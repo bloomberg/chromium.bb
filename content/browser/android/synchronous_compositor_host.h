@@ -111,6 +111,9 @@ class SynchronousCompositorHost : public SynchronousCompositor {
   size_t bytes_limit_;
   std::unique_ptr<SharedMemoryWithSize> software_draw_shm_;
 
+  // Indicates the next draw needs to be synchronous
+  bool compute_scroll_needs_synchronous_draw_ = false;
+
   // Updated by both renderer and browser.
   gfx::ScrollOffset root_scroll_offset_;
 

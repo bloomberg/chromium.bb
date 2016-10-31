@@ -104,10 +104,19 @@ SynchronousCompositorHost::DemandDrawHwAsync(
     const gfx::Size& viewport_size,
     const gfx::Rect& viewport_rect_for_tile_priority,
     const gfx::Transform& transform_for_tile_priority) {
+  scoped_refptr<FrameFuture> frame_future = new FrameFuture();
+  if (compute_scroll_needs_synchronous_draw_) {
+    compute_scroll_needs_synchronous_draw_ = false;
+    auto frame_ptr = base::MakeUnique<Frame>();
+    *frame_ptr = DemandDrawHw(viewport_size, viewport_rect_for_tile_priority,
+                              transform_for_tile_priority);
+    frame_future->SetFrame(std::move(frame_ptr));
+    return frame_future;
+  }
+
   SyncCompositorDemandDrawHwParams params(viewport_size,
                                           viewport_rect_for_tile_priority,
                                           transform_for_tile_priority);
-  scoped_refptr<FrameFuture> frame_future = new FrameFuture();
   if (SynchronousCompositorBrowserFilter* filter = GetFilter()) {
     if (!registered_with_filter_) {
       filter->RegisterHost(this);
@@ -363,6 +372,7 @@ void SynchronousCompositorHost::OnComputeScroll(
   SyncCompositorCommonRendererParams common_renderer_params;
   sender_->Send(
       new SyncCompositorMsg_ComputeScroll(routing_id_, animation_time));
+  compute_scroll_needs_synchronous_draw_ = true;
 }
 
 void SynchronousCompositorHost::DidOverscroll(
@@ -374,6 +384,7 @@ void SynchronousCompositorHost::DidOverscroll(
 
 void SynchronousCompositorHost::DidSendBeginFrame(
     ui::WindowAndroid* window_android) {
+  compute_scroll_needs_synchronous_draw_ = false;
   if (SynchronousCompositorBrowserFilter* filter = GetFilter())
     filter->SyncStateAfterVSync(window_android, this);
 }
