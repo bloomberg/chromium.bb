@@ -1,51 +1,26 @@
-<!DOCTYPE HTML>
-<html>
-<head>
+<!doctype html>
 <script src="../../resources/testharness.js"></script>
 <script src="../../resources/testharnessreport.js"></script>
-<script src="resources/util.js"></script>
-</head>
-<body>
-<div>
-<div id="src" contenteditable></div><br/>
-<div id="dst" contenteditable spellcheck="false"></div>
-</div>
+<script src="../assert_selection.js"></script>
+<script src="spellcheck_test.js"></script>
+
 <script>
-var srcNode = document.getElementById('src');
-var dstNode = document.getElementById('dst');
-
-steps = [
-    // Insert a misspelled word to initialize a spellchecker.
-    // Break the insertion of 'zz apple' into two parts to wait for the spelling
-    // markers under 'zz' to appear.
-    function() {
-        srcNode.focus();
-        document.execCommand('InsertText', false, 'z');
-        document.execCommand('InsertText', false, 'z');
-        document.execCommand('InsertText', false, ' ');
+spellcheck_test(
+    '<div contenteditable spellcheck="false">|</div contenteditable>',
+    document => {
+      document.getSelection().setClipboardData('zz apple.');
+      document.execCommand('paste');
     },
-    function() {
-        document.execCommand('InsertText', false, 'a');
-        document.execCommand('InsertText', false, 'p');
-        document.execCommand('InsertText', false, 'p');
-        document.execCommand('InsertText', false, 'l');
-        document.execCommand('InsertText', false, 'e');
+    '<div contenteditable spellcheck="false">zz apple.</div>',
+    'No spellchecking when pasting into spellcheck=false.');
+
+spellcheck_test(
+    '<div contenteditable>|</div contenteditable>',
+    document => {
+      document.getSelection().setClipboardData('zz apple.');
+      internals.setSpellCheckingEnabled(false);
+      document.execCommand('paste');
     },
-    function() {
-        window.getSelection().selectAllChildren(srcNode);
-        document.execCommand('Copy');
-        dstNode.focus();
-        document.execCommand('Paste');
-    }
-];
-
-assertions = [
-    () => {},
-    () => assert_true(internals.hasSpellingMarker(document, 0, 2)),
-    () => assert_false(internals.hasSpellingMarker(document, 0, 2))
-];
-
-runSpellingTest(steps, assertions, 'Blink does not spellcheck text when pasting text to an element having spellchecking disabled.')
+    '<div contenteditable>zz apple.</div>',
+    'No spellchecking when spellchecking is disabled globally.');
 </script>
-</body>
-</html>
