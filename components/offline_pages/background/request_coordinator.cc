@@ -212,6 +212,13 @@ void RequestCoordinator::StopPrerendering(Offliner::RequestStatus stop_status) {
     DCHECK(active_request_.get());
     offliner_->Cancel();
 
+    // If we timed out, let the offliner done callback handle it.
+    if (processing_state_ == ProcessingWindowState::IMMEDIATE_WINDOW &&
+        stop_status == Offliner::RequestStatus::REQUEST_COORDINATOR_TIMED_OUT)
+      return;
+
+    // Otherwise, this attempt never really had a chance to run, mark it
+    // aborted.
     AbortRequestAttempt(active_request_.get());
   }
 

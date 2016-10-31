@@ -1090,8 +1090,6 @@ TEST_F(RequestCoordinatorTest, WatchdogTimeoutForScheduledProcessing) {
 
   EXPECT_FALSE(is_starting());
   EXPECT_TRUE(OfflinerWasCanceled());
-  EXPECT_EQ(Offliner::RequestStatus::REQUEST_COORDINATOR_TIMED_OUT,
-            last_offlining_status());
 }
 
 TEST_F(RequestCoordinatorTest, WatchdogTimeoutForImmediateProcessing) {
@@ -1134,10 +1132,7 @@ TEST_F(RequestCoordinatorTest, WatchdogTimeoutForImmediateProcessing) {
   PumpLoop();
 
   // Verify the request timed out.
-  EXPECT_FALSE(coordinator()->is_busy());
   EXPECT_TRUE(OfflinerWasCanceled());
-  EXPECT_EQ(Offliner::RequestStatus::REQUEST_COORDINATOR_TIMED_OUT,
-            last_offlining_status());
 }
 
 TEST_F(RequestCoordinatorTest, TimeBudgetExceeded) {
