@@ -11,6 +11,20 @@ CssScanningMetricsObserver::CssScanningMetricsObserver() {}
 
 CssScanningMetricsObserver::~CssScanningMetricsObserver() {}
 
+void CssScanningMetricsObserver::OnFirstContentfulPaint(
+    const page_load_metrics::PageLoadTiming& timing,
+    const page_load_metrics::PageLoadExtraInfo& info) {
+  if (info.metadata.behavior_flags &
+          blink::WebLoadingBehaviorFlag::WebLoadingBehaviorCSSPreloadFound &&
+      WasStartedInForegroundOptionalEventInForeground(
+          timing.first_contentful_paint, info)) {
+    PAGE_LOAD_HISTOGRAM(
+        "PageLoad.Clients.CssScanner.PaintTiming."
+        "ParseStartToFirstContentfulPaint",
+        timing.first_contentful_paint.value() - timing.parse_start.value());
+  }
+}
+
 void CssScanningMetricsObserver::OnFirstMeaningfulPaint(
     const page_load_metrics::PageLoadTiming& timing,
     const page_load_metrics::PageLoadExtraInfo& info) {

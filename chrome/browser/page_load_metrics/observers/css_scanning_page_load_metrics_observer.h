@@ -15,6 +15,9 @@ class CssScanningMetricsObserver
   ~CssScanningMetricsObserver() override;
 
   // page_load_metrics::PageLoadMetricsObserver:
+  void OnFirstContentfulPaint(
+      const page_load_metrics::PageLoadTiming& timing,
+      const page_load_metrics::PageLoadExtraInfo& info) override;
   void OnFirstMeaningfulPaint(
       const page_load_metrics::PageLoadTiming& timing,
       const page_load_metrics::PageLoadExtraInfo& info) override;
