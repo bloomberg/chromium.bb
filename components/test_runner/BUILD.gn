@@ -202,16 +202,3 @@ group("resources") {
     deps += [ ":copy_android_fonts" ]
   }
 }
-
-if (is_win) {
-  executable("layout_test_helper") {
-    sources = [
-      "helper/layout_test_helper_win.cc",
-    ]
-
-    deps = [
-      "//build/config/sanitizers:deps",
-      "//build/win:default_exe_manifest",
-    ]
-  }
-}

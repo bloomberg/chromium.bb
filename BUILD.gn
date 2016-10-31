@@ -920,10 +920,7 @@ if (!is_ios) {
     }
 
     if (is_win) {
-      deps += [
-        "//components/test_runner:layout_test_helper",
-        "//content/shell:content_shell_crash_service",
-      ]
+      deps += [ "//content/shell:content_shell_crash_service" ]
     }
 
     if (!is_win && !is_android) {
@@ -1083,7 +1080,6 @@ if (is_win) {
     testonly = true
 
     deps = [
-      "//components/test_runner:layout_test_helper",
       "//content/shell:content_shell",
       "//content/shell:content_shell_crash_service",
     ]
@@ -1104,7 +1100,6 @@ if (is_win) {
       "//chrome/test/chromedriver:chromedriver_unittests",
       "//chrome_elf:chrome_elf_unittests",
       "//components:components_unittests",
-      "//components/test_runner:layout_test_helper",
       "//content/shell:content_shell_crash_service",
       "//content/test:content_browsertests",
       "//content/test:content_unittests",
