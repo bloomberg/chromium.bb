@@ -60,22 +60,28 @@ const char kHostId[] = "ABC123";
 const char kHostPin[] = "123456";
 
 struct NetworkPerformanceParams {
-  NetworkPerformanceParams(int bandwidth,
-                           int max_buffers,
+  // |buffer_s| defines buffer size in seconds. actual buffer size is calculated
+  // based on bandwidth_kbps
+  NetworkPerformanceParams(int bandwidth_kbps,
+                           double buffer_s,
                            double latency_average_ms,
                            double latency_stddev_ms,
-                           double out_of_order_rate)
-      : bandwidth(bandwidth),
-        max_buffers(max_buffers),
+                           double out_of_order_rate,
+                           double signaling_latency_ms)
+      : bandwidth_kbps(bandwidth_kbps),
+        max_buffers(buffer_s * bandwidth_kbps * 1000 / 8),
         latency_average(base::TimeDelta::FromMillisecondsD(latency_average_ms)),
         latency_stddev(base::TimeDelta::FromMillisecondsD(latency_stddev_ms)),
-        out_of_order_rate(out_of_order_rate) {}
+        out_of_order_rate(out_of_order_rate),
+        signaling_latency(
+            base::TimeDelta::FromMillisecondsD(signaling_latency_ms)) {}
 
-  int bandwidth;
+  int bandwidth_kbps;
   int max_buffers;
   base::TimeDelta latency_average;
   base::TimeDelta latency_stddev;
   double out_of_order_rate;
+  base::TimeDelta signaling_latency;
 };
 
 class FakeCursorShapeStub : public protocol::CursorShapeStub {
@@ -256,6 +262,7 @@ class ProtocolPerfTest
     jingle_glue::JingleThreadWrapper::EnsureForCurrentMessageLoop();
 
     host_signaling_.reset(new FakeSignalStrategy(kHostJid));
+    host_signaling_->set_send_delay(GetParam().signaling_latency);
     host_signaling_->ConnectTo(client_signaling_.get());
 
     protocol::NetworkSettings network_settings(
@@ -264,7 +271,7 @@ class ProtocolPerfTest
     std::unique_ptr<FakePortAllocatorFactory> port_allocator_factory(
         new FakePortAllocatorFactory(fake_network_dispatcher_));
     port_allocator_factory->socket_factory()->SetBandwidth(
-        GetParam().bandwidth, GetParam().max_buffers);
+        GetParam().bandwidth_kbps * 1000 / 8, GetParam().max_buffers);
     port_allocator_factory->socket_factory()->SetLatency(
         GetParam().latency_average, GetParam().latency_stddev);
     port_allocator_factory->socket_factory()->set_out_of_order_rate(
@@ -314,6 +321,7 @@ class ProtocolPerfTest
   }
 
   void StartClientAfterHost() {
+    client_signaling_->set_send_delay(GetParam().signaling_latency);
     client_signaling_->ConnectTo(host_signaling_.get());
 
     protocol::NetworkSettings network_settings(
@@ -328,7 +336,7 @@ class ProtocolPerfTest
         new FakePortAllocatorFactory(fake_network_dispatcher_));
     client_socket_factory_ = port_allocator_factory->socket_factory();
     port_allocator_factory->socket_factory()->SetBandwidth(
-        GetParam().bandwidth, GetParam().max_buffers);
+        GetParam().bandwidth_kbps * 1000 / 8, GetParam().max_buffers);
     port_allocator_factory->socket_factory()->SetLatency(
         GetParam().latency_average, GetParam().latency_stddev);
     port_allocator_factory->socket_factory()->set_out_of_order_rate(
@@ -410,38 +418,45 @@ class ProtocolPerfTest
 INSTANTIATE_TEST_CASE_P(
     NoDelay,
     ProtocolPerfTest,
-    ::testing::Values(NetworkPerformanceParams(0, 0, 0, 0, 0.0)));
+    ::testing::Values(NetworkPerformanceParams(0, 0, 0, 0, 0.0, 0)));
 
 INSTANTIATE_TEST_CASE_P(
     HighLatency,
     ProtocolPerfTest,
-    ::testing::Values(NetworkPerformanceParams(0, 0, 300, 30, 0.0),
-                      NetworkPerformanceParams(0, 0, 30, 10, 0.0)));
+    ::testing::Values(NetworkPerformanceParams(0, 0, 300, 30, 0.0, 0),
+                      NetworkPerformanceParams(0, 0, 30, 10, 0.0, 0)));
 
 INSTANTIATE_TEST_CASE_P(
     OutOfOrder,
     ProtocolPerfTest,
-    ::testing::Values(NetworkPerformanceParams(0, 0, 2, 0, 0.01),
-                      NetworkPerformanceParams(0, 0, 30, 1, 0.01),
-                      NetworkPerformanceParams(0, 0, 30, 1, 0.1),
-                      NetworkPerformanceParams(0, 0, 300, 20, 0.01),
-                      NetworkPerformanceParams(0, 0, 300, 20, 0.1)));
+    ::testing::Values(NetworkPerformanceParams(0, 0, 2, 0, 0.01, 0),
+                      NetworkPerformanceParams(0, 0, 30, 1, 0.01, 0),
+                      NetworkPerformanceParams(0, 0, 30, 1, 0.1, 0),
+                      NetworkPerformanceParams(0, 0, 300, 20, 0.01, 0),
+                      NetworkPerformanceParams(0, 0, 300, 20, 0.1, 0)));
 
 INSTANTIATE_TEST_CASE_P(
     LimitedBandwidth,
     ProtocolPerfTest,
     ::testing::Values(
         // 100 Mbps
-        NetworkPerformanceParams(12500000, 12500000, 2, 1, 0.0),
+        NetworkPerformanceParams(100000, 0.25, 2, 1, 0.0, 0),
+        NetworkPerformanceParams(100000, 1.0, 2, 1, 0.0, 0),
         // 8 Mbps
-        NetworkPerformanceParams(1000000, 300000, 30, 5, 0.01),
-        NetworkPerformanceParams(1000000, 2000000, 30, 5, 0.01),
+        NetworkPerformanceParams(8000, 0.25, 30, 5, 0.01, 0),
+        NetworkPerformanceParams(8000, 1.0, 30, 5, 0.01, 0),
         // 2 Mbps
-        NetworkPerformanceParams(250000, 300000, 30, 5, 0.01),
-        NetworkPerformanceParams(250000, 2000000, 30, 5, 0.01),
-        // 800 kBps
-        NetworkPerformanceParams(100000, 30000, 130, 5, 0.00),
-        NetworkPerformanceParams(100000, 200000, 130, 5, 0.00)));
+        NetworkPerformanceParams(2000, 0.25, 30, 5, 0.01, 0),
+        NetworkPerformanceParams(2000, 1.0, 30, 5, 0.01, 0),
+        // 800 kbps
+        NetworkPerformanceParams(800, 0.25, 130, 5, 0.00, 0),
+        NetworkPerformanceParams(800, 1.0, 130, 5, 0.00, 0)));
+
+INSTANTIATE_TEST_CASE_P(
+    SlowSignaling,
+    ProtocolPerfTest,
+    ::testing::Values(NetworkPerformanceParams(8000, 0.25, 30, 0, 0.0, 50),
+                      NetworkPerformanceParams(8000, 0.25, 30, 0, 0.0, 500)));
 
 // TotalLatency[Ice|Webrtc] tests measure video latency in the case when the
 // whole screen is updated occasionally. It's intended to simulate the case when
@@ -512,6 +527,8 @@ void ProtocolPerfTest::MeasureTotalLatency(bool use_webrtc) {
     }
   }
 
+  WaitFrameStats(total_frames);
+
   CHECK(big_update_count);
   VLOG(0) << "Average latency for big updates: "
           << (total_latency_big_updates / big_update_count).InMillisecondsF();
@@ -521,6 +538,16 @@ void ProtocolPerfTest::MeasureTotalLatency(bool use_webrtc) {
         << "Average latency for small updates: "
         << (total_latency_small_updates / small_update_count).InMillisecondsF();
   }
+
+  double average_bwe =
+      std::accumulate(frame_stats_.begin() + warm_up_frames,
+                      frame_stats_.begin() + total_frames, 0.0,
+                      [](double sum, const protocol::FrameStats& stats) {
+                        return sum + stats.host_stats.bandwidth_estimate_kbps;
+                      }) /
+      (total_frames - warm_up_frames);
+  VLOG(0) << "Average BW estimate: " << average_bwe
+          << " (actual: " << GetParam().bandwidth_kbps << ")";
 }
 
 TEST_P(ProtocolPerfTest, TotalLatencyIce) {
@@ -580,12 +607,21 @@ void ProtocolPerfTest::MeasureScrollPerformance(bool use_webrtc) {
                       stats.host_stats.latest_event_timestamp);
       });
 
+  double average_bwe =
+      std::accumulate(frame_stats_.begin() + warm_up_frames,
+                      frame_stats_.begin() + warm_up_frames + num_frames, 0.0,
+                      [](double sum, const protocol::FrameStats& stats) {
+                        return sum + stats.host_stats.bandwidth_estimate_kbps;
+                      }) /
+      num_frames;
+
   VLOG(0) << "FPS: " << num_frames / total_time.InSecondsF();
   VLOG(0) << "Average latency: " << latency_sum.InMillisecondsF() / num_frames
           << " ms";
   VLOG(0) << "Total size: " << total_size << " bytes";
   VLOG(0) << "Bandwidth utilization: "
-          << 100 * total_size / (total_time.InSecondsF() * GetParam().bandwidth)
+          << 100 * total_size / (total_time.InSecondsF() *
+                                 GetParam().bandwidth_kbps * 1000 / 8)
           << "%";
   VLOG(0) << "Network buffer delay (bufferbloat), average: "
           << client_socket_factory_->average_buffer_delay().InMilliseconds()
@@ -593,6 +629,8 @@ void ProtocolPerfTest::MeasureScrollPerformance(bool use_webrtc) {
           << client_socket_factory_->max_buffer_delay().InMilliseconds()
           << " ms";
   VLOG(0) << "Packet drop rate: " << client_socket_factory_->drop_rate();
+  VLOG(0) << "Average BW estimate: " << average_bwe
+          << " (actual: " << GetParam().bandwidth_kbps << ")";
 }
 
 TEST_P(ProtocolPerfTest, ScrollPerformanceIce) {

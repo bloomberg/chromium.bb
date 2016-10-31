@@ -151,8 +151,8 @@ int FakeUdpSocket::GetOption(rtc::Socket::Option option, int* value) {
 }
 
 int FakeUdpSocket::SetOption(rtc::Socket::Option option, int value) {
-  NOTIMPLEMENTED();
-  return -1;
+  // All options are currently ignored.
+  return 0;
 }
 
 int FakeUdpSocket::GetError() const {
