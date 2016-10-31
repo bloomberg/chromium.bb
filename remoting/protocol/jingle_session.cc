@@ -106,25 +106,25 @@ class JingleSession::OrderedMessageQueue {
   ~OrderedMessageQueue() {}
 
   // Returns the list of messages ordered by their sequential IDs.
-  std::vector<std::unique_ptr<PendingMessage>> OnIncomingMessage(
+  std::vector<PendingMessage> OnIncomingMessage(
       const std::string& id,
-      std::unique_ptr<PendingMessage>);
+      PendingMessage&& pending_message);
 
  private:
   // Implements an ordered list by using map with the |sequence_id| as the key,
   // so that |queue_| is always sorted by |sequence_id|.
-  std::map<int, std::unique_ptr<PendingMessage>> queue_;
+  std::map<int, PendingMessage> queue_;
 
   int next_incoming_ = kAny;
 
   DISALLOW_COPY_AND_ASSIGN(OrderedMessageQueue);
 };
 
-std::vector<std::unique_ptr<JingleSession::PendingMessage>>
+std::vector<JingleSession::PendingMessage>
 JingleSession::OrderedMessageQueue::OnIncomingMessage(
     const std::string& id,
-    std::unique_ptr<JingleSession::PendingMessage> message) {
-  std::vector<std::unique_ptr<JingleSession::PendingMessage>> result;
+    JingleSession::PendingMessage&& message) {
+  std::vector<JingleSession::PendingMessage> result;
   int current = GetSequentialId(id);
   // If there is no sequencing order encoded in the id, just return the
   // message.
@@ -157,12 +157,16 @@ JingleSession::OrderedMessageQueue::OnIncomingMessage(
   return result;
 };
 
+JingleSession::PendingMessage::PendingMessage() = default;
+JingleSession::PendingMessage::PendingMessage(PendingMessage&& moved) = default;
 JingleSession::PendingMessage::PendingMessage(
     std::unique_ptr<JingleMessage> message,
     const ReplyCallback& reply_callback)
     : message(std::move(message)), reply_callback(reply_callback) {}
+JingleSession::PendingMessage::~PendingMessage() = default;
 
-JingleSession::PendingMessage::~PendingMessage() {}
+JingleSession::PendingMessage& JingleSession::PendingMessage::operator=(
+    PendingMessage&& moved) = default;
 
 JingleSession::JingleSession(JingleSessionManager* session_manager)
     : session_manager_(session_manager),
@@ -399,7 +403,7 @@ void JingleSession::SendMessage(std::unique_ptr<JingleMessage> message) {
   }
   if (request) {
     request->SetTimeout(base::TimeDelta::FromSeconds(timeout));
-    pending_requests_.insert(std::move(request));
+    pending_requests_.push_back(std::move(request));
   } else {
     LOG(ERROR) << "Failed to send a "
                << JingleMessage::GetActionName(message->action) << " message";
@@ -451,14 +455,15 @@ void JingleSession::OnTransportInfoResponse(IqRequest* request,
   DCHECK(!transport_info_requests_.empty());
 
   // Consider transport-info requests sent before this one lost and delete
-  // corresponding IqRequest objects.
-  while (transport_info_requests_.front().get() != request) {
-    transport_info_requests_.pop_front();
-  }
-
-  // Delete the |request| itself.
-  DCHECK_EQ(request, transport_info_requests_.front().get());
-  transport_info_requests_.pop_front();
+  // all IqRequest objects in front of |request|.
+  auto request_it = std::find_if(
+      transport_info_requests_.begin(), transport_info_requests_.end(),
+      [request](const std::unique_ptr<IqRequest>& ptr) {
+        return ptr.get() == request;
+      });
+  DCHECK(request_it != transport_info_requests_.end());
+  transport_info_requests_.erase(transport_info_requests_.begin(),
+                                 request_it + 1);
 
   // Ignore transport-info timeouts.
   if (!response) {
@@ -477,13 +482,13 @@ void JingleSession::OnTransportInfoResponse(IqRequest* request,
 void JingleSession::OnIncomingMessage(const std::string& id,
                                       std::unique_ptr<JingleMessage> message,
                                       const ReplyCallback& reply_callback) {
-  std::unique_ptr<PendingMessage> item(
-      new PendingMessage(std::move(message), reply_callback));
-  std::vector<std::unique_ptr<PendingMessage>> ordered =
-      message_queue_->OnIncomingMessage(id, std::move(item));
+  std::vector<PendingMessage> ordered = message_queue_->OnIncomingMessage(
+      id, PendingMessage{std::move(message), reply_callback});
+  base::WeakPtr<JingleSession> self = weak_factory_.GetWeakPtr();
   for (auto& message : ordered) {
-    ProcessIncomingMessage(std::move(message->message),
-                           message->reply_callback);
+    ProcessIncomingMessage(std::move(message.message), message.reply_callback);
+    if (!self)
+      return;
   }
 }
 
@@ -508,19 +513,7 @@ void JingleSession::ProcessIncomingMessage(
       break;
 
     case JingleMessage::TRANSPORT_INFO:
-      if (!transport_) {
-        LOG(ERROR) << "Received unexpected transport-info message->";
-        reply_callback.Run(JingleMessageReply::NONE);
-        return;
-      }
-
-      if (!message->transport_info ||
-          !transport_->ProcessTransportInfo(message->transport_info.get())) {
-        reply_callback.Run(JingleMessageReply::BAD_REQUEST);
-        return;
-      }
-
-      reply_callback.Run(JingleMessageReply::NONE);
+      OnTransportInfo(std::move(message), reply_callback);
       break;
 
     case JingleMessage::SESSION_TERMINATE:
@@ -557,8 +550,9 @@ void JingleSession::OnAccept(std::unique_ptr<JingleMessage> message,
   SetState(ACCEPTED);
 
   DCHECK(authenticator_->state() == Authenticator::WAITING_MESSAGE);
-  authenticator_->ProcessMessage(auth_message, base::Bind(
-      &JingleSession::ProcessAuthenticationStep,base::Unretained(this)));
+  authenticator_->ProcessMessage(
+      auth_message, base::Bind(&JingleSession::ProcessAuthenticationStep,
+                               base::Unretained(this)));
 }
 
 void JingleSession::OnSessionInfo(std::unique_ptr<JingleMessage> message,
@@ -580,8 +574,30 @@ void JingleSession::OnSessionInfo(std::unique_ptr<JingleMessage> message,
 
   reply_callback.Run(JingleMessageReply::NONE);
 
-  authenticator_->ProcessMessage(message->info.get(), base::Bind(
-      &JingleSession::ProcessAuthenticationStep, base::Unretained(this)));
+  authenticator_->ProcessMessage(
+      message->info.get(), base::Bind(&JingleSession::ProcessAuthenticationStep,
+                                      base::Unretained(this)));
+}
+
+void JingleSession::OnTransportInfo(std::unique_ptr<JingleMessage> message,
+                                    const ReplyCallback& reply_callback) {
+  if (!message->transport_info) {
+    reply_callback.Run(JingleMessageReply::BAD_REQUEST);
+    return;
+  }
+
+  if (state_ == AUTHENTICATING) {
+    pending_transport_info_.push_back(
+        PendingMessage{std::move(message), reply_callback});
+  } else if (state_ == AUTHENTICATED) {
+    reply_callback.Run(
+        transport_->ProcessTransportInfo(message->transport_info.get())
+            ? JingleMessageReply::NONE
+            : JingleMessageReply::BAD_REQUEST);
+  } else {
+    LOG(ERROR) << "Received unexpected transport-info message.";
+    reply_callback.Run(JingleMessageReply::UNEXPECTED_REQUEST);
+  }
 }
 
 void JingleSession::OnTerminate(std::unique_ptr<JingleMessage> message,
@@ -678,21 +694,13 @@ void JingleSession::ProcessAuthenticationStep() {
   }
   DCHECK_NE(authenticator_->state(), Authenticator::MESSAGE_READY);
 
-  // The current JingleSession object can be destroyed by event_handler of
-  // SetState(AUTHENTICATING) and cause subsequent dereferencing of the this
-  // pointer to crash.  To protect against it, we run ContinueAuthenticationStep
-  // asychronously using a weak pointer.
-  base::ThreadTaskRunnerHandle::Get()->PostTask(
-    FROM_HERE,
-    base::Bind(&JingleSession::ContinueAuthenticationStep,
-               weak_factory_.GetWeakPtr()));
-
   if (authenticator_->started()) {
+    base::WeakPtr<JingleSession> self = weak_factory_.GetWeakPtr();
     SetState(AUTHENTICATING);
+    if (!self)
+      return;
   }
-}
 
-void JingleSession::ContinueAuthenticationStep() {
   if (authenticator_->state() == Authenticator::ACCEPTED) {
     OnAuthenticated();
   } else if (authenticator_->state() == Authenticator::REJECTED) {
@@ -705,6 +713,18 @@ void JingleSession::OnAuthenticated() {
   transport_->Start(authenticator_.get(),
                     base::Bind(&JingleSession::SendTransportInfo,
                                weak_factory_.GetWeakPtr()));
+
+  base::WeakPtr<JingleSession> self = weak_factory_.GetWeakPtr();
+  std::vector<PendingMessage> messages_to_process;
+  std::swap(messages_to_process, pending_transport_info_);
+  for (auto& message : messages_to_process) {
+    message.reply_callback.Run(
+        transport_->ProcessTransportInfo(message.message->transport_info.get())
+            ? JingleMessageReply::NONE
+            : JingleMessageReply::BAD_REQUEST);
+    if (!self)
+      return;
+  }
 
   SetState(AUTHENTICATED);
 }

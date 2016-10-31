@@ -101,8 +101,16 @@ void FakeAuthenticator::set_messages_till_started(int messages) {
   messages_till_started_ = messages;
 }
 
+void FakeAuthenticator::Resume() {
+  base::ResetAndReturn(&resume_closure_).Run();
+}
+
 Authenticator::State FakeAuthenticator::state() const {
   EXPECT_LE(messages_, round_trips_ * 2);
+
+  if (messages_ == pause_message_index_ && !resume_closure_.is_null())
+    return PROCESSING_MESSAGE;
+
   if (messages_ >= round_trips_ * 2) {
     if (action_ == REJECT) {
       return REJECTED;
@@ -152,6 +160,10 @@ void FakeAuthenticator::ProcessMessage(const buzz::XmlElement* message,
   }
 
   ++messages_;
+  if (messages_ == pause_message_index_) {
+    resume_closure_ = resume_callback;
+    return;
+  }
   resume_callback.Run();
 }
 

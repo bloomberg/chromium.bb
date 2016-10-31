@@ -5,9 +5,8 @@
 #ifndef REMOTING_PROTOCOL_JINGLE_SESSION_H_
 #define REMOTING_PROTOCOL_JINGLE_SESSION_H_
 
-#include <list>
-#include <set>
 #include <string>
+#include <vector>
 
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
@@ -97,6 +96,8 @@ class JingleSession : public Session {
                 const ReplyCallback& reply_callback);
   void OnSessionInfo(std::unique_ptr<JingleMessage> message,
                      const ReplyCallback& reply_callback);
+  void OnTransportInfo(std::unique_ptr<JingleMessage> message,
+                       const ReplyCallback& reply_callback);
   void OnTerminate(std::unique_ptr<JingleMessage> message,
                    const ReplyCallback& reply_callback);
 
@@ -108,9 +109,6 @@ class JingleSession : public Session {
 
   // Called after subsequent authenticator messages are processed.
   void ProcessAuthenticationStep();
-
-  // Called after the authenticating step is finished.
-  void ContinueAuthenticationStep();
 
   // Called when authentication is finished.
   void OnAuthenticated();
@@ -142,17 +140,20 @@ class JingleSession : public Session {
   Transport* transport_ = nullptr;
 
   // Pending Iq requests. Used for all messages except transport-info.
-  std::set<std::unique_ptr<IqRequest>> pending_requests_;
+  std::vector<std::unique_ptr<IqRequest>> pending_requests_;
 
   // Pending transport-info requests.
-  std::list<std::unique_ptr<IqRequest>> transport_info_requests_;
+  std::vector<std::unique_ptr<IqRequest>> transport_info_requests_;
 
   struct PendingMessage {
+    PendingMessage();
+    PendingMessage(PendingMessage&& moved);
     PendingMessage(std::unique_ptr<JingleMessage> message,
                    const ReplyCallback& reply_callback);
     ~PendingMessage();
+    PendingMessage& operator=(PendingMessage&& moved);
     std::unique_ptr<JingleMessage> message;
-    const ReplyCallback reply_callback;
+    ReplyCallback reply_callback;
   };
 
   // A message queue to guarantee the incoming messages are processed in order.
@@ -163,6 +164,10 @@ class JingleSession : public Session {
   // client and the ID's sent from the host.
   std::string outgoing_id_prefix_ = base::Uint64ToString(base::RandUint64());
   int next_outgoing_id_ = 0;
+
+  // Transport info messages that are received while the session is being
+  // authenticated.
+  std::vector<PendingMessage> pending_transport_info_;
 
   base::WeakPtrFactory<JingleSession> weak_factory_;
 

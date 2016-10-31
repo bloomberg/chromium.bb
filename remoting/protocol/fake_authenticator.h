@@ -68,6 +68,14 @@ class FakeAuthenticator : public Authenticator {
   // |round_trips| is set to 0.
   void set_auth_key(const std::string& auth_key) { auth_key_ = auth_key; }
 
+  // When pause_message_index is set the authenticator will pause in
+  // PROCESSING_MESSAGE state after that message, until
+  // TakeResumeClosure().Run() is called.
+  void set_pause_message_index(int pause_message_index) {
+    pause_message_index_ = pause_message_index;
+  }
+  void Resume();
+
   // Authenticator interface.
   State state() const override;
   bool started() const override;
@@ -90,6 +98,9 @@ class FakeAuthenticator : public Authenticator {
   // Number of messages that the authenticator needs to process before started()
   // returns true.  Default to 0.
   int messages_till_started_ = 0;
+
+  int pause_message_index_ = -1;
+  base::Closure resume_closure_;
 
   std::string auth_key_;
 
