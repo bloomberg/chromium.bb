@@ -56,7 +56,7 @@ class TabLoader : public content::NotificationObserver,
   void SetTabLoadingEnabled(bool enable_tab_loading) override;
 
   // Called to start restoring tabs.
-  static void RestoreTabs(const std::vector<RestoredTab>& tabs_,
+  static void RestoreTabs(const std::vector<RestoredTab>& tabs,
                           const base::TimeTicks& restore_started);
 
  private:
