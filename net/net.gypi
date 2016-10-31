@@ -791,6 +791,8 @@
       'nqe/network_quality.h',
       'nqe/network_quality_estimator.cc',
       'nqe/network_quality_estimator.h',
+      'nqe/network_quality_estimator_params.cc',
+      'nqe/network_quality_estimator_params.h',
       'nqe/network_quality_observation.h',
       'nqe/network_quality_observation_source.h',
       'nqe/network_quality_store.cc',
