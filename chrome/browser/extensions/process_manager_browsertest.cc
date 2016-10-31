@@ -734,24 +734,26 @@ IN_PROC_BROWSER_TEST_F(ProcessManagerBrowserTest,
       main_frame->GetProcess()->GetID(),
       GURL("chrome-extension://some-extension-id/resource.html")));
 
-  EXPECT_TRUE(policy->CanCommitURL(
-      extension_frame->GetProcess()->GetID(),
-      GURL("blob:chrome-extension://some-extension-id/some-guid")));
-  EXPECT_FALSE(policy->CanCommitURL(
-      main_frame->GetProcess()->GetID(),
-      GURL("blob:chrome-extension://some-extension-id/some-guid")));
-  EXPECT_TRUE(policy->CanCommitURL(
-      extension_frame->GetProcess()->GetID(),
-      GURL("chrome-extension://some-extension-id/resource.html")));
-  EXPECT_FALSE(policy->CanCommitURL(
-      main_frame->GetProcess()->GetID(),
-      GURL("chrome-extension://some-extension-id/resource.html")));
-  EXPECT_TRUE(policy->CanCommitURL(
-      extension_frame->GetProcess()->GetID(),
-      GURL("filesystem:chrome-extension://some-extension-id/some-path")));
-  EXPECT_FALSE(policy->CanCommitURL(
-      main_frame->GetProcess()->GetID(),
-      GURL("filesystem:chrome-extension://some-extension-id/some-path")));
+  if (extensions::IsIsolateExtensionsEnabled()) {
+    EXPECT_TRUE(policy->CanCommitURL(
+        extension_frame->GetProcess()->GetID(),
+        GURL("blob:chrome-extension://some-extension-id/some-guid")));
+    EXPECT_FALSE(policy->CanCommitURL(
+        main_frame->GetProcess()->GetID(),
+        GURL("blob:chrome-extension://some-extension-id/some-guid")));
+    EXPECT_TRUE(policy->CanCommitURL(
+        extension_frame->GetProcess()->GetID(),
+        GURL("chrome-extension://some-extension-id/resource.html")));
+    EXPECT_FALSE(policy->CanCommitURL(
+        main_frame->GetProcess()->GetID(),
+        GURL("chrome-extension://some-extension-id/resource.html")));
+    EXPECT_TRUE(policy->CanCommitURL(
+        extension_frame->GetProcess()->GetID(),
+        GURL("filesystem:chrome-extension://some-extension-id/some-path")));
+    EXPECT_FALSE(policy->CanCommitURL(
+        main_frame->GetProcess()->GetID(),
+        GURL("filesystem:chrome-extension://some-extension-id/some-path")));
+  }
 
   // Open a new about:blank popup from main frame.  This should stay in the web
   // process.
