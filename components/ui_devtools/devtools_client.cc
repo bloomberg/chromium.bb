@@ -25,12 +25,6 @@ void UiDevToolsClient::AddAgent(std::unique_ptr<UiDevToolsAgent> agent) {
   agents_.push_back(std::move(agent));
 }
 
-void UiDevToolsClient::AddDOMBackend(
-    std::unique_ptr<protocol::DOM::Backend> dom_backend) {
-  dom_backend_ = std::move(dom_backend);
-  protocol::DOM::Dispatcher::wire(&dispatcher_, dom_backend_.get());
-}
-
 void UiDevToolsClient::Dispatch(const std::string& data) {
   dispatcher_.dispatch(protocol::parseJSON(data));
 }

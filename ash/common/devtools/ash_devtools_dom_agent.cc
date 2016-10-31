@@ -2,11 +2,9 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "ash/common/devtools/devtools_dom_agent.h"
+#include "ash/common/devtools/ash_devtools_dom_agent.h"
 
-#include "ash/common/wm_shell.h"
 #include "ash/common/wm_window.h"
-#include "components/ui_devtools/DOM.h"
 #include "components/ui_devtools/devtools_server.h"
 #include "ui/views/view.h"
 #include "ui/views/widget/widget.h"

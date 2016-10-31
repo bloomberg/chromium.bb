@@ -2,16 +2,18 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef ASH_COMMON_DEVTOOLS_DEVTOOLS_DOM_AGENT_H_
-#define ASH_COMMON_DEVTOOLS_DEVTOOLS_DOM_AGENT_H_
+#ifndef ASH_COMMON_DEVTOOLS_ASH_DEVTOOLS_DOM_AGENT_H_
+#define ASH_COMMON_DEVTOOLS_ASH_DEVTOOLS_DOM_AGENT_H_
 
 #include "ash/common/wm_shell.h"
 #include "components/ui_devtools/DOM.h"
+#include "components/ui_devtools/devtools_base_agent.h"
 
 namespace ash {
 namespace devtools {
 
-class AshDevToolsDOMAgent : public ui::devtools::protocol::DOM::Backend {
+class AshDevToolsDOMAgent : public ui::devtools::UiDevToolsBaseAgent<
+                                ui::devtools::protocol::DOM::Metainfo> {
  public:
   explicit AshDevToolsDOMAgent(ash::WmShell* shell);
   ~AshDevToolsDOMAgent() override;
@@ -34,4 +36,4 @@ class AshDevToolsDOMAgent : public ui::devtools::protocol::DOM::Backend {
 }  // namespace devtools
 }  // namespace ash
 
-#endif  // ASH_COMMON_DEVTOOLS_DEVTOOLS_DOM_AGENT_H_
+#endif  // ASH_COMMON_DEVTOOLS_ASH_DEVTOOLS_DOM_AGENT_H_
