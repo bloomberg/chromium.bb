@@ -16,7 +16,6 @@
 #include "base/macros.h"
 #include "base/memory/ptr_util.h"
 #include "base/run_loop.h"
-#include "base/stl_util.h"
 #include "base/strings/string_util.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/synchronization/waitable_event.h"
@@ -97,10 +96,6 @@ class PasswordStoreTest : public testing::Test {
   base::MessageLoopForUI message_loop_;
   base::ScopedTempDir temp_dir_;
 };
-
-ACTION(STLDeleteElements0) {
-  base::STLDeleteContainerPointers(arg0.begin(), arg0.end());
-}
 
 TEST_F(PasswordStoreTest, IgnoreOldWwwGoogleLogins) {
   scoped_refptr<PasswordStoreDefault> store(new PasswordStoreDefault(
