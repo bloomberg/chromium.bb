@@ -270,7 +270,6 @@ void AgentHostDelegate::Attach(content::DevToolsExternalAgentProxy* proxy) {
 
 void AgentHostDelegate::Detach() {
   web_socket_.reset();
-  proxy_->ConnectionClosed();
   proxy_ = nullptr;
 }
 
@@ -342,12 +341,14 @@ void AgentHostDelegate::OnFrameRead(const std::string& message) {
 }
 
 void AgentHostDelegate::OnSocketClosed() {
-  if (proxy_) {
+  content::DevToolsExternalAgentProxy* proxy = proxy_;
+  if (proxy) {
     std::string message = "{ \"method\": \"Inspector.detached\", "
         "\"params\": { \"reason\": \"Connection lost.\"} }";
-    proxy_->DispatchOnClientHost(message);
+    proxy->DispatchOnClientHost(message);
     Detach();
-  }
+    proxy->ConnectionClosed();  // May delete |this|.
+ }
 }
 
 void AgentHostDelegate::SendProtocolCommand(

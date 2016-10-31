@@ -858,9 +858,10 @@ void DevToolsUIBindings::ClearPreferences() {
 }
 
 void DevToolsUIBindings::Reattach(const DispatchCallback& callback) {
-  DCHECK(agent_host_.get());
-  agent_host_->DetachClient(this);
-  agent_host_->AttachClient(this);
+  if (agent_host_.get()) {
+    agent_host_->DetachClient(this);
+    agent_host_->AttachClient(this);
+  }
   callback.Run(nullptr);
 }
 
@@ -1115,7 +1116,6 @@ void DevToolsUIBindings::AttachTo(
 }
 
 void DevToolsUIBindings::Reload() {
-  DCHECK(agent_host_.get());
   reloading_ = true;
   web_contents_->GetController().Reload(false);
 }
@@ -1157,8 +1157,10 @@ void DevToolsUIBindings::DocumentAvailableInMainFrame() {
   if (!reloading_)
     return;
   reloading_ = false;
-  agent_host_->DetachClient(this);
-  agent_host_->AttachClient(this);
+  if (agent_host_.get()) {
+    agent_host_->DetachClient(this);
+    agent_host_->AttachClient(this);
+  }
 }
 
 void DevToolsUIBindings::DocumentOnLoadCompletedInMainFrame() {
