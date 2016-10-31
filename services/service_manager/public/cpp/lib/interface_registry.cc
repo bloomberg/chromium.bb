@@ -35,28 +35,48 @@ CapabilitySet GetRequestedCapabilities(const InterfaceProviderSpec& source_spec,
 
 // Generates a single set of interfaces that is the union of all interfaces
 // exposed by the target for the capabilities requested by the source.
-InterfaceSet GetAllowedInterfaces(
+InterfaceSet GetInterfacesToExpose(
     const InterfaceProviderSpec& source_spec,
     const Identity& target,
     const InterfaceProviderSpec& target_spec) {
-  InterfaceSet allowed_interfaces;
+  InterfaceSet exposed_interfaces;
   // TODO(beng): remove this once we can assert that an InterfaceRegistry must
   //             always be constructed with a valid identity.
   if (!target.IsValid()) {
-    allowed_interfaces.insert("*");
-    return allowed_interfaces;
+    exposed_interfaces.insert("*");
+    return exposed_interfaces;
   }
   CapabilitySet capabilities = GetRequestedCapabilities(source_spec, target);
   for (const auto& capability : capabilities) {
     auto it = target_spec.provides.find(capability);
     if (it != target_spec.provides.end()) {
       for (const auto& interface_name : it->second)
-        allowed_interfaces.insert(interface_name);
+        exposed_interfaces.insert(interface_name);
     }
   }
-  return allowed_interfaces;
+  return exposed_interfaces;
 }
 
+void SerializeIdentity(const Identity& identity, std::stringstream* stream) {
+  *stream << identity.name() << "@" << identity.instance() << " run as: "
+          << identity.user_id();
+}
+
+void SerializeSpec(const InterfaceProviderSpec& spec,
+                   std::stringstream* stream) {
+  *stream << "  Providing:\n";
+  for (const auto& entry : spec.provides) {
+    *stream << "    capability: " << entry.first << " containing interfaces:\n";
+    for (const auto& interface_name : entry.second)
+      *stream << "      " << interface_name << "\n";
+  }
+  *stream << "\n  Requiring:\n";
+  for (const auto& entry : spec.requires) {
+    *stream << "    From: " << entry.first << ":\n";
+    for (const auto& capability_name : entry.second)
+      *stream << "      " << capability_name << "\n";
+  }
+}
 
 }  // namespace
 
@@ -73,23 +93,46 @@ void InterfaceRegistry::Bind(
     const Identity& remote_identity,
     const InterfaceProviderSpec& remote_interface_provider_spec) {
   DCHECK(!binding_.is_bound());
-  identity_ = local_identity;
-  interface_provider_spec_ = local_interface_provider_spec;
+  local_identity_ = local_identity;
+  local_interface_provider_spec_ = local_interface_provider_spec;
   remote_identity_ = remote_identity;
-  allowed_interfaces_ = GetAllowedInterfaces(remote_interface_provider_spec,
-                                             identity_,
-                                             interface_provider_spec_);
-  allow_all_interfaces_ =
-      allowed_interfaces_.size() == 1 && allowed_interfaces_.count("*") == 1;
-  if (!allow_all_interfaces_) {
-    for (auto it = name_to_binder_.begin(); it != name_to_binder_.end();) {
-      if (allowed_interfaces_.count(it->first) == 0)
-        it = name_to_binder_.erase(it);
-      else
-        ++it;
-    }
-  }
+  remote_interface_provider_spec_ = remote_interface_provider_spec;
+  RebuildExposedInterfaces();
   binding_.Bind(std::move(local_interfaces_request));
+}
+
+void InterfaceRegistry::Serialize(std::stringstream* stream) {
+  *stream << "\n\nInterfaceRegistry(" << name_ << "):\n";
+  if (!binding_.is_bound()) {
+    *stream << "\n  --> InterfaceRegistry is not yet bound to a pipe.\n\n";
+    return;
+  }
+
+  *stream << "Owned by:\n  ";
+  SerializeIdentity(local_identity_, stream);
+  *stream << "\n\n";
+  SerializeSpec(local_interface_provider_spec_, stream);
+
+  *stream << "\n";
+
+  *stream << "Bound to:\n  ";
+  SerializeIdentity(remote_identity_, stream);
+  *stream << "\n\n";
+  SerializeSpec(remote_interface_provider_spec_, stream);
+
+  *stream << "\nBinders registered for:\n";
+  bool found_exposed = false;
+  for (const auto& entry : name_to_binder_) {
+    bool exposed = exposed_interfaces_.count(entry.first) > 0;
+    found_exposed |= exposed;
+    *stream << " " << (exposed ? "* " : "  ") << entry.first << "\n";
+  }
+  if (found_exposed)
+    *stream << "\n * - denotes an interface exposed to remote per policy.\n";
+
+  *stream << "\n\n";
+  if (expose_all_interfaces_)
+    *stream << "All interfaces exposed.\n\n";
 }
 
 base::WeakPtr<InterfaceRegistry> InterfaceRegistry::GetWeakPtr() {
@@ -147,24 +190,31 @@ void InterfaceRegistry::GetInterface(const std::string& interface_name,
     return;
   }
 
-  auto iter = name_to_binder_.find(interface_name);
-  if (iter != name_to_binder_.end()) {
-    iter->second->BindInterface(remote_identity_,
-                                interface_name,
-                                std::move(handle));
-  } else if (!CanBindRequestForInterface(interface_name)) {
+  if (CanBindRequestForInterface(interface_name)) {
+    auto iter = name_to_binder_.find(interface_name);
+    if (iter != name_to_binder_.end()) {
+      iter->second->BindInterface(remote_identity_,
+                                  interface_name,
+                                  std::move(handle));
+    } else if (!default_binder_.is_null()) {
+      default_binder_.Run(interface_name, std::move(handle));
+    } else {
+      std::stringstream ss;
+      ss << "Failed to locate a binder for interface: " << interface_name
+         << " requested by: " << remote_identity_.name() << " exposed by: "
+         << local_identity_.name() << " via InterfaceProviderSpec \"" << name_
+         << "\".";
+      Serialize(&ss);
+      LOG(ERROR) << ss.str();
+    }
+  } else {
     std::stringstream ss;
     ss << "InterfaceProviderSpec \"" << name_ << "\" prevented service: "
        << remote_identity_.name() << " from binding interface: "
-       << interface_name << " exposed by: " << identity_.name();
+       << interface_name << " exposed by: " << local_identity_.name();
+    Serialize(&ss);
     LOG(ERROR) << ss.str();
     mojo::ReportBadMessage(ss.str());
-  } else if (!default_binder_.is_null()) {
-    default_binder_.Run(interface_name, std::move(handle));
-  } else {
-    LOG(ERROR) << "Failed to locate a binder for interface: " << interface_name
-               << " requested by: " << remote_identity_.name()
-               << " exposed by: " << identity_.name();
   }
 }
 
@@ -186,7 +236,15 @@ bool InterfaceRegistry::CanBindRequestForInterface(
   // of the source.
   if (!binding_.is_bound())
     return true;
-  return allow_all_interfaces_ || allowed_interfaces_.count(interface_name);
+  return expose_all_interfaces_ || exposed_interfaces_.count(interface_name);
+}
+
+void InterfaceRegistry::RebuildExposedInterfaces() {
+  exposed_interfaces_ = GetInterfacesToExpose(remote_interface_provider_spec_,
+                                              local_identity_,
+                                              local_interface_provider_spec_);
+  expose_all_interfaces_ =
+      exposed_interfaces_.size() == 1 && exposed_interfaces_.count("*") == 1;
 }
 
 }  // namespace service_manager

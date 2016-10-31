@@ -77,7 +77,9 @@ class InterfaceRegistry : public mojom::InterfaceProvider {
   };
 
   // Construct an unbound InterfaceRegistry. This object will not bind requests
-  // for interfaces until Bind() is called.
+  // for interfaces until Bind() is called. |name| is used for error reporting
+  // and should reflect the name of the InterfaceProviderSpec pair that controls
+  // which interfaces can be bound via this InterfaceRegistry.
   explicit InterfaceRegistry(const std::string& name);
   ~InterfaceRegistry() override;
 
@@ -94,6 +96,10 @@ class InterfaceRegistry : public mojom::InterfaceProvider {
             const InterfaceProviderSpec& local_interface_provider_spec,
             const Identity& remote_identity,
             const InterfaceProviderSpec& remote_interface_provider_spec);
+
+  // Serializes the contents of the registry (including the local and remote
+  // specs) to a stringstream.
+  void Serialize(std::stringstream* stream);
 
   base::WeakPtr<InterfaceRegistry> GetWeakPtr();
 
@@ -147,7 +153,7 @@ class InterfaceRegistry : public mojom::InterfaceProvider {
   void SetConnectionLostClosure(const base::Closure& connection_lost_closure);
 
  private:
-  using NameToInterfaceBinderMap =
+  using InterfaceNameToBinderMap =
       std::map<std::string, std::unique_ptr<InterfaceBinder>>;
 
   // mojom::InterfaceProvider:
@@ -163,19 +169,37 @@ class InterfaceRegistry : public mojom::InterfaceProvider {
   // according to capability policy.
   bool CanBindRequestForInterface(const std::string& interface_name) const;
 
+  // Called whenever |remote_interface_provider_spec_| changes to rebuild the
+  // contents of |exposed_interfaces_| and |expose_all_interfaces_|.
+  void RebuildExposedInterfaces();
+
   mojom::InterfaceProviderRequest pending_request_;
 
   mojo::Binding<mojom::InterfaceProvider> binding_;
-  Identity identity_;
-  InterfaceProviderSpec interface_provider_spec_;
+
   std::string name_;
 
-  // Metadata computed when Bind() is called:
-  Identity remote_identity_;
-  InterfaceSet allowed_interfaces_;
-  bool allow_all_interfaces_ = false;
+  // Initialized from static metadata in the host service's manifest.
+  Identity local_identity_;
+  InterfaceProviderSpec local_interface_provider_spec_;
 
-  NameToInterfaceBinderMap name_to_binder_;
+  // Initialized from static metadata in the remote service's manifest.
+  Identity remote_identity_;
+  // Initialized from static metadata in the remote service's manifest. May be
+  // mutated after the fact when a capability is dynamically granted via a call
+  // to GrantCapability().
+  InterfaceProviderSpec remote_interface_provider_spec_;
+
+  // Metadata computed whenever |remote_interface_provider_spec_| changes.
+  InterfaceSet exposed_interfaces_;
+  bool expose_all_interfaces_ = false;
+
+  // Contains every interface binder that has been registered with this
+  // InterfaceRegistry. Not all binders may be reachable depending on the
+  // capabilities requested by the remote. Only interfaces in
+  // exposed_interfaces_ may be bound. When |expose_all_interfaces_| is true,
+  // any interface may be bound.
+  InterfaceNameToBinderMap name_to_binder_;
   Binder default_binder_;
 
   bool is_paused_ = false;
