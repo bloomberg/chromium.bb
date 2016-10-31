@@ -97,6 +97,7 @@ class BluetoothRemoteGATTCharacteristic final
 
  private:
   friend class ReadValueCallback;
+  friend class WriteValueCallback;
 
   BluetoothRemoteGATTServer* gatt() { return m_service->device()->gatt(); }
 

@@ -1,4 +1,5 @@
 promise_test(() => {
+  let val = new Uint8Array([1]);
   return setBluetoothFakeAdapter('GATTOperationSucceedsAfterReconnectionAdapter')
     .then(() => requestDeviceWithKeyDown({
       filters: [{services: ['health_thermometer']}]}))
@@ -7,7 +8,7 @@ promise_test(() => {
     .then(service => service.getCharacteristic('measurement_interval'))
     .then(characteristic => {
       let promise = assert_promise_rejects_with_message(
-        characteristic.CALLS([readValue()]),
+        characteristic.CALLS([readValue()| writeValue(val)]),
         new DOMException('GATT Server disconnected while performing a GATT operation.',
                          'NetworkError'));
       let gatt = characteristic.service.device.gatt;

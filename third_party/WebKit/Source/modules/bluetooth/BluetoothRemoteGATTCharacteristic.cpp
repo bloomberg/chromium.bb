@@ -196,15 +196,27 @@ class WriteValueCallback : public WebBluetoothWriteValueCallbacks {
  public:
   WriteValueCallback(BluetoothRemoteGATTCharacteristic* characteristic,
                      ScriptPromiseResolver* resolver)
-      : m_webCharacteristic(characteristic), m_resolver(resolver) {}
+      : m_characteristic(characteristic), m_resolver(resolver) {
+    // We always check that the device is connected before constructing this
+    // object.
+    CHECK(m_characteristic->gatt()->connected());
+    m_characteristic->gatt()->AddToActiveAlgorithms(m_resolver.get());
+  }
 
   void onSuccess(const WebVector<uint8_t>& value) override {
     if (!m_resolver->getExecutionContext() ||
         m_resolver->getExecutionContext()->activeDOMObjectsAreStopped())
       return;
 
-    if (m_webCharacteristic) {
-      m_webCharacteristic->setValue(ConvertWebVectorToDataView(value));
+    if (!m_characteristic->gatt()->RemoveFromActiveAlgorithms(
+            m_resolver.get())) {
+      m_resolver->reject(
+          DOMException::create(NetworkError, kGATTServerDisconnected));
+      return;
+    }
+
+    if (m_characteristic) {
+      m_characteristic->setValue(ConvertWebVectorToDataView(value));
     }
     m_resolver->resolve();
   }
@@ -216,17 +228,31 @@ class WriteValueCallback : public WebBluetoothWriteValueCallbacks {
     if (!m_resolver->getExecutionContext() ||
         m_resolver->getExecutionContext()->activeDOMObjectsAreStopped())
       return;
+
+    if (!m_characteristic->gatt()->RemoveFromActiveAlgorithms(
+            m_resolver.get())) {
+      m_resolver->reject(
+          DOMException::create(NetworkError, kGATTServerDisconnected));
+      return;
+    }
+
     m_resolver->reject(BluetoothError::take(m_resolver, error));
   }
 
  private:
-  WeakPersistent<BluetoothRemoteGATTCharacteristic> m_webCharacteristic;
+  WeakPersistent<BluetoothRemoteGATTCharacteristic> m_characteristic;
   Persistent<ScriptPromiseResolver> m_resolver;
 };
 
 ScriptPromise BluetoothRemoteGATTCharacteristic::writeValue(
     ScriptState* scriptState,
     const DOMArrayPiece& value) {
+  if (!gatt()->connected()) {
+    return ScriptPromise::rejectWithDOMException(
+        scriptState,
+        DOMException::create(NetworkError, kGATTServerNotConnected));
+  }
+
   WebBluetooth* webbluetooth =
       BluetoothSupplement::fromScriptState(scriptState);
   // Partial implementation of writeValue algorithm:
