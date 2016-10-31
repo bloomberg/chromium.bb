@@ -2927,16 +2927,6 @@
     ]
   },
 
-  "NetworkThrottlingEnabled": {
-    "os": ["chromeos"],
-    "test_policy": { "NetworkThrottlingEnabled": {"enabled": "true", "upload_rate_kbits": "5600", "download_rate_kbits": "5600"} },
-    "pref_mappings": [
-      { "pref": "net.throttling_enabled",
-        "local_state": true
-      }
-    ]
-  },
-
   "LoginVideoCaptureAllowedUrls": {
     "os": ["chromeos"],
     "test_policy": { "LoginVideoCaptureAllowedUrls": [ "https://example.com" ] },

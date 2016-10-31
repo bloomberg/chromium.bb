@@ -139,14 +139,6 @@ class CHROMEOS_EXPORT ShillPropertyHandler
   // only set it.
   void SetWakeOnLanEnabled(bool enabled);
 
-  // Calls shill to enable/disable network bandwidth throttling. If |enabled|
-  // is true, |upload_rate_kbits| and |download_rate_kbits| specify the rate
-  // in kbits/s to throttle to. If |enabled| is false, throttling is disabled
-  // and the rates are ignored.
-  void SetNetworkThrottlingStatus(bool enabled,
-                                  uint32_t upload_rate_kbits,
-                                  uint32_t download_rate_kbits);
-
   // Requests an immediate network scan.
   void RequestScan() const;
 

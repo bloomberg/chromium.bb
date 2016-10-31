@@ -67,13 +67,8 @@ class MockShillManagerClient : public ShillManagerClient {
   MOCK_METHOD2(ConnectToBestServices,
                void(const base::Closure& callback,
                     const ErrorCallback& error_callback));
-  MOCK_METHOD5(SetNetworkThrottlingStatus,
-               void(const bool,
-                    const uint32_t,
-                    const uint32_t,
-                    const base::Closure&,
-                    const ErrorCallback& error_callback));
   MOCK_METHOD0(GetTestInterface, TestInterface*());
+
 };
 
 }  // namespace chromeos

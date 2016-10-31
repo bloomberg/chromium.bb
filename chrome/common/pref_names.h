@@ -488,8 +488,6 @@ extern const char kTaskManagerColumnVisibility[];
 extern const char kTaskManagerEndProcessEnabled[];
 extern const char kAppWindowPlacement[];
 
-extern const char kNetworkThrottlingEnabled[];
-
 extern const char kDownloadDefaultDirectory[];
 extern const char kDownloadExtensionsToOpen[];
 extern const char kDownloadDirUpgraded[];

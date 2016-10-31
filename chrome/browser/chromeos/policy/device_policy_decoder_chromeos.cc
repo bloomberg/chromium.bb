@@ -332,26 +332,6 @@ void DecodeNetworkPolicies(const em::ChromeDeviceSettingsProto& policy,
     }
   }
 
-  if (policy.has_network_throttling()) {
-    const em::NetworkThrottlingEnabledProto& container(
-        policy.network_throttling());
-    std::unique_ptr<base::DictionaryValue> throttling_status(
-        new base::DictionaryValue());
-    bool enabled = (container.has_enabled()) ? container.enabled() : false;
-    uint32_t upload_rate_kbits =
-        (container.has_upload_rate_kbits()) ? container.upload_rate_kbits() : 0;
-    uint32_t download_rate_kbits = (container.has_download_rate_kbits())
-                                       ? container.download_rate_kbits()
-                                       : 0;
-
-    throttling_status->SetBoolean("enabled", enabled);
-    throttling_status->SetInteger("upload_rate_kbits", upload_rate_kbits);
-    throttling_status->SetInteger("download_rate_kbits", download_rate_kbits);
-    policies->Set(key::kNetworkThrottlingEnabled, POLICY_LEVEL_MANDATORY,
-                  POLICY_SCOPE_MACHINE, POLICY_SOURCE_CLOUD,
-                  std::move(throttling_status), nullptr);
-  }
-
   if (policy.has_open_network_configuration() &&
       policy.open_network_configuration().has_open_network_configuration()) {
     std::string config(
