@@ -340,6 +340,9 @@ int32_t CommandBufferHelper::GetTotalFreeEntriesNoWaiting() const {
 bool CommandBufferHelper::OnMemoryDump(
     const base::trace_event::MemoryDumpArgs& args,
     base::trace_event::ProcessMemoryDump* pmd) {
+  using base::trace_event::MemoryAllocatorDump;
+  using base::trace_event::MemoryDumpLevelOfDetail;
+
   if (!HaveRingBuffer())
     return true;
 
@@ -347,19 +350,20 @@ bool CommandBufferHelper::OnMemoryDump(
       base::trace_event::MemoryDumpManager::GetInstance()
           ->GetTracingProcessId();
 
-  base::trace_event::MemoryAllocatorDump* dump =
-      pmd->CreateAllocatorDump(base::StringPrintf(
-          "gpu/command_buffer_memory/buffer_%d", ring_buffer_id_));
-  dump->AddScalar(base::trace_event::MemoryAllocatorDump::kNameSize,
-                  base::trace_event::MemoryAllocatorDump::kUnitsBytes,
-                  ring_buffer_size_);
-  dump->AddScalar("free_size",
-                  base::trace_event::MemoryAllocatorDump::kUnitsBytes,
-                  GetTotalFreeEntriesNoWaiting() * sizeof(CommandBufferEntry));
-  auto guid = GetBufferGUIDForTracing(tracing_process_id, ring_buffer_id_);
-  const int kImportance = 2;
-  pmd->CreateSharedGlobalAllocatorDump(guid);
-  pmd->AddOwnershipEdge(dump->guid(), guid, kImportance);
+  MemoryAllocatorDump* dump = pmd->CreateAllocatorDump(base::StringPrintf(
+      "gpu/command_buffer_memory/buffer_%d", ring_buffer_id_));
+  dump->AddScalar(MemoryAllocatorDump::kNameSize,
+                  MemoryAllocatorDump::kUnitsBytes, ring_buffer_size_);
+
+  if (args.level_of_detail != MemoryDumpLevelOfDetail::BACKGROUND) {
+    dump->AddScalar(
+        "free_size", MemoryAllocatorDump::kUnitsBytes,
+        GetTotalFreeEntriesNoWaiting() * sizeof(CommandBufferEntry));
+    auto guid = GetBufferGUIDForTracing(tracing_process_id, ring_buffer_id_);
+    const int kImportance = 2;
+    pmd->CreateSharedGlobalAllocatorDump(guid);
+    pmd->AddOwnershipEdge(dump->guid(), guid, kImportance);
+  }
 
   return true;
 }

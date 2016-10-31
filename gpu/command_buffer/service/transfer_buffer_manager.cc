@@ -111,17 +111,30 @@ scoped_refptr<Buffer> TransferBufferManager::GetTransferBuffer(int32_t id) {
 bool TransferBufferManager::OnMemoryDump(
     const base::trace_event::MemoryDumpArgs& args,
     base::trace_event::ProcessMemoryDump* pmd) {
+  using base::trace_event::MemoryAllocatorDump;
+  using base::trace_event::MemoryDumpLevelOfDetail;
+
+  if (args.level_of_detail == MemoryDumpLevelOfDetail::BACKGROUND) {
+    std::string dump_name = base::StringPrintf("gpu/transfer_memory/client_%d",
+                                               memory_tracker_->ClientId());
+    MemoryAllocatorDump* dump = pmd->CreateAllocatorDump(dump_name);
+    dump->AddScalar(MemoryAllocatorDump::kNameSize,
+                    MemoryAllocatorDump::kUnitsBytes,
+                    shared_memory_bytes_allocated_);
+
+    // Early out, no need for more detail in a BACKGROUND dump.
+    return true;
+  }
+
   for (const auto& buffer_entry : registered_buffers_) {
     int32_t buffer_id = buffer_entry.first;
     const Buffer* buffer = buffer_entry.second.get();
     std::string dump_name =
         base::StringPrintf("gpu/transfer_memory/client_%d/buffer_%d",
                            memory_tracker_->ClientId(), buffer_id);
-    base::trace_event::MemoryAllocatorDump* dump =
-        pmd->CreateAllocatorDump(dump_name);
-    dump->AddScalar(base::trace_event::MemoryAllocatorDump::kNameSize,
-                    base::trace_event::MemoryAllocatorDump::kUnitsBytes,
-                    buffer->size());
+    MemoryAllocatorDump* dump = pmd->CreateAllocatorDump(dump_name);
+    dump->AddScalar(MemoryAllocatorDump::kNameSize,
+                    MemoryAllocatorDump::kUnitsBytes, buffer->size());
     auto guid =
         GetBufferGUIDForTracing(memory_tracker_->ClientTracingId(), buffer_id);
     pmd->CreateSharedGlobalAllocatorDump(guid);

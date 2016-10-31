@@ -198,10 +198,9 @@ class CC_EXPORT SoftwareImageDecodeController
     void SubtractUsage(size_t usage);
     void ResetUsage();
     size_t total_limit_bytes() const { return limit_bytes_; }
-
-   private:
     size_t GetCurrentUsageSafe() const;
 
+   private:
     size_t limit_bytes_;
     base::CheckedNumeric<size_t> current_usage_bytes_;
   };

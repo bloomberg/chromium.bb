@@ -712,6 +712,21 @@ void BufferManager::SetPrimitiveRestartFixedIndexIfNecessary(GLenum type) {
 
 bool BufferManager::OnMemoryDump(const base::trace_event::MemoryDumpArgs& args,
                                  base::trace_event::ProcessMemoryDump* pmd) {
+  using base::trace_event::MemoryAllocatorDump;
+  using base::trace_event::MemoryDumpLevelOfDetail;
+
+  if (args.level_of_detail == MemoryDumpLevelOfDetail::BACKGROUND) {
+    std::string dump_name =
+        base::StringPrintf("gpu/gl/buffers/share_group_%" PRIu64 "",
+                           memory_tracker_->ShareGroupTracingGUID());
+    MemoryAllocatorDump* dump = pmd->CreateAllocatorDump(dump_name);
+    dump->AddScalar(MemoryAllocatorDump::kNameSize,
+                    MemoryAllocatorDump::kUnitsBytes, mem_represented());
+
+    // Early out, no need for more detail in a BACKGROUND dump.
+    return true;
+  }
+
   const uint64_t share_group_tracing_guid =
       memory_tracker_->ShareGroupTracingGUID();
   for (const auto& buffer_entry : buffers_) {
@@ -721,10 +736,9 @@ bool BufferManager::OnMemoryDump(const base::trace_event::MemoryDumpArgs& args,
     std::string dump_name =
         base::StringPrintf("gpu/gl/buffers/share_group_%" PRIu64 "/buffer_%d",
                            share_group_tracing_guid, client_buffer_id);
-    base::trace_event::MemoryAllocatorDump* dump =
-        pmd->CreateAllocatorDump(dump_name);
-    dump->AddScalar(base::trace_event::MemoryAllocatorDump::kNameSize,
-                    base::trace_event::MemoryAllocatorDump::kUnitsBytes,
+    MemoryAllocatorDump* dump = pmd->CreateAllocatorDump(dump_name);
+    dump->AddScalar(MemoryAllocatorDump::kNameSize,
+                    MemoryAllocatorDump::kUnitsBytes,
                     static_cast<uint64_t>(buffer->size()));
 
     auto guid = gl::GetGLBufferGUIDForTracing(share_group_tracing_guid,
@@ -732,6 +746,7 @@ bool BufferManager::OnMemoryDump(const base::trace_event::MemoryDumpArgs& args,
     pmd->CreateSharedGlobalAllocatorDump(guid);
     pmd->AddOwnershipEdge(dump->guid(), guid);
   }
+
   return true;
 }
 
