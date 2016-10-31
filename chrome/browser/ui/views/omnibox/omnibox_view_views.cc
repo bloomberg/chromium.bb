@@ -22,7 +22,6 @@
 #include "chrome/browser/ui/views/location_bar/location_bar_view.h"
 #include "chrome/browser/ui/views/omnibox/omnibox_popup_contents_view.h"
 #include "chrome/grit/generated_resources.h"
-#include "components/bookmarks/browser/bookmark_node_data.h"
 #include "components/omnibox/browser/autocomplete_input.h"
 #include "components/omnibox/browser/autocomplete_match.h"
 #include "components/omnibox/browser/omnibox_edit_controller.h"
@@ -60,8 +59,6 @@
 #if defined(OS_WIN)
 #include "chrome/browser/browser_process.h"
 #endif
-
-using bookmarks::BookmarkNodeData;
 
 namespace {
 
@@ -1009,14 +1006,11 @@ void OmniboxViewViews::OnAfterCutOrCopy(ui::ClipboardType clipboard_type) {
   if (IsSelectAll())
     UMA_HISTOGRAM_COUNTS(OmniboxEditModel::kCutOrCopyAllTextHistogram, 1);
 
-  if (write_url) {
-    BookmarkNodeData data;
-    data.ReadFromTuple(url, selected_text);
-    data.WriteToClipboard(clipboard_type);
-  } else {
-    ui::ScopedClipboardWriter scoped_clipboard_writer(clipboard_type);
+  ui::ScopedClipboardWriter scoped_clipboard_writer(clipboard_type);
+  if (write_url)
+    scoped_clipboard_writer.WriteURL(selected_text);
+  else
     scoped_clipboard_writer.WriteText(selected_text);
-  }
 }
 
 void OmniboxViewViews::OnWriteDragData(ui::OSExchangeData* data) {

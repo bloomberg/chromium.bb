@@ -1746,14 +1746,15 @@ IN_PROC_BROWSER_TEST_F(OmniboxViewTest, CopyURLToClipboard) {
   EXPECT_FALSE(clipboard->IsFormatAvailable(
       ui::Clipboard::GetHtmlFormatType(), ui::CLIPBOARD_TYPE_COPY_PASTE));
 
-  // These platforms should read bookmark format.
-#if defined(OS_WIN) || defined(OS_CHROMEOS) || defined(OS_MACOSX)
-  base::string16 title;
-  std::string url;
-  clipboard->ReadBookmark(&title, &url);
-  EXPECT_EQ(target_url, url);
-  EXPECT_EQ(ASCIIToUTF16(target_url), title);
+// Windows clipboard only supports text URLs.
+#if defined(OS_LINUX) || defined(OS_MACOSX)
+  EXPECT_TRUE(clipboard->IsFormatAvailable(ui::Clipboard::GetUrlFormatType(),
+                                           ui::CLIPBOARD_TYPE_COPY_PASTE));
 #endif
+
+  std::string url;
+  clipboard->ReadAsciiText(ui::CLIPBOARD_TYPE_COPY_PASTE, &url);
+  EXPECT_EQ(target_url, url);
 }
 
 IN_PROC_BROWSER_TEST_F(OmniboxViewTest, CutURLToClipboard) {
@@ -1792,14 +1793,15 @@ IN_PROC_BROWSER_TEST_F(OmniboxViewTest, CutURLToClipboard) {
   EXPECT_FALSE(clipboard->IsFormatAvailable(
       ui::Clipboard::GetHtmlFormatType(), ui::CLIPBOARD_TYPE_COPY_PASTE));
 
-  // These platforms should read bookmark format.
-#if defined(OS_WIN) || defined(OS_CHROMEOS) || defined(OS_MACOSX)
-  base::string16 title;
-  std::string url;
-  clipboard->ReadBookmark(&title, &url);
-  EXPECT_EQ(target_url, url);
-  EXPECT_EQ(ASCIIToUTF16(target_url), title);
+// Windows clipboard only supports text URLs.
+#if defined(OS_LINUX) || defined(OS_MACOSX)
+  EXPECT_TRUE(clipboard->IsFormatAvailable(ui::Clipboard::GetUrlFormatType(),
+                                           ui::CLIPBOARD_TYPE_COPY_PASTE));
 #endif
+
+  std::string url;
+  clipboard->ReadAsciiText(ui::CLIPBOARD_TYPE_COPY_PASTE, &url);
+  EXPECT_EQ(target_url, url);
 }
 
 IN_PROC_BROWSER_TEST_F(OmniboxViewTest, CopyTextToClipboard) {
