@@ -105,6 +105,7 @@ class ServiceManager::Instance
       pid_receiver_binding_.Close();
     connectors_.CloseAllBindings();
     service_manager_bindings_.CloseAllBindings();
+    service_manager_->OnInstanceUnreachable(this);
 
     if (state_ == State::STARTING) {
       service_manager_->NotifyServiceFailedToStart(identity_);
