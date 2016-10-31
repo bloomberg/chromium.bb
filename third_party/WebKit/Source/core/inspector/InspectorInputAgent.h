@@ -39,7 +39,6 @@
 
 namespace blink {
 class InspectedFrames;
-class PlatformMouseEvent;
 
 class CORE_EXPORT InspectorInputAgent final
     : public InspectorBaseAgent<protocol::Input::Metainfo> {

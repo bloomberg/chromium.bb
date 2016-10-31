@@ -11,9 +11,7 @@
 
 namespace blink {
 
-class ComputedStyle;
 class LayoutInline;
-class LayoutObject;
 
 class LineLayoutInline : public LineLayoutBoxModel {
  public:

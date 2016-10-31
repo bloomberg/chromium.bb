@@ -12,7 +12,6 @@
 
 namespace blink {
 
-class CSSValueList;
 class UnderlyingValueOwner;
 class InterpolationType;
 

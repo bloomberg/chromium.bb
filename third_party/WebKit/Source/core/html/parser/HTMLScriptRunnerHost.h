@@ -33,7 +33,6 @@ namespace blink {
 
 class HTMLInputStream;
 class Resource;
-class Visitor;
 
 class CORE_EXPORT HTMLScriptRunnerHost : public GarbageCollectedMixin {
  public:

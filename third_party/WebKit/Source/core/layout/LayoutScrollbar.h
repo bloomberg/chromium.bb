@@ -35,11 +35,9 @@ namespace blink {
 
 class ComputedStyle;
 class LayoutBox;
-class LayoutBoxModelObject;
 class LayoutScrollbarPart;
 class LocalFrame;
 class Node;
-class PaintInvalidationState;
 
 class LayoutScrollbar final : public Scrollbar {
  public:

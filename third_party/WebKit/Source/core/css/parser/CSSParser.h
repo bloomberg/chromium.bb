@@ -20,7 +20,6 @@ class CSSSelectorList;
 class Element;
 class ImmutableStylePropertySet;
 class MutableStylePropertySet;
-class StyleColor;
 class StyleRuleBase;
 class StyleRuleKeyframe;
 class StyleSheetContents;

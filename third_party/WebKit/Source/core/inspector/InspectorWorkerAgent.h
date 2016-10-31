@@ -40,7 +40,6 @@
 
 namespace blink {
 class InspectedFrames;
-class KURL;
 class WorkerInspectorProxy;
 
 class CORE_EXPORT InspectorWorkerAgent final

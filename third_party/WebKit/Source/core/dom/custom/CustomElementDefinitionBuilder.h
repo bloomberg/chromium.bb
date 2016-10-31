@@ -14,9 +14,6 @@ namespace blink {
 class CustomElementDefinition;
 class CustomElementDescriptor;
 class CustomElementRegistry;
-class ExceptionState;
-class ScriptState;
-class ScriptValue;
 
 // Implement CustomElementDefinitionBuilder to provide
 // technology-specific steps for CustomElementRegistry.define.

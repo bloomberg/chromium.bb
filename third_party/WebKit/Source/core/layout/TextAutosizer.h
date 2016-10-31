@@ -45,8 +45,6 @@ class ComputedStyle;
 class Document;
 class IntSize;
 class LayoutBlock;
-class LayoutListItem;
-class LayoutListMarker;
 class LayoutObject;
 class LayoutTable;
 class LocalFrame;

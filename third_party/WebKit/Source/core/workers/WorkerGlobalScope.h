@@ -49,7 +49,6 @@
 namespace blink {
 
 class ConsoleMessage;
-class ConsoleMessageStorage;
 class ExceptionState;
 class V8AbstractEventListener;
 class WorkerClients;

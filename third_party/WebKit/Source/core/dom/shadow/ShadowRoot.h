@@ -41,7 +41,6 @@ class Document;
 class ElementShadow;
 class ExceptionState;
 class HTMLShadowElement;
-class HTMLSlotElement;
 class InsertionPoint;
 class ShadowRootRareDataV0;
 class SlotAssignment;

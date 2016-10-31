@@ -32,18 +32,11 @@
 
 namespace blink {
 
-class CSSPrimitiveValue;
-class CSSValueList;
 class CSSVariableData;
 class ExceptionState;
 class MutableStylePropertySet;
 class Node;
-class LayoutObject;
 class ComputedStyle;
-class ShadowData;
-class ShadowList;
-class StyleColor;
-class StylePropertyShorthand;
 
 class CORE_EXPORT CSSComputedStyleDeclaration final
     : public CSSStyleDeclaration {

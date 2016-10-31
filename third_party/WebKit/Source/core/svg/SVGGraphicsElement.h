@@ -31,7 +31,6 @@
 namespace blink {
 
 class AffineTransform;
-class Path;
 class SVGMatrixTearOff;
 class SVGRectTearOff;
 

@@ -44,9 +44,7 @@
 
 namespace blink {
 
-class CaretBase;
 class CharacterData;
-class CullRect;
 class LayoutBlock;
 class LocalFrame;
 class FrameCaret;

@@ -51,8 +51,6 @@
 
 #define CanvasDefaultInterpolationQuality InterpolationLow
 
-class SkColorSpace;
-
 namespace blink {
 
 class AffineTransform;
@@ -68,7 +66,6 @@ class ImageBuffer;
 class ImageBufferSurface;
 class ImageData;
 class IntSize;
-class WebGraphicsContext3DProvider;
 
 class
     CanvasRenderingContext2DOrWebGLRenderingContextOrWebGL2RenderingContextOrImageBitmapRenderingContext;

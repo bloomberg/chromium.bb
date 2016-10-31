@@ -11,7 +11,6 @@
 namespace blink {
 
 class MediaControls;
-class LocalDOMWindow;
 
 class MediaControlsWindowEventListener final : public EventListener {
  public:

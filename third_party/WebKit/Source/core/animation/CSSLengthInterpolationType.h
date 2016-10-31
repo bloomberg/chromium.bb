@@ -12,7 +12,6 @@
 namespace blink {
 
 class ComputedStyle;
-class CSSToLengthConversionData;
 
 class CSSLengthInterpolationType : public CSSInterpolationType {
  public:

@@ -13,8 +13,6 @@ namespace blink {
 
 class ComputedStyle;
 class GraphicsContext;
-class IntRect;
-class LayoutBox;
 class LayoutRect;
 struct PaintInfo;
 class Path;

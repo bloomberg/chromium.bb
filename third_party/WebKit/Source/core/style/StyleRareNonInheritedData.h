@@ -50,7 +50,6 @@ namespace blink {
 class ContentData;
 class CSSAnimationData;
 class CSSTransitionData;
-class LengthSize;
 class ShadowList;
 class StyleDeprecatedFlexibleBoxData;
 class StyleFilterData;

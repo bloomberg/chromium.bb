@@ -43,7 +43,6 @@
 namespace blink {
 
 class ContainerNode;
-class ResourceFetcher;
 class DocumentFragment;
 class Document;
 class Element;

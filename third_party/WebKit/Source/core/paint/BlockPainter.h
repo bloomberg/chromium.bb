@@ -14,9 +14,7 @@ class InlineBox;
 class LayoutBlock;
 class LayoutBox;
 class LayoutFlexibleBox;
-class LayoutObject;
 class LayoutPoint;
-class LayoutRect;
 
 class BlockPainter {
   STACK_ALLOCATED();

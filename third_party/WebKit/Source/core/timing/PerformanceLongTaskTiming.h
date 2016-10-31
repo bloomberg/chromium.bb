@@ -12,7 +12,6 @@
 
 namespace blink {
 
-class Document;
 class DOMWindow;
 
 class PerformanceLongTaskTiming final : public PerformanceEntry {

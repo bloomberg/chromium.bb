@@ -14,7 +14,6 @@ class Document;
 class Element;
 class ResizeObserverCallback;
 class ResizeObserverController;
-class ResizeObserverEntry;
 class ResizeObservation;
 
 // ResizeObserver represents ResizeObserver javascript api:

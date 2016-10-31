@@ -11,9 +11,7 @@
 
 namespace blink {
 
-class FloatPoint;
 class Font;
-class GraphicsContext;
 struct PaintInfo;
 class LayoutPoint;
 class LayoutSVGInlineText;

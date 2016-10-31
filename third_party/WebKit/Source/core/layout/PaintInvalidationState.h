@@ -17,7 +17,6 @@ namespace blink {
 
 class LayoutBoxModelObject;
 class LayoutObject;
-class LayoutSVGModelObject;
 class LayoutView;
 class PaintLayer;
 

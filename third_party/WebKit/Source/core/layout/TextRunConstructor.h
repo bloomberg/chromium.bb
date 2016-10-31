@@ -44,11 +44,9 @@
 namespace blink {
 
 class Font;
-class LayoutObject;
 class ComputedStyle;
 class LayoutText;
 class LineLayoutText;
-class LineLayoutItem;
 
 enum TextRunFlag {
   DefaultTextRunFlags = 0,

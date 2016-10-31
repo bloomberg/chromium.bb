@@ -10,8 +10,6 @@
 
 namespace blink {
 
-class ConsoleMessageStorage;
-class WorkerInspectorController;
 class WorkerThread;
 
 class CORE_EXPORT ThreadedWorkletGlobalScope : public WorkletGlobalScope {

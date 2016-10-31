@@ -14,6 +14,7 @@
 namespace blink {
 
 class DOMWindow;
+class LocalDOMWindow;
 class Performance;
 
 class CORE_EXPORT DOMWindowPerformance final

@@ -14,8 +14,6 @@
 namespace blink {
 
 class CompositorProxy;
-class Event;
-class ScriptState;
 class WorkerClients;
 class WorkerGlobalScope;
 

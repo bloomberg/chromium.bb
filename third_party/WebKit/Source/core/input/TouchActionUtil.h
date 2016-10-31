@@ -10,7 +10,6 @@
 
 namespace blink {
 
-class LayoutObject;
 class Node;
 
 namespace TouchActionUtil {

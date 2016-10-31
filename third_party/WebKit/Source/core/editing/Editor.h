@@ -45,7 +45,6 @@ namespace blink {
 
 class CompositeEditCommand;
 class DragData;
-class DummyPageHolder;
 class EditCommandComposition;
 class EditorClient;
 class EditorInternalCommand;

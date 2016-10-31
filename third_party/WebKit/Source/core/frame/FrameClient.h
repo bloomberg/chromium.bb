@@ -12,9 +12,6 @@
 namespace blink {
 
 class Frame;
-class LocalFrame;
-class MessageEvent;
-class SecurityOrigin;
 enum class FrameDetachType;
 
 class CORE_EXPORT FrameClient : public GarbageCollectedFinalized<FrameClient> {

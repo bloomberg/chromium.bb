@@ -33,8 +33,6 @@
 
 namespace blink {
 
-class LayoutObject;
-
 // Values for vertical alignment.
 const int PositionUndefined = 0x80000000;
 

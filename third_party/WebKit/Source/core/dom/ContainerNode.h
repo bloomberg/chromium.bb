@@ -38,7 +38,9 @@ class ClassCollection;
 class ExceptionState;
 class FloatPoint;
 class HTMLCollection;
+class NameNodeList;
 using StaticElementList = StaticNodeTypeList<Element>;
+class RadioNodeList;
 class TagCollection;
 
 enum DynamicRestyleFlags {

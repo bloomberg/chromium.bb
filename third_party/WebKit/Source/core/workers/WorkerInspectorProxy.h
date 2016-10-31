@@ -15,7 +15,6 @@ namespace blink {
 
 class Document;
 class KURL;
-class WorkerGlobalScopeProxy;
 
 // A proxy for talking to the worker inspector on the worker thread.
 // All of these methods should be called on the main thread.

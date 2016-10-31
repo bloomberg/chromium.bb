@@ -52,7 +52,6 @@ class DOMEditor;
 class Document;
 class DocumentLoader;
 class Element;
-class EventTarget;
 class ExceptionState;
 class FloatQuad;
 class HTMLSlotElement;
@@ -62,9 +61,6 @@ class InspectorHistory;
 class Node;
 class QualifiedName;
 class PseudoElement;
-class PlatformGestureEvent;
-class PlatformMouseEvent;
-class PlatformTouchEvent;
 class InspectorRevalidateDOMTask;
 class ShadowRoot;
 

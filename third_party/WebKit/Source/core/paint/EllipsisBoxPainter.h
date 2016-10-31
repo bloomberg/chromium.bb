@@ -12,9 +12,6 @@ namespace blink {
 struct PaintInfo;
 
 class EllipsisBox;
-class FloatPoint;
-class Font;
-class GraphicsContext;
 class LayoutPoint;
 class LayoutUnit;
 class ComputedStyle;

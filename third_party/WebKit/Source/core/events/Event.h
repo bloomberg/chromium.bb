@@ -37,6 +37,7 @@
 namespace blink {
 
 class DOMWrapperWorld;
+class EventDispatchMediator;
 class EventTarget;
 class ExecutionContext;
 

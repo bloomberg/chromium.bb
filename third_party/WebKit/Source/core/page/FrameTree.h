@@ -27,7 +27,6 @@
 namespace blink {
 
 class Frame;
-class TreeScope;
 
 class CORE_EXPORT FrameTree final {
   WTF_MAKE_NONCOPYABLE(FrameTree);

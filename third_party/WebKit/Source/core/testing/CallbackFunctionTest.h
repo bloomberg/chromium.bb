@@ -14,7 +14,6 @@ namespace blink {
 
 class ExceptionState;
 class HTMLDivElement;
-class ScriptState;
 class TestCallback;
 class TestInterfaceCallback;
 class TestReceiverObjectCallback;

@@ -46,38 +46,23 @@
 namespace blink {
 
 class Attribute;
-class ClassCollection;
 class ContainerNode;
-class DOMTokenList;
 class Document;
 class Element;
 class ElementShadow;
 class Event;
-class EventDispatchMediator;
 class EventListener;
 class ExceptionState;
-class FloatPoint;
 class GetRootNodeOptions;
-class LocalFrame;
-class HTMLInputElement;
 class HTMLQualifiedName;
 class HTMLSlotElement;
 class IntRect;
 class EventDispatchHandlingState;
-class KeyboardEvent;
-class NSResolver;
-class NameNodeList;
-class NamedNodeMap;
-class NodeEventContext;
 class NodeList;
 class NodeListsNodeData;
 class NodeRareData;
-class PlatformGestureEvent;
 class PlatformMouseEvent;
-class PlatformWheelEvent;
-class PointerEvent;
 class QualifiedName;
-class RadioNodeList;
 class RegisteredEventListener;
 class LayoutBox;
 class LayoutBoxModelObject;
@@ -89,7 +74,6 @@ template <typename NodeType>
 class StaticNodeTypeList;
 using StaticNodeList = StaticNodeTypeList<Node>;
 class StyleChangeReasonForTracing;
-class TagCollection;
 class Text;
 class TouchEvent;
 

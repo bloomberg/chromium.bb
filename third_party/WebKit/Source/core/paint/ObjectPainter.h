@@ -14,8 +14,6 @@ namespace blink {
 class Color;
 class GraphicsContext;
 class LayoutPoint;
-class LayoutRect;
-class LayoutSize;
 struct PaintInfo;
 class LayoutObject;
 class ComputedStyle;

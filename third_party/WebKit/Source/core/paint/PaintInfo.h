@@ -47,10 +47,7 @@
 
 namespace blink {
 
-class LayoutInline;
 class LayoutBoxModelObject;
-class LayoutObject;
-class PaintInvalidationState;
 
 struct CORE_EXPORT PaintInfo {
   PaintInfo(GraphicsContext& newContext,

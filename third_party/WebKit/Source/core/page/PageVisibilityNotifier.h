@@ -31,7 +31,6 @@
 
 namespace blink {
 
-class LocalFrame;
 class Page;
 class PageVisibilityObserver;
 

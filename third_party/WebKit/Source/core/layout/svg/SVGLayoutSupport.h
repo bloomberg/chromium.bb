@@ -35,7 +35,6 @@ namespace blink {
 class AffineTransform;
 class FloatPoint;
 class FloatRect;
-class PaintInvalidationState;
 class LayoutRect;
 class LayoutGeometryMap;
 class LayoutBoxModelObject;

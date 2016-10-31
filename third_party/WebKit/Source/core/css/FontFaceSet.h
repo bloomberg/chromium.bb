@@ -47,13 +47,10 @@
 namespace blink {
 
 class CSSFontFace;
-class CSSFontFaceSource;
 class CSSFontSelector;
-class Dictionary;
 class ExceptionState;
 class Font;
 class FontFaceCache;
-class FontResource;
 class ExecutionContext;
 
 using FontFaceSetIterable = PairIterable<Member<FontFace>, Member<FontFace>>;

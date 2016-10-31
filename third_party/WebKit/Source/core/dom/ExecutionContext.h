@@ -55,7 +55,6 @@ class ExecutionContextTask;
 class LocalDOMWindow;
 class PublicURLManager;
 class SecurityOrigin;
-class SourceLocation;
 
 class CORE_EXPORT ExecutionContext : public ContextLifecycleNotifier,
                                      public Supplementable<ExecutionContext> {

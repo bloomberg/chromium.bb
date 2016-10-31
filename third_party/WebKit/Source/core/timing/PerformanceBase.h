@@ -46,7 +46,6 @@
 namespace blink {
 
 class DOMWindow;
-class Document;
 class ExceptionState;
 class PerformanceObserver;
 class PerformanceTiming;

@@ -14,7 +14,10 @@ namespace blink {
 
 class Event;
 class IntRect;
+class LocalFrame;
+class MessageEvent;
 class ResourceRequest;
+class SecurityOrigin;
 
 class RemoteFrameClient : public FrameClient {
  public:

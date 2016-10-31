@@ -43,7 +43,6 @@ class GLES2Interface;
 
 namespace blink {
 class ExceptionState;
-class GraphicsContext;
 class ImageBitmapOptions;
 
 class CORE_EXPORT HTMLVideoElement final : public HTMLMediaElement,

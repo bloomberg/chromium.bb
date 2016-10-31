@@ -50,8 +50,6 @@ class Element;
 class FontResource;
 class ImageResource;
 class LocalFrame;
-class Node;
-class LayoutObject;
 class Resource;
 class SharedBuffer;
 class StylePropertySet;

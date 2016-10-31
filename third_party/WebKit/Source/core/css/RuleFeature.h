@@ -36,7 +36,6 @@ namespace blink {
 struct InvalidationLists;
 class QualifiedName;
 class RuleData;
-class SpaceSplitString;
 class StyleRule;
 
 struct RuleFeature {

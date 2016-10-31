@@ -57,7 +57,6 @@ class GCObservation;
 class HTMLMediaElement;
 class InternalRuntimeFlags;
 class InternalSettings;
-class Iterator;
 class LayerRectList;
 class LocalDOMWindow;
 class LocalFrame;

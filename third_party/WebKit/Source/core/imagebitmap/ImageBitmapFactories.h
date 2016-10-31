@@ -53,7 +53,6 @@ class ExceptionState;
 class ExecutionContext;
 class ImageBitmapSource;
 class ImageBitmapOptions;
-class ImageDecoder;
 class WebTaskRunner;
 
 typedef HTMLImageElementOrHTMLVideoElementOrHTMLCanvasElementOrBlobOrImageDataOrImageBitmap

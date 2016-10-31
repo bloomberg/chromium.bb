@@ -46,12 +46,10 @@ class Resource;
 class Document;
 class DocumentLoader;
 class InspectedFrames;
-class InspectorCSSAgent;
 class InspectorResourceContentLoader;
 class KURL;
 class LocalFrame;
 class SharedBuffer;
-class TextResourceDecoder;
 
 using blink::protocol::Maybe;
 

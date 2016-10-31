@@ -34,7 +34,6 @@ class CSSRule;
 class CSSStyleSheet;
 class CSSValue;
 class ExceptionState;
-class MutableStylePropertySet;
 
 class CORE_EXPORT CSSStyleDeclaration
     : public GarbageCollectedFinalized<CSSStyleDeclaration>,

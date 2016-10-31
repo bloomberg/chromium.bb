@@ -62,10 +62,6 @@ class XMLHttpRequest;
 class WebSocketHandshakeRequest;
 class WebSocketHandshakeResponse;
 
-namespace protocol {
-class DictionaryValue;
-}
-
 class CORE_EXPORT InspectorNetworkAgent final
     : public InspectorBaseAgent<protocol::Network::Metainfo> {
  public:

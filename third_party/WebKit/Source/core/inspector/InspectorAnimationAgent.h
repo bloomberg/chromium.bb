@@ -16,13 +16,10 @@
 
 namespace blink {
 
-class AnimationNode;
 class AnimationTimeline;
-class Element;
 class InspectedFrames;
 class InspectorCSSAgent;
 class InspectorDOMAgent;
-class TimingFunction;
 
 class CORE_EXPORT InspectorAnimationAgent final
     : public InspectorBaseAgent<protocol::Animation::Metainfo> {

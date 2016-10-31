@@ -10,7 +10,6 @@
 
 namespace blink {
 
-class GraphicsContext;
 class LayoutBox;
 
 // Information extracted from ComputedStyle for box painting.

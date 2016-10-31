@@ -13,6 +13,7 @@
 namespace blink {
 
 class DOMWindow;
+class LocalDOMWindow;
 class PaintWorklet;
 class Worklet;
 

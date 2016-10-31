@@ -23,7 +23,6 @@ class Font;
 class GraphicsContext;
 class GraphicsContextStateSaver;
 class LayoutTextCombine;
-class LayoutObject;
 class LineLayoutItem;
 struct PaintInfo;
 class ShadowList;

@@ -36,8 +36,6 @@
 
 namespace blink {
 
-class CSSBasicShapeValue;
-class CSSBasicShape;
 class CSSValue;
 class FloatPoint;
 class StyleResolverState;

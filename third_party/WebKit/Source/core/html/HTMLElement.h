@@ -32,6 +32,7 @@ class DocumentFragment;
 class HTMLFormElement;
 class HTMLMenuElement;
 class ExceptionState;
+class KeyboardEvent;
 
 enum TranslateAttributeMode {
   TranslateAttributeYes,

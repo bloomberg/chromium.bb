@@ -47,14 +47,9 @@
 namespace blink {
 
 class ArchiveResource;
-class CSSStyleSheetResource;
 class DocumentResource;
-class FontResource;
 class ImageResource;
 class MHTMLArchive;
-class RawResource;
-class ScriptResource;
-class XSLStyleSheetResource;
 class KURL;
 class ResourceTimingInfo;
 

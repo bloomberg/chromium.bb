@@ -23,7 +23,6 @@ class CSSStyleDeclaration;
 class CustomElementRegistry;
 class DOMSelection;
 class DOMVisualViewport;
-class DOMWindowCSS;
 class Document;
 class Element;
 class External;
@@ -41,7 +40,6 @@ class Screen;
 class ScriptState;
 class ScrollToOptions;
 class SerializedScriptValue;
-class Storage;
 class StyleMedia;
 
 class CORE_EXPORT DOMWindow : public EventTargetWithInlineData,

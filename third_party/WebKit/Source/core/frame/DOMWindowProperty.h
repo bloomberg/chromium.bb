@@ -31,7 +31,6 @@
 
 namespace blink {
 
-class LocalDOMWindow;
 class LocalFrame;
 
 class CORE_EXPORT DOMWindowProperty : public GarbageCollectedMixin {

@@ -33,9 +33,7 @@ class Document;
 class DocumentInit;
 class DocumentType;
 class ExceptionState;
-class LocalFrame;
 class HTMLDocument;
-class KURL;
 class XMLDocument;
 
 class CORE_EXPORT DOMImplementation final

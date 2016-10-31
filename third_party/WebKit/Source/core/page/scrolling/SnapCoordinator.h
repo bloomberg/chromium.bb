@@ -12,9 +12,7 @@
 
 namespace blink {
 
-class ComputedStyle;
 class ContainerNode;
-class Element;
 class LayoutBox;
 struct LengthPoint;
 

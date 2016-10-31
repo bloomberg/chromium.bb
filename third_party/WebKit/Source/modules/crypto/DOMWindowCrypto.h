@@ -39,6 +39,7 @@ namespace blink {
 
 class Crypto;
 class DOMWindow;
+class LocalDOMWindow;
 
 class DOMWindowCrypto final : public GarbageCollected<DOMWindowCrypto>,
                               public Supplement<LocalDOMWindow>,

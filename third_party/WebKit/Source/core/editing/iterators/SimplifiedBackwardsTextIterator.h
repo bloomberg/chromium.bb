@@ -35,7 +35,6 @@
 namespace blink {
 
 class LayoutText;
-class LayoutTextFragment;
 
 // Iterates through the DOM range, returning all the text, and 0-length
 // boundaries at points where replaced elements break up the text flow. The text

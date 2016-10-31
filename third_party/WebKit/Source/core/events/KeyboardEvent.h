@@ -33,8 +33,6 @@
 
 namespace blink {
 
-class EventDispatcher;
-
 class CORE_EXPORT KeyboardEvent final : public UIEventWithKeyState {
   DEFINE_WRAPPERTYPEINFO();
 

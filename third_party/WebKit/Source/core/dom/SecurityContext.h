@@ -45,7 +45,6 @@ namespace blink {
 
 class SecurityOrigin;
 class ContentSecurityPolicy;
-class KURL;
 
 class CORE_EXPORT SecurityContext : public GarbageCollectedMixin {
   WTF_MAKE_NONCOPYABLE(SecurityContext);

@@ -25,7 +25,6 @@
 
 namespace blink {
 
-class HitTestRequest;
 class HitTestResult;
 
 class EllipsisBox final : public InlineBox {

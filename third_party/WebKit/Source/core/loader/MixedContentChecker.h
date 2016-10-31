@@ -42,7 +42,6 @@
 namespace blink {
 
 class Frame;
-class FrameLoaderClient;
 class LocalFrame;
 class KURL;
 class ResourceResponse;

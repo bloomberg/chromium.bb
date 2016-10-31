@@ -28,7 +28,6 @@
 
 namespace blink {
 
-class Document;
 class FrameSelection;
 class LayoutView;
 

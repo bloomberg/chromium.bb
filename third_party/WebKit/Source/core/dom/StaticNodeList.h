@@ -34,7 +34,6 @@
 
 namespace blink {
 
-class Element;
 class Node;
 
 template <typename NodeType>

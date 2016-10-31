@@ -15,6 +15,7 @@ class ClipRect;
 class GraphicsContext;
 class PaintLayer;
 class LayerClipRecorder;
+class LayoutObject;
 
 class FilterPainter {
   STACK_ALLOCATED();

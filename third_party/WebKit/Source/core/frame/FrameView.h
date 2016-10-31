@@ -64,7 +64,6 @@ class DocumentLifecycle;
 class Cursor;
 class Element;
 class FloatSize;
-class HTMLFrameOwnerElement;
 class JSONArray;
 class JSONObject;
 class LayoutItem;

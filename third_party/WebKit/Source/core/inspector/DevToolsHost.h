@@ -37,7 +37,6 @@
 namespace blink {
 
 class ContextMenuItem;
-class Event;
 class FrontendMenuProvider;
 class InspectorFrontendClient;
 class LocalFrame;

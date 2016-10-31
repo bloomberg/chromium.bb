@@ -44,7 +44,6 @@ class CSSMediaRule;
 class CSSStyleDeclaration;
 class CSSStyleRule;
 class CSSStyleSheet;
-class Document;
 class Element;
 class ExceptionState;
 class InspectorNetworkAgent;

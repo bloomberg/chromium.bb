@@ -30,7 +30,6 @@
 
 namespace blink {
 
-class HitTestResult;
 class HTMLImageElement;
 class Path;
 

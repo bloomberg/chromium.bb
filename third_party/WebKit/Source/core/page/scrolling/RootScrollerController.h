@@ -12,11 +12,9 @@ namespace blink {
 
 class Document;
 class Element;
-class GraphicsLayer;
 class PaintLayer;
 class PaintLayerScrollableArea;
 class ScrollableArea;
-class ScrollStateCallback;
 
 // Manages the root scroller associated with a given document. The root
 // scroller causes browser controls movement, overscroll effects and prevents

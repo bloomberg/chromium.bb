@@ -12,8 +12,6 @@
 
 namespace blink {
 
-class LocalFrame;
-
 // DocumentParserTiming is responsible for tracking parser-related timings for a
 // given document.
 class DocumentParserTiming final

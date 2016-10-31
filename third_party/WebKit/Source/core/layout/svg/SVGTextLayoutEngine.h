@@ -31,7 +31,6 @@ namespace blink {
 
 class ComputedStyle;
 class InlineFlowBox;
-class LayoutObject;
 class PathPositionMapper;
 class SVGInlineFlowBox;
 class SVGInlineTextBox;

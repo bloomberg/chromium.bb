@@ -13,7 +13,6 @@ namespace blink {
 class Element;
 class ClientRect;
 class LayoutRect;
-class LayoutSize;
 
 class ResizeObserverEntry final : public GarbageCollected<ResizeObserverEntry>,
                                   public ScriptWrappable {

@@ -13,6 +13,7 @@ namespace blink {
 
 class DOMWindow;
 class ExceptionState;
+class LocalDOMWindow;
 class Storage;
 
 class DOMWindowStorage final : public GarbageCollected<DOMWindowStorage>,

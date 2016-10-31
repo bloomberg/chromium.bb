@@ -17,8 +17,6 @@ class Color;
 class CompositionUnderline;
 class ComputedStyle;
 class DocumentMarker;
-class FloatPoint;
-class FloatRect;
 class Font;
 class GraphicsContext;
 class InlineTextBox;

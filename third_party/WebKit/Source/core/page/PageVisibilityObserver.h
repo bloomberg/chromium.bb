@@ -33,8 +33,6 @@
 
 namespace blink {
 
-class LocalFrame;
-
 class CORE_EXPORT PageVisibilityObserver
     : public LifecycleObserver<Page, PageVisibilityObserver> {
  public:

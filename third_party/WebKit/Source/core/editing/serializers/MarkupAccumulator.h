@@ -37,7 +37,6 @@
 namespace blink {
 
 class Attribute;
-class DocumentType;
 class Element;
 class Node;
 

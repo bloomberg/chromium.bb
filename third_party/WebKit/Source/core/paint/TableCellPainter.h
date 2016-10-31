@@ -17,7 +17,6 @@ class LayoutPoint;
 class LayoutRect;
 class LayoutTableCell;
 class LayoutObject;
-class ComputedStyle;
 
 class TableCellPainter {
   STACK_ALLOCATED();

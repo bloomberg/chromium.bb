@@ -41,8 +41,6 @@ class EventDispatchMediator;
 class FrameView;
 class EventDispatchHandlingState;
 class Node;
-class NodeEventContext;
-class WindowEventContext;
 
 class EventDispatchHandlingState
     : public GarbageCollected<EventDispatchHandlingState> {

@@ -16,7 +16,6 @@
 
 namespace blink {
 
-class ExecutionContext;
 class InspectorAgent;
 class InstrumentingAgents;
 class LocalFrame;

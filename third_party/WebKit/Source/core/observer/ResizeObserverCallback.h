@@ -9,7 +9,6 @@
 
 namespace blink {
 
-class ExecutionContext;
 class ResizeObserver;
 class ResizeObserverEntry;
 

@@ -52,7 +52,6 @@
 namespace blink {
 
 class PaintLayer;
-class LayoutObject;
 
 enum PaintLayerFlag {
   PaintLayerNoFlag = 0,

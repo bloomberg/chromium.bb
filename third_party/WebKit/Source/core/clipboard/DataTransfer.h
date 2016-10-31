@@ -44,7 +44,6 @@ class FileList;
 class FrameSelection;
 class LocalFrame;
 class Node;
-class Range;
 
 // Used for drag and drop and copy/paste.
 // Drag and Drop:

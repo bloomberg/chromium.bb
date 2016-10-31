@@ -37,7 +37,6 @@
 namespace blink {
 
 class FetchRequest;
-class FloatSize;
 class ImageResourceObserver;
 class MemoryCache;
 class ResourceClient;

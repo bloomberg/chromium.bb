@@ -41,7 +41,6 @@ class Document;
 class EnumerationHistogram;
 class ExecutionContext;
 class Frame;
-class LocalFrame;
 class StyleSheetContents;
 
 // UseCounter is used for counting the number of times features of

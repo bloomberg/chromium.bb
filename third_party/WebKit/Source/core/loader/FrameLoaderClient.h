@@ -56,7 +56,6 @@ namespace blink {
 
 class Document;
 class DocumentLoader;
-class FetchRequest;
 struct FrameLoadRequest;
 class HTMLFormElement;
 class HTMLFrameElementBase;
@@ -78,10 +77,8 @@ class WebCookieJar;
 class WebMediaPlayer;
 class WebMediaPlayerClient;
 class WebMediaPlayerSource;
-class WebMediaStream;
 class WebRTCPeerConnectionHandler;
 class WebServiceWorkerProvider;
-class WebSocketHandle;
 class Widget;
 
 class CORE_EXPORT FrameLoaderClient : public FrameClient {

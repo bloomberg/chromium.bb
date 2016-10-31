@@ -11,8 +11,6 @@
 
 namespace blink {
 
-class IdleCallbackDeadline;
-
 class IdleRequestCallback
     : public GarbageCollectedFinalized<IdleRequestCallback> {
  public:

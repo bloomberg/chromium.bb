@@ -12,8 +12,9 @@
 
 namespace blink {
 
-class DOMWindow;
 class AudioWorklet;
+class DOMWindow;
+class LocalDOMWindow;
 class Worklet;
 
 class MODULES_EXPORT WindowAudioWorklet final

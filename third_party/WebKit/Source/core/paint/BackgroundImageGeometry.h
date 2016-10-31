@@ -15,7 +15,6 @@ namespace blink {
 
 class FillLayer;
 class LayoutBoxModelObject;
-class LayoutObject;
 class LayoutRect;
 
 class BackgroundImageGeometry {

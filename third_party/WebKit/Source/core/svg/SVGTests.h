@@ -26,7 +26,6 @@
 
 namespace blink {
 
-class Document;
 class QualifiedName;
 class SVGElement;
 class SVGStaticStringList;

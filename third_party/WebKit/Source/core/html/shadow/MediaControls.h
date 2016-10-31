@@ -33,7 +33,6 @@
 namespace blink {
 
 class Event;
-class TextTrackContainer;
 class MediaControlsWindowEventListener;
 
 class CORE_EXPORT MediaControls final : public HTMLDivElement {

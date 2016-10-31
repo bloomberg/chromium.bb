@@ -36,12 +36,9 @@
 
 namespace blink {
 
-class CullRect;
 class DisplayItemClient;
-class LocalFrame;
 class GraphicsContext;
 class LayoutBlock;
-class LayoutViewItem;
 
 class CORE_EXPORT CaretBase : public GarbageCollectedFinalized<CaretBase>,
                               public DisplayItemClient {

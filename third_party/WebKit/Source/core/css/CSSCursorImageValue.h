@@ -29,7 +29,6 @@
 namespace blink {
 
 class Element;
-class SVGElement;
 
 class CSSCursorImageValue : public CSSValue {
  public:

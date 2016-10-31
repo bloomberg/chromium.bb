@@ -14,7 +14,6 @@ namespace blink {
 
 class LayoutBlockFlow;
 class FloatingObject;
-class LineInfo;
 class LineWidth;
 
 class LineLayoutBlockFlow : public LineLayoutBox {

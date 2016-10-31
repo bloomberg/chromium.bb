@@ -43,7 +43,6 @@ namespace blink {
 class GraphicsContext;
 class GraphicsLayer;
 class InspectedFrames;
-class LayoutObject;
 class LayoutRect;
 class PictureSnapshot;
 class PaintLayer;

@@ -9,8 +9,6 @@
 
 namespace blink {
 
-class LayoutBoxModelObjectTest;
-
 class StickyPositionScrollingConstraints final {
  public:
   enum AnchorEdgeFlags {

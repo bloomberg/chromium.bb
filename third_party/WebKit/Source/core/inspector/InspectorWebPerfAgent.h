@@ -17,7 +17,6 @@ class ExecutionContext;
 class Frame;
 class LocalFrame;
 class Location;
-class InspectedFrames;
 
 // Inspector Agent for Web Performance APIs
 class CORE_EXPORT InspectorWebPerfAgent final

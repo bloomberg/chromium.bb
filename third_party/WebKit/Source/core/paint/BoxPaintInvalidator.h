@@ -11,7 +11,6 @@
 namespace blink {
 
 class LayoutBox;
-class LayoutRect;
 class LayoutSize;
 struct PaintInvalidatorContext;
 

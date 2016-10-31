@@ -32,8 +32,6 @@
 
 namespace blink {
 
-class Node;
-
 class CORE_EXPORT BitStack {
   STACK_ALLOCATED();
 

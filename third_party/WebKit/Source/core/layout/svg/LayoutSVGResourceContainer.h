@@ -37,8 +37,6 @@ enum LayoutSVGResourceType {
   ClipperResourceType
 };
 
-class PaintLayer;
-
 class LayoutSVGResourceContainer : public LayoutSVGHiddenContainer {
  public:
   explicit LayoutSVGResourceContainer(SVGElement*);

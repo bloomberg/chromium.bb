@@ -12,8 +12,9 @@
 
 namespace blink {
 
-class DOMWindow;
 class AnimationWorklet;
+class DOMWindow;
+class LocalDOMWindow;
 class Worklet;
 
 class MODULES_EXPORT WindowAnimationWorklet final

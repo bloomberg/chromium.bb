@@ -52,7 +52,6 @@ class PageScaleConstraintsSet;
 class Settings;
 class TopDocumentRootScrollerController;
 class UseCounter;
-class Visitor;
 class VisualViewport;
 
 // FrameHost is the set of global data shared between multiple frames

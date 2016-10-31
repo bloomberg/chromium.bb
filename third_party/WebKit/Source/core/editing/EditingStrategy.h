@@ -12,12 +12,6 @@
 
 namespace blink {
 
-template <typename Strategy>
-class PositionTemplate;
-
-template <typename Strategy>
-class PositionIteratorAlgorithm;
-
 // Editing algorithm defined on node traversal.
 template <typename Traversal>
 class CORE_TEMPLATE_CLASS_EXPORT EditingAlgorithm : public Traversal {

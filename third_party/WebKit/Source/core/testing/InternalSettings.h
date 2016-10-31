@@ -39,9 +39,7 @@
 
 namespace blink {
 
-class Document;
 class ExceptionState;
-class LocalFrame;
 class Page;
 class Settings;
 

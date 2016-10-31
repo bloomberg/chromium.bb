@@ -45,7 +45,6 @@
 
 namespace blink {
 
-class HTMLElement;
 class CompositorProxiedPropertySet;
 class ResizeObservation;
 class ResizeObserver;

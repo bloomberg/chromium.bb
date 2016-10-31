@@ -68,7 +68,6 @@ class CompositedLayerMapping;
 class CompositorFilterOperations;
 class ComputedStyle;
 class FilterOperations;
-class HitTestRequest;
 class HitTestResult;
 class HitTestingTransformState;
 class PaintLayerCompositor;

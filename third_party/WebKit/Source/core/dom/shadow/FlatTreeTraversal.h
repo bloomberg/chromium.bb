@@ -37,7 +37,6 @@
 namespace blink {
 
 class ContainerNode;
-class HTMLSlotElement;
 class Node;
 
 // Flat tree version of |NodeTraversal|.

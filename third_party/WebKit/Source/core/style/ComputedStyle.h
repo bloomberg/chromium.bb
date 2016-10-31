@@ -116,7 +116,6 @@ class CSSAnimationData;
 class CSSTransitionData;
 class CSSVariableData;
 class Font;
-class FontMetrics;
 class Hyphenation;
 class RotateTransformOperation;
 class ScaleTransformOperation;

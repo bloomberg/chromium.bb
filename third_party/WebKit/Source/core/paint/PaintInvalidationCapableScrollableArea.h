@@ -12,9 +12,7 @@
 namespace blink {
 
 class LayoutBox;
-class LayoutBoxModelObject;
 class LayoutScrollbarPart;
-class PaintInvalidationContainer;
 class PaintInvalidationState;
 struct PaintInvalidatorContext;
 

@@ -19,7 +19,6 @@
 namespace blink {
 
 class AutoscrollController;
-class FloatPoint;
 class FrameHost;
 class LayoutBox;
 class LayoutObject;

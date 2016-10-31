@@ -45,7 +45,6 @@ namespace blink {
 class ExceptionState;
 class ExecutionContext;
 class MessagePort;
-class ScriptState;
 class SerializedScriptValue;
 
 // Not to be confused with WebMessagePortChannelArray; this one uses Vector and

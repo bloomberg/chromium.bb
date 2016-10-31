@@ -16,7 +16,6 @@ namespace blink {
 
 class FrameView;
 class LayoutObject;
-class ObjectPaintProperties;
 
 // The context for PaintPropertyTreeBuilder.
 // It's responsible for bookkeeping tree state in other order, for example, the

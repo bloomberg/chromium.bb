@@ -41,7 +41,6 @@ namespace blink {
 class Element;
 class ExceptionState;
 class KeyframeEffectOptions;
-class PropertyHandle;
 
 // Represents the effect of an Animation on an Element's properties.
 // http://w3c.github.io/web-animations/#keyframe-effect

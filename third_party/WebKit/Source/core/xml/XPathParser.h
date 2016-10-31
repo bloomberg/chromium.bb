@@ -41,7 +41,6 @@ namespace XPath {
 
 class Expression;
 class LocationPath;
-class ParseNode;
 class Parser;
 class Predicate;
 

@@ -40,7 +40,6 @@ class WebLayer;
 
 namespace blink {
 
-class ResourceError;
 class ResourceResponse;
 
 class CORE_EXPORT PluginView : public Widget {

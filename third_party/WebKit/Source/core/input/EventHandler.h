@@ -55,13 +55,11 @@ namespace blink {
 
 class DataTransfer;
 class PaintLayer;
-class Document;
 class Element;
 class Event;
 class EventTarget;
 template <typename EventType>
 class EventWithHitTestResults;
-class FloatPoint;
 class FloatQuad;
 class FrameHost;
 class HTMLFrameSetElement;
@@ -79,7 +77,6 @@ class Scrollbar;
 class SelectionController;
 class TextEvent;
 class WheelEvent;
-class Widget;
 
 class CORE_EXPORT EventHandler final
     : public GarbageCollectedFinalized<EventHandler> {

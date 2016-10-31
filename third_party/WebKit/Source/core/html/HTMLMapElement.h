@@ -28,7 +28,6 @@
 
 namespace blink {
 
-class HitTestResult;
 class HTMLImageElement;
 
 class CORE_EXPORT HTMLMapElement final : public HTMLElement {

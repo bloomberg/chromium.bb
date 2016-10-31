@@ -10,12 +10,8 @@
 namespace blink {
 
 struct PaintInfo;
-class FloatRect;
-class Font;
 class LayoutEmbeddedObject;
 class LayoutPoint;
-class Path;
-class TextRun;
 
 class EmbeddedObjectPainter {
   STACK_ALLOCATED();

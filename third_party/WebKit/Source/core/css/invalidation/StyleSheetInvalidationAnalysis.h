@@ -33,8 +33,6 @@
 
 namespace blink {
 
-class Document;
-class Node;
 class StyleSheetContents;
 class TreeScope;
 

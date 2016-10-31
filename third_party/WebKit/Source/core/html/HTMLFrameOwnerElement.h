@@ -32,7 +32,6 @@
 
 namespace blink {
 
-class LocalDOMWindow;
 class ExceptionState;
 class Frame;
 class LayoutPart;

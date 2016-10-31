@@ -35,7 +35,6 @@
 
 namespace blink {
 
-class CancellableTaskFactory;
 class Document;
 class ScriptLoader;
 class WebTaskRunner;

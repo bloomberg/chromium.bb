@@ -14,6 +14,7 @@ namespace blink {
 
 class ExecutionContext;
 class ParentFrameTaskRunners;
+class SourceLocation;
 class WorkerInspectorProxy;
 class WorkerLoaderProxy;
 class WorkerThread;

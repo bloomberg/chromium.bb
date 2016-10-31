@@ -40,7 +40,6 @@ namespace blink {
 
 class PageRuleCollector;
 class StyleSheetContents;
-class ViewportStyleResolver;
 
 // This class selects a ComputedStyle for a given element based on a collection
 // of stylesheets.

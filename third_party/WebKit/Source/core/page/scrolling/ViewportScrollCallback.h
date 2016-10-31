@@ -12,7 +12,6 @@
 namespace blink {
 
 class BrowserControls;
-class FloatSize;
 class ScrollableArea;
 class ScrollState;
 class OverscrollController;

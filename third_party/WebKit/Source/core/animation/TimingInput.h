@@ -11,7 +11,6 @@
 
 namespace blink {
 
-class Dictionary;
 class Document;
 class ExceptionState;
 class KeyframeEffectOptions;

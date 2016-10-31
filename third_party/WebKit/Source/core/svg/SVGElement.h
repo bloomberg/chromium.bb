@@ -44,7 +44,6 @@ class SVGDocumentExtensions;
 class SVGElement;
 class SVGElementRareData;
 class SVGFitToViewBox;
-class SVGLength;
 class SVGPropertyBase;
 class SVGSVGElement;
 class SVGUseElement;

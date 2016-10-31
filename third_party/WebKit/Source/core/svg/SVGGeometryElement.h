@@ -35,6 +35,7 @@
 
 namespace blink {
 
+class Path;
 class SVGPointTearOff;
 
 class SVGGeometryElement : public SVGGraphicsElement {

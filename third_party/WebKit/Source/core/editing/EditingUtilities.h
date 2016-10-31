@@ -60,11 +60,8 @@ enum class DeleteDirection {
 
 class Document;
 class Element;
-class HTMLBRElement;
 class HTMLElement;
-class HTMLLIElement;
 class HTMLSpanElement;
-class HTMLUListElement;
 class Node;
 class Range;
 

@@ -49,13 +49,11 @@ class AnimatableValue;
 class CSSRuleList;
 class CSSStyleSheet;
 class CSSValue;
-class ContainerNode;
 class Document;
 class Element;
 class Interpolation;
 class MatchResult;
 class MediaQueryEvaluator;
-class ScopedStyleResolver;
 class StylePropertySet;
 class StyleRule;
 

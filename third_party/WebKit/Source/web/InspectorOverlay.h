@@ -55,6 +55,9 @@ class LayoutEditor;
 class Node;
 class Page;
 class PageOverlay;
+class PlatformGestureEvent;
+class PlatformMouseEvent;
+class PlatformTouchEvent;
 class WebViewImpl;
 
 namespace protocol {

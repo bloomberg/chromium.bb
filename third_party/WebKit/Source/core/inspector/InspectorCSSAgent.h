@@ -44,7 +44,6 @@
 
 namespace blink {
 
-class CSSKeyframeRule;
 class CSSRule;
 class CSSRuleList;
 class CSSStyleRule;

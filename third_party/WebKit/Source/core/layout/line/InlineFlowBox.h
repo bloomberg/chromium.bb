@@ -29,7 +29,6 @@
 
 namespace blink {
 
-class HitTestRequest;
 class HitTestResult;
 class InlineTextBox;
 class LineBoxList;

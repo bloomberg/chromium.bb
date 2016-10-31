@@ -14,10 +14,8 @@
 
 namespace blink {
 
-class BackgroundImageGeometry;
 class ComputedStyle;
 class FillLayer;
-class FloatRoundedRect;
 class GraphicsContext;
 class Image;
 class InlineFlowBox;

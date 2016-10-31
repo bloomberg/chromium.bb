@@ -11,7 +11,6 @@ namespace blink {
 
 struct PaintInfo;
 class LayoutPoint;
-class LayoutBox;
 class LayoutGrid;
 
 class GridPainter {

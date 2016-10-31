@@ -36,7 +36,6 @@
 namespace blink {
 
 class Document;
-class Node;
 
 class DocumentAnimations {
  public:

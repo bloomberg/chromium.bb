@@ -10,7 +10,6 @@
 
 namespace blink {
 
-class NGConstraintSpace;
 struct NGExclusion;
 
 // 3 node R-Tree that represents available space(left, bottom, right) or

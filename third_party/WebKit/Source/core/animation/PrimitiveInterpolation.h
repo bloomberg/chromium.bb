@@ -15,8 +15,6 @@
 
 namespace blink {
 
-class StyleResolverState;
-
 // Represents an animation's effect between an adjacent pair of
 // PropertySpecificKeyframes after converting the keyframes to an internal
 // format with respect to the animation environment and underlying values.

@@ -10,6 +10,9 @@
 
 namespace blink {
 
+class CSSParserToken;
+class CSSParserTokenRange;
+
 class CSSParserObserverWrapper {
   STACK_ALLOCATED();
 

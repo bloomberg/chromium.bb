@@ -39,7 +39,6 @@
 
 namespace blink {
 
-class LayoutPoint;
 class SelectionAdjuster;
 
 const TextAffinity SelDefaultAffinity = TextAffinity::Downstream;

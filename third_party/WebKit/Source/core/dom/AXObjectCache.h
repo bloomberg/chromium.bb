@@ -43,7 +43,6 @@ class HTMLOptionElement;
 class HTMLSelectElement;
 class LayoutMenuList;
 class LineLayoutItem;
-class Page;
 
 class CORE_EXPORT AXObjectCache
     : public GarbageCollectedFinalized<AXObjectCache> {
