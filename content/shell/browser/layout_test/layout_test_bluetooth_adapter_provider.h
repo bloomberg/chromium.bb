@@ -317,9 +317,9 @@ class LayoutTestBluetoothAdapterProvider {
   //           - Read: Calls GattCharacteristicValueChanged and success
   //               callback with [1].
   //           - Write: Calls success callback.
+  //           - StartNotifySession: Run success callback.
   //           - GetProperties: Returns
   //               BluetoothRemoteGattCharacteristic::PROPERTY_READ
-  // TODO(crbug.com/608538): Mock Write and StartNotifySession.
   static scoped_refptr<testing::NiceMock<device::MockBluetoothAdapter>>
   GetDisconnectingHealthThermometer();
 
@@ -366,6 +366,10 @@ class LayoutTestBluetoothAdapterProvider {
   //                 otherwise it saves a failing callback. This callback is run
   //                 during CreateGattConnection. If |disconnect| is true
   //                 disconnects the device.
+  //               - StartNotifySession: If |succeeds| is true, saves a
+  //                 succeeding callback, otherwise it saves a failing callback.
+  //                 This calback is run during CreateGattConnection. If
+  //                 |disconnect| is true disconnects the device.
   //         - CreateGattConnection: Runs success callback with a new GATT
   //           connection and runs any pending GATT operation callbacks.
   static scoped_refptr<testing::NiceMock<device::MockBluetoothAdapter>>

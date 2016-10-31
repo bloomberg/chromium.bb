@@ -282,14 +282,26 @@ class NotificationsCallback : public WebBluetoothNotificationsCallbacks {
  public:
   NotificationsCallback(BluetoothRemoteGATTCharacteristic* characteristic,
                         ScriptPromiseResolver* resolver)
-      : m_webCharacteristic(characteristic), m_resolver(resolver) {}
+      : m_characteristic(characteristic), m_resolver(resolver) {
+    // We always check that the device is connected before constructing this
+    // object.
+    CHECK(m_characteristic->gatt()->connected());
+    m_characteristic->gatt()->AddToActiveAlgorithms(m_resolver.get());
+  }
 
   void onSuccess() override {
     if (!m_resolver->getExecutionContext() ||
         m_resolver->getExecutionContext()->activeDOMObjectsAreStopped())
       return;
 
-    m_resolver->resolve(m_webCharacteristic);
+    if (!m_characteristic->gatt()->RemoveFromActiveAlgorithms(
+            m_resolver.get())) {
+      m_resolver->reject(
+          DOMException::create(NetworkError, kGATTServerDisconnected));
+      return;
+    }
+
+    m_resolver->resolve(m_characteristic);
   }
 
   void onError(
@@ -299,16 +311,30 @@ class NotificationsCallback : public WebBluetoothNotificationsCallbacks {
     if (!m_resolver->getExecutionContext() ||
         m_resolver->getExecutionContext()->activeDOMObjectsAreStopped())
       return;
+
+    if (!m_characteristic->gatt()->RemoveFromActiveAlgorithms(
+            m_resolver.get())) {
+      m_resolver->reject(
+          DOMException::create(NetworkError, kGATTServerDisconnected));
+      return;
+    }
+
     m_resolver->reject(BluetoothError::take(m_resolver, error));
   }
 
  private:
-  Persistent<BluetoothRemoteGATTCharacteristic> m_webCharacteristic;
+  Persistent<BluetoothRemoteGATTCharacteristic> m_characteristic;
   Persistent<ScriptPromiseResolver> m_resolver;
 };
 
 ScriptPromise BluetoothRemoteGATTCharacteristic::startNotifications(
     ScriptState* scriptState) {
+  if (!gatt()->connected()) {
+    return ScriptPromise::rejectWithDOMException(
+        scriptState,
+        DOMException::create(NetworkError, kGATTServerNotConnected));
+  }
+
   WebBluetooth* webbluetooth =
       BluetoothSupplement::fromScriptState(scriptState);
   ScriptPromiseResolver* resolver = ScriptPromiseResolver::create(scriptState);

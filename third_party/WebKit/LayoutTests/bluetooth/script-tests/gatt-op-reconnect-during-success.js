@@ -8,7 +8,10 @@ promise_test(() => {
     .then(service => service.getCharacteristic('measurement_interval'))
     .then(characteristic => {
       let promise = assert_promise_rejects_with_message(
-        characteristic.CALLS([readValue()| writeValue(val)]),
+        characteristic.CALLS([
+          readValue()|
+          writeValue(val)|
+          startNotifications()]),
         new DOMException('GATT Server disconnected while performing a GATT operation.',
                          'NetworkError'));
       let gatt = characteristic.service.device.gatt;

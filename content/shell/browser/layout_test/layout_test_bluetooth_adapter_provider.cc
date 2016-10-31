@@ -671,7 +671,8 @@ LayoutTestBluetoothAdapterProvider::GetDisconnectingHealthThermometer() {
           "Measurement Interval", health_thermometer.get(),
           kMeasurementIntervalUUID,
           BluetoothRemoteGattCharacteristic::PROPERTY_READ |
-          BluetoothRemoteGattCharacteristic::PROPERTY_WRITE));
+              BluetoothRemoteGattCharacteristic::PROPERTY_WRITE |
+              BluetoothRemoteGattCharacteristic::PROPERTY_NOTIFY));
   NiceMockBluetoothGattCharacteristic* measurement_ptr =
       measurement_interval.get();
 
@@ -687,9 +688,13 @@ LayoutTestBluetoothAdapterProvider::GetDisconnectingHealthThermometer() {
           }));
 
   ON_CALL(*measurement_interval, WriteRemoteCharacteristic(_, _, _))
-      .WillByDefault(RunCallback<1 /* success callback */>());
+      .WillByDefault(RunCallback<1 /* success_callback */>());
 
-  // TODO(crbug.com/608538): Mock StartNotifySession.
+  ON_CALL(*measurement_interval, StartNotifySession(_, _))
+      .WillByDefault(
+          RunCallbackWithResult<0 /* success_callback */>([measurement_ptr]() {
+            return GetBaseGATTNotifySession(measurement_ptr->GetWeakPtr());
+          }));
 
   health_thermometer->AddMockCharacteristic(std::move(measurement_interval));
   device->AddMockService(std::move(health_thermometer));
@@ -908,7 +913,8 @@ scoped_refptr<NiceMockBluetoothAdapter> LayoutTestBluetoothAdapterProvider::
           "Measurement Interval", health_thermometer.get(),
           kMeasurementIntervalUUID,
           BluetoothRemoteGattCharacteristic::PROPERTY_READ |
-          BluetoothRemoteGattCharacteristic::PROPERTY_WRITE));
+              BluetoothRemoteGattCharacteristic::PROPERTY_WRITE |
+              BluetoothRemoteGattCharacteristic::PROPERTY_NOTIFY));
   NiceMockBluetoothGattCharacteristic* measurement_ptr =
       measurement_interval.get();
 
@@ -958,6 +964,32 @@ scoped_refptr<NiceMockBluetoothAdapter> LayoutTestBluetoothAdapterProvider::
                          device_ptr));
         }
       }));
+
+  ON_CALL(*measurement_interval, StartNotifySession(_, _))
+      .WillByDefault(Invoke([adapter_ptr, device_ptr, measurement_ptr,
+                             disconnect, succeeds](
+          const BluetoothRemoteGattCharacteristic::NotifySessionCallback&
+              callback,
+          const BluetoothRemoteGattCharacteristic::ErrorCallback&
+              error_callback) {
+        base::Closure pending;
+        if (succeeds) {
+          pending = base::Bind(callback, base::Passed(GetBaseGATTNotifySession(
+                                             measurement_ptr->GetWeakPtr())));
+        } else {
+          pending = base::Bind(error_callback,
+                               BluetoothRemoteGattService::GATT_ERROR_FAILED);
+        }
+        device_ptr->PushPendingCallback(pending);
+        if (disconnect) {
+          device_ptr->SetConnected(false);
+          base::ThreadTaskRunnerHandle::Get()->PostTask(
+              FROM_HERE,
+              base::Bind(&NotifyDeviceChanged, base::RetainedRef(adapter_ptr),
+                         device_ptr));
+        }
+      }));
+
   health_thermometer->AddMockCharacteristic(std::move(measurement_interval));
   device->AddMockService(std::move(health_thermometer));
   adapter->AddMockDevice(std::move(device));
