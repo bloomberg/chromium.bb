@@ -585,6 +585,14 @@ sandbox::ResultCode SetJobLevel(const base::CommandLine& cmd_line,
 // TODO(jschuh): Need get these restrictions applied to NaCl and Pepper.
 // Just have to figure out what needs to be warmed up first.
 sandbox::ResultCode AddBaseHandleClosePolicy(sandbox::TargetPolicy* policy) {
+  if (base::win::GetVersion() >= base::win::VERSION_WIN10) {
+    // Close all ALPC ports.
+    sandbox::ResultCode ret =
+        policy->AddKernelObjectToClose(L"ALPC Port", NULL);
+    if (ret != sandbox::SBOX_ALL_OK) {
+      return ret;
+    }
+  }
   // TODO(cpu): Add back the BaseNamedObjects policy.
   base::string16 object_path = PrependWindowsSessionPath(
       L"\\BaseNamedObjects\\windows_shell_global_counters");
