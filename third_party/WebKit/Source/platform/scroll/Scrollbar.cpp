@@ -69,6 +69,7 @@ Scrollbar::Scrollbar(ScrollableArea* scrollableArea,
   // scrollbars (rather than leaving one dimension of the scrollbar alone when
   // sizing).
   int thickness = m_theme.scrollbarThickness(controlSize);
+  m_themeScrollbarThickness = thickness;
   if (m_hostWindow)
     thickness = m_hostWindow->windowToViewportScalar(thickness);
   Widget::setFrameRect(IntRect(0, 0, thickness, thickness));
@@ -526,8 +527,7 @@ int Scrollbar::scrollbarThickness() const {
   int thickness = orientation() == HorizontalScrollbar ? height() : width();
   if (!thickness || !m_hostWindow)
     return thickness;
-  return m_hostWindow->windowToViewportScalar(
-      m_theme.scrollbarThickness(controlSize()));
+  return m_hostWindow->windowToViewportScalar(m_themeScrollbarThickness);
 }
 
 bool Scrollbar::isOverlayScrollbar() const {

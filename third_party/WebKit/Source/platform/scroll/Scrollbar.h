@@ -249,6 +249,7 @@ class PLATFORM_EXPORT Scrollbar : public Widget,
   float scrollableAreaTargetPos() const;
   bool thumbWillBeUnderMouse() const;
 
+  int m_themeScrollbarThickness;
   bool m_trackNeedsRepaint;
   bool m_thumbNeedsRepaint;
 };
