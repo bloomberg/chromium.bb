@@ -247,7 +247,6 @@
 	The adjustments can be combined, according to a defined precedence: 1)
 	Flip, 2) Slide, 3) Resize.
       </description>
-
       <entry name="none" value="0">
 	<description summary="don't move the child surface when constrained">
 	  Don't alter the surface position even if it is constrained on some
@@ -595,7 +594,6 @@
 	This request must be used in response to some sort of user action
 	like a button press, key press, or touch down event.
       </description>
-
       <arg name="seat" type="object" interface="wl_seat" summary="the wl_seat of the user event"/>
       <arg name="serial" type="uint" summary="the serial of the user event"/>
       <arg name="x" type="int" summary="the x position to pop up the window menu at"/>
@@ -894,7 +892,6 @@
 	Clients must send an ack_configure in response to this event. See
 	xdg_surface.configure and xdg_surface.ack_configure for details.
       </description>
-
       <arg name="width" type="int"/>
       <arg name="height" type="int"/>
       <arg name="states" type="array"/>
@@ -1009,7 +1006,6 @@
 	"owner-events" grab in X11 parlance), while the top most grabbing popup
 	will always have keyboard focus.
       </description>
-
       <arg name="seat" type="object" interface="wl_seat"
 	   summary="the wl_seat of the user event"/>
       <arg name="serial" type="uint" summary="the serial of the user event"/>

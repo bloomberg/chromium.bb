@@ -234,7 +234,6 @@
         This request must be used in response to some sort of user action
         like a button press, key press, or touch down event.
       </description>
-
       <arg name="seat" type="object" interface="wl_seat" summary="the wl_seat of the user event"/>
       <arg name="serial" type="uint" summary="the serial of the user event"/>
       <arg name="x" type="int" summary="the x position to pop up the window menu at"/>
@@ -396,7 +395,6 @@
         can respond to one, it is free to discard all but the last
         event it received.
       </description>
-
       <arg name="width" type="int"/>
       <arg name="height" type="int"/>
       <arg name="states" type="array"/>

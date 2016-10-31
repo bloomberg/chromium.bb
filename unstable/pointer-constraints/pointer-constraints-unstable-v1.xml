@@ -140,7 +140,6 @@
 	objects of the same seat. wl_pointer.axis and wl_pointer.button events
 	are unaffected.
       </description>
-
       <arg name="id" type="new_id" interface="zwp_locked_pointer_v1"/>
       <arg name="surface" type="object" interface="wl_surface"
 	   summary="surface to lock pointer to"/>
@@ -171,7 +170,6 @@
 	state. See the the description of wp_confined_pointer for further
 	information.
       </description>
-
       <arg name="id" type="new_id" interface="zwp_confined_pointer_v1"/>
       <arg name="surface" type="object" interface="wl_surface"
 	   summary="surface to lock pointer to"/>
@@ -231,7 +229,6 @@
 	effect when the associated surface gets it pending state applied. See
 	wl_surface.commit for details.
       </description>
-
       <arg name="surface_x" type="fixed"
 	   summary="surface-local x coordinate"/>
       <arg name="surface_y" type="fixed"
@@ -248,7 +245,6 @@
 
 	For details about the lock region, see wp_locked_pointer.
       </description>
-
       <arg name="region" type="object" interface="wl_region" allow-null="true"
 	   summary="region of surface"/>
     </request>
@@ -317,7 +313,6 @@
 
 	For details about the confine region, see wp_confined_pointer.
       </description>
-
       <arg name="region" type="object" interface="wl_region" allow-null="true"
 	   summary="region of surface"/>
     </request>

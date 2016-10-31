@@ -127,22 +127,16 @@
     <enum name="error">
       <entry name="already_used" value="0"
              summary="the dmabuf_batch object has already been used to create a wl_buffer"/>
-
       <entry name="plane_idx" value="1"
              summary="plane index out of bounds"/>
-
       <entry name="plane_set" value="2"
              summary="the plane index was already set"/>
-
       <entry name="incomplete" value="3"
              summary="missing or too many planes to create a buffer"/>
-
       <entry name="invalid_format" value="4"
              summary="format not supported"/>
-
       <entry name="invalid_dimensions" value="5"
              summary="invalid width or height"/>
-
       <entry name="out_of_bounds" value="6"
              summary="offset + stride * height goes out of dmabuf bounds"/>
     </enum>
@@ -170,7 +164,6 @@
         The error PLANE_SET is raised if attempting to set a plane that
         was already set.
       </description>
-
       <arg name="fd" type="fd" summary="dmabuf fd"/>
       <arg name="plane_idx" type="uint" summary="plane index"/>
       <arg name="offset" type="uint" summary="offset in bytes"/>

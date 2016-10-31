@@ -556,7 +556,6 @@
 	wp_tablet_tool.proximity_in and wp_tablet_tool.proximity_out for
 	details.
       </description>
-
       <arg name="serial" type="uint"/>
       <arg name="button" type="uint" summary="The button whose state has changed"/>
       <arg name="state" type="uint" enum="button_state" summary="Whether the button was pressed or released"/>

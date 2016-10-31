@@ -81,7 +81,6 @@
         For details on what information is returned, see the
         presentation_feedback interface.
       </description>
-
       <arg name="surface" type="object" interface="wl_surface"
            summary="target surface"/>
       <arg name="callback" type="new_id" interface="wp_presentation_feedback"
@@ -120,7 +119,6 @@
         recommended. Clients must be able to query the current clock
         value directly, not by asking the compositor.
       </description>
-
       <arg name="clk_id" type="uint" summary="platform clock identifier"/>
     </event>
 
@@ -152,7 +150,6 @@
         the synchronized output. If a client has not bound to the
         right wl_output global at all, this event is not sent.
       </description>
-
       <arg name="output" type="object" interface="wl_output"
            summary="presentation output"/>
     </event>
@@ -192,7 +189,6 @@
         Possible zero-copy cases include direct scanout of a
         fullscreen surface and a surface on a hardware overlay.
       </description>
-
       <entry name="vsync" value="0x1" summary="presentation was vsync'd"/>
       <entry name="hw_clock" value="0x2"
              summary="hardware provided the presentation timestamp"/>
@@ -246,7 +242,6 @@
         a way to query the refresh count, then the arguments seq_hi
         and seq_lo must be zero.
       </description>
-
       <arg name="tv_sec_hi" type="uint"
            summary="high 32 bits of the seconds part of the presentation timestamp"/>
       <arg name="tv_sec_lo" type="uint"

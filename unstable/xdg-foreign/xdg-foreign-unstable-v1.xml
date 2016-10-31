@@ -80,7 +80,6 @@
 	be used to create a xdg_imported multiple times. Only xdg_surface
 	surfaces may be exported.
       </description>
-
       <arg name="id" type="new_id" interface="zxdg_exported_v1"
 	   summary="the new xdg_exported object"/>
       <arg name="surface" type="object" interface="wl_surface"
@@ -110,7 +109,6 @@
 	represents the imported surface, and the importing client can
 	manipulate its relationship using it. See xdg_imported for details.
       </description>
-
       <arg name="id" type="new_id" interface="zxdg_imported_v1"
 	   summary="the new xdg_imported object"/>
       <arg name="handle" type="string"
@@ -141,7 +139,6 @@
 	import the surface by calling xdg_importer.import. A handle may be
 	used to import the surface multiple times.
       </description>
-
       <arg name="handle" type="string" summary="the exported surface handle"/>
     </event>
   </interface>
@@ -168,7 +165,6 @@
 	sets up a surface to surface relation with the same stacking and positioning
 	semantics as xdg_surface.set_parent.
       </description>
-
       <arg name="surface" type="object" interface="wl_surface"
 	   summary="the child surface"/>
     </request>

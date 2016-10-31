@@ -54,7 +54,6 @@
 	a wp_viewport object associated, the viewport_exists
 	protocol error is raised.
       </description>
-
       <arg name="id" type="new_id" interface="wp_viewport"
            summary="the new viewport interface id"/>
       <arg name="surface" type="object" interface="wl_surface"
@@ -159,7 +158,6 @@
 	The crop and scale state is double-buffered state, and will be
 	applied on the next wl_surface.commit.
       </description>
-
       <arg name="x" type="fixed" summary="source rectangle x"/>
       <arg name="y" type="fixed" summary="source rectangle y"/>
       <arg name="width" type="fixed" summary="source rectangle width"/>
@@ -180,7 +178,6 @@
 	The crop and scale state is double-buffered state, and will be
 	applied on the next wl_surface.commit.
       </description>
-
       <arg name="width" type="int" summary="surface width"/>
       <arg name="height" type="int" summary="surface height"/>
     </request>
