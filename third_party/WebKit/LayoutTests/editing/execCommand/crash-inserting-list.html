@@ -1,46 +1,55 @@
-<!DOCTYPE html>
-<!-- It is a minimized testcase for a Clusterfuzz test. See crbug.com/345373 -->
-<html>
-<head>
-<style>
-* { float:left; }
-.class0 { content: url(); }
-</style>
-</head>
-<body>
-<ul class="class0">
-    <li id="r0"></li>
-    <li id="r1"></li>
-</ul>
-<hr/>
+<!doctype html>
+<script src="../../resources/testharness.js"></script>
+<script src="../../resources/testharnessreport.js"></script>
+<script src="../assert_selection.js"></script>
 <script>
-    if (window.testRunner)
-        testRunner.dumpAsText();
+// It is a minimized testcase for a Clusterfuzz test. See crbug.com/345373
+test(() => assert_selection(
+    [
+      '<style>',
+      '* { float:left; }',
+      '.class0 { content: url(); }',
+      '</style>',
+      '<ul class="class0">',
+        '<li id="r0"></li>',
+        '<li id="r1"></li>',
+      '</ul>',
+      '<hr>',
+    ].join(''),
+    selection => {
+        let domNodeRemovedFireCount = 0;
+        selection.document.addEventListener('DOMNodeRemoved', (event) => {
+          if (domNodeRemovedFireCount >= 1)
+            return;
+          ++domNodeRemovedFireCount;
+          const element = event.srcElement;
+          selection.document.execCommand('InsertOrderedList');
 
-    var domNodeRemovedFireCount = 0;
-    document.addEventListener("DOMNodeRemoved", function () {
-        if (domNodeRemovedFireCount >= 1)
-	    return;
-        domNodeRemovedFireCount++;
-        var element = event.srcElement;
-        document.execCommand('InsertOrderedList', false, false);
+          const parentElement = selection.document.getElementById('r1');
+          const childElement = parentElement.childNodes[0];
+          parentElement.insertBefore(element, childElement);
 
-        var parentElement = document.getElementById('r1');
-        var childElement = parentElement.childNodes[0];
-        parentElement.insertBefore(element, childElement);
+          selection.document.execCommand('Undo');
+          selection.document.execCommand('Redo');
+          selection.document.execCommand('Outdent');
+        });
 
-        document.execCommand('Undo', false, false);
-        document.execCommand('Redo', false, false);
-        document.execCommand('Outdent', false, false);
-    }, false);
-
-    document.designMode = 'on';
-    var selection = window.getSelection();
-    document.execCommand('SelectAll', false);
-    var range = selection.getRangeAt(0);
-    var insertedElement = document.getElementById('r0');
-    range.insertNode(insertedElement);
-    document.write('This test passes if the page does not crash.');
+        selection.document.designMode = 'on';
+        selection.document.execCommand('SelectAll');
+        const range = selection.getRangeAt(0);
+        const insertedElement = selection.document.getElementById('r0');
+        range.insertNode(insertedElement);
+    },
+    [
+      '<style>',
+      '* { float:left; }',
+      '.class0 { content: url(); }',
+      '</style>',
+      '<ul class="class0">',
+        '<li id="r1">',
+          '<li id="r0"></li>',
+        '</li>',
+      '</ul>',
+      '^<hr>|',
+    ].join('')));
 </script>
-</body>
-</html>
