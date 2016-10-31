@@ -6,6 +6,7 @@
 
 #include <stddef.h>
 
+#include <memory>
 #include <vector>
 
 #include "base/command_line.h"

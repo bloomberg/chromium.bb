@@ -3,6 +3,8 @@
 // found in the LICENSE file.
 #include "components/sync/engine_impl/loopback_server/loopback_connection_manager.h"
 
+#include <string>
+
 namespace syncer {
 
 LoopbackConnectionManager::LoopbackConnectionManager(

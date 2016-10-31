@@ -5,6 +5,7 @@
 #include "chrome/browser/sync/test/integration/multi_client_status_change_checker.h"
 
 #include "base/logging.h"
+#include "base/scoped_observer.h"
 #include "components/browser_sync/profile_sync_service.h"
 
 MultiClientStatusChangeChecker::MultiClientStatusChangeChecker(

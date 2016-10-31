@@ -4,7 +4,10 @@
 
 #include "chrome/browser/sync/test/integration/sync_integration_test_util.h"
 
+#include <string>
+
 #include "base/strings/stringprintf.h"
+#include "chrome/browser/sync/test/integration/fake_server_match_status_checker.h"
 #include "components/browser_sync/profile_sync_service.h"
 
 ServerCountMatchStatusChecker::ServerCountMatchStatusChecker(

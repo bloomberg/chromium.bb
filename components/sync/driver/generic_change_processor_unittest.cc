@@ -20,6 +20,7 @@
 #include "components/sync/engine/attachments/fake_attachment_uploader.h"
 #include "components/sync/engine/sync_encryption_handler.h"
 #include "components/sync/model/attachments/attachment_id.h"
+#include "components/sync/model/attachments/attachment_service.h"
 #include "components/sync/model/data_type_error_handler_mock.h"
 #include "components/sync/model/fake_syncable_service.h"
 #include "components/sync/model/sync_change.h"

@@ -4,6 +4,8 @@
 
 #include "components/sync/engine/cycle/sync_cycle_snapshot.h"
 
+#include <memory>
+
 #include "base/test/values_test_util.h"
 #include "base/values.h"
 #include "testing/gtest/include/gtest/gtest.h"
