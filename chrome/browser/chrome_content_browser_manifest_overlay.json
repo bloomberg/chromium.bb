@@ -48,7 +48,13 @@
           "media_router::mojom::MediaRouter",
           "mojom::OmniboxPageHandler",
           "password_manager::mojom::CredentialManager",
-          "translate::mojom::ContentTranslateDriver"
+          "translate::mojom::ContentTranslateDriver",
+
+          // TODO(beng): These should be moved to a separate capability.
+          "mojom::OmniboxPageHandler",
+          "mojom::PluginsPageHandler",
+          "mojom::SiteEngagementUIHandler",
+          "mojom::UsbInternalsPageHandler"
         ]
       }
     }
