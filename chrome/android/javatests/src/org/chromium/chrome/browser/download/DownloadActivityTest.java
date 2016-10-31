@@ -26,6 +26,7 @@ import org.chromium.chrome.browser.download.ui.DownloadHistoryItemViewHolder;
 import org.chromium.chrome.browser.download.ui.DownloadHistoryItemWrapper;
 import org.chromium.chrome.browser.download.ui.DownloadItemView;
 import org.chromium.chrome.browser.download.ui.DownloadManagerUi;
+import org.chromium.chrome.browser.download.ui.SpaceDisplay;
 import org.chromium.chrome.browser.download.ui.StubbedProvider;
 import org.chromium.chrome.browser.offlinepages.downloads.OfflinePageDownloadItem;
 import org.chromium.chrome.browser.snackbar.SnackbarManager;
@@ -46,10 +47,11 @@ public class DownloadActivityTest extends BaseActivityInstrumentationTestCase<Do
 
     private static class TestObserver extends RecyclerView.AdapterDataObserver
             implements SelectionObserver<DownloadHistoryItemWrapper>,
-                    DownloadManagerUi.DownloadUiObserver {
+                    DownloadManagerUi.DownloadUiObserver, SpaceDisplay.Observer {
         public final CallbackHelper onChangedCallback = new CallbackHelper();
         public final CallbackHelper onSelectionCallback = new CallbackHelper();
         public final CallbackHelper onFilterCallback = new CallbackHelper();
+        public final CallbackHelper onSpaceDisplayUpdatedCallback = new CallbackHelper();
 
         private List<DownloadHistoryItemWrapper> mOnSelectionItems;
         private Handler mHandler;
@@ -92,6 +94,16 @@ public class DownloadActivityTest extends BaseActivityInstrumentationTestCase<Do
         }
 
         @Override
+        public void onSpaceDisplayUpdated(SpaceDisplay display) {
+            mHandler.post(new Runnable() {
+                @Override
+                public void run() {
+                    onSpaceDisplayUpdatedCallback.notifyCalled();
+                }
+            });
+        }
+
+        @Override
         public void onManagerDestroyed() {
         }
     }
@@ -124,8 +136,10 @@ public class DownloadActivityTest extends BaseActivityInstrumentationTestCase<Do
         mAdapter.registerAdapterDataObserver(mAdapterObserver);
 
         mSpaceUsedDisplay =
-                (TextView) getActivity().findViewById(R.id.space_used_display);
+                (TextView) getActivity().findViewById(R.id.size_downloaded);
         mRecyclerView = ((RecyclerView) getActivity().findViewById(R.id.recycler_view));
+
+        mUi.getSpaceDisplayForTests().addObserverForTests(mAdapterObserver);
     }
 
     @MediumTest
@@ -134,12 +148,12 @@ public class DownloadActivityTest extends BaseActivityInstrumentationTestCase<Do
         CriteriaHelper.pollUiThread(new Criteria() {
             @Override
             public boolean isSatisfied() {
-                return TextUtils.equals("6.00 GB used", mSpaceUsedDisplay.getText());
+                return TextUtils.equals("6.00 GB downloaded", mSpaceUsedDisplay.getText());
             }
         });
 
         // Add a new item.
-        int callCount = mAdapterObserver.onChangedCallback.getCallCount();
+        int callCount = mAdapterObserver.onSpaceDisplayUpdatedCallback.getCallCount();
         final DownloadItem updateItem = StubbedProvider.createDownloadItem(7, "20151021 07:28");
         ThreadUtils.runOnUiThread(new Runnable() {
             @Override
@@ -147,11 +161,11 @@ public class DownloadActivityTest extends BaseActivityInstrumentationTestCase<Do
                 mAdapter.onDownloadItemUpdated(updateItem, false, DownloadState.COMPLETE);
             }
         });
-        mAdapterObserver.onChangedCallback.waitForCallback(callCount);
-        assertEquals("6.50 GB used", mSpaceUsedDisplay.getText());
+        mAdapterObserver.onSpaceDisplayUpdatedCallback.waitForCallback(callCount);
+        assertEquals("6.50 GB downloaded", mSpaceUsedDisplay.getText());
 
         // Mark one download as deleted on disk, which should prevent it from being counted.
-        callCount = mAdapterObserver.onChangedCallback.getCallCount();
+        callCount = mAdapterObserver.onSpaceDisplayUpdatedCallback.getCallCount();
         final DownloadItem deletedItem = StubbedProvider.createDownloadItem(6, "20151021 07:28");
         deletedItem.setHasBeenExternallyRemoved(true);
         ThreadUtils.runOnUiThread(new Runnable() {
@@ -160,11 +174,11 @@ public class DownloadActivityTest extends BaseActivityInstrumentationTestCase<Do
                 mAdapter.onDownloadItemUpdated(deletedItem, false, DownloadState.COMPLETE);
             }
         });
-        mAdapterObserver.onChangedCallback.waitForCallback(callCount);
-        assertEquals("5.50 GB used", mSpaceUsedDisplay.getText());
+        mAdapterObserver.onSpaceDisplayUpdatedCallback.waitForCallback(callCount);
+        assertEquals("5.50 GB downloaded", mSpaceUsedDisplay.getText());
 
         // Say that the offline page has been deleted.
-        callCount = mAdapterObserver.onChangedCallback.getCallCount();
+        callCount = mAdapterObserver.onSpaceDisplayUpdatedCallback.getCallCount();
         final OfflinePageDownloadItem deletedPage =
                 StubbedProvider.createOfflineItem(3, "20151021 07:28");
         ThreadUtils.runOnUiThread(new Runnable() {
@@ -174,8 +188,8 @@ public class DownloadActivityTest extends BaseActivityInstrumentationTestCase<Do
                         deletedPage.getGuid());
             }
         });
-        mAdapterObserver.onChangedCallback.waitForCallback(callCount);
-        assertEquals("512.00 MB used", mSpaceUsedDisplay.getText());
+        mAdapterObserver.onSpaceDisplayUpdatedCallback.waitForCallback(callCount);
+        assertEquals("512.00 MB downloaded", mSpaceUsedDisplay.getText());
     }
 
     /** Clicking on filters affects various things in the UI. */
@@ -185,11 +199,12 @@ public class DownloadActivityTest extends BaseActivityInstrumentationTestCase<Do
         CriteriaHelper.pollUiThread(new Criteria() {
             @Override
             public boolean isSatisfied() {
-                return TextUtils.equals("6.00 GB used", mSpaceUsedDisplay.getText());
+                return TextUtils.equals("6.00 GB downloaded", mSpaceUsedDisplay.getText());
             }
         });
 
         // Change the filter. Only the Offline Page and its date header should stay.
+        int spaceDisplayCallCount = mAdapterObserver.onSpaceDisplayUpdatedCallback.getCallCount();
         clickOnFilter(mUi, 1);
         assertEquals(2, mAdapter.getItemCount());
 
@@ -206,7 +221,8 @@ public class DownloadActivityTest extends BaseActivityInstrumentationTestCase<Do
         });
 
         // Filtering doesn't affect the total download size.
-        assertEquals("6.00 GB used", mSpaceUsedDisplay.getText());
+        mAdapterObserver.onSpaceDisplayUpdatedCallback.waitForCallback(spaceDisplayCallCount);
+        assertEquals("6.00 GB downloaded", mSpaceUsedDisplay.getText());
     }
 
     @MediumTest
@@ -218,7 +234,7 @@ public class DownloadActivityTest extends BaseActivityInstrumentationTestCase<Do
         CriteriaHelper.pollUiThread(new Criteria() {
             @Override
             public boolean isSatisfied() {
-                return TextUtils.equals("6.00 GB used", mSpaceUsedDisplay.getText());
+                return TextUtils.equals("6.00 GB downloaded", mSpaceUsedDisplay.getText());
             }
         });
 
@@ -248,7 +264,7 @@ public class DownloadActivityTest extends BaseActivityInstrumentationTestCase<Do
         mStubbedProvider.getOfflinePageBridge().deleteItemCallback.waitForCallback(0);
         assertFalse(mStubbedProvider.getSelectionDelegate().isSelectionEnabled());
         assertEquals(8, mAdapter.getItemCount());
-        assertEquals("0.65 KB used", mSpaceUsedDisplay.getText());
+        assertEquals("0.65 KB downloaded", mSpaceUsedDisplay.getText());
     }
 
     @MediumTest
@@ -265,7 +281,7 @@ public class DownloadActivityTest extends BaseActivityInstrumentationTestCase<Do
         SnackbarManager.setDurationForTesting(5000);
 
         // Add duplicate items.
-        int callCount = mAdapterObserver.onChangedCallback.getCallCount();
+        int callCount = mAdapterObserver.onSpaceDisplayUpdatedCallback.getCallCount();
         final DownloadItem item7 = StubbedProvider.createDownloadItem(7, "20161021 07:28");
         final DownloadItem item8 = StubbedProvider.createDownloadItem(8, "20161021 17:28");
         ThreadUtils.runOnUiThread(new Runnable() {
@@ -275,13 +291,13 @@ public class DownloadActivityTest extends BaseActivityInstrumentationTestCase<Do
                 mAdapter.onDownloadItemUpdated(item8, false, DownloadState.COMPLETE);
             }
         });
-        mAdapterObserver.onChangedCallback.waitForCallback(callCount, 2);
+        mAdapterObserver.onSpaceDisplayUpdatedCallback.waitForCallback(callCount, 2);
 
         // This first check is a Criteria because initialization of the Adapter is asynchronous.
         CriteriaHelper.pollUiThread(new Criteria() {
             @Override
             public boolean isSatisfied() {
-                return TextUtils.equals("7.00 GB used", mSpaceUsedDisplay.getText());
+                return TextUtils.equals("7.00 GB downloaded", mSpaceUsedDisplay.getText());
             }
         });
 
@@ -292,7 +308,7 @@ public class DownloadActivityTest extends BaseActivityInstrumentationTestCase<Do
         assertEquals(14, mAdapter.getItemCount());
 
         // Click the delete button.
-        callCount = mAdapterObserver.onChangedCallback.getCallCount();
+        callCount = mAdapterObserver.onSpaceDisplayUpdatedCallback.getCallCount();
         ThreadUtils.runOnUiThread(new Runnable() {
             @Override
             public void run() {
@@ -300,15 +316,15 @@ public class DownloadActivityTest extends BaseActivityInstrumentationTestCase<Do
                         .performIdentifierAction(R.id.selection_mode_delete_menu_id, 0));
             }
         });
-        mAdapterObserver.onChangedCallback.waitForCallback(callCount);
+        mAdapterObserver.onSpaceDisplayUpdatedCallback.waitForCallback(callCount);
 
         // Assert that items are temporarily removed from the adapter. The two selected items,
         // one duplicate item, and one date bucket should be removed.
         assertEquals(10, mAdapter.getItemCount());
-        assertEquals("1.00 GB used", mSpaceUsedDisplay.getText());
+        assertEquals("1.00 GB downloaded", mSpaceUsedDisplay.getText());
 
         // Click "Undo" on the snackbar.
-        callCount = mAdapterObserver.onChangedCallback.getCallCount();
+        callCount = mAdapterObserver.onSpaceDisplayUpdatedCallback.getCallCount();
         final View rootView = mUi.getView().getRootView();
         assertNotNull(rootView.findViewById(R.id.snackbar));
         ThreadUtils.runOnUiThread(new Runnable() {
@@ -318,7 +334,7 @@ public class DownloadActivityTest extends BaseActivityInstrumentationTestCase<Do
             }
         });
 
-        mAdapterObserver.onChangedCallback.waitForCallback(callCount);
+        mAdapterObserver.onSpaceDisplayUpdatedCallback.waitForCallback(callCount);
 
         // Assert that items are restored.
         assertEquals(0,
@@ -327,7 +343,7 @@ public class DownloadActivityTest extends BaseActivityInstrumentationTestCase<Do
                 mStubbedProvider.getOfflinePageBridge().deleteItemCallback.getCallCount());
         assertFalse(mStubbedProvider.getSelectionDelegate().isSelectionEnabled());
         assertEquals(14, mAdapter.getItemCount());
-        assertEquals("7.00 GB used", mSpaceUsedDisplay.getText());
+        assertEquals("7.00 GB downloaded", mSpaceUsedDisplay.getText());
     }
 
     @MediumTest
@@ -342,7 +358,7 @@ public class DownloadActivityTest extends BaseActivityInstrumentationTestCase<Do
         SnackbarManager.setDurationForTesting(5000);
 
         // Add duplicate items.
-        int callCount = mAdapterObserver.onChangedCallback.getCallCount();
+        int callCount = mAdapterObserver.onSpaceDisplayUpdatedCallback.getCallCount();
         final DownloadItem item7 = StubbedProvider.createDownloadItem(7, "20161021 07:28");
         final DownloadItem item8 = StubbedProvider.createDownloadItem(8, "20161021 17:28");
         ThreadUtils.runOnUiThread(new Runnable() {
@@ -352,13 +368,13 @@ public class DownloadActivityTest extends BaseActivityInstrumentationTestCase<Do
                 mAdapter.onDownloadItemUpdated(item8, false, DownloadState.COMPLETE);
             }
         });
-        mAdapterObserver.onChangedCallback.waitForCallback(callCount, 2);
+        mAdapterObserver.onSpaceDisplayUpdatedCallback.waitForCallback(callCount, 2);
 
         // This first check is a Criteria because initialization of the Adapter is asynchronous.
         CriteriaHelper.pollUiThread(new Criteria() {
             @Override
             public boolean isSatisfied() {
-                return TextUtils.equals("7.00 GB used", mSpaceUsedDisplay.getText());
+                return TextUtils.equals("7.00 GB downloaded", mSpaceUsedDisplay.getText());
             }
         });
 
@@ -369,7 +385,7 @@ public class DownloadActivityTest extends BaseActivityInstrumentationTestCase<Do
         assertEquals(14, mAdapter.getItemCount());
 
         // Click the delete button.
-        callCount = mAdapterObserver.onChangedCallback.getCallCount();
+        callCount = mAdapterObserver.onSpaceDisplayUpdatedCallback.getCallCount();
         ThreadUtils.runOnUiThread(new Runnable() {
             @Override
             public void run() {
@@ -377,14 +393,14 @@ public class DownloadActivityTest extends BaseActivityInstrumentationTestCase<Do
                         .performIdentifierAction(R.id.selection_mode_delete_menu_id, 0));
             }
         });
-        mAdapterObserver.onChangedCallback.waitForCallback(callCount);
+        mAdapterObserver.onSpaceDisplayUpdatedCallback.waitForCallback(callCount);
 
         // Assert that the two items and their date bucket are temporarily removed from the adapter.
         assertEquals(11, mAdapter.getItemCount());
-        assertEquals("6.00 GB used", mSpaceUsedDisplay.getText());
+        assertEquals("6.00 GB downloaded", mSpaceUsedDisplay.getText());
 
         // Click "Undo" on the snackbar.
-        callCount = mAdapterObserver.onChangedCallback.getCallCount();
+        callCount = mAdapterObserver.onSpaceDisplayUpdatedCallback.getCallCount();
         final View rootView = mUi.getView().getRootView();
         assertNotNull(rootView.findViewById(R.id.snackbar));
         ThreadUtils.runOnUiThread(new Runnable() {
@@ -394,11 +410,11 @@ public class DownloadActivityTest extends BaseActivityInstrumentationTestCase<Do
             }
         });
 
-        mAdapterObserver.onChangedCallback.waitForCallback(callCount);
+        mAdapterObserver.onSpaceDisplayUpdatedCallback.waitForCallback(callCount);
 
         // Assert that items are restored.
         assertEquals(14, mAdapter.getItemCount());
-        assertEquals("7.00 GB used", mSpaceUsedDisplay.getText());
+        assertEquals("7.00 GB downloaded", mSpaceUsedDisplay.getText());
     }
 
     @MediumTest

@@ -514,6 +514,11 @@ public class DownloadManagerUi implements OnMenuItemClickListener {
         return mHistoryAdapter;
     }
 
+    /** Returns the {@link SpaceDisplay}. */
+    public SpaceDisplay getSpaceDisplayForTests() {
+        return mSpaceDisplay;
+    }
+
     /** Sets a BackendProvider that is used in place of a real one. */
     @VisibleForTesting
     public static void setProviderForTests(BackendProvider provider) {

@@ -1749,23 +1749,32 @@ To obtain new licenses, connect to the internet and play your downloaded content
       <message name="IDS_OPEN_DOWNLOADED_LABEL" desc="A text label on the snackbar widget to open the downloaded file.">
         Open
       </message>
-      <message name="IDS_DOWNLOAD_MANAGER_UI_SPACE_AVAILABLE_KB" desc="String indicating how much storage is available on the device, in kilobytes.">
+      <message name="IDS_DOWNLOAD_MANAGER_UI_SPACE_FREE_KB" desc="String indicating how much storage is available to use on the device, in kilobytes.">
         <ph name="kilobytes">%1$3.2f<ex>12.5</ex></ph> KB available
       </message>
-      <message name="IDS_DOWNLOAD_MANAGER_UI_SPACE_AVAILABLE_MB" desc="String indicating how much storage is available on the device, in megabytes.">
+      <message name="IDS_DOWNLOAD_MANAGER_UI_SPACE_FREE_MB" desc="String indicating how much storage is available to use on the device, in megabytes.">
         <ph name="megabytes">%1$3.2f<ex>12.5</ex></ph> MB available
       </message>
-      <message name="IDS_DOWNLOAD_MANAGER_UI_SPACE_AVAILABLE_GB" desc="String indicating how much storage is available on the device, in gigabytes.">
+      <message name="IDS_DOWNLOAD_MANAGER_UI_SPACE_FREE_GB" desc="String indicating how much storage is available to use on the device, in gigabytes.">
         <ph name="gigabytes">%1$3.2f<ex>12.5</ex></ph> GB available
       </message>
+      <message name="IDS_DOWNLOAD_MANAGER_UI_SPACE_OTHER_KB" desc="String indicating that some amount of storage space on the device has been used by other apps, in kilobytes.">
+        <ph name="kilobytes">%1$3.2f<ex>0.3</ex></ph> KB other apps
+      </message>
+      <message name="IDS_DOWNLOAD_MANAGER_UI_SPACE_OTHER_MB" desc="String indicating that some amount of storage space on the device has been used by other apps, in megabytes.">
+        <ph name="megabytes">%1$3.2f<ex>0.3</ex></ph> MB other apps
+      </message>
+      <message name="IDS_DOWNLOAD_MANAGER_UI_SPACE_OTHER_GB" desc="String indicating that some amount of storage space on the device has been used by other apps, in gigabytes.">
+        <ph name="gigabytes">%1$3.2f<ex>0.3</ex></ph> GB other apps
+      </message>
       <message name="IDS_DOWNLOAD_MANAGER_UI_SPACE_USED_KB" desc="String indicating that some amount of storage space on the device has been used by downloads, in kilobytes.">
-        <ph name="kilobytes">%1$3.2f<ex>0.3</ex></ph> KB used
+        <ph name="kilobytes">%1$3.2f<ex>0.3</ex></ph> KB downloaded
       </message>
       <message name="IDS_DOWNLOAD_MANAGER_UI_SPACE_USED_MB" desc="String indicating that some amount of storage space on the device has been used by downloads, in megabytes.">
-        <ph name="megabytes">%1$3.2f<ex>0.3</ex></ph> MB used
+        <ph name="megabytes">%1$3.2f<ex>0.3</ex></ph> MB downloaded
       </message>
       <message name="IDS_DOWNLOAD_MANAGER_UI_SPACE_USED_GB" desc="String indicating that some amount of storage space on the device has been used by downloads, in gigabytes.">
-        <ph name="gigabytes">%1$3.2f<ex>0.3</ex></ph> GB used
+        <ph name="gigabytes">%1$3.2f<ex>0.3</ex></ph> GB downloaded
       </message>
       <message name="IDS_DOWNLOAD_MANAGER_UI_ALL_DOWNLOADS" desc="Indicates that clicking on this button shows all of your downloads.">
         All downloads

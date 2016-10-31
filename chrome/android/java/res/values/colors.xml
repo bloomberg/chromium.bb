@@ -194,5 +194,6 @@
 
     <!-- Other colors -->
     <color name="selectable_list_item_highlight_color">#804281f4</color>
+    <color name="material_progressbar_bg">#dbdbdb</color>
 
 </resources>
