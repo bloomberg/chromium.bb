@@ -333,12 +333,12 @@ const char ExtensionWebUI::kExtensionURLOverrides[] =
     "extensions.chrome_url_overrides";
 
 ExtensionWebUI::ExtensionWebUI(content::WebUI* web_ui, const GURL& url)
-    : WebUIController(web_ui) {
+    : WebUIController(web_ui),
+      url_(url) {
   Profile* profile = Profile::FromWebUI(web_ui);
   const Extension* extension = extensions::ExtensionRegistry::Get(
       profile)->enabled_extensions().GetExtensionOrAppByURL(url);
   DCHECK(extension);
-  DCHECK_EQ(extension_misc::kBookmarkManagerId, extension->id());
 
   // The base class defaults to enabling WebUI bindings, but we don't need
   // those (this is also reflected in ChromeWebUIControllerFactory::
@@ -347,26 +347,20 @@ ExtensionWebUI::ExtensionWebUI(content::WebUI* web_ui, const GURL& url)
   web_ui->SetBindings(bindings);
 
   // Hack: A few things we specialize just for the bookmark manager.
-  bookmark_manager_private_drag_event_router_.reset(
-      new extensions::BookmarkManagerPrivateDragEventRouter(
-          profile, web_ui->GetWebContents()));
+  if (extension->id() == extension_misc::kBookmarkManagerId) {
+    bookmark_manager_private_drag_event_router_.reset(
+        new extensions::BookmarkManagerPrivateDragEventRouter(
+            profile, web_ui->GetWebContents()));
 
-  web_ui->SetLinkTransitionType(ui::PAGE_TRANSITION_AUTO_BOOKMARK);
+    web_ui->SetLinkTransitionType(ui::PAGE_TRANSITION_AUTO_BOOKMARK);
+  }
 }
 
 ExtensionWebUI::~ExtensionWebUI() {}
 
-// static
-bool ExtensionWebUI::NeedsExtensionWebUI(
-    content::BrowserContext* browser_context,
-    const GURL& url) {
-  CHECK(browser_context);
-  const Extension* extension =
-      extensions::ExtensionRegistry::Get(browser_context)->enabled_extensions().
-          GetExtensionOrAppByURL(url);
-  // Only use bindings for the Bookmark Manager extension, which needs it as a
-  // hack (see ExtensionWebUI's constructor below).
-  return extension && extension->id() == extension_misc::kBookmarkManagerId;
+extensions::BookmarkManagerPrivateDragEventRouter*
+ExtensionWebUI::bookmark_manager_private_drag_event_router() {
+  return bookmark_manager_private_drag_event_router_.get();
 }
 
 ////////////////////////////////////////////////////////////////////////////////

@@ -142,10 +142,10 @@ TEST_F(BookmarkContextMenuTest, OpenAll) {
 }
 
 // Tests open all on a folder with a couple of bookmarks in incognito window.
-TEST_F(BookmarkContextMenuTest, OpenAllIncognito) {
+TEST_F(BookmarkContextMenuTest, OpenAllIngonito) {
   const BookmarkNode* folder = model_->bookmark_bar_node()->GetChild(1);
   chrome::OpenAll(NULL, &navigator_, folder,
-                  WindowOpenDisposition::OFF_THE_RECORD, profile_.get());
+                  WindowOpenDisposition::OFF_THE_RECORD, NULL);
 
   // Should have navigated to only f1a but not f2a.
   ASSERT_EQ(static_cast<size_t>(1), navigator_.urls_.size());

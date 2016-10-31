@@ -8,7 +8,6 @@
 #include <memory>
 #include <string>
 
-#include "base/macros.h"
 #include "chrome/common/extensions/chrome_manifest_url_handlers.h"
 #include "components/favicon_base/favicon_callback.h"
 #include "content/public/browser/web_ui_controller.h"
@@ -32,8 +31,6 @@ class PrefRegistrySyncable;
 // the main tab contents area. For example, each extension can specify an
 // "options_page", and that page is displayed in the tab contents area and is
 // hosted by this class.
-// TODO(devlin): The above description has nothing to do with this class as far
-// as I can tell.
 class ExtensionWebUI : public content::WebUIController {
  public:
   static const char kExtensionURLOverrides[];
@@ -42,15 +39,9 @@ class ExtensionWebUI : public content::WebUIController {
 
   ~ExtensionWebUI() override;
 
-  // Returns true if the given url requires WebUI bindings.
-  static bool NeedsExtensionWebUI(content::BrowserContext* browser_context,
-                                  const GURL& url);
+  virtual extensions::BookmarkManagerPrivateDragEventRouter*
+      bookmark_manager_private_drag_event_router();
 
-  // TODO(devlin): The rest of this class is static methods dealing with
-  // chrome url overrides (e.g. changing chrome://newtab to go to an extension-
-  // provided new tab page). This should be in a separate class from the WebUI
-  // controller for the bookmark manager, and the WebUI controller should be
-  // renamed.
   // BrowserURLHandler
   static bool HandleChromeURLOverride(GURL* url,
                                       content::BrowserContext* browser_context);
@@ -93,11 +84,6 @@ class ExtensionWebUI : public content::WebUIController {
       const GURL& page_url,
       const favicon_base::FaviconResultsCallback& callback);
 
-  extensions::BookmarkManagerPrivateDragEventRouter*
-      bookmark_manager_private_drag_event_router() {
-    return bookmark_manager_private_drag_event_router_.get();
-  }
-
  private:
   // Unregister the specified override, and if it's the currently active one,
   // ensure that something takes its place.
@@ -111,7 +97,8 @@ class ExtensionWebUI : public content::WebUIController {
   std::unique_ptr<extensions::BookmarkManagerPrivateDragEventRouter>
       bookmark_manager_private_drag_event_router_;
 
-  DISALLOW_COPY_AND_ASSIGN(ExtensionWebUI);
+  // The URL this WebUI was created for.
+  GURL url_;
 };
 
 #endif  // CHROME_BROWSER_EXTENSIONS_EXTENSION_WEB_UI_H_
