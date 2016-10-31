@@ -34,6 +34,7 @@
 #include "platform/weborigin/SchemeRegistry.h"
 #include "platform/weborigin/SecurityPolicy.h"
 #include "platform/weborigin/URLSecurityOriginMap.h"
+#include "url/url_canon.h"
 #include "url/url_canon_ip.h"
 #include "wtf/HexNumber.h"
 #include "wtf/NotFound.h"
@@ -103,11 +104,7 @@ static bool shouldTreatAsUniqueOrigin(const KURL& url) {
       (relevantURL.protocolIsInHTTPFamily() || relevantURL.protocolIs("ftp")) &&
       relevantURL.host().isEmpty()));
 
-  // SchemeRegistry needs a lower case protocol because it uses HashMaps
-  // that assume the scheme has already been canonicalized.
-  String protocol = relevantURL.protocol().lower();
-
-  if (SchemeRegistry::shouldTreatURLSchemeAsNoAccess(protocol))
+  if (SchemeRegistry::shouldTreatURLSchemeAsNoAccess(relevantURL.protocol()))
     return true;
 
   // This is the common case.
@@ -115,9 +112,8 @@ static bool shouldTreatAsUniqueOrigin(const KURL& url) {
 }
 
 SecurityOrigin::SecurityOrigin(const KURL& url)
-    : m_protocol(url.protocol().isNull() ? emptyString()
-                                         : url.protocol().lower()),
-      m_host(url.host().isNull() ? emptyString() : url.host().lower()),
+    : m_protocol(url.protocol()),
+      m_host(url.host()),
       m_port(url.port()),
       m_effectivePort(url.port() ? url.port()
                                  : defaultPortForProtocol(m_protocol)),
@@ -126,6 +122,11 @@ SecurityOrigin::SecurityOrigin(const KURL& url)
       m_domainWasSetInDOM(false),
       m_blockLocalAccessFromLocalOrigin(false),
       m_isUniqueOriginPotentiallyTrustworthy(false) {
+  if (m_protocol.isNull())
+    m_protocol = emptyString();
+  if (m_host.isNull())
+    m_host = emptyString();
+
   // Suborigins are serialized into the host, so extract it if necessary.
   String suboriginName;
   if (deserializeSuboriginAndProtocolAndHost(m_protocol, m_host, suboriginName,
@@ -324,8 +325,7 @@ bool SecurityOrigin::canDisplay(const KURL& url) const {
   if (m_universalAccess)
     return true;
 
-  String protocol = url.protocol().lower();
-
+  String protocol = url.protocol();
   if (SchemeRegistry::canDisplayOnlyIfCanRequest(protocol))
     return canRequest(url);
 
@@ -600,6 +600,21 @@ void SecurityOrigin::setUniqueOriginIsPotentiallyTrustworthy(
     bool isUniqueOriginPotentiallyTrustworthy) {
   ASSERT(!isUniqueOriginPotentiallyTrustworthy || isUnique());
   m_isUniqueOriginPotentiallyTrustworthy = isUniqueOriginPotentiallyTrustworthy;
+}
+
+String SecurityOrigin::canonicalizeHost(const String& host, bool* success) {
+  url::Component outHost;
+  url::RawCanonOutputT<char> canonOutput;
+  if (host.is8Bit()) {
+    StringUTF8Adaptor utf8(host);
+    *success = url::CanonicalizeHost(
+        utf8.data(), url::Component(0, utf8.length()), &canonOutput, &outHost);
+  } else {
+    *success = url::CanonicalizeHost(host.characters16(),
+                                     url::Component(0, host.length()),
+                                     &canonOutput, &outHost);
+  }
+  return String::fromUTF8(canonOutput.data(), canonOutput.length());
 }
 
 }  // namespace blink

@@ -31,5 +31,22 @@
                           });
             assert_equals(document.domain, '127.0.0.1');
         }, 'Setting an invalid `document.domain` that looks like an IP address fails.');
+
+        test(function () {
+            assert_equals(document.domain, '127.0.0.1');
+            assert_throws('SecurityError',
+                          function () {
+                            document.domain = '[]';
+                          });
+            assert_throws('SecurityError',
+                          function () {
+                            document.domain = 'example.test/path';
+                          });
+            assert_throws('SecurityError',
+                          function () {
+                            document.domain = '%.com';
+                          });
+            assert_equals(document.domain, '127.0.0.1');
+        }, 'Setting `document.domain` to a host that fails to parse fails.');
     </script>
 </head>

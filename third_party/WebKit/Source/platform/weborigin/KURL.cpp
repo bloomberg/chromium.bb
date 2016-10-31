@@ -724,6 +724,7 @@ void KURL::init(const KURL& base,
     init(base, relative.characters16(), relative.length(), queryEncoding);
   initProtocolIsInHTTPFamily();
   initInnerURL();
+  DCHECK_EQ(protocol(), protocol().lower());
 }
 
 template <typename CHAR>

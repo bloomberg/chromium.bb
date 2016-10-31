@@ -155,6 +155,7 @@ TEST(BlinkPlatformTest, WebSecurityOriginNormalization) {
                {"filesystem:https://example.com/temporary/yay.png"},
                {"data"},
                {"blob:"},
+               {"chrome://,/"},
                {"xkcd://927"},
                {"filesystem"},
                {"data://example.com:80"},

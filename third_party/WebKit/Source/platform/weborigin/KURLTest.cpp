@@ -700,6 +700,10 @@ TEST(KURLTest, ProtocolIs) {
   KURL invalidUTF8(ParsedURLString, "http://a@9%aa%:");
   EXPECT_FALSE(invalidUTF8.protocolIs("http"));
   EXPECT_TRUE(invalidUTF8.protocolIs(""));
+
+  KURL capital(KURL(), "HTTP://www.example.text");
+  EXPECT_TRUE(capital.protocolIs("http"));
+  EXPECT_EQ(capital.protocol(), "http");
 }
 
 TEST(KURLTest, strippedForUseAsReferrer) {

@@ -502,4 +502,30 @@ TEST_F(SecurityOriginTest, UniqueOriginIsSameSchemeHostPort) {
   EXPECT_FALSE(uniqueOrigin->isSameSchemeHostPort(tupleOrigin.get()));
 }
 
+TEST_F(SecurityOriginTest, CanonicalizeHost) {
+  struct TestCase {
+    const char* host;
+    const char* canonicalOutput;
+    bool expectedSuccess;
+  } cases[] = {
+      {"", "", true},
+      {"example.test", "example.test", true},
+      {"EXAMPLE.TEST", "example.test", true},
+      {"eXaMpLe.TeSt/path", "example.test%2Fpath", false},
+      {",", "%2C", true},
+      {"💩", "xn--ls8h", true},
+      {"[]", "[]", false},
+      {"%yo", "%25yo", false},
+  };
+
+  for (const TestCase& test : cases) {
+    SCOPED_TRACE(testing::Message() << "raw host: '" << test.host << "'");
+    String host = String::fromUTF8(test.host);
+    bool success = false;
+    String canonicalHost = SecurityOrigin::canonicalizeHost(host, &success);
+    EXPECT_EQ(test.canonicalOutput, canonicalHost);
+    EXPECT_EQ(test.expectedSuccess, success);
+  }
+}
+
 }  // namespace blink

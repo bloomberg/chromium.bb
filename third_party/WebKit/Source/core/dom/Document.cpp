@@ -4423,7 +4423,7 @@ String Document::domain() const {
   return getSecurityOrigin()->domain();
 }
 
-void Document::setDomain(const String& newDomain,
+void Document::setDomain(const String& rawDomain,
                          ExceptionState& exceptionState) {
   UseCounter::count(*this, UseCounter::DocumentSetDomain);
 
@@ -4438,6 +4438,14 @@ void Document::setDomain(const String& newDomain,
     exceptionState.throwSecurityError("Assignment is forbidden for the '" +
                                       getSecurityOrigin()->protocol() +
                                       "' scheme.");
+    return;
+  }
+
+  bool success = false;
+  String newDomain = SecurityOrigin::canonicalizeHost(rawDomain, &success);
+  if (!success) {
+    exceptionState.throwSecurityError("'" + rawDomain +
+                                      "' could not be parsed properly.");
     return;
   }
 

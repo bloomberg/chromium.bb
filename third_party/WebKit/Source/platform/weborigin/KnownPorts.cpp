@@ -69,7 +69,9 @@ bool isPortAllowedForScheme(const KURL& url) {
   // through non-network schemes that don't go over the network.
   if (!url.hasPort())
     return true;
-  String protocol = url.protocol().isNull() ? "" : url.protocol().lower();
+  String protocol = url.protocol();
+  if (protocol.isNull())
+    protocol = emptyString();
   unsigned short effectivePort = url.port();
   if (!effectivePort)
     effectivePort = defaultPortForProtocol(protocol);

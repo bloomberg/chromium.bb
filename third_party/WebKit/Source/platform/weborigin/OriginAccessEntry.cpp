@@ -78,8 +78,8 @@ bool IsSubdomainOfHost(const String& subdomain, const String& host) {
 OriginAccessEntry::OriginAccessEntry(const String& protocol,
                                      const String& host,
                                      SubdomainSetting subdomainSetting)
-    : m_protocol(protocol.lower()),
-      m_host(host.lower()),
+    : m_protocol(protocol),
+      m_host(host),
       m_subdomainSettings(subdomainSetting),
       m_hostIsPublicSuffix(false) {
   ASSERT(subdomainSetting >= AllowSubdomains ||
@@ -112,8 +112,6 @@ OriginAccessEntry::OriginAccessEntry(const String& protocol,
 
 OriginAccessEntry::MatchResult OriginAccessEntry::matchesOrigin(
     const SecurityOrigin& origin) const {
-  ASSERT(origin.protocol() == origin.protocol().lower());
-
   if (m_protocol != origin.protocol())
     return DoesNotMatchOrigin;
 
@@ -122,7 +120,6 @@ OriginAccessEntry::MatchResult OriginAccessEntry::matchesOrigin(
 
 OriginAccessEntry::MatchResult OriginAccessEntry::matchesDomain(
     const SecurityOrigin& origin) const {
-  ASSERT(origin.host() == origin.host().lower());
   // Special case: Include subdomains and empty host means "all hosts, including
   // ip addresses".
   if (m_subdomainSettings != DisallowSubdomains && m_host.isEmpty())

@@ -269,6 +269,10 @@ class PLATFORM_EXPORT SecurityOrigin : public RefCounted<SecurityOrigin> {
   void setUniqueOriginIsPotentiallyTrustworthy(
       bool isUniqueOriginPotentiallyTrustworthy);
 
+  // Only used for document.domain setting. The method should probably be moved
+  // if we need it for something more general.
+  static String canonicalizeHost(const String& host, bool* success);
+
  private:
   friend class SecurityOriginTest;
   FRIEND_TEST_ALL_PREFIXES(SecurityOriginTest, Suborigins);
