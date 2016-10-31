@@ -6,6 +6,7 @@
 
 #include "core/HTMLNames.h"
 #include "core/dom/ElementTraversal.h"
+#include "core/dom/Node.h"
 #include "core/dom/NodeTraversal.h"
 #include "core/dom/shadow/ElementShadow.h"
 #include "core/dom/shadow/InsertionPoint.h"
@@ -35,7 +36,7 @@ void SlotAssignment::slotAdded(HTMLSlotElement& slot) {
     return;
   // |oldActive| is no longer an active slot.
   if (oldActive.findHostChildWithSameSlotName())
-    oldActive.enqueueSlotChangeEvent();
+    oldActive.didSlotChange(SlotChangeType::Initial);
   // TODO(hayato): We should not enqeueue a slotchange event for |oldActive|
   // if |oldActive| was inserted together with |slot|.
   // This could happen if |oldActive| and |slot| are descendants of the inserted
@@ -54,7 +55,7 @@ void SlotAssignment::slotRemoved(HTMLSlotElement& slot) {
   if (newActive && newActive != oldActive) {
     // |newActive| slot becomes an active slot.
     if (newActive->findHostChildWithSameSlotName())
-      newActive->enqueueSlotChangeEvent();
+      newActive->didSlotChange(SlotChangeType::Initial);
     // TODO(hayato): Prevent a false-positive slotchange.
     // This could happen if more than one slots which have the same name are
     // descendants of the removed node.
@@ -86,19 +87,19 @@ void SlotAssignment::slotRenamed(const AtomicString& oldSlotName,
   bool hasAssignedNodesAfter = slot.hasAssignedNodesSlow();
 
   if (hasAssignedNodesBefore || hasAssignedNodesAfter)
-    slot.enqueueSlotChangeEvent();
+    slot.didSlotChange(SlotChangeType::Initial);
 }
 
 void SlotAssignment::hostChildSlotNameChanged(const AtomicString& oldValue,
                                               const AtomicString& newValue) {
   if (HTMLSlotElement* slot =
           findSlotByName(HTMLSlotElement::normalizeSlotName(oldValue))) {
-    slot->enqueueSlotChangeEvent();
+    slot->didSlotChange(SlotChangeType::Initial);
     m_owner->owner()->setNeedsDistributionRecalc();
   }
   if (HTMLSlotElement* slot =
           findSlotByName(HTMLSlotElement::normalizeSlotName(newValue))) {
-    slot->enqueueSlotChangeEvent();
+    slot->didSlotChange(SlotChangeType::Initial);
     m_owner->owner()->setNeedsDistributionRecalc();
   }
 }

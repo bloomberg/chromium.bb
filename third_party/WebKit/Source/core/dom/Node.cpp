@@ -2363,7 +2363,7 @@ void Node::setV0CustomElementState(V0CustomElementState newState) {
     toElement(this)->pseudoStateChanged(CSSSelector::PseudoUnresolved);
 }
 
-void Node::checkSlotChange() {
+void Node::checkSlotChange(SlotChangeType slotChangeType) {
   // Common check logic is used in both cases, "after inserted" and "before
   // removed".
   if (!isSlotable())
@@ -2380,7 +2380,7 @@ void Node::checkSlotChange() {
     // Although DOM Standard requires "assign a slot for node / run assign
     // slotables" at this timing, we skip it as an optimization.
     if (HTMLSlotElement* slot = root->ensureSlotAssignment().findSlot(*this))
-      slot->enqueueSlotChangeEvent();
+      slot->didSlotChange(slotChangeType);
   } else {
     // Relevant DOM Standard:
     // https://dom.spec.whatwg.org/#concept-node-insert
@@ -2395,7 +2395,7 @@ void Node::checkSlotChange() {
       // TODO(hayato): Support slotchange for slots in non-shadow trees.
       if (ShadowRoot* root = containingShadowRoot()) {
         if (root && root->isV1() && !parentSlot.hasAssignedNodesSlow())
-          parentSlot.enqueueSlotChangeEvent();
+          parentSlot.didSlotChange(slotChangeType);
       }
     }
   }

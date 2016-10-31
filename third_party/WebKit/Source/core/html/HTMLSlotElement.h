@@ -91,12 +91,11 @@ class CORE_EXPORT HTMLSlotElement final : public HTMLElement {
   bool hasAssignedNodesSlow() const;
   bool findHostChildWithSameSlotName() const;
 
-  void enqueueSlotChangeEvent();
-
   void clearDistribution();
   void saveAndClearDistribution();
 
   bool supportsDistribution() const { return isInV1ShadowTree(); }
+  void didSlotChange(SlotChangeType);
 
   static AtomicString normalizeSlotName(const AtomicString&);
 
@@ -109,6 +108,7 @@ class CORE_EXPORT HTMLSlotElement final : public HTMLElement {
   void removedFrom(ContainerNode*) final;
   void willRecalcStyle(StyleRecalcChange) final;
 
+  void enqueueSlotChangeEvent();
   void dispatchSlotChangeEvent();
 
   HeapVector<Member<Node>> m_assignedNodes;

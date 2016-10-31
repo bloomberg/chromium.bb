@@ -17,8 +17,6 @@ function doneIfSlotChange(slots, test) {
   let fired = new Set();
   for (let slot of slots) {
     slot.addEventListener('slotchange', test.step_func((e) => {
-      if (e.target != slot)
-        return;
       assert_false(fired.has(slot.id));
       fired.add(slot.id);
       if (fired.size == slots.length) {

@@ -315,13 +315,9 @@ void HTMLSlotElement::lazyReattachDistributedNodesIfNeeded() {
   m_oldDistributedNodes.clear();
 }
 
-void HTMLSlotElement::enqueueSlotChangeEvent() {
-  if (!m_slotchangeEventEnqueued) {
-    Microtask::enqueueMicrotask(WTF::bind(
-        &HTMLSlotElement::dispatchSlotChangeEvent, wrapPersistent(this)));
-    m_slotchangeEventEnqueued = true;
-  }
-
+void HTMLSlotElement::didSlotChange(SlotChangeType slotChangeType) {
+  if (slotChangeType == SlotChangeType::Initial)
+    enqueueSlotChangeEvent();
   ShadowRoot* root = containingShadowRoot();
   // TODO(hayato): Relax this check if slots in non-shadow trees are well
   // supported.
@@ -330,7 +326,15 @@ void HTMLSlotElement::enqueueSlotChangeEvent() {
   root->owner()->setNeedsDistributionRecalc();
   // Check slotchange recursively since this slotchange may cause another
   // slotchange.
-  checkSlotChange();
+  checkSlotChange(SlotChangeType::Chained);
+}
+
+void HTMLSlotElement::enqueueSlotChangeEvent() {
+  if (m_slotchangeEventEnqueued)
+    return;
+  Microtask::enqueueMicrotask(WTF::bind(
+      &HTMLSlotElement::dispatchSlotChangeEvent, wrapPersistent(this)));
+  m_slotchangeEventEnqueued = true;
 }
 
 bool HTMLSlotElement::hasAssignedNodesSlow() const {

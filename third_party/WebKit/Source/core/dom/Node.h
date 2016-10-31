@@ -113,6 +113,11 @@ enum class CustomElementState {
   NotDefinedFlag = 2 << nodeCustomElementShift,
 };
 
+enum class SlotChangeType {
+  Initial,
+  Chained,
+};
+
 class NodeRareDataBase {
  public:
   LayoutObject* layoutObject() const { return m_layoutObject; }
@@ -784,9 +789,13 @@ class CORE_EXPORT Node : public EventTarget {
     return getFlag(IsFinishedParsingChildrenFlag);
   }
 
-  void checkSlotChange();
-  void checkSlotChangeAfterInserted() { checkSlotChange(); }
-  void checkSlotChangeBeforeRemoved() { checkSlotChange(); }
+  void checkSlotChange(SlotChangeType);
+  void checkSlotChangeAfterInserted() {
+    checkSlotChange(SlotChangeType::Initial);
+  }
+  void checkSlotChangeBeforeRemoved() {
+    checkSlotChange(SlotChangeType::Initial);
+  }
 
   DECLARE_VIRTUAL_TRACE();
 
