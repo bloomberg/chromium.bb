@@ -88,7 +88,7 @@ void WmShell::Initialize(const scoped_refptr<base::SequencedWorkerPool>& pool) {
   wallpaper_controller_.reset(new WallpaperController(blocking_pool_));
 
   // Start devtools server
-  devtools_server_ = ui::devtools::UiDevToolsServer::Create();
+  devtools_server_ = ui::devtools::UiDevToolsServer::Create(nullptr);
   if (devtools_server_) {
     auto dom_backend = base::MakeUnique<devtools::AshDevToolsDOMAgent>(this);
     auto devtools_client = base::MakeUnique<ui::devtools::UiDevToolsClient>(

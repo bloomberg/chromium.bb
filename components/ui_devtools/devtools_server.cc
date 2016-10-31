@@ -27,13 +27,24 @@ const char kChromeDeveloperToolsPrefix[] =
     "chrome-devtools://devtools/bundled/inspector.html?ws=";
 }  // namespace
 
-UiDevToolsServer::UiDevToolsServer()
-    : thread_(new base::Thread("UiDevToolsServerThread")) {}
+UiDevToolsServer::UiDevToolsServer(
+    scoped_refptr<base::SingleThreadTaskRunner> task_runner)
+    : task_runner_(task_runner) {
+  if (task_runner_)
+    return;
+  // If task_runner not passed in, create an I/O thread the server can run on
+  thread_.reset(new base::Thread("UiDevToolsServerThread"));
+  base::Thread::Options options;
+  options.message_loop_type = base::MessageLoop::TYPE_IO;
+  CHECK(thread_->StartWithOptions(options));
+  task_runner_ = thread_->task_runner();
+}
 
 UiDevToolsServer::~UiDevToolsServer() {}
 
 // static
-std::unique_ptr<UiDevToolsServer> UiDevToolsServer::Create() {
+std::unique_ptr<UiDevToolsServer> UiDevToolsServer::Create(
+    scoped_refptr<base::SingleThreadTaskRunner> task_runner) {
   std::unique_ptr<UiDevToolsServer> server;
   if (base::CommandLine::ForCurrentProcess()->HasSwitch(kEnableUiDevTools)) {
     // TODO(mhashmi): Change port if more than one inspectable clients
@@ -42,7 +53,7 @@ std::unique_ptr<UiDevToolsServer> UiDevToolsServer::Create() {
         base::CommandLine::ForCurrentProcess()->GetSwitchValueASCII(
             kEnableUiDevTools),
         &port);
-    server.reset(new UiDevToolsServer());
+    server.reset(new UiDevToolsServer(task_runner));
     server->Start("127.0.0.1", port);
   }
   return server;
@@ -54,28 +65,21 @@ void UiDevToolsServer::AttachClient(std::unique_ptr<UiDevToolsClient> client) {
 
 void UiDevToolsServer::SendOverWebSocket(int connection_id,
                                          const String& message) {
-  thread_->task_runner()->PostTask(
+  task_runner_->PostTask(
       FROM_HERE,
       base::Bind(&net::HttpServer::SendOverWebSocket,
                  base::Unretained(server_.get()), connection_id, message));
 }
 
 void UiDevToolsServer::Start(const std::string& address_string, uint16_t port) {
-  if (thread_ && thread_->IsRunning())
-    return;
-
-  // Start IO thread upon which all the methods will run
-  base::Thread::Options options;
-  options.message_loop_type = base::MessageLoop::TYPE_IO;
-  if (thread_->StartWithOptions(options)) {
-    thread_->task_runner()->PostTask(
-        FROM_HERE, base::Bind(&UiDevToolsServer::StartServer,
-                              base::Unretained(this), address_string, port));
-  }
+  task_runner_->PostTask(
+      FROM_HERE, base::Bind(&UiDevToolsServer::StartServer,
+                            base::Unretained(this), address_string, port));
 }
 
 void UiDevToolsServer::StartServer(const std::string& address_string,
                                    uint16_t port) {
+  DCHECK(!server_);
   std::unique_ptr<net::ServerSocket> socket(
       new net::TCPServerSocket(nullptr, net::NetLogSource()));
   constexpr int kBacklog = 1;
@@ -109,11 +113,15 @@ void UiDevToolsServer::OnHttpRequest(int connection_id,
           ip.ToString().c_str(), i);
     }
     clientHTML += "</html>";
-    thread_->task_runner()->PostTask(
+    task_runner_->PostTask(
         FROM_HERE,
         base::Bind(&net::HttpServer::Send200, base::Unretained(server_.get()),
                    connection_id, clientHTML, "text/html"));
+    return;
   }
+  task_runner_->PostTask(
+      FROM_HERE, base::Bind(&net::HttpServer::Send404,
+                            base::Unretained(server_.get()), connection_id));
 }
 
 void UiDevToolsServer::OnWebSocketRequest(
@@ -131,7 +139,7 @@ void UiDevToolsServer::OnWebSocketRequest(
     return;
   client->set_connection_id(connection_id);
   connections_[connection_id] = client;
-  thread_->task_runner()->PostTask(
+  task_runner_->PostTask(
       FROM_HERE,
       base::Bind(&net::HttpServer::AcceptWebSocket,
                  base::Unretained(server_.get()), connection_id, info));
@@ -143,14 +151,14 @@ void UiDevToolsServer::OnWebSocketMessage(int connection_id,
   DCHECK(it != connections_.end());
   UiDevToolsClient* client = it->second;
   DCHECK(client);
-  thread_->task_runner()->PostTask(
-      FROM_HERE,
-      base::Bind(&UiDevToolsClient::Dispatch, base::Unretained(client), data));
+  task_runner_->PostTask(FROM_HERE, base::Bind(&UiDevToolsClient::Dispatch,
+                                               base::Unretained(client), data));
 }
 
 void UiDevToolsServer::OnClose(int connection_id) {
   ConnectionsMap::iterator it = connections_.find(connection_id);
-  DCHECK(it != connections_.end());
+  if (it == connections_.end())
+    return;
   UiDevToolsClient* client = it->second;
   DCHECK(client);
   client->set_connection_id(UiDevToolsClient::kNotConnected);

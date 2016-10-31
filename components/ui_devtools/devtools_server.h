@@ -20,16 +20,19 @@ namespace devtools {
 
 class UiDevToolsServer : public net::HttpServer::Delegate {
  public:
-  UiDevToolsServer();
   ~UiDevToolsServer() override;
 
   // Returns an empty unique_ptr if ui devtools flag isn't enabled.
-  static std::unique_ptr<UiDevToolsServer> Create();
+  static std::unique_ptr<UiDevToolsServer> Create(
+      scoped_refptr<base::SingleThreadTaskRunner> task_runner);
 
   void AttachClient(std::unique_ptr<UiDevToolsClient> client);
   void SendOverWebSocket(int connection_id, const String& message);
 
  private:
+  explicit UiDevToolsServer(
+      scoped_refptr<base::SingleThreadTaskRunner> task_runner);
+
   void Start(const std::string& address_string, uint16_t port);
   void StartServer(const std::string& address_string, uint16_t port);
 
@@ -47,10 +50,9 @@ class UiDevToolsServer : public net::HttpServer::Delegate {
   ClientsList clients_;
   ConnectionsMap connections_;
 
-  // TODO(mhashmi): Inject IO thread task runner instead of creating/owning
-  // thread
   std::unique_ptr<base::Thread> thread_;
   std::unique_ptr<net::HttpServer> server_;
+  scoped_refptr<base::SingleThreadTaskRunner> task_runner_;
 
   DISALLOW_COPY_AND_ASSIGN(UiDevToolsServer);
 };
