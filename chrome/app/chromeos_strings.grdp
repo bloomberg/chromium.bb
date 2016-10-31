@@ -6486,4 +6486,30 @@ All users must sign out to continue.
   <message name="IDS_HATS_DONE_BUTTON_LABEL" desc="Label used for the done button at the end of survey">
     Done
   </message>
+  
+  <!-- Print Job Notification -->
+  <message name="IDS_PRINT_JOB_WAITING_NOTIFICATION_MESSAGE" desc="Message of the waiting-for-printing notification.">
+    Waiting to print <ph name="PAGE_NUMBER">$1<ex>5</ex></ph> pages to <ph name="PRINTER_NAME">$2<ex>printer</ex></ph>
+  </message>
+  <message name="IDS_PRINT_JOB_PRINTING_NOTIFICATION_MESSAGE" desc="Message of the printing-in-progress notification.">
+    Now printing <ph name="PAGE_NUMBER">$1<ex>5</ex></ph> pages to <ph name="PRINTER_NAME">$2<ex>printer</ex></ph>
+  </message>
+  <message name="IDS_PRINT_JOB_DONE_NOTIFICATION_MESSAGE" desc="Message of the successful printing notitification.">
+    Successfully printed <ph name="PAGE_NUMBER">$1<ex>5</ex></ph> pages to <ph name="PRINTER_NAME">$2<ex>printer</ex></ph>
+  </message>
+  <message name="IDS_PRINT_JOB_ERROR_NOTIFICATION_MESSAGE" desc="Message of the error printing notification.">
+    Error printing <ph name="PAGE_NUMBER">$1<ex>5</ex></ph> pages to <ph name="PRINTER_NAME">$2<ex>printer</ex></ph> 
+  </message>
+  <message name="IDS_PRINT_JOB_NOTIFICATION_CANCEL_BUTTON" desc="Text on the button for the user to cancel the current print job.">
+    Cancel printing
+  </message>
+  <message name="IDS_PRINT_JOB_NOTIFICATION_PAUSE_BUTTON" desc="Text on the button for the user to pause the current print job.">
+    Pause printing
+  </message>
+  <message name="IDS_PRINT_JOB_NOTIFICATION_RESUME_BUTTON" desc="Text on the button for the user to resume the current print job.">
+    Resume printing
+  </message>
+  <message name="IDS_PRINT_JOB_NOTIFICATION_GET_HELP_BUTTON" desc="Text on the button for the user to get help about the current print job.">
+    Get help
+  </message>
 </grit-part>

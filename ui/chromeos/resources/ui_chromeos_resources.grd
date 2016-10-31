@@ -54,6 +54,16 @@
       <structure type="chrome_scaled_image" name="IDR_LOGIN_DEFAULT_USER_31" file="default_user_images/avatar_recordplayer.png" />
       <structure type="chrome_scaled_image" name="IDR_LOGIN_DEFAULT_USER_32" file="default_user_images/avatar_upsidedown.png" />
       <structure type="chrome_scaled_image" name="IDR_LOGIN_DEFAULT_USER_33" file="default_user_images/avatar_cat.png" />
+      
+      <!-- Print Job Notification images. -->
+      <structure type="chrome_scaled_image" name="IDR_PRINT_NOTIFICATION_CANCEL" file="print_notification/cancel.png" />
+      <structure type="chrome_scaled_image" name="IDR_PRINT_NOTIFICATION_PAUSE" file="print_notification/pause.png" />
+      <structure type="chrome_scaled_image" name="IDR_PRINT_NOTIFICATION_PLAY" file="print_notification/play.png" />
+      <structure type="chrome_scaled_image" name="IDR_PRINT_NOTIFICATION_HELP" file="print_notification/help.png" />
+      <structure type="chrome_scaled_image" name="IDR_PRINT_NOTIFICATION_WAITING" file="print_notification/print_job_waiting.png" />
+      <structure type="chrome_scaled_image" name="IDR_PRINT_NOTIFICATION_PRINTING" file="print_notification/print_job_printing.png" />
+      <structure type="chrome_scaled_image" name="IDR_PRINT_NOTIFICATION_DONE" file="print_notification/print_job_done.png" />
+      <structure type="chrome_scaled_image" name="IDR_PRINT_NOTIFICATION_ERROR" file="print_notification/print_job_error.png" />
     </structures>
   </release>
 </grit>
