@@ -77,10 +77,9 @@ class ShelfTooltipManager::ShelfTooltipBubble
         theme->GetSystemColor(ui::NativeTheme::kColorId_TooltipBackground);
     set_color(background_color);
     label->SetBackgroundColor(background_color);
+    // The background is not opaque, so we can't do subpixel rendering.
+    label->SetSubpixelRenderingEnabled(false);
     AddChildView(label);
-    // The bubble border has its own background so the background created by the
-    // BubbleDialogDelegateView is redundant and would cause extra opacity.
-    set_background(nullptr);
 
     gfx::Insets insets(kArrowTopBottomOffset, kArrowLeftRightOffset);
     // Adjust the anchor location for asymmetrical borders of shelf item.

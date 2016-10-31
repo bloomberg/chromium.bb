@@ -295,11 +295,6 @@ void BubbleDialogDelegateView::UpdateColorsFromTheme(
     const ui::NativeTheme* theme) {
   if (!color_explicitly_set_)
     color_ = theme->GetSystemColor(ui::NativeTheme::kColorId_BubbleBackground);
-  // The background color is handled by the BubbleFrameView, so it shouldn't be
-  // necessary to set the color on |this|. I am cowardly leaving it in place for
-  // pre-MD bubbles in case this is necessary for some reason.
-  if (!ui::MaterialDesignController::IsSecondaryUiMaterial())
-    set_background(Background::CreateSolidBackground(color()));
   BubbleFrameView* frame_view = GetBubbleFrameView();
   if (frame_view)
     frame_view->bubble_border()->set_background_color(color());
