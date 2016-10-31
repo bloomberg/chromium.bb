@@ -61,12 +61,13 @@ IN_PROC_BROWSER_TEST_F(AudibleContentsTrackerTest, TestAudioNotifications) {
   MockAudibleContentsObserver* audio_observer = observer();
   EXPECT_FALSE(audio_observer->is_audio_playing());
 
-  // For serving audio.
-  ASSERT_TRUE(embedded_test_server()->Start());
+  // Add a request handler for serving audio.
   base::FilePath test_data_dir;
   ASSERT_TRUE(PathService::Get(base::DIR_SOURCE_ROOT, &test_data_dir));
   embedded_test_server()->ServeFilesFromDirectory(
       test_data_dir.AppendASCII("chrome/test/data/"));
+  // Start the test server after adding the request handler for thread safety.
+  ASSERT_TRUE(embedded_test_server()->Start());
   ui_test_utils::NavigateToURL(
       browser(), embedded_test_server()->GetURL("/autoplay_audio.html"));
 
