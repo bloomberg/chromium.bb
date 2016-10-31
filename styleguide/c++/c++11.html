@@ -527,21 +527,11 @@ codebase.
 </tr>
 
 <tr>
-<td>Alignment Features</td>
-<td><code>alignas</code> specifier, <code>alignof</code> operator</td>
-<td>Object alignment</td>
-<td><a href="http://en.cppreference.com/w/cpp/language/alignas">alignas specifier</a>, <a href="http://en.cppreference.com/w/cpp/language/alignof">alignof operator</a></td>
-<td>Reevaluate now that MSVS2015 is available. <a href="https://groups.google.com/a/chromium.org/d/msg/cxx/rwXN02jzzq0/CpUc1ZzMBQAJ">Discussion thread</a></td>
-</tr>
-
-<tr>
-<td>Inherited Constructors</td>
-<td><code>class Derived : Base {<br />
-&nbsp;&nbsp;using Base::Base;<br />
-};</code></td>
-<td>Allow derived classes to inherit constructors from base classes</td>
-<td><a href="http://en.cppreference.com/w/cpp/language/using_declaration">Using-declaration</a></td>
-<td>Reevaluate now that MSVS2015 is available. <a href="https://groups.google.com/a/chromium.org/d/msg/chromium-dev/BULzgIKZ-Ao/PLO7_GoVNvYJ">Discussion thread</a></td>
+<td>Inline Namespaces</td>
+<td><code>inline namespace foo { ... }</code></td>
+<td>Allows better versioning of namespaces</td>
+<td><a href="http://en.cppreference.com/w/cpp/language/namespace#Inline_namespaces">Inline namespaces</a></td>
+<td>Banned in the <a href="https://google.github.io/styleguide/cppguide.html#Namespaces">Google Style Guide</a>. Unclear how it will work with components.</td>
 </tr>
 
 <tr>
@@ -550,30 +540,6 @@ codebase.
 <td>An integer of at least 64 bits</td>
 <td><a href="http://en.cppreference.com/w/cpp/language/types">Fundamental types</a></td>
 <td>Use a stdint.h type if you need a 64bit number. <a href="https://groups.google.com/a/chromium.org/forum/#!topic/chromium-dev/RxugZ-pIDxk">Discussion thread</a></td>
-</tr>
-
-<tr>
-<td>Raw String Literals</td>
-<td><code>string <i>var</i>=R&quot;(<i>raw_string</i>)&quot;;</code></td>
-<td>Allows a string to be encoded without any escape sequences, easing parsing in regex expressions, for example</td>
-<td><a href="http://en.cppreference.com/w/cpp/language/string_literal">string literal</a></td>
-<td>Causes incorrect line numbers in MSVS2013 and gcc. Reevaluate once that works. <a href="https://groups.google.com/a/chromium.org/forum/#!topic/chromium-dev/2kWQHbbuMHI">Discussion thread</a></td>
-</tr>
-
-<tr>
-<td>UTF-16 and UTF-32 Support (16-Bit and 32-Bit Character Types)</td>
-<td><code>char16_t</code> and <code>char32_t</code></td>
-<td>Provides character types for handling 16-bit and 32-bit code units (useful for encoding UTF-16 and UTF-32 string data)</td>
-<td><a href="http://en.cppreference.com/w/cpp/language/types">Fundamental types</a></td>
-<td>Reevaluate now that MSVS2015 is available. Non-UTF-8 text is banned by the <a href="https://google.github.io/styleguide/cppguide.html#Non-ASCII_Characters">Google Style Guide</a>. However, may be useful for consuming non-ASCII data. <a href="https://groups.google.com/a/chromium.org/forum/#!topic/chromium-dev/ME2kL7_Kvyk">Discussion thread</a></td>
-</tr>
-
-<tr>
-<td>UTF-8, UTF-16, UTF-32 String Literals</td>
-<td><code>u8&quot;<i>string</i>&quot;, u&quot;<i>string</i>&quot;, U&quot;<i>string</i>&quot;</code></td>
-<td>Enforces UTF-8, UTF-16, UTF-32 encoding on all string literals</td>
-<td><a href="http://en.cppreference.com/w/cpp/language/string_literal">string literal</a></td>
-<td>Reevaluate now that MSVS2015 is available. <a href="https://groups.google.com/a/chromium.org/forum/#!topic/chromium-dev/gcoUbcjfsII">Discussion thread</a></td>
 </tr>
 
 <tr>
@@ -588,6 +554,14 @@ std::move(t).f();&nbsp;&nbsp;// second</code></td>
 <td>Allows class member functions to only bind to |this| as an rvalue or lvalue.</td>
 <td><a href="http://en.cppreference.com/w/cpp/language/member_functions#const-.2C_volatile-.2C_and_ref-qualified_member_functions">const-, volatile-, and ref-qualified member functions</a></td>
 <td>Banned in the <a href="https://google.github.io/styleguide/cppguide.html#C++11">Google Style Guide</a>. May only be used in Chromium with explicit approval from <code>styleguide/c++/OWNERS</code>. <a href="https://groups.google.com/a/chromium.org/d/topic/cxx/gowclr2LPQA/discussion">Discussion Thread</a></td>
+</tr>
+
+<tr>
+<td>User-Defined Literals</td>
+<td><code><i>type</i> <i>var</i> = <i>literal_value</i>_<i>type</i></code></td>
+<td>Allows user-defined literal expressions</td>
+<td><a href="http://en.cppreference.com/w/cpp/language/user_literal">User-defined literals</a></td>
+<td>Banned in the <a href="https://google.github.io/styleguide/cppguide.html#Operator_Overloading">Google Style Guide</a>.</td>
 </tr>
 
 </tbody>
@@ -606,6 +580,14 @@ std::move(t).f();&nbsp;&nbsp;// second</code></td>
 <th style='width:240px;'>Description</th>
 <th style='width:240px;'>Documentation Link</th>
 <th style='width:240px;'>Notes</th>
+</tr>
+
+<tr>
+<td>Atomics</td>
+<td><code>&lt;atomic&gt;</code></td>
+<td>Fine-grained atomic types and operations</td>
+<td><a href="http://en.cppreference.com/w/cpp/atomic">Atomic operations library</a></td>
+<td>Use in tcmalloc has caused <a href="http://crbug.com/572525">performance regressions</a>. Banned until we understand this better. <a href="https://groups.google.com/a/chromium.org/d/topic/cxx/Ej3RAiaI44s/discussion">Discussion Thread</a></td>
 </tr>
 
 <tr>
@@ -633,28 +615,20 @@ std::move(t).f();&nbsp;&nbsp;// second</code></td>
 </tr>
 
 <tr>
+<td>Shared Pointers</td>
+<td><code>std::shared_ptr</code></td>
+<td>Allows shared ownership of a pointer through reference counts</td>
+<td><a href="http://en.cppreference.com/w/cpp/memory/shared_ptr">std::shared_ptr</a></td>
+<td>Needs a lot more evaluation for Chromium, and there isn't enough of a push for this feature. <a href="https://google.github.io/styleguide/cppguide.html#Ownership_and_Smart_Pointers">Google Style Guide</a>. <a href="https://groups.google.com/a/chromium.org/d/topic/cxx/aT2wsBLKvzI/discussion">Discussion Thread</a>.</td>
+</tr>
+
+<tr>
 <td>Thread Library</td>
 <td><code>&lt;thread&gt;</code> and related headers, including<br />
 <code>&lt;future&gt;</code>, <code>&lt;mutex&gt;</code>, <code>&lt;condition_variable&gt;</code></td>
 <td>Provides a standard multithreading library using <code>std::thread</code> and associates</td>
 <td><a href="http://en.cppreference.com/w/cpp/thread">Thread support library</a></td>
 <td>Overlaps with many classes in <code>base/</code>. Keep using the <code>base/</code> classes for now. <code>base::Thread</code> is tightly coupled to <code>MessageLoop</code> which would make it hard to replace. We should investigate using standard mutexes, or unique_lock, etc. to replace our locking/synchronization classes.</td>
-</tr>
-
-<tr>
-<td>Atomics</td>
-<td><code>&lt;atomic&gt;</code></td>
-<td>Fine-grained atomic types and operations</td>
-<td><a href="http://en.cppreference.com/w/cpp/atomic">Atomic operations library</a></td>
-<td>Use in tcmalloc has caused <a href="http://crbug.com/572525">performance regressions</a>. Banned until we understand this better. <a href="https://groups.google.com/a/chromium.org/d/topic/cxx/Ej3RAiaI44s/discussion">Discussion Thread</a></td>
-</tr>
-
-<tr>
-<td>Shared Pointers</td>
-<td><code>std::shared_ptr</code></td>
-<td>Allows shared ownership of a pointer through reference counts</td>
-<td><a href="http://en.cppreference.com/w/cpp/memory/shared_ptr">std::shared_ptr</a></td>
-<td>Needs a lot more evaluation for Chromium, and there isn't enough of a push for this feature. <a href="https://google.github.io/styleguide/cppguide.html#Ownership_and_Smart_Pointers">Google Style Guide</a>. <a href="https://groups.google.com/a/chromium.org/d/topic/cxx/aT2wsBLKvzI/discussion">Discussion Thread</a>.</td>
 </tr>
 
 </tbody>
@@ -680,6 +654,14 @@ work in all our compilers yet.</p>
 </tr>
 
 <tr>
+<td>Alignment Features</td>
+<td><code>alignas</code> specifier, <code>alignof</code> operator</td>
+<td>Object alignment</td>
+<td><a href="http://en.cppreference.com/w/cpp/language/alignas">alignas specifier</a>, <a href="http://en.cppreference.com/w/cpp/language/alignof">alignof operator</a></td>
+<td>Reevaluate now that MSVS2015 is available. <a href="https://groups.google.com/a/chromium.org/d/msg/cxx/rwXN02jzzq0/CpUc1ZzMBQAJ">Discussion thread</a></td>
+</tr>
+
+<tr>
 <td>Attributes</td>
 <td><code>[[<i>attribute_name</i>]]</code></td>
 <td>Attaches properties to declarations that specific compiler implementations may use.</td>
@@ -688,19 +670,37 @@ work in all our compilers yet.</p>
 </tr>
 
 <tr>
-<td>Inline Namespaces</td>
-<td><code>inline namespace foo { ... }</code></td>
-<td>Allows better versioning of namespaces</td>
-<td><a href="http://en.cppreference.com/w/cpp/language/namespace#Inline_namespaces">Inline namespaces</a></td>
-<td>Banned in the <a href="https://google.github.io/styleguide/cppguide.html#Namespaces">Google Style Guide</a>. Unclear how it will work with components.</td>
+<td>Inherited Constructors</td>
+<td><code>class Derived : Base {<br />
+&nbsp;&nbsp;using Base::Base;<br />
+};</code></td>
+<td>Allow derived classes to inherit constructors from base classes</td>
+<td><a href="http://en.cppreference.com/w/cpp/language/using_declaration">Using-declaration</a></td>
+<td>Reevaluate now that MSVS2015 is available. <a href="https://groups.google.com/a/chromium.org/d/msg/chromium-dev/BULzgIKZ-Ao/PLO7_GoVNvYJ">Discussion thread</a></td>
 </tr>
 
 <tr>
-<td>User-Defined Literals</td>
-<td><code><i>type</i> <i>var</i> = <i>literal_value</i>_<i>type</i></code></td>
-<td>Allows user-defined literal expressions</td>
-<td><a href="http://en.cppreference.com/w/cpp/language/user_literal">User-defined literals</a></td>
-<td>Banned in the <a href="https://google.github.io/styleguide/cppguide.html#Operator_Overloading">Google Style Guide</a>.</td>
+<td>Raw String Literals</td>
+<td><code>string <i>var</i>=R&quot;(<i>raw_string</i>)&quot;;</code></td>
+<td>Allows a string to be encoded without any escape sequences, easing parsing in regex expressions, for example</td>
+<td><a href="http://en.cppreference.com/w/cpp/language/string_literal">string literal</a></td>
+<td>Causes incorrect line numbers in MSVS2013 and gcc. Reevaluate once that works. <a href="https://groups.google.com/a/chromium.org/forum/#!topic/chromium-dev/2kWQHbbuMHI">Discussion thread</a></td>
+</tr>
+
+<tr>
+<td>UTF-8, UTF-16, UTF-32 String Literals</td>
+<td><code>u8&quot;<i>string</i>&quot;, u&quot;<i>string</i>&quot;, U&quot;<i>string</i>&quot;</code></td>
+<td>Enforces UTF-8, UTF-16, UTF-32 encoding on all string literals</td>
+<td><a href="http://en.cppreference.com/w/cpp/language/string_literal">string literal</a></td>
+<td>Reevaluate now that MSVS2015 is available. <a href="https://groups.google.com/a/chromium.org/forum/#!topic/chromium-dev/gcoUbcjfsII">Discussion thread</a></td>
+</tr>
+
+<tr>
+<td>UTF-16 and UTF-32 Support (16-Bit and 32-Bit Character Types)</td>
+<td><code>char16_t</code> and <code>char32_t</code></td>
+<td>Provides character types for handling 16-bit and 32-bit code units (useful for encoding UTF-16 and UTF-32 string data)</td>
+<td><a href="http://en.cppreference.com/w/cpp/language/types">Fundamental types</a></td>
+<td>Reevaluate now that MSVS2015 is available. Non-UTF-8 text is banned by the <a href="https://google.github.io/styleguide/cppguide.html#Non-ASCII_Characters">Google Style Guide</a>. However, may be useful for consuming non-ASCII data. <a href="https://groups.google.com/a/chromium.org/forum/#!topic/chromium-dev/ME2kL7_Kvyk">Discussion thread</a></td>
 </tr>
 
 </tbody>
