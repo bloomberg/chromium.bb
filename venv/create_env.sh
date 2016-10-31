@@ -20,8 +20,8 @@ venv_dir="venv"
 cd "$(dirname "$(readlink -f -- "$0")")"
 
 (
-  # Try for 30 seconds to acquire an exclusive lock on virtualenv.
-  flock -w 30 9 || ( echo "Failed to acquire lock on virtualenv."; exit 1 )
+  # Try for 90 seconds to acquire an exclusive lock on virtualenv.
+  flock -w 90 9 || ( echo "Failed to acquire lock on virtualenv."; exit 1 )
   installed="$venv_dir/.installed.txt"
   if ! cmp -s requirements.txt "$installed" ; then
     echo "Creating or updating virtualenv in $(pwd)/$venv_dir/"
