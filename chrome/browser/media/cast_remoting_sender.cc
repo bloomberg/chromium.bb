@@ -14,6 +14,7 @@
 #include "base/memory/ptr_util.h"
 #include "base/numerics/safe_conversions.h"
 #include "base/stl_util.h"
+#include "base/time/default_tick_clock.h"
 #include "base/trace_event/trace_event.h"
 #include "content/public/browser/browser_thread.h"
 #include "media/base/bind_to_current_loop.h"
@@ -72,15 +73,18 @@ class CastRemotingSender::RemotingRtcpClient final
 #define SENDER_SSRC (is_audio_ ? "AUDIO[" : "VIDEO[") << ssrc_ << "] "
 
 CastRemotingSender::CastRemotingSender(
-    scoped_refptr<media::cast::CastEnvironment> cast_environment,
     media::cast::CastTransport* transport,
-    const media::cast::CastTransportRtpConfig& config)
+    const media::cast::CastTransportRtpConfig& config,
+    base::TimeDelta logging_flush_interval,
+    const FrameEventCallback& cb)
     : rtp_stream_id_(config.rtp_stream_id),
-      cast_environment_(std::move(cast_environment)),
       transport_(transport),
       ssrc_(config.ssrc),
       is_audio_(config.rtp_payload_type ==
                 media::cast::RtpPayloadType::REMOTE_AUDIO),
+      logging_flush_interval_(logging_flush_interval),
+      frame_event_cb_(cb),
+      clock_(new base::DefaultTickClock()),
       binding_(this),
       max_ack_delay_(kMaxAckDelay),
       last_sent_frame_id_(media::cast::FrameId::first() - 1),
@@ -89,10 +93,8 @@ CastRemotingSender::CastRemotingSender(
       input_queue_discards_remaining_(0),
       flow_restart_pending_(true),
       weak_factory_(this) {
-  // Confirm this constructor is running on the IO BrowserThread and the
-  // CastEnvironment::MAIN thread is the same thread.
+  // Confirm this constructor is running on the IO BrowserThread.
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
-  DCHECK(cast_environment_->CurrentlyOn(media::cast::CastEnvironment::MAIN));
 
   CastRemotingSender*& pointer_in_map = g_sender_map.Get()[rtp_stream_id_];
   DCHECK(!pointer_in_map);
@@ -100,6 +102,16 @@ CastRemotingSender::CastRemotingSender(
 
   transport_->InitializeStream(
       config, base::MakeUnique<RemotingRtcpClient>(weak_factory_.GetWeakPtr()));
+
+  if (!frame_event_cb_.is_null())
+    DCHECK(logging_flush_interval_ > base::TimeDelta());
+
+  if (!frame_event_cb_.is_null()) {
+    base::ThreadTaskRunnerHandle::Get()->PostDelayedTask(
+        FROM_HERE, base::Bind(&CastRemotingSender::SendFrameEvents,
+                              weak_factory_.GetWeakPtr()),
+        logging_flush_interval_);
+  }
 }
 
 CastRemotingSender::~CastRemotingSender() {
@@ -167,11 +179,11 @@ void CastRemotingSender::OnReceivedRtt(base::TimeDelta round_trip_time) {
 }
 
 void CastRemotingSender::ResendCheck() {
-  DCHECK(cast_environment_->CurrentlyOn(media::cast::CastEnvironment::MAIN));
+  DCHECK_CURRENTLY_ON(BrowserThread::IO);
 
   DCHECK(!last_send_time_.is_null());
   const base::TimeDelta time_since_last_send =
-      cast_environment_->Clock()->NowTicks() - last_send_time_;
+      clock_->NowTicks() - last_send_time_;
   if (time_since_last_send > max_ack_delay_) {
     if (latest_acked_frame_id_ == last_sent_frame_id_) {
       // Last frame acked, no point in doing anything.
@@ -185,25 +197,25 @@ void CastRemotingSender::ResendCheck() {
 }
 
 void CastRemotingSender::ScheduleNextResendCheck() {
-  DCHECK(cast_environment_->CurrentlyOn(media::cast::CastEnvironment::MAIN));
+  DCHECK_CURRENTLY_ON(BrowserThread::IO);
 
   DCHECK(!last_send_time_.is_null());
   base::TimeDelta time_to_next =
-      last_send_time_ - cast_environment_->Clock()->NowTicks() + max_ack_delay_;
+      last_send_time_ - clock_->NowTicks() + max_ack_delay_;
   time_to_next = std::max(time_to_next, kMinSchedulingDelay);
-  cast_environment_->PostDelayedTask(
-      media::cast::CastEnvironment::MAIN, FROM_HERE,
+  base::ThreadTaskRunnerHandle::Get()->PostDelayedTask(
+      FROM_HERE,
       base::Bind(&CastRemotingSender::ResendCheck, weak_factory_.GetWeakPtr()),
       time_to_next);
 }
 
 void CastRemotingSender::ResendForKickstart() {
-  DCHECK(cast_environment_->CurrentlyOn(media::cast::CastEnvironment::MAIN));
+  DCHECK_CURRENTLY_ON(BrowserThread::IO);
 
   DCHECK(!last_send_time_.is_null());
   VLOG(1) << SENDER_SSRC << "Resending last packet of frame "
           << last_sent_frame_id_ << " to kick-start.";
-  last_send_time_ = cast_environment_->Clock()->NowTicks();
+  last_send_time_ = clock_->NowTicks();
   transport_->ResendFrameForKickstart(ssrc_, last_sent_frame_id_);
 }
 
@@ -232,7 +244,7 @@ media::cast::RtpTimeTicks CastRemotingSender::GetRecordedRtpTimestamp(
 
 void CastRemotingSender::OnReceivedCastMessage(
     const media::cast::RtcpCastMessage& cast_feedback) {
-  DCHECK(cast_environment_->CurrentlyOn(media::cast::CastEnvironment::MAIN));
+  DCHECK_CURRENTLY_ON(BrowserThread::IO);
 
   if (last_send_time_.is_null())
     return;  // Cannot get an ACK without having first sent a frame.
@@ -264,16 +276,18 @@ void CastRemotingSender::OnReceivedCastMessage(
     duplicate_ack_counter_ = 0;
   }
 
-  base::TimeTicks now = cast_environment_->Clock()->NowTicks();
-  auto ack_event = base::MakeUnique<media::cast::FrameEvent>();
-  ack_event->timestamp = now;
-  ack_event->type = media::cast::FRAME_ACK_RECEIVED;
-  ack_event->media_type =
-      is_audio_ ? media::cast::AUDIO_EVENT : media::cast::VIDEO_EVENT;
-  ack_event->rtp_timestamp =
-      GetRecordedRtpTimestamp(cast_feedback.ack_frame_id);
-  ack_event->frame_id = cast_feedback.ack_frame_id;
-  cast_environment_->logger()->DispatchFrameEvent(std::move(ack_event));
+  if (!frame_event_cb_.is_null()) {
+    base::TimeTicks now = clock_->NowTicks();
+    media::cast::FrameEvent ack_event;
+    ack_event.timestamp = now;
+    ack_event.type = media::cast::FRAME_ACK_RECEIVED;
+    ack_event.media_type =
+        is_audio_ ? media::cast::AUDIO_EVENT : media::cast::VIDEO_EVENT;
+    ack_event.rtp_timestamp =
+        GetRecordedRtpTimestamp(cast_feedback.ack_frame_id);
+    ack_event.frame_id = cast_feedback.ack_frame_id;
+    recent_frame_events_.push_back(ack_event);
+  }
 
   const bool is_acked_out_of_order =
       cast_feedback.ack_frame_id < latest_acked_frame_id_;
@@ -311,7 +325,7 @@ void CastRemotingSender::OnReceivedCastMessage(
 
 void CastRemotingSender::ConsumeDataChunk(uint32_t offset, uint32_t size,
                                           uint32_t total_payload_size) {
-  DCHECK(cast_environment_->CurrentlyOn(media::cast::CastEnvironment::MAIN));
+  DCHECK_CURRENTLY_ON(BrowserThread::IO);
   input_queue_.push(
       base::Bind(&CastRemotingSender::TryConsumeDataChunk,
                  base::Unretained(this), offset, size, total_payload_size));
@@ -319,14 +333,14 @@ void CastRemotingSender::ConsumeDataChunk(uint32_t offset, uint32_t size,
 }
 
 void CastRemotingSender::SendFrame() {
-  DCHECK(cast_environment_->CurrentlyOn(media::cast::CastEnvironment::MAIN));
+  DCHECK_CURRENTLY_ON(BrowserThread::IO);
   input_queue_.push(
       base::Bind(&CastRemotingSender::TrySendFrame, base::Unretained(this)));
   ProcessInputQueue(MOJO_RESULT_OK);
 }
 
 void CastRemotingSender::ProcessInputQueue(MojoResult result) {
-  DCHECK(cast_environment_->CurrentlyOn(media::cast::CastEnvironment::MAIN));
+  DCHECK_CURRENTLY_ON(BrowserThread::IO);
   while (!input_queue_.empty()) {
     if (!input_queue_.front().Run(input_queue_discards_remaining_ > 0))
       break;  // Operation must be retried later. Stop processing queue.
@@ -339,7 +353,7 @@ void CastRemotingSender::ProcessInputQueue(MojoResult result) {
 bool CastRemotingSender::TryConsumeDataChunk(uint32_t offset, uint32_t size,
                                              uint32_t total_payload_size,
                                              bool discard_data) {
-  DCHECK(cast_environment_->CurrentlyOn(media::cast::CastEnvironment::MAIN));
+  DCHECK_CURRENTLY_ON(BrowserThread::IO);
 
   do {
     if (!pipe_.is_valid()) {
@@ -395,7 +409,7 @@ bool CastRemotingSender::TryConsumeDataChunk(uint32_t offset, uint32_t size,
 }
 
 bool CastRemotingSender::TrySendFrame(bool discard_data) {
-  DCHECK(cast_environment_->CurrentlyOn(media::cast::CastEnvironment::MAIN));
+  DCHECK_CURRENTLY_ON(BrowserThread::IO);
 
   // If the frame's data is to be discarded, just return immediately.
   if (discard_data)
@@ -416,7 +430,7 @@ bool CastRemotingSender::TrySendFrame(bool discard_data) {
   const bool is_first_frame_to_be_sent = last_send_time_.is_null();
 
   base::TimeTicks last_frame_reference_time = last_send_time_;
-  last_send_time_ = cast_environment_->Clock()->NowTicks();
+  last_send_time_ = clock_->NowTicks();
   last_sent_frame_id_ = frame_id;
   // If this is the first frame about to be sent, fake the value of
   // |latest_acked_frame_id_| to indicate the receiver starts out all caught up.
@@ -458,19 +472,20 @@ bool CastRemotingSender::TrySendFrame(bool discard_data) {
                    media::cast::kRemotingRtpTimebase));
   remoting_frame.data.swap(next_frame_data_);
 
-  std::unique_ptr<media::cast::FrameEvent> remoting_event(
-      new media::cast::FrameEvent());
-  remoting_event->timestamp = remoting_frame.reference_time;
-  // TODO(xjz): Use a new event type for remoting.
-  remoting_event->type = media::cast::FRAME_ENCODED;
-  remoting_event->media_type =
-      is_audio_ ? media::cast::AUDIO_EVENT : media::cast::VIDEO_EVENT;
-  remoting_event->rtp_timestamp = remoting_frame.rtp_timestamp;
-  remoting_event->frame_id = frame_id;
-  remoting_event->size = remoting_frame.data.length();
-  remoting_event->key_frame =
-      remoting_frame.dependency == media::cast::EncodedFrame::KEY;
-  cast_environment_->logger()->DispatchFrameEvent(std::move(remoting_event));
+  if (!frame_event_cb_.is_null()) {
+    media::cast::FrameEvent remoting_event;
+    remoting_event.timestamp = remoting_frame.reference_time;
+    // TODO(xjz): Use a new event type for remoting.
+    remoting_event.type = media::cast::FRAME_ENCODED;
+    remoting_event.media_type =
+        is_audio_ ? media::cast::AUDIO_EVENT : media::cast::VIDEO_EVENT;
+    remoting_event.rtp_timestamp = remoting_frame.rtp_timestamp;
+    remoting_event.frame_id = frame_id;
+    remoting_event.size = remoting_frame.data.length();
+    remoting_event.key_frame =
+        remoting_frame.dependency == media::cast::EncodedFrame::KEY;
+    recent_frame_events_.push_back(remoting_event);
+  }
 
   RecordLatestFrameTimestamps(frame_id, remoting_frame.rtp_timestamp);
 
@@ -480,7 +495,7 @@ bool CastRemotingSender::TrySendFrame(bool discard_data) {
 }
 
 void CastRemotingSender::CancelInFlightData() {
-  DCHECK(cast_environment_->CurrentlyOn(media::cast::CastEnvironment::MAIN));
+  DCHECK_CURRENTLY_ON(BrowserThread::IO);
 
   base::STLClearObject(&next_frame_data_);
 
@@ -506,6 +521,22 @@ void CastRemotingSender::CancelInFlightData() {
   flow_restart_pending_ = true;
   VLOG(1) << SENDER_SSRC
           << "Now restarting because in-flight data was just canceled.";
+}
+
+void CastRemotingSender::SendFrameEvents() {
+  DCHECK_CURRENTLY_ON(BrowserThread::IO);
+  DCHECK(!frame_event_cb_.is_null());
+
+  if (!recent_frame_events_.empty()) {
+    std::vector<media::cast::FrameEvent> frame_events;
+    frame_events.swap(recent_frame_events_);
+    frame_event_cb_.Run(frame_events);
+  }
+
+  base::ThreadTaskRunnerHandle::Get()->PostDelayedTask(
+      FROM_HERE, base::Bind(&CastRemotingSender::SendFrameEvents,
+                            weak_factory_.GetWeakPtr()),
+      logging_flush_interval_);
 }
 
 }  // namespace cast

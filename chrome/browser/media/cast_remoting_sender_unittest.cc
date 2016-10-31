@@ -13,7 +13,6 @@
 #include "base/run_loop.h"
 #include "base/time/default_tick_clock.h"
 #include "content/public/test/test_browser_thread_bundle.h"
-#include "media/cast/cast_environment.h"
 #include "media/cast/constants.h"
 #include "media/cast/net/cast_transport.h"
 #include "media/cast/test/utility/default_config.h"
@@ -90,7 +89,6 @@ class FakeTransport : public media::cast::CastTransport {
   void SetOptions(const base::DictionaryValue& options) final {}
 
  private:
-  const scoped_refptr<media::cast::CastEnvironment> cast_environment_;
   std::vector<media::cast::EncodedFrame> sent_frames_;
   std::vector<media::cast::FrameId> canceled_frame_ids_;
 
@@ -106,11 +104,7 @@ class CastRemotingSenderTest : public ::testing::Test {
  protected:
   CastRemotingSenderTest()
       : thread_bundle_(content::TestBrowserThreadBundle::IO_MAINLOOP),
-        cast_environment_(new media::cast::CastEnvironment(
-            base::WrapUnique(new base::DefaultTickClock()),
-            base::ThreadTaskRunnerHandle::Get(), nullptr, nullptr)),
         expecting_error_callback_run_(false) {
-
     media::cast::FrameSenderConfig video_config =
         media::cast::GetDefaultVideoSenderConfig();
     video_config.rtp_payload_type = media::cast::RtpPayloadType::REMOTE_VIDEO;
@@ -121,7 +115,9 @@ class CastRemotingSenderTest : public ::testing::Test {
     transport_config_.aes_key = video_config.aes_key;
     transport_config_.aes_iv_mask = video_config.aes_iv_mask;
     remoting_sender_.reset(new CastRemotingSender(
-        cast_environment_, &transport_, transport_config_));
+        &transport_, transport_config_, base::TimeDelta::FromMilliseconds(1),
+        base::Bind(&CastRemotingSenderTest::ReceivedLoggingEvents,
+                   base::Unretained(this))));
     // Give CastRemotingSender a small RTT measurement to prevent kickstart
     // testing from taking too long.
     remoting_sender_->OnReceivedRtt(base::TimeDelta::FromMilliseconds(1));
@@ -259,13 +255,20 @@ class CastRemotingSenderTest : public ::testing::Test {
     return true;
   }
 
+  void ReceivedLoggingEvents(
+      const std::vector<media::cast::FrameEvent>& events) {
+    EXPECT_FALSE(events.empty());
+    ++num_times_logging_callback_called_;
+  }
+
+  int num_times_logging_callback_called_ = 0;
+
  private:
   void OnError() {
     CHECK(expecting_error_callback_run_);
   }
 
   content::TestBrowserThreadBundle thread_bundle_;
-  const scoped_refptr<media::cast::CastEnvironment> cast_environment_;
   media::cast::CastTransportRtpConfig transport_config_;
   FakeTransport transport_;
   std::unique_ptr<CastRemotingSender> remoting_sender_;
@@ -340,6 +343,8 @@ TEST_F(CastRemotingSenderTest, SendsMultipleFramesWithDelayedAcks) {
 }
 
 TEST_F(CastRemotingSenderTest, KickstartsIfAckNotTimely) {
+  EXPECT_EQ(0, num_times_logging_callback_called_);
+
   // Send first frame and don't Ack it. Expect the first frame to be
   // kickstarted.
   ASSERT_TRUE(ProduceDataChunk(0, 16));
@@ -363,6 +368,9 @@ TEST_F(CastRemotingSenderTest, KickstartsIfAckNotTimely) {
   AckOldestInFlightFrames(2);
   EXPECT_EQ(2, NumberOfFramesInFlight());
   EXPECT_EQ(media::cast::FrameId::first() + 3, WaitForKickstart());
+
+  // This test takes enough time to trigger the logging callback.
+  EXPECT_GT(num_times_logging_callback_called_, 2);
 }
 
 TEST_F(CastRemotingSenderTest, CancelsUnsentFrame) {

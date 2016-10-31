@@ -15,8 +15,9 @@
 
 namespace {
 
-// How often to send raw events.
-const int kSendRawEventsIntervalSecs = 1;
+// The interval for CastTransport and/or CastRemotingSender to send
+// Frame/PacketEvents to renderer process for logging.
+constexpr base::TimeDelta kSendEventsInterval = base::TimeDelta::FromSeconds(1);
 
 class TransportClient : public media::cast::CastTransport::Client {
  public:
@@ -171,7 +172,7 @@ void CastTransportHostFilter::OnNew(int32_t channel_id,
   udp_transport->SetUdpOptions(options);
   std::unique_ptr<media::cast::CastTransport> transport =
       media::cast::CastTransport::Create(
-          &clock_, base::TimeDelta::FromSeconds(kSendRawEventsIntervalSecs),
+          &clock_, kSendEventsInterval,
           base::MakeUnique<TransportClient>(channel_id, this),
           std::move(udp_transport), base::ThreadTaskRunnerHandle::Get());
   transport->SetOptions(options);
@@ -213,15 +214,11 @@ void CastTransportHostFilter::OnInitializeStream(
     if (config.rtp_payload_type == media::cast::RtpPayloadType::REMOTE_AUDIO ||
         config.rtp_payload_type == media::cast::RtpPayloadType::REMOTE_VIDEO) {
       // Create CastRemotingSender for this RTP stream.
-      scoped_refptr<media::cast::CastEnvironment> cast_environment =
-          new media::cast::CastEnvironment(
-              base::MakeUnique<base::DefaultTickClock>(),
-              base::ThreadTaskRunnerHandle::Get(),
-              base::ThreadTaskRunnerHandle::Get(),
-              base::ThreadTaskRunnerHandle::Get());
       remoting_sender_map_.AddWithID(
-          new CastRemotingSender(std::move(cast_environment), transport,
-                                 config),
+          new CastRemotingSender(
+              transport, config, kSendEventsInterval,
+              base::Bind(&CastTransportHostFilter::OnCastRemotingSenderEvents,
+                         weak_factory_.GetWeakPtr(), channel_id)),
           config.rtp_stream_id);
       DVLOG(3) << "Create CastRemotingSender for stream: "
                << config.rtp_stream_id;
@@ -378,6 +375,17 @@ void CastTransportHostFilter::OnSendRtcpFromRtpReceiver(int32_t channel_id) {
         << "CastTransportHostFilter::OnSendRtcpFromRtpReceiver "
         << "on non-existing channel";
   }
+}
+
+void CastTransportHostFilter::OnCastRemotingSenderEvents(
+    int32_t channel_id,
+    const std::vector<media::cast::FrameEvent>& events) {
+  if (events.empty())
+    return;
+  // PacketEvents can only come from CastTransport via CastTransport::Client
+  // interface.
+  Send(new CastMsg_RawEvents(channel_id,
+                             std::vector<media::cast::PacketEvent>(), events));
 }
 
 }  // namespace cast

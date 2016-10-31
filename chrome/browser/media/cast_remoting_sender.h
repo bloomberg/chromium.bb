@@ -11,7 +11,6 @@
 #include "base/memory/weak_ptr.h"
 #include "base/time/time.h"
 #include "media/cast/cast_config.h"
-#include "media/cast/cast_environment.h"
 #include "media/cast/net/cast_transport.h"
 #include "media/cast/net/rtcp/rtcp_defines.h"
 #include "media/mojo/interfaces/remoting.mojom.h"
@@ -19,6 +18,11 @@
 #include "mojo/public/cpp/system/watcher.h"
 
 namespace cast {
+
+// The callback that is used to send frame events to renderer process for
+// logging purpose.
+using FrameEventCallback =
+    base::Callback<void(const std::vector<media::cast::FrameEvent>&)>;
 
 // RTP sender for a single Cast Remoting RTP stream. The client calls Send() to
 // instruct the sender to read from a Mojo data pipe and transmit the data using
@@ -38,10 +42,12 @@ namespace cast {
 class CastRemotingSender : public media::mojom::RemotingDataStreamSender {
  public:
   // |transport| is expected to outlive this class.
-  CastRemotingSender(
-      scoped_refptr<media::cast::CastEnvironment> cast_environment,
-      media::cast::CastTransport* transport,
-      const media::cast::CastTransportRtpConfig& config);
+  // |logging_flush_interval| must be greater than |base::TimeDelta()| if |cb|
+  // is not null.
+  CastRemotingSender(media::cast::CastTransport* transport,
+                     const media::cast::CastTransportRtpConfig& config,
+                     base::TimeDelta logging_flush_interval,
+                     const FrameEventCallback& cb);
   ~CastRemotingSender() final;
 
   // Look-up a CastRemotingSender instance by its |rtp_stream_id| and then bind
@@ -113,10 +119,12 @@ class CastRemotingSender : public media::mojom::RemotingDataStreamSender {
   media::cast::RtpTimeTicks GetRecordedRtpTimestamp(
       media::cast::FrameId frame_id) const;
 
+  // If |frame_event_cb_| is not null, this calls |frame_event_cb_| to
+  // periodically send the frame events to renderer process for logging.
+  void SendFrameEvents();
+
   // Unique identifier for the RTP stream and this CastRemotingSender.
   const int32_t rtp_stream_id_;
-
-  const scoped_refptr<media::cast::CastEnvironment> cast_environment_;
 
   // Sends encoded frames over the configured transport (e.g., UDP). It outlives
   // this class.
@@ -125,6 +133,15 @@ class CastRemotingSender : public media::mojom::RemotingDataStreamSender {
   const uint32_t ssrc_;
 
   const bool is_audio_;
+
+  // The interval to send frame events to renderer process for logging. When
+  // |frame_event_cb_| is not null, this must be greater than base::TimeDelta().
+  const base::TimeDelta logging_flush_interval_;
+
+  // The callback to send frame events to renderer process for logging.
+  const FrameEventCallback frame_event_cb_;
+
+  std::unique_ptr<base::TickClock> clock_;
 
   // Callback that is run to notify when a fatal error occurs.
   base::Closure error_callback_;
@@ -185,6 +202,10 @@ class CastRemotingSender : public media::mojom::RemotingDataStreamSender {
   // CancelInFlightData() operation just completed. This causes TrySendFrame()
   // to mark the next frame as the start of a new sequence.
   bool flow_restart_pending_;
+
+  // FrameEvents pending delivery via |frame_event_cb_|. No event is added if
+  // |frame_event_cb_| is null.
+  std::vector<media::cast::FrameEvent> recent_frame_events_;
 
   // NOTE: Weak pointers must be invalidated before all other member variables.
   base::WeakPtrFactory<CastRemotingSender> weak_factory_;

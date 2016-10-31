@@ -88,6 +88,11 @@ class CastTransportHostFilter : public content::BrowserMessageFilter {
              const base::DictionaryValue& options);
   void OnDelete(int32_t channel_id);
 
+  // Sends frame events from CastRemotingSender to renderer process for logging.
+  void OnCastRemotingSenderEvents(
+      int32_t channel_id,
+      const std::vector<media::cast::FrameEvent>& events);
+
   IDMap<media::cast::CastTransport, IDMapOwnPointer> id_map_;
 
   // Clock used by Cast transport.
