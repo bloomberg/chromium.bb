@@ -503,6 +503,14 @@ void LocationBarViewMac::Layout() {
   }
 
   const bool is_keyword_hint = omnibox_view_->model()->is_keyword_hint();
+
+  // This is true for EV certificate since the certificate should be
+  // displayed, even if the width is narrow.
+  CGFloat available_width =
+      [cell availableWidthInFrame:[[cell controlView] frame]];
+  is_width_available_for_security_verbose_ =
+      available_width >= kMinURLWidth || ShouldShowEVBubble();
+
   if (!keyword.empty() && !is_keyword_hint) {
     // Switch from location icon to keyword mode.
     location_icon_decoration_->SetVisible(false);
@@ -524,14 +532,7 @@ void LocationBarViewMac::Layout() {
     base::string16 label(GetToolbarModel()->GetEVCertName());
     security_state_bubble_decoration_->SetFullLabel(
         base::SysUTF16ToNSString(label));
-
-    // This is true for EV certificate since the certificate should be
-    // displayed, even if the width is narrow.
-    is_width_available_for_security_verbose_ = true;
   } else if (ShouldShowSecurityState()) {
-    CGFloat available_width =
-        [cell availableWidthInFrame:[[cell controlView] frame]];
-    is_width_available_for_security_verbose_ = available_width >= kMinURLWidth;
     bool is_security_state_visible =
         is_width_available_for_security_verbose_ ||
         security_state_bubble_decoration_->AnimatingOut();
