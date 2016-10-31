@@ -84,6 +84,7 @@ class POLICY_EXPORT CloudPolicyManager
   virtual void GetChromePolicy(PolicyMap* policy_map);
 
   void CreateComponentCloudPolicyService(
+      const std::string& policy_type,
       const base::FilePath& policy_cache_path,
       const scoped_refptr<net::URLRequestContextGetter>& request_context,
       CloudPolicyClient* client);

@@ -550,7 +550,9 @@ class PolicyRequestHandler(BaseHTTPServer.BaseHTTPRequestHandler):
               'google/ios/user')):
         fetch_response = response.policy_response.response.add()
         self.ProcessCloudPolicy(request, token_info, fetch_response, username)
-      elif request.policy_type == 'google/chrome/extension':
+      elif (request.policy_type in
+             ('google/chrome/extension',
+              'google/chromeos/signinextension')):
         self.ProcessCloudPolicyForExtensions(
             request, response.policy_response, token_info, username)
       else:
@@ -809,7 +811,7 @@ class PolicyRequestHandler(BaseHTTPServer.BaseHTTPRequestHandler):
     """
     # Send one PolicyFetchResponse for each extension that has
     # configuration data at the server.
-    ids = self.server.ListMatchingComponents('google/chrome/extension')
+    ids = self.server.ListMatchingComponents(request.policy_type)
     for settings_entity_id in ids:
       # Reuse the extension policy request, to trigger the same signature
       # type in the response.
@@ -863,7 +865,8 @@ class PolicyRequestHandler(BaseHTTPServer.BaseHTTPRequestHandler):
         if payload is None:
           self.GatherDevicePolicySettings(settings, policy.get(policy_key, {}))
           payload = settings.SerializeToString()
-      elif msg.policy_type == 'google/chrome/extension':
+      elif msg.policy_type in ('google/chrome/extension',
+                               'google/chromeos/signinextension'):
         settings = ep.ExternalPolicyData()
         payload = self.server.ReadPolicyFromDataDir(policy_key, settings)
         if payload is None:
@@ -1156,7 +1159,8 @@ class PolicyTestServer(testserver_base.BrokenPipeHandlerMixIn,
       dm.DeviceRegisterRequest.DEVICE: [
           'google/chromeos/device',
           'google/chromeos/publicaccount',
-          'google/chrome/extension'
+          'google/chrome/extension',
+          'google/chromeos/signinextension'
       ],
       dm.DeviceRegisterRequest.ANDROID_BROWSER: [
           'google/android/user'

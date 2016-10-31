@@ -14,6 +14,7 @@
 #include "base/macros.h"
 #include "base/memory/linked_ptr.h"
 #include "base/memory/ref_counted.h"
+#include "components/policy/core/common/policy_namespace.h"
 #include "components/policy/core/common/policy_service.h"
 #include "extensions/browser/api/storage/settings_observer.h"
 #include "extensions/browser/api/storage/value_store_cache.h"
@@ -82,6 +83,10 @@ class ManagedValueStoreCache : public ValueStoreCache,
   // The profile that owns the extension system being used. This is used to
   // get the PolicyService, the EventRouter and the ExtensionService.
   Profile* profile_;
+
+  // The policy domain. This is used for both updating the schema registry with
+  // the list of extensions and for observing the policy updates.
+  policy::PolicyDomain policy_domain_;
 
   // The |profile_|'s PolicyService.
   policy::PolicyService* policy_service_;

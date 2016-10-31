@@ -16,7 +16,7 @@ SchemaRegistry::SchemaRegistry() : schema_map_(new SchemaMap) {
   for (int i = 0; i < POLICY_DOMAIN_SIZE; ++i)
     domains_ready_[i] = false;
 #if !defined(ENABLE_EXTENSIONS)
-  domains_ready_[POLICY_DOMAIN_EXTENSIONS] = true;
+  SetExtensionsDomainsReady();
 #endif
 }
 
@@ -76,6 +76,16 @@ void SchemaRegistry::SetReady(PolicyDomain domain) {
   }
 }
 
+void SchemaRegistry::SetAllDomainsReady() {
+  for (int i = 0; i < POLICY_DOMAIN_SIZE; ++i)
+    SetReady(static_cast<PolicyDomain>(i));
+}
+
+void SchemaRegistry::SetExtensionsDomainsReady() {
+  SetReady(POLICY_DOMAIN_EXTENSIONS);
+  SetReady(POLICY_DOMAIN_SIGNIN_EXTENSIONS);
+}
+
 void SchemaRegistry::AddObserver(Observer* observer) {
   observers_.AddObserver(observer);
 }
@@ -102,8 +112,7 @@ CombinedSchemaRegistry::CombinedSchemaRegistry()
   // The combined registry is always ready, since it can always start tracking
   // another registry that is not ready yet and going from "ready" to "not
   // ready" is not allowed.
-  for (int i = 0; i < POLICY_DOMAIN_SIZE; ++i)
-    SetReady(static_cast<PolicyDomain>(i));
+  SetAllDomainsReady();
 }
 
 CombinedSchemaRegistry::~CombinedSchemaRegistry() {}

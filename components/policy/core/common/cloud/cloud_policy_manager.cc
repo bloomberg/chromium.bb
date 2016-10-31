@@ -114,6 +114,7 @@ void CloudPolicyManager::GetChromePolicy(PolicyMap* policy_map) {
 }
 
 void CloudPolicyManager::CreateComponentCloudPolicyService(
+    const std::string& policy_type,
     const base::FilePath& policy_cache_path,
     const scoped_refptr<net::URLRequestContextGetter>& request_context,
     CloudPolicyClient* client) {
@@ -138,8 +139,9 @@ void CloudPolicyManager::CreateComponentCloudPolicyService(
   std::unique_ptr<ResourceCache> resource_cache(
       new ResourceCache(policy_cache_path, file_task_runner_));
   component_policy_service_.reset(new ComponentCloudPolicyService(
-      this, schema_registry(), core(), client, std::move(resource_cache),
-      request_context, file_task_runner_, io_task_runner_));
+      policy_type, this, schema_registry(), core(), client,
+      std::move(resource_cache), request_context, file_task_runner_,
+      io_task_runner_));
 #endif  // !defined(OS_ANDROID) && !defined(OS_IOS)
 }
 

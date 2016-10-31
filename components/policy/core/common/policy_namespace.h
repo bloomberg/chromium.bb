@@ -26,6 +26,11 @@ enum PolicyDomain {
   // The component ID for the extension policies is equal to the extension ID.
   POLICY_DOMAIN_EXTENSIONS,
 
+  // The namespace that corresponds to the policies for extensions running
+  // under Chrome OS signin profile. The component ID is equal to the extension
+  // ID.
+  POLICY_DOMAIN_SIGNIN_EXTENSIONS,
+
   // Must be the last entry.
   POLICY_DOMAIN_SIZE,
 };

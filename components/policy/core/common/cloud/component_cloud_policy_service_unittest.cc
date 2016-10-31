@@ -149,8 +149,9 @@ class ComponentCloudPolicyServiceTest : public testing::Test {
   void Connect() {
     client_ = new MockCloudPolicyClient();
     service_.reset(new ComponentCloudPolicyService(
-        &delegate_, &registry_, &core_, client_, std::move(owned_cache_),
-        request_context_, loop_.task_runner(), loop_.task_runner()));
+        dm_protocol::kChromeExtensionPolicyType, &delegate_, &registry_, &core_,
+        client_, std::move(owned_cache_), request_context_, loop_.task_runner(),
+        loop_.task_runner()));
 
     client_->SetDMToken(ComponentPolicyBuilder::kFakeToken);
     EXPECT_EQ(1u, client_->types_to_fetch_.size());
@@ -183,8 +184,7 @@ class ComponentCloudPolicyServiceTest : public testing::Test {
     registry_.RegisterComponent(
         PolicyNamespace(POLICY_DOMAIN_EXTENSIONS, kTestExtension),
         CreateTestSchema());
-    registry_.SetReady(POLICY_DOMAIN_CHROME);
-    registry_.SetReady(POLICY_DOMAIN_EXTENSIONS);
+    registry_.SetAllDomainsReady();
   }
 
   void PopulateCache() {
@@ -311,8 +311,7 @@ TEST_F(ComponentCloudPolicyServiceTest, FetchPolicy) {
   // A refresh is not needed, because no components are registered yet.
   EXPECT_CALL(delegate_, OnComponentCloudPolicyUpdated());
   EXPECT_CALL(*client_, FetchPolicy()).Times(0);
-  registry_.SetReady(POLICY_DOMAIN_CHROME);
-  registry_.SetReady(POLICY_DOMAIN_EXTENSIONS);
+  registry_.SetAllDomainsReady();
   LoadStore();
   Mock::VerifyAndClearExpectations(client_);
   Mock::VerifyAndClearExpectations(&delegate_);
@@ -397,8 +396,7 @@ TEST_F(ComponentCloudPolicyServiceTest, LoadAndPurgeCache) {
 }
 
 TEST_F(ComponentCloudPolicyServiceTest, SignInAfterStartup) {
-  registry_.SetReady(POLICY_DOMAIN_CHROME);
-  registry_.SetReady(POLICY_DOMAIN_EXTENSIONS);
+  registry_.SetAllDomainsReady();
 
   // Initialize the store without credentials.
   EXPECT_FALSE(store_.is_initialized());

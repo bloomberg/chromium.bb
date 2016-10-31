@@ -36,8 +36,6 @@ DeviceLocalAccountExtensionTracker::DeviceLocalAccountExtensionTracker(
   } else {
     NOTREACHED();
   }
-
-  schema_registry_->SetReady(POLICY_DOMAIN_EXTENSIONS);
 }
 
 DeviceLocalAccountExtensionTracker::~DeviceLocalAccountExtensionTracker() {

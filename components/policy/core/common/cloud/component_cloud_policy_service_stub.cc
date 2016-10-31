@@ -12,6 +12,7 @@ namespace policy {
 ComponentCloudPolicyService::Delegate::~Delegate() {}
 
 ComponentCloudPolicyService::ComponentCloudPolicyService(
+    const std::string& policy_type,
     Delegate* delegate,
     SchemaRegistry* schema_registry,
     CloudPolicyCore* core,

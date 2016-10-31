@@ -39,12 +39,18 @@ const struct DomainConstants {
   const char* data_cache_key;
   const char* policy_type;
 } kDomains[] = {
-  {
-    POLICY_DOMAIN_EXTENSIONS,
-    "extension-policy",
-    "extension-policy-data",
-    dm_protocol::kChromeExtensionPolicyType,
-  },
+    {
+        POLICY_DOMAIN_EXTENSIONS,
+        "extension-policy",
+        "extension-policy-data",
+        dm_protocol::kChromeExtensionPolicyType,
+    },
+    {
+        POLICY_DOMAIN_SIGNIN_EXTENSIONS,
+        "signinextension-policy",
+        "signinextension-policy-data",
+        dm_protocol::kChromeSigninExtensionPolicyType,
+    },
 };
 
 const DomainConstants* GetDomainConstants(PolicyDomain domain) {

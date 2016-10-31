@@ -6,7 +6,6 @@
 
 #include <stddef.h>
 
-#include <string>
 #include <utility>
 
 #include "base/bind.h"
@@ -41,10 +40,9 @@ namespace policy {
 namespace {
 
 bool NotInResponseMap(const ScopedResponseMap& map,
+                      PolicyDomain domain,
                       const std::string& component_id) {
-  // This helper only works for POLICY_DOMAIN_EXTENSIONS for now. Parameterize
-  // this and update SetCurrentPolicies() below later if appropriate.
-  return !map.contains(PolicyNamespace(POLICY_DOMAIN_EXTENSIONS, component_id));
+  return !map.contains(PolicyNamespace(domain, component_id));
 }
 
 bool NotInSchemaMap(const scoped_refptr<SchemaMap> schema_map,
@@ -189,7 +187,11 @@ void ComponentCloudPolicyService::Backend::SetCurrentPolicies(
     std::unique_ptr<ScopedResponseMap> responses) {
   // Purge any components that don't have a policy configured at the server.
   store_.Purge(POLICY_DOMAIN_EXTENSIONS,
-               base::Bind(&NotInResponseMap, base::ConstRef(*responses)));
+               base::Bind(&NotInResponseMap, base::ConstRef(*responses),
+                          POLICY_DOMAIN_EXTENSIONS));
+  store_.Purge(POLICY_DOMAIN_SIGNIN_EXTENSIONS,
+               base::Bind(&NotInResponseMap, base::ConstRef(*responses),
+                          POLICY_DOMAIN_SIGNIN_EXTENSIONS));
 
   for (ScopedResponseMap::iterator it = responses->begin();
        it != responses->end(); ++it) {
@@ -231,6 +233,7 @@ void ComponentCloudPolicyService::Backend::OnSchemasUpdated(
 }
 
 ComponentCloudPolicyService::ComponentCloudPolicyService(
+    const std::string& policy_type,
     Delegate* delegate,
     SchemaRegistry* schema_registry,
     CloudPolicyCore* core,
@@ -239,7 +242,8 @@ ComponentCloudPolicyService::ComponentCloudPolicyService(
     scoped_refptr<net::URLRequestContextGetter> request_context,
     scoped_refptr<base::SequencedTaskRunner> backend_task_runner,
     scoped_refptr<base::SequencedTaskRunner> io_task_runner)
-    : delegate_(delegate),
+    : policy_type_(policy_type),
+      delegate_(delegate),
       schema_registry_(schema_registry),
       core_(core),
       request_context_(request_context),
@@ -251,6 +255,8 @@ ComponentCloudPolicyService::ComponentCloudPolicyService(
       loaded_initial_policy_(false),
       is_registered_for_cloud_policy_(false),
       weak_ptr_factory_(this) {
+  DCHECK(policy_type == dm_protocol::kChromeExtensionPolicyType ||
+         policy_type == dm_protocol::kChromeSigninExtensionPolicyType);
   CHECK(!core_->client());
 
   external_policy_data_fetcher_backend_.reset(
@@ -277,8 +283,7 @@ ComponentCloudPolicyService::ComponentCloudPolicyService(
   client->AddObserver(this);
 
   // Register the supported policy domains at the client.
-  client->AddPolicyTypeToFetch(dm_protocol::kChromeExtensionPolicyType,
-                               std::string());
+  client->AddPolicyTypeToFetch(policy_type_, std::string());
 }
 
 ComponentCloudPolicyService::~ComponentCloudPolicyService() {
@@ -348,8 +353,7 @@ void ComponentCloudPolicyService::OnCoreDisconnecting(CloudPolicyCore* core) {
   core_->client()->RemoveObserver(this);
 
   // Remove all the namespaces from the client.
-  core_->client()->RemovePolicyTypeToFetch(
-      dm_protocol::kChromeExtensionPolicyType, std::string());
+  core_->client()->RemovePolicyTypeToFetch(policy_type_, std::string());
 }
 
 void ComponentCloudPolicyService::OnRefreshSchedulerStarted(

@@ -146,8 +146,7 @@ DeviceLocalAccountPolicyBroker::DeviceLocalAccountPolicyBroker(
   schema_registry_.RegisterComponent(
       PolicyNamespace(POLICY_DOMAIN_CHROME, std::string()),
       g_browser_process->browser_policy_connector()->GetChromeSchema());
-  schema_registry_.SetReady(POLICY_DOMAIN_CHROME);
-  schema_registry_.SetReady(POLICY_DOMAIN_EXTENSIONS);
+  schema_registry_.SetAllDomainsReady();
 }
 
 DeviceLocalAccountPolicyBroker::~DeviceLocalAccountPolicyBroker() {
@@ -234,9 +233,10 @@ void DeviceLocalAccountPolicyBroker::CreateComponentCloudPolicyService(
                             content::BrowserThread::FILE)));
 
   component_policy_service_.reset(new ComponentCloudPolicyService(
-      this, &schema_registry_, core(), client, std::move(resource_cache),
-      request_context, content::BrowserThread::GetTaskRunnerForThread(
-                           content::BrowserThread::FILE),
+      dm_protocol::kChromeExtensionPolicyType, this, &schema_registry_, core(),
+      client, std::move(resource_cache), request_context,
+      content::BrowserThread::GetTaskRunnerForThread(
+          content::BrowserThread::FILE),
       content::BrowserThread::GetTaskRunnerForThread(
           content::BrowserThread::IO)));
 }

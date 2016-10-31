@@ -116,7 +116,7 @@ TEST(SchemaRegistryTest, IsReady) {
   EXPECT_FALSE(registry.IsReady());
 #if defined(ENABLE_EXTENSIONS)
   EXPECT_CALL(observer, OnSchemaRegistryReady()).Times(0);
-  registry.SetReady(POLICY_DOMAIN_EXTENSIONS);
+  registry.SetExtensionsDomainsReady();
   Mock::VerifyAndClearExpectations(&observer);
   EXPECT_FALSE(registry.IsReady());
 #endif
@@ -273,7 +273,7 @@ TEST(SchemaRegistryTest, ForwardingSchemaRegistry) {
   EXPECT_FALSE(registry->IsReady());
   EXPECT_FALSE(forwarding.IsReady());
 
-  registry->SetReady(POLICY_DOMAIN_EXTENSIONS);
+  registry->SetExtensionsDomainsReady();
   EXPECT_FALSE(registry->IsReady());
   EXPECT_FALSE(forwarding.IsReady());
 
@@ -286,7 +286,7 @@ TEST(SchemaRegistryTest, ForwardingSchemaRegistry) {
   EXPECT_TRUE(SchemaMapEquals(registry->schema_map(), forwarding.schema_map()));
   Mock::VerifyAndClearExpectations(&observer);
 
-  forwarding.SetReady(POLICY_DOMAIN_EXTENSIONS);
+  forwarding.SetExtensionsDomainsReady();
   EXPECT_FALSE(forwarding.IsReady());
   Mock::VerifyAndClearExpectations(&observer);
 

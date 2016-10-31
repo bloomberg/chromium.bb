@@ -112,8 +112,7 @@ TEST_F(SchemaRegistryTrackingPolicyProviderTest, RefreshPolicies) {
 
 TEST_F(SchemaRegistryTrackingPolicyProviderTest, SchemaReady) {
   EXPECT_CALL(observer_, OnUpdatePolicy(&schema_registry_tracking_provider_));
-  schema_registry_.SetReady(POLICY_DOMAIN_CHROME);
-  schema_registry_.SetReady(POLICY_DOMAIN_EXTENSIONS);
+  schema_registry_.SetAllDomainsReady();
   Mock::VerifyAndClearExpectations(&observer_);
 
   EXPECT_TRUE(schema_registry_tracking_provider_.IsInitializationComplete(
@@ -136,7 +135,7 @@ TEST_F(SchemaRegistryTrackingPolicyProviderTest, SchemaReadyWithComponents) {
   EXPECT_CALL(mock_provider_, RefreshPolicies()).Times(0);
   schema_registry_.RegisterComponent(
       PolicyNamespace(POLICY_DOMAIN_EXTENSIONS, "xyz"), CreateTestSchema());
-  schema_registry_.SetReady(POLICY_DOMAIN_EXTENSIONS);
+  schema_registry_.SetExtensionsDomainsReady();
   Mock::VerifyAndClearExpectations(&mock_provider_);
 
   EXPECT_CALL(mock_provider_, RefreshPolicies());
@@ -180,8 +179,7 @@ TEST_F(SchemaRegistryTrackingPolicyProviderTest, DelegateUpdates) {
   Mock::VerifyAndClearExpectations(&observer_);
 
   EXPECT_CALL(mock_provider_, RefreshPolicies());
-  schema_registry_.SetReady(POLICY_DOMAIN_CHROME);
-  schema_registry_.SetReady(POLICY_DOMAIN_EXTENSIONS);
+  schema_registry_.SetAllDomainsReady();
   EXPECT_TRUE(schema_registry_.IsReady());
   Mock::VerifyAndClearExpectations(&mock_provider_);
   EXPECT_FALSE(schema_registry_tracking_provider_.IsInitializationComplete(
@@ -205,9 +203,8 @@ TEST_F(SchemaRegistryTrackingPolicyProviderTest, DelegateUpdates) {
 TEST_F(SchemaRegistryTrackingPolicyProviderTest, RemoveAndAddComponent) {
   EXPECT_CALL(mock_provider_, RefreshPolicies());
   const PolicyNamespace ns(POLICY_DOMAIN_EXTENSIONS, "xyz");
-  schema_registry_.SetReady(POLICY_DOMAIN_CHROME);
   schema_registry_.RegisterComponent(ns, CreateTestSchema());
-  schema_registry_.SetReady(POLICY_DOMAIN_EXTENSIONS);
+  schema_registry_.SetAllDomainsReady();
   Mock::VerifyAndClearExpectations(&mock_provider_);
 
   // Serve policy for |ns|.

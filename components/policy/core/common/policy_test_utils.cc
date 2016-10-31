@@ -203,6 +203,10 @@ std::ostream& operator<<(std::ostream& os, policy::PolicyDomain domain) {
       os << "POLICY_DOMAIN_EXTENSIONS";
       break;
     }
+    case policy::POLICY_DOMAIN_SIGNIN_EXTENSIONS: {
+      os << "POLICY_DOMAIN_SIGNIN_EXTENSIONS";
+      break;
+    }
     default: {
       os << "POLICY_DOMAIN_UNKNOWN(" << int(domain) << ")";
     }

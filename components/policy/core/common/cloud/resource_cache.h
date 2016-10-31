@@ -75,10 +75,11 @@ class POLICY_EXPORT ResourceCache {
                      bool allow_create,
                      base::FilePath* path);
 
-  // Points |path| at the file in which data for (key, subkey) should be stored
-  // and returns whether the parent directory of this file exists. If
+  // Points |subkey_path| at the file in which data for (key, subkey) should be
+  // stored and returns whether the parent directory of this file exists. If
   // |allow_create_key| is |true|, the directory is created if it did not exist
-  // yet. This method does not check whether the file at |path| exists or not.
+  // yet. This method does not check whether the file at |subkey_path| exists or
+  // not.
   bool VerifyKeyPathAndGetSubkeyPath(const std::string& key,
                                      bool allow_create_key,
                                      const std::string& subkey,

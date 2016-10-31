@@ -53,6 +53,7 @@ POLICY_EXPORT extern const char kChromeDevicePolicyType[];
 POLICY_EXPORT extern const char kChromeUserPolicyType[];
 POLICY_EXPORT extern const char kChromePublicAccountPolicyType[];
 POLICY_EXPORT extern const char kChromeExtensionPolicyType[];
+POLICY_EXPORT extern const char kChromeSigninExtensionPolicyType[];
 
 // These codes are sent in the |error_code| field of PolicyFetchResponse.
 enum PolicyFetchStatus {

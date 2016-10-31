@@ -6,6 +6,7 @@
 #define COMPONENTS_POLICY_CORE_COMMON_CLOUD_COMPONENT_CLOUD_POLICY_SERVICE_H_
 
 #include <memory>
+#include <string>
 
 #include "base/compiler_specific.h"
 #include "base/macros.h"
@@ -56,6 +57,10 @@ class POLICY_EXPORT ComponentCloudPolicyService
     virtual void OnComponentCloudPolicyUpdated() = 0;
   };
 
+  // |policy_type| specifies the policy type that should be fetched. The only
+  // allowed values are: |dm_protocol::kChromeExtensionPolicyType|,
+  // |dm_protocol::kChromeSigninExtensionPolicyType|.
+  //
   // The |delegate| is notified of updates to the downloaded policies and must
   // outlive this object.
   //
@@ -81,6 +86,7 @@ class POLICY_EXPORT ComponentCloudPolicyService
   //
   // |request_context| is used by the background URLFetchers.
   ComponentCloudPolicyService(
+      const std::string& policy_type,
       Delegate* delegate,
       SchemaRegistry* schema_registry,
       CloudPolicyCore* core,
@@ -133,6 +139,7 @@ class POLICY_EXPORT ComponentCloudPolicyService
   void ReloadSchema();
   void OnPolicyUpdated(std::unique_ptr<PolicyBundle> policy);
 
+  std::string policy_type_;
   Delegate* delegate_;
   SchemaRegistry* schema_registry_;
   CloudPolicyCore* core_;
