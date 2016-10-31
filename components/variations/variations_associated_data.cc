@@ -11,6 +11,7 @@
 #include "base/feature_list.h"
 #include "base/macros.h"
 #include "base/memory/singleton.h"
+#include "base/metrics/field_trial_param_associator.h"
 #include "base/strings/string_split.h"
 #include "components/variations/variations_http_header_provider.h"
 
@@ -104,68 +105,6 @@ class GroupMapAccessor {
 
   DISALLOW_COPY_AND_ASSIGN(GroupMapAccessor);
 };
-
-// Singleton helper class that keeps track of the parameters of all variations
-// and ensures access to these is thread-safe.
-class VariationsParamAssociator {
- public:
-  typedef std::pair<std::string, std::string> VariationKey;
-  typedef std::map<std::string, std::string> VariationParams;
-
-  // Retrieve the singleton.
-  static VariationsParamAssociator* GetInstance() {
-    return base::Singleton<
-        VariationsParamAssociator,
-        base::LeakySingletonTraits<VariationsParamAssociator>>::get();
-  }
-
-  bool AssociateVariationParams(const std::string& trial_name,
-                                const std::string& group_name,
-                                const VariationParams& params) {
-    base::AutoLock scoped_lock(lock_);
-
-    if (base::FieldTrialList::IsTrialActive(trial_name))
-      return false;
-
-    const VariationKey key(trial_name, group_name);
-    if (base::ContainsKey(variation_params_, key))
-      return false;
-
-    variation_params_[key] = params;
-    return true;
-  }
-
-  bool GetVariationParams(const std::string& trial_name,
-                          VariationParams* params) {
-    base::AutoLock scoped_lock(lock_);
-
-    const std::string group_name =
-        base::FieldTrialList::FindFullName(trial_name);
-    const VariationKey key(trial_name, group_name);
-    if (!base::ContainsKey(variation_params_, key))
-      return false;
-
-    *params = variation_params_[key];
-    return true;
-  }
-
-  void ClearAllParamsForTesting() {
-    base::AutoLock scoped_lock(lock_);
-    variation_params_.clear();
-  }
-
- private:
-  friend struct base::DefaultSingletonTraits<VariationsParamAssociator>;
-
-  VariationsParamAssociator() {}
-  ~VariationsParamAssociator() {}
-
-  base::Lock lock_;
-  std::map<VariationKey, VariationParams> variation_params_;
-
-  DISALLOW_COPY_AND_ASSIGN(VariationsParamAssociator);
-};
-
 }  // namespace
 
 void AssociateGoogleVariationID(IDCollectionKey key,
@@ -207,13 +146,13 @@ bool AssociateVariationParams(
     const std::string& trial_name,
     const std::string& group_name,
     const std::map<std::string, std::string>& params) {
-  return VariationsParamAssociator::GetInstance()->AssociateVariationParams(
-      trial_name, group_name, params);
+  return base::FieldTrialParamAssociator::GetInstance()
+      ->AssociateFieldTrialParams(trial_name, group_name, params);
 }
 
 bool GetVariationParams(const std::string& trial_name,
                         std::map<std::string, std::string>* params) {
-  return VariationsParamAssociator::GetInstance()->GetVariationParams(
+  return base::FieldTrialParamAssociator::GetInstance()->GetFieldTrialParams(
       trial_name, params);
 }
 
@@ -281,7 +220,7 @@ void ClearAllVariationIDs() {
 }
 
 void ClearAllVariationParams() {
-  VariationsParamAssociator::GetInstance()->ClearAllParamsForTesting();
+  base::FieldTrialParamAssociator::GetInstance()->ClearAllParamsForTesting();
 }
 
 }  // namespace testing

@@ -531,6 +531,8 @@ component("base") {
     "metrics/bucket_ranges.h",
     "metrics/field_trial.cc",
     "metrics/field_trial.h",
+    "metrics/field_trial_param_associator.cc",
+    "metrics/field_trial_param_associator.h",
     "metrics/histogram.cc",
     "metrics/histogram.h",
     "metrics/histogram_base.cc",
