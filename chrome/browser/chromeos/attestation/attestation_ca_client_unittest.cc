@@ -3,8 +3,10 @@
 // found in the LICENSE file.
 
 #include "base/bind.h"
+#include "base/command_line.h"
 #include "base/message_loop/message_loop.h"
 #include "chrome/browser/chromeos/attestation/attestation_ca_client.h"
+#include "chromeos/chromeos_switches.h"
 #include "content/public/test/test_browser_thread.h"
 #include "net/base/net_errors.h"
 #include "net/http/http_status_code.h"
@@ -26,15 +28,15 @@ class AttestationCAClientTest : public ::testing::Test {
 
   ~AttestationCAClientTest() override {}
 
-  void DataCallback (bool result, const std::string& data) {
+  void DataCallback(bool result, const std::string& data) {
     ++num_invocations_;
     result_ = result;
     data_ = data;
   }
 
-  void DeleteClientDataCallback (AttestationCAClient* client,
-                                 bool result,
-                                 const std::string& data) {
+  void DeleteClientDataCallback(AttestationCAClient* client,
+                                bool result,
+                                const std::string& data) {
     delete client;
     DataCallback(result, data);
   }
@@ -123,6 +125,61 @@ TEST_F(AttestationCAClientTest, DeleteOnCallback) {
   EXPECT_EQ(1, num_invocations_);
   EXPECT_TRUE(result_);
   EXPECT_EQ("certificate_response", data_);
+}
+
+class AttestationCAClientAttestationServerTest
+    : public AttestationCAClientTest {};
+
+TEST_F(AttestationCAClientAttestationServerTest, DefaultEnrollRequest) {
+  base::CommandLine::ForCurrentProcess()->AppendSwitchASCII(
+      chromeos::switches::kAttestationServer, "default");
+  AttestationCAClient client;
+  client.SendEnrollRequest("enroll",
+                           base::Bind(&AttestationCAClientTest::DataCallback,
+                                      base::Unretained(this)));
+  net::TestURLFetcher* fetcher = url_fetcher_factory_.GetFetcherByID(0);
+  CHECK(fetcher);
+  EXPECT_EQ(GURL("https://chromeos-ca.gstatic.com/enroll"),
+            fetcher->GetOriginalURL());
+}
+
+TEST_F(AttestationCAClientAttestationServerTest, DefaultCertificateRequest) {
+  base::CommandLine::ForCurrentProcess()->AppendSwitchASCII(
+      chromeos::switches::kAttestationServer, "default");
+  AttestationCAClient client;
+  client.SendCertificateRequest(
+      "certificate", base::Bind(&AttestationCAClientTest::DataCallback,
+                                base::Unretained(this)));
+  net::TestURLFetcher* fetcher = url_fetcher_factory_.GetFetcherByID(0);
+  CHECK(fetcher);
+  EXPECT_EQ(GURL("https://chromeos-ca.gstatic.com/sign"),
+            fetcher->GetOriginalURL());
+}
+
+TEST_F(AttestationCAClientAttestationServerTest, TestEnrollRequest) {
+  base::CommandLine::ForCurrentProcess()->AppendSwitchASCII(
+      chromeos::switches::kAttestationServer, "test");
+  AttestationCAClient client;
+  client.SendEnrollRequest("enroll",
+                           base::Bind(&AttestationCAClientTest::DataCallback,
+                                      base::Unretained(this)));
+  net::TestURLFetcher* fetcher = url_fetcher_factory_.GetFetcherByID(0);
+  CHECK(fetcher);
+  EXPECT_EQ(GURL("https://asbestos-qa.corp.google.com/enroll"),
+            fetcher->GetOriginalURL());
+}
+
+TEST_F(AttestationCAClientAttestationServerTest, TestCertificateRequest) {
+  base::CommandLine::ForCurrentProcess()->AppendSwitchASCII(
+      chromeos::switches::kAttestationServer, "test");
+  AttestationCAClient client;
+  client.SendCertificateRequest(
+      "certificate", base::Bind(&AttestationCAClientTest::DataCallback,
+                                base::Unretained(this)));
+  net::TestURLFetcher* fetcher = url_fetcher_factory_.GetFetcherByID(0);
+  CHECK(fetcher);
+  EXPECT_EQ(GURL("https://asbestos-qa.corp.google.com/sign"),
+            fetcher->GetOriginalURL());
 }
 
 }  // namespace attestation

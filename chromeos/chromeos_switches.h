@@ -124,6 +124,7 @@ CHROMEOS_EXPORT extern const char kSmsTestMessages[];
 CHROMEOS_EXPORT extern const char kStubCrosSettings[];
 CHROMEOS_EXPORT extern const char kSystemDevMode[];
 CHROMEOS_EXPORT extern const char kTestAutoUpdateUI[];
+CHROMEOS_EXPORT extern const char kAttestationServer[];
 CHROMEOS_EXPORT extern const char kWakeOnWifiPacket[];
 
 // Returns true if the system should wake in response to wifi traffic.

@@ -6,7 +6,9 @@
 
 #include <string>
 
+#include "base/command_line.h"
 #include "chrome/browser/browser_process.h"
+#include "chromeos/chromeos_switches.h"
 #include "net/base/load_flags.h"
 #include "net/http/http_status_code.h"
 #include "net/url_request/url_fetcher.h"
@@ -14,9 +16,22 @@
 #include "url/gurl.h"
 
 namespace {
+// Values for the attestation server switch.
+const char kAttestationServerDefault[] = "default";
+const char kAttestationServerTest[] = "test";
 
-const char kCertificateRequestURL[] = "https://chromeos-ca.gstatic.com/sign";
-const char kEnrollRequestURL[] = "https://chromeos-ca.gstatic.com/enroll";
+// Endpoints for the default Google Privacy CA operations.
+const char kDefaultEnrollRequestURL[] =
+    "https://chromeos-ca.gstatic.com/enroll";
+const char kDefaultCertificateRequestURL[] =
+    "https://chromeos-ca.gstatic.com/sign";
+
+// Endpoints for the test Google Privacy CA operations.
+const char kTestEnrollRequestURL[] =
+    "https://asbestos-qa.corp.google.com/enroll";
+const char kTestCertificateRequestURL[] =
+    "https://asbestos-qa.corp.google.com/sign";
+
 const char kMimeContentType[] = "application/octet-stream";
 
 }  // namespace
@@ -24,19 +39,40 @@ const char kMimeContentType[] = "application/octet-stream";
 namespace chromeos {
 namespace attestation {
 
-AttestationCAClient::AttestationCAClient() {}
+static PrivacyCAType GetAttestationServerType() {
+  std::string value =
+      base::CommandLine::ForCurrentProcess()->GetSwitchValueASCII(
+          chromeos::switches::kAttestationServer);
+  if (value.empty() || value == kAttestationServerDefault) {
+    return DEFAULT_PCA;
+  }
+  if (value == kAttestationServerTest) {
+    return TEST_PCA;
+  }
+  LOG(WARNING) << "Invalid attestation server value: " << value
+               << ". Using default.";
+  return DEFAULT_PCA;
+}
+
+AttestationCAClient::AttestationCAClient() {
+  pca_type_ = GetAttestationServerType();
+}
 
 AttestationCAClient::~AttestationCAClient() {}
 
 void AttestationCAClient::SendEnrollRequest(const std::string& request,
                                             const DataCallback& on_response) {
-  FetchURL(kEnrollRequestURL, request, on_response);
+  FetchURL(
+      GetType() == TEST_PCA ? kTestEnrollRequestURL : kDefaultEnrollRequestURL,
+      request, on_response);
 }
 
 void AttestationCAClient::SendCertificateRequest(
     const std::string& request,
     const DataCallback& on_response) {
-  FetchURL(kCertificateRequestURL, request, on_response);
+  FetchURL(GetType() == TEST_PCA ? kTestCertificateRequestURL
+                                 : kDefaultCertificateRequestURL,
+           request, on_response);
 }
 
 void AttestationCAClient::OnURLFetchComplete(const net::URLFetcher* source) {
@@ -87,6 +123,10 @@ void AttestationCAClient::FetchURL(const std::string& url,
   fetcher->SetUploadData(kMimeContentType, request);
   pending_requests_[fetcher] = on_response;
   fetcher->Start();
+}
+
+PrivacyCAType AttestationCAClient::GetType() {
+  return pca_type_;
 }
 
 }  // namespace attestation

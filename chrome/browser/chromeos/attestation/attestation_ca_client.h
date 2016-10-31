@@ -9,6 +9,7 @@
 #include <string>
 
 #include "base/macros.h"
+#include "chromeos/attestation/attestation_constants.h"
 #include "chromeos/attestation/attestation_flow.h"
 #include "net/url_request/url_fetcher_delegate.h"
 
@@ -32,7 +33,11 @@ class AttestationCAClient : public ServerProxy,
   // net::URLFetcherDelegate:
   void OnURLFetchComplete(const net::URLFetcher* source) override;
 
+  PrivacyCAType GetType() override;
+
  private:
+  PrivacyCAType pca_type_;
+
   typedef std::map<const net::URLFetcher*, DataCallback> FetcherCallbackMap;
 
   // POSTs |request| data to |url| and calls |on_response| with the response
