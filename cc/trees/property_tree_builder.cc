@@ -9,6 +9,7 @@
 #include <map>
 #include <set>
 
+#include "base/memory/ptr_util.h"
 #include "cc/animation/animation_host.h"
 #include "cc/animation/mutable_properties.h"
 #include "cc/base/math_util.h"
@@ -225,6 +226,14 @@ static size_t NumUnclippedDescendants(LayerImpl* layer) {
   return layer->test_properties()->num_unclipped_descendants;
 }
 
+static inline const FilterOperations& Filters(Layer* layer) {
+  return layer->filters();
+}
+
+static inline const FilterOperations& Filters(LayerImpl* layer) {
+  return layer->test_properties()->filters;
+}
+
 static Layer* MaskLayer(Layer* layer) {
   return layer->mask_layer();
 }
@@ -429,10 +438,15 @@ void AddClipNodeIfNeeded(const DataForRecursion<LayerType>& data_from_ancestor,
       node.layer_clipping_uses_only_local_clip = false;
     }
 
-    if (layer_clips_subtree)
+    if (layer_clips_subtree) {
       node.clip_type = ClipNode::ClipType::APPLIES_LOCAL_CLIP;
-    else
+    } else if (Filters(layer).HasFilterThatMovesPixels()) {
+      node.clip_type = ClipNode::ClipType::EXPANDS_CLIP;
+      node.clip_expander =
+          base::MakeUnique<ClipExpander>(layer->effect_tree_index());
+    } else {
       node.clip_type = ClipNode::ClipType::NONE;
+    }
     node.resets_clip = has_unclipped_surface;
     node.target_is_clipped = data_for_children->target_is_clipped;
     node.layers_are_clipped = layers_are_clipped;
@@ -810,20 +824,12 @@ static inline SkXfermode::Mode BlendMode(LayerImpl* layer) {
   return layer->test_properties()->blend_mode;
 }
 
-static inline const FilterOperations& Filters(Layer* layer) {
-  return layer->filters();
-}
-
 static inline const gfx::PointF FiltersOrigin(Layer* layer) {
   return layer->filters_origin();
 }
 
 static inline const gfx::PointF FiltersOrigin(LayerImpl* layer) {
   return layer->test_properties()->filters_origin;
-}
-
-static inline const FilterOperations& Filters(LayerImpl* layer) {
-  return layer->test_properties()->filters;
 }
 
 static inline const FilterOperations& BackgroundFilters(Layer* layer) {

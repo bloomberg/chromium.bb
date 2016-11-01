@@ -507,6 +507,8 @@ component("cc") {
     "trees/blocking_task_runner.h",
     "trees/channel_impl.h",
     "trees/channel_main.h",
+    "trees/clip_expander.cc",
+    "trees/clip_expander.h",
     "trees/clip_node.cc",
     "trees/clip_node.h",
     "trees/compositor_mode.h",

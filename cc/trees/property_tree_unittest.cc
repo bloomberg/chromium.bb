@@ -4,6 +4,7 @@
 
 #include "cc/trees/property_tree.h"
 
+#include "base/memory/ptr_util.h"
 #include "cc/input/main_thread_scrolling_reason.h"
 #include "cc/proto/property_tree.pb.h"
 #include "cc/test/geometry_test_utils.h"
@@ -112,6 +113,33 @@ TEST(PropertyTreeSerializationTest, ClipNodeSerialization) {
   original.target_transform_id = 3;
   original.target_effect_id = 4;
   original.clip_type = ClipNode::ClipType::NONE;
+  original.layer_clipping_uses_only_local_clip = false;
+  original.target_is_clipped = false;
+  original.layers_are_clipped = false;
+  original.layers_are_clipped_when_surfaces_disabled = false;
+  original.resets_clip = false;
+
+  proto::TreeNode proto;
+  original.ToProtobuf(&proto);
+  ClipNode result;
+  result.FromProtobuf(proto);
+
+  EXPECT_EQ(original, result);
+}
+
+TEST(PropertyTreeSerializationTest, ClipNodeWithExpanderSerialization) {
+  ClipNode original;
+  original.id = 3;
+  original.parent_id = 2;
+  original.owner_id = 4;
+  original.clip = gfx::RectF(0.5f, 0.5f);
+  original.combined_clip_in_target_space = gfx::RectF(0.6f, 0.6f);
+  original.clip_in_target_space = gfx::RectF(0.7f, 0.7f);
+  original.transform_id = 2;
+  original.target_transform_id = 3;
+  original.target_effect_id = 4;
+  original.clip_type = ClipNode::ClipType::EXPANDS_CLIP;
+  original.clip_expander = base::MakeUnique<ClipExpander>(8);
   original.layer_clipping_uses_only_local_clip = false;
   original.target_is_clipped = false;
   original.layers_are_clipped = false;
