@@ -438,9 +438,6 @@ void GLES2Implementation::SetAggressivelyFreeResources(
 bool GLES2Implementation::OnMemoryDump(
     const base::trace_event::MemoryDumpArgs& args,
     base::trace_event::ProcessMemoryDump* pmd) {
-  using base::trace_event::MemoryAllocatorDump;
-  using base::trace_event::MemoryDumpLevelOfDetail;
-
   if (!transfer_buffer_->HaveBuffer())
     return true;
 
@@ -448,21 +445,20 @@ bool GLES2Implementation::OnMemoryDump(
       base::trace_event::MemoryDumpManager::GetInstance()
           ->GetTracingProcessId();
 
-  MemoryAllocatorDump* dump = pmd->CreateAllocatorDump(base::StringPrintf(
-      "gpu/transfer_buffer_memory/buffer_%d", transfer_buffer_->GetShmId()));
-  dump->AddScalar(MemoryAllocatorDump::kNameSize,
-                  MemoryAllocatorDump::kUnitsBytes,
+  base::trace_event::MemoryAllocatorDump* dump = pmd->CreateAllocatorDump(
+      base::StringPrintf("gpu/transfer_buffer_memory/buffer_%d",
+                         transfer_buffer_->GetShmId()));
+  dump->AddScalar(base::trace_event::MemoryAllocatorDump::kNameSize,
+                  base::trace_event::MemoryAllocatorDump::kUnitsBytes,
                   transfer_buffer_->GetSize());
-
-  if (args.level_of_detail != MemoryDumpLevelOfDetail::BACKGROUND) {
-    dump->AddScalar("free_size", MemoryAllocatorDump::kUnitsBytes,
-                    transfer_buffer_->GetFreeSize());
-    auto guid = GetBufferGUIDForTracing(tracing_process_id,
-                                        transfer_buffer_->GetShmId());
-    const int kImportance = 2;
-    pmd->CreateSharedGlobalAllocatorDump(guid);
-    pmd->AddOwnershipEdge(dump->guid(), guid, kImportance);
-  }
+  dump->AddScalar("free_size",
+                  base::trace_event::MemoryAllocatorDump::kUnitsBytes,
+                  transfer_buffer_->GetFreeSize());
+  auto guid =
+      GetBufferGUIDForTracing(tracing_process_id, transfer_buffer_->GetShmId());
+  const int kImportance = 2;
+  pmd->CreateSharedGlobalAllocatorDump(guid);
+  pmd->AddOwnershipEdge(dump->guid(), guid, kImportance);
 
   return true;
 }

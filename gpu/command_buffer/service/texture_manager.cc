@@ -34,9 +34,6 @@
 #include "ui/gl/gl_version_info.h"
 #include "ui/gl/trace_util.h"
 
-using base::trace_event::MemoryAllocatorDump;
-using base::trace_event::MemoryDumpLevelOfDetail;
-
 namespace gpu {
 namespace gles2 {
 
@@ -1721,10 +1718,12 @@ void Texture::DumpLevelMemory(base::trace_event::ProcessMemoryDump* pmd,
       // texture allocation also as the storage is not provided by the
       // GLImage in that case.
       if (level_infos[level_index].image_state != BOUND) {
-        MemoryAllocatorDump* dump = pmd->CreateAllocatorDump(base::StringPrintf(
-            "%s/face_%d/level_%d", dump_name.c_str(), face_index, level_index));
+        base::trace_event::MemoryAllocatorDump* dump = pmd->CreateAllocatorDump(
+            base::StringPrintf("%s/face_%d/level_%d", dump_name.c_str(),
+                               face_index, level_index));
         dump->AddScalar(
-            MemoryAllocatorDump::kNameSize, MemoryAllocatorDump::kUnitsBytes,
+            base::trace_event::MemoryAllocatorDump::kNameSize,
+            base::trace_event::MemoryAllocatorDump::kUnitsBytes,
             static_cast<uint64_t>(level_infos[level_index].estimated_size));
       }
     }
@@ -3262,21 +3261,8 @@ ScopedTextureUploadTimer::~ScopedTextureUploadTimer() {
 
 bool TextureManager::OnMemoryDump(const base::trace_event::MemoryDumpArgs& args,
                                   base::trace_event::ProcessMemoryDump* pmd) {
-  if (args.level_of_detail == MemoryDumpLevelOfDetail::BACKGROUND) {
-    std::string dump_name =
-        base::StringPrintf("gpu/gl/textures/share_group_%" PRIu64 "",
-                           memory_tracker_->ShareGroupTracingGUID());
-    MemoryAllocatorDump* dump = pmd->CreateAllocatorDump(dump_name);
-    dump->AddScalar(MemoryAllocatorDump::kNameSize,
-                    MemoryAllocatorDump::kUnitsBytes, mem_represented());
-
-    // Early out, no need for more detail in a BACKGROUND dump.
-    return true;
-  }
-
   for (const auto& resource : textures_) {
-    // Only dump memory info for textures actually owned by this
-    // TextureManager.
+    // Only dump memory info for textures actually owned by this TextureManager.
     DumpTextureRef(pmd, resource.second.get());
   }
 
@@ -3302,9 +3288,10 @@ void TextureManager::DumpTextureRef(base::trace_event::ProcessMemoryDump* pmd,
       "gpu/gl/textures/share_group_%" PRIu64 "/texture_%d",
       memory_tracker_->ShareGroupTracingGUID(), ref->client_id());
 
-  MemoryAllocatorDump* dump = pmd->CreateAllocatorDump(dump_name);
-  dump->AddScalar(MemoryAllocatorDump::kNameSize,
-                  MemoryAllocatorDump::kUnitsBytes,
+  base::trace_event::MemoryAllocatorDump* dump =
+      pmd->CreateAllocatorDump(dump_name);
+  dump->AddScalar(base::trace_event::MemoryAllocatorDump::kNameSize,
+                  base::trace_event::MemoryAllocatorDump::kUnitsBytes,
                   static_cast<uint64_t>(size));
 
   // Add the |client_guid| which expresses shared ownership with the client

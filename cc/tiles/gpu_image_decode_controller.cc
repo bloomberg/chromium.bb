@@ -551,25 +551,8 @@ void GpuImageDecodeController::SetShouldAggressivelyFreeResources(
 bool GpuImageDecodeController::OnMemoryDump(
     const base::trace_event::MemoryDumpArgs& args,
     base::trace_event::ProcessMemoryDump* pmd) {
-  using base::trace_event::MemoryAllocatorDump;
-  using base::trace_event::MemoryAllocatorDumpGuid;
-  using base::trace_event::MemoryDumpLevelOfDetail;
-
   TRACE_EVENT0(TRACE_DISABLED_BY_DEFAULT("cc.debug"),
                "GpuImageDecodeController::OnMemoryDump");
-
-  if (args.level_of_detail == MemoryDumpLevelOfDetail::BACKGROUND) {
-    std::string dump_name =
-        base::StringPrintf("cc/image_memory/controller_0x%" PRIXPTR,
-                           reinterpret_cast<uintptr_t>(this));
-    MemoryAllocatorDump* dump = pmd->CreateAllocatorDump(dump_name);
-    dump->AddScalar(MemoryAllocatorDump::kNameSize,
-                    MemoryAllocatorDump::kUnitsBytes, bytes_used_);
-
-    // Early out, no need for more detail in a BACKGROUND dump.
-    return true;
-  }
-
   for (const auto& image_pair : persistent_cache_) {
     const ImageData* image_data = image_pair.second.get();
     const uint32_t image_id = image_pair.first;
@@ -579,40 +562,41 @@ bool GpuImageDecodeController::OnMemoryDump(
       std::string discardable_dump_name = base::StringPrintf(
           "cc/image_memory/controller_0x%" PRIXPTR "/discardable/image_%d",
           reinterpret_cast<uintptr_t>(this), image_id);
-      MemoryAllocatorDump* dump =
+      base::trace_event::MemoryAllocatorDump* dump =
           image_data->decode.data()->CreateMemoryAllocatorDump(
               discardable_dump_name.c_str(), pmd);
-      // If our image is locked, dump the "locked_size" as an additional
-      // column.
+      // If our image is locked, dump the "locked_size" as an additional column.
       // This lets us see the amount of discardable which is contributing to
       // memory pressure.
       if (image_data->decode.is_locked()) {
-        dump->AddScalar("locked_size", MemoryAllocatorDump::kUnitsBytes,
+        dump->AddScalar("locked_size",
+                        base::trace_event::MemoryAllocatorDump::kUnitsBytes,
                         image_data->size);
       }
     }
 
-    // If we have an uploaded image (that is actually on the GPU, not just a
-    // CPU
+    // If we have an uploaded image (that is actually on the GPU, not just a CPU
     // wrapper), upload it here.
     if (image_data->upload.image() &&
         image_data->mode == DecodedDataMode::GPU) {
       std::string gpu_dump_name = base::StringPrintf(
           "cc/image_memory/controller_0x%" PRIXPTR "/gpu/image_%d",
           reinterpret_cast<uintptr_t>(this), image_id);
-      MemoryAllocatorDump* dump = pmd->CreateAllocatorDump(gpu_dump_name);
-      dump->AddScalar(MemoryAllocatorDump::kNameSize,
-                      MemoryAllocatorDump::kUnitsBytes, image_data->size);
+      base::trace_event::MemoryAllocatorDump* dump =
+          pmd->CreateAllocatorDump(gpu_dump_name);
+      dump->AddScalar(base::trace_event::MemoryAllocatorDump::kNameSize,
+                      base::trace_event::MemoryAllocatorDump::kUnitsBytes,
+                      image_data->size);
 
-      // Create a global shred GUID to associate this data with its GPU
-      // process
+      // Create a global shred GUID to associate this data with its GPU process
       // counterpart.
       GLuint gl_id = skia::GrBackendObjectToGrGLTextureInfo(
                          image_data->upload.image()->getTextureHandle(
                              false /* flushPendingGrContextIO */))
                          ->fID;
-      MemoryAllocatorDumpGuid guid = gl::GetGLTextureClientGUIDForTracing(
-          context_->ContextSupport()->ShareGroupTracingGUID(), gl_id);
+      base::trace_event::MemoryAllocatorDumpGuid guid =
+          gl::GetGLTextureClientGUIDForTracing(
+              context_->ContextSupport()->ShareGroupTracingGUID(), gl_id);
 
       // kImportance is somewhat arbitrary - we chose 3 to be higher than the
       // value used in the GPU process (1), and Skia (2), causing us to appear

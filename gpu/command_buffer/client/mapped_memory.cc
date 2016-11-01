@@ -169,31 +169,21 @@ void MappedMemoryManager::FreeUnused() {
 bool MappedMemoryManager::OnMemoryDump(
     const base::trace_event::MemoryDumpArgs& args,
     base::trace_event::ProcessMemoryDump* pmd) {
-  using base::trace_event::MemoryAllocatorDump;
-  using base::trace_event::MemoryDumpLevelOfDetail;
-
-  if (args.level_of_detail == MemoryDumpLevelOfDetail::BACKGROUND) {
-    std::string dump_name =
-        base::StringPrintf("gpu/mapped_memory/manager_%d", tracing_id_);
-    MemoryAllocatorDump* dump = pmd->CreateAllocatorDump(dump_name);
-    dump->AddScalar(MemoryAllocatorDump::kNameSize,
-                    MemoryAllocatorDump::kUnitsBytes, allocated_memory_);
-
-    // Early out, no need for more detail in a BACKGROUND dump.
-    return true;
-  }
-
   const uint64_t tracing_process_id =
       base::trace_event::MemoryDumpManager::GetInstance()
           ->GetTracingProcessId();
+
   for (const auto& chunk : chunks_) {
     std::string dump_name = base::StringPrintf(
         "gpu/mapped_memory/manager_%d/chunk_%d", tracing_id_, chunk->shm_id());
-    MemoryAllocatorDump* dump = pmd->CreateAllocatorDump(dump_name);
+    base::trace_event::MemoryAllocatorDump* dump =
+        pmd->CreateAllocatorDump(dump_name);
 
-    dump->AddScalar(MemoryAllocatorDump::kNameSize,
-                    MemoryAllocatorDump::kUnitsBytes, chunk->GetSize());
-    dump->AddScalar("free_size", MemoryAllocatorDump::kUnitsBytes,
+    dump->AddScalar(base::trace_event::MemoryAllocatorDump::kNameSize,
+                    base::trace_event::MemoryAllocatorDump::kUnitsBytes,
+                    chunk->GetSize());
+    dump->AddScalar("free_size",
+                    base::trace_event::MemoryAllocatorDump::kUnitsBytes,
                     chunk->GetFreeSize());
 
     auto guid = GetBufferGUIDForTracing(tracing_process_id, chunk->shm_id());
