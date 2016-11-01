@@ -657,7 +657,7 @@ void GpuVideoDecoder::PictureReady(const media::Picture& picture) {
   frame->set_color_space(picture.color_space());
   if (picture.allow_overlay())
     frame->metadata()->SetBoolean(VideoFrameMetadata::ALLOW_OVERLAY, true);
-#if defined(OS_MACOSX) || defined(OS_WIN)
+#if defined(OS_WIN)
   frame->metadata()->SetBoolean(VideoFrameMetadata::DECODER_OWNS_FRAME, true);
 #endif
 
