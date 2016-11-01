@@ -1306,8 +1306,10 @@ weston_wm_handle_reparent_notify(struct weston_wm *wm, xcb_generic_event_t *even
 struct weston_seat *
 weston_wm_pick_seat(struct weston_wm *wm)
 {
-	return container_of(wm->server->compositor->seat_list.next,
-			    struct weston_seat, link);
+	struct wl_list *seats = wm->server->compositor->seat_list.next;
+	if (wl_list_empty(seats))
+		return NULL;
+	return container_of(seats, struct weston_seat, link);
 }
 
 static struct weston_seat *

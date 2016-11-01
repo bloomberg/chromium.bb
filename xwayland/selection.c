@@ -709,6 +709,8 @@ weston_wm_selection_init(struct weston_wm *wm)
 					  wm->atom.clipboard, mask);
 
 	seat = weston_wm_pick_seat(wm);
+	if (seat == NULL)
+		return;
 	wm->selection_listener.notify = weston_wm_set_selection;
 	wl_signal_add(&seat->selection_signal, &wm->selection_listener);
 
