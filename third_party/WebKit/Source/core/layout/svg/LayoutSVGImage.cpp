@@ -88,7 +88,7 @@ FloatSize LayoutSVGImage::calculateObjectSize() const {
 }
 
 bool LayoutSVGImage::updateBoundingBox() {
-  FloatRect oldBoundaries = m_objectBoundingBox;
+  FloatRect oldObjectBoundingBox = m_objectBoundingBox;
 
   SVGLengthContext lengthContext(element());
   m_objectBoundingBox =
@@ -104,11 +104,15 @@ bool LayoutSVGImage::updateBoundingBox() {
   if (styleRef().width().isAuto() || styleRef().height().isAuto())
     m_objectBoundingBox.setSize(calculateObjectSize());
 
-  m_needsBoundariesUpdate |= oldBoundaries != m_objectBoundingBox;
+  if (oldObjectBoundingBox != m_objectBoundingBox) {
+    setShouldDoFullPaintInvalidation();
+    m_needsBoundariesUpdate = true;
+  }
+
   if (element())
     element()->setNeedsResizeObserverUpdate();
 
-  return oldBoundaries.size() != m_objectBoundingBox.size();
+  return oldObjectBoundingBox.size() != m_objectBoundingBox.size();
 }
 
 void LayoutSVGImage::layout() {

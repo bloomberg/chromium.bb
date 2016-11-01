@@ -184,7 +184,10 @@ void LayoutSVGShape::layout() {
   // feeds into the paint invalidation rect - so we need to call it for both
   // the shape-update and the bounds-update flag, since .
   if (m_needsShapeUpdate || m_needsBoundariesUpdate) {
+    FloatRect oldObjectBoundingBox = objectBoundingBox();
     updateShapeFromElement();
+    if (oldObjectBoundingBox != objectBoundingBox())
+      setShouldDoFullPaintInvalidation();
     m_needsShapeUpdate = false;
 
     m_paintInvalidationBoundingBox = strokeBoundingBox();
