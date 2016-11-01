@@ -463,12 +463,13 @@ SingleGnubbySigner.prototype.goToError_ = function(code, opt_warn) {
   var logFn = opt_warn ? console.warn.bind(console) : console.log.bind(console);
   logFn(UTIL_fmt('failed (' + code.toString(16) + ')'));
   var result = { code: code };
-  if (!this.forEnroll_ && code == DeviceStatusCodes.WRONG_DATA_STATUS) {
-    // When a device yields WRONG_DATA to all sign challenges, and this is a
-    // sign request, we don't want to yield to the web page that it's not
-    // enrolled just yet: we want the user to tap the device first. We'll
-    // report the gnubby to the caller and let it close it instead of closing
-    // it here.
+  if (!this.forEnroll_ &&
+      SingleGnubbySigner.signErrorIndicatesInvalidKeyHandle(code)) {
+    // When a device yields an idempotent bad key handle error to all sign
+    // challenges, and this is a sign request, we don't want to yield to the
+    // web page that it's not enrolled just yet: we want the user to tap the
+    // device first. We'll report the gnubby to the caller and let it close it
+    // instead of closing it here.
     result.gnubby = this.gnubby_;
   } else {
     // Since this gnubby can no longer produce a useful result, go ahead and

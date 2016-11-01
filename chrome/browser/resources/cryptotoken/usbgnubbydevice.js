@@ -44,6 +44,27 @@ UsbGnubbyDevice.NAMESPACE = 'usb';
 
 /** Destroys this low-level device instance. */
 UsbGnubbyDevice.prototype.destroy = function() {
+  function closeLowLevelDevice(dev) {
+    chrome.usb.releaseInterface(dev, 0, function() {
+      if (chrome.runtime.lastError) {
+        console.warn(UTIL_fmt('Device ' + dev.handle +
+            ' couldn\'t be released:'));
+        console.warn(UTIL_fmt(chrome.runtime.lastError.message));
+        return;
+      }
+      console.log(UTIL_fmt('Device ' + dev.handle + ' released'));
+      chrome.usb.closeDevice(dev, function() {
+        if (chrome.runtime.lastError) {
+          console.warn(UTIL_fmt('Device ' + dev.handle +
+              ' couldn\'t be closed:'));
+          console.warn(UTIL_fmt(chrome.runtime.lastError.message));
+          return;
+        }
+        console.log(UTIL_fmt('Device ' + dev.handle + ' closed'));
+      });
+    });
+  }
+
   if (!this.dev) return;  // Already dead.
 
   this.gnubbies_.removeOpenDevice(
@@ -75,25 +96,27 @@ UsbGnubbyDevice.prototype.destroy = function() {
 
   var dev = this.dev;
   this.dev = null;
+  var reallyCloseDevice = closeLowLevelDevice.bind(null, dev);
 
-  chrome.usb.releaseInterface(dev, 0, function() {
-    if (chrome.runtime.lastError) {
-      console.warn(UTIL_fmt('Device ' + dev.handle +
-          ' couldn\'t be released:'));
-      console.warn(UTIL_fmt(chrome.runtime.lastError.message));
+  if (this.destroyHook_) {
+    var p = this.destroyHook_();
+    if (!p) {
+      reallyCloseDevice();
       return;
     }
-    console.log(UTIL_fmt('Device ' + dev.handle + ' released'));
-    chrome.usb.closeDevice(dev, function() {
-      if (chrome.runtime.lastError) {
-        console.warn(UTIL_fmt('Device ' + dev.handle +
-            ' couldn\'t be closed:'));
-        console.warn(UTIL_fmt(chrome.runtime.lastError.message));
-        return;
-      }
-      console.log(UTIL_fmt('Device ' + dev.handle + ' closed'));
-    });
-  });
+    p.then(reallyCloseDevice);
+  } else {
+    reallyCloseDevice();
+  }
+};
+
+/**
+ * Sets a callback that will get called when this device instance is destroyed.
+ * @param {function() : ?Promise} cb Called back when closed. Callback may
+ *     yield a promise that resolves when the close hook completes.
+ */
+UsbGnubbyDevice.prototype.setDestroyHook = function(cb) {
+  this.destroyHook_ = cb;
 };
 
 /**
@@ -391,7 +414,7 @@ UsbGnubbyDevice.prototype.queueCommand = function(cid, cmd, data) {
  * @const
  */
 UsbGnubbyDevice.WINUSB_VID_PIDS = [
-  {'vendorId': 4176, 'productId': 529}  // Yubico WinUSB
+  {'vendorId': 4176, 'productId': 529}   // Yubico WinUSB
 ];
 
 /**
@@ -409,15 +432,21 @@ UsbGnubbyDevice.enumerate = function(cb, opt_type) {
   var numEnumerated = 0;
   var allDevs = [];
 
-  function enumerated(devs) {
-    allDevs = allDevs.concat(devs);
+  function enumerated(vidPid, devs) {
+    if (devs) {
+      for (var i = 0; i < devs.length; i++) {
+        devs[i].enumeratedBy = vidPid;
+      }
+      allDevs = allDevs.concat(devs);
+    }
     if (++numEnumerated == UsbGnubbyDevice.WINUSB_VID_PIDS.length) {
       cb(allDevs);
     }
   }
 
   for (var i = 0; i < UsbGnubbyDevice.WINUSB_VID_PIDS.length; i++) {
-    chrome.usb.getDevices(UsbGnubbyDevice.WINUSB_VID_PIDS[i], enumerated);
+    var vidPid = UsbGnubbyDevice.WINUSB_VID_PIDS[i];
+    chrome.usb.getDevices(vidPid, enumerated.bind(null, vidPid));
   }
 };
 
@@ -505,6 +534,10 @@ UsbGnubbyDevice.open = function(gnubbies, which, dev, cb) {
           cb(-GnubbyDevice.BUSY);
           return;
         }
+        // Restore the enumeratedBy value, if we had it.
+        if (enumeratedBy) {
+          dev.enumeratedBy = enumeratedBy;
+        }
         var gnubby = new UsbGnubbyDevice(gnubbies, nonNullHandle, which,
             inEndpoint, outEndpoint);
         cb(-GnubbyDevice.OK, gnubby);
@@ -512,10 +545,15 @@ UsbGnubbyDevice.open = function(gnubbies, which, dev, cb) {
     });
   }
 
+  var enumeratedBy = dev.enumeratedBy;
+
   if (UsbGnubbyDevice.runningOnCrOS === undefined) {
     UsbGnubbyDevice.runningOnCrOS =
         (window.navigator.appVersion.indexOf('; CrOS ') != -1);
   }
+  // dev contains an enumeratedBy value, which we need to strip prior to
+  // calling Chrome APIs with it.
+  delete dev.enumeratedBy;
   if (UsbGnubbyDevice.runningOnCrOS) {
     chrome.usb.requestAccess(dev, 0, function(success) {
       // Even though the argument to requestAccess is a chrome.usb.Device, the
@@ -539,6 +577,7 @@ UsbGnubbyDevice.deviceToDeviceId = function(dev) {
   var usbDev = /** @type {!chrome.usb.Device} */ (dev);
   var deviceId = {
     namespace: UsbGnubbyDevice.NAMESPACE,
+    enumeratedBy: dev.enumeratedBy,
     device: usbDev.device
   };
   return deviceId;

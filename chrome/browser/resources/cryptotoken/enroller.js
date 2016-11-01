@@ -49,7 +49,7 @@ function handleU2fEnrollRequest(messageSender, request, sendResponse) {
     sendErrorResponse({errorCode: ErrorCodes.BAD_REQUEST});
     return null;
   }
-  if (sender.origin.startsWith('http://') && !HTTP_ORIGINS_ALLOWED) {
+  if (sender.origin.indexOf('http://') == 0 && !HTTP_ORIGINS_ALLOWED) {
     sendErrorResponse({errorCode: ErrorCodes.BAD_REQUEST});
     return null;
   }
@@ -261,7 +261,7 @@ function Enroller(timer, sender, errorCb, successCb, opt_logMsgUrl) {
   // what they get.)
   /** @private {boolean} */
   this.allowHttp_ =
-      this.sender_.origin ? this.sender_.origin.startsWith('http://') : false;
+      this.sender_.origin ? this.sender_.origin.indexOf('http://') == 0 : false;
   /** @private {Closeable} */
   this.handler_ = null;
 }
@@ -310,6 +310,9 @@ Enroller.prototype.approveOrigin_ = function() {
         if (!result) {
           // Origin not approved: rather than give an explicit indication to
           // the web page, let a timeout occur.
+          // NOTE: if you are looking at this in a debugger, this line will
+          // always be false since the origin of the debugger is different
+          // than origin of requesting page
           if (self.timer_.expired()) {
             self.notifyTimeout_();
             return;

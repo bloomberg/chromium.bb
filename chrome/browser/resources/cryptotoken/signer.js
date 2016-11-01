@@ -47,7 +47,7 @@ function handleU2fSignRequest(messageSender, request, sendResponse) {
     sendErrorResponse({errorCode: ErrorCodes.BAD_REQUEST});
     return null;
   }
-  if (sender.origin.startsWith('http://') && !HTTP_ORIGINS_ALLOWED) {
+  if (sender.origin.indexOf('http://') == 0 && !HTTP_ORIGINS_ALLOWED) {
     sendErrorResponse({errorCode: ErrorCodes.BAD_REQUEST});
     return null;
   }
@@ -319,7 +319,7 @@ function Signer(timer, sender, errorCb, successCb, opt_logMsgUrl) {
   // what they get.)
   /** @private {boolean} */
   this.allowHttp_ = this.sender_.origin ?
-      this.sender_.origin.startsWith('http://') : false;
+      this.sender_.origin.indexOf('http://') == 0 : false;
   /** @private {Closeable} */
   this.handler_ = null;
 }

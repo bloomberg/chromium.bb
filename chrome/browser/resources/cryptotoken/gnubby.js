@@ -111,6 +111,9 @@ Gnubby.prototype.open = function(which, opt_type, opt_cb, opt_caller) {
         return;
       }
       self.dev = device;
+      if (self.closeHook_) {
+        self.dev.setDestroyHook(self.closeHook_);
+      }
       cb(rc);
     });
   }
@@ -119,7 +122,12 @@ Gnubby.prototype.open = function(which, opt_type, opt_cb, opt_caller) {
     setCid(which);
     self.which = which;
     Gnubby.gnubbies_.addClient(which, self, function(rc, device) {
-      self.dev = device;
+      if (!rc) {
+        self.dev = device;
+        if (self.closeHook_) {
+          self.dev.setDestroyHook(self.closeHook_);
+        }
+      }
       cb(rc);
     });
   } else {
@@ -186,6 +194,15 @@ Gnubby.prototype.closeWhenIdle = function(cb) {
 };
 
 /**
+ * Sets a callback that will get called when this gnubby is closed.
+ * @param {function() : ?Promise} cb Called back when closed. Callback
+ *     may yield a promise that resolves when the close hook completes.
+ */
+Gnubby.prototype.setCloseHook = function(cb) {
+  this.closeHook_ = cb;
+};
+
+/**
  * Close and notify every caller that it is now closed.
  * @private
  */
@@ -236,6 +253,13 @@ Gnubby.prototype.receivedFrame = function(frame) {
 };
 
 /**
+ * @return {number|undefined} The last read error seen by this device.
+ */
+Gnubby.prototype.getLastReadError = function() {
+  return this.lastReadError_;
+};
+
+/**
  * @return {ArrayBuffer|Uint8Array} oldest received frame. Throw if none.
  * @private
  */
@@ -276,6 +300,7 @@ Gnubby.prototype.read_ = function(cmd, timeout, cb) {
       window.clearTimeout(tid);
       tid = null;
     }
+    self.lastReadError_ = /** @private {number|undefined} */ (a);
     var c = callback;
     if (c) {
       callback = null;

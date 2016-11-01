@@ -16,25 +16,20 @@ function getOriginsFromJson(text) {
   try {
     var urls, i;
     var appIdData = JSON.parse(text);
-    if (Array.isArray(appIdData)) {
-      // Older format where it is a simple list of facets
-      urls = appIdData;
-    } else {
-      var trustedFacets = appIdData['trustedFacets'];
-      if (trustedFacets) {
-        var versionBlock;
-        for (i = 0; versionBlock = trustedFacets[i]; i++) {
-          if (versionBlock['version'] &&
-              versionBlock['version']['major'] == 1 &&
-              versionBlock['version']['minor'] == 0) {
-            urls = versionBlock['ids'];
-            break;
-          }
+    var trustedFacets = appIdData['trustedFacets'];
+    if (trustedFacets) {
+      var versionBlock;
+      for (i = 0; versionBlock = trustedFacets[i]; i++) {
+        if (versionBlock['version'] &&
+            versionBlock['version']['major'] == 1 &&
+            versionBlock['version']['minor'] == 0) {
+          urls = versionBlock['ids'];
+          break;
         }
       }
-      if (typeof urls == 'undefined') {
-        throw Error('Could not find trustedFacets for version 1.0');
-      }
+    }
+    if (typeof urls == 'undefined') {
+      throw Error('Could not find trustedFacets for version 1.0');
     }
     var origins = {};
     var url;
@@ -207,7 +202,7 @@ XhrAppIdChecker.prototype.fetchAllowedOriginsForAppId_ = function(appId) {
     return Promise.resolve([]);
   }
 
-  if (appId.startsWith('http://') && !this.allowHttp_) {
+  if (appId.indexOf('http://') == 0 && !this.allowHttp_) {
     console.log(UTIL_fmt('http app ids disallowed, ' + appId + ' requested'));
     return Promise.resolve([]);
   }

@@ -9,7 +9,17 @@
 
 /**
  * @typedef {{
+ *   vendorId: (number|undefined),
+ *   productId: (number|undefined),
+ *   usagePage: (number|undefined)
+ * }}
+ */
+var GnubbyEnumerationFilter;
+
+/**
+ * @typedef {{
  *   namespace: string,
+ *   enumeratedBy: (GnubbyEnumerationFilter|undefined),
  *   device: number
  * }}
  */

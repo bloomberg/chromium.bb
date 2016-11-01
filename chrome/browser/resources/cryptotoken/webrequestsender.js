@@ -88,7 +88,7 @@ function getTabIdWhenPossible(sender) {
               resolve(true);
             }, function() {
               // Didn't match? Check if the debugger is open.
-              if (!tab.url.startsWith('chrome-devtools://')) {
+              if (tab.url.indexOf('chrome-devtools://') != 0) {
                 reject(false);
                 return;
               }

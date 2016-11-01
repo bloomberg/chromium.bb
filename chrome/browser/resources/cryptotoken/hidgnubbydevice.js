@@ -40,6 +40,18 @@ HidGnubbyDevice.NAMESPACE = 'hid';
 HidGnubbyDevice.prototype.destroy = function() {
   if (!this.dev) return;  // Already dead.
 
+  function closeLowLevelDevice(dev) {
+    chrome.hid.disconnect(dev.connectionId, function() {
+      if (chrome.runtime.lastError) {
+        console.warn(UTIL_fmt('Device ' + dev.connectionId +
+            ' couldn\'t be disconnected:'));
+        console.warn(UTIL_fmt(chrome.runtime.lastError.message));
+        return;
+      }
+      console.log(UTIL_fmt('Device ' + dev.connectionId + ' closed'));
+    });
+  }
+
   this.gnubbies_.removeOpenDevice(
       {namespace: HidGnubbyDevice.NAMESPACE, device: this.id});
   this.closing = true;
@@ -69,16 +81,29 @@ HidGnubbyDevice.prototype.destroy = function() {
 
   var dev = this.dev;
   this.dev = null;
+  var reallyCloseDevice = closeLowLevelDevice.bind(null, dev);
 
-  chrome.hid.disconnect(dev.connectionId, function() {
-    if (chrome.runtime.lastError) {
-      console.warn(UTIL_fmt('Device ' + dev.connectionId +
-          ' couldn\'t be disconnected:'));
-      console.warn(UTIL_fmt(chrome.runtime.lastError.message));
+  if (this.destroyHook_) {
+    var p = this.destroyHook_();
+    if (!p) {
+      reallyCloseDevice();
       return;
     }
-    console.log(UTIL_fmt('Device ' + dev.connectionId + ' closed'));
-  });
+    // When this method returns, a device reference may still be held, until the
+    // promise completes.
+    p.then(reallyCloseDevice);
+  } else {
+    reallyCloseDevice();
+  }
+};
+
+/**
+ * Sets a callback that will get called when this device instance is destroyed.
+ * @param {function() : ?Promise} cb Called back when closed. Callback may
+ *     yield a promise that resolves when the close hook completes.
+ */
+HidGnubbyDevice.prototype.setDestroyHook = function(cb) {
+  this.destroyHook_ = cb;
 };
 
 /**
@@ -411,7 +436,7 @@ HidGnubbyDevice.prototype.writePump_ = function() {
  * @const
  */
 HidGnubbyDevice.HID_VID_PIDS = [
-  {'vendorId': 4176, 'productId': 512}  // Google-specific Yubico HID
+  {'vendorId': 4176, 'productId': 512}    // Google-specific Yubico HID
 ];
 
 /**
@@ -427,20 +452,20 @@ HidGnubbyDevice.enumerate = function(cb, opt_type) {
   var numEnumerated = 0;
   var allDevs = [];
 
-  function enumerated(f1d0Enumerated, devs) {
+  function enumerated(filter, devs) {
     // Don't double-add a device; it'll just confuse things.
     // We assume the various calls to getDevices() return from the same
     // deviceId pool.
     for (var i = 0; i < devs.length; i++) {
       var dev = devs[i];
-      dev.f1d0Only = f1d0Enumerated;
+      dev.enumeratedBy = filter;
       // Unfortunately indexOf is not usable, since the two calls produce
       // different objects. Compare their deviceIds instead.
       var found = false;
       for (var j = 0; j < allDevs.length; j++) {
         if (allDevs[j].deviceId == dev.deviceId) {
           found = true;
-          allDevs[j].f1d0Only &= f1d0Enumerated;
+          allDevs[j].enumeratedBy = filter;
           break;
         }
       }
@@ -456,11 +481,12 @@ HidGnubbyDevice.enumerate = function(cb, opt_type) {
   // Pass 1: usagePage-based enumeration, for FIDO U2F devices. If non-FIDO
   // devices are asked for, "implement" this pass by providing it the empty
   // list. (enumerated requires that it's called once per pass.)
+  var f1d0Filter = {usagePage: 0xf1d0};
   if (opt_type == GnubbyEnumerationTypes.VID_PID) {
-    enumerated(true, []);
+    enumerated(f1d0Filter, []);
   } else {
-    chrome.hid.getDevices({filters: [{usagePage: 0xf1d0}]},
-        enumerated.bind(null, true));
+    chrome.hid.getDevices({filters: [f1d0Filter]},
+        enumerated.bind(null, f1d0Filter));
   }
   // Pass 2: vid/pid-based enumeration, for legacy devices. If FIDO devices
   // are asked for, "implement" this pass by providing it the empty list.
@@ -468,8 +494,8 @@ HidGnubbyDevice.enumerate = function(cb, opt_type) {
     enumerated(false, []);
   } else {
     for (var i = 0; i < HidGnubbyDevice.HID_VID_PIDS.length; i++) {
-      var dev = HidGnubbyDevice.HID_VID_PIDS[i];
-      chrome.hid.getDevices({filters: [dev]}, enumerated.bind(null, false));
+      var vidPid = HidGnubbyDevice.HID_VID_PIDS[i];
+      chrome.hid.getDevices({filters: [vidPid]}, enumerated.bind(null, vidPid));
     }
   }
 };
@@ -507,6 +533,7 @@ HidGnubbyDevice.deviceToDeviceId = function(dev) {
   var hidDev = /** @type {!chrome.hid.HidDeviceInfo} */ (dev);
   var deviceId = {
     namespace: HidGnubbyDevice.NAMESPACE,
+    enumeratedBy: hidDev.enumeratedBy,
     device: hidDev.deviceId
   };
   return deviceId;

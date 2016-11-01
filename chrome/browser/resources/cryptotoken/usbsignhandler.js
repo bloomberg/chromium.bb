@@ -96,7 +96,8 @@ UsbSignHandler.prototype.signerFoundGnubby_ =
     var challenge = signResult['challenge'];
     var info = new Uint8Array(signResult['info']);
     this.notifySuccess_(gnubby, challenge, info);
-  } else if (signResult.code == DeviceStatusCodes.WRONG_DATA_STATUS) {
+  } else if (SingleGnubbySigner.signErrorIndicatesInvalidKeyHandle(
+      signResult.code)) {
     var gnubby = signResult['gnubby'];
     this.notEnrolledGnubbies_.push(gnubby);
     this.sendBogusEnroll_(gnubby);

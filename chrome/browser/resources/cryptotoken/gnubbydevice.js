@@ -30,6 +30,8 @@ GnubbyDevice.CMD_INIT = 0x86;
 GnubbyDevice.CMD_PROMPT = 0x87;
 /** Send device identification wink */
 GnubbyDevice.CMD_WINK = 0x88;
+/** BLE UID read/set */
+GnubbyDevice.CMD_BLE_UID = 0xb5;
 /** USB test */
 GnubbyDevice.CMD_USB_TEST = 0xb9;
 /** Device Firmware Upgrade */
@@ -83,6 +85,13 @@ GnubbyDevice.NOPERMISSION = 666;
 
 /** Destroys this low-level device instance. */
 GnubbyDevice.prototype.destroy = function() {};
+
+/**
+ * Sets a callback that will get called when this device instance is destroyed.
+ * @param {function() : ?Promise} cb Called back when closed. Callback may
+ *     yield a promise that resolves when the close hook completes.
+ */
+GnubbyDevice.prototype.setDestroyHook = function(cb) {};
 
 /**
  * Register a client for this gnubby.
