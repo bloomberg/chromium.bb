@@ -8295,12 +8295,6 @@ I don't think this site should be blocked!
       <message name="IDS_NOTIFICATIONS_NATIVE_FLAG_DESCRIPTION" desc="Description of the flag to enable native notifications.">
         Enable support for using the native notification toasts and notification center on platforms where these are available.
       </message>
-      <message name="IDS_FULLSCREEN_TAB_LABEL" desc="Label for Fullscreen tab on Content Settings dialog">
-        Full screen
-      </message>
-      <message name="IDS_FULLSCREEN_HEADER" desc="Header for fullscreen exception management page on Content Settings dialog">
-        Full screen exceptions
-      </message>
       <message name="IDS_EXCEPTIONS_PATTERN_HEADER" desc="A column header for the pattern column of the cookie/image/javascript/plugins exceptions dialog">
         Hostname pattern
       </message>
@@ -8336,15 +8330,6 @@ I don't think this site should be blocked!
       </message>
       <message name="IDS_EXCEPTIONS_GEOLOCATION_EMBEDDED_ON_HOST" desc="Template text for a child row in the Geolocation Exceptions page view. Controls the permission setting for the parent page when embedded on the specified site.">
         embedded on <ph name="URL">$1<ex>www.google.com</ex></ph>
-      </message>
-      <message name="IDS_EXCLUSIVE_ACCESS_DEPRECATED" desc="Label for Fullscreen / Mouse Lock exception management page on Content Settings dialog, explaining that the settings are no longer used.">
-        Note: These settings are no longer used on this system, but you can still view and edit them.
-      </message>
-      <message name="IDS_MOUSE_LOCK_TAB_LABEL" desc="Label for Mouse Lock tab on Content Settings dialog">
-        Mouse cursor lock
-      </message>
-      <message name="IDS_MOUSE_LOCK_HEADER" desc="Label for Mouse Lock exception management page on Content Settings dialog">
-        Mouse cursor exceptions
       </message>
       <if expr="chromeos or is_win">
         <message name="IDS_PROTECTED_CONTENT_TAB_LABEL" desc="Label for the Protected Content tab on the Content Settings dialog.">

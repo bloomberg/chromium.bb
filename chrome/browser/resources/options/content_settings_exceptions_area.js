@@ -17,7 +17,6 @@ cr.define('options.contentSettings', function() {
   function isEditableType(contentType) {
     // Exceptions of the following lists are not editable for now.
     return !(contentType == 'location' ||
-             contentType == 'fullscreen' ||
              contentType == 'media-stream-mic' ||
              contentType == 'media-stream-camera' ||
              contentType == 'midi-sysex' ||
@@ -118,12 +117,10 @@ cr.define('options.contentSettings', function() {
         select.appendChild(optionSession);
       }
 
-      if (this.contentType != 'fullscreen') {
-        var optionBlock = cr.doc.createElement('option');
-        optionBlock.textContent = loadTimeData.getString('blockException');
-        optionBlock.value = 'block';
-        select.appendChild(optionBlock);
-      }
+      var optionBlock = cr.doc.createElement('option');
+      optionBlock.textContent = loadTimeData.getString('blockException');
+      optionBlock.value = 'block';
+      select.appendChild(optionBlock);
 
       if (this.isEmbeddingRule()) {
         this.patternLabel.classList.add('sublabel');
