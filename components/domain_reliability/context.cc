@@ -67,7 +67,7 @@ DomainReliabilityContext::~DomainReliabilityContext() {
   ClearBeacons();
 }
 
-void DomainReliabilityContext::OnBeacon(
+bool DomainReliabilityContext::OnBeacon(
     std::unique_ptr<DomainReliabilityBeacon> beacon) {
   bool success = (beacon->status == "ok");
   double sample_rate = beacon->details.quic_port_migration_detected
@@ -80,7 +80,7 @@ void DomainReliabilityContext::OnBeacon(
     // an older beacon. (This histogram is also logged below based on whether
     // an older beacon was actually evicted.)
     LogOnBeaconDidEvictHistogram(false);
-    return;
+    return false;
   }
   beacon->sample_rate = sample_rate;
 
@@ -91,6 +91,8 @@ void DomainReliabilityContext::OnBeacon(
         "DomainReliability.ReportedBeaconError_HasServerIP",
         -beacon->chrome_error);
   }
+  UMA_HISTOGRAM_COUNTS_100("DomainReliability.ReportedBeaconUploadDepth",
+                           beacon->upload_depth);
   // TODO(juliatuttle): Histogram HTTP response code?
 
   // Allow beacons about reports, but don't schedule an upload for more than
@@ -103,6 +105,15 @@ void DomainReliabilityContext::OnBeacon(
     RemoveOldestBeacon();
 
   LogOnBeaconDidEvictHistogram(should_evict);
+
+  base::TimeTicks now = base::TimeTicks::Now();
+  if (last_queued_beacon_time_ != base::TimeTicks()) {
+    UMA_HISTOGRAM_LONG_TIMES("DomainReliability.BeaconInterval",
+                             now - last_queued_beacon_time_);
+  }
+  last_queued_beacon_time_ = now;
+
+  return true;
 }
 
 void DomainReliabilityContext::ClearBeacons() {

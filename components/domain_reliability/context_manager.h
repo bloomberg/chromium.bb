@@ -13,6 +13,7 @@
 #include <unordered_set>
 
 #include "base/macros.h"
+#include "base/time/time.h"
 #include "base/values.h"
 #include "components/domain_reliability/beacon.h"
 #include "components/domain_reliability/config.h"
@@ -71,6 +72,8 @@ class DOMAIN_RELIABILITY_EXPORT DomainReliabilityContextManager {
   // that have removed their context (by sending "NEL: max-age=0"), so the
   // context manager knows they are allowed to set a config again later.
   std::unordered_set<std::string> removed_contexts_;
+
+  base::TimeTicks last_routed_beacon_time_;
 
   DISALLOW_COPY_AND_ASSIGN(DomainReliabilityContextManager);
 };

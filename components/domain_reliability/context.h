@@ -61,7 +61,10 @@ class DOMAIN_RELIABILITY_EXPORT DomainReliabilityContext {
   // Notifies the context of a beacon on its domain(s); may or may not save the
   // actual beacon to be uploaded, depending on the sample rates in the config,
   // but will increment one of the request counters in any case.
-  void OnBeacon(std::unique_ptr<DomainReliabilityBeacon> beacon);
+  //
+  // Returns |true| if the beacon was queued or |false| if it was discarded,
+  // for metrics purposes.
+  bool OnBeacon(std::unique_ptr<DomainReliabilityBeacon> beacon);
 
   // Called to clear browsing data, since beacons are like browsing history.
   void ClearBeacons();
@@ -121,6 +124,8 @@ class DOMAIN_RELIABILITY_EXPORT DomainReliabilityContext {
   // The last network change time is not tracked per-context, so this is a
   // pointer to that value in a wider (e.g. per-Monitor or unittest) scope.
   const base::TimeTicks* last_network_change_time_;
+
+  base::TimeTicks last_queued_beacon_time_;
 
   base::WeakPtrFactory<DomainReliabilityContext> weak_factory_;
 
