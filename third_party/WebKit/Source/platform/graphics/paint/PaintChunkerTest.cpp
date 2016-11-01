@@ -17,29 +17,6 @@ namespace {
 // bots.
 #if defined(NDEBUG) || !OS(WIN)
 
-TransformPaintPropertyNode* dummyRootTransform() {
-  DEFINE_STATIC_REF(TransformPaintPropertyNode, rootTransform,
-                    (TransformPaintPropertyNode::create(
-                        nullptr, TransformationMatrix(), FloatPoint3D())));
-  return rootTransform;
-}
-
-ClipPaintPropertyNode* dummyRootClip() {
-  DEFINE_STATIC_REF(ClipPaintPropertyNode, rootClip,
-                    (ClipPaintPropertyNode::create(
-                        nullptr, dummyRootTransform(),
-                        FloatRoundedRect(LayoutRect::infiniteIntRect()))));
-  return rootClip;
-}
-
-EffectPaintPropertyNode* dummyRootEffect() {
-  DEFINE_STATIC_REF(EffectPaintPropertyNode, rootEffect,
-                    (EffectPaintPropertyNode::create(
-                        nullptr, dummyRootTransform(), dummyRootClip(),
-                        CompositorFilterOperations(), 1.0)));
-  return rootEffect;
-}
-
 PaintChunkProperties rootPaintChunkProperties() {
   return PaintChunkProperties();
 }
@@ -171,8 +148,8 @@ TEST_F(PaintChunkerTest, BuildMultipleChunksWithDifferentPropertyChanges) {
   PaintChunkProperties simpleTransformAndEffect;
   simpleTransformAndEffect.transform = simpleTransform.transform;
   simpleTransformAndEffect.effect = EffectPaintPropertyNode::create(
-      dummyRootEffect(), dummyRootTransform(), dummyRootClip(),
-      CompositorFilterOperations(), 0.5f);
+      EffectPaintPropertyNode::root(), TransformPaintPropertyNode::root(),
+      ClipPaintPropertyNode::root(), CompositorFilterOperations(), 0.5f);
   chunker.updateCurrentPaintChunkProperties(nullptr, simpleTransformAndEffect);
   chunker.incrementDisplayItemIndex(NormalTestDisplayItem());
   chunker.incrementDisplayItemIndex(NormalTestDisplayItem());
@@ -184,8 +161,8 @@ TEST_F(PaintChunkerTest, BuildMultipleChunksWithDifferentPropertyChanges) {
                                          FloatPoint3D(9, 8, 7));
   simpleTransformAndEffectWithUpdatedTransform.effect =
       EffectPaintPropertyNode::create(
-          dummyRootEffect(), dummyRootTransform(), dummyRootClip(),
-          CompositorFilterOperations(),
+          EffectPaintPropertyNode::root(), TransformPaintPropertyNode::root(),
+          ClipPaintPropertyNode::root(), CompositorFilterOperations(),
           simpleTransformAndEffect.effect->opacity());
   chunker.updateCurrentPaintChunkProperties(
       nullptr, simpleTransformAndEffectWithUpdatedTransform);

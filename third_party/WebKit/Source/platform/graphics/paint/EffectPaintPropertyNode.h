@@ -7,6 +7,8 @@
 
 #include "platform/PlatformExport.h"
 #include "platform/graphics/CompositorFilterOperations.h"
+#include "platform/graphics/paint/ClipPaintPropertyNode.h"
+#include "platform/graphics/paint/TransformPaintPropertyNode.h"
 #include "wtf/PassRefPtr.h"
 #include "wtf/RefCounted.h"
 #include "wtf/RefPtr.h"
@@ -23,6 +25,8 @@ namespace blink {
 class PLATFORM_EXPORT EffectPaintPropertyNode
     : public RefCounted<EffectPaintPropertyNode> {
  public:
+  static EffectPaintPropertyNode* root();
+
   static PassRefPtr<EffectPaintPropertyNode> create(
       PassRefPtr<const EffectPaintPropertyNode> parent,
       PassRefPtr<const TransformPaintPropertyNode> localTransformSpace,

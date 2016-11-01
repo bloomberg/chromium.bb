@@ -25,6 +25,8 @@ namespace blink {
 class PLATFORM_EXPORT ClipPaintPropertyNode
     : public RefCounted<ClipPaintPropertyNode> {
  public:
+  static ClipPaintPropertyNode* root();
+
   static PassRefPtr<ClipPaintPropertyNode> create(
       PassRefPtr<const ClipPaintPropertyNode> parent,
       PassRefPtr<const TransformPaintPropertyNode> localTransformSpace,

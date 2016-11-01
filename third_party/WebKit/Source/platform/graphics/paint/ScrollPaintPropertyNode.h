@@ -29,6 +29,8 @@ using MainThreadScrollingReasons = uint32_t;
 class PLATFORM_EXPORT ScrollPaintPropertyNode
     : public RefCounted<ScrollPaintPropertyNode> {
  public:
+  static ScrollPaintPropertyNode* root();
+
   static PassRefPtr<ScrollPaintPropertyNode> create(
       PassRefPtr<ScrollPaintPropertyNode> parent,
       PassRefPtr<const TransformPaintPropertyNode> scrollOffsetTranslation,

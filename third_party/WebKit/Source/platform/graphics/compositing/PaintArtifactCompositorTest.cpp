@@ -37,29 +37,6 @@ gfx::Transform translation(SkMScalar x, SkMScalar y) {
   return transform;
 }
 
-TransformPaintPropertyNode* dummyRootTransform() {
-  DEFINE_STATIC_REF(TransformPaintPropertyNode, rootTransform,
-                    (TransformPaintPropertyNode::create(
-                        nullptr, TransformationMatrix(), FloatPoint3D())));
-  return rootTransform;
-}
-
-ClipPaintPropertyNode* dummyRootClip() {
-  DEFINE_STATIC_REF(ClipPaintPropertyNode, rootClip,
-                    (ClipPaintPropertyNode::create(
-                        nullptr, dummyRootTransform(),
-                        FloatRoundedRect(LayoutRect::infiniteIntRect()))));
-  return rootClip;
-}
-
-EffectPaintPropertyNode* dummyRootEffect() {
-  DEFINE_STATIC_REF(EffectPaintPropertyNode, rootEffect,
-                    (EffectPaintPropertyNode::create(
-                        nullptr, dummyRootTransform(), dummyRootClip(),
-                        CompositorFilterOperations(), 1.0)));
-  return rootEffect;
-}
-
 class WebLayerTreeViewWithCompositorFrameSink
     : public WebLayerTreeViewImplForTesting {
  public:
@@ -161,11 +138,11 @@ TEST_F(PaintArtifactCompositorTestWithPropertyTrees, OneTransform) {
                                          FloatPoint3D(100, 100, 0));
 
   TestPaintArtifact artifact;
-  artifact.chunk(transform, nullptr, dummyRootEffect())
+  artifact.chunk(transform, nullptr, EffectPaintPropertyNode::root())
       .rectDrawing(FloatRect(0, 0, 100, 100), Color::white);
-  artifact.chunk(nullptr, nullptr, dummyRootEffect())
+  artifact.chunk(nullptr, nullptr, EffectPaintPropertyNode::root())
       .rectDrawing(FloatRect(0, 0, 100, 100), Color::gray);
-  artifact.chunk(transform, nullptr, dummyRootEffect())
+  artifact.chunk(transform, nullptr, EffectPaintPropertyNode::root())
       .rectDrawing(FloatRect(100, 100, 200, 100), Color::black);
   update(artifact.build());
 
@@ -207,9 +184,9 @@ TEST_F(PaintArtifactCompositorTestWithPropertyTrees, TransformCombining) {
           transform1, TransformationMatrix().translate(5, 5), FloatPoint3D());
 
   TestPaintArtifact artifact;
-  artifact.chunk(transform1, nullptr, dummyRootEffect())
+  artifact.chunk(transform1, nullptr, EffectPaintPropertyNode::root())
       .rectDrawing(FloatRect(0, 0, 300, 200), Color::white);
-  artifact.chunk(transform2, nullptr, dummyRootEffect())
+  artifact.chunk(transform2, nullptr, EffectPaintPropertyNode::root())
       .rectDrawing(FloatRect(0, 0, 300, 200), Color::black);
   update(artifact.build());
 
@@ -310,13 +287,13 @@ TEST_F(PaintArtifactCompositorTestWithPropertyTrees, SortingContextID) {
                                          FloatPoint3D(), false, 2);
 
   TestPaintArtifact artifact;
-  artifact.chunk(transform1, nullptr, dummyRootEffect())
+  artifact.chunk(transform1, nullptr, EffectPaintPropertyNode::root())
       .rectDrawing(FloatRect(0, 0, 300, 200), Color::white);
-  artifact.chunk(transform2, nullptr, dummyRootEffect())
+  artifact.chunk(transform2, nullptr, EffectPaintPropertyNode::root())
       .rectDrawing(FloatRect(0, 0, 300, 200), Color::lightGray);
-  artifact.chunk(transform3, nullptr, dummyRootEffect())
+  artifact.chunk(transform3, nullptr, EffectPaintPropertyNode::root())
       .rectDrawing(FloatRect(0, 0, 300, 200), Color::darkGray);
-  artifact.chunk(transform4, nullptr, dummyRootEffect())
+  artifact.chunk(transform4, nullptr, EffectPaintPropertyNode::root())
       .rectDrawing(FloatRect(0, 0, 300, 200), Color::black);
   update(artifact.build());
 
@@ -393,13 +370,13 @@ TEST_F(PaintArtifactCompositorTestWithPropertyTrees, NestedClips) {
       clip1, nullptr, FloatRoundedRect(200, 200, 700, 100));
 
   TestPaintArtifact artifact;
-  artifact.chunk(nullptr, clip1, dummyRootEffect())
+  artifact.chunk(nullptr, clip1, EffectPaintPropertyNode::root())
       .rectDrawing(FloatRect(300, 350, 100, 100), Color::white);
-  artifact.chunk(nullptr, clip2, dummyRootEffect())
+  artifact.chunk(nullptr, clip2, EffectPaintPropertyNode::root())
       .rectDrawing(FloatRect(300, 350, 100, 100), Color::lightGray);
-  artifact.chunk(nullptr, clip1, dummyRootEffect())
+  artifact.chunk(nullptr, clip1, EffectPaintPropertyNode::root())
       .rectDrawing(FloatRect(300, 350, 100, 100), Color::darkGray);
-  artifact.chunk(nullptr, clip2, dummyRootEffect())
+  artifact.chunk(nullptr, clip2, EffectPaintPropertyNode::root())
       .rectDrawing(FloatRect(300, 350, 100, 100), Color::black);
   update(artifact.build());
 
@@ -452,7 +429,7 @@ TEST_F(PaintArtifactCompositorTestWithPropertyTrees, DeeplyNestedClips) {
   }
 
   TestPaintArtifact artifact;
-  artifact.chunk(nullptr, clips.last(), dummyRootEffect())
+  artifact.chunk(nullptr, clips.last(), EffectPaintPropertyNode::root())
       .rectDrawing(FloatRect(0, 0, 200, 200), Color::white);
   update(artifact.build());
 
@@ -484,9 +461,9 @@ TEST_F(PaintArtifactCompositorTestWithPropertyTrees, SiblingClips) {
       commonClip, nullptr, FloatRoundedRect(400, 0, 400, 600));
 
   TestPaintArtifact artifact;
-  artifact.chunk(nullptr, clip1, dummyRootEffect())
+  artifact.chunk(nullptr, clip1, EffectPaintPropertyNode::root())
       .rectDrawing(FloatRect(0, 0, 640, 480), Color::white);
-  artifact.chunk(nullptr, clip2, dummyRootEffect())
+  artifact.chunk(nullptr, clip2, EffectPaintPropertyNode::root())
       .rectDrawing(FloatRect(0, 0, 640, 480), Color::black);
   update(artifact.build());
 
@@ -538,14 +515,14 @@ TEST_F(PaintArtifactCompositorTestWithPropertyTrees,
 
 TEST_F(PaintArtifactCompositorTestWithPropertyTrees, EffectTreeConversion) {
   RefPtr<EffectPaintPropertyNode> effect1 = EffectPaintPropertyNode::create(
-      dummyRootEffect(), dummyRootTransform(), dummyRootClip(),
-      CompositorFilterOperations(), 0.5);
+      EffectPaintPropertyNode::root(), TransformPaintPropertyNode::root(),
+      ClipPaintPropertyNode::root(), CompositorFilterOperations(), 0.5);
   RefPtr<EffectPaintPropertyNode> effect2 = EffectPaintPropertyNode::create(
-      effect1, dummyRootTransform(), dummyRootClip(),
-      CompositorFilterOperations(), 0.3);
+      effect1, TransformPaintPropertyNode::root(),
+      ClipPaintPropertyNode::root(), CompositorFilterOperations(), 0.3);
   RefPtr<EffectPaintPropertyNode> effect3 = EffectPaintPropertyNode::create(
-      dummyRootEffect(), dummyRootTransform(), dummyRootClip(),
-      CompositorFilterOperations(), 0.2);
+      EffectPaintPropertyNode::root(), TransformPaintPropertyNode::root(),
+      ClipPaintPropertyNode::root(), CompositorFilterOperations(), 0.2);
 
   TestPaintArtifact artifact;
   artifact.chunk(nullptr, nullptr, effect2.get())
@@ -560,7 +537,8 @@ TEST_F(PaintArtifactCompositorTestWithPropertyTrees, EffectTreeConversion) {
 
   const cc::EffectTree& effectTree = propertyTrees().effect_tree;
   // Node #0 reserved for null; #1 for root render surface; #2 for
-  // dummyRootEffect, plus 3 nodes for those created by this test.
+  // EffectPaintPropertyNode::root(), plus 3 nodes for those created by
+  // this test.
   ASSERT_EQ(6u, effectTree.size());
 
   const cc::EffectNode& convertedDummyRootEffect = *effectTree.Node(2);
@@ -620,8 +598,8 @@ TEST_F(PaintArtifactCompositorTestWithPropertyTrees, OneScrollNode) {
 
 TEST_F(PaintArtifactCompositorTestWithPropertyTrees, NestedScrollNodes) {
   RefPtr<EffectPaintPropertyNode> effect = EffectPaintPropertyNode::create(
-      dummyRootEffect(), dummyRootTransform(), dummyRootClip(),
-      CompositorFilterOperations(), 0.5);
+      EffectPaintPropertyNode::root(), TransformPaintPropertyNode::root(),
+      ClipPaintPropertyNode::root(), CompositorFilterOperations(), 0.5);
 
   RefPtr<TransformPaintPropertyNode> scrollTranslationA =
       TransformPaintPropertyNode::create(

@@ -24,6 +24,8 @@ namespace blink {
 class PLATFORM_EXPORT TransformPaintPropertyNode
     : public RefCounted<TransformPaintPropertyNode> {
  public:
+  static TransformPaintPropertyNode* root();
+
   static PassRefPtr<TransformPaintPropertyNode> create(
       PassRefPtr<const TransformPaintPropertyNode> parent,
       const TransformationMatrix& matrix,

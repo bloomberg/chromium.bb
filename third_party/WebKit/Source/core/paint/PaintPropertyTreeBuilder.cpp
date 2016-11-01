@@ -20,54 +20,21 @@
 
 namespace blink {
 
-namespace {
-TransformPaintPropertyNode* rootTransformNode() {
-  DEFINE_STATIC_REF(TransformPaintPropertyNode, rootTransform,
-                    (TransformPaintPropertyNode::create(
-                        nullptr, TransformationMatrix(), FloatPoint3D())));
-  return rootTransform;
-}
-
-ClipPaintPropertyNode* rootClipNode() {
-  DEFINE_STATIC_REF(ClipPaintPropertyNode, rootClip,
-                    (ClipPaintPropertyNode::create(
-                        nullptr, rootTransformNode(),
-                        FloatRoundedRect(LayoutRect::infiniteIntRect()))));
-  return rootClip;
-}
-
-EffectPaintPropertyNode* rootEffectNode() {
-  DEFINE_STATIC_REF(EffectPaintPropertyNode, rootEffect,
-                    (EffectPaintPropertyNode::create(
-                        nullptr, rootTransformNode(), rootClipNode(),
-                        CompositorFilterOperations(), 1.0)));
-  return rootEffect;
-}
-
-ScrollPaintPropertyNode* rootScrollNode() {
-  DEFINE_STATIC_REF(
-      ScrollPaintPropertyNode, rootScroll,
-      (ScrollPaintPropertyNode::create(nullptr, rootTransformNode(), IntSize(),
-                                       IntSize(), false, false)));
-  return rootScroll;
-}
-}
-
 PaintPropertyTreeBuilderContext
 PaintPropertyTreeBuilder::setupInitialContext() {
   PaintPropertyTreeBuilderContext context;
 
   context.current.clip = context.absolutePosition.clip =
-      context.fixedPosition.clip = rootClipNode();
-  context.currentEffect = rootEffectNode();
+      context.fixedPosition.clip = ClipPaintPropertyNode::root();
+  context.currentEffect = EffectPaintPropertyNode::root();
   context.current.transform = context.absolutePosition.transform =
-      context.fixedPosition.transform = rootTransformNode();
+      context.fixedPosition.transform = TransformPaintPropertyNode::root();
   context.current.scroll = context.absolutePosition.scroll =
-      context.fixedPosition.scroll = rootScrollNode();
+      context.fixedPosition.scroll = ScrollPaintPropertyNode::root();
 
   // Ensure scroll tree properties are reset. They will be rebuilt during the
   // tree walk.
-  rootScrollNode()->clearMainThreadScrollingReasons();
+  ScrollPaintPropertyNode::root()->clearMainThreadScrollingReasons();
 
   return context;
 }
@@ -398,7 +365,7 @@ void PaintPropertyTreeBuilder::updateEffect(
     filter = layer->createCompositorFilterOperationsForFilter(style);
   }
 
-  const ClipPaintPropertyNode* outputClip = rootClipNode();
+  const ClipPaintPropertyNode* outputClip = ClipPaintPropertyNode::root();
   // The CSS filter spec didn't specify how filters interact with overflow
   // clips. The implementation here mimics the old Blink/WebKit behavior for
   // backward compatibility.
