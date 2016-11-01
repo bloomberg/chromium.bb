@@ -149,6 +149,7 @@ void HTMLCanvasElement::dispose() {
     m_context->detachCanvas();
     m_context = nullptr;
   }
+  m_imageBuffer = nullptr;
 }
 
 void HTMLCanvasElement::parseAttribute(const QualifiedName& name,

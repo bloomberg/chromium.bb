@@ -107,6 +107,7 @@ ImageBuffer::~ImageBuffer() {
     s_globalAcceleratedImageBufferCount--;
   }
   ImageBuffer::s_globalGPUMemoryUsage -= m_gpuMemoryUsage;
+  m_surface->setImageBuffer(nullptr);
 }
 
 bool ImageBuffer::canCreateImageBuffer(const IntSize& size) {
