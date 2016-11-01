@@ -80,6 +80,19 @@ class FakeCIDBConnection(object):
     self.buildTable.append(row)
     return build_id
 
+  def FinishBuild(self, build_id, status=None, summary=None):
+    """Update the build with finished status."""
+    build = self.buildTable[build_id]
+
+    values = {}
+    if status is not None:
+      values.update(status=status)
+    if summary is not None:
+      values.update(summary=summary)
+
+    if values:
+      build.update(values)
+
   def UpdateMetadata(self, build_id, metadata):
     """See cidb.UpdateMetadata.
 
@@ -278,3 +291,10 @@ class FakeCIDBConnection(object):
   def GetKeyVals(self):
     """Gets contents of keyvalTable."""
     return self.fake_keyvals
+
+  def GetBuildStatusWithBuildbucketId(self, buildbucket_id):
+    for row in self.buildTable:
+      if row['buildbucket_id'] == buildbucket_id:
+        return self._TrimStatus(row)
+
+    return None

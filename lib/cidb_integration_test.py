@@ -663,6 +663,34 @@ class BuildTableTest(CIDBIntegrationTest):
     self.assertEqual(tmp_buildbucket_id,
                      bot_db.GetBuildStatus(build_id)['buildbucket_id'])
 
+    build_status = bot_db.GetBuildStatusWithBuildbucketId(
+        tmp_buildbucket_id)
+    self.assertEqual(build_status['id'], build_id)
+
+  def testFinishBuild(self):
+    """Test FinishBuild."""
+    self._PrepareDatabase()
+    bot_db = self.LocalCIDBConnection(self.CIDB_USER_BOT)
+
+    build_id = bot_db.InsertBuild('build_name',
+                                  constants.WATERFALL_INTERNAL,
+                                  _random(),
+                                  'build_config',
+                                  'bot_hostname')
+
+    bot_db.FinishBuild(build_id, status=constants.BUILDER_STATUS_ABORTED,
+                       summary='summary')
+    self.assertEqual(
+        bot_db.GetBuildStatus(build_id)['status'],
+        constants.BUILDER_STATUS_ABORTED)
+    self.assertEqual(
+        bot_db.GetBuildStatus(build_id)['build_config'],
+        'build_config')
+    self.assertEqual(
+        bot_db.GetBuildStatus(build_id)['summary'],
+        'summary')
+
+
 class DataSeries1Test(CIDBIntegrationTest):
   """Simulate a single set of canary builds."""
 

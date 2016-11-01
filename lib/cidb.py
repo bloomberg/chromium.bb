@@ -609,7 +609,7 @@ class CIDBConnection(SchemaVersionedMySQLConnection):
   BUILD_STATUS_KEYS = (
       'id', 'build_config', 'start_time', 'finish_time', 'status', 'waterfall',
       'build_number', 'builder_name', 'platform_version', 'full_version',
-      'milestone_version', 'important', 'buildbucket_id')
+      'milestone_version', 'important', 'buildbucket_id', 'summary')
 
   def __init__(self, db_credentials_dir, *args, **kwargs):
     super(CIDBConnection, self).__init__('cidb', CIDB_MIGRATIONS_DIR,
@@ -935,6 +935,7 @@ class CIDBConnection(SchemaVersionedMySQLConnection):
          'finish_time': current_timestamp,
          'final': True})
 
+
   @minimum_schema(25)
   def FinishBuild(self, build_id, status=None, summary=None, metadata_url=None):
     """Update the given build row, marking it as finished.
@@ -952,15 +953,23 @@ class CIDBConnection(SchemaVersionedMySQLConnection):
                           'R39-6225.0.0-rc1/metadata.json')
     """
     self._ReflectToMetadata()
-    if summary:
-      summary = summary[:1024]
+
     # The current timestamp is evaluated on the database, not locally.
     current_timestamp = sqlalchemy.func.current_timestamp()
-    self._Update('buildTable', build_id, {'finish_time': current_timestamp,
-                                          'status': status,
-                                          'summary': summary,
-                                          'metadata_url': metadata_url,
-                                          'final': True})
+    values = {
+        'finish_time': current_timestamp,
+        'final': True
+    }
+
+    if status is not None:
+      values.update(status=status)
+    if summary is not None:
+      summary = summary[:1024]
+      values.update(summary=summary)
+    if metadata_url is not None:
+      values.update(metadata_url=metadata_url)
+
+    self._Update('buildTable', build_id, values)
 
 
   @minimum_schema(16)
@@ -982,6 +991,13 @@ class CIDBConnection(SchemaVersionedMySQLConnection):
         'SET status="%s", final=1 '
         'WHERE (build_id, child_config) = (%d, "%s")' %
         (status, build_id, child_config))
+
+  @minimum_schema(50)
+  def GetBuildStatusWithBuildbucketId(self, buildbucket_id):
+    status = self._SelectWhere('buildTable',
+                               'buildbucket_id = "%s"' % buildbucket_id,
+                               self.BUILD_STATUS_KEYS)
+    return status[0] if status else None
 
   @minimum_schema(47)
   def GetBuildStatus(self, build_id):
