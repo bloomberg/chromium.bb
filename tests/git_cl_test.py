@@ -2118,11 +2118,17 @@ class TestGitCl(TestCase):
       'labels': {},
       'current_revision': 'deadbeaf',
     }
+    cl._codereview_impl._GetChangeCommit = lambda: {
+      'commit': 'deadbeef',
+      'web_links': [{'name': 'gerrit',
+                     'url': 'https://git.googlesource.com/test/+/deadbeef'}],
+    }
     cl._codereview_impl.SubmitIssue = lambda wait_for_merge: None
     out = StringIO.StringIO()
     self.mock(sys, 'stdout', out)
     self.assertEqual(0, cl.CMDLand(force=True, bypass_hooks=True, verbose=True))
     self.assertRegexpMatches(out.getvalue(), 'Issue.*123 has been submitted')
+    self.assertRegexpMatches(out.getvalue(), 'Landed as .*deadbeef')
 
   BUILDBUCKET_BUILDS_MAP = {
         '9000': {

@@ -483,6 +483,12 @@ def GetChangeDetail(host, change, o_params=None):
   return ReadHttpJsonResponse(CreateHttpConn(host, path))
 
 
+def GetChangeCommit(host, change, revision='current'):
+  """Query a gerrit server for a revision associated with a change."""
+  path = 'changes/%s/revisions/%s/commit?links' % (change, revision)
+  return ReadHttpJsonResponse(CreateHttpConn(host, path))
+
+
 def GetChangeDescriptionFromGitiles(url, revision):
   """Query Gitiles for actual commit message for a given url and ref.
 

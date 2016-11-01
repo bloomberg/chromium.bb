@@ -2497,6 +2497,14 @@ class _GerritChangelistImpl(_ChangelistCodereviewBase):
       raise GerritIssueNotExists(issue, self.GetCodereviewServer())
     return data
 
+  def _GetChangeCommit(self, issue=None):
+    issue = issue or self.GetIssue()
+    assert issue, 'issue is required to query Gerrit'
+    data = gerrit_util.GetChangeCommit(self._GetGerritHost(), str(issue))
+    if not data:
+      raise GerritIssueNotExists(issue, self.GetCodereviewServer())
+    return data
+
   def CMDLand(self, force, bypass_hooks, verbose):
     if git_common.is_dirty_git_tree('land'):
       return 1
@@ -2535,6 +2543,11 @@ class _GerritChangelistImpl(_ChangelistCodereviewBase):
 
     self.SubmitIssue(wait_for_merge=True)
     print('Issue %s has been submitted.' % self.GetIssueURL())
+    links = self._GetChangeCommit().get('web_links', [])
+    for link in links:
+      if link.get('name') == 'gerrit' and link.get('url'):
+        print('Landed as %s' % link.get('url'))
+        break
     return 0
 
   def CMDPatchWithParsedIssue(self, parsed_issue_arg, reject, nocommit,
