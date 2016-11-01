@@ -5,7 +5,7 @@ sky@chromium.org
 
 # These are for the common case of adding or renaming a few items. If you're
 # doing structural changes, please get a review from a reviewer above.
-per-file ash.gyp=*
 per-file ash_strings.grd=*
 per-file ash_chromeos_strings.grdp=*
 per-file ash_switches.*=*
+per-file BUILD.gn=*
