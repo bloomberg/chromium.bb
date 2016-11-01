@@ -36,18 +36,14 @@ namespace blink {
 
 DistanceEffect::DistanceEffect()
     : m_model(ModelInverse),
-      m_isClamped(true),
       m_refDistance(1.0),
       m_maxDistance(10000.0),
       m_rolloffFactor(1.0) {}
 
 double DistanceEffect::gain(double distance) {
-  // don't go beyond maximum distance
-  distance = std::min(distance, m_maxDistance);
-
-  // if clamped, don't get closer than reference distance
-  if (m_isClamped)
-    distance = std::max(distance, m_refDistance);
+  // Don't get closer than the reference distance or go beyond the maximum
+  // distance.
+  distance = clampTo(distance, m_refDistance, m_maxDistance);
 
   switch (m_model) {
     case ModelLinear:

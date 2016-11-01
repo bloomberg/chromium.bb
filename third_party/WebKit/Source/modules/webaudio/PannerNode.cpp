@@ -342,8 +342,8 @@ bool PannerHandler::setDistanceModel(unsigned model) {
       if (model != m_distanceModel) {
         // This synchronizes with process().
         MutexLocker processLocker(m_processLock);
-        m_distanceEffect.setModel(static_cast<DistanceEffect::ModelType>(model),
-                                  true);
+        m_distanceEffect.setModel(
+            static_cast<DistanceEffect::ModelType>(model));
         m_distanceModel = model;
       }
       break;

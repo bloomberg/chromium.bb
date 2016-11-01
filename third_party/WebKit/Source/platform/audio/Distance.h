@@ -52,10 +52,7 @@ class PLATFORM_EXPORT DistanceEffect {
 
   ModelType model() { return m_model; }
 
-  void setModel(ModelType model, bool clamped) {
-    m_model = model;
-    m_isClamped = clamped;
-  }
+  void setModel(ModelType model) { m_model = model; }
 
   // Distance params
   void setRefDistance(double refDistance) { m_refDistance = refDistance; }
@@ -74,7 +71,6 @@ class PLATFORM_EXPORT DistanceEffect {
   double exponentialGain(double distance);
 
   ModelType m_model;
-  bool m_isClamped;
   double m_refDistance;
   double m_maxDistance;
   double m_rolloffFactor;
