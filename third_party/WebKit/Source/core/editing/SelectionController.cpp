@@ -432,8 +432,7 @@ void SelectionController::selectClosestWordFromHitTestResult(
       return;
   }
 
-  if (appendTrailingWhitespace == AppendTrailingWhitespace::ShouldAppend &&
-      newSelection.isRange())
+  if (appendTrailingWhitespace == AppendTrailingWhitespace::ShouldAppend)
     newSelection.appendTrailingWhitespace();
 
   updateSelectionForMouseDownDispatchingSelectStart(
@@ -467,8 +466,7 @@ void SelectionController::selectClosestMisspellingFromHitTestResult(
     }
   }
 
-  if (appendTrailingWhitespace == AppendTrailingWhitespace::ShouldAppend &&
-      newSelection.isRange())
+  if (appendTrailingWhitespace == AppendTrailingWhitespace::ShouldAppend)
     newSelection.appendTrailingWhitespace();
 
   updateSelectionForMouseDownDispatchingSelectStart(

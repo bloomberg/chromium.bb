@@ -238,7 +238,11 @@ static EphemeralRangeTemplate<Strategy> makeSearchRange(
 
 template <typename Strategy>
 void VisibleSelectionTemplate<Strategy>::appendTrailingWhitespace() {
+  if (isNone())
+    return;
   DCHECK_EQ(m_granularity, WordGranularity);
+  if (!isRange())
+    return;
   const EphemeralRangeTemplate<Strategy> searchRange = makeSearchRange(end());
   if (searchRange.isNull())
     return;
