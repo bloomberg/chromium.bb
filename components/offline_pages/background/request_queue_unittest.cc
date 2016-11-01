@@ -5,6 +5,7 @@
 #include "components/offline_pages/background/request_queue.h"
 
 #include <memory>
+#include <utility>
 
 #include "base/bind.h"
 #include "base/test/test_simple_task_runner.h"
@@ -24,7 +25,6 @@ namespace {
 const int64_t kRequestId = 42;
 const GURL kUrl("http://example.com");
 const ClientId kClientId("bookmark", "1234");
-const int64_t kRetryCount = 2;
 // Data for request 2.
 const int64_t kRequestId2 = 77;
 const GURL kUrl2("http://test.com");
@@ -350,51 +350,6 @@ TEST_F(RequestQueueTest, MultipleRequestsAddGetRemove) {
   ASSERT_EQ(request2.request_id(), last_requests().at(0)->request_id());
 }
 
-TEST_F(RequestQueueTest, UpdateRequest) {
-  // First add a request.  Retry count will be set to 0.
-  base::Time creation_time = base::Time::Now();
-  SavePageRequest request(
-      kRequestId, kUrl, kClientId, creation_time, kUserRequested);
-  queue()->AddRequest(request, base::Bind(&RequestQueueTest::AddRequestDone,
-                                          base::Unretained(this)));
-  PumpLoop();
-
-  // Update the request, ensure it succeeded.
-  request.set_completed_attempt_count(kRetryCount);
-  queue()->UpdateRequest(
-      request,
-      base::Bind(&RequestQueueTest::UpdateRequestDone, base::Unretained(this)));
-  PumpLoop();
-  ASSERT_EQ(UpdateRequestResult::SUCCESS, last_update_result());
-
-  // Get the request, and verify the update took effect.
-  queue()->GetRequests(
-      base::Bind(&RequestQueueTest::GetRequestsDone, base::Unretained(this)));
-  PumpLoop();
-  ASSERT_EQ(GetRequestsResult::SUCCESS, last_get_requests_result());
-  ASSERT_EQ(1ul, last_requests().size());
-  ASSERT_EQ(kRetryCount, last_requests().at(0)->completed_attempt_count());
-}
-
-TEST_F(RequestQueueTest, UpdateRequestNotPresent) {
-  // First add a request.  Retry count will be set to 0.
-  base::Time creation_time = base::Time::Now();
-  SavePageRequest request1(
-      kRequestId, kUrl, kClientId, creation_time, kUserRequested);
-  SavePageRequest request2(
-      kRequestId2, kUrl2, kClientId2, creation_time, kUserRequested);
-  queue()->AddRequest(request2, base::Bind(&RequestQueueTest::AddRequestDone,
-                                           base::Unretained(this)));
-  PumpLoop();
-
-  // Try to update request1 when only request2 is in the queue.
-  queue()->UpdateRequest(
-      request1,
-      base::Bind(&RequestQueueTest::UpdateRequestDone, base::Unretained(this)));
-  PumpLoop();
-  ASSERT_EQ(UpdateRequestResult::REQUEST_DOES_NOT_EXIST, last_update_result());
-}
-
 TEST_F(RequestQueueTest, MarkAttemptStarted) {
   // First add a request.  Retry count will be set to 0.
   base::Time creation_time = base::Time::Now();
@@ -497,6 +452,36 @@ TEST_F(RequestQueueTest, MarkAttemptAbortedRequestNotPresent) {
   EXPECT_EQ(ItemActionStatus::NOT_FOUND,
             update_requests_result()->item_statuses.at(0).second);
   EXPECT_EQ(0ul, update_requests_result()->updated_items.size());
+}
+
+TEST_F(RequestQueueTest, MarkAttemptCompleted) {
+  base::Time creation_time = base::Time::Now();
+  SavePageRequest request(kRequestId, kUrl, kClientId, creation_time,
+                          kUserRequested);
+  queue()->AddRequest(request, base::Bind(&RequestQueueTest::AddRequestDone,
+                                          base::Unretained(this)));
+  PumpLoop();
+
+  // Start request.
+  queue()->MarkAttemptStarted(kRequestId,
+                              base::Bind(&RequestQueueTest::UpdateRequestsDone,
+                                         base::Unretained(this)));
+  PumpLoop();
+  ClearResults();
+
+  queue()->MarkAttemptCompleted(
+      kRequestId, base::Bind(&RequestQueueTest::UpdateRequestsDone,
+                             base::Unretained(this)));
+  PumpLoop();
+
+  ASSERT_TRUE(update_requests_result());
+  EXPECT_EQ(1UL, update_requests_result()->item_statuses.size());
+  EXPECT_EQ(kRequestId, update_requests_result()->item_statuses.at(0).first);
+  EXPECT_EQ(ItemActionStatus::SUCCESS,
+            update_requests_result()->item_statuses.at(0).second);
+  EXPECT_EQ(1UL, update_requests_result()->updated_items.size());
+  EXPECT_EQ(SavePageRequest::RequestState::AVAILABLE,
+            update_requests_result()->updated_items.at(0).request_state());
 }
 
 }  // namespace offline_pages

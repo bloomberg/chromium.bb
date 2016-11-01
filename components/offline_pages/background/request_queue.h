@@ -78,11 +78,6 @@ class RequestQueue {
   void AddRequest(const SavePageRequest& request,
                   const AddRequestCallback& callback);
 
-  // Updates a request in the request queue if a request with matching ID
-  // exists. Does nothing otherwise. Result is returned through |callback|.
-  void UpdateRequest(const SavePageRequest& request,
-                     const UpdateRequestCallback& callback);
-
   // Removes the requests matching the |request_ids|. Result is returned through
   // |callback|.  If a request id cannot be removed, this will still remove the
   // others.
@@ -103,11 +98,10 @@ class RequestQueue {
   // |callback|.
   void MarkAttemptAborted(int64_t request_id, const UpdateCallback& callback);
 
-  void GetForUpdateDone(
-      const RequestQueue::UpdateRequestCallback& update_callback,
-      const SavePageRequest& update_request,
-      bool success,
-      std::vector<std::unique_ptr<SavePageRequest>> requests);
+  // Marks attempt with |request_id| as completed. The attempt may have
+  // completed with either success or failure (not denoted here). Results
+  // are returned through |callback|.
+  void MarkAttemptCompleted(int64_t request_id, const UpdateCallback& callback);
 
  private:
   // Callback used by |PurgeRequests|.

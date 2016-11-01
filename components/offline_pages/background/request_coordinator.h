@@ -7,6 +7,7 @@
 
 #include <memory>
 #include <set>
+#include <string>
 #include <vector>
 
 #include "base/callback.h"
@@ -241,9 +242,11 @@ class RequestCoordinator : public KeyedService,
   void AddRequestResultCallback(RequestQueue::AddRequestResult result,
                                 const SavePageRequest& request);
 
-  // Receives the result of update and delete requests to the request queue.
-  void UpdateRequestCallback(const ClientId& client_id,
-                             RequestQueue::UpdateRequestResult result);
+  // Receives the result of mark attempt completed requests.
+  void MarkAttemptCompletedDoneCallback(
+      int64_t request_id,
+      const ClientId& client_id,
+      std::unique_ptr<UpdateRequestsResult> result);
 
   void UpdateMultipleRequestsCallback(
       std::unique_ptr<UpdateRequestsResult> result);
