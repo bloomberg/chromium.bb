@@ -1095,10 +1095,9 @@ class CORE_EXPORT LayoutBox : public LayoutBoxModelObject {
   bool shrinkToAvoidFloats() const;
   virtual bool avoidsFloats() const;
 
-  void updateFragmentationInfoForChild(LayoutBox& child);
-
-  void markChildForPaginationRelayoutIfNeeded(LayoutBox& child,
-                                              SubtreeLayoutScope&);
+  void updateFragmentationInfoForChild(LayoutBox&);
+  bool childNeedsRelayoutForPagination(const LayoutBox&) const;
+  void markChildForPaginationRelayoutIfNeeded(LayoutBox&, SubtreeLayoutScope&);
 
   bool isWritingModeRoot() const {
     return !parent() ||

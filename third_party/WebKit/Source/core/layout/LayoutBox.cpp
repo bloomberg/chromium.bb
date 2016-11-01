@@ -4719,44 +4719,49 @@ void LayoutBox::updateFragmentationInfoForChild(LayoutBox& child) {
     child.setOffsetToNextPage(spaceLeft);
 }
 
+bool LayoutBox::childNeedsRelayoutForPagination(const LayoutBox& child) const {
+  // TODO(mstensho): Should try to get this to work for floats too, instead of
+  // just marking and bailing here.
+  if (child.isFloating())
+    return true;
+  LayoutUnit logicalTop = child.logicalTop();
+  // Figure out if we really need to force re-layout of the child. We only need
+  // to do this if there's a chance that we need to recalculate pagination
+  // struts inside.
+  if (LayoutUnit pageLogicalHeight = pageLogicalHeightForOffset(logicalTop)) {
+    LayoutUnit logicalHeight = child.logicalHeightIncludingOverflow();
+    LayoutUnit remainingSpace = pageRemainingLogicalHeightForOffset(
+        logicalTop, AssociateWithLatterPage);
+    if (child.offsetToNextPage()) {
+      // We need to relayout unless we're going to break at the exact same
+      // location as before.
+      if (child.offsetToNextPage() != remainingSpace)
+        return true;
+    } else if (logicalHeight > remainingSpace) {
+      // Last time we laid out this child, we didn't need to break, but now we
+      // have to. So we need to relayout.
+      return true;
+    }
+  } else {
+    return true;
+  }
+
+  // It seems that we can skip layout of this child, but we need to ask the flow
+  // thread for permission first. We currently cannot skip over objects
+  // containing column spanners.
+  LayoutFlowThread* flowThread = child.flowThreadContainingBlock();
+  return flowThread && !flowThread->canSkipLayout(child);
+}
+
 void LayoutBox::markChildForPaginationRelayoutIfNeeded(
     LayoutBox& child,
     SubtreeLayoutScope& layoutScope) {
   DCHECK(!child.needsLayout());
   LayoutState* layoutState = view()->layoutState();
-  // TODO(mstensho): Should try to get this to work for floats too, instead of
-  // just marking and bailing here.
-  if (layoutState->paginationStateChanged() || child.isFloating()) {
+
+  if (layoutState->paginationStateChanged() ||
+      (layoutState->isPaginated() && childNeedsRelayoutForPagination(child)))
     layoutScope.setChildNeedsLayout(&child);
-    return;
-  }
-  if (!layoutState->isPaginated())
-    return;
-
-  LayoutUnit logicalTop = child.logicalTop();
-  if (LayoutUnit pageLogicalHeight = pageLogicalHeightForOffset(logicalTop)) {
-    // Figure out if we really need to force re-layout of the child. We only
-    // need to do this if there's a chance that we need to recalculate
-    // pagination struts inside.
-    LayoutUnit remainingSpace = pageRemainingLogicalHeightForOffset(
-        logicalTop, AssociateWithLatterPage);
-    LayoutUnit logicalHeight = child.logicalHeightIncludingOverflow();
-    if ((!child.offsetToNextPage() && logicalHeight <= remainingSpace) ||
-        child.offsetToNextPage() == remainingSpace) {
-      // We don't need to relayout this child, either because the child wasn't
-      // previously fragmented, and won't be fragmented now either, or because
-      // it would fragment at the exact same position as before.
-      //
-      // We want to skip layout of this child, but we need to ask the flow
-      // thread for permission first. We currently cannot skip over objects
-      // containing column spanners.
-      LayoutFlowThread* flowThread = child.flowThreadContainingBlock();
-      if (!flowThread || flowThread->canSkipLayout(child))
-        return;
-    }
-  }
-
-  layoutScope.setChildNeedsLayout(&child);
 }
 
 void LayoutBox::markOrthogonalWritingModeRoot() {
