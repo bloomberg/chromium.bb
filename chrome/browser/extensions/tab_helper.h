@@ -52,7 +52,6 @@ class WebstoreInlineInstallerFactory;
 class TabHelper : public content::WebContentsObserver,
                   public ExtensionFunctionDispatcher::Delegate,
                   public ExtensionRegistryObserver,
-                  public base::SupportsWeakPtr<TabHelper>,
                   public content::NotificationObserver,
                   public content::WebContentsUserData<TabHelper> {
  public:
