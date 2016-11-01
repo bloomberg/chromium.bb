@@ -328,7 +328,9 @@ def create_directories(base_directory, files):
       item = os.path.dirname(item)
   for d in sorted(directories):
     if d:
-      fs.mkdir(os.path.join(base_directory, d))
+      abs_d = os.path.join(base_directory, d)
+      if not fs.isdir(abs_d):
+        fs.mkdir(abs_d)
 
 
 def create_symlinks(base_directory, files):
