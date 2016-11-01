@@ -283,10 +283,7 @@ VTVideoDecodeAccelerator::PictureInfo::PictureInfo(uint32_t client_texture_id,
     : client_texture_id(client_texture_id),
       service_texture_id(service_texture_id) {}
 
-VTVideoDecodeAccelerator::PictureInfo::~PictureInfo() {
-  if (gl_image)
-    gl_image->Destroy(false);
-}
+VTVideoDecodeAccelerator::PictureInfo::~PictureInfo() {}
 
 bool VTVideoDecodeAccelerator::FrameOrder::operator()(
     const linked_ptr<Frame>& lhs,
@@ -906,7 +903,6 @@ void VTVideoDecodeAccelerator::ReusePictureBuffer(int32_t picture_id) {
   if (it != picture_info_map_.end()) {
     PictureInfo* picture_info = it->second.get();
     picture_info->cv_image.reset();
-    picture_info->gl_image->Destroy(false);
     picture_info->gl_image = nullptr;
   }
 

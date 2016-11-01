@@ -42,7 +42,6 @@ class GL_EXPORT GLImageIOSurface : public GLImage {
                                    gfx::BufferFormat format);
 
   // Overridden from GLImage:
-  void Destroy(bool have_context) override;
   gfx::Size GetSize() override;
   unsigned GetInternalFormat() override;
   bool BindTexImage(unsigned target) override;

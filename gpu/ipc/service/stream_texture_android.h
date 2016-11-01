@@ -43,7 +43,6 @@ class StreamTexture : public gpu::gles2::GLStreamTextureImage,
   ~StreamTexture() override;
 
   // gl::GLImage implementation:
-  void Destroy(bool have_context) override;
   gfx::Size GetSize() override;
   unsigned GetInternalFormat() override;
   bool BindTexImage(unsigned target) override;

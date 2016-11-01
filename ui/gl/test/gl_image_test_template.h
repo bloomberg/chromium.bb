@@ -183,7 +183,7 @@ class GLImageTest : public testing::Test {
 
 TYPED_TEST_CASE_P(GLImageTest);
 
-TYPED_TEST_P(GLImageTest, CreateAndDestroy) {
+TYPED_TEST_P(GLImageTest, Create) {
   const gfx::Size small_image_size(4, 4);
   const gfx::Size large_image_size(512, 512);
   const uint8_t* image_color = this->delegate_.GetImageColor();
@@ -203,16 +203,11 @@ TYPED_TEST_P(GLImageTest, CreateAndDestroy) {
   // Verify that image size is correct.
   EXPECT_EQ(small_image->GetSize().ToString(), small_image_size.ToString());
   EXPECT_EQ(large_image->GetSize().ToString(), large_image_size.ToString());
-
-  // Verify that destruction of images work correctly both when we have a
-  // context and when we don't.
-  small_image->Destroy(true /* have_context */);
-  large_image->Destroy(false /* have_context */);
 }
 
 // The GLImageTest test case verifies the behaviour that is expected from a
 // GLImage in order to be conformant.
-REGISTER_TYPED_TEST_CASE_P(GLImageTest, CreateAndDestroy);
+REGISTER_TYPED_TEST_CASE_P(GLImageTest, Create);
 
 template <typename GLImageTestDelegate>
 class GLImageOddSizeTest : public GLImageTest<GLImageTestDelegate> {};
@@ -220,7 +215,7 @@ class GLImageOddSizeTest : public GLImageTest<GLImageTestDelegate> {};
 // This test verifies that odd-sized GLImages can be created and destroyed.
 TYPED_TEST_CASE_P(GLImageOddSizeTest);
 
-TYPED_TEST_P(GLImageOddSizeTest, CreateAndDestroy) {
+TYPED_TEST_P(GLImageOddSizeTest, Create) {
   const gfx::Size odd_image_size(17, 53);
   const uint8_t* image_color = this->delegate_.GetImageColor();
 
@@ -232,13 +227,11 @@ TYPED_TEST_P(GLImageOddSizeTest, CreateAndDestroy) {
 
   // Verify that image size is correct.
   EXPECT_EQ(odd_image->GetSize().ToString(), odd_image_size.ToString());
-
-  odd_image->Destroy(true /* have_context */);
 }
 
 // The GLImageTest test case verifies the behaviour that is expected from a
 // GLImage in order to be conformant.
-REGISTER_TYPED_TEST_CASE_P(GLImageOddSizeTest, CreateAndDestroy);
+REGISTER_TYPED_TEST_CASE_P(GLImageOddSizeTest, Create);
 
 template <typename GLImageTestDelegate>
 class GLImageZeroInitializeTest : public GLImageTest<GLImageTestDelegate> {};
@@ -294,7 +287,6 @@ TYPED_TEST_P(GLImageZeroInitializeTest, ZeroInitialize) {
   // Clean up.
   glDeleteTextures(1, &texture);
   glDeleteFramebuffersEXT(1, &framebuffer);
-  image->Destroy(true /* have_context */);
 }
 
 REGISTER_TYPED_TEST_CASE_P(GLImageZeroInitializeTest, ZeroInitialize);
@@ -341,7 +333,6 @@ TYPED_TEST_P(GLImageBindTest, BindTexImage) {
   // Clean up.
   glDeleteTextures(1, &texture);
   glDeleteFramebuffersEXT(1, &framebuffer);
-  image->Destroy(true /* have_context */);
 }
 
 REGISTER_TYPED_TEST_CASE_P(GLImageBindTest, BindTexImage);
@@ -403,7 +394,6 @@ TYPED_TEST_P(GLImageCopyTest, CopyTexImage) {
   // Clean up.
   glDeleteTextures(1, &texture);
   glDeleteFramebuffersEXT(1, &framebuffer);
-  image->Destroy(true /* have_context */);
   if (vao) {
     glDeleteVertexArraysOES(1, &vao);
   }

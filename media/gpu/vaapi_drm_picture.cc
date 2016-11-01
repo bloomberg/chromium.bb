@@ -37,8 +37,6 @@ VaapiDrmPicture::VaapiDrmPicture(
 VaapiDrmPicture::~VaapiDrmPicture() {
   if (gl_image_ && make_context_current_cb_.Run()) {
     gl_image_->ReleaseTexImage(GL_TEXTURE_EXTERNAL_OES);
-    gl_image_->Destroy(true);
-
     DCHECK_EQ(glGetError(), static_cast<GLenum>(GL_NO_ERROR));
   }
 }

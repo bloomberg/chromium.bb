@@ -31,7 +31,6 @@ class AVDACodecImage : public gpu::gles2::GLStreamTextureImage {
                  const base::WeakPtr<gpu::gles2::GLES2Decoder>& decoder);
 
   // gl::GLImage implementation
-  void Destroy(bool have_context) override;
   gfx::Size GetSize() override;
   unsigned GetInternalFormat() override;
   bool BindTexImage(unsigned target) override;

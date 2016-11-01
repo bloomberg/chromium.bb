@@ -3797,7 +3797,6 @@ class MockGLImage : public gl::GLImage {
   // Overridden from gl::GLImage:
   MOCK_METHOD0(GetSize, gfx::Size());
   MOCK_METHOD0(GetInternalFormat, unsigned());
-  MOCK_METHOD1(Destroy, void(bool));
   MOCK_METHOD1(BindTexImage, bool(unsigned));
   MOCK_METHOD1(ReleaseTexImage, void(unsigned));
   MOCK_METHOD1(CopyTexImage, bool(unsigned));
@@ -3933,7 +3932,6 @@ TEST_P(GLES2DecoderWithShaderTest, CopyTexImage) {
   EXPECT_EQ(error::kNoError, ExecuteCmd(fbtex_cmd));
   EXPECT_EQ(GL_NO_ERROR, GetGLError());
 
-  EXPECT_CALL(*image.get(), Destroy(true)).Times(1).RetiresOnSaturation();
   image = nullptr;
 }
 

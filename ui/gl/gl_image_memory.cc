@@ -352,9 +352,7 @@ GLImageMemory::GLImageMemory(const gfx::Size& size, unsigned internalformat)
       format_(gfx::BufferFormat::RGBA_8888),
       stride_(0) {}
 
-GLImageMemory::~GLImageMemory() {
-  DCHECK(!memory_);
-}
+GLImageMemory::~GLImageMemory() {}
 
 bool GLImageMemory::Initialize(const unsigned char* memory,
                                gfx::BufferFormat format,
@@ -382,10 +380,6 @@ bool GLImageMemory::Initialize(const unsigned char* memory,
   format_ = format;
   stride_ = stride;
   return true;
-}
-
-void GLImageMemory::Destroy(bool have_context) {
-  memory_ = nullptr;
 }
 
 gfx::Size GLImageMemory::GetSize() {

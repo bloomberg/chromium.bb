@@ -102,10 +102,6 @@ void StreamTexture::OnWillDestroyStub() {
   surface_texture_ = NULL;
 }
 
-void StreamTexture::Destroy(bool have_context) {
-  NOTREACHED();
-}
-
 std::unique_ptr<ui::ScopedMakeCurrent> StreamTexture::MakeStubCurrent() {
   std::unique_ptr<ui::ScopedMakeCurrent> scoped_make_current;
   bool needs_make_current =

@@ -198,10 +198,6 @@ unsigned GLImageOzoneNativePixmap::GetInternalFormat() {
   return internalformat_;
 }
 
-void GLImageOzoneNativePixmap::Destroy(bool have_context) {
-  GLImageEGL::Destroy(have_context);
-}
-
 bool GLImageOzoneNativePixmap::CopyTexImage(unsigned target) {
   if (egl_image_ == EGL_NO_IMAGE_KHR) {
     // Pass-through image type fails to bind and copy; make sure we

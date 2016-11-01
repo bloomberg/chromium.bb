@@ -183,10 +183,7 @@ bool GLES2DecoderPassthroughImpl::Initialize(
 }
 
 void GLES2DecoderPassthroughImpl::Destroy(bool have_context) {
-  if (image_manager_.get()) {
-    image_manager_->Destroy(have_context);
-    image_manager_.reset();
-  }
+  image_manager_.reset();
 
   DeleteServiceObjects(
       &framebuffer_id_map_, have_context,

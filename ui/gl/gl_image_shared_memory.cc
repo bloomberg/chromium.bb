@@ -20,9 +20,7 @@ GLImageSharedMemory::GLImageSharedMemory(const gfx::Size& size,
                                          unsigned internalformat)
     : GLImageMemory(size, internalformat) {}
 
-GLImageSharedMemory::~GLImageSharedMemory() {
-  DCHECK(!shared_memory_);
-}
+GLImageSharedMemory::~GLImageSharedMemory() {}
 
 bool GLImageSharedMemory::Initialize(
     const base::SharedMemoryHandle& handle,
@@ -70,11 +68,6 @@ bool GLImageSharedMemory::Initialize(
   shared_memory_ = std::move(shared_memory);
   shared_memory_id_ = shared_memory_id;
   return true;
-}
-
-void GLImageSharedMemory::Destroy(bool have_context) {
-  GLImageMemory::Destroy(have_context);
-  shared_memory_.reset();
 }
 
 void GLImageSharedMemory::OnMemoryDump(

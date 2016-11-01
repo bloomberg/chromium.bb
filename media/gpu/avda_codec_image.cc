@@ -37,8 +37,6 @@ AVDACodecImage::~AVDACodecImage() {
   shared_state_->SetImageForPicture(picture_buffer_id_, nullptr);
 }
 
-void AVDACodecImage::Destroy(bool have_context) {}
-
 gfx::Size AVDACodecImage::GetSize() {
   return size_;
 }

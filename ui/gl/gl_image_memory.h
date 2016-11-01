@@ -25,7 +25,6 @@ class GL_EXPORT GLImageMemory : public GLImage {
                   size_t stride);
 
   // Overridden from GLImage:
-  void Destroy(bool have_context) override;
   gfx::Size GetSize() override;
   unsigned GetInternalFormat() override;
   bool BindTexImage(unsigned target) override;

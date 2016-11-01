@@ -25,7 +25,6 @@ class GL_EXPORT GLImageSurfaceTexture : public GLImage {
   bool Initialize(SurfaceTexture* surface_texture);
 
   // Overridden from GLImage:
-  void Destroy(bool have_context) override;
   gfx::Size GetSize() override;
   unsigned GetInternalFormat() override;
   bool BindTexImage(unsigned target) override;

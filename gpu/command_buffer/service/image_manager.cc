@@ -18,23 +18,14 @@ ImageManager::ImageManager() {
 ImageManager::~ImageManager() {
 }
 
-void ImageManager::Destroy(bool have_context) {
-  for (GLImageMap::const_iterator iter = images_.begin(); iter != images_.end();
-       ++iter)
-    iter->second.get()->Destroy(have_context);
-  images_.clear();
-}
-
 void ImageManager::AddImage(gl::GLImage* image, int32_t service_id) {
   DCHECK(images_.find(service_id) == images_.end());
   images_[service_id] = image;
 }
 
 void ImageManager::RemoveImage(int32_t service_id) {
-  GLImageMap::iterator iter = images_.find(service_id);
-  DCHECK(iter != images_.end());
-  iter->second.get()->Destroy(true);
-  images_.erase(iter);
+  DCHECK(images_.find(service_id) != images_.end());
+  images_.erase(service_id);
 }
 
 gl::GLImage* ImageManager::LookupImage(int32_t service_id) {

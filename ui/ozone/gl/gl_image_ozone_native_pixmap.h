@@ -24,7 +24,6 @@ class OZONE_GL_EXPORT GLImageOzoneNativePixmap : public gl::GLImageEGL {
 
   // Overridden from GLImage:
   unsigned GetInternalFormat() override;
-  void Destroy(bool have_context) override;
   bool CopyTexImage(unsigned target) override;
   bool ScheduleOverlayPlane(gfx::AcceleratedWidget widget,
                             int z_order,

@@ -20,7 +20,6 @@ class GL_EXPORT GLImageEGL : public GLImage {
   bool Initialize(EGLenum target, EGLClientBuffer buffer, const EGLint* attrs);
 
   // Overridden from GLImage:
-  void Destroy(bool have_context) override;
   gfx::Size GetSize() override;
   unsigned GetInternalFormat() override;
   bool BindTexImage(unsigned target) override;

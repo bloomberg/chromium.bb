@@ -147,7 +147,6 @@ class GLStreamTextureImageStub : public GLStreamTextureImage {
   GLStreamTextureImageStub() {}
 
   // Overridden from GLImage:
-  void Destroy(bool have_context) override {}
   gfx::Size GetSize() override { return gfx::Size(); }
   unsigned GetInternalFormat() override { return 0; }
   bool BindTexImage(unsigned target) override { return false; }

@@ -26,7 +26,6 @@ class GL_EXPORT GLImageRefCountedMemory : public GLImageMemory {
                   gfx::BufferFormat format);
 
   // Overridden from GLImage:
-  void Destroy(bool have_context) override;
   void OnMemoryDump(base::trace_event::ProcessMemoryDump* pmd,
                     uint64_t process_tracing_id,
                     const std::string& dump_name) override;

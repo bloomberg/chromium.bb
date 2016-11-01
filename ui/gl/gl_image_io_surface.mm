@@ -182,7 +182,6 @@ GLImageIOSurface::GLImageIOSurface(const gfx::Size& size,
 
 GLImageIOSurface::~GLImageIOSurface() {
   DCHECK(thread_checker_.CalledOnValidThread());
-  DCHECK(!io_surface_);
 }
 
 bool GLImageIOSurface::Initialize(IOSurfaceRef io_surface,
@@ -222,12 +221,6 @@ bool GLImageIOSurface::InitializeWithCVPixelBuffer(
 
   cv_pixel_buffer_.reset(cv_pixel_buffer, base::scoped_policy::RETAIN);
   return true;
-}
-
-void GLImageIOSurface::Destroy(bool have_context) {
-  DCHECK(thread_checker_.CalledOnValidThread());
-  io_surface_.reset();
-  cv_pixel_buffer_.reset();
 }
 
 gfx::Size GLImageIOSurface::GetSize() {

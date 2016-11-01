@@ -25,7 +25,6 @@ class GPU_EXPORT ImageManager {
   ImageManager();
   ~ImageManager();
 
-  void Destroy(bool have_context);
   void AddImage(gl::GLImage* image, int32_t service_id);
   void RemoveImage(int32_t service_id);
   gl::GLImage* LookupImage(int32_t service_id);

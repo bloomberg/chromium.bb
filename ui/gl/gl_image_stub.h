@@ -18,7 +18,6 @@ class GL_EXPORT GLImageStub : public GLImage {
   GLImageStub();
 
   // Overridden from GLImage:
-  void Destroy(bool have_context) override {}
   gfx::Size GetSize() override;
   unsigned GetInternalFormat() override;
   bool BindTexImage(unsigned target) override;

@@ -35,7 +35,6 @@ class GLImageSync : public gl::GLImage {
                        const gfx::Size& size);
 
   // Implement GLImage.
-  void Destroy(bool have_context) override;
   gfx::Size GetSize() override;
   unsigned GetInternalFormat() override;
   bool BindTexImage(unsigned target) override;
@@ -74,9 +73,6 @@ GLImageSync::GLImageSync(const scoped_refptr<NativeImageBuffer>& buffer,
 GLImageSync::~GLImageSync() {
   if (buffer_.get())
     buffer_->RemoveClient(this);
-}
-
-void GLImageSync::Destroy(bool have_context) {
 }
 
 gfx::Size GLImageSync::GetSize() {

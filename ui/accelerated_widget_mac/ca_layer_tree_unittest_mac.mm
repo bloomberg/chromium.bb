@@ -22,10 +22,7 @@ namespace {
 
 struct CALayerProperties {
   CALayerProperties() {}
-  ~CALayerProperties() {
-    if (gl_image)
-      gl_image->Destroy(true);
-  }
+  ~CALayerProperties() {}
 
   bool is_clipped = true;
   gfx::Rect clip_rect;
@@ -268,7 +265,6 @@ class CALayerTreePropertyUpdatesTest : public CALayerTreeTest {
 
     // Change the contents and commit.
     {
-      properties.gl_image->Destroy(true);
       properties.gl_image = nullptr;
       UpdateCALayerTree(ca_layer_tree, &properties, superlayer_);
 
@@ -469,8 +465,6 @@ class CALayerTreePropertyUpdatesTest : public CALayerTreeTest {
       if ([content_layer respondsToSelector:(@selector(contentsScale))])
         EXPECT_EQ(properties.scale_factor, [content_layer contentsScale]);
     }
-
-    properties.gl_image->Destroy(true);
   }
 };
 
@@ -569,9 +563,6 @@ TEST_F(CALayerTreeTest, SplitSortingContextZero) {
             [content_layer_3 contents]);
   EXPECT_EQ(static_cast<id>(gl_images[4]->io_surface().get()),
             [content_layer_4 contents]);
-
-  for (size_t i = 0; i < 5; ++i)
-    gl_images[i]->Destroy(true);
 }
 
 // Verify that sorting contexts are allocated appropriately.
@@ -638,9 +629,6 @@ TEST_F(CALayerTreeTest, SortingContexts) {
             [content_layer_1 contents]);
   EXPECT_EQ(static_cast<id>(gl_images[2]->io_surface().get()),
             [content_layer_2 contents]);
-
-  for (size_t i = 0; i < 3; ++i)
-    gl_images[i]->Destroy(true);
 }
 
 // Verify that sorting contexts must all have the same clipping properties.
@@ -724,7 +712,6 @@ TEST_F(CALayerTreeTest, AVLayer) {
         isKindOfClass:NSClassFromString(@"AVSampleBufferDisplayLayer")]);
   }
 
-  properties.gl_image->Destroy(true);
   properties.gl_image = CreateGLImage(
       gfx::Size(256, 256), gfx::BufferFormat::YUV_420_BIPLANAR, false);
 
@@ -749,7 +736,6 @@ TEST_F(CALayerTreeTest, AVLayer) {
     EXPECT_NE(content_layer2, content_layer1);
   }
 
-  properties.gl_image->Destroy(true);
   properties.gl_image = CreateGLImage(
       gfx::Size(256, 256), gfx::BufferFormat::YUV_420_BIPLANAR, true);
 
@@ -773,7 +759,6 @@ TEST_F(CALayerTreeTest, AVLayer) {
     EXPECT_EQ(content_layer3, content_layer2);
   }
 
-  properties.gl_image->Destroy(true);
   properties.gl_image = CreateGLImage(
       gfx::Size(256, 256), gfx::BufferFormat::YUV_420_BIPLANAR, false);
 

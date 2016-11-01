@@ -14,8 +14,6 @@ GLImageSurfaceTexture::GLImageSurfaceTexture(const gfx::Size& size)
 
 GLImageSurfaceTexture::~GLImageSurfaceTexture() {
   DCHECK(thread_checker_.CalledOnValidThread());
-  DCHECK(!surface_texture_.get());
-  DCHECK_EQ(0, texture_id_);
 }
 
 bool GLImageSurfaceTexture::Initialize(SurfaceTexture* surface_texture) {
@@ -23,12 +21,6 @@ bool GLImageSurfaceTexture::Initialize(SurfaceTexture* surface_texture) {
   DCHECK(!surface_texture_.get());
   surface_texture_ = surface_texture;
   return true;
-}
-
-void GLImageSurfaceTexture::Destroy(bool have_context) {
-  DCHECK(thread_checker_.CalledOnValidThread());
-  surface_texture_ = NULL;
-  texture_id_ = 0;
 }
 
 gfx::Size GLImageSurfaceTexture::GetSize() {

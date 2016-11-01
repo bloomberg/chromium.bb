@@ -92,10 +92,8 @@ void GbmSurface::Destroy() {
     glDeleteFramebuffersEXT(1, &fbo_);
     fbo_ = 0;
   }
-  for (auto image : images_) {
-    if (image)
-      image->Destroy(true);
-  }
+  for (auto& image : images_)
+    image = nullptr;
 
   if (!was_current) {
     if (previous_context) {
@@ -133,9 +131,6 @@ bool GbmSurface::CreatePixmaps() {
         new GLImageOzoneNativePixmap(GetSize(), GL_BGRA_EXT);
     if (!image->Initialize(pixmap.get(), gfx::BufferFormat::BGRA_8888))
       return false;
-    // GLImage must have Destroy() called before destructor is called.
-    if (images_[i])
-      images_[i]->Destroy(true);
     images_[i] = image;
     // Bind image to texture.
     gl::ScopedTextureBinder binder(GL_TEXTURE_2D, textures_[i]);

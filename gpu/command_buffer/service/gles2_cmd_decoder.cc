@@ -2760,7 +2760,6 @@ void BackTexture::DestroyNativeGpuMemoryBuffer(bool have_context) {
         decoder_->state_.GetErrorState());
 
     image_->ReleaseTexImage(Target());
-    image_->Destroy(have_context);
 
     decoder_->texture_manager()->SetLevelImage(texture_ref_.get(), Target(), 0,
                                                nullptr, Texture::UNBOUND);
@@ -4748,10 +4747,7 @@ void GLES2DecoderImpl::Destroy(bool have_context) {
     transform_feedback_manager_.reset();
   }
 
-  if (image_manager_.get()) {
-    image_manager_->Destroy(have_context);
-    image_manager_.reset();
-  }
+  image_manager_.reset();
 
   offscreen_target_frame_buffer_.reset();
   offscreen_target_color_texture_.reset();

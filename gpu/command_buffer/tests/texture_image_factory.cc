@@ -14,7 +14,6 @@ class TextureImage : public gl::GLImage {
  public:
   explicit TextureImage(const gfx::Size& size) : size_(size) {}
 
-  void Destroy(bool have_context) override {}
   gfx::Size GetSize() override { return size_; }
   unsigned GetInternalFormat() override { return GL_RGBA; }
   bool BindTexImage(unsigned target) override {
