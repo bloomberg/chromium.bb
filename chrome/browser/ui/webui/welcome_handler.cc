@@ -7,12 +7,12 @@
 #include "base/metrics/histogram_macros.h"
 #include "base/metrics/user_metrics.h"
 #include "chrome/browser/profiles/profile.h"
-#include "chrome/browser/signin/profile_oauth2_token_service_factory.h"
 #include "chrome/browser/signin/signin_manager_factory.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_finder.h"
 #include "chrome/browser/ui/browser_navigator.h"
 #include "chrome/browser/ui/profile_chooser_constants.h"
+#include "chrome/browser/ui/webui/signin/login_ui_service_factory.h"
 #include "chrome/common/url_constants.h"
 #include "components/signin/core/browser/signin_manager.h"
 #include "components/signin/core/browser/signin_metrics.h"
@@ -20,25 +20,26 @@
 
 WelcomeHandler::WelcomeHandler(content::WebUI* web_ui)
     : profile_(Profile::FromWebUI(web_ui)),
-      oauth2_token_service_(
-          ProfileOAuth2TokenServiceFactory::GetForProfile(profile_)),
+      login_ui_service_(LoginUIServiceFactory::GetForProfile(profile_)),
       result_(WelcomeResult::DEFAULT) {
-  oauth2_token_service_->AddObserver(this);
+  login_ui_service_->AddObserver(this);
   base::RecordAction(
       base::UserMetricsAction("Signin_Impression_FromStartPage"));
 }
 
 WelcomeHandler::~WelcomeHandler() {
-  oauth2_token_service_->RemoveObserver(this);
+  login_ui_service_->RemoveObserver(this);
   UMA_HISTOGRAM_ENUMERATION("Welcome.SignInPromptResult", result_,
                             WelcomeResult::WELCOME_RESULT_MAX);
 }
 
-// Override from OAuth2TokenService::Observer. Occurs when a new auth token is
-// available.
-void WelcomeHandler::OnRefreshTokenAvailable(const std::string& account_id) {
-  result_ = WelcomeResult::SIGNED_IN;
-  GoToNewTabPage();
+// Override from LoginUIService::Observer.
+void WelcomeHandler::OnSyncConfirmationUIClosed(
+    LoginUIService::SyncConfirmationUIClosedResult result) {
+  if (result != LoginUIService::ABORT_SIGNIN) {
+    result_ = WelcomeResult::SIGNED_IN;
+    GoToNewTabPage();
+  }
 }
 
 // Handles backend events necessary when user clicks "Sign in."
