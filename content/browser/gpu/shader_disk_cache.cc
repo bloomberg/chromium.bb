@@ -6,7 +6,6 @@
 
 #include "base/macros.h"
 #include "base/threading/thread_checker.h"
-#include "content/browser/gpu/gpu_process_host.h"
 #include "content/public/browser/browser_thread.h"
 #include "gpu/command_buffer/common/constants.h"
 #include "net/base/cache_type.h"
@@ -73,7 +72,9 @@ class ShaderDiskReadHelper
     : public base::ThreadChecker,
       public base::RefCounted<ShaderDiskReadHelper> {
  public:
-  ShaderDiskReadHelper(base::WeakPtr<ShaderDiskCache> cache, int host_id);
+  using ShaderLoadedCallback = ShaderDiskCache::ShaderLoadedCallback;
+  ShaderDiskReadHelper(base::WeakPtr<ShaderDiskCache> cache,
+                       const ShaderLoadedCallback& callback);
   void LoadCache();
 
  private:
@@ -98,10 +99,10 @@ class ShaderDiskReadHelper
   int IterationComplete(int rv);
 
   base::WeakPtr<ShaderDiskCache> cache_;
+  ShaderLoadedCallback shader_loaded_callback_;
   OpType op_type_;
   std::unique_ptr<disk_cache::Backend::Iterator> iter_;
   scoped_refptr<net::IOBufferWithSize> buf_;
-  int host_id_;
   disk_cache::Entry* entry_;
 
   DISALLOW_COPY_AND_ASSIGN(ShaderDiskReadHelper);
@@ -242,15 +243,13 @@ int ShaderDiskCacheEntry::IOComplete(int rv) {
   return rv;
 }
 
-ShaderDiskReadHelper::ShaderDiskReadHelper(
-    base::WeakPtr<ShaderDiskCache> cache,
-    int host_id)
+ShaderDiskReadHelper::ShaderDiskReadHelper(base::WeakPtr<ShaderDiskCache> cache,
+                                           const ShaderLoadedCallback& callback)
     : cache_(cache),
+      shader_loaded_callback_(callback),
       op_type_(OPEN_NEXT),
       buf_(NULL),
-      host_id_(host_id),
-      entry_(NULL) {
-}
+      entry_(NULL) {}
 
 void ShaderDiskReadHelper::LoadCache() {
   DCHECK(CalledOnValidThread());
@@ -325,11 +324,9 @@ int ShaderDiskReadHelper::OpenNextEntryComplete(int rv) {
 int ShaderDiskReadHelper::ReadComplete(int rv) {
   DCHECK(CalledOnValidThread());
   // Called through OnOpComplete, so we know |cache_| is valid.
-  if (rv && rv == buf_->size()) {
-    GpuProcessHost* host = GpuProcessHost::FromID(host_id_);
-    if (host)
-      host->LoadedShader(entry_->GetKey(), std::string(buf_->data(),
-                                                       buf_->size()));
+  if (rv && rv == buf_->size() && !shader_loaded_callback_.is_null()) {
+    shader_loaded_callback_.Run(entry_->GetKey(),
+                                std::string(buf_->data(), buf_->size()));
   }
 
   buf_ = NULL;
@@ -514,7 +511,6 @@ void ShaderCacheFactory::CacheCleared(const base::FilePath& path) {
 
 ShaderDiskCache::ShaderDiskCache(const base::FilePath& cache_path)
     : cache_available_(false),
-      host_id_(0),
       cache_path_(cache_path),
       is_initialized_(false) {
   ShaderCacheFactory::GetInstance()->AddToCache(cache_path_, this);
@@ -585,7 +581,7 @@ void ShaderDiskCache::CacheCreatedCallback(int rv) {
     LOG(ERROR) << "Shader Cache Creation failed: " << rv;
     return;
   }
-  helper_ = new ShaderDiskReadHelper(AsWeakPtr(), host_id_);
+  helper_ = new ShaderDiskReadHelper(AsWeakPtr(), shader_loaded_callback_);
   helper_->LoadCache();
 }
 

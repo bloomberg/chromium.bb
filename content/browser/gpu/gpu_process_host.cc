@@ -293,6 +293,14 @@ class GpuSandboxedProcessLauncherDelegate
 #endif  // OS_WIN
 };
 
+void HostLoadedShader(int host_id,
+                      const std::string& key,
+                      const std::string& data) {
+  GpuProcessHost* host = GpuProcessHost::FromID(host_id);
+  if (host)
+    host->LoadedShader(key, data);
+}
+
 }  // anonymous namespace
 
 class GpuProcessHost::ConnectionFilterImpl : public ConnectionFilter {
@@ -1150,7 +1158,7 @@ void GpuProcessHost::CreateChannelCache(int32_t client_id) {
   if (!cache.get())
     return;
 
-  cache->set_host_id(host_id_);
+  cache->set_shader_loaded_callback(base::Bind(&HostLoadedShader, host_id_));
 
   client_id_to_shader_cache_[client_id] = cache;
 }

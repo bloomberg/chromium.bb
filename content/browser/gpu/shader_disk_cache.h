@@ -34,9 +34,13 @@ class CONTENT_EXPORT ShaderDiskCache
     : public base::RefCounted<ShaderDiskCache>,
       public base::SupportsWeakPtr<ShaderDiskCache> {
  public:
+  using ShaderLoadedCallback =
+      base::Callback<void(const std::string&, const std::string&)>;
   void Init();
 
-  void set_host_id(int host_id) { host_id_ = host_id; }
+  void set_shader_loaded_callback(const ShaderLoadedCallback& callback) {
+    shader_loaded_callback_ = callback;
+  }
 
   // Store the |shader| into the cache under |key|.
   void Cache(const std::string& key, const std::string& shader);
@@ -84,11 +88,11 @@ class CONTENT_EXPORT ShaderDiskCache
   void ReadComplete();
 
   bool cache_available_;
-  int host_id_;
   base::FilePath cache_path_;
   bool is_initialized_;
   net::CompletionCallback available_callback_;
   net::CompletionCallback cache_complete_callback_;
+  ShaderLoadedCallback shader_loaded_callback_;
 
   std::unique_ptr<disk_cache::Backend> backend_;
 
