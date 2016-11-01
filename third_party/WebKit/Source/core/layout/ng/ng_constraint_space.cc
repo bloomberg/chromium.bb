@@ -70,9 +70,7 @@ NGConstraintSpace* NGConstraintSpace::CreateFromLayoutObject(
       builder.ToConstraintSpace());
 }
 
-void NGConstraintSpace::AddExclusion(const NGLogicalRect& exclusion) const {
-  WRITING_MODE_IGNORED(
-      "Exclusions are stored directly in physical constraint space.");
+void NGConstraintSpace::AddExclusion(const NGExclusion* exclusion) const {
   MutablePhysicalSpace()->AddExclusion(exclusion);
 }
 

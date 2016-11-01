@@ -304,7 +304,6 @@ blink_core_sources("layout") {
     "ng/ng_layout_opportunity_tree_node.h",
     "ng/ng_length_utils.cc",
     "ng/ng_length_utils.h",
-    "ng/ng_macros.h",
     "ng/ng_physical_constraint_space.cc",
     "ng/ng_physical_constraint_space.h",
     "ng/ng_physical_fragment.cc",

@@ -6,7 +6,6 @@
 #define NGConstraintSpace_h
 
 #include "core/CoreExport.h"
-#include "core/layout/ng/ng_macros.h"
 #include "core/layout/ng/ng_physical_constraint_space.h"
 #include "core/layout/ng/ng_writing_mode.h"
 #include "platform/heap/Handle.h"
@@ -47,12 +46,6 @@ class CORE_EXPORT NGConstraintSpace final
     return physical_space_;
   }
 
-  const Vector<std::unique_ptr<const NGLogicalRect>>& Exclusions() const {
-    WRITING_MODE_IGNORED(
-        "Exclusions are stored directly in physical constraint space.");
-    return PhysicalSpace()->Exclusions();
-  }
-
   NGDirection Direction() const { return static_cast<NGDirection>(direction_); }
 
   NGWritingMode WritingMode() const {
@@ -62,7 +55,7 @@ class CORE_EXPORT NGConstraintSpace final
   // Adds the exclusion in the physical constraint space.
   // Passing the exclusion ignoring the writing mode is fine here since the
   // exclusion is set in physical coordinates.
-  void AddExclusion(const NGLogicalRect& exclusion) const;
+  void AddExclusion(const NGExclusion* exclusion) const;
 
   // Size of the container. Used for the following three cases:
   // 1) Percentage resolution.
