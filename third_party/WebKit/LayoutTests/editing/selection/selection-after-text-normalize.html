@@ -1,37 +1,29 @@
-<div id="container">
-<p id="description"></p>
+<!doctype html>
+<script src="../../resources/testharness.js"></script>
+<script src="../../resources/testharnessreport.js"></script>
+<script src="../assert_selection.js"></script>
 <div id="sample"></div>
-</div>
-<script src="../../resources/js-test.js"></script>
 <script>
-description('Check selection updated after normalize.');
-function $(id) { return document.getElementById(id); }
-
-var selection = window.getSelection();
-var newText;
-function testIt(source, expectedText)
-{
-    var sample = $('sample');
-    sample.innerHTML = '';
-
-    var expectedEnd;
-    var expectedStart;
-    var sampleText = '';
-    var offset = 0;
-    var textNode = sample.appendChild(document.createTextNode(''));
-    var startNode;
-    var startOffset;
-    var endNode;
-    var endOffset;
+function assemble(seleciton, source) {
+    let sample = seleciton.document.body;
+    let expectedEnd;
+    let expectedStart;
+    let sampleText = '';
+    let offset = 0;
+    let textNode = sample.appendChild(document.createTextNode(''));
+    let startNode;
+    let startOffset;
+    let endNode;
+    let endOffset;
     for (var i = 0; i < source.length; ++i) {
-        var ch = source[i];
+        let ch = source[i];
         switch (ch) {
-        case '[':
+        case '^':
             expectedStart = offset;
             startNode = textNode;
             startOffset = textNode.length;
             break;
-        case ']':
+        case '|':
             expectedEnd = offset;
             endNode = textNode;
             endOffset = textNode.length;
@@ -46,38 +38,32 @@ function testIt(source, expectedText)
             break;
         }
     }
-
-    var expectedText = sampleText.substring(expectedStart, expectedEnd);
-    var selection = getSelection();
-    selection.collapse(startNode, startOffset);
-    selection.extend(endNode, endOffset);
-
+    seleciton.collapse(startNode, startOffset);
+    seleciton.extend(endNode, endOffset);
     sample.normalize();
-    newText = sample.firstChild;
-
-    debug(source);
-    shouldBeFalse('selection.isCollapsed');
-    shouldBe('selection.anchorNode', 'newText');
-    shouldBe('selection.anchorOffset', expectedStart.toString());
-    shouldBe('selection.focusNode', 'newText');
-    shouldBe('selection.focusOffset', expectedEnd.toString());
-    shouldBeEqualToString('selection.toString()', expectedText);
-
-    debug('');
 }
 
-testIt('[foo] bar baz');
-testIt('foo [bar] baz');
-testIt('foo bar [baz]');
-testIt('f[oo ba]r baz');
-testIt('f[oo bar ba]z');
-testIt('foo b[ar ba]z');
-testIt('f[oo  ba]z');
-testIt('[foo ] baz');
-testIt('[foo  baz]');
-testIt('foo [ baz]');
-testIt('foo [bar ]');
+function test_text_normalize(inputText, expectedText) {
+    test(() => {
+        assert_equals(expectedText.indexOf(' '), -1,
+            'expectedText should not have split marker.');
+        assert_selection(
+            '',
+            selection => assemble(selection, inputText),
+            expectedText);
+    }, inputText);
+}
 
-if (window.testRunner)
-    $('container').outerHTML = '';
+// Note: ' ' denotes end of Text node.
+test_text_normalize('^foo| bar baz', '^foo|barbaz');
+test_text_normalize('foo ^bar| baz', 'foo^bar|baz');
+test_text_normalize('foo bar ^baz|', 'foobar^baz|');
+test_text_normalize('f^oo ba|r baz', 'f^ooba|rbaz');
+test_text_normalize('f^oo bar ba|z', 'f^oobarba|z');
+test_text_normalize('foo b^ar ba|z', 'foob^arba|z');
+test_text_normalize('f^oo  ba|z', 'f^ooba|z');
+test_text_normalize('^foo | baz', '^foo|baz');
+test_text_normalize('^foo  baz|', '^foobaz|');
+test_text_normalize('foo ^ baz|', 'foo^baz|');
+test_text_normalize('foo ^bar |', 'foo^bar|');
 </script>
