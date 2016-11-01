@@ -16660,23 +16660,18 @@ void GLES2DecoderImpl::TexStorageImpl(GLenum target,
     GLsizei level_width = width;
     GLsizei level_height = height;
     GLsizei level_depth = depth;
-    GLenum adjusted_format = internal_format;
-#if defined(OS_MACOSX)
-    // TODO(dshwang): remove it after fixing the root cause. crbug.com/657532
-    adjusted_format = feature_info_->IsES3Enabled() ? internal_format : format;
-#endif
 
     for (int ii = 0; ii < levels; ++ii) {
       if (target == GL_TEXTURE_CUBE_MAP) {
         for (int jj = 0; jj < 6; ++jj) {
           GLenum face = GL_TEXTURE_CUBE_MAP_POSITIVE_X + jj;
           texture_manager()->SetLevelInfo(
-              texture_ref, face, ii, adjusted_format, level_width, level_height,
+              texture_ref, face, ii, internal_format, level_width, level_height,
               1, 0, format, type, gfx::Rect());
         }
       } else {
         texture_manager()->SetLevelInfo(
-            texture_ref, target, ii, adjusted_format, level_width, level_height,
+            texture_ref, target, ii, internal_format, level_width, level_height,
             level_depth, 0, format, type, gfx::Rect());
       }
       level_width = std::max(1, level_width >> 1);

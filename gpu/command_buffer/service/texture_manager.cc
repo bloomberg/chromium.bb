@@ -319,6 +319,13 @@ bool SizedFormatAvailable(const FeatureInfo* feature_info,
   if (immutable)
     return true;
 
+  if ((feature_info->feature_flags().chromium_image_ycbcr_420v &&
+       internal_format == GL_RGB_YCBCR_420V_CHROMIUM) ||
+      (feature_info->feature_flags().chromium_image_ycbcr_422 &&
+       internal_format == GL_RGB_YCBCR_422_CHROMIUM)) {
+    return true;
+  }
+
   // TODO(dshwang): check if it's possible to remove
   // CHROMIUM_color_buffer_float_rgb. crbug.com/329605
   if ((feature_info->feature_flags().chromium_color_buffer_float_rgb &&
