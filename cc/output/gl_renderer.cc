@@ -4042,9 +4042,10 @@ void GLRenderer::ScheduleRenderPassDrawQuad(
   transform.asColMajorf(gl_transform);
   unsigned filter = ca_layer_overlay->filter;
 
-  gl_->ScheduleCALayerSharedStateCHROMIUM(
-      ca_layer_overlay->shared_state->opacity, is_clipped, clip_rect,
-      sorting_context_id, gl_transform);
+  // The alpha has already been applied when copying the RPDQ to an IOSurface.
+  GLfloat alpha = 1;
+  gl_->ScheduleCALayerSharedStateCHROMIUM(alpha, is_clipped, clip_rect,
+                                          sorting_context_id, gl_transform);
   gl_->ScheduleCALayerCHROMIUM(
       texture_id, contents_rect, ca_layer_overlay->background_color,
       ca_layer_overlay->edge_aa_mask, bounds_rect, filter);
