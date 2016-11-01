@@ -51,8 +51,9 @@ class PpdCacheTest : public ::testing::Test {
 
   // Make and return a cache for the test that uses a temporary directory
   // which is cleaned up at the end of the test.
-  std::unique_ptr<PpdCache> CreateTestCache() {
-    return PpdCache::Create(ppd_cache_temp_dir_.GetPath());
+  std::unique_ptr<PpdCache> CreateTestCache(
+      const PpdCache::Options& options = PpdCache::Options()) {
+    return PpdCache::Create(ppd_cache_temp_dir_.GetPath(), options);
   }
 
  protected:
@@ -143,6 +144,44 @@ TEST_F(PpdCacheTest, StoredExtensions) {
   std::string gzipped_contents(kTestGZippedPpdContents,
                                sizeof(kTestGZippedPpdContents));
   EXPECT_EQ(".ppd.gz", cache->Store(ref, gzipped_contents).value().Extension());
+}
+
+// Test that we get back what we stored when we store an available printers
+// list.
+TEST_F(PpdCacheTest, StoreAndRetrieveAvailablePrinters) {
+  auto cache = CreateTestCache();
+
+  // Nothing stored, so should miss in the cache.
+  base::Optional<PpdProvider::AvailablePrintersMap> result =
+      cache->FindAvailablePrinters();
+  EXPECT_FALSE(result);
+
+  // Create something to store.
+  PpdProvider::AvailablePrintersMap a;
+  a["foo"] = {"bar", "baz", "sna"};
+  a["bar"] = {"c", "d", "e"};
+  a["baz"] = {"f", "g", "h"};
+
+  // Store it, get it back.
+  cache->StoreAvailablePrinters(a);
+  result = cache->FindAvailablePrinters();
+  ASSERT_TRUE(result);
+
+  EXPECT_EQ(a, result.value());
+}
+
+// When an entry is too old, we shouldn't return it.
+TEST_F(PpdCacheTest, ExpireStaleAvailablePrinters) {
+  PpdCache::Options options;
+  // Expire stuff immediately by setting the staleness limit to 0.
+  options.max_available_list_staleness = base::TimeDelta();
+  auto cache = CreateTestCache(options);
+
+  // Store an empty map.  (Contents don't really matter for this test).
+  cache->StoreAvailablePrinters(PpdProvider::AvailablePrintersMap());
+
+  // Should *miss* in the cache because the entry is already expired.
+  EXPECT_FALSE(cache->FindAvailablePrinters());
 }
 
 }  // namespace

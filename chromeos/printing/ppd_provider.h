@@ -5,8 +5,10 @@
 #ifndef CHROMEOS_PRINTING_PPD_PROVIDER_H_
 #define CHROMEOS_PRINTING_PPD_PROVIDER_H_
 
+#include <map>
 #include <memory>
 #include <string>
+#include <vector>
 
 #include "base/callback.h"
 #include "base/files/file_path.h"
@@ -28,15 +30,12 @@ class PpdCache;
 // based on manufacturer/model of the printer.
 class CHROMEOS_EXPORT PpdProvider {
  public:
-  // Possible results of a Resolve* call.
-  enum ResolveResult {
-    // Found a PPD
+  // Possible result codes of a Resolve() or QueryAvailable() call.
+  enum CallbackResultCode {
     SUCCESS,
 
-    // TODO(justincarlson) - Should we have a "FALLBACK" result here indicating
-    // we found a PPD that we think will work, but wasn't an exact match?
-
     // Looked for a PPD for this configuration, but couldn't find a match.
+    // Never returned for QueryAvailable().
     NOT_FOUND,
 
     // Failed to contact an external server needed to finish resolution.
@@ -46,10 +45,21 @@ class CHROMEOS_EXPORT PpdProvider {
     INTERNAL_ERROR,
   };
 
-  // Result of a resolve function.  If ResolveResult is SUCCESS, then filepath
-  // holds the path to a PPD file (that may or may not be gzipped).  Otherwise,
-  // the FilePath will be empty.
-  using ResolveCallback = base::Callback<void(ResolveResult, base::FilePath)>;
+  // Result of a Resolve().  If the result code is SUCCESS, then FilePath holds
+  // the path to a PPD file (that may or may not be gzipped).  Otherwise, the
+  // FilePath will be empty.
+  using ResolveCallback =
+      base::Callback<void(CallbackResultCode, base::FilePath)>;
+
+  // Available printers are represented as a map from manufacturer to
+  // list-of-printer-models.
+  using AvailablePrintersMap = std::map<std::string, std::vector<std::string>>;
+
+  // Result of a QueryAvailable.  If the result code is SUCCESS, then
+  // AvailablePrintersMap holds a map from manufacturer name to list of printer
+  // names.  Otherwise the map will be empty.
+  using QueryAvailableCallback =
+      base::Callback<void(CallbackResultCode, const AvailablePrintersMap&)>;
 
   // Construction-time options.  Everything in this structure should have
   // a sane default.
@@ -80,14 +90,31 @@ class CHROMEOS_EXPORT PpdProvider {
   //
   // |cb| will only be called after the task invoking Resolve() is finished.
   //
-  // Only one Resolve call should be outstanding at a time.
+  // Only one Resolve() call should be outstanding at a time.
   virtual void Resolve(const Printer::PpdReference& ppd_reference,
-                       ResolveCallback cb) = 0;
+                       const ResolveCallback& cb) = 0;
 
-  // Abort any outstanding Resolve call.  After this returns, it is guaranteed
-  // that all no ResolveCallback will be called until the next time Resolve is
-  // called.  It is a nop to call this if no Resolve is outstanding.
+  // Abort any outstanding Resolve() call.  After this returns, it is guaranteed
+  // that no ResolveCallback will be called until the next time Resolve is
+  // called.  It is a nop to call this if no Resolve() is outstanding.
   virtual void AbortResolve() = 0;
+
+  // Get all the printer makes and models we can support.
+  //
+  // Must be called from a Sequenced Task context (i.e.
+  // base::SequencedTaskRunnerHandle::IsSet() must be true).
+  //
+  // |cb| will only be called after the task invoking QueryAvailable() is
+  // finished.
+  //
+  // Only one QueryAvailable() call should be outstanding at a time.
+  virtual void QueryAvailable(const QueryAvailableCallback& cb) = 0;
+
+  // Abort any outstanding QueryAvailable() call.  After this returns, it is
+  // guaranteed that no QueryAvailableCallback will be called until the next
+  // time QueryAvailable() is called.  It is a nop to call this if no
+  // QueryAvailable() is outstanding.
+  virtual void AbortQueryAvailable() = 0;
 
   // Most of the time, the cache is just an invisible backend to the Provider,
   // consulted at Resolve time, but in the case of the user doing "Add Printer"

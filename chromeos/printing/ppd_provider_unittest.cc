@@ -18,10 +18,6 @@
 #include "net/url_request/url_request_test_util.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
-using base::FilePath;
-using std::string;
-using std::unique_ptr;
-
 namespace chromeos {
 namespace printing {
 namespace {
@@ -37,6 +33,34 @@ const char kQuirksResponse[] =
     "  \"lastUpdatedTime\": \"1\"\n"
     "}\n";
 const char kQuirksPpd[] = "This is the quirks ppd";
+
+// A well-formatted response for a list of ppds from quirks server.  This
+// corresponds to the AvailablePrintersMap returned by QuirksPrinters() below.
+const char kQuirksListResponse[] =
+    "{\n"
+    "  \"manufacturers\": [\n"
+    "    {\n"
+    "      \"manufacturer\": \"manu_a\",\n"
+    "      \"models\": [\n"
+    "         \"model_1\",\n"
+    "         \"model_2\"\n"
+    "      ]\n"
+    "    },\n"
+    "    {\n"
+    "      \"manufacturer\": \"manu_b\",\n"
+    "      \"models\": [\n"
+    "         \"model_3\",\n"
+    "         \"model_1\"\n"
+    "      ]\n"
+    "    }\n"
+    "  ]\n"
+    "}\n";
+
+// Return an AvailablePrintersMap that matches what's in kQuirksListResponse.
+PpdProvider::AvailablePrintersMap QuirksPrinters() {
+  return {{"manu_a", {"model_1", "model_2"}},
+          {"manu_b", {"model_3", "model_1"}}};
+}
 
 class PpdProviderTest : public ::testing::Test {
  public:
@@ -58,7 +82,7 @@ class PpdProviderTest : public ::testing::Test {
   base::ScopedTempDir ppd_cache_temp_dir_;
 
   // Provider to be used in the test.
-  unique_ptr<PpdProvider> ppd_provider_;
+  std::unique_ptr<PpdProvider> ppd_provider_;
 
   // Misc extra stuff needed for the test environment to function.
   base::MessageLoop loop_;
@@ -69,14 +93,14 @@ class PpdProviderTest : public ::testing::Test {
 // saves it for inspection by the test.
 struct CapturedResolveResult {
   bool initialized = false;
-  PpdProvider::ResolveResult result;
-  FilePath file;
+  PpdProvider::CallbackResultCode result;
+  base::FilePath file;
 };
 
 // Callback for saving a resolve callback.
 void CaptureResolveResultCallback(CapturedResolveResult* capture,
-                                  PpdProvider::ResolveResult result,
-                                  FilePath file) {
+                                  PpdProvider::CallbackResultCode result,
+                                  base::FilePath file) {
   capture->initialized = true;
   capture->result = result;
   capture->file = file;
@@ -85,11 +109,11 @@ void CaptureResolveResultCallback(CapturedResolveResult* capture,
 // For a resolve result that should end up successful, check that it is
 // successful and the contents are expected_contents.
 void CheckResolveSuccessful(const CapturedResolveResult& captured,
-                            const string& expected_contents) {
+                            const std::string& expected_contents) {
   ASSERT_TRUE(captured.initialized);
   EXPECT_EQ(PpdProvider::SUCCESS, captured.result);
 
-  string contents;
+  std::string contents;
   ASSERT_TRUE(base::ReadFileToString(captured.file, &contents));
   EXPECT_EQ(expected_contents, contents);
 }
@@ -97,7 +121,7 @@ void CheckResolveSuccessful(const CapturedResolveResult& captured,
 // Resolve a PPD via the quirks server.
 TEST_F(PpdProviderTest, QuirksServerResolve) {
   base::ScopedTempDir temp_dir;
-  CHECK(temp_dir.CreateUniqueTempDir());
+  ASSERT_TRUE(temp_dir.CreateUniqueTempDir());
 
   Printer::PpdReference ppd_reference;
   ppd_reference.effective_manufacturer = kTestManufacturer;
@@ -112,11 +136,11 @@ TEST_F(PpdProviderTest, QuirksServerResolve) {
         "https://%s/v2/printer/manufacturers/%s/models/%s?key=%s",
         kTestQuirksServer, kTestManufacturer, kTestModel, kTestAPIKey));
 
-    FilePath contents_path = temp_dir.GetPath().Append("response");
-    string contents = kQuirksResponse;
-    int bytes_written = base::WriteFile(contents_path, kQuirksResponse,
-                                        strlen(kQuirksResponse));
-    ASSERT_EQ(bytes_written, static_cast<int>(strlen(kQuirksResponse)));
+    base::FilePath contents_path = temp_dir.GetPath().Append("response");
+    std::string contents = kQuirksResponse;
+    int bytes_written =
+        base::WriteFile(contents_path, contents.data(), contents.size());
+    ASSERT_EQ(bytes_written, static_cast<int>(contents.size()));
 
     interceptor.SetResponse(expected_url, contents_path);
 
@@ -156,12 +180,12 @@ TEST_F(PpdProviderTest, LocalResolve) {
   }
 
   // Store a local ppd.
-  const string kLocalPpdContents("My local ppd contents");
+  const std::string kLocalPpdContents("My local ppd contents");
   {
     base::ScopedTempDir temp_dir;
-    CHECK(temp_dir.CreateUniqueTempDir());
+    ASSERT_TRUE(temp_dir.CreateUniqueTempDir());
 
-    FilePath local_ppd_path = temp_dir.GetPath().Append("local_ppd");
+    base::FilePath local_ppd_path = temp_dir.GetPath().Append("local_ppd");
     ASSERT_EQ(base::WriteFile(local_ppd_path, kLocalPpdContents.data(),
                               kLocalPpdContents.size()),
               static_cast<int>(kLocalPpdContents.size()));
@@ -179,6 +203,60 @@ TEST_F(PpdProviderTest, LocalResolve) {
     base::RunLoop().RunUntilIdle();
     CheckResolveSuccessful(captured, kLocalPpdContents);
   }
+}
+
+// Run a query for the list of available printers.
+TEST_F(PpdProviderTest, QueryAvailable) {
+  base::ScopedTempDir temp_dir;
+  ASSERT_TRUE(temp_dir.CreateUniqueTempDir());
+  PpdProvider::CallbackResultCode result_code;
+  PpdProvider::AvailablePrintersMap available_printers;
+
+  // Define a callback that sets the above variables with the callback results.
+  // This would be cleaner with capture groups, but Bind disallows them in
+  // lambdas.
+  PpdProvider::QueryAvailableCallback query_callback = base::Bind(
+      [](PpdProvider::CallbackResultCode* code_out,
+         PpdProvider::AvailablePrintersMap* query_result_out,
+         PpdProvider::CallbackResultCode code,
+         const PpdProvider::AvailablePrintersMap& query_result) {
+        *code_out = code;
+        *query_result_out = query_result;
+      },
+      &result_code, &available_printers);
+
+  {
+    net::TestURLRequestInterceptor interceptor(
+        "https", kTestQuirksServer, base::ThreadTaskRunnerHandle::Get(),
+        base::ThreadTaskRunnerHandle::Get());
+
+    GURL expected_url(base::StringPrintf("https://%s/v2/printer/list?key=%s",
+                                         kTestQuirksServer, kTestAPIKey));
+
+    base::FilePath contents_path = temp_dir.GetPath().Append("response");
+    std::string contents = kQuirksListResponse;
+    int bytes_written = base::WriteFile(contents_path, kQuirksListResponse,
+                                        strlen(kQuirksListResponse));
+    ASSERT_EQ(static_cast<int>(strlen(kQuirksListResponse)), bytes_written);
+
+    interceptor.SetResponse(expected_url, contents_path);
+
+    CapturedResolveResult captured;
+    ppd_provider_->QueryAvailable(query_callback);
+    base::RunLoop().RunUntilIdle();
+    EXPECT_EQ(PpdProvider::SUCCESS, result_code);
+    EXPECT_EQ(QuirksPrinters(), available_printers);
+  }
+
+  // Now that the interceptor is out of scope, re-run the query.  We should
+  // hit in the cache, and thus *not* re-run the query.  Reset the capture
+  // variables first.
+  result_code = PpdProvider::SERVER_ERROR;
+  available_printers.clear();
+  ppd_provider_->QueryAvailable(query_callback);
+  base::RunLoop().RunUntilIdle();
+  EXPECT_EQ(PpdProvider::SUCCESS, result_code);
+  EXPECT_EQ(QuirksPrinters(), available_printers);
 }
 
 }  // namespace

@@ -10,7 +10,9 @@
 
 #include "base/files/file_path.h"
 #include "base/optional.h"
+#include "base/time/time.h"
 #include "chromeos/chromeos_export.h"
+#include "chromeos/printing/ppd_provider.h"
 #include "chromeos/printing/printer_configuration.h"
 
 namespace chromeos {
@@ -25,8 +27,28 @@ namespace printing {
 // re-run the resolution logic if we have new meta-information about a printer.
 class CHROMEOS_EXPORT PpdCache {
  public:
+  // Options that can be tweaked.  These should all have sane defaults.  This
+  // structure is copyable.
+  struct Options {
+    Options() {}
+
+    // If the cached available printer data is older than this, we will consider
+    // it stale and won't return it.  A non-positive value here means we will
+    // always consider data stale (which is useful for tests).
+    // Default is 14 days.
+    base::TimeDelta max_available_list_staleness =
+        base::TimeDelta::FromDays(14);
+
+    // Size limit on the serialized cached available printer list, in bytes.
+    // This is just a check to make sure we don't consume ridiculous amounts of
+    // disk if we get bad data.
+    // Default is 10 MB
+    size_t max_available_list_cached_size = 10 * 1024 * 1024;
+  };
+
   // Create and return a Ppdcache that uses cache_dir to store state.
-  static std::unique_ptr<PpdCache> Create(const base::FilePath& cache_base_dir);
+  static std::unique_ptr<PpdCache> Create(const base::FilePath& cache_base_dir,
+                                          const Options& options = Options());
   virtual ~PpdCache() {}
 
   // Find a PPD that was previously cached with the given reference.  Note that
@@ -49,6 +71,15 @@ class CHROMEOS_EXPORT PpdCache {
   virtual base::Optional<base::FilePath> Store(
       const Printer::PpdReference& reference,
       const std::string& ppd_contents) = 0;
+
+  // Return a map of available printers, if we have one available and it's
+  // not too stale.
+  virtual base::Optional<PpdProvider::AvailablePrintersMap>
+  FindAvailablePrinters() = 0;
+
+  // Store |available_printers|, replacing any existing entry.
+  virtual void StoreAvailablePrinters(
+      const PpdProvider::AvailablePrintersMap& available_printers) = 0;
 };
 
 }  // namespace printing
