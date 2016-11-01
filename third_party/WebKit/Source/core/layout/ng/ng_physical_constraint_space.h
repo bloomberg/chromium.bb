@@ -70,6 +70,9 @@ class CORE_EXPORT NGPhysicalConstraintSpace final
       NGFragmentationType height_direction_fragmentation_type,
       bool is_new_fc);
 
+  NGPhysicalConstraintSpace();
+  NGPhysicalConstraintSpace(NGPhysicalSize);
+
   NGPhysicalSize ContainerSize() const { return container_size_; }
 
   void AddExclusion(const NGExclusion*, unsigned options = 0);
