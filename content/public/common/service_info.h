@@ -44,6 +44,10 @@ struct CONTENT_EXPORT ServiceInfo {
   //
   // If |task_runner| is not null, this value is ignored.
   bool use_own_thread = false;
+
+  // Whether a ServiceContext is created and passed to the service when the
+  // service is created.
+  bool service_owns_context = false;
 };
 
 }  // namespace content

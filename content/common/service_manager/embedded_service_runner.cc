@@ -26,6 +26,7 @@ class EmbeddedServiceRunner::Instance
       : name_(name.as_string()),
         factory_callback_(info.factory),
         use_own_thread_(!info.task_runner && info.use_own_thread),
+        service_owns_context_(info.service_owns_context),
         quit_closure_(quit_closure),
         quit_task_runner_(base::ThreadTaskRunnerHandle::Get()),
         task_runner_(info.task_runner) {
@@ -81,12 +82,19 @@ class EmbeddedServiceRunner::Instance
           base::Bind(&Instance::Quit, base::Unretained(this)));
     }
 
-    service_manager::ServiceContext* new_connection =
-        new service_manager::ServiceContext(service_.get(), std::move(request));
-    service_manager_connections_.push_back(base::WrapUnique(new_connection));
-    new_connection->SetConnectionLostClosure(
-        base::Bind(&Instance::OnStop, base::Unretained(this),
-                   new_connection));
+    std::unique_ptr<service_manager::ServiceContext> new_connection =
+        base::MakeUnique<service_manager::ServiceContext>(
+            service_.get(), std::move(request));
+    if (service_owns_context_) {
+      service_->set_context(std::move(new_connection));
+    } else {
+      service_manager::ServiceContext* new_connection_ptr =
+          new_connection.get();
+      service_manager_connections_.push_back(std::move(new_connection));
+      new_connection_ptr->SetConnectionLostClosure(
+          base::Bind(&Instance::OnStop, base::Unretained(this),
+                     new_connection_ptr));
+    }
   }
 
   void OnStop(service_manager::ServiceContext* connection) {
@@ -126,6 +134,7 @@ class EmbeddedServiceRunner::Instance
   const std::string name_;
   const ServiceInfo::ServiceFactory factory_callback_;
   const bool use_own_thread_;
+  const bool service_owns_context_;
   const base::Closure quit_closure_;
   const scoped_refptr<base::SingleThreadTaskRunner> quit_task_runner_;
 
