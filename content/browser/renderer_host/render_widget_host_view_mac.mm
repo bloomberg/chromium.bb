@@ -3245,8 +3245,14 @@ extern NSString *NSTextInputReplacementRangeAttributeName;
 - (void)viewDidChangeBackingProperties {
   NSScreen* screen = [[self window] screen];
   if (screen) {
+    CGColorSpaceRef color_space = [[screen colorSpace] CGColorSpace];
+    // On Sierra, we need to operate in a single screen's color space because
+    // IOSurfaces do not opt-out of color correction.
+    // https://crbug.com/654488
+    if (base::mac::IsAtLeastOS10_12())
+      color_space = base::mac::GetSystemColorSpace();
     gfx::ICCProfile icc_profile =
-        gfx::ICCProfile::FromCGColorSpace([[screen colorSpace] CGColorSpace]);
+        gfx::ICCProfile::FromCGColorSpace(color_space);
     renderWidgetHostView_->browser_compositor_->SetDisplayColorSpace(
         icc_profile.GetColorSpace());
   }
