@@ -708,13 +708,6 @@ class WebContents : public PageNavigator,
   // as soon as they are ready.
   virtual void ResumeLoadingCreatedWebContents() = 0;
 
-  // Requests to resume the current media session.
-  virtual void ResumeMediaSession() = 0;
-  // Requests to suspend the current media session.
-  virtual void SuspendMediaSession() = 0;
-  // Requests to stop the current media session.
-  virtual void StopMediaSession() = 0;
-
   // Called when the WebContents has displayed a password field on an
   // HTTP page. This method modifies the appropriate NavigationEntry's
   // SSLStatus to record the sensitive input field, so that embedders

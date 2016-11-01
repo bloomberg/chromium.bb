@@ -12,13 +12,13 @@ import android.os.Parcel;
 import android.os.ParcelUuid;
 import android.os.Parcelable;
 
-import org.chromium.base.ObserverList;
 import org.chromium.base.ThreadUtils;
 import org.chromium.base.VisibleForTesting;
 import org.chromium.base.annotations.CalledByNative;
 import org.chromium.base.annotations.JNINamespace;
 import org.chromium.content.browser.AppWebMessagePort;
 import org.chromium.content.browser.AppWebMessagePortService;
+import org.chromium.content.browser.MediaSessionImpl;
 import org.chromium.content_public.browser.AccessibilitySnapshotCallback;
 import org.chromium.content_public.browser.AccessibilitySnapshotNode;
 import org.chromium.content_public.browser.ContentBitmapCallback;
@@ -93,6 +93,10 @@ import java.util.UUID;
 
     // Lazily created proxy observer for handling all Java-based WebContentsObservers.
     private WebContentsObserverProxy mObserverProxy;
+
+    // The media session for this WebContents. It is constructed by the native MediaSession and has
+    // the same life time as native MediaSession.
+    private MediaSessionImpl mMediaSession;
 
     private WebContentsImpl(
             long nativeWebContentsAndroid, NavigationController navigationController) {
@@ -372,21 +376,6 @@ import java.util.UUID;
         nativeRequestAccessibilitySnapshot(mNativeWebContentsAndroid, callback);
     }
 
-    @Override
-    public void resumeMediaSession() {
-        nativeResumeMediaSession(mNativeWebContentsAndroid);
-    }
-
-    @Override
-    public void suspendMediaSession() {
-        nativeSuspendMediaSession(mNativeWebContentsAndroid);
-    }
-
-    @Override
-    public void stopMediaSession() {
-        nativeStopMediaSession(mNativeWebContentsAndroid);
-    }
-
     // root node can be null if parsing fails.
     @CalledByNative
     private static void onAccessibilitySnapshot(AccessibilitySnapshotNode root,
@@ -437,12 +426,6 @@ import java.util.UUID;
         mObserverProxy.removeObserver(observer);
     }
 
-    @VisibleForTesting
-    @Override
-    public ObserverList.RewindableIterator<WebContentsObserver> getObserversForTesting() {
-        return mObserverProxy.getObserversForTesting();
-    }
-
     @Override
     public void getContentBitmapAsync(Bitmap.Config config, float scale, Rect srcRect,
             ContentBitmapCallback callback) {
@@ -472,6 +455,11 @@ import java.util.UUID;
     private void onDownloadImageFinished(ImageDownloadCallback callback, int id, int httpStatusCode,
             String imageUrl, List<Bitmap> bitmaps, List<Rect> sizes) {
         callback.onFinishDownloadImage(id, httpStatusCode, imageUrl, bitmaps, sizes);
+    }
+
+    @CalledByNative
+    private final void setMediaSession(MediaSessionImpl mediaSession) {
+        mMediaSession = mediaSession;
     }
 
     @CalledByNative
@@ -547,9 +535,6 @@ import java.util.UUID;
     private native int nativeGetThemeColor(long nativeWebContentsAndroid);
     private native void nativeRequestAccessibilitySnapshot(
             long nativeWebContentsAndroid, AccessibilitySnapshotCallback callback);
-    private native void nativeResumeMediaSession(long nativeWebContentsAndroid);
-    private native void nativeSuspendMediaSession(long nativeWebContentsAndroid);
-    private native void nativeStopMediaSession(long nativeWebContentsAndroid);
     private native void nativeGetContentBitmap(long nativeWebContentsAndroid,
             ContentBitmapCallback callback, Bitmap.Config config, float scale,
             float x, float y, float width, float height);

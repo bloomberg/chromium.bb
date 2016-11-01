@@ -9,7 +9,7 @@
 #include "base/logging.h"
 #include "base/single_thread_task_runner.h"
 #include "base/threading/thread_task_runner_handle.h"
-#include "content/browser/media/session/media_session.h"
+#include "content/browser/media/session/media_session_impl.h"
 #include "content/public/browser/web_contents.h"
 #include "content/public/common/content_switches.h"
 #include "content/public/test/browser_test_utils.h"
@@ -54,9 +54,7 @@ struct VisibilityTestData {
   SessionState session_state_before_hide;
   SessionState session_state_after_hide;
 };
-
 }
-
 
 // Base class of MediaSession visibility tests. The class is intended
 // to be used to run tests under different configurations. Tests
@@ -64,29 +62,29 @@ struct VisibilityTestData {
 // their configuration, and use macro INCLUDE_TEST_FROM_BASE_CLASS to
 // include required tests. See
 // media_session_visibility_browsertest_instances.cc for examples.
-class MediaSessionVisibilityBrowserTest
+class MediaSessionImplVisibilityBrowserTest
     : public ContentBrowserTest,
       public ::testing::WithParamInterface<
           std::tr1::tuple<VisibilityTestData, Pipeline>> {
  public:
-  MediaSessionVisibilityBrowserTest() = default;
-  ~MediaSessionVisibilityBrowserTest() override = default;
+  MediaSessionImplVisibilityBrowserTest() = default;
+  ~MediaSessionImplVisibilityBrowserTest() override = default;
 
   void SetUpOnMainThread() override {
     ContentBrowserTest::SetUpOnMainThread();
     web_contents_ = shell()->web_contents();
-    media_session_ = MediaSession::Get(web_contents_);
+    media_session_ = MediaSessionImpl::Get(web_contents_);
 
-    media_session_state_loop_runners_[MediaSession::State::ACTIVE] =
+    media_session_state_loop_runners_[MediaSessionImpl::State::ACTIVE] =
         new MessageLoopRunner();
-    media_session_state_loop_runners_[MediaSession::State::SUSPENDED] =
+    media_session_state_loop_runners_[MediaSessionImpl::State::SUSPENDED] =
         new MessageLoopRunner();
-    media_session_state_loop_runners_[MediaSession::State::INACTIVE] =
+    media_session_state_loop_runners_[MediaSessionImpl::State::INACTIVE] =
         new MessageLoopRunner();
     media_session_state_callback_subscription_ =
         media_session_->RegisterMediaSessionStateChangedCallbackForTest(
-            base::Bind(&MediaSessionVisibilityBrowserTest::
-                       OnMediaSessionStateChanged,
+            base::Bind(&MediaSessionImplVisibilityBrowserTest::
+                           OnMediaSessionStateChanged,
                        base::Unretained(this)));
   }
 
@@ -105,8 +103,8 @@ class MediaSessionVisibilityBrowserTest
       disabled_features = media::kResumeBackgroundVideo.name;
 
     std::unique_ptr<base::FeatureList> feature_list(new base::FeatureList);
-    feature_list->InitializeFromCommandLine(
-        enabled_features, disabled_features);
+    feature_list->InitializeFromCommandLine(enabled_features,
+                                            disabled_features);
     base::FeatureList::ClearInstanceForTesting();
     base::FeatureList::SetInstance(std::move(feature_list));
   }
@@ -115,8 +113,7 @@ class MediaSessionVisibilityBrowserTest
     command_line->AppendSwitch(
         switches::kDisableGestureRequirementForMediaPlayback);
 #if !defined(OS_ANDROID)
-    command_line->AppendSwitch(
-        switches::kEnableDefaultMediaSession);
+    command_line->AppendSwitch(switches::kEnableDefaultMediaSession);
 #endif  // !defined(OS_ANDROID)
 
     VisibilityTestData params = GetVisibilityTestData();
@@ -152,23 +149,23 @@ class MediaSessionVisibilityBrowserTest
     ClearMediaSessionStateLoopRunners();
     RunScript(kStartPlayerScript);
     LOG(INFO) << "Waiting for session to be active";
-    WaitForMediaSessionState(MediaSession::State::ACTIVE);
+    WaitForMediaSessionState(MediaSessionImpl::State::ACTIVE);
   }
 
   // Maybe pause the player depending on whether the session state before hide
   // is SUSPENDED.
   void MaybePausePlayer() {
-    ASSERT_TRUE(GetVisibilityTestData().session_state_before_hide
-                != SessionState::INACTIVE);
-    if (GetVisibilityTestData().session_state_before_hide
-        == SessionState::ACTIVE)
+    ASSERT_TRUE(GetVisibilityTestData().session_state_before_hide !=
+                SessionState::INACTIVE);
+    if (GetVisibilityTestData().session_state_before_hide ==
+        SessionState::ACTIVE)
       return;
 
     LOG(INFO) << "Pausing player";
     ClearMediaSessionStateLoopRunners();
     RunScript(kPausePlayerScript);
     LOG(INFO) << "Waiting for session to be suspended";
-    WaitForMediaSessionState(MediaSession::State::SUSPENDED);
+    WaitForMediaSessionState(MediaSessionImpl::State::SUSPENDED);
   }
 
   void HideTab() {
@@ -178,9 +175,9 @@ class MediaSessionVisibilityBrowserTest
   }
 
   void CheckSessionStateAfterHide() {
-    MediaSession::State state_before_hide =
+    MediaSessionImpl::State state_before_hide =
         ToMediaSessionState(GetVisibilityTestData().session_state_before_hide);
-    MediaSession::State state_after_hide =
+    MediaSessionImpl::State state_after_hide =
         ToMediaSessionState(GetVisibilityTestData().session_state_after_hide);
 
     if (state_before_hide == state_after_hide) {
@@ -211,7 +208,7 @@ class MediaSessionVisibilityBrowserTest
       state_loop_runner.second = new MessageLoopRunner();
   }
 
-  void OnMediaSessionStateChanged(MediaSession::State state) {
+  void OnMediaSessionStateChanged(MediaSessionImpl::State state) {
     ASSERT_TRUE(media_session_state_loop_runners_.count(state));
     media_session_state_loop_runners_[state]->Quit();
   }
@@ -225,85 +222,85 @@ class MediaSessionVisibilityBrowserTest
     run_loop.Run();
   }
 
-  void WaitForMediaSessionState(MediaSession::State state) {
+  void WaitForMediaSessionState(MediaSessionImpl::State state) {
     ASSERT_TRUE(media_session_state_loop_runners_.count(state));
     media_session_state_loop_runners_[state]->Run();
   }
 
-  MediaSession::State ToMediaSessionState(SessionState state) {
+  MediaSessionImpl::State ToMediaSessionState(SessionState state) {
     switch (state) {
       case SessionState::ACTIVE:
-        return MediaSession::State::ACTIVE;
+        return MediaSessionImpl::State::ACTIVE;
         break;
       case SessionState::SUSPENDED:
-        return MediaSession::State::SUSPENDED;
+        return MediaSessionImpl::State::SUSPENDED;
         break;
       case SessionState::INACTIVE:
-        return MediaSession::State::INACTIVE;
+        return MediaSessionImpl::State::INACTIVE;
         break;
       default:
         ADD_FAILURE() << "invalid SessionState to convert";
-        return MediaSession::State::INACTIVE;
+        return MediaSessionImpl::State::INACTIVE;
     }
   }
 
   WebContents* web_contents_;
-  MediaSession* media_session_;
+  MediaSessionImpl* media_session_;
   // MessageLoopRunners for waiting MediaSession state to change. Note that the
   // MessageLoopRunners can accept Quit() before calling Run(), thus the state
   // change can still be captured before waiting. For example, the MediaSession
   // might go active immediately after calling HTMLMediaElement.play(). A test
   // can listen to the state change before calling play(), and then wait for the
   // state change after play().
-  std::map<MediaSession::State, scoped_refptr<MessageLoopRunner> >
-  media_session_state_loop_runners_;
-  std::unique_ptr<base::CallbackList<void(MediaSession::State)>::Subscription>
+  std::map<MediaSessionImpl::State, scoped_refptr<MessageLoopRunner>>
+      media_session_state_loop_runners_;
+  std::unique_ptr<
+      base::CallbackList<void(MediaSessionImpl::State)>::Subscription>
       media_session_state_callback_subscription_;
 
-  DISALLOW_COPY_AND_ASSIGN(MediaSessionVisibilityBrowserTest);
+  DISALLOW_COPY_AND_ASSIGN(MediaSessionImplVisibilityBrowserTest);
 };
 
 namespace {
 
 VisibilityTestData kTestParams[] = {
-    { MediaSuspend::ENABLED, BackgroundResuming::DISABLED,
-      SessionState::SUSPENDED, SessionState::INACTIVE },
-    { MediaSuspend::ENABLED, BackgroundResuming::DISABLED,
-      SessionState::ACTIVE, SessionState::INACTIVE },
-    { MediaSuspend::ENABLED, BackgroundResuming::ENABLED,
-      SessionState::ACTIVE, SessionState::SUSPENDED },
-    { MediaSuspend::ENABLED, BackgroundResuming::ENABLED,
-      SessionState::SUSPENDED, SessionState::SUSPENDED },
-    { MediaSuspend::DISABLED, BackgroundResuming::DISABLED,
-      SessionState::SUSPENDED, SessionState::SUSPENDED },
-    { MediaSuspend::DISABLED, BackgroundResuming::DISABLED,
-      SessionState::ACTIVE, SessionState::ACTIVE },
-    { MediaSuspend::DISABLED, BackgroundResuming::ENABLED,
-      SessionState::ACTIVE, SessionState::ACTIVE },
-    { MediaSuspend::DISABLED, BackgroundResuming::ENABLED,
-      SessionState::SUSPENDED, SessionState::SUSPENDED },
+    {MediaSuspend::ENABLED, BackgroundResuming::DISABLED,
+     SessionState::SUSPENDED, SessionState::INACTIVE},
+    {MediaSuspend::ENABLED, BackgroundResuming::DISABLED, SessionState::ACTIVE,
+     SessionState::INACTIVE},
+    {MediaSuspend::ENABLED, BackgroundResuming::ENABLED, SessionState::ACTIVE,
+     SessionState::SUSPENDED},
+    {MediaSuspend::ENABLED, BackgroundResuming::ENABLED,
+     SessionState::SUSPENDED, SessionState::SUSPENDED},
+    {MediaSuspend::DISABLED, BackgroundResuming::DISABLED,
+     SessionState::SUSPENDED, SessionState::SUSPENDED},
+    {MediaSuspend::DISABLED, BackgroundResuming::DISABLED, SessionState::ACTIVE,
+     SessionState::ACTIVE},
+    {MediaSuspend::DISABLED, BackgroundResuming::ENABLED, SessionState::ACTIVE,
+     SessionState::ACTIVE},
+    {MediaSuspend::DISABLED, BackgroundResuming::ENABLED,
+     SessionState::SUSPENDED, SessionState::SUSPENDED},
 };
 
 Pipeline kPipelines[] = {
     Pipeline::WMPI,
 #if defined(OS_ANDROID)
-    // Disabling WMPA tests because of https://crbug.com/646312
-    // Pipeline::WMPA,
+// Disabling WMPA tests because of https://crbug.com/646312
+// Pipeline::WMPA,
 #endif  // defined(OS_ANDROID)
 };
 
 }  // anonymous namespace
 
-IN_PROC_BROWSER_TEST_P(MediaSessionVisibilityBrowserTest,
-                       TestEntryPoint) {
+IN_PROC_BROWSER_TEST_P(MediaSessionImplVisibilityBrowserTest, TestEntryPoint) {
   StartPlayer();
   MaybePausePlayer();
   HideTab();
   CheckSessionStateAfterHide();
 }
 
-INSTANTIATE_TEST_CASE_P(MediaSessionVisibilityBrowserTestInstances,
-                        MediaSessionVisibilityBrowserTest,
+INSTANTIATE_TEST_CASE_P(MediaSessionImplVisibilityBrowserTestInstances,
+                        MediaSessionImplVisibilityBrowserTest,
                         ::testing::Combine(::testing::ValuesIn(kTestParams),
                                            ::testing::ValuesIn(kPipelines)));
 

@@ -6,6 +6,7 @@
 
 #include "base/android/context_utils.h"
 #include "base/android/jni_android.h"
+#include "content/browser/media/session/media_session_impl.h"
 #include "jni/AudioFocusDelegate_jni.h"
 
 using base::android::JavaParamRef;
@@ -18,7 +19,7 @@ bool AudioFocusDelegateAndroid::Register(JNIEnv* env) {
 }
 
 AudioFocusDelegateAndroid::AudioFocusDelegateAndroid(
-    MediaSession* media_session)
+    MediaSessionImpl* media_session)
     : media_session_(media_session) {}
 
 AudioFocusDelegateAndroid::~AudioFocusDelegateAndroid() {
@@ -91,7 +92,7 @@ void AudioFocusDelegateAndroid::RecordSessionDuck(
 
 // static
 std::unique_ptr<AudioFocusDelegate> AudioFocusDelegate::Create(
-    MediaSession* media_session) {
+    MediaSessionImpl* media_session) {
   AudioFocusDelegateAndroid* delegate =
       new AudioFocusDelegateAndroid(media_session);
   delegate->Initialize();

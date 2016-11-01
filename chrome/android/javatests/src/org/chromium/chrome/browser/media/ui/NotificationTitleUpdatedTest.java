@@ -24,7 +24,8 @@ import org.chromium.chrome.test.util.browser.TabTitleObserver;
 import org.chromium.content.browser.test.util.Criteria;
 import org.chromium.content.browser.test.util.CriteriaHelper;
 import org.chromium.content.browser.test.util.JavaScriptUtils;
-import org.chromium.content_public.browser.WebContentsObserver;
+import org.chromium.content_public.browser.MediaSession;
+import org.chromium.content_public.browser.MediaSessionObserver;
 import org.chromium.content_public.common.MediaMetadata;
 
 /**
@@ -150,8 +151,9 @@ public class NotificationTitleUpdatedTest extends ChromeActivityTestCaseBase<Chr
         ThreadUtils.runOnUiThreadBlocking(new Runnable() {
                 @Override
                 public void run() {
-                    ObserverList.RewindableIterator<WebContentsObserver> observers =
-                            tab.getWebContents().getObserversForTesting();
+                    ObserverList.RewindableIterator<MediaSessionObserver> observers =
+                            MediaSession.fromWebContents(tab.getWebContents())
+                                    .getObserversForTesting();
                     while (observers.hasNext()) {
                         observers.next().mediaSessionStateChanged(isControllable, isSuspended);
                     }
@@ -163,8 +165,8 @@ public class NotificationTitleUpdatedTest extends ChromeActivityTestCaseBase<Chr
         ThreadUtils.runOnUiThreadBlocking(new Runnable() {
             @Override
             public void run() {
-                ObserverList.RewindableIterator<WebContentsObserver> observers =
-                        tab.getWebContents().getObserversForTesting();
+                ObserverList.RewindableIterator<MediaSessionObserver> observers =
+                        MediaSession.fromWebContents(tab.getWebContents()).getObserversForTesting();
                 while (observers.hasNext()) {
                     observers.next().mediaSessionMetadataChanged(metadata);
                 }

@@ -25,6 +25,7 @@
 #include "content/browser/device_sensors/sensor_manager_android.h"
 #include "content/browser/frame_host/navigation_controller_android.h"
 #include "content/browser/media/session/audio_focus_delegate_android.h"
+#include "content/browser/media/session/media_session_android.h"
 #include "content/browser/memory/memory_monitor_android.h"
 #include "content/browser/renderer_host/ime_adapter_android.h"
 #include "content/browser/speech/speech_recognizer_impl_android.h"
@@ -54,6 +55,7 @@ base::android::RegistrationMethod kContentRegisteredMethods[] = {
      content::InterstitialPageDelegateAndroid::
          RegisterInterstitialPageDelegateAndroid},
     {"LoadUrlParams", content::RegisterLoadUrlParams},
+    {"MediaSessionImpl", content::MediaSessionAndroid::Register},
     {"NavigationControllerAndroid",
      content::NavigationControllerAndroid::Register},
     {"RegisterImeAdapter", content::RegisterImeAdapter},

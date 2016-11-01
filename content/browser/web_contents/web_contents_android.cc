@@ -618,21 +618,6 @@ void WebContentsAndroid::RequestAccessibilitySnapshot(
       snapshot_callback);
 }
 
-void WebContentsAndroid::ResumeMediaSession(JNIEnv* env,
-                                            const JavaParamRef<jobject>& obj) {
-  web_contents_->ResumeMediaSession();
-}
-
-void WebContentsAndroid::SuspendMediaSession(JNIEnv* env,
-                                             const JavaParamRef<jobject>& obj) {
-  web_contents_->SuspendMediaSession();
-}
-
-void WebContentsAndroid::StopMediaSession(JNIEnv* env,
-                                          const JavaParamRef<jobject>& obj) {
-  web_contents_->StopMediaSession();
-}
-
 ScopedJavaLocalRef<jstring> WebContentsAndroid::GetEncoding(
     JNIEnv* env,
     const JavaParamRef<jobject>& obj) const {
@@ -738,4 +723,11 @@ void WebContentsAndroid::OnFinishDownloadImage(
   Java_WebContentsImpl_onDownloadImageFinished(
       env, *obj, *callback, id, http_status_code, jurl, jbitmaps, jsizes);
 }
+
+void WebContentsAndroid::SetMediaSession(
+    const ScopedJavaLocalRef<jobject>& j_media_session) {
+  JNIEnv* env = base::android::AttachCurrentThread();
+  Java_WebContentsImpl_setMediaSession(env, obj_, j_media_session);
+}
+
 }  // namespace content

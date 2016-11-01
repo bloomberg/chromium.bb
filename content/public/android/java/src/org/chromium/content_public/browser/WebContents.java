@@ -8,7 +8,6 @@ import android.graphics.Bitmap;
 import android.graphics.Rect;
 import android.os.Parcelable;
 
-import org.chromium.base.ObserverList;
 import org.chromium.base.VisibleForTesting;
 
 /**
@@ -306,21 +305,6 @@ public interface WebContents extends Parcelable {
     void requestAccessibilitySnapshot(AccessibilitySnapshotCallback callback);
 
     /**
-     * Resumes the current media session.
-     */
-    void resumeMediaSession();
-
-    /**
-     * Suspends the current media session.
-     */
-    void suspendMediaSession();
-
-    /**
-     * Stops the current media session.
-     */
-    void stopMediaSession();
-
-    /**
      * Add an observer to the WebContents
      *
      * @param observer The observer to add.
@@ -333,12 +317,6 @@ public interface WebContents extends Parcelable {
      * @param observer The observer to remove.
      */
     void removeObserver(WebContentsObserver observer);
-
-    /**
-     * @return The list of observers.
-     */
-    @VisibleForTesting
-    ObserverList.RewindableIterator<WebContentsObserver> getObserversForTesting();
 
     public void getContentBitmapAsync(Bitmap.Config config, float scale, Rect srcRect,
             ContentBitmapCallback callback);

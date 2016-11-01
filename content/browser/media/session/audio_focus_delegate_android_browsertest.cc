@@ -9,7 +9,7 @@
 #include "base/run_loop.h"
 #include "base/single_thread_task_runner.h"
 #include "base/threading/thread_task_runner_handle.h"
-#include "content/browser/media/session/media_session.h"
+#include "content/browser/media/session/media_session_impl.h"
 #include "content/browser/media/session/mock_media_session_player_observer.h"
 #include "content/public/test/content_browser_test.h"
 #include "content/shell/browser/shell.h"
@@ -36,11 +36,13 @@ IN_PROC_BROWSER_TEST_F(AudioFocusDelegateAndroidBrowserTest,
   std::unique_ptr<MockMediaSessionPlayerObserver> player_observer(
       new MockMediaSessionPlayerObserver);
 
-  MediaSession* media_session = MediaSession::Get(shell()->web_contents());
+  MediaSessionImpl* media_session =
+      MediaSessionImpl::Get(shell()->web_contents());
   ASSERT_TRUE(media_session);
 
   WebContents* other_web_contents = CreateBrowser()->web_contents();
-  MediaSession* other_media_session = MediaSession::Get(other_web_contents);
+  MediaSessionImpl* other_media_session =
+      MediaSessionImpl::Get(other_web_contents);
   ASSERT_TRUE(other_media_session);
 
   player_observer->StartNewPlayer();

@@ -18,7 +18,7 @@ namespace {
 // AudioFocusDelegate which only handles audio focus between WebContents.
 class AudioFocusDelegateDefault : public AudioFocusDelegate {
  public:
-  explicit AudioFocusDelegateDefault(MediaSession* media_session);
+  explicit AudioFocusDelegateDefault(MediaSessionImpl* media_session);
   ~AudioFocusDelegateDefault() override;
 
   // AudioFocusDelegate implementation.
@@ -28,13 +28,13 @@ class AudioFocusDelegateDefault : public AudioFocusDelegate {
 
  private:
   // Weak pointer because |this| is owned by |media_session_|.
-  MediaSession* media_session_;
+  MediaSessionImpl* media_session_;
 };
 
 }  // anonymous namespace
 
 AudioFocusDelegateDefault::AudioFocusDelegateDefault(
-    MediaSession* media_session)
+    MediaSessionImpl* media_session)
     : media_session_(media_session) {}
 
 AudioFocusDelegateDefault::~AudioFocusDelegateDefault() = default;
@@ -57,7 +57,7 @@ void AudioFocusDelegateDefault::AbandonAudioFocus() {
 
 // static
 std::unique_ptr<AudioFocusDelegate> AudioFocusDelegate::Create(
-    MediaSession* media_session) {
+    MediaSessionImpl* media_session) {
   return std::unique_ptr<AudioFocusDelegate>(
       new AudioFocusDelegateDefault(media_session));
 }

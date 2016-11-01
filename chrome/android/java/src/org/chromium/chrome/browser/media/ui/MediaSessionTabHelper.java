@@ -12,6 +12,7 @@ import android.text.TextUtils;
 
 import org.chromium.base.ContextUtils;
 import org.chromium.base.Log;
+import org.chromium.base.VisibleForTesting;
 import org.chromium.chrome.R;
 import org.chromium.chrome.browser.metrics.MediaNotificationUma;
 import org.chromium.chrome.browser.metrics.MediaSessionUMA;
@@ -19,13 +20,16 @@ import org.chromium.chrome.browser.tab.EmptyTabObserver;
 import org.chromium.chrome.browser.tab.Tab;
 import org.chromium.chrome.browser.tab.TabObserver;
 import org.chromium.components.url_formatter.UrlFormatter;
+import org.chromium.content_public.browser.MediaSession;
+import org.chromium.content_public.browser.MediaSessionObserver;
 import org.chromium.content_public.browser.WebContents;
-import org.chromium.content_public.browser.WebContentsObserver;
 import org.chromium.content_public.common.MediaMetadata;
 import org.chromium.ui.base.WindowAndroid;
 
 import java.net.URI;
 import java.net.URISyntaxException;
+
+import javax.annotation.Nullable;
 
 /**
  * A tab helper responsible for enabling/disabling media controls and passing
@@ -42,8 +46,7 @@ public class MediaSessionTabHelper implements MediaImageCallback {
     private Bitmap mFavicon = null;
     private Bitmap mCurrentMediaImage = null;
     private String mOrigin = null;
-    private WebContents mWebContents;
-    private WebContentsObserver mWebContentsObserver;
+    private MediaSessionObserver mMediaSessionObserver;
     private int mPreviousVolumeControlStream = AudioManager.USE_DEFAULT_STREAM_TYPE;
     private MediaNotificationInfo.Builder mNotificationInfoBuilder = null;
     // The fallback title if |mPageMetadata| is null or its title is empty.
@@ -54,13 +57,21 @@ public class MediaSessionTabHelper implements MediaImageCallback {
     private MediaMetadata mCurrentMetadata = null;
     private MediaImageManager mMediaImageManager = null;
 
+    @VisibleForTesting
+    @Nullable
+    MediaSessionObserver getMediaSessionObserverForTesting() {
+        return mMediaSessionObserver;
+    }
+
     private MediaNotificationListener mControlsListener = new MediaNotificationListener() {
         @Override
         public void onPlay(int actionSource) {
             MediaSessionUMA
                     .recordPlay(MediaSessionTabHelper.convertMediaActionSourceToUMA(actionSource));
 
-            mWebContents.resumeMediaSession();
+            if (mMediaSessionObserver.getMediaSession() != null) {
+                mMediaSessionObserver.getMediaSession().resume();
+            }
         }
 
         @Override
@@ -68,7 +79,9 @@ public class MediaSessionTabHelper implements MediaImageCallback {
             MediaSessionUMA.recordPause(
                     MediaSessionTabHelper.convertMediaActionSourceToUMA(actionSource));
 
-            mWebContents.suspendMediaSession();
+            if (mMediaSessionObserver.getMediaSession() != null) {
+                mMediaSessionObserver.getMediaSession().suspend();
+            }
         }
 
         @Override
@@ -76,7 +89,9 @@ public class MediaSessionTabHelper implements MediaImageCallback {
             MediaSessionUMA
                     .recordStop(MediaSessionTabHelper.convertMediaActionSourceToUMA(actionSource));
 
-            mWebContents.stopMediaSession();
+            if (mMediaSessionObserver.getMediaSession() != null) {
+                mMediaSessionObserver.getMediaSession().stop();
+            }
         }
     };
 
@@ -92,12 +107,12 @@ public class MediaSessionTabHelper implements MediaImageCallback {
         mNotificationInfoBuilder = null;
     }
 
-    private WebContentsObserver createWebContentsObserver(WebContents webContents) {
-        return new WebContentsObserver(webContents) {
+    private MediaSessionObserver createMediaSessionObserver(MediaSession mediaSession) {
+        return new MediaSessionObserver(mediaSession) {
             @Override
-            public void destroy() {
+            public void mediaSessionDestroyed() {
                 hideNotification();
-                super.destroy();
+                cleanupMediaSessionObserver();
             }
 
             @Override
@@ -154,18 +169,23 @@ public class MediaSessionTabHelper implements MediaImageCallback {
     }
 
     private void setWebContents(WebContents webContents) {
-        if (mWebContents == webContents) return;
+        MediaSession mediaSession = MediaSession.fromWebContents(webContents);
+        if (mMediaSessionObserver != null
+                && mediaSession == mMediaSessionObserver.getMediaSession()) {
+            return;
+        }
 
-        cleanupWebContents();
-        mWebContents = webContents;
-        if (mWebContents != null) mWebContentsObserver = createWebContentsObserver(mWebContents);
-        mMediaImageManager.setWebContents(mWebContents);
+        cleanupMediaSessionObserver();
+        if (mediaSession != null) {
+            mMediaSessionObserver = createMediaSessionObserver(mediaSession);
+        }
+        mMediaImageManager.setWebContents(webContents);
     }
 
-    private void cleanupWebContents() {
-        if (mWebContentsObserver != null) mWebContentsObserver.destroy();
-        mWebContentsObserver = null;
-        mWebContents = null;
+    private void cleanupMediaSessionObserver() {
+        if (mMediaSessionObserver == null) return;
+        mMediaSessionObserver.stopObserving();
+        mMediaSessionObserver = null;
     }
 
     private final TabObserver mTabObserver = new EmptyTabObserver() {
@@ -223,7 +243,7 @@ public class MediaSessionTabHelper implements MediaImageCallback {
         public void onDestroyed(Tab tab) {
             assert mTab == tab;
 
-            cleanupWebContents();
+            cleanupMediaSessionObserver();
 
             hideNotification();
             mTab.removeObserver(this);

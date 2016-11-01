@@ -5,7 +5,7 @@
 #include "content/browser/media/session/media_session_service_impl.h"
 
 #include "content/browser/media/session/media_metadata_sanitizer.h"
-#include "content/browser/media/session/media_session.h"
+#include "content/browser/media/session/media_session_impl.h"
 #include "content/browser/web_contents/web_contents_impl.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/web_contents.h"
@@ -46,7 +46,7 @@ void MediaSessionServiceImpl::SetMetadata(
   WebContentsImpl* contents = static_cast<WebContentsImpl*>(
       WebContentsImpl::FromRenderFrameHost(render_frame_host_));
   if (contents)
-    MediaSession::Get(contents)->SetMetadata(metadata);
+    MediaSessionImpl::Get(contents)->SetMetadata(metadata);
 }
 
 void MediaSessionServiceImpl::EnableAction(

@@ -413,9 +413,6 @@ class CONTENT_EXPORT WebContentsImpl
   void GetManifest(const GetManifestCallback& callback) override;
   void ExitFullscreen(bool will_cause_resize) override;
   void ResumeLoadingCreatedWebContents() override;
-  void ResumeMediaSession() override;
-  void SuspendMediaSession() override;
-  void StopMediaSession() override;
   void OnPasswordInputShownOnHttp() override;
   void OnCreditCardInputShownOnHttp() override;
   void SetIsOverlayContent(bool is_overlay_content) override;
@@ -430,13 +427,6 @@ class CONTENT_EXPORT WebContentsImpl
   void SetAllowOtherViews(bool allow) override;
   bool GetAllowOtherViews() override;
 #endif
-
-  // This method is called when the MediaSession state has changed, and will
-  // notify the WebContents observers.
-  void OnMediaSessionStateChanged();
-  // This method is called when the MediaSession metadata has changed, and will
-  // notify the WebContents observers.
-  void OnMediaSessionMetadataChanged();
 
   // Implementation of PageNavigator.
   WebContents* OpenURL(const OpenURLParams& params) override;

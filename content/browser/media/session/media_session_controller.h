@@ -17,7 +17,7 @@ enum class MediaContentType;
 
 namespace content {
 
-class MediaSession;
+class MediaSessionImpl;
 class MediaWebContentsObserver;
 
 // Helper class for controlling a single player's MediaSession instance.  Sends
@@ -61,7 +61,7 @@ class CONTENT_EXPORT MediaSessionController
   MediaWebContentsObserver* const media_web_contents_observer_;
 
   // Non-owned pointer; lifetime is the same as |media_web_contents_observer_|.
-  MediaSession* const media_session_;
+  MediaSessionImpl* const media_session_;
 
   int player_id_ = 0;
   bool has_session_ = false;

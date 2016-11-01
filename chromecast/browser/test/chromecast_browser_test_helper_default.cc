@@ -9,6 +9,7 @@
 #include "chromecast/browser/cast_browser_process.h"
 #include "chromecast/browser/cast_content_window.h"
 #include "chromecast/browser/cast_media_blocker.h"
+#include "content/public/browser/media_session.h"
 #include "content/public/browser/web_contents.h"
 #include "content/public/test/browser_test_utils.h"
 #include "content/public/test/test_navigation_observer.h"
@@ -27,7 +28,8 @@ class DefaultHelper : public ChromecastBrowserTestHelper {
     web_contents_ = window_->CreateWebContents(
         CastBrowserProcess::GetInstance()->browser_context());
     window_->CreateWindowTree(web_contents_.get());
-    blocker_.reset(new CastMediaBlocker(web_contents_.get()));
+    blocker_.reset(new CastMediaBlocker(
+        content::MediaSession::Get(web_contents_.get()), web_contents_.get()));
 
     content::WaitForLoadStop(web_contents_.get());
     content::TestNavigationObserver same_tab_observer(web_contents_.get(), 1);

@@ -6,9 +6,10 @@
 #define CONTENT_BROWSER_MEDIA_SESSION_AUDIO_FOCUS_DELEGATE_H_
 
 #include "content/browser/media/session/audio_focus_manager.h"
-#include "content/browser/media/session/media_session.h"
 
 namespace content {
+
+class MediaSessionImpl;
 
 // AudioFocusDelegate is an interface abstracting audio focus handling for the
 // MediaSession class.
@@ -16,7 +17,7 @@ class AudioFocusDelegate {
  public:
   // Factory method returning an implementation of AudioFocusDelegate.
   static std::unique_ptr<AudioFocusDelegate> Create(
-      MediaSession* media_session);
+      MediaSessionImpl* media_session);
 
   virtual ~AudioFocusDelegate() = default;
 

@@ -3,7 +3,7 @@
 // found in the LICENSE file.
 
 #include "base/command_line.h"
-#include "content/browser/media/session/media_session.h"
+#include "content/browser/media/session/media_session_impl.h"
 #include "content/browser/media/session/mock_media_session_player_observer.h"
 #include "content/public/test/content_browser_test.h"
 #include "content/shell/browser/shell.h"
@@ -22,10 +22,11 @@ class AudioFocusDelegateDefaultBrowserTest : public ContentBrowserTest {
     std::unique_ptr<MockMediaSessionPlayerObserver>
         player_observer(new MockMediaSessionPlayerObserver);
 
-    MediaSession* media_session = MediaSession::Get(start_contents);
+    MediaSessionImpl* media_session = MediaSessionImpl::Get(start_contents);
     ASSERT_TRUE(media_session);
 
-    MediaSession* other_media_session = MediaSession::Get(interrupt_contents);
+    MediaSessionImpl* other_media_session =
+        MediaSessionImpl::Get(interrupt_contents);
     ASSERT_TRUE(other_media_session);
 
     player_observer->StartNewPlayer();
@@ -40,8 +41,8 @@ class AudioFocusDelegateDefaultBrowserTest : public ContentBrowserTest {
     EXPECT_FALSE(media_session->IsActive());
     EXPECT_TRUE(other_media_session->IsActive());
 
-    media_session->Stop(MediaSession::SuspendType::UI);
-    other_media_session->Stop(MediaSession::SuspendType::UI);
+    media_session->Stop(MediaSessionImpl::SuspendType::UI);
+    other_media_session->Stop(MediaSessionImpl::SuspendType::UI);
   }
 };
 

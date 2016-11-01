@@ -18,7 +18,7 @@ class AudioFocusDelegateAndroid : public AudioFocusDelegate {
  public:
   static bool Register(JNIEnv* env);
 
-  explicit AudioFocusDelegateAndroid(MediaSession* media_session);
+  explicit AudioFocusDelegateAndroid(MediaSessionImpl* media_session);
   ~AudioFocusDelegateAndroid() override;
 
   void Initialize();
@@ -52,7 +52,7 @@ class AudioFocusDelegateAndroid : public AudioFocusDelegate {
 
  private:
   // Weak pointer because |this| is owned by |media_session_|.
-  MediaSession* media_session_;
+  MediaSessionImpl* media_session_;
   base::android::ScopedJavaGlobalRef<jobject> j_media_session_delegate_;
 
   DISALLOW_COPY_AND_ASSIGN(AudioFocusDelegateAndroid);

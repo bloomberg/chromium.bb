@@ -4,8 +4,6 @@
 
 package org.chromium.content_public.browser;
 
-import org.chromium.content_public.common.MediaMetadata;
-
 import java.lang.ref.WeakReference;
 
 /**
@@ -171,19 +169,6 @@ public abstract class WebContentsObserver {
      * @param url        The URL that we are navigating to.
      */
     public void didStartNavigationToPendingEntry(String url) {}
-
-    /**
-     * Called when the media session state changed.
-     * @param isControllable if the session can be resumed or suspended.
-     * @param isSuspended if the session currently suspended or not.
-     */
-    public void mediaSessionStateChanged(boolean isControllable, boolean isSuspended) {}
-
-    /**
-     * Called when the media session metadata changed.
-     * @param metadata the new MediaMetadata after change.
-     */
-    public void mediaSessionMetadataChanged(MediaMetadata metadata) {}
 
     /**
      * Stop observing the web contents and clean up associated references.

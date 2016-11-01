@@ -61,7 +61,7 @@
 #include "content/browser/media/audio_stream_monitor.h"
 #include "content/browser/media/capture/web_contents_audio_muter.h"
 #include "content/browser/media/media_web_contents_observer.h"
-#include "content/browser/media/session/media_session.h"
+#include "content/browser/media/session/media_session_impl.h"
 #include "content/browser/message_port_message_filter.h"
 #include "content/browser/plugin_content_origin_whitelist.h"
 #include "content/browser/renderer_host/render_process_host_impl.h"
@@ -3801,33 +3801,6 @@ void WebContentsImpl::OnUpdateFaviconURL(
 
   for (auto& observer : observers_)
     observer.DidUpdateFaviconURL(candidates);
-}
-
-void WebContentsImpl::OnMediaSessionStateChanged() {
-  MediaSession* session = MediaSession::Get(this);
-  for (auto& observer : observers_) {
-    observer.MediaSessionStateChanged(session->IsControllable(),
-                                       session->IsSuspended());
-  }
-}
-
-void WebContentsImpl::OnMediaSessionMetadataChanged() {
-  MediaSession* session = MediaSession::Get(this);
-  for (auto& observer : observers_) {
-    observer.MediaSessionMetadataChanged(session->metadata());
-  }
-}
-
-void WebContentsImpl::ResumeMediaSession() {
-  MediaSession::Get(this)->Resume(MediaSession::SuspendType::UI);
-}
-
-void WebContentsImpl::SuspendMediaSession() {
-  MediaSession::Get(this)->Suspend(MediaSession::SuspendType::UI);
-}
-
-void WebContentsImpl::StopMediaSession() {
-  MediaSession::Get(this)->Stop(MediaSession::SuspendType::UI);
 }
 
 void WebContentsImpl::OnPasswordInputShownOnHttp() {

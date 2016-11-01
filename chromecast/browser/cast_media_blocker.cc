@@ -4,25 +4,17 @@
 
 #include "chromecast/browser/cast_media_blocker.h"
 
-#include "base/callback.h"
 #include "base/threading/thread_checker.h"
+#include "content/public/browser/media_session.h"
 #include "content/public/browser/web_contents.h"
 
 namespace chromecast {
 namespace shell {
 
-CastMediaBlocker::CastMediaBlocker(content::WebContents* web_contents)
-    : CastMediaBlocker::CastMediaBlocker(
-          web_contents,
-          base::Bind(&CastMediaBlocker::Suspend, base::Unretained(this)),
-          base::Bind(&CastMediaBlocker::Resume, base::Unretained(this))) {}
-
-CastMediaBlocker::CastMediaBlocker(content::WebContents* web_contents,
-                                   const base::Closure& suspend_cb,
-                                   const base::Closure& resume_cb)
-    : content::WebContentsObserver(web_contents),
-      suspend_cb_(suspend_cb),
-      resume_cb_(resume_cb),
+CastMediaBlocker::CastMediaBlocker(content::MediaSession* media_session,
+                                   content::WebContents* web_contents)
+    : content::MediaSessionObserver(media_session),
+      content::WebContentsObserver(web_contents),
       blocked_(false),
       paused_by_user_(true),
       suspended_(true),
@@ -44,7 +36,7 @@ void CastMediaBlocker::BlockMediaLoading(bool blocked) {
   // If blocking media, suspend if possible.
   if (blocked_) {
     if (!suspended_ && controllable_) {
-      suspend_cb_.Run();
+      Suspend();
     }
     return;
   }
@@ -52,7 +44,7 @@ void CastMediaBlocker::BlockMediaLoading(bool blocked) {
   // If unblocking media, resume if media was not paused by user.
   if (!paused_by_user_ && suspended_ && controllable_) {
     paused_by_user_ = true;
-    resume_cb_.Run();
+    Resume();
   }
 }
 
@@ -71,7 +63,7 @@ void CastMediaBlocker::MediaSessionStateChanged(bool is_controllable,
     // blocked, resume media if suspended.
     if (!blocked_ && !paused_by_user_ && is_suspended && controllable_) {
       paused_by_user_ = true;
-      resume_cb_.Run();
+      Resume();
     }
 
     // Suspend if blocked and the session becomes controllable.
@@ -79,7 +71,7 @@ void CastMediaBlocker::MediaSessionStateChanged(bool is_controllable,
       // Only suspend if suspended_ doesn't change. Otherwise, this will be
       // handled in the suspended changed block.
       if (suspended_ == is_suspended)
-        suspend_cb_.Run();
+        Suspend();
     }
   }
 
@@ -91,7 +83,7 @@ void CastMediaBlocker::MediaSessionStateChanged(bool is_controllable,
       // If media was resumed when blocked, the user tried to play music.
       paused_by_user_ = false;
       if (controllable_)
-        suspend_cb_.Run();
+        Suspend();
     }
 
     // If not blocking, cache the user's play intent.
@@ -101,19 +93,19 @@ void CastMediaBlocker::MediaSessionStateChanged(bool is_controllable,
 }
 
 void CastMediaBlocker::Suspend() {
-  if (!web_contents())
+  if (!media_session())
     return;
 
   LOG(INFO) << "Suspending media session.";
-  web_contents()->SuspendMediaSession();
+  media_session()->Suspend(content::MediaSession::SuspendType::SYSTEM);
 }
 
 void CastMediaBlocker::Resume() {
-  if (!web_contents())
+  if (!media_session())
     return;
 
   LOG(INFO) << "Resuming media session.";
-  web_contents()->ResumeMediaSession();
+  media_session()->Resume(content::MediaSession::SuspendType::SYSTEM);
 }
 
 }  // namespace shell

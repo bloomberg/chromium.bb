@@ -318,30 +318,6 @@ void WebContentsObserverProxy::DidStartNavigationToPendingEntry(
                                                                  jstring_url);
 }
 
-void WebContentsObserverProxy::MediaSessionStateChanged(bool is_controllable,
-                                                        bool is_suspended) {
-  JNIEnv* env = AttachCurrentThread();
-
-  ScopedJavaLocalRef<jobject> obj(java_observer_);
-
-  Java_WebContentsObserverProxy_mediaSessionStateChanged(
-      env, obj, is_controllable, is_suspended);
-}
-
-void WebContentsObserverProxy::MediaSessionMetadataChanged(
-    const base::Optional<MediaMetadata>& metadata) {
-  JNIEnv* env = AttachCurrentThread();
-
-  ScopedJavaLocalRef<jobject> obj(java_observer_);
-  ScopedJavaLocalRef<jobject> j_metadata;
-
-  if (metadata.has_value())
-    j_metadata = MediaMetadataAndroid::CreateJavaObject(env, metadata.value());
-
-  Java_WebContentsObserverProxy_mediaSessionMetadataChanged(env, obj,
-                                                            j_metadata);
-}
-
 void WebContentsObserverProxy::SetToBaseURLForDataURLIfNeeded(
     std::string* url) {
   NavigationEntry* entry =

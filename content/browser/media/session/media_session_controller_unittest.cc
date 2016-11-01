@@ -5,8 +5,8 @@
 #include <tuple>
 
 #include "content/browser/media/media_web_contents_observer.h"
-#include "content/browser/media/session/media_session.h"
 #include "content/browser/media/session/media_session_controller.h"
+#include "content/browser/media/session/media_session_impl.h"
 #include "content/common/media/media_player_delegate_messages.h"
 #include "content/test/test_render_view_host.h"
 #include "content/test/test_web_contents.h"
@@ -35,7 +35,9 @@ class MediaSessionControllerTest : public RenderViewHostImplTestHarness {
         id_, contents()->media_web_contents_observer()));
   }
 
-  MediaSession* media_session() { return MediaSession::Get(contents()); }
+  MediaSessionImpl* media_session() {
+    return MediaSessionImpl::Get(contents());
+  }
 
   IPC::TestSink& test_sink() { return main_test_rfh()->GetProcess()->sink(); }
 

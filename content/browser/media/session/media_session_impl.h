@@ -2,23 +2,30 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CONTENT_BROWSER_MEDIA_SESSION_MEDIA_SESSION_H_
-#define CONTENT_BROWSER_MEDIA_SESSION_MEDIA_SESSION_H_
+#ifndef CONTENT_BROWSER_MEDIA_SESSION_MEDIA_SESSION_IMPL_H_
+#define CONTENT_BROWSER_MEDIA_SESSION_MEDIA_SESSION_IMPL_H_
 
 #include <stddef.h>
 
 #include "base/callback_list.h"
 #include "base/id_map.h"
 #include "base/macros.h"
+#include "base/observer_list.h"
 #include "base/optional.h"
 #include "content/browser/media/session/audio_focus_manager.h"
 #include "content/browser/media/session/media_session_uma_helper.h"
 #include "content/common/content_export.h"
+#include "content/public/browser/media_session.h"
+#include "content/public/browser/media_session_observer.h"
 #include "content/public/browser/web_contents_observer.h"
 #include "content/public/browser/web_contents_user_data.h"
 #include "content/public/common/media_metadata.h"
 
-class MediaSessionBrowserTest;
+#if defined(OS_ANDROID)
+#include "base/android/scoped_java_ref.h"
+#endif  // defined(OS_ANDROID)
+
+class MediaSessionImplBrowserTest;
 
 namespace media {
 enum class MediaContentType;
@@ -28,48 +35,53 @@ namespace content {
 
 class AudioFocusDelegate;
 class AudioFocusManagerTest;
+class MediaSessionImplStateObserver;
+class MediaSessionImplVisibilityBrowserTest;
+class MediaSessionObserver;
 class MediaSessionPlayerObserver;
-class MediaSessionStateObserver;
-class MediaSessionVisibilityBrowserTest;
 
-// MediaSession manages the media session and audio focus for a given
-// WebContents. It is requesting the audio focus, pausing when requested by the
-// system and dropping it on demand.
-// The audio focus can be of two types: Transient or Content. A Transient audio
+#if defined(OS_ANDROID)
+class MediaSessionAndroid;
+#endif  // defined(OS_ANDROID)
+
+// MediaSessionImpl is the implementation of MediaSession. It manages the media
+// session and audio focus for a given WebContents. It is requesting the audio
+// focus, pausing when requested by the system and dropping it on demand. The
+// audio focus can be of two types: Transient or Content. A Transient audio
 // focus will allow other players to duck instead of pausing and will be
 // declared as temporary to the system. A Content audio focus will not be
 // declared as temporary and will not allow other players to duck. If a given
 // WebContents can only have one audio focus at a time, it will be Content in
 // case of Transient and Content audio focus are both requested.
-// TODO(thakis,mlamouri): MediaSession isn't CONTENT_EXPORT'd because it creates
-// complicated build issues with WebContentsUserData being a non-exported
-// template, see htttps://crbug.com/589840. As a result, the class uses
-// CONTENT_EXPORT for methods that are being used from tests. CONTENT_EXPORT
-// should be moved back to the class when the Windows build will work with it.
-class MediaSession : public WebContentsObserver,
-                     protected WebContentsUserData<MediaSession> {
+// TODO(thakis,mlamouri): MediaSessionImpl isn't CONTENT_EXPORT'd because it
+// creates complicated build issues with WebContentsUserData being a
+// non-exported template, see https://crbug.com/589840. As a result, the class
+// uses CONTENT_EXPORT for methods that are being used from tests.
+// CONTENT_EXPORT should be moved back to the class when the Windows build will
+// work with it.
+class MediaSessionImpl : public MediaSession,
+                         public WebContentsObserver,
+                         protected WebContentsUserData<MediaSessionImpl> {
  public:
-  enum class SuspendType {
-    // Suspended by the system because a transient sound needs to be played.
-    SYSTEM,
-    // Suspended by the UI.
-    UI,
-    // Suspended by the page via script or user interaction.
-    CONTENT,
-  };
-
   // Only visible to tests.
-  enum class State {
-    ACTIVE,
-    SUSPENDED,
-    INACTIVE
-  };
+  enum class State { ACTIVE, SUSPENDED, INACTIVE };
 
-  // Returns the MediaSession associated to this WebContents. Creates one if
+  // Returns the MediaSessionImpl associated to this WebContents. Creates one if
   // none is currently available.
-  CONTENT_EXPORT static MediaSession* Get(WebContents* web_contents);
+  CONTENT_EXPORT static MediaSessionImpl* Get(WebContents* web_contents);
 
-  ~MediaSession() override;
+  ~MediaSessionImpl() override;
+
+#if defined(OS_ANDROID)
+  static MediaSession* FromJavaMediaSession(
+      const base::android::JavaRef<jobject>& j_media_session);
+  MediaSessionAndroid* session_android() const {
+    return session_android_.get();
+  }
+#endif  // defined(OS_ANDROID)
+
+  void AddObserver(MediaSessionObserver* observer);
+  void RemoveObserver(MediaSessionObserver* observer);
 
   void SetMetadata(const base::Optional<MediaMetadata>& metadata);
   const base::Optional<MediaMetadata>& metadata() const { return metadata_; }
@@ -101,15 +113,15 @@ class MediaSession : public WebContentsObserver,
 
   // Resume the media session.
   // |type| represents the origin of the request.
-  CONTENT_EXPORT void Resume(SuspendType suspend_type);
+  CONTENT_EXPORT void Resume(MediaSession::SuspendType suspend_type) override;
 
   // Suspend the media session.
   // |type| represents the origin of the request.
-  CONTENT_EXPORT void Suspend(SuspendType suspend_type);
+  CONTENT_EXPORT void Suspend(MediaSession::SuspendType suspend_type) override;
 
   // Stop the media session.
   // |type| represents the origin of the request.
-  CONTENT_EXPORT void Stop(SuspendType suspend_type);
+  CONTENT_EXPORT void Stop(MediaSession::SuspendType suspend_type) override;
 
   // Let the media session start ducking such that the volume multiplier is
   // reduced.
@@ -149,11 +161,11 @@ class MediaSession : public WebContentsObserver,
   void WebContentsDestroyed() override;
 
  private:
-  friend class content::WebContentsUserData<MediaSession>;
-  friend class ::MediaSessionBrowserTest;
-  friend class content::MediaSessionVisibilityBrowserTest;
+  friend class content::WebContentsUserData<MediaSessionImpl>;
+  friend class ::MediaSessionImplBrowserTest;
+  friend class content::MediaSessionImplVisibilityBrowserTest;
   friend class content::AudioFocusManagerTest;
-  friend class content::MediaSessionStateObserver;
+  friend class content::MediaSessionImplStateObserver;
 
   CONTENT_EXPORT void SetDelegateForTests(
       std::unique_ptr<AudioFocusDelegate> delegate);
@@ -161,7 +173,7 @@ class MediaSession : public WebContentsObserver,
   CONTENT_EXPORT void RemoveAllPlayersForTest();
   CONTENT_EXPORT MediaSessionUmaHelper* uma_helper_for_test();
 
-  // Representation of a player for the MediaSession.
+  // Representation of a player for the MediaSessionImpl.
   struct PlayerIdentifier {
     PlayerIdentifier(MediaSessionPlayerObserver* observer, int player_id);
     PlayerIdentifier(const PlayerIdentifier&) = default;
@@ -180,13 +192,13 @@ class MediaSession : public WebContentsObserver,
   using PlayersMap = base::hash_set<PlayerIdentifier, PlayerIdentifier::Hash>;
   using StateChangedCallback = base::Callback<void(State)>;
 
-  CONTENT_EXPORT explicit MediaSession(WebContents* web_contents);
+  CONTENT_EXPORT explicit MediaSessionImpl(WebContents* web_contents);
 
   void Initialize();
 
-  CONTENT_EXPORT void OnSuspendInternal(SuspendType suspend_type,
+  CONTENT_EXPORT void OnSuspendInternal(MediaSession::SuspendType suspend_type,
                                         State new_state);
-  CONTENT_EXPORT void OnResumeInternal(SuspendType suspend_type);
+  CONTENT_EXPORT void OnResumeInternal(MediaSession::SuspendType suspend_type);
 
   // Requests audio focus to the AudioFocusDelegate.
   // Returns whether the request was granted.
@@ -211,7 +223,7 @@ class MediaSession : public WebContentsObserver,
   // ducking.
   double GetVolumeMultiplier() const;
 
-  // Registers a MediaSession state change callback.
+  // Registers a MediaSessionImpl state change callback.
   CONTENT_EXPORT std::unique_ptr<base::CallbackList<void(State)>::Subscription>
   RegisterMediaSessionStateChangedCallbackForTest(
       const StateChangedCallback& cb);
@@ -224,7 +236,7 @@ class MediaSession : public WebContentsObserver,
   PlayersMap pepper_players_;
 
   State audio_focus_state_;
-  SuspendType suspend_type_;
+  MediaSession::SuspendType suspend_type_;
   AudioFocusManager::AudioFocusType audio_focus_type_;
 
   MediaSessionUmaHelper uma_helper_;
@@ -237,9 +249,15 @@ class MediaSession : public WebContentsObserver,
   base::Optional<MediaMetadata> metadata_;
   base::CallbackList<void(State)> media_session_state_listeners_;
 
-  DISALLOW_COPY_AND_ASSIGN(MediaSession);
+  base::ObserverList<MediaSessionObserver> observers_;
+
+#if defined(OS_ANDROID)
+  std::unique_ptr<MediaSessionAndroid> session_android_;
+#endif  // defined(OS_ANDROID)
+
+  DISALLOW_COPY_AND_ASSIGN(MediaSessionImpl);
 };
 
 }  // namespace content
 
-#endif  // CONTENT_BROWSER_MEDIA_SESSION_MEDIA_SESSION_H_
+#endif  // CONTENT_BROWSER_MEDIA_SESSION_MEDIA_SESSION_IMPL_H_

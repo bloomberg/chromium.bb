@@ -159,13 +159,6 @@ class CONTENT_EXPORT WebContentsAndroid
       const base::android::JavaParamRef<jobject>& obj,
       const base::android::JavaParamRef<jobject>& callback);
 
-  void ResumeMediaSession(JNIEnv* env,
-                          const base::android::JavaParamRef<jobject>& obj);
-  void SuspendMediaSession(JNIEnv* env,
-                           const base::android::JavaParamRef<jobject>& obj);
-  void StopMediaSession(JNIEnv* env,
-                        const base::android::JavaParamRef<jobject>& obj);
-
   base::android::ScopedJavaLocalRef<jstring> GetEncoding(
       JNIEnv* env,
       const base::android::JavaParamRef<jobject>& obj) const;
@@ -198,6 +191,9 @@ class CONTENT_EXPORT WebContentsAndroid
                     jint max_bitmap_size,
                     jboolean bypass_cache,
                     const base::android::JavaParamRef<jobject>& jcallback);
+
+  void SetMediaSession(
+      const base::android::ScopedJavaLocalRef<jobject>& j_media_session);
 
  private:
   RenderWidgetHostViewAndroid* GetRenderWidgetHostViewAndroid();
