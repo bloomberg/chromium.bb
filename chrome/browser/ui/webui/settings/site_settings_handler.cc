@@ -224,6 +224,15 @@ void SiteSettingsHandler::OnContentSettingChanged(
   if (!site_settings::HasRegisteredGroupName(content_type))
     return;
 
+  // These content types are deprecated and should not trigger a UI update.
+  // TODO(mgiuca): This is really only necessary to avoid breaking
+  // SiteSettingsHandlerTest.Incognito. Delete this check when we delete the
+  // enum value. https://crbug.com/591896
+  if (content_type == CONTENT_SETTINGS_TYPE_FULLSCREEN ||
+      content_type == CONTENT_SETTINGS_TYPE_MOUSELOCK) {
+    return;
+  }
+
   if (primary_pattern.ToString().empty()) {
     CallJavascriptFunction(
         "cr.webUIListenerCallback",

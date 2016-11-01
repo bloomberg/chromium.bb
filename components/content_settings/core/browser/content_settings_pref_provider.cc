@@ -33,6 +33,22 @@
 
 namespace content_settings {
 
+namespace {
+
+// These settings are no longer used, and should be deleted on profile startup.
+// NOTE: Do not use the CONTENT_SETTINGS_TYPE_* constants, as these will soon be
+// deleted.
+#if !defined(OS_IOS)
+const char kObsoleteFullscreenExceptionsPref[] =
+    "profile.content_settings.exceptions.fullscreen";
+#if !defined(OS_ANDROID)
+const char kObsoleteMouseLockExceptionsPref[] =
+    "profile.content_settings.exceptions.mouselock";
+#endif  // !defined(OS_ANDROID)
+#endif  // !defined(OS_IOS)
+
+}  // namespace
+
 // ////////////////////////////////////////////////////////////////////////////
 // PrefProvider:
 //
@@ -66,6 +82,8 @@ PrefProvider::PrefProvider(PrefService* prefs, bool incognito)
       ContentSettingsPattern::kContentSettingsPatternVersion) {
     return;
   }
+
+  DiscardObsoletePreferences();
 
   pref_change_registrar_.Init(prefs_);
 
@@ -185,6 +203,17 @@ void PrefProvider::Notify(
                   secondary_pattern,
                   content_type,
                   resource_identifier);
+}
+
+void PrefProvider::DiscardObsoletePreferences() {
+  // These prefs aren't registered on iOS/Android so they can't (and don't need
+  // to) be deleted.
+#if !defined(OS_IOS)
+  prefs_->ClearPref(kObsoleteFullscreenExceptionsPref);
+#if !defined(OS_ANDROID)
+  prefs_->ClearPref(kObsoleteMouseLockExceptionsPref);
+#endif  // !defined(OS_ANDROID)
+#endif  // !defined(OS_IOS)
 }
 
 }  // namespace content_settings

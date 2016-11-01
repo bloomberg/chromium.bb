@@ -152,6 +152,38 @@ TEST_F(DefaultProviderTest, ObservePref) {
                                          std::string(), false));
 }
 
+// Tests that fullscreen and mouselock content settings are cleared.
+TEST_F(DefaultProviderTest, DiscardObsoletePreferences) {
+  static const char kFullscreenPrefPath[] =
+      "profile.default_content_setting_values.fullscreen";
+#if !defined(OS_ANDROID)
+  static const char kMouselockPrefPath[] =
+      "profile.default_content_setting_values.mouselock";
+#endif
+  static const char kGeolocationPrefPath[] =
+      "profile.default_content_setting_values.geolocation";
+
+  PrefService* prefs = profile_.GetPrefs();
+  // Set some pref data.
+  prefs->SetInteger(kFullscreenPrefPath, CONTENT_SETTING_BLOCK);
+#if !defined(OS_ANDROID)
+  prefs->SetInteger(kMouselockPrefPath, CONTENT_SETTING_ALLOW);
+#endif
+  prefs->SetInteger(kGeolocationPrefPath, CONTENT_SETTING_BLOCK);
+
+  // Instantiate a new DefaultProvider; can't use |provider_| because we want to
+  // test the constructor's behavior after setting the above.
+  DefaultProvider provider(prefs, false);
+
+  // Check that fullscreen and mouselock have been deleted.
+  EXPECT_FALSE(prefs->HasPrefPath(kFullscreenPrefPath));
+#if !defined(OS_ANDROID)
+  EXPECT_FALSE(prefs->HasPrefPath(kMouselockPrefPath));
+#endif
+  EXPECT_TRUE(prefs->HasPrefPath(kGeolocationPrefPath));
+  EXPECT_EQ(CONTENT_SETTING_BLOCK, prefs->GetInteger(kGeolocationPrefPath));
+}
+
 TEST_F(DefaultProviderTest, OffTheRecord) {
   DefaultProvider otr_provider(profile_.GetPrefs(), true /* incognito */);
 

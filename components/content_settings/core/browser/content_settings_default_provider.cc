@@ -28,6 +28,18 @@ namespace content_settings {
 
 namespace {
 
+// These settings are no longer used, and should be deleted on profile startup.
+// NOTE: Do not use the CONTENT_SETTINGS_TYPE_* constants, as these will soon be
+// deleted.
+#if !defined(OS_IOS)
+const char kObsoleteFullscreenDefaultPref[] =
+    "profile.default_content_setting_values.fullscreen";
+#if !defined(OS_ANDROID)
+const char kObsoleteMouseLockDefaultPref[] =
+    "profile.default_content_setting_values.mouselock";
+#endif  // !defined(OS_ANDROID)
+#endif  // !defined(OS_IOS)
+
 ContentSetting GetDefaultValue(const WebsiteSettingsInfo* info) {
   const base::Value* initial_default = info->initial_default_value();
   if (!initial_default)
@@ -88,6 +100,9 @@ DefaultProvider::DefaultProvider(PrefService* prefs, bool incognito)
       is_incognito_(incognito),
       updating_preferences_(false) {
   DCHECK(prefs_);
+
+  // Remove the obsolete preferences from the pref file.
+  DiscardObsoletePreferences();
 
   // Read global defaults.
   ReadDefaultSettings();
@@ -342,6 +357,17 @@ std::unique_ptr<base::Value> DefaultProvider::ReadFromPref(
     ContentSettingsType content_type) {
   int int_value = prefs_->GetInteger(GetPrefName(content_type));
   return ContentSettingToValue(IntToContentSetting(int_value));
+}
+
+void DefaultProvider::DiscardObsoletePreferences() {
+  // These prefs aren't registered on iOS/Android so they can't (and don't need
+  // to) be deleted.
+#if !defined(OS_IOS)
+  prefs_->ClearPref(kObsoleteFullscreenDefaultPref);
+#if !defined(OS_ANDROID)
+  prefs_->ClearPref(kObsoleteMouseLockDefaultPref);
+#endif  // !defined(OS_ANDROID)
+#endif  // !defined(OS_IOS)
 }
 
 }  // namespace content_settings

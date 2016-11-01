@@ -132,6 +132,62 @@ TEST_F(PrefProviderTest, Observer) {
   pref_content_settings_provider.ShutdownOnUIThread();
 }
 
+// Tests that fullscreen and mouselock content settings are cleared.
+TEST_F(PrefProviderTest, DiscardObsoletePreferences) {
+  static const char kFullscreenPrefPath[] =
+      "profile.content_settings.exceptions.fullscreen";
+#if !defined(OS_ANDROID)
+  static const char kMouselockPrefPath[] =
+      "profile.content_settings.exceptions.mouselock";
+#endif
+  static const char kGeolocationPrefPath[] =
+      "profile.content_settings.exceptions.geolocation";
+  static const char kPattern[] = "[*.]example.com";
+
+  TestingProfile profile;
+  PrefService* prefs = profile.GetPrefs();
+
+  // Set some pref data. Each content setting type has the following value:
+  // {"[*.]example.com": {"setting": 1}}
+  base::DictionaryValue pref_data;
+  auto data_for_pattern = base::MakeUnique<base::DictionaryValue>();
+  data_for_pattern->SetInteger("setting", CONTENT_SETTING_ALLOW);
+  pref_data.SetWithoutPathExpansion(kPattern, std::move(data_for_pattern));
+  prefs->Set(kFullscreenPrefPath, pref_data);
+#if !defined(OS_ANDROID)
+  prefs->Set(kMouselockPrefPath, pref_data);
+#endif
+  prefs->Set(kGeolocationPrefPath, pref_data);
+
+  // Instantiate a new PrefProvider here, because we want to test the
+  // constructor's behavior after setting the above.
+  PrefProvider provider(prefs, false);
+  provider.ShutdownOnUIThread();
+
+  // Check that fullscreen and mouselock have been reset back to defaults.
+  // TODO(mgiuca): These should be fully deleted, except that they keep being
+  // recreated due to the content settings enum still existing. Delete the enum,
+  // then update this test to expect full deletion. https://crbug.com/591896.
+  // EXPECT_FALSE(prefs->HasPrefPath(kFullscreenPrefPath));
+  // EXPECT_FALSE(prefs->HasPrefPath(kMouselockPrefPath));
+  GURL primary_url("http://example.com/");
+  EXPECT_EQ(CONTENT_SETTING_DEFAULT,
+            TestUtils::GetContentSetting(&provider, primary_url, primary_url,
+                                         CONTENT_SETTINGS_TYPE_FULLSCREEN,
+                                         std::string(), false));
+#if !defined(OS_ANDROID)
+  EXPECT_EQ(CONTENT_SETTING_DEFAULT,
+            TestUtils::GetContentSetting(&provider, primary_url, primary_url,
+                                         CONTENT_SETTINGS_TYPE_MOUSELOCK,
+                                         std::string(), false));
+#endif
+  EXPECT_TRUE(prefs->HasPrefPath(kGeolocationPrefPath));
+  EXPECT_EQ(CONTENT_SETTING_ALLOW,
+            TestUtils::GetContentSetting(&provider, primary_url, primary_url,
+                                         CONTENT_SETTINGS_TYPE_GEOLOCATION,
+                                         std::string(), false));
+}
+
 // Test for regression in which the PrefProvider modified the user pref store
 // of the OTR unintentionally: http://crbug.com/74466.
 TEST_F(PrefProviderTest, Incognito) {

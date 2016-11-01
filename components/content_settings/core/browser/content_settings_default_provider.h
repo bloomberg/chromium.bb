@@ -72,6 +72,9 @@ class DefaultProvider : public ObservableProvider {
   // Called on prefs change.
   void OnPreferenceChanged(const std::string& pref_name);
 
+  // Clean up the obsolete preferences from the user's profile.
+  void DiscardObsoletePreferences();
+
   // Copies of the pref data, so that we can read it on the IO thread.
   std::map<ContentSettingsType, std::unique_ptr<base::Value>> default_settings_;
 
