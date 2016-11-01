@@ -5,8 +5,12 @@
 #include "media/remoting/remoting_controller.h"
 
 #include "base/bind.h"
+#include "base/bind_helpers.h"
+#include "base/callback_helpers.h"
 #include "base/logging.h"
 #include "base/single_thread_task_runner.h"
+#include "media/remoting/rpc/proto_utils.h"
+#include "media/remoting/rpc/rpc_broker.h"
 
 namespace media {
 
@@ -16,9 +20,63 @@ RemotingController::RemotingController(
     : binding_(this, std::move(source_request)),
       remoter_(std::move(remoter)),
       task_runner_(base::ThreadTaskRunnerHandle::Get()),
-      weak_factory_(this) {}
+      weak_factory_(this) {
+  DCHECK(remoter_);
+  rpc_broker_.reset(new remoting::RpcBroker(base::Bind(
+      &RemotingController::OnSendMessageToSink, weak_factory_.GetWeakPtr())));
+}
 
 RemotingController::~RemotingController() {}
+
+void RemotingController::StartDataPipe(
+    std::unique_ptr<mojo::DataPipe> audio_data_pipe,
+    std::unique_ptr<mojo::DataPipe> video_data_pipe,
+    const DataPipeStartCallback& done_callback) {
+  VLOG(2) << __FUNCTION__;
+  DCHECK(task_runner_->BelongsToCurrentThread());
+  DCHECK(!done_callback.is_null());
+  bool audio = audio_data_pipe != nullptr;
+  bool video = video_data_pipe != nullptr;
+
+  if (!audio && !video) {
+    LOG(ERROR) << "No audio and video to establish data pipe";
+    done_callback.Run(mojom::RemotingDataStreamSenderPtrInfo(),
+                      mojom::RemotingDataStreamSenderPtrInfo(),
+                      mojo::ScopedDataPipeProducerHandle(),
+                      mojo::ScopedDataPipeProducerHandle());
+    return;
+  }
+
+  mojom::RemotingDataStreamSenderPtr audio_stream_sender;
+  mojom::RemotingDataStreamSenderPtr video_stream_sender;
+  remoter_->StartDataStreams(
+      audio ? std::move(audio_data_pipe->consumer_handle)
+            : mojo::ScopedDataPipeConsumerHandle(),
+      video ? std::move(video_data_pipe->consumer_handle)
+            : mojo::ScopedDataPipeConsumerHandle(),
+      audio ? mojo::GetProxy(&audio_stream_sender)
+            : media::mojom::RemotingDataStreamSenderRequest(),
+      video ? mojo::GetProxy(&video_stream_sender)
+            : media::mojom::RemotingDataStreamSenderRequest());
+
+  done_callback.Run(audio_stream_sender.PassInterface(),
+                    video_stream_sender.PassInterface(),
+                    audio ? std::move(audio_data_pipe->producer_handle)
+                          : mojo::ScopedDataPipeProducerHandle(),
+                    video ? std::move(video_data_pipe->producer_handle)
+                          : mojo::ScopedDataPipeProducerHandle());
+}
+
+base::WeakPtr<remoting::RpcBroker> RemotingController::GetRpcBroker() const {
+  DCHECK(task_runner_->BelongsToCurrentThread());
+  return rpc_broker_->GetWeakPtr();
+}
+
+void RemotingController::OnSendMessageToSink(
+    std::unique_ptr<std::vector<uint8_t>> message) {
+  DCHECK(task_runner_->BelongsToCurrentThread());
+  remoter_->SendMessageToSink(*message);
+}
 
 void RemotingController::OnSinkAvailable() {
   DCHECK(task_runner_->BelongsToCurrentThread());
@@ -54,9 +112,13 @@ void RemotingController::OnStartFailed(mojom::RemotingStartFailReason reason) {
 void RemotingController::OnMessageFromSink(
     const std::vector<uint8_t>& message) {
   DCHECK(task_runner_->BelongsToCurrentThread());
+  std::unique_ptr<remoting::pb::RpcMessage> rpc(new remoting::pb::RpcMessage());
+  if (!rpc->ParseFromArray(message.data(), message.size())) {
+    LOG(ERROR) << "corrupted Rpc message";
+    return;
+  }
 
-  // TODO(xjz): Merge with Eric's CL to handle the RPC messages here.
-  NOTIMPLEMENTED();
+  rpc_broker_->ProcessMessageFromRemote(std::move(rpc));
 }
 
 void RemotingController::OnStopped(mojom::RemotingStopReason reason) {

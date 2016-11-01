@@ -11,6 +11,7 @@
 #include "media/base/limits.h"
 #include "media/base/media_util.h"
 #include "media/base/video_decoder_config.h"
+#include "media/remoting/fake_remoting_controller.h"
 #include "mojo/public/cpp/bindings/strong_binding.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
@@ -34,87 +35,6 @@ PipelineMetadata defaultMetadata() {
       ChannelLayout::CHANNEL_LAYOUT_MONO, limits::kMinSampleRate,
       EmptyExtraData(), Unencrypted());
   return data;
-}
-
-class FakeRemoter final : public mojom::Remoter {
- public:
-  // |start_will_fail| indicates whether starting remoting will fail.
-  FakeRemoter(mojom::RemotingSourcePtr source, bool start_will_fail)
-      : source_(std::move(source)), start_will_fail_(start_will_fail) {}
-  ~FakeRemoter() override {}
-
-  // mojom::Remoter implementations.
-  void Start() override {
-    if (start_will_fail_) {
-      base::ThreadTaskRunnerHandle::Get()->PostTask(
-          FROM_HERE,
-          base::Bind(&FakeRemoter::StartFailed, base::Unretained(this)));
-    } else {
-      base::ThreadTaskRunnerHandle::Get()->PostTask(
-          FROM_HERE, base::Bind(&FakeRemoter::Started, base::Unretained(this)));
-    }
-  }
-
-  void StartDataStreams(
-      mojo::ScopedDataPipeConsumerHandle audio_pipe,
-      mojo::ScopedDataPipeConsumerHandle video_pipe,
-      mojom::RemotingDataStreamSenderRequest audio_sender_request,
-      mojom::RemotingDataStreamSenderRequest video_sender_request) override {}
-
-  void Stop(mojom::RemotingStopReason reason) override {
-    base::ThreadTaskRunnerHandle::Get()->PostTask(
-        FROM_HERE,
-        base::Bind(&FakeRemoter::Stopped, base::Unretained(this), reason));
-  }
-
-  void SendMessageToSink(const std::vector<uint8_t>& message) override {}
-
- private:
-  void Started() { source_->OnStarted(); }
-  void StartFailed() {
-    source_->OnStartFailed(mojom::RemotingStartFailReason::ROUTE_TERMINATED);
-  }
-  void Stopped(mojom::RemotingStopReason reason) { source_->OnStopped(reason); }
-
-  mojom::RemotingSourcePtr source_;
-  bool start_will_fail_;
-
-  DISALLOW_COPY_AND_ASSIGN(FakeRemoter);
-};
-
-class FakeRemoterFactory final : public mojom::RemoterFactory {
- public:
-  // |start_will_fail| indicates whether starting remoting will fail.
-  explicit FakeRemoterFactory(bool start_will_fail)
-      : start_will_fail_(start_will_fail) {}
-  ~FakeRemoterFactory() override {}
-
-  void Create(mojom::RemotingSourcePtr source,
-              mojom::RemoterRequest request) override {
-    mojo::MakeStrongBinding(
-        base::MakeUnique<FakeRemoter>(std::move(source), start_will_fail_),
-        std::move(request));
-  }
-
- private:
-  bool start_will_fail_;
-
-  DISALLOW_COPY_AND_ASSIGN(FakeRemoterFactory);
-};
-
-std::unique_ptr<RemotingController> CreateRemotingController(
-    bool start_will_fail) {
-  mojom::RemotingSourcePtr remoting_source;
-  mojom::RemotingSourceRequest remoting_source_request =
-      mojo::GetProxy(&remoting_source);
-  mojom::RemoterPtr remoter;
-  std::unique_ptr<mojom::RemoterFactory> remoter_factory =
-      base::MakeUnique<FakeRemoterFactory>(start_will_fail);
-  remoter_factory->Create(std::move(remoting_source), mojo::GetProxy(&remoter));
-  std::unique_ptr<RemotingController> remoting_controller =
-      base::MakeUnique<RemotingController>(std::move(remoting_source_request),
-                                           std::move(remoter));
-  return remoting_controller;
 }
 
 }  // namespace

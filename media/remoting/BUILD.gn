@@ -18,6 +18,8 @@ source_set("rpc") {
     "rpc/proto_enum_utils.h",
     "rpc/proto_utils.cc",
     "rpc/proto_utils.h",
+    "rpc/rpc_broker.cc",
+    "rpc/rpc_broker.h",
   ]
 
   deps = [
@@ -31,23 +33,36 @@ source_set("rpc") {
 
 source_set("remoting") {
   sources = [
+    "remote_demuxer_stream_adapter.cc",
+    "remote_demuxer_stream_adapter.h",
+    "remote_renderer_impl.cc",
+    "remote_renderer_impl.h",
     "remoting_controller.cc",
     "remoting_controller.h",
     "remoting_renderer_factory.cc",
     "remoting_renderer_factory.h",
   ]
   deps = [
+    ":rpc",
     "//base",
     "//media",
     "//media/mojo/interfaces:remoting",
+    "//mojo/public/cpp/bindings",
   ]
 }
 
 source_set("media_remoting_tests") {
   testonly = true
   sources = [
+    "fake_remoting_controller.cc",
+    "fake_remoting_controller.h",
+    "fake_remoting_demuxer_stream_provider.cc",
+    "fake_remoting_demuxer_stream_provider.h",
+    "remote_demuxer_stream_adapter_unittest.cc",
+    "remote_renderer_impl_unittest.cc",
     "remoting_controller_unittest.cc",
     "rpc/proto_utils_unittest.cc",
+    "rpc/rpc_broker_unittest.cc",
   ]
 
   deps = [
