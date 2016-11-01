@@ -1031,7 +1031,8 @@ class MODULES_EXPORT WebGLRenderingContextBase : public CanvasRenderingContext,
                     Image*,
                     WebGLImageConversion::ImageHtmlDomSource,
                     bool flipY,
-                    bool premultiplyAlpha);
+                    bool premultiplyAlpha,
+                    const IntRect&);
 
   // Copy from the source directly to the texture via the gpu, without a
   // read-back to system memory.  Souce could be canvas or imageBitmap.
@@ -1501,6 +1502,7 @@ class MODULES_EXPORT WebGLRenderingContextBase : public CanvasRenderingContext,
                                       GLint,
                                       GLint,
                                       HTMLImageElement*,
+                                      const IntRect&,
                                       ExceptionState&);
   void texImageHelperHTMLCanvasElement(TexImageFunctionID,
                                        GLenum,
@@ -1536,6 +1538,8 @@ class MODULES_EXPORT WebGLRenderingContextBase : public CanvasRenderingContext,
                                  ImageBitmap*,
                                  ExceptionState&);
   static const char* getTexImageFunctionName(TexImageFunctionID);
+  IntRect sentinelEmptyRect();
+  IntRect safeGetImageSize(Image*);
 
  private:
   WebGLRenderingContextBase(HTMLCanvasElement*,

@@ -2553,6 +2553,7 @@ void GLES2Implementation::TexImage2D(
   uint32_t padded_row_size;
   uint32_t skip_size;
   PixelStoreParams params = GetUnpackParameters(k2D);
+
   if (!GLES2Util::ComputeImageDataSizesES3(width, height, 1,
                                            format, type,
                                            params,

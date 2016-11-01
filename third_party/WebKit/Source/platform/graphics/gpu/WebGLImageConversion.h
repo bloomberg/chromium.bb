@@ -216,8 +216,9 @@ class PLATFORM_EXPORT WebGLImageConversion final {
                             bool flipY,
                             AlphaOp,
                             DataFormat sourceFormat,
-                            unsigned width,
-                            unsigned height,
+                            unsigned sourceImageWidth,
+                            unsigned sourceImageHeight,
+                            const IntRect& sourceImageSubRectangle,
                             unsigned sourceUnpackAlignment,
                             Vector<uint8_t>& data);
 
@@ -261,8 +262,9 @@ class PLATFORM_EXPORT WebGLImageConversion final {
   // GraphicsContext3DImagePacking.cpp.
   static bool packPixels(const uint8_t* sourceData,
                          DataFormat sourceDataFormat,
-                         unsigned width,
-                         unsigned height,
+                         unsigned sourceDataWidth,
+                         unsigned sourceDataHeight,
+                         const IntRect& sourceDataSubRectangle,
                          unsigned sourceUnpackAlignment,
                          unsigned destinationFormat,
                          unsigned destinationType,

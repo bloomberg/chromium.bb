@@ -2232,23 +2232,24 @@ class FormatConverter {
   STACK_ALLOCATED();
 
  public:
-  FormatConverter(unsigned width,
-                  unsigned height,
+  FormatConverter(const IntRect& sourceDataSubRectangle,
                   const void* srcStart,
                   void* dstStart,
                   int srcStride,
+                  int srcRowOffset,
                   int dstStride)
-      : m_width(width),
-        m_height(height),
+      : m_srcSubRectangle(sourceDataSubRectangle),
         m_srcStart(srcStart),
         m_dstStart(dstStart),
         m_srcStride(srcStride),
+        m_srcRowOffset(srcRowOffset),
         m_dstStride(dstStride),
         m_success(false) {
     const unsigned MaxNumberOfComponents = 4;
     const unsigned MaxBytesPerComponent = 4;
     m_unpackedIntermediateSrcData = wrapArrayUnique(
-        new uint8_t[m_width * MaxNumberOfComponents * MaxBytesPerComponent]);
+        new uint8_t[m_srcSubRectangle.width() * MaxNumberOfComponents *
+                    MaxBytesPerComponent]);
     ASSERT(m_unpackedIntermediateSrcData.get());
   }
 
@@ -2271,10 +2272,10 @@ class FormatConverter {
             WebGLImageConversion::AlphaOp alphaOp>
   void convert();
 
-  const unsigned m_width, m_height;
+  const IntRect& m_srcSubRectangle;
   const void* const m_srcStart;
   void* const m_dstStart;
-  const int m_srcStride, m_dstStride;
+  const int m_srcStride, m_srcRowOffset, m_dstStride;
   bool m_success;
   std::unique_ptr<uint8_t[]> m_unpackedIntermediateSrcData;
 };
@@ -2452,28 +2453,32 @@ void FormatConverter::convert() {
                            alphaOp == WebGLImageConversion::AlphaDoNothing;
   ASSERT(!trivialUnpack || !trivialPack);
 
-  const SrcType* srcRowStart = static_cast<const SrcType*>(m_srcStart);
+  const SrcType* srcRowStart =
+      static_cast<const SrcType*>(static_cast<const void*>(
+          static_cast<const uint8_t*>(m_srcStart) +
+          ((m_srcStride * m_srcSubRectangle.y()) + m_srcRowOffset)));
   DstType* dstRowStart = static_cast<DstType*>(m_dstStart);
   if (trivialUnpack) {
-    for (size_t i = 0; i < m_height; ++i) {
-      pack<DstFormat, alphaOp>(srcRowStart, dstRowStart, m_width);
+    for (int i = 0; i < m_srcSubRectangle.height(); ++i) {
+      pack<DstFormat, alphaOp>(srcRowStart, dstRowStart,
+                               m_srcSubRectangle.width());
       srcRowStart += srcStrideInElements;
       dstRowStart += dstStrideInElements;
     }
   } else if (trivialPack) {
-    for (size_t i = 0; i < m_height; ++i) {
-      unpack<SrcFormat>(srcRowStart, dstRowStart, m_width);
+    for (int i = 0; i < m_srcSubRectangle.height(); ++i) {
+      unpack<SrcFormat>(srcRowStart, dstRowStart, m_srcSubRectangle.width());
       srcRowStart += srcStrideInElements;
       dstRowStart += dstStrideInElements;
     }
   } else {
-    for (size_t i = 0; i < m_height; ++i) {
+    for (int i = 0; i < m_srcSubRectangle.height(); ++i) {
       unpack<SrcFormat>(srcRowStart, reinterpret_cast<IntermType*>(
                                          m_unpackedIntermediateSrcData.get()),
-                        m_width);
+                        m_srcSubRectangle.width());
       pack<DstFormat, alphaOp>(
           reinterpret_cast<IntermType*>(m_unpackedIntermediateSrcData.get()),
-          dstRowStart, m_width);
+          dstRowStart, m_srcSubRectangle.width());
       srcRowStart += srcStrideInElements;
       dstRowStart += dstStrideInElements;
     }
@@ -2861,8 +2866,9 @@ bool WebGLImageConversion::packImageData(Image* image,
                                          bool flipY,
                                          AlphaOp alphaOp,
                                          DataFormat sourceFormat,
-                                         unsigned width,
-                                         unsigned height,
+                                         unsigned sourceImageWidth,
+                                         unsigned sourceImageHeight,
+                                         const IntRect& sourceImageSubRectangle,
                                          unsigned sourceUnpackAlignment,
                                          Vector<uint8_t>& data) {
   if (!pixels)
@@ -2872,14 +2878,16 @@ bool WebGLImageConversion::packImageData(Image* image,
   // Output data is tightly packed (alignment == 1).
   PixelStoreParams params;
   params.alignment = 1;
-  if (computeImageSizeInBytes(format, type, width, height, 1, params,
+  if (computeImageSizeInBytes(format, type, sourceImageSubRectangle.width(),
+                              sourceImageSubRectangle.height(), 1, params,
                               &packedSize, 0, 0) != GL_NO_ERROR)
     return false;
   data.resize(packedSize);
 
-  if (!packPixels(reinterpret_cast<const uint8_t*>(pixels), sourceFormat, width,
-                  height, sourceUnpackAlignment, format, type, alphaOp,
-                  data.data(), flipY))
+  if (!packPixels(reinterpret_cast<const uint8_t*>(pixels), sourceFormat,
+                  sourceImageWidth, sourceImageHeight, sourceImageSubRectangle,
+                  sourceUnpackAlignment, format, type, alphaOp, data.data(),
+                  flipY))
     return false;
   if (ImageObserver* observer = image->getImageObserver())
     observer->didDraw(image);
@@ -2908,7 +2916,8 @@ bool WebGLImageConversion::extractImageData(const uint8_t* imageData,
     return false;
   data.resize(packedSize);
 
-  if (!packPixels(imageData, sourceDataFormat, width, height, 0, format, type,
+  if (!packPixels(imageData, sourceDataFormat, width, height,
+                  IntRect(0, 0, width, height), 0, format, type,
                   premultiplyAlpha ? AlphaDoPremultiply : AlphaDoNothing,
                   data.data(), flipY))
     return false;
@@ -2937,7 +2946,8 @@ bool WebGLImageConversion::extractTextureData(unsigned width,
   data.resize(width * height * bytesPerPixel);
 
   if (!packPixels(static_cast<const uint8_t*>(pixels), sourceDataFormat, width,
-                  height, unpackAlignment, format, type,
+                  height, IntRect(0, 0, width, height), unpackAlignment, format,
+                  type,
                   (premultiplyAlpha ? AlphaDoPremultiply : AlphaDoNothing),
                   data.data(), flipY))
     return false;
@@ -2947,25 +2957,29 @@ bool WebGLImageConversion::extractTextureData(unsigned width,
 
 bool WebGLImageConversion::packPixels(const uint8_t* sourceData,
                                       DataFormat sourceDataFormat,
-                                      unsigned width,
-                                      unsigned height,
+                                      unsigned sourceDataWidth,
+                                      unsigned sourceDataHeight,
+                                      const IntRect& sourceDataSubRectangle,
                                       unsigned sourceUnpackAlignment,
                                       unsigned destinationFormat,
                                       unsigned destinationType,
                                       AlphaOp alphaOp,
                                       void* destinationData,
                                       bool flipY) {
-  int validSrc = width * TexelBytesForFormat(sourceDataFormat);
+  int validSrc = sourceDataWidth * TexelBytesForFormat(sourceDataFormat);
   int remainder =
       sourceUnpackAlignment ? (validSrc % sourceUnpackAlignment) : 0;
   int srcStride =
       remainder ? (validSrc + sourceUnpackAlignment - remainder) : validSrc;
+  int srcRowOffset =
+      sourceDataSubRectangle.x() * TexelBytesForFormat(sourceDataFormat);
 
   DataFormat dstDataFormat = getDataFormat(destinationFormat, destinationType);
-  int dstStride = width * TexelBytesForFormat(dstDataFormat);
+  int dstStride =
+      sourceDataSubRectangle.width() * TexelBytesForFormat(dstDataFormat);
   if (flipY) {
-    destinationData =
-        static_cast<uint8_t*>(destinationData) + dstStride * (height - 1);
+    destinationData = static_cast<uint8_t*>(destinationData) +
+                      dstStride * (sourceDataSubRectangle.height() - 1);
     dstStride = -dstStride;
   }
   if (!HasAlpha(sourceDataFormat) || !HasColor(sourceDataFormat) ||
@@ -2973,20 +2987,21 @@ bool WebGLImageConversion::packPixels(const uint8_t* sourceData,
     alphaOp = AlphaDoNothing;
 
   if (sourceDataFormat == dstDataFormat && alphaOp == AlphaDoNothing) {
-    const uint8_t* ptr = sourceData;
-    const uint8_t* ptrEnd = sourceData + srcStride * height;
+    const uint8_t* ptr = sourceData + srcStride * sourceDataSubRectangle.y();
+    const uint8_t* ptrEnd =
+        sourceData + srcStride * sourceDataSubRectangle.maxY();
     unsigned rowSize = (dstStride > 0) ? dstStride : -dstStride;
     uint8_t* dst = static_cast<uint8_t*>(destinationData);
     while (ptr < ptrEnd) {
-      memcpy(dst, ptr, rowSize);
+      memcpy(dst, ptr + srcRowOffset, rowSize);
       ptr += srcStride;
       dst += dstStride;
     }
     return true;
   }
 
-  FormatConverter converter(width, height, sourceData, destinationData,
-                            srcStride, dstStride);
+  FormatConverter converter(sourceDataSubRectangle, sourceData, destinationData,
+                            srcStride, srcRowOffset, dstStride);
   converter.convert(sourceDataFormat, dstDataFormat, alphaOp);
   if (!converter.Success())
     return false;

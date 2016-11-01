@@ -1104,30 +1104,30 @@ void WebGL2RenderingContextBase::renderbufferStorageMultisample(
 void WebGL2RenderingContextBase::resetUnpackParameters() {
   WebGLRenderingContextBase::resetUnpackParameters();
 
-  if (!m_unpackRowLength)
+  if (m_unpackRowLength)
     contextGL()->PixelStorei(GL_UNPACK_ROW_LENGTH, 0);
-  if (!m_unpackImageHeight)
+  if (m_unpackImageHeight)
     contextGL()->PixelStorei(GL_UNPACK_IMAGE_HEIGHT, 0);
-  if (!m_unpackSkipPixels)
+  if (m_unpackSkipPixels)
     contextGL()->PixelStorei(GL_UNPACK_SKIP_PIXELS, 0);
-  if (!m_unpackSkipRows)
+  if (m_unpackSkipRows)
     contextGL()->PixelStorei(GL_UNPACK_SKIP_ROWS, 0);
-  if (!m_unpackSkipImages)
+  if (m_unpackSkipImages)
     contextGL()->PixelStorei(GL_UNPACK_SKIP_IMAGES, 0);
 }
 
 void WebGL2RenderingContextBase::restoreUnpackParameters() {
   WebGLRenderingContextBase::restoreUnpackParameters();
 
-  if (!m_unpackRowLength)
+  if (m_unpackRowLength)
     contextGL()->PixelStorei(GL_UNPACK_ROW_LENGTH, m_unpackRowLength);
-  if (!m_unpackImageHeight)
+  if (m_unpackImageHeight)
     contextGL()->PixelStorei(GL_UNPACK_IMAGE_HEIGHT, m_unpackImageHeight);
-  if (!m_unpackSkipPixels)
+  if (m_unpackSkipPixels)
     contextGL()->PixelStorei(GL_UNPACK_SKIP_PIXELS, m_unpackSkipPixels);
-  if (!m_unpackSkipRows)
+  if (m_unpackSkipRows)
     contextGL()->PixelStorei(GL_UNPACK_SKIP_ROWS, m_unpackSkipRows);
-  if (!m_unpackSkipImages)
+  if (m_unpackSkipImages)
     contextGL()->PixelStorei(GL_UNPACK_SKIP_IMAGES, m_unpackSkipImages);
 }
 
@@ -1305,7 +1305,15 @@ void WebGL2RenderingContextBase::texImage2D(GLenum target,
                                             GLenum type,
                                             HTMLImageElement* image,
                                             ExceptionState& exceptionState) {
-  // TODO(zmo): To be implemented.
+  IntRect sourceImageRect;
+  if (image) {
+    sourceImageRect.setLocation(IntPoint(m_unpackSkipPixels, m_unpackSkipRows));
+    sourceImageRect.setSize(IntSize(width, height));
+  }
+
+  texImageHelperHTMLImageElement(TexImage2D, target, level, internalformat,
+                                 format, type, 0, 0, 0, image, sourceImageRect,
+                                 exceptionState);
 }
 
 void WebGL2RenderingContextBase::texImage2D(GLenum target,
@@ -1451,7 +1459,15 @@ void WebGL2RenderingContextBase::texSubImage2D(GLenum target,
                                                GLenum type,
                                                HTMLImageElement* image,
                                                ExceptionState& exceptionState) {
-  // TODO(zmo): To be implemente.
+  IntRect sourceImageRect;
+  if (image) {
+    sourceImageRect.setLocation(IntPoint(m_unpackSkipPixels, m_unpackSkipRows));
+    sourceImageRect.setSize(IntSize(width, height));
+  }
+
+  texImageHelperHTMLImageElement(TexSubImage2D, target, level, 0, format, type,
+                                 xoffset, yoffset, 0, image, sourceImageRect,
+                                 exceptionState);
 }
 
 void WebGL2RenderingContextBase::texSubImage2D(GLenum target,
@@ -1858,7 +1874,7 @@ void WebGL2RenderingContextBase::texSubImage3D(GLenum target,
                                                ExceptionState& exceptionState) {
   texImageHelperHTMLImageElement(TexSubImage3D, target, level, 0, format, type,
                                  xoffset, yoffset, zoffset, image,
-                                 exceptionState);
+                                 sentinelEmptyRect(), exceptionState);
 }
 
 void WebGL2RenderingContextBase::texSubImage3D(GLenum target,
