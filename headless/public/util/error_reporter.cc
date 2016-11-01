@@ -14,6 +14,7 @@ ErrorReporter::ErrorReporter() {}
 
 ErrorReporter::~ErrorReporter() {}
 
+#if DCHECK_IS_ON()
 void ErrorReporter::Push() {
   path_.push_back(nullptr);
 }
@@ -47,5 +48,6 @@ void ErrorReporter::AddError(base::StringPiece description) {
 bool ErrorReporter::HasErrors() const {
   return !errors_.empty();
 }
+#endif  // DCHECK_IS_ON()
 
 }  // namespace headless
