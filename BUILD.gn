@@ -266,6 +266,7 @@ group("both_gn_and_gyp") {
       "//third_party/cacheinvalidation:cacheinvalidation_unittests",
       "//third_party/codesighs",
       "//third_party/pdfium/samples:pdfium_test",
+      "//third_party/webrtc/tools:frame_analyzer",
       "//tools/battor_agent",
       "//tools/battor_agent:battor_agent_unittests",
       "//tools/gn",
