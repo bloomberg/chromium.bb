@@ -1220,10 +1220,9 @@ public class ChromeTabbedActivity extends ChromeActivity implements OverviewMode
                 MultiWindowUtils.getInstance().getOpenInOtherWindowActivity(this);
         if (targetActivity == null) return;
 
-        // When a second instance is created, the merged instance task id should be cleared.
-        setMergedInstanceTaskId(0);
         Intent intent = new Intent(this, targetActivity);
         MultiWindowUtils.setOpenInOtherWindowIntentExtras(intent, this, targetActivity);
+        MultiWindowUtils.onMultiInstanceModeStarted();
 
         tab.detachAndStartReparenting(intent, null, null);
     }
@@ -1688,6 +1687,14 @@ public class ChromeTabbedActivity extends ChromeActivity implements OverviewMode
         return new ChromeFullscreenManager(this,
                 (ToolbarControlContainer) findViewById(R.id.control_container),
                 getTabModelSelector(), getControlContainerHeightResource(), true);
+    }
+
+    /**
+     * Should be called when multi-instance mode is started.
+     */
+    public static void onMultiInstanceModeStarted() {
+        // When a second instance is created, the merged instance task id should be cleared.
+        setMergedInstanceTaskId(0);
     }
 
     private static void setMergedInstanceTaskId(int mergedInstanceTaskId) {
