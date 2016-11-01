@@ -4,6 +4,8 @@
 
 #include "components/user_manager/fake_user_manager.h"
 
+#include <algorithm>
+
 #include "base/callback.h"
 #include "base/command_line.h"
 #include "base/sys_info.h"
@@ -53,11 +55,11 @@ const user_manager::User* FakeUserManager::AddUserWithAffiliation(
 }
 
 void FakeUserManager::RemoveUserFromList(const AccountId& account_id) {
-  user_manager::UserList::iterator it = users_.begin();
-  // TODO (alemate): Chenge this to GetAccountId(), once a real AccountId is
-  // passed. crbug.com/546876
-  while (it != users_.end() && (*it)->GetEmail() != account_id.GetUserEmail())
-    ++it;
+  const user_manager::UserList::iterator it =
+      std::find_if(users_.begin(), users_.end(),
+                   [&account_id](const user_manager::User* user) {
+                     return user->GetAccountId() == account_id;
+                   });
   if (it != users_.end()) {
     if (primary_user_ == *it)
       primary_user_ = nullptr;
@@ -134,9 +136,7 @@ void FakeUserManager::SaveUserDisplayName(const AccountId& account_id,
                                           const base::string16& display_name) {
   for (user_manager::UserList::iterator it = users_.begin(); it != users_.end();
        ++it) {
-    // TODO (alemate): Chenge this to GetAccountId(), once a real AccountId is
-    // passed. crbug.com/546876
-    if ((*it)->GetEmail() == account_id.GetUserEmail()) {
+    if ((*it)->GetAccountId() == account_id) {
       (*it)->set_display_name(display_name);
       return;
     }

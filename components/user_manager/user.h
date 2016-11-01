@@ -86,7 +86,7 @@ class USER_MANAGER_EXPORT User : public UserInfo {
   ~User() override;
 
   // UserInfo
-  std::string GetEmail() const override;
+  std::string GetDisplayEmail() const override;
   base::string16 GetDisplayName() const override;
   base::string16 GetGivenName() const override;
   const gfx::ImageSkia& GetImage() const override;

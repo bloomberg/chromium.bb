@@ -139,7 +139,7 @@ User::User(const AccountId& account_id)
 
 User::~User() {}
 
-std::string User::GetEmail() const {
+std::string User::GetDisplayEmail() const {
   return display_email();
 }
 

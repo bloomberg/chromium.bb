@@ -259,7 +259,7 @@ TEST_F(TrayUserTest, MultiUserModeButtonClicks) {
   // Since the name is capitalized, the email should be different than the
   // user_id.
   EXPECT_NE(active_user->GetAccountId().GetUserEmail(),
-            second_user->GetEmail());
+            second_user->GetDisplayEmail());
   tray()->CloseSystemBubble();
 }
 

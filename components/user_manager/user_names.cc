@@ -54,12 +54,12 @@ FixedAccountManager::FixedAccountManager()
 
 namespace user_manager {
 
-constexpr const char kStubUser[] = "stub-user@example.com";
+const char kStubUser[] = "stub-user@example.com";
 
 // Should match cros constant in platform/libchromeos/chromeos/cryptohome.h
-constexpr const char kGuestUserName[] = "$guest";
+const char kGuestUserName[] = "$guest";
 
-constexpr const char kSupervisedUserDomain[] = "locally-managed.localhost";
+const char kSupervisedUserDomain[] = "locally-managed.localhost";
 
 std::string CanonicalizeUserID(const std::string& user_id) {
   if (user_id == kGuestUserName)
@@ -67,6 +67,7 @@ std::string CanonicalizeUserID(const std::string& user_id) {
   return gaia::CanonicalizeEmail(user_id);
 }
 
+// Note: StubAccountId is used for all tests, not only ChromeOS tests.
 const AccountId& StubAccountId() {
   return FixedAccountManager::GetInstance()->stub_account_id();
 }

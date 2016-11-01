@@ -377,7 +377,8 @@ void UserCardView::AddUserContent(LoginStatus login_status, int user_index) {
     base::string16 user_email_string =
         tray_delegate->IsUserSupervised()
             ? l10n_util::GetStringUTF16(IDS_ASH_STATUS_TRAY_SUPERVISED_LABEL)
-            : base::UTF8ToUTF16(delegate->GetUserInfo(user_index)->GetEmail());
+            : base::UTF8ToUTF16(
+                  delegate->GetUserInfo(user_index)->GetDisplayEmail());
     if (!user_email_string.empty()) {
       user_email = new views::Label(user_email_string);
       user_email->SetFontList(

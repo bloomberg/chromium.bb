@@ -7,11 +7,11 @@
 #include "base/logging.h"
 #include "base/strings/utf_string_conversions.h"
 #include "components/signin/core/account_id/account_id.h"
+#include "components/user_manager/user_names.h"
 
 namespace user_manager {
 
-UserInfoImpl::UserInfoImpl()
-    : account_id_(AccountId::FromUserEmail("stub-user@domain.com")) {}
+UserInfoImpl::UserInfoImpl() : account_id_(StubAccountId()) {}
 
 UserInfoImpl::~UserInfoImpl() {
 }
@@ -24,8 +24,8 @@ base::string16 UserInfoImpl::GetGivenName() const {
   return base::UTF8ToUTF16("Stub");
 }
 
-std::string UserInfoImpl::GetEmail() const {
-  return account_id_.GetUserEmail();
+std::string UserInfoImpl::GetDisplayEmail() const {
+  return account_id_.GetUserEmail();  // Migrated
 }
 
 const AccountId& UserInfoImpl::GetAccountId() const {

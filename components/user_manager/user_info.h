@@ -33,7 +33,7 @@ class USER_MANAGER_EXPORT UserInfo {
   // Gets the display email address for the user.
   // The display email address might contains some periods in the email name
   // as well as capitalized letters. For example: "Foo.Bar@mock.com".
-  virtual std::string GetEmail() const = 0;
+  virtual std::string GetDisplayEmail() const = 0;
 
   // Returns AccountId for the user.
   virtual const AccountId& GetAccountId() const = 0;

@@ -54,7 +54,7 @@ class MockUserInfo : public user_manager::UserInfo {
     return base::UTF8ToUTF16("Über Über Über Über");
   }
 
-  std::string GetEmail() const override { return display_email_; }
+  std::string GetDisplayEmail() const override { return display_email_; }
 
   const AccountId& GetAccountId() const override { return account_id_; }
 
