@@ -3240,12 +3240,6 @@
         "swarming": {
           "can_use_on_swarming_builders": false
         },
-        "test": "ppapi_unittests"
-      },
-      {
-        "swarming": {
-          "can_use_on_swarming_builders": false
-        },
         "test": "remoting_unittests"
       },
       {
