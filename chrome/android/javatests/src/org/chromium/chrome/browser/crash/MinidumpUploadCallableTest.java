@@ -462,7 +462,7 @@ public class MinidumpUploadCallableTest extends CrashTestCase {
                 new MockCrashReportingPermissionManager() {
                     {
                         mIsInSample = true;
-                        mIsPermitted = false;
+                        mIsPermitted = true;
                         mIsUserPermitted = true;
                         mIsCommandLineDisabled = false;
                         mIsNetworkAvailable = false;
