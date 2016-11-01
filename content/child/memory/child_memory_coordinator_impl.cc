@@ -7,6 +7,7 @@
 #include "base/lazy_instance.h"
 #include "base/memory/memory_coordinator_client_registry.h"
 #include "base/synchronization/lock.h"
+#include "base/trace_event/trace_event.h"
 
 namespace content {
 
@@ -58,6 +59,8 @@ ChildMemoryCoordinatorImpl::~ChildMemoryCoordinatorImpl() {
 
 void ChildMemoryCoordinatorImpl::OnStateChange(mojom::MemoryState state) {
   base::MemoryState base_state = ToBaseMemoryState(state);
+  TRACE_EVENT1("memory-infra", "ChildMemoryCoordinatorImpl::OnStateChange",
+               "state", MemoryStateToString(base_state));
   base::MemoryCoordinatorClientRegistry::GetInstance()->Notify(
       base_state);
 }

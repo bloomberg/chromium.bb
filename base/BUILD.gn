@@ -469,6 +469,7 @@ component("base") {
     "memory/free_deleter.h",
     "memory/linked_ptr.h",
     "memory/manual_constructor.h",
+    "memory/memory_coordinator_client.cc",
     "memory/memory_coordinator_client.h",
     "memory/memory_coordinator_client_registry.cc",
     "memory/memory_coordinator_client_registry.h",

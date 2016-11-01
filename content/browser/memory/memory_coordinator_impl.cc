@@ -5,6 +5,7 @@
 #include "content/browser/memory/memory_coordinator_impl.h"
 
 #include "base/threading/thread_task_runner_handle.h"
+#include "base/trace_event/trace_event.h"
 #include "content/browser/memory/memory_monitor.h"
 #include "content/public/browser/notification_service.h"
 #include "content/public/browser/notification_types.h"
@@ -196,6 +197,10 @@ void MemoryCoordinatorImpl::UpdateState() {
   }
 
   if (next_state != prev_state) {
+    TRACE_EVENT2("memory-infra", "MemoryCoordinatorImpl::UpdateState",
+                 "prev", MemoryStateToString(prev_state),
+                 "next", MemoryStateToString(next_state));
+
     NotifyStateToClients();
     NotifyStateToChildren();
     ScheduleUpdateState(minimum_transition_period_);
