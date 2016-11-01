@@ -7,6 +7,7 @@
 #include "base/memory/ptr_util.h"
 #include "chrome/browser/android/android_theme_resources.h"
 #include "chrome/browser/infobars/infobar_service.h"
+#include "chrome/browser/permissions/permission_prompt_android.h"
 #include "chrome/browser/permissions/permission_request.h"
 #include "chrome/browser/permissions/permission_util.h"
 #include "chrome/browser/ui/android/infobars/grouped_permission_infobar.h"
@@ -21,12 +22,13 @@ GroupedPermissionInfoBarDelegate::~GroupedPermissionInfoBarDelegate() {}
 
 // static
 infobars::InfoBar* GroupedPermissionInfoBarDelegate::Create(
+    PermissionPromptAndroid* permission_prompt,
     InfoBarService* infobar_service,
     const GURL& requesting_origin,
     const std::vector<PermissionRequest*>& requests) {
-  return infobar_service->AddInfoBar(
-      base::MakeUnique<GroupedPermissionInfoBar>(base::WrapUnique(
-          new GroupedPermissionInfoBarDelegate(requesting_origin, requests))));
+  return infobar_service->AddInfoBar(base::MakeUnique<GroupedPermissionInfoBar>(
+      base::WrapUnique(new GroupedPermissionInfoBarDelegate(
+          permission_prompt, requesting_origin, requests))));
 }
 
 bool GroupedPermissionInfoBarDelegate::ShouldShowPersistenceToggle() const {
@@ -63,18 +65,38 @@ base::string16 GroupedPermissionInfoBarDelegate::GetMessageText() const {
       url_formatter::FormatUrlForSecurityDisplay(requesting_origin_));
 }
 
+bool GroupedPermissionInfoBarDelegate::Accept() {
+  if (permission_prompt_)
+    permission_prompt_->Accept();
+  return true;
+}
+
+bool GroupedPermissionInfoBarDelegate::Cancel() {
+  if (permission_prompt_)
+    permission_prompt_->Deny();
+  return true;
+}
+
+void GroupedPermissionInfoBarDelegate::PermissionPromptDestroyed() {
+  permission_prompt_ = nullptr;
+}
+
 bool GroupedPermissionInfoBarDelegate::GetAcceptState(size_t position) {
   DCHECK_LT(position, requests_.size());
   return accept_states_[position];
 }
 
 GroupedPermissionInfoBarDelegate::GroupedPermissionInfoBarDelegate(
+    PermissionPromptAndroid* permission_prompt,
     const GURL& requesting_origin,
     const std::vector<PermissionRequest*>& requests)
     : requesting_origin_(requesting_origin),
       requests_(requests),
       accept_states_(requests_.size(), true),
-      persist_(true) {}
+      persist_(true),
+      permission_prompt_(permission_prompt) {
+  DCHECK(permission_prompt);
+}
 
 infobars::InfoBarDelegate::InfoBarIdentifier
 GroupedPermissionInfoBarDelegate::GetIdentifier() const {

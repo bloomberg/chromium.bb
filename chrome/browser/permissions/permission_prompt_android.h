@@ -34,6 +34,8 @@ class PermissionPromptAndroid : public PermissionPrompt {
   gfx::NativeWindow GetNativeWindow() override;
 
   void Closing();
+  void Accept();
+  void Deny();
 
  private:
   // PermissionPromptAndroid is owned by PermissionRequestManager, so it should

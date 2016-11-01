@@ -13,6 +13,7 @@
 
 class GURL;
 class InfoBarService;
+class PermissionPromptAndroid;
 class PermissionRequest;
 
 // An InfoBar that displays a group of permission requests, each of which can be
@@ -24,6 +25,7 @@ class GroupedPermissionInfoBarDelegate : public ConfirmInfoBarDelegate {
   ~GroupedPermissionInfoBarDelegate() override;
 
   static infobars::InfoBar* Create(
+      PermissionPromptAndroid* permission_prompt,
       InfoBarService* infobar_service,
       const GURL& requesting_origin,
       const std::vector<PermissionRequest*>& requests);
@@ -47,12 +49,17 @@ class GroupedPermissionInfoBarDelegate : public ConfirmInfoBarDelegate {
 
   // ConfirmInfoBarDelegate:
   base::string16 GetMessageText() const override;
+  bool Accept() override;
+  bool Cancel() override;
+
+  void PermissionPromptDestroyed();
 
  protected:
   bool GetAcceptState(size_t position);
 
  private:
   GroupedPermissionInfoBarDelegate(
+      PermissionPromptAndroid* permission_prompt,
       const GURL& requesting_origin,
       const std::vector<PermissionRequest*>& requests);
 
@@ -67,6 +74,7 @@ class GroupedPermissionInfoBarDelegate : public ConfirmInfoBarDelegate {
   std::vector<bool> accept_states_;
   // Whether the accept/deny decision is persisted.
   bool persist_;
+  PermissionPromptAndroid* permission_prompt_;
 
   DISALLOW_COPY_AND_ASSIGN(GroupedPermissionInfoBarDelegate);
 };

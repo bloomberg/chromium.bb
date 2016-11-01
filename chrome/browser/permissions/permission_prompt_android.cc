@@ -19,7 +19,11 @@ PermissionPromptAndroid::PermissionPromptAndroid(
   DCHECK(web_contents);
 }
 
-PermissionPromptAndroid::~PermissionPromptAndroid() {}
+PermissionPromptAndroid::~PermissionPromptAndroid() {
+  GroupedPermissionInfoBarDelegate* infobar_delegate =
+      static_cast<GroupedPermissionInfoBarDelegate*>(infobar_->delegate());
+  infobar_delegate->PermissionPromptDestroyed();
+}
 
 void PermissionPromptAndroid::SetDelegate(Delegate* delegate) {
   delegate_ = delegate;
@@ -34,7 +38,7 @@ void PermissionPromptAndroid::Show(
     return;
 
   infobar_ = GroupedPermissionInfoBarDelegate::Create(
-      infobar_service, requests[0]->GetOrigin(), requests);
+      this, infobar_service, requests[0]->GetOrigin(), requests);
 }
 
 bool PermissionPromptAndroid::CanAcceptRequestUpdate() {
@@ -67,6 +71,16 @@ void PermissionPromptAndroid::Closing() {
   infobar_ = nullptr;
   if (delegate_)
     delegate_->Closing();
+}
+
+void PermissionPromptAndroid::Accept() {
+  if (delegate_)
+    delegate_->Accept();
+}
+
+void PermissionPromptAndroid::Deny() {
+  if (delegate_)
+    delegate_->Deny();
 }
 
 // static
