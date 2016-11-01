@@ -310,6 +310,7 @@ def get_proc_info():
     if _is_autoserv_proc(proc):
       autoserv_count += 1
     total += 1
+  logging.debug('autoserv_count: %s', autoserv_count)
   _autoserv_proc_count_metric.set(autoserv_count)
   _proc_count_metric.set(total)
 

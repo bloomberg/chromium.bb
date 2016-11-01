@@ -55,13 +55,13 @@ class PuppetRunSummary(object):
 
   @property
   def config_version(self):
-    """Return config version as int or None."""
-    return self.versions.get('config', None)
+    """Return config version as int."""
+    return self.versions.get('config', -1)
 
   @property
   def puppet_version(self):
-    """Return Puppet version as string or None."""
-    return self.versions.get('puppet', None)
+    """Return Puppet version as string."""
+    return self.versions.get('puppet', '')
 
   @property
   def events(self):
@@ -91,7 +91,7 @@ def get_puppet_summary():
   except Exception as e:
     logging.warning('Error loading Puppet run summary: %s', e)
   else:
-    _config_version_metric.set(str(summary.config_version))
+    _config_version_metric.set(summary.config_version)
     _puppet_version_metric.set(str(summary.puppet_version))
 
     for key, value in summary.events.iteritems():
