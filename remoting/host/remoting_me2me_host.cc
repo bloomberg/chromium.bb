@@ -28,7 +28,6 @@
 #include "base/strings/utf_string_conversions.h"
 #include "build/build_config.h"
 #include "components/policy/policy_constants.h"
-#include "ipc/attachment_broker_unprivileged.h"
 #include "ipc/ipc_channel.h"
 #include "ipc/ipc_channel_proxy.h"
 #include "ipc/ipc_listener.h"
@@ -469,17 +468,11 @@ bool HostProcess::InitWithCommandLine(const base::CommandLine* cmd_line) {
           *cmd_line));
 
   // Connect to the daemon process.
-  daemon_channel_.reset(
-      new IPC::ChannelProxy(this, context_->network_task_runner()));
-  IPC::AttachmentBrokerUnprivileged::CreateBrokerIfNeeded();
-  IPC::AttachmentBroker* broker = IPC::AttachmentBroker::GetGlobal();
-  if (broker && !broker->IsPrivilegedBroker())
-    broker->RegisterBrokerCommunicationChannel(daemon_channel_.get());
-  daemon_channel_->Init(mojo::edk::CreateChildMessagePipe(
-                            cmd_line->GetSwitchValueASCII(kMojoPipeToken))
-                            .release(),
-                        IPC::Channel::MODE_CLIENT,
-                        /*create_pipe_now=*/true);
+  daemon_channel_ = IPC::ChannelProxy::Create(
+      mojo::edk::CreateChildMessagePipe(
+          cmd_line->GetSwitchValueASCII(kMojoPipeToken))
+          .release(),
+      IPC::Channel::MODE_CLIENT, this, context_->network_task_runner());
 
 #else  // !defined(REMOTING_MULTI_PROCESS)
   if (cmd_line->HasSwitch(kHostConfigSwitchName)) {
@@ -862,10 +855,6 @@ void HostProcess::ShutdownOnUiThread() {
   policy_watcher_.reset();
 
 #if defined(REMOTING_MULTI_PROCESS)
-  IPC::AttachmentBroker* broker = IPC::AttachmentBroker::GetGlobal();
-  if (broker && !broker->IsPrivilegedBroker()) {
-    broker->DeregisterBrokerCommunicationChannel(daemon_channel_.get());
-  }
   daemon_channel_.reset();
 #endif  // defined(REMOTING_MULTI_PROCESS)
 

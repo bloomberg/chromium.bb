@@ -20,7 +20,6 @@
 #include "base/run_loop.h"
 #include "base/single_thread_task_runner.h"
 #include "build/build_config.h"
-#include "ipc/attachment_broker_privileged.h"
 #include "ipc/ipc_channel.h"
 #include "ipc/ipc_channel_proxy.h"
 #include "ipc/ipc_listener.h"
@@ -106,7 +105,7 @@ class MockDaemonListener : public IPC::Listener {
 
   bool OnMessageReceived(const IPC::Message& message) override;
 
-  MOCK_METHOD1(OnDesktopAttached, void(IPC::PlatformFileForTransit));
+  MOCK_METHOD1(OnDesktopAttached, void(const IPC::ChannelHandle&));
   MOCK_METHOD1(OnChannelConnected, void(int32_t));
   MOCK_METHOD0(OnChannelError, void());
 
@@ -194,7 +193,7 @@ class IpcDesktopEnvironmentTest : public testing::Test {
 
   // Invoked when ChromotingDesktopDaemonMsg_DesktopAttached message is
   // received.
-  void OnDesktopAttached(IPC::PlatformFileForTransit desktop_pipe);
+  void OnDesktopAttached(const IPC::ChannelHandle& desktop_pipe);
 
   void RunMainLoopUntilDone();
 
@@ -257,7 +256,6 @@ IpcDesktopEnvironmentTest::IpcDesktopEnvironmentTest()
       remote_input_injector_(nullptr),
       terminal_id_(-1),
       client_session_control_factory_(&client_session_control_) {
-  IPC::AttachmentBrokerPrivileged::CreateBrokerForSingleProcessTests();
 }
 
 IpcDesktopEnvironmentTest::~IpcDesktopEnvironmentTest() {
@@ -450,18 +448,10 @@ void IpcDesktopEnvironmentTest::OnDisconnectCallback() {
 }
 
 void IpcDesktopEnvironmentTest::OnDesktopAttached(
-    IPC::PlatformFileForTransit desktop_pipe) {
-
-  base::ProcessHandle process_handle = base::GetCurrentProcessHandle();
-#if defined(OS_WIN)
-  ASSERT_NE(FALSE, ::DuplicateHandle(GetCurrentProcess(), process_handle,
-                                     GetCurrentProcess(), &process_handle,
-                                     0, FALSE, DUPLICATE_SAME_ACCESS));
-#endif
-
+    const IPC::ChannelHandle& desktop_pipe) {
   // Instruct DesktopSessionProxy to connect to the network-to-desktop pipe.
   desktop_environment_factory_->OnDesktopSessionAgentAttached(
-      terminal_id_, process_handle, desktop_pipe);
+      terminal_id_, desktop_pipe);
 }
 
 void IpcDesktopEnvironmentTest::RunMainLoopUntilDone() {

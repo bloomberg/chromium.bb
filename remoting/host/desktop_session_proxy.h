@@ -15,8 +15,8 @@
 #include "base/memory/weak_ptr.h"
 #include "base/process/process.h"
 #include "base/sequenced_task_runner_helpers.h"
+#include "ipc/ipc_channel_handle.h"
 #include "ipc/ipc_listener.h"
-#include "ipc/ipc_platform_file.h"
 #include "remoting/host/audio_capturer.h"
 #include "remoting/host/desktop_environment.h"
 #include "remoting/host/screen_resolution.h"
@@ -93,8 +93,7 @@ class DesktopSessionProxy
   void OnChannelError() override;
 
   // Connects to the desktop session agent.
-  bool AttachToDesktop(base::Process desktop_process,
-                       IPC::PlatformFileForTransit desktop_pipe);
+  bool AttachToDesktop(const IPC::ChannelHandle& desktop_pipe);
 
   // Closes the connection to the desktop session agent and cleans up
   // the associated resources.
@@ -203,9 +202,6 @@ class DesktopSessionProxy
 
   // IPC channel to the desktop session agent.
   std::unique_ptr<IPC::ChannelProxy> desktop_channel_;
-
-  // Handle of the desktop process.
-  base::Process desktop_process_;
 
   int pending_capture_frame_requests_;
 

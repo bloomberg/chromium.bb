@@ -12,6 +12,7 @@
 #include "base/process/process_handle.h"
 #include "base/single_thread_task_runner.h"
 #include "build/build_config.h"
+#include "ipc/ipc_channel_handle.h"
 #include "ipc/ipc_sender.h"
 #include "remoting/host/audio_capturer.h"
 #include "remoting/host/chromoting_messages.h"
@@ -165,26 +166,21 @@ void IpcDesktopEnvironmentFactory::SetScreenResolution(
 
 void IpcDesktopEnvironmentFactory::OnDesktopSessionAgentAttached(
     int terminal_id,
-    base::ProcessHandle desktop_process_handle,
-    IPC::PlatformFileForTransit desktop_pipe) {
+    const IPC::ChannelHandle& desktop_pipe) {
   if (!caller_task_runner_->BelongsToCurrentThread()) {
-    caller_task_runner_->PostTask(FROM_HERE, base::Bind(
-        &IpcDesktopEnvironmentFactory::OnDesktopSessionAgentAttached,
-        base::Unretained(this), terminal_id, desktop_process_handle,
-        desktop_pipe));
+    caller_task_runner_->PostTask(
+        FROM_HERE,
+        base::Bind(&IpcDesktopEnvironmentFactory::OnDesktopSessionAgentAttached,
+                   base::Unretained(this), terminal_id, desktop_pipe));
     return;
   }
 
-  base::Process desktop_process(desktop_process_handle);
   ActiveConnectionsList::iterator i = active_connections_.find(terminal_id);
   if (i != active_connections_.end()) {
     i->second->DetachFromDesktop();
-    i->second->AttachToDesktop(std::move(desktop_process), desktop_pipe);
+    i->second->AttachToDesktop(desktop_pipe);
   } else {
-#if defined(OS_POSIX)
-    DCHECK(desktop_pipe.auto_close);
-    base::File pipe_closer(IPC::PlatformFileForTransitToFile(desktop_pipe));
-#endif  // defined(OS_POSIX)
+    mojo::ScopedMessagePipeHandle closer(desktop_pipe.mojo_handle);
   }
 }
 

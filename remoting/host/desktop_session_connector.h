@@ -7,7 +7,7 @@
 
 #include "base/macros.h"
 #include "base/process/process.h"
-#include "ipc/ipc_platform_file.h"
+#include "ipc/ipc_channel_handle.h"
 
 namespace remoting {
 
@@ -41,13 +41,11 @@ class DesktopSessionConnector {
       const ScreenResolution& resolution) = 0;
 
   // Notifies the network process that |terminal_id| is now attached to
-  // a desktop integration process. |desktop_process_handle| specifies the
-  // process handle. |desktop_pipe| is the client end of the pipe opened by the
-  // desktop process.
+  // a desktop integration process. |desktop_pipe| is the client end of the pipe
+  // opened by the desktop process.
   virtual void OnDesktopSessionAgentAttached(
       int terminal_id,
-      base::ProcessHandle desktop_process_handle,
-      IPC::PlatformFileForTransit desktop_pipe) = 0;
+      const IPC::ChannelHandle& desktop_pipe) = 0;
 
   // Notifies the network process that the daemon has disconnected the desktop
   // session from the associated desktop environment.

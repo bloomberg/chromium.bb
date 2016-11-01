@@ -582,15 +582,6 @@ void DesktopSessionWin::OnChannelConnected(int32_t peer_pid) {
 
   ReportElapsedTime("channel connected");
 
-  // Obtain the handle of the desktop process. It will be passed to the network
-  // process to use to duplicate handles of shared memory objects from
-  // the desktop process.
-  desktop_process_.Set(OpenProcess(PROCESS_DUP_HANDLE, false, peer_pid));
-  if (!desktop_process_.IsValid()) {
-    CrashDesktopProcess(FROM_HERE);
-    return;
-  }
-
   VLOG(1) << "IPC: daemon <- desktop (" << peer_pid << ")";
 }
 
@@ -684,10 +675,8 @@ void DesktopSessionWin::OnSessionDetached() {
 }
 
 void DesktopSessionWin::OnDesktopSessionAgentAttached(
-      IPC::PlatformFileForTransit desktop_pipe) {
-  if (!daemon_process()->OnDesktopSessionAgentAttached(id(),
-                                                       desktop_process_.Get(),
-                                                       desktop_pipe)) {
+      const IPC::ChannelHandle& desktop_pipe) {
+  if (!daemon_process()->OnDesktopSessionAgentAttached(id(), desktop_pipe)) {
     CrashDesktopProcess(FROM_HERE);
   }
 }

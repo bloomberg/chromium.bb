@@ -17,7 +17,6 @@
 #include "base/message_loop/message_loop.h"
 #include "base/strings/string_util.h"
 #include "build/build_config.h"
-#include "ipc/attachment_broker_unprivileged.h"
 #include "ipc/ipc_channel_proxy.h"
 #include "remoting/base/auto_thread.h"
 #include "remoting/base/auto_thread_task_runner.h"
@@ -104,9 +103,6 @@ void DesktopProcess::OnChannelConnected(int32_t peer_pid) {
 
 void DesktopProcess::OnChannelError() {
   // Shutdown the desktop process.
-  IPC::AttachmentBroker* broker = IPC::AttachmentBroker::GetGlobal();
-  if (broker && !broker->IsPrivilegedBroker())
-    broker->DeregisterBrokerCommunicationChannel(daemon_channel_.get());
   daemon_channel_.reset();
   if (desktop_agent_.get()) {
     desktop_agent_->Stop();
@@ -124,8 +120,6 @@ bool DesktopProcess::Start(
   DCHECK(caller_task_runner_->BelongsToCurrentThread());
   DCHECK(!desktop_environment_factory_);
   DCHECK(desktop_environment_factory);
-
-  IPC::AttachmentBrokerUnprivileged::CreateBrokerIfNeeded();
 
   desktop_environment_factory_ = std::move(desktop_environment_factory);
 
@@ -150,28 +144,17 @@ bool DesktopProcess::Start(
                               input_task_runner_, io_task_runner_);
 
   // Start the agent and create an IPC channel to talk to it.
-  IPC::PlatformFileForTransit desktop_pipe;
-  if (!desktop_agent_->Start(AsWeakPtr(), &desktop_pipe)) {
-    desktop_agent_ = nullptr;
-    caller_task_runner_ = nullptr;
-    input_task_runner_ = nullptr;
-    desktop_environment_factory_.reset();
-    return false;
-  }
+  mojo::ScopedMessagePipeHandle desktop_pipe =
+      desktop_agent_->Start(AsWeakPtr());
 
   // Connect to the daemon.
-  daemon_channel_.reset(new IPC::ChannelProxy(this, io_task_runner_));
-  IPC::AttachmentBroker* broker = IPC::AttachmentBroker::GetGlobal();
-  if (broker && !broker->IsPrivilegedBroker()) {
-    broker->RegisterBrokerCommunicationChannel(daemon_channel_.get());
-  }
-  daemon_channel_->Init(daemon_channel_handle_.release(),
-                        IPC::Channel::MODE_CLIENT,
-                        /*create_pipe_now=*/true);
+  daemon_channel_ = IPC::ChannelProxy::Create(daemon_channel_handle_.release(),
+                                              IPC::Channel::MODE_CLIENT, this,
+                                              io_task_runner_);
 
   // Pass |desktop_pipe| to the daemon.
   daemon_channel_->Send(
-      new ChromotingDesktopDaemonMsg_DesktopAttached(desktop_pipe));
+      new ChromotingDesktopDaemonMsg_DesktopAttached(desktop_pipe.release()));
 
   return true;
 }

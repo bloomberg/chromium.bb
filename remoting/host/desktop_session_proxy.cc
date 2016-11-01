@@ -218,33 +218,17 @@ void DesktopSessionProxy::OnChannelError() {
 }
 
 bool DesktopSessionProxy::AttachToDesktop(
-    base::Process desktop_process,
-    IPC::PlatformFileForTransit desktop_pipe) {
+    const IPC::ChannelHandle& desktop_pipe) {
   DCHECK(caller_task_runner_->BelongsToCurrentThread());
   DCHECK(!desktop_channel_);
-  DCHECK(!desktop_process_.IsValid());
 
   // Ignore the attach notification if the client session has been disconnected
   // already.
   if (!client_session_control_.get())
     return false;
 
-  desktop_process_ = std::move(desktop_process);
-
-#if defined(OS_WIN)
-  base::win::ScopedHandle pipe(desktop_pipe.GetHandle());
-  IPC::ChannelHandle desktop_channel_handle(pipe.Get());
-#elif defined(OS_POSIX)
-  // On posix: |desktop_pipe| is a valid file descriptor.
-  DCHECK(desktop_pipe.auto_close);
-
-  IPC::ChannelHandle desktop_channel_handle(std::string(), desktop_pipe);
-#else
-#error Unsupported platform.
-#endif
-
   // Connect to the desktop process.
-  desktop_channel_ = IPC::ChannelProxy::Create(desktop_channel_handle,
+  desktop_channel_ = IPC::ChannelProxy::Create(desktop_pipe,
                                                IPC::Channel::MODE_CLIENT, this,
                                                io_task_runner_.get());
 
@@ -263,9 +247,6 @@ void DesktopSessionProxy::DetachFromDesktop() {
 
   desktop_channel_.reset();
   desktop_session_id_ = UINT32_MAX;
-
-  if (desktop_process_.IsValid())
-    desktop_process_.Close();
 
   shared_buffers_.clear();
 

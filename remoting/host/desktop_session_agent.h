@@ -17,7 +17,7 @@
 #include "base/memory/ref_counted.h"
 #include "base/memory/weak_ptr.h"
 #include "ipc/ipc_listener.h"
-#include "ipc/ipc_platform_file.h"
+#include "mojo/public/cpp/system/message_pipe.h"
 #include "remoting/host/client_session_control.h"
 #include "remoting/protocol/clipboard_stub.h"
 #include "third_party/webrtc/modules/desktop_capture/desktop_capturer.h"
@@ -94,10 +94,8 @@ class DesktopSessionAgent
   void ProcessAudioPacket(std::unique_ptr<AudioPacket> packet);
 
   // Creates desktop integration components and a connected IPC channel to be
-  // used to access them. The client end of the channel is returned in
-  // the variable pointed by |desktop_pipe_out|.
-  bool Start(const base::WeakPtr<Delegate>& delegate,
-             IPC::PlatformFileForTransit* desktop_pipe_out);
+  // used to access them. The client end of the channel is returned.
+  mojo::ScopedMessagePipeHandle Start(const base::WeakPtr<Delegate>& delegate);
 
   // Stops the agent asynchronously.
   void Stop();
@@ -178,10 +176,6 @@ class DesktopSessionAgent
 
   // IPC channel connecting the desktop process with the network process.
   std::unique_ptr<IPC::ChannelProxy> network_channel_;
-
-  // The client end of the network-to-desktop pipe. It is kept alive until
-  // the network process connects to the pipe.
-  base::File desktop_pipe_;
 
   // True if the desktop session agent has been started.
   bool started_ = false;

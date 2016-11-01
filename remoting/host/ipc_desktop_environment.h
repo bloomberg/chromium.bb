@@ -14,6 +14,7 @@
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
 #include "base/memory/weak_ptr.h"
+#include "ipc/ipc_channel_handle.h"
 #include "remoting/host/desktop_environment.h"
 #include "remoting/host/desktop_session_connector.h"
 
@@ -94,8 +95,7 @@ class IpcDesktopEnvironmentFactory
                            const ScreenResolution& resolution) override;
   void OnDesktopSessionAgentAttached(
       int terminal_id,
-      base::ProcessHandle desktop_process_handle,
-      IPC::PlatformFileForTransit desktop_pipe) override;
+      const IPC::ChannelHandle& desktop_pipe) override;
   void OnTerminalDisconnected(int terminal_id) override;
 
  private:

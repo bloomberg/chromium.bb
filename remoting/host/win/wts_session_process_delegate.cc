@@ -20,7 +20,6 @@
 #include "base/strings/utf_string_conversions.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "base/win/scoped_handle.h"
-#include "ipc/attachment_broker.h"
 #include "ipc/ipc_channel.h"
 #include "ipc/ipc_channel_proxy.h"
 #include "ipc/ipc_listener.h"
@@ -256,8 +255,6 @@ void WtsSessionProcessDelegate::Core::CloseChannel() {
   if (!channel_)
     return;
 
-  IPC::AttachmentBroker::GetGlobal()->DeregisterCommunicationChannel(
-      channel_.get());
   channel_.reset();
   elevated_server_handle_.reset();
   elevated_launcher_pid_ = base::kNullProcessId;
@@ -365,14 +362,11 @@ void WtsSessionProcessDelegate::Core::DoLaunchProcess() {
 
   const std::string mojo_message_pipe_token = mojo::edk::GenerateRandomToken();
   mojo_child_token_ = mojo::edk::GenerateRandomToken();
-  std::unique_ptr<IPC::ChannelProxy> channel(
-      new IPC::ChannelProxy(this, io_task_runner_));
-  IPC::AttachmentBroker::GetGlobal()->RegisterCommunicationChannel(
-      channel.get(), io_task_runner_);
-  channel->Init(mojo::edk::CreateParentMessagePipe(mojo_message_pipe_token,
-                                                   mojo_child_token_)
-                    .release(),
-                IPC::Channel::MODE_SERVER, /*create_pipe_now=*/true);
+  std::unique_ptr<IPC::ChannelProxy> channel = IPC::ChannelProxy::Create(
+      mojo::edk::CreateParentMessagePipe(mojo_message_pipe_token,
+                                         mojo_child_token_)
+          .release(),
+      IPC::Channel::MODE_SERVER, this, io_task_runner_);
   command_line.AppendSwitchASCII(kMojoPipeToken, mojo_message_pipe_token);
 
   std::unique_ptr<mojo::edk::PlatformChannelPair> normal_mojo_channel;

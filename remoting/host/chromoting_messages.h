@@ -8,6 +8,7 @@
 #include <stdint.h>
 
 #include "base/memory/shared_memory_handle.h"
+#include "ipc/ipc_channel_handle.h"
 #include "ipc/ipc_platform_file.h"
 #include "remoting/host/chromoting_param_traits.h"
 #include "remoting/host/screen_resolution.h"
@@ -53,17 +54,11 @@ IPC_MESSAGE_CONTROL1(ChromotingDaemonNetworkMsg_TerminalDisconnected,
                      int /* terminal_id */)
 
 // Notifies the network process that |terminal_id| is now attached to
-// a desktop integration process. |desktop_process| is the handle of the desktop
-// process. |desktop_pipe| is the client end of the desktop-to-network pipe
-// opened.
-//
-// Windows only: |desktop_pipe| has to be duplicated from the desktop process
-// by the receiver of the message. |desktop_process| is already duplicated by
-// the sender.
-IPC_MESSAGE_CONTROL3(ChromotingDaemonNetworkMsg_DesktopAttached,
+// a desktop integration process. |desktop_pipe| is the client end of the
+// desktop-to-network pipe opened.
+IPC_MESSAGE_CONTROL2(ChromotingDaemonNetworkMsg_DesktopAttached,
                      int /* terminal_id */,
-                     base::ProcessHandle /* desktop_process */,
-                     IPC::PlatformFileForTransit /* desktop_pipe */)
+                     IPC::ChannelHandle /* desktop_pipe */)
 
 //-----------------------------------------------------------------------------
 // Chromoting messages sent from the network to the daemon process.
@@ -127,11 +122,8 @@ IPC_MESSAGE_CONTROL0(ChromotingNetworkDaemonMsg_HostShutdown)
 // Notifies the daemon that a desktop integration process has been initialized.
 // |desktop_pipe| specifies the client end of the desktop pipe. It is to be
 // forwarded to the desktop environment stub.
-//
-// Windows only: |desktop_pipe| has to be duplicated from the desktop process by
-// the receiver of the message.
 IPC_MESSAGE_CONTROL1(ChromotingDesktopDaemonMsg_DesktopAttached,
-                     IPC::PlatformFileForTransit /* desktop_pipe */)
+                     IPC::ChannelHandle /* desktop_pipe */)
 
 // Asks the daemon to inject Secure Attention Sequence (SAS) in the session
 // where the desktop process is running.

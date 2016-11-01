@@ -23,6 +23,7 @@
 #include "base/win/registry.h"
 #include "base/win/scoped_handle.h"
 #include "base/win/win_util.h"
+#include "ipc/ipc_channel_handle.h"
 #include "ipc/ipc_message.h"
 #include "ipc/ipc_message_macros.h"
 #include "mojo/edk/embedder/scoped_ipc_support.h"
@@ -82,8 +83,7 @@ class DaemonProcessWin : public DaemonProcess {
   void SendToNetwork(IPC::Message* message) override;
   bool OnDesktopSessionAgentAttached(
       int terminal_id,
-      base::ProcessHandle desktop_process,
-      IPC::PlatformFileForTransit desktop_pipe) override;
+      const IPC::ChannelHandle& desktop_pipe) override;
 
  protected:
   // DaemonProcess implementation.
@@ -174,25 +174,9 @@ void DaemonProcessWin::SendToNetwork(IPC::Message* message) {
 
 bool DaemonProcessWin::OnDesktopSessionAgentAttached(
     int terminal_id,
-    base::ProcessHandle desktop_process,
-    IPC::PlatformFileForTransit desktop_pipe) {
-  // Prepare |desktop_process| handle for sending over to the network process.
-  base::ProcessHandle desktop_process_for_transit;
-  if (!DuplicateHandle(GetCurrentProcess(),
-                       desktop_process,
-                       network_process_.Get(),
-                       &desktop_process_for_transit,
-                       0,
-                       FALSE,
-                       DUPLICATE_SAME_ACCESS)) {
-    PLOG(ERROR) << "Failed to duplicate the desktop process handle";
-    return false;
-  }
-
-  // |desktop_pipe| is a handle in the desktop process. It will be duplicated
-  // by the network process directly from the desktop process.
+    const IPC::ChannelHandle& desktop_pipe) {
   SendToNetwork(new ChromotingDaemonNetworkMsg_DesktopAttached(
-      terminal_id, desktop_process_for_transit, desktop_pipe));
+      terminal_id, desktop_pipe));
   return true;
 }
 

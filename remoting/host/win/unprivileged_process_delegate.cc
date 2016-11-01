@@ -22,7 +22,6 @@
 #include "base/strings/utf_string_conversions.h"
 #include "base/synchronization/lock.h"
 #include "base/win/scoped_handle.h"
-#include "ipc/attachment_broker.h"
 #include "ipc/ipc_channel.h"
 #include "ipc/ipc_channel_proxy.h"
 #include "ipc/ipc_message.h"
@@ -287,14 +286,11 @@ void UnprivilegedProcessDelegate::LaunchProcess(
   const std::string mojo_child_token = mojo::edk::GenerateRandomToken();
   const std::string mojo_message_pipe_token = mojo::edk::GenerateRandomToken();
 
-  std::unique_ptr<IPC::ChannelProxy> server =
-      base::MakeUnique<IPC::ChannelProxy>(this, io_task_runner_);
-  IPC::AttachmentBroker::GetGlobal()->RegisterCommunicationChannel(
-      server.get(), io_task_runner_);
-  server->Init(mojo::edk::CreateParentMessagePipe(mojo_message_pipe_token,
-                                                  mojo_child_token)
-                   .release(),
-               IPC::Channel::MODE_SERVER, /*create_pipe_now=*/true);
+  std::unique_ptr<IPC::ChannelProxy> server = IPC::ChannelProxy::Create(
+      mojo::edk::CreateParentMessagePipe(mojo_message_pipe_token,
+                                         mojo_child_token)
+          .release(),
+      IPC::Channel::MODE_SERVER, this, io_task_runner_);
   base::CommandLine command_line(target_command_->argv());
   command_line.AppendSwitchASCII(kMojoPipeToken, mojo_message_pipe_token);
 
@@ -338,12 +334,6 @@ void UnprivilegedProcessDelegate::Send(IPC::Message* message) {
 
 void UnprivilegedProcessDelegate::CloseChannel() {
   DCHECK(CalledOnValidThread());
-
-  if (!channel_)
-    return;
-
-  IPC::AttachmentBroker::GetGlobal()->DeregisterCommunicationChannel(
-      channel_.get());
   channel_.reset();
 }
 

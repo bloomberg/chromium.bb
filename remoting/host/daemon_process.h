@@ -18,8 +18,7 @@
 #include "base/observer_list.h"
 #include "base/process/process.h"
 #include "ipc/ipc_channel.h"
-#include "ipc/ipc_channel_proxy.h"
-#include "ipc/ipc_platform_file.h"
+#include "ipc/ipc_channel_handle.h"
 #include "remoting/host/config_watcher.h"
 #include "remoting/host/host_status_monitor.h"
 #include "remoting/host/worker_process_ipc_delegate.h"
@@ -77,13 +76,11 @@ class DaemonProcess
   virtual void SendToNetwork(IPC::Message* message) = 0;
 
   // Called when a desktop integration process attaches to |terminal_id|.
-  // |desktop_process| is a handle of the desktop integration process.
   // |desktop_pipe| specifies the client end of the desktop pipe. Returns true
   // on success, false otherwise.
   virtual bool OnDesktopSessionAgentAttached(
       int terminal_id,
-      base::ProcessHandle desktop_process,
-      IPC::PlatformFileForTransit desktop_pipe) = 0;
+      const IPC::ChannelHandle& desktop_pipe) = 0;
 
   // Closes the desktop session identified by |terminal_id|.
   void CloseDesktopSession(int terminal_id);
