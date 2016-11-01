@@ -551,12 +551,13 @@ TEST_F('PrintPreviewWebUITest', 'SourceIsPDFCapabilities', function() {
   var otherOptions = $('other-options-settings');
   var scalingSettings = $('scaling-settings');
 
- checkSectionVisible(otherOptions, true);
+  checkSectionVisible(otherOptions, true);
   checkElementDisplayed(
       otherOptions.querySelector('.fit-to-page-container'), true);
   expectTrue(
       otherOptions.querySelector('.fit-to-page-checkbox').checked);
-  this.expandMoreSettings();
+  if (loadTimeData.getBoolean('scalingEnabled'))
+    this.expandMoreSettings();
   checkSectionVisible($('media-size-settings'), true);
   if (loadTimeData.getBoolean('scalingEnabled'))
     checkSectionVisible(scalingSettings, true);
