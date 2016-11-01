@@ -205,24 +205,24 @@ CheckedMul(T x, T y, RangeConstraint* validity) {
   if (!x || !y) {
     *validity = RANGE_VALID;
     return static_cast<T>(0);
-
-  } else if (x > 0) {
-    if (y > 0)
+  }
+  if (x > 0) {
+    if (y > 0) {
       *validity =
           x <= std::numeric_limits<T>::max() / y ? RANGE_VALID : RANGE_OVERFLOW;
-    else
+    } else {
       *validity = y >= std::numeric_limits<T>::min() / x ? RANGE_VALID
                                                          : RANGE_UNDERFLOW;
-
+    }
   } else {
-    if (y > 0)
+    if (y > 0) {
       *validity = x >= std::numeric_limits<T>::min() / y ? RANGE_VALID
                                                          : RANGE_UNDERFLOW;
-    else
+    } else {
       *validity =
           y >= std::numeric_limits<T>::max() / x ? RANGE_VALID : RANGE_OVERFLOW;
+    }
   }
-
   return static_cast<T>(*validity == RANGE_VALID ? x * y : 0);
 }
 
