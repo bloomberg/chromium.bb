@@ -387,7 +387,8 @@ void LayoutTableCell::setOverrideLogicalContentHeightFromRowHeight(
     LayoutUnit rowHeight) {
   clearIntrinsicPadding();
   setOverrideLogicalContentHeight(
-      (rowHeight - borderAndPaddingLogicalHeight()).clampNegativeToZero());
+      (rowHeight - collapsedBorderAndCSSPaddingLogicalHeight())
+          .clampNegativeToZero());
 }
 
 LayoutSize LayoutTableCell::offsetFromContainer(const LayoutObject* o) const {

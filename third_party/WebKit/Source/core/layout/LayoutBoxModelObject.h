@@ -321,6 +321,15 @@ class CORE_EXPORT LayoutBoxModelObject : public LayoutObject {
     return paddingBefore() + paddingAfter();
   }
 
+  LayoutUnit collapsedBorderAndCSSPaddingLogicalWidth() const {
+    return computedCSSPaddingStart() + computedCSSPaddingEnd() + borderStart() +
+           borderEnd();
+  }
+  LayoutUnit collapsedBorderAndCSSPaddingLogicalHeight() const {
+    return computedCSSPaddingBefore() + computedCSSPaddingAfter() +
+           borderBefore() + borderAfter();
+  }
+
   virtual LayoutRectOutsets marginBoxOutsets() const = 0;
   virtual LayoutUnit marginTop() const = 0;
   virtual LayoutUnit marginBottom() const = 0;

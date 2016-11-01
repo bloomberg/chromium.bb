@@ -1364,7 +1364,7 @@ void LayoutBox::clearExtraInlineAndBlockOffests() {
 
 LayoutUnit LayoutBox::adjustBorderBoxLogicalWidthForBoxSizing(
     float width) const {
-  LayoutUnit bordersPlusPadding = borderAndPaddingLogicalWidth();
+  LayoutUnit bordersPlusPadding = collapsedBorderAndCSSPaddingLogicalWidth();
   LayoutUnit result(width);
   if (style()->boxSizing() == BoxSizingContentBox)
     return result + bordersPlusPadding;
@@ -1373,7 +1373,7 @@ LayoutUnit LayoutBox::adjustBorderBoxLogicalWidthForBoxSizing(
 
 LayoutUnit LayoutBox::adjustBorderBoxLogicalHeightForBoxSizing(
     float height) const {
-  LayoutUnit bordersPlusPadding = borderAndPaddingLogicalHeight();
+  LayoutUnit bordersPlusPadding = collapsedBorderAndCSSPaddingLogicalHeight();
   LayoutUnit result(height);
   if (style()->boxSizing() == BoxSizingContentBox)
     return result + bordersPlusPadding;
@@ -1384,7 +1384,7 @@ LayoutUnit LayoutBox::adjustContentBoxLogicalWidthForBoxSizing(
     float width) const {
   LayoutUnit result(width);
   if (style()->boxSizing() == BoxSizingBorderBox)
-    result -= borderAndPaddingLogicalWidth();
+    result -= collapsedBorderAndCSSPaddingLogicalWidth();
   return std::max(LayoutUnit(), result);
 }
 
@@ -1392,7 +1392,7 @@ LayoutUnit LayoutBox::adjustContentBoxLogicalHeightForBoxSizing(
     float height) const {
   LayoutUnit result(height);
   if (style()->boxSizing() == BoxSizingBorderBox)
-    result -= borderAndPaddingLogicalHeight();
+    result -= collapsedBorderAndCSSPaddingLogicalHeight();
   return std::max(LayoutUnit(), result);
 }
 
@@ -3202,7 +3202,8 @@ LayoutUnit LayoutBox::computePercentageLogicalHeight(
         // cases, but it is preferable to the alternative (sizing intrinsically
         // and making the row end up too big).
         LayoutTableCell* cell = toLayoutTableCell(cb);
-        if (scrollsOverflowY() &&
+        if (style()->overflowY() != OverflowVisible &&
+            style()->overflowY() != OverflowHidden &&
             (!cell->style()->logicalHeight().isAuto() ||
              !cell->table()->style()->logicalHeight().isAuto()))
           return LayoutUnit();

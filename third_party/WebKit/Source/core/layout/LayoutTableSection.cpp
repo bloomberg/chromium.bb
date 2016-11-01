@@ -1114,7 +1114,9 @@ int LayoutTableSection::distributeExtraLogicalHeightToRows(
 static bool shouldFlexCellChild(LayoutObject* cellDescendant) {
   return cellDescendant->isAtomicInlineLevel() ||
          (cellDescendant->isBox() &&
-          toLayoutBox(cellDescendant)->scrollsOverflow());
+          toLayoutBox(cellDescendant)->style()->overflowY() !=
+              OverflowVisible &&
+          toLayoutBox(cellDescendant)->style()->overflowY() != OverflowHidden);
 }
 
 void LayoutTableSection::layoutRows() {
@@ -1893,7 +1895,7 @@ void LayoutTableSection::relayoutCellIfFlexed(LayoutTableCell& cell,
   // can't hope to match the behavior perfectly, but we'll continue to refine it
   // as we discover new bugs. :)
   bool cellChildrenFlex = false;
-  bool flexAllChildren = cell.style()->logicalHeight().isFixed() ||
+  bool flexAllChildren = cell.style()->logicalHeight().isSpecified() ||
                          (!table()->style()->logicalHeight().isAuto() &&
                           rowHeight != cell.logicalHeight());
 

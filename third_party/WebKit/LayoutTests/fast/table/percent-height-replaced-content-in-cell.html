@@ -1,0 +1,21 @@
+<!DOCTYPE html>
+<style>
+table {
+  height: 100px;
+}
+img {
+  height: 100%;
+}
+</style>
+<table class="test" data-expected-height=100 data-expected-width=82>
+    <tr>
+        <td class="test" data-expected-height=96 data-expected-width=78><img src="../images/resources/border-image-srgb-color-profile.png"></td>
+    </tr>
+</table>
+<script src="../../resources/check-layout.js"></script>
+<p> crbug.com/637811: Percent height replaced content in a cell should flex the height of the cell. </p>
+<div id="output"></div>
+<script>
+document.body.offsetTop;
+checkLayout('.test', output);
+</script>
