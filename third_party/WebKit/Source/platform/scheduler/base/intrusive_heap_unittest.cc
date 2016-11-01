@@ -29,16 +29,21 @@ struct TestElement {
 
 }  // namespace
 
-using IntrusiveHeapTest = ::testing::Test;
+class IntrusiveHeapTest : public ::testing::Test {
+ protected:
+  static bool CompareNodes(const TestElement& a, const TestElement& b) {
+    return IntrusiveHeap<TestElement>::CompareNodes(a, b);
+  }
+};
 
-TEST(IntrusiveHeapTest, Basic) {
+TEST_F(IntrusiveHeapTest, Basic) {
   IntrusiveHeap<TestElement> heap;
 
   EXPECT_TRUE(heap.empty());
   EXPECT_EQ(0u, heap.size());
 }
 
-TEST(IntrusiveHeapTest, Clear) {
+TEST_F(IntrusiveHeapTest, Clear) {
   IntrusiveHeap<TestElement> heap;
   HeapHandle index1;
 
@@ -51,7 +56,7 @@ TEST(IntrusiveHeapTest, Clear) {
   EXPECT_FALSE(index1.IsValid());
 }
 
-TEST(IntrusiveHeapTest, Destructor) {
+TEST_F(IntrusiveHeapTest, Destructor) {
   HeapHandle index1;
 
   {
@@ -65,7 +70,7 @@ TEST(IntrusiveHeapTest, Destructor) {
   EXPECT_FALSE(index1.IsValid());
 }
 
-TEST(IntrusiveHeapTest, Min) {
+TEST_F(IntrusiveHeapTest, Min) {
   IntrusiveHeap<TestElement> heap;
 
   heap.insert({9, nullptr});
@@ -82,7 +87,7 @@ TEST(IntrusiveHeapTest, Min) {
   EXPECT_EQ(2, heap.min().key);
 }
 
-TEST(IntrusiveHeapTest, InsertAscending) {
+TEST_F(IntrusiveHeapTest, InsertAscending) {
   IntrusiveHeap<TestElement> heap;
   HeapHandle index1;
 
@@ -93,7 +98,7 @@ TEST(IntrusiveHeapTest, InsertAscending) {
   EXPECT_EQ(50u, heap.size());
 }
 
-TEST(IntrusiveHeapTest, InsertDescending) {
+TEST_F(IntrusiveHeapTest, InsertDescending) {
   IntrusiveHeap<TestElement> heap;
 
   for (int i = 0; i < 50; i++)
@@ -103,7 +108,7 @@ TEST(IntrusiveHeapTest, InsertDescending) {
   EXPECT_EQ(50u, heap.size());
 }
 
-TEST(IntrusiveHeapTest, HeapIndex) {
+TEST_F(IntrusiveHeapTest, HeapIndex) {
   HeapHandle index5;
   HeapHandle index4;
   HeapHandle index3;
@@ -132,7 +137,7 @@ TEST(IntrusiveHeapTest, HeapIndex) {
   EXPECT_FALSE(heap.empty());
 }
 
-TEST(IntrusiveHeapTest, Pop) {
+TEST_F(IntrusiveHeapTest, Pop) {
   IntrusiveHeap<TestElement> heap;
   HeapHandle index1;
   HeapHandle index2;
@@ -154,7 +159,7 @@ TEST(IntrusiveHeapTest, Pop) {
   EXPECT_FALSE(index2.IsValid());
 }
 
-TEST(IntrusiveHeapTest, PopMany) {
+TEST_F(IntrusiveHeapTest, PopMany) {
   IntrusiveHeap<TestElement> heap;
 
   for (int i = 0; i < 500; i++)
@@ -169,7 +174,7 @@ TEST(IntrusiveHeapTest, PopMany) {
   EXPECT_TRUE(heap.empty());
 }
 
-TEST(IntrusiveHeapTest, Erase) {
+TEST_F(IntrusiveHeapTest, Erase) {
   IntrusiveHeap<TestElement> heap;
 
   HeapHandle index12;
@@ -197,7 +202,7 @@ TEST(IntrusiveHeapTest, Erase) {
   EXPECT_TRUE(heap.empty());
 }
 
-TEST(IntrusiveHeapTest, ReplaceMin) {
+TEST_F(IntrusiveHeapTest, ReplaceMin) {
   IntrusiveHeap<TestElement> heap;
 
   for (int i = 0; i < 500; i++)
@@ -211,7 +216,7 @@ TEST(IntrusiveHeapTest, ReplaceMin) {
   EXPECT_EQ(1000, heap.min().key);
 }
 
-TEST(IntrusiveHeapTest, ReplaceMinWithNonLeafNode) {
+TEST_F(IntrusiveHeapTest, ReplaceMinWithNonLeafNode) {
   IntrusiveHeap<TestElement> heap;
 
   for (int i = 0; i < 50; i++) {
@@ -235,7 +240,7 @@ TEST(IntrusiveHeapTest, ReplaceMinWithNonLeafNode) {
   EXPECT_TRUE(heap.empty());
 }
 
-TEST(IntrusiveHeapTest, ReplaceMinCheckAllFinalPositions) {
+TEST_F(IntrusiveHeapTest, ReplaceMinCheckAllFinalPositions) {
   HeapHandle index[100];
 
   for (int j = -1; j <= 201; j += 2) {
@@ -257,7 +262,7 @@ TEST(IntrusiveHeapTest, ReplaceMinCheckAllFinalPositions) {
   }
 }
 
-TEST(IntrusiveHeapTest, ChangeKeyUp) {
+TEST_F(IntrusiveHeapTest, ChangeKeyUp) {
   IntrusiveHeap<TestElement> heap;
   HeapHandle index[10];
 
@@ -276,7 +281,7 @@ TEST(IntrusiveHeapTest, ChangeKeyUp) {
   EXPECT_THAT(results, testing::ElementsAre(0, 2, 4, 6, 8, 12, 14, 16, 17, 18));
 }
 
-TEST(IntrusiveHeapTest, ChangeKeyUpButDoesntMove) {
+TEST_F(IntrusiveHeapTest, ChangeKeyUpButDoesntMove) {
   IntrusiveHeap<TestElement> heap;
   HeapHandle index[10];
 
@@ -295,7 +300,7 @@ TEST(IntrusiveHeapTest, ChangeKeyUpButDoesntMove) {
   EXPECT_THAT(results, testing::ElementsAre(0, 2, 4, 6, 8, 11, 12, 14, 16, 18));
 }
 
-TEST(IntrusiveHeapTest, ChangeKeyDown) {
+TEST_F(IntrusiveHeapTest, ChangeKeyDown) {
   IntrusiveHeap<TestElement> heap;
   HeapHandle index[10];
 
@@ -314,7 +319,7 @@ TEST(IntrusiveHeapTest, ChangeKeyDown) {
   EXPECT_THAT(results, testing::ElementsAre(0, 1, 2, 4, 6, 8, 12, 14, 16, 18));
 }
 
-TEST(IntrusiveHeapTest, ChangeKeyDownButDoesntMove) {
+TEST_F(IntrusiveHeapTest, ChangeKeyDownButDoesntMove) {
   IntrusiveHeap<TestElement> heap;
   HeapHandle index[10];
 
@@ -333,7 +338,7 @@ TEST(IntrusiveHeapTest, ChangeKeyDownButDoesntMove) {
   EXPECT_THAT(results, testing::ElementsAre(0, 2, 4, 6, 8, 9, 12, 14, 16, 18));
 }
 
-TEST(IntrusiveHeapTest, ChangeKeyCheckAllFinalPositions) {
+TEST_F(IntrusiveHeapTest, ChangeKeyCheckAllFinalPositions) {
   HeapHandle index[100];
 
   for (int j = -1; j <= 201; j += 2) {
@@ -353,6 +358,16 @@ TEST(IntrusiveHeapTest, ChangeKeyCheckAllFinalPositions) {
       heap.pop();
     }
   }
+}
+
+TEST_F(IntrusiveHeapTest, CompareNodes) {
+  TestElement five{5, nullptr}, six{6, nullptr};
+
+  // This is the stdlibc++ assertion that fails in http://crbug.com/661080
+  EXPECT_FALSE(IntrusiveHeapTest::CompareNodes(six, six));
+
+  EXPECT_FALSE(IntrusiveHeapTest::CompareNodes(five, six));
+  EXPECT_TRUE(IntrusiveHeapTest::CompareNodes(six, five));
 }
 
 }  // namespace scheduler

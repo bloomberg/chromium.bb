@@ -129,6 +129,8 @@ class IntrusiveHeap {
     kMinimumHeapSize = 4u
   };
 
+  friend class IntrusiveHeapTest;
+
   size_t MoveHole(size_t new_hole_pos, size_t old_hole_pos) {
     DCHECK_GT(new_hole_pos, 0u);
     DCHECK_LE(new_hole_pos, size_);
@@ -155,7 +157,8 @@ class IntrusiveHeap {
     DCHECK(std::is_heap(begin(), end(), CompareNodes));
   }
 
-  static bool CompareNodes(const T& a, const T& b) { return b <= a; }
+  // is_heap requires a strict comparator.
+  static bool CompareNodes(const T& a, const T& b) { return !(a <= b); }
 
   // Moves the |hole| up the tree and when the right position has been found
   // |element| is moved in.
