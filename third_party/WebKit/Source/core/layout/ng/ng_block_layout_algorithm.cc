@@ -28,24 +28,22 @@ LayoutUnit ComputeCollapsedMarginBlockStart(
 
 // Creates an exclusion from the fragment that will be placed in the provided
 // layout opportunity.
-NGExclusion* CreateExclusion(const NGFragment& fragment,
-                             const NGLayoutOpportunity& opportunity,
-                             LayoutUnit float_offset,
-                             NGBoxStrut margins) {
-  LayoutUnit exclusion_top = opportunity.offset.block_offset;
+NGLogicalRect CreateExclusion(const NGFragment& fragment,
+                              const NGLayoutOpportunity& opportunity,
+                              LayoutUnit float_offset,
+                              NGBoxStrut margins) {
+  NGLogicalRect exclusion;
+  exclusion.offset = opportunity.offset;
+  exclusion.offset.inline_offset += float_offset;
 
-  LayoutUnit exclusion_left = opportunity.offset.inline_offset;
-  exclusion_left += float_offset;
-
-  LayoutUnit exclusion_bottom = exclusion_top + fragment.BlockSize();
-  LayoutUnit exclusion_right = exclusion_left + fragment.InlineSize();
+  exclusion.size.inline_size = fragment.InlineSize();
+  exclusion.size.block_size = fragment.BlockSize();
 
   // Adjust to child's margin.
-  exclusion_bottom += margins.BlockSum();
-  exclusion_right += margins.InlineSum();
+  exclusion.size.block_size += margins.BlockSum();
+  exclusion.size.inline_size += margins.InlineSum();
 
-  return new NGExclusion(exclusion_top, exclusion_right, exclusion_bottom,
-                         exclusion_left);
+  return exclusion;
 }
 
 // Finds a layout opportunity for the fragment.
@@ -361,7 +359,7 @@ NGLogicalOffset NGBlockLayoutAlgorithm::PositionFloatFragment(
   }
 
   // Add the float as an exclusion.
-  const NGExclusion* exclusion =
+  const NGLogicalRect exclusion =
       CreateExclusion(fragment, opportunity, float_offset, margins);
   constraint_space_->AddExclusion(exclusion);
 

@@ -24,12 +24,13 @@ NGPhysicalConstraintSpace::NGPhysicalConstraintSpace(
       height_direction_fragmentation_type_(height_direction_fragmentation_type),
       is_new_fc_(is_new_fc) {}
 
-void NGPhysicalConstraintSpace::AddExclusion(const NGExclusion* exclusion,
+void NGPhysicalConstraintSpace::AddExclusion(const NGLogicalRect& exclusion,
                                              unsigned options) {
-  exclusions_.append(exclusion);
+  NGLogicalRect* exclusion_ptr = new NGLogicalRect(exclusion);
+  exclusions_.append(WTF::wrapUnique(exclusion_ptr));
 }
 
-const HeapVector<Member<const NGExclusion>>&
+const Vector<std::unique_ptr<const NGLogicalRect>>&
 NGPhysicalConstraintSpace::Exclusions(unsigned options) const {
   // TODO(layout-ng): Filter based on options? Perhaps layout Opportunities
   // should filter instead?
