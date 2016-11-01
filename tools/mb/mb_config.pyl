@@ -282,10 +282,8 @@
       'Mac Builder': 'gpu_tests_release_bot',
       'Mac Builder (dbg)': 'debug_bot',
       'ios-device': 'ios',
-      'ios-device-gn': 'ios',
       'ios-simulator': 'ios',
       'ios-simulator-cronet': 'ios',
-      'ios-simulator-gn': 'ios',
       'ios-simulator-swarming': 'ios',
     },
 
@@ -577,10 +575,8 @@
 
     'tryserver.chromium.mac': {
       'ios-device': 'ios',
-      'ios-device-gn': 'ios',
       'ios-simulator': 'ios',
       'ios-simulator-cronet': 'ios',
-      'ios-simulator-gn': 'ios',
       'ios-simulator-swarming': 'ios',
       'mac_chromium_10.10_rel_ng': 'gpu_tests_release_trybot',
       'mac_chromium_10.10_macviews': 'mac_views_browser_release_trybot',
