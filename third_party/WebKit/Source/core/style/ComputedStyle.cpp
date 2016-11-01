@@ -2225,7 +2225,7 @@ int ComputedStyle::outlineOutsetExtent() const {
     return 0;
   if (outlineStyleIsAuto()) {
     return GraphicsContext::focusRingOutsetExtent(
-        outlineOffset(), getOutlineStrokeWidthForFocusRing());
+        outlineOffset(), std::ceil(getOutlineStrokeWidthForFocusRing()));
   }
   return std::max(0, saturatedAddition(outlineWidth(), outlineOffset()));
 }

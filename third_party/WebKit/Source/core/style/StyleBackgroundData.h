@@ -36,7 +36,7 @@ namespace blink {
 // TODO(sashab): Move this into a private class on ComputedStyle, and remove
 // all methods on it, merging them into copy/creation methods on ComputedStyle
 // instead. Keep the allocation logic, only allocating a new object if needed.
-class StyleBackgroundData : public RefCounted<StyleBackgroundData> {
+class CORE_EXPORT StyleBackgroundData : public RefCounted<StyleBackgroundData> {
  public:
   static PassRefPtr<StyleBackgroundData> create() {
     return adoptRef(new StyleBackgroundData);
