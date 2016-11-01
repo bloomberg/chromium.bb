@@ -12,6 +12,7 @@
 #include "core/frame/LocalDOMWindow.h"
 #include "core/frame/LocalFrame.h"
 #include "core/html/HTMLImageElement.h"
+#include "core/html/HTMLVideoElement.h"
 #include "core/html/canvas/CanvasImageSource.h"
 #include "platform/graphics/Image.h"
 #include "public/platform/InterfaceProvider.h"
@@ -28,11 +29,13 @@ static CanvasImageSource* toImageSourceInternal(
   if (value.isHTMLImageElement())
     return value.getAsHTMLImageElement();
 
-  if (value.isImageBitmap()) {
-    if (static_cast<ImageBitmap*>(value.getAsImageBitmap())->isNeutered())
-      return nullptr;
+  if (value.isImageBitmap() &&
+      !static_cast<ImageBitmap*>(value.getAsImageBitmap())->isNeutered()) {
     return value.getAsImageBitmap();
   }
+
+  if (value.isHTMLVideoElement())
+    return value.getAsHTMLVideoElement();
 
   return nullptr;
 }
@@ -66,8 +69,8 @@ ScriptPromise FaceDetector::detect(ScriptState* scriptState,
 
   if (imageSourceInternal->wouldTaintOrigin(
           scriptState->getExecutionContext()->getSecurityOrigin())) {
-    resolver->reject(DOMException::create(SecurityError,
-                                          "Image source would taint origin."));
+    resolver->reject(
+        DOMException::create(SecurityError, "Source would taint origin."));
     return promise;
   }
 
@@ -79,6 +82,11 @@ ScriptPromise FaceDetector::detect(ScriptState* scriptState,
     return detectFacesOnImageBitmap(
         resolver, static_cast<ImageBitmap*>(imageSourceInternal));
   }
+  if (imageSourceInternal->isVideoElement()) {
+    return detectFacesOnVideoElement(
+        resolver, static_cast<HTMLVideoElement*>(imageSourceInternal));
+  }
+
   NOTREACHED();
   return promise;
 }
@@ -195,10 +203,70 @@ ScriptPromise FaceDetector::detectFacesOnImageBitmap(
     allocationSize = imageBitmap->size().area() * 4 /* bytes per pixel */;
   }
 
-  mojo::ScopedSharedBufferHandle sharedBufferHandle =
-      mojo::SharedBufferHandle::Create(allocationSize.ValueOrDefault(0));
+  return detectFacesOnData(resolver, pixelDataPtr,
+                           allocationSize.ValueOrDefault(0),
+                           imageBitmap->width(), imageBitmap->height());
+}
 
-  if (!pixelDataPtr || !sharedBufferHandle->is_valid()) {
+ScriptPromise FaceDetector::detectFacesOnVideoElement(
+    ScriptPromiseResolver* resolver,
+    const HTMLVideoElement* video) {
+  ScriptPromise promise = resolver->promise();
+
+  // TODO(mcasas): Check if |video| is actually playing a MediaStream by using
+  // HTMLMediaElement::isMediaStreamURL(video->currentSrc().getString()); if
+  // there is a local WebCam associated, there might be sophisticated ways to
+  // detect faces on it. Until then, treat as a normal <video> element.
+
+  // !hasAvailableVideoFrame() is a bundle of invalid states.
+  if (!video->hasAvailableVideoFrame()) {
+    resolver->reject(DOMException::create(
+        InvalidStateError, "Invalid HTMLVideoElement or state."));
+    return promise;
+  }
+
+  const FloatSize videoSize(video->videoWidth(), video->videoHeight());
+  SourceImageStatus sourceImageStatus = InvalidSourceImageStatus;
+  RefPtr<Image> image =
+      video->getSourceImageForCanvas(&sourceImageStatus, PreferNoAcceleration,
+                                     SnapshotReasonDrawImage, videoSize);
+
+  DCHECK_EQ(NormalSourceImageStatus, sourceImageStatus);
+
+  SkPixmap pixmap;
+  RefPtr<Uint8Array> pixelData;
+  uint8_t* pixelDataPtr = nullptr;
+  WTF::CheckedNumeric<int> allocationSize = 0;
+  // Use |skImage|'s pixels if it has direct access to them.
+  sk_sp<SkImage> skImage = image->imageForCurrentFrame();
+  if (skImage->peekPixels(&pixmap)) {
+    pixelDataPtr = static_cast<uint8_t*>(pixmap.writable_addr());
+    allocationSize = pixmap.getSafeSize();
+  } else {
+    // TODO(mcasas): retrieve the pixels from elsewhere.
+    NOTREACHED();
+    resolver->reject(DOMException::create(
+        InvalidStateError, "Failed to get pixels for current frame."));
+    return promise;
+  }
+
+  return detectFacesOnData(resolver, pixelDataPtr,
+                           allocationSize.ValueOrDefault(0), image->width(),
+                           image->height());
+}
+
+ScriptPromise FaceDetector::detectFacesOnData(ScriptPromiseResolver* resolver,
+                                              uint8_t* data,
+                                              int size,
+                                              int width,
+                                              int height) {
+  DCHECK(data);
+  DCHECK(size);
+  ScriptPromise promise = resolver->promise();
+
+  mojo::ScopedSharedBufferHandle sharedBufferHandle =
+      mojo::SharedBufferHandle::Create(size);
+  if (!sharedBufferHandle->is_valid()) {
     resolver->reject(
         DOMException::create(InvalidStateError, "Internal allocation error"));
     return promise;
@@ -206,20 +274,19 @@ ScriptPromise FaceDetector::detectFacesOnImageBitmap(
 
   if (!m_service) {
     resolver->reject(DOMException::create(
-        NotFoundError, "Face detection service unavailable."));
+        NotSupportedError, "Face detection service unavailable."));
     return promise;
   }
 
   const mojo::ScopedSharedBufferMapping mappedBuffer =
-      sharedBufferHandle->Map(allocationSize.ValueOrDefault(0));
+      sharedBufferHandle->Map(size);
   DCHECK(mappedBuffer.get());
 
-  memcpy(mappedBuffer.get(), pixelDataPtr, allocationSize.ValueOrDefault(0));
+  memcpy(mappedBuffer.get(), data, size);
 
   m_serviceRequests.add(resolver);
   DCHECK(m_service.is_bound());
-  m_service->DetectFace(std::move(sharedBufferHandle), imageBitmap->width(),
-                        imageBitmap->height(),
+  m_service->DetectFace(std::move(sharedBufferHandle), width, height,
                         convertToBaseCallback(WTF::bind(
                             &FaceDetector::onDetectFace, wrapPersistent(this),
                             wrapPersistent(resolver))));

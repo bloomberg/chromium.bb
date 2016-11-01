@@ -1,0 +1,47 @@
+<!DOCTYPE html>
+<script src="../resources/testharness.js"></script>
+<script src="../resources/testharnessreport.js"></script>
+<script src="../resources/mojo-helpers.js"></script>
+<script src="resources/mock-shapedetection.js"></script>
+<script>
+
+// This test verifies that FaceDetector.detect works on an HTMLVideoElement.
+// Uses the mock mojo server implemented in mock-shapedetection.js.
+async_test(function(t) {
+  var video = document.createElement('video');
+  video.src = "../imported/wpt/media/white.webm";
+  video.loop = true;
+  video.autoplay = true;
+  video.onerror = this.unreached_func("<video> error");
+  video.onplay = this.step_func(function() {
+    var theMock = null;
+    mockShapeDetectionReady
+      .then(mock => {
+        theMock = mock;
+        return new FaceDetector();
+      })
+      .catch(error => {
+        assert_unreached("Error creating MockShapeDetection: " + error);
+      })
+      .then(detector => {
+        return detector.detect(video);
+      })
+      .then(faceDetectionResult => {
+        const imageReceivedByMock = theMock.getFrameData();
+        assert_equals(imageReceivedByMock.byteLength, 307200,
+                      "Image length");
+        const WHITE_PIXEL = 0xFFFFFFFF;
+        assert_equals(imageReceivedByMock[0], WHITE_PIXEL, "Pixel color");
+        assert_equals(faceDetectionResult.length, 3, "Number of faces");
+        t.done();
+      })
+      .catch(error => {
+        assert_unreached("Error during detect(img): " + error);
+      });
+  });
+
+  video.load();
+
+}, 'exercises the ShapeDetection API detect(HTMLVideoElement)');
+
+</script>

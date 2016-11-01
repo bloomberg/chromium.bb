@@ -5,8 +5,8 @@
 <script src="resources/mock-shapedetection.js"></script>
 <script>
 
-// This test verifies that FaceDetector can detect(ImageBitmap). Uses the mock
-// mojo server under mock-shapedetection.js.
+// This test verifies that FaceDetector.detect works on an ImageBitmap.
+// Uses the mock mojo server implemented in mock-shapedetection.js.
 async_test(function(t) {
   var img = new Image();
 
@@ -34,11 +34,10 @@ async_test(function(t) {
         })
         .then(faceDetectionResult => {
           const imageReceivedByMock = theMock.getFrameData();
-          assert_equals(imageReceivedByMock.byteLength, 2500,
-                        "imageReceivedByMock.byteLength");
+          assert_equals(imageReceivedByMock.byteLength, 2500,"Image length");
           const GREEN_PIXEL = 0xFF00FF00;
-          assert_equals(imageReceivedByMock[0], GREEN_PIXEL, "pixel must be green");
-          assert_equals(faceDetectionResult.length, 3, "faceDetectionResult.length");
+          assert_equals(imageReceivedByMock[0], GREEN_PIXEL, "Pixel color");
+          assert_equals(faceDetectionResult.length, 3, "Number of faces");
           t.done();
         })
         .catch(error => {

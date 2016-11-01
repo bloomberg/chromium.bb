@@ -32,7 +32,14 @@ class MODULES_EXPORT FaceDetector final
   ScriptPromise detectFacesOnImageElement(ScriptPromiseResolver*,
                                           const HTMLImageElement*);
   ScriptPromise detectFacesOnImageBitmap(ScriptPromiseResolver*, ImageBitmap*);
+  ScriptPromise detectFacesOnVideoElement(ScriptPromiseResolver*,
+                                          const HTMLVideoElement*);
 
+  ScriptPromise detectFacesOnData(ScriptPromiseResolver*,
+                                  uint8_t* data,
+                                  int size,
+                                  int width,
+                                  int height);
   void onDetectFace(ScriptPromiseResolver*,
                     mojom::blink::FaceDetectionResultPtr);
 
