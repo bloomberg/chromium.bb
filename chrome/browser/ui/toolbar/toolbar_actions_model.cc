@@ -635,6 +635,11 @@ bool ToolbarActionsModel::HasComponentAction(
 }
 
 void ToolbarActionsModel::AddComponentAction(const std::string& action_id) {
+  if (!actions_initialized_) {
+    // TODO(crbug.com/660972): Add these component actions at initialization.
+    return;
+  }
+
   DCHECK(use_redesign_);
   ToolbarItem component_item(action_id, COMPONENT_ACTION);
   DCHECK(!HasItem(component_item));

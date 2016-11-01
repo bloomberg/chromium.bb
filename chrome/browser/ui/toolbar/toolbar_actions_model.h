@@ -181,6 +181,7 @@ class ToolbarActionsModel
   void SetActionVisibility(const std::string& action_id, bool visible);
 
   // ComponentMigrationHelper::ComponentActionDelegate:
+  // AddComponentAction() is a no-op if |actions_initialized_| is false.
   void AddComponentAction(const std::string& action_id) override;
   void RemoveComponentAction(const std::string& action_id) override;
   bool HasComponentAction(const std::string& action_id) const override;

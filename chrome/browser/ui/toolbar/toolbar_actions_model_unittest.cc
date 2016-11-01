@@ -1454,6 +1454,18 @@ TEST_F(ToolbarActionsModelUnitTest,
   EXPECT_EQ(browser_action_c()->id(), GetActionIdAtIndex(1u));
 }
 
+TEST_F(ToolbarActionsModelUnitTest, AddComponentActionBeforeInitialization) {
+  InitializeEmptyExtensionService();
+  ToolbarActionsModel* toolbar_model = extensions::extension_action_test_util::
+      CreateToolbarModelForProfileWithoutWaitingForReady(profile());
+  ASSERT_FALSE(toolbar_model->actions_initialized());
+
+  // AddComponentAction() should be a no-op if actions_initialized() is false.
+  toolbar_model->AddComponentAction(component_action_id());
+  EXPECT_EQ(0u, toolbar_model->toolbar_items().size());
+  EXPECT_FALSE(toolbar_model->HasComponentAction(component_action_id()));
+}
+
 TEST_F(ToolbarActionsModelUnitTest,
        NoMigrationToComponentActionWithoutExtension) {
   extensions::FeatureSwitch::ScopedOverride enable_redesign(
