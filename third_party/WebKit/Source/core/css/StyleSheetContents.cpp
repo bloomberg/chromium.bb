@@ -92,6 +92,11 @@ StyleSheetContents::StyleSheetContents(const StyleSheetContents& o)
   // FIXME: Copy import rules.
   ASSERT(o.m_importRules.isEmpty());
 
+  for (unsigned i = 0; i < m_namespaceRules.size(); ++i) {
+    m_namespaceRules[i] =
+        static_cast<StyleRuleNamespace*>(o.m_namespaceRules[i]->copy());
+  }
+
   // LazyParseCSS: Copying child rules is a strict point for lazy parsing, so
   // there is no need to copy lazy parsing state here.
   for (unsigned i = 0; i < m_childRules.size(); ++i)

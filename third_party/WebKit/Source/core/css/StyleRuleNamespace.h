@@ -17,6 +17,10 @@ class StyleRuleNamespace final : public StyleRuleBase {
     return new StyleRuleNamespace(prefix, uri);
   }
 
+  StyleRuleNamespace* copy() const {
+    return new StyleRuleNamespace(m_prefix, m_uri);
+  }
+
   AtomicString prefix() const { return m_prefix; }
   AtomicString uri() const { return m_uri; }
 

@@ -150,9 +150,10 @@ StyleRuleBase* StyleRuleBase::copy() const {
       return toStyleRuleKeyframes(this)->copy();
     case Viewport:
       return toStyleRuleViewport(this)->copy();
+    case Namespace:
+      return toStyleRuleNamespace(this)->copy();
     case Charset:
     case Keyframe:
-    case Namespace:
       ASSERT_NOT_REACHED();
       return nullptr;
   }
