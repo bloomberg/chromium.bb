@@ -1848,6 +1848,20 @@ fuzzer_test("net_http_stream_parser_fuzzer") {
   dict = "data/fuzzer_dictionaries/net_http_stream_parser_fuzzer.dict"
 }
 
+if (!disable_brotli_filter) {
+  fuzzer_test("net_brotli_source_stream_fuzzer") {
+    sources = [
+      "filter/brotli_source_stream_fuzzer.cc",
+    ]
+    deps = [
+      ":net_fuzzer_test_support",
+      ":test_support",
+      "//base",
+      "//net",
+    ]
+  }
+}
+
 fuzzer_test("net_gzip_source_stream_fuzzer") {
   sources = [
     "filter/gzip_source_stream_fuzzer.cc",
