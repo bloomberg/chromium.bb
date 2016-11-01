@@ -53,6 +53,8 @@ extern const base::Feature kHappinessTrackingSystem;
 extern const base::Feature kLinuxObsoleteSystemIsEndOfTheLine;
 #endif
 
+extern const base::Feature kMaterialDesignBookmarks;
+
 #if defined(ENABLE_EXTENSIONS)
 extern const base::Feature kMaterialDesignExtensions;
 #endif

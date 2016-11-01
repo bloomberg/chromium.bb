@@ -118,6 +118,7 @@
 #include "chrome/browser/signin/easy_unlock_service_factory.h"
 #include "chrome/browser/ui/webui/devtools_ui.h"
 #include "chrome/browser/ui/webui/inspect_ui.h"
+#include "chrome/browser/ui/webui/md_bookmarks/md_bookmarks_ui.h"
 #include "chrome/browser/ui/webui/md_downloads/md_downloads_ui.h"
 #include "chrome/browser/ui/webui/md_feedback/md_feedback_ui.h"
 #include "chrome/browser/ui/webui/md_history_ui.h"
@@ -407,8 +408,10 @@ WebUIFactoryFunction GetWebUIFactoryFunction(WebUI* web_ui,
 #endif  // !defined(OS_CHROMEOS)
 
   // Bookmarks are part of NTP on Android.
-  if (url.host() == chrome::kChromeUIBookmarksHost)
-    return &NewWebUI<BookmarksUI>;
+  if (url.host() == chrome::kChromeUIBookmarksHost) {
+    return MdBookmarksUI::IsEnabled() ? &NewWebUI<MdBookmarksUI>
+                                      : &NewWebUI<BookmarksUI>;
+  }
   // Downloads list on Android uses the built-in download manager.
   if (url.host() == chrome::kChromeUIDownloadsHost)
     return &NewWebUI<MdDownloadsUI>;
@@ -773,8 +776,10 @@ base::RefCountedMemory* ChromeWebUIControllerFactory::GetFaviconResourceBytes(
 #if !defined(OS_ANDROID)  // Bookmarks are part of NTP on Android.
   // The bookmark manager is a chrome extension, so we have to check for it
   // before we check for extension scheme.
-  if (page_url.host() == extension_misc::kBookmarkManagerId)
+  if (page_url.host() == extension_misc::kBookmarkManagerId ||
+      page_url.host() == chrome::kChromeUIBookmarksHost) {
     return BookmarksUI::GetFaviconResourceBytes(scale_factor);
+  }
 
   // The extension scheme is handled in GetFaviconForURL.
   if (page_url.SchemeIs(extensions::kExtensionScheme)) {

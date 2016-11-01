@@ -1728,6 +1728,9 @@ const FeatureEntry kFeatureEntries[] = {
      ENABLE_DISABLE_VALUE_TYPE(switches::kEnableAppLink,
                                switches::kDisableAppLink)},
 #endif  // OS_ANDROID
+    {"enable-md-bookmarks", IDS_FLAGS_ENABLE_MATERIAL_DESIGN_BOOKMARKS_NAME,
+     IDS_FLAGS_ENABLE_MATERIAL_DESIGN_BOOKMARKS_DESCRIPTION, kOsDesktop,
+     FEATURE_VALUE_TYPE(features::kMaterialDesignBookmarks)},
     {"enable-md-feedback", IDS_FLAGS_ENABLE_MATERIAL_DESIGN_FEEDBACK_NAME,
      IDS_FLAGS_ENABLE_MATERIAL_DESIGN_FEEDBACK_DESCRIPTION, kOsDesktop,
      SINGLE_VALUE_TYPE(switches::kEnableMaterialDesignFeedback)},

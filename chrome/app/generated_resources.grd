@@ -5027,6 +5027,14 @@ Keep your key file in a safe place. You will need it to create new versions of y
         </message>
       </if>
 
+      <!-- Material Design version of chrome://bookmarks -->
+      <message name="IDS_FLAGS_ENABLE_MATERIAL_DESIGN_BOOKMARKS_NAME" desc="Name for the flag to enable the material design bookmarks page.">
+        Enable Material Design bookmarks
+      </message>
+      <message name="IDS_FLAGS_ENABLE_MATERIAL_DESIGN_BOOKMARKS_DESCRIPTION" desc="Description for the flag to enable the material design bookmarks page.">
+        If enabled, the chrome://bookmarks/ URL loads the Material Design bookmarks page.
+      </message>
+
       <!-- Material Design version of chrome://policy -->
       <message name="IDS_FLAGS_ENABLE_MATERIAL_DESIGN_POLICY_PAGE_NAME" desc="Name for the flag to enable the material design policy page.">
           Enable Material Design policy page

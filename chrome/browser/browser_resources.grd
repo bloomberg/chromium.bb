@@ -243,6 +243,10 @@
       <include name="IDR_OTHER_DEVICES_JS" file="resources\history\other_devices.js" flattenhtml="true" type="BINDATA" compress="gzip" />
 
       <if expr="not is_android and not is_ios">
+        <!-- MD Bookmarks. -->
+        <include name="IDR_MD_BOOKMARKS_BOOKMARKS_HTML" file="resources\md_bookmarks\bookmarks.html" type="BINDATA" />
+
+        <!-- MD History. -->
         <include name="IDR_MD_HISTORY_CONSTANTS_HTML" file="resources\md_history\constants.html" type="BINDATA" />
         <include name="IDR_MD_HISTORY_CONSTANTS_JS" file="resources\md_history\constants.js" type="BINDATA" />
         <include name="IDR_MD_HISTORY_HISTORY_HTML" file="resources\md_history\history.html" flattenhtml="true" type="BINDATA" />

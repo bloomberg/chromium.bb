@@ -21,6 +21,7 @@
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/search/hotword_service.h"
 #include "chrome/browser/search/hotword_service_factory.h"
+#include "chrome/browser/ui/webui/md_bookmarks/md_bookmarks_ui.h"
 #include "chrome/common/channel_info.h"
 #include "chrome/common/chrome_paths.h"
 #include "chrome/common/chrome_switches.h"
@@ -471,17 +472,21 @@ void ComponentLoader::AddDefaultComponentExtensions(
   if (!skip_session_components) {
     const base::CommandLine* command_line =
         base::CommandLine::ForCurrentProcess();
-    if (!command_line->HasSwitch(chromeos::switches::kGuestSession))
+    if (!command_line->HasSwitch(chromeos::switches::kGuestSession) &&
+        !MdBookmarksUI::IsEnabled()) {
       Add(IDR_BOOKMARKS_MANIFEST,
           base::FilePath(FILE_PATH_LITERAL("bookmark_manager")));
+    }
 
     Add(IDR_CROSH_BUILTIN_MANIFEST, base::FilePath(FILE_PATH_LITERAL(
         "/usr/share/chromeos-assets/crosh_builtin")));
   }
 #else  // defined(OS_CHROMEOS)
   DCHECK(!skip_session_components);
-  Add(IDR_BOOKMARKS_MANIFEST,
-      base::FilePath(FILE_PATH_LITERAL("bookmark_manager")));
+  if (!MdBookmarksUI::IsEnabled()) {
+    Add(IDR_BOOKMARKS_MANIFEST,
+        base::FilePath(FILE_PATH_LITERAL("bookmark_manager")));
+  }
 #if defined(ENABLE_PRINTING)
   // Cloud Print component app. Not required on Chrome OS.
   Add(IDR_CLOUDPRINT_MANIFEST,
