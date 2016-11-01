@@ -511,6 +511,8 @@ class WebGL2ConformanceExpectations(WebGLConformanceExpectations):
                ['linux'], bug=627525)
 
     # Linux Multi-vendor failures.
+    self.Skip('deqp/data/gles3/shaders/qualification_order.html',
+        ['linux', 'amd', 'intel'], bug=483282)
     self.Flaky('deqp/functional/gles3/texturespecification/' +
         'random_teximage2d_2d.html',
         ['linux', 'amd', 'intel'], bug=618447)
@@ -625,8 +627,6 @@ class WebGL2ConformanceExpectations(WebGLConformanceExpectations):
         ['linux', 'amd'], bug=483282)
     self.Fail('deqp/functional/gles3/shadertexturefunction/' +
         'texelfetchoffset.html',
-        ['linux', 'amd'], bug=483282)
-    self.Skip('deqp/data/gles3/shaders/qualification_order.html',
         ['linux', 'amd'], bug=483282)
 
     self.Fail('deqp/functional/gles3/instancedrendering.html',
