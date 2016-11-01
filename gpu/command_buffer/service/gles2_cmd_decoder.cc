@@ -15293,6 +15293,7 @@ error::Error GLES2DecoderImpl::HandleGetTransformFeedbackVarying(
   Program* program = GetProgramInfoNotShader(
       program_id, "glGetTransformFeedbackVarying");
   if (!program) {
+    // An error is already set.
     return error::kNoError;
   }
   GLuint service_id = program->service_id();
@@ -17225,7 +17226,9 @@ error::Error GLES2DecoderImpl::HandleClientWaitSync(
     case GL_WAIT_FAILED:
       // Avoid leaking GL errors when using virtual contexts.
       LOCAL_PEEK_GL_ERROR(function_name);
-      break;
+      *result_dst = status;
+      // If validation is complete, this only happens if the context is lost.
+      return error::kLostContext;
     default:
       NOTREACHED();
       break;
@@ -17401,12 +17404,13 @@ error::Error GLES2DecoderImpl::HandleMapBufferRange(
     return error::kNoError;
   }
   if (size == 0) {
-    LOCAL_SET_GL_ERROR(GL_INVALID_OPERATION, func_name, "size is zero");
+    LOCAL_SET_GL_ERROR(GL_INVALID_OPERATION, func_name, "length is zero");
     return error::kNoError;
   }
   Buffer* buffer = buffer_manager()->RequestBufferAccess(
       &state_, target, offset, size, func_name);
   if (!buffer) {
+    // An error is already set.
     return error::kNoError;
   }
   if (state_.bound_transform_feedback->active() &&
@@ -17437,7 +17441,7 @@ error::Error GLES2DecoderImpl::HandleMapBufferRange(
   }
   if (!AnyBitsSet(access, GL_MAP_READ_BIT | GL_MAP_WRITE_BIT)) {
     LOCAL_SET_GL_ERROR(GL_INVALID_OPERATION, func_name,
-        "neither MAP_READ_BIT nore MAP_WRITE_BIT is set");
+        "neither MAP_READ_BIT nor MAP_WRITE_BIT is set");
     return error::kNoError;
   }
   if (AllBitsSet(access, GL_MAP_READ_BIT) &&
@@ -17445,7 +17449,7 @@ error::Error GLES2DecoderImpl::HandleMapBufferRange(
                           GL_MAP_INVALIDATE_BUFFER_BIT |
                           GL_MAP_UNSYNCHRONIZED_BIT))) {
     LOCAL_SET_GL_ERROR(GL_INVALID_OPERATION, func_name,
-        "Incompatible access bits with MAP_READ_BIT");
+        "incompatible access bits with MAP_READ_BIT");
     return error::kNoError;
   }
   if (AllBitsSet(access, GL_MAP_FLUSH_EXPLICIT_BIT) &&
@@ -17469,6 +17473,8 @@ error::Error GLES2DecoderImpl::HandleMapBufferRange(
   }
   void* ptr = glMapBufferRange(target, offset, size, access);
   if (ptr == nullptr) {
+    // This should mean GL_OUT_OF_MEMORY (or context loss).
+    LOCAL_COPY_REAL_GL_ERRORS_TO_WRAPPER(func_name);
     return error::kNoError;
   }
   buffer->SetMappedRange(offset, size, access, ptr,
