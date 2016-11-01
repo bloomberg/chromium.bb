@@ -60,7 +60,7 @@
 
 - (void)drawRect:(NSRect)rect {
   NSRect bounds = [self bounds];
-  bounds.size.height = InfoBarContainerDelegate::kDefaultBarTargetHeightMd;
+  bounds.size.height = InfoBarContainerDelegate::kDefaultBarTargetHeight;
   CGFloat tipXOffset = arrowX_ - arrowHalfWidth_;
 
   // Around the bounds of the infobar, continue drawing the path into which the
