@@ -5213,6 +5213,8 @@ void Document::beginLifecycleUpdatesIfRenderingReady() {
     // explicitly request them.
     if (frame->isMainFrame())
       frame->page()->chromeClient().beginLifecycleUpdates();
+    if (frame->view())
+      frame->view()->setupRenderThrottling();
   }
 }
 

@@ -33,8 +33,11 @@
 #include "core/css/resolver/StyleResolver.h"
 #include "core/dom/AXObjectCache.h"
 #include "core/dom/DOMNodeIds.h"
+#include "core/dom/ElementVisibilityObserver.h"
 #include "core/dom/Fullscreen.h"
+#include "core/dom/IntersectionObserverCallback.h"
 #include "core/dom/IntersectionObserverController.h"
+#include "core/dom/IntersectionObserverInit.h"
 #include "core/editing/EditingUtilities.h"
 #include "core/editing/FrameSelection.h"
 #include "core/editing/RenderedPosition.h"
@@ -153,10 +156,6 @@ FrameView::FrameView(LocalFrame* frame)
       m_inSynchronousPostLayout(false),
       m_postLayoutTasksTimer(this, &FrameView::postLayoutTimerFired),
       m_updateWidgetsTimer(this, &FrameView::updateWidgetsTimerFired),
-      m_renderThrottlingObserverNotificationFactory(
-          CancellableTaskFactory::create(
-              this,
-              &FrameView::notifyRenderThrottlingObservers)),
       m_isTransparent(false),
       m_baseBackgroundColor(Color::white),
       m_mediaType(MediaTypeNames::screen),
@@ -169,7 +168,6 @@ FrameView::FrameView(LocalFrame* frame)
       m_browserControlsViewportAdjustment(0),
       m_needsUpdateWidgetGeometries(false),
       m_needsUpdateViewportIntersection(true),
-      m_needsUpdateViewportIntersectionInSubtree(true),
 #if ENABLE(ASSERT)
       m_hasBeenDisposed(false),
 #endif
@@ -180,9 +178,7 @@ FrameView::FrameView(LocalFrame* frame)
       m_scrollbarsSuppressed(false),
       m_inUpdateScrollbars(false),
       m_frameTimingRequestsDirty(true),
-      m_viewportIntersectionValid(false),
       m_hiddenForThrottling(false),
-      m_crossOriginForThrottling(false),
       m_subtreeThrottled(false),
       m_currentUpdateLifecyclePhasesTargetState(
           DocumentLifecycle::Uninitialized),
@@ -222,6 +218,7 @@ DEFINE_TRACE(FrameView) {
   visitor->trace(m_autoSizeInfo);
   visitor->trace(m_children);
   visitor->trace(m_viewportScrollableArea);
+  visitor->trace(m_visibilityObserver);
   visitor->trace(m_scrollAnchor);
   visitor->trace(m_anchoringAdjustmentQueue);
   visitor->trace(m_scrollbarManager);
@@ -284,6 +281,28 @@ void FrameView::init() {
     setCanHaveScrollbars(false);
 }
 
+void FrameView::setupRenderThrottling() {
+  if (m_visibilityObserver)
+    return;
+
+  // We observe the frame owner element instead of the document element, because
+  // if the document has no content we can falsely think the frame is invisible.
+  // Note that this means we cannot throttle top-level frames or (currently)
+  // frames whose owner element is remote.
+  Element* targetElement = frame().deprecatedLocalOwner();
+  if (!targetElement)
+    return;
+
+  m_visibilityObserver = new ElementVisibilityObserver(
+      targetElement, WTF::bind(
+                         [](FrameView* frameView, bool isVisible) {
+                           frameView->updateRenderThrottlingStatus(
+                               !isVisible, frameView->m_subtreeThrottled);
+                         },
+                         wrapWeakPersistent(this)));
+  m_visibilityObserver->start();
+}
+
 void FrameView::dispose() {
   RELEASE_ASSERT(!isInPerformLayout());
 
@@ -310,8 +329,6 @@ void FrameView::dispose() {
 
   m_postLayoutTasksTimer.stop();
   m_didScrollTimer.stop();
-
-  m_renderThrottlingObserverNotificationFactory->cancel();
 
   // FIXME: Do we need to do something here for OOPI?
   HTMLFrameOwnerElement* ownerElement = m_frame->deprecatedLocalOwner();
@@ -3417,6 +3434,10 @@ void FrameView::setParent(Widget* parentView) {
 
   updateScrollableAreaSet();
   setNeedsUpdateViewportIntersection();
+  setupRenderThrottling();
+
+  if (parentFrameView())
+    m_subtreeThrottled = parentFrameView()->canThrottleRendering();
 }
 
 void FrameView::removeChild(Widget* child) {
@@ -4333,73 +4354,13 @@ void FrameView::collectAnnotatedRegions(
 }
 
 void FrameView::setNeedsUpdateViewportIntersection() {
-  m_needsUpdateViewportIntersection = true;
   for (FrameView* parent = parentFrameView(); parent;
        parent = parent->parentFrameView())
     parent->m_needsUpdateViewportIntersectionInSubtree = true;
 }
 
-void FrameView::updateViewportIntersectionIfNeeded() {
-  if (!m_needsUpdateViewportIntersection)
-    return;
-  m_needsUpdateViewportIntersection = false;
-  m_viewportIntersectionValid = true;
-  FrameView* parent = parentFrameView();
-  if (!parent) {
-    HTMLFrameOwnerElement* element = frame().deprecatedLocalOwner();
-    if (!element)
-      frame().document()->maybeRecordLoadReason(WouldLoadOutOfProcess);
-    // Having no layout object means the frame is not drawn.
-    else if (!element->layoutObject())
-      frame().document()->maybeRecordLoadReason(WouldLoadDisplayNone);
-    m_viewportIntersection = frameRect();
-    return;
-  }
-  ASSERT(!parent->m_needsUpdateViewportIntersection);
-
-  bool parentLoaded = parent->frame().document()->wouldLoadReason() > Created;
-  // If the parent wasn't loaded, the children won't be either.
-  if (parentLoaded) {
-    if (frameRect().isEmpty())
-      frame().document()->maybeRecordLoadReason(WouldLoadZeroByZero);
-    else if (frameRect().maxY() < 0 && frameRect().maxX() < 0)
-      frame().document()->maybeRecordLoadReason(WouldLoadAboveAndLeft);
-    else if (frameRect().maxY() < 0)
-      frame().document()->maybeRecordLoadReason(WouldLoadAbove);
-    else if (frameRect().maxX() < 0)
-      frame().document()->maybeRecordLoadReason(WouldLoadLeft);
-  }
-
-  // If our parent is hidden, then we are too.
-  if (parent->m_viewportIntersection.isEmpty()) {
-    m_viewportIntersection = parent->m_viewportIntersection;
-    return;
-  }
-
-  // Transform our bounds into the root frame's content coordinate space,
-  // making sure we have valid layout data in our parent document. If our
-  // parent is throttled, we'll use possible stale layout information and
-  // rely on the fact that another lifecycle update will be scheduled once
-  // our parent becomes unthrottled.
-  ASSERT(parent->lifecycle().state() >= DocumentLifecycle::LayoutClean ||
-         parent->shouldThrottleRendering());
-  m_viewportIntersection = parent->contentsToRootFrame(frameRect());
-
-  // TODO(skyostil): Expand the viewport to make it less likely to see stale
-  // content while scrolling.
-  IntRect viewport = parent->m_viewportIntersection;
-  m_viewportIntersection.intersect(viewport);
-
-  if (parentLoaded && !m_viewportIntersection.isEmpty())
-    frame().document()->maybeRecordLoadReason(WouldLoadVisible);
-}
-
 void FrameView::updateViewportIntersectionsForSubtree(
     DocumentLifecycle::LifecycleState targetState) {
-  bool hadValidIntersection = m_viewportIntersectionValid;
-  bool hadEmptyIntersection = m_viewportIntersection.isEmpty();
-  updateViewportIntersectionIfNeeded();
-
   // Notify javascript IntersectionObservers
   if (targetState == DocumentLifecycle::PaintClean &&
       frame().document()->intersectionObserverController())
@@ -4407,15 +4368,6 @@ void FrameView::updateViewportIntersectionsForSubtree(
         .document()
         ->intersectionObserverController()
         ->computeTrackedIntersectionObservations();
-
-  // Adjust render throttling for iframes based on visibility
-  bool shouldNotify = !hadValidIntersection ||
-                      hadEmptyIntersection != m_viewportIntersection.isEmpty();
-  if (shouldNotify &&
-      !m_renderThrottlingObserverNotificationFactory->isPending())
-    m_frame->frameScheduler()->unthrottledTaskRunner()->postTask(
-        BLINK_FROM_HERE,
-        m_renderThrottlingObserverNotificationFactory->cancelAndCreate());
 
   if (!m_needsUpdateViewportIntersectionInSubtree)
     return;
@@ -4430,66 +4382,41 @@ void FrameView::updateViewportIntersectionsForSubtree(
   }
 }
 
-void FrameView::updateThrottlingStatus() {
-  // Only offscreen frames can be throttled. Note that we disallow throttling
-  // of 0x0 frames because some sites use them to drive UI logic.
-  DCHECK(m_viewportIntersectionValid);
-  m_hiddenForThrottling =
-      m_viewportIntersection.isEmpty() && !frameRect().isEmpty();
-
-  // We only throttle the rendering pipeline in cross-origin frames. This is
-  // to avoid a situation where an ancestor frame directly depends on the
-  // pipeline timing of a descendant and breaks as a result of throttling.
-  // The rationale is that cross-origin frames must already communicate with
-  // asynchronous messages, so they should be able to tolerate some delay in
-  // receiving replies from a throttled peer.
-  //
-  // Check if we can access our parent's security origin.
-  m_crossOriginForThrottling = false;
-  // If any of our parents are throttled, we must be too.
-  m_subtreeThrottled = false;
-  const SecurityOrigin* origin = frame().securityContext()->getSecurityOrigin();
-  for (Frame* parentFrame = m_frame->tree().parent(); parentFrame;
-       parentFrame = parentFrame->tree().parent()) {
-    const SecurityOrigin* parentOrigin =
-        parentFrame->securityContext()->getSecurityOrigin();
-    if (!origin->canAccess(parentOrigin))
-      m_crossOriginForThrottling = true;
-    if (parentFrame->isLocalFrame() && toLocalFrame(parentFrame)->view() &&
-        toLocalFrame(parentFrame)->view()->canThrottleRendering())
-      m_subtreeThrottled = true;
-  }
-  m_frame->frameScheduler()->setFrameVisible(!m_hiddenForThrottling);
-  m_frame->frameScheduler()->setCrossOrigin(m_crossOriginForThrottling);
+void FrameView::updateRenderThrottlingStatusForTesting() {
+  m_visibilityObserver->deliverObservationsForTesting();
 }
 
-void FrameView::notifyRenderThrottlingObserversForTesting() {
-  DCHECK(m_renderThrottlingObserverNotificationFactory->isPending());
-  notifyRenderThrottlingObservers();
-}
-
-void FrameView::notifyRenderThrottlingObservers() {
-  TRACE_EVENT0("blink", "FrameView::notifyRenderThrottlingObservers");
+void FrameView::updateRenderThrottlingStatus(bool hidden,
+                                             bool subtreeThrottled) {
+  TRACE_EVENT0("blink", "FrameView::updateRenderThrottlingStatus");
   DCHECK(!isInPerformLayout());
-  DCHECK(frame().document());
-  DCHECK(!frame().document()->inStyleRecalc());
+  DCHECK(!m_frame->document() || !m_frame->document()->inStyleRecalc());
   bool wasThrottled = canThrottleRendering();
 
-  updateThrottlingStatus();
+  // Note that we disallow throttling of 0x0 frames because some sites use
+  // them to drive UI logic.
+  m_hiddenForThrottling = hidden && !frameRect().isEmpty();
+  m_subtreeThrottled = subtreeThrottled;
 
-  bool becameThrottled = !wasThrottled && canThrottleRendering();
-  bool becameUnthrottled = wasThrottled && !canThrottleRendering();
-  ScrollingCoordinator* scrollingCoordinator = this->scrollingCoordinator();
-  if (becameThrottled) {
-    // If this FrameView became throttled, we must make sure all of its
-    // children become throttled at the same time. Otherwise we might
-    // attempt to paint one of the children with an out-of-date layout
-    // before |notifyRenderThrottlingObservers| has made it throttled.
-    forAllNonThrottledFrameViews([](FrameView& frameView) {
-      frameView.m_subtreeThrottled = true;
-      DCHECK(frameView.canThrottleRendering());
-    });
+  bool isThrottled = canThrottleRendering();
+  bool becameUnthrottled = wasThrottled && !isThrottled;
+
+  // If this FrameView became unthrottled or throttled, we must make sure all
+  // its children are notified synchronously. Otherwise we 1) might attempt to
+  // paint one of the children with an out-of-date layout before
+  // |updateRenderThrottlingStatus| has made it throttled or 2) fail to
+  // unthrottle a child whose parent is unthrottled by a later notification.
+  if (wasThrottled != isThrottled) {
+    for (const Member<Widget>& child : *children()) {
+      if (child->isFrameView()) {
+        FrameView* childView = toFrameView(child);
+        childView->updateRenderThrottlingStatus(
+            childView->m_hiddenForThrottling, isThrottled);
+      }
+    }
   }
+
+  ScrollingCoordinator* scrollingCoordinator = this->scrollingCoordinator();
   if (becameUnthrottled) {
     // ScrollingCoordinator needs to update according to the new throttling
     // status.
@@ -4513,9 +4440,39 @@ void FrameView::notifyRenderThrottlingObservers() {
       hasHandlers)
     scrollingCoordinator->touchEventTargetRectsDidChange();
 
+  FrameView* parent = parentFrameView();
+  if (frame().document()->frame()) {
+    if (!parent) {
+      HTMLFrameOwnerElement* element = frame().deprecatedLocalOwner();
+      if (!element)
+        frame().document()->maybeRecordLoadReason(WouldLoadOutOfProcess);
+      // Having no layout object means the frame is not drawn.
+      else if (!element->layoutObject())
+        frame().document()->maybeRecordLoadReason(WouldLoadDisplayNone);
+    } else {
+      // Assume the main frame has always loaded since we don't track its
+      // visibility.
+      bool parentLoaded =
+          !parent->parentFrameView() ||
+          parent->frame().document()->wouldLoadReason() > Created;
+      // If the parent wasn't loaded, the children won't be either.
+      if (parentLoaded) {
+        if (frameRect().isEmpty())
+          frame().document()->maybeRecordLoadReason(WouldLoadZeroByZero);
+        else if (frameRect().maxY() < 0 && frameRect().maxX() < 0)
+          frame().document()->maybeRecordLoadReason(WouldLoadAboveAndLeft);
+        else if (frameRect().maxY() < 0)
+          frame().document()->maybeRecordLoadReason(WouldLoadAbove);
+        else if (frameRect().maxX() < 0)
+          frame().document()->maybeRecordLoadReason(WouldLoadLeft);
+        else if (!m_hiddenForThrottling)
+          frame().document()->maybeRecordLoadReason(WouldLoadVisible);
+      }
+    }
+  }
+
 #if DCHECK_IS_ON()
   // Make sure we never have an unthrottled frame inside a throttled one.
-  FrameView* parent = parentFrameView();
   while (parent) {
     DCHECK(canThrottleRendering() || !parent->canThrottleRendering());
     parent = parent->parentFrameView();
@@ -4530,8 +4487,14 @@ bool FrameView::shouldThrottleRendering() const {
 bool FrameView::canThrottleRendering() const {
   if (!RuntimeEnabledFeatures::renderingPipelineThrottlingEnabled())
     return false;
+  // We only throttle the rendering pipeline in cross-origin frames. This is
+  // to avoid a situation where an ancestor frame directly depends on the
+  // pipeline timing of a descendant and breaks as a result of throttling.
+  // The rationale is that cross-origin frames must already communicate with
+  // asynchronous messages, so they should be able to tolerate some delay in
+  // receiving replies from a throttled peer.
   return m_subtreeThrottled ||
-         (m_hiddenForThrottling && m_crossOriginForThrottling);
+         (m_hiddenForThrottling && m_frame->isCrossOriginSubframe());
 }
 
 void FrameView::setInitialViewportSize(const IntSize& viewportSize) {

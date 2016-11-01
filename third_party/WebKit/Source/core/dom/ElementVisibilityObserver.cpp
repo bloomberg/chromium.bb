@@ -46,6 +46,8 @@ void ElementVisibilityObserver::start() {
       &document, WTF::bind(&ElementVisibilityObserver::onVisibilityChanged,
                            wrapWeakPersistent(this)));
   DCHECK(m_intersectionObserver);
+  m_intersectionObserver->setInitialState(
+      IntersectionObserver::InitialState::kAuto);
   m_intersectionObserver->observe(m_element.release());
 }
 
@@ -59,6 +61,10 @@ void ElementVisibilityObserver::stop() {
 
   m_intersectionObserver->disconnect();
   m_intersectionObserver = nullptr;
+}
+
+void ElementVisibilityObserver::deliverObservationsForTesting() {
+  m_intersectionObserver->deliver();
 }
 
 DEFINE_TRACE(ElementVisibilityObserver) {

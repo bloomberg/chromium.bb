@@ -36,6 +36,8 @@ class CORE_EXPORT ElementVisibilityObserver final
   void start();
   void stop();
 
+  void deliverObservationsForTesting();
+
   DECLARE_VIRTUAL_TRACE();
 
  private:

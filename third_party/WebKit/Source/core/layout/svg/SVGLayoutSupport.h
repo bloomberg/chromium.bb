@@ -110,7 +110,8 @@ class CORE_EXPORT SVGLayoutSupport {
                                  MapCoordinatesFlags);
   static void mapAncestorToLocal(const LayoutObject&,
                                  const LayoutBoxModelObject* ancestor,
-                                 TransformState&);
+                                 TransformState&,
+                                 MapCoordinatesFlags);
   static const LayoutObject* pushMappingToContainer(
       const LayoutObject*,
       const LayoutBoxModelObject* ancestorToStopAt,
