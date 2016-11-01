@@ -203,12 +203,6 @@ void TrayBackgroundView::TrayContainer::SetMargin(int main_axis_margin,
   UpdateLayout();
 }
 
-gfx::Size TrayBackgroundView::TrayContainer::GetPreferredSize() const {
-  if (size_.IsEmpty())
-    return views::View::GetPreferredSize();
-  return size_;
-}
-
 void TrayBackgroundView::TrayContainer::ChildPreferredSizeChanged(
     views::View* child) {
   PreferredSizeChanged();
@@ -245,7 +239,8 @@ void TrayBackgroundView::TrayContainer::UpdateLayout() {
   SetBorder(views::Border::CreateEmptyBorder(insets + margin));
 
   views::BoxLayout* layout = new views::BoxLayout(orientation, 0, 0, 0);
-  layout->SetDefaultFlex(1);
+  if (!ash::MaterialDesignController::IsShelfMaterial())
+    layout->SetDefaultFlex(1);
   layout->set_minimum_cross_axis_size(kTrayItemSize);
   views::View::SetLayoutManager(layout);
 

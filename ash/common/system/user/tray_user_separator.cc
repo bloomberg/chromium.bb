@@ -13,10 +13,6 @@ namespace ash {
 TrayUserSeparator::TrayUserSeparator(SystemTray* system_tray)
     : SystemTrayItem(system_tray, UMA_NOT_RECORDED), separator_shown_(false) {}
 
-views::View* TrayUserSeparator::CreateTrayView(LoginStatus status) {
-  return NULL;
-}
-
 views::View* TrayUserSeparator::CreateDefaultView(LoginStatus status) {
   if (status == LoginStatus::NOT_LOGGED_IN)
     return NULL;
@@ -33,10 +29,6 @@ views::View* TrayUserSeparator::CreateDefaultView(LoginStatus status) {
 
   separator_shown_ = true;
   return new views::View();
-}
-
-views::View* TrayUserSeparator::CreateDetailedView(LoginStatus status) {
-  return NULL;
 }
 
 void TrayUserSeparator::DestroyDefaultView() {

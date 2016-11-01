@@ -41,12 +41,7 @@ class ASH_EXPORT TrayBackgroundView : public ActionableView,
 
     void SetAlignment(ShelfAlignment alignment);
 
-    void set_size(const gfx::Size& size) { size_ = size; }
-
     void SetMargin(int main_axis_margin, int cross_axis_margin);
-
-    // views::View:
-    gfx::Size GetPreferredSize() const override;
 
    protected:
     // views::View:
@@ -59,7 +54,6 @@ class ASH_EXPORT TrayBackgroundView : public ActionableView,
     void UpdateLayout();
 
     ShelfAlignment alignment_;
-    gfx::Size size_;
     int main_axis_margin_ = 0;
     int cross_axis_margin_ = 0;
 

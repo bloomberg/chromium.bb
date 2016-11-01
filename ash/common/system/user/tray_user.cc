@@ -78,8 +78,6 @@ views::View* TrayUser::CreateTrayView(LoginStatus status) {
   CHECK(layout_view_ == nullptr);
 
   layout_view_ = new views::View;
-  layout_view_->SetLayoutManager(new views::BoxLayout(
-      views::BoxLayout::kHorizontal, 0, 0, kUserLabelToIconPadding));
   UpdateAfterLoginStatusChange(status);
   return layout_view_;
 }
@@ -151,7 +149,9 @@ void TrayUser::UpdateAfterLoginStatusChange(LoginStatus status) {
 
   if ((need_avatar != (avatar_ != nullptr)) ||
       (need_label != (label_ != nullptr))) {
-    layout_view_->RemoveAllChildViews(true);
+    delete label_;
+    delete avatar_;
+
     if (need_label) {
       label_ = new views::Label;
       SetupLabelForTray(label_);
@@ -174,19 +174,6 @@ void TrayUser::UpdateAfterLoginStatusChange(LoginStatus status) {
     label_->SetText(l10n_util::GetStringUTF16(IDS_ASH_STATUS_TRAY_GUEST_LABEL));
   }
 
-  if (avatar_) {
-    avatar_->SetCornerRadii(0, kTrayRoundedBorderRadius,
-                            kTrayRoundedBorderRadius, 0);
-    const int distance_to_avatar =
-        MaterialDesignController::IsShelfMaterial()
-            ? GetTrayConstant(TRAY_IMAGE_ITEM_PADDING)
-            : 0;
-    const bool is_horizontal =
-        IsHorizontalAlignment(system_tray()->shelf_alignment());
-    avatar_->SetBorder(views::Border::CreateEmptyBorder(
-        is_horizontal ? 0 : distance_to_avatar,
-        is_horizontal ? distance_to_avatar : 0, 0, 0));
-  }
   UpdateAvatarImage(status);
 
   // Update layout after setting label_ and avatar_ with new login status.
@@ -197,13 +184,8 @@ void TrayUser::UpdateAfterShelfAlignmentChange(ShelfAlignment alignment) {
   // Inactive users won't have a layout.
   if (!layout_view_)
     return;
-  const int distance_to_avatar = MaterialDesignController::IsShelfMaterial()
-                                     ? GetTrayConstant(TRAY_IMAGE_ITEM_PADDING)
-                                     : 0;
   if (IsHorizontalAlignment(alignment)) {
     if (avatar_) {
-      avatar_->SetBorder(
-          views::Border::CreateEmptyBorder(0, distance_to_avatar, 0, 0));
       avatar_->SetCornerRadii(0, kTrayRoundedBorderRadius,
                               kTrayRoundedBorderRadius, 0);
     }
@@ -223,8 +205,6 @@ void TrayUser::UpdateAfterShelfAlignmentChange(ShelfAlignment alignment) {
         views::BoxLayout::kHorizontal, 0, 0, kUserLabelToIconPadding));
   } else {
     if (avatar_) {
-      avatar_->SetBorder(
-          views::Border::CreateEmptyBorder(distance_to_avatar, 0, 0, 0));
       avatar_->SetCornerRadii(0, 0, kTrayRoundedBorderRadius,
                               kTrayRoundedBorderRadius);
     }
