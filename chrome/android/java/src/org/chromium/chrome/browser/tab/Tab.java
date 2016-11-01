@@ -1618,6 +1618,8 @@ public class Tab implements ViewGroup.OnHierarchyChangeListener,
      * @param windowAndroid The WindowAndroid to propagate.
      */
     public void updateWindowAndroid(WindowAndroid windowAndroid) {
+        // TODO(yusufo): mWindowAndroid can never be null until crbug.com/657007 is fixed.
+        assert windowAndroid != null;
         mWindowAndroid = windowAndroid;
         if (mContentViewCore != null) mContentViewCore.updateWindowAndroid(mWindowAndroid);
     }

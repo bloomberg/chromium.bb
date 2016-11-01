@@ -162,8 +162,6 @@ public class VrShellImpl extends GvrLayout implements GLSurfaceView.Renderer, Vr
     private void reparentContentWindow() {
         mOriginalWindowAndroid = mContentCVC.getWindowAndroid();
 
-        // TODO(mthiesse): Update the WindowAndroid in ChromeActivity too?
-        mTab.updateWindowAndroid(null);
         mTab.updateWindowAndroid(mContentVrWindowAndroid);
 
         ViewGroup contentContentView = mContentCVC.getContainerView();
@@ -179,7 +177,6 @@ public class VrShellImpl extends GvrLayout implements GLSurfaceView.Renderer, Vr
 
     private void restoreContentWindow() {
         ViewGroup contentContentView = mContentCVC.getContainerView();
-        mTab.updateWindowAndroid(null);
         mTab.updateWindowAndroid(mOriginalWindowAndroid);
         mContentViewCoreContainer.removeView(contentContentView);
         mOriginalContentViewParent.addView(contentContentView, mOriginalContentViewIndex,
