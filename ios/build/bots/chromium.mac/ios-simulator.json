@@ -4,8 +4,8 @@
     "smut"
   ],
   "comments": [
-    "Tests for 32- and 64-bit iOS 9.0 simulators.",
-    "Tests run on iPhone 5s (64-bit) and iPad Retina (32-bit).",
+    "Tests for 64-bit iOS 10.0 simulators.",
+    "Tests run on iPhone 6s and iPad Air 2, both 64-bit.",
     "Build is performed with gn+ninja."
   ],
   "xcode version": "8.0",
@@ -34,13 +34,13 @@
   "tests": [
     {
       "include": "common_tests.json",
-      "device type": "iPhone 5s",
-      "os": "9.0"
+      "device type": "iPhone 6s",
+      "os": "10.0"
     },
     {
       "include": "common_tests.json",
-      "device type": "iPad Retina",
-      "os": "9.0"
+      "device type": "iPad Air 2",
+      "os": "10.0"
     }
   ]
 }
