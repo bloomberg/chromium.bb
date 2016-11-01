@@ -2275,13 +2275,6 @@ const NSTimeInterval kSnapshotOverlayTransition = 0.5;
   }
 }
 
-- (void)prepareForGoBack {
-  // Before changing the current session history entry, record the tab state.
-  if (!_webStateImpl->IsShowingWebInterstitial()) {
-    [self recordStateInHistory];
-  }
-}
-
 - (void)goBack {
   [self goDelta:-1];
 }
@@ -2302,10 +2295,7 @@ const NSTimeInterval kSnapshotOverlayTransition = 0.5;
     return;
   }
 
-  if (delta < 0) {
-    [self prepareForGoBack];
-  } else {
-    // Before changing the current session history entry, record the tab state.
+  if (delta >= 0 || !_webStateImpl->IsShowingWebInterstitial()) {
     [self recordStateInHistory];
   }
 

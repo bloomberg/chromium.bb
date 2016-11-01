@@ -200,9 +200,6 @@ class WebStateImpl;
 - (void)goForward;
 // Navigate forwards or backwards by |delta| pages.
 - (void)goDelta:(int)delta;
-// Perform necessary setup in order to navigate backwards.
-// TODO(rohitrao): Remove this from the public API.
-- (void)prepareForGoBack;
 
 // Executes |script| in the web view, registering user interaction.
 - (void)executeUserJavaScript:(NSString*)script
