@@ -4410,6 +4410,12 @@
         "swarming": {
           "can_use_on_swarming_builders": true
         },
+        "test": "ipc_tests"
+      },
+      {
+        "swarming": {
+          "can_use_on_swarming_builders": true
+        },
         "test": "jingle_unittests"
       },
       {
@@ -12546,6 +12552,12 @@
           "can_use_on_swarming_builders": true
         },
         "test": "interactive_ui_tests"
+      },
+      {
+        "swarming": {
+          "can_use_on_swarming_builders": true
+        },
+        "test": "ipc_tests"
       },
       {
         "swarming": {

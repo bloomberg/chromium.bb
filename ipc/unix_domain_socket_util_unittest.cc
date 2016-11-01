@@ -31,6 +31,9 @@ class SocketAcceptor : public base::MessageLoopForIO::Watcher {
         started_watching_event_(
             base::WaitableEvent::ResetPolicy::AUTOMATIC,
             base::WaitableEvent::InitialState::NOT_SIGNALED),
+        stopped_watching_event_(
+            base::WaitableEvent::ResetPolicy::AUTOMATIC,
+            base::WaitableEvent::InitialState::NOT_SIGNALED),
         accepted_event_(base::WaitableEvent::ResetPolicy::AUTOMATIC,
                         base::WaitableEvent::InitialState::NOT_SIGNALED) {
     target_thread->PostTask(FROM_HERE,
@@ -55,7 +58,8 @@ class SocketAcceptor : public base::MessageLoopForIO::Watcher {
     if (watcher_.get()) {
       target_thread_->PostTask(FROM_HERE,
           base::Bind(&SocketAcceptor::StopWatching, base::Unretained(this),
-              watcher_.release()));
+                     watcher_.release()));
+      stopped_watching_event_.Wait();
     }
   }
 
@@ -69,6 +73,7 @@ class SocketAcceptor : public base::MessageLoopForIO::Watcher {
   void StopWatching(base::MessageLoopForIO::FileDescriptorWatcher* watcher) {
     watcher->StopWatchingFileDescriptor();
     delete watcher;
+    stopped_watching_event_.Signal();
   }
   void OnFileCanReadWithoutBlocking(int fd) override {
     ASSERT_EQ(-1, server_fd_);
@@ -82,6 +87,7 @@ class SocketAcceptor : public base::MessageLoopForIO::Watcher {
   base::SingleThreadTaskRunner* target_thread_;
   std::unique_ptr<base::MessageLoopForIO::FileDescriptorWatcher> watcher_;
   base::WaitableEvent started_watching_event_;
+  base::WaitableEvent stopped_watching_event_;
   base::WaitableEvent accepted_event_;
 
   DISALLOW_COPY_AND_ASSIGN(SocketAcceptor);
