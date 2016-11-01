@@ -25,7 +25,6 @@
 #include "chrome/test/base/testing_profile.h"
 #include "chromeos/chromeos_switches.h"
 #include "components/session_manager/core/session_manager.h"
-#include "components/user_manager/user_manager.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/notification_service.h"
 #include "content/public/test/test_utils.h"
@@ -331,8 +330,8 @@ IN_PROC_BROWSER_TEST_F(BrailleDisplayPrivateAPIUserTest,
                        MAYBE_KeyEventOnLockScreen) {
   std::unique_ptr<ScreenLockerTester> tester(ScreenLocker::GetTester());
   // Log in.
-  user_manager::UserManager::Get()->UserLoggedIn(
-      AccountId::FromUserEmail(kTestUserName), kTestUserName, true);
+  session_manager::SessionManager::Get()->CreateSession(
+      AccountId::FromUserEmail(kTestUserName), kTestUserName);
   session_manager::SessionManager::Get()->SessionStarted();
   Profile* profile = ProfileManager::GetActiveUserProfile();
   ASSERT_FALSE(

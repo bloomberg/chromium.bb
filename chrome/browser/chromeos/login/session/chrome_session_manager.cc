@@ -15,6 +15,7 @@
 #include "chrome/browser/chromeos/app_mode/kiosk_app_launch_error.h"
 #include "chrome/browser/chromeos/app_mode/kiosk_app_manager.h"
 #include "chrome/browser/chromeos/arc/arc_auth_service.h"
+#include "chrome/browser/chromeos/boot_times_recorder.h"
 #include "chrome/browser/chromeos/login/login_wizard.h"
 #include "chrome/browser/chromeos/login/session/user_session_manager.h"
 #include "chrome/browser/chromeos/login/wizard_controller.h"
@@ -238,6 +239,16 @@ void ChromeSessionManager::SessionStarted() {
       content::Source<session_manager::SessionManager>(this),
       content::Details<const user_manager::User>(
           user_manager->GetActiveUser()));
+}
+
+void ChromeSessionManager::NotifyUserLoggedIn(const AccountId& user_account_id,
+                                              const std::string& user_id_hash,
+                                              bool browser_restart) {
+  BootTimesRecorder* btl = BootTimesRecorder::Get();
+  btl->AddLoginTimeMarker("UserLoggedIn-Start", false);
+  session_manager::SessionManager::NotifyUserLoggedIn(
+      user_account_id, user_id_hash, browser_restart);
+  btl->AddLoginTimeMarker("UserLoggedIn-End", false);
 }
 
 }  // namespace chromeos

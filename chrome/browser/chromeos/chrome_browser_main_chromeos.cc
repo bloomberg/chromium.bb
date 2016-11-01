@@ -545,7 +545,8 @@ void ChromeBrowserMainPartsChromeos::PreProfileInit() {
     // In case of multi-profiles --login-profile will contain user_id_hash.
     std::string user_id_hash =
         parsed_command_line().GetSwitchValueASCII(switches::kLoginProfile);
-    user_manager->UserLoggedIn(account_id, user_id_hash, true);
+    session_manager::SessionManager::Get()->CreateSessionForRestart(
+        account_id, user_id_hash);
     VLOG(1) << "Relaunching browser for user: " << account_id.Serialize()
             << " with hash: " << user_id_hash;
   }

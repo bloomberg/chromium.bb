@@ -29,7 +29,6 @@
 #include "components/session_manager/core/session_manager.h"
 #include "components/signin/core/account_id/account_id.h"
 #include "components/sync_preferences/pref_service_syncable.h"
-#include "components/user_manager/user_manager.h"
 #include "components/user_manager/user_names.h"
 #include "content/public/browser/notification_service.h"
 #include "content/public/test/test_utils.h"
@@ -297,8 +296,8 @@ IN_PROC_BROWSER_TEST_F(AccessibilityManagerTest, Login) {
   EXPECT_EQ(default_autoclick_delay(), GetAutoclickDelay());
 
   // Logs in.
-  user_manager::UserManager::Get()->UserLoggedIn(test_account_id_,
-                                                 kTestUserName, true);
+  auto* session_manager = session_manager::SessionManager::Get();
+  session_manager->CreateSession(test_account_id_, kTestUserName);
 
   // Confirms that the features still disabled just after login.
   EXPECT_FALSE(IsLargeCursorEnabled());
@@ -309,7 +308,7 @@ IN_PROC_BROWSER_TEST_F(AccessibilityManagerTest, Login) {
   EXPECT_FALSE(IsMonoAudioEnabled());
   EXPECT_EQ(default_autoclick_delay(), GetAutoclickDelay());
 
-  session_manager::SessionManager::Get()->SessionStarted();
+  session_manager->SessionStarted();
 
   // Confirms that the features are still disabled just after login.
   EXPECT_FALSE(IsLargeCursorEnabled());
@@ -366,9 +365,9 @@ IN_PROC_BROWSER_TEST_F(AccessibilityManagerTest, BrailleOnLoginScreen) {
 
 IN_PROC_BROWSER_TEST_F(AccessibilityManagerTest, TypePref) {
   // Logs in.
-  user_manager::UserManager::Get()->UserLoggedIn(test_account_id_,
-                                                 kTestUserName, true);
-  session_manager::SessionManager::Get()->SessionStarted();
+  auto* session_manager = session_manager::SessionManager::Get();
+  session_manager->CreateSession(test_account_id_, kTestUserName);
+  session_manager->SessionStarted();
 
   // Confirms that the features are disabled just after login.
   EXPECT_FALSE(IsLargeCursorEnabled());
@@ -435,8 +434,8 @@ IN_PROC_BROWSER_TEST_F(AccessibilityManagerTest, TypePref) {
 
 IN_PROC_BROWSER_TEST_F(AccessibilityManagerTest, ResumeSavedPref) {
   // Loads the profile of the user.
-  user_manager::UserManager::Get()->UserLoggedIn(test_account_id_,
-                                                 kTestUserName, true);
+  auto* session_manager = session_manager::SessionManager::Get();
+  session_manager->CreateSession(test_account_id_, kTestUserName);
 
   // Sets the pref to enable large cursor before login.
   SetLargeCursorEnabledPref(true);
@@ -468,7 +467,7 @@ IN_PROC_BROWSER_TEST_F(AccessibilityManagerTest, ResumeSavedPref) {
   EXPECT_FALSE(IsMonoAudioEnabled());
 
   // Logs in.
-  session_manager::SessionManager::Get()->SessionStarted();
+  session_manager->SessionStarted();
 
   // Confirms that features are enabled by restoring from pref just after login.
   EXPECT_TRUE(IsLargeCursorEnabled());
@@ -485,9 +484,9 @@ IN_PROC_BROWSER_TEST_F(AccessibilityManagerTest,
   MockAccessibilityObserver observer;
 
   // Logs in.
-  user_manager::UserManager::Get()->UserLoggedIn(test_account_id_,
-                                                 kTestUserName, true);
-  session_manager::SessionManager::Get()->SessionStarted();
+  auto* session_manager = session_manager::SessionManager::Get();
+  session_manager->CreateSession(test_account_id_, kTestUserName);
+  session_manager->SessionStarted();
 
   EXPECT_FALSE(observer.observed());
   observer.reset();
@@ -561,9 +560,9 @@ IN_PROC_BROWSER_TEST_F(AccessibilityManagerTest,
   MockAccessibilityObserver observer;
 
   // Logs in.
-  user_manager::UserManager::Get()->UserLoggedIn(test_account_id_,
-                                                 kTestUserName, true);
-  session_manager::SessionManager::Get()->SessionStarted();
+  auto* session_manager = session_manager::SessionManager::Get();
+  session_manager->CreateSession(test_account_id_, kTestUserName);
+  session_manager->SessionStarted();
 
   EXPECT_FALSE(observer.observed());
   observer.reset();
@@ -673,8 +672,8 @@ IN_PROC_BROWSER_TEST_P(AccessibilityManagerUserTypeTest,
 
   // Logs in.
   const AccountId account_id = AccountId::FromUserEmail(GetParam());
-  user_manager::UserManager::Get()->UserLoggedIn(
-      account_id, account_id.GetUserEmail(), true);
+  auto* session_manager = session_manager::SessionManager::Get();
+  session_manager->CreateSession(account_id, account_id.GetUserEmail());
 
   // Confirms that the features are still enabled just after login.
   EXPECT_TRUE(IsLargeCursorEnabled());
@@ -684,7 +683,7 @@ IN_PROC_BROWSER_TEST_P(AccessibilityManagerUserTypeTest,
   EXPECT_EQ(kTestAutoclickDelayMs, GetAutoclickDelay());
   EXPECT_TRUE(IsMonoAudioEnabled());
 
-  session_manager::SessionManager::Get()->SessionStarted();
+  session_manager->SessionStarted();
 
   // Confirms that the features keep enabled after session starts.
   EXPECT_TRUE(IsLargeCursorEnabled());
@@ -706,9 +705,9 @@ IN_PROC_BROWSER_TEST_P(AccessibilityManagerUserTypeTest,
 IN_PROC_BROWSER_TEST_P(AccessibilityManagerUserTypeTest, BrailleWhenLoggedIn) {
   // Logs in.
   const AccountId account_id = AccountId::FromUserEmail(GetParam());
-  user_manager::UserManager::Get()->UserLoggedIn(
-      account_id, account_id.GetUserEmail(), true);
-  session_manager::SessionManager::Get()->SessionStarted();
+  auto* session_manager = session_manager::SessionManager::Get();
+  session_manager->CreateSession(account_id, account_id.GetUserEmail());
+  session_manager->SessionStarted();
   // This object watches for IME preference changes and reflects those in
   // the IME framework state.
   chromeos::Preferences prefs;
@@ -752,9 +751,9 @@ IN_PROC_BROWSER_TEST_P(AccessibilityManagerUserTypeTest, BrailleWhenLoggedIn) {
 
 IN_PROC_BROWSER_TEST_F(AccessibilityManagerTest, AccessibilityMenuVisibility) {
   // Log in.
-  user_manager::UserManager::Get()->UserLoggedIn(test_account_id_,
-                                                 kTestUserName, true);
-  session_manager::SessionManager::Get()->SessionStarted();
+  auto* session_manager = session_manager::SessionManager::Get();
+  session_manager->CreateSession(test_account_id_, kTestUserName);
+  session_manager->SessionStarted();
 
   // Confirms that the features are disabled.
   EXPECT_FALSE(IsLargeCursorEnabled());

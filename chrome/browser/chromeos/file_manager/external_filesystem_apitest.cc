@@ -20,7 +20,7 @@
 #include "chrome/common/chrome_constants.h"
 #include "chrome/common/chrome_paths.h"
 #include "components/drive/service/fake_drive_service.h"
-#include "components/user_manager/user_manager.h"
+#include "components/session_manager/core/session_manager.h"
 #include "content/public/browser/browser_context.h"
 #include "content/public/browser/notification_service.h"
 #include "content/public/test/test_utils.h"
@@ -567,9 +567,8 @@ class MultiProfileDriveFileSystemExtensionApiTest :
   void SetUpOnMainThread() override {
     base::FilePath user_data_directory;
     PathService::Get(chrome::DIR_USER_DATA, &user_data_directory);
-    user_manager::UserManager::Get()->UserLoggedIn(
-        AccountId::FromUserEmail(kSecondProfileAccount), kSecondProfileHash,
-        false);
+    session_manager::SessionManager::Get()->CreateSession(
+        AccountId::FromUserEmail(kSecondProfileAccount), kSecondProfileHash);
     // Set up the secondary profile.
     base::FilePath profile_dir =
         user_data_directory.Append(

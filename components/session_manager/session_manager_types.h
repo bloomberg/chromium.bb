@@ -5,6 +5,8 @@
 #ifndef COMPONENTS_SESSION_MANAGER_SESSION_MANAGER_TYPES_H_
 #define COMPONENTS_SESSION_MANAGER_SESSION_MANAGER_TYPES_H_
 
+#include "components/signin/core/account_id/account_id.h"
+
 namespace session_manager {
 
 // TODO(xiyuan): Get rid/consolidate with chromeos::LoggedInState.
@@ -32,6 +34,15 @@ enum class SessionState {
   // Same as SESSION_STATE_LOGIN_PRIMARY but for multi-profiles sign in i.e.
   // when there's at least one user already active in the session.
   LOGIN_SECONDARY,
+};
+
+// A type for session id.
+using SessionId = int;
+
+// Info about a user session.
+struct Session {
+  SessionId id;
+  AccountId user_account_id;
 };
 
 }  // namespace session_manager

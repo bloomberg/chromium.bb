@@ -10,6 +10,9 @@ component("core") {
   deps = [
     "//base",
     "//components/session_manager:base",
+    "//components/signin/core/account_id",
+    "//components/user_manager",
+    "//skia",
   ]
   defines = [ "SESSION_IMPLEMENTATION" ]
 }

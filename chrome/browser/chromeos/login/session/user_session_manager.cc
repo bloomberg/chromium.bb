@@ -488,10 +488,6 @@ void UserSessionManager::StartSession(
   if (!has_active_session)
     StartCrosSession();
 
-  // TODO(nkostylev): Notify UserLoggedIn() after profile is actually
-  // ready to be used (http://crbug.com/361528).
-  NotifyUserLoggedIn();
-
   if (!user_context.GetDeviceId().empty()) {
     user_manager::known_user::SetDeviceId(user_context.GetAccountId(),
                                           user_context.GetDeviceId());
@@ -888,6 +884,8 @@ void UserSessionManager::CreateUserSession(const UserContext& user_context,
   has_auth_cookies_ = has_auth_cookies;
   InitSessionRestoreStrategy();
   StoreUserContextDataBeforeProfileIsCreated();
+  session_manager::SessionManager::Get()->CreateSession(
+      user_context_.GetAccountId(), user_context_.GetUserIDHash());
 }
 
 void UserSessionManager::PreStartSession() {
@@ -910,15 +908,6 @@ void UserSessionManager::StartCrosSession() {
   DBusThreadManager::Get()->GetSessionManagerClient()->StartSession(
       cryptohome::Identification(user_context_.GetAccountId()));
   btl->AddLoginTimeMarker("StartSession-End", false);
-}
-
-void UserSessionManager::NotifyUserLoggedIn() {
-  BootTimesRecorder* btl = BootTimesRecorder::Get();
-  btl->AddLoginTimeMarker("UserLoggedIn-Start", false);
-  user_manager::UserManager* user_manager = user_manager::UserManager::Get();
-  user_manager->UserLoggedIn(user_context_.GetAccountId(),
-                             user_context_.GetUserIDHash(), false);
-  btl->AddLoginTimeMarker("UserLoggedIn-End", false);
 }
 
 void UserSessionManager::PrepareProfile() {

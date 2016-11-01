@@ -7,4 +7,7 @@ source_set("base") {
     "session_manager_export.h",
     "session_manager_types.h",
   ]
+  deps = [
+    "//components/signin/core/account_id",
+  ]
 }

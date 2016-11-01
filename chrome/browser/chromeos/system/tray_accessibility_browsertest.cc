@@ -36,7 +36,6 @@
 #include "components/policy/policy_constants.h"
 #include "components/prefs/pref_service.h"
 #include "components/session_manager/core/session_manager.h"
-#include "components/user_manager/user_manager.h"
 #include "content/public/test/test_utils.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "ui/views/controls/button/button.h"
@@ -284,9 +283,8 @@ class TrayAccessibilityTest
 IN_PROC_BROWSER_TEST_P(TrayAccessibilityTest, LoginStatus) {
   EXPECT_EQ(ash::LoginStatus::NOT_LOGGED_IN, GetLoginStatus());
 
-  user_manager::UserManager::Get()->UserLoggedIn(
-      AccountId::FromUserEmail("owner@invalid.domain"), "owner@invalid.domain",
-      true);
+  session_manager::SessionManager::Get()->CreateSession(
+      AccountId::FromUserEmail("owner@invalid.domain"), "owner@invalid.domain");
   session_manager::SessionManager::Get()->SessionStarted();
 
   EXPECT_EQ(ash::LoginStatus::USER, GetLoginStatus());
@@ -298,9 +296,8 @@ IN_PROC_BROWSER_TEST_P(TrayAccessibilityTest, ShowTrayIcon) {
   // Confirms that the icon is invisible before login.
   EXPECT_FALSE(IsTrayIconVisible());
 
-  user_manager::UserManager::Get()->UserLoggedIn(
-      AccountId::FromUserEmail("owner@invalid.domain"), "owner@invalid.domain",
-      true);
+  session_manager::SessionManager::Get()->CreateSession(
+      AccountId::FromUserEmail("owner@invalid.domain"), "owner@invalid.domain");
   session_manager::SessionManager::Get()->SessionStarted();
 
   // Confirms that the icon is invisible just after login.
@@ -364,9 +361,8 @@ IN_PROC_BROWSER_TEST_P(TrayAccessibilityTest, ShowTrayIcon) {
 
 IN_PROC_BROWSER_TEST_P(TrayAccessibilityTest, ShowMenu) {
   // Login
-  user_manager::UserManager::Get()->UserLoggedIn(
-      AccountId::FromUserEmail("owner@invalid.domain"), "owner@invalid.domain",
-      true);
+  session_manager::SessionManager::Get()->CreateSession(
+      AccountId::FromUserEmail("owner@invalid.domain"), "owner@invalid.domain");
   session_manager::SessionManager::Get()->SessionStarted();
 
   SetShowAccessibilityOptionsInSystemTrayMenu(false);
@@ -433,9 +429,8 @@ IN_PROC_BROWSER_TEST_P(TrayAccessibilityTest, ShowMenu) {
 
 IN_PROC_BROWSER_TEST_P(TrayAccessibilityTest, ShowMenuWithShowMenuOption) {
   // Login
-  user_manager::UserManager::Get()->UserLoggedIn(
-      AccountId::FromUserEmail("owner@invalid.domain"), "owner@invalid.domain",
-      true);
+  session_manager::SessionManager::Get()->CreateSession(
+      AccountId::FromUserEmail("owner@invalid.domain"), "owner@invalid.domain");
   session_manager::SessionManager::Get()->SessionStarted();
 
   SetShowAccessibilityOptionsInSystemTrayMenu(true);

@@ -5,9 +5,13 @@
 #ifndef COMPONENTS_SESSION_MANAGER_CORE_SESSION_MANAGER_H_
 #define COMPONENTS_SESSION_MANAGER_CORE_SESSION_MANAGER_H_
 
+#include <vector>
+
 #include "base/macros.h"
 #include "components/session_manager/session_manager_export.h"
 #include "components/session_manager/session_manager_types.h"
+
+class AccountId;
 
 namespace session_manager {
 
@@ -20,8 +24,14 @@ class SESSION_EXPORT SessionManager {
   // initialized yet.
   static SessionManager* Get();
 
-  SessionState session_state() const { return session_state_; }
-  virtual void SetSessionState(SessionState state);
+  void SetSessionState(SessionState state);
+
+  // Creates a session for the given user. The first one is for regular cases
+  // and the 2nd one is for the crash-and-restart case.
+  void CreateSession(const AccountId& user_account_id,
+                     const std::string& user_id_hash);
+  void CreateSessionForRestart(const AccountId& user_account_id,
+                               const std::string& user_id_hash);
 
   // Returns true if we're logged in and browser has been started i.e.
   // browser_creator.LaunchBrowser(...) was called after sign in
@@ -36,11 +46,23 @@ class SESSION_EXPORT SessionManager {
   // before the session has been started.
   virtual void SessionStarted();
 
+  SessionState session_state() const { return session_state_; }
+  const std::vector<Session>& sessions() const { return sessions_; }
+
  protected:
+  // Notifies UserManager about a user signs in when creating a user session.
+  virtual void NotifyUserLoggedIn(const AccountId& user_account_id,
+                                  const std::string& user_id_hash,
+                                  bool browser_restart);
+
   // Sets SessionManager instance.
   static void SetInstance(SessionManager* session_manager);
 
  private:
+  void CreateSessionInternal(const AccountId& user_account_id,
+                             const std::string& user_id_hash,
+                             bool browser_restart);
+
   // Pointer to the existing SessionManager instance (if any).
   // Set in ctor, reset in dtor. Not owned since specific implementation of
   // SessionManager should decide on its own appropriate owner of SessionManager
@@ -52,6 +74,15 @@ class SESSION_EXPORT SessionManager {
 
   // True if SessionStarted() has been called.
   bool session_started_ = false;
+
+  // Id of the primary session, i.e. the first user session.
+  static const SessionId kPrimarySessionId = 1;
+
+  // ID assigned to the next session.
+  SessionId next_id_ = kPrimarySessionId;
+
+  // Keeps track of user sessions.
+  std::vector<Session> sessions_;
 
   DISALLOW_COPY_AND_ASSIGN(SessionManager);
 };

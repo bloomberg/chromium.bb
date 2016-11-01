@@ -288,7 +288,6 @@ class UserSessionManager
   void StoreUserContextDataBeforeProfileIsCreated();
 
   void StartCrosSession();
-  void NotifyUserLoggedIn();
   void PrepareProfile();
 
   // Callback for asynchronous profile creation.

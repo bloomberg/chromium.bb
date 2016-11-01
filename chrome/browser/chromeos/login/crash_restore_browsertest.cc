@@ -18,6 +18,7 @@
 #include "chromeos/dbus/dbus_thread_manager.h"
 #include "chromeos/dbus/fake_session_manager_client.h"
 #include "chromeos/dbus/session_manager_client.h"
+#include "components/session_manager/core/session_manager.h"
 #include "components/user_manager/user.h"
 #include "components/user_manager/user_manager.h"
 #include "content/public/test/test_utils.h"
@@ -75,6 +76,11 @@ IN_PROC_BROWSER_TEST_F(CrashRestoreSimpleTest, RestoreSessionForOneUser) {
   EXPECT_EQ(CryptohomeClient::GetStubSanitizedUsername(cryptohome_id1_),
             user->username_hash());
   EXPECT_EQ(1UL, user_manager->GetLoggedInUsers().size());
+
+  auto* session_manager = session_manager::SessionManager::Get();
+  EXPECT_EQ(session_manager::SessionState::ACTIVE,
+            session_manager->session_state());
+  EXPECT_EQ(1u, session_manager->sessions().size());
 }
 
 // Observer that keeps track of user sessions restore event.
@@ -164,6 +170,14 @@ IN_PROC_BROWSER_TEST_F(CrashRestoreComplexTest, RestoreSessionForThreeUsers) {
   EXPECT_EQ(account_id1_, users[2]->GetAccountId());
   EXPECT_EQ(CryptohomeClient::GetStubSanitizedUsername(cryptohome_id1_),
             users[2]->username_hash());
+
+  auto* session_manager = session_manager::SessionManager::Get();
+  EXPECT_EQ(session_manager::SessionState::ACTIVE,
+            session_manager->session_state());
+  EXPECT_EQ(3u, session_manager->sessions().size());
+  EXPECT_EQ(session_manager->sessions()[0].user_account_id, account_id1_);
+  EXPECT_EQ(session_manager->sessions()[1].user_account_id, account_id2_);
+  EXPECT_EQ(session_manager->sessions()[2].user_account_id, account_id3_);
 }
 
 }  // namespace chromeos
