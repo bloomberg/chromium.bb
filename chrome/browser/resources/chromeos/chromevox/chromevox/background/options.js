@@ -19,8 +19,6 @@ goog.require('cvox.ChromeVox');
 goog.require('cvox.ChromeVoxPrefs');
 goog.require('cvox.CommandStore');
 goog.require('cvox.ExtensionBridge');
-goog.require('cvox.KeyMap');
-goog.require('cvox.KeySequence');
 goog.require('cvox.PlatformFilter');
 goog.require('cvox.PlatformUtil');
 
@@ -37,31 +35,13 @@ cvox.OptionsPage = function() {
  */
 cvox.OptionsPage.prefs;
 
-
 /**
- * A mapping from keycodes to their human readable text equivalents.
- * This is initialized in cvox.OptionsPage.init for internationalization.
- * @type {Object<string>}
- */
-cvox.OptionsPage.KEYCODE_TO_TEXT = {
-};
-
-/**
- * A mapping from human readable text to keycode values.
- * This is initialized in cvox.OptionsPage.init for internationalization.
- * @type {Object<string>}
- */
-cvox.OptionsPage.TEXT_TO_KEYCODE = {
-};
-
-/**
- * Initialize the options page by setting the current value of all prefs,
- * building the key bindings table, and adding event listeners.
+ * Initialize the options page by setting the current value of all prefs, and
+ * adding event listeners.
  * @suppress {missingProperties} Property prefs never defined on Window
  */
 cvox.OptionsPage.init = function() {
   cvox.OptionsPage.prefs = chrome.extension.getBackgroundPage().prefs;
-  cvox.OptionsPage.populateKeyMapSelect();
   cvox.OptionsPage.populateVoicesSelect();
   cvox.BrailleTable.getAll(function(tables) {
     /** @type {!Array<cvox.BrailleTable.Table>} */
@@ -102,13 +82,10 @@ cvox.OptionsPage.init = function() {
   document.addEventListener('keydown', cvox.OptionsPage.eventListener, false);
 
   cvox.ExtensionBridge.addMessageListener(function(message) {
-    if (message['keyBindings'] || message['prefs']) {
+    if (message['prefs']) {
       cvox.OptionsPage.update();
     }
   });
-
-  $('selectKeys').addEventListener(
-      'click', cvox.OptionsPage.reset, false);
 
   if (cvox.PlatformUtil.matchesPlatform(cvox.PlatformFilter.WML)) {
     $('version').textContent =
@@ -179,26 +156,6 @@ var handleNumbericalInputPref = function(id, pref) {
     if ($(id).value === '')
       $(id).value = localStorage[pref];
   }, true);
-};
-
-/**
- * Populate the keymap select element with stored keymaps
- */
-cvox.OptionsPage.populateKeyMapSelect = function() {
-  var select = $('cvox_keymaps');
-  for (var id in cvox.KeyMap.AVAILABLE_MAP_INFO) {
-    var info = cvox.KeyMap.AVAILABLE_MAP_INFO[id];
-    var option = document.createElement('option');
-    option.id = id;
-    option.className = 'i18n';
-    option.setAttribute('msgid', id);
-    if (cvox.OptionsPage.prefs.getPrefs()['currentKeyMap'] == id) {
-      option.setAttribute('selected', '');
-    }
-    select.appendChild(option);
-  }
-
-  select.addEventListener('change', cvox.OptionsPage.reset, true);
 };
 
 /**
@@ -372,52 +329,10 @@ cvox.OptionsPage.eventListener = function(event) {
           }
         }
       }
-    } else if (target.classList.contains('key')) {
-      var keySeq = cvox.KeySequence.fromStr(target.value);
-      var success = false;
-      if (target.id == 'cvoxKey') {
-        cvox.OptionsPage.prefs.setPref(target.id, target.value);
-        cvox.OptionsPage.prefs.sendPrefsToAllTabs(true, true);
-        success = true;
-      } else {
-        success =
-            cvox.OptionsPage.prefs.setKey(target.id, keySeq);
-
-        // TODO(dtseng): Don't surface conflicts until we have a better
-        // workflow.
-      }
     }
   }, 0);
   return true;
 };
-
-/**
- * Refreshes all dynamic content on the page.
- * This includes all key related information.
- */
-cvox.OptionsPage.reset = function() {
-  var selectKeyMap = $('cvox_keymaps');
-  var id = selectKeyMap.options[selectKeyMap.selectedIndex].id;
-
-  var msgs = Msgs;
-  var announce = cvox.OptionsPage.prefs.getPrefs()['currentKeyMap'] == id ?
-      msgs.getMsg('keymap_reset', [msgs.getMsg(id)]) :
-      msgs.getMsg('keymap_switch', [msgs.getMsg(id)]);
-  cvox.OptionsPage.updateStatus_(announce);
-
-  cvox.OptionsPage.prefs.switchToKeyMap(id);
-  Msgs.addTranslatedMessagesToDom(document);
-};
-
-/**
- * Updates the status live region.
- * @param {string} status The new status.
- * @private
- */
-cvox.OptionsPage.updateStatus_ = function(status) {
-  $('status').innerText = status;
-};
-
 
 /**
  * Hides all elements not matching the current platform.
