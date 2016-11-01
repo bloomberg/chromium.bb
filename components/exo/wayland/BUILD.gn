@@ -80,3 +80,14 @@ source_set("unit_tests") {
     "//third_party/wayland:wayland_client",
   ]
 }
+
+executable("wayland_motion_events") {
+  sources = [
+    "clients/motion_events.cc",
+  ]
+
+  deps = [
+    "//base",
+    "//third_party/wayland:wayland_client",
+  ]
+}
