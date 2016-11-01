@@ -35,7 +35,7 @@ class MODULES_EXPORT ImageBitmapRenderingContext final
   };
 
   // Script API
-  void transferFromImageBitmap(ImageBitmap*, ExceptionState&);
+  void transferFromImageBitmap(ImageBitmap*);
 
   // CanvasRenderingContext implementation
   ContextType getContextType() const override {

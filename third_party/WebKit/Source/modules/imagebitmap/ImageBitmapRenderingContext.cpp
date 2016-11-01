@@ -27,16 +27,9 @@ void ImageBitmapRenderingContext::setCanvasGetContextResult(
 }
 
 void ImageBitmapRenderingContext::transferFromImageBitmap(
-    ImageBitmap* imageBitmap,
-    ExceptionState& exceptionState) {
+    ImageBitmap* imageBitmap) {
   if (!imageBitmap) {
     m_image.release();
-    return;
-  }
-
-  if (imageBitmap->isNeutered()) {
-    exceptionState.throwDOMException(InvalidStateError,
-                                     "The input ImageBitmap has been detached");
     return;
   }
 
@@ -60,7 +53,6 @@ void ImageBitmapRenderingContext::transferFromImageBitmap(
   }
   canvas()->didDraw(
       FloatRect(FloatPoint(), FloatSize(m_image->width(), m_image->height())));
-  imageBitmap->close();
 }
 
 bool ImageBitmapRenderingContext::paint(GraphicsContext& gc, const IntRect& r) {
