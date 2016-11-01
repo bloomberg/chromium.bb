@@ -9804,26 +9804,36 @@ error::Error GLES2DecoderImpl::DoDrawArrays(
     return error::kNoError;
   }
 
-  if (state_.bound_transform_feedback.get() &&
-      state_.bound_transform_feedback->active() &&
-      !state_.bound_transform_feedback->paused() &&
-      mode != state_.bound_transform_feedback->primitive_mode()) {
-    LOCAL_SET_GL_ERROR(GL_INVALID_OPERATION, function_name,
-        "mode is not identical with active transformfeedback's primitiveMode");
-    return error::kNoError;
-  }
-
-  if (count == 0 || primcount == 0) {
-    LOCAL_RENDER_WARNING("Render count or primcount is 0.");
-    return error::kNoError;
-  }
-
   if (feature_info_->IsWebGL2OrES3Context()) {
     if (!AttribsTypeMatch()) {
       LOCAL_SET_GL_ERROR(GL_INVALID_OPERATION, function_name,
                          "vertexAttrib function must match shader attrib type");
       return error::kNoError;
     }
+
+    DCHECK(state_.bound_transform_feedback.get());
+    if (state_.bound_transform_feedback->active() &&
+        !state_.bound_transform_feedback->paused()) {
+      if (mode != state_.bound_transform_feedback->primitive_mode()) {
+        LOCAL_SET_GL_ERROR(GL_INVALID_OPERATION, function_name,
+            "mode differs from active transformfeedback's primitiveMode");
+        return error::kNoError;
+      }
+      if (!buffer_manager()->RequestBuffersAccess(
+              state_.GetErrorState(),
+              state_.bound_transform_feedback.get(),
+              state_.current_program->GetTransformFeedbackVaryingSizes(),
+              count,
+              function_name,
+              "transformfeedback buffers")) {
+        return error::kNoError;
+      }
+    }
+  }
+
+  if (count == 0 || primcount == 0) {
+    LOCAL_RENDER_WARNING("Render count or primcount is 0.");
+    return error::kNoError;
   }
 
   base::CheckedNumeric<GLuint> checked_max_vertex = first;

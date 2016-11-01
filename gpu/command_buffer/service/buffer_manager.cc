@@ -825,6 +825,47 @@ bool BufferManager::RequestBufferAccess(ErrorState* error_state,
   return true;
 }
 
+bool BufferManager::RequestBuffersAccess(
+    ErrorState* error_state,
+    const IndexedBufferBindingHost* bindings,
+    const std::vector<GLsizeiptr>& variable_sizes,
+    GLsizei count,
+    const char* func_name,
+    const char* message_tag) {
+  DCHECK(error_state);
+  DCHECK(bindings);
+  for (size_t ii = 0; ii < variable_sizes.size(); ++ii) {
+    Buffer* buffer = bindings->GetBufferBinding(ii);
+    if (!buffer) {
+      std::string msg = base::StringPrintf(
+          "%s : no buffer bound at index %zu", message_tag, ii);
+      ERRORSTATE_SET_GL_ERROR(
+          error_state, GL_INVALID_OPERATION, func_name, msg.c_str());
+      return false;
+    }
+    if (buffer->GetMappedRange()) {
+      std::string msg = base::StringPrintf(
+          "%s : buffer is mapped at index %zu", message_tag, ii);
+      ERRORSTATE_SET_GL_ERROR(
+          error_state, GL_INVALID_OPERATION, func_name, msg.c_str());
+      return false;
+    }
+    GLsizeiptr size = bindings->GetEffectiveBufferSize(ii);
+    base::CheckedNumeric<GLsizeiptr> required_size = variable_sizes[ii];
+    required_size *= count;
+    if (size < required_size.ValueOrDefault(
+            std::numeric_limits<GLsizeiptr>::max())) {
+      std::string msg = base::StringPrintf(
+          "%s : buffer or buffer range not large enough at index %zu",
+          message_tag, ii);
+      ERRORSTATE_SET_GL_ERROR(
+          error_state, GL_INVALID_OPERATION, func_name, msg.c_str());
+      return false;
+    }
+  }
+  return true;
+}
+
 void BufferManager::IncreaseMappedBufferCount() {
   DCHECK_GT(std::numeric_limits<uint32_t>::max(), mapped_buffer_count_);
   mapped_buffer_count_++;

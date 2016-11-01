@@ -28,6 +28,7 @@ class BufferManager;
 struct ContextState;
 class ErrorState;
 class FeatureInfo;
+class IndexedBufferBindingHost;
 class TestHelper;
 
 // Info about Buffers currently in the system.
@@ -325,6 +326,16 @@ class GPU_EXPORT BufferManager : public base::trace_event::MemoryDumpProvider {
                            GLsizeiptr size,
                            const char* func_name,
                            const char* message_tag);
+  // Returns false and generates INVALID_OPERATION if buffer at binding |ii|
+  // doesn't exist, is mapped, or smaller than |variable_sizes[ii]| * |count|.
+  // Return true otherwise.
+  bool RequestBuffersAccess(
+      ErrorState* error_state,
+      const IndexedBufferBindingHost* bindings,
+      const std::vector<GLsizeiptr>& variable_sizes,
+      GLsizei count,
+      const char* func_name,
+      const char* message_tag);
 
   uint32_t mapped_buffer_count() const {
     return mapped_buffer_count_;

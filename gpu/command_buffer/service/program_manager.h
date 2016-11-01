@@ -420,6 +420,13 @@ class GPU_EXPORT Program : public base::RefCounted<Program> {
     return uniform_block_size_info_;
   }
 
+  // Return the transform feedback varying sizes (per vertex).
+  // Note that if the bufferMode is GL_INTERLEAVED_ATTRIBS, then there is only
+  // one entry and it is the sum of all varying sizes.
+  const std::vector<GLsizeiptr>& GetTransformFeedbackVaryingSizes() const {
+    return transform_feedback_data_size_per_vertex_;
+  }
+
  private:
   friend class base::RefCounted<Program>;
   friend class ProgramManager;
@@ -459,6 +466,7 @@ class GPU_EXPORT Program : public base::RefCounted<Program> {
   void UpdateFragmentOutputBaseTypes();
   void UpdateVertexInputBaseTypes();
   void UpdateUniformBlockSizeInfo();
+  void UpdateTransformFeedbackInfo();
 
   // Process the program log, replacing the hashed names with original names.
   std::string ProcessLogInfo(const std::string& log);
@@ -562,6 +570,11 @@ class GPU_EXPORT Program : public base::RefCounted<Program> {
   // After a successful link.
   std::vector<std::string> effective_transform_feedback_varyings_;
   GLenum effective_transform_feedback_buffer_mode_;
+  // If buffer mode is INTERLEVED, there is only one entry; otherwise there
+  // might be multiple entries, one per transform feedback varying.
+  // The size requirement is per vertex. Total minimum buffer size requirment
+  // is calculated at DrawArrays{Instanced} time by multiplying vertex count.
+  std::vector<GLsizeiptr> transform_feedback_data_size_per_vertex_;
 
   // Fragment input-location binding map from
   // glBindFragmentInputLocationCHROMIUM() calls.

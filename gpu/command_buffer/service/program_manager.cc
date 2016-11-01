@@ -8,6 +8,7 @@
 #include <stdint.h>
 
 #include <algorithm>
+#include <limits>
 #include <memory>
 #include <set>
 #include <utility>
@@ -118,6 +119,8 @@ uint32_t ComputeOffset(const void* start, const void* position) {
          static_cast<const uint8_t*>(start);
 }
 
+// This is used for vertex shader input variables and fragment shader output
+// variables.
 ShaderVariableBaseType InputOutputTypeToBaseType(bool is_input, GLenum type) {
   switch (type) {
     case GL_INT:
@@ -150,6 +153,76 @@ ShaderVariableBaseType InputOutputTypeToBaseType(bool is_input, GLenum type) {
       NOTREACHED();
       return SHADER_VARIABLE_UNDEFINED_TYPE;
   }
+}
+
+GLsizeiptr VertexShaderOutputBaseTypeToSize(GLenum type) {
+  switch (type) {
+    case GL_INT:
+      return 4;
+    case GL_INT_VEC2:
+      return 8;
+    case GL_INT_VEC3:
+      return 12;
+    case GL_INT_VEC4:
+      return 16;
+    case GL_UNSIGNED_INT:
+      return 4;
+    case GL_UNSIGNED_INT_VEC2:
+      return 8;
+    case GL_UNSIGNED_INT_VEC3:
+      return 12;
+    case GL_UNSIGNED_INT_VEC4:
+      return 16;
+    case GL_FLOAT:
+      return 4;
+    case GL_FLOAT_VEC2:
+      return 8;
+    case GL_FLOAT_VEC3:
+      return 12;
+    case GL_FLOAT_VEC4:
+      return 16;
+    case GL_FLOAT_MAT2:
+      return 16;
+    case GL_FLOAT_MAT3:
+      return 36;
+    case GL_FLOAT_MAT4:
+      return 64;
+    case GL_FLOAT_MAT2x3:
+      return 24;
+    case GL_FLOAT_MAT3x2:
+      return 24;
+    case GL_FLOAT_MAT2x4:
+      return 32;
+    case GL_FLOAT_MAT4x2:
+      return 32;
+    case GL_FLOAT_MAT3x4:
+      return 48;
+    case GL_FLOAT_MAT4x3:
+      return 48;
+    default:
+      NOTREACHED();
+      return 0;
+  }
+}
+
+GLsizeiptr VertexShaderOutputTypeToSize(const sh::Varying& varying) {
+  base::CheckedNumeric<GLsizeiptr> total = 0;
+  if (varying.fields.size()) {  // struct case.
+    for (auto const& field : varying.fields) {
+      // struct field for vertex shader outputs can only be basic types.
+      GLsizeiptr size = VertexShaderOutputBaseTypeToSize(field.type);
+      DCHECK(size);
+      total += size;
+    }
+  } else {
+    GLsizeiptr size = VertexShaderOutputBaseTypeToSize(varying.type);
+    DCHECK(size);
+    total = size;
+    if (varying.arraySize > 1) {  // array case.
+      total *= varying.arraySize;
+    }
+  }
+  return total.ValueOrDefault(std::numeric_limits<GLsizeiptr>::max());
 }
 
 // Scoped object which logs three UMA stats related to program cleanup when
@@ -457,8 +530,44 @@ void Program::SetUniformBlockBinding(GLuint index, GLuint binding) {
   uniform_block_size_info_[index].binding = binding;
 }
 
-std::string Program::ProcessLogInfo(
-    const std::string& log) {
+void Program::UpdateTransformFeedbackInfo() {
+  effective_transform_feedback_buffer_mode_ = transform_feedback_buffer_mode_;
+  effective_transform_feedback_varyings_ = transform_feedback_varyings_;
+
+  Shader* vertex_shader = attached_shaders_[0].get();
+  DCHECK(vertex_shader);
+
+  if (effective_transform_feedback_buffer_mode_ == GL_INTERLEAVED_ATTRIBS) {
+    transform_feedback_data_size_per_vertex_.resize(1);
+  } else {
+    transform_feedback_data_size_per_vertex_.resize(
+        effective_transform_feedback_varyings_.size());
+  }
+
+  base::CheckedNumeric<GLsizeiptr> total = 0;
+  for (size_t ii = 0; ii < effective_transform_feedback_varyings_.size();
+       ++ii) {
+    const std::string& client_name = effective_transform_feedback_varyings_[ii];
+    const std::string* service_name =
+        vertex_shader->GetVaryingMappedName(client_name);
+    DCHECK(service_name);
+    const sh::Varying* varying = vertex_shader->GetVaryingInfo(*service_name);
+    DCHECK(varying);
+    GLsizeiptr size = VertexShaderOutputTypeToSize(*varying);
+    DCHECK(size);
+    if (effective_transform_feedback_buffer_mode_ == GL_INTERLEAVED_ATTRIBS) {
+      total += size;
+    } else {
+      transform_feedback_data_size_per_vertex_[ii] = size;
+    }
+  }
+  if (effective_transform_feedback_buffer_mode_ == GL_INTERLEAVED_ATTRIBS) {
+    transform_feedback_data_size_per_vertex_[0] =
+        total.ValueOrDefault(std::numeric_limits<GLsizeiptr>::max());
+  }
+}
+
+std::string Program::ProcessLogInfo(const std::string& log) {
   std::string output;
   re2::StringPiece input(log);
   std::string prior_log;
@@ -694,9 +803,7 @@ void Program::Update() {
   UpdateFragmentOutputBaseTypes();
   UpdateVertexInputBaseTypes();
   UpdateUniformBlockSizeInfo();
-
-  effective_transform_feedback_buffer_mode_ = transform_feedback_buffer_mode_;
-  effective_transform_feedback_varyings_ = transform_feedback_varyings_;
+  UpdateTransformFeedbackInfo();
 
   valid_ = true;
 }
