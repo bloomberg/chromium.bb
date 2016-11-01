@@ -238,7 +238,7 @@ public class AutofillProfileEditor extends AutofillEditorBase {
     // Read edited data; save in the associated Chrome profile.
     // Ignore empty fields.
     @Override
-    protected void saveEntry() {
+    protected boolean saveEntry() {
         AutofillProfile profile = new PersonalDataManager.AutofillProfile(mGUID,
                 AutofillPreferences.SETTINGS_ORIGIN, true /* isLocal */,
                 getFieldText(AddressField.RECIPIENT), getFieldText(AddressField.ORGANIZATION),
@@ -248,6 +248,7 @@ public class AutofillProfileEditor extends AutofillEditorBase {
                 mCountryCodes.get(mCurrentCountryPos), mPhoneText.getText().toString(),
                 mEmailText.getText().toString(), mLanguageCodeString);
         PersonalDataManager.getInstance().setProfile(profile);
+        return true;
     }
 
     private String getFieldText(int fieldId) {

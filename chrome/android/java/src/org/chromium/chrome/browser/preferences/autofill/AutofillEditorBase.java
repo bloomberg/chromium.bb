@@ -134,8 +134,9 @@ public abstract class AutofillEditorBase
         button.setOnClickListener(new View.OnClickListener() {
                 @Override
                 public void onClick(View v) {
-                    saveEntry();
-                    getActivity().finish();
+                    if (saveEntry()) {
+                        getActivity().finish();
+                    }
                 }
             });
         button.setEnabled(false);
@@ -144,8 +145,8 @@ public abstract class AutofillEditorBase
     /** Returns the ID of the layout to inflate. */
     protected abstract int getLayoutId();
 
-    /** Called when the entry should be saved. */
-    protected abstract void saveEntry();
+    /** @return True if entry could be saved and activity can be finished. */
+    protected abstract boolean saveEntry();
 
     /** Called when the entry being edited should be deleted. */
     protected void deleteEntry() {

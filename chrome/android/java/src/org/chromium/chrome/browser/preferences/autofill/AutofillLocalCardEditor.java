@@ -5,6 +5,7 @@
 package org.chromium.chrome.browser.preferences.autofill;
 
 import android.os.Bundle;
+import android.text.Editable;
 import android.text.TextUtils;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -73,16 +74,10 @@ public class AutofillLocalCardEditor extends AutofillCreditCardEditor {
     }
 
     @Override
-    public void onItemSelected(AdapterView<?> parent, View view, int position, long id) {
-        if ((parent == mExpirationYear && position != mInitialExpirationYearPos)
-                || (parent == mExpirationMonth && position != mInitialExpirationMonthPos)
-                || (parent == mBillingAddress && position != mInitialBillingAddressPos)) {
-            updateSaveButtonEnabled();
-        }
-    }
+    public void onItemSelected(AdapterView<?> parent, View view, int position, long id) {}
 
     @Override
-    public void onTextChanged(CharSequence s, int start, int before, int count) {
+    public void afterTextChanged(Editable s) {
         updateSaveButtonEnabled();
     }
 
@@ -158,9 +153,17 @@ public class AutofillLocalCardEditor extends AutofillCreditCardEditor {
     }
 
     @Override
-    protected void saveEntry() {
+    protected boolean saveEntry() {
         // Remove all spaces in editText.
         String cardNumber = mNumberText.getText().toString().replaceAll("\\s+", "");
+        PersonalDataManager personalDataManager = PersonalDataManager.getInstance();
+        // Card Payment Type will be empty if credit card number is not valid.
+        if (TextUtils.isEmpty(personalDataManager.getBasicCardPaymentType(cardNumber,
+                true /* emptyIfInvalid */))) {
+            mNumberLabel.setError(mContext.getString(
+                    R.string.payments_card_number_invalid_validation_message));
+            return false;
+        }
         CreditCard card = new CreditCard(mGUID, AutofillPreferences.SETTINGS_ORIGIN,
                 true /* isLocal */, false /* isCached */, mNameText.getText().toString().trim(),
                 cardNumber, "" /* obfuscatedNumber */,
@@ -169,7 +172,8 @@ public class AutofillLocalCardEditor extends AutofillCreditCardEditor {
                 0 /* issuerIconDrawableId */,
                 ((AutofillProfile) mBillingAddress.getSelectedItem()).getGUID() /* billing */,
                 "" /* serverId */);
-        PersonalDataManager.getInstance().setCreditCard(card);
+        personalDataManager.setCreditCard(card);
+        return true;
     }
 
     @Override
@@ -183,11 +187,9 @@ public class AutofillLocalCardEditor extends AutofillCreditCardEditor {
     protected void initializeButtons(View v) {
         super.initializeButtons(v);
 
-        // Listen for changes to inputs. Enable the save button after something has changed.
-        mNameText.addTextChangedListener(this);
+        // Listen for change to credit card number input. Enable the save button after user enters a
+        // number.
         mNumberText.addTextChangedListener(this);
-        mExpirationMonth.setOnItemSelectedListener(this);
-        mExpirationYear.setOnItemSelectedListener(this);
 
         // Listen for touch events for drop down menus. We clear the keyboard when user touches
         // any of these fields.
@@ -196,8 +198,9 @@ public class AutofillLocalCardEditor extends AutofillCreditCardEditor {
     }
 
     private void updateSaveButtonEnabled() {
-        boolean enabled = !TextUtils.isEmpty(mNameText.getText())
-                || !TextUtils.isEmpty(mNumberText.getText());
+        // Enable save button if credit card number is not empty. We validate the credit card number
+        // when user presses the save button.
+        boolean enabled = !TextUtils.isEmpty(mNumberText.getText());
         ((Button) getView().findViewById(R.id.button_primary)).setEnabled(enabled);
     }
 }
