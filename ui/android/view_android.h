@@ -69,6 +69,8 @@ class UI_ANDROID_EXPORT ViewAndroid {
   cc::Layer* GetLayer() const;
   void SetLayer(scoped_refptr<cc::Layer> layer);
 
+  void SetDelegate(const base::android::JavaRef<jobject>& delegate);
+
   // Adds this view as a child of another view.
   void AddChild(ViewAndroid* child);
 

@@ -85,6 +85,11 @@ ViewAndroid::~ViewAndroid() {
   }
 }
 
+void ViewAndroid::SetDelegate(const JavaRef<jobject>& delegate) {
+  JNIEnv* env = base::android::AttachCurrentThread();
+  delegate_ = JavaObjectWeakGlobalRef(env, delegate);
+}
+
 void ViewAndroid::AddChild(ViewAndroid* child) {
   DCHECK(child);
   DCHECK(std::find(children_.begin(), children_.end(), child) ==

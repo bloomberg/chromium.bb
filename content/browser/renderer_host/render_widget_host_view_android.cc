@@ -982,7 +982,7 @@ void RenderWidgetHostViewAndroid::CopyFromCompositingSurface(
     callback.Run(SkBitmap(), READBACK_SURFACE_UNAVAILABLE);
     return;
   }
-  if (!content_view_core_ || !(content_view_core_->GetWindowAndroid())) {
+  if (!(view_.GetWindowAndroid())) {
     callback.Run(SkBitmap(), READBACK_FAILED);
     return;
   }
@@ -1005,7 +1005,7 @@ void RenderWidgetHostViewAndroid::CopyFromCompositingSurface(
   }
 
   ui::WindowAndroidCompositor* compositor =
-      content_view_core_->GetWindowAndroid()->GetCompositor();
+      view_.GetWindowAndroid()->GetCompositor();
   DCHECK(compositor);
   DCHECK(delegated_frame_host_);
   scoped_refptr<PendingReadbackLock> readback_lock(
@@ -1213,9 +1213,9 @@ bool RenderWidgetHostViewAndroid::SupportsAnimation() const {
 }
 
 void RenderWidgetHostViewAndroid::SetNeedsAnimate() {
-  DCHECK(content_view_core_ && content_view_core_->GetWindowAndroid());
+  DCHECK(view_.GetWindowAndroid());
   DCHECK(using_browser_compositor_);
-  content_view_core_->GetWindowAndroid()->SetNeedsAnimate();
+  view_.GetWindowAndroid()->SetNeedsAnimate();
 }
 
 void RenderWidgetHostViewAndroid::MoveCaret(const gfx::PointF& position) {
@@ -1427,7 +1427,7 @@ void RenderWidgetHostViewAndroid::RequestVSyncUpdate(uint32_t requests) {
   // vsync requests will be pushed if/when we resume observing in
   // |StartObservingRootWindow()|.
   if (observing_root_window_ && should_request_vsync) {
-    ui::WindowAndroid* windowAndroid = content_view_core_->GetWindowAndroid();
+    ui::WindowAndroid* windowAndroid = view_.GetWindowAndroid();
     DCHECK(windowAndroid);
     // TODO(boliu): This check should be redundant with
     // |observing_root_window_| check above. However we are receiving trickle
@@ -1442,7 +1442,7 @@ void RenderWidgetHostViewAndroid::StartObservingRootWindow() {
   DCHECK(content_view_core_);
   // TODO(yusufo): This will need to have a better fallback for cases where
   // setContentViewCore is called with a valid ContentViewCore without a window.
-  DCHECK(content_view_core_->GetWindowAndroid());
+  DCHECK(view_.GetWindowAndroid());
   DCHECK(is_showing_);
   if (observing_root_window_)
     return;
@@ -1450,7 +1450,7 @@ void RenderWidgetHostViewAndroid::StartObservingRootWindow() {
   observing_root_window_ = true;
   if (host_)
     host_->Send(new ViewMsg_SetBeginFramePaused(host_->GetRoutingID(), false));
-  content_view_core_->GetWindowAndroid()->AddObserver(this);
+  view_.GetWindowAndroid()->AddObserver(this);
 
   // Clear existing vsync requests to allow a request to the new window.
   uint32_t outstanding_vsync_requests = outstanding_vsync_requests_;
@@ -1458,7 +1458,7 @@ void RenderWidgetHostViewAndroid::StartObservingRootWindow() {
   RequestVSyncUpdate(outstanding_vsync_requests);
 
   ui::WindowAndroidCompositor* compositor =
-      content_view_core_->GetWindowAndroid()->GetCompositor();
+      view_.GetWindowAndroid()->GetCompositor();
   if (compositor) {
     delegated_frame_host_->RegisterFrameSinkHierarchy(
         compositor->GetFrameSinkId());
@@ -1466,7 +1466,7 @@ void RenderWidgetHostViewAndroid::StartObservingRootWindow() {
 }
 
 void RenderWidgetHostViewAndroid::StopObservingRootWindow() {
-  if (!content_view_core_ || !(content_view_core_->GetWindowAndroid())) {
+  if (!(view_.GetWindowAndroid())) {
     DCHECK(!observing_root_window_);
     return;
   }
@@ -1480,7 +1480,7 @@ void RenderWidgetHostViewAndroid::StopObservingRootWindow() {
   observing_root_window_ = false;
   if (host_)
     host_->Send(new ViewMsg_SetBeginFramePaused(host_->GetRoutingID(), true));
-  content_view_core_->GetWindowAndroid()->RemoveObserver(this);
+  view_.GetWindowAndroid()->RemoveObserver(this);
   // If the DFH has already been destroyed, it will have cleaned itself up.
   // This happens in some WebView cases.
   if (delegated_frame_host_)
@@ -1502,7 +1502,7 @@ void RenderWidgetHostViewAndroid::SendBeginFrame(base::TimeTicks frame_time,
       cc::BeginFrameArgs::Create(BEGINFRAME_FROM_HERE, frame_time, deadline,
                                  vsync_period, cc::BeginFrameArgs::NORMAL)));
   if (sync_compositor_)
-    sync_compositor_->DidSendBeginFrame(content_view_core_->GetWindowAndroid());
+    sync_compositor_->DidSendBeginFrame(view_.GetWindowAndroid());
 }
 
 bool RenderWidgetHostViewAndroid::Animate(base::TimeTicks frame_time) {
@@ -1806,7 +1806,7 @@ void RenderWidgetHostViewAndroid::SetContentViewCore(
     selection_controller_ = CreateSelectionController(this, content_view_core_);
 
   if (!overscroll_controller_ &&
-      content_view_core_->GetWindowAndroid()->GetCompositor()) {
+      view_.GetWindowAndroid()->GetCompositor()) {
     overscroll_controller_ = CreateOverscrollController(
         content_view_core_, ui::GetScaleFactorForNativeView(GetNativeView()));
   }
@@ -1866,8 +1866,8 @@ void RenderWidgetHostViewAndroid::OnRootWindowVisibilityChanged(bool visible) {
 void RenderWidgetHostViewAndroid::OnAttachedToWindow() {
   if (is_showing_)
     StartObservingRootWindow();
-  DCHECK(content_view_core_ && content_view_core_->GetWindowAndroid());
-  if (content_view_core_->GetWindowAndroid()->GetCompositor())
+  DCHECK(view_.GetWindowAndroid());
+  if (view_.GetWindowAndroid()->GetCompositor())
     OnAttachCompositor();
 }
 
@@ -1882,7 +1882,7 @@ void RenderWidgetHostViewAndroid::OnAttachCompositor() {
     overscroll_controller_ = CreateOverscrollController(
         content_view_core_, ui::GetScaleFactorForNativeView(GetNativeView()));
   ui::WindowAndroidCompositor* compositor =
-      content_view_core_->GetWindowAndroid()->GetCompositor();
+      view_.GetWindowAndroid()->GetCompositor();
   delegated_frame_host_->RegisterFrameSinkHierarchy(
       compositor->GetFrameSinkId());
 }

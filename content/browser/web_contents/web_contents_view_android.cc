@@ -7,6 +7,7 @@
 #include "base/android/jni_android.h"
 #include "base/android/jni_string.h"
 #include "base/logging.h"
+#include "cc/layers/layer.h"
 #include "content/browser/android/content_view_core_impl.h"
 #include "content/browser/frame_host/interstitial_page_impl.h"
 #include "content/browser/renderer_host/render_widget_host_view_android.h"
@@ -64,6 +65,8 @@ WebContentsViewAndroid::WebContentsViewAndroid(
 }
 
 WebContentsViewAndroid::~WebContentsViewAndroid() {
+  if (view_.GetLayer())
+    view_.GetLayer()->RemoveFromParent();
 }
 
 void WebContentsViewAndroid::SetContentViewCore(
@@ -87,7 +90,7 @@ void WebContentsViewAndroid::SetContentViewCore(
 }
 
 gfx::NativeView WebContentsViewAndroid::GetNativeView() const {
-  return content_view_core_ ? content_view_core_->GetViewAndroid() : nullptr;
+  return const_cast<gfx::NativeView>(&view_);
 }
 
 gfx::NativeView WebContentsViewAndroid::GetContentNativeView() const {

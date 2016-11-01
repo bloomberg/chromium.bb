@@ -207,27 +207,19 @@ ContentViewCoreImpl::ContentViewCoreImpl(
     JNIEnv* env,
     const JavaRef<jobject>& obj,
     WebContents* web_contents,
-    const JavaRef<jobject>& view_android_delegate,
-    ui::WindowAndroid* window_android,
     const JavaRef<jobject>& java_bridge_retained_object_set)
     : WebContentsObserver(web_contents),
       java_ref_(env, obj),
-      view_(view_android_delegate),
       web_contents_(static_cast<WebContentsImpl*>(web_contents)),
       page_scale_(1),
-      dpi_scale_(ui::GetScaleFactorForNativeView(&view_)),
+      dpi_scale_(ui::GetScaleFactorForNativeView(GetViewAndroid())),
       device_orientation_(0),
       accessibility_enabled_(false) {
-  CHECK(web_contents) <<
-      "A ContentViewCoreImpl should be created with a valid WebContents.";
-  DCHECK(window_android);
-  DCHECK(!view_android_delegate.is_null());
-  window_android->AddChild(&view_);
-  view_.SetLayer(cc::Layer::Create());
+  GetViewAndroid()->SetLayer(cc::Layer::Create());
   gfx::Size physical_size(
       Java_ContentViewCore_getPhysicalBackingWidthPix(env, obj),
       Java_ContentViewCore_getPhysicalBackingHeightPix(env, obj));
-  view_.GetLayer()->SetBounds(physical_size);
+  GetViewAndroid()->GetLayer()->SetBounds(physical_size);
 
   // Currently, the only use case we have for overriding a user agent involves
   // spoofing a desktop Linux user agent for "Request desktop site".
@@ -257,7 +249,6 @@ void ContentViewCoreImpl::RemoveObserver(
 }
 
 ContentViewCoreImpl::~ContentViewCoreImpl() {
-  view_.GetLayer()->RemoveFromParent();
   for (auto& observer : observer_list_)
     observer.OnContentViewCoreDestroyed();
   observer_list_.Clear();
@@ -275,17 +266,18 @@ void ContentViewCoreImpl::UpdateWindowAndroid(
     JNIEnv* env,
     const base::android::JavaParamRef<jobject>& obj,
     jlong window_android) {
+  ui::ViewAndroid* view = GetViewAndroid();
   if (window_android) {
-    DCHECK(!view_.GetWindowAndroid());
+    DCHECK(!GetWindowAndroid());
     ui::WindowAndroid* window =
         reinterpret_cast<ui::WindowAndroid*>(window_android);
-    window->AddChild(&view_);
+    window->AddChild(view);
     for (auto& observer : observer_list_)
       observer.OnAttachedToWindow();
   } else {
     for (auto& observer : observer_list_)
       observer.OnDetachedFromWindow();
-    view_.RemoveFromParent();
+    view->RemoveFromParent();
   }
 }
 
@@ -298,9 +290,9 @@ ContentViewCoreImpl::GetWebContentsAndroid(JNIEnv* env,
 base::android::ScopedJavaLocalRef<jobject>
 ContentViewCoreImpl::GetJavaWindowAndroid(JNIEnv* env,
                                           const JavaParamRef<jobject>& obj) {
-  if (!view_.GetWindowAndroid())
+  if (!GetWindowAndroid())
     return ScopedJavaLocalRef<jobject>();
-  return view_.GetWindowAndroid()->GetJavaObject();
+  return GetWindowAndroid()->GetJavaObject();
 }
 
 void ContentViewCoreImpl::OnJavaContentViewCoreDestroyed(
@@ -416,10 +408,10 @@ void ContentViewCoreImpl::UpdateFrameInfo(
     const gfx::SelectionBound& selection_start) {
   JNIEnv* env = AttachCurrentThread();
   ScopedJavaLocalRef<jobject> obj = java_ref_.get(env);
-  if (obj.is_null() || !view_.GetWindowAndroid())
+  if (obj.is_null() || !GetWindowAndroid())
     return;
 
-  view_.GetWindowAndroid()->set_content_offset(
+  GetWindowAndroid()->set_content_offset(
       gfx::Vector2dF(0.0f, top_controls_height * top_controls_shown_ratio));
 
   page_scale_ = page_scale_factor;
@@ -513,11 +505,12 @@ void ContentViewCoreImpl::ShowSelectPopupMenu(
   }
   ScopedJavaLocalRef<jobjectArray> items_array(
       base::android::ToJavaArrayOfStrings(env, labels));
-  select_popup_ = view_.AcquireAnchorView();
+  ui::ViewAndroid* view = GetViewAndroid();
+  select_popup_ = view->AcquireAnchorView();
   const ScopedJavaLocalRef<jobject> popup_view = select_popup_.view();
   if (popup_view.is_null())
     return;
-  view_.SetAnchorRect(popup_view,
+  view->SetAnchorRect(popup_view,
                       gfx::ScaleRect(gfx::RectF(bounds), page_scale_));
   Java_ContentViewCore_showSelectPopup(
       env, j_obj, popup_view, reinterpret_cast<intptr_t>(frame), items_array,
@@ -814,11 +807,11 @@ void ContentViewCoreImpl::SelectBetweenCoordinates(const gfx::PointF& base,
 }
 
 ui::WindowAndroid* ContentViewCoreImpl::GetWindowAndroid() const {
-  return view_.GetWindowAndroid();
+  return GetViewAndroid()->GetWindowAndroid();
 }
 
-ui::ViewAndroid* ContentViewCoreImpl::GetViewAndroid() {
-  return &view_;
+ui::ViewAndroid* ContentViewCoreImpl::GetViewAndroid() const {
+  return web_contents_->GetView()->GetNativeView();
 }
 
 
@@ -1230,7 +1223,7 @@ void ContentViewCoreImpl::WasResized(JNIEnv* env,
   gfx::Size physical_size(
       Java_ContentViewCore_getPhysicalBackingWidthPix(env, obj),
       Java_ContentViewCore_getPhysicalBackingHeightPix(env, obj));
-  view_.GetLayer()->SetBounds(physical_size);
+  GetViewAndroid()->GetLayer()->SetBounds(physical_size);
 
   if (view) {
     web_contents_->SendScreenRects();
@@ -1359,7 +1352,7 @@ void ContentViewCoreImpl::SetAccessibilityEnabledInternal(bool enabled) {
 void ContentViewCoreImpl::SendOrientationChangeEventInternal() {
   RenderWidgetHostViewAndroid* rwhv = GetRenderWidgetHostViewAndroid();
   if (rwhv)
-    rwhv->UpdateScreenInfo(&view_);
+    rwhv->UpdateScreenInfo(GetViewAndroid());
 
   static_cast<WebContentsImpl*>(web_contents())->
       screen_orientation_dispatcher_host()->OnOrientationChange();
@@ -1542,15 +1535,24 @@ void ContentViewCoreImpl::PullReset() {
 // This is called for each ContentView.
 jlong Init(JNIEnv* env,
            const JavaParamRef<jobject>& obj,
-           const JavaParamRef<jobject>& web_contents,
-           const JavaParamRef<jobject>& view_android_delegate,
-           jlong window_android,
+           const JavaParamRef<jobject>& jweb_contents,
+           const JavaParamRef<jobject>& jview_android_delegate,
+           jlong jwindow_android,
            const JavaParamRef<jobject>& retained_objects_set) {
+  WebContentsImpl* web_contents = static_cast<WebContentsImpl*>(
+      WebContents::FromJavaWebContents(jweb_contents));
+  CHECK(web_contents) <<
+      "A ContentViewCoreImpl should be created with a valid WebContents.";
+  ui::ViewAndroid* view_android = web_contents->GetView()->GetNativeView();
+  view_android->SetDelegate(jview_android_delegate);
+
+  ui::WindowAndroid* window_android =
+        reinterpret_cast<ui::WindowAndroid*>(jwindow_android);
+  DCHECK(window_android);
+  window_android->AddChild(view_android);
+
   ContentViewCoreImpl* view = new ContentViewCoreImpl(
-      env, obj, WebContents::FromJavaWebContents(web_contents),
-      view_android_delegate,
-      reinterpret_cast<ui::WindowAndroid*>(window_android),
-      retained_objects_set);
+      env, obj, web_contents, retained_objects_set);
   return reinterpret_cast<intptr_t>(view);
 }
 

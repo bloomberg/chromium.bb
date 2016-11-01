@@ -13,6 +13,7 @@
 #include "content/public/browser/web_contents_view_delegate.h"
 #include "content/public/common/context_menu_params.h"
 #include "content/public/common/drop_data.h"
+#include "ui/android/view_android.h"
 #include "ui/gfx/geometry/rect_f.h"
 
 namespace content {
@@ -98,6 +99,9 @@ class WebContentsViewAndroid : public WebContentsView,
 
   // Interface for extensions to WebContentsView. Used to show the context menu.
   std::unique_ptr<WebContentsViewDelegate> delegate_;
+
+  // The native view associated with the contents of the web.
+  ui::ViewAndroid view_;
 
   DISALLOW_COPY_AND_ASSIGN(WebContentsViewAndroid);
 };

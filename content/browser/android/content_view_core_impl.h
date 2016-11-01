@@ -54,8 +54,6 @@ class ContentViewCoreImpl : public ContentViewCore,
       JNIEnv* env,
       const base::android::JavaRef<jobject>& obj,
       WebContents* web_contents,
-      const base::android::JavaRef<jobject>& view_android_delegate,
-      ui::WindowAndroid* window_android,
       const base::android::JavaRef<jobject>& java_bridge_retained_object_set);
 
   // ContentViewCore implementation.
@@ -389,7 +387,7 @@ class ContentViewCoreImpl : public ContentViewCore,
 
   void OnShowUnhandledTapUIIfNeeded(int x_dip, int y_dip);
 
-  ui::ViewAndroid* GetViewAndroid();
+  ui::ViewAndroid* GetViewAndroid() const;
 
  private:
   class ContentViewUserData;
@@ -441,8 +439,6 @@ class ContentViewCoreImpl : public ContentViewCore,
 
   // Select popup view
   ui::ViewAndroid::ScopedAnchorView select_popup_;
-
-  ui::ViewAndroid view_;
 
   // Reference to the current WebContents used to determine how and what to
   // display in the ContentViewCore.
