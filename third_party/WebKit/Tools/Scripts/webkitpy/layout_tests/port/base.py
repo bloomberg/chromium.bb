@@ -1533,10 +1533,6 @@ class Port(object):
         """Returns the full path to the test driver."""
         return self._build_path(target, self.driver_name())
 
-    def _path_to_webcore_library(self):
-        """Returns the full path to a built copy of WebCore."""
-        return None
-
     def _path_to_helper(self):
         """Returns the full path to the layout_test_helper binary, which
         is used to help configure the system for the test run, or None
@@ -1721,20 +1717,8 @@ class Port(object):
             return False
         return True
 
-    def _modules_to_search_for_symbols(self):
-        path = self._path_to_webcore_library()
-        if path:
-            return [path]
-        return []
-
     def _symbols_string(self):
-        symbols = ''
-        for path_to_module in self._modules_to_search_for_symbols():
-            try:
-                symbols += self._executive.run_command(['nm', path_to_module], error_handler=self._executive.ignore_error)
-            except OSError as e:
-                _log.warning("Failed to run nm: %s.  Can't determine supported features correctly.", e)
-        return symbols
+        return ''
 
     # Ports which use compile-time feature detection should define this method and return
     # a dictionary mapping from symbol substrings to possibly disabled test directories.
@@ -1767,9 +1751,8 @@ class Port(object):
         # Disable any tests for symbols missing from the executable or libraries.
         if self._has_test_in_directories(self._missing_symbol_to_skipped_tests().values(), test_list):
             symbols_string = self._symbols_string()
-            if symbols_string is not None:
-                return reduce(operator.add, [directories for symbol_substring, directories in self._missing_symbol_to_skipped_tests(
-                ).items() if symbol_substring not in symbols_string], [])
+            return reduce(operator.add, [directories for symbol_substring, directories in self._missing_symbol_to_skipped_tests(
+            ).items() if symbol_substring not in symbols_string], [])
         return []
 
     def _convert_path(self, path):

@@ -327,8 +327,6 @@ class PortTestCase(unittest.TestCase):
     def test_skipped_directories_for_symbols(self):
         # This first test confirms that the commonly found symbols result in the expected skipped directories.
         port = self.make_port()
-        # pylint: disable=protected-access
-        port._symbols_string = lambda: "fooSymbol"
         self.assertEqual(
             set(port._skipped_tests_for_unsupported_features(test_list=['webaudio/codec-tests/mp3/foo.html'])),
             set([
