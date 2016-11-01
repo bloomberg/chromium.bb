@@ -4,8 +4,8 @@
 
 #include "core/inspector/InspectorWebPerfAgent.h"
 
+#include "core/frame/LocalFrame.h"
 #include "core/frame/Location.h"
-#include "core/inspector/InspectedFrames.h"
 #include "core/testing/DummyPageHolder.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "wtf/PtrUtil.h"
@@ -31,11 +31,9 @@ class InspectorWebPerfAgentTest : public ::testing::Test {
   String frameContextURL();
   int numUniqueFrameContextsSeen();
 
-  String sanitizedLongTaskName(
-      HeapHashSet<Member<Location>> frameContextLocations,
-      Frame* rootFrame) {
-    return m_agent->sanitizedAttribution(frameContextLocations, rootFrame)
-        .first;
+  String sanitizedLongTaskName(HeapHashSet<Member<Frame>> frameContexts,
+                               Frame* observerFrame) {
+    return m_agent->sanitizedAttribution(frameContexts, observerFrame).first;
   }
 
   Persistent<InspectorWebPerfAgent> m_agent;
@@ -56,14 +54,14 @@ void InspectorWebPerfAgentTest::SetUp() {
 
 String InspectorWebPerfAgentTest::frameContextURL() {
   // This is reported only if there is a single frameContext URL.
-  if (m_agent->m_frameContextLocations.size() != 1)
+  if (m_agent->m_frameContexts.size() != 1)
     return "";
-  Location* location = (*m_agent->m_frameContextLocations.begin()).get();
-  return location->href();
+  Frame* frame = (*m_agent->m_frameContexts.begin()).get();
+  return toLocalFrame(frame)->document()->location()->href();
 }
 
 int InspectorWebPerfAgentTest::numUniqueFrameContextsSeen() {
-  return m_agent->m_frameContextLocations.size();
+  return m_agent->m_frameContexts.size();
 }
 
 TEST_F(InspectorWebPerfAgentTest, SingleScriptInTask) {
@@ -130,30 +128,28 @@ TEST_F(InspectorWebPerfAgentTest, NoScriptInLongTask) {
 }
 
 TEST_F(InspectorWebPerfAgentTest, SanitizedLongTaskName) {
-  HeapHashSet<Member<Location>> frameContextLocations;
+  HeapHashSet<Member<Frame>> frameContexts;
   // Unable to attribute, when no execution contents are available.
-  EXPECT_EQ("unknown", sanitizedLongTaskName(frameContextLocations, frame()));
+  EXPECT_EQ("unknown", sanitizedLongTaskName(frameContexts, frame()));
 
   // Attribute for same context (and same origin).
-  frameContextLocations.add(Location::create(frame()));
-  EXPECT_EQ("same-origin",
-            sanitizedLongTaskName(frameContextLocations, frame()));
+  frameContexts.add(frame());
+  EXPECT_EQ("same-origin", sanitizedLongTaskName(frameContexts, frame()));
 
   // Unable to attribute, when multiple script execution contents are involved.
-  frameContextLocations.add(Location::create(frame()));
-  EXPECT_EQ("multiple-contexts",
-            sanitizedLongTaskName(frameContextLocations, frame()));
+  frameContexts.add(anotherFrame());
+  EXPECT_EQ("multiple-contexts", sanitizedLongTaskName(frameContexts, frame()));
 }
 
 TEST_F(InspectorWebPerfAgentTest, SanitizedLongTaskName_CrossOrigin) {
-  HeapHashSet<Member<Location>> frameContextLocations;
+  HeapHashSet<Member<Frame>> frameContexts;
   // Unable to attribute, when no execution contents are available.
-  EXPECT_EQ("unknown", sanitizedLongTaskName(frameContextLocations, frame()));
+  EXPECT_EQ("unknown", sanitizedLongTaskName(frameContexts, frame()));
 
   // Attribute for same context (and same origin).
-  frameContextLocations.add(Location::create(anotherFrame()));
+  frameContexts.add(anotherFrame());
   EXPECT_EQ("cross-origin-unreachable",
-            sanitizedLongTaskName(frameContextLocations, frame()));
+            sanitizedLongTaskName(frameContexts, frame()));
 }
 
 }  // namespace blink

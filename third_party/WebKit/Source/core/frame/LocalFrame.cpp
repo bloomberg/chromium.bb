@@ -54,6 +54,7 @@
 #include "core/html/HTMLPlugInElement.h"
 #include "core/input/EventHandler.h"
 #include "core/inspector/InspectorInstrumentation.h"
+#include "core/inspector/InspectorWebPerfAgent.h"
 #include "core/layout/HitTestResult.h"
 #include "core/layout/LayoutView.h"
 #include "core/layout/api/LayoutPartItem.h"
@@ -71,6 +72,7 @@
 #include "core/paint/PaintLayer.h"
 #include "core/paint/TransformRecorder.h"
 #include "core/svg/SVGDocumentExtensions.h"
+#include "core/timing/Performance.h"
 #include "platform/DragImage.h"
 #include "platform/PluginScriptForbiddenScope.h"
 #include "platform/RuntimeEnabledFeatures.h"
@@ -329,6 +331,7 @@ LocalFrame::~LocalFrame() {
 
 DEFINE_TRACE(LocalFrame) {
   visitor->trace(m_instrumentingAgents);
+  visitor->trace(m_inspectorWebPerfAgent);
   visitor->trace(m_loader);
   visitor->trace(m_navigationScheduler);
   visitor->trace(m_view);
@@ -554,6 +557,23 @@ bool LocalFrame::isCrossOriginSubframe() const {
   return top &&
          !securityOrigin->canAccess(
              top->securityContext()->getSecurityOrigin());
+}
+
+void LocalFrame::enableInspectorWebPerfAgent(Performance* performance) {
+  if (!m_inspectorWebPerfAgent) {
+    m_inspectorWebPerfAgent = new InspectorWebPerfAgent(this);
+    m_inspectorWebPerfAgent->enable();
+  }
+  m_inspectorWebPerfAgent->addWebPerformanceObserver(performance);
+}
+
+void LocalFrame::disableInspectorWebPerfAgent(Performance* performance) {
+  DCHECK(m_inspectorWebPerfAgent->isEnabled());
+  m_inspectorWebPerfAgent->removeWebPerformanceObserver(performance);
+  if (!m_inspectorWebPerfAgent->hasWebPerformanceObservers()) {
+    m_inspectorWebPerfAgent->disable();
+    m_inspectorWebPerfAgent = nullptr;
+  }
 }
 
 void LocalFrame::setPrinting(bool printing,

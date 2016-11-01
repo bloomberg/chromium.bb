@@ -35,7 +35,6 @@
 #include "bindings/core/v8/V8ObjectBuilder.h"
 #include "core/dom/Document.h"
 #include "core/frame/LocalFrame.h"
-#include "core/inspector/InspectedFrames.h"
 #include "core/inspector/InspectorWebPerfAgent.h"
 #include "core/loader/DocumentLoader.h"
 #include "core/origin_trials/OriginTrials.h"
@@ -59,9 +58,17 @@ static double toTimeOrigin(LocalFrame* frame) {
 }
 
 Performance::Performance(LocalFrame* frame)
-    : PerformanceBase(toTimeOrigin(frame)), DOMWindowProperty(frame) {}
+    : PerformanceBase(toTimeOrigin(frame)),
+      DOMWindowProperty(frame),
+      m_observingLongTasks(false) {}
 
-Performance::~Performance() {}
+Performance::~Performance() {
+  LocalFrame* localRoot = frame()->localFrameRoot();
+  if (m_observingLongTasks && localRoot) {
+    m_observingLongTasks = false;
+    localRoot->disableInspectorWebPerfAgent(this);
+  }
+}
 
 ExecutionContext* Performance::getExecutionContext() const {
   if (!frame())
@@ -88,16 +95,20 @@ PerformanceTiming* Performance::timing() const {
 }
 
 void Performance::updateLongTaskInstrumentation() {
-  if (hasObserverFor(PerformanceEntry::LongTask) && !m_longTaskInspectorAgent) {
-    if (!frame() || !frame()->document() ||
-        !OriginTrials::longTaskObserverEnabled(frame()->document()))
-      return;
-    m_longTaskInspectorAgent = new InspectorWebPerfAgent(frame());
-    m_longTaskInspectorAgent->enable();
-  } else if (!hasObserverFor(PerformanceEntry::LongTask) &&
-             m_longTaskInspectorAgent) {
-    m_longTaskInspectorAgent->disable();
-    m_longTaskInspectorAgent = nullptr;
+  DCHECK(frame());
+  if (!frame()->document() ||
+      !OriginTrials::longTaskObserverEnabled(frame()->document()))
+    return;
+  LocalFrame* localRoot = frame()->localFrameRoot();
+  DCHECK(localRoot);
+
+  if (!m_observingLongTasks && hasObserverFor(PerformanceEntry::LongTask)) {
+    m_observingLongTasks = true;
+    localRoot->enableInspectorWebPerfAgent(this);
+  } else if (m_observingLongTasks &&
+             !hasObserverFor(PerformanceEntry::LongTask)) {
+    m_observingLongTasks = false;
+    localRoot->disableInspectorWebPerfAgent(this);
   }
 }
 
@@ -108,10 +119,13 @@ ScriptValue Performance::toJSONForBinding(ScriptState* scriptState) const {
   return result.scriptValue();
 }
 
+bool Performance::observingLongTasks() {
+  return m_observingLongTasks;
+}
+
 DEFINE_TRACE(Performance) {
   visitor->trace(m_navigation);
   visitor->trace(m_timing);
-  visitor->trace(m_longTaskInspectorAgent);
   DOMWindowProperty::trace(visitor);
   PerformanceBase::trace(visitor);
 }

@@ -17,9 +17,7 @@ class PerformanceTest : public ::testing::Test {
     m_performance = Performance::create(&m_pageHolder->frame());
   }
 
-  bool hasLongTaskInspectorAgent() {
-    return m_performance->m_longTaskInspectorAgent;
-  }
+  bool observingLongTasks() { return m_performance->observingLongTasks(); }
 
   void addLongTaskObserver() {
     // simulate with filter options.
@@ -37,21 +35,16 @@ class PerformanceTest : public ::testing::Test {
 
 TEST_F(PerformanceTest, LongTaskObserverInstrumentation) {
   m_performance->updateLongTaskInstrumentation();
-  EXPECT_FALSE(hasLongTaskInspectorAgent());
+  EXPECT_FALSE(observingLongTasks());
 
   // Adding LongTask observer (with filer option) enables instrumentation.
   addLongTaskObserver();
   m_performance->updateLongTaskInstrumentation();
-  EXPECT_TRUE(hasLongTaskInspectorAgent());
-
-  // While LongTask observer is present, updateLongTaskInstrumentation has no
-  // effect.
-  m_performance->updateLongTaskInstrumentation();
-  EXPECT_TRUE(hasLongTaskInspectorAgent());
+  EXPECT_TRUE(observingLongTasks());
 
   // Removing LongTask observer disables instrumentation.
   removeLongTaskObserver();
   m_performance->updateLongTaskInstrumentation();
-  EXPECT_FALSE(hasLongTaskInspectorAgent());
+  EXPECT_FALSE(observingLongTasks());
 }
 }

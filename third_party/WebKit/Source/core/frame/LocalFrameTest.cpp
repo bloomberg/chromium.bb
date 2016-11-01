@@ -9,8 +9,10 @@
 #include "core/frame/FrameView.h"
 #include "core/frame/VisualViewport.h"
 #include "core/html/HTMLElement.h"
+#include "core/inspector/InspectorWebPerfAgent.h"
 #include "core/layout/LayoutObject.h"
 #include "core/testing/DummyPageHolder.h"
+#include "core/timing/Performance.h"
 #include "platform/DragImage.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
@@ -23,6 +25,7 @@ class LocalFrameTest : public ::testing::Test {
 
   Document& document() const { return m_dummyPageHolder->document(); }
   LocalFrame& frame() const { return *document().frame(); }
+  Performance* performance() const { return m_performance; }
 
   void setBodyContent(const std::string& bodyContent) {
     document().body()->setInnerHTML(String::fromUTF8(bodyContent.c_str()),
@@ -34,12 +37,19 @@ class LocalFrameTest : public ::testing::Test {
     document().view()->updateAllLifecyclePhases();
   }
 
+  bool hasWebPerformanceAgent() { return frame().m_inspectorWebPerfAgent; }
+  bool hasWebPerformanceAgentObservers() {
+    return frame().m_inspectorWebPerfAgent->hasWebPerformanceObservers();
+  }
+
  private:
   void SetUp() override {
     m_dummyPageHolder = DummyPageHolder::create(IntSize(800, 600));
+    m_performance = Performance::create(&frame());
   }
 
   std::unique_ptr<DummyPageHolder> m_dummyPageHolder;
+  Persistent<Performance> m_performance;
 };
 
 TEST_F(LocalFrameTest, nodeImage) {
@@ -136,6 +146,16 @@ TEST_F(LocalFrameTest, dragImageForSelectionUsesPageScaleFactor) {
   EXPECT_GT(image1->size().height(), 0);
   EXPECT_EQ(image1->size().width() * 2, image2->size().width());
   EXPECT_EQ(image1->size().height() * 2, image2->size().height());
+}
+
+TEST_F(LocalFrameTest, LongTaskObserverInstrumentation) {
+  EXPECT_FALSE(hasWebPerformanceAgent());
+  frame().enableInspectorWebPerfAgent(performance());
+  EXPECT_TRUE(hasWebPerformanceAgent());
+  EXPECT_TRUE(hasWebPerformanceAgentObservers());
+
+  frame().disableInspectorWebPerfAgent(performance());
+  EXPECT_FALSE(hasWebPerformanceAgent());
 }
 
 }  // namespace blink
