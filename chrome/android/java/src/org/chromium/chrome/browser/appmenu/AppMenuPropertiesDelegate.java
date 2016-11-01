@@ -90,6 +90,7 @@ public class AppMenuPropertiesDelegate {
             String url = currentTab.getUrl();
             boolean isChromeScheme = url.startsWith(UrlConstants.CHROME_SCHEME)
                     || url.startsWith(UrlConstants.CHROME_NATIVE_SCHEME);
+            boolean isFileScheme = url.startsWith(UrlConstants.FILE_SCHEME);
             boolean shouldShowIconRow = !mActivity.isTablet()
                     || mActivity.getWindow().getDecorView().getWidth()
                             < DeviceFormFactor.getMinimumTabletWidthPx(mActivity);
@@ -153,15 +154,18 @@ public class AppMenuPropertiesDelegate {
             menu.findItem(R.id.find_in_page_id).setVisible(
                     !currentTab.isNativePage() && currentTab.getWebContents() != null);
 
-            // Hide 'Add to homescreen' on all chrome:// pages -- Android doesn't know how to direct
-            // those URLs.  Also hide it on incognito pages to avoid problems where users create
-            // shortcuts in incognito mode and then open the webapp in regular mode. Also check if
-            // creating shortcuts is supported at all.
+            // Hide 'Add to homescreen' for the following:
+            // 1.) chrome:// pages - Android doesn't know how to direct those URLs.
+            // 2.) incognito pages - To avoid problems where users create shortcuts in incognito
+            //                       mode and then open the webapp in regular mode.
+            // 3.) file:// - After API 24, file: URIs are not supported in VIEW intents and thus
+            //               can not be added to the homescreen.
+            // 4.) If creating shortcuts it not supported by the current home screen.
             MenuItem homescreenItem = menu.findItem(R.id.add_to_homescreen_id);
             boolean canAddShortcutToHomescreen =
                     ShortcutHelper.isAddToHomeIntentSupported(mActivity);
             homescreenItem.setVisible(
-                    canAddShortcutToHomescreen && !isChromeScheme && !isIncognito);
+                    canAddShortcutToHomescreen && !isChromeScheme && !isFileScheme && !isIncognito);
 
             // Hide request desktop site on all chrome:// pages except for the NTP. Check request
             // desktop site if it's activated on this page.
