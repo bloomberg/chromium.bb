@@ -849,7 +849,9 @@ void Resource::prune() {
   destroyDecodedDataIfPossible();
 }
 
-void Resource::prepareToSuspend() {
+void Resource::onMemoryStateChange(MemoryState state) {
+  if (state != MemoryState::SUSPENDED)
+    return;
   prune();
   if (!m_cacheHandler)
     return;

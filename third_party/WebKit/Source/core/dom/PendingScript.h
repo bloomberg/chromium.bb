@@ -101,7 +101,7 @@ class CORE_EXPORT PendingScript final
   PendingScript(Element*, ScriptResource*);
   PendingScript() = delete;
 
-  void prepareToSuspend() override;
+  void onMemoryStateChange(MemoryState) override;
 
   bool m_watchingForLoad;
   Member<Element> m_element;

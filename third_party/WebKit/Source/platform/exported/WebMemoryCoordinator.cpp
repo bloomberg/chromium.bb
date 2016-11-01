@@ -17,8 +17,4 @@ void WebMemoryCoordinator::onMemoryStateChange(MemoryState state) {
   MemoryCoordinator::instance().onMemoryStateChange(state);
 }
 
-void WebMemoryCoordinator::prepareToSuspend() {
-  MemoryCoordinator::instance().prepareToSuspend();
-}
-
 }  // namespace blink

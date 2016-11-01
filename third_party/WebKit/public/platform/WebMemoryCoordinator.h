@@ -19,9 +19,6 @@ class WebMemoryCoordinator {
   BLINK_PLATFORM_EXPORT static void onMemoryPressure(WebMemoryPressureLevel);
 
   BLINK_PLATFORM_EXPORT static void onMemoryStateChange(MemoryState);
-
-  // Called when Blink is going to be suspended.
-  BLINK_PLATFORM_EXPORT static void prepareToSuspend();
 };
 
 }  // namespace blink

@@ -32,12 +32,6 @@ void MemoryCoordinator::unregisterClient(MemoryCoordinatorClient* client) {
   m_clients.remove(client);
 }
 
-void MemoryCoordinator::prepareToSuspend() {
-  for (auto& client : m_clients)
-    client->prepareToSuspend();
-  WTF::Partitions::decommitFreeableMemory();
-}
-
 void MemoryCoordinator::onMemoryPressure(WebMemoryPressureLevel level) {
   TRACE_EVENT0("blink", "MemoryCoordinator::onMemoryPressure");
   for (auto& client : m_clients)

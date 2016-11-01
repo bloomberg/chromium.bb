@@ -405,7 +405,7 @@ class CORE_EXPORT Resource : public GarbageCollectedFinalized<Resource>,
   String reasonNotDeletable() const;
 
   // MemoryCoordinatorClient overrides:
-  void prepareToSuspend() override;
+  void onMemoryStateChange(MemoryState) override;
 
   Member<CachedMetadataHandlerImpl> m_cacheHandler;
   RefPtr<SecurityOrigin> m_fetcherSecurityOrigin;

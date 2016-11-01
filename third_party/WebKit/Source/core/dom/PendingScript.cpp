@@ -222,7 +222,9 @@ bool PendingScript::errorOccurred() const {
   return false;
 }
 
-void PendingScript::prepareToSuspend() {
+void PendingScript::onMemoryStateChange(MemoryState state) {
+  if (state != MemoryState::SUSPENDED)
+    return;
   if (!m_streamer)
     return;
   m_streamer->cancel();
