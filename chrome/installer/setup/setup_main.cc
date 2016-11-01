@@ -80,10 +80,6 @@
 #include "components/crash/content/app/run_as_crashpad_handler_win.h"
 #include "content/public/common/content_switches.h"
 
-#if defined(GOOGLE_CHROME_BUILD)
-#include "chrome/installer/util/updating_app_registration_data.h"
-#endif
-
 using installer::InstallerState;
 using installer::InstallationState;
 using installer::MasterPreferences;
@@ -856,116 +852,6 @@ void UninstallBinariesIfUnused(
   }
 }
 
-// This function is a short-term repair for the damage documented in
-// http://crbug.com/456602. Briefly: canaries from 42.0.2293.0 through
-// 42.0.2302.0 (inclusive) contained a bug that broke normal Chrome installed at
-// user-level. This function detects the broken state during a canary update and
-// repairs it by calling on the existing Chrome's installer to fix itself.
-// TODO(grt): Remove this once the majority of impacted canary clients have
-// picked it up.
-void RepairChromeIfBroken(const InstallationState& original_state,
-                          const InstallerState& installer_state) {
-#if !defined(GOOGLE_CHROME_BUILD)
-  // Chromium does not support SxS installation, so there is no work to be done.
-  return;
-#else  // GOOGLE_CHROME_BUILD
-  // Nothing to do if not a per-user SxS install/update.
-  if (!InstallUtil::IsChromeSxSProcess() ||
-      installer_state.system_install() ||
-      installer_state.is_multi_install()) {
-    return;
-  }
-
-  // When running a side-by-side install, BrowserDistribution provides no way
-  // to create or access a GoogleChromeDistribution (by design).
-  static const base::char16 kChromeGuid[] =
-      L"{8A69D345-D564-463c-AFF1-A69D9E530F96}";
-  static const base::char16 kChromeBinariesGuid[] =
-      L"{4DC8B4CA-1BDA-483e-B5FA-D3C12E15B62D}";
-
-  UpdatingAppRegistrationData chrome_reg_data(kChromeGuid);
-  UpdatingAppRegistrationData binaries_reg_data(kChromeBinariesGuid);
-
-  // Nothing to do if the binaries are installed.
-  base::win::RegKey key;
-  base::string16 version_str;
-  if (key.Open(HKEY_CURRENT_USER,
-               binaries_reg_data.GetVersionKey().c_str(),
-               KEY_QUERY_VALUE | KEY_WOW64_32KEY) == ERROR_SUCCESS &&
-      key.ReadValue(google_update::kRegVersionField,
-                    &version_str) == ERROR_SUCCESS) {
-    return;
-  }
-
-  // Nothing to do if Chrome is not installed.
-  if (key.Open(HKEY_CURRENT_USER,
-               chrome_reg_data.GetVersionKey().c_str(),
-               KEY_QUERY_VALUE | KEY_WOW64_32KEY) != ERROR_SUCCESS ||
-      key.ReadValue(google_update::kRegVersionField,
-                    &version_str) != ERROR_SUCCESS) {
-    return;
-  }
-
-  // Nothing to do if Chrome is not multi-install.
-  base::string16 setup_args;
-  if (key.Open(HKEY_CURRENT_USER,
-               chrome_reg_data.GetStateKey().c_str(),
-               KEY_QUERY_VALUE | KEY_WOW64_32KEY) != ERROR_SUCCESS) {
-    LOG(ERROR) << "RepairChrome: Failed to open Chrome's ClientState key.";
-    return;
-  }
-  if (key.ReadValue(installer::kUninstallArgumentsField,
-                    &setup_args) != ERROR_SUCCESS) {
-    LOG(ERROR) << "RepairChrome: Failed to read Chrome's UninstallArguments.";
-    return;
-  }
-  if (setup_args.find(base::UTF8ToUTF16(installer::switches::kMultiInstall)) ==
-      base::string16::npos) {
-    LOG(INFO) << "RepairChrome: Not repairing single-install Chrome.";
-    return;
-  }
-
-  // Generate a command line to run Chrome's installer.
-  base::string16 setup_path;
-  if (key.ReadValue(installer::kUninstallStringField,
-                    &setup_path) != ERROR_SUCCESS) {
-    LOG(ERROR) << "RepairChrome: Failed to read Chrome's UninstallString.";
-    return;
-  }
-
-  // Replace --uninstall with --do-not-launch-chrome to cause chrome to
-  // self-repair.
-  base::ReplaceFirstSubstringAfterOffset(
-      &setup_args, 0, base::UTF8ToUTF16(installer::switches::kUninstall),
-      base::UTF8ToUTF16(installer::switches::kDoNotLaunchChrome));
-  base::CommandLine setup_command(base::CommandLine::NO_PROGRAM);
-  InstallUtil::ComposeCommandLine(setup_path, setup_args, &setup_command);
-
-  // Run Chrome's installer so that it repairs itself. Break away from any job
-  // in which this operation is running so that Google Update doesn't wait
-  // around for the repair. Retry once without the attempt to break away in case
-  // this process doesn't have JOB_OBJECT_LIMIT_BREAKAWAY_OK.
-  base::LaunchOptions launch_options;
-  launch_options.force_breakaway_from_job_ = true;
-  while (true) {
-    if (base::LaunchProcess(setup_command, launch_options).IsValid()) {
-      LOG(INFO) << "RepairChrome: Launched repair command \""
-                << setup_command.GetCommandLineString() << "\"";
-      break;
-    } else {
-      PLOG(ERROR) << "RepairChrome: Failed launching repair command \""
-                  << setup_command.GetCommandLineString() << "\"";
-      if (launch_options.force_breakaway_from_job_) {
-        LOG(ERROR) << "RepairChrome: Will retry without breakaway.";
-        launch_options.force_breakaway_from_job_ = false;
-      } else {
-        break;
-      }
-    }
-  }
-#endif  // GOOGLE_CHROME_BUILD
-}
-
 installer::InstallStatus InstallProducts(
     const InstallationState& original_state,
     const base::FilePath& setup_exe,
@@ -1025,8 +911,6 @@ installer::InstallStatus InstallProducts(
 
   // Handle installer::UNUSED_BINARIES returned by CheckPreInstallConditions.
   UninstallBinariesIfUnused(original_state, *installer_state, &install_status);
-
-  RepairChromeIfBroken(original_state, *installer_state);
 
   return install_status;
 }
