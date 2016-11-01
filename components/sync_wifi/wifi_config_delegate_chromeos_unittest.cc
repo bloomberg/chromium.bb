@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "components/wifi_sync/wifi_config_delegate_chromeos.h"
+#include "components/sync_wifi/wifi_config_delegate_chromeos.h"
 
 #include <stddef.h>
 
@@ -14,10 +14,10 @@
 #include "base/values.h"
 #include "chromeos/network/managed_network_configuration_handler.h"
 #include "chromeos/network/network_handler_callbacks.h"
-#include "components/wifi_sync/wifi_credential.h"
+#include "components/sync_wifi/wifi_credential.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
-namespace wifi_sync {
+namespace sync_wifi {
 
 namespace {
 const char kSsid[] = "fake-ssid";
@@ -33,8 +33,7 @@ class FakeManagedNetworkConfigurationHandler
     : public chromeos::ManagedNetworkConfigurationHandler {
  public:
   FakeManagedNetworkConfigurationHandler()
-      : create_configuration_called_(false) {
-  }
+      : create_configuration_called_(false) {}
 
   // ManagedNetworkConfigurationHandler implementation.
   void AddObserver(chromeos::NetworkPolicyObserver* observer) override {
@@ -43,25 +42,22 @@ class FakeManagedNetworkConfigurationHandler
   void RemoveObserver(chromeos::NetworkPolicyObserver* observer) override {
     NOTIMPLEMENTED();
   }
-  void GetProperties(
-      const std::string& userhash,
-      const std::string& service_path,
-      const DictionaryResultCallback& callback,
-      const ErrorCallback& error_callback) override {
+  void GetProperties(const std::string& userhash,
+                     const std::string& service_path,
+                     const DictionaryResultCallback& callback,
+                     const ErrorCallback& error_callback) override {
     NOTIMPLEMENTED();
   }
-  void GetManagedProperties(
-      const std::string& userhash,
-      const std::string& service_path,
-      const DictionaryResultCallback& callback,
-      const ErrorCallback& error_callback) override {
+  void GetManagedProperties(const std::string& userhash,
+                            const std::string& service_path,
+                            const DictionaryResultCallback& callback,
+                            const ErrorCallback& error_callback) override {
     NOTIMPLEMENTED();
   }
-  void SetProperties(
-      const std::string& service_path,
-      const base::DictionaryValue& user_settings,
-      const base::Closure& callback,
-      const ErrorCallback& error_callback) override {
+  void SetProperties(const std::string& service_path,
+                     const base::DictionaryValue& user_settings,
+                     const base::Closure& callback,
+                     const ErrorCallback& error_callback) override {
     NOTIMPLEMENTED();
   }
   void CreateConfiguration(const std::string& userhash,
@@ -73,17 +69,15 @@ class FakeManagedNetworkConfigurationHandler
     create_configuration_success_callback_ = callback;
     create_configuration_error_callback_ = error_callback;
   }
-  void RemoveConfiguration(
-      const std::string& service_path,
-      const base::Closure& callback,
-      const ErrorCallback& error_callback) const override {
+  void RemoveConfiguration(const std::string& service_path,
+                           const base::Closure& callback,
+                           const ErrorCallback& error_callback) const override {
     NOTIMPLEMENTED();
   }
-  void SetPolicy(
-      ::onc::ONCSource onc_source,
-      const std::string& userhash,
-      const base::ListValue& network_configs_onc,
-      const base::DictionaryValue& global_network_config) override {
+  void SetPolicy(::onc::ONCSource onc_source,
+                 const std::string& userhash,
+                 const base::ListValue& network_configs_onc,
+                 const base::DictionaryValue& global_network_config) override {
     NOTIMPLEMENTED();
   }
   bool IsAnyPolicyApplicationRunning() const override {
@@ -137,11 +131,9 @@ class WifiConfigDelegateChromeOsTest : public testing::Test {
  protected:
   WifiConfigDelegateChromeOsTest()
       : fake_managed_network_configuration_handler_(
-          new FakeManagedNetworkConfigurationHandler()) {
-    config_delegate_.reset(
-        new WifiConfigDelegateChromeOs(
-            kUserHash,
-            fake_managed_network_configuration_handler_.get()));
+            new FakeManagedNetworkConfigurationHandler()) {
+    config_delegate_.reset(new WifiConfigDelegateChromeOs(
+        kUserHash, fake_managed_network_configuration_handler_.get()));
   }
 
   // Wrapper for WifiConfigDelegateChromeOs::AddToLocalNetworks.
@@ -228,4 +220,4 @@ TEST_F(WifiConfigDelegateChromeOsTest,
   }
 }
 
-}  // namespace wifi_sync
+}  // namespace sync_wifi

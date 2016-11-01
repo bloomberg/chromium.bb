@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "components/wifi_sync/wifi_config_delegate_chromeos.h"
+#include "components/sync_wifi/wifi_config_delegate_chromeos.h"
 
 #include <memory>
 
@@ -10,9 +10,9 @@
 #include "base/logging.h"
 #include "base/values.h"
 #include "chromeos/network/managed_network_configuration_handler.h"
-#include "components/wifi_sync/wifi_credential.h"
+#include "components/sync_wifi/wifi_credential.h"
 
-namespace wifi_sync {
+namespace sync_wifi {
 
 namespace {
 
@@ -36,8 +36,7 @@ WifiConfigDelegateChromeOs::WifiConfigDelegateChromeOs(
   DCHECK(managed_network_configuration_handler_);
 }
 
-WifiConfigDelegateChromeOs::~WifiConfigDelegateChromeOs() {
-}
+WifiConfigDelegateChromeOs::~WifiConfigDelegateChromeOs() {}
 
 void WifiConfigDelegateChromeOs::AddToLocalNetworks(
     const WifiCredential& network_credential) {
@@ -57,4 +56,4 @@ void WifiConfigDelegateChromeOs::AddToLocalNetworks(
       base::Bind(OnCreateConfigurationFailed, network_credential));
 }
 
-}  // namespace wifi_sync
+}  // namespace sync_wifi

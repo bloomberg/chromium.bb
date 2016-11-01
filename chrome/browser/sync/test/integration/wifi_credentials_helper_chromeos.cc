@@ -19,13 +19,13 @@
 #include "chromeos/network/network_handler.h"
 #include "chromeos/network/network_state_handler.h"
 #include "components/onc/onc_constants.h"
-#include "components/wifi_sync/network_state_helper_chromeos.h"
-#include "components/wifi_sync/wifi_credential_syncable_service_factory.h"
+#include "components/sync_wifi/network_state_helper_chromeos.h"
+#include "components/sync_wifi/wifi_credential_syncable_service_factory.h"
 #include "content/public/browser/browser_context.h"
 
-using wifi_sync::WifiCredential;
+using sync_wifi::WifiCredential;
 
-using WifiCredentialSet = wifi_sync::WifiCredential::CredentialSet;
+using WifiCredentialSet = sync_wifi::WifiCredential::CredentialSet;
 
 namespace wifi_credentials_helper {
 
@@ -78,7 +78,7 @@ GetManagedNetworkConfigurationHandler() {
 namespace chromeos {
 
 void SetUpChromeOs() {
-  wifi_sync::WifiCredentialSyncableServiceFactory::GetInstance()
+  sync_wifi::WifiCredentialSyncableServiceFactory::GetInstance()
       ->set_ignore_login_state_for_test(true);
 }
 
@@ -118,7 +118,7 @@ void AddWifiCredentialToProfileChromeOs(
 WifiCredentialSet GetWifiCredentialsForProfileChromeOs(
     const content::BrowserContext* browser_context) {
   DCHECK(browser_context);
-  return wifi_sync::GetWifiCredentialsForShillProfile(
+  return sync_wifi::GetWifiCredentialsForShillProfile(
       GetNetworkStateHandler(),
       ShillProfilePathForBrowserContext(*browser_context));
 }

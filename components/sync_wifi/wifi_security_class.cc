@@ -2,12 +2,12 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "components/wifi_sync/wifi_security_class.h"
+#include "components/sync_wifi/wifi_security_class.h"
 
 #include "base/logging.h"
 #include "components/onc/onc_constants.h"
 
-namespace wifi_sync {
+namespace sync_wifi {
 
 bool WifiSecurityClassSupportsPassphrases(
     const WifiSecurityClass security_class) {
@@ -86,4 +86,4 @@ bool WifiSecurityClassToOncSecurityString(WifiSecurityClass security_class,
   return false;
 }
 
-}  // namespace wifi_sync
+}  // namespace sync_wifi

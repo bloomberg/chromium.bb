@@ -104,8 +104,8 @@
 #if defined(OS_CHROMEOS)
 #include "chrome/browser/ui/app_list/arc/arc_package_sync_data_type_controller.h"
 #include "chrome/browser/ui/app_list/arc/arc_package_syncable_service.h"
-#include "components/wifi_sync/wifi_credential_syncable_service.h"
-#include "components/wifi_sync/wifi_credential_syncable_service_factory.h"
+#include "components/sync_wifi/wifi_credential_syncable_service.h"
+#include "components/sync_wifi/wifi_credential_syncable_service_factory.h"
 #endif
 
 using content::BrowserThread;
@@ -412,8 +412,9 @@ ChromeSyncClient::GetSyncableServiceForType(syncer::ModelType type) {
     }
 #if defined(OS_CHROMEOS)
     case syncer::WIFI_CREDENTIALS:
-      return wifi_sync::WifiCredentialSyncableServiceFactory::
-          GetForBrowserContext(profile_)->AsWeakPtr();
+      return sync_wifi::WifiCredentialSyncableServiceFactory::
+          GetForBrowserContext(profile_)
+              ->AsWeakPtr();
     case syncer::ARC_PACKAGE:
       return arc::ArcPackageSyncableService::Get(profile_)->AsWeakPtr();
 #endif

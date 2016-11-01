@@ -2,10 +2,10 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef COMPONENTS_WIFI_SYNC_WIFI_CONFIG_DELEGATE_H_
-#define COMPONENTS_WIFI_SYNC_WIFI_CONFIG_DELEGATE_H_
+#ifndef COMPONENTS_SYNC_WIFI_WIFI_CONFIG_DELEGATE_H_
+#define COMPONENTS_SYNC_WIFI_WIFI_CONFIG_DELEGATE_H_
 
-namespace wifi_sync {
+namespace sync_wifi {
 
 class WifiCredential;
 
@@ -18,10 +18,9 @@ class WifiConfigDelegate {
   // Adds a local network configuration entry for a WiFi network using
   // the properties of |network_credential|. If the entry already
   // exists, the entry's passphrase is updated.
-  virtual void AddToLocalNetworks(
-      const WifiCredential& network_credential) = 0;
+  virtual void AddToLocalNetworks(const WifiCredential& network_credential) = 0;
 };
 
-}  // namespace wifi_sync
+}  // namespace sync_wifi
 
-#endif  // COMPONENTS_WIFI_SYNC_WIFI_CONFIG_DELEGATE_H_
+#endif  // COMPONENTS_SYNC_WIFI_WIFI_CONFIG_DELEGATE_H_

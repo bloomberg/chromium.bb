@@ -2,12 +2,12 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "components/wifi_sync/wifi_security_class.h"
+#include "components/sync_wifi/wifi_security_class.h"
 
 #include "components/onc/onc_constants.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
-namespace wifi_sync {
+namespace sync_wifi {
 
 TEST(WifiSecurityClassTest, WifiSecurityClassSupportsPassphrases) {
   EXPECT_FALSE(WifiSecurityClassSupportsPassphrases(SECURITY_CLASS_NONE));
@@ -48,24 +48,24 @@ TEST(WifiSecurityClassTest, WifiSecurityClassToSyncSecurityClass) {
 TEST(WifiSecurityClassTest, WifiSecurityClassToOncSecurityString) {
   std::string security_string;
 
-  EXPECT_TRUE(WifiSecurityClassToOncSecurityString(
-      SECURITY_CLASS_NONE, &security_string));
+  EXPECT_TRUE(WifiSecurityClassToOncSecurityString(SECURITY_CLASS_NONE,
+                                                   &security_string));
   EXPECT_EQ(onc::wifi::kSecurityNone, security_string);
 
-  EXPECT_TRUE(WifiSecurityClassToOncSecurityString(
-      SECURITY_CLASS_WEP, &security_string));
+  EXPECT_TRUE(WifiSecurityClassToOncSecurityString(SECURITY_CLASS_WEP,
+                                                   &security_string));
   EXPECT_EQ(onc::wifi::kWEP_PSK, security_string);
 
-  EXPECT_TRUE(WifiSecurityClassToOncSecurityString(
-      SECURITY_CLASS_PSK, &security_string));
+  EXPECT_TRUE(WifiSecurityClassToOncSecurityString(SECURITY_CLASS_PSK,
+                                                   &security_string));
   EXPECT_EQ(onc::wifi::kWPA_PSK, security_string);
 
   EXPECT_TRUE(WifiSecurityClassToOncSecurityString(SECURITY_CLASS_802_1X,
                                                    &security_string));
   EXPECT_EQ(onc::wifi::kWPA_EAP, security_string);
 
-  EXPECT_FALSE(WifiSecurityClassToOncSecurityString(
-      SECURITY_CLASS_INVALID, &security_string));
+  EXPECT_FALSE(WifiSecurityClassToOncSecurityString(SECURITY_CLASS_INVALID,
+                                                    &security_string));
 }
 
-}  // namespace wifi_sync
+}  // namespace sync_wifi

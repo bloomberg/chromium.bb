@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "components/wifi_sync/wifi_credential_syncable_service_factory.h"
+#include "components/sync_wifi/wifi_credential_syncable_service_factory.h"
 
 #include <string>
 
@@ -10,18 +10,18 @@
 #include "base/memory/ptr_util.h"
 #include "build/build_config.h"
 #include "components/keyed_service/content/browser_context_dependency_manager.h"
-#include "components/wifi_sync/wifi_config_delegate.h"
-#include "components/wifi_sync/wifi_credential_syncable_service.h"
+#include "components/sync_wifi/wifi_config_delegate.h"
+#include "components/sync_wifi/wifi_credential_syncable_service.h"
 #include "content/public/browser/browser_context.h"
 
 #if defined(OS_CHROMEOS)
 #include "base/files/file_path.h"
 #include "chromeos/login/login_state.h"
 #include "chromeos/network/network_handler.h"
-#include "components/wifi_sync/wifi_config_delegate_chromeos.h"
+#include "components/sync_wifi/wifi_config_delegate_chromeos.h"
 #endif
 
-namespace wifi_sync {
+namespace sync_wifi {
 
 namespace {
 
@@ -68,17 +68,15 @@ WifiCredentialSyncableServiceFactory::GetInstance() {
 
 WifiCredentialSyncableServiceFactory::WifiCredentialSyncableServiceFactory()
     : BrowserContextKeyedServiceFactory(
-        "WifiCredentialSyncableService",
-        BrowserContextDependencyManager::GetInstance()) {
-}
+          "WifiCredentialSyncableService",
+          BrowserContextDependencyManager::GetInstance()) {}
 
-WifiCredentialSyncableServiceFactory::~WifiCredentialSyncableServiceFactory() {
-}
+WifiCredentialSyncableServiceFactory::~WifiCredentialSyncableServiceFactory() {}
 
 KeyedService* WifiCredentialSyncableServiceFactory::BuildServiceInstanceFor(
     content::BrowserContext* context) const {
-  // TODO(quiche): Figure out if this behaves properly for multi-profile.
-  // crbug.com/430681.
+// TODO(quiche): Figure out if this behaves properly for multi-profile.
+// crbug.com/430681.
 #if defined(OS_CHROMEOS)
   return new WifiCredentialSyncableService(
       BuildWifiConfigDelegateChromeOs(context));
@@ -102,4 +100,4 @@ WifiCredentialSyncableServiceFactory::BuildWifiConfigDelegateChromeOs(
 }
 #endif
 
-}  // namespace wifi_sync
+}  // namespace sync_wifi

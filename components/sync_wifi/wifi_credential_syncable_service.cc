@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "components/wifi_sync/wifi_credential_syncable_service.h"
+#include "components/sync_wifi/wifi_credential_syncable_service.h"
 
 #include <stdint.h>
 
@@ -16,10 +16,10 @@
 #include "components/sync/model/sync_error_factory.h"
 #include "components/sync/model/sync_merge_result.h"
 #include "components/sync/protocol/sync.pb.h"
-#include "components/wifi_sync/wifi_credential.h"
-#include "components/wifi_sync/wifi_security_class.h"
+#include "components/sync_wifi/wifi_credential.h"
+#include "components/sync_wifi/wifi_security_class.h"
 
-namespace wifi_sync {
+namespace sync_wifi {
 
 namespace {
 
@@ -113,8 +113,7 @@ WifiCredentialSyncableService::WifiCredentialSyncableService(
   DCHECK(network_config_delegate_);
 }
 
-WifiCredentialSyncableService::~WifiCredentialSyncableService() {
-}
+WifiCredentialSyncableService::~WifiCredentialSyncableService() {}
 
 syncer::SyncMergeResult WifiCredentialSyncableService::MergeDataAndStartSyncing(
     syncer::ModelType type,
@@ -205,8 +204,8 @@ bool WifiCredentialSyncableService::AddToSyncedNetworks(
     return false;
   }
 
-  const SsidAndSecurityClass network_id(
-      credential.ssid(), credential.security_class());
+  const SsidAndSecurityClass network_id(credential.ssid(),
+                                        credential.security_class());
   if (synced_networks_and_passphrases_.find(network_id) !=
       synced_networks_and_passphrases_.end()) {
     // TODO(quiche): If passphrase has changed, submit this to sync as
@@ -232,4 +231,4 @@ bool WifiCredentialSyncableService::AddToSyncedNetworks(
   return true;
 }
 
-}  // namespace wifi_sync
+}  // namespace sync_wifi

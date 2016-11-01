@@ -265,9 +265,9 @@ test("components_unittests") {
       "//components/arc:unit_tests",
       "//components/ownership:unit_tests",
       "//components/pairing:unit_tests",
+      "//components/sync_wifi:unit_tests",
       "//components/timers:unit_tests",
       "//components/user_manager:unit_tests",
-      "//components/wifi_sync:unit_tests",
     ]
   }
 

@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef COMPONENTS_WIFI_SYNC_WIFI_CREDENTIAL_SYNCABLE_SERVICE_FACTORY_H_
-#define COMPONENTS_WIFI_SYNC_WIFI_CREDENTIAL_SYNCABLE_SERVICE_FACTORY_H_
+#ifndef COMPONENTS_SYNC_WIFI_WIFI_CREDENTIAL_SYNCABLE_SERVICE_FACTORY_H_
+#define COMPONENTS_SYNC_WIFI_WIFI_CREDENTIAL_SYNCABLE_SERVICE_FACTORY_H_
 
 #include <memory>
 
@@ -16,7 +16,7 @@ namespace content {
 class BrowserContext;
 }
 
-namespace wifi_sync {
+namespace sync_wifi {
 
 class WifiConfigDelegate;
 class WifiCredentialSyncableService;
@@ -72,6 +72,6 @@ class WifiCredentialSyncableServiceFactory
   DISALLOW_COPY_AND_ASSIGN(WifiCredentialSyncableServiceFactory);
 };
 
-}  // namespace wifi_sync
+}  // namespace sync_wifi
 
-#endif  // COMPONENTS_WIFI_SYNC_WIFI_CREDENTIAL_SYNCABLE_SERVICE_FACTORY_H_
+#endif  // COMPONENTS_SYNC_WIFI_WIFI_CREDENTIAL_SYNCABLE_SERVICE_FACTORY_H_

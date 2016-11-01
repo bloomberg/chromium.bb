@@ -5,7 +5,7 @@
 #ifndef CHROME_BROWSER_SYNC_TEST_INTEGRATION_WIFI_CREDENTIALS_HELPER_CHROMEOS_H_
 #define CHROME_BROWSER_SYNC_TEST_INTEGRATION_WIFI_CREDENTIALS_HELPER_CHROMEOS_H_
 
-#include "components/wifi_sync/wifi_credential.h"
+#include "components/sync_wifi/wifi_credential.h"
 
 namespace content {
 class BrowserContext;
@@ -28,10 +28,10 @@ void SetupClientForProfileChromeOs(
 // corresponds to |browser_context|.
 void AddWifiCredentialToProfileChromeOs(
     const content::BrowserContext* browser_context,
-    const wifi_sync::WifiCredential& credential);
+    const sync_wifi::WifiCredential& credential);
 
 // Returns the ChromeOS WiFi credentials associated with |browser_context|.
-wifi_sync::WifiCredential::CredentialSet GetWifiCredentialsForProfileChromeOs(
+sync_wifi::WifiCredential::CredentialSet GetWifiCredentialsForProfileChromeOs(
     const content::BrowserContext* profile);
 
 }  // namespace chromeos

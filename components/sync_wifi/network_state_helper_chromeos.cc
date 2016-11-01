@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "components/wifi_sync/network_state_helper_chromeos.h"
+#include "components/sync_wifi/network_state_helper_chromeos.h"
 
 #include <memory>
 
@@ -10,9 +10,9 @@
 #include "chromeos/network/network_state.h"
 #include "chromeos/network/network_state_handler.h"
 #include "chromeos/network/network_type_pattern.h"
-#include "components/wifi_sync/wifi_security_class.h"
+#include "components/sync_wifi/wifi_security_class.h"
 
-namespace wifi_sync {
+namespace sync_wifi {
 
 WifiCredential::CredentialSet GetWifiCredentialsForShillProfile(
     chromeos::NetworkStateHandler* network_state_handler,
@@ -21,11 +21,8 @@ WifiCredential::CredentialSet GetWifiCredentialsForShillProfile(
 
   chromeos::NetworkStateHandler::NetworkStateList networks;
   network_state_handler->GetNetworkListByType(
-      chromeos::NetworkTypePattern::WiFi(),
-      true /* configured_only */,
-      false /* visible_only */,
-      0 /* unlimited result size */,
-      &networks);
+      chromeos::NetworkTypePattern::WiFi(), true /* configured_only */,
+      false /* visible_only */, 0 /* unlimited result size */, &networks);
 
   auto credentials(WifiCredential::MakeSet());
   for (const chromeos::NetworkState* network : networks) {
@@ -47,4 +44,4 @@ WifiCredential::CredentialSet GetWifiCredentialsForShillProfile(
   return credentials;
 }
 
-}  // namespace wifi_sync
+}  // namespace sync_wifi

@@ -2,7 +2,7 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
-source_set("wifi_sync") {
+source_set("sync_wifi") {
   sources = [
     "network_state_helper_chromeos.cc",
     "network_state_helper_chromeos.h",
@@ -47,7 +47,7 @@ source_set("unit_tests") {
   ]
 
   deps = [
-    ":wifi_sync",
+    ":sync_wifi",
     "//base",
     "//chromeos",
     "//components/onc",

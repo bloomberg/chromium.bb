@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "components/wifi_sync/wifi_credential_syncable_service.h"
+#include "components/sync_wifi/wifi_credential_syncable_service.h"
 
 #include <stdint.h>
 
@@ -23,12 +23,12 @@
 #include "components/sync/model/sync_error.h"
 #include "components/sync/model/sync_error_factory_mock.h"
 #include "components/sync/protocol/sync.pb.h"
-#include "components/wifi_sync/wifi_config_delegate.h"
-#include "components/wifi_sync/wifi_credential.h"
-#include "components/wifi_sync/wifi_security_class.h"
+#include "components/sync_wifi/wifi_config_delegate.h"
+#include "components/sync_wifi/wifi_credential.h"
+#include "components/sync_wifi/wifi_security_class.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
-namespace wifi_sync {
+namespace sync_wifi {
 
 using syncer::FakeSyncChangeProcessor;
 using syncer::SyncErrorFactoryMock;
@@ -294,8 +294,7 @@ TEST_F(WifiCredentialSyncableServiceTest,
   EXPECT_TRUE(AddToSyncedNetworks(
       "fake-item-id", MakeCredential(kSsidNonUtf8, SECURITY_CLASS_NONE, "")));
   EXPECT_TRUE(AddToSyncedNetworks(
-      "fake-item-id-2",
-      MakeCredential(kSsidNonUtf8, SECURITY_CLASS_WEP, "")));
+      "fake-item-id-2", MakeCredential(kSsidNonUtf8, SECURITY_CLASS_WEP, "")));
   EXPECT_EQ(2, change_processor_changes_size());
 }
 
@@ -313,31 +312,25 @@ TEST_F(WifiCredentialSyncableServiceTest,
        AddToSyncedNetworksDuplicateAddPskNetwork) {
   const std::string passphrase("psk-passphrase");
   StartSyncing();
-  EXPECT_TRUE(
-      AddToSyncedNetworks(
-          "fake-item-id",
-          MakeCredential(kSsidNonUtf8, SECURITY_CLASS_PSK, passphrase)));
+  EXPECT_TRUE(AddToSyncedNetworks(
+      "fake-item-id",
+      MakeCredential(kSsidNonUtf8, SECURITY_CLASS_PSK, passphrase)));
   EXPECT_EQ(1, change_processor_changes_size());
-  EXPECT_FALSE(
-      AddToSyncedNetworks(
-          "fake-item-id",
-          MakeCredential(kSsidNonUtf8, SECURITY_CLASS_PSK, passphrase)));
+  EXPECT_FALSE(AddToSyncedNetworks(
+      "fake-item-id",
+      MakeCredential(kSsidNonUtf8, SECURITY_CLASS_PSK, passphrase)));
   EXPECT_EQ(1, change_processor_changes_size());
 }
 
 TEST_F(WifiCredentialSyncableServiceTest,
        AddToSyncedNetworksDuplicateAddOpenNetwork) {
   StartSyncing();
-  EXPECT_TRUE(
-      AddToSyncedNetworks(
-          "fake-item-id",
-          MakeCredential(kSsidNonUtf8, SECURITY_CLASS_NONE, "")));
+  EXPECT_TRUE(AddToSyncedNetworks(
+      "fake-item-id", MakeCredential(kSsidNonUtf8, SECURITY_CLASS_NONE, "")));
   EXPECT_EQ(1, change_processor_changes_size());
-  EXPECT_FALSE(
-      AddToSyncedNetworks(
-          "fake-item-id",
-          MakeCredential(kSsidNonUtf8, SECURITY_CLASS_NONE, "")));
+  EXPECT_FALSE(AddToSyncedNetworks(
+      "fake-item-id", MakeCredential(kSsidNonUtf8, SECURITY_CLASS_NONE, "")));
   EXPECT_EQ(1, change_processor_changes_size());
 }
 
-}  // namespace wifi_sync
+}  // namespace sync_wifi

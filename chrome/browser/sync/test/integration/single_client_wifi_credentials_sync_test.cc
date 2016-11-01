@@ -11,12 +11,12 @@
 #include "chrome/browser/sync/test/integration/wifi_credentials_helper.h"
 #include "chrome/common/chrome_switches.h"
 #include "components/browser_sync/browser_sync_switches.h"
-#include "components/wifi_sync/wifi_credential.h"
-#include "components/wifi_sync/wifi_security_class.h"
+#include "components/sync_wifi/wifi_credential.h"
+#include "components/sync_wifi/wifi_security_class.h"
 
-using wifi_sync::WifiCredential;
+using sync_wifi::WifiCredential;
 
-using WifiCredentialSet = wifi_sync::WifiCredential::CredentialSet;
+using WifiCredentialSet = sync_wifi::WifiCredential::CredentialSet;
 
 class SingleClientWifiCredentialsSyncTest : public SyncTest {
  public:
@@ -57,7 +57,7 @@ IN_PROC_BROWSER_TEST_F(SingleClientWifiCredentialsSyncTest, SingleCredential) {
   const char ssid[] = "fake-ssid";
   std::unique_ptr<WifiCredential> credential =
       wifi_credentials_helper::MakeWifiCredential(
-          ssid, wifi_sync::SECURITY_CLASS_PSK, "fake_passphrase");
+          ssid, sync_wifi::SECURITY_CLASS_PSK, "fake_passphrase");
   ASSERT_TRUE(credential);
 
   const size_t profile_index = 0;

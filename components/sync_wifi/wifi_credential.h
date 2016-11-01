@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef COMPONENTS_WIFI_SYNC_WIFI_CREDENTIAL_H_
-#define COMPONENTS_WIFI_SYNC_WIFI_CREDENTIAL_H_
+#ifndef COMPONENTS_SYNC_WIFI_WIFI_CREDENTIAL_H_
+#define COMPONENTS_SYNC_WIFI_WIFI_CREDENTIAL_H_
 
 #include <stdint.h>
 
@@ -12,13 +12,13 @@
 #include <string>
 #include <vector>
 
-#include "components/wifi_sync/wifi_security_class.h"
+#include "components/sync_wifi/wifi_security_class.h"
 
 namespace base {
 class DictionaryValue;
 }
 
-namespace wifi_sync {
+namespace sync_wifi {
 
 // A container to hold the information required to locate and connect
 // to a WiFi network.
@@ -29,9 +29,9 @@ class WifiCredential final {  // final because the class is copyable
   // (inclusive). There are no restrictions on the values of those
   // bytes. The SSID is not, e.g., required to be encoded as UTF-8.
   using SsidBytes = std::vector<uint8_t>;
-  using CredentialSet = std::set<
-      WifiCredential,
-      bool(*)(const WifiCredential&a, const WifiCredential& b)>;
+  using CredentialSet =
+      std::set<WifiCredential,
+               bool (*)(const WifiCredential& a, const WifiCredential& b)>;
 
   WifiCredential(const WifiCredential& other);
   ~WifiCredential();
@@ -89,6 +89,6 @@ class WifiCredential final {  // final because the class is copyable
   const std::string passphrase_;
 };
 
-}  // namespace wifi_sync
+}  // namespace sync_wifi
 
-#endif  // COMPONENTS_WIFI_SYNC_WIFI_CREDENTIAL_H_
+#endif  // COMPONENTS_SYNC_WIFI_WIFI_CREDENTIAL_H_

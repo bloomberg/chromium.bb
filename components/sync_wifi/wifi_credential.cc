@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "components/wifi_sync/wifi_credential.h"
+#include "components/sync_wifi/wifi_credential.h"
 
 #include "base/i18n/streaming_utf8_validator.h"
 #include "base/logging.h"
@@ -12,12 +12,11 @@
 #include "base/values.h"
 #include "components/onc/onc_constants.h"
 
-namespace wifi_sync {
+namespace sync_wifi {
 
 WifiCredential::WifiCredential(const WifiCredential& other) = default;
 
-WifiCredential::~WifiCredential() {
-}
+WifiCredential::~WifiCredential() {}
 
 // static
 std::unique_ptr<WifiCredential> WifiCredential::Create(
@@ -79,11 +78,10 @@ std::string WifiCredential::ToString() const {
 }
 
 // static
-bool WifiCredential::IsLessThan(
-    const WifiCredential& a, const WifiCredential& b) {
-  return a.ssid_ < b.ssid_ ||
-      a.security_class_< b.security_class_ ||
-      a.passphrase_ < b.passphrase_;
+bool WifiCredential::IsLessThan(const WifiCredential& a,
+                                const WifiCredential& b) {
+  return a.ssid_ < b.ssid_ || a.security_class_ < b.security_class_ ||
+         a.passphrase_ < b.passphrase_;
 }
 
 // static
@@ -99,13 +97,9 @@ WifiCredential::SsidBytes WifiCredential::MakeSsidBytesForTest(
 
 // Private methods.
 
-WifiCredential::WifiCredential(
-    const std::vector<unsigned char>& ssid,
-    WifiSecurityClass security_class,
-    const std::string& passphrase)
-    : ssid_(ssid),
-      security_class_(security_class),
-      passphrase_(passphrase) {
-}
+WifiCredential::WifiCredential(const std::vector<unsigned char>& ssid,
+                               WifiSecurityClass security_class,
+                               const std::string& passphrase)
+    : ssid_(ssid), security_class_(security_class), passphrase_(passphrase) {}
 
-}  // namespace wifi_sync
+}  // namespace sync_wifi

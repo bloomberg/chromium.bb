@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "components/wifi_sync/wifi_credential.h"
+#include "components/sync_wifi/wifi_credential.h"
 
 #include <memory>
 
@@ -11,7 +11,7 @@
 #include "components/onc/onc_constants.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
-namespace wifi_sync {
+namespace sync_wifi {
 
 namespace {
 
@@ -33,8 +33,8 @@ WifiCredential MakeCredential(const std::string& ssid,
 
 bool TypeIsWifi(const base::DictionaryValue& onc_properties) {
   std::string network_type;
-  EXPECT_TRUE(onc_properties.GetString(
-      onc::toplevel_config::kType, &network_type));
+  EXPECT_TRUE(
+      onc_properties.GetString(onc::toplevel_config::kType, &network_type));
   return network_type == onc::network_type::kWiFi;
 }
 
@@ -131,4 +131,4 @@ TEST(WifiCredentialTest, ToOncPropertiesSsidNonUtf8) {
   EXPECT_FALSE(onc_properties);
 }
 
-}  // namespace wifi_sync
+}  // namespace sync_wifi

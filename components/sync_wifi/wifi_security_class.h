@@ -2,15 +2,15 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef COMPONENTS_WIFI_SYNC_WIFI_SECURITY_CLASS_H_
-#define COMPONENTS_WIFI_SYNC_WIFI_SECURITY_CLASS_H_
+#ifndef COMPONENTS_SYNC_WIFI_WIFI_SECURITY_CLASS_H_
+#define COMPONENTS_SYNC_WIFI_WIFI_SECURITY_CLASS_H_
 
 #include <string>
 
 #include "build/build_config.h"
 #include "components/sync/protocol/sync.pb.h"
 
-namespace wifi_sync {
+namespace sync_wifi {
 
 enum WifiSecurityClass {
   SECURITY_CLASS_INVALID,
@@ -27,8 +27,7 @@ bool WifiSecurityClassSupportsPassphrases(WifiSecurityClass security_class);
 // Converts from Chrome Sync's serialized form of a security class, to
 // a WifiSecurityClass. Returns the appropriate WifiSecurityClass
 // value. If |sync_enum| is unrecognized, returns SECURITY_CLASS_INVALID.
-WifiSecurityClass
-WifiSecurityClassFromSyncSecurityClass(
+WifiSecurityClass WifiSecurityClassFromSyncSecurityClass(
     sync_pb::WifiCredentialSpecifics_SecurityClass sync_enum);
 
 // Converts from a WifiSecurityClass enum to Chrome Sync's serialized
@@ -54,6 +53,6 @@ WifiSecurityClass WifiSecurityClassFromShillSecurity(
     const std::string& shill_security);
 #endif  // OS_CHROMEOS
 
-}  // namespace wifi_sync
+}  // namespace sync_wifi
 
-#endif  // COMPONENTS_WIFI_SYNC_WIFI_SECURITY_CLASS_H_
+#endif  // COMPONENTS_SYNC_WIFI_WIFI_SECURITY_CLASS_H_

@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef COMPONENTS_WIFI_SYNC_WIFI_CREDENTIAL_SYNCABLE_SERVICE_H_
-#define COMPONENTS_WIFI_SYNC_WIFI_CREDENTIAL_SYNCABLE_SERVICE_H_
+#ifndef COMPONENTS_SYNC_WIFI_WIFI_CREDENTIAL_SYNCABLE_SERVICE_H_
+#define COMPONENTS_SYNC_WIFI_WIFI_CREDENTIAL_SYNCABLE_SERVICE_H_
 
 #include <map>
 #include <memory>
@@ -14,11 +14,11 @@
 #include "components/keyed_service/core/keyed_service.h"
 #include "components/sync/model/sync_change_processor.h"
 #include "components/sync/model/syncable_service.h"
-#include "components/wifi_sync/wifi_config_delegate.h"
-#include "components/wifi_sync/wifi_credential.h"
-#include "components/wifi_sync/wifi_security_class.h"
+#include "components/sync_wifi/wifi_config_delegate.h"
+#include "components/sync_wifi/wifi_credential.h"
+#include "components/sync_wifi/wifi_security_class.h"
 
-namespace wifi_sync {
+namespace sync_wifi {
 
 // KeyedService that synchronizes WiFi credentials between local settings,
 // and Chrome Sync.
@@ -30,8 +30,8 @@ namespace wifi_sync {
 // On ChromeOS, this class should only be instantiated
 // for the primary user profile, as that is the only profile for
 // which a Shill profile is loaded.
-class WifiCredentialSyncableService
-    : public syncer::SyncableService, public KeyedService {
+class WifiCredentialSyncableService : public syncer::SyncableService,
+                                      public KeyedService {
  public:
   // Constructs a syncable service. Changes from Chrome Sync will be
   // applied locally by |network_config_delegate|. Local changes will
@@ -89,6 +89,6 @@ class WifiCredentialSyncableService
   DISALLOW_COPY_AND_ASSIGN(WifiCredentialSyncableService);
 };
 
-}  // namespace wifi_sync
+}  // namespace sync_wifi
 
-#endif  // COMPONENTS_WIFI_SYNC_WIFI_CREDENTIAL_SYNCABLE_SERVICE_H_
+#endif  // COMPONENTS_SYNC_WIFI_WIFI_CREDENTIAL_SYNCABLE_SERVICE_H_

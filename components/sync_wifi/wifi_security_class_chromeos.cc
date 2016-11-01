@@ -2,11 +2,11 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "components/wifi_sync/wifi_security_class.h"
+#include "components/sync_wifi/wifi_security_class.h"
 
 #include "third_party/cros_system_api/dbus/service_constants.h"
 
-namespace wifi_sync {
+namespace sync_wifi {
 
 WifiSecurityClass WifiSecurityClassFromShillSecurity(
     const std::string& shill_security) {
@@ -21,4 +21,4 @@ WifiSecurityClass WifiSecurityClassFromShillSecurity(
   return SECURITY_CLASS_INVALID;
 }
 
-}  // namespace wifi_sync
+}  // namespace sync_wifi

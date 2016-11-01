@@ -8,8 +8,8 @@
 #include <memory>
 #include <string>
 
-#include "components/wifi_sync/wifi_credential.h"
-#include "components/wifi_sync/wifi_security_class.h"
+#include "components/sync_wifi/wifi_credential.h"
+#include "components/sync_wifi/wifi_security_class.h"
 
 class Profile;
 
@@ -39,20 +39,20 @@ bool ProfileMatchesVerifier(int profile_index);
 bool AllProfilesMatch();
 
 // Returns a new WifiCredential constructed from the given parameters.
-std::unique_ptr<wifi_sync::WifiCredential> MakeWifiCredential(
+std::unique_ptr<sync_wifi::WifiCredential> MakeWifiCredential(
     const std::string& ssid,
-    wifi_sync::WifiSecurityClass security_class,
+    sync_wifi::WifiSecurityClass security_class,
     const std::string& passphrase);
 
 // Adds a WiFi credential to the service at index |profile_index|,
 // and the verifier (if the SyncTest uses a verifier).
 void AddWifiCredential(int profile_index,
                        const std::string& sync_id,
-                       const wifi_sync::WifiCredential& credential);
+                       const sync_wifi::WifiCredential& credential);
 
 // Returns the set of WifiCredentials configured in local network
 // settings, for |profile|.
-wifi_sync::WifiCredential::CredentialSet GetWifiCredentialsForProfile(
+sync_wifi::WifiCredential::CredentialSet GetWifiCredentialsForProfile(
     const Profile* profile);
 
 }  // namespace wifi_credentials_helper

@@ -2,19 +2,19 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef COMPONENTS_WIFI_SYNC_WIFI_CONFIG_DELEGATE_CHROMEOS_H_
-#define COMPONENTS_WIFI_SYNC_WIFI_CONFIG_DELEGATE_CHROMEOS_H_
+#ifndef COMPONENTS_SYNC_WIFI_WIFI_CONFIG_DELEGATE_CHROMEOS_H_
+#define COMPONENTS_SYNC_WIFI_WIFI_CONFIG_DELEGATE_CHROMEOS_H_
 
 #include <string>
 
 #include "base/macros.h"
-#include "components/wifi_sync/wifi_config_delegate.h"
+#include "components/sync_wifi/wifi_config_delegate.h"
 
 namespace chromeos {
 class ManagedNetworkConfigurationHandler;
 }
 
-namespace wifi_sync {
+namespace sync_wifi {
 
 // ChromeOS-specific implementation of the WifiConfigDelegate interface.
 class WifiConfigDelegateChromeOs : public WifiConfigDelegate {
@@ -44,6 +44,6 @@ class WifiConfigDelegateChromeOs : public WifiConfigDelegate {
   DISALLOW_COPY_AND_ASSIGN(WifiConfigDelegateChromeOs);
 };
 
-}  // namespace wifi_sync
+}  // namespace sync_wifi
 
-#endif  // COMPONENTS_WIFI_SYNC_WIFI_CONFIG_DELEGATE_CHROMEOS_H_
+#endif  // COMPONENTS_SYNC_WIFI_WIFI_CONFIG_DELEGATE_CHROMEOS_H_

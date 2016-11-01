@@ -69,8 +69,8 @@ source_set("chromeos") {
     "//components/proxy_config",
     "//components/safe_browsing_db:metadata_proto",
     "//components/session_manager/core",
+    "//components/sync_wifi",
     "//components/user_manager",
-    "//components/wifi_sync",
 
     # This depends directly on the variations target, rather than just
     # transitively via the common target because the proto sources need to
