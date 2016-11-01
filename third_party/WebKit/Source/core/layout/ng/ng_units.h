@@ -92,6 +92,7 @@ struct NGPhysicalRect {
   NGPhysicalSize size;
 };
 
+// TODO(glebl): move to a separate file in layout/ng/units.
 struct CORE_EXPORT NGLogicalRect {
   NGLogicalRect() {}
   NGLogicalRect(LayoutUnit inline_offset,
@@ -101,8 +102,29 @@ struct CORE_EXPORT NGLogicalRect {
       : offset(inline_offset, block_offset), size(inline_size, block_size) {}
 
   bool IsEmpty() const;
+
+  // Whether this rectangle is contained by the provided rectangle.
+  bool IsContained(const NGLogicalRect& other) const;
+
   String ToString() const;
   bool operator==(const NGLogicalRect& other) const;
+
+  // Getters
+  LayoutUnit InlineStartOffset() const { return offset.inline_offset; }
+
+  LayoutUnit InlineEndOffset() const {
+    return offset.inline_offset + size.inline_size;
+  }
+
+  LayoutUnit BlockStartOffset() const { return offset.block_offset; }
+
+  LayoutUnit BlockEndOffset() const {
+    return offset.block_offset + size.block_size;
+  }
+
+  LayoutUnit BlockSize() const { return size.block_size; }
+
+  LayoutUnit InlineSize() const { return size.inline_size; }
 
   NGLogicalOffset offset;
   NGLogicalSize size;

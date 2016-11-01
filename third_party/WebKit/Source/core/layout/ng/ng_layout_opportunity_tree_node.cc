@@ -11,7 +11,7 @@ namespace blink {
 
 NGLayoutOpportunityTreeNode::NGLayoutOpportunityTreeNode(
     const NGLogicalRect opportunity)
-    : opportunity(opportunity) {
+    : opportunity(opportunity), exclusion(nullptr) {
   exclusion_edge.start = opportunity.offset.inline_offset;
   exclusion_edge.end = exclusion_edge.start + opportunity.size.inline_size;
 }
@@ -19,13 +19,14 @@ NGLayoutOpportunityTreeNode::NGLayoutOpportunityTreeNode(
 NGLayoutOpportunityTreeNode::NGLayoutOpportunityTreeNode(
     const NGLogicalRect opportunity,
     NGEdge exclusion_edge)
-    : opportunity(opportunity), exclusion_edge(exclusion_edge) {}
+    : opportunity(opportunity),
+      exclusion_edge(exclusion_edge),
+      exclusion(nullptr) {}
 
 DEFINE_TRACE(NGLayoutOpportunityTreeNode) {
   visitor->trace(left);
   visitor->trace(bottom);
   visitor->trace(right);
-  visitor->trace(exclusion);
 }
 
 }  // namespace blink

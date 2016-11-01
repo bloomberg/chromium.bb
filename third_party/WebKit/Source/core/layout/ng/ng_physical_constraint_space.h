@@ -27,33 +27,6 @@ enum NGFragmentationType {
   FragmentRegion
 };
 
-struct NGExclusion : public GarbageCollected<NGExclusion> {
-  NGExclusion(LayoutUnit top,
-              LayoutUnit right,
-              LayoutUnit bottom,
-              LayoutUnit left) {
-    rect.offset.left = left;
-    rect.offset.top = top;
-    rect.size.width = right - left;
-    rect.size.height = bottom - top;
-  }
-  LayoutUnit Top() const { return rect.offset.top; }
-  LayoutUnit Right() const { return rect.size.width + rect.offset.left; }
-  LayoutUnit Bottom() const { return rect.size.height + rect.offset.top; }
-  LayoutUnit Left() const { return rect.offset.left; }
-
-  String ToString() const {
-    return String::format("%s,%s %sx%s",
-                          rect.offset.left.toString().ascii().data(),
-                          rect.offset.top.toString().ascii().data(),
-                          rect.size.width.toString().ascii().data(),
-                          rect.size.height.toString().ascii().data());
-  }
-  NGPhysicalRect rect;
-
-  DEFINE_INLINE_TRACE() {}
-};
-
 // The NGPhysicalConstraintSpace contains the underlying data for the
 // NGConstraintSpace. It is not meant to be used directly as all members are in
 // the physical coordinate space. Instead NGConstraintSpace should be used.
@@ -72,11 +45,11 @@ class CORE_EXPORT NGPhysicalConstraintSpace final
 
   NGPhysicalSize ContainerSize() const { return container_size_; }
 
-  void AddExclusion(const NGExclusion*, unsigned options = 0);
-  const HeapVector<Member<const NGExclusion>>& Exclusions(
+  void AddExclusion(const NGLogicalRect&, unsigned options = 0);
+  const Vector<std::unique_ptr<const NGLogicalRect>>& Exclusions(
       unsigned options = 0) const;
 
-  DEFINE_INLINE_TRACE() { visitor->trace(exclusions_); }
+  DEFINE_INLINE_TRACE() {}
 
  private:
   friend class NGConstraintSpace;
@@ -94,7 +67,7 @@ class CORE_EXPORT NGPhysicalConstraintSpace final
   // formatting Context
   unsigned is_new_fc_ : 1;
 
-  HeapVector<Member<const NGExclusion>> exclusions_;
+  Vector<std::unique_ptr<const NGLogicalRect>> exclusions_;
 };
 
 }  // namespace blink

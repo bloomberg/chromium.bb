@@ -28,6 +28,13 @@ bool NGLogicalRect::IsEmpty() const {
   return *this == NGLogicalRect();
 }
 
+bool NGLogicalRect::IsContained(const NGLogicalRect& other) const {
+  return !(InlineEndOffset() <= other.InlineStartOffset() ||
+           BlockEndOffset() <= other.BlockStartOffset() ||
+           InlineStartOffset() >= other.InlineEndOffset() ||
+           BlockStartOffset() >= other.BlockEndOffset());
+}
+
 bool NGLogicalRect::operator==(const NGLogicalRect& other) const {
   return std::tie(other.offset, other.size) == std::tie(offset, size);
 }

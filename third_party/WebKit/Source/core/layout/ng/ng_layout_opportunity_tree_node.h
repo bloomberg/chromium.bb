@@ -10,13 +10,13 @@
 
 namespace blink {
 
-struct NGExclusion;
 
 // 3 node R-Tree that represents available space(left, bottom, right) or
 // layout opportunity after the parent spatial rectangle is split by the
 // exclusion rectangle.
 struct CORE_EXPORT NGLayoutOpportunityTreeNode
     : public GarbageCollected<NGLayoutOpportunityTreeNode> {
+ public:
   // Default constructor.
   // Creates a Layout Opportunity tree node that is limited by it's own edge
   // from above.
@@ -34,14 +34,14 @@ struct CORE_EXPORT NGLayoutOpportunityTreeNode
   Member<NGLayoutOpportunityTreeNode> bottom;
   Member<NGLayoutOpportunityTreeNode> right;
 
-  // Exclusion that split apart this layout opportunity.
-  Member<const NGExclusion> exclusion;
-
   // The top layout opportunity associated with this node.
   NGLogicalRect opportunity;
 
   // Edge that limits this layout opportunity from above.
   NGEdge exclusion_edge;
+
+  // Exclusion that splits apart this layout opportunity.
+  const NGLogicalRect* exclusion;  // Not owned.
 
   // Whether this node is a leaf node.
   // The node is a leaf if it doesn't have an exclusion that splits it apart.
