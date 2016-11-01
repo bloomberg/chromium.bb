@@ -30,38 +30,6 @@ CONSOLE ERROR: line 99: Error: <marker> attribute orient: Expected angle, "E-".
 CONSOLE ERROR: line 99: Error: <marker> attribute orient: Expected angle, "E-deg".
 CONSOLE ERROR: line 99: Error: <marker> attribute orient: Expected angle, "E-rad".
 CONSOLE ERROR: line 99: Error: <marker> attribute orient: Expected angle, "E-grad".
-CONSOLE ERROR: line 99: Error: <marker> attribute orient: Expected angle, "-".
-CONSOLE ERROR: line 99: Error: <marker> attribute orient: Expected angle, "-deg".
-CONSOLE ERROR: line 99: Error: <marker> attribute orient: Expected angle, "-rad".
-CONSOLE ERROR: line 99: Error: <marker> attribute orient: Expected angle, "-grad".
-CONSOLE ERROR: line 99: Error: <marker> attribute orient: Expected angle, "+".
-CONSOLE ERROR: line 99: Error: <marker> attribute orient: Expected angle, "+deg".
-CONSOLE ERROR: line 99: Error: <marker> attribute orient: Expected angle, "+rad".
-CONSOLE ERROR: line 99: Error: <marker> attribute orient: Expected angle, "+grad".
-CONSOLE ERROR: line 99: Error: <marker> attribute orient: Expected angle, "-.".
-CONSOLE ERROR: line 99: Error: <marker> attribute orient: Expected angle, "-.deg".
-CONSOLE ERROR: line 99: Error: <marker> attribute orient: Expected angle, "-.rad".
-CONSOLE ERROR: line 99: Error: <marker> attribute orient: Expected angle, "-.grad".
-CONSOLE ERROR: line 99: Error: <marker> attribute orient: Expected angle, ".-".
-CONSOLE ERROR: line 99: Error: <marker> attribute orient: Expected angle, ".-deg".
-CONSOLE ERROR: line 99: Error: <marker> attribute orient: Expected angle, ".-rad".
-CONSOLE ERROR: line 99: Error: <marker> attribute orient: Expected angle, ".-grad".
-CONSOLE ERROR: line 99: Error: <marker> attribute orient: Expected angle, ".".
-CONSOLE ERROR: line 99: Error: <marker> attribute orient: Expected angle, ".deg".
-CONSOLE ERROR: line 99: Error: <marker> attribute orient: Expected angle, ".rad".
-CONSOLE ERROR: line 99: Error: <marker> attribute orient: Expected angle, ".grad".
-CONSOLE ERROR: line 99: Error: <marker> attribute orient: Expected angle, "+.".
-CONSOLE ERROR: line 99: Error: <marker> attribute orient: Expected angle, "+.deg".
-CONSOLE ERROR: line 99: Error: <marker> attribute orient: Expected angle, "+.rad".
-CONSOLE ERROR: line 99: Error: <marker> attribute orient: Expected angle, "+.grad".
-CONSOLE ERROR: line 99: Error: <marker> attribute orient: Expected angle, ".E0".
-CONSOLE ERROR: line 99: Error: <marker> attribute orient: Expected angle, ".E0deg".
-CONSOLE ERROR: line 99: Error: <marker> attribute orient: Expected angle, ".E0rad".
-CONSOLE ERROR: line 99: Error: <marker> attribute orient: Expected angle, ".E0grad".
-CONSOLE ERROR: line 99: Error: <marker> attribute orient: Expected angle, "e1".
-CONSOLE ERROR: line 99: Error: <marker> attribute orient: Expected angle, "e1deg".
-CONSOLE ERROR: line 99: Error: <marker> attribute orient: Expected angle, "e1rad".
-CONSOLE ERROR: line 99: Error: <marker> attribute orient: Expected angle, "e1grad".
 CONSOLE ERROR: line 99: Error: <marker> attribute orient: Expected angle, "NaN ".
 CONSOLE ERROR: line 99: Error: <marker> attribute orient: Expected angle, "NaNdeg ".
 CONSOLE ERROR: line 99: Error: <marker> attribute orient: Expected angle, "NaNrad ".
@@ -94,38 +62,6 @@ CONSOLE ERROR: line 99: Error: <marker> attribute orient: Expected angle, "E- ".
 CONSOLE ERROR: line 99: Error: <marker> attribute orient: Expected angle, "E-deg ".
 CONSOLE ERROR: line 99: Error: <marker> attribute orient: Expected angle, "E-rad ".
 CONSOLE ERROR: line 99: Error: <marker> attribute orient: Expected angle, "E-grad ".
-CONSOLE ERROR: line 99: Error: <marker> attribute orient: Expected angle, "- ".
-CONSOLE ERROR: line 99: Error: <marker> attribute orient: Expected angle, "-deg ".
-CONSOLE ERROR: line 99: Error: <marker> attribute orient: Expected angle, "-rad ".
-CONSOLE ERROR: line 99: Error: <marker> attribute orient: Expected angle, "-grad ".
-CONSOLE ERROR: line 99: Error: <marker> attribute orient: Expected angle, "+ ".
-CONSOLE ERROR: line 99: Error: <marker> attribute orient: Expected angle, "+deg ".
-CONSOLE ERROR: line 99: Error: <marker> attribute orient: Expected angle, "+rad ".
-CONSOLE ERROR: line 99: Error: <marker> attribute orient: Expected angle, "+grad ".
-CONSOLE ERROR: line 99: Error: <marker> attribute orient: Expected angle, "-. ".
-CONSOLE ERROR: line 99: Error: <marker> attribute orient: Expected angle, "-.deg ".
-CONSOLE ERROR: line 99: Error: <marker> attribute orient: Expected angle, "-.rad ".
-CONSOLE ERROR: line 99: Error: <marker> attribute orient: Expected angle, "-.grad ".
-CONSOLE ERROR: line 99: Error: <marker> attribute orient: Expected angle, ".- ".
-CONSOLE ERROR: line 99: Error: <marker> attribute orient: Expected angle, ".-deg ".
-CONSOLE ERROR: line 99: Error: <marker> attribute orient: Expected angle, ".-rad ".
-CONSOLE ERROR: line 99: Error: <marker> attribute orient: Expected angle, ".-grad ".
-CONSOLE ERROR: line 99: Error: <marker> attribute orient: Expected angle, ". ".
-CONSOLE ERROR: line 99: Error: <marker> attribute orient: Expected angle, ".deg ".
-CONSOLE ERROR: line 99: Error: <marker> attribute orient: Expected angle, ".rad ".
-CONSOLE ERROR: line 99: Error: <marker> attribute orient: Expected angle, ".grad ".
-CONSOLE ERROR: line 99: Error: <marker> attribute orient: Expected angle, "+. ".
-CONSOLE ERROR: line 99: Error: <marker> attribute orient: Expected angle, "+.deg ".
-CONSOLE ERROR: line 99: Error: <marker> attribute orient: Expected angle, "+.rad ".
-CONSOLE ERROR: line 99: Error: <marker> attribute orient: Expected angle, "+.grad ".
-CONSOLE ERROR: line 99: Error: <marker> attribute orient: Expected angle, ".E0 ".
-CONSOLE ERROR: line 99: Error: <marker> attribute orient: Expected angle, ".E0deg ".
-CONSOLE ERROR: line 99: Error: <marker> attribute orient: Expected angle, ".E0rad ".
-CONSOLE ERROR: line 99: Error: <marker> attribute orient: Expected angle, ".E0grad ".
-CONSOLE ERROR: line 99: Error: <marker> attribute orient: Expected angle, "e1 ".
-CONSOLE ERROR: line 99: Error: <marker> attribute orient: Expected angle, "e1deg ".
-CONSOLE ERROR: line 99: Error: <marker> attribute orient: Expected angle, "e1rad ".
-CONSOLE ERROR: line 99: Error: <marker> attribute orient: Expected angle, "e1grad ".
 CONSOLE ERROR: line 99: Error: <marker> attribute orient: Expected angle, "NaN   ".
 CONSOLE ERROR: line 99: Error: <marker> attribute orient: Expected angle, "NaNdeg   ".
 CONSOLE ERROR: line 99: Error: <marker> attribute orient: Expected angle, "NaNrad   ".
@@ -158,38 +94,6 @@ CONSOLE ERROR: line 99: Error: <marker> attribute orient: Expected angle, "E-   
 CONSOLE ERROR: line 99: Error: <marker> attribute orient: Expected angle, "E-deg   ".
 CONSOLE ERROR: line 99: Error: <marker> attribute orient: Expected angle, "E-rad   ".
 CONSOLE ERROR: line 99: Error: <marker> attribute orient: Expected angle, "E-grad   ".
-CONSOLE ERROR: line 99: Error: <marker> attribute orient: Expected angle, "-   ".
-CONSOLE ERROR: line 99: Error: <marker> attribute orient: Expected angle, "-deg   ".
-CONSOLE ERROR: line 99: Error: <marker> attribute orient: Expected angle, "-rad   ".
-CONSOLE ERROR: line 99: Error: <marker> attribute orient: Expected angle, "-grad   ".
-CONSOLE ERROR: line 99: Error: <marker> attribute orient: Expected angle, "+   ".
-CONSOLE ERROR: line 99: Error: <marker> attribute orient: Expected angle, "+deg   ".
-CONSOLE ERROR: line 99: Error: <marker> attribute orient: Expected angle, "+rad   ".
-CONSOLE ERROR: line 99: Error: <marker> attribute orient: Expected angle, "+grad   ".
-CONSOLE ERROR: line 99: Error: <marker> attribute orient: Expected angle, "-.   ".
-CONSOLE ERROR: line 99: Error: <marker> attribute orient: Expected angle, "-.deg   ".
-CONSOLE ERROR: line 99: Error: <marker> attribute orient: Expected angle, "-.rad   ".
-CONSOLE ERROR: line 99: Error: <marker> attribute orient: Expected angle, "-.grad   ".
-CONSOLE ERROR: line 99: Error: <marker> attribute orient: Expected angle, ".-   ".
-CONSOLE ERROR: line 99: Error: <marker> attribute orient: Expected angle, ".-deg   ".
-CONSOLE ERROR: line 99: Error: <marker> attribute orient: Expected angle, ".-rad   ".
-CONSOLE ERROR: line 99: Error: <marker> attribute orient: Expected angle, ".-grad   ".
-CONSOLE ERROR: line 99: Error: <marker> attribute orient: Expected angle, ".   ".
-CONSOLE ERROR: line 99: Error: <marker> attribute orient: Expected angle, ".deg   ".
-CONSOLE ERROR: line 99: Error: <marker> attribute orient: Expected angle, ".rad   ".
-CONSOLE ERROR: line 99: Error: <marker> attribute orient: Expected angle, ".grad   ".
-CONSOLE ERROR: line 99: Error: <marker> attribute orient: Expected angle, "+.   ".
-CONSOLE ERROR: line 99: Error: <marker> attribute orient: Expected angle, "+.deg   ".
-CONSOLE ERROR: line 99: Error: <marker> attribute orient: Expected angle, "+.rad   ".
-CONSOLE ERROR: line 99: Error: <marker> attribute orient: Expected angle, "+.grad   ".
-CONSOLE ERROR: line 99: Error: <marker> attribute orient: Expected angle, ".E0   ".
-CONSOLE ERROR: line 99: Error: <marker> attribute orient: Expected angle, ".E0deg   ".
-CONSOLE ERROR: line 99: Error: <marker> attribute orient: Expected angle, ".E0rad   ".
-CONSOLE ERROR: line 99: Error: <marker> attribute orient: Expected angle, ".E0grad   ".
-CONSOLE ERROR: line 99: Error: <marker> attribute orient: Expected angle, "e1   ".
-CONSOLE ERROR: line 99: Error: <marker> attribute orient: Expected angle, "e1deg   ".
-CONSOLE ERROR: line 99: Error: <marker> attribute orient: Expected angle, "e1rad   ".
-CONSOLE ERROR: line 99: Error: <marker> attribute orient: Expected angle, "e1grad   ".
 CONSOLE ERROR: line 99: Error: <marker> attribute orient: Expected angle, "NaN\r\n\t ".
 CONSOLE ERROR: line 99: Error: <marker> attribute orient: Expected angle, "NaNdeg\r\n\t ".
 CONSOLE ERROR: line 99: Error: <marker> attribute orient: Expected angle, "NaNrad\r\n\t ".
@@ -222,38 +126,6 @@ CONSOLE ERROR: line 99: Error: <marker> attribute orient: Expected angle, "E-\r\
 CONSOLE ERROR: line 99: Error: <marker> attribute orient: Expected angle, "E-deg\r\n\t ".
 CONSOLE ERROR: line 99: Error: <marker> attribute orient: Expected angle, "E-rad\r\n\t ".
 CONSOLE ERROR: line 99: Error: <marker> attribute orient: Expected angle, "E-grad\r\n\t ".
-CONSOLE ERROR: line 99: Error: <marker> attribute orient: Expected angle, "-\r\n\t ".
-CONSOLE ERROR: line 99: Error: <marker> attribute orient: Expected angle, "-deg\r\n\t ".
-CONSOLE ERROR: line 99: Error: <marker> attribute orient: Expected angle, "-rad\r\n\t ".
-CONSOLE ERROR: line 99: Error: <marker> attribute orient: Expected angle, "-grad\r\n\t ".
-CONSOLE ERROR: line 99: Error: <marker> attribute orient: Expected angle, "+\r\n\t ".
-CONSOLE ERROR: line 99: Error: <marker> attribute orient: Expected angle, "+deg\r\n\t ".
-CONSOLE ERROR: line 99: Error: <marker> attribute orient: Expected angle, "+rad\r\n\t ".
-CONSOLE ERROR: line 99: Error: <marker> attribute orient: Expected angle, "+grad\r\n\t ".
-CONSOLE ERROR: line 99: Error: <marker> attribute orient: Expected angle, "-.\r\n\t ".
-CONSOLE ERROR: line 99: Error: <marker> attribute orient: Expected angle, "-.deg\r\n\t ".
-CONSOLE ERROR: line 99: Error: <marker> attribute orient: Expected angle, "-.rad\r\n\t ".
-CONSOLE ERROR: line 99: Error: <marker> attribute orient: Expected angle, "-.grad\r\n\t ".
-CONSOLE ERROR: line 99: Error: <marker> attribute orient: Expected angle, ".-\r\n\t ".
-CONSOLE ERROR: line 99: Error: <marker> attribute orient: Expected angle, ".-deg\r\n\t ".
-CONSOLE ERROR: line 99: Error: <marker> attribute orient: Expected angle, ".-rad\r\n\t ".
-CONSOLE ERROR: line 99: Error: <marker> attribute orient: Expected angle, ".-grad\r\n\t ".
-CONSOLE ERROR: line 99: Error: <marker> attribute orient: Expected angle, ".\r\n\t ".
-CONSOLE ERROR: line 99: Error: <marker> attribute orient: Expected angle, ".deg\r\n\t ".
-CONSOLE ERROR: line 99: Error: <marker> attribute orient: Expected angle, ".rad\r\n\t ".
-CONSOLE ERROR: line 99: Error: <marker> attribute orient: Expected angle, ".grad\r\n\t ".
-CONSOLE ERROR: line 99: Error: <marker> attribute orient: Expected angle, "+.\r\n\t ".
-CONSOLE ERROR: line 99: Error: <marker> attribute orient: Expected angle, "+.deg\r\n\t ".
-CONSOLE ERROR: line 99: Error: <marker> attribute orient: Expected angle, "+.rad\r\n\t ".
-CONSOLE ERROR: line 99: Error: <marker> attribute orient: Expected angle, "+.grad\r\n\t ".
-CONSOLE ERROR: line 99: Error: <marker> attribute orient: Expected angle, ".E0\r\n\t ".
-CONSOLE ERROR: line 99: Error: <marker> attribute orient: Expected angle, ".E0deg\r\n\t ".
-CONSOLE ERROR: line 99: Error: <marker> attribute orient: Expected angle, ".E0rad\r\n\t ".
-CONSOLE ERROR: line 99: Error: <marker> attribute orient: Expected angle, ".E0grad\r\n\t ".
-CONSOLE ERROR: line 99: Error: <marker> attribute orient: Expected angle, "e1\r\n\t ".
-CONSOLE ERROR: line 99: Error: <marker> attribute orient: Expected angle, "e1deg\r\n\t ".
-CONSOLE ERROR: line 99: Error: <marker> attribute orient: Expected angle, "e1rad\r\n\t ".
-CONSOLE ERROR: line 99: Error: <marker> attribute orient: Expected angle, "e1grad\r\n\t ".
 CONSOLE ERROR: line 99: Error: <marker> attribute orient: Expected angle, "NaN\f".
 CONSOLE ERROR: line 99: Error: <marker> attribute orient: Expected angle, "NaNdeg\f".
 CONSOLE ERROR: line 99: Error: <marker> attribute orient: Expected angle, "NaNrad\f".
@@ -286,38 +158,6 @@ CONSOLE ERROR: line 99: Error: <marker> attribute orient: Expected angle, "E-\f"
 CONSOLE ERROR: line 99: Error: <marker> attribute orient: Expected angle, "E-deg\f".
 CONSOLE ERROR: line 99: Error: <marker> attribute orient: Expected angle, "E-rad\f".
 CONSOLE ERROR: line 99: Error: <marker> attribute orient: Expected angle, "E-grad\f".
-CONSOLE ERROR: line 99: Error: <marker> attribute orient: Expected angle, "-\f".
-CONSOLE ERROR: line 99: Error: <marker> attribute orient: Expected angle, "-deg\f".
-CONSOLE ERROR: line 99: Error: <marker> attribute orient: Expected angle, "-rad\f".
-CONSOLE ERROR: line 99: Error: <marker> attribute orient: Expected angle, "-grad\f".
-CONSOLE ERROR: line 99: Error: <marker> attribute orient: Expected angle, "+\f".
-CONSOLE ERROR: line 99: Error: <marker> attribute orient: Expected angle, "+deg\f".
-CONSOLE ERROR: line 99: Error: <marker> attribute orient: Expected angle, "+rad\f".
-CONSOLE ERROR: line 99: Error: <marker> attribute orient: Expected angle, "+grad\f".
-CONSOLE ERROR: line 99: Error: <marker> attribute orient: Expected angle, "-.\f".
-CONSOLE ERROR: line 99: Error: <marker> attribute orient: Expected angle, "-.deg\f".
-CONSOLE ERROR: line 99: Error: <marker> attribute orient: Expected angle, "-.rad\f".
-CONSOLE ERROR: line 99: Error: <marker> attribute orient: Expected angle, "-.grad\f".
-CONSOLE ERROR: line 99: Error: <marker> attribute orient: Expected angle, ".-\f".
-CONSOLE ERROR: line 99: Error: <marker> attribute orient: Expected angle, ".-deg\f".
-CONSOLE ERROR: line 99: Error: <marker> attribute orient: Expected angle, ".-rad\f".
-CONSOLE ERROR: line 99: Error: <marker> attribute orient: Expected angle, ".-grad\f".
-CONSOLE ERROR: line 99: Error: <marker> attribute orient: Expected angle, ".\f".
-CONSOLE ERROR: line 99: Error: <marker> attribute orient: Expected angle, ".deg\f".
-CONSOLE ERROR: line 99: Error: <marker> attribute orient: Expected angle, ".rad\f".
-CONSOLE ERROR: line 99: Error: <marker> attribute orient: Expected angle, ".grad\f".
-CONSOLE ERROR: line 99: Error: <marker> attribute orient: Expected angle, "+.\f".
-CONSOLE ERROR: line 99: Error: <marker> attribute orient: Expected angle, "+.deg\f".
-CONSOLE ERROR: line 99: Error: <marker> attribute orient: Expected angle, "+.rad\f".
-CONSOLE ERROR: line 99: Error: <marker> attribute orient: Expected angle, "+.grad\f".
-CONSOLE ERROR: line 99: Error: <marker> attribute orient: Expected angle, ".E0\f".
-CONSOLE ERROR: line 99: Error: <marker> attribute orient: Expected angle, ".E0deg\f".
-CONSOLE ERROR: line 99: Error: <marker> attribute orient: Expected angle, ".E0rad\f".
-CONSOLE ERROR: line 99: Error: <marker> attribute orient: Expected angle, ".E0grad\f".
-CONSOLE ERROR: line 99: Error: <marker> attribute orient: Expected angle, "e1\f".
-CONSOLE ERROR: line 99: Error: <marker> attribute orient: Expected angle, "e1deg\f".
-CONSOLE ERROR: line 99: Error: <marker> attribute orient: Expected angle, "e1rad\f".
-CONSOLE ERROR: line 99: Error: <marker> attribute orient: Expected angle, "e1grad\f".
 CONSOLE ERROR: line 99: Error: <marker> attribute orient: Expected angle, " NaN".
 CONSOLE ERROR: line 99: Error: <marker> attribute orient: Expected angle, " NaNdeg".
 CONSOLE ERROR: line 99: Error: <marker> attribute orient: Expected angle, " NaNrad".
@@ -350,38 +190,6 @@ CONSOLE ERROR: line 99: Error: <marker> attribute orient: Expected angle, " E-".
 CONSOLE ERROR: line 99: Error: <marker> attribute orient: Expected angle, " E-deg".
 CONSOLE ERROR: line 99: Error: <marker> attribute orient: Expected angle, " E-rad".
 CONSOLE ERROR: line 99: Error: <marker> attribute orient: Expected angle, " E-grad".
-CONSOLE ERROR: line 99: Error: <marker> attribute orient: Expected angle, " -".
-CONSOLE ERROR: line 99: Error: <marker> attribute orient: Expected angle, " -deg".
-CONSOLE ERROR: line 99: Error: <marker> attribute orient: Expected angle, " -rad".
-CONSOLE ERROR: line 99: Error: <marker> attribute orient: Expected angle, " -grad".
-CONSOLE ERROR: line 99: Error: <marker> attribute orient: Expected angle, " +".
-CONSOLE ERROR: line 99: Error: <marker> attribute orient: Expected angle, " +deg".
-CONSOLE ERROR: line 99: Error: <marker> attribute orient: Expected angle, " +rad".
-CONSOLE ERROR: line 99: Error: <marker> attribute orient: Expected angle, " +grad".
-CONSOLE ERROR: line 99: Error: <marker> attribute orient: Expected angle, " -.".
-CONSOLE ERROR: line 99: Error: <marker> attribute orient: Expected angle, " -.deg".
-CONSOLE ERROR: line 99: Error: <marker> attribute orient: Expected angle, " -.rad".
-CONSOLE ERROR: line 99: Error: <marker> attribute orient: Expected angle, " -.grad".
-CONSOLE ERROR: line 99: Error: <marker> attribute orient: Expected angle, " .-".
-CONSOLE ERROR: line 99: Error: <marker> attribute orient: Expected angle, " .-deg".
-CONSOLE ERROR: line 99: Error: <marker> attribute orient: Expected angle, " .-rad".
-CONSOLE ERROR: line 99: Error: <marker> attribute orient: Expected angle, " .-grad".
-CONSOLE ERROR: line 99: Error: <marker> attribute orient: Expected angle, " .".
-CONSOLE ERROR: line 99: Error: <marker> attribute orient: Expected angle, " .deg".
-CONSOLE ERROR: line 99: Error: <marker> attribute orient: Expected angle, " .rad".
-CONSOLE ERROR: line 99: Error: <marker> attribute orient: Expected angle, " .grad".
-CONSOLE ERROR: line 99: Error: <marker> attribute orient: Expected angle, " +.".
-CONSOLE ERROR: line 99: Error: <marker> attribute orient: Expected angle, " +.deg".
-CONSOLE ERROR: line 99: Error: <marker> attribute orient: Expected angle, " +.rad".
-CONSOLE ERROR: line 99: Error: <marker> attribute orient: Expected angle, " +.grad".
-CONSOLE ERROR: line 99: Error: <marker> attribute orient: Expected angle, " .E0".
-CONSOLE ERROR: line 99: Error: <marker> attribute orient: Expected angle, " .E0deg".
-CONSOLE ERROR: line 99: Error: <marker> attribute orient: Expected angle, " .E0rad".
-CONSOLE ERROR: line 99: Error: <marker> attribute orient: Expected angle, " .E0grad".
-CONSOLE ERROR: line 99: Error: <marker> attribute orient: Expected angle, " e1".
-CONSOLE ERROR: line 99: Error: <marker> attribute orient: Expected angle, " e1deg".
-CONSOLE ERROR: line 99: Error: <marker> attribute orient: Expected angle, " e1rad".
-CONSOLE ERROR: line 99: Error: <marker> attribute orient: Expected angle, " e1grad".
 CONSOLE ERROR: line 99: Error: <marker> attribute orient: Expected angle, " NaN ".
 CONSOLE ERROR: line 99: Error: <marker> attribute orient: Expected angle, " NaNdeg ".
 CONSOLE ERROR: line 99: Error: <marker> attribute orient: Expected angle, " NaNrad ".
@@ -414,38 +222,6 @@ CONSOLE ERROR: line 99: Error: <marker> attribute orient: Expected angle, " E- "
 CONSOLE ERROR: line 99: Error: <marker> attribute orient: Expected angle, " E-deg ".
 CONSOLE ERROR: line 99: Error: <marker> attribute orient: Expected angle, " E-rad ".
 CONSOLE ERROR: line 99: Error: <marker> attribute orient: Expected angle, " E-grad ".
-CONSOLE ERROR: line 99: Error: <marker> attribute orient: Expected angle, " - ".
-CONSOLE ERROR: line 99: Error: <marker> attribute orient: Expected angle, " -deg ".
-CONSOLE ERROR: line 99: Error: <marker> attribute orient: Expected angle, " -rad ".
-CONSOLE ERROR: line 99: Error: <marker> attribute orient: Expected angle, " -grad ".
-CONSOLE ERROR: line 99: Error: <marker> attribute orient: Expected angle, " + ".
-CONSOLE ERROR: line 99: Error: <marker> attribute orient: Expected angle, " +deg ".
-CONSOLE ERROR: line 99: Error: <marker> attribute orient: Expected angle, " +rad ".
-CONSOLE ERROR: line 99: Error: <marker> attribute orient: Expected angle, " +grad ".
-CONSOLE ERROR: line 99: Error: <marker> attribute orient: Expected angle, " -. ".
-CONSOLE ERROR: line 99: Error: <marker> attribute orient: Expected angle, " -.deg ".
-CONSOLE ERROR: line 99: Error: <marker> attribute orient: Expected angle, " -.rad ".
-CONSOLE ERROR: line 99: Error: <marker> attribute orient: Expected angle, " -.grad ".
-CONSOLE ERROR: line 99: Error: <marker> attribute orient: Expected angle, " .- ".
-CONSOLE ERROR: line 99: Error: <marker> attribute orient: Expected angle, " .-deg ".
-CONSOLE ERROR: line 99: Error: <marker> attribute orient: Expected angle, " .-rad ".
-CONSOLE ERROR: line 99: Error: <marker> attribute orient: Expected angle, " .-grad ".
-CONSOLE ERROR: line 99: Error: <marker> attribute orient: Expected angle, " . ".
-CONSOLE ERROR: line 99: Error: <marker> attribute orient: Expected angle, " .deg ".
-CONSOLE ERROR: line 99: Error: <marker> attribute orient: Expected angle, " .rad ".
-CONSOLE ERROR: line 99: Error: <marker> attribute orient: Expected angle, " .grad ".
-CONSOLE ERROR: line 99: Error: <marker> attribute orient: Expected angle, " +. ".
-CONSOLE ERROR: line 99: Error: <marker> attribute orient: Expected angle, " +.deg ".
-CONSOLE ERROR: line 99: Error: <marker> attribute orient: Expected angle, " +.rad ".
-CONSOLE ERROR: line 99: Error: <marker> attribute orient: Expected angle, " +.grad ".
-CONSOLE ERROR: line 99: Error: <marker> attribute orient: Expected angle, " .E0 ".
-CONSOLE ERROR: line 99: Error: <marker> attribute orient: Expected angle, " .E0deg ".
-CONSOLE ERROR: line 99: Error: <marker> attribute orient: Expected angle, " .E0rad ".
-CONSOLE ERROR: line 99: Error: <marker> attribute orient: Expected angle, " .E0grad ".
-CONSOLE ERROR: line 99: Error: <marker> attribute orient: Expected angle, " e1 ".
-CONSOLE ERROR: line 99: Error: <marker> attribute orient: Expected angle, " e1deg ".
-CONSOLE ERROR: line 99: Error: <marker> attribute orient: Expected angle, " e1rad ".
-CONSOLE ERROR: line 99: Error: <marker> attribute orient: Expected angle, " e1grad ".
 CONSOLE ERROR: line 99: Error: <marker> attribute orient: Expected angle, " NaN   ".
 CONSOLE ERROR: line 99: Error: <marker> attribute orient: Expected angle, " NaNdeg   ".
 CONSOLE ERROR: line 99: Error: <marker> attribute orient: Expected angle, " NaNrad   ".
@@ -478,38 +254,6 @@ CONSOLE ERROR: line 99: Error: <marker> attribute orient: Expected angle, " E-  
 CONSOLE ERROR: line 99: Error: <marker> attribute orient: Expected angle, " E-deg   ".
 CONSOLE ERROR: line 99: Error: <marker> attribute orient: Expected angle, " E-rad   ".
 CONSOLE ERROR: line 99: Error: <marker> attribute orient: Expected angle, " E-grad   ".
-CONSOLE ERROR: line 99: Error: <marker> attribute orient: Expected angle, " -   ".
-CONSOLE ERROR: line 99: Error: <marker> attribute orient: Expected angle, " -deg   ".
-CONSOLE ERROR: line 99: Error: <marker> attribute orient: Expected angle, " -rad   ".
-CONSOLE ERROR: line 99: Error: <marker> attribute orient: Expected angle, " -grad   ".
-CONSOLE ERROR: line 99: Error: <marker> attribute orient: Expected angle, " +   ".
-CONSOLE ERROR: line 99: Error: <marker> attribute orient: Expected angle, " +deg   ".
-CONSOLE ERROR: line 99: Error: <marker> attribute orient: Expected angle, " +rad   ".
-CONSOLE ERROR: line 99: Error: <marker> attribute orient: Expected angle, " +grad   ".
-CONSOLE ERROR: line 99: Error: <marker> attribute orient: Expected angle, " -.   ".
-CONSOLE ERROR: line 99: Error: <marker> attribute orient: Expected angle, " -.deg   ".
-CONSOLE ERROR: line 99: Error: <marker> attribute orient: Expected angle, " -.rad   ".
-CONSOLE ERROR: line 99: Error: <marker> attribute orient: Expected angle, " -.grad   ".
-CONSOLE ERROR: line 99: Error: <marker> attribute orient: Expected angle, " .-   ".
-CONSOLE ERROR: line 99: Error: <marker> attribute orient: Expected angle, " .-deg   ".
-CONSOLE ERROR: line 99: Error: <marker> attribute orient: Expected angle, " .-rad   ".
-CONSOLE ERROR: line 99: Error: <marker> attribute orient: Expected angle, " .-grad   ".
-CONSOLE ERROR: line 99: Error: <marker> attribute orient: Expected angle, " .   ".
-CONSOLE ERROR: line 99: Error: <marker> attribute orient: Expected angle, " .deg   ".
-CONSOLE ERROR: line 99: Error: <marker> attribute orient: Expected angle, " .rad   ".
-CONSOLE ERROR: line 99: Error: <marker> attribute orient: Expected angle, " .grad   ".
-CONSOLE ERROR: line 99: Error: <marker> attribute orient: Expected angle, " +.   ".
-CONSOLE ERROR: line 99: Error: <marker> attribute orient: Expected angle, " +.deg   ".
-CONSOLE ERROR: line 99: Error: <marker> attribute orient: Expected angle, " +.rad   ".
-CONSOLE ERROR: line 99: Error: <marker> attribute orient: Expected angle, " +.grad   ".
-CONSOLE ERROR: line 99: Error: <marker> attribute orient: Expected angle, " .E0   ".
-CONSOLE ERROR: line 99: Error: <marker> attribute orient: Expected angle, " .E0deg   ".
-CONSOLE ERROR: line 99: Error: <marker> attribute orient: Expected angle, " .E0rad   ".
-CONSOLE ERROR: line 99: Error: <marker> attribute orient: Expected angle, " .E0grad   ".
-CONSOLE ERROR: line 99: Error: <marker> attribute orient: Expected angle, " e1   ".
-CONSOLE ERROR: line 99: Error: <marker> attribute orient: Expected angle, " e1deg   ".
-CONSOLE ERROR: line 99: Error: <marker> attribute orient: Expected angle, " e1rad   ".
-CONSOLE ERROR: line 99: Error: <marker> attribute orient: Expected angle, " e1grad   ".
 CONSOLE ERROR: line 99: Error: <marker> attribute orient: Expected angle, " NaN\r\n\t ".
 CONSOLE ERROR: line 99: Error: <marker> attribute orient: Expected angle, " NaNdeg\r\n\t ".
 CONSOLE ERROR: line 99: Error: <marker> attribute orient: Expected angle, " NaNrad\r\n\t ".
@@ -542,38 +286,6 @@ CONSOLE ERROR: line 99: Error: <marker> attribute orient: Expected angle, " E-\r
 CONSOLE ERROR: line 99: Error: <marker> attribute orient: Expected angle, " E-deg\r\n\t ".
 CONSOLE ERROR: line 99: Error: <marker> attribute orient: Expected angle, " E-rad\r\n\t ".
 CONSOLE ERROR: line 99: Error: <marker> attribute orient: Expected angle, " E-grad\r\n\t ".
-CONSOLE ERROR: line 99: Error: <marker> attribute orient: Expected angle, " -\r\n\t ".
-CONSOLE ERROR: line 99: Error: <marker> attribute orient: Expected angle, " -deg\r\n\t ".
-CONSOLE ERROR: line 99: Error: <marker> attribute orient: Expected angle, " -rad\r\n\t ".
-CONSOLE ERROR: line 99: Error: <marker> attribute orient: Expected angle, " -grad\r\n\t ".
-CONSOLE ERROR: line 99: Error: <marker> attribute orient: Expected angle, " +\r\n\t ".
-CONSOLE ERROR: line 99: Error: <marker> attribute orient: Expected angle, " +deg\r\n\t ".
-CONSOLE ERROR: line 99: Error: <marker> attribute orient: Expected angle, " +rad\r\n\t ".
-CONSOLE ERROR: line 99: Error: <marker> attribute orient: Expected angle, " +grad\r\n\t ".
-CONSOLE ERROR: line 99: Error: <marker> attribute orient: Expected angle, " -.\r\n\t ".
-CONSOLE ERROR: line 99: Error: <marker> attribute orient: Expected angle, " -.deg\r\n\t ".
-CONSOLE ERROR: line 99: Error: <marker> attribute orient: Expected angle, " -.rad\r\n\t ".
-CONSOLE ERROR: line 99: Error: <marker> attribute orient: Expected angle, " -.grad\r\n\t ".
-CONSOLE ERROR: line 99: Error: <marker> attribute orient: Expected angle, " .-\r\n\t ".
-CONSOLE ERROR: line 99: Error: <marker> attribute orient: Expected angle, " .-deg\r\n\t ".
-CONSOLE ERROR: line 99: Error: <marker> attribute orient: Expected angle, " .-rad\r\n\t ".
-CONSOLE ERROR: line 99: Error: <marker> attribute orient: Expected angle, " .-grad\r\n\t ".
-CONSOLE ERROR: line 99: Error: <marker> attribute orient: Expected angle, " .\r\n\t ".
-CONSOLE ERROR: line 99: Error: <marker> attribute orient: Expected angle, " .deg\r\n\t ".
-CONSOLE ERROR: line 99: Error: <marker> attribute orient: Expected angle, " .rad\r\n\t ".
-CONSOLE ERROR: line 99: Error: <marker> attribute orient: Expected angle, " .grad\r\n\t ".
-CONSOLE ERROR: line 99: Error: <marker> attribute orient: Expected angle, " +.\r\n\t ".
-CONSOLE ERROR: line 99: Error: <marker> attribute orient: Expected angle, " +.deg\r\n\t ".
-CONSOLE ERROR: line 99: Error: <marker> attribute orient: Expected angle, " +.rad\r\n\t ".
-CONSOLE ERROR: line 99: Error: <marker> attribute orient: Expected angle, " +.grad\r\n\t ".
-CONSOLE ERROR: line 99: Error: <marker> attribute orient: Expected angle, " .E0\r\n\t ".
-CONSOLE ERROR: line 99: Error: <marker> attribute orient: Expected angle, " .E0deg\r\n\t ".
-CONSOLE ERROR: line 99: Error: <marker> attribute orient: Expected angle, " .E0rad\r\n\t ".
-CONSOLE ERROR: line 99: Error: <marker> attribute orient: Expected angle, " .E0grad\r\n\t ".
-CONSOLE ERROR: line 99: Error: <marker> attribute orient: Expected angle, " e1\r\n\t ".
-CONSOLE ERROR: line 99: Error: <marker> attribute orient: Expected angle, " e1deg\r\n\t ".
-CONSOLE ERROR: line 99: Error: <marker> attribute orient: Expected angle, " e1rad\r\n\t ".
-CONSOLE ERROR: line 99: Error: <marker> attribute orient: Expected angle, " e1grad\r\n\t ".
 CONSOLE ERROR: line 99: Error: <marker> attribute orient: Expected angle, " NaN\f".
 CONSOLE ERROR: line 99: Error: <marker> attribute orient: Expected angle, " NaNdeg\f".
 CONSOLE ERROR: line 99: Error: <marker> attribute orient: Expected angle, " NaNrad\f".
@@ -606,38 +318,6 @@ CONSOLE ERROR: line 99: Error: <marker> attribute orient: Expected angle, " E-\f
 CONSOLE ERROR: line 99: Error: <marker> attribute orient: Expected angle, " E-deg\f".
 CONSOLE ERROR: line 99: Error: <marker> attribute orient: Expected angle, " E-rad\f".
 CONSOLE ERROR: line 99: Error: <marker> attribute orient: Expected angle, " E-grad\f".
-CONSOLE ERROR: line 99: Error: <marker> attribute orient: Expected angle, " -\f".
-CONSOLE ERROR: line 99: Error: <marker> attribute orient: Expected angle, " -deg\f".
-CONSOLE ERROR: line 99: Error: <marker> attribute orient: Expected angle, " -rad\f".
-CONSOLE ERROR: line 99: Error: <marker> attribute orient: Expected angle, " -grad\f".
-CONSOLE ERROR: line 99: Error: <marker> attribute orient: Expected angle, " +\f".
-CONSOLE ERROR: line 99: Error: <marker> attribute orient: Expected angle, " +deg\f".
-CONSOLE ERROR: line 99: Error: <marker> attribute orient: Expected angle, " +rad\f".
-CONSOLE ERROR: line 99: Error: <marker> attribute orient: Expected angle, " +grad\f".
-CONSOLE ERROR: line 99: Error: <marker> attribute orient: Expected angle, " -.\f".
-CONSOLE ERROR: line 99: Error: <marker> attribute orient: Expected angle, " -.deg\f".
-CONSOLE ERROR: line 99: Error: <marker> attribute orient: Expected angle, " -.rad\f".
-CONSOLE ERROR: line 99: Error: <marker> attribute orient: Expected angle, " -.grad\f".
-CONSOLE ERROR: line 99: Error: <marker> attribute orient: Expected angle, " .-\f".
-CONSOLE ERROR: line 99: Error: <marker> attribute orient: Expected angle, " .-deg\f".
-CONSOLE ERROR: line 99: Error: <marker> attribute orient: Expected angle, " .-rad\f".
-CONSOLE ERROR: line 99: Error: <marker> attribute orient: Expected angle, " .-grad\f".
-CONSOLE ERROR: line 99: Error: <marker> attribute orient: Expected angle, " .\f".
-CONSOLE ERROR: line 99: Error: <marker> attribute orient: Expected angle, " .deg\f".
-CONSOLE ERROR: line 99: Error: <marker> attribute orient: Expected angle, " .rad\f".
-CONSOLE ERROR: line 99: Error: <marker> attribute orient: Expected angle, " .grad\f".
-CONSOLE ERROR: line 99: Error: <marker> attribute orient: Expected angle, " +.\f".
-CONSOLE ERROR: line 99: Error: <marker> attribute orient: Expected angle, " +.deg\f".
-CONSOLE ERROR: line 99: Error: <marker> attribute orient: Expected angle, " +.rad\f".
-CONSOLE ERROR: line 99: Error: <marker> attribute orient: Expected angle, " +.grad\f".
-CONSOLE ERROR: line 99: Error: <marker> attribute orient: Expected angle, " .E0\f".
-CONSOLE ERROR: line 99: Error: <marker> attribute orient: Expected angle, " .E0deg\f".
-CONSOLE ERROR: line 99: Error: <marker> attribute orient: Expected angle, " .E0rad\f".
-CONSOLE ERROR: line 99: Error: <marker> attribute orient: Expected angle, " .E0grad\f".
-CONSOLE ERROR: line 99: Error: <marker> attribute orient: Expected angle, " e1\f".
-CONSOLE ERROR: line 99: Error: <marker> attribute orient: Expected angle, " e1deg\f".
-CONSOLE ERROR: line 99: Error: <marker> attribute orient: Expected angle, " e1rad\f".
-CONSOLE ERROR: line 99: Error: <marker> attribute orient: Expected angle, " e1grad\f".
 CONSOLE ERROR: line 99: Error: <marker> attribute orient: Expected angle, "   NaN".
 CONSOLE ERROR: line 99: Error: <marker> attribute orient: Expected angle, "   NaNdeg".
 CONSOLE ERROR: line 99: Error: <marker> attribute orient: Expected angle, "   NaNrad".
@@ -670,38 +350,6 @@ CONSOLE ERROR: line 99: Error: <marker> attribute orient: Expected angle, "   E-
 CONSOLE ERROR: line 99: Error: <marker> attribute orient: Expected angle, "   E-deg".
 CONSOLE ERROR: line 99: Error: <marker> attribute orient: Expected angle, "   E-rad".
 CONSOLE ERROR: line 99: Error: <marker> attribute orient: Expected angle, "   E-grad".
-CONSOLE ERROR: line 99: Error: <marker> attribute orient: Expected angle, "   -".
-CONSOLE ERROR: line 99: Error: <marker> attribute orient: Expected angle, "   -deg".
-CONSOLE ERROR: line 99: Error: <marker> attribute orient: Expected angle, "   -rad".
-CONSOLE ERROR: line 99: Error: <marker> attribute orient: Expected angle, "   -grad".
-CONSOLE ERROR: line 99: Error: <marker> attribute orient: Expected angle, "   +".
-CONSOLE ERROR: line 99: Error: <marker> attribute orient: Expected angle, "   +deg".
-CONSOLE ERROR: line 99: Error: <marker> attribute orient: Expected angle, "   +rad".
-CONSOLE ERROR: line 99: Error: <marker> attribute orient: Expected angle, "   +grad".
-CONSOLE ERROR: line 99: Error: <marker> attribute orient: Expected angle, "   -.".
-CONSOLE ERROR: line 99: Error: <marker> attribute orient: Expected angle, "   -.deg".
-CONSOLE ERROR: line 99: Error: <marker> attribute orient: Expected angle, "   -.rad".
-CONSOLE ERROR: line 99: Error: <marker> attribute orient: Expected angle, "   -.grad".
-CONSOLE ERROR: line 99: Error: <marker> attribute orient: Expected angle, "   .-".
-CONSOLE ERROR: line 99: Error: <marker> attribute orient: Expected angle, "   .-deg".
-CONSOLE ERROR: line 99: Error: <marker> attribute orient: Expected angle, "   .-rad".
-CONSOLE ERROR: line 99: Error: <marker> attribute orient: Expected angle, "   .-grad".
-CONSOLE ERROR: line 99: Error: <marker> attribute orient: Expected angle, "   .".
-CONSOLE ERROR: line 99: Error: <marker> attribute orient: Expected angle, "   .deg".
-CONSOLE ERROR: line 99: Error: <marker> attribute orient: Expected angle, "   .rad".
-CONSOLE ERROR: line 99: Error: <marker> attribute orient: Expected angle, "   .grad".
-CONSOLE ERROR: line 99: Error: <marker> attribute orient: Expected angle, "   +.".
-CONSOLE ERROR: line 99: Error: <marker> attribute orient: Expected angle, "   +.deg".
-CONSOLE ERROR: line 99: Error: <marker> attribute orient: Expected angle, "   +.rad".
-CONSOLE ERROR: line 99: Error: <marker> attribute orient: Expected angle, "   +.grad".
-CONSOLE ERROR: line 99: Error: <marker> attribute orient: Expected angle, "   .E0".
-CONSOLE ERROR: line 99: Error: <marker> attribute orient: Expected angle, "   .E0deg".
-CONSOLE ERROR: line 99: Error: <marker> attribute orient: Expected angle, "   .E0rad".
-CONSOLE ERROR: line 99: Error: <marker> attribute orient: Expected angle, "   .E0grad".
-CONSOLE ERROR: line 99: Error: <marker> attribute orient: Expected angle, "   e1".
-CONSOLE ERROR: line 99: Error: <marker> attribute orient: Expected angle, "   e1deg".
-CONSOLE ERROR: line 99: Error: <marker> attribute orient: Expected angle, "   e1rad".
-CONSOLE ERROR: line 99: Error: <marker> attribute orient: Expected angle, "   e1grad".
 CONSOLE ERROR: line 99: Error: <marker> attribute orient: Expected angle, "   NaN ".
 CONSOLE ERROR: line 99: Error: <marker> attribute orient: Expected angle, "   NaNdeg ".
 CONSOLE ERROR: line 99: Error: <marker> attribute orient: Expected angle, "   NaNrad ".
@@ -734,38 +382,6 @@ CONSOLE ERROR: line 99: Error: <marker> attribute orient: Expected angle, "   E-
 CONSOLE ERROR: line 99: Error: <marker> attribute orient: Expected angle, "   E-deg ".
 CONSOLE ERROR: line 99: Error: <marker> attribute orient: Expected angle, "   E-rad ".
 CONSOLE ERROR: line 99: Error: <marker> attribute orient: Expected angle, "   E-grad ".
-CONSOLE ERROR: line 99: Error: <marker> attribute orient: Expected angle, "   - ".
-CONSOLE ERROR: line 99: Error: <marker> attribute orient: Expected angle, "   -deg ".
-CONSOLE ERROR: line 99: Error: <marker> attribute orient: Expected angle, "   -rad ".
-CONSOLE ERROR: line 99: Error: <marker> attribute orient: Expected angle, "   -grad ".
-CONSOLE ERROR: line 99: Error: <marker> attribute orient: Expected angle, "   + ".
-CONSOLE ERROR: line 99: Error: <marker> attribute orient: Expected angle, "   +deg ".
-CONSOLE ERROR: line 99: Error: <marker> attribute orient: Expected angle, "   +rad ".
-CONSOLE ERROR: line 99: Error: <marker> attribute orient: Expected angle, "   +grad ".
-CONSOLE ERROR: line 99: Error: <marker> attribute orient: Expected angle, "   -. ".
-CONSOLE ERROR: line 99: Error: <marker> attribute orient: Expected angle, "   -.deg ".
-CONSOLE ERROR: line 99: Error: <marker> attribute orient: Expected angle, "   -.rad ".
-CONSOLE ERROR: line 99: Error: <marker> attribute orient: Expected angle, "   -.grad ".
-CONSOLE ERROR: line 99: Error: <marker> attribute orient: Expected angle, "   .- ".
-CONSOLE ERROR: line 99: Error: <marker> attribute orient: Expected angle, "   .-deg ".
-CONSOLE ERROR: line 99: Error: <marker> attribute orient: Expected angle, "   .-rad ".
-CONSOLE ERROR: line 99: Error: <marker> attribute orient: Expected angle, "   .-grad ".
-CONSOLE ERROR: line 99: Error: <marker> attribute orient: Expected angle, "   . ".
-CONSOLE ERROR: line 99: Error: <marker> attribute orient: Expected angle, "   .deg ".
-CONSOLE ERROR: line 99: Error: <marker> attribute orient: Expected angle, "   .rad ".
-CONSOLE ERROR: line 99: Error: <marker> attribute orient: Expected angle, "   .grad ".
-CONSOLE ERROR: line 99: Error: <marker> attribute orient: Expected angle, "   +. ".
-CONSOLE ERROR: line 99: Error: <marker> attribute orient: Expected angle, "   +.deg ".
-CONSOLE ERROR: line 99: Error: <marker> attribute orient: Expected angle, "   +.rad ".
-CONSOLE ERROR: line 99: Error: <marker> attribute orient: Expected angle, "   +.grad ".
-CONSOLE ERROR: line 99: Error: <marker> attribute orient: Expected angle, "   .E0 ".
-CONSOLE ERROR: line 99: Error: <marker> attribute orient: Expected angle, "   .E0deg ".
-CONSOLE ERROR: line 99: Error: <marker> attribute orient: Expected angle, "   .E0rad ".
-CONSOLE ERROR: line 99: Error: <marker> attribute orient: Expected angle, "   .E0grad ".
-CONSOLE ERROR: line 99: Error: <marker> attribute orient: Expected angle, "   e1 ".
-CONSOLE ERROR: line 99: Error: <marker> attribute orient: Expected angle, "   e1deg ".
-CONSOLE ERROR: line 99: Error: <marker> attribute orient: Expected angle, "   e1rad ".
-CONSOLE ERROR: line 99: Error: <marker> attribute orient: Expected angle, "   e1grad ".
 CONSOLE ERROR: line 99: Error: <marker> attribute orient: Expected angle, "   NaN   ".
 CONSOLE ERROR: line 99: Error: <marker> attribute orient: Expected angle, "   NaNdeg   ".
 CONSOLE ERROR: line 99: Error: <marker> attribute orient: Expected angle, "   NaNrad   ".
@@ -798,38 +414,6 @@ CONSOLE ERROR: line 99: Error: <marker> attribute orient: Expected angle, "   E-
 CONSOLE ERROR: line 99: Error: <marker> attribute orient: Expected angle, "   E-deg   ".
 CONSOLE ERROR: line 99: Error: <marker> attribute orient: Expected angle, "   E-rad   ".
 CONSOLE ERROR: line 99: Error: <marker> attribute orient: Expected angle, "   E-grad   ".
-CONSOLE ERROR: line 99: Error: <marker> attribute orient: Expected angle, "   -   ".
-CONSOLE ERROR: line 99: Error: <marker> attribute orient: Expected angle, "   -deg   ".
-CONSOLE ERROR: line 99: Error: <marker> attribute orient: Expected angle, "   -rad   ".
-CONSOLE ERROR: line 99: Error: <marker> attribute orient: Expected angle, "   -grad   ".
-CONSOLE ERROR: line 99: Error: <marker> attribute orient: Expected angle, "   +   ".
-CONSOLE ERROR: line 99: Error: <marker> attribute orient: Expected angle, "   +deg   ".
-CONSOLE ERROR: line 99: Error: <marker> attribute orient: Expected angle, "   +rad   ".
-CONSOLE ERROR: line 99: Error: <marker> attribute orient: Expected angle, "   +grad   ".
-CONSOLE ERROR: line 99: Error: <marker> attribute orient: Expected angle, "   -.   ".
-CONSOLE ERROR: line 99: Error: <marker> attribute orient: Expected angle, "   -.deg   ".
-CONSOLE ERROR: line 99: Error: <marker> attribute orient: Expected angle, "   -.rad   ".
-CONSOLE ERROR: line 99: Error: <marker> attribute orient: Expected angle, "   -.grad   ".
-CONSOLE ERROR: line 99: Error: <marker> attribute orient: Expected angle, "   .-   ".
-CONSOLE ERROR: line 99: Error: <marker> attribute orient: Expected angle, "   .-deg   ".
-CONSOLE ERROR: line 99: Error: <marker> attribute orient: Expected angle, "   .-rad   ".
-CONSOLE ERROR: line 99: Error: <marker> attribute orient: Expected angle, "   .-grad   ".
-CONSOLE ERROR: line 99: Error: <marker> attribute orient: Expected angle, "   .   ".
-CONSOLE ERROR: line 99: Error: <marker> attribute orient: Expected angle, "   .deg   ".
-CONSOLE ERROR: line 99: Error: <marker> attribute orient: Expected angle, "   .rad   ".
-CONSOLE ERROR: line 99: Error: <marker> attribute orient: Expected angle, "   .grad   ".
-CONSOLE ERROR: line 99: Error: <marker> attribute orient: Expected angle, "   +.   ".
-CONSOLE ERROR: line 99: Error: <marker> attribute orient: Expected angle, "   +.deg   ".
-CONSOLE ERROR: line 99: Error: <marker> attribute orient: Expected angle, "   +.rad   ".
-CONSOLE ERROR: line 99: Error: <marker> attribute orient: Expected angle, "   +.grad   ".
-CONSOLE ERROR: line 99: Error: <marker> attribute orient: Expected angle, "   .E0   ".
-CONSOLE ERROR: line 99: Error: <marker> attribute orient: Expected angle, "   .E0deg   ".
-CONSOLE ERROR: line 99: Error: <marker> attribute orient: Expected angle, "   .E0rad   ".
-CONSOLE ERROR: line 99: Error: <marker> attribute orient: Expected angle, "   .E0grad   ".
-CONSOLE ERROR: line 99: Error: <marker> attribute orient: Expected angle, "   e1   ".
-CONSOLE ERROR: line 99: Error: <marker> attribute orient: Expected angle, "   e1deg   ".
-CONSOLE ERROR: line 99: Error: <marker> attribute orient: Expected angle, "   e1rad   ".
-CONSOLE ERROR: line 99: Error: <marker> attribute orient: Expected angle, "   e1grad   ".
 CONSOLE ERROR: line 99: Error: <marker> attribute orient: Expected angle, "   NaN\r\n\t ".
 CONSOLE ERROR: line 99: Error: <marker> attribute orient: Expected angle, "   NaNdeg\r\n\t ".
 CONSOLE ERROR: line 99: Error: <marker> attribute orient: Expected angle, "   NaNrad\r\n\t ".
@@ -862,38 +446,6 @@ CONSOLE ERROR: line 99: Error: <marker> attribute orient: Expected angle, "   E-
 CONSOLE ERROR: line 99: Error: <marker> attribute orient: Expected angle, "   E-deg\r\n\t ".
 CONSOLE ERROR: line 99: Error: <marker> attribute orient: Expected angle, "   E-rad\r\n\t ".
 CONSOLE ERROR: line 99: Error: <marker> attribute orient: Expected angle, "   E-grad\r\n\t ".
-CONSOLE ERROR: line 99: Error: <marker> attribute orient: Expected angle, "   -\r\n\t ".
-CONSOLE ERROR: line 99: Error: <marker> attribute orient: Expected angle, "   -deg\r\n\t ".
-CONSOLE ERROR: line 99: Error: <marker> attribute orient: Expected angle, "   -rad\r\n\t ".
-CONSOLE ERROR: line 99: Error: <marker> attribute orient: Expected angle, "   -grad\r\n\t ".
-CONSOLE ERROR: line 99: Error: <marker> attribute orient: Expected angle, "   +\r\n\t ".
-CONSOLE ERROR: line 99: Error: <marker> attribute orient: Expected angle, "   +deg\r\n\t ".
-CONSOLE ERROR: line 99: Error: <marker> attribute orient: Expected angle, "   +rad\r\n\t ".
-CONSOLE ERROR: line 99: Error: <marker> attribute orient: Expected angle, "   +grad\r\n\t ".
-CONSOLE ERROR: line 99: Error: <marker> attribute orient: Expected angle, "   -.\r\n\t ".
-CONSOLE ERROR: line 99: Error: <marker> attribute orient: Expected angle, "   -.deg\r\n\t ".
-CONSOLE ERROR: line 99: Error: <marker> attribute orient: Expected angle, "   -.rad\r\n\t ".
-CONSOLE ERROR: line 99: Error: <marker> attribute orient: Expected angle, "   -.grad\r\n\t ".
-CONSOLE ERROR: line 99: Error: <marker> attribute orient: Expected angle, "   .-\r\n\t ".
-CONSOLE ERROR: line 99: Error: <marker> attribute orient: Expected angle, "   .-deg\r\n\t ".
-CONSOLE ERROR: line 99: Error: <marker> attribute orient: Expected angle, "   .-rad\r\n\t ".
-CONSOLE ERROR: line 99: Error: <marker> attribute orient: Expected angle, "   .-grad\r\n\t ".
-CONSOLE ERROR: line 99: Error: <marker> attribute orient: Expected angle, "   .\r\n\t ".
-CONSOLE ERROR: line 99: Error: <marker> attribute orient: Expected angle, "   .deg\r\n\t ".
-CONSOLE ERROR: line 99: Error: <marker> attribute orient: Expected angle, "   .rad\r\n\t ".
-CONSOLE ERROR: line 99: Error: <marker> attribute orient: Expected angle, "   .grad\r\n\t ".
-CONSOLE ERROR: line 99: Error: <marker> attribute orient: Expected angle, "   +.\r\n\t ".
-CONSOLE ERROR: line 99: Error: <marker> attribute orient: Expected angle, "   +.deg\r\n\t ".
-CONSOLE ERROR: line 99: Error: <marker> attribute orient: Expected angle, "   +.rad\r\n\t ".
-CONSOLE ERROR: line 99: Error: <marker> attribute orient: Expected angle, "   +.grad\r\n\t ".
-CONSOLE ERROR: line 99: Error: <marker> attribute orient: Expected angle, "   .E0\r\n\t ".
-CONSOLE ERROR: line 99: Error: <marker> attribute orient: Expected angle, "   .E0deg\r\n\t ".
-CONSOLE ERROR: line 99: Error: <marker> attribute orient: Expected angle, "   .E0rad\r\n\t ".
-CONSOLE ERROR: line 99: Error: <marker> attribute orient: Expected angle, "   .E0grad\r\n\t ".
-CONSOLE ERROR: line 99: Error: <marker> attribute orient: Expected angle, "   e1\r\n\t ".
-CONSOLE ERROR: line 99: Error: <marker> attribute orient: Expected angle, "   e1deg\r\n\t ".
-CONSOLE ERROR: line 99: Error: <marker> attribute orient: Expected angle, "   e1rad\r\n\t ".
-CONSOLE ERROR: line 99: Error: <marker> attribute orient: Expected angle, "   e1grad\r\n\t ".
 CONSOLE ERROR: line 99: Error: <marker> attribute orient: Expected angle, "   NaN\f".
 CONSOLE ERROR: line 99: Error: <marker> attribute orient: Expected angle, "   NaNdeg\f".
 CONSOLE ERROR: line 99: Error: <marker> attribute orient: Expected angle, "   NaNrad\f".
@@ -926,38 +478,6 @@ CONSOLE ERROR: line 99: Error: <marker> attribute orient: Expected angle, "   E-
 CONSOLE ERROR: line 99: Error: <marker> attribute orient: Expected angle, "   E-deg\f".
 CONSOLE ERROR: line 99: Error: <marker> attribute orient: Expected angle, "   E-rad\f".
 CONSOLE ERROR: line 99: Error: <marker> attribute orient: Expected angle, "   E-grad\f".
-CONSOLE ERROR: line 99: Error: <marker> attribute orient: Expected angle, "   -\f".
-CONSOLE ERROR: line 99: Error: <marker> attribute orient: Expected angle, "   -deg\f".
-CONSOLE ERROR: line 99: Error: <marker> attribute orient: Expected angle, "   -rad\f".
-CONSOLE ERROR: line 99: Error: <marker> attribute orient: Expected angle, "   -grad\f".
-CONSOLE ERROR: line 99: Error: <marker> attribute orient: Expected angle, "   +\f".
-CONSOLE ERROR: line 99: Error: <marker> attribute orient: Expected angle, "   +deg\f".
-CONSOLE ERROR: line 99: Error: <marker> attribute orient: Expected angle, "   +rad\f".
-CONSOLE ERROR: line 99: Error: <marker> attribute orient: Expected angle, "   +grad\f".
-CONSOLE ERROR: line 99: Error: <marker> attribute orient: Expected angle, "   -.\f".
-CONSOLE ERROR: line 99: Error: <marker> attribute orient: Expected angle, "   -.deg\f".
-CONSOLE ERROR: line 99: Error: <marker> attribute orient: Expected angle, "   -.rad\f".
-CONSOLE ERROR: line 99: Error: <marker> attribute orient: Expected angle, "   -.grad\f".
-CONSOLE ERROR: line 99: Error: <marker> attribute orient: Expected angle, "   .-\f".
-CONSOLE ERROR: line 99: Error: <marker> attribute orient: Expected angle, "   .-deg\f".
-CONSOLE ERROR: line 99: Error: <marker> attribute orient: Expected angle, "   .-rad\f".
-CONSOLE ERROR: line 99: Error: <marker> attribute orient: Expected angle, "   .-grad\f".
-CONSOLE ERROR: line 99: Error: <marker> attribute orient: Expected angle, "   .\f".
-CONSOLE ERROR: line 99: Error: <marker> attribute orient: Expected angle, "   .deg\f".
-CONSOLE ERROR: line 99: Error: <marker> attribute orient: Expected angle, "   .rad\f".
-CONSOLE ERROR: line 99: Error: <marker> attribute orient: Expected angle, "   .grad\f".
-CONSOLE ERROR: line 99: Error: <marker> attribute orient: Expected angle, "   +.\f".
-CONSOLE ERROR: line 99: Error: <marker> attribute orient: Expected angle, "   +.deg\f".
-CONSOLE ERROR: line 99: Error: <marker> attribute orient: Expected angle, "   +.rad\f".
-CONSOLE ERROR: line 99: Error: <marker> attribute orient: Expected angle, "   +.grad\f".
-CONSOLE ERROR: line 99: Error: <marker> attribute orient: Expected angle, "   .E0\f".
-CONSOLE ERROR: line 99: Error: <marker> attribute orient: Expected angle, "   .E0deg\f".
-CONSOLE ERROR: line 99: Error: <marker> attribute orient: Expected angle, "   .E0rad\f".
-CONSOLE ERROR: line 99: Error: <marker> attribute orient: Expected angle, "   .E0grad\f".
-CONSOLE ERROR: line 99: Error: <marker> attribute orient: Expected angle, "   e1\f".
-CONSOLE ERROR: line 99: Error: <marker> attribute orient: Expected angle, "   e1deg\f".
-CONSOLE ERROR: line 99: Error: <marker> attribute orient: Expected angle, "   e1rad\f".
-CONSOLE ERROR: line 99: Error: <marker> attribute orient: Expected angle, "   e1grad\f".
 CONSOLE ERROR: line 99: Error: <marker> attribute orient: Expected angle, "\r\n\t NaN".
 CONSOLE ERROR: line 99: Error: <marker> attribute orient: Expected angle, "\r\n\t NaNdeg".
 CONSOLE ERROR: line 99: Error: <marker> attribute orient: Expected angle, "\r\n\t NaNrad".
@@ -990,38 +510,6 @@ CONSOLE ERROR: line 99: Error: <marker> attribute orient: Expected angle, "\r\n\
 CONSOLE ERROR: line 99: Error: <marker> attribute orient: Expected angle, "\r\n\t E-deg".
 CONSOLE ERROR: line 99: Error: <marker> attribute orient: Expected angle, "\r\n\t E-rad".
 CONSOLE ERROR: line 99: Error: <marker> attribute orient: Expected angle, "\r\n\t E-grad".
-CONSOLE ERROR: line 99: Error: <marker> attribute orient: Expected angle, "\r\n\t -".
-CONSOLE ERROR: line 99: Error: <marker> attribute orient: Expected angle, "\r\n\t -deg".
-CONSOLE ERROR: line 99: Error: <marker> attribute orient: Expected angle, "\r\n\t -rad".
-CONSOLE ERROR: line 99: Error: <marker> attribute orient: Expected angle, "\r\n\t -grad".
-CONSOLE ERROR: line 99: Error: <marker> attribute orient: Expected angle, "\r\n\t +".
-CONSOLE ERROR: line 99: Error: <marker> attribute orient: Expected angle, "\r\n\t +deg".
-CONSOLE ERROR: line 99: Error: <marker> attribute orient: Expected angle, "\r\n\t +rad".
-CONSOLE ERROR: line 99: Error: <marker> attribute orient: Expected angle, "\r\n\t +grad".
-CONSOLE ERROR: line 99: Error: <marker> attribute orient: Expected angle, "\r\n\t -.".
-CONSOLE ERROR: line 99: Error: <marker> attribute orient: Expected angle, "\r\n\t -.deg".
-CONSOLE ERROR: line 99: Error: <marker> attribute orient: Expected angle, "\r\n\t -.rad".
-CONSOLE ERROR: line 99: Error: <marker> attribute orient: Expected angle, "\r\n\t -.grad".
-CONSOLE ERROR: line 99: Error: <marker> attribute orient: Expected angle, "\r\n\t .-".
-CONSOLE ERROR: line 99: Error: <marker> attribute orient: Expected angle, "\r\n\t .-deg".
-CONSOLE ERROR: line 99: Error: <marker> attribute orient: Expected angle, "\r\n\t .-rad".
-CONSOLE ERROR: line 99: Error: <marker> attribute orient: Expected angle, "\r\n\t .-grad".
-CONSOLE ERROR: line 99: Error: <marker> attribute orient: Expected angle, "\r\n\t .".
-CONSOLE ERROR: line 99: Error: <marker> attribute orient: Expected angle, "\r\n\t .deg".
-CONSOLE ERROR: line 99: Error: <marker> attribute orient: Expected angle, "\r\n\t .rad".
-CONSOLE ERROR: line 99: Error: <marker> attribute orient: Expected angle, "\r\n\t .grad".
-CONSOLE ERROR: line 99: Error: <marker> attribute orient: Expected angle, "\r\n\t +.".
-CONSOLE ERROR: line 99: Error: <marker> attribute orient: Expected angle, "\r\n\t +.deg".
-CONSOLE ERROR: line 99: Error: <marker> attribute orient: Expected angle, "\r\n\t +.rad".
-CONSOLE ERROR: line 99: Error: <marker> attribute orient: Expected angle, "\r\n\t +.grad".
-CONSOLE ERROR: line 99: Error: <marker> attribute orient: Expected angle, "\r\n\t .E0".
-CONSOLE ERROR: line 99: Error: <marker> attribute orient: Expected angle, "\r\n\t .E0deg".
-CONSOLE ERROR: line 99: Error: <marker> attribute orient: Expected angle, "\r\n\t .E0rad".
-CONSOLE ERROR: line 99: Error: <marker> attribute orient: Expected angle, "\r\n\t .E0grad".
-CONSOLE ERROR: line 99: Error: <marker> attribute orient: Expected angle, "\r\n\t e1".
-CONSOLE ERROR: line 99: Error: <marker> attribute orient: Expected angle, "\r\n\t e1deg".
-CONSOLE ERROR: line 99: Error: <marker> attribute orient: Expected angle, "\r\n\t e1rad".
-CONSOLE ERROR: line 99: Error: <marker> attribute orient: Expected angle, "\r\n\t e1grad".
 CONSOLE ERROR: line 99: Error: <marker> attribute orient: Expected angle, "\r\n\t NaN ".
 CONSOLE ERROR: line 99: Error: <marker> attribute orient: Expected angle, "\r\n\t NaNdeg ".
 CONSOLE ERROR: line 99: Error: <marker> attribute orient: Expected angle, "\r\n\t NaNrad ".
@@ -1054,38 +542,6 @@ CONSOLE ERROR: line 99: Error: <marker> attribute orient: Expected angle, "\r\n\
 CONSOLE ERROR: line 99: Error: <marker> attribute orient: Expected angle, "\r\n\t E-deg ".
 CONSOLE ERROR: line 99: Error: <marker> attribute orient: Expected angle, "\r\n\t E-rad ".
 CONSOLE ERROR: line 99: Error: <marker> attribute orient: Expected angle, "\r\n\t E-grad ".
-CONSOLE ERROR: line 99: Error: <marker> attribute orient: Expected angle, "\r\n\t - ".
-CONSOLE ERROR: line 99: Error: <marker> attribute orient: Expected angle, "\r\n\t -deg ".
-CONSOLE ERROR: line 99: Error: <marker> attribute orient: Expected angle, "\r\n\t -rad ".
-CONSOLE ERROR: line 99: Error: <marker> attribute orient: Expected angle, "\r\n\t -grad ".
-CONSOLE ERROR: line 99: Error: <marker> attribute orient: Expected angle, "\r\n\t + ".
-CONSOLE ERROR: line 99: Error: <marker> attribute orient: Expected angle, "\r\n\t +deg ".
-CONSOLE ERROR: line 99: Error: <marker> attribute orient: Expected angle, "\r\n\t +rad ".
-CONSOLE ERROR: line 99: Error: <marker> attribute orient: Expected angle, "\r\n\t +grad ".
-CONSOLE ERROR: line 99: Error: <marker> attribute orient: Expected angle, "\r\n\t -. ".
-CONSOLE ERROR: line 99: Error: <marker> attribute orient: Expected angle, "\r\n\t -.deg ".
-CONSOLE ERROR: line 99: Error: <marker> attribute orient: Expected angle, "\r\n\t -.rad ".
-CONSOLE ERROR: line 99: Error: <marker> attribute orient: Expected angle, "\r\n\t -.grad ".
-CONSOLE ERROR: line 99: Error: <marker> attribute orient: Expected angle, "\r\n\t .- ".
-CONSOLE ERROR: line 99: Error: <marker> attribute orient: Expected angle, "\r\n\t .-deg ".
-CONSOLE ERROR: line 99: Error: <marker> attribute orient: Expected angle, "\r\n\t .-rad ".
-CONSOLE ERROR: line 99: Error: <marker> attribute orient: Expected angle, "\r\n\t .-grad ".
-CONSOLE ERROR: line 99: Error: <marker> attribute orient: Expected angle, "\r\n\t . ".
-CONSOLE ERROR: line 99: Error: <marker> attribute orient: Expected angle, "\r\n\t .deg ".
-CONSOLE ERROR: line 99: Error: <marker> attribute orient: Expected angle, "\r\n\t .rad ".
-CONSOLE ERROR: line 99: Error: <marker> attribute orient: Expected angle, "\r\n\t .grad ".
-CONSOLE ERROR: line 99: Error: <marker> attribute orient: Expected angle, "\r\n\t +. ".
-CONSOLE ERROR: line 99: Error: <marker> attribute orient: Expected angle, "\r\n\t +.deg ".
-CONSOLE ERROR: line 99: Error: <marker> attribute orient: Expected angle, "\r\n\t +.rad ".
-CONSOLE ERROR: line 99: Error: <marker> attribute orient: Expected angle, "\r\n\t +.grad ".
-CONSOLE ERROR: line 99: Error: <marker> attribute orient: Expected angle, "\r\n\t .E0 ".
-CONSOLE ERROR: line 99: Error: <marker> attribute orient: Expected angle, "\r\n\t .E0deg ".
-CONSOLE ERROR: line 99: Error: <marker> attribute orient: Expected angle, "\r\n\t .E0rad ".
-CONSOLE ERROR: line 99: Error: <marker> attribute orient: Expected angle, "\r\n\t .E0grad ".
-CONSOLE ERROR: line 99: Error: <marker> attribute orient: Expected angle, "\r\n\t e1 ".
-CONSOLE ERROR: line 99: Error: <marker> attribute orient: Expected angle, "\r\n\t e1deg ".
-CONSOLE ERROR: line 99: Error: <marker> attribute orient: Expected angle, "\r\n\t e1rad ".
-CONSOLE ERROR: line 99: Error: <marker> attribute orient: Expected angle, "\r\n\t e1grad ".
 CONSOLE ERROR: line 99: Error: <marker> attribute orient: Expected angle, "\r\n\t NaN   ".
 CONSOLE ERROR: line 99: Error: <marker> attribute orient: Expected angle, "\r\n\t NaNdeg   ".
 CONSOLE ERROR: line 99: Error: <marker> attribute orient: Expected angle, "\r\n\t NaNrad   ".
@@ -1118,38 +574,6 @@ CONSOLE ERROR: line 99: Error: <marker> attribute orient: Expected angle, "\r\n\
 CONSOLE ERROR: line 99: Error: <marker> attribute orient: Expected angle, "\r\n\t E-deg   ".
 CONSOLE ERROR: line 99: Error: <marker> attribute orient: Expected angle, "\r\n\t E-rad   ".
 CONSOLE ERROR: line 99: Error: <marker> attribute orient: Expected angle, "\r\n\t E-grad   ".
-CONSOLE ERROR: line 99: Error: <marker> attribute orient: Expected angle, "\r\n\t -   ".
-CONSOLE ERROR: line 99: Error: <marker> attribute orient: Expected angle, "\r\n\t -deg   ".
-CONSOLE ERROR: line 99: Error: <marker> attribute orient: Expected angle, "\r\n\t -rad   ".
-CONSOLE ERROR: line 99: Error: <marker> attribute orient: Expected angle, "\r\n\t -grad   ".
-CONSOLE ERROR: line 99: Error: <marker> attribute orient: Expected angle, "\r\n\t +   ".
-CONSOLE ERROR: line 99: Error: <marker> attribute orient: Expected angle, "\r\n\t +deg   ".
-CONSOLE ERROR: line 99: Error: <marker> attribute orient: Expected angle, "\r\n\t +rad   ".
-CONSOLE ERROR: line 99: Error: <marker> attribute orient: Expected angle, "\r\n\t +grad   ".
-CONSOLE ERROR: line 99: Error: <marker> attribute orient: Expected angle, "\r\n\t -.   ".
-CONSOLE ERROR: line 99: Error: <marker> attribute orient: Expected angle, "\r\n\t -.deg   ".
-CONSOLE ERROR: line 99: Error: <marker> attribute orient: Expected angle, "\r\n\t -.rad   ".
-CONSOLE ERROR: line 99: Error: <marker> attribute orient: Expected angle, "\r\n\t -.grad   ".
-CONSOLE ERROR: line 99: Error: <marker> attribute orient: Expected angle, "\r\n\t .-   ".
-CONSOLE ERROR: line 99: Error: <marker> attribute orient: Expected angle, "\r\n\t .-deg   ".
-CONSOLE ERROR: line 99: Error: <marker> attribute orient: Expected angle, "\r\n\t .-rad   ".
-CONSOLE ERROR: line 99: Error: <marker> attribute orient: Expected angle, "\r\n\t .-grad   ".
-CONSOLE ERROR: line 99: Error: <marker> attribute orient: Expected angle, "\r\n\t .   ".
-CONSOLE ERROR: line 99: Error: <marker> attribute orient: Expected angle, "\r\n\t .deg   ".
-CONSOLE ERROR: line 99: Error: <marker> attribute orient: Expected angle, "\r\n\t .rad   ".
-CONSOLE ERROR: line 99: Error: <marker> attribute orient: Expected angle, "\r\n\t .grad   ".
-CONSOLE ERROR: line 99: Error: <marker> attribute orient: Expected angle, "\r\n\t +.   ".
-CONSOLE ERROR: line 99: Error: <marker> attribute orient: Expected angle, "\r\n\t +.deg   ".
-CONSOLE ERROR: line 99: Error: <marker> attribute orient: Expected angle, "\r\n\t +.rad   ".
-CONSOLE ERROR: line 99: Error: <marker> attribute orient: Expected angle, "\r\n\t +.grad   ".
-CONSOLE ERROR: line 99: Error: <marker> attribute orient: Expected angle, "\r\n\t .E0   ".
-CONSOLE ERROR: line 99: Error: <marker> attribute orient: Expected angle, "\r\n\t .E0deg   ".
-CONSOLE ERROR: line 99: Error: <marker> attribute orient: Expected angle, "\r\n\t .E0rad   ".
-CONSOLE ERROR: line 99: Error: <marker> attribute orient: Expected angle, "\r\n\t .E0grad   ".
-CONSOLE ERROR: line 99: Error: <marker> attribute orient: Expected angle, "\r\n\t e1   ".
-CONSOLE ERROR: line 99: Error: <marker> attribute orient: Expected angle, "\r\n\t e1deg   ".
-CONSOLE ERROR: line 99: Error: <marker> attribute orient: Expected angle, "\r\n\t e1rad   ".
-CONSOLE ERROR: line 99: Error: <marker> attribute orient: Expected angle, "\r\n\t e1grad   ".
 CONSOLE ERROR: line 99: Error: <marker> attribute orient: Expected angle, "\r\n\t NaN\r\n\t ".
 CONSOLE ERROR: line 99: Error: <marker> attribute orient: Expected angle, "\r\n\t NaNdeg\r\n\t ".
 CONSOLE ERROR: line 99: Error: <marker> attribute orient: Expected angle, "\r\n\t NaNrad\r\n\t ".
@@ -1182,38 +606,6 @@ CONSOLE ERROR: line 99: Error: <marker> attribute orient: Expected angle, "\r\n\
 CONSOLE ERROR: line 99: Error: <marker> attribute orient: Expected angle, "\r\n\t E-deg\r\n\t ".
 CONSOLE ERROR: line 99: Error: <marker> attribute orient: Expected angle, "\r\n\t E-rad\r\n\t ".
 CONSOLE ERROR: line 99: Error: <marker> attribute orient: Expected angle, "\r\n\t E-grad\r\n\t ".
-CONSOLE ERROR: line 99: Error: <marker> attribute orient: Expected angle, "\r\n\t -\r\n\t ".
-CONSOLE ERROR: line 99: Error: <marker> attribute orient: Expected angle, "\r\n\t -deg\r\n\t ".
-CONSOLE ERROR: line 99: Error: <marker> attribute orient: Expected angle, "\r\n\t -rad\r\n\t ".
-CONSOLE ERROR: line 99: Error: <marker> attribute orient: Expected angle, "\r\n\t -grad\r\n\t ".
-CONSOLE ERROR: line 99: Error: <marker> attribute orient: Expected angle, "\r\n\t +\r\n\t ".
-CONSOLE ERROR: line 99: Error: <marker> attribute orient: Expected angle, "\r\n\t +deg\r\n\t ".
-CONSOLE ERROR: line 99: Error: <marker> attribute orient: Expected angle, "\r\n\t +rad\r\n\t ".
-CONSOLE ERROR: line 99: Error: <marker> attribute orient: Expected angle, "\r\n\t +grad\r\n\t ".
-CONSOLE ERROR: line 99: Error: <marker> attribute orient: Expected angle, "\r\n\t -.\r\n\t ".
-CONSOLE ERROR: line 99: Error: <marker> attribute orient: Expected angle, "\r\n\t -.deg\r\n\t ".
-CONSOLE ERROR: line 99: Error: <marker> attribute orient: Expected angle, "\r\n\t -.rad\r\n\t ".
-CONSOLE ERROR: line 99: Error: <marker> attribute orient: Expected angle, "\r\n\t -.grad\r\n\t ".
-CONSOLE ERROR: line 99: Error: <marker> attribute orient: Expected angle, "\r\n\t .-\r\n\t ".
-CONSOLE ERROR: line 99: Error: <marker> attribute orient: Expected angle, "\r\n\t .-deg\r\n\t ".
-CONSOLE ERROR: line 99: Error: <marker> attribute orient: Expected angle, "\r\n\t .-rad\r\n\t ".
-CONSOLE ERROR: line 99: Error: <marker> attribute orient: Expected angle, "\r\n\t .-grad\r\n\t ".
-CONSOLE ERROR: line 99: Error: <marker> attribute orient: Expected angle, "\r\n\t .\r\n\t ".
-CONSOLE ERROR: line 99: Error: <marker> attribute orient: Expected angle, "\r\n\t .deg\r\n\t ".
-CONSOLE ERROR: line 99: Error: <marker> attribute orient: Expected angle, "\r\n\t .rad\r\n\t ".
-CONSOLE ERROR: line 99: Error: <marker> attribute orient: Expected angle, "\r\n\t .grad\r\n\t ".
-CONSOLE ERROR: line 99: Error: <marker> attribute orient: Expected angle, "\r\n\t +.\r\n\t ".
-CONSOLE ERROR: line 99: Error: <marker> attribute orient: Expected angle, "\r\n\t +.deg\r\n\t ".
-CONSOLE ERROR: line 99: Error: <marker> attribute orient: Expected angle, "\r\n\t +.rad\r\n\t ".
-CONSOLE ERROR: line 99: Error: <marker> attribute orient: Expected angle, "\r\n\t +.grad\r\n\t ".
-CONSOLE ERROR: line 99: Error: <marker> attribute orient: Expected angle, "\r\n\t .E0\r\n\t ".
-CONSOLE ERROR: line 99: Error: <marker> attribute orient: Expected angle, "\r\n\t .E0deg\r\n\t ".
-CONSOLE ERROR: line 99: Error: <marker> attribute orient: Expected angle, "\r\n\t .E0rad\r\n\t ".
-CONSOLE ERROR: line 99: Error: <marker> attribute orient: Expected angle, "\r\n\t .E0grad\r\n\t ".
-CONSOLE ERROR: line 99: Error: <marker> attribute orient: Expected angle, "\r\n\t e1\r\n\t ".
-CONSOLE ERROR: line 99: Error: <marker> attribute orient: Expected angle, "\r\n\t e1deg\r\n\t ".
-CONSOLE ERROR: line 99: Error: <marker> attribute orient: Expected angle, "\r\n\t e1rad\r\n\t ".
-CONSOLE ERROR: line 99: Error: <marker> attribute orient: Expected angle, "\r\n\t e1grad\r\n\t ".
 CONSOLE ERROR: line 99: Error: <marker> attribute orient: Expected angle, "\r\n\t NaN\f".
 CONSOLE ERROR: line 99: Error: <marker> attribute orient: Expected angle, "\r\n\t NaNdeg\f".
 CONSOLE ERROR: line 99: Error: <marker> attribute orient: Expected angle, "\r\n\t NaNrad\f".
@@ -1246,38 +638,6 @@ CONSOLE ERROR: line 99: Error: <marker> attribute orient: Expected angle, "\r\n\
 CONSOLE ERROR: line 99: Error: <marker> attribute orient: Expected angle, "\r\n\t E-deg\f".
 CONSOLE ERROR: line 99: Error: <marker> attribute orient: Expected angle, "\r\n\t E-rad\f".
 CONSOLE ERROR: line 99: Error: <marker> attribute orient: Expected angle, "\r\n\t E-grad\f".
-CONSOLE ERROR: line 99: Error: <marker> attribute orient: Expected angle, "\r\n\t -\f".
-CONSOLE ERROR: line 99: Error: <marker> attribute orient: Expected angle, "\r\n\t -deg\f".
-CONSOLE ERROR: line 99: Error: <marker> attribute orient: Expected angle, "\r\n\t -rad\f".
-CONSOLE ERROR: line 99: Error: <marker> attribute orient: Expected angle, "\r\n\t -grad\f".
-CONSOLE ERROR: line 99: Error: <marker> attribute orient: Expected angle, "\r\n\t +\f".
-CONSOLE ERROR: line 99: Error: <marker> attribute orient: Expected angle, "\r\n\t +deg\f".
-CONSOLE ERROR: line 99: Error: <marker> attribute orient: Expected angle, "\r\n\t +rad\f".
-CONSOLE ERROR: line 99: Error: <marker> attribute orient: Expected angle, "\r\n\t +grad\f".
-CONSOLE ERROR: line 99: Error: <marker> attribute orient: Expected angle, "\r\n\t -.\f".
-CONSOLE ERROR: line 99: Error: <marker> attribute orient: Expected angle, "\r\n\t -.deg\f".
-CONSOLE ERROR: line 99: Error: <marker> attribute orient: Expected angle, "\r\n\t -.rad\f".
-CONSOLE ERROR: line 99: Error: <marker> attribute orient: Expected angle, "\r\n\t -.grad\f".
-CONSOLE ERROR: line 99: Error: <marker> attribute orient: Expected angle, "\r\n\t .-\f".
-CONSOLE ERROR: line 99: Error: <marker> attribute orient: Expected angle, "\r\n\t .-deg\f".
-CONSOLE ERROR: line 99: Error: <marker> attribute orient: Expected angle, "\r\n\t .-rad\f".
-CONSOLE ERROR: line 99: Error: <marker> attribute orient: Expected angle, "\r\n\t .-grad\f".
-CONSOLE ERROR: line 99: Error: <marker> attribute orient: Expected angle, "\r\n\t .\f".
-CONSOLE ERROR: line 99: Error: <marker> attribute orient: Expected angle, "\r\n\t .deg\f".
-CONSOLE ERROR: line 99: Error: <marker> attribute orient: Expected angle, "\r\n\t .rad\f".
-CONSOLE ERROR: line 99: Error: <marker> attribute orient: Expected angle, "\r\n\t .grad\f".
-CONSOLE ERROR: line 99: Error: <marker> attribute orient: Expected angle, "\r\n\t +.\f".
-CONSOLE ERROR: line 99: Error: <marker> attribute orient: Expected angle, "\r\n\t +.deg\f".
-CONSOLE ERROR: line 99: Error: <marker> attribute orient: Expected angle, "\r\n\t +.rad\f".
-CONSOLE ERROR: line 99: Error: <marker> attribute orient: Expected angle, "\r\n\t +.grad\f".
-CONSOLE ERROR: line 99: Error: <marker> attribute orient: Expected angle, "\r\n\t .E0\f".
-CONSOLE ERROR: line 99: Error: <marker> attribute orient: Expected angle, "\r\n\t .E0deg\f".
-CONSOLE ERROR: line 99: Error: <marker> attribute orient: Expected angle, "\r\n\t .E0rad\f".
-CONSOLE ERROR: line 99: Error: <marker> attribute orient: Expected angle, "\r\n\t .E0grad\f".
-CONSOLE ERROR: line 99: Error: <marker> attribute orient: Expected angle, "\r\n\t e1\f".
-CONSOLE ERROR: line 99: Error: <marker> attribute orient: Expected angle, "\r\n\t e1deg\f".
-CONSOLE ERROR: line 99: Error: <marker> attribute orient: Expected angle, "\r\n\t e1rad\f".
-CONSOLE ERROR: line 99: Error: <marker> attribute orient: Expected angle, "\r\n\t e1grad\f".
 CONSOLE ERROR: line 99: Error: <marker> attribute orient: Expected angle, "\fNaN".
 CONSOLE ERROR: line 99: Error: <marker> attribute orient: Expected angle, "\fNaNdeg".
 CONSOLE ERROR: line 99: Error: <marker> attribute orient: Expected angle, "\fNaNrad".
@@ -1310,38 +670,6 @@ CONSOLE ERROR: line 99: Error: <marker> attribute orient: Expected angle, "\fE-"
 CONSOLE ERROR: line 99: Error: <marker> attribute orient: Expected angle, "\fE-deg".
 CONSOLE ERROR: line 99: Error: <marker> attribute orient: Expected angle, "\fE-rad".
 CONSOLE ERROR: line 99: Error: <marker> attribute orient: Expected angle, "\fE-grad".
-CONSOLE ERROR: line 99: Error: <marker> attribute orient: Expected angle, "\f-".
-CONSOLE ERROR: line 99: Error: <marker> attribute orient: Expected angle, "\f-deg".
-CONSOLE ERROR: line 99: Error: <marker> attribute orient: Expected angle, "\f-rad".
-CONSOLE ERROR: line 99: Error: <marker> attribute orient: Expected angle, "\f-grad".
-CONSOLE ERROR: line 99: Error: <marker> attribute orient: Expected angle, "\f+".
-CONSOLE ERROR: line 99: Error: <marker> attribute orient: Expected angle, "\f+deg".
-CONSOLE ERROR: line 99: Error: <marker> attribute orient: Expected angle, "\f+rad".
-CONSOLE ERROR: line 99: Error: <marker> attribute orient: Expected angle, "\f+grad".
-CONSOLE ERROR: line 99: Error: <marker> attribute orient: Expected angle, "\f-.".
-CONSOLE ERROR: line 99: Error: <marker> attribute orient: Expected angle, "\f-.deg".
-CONSOLE ERROR: line 99: Error: <marker> attribute orient: Expected angle, "\f-.rad".
-CONSOLE ERROR: line 99: Error: <marker> attribute orient: Expected angle, "\f-.grad".
-CONSOLE ERROR: line 99: Error: <marker> attribute orient: Expected angle, "\f.-".
-CONSOLE ERROR: line 99: Error: <marker> attribute orient: Expected angle, "\f.-deg".
-CONSOLE ERROR: line 99: Error: <marker> attribute orient: Expected angle, "\f.-rad".
-CONSOLE ERROR: line 99: Error: <marker> attribute orient: Expected angle, "\f.-grad".
-CONSOLE ERROR: line 99: Error: <marker> attribute orient: Expected angle, "\f.".
-CONSOLE ERROR: line 99: Error: <marker> attribute orient: Expected angle, "\f.deg".
-CONSOLE ERROR: line 99: Error: <marker> attribute orient: Expected angle, "\f.rad".
-CONSOLE ERROR: line 99: Error: <marker> attribute orient: Expected angle, "\f.grad".
-CONSOLE ERROR: line 99: Error: <marker> attribute orient: Expected angle, "\f+.".
-CONSOLE ERROR: line 99: Error: <marker> attribute orient: Expected angle, "\f+.deg".
-CONSOLE ERROR: line 99: Error: <marker> attribute orient: Expected angle, "\f+.rad".
-CONSOLE ERROR: line 99: Error: <marker> attribute orient: Expected angle, "\f+.grad".
-CONSOLE ERROR: line 99: Error: <marker> attribute orient: Expected angle, "\f.E0".
-CONSOLE ERROR: line 99: Error: <marker> attribute orient: Expected angle, "\f.E0deg".
-CONSOLE ERROR: line 99: Error: <marker> attribute orient: Expected angle, "\f.E0rad".
-CONSOLE ERROR: line 99: Error: <marker> attribute orient: Expected angle, "\f.E0grad".
-CONSOLE ERROR: line 99: Error: <marker> attribute orient: Expected angle, "\fe1".
-CONSOLE ERROR: line 99: Error: <marker> attribute orient: Expected angle, "\fe1deg".
-CONSOLE ERROR: line 99: Error: <marker> attribute orient: Expected angle, "\fe1rad".
-CONSOLE ERROR: line 99: Error: <marker> attribute orient: Expected angle, "\fe1grad".
 CONSOLE ERROR: line 99: Error: <marker> attribute orient: Expected angle, "\fNaN ".
 CONSOLE ERROR: line 99: Error: <marker> attribute orient: Expected angle, "\fNaNdeg ".
 CONSOLE ERROR: line 99: Error: <marker> attribute orient: Expected angle, "\fNaNrad ".
@@ -1374,38 +702,6 @@ CONSOLE ERROR: line 99: Error: <marker> attribute orient: Expected angle, "\fE- 
 CONSOLE ERROR: line 99: Error: <marker> attribute orient: Expected angle, "\fE-deg ".
 CONSOLE ERROR: line 99: Error: <marker> attribute orient: Expected angle, "\fE-rad ".
 CONSOLE ERROR: line 99: Error: <marker> attribute orient: Expected angle, "\fE-grad ".
-CONSOLE ERROR: line 99: Error: <marker> attribute orient: Expected angle, "\f- ".
-CONSOLE ERROR: line 99: Error: <marker> attribute orient: Expected angle, "\f-deg ".
-CONSOLE ERROR: line 99: Error: <marker> attribute orient: Expected angle, "\f-rad ".
-CONSOLE ERROR: line 99: Error: <marker> attribute orient: Expected angle, "\f-grad ".
-CONSOLE ERROR: line 99: Error: <marker> attribute orient: Expected angle, "\f+ ".
-CONSOLE ERROR: line 99: Error: <marker> attribute orient: Expected angle, "\f+deg ".
-CONSOLE ERROR: line 99: Error: <marker> attribute orient: Expected angle, "\f+rad ".
-CONSOLE ERROR: line 99: Error: <marker> attribute orient: Expected angle, "\f+grad ".
-CONSOLE ERROR: line 99: Error: <marker> attribute orient: Expected angle, "\f-. ".
-CONSOLE ERROR: line 99: Error: <marker> attribute orient: Expected angle, "\f-.deg ".
-CONSOLE ERROR: line 99: Error: <marker> attribute orient: Expected angle, "\f-.rad ".
-CONSOLE ERROR: line 99: Error: <marker> attribute orient: Expected angle, "\f-.grad ".
-CONSOLE ERROR: line 99: Error: <marker> attribute orient: Expected angle, "\f.- ".
-CONSOLE ERROR: line 99: Error: <marker> attribute orient: Expected angle, "\f.-deg ".
-CONSOLE ERROR: line 99: Error: <marker> attribute orient: Expected angle, "\f.-rad ".
-CONSOLE ERROR: line 99: Error: <marker> attribute orient: Expected angle, "\f.-grad ".
-CONSOLE ERROR: line 99: Error: <marker> attribute orient: Expected angle, "\f. ".
-CONSOLE ERROR: line 99: Error: <marker> attribute orient: Expected angle, "\f.deg ".
-CONSOLE ERROR: line 99: Error: <marker> attribute orient: Expected angle, "\f.rad ".
-CONSOLE ERROR: line 99: Error: <marker> attribute orient: Expected angle, "\f.grad ".
-CONSOLE ERROR: line 99: Error: <marker> attribute orient: Expected angle, "\f+. ".
-CONSOLE ERROR: line 99: Error: <marker> attribute orient: Expected angle, "\f+.deg ".
-CONSOLE ERROR: line 99: Error: <marker> attribute orient: Expected angle, "\f+.rad ".
-CONSOLE ERROR: line 99: Error: <marker> attribute orient: Expected angle, "\f+.grad ".
-CONSOLE ERROR: line 99: Error: <marker> attribute orient: Expected angle, "\f.E0 ".
-CONSOLE ERROR: line 99: Error: <marker> attribute orient: Expected angle, "\f.E0deg ".
-CONSOLE ERROR: line 99: Error: <marker> attribute orient: Expected angle, "\f.E0rad ".
-CONSOLE ERROR: line 99: Error: <marker> attribute orient: Expected angle, "\f.E0grad ".
-CONSOLE ERROR: line 99: Error: <marker> attribute orient: Expected angle, "\fe1 ".
-CONSOLE ERROR: line 99: Error: <marker> attribute orient: Expected angle, "\fe1deg ".
-CONSOLE ERROR: line 99: Error: <marker> attribute orient: Expected angle, "\fe1rad ".
-CONSOLE ERROR: line 99: Error: <marker> attribute orient: Expected angle, "\fe1grad ".
 CONSOLE ERROR: line 99: Error: <marker> attribute orient: Expected angle, "\fNaN   ".
 CONSOLE ERROR: line 99: Error: <marker> attribute orient: Expected angle, "\fNaNdeg   ".
 CONSOLE ERROR: line 99: Error: <marker> attribute orient: Expected angle, "\fNaNrad   ".
@@ -1438,38 +734,6 @@ CONSOLE ERROR: line 99: Error: <marker> attribute orient: Expected angle, "\fE- 
 CONSOLE ERROR: line 99: Error: <marker> attribute orient: Expected angle, "\fE-deg   ".
 CONSOLE ERROR: line 99: Error: <marker> attribute orient: Expected angle, "\fE-rad   ".
 CONSOLE ERROR: line 99: Error: <marker> attribute orient: Expected angle, "\fE-grad   ".
-CONSOLE ERROR: line 99: Error: <marker> attribute orient: Expected angle, "\f-   ".
-CONSOLE ERROR: line 99: Error: <marker> attribute orient: Expected angle, "\f-deg   ".
-CONSOLE ERROR: line 99: Error: <marker> attribute orient: Expected angle, "\f-rad   ".
-CONSOLE ERROR: line 99: Error: <marker> attribute orient: Expected angle, "\f-grad   ".
-CONSOLE ERROR: line 99: Error: <marker> attribute orient: Expected angle, "\f+   ".
-CONSOLE ERROR: line 99: Error: <marker> attribute orient: Expected angle, "\f+deg   ".
-CONSOLE ERROR: line 99: Error: <marker> attribute orient: Expected angle, "\f+rad   ".
-CONSOLE ERROR: line 99: Error: <marker> attribute orient: Expected angle, "\f+grad   ".
-CONSOLE ERROR: line 99: Error: <marker> attribute orient: Expected angle, "\f-.   ".
-CONSOLE ERROR: line 99: Error: <marker> attribute orient: Expected angle, "\f-.deg   ".
-CONSOLE ERROR: line 99: Error: <marker> attribute orient: Expected angle, "\f-.rad   ".
-CONSOLE ERROR: line 99: Error: <marker> attribute orient: Expected angle, "\f-.grad   ".
-CONSOLE ERROR: line 99: Error: <marker> attribute orient: Expected angle, "\f.-   ".
-CONSOLE ERROR: line 99: Error: <marker> attribute orient: Expected angle, "\f.-deg   ".
-CONSOLE ERROR: line 99: Error: <marker> attribute orient: Expected angle, "\f.-rad   ".
-CONSOLE ERROR: line 99: Error: <marker> attribute orient: Expected angle, "\f.-grad   ".
-CONSOLE ERROR: line 99: Error: <marker> attribute orient: Expected angle, "\f.   ".
-CONSOLE ERROR: line 99: Error: <marker> attribute orient: Expected angle, "\f.deg   ".
-CONSOLE ERROR: line 99: Error: <marker> attribute orient: Expected angle, "\f.rad   ".
-CONSOLE ERROR: line 99: Error: <marker> attribute orient: Expected angle, "\f.grad   ".
-CONSOLE ERROR: line 99: Error: <marker> attribute orient: Expected angle, "\f+.   ".
-CONSOLE ERROR: line 99: Error: <marker> attribute orient: Expected angle, "\f+.deg   ".
-CONSOLE ERROR: line 99: Error: <marker> attribute orient: Expected angle, "\f+.rad   ".
-CONSOLE ERROR: line 99: Error: <marker> attribute orient: Expected angle, "\f+.grad   ".
-CONSOLE ERROR: line 99: Error: <marker> attribute orient: Expected angle, "\f.E0   ".
-CONSOLE ERROR: line 99: Error: <marker> attribute orient: Expected angle, "\f.E0deg   ".
-CONSOLE ERROR: line 99: Error: <marker> attribute orient: Expected angle, "\f.E0rad   ".
-CONSOLE ERROR: line 99: Error: <marker> attribute orient: Expected angle, "\f.E0grad   ".
-CONSOLE ERROR: line 99: Error: <marker> attribute orient: Expected angle, "\fe1   ".
-CONSOLE ERROR: line 99: Error: <marker> attribute orient: Expected angle, "\fe1deg   ".
-CONSOLE ERROR: line 99: Error: <marker> attribute orient: Expected angle, "\fe1rad   ".
-CONSOLE ERROR: line 99: Error: <marker> attribute orient: Expected angle, "\fe1grad   ".
 CONSOLE ERROR: line 99: Error: <marker> attribute orient: Expected angle, "\fNaN\r\n\t ".
 CONSOLE ERROR: line 99: Error: <marker> attribute orient: Expected angle, "\fNaNdeg\r\n\t ".
 CONSOLE ERROR: line 99: Error: <marker> attribute orient: Expected angle, "\fNaNrad\r\n\t ".
@@ -1502,38 +766,6 @@ CONSOLE ERROR: line 99: Error: <marker> attribute orient: Expected angle, "\fE-\
 CONSOLE ERROR: line 99: Error: <marker> attribute orient: Expected angle, "\fE-deg\r\n\t ".
 CONSOLE ERROR: line 99: Error: <marker> attribute orient: Expected angle, "\fE-rad\r\n\t ".
 CONSOLE ERROR: line 99: Error: <marker> attribute orient: Expected angle, "\fE-grad\r\n\t ".
-CONSOLE ERROR: line 99: Error: <marker> attribute orient: Expected angle, "\f-\r\n\t ".
-CONSOLE ERROR: line 99: Error: <marker> attribute orient: Expected angle, "\f-deg\r\n\t ".
-CONSOLE ERROR: line 99: Error: <marker> attribute orient: Expected angle, "\f-rad\r\n\t ".
-CONSOLE ERROR: line 99: Error: <marker> attribute orient: Expected angle, "\f-grad\r\n\t ".
-CONSOLE ERROR: line 99: Error: <marker> attribute orient: Expected angle, "\f+\r\n\t ".
-CONSOLE ERROR: line 99: Error: <marker> attribute orient: Expected angle, "\f+deg\r\n\t ".
-CONSOLE ERROR: line 99: Error: <marker> attribute orient: Expected angle, "\f+rad\r\n\t ".
-CONSOLE ERROR: line 99: Error: <marker> attribute orient: Expected angle, "\f+grad\r\n\t ".
-CONSOLE ERROR: line 99: Error: <marker> attribute orient: Expected angle, "\f-.\r\n\t ".
-CONSOLE ERROR: line 99: Error: <marker> attribute orient: Expected angle, "\f-.deg\r\n\t ".
-CONSOLE ERROR: line 99: Error: <marker> attribute orient: Expected angle, "\f-.rad\r\n\t ".
-CONSOLE ERROR: line 99: Error: <marker> attribute orient: Expected angle, "\f-.grad\r\n\t ".
-CONSOLE ERROR: line 99: Error: <marker> attribute orient: Expected angle, "\f.-\r\n\t ".
-CONSOLE ERROR: line 99: Error: <marker> attribute orient: Expected angle, "\f.-deg\r\n\t ".
-CONSOLE ERROR: line 99: Error: <marker> attribute orient: Expected angle, "\f.-rad\r\n\t ".
-CONSOLE ERROR: line 99: Error: <marker> attribute orient: Expected angle, "\f.-grad\r\n\t ".
-CONSOLE ERROR: line 99: Error: <marker> attribute orient: Expected angle, "\f.\r\n\t ".
-CONSOLE ERROR: line 99: Error: <marker> attribute orient: Expected angle, "\f.deg\r\n\t ".
-CONSOLE ERROR: line 99: Error: <marker> attribute orient: Expected angle, "\f.rad\r\n\t ".
-CONSOLE ERROR: line 99: Error: <marker> attribute orient: Expected angle, "\f.grad\r\n\t ".
-CONSOLE ERROR: line 99: Error: <marker> attribute orient: Expected angle, "\f+.\r\n\t ".
-CONSOLE ERROR: line 99: Error: <marker> attribute orient: Expected angle, "\f+.deg\r\n\t ".
-CONSOLE ERROR: line 99: Error: <marker> attribute orient: Expected angle, "\f+.rad\r\n\t ".
-CONSOLE ERROR: line 99: Error: <marker> attribute orient: Expected angle, "\f+.grad\r\n\t ".
-CONSOLE ERROR: line 99: Error: <marker> attribute orient: Expected angle, "\f.E0\r\n\t ".
-CONSOLE ERROR: line 99: Error: <marker> attribute orient: Expected angle, "\f.E0deg\r\n\t ".
-CONSOLE ERROR: line 99: Error: <marker> attribute orient: Expected angle, "\f.E0rad\r\n\t ".
-CONSOLE ERROR: line 99: Error: <marker> attribute orient: Expected angle, "\f.E0grad\r\n\t ".
-CONSOLE ERROR: line 99: Error: <marker> attribute orient: Expected angle, "\fe1\r\n\t ".
-CONSOLE ERROR: line 99: Error: <marker> attribute orient: Expected angle, "\fe1deg\r\n\t ".
-CONSOLE ERROR: line 99: Error: <marker> attribute orient: Expected angle, "\fe1rad\r\n\t ".
-CONSOLE ERROR: line 99: Error: <marker> attribute orient: Expected angle, "\fe1grad\r\n\t ".
 CONSOLE ERROR: line 99: Error: <marker> attribute orient: Expected angle, "\fNaN\f".
 CONSOLE ERROR: line 99: Error: <marker> attribute orient: Expected angle, "\fNaNdeg\f".
 CONSOLE ERROR: line 99: Error: <marker> attribute orient: Expected angle, "\fNaNrad\f".
@@ -1566,38 +798,6 @@ CONSOLE ERROR: line 99: Error: <marker> attribute orient: Expected angle, "\fE-\
 CONSOLE ERROR: line 99: Error: <marker> attribute orient: Expected angle, "\fE-deg\f".
 CONSOLE ERROR: line 99: Error: <marker> attribute orient: Expected angle, "\fE-rad\f".
 CONSOLE ERROR: line 99: Error: <marker> attribute orient: Expected angle, "\fE-grad\f".
-CONSOLE ERROR: line 99: Error: <marker> attribute orient: Expected angle, "\f-\f".
-CONSOLE ERROR: line 99: Error: <marker> attribute orient: Expected angle, "\f-deg\f".
-CONSOLE ERROR: line 99: Error: <marker> attribute orient: Expected angle, "\f-rad\f".
-CONSOLE ERROR: line 99: Error: <marker> attribute orient: Expected angle, "\f-grad\f".
-CONSOLE ERROR: line 99: Error: <marker> attribute orient: Expected angle, "\f+\f".
-CONSOLE ERROR: line 99: Error: <marker> attribute orient: Expected angle, "\f+deg\f".
-CONSOLE ERROR: line 99: Error: <marker> attribute orient: Expected angle, "\f+rad\f".
-CONSOLE ERROR: line 99: Error: <marker> attribute orient: Expected angle, "\f+grad\f".
-CONSOLE ERROR: line 99: Error: <marker> attribute orient: Expected angle, "\f-.\f".
-CONSOLE ERROR: line 99: Error: <marker> attribute orient: Expected angle, "\f-.deg\f".
-CONSOLE ERROR: line 99: Error: <marker> attribute orient: Expected angle, "\f-.rad\f".
-CONSOLE ERROR: line 99: Error: <marker> attribute orient: Expected angle, "\f-.grad\f".
-CONSOLE ERROR: line 99: Error: <marker> attribute orient: Expected angle, "\f.-\f".
-CONSOLE ERROR: line 99: Error: <marker> attribute orient: Expected angle, "\f.-deg\f".
-CONSOLE ERROR: line 99: Error: <marker> attribute orient: Expected angle, "\f.-rad\f".
-CONSOLE ERROR: line 99: Error: <marker> attribute orient: Expected angle, "\f.-grad\f".
-CONSOLE ERROR: line 99: Error: <marker> attribute orient: Expected angle, "\f.\f".
-CONSOLE ERROR: line 99: Error: <marker> attribute orient: Expected angle, "\f.deg\f".
-CONSOLE ERROR: line 99: Error: <marker> attribute orient: Expected angle, "\f.rad\f".
-CONSOLE ERROR: line 99: Error: <marker> attribute orient: Expected angle, "\f.grad\f".
-CONSOLE ERROR: line 99: Error: <marker> attribute orient: Expected angle, "\f+.\f".
-CONSOLE ERROR: line 99: Error: <marker> attribute orient: Expected angle, "\f+.deg\f".
-CONSOLE ERROR: line 99: Error: <marker> attribute orient: Expected angle, "\f+.rad\f".
-CONSOLE ERROR: line 99: Error: <marker> attribute orient: Expected angle, "\f+.grad\f".
-CONSOLE ERROR: line 99: Error: <marker> attribute orient: Expected angle, "\f.E0\f".
-CONSOLE ERROR: line 99: Error: <marker> attribute orient: Expected angle, "\f.E0deg\f".
-CONSOLE ERROR: line 99: Error: <marker> attribute orient: Expected angle, "\f.E0rad\f".
-CONSOLE ERROR: line 99: Error: <marker> attribute orient: Expected angle, "\f.E0grad\f".
-CONSOLE ERROR: line 99: Error: <marker> attribute orient: Expected angle, "\fe1\f".
-CONSOLE ERROR: line 99: Error: <marker> attribute orient: Expected angle, "\fe1deg\f".
-CONSOLE ERROR: line 99: Error: <marker> attribute orient: Expected angle, "\fe1rad\f".
-CONSOLE ERROR: line 99: Error: <marker> attribute orient: Expected angle, "\fe1grad\f".
 This is a testharness.js-based test.
 PASS Test <angle> invalid value: NaN 
 PASS Test <angle> invalid value: NaNdeg 
@@ -1631,38 +831,6 @@ PASS Test <angle> invalid value: E-
 PASS Test <angle> invalid value: E-deg 
 PASS Test <angle> invalid value: E-rad 
 PASS Test <angle> invalid value: E-grad 
-PASS Test <angle> invalid value: - 
-PASS Test <angle> invalid value: -deg 
-PASS Test <angle> invalid value: -rad 
-PASS Test <angle> invalid value: -grad 
-PASS Test <angle> invalid value: + 
-PASS Test <angle> invalid value: +deg 
-PASS Test <angle> invalid value: +rad 
-PASS Test <angle> invalid value: +grad 
-PASS Test <angle> invalid value: -. 
-PASS Test <angle> invalid value: -.deg 
-PASS Test <angle> invalid value: -.rad 
-PASS Test <angle> invalid value: -.grad 
-PASS Test <angle> invalid value: .- 
-PASS Test <angle> invalid value: .-deg 
-PASS Test <angle> invalid value: .-rad 
-PASS Test <angle> invalid value: .-grad 
-PASS Test <angle> invalid value: . 
-PASS Test <angle> invalid value: .deg 
-PASS Test <angle> invalid value: .rad 
-PASS Test <angle> invalid value: .grad 
-PASS Test <angle> invalid value: +. 
-PASS Test <angle> invalid value: +.deg 
-PASS Test <angle> invalid value: +.rad 
-PASS Test <angle> invalid value: +.grad 
-PASS Test <angle> invalid value: .E0 
-PASS Test <angle> invalid value: .E0deg 
-PASS Test <angle> invalid value: .E0rad 
-PASS Test <angle> invalid value: .E0grad 
-PASS Test <angle> invalid value: e1 
-PASS Test <angle> invalid value: e1deg 
-PASS Test <angle> invalid value: e1rad 
-PASS Test <angle> invalid value: e1grad 
 PASS Test <angle> invalid value: NaN  
 PASS Test <angle> invalid value: NaNdeg  
 PASS Test <angle> invalid value: NaNrad  
@@ -1695,38 +863,6 @@ PASS Test <angle> invalid value: E-
 PASS Test <angle> invalid value: E-deg  
 PASS Test <angle> invalid value: E-rad  
 PASS Test <angle> invalid value: E-grad  
-PASS Test <angle> invalid value: -  
-PASS Test <angle> invalid value: -deg  
-PASS Test <angle> invalid value: -rad  
-PASS Test <angle> invalid value: -grad  
-PASS Test <angle> invalid value: +  
-PASS Test <angle> invalid value: +deg  
-PASS Test <angle> invalid value: +rad  
-PASS Test <angle> invalid value: +grad  
-PASS Test <angle> invalid value: -.  
-PASS Test <angle> invalid value: -.deg  
-PASS Test <angle> invalid value: -.rad  
-PASS Test <angle> invalid value: -.grad  
-PASS Test <angle> invalid value: .-  
-PASS Test <angle> invalid value: .-deg  
-PASS Test <angle> invalid value: .-rad  
-PASS Test <angle> invalid value: .-grad  
-PASS Test <angle> invalid value: .  
-PASS Test <angle> invalid value: .deg  
-PASS Test <angle> invalid value: .rad  
-PASS Test <angle> invalid value: .grad  
-PASS Test <angle> invalid value: +.  
-PASS Test <angle> invalid value: +.deg  
-PASS Test <angle> invalid value: +.rad  
-PASS Test <angle> invalid value: +.grad  
-PASS Test <angle> invalid value: .E0  
-PASS Test <angle> invalid value: .E0deg  
-PASS Test <angle> invalid value: .E0rad  
-PASS Test <angle> invalid value: .E0grad  
-PASS Test <angle> invalid value: e1  
-PASS Test <angle> invalid value: e1deg  
-PASS Test <angle> invalid value: e1rad  
-PASS Test <angle> invalid value: e1grad  
 PASS Test <angle> invalid value: NaN    
 PASS Test <angle> invalid value: NaNdeg    
 PASS Test <angle> invalid value: NaNrad    
@@ -1759,38 +895,6 @@ PASS Test <angle> invalid value: E-
 PASS Test <angle> invalid value: E-deg    
 PASS Test <angle> invalid value: E-rad    
 PASS Test <angle> invalid value: E-grad    
-PASS Test <angle> invalid value: -    
-PASS Test <angle> invalid value: -deg    
-PASS Test <angle> invalid value: -rad    
-PASS Test <angle> invalid value: -grad    
-PASS Test <angle> invalid value: +    
-PASS Test <angle> invalid value: +deg    
-PASS Test <angle> invalid value: +rad    
-PASS Test <angle> invalid value: +grad    
-PASS Test <angle> invalid value: -.    
-PASS Test <angle> invalid value: -.deg    
-PASS Test <angle> invalid value: -.rad    
-PASS Test <angle> invalid value: -.grad    
-PASS Test <angle> invalid value: .-    
-PASS Test <angle> invalid value: .-deg    
-PASS Test <angle> invalid value: .-rad    
-PASS Test <angle> invalid value: .-grad    
-PASS Test <angle> invalid value: .    
-PASS Test <angle> invalid value: .deg    
-PASS Test <angle> invalid value: .rad    
-PASS Test <angle> invalid value: .grad    
-PASS Test <angle> invalid value: +.    
-PASS Test <angle> invalid value: +.deg    
-PASS Test <angle> invalid value: +.rad    
-PASS Test <angle> invalid value: +.grad    
-PASS Test <angle> invalid value: .E0    
-PASS Test <angle> invalid value: .E0deg    
-PASS Test <angle> invalid value: .E0rad    
-PASS Test <angle> invalid value: .E0grad    
-PASS Test <angle> invalid value: e1    
-PASS Test <angle> invalid value: e1deg    
-PASS Test <angle> invalid value: e1rad    
-PASS Test <angle> invalid value: e1grad    
 PASS Test <angle> invalid value: NaN\r\n\t  
 PASS Test <angle> invalid value: NaNdeg\r\n\t  
 PASS Test <angle> invalid value: NaNrad\r\n\t  
@@ -1823,38 +927,6 @@ PASS Test <angle> invalid value: E-\r\n\t
 PASS Test <angle> invalid value: E-deg\r\n\t  
 PASS Test <angle> invalid value: E-rad\r\n\t  
 PASS Test <angle> invalid value: E-grad\r\n\t  
-PASS Test <angle> invalid value: -\r\n\t  
-PASS Test <angle> invalid value: -deg\r\n\t  
-PASS Test <angle> invalid value: -rad\r\n\t  
-PASS Test <angle> invalid value: -grad\r\n\t  
-PASS Test <angle> invalid value: +\r\n\t  
-PASS Test <angle> invalid value: +deg\r\n\t  
-PASS Test <angle> invalid value: +rad\r\n\t  
-PASS Test <angle> invalid value: +grad\r\n\t  
-PASS Test <angle> invalid value: -.\r\n\t  
-PASS Test <angle> invalid value: -.deg\r\n\t  
-PASS Test <angle> invalid value: -.rad\r\n\t  
-PASS Test <angle> invalid value: -.grad\r\n\t  
-PASS Test <angle> invalid value: .-\r\n\t  
-PASS Test <angle> invalid value: .-deg\r\n\t  
-PASS Test <angle> invalid value: .-rad\r\n\t  
-PASS Test <angle> invalid value: .-grad\r\n\t  
-PASS Test <angle> invalid value: .\r\n\t  
-PASS Test <angle> invalid value: .deg\r\n\t  
-PASS Test <angle> invalid value: .rad\r\n\t  
-PASS Test <angle> invalid value: .grad\r\n\t  
-PASS Test <angle> invalid value: +.\r\n\t  
-PASS Test <angle> invalid value: +.deg\r\n\t  
-PASS Test <angle> invalid value: +.rad\r\n\t  
-PASS Test <angle> invalid value: +.grad\r\n\t  
-PASS Test <angle> invalid value: .E0\r\n\t  
-PASS Test <angle> invalid value: .E0deg\r\n\t  
-PASS Test <angle> invalid value: .E0rad\r\n\t  
-PASS Test <angle> invalid value: .E0grad\r\n\t  
-PASS Test <angle> invalid value: e1\r\n\t  
-PASS Test <angle> invalid value: e1deg\r\n\t  
-PASS Test <angle> invalid value: e1rad\r\n\t  
-PASS Test <angle> invalid value: e1grad\r\n\t  
 PASS Test <angle> invalid value: NaN\f 
 PASS Test <angle> invalid value: NaNdeg\f 
 PASS Test <angle> invalid value: NaNrad\f 
@@ -1887,38 +959,6 @@ PASS Test <angle> invalid value: E-\f
 PASS Test <angle> invalid value: E-deg\f 
 PASS Test <angle> invalid value: E-rad\f 
 PASS Test <angle> invalid value: E-grad\f 
-PASS Test <angle> invalid value: -\f 
-PASS Test <angle> invalid value: -deg\f 
-PASS Test <angle> invalid value: -rad\f 
-PASS Test <angle> invalid value: -grad\f 
-PASS Test <angle> invalid value: +\f 
-PASS Test <angle> invalid value: +deg\f 
-PASS Test <angle> invalid value: +rad\f 
-PASS Test <angle> invalid value: +grad\f 
-PASS Test <angle> invalid value: -.\f 
-PASS Test <angle> invalid value: -.deg\f 
-PASS Test <angle> invalid value: -.rad\f 
-PASS Test <angle> invalid value: -.grad\f 
-PASS Test <angle> invalid value: .-\f 
-PASS Test <angle> invalid value: .-deg\f 
-PASS Test <angle> invalid value: .-rad\f 
-PASS Test <angle> invalid value: .-grad\f 
-PASS Test <angle> invalid value: .\f 
-PASS Test <angle> invalid value: .deg\f 
-PASS Test <angle> invalid value: .rad\f 
-PASS Test <angle> invalid value: .grad\f 
-PASS Test <angle> invalid value: +.\f 
-PASS Test <angle> invalid value: +.deg\f 
-PASS Test <angle> invalid value: +.rad\f 
-PASS Test <angle> invalid value: +.grad\f 
-PASS Test <angle> invalid value: .E0\f 
-PASS Test <angle> invalid value: .E0deg\f 
-PASS Test <angle> invalid value: .E0rad\f 
-PASS Test <angle> invalid value: .E0grad\f 
-PASS Test <angle> invalid value: e1\f 
-PASS Test <angle> invalid value: e1deg\f 
-PASS Test <angle> invalid value: e1rad\f 
-PASS Test <angle> invalid value: e1grad\f 
 PASS Test <angle> invalid value:  NaN 
 PASS Test <angle> invalid value:  NaNdeg 
 PASS Test <angle> invalid value:  NaNrad 
@@ -1951,38 +991,6 @@ PASS Test <angle> invalid value:  E-
 PASS Test <angle> invalid value:  E-deg 
 PASS Test <angle> invalid value:  E-rad 
 PASS Test <angle> invalid value:  E-grad 
-PASS Test <angle> invalid value:  - 
-PASS Test <angle> invalid value:  -deg 
-PASS Test <angle> invalid value:  -rad 
-PASS Test <angle> invalid value:  -grad 
-PASS Test <angle> invalid value:  + 
-PASS Test <angle> invalid value:  +deg 
-PASS Test <angle> invalid value:  +rad 
-PASS Test <angle> invalid value:  +grad 
-PASS Test <angle> invalid value:  -. 
-PASS Test <angle> invalid value:  -.deg 
-PASS Test <angle> invalid value:  -.rad 
-PASS Test <angle> invalid value:  -.grad 
-PASS Test <angle> invalid value:  .- 
-PASS Test <angle> invalid value:  .-deg 
-PASS Test <angle> invalid value:  .-rad 
-PASS Test <angle> invalid value:  .-grad 
-PASS Test <angle> invalid value:  . 
-PASS Test <angle> invalid value:  .deg 
-PASS Test <angle> invalid value:  .rad 
-PASS Test <angle> invalid value:  .grad 
-PASS Test <angle> invalid value:  +. 
-PASS Test <angle> invalid value:  +.deg 
-PASS Test <angle> invalid value:  +.rad 
-PASS Test <angle> invalid value:  +.grad 
-PASS Test <angle> invalid value:  .E0 
-PASS Test <angle> invalid value:  .E0deg 
-PASS Test <angle> invalid value:  .E0rad 
-PASS Test <angle> invalid value:  .E0grad 
-PASS Test <angle> invalid value:  e1 
-PASS Test <angle> invalid value:  e1deg 
-PASS Test <angle> invalid value:  e1rad 
-PASS Test <angle> invalid value:  e1grad 
 PASS Test <angle> invalid value:  NaN  
 PASS Test <angle> invalid value:  NaNdeg  
 PASS Test <angle> invalid value:  NaNrad  
@@ -2015,38 +1023,6 @@ PASS Test <angle> invalid value:  E-
 PASS Test <angle> invalid value:  E-deg  
 PASS Test <angle> invalid value:  E-rad  
 PASS Test <angle> invalid value:  E-grad  
-PASS Test <angle> invalid value:  -  
-PASS Test <angle> invalid value:  -deg  
-PASS Test <angle> invalid value:  -rad  
-PASS Test <angle> invalid value:  -grad  
-PASS Test <angle> invalid value:  +  
-PASS Test <angle> invalid value:  +deg  
-PASS Test <angle> invalid value:  +rad  
-PASS Test <angle> invalid value:  +grad  
-PASS Test <angle> invalid value:  -.  
-PASS Test <angle> invalid value:  -.deg  
-PASS Test <angle> invalid value:  -.rad  
-PASS Test <angle> invalid value:  -.grad  
-PASS Test <angle> invalid value:  .-  
-PASS Test <angle> invalid value:  .-deg  
-PASS Test <angle> invalid value:  .-rad  
-PASS Test <angle> invalid value:  .-grad  
-PASS Test <angle> invalid value:  .  
-PASS Test <angle> invalid value:  .deg  
-PASS Test <angle> invalid value:  .rad  
-PASS Test <angle> invalid value:  .grad  
-PASS Test <angle> invalid value:  +.  
-PASS Test <angle> invalid value:  +.deg  
-PASS Test <angle> invalid value:  +.rad  
-PASS Test <angle> invalid value:  +.grad  
-PASS Test <angle> invalid value:  .E0  
-PASS Test <angle> invalid value:  .E0deg  
-PASS Test <angle> invalid value:  .E0rad  
-PASS Test <angle> invalid value:  .E0grad  
-PASS Test <angle> invalid value:  e1  
-PASS Test <angle> invalid value:  e1deg  
-PASS Test <angle> invalid value:  e1rad  
-PASS Test <angle> invalid value:  e1grad  
 PASS Test <angle> invalid value:  NaN    
 PASS Test <angle> invalid value:  NaNdeg    
 PASS Test <angle> invalid value:  NaNrad    
@@ -2079,38 +1055,6 @@ PASS Test <angle> invalid value:  E-
 PASS Test <angle> invalid value:  E-deg    
 PASS Test <angle> invalid value:  E-rad    
 PASS Test <angle> invalid value:  E-grad    
-PASS Test <angle> invalid value:  -    
-PASS Test <angle> invalid value:  -deg    
-PASS Test <angle> invalid value:  -rad    
-PASS Test <angle> invalid value:  -grad    
-PASS Test <angle> invalid value:  +    
-PASS Test <angle> invalid value:  +deg    
-PASS Test <angle> invalid value:  +rad    
-PASS Test <angle> invalid value:  +grad    
-PASS Test <angle> invalid value:  -.    
-PASS Test <angle> invalid value:  -.deg    
-PASS Test <angle> invalid value:  -.rad    
-PASS Test <angle> invalid value:  -.grad    
-PASS Test <angle> invalid value:  .-    
-PASS Test <angle> invalid value:  .-deg    
-PASS Test <angle> invalid value:  .-rad    
-PASS Test <angle> invalid value:  .-grad    
-PASS Test <angle> invalid value:  .    
-PASS Test <angle> invalid value:  .deg    
-PASS Test <angle> invalid value:  .rad    
-PASS Test <angle> invalid value:  .grad    
-PASS Test <angle> invalid value:  +.    
-PASS Test <angle> invalid value:  +.deg    
-PASS Test <angle> invalid value:  +.rad    
-PASS Test <angle> invalid value:  +.grad    
-PASS Test <angle> invalid value:  .E0    
-PASS Test <angle> invalid value:  .E0deg    
-PASS Test <angle> invalid value:  .E0rad    
-PASS Test <angle> invalid value:  .E0grad    
-PASS Test <angle> invalid value:  e1    
-PASS Test <angle> invalid value:  e1deg    
-PASS Test <angle> invalid value:  e1rad    
-PASS Test <angle> invalid value:  e1grad    
 PASS Test <angle> invalid value:  NaN\r\n\t  
 PASS Test <angle> invalid value:  NaNdeg\r\n\t  
 PASS Test <angle> invalid value:  NaNrad\r\n\t  
@@ -2143,38 +1087,6 @@ PASS Test <angle> invalid value:  E-\r\n\t
 PASS Test <angle> invalid value:  E-deg\r\n\t  
 PASS Test <angle> invalid value:  E-rad\r\n\t  
 PASS Test <angle> invalid value:  E-grad\r\n\t  
-PASS Test <angle> invalid value:  -\r\n\t  
-PASS Test <angle> invalid value:  -deg\r\n\t  
-PASS Test <angle> invalid value:  -rad\r\n\t  
-PASS Test <angle> invalid value:  -grad\r\n\t  
-PASS Test <angle> invalid value:  +\r\n\t  
-PASS Test <angle> invalid value:  +deg\r\n\t  
-PASS Test <angle> invalid value:  +rad\r\n\t  
-PASS Test <angle> invalid value:  +grad\r\n\t  
-PASS Test <angle> invalid value:  -.\r\n\t  
-PASS Test <angle> invalid value:  -.deg\r\n\t  
-PASS Test <angle> invalid value:  -.rad\r\n\t  
-PASS Test <angle> invalid value:  -.grad\r\n\t  
-PASS Test <angle> invalid value:  .-\r\n\t  
-PASS Test <angle> invalid value:  .-deg\r\n\t  
-PASS Test <angle> invalid value:  .-rad\r\n\t  
-PASS Test <angle> invalid value:  .-grad\r\n\t  
-PASS Test <angle> invalid value:  .\r\n\t  
-PASS Test <angle> invalid value:  .deg\r\n\t  
-PASS Test <angle> invalid value:  .rad\r\n\t  
-PASS Test <angle> invalid value:  .grad\r\n\t  
-PASS Test <angle> invalid value:  +.\r\n\t  
-PASS Test <angle> invalid value:  +.deg\r\n\t  
-PASS Test <angle> invalid value:  +.rad\r\n\t  
-PASS Test <angle> invalid value:  +.grad\r\n\t  
-PASS Test <angle> invalid value:  .E0\r\n\t  
-PASS Test <angle> invalid value:  .E0deg\r\n\t  
-PASS Test <angle> invalid value:  .E0rad\r\n\t  
-PASS Test <angle> invalid value:  .E0grad\r\n\t  
-PASS Test <angle> invalid value:  e1\r\n\t  
-PASS Test <angle> invalid value:  e1deg\r\n\t  
-PASS Test <angle> invalid value:  e1rad\r\n\t  
-PASS Test <angle> invalid value:  e1grad\r\n\t  
 PASS Test <angle> invalid value:  NaN\f 
 PASS Test <angle> invalid value:  NaNdeg\f 
 PASS Test <angle> invalid value:  NaNrad\f 
@@ -2207,38 +1119,6 @@ PASS Test <angle> invalid value:  E-\f
 PASS Test <angle> invalid value:  E-deg\f 
 PASS Test <angle> invalid value:  E-rad\f 
 PASS Test <angle> invalid value:  E-grad\f 
-PASS Test <angle> invalid value:  -\f 
-PASS Test <angle> invalid value:  -deg\f 
-PASS Test <angle> invalid value:  -rad\f 
-PASS Test <angle> invalid value:  -grad\f 
-PASS Test <angle> invalid value:  +\f 
-PASS Test <angle> invalid value:  +deg\f 
-PASS Test <angle> invalid value:  +rad\f 
-PASS Test <angle> invalid value:  +grad\f 
-PASS Test <angle> invalid value:  -.\f 
-PASS Test <angle> invalid value:  -.deg\f 
-PASS Test <angle> invalid value:  -.rad\f 
-PASS Test <angle> invalid value:  -.grad\f 
-PASS Test <angle> invalid value:  .-\f 
-PASS Test <angle> invalid value:  .-deg\f 
-PASS Test <angle> invalid value:  .-rad\f 
-PASS Test <angle> invalid value:  .-grad\f 
-PASS Test <angle> invalid value:  .\f 
-PASS Test <angle> invalid value:  .deg\f 
-PASS Test <angle> invalid value:  .rad\f 
-PASS Test <angle> invalid value:  .grad\f 
-PASS Test <angle> invalid value:  +.\f 
-PASS Test <angle> invalid value:  +.deg\f 
-PASS Test <angle> invalid value:  +.rad\f 
-PASS Test <angle> invalid value:  +.grad\f 
-PASS Test <angle> invalid value:  .E0\f 
-PASS Test <angle> invalid value:  .E0deg\f 
-PASS Test <angle> invalid value:  .E0rad\f 
-PASS Test <angle> invalid value:  .E0grad\f 
-PASS Test <angle> invalid value:  e1\f 
-PASS Test <angle> invalid value:  e1deg\f 
-PASS Test <angle> invalid value:  e1rad\f 
-PASS Test <angle> invalid value:  e1grad\f 
 PASS Test <angle> invalid value:    NaN 
 PASS Test <angle> invalid value:    NaNdeg 
 PASS Test <angle> invalid value:    NaNrad 
@@ -2271,38 +1151,6 @@ PASS Test <angle> invalid value:    E-
 PASS Test <angle> invalid value:    E-deg 
 PASS Test <angle> invalid value:    E-rad 
 PASS Test <angle> invalid value:    E-grad 
-PASS Test <angle> invalid value:    - 
-PASS Test <angle> invalid value:    -deg 
-PASS Test <angle> invalid value:    -rad 
-PASS Test <angle> invalid value:    -grad 
-PASS Test <angle> invalid value:    + 
-PASS Test <angle> invalid value:    +deg 
-PASS Test <angle> invalid value:    +rad 
-PASS Test <angle> invalid value:    +grad 
-PASS Test <angle> invalid value:    -. 
-PASS Test <angle> invalid value:    -.deg 
-PASS Test <angle> invalid value:    -.rad 
-PASS Test <angle> invalid value:    -.grad 
-PASS Test <angle> invalid value:    .- 
-PASS Test <angle> invalid value:    .-deg 
-PASS Test <angle> invalid value:    .-rad 
-PASS Test <angle> invalid value:    .-grad 
-PASS Test <angle> invalid value:    . 
-PASS Test <angle> invalid value:    .deg 
-PASS Test <angle> invalid value:    .rad 
-PASS Test <angle> invalid value:    .grad 
-PASS Test <angle> invalid value:    +. 
-PASS Test <angle> invalid value:    +.deg 
-PASS Test <angle> invalid value:    +.rad 
-PASS Test <angle> invalid value:    +.grad 
-PASS Test <angle> invalid value:    .E0 
-PASS Test <angle> invalid value:    .E0deg 
-PASS Test <angle> invalid value:    .E0rad 
-PASS Test <angle> invalid value:    .E0grad 
-PASS Test <angle> invalid value:    e1 
-PASS Test <angle> invalid value:    e1deg 
-PASS Test <angle> invalid value:    e1rad 
-PASS Test <angle> invalid value:    e1grad 
 PASS Test <angle> invalid value:    NaN  
 PASS Test <angle> invalid value:    NaNdeg  
 PASS Test <angle> invalid value:    NaNrad  
@@ -2335,38 +1183,6 @@ PASS Test <angle> invalid value:    E-
 PASS Test <angle> invalid value:    E-deg  
 PASS Test <angle> invalid value:    E-rad  
 PASS Test <angle> invalid value:    E-grad  
-PASS Test <angle> invalid value:    -  
-PASS Test <angle> invalid value:    -deg  
-PASS Test <angle> invalid value:    -rad  
-PASS Test <angle> invalid value:    -grad  
-PASS Test <angle> invalid value:    +  
-PASS Test <angle> invalid value:    +deg  
-PASS Test <angle> invalid value:    +rad  
-PASS Test <angle> invalid value:    +grad  
-PASS Test <angle> invalid value:    -.  
-PASS Test <angle> invalid value:    -.deg  
-PASS Test <angle> invalid value:    -.rad  
-PASS Test <angle> invalid value:    -.grad  
-PASS Test <angle> invalid value:    .-  
-PASS Test <angle> invalid value:    .-deg  
-PASS Test <angle> invalid value:    .-rad  
-PASS Test <angle> invalid value:    .-grad  
-PASS Test <angle> invalid value:    .  
-PASS Test <angle> invalid value:    .deg  
-PASS Test <angle> invalid value:    .rad  
-PASS Test <angle> invalid value:    .grad  
-PASS Test <angle> invalid value:    +.  
-PASS Test <angle> invalid value:    +.deg  
-PASS Test <angle> invalid value:    +.rad  
-PASS Test <angle> invalid value:    +.grad  
-PASS Test <angle> invalid value:    .E0  
-PASS Test <angle> invalid value:    .E0deg  
-PASS Test <angle> invalid value:    .E0rad  
-PASS Test <angle> invalid value:    .E0grad  
-PASS Test <angle> invalid value:    e1  
-PASS Test <angle> invalid value:    e1deg  
-PASS Test <angle> invalid value:    e1rad  
-PASS Test <angle> invalid value:    e1grad  
 PASS Test <angle> invalid value:    NaN    
 PASS Test <angle> invalid value:    NaNdeg    
 PASS Test <angle> invalid value:    NaNrad    
@@ -2399,38 +1215,6 @@ PASS Test <angle> invalid value:    E-
 PASS Test <angle> invalid value:    E-deg    
 PASS Test <angle> invalid value:    E-rad    
 PASS Test <angle> invalid value:    E-grad    
-PASS Test <angle> invalid value:    -    
-PASS Test <angle> invalid value:    -deg    
-PASS Test <angle> invalid value:    -rad    
-PASS Test <angle> invalid value:    -grad    
-PASS Test <angle> invalid value:    +    
-PASS Test <angle> invalid value:    +deg    
-PASS Test <angle> invalid value:    +rad    
-PASS Test <angle> invalid value:    +grad    
-PASS Test <angle> invalid value:    -.    
-PASS Test <angle> invalid value:    -.deg    
-PASS Test <angle> invalid value:    -.rad    
-PASS Test <angle> invalid value:    -.grad    
-PASS Test <angle> invalid value:    .-    
-PASS Test <angle> invalid value:    .-deg    
-PASS Test <angle> invalid value:    .-rad    
-PASS Test <angle> invalid value:    .-grad    
-PASS Test <angle> invalid value:    .    
-PASS Test <angle> invalid value:    .deg    
-PASS Test <angle> invalid value:    .rad    
-PASS Test <angle> invalid value:    .grad    
-PASS Test <angle> invalid value:    +.    
-PASS Test <angle> invalid value:    +.deg    
-PASS Test <angle> invalid value:    +.rad    
-PASS Test <angle> invalid value:    +.grad    
-PASS Test <angle> invalid value:    .E0    
-PASS Test <angle> invalid value:    .E0deg    
-PASS Test <angle> invalid value:    .E0rad    
-PASS Test <angle> invalid value:    .E0grad    
-PASS Test <angle> invalid value:    e1    
-PASS Test <angle> invalid value:    e1deg    
-PASS Test <angle> invalid value:    e1rad    
-PASS Test <angle> invalid value:    e1grad    
 PASS Test <angle> invalid value:    NaN\r\n\t  
 PASS Test <angle> invalid value:    NaNdeg\r\n\t  
 PASS Test <angle> invalid value:    NaNrad\r\n\t  
@@ -2463,38 +1247,6 @@ PASS Test <angle> invalid value:    E-\r\n\t
 PASS Test <angle> invalid value:    E-deg\r\n\t  
 PASS Test <angle> invalid value:    E-rad\r\n\t  
 PASS Test <angle> invalid value:    E-grad\r\n\t  
-PASS Test <angle> invalid value:    -\r\n\t  
-PASS Test <angle> invalid value:    -deg\r\n\t  
-PASS Test <angle> invalid value:    -rad\r\n\t  
-PASS Test <angle> invalid value:    -grad\r\n\t  
-PASS Test <angle> invalid value:    +\r\n\t  
-PASS Test <angle> invalid value:    +deg\r\n\t  
-PASS Test <angle> invalid value:    +rad\r\n\t  
-PASS Test <angle> invalid value:    +grad\r\n\t  
-PASS Test <angle> invalid value:    -.\r\n\t  
-PASS Test <angle> invalid value:    -.deg\r\n\t  
-PASS Test <angle> invalid value:    -.rad\r\n\t  
-PASS Test <angle> invalid value:    -.grad\r\n\t  
-PASS Test <angle> invalid value:    .-\r\n\t  
-PASS Test <angle> invalid value:    .-deg\r\n\t  
-PASS Test <angle> invalid value:    .-rad\r\n\t  
-PASS Test <angle> invalid value:    .-grad\r\n\t  
-PASS Test <angle> invalid value:    .\r\n\t  
-PASS Test <angle> invalid value:    .deg\r\n\t  
-PASS Test <angle> invalid value:    .rad\r\n\t  
-PASS Test <angle> invalid value:    .grad\r\n\t  
-PASS Test <angle> invalid value:    +.\r\n\t  
-PASS Test <angle> invalid value:    +.deg\r\n\t  
-PASS Test <angle> invalid value:    +.rad\r\n\t  
-PASS Test <angle> invalid value:    +.grad\r\n\t  
-PASS Test <angle> invalid value:    .E0\r\n\t  
-PASS Test <angle> invalid value:    .E0deg\r\n\t  
-PASS Test <angle> invalid value:    .E0rad\r\n\t  
-PASS Test <angle> invalid value:    .E0grad\r\n\t  
-PASS Test <angle> invalid value:    e1\r\n\t  
-PASS Test <angle> invalid value:    e1deg\r\n\t  
-PASS Test <angle> invalid value:    e1rad\r\n\t  
-PASS Test <angle> invalid value:    e1grad\r\n\t  
 PASS Test <angle> invalid value:    NaN\f 
 PASS Test <angle> invalid value:    NaNdeg\f 
 PASS Test <angle> invalid value:    NaNrad\f 
@@ -2527,38 +1279,6 @@ PASS Test <angle> invalid value:    E-\f
 PASS Test <angle> invalid value:    E-deg\f 
 PASS Test <angle> invalid value:    E-rad\f 
 PASS Test <angle> invalid value:    E-grad\f 
-PASS Test <angle> invalid value:    -\f 
-PASS Test <angle> invalid value:    -deg\f 
-PASS Test <angle> invalid value:    -rad\f 
-PASS Test <angle> invalid value:    -grad\f 
-PASS Test <angle> invalid value:    +\f 
-PASS Test <angle> invalid value:    +deg\f 
-PASS Test <angle> invalid value:    +rad\f 
-PASS Test <angle> invalid value:    +grad\f 
-PASS Test <angle> invalid value:    -.\f 
-PASS Test <angle> invalid value:    -.deg\f 
-PASS Test <angle> invalid value:    -.rad\f 
-PASS Test <angle> invalid value:    -.grad\f 
-PASS Test <angle> invalid value:    .-\f 
-PASS Test <angle> invalid value:    .-deg\f 
-PASS Test <angle> invalid value:    .-rad\f 
-PASS Test <angle> invalid value:    .-grad\f 
-PASS Test <angle> invalid value:    .\f 
-PASS Test <angle> invalid value:    .deg\f 
-PASS Test <angle> invalid value:    .rad\f 
-PASS Test <angle> invalid value:    .grad\f 
-PASS Test <angle> invalid value:    +.\f 
-PASS Test <angle> invalid value:    +.deg\f 
-PASS Test <angle> invalid value:    +.rad\f 
-PASS Test <angle> invalid value:    +.grad\f 
-PASS Test <angle> invalid value:    .E0\f 
-PASS Test <angle> invalid value:    .E0deg\f 
-PASS Test <angle> invalid value:    .E0rad\f 
-PASS Test <angle> invalid value:    .E0grad\f 
-PASS Test <angle> invalid value:    e1\f 
-PASS Test <angle> invalid value:    e1deg\f 
-PASS Test <angle> invalid value:    e1rad\f 
-PASS Test <angle> invalid value:    e1grad\f 
 PASS Test <angle> invalid value: \r\n\t NaN 
 PASS Test <angle> invalid value: \r\n\t NaNdeg 
 PASS Test <angle> invalid value: \r\n\t NaNrad 
@@ -2591,38 +1311,6 @@ PASS Test <angle> invalid value: \r\n\t E-
 PASS Test <angle> invalid value: \r\n\t E-deg 
 PASS Test <angle> invalid value: \r\n\t E-rad 
 PASS Test <angle> invalid value: \r\n\t E-grad 
-PASS Test <angle> invalid value: \r\n\t - 
-PASS Test <angle> invalid value: \r\n\t -deg 
-PASS Test <angle> invalid value: \r\n\t -rad 
-PASS Test <angle> invalid value: \r\n\t -grad 
-PASS Test <angle> invalid value: \r\n\t + 
-PASS Test <angle> invalid value: \r\n\t +deg 
-PASS Test <angle> invalid value: \r\n\t +rad 
-PASS Test <angle> invalid value: \r\n\t +grad 
-PASS Test <angle> invalid value: \r\n\t -. 
-PASS Test <angle> invalid value: \r\n\t -.deg 
-PASS Test <angle> invalid value: \r\n\t -.rad 
-PASS Test <angle> invalid value: \r\n\t -.grad 
-PASS Test <angle> invalid value: \r\n\t .- 
-PASS Test <angle> invalid value: \r\n\t .-deg 
-PASS Test <angle> invalid value: \r\n\t .-rad 
-PASS Test <angle> invalid value: \r\n\t .-grad 
-PASS Test <angle> invalid value: \r\n\t . 
-PASS Test <angle> invalid value: \r\n\t .deg 
-PASS Test <angle> invalid value: \r\n\t .rad 
-PASS Test <angle> invalid value: \r\n\t .grad 
-PASS Test <angle> invalid value: \r\n\t +. 
-PASS Test <angle> invalid value: \r\n\t +.deg 
-PASS Test <angle> invalid value: \r\n\t +.rad 
-PASS Test <angle> invalid value: \r\n\t +.grad 
-PASS Test <angle> invalid value: \r\n\t .E0 
-PASS Test <angle> invalid value: \r\n\t .E0deg 
-PASS Test <angle> invalid value: \r\n\t .E0rad 
-PASS Test <angle> invalid value: \r\n\t .E0grad 
-PASS Test <angle> invalid value: \r\n\t e1 
-PASS Test <angle> invalid value: \r\n\t e1deg 
-PASS Test <angle> invalid value: \r\n\t e1rad 
-PASS Test <angle> invalid value: \r\n\t e1grad 
 PASS Test <angle> invalid value: \r\n\t NaN  
 PASS Test <angle> invalid value: \r\n\t NaNdeg  
 PASS Test <angle> invalid value: \r\n\t NaNrad  
@@ -2655,38 +1343,6 @@ PASS Test <angle> invalid value: \r\n\t E-
 PASS Test <angle> invalid value: \r\n\t E-deg  
 PASS Test <angle> invalid value: \r\n\t E-rad  
 PASS Test <angle> invalid value: \r\n\t E-grad  
-PASS Test <angle> invalid value: \r\n\t -  
-PASS Test <angle> invalid value: \r\n\t -deg  
-PASS Test <angle> invalid value: \r\n\t -rad  
-PASS Test <angle> invalid value: \r\n\t -grad  
-PASS Test <angle> invalid value: \r\n\t +  
-PASS Test <angle> invalid value: \r\n\t +deg  
-PASS Test <angle> invalid value: \r\n\t +rad  
-PASS Test <angle> invalid value: \r\n\t +grad  
-PASS Test <angle> invalid value: \r\n\t -.  
-PASS Test <angle> invalid value: \r\n\t -.deg  
-PASS Test <angle> invalid value: \r\n\t -.rad  
-PASS Test <angle> invalid value: \r\n\t -.grad  
-PASS Test <angle> invalid value: \r\n\t .-  
-PASS Test <angle> invalid value: \r\n\t .-deg  
-PASS Test <angle> invalid value: \r\n\t .-rad  
-PASS Test <angle> invalid value: \r\n\t .-grad  
-PASS Test <angle> invalid value: \r\n\t .  
-PASS Test <angle> invalid value: \r\n\t .deg  
-PASS Test <angle> invalid value: \r\n\t .rad  
-PASS Test <angle> invalid value: \r\n\t .grad  
-PASS Test <angle> invalid value: \r\n\t +.  
-PASS Test <angle> invalid value: \r\n\t +.deg  
-PASS Test <angle> invalid value: \r\n\t +.rad  
-PASS Test <angle> invalid value: \r\n\t +.grad  
-PASS Test <angle> invalid value: \r\n\t .E0  
-PASS Test <angle> invalid value: \r\n\t .E0deg  
-PASS Test <angle> invalid value: \r\n\t .E0rad  
-PASS Test <angle> invalid value: \r\n\t .E0grad  
-PASS Test <angle> invalid value: \r\n\t e1  
-PASS Test <angle> invalid value: \r\n\t e1deg  
-PASS Test <angle> invalid value: \r\n\t e1rad  
-PASS Test <angle> invalid value: \r\n\t e1grad  
 PASS Test <angle> invalid value: \r\n\t NaN    
 PASS Test <angle> invalid value: \r\n\t NaNdeg    
 PASS Test <angle> invalid value: \r\n\t NaNrad    
@@ -2719,38 +1375,6 @@ PASS Test <angle> invalid value: \r\n\t E-
 PASS Test <angle> invalid value: \r\n\t E-deg    
 PASS Test <angle> invalid value: \r\n\t E-rad    
 PASS Test <angle> invalid value: \r\n\t E-grad    
-PASS Test <angle> invalid value: \r\n\t -    
-PASS Test <angle> invalid value: \r\n\t -deg    
-PASS Test <angle> invalid value: \r\n\t -rad    
-PASS Test <angle> invalid value: \r\n\t -grad    
-PASS Test <angle> invalid value: \r\n\t +    
-PASS Test <angle> invalid value: \r\n\t +deg    
-PASS Test <angle> invalid value: \r\n\t +rad    
-PASS Test <angle> invalid value: \r\n\t +grad    
-PASS Test <angle> invalid value: \r\n\t -.    
-PASS Test <angle> invalid value: \r\n\t -.deg    
-PASS Test <angle> invalid value: \r\n\t -.rad    
-PASS Test <angle> invalid value: \r\n\t -.grad    
-PASS Test <angle> invalid value: \r\n\t .-    
-PASS Test <angle> invalid value: \r\n\t .-deg    
-PASS Test <angle> invalid value: \r\n\t .-rad    
-PASS Test <angle> invalid value: \r\n\t .-grad    
-PASS Test <angle> invalid value: \r\n\t .    
-PASS Test <angle> invalid value: \r\n\t .deg    
-PASS Test <angle> invalid value: \r\n\t .rad    
-PASS Test <angle> invalid value: \r\n\t .grad    
-PASS Test <angle> invalid value: \r\n\t +.    
-PASS Test <angle> invalid value: \r\n\t +.deg    
-PASS Test <angle> invalid value: \r\n\t +.rad    
-PASS Test <angle> invalid value: \r\n\t +.grad    
-PASS Test <angle> invalid value: \r\n\t .E0    
-PASS Test <angle> invalid value: \r\n\t .E0deg    
-PASS Test <angle> invalid value: \r\n\t .E0rad    
-PASS Test <angle> invalid value: \r\n\t .E0grad    
-PASS Test <angle> invalid value: \r\n\t e1    
-PASS Test <angle> invalid value: \r\n\t e1deg    
-PASS Test <angle> invalid value: \r\n\t e1rad    
-PASS Test <angle> invalid value: \r\n\t e1grad    
 PASS Test <angle> invalid value: \r\n\t NaN\r\n\t  
 PASS Test <angle> invalid value: \r\n\t NaNdeg\r\n\t  
 PASS Test <angle> invalid value: \r\n\t NaNrad\r\n\t  
@@ -2783,38 +1407,6 @@ PASS Test <angle> invalid value: \r\n\t E-\r\n\t
 PASS Test <angle> invalid value: \r\n\t E-deg\r\n\t  
 PASS Test <angle> invalid value: \r\n\t E-rad\r\n\t  
 PASS Test <angle> invalid value: \r\n\t E-grad\r\n\t  
-PASS Test <angle> invalid value: \r\n\t -\r\n\t  
-PASS Test <angle> invalid value: \r\n\t -deg\r\n\t  
-PASS Test <angle> invalid value: \r\n\t -rad\r\n\t  
-PASS Test <angle> invalid value: \r\n\t -grad\r\n\t  
-PASS Test <angle> invalid value: \r\n\t +\r\n\t  
-PASS Test <angle> invalid value: \r\n\t +deg\r\n\t  
-PASS Test <angle> invalid value: \r\n\t +rad\r\n\t  
-PASS Test <angle> invalid value: \r\n\t +grad\r\n\t  
-PASS Test <angle> invalid value: \r\n\t -.\r\n\t  
-PASS Test <angle> invalid value: \r\n\t -.deg\r\n\t  
-PASS Test <angle> invalid value: \r\n\t -.rad\r\n\t  
-PASS Test <angle> invalid value: \r\n\t -.grad\r\n\t  
-PASS Test <angle> invalid value: \r\n\t .-\r\n\t  
-PASS Test <angle> invalid value: \r\n\t .-deg\r\n\t  
-PASS Test <angle> invalid value: \r\n\t .-rad\r\n\t  
-PASS Test <angle> invalid value: \r\n\t .-grad\r\n\t  
-PASS Test <angle> invalid value: \r\n\t .\r\n\t  
-PASS Test <angle> invalid value: \r\n\t .deg\r\n\t  
-PASS Test <angle> invalid value: \r\n\t .rad\r\n\t  
-PASS Test <angle> invalid value: \r\n\t .grad\r\n\t  
-PASS Test <angle> invalid value: \r\n\t +.\r\n\t  
-PASS Test <angle> invalid value: \r\n\t +.deg\r\n\t  
-PASS Test <angle> invalid value: \r\n\t +.rad\r\n\t  
-PASS Test <angle> invalid value: \r\n\t +.grad\r\n\t  
-PASS Test <angle> invalid value: \r\n\t .E0\r\n\t  
-PASS Test <angle> invalid value: \r\n\t .E0deg\r\n\t  
-PASS Test <angle> invalid value: \r\n\t .E0rad\r\n\t  
-PASS Test <angle> invalid value: \r\n\t .E0grad\r\n\t  
-PASS Test <angle> invalid value: \r\n\t e1\r\n\t  
-PASS Test <angle> invalid value: \r\n\t e1deg\r\n\t  
-PASS Test <angle> invalid value: \r\n\t e1rad\r\n\t  
-PASS Test <angle> invalid value: \r\n\t e1grad\r\n\t  
 PASS Test <angle> invalid value: \r\n\t NaN\f 
 PASS Test <angle> invalid value: \r\n\t NaNdeg\f 
 PASS Test <angle> invalid value: \r\n\t NaNrad\f 
@@ -2847,38 +1439,6 @@ PASS Test <angle> invalid value: \r\n\t E-\f
 PASS Test <angle> invalid value: \r\n\t E-deg\f 
 PASS Test <angle> invalid value: \r\n\t E-rad\f 
 PASS Test <angle> invalid value: \r\n\t E-grad\f 
-PASS Test <angle> invalid value: \r\n\t -\f 
-PASS Test <angle> invalid value: \r\n\t -deg\f 
-PASS Test <angle> invalid value: \r\n\t -rad\f 
-PASS Test <angle> invalid value: \r\n\t -grad\f 
-PASS Test <angle> invalid value: \r\n\t +\f 
-PASS Test <angle> invalid value: \r\n\t +deg\f 
-PASS Test <angle> invalid value: \r\n\t +rad\f 
-PASS Test <angle> invalid value: \r\n\t +grad\f 
-PASS Test <angle> invalid value: \r\n\t -.\f 
-PASS Test <angle> invalid value: \r\n\t -.deg\f 
-PASS Test <angle> invalid value: \r\n\t -.rad\f 
-PASS Test <angle> invalid value: \r\n\t -.grad\f 
-PASS Test <angle> invalid value: \r\n\t .-\f 
-PASS Test <angle> invalid value: \r\n\t .-deg\f 
-PASS Test <angle> invalid value: \r\n\t .-rad\f 
-PASS Test <angle> invalid value: \r\n\t .-grad\f 
-PASS Test <angle> invalid value: \r\n\t .\f 
-PASS Test <angle> invalid value: \r\n\t .deg\f 
-PASS Test <angle> invalid value: \r\n\t .rad\f 
-PASS Test <angle> invalid value: \r\n\t .grad\f 
-PASS Test <angle> invalid value: \r\n\t +.\f 
-PASS Test <angle> invalid value: \r\n\t +.deg\f 
-PASS Test <angle> invalid value: \r\n\t +.rad\f 
-PASS Test <angle> invalid value: \r\n\t +.grad\f 
-PASS Test <angle> invalid value: \r\n\t .E0\f 
-PASS Test <angle> invalid value: \r\n\t .E0deg\f 
-PASS Test <angle> invalid value: \r\n\t .E0rad\f 
-PASS Test <angle> invalid value: \r\n\t .E0grad\f 
-PASS Test <angle> invalid value: \r\n\t e1\f 
-PASS Test <angle> invalid value: \r\n\t e1deg\f 
-PASS Test <angle> invalid value: \r\n\t e1rad\f 
-PASS Test <angle> invalid value: \r\n\t e1grad\f 
 PASS Test <angle> invalid value: \fNaN 
 PASS Test <angle> invalid value: \fNaNdeg 
 PASS Test <angle> invalid value: \fNaNrad 
@@ -2911,38 +1471,6 @@ PASS Test <angle> invalid value: \fE-
 PASS Test <angle> invalid value: \fE-deg 
 PASS Test <angle> invalid value: \fE-rad 
 PASS Test <angle> invalid value: \fE-grad 
-PASS Test <angle> invalid value: \f- 
-PASS Test <angle> invalid value: \f-deg 
-PASS Test <angle> invalid value: \f-rad 
-PASS Test <angle> invalid value: \f-grad 
-PASS Test <angle> invalid value: \f+ 
-PASS Test <angle> invalid value: \f+deg 
-PASS Test <angle> invalid value: \f+rad 
-PASS Test <angle> invalid value: \f+grad 
-PASS Test <angle> invalid value: \f-. 
-PASS Test <angle> invalid value: \f-.deg 
-PASS Test <angle> invalid value: \f-.rad 
-PASS Test <angle> invalid value: \f-.grad 
-PASS Test <angle> invalid value: \f.- 
-PASS Test <angle> invalid value: \f.-deg 
-PASS Test <angle> invalid value: \f.-rad 
-PASS Test <angle> invalid value: \f.-grad 
-PASS Test <angle> invalid value: \f. 
-PASS Test <angle> invalid value: \f.deg 
-PASS Test <angle> invalid value: \f.rad 
-PASS Test <angle> invalid value: \f.grad 
-PASS Test <angle> invalid value: \f+. 
-PASS Test <angle> invalid value: \f+.deg 
-PASS Test <angle> invalid value: \f+.rad 
-PASS Test <angle> invalid value: \f+.grad 
-PASS Test <angle> invalid value: \f.E0 
-PASS Test <angle> invalid value: \f.E0deg 
-PASS Test <angle> invalid value: \f.E0rad 
-PASS Test <angle> invalid value: \f.E0grad 
-PASS Test <angle> invalid value: \fe1 
-PASS Test <angle> invalid value: \fe1deg 
-PASS Test <angle> invalid value: \fe1rad 
-PASS Test <angle> invalid value: \fe1grad 
 PASS Test <angle> invalid value: \fNaN  
 PASS Test <angle> invalid value: \fNaNdeg  
 PASS Test <angle> invalid value: \fNaNrad  
@@ -2975,38 +1503,6 @@ PASS Test <angle> invalid value: \fE-
 PASS Test <angle> invalid value: \fE-deg  
 PASS Test <angle> invalid value: \fE-rad  
 PASS Test <angle> invalid value: \fE-grad  
-PASS Test <angle> invalid value: \f-  
-PASS Test <angle> invalid value: \f-deg  
-PASS Test <angle> invalid value: \f-rad  
-PASS Test <angle> invalid value: \f-grad  
-PASS Test <angle> invalid value: \f+  
-PASS Test <angle> invalid value: \f+deg  
-PASS Test <angle> invalid value: \f+rad  
-PASS Test <angle> invalid value: \f+grad  
-PASS Test <angle> invalid value: \f-.  
-PASS Test <angle> invalid value: \f-.deg  
-PASS Test <angle> invalid value: \f-.rad  
-PASS Test <angle> invalid value: \f-.grad  
-PASS Test <angle> invalid value: \f.-  
-PASS Test <angle> invalid value: \f.-deg  
-PASS Test <angle> invalid value: \f.-rad  
-PASS Test <angle> invalid value: \f.-grad  
-PASS Test <angle> invalid value: \f.  
-PASS Test <angle> invalid value: \f.deg  
-PASS Test <angle> invalid value: \f.rad  
-PASS Test <angle> invalid value: \f.grad  
-PASS Test <angle> invalid value: \f+.  
-PASS Test <angle> invalid value: \f+.deg  
-PASS Test <angle> invalid value: \f+.rad  
-PASS Test <angle> invalid value: \f+.grad  
-PASS Test <angle> invalid value: \f.E0  
-PASS Test <angle> invalid value: \f.E0deg  
-PASS Test <angle> invalid value: \f.E0rad  
-PASS Test <angle> invalid value: \f.E0grad  
-PASS Test <angle> invalid value: \fe1  
-PASS Test <angle> invalid value: \fe1deg  
-PASS Test <angle> invalid value: \fe1rad  
-PASS Test <angle> invalid value: \fe1grad  
 PASS Test <angle> invalid value: \fNaN    
 PASS Test <angle> invalid value: \fNaNdeg    
 PASS Test <angle> invalid value: \fNaNrad    
@@ -3039,38 +1535,6 @@ PASS Test <angle> invalid value: \fE-
 PASS Test <angle> invalid value: \fE-deg    
 PASS Test <angle> invalid value: \fE-rad    
 PASS Test <angle> invalid value: \fE-grad    
-PASS Test <angle> invalid value: \f-    
-PASS Test <angle> invalid value: \f-deg    
-PASS Test <angle> invalid value: \f-rad    
-PASS Test <angle> invalid value: \f-grad    
-PASS Test <angle> invalid value: \f+    
-PASS Test <angle> invalid value: \f+deg    
-PASS Test <angle> invalid value: \f+rad    
-PASS Test <angle> invalid value: \f+grad    
-PASS Test <angle> invalid value: \f-.    
-PASS Test <angle> invalid value: \f-.deg    
-PASS Test <angle> invalid value: \f-.rad    
-PASS Test <angle> invalid value: \f-.grad    
-PASS Test <angle> invalid value: \f.-    
-PASS Test <angle> invalid value: \f.-deg    
-PASS Test <angle> invalid value: \f.-rad    
-PASS Test <angle> invalid value: \f.-grad    
-PASS Test <angle> invalid value: \f.    
-PASS Test <angle> invalid value: \f.deg    
-PASS Test <angle> invalid value: \f.rad    
-PASS Test <angle> invalid value: \f.grad    
-PASS Test <angle> invalid value: \f+.    
-PASS Test <angle> invalid value: \f+.deg    
-PASS Test <angle> invalid value: \f+.rad    
-PASS Test <angle> invalid value: \f+.grad    
-PASS Test <angle> invalid value: \f.E0    
-PASS Test <angle> invalid value: \f.E0deg    
-PASS Test <angle> invalid value: \f.E0rad    
-PASS Test <angle> invalid value: \f.E0grad    
-PASS Test <angle> invalid value: \fe1    
-PASS Test <angle> invalid value: \fe1deg    
-PASS Test <angle> invalid value: \fe1rad    
-PASS Test <angle> invalid value: \fe1grad    
 PASS Test <angle> invalid value: \fNaN\r\n\t  
 PASS Test <angle> invalid value: \fNaNdeg\r\n\t  
 PASS Test <angle> invalid value: \fNaNrad\r\n\t  
@@ -3103,38 +1567,6 @@ PASS Test <angle> invalid value: \fE-\r\n\t
 PASS Test <angle> invalid value: \fE-deg\r\n\t  
 PASS Test <angle> invalid value: \fE-rad\r\n\t  
 PASS Test <angle> invalid value: \fE-grad\r\n\t  
-PASS Test <angle> invalid value: \f-\r\n\t  
-PASS Test <angle> invalid value: \f-deg\r\n\t  
-PASS Test <angle> invalid value: \f-rad\r\n\t  
-PASS Test <angle> invalid value: \f-grad\r\n\t  
-PASS Test <angle> invalid value: \f+\r\n\t  
-PASS Test <angle> invalid value: \f+deg\r\n\t  
-PASS Test <angle> invalid value: \f+rad\r\n\t  
-PASS Test <angle> invalid value: \f+grad\r\n\t  
-PASS Test <angle> invalid value: \f-.\r\n\t  
-PASS Test <angle> invalid value: \f-.deg\r\n\t  
-PASS Test <angle> invalid value: \f-.rad\r\n\t  
-PASS Test <angle> invalid value: \f-.grad\r\n\t  
-PASS Test <angle> invalid value: \f.-\r\n\t  
-PASS Test <angle> invalid value: \f.-deg\r\n\t  
-PASS Test <angle> invalid value: \f.-rad\r\n\t  
-PASS Test <angle> invalid value: \f.-grad\r\n\t  
-PASS Test <angle> invalid value: \f.\r\n\t  
-PASS Test <angle> invalid value: \f.deg\r\n\t  
-PASS Test <angle> invalid value: \f.rad\r\n\t  
-PASS Test <angle> invalid value: \f.grad\r\n\t  
-PASS Test <angle> invalid value: \f+.\r\n\t  
-PASS Test <angle> invalid value: \f+.deg\r\n\t  
-PASS Test <angle> invalid value: \f+.rad\r\n\t  
-PASS Test <angle> invalid value: \f+.grad\r\n\t  
-PASS Test <angle> invalid value: \f.E0\r\n\t  
-PASS Test <angle> invalid value: \f.E0deg\r\n\t  
-PASS Test <angle> invalid value: \f.E0rad\r\n\t  
-PASS Test <angle> invalid value: \f.E0grad\r\n\t  
-PASS Test <angle> invalid value: \fe1\r\n\t  
-PASS Test <angle> invalid value: \fe1deg\r\n\t  
-PASS Test <angle> invalid value: \fe1rad\r\n\t  
-PASS Test <angle> invalid value: \fe1grad\r\n\t  
 PASS Test <angle> invalid value: \fNaN\f 
 PASS Test <angle> invalid value: \fNaNdeg\f 
 PASS Test <angle> invalid value: \fNaNrad\f 
@@ -3167,37 +1599,5 @@ PASS Test <angle> invalid value: \fE-\f
 PASS Test <angle> invalid value: \fE-deg\f 
 PASS Test <angle> invalid value: \fE-rad\f 
 PASS Test <angle> invalid value: \fE-grad\f 
-PASS Test <angle> invalid value: \f-\f 
-PASS Test <angle> invalid value: \f-deg\f 
-PASS Test <angle> invalid value: \f-rad\f 
-PASS Test <angle> invalid value: \f-grad\f 
-PASS Test <angle> invalid value: \f+\f 
-PASS Test <angle> invalid value: \f+deg\f 
-PASS Test <angle> invalid value: \f+rad\f 
-PASS Test <angle> invalid value: \f+grad\f 
-PASS Test <angle> invalid value: \f-.\f 
-PASS Test <angle> invalid value: \f-.deg\f 
-PASS Test <angle> invalid value: \f-.rad\f 
-PASS Test <angle> invalid value: \f-.grad\f 
-PASS Test <angle> invalid value: \f.-\f 
-PASS Test <angle> invalid value: \f.-deg\f 
-PASS Test <angle> invalid value: \f.-rad\f 
-PASS Test <angle> invalid value: \f.-grad\f 
-PASS Test <angle> invalid value: \f.\f 
-PASS Test <angle> invalid value: \f.deg\f 
-PASS Test <angle> invalid value: \f.rad\f 
-PASS Test <angle> invalid value: \f.grad\f 
-PASS Test <angle> invalid value: \f+.\f 
-PASS Test <angle> invalid value: \f+.deg\f 
-PASS Test <angle> invalid value: \f+.rad\f 
-PASS Test <angle> invalid value: \f+.grad\f 
-PASS Test <angle> invalid value: \f.E0\f 
-PASS Test <angle> invalid value: \f.E0deg\f 
-PASS Test <angle> invalid value: \f.E0rad\f 
-PASS Test <angle> invalid value: \f.E0grad\f 
-PASS Test <angle> invalid value: \fe1\f 
-PASS Test <angle> invalid value: \fe1deg\f 
-PASS Test <angle> invalid value: \fe1rad\f 
-PASS Test <angle> invalid value: \fe1grad\f 
 Harness: the test ran to completion.
 

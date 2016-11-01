@@ -20,7 +20,7 @@ testInvalidType("<angle>",
          "orient",
          0, // expected default value
          whitespace,
-         [ Number.NaN, Number.POSITIVE_INFINITY, Number.NEGATIVE_INFINITY, "fnord", "E", "e", "e+", "E-", "-", "+", "-.", ".-", ".", "+.", ".E0", "e1" ], // invalid
+         [ Number.NaN, Number.POSITIVE_INFINITY, Number.NEGATIVE_INFINITY, "fnord", "E", "e", "e+", "E-" ], // invalid
          [ "", "deg", "rad", "grad" ], // valid units
          function(elm, value) { assert_approx_equals(elm.orientAngle.baseVal.valueInSpecifiedUnits, parseFloat(value), EPSILON); },
          function(elm, expected) { assert_approx_equals(elm.orientAngle.baseVal.value, expected, EPSILON); } );
