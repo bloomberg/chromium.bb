@@ -3,6 +3,7 @@
 // found in the LICENSE file.
 
 #include "bindings/core/v8/ScriptController.h"
+#include "bindings/core/v8/ScriptSourceCode.h"
 #include "core/dom/Document.h"
 #include "core/dom/Element.h"
 #include "core/frame/FrameView.h"
@@ -778,7 +779,7 @@ TEST_F(FrameThrottlingTest, ThrottleSubtreeAtomically) {
   // observer notifications.
   frameElement->contentDocument()
       ->view()
-      ->notifyRenderThrottlingObserversForTesting();
+      ->updateRenderThrottlingStatusForTesting();
   EXPECT_TRUE(frameElement->contentDocument()->view()->canThrottleRendering());
   EXPECT_TRUE(
       childFrameElement->contentDocument()->view()->canThrottleRendering());
@@ -786,9 +787,33 @@ TEST_F(FrameThrottlingTest, ThrottleSubtreeAtomically) {
   // Both frames should still be throttled after the second notification.
   childFrameElement->contentDocument()
       ->view()
-      ->notifyRenderThrottlingObserversForTesting();
+      ->updateRenderThrottlingStatusForTesting();
   EXPECT_TRUE(frameElement->contentDocument()->view()->canThrottleRendering());
   EXPECT_TRUE(
+      childFrameElement->contentDocument()->view()->canThrottleRendering());
+
+  // Move the frame back on screen but don't update throttling yet.
+  frameElement->setAttribute(styleAttr, "transform: translateY(0px)");
+  compositor().beginFrame();
+  EXPECT_TRUE(frameElement->contentDocument()->view()->canThrottleRendering());
+  EXPECT_TRUE(
+      childFrameElement->contentDocument()->view()->canThrottleRendering());
+
+  // Update throttling for the child. It should remain throttled because the
+  // parent is still throttled.
+  childFrameElement->contentDocument()
+      ->view()
+      ->updateRenderThrottlingStatusForTesting();
+  EXPECT_TRUE(frameElement->contentDocument()->view()->canThrottleRendering());
+  EXPECT_TRUE(
+      childFrameElement->contentDocument()->view()->canThrottleRendering());
+
+  // Updating throttling on the parent should unthrottle both frames.
+  frameElement->contentDocument()
+      ->view()
+      ->updateRenderThrottlingStatusForTesting();
+  EXPECT_FALSE(frameElement->contentDocument()->view()->canThrottleRendering());
+  EXPECT_FALSE(
       childFrameElement->contentDocument()->view()->canThrottleRendering());
 }
 
@@ -872,6 +897,35 @@ TEST_F(FrameThrottlingTest, SynchronousLayoutInAnimationFrameCallback) {
       "  throttledFrame.document.querySelector('#d').getBoundingClientRect();\n"
       "});\n");
   compositeFrame();
+}
+
+TEST_F(FrameThrottlingTest, AllowOneAnimationFrame) {
+  webView().settings()->setJavaScriptEnabled(true);
+
+  // Prepare a page with two cross origin frames (from the same origin so they
+  // are able to access eachother).
+  SimRequest mainResource("https://example.com/", "text/html");
+  SimRequest frameResource("https://thirdparty.com/frame.html", "text/html");
+  loadURL("https://example.com/");
+  mainResource.complete(
+      "<iframe id=frame style=\"position: fixed; top: -10000px\" "
+      "src='https://thirdparty.com/frame.html'></iframe>");
+
+  frameResource.complete(
+      "<script>"
+      "window.requestAnimationFrame(() => { window.didRaf = true; });"
+      "</script>");
+
+  auto* frameElement = toHTMLIFrameElement(document().getElementById("frame"));
+  compositeFrame();
+  EXPECT_TRUE(frameElement->contentDocument()->view()->canThrottleRendering());
+
+  LocalFrame* localFrame = toLocalFrame(frameElement->contentFrame());
+  v8::HandleScope scope(v8::Isolate::GetCurrent());
+  v8::Local<v8::Value> result =
+      localFrame->script().executeScriptInMainWorldAndReturnValue(
+          ScriptSourceCode("window.didRaf;"));
+  EXPECT_TRUE(result->IsTrue());
 }
 
 }  // namespace blink
