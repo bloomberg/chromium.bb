@@ -11,6 +11,7 @@ import android.view.KeyEvent;
 import android.view.View.MeasureSpec;
 
 import org.chromium.base.Log;
+import org.chromium.base.metrics.RecordUserAction;
 
 /**
  *  Main callback class used by ContentView.
@@ -163,6 +164,7 @@ public class ContentViewClient {
         }
 
         try {
+            RecordUserAction.record("Android.ContentDetectorActivated");
             context.startActivity(intent);
         } catch (ActivityNotFoundException ex) {
             Log.w(TAG, "No application can handle %s", intentUrl);
