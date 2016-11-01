@@ -412,9 +412,6 @@ const char kSystemDevMode[] = "system-developer-mode";
 // Enables testing for auto update UI.
 const char kTestAutoUpdateUI[] = "test-auto-update-ui";
 
-// Determines which Google Privacy CA to use for attestation.
-const char kAttestationServer[] = "attestation-server";
-
 // Enables wake on wifi packet feature, which wakes the device on the receipt
 // of network packets from whitelisted sources.
 const char kWakeOnWifiPacket[] = "wake-on-wifi-packet";
