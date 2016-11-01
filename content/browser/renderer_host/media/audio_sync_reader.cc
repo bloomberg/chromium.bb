@@ -18,10 +18,12 @@
 #include "build/build_config.h"
 #include "content/browser/renderer_host/media/media_stream_manager.h"
 #include "content/public/common/content_switches.h"
+#include "media/audio/audio_device_thread.h"
 #include "media/base/audio_parameters.h"
 
 using media::AudioBus;
 using media::AudioOutputBuffer;
+using Packet = media::AudioDeviceThread::Packet;
 
 namespace {
 
@@ -140,20 +142,23 @@ std::unique_ptr<AudioSyncReader> AudioSyncReader::Create(
 }
 
 // media::AudioOutputController::SyncReader implementations.
-void AudioSyncReader::UpdatePendingBytes(uint32_t bytes,
-                                         uint32_t frames_skipped) {
+void AudioSyncReader::RequestMoreData(base::TimeDelta delay,
+                                      base::TimeTicks delay_timestamp,
+                                      int prior_frames_skipped) {
   // Increase the number of skipped frames stored in shared memory. We don't
   // send it over the socket since sending more than 4 bytes might lead to being
   // descheduled. The reading side will zero it when consumed.
   AudioOutputBuffer* buffer =
       reinterpret_cast<AudioOutputBuffer*>(shared_memory_->memory());
-  buffer->params.frames_skipped += frames_skipped;
+  buffer->params.frames_skipped += prior_frames_skipped;
 
   // Zero out the entire output buffer to avoid stuttering/repeating-buffers
   // in the anomalous case if the renderer is unable to keep up with real-time.
   output_bus_->Zero();
 
-  socket_->Send(&bytes, sizeof(bytes));
+  Packet packet = {delay.InMicroseconds(),
+                   (delay_timestamp - base::TimeTicks()).InMicroseconds()};
+  socket_->Send(&packet, sizeof(packet));
   ++buffer_index_;
 }
 

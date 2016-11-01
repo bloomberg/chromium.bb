@@ -39,9 +39,10 @@ base::TimeDelta ComputeTotalElapsedRenderTime(
 }  // namespace
 
 // media::AudioRendererSink::RenderCallback implementation
-int TrackAudioRenderer::Render(media::AudioBus* audio_bus,
-                               uint32_t frames_delayed,
-                               uint32_t frames_skipped) {
+int TrackAudioRenderer::Render(base::TimeDelta delay,
+                               base::TimeTicks delay_timestamp,
+                               int prior_frames_skipped,
+                               media::AudioBus* audio_bus) {
   TRACE_EVENT0("audio", "TrackAudioRenderer::Render");
   base::AutoLock auto_lock(thread_lock_);
 
@@ -50,19 +51,13 @@ int TrackAudioRenderer::Render(media::AudioBus* audio_bus,
     return 0;
   }
 
-  // Source sample rate equals to output one, see MaybeStartSink(), so using it.
-  uint32_t audio_delay_milliseconds = static_cast<double>(frames_delayed) *
-                                      base::Time::kMillisecondsPerSecond /
-                                      source_params_.sample_rate();
 
   // TODO(miu): Plumbing is needed to determine the actual playout timestamp
   // of the audio, instead of just snapshotting TimeTicks::Now(), for proper
   // audio/video sync.  http://crbug.com/335335
-  const base::TimeTicks playout_time =
-      base::TimeTicks::Now() +
-      base::TimeDelta::FromMilliseconds(audio_delay_milliseconds);
+  const base::TimeTicks playout_time = base::TimeTicks::Now() + delay;
   DVLOG(2) << "Pulling audio out of shifter to be played "
-           << audio_delay_milliseconds << " ms from now.";
+           << delay.InMilliseconds() << " ms from now.";
   audio_shifter_->Pull(audio_bus, playout_time);
   num_samples_rendered_ += audio_bus->frames();
   return audio_bus->frames();

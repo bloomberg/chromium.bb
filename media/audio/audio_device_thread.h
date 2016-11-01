@@ -42,7 +42,8 @@ class MEDIA_EXPORT AudioDeviceThread : public base::PlatformThread::Delegate {
     virtual void MapSharedMemory() = 0;
 
     // Called whenever we receive notifications about pending input data.
-    virtual void Process(uint32_t pending_data) = 0;
+    virtual void Process(int64_t pending_data,
+                         base::TimeTicks data_timestamp) = 0;
 
    protected:
     virtual ~Callback();
@@ -74,6 +75,12 @@ class MEDIA_EXPORT AudioDeviceThread : public base::PlatformThread::Delegate {
   // This tells the audio thread to stop and clean up the data; this is a
   // synchronous process and the thread will stop before the method returns.
   ~AudioDeviceThread() override;
+
+  // Represents a data packet to be received via the socket.
+  struct Packet {
+    int64_t pending_data;
+    int64_t data_timestamp_us;
+  };
 
  private:
   void ThreadMain() final;

@@ -28,14 +28,15 @@ class AudioRendererSink
   class RenderCallback {
    public:
     // Attempts to completely fill all channels of |dest|, returns actual
-    // number of frames filled. |frames_skipped| contains the number of frames
+    // number of frames filled. |prior_frames_skipped| contains the number of
+    // frames
     // the consumer has skipped, if any.
-    // TODO(jameswest): Change to use the same signature as
-    // AudioOutputStream::AudioSourceCallback::OnMoreData.
-    virtual int Render(AudioBus* dest,
-                       uint32_t frames_delayed,
-                       uint32_t frames_skipped) = 0;
-
+    // The |delay| argument represents audio device output latency,
+    // |delay_timestamp| represents the time when |delay| was obtained.
+    virtual int Render(base::TimeDelta delay,
+                       base::TimeTicks delay_timestamp,
+                       int prior_frames_skipped,
+                       AudioBus* dest) = 0;
     // Signals an error has occurred.
     virtual void OnRenderError() = 0;
 

@@ -85,7 +85,7 @@ bool AudioOutputStreamSink::CurrentThreadIsRenderingThread() {
 }
 
 int AudioOutputStreamSink::OnMoreData(base::TimeDelta delay,
-                                      base::TimeTicks /* delay_timestamp */,
+                                      base::TimeTicks delay_timestamp,
                                       int prior_frames_skipped,
                                       AudioBus* dest) {
   // Note: Runs on the audio thread created by the OS.
@@ -93,11 +93,8 @@ int AudioOutputStreamSink::OnMoreData(base::TimeDelta delay,
   if (!active_render_callback_)
     return 0;
 
-  uint32_t frames_delayed =
-      AudioTimestampHelper::TimeToFrames(delay, active_params_.sample_rate());
-
-  return active_render_callback_->Render(dest, frames_delayed,
-                                         prior_frames_skipped);
+  return active_render_callback_->Render(delay, delay_timestamp,
+                                         prior_frames_skipped, dest);
 }
 
 void AudioOutputStreamSink::OnError(AudioOutputStream* stream) {

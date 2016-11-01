@@ -15,6 +15,7 @@
 #include "content/renderer/media/audio_device_factory.h"
 #include "content/renderer/render_frame_impl.h"
 #include "content/renderer/render_thread_impl.h"
+#include "media/base/audio_timestamp_helper.h"
 #include "media/base/silent_sink_suspender.h"
 #include "third_party/WebKit/public/web/WebLocalFrame.h"
 #include "third_party/WebKit/public/web/WebView.h"
@@ -100,9 +101,10 @@ double RendererWebAudioDeviceImpl::sampleRate() {
   return params_.sample_rate();
 }
 
-int RendererWebAudioDeviceImpl::Render(media::AudioBus* dest,
-                                       uint32_t frames_delayed,
-                                       uint32_t frames_skipped) {
+int RendererWebAudioDeviceImpl::Render(base::TimeDelta delay,
+                                       base::TimeTicks delay_timestamp,
+                                       int prior_frames_skipped,
+                                       media::AudioBus* dest) {
   // Wrap the output pointers using WebVector.
   WebVector<float*> web_audio_dest_data(static_cast<size_t>(dest->channels()));
   for (int i = 0; i < dest->channels(); ++i)
