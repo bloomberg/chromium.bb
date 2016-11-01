@@ -11,6 +11,7 @@
 #include "base/macros.h"
 #include "build/build_config.h"
 #include "third_party/skia/include/core/SkRefCnt.h"
+#include "ui/aura/env.h"
 #include "ui/views/mus/mus_export.h"
 
 namespace aura {
@@ -37,7 +38,9 @@ class VIEWS_MUS_EXPORT AuraInit {
   // load 2x icons from.
   AuraInit(service_manager::Connector* connector,
            const std::string& resource_file,
-           const std::string& resource_file_200 = std::string());
+           const std::string& resource_file_200 = std::string(),
+           const aura::Env::WindowPortFactory& window_port_factory =
+               aura::Env::WindowPortFactory());
 
   ~AuraInit();
 

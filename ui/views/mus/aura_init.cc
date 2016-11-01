@@ -47,10 +47,11 @@ class MusViewsDelegate : public ViewsDelegate {
 
 AuraInit::AuraInit(service_manager::Connector* connector,
                    const std::string& resource_file,
-                   const std::string& resource_file_200)
+                   const std::string& resource_file_200,
+                   const aura::Env::WindowPortFactory& window_port_factory)
     : resource_file_(resource_file),
       resource_file_200_(resource_file_200),
-      env_(aura::Env::CreateInstance()),
+      env_(aura::Env::CreateInstance(window_port_factory)),
       views_delegate_(new MusViewsDelegate) {
   ui::MaterialDesignController::Initialize();
   InitializeResources(connector);

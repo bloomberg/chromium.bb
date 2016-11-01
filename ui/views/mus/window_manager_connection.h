@@ -30,7 +30,6 @@ class GpuService;
 }
 
 namespace views {
-class ClipboardMus;
 class NativeWidget;
 class PointerWatcher;
 class PointerWatcherEventRouter;
