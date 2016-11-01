@@ -145,6 +145,10 @@ const char kCrashOnHangThreads[]            = "crash-on-hang-threads";
 const char kCreateBrowserOnStartupForTests[] =
     "create-browser-on-startup-for-tests";
 
+// Specifies the HTTP endpoint which will be used to serve
+// chrome-devtools://devtools/custom/<path>
+const char kCustomDevtoolsFrontend[] = "custom-devtools-frontend";
+
 // Enables a frame context menu item that toggles the frame in and out of glass
 // mode (Windows Vista and up only).
 const char kDebugEnableFrameToggle[]        = "debug-enable-frame-toggle";

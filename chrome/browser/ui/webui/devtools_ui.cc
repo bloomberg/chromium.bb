@@ -4,12 +4,14 @@
 
 #include "chrome/browser/ui/webui/devtools_ui.h"
 
+#include "base/command_line.h"
 #include "base/macros.h"
 #include "base/memory/ref_counted_memory.h"
 #include "base/strings/string_split.h"
 #include "base/strings/string_util.h"
 #include "base/strings/stringprintf.h"
 #include "chrome/browser/profiles/profile.h"
+#include "chrome/common/chrome_switches.h"
 #include "chrome/common/url_constants.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/devtools_frontend_host.h"
@@ -18,6 +20,8 @@
 #include "content/public/browser/web_ui.h"
 #include "content/public/common/user_agent.h"
 #include "net/base/escape.h"
+#include "net/base/filename_util.h"
+#include "net/base/load_flags.h"
 #include "net/base/url_util.h"
 #include "net/url_request/url_fetcher.h"
 #include "net/url_request/url_fetcher_delegate.h"
@@ -237,6 +241,11 @@ class DevToolsDataSource : public content::URLDataSource,
   void StartRemoteDataRequest(const std::string& path,
                               const GotDataCallback& callback);
 
+  // Serves remote DevTools frontend from any endpoint, passed through
+  // command-line flag.
+  void StartCustomDataRequest(const GURL& url,
+                              const GotDataCallback& callback);
+
   ~DevToolsDataSource() override;
 
   scoped_refptr<net::URLRequestContextGetter> request_context_;
@@ -285,6 +294,27 @@ void DevToolsDataSource::StartDataRequest(
                        base::CompareCase::INSENSITIVE_ASCII)) {
     StartRemoteDataRequest(path.substr(remote_path_prefix.length()),
                            callback);
+    return;
+  }
+
+  std::string custom_frontend_url =
+      base::CommandLine::ForCurrentProcess()->GetSwitchValueASCII(
+          switches::kCustomDevtoolsFrontend);
+
+  if (custom_frontend_url.empty()) {
+    callback.Run(NULL);
+    return;
+  }
+
+  // Serve request from custom location.
+  std::string custom_path_prefix(chrome::kChromeUIDevToolsCustomPath);
+  custom_path_prefix += "/";
+
+  if (base::StartsWith(path, custom_path_prefix,
+                       base::CompareCase::INSENSITIVE_ASCII)) {
+    GURL url = GURL(custom_frontend_url +
+                    path.substr(custom_path_prefix.length()));
+    StartCustomDataRequest(url, callback);
     return;
   }
 
@@ -337,6 +367,22 @@ void DevToolsDataSource::StartRemoteDataRequest(
       net::URLFetcher::Create(url, net::URLFetcher::GET, this).release();
   pending_[fetcher] = callback;
   fetcher->SetRequestContext(request_context_.get());
+  fetcher->Start();
+}
+
+void DevToolsDataSource::StartCustomDataRequest(
+    const GURL& url,
+    const content::URLDataSource::GotDataCallback& callback) {
+  if (!url.is_valid()) {
+    callback.Run(
+        new base::RefCountedStaticMemory(kHttpNotFound, strlen(kHttpNotFound)));
+    return;
+  }
+  net::URLFetcher* fetcher =
+      net::URLFetcher::Create(url, net::URLFetcher::GET, this).release();
+  pending_[fetcher] = callback;
+  fetcher->SetRequestContext(request_context_.get());
+  fetcher->SetLoadFlags(net::LOAD_DISABLE_CACHE);
   fetcher->Start();
 }
 
