@@ -75,7 +75,9 @@ Background = function() {
    * @private
    */
   this.nextCompatRegExp_ = Background.globsToRegExp_([
-    '*docs.google.com*'
+    '*docs.google.com/document/*',
+    '*docs.google.com/spreadsheets/*',
+    '*docs.google.com/presentation/*'
   ]);
 
   /**

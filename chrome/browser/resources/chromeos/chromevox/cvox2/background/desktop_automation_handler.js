@@ -149,6 +149,10 @@ DesktopAutomationHandler.prototype = {
     var prev = ChromeVoxState.instance.currentRange;
     if (prev.contentEquals(cursors.Range.fromNode(evt.target)) ||
         evt.target.state.focused) {
+      // Category flush here since previous focus events via navigation can
+      // cause double speak.
+      Output.forceModeForNextSpeechUtterance(cvox.QueueMode.CATEGORY_FLUSH);
+
       // Intentionally skip setting range.
       new Output()
           .withRichSpeechAndBraille(cursors.Range.fromNode(evt.target),

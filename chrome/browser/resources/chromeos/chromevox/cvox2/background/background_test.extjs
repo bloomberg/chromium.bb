@@ -562,12 +562,12 @@ TEST_F('BackgroundTest', 'ModeSwitching', function() {
 
     // Next compat switching.
     localStorage['useNext'] = true;
-    fakeWebRoot.docUrl = 'http://docs.google.com/#123123';
+    fakeWebRoot.docUrl = 'http://docs.google.com/document/#123123';
     bk.setCurrentRange(cursors.Range.fromNode(fakeWebRoot));
     assertEquals('next_compat', bk.mode);
 
     // And, back to force next.
-    fakeWebRoot.docUrl = 'http://google.com/';
+    fakeWebRoot.docUrl = 'http://docs.google.com/form/123';
     bk.setCurrentRange(cursors.Range.fromNode(fakeWebRoot));
     assertEquals('force_next', bk.mode);
   }.bind(this));
