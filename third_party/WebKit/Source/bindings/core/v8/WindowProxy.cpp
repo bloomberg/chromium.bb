@@ -218,8 +218,11 @@ bool WindowProxy::initializeIfNeeded() {
 }
 
 bool WindowProxy::initialize() {
-  TRACE_EVENT0("v8", "WindowProxy::initialize");
-  SCOPED_BLINK_UMA_HISTOGRAM_TIMER("Blink.Binding.InitializeWindowProxy");
+  TRACE_EVENT1("v8", "WindowProxy::initialize", "isMainWindow",
+               m_frame->isMainFrame());
+  SCOPED_BLINK_UMA_HISTOGRAM_TIMER(
+      m_frame->isMainFrame() ? "Blink.Binding.InitializeMainWindowProxy"
+                             : "Blink.Binding.InitializeNonMainWindowProxy");
 
   ScriptForbiddenScope::AllowUserAgentScript allowScript;
 
