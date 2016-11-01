@@ -439,8 +439,8 @@ std::string ManagedDisplayInfo::ToString() const {
   }
 
   std::string result = base::StringPrintf(
-      "ManagedDisplayInfo[%lld] native bounds=%s, size=%s, scale=%f, "
-      "overscan=%s, rotation=%d, ui-scale=%f, touchscreen=%s, "
+      "ManagedDisplayInfo[%lld] native bounds=%s, size=%s, device-scale=%g, "
+      "overscan=%s, rotation=%d, ui-scale=%g, touchscreen=%s, "
       "input_devices=[%s]",
       static_cast<long long int>(id_), bounds_in_native_.ToString().c_str(),
       size_in_pixel_.ToString().c_str(), device_scale_factor_,
@@ -463,10 +463,10 @@ std::string ManagedDisplayInfo::ToFullString() const {
     scoped_refptr<ManagedDisplayMode> m(*iter);
     if (!display_modes_str.empty())
       display_modes_str += ",";
-    base::StringAppendF(&display_modes_str, "(%dx%d@%f%c%s)", m->size().width(),
-                        m->size().height(), m->refresh_rate(),
-                        m->is_interlaced() ? 'I' : 'P',
-                        m->native() ? "(N)" : "");
+    base::StringAppendF(
+        &display_modes_str, "(%dx%d@%g%c%s %g/%g)", m->size().width(),
+        m->size().height(), m->refresh_rate(), m->is_interlaced() ? 'I' : 'P',
+        m->native() ? "(N)" : "", m->ui_scale(), m->device_scale_factor());
   }
   return ToString() + ", display_modes==" + display_modes_str;
 }
