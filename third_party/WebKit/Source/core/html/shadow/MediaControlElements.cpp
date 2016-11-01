@@ -425,7 +425,17 @@ void MediaControlToggleClosedCaptionsButtonElement::updateDisplayType() {
 void MediaControlToggleClosedCaptionsButtonElement::defaultEventHandler(
     Event* event) {
   if (event->type() == EventTypeNames::click) {
-    mediaControls().toggleTextTrackList();
+    if (mediaElement().textTracks()->length() == 1) {
+      // If only one track exists, toggle it on/off
+      if (mediaElement().textTracks()->hasShowingTracks()) {
+        mediaControls().disableShowingTextTracks();
+      } else {
+        mediaControls().showTextTrackAtIndex(0);
+      }
+    } else {
+      mediaControls().toggleTextTrackList();
+    }
+
     updateDisplayType();
     event->setDefaultHandled();
   }
@@ -461,12 +471,12 @@ void MediaControlTextTrackListElement::defaultEventHandler(Event* event) {
     if (!target || !target->isElementNode())
       return;
 
-    disableShowingTextTracks();
+    mediaControls().disableShowingTextTracks();
     int trackIndex =
         toElement(target)->getIntegralAttribute(trackIndexAttrName());
     if (trackIndex != trackIndexOffValue) {
       DCHECK_GE(trackIndex, 0);
-      showTextTrackAtIndex(trackIndex);
+      mediaControls().showTextTrackAtIndex(trackIndex);
       mediaElement().disableAutomaticTextTrackSelection();
     }
 
@@ -484,35 +494,22 @@ void MediaControlTextTrackListElement::setVisible(bool visible) {
   }
 }
 
-void MediaControlTextTrackListElement::showTextTrackAtIndex(
-    unsigned indexToEnable) {
-  TextTrackList* trackList = mediaElement().textTracks();
-  if (indexToEnable >= trackList->length())
-    return;
-  TextTrack* track = trackList->anonymousIndexedGetter(indexToEnable);
-  if (track && track->canBeRendered())
-    track->setMode(TextTrack::showingKeyword());
-}
-
-void MediaControlTextTrackListElement::disableShowingTextTracks() {
-  TextTrackList* trackList = mediaElement().textTracks();
-  for (unsigned i = 0; i < trackList->length(); ++i) {
-    TextTrack* track = trackList->anonymousIndexedGetter(i);
-    if (track->mode() == TextTrack::showingKeyword())
-      track->setMode(TextTrack::disabledKeyword());
-  }
-}
-
 String MediaControlTextTrackListElement::getTextTrackLabel(TextTrack* track) {
-  if (!track)
+  if (!track) {
     return mediaElement().locale().queryString(
         WebLocalizedString::TextTracksOff);
+  }
 
   String trackLabel = track->label();
 
   if (trackLabel.isEmpty())
+    trackLabel = track->language();
+
+  if (trackLabel.isEmpty()) {
     trackLabel = String(mediaElement().locale().queryString(
-        WebLocalizedString::TextTracksNoLabel));
+        WebLocalizedString::TextTracksNoLabel,
+        String::number(track->trackIndex() + 1)));
+  }
 
   return trackLabel;
 }

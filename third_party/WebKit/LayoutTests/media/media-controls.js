@@ -133,7 +133,8 @@ function clickAtCoordinates(x, y)
 function textTrackListItemAtIndex(video, index)
 {
     var textTrackListElementID = "-internal-media-controls-text-track-list";
-    var textTrackListElement = mediaControlsElement(internals.shadowRoot(video).firstChild, textTrackListElementID);
+    var textTrackListElement = mediaControlsElement(
+            internals.shadowRoot(video).firstChild, textTrackListElementID);
     if (!textTrackListElement)
         throw "Failed to find text track list element";
 
@@ -145,10 +146,16 @@ function textTrackListItemAtIndex(video, index)
     }
 }
 
+function clickCaptionButton(video)
+{
+    var captionsButtonCoordinates =
+            mediaControlsButtonCoordinates(video, "toggle-closed-captions-button");
+    clickAtCoordinates(captionsButtonCoordinates[0], captionsButtonCoordinates[1]);
+}
+
 function clickTextTrackAtIndex(video, index)
 {
-    var captionsButtonCoordinates = mediaControlsButtonCoordinates(video, "toggle-closed-captions-button");
-    clickAtCoordinates(captionsButtonCoordinates[0], captionsButtonCoordinates[1]);
+    clickCaptionButton(video);
     var trackListItemElement = textTrackListItemAtIndex(video, index);
     var trackListItemCoordinates = elementCoordinates(trackListItemElement);
     clickAtCoordinates(trackListItemCoordinates[0], trackListItemCoordinates[1]);
@@ -157,6 +164,18 @@ function clickTextTrackAtIndex(video, index)
 function turnClosedCaptionsOff(video)
 {
     clickTextTrackAtIndex(video, -1);
+}
+
+function checkCaptionsVisible(video, captions)
+{
+    for (var i = 0; i < captions.length; i++) {
+      assert_equals(textTrackCueElementByIndex(video, i).innerText, captions[i]);
+    }
+}
+
+function checkCaptionsHidden(video)
+{
+    assert_equals(textTrackDisplayElement(video), null);
 }
 
 function runAfterHideMediaControlsTimerFired(func, mediaElement)

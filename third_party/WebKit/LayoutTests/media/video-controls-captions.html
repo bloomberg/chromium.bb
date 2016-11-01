@@ -6,6 +6,7 @@
 <script src="media-controls.js"></script>
 <video controls>
     <track src="track/captions-webvtt/captions-fast.vtt" kind="captions">
+    <track src="track/captions-webvtt/captions-rtl.vtt" kind="captions">
 </video>
 <script>
 async_test(function(t) {
@@ -15,12 +16,12 @@ async_test(function(t) {
         assert_true(isClosedCaptionsButtonVisible(video));
 
         // The captions track should be listed in textTracks, but not yet loaded.
-        assert_equals(video.textTracks.length, 1);
+        assert_equals(video.textTracks.length, 2);
         assert_equals(video.textTracks[0].mode, "disabled");
         assert_equals(textTrackContainerElement(video), null);
 
-        var track = document.querySelector("track");
-        track.onload = t.step_func(function() {
+        var tracks = document.querySelectorAll("track");
+        tracks[0].onload = t.step_func(function() {
             assert_equals(textTrackDisplayElement(video).innerText, "Lorem");
 
             // Captions should not be visible after Off is clicked.
@@ -28,7 +29,8 @@ async_test(function(t) {
             assert_equals(textTrackDisplayElement(video), null);
 
             // Remove DOM node representing the track element.
-            track.remove();
+            tracks[1].remove();
+            tracks[0].remove();
             assert_false(isClosedCaptionsButtonVisible(video));
 
             addUnloadableHTMLTrackElement();

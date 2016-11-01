@@ -11,28 +11,29 @@
 <video controls></video>
 <script>
 async_test(function(t) {
-  // Set up video
+  // Set up video.
   var video = document.querySelector("video");
   video.src = findMediaFile("video", "content/test");
   video.setAttribute("width", "60");
-  // Add captions
-  var track = video.addTextTrack("captions");
+  // Add two captions.
+  video.addTextTrack("captions");
+  video.addTextTrack("captions");
 
   video.onloadeddata = t.step_func_done(function() {
     var overflowList = getOverflowList(video);
     var overflowMenu = getOverflowMenuButton(video);
 
-    // Get the menu that displays the list of text tracks
+    // Get the menu that displays the list of text tracks.
    var captionsList = mediaControlsElement(internals.shadowRoot(video).firstChild, "-internal-media-controls-text-track-list");
 
-    // Initially the list should not be visible
+    // Initially the list should not be visible.
     assert_equals(getComputedStyle(captionsList).display, "none");
 
-    // Click on the overflow menu button
+    // Click on the overflow menu button.
     var coords = elementCoordinates(overflowMenu);
     clickAtCoordinates(coords[0], coords[1]);
 
-    // Click on the closed captions button
+    // Click on the closed captions button.
     var coords = elementCoordinates(overflowList.children[OverflowMenuButtons.CLOSED_CAPTIONS]);
     clickAtCoordinates(coords[0], coords[1]);
     assert_not_equals(getComputedStyle(captionsList).display, "none");

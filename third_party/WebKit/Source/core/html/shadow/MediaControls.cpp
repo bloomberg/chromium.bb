@@ -34,6 +34,7 @@
 #include "core/html/HTMLMediaElement.h"
 #include "core/html/shadow/MediaControlsWindowEventListener.h"
 #include "core/html/track/TextTrackContainer.h"
+#include "core/html/track/TextTrackList.h"
 #include "core/layout/LayoutObject.h"
 #include "core/layout/LayoutTheme.h"
 #include "platform/EventDispatchForbiddenScope.h"
@@ -529,6 +530,24 @@ void MediaControls::toggleTextTrackList() {
     m_windowEventListener->start();
 
   m_textTrackList->setVisible(!m_textTrackList->isWanted());
+}
+
+void MediaControls::showTextTrackAtIndex(unsigned indexToEnable) {
+  TextTrackList* trackList = mediaElement().textTracks();
+  if (indexToEnable >= trackList->length())
+    return;
+  TextTrack* track = trackList->anonymousIndexedGetter(indexToEnable);
+  if (track && track->canBeRendered())
+    track->setMode(TextTrack::showingKeyword());
+}
+
+void MediaControls::disableShowingTextTracks() {
+  TextTrackList* trackList = mediaElement().textTracks();
+  for (unsigned i = 0; i < trackList->length(); ++i) {
+    TextTrack* track = trackList->anonymousIndexedGetter(i);
+    if (track->mode() == TextTrack::showingKeyword())
+      track->setMode(TextTrack::disabledKeyword());
+  }
 }
 
 void MediaControls::refreshCastButtonVisibility() {

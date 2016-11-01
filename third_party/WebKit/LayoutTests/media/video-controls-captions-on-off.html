@@ -2,49 +2,41 @@
 <title>Tests that tracks can be turned on and off through the track selection menu.</title>
 <script src="../resources/testharness.js"></script>
 <script src="../resources/testharnessreport.js"></script>
-<script src="media-file.js"></script>
 <script src="media-controls.js"></script>
+<script src="media-file.js"></script>
 <video controls></video>
 <script>
 async_test(function(t) {
-    var text = ["First", "Second", "Third"];
+    var captions = ["First", "Second", "Third"];
     var video = document.querySelector("video");
 
     video.oncanplaythrough = t.step_func_done(function() {
-        var track = video.addTextTrack("captions");
+        var track1 = video.addTextTrack("captions");
+        var track2 = video.addTextTrack("captions");
 
-        for (var i = 0; i < text.length; i++) {
-            var cue = new VTTCue(0, 120, text[i]);
-            track.addCue(cue);
+        for (var i = 0; i < captions.length; i++) {
+            track1.addCue(new VTTCue(0, 120, captions[i]));
+            track2.addCue(new VTTCue(0, 120, captions[i]));
         }
         assert_true(isClosedCaptionsButtonVisible(video));
 
         // The captions track should be listed in textTracks, but not yet loaded.
-        assert_equals(video.textTracks.length, 1);
+        assert_equals(video.textTracks.length, 2);
         assert_equals(video.textTracks[0].mode, "hidden");
-        checkCaptionsHidden();
+        checkCaptionsHidden(video);
 
         // Captions track should become visible after the track is selected.
         clickTextTrackAtIndex(video, 0);
-        checkCaptionsVisible();
+        checkCaptionsVisible(video, captions);
 
         // Captions should not be visible after they're turned off through the menu.
         turnClosedCaptionsOff(video);
-        checkCaptionsHidden();
+        checkCaptionsHidden(video);
 
         // Captions track should become visible after the track is selected again.
         clickTextTrackAtIndex(video, 0);
-        checkCaptionsVisible();
+        checkCaptionsVisible(video, captions);
     });
-
-    function checkCaptionsVisible() {
-        for (var i = 0; i < text.length; i++)
-            assert_equals(textTrackCueElementByIndex(video, i).innerText, text[i]);
-    }
-
-    function checkCaptionsHidden() {
-        assert_equals(textTrackDisplayElement(video), null);
-    }
 
     video.src = findMediaFile("video", "content/counting");
 });

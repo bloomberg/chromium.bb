@@ -894,8 +894,8 @@ below:
       <message name="IDS_MEDIA_OVERFLOW_MENU_DOWNLOAD" desc="Media controls overflow menu item label for a download button.">
        Download
       </message>
-      <message name="IDS_MEDIA_TRACKS_NO_LABEL" desc="Menu item label for a text track that has no name specified">
-        Unknown
+      <message name="IDS_MEDIA_TRACKS_NO_LABEL" desc="Menu item label for a text track that has no name specified. The number represents the track number in the list of tracks.">
+        Track <ph name="NUMBER">$1<ex>1</ex></ph>
       </message>
 
       <message name="IDS_MEDIA_TRACKS_OFF" desc="Menu item label for a text track that represents disabling closed captions">

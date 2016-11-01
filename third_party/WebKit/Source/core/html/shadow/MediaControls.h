@@ -61,6 +61,8 @@ class CORE_EXPORT MediaControls final : public HTMLDivElement {
   void changedClosedCaptionsVisibility();
   void refreshClosedCaptionsButtonVisibility();
   void toggleTextTrackList();
+  void showTextTrackAtIndex(unsigned indexToEnable);
+  void disableShowingTextTracks();
 
   void enteredFullscreen();
   void exitedFullscreen();
