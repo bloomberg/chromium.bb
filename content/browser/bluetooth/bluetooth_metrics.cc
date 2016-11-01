@@ -328,4 +328,16 @@ void RecordStartNotificationsOutcome(CacheQueryOutcome outcome) {
       TranslateCacheQueryOutcomeToGATTOperationOutcome(outcome));
 }
 
+void RecordRSSISignalStrength(int rssi) {
+  UMA_HISTOGRAM_SPARSE_SLOWLY("Bluetooth.Web.RequestDevice.RSSISignalStrength",
+                              rssi);
+}
+
+void RecordRSSISignalStrengthLevel(UMARSSISignalStrengthLevel level) {
+  UMA_HISTOGRAM_ENUMERATION(
+      "Bluetooth.Web.RequestDevice.RSSISignalStrengthLevel",
+      static_cast<int>(level),
+      static_cast<int>(UMARSSISignalStrengthLevel::COUNT));
+}
+
 }  // namespace content

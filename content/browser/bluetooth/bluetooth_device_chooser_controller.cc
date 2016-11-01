@@ -35,6 +35,13 @@ const int kMaxRSSI = -55;
 // Number of RSSI levels used in the signal strength image.
 const int kNumSignalStrengthLevels = 5;
 
+const content::UMARSSISignalStrengthLevel kRSSISignalStrengthEnumTable[] = {
+    content::UMARSSISignalStrengthLevel::LEVEL_0,
+    content::UMARSSISignalStrengthLevel::LEVEL_1,
+    content::UMARSSISignalStrengthLevel::LEVEL_2,
+    content::UMARSSISignalStrengthLevel::LEVEL_3,
+    content::UMARSSISignalStrengthLevel::LEVEL_4};
+
 }  // namespace
 
 namespace content {
@@ -384,15 +391,26 @@ void BluetoothDeviceChooserController::AdapterPoweredChanged(bool powered) {
 
 int BluetoothDeviceChooserController::CalculateSignalStrengthLevel(
     int8_t rssi) {
-  if (rssi <= kMinRSSI)
-    return 0;
+  RecordRSSISignalStrength(rssi);
 
-  if (rssi >= kMaxRSSI)
+  if (rssi <= kMinRSSI) {
+    RecordRSSISignalStrengthLevel(
+        UMARSSISignalStrengthLevel::LESS_THAN_OR_EQUAL_TO_MIN_RSSI);
+    return 0;
+  }
+
+  if (rssi >= kMaxRSSI) {
+    RecordRSSISignalStrengthLevel(
+        UMARSSISignalStrengthLevel::GREATER_THAN_OR_EQUAL_TO_MAX_RSSI);
     return kNumSignalStrengthLevels - 1;
+  }
 
   double input_range = kMaxRSSI - kMinRSSI;
   double output_range = kNumSignalStrengthLevels - 1;
-  return static_cast<int>((rssi - kMinRSSI) * output_range / input_range);
+  int level = static_cast<int>((rssi - kMinRSSI) * output_range / input_range);
+  DCHECK(kNumSignalStrengthLevels == arraysize(kRSSISignalStrengthEnumTable));
+  RecordRSSISignalStrengthLevel(kRSSISignalStrengthEnumTable[level]);
+  return level;
 }
 
 void BluetoothDeviceChooserController::SetTestScanDurationForTesting() {
