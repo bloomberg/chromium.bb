@@ -700,13 +700,12 @@ void FindLayersThatNeedUpdates(LayerTreeImpl* layer_tree_impl,
   const EffectTree& effect_tree = property_trees->effect_tree;
 
   for (auto* layer_impl : *layer_tree_impl) {
+    if (!IsRootLayer(layer_impl) &&
+        LayerShouldBeSkipped(layer_impl, transform_tree, effect_tree))
+      continue;
+
     bool layer_is_drawn =
         effect_tree.Node(layer_impl->effect_tree_index())->is_drawn;
-
-    if (!IsRootLayer(layer_impl) &&
-        LayerShouldBeSkipped(layer_impl, layer_is_drawn, transform_tree,
-                             effect_tree))
-      continue;
 
     if (LayerNeedsUpdate(layer_impl, layer_is_drawn, property_trees))
       visible_layer_list->push_back(layer_impl);
@@ -733,7 +732,6 @@ void UpdateRenderSurfaceForLayer(EffectTree* effect_tree,
 template <typename LayerType>
 static inline bool LayerShouldBeSkippedInternal(
     LayerType* layer,
-    bool layer_is_drawn,
     const TransformTree& transform_tree,
     const EffectTree& effect_tree) {
   const TransformNode* transform_node =
@@ -752,19 +750,15 @@ static inline bool LayerShouldBeSkippedInternal(
 }
 
 bool LayerShouldBeSkipped(LayerImpl* layer,
-                          bool layer_is_drawn,
                           const TransformTree& transform_tree,
                           const EffectTree& effect_tree) {
-  return LayerShouldBeSkippedInternal(layer, layer_is_drawn, transform_tree,
-                                      effect_tree);
+  return LayerShouldBeSkippedInternal(layer, transform_tree, effect_tree);
 }
 
 bool LayerShouldBeSkipped(Layer* layer,
-                          bool layer_is_drawn,
                           const TransformTree& transform_tree,
                           const EffectTree& effect_tree) {
-  return LayerShouldBeSkippedInternal(layer, layer_is_drawn, transform_tree,
-                                      effect_tree);
+  return LayerShouldBeSkippedInternal(layer, transform_tree, effect_tree);
 }
 
 void FindLayersThatNeedUpdates(LayerTree* layer_tree,
@@ -773,13 +767,12 @@ void FindLayersThatNeedUpdates(LayerTree* layer_tree,
   const TransformTree& transform_tree = property_trees->transform_tree;
   const EffectTree& effect_tree = property_trees->effect_tree;
   for (auto* layer : *layer_tree) {
+    if (!IsRootLayer(layer) &&
+        LayerShouldBeSkipped(layer, transform_tree, effect_tree))
+      continue;
+
     bool layer_is_drawn =
         effect_tree.Node(layer->effect_tree_index())->is_drawn;
-
-    if (!IsRootLayer(layer) &&
-        LayerShouldBeSkipped(layer, layer_is_drawn, transform_tree,
-                             effect_tree))
-      continue;
 
     if (LayerNeedsUpdate(layer, layer_is_drawn, property_trees)) {
       update_layer_list->push_back(layer);

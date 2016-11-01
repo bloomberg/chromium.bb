@@ -90,7 +90,6 @@ void CC_EXPORT ComputeSurfaceDrawProperties(const PropertyTrees* property_trees,
                                             RenderSurfaceImpl* render_surface);
 
 bool CC_EXPORT LayerShouldBeSkipped(LayerImpl* layer,
-                                    bool layer_is_drawn,
                                     const TransformTree& transform_tree,
                                     const EffectTree& effect_tree);
 

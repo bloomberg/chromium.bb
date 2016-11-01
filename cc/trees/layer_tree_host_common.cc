@@ -380,13 +380,10 @@ static void ComputeInitialRenderSurfaceLayerList(
     }
     layer->set_is_drawn_render_surface_layer_list_member(false);
 
-    bool layer_is_drawn =
-        property_trees->effect_tree.Node(layer->effect_tree_index())->is_drawn;
     bool is_root = layer_tree_impl->IsRootLayer(layer);
-    bool skip_layer =
-        !is_root && draw_property_utils::LayerShouldBeSkipped(
-                        layer, layer_is_drawn, property_trees->transform_tree,
-                        property_trees->effect_tree);
+    bool skip_layer = !is_root && draw_property_utils::LayerShouldBeSkipped(
+                                      layer, property_trees->transform_tree,
+                                      property_trees->effect_tree);
     if (skip_layer)
       continue;
 
@@ -435,6 +432,8 @@ static void ComputeInitialRenderSurfaceLayerList(
             surface->render_target()->nearest_occlusion_immune_ancestor());
       }
     }
+    bool layer_is_drawn =
+        property_trees->effect_tree.Node(layer->effect_tree_index())->is_drawn;
     bool layer_should_be_drawn = draw_property_utils::LayerNeedsUpdate(
         layer, layer_is_drawn, property_trees);
     if (!layer_should_be_drawn)
