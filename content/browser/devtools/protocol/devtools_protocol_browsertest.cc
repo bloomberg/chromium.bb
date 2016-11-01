@@ -973,9 +973,9 @@ IN_PROC_BROWSER_TEST_F(DevToolsProtocolTest, BrowserGetTargets) {
   EXPECT_TRUE(target_info->GetString("type", &type));
   EXPECT_TRUE(target_info->GetString("title", &title));
   EXPECT_TRUE(target_info->GetString("url", &url));
-  EXPECT_EQ(type, "page");
-  EXPECT_EQ(title, "about:blank");
-  EXPECT_EQ(url, "about:blank");
+  EXPECT_EQ("page", type);
+  EXPECT_EQ("about:blank", title);
+  EXPECT_EQ("about:blank", url);
 }
 
 namespace {

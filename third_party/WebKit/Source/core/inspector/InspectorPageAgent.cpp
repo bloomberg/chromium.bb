@@ -44,8 +44,10 @@
 #include "core/fetch/ResourceFetcher.h"
 #include "core/fetch/ScriptResource.h"
 #include "core/frame/FrameHost.h"
+#include "core/frame/FrameView.h"
 #include "core/frame/LocalFrame.h"
 #include "core/frame/Settings.h"
+#include "core/frame/VisualViewport.h"
 #include "core/html/HTMLFrameOwnerElement.h"
 #include "core/html/VoidCallback.h"
 #include "core/html/imports/HTMLImportLoader.h"
@@ -856,6 +858,43 @@ void InspectorPageAgent::setBlockedEventsWarningThreshold(ErrorString*,
   if (!host)
     return;
   host->settings().setBlockedMainThreadEventsWarningThreshold(threshold);
+}
+
+void InspectorPageAgent::getLayoutMetrics(
+    ErrorString*,
+    std::unique_ptr<protocol::Page::LayoutViewport>* outLayoutViewport,
+    std::unique_ptr<protocol::Page::VisualViewport>* outVisualViewport) {
+  LocalFrame* mainFrame = m_inspectedFrames->root();
+  VisualViewport& visualViewport = mainFrame->host()->visualViewport();
+
+  mainFrame->document()->updateStyleAndLayoutIgnorePendingStylesheets();
+
+  IntRect visibleContents = mainFrame->view()->visibleContentRect();
+  *outLayoutViewport = protocol::Page::LayoutViewport::create()
+                           .setPageX(visibleContents.x())
+                           .setPageY(visibleContents.y())
+                           .setClientWidth(visibleContents.width())
+                           .setClientHeight(visibleContents.height())
+                           .build();
+
+  FrameView* frameView = mainFrame->view();
+  ScrollOffset pageOffset = frameView->getScrollableArea()->scrollOffset();
+  float pageZoom = mainFrame->pageZoomFactor();
+  FloatRect visibleRect = visualViewport.visibleRect();
+  float scale = visualViewport.scale();
+  float scrollbarWidth = frameView->verticalScrollbarWidth() / scale;
+  float scrollbarHeight = frameView->horizontalScrollbarHeight() / scale;
+
+  *outVisualViewport =
+      protocol::Page::VisualViewport::create()
+          .setOffsetX(adjustScrollForAbsoluteZoom(visibleRect.x(), pageZoom))
+          .setOffsetY(adjustScrollForAbsoluteZoom(visibleRect.y(), pageZoom))
+          .setPageX(adjustScrollForAbsoluteZoom(pageOffset.width(), pageZoom))
+          .setPageY(adjustScrollForAbsoluteZoom(pageOffset.height(), pageZoom))
+          .setClientWidth(visibleRect.width() - scrollbarWidth)
+          .setClientHeight(visibleRect.height() - scrollbarHeight)
+          .setScale(scale)
+          .build();
 }
 
 DEFINE_TRACE(InspectorPageAgent) {

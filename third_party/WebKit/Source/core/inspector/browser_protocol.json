@@ -183,6 +183,33 @@
                 "type": "string",
                 "enum": ["Proceed", "Cancel", "CancelAndIgnore"],
                 "experimental": true
+            },
+            {
+                "id": "LayoutViewport",
+                "type": "object",
+                "description": "Layout viewport position and dimensions.",
+                "experimental": true,
+                "properties": [
+                    { "name": "pageX", "type": "integer", "description": "Horizontal offset relative to the document (CSS pixels)." },
+                    { "name": "pageY", "type": "integer", "description": "Vertical offset relative to the document (CSS pixels)." },
+                    { "name": "clientWidth", "type": "integer", "description": "Width (CSS pixels), excludes scrollbar if present." },
+                    { "name": "clientHeight", "type": "integer", "description": "Height (CSS pixels), excludes scrollbar if present." }
+                ]
+            },
+            {
+                "id": "VisualViewport",
+                "type": "object",
+                "description": "Visual viewport position, dimensions, and scale.",
+                "experimental": true,
+                "properties": [
+                    { "name": "offsetX", "type": "number", "description": "Horizontal offset relative to the layout viewport (CSS pixels)." },
+                    { "name": "offsetY", "type": "number", "description": "Vertical offset relative to the layout viewport (CSS pixels)." },
+                    { "name": "pageX", "type": "number", "description": "Horizontal offset relative to the document (CSS pixels)." },
+                    { "name": "pageY", "type": "number", "description": "Vertical offset relative to the document (CSS pixels)." },
+                    { "name": "clientWidth", "type": "number", "description": "Width (CSS pixels), excludes scrollbar if present." },
+                    { "name": "clientHeight", "type": "number", "description": "Height (CSS pixels), excludes scrollbar if present." },
+                    { "name": "scale", "type": "number", "description": "Scale relative to the ideal viewport (size at width=device-width)." }
+                ]
             }
         ],
         "commands": [
@@ -509,6 +536,15 @@
                 "description": "Should be sent in response to a navigationRequested or a redirectRequested event, telling the browser how to handle the navigation.",
                 "experimental": true,
                 "handlers": ["browser"]
+            },
+            {
+                "name": "getLayoutMetrics",
+                "description": "Returns metrics relating to the layouting of the page, such as viewport bounds/scale.",
+                "experimental": true,
+                "returns": [
+                    { "name": "layoutViewport", "$ref": "LayoutViewport", "description": "Metrics relating to the layout viewport." },
+                    { "name": "visualViewport", "$ref": "VisualViewport", "description": "Metrics relating to the visual viewport." }
+                ]
             }
         ],
         "events": [

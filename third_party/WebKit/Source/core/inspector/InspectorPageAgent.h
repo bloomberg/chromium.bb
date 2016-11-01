@@ -142,6 +142,10 @@ class CORE_EXPORT InspectorPageAgent final
                         const Maybe<String>& message) override;
   void setBlockedEventsWarningThreshold(ErrorString*,
                                         double threshold) override;
+  void getLayoutMetrics(
+      ErrorString*,
+      std::unique_ptr<protocol::Page::LayoutViewport>*,
+      std::unique_ptr<protocol::Page::VisualViewport>*) override;
 
   // InspectorInstrumentation API
   void didClearDocumentOfWindowObject(LocalFrame*);
