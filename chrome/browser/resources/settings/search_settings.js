@@ -149,7 +149,13 @@ cr.define('settings', function() {
         if (request.regExp.test(textContent)) {
           foundMatches = true;
           revealParentSection_(node, request.rawQuery_);
-          highlight_(node, textContent.split(request.regExp));
+
+          // Don't highlight <select> nodes, yellow rectangles can't be
+          // displayed within an <option>.
+          // TODO(dpapad): highlight <select> controls with a search bubble
+          // instead.
+          if (node.parentNode.nodeName != 'OPTION')
+            highlight_(node, textContent.split(request.regExp));
         }
         // Returning early since TEXT_NODE nodes never have children.
         return;

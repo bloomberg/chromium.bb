@@ -908,6 +908,29 @@ TEST_F('CrSettingsMainPageTest', 'MAYBE_MainPage_All', function() {
 });
 
 /**
+ * Test fixture for chrome/browser/resources/settings/search_settings.js.
+ * @constructor
+ * @extends {CrSettingsBrowserTest}
+ */
+function CrSettingsSearchTest() {}
+
+CrSettingsSearchTest.prototype = {
+  __proto__: CrSettingsBrowserTest.prototype,
+
+  /** @override */
+  browsePreload: 'chrome://md-settings/settings_page/settings_section.html',
+
+  /** @override */
+  extraLibraries: CrSettingsBrowserTest.prototype.extraLibraries.concat([
+    'search_settings_test.js',
+  ]),
+};
+
+TEST_F('CrSettingsSearchTest', 'All', function() {
+  mocha.run();
+});
+
+/**
  * @constructor
  * @extends {CrSettingsBrowserTest}
  */
