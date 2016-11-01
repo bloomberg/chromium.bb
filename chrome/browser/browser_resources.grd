@@ -167,6 +167,8 @@
         <include name="IDR_MD_EXTENSIONS_EXTENSIONS_JS" file="resources\md_extensions\extensions.js" type="BINDATA" />
         <include name="IDR_MD_EXTENSIONS_ANIMATION_HELPER_HTML" file="resources\md_extensions\animation_helper.html" type="BINDATA" />
         <include name="IDR_MD_EXTENSIONS_ANIMATION_HELPER_JS" file="resources\md_extensions\animation_helper.js" type="BINDATA" />
+        <include name="IDR_MD_EXTENSIONS_CODE_SECTION_HTML" file="resources\md_extensions\code_section.html" type="BINDATA" />
+        <include name="IDR_MD_EXTENSIONS_CODE_SECTION_JS" file="resources\md_extensions\code_section.js" type="BINDATA" />
         <include name="IDR_MD_EXTENSIONS_DETAIL_VIEW_HTML" file="resources\md_extensions\detail_view.html" type="BINDATA" />
         <include name="IDR_MD_EXTENSIONS_DETAIL_VIEW_JS" file="resources\md_extensions\detail_view.js" type="BINDATA" />
         <include name="IDR_MD_EXTENSIONS_DROP_OVERLAY_HTML" file="resources\md_extensions\drop_overlay.html" type="BINDATA" />

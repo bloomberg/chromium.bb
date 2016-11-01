@@ -7,6 +7,7 @@ cr.define('extension_error_page_tests', function() {
   /** @enum {string} */
   var TestNames = {
     Layout: 'layout',
+    CodeSection: 'code section',
   };
 
   /**
@@ -21,10 +22,17 @@ cr.define('extension_error_page_tests', function() {
 
     /** @override */
     deleteErrors: function(extensionId, errorIds, type) {},
+
+    /** @override */
+    requestFileSource: function(args) {
+      this.requestFileSourceArgs = args;
+      this.requestFileSourceResolver = new PromiseResolver();
+      return this.requestFileSourceResolver.promise;
+    },
   };
 
   function registerTests() {
-    suite('ExtensionItemTest', function() {
+    suite('ExtensionErrorPageTest', function() {
       /** @type {chrome.developerPrivate.ExtensionInfo} */
       var extensionData;
 
@@ -58,7 +66,7 @@ cr.define('extension_error_page_tests', function() {
       setup(function() {
         PolymerTest.clearBody();
         var runtimeError = Object.assign({
-          source: 'source',
+          source: 'chrome-extension://' + extensionId + '/source.html',
           message: 'message',
           id: 1,
           severity: chrome.developerPrivate.ErrorLevel.ERROR,
@@ -69,8 +77,8 @@ cr.define('extension_error_page_tests', function() {
         });
         errorPage = new extensions.ErrorPage();
         mockDelegate = new MockErrorPageDelegate();
-        errorPage.data = extensionData;
         errorPage.delegate = mockDelegate;
+        errorPage.data = extensionData;
         document.body.appendChild(errorPage);
       });
 
@@ -113,6 +121,30 @@ cr.define('extension_error_page_tests', function() {
         mockDelegate.testClickingCalls(
             error.querySelector('.delete-button'), 'deleteErrors',
             [extensionId, [manifestError.id]]);
+      });
+
+      test(assert(TestNames.CodeSection), function(done) {
+        Polymer.dom.flush();
+
+        expectTrue(!!mockDelegate.requestFileSourceArgs);
+        args = mockDelegate.requestFileSourceArgs;
+        expectEquals(extensionId, args.extensionId);
+        expectEquals('source.html', args.pathSuffix);
+        expectEquals('message', args.message);
+
+        expectTrue(!!mockDelegate.requestFileSourceResolver);
+        var code = {
+          beforeHighlight: 'foo',
+          highlight: 'bar',
+          afterHighlight: 'baz',
+          message: 'quu',
+        };
+        mockDelegate.requestFileSourceResolver.resolve(code);
+        mockDelegate.requestFileSourceResolver.promise.then(function() {
+          Polymer.dom.flush();
+          expectEquals(code, errorPage.$$('extensions-code-section').code);
+          done();
+        });
       });
     });
   }

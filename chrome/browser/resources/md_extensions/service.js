@@ -280,7 +280,16 @@ cr.define('extensions', function() {
         errorIds: errorIds,
         type: type,
       });
-    }
+    },
+
+    /** @override */
+    requestFileSource: function(args) {
+      return new Promise(function(resolve, reject) {
+        chrome.developerPrivate.requestFileSource(args, function(code) {
+          resolve(code);
+        });
+      });
+    },
   };
 
   cr.addSingletonGetter(Service);

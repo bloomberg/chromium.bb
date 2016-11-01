@@ -169,6 +169,8 @@ content::WebUIDataSource* CreateMdExtensionsSource() {
       l10n_util::GetStringFUTF16(
           IDS_EXTENSIONS_ADDED_WITHOUT_KNOWLEDGE,
           l10n_util::GetStringUTF16(IDS_EXTENSION_WEB_STORE_TITLE)));
+  source->AddLocalizedString("noErrorsToShow",
+                             IDS_EXTENSIONS_ERROR_NO_ERRORS_CODE_MESSAGE);
   source->AddLocalizedString("packDialogTitle",
                              IDS_MD_EXTENSIONS_PACK_DIALOG_TITLE);
   source->AddLocalizedString("packDialogBrowse",
@@ -213,6 +215,9 @@ content::WebUIDataSource* CreateMdExtensionsSource() {
                           IDR_MD_EXTENSIONS_ANIMATION_HELPER_HTML);
   source->AddResourcePath("animation_helper.js",
                           IDR_MD_EXTENSIONS_ANIMATION_HELPER_JS);
+  source->AddResourcePath("code_section.html",
+                          IDR_MD_EXTENSIONS_CODE_SECTION_HTML);
+  source->AddResourcePath("code_section.js", IDR_MD_EXTENSIONS_CODE_SECTION_JS);
   source->AddResourcePath("extensions.js", IDR_MD_EXTENSIONS_EXTENSIONS_JS);
   source->AddResourcePath("drag_and_drop_handler.html",
                           IDR_EXTENSIONS_DRAG_AND_DROP_HANDLER_HTML);
