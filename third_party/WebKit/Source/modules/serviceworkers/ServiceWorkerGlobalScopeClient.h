@@ -48,7 +48,6 @@ namespace blink {
 struct WebCrossOriginServiceWorkerClient;
 struct WebServiceWorkerClientQueryOptions;
 class ExecutionContext;
-class WebServiceWorkerCacheStorage;
 class WebServiceWorkerResponse;
 class WebURL;
 class WorkerClients;

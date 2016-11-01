@@ -48,8 +48,6 @@
 #include "core/workers/WorkerClients.h"
 #include "core/workers/WorkerThreadStartupData.h"
 #include "modules/EventTargetModules.h"
-#include "modules/cachestorage/CacheStorage.h"
-#include "modules/cachestorage/InspectorCacheStorageAgent.h"
 #include "modules/fetch/GlobalFetch.h"
 #include "modules/serviceworkers/ServiceWorkerClients.h"
 #include "modules/serviceworkers/ServiceWorkerGlobalScopeClient.h"
