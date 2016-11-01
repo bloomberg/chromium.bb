@@ -13,7 +13,10 @@ Polymer({
 
   properties: {
     /** @private {?UpdateStatusChangedEvent} */
-    currentUpdateStatusEvent_: Object,
+    currentUpdateStatusEvent_: {
+      type: Object,
+      value: {message: '', progress: 0, status: UpdateStatus.DISABLED},
+    },
 
 <if expr="chromeos">
     /** @private */

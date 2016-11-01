@@ -83,14 +83,16 @@
             <div class="settings-box two-line">
               <iron-icon
                   hidden="[[!shouldShowUpdateStatusIcon_(
-                      currentUpdateStatusEvent_)]]"
-                  icon$="[[getIcon_(currentUpdateStatusEvent_)]]"
-                  src="[[getIconSrc_(currentUpdateStatusEvent_)]]">
+                      obsoleteSystemInfo_, currentUpdateStatusEvent_)]]"
+                  icon$="[[getIcon_(
+                      obsoleteSystemInfo_, currentUpdateStatusEvent_)]]"
+                  src="[[getIconSrc_(
+                      obsoleteSystemInfo_, currentUpdateStatusEvent_)]]">
               </iron-icon>
               <div class="start">
                 <div id="updateStatusMessage"
                     hidden="[[!shouldShowUpdateStatusMessage_(
-                        currentUpdateStatusEvent_)]]"
+                        obsoleteSystemInfo_, currentUpdateStatusEvent_)]]"
 <if expr="not chromeos">
                     inner-h-t-m-l="[[getUpdateStatusMessage_(
                         currentUpdateStatusEvent_)]]">
@@ -130,7 +132,8 @@
                   $i18n{aboutRelaunchAndPowerwash}
                 </paper-button>
                 <paper-button id="checkForUpdates" class="secondary-button"
-                    hidden="[[!shouldShowCheckUpdates_(currentUpdateStatusEvent_)]]"
+                    hidden="[[!shouldShowCheckUpdates_(
+                        currentUpdateStatusEvent_)]]"
                     on-tap="onCheckUpdatesTap_">
                   $i18n{aboutCheckForUpdates}
                 </paper-button>
