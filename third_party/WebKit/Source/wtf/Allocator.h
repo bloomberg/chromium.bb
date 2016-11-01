@@ -121,7 +121,6 @@ namespace WTF {
     ASSERT(location);                                                 \
     return location;                                                  \
   }                                                                   \
-  static const char* classNameForAllocator() { return #type; }        \
                                                                       \
  private:                                                             \
   typedef int __thisIsHereToForceASemicolonAfterThisMacro
