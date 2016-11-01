@@ -3,6 +3,7 @@
 // found in the LICENSE file.
 
 #include "base/memory/ptr_util.h"
+#include "base/metrics/histogram_macros.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/values.h"
 #include "components/omnibox/browser/autocomplete_provider_client.h"
@@ -123,7 +124,7 @@ void PhysicalWebProvider::ConstructMatches(base::ListValue* metadata_list) {
     const size_t remaining_metadata = metadata_count - i;
     if ((remaining_slots == 1) && (remaining_metadata > remaining_slots)) {
       AppendOverflowItem(remaining_metadata, relevance, title);
-      return;
+      break;
     }
 
     GURL url(url_string);
@@ -151,6 +152,9 @@ void PhysicalWebProvider::ConstructMatches(base::ListValue* metadata_list) {
     matches_.push_back(match);
     ++used_slots;
   }
+
+  UMA_HISTOGRAM_EXACT_LINEAR(
+      "Omnibox.PhysicalWebProviderMatches", matches_.size(), kMaxMatches);
 }
 
 void PhysicalWebProvider::AppendOverflowItem(int additional_url_count,
