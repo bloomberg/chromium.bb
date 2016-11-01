@@ -61,6 +61,10 @@ class ServerWindowCompositorFrameSink
   cc::LocalFrameId local_frame_id_;
   cc::SurfaceIdAllocator surface_id_allocator_;
   cc::SurfaceFactory surface_factory_;
+  // Counts the number of CompositorFrames that have been submitted and have not
+  // yet received an ACK.
+  int ack_pending_count_ = 0;
+  cc::ReturnedResourceArray surface_returned_resources_;
 
   cc::mojom::MojoCompositorFrameSinkClientPtr client_;
   mojo::Binding<MojoCompositorFrameSink> binding_;

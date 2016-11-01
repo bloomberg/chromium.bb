@@ -62,6 +62,7 @@ void ServerWindowCompositorFrameSink::SubmitCompositorFrame(
     local_frame_id_ = surface_id_allocator_.GenerateId();
     surface_factory_.Create(local_frame_id_);
   }
+  ++ack_pending_count_;
   surface_factory_.SubmitCompositorFrame(
       local_frame_id_, std::move(frame),
       base::Bind(&ServerWindowCompositorFrameSink::DidReceiveCompositorFrameAck,
@@ -72,16 +73,29 @@ void ServerWindowCompositorFrameSink::SubmitCompositorFrame(
 }
 
 void ServerWindowCompositorFrameSink::DidReceiveCompositorFrameAck() {
-  if (!client_ || !base::MessageLoop::current())
+  if (!client_)
     return;
   client_->DidReceiveCompositorFrameAck();
+  DCHECK_GT(ack_pending_count_, 0);
+  if (!surface_returned_resources_.empty()) {
+    client_->ReclaimResources(surface_returned_resources_);
+    surface_returned_resources_.clear();
+  }
+  ack_pending_count_--;
 }
 
 void ServerWindowCompositorFrameSink::ReturnResources(
     const cc::ReturnedResourceArray& resources) {
-  if (!client_ || !base::MessageLoop::current())
+  if (resources.empty())
     return;
-  client_->ReclaimResources(resources);
+
+  if (!ack_pending_count_ && client_) {
+    client_->ReclaimResources(resources);
+    return;
+  }
+
+  std::copy(resources.begin(), resources.end(),
+            std::back_inserter(surface_returned_resources_));
 }
 
 void ServerWindowCompositorFrameSink::SetBeginFrameSource(

@@ -40,6 +40,8 @@ class OffscreenCanvasCompositorFrameSink
   cc::SurfaceId surface_id_;
   std::unique_ptr<cc::SurfaceFactory> surface_factory_;
   cc::mojom::MojoCompositorFrameSinkClientPtr client_;
+  int ack_pending_count_ = 0;
+  cc::ReturnedResourceArray surface_returned_resources_;
 
   DISALLOW_COPY_AND_ASSIGN(OffscreenCanvasCompositorFrameSink);
 };

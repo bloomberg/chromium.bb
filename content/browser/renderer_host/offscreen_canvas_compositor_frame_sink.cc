@@ -50,6 +50,7 @@ void OffscreenCanvasCompositorFrameSink::SubmitCompositorFrame(
 
     manager->RegisterFrameSinkId(surface_id_.frame_sink_id());
   }
+  ++ack_pending_count_;
   surface_factory_->SubmitCompositorFrame(
       surface_id_.local_frame_id(), std::move(frame),
       base::Bind(
@@ -64,7 +65,16 @@ void OffscreenCanvasCompositorFrameSink::SetNeedsBeginFrame(
 
 void OffscreenCanvasCompositorFrameSink::ReturnResources(
     const cc::ReturnedResourceArray& resources) {
-  client_->ReclaimResources(resources);
+  if (resources.empty())
+    return;
+
+  if (!ack_pending_count_ && client_) {
+    client_->ReclaimResources(resources);
+    return;
+  }
+
+  std::copy(resources.begin(), resources.end(),
+            std::back_inserter(surface_returned_resources_));
 }
 
 void OffscreenCanvasCompositorFrameSink::WillDrawSurface(
@@ -75,7 +85,15 @@ void OffscreenCanvasCompositorFrameSink::SetBeginFrameSource(
     cc::BeginFrameSource* begin_frame_source) {}
 
 void OffscreenCanvasCompositorFrameSink::DidReceiveCompositorFrameAck() {
+  if (!client_)
+    return;
   client_->DidReceiveCompositorFrameAck();
+  DCHECK_GT(ack_pending_count_, 0);
+  if (!surface_returned_resources_.empty()) {
+    client_->ReclaimResources(surface_returned_resources_);
+    surface_returned_resources_.clear();
+  }
+  ack_pending_count_--;
 }
 
 }  // namespace content
