@@ -3267,12 +3267,6 @@
         "swarming": {
           "can_use_on_swarming_builders": false
         },
-        "test": "sync_integration_tests"
-      },
-      {
-        "swarming": {
-          "can_use_on_swarming_builders": false
-        },
         "test": "ui_base_unittests"
       },
       {
