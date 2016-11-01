@@ -50,7 +50,7 @@ MaterialDesignController::Mode MaterialDesignController::GetMode() {
 
 // static
 bool MaterialDesignController::IsShelfMaterial() {
-  return MaterialDesignController::IsMaterialExperimental();
+  return IsMaterial();
 }
 
 // static
@@ -60,12 +60,12 @@ bool MaterialDesignController::IsImmersiveModeMaterial() {
 
 // static
 bool MaterialDesignController::IsSystemTrayMenuMaterial() {
-  return MaterialDesignController::IsMaterialExperimental();
+  return IsMaterial();
 }
 
 // static
 bool MaterialDesignController::UseMaterialDesignSystemIcons() {
-  return MaterialDesignController::IsMaterialExperimental();
+  return IsMaterial();
 }
 
 // static

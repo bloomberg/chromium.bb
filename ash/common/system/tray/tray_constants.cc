@@ -98,21 +98,21 @@ const float kTrayPopupInkDropHighlightOpacity = 0.08f;
 const int kTrayPopupInkDropInset = 4;
 
 int GetTrayConstant(TrayConstant constant) {
-  const int kTrayItemHeightLegacy[] = {38, 38, kTrayItemSize};
-  const int kTraySpacing[] = {4, 4, 0};
-  const int kTrayPaddingFromEdgeOfShelf[] = {3, 3, 4};
-  const int kTrayPopupItemHeight[] = {46, 46, 48};
+  const int kTrayItemHeightLegacy[] = {38, kTrayItemSize, kTrayItemSize};
+  const int kTraySpacing[] = {4, 0, 0};
+  const int kTrayPaddingFromEdgeOfShelf[] = {3, 4, 4};
+  const int kTrayPopupItemHeight[] = {46, 48, 48};
   // TODO(bruthig): Use the correct values for non-material design.
-  const int kTrayPopupItemLeftInset[] = {0, 0, 4};
+  const int kTrayPopupItemLeftInset[] = {0, 4, 4};
   // TODO(bruthig): Use the correct values for non-material design.
-  const int kTrayPopupItemRightInset[] = {0, 0, 4};
+  const int kTrayPopupItemRightInset[] = {0, 4, 4};
   // TODO(bruthig): Use the correct values for non-material design.
   const int kTrayPopupItemMinStartWidth[] = {48, 48, 48};
   // TODO(bruthig): Use the correct values for non-material design.
   const int kTrayPopupItemMinEndWidth[] = {48, 48, 48};
-  const int kVirtualKeyboardButtonSize[] = {39, 39, kTrayItemSize};
-  const int kTrayImeMenuIcon[] = {40, 40, kTrayItemSize};
-  const int kTrayImageItemPadding[] = {1, 1, 3};
+  const int kVirtualKeyboardButtonSize[] = {39, kTrayItemSize, kTrayItemSize};
+  const int kTrayImeMenuIcon[] = {40, kTrayItemSize, kTrayItemSize};
+  const int kTrayImageItemPadding[] = {1, 3, 3};
 
   const int mode = MaterialDesignController::GetMode();
   DCHECK(mode >= MaterialDesignController::NON_MATERIAL &&
