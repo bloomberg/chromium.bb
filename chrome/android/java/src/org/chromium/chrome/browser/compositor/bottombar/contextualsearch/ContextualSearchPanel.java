@@ -26,6 +26,7 @@ import org.chromium.chrome.browser.compositor.scene_layer.ContextualSearchSceneL
 import org.chromium.chrome.browser.compositor.scene_layer.SceneOverlayLayer;
 import org.chromium.chrome.browser.contextualsearch.ContextualSearchManagementDelegate;
 import org.chromium.chrome.browser.util.MathUtils;
+import org.chromium.ui.base.LocalizationUtils;
 import org.chromium.ui.resources.ResourceManager;
 
 /**
@@ -68,6 +69,11 @@ public class ContextualSearchPanel extends OverlayPanel {
      */
     private ContextualSearchSceneLayer mSceneLayer;
 
+    /**
+     * The distance of the divider from the end of the bar, in dp.
+     */
+    private final float mEndButtonWidthDp;
+
     // ============================================================================================
     // Constructor
     // ============================================================================================
@@ -86,6 +92,8 @@ public class ContextualSearchPanel extends OverlayPanel {
 
         mBarShadowHeightPx = ApiCompatibilityUtils.getDrawable(mContext.getResources(),
                 R.drawable.contextual_search_bar_shadow).getIntrinsicHeight();
+        mEndButtonWidthDp = mPxToDp * (float) mContext.getResources().getDimensionPixelSize(
+                R.dimen.contextual_search_end_button_width);
     }
 
     @Override
@@ -263,10 +271,28 @@ public class ContextualSearchPanel extends OverlayPanel {
     // Generic Event Handling
     // ============================================================================================
 
+    private boolean isCoordinateInsideActionTarget(float x) {
+        if (LocalizationUtils.isLayoutRtl()) {
+            return x >= getContentX() + mEndButtonWidthDp;
+        } else {
+            return x <= getContentX() + getContentViewWidthDp() - mEndButtonWidthDp;
+        }
+    }
+
+    /**
+     * Handles a bar click. The position is given in dp.
+     */
     @Override
     public void handleBarClick(long time, float x, float y) {
-        super.handleBarClick(time, x, y);
-        if (isExpanded() || isMaximized()) {
+        if (isPeeking()) {
+            if (getSearchBarControl().getQuickActionControl().hasQuickAction()
+                    && isCoordinateInsideActionTarget(x)) {
+                getSearchBarControl().getQuickActionControl().sendIntent();
+            } else {
+                // super takes care of expanding the Panel when peeking.
+                super.handleBarClick(time, x, y);
+            }
+        } else if (isExpanded() || isMaximized()) {
             if (isCoordinateInsideCloseButton(x)) {
                 closePanel(StateChangeReason.CLOSE_BUTTON, true);
             } else if (!mActivity.isCustomTab() && canDisplayContentInPanel()) {

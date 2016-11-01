@@ -107,6 +107,8 @@
     TextViews that we cannot get rid of. -->
     <dimen name="contextual_search_text_layer_min_height">38dp</dimen>
     <dimen name="contextual_search_term_caption_spacing">1.5dp</dimen>
+    <!-- This is the offset of the divider from the end of the bar. -->
+    <dimen name="contextual_search_end_button_width">41dp</dimen>
 
     <!-- Overlay panel dimensions -->
     <dimen name="overlay_panel_bar_height">56dp</dimen>

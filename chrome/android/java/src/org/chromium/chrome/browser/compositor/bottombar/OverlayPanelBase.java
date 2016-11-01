@@ -312,6 +312,13 @@ abstract class OverlayPanelBase {
     }
 
     /**
+     * @return The width of the Overlay Panel Content View in dp.
+     */
+    public float getContentViewWidthDp() {
+        return getContentViewWidthPx() * mPxToDp;
+    }
+
+    /**
      * @return The height of the Overlay Panel Content View in pixels.
      */
     public int getContentViewHeightPx() {
