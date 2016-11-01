@@ -2946,11 +2946,49 @@ static int drmGetMaxNodeName(void)
            3 /* length of the node number */;
 }
 
-static int drmParsePciDeviceInfo(int maj, int min,
-                                 drmPciDeviceInfoPtr device,
-                                 uint32_t flags)
-{
 #ifdef __linux__
+static int parse_separate_sysfs_files(int maj, int min,
+                                      drmPciDeviceInfoPtr device)
+{
+#define ARRAY_SIZE(a) (sizeof(a) / sizeof((a)[0]))
+    static const char *attrs[] = {
+      "revision", /* Older kernels are missing the file, so check for it first */
+      "vendor",
+      "device",
+      "subsystem_vendor",
+      "subsystem_device",
+    };
+    char path[PATH_MAX + 1];
+    unsigned int data[ARRAY_SIZE(attrs)];
+    FILE *fp;
+    int ret;
+
+    for (unsigned i = 0; i < ARRAY_SIZE(attrs); i++) {
+        snprintf(path, PATH_MAX, "/sys/dev/char/%d:%d/device/%s", maj, min,
+                 attrs[i]);
+        fp = fopen(path, "r");
+        if (!fp)
+            return -errno;
+
+        ret = fscanf(fp, "%x", &data[i]);
+        fclose(fp);
+        if (ret != 1)
+            return -errno;
+
+    }
+
+    device->revision_id = data[0] & 0xff;
+    device->vendor_id = data[1] & 0xffff;
+    device->device_id = data[2] & 0xffff;
+    device->subvendor_id = data[3] & 0xffff;
+    device->subdevice_id = data[4] & 0xffff;
+
+    return 0;
+}
+
+static int parse_config_sysfs_file(int maj, int min,
+                                   drmPciDeviceInfoPtr device)
+{
     char path[PATH_MAX + 1];
     unsigned char config[64];
     int fd, ret;
@@ -2970,6 +3008,18 @@ static int drmParsePciDeviceInfo(int maj, int min,
     device->revision_id = config[8];
     device->subvendor_id = config[44] | (config[45] << 8);
     device->subdevice_id = config[46] | (config[47] << 8);
+
+    return 0;
+}
+#endif
+
+static int drmParsePciDeviceInfo(int maj, int min,
+                                 drmPciDeviceInfoPtr device,
+                                 uint32_t flags)
+{
+#ifdef __linux__
+    if (parse_separate_sysfs_files(maj, min, device))
+        return parse_config_sysfs_file(maj, min, device);
 
     return 0;
 #else
