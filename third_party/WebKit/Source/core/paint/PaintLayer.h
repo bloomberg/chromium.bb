@@ -717,11 +717,11 @@ class CORE_EXPORT PaintLayer : public DisplayItemClient {
       bool hasRootScrollerAsDescendant);
   void didUpdateCompositingInputs();
 
-  IntRect clippedAbsoluteBoundingBox() const {
+  const IntRect& clippedAbsoluteBoundingBox() const {
     DCHECK(!m_needsAncestorDependentCompositingInputsUpdate);
     return m_ancestorDependentCompositingInputs.clippedAbsoluteBoundingBox;
   }
-  IntRect unclippedAbsoluteBoundingBox() const {
+  const IntRect& unclippedAbsoluteBoundingBox() const {
     DCHECK(!m_needsAncestorDependentCompositingInputsUpdate);
     return m_ancestorDependentCompositingInputs.unclippedAbsoluteBoundingBox;
   }
