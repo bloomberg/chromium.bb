@@ -4,8 +4,8 @@ layer at (0,0) size 800x600
   LayoutBlockFlow {HTML} at (0,0) size 800x600
     LayoutBlockFlow {BODY} at (8,8) size 784x576
       LayoutBlockFlow {P} at (0,0) size 784x18
-        LayoutText {#text} at (0,0) size 775x17
-          text run at (0,0) width 775: "Test that visited style matches to the topmost link in a decendant selector. The link should be green, with red underlining."
+        LayoutText {#text} at (0,0) size 782x17
+          text run at (0,0) width 782: "Test that visited style matches to the topmost link in a descendant selector. The link should be green, with red underlining."
       LayoutBlockFlow {P} at (0,34) size 784x18
         LayoutInline {A} at (0,0) size 31x17 [color=#FF0000]
           LayoutInline {SPAN} at (0,0) size 31x17 [color=#008000]
