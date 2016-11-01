@@ -1203,7 +1203,7 @@ static void SetSurfaceDrawTransform(const PropertyTrees* property_trees,
 
 static void SetSurfaceIsClipped(const ClipNode* clip_node,
                                 RenderSurfaceImpl* render_surface) {
-  DCHECK(render_surface->OwningLayerId() == clip_node->owner_id)
+  DCHECK(render_surface->id() == clip_node->owner_id)
       << "we now create clip node for every render surface";
 
   render_surface->SetIsClipped(clip_node->target_is_clipped);

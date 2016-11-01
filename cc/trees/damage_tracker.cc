@@ -363,7 +363,7 @@ void DamageTracker::ExtendDamageForRenderSurface(
 
   bool surface_is_new = false;
   SurfaceRectMapData& data =
-      RectDataForSurface(render_surface->OwningLayerId(), &surface_is_new);
+      RectDataForSurface(render_surface->id(), &surface_is_new);
   gfx::Rect old_surface_rect = data.rect_;
 
   gfx::Rect surface_rect_in_target_space =
