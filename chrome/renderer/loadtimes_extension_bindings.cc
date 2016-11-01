@@ -346,20 +346,17 @@ class LoadTimesExtensionWrapper : public v8::Extension {
     if (!data_source) {
       return;
     }
-    DocumentState* document_state = DocumentState::FromDataSource(data_source);
-    if (!document_state) {
-      return;
-    }
+    WebPerformance web_performance = frame->performance();
     base::Time now = base::Time::Now();
-    base::Time start = document_state->request_time().is_null()
-                           ? document_state->start_load_time()
-                           : document_state->request_time();
-    base::Time onload = document_state->finish_document_load_time();
+    base::Time start =
+        base::Time::FromDoubleT(web_performance.navigationStart());
+
+    base::Time dom_content_loaded_end =
+        base::Time::FromDoubleT(web_performance.domContentLoadedEventEnd());
     base::TimeDelta page = now - start;
     int navigation_type = GetCSITransitionType(data_source->navigationType());
-    // Important: |frame|, |data_source| and |document_state| should not be
-    // referred to below this line, as JS setters below can invalidate these
-    // pointers.
+    // Important: |frame| and |data_source| should not be referred to below this
+    // line, as JS setters below can invalidate these pointers.
     v8::Isolate* isolate = args.GetIsolate();
     v8::Local<v8::Context> ctx = isolate->GetCurrentContext();
     v8::Local<v8::Object> csi = v8::Object::New(isolate);
@@ -370,11 +367,15 @@ class LoadTimesExtensionWrapper : public v8::Extension {
              .FromMaybe(false)) {
       return;
     }
+    // NOTE: historically, the CSI onload field has reported the time the
+    // document finishes parsing, which is DOMContentLoaded. Thus, we continue
+    // to report that here, despite the fact that the field is named onloadT.
     if (!csi->Set(ctx, v8::String::NewFromUtf8(isolate, "onloadT",
                                                v8::NewStringType::kNormal)
                            .ToLocalChecked(),
-                  v8::Number::New(isolate, floor(onload.ToDoubleT() * 1000)))
-             .FromMaybe(false)) {
+                  v8::Number::New(isolate,
+                                  floor(dom_content_loaded_end.ToDoubleT() *
+                                        1000))).FromMaybe(false)) {
       return;
     }
     if (!csi->Set(ctx, v8::String::NewFromUtf8(isolate, "pageT",
