@@ -632,14 +632,6 @@ IPC_MESSAGE_ROUTED1(ViewMsg_HandleCompositorProto,
 IPC_MESSAGE_ROUTED1(ViewHostMsg_SetNeedsBeginFrames,
                     bool /* enabled */)
 
-// Similar to ViewHostMsg_CreateWindow, except used for sub-widgets, like
-// <select> dropdowns.  This message is sent to the WebContentsImpl that
-// contains the widget being created.
-IPC_SYNC_MESSAGE_CONTROL2_1(ViewHostMsg_CreateWidget,
-                            int /* opener_id */,
-                            blink::WebPopupType /* popup type */,
-                            int /* route_id */)
-
 // Similar to ViewHostMsg_CreateWidget except the widget is a full screen
 // window.
 IPC_SYNC_MESSAGE_CONTROL1_1(ViewHostMsg_CreateFullscreenWidget,

@@ -27,6 +27,9 @@ class RenderWidgetFullscreen : public RenderWidget {
   virtual blink::WebWidget* CreateWebWidget();
 
   bool Init(int32_t opener_id);
+
+ private:
+  bool SendIPC(int32_t opener_id, int32_t* routing_id);
 };
 
 }  // namespace content

@@ -10,6 +10,7 @@ public_headers = [
   "//content/public/common/renderer_preferences.h",
   "//content/public/common/web_preferences.h",
   "//net/base/network_change_notifier.h",
+  "//third_party/WebKit/public/web/WebPopupType.h",
 ]
 traits_headers = [
   "//content/common/frame_messages.h",
@@ -41,5 +42,6 @@ type_mappings = [
   "content.mojom.NetworkConnectionType=net::NetworkChangeNotifier::ConnectionType",
   "content.mojom.RendererPreferences=content::RendererPreferences",
   "content.mojom.ResizeParams=content::ResizeParams",
+  "content.mojom.WebPopupType=blink::WebPopupType",
   "content.mojom.WebPreferences=content::WebPreferences",
 ]

@@ -48,11 +48,24 @@ class MockRenderMessageFilterImpl : public mojom::RenderMessageFilter {
     NOTREACHED();
   }
 
-  // Note that
   bool CreateNewWindow(mojom::CreateNewWindowParamsPtr params,
                        mojom::CreateNewWindowReplyPtr* reply) override {
     *reply = mojom::CreateNewWindowReply::New();
     thread_->OnCreateWindow(*params, reply->get());
+    return true;
+  }
+
+  void CreateNewWidget(int32_t opener_id,
+                      blink::WebPopupType popup_type,
+                      const CreateNewWidgetCallback& callback) override {
+    // See comment in CreateNewWindow().
+    NOTREACHED();
+  }
+
+  bool CreateNewWidget(int32_t opener_id,
+                       blink::WebPopupType popup_type,
+                       int32_t* route_id) override {
+    thread_->OnCreateWidget(opener_id, popup_type, route_id);
     return true;
   }
 
@@ -256,7 +269,7 @@ void MockRenderThread::SendCloseMessage() {
   RenderViewImpl::FromRoutingID(routing_id_)->OnMessageReceived(msg);
 }
 
-// The Widget expects to be returned valid route_id.
+// The Widget expects to be returned a valid route_id.
 void MockRenderThread::OnCreateWidget(int opener_id,
                                       blink::WebPopupType popup_type,
                                       int* route_id) {
@@ -285,7 +298,6 @@ bool MockRenderThread::OnMessageReceived(const IPC::Message& msg) {
 
   bool handled = true;
   IPC_BEGIN_MESSAGE_MAP(MockRenderThread, msg)
-    IPC_MESSAGE_HANDLER(ViewHostMsg_CreateWidget, OnCreateWidget)
     IPC_MESSAGE_HANDLER(FrameHostMsg_CreateChildFrame, OnCreateChildFrame)
     IPC_MESSAGE_UNHANDLED(handled = false)
   IPC_END_MESSAGE_MAP()

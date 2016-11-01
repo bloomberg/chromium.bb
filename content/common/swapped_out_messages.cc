@@ -45,8 +45,6 @@ bool SwappedOutMessages::CanSendWhileSwappedOut(const IPC::Message* msg) {
     case FrameHostMsg_ForwardInputEvent::ID:
     // A swapped-out frame's opener might be updated with window.open.
     case FrameHostMsg_DidChangeOpener::ID:
-    // For handling pop-ups from cross-site frames.
-    case ViewHostMsg_CreateWidget::ID:
       return true;
     default:
       break;

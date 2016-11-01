@@ -4,6 +4,7 @@
 
 module content.mojom;
 
+import "content/common/native_types.mojom";
 import "content/public/common/window_container_type.mojom";
 import "third_party/WebKit/public/platform/referrer.mojom";
 import "third_party/WebKit/public/web/window_features.mojom";
@@ -82,4 +83,9 @@ interface RenderMessageFilter {
   // be created.
   [Sync] CreateNewWindow(CreateNewWindowParams params)
       => (CreateNewWindowReply reply);
+
+  // Similar to CreateWindow, except used for sub-widgets, like <select>
+  // dropdowns.
+  [Sync] CreateNewWidget(int32 opener_id, content.mojom.WebPopupType popup_type)
+      => (int32 route_id);
 };

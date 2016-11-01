@@ -714,7 +714,8 @@ void RenderViewImpl::Initialize(const mojom::CreateViewParams& params,
   webview_ =
       WebView::create(this, is_hidden() ? blink::WebPageVisibilityStateHidden
                                         : blink::WebPageVisibilityStateVisible);
-  RenderWidget::DoInit(MSG_ROUTING_NONE, webview_->widget(), nullptr);
+  RenderWidget::DoInit(MSG_ROUTING_NONE, webview_->widget(),
+                       CreateWidgetCallback());
 
   g_view_map.Get().insert(std::make_pair(webview(), this));
   g_routing_id_view_map.Get().insert(std::make_pair(GetRoutingID(), this));

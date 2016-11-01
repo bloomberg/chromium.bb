@@ -29,6 +29,7 @@
 #include "content/common/content_switches_internal.h"
 #include "content/common/input/synthetic_gesture_packet.h"
 #include "content/common/input_messages.h"
+#include "content/common/render_message_filter.mojom.h"
 #include "content/common/swapped_out_messages.h"
 #include "content/common/text_input_state.h"
 #include "content/common/view_messages.h"
@@ -324,7 +325,7 @@ RenderWidget* RenderWidget::CreateForFrame(
   // this function returns.
   if (widget->DoInit(MSG_ROUTING_NONE,
                      RenderWidget::CreateWebFrameWidget(widget.get(), frame),
-                     nullptr)) {
+                     CreateWidgetCallback())) {
     if (g_render_widget_initialized)
       g_render_widget_initialized(widget.get());
     return widget.get();
@@ -381,10 +382,18 @@ void RenderWidget::SetSwappedOut(bool is_swapped_out) {
     RenderProcess::current()->AddRefProcess();
 }
 
+bool RenderWidget::CreateWidget(int32_t opener_id,
+                                blink::WebPopupType popup_type,
+                                int32_t* routing_id) {
+  RenderThreadImpl::current_render_message_filter()->CreateNewWidget(
+      opener_id, popup_type, routing_id);
+  return true;
+}
+
 bool RenderWidget::Init(int32_t opener_id) {
-  bool success = DoInit(
-      opener_id, RenderWidget::CreateWebWidget(this),
-      new ViewHostMsg_CreateWidget(opener_id, popup_type_, &routing_id_));
+  bool success = DoInit(opener_id, RenderWidget::CreateWebWidget(this),
+      base::Bind(&RenderWidget::CreateWidget, base::Unretained(this),
+           opener_id, popup_type_, &routing_id_));
   if (success) {
     SetRoutingID(routing_id_);
     return true;
@@ -394,7 +403,7 @@ bool RenderWidget::Init(int32_t opener_id) {
 
 bool RenderWidget::DoInit(int32_t opener_id,
                           WebWidget* web_widget,
-                          IPC::SyncMessage* create_widget_message) {
+                          CreateWidgetCallback create_widget_callback) {
   DCHECK(!webwidget_internal_);
 
   if (opener_id != MSG_ROUTING_NONE)
@@ -406,8 +415,8 @@ bool RenderWidget::DoInit(int32_t opener_id,
   mouse_lock_dispatcher_.reset(new RenderWidgetMouseLockDispatcher(this));
 
   bool result = true;
-  if (create_widget_message)
-    result = RenderThread::Get()->Send(create_widget_message);
+  if (!create_widget_callback.is_null())
+    result = std::move(create_widget_callback).Run();
 
   if (result) {
     RenderThread::Get()->AddRoute(routing_id_, this);

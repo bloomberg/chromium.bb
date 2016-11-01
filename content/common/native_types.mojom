@@ -35,3 +35,6 @@ struct WebPreferences;
 // but the network service doesn't exist yet.
 [Native]
 enum NetworkConnectionType;
+
+[Native]
+enum WebPopupType;

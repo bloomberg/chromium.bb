@@ -169,7 +169,6 @@ RenderMessageFilter::~RenderMessageFilter() {
 bool RenderMessageFilter::OnMessageReceived(const IPC::Message& message) {
   bool handled = true;
   IPC_BEGIN_MESSAGE_MAP(RenderMessageFilter, message)
-    IPC_MESSAGE_HANDLER(ViewHostMsg_CreateWidget, OnCreateWidget)
     IPC_MESSAGE_HANDLER(ViewHostMsg_CreateFullscreenWidget,
                         OnCreateFullscreenWidget)
 #if defined(OS_MACOSX)
@@ -242,12 +241,6 @@ void RenderMessageFilter::OverrideThreadForMessage(const IPC::Message& message,
     *thread = BrowserThread::UI;
 }
 
-void RenderMessageFilter::OnCreateWidget(int opener_id,
-                                         blink::WebPopupType popup_type,
-                                         int* route_id) {
-  render_widget_helper_->CreateNewWidget(opener_id, popup_type, route_id);
-}
-
 void RenderMessageFilter::OnCreateFullscreenWidget(int opener_id,
                                                    int* route_id) {
   render_widget_helper_->CreateNewFullscreenWidget(opener_id, route_id);
@@ -301,6 +294,15 @@ void RenderMessageFilter::CreateNewWindow(
       &reply->main_frame_route_id, &reply->main_frame_widget_route_id,
       cloned_namespace.get());
   callback.Run(std::move(reply));
+}
+
+void RenderMessageFilter::CreateNewWidget(
+    int32_t opener_id,
+    blink::WebPopupType popup_type,
+    const CreateNewWidgetCallback& callback) {
+  int route_id = MSG_ROUTING_NONE;
+  render_widget_helper_->CreateNewWidget(opener_id, popup_type, &route_id);
+  callback.Run(route_id);
 }
 
 #if defined(OS_MACOSX)

@@ -120,9 +120,6 @@ class CONTENT_EXPORT RenderMessageFilter
   friend class base::DeleteHelper<RenderMessageFilter>;
 
   void OnGetProcessMemorySizes(size_t* private_bytes, size_t* shared_bytes);
-  void OnCreateWidget(int opener_id,
-                      blink::WebPopupType popup_type,
-                      int* route_id);
   void OnCreateFullscreenWidget(int opener_id, int* route_id);
 
 #if defined(OS_MACOSX)
@@ -135,6 +132,9 @@ class CONTENT_EXPORT RenderMessageFilter
   void GenerateRoutingID(const GenerateRoutingIDCallback& routing_id) override;
   void CreateNewWindow(mojom::CreateNewWindowParamsPtr params,
                        const CreateNewWindowCallback& callback) override;
+  void CreateNewWidget(int32_t opener_id,
+                       blink::WebPopupType popup_type,
+                       const CreateNewWidgetCallback& callback) override;
 
   // Message handlers called on the browser IO thread:
   void OnEstablishGpuChannel(IPC::Message* reply);
