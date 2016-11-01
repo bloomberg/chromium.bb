@@ -11,7 +11,6 @@
 #include "google_apis/gcm/monitoring/gcm_stats_recorder.h"
 #include "google_apis/gcm/protocol/checkin.pb.h"
 #include "net/base/load_flags.h"
-#include "net/http/http_status_code.h"
 #include "net/url_request/url_fetcher.h"
 #include "net/url_request/url_request_status.h"
 
@@ -194,7 +193,7 @@ void CheckinRequest::OnURLFetchComplete(const net::URLFetcher* source) {
     CheckinRequestStatus status = response_status == net::HTTP_BAD_REQUEST ?
         HTTP_BAD_REQUEST : HTTP_UNAUTHORIZED;
     RecordCheckinStatusAndReportUMA(status, recorder_, false);
-    callback_.Run(response_proto);
+    callback_.Run(response_status, response_proto);
     return;
   }
 
@@ -225,7 +224,7 @@ void CheckinRequest::OnURLFetchComplete(const net::URLFetcher* source) {
                        backoff_entry_.failure_count());
   UMA_HISTOGRAM_TIMES("GCM.CheckinCompleteTime",
                       base::TimeTicks::Now() - request_start_time_);
-  callback_.Run(response_proto);
+  callback_.Run(response_status, response_proto);
 }
 
 }  // namespace gcm

@@ -30,6 +30,8 @@ extern const char kGcmClientCreated[];
 extern const char kGcmClientState[];
 extern const char kGcmEnabled[];
 extern const char kIsRecording[];
+extern const char kLastCheckin[];
+extern const char kNextCheckin[];
 extern const char kProfileServiceCreated[];
 extern const char kReceiveInfo[];
 extern const char kRegisteredAppIds[];

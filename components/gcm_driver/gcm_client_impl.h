@@ -28,6 +28,7 @@
 #include "google_apis/gcm/engine/unregistration_request.h"
 #include "google_apis/gcm/protocol/android_checkin.pb.h"
 #include "google_apis/gcm/protocol/checkin.pb.h"
+#include "net/http/http_status_code.h"
 #include "net/url_request/url_request_context_getter.h"
 
 class GURL;
@@ -230,6 +231,7 @@ class GCMClientImpl
   // Completes the device checkin request by parsing the |checkin_response|.
   // Function also cleans up the pending checkin.
   void OnCheckinCompleted(
+      net::HttpStatusCode response_code,
       const checkin_proto::AndroidCheckinResponse& checkin_response);
 
   // Callback passed to GCMStore::SetGServicesSettings.

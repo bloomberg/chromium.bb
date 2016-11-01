@@ -8,9 +8,11 @@
 #include <utility>
 
 #include "base/format_macros.h"
+#include "base/i18n/time_formatting.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/string_util.h"
 #include "base/strings/stringprintf.h"
+#include "base/strings/utf_string_conversions.h"
 #include "base/values.h"
 #include "components/gcm_driver/gcm_activity.h"
 #include "components/gcm_driver/gcm_internals_constants.h"
@@ -118,6 +120,16 @@ void SetGCMInternalsInfo(const gcm::GCMClient::GCMStatistics* stats,
                            base::JoinString(stats->registered_app_ids, ","));
     if (stats->connection_client_created)
       device_info->SetString(kConnectionState, stats->connection_state);
+    if (!stats->last_checkin.is_null()) {
+      device_info->SetString(
+          kLastCheckin, base::UTF16ToUTF8(base::TimeFormatFriendlyDateAndTime(
+                            stats->last_checkin)));
+    }
+    if (!stats->next_checkin.is_null()) {
+      device_info->SetString(
+          kNextCheckin, base::UTF16ToUTF8(base::TimeFormatFriendlyDateAndTime(
+                            stats->next_checkin)));
+    }
     if (stats->android_id > 0) {
       device_info->SetString(
           kAndroidId, base::StringPrintf("0x%" PRIx64, stats->android_id));

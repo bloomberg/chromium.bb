@@ -544,8 +544,6 @@ void GCMClientImpl::DestroyStoreWhenNotNeeded() {
 }
 
 void GCMClientImpl::ResetStore() {
-  DCHECK_EQ(LOADING, state_);
-
   // If already being reset, don't do it again. We want to prevent from
   // resetting and loading from the store again and again.
   if (gcm_store_reset_) {
@@ -701,16 +699,19 @@ void GCMClientImpl::StartCheckin() {
 }
 
 void GCMClientImpl::OnCheckinCompleted(
+    net::HttpStatusCode response_code,
     const checkin_proto::AndroidCheckinResponse& checkin_response) {
   checkin_request_.reset();
 
-  if (!checkin_response.has_android_id() ||
-      !checkin_response.has_security_token()) {
-    // TODO(fgorski): I don't think a retry here will help, we should probably
-    // start over. By checking in with (0, 0).
+  if (response_code == net::HTTP_UNAUTHORIZED ||
+      response_code == net::HTTP_BAD_REQUEST) {
+    LOG(ERROR) << "Checkin rejected. Resetting GCM Store.";
+    ResetStore();
     return;
   }
 
+  DCHECK(checkin_response.has_android_id());
+  DCHECK(checkin_response.has_security_token());
   CheckinInfo checkin_info;
   checkin_info.android_id = checkin_response.android_id();
   checkin_info.secret = checkin_response.security_token();
@@ -719,7 +720,7 @@ void GCMClientImpl::OnCheckinCompleted(
     OnFirstTimeDeviceCheckinCompleted(checkin_info);
   } else {
     // checkin_info is not expected to change after a periodic checkin as it
-    // would invalidate the registratoin IDs.
+    // would invalidate the registration IDs.
     DCHECK_EQ(READY, state_);
     DCHECK_EQ(device_checkin_info_.android_id, checkin_info.android_id);
     DCHECK_EQ(device_checkin_info_.secret, checkin_info.secret);
@@ -1187,6 +1188,9 @@ GCMClient::GCMStatistics GCMClientImpl::GetStatistics() const {
   stats.is_recording = recorder_.is_recording();
   stats.gcm_client_state = GetStateString();
   stats.connection_client_created = mcs_client_.get() != NULL;
+  stats.last_checkin = last_checkin_time_;
+  stats.next_checkin =
+      last_checkin_time_ + gservices_settings_.GetCheckinInterval();
   if (connection_factory_.get())
     stats.connection_state = connection_factory_->GetConnectionStateString();
   if (mcs_client_.get()) {

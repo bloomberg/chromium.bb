@@ -280,10 +280,16 @@ class GCMClientImplTest : public testing::Test,
       const std::string& app_id,
       const std::string& message_id,
       const MCSClient::MessageSendStatus status);
+  void FailCheckin(net::HttpStatusCode response_code);
   void CompleteCheckin(uint64_t android_id,
                        uint64_t security_token,
                        const std::string& digest,
                        const std::map<std::string, std::string>& settings);
+  void CompleteCheckinImpl(uint64_t android_id,
+                           uint64_t security_token,
+                           const std::string& digest,
+                           const std::map<std::string, std::string>& settings,
+                           net::HttpStatusCode response_code);
   void CompleteRegistration(const std::string& registration_id);
   void CompleteUnregistration(const std::string& app_id);
   void VerifyPendingRequestFetcherDeleted();
@@ -457,11 +463,27 @@ void GCMClientImplTest::BuildGCMClient(base::TimeDelta clock_step) {
       new FakeGCMInternalsBuilder(clock_step))));
 }
 
+void GCMClientImplTest::FailCheckin(net::HttpStatusCode response_code) {
+  std::map<std::string, std::string> settings;
+  CompleteCheckinImpl(0, 0, GServicesSettings::CalculateDigest(settings),
+                      settings, response_code);
+}
+
 void GCMClientImplTest::CompleteCheckin(
     uint64_t android_id,
     uint64_t security_token,
     const std::string& digest,
     const std::map<std::string, std::string>& settings) {
+  CompleteCheckinImpl(android_id, security_token, digest, settings,
+                      net::HTTP_OK);
+}
+
+void GCMClientImplTest::CompleteCheckinImpl(
+    uint64_t android_id,
+    uint64_t security_token,
+    const std::string& digest,
+    const std::map<std::string, std::string>& settings,
+    net::HttpStatusCode response_code) {
   checkin_proto::AndroidCheckinResponse response;
   response.set_stats_ok(true);
   response.set_android_id(android_id);
@@ -486,7 +508,7 @@ void GCMClientImplTest::CompleteCheckin(
 
   net::TestURLFetcher* fetcher = url_fetcher_factory_.GetFetcherByID(0);
   ASSERT_TRUE(fetcher);
-  fetcher->set_response_code(net::HTTP_OK);
+  fetcher->set_response_code(response_code);
   fetcher->SetResponseString(response_string);
   fetcher->delegate()->OnURLFetchComplete(fetcher);
   // Give a chance for GCMStoreImpl::Backend to finish persisting data.
@@ -1212,6 +1234,26 @@ TEST_F(GCMClientImplCheckinTest, CheckinWhenAccountReplaced) {
   EXPECT_TRUE(device_checkin_info().accounts_set);
   EXPECT_EQ(MakeEmailToTokenMap(account_tokens),
             device_checkin_info().account_tokens);
+}
+
+TEST_F(GCMClientImplCheckinTest, ResetStoreWhenCheckinRejected) {
+  base::HistogramTester histogram_tester;
+  std::map<std::string, std::string> settings;
+  ASSERT_NO_FATAL_FAILURE(FailCheckin(net::HTTP_UNAUTHORIZED));
+  PumpLoopUntilIdle();
+
+  // Store should have been destroyed. Restart client and verify the initial
+  // checkin response is persisted.
+  BuildGCMClient(base::TimeDelta());
+  InitializeGCMClient();
+  StartGCMClient();
+  ASSERT_NO_FATAL_FAILURE(
+      CompleteCheckin(kDeviceAndroidId2, kDeviceSecurityToken2,
+                      GServicesSettings::CalculateDigest(settings), settings));
+
+  EXPECT_EQ(LOADING_COMPLETED, last_event());
+  EXPECT_EQ(kDeviceAndroidId2, mcs_client()->last_android_id());
+  EXPECT_EQ(kDeviceSecurityToken2, mcs_client()->last_security_token());
 }
 
 class GCMClientImplStartAndStopTest : public GCMClientImplTest {

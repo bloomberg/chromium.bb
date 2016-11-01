@@ -38,6 +38,8 @@ cr.define('gcmInternals', function() {
     setIfExists(info, 'gcmClientState', 'gcm-client-state');
     setIfExists(info, 'connectionClientCreated', 'connection-client-created');
     setIfExists(info, 'connectionState', 'connection-state');
+    setIfExists(info, 'lastCheckin', 'last-checkin');
+    setIfExists(info, 'nextCheckin', 'next-checkin');
     setIfExists(info, 'registeredAppIds', 'registered-app-ids');
     setIfExists(info, 'sendQueueSize', 'send-queue-size');
     setIfExists(info, 'resendQueueSize', 'resend-queue-size');
@@ -105,6 +107,9 @@ cr.define('gcmInternals', function() {
     $('recording').onclick = setRecording;
     $('clear-logs').onclick = clearLogs;
     chrome.send('getGcmInternalsInfo', [false]);
+
+    // Recording defaults to on.
+    chrome.send('setGcmInternalsRecording', [true]);
   }
 
   /**

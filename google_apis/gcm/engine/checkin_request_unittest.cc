@@ -36,8 +36,8 @@ class CheckinRequestTest : public GCMRequestTestBase {
   CheckinRequestTest();
   ~CheckinRequestTest() override;
 
-  void FetcherCallback(
-      const checkin_proto::AndroidCheckinResponse& response);
+  void FetcherCallback(net::HttpStatusCode response_code,
+                       const checkin_proto::AndroidCheckinResponse& response);
 
   void CreateRequest(uint64_t android_id, uint64_t security_token);
 
@@ -45,6 +45,8 @@ class CheckinRequestTest : public GCMRequestTestBase {
 
  protected:
   bool callback_called_;
+  net::HttpStatusCode response_code_ =
+      net::HTTP_CONTINUE;  // Something that's not used in tests.
   uint64_t android_id_;
   uint64_t security_token_;
   int checkin_device_type_;
@@ -63,8 +65,10 @@ CheckinRequestTest::CheckinRequestTest()
 CheckinRequestTest::~CheckinRequestTest() {}
 
 void CheckinRequestTest::FetcherCallback(
+    net::HttpStatusCode response_code,
     const checkin_proto::AndroidCheckinResponse& checkin_response) {
   callback_called_ = true;
+  response_code_ = response_code;
   if (checkin_response.has_android_id())
     android_id_ = checkin_response.android_id();
   if (checkin_response.has_security_token())
@@ -172,6 +176,7 @@ TEST_F(CheckinRequestTest, ResponseBodyEmpty) {
   CompleteFetch();
 
   EXPECT_TRUE(callback_called_);
+  EXPECT_EQ(net::HTTP_OK, response_code_);
   EXPECT_EQ(kAndroidId, android_id_);
   EXPECT_EQ(kSecurityToken, security_token_);
 }
@@ -189,6 +194,7 @@ TEST_F(CheckinRequestTest, ResponseBodyCorrupted) {
   CompleteFetch();
 
   EXPECT_TRUE(callback_called_);
+  EXPECT_EQ(net::HTTP_OK, response_code_);
   EXPECT_EQ(kAndroidId, android_id_);
   EXPECT_EQ(kSecurityToken, security_token_);
 }
@@ -201,6 +207,7 @@ TEST_F(CheckinRequestTest, ResponseHttpStatusUnauthorized) {
   CompleteFetch();
 
   EXPECT_TRUE(callback_called_);
+  EXPECT_EQ(net::HTTP_UNAUTHORIZED, response_code_);
   EXPECT_EQ(kBlankAndroidId, android_id_);
   EXPECT_EQ(kBlankSecurityToken, security_token_);
 }
@@ -213,6 +220,7 @@ TEST_F(CheckinRequestTest, ResponseHttpStatusBadRequest) {
   CompleteFetch();
 
   EXPECT_TRUE(callback_called_);
+  EXPECT_EQ(net::HTTP_BAD_REQUEST, response_code_);
   EXPECT_EQ(kBlankAndroidId, android_id_);
   EXPECT_EQ(kBlankSecurityToken, security_token_);
 }
@@ -230,6 +238,7 @@ TEST_F(CheckinRequestTest, ResponseHttpStatusNotOK) {
   CompleteFetch();
 
   EXPECT_TRUE(callback_called_);
+  EXPECT_EQ(net::HTTP_OK, response_code_);
   EXPECT_EQ(kAndroidId, android_id_);
   EXPECT_EQ(kSecurityToken, security_token_);
 }

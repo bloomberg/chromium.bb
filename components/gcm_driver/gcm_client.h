@@ -124,6 +124,8 @@ class GCMClient {
     std::string gcm_client_state;
     bool connection_client_created;
     std::string connection_state;
+    base::Time last_checkin;
+    base::Time next_checkin;
     uint64_t android_id;
     std::vector<std::string> registered_app_ids;
     int send_queue_size;
