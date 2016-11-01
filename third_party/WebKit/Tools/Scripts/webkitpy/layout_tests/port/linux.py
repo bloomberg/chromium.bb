@@ -157,6 +157,3 @@ class LinuxPort(base.Port):
     def _path_to_driver(self, target=None):
         binary_name = self.driver_name()
         return self._build_path_with_target(target, binary_name)
-
-    def _path_to_helper(self):
-        return None

@@ -331,18 +331,11 @@ class Manager(object):
                 _log.error("Build check failed")
                 return exit_code
 
-        # This must be started before we check the system dependencies,
-        # since the helper may do things to make the setup correct.
-        if self._options.pixel_tests:
-            self._printer.write_update("Starting pixel test helper ...")
-            self._port.start_helper()
-
         # Check that the system dependencies (themes, fonts, ...) are correct.
         if not self._options.nocheck_sys_deps:
             self._printer.write_update("Checking system dependencies ...")
             exit_code = self._port.check_sys_deps(self._needs_servers(test_names))
             if exit_code:
-                self._port.stop_helper()
                 return exit_code
 
         if self._options.clobber_old_results:
@@ -405,20 +398,13 @@ class Manager(object):
         sys.stdout.flush()
         _log.debug("Flushing stderr")
         sys.stderr.flush()
-        _log.debug("Stopping helper")
-        self._port.stop_helper()
         _log.debug("Cleaning up port")
         self._port.clean_up_test_run()
 
     def _force_pixel_tests_if_needed(self):
         if self._options.pixel_tests:
             return False
-
-        _log.debug("Restarting helper")
-        self._port.stop_helper()
         self._options.pixel_tests = True
-        self._port.start_helper()
-
         return True
 
     def _look_for_new_crash_logs(self, run_results, start_time):

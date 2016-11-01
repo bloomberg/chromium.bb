@@ -98,9 +98,6 @@ class MockDRTPort(object):
 
         return new_cmd_line
 
-    def start_helper(self):
-        pass
-
     def start_http_server(self, additional_dirs, number_of_servers):
         pass
 
@@ -108,9 +105,6 @@ class MockDRTPort(object):
         pass
 
     def acquire_http_lock(self):
-        pass
-
-    def stop_helper(self):
         pass
 
     def stop_http_server(self):
