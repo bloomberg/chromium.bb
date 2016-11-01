@@ -11,5 +11,5 @@
     // back-reference to the canvas
     readonly attribute HTMLCanvasElement canvas;
 
-    void transferFromImageBitmap(ImageBitmap? bitmap);
+    [RaisesException] void transferFromImageBitmap(ImageBitmap? bitmap);
 };
