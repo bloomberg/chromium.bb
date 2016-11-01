@@ -130,12 +130,39 @@
                 harness_status.message +
                 "\n";
         }
-        // Iterate through tests array and build string that contains
-        // results for all tests.
-        for (var i = 0; i < tests.length; ++i) {
-            resultStr += convertResult(tests[i].status) + " " +
-                sanitize(tests[i].name) + " " +
-                sanitize(tests[i].message) + "\n";
+        // reflection tests contain huge number of tests, and Chromium code
+        // review tool has the 1MB diff size limit. We merge PASS lines.
+        if (document.URL.indexOf("/html/dom/reflection") >= 0) {
+            for (var i = 0; i < tests.length; ++i) {
+                if (tests[i].status == 0) {
+                    var colon = tests[i].name.indexOf(':');
+                    if (colon > 0) {
+                        var prefix = tests[i].name.substring(0, colon + 1);
+                        var j = i + 1;
+                        for (; j < tests.length; ++j) {
+                            if (!tests[j].name.startsWith(prefix) || tests[j].status != 0)
+                                break;
+                        }
+                        if ((j - i) > 1) {
+                            resultStr += convertResult(tests[i].status) +
+                                " " + sanitize(prefix) + " " + (j - i) + " tests\n"
+                            i = j - 1;
+                            continue;
+                        }
+                    }
+                }
+                resultStr += convertResult(tests[i].status) + " " +
+                    sanitize(tests[i].name) + " " +
+                    sanitize(tests[i].message) + "\n";
+            }
+        } else {
+            // Iterate through tests array and build string that contains
+            // results for all tests.
+            for (var i = 0; i < tests.length; ++i) {
+                resultStr += convertResult(tests[i].status) + " " +
+                    sanitize(tests[i].name) + " " +
+                    sanitize(tests[i].message) + "\n";
+            }
         }
 
         resultStr += "Harness: the test ran to completion.\n";

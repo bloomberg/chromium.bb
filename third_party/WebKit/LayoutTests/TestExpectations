@@ -542,6 +542,11 @@ crbug.com/660492 [ Linux ] storage/indexeddb/structured-clone.html [ Timeout ]
 
 crbug.com/475984 [ Mac Debug ] css2.1/t100801-c544-valgn-03-d-agi.html [ Failure ]
 
+# Diff of -expected.txt is too large to upload.
+Bug(tkent) imported/wpt/html/dom/reflection-embedded.html [ NeedsManualRebaseline ]
+Bug(tkent) imported/wpt/html/dom/reflection-forms.html [ NeedsManualRebaseline ]
+Bug(tkent) imported/wpt/html/dom/reflection-text.html [ NeedsManualRebaseline ]
+
 # In imported/wpt/html/, we prefer checking in failure
 # expectation files. The following tests with [ Failure ] don't have failure
 # expectation files because they contain local path names.
