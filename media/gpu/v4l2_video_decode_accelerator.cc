@@ -1923,6 +1923,7 @@ void V4L2VideoDecodeAccelerator::StartResolutionChange() {
     return;
 
   decoder_state_ = kChangingResolution;
+  SendPictureReady();  // Send all pending PictureReady.
 
   if (!image_processor_bitstream_buffer_ids_.empty()) {
     DVLOGF(3) << "Wait image processor to finish before destroying buffers.";
@@ -2540,8 +2541,8 @@ bool V4L2VideoDecodeAccelerator::DestroyOutputBuffers() {
 void V4L2VideoDecodeAccelerator::SendPictureReady() {
   DVLOGF(3);
   DCHECK(decoder_thread_.task_runner()->BelongsToCurrentThread());
-  bool resetting_or_flushing =
-      (decoder_state_ == kResetting || decoder_flushing_);
+  bool send_now = (decoder_state_ == kChangingResolution ||
+                   decoder_state_ == kResetting || decoder_flushing_);
   while (pending_picture_ready_.size() > 0) {
     bool cleared = pending_picture_ready_.front().cleared;
     const Picture& picture = pending_picture_ready_.front().picture;
@@ -2553,15 +2554,16 @@ void V4L2VideoDecodeAccelerator::SendPictureReady() {
           FROM_HERE,
           base::Bind(&Client::PictureReady, decode_client_, picture));
       pending_picture_ready_.pop();
-    } else if (!cleared || resetting_or_flushing) {
+    } else if (!cleared || send_now) {
       DVLOGF(3) << "cleared=" << pending_picture_ready_.front().cleared
                 << ", decoder_state_=" << decoder_state_
                 << ", decoder_flushing_=" << decoder_flushing_
                 << ", picture_clearing_count_=" << picture_clearing_count_;
       // If the picture is not cleared, post it to the child thread because it
       // has to be cleared in the child thread. A picture only needs to be
-      // cleared once. If the decoder is resetting or flushing, send all
-      // pictures to ensure PictureReady arrive before reset or flush done.
+      // cleared once. If the decoder is changing resolution, resetting or
+      // flushing, send all pictures to ensure PictureReady arrive before
+      // ProvidePictureBuffers, NotifyResetDone, or NotifyFlushDone.
       child_task_runner_->PostTaskAndReply(
           FROM_HERE, base::Bind(&Client::PictureReady, client_, picture),
           // Unretained is safe. If Client::PictureReady gets to run, |this| is
