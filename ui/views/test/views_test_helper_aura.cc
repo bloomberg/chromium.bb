@@ -54,7 +54,8 @@ void ViewsTestHelperAura::TearDown() {
     aura::client::SetScreenPositionClient(GetContext(), nullptr);
 
   aura_test_helper_->TearDown();
-  CHECK(!wm::ScopedCaptureClient::IsActive());
+  CHECK(!wm::CaptureController::Get() ||
+        !wm::CaptureController::Get()->is_active());
 }
 
 gfx::NativeWindow ViewsTestHelperAura::GetContext() {

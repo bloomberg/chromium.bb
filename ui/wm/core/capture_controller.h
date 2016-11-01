@@ -24,6 +24,11 @@ namespace wm {
 // Internal CaptureClient implementation. See ScopedCaptureClient for details.
 class WM_EXPORT CaptureController : public aura::client::CaptureClient {
  public:
+  CaptureController();
+  ~CaptureController() override;
+
+  static CaptureController* Get() { return instance_; }
+
   // Adds |root| to the list of root windows notified when capture changes.
   void Attach(aura::Window* root);
 
@@ -45,8 +50,7 @@ class WM_EXPORT CaptureController : public aura::client::CaptureClient {
  private:
   friend class ScopedCaptureClient;
 
-  CaptureController();
-  ~CaptureController() override;
+  static CaptureController* instance_;
 
   // The current capture window. NULL if there is no capture window.
   aura::Window* capture_window_;
@@ -88,22 +92,12 @@ class WM_EXPORT ScopedCaptureClient : public aura::WindowObserver {
   explicit ScopedCaptureClient(aura::Window* root);
   ~ScopedCaptureClient() override;
 
-  // Returns true if there is a CaptureController with at least one RootWindow.
-  static bool IsActive();
-
-  aura::client::CaptureClient* capture_client() {
-    return capture_controller_;
-  }
-
   // Overridden from aura::WindowObserver:
   void OnWindowDestroyed(aura::Window* window) override;
 
  private:
   // Invoked from destructor and OnWindowDestroyed() to cleanup.
   void Shutdown();
-
-  // The single CaptureController instance.
-  static CaptureController* capture_controller_;
 
   // RootWindow this ScopedCaptureClient was create for.
   aura::Window* root_window_;

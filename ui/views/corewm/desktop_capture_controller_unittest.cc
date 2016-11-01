@@ -100,8 +100,7 @@ TEST_F(DesktopCaptureControllerTest, CaptureWindowInputEventTest) {
   Widget::InitParams params = CreateParams(Widget::InitParams::TYPE_POPUP);
   std::unique_ptr<wm::ScopedCaptureClient> scoped_capture_client(
       new wm::ScopedCaptureClient(params.context->GetRootWindow()));
-  aura::client::CaptureClient* capture_client =
-      scoped_capture_client->capture_client();
+  aura::client::CaptureClient* capture_client = wm::CaptureController::Get();
   params.ownership = views::Widget::InitParams::WIDGET_OWNS_NATIVE_WIDGET;
   params.bounds = gfx::Rect(50, 50, 650, 650);
   widget1->Init(params);
@@ -142,8 +141,7 @@ TEST_F(DesktopCaptureControllerTest, CaptureWindowInputEventTest) {
 
   EXPECT_FALSE(widget1->GetNativeView()->HasCapture());
   EXPECT_FALSE(widget2->GetNativeView()->HasCapture());
-  EXPECT_EQ(reinterpret_cast<aura::Window*>(0),
-            capture_client->GetCaptureWindow());
+  EXPECT_EQ(nullptr, capture_client->GetCaptureWindow());
 
   widget1->GetNativeView()->SetCapture();
   EXPECT_TRUE(widget1->GetNativeView()->HasCapture());

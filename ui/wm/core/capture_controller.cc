@@ -12,8 +12,22 @@
 
 namespace wm {
 
+// static
+CaptureController* CaptureController::instance_ = nullptr;
+
 ////////////////////////////////////////////////////////////////////////////////
 // CaptureController, public:
+
+CaptureController::CaptureController()
+    : capture_window_(nullptr), capture_delegate_(nullptr) {
+  DCHECK(!instance_);
+  instance_ = this;
+}
+
+CaptureController::~CaptureController() {
+  DCHECK_EQ(instance_, this);
+  instance_ = nullptr;
+}
 
 void CaptureController::Attach(aura::Window* root) {
   DCHECK_EQ(0u, delegates_.count(root));
@@ -103,37 +117,16 @@ void CaptureController::RemoveObserver(
 }
 
 ////////////////////////////////////////////////////////////////////////////////
-// CaptureController, private:
-
-CaptureController::CaptureController()
-    : capture_window_(nullptr),
-      capture_delegate_(nullptr) {
-}
-
-CaptureController::~CaptureController() {
-}
-
-////////////////////////////////////////////////////////////////////////////////
 // ScopedCaptureClient:
-
-// static
-CaptureController* ScopedCaptureClient::capture_controller_ = nullptr;
 
 ScopedCaptureClient::ScopedCaptureClient(aura::Window* root)
     : root_window_(root) {
   root->AddObserver(this);
-  if (!capture_controller_)
-    capture_controller_ = new CaptureController;
-  capture_controller_->Attach(root);
+  CaptureController::Get()->Attach(root);
 }
 
 ScopedCaptureClient::~ScopedCaptureClient() {
   Shutdown();
-}
-
-// static
-bool ScopedCaptureClient::IsActive() {
-  return capture_controller_ && capture_controller_->is_active();
 }
 
 void ScopedCaptureClient::OnWindowDestroyed(aura::Window* window) {
@@ -146,11 +139,7 @@ void ScopedCaptureClient::Shutdown() {
     return;
 
   root_window_->RemoveObserver(this);
-  capture_controller_->Detach(root_window_);
-  if (!capture_controller_->is_active()) {
-    delete capture_controller_;
-    capture_controller_ = nullptr;
-  }
+  CaptureController::Get()->Detach(root_window_);
   root_window_ = nullptr;
 }
 
@@ -159,7 +148,7 @@ void ScopedCaptureClient::Shutdown() {
 
 void ScopedCaptureClient::TestApi::SetDelegate(
     aura::client::CaptureDelegate* delegate) {
-  client_->capture_controller_->delegates_[client_->root_window_] = delegate;
+  CaptureController::Get()->delegates_[client_->root_window_] = delegate;
 }
 
 }  // namespace wm

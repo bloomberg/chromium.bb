@@ -96,11 +96,7 @@ class CaptureControllerTest : public aura::test::AuraTestBase {
   }
 
   aura::Window* GetCaptureWindow() {
-    return capture_controller_->capture_client()->GetCaptureWindow();
-  }
-
-  aura::Window* GetSecondCaptureWindow() {
-    return second_capture_controller_->capture_client()->GetCaptureWindow();
+    return CaptureController::Get()->GetCaptureWindow();
   }
 
   std::unique_ptr<ScopedCaptureClient> capture_controller_;
@@ -141,17 +137,13 @@ TEST_F(CaptureControllerTest, ResetOtherWindowCaptureOnCapture) {
   // Create a window inside the WindowEventDispatcher.
   std::unique_ptr<aura::Window> w1(CreateNormalWindow(1, root_window(), NULL));
   w1->SetCapture();
-  // Both capture clients should return the same capture window.
   EXPECT_EQ(w1.get(), GetCaptureWindow());
-  EXPECT_EQ(w1.get(), GetSecondCaptureWindow());
 
   // Build a window in the second WindowEventDispatcher and give it capture.
-  // Both capture clients should return the same capture window.
   std::unique_ptr<aura::Window> w2(
       CreateNormalWindow(2, second_host_->window(), NULL));
   w2->SetCapture();
   EXPECT_EQ(w2.get(), GetCaptureWindow());
-  EXPECT_EQ(w2.get(), GetSecondCaptureWindow());
 }
 
 // Verifies the touch target for the WindowEventDispatcher gets reset on
@@ -162,24 +154,19 @@ TEST_F(CaptureControllerTest, TouchTargetResetOnCaptureChange) {
   ui::test::EventGenerator event_generator1(root_window());
   event_generator1.PressTouch();
   w1->SetCapture();
-  // Both capture clients should return the same capture window.
   EXPECT_EQ(w1.get(), GetCaptureWindow());
-  EXPECT_EQ(w1.get(), GetSecondCaptureWindow());
 
   // Build a window in the second WindowEventDispatcher and give it capture.
-  // Both capture clients should return the same capture window.
   std::unique_ptr<aura::Window> w2(
       CreateNormalWindow(2, second_host_->window(), NULL));
   w2->SetCapture();
   EXPECT_EQ(w2.get(), GetCaptureWindow());
-  EXPECT_EQ(w2.get(), GetSecondCaptureWindow());
 
   // Release capture on the window. Releasing capture should reset the touch
   // target of the first WindowEventDispatcher (as it no longer contains the
   // capture target).
   w2->ReleaseCapture();
-  EXPECT_EQ(static_cast<aura::Window*>(NULL), GetCaptureWindow());
-  EXPECT_EQ(static_cast<aura::Window*>(NULL), GetSecondCaptureWindow());
+  EXPECT_EQ(nullptr, GetCaptureWindow());
 }
 
 // Test that native capture is released properly when the window with capture
@@ -195,19 +182,16 @@ TEST_F(CaptureControllerTest, ReparentedWhileCaptured) {
   std::unique_ptr<aura::Window> w(CreateNormalWindow(1, root_window(), NULL));
   w->SetCapture();
   EXPECT_EQ(w.get(), GetCaptureWindow());
-  EXPECT_EQ(w.get(), GetSecondCaptureWindow());
   EXPECT_TRUE(delegate->HasNativeCapture());
   EXPECT_FALSE(delegate2->HasNativeCapture());
 
   second_host_->window()->AddChild(w.get());
   EXPECT_EQ(w.get(), GetCaptureWindow());
-  EXPECT_EQ(w.get(), GetSecondCaptureWindow());
   EXPECT_TRUE(delegate->HasNativeCapture());
   EXPECT_FALSE(delegate2->HasNativeCapture());
 
   w->ReleaseCapture();
   EXPECT_EQ(nullptr, GetCaptureWindow());
-  EXPECT_EQ(nullptr, GetSecondCaptureWindow());
   EXPECT_FALSE(delegate->HasNativeCapture());
   EXPECT_FALSE(delegate2->HasNativeCapture());
 }

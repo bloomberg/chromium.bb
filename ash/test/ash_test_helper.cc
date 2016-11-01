@@ -192,9 +192,10 @@ void AshTestHelper::TearDown() {
   ui::ShutdownInputMethodForTesting();
   zero_duration_mode_.reset();
 
-  CHECK(!::wm::ScopedCaptureClient::IsActive());
-
   views_delegate_.reset();
+  wm_state_.reset();
+
+  CHECK(!::wm::CaptureController::Get());
 }
 
 void AshTestHelper::RunAllPendingInMessageLoop() {
