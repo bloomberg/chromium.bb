@@ -450,6 +450,11 @@ class SyncStageTest(generic_stages_unittest.AbstractStageTestCase):
                      return_value=slave_config_map)
     stage.ScheduleSlaveBuildsViaBuildbucket(important_only=False, dryrun=True)
 
+    scheduled_slaves = self._run.attrs.metadata.GetValue('scheduled_slaves')
+    self.assertEqual(len(scheduled_slaves), 0)
+    unscheduled_slaves = self._run.attrs.metadata.GetValue('unscheduled_slaves')
+    self.assertEqual(len(unscheduled_slaves), 2)
+
   def testScheduleSlaveBuildsFailure(self):
     """Test ScheduleSlaveBuilds with mixed slave failures."""
     stage = self.ConstructStage()
@@ -467,6 +472,28 @@ class SyncStageTest(generic_stages_unittest.AbstractStageTestCase):
         buildbucket_lib.BuildbucketResponseException,
         stage.ScheduleSlaveBuildsViaBuildbucket,
         important_only=False, dryrun=True)
+
+  def testScheduleSlaveBuildsSuccess(self):
+    """Test ScheduleSlaveBuilds with success."""
+    stage = self.ConstructStage()
+
+    self.PatchObject(sync_stages.SyncStage, 'PostSlaveBuildToBuildbucket',
+                     return_value=('buildbucket_id', None))
+
+    slave_config_map = {
+        'slave_external': config_lib.BuildConfig(
+            important=False, active_waterfall=constants.WATERFALL_EXTERNAL),
+        'slave_internal': config_lib.BuildConfig(
+            important=True, active_waterfall=constants.WATERFALL_INTERNAL)}
+    self.PatchObject(generic_stages.BuilderStage, '_GetSlaveConfigMap',
+                     return_value=slave_config_map)
+
+    stage.ScheduleSlaveBuildsViaBuildbucket(important_only=False, dryrun=True)
+
+    scheduled_slaves = self._run.attrs.metadata.GetValue('scheduled_slaves')
+    self.assertEqual(len(scheduled_slaves), 2)
+    unscheduled_slaves = self._run.attrs.metadata.GetValue('unscheduled_slaves')
+    self.assertEqual(len(unscheduled_slaves), 0)
 
 class BaseCQTestCase(generic_stages_unittest.StageTestCase):
   """Helper class for testing the CommitQueueSync stage"""

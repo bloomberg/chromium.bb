@@ -557,6 +557,7 @@ class SyncStage(generic_stages.BuilderStage):
         self._run.manifest_branch, self._run.config.name, build_id)
 
     scheduled_slave_builds = []
+    unscheduled_slave_builds = []
 
     # Get all active slave build configs.
     slave_config_map = self._GetSlaveConfigMap(important_only)
@@ -567,13 +568,19 @@ class SyncStage(generic_stages.BuilderStage):
 
         scheduled_slave_builds.append((slave_name, buildbucket_id, created_ts))
       except buildbucket_lib.BuildbucketResponseException as e:
+        # Use 16-digit ts to be consistent with the created_ts from Buildbucket
+        current_ts = int(round(time.time() * 1000000))
+        unscheduled_slave_builds.append((slave_name, None, current_ts))
         if important_only or slave_config.important:
           raise
         else:
-          logging.warning('Failed to schedule %s: %s' % (slave_name, e))
+          logging.warning('Failed to schedule %s current timestamp %s: %s'
+                          % (slave_name, current_ts, e))
 
     self._run.attrs.metadata.ExtendKeyListWithList(
         'scheduled_slaves', scheduled_slave_builds)
+    self._run.attrs.metadata.ExtendKeyListWithList(
+        'unscheduled_slaves', unscheduled_slave_builds)
 
   @failures_lib.SetFailureType(failures_lib.InfrastructureFailure)
   def PerformStage(self):
