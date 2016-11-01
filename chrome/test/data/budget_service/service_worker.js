@@ -2,6 +2,9 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+// Don't wait for clients of old SW to close before activating.
+self.addEventListener('install', () => skipWaiting());
+
 // Accept messages from the test JavaScript to trigger worker based tests.
 self.addEventListener('message', function (event) {
   if (event.data.command == 'workerGet') {

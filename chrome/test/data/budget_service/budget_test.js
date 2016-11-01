@@ -8,12 +8,37 @@
 // framework.
 var resultQueue = new ResultQueue();
 
+// Waits for the given ServiceWorkerRegistration to become ready.
+// Shim for https://github.com/w3c/ServiceWorker/issues/770.
+function swRegistrationReady(reg) {
+  return new Promise((resolve, reject) => {
+    if (reg.active) {
+      resolve();
+      return;
+    }
+
+    if (!reg.installing && !reg.waiting) {
+      reject(Error('Install failed'));
+      return;
+    }
+
+    (reg.installing || reg.waiting).addEventListener('statechange', function() {
+      if (this.state == 'redundant') {
+        reject(Error('Install failed'));
+      } else if (this.state == 'activated') {
+        resolve();
+      }
+    });
+  });
+}
+
 function registerServiceWorker() {
   // The base dir used to resolve service_worker.js.
-  navigator.serviceWorker.register('service_worker.js', {scope: './'}).then(
-      function(swRegistration) {
-        sendResultToTest('ok - service worker registered');
-      }, sendErrorToTest);
+  navigator.serviceWorker.register('service_worker.js', {
+    scope: './'
+  }).then(swRegistrationReady).then(() => {
+    sendResultToTest('ok - service worker registered');
+  }).catch(sendErrorToTest);
 }
 
 // Query for the budget and return the current total.

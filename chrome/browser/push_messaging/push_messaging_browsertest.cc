@@ -505,13 +505,7 @@ IN_PROC_BROWSER_TEST_F(PushMessagingBrowserTest,
             script_result);
 }
 
-// Flaky on ChromeOS and Linux. See http://crbug.com/657202.
-#if defined(OS_CHROMEOS) || defined(OS_LINUX)
-#define MAYBE_SubscribeWorker DISABLED_SubscribeWorker
-#else
-#define MAYBE_SubscribeWorker SubscribeWorker
-#endif
-IN_PROC_BROWSER_TEST_F(PushMessagingBrowserTest, MAYBE_SubscribeWorker) {
+IN_PROC_BROWSER_TEST_F(PushMessagingBrowserTest, SubscribeWorker) {
   std::string script_result;
 
   ASSERT_TRUE(RunScript("registerServiceWorker()", &script_result));
@@ -554,14 +548,8 @@ IN_PROC_BROWSER_TEST_F(PushMessagingBrowserTest, MAYBE_SubscribeWorker) {
   EXPECT_NE(push_service(), GetAppHandler());
 }
 
-// Flaky on ChromeOS and Linux. See http://crbug.com/657202.
-#if defined(OS_CHROMEOS) || defined(OS_LINUX)
-#define MAYBE_SubscribeWorkerUsingManifest DISABLED_SubscribeWorkerUsingManifest
-#else
-#define MAYBE_SubscribeWorkerUsingManifest SubscribeWorkerUsingManifest
-#endif
 IN_PROC_BROWSER_TEST_F(PushMessagingBrowserTest,
-                       MAYBE_SubscribeWorkerUsingManifest) {
+                       SubscribeWorkerUsingManifest) {
   std::string script_result;
 
   ASSERT_TRUE(RunScript("registerServiceWorker()", &script_result));
@@ -607,13 +595,7 @@ IN_PROC_BROWSER_TEST_F(PushMessagingBrowserTest,
   EXPECT_NE(push_service(), GetAppHandler());
 }
 
-// Disabled on Windows and Linux due to flakiness (http://crbug.com/554003).
-#if defined(OS_WIN) || defined(OS_LINUX)
-#define MAYBE_SubscribePersisted DISABLED_SubscribePersisted
-#else
-#define MAYBE_SubscribePersisted SubscribePersisted
-#endif
-IN_PROC_BROWSER_TEST_F(PushMessagingBrowserTest, MAYBE_SubscribePersisted) {
+IN_PROC_BROWSER_TEST_F(PushMessagingBrowserTest, SubscribePersisted) {
   std::string script_result;
 
   // First, test that Service Worker registration IDs are assigned in order of
