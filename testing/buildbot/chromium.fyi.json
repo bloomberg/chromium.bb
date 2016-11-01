@@ -3180,12 +3180,6 @@
         "swarming": {
           "can_use_on_swarming_builders": false
         },
-        "test": "interactive_ui_tests"
-      },
-      {
-        "swarming": {
-          "can_use_on_swarming_builders": false
-        },
         "test": "ipc_tests"
       },
       {
@@ -3205,12 +3199,6 @@
           "can_use_on_swarming_builders": false
         },
         "test": "media_unittests"
-      },
-      {
-        "swarming": {
-          "can_use_on_swarming_builders": false
-        },
-        "test": "message_center_unittests"
       },
       {
         "swarming": {
