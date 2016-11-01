@@ -28,15 +28,15 @@ layer at (0,0) size 800x600
                 LayoutBlockFlow {IMG} at (1,1) size 10x200
                 LayoutText {#text} at (11,187) size 51x17
                   text run at (11,187) width 51: "Cell A1"
-              LayoutTableCell {TD} at (63,71) size 64x64 [border: (1px inset #808080)] [r=0 c=1 rs=1 cs=1]
-                LayoutTable {TABLE} at (1,1) size 62x62 [border: (2px outset #808080)]
-                  LayoutTableSection {TBODY} at (2,2) size 58x58
+              LayoutTableCell {TD} at (63,0) size 64x206 [border: (1px inset #808080)] [r=0 c=1 rs=1 cs=1]
+                LayoutTable {TABLE} at (1,1) size 62x204 [border: (2px outset #808080)]
+                  LayoutTableSection {TBODY} at (2,2) size 58x200
                     LayoutTableRow {TR} at (0,2) size 58x30
                       LayoutTableCell {TD} at (2,6) size 54x22 [border: (1px inset #808080)] [r=0 c=0 rs=1 cs=1]
                         LayoutText {#text} at (2,2) size 50x17
                           text run at (2,2) width 50: "Cell B1"
-                    LayoutTableRow {TR} at (0,34) size 58x22
-                      LayoutTableCell {TD} at (2,34) size 54x22 [bgcolor=#99CC99] [border: (1px inset #808080)] [r=1 c=0 rs=1 cs=1]
+                    LayoutTableRow {TR} at (0,34) size 58x164
+                      LayoutTableCell {TD} at (2,105) size 54x22 [bgcolor=#99CC99] [border: (1px inset #808080)] [r=1 c=0 rs=1 cs=1]
                         LayoutText {#text} at (2,2) size 50x17
                           text run at (2,2) width 50: "Cell B2"
 layer at (10,166) size 10x200 clip at (11,167) size 8x198 scrollWidth 17

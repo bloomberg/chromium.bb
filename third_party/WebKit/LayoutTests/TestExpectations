@@ -448,8 +448,6 @@ crbug.com/548226 fast/events/pointerevents/mouse-pointer-event-properties.html [
 
 crbug.com/658287 fast/forms/relayout-shifts-inner-editor.html [ Crash Failure Pass ]
 
-crbug.com/637811 tables/mozilla_expected_failures/bugs/bug32205-4.html [ NeedsRebaseline ]
-
 crbug.com/432129 fast/html/marquee-scroll.html [ Failure Pass ]
 crbug.com/518929 [ Precise Debug ] http/tests/appcache/obsolete-error-events.html [ Failure Pass Timeout ]
 crbug.com/248938 virtual/threaded/transitions/cancel-and-start-new.html [ Pass Failure ]
