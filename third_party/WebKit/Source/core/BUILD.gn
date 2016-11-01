@@ -969,7 +969,7 @@ fuzzer_test("text_resource_decoder_fuzzer") {
   ]
   deps = [
     ":core",
-    "../platform:test_support",
+    "../platform:blink_fuzzer_test_support",
   ]
 }
 

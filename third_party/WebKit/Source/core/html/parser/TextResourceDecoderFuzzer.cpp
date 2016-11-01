@@ -4,8 +4,8 @@
 
 #include "core/html/parser/TextResourceDecoderForFuzzing.h"
 
+#include "platform/testing/BlinkFuzzerTestSupport.h"
 #include "platform/testing/FuzzedDataProvider.h"
-#include "platform/testing/TestingPlatformSupport.h"
 #include <algorithm>
 
 namespace blink {
@@ -26,11 +26,6 @@ extern "C" int LLVMFuzzerTestOneInput(const uint8_t* data, size_t size) {
 }
 
 extern "C" int LLVMFuzzerInitialize(int* argc, char*** argv) {
-  // Intentional leak - no need to do cleanup as explained in
-  // "Initialization/Cleanup" section of testing/libfuzzer/efficient_fuzzer.md
-  DEFINE_STATIC_LOCAL(blink::ScopedUnittestsEnvironmentSetup, testSetup,
-                      (*argc, *argv));
-  ALLOW_UNUSED_LOCAL(testSetup);
-
+  blink::InitializeBlinkFuzzTest(argc, argv);
   return 0;
 }
