@@ -12,7 +12,7 @@
 
 // From gl2/gl2ext.h.
 #ifndef GL_MAILBOX_SIZE_CHROMIUM
-#define GL_MAILBOX_SIZE_CHROMIUM 64
+#define GL_MAILBOX_SIZE_CHROMIUM 16
 #endif
 
 namespace gpu {

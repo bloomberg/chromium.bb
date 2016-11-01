@@ -3454,10 +3454,10 @@ static const GLES2Util::EnumToString enum_to_string_table[] = {
         1, "GL_ES_VERSION_2_0",
     },
     {
-        24, "GL_SYNC_TOKEN_SIZE_CHROMIUM",
+        16, "GL_MAILBOX_SIZE_CHROMIUM",
     },
     {
-        64, "GL_MAILBOX_SIZE_CHROMIUM",
+        24, "GL_SYNC_TOKEN_SIZE_CHROMIUM",
     },
 };
 

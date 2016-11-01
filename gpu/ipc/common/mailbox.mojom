@@ -6,5 +6,5 @@ module gpu.mojom;
 
 // See gpu/command_buffer/common/mailbox.h
 struct Mailbox {
-  array<int8, 64> name;
+  array<int8, 16> name;
 };

@@ -12793,7 +12793,7 @@ struct ProduceTextureCHROMIUMImmediate {
   static const uint8_t cmd_flags = CMD_FLAG_SET_TRACE_LEVEL(1);
 
   static uint32_t ComputeDataSize() {
-    return static_cast<uint32_t>(sizeof(GLbyte) * 64);
+    return static_cast<uint32_t>(sizeof(GLbyte) * 16);
   }
 
   static uint32_t ComputeSize() {
@@ -12832,7 +12832,7 @@ struct ProduceTextureDirectCHROMIUMImmediate {
   static const uint8_t cmd_flags = CMD_FLAG_SET_TRACE_LEVEL(1);
 
   static uint32_t ComputeDataSize() {
-    return static_cast<uint32_t>(sizeof(GLbyte) * 64);
+    return static_cast<uint32_t>(sizeof(GLbyte) * 16);
   }
 
   static uint32_t ComputeSize() {
@@ -12881,7 +12881,7 @@ struct ConsumeTextureCHROMIUMImmediate {
   static const uint8_t cmd_flags = CMD_FLAG_SET_TRACE_LEVEL(2);
 
   static uint32_t ComputeDataSize() {
-    return static_cast<uint32_t>(sizeof(GLbyte) * 64);
+    return static_cast<uint32_t>(sizeof(GLbyte) * 16);
   }
 
   static uint32_t ComputeSize() {
@@ -12920,7 +12920,7 @@ struct CreateAndConsumeTextureINTERNALImmediate {
   static const uint8_t cmd_flags = CMD_FLAG_SET_TRACE_LEVEL(2);
 
   static uint32_t ComputeDataSize() {
-    return static_cast<uint32_t>(sizeof(GLbyte) * 64);
+    return static_cast<uint32_t>(sizeof(GLbyte) * 16);
   }
 
   static uint32_t ComputeSize() {

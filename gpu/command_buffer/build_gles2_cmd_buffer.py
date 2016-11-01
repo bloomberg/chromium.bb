@@ -2556,7 +2556,7 @@ _FUNCTION_INFO = {
     'decoder_func': 'DoConsumeTextureCHROMIUM',
     'impl_func': False,
     'type': 'PUT',
-    'count': 64,  # GL_MAILBOX_SIZE_CHROMIUM
+    'count': 16,  # GL_MAILBOX_SIZE_CHROMIUM
     'unit_test': False,
     'client_test': False,
     'extension': "CHROMIUM_texture_mailbox",
@@ -2583,7 +2583,7 @@ _FUNCTION_INFO = {
     'decoder_func': 'DoCreateAndConsumeTextureINTERNAL',
     'internal': True,
     'type': 'PUT',
-    'count': 64,  # GL_MAILBOX_SIZE_CHROMIUM
+    'count': 16,  # GL_MAILBOX_SIZE_CHROMIUM
     'unit_test': False,
     'trace_level': 2,
   },
@@ -3485,7 +3485,7 @@ _FUNCTION_INFO = {
     'decoder_func': 'DoProduceTextureCHROMIUM',
     'impl_func': False,
     'type': 'PUT',
-    'count': 64,  # GL_MAILBOX_SIZE_CHROMIUM
+    'count': 16,  # GL_MAILBOX_SIZE_CHROMIUM
     'unit_test': False,
     'client_test': False,
     'extension': "CHROMIUM_texture_mailbox",
@@ -3495,7 +3495,7 @@ _FUNCTION_INFO = {
     'decoder_func': 'DoProduceTextureDirectCHROMIUM',
     'impl_func': False,
     'type': 'PUT',
-    'count': 64,  # GL_MAILBOX_SIZE_CHROMIUM
+    'count': 16,  # GL_MAILBOX_SIZE_CHROMIUM
     'unit_test': False,
     'client_test': False,
     'extension': "CHROMIUM_texture_mailbox",

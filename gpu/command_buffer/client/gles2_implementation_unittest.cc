@@ -3721,7 +3721,7 @@ TEST_F(GLES2ImplementationTest, Enable) {
 TEST_F(GLES2ImplementationTest, ConsumeTextureCHROMIUM) {
   struct Cmds {
     cmds::ConsumeTextureCHROMIUMImmediate cmd;
-    GLbyte data[64];
+    GLbyte data[GL_MAILBOX_SIZE_CHROMIUM];
   };
 
   Mailbox mailbox = Mailbox::Generate();
@@ -3734,7 +3734,7 @@ TEST_F(GLES2ImplementationTest, ConsumeTextureCHROMIUM) {
 TEST_F(GLES2ImplementationTest, CreateAndConsumeTextureCHROMIUM) {
   struct Cmds {
     cmds::CreateAndConsumeTextureINTERNALImmediate cmd;
-    GLbyte data[64];
+    GLbyte data[GL_MAILBOX_SIZE_CHROMIUM];
   };
 
   Mailbox mailbox = Mailbox::Generate();
@@ -3748,7 +3748,7 @@ TEST_F(GLES2ImplementationTest, CreateAndConsumeTextureCHROMIUM) {
 TEST_F(GLES2ImplementationTest, ProduceTextureCHROMIUM) {
   struct Cmds {
     cmds::ProduceTextureCHROMIUMImmediate cmd;
-    GLbyte data[64];
+    GLbyte data[GL_MAILBOX_SIZE_CHROMIUM];
   };
 
   Mailbox mailbox = Mailbox::Generate();
@@ -3761,7 +3761,7 @@ TEST_F(GLES2ImplementationTest, ProduceTextureCHROMIUM) {
 TEST_F(GLES2ImplementationTest, ProduceTextureDirectCHROMIUM) {
   struct Cmds {
     cmds::ProduceTextureDirectCHROMIUMImmediate cmd;
-    GLbyte data[64];
+    GLbyte data[GL_MAILBOX_SIZE_CHROMIUM];
   };
 
   Mailbox mailbox = Mailbox::Generate();

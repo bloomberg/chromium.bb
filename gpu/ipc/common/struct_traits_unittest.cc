@@ -300,9 +300,7 @@ TEST_F(StructTraitsTest, EmptyGpuInfo) {
 
 TEST_F(StructTraitsTest, Mailbox) {
   const int8_t mailbox_name[GL_MAILBOX_SIZE_CHROMIUM] = {
-      0, 9, 8, 7, 6, 5, 4, 3, 2, 1, 9, 7, 5, 3, 1, 2, 4, 6, 8, 0, 0, 9,
-      8, 7, 6, 5, 4, 3, 2, 1, 9, 7, 5, 3, 1, 2, 4, 6, 8, 0, 0, 9, 8, 7,
-      6, 5, 4, 3, 2, 1, 9, 7, 5, 3, 1, 2, 4, 6, 8, 0, 0, 9, 8, 7};
+      0, 9, 8, 7, 6, 5, 4, 3, 2, 1, 9, 7, 5, 3, 1, 2};
   gpu::Mailbox input;
   input.SetName(mailbox_name);
   mojom::TraitsTestServicePtr proxy = GetTraitsTestProxy();
@@ -316,9 +314,7 @@ TEST_F(StructTraitsTest, Mailbox) {
 TEST_F(StructTraitsTest, MailboxHolder) {
   gpu::MailboxHolder input;
   const int8_t mailbox_name[GL_MAILBOX_SIZE_CHROMIUM] = {
-      0, 9, 8, 7, 6, 5, 4, 3, 2, 1, 9, 7, 5, 3, 1, 2, 4, 6, 8, 0, 0, 9,
-      8, 7, 6, 5, 4, 3, 2, 1, 9, 7, 5, 3, 1, 2, 4, 6, 8, 0, 0, 9, 8, 7,
-      6, 5, 4, 3, 2, 1, 9, 7, 5, 3, 1, 2, 4, 6, 8, 0, 0, 9, 8, 7};
+      0, 9, 8, 7, 6, 5, 4, 3, 2, 1, 9, 7, 5, 3, 1, 2};
   gpu::Mailbox mailbox;
   mailbox.SetName(mailbox_name);
   const gpu::CommandBufferNamespace namespace_id = gpu::IN_PROCESS;
