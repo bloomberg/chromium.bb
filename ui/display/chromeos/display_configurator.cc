@@ -31,10 +31,6 @@ namespace {
 
 typedef std::vector<const DisplayMode*> DisplayModeList;
 
-// The delay to perform configuration after RRNotify. See the comment for
-// |configure_timer_|.
-const int kConfigureDelayMs = 500;
-
 // The EDID specification marks the top bit of the manufacturer id as reserved.
 const int16_t kReservedManufacturerID = static_cast<int16_t>(1 << 15);
 
@@ -66,6 +62,12 @@ bool DisplayConfigurator::TestApi::TriggerConfigureTimeout() {
   } else {
     return false;
   }
+}
+
+base::TimeDelta DisplayConfigurator::TestApi::GetConfigureDelay() const {
+  return configurator_->configure_timer_.IsRunning()
+             ? configurator_->configure_timer_.GetCurrentDelay()
+             : base::TimeDelta();
 }
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -862,6 +864,14 @@ void DisplayConfigurator::SetDisplayPowerInternal(
   pending_power_flags_ = flags;
   queued_configuration_callbacks_.push_back(callback);
 
+  if (configure_timer_.IsRunning()) {
+    // If there is a configuration task scheduled, avoid performing
+    // configuration immediately. Instead reset the timer to wait for things to
+    // settle.
+    configure_timer_.Reset();
+    return;
+  }
+
   RunPendingConfiguration();
 }
 
@@ -916,21 +926,9 @@ void DisplayConfigurator::OnConfigurationChanged() {
 
   // Configure displays with |kConfigureDelayMs| delay,
   // so that time-consuming ConfigureDisplays() won't be called multiple times.
-  if (configure_timer_.IsRunning()) {
-    // Note: when the timer is running it is possible that a different task
-    // (RestoreRequestedPowerStateAfterResume()) is scheduled. In these cases,
-    // prefer the already scheduled task to ConfigureDisplays() since
-    // ConfigureDisplays() performs only basic configuration while
-    // RestoreRequestedPowerStateAfterResume() will perform additional
-    // operations.
-    configure_timer_.Reset();
-  } else {
-    configure_timer_.Start(
-        FROM_HERE,
-        base::TimeDelta::FromMilliseconds(kConfigureDelayMs),
-        this,
-        &DisplayConfigurator::ConfigureDisplays);
-  }
+  configure_timer_.Start(FROM_HERE,
+                         base::TimeDelta::FromMilliseconds(kConfigureDelayMs),
+                         this, &DisplayConfigurator::ConfigureDisplays);
 }
 
 void DisplayConfigurator::AddObserver(Observer* observer) {
@@ -971,6 +969,20 @@ void DisplayConfigurator::ResumeDisplays() {
     return;
 
   displays_suspended_ = false;
+
+  if (current_display_state_ == MULTIPLE_DISPLAY_STATE_DUAL_MIRROR ||
+      current_display_state_ == MULTIPLE_DISPLAY_STATE_DUAL_EXTENDED ||
+      current_display_state_ == MULTIPLE_DISPLAY_STATE_MULTI_EXTENDED) {
+    // When waking up from suspend while being in a multi display mode, we
+    // schedule a delayed forced configuration, which will make
+    // SetDisplayPowerInternal() avoid performing the configuration immediately.
+    // This gives a chance to wait for all displays to be added and detected
+    // before configuration is performed, so we won't immediately resize the
+    // desktops and the windows on it to fit on a single display.
+    configure_timer_.Start(FROM_HERE, base::TimeDelta::FromMilliseconds(
+                                          kResumeConfigureMultiDisplayDelayMs),
+                           this, &DisplayConfigurator::ConfigureDisplays);
+  }
 
   // If requested_power_state_ is ALL_OFF due to idle suspend, powerd will turn
   // the display power on when it enables the backlight.
