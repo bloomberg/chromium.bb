@@ -13,7 +13,8 @@ async_test(function(t)
     {
         assert_equals(document.fullscreenElement, div, "fullscreenElement before exitFullscreen()");
         document.exitFullscreen();
-        // FIXME: per spec fullscreenElement should still be div
+        // TODO(foolip): fullscreenElement should still be div.
+        // https://crbug.com/402421
         assert_equals(document.fullscreenElement, null, "fullscreenElement after exitFullscreen()");
 
         document.onfullscreenchange = t.step_func(function()
@@ -27,7 +28,8 @@ async_test(function(t)
     {
         assert_equals(document.fullscreenElement, null, "fullscreenElement before requestFullscreen()");
         div.requestFullscreen();
-        // FIXME: per spec fullscreenElement should still be null
+        // TODO(foolip): fullscreenElement should still be null.
+        // https://crbug.com/402421
         assert_equals(document.fullscreenElement, div, "fullscreenElement after requestFullscreen()");
     }), document.body);
 });

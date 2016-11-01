@@ -1207,8 +1207,7 @@ crbug.com/459056 [ Win7 ] fast/text/font-fallback-win.html [ Failure ]
 
 crbug.com/525296 fast/css/font-load-while-styleresolver-missing.html [ Crash Failure Pass ]
 
-crbug.com/240576 fullscreen/api/element-ready-check-containing-iframe.html [ Timeout Failure Pass ]
-crbug.com/240576 virtual/android/fullscreen/api/element-ready-check-containing-iframe.html [ Timeout Failure Pass ]
+crbug.com/240576 imported/wpt/fullscreen/api/element-ready-check-containing-iframe-manual.html [ Timeout Failure Pass ]
 
 crbug.com/567230 [ Debug ] virtual/threaded/animations/restart-not-visible.html [ Timeout ]
 
@@ -1515,23 +1514,3 @@ crbug.com/660308 [ Mac ] fast/css-grid-layout/grid-auto-repeat-intrinsic.html [ 
 
 crbug.com/657968 storage/indexeddb/idbdatabase-createObjectStore-exception-order.html [ Pass Failure ]
 crbug.com/657968 storage/indexeddb/idbdatabase-deleteObjectStore-exception-order.html [ Pass Failure ]
-
-crbug.com/660846 imported/wpt/fullscreen/api/document-exit-fullscreen-manual.html [ Skip ]
-crbug.com/660846 imported/wpt/fullscreen/api/document-fullscreen-element-manual.html [ Skip ]
-crbug.com/660846 imported/wpt/fullscreen/api/document-onfullscreenchange-manual.html [ Skip ]
-crbug.com/660846 imported/wpt/fullscreen/api/element-ready-check-containing-iframe-manual.html [ Skip ]
-crbug.com/660846 imported/wpt/fullscreen/api/element-ready-check-enabled-flag-not-set-manual.html [ Skip ]
-crbug.com/660846 imported/wpt/fullscreen/api/element-ready-check-fullscreen-element-sibling-manual.html [ Skip ]
-crbug.com/660846 imported/wpt/fullscreen/api/element-ready-check-fullscreen-iframe-child-manual.html [ Skip ]
-crbug.com/660846 imported/wpt/fullscreen/api/element-ready-check-iframe-child-manual.html [ Skip ]
-crbug.com/660846 imported/wpt/fullscreen/api/element-ready-check-not-in-document-manual.html [ Skip ]
-crbug.com/660846 imported/wpt/fullscreen/api/element-request-fullscreen-manual.html [ Skip ]
-crbug.com/660846 imported/wpt/fullscreen/api/element-request-fullscreen-non-top-manual.html [ Skip ]
-crbug.com/660846 imported/wpt/fullscreen/api/element-request-fullscreen-svg-rect-manual.html [ Skip ]
-crbug.com/660846 imported/wpt/fullscreen/api/element-request-fullscreen-svg-svg-manual.html [ Skip ]
-crbug.com/660846 imported/wpt/fullscreen/api/element-request-fullscreen-top-manual.html [ Skip ]
-crbug.com/660846 imported/wpt/fullscreen/model/remove-child-manual.html [ Skip ]
-crbug.com/660846 imported/wpt/fullscreen/model/remove-first-manual.html [ Skip ]
-crbug.com/660846 imported/wpt/fullscreen/model/remove-last-manual.html [ Skip ]
-crbug.com/660846 imported/wpt/fullscreen/model/remove-parent-manual.html [ Skip ]
-crbug.com/660846 imported/wpt/fullscreen/model/remove-single-manual.html [ Skip ]

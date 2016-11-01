@@ -79,37 +79,45 @@
         return !!document.querySelector('script[src*="/resources/testharness"]');
     }
 
+    function isWPTManualTest() {
+        var path = location.pathname;
+        return /\/imported\/wpt\/.*-manual\.html$/.test(path);
+    }
 
-    function injectSyntheticInput() {
-        var path = window.location.pathname;
-        if (path.match(/imported\/wpt\/.*\.html$/)) {
-            // Set a global variable for the address of automated input script if they need to use it.
-            var automated_input_scripts_folder = path.replace(/imported\/wpt\/(.*)\.html$/, 'imported/wpt_automation');
+    function loadAutomationScript() {
+        var testPath = location.pathname;
+        var automationPath = testPath.replace(/\/imported\/wpt\/.*$/, '/imported/wpt_automation');
 
-            importAutomationScript = function(relativePath) {
-              var common_script = document.createElement('script');
-              common_script.setAttribute('src', automated_input_scripts_folder + relativePath);
-              document.head.appendChild(common_script);
-            }
-
-            path = path.replace(/imported\/wpt\/(.*)\.html$/, "imported/wpt_automation/$1-automation.js");
-            var input_script = document.createElement('script');
-            input_script.setAttribute('src', path);
-            document.head.appendChild(input_script);
+        // Export importAutomationScript for use by the automation scripts.
+        window.importAutomationScript = function(relativePath) {
+            var script = document.createElement('script');
+            script.src = automationPath + relativePath;
+            document.head.appendChild(script);
         }
+
+        var src;
+        if (testPath.includes('/imported/wpt/fullscreen/')) {
+            // Fullscreen tests all use the same automation script.
+            src = automationPath + '/fullscreen/auto-click.js';
+        } else if (testPath.includes('/imported/wpt/pointerevents/')
+                   || testPath.includes('/imported/wpt/uievents/')) {
+            // Per-test automation scripts.
+            src = testPath.replace(/\/imported\/wpt\/(.*)\.html$/, "/imported/wpt_automation/$1-automation.js");
+        } else {
+            return;
+        }
+        var script = document.createElement('script');
+        script.src = src;
+        document.head.appendChild(script);
     }
 
     var didDispatchLoadEvent = false;
-    var handleLoad = function() {
+    window.addEventListener('load', function() {
         didDispatchLoadEvent = true;
-        window.removeEventListener('load', handleLoad);
-        // Add synthetic input to pointer event manual tests
-        if(window.location.pathname.includes('imported/wpt/pointerevents/')
-            || window.location.pathname.includes('imported/wpt/uievents/')) {
-            setTimeout(injectSyntheticInput, 0);
+        if (isWPTManualTest()) {
+            setTimeout(loadAutomationScript, 0);
         }
-    };
-    window.addEventListener('load', handleLoad, false);
+    }, { once: true });
 
     // Using a callback function, test results will be added to the page in a
     // manner that allows dumpAsText to produce readable test results.

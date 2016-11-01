@@ -1,8 +1,8 @@
 CONSOLE WARNING: <source src> with a <picture> parent is invalid and therefore ignored. Please use <source srcset> instead.
 CONSOLE ERROR: Failed parsing 'srcset' attribute value since it has multiple 'x' descriptors or a mix of 'x' and 'w'/'h' descriptors.
 CONSOLE ERROR: Dropped srcset candidate "data:,b"
-CONSOLE ERROR: line 179: Failed parsing 'srcset' attribute value since it has multiple 'x' descriptors or a mix of 'x' and 'w'/'h' descriptors.
-CONSOLE ERROR: line 179: Dropped srcset candidate "data:,b"
+CONSOLE ERROR: line 187: Failed parsing 'srcset' attribute value since it has multiple 'x' descriptors or a mix of 'x' and 'w'/'h' descriptors.
+CONSOLE ERROR: line 187: Dropped srcset candidate "data:,b"
 This is a testharness.js-based test.
 PASS <img data-expect=""> 
 PASS <img src="" data-expect=""> 
