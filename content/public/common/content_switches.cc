@@ -1060,6 +1060,9 @@ const char kPpapiSubpixelRenderingSetting[] =
 // Enables the exporting of the tracing events to ETW. This is only supported on
 // Windows Vista and later.
 const char kTraceExportEventsToETW[] = "trace-export-events-to-etw";
+
+// Disables the DirectX screen capturer, but use GDI screen capturer.
+const char kDisableDirectXScreenCapturer[] = "disable-directx-screen-capturer";
 #endif
 
 #if defined(ENABLE_IPC_FUZZER)

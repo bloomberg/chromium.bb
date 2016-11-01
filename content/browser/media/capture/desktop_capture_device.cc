@@ -10,6 +10,7 @@
 #include <utility>
 
 #include "base/bind.h"
+#include "base/command_line.h"
 #include "base/location.h"
 #include "base/logging.h"
 #include "base/macros.h"
@@ -22,6 +23,7 @@
 #include "content/browser/media/capture/desktop_capture_device_uma_types.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/desktop_media_id.h"
+#include "content/public/common/content_switches.h"
 #include "device/power_save_blocker/power_save_blocker.h"
 #include "media/base/video_util.h"
 #include "media/capture/content/capture_resolution_chooser.h"
@@ -365,7 +367,13 @@ std::unique_ptr<media::VideoCaptureDevice> DesktopCaptureDevice::Create(
   options.set_disable_effects(false);
 
 #if defined(OS_WIN)
-  options.set_allow_use_magnification_api(true);
+  if (base::CommandLine::ForCurrentProcess()->HasSwitch(
+          switches::kDisableDirectXScreenCapturer)) {
+    options.set_allow_use_magnification_api(true);
+  } else {
+    options.set_allow_directx_capturer(true);
+    options.set_allow_use_magnification_api(false);
+  }
 #endif
 
   std::unique_ptr<webrtc::DesktopCapturer> capturer;

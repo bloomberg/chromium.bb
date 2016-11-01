@@ -314,6 +314,7 @@ CONTENT_EXPORT extern const char kMemoryPressureThresholdsMb[];
 CONTENT_EXPORT extern const char kPpapiAntialiasedTextEnabled[];
 CONTENT_EXPORT extern const char kPpapiSubpixelRenderingSetting[];
 CONTENT_EXPORT extern const char kTraceExportEventsToETW[];
+CONTENT_EXPORT extern const char kDisableDirectXScreenCapturer[];
 #endif
 
 #if defined(ENABLE_IPC_FUZZER)
