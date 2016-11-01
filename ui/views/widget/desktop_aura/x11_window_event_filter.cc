@@ -14,7 +14,6 @@
 #include "ui/aura/window_delegate.h"
 #include "ui/aura/window_tree_host.h"
 #include "ui/base/hit_test.h"
-#include "ui/base/x/x11_util.h"
 #include "ui/display/display.h"
 #include "ui/display/screen.h"
 #include "ui/events/event.h"
@@ -22,9 +21,29 @@
 #include "ui/gfx/x/x11_types.h"
 #include "ui/views/linux_ui/linux_ui.h"
 #include "ui/views/widget/desktop_aura/desktop_window_tree_host.h"
-#include "ui/views/widget/desktop_aura/x11_pointer_grab.h"
 #include "ui/views/widget/native_widget_aura.h"
 #include "ui/views/widget/widget.h"
+
+namespace {
+
+// These constants are defined in the Extended Window Manager Hints
+// standard...and aren't in any header that I can find.
+const int k_NET_WM_MOVERESIZE_SIZE_TOPLEFT =     0;
+const int k_NET_WM_MOVERESIZE_SIZE_TOP =         1;
+const int k_NET_WM_MOVERESIZE_SIZE_TOPRIGHT =    2;
+const int k_NET_WM_MOVERESIZE_SIZE_RIGHT =       3;
+const int k_NET_WM_MOVERESIZE_SIZE_BOTTOMRIGHT = 4;
+const int k_NET_WM_MOVERESIZE_SIZE_BOTTOM =      5;
+const int k_NET_WM_MOVERESIZE_SIZE_BOTTOMLEFT =  6;
+const int k_NET_WM_MOVERESIZE_SIZE_LEFT =        7;
+const int k_NET_WM_MOVERESIZE_MOVE =             8;
+
+const char* kAtomsToCache[] = {
+  "_NET_WM_MOVERESIZE",
+  NULL
+};
+
+}  // namespace
 
 namespace views {
 
@@ -32,6 +51,8 @@ X11WindowEventFilter::X11WindowEventFilter(
     DesktopWindowTreeHost* window_tree_host)
     : xdisplay_(gfx::GetXDisplay()),
       xwindow_(window_tree_host->AsWindowTreeHost()->GetAcceleratedWidget()),
+      x_root_window_(DefaultRootWindow(xdisplay_)),
+      atom_cache_(xdisplay_, kAtomsToCache),
       window_tree_host_(window_tree_host),
       click_component_(HTNOWHERE) {
 }
@@ -156,34 +177,34 @@ void X11WindowEventFilter::ToggleMaximizedState() {
 bool X11WindowEventFilter::DispatchHostWindowDragMovement(
     int hittest,
     const gfx::Point& screen_location) {
-  ui::NetWmMoveResize direction = ui::NetWmMoveResize::CANCEL;
+  int direction = -1;
   switch (hittest) {
     case HTBOTTOM:
-      direction = ui::NetWmMoveResize::SIZE_BOTTOM;
+      direction = k_NET_WM_MOVERESIZE_SIZE_BOTTOM;
       break;
     case HTBOTTOMLEFT:
-      direction = ui::NetWmMoveResize::SIZE_BOTTOMLEFT;
+      direction = k_NET_WM_MOVERESIZE_SIZE_BOTTOMLEFT;
       break;
     case HTBOTTOMRIGHT:
-      direction = ui::NetWmMoveResize::SIZE_BOTTOMRIGHT;
+      direction = k_NET_WM_MOVERESIZE_SIZE_BOTTOMRIGHT;
       break;
     case HTCAPTION:
-      direction = ui::NetWmMoveResize::MOVE;
+      direction = k_NET_WM_MOVERESIZE_MOVE;
       break;
     case HTLEFT:
-      direction = ui::NetWmMoveResize::SIZE_LEFT;
+      direction = k_NET_WM_MOVERESIZE_SIZE_LEFT;
       break;
     case HTRIGHT:
-      direction = ui::NetWmMoveResize::SIZE_RIGHT;
+      direction = k_NET_WM_MOVERESIZE_SIZE_RIGHT;
       break;
     case HTTOP:
-      direction = ui::NetWmMoveResize::SIZE_TOP;
+      direction = k_NET_WM_MOVERESIZE_SIZE_TOP;
       break;
     case HTTOPLEFT:
-      direction = ui::NetWmMoveResize::SIZE_TOPLEFT;
+      direction = k_NET_WM_MOVERESIZE_SIZE_TOPLEFT;
       break;
     case HTTOPRIGHT:
-      direction = ui::NetWmMoveResize::SIZE_TOPRIGHT;
+      direction = k_NET_WM_MOVERESIZE_SIZE_TOPRIGHT;
       break;
     default:
       return false;
@@ -193,8 +214,24 @@ bool X11WindowEventFilter::DispatchHostWindowDragMovement(
   // because what we're about to do is tell the window manager
   // that it's now responsible for moving the window around; it immediately
   // grabs when it receives the event below.
-  UngrabPointer();
-  MoveResizeManagedWindow(xwindow_, screen_location, direction);
+  XUngrabPointer(xdisplay_, CurrentTime);
+
+  XEvent event;
+  memset(&event, 0, sizeof(event));
+  event.xclient.type = ClientMessage;
+  event.xclient.display = xdisplay_;
+  event.xclient.window = xwindow_;
+  event.xclient.message_type = atom_cache_.GetAtom("_NET_WM_MOVERESIZE");
+  event.xclient.format = 32;
+  event.xclient.data.l[0] = screen_location.x();
+  event.xclient.data.l[1] = screen_location.y();
+  event.xclient.data.l[2] = direction;
+  event.xclient.data.l[3] = 0;
+  event.xclient.data.l[4] = 0;
+
+  XSendEvent(xdisplay_, x_root_window_, False,
+             SubstructureRedirectMask | SubstructureNotifyMask,
+             &event);
 
   return true;
 }

@@ -495,30 +495,6 @@ void SetUseOSWindowFrame(XID window, bool use_os_window_frame) {
                   sizeof(MotifWmHints)/sizeof(long));
 }
 
-void MoveResizeManagedWindow(XID window,
-                             gfx::Point root_location,
-                             NetWmMoveResize mode) {
-  XDisplay* display = gfx::GetXDisplay();
-  XAtom message_type = GetAtom("_NET_WM_MOVERESIZE");
-  XEvent event;
-  memset(&event, 0, sizeof(event));
-  event.xclient.type = ClientMessage;
-  event.xclient.display = display;
-  event.xclient.window = window;
-  event.xclient.message_type = message_type;
-  event.xclient.format = 32;
-  event.xclient.data.l[0] = root_location.x();
-  event.xclient.data.l[1] = root_location.y();
-  event.xclient.data.l[2] = static_cast<long>(mode);
-  event.xclient.data.l[3] =
-      Button1;  // Currently all our managed dragging is done with LMB.
-  event.xclient.data.l[4] = 1;  // Requested by normal application
-
-  XSendEvent(display, DefaultRootWindow(display), False,
-             SubstructureRedirectMask | SubstructureNotifyMask, &event);
-  XFlush(display);
-}
-
 bool IsShapeExtensionAvailable() {
   int dummy;
   static bool is_shape_available =

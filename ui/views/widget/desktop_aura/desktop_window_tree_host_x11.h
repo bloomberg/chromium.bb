@@ -26,12 +26,6 @@
 #include "ui/views/views_export.h"
 #include "ui/views/widget/desktop_aura/desktop_window_tree_host.h"
 
-namespace aura {
-namespace client {
-class WindowMoveClient;
-}
-}
-
 namespace gfx {
 class ImageSkia;
 class ImageSkiaRep;
@@ -45,6 +39,7 @@ class XScopedEventSelector;
 namespace views {
 class DesktopDragDropClientAuraX11;
 class DesktopWindowTreeHostObserverX11;
+class X11DesktopWindowMoveClient;
 class X11WindowEventFilter;
 
 class VIEWS_EXPORT DesktopWindowTreeHostX11
@@ -285,9 +280,6 @@ class VIEWS_EXPORT DesktopWindowTreeHostX11
   XDisplay* xdisplay_;
   ::Window xwindow_;
 
-  // |xwindow_| is managed iff it is not override-redirect.
-  bool is_managed_;
-
   // Events selected on |xwindow_|.
   std::unique_ptr<ui::XScopedEventSelector> xwindow_events_;
 
@@ -349,7 +341,7 @@ class VIEWS_EXPORT DesktopWindowTreeHostX11
   DesktopDragDropClientAuraX11* drag_drop_client_;
 
   std::unique_ptr<ui::EventHandler> x11_non_client_event_filter_;
-  std::unique_ptr<aura::client::WindowMoveClient> x11_window_move_client_;
+  std::unique_ptr<X11DesktopWindowMoveClient> x11_window_move_client_;
 
   // TODO(beng): Consider providing an interface to DesktopNativeWidgetAura
   //             instead of providing this route back to Widget.

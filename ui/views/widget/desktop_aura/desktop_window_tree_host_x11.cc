@@ -60,7 +60,6 @@
 #include "ui/views/widget/desktop_aura/desktop_window_tree_host_observer_x11.h"
 #include "ui/views/widget/desktop_aura/x11_desktop_handler.h"
 #include "ui/views/widget/desktop_aura/x11_desktop_window_move_client.h"
-#include "ui/views/widget/desktop_aura/x11_desktop_window_move_client_managed.h"
 #include "ui/views/widget/desktop_aura/x11_pointer_grab.h"
 #include "ui/views/widget/desktop_aura/x11_window_event_filter.h"
 #include "ui/wm/core/compound_event_filter.h"
@@ -90,51 +89,52 @@ const int k_NET_WM_STATE_REMOVE = 0;
 // should appear on all desktops.
 const int kAllDesktops = 0xFFFFFFFF;
 
-const char* kAtomsToCache[] = {"UTF8_STRING",
-                               "WM_DELETE_WINDOW",
-                               "WM_PROTOCOLS",
-                               "_NET_ACTIVE_WINDOW",
-                               "_NET_FRAME_EXTENTS",
-                               "_NET_WM_CM_S0",
-                               "_NET_WM_DESKTOP",
-                               "_NET_WM_ICON",
-                               "_NET_WM_MOVERESIZE",
-                               "_NET_WM_NAME",
-                               "_NET_WM_PID",
-                               "_NET_WM_PING",
-                               "_NET_WM_STATE",
-                               "_NET_WM_STATE_ABOVE",
-                               "_NET_WM_STATE_FULLSCREEN",
-                               "_NET_WM_STATE_HIDDEN",
-                               "_NET_WM_STATE_MAXIMIZED_HORZ",
-                               "_NET_WM_STATE_MAXIMIZED_VERT",
-                               "_NET_WM_STATE_SKIP_TASKBAR",
-                               "_NET_WM_STATE_STICKY",
-                               "_NET_WM_USER_TIME",
-                               "_NET_WM_WINDOW_OPACITY",
-                               "_NET_WM_WINDOW_TYPE",
-                               "_NET_WM_WINDOW_TYPE_DND",
-                               "_NET_WM_WINDOW_TYPE_MENU",
-                               "_NET_WM_WINDOW_TYPE_NORMAL",
-                               "_NET_WM_WINDOW_TYPE_NOTIFICATION",
-                               "_NET_WM_WINDOW_TYPE_TOOLTIP",
-                               "XdndActionAsk",
-                               "XdndActionCopy",
-                               "XdndActionLink",
-                               "XdndActionList",
-                               "XdndActionMove",
-                               "XdndActionPrivate",
-                               "XdndAware",
-                               "XdndDrop",
-                               "XdndEnter",
-                               "XdndFinished",
-                               "XdndLeave",
-                               "XdndPosition",
-                               "XdndProxy",  // Proxy windows?
-                               "XdndSelection",
-                               "XdndStatus",
-                               "XdndTypeList",
-                               NULL};
+const char* kAtomsToCache[] = {
+  "UTF8_STRING",
+  "WM_DELETE_WINDOW",
+  "WM_PROTOCOLS",
+  "_NET_ACTIVE_WINDOW",
+  "_NET_FRAME_EXTENTS",
+  "_NET_WM_CM_S0",
+  "_NET_WM_DESKTOP",
+  "_NET_WM_ICON",
+  "_NET_WM_NAME",
+  "_NET_WM_PID",
+  "_NET_WM_PING",
+  "_NET_WM_STATE",
+  "_NET_WM_STATE_ABOVE",
+  "_NET_WM_STATE_FULLSCREEN",
+  "_NET_WM_STATE_HIDDEN",
+  "_NET_WM_STATE_MAXIMIZED_HORZ",
+  "_NET_WM_STATE_MAXIMIZED_VERT",
+  "_NET_WM_STATE_SKIP_TASKBAR",
+  "_NET_WM_STATE_STICKY",
+  "_NET_WM_USER_TIME",
+  "_NET_WM_WINDOW_OPACITY",
+  "_NET_WM_WINDOW_TYPE",
+  "_NET_WM_WINDOW_TYPE_DND",
+  "_NET_WM_WINDOW_TYPE_MENU",
+  "_NET_WM_WINDOW_TYPE_NORMAL",
+  "_NET_WM_WINDOW_TYPE_NOTIFICATION",
+  "_NET_WM_WINDOW_TYPE_TOOLTIP",
+  "XdndActionAsk",
+  "XdndActionCopy",
+  "XdndActionLink",
+  "XdndActionList",
+  "XdndActionMove",
+  "XdndActionPrivate",
+  "XdndAware",
+  "XdndDrop",
+  "XdndEnter",
+  "XdndFinished",
+  "XdndLeave",
+  "XdndPosition",
+  "XdndProxy",  // Proxy windows?
+  "XdndSelection",
+  "XdndStatus",
+  "XdndTypeList",
+  NULL
+};
 
 const char kX11WindowRolePopup[] = "popup";
 const char kX11WindowRoleBubble[] = "bubble";
@@ -173,27 +173,6 @@ int XI2ModeToXMode(int xi2_mode) {
     default:
       NOTREACHED();
       return NotifyNormal;
-  }
-}
-
-bool CanUseManagedWindowMove() {
-  if (!ui::IsXInput2Available() ||
-      !ui::WmSupportsHint(ui::GetAtom("_NET_WM_MOVERESIZE")))
-    return false;
-  switch(ui::GuessWindowManager()) {
-    case ui::WM_COMPIZ:
-    case ui::WM_METACITY:
-    case ui::WM_MUFFIN:
-    case ui::WM_MUTTER:
-      return true;
-    case ui::WM_XFWM4:
-      // Xfwm does not release the pointer grab when the dragging window gets
-      // destroyed (dragged into another window), and does not support
-      // _NET_WM_MOVERESIZE_CANCEL.
-      return false;
-    default:
-      // Whitelist only tested WMs.
-      return false;
   }
 }
 
@@ -492,12 +471,7 @@ void DesktopWindowTreeHostX11::OnNativeWidgetCreated(
   SetUseNativeFrame(params.type == Widget::InitParams::TYPE_WINDOW &&
                     !params.remove_standard_frame);
 
-
-  static bool can_use_managed_move = CanUseManagedWindowMove();
-  if (can_use_managed_move && is_managed_)
-    x11_window_move_client_.reset(new X11DesktopWindowMoveClientManaged);
-  else
-    x11_window_move_client_.reset(new X11DesktopWindowMoveClient);
+  x11_window_move_client_.reset(new X11DesktopWindowMoveClient);
   aura::client::SetWindowMoveClient(window(), x11_window_move_client_.get());
 
   SetWindowTransparency();
@@ -1379,7 +1353,6 @@ void DesktopWindowTreeHostX11::InitX11Window(
   if (!activatable_)
     swa.override_redirect = True;
 
-  is_managed_ = !swa.override_redirect;
   if (swa.override_redirect)
     attribute_mask |= CWOverrideRedirect;
 
