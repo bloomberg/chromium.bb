@@ -1,7 +1,11 @@
 <script>
 window.onload = function() {
-  if (window.opener)
-    window.opener.postMessage('done', '*');
+  setTimeout(function() {
+    if (window.internals)
+      internals.updateLayoutIgnorePendingStylesheetsAndRunPostLayoutTasks(document);
+    if (window.testRunner)
+      testRunner.notifyDone();
+  }, 0);
 }
 </script>
 <object name='plugin' type='application/x-blink-test-plugin'>
