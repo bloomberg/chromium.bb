@@ -75,8 +75,8 @@
 
   // Infobars are drawn a little taller, so have to move its controls to keep
   // them centered.
-  // TODO(ellyjones): Remove this constant.
-  CGFloat heightDelta = 2;
+  CGFloat heightDelta = InfoBarContainerDelegate::kDefaultBarTargetHeightMd -
+                        InfoBarContainerDelegate::kDefaultBarTargetHeight;
   for (NSView* nextSubview in [infoBarView_ subviews]) {
     NSRect frame = [nextSubview frame];
     frame.origin.y += heightDelta / 2;

@@ -21,9 +21,9 @@ class UI_BASE_EXPORT MaterialDesignController {
   // updating references as these are used as array indices.
   enum Mode {
     // Basic material design.
-    MATERIAL_NORMAL = 0,
+    MATERIAL_NORMAL = 1,
     // Material design targeted at mouse/touch hybrid devices.
-    MATERIAL_HYBRID = 1
+    MATERIAL_HYBRID = 2
   };
 
   // Initializes |mode_|. Must be called before checking |mode_|.

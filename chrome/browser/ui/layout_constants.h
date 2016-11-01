@@ -19,6 +19,9 @@ enum LayoutConstant {
   // contained text.
   LOCATION_BAR_BUBBLE_FONT_VERTICAL_PADDING,
 
+  // The horizontal space between the edge and a bubble.
+  LOCATION_BAR_BUBBLE_HORIZONTAL_PADDING,
+
   // The additional vertical padding of a bubble.
   LOCATION_BAR_BUBBLE_VERTICAL_PADDING,
 

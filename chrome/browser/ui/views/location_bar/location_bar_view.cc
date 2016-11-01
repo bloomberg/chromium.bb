@@ -526,6 +526,7 @@ gfx::Size LocationBarView::GetPreferredSize() const {
   } else if (ShouldShowSecurityChip()) {
     base::string16 security_text = GetSecurityText();
     leading_width +=
+        GetLayoutConstant(LOCATION_BAR_BUBBLE_HORIZONTAL_PADDING) +
         location_icon_view_->GetMinimumSizeForLabelText(security_text).width();
   } else {
     leading_width += padding + location_icon_view_->GetMinimumSize().width();
@@ -575,14 +576,16 @@ void LocationBarView::Layout() {
   // to position our child views in this case, because other things may be
   // positioned relative to them (e.g. the "bookmark added" bubble if the user
   // hits ctrl-d).
+  const int bubble_horizontal_padding =
+      GetLayoutConstant(LOCATION_BAR_BUBBLE_HORIZONTAL_PADDING);
   const int vertical_padding = GetTotalVerticalPadding();
   const int location_height = std::max(height() - (vertical_padding * 2), 0);
 
   location_icon_view_->SetLabel(base::string16());
   if (ShouldShowKeywordBubble()) {
     leading_decorations.AddDecoration(vertical_padding, location_height, true,
-                                      0, 0, item_padding,
-                                      selected_keyword_view_);
+                                      0, bubble_horizontal_padding,
+                                      item_padding, selected_keyword_view_);
     if (selected_keyword_view_->keyword() != keyword) {
       selected_keyword_view_->SetKeyword(keyword);
       const TemplateURL* template_url =
@@ -601,9 +604,9 @@ void LocationBarView::Layout() {
     location_icon_view_->SetLabel(GetSecurityText());
     // The largest fraction of the omnibox that can be taken by the EV bubble.
     const double kMaxBubbleFraction = 0.5;
-    leading_decorations.AddDecoration(vertical_padding, location_height, false,
-                                      kMaxBubbleFraction, 0, item_padding,
-                                      location_icon_view_);
+    leading_decorations.AddDecoration(
+        vertical_padding, location_height, false, kMaxBubbleFraction,
+        bubble_horizontal_padding, item_padding, location_icon_view_);
   } else {
     leading_decorations.AddDecoration(vertical_padding, location_height,
                                       location_icon_view_);
