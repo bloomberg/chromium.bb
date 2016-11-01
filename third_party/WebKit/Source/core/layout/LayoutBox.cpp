@@ -4743,7 +4743,9 @@ bool LayoutBox::childNeedsRelayoutForPagination(const LayoutBox& child) const {
       // have to. So we need to relayout.
       return true;
     }
-  } else {
+  } else if (child.offsetToNextPage()) {
+    // This child did previously break, but it won't anymore, because we no
+    // longer have a known fragmentainer height.
     return true;
   }
 
