@@ -6,11 +6,13 @@
 #include <string>
 
 #include "ash/common/login_status.h"
+#include "ash/common/material_design/material_design_controller.h"
 #include "ash/common/strings/grit/ash_strings.h"
 #include "ash/common/system/date/date_default_view.h"
 #include "ash/common/system/date/tray_date.h"
+#include "ash/common/system/tiles/tiles_default_view.h"
+#include "ash/common/system/tiles/tray_tiles.h"
 #include "ash/common/system/tray/system_tray.h"
-#include "ash/common/system/tray/tray_popup_header_button.h"
 #include "ash/shell.h"
 #include "base/command_line.h"
 #include "base/location.h"
@@ -42,6 +44,7 @@
 #include "content/public/test/test_utils.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/compositor/scoped_animation_duration_scale_mode.h"
+#include "ui/views/controls/button/custom_button.h"
 #include "ui/views/view.h"
 
 namespace em = enterprise_management;
@@ -147,27 +150,42 @@ class ShutdownPolicyInSessionTest
 
   void SetUpOnMainThread() override {
     ShutdownPolicyBaseTest::SetUpOnMainThread();
-    ash::TrayDate* tray_date = ash::Shell::GetInstance()
-                                 ->GetPrimarySystemTray()
-                                 ->GetTrayDateForTesting();
-    ASSERT_TRUE(tray_date);
-    date_default_view_.reset(static_cast<ash::DateDefaultView*>(
-        tray_date->CreateDefaultViewForTesting(ash::LoginStatus::USER)));
-    ASSERT_TRUE(date_default_view_);
+    if (ash::MaterialDesignController::IsSystemTrayMenuMaterial()) {
+      ash::TrayTiles* tray_tiles = ash::Shell::GetInstance()
+                                       ->GetPrimarySystemTray()
+                                       ->GetTrayTilesForTesting();
+      ASSERT_TRUE(tray_tiles);
+      tiles_default_view_.reset(static_cast<ash::TilesDefaultView*>(
+          tray_tiles->CreateDefaultViewForTesting(ash::LoginStatus::USER)));
+      ASSERT_TRUE(tiles_default_view_);
+    } else {
+      ash::TrayDate* tray_date = ash::Shell::GetInstance()
+                                     ->GetPrimarySystemTray()
+                                     ->GetTrayDateForTesting();
+      ASSERT_TRUE(tray_date);
+      date_default_view_.reset(static_cast<ash::DateDefaultView*>(
+          tray_date->CreateDefaultViewForTesting(ash::LoginStatus::USER)));
+      ASSERT_TRUE(date_default_view_);
+    }
   }
 
   void TearDownOnMainThread() override {
-    date_default_view_.reset();
+    if (ash::MaterialDesignController::IsSystemTrayMenuMaterial())
+      tiles_default_view_.reset();
+    else
+      date_default_view_.reset();
     ShutdownPolicyBaseTest::TearDownOnMainThread();
   }
 
   // Get the shutdown and reboot button view from the date default view.
-  const ash::TrayPopupHeaderButton* GetShutdownButton() {
-    return static_cast<const ash::TrayPopupHeaderButton*>(
+  const views::CustomButton* GetShutdownButton() {
+    if (ash::MaterialDesignController::IsSystemTrayMenuMaterial())
+      return tiles_default_view_->GetShutdownButtonViewForTest();
+    return static_cast<const views::CustomButton*>(
         date_default_view_->GetShutdownButtonViewForTest());
   }
 
-  bool HasButtonTooltipText(const ash::TrayPopupHeaderButton* button,
+  bool HasButtonTooltipText(const views::CustomButton* button,
                             int message_id) const {
     base::string16 actual_tooltip;
     button->GetTooltipText(gfx::Point(), &actual_tooltip);
@@ -175,19 +193,23 @@ class ShutdownPolicyInSessionTest
   }
 
  private:
+  // Not used in material design.
   std::unique_ptr<ash::DateDefaultView> date_default_view_;
+
+  // Only used in material design.
+  std::unique_ptr<ash::TilesDefaultView> tiles_default_view_;
 
   DISALLOW_COPY_AND_ASSIGN(ShutdownPolicyInSessionTest);
 };
 
 IN_PROC_BROWSER_TEST_F(ShutdownPolicyInSessionTest, TestBasic) {
-  const ash::TrayPopupHeaderButton *shutdown_button = GetShutdownButton();
+  const views::CustomButton* shutdown_button = GetShutdownButton();
   EXPECT_TRUE(
       HasButtonTooltipText(shutdown_button, IDS_ASH_STATUS_TRAY_SHUTDOWN));
 }
 
 IN_PROC_BROWSER_TEST_F(ShutdownPolicyInSessionTest, PolicyChange) {
-  const ash::TrayPopupHeaderButton *shutdown_button = GetShutdownButton();
+  const views::CustomButton* shutdown_button = GetShutdownButton();
 
   UpdateRebootOnShutdownPolicy(true);
   SyncRefreshDevicePolicy();

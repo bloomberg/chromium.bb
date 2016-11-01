@@ -36,6 +36,10 @@ class ASH_EXPORT TraySystemInfo : public SystemTrayItem, public ClockObserver {
   explicit TraySystemInfo(SystemTray* system_tray);
   ~TraySystemInfo() override;
 
+  const tray::TimeView* GetTimeTrayForTesting() const;
+  const SystemInfoDefaultView* GetDefaultViewForTesting() const;
+  views::View* CreateDefaultViewForTesting(LoginStatus status);
+
  private:
   // SystemTrayItem:
   views::View* CreateTrayView(LoginStatus status) override;

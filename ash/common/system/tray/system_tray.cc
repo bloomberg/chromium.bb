@@ -213,6 +213,7 @@ SystemTray::SystemTray(WmShelf* wm_shelf)
       tray_cast_(nullptr),
       tray_date_(nullptr),
       tray_tiles_(nullptr),
+      tray_system_info_(nullptr),
       tray_update_(nullptr),
       screen_capture_tray_item_(nullptr),
       screen_share_tray_item_(nullptr) {
@@ -308,7 +309,8 @@ void SystemTray::CreateItems(SystemTrayDelegate* delegate) {
   if (use_material_design) {
     tray_tiles_ = new TrayTiles(this);
     AddTrayItem(tray_tiles_);
-    AddTrayItem(new TraySystemInfo(this));
+    tray_system_info_ = new TraySystemInfo(this);
+    AddTrayItem(tray_system_info_);
   } else {
     AddTrayItem(tray_date_);
   }
@@ -837,6 +839,14 @@ TrayCast* SystemTray::GetTrayCastForTesting() const {
 
 TrayDate* SystemTray::GetTrayDateForTesting() const {
   return tray_date_;
+}
+
+TraySystemInfo* SystemTray::GetTraySystemInfoForTesting() const {
+  return tray_system_info_;
+}
+
+TrayTiles* SystemTray::GetTrayTilesForTesting() const {
+  return tray_tiles_;
 }
 
 TrayUpdate* SystemTray::GetTrayUpdateForTesting() const {

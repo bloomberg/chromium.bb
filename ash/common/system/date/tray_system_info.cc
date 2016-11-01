@@ -33,6 +33,18 @@ TraySystemInfo::~TraySystemInfo() {
   WmShell::Get()->system_tray_notifier()->RemoveClockObserver(this);
 }
 
+const tray::TimeView* TraySystemInfo::GetTimeTrayForTesting() const {
+  return tray_view_;
+}
+
+const SystemInfoDefaultView* TraySystemInfo::GetDefaultViewForTesting() const {
+  return default_view_;
+}
+
+views::View* TraySystemInfo::CreateDefaultViewForTesting(LoginStatus status) {
+  return CreateDefaultView(status);
+}
+
 views::View* TraySystemInfo::CreateTrayView(LoginStatus status) {
   CHECK(tray_view_ == nullptr);
   tray::TimeView::ClockLayout clock_layout =
@@ -46,7 +58,6 @@ views::View* TraySystemInfo::CreateTrayView(LoginStatus status) {
 }
 
 views::View* TraySystemInfo::CreateDefaultView(LoginStatus status) {
-  CHECK(default_view_ == nullptr);
   default_view_ = new SystemInfoDefaultView(this, status);
 
 #if defined(OS_CHROMEOS)

@@ -154,4 +154,9 @@ views::View* TilesDefaultView::GetHelpButtonView() const {
   return help_button_;
 }
 
+const views::CustomButton* TilesDefaultView::GetShutdownButtonViewForTest()
+    const {
+  return power_button_;
+}
+
 }  // namespace ash

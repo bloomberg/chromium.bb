@@ -5,6 +5,7 @@
 #ifndef ASH_COMMON_SYSTEM_TILES_TILES_DEFAULT_VIEW_H_
 #define ASH_COMMON_SYSTEM_TILES_TILES_DEFAULT_VIEW_H_
 
+#include "ash/ash_export.h"
 #include "ash/common/login_status.h"
 #include "ash/common/system/chromeos/shutdown_policy_observer.h"
 #include "base/macros.h"
@@ -22,9 +23,9 @@ class SystemTrayItem;
 
 // The container view for the tiles in the bottom row of the system menu
 // (settings, help, lock, and power).
-class TilesDefaultView : public views::View,
-                         public views::ButtonListener,
-                         public ShutdownPolicyObserver {
+class ASH_EXPORT TilesDefaultView : public views::View,
+                                    public views::ButtonListener,
+                                    public ShutdownPolicyObserver {
  public:
   TilesDefaultView(SystemTrayItem* owner, LoginStatus login);
   ~TilesDefaultView() override;
@@ -42,6 +43,8 @@ class TilesDefaultView : public views::View,
 
   // Accessor needed to obtain the help button view for the first-run flow.
   views::View* GetHelpButtonView() const;
+
+  const views::CustomButton* GetShutdownButtonViewForTest() const;
 
  private:
   friend class TrayTilesTest;

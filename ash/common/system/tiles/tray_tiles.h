@@ -21,15 +21,17 @@ class ASH_EXPORT TrayTiles : public SystemTrayItem {
   explicit TrayTiles(SystemTray* system_tray);
   ~TrayTiles() override;
 
-  // SystemTrayItem:
-  views::View* CreateDefaultView(LoginStatus status) override;
-  void DestroyDefaultView() override;
-
   // Accessor needed to obtain the help button view for the first-run flow.
   views::View* GetHelpButtonView() const;
 
+  views::View* CreateDefaultViewForTesting(LoginStatus status);
+
  private:
   friend class TrayTilesTest;
+
+  // SystemTrayItem:
+  views::View* CreateDefaultView(LoginStatus status) override;
+  void DestroyDefaultView() override;
 
   TilesDefaultView* default_view_;
 

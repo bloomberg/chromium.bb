@@ -55,7 +55,7 @@ class TrayTilesTest : public test::AshTestBase {
 TEST_F(TrayTilesTest, ButtonStatesWithAddingUser) {
   SetUserAddingScreenRunning(true);
   std::unique_ptr<views::View> default_view(
-      tray_tiles()->CreateDefaultView(LoginStatus::USER));
+      tray_tiles()->CreateDefaultViewForTesting(LoginStatus::USER));
   EXPECT_EQ(GetSettingsButton()->state(), views::Button::STATE_DISABLED);
   EXPECT_EQ(GetHelpButton()->state(), views::Button::STATE_DISABLED);
 #if !defined(OS_WIN)
@@ -66,7 +66,7 @@ TEST_F(TrayTilesTest, ButtonStatesWithAddingUser) {
 
 TEST_F(TrayTilesTest, ButtonStatesWithLoginStatusNotLoggedIn) {
   std::unique_ptr<views::View> default_view(
-      tray_tiles()->CreateDefaultView(LoginStatus::NOT_LOGGED_IN));
+      tray_tiles()->CreateDefaultViewForTesting(LoginStatus::NOT_LOGGED_IN));
   EXPECT_EQ(GetSettingsButton()->state(), views::Button::STATE_DISABLED);
   EXPECT_EQ(GetHelpButton()->state(), views::Button::STATE_DISABLED);
 #if !defined(OS_WIN)
@@ -77,7 +77,7 @@ TEST_F(TrayTilesTest, ButtonStatesWithLoginStatusNotLoggedIn) {
 
 TEST_F(TrayTilesTest, ButtonStatesWithLoginStatusLocked) {
   std::unique_ptr<views::View> default_view(
-      tray_tiles()->CreateDefaultView(LoginStatus::LOCKED));
+      tray_tiles()->CreateDefaultViewForTesting(LoginStatus::LOCKED));
   EXPECT_EQ(GetSettingsButton()->state(), views::Button::STATE_DISABLED);
   EXPECT_EQ(GetHelpButton()->state(), views::Button::STATE_DISABLED);
 #if !defined(OS_WIN)
@@ -88,7 +88,7 @@ TEST_F(TrayTilesTest, ButtonStatesWithLoginStatusLocked) {
 
 TEST_F(TrayTilesTest, ButtonStatesWithLoginStatusUser) {
   std::unique_ptr<views::View> default_view(
-      tray_tiles()->CreateDefaultView(LoginStatus::USER));
+      tray_tiles()->CreateDefaultViewForTesting(LoginStatus::USER));
   EXPECT_EQ(GetSettingsButton()->state(), views::Button::STATE_NORMAL);
   EXPECT_EQ(GetHelpButton()->state(), views::Button::STATE_NORMAL);
 #if !defined(OS_WIN)
