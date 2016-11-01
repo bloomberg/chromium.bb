@@ -45,11 +45,22 @@ class ArcImeService : public ArcService,
   explicit ArcImeService(ArcBridgeService* bridge_service);
   ~ArcImeService() override;
 
+  class ArcWindowDetector {
+   public:
+    virtual ~ArcWindowDetector();
+    virtual bool IsArcTopLevelWindow(const aura::Window* window) const;
+    virtual bool IsArcWindow(const aura::Window* window) const;
+  };
+
   // Injects the custom IPC bridge object for testing purpose only.
   void SetImeBridgeForTesting(std::unique_ptr<ArcImeBridge> test_ime_bridge);
 
   // Injects the custom IME for testing purpose only.
   void SetInputMethodForTesting(ui::InputMethod* test_input_method);
+
+  // Injects the custom detector for ARC windows, for testing purpose only.
+  void SetArcWindowDetectorForTesting(
+      std::unique_ptr<ArcWindowDetector> detector);
 
   // Overridden from aura::EnvObserver:
   void OnWindowInitialized(aura::Window* new_window) override;
@@ -107,6 +118,7 @@ class ArcImeService : public ArcService,
   ui::InputMethod* GetInputMethod();
 
   std::unique_ptr<ArcImeBridge> ime_bridge_;
+  std::unique_ptr<ArcWindowDetector> arc_window_detector_;
   ui::TextInputType ime_type_;
   gfx::Rect cursor_rect_;
   bool has_composition_text_;

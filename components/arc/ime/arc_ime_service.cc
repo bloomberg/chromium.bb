@@ -21,17 +21,17 @@
 
 namespace arc {
 
-namespace {
+ArcImeService::ArcWindowDetector::~ArcWindowDetector() = default;
 
-bool IsArcWindow(const aura::Window* window) {
+bool ArcImeService::ArcWindowDetector::IsArcWindow(
+    const aura::Window* window) const {
   return exo::Surface::AsSurface(window);
 }
 
-bool IsArcTopLevelWindow(const aura::Window* window) {
+bool ArcImeService::ArcWindowDetector::IsArcTopLevelWindow(
+    const aura::Window* window) const {
   return exo::ShellSurface::GetMainSurface(window);
 }
-
-}  // namespace
 
 ////////////////////////////////////////////////////////////////////////////////
 // ArcImeService main implementation:
@@ -39,6 +39,7 @@ bool IsArcTopLevelWindow(const aura::Window* window) {
 ArcImeService::ArcImeService(ArcBridgeService* bridge_service)
     : ArcService(bridge_service),
       ime_bridge_(new ArcImeBridgeImpl(this, bridge_service)),
+      arc_window_detector_(new ArcWindowDetector()),
       ime_type_(ui::TEXT_INPUT_TYPE_NONE),
       has_composition_text_(false),
       keyboard_controller_(nullptr),
@@ -77,6 +78,11 @@ void ArcImeService::SetInputMethodForTesting(
   test_input_method_ = test_input_method;
 }
 
+void ArcImeService::SetArcWindowDetectorForTesting(
+    std::unique_ptr<ArcWindowDetector> detector) {
+  arc_window_detector_ = std::move(detector);
+}
+
 ui::InputMethod* ArcImeService::GetInputMethod() {
   if (test_input_method_)
     return test_input_method_;
@@ -89,7 +95,7 @@ ui::InputMethod* ArcImeService::GetInputMethod() {
 // Overridden from aura::EnvObserver:
 
 void ArcImeService::OnWindowInitialized(aura::Window* new_window) {
-  if (IsArcWindow(new_window)) {
+  if (arc_window_detector_->IsArcWindow(new_window)) {
     if (!is_focus_observer_installed_) {
       exo::WMHelper::GetInstance()->AddFocusObserver(this);
       is_focus_observer_installed_ = true;
@@ -116,17 +122,22 @@ void ArcImeService::OnWindowFocused(aura::Window* gained_focus,
   if (lost_focus == gained_focus)
     return;
 
-  if (lost_focus && focused_arc_window_.Contains(lost_focus)) {
-    ui::InputMethod* const input_method = GetInputMethod();
-    if (input_method)
-      input_method->DetachTextInputClient(this);
+  const bool detach = (lost_focus && focused_arc_window_.Contains(lost_focus));
+  const bool attach =
+      (gained_focus && arc_window_detector_->IsArcTopLevelWindow(gained_focus));
+  if (detach)
     focused_arc_window_.Remove(lost_focus);
-  }
-
-  if (gained_focus && IsArcTopLevelWindow(gained_focus)) {
+  if (attach)
     focused_arc_window_.Add(gained_focus);
-    ui::InputMethod* const input_method = GetInputMethod();
-    if (input_method)
+
+  // Notify to the input method, either when this service is detached or
+  // attached. Do nothing when the focus is moving between ARC windows,
+  // to avoid unpexpected context reset in ARC.
+  ui::InputMethod* const input_method = GetInputMethod();
+  if (input_method) {
+    if (detach && !attach)
+      input_method->DetachTextInputClient(this);
+    if (!detach && attach)
       input_method->SetFocusedTextInputClient(this);
   }
 }

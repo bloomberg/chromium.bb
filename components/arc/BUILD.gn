@@ -218,6 +218,7 @@ source_set("unit_tests") {
     "//mojo/public/cpp/system:system",
     "//testing/gtest",
     "//ui/aura",
+    "//ui/aura:test_support",
     "//ui/base:test_support",
     "//ui/base/ime",
     "//ui/events",
