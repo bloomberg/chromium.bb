@@ -22,15 +22,15 @@ namespace blink {
 
 class MockFunction : public ScriptFunction {
  public:
-  static MockFunction* create(ScriptState* scriptState) {
-    return new MockFunction(scriptState);
+  static ::testing::StrictMock<MockFunction>* create(ScriptState* scriptState) {
+    return new ::testing::StrictMock<MockFunction>(scriptState);
   }
 
   v8::Local<v8::Function> bind() { return bindToV8Function(); }
 
   MOCK_METHOD1(call, ScriptValue(ScriptValue));
 
- private:
+ protected:
   explicit MockFunction(ScriptState* scriptState)
       : ScriptFunction(scriptState) {}
 };
@@ -70,8 +70,8 @@ TEST_F(RemotePlaybackTest, PromptCancelledRejectsWithNotAllowedError) {
   RemotePlayback* remotePlayback =
       HTMLMediaElementRemotePlayback::remote(scope.getScriptState(), *element);
 
-  MockFunction* resolve = MockFunction::create(scope.getScriptState());
-  MockFunction* reject = MockFunction::create(scope.getScriptState());
+  auto resolve = MockFunction::create(scope.getScriptState());
+  auto reject = MockFunction::create(scope.getScriptState());
 
   EXPECT_CALL(*resolve, call(::testing::_)).Times(0);
   EXPECT_CALL(*reject, call(::testing::_)).Times(1);
@@ -80,6 +80,14 @@ TEST_F(RemotePlaybackTest, PromptCancelledRejectsWithNotAllowedError) {
       &pageHolder->document(), UserGestureToken::NewGesture));
   remotePlayback->prompt().then(resolve->bind(), reject->bind());
   cancelPrompt(remotePlayback);
+
+  // Runs pending promises.
+  v8::MicrotasksScope::PerformCheckpoint(scope.isolate());
+
+  // Verify mock expectations explicitly as the mock objects are garbage
+  // collected.
+  ::testing::Mock::VerifyAndClear(resolve);
+  ::testing::Mock::VerifyAndClear(reject);
 }
 
 TEST_F(RemotePlaybackTest, StateChangeEvents) {
@@ -114,6 +122,12 @@ TEST_F(RemotePlaybackTest, StateChangeEvents) {
   setState(remotePlayback, WebRemotePlaybackState::Connected);
   setState(remotePlayback, WebRemotePlaybackState::Disconnected);
   setState(remotePlayback, WebRemotePlaybackState::Disconnected);
+
+  // Verify mock expectations explicitly as the mock objects are garbage
+  // collected.
+  ::testing::Mock::VerifyAndClear(connectingHandler);
+  ::testing::Mock::VerifyAndClear(connectHandler);
+  ::testing::Mock::VerifyAndClear(disconnectHandler);
 }
 
 TEST_F(RemotePlaybackTest,
@@ -137,6 +151,14 @@ TEST_F(RemotePlaybackTest,
   remotePlayback->prompt().then(resolve->bind(), reject->bind());
   HTMLMediaElementRemotePlayback::setBooleanAttribute(
       HTMLNames::disableremoteplaybackAttr, *element, true);
+
+  // Runs pending promises.
+  v8::MicrotasksScope::PerformCheckpoint(scope.isolate());
+
+  // Verify mock expectations explicitly as the mock objects are garbage
+  // collected.
+  ::testing::Mock::VerifyAndClear(resolve);
+  ::testing::Mock::VerifyAndClear(reject);
 }
 
 TEST_F(RemotePlaybackTest, DisableRemotePlaybackCancelsAvailabilityCallbacks) {
@@ -157,18 +179,27 @@ TEST_F(RemotePlaybackTest, DisableRemotePlaybackCancelsAvailabilityCallbacks) {
   // message loop.
   EXPECT_CALL(*callbackFunction, call(::testing::_)).Times(0);
 
-  MockFunction* watchResolve = MockFunction::create(scope.getScriptState());
-  MockFunction* watchReject = MockFunction::create(scope.getScriptState());
+  MockFunction* resolve = MockFunction::create(scope.getScriptState());
+  MockFunction* reject = MockFunction::create(scope.getScriptState());
 
-  EXPECT_CALL(*watchResolve, call(::testing::_)).Times(1);
-  EXPECT_CALL(*watchReject, call(::testing::_)).Times(0);
+  EXPECT_CALL(*resolve, call(::testing::_)).Times(1);
+  EXPECT_CALL(*reject, call(::testing::_)).Times(0);
 
   remotePlayback->watchAvailability(availabilityCallback)
-      .then(watchResolve->bind(), watchReject->bind());
+      .then(resolve->bind(), reject->bind());
 
   HTMLMediaElementRemotePlayback::setBooleanAttribute(
       HTMLNames::disableremoteplaybackAttr, *element, true);
   setAvailability(remotePlayback, true);
+
+  // Runs pending promises.
+  v8::MicrotasksScope::PerformCheckpoint(scope.isolate());
+
+  // Verify mock expectations explicitly as the mock objects are garbage
+  // collected.
+  ::testing::Mock::VerifyAndClear(resolve);
+  ::testing::Mock::VerifyAndClear(reject);
+  ::testing::Mock::VerifyAndClear(callbackFunction);
 }
 
 }  // namespace blink
