@@ -91,6 +91,8 @@ source_set("browser") {
     "//net:extras",
     "//net:http_server",
     "//ppapi/features",
+    "//services/device:lib",
+    "//services/device/public/cpp",
     "//services/file:lib",
     "//services/file/public/cpp",
     "//services/file/public/interfaces",

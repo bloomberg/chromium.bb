@@ -39,6 +39,8 @@
 #include "net/ssl/channel_id_store.h"
 #include "net/url_request/url_request_context.h"
 #include "net/url_request/url_request_context_getter.h"
+#include "services/device/device_service.h"
+#include "services/device/public/cpp/constants.h"
 #include "services/file/file_service.h"
 #include "services/file/public/cpp/constants.h"
 #include "services/file/user_id_map.h"
@@ -457,6 +459,13 @@ void BrowserContext::Initialize(
     connection->Start();
 
     // New embedded service factories should be added to |connection| here.
+    // TODO(blundell): Does this belong as a global service rather than per
+    // BrowserContext?
+    ServiceInfo info;
+    info.factory =
+        base::Bind(&device::CreateDeviceService,
+                   BrowserThread::GetTaskRunnerForThread(BrowserThread::FILE));
+    connection->AddEmbeddedService(device::kDeviceServiceName, info);
 
     if (base::CommandLine::ForCurrentProcess()->HasSwitch(
             switches::kMojoLocalStorage)) {

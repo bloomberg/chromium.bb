@@ -170,11 +170,13 @@ service_manifest("browser_manifest") {
   name = "content_browser"
   source = "mojo/content_browser_manifest.json"
   packaged_services = [
+    "device",
     "file",
     "media",
   ]
   deps = [
     "//media/mojo/services:media_manifest",
+    "//services/device:manifest",
     "//services/file:manifest",
   ]
 }
