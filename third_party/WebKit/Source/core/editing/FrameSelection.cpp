@@ -1349,8 +1349,8 @@ void FrameSelection::moveRangeSelection(const VisiblePosition& basePosition,
           .setBaseAndExtentDeprecated(basePosition.deepEquivalent(),
                                       extentPosition.deepEquivalent())
           .setAffinity(basePosition.affinity())
+          .setGranularity(granularity)
           .build());
-  newSelection.expandUsingGranularity(granularity);
 
   if (newSelection.isNone())
     return;

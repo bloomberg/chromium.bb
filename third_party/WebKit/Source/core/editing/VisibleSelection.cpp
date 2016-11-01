@@ -59,7 +59,7 @@ VisibleSelectionTemplate<Strategy>::VisibleSelectionTemplate(
       m_isDirectional(selection.isDirectional()),
       m_granularity(selection.granularity()),
       m_hasTrailingWhitespace(selection.hasTrailingWhitespace()) {
-  validate();
+  validate(m_granularity);
 }
 
 template <typename Strategy>
@@ -217,14 +217,6 @@ VisibleSelectionTemplate<Strategy>::toNormalizedEphemeralRange() const {
   //
   DCHECK(isRange());
   return normalizeRange(EphemeralRangeTemplate<Strategy>(m_start, m_end));
-}
-
-template <typename Strategy>
-void VisibleSelectionTemplate<Strategy>::expandUsingGranularity(
-    TextGranularity granularity) {
-  if (isNone())
-    return;
-  validate(granularity);
 }
 
 template <typename Strategy>

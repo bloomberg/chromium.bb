@@ -387,8 +387,12 @@ static bool executeInsertElement(LocalFrame& frame, HTMLElement* content) {
 
 static bool expandSelectionToGranularity(LocalFrame& frame,
                                          TextGranularity granularity) {
-  VisibleSelection selection = frame.selection().selection();
-  selection.expandUsingGranularity(granularity);
+  const VisibleSelection& selection = createVisibleSelection(
+      SelectionInDOMTree::Builder()
+          .setBaseAndExtent(frame.selection().selection().base(),
+                            frame.selection().selection().extent())
+          .setGranularity(granularity)
+          .build());
   const EphemeralRange newRange = selection.toNormalizedEphemeralRange();
   if (newRange.isNull())
     return false;

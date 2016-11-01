@@ -122,8 +122,6 @@ class CORE_TEMPLATE_CLASS_EXPORT VisibleSelectionTemplate {
 
   void appendTrailingWhitespace();
 
-  void expandUsingGranularity(TextGranularity);
-
   // TODO(yosin) Most callers probably don't want these functions, but
   // are using them for historical reasons. |toNormalizedEphemeralRange()|
   // contracts the range around text, and moves the caret most backward

@@ -59,6 +59,17 @@ static void testFlatTreePositionsToEqualToDOMTreePositions(
             toPositionInDOMTree(selectionInFlatTree.extent()));
 }
 
+template <typename Strategy>
+VisibleSelectionTemplate<Strategy> expandUsingGranularity(
+    const VisibleSelectionTemplate<Strategy>& selection,
+    TextGranularity granularity) {
+  return createVisibleSelection(
+      typename SelectionTemplate<Strategy>::Builder()
+          .setBaseAndExtent(selection.base(), selection.extent())
+          .setGranularity(granularity)
+          .build());
+}
+
 TEST_F(VisibleSelectionTest, expandUsingGranularity) {
   const char* bodyContent =
       "<span id=host><a id=one>1</a><a id=two>22</a></span>";
@@ -81,12 +92,13 @@ TEST_F(VisibleSelectionTest, expandUsingGranularity) {
   // From a position at distributed node
   selection = createVisibleSelection(
       SelectionInDOMTree::Builder().collapse(Position(one, 1)).build());
-  selection.expandUsingGranularity(WordGranularity);
+  selection = expandUsingGranularity(selection, WordGranularity);
   selectionInFlatTree =
       createVisibleSelection(SelectionInFlatTree::Builder()
                                  .collapse(PositionInFlatTree(one, 1))
                                  .build());
-  selectionInFlatTree.expandUsingGranularity(WordGranularity);
+  selectionInFlatTree =
+      expandUsingGranularity(selectionInFlatTree, WordGranularity);
 
   EXPECT_EQ(Position(one, 1), selection.base());
   EXPECT_EQ(Position(one, 1), selection.extent());
@@ -101,12 +113,13 @@ TEST_F(VisibleSelectionTest, expandUsingGranularity) {
   // From a position at distributed node
   selection = createVisibleSelection(
       SelectionInDOMTree::Builder().collapse(Position(two, 1)).build());
-  selection.expandUsingGranularity(WordGranularity);
+  selection = expandUsingGranularity(selection, WordGranularity);
   selectionInFlatTree =
       createVisibleSelection(SelectionInFlatTree::Builder()
                                  .collapse(PositionInFlatTree(two, 1))
                                  .build());
-  selectionInFlatTree.expandUsingGranularity(WordGranularity);
+  selectionInFlatTree =
+      expandUsingGranularity(selectionInFlatTree, WordGranularity);
 
   EXPECT_EQ(Position(two, 1), selection.base());
   EXPECT_EQ(Position(two, 1), selection.extent());
@@ -121,12 +134,13 @@ TEST_F(VisibleSelectionTest, expandUsingGranularity) {
   // From a position at node in shadow tree
   selection = createVisibleSelection(
       SelectionInDOMTree::Builder().collapse(Position(three, 1)).build());
-  selection.expandUsingGranularity(WordGranularity);
+  selection = expandUsingGranularity(selection, WordGranularity);
   selectionInFlatTree =
       createVisibleSelection(SelectionInFlatTree::Builder()
                                  .collapse(PositionInFlatTree(three, 1))
                                  .build());
-  selectionInFlatTree.expandUsingGranularity(WordGranularity);
+  selectionInFlatTree =
+      expandUsingGranularity(selectionInFlatTree, WordGranularity);
 
   EXPECT_EQ(Position(three, 1), selection.base());
   EXPECT_EQ(Position(three, 1), selection.extent());
@@ -141,12 +155,13 @@ TEST_F(VisibleSelectionTest, expandUsingGranularity) {
   // From a position at node in shadow tree
   selection = createVisibleSelection(
       SelectionInDOMTree::Builder().collapse(Position(four, 1)).build());
-  selection.expandUsingGranularity(WordGranularity);
+  selection = expandUsingGranularity(selection, WordGranularity);
   selectionInFlatTree =
       createVisibleSelection(SelectionInFlatTree::Builder()
                                  .collapse(PositionInFlatTree(four, 1))
                                  .build());
-  selectionInFlatTree.expandUsingGranularity(WordGranularity);
+  selectionInFlatTree =
+      expandUsingGranularity(selectionInFlatTree, WordGranularity);
 
   EXPECT_EQ(Position(four, 1), selection.base());
   EXPECT_EQ(Position(four, 1), selection.extent());
@@ -161,12 +176,13 @@ TEST_F(VisibleSelectionTest, expandUsingGranularity) {
   // From a position at node in shadow tree
   selection = createVisibleSelection(
       SelectionInDOMTree::Builder().collapse(Position(five, 1)).build());
-  selection.expandUsingGranularity(WordGranularity);
+  selection = expandUsingGranularity(selection, WordGranularity);
   selectionInFlatTree =
       createVisibleSelection(SelectionInFlatTree::Builder()
                                  .collapse(PositionInFlatTree(five, 1))
                                  .build());
-  selectionInFlatTree.expandUsingGranularity(WordGranularity);
+  selectionInFlatTree =
+      expandUsingGranularity(selectionInFlatTree, WordGranularity);
 
   EXPECT_EQ(Position(five, 1), selection.base());
   EXPECT_EQ(Position(five, 1), selection.extent());
@@ -326,8 +342,9 @@ TEST_F(VisibleSelectionTest, WordGranularity) {
   {
     setSelection(selection, 0);
     setSelection(selectionInFlatTree, 0);
-    selection.expandUsingGranularity(WordGranularity);
-    selectionInFlatTree.expandUsingGranularity(WordGranularity);
+    selection = expandUsingGranularity(selection, WordGranularity);
+    selectionInFlatTree =
+        expandUsingGranularity(selectionInFlatTree, WordGranularity);
 
     Range* range = firstRangeOf(selection);
     EXPECT_EQ(0, range->startOffset());
@@ -341,8 +358,9 @@ TEST_F(VisibleSelectionTest, WordGranularity) {
   {
     setSelection(selection, 8);
     setSelection(selectionInFlatTree, 8);
-    selection.expandUsingGranularity(WordGranularity);
-    selectionInFlatTree.expandUsingGranularity(WordGranularity);
+    selection = expandUsingGranularity(selection, WordGranularity);
+    selectionInFlatTree =
+        expandUsingGranularity(selectionInFlatTree, WordGranularity);
 
     Range* range = firstRangeOf(selection);
     EXPECT_EQ(6, range->startOffset());
@@ -358,8 +376,9 @@ TEST_F(VisibleSelectionTest, WordGranularity) {
   {
     setSelection(selection, 5);
     setSelection(selectionInFlatTree, 5);
-    selection.expandUsingGranularity(WordGranularity);
-    selectionInFlatTree.expandUsingGranularity(WordGranularity);
+    selection = expandUsingGranularity(selection, WordGranularity);
+    selectionInFlatTree =
+        expandUsingGranularity(selectionInFlatTree, WordGranularity);
 
     Range* range = firstRangeOf(selection);
     EXPECT_EQ(5, range->startOffset());
@@ -375,8 +394,9 @@ TEST_F(VisibleSelectionTest, WordGranularity) {
   {
     setSelection(selection, 26);
     setSelection(selectionInFlatTree, 26);
-    selection.expandUsingGranularity(WordGranularity);
-    selectionInFlatTree.expandUsingGranularity(WordGranularity);
+    selection = expandUsingGranularity(selection, WordGranularity);
+    selectionInFlatTree =
+        expandUsingGranularity(selectionInFlatTree, WordGranularity);
 
     Range* range = firstRangeOf(selection);
     EXPECT_EQ(26, range->startOffset());
@@ -390,8 +410,9 @@ TEST_F(VisibleSelectionTest, WordGranularity) {
   {
     setSelection(selection, 27);
     setSelection(selectionInFlatTree, 27);
-    selection.expandUsingGranularity(WordGranularity);
-    selectionInFlatTree.expandUsingGranularity(WordGranularity);
+    selection = expandUsingGranularity(selection, WordGranularity);
+    selectionInFlatTree =
+        expandUsingGranularity(selectionInFlatTree, WordGranularity);
 
     Range* range = firstRangeOf(selection);
     EXPECT_EQ(27, range->startOffset());
@@ -405,8 +426,9 @@ TEST_F(VisibleSelectionTest, WordGranularity) {
   {
     setSelection(selection, 0, 1);
     setSelection(selectionInFlatTree, 0, 1);
-    selection.expandUsingGranularity(WordGranularity);
-    selectionInFlatTree.expandUsingGranularity(WordGranularity);
+    selection = expandUsingGranularity(selection, WordGranularity);
+    selectionInFlatTree =
+        expandUsingGranularity(selectionInFlatTree, WordGranularity);
 
     Range* range = firstRangeOf(selection);
     EXPECT_EQ(0, range->startOffset());
@@ -420,8 +442,9 @@ TEST_F(VisibleSelectionTest, WordGranularity) {
   {
     setSelection(selection, 2, 8);
     setSelection(selectionInFlatTree, 2, 8);
-    selection.expandUsingGranularity(WordGranularity);
-    selectionInFlatTree.expandUsingGranularity(WordGranularity);
+    selection = expandUsingGranularity(selection, WordGranularity);
+    selectionInFlatTree =
+        expandUsingGranularity(selectionInFlatTree, WordGranularity);
 
     Range* range = firstRangeOf(selection);
     EXPECT_EQ(0, range->startOffset());

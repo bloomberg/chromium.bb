@@ -196,9 +196,15 @@ bool SelectionController::handleMousePressEventSingleClick(
       newSelection.setExtent(pos);
     }
 
+    // TODO(yosin): We should have |newBase| and |newExtent| instead of
+    // |newSelection|.
     if (selection().granularity() != CharacterGranularity) {
       granularity = selection().granularity();
-      newSelection.expandUsingGranularity(selection().granularity());
+      newSelection = createVisibleSelection(
+          SelectionInFlatTree::Builder()
+              .setBaseAndExtent(newSelection.base(), newSelection.extent())
+              .setGranularity(granularity)
+              .build());
     }
   } else if (m_selectionState != SelectionState::ExtendedSelection) {
     if (visiblePos.isNull()) {
@@ -333,8 +339,15 @@ void SelectionController::updateSelectionForMouseDrag(
     newSelection.setExtent(targetPosition);
   }
 
-  if (selection().granularity() != CharacterGranularity)
-    newSelection.expandUsingGranularity(selection().granularity());
+  // TODO(yosin): We should have |newBase| and |newExtent| instead of
+  // |newSelection|.
+  if (selection().granularity() != CharacterGranularity) {
+    newSelection = createVisibleSelection(
+        SelectionInFlatTree::Builder()
+            .setBaseAndExtent(newSelection.base(), newSelection.extent())
+            .setGranularity(selection().granularity())
+            .build());
+  }
 
   setNonDirectionalSelectionIfNeeded(newSelection, selection().granularity(),
                                      AdjustEndpointsAtBidiBoundary);
@@ -393,10 +406,11 @@ void SelectionController::selectClosestWordFromHitTestResult(
   const VisiblePositionInFlatTree& pos =
       visiblePositionOfHitTestResult(adjustedHitTestResult);
   if (pos.isNotNull()) {
-    SelectionInFlatTree::Builder builder;
-    builder.collapse(pos.toPositionWithAffinity());
-    newSelection = createVisibleSelection(builder.build());
-    newSelection.expandUsingGranularity(WordGranularity);
+    newSelection =
+        createVisibleSelection(SelectionInFlatTree::Builder()
+                                   .collapse(pos.toPositionWithAffinity())
+                                   .setGranularity(WordGranularity)
+                                   .build());
   }
 
   if (selectInputEventType == SelectInputEventType::Touch) {
@@ -675,10 +689,11 @@ bool SelectionController::handleMousePressEventTripleClick(
   const VisiblePositionInFlatTree& pos =
       visiblePositionOfHitTestResult(event.hitTestResult());
   if (pos.isNotNull()) {
-    SelectionInFlatTree::Builder builder;
-    builder.collapse(pos.toPositionWithAffinity());
-    newSelection = createVisibleSelection(builder.build());
-    newSelection.expandUsingGranularity(ParagraphGranularity);
+    newSelection =
+        createVisibleSelection(SelectionInFlatTree::Builder()
+                                   .collapse(pos.toPositionWithAffinity())
+                                   .setGranularity(ParagraphGranularity)
+                                   .build());
   }
 
   return updateSelectionForMouseDownDispatchingSelectStart(
