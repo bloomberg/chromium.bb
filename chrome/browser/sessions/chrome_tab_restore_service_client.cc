@@ -121,7 +121,7 @@ GURL ChromeTabRestoreServiceClient::GetNewTabURL() {
 }
 
 bool ChromeTabRestoreServiceClient::HasLastSession() {
-#if defined(ENABLE_SESSION_SERVICE)
+#if BUILDFLAG(ENABLE_SESSION_SERVICE)
   SessionService* session_service =
       SessionServiceFactory::GetForProfile(profile_);
   Profile::ExitType exit_type = profile_->GetLastSessionExitType();
@@ -141,7 +141,7 @@ void ChromeTabRestoreServiceClient::GetLastSession(
     const sessions::GetLastSessionCallback& callback,
     base::CancelableTaskTracker* tracker) {
   DCHECK(HasLastSession());
-#if defined(ENABLE_SESSION_SERVICE)
+#if BUILDFLAG(ENABLE_SESSION_SERVICE)
   SessionServiceFactory::GetForProfile(profile_)
       ->GetLastSession(callback, tracker);
 #endif

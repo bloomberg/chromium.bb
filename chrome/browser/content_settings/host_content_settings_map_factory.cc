@@ -21,7 +21,7 @@
 #include "extensions/browser/extensions_browser_client.h"
 #endif
 
-#if defined(ENABLE_SUPERVISED_USERS)
+#if BUILDFLAG(ENABLE_SUPERVISED_USERS)
 #include "chrome/browser/content_settings/content_settings_supervised_provider.h"
 #include "chrome/browser/supervised_user/supervised_user_settings_service.h"
 #include "chrome/browser/supervised_user/supervised_user_settings_service_factory.h"
@@ -31,7 +31,7 @@ HostContentSettingsMapFactory::HostContentSettingsMapFactory()
     : RefcountedBrowserContextKeyedServiceFactory(
         "HostContentSettingsMap",
         BrowserContextDependencyManager::GetInstance()) {
-#if defined(ENABLE_SUPERVISED_USERS)
+#if BUILDFLAG(ENABLE_SUPERVISED_USERS)
   DependsOn(SupervisedUserSettingsServiceFactory::GetInstance());
 #endif
 #if defined(ENABLE_EXTENSIONS)
@@ -94,7 +94,7 @@ scoped_refptr<RefcountedKeyedService>
   if (ext_service)
     ext_service->RegisterContentSettings(settings_map.get());
 #endif // defined(ENABLE_EXTENSIONS)
-#if defined(ENABLE_SUPERVISED_USERS)
+#if BUILDFLAG(ENABLE_SUPERVISED_USERS)
   SupervisedUserSettingsService* supervised_service =
       SupervisedUserSettingsServiceFactory::GetForProfile(profile);
   // This may be null in testing.
@@ -104,7 +104,7 @@ scoped_refptr<RefcountedKeyedService>
     settings_map->RegisterProvider(HostContentSettingsMap::SUPERVISED_PROVIDER,
                                    std::move(supervised_provider));
   }
-#endif // defined(ENABLE_SUPERVISED_USERS)
+#endif // BUILDFLAG(ENABLE_SUPERVISED_USERS)
 
   return settings_map;
 }

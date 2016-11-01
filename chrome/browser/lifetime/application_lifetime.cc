@@ -34,6 +34,7 @@
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
 #include "chrome/browser/ui/user_manager.h"
 #include "chrome/common/chrome_constants.h"
+#include "chrome/common/features.h"
 #include "chrome/common/pref_names.h"
 #include "components/prefs/pref_service.h"
 #include "content/public/browser/browser_thread.h"
@@ -123,7 +124,7 @@ void ShutdownIfNoBrowsers() {
   // Tell everyone that we are shutting down.
   browser_shutdown::SetTryingToQuit(true);
 
-#if defined(ENABLE_SESSION_SERVICE)
+#if BUILDFLAG(ENABLE_SESSION_SERVICE)
   // If ShuttingDownWithoutClosingBrowsers() returns true, the session
   // services may not get a chance to shut down normally, so explicitly shut
   // them down here to ensure they have a chance to persist their data.

@@ -7,6 +7,7 @@
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/sessions/session_service.h"
 #include "chrome/browser/sessions/session_service_factory.h"
+#include "chrome/common/features.h"
 #include "content/public/browser/web_contents.h"
 
 #if defined(ENABLE_EXTENSIONS)
@@ -49,7 +50,7 @@ SessionID::id_type SessionTabHelper::IdForWindowContainingTab(
 }
 
 void SessionTabHelper::UserAgentOverrideSet(const std::string& user_agent) {
-#if defined(ENABLE_SESSION_SERVICE)
+#if BUILDFLAG(ENABLE_SESSION_SERVICE)
   Profile* profile =
       Profile::FromBrowserContext(web_contents()->GetBrowserContext());
   SessionService* session = SessionServiceFactory::GetForProfile(profile);

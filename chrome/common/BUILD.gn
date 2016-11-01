@@ -35,6 +35,8 @@ buildflag_header("features") {
     "ENABLE_PACKAGE_MASH_SERVICES=$enable_package_mash_services",
     "ENABLE_PLUGIN_INSTALLATION=$enable_plugin_installation",
     "ENABLE_SERVICE_DISCOVERY=$enable_service_discovery",
+    "ENABLE_SESSION_SERVICE=$enable_session_service",
+    "ENABLE_SUPERVISED_USERS=$enable_supervised_users",
     "ENABLE_XPC_NOTIFICATIONS=$enable_xpc_notifications",
     "PGO_BUILD=$pgo_build",
     "USE_VULCANIZE=$use_vulcanize",

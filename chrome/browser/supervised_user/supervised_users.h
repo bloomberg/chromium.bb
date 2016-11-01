@@ -5,9 +5,11 @@
 #ifndef CHROME_BROWSER_SUPERVISED_USER_SUPERVISED_USERS_H_
 #define CHROME_BROWSER_SUPERVISED_USER_SUPERVISED_USERS_H_
 
+#include "chrome/common/features.h"
+
 // Compile-time check to make sure that we don't include supervised user source
 // files when ENABLE_SUPERVISED_USERS is not defined.
-#if !defined(ENABLE_SUPERVISED_USERS)
+#if !BUILDFLAG(ENABLE_SUPERVISED_USERS)
 #error "Supervised users aren't enabled."
 #endif
 

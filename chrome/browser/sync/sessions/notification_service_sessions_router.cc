@@ -27,7 +27,7 @@
 #include "chrome/browser/android/tab_android.h"
 #endif
 
-#if defined(ENABLE_SUPERVISED_USERS)
+#if BUILDFLAG(ENABLE_SUPERVISED_USERS)
 #include "chrome/browser/supervised_user/supervised_user_service.h"
 #include "chrome/browser/supervised_user/supervised_user_service_factory.h"
 #endif
@@ -92,7 +92,7 @@ NotificationServiceSessionsRouter::NotificationServiceSessionsRouter(
         base::Bind(&NotificationServiceSessionsRouter::OnFaviconsChanged,
                    base::Unretained(this)));
   }
-#if defined(ENABLE_SUPERVISED_USERS)
+#if BUILDFLAG(ENABLE_SUPERVISED_USERS)
   if (profile_->IsSupervised()) {
     SupervisedUserService* supervised_user_service =
         SupervisedUserServiceFactory::GetForProfile(profile_);

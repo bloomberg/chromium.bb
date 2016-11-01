@@ -14,6 +14,7 @@
 #include "chrome/browser/signin/signin_error_controller_factory.h"
 #include "chrome/browser/signin/signin_manager_factory.h"
 #include "chrome/browser/ui/webui/signin/signin_utils.h"
+#include "chrome/common/features.h"
 #include "chrome/common/pref_names.h"
 #include "chrome/grit/generated_resources.h"
 #include "chrome/test/base/browser_with_test_window_test.h"
@@ -31,7 +32,7 @@
 #include "testing/gtest/include/gtest/gtest.h"
 #include "ui/base/l10n/l10n_util.h"
 
-#if defined(ENABLE_SUPERVISED_USERS)
+#if BUILDFLAG(ENABLE_SUPERVISED_USERS)
 #include "chrome/browser/supervised_user/legacy/supervised_user_sync_service.h"
 #include "chrome/browser/supervised_user/legacy/supervised_user_sync_service_factory.h"
 #endif
@@ -52,7 +53,7 @@ const char kTestEmail2[] = "foo2@bar.com";
 
 const char kTestWebUIResponse[] = "cr.webUIListenerCallback";
 
-#if defined(ENABLE_SUPERVISED_USERS)
+#if BUILDFLAG(ENABLE_SUPERVISED_USERS)
 const char kSupervisedUserId1[] = "test-supervised-id-1";
 const char kSupervisedUserId2[] = "test-supervised-id-2";
 
@@ -142,7 +143,7 @@ class TestSigninCreateProfileHandler : public SigninCreateProfileHandler {
                     Profile* custodian_profile,
                     Profile* new_profile));
 
-#if defined(ENABLE_SUPERVISED_USERS)
+#if BUILDFLAG(ENABLE_SUPERVISED_USERS)
   // Calls the callback method to resume profile creation flow.
   void RealRegisterSupervisedUser(bool create_shortcut,
                                   const std::string& supervised_user_id,
@@ -191,7 +192,7 @@ class SigninCreateProfileHandlerTest : public BrowserWithTestWindowTest {
     fake_signin_manager_->SetAuthenticatedAccountInfo(kTestGaiaId1,
                                                       kTestEmail1);
 
-#if defined(ENABLE_SUPERVISED_USERS)
+#if BUILDFLAG(ENABLE_SUPERVISED_USERS)
     // Add supervised users to the custodian profile.
     SupervisedUserSyncService* sync_service_ =
         SupervisedUserSyncServiceFactory::GetForProfile(custodian_);
@@ -423,7 +424,7 @@ TEST_F(SigninCreateProfileHandlerTest, CreateProfileWithForceSignin) {
   ASSERT_FALSE(show_confirmation);
 }
 
-#if defined(ENABLE_SUPERVISED_USERS)
+#if BUILDFLAG(ENABLE_SUPERVISED_USERS)
 
 TEST_F(SigninCreateProfileHandlerTest, CreateSupervisedUser) {
   // Expect the call to create the profile.

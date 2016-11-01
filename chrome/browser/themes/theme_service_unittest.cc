@@ -19,6 +19,7 @@
 #include "chrome/browser/themes/theme_properties.h"
 #include "chrome/browser/themes/theme_service_factory.h"
 #include "chrome/common/chrome_paths.h"
+#include "chrome/common/features.h"
 #include "chrome/common/pref_names.h"
 #include "chrome/test/base/testing_browser_process.h"
 #include "chrome/test/base/testing_profile.h"
@@ -35,7 +36,7 @@
 #include "ui/base/test/material_design_controller_test_api.h"
 #include "ui/base/ui_base_switches.h"
 
-#if defined(ENABLE_SUPERVISED_USERS)
+#if BUILDFLAG(ENABLE_SUPERVISED_USERS)
 #include "chrome/browser/supervised_user/supervised_user_service.h"
 #include "chrome/browser/supervised_user/supervised_user_service_factory.h"
 #endif
@@ -358,7 +359,7 @@ TEST_F(ThemeServiceTest, UninstallThemeOnThemeChangeNotification) {
   EXPECT_EQ(extension1_id, theme_service->GetThemeID());
 }
 
-#if defined(ENABLE_SUPERVISED_USERS)
+#if BUILDFLAG(ENABLE_SUPERVISED_USERS)
 class ThemeServiceSupervisedUserTest : public ThemeServiceTest {
  public:
   ThemeServiceSupervisedUserTest() {}
@@ -396,7 +397,7 @@ TEST_F(ThemeServiceSupervisedUserTest, SupervisedUserThemeReplacesNativeTheme) {
             CustomThemeSupplier::SUPERVISED_USER_THEME);
 }
 #endif // defined(OS_LINUX) && !defined(OS_CHROMEOS)
-#endif // defined(ENABLE_SUPERVISED_USERS)
+#endif // BUILDFLAG(ENABLE_SUPERVISED_USERS)
 
 #if !defined(OS_MACOSX)  // Mac uses different colors than other platforms.
 // Simple class to run tests in material design mode.

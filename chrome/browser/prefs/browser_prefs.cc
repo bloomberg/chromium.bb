@@ -136,7 +136,7 @@
 #include "chrome/browser/plugins/plugins_resource_service.h"
 #endif
 
-#if defined(ENABLE_SUPERVISED_USERS)
+#if BUILDFLAG(ENABLE_SUPERVISED_USERS)
 #include "chrome/browser/supervised_user/child_accounts/child_account_service.h"
 #include "chrome/browser/supervised_user/legacy/supervised_user_shared_settings_service.h"
 #include "chrome/browser/supervised_user/legacy/supervised_user_sync_service.h"
@@ -544,7 +544,7 @@ void RegisterProfilePrefs(user_prefs::PrefRegistrySyncable* registry) {
   LocalDiscoveryUI::RegisterProfilePrefs(registry);
 #endif
 
-#if defined(ENABLE_SUPERVISED_USERS)
+#if BUILDFLAG(ENABLE_SUPERVISED_USERS)
 #if !defined(OS_ANDROID)
   SupervisedUserSharedSettingsService::RegisterProfilePrefs(registry);
   SupervisedUserSyncService::RegisterProfilePrefs(registry);

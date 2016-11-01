@@ -23,6 +23,7 @@
 #include "chrome/browser/profiles/profiles_state.h"
 #include "chrome/browser/sync/profile_sync_service_factory.h"
 #include "chrome/browser/ui/webui/profile_helper.h"
+#include "chrome/common/features.h"
 #include "chrome/common/pref_names.h"
 #include "chrome/grit/generated_resources.h"
 #include "components/browser_sync/profile_sync_service.h"
@@ -30,7 +31,7 @@
 #include "content/public/browser/web_ui.h"
 #include "ui/base/l10n/l10n_util.h"
 
-#if defined(ENABLE_SUPERVISED_USERS)
+#if BUILDFLAG(ENABLE_SUPERVISED_USERS)
 #include "chrome/browser/supervised_user/legacy/supervised_user_registration_utility.h"
 #include "chrome/browser/supervised_user/legacy/supervised_user_sync_service.h"
 #include "chrome/browser/supervised_user/legacy/supervised_user_sync_service_factory.h"
@@ -46,7 +47,7 @@ CreateProfileHandler::CreateProfileHandler()
 }
 
 CreateProfileHandler::~CreateProfileHandler() {
-#if defined(ENABLE_SUPERVISED_USERS)
+#if BUILDFLAG(ENABLE_SUPERVISED_USERS)
   // Cancellation is only supported for supervised users.
   CancelProfileRegistration(false);
 #endif
@@ -57,7 +58,7 @@ void CreateProfileHandler::GetLocalizedValues(
 }
 
 void CreateProfileHandler::RegisterMessages() {
-#if defined(ENABLE_SUPERVISED_USERS)
+#if BUILDFLAG(ENABLE_SUPERVISED_USERS)
   // Cancellation is only supported for supervised users.
   web_ui()->RegisterMessageCallback(
       "cancelCreateProfile",
@@ -71,7 +72,7 @@ void CreateProfileHandler::RegisterMessages() {
 }
 
 void CreateProfileHandler::CreateProfile(const base::ListValue* args) {
-#if defined(ENABLE_SUPERVISED_USERS)
+#if BUILDFLAG(ENABLE_SUPERVISED_USERS)
   // This handler could have been called for a supervised user, for example
   // because the user fiddled with the web inspector. Silently return.
   if (Profile::FromWebUI(web_ui())->IsSupervised())
@@ -106,7 +107,7 @@ void CreateProfileHandler::CreateProfile(const base::ListValue* args) {
     args->GetBoolean(2, &create_shortcut);
   }
   std::string supervised_user_id;
-#if defined(ENABLE_SUPERVISED_USERS)
+#if BUILDFLAG(ENABLE_SUPERVISED_USERS)
   if (!ProcessSupervisedCreateProfileArgs(args, &supervised_user_id))
     return;
 #endif
@@ -165,7 +166,7 @@ void CreateProfileHandler::HandleProfileCreationSuccess(
       CreateShortcutAndShowSuccess(create_shortcut, profile);
       break;
     }
-#if defined(ENABLE_SUPERVISED_USERS)
+#if BUILDFLAG(ENABLE_SUPERVISED_USERS)
     case SUPERVISED_PROFILE_CREATION:
     case SUPERVISED_PROFILE_IMPORT:
       RegisterSupervisedUser(create_shortcut, supervised_user_id, profile);
@@ -194,7 +195,7 @@ void CreateProfileHandler::CreateShortcutAndShowSuccess(bool create_shortcut,
   dict.SetString("name",
                  profile->GetPrefs()->GetString(prefs::kProfileName));
   dict.Set("filePath", base::CreateFilePathValue(profile->GetPath()));
-#if defined(ENABLE_SUPERVISED_USERS)
+#if BUILDFLAG(ENABLE_SUPERVISED_USERS)
   bool is_supervised =
       profile_creation_type_ == SUPERVISED_PROFILE_CREATION ||
       profile_creation_type_ == SUPERVISED_PROFILE_IMPORT;
@@ -209,7 +210,7 @@ void CreateProfileHandler::CreateShortcutAndShowSuccess(bool create_shortcut,
   // new non-supervised user profile we don't show any confirmation, so open
   // the new window now.
   bool should_open_new_window = true;
-#if defined(ENABLE_SUPERVISED_USERS)
+#if BUILDFLAG(ENABLE_SUPERVISED_USERS)
   if (profile_creation_type_ == SUPERVISED_PROFILE_CREATION)
     should_open_new_window = false;
 #endif
@@ -252,7 +253,7 @@ void CreateProfileHandler::RecordProfileCreationMetrics(
 base::string16 CreateProfileHandler::GetProfileCreationErrorMessageLocal()
     const {
   int message_id = IDS_PROFILES_CREATE_LOCAL_ERROR;
-#if defined(ENABLE_SUPERVISED_USERS)
+#if BUILDFLAG(ENABLE_SUPERVISED_USERS)
   // Local errors can occur during supervised profile import.
   if (profile_creation_type_ == SUPERVISED_PROFILE_IMPORT)
     message_id = IDS_LEGACY_SUPERVISED_USER_IMPORT_LOCAL_ERROR;
@@ -260,7 +261,7 @@ base::string16 CreateProfileHandler::GetProfileCreationErrorMessageLocal()
   return l10n_util::GetStringUTF16(message_id);
 }
 
-#if defined(ENABLE_SUPERVISED_USERS)
+#if BUILDFLAG(ENABLE_SUPERVISED_USERS)
 base::string16 CreateProfileHandler::GetProfileCreationErrorMessageRemote()
     const {
   return l10n_util::GetStringUTF16(
@@ -281,7 +282,7 @@ base::string16 CreateProfileHandler::GetProfileCreationErrorMessageSignin()
 std::string CreateProfileHandler::GetJavascriptMethodName(
     ProfileCreationStatus status) const {
   switch (profile_creation_type_) {
-#if defined(ENABLE_SUPERVISED_USERS)
+#if BUILDFLAG(ENABLE_SUPERVISED_USERS)
     case SUPERVISED_PROFILE_IMPORT:
       switch (status) {
         case PROFILE_CREATION_SUCCESS:
@@ -305,7 +306,7 @@ std::string CreateProfileHandler::GetJavascriptMethodName(
   return std::string();
 }
 
-#if defined(ENABLE_SUPERVISED_USERS)
+#if BUILDFLAG(ENABLE_SUPERVISED_USERS)
 bool CreateProfileHandler::ProcessSupervisedCreateProfileArgs(
     const base::ListValue* args, std::string* supervised_user_id) {
   bool supervised_user = false;

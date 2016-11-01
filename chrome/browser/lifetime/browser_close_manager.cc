@@ -23,6 +23,7 @@
 #include "chrome/browser/ui/chrome_pages.h"
 #include "chrome/browser/ui/scoped_tabbed_browser_displayer.h"
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
+#include "chrome/common/features.h"
 #include "content/public/browser/web_contents.h"
 
 namespace {
@@ -142,7 +143,7 @@ void BrowserCloseManager::OnReportDownloadsCancellable(bool proceed) {
 }
 
 void BrowserCloseManager::CloseBrowsers() {
-#if defined(ENABLE_SESSION_SERVICE)
+#if BUILDFLAG(ENABLE_SESSION_SERVICE)
   // Before we close the browsers shutdown all session services. That way an
   // exit can restore all browsers open before exiting.
   ProfileManager::ShutdownSessionServices();

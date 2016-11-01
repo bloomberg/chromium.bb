@@ -91,7 +91,7 @@
 #include "extensions/common/user_script.h"
 #endif
 
-#if defined(ENABLE_SUPERVISED_USERS)
+#if BUILDFLAG(ENABLE_SUPERVISED_USERS)
 #include "chrome/browser/supervised_user/supervised_user_resource_throttle.h"
 #endif
 
@@ -618,7 +618,7 @@ void ChromeResourceDispatcherHostDelegate::AppendStandardResourceThrottles(
   if (first_throttle)
     throttles->push_back(first_throttle);
 
-#if defined(ENABLE_SUPERVISED_USERS)
+#if BUILDFLAG(ENABLE_SUPERVISED_USERS)
   bool is_subresource_request =
       resource_type != content::RESOURCE_TYPE_MAIN_FRAME;
   throttles->push_back(new SupervisedUserResourceThrottle(

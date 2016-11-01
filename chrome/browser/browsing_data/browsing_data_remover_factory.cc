@@ -32,7 +32,7 @@
 #include "extensions/browser/extension_prefs_factory.h"
 #endif
 
-#if defined(ENABLE_SESSION_SERVICE)
+#if BUILDFLAG(ENABLE_SESSION_SERVICE)
 #include "chrome/browser/sessions/session_service_factory.h"
 #endif
 
@@ -75,7 +75,7 @@ BrowsingDataRemoverFactory::BrowsingDataRemoverFactory()
   DependsOn(extensions::ExtensionPrefsFactory::GetInstance());
 #endif
 
-#if defined(ENABLE_SESSION_SERVICE)
+#if BUILDFLAG(ENABLE_SESSION_SERVICE)
   DependsOn(SessionServiceFactory::GetInstance());
 #endif
 }

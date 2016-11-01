@@ -109,7 +109,7 @@
 #include "chrome/browser/browsing_data/browsing_data_flash_lso_helper.h"
 #endif
 
-#if defined(ENABLE_SESSION_SERVICE)
+#if BUILDFLAG(ENABLE_SESSION_SERVICE)
 #include "chrome/browser/sessions/session_service.h"
 #include "chrome/browser/sessions/session_service_factory.h"
 #endif
@@ -631,7 +631,7 @@ void BrowsingDataRemover::RemoveImpl(
         tab_service->DeleteLastSession();
       }
 
-#if defined(ENABLE_SESSION_SERVICE)
+#if BUILDFLAG(ENABLE_SESSION_SERVICE)
       // We also delete the last session when we delete the history.
       SessionService* session_service =
           SessionServiceFactory::GetForProfile(profile_);

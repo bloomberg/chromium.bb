@@ -50,12 +50,6 @@ declare_args() {
   # We always build Google Chrome and Chromecast with proprietary codecs.
   proprietary_codecs = is_chrome_branded || is_chromecast
 
-  # Enables use of the session service, which is enabled by default.
-  # Android stores them separately on the Java side.
-  enable_session_service = !is_android && !is_ios && !is_chromecast
-
-  enable_supervised_users = !is_ios && !is_chromecast
-
   # Variable safe_browsing is used to control the build time configuration for
   # safe browsing feature. Safe browsing can be compiled in 3 different levels:
   # 0 disables it, 1 enables it fully, and 2 enables mobile protection via an

@@ -17,11 +17,12 @@
 #include "base/strings/string16.h"
 #include "chrome/browser/profiles/profile_attributes_storage.h"
 #include "chrome/browser/profiles/profile_metrics.h"
+#include "chrome/common/features.h"
 #include "content/public/browser/web_contents.h"
 #include "content/public/browser/web_contents_observer.h"
 #include "ui/gfx/image/image.h"
 
-#if defined(ENABLE_SUPERVISED_USERS)
+#if BUILDFLAG(ENABLE_SUPERVISED_USERS)
 #include "chrome/browser/supervised_user/supervised_user_service_observer.h"
 #endif
 
@@ -39,7 +40,7 @@ class SupervisedUserService;
 // data changes, and the view for this model should forward actions
 // back to it in response to user events.
 class AvatarMenu :
-#if defined(ENABLE_SUPERVISED_USERS)
+#if BUILDFLAG(ENABLE_SUPERVISED_USERS)
     public SupervisedUserServiceObserver,
 #endif
     public ProfileAttributesStorage::Observer {
@@ -161,7 +162,7 @@ class AvatarMenu :
       const base::FilePath& profile_path) override;
   void OnProfileIsOmittedChanged(const base::FilePath& profile_path) override;
 
-#if defined(ENABLE_SUPERVISED_USERS)
+#if BUILDFLAG(ENABLE_SUPERVISED_USERS)
   // SupervisedUserServiceObserver:
   void OnCustodianInfoChanged() override;
 #endif
@@ -175,7 +176,7 @@ class AvatarMenu :
   // The controller for avatar menu actions.
   std::unique_ptr<AvatarMenuActions> menu_actions_;
 
-#if defined(ENABLE_SUPERVISED_USERS)
+#if BUILDFLAG(ENABLE_SUPERVISED_USERS)
   // Observes changes to a supervised user's custodian info.
   ScopedObserver<SupervisedUserService, SupervisedUserServiceObserver>
       supervised_user_observer_;
