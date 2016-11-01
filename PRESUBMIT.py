@@ -52,8 +52,6 @@ _TEST_CODE_EXCLUDED_PATHS = (
     r'.*[\\\/](test|tool(s)?)[\\\/].*',
     # content_shell is used for running layout tests.
     r'content[\\\/]shell[\\\/].*',
-    # At request of folks maintaining this folder.
-    r'chrome[\\\/]browser[\\\/]automation[\\\/].*',
     # Non-production example code.
     r'mojo[\\\/]examples[\\\/].*',
     # Launcher for running iOS tests on the simulator.
