@@ -498,13 +498,15 @@ class SyncStage(generic_stages.BuilderStage):
     return bucket
 
   def PostSlaveBuildToBuildbucket(self, build_name, build_config,
-                                  master_build_id, dryrun):
+                                  master_build_id, buildset_tag, dryrun):
     """Send a Put slave build request to Buildbucket.
 
     Args:
       build_name: Salve build name to put to Buildbucket.
       build_config: Slave build config to put to Buildbucket.
       master_build_id: Master build id of the slave build.
+      buildset_tag: The buildset tag for strong consistent tag queries.
+                    More context: crbug.com/661689
       dryrun: Whether a dryrun.
     """
     body = json.dumps({
@@ -517,8 +519,11 @@ class SyncStage(generic_stages.BuilderStage):
                 'cbb_master_build_id': master_build_id,
             }
         }),
-        'tags':['build_type:%s' % build_config.build_type,
-                'master:False']
+        'tags':['buildset:%s' % buildset_tag,
+                'build_type:%s' % build_config.build_type,
+                'master:False',
+                'cbb_config:%s' % build_name,
+                'cbb_master_build_id:%s' % master_build_id]
     })
 
     content = self.buildbucket_client.PutBuildRequest(
@@ -548,6 +553,9 @@ class SyncStage(generic_stages.BuilderStage):
       logging.info('No build id. Skip scheduling slaves.')
       return
 
+    buildset_tag = 'cbuildbot/%s/%s/%s' % (
+        self._run.manifest_branch, self._run.config.name, build_id)
+
     scheduled_slave_builds = []
 
     # Get all active slave build configs.
@@ -555,7 +563,7 @@ class SyncStage(generic_stages.BuilderStage):
     for slave_name, slave_config in slave_config_map.iteritems():
       try:
         buildbucket_id, created_ts = self.PostSlaveBuildToBuildbucket(
-            slave_name, slave_config, build_id, dryrun)
+            slave_name, slave_config, build_id, buildset_tag, dryrun)
 
         scheduled_slave_builds.append((slave_name, buildbucket_id, created_ts))
       except buildbucket_lib.BuildbucketResponseException as e:
