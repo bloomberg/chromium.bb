@@ -1466,6 +1466,7 @@ TEST_P(GLES3DecoderWithShaderTest, GetTransformFeedbackVaryingSucceeds) {
   const GLuint kIndex = 1;
   const uint32_t kBucketId = 123;
   const char kName[] = "HolyCow";
+  const GLsizei kNumVaryings = 2;
   const GLsizei kBufferSize = static_cast<GLsizei>(strlen(kName) + 1);
   const GLsizei kSize = 2;
   const GLenum kType = GL_FLOAT_VEC2;
@@ -1477,12 +1478,12 @@ TEST_P(GLES3DecoderWithShaderTest, GetTransformFeedbackVaryingSucceeds) {
       .WillOnce(SetArgPointee<2>(GL_TRUE))
       .RetiresOnSaturation();
   EXPECT_CALL(*gl_, GetProgramiv(kServiceProgramId,
+                                 GL_TRANSFORM_FEEDBACK_VARYINGS, _))
+      .WillOnce(SetArgPointee<2>(kNumVaryings))
+      .RetiresOnSaturation();
+  EXPECT_CALL(*gl_, GetProgramiv(kServiceProgramId,
                                  GL_TRANSFORM_FEEDBACK_VARYING_MAX_LENGTH, _))
       .WillOnce(SetArgPointee<2>(kBufferSize))
-      .RetiresOnSaturation();
-  EXPECT_CALL(*gl_, GetError())
-      .WillOnce(Return(GL_NO_ERROR))
-      .WillOnce(Return(GL_NO_ERROR))
       .RetiresOnSaturation();
   EXPECT_CALL(*gl_,
               GetTransformFeedbackVarying(
@@ -1543,7 +1544,7 @@ TEST_P(GLES3DecoderWithShaderTest, GetTransformFeedbackVaryingBadProgramFails) {
 TEST_P(GLES3DecoderWithShaderTest, GetTransformFeedbackVaryingBadParamsFails) {
   const GLuint kIndex = 1;
   const uint32_t kBucketId = 123;
-  const GLsizei kBufferSize = 10;
+  const GLsizei kNumVaryings = 1;
   GetTransformFeedbackVarying cmd;
   typedef GetTransformFeedbackVarying::Result Result;
   Result* result = static_cast<Result*>(shared_memory_address_);
@@ -1557,17 +1558,8 @@ TEST_P(GLES3DecoderWithShaderTest, GetTransformFeedbackVaryingBadParamsFails) {
       .WillOnce(SetArgPointee<2>(GL_TRUE))
       .RetiresOnSaturation();
   EXPECT_CALL(*gl_, GetProgramiv(kServiceProgramId,
-                                 GL_TRANSFORM_FEEDBACK_VARYING_MAX_LENGTH, _))
-      .WillOnce(SetArgPointee<2>(kBufferSize))
-      .RetiresOnSaturation();
-  EXPECT_CALL(*gl_, GetError())
-      .WillOnce(Return(GL_NO_ERROR))
-      .WillOnce(Return(GL_INVALID_VALUE))
-      .RetiresOnSaturation();
-  EXPECT_CALL(*gl_,
-              GetTransformFeedbackVarying(
-                  kServiceProgramId, kIndex, _, _, _, _, _))
-      .Times(1)
+                                 GL_TRANSFORM_FEEDBACK_VARYINGS, _))
+      .WillOnce(SetArgPointee<2>(kNumVaryings))
       .RetiresOnSaturation();
   EXPECT_EQ(error::kNoError, ExecuteCmd(cmd));
   EXPECT_EQ(0, result->success);

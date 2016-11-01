@@ -15230,7 +15230,7 @@ error::Error GLES2DecoderImpl::HandleGetProgramInfoCHROMIUM(
 error::Error GLES2DecoderImpl::HandleGetUniformBlocksCHROMIUM(
     uint32_t immediate_data_size,
     const volatile void* cmd_data) {
-  if (!unsafe_es3_apis_enabled())
+  if (!feature_info_->IsWebGL2OrES3Context())
     return error::kUnknownCommand;
   const volatile gles2::cmds::GetUniformBlocksCHROMIUM& c =
       *static_cast<const volatile gles2::cmds::GetUniformBlocksCHROMIUM*>(
@@ -15251,7 +15251,7 @@ error::Error GLES2DecoderImpl::HandleGetUniformBlocksCHROMIUM(
 error::Error GLES2DecoderImpl::HandleGetUniformsES3CHROMIUM(
     uint32_t immediate_data_size,
     const volatile void* cmd_data) {
-  if (!unsafe_es3_apis_enabled())
+  if (!feature_info_->IsWebGL2OrES3Context())
     return error::kUnknownCommand;
   const volatile gles2::cmds::GetUniformsES3CHROMIUM& c =
       *static_cast<const volatile gles2::cmds::GetUniformsES3CHROMIUM*>(
@@ -15272,7 +15272,7 @@ error::Error GLES2DecoderImpl::HandleGetUniformsES3CHROMIUM(
 error::Error GLES2DecoderImpl::HandleGetTransformFeedbackVarying(
     uint32_t immediate_data_size,
     const volatile void* cmd_data) {
-  if (!unsafe_es3_apis_enabled())
+  if (!feature_info_->IsWebGL2OrES3Context())
     return error::kUnknownCommand;
   const volatile gles2::cmds::GetTransformFeedbackVarying& c =
       *static_cast<const volatile gles2::cmds::GetTransformFeedbackVarying*>(
@@ -15303,6 +15303,13 @@ error::Error GLES2DecoderImpl::HandleGetTransformFeedbackVarying(
         "glGetTransformFeedbackVarying", "program not linked");
     return error::kNoError;
   }
+  GLint num_varyings = 0;
+  glGetProgramiv(service_id, GL_TRANSFORM_FEEDBACK_VARYINGS, &num_varyings);
+  if (index >= static_cast<GLuint>(num_varyings)) {
+    LOCAL_SET_GL_ERROR(GL_INVALID_VALUE,
+        "glGetTransformFeedbackVarying", "index out of bounds");
+    return error::kNoError;
+  }
   GLint max_length = 0;
   glGetProgramiv(
       service_id, GL_TRANSFORM_FEEDBACK_VARYING_MAX_LENGTH, &max_length);
@@ -15311,14 +15318,8 @@ error::Error GLES2DecoderImpl::HandleGetTransformFeedbackVarying(
   GLsizei length = 0;
   GLsizei size = 0;
   GLenum type = 0;
-  LOCAL_COPY_REAL_GL_ERRORS_TO_WRAPPER("GetTransformFeedbackVarying");
   glGetTransformFeedbackVarying(
       service_id, index, max_length, &length, &size, &type, &buffer[0]);
-  GLenum error = glGetError();
-  if (error != GL_NO_ERROR) {
-    LOCAL_SET_GL_ERROR(error, "glGetTransformFeedbackVarying", "");
-    return error::kNoError;
-  }
   result->success = 1;  // true.
   result->size = static_cast<int32_t>(size);
   result->type = static_cast<uint32_t>(type);
@@ -15332,7 +15333,7 @@ error::Error GLES2DecoderImpl::HandleGetTransformFeedbackVarying(
 error::Error GLES2DecoderImpl::HandleGetTransformFeedbackVaryingsCHROMIUM(
     uint32_t immediate_data_size,
     const volatile void* cmd_data) {
-  if (!unsafe_es3_apis_enabled())
+  if (!feature_info_->IsWebGL2OrES3Context())
     return error::kUnknownCommand;
   const volatile gles2::cmds::GetTransformFeedbackVaryingsCHROMIUM& c =
       *static_cast<
@@ -17156,7 +17157,7 @@ error::Error GLES2DecoderImpl::HandleUniformBlockBinding(
     uint32_t immediate_data_size,
     const volatile void* cmd_data) {
   const char* func_name = "glUniformBlockBinding";
-  if (!unsafe_es3_apis_enabled())
+  if (!feature_info_->IsWebGL2OrES3Context())
     return error::kUnknownCommand;
   const volatile gles2::cmds::UniformBlockBinding& c =
       *static_cast<const volatile gles2::cmds::UniformBlockBinding*>(cmd_data);
@@ -17187,7 +17188,7 @@ error::Error GLES2DecoderImpl::HandleClientWaitSync(
     uint32_t immediate_data_size,
     const volatile void* cmd_data) {
   const char* function_name = "glClientWaitSync";
-  if (!unsafe_es3_apis_enabled())
+  if (!feature_info_->IsWebGL2OrES3Context())
     return error::kUnknownCommand;
   const volatile gles2::cmds::ClientWaitSync& c =
       *static_cast<const volatile gles2::cmds::ClientWaitSync*>(cmd_data);
@@ -17236,7 +17237,7 @@ error::Error GLES2DecoderImpl::HandleClientWaitSync(
 error::Error GLES2DecoderImpl::HandleWaitSync(uint32_t immediate_data_size,
                                               const volatile void* cmd_data) {
   const char* function_name = "glWaitSync";
-  if (!unsafe_es3_apis_enabled())
+  if (!feature_info_->IsWebGL2OrES3Context())
     return error::kUnknownCommand;
   const volatile gles2::cmds::WaitSync& c =
       *static_cast<const volatile gles2::cmds::WaitSync*>(cmd_data);
@@ -17276,7 +17277,7 @@ GLsync GLES2DecoderImpl::DoFenceSync(GLenum condition, GLbitfield flags) {
 error::Error GLES2DecoderImpl::HandleGetInternalformativ(
     uint32_t immediate_data_size,
     const volatile void* cmd_data) {
-  if (!unsafe_es3_apis_enabled())
+  if (!feature_info_->IsWebGL2OrES3Context())
     return error::kUnknownCommand;
   const volatile gles2::cmds::GetInternalformativ& c =
       *static_cast<const volatile gles2::cmds::GetInternalformativ*>(cmd_data);
@@ -17288,7 +17289,8 @@ error::Error GLES2DecoderImpl::HandleGetInternalformativ(
     return error::kNoError;
   }
   if (!validators_->render_buffer_format.IsValid(format)) {
-    LOCAL_SET_GL_ERROR_INVALID_ENUM("glGetInternalformativ", format, "format");
+    LOCAL_SET_GL_ERROR_INVALID_ENUM("glGetInternalformativ", format,
+                                    "internalformat");
     return error::kNoError;
   }
   if (!validators_->internal_format_parameter.IsValid(pname)) {
@@ -17370,7 +17372,7 @@ error::Error GLES2DecoderImpl::HandleGetInternalformativ(
 
 error::Error GLES2DecoderImpl::HandleMapBufferRange(
     uint32_t immediate_data_size, const volatile void* cmd_data) {
-  if (!unsafe_es3_apis_enabled()) {
+  if (!feature_info_->IsWebGL2OrES3Context()) {
     return error::kUnknownCommand;
   }
 
@@ -17481,7 +17483,7 @@ error::Error GLES2DecoderImpl::HandleMapBufferRange(
 
 error::Error GLES2DecoderImpl::HandleUnmapBuffer(
     uint32_t immediate_data_size, const volatile void* cmd_data) {
-  if (!unsafe_es3_apis_enabled()) {
+  if (!feature_info_->IsWebGL2OrES3Context()) {
     return error::kUnknownCommand;
   }
   const char* func_name = "glUnmapBuffer";
