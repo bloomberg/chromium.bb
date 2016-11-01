@@ -6,6 +6,7 @@
 #define CSSLazyParsingState_h
 
 #include "core/css/CSSSelectorList.h"
+#include "core/css/StyleSheetContents.h"
 #include "core/css/parser/CSSParserMode.h"
 #include "wtf/Vector.h"
 #include "wtf/text/WTFString.h"
@@ -20,20 +21,24 @@ class CSSLazyParsingState
  public:
   CSSLazyParsingState(const CSSParserContext&,
                       Vector<String> escapedStrings,
-                      const String& sheetText);
+                      const String& sheetText,
+                      StyleSheetContents*);
 
-  // This should be a copy of the context used in CSSParser::parseSheet.
-  const CSSParserContext& context() { return m_context; }
+  const CSSParserContext& context();
 
   bool shouldLazilyParseProperties(const CSSSelectorList&);
 
-  DEFINE_INLINE_TRACE() {}
+  DEFINE_INLINE_TRACE() { visitor->trace(m_owningContents); }
 
  private:
   CSSParserContext m_context;
   Vector<String> m_escapedStrings;
   // Also referenced on the css resource.
   String m_sheetText;
+
+  // Weak to ensure lazy state will never cause the contents to live longer than
+  // it should (we DCHECK this fact).
+  WeakMember<StyleSheetContents> m_owningContents;
 };
 
 }  // namespace blink

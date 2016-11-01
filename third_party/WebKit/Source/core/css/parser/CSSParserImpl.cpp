@@ -210,8 +210,8 @@ void CSSParserImpl::parseStyleSheet(const String& string,
                      "CSSParserImpl::parseStyleSheet.parse");
   CSSParserImpl parser(context, styleSheet);
   if (deferPropertyParsing) {
-    parser.m_lazyState =
-        new CSSLazyParsingState(context, scope.takeEscapedStrings(), string);
+    parser.m_lazyState = new CSSLazyParsingState(
+        context, scope.takeEscapedStrings(), string, parser.m_styleSheet);
   }
   bool firstRuleValid = parser.consumeRuleList(
       scope.tokenRange(), TopLevelRuleList, [&styleSheet](StyleRuleBase* rule) {
