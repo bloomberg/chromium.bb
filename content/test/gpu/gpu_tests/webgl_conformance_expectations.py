@@ -312,8 +312,6 @@ class WebGLConformanceExpectations(GpuTestExpectations):
         ['linux', 'intel'], bug=540543)  # ANGLE bug 1277
     self.Fail('conformance/glsl/misc/gl_position_unset.vert.html',
         ['linux', 'intel'], bug=540543)  # ANGLE bug 1277
-    self.Fail('conformance/glsl/misc/shaders-with-invariance.html',
-        ['linux', 'intel'], bug=540543)  # ANGLE bug 1276
     self.Fail('conformance/glsl/misc/shaders-with-varyings.html',
         ['linux', 'intel'], bug=540543)
     self.Fail('conformance/extensions/ext-disjoint-timer-query.html',
