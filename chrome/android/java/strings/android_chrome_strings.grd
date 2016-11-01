@@ -1611,9 +1611,6 @@ To obtain new licenses, connect to the internet and play your downloaded content
       <message name="IDS_PAGE_INFO_CONNECTION_OFFLINE" desc="Message to display in the page info bubble when viewing and offline page.">
         You are viewing an offline copy of this page from <ph name="CREATION_TIME">%1$s<ex>Feb 9, 2016</ex></ph>
       </message>
-      <message name="IDS_PAGE_INFO_OFFLINE_ICON" desc="Content description for the offline page icon on page info dialog.">
-        Offline content
-      </message>
       <message name="IDS_PAGE_INFO_DOMAIN_HIDDEN" desc="Message to display in the page info bubble when the domain is hidden.">
         This content is from <ph name="DOMAIN_NAME">%1$s<ex>google.com</ex></ph>, delivered by Google.
       </message>
