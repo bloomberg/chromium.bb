@@ -22,6 +22,7 @@
 #include "core/dom/custom/CustomElementUpgradeSorter.h"
 #include "core/dom/custom/V0CustomElementRegistrationContext.h"
 #include "core/frame/LocalDOMWindow.h"
+#include "platform/tracing/TraceEvent.h"
 #include "wtf/Allocator.h"
 
 namespace blink {
@@ -104,6 +105,7 @@ void CustomElementRegistry::define(const AtomicString& name,
                                    CustomElementDefinitionBuilder& builder,
                                    const ElementDefinitionOptions& options,
                                    ExceptionState& exceptionState) {
+  TRACE_EVENT1("blink", "CustomElementRegistry::define", "name", name.utf8());
   if (!builder.checkConstructorIntrinsics())
     return;
 

@@ -4,7 +4,9 @@
 
 #include "core/dom/custom/CustomElementReactionQueue.h"
 
+#include "core/dom/Element.h"
 #include "core/dom/custom/CustomElementReaction.h"
+#include "platform/tracing/TraceEvent.h"
 
 namespace blink {
 
@@ -23,6 +25,8 @@ void CustomElementReactionQueue::add(CustomElementReaction* reaction) {
 // There is one queue per element, so this could be invoked
 // recursively.
 void CustomElementReactionQueue::invokeReactions(Element* element) {
+  TRACE_EVENT1("blink", "CustomElementReactionQueue::invokeReactions", "name",
+               element->localName().utf8());
   while (m_index < m_reactions.size()) {
     CustomElementReaction* reaction = m_reactions[m_index];
     m_reactions[m_index++] = nullptr;

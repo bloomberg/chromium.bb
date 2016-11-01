@@ -19,6 +19,7 @@
 #include "core/dom/custom/CustomElementRegistry.h"
 #include "core/frame/LocalDOMWindow.h"
 #include "platform/RuntimeEnabledFeatures.h"
+#include "platform/tracing/TraceEvent.h"
 
 namespace blink {
 
@@ -27,6 +28,7 @@ void V8HTMLConstructor::htmlConstructor(
     const v8::FunctionCallbackInfo<v8::Value>& info,
     const WrapperTypeInfo& wrapperTypeInfo,
     const HTMLElementType elementInterfaceName) {
+  TRACE_EVENT0("blink", "HTMLConstructor");
   DCHECK(info.IsConstructCall());
 
   v8::Isolate* isolate = info.GetIsolate();
