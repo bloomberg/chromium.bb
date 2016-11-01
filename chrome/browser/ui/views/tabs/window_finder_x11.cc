@@ -4,6 +4,7 @@
 
 #include "chrome/browser/ui/views/tabs/window_finder.h"
 
+#include "chrome/browser/ui/views/tabs/window_finder_mus.h"
 #include "ui/display/display.h"
 #include "ui/display/screen.h"
 #include "ui/gfx/geometry/point_conversions.h"
@@ -26,8 +27,11 @@ gfx::Point DIPToPixelPoint(const gfx::Point& dip_point) {
 gfx::NativeWindow WindowFinder::GetLocalProcessWindowAtPoint(
     const gfx::Point& screen_point,
     const std::set<gfx::NativeWindow>& ignore) {
-  // The X11 server is the canonical state of what the window stacking order
-  // is.
+  gfx::NativeWindow mus_result = nullptr;
+  if (GetLocalProcessWindowAtPointMus(screen_point, ignore, &mus_result))
+    return mus_result;
+
+  // The X11 server is the canonical state of what the window stacking order is.
   views::X11TopmostWindowFinder finder;
   return finder.FindLocalProcessWindowAt(DIPToPixelPoint(screen_point), ignore);
 }

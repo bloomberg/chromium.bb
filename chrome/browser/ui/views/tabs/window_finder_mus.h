@@ -7,18 +7,13 @@
 
 #include "chrome/browser/ui/views/tabs/window_finder.h"
 
-class WindowFinderMus : public WindowFinder {
- public:
-  WindowFinderMus();
-  ~WindowFinderMus() override;
-
-  // Overridden from WindowFinder:
-  gfx::NativeWindow GetLocalProcessWindowAtPoint(
-      const gfx::Point& screen_point,
-      const std::set<gfx::NativeWindow>& ignore) override;
-
- private:
-  DISALLOW_COPY_AND_ASSIGN(WindowFinderMus);
-};
+// Used to locate the aura::Window under the specified point when in mus.
+// If running in mus true is returned and |mus_result| is set to the
+// aura::Window associated with the ui::Window under the specified point.
+// It's possible for true to be returned and mus_result to be set to null.
+bool GetLocalProcessWindowAtPointMus(
+    const gfx::Point& screen_point,
+    const std::set<gfx::NativeWindow>& ignore,
+    gfx::NativeWindow* mus_result);
 
 #endif  // CHROME_BROWSER_UI_VIEWS_TABS_WINDOW_FINDER_MUS_H_

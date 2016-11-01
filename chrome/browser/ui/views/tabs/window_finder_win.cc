@@ -9,6 +9,7 @@
 #include "base/macros.h"
 #include "base/win/scoped_gdi_object.h"
 #include "base/win/windows_version.h"
+#include "chrome/browser/ui/views/tabs/window_finder_mus.h"
 #include "ui/aura/window.h"
 #include "ui/display/win/screen_win.h"
 #include "ui/views/widget/desktop_aura/desktop_window_tree_host_win.h"
@@ -235,6 +236,10 @@ std::set<HWND> RemapIgnoreSet(const std::set<gfx::NativeView>& ignore) {
 gfx::NativeWindow WindowFinder::GetLocalProcessWindowAtPoint(
     const gfx::Point& screen_point,
     const std::set<gfx::NativeWindow>& ignore) {
+  gfx::NativeWindow mus_result = nullptr;
+  if (GetLocalProcessWindowAtPointMus(screen_point, ignore, &mus_result))
+    return mus_result;
+
   return LocalProcessWindowFinder::GetProcessWindowAtPoint(
       screen_point, RemapIgnoreSet(ignore));
 }

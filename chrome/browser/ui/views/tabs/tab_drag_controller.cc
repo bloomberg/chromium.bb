@@ -49,9 +49,6 @@
 #endif
 
 #if defined(USE_AURA)
-#include "chrome/browser/ui/views/tabs/window_finder_mus.h"  // nogncheck
-#include "content/public/common/service_manager_connection.h"  // nogncheck
-#include "services/service_manager/runner/common/client_util.h"  // nogncheck
 #include "ui/aura/env.h"  // nogncheck
 #include "ui/aura/window.h"  // nogncheck
 #include "ui/wm/core/window_modality_controller.h"  // nogncheck
@@ -225,17 +222,9 @@ TabDragController::TabDragController()
       is_mutating_(false),
       attach_x_(-1),
       attach_index_(-1),
+      window_finder_(base::MakeUnique<WindowFinder>()),
       weak_factory_(this) {
   instance_ = this;
-
-#if defined(USE_AURA)
-  content::ServiceManagerConnection* service_manager_connection =
-      content::ServiceManagerConnection::GetForProcess();
-  if (service_manager_connection && service_manager::ServiceManagerIsRemote())
-    window_finder_.reset(new WindowFinderMus);
-  else
-#endif
-    window_finder_.reset(new WindowFinder);
 }
 
 TabDragController::~TabDragController() {
