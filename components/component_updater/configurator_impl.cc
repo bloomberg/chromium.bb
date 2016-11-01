@@ -130,7 +130,7 @@ int ConfiguratorImpl::NextCheckDelay() const {
 }
 
 int ConfiguratorImpl::StepDelay() const {
-  return fast_update_ ? 1 : 1;
+  return 1;
 }
 
 int ConfiguratorImpl::OnDemandDelay() const {
