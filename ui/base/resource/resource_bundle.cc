@@ -215,7 +215,7 @@ void ResourceBundle::InitSharedInstanceWithPakFileRegion(
     NOTREACHED() << "failed to load pak file";
     return;
   }
-  g_shared_instance_->locale_resources_data_.reset(data_pack.release());
+  g_shared_instance_->locale_resources_data_ = std::move(data_pack);
   g_shared_instance_->InitDefaultFontList();
 }
 
@@ -336,7 +336,7 @@ std::string ResourceBundle::LoadLocaleResources(
     return std::string();
   }
 
-  locale_resources_data_.reset(data_pack.release());
+  locale_resources_data_ = std::move(data_pack);
   return app_locale;
 }
 #endif  // defined(OS_ANDROID)
@@ -353,7 +353,7 @@ void ResourceBundle::LoadTestResources(const base::FilePath& path,
 
   data_pack.reset(new DataPack(ui::SCALE_FACTOR_NONE));
   if (!locale_path.empty() && data_pack->LoadFromPath(locale_path)) {
-    locale_resources_data_.reset(data_pack.release());
+    locale_resources_data_ = std::move(data_pack);
   } else {
     locale_resources_data_.reset(new DataPack(ui::SCALE_FACTOR_NONE));
   }
