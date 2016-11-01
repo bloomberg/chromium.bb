@@ -6,6 +6,7 @@
 
 #include "base/command_line.h"
 #include "chrome/browser/background/background_contents_service.h"
+#include "chrome/browser/extensions/extension_system_factory.h"
 #include "chrome/browser/profiles/incognito_helpers.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/common/pref_names.h"
@@ -32,6 +33,7 @@ BackgroundContentsServiceFactory::BackgroundContentsServiceFactory()
         "BackgroundContentsService",
         BrowserContextDependencyManager::GetInstance()) {
   DependsOn(extensions::ExtensionRegistryFactory::GetInstance());
+  DependsOn(extensions::ExtensionSystemFactory::GetInstance());
 }
 
 BackgroundContentsServiceFactory::~BackgroundContentsServiceFactory() {

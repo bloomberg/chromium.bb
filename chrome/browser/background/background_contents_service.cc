@@ -50,6 +50,7 @@
 #include "extensions/common/extension_set.h"
 #include "extensions/common/manifest_handlers/background_info.h"
 #include "extensions/common/manifest_handlers/icons_handler.h"
+#include "extensions/common/one_shot_event.h"
 #include "extensions/grit/extensions_browser_resources.h"
 #include "ipc/ipc_message.h"
 #include "ui/base/l10n/l10n_util.h"
@@ -280,7 +281,7 @@ int BackgroundContentsService::restart_delay_in_ms_ = 3000;  // 3 seconds.
 BackgroundContentsService::BackgroundContentsService(
     Profile* profile,
     const base::CommandLine* command_line)
-    : prefs_(NULL),
+    : prefs_(nullptr),
       extension_registry_observer_(this),
       weak_ptr_factory_(this) {
   // Don't load/store preferences if the parent profile is incognito.
@@ -337,9 +338,9 @@ BackgroundContentsService::GetBackgroundContents() const
 
 void BackgroundContentsService::StartObserving(Profile* profile) {
   // On startup, load our background pages after extension-apps have loaded.
-  registrar_.Add(this,
-                 extensions::NOTIFICATION_EXTENSIONS_READY_DEPRECATED,
-                 content::Source<Profile>(profile));
+  extensions::ExtensionSystem::Get(profile)->ready().Post(
+      FROM_HERE, base::Bind(&BackgroundContentsService::OnExtensionSystemReady,
+                            weak_ptr_factory_.GetWeakPtr(), profile));
 
   // Track the lifecycle of all BackgroundContents in the system to allow us
   // to store an up-to-date list of the urls. Start tracking contents when they
@@ -370,21 +371,19 @@ void BackgroundContentsService::StartObserving(Profile* profile) {
   extension_registry_observer_.Add(extensions::ExtensionRegistry::Get(profile));
 }
 
+void BackgroundContentsService::OnExtensionSystemReady(Profile* profile) {
+  SCOPED_UMA_HISTOGRAM_TIMER("Extensions.BackgroundContentsServiceStartupTime");
+  LoadBackgroundContentsFromManifests(profile);
+  LoadBackgroundContentsFromPrefs(profile);
+  SendChangeNotification(profile);
+}
+
 void BackgroundContentsService::Observe(
     int type,
     const content::NotificationSource& source,
     const content::NotificationDetails& details) {
   TRACE_EVENT0("browser,startup", "BackgroundContentsService::Observe");
   switch (type) {
-    case extensions::NOTIFICATION_EXTENSIONS_READY_DEPRECATED: {
-      SCOPED_UMA_HISTOGRAM_TIMER(
-          "Extensions.BackgroundContentsServiceStartupTime");
-      Profile* profile = content::Source<Profile>(source).ptr();
-      LoadBackgroundContentsFromManifests(profile);
-      LoadBackgroundContentsFromPrefs(profile);
-      SendChangeNotification(profile);
-      break;
-    }
     case chrome::NOTIFICATION_BACKGROUND_CONTENTS_DELETED:
       BackgroundContentsShutdown(
           content::Details<BackgroundContents>(details).ptr());

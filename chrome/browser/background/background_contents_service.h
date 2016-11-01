@@ -151,6 +151,9 @@ class BackgroundContentsService : private content::NotificationObserver,
                const content::NotificationSource& source,
                const content::NotificationDetails& details) override;
 
+  // Called when ExtensionSystem is ready.
+  void OnExtensionSystemReady(Profile* profile);
+
   // extensions::ExtensionRegistryObserver implementation.
   void OnExtensionLoaded(content::BrowserContext* browser_context,
                          const extensions::Extension* extension) override;
