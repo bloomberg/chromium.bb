@@ -62,5 +62,6 @@ public abstract class MediaSessionObserver {
     public final void stopObserving() {
         if (mMediaSession == null) return;
         mMediaSession.removeObserver(this);
+        mMediaSession = null;
     }
 }
