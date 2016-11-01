@@ -32,57 +32,57 @@ InspectorTest.dumpTarget = function(targetAware)
     return InspectorTest.dumpTargetIds ?  "target " + targetAware.target().id() + " " : "";
 }
 
-InspectorTest.DebuggerModelMock = function(target)
-{
-    WebInspector.SDKModel.call(this, WebInspector.DebuggerModel, target);
-    this._breakpointResolvedEventTarget = new WebInspector.Object();
-    this._scripts = {};
-    this._breakpoints = {};
-    this._debuggerWorkspaceBinding = InspectorTest.testDebuggerWorkspaceBinding;
-}
+InspectorTest.DebuggerModelMock = class extends WebInspector.SDKModel {
+    constructor(target)
+    {
+        super(WebInspector.DebuggerModel, target);
+        this._breakpointResolvedEventTarget = new WebInspector.Object();
+        this._scripts = {};
+        this._breakpoints = {};
+        this._debuggerWorkspaceBinding = InspectorTest.testDebuggerWorkspaceBinding;
+    }
 
-InspectorTest.DebuggerModelMock.prototype = {
-    target: function()
+    target()
     {
         return this._target;
-    },
+    }
 
-    _targetDisposed: function() { },
+    _targetDisposed() { }
 
-    debuggerEnabled: function()
+    debuggerEnabled()
     {
         return true;
-    },
+    }
 
-    scriptsForSourceURL: function(url)
+    scriptsForSourceURL(url)
     {
         var script = this._scriptForURL(url);
         return script ? [script] : [];
-    },
+    }
 
-    _addScript: function(scriptId, url)
+    _addScript(scriptId, url)
     {
         var script = new WebInspector.Script(this, scriptId, url);
         this._scripts[scriptId] = script;
         this._debuggerWorkspaceBinding._targetToData.get(this._target)._parsedScriptSource({data: script});
-    },
+    }
 
-    _registerScript: function(script)
+    _registerScript(script)
     {
         this._scripts[script.scriptId] = script;
         this._debuggerWorkspaceBinding._targetToData.get(this._target)._parsedScriptSource({data: script});
-    },
+    }
 
-    _scriptForURL: function(url)
+    _scriptForURL(url)
     {
         for (var scriptId in this._scripts) {
             var script = this._scripts[scriptId];
             if (script.sourceURL === url)
                 return script;
         }
-    },
+    }
 
-    _scheduleSetBeakpointCallback: function(callback, breakpointId, locations)
+    _scheduleSetBeakpointCallback(callback, breakpointId, locations)
     {
         setTimeout(innerCallback.bind(this), 0);
 
@@ -96,14 +96,14 @@ InspectorTest.DebuggerModelMock.prototype = {
                 savedCallback();
             }
         }
-    },
+    }
 
-    createRawLocation: function(script, line, column)
+    createRawLocation(script, line, column)
     {
         return new WebInspector.DebuggerModel.Location(this, script.scriptId, line, column);
-    },
+    }
 
-    setBreakpointByURL: function(url, lineNumber, columnNumber, condition, callback)
+    setBreakpointByURL(url, lineNumber, columnNumber, condition, callback)
     {
         InspectorTest.addResult("    " + InspectorTest.dumpTarget(this) + "debuggerModel.setBreakpoint(" + [url, lineNumber, condition].join(":") + ")");
 
@@ -132,60 +132,58 @@ InspectorTest.DebuggerModelMock.prototype = {
         }
 
         this._scheduleSetBeakpointCallback(callback, breakpointId, locations);
-    },
+    }
 
-    removeBreakpoint: function(breakpointId, callback)
+    removeBreakpoint(breakpointId, callback)
     {
         InspectorTest.addResult("    " + InspectorTest.dumpTarget(this) + "debuggerModel.removeBreakpoint(" + breakpointId + ")");
         delete this._breakpoints[breakpointId];
         if (callback)
             setTimeout(callback, 0);
-    },
+    }
 
-    setBreakpointsActive: function() { },
+    setBreakpointsActive() { }
 
-    scriptForId: function(scriptId)
+    scriptForId(scriptId)
     {
         return this._scripts[scriptId];
-    },
+    }
 
-    reset: function()
+    reset()
     {
         InspectorTest.addResult("  Resetting debugger.");
         this._scripts = {};
         this._debuggerWorkspaceBinding._reset(this._target);
-    },
+    }
 
-    pushSourceMapping: function(sourceMapping)
+    pushSourceMapping(sourceMapping)
     {
         for (var scriptId in this._scripts)
             this._debuggerWorkspaceBinding.pushSourceMapping(this._scripts[scriptId], sourceMapping);
-    },
+    }
 
-    disableSourceMapping: function(sourceMapping)
+    disableSourceMapping(sourceMapping)
     {
         sourceMapping._disabled = true;
         for (var scriptId in this._scripts)
             this._debuggerWorkspaceBinding.updateLocations(this._scripts[scriptId]);
-    },
+    }
 
-    addBreakpointListener: function(breakpointId, listener, thisObject)
+    addBreakpointListener(breakpointId, listener, thisObject)
     {
         this._breakpointResolvedEventTarget.addEventListener(breakpointId, listener, thisObject)
-    },
+    }
 
-    removeBreakpointListener: function(breakpointId, listener, thisObject)
+    removeBreakpointListener(breakpointId, listener, thisObject)
     {
         this._breakpointResolvedEventTarget.removeEventListener(breakpointId, listener, thisObject);
-    },
+    }
 
-    _breakpointResolved: function(breakpointId, location)
+    _breakpointResolved(breakpointId, location)
     {
         this._breakpointResolvedEventTarget.dispatchEventToListeners(breakpointId, location);
-    },
-
-    __proto__: WebInspector.Object.prototype
-}
+    }
+};
 
 InspectorTest.setupLiveLocationSniffers = function()
 {

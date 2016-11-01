@@ -5,50 +5,49 @@
 
 function test()
 {
-    function TestWidget(widgetName)
-    {
-        WebInspector.Widget.call(this);
+    var TestWidget = class extends WebInspector.Widget {
+        constructor(widgetName)
+        {
+            super();
+            this._widgetName = widgetName;
+            this._processWillShowCount = 0;
+            this._processWasHiddenCount = 0;
+            InspectorTest.addResult(this._widgetName + "()");
+        }
 
-        this._widgetName = widgetName;
-        this._processWillShowCount = 0;
-        this._processWasHiddenCount = 0;
-        InspectorTest.addResult(this._widgetName + "()");
-    }
-
-    TestWidget.prototype = {
-        _processWillShow: function()
+        _processWillShow()
         {
             InspectorTest.assertEquals(this._processWillShowCount, this._processWasHiddenCount);
-            WebInspector.Widget.prototype._processWillShow.call(this);
+            super._processWillShow();
             ++this._processWillShowCount;
-        },
+        }
 
-        _processWasHidden: function()
+        _processWasHidden()
         {
-            WebInspector.Widget.prototype._processWasHidden.call(this);
+            super._processWasHidden();
             ++this._processWasHiddenCount;
             InspectorTest.assertEquals(this._processWillShowCount, this._processWasHiddenCount);
-        },
+        }
 
-        show: function(parentElement)
+        show(parentElement)
         {
             InspectorTest.addResult(this._widgetName + ".show()");
-            WebInspector.Widget.prototype.show.call(this, parentElement);
-        },
+            super.show(parentElement);
+        }
 
-        detach: function()
+        detach()
         {
             InspectorTest.addResult(this._widgetName + ".detach()");
-            WebInspector.Widget.prototype.detach.call(this);
-        },
+            super.detach();
+        }
 
-        doResize: function()
+        doResize()
         {
             InspectorTest.addResult(this._widgetName + ".doResize()");
-            WebInspector.Widget.prototype.doResize.call(this);
-        },
+            super.doResize();
+        }
 
-        wasShown: function()
+        wasShown()
         {
             InspectorTest.addResult("  " + this._widgetName + ".wasShown()");
             if (this.showOnWasShown)
@@ -57,24 +56,22 @@ function test()
                 this.detachOnWasShown.detach();
             if (this.resizeOnWasShown)
                 this.resizeOnWasShown.doResize();
-        },
+        }
 
-        willHide: function()
+        willHide()
         {
             InspectorTest.addResult("  " + this._widgetName + ".willHide()");
             if (this.showOnWillHide)
                 this.showOnWillHide.show(this.element);
             if (this.detachOnWillHide)
                 this.detachOnWillHide.detach();
-        },
+        }
 
-        onResize: function()
+        onResize()
         {
             InspectorTest.addResult("  " + this._widgetName + ".onResize()");
         }
     };
-
-    TestWidget.prototype.__proto__ = WebInspector.Widget.prototype;
 
     InspectorTest.runTestSuite([
         function testShowWidget(next)

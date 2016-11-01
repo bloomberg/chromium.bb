@@ -11,22 +11,21 @@ function test()
     var overrideShowMatchingItems = true;
     var history = [];
 
-    function StubDelegate()
-    {
-        WebInspector.FilteredListWidget.Delegate.call(this, history);
-    }
-    StubDelegate.prototype = {
-        itemKeyAt: function(itemIndex) { return overridenInput[itemIndex]; },
-        itemScoreAt: function(itemIndex) { return 0; },
-        itemCount: function() { return overridenInput.length; },
-        selectItem: function(itemIndex, promptValue)
+    var StubDelegate = class extends WebInspector.FilteredListWidget.Delegate {
+        constructor()
+        {
+            super(history);
+        }
+
+        itemKeyAt(itemIndex) { return overridenInput[itemIndex]; }
+        itemScoreAt(itemIndex) { return 0; }
+        itemCount() { return overridenInput.length; }
+        selectItem(itemIndex, promptValue)
         {
             InspectorTest.addResult("Selected item index: " + itemIndex);
-        },
-        shouldShowMatchingItems: function() { return overrideShowMatchingItems; },
-
-        __proto__: WebInspector.FilteredListWidget.Delegate.prototype
-    }
+        }
+        shouldShowMatchingItems() { return overrideShowMatchingItems; }
+    };
 
     var delegate = new StubDelegate();
 

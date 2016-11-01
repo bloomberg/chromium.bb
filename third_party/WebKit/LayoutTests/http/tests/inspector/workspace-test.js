@@ -42,30 +42,27 @@ InspectorTest._pageCapabilities =
 InspectorTest.createMockTarget = function(id, debuggerModelConstructor, capabilities)
 {
     capabilities = capabilities || InspectorTest._pageCapabilities;
-    var MockTarget = function(name, connectionFactory, callback)
-    {
-        WebInspector.Target.call(this, InspectorTest.testTargetManager, name, capabilities, connectionFactory, null, callback);
-        this._inspectedURL = InspectorTest.mainTarget.inspectedURL();
-        this.consoleModel = new WebInspector.ConsoleModel(this);
-        this.networkManager = new WebInspector.NetworkManager(this);
-        this.runtimeModel = new WebInspector.RuntimeModel(this);
-        this.securityOriginManager = WebInspector.SecurityOriginManager.fromTarget(this);
-        this.resourceTreeModel = new WebInspector.ResourceTreeModel(this, this.networkManager, this.securityOriginManager);
-        this.resourceTreeModel._cachedResourcesProcessed = true;
-        this.resourceTreeModel._frameAttached("42", 0);
-        this.debuggerModel = debuggerModelConstructor ? new debuggerModelConstructor(this) : new WebInspector.DebuggerModel(this);
-        this._modelByConstructor.set(WebInspector.DebuggerModel, this.debuggerModel);
-        this.domModel = new WebInspector.DOMModel(this);
-        this.cssModel = new WebInspector.CSSModel(this, this.domModel);
-    }
+    var MockTarget = class extends WebInspector.Target {
+        constructor(name, connectionFactory, callback) {
+            super(InspectorTest.testTargetManager, name, capabilities, connectionFactory, null, callback);
+            this._inspectedURL = InspectorTest.mainTarget.inspectedURL();
+            this.consoleModel = new WebInspector.ConsoleModel(this);
+            this.networkManager = new WebInspector.NetworkManager(this);
+            this.runtimeModel = new WebInspector.RuntimeModel(this);
+            this.securityOriginManager = WebInspector.SecurityOriginManager.fromTarget(this);
+            this.resourceTreeModel = new WebInspector.ResourceTreeModel(this, this.networkManager, this.securityOriginManager);
+            this.resourceTreeModel._cachedResourcesProcessed = true;
+            this.resourceTreeModel._frameAttached("42", 0);
+            this.debuggerModel = debuggerModelConstructor ? new debuggerModelConstructor(this) : new WebInspector.DebuggerModel(this);
+            this._modelByConstructor.set(WebInspector.DebuggerModel, this.debuggerModel);
+            this.domModel = new WebInspector.DOMModel(this);
+            this.cssModel = new WebInspector.CSSModel(this, this.domModel);
+        }
 
-    MockTarget.prototype = {
-        _loadedWithCapabilities: function()
+        _loadedWithCapabilities()
         {
-        },
-
-        __proto__: WebInspector.Target.prototype
-    }
+        }
+    };
 
     var target = new MockTarget("mock-target-" + id, (params) => new WebInspector.StubConnection(params));
     InspectorTest.testTargetManager.addTarget(target);

@@ -65,7 +65,7 @@ function test()
         var url = frame.uiSourceCode().url();
         InspectorTest.addResult(InspectorTest.formatters.formatAsURL(url));
         cpuProfile.nodes.forEach(n => n.callFrame.url = url);
-        var lineProfile = new WebInspector.LineLevelProfile.instance();
+        var lineProfile = WebInspector.LineLevelProfile.instance();
         lineProfile.appendCPUProfile(new WebInspector.CPUProfileDataModel(cpuProfile));
         setTimeout(() => InspectorTest.completeTest(), 0);
     }
