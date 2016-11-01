@@ -45,6 +45,7 @@ Panel.init = function() {
 
   /** @type {Element} @private */
   this.brailleTableElement_ = $('braille-table');
+  this.brailleTableElement2_ = $('braille-table2');
 
   /**
    * The array of top-level menus.
@@ -184,19 +185,7 @@ Panel.exec = function(command) {
       this.speechElement_.innerHTML += escapeForHtml(command.data);
       break;
     case PanelCommandType.UPDATE_BRAILLE:
-      var groups = command.data.groups;
-      this.brailleTableElement_.deleteRow(0);
-      this.brailleTableElement_.deleteRow(0);
-      var row1 = this.brailleTableElement_.insertRow(-1);
-      var row2 = this.brailleTableElement_.insertRow(-1);
-
-      for (var i = 0; i < groups.length; i++) {
-        var topCell = row1.insertCell(-1);
-        var bottomCell = row2.insertCell(-1);
-        topCell.innerHTML = groups[i][0];
-        bottomCell.innerHTML = groups[i][1];
-      }
-
+      Panel.onUpdateBraille(command.data);
       break;
     case PanelCommandType.ENABLE_MENUS:
       Panel.onEnableMenus();
@@ -413,6 +402,82 @@ Panel.addMenu = function(menuMsg) {
   this.menus_.push(menu);
   return menu;
 };
+
+/**
+ * Updates the content shown on the virtual braille display.
+ * @param {*=} data The data sent through the PanelCommand.
+ */
+Panel.onUpdateBraille = function(data) {
+  var groups = data.groups;
+  var cols = parseInt(localStorage['virtualBrailleColumns'], 10);
+  var rows = parseInt(localStorage['virtualBrailleRows'], 10);
+  var sideBySide = localStorage['brailleSideBySide'] === 'true';
+
+  var addBorders = function(event) {
+    var cell = event.target;
+    if (cell.tagName == 'TD') {
+      cell.className = 'highlighted-cell';
+      var companionID = cell.getAttribute('companionID');
+      var companion = $(companionID);
+      companion.className = 'highlighted-cell';
+    }
+  };
+
+  var removeBorders = function(event) {
+    var cell = event.target;
+    if (cell.tagName == 'TD') {
+      cell.className = 'unhighlighted-cell';
+      var companionID = cell.getAttribute('companionID');
+      var companion = $(companionID);
+      companion.className = 'unhighlighted-cell';
+    }
+  };
+
+  this.brailleContainer_.addEventListener('mouseover', addBorders);
+  this.brailleContainer_.addEventListener('mouseout', removeBorders);
+
+  // Clear the tables.
+  var rowCount = this.brailleTableElement_.rows.length;
+  for (var i = 0; i < rowCount; i++) {
+    this.brailleTableElement_.deleteRow(0);
+  }
+  rowCount = this.brailleTableElement2_.rows.length;
+  for (var i = 0; i < rowCount; i++) {
+    this.brailleTableElement2_.deleteRow(0);
+  }
+
+  var row1, row2;
+  rowCount = 0;
+  for (var i = 0; i < groups.length; i++) {
+    if (i % cols == 0) {
+      // Check if we reached the limit on the number of rows we can have.
+      if (rowCount == rows)
+        break;
+      rowCount++;
+      row1 = this.brailleTableElement_.insertRow(-1);
+      if (sideBySide) {
+        // Side by side.
+        row2 = this.brailleTableElement2_.insertRow(-1);
+      } else {
+        // Interleaved.
+        row2 = this.brailleTableElement_.insertRow(-1);
+      }
+    }
+
+    var topCell = row1.insertCell(-1);
+    topCell.innerHTML = groups[i][0];
+    topCell.id = i + '-textCell';
+    topCell.setAttribute('companionID', i + '-brailleCell');
+    topCell.className = 'unhighlighted-cell';
+
+    var bottomCell = row2.insertCell(-1);
+    bottomCell.innerHTML = groups[i][1];
+    bottomCell.id = i + '-brailleCell';
+    bottomCell.setAttribute('companionID', i + '-textCell');
+    bottomCell.className = 'unhighlighted-cell';
+  }
+};
+
 
 
 /**

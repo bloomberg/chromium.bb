@@ -245,7 +245,7 @@ cvox.BrailleDisplayManager.prototype.translateContent_ = function(
         translatedEndIndex = textToBraille[endIndex];
       }
       this.translatedContent_ = cells;
-      // Copy the transalted content to a separate buffer and  add the cursor
+      // Copy the translated content to a separate buffer and  add the cursor
       // to it.
       this.displayedContent_ = new ArrayBuffer(cells.byteLength);
       new Uint8Array(this.displayedContent_).set(new Uint8Array(cells));

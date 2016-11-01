@@ -10,6 +10,7 @@
 goog.provide('cvox.OptionsPage');
 
 goog.require('Msgs');
+goog.require('PanelCommand');
 goog.require('cvox.BrailleTable');
 goog.require('cvox.BrailleTranslatorManager');
 goog.require('cvox.ChromeEarcons');
@@ -71,6 +72,26 @@ cvox.OptionsPage.init = function() {
     $('brailleWordWrap').checked = items.brailleWordWrap;
   });
 
+  $('virtual_braille_display_rows_input').value =
+      localStorage['virtualBrailleRows'];
+  $('virtual_braille_display_columns_input').value =
+      localStorage['virtualBrailleColumns'];
+  var changeToInterleave =
+      Msgs.getMsg('options_change_current_display_style_interleave');
+  var changeToSideBySide =
+      Msgs.getMsg('options_change_current_display_style_side_by_side');
+  var currentlyDisplayingInterleave =
+      Msgs.getMsg('options_current_display_style_interleave');
+  var currentlyDisplayingSideBySide =
+      Msgs.getMsg('options_current_display_style_side_by_side');
+  $('changeDisplayStyle').textContent =
+      localStorage['brailleSideBySide'] === 'true' ?
+      changeToInterleave : changeToSideBySide;
+  $('currentDisplayStyle').textContent =
+      localStorage['brailleSideBySide'] === 'true' ?
+      currentlyDisplayingSideBySide : currentlyDisplayingInterleave;
+
+
   Msgs.addTranslatedMessagesToDom(document);
   cvox.OptionsPage.hidePlatformSpecifics();
 
@@ -93,6 +114,33 @@ cvox.OptionsPage.init = function() {
     $('version').textContent =
         chrome.app.getDetails().version;
   }
+
+  var clearVirtualDisplay = function() {
+    var groups = [];
+    var sizeOfDisplay = parseInt(localStorage['virtualBrailleRows'], 10) *
+        parseInt(localStorage['virtualBrailleColumns'], 10);
+    for (var i = 0; i < sizeOfDisplay; i++) {
+        groups.push(['X', 'X']);
+    }
+    (new PanelCommand(PanelCommandType.UPDATE_BRAILLE,
+                      {groups: groups})).send();
+  };
+
+  $('changeDisplayStyle').addEventListener('click', function(evt) {
+    var sideBySide = localStorage['brailleSideBySide'] !== 'true';
+    localStorage['brailleSideBySide'] = sideBySide;
+    $('changeDisplayStyle').textContent =
+        sideBySide ? changeToInterleave : changeToSideBySide;
+    $('currentDisplayStyle').textContent =
+        sideBySide ? currentlyDisplayingSideBySide :
+        currentlyDisplayingInterleave;
+    clearVirtualDisplay();
+  }, true);
+
+  handleNumbericalInputPref('virtual_braille_display_rows_input',
+      'virtualBrailleRows');
+  handleNumbericalInputPref('virtual_braille_display_columns_input',
+      'virtualBrailleColumns');
 };
 
 /**
@@ -110,6 +158,27 @@ cvox.OptionsPage.update = function() {
       cvox.OptionsPage.setValue(elements[i], prefs[key]);
     }
   }
+};
+/**
+ * Adds event listeners to input boxes to update local storage values and
+ * make sure that the input is a positive nonempty number between 1 and 99.
+ * @param {string} id Id of the input box.
+ * @param {string} pref Preference key in localStorage to access and modify.
+ */
+var handleNumbericalInputPref = function(id, pref) {
+  $(id).addEventListener('input', function(evt) {
+    if ($(id).value === '')
+      return;
+    else if (parseInt($(id).value, 10) < 1 || parseInt($(id).value, 10) > 99)
+      $(id).value = localStorage[pref];
+    else
+      localStorage[pref] = $(id).value;
+  }, true);
+
+  $(id).addEventListener('focusout', function(evt) {
+    if ($(id).value === '')
+      $(id).value = localStorage[pref];
+  }, true);
 };
 
 /**

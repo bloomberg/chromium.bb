@@ -101,8 +101,27 @@ button {
 
 #braille-container {
   height: 35px;
+  overflow: hidden;
   position: relative;
   top: -35px;
+}
+
+#braille-container * {
+  border-spacing: 0;
+  color: #fff;
+}
+
+#braille-table-holder-outer {
+  display: flex;
+  height: 100%;
+  overflow: scroll;
+  padding-bottom: 17px;
+  padding-right: 17px;
+  width: 100%;
+}
+
+.braille-table-holder {
+  flex-grow: 1;
 }
 
 #braille-text {
@@ -299,15 +318,10 @@ button {
   width: 8em;
 }
 
-table#braille-table {
-  border: none;
-  border-spacing: 0;
+.highlighted-cell {
+  border: 1px solid white;
 }
 
-table#braille-table * {
-  color: #fff;
-}
-
-table#braille-table tr:first-child {
-  font-size: 85%;
+.unhighlighted-cell {
+  border: 1px solid black;
 }

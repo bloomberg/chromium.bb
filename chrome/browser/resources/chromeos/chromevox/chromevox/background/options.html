@@ -85,10 +85,29 @@
         </span>
       </label>
     </div>
-  
     <br><br>
   </div>
 
+  <h2 class="i18n" msgid="options_virtual_braille_display">Virtual Braille Display</h2>
+  <label>
+    <div>
+    <span class="i18n description" msgid="options_virtual_braille_display_rows" id="virtual_braille_display_rows_description">
+      Rows:
+    </span>
+    </div>
+    <input type="number" min="1" id="virtual_braille_display_rows_input">
+  </label>
+  <label >
+    <div>
+    <span class="i18n description" msgid="options_virtual_braille_display_columns" id="virtual_braille_display_columns_description">
+      Columns:
+    </span>
+    </div>
+    <input type="number" min="1" id="virtual_braille_display_columns_input">
+  </label>
+
+  <div id="currentDisplayStyle"></div>
+  <button id="changeDisplayStyle"></button>
 
   <h2 class="i18n" msgid="options_keyboard_shortcuts">Keyboard shortcuts</h2>
   <p class="i18n description" msgid="options_keymap_description" id="keymap_description">
