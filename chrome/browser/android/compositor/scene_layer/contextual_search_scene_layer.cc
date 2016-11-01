@@ -116,6 +116,11 @@ void ContextualSearchSceneLayer::UpdateContextualSearchLayer(
     jfloat progress_bar_height,
     jfloat progress_bar_opacity,
     jint progress_bar_completion,
+    jfloat divider_line_visibility_percentage,
+    jfloat divider_line_width,
+    jfloat divider_line_height,
+    jint divider_line_color,
+    jfloat divider_line_x_offset,
     jobject j_profile) {
 
   // Load the thumbnail if necessary.
@@ -204,7 +209,12 @@ void ContextualSearchSceneLayer::UpdateContextualSearchLayer(
       progress_bar_visible,
       progress_bar_height,
       progress_bar_opacity,
-      progress_bar_completion);
+      progress_bar_completion,
+      divider_line_visibility_percentage,
+      divider_line_width,
+      divider_line_height,
+      divider_line_color,
+      divider_line_x_offset);
 
   // Make the layer visible if it is not already.
   contextual_search_layer_->layer()->SetHideLayerAndSubtree(false);

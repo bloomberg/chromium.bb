@@ -87,7 +87,12 @@ class ContextualSearchLayer : public OverlayPanelLayer {
                      bool progress_bar_visible,
                      float progress_bar_height,
                      float progress_bar_opacity,
-                     int progress_bar_completion);
+                     int progress_bar_completion,
+                     float divider_line_visibility_percentage,
+                     float divider_line_width,
+                     float divider_line_height,
+                     int divider_line_color,
+                     float divider_line_x_offset);
 
   void SetThumbnail(const SkBitmap* thumbnail);
 
@@ -145,6 +150,7 @@ class ContextualSearchLayer : public OverlayPanelLayer {
   scoped_refptr<cc::NinePatchLayer> progress_bar_background_;
   scoped_refptr<cc::UIResourceLayer> search_caption_;
   scoped_refptr<cc::UIResourceLayer> text_layer_;
+  scoped_refptr<cc::SolidColorLayer> divider_line_;
 };
 
 }  //  namespace android

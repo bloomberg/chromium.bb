@@ -121,6 +121,13 @@ public class ContextualSearchSceneLayer extends SceneOverlayLayer {
         float progressBarOpacity = panel.getProgressBarOpacity();
         int progressBarCompletion = panel.getProgressBarCompletion();
 
+        float dividerLineVisibilityPercentage =
+                searchBarControl.getDividerLineVisibilityPercentage();
+        float dividerLineWidth = searchBarControl.getDividerLineWidth();
+        float dividerLineHeight = searchBarControl.getDividerLineHeight();
+        int dividerLineColor = searchBarControl.getDividerLineColor();
+        float dividerLineXOffset = searchBarControl.getDividerLineXOffset();
+
         WebContents panelWebContents = panel.getContentViewCore() != null
                 ? panel.getContentViewCore().getWebContents() : null;
 
@@ -183,6 +190,11 @@ public class ContextualSearchSceneLayer extends SceneOverlayLayer {
                 progressBarHeight * mDpToPx,
                 progressBarOpacity,
                 progressBarCompletion,
+                dividerLineVisibilityPercentage,
+                dividerLineWidth,
+                dividerLineHeight,
+                dividerLineColor,
+                dividerLineXOffset,
                 Profile.getLastUsedProfile());
     }
 
@@ -291,5 +303,10 @@ public class ContextualSearchSceneLayer extends SceneOverlayLayer {
             float progressBarHeight,
             float progressBarOpacity,
             int progressBarCompletion,
+            float dividerLineVisibilityPercentage,
+            float dividerLineWidth,
+            float dividerLineHeight,
+            int dividerLineColor,
+            float dividerLineXOffset,
             Profile profile);
 }

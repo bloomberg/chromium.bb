@@ -871,8 +871,17 @@ abstract class OverlayPanelBase {
         // NOTE(pedrosimonetti): Handle special case from PanelState.UNDEFINED
         // to PanelState.CLOSED, where both have a height of zero. Returning
         // zero here means the Panel will be reset to its CLOSED state.
-        return startSize == 0.f && endSize == 0.f ? 0.f
+        float completionPercent = startSize == 0.f && endSize == 0.f ? 0.f
                 : (height - startSize) / (endSize - startSize);
+
+        // Since the completion percent is being calculated it often will get close to 1.f or 0.f
+        // without ever reaching those values. If completionPercent is within completionPrecision,
+        // round up or down.
+        float completionPrecision = 0.002f;
+        if (completionPercent < completionPrecision) completionPercent = 0.f;
+        if (completionPercent > 1.f - completionPrecision) completionPercent = 1.f;
+
+        return completionPercent;
     }
 
     /**

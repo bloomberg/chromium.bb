@@ -31,10 +31,28 @@ public class ContextualSearchImageControl
     /** The OverlayPanelAnimation used to add animations. */
     private final OverlayPanelAnimation mOverlayPanelAnimation;
 
+    /** The percentage the panel is expanded. 1.f is fully expanded and 0.f is peeked. */
+    private float mExpandedPercentage;
+
     public ContextualSearchImageControl(OverlayPanelAnimation overlayPanelAnimation,
             Context context) {
         mContext = context;
         mOverlayPanelAnimation = overlayPanelAnimation;
+    }
+
+    /**
+     * Updates the Bar image when in transition between peeked to expanded states.
+     * @param percentage The percentage to the more opened state.
+     */
+    public void onUpdateFromPeekToExpand(float percentage) {
+        mExpandedPercentage = percentage;
+
+        if (mQuickActionIconVisible || mThumbnailVisible) {
+            mOverlayPanelAnimation.cancelAnimation(this, AnimationType.STATIC_IMAGE_VISIBILITY);
+
+            mStaticImageVisibilityPercentage = 1.f - percentage;
+            if (mStaticImageVisibilityPercentage < 1.f) getIconSpriteControl().setIsVisible(true);
+        }
     }
 
     // ============================================================================================
@@ -213,6 +231,7 @@ public class ContextualSearchImageControl
         mThumbnailVisible = false;
         getIconSpriteControl().setIsVisible(true);
         mStaticImageVisibilityPercentage = 0.f;
+        mExpandedPercentage = 0.f;
     }
 
     // ============================================================================================
@@ -222,6 +241,10 @@ public class ContextualSearchImageControl
     private Interpolator mStaticImageVisibilityInterpolator;
 
     private void animateStaticImageVisibility(boolean visible) {
+        // If the panel is expanded then #onUpdateFromPeekToExpand() is responsible for setting
+        // mStaticImageVisibility and the static image appearance should not be animated.
+        if (visible && mExpandedPercentage > 0.f) return;
+
         if (mStaticImageVisibilityInterpolator == null) {
             mStaticImageVisibilityInterpolator =
                     PathInterpolatorCompat.create(0.4f, 0.f, 0.6f, 1.f);
@@ -248,7 +271,7 @@ public class ContextualSearchImageControl
         if (prop == AnimationType.STATIC_IMAGE_VISIBILITY) {
             if (mStaticImageVisibilityPercentage == 0.f) {
                 onStaticImageHidden();
-            } else {
+            } else if (mStaticImageVisibilityPercentage == 1.f) {
                 getIconSpriteControl().setIsVisible(false);
             }
         }

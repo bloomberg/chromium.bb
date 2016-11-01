@@ -96,6 +96,11 @@ class ContextualSearchSceneLayer : public SceneLayer,
       jfloat progress_bar_height,
       jfloat progress_bar_opacity,
       jint progress_bar_completion,
+      jfloat divider_line_visibility_percentage,
+      jfloat divider_line_width,
+      jfloat divider_line_height,
+      jint divider_line_color,
+      jfloat divider_line_x_offset,
       jobject j_profile);
 
   // Inherited from BitmapFetcherDelegate

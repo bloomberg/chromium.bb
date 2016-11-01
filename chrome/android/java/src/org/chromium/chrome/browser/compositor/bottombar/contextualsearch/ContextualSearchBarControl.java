@@ -7,10 +7,12 @@ package org.chromium.chrome.browser.compositor.bottombar.contextualsearch;
 import android.content.Context;
 import android.view.ViewGroup;
 
+import org.chromium.base.ApiCompatibilityUtils;
 import org.chromium.chrome.R;
 import org.chromium.chrome.browser.compositor.bottombar.OverlayPanel;
 import org.chromium.chrome.browser.compositor.bottombar.OverlayPanelAnimation;
 import org.chromium.chrome.browser.compositor.layouts.ChromeAnimation;
+import org.chromium.ui.base.LocalizationUtils;
 import org.chromium.ui.resources.dynamics.DynamicResourceLoader;
 
 /**
@@ -23,7 +25,8 @@ public class ContextualSearchBarControl
      * Animation properties.
      */
     protected enum AnimationType {
-        TEXT_OPACITY
+        TEXT_OPACITY,
+        DIVIDER_LINE_VISIBILITY
     }
 
     /**
@@ -71,6 +74,31 @@ public class ContextualSearchBarControl
     private final float mTermCaptionSpacing;
 
     /**
+     * The visibility percentage for the divider line ranging from 0.f to 1.f.
+     */
+    private float mDividerLineVisibilityPercentage;
+
+    /**
+     * The width of the divider line in px.
+     */
+    private final float mDividerLineWidth;
+
+    /**
+     * The height of the divider line in px.
+     */
+    private final float mDividerLineHeight;
+
+    /**
+     * The divider line color.
+     */
+    private final int mDividerLineColor;
+
+    /**
+     * The width of the end button in px.
+     */
+    private final float mEndButtonWidth;
+
+    /**
      * Constructs a new bottom bar control container by inflating views from XML.
      *
      * @param panel     The panel.
@@ -93,6 +121,16 @@ public class ContextualSearchBarControl
                 R.dimen.contextual_search_text_layer_min_height);
         mTermCaptionSpacing = context.getResources().getDimension(
                 R.dimen.contextual_search_term_caption_spacing);
+
+        // Divider line values.
+        mDividerLineWidth = context.getResources().getDimension(
+                R.dimen.contextual_search_divider_line_width);
+        mDividerLineHeight = context.getResources().getDimension(
+                R.dimen.contextual_search_divider_line_height);
+        mDividerLineColor = ApiCompatibilityUtils.getColor(context.getResources(),
+                R.color.google_grey_500);
+        mEndButtonWidth = context.getResources().getDimension(
+                R.dimen.contextual_search_end_button_width);
     }
 
     /**
@@ -127,6 +165,20 @@ public class ContextualSearchBarControl
     }
 
     /**
+     * Updates this bar when in transition between peeked to expanded states.
+     * @param percentage The percentage to the more opened state.
+     */
+    public void onUpdateFromPeekToExpand(float percentage) {
+        // If there is a quick action, the divider line's appearance was animated when the quick
+        // action was set.
+        if (!getQuickActionControl().hasQuickAction()) {
+            mDividerLineVisibilityPercentage = percentage;
+        }
+        getImageControl().onUpdateFromPeekToExpand(percentage);
+        mCaptionControl.onUpdateFromPeekToExpand(percentage);
+    }
+
+    /**
      * Sets the search context to display in the control.
      * @param selection The portion of the context that represents the user's selection.
      * @param end The portion of the context after the selection.
@@ -137,6 +189,7 @@ public class ContextualSearchBarControl
         mQuickActionControl.reset();
         mContextControl.setSearchContext(selection, end);
         resetSearchBarContextOpacity();
+        animateDividerLine(false);
     }
 
     /**
@@ -149,6 +202,7 @@ public class ContextualSearchBarControl
         mQuickActionControl.reset();
         mSearchTermControl.setSearchTerm(searchTerm);
         resetSearchBarTermOpacity();
+        animateDividerLine(false);
     }
 
     /**
@@ -223,6 +277,7 @@ public class ContextualSearchBarControl
             // regular caption?
             mCaptionControl.setCaption(mQuickActionControl.getCaption());
             mImageControl.setQuickActionIconResourceId(mQuickActionControl.getIconResId());
+            animateDividerLine(true);
         }
     }
 
@@ -259,6 +314,60 @@ public class ContextualSearchBarControl
     }
 
     // ============================================================================================
+    // Divider Line
+    // ============================================================================================
+    /**
+     * @return The visibility percentage for the divider line ranging from 0.f to 1.f.
+     */
+    public float getDividerLineVisibilityPercentage() {
+        return mDividerLineVisibilityPercentage;
+    }
+
+    /**
+     * @return The width of the divider line in px.
+     */
+    public float getDividerLineWidth() {
+        return mDividerLineWidth;
+    }
+
+    /**
+     * @return The height of the divider line in px.
+     */
+    public float getDividerLineHeight() {
+        return mDividerLineHeight;
+    }
+
+    /**
+     * @return The divider line color.
+     */
+    public int getDividerLineColor() {
+        return mDividerLineColor;
+    }
+
+    /**
+     * @return The x-offset for the divider line relative to the x-position of the Bar in px.
+     */
+    public float getDividerLineXOffset() {
+        if (LocalizationUtils.isLayoutRtl()) {
+            return mEndButtonWidth;
+        } else {
+            return mOverlayPanel.getContentViewWidthPx() - mEndButtonWidth - getDividerLineWidth();
+        }
+    }
+
+    /**
+     * Animates the appearance or disappearance of the divider line.
+     * @param visible Whether the divider line should be made visible.
+     */
+    private void animateDividerLine(boolean visible) {
+        float endValue = visible ? 1.f : 0.f;
+        if (mDividerLineVisibilityPercentage == endValue) return;
+        mOverlayPanel.addToAnimation(this, AnimationType.DIVIDER_LINE_VISIBILITY,
+                mDividerLineVisibilityPercentage, endValue,
+                OverlayPanelAnimation.BASE_ANIMATION_DURATION_MS, 0);
+    }
+
+    // ============================================================================================
     // Search Bar Animation
     // ============================================================================================
 
@@ -279,16 +388,6 @@ public class ContextualSearchBarControl
         }
     }
 
-    @Override
-    public void setProperty(AnimationType type, float value) {
-        if (type == AnimationType.TEXT_OPACITY) {
-            updateSearchBarTextOpacity(value);
-        }
-    }
-
-    @Override
-    public void onPropertyAnimationFinished(AnimationType prop) {}
-
     /**
      * Updates the UI state for the SearchBar text. The search context view will fade out
      * while the search term fades in.
@@ -306,4 +405,20 @@ public class ContextualSearchBarControl
         mSearchBarContextOpacity = fadingOutPercentage;
         mSearchBarTermOpacity = fadingInPercentage;
     }
+
+    // ============================================================================================
+    // ChromeAnimation.Animatable Implementation
+    // ============================================================================================
+
+    @Override
+    public void setProperty(AnimationType type, float value) {
+        if (type == AnimationType.TEXT_OPACITY) {
+            updateSearchBarTextOpacity(value);
+        } else if (type == AnimationType.DIVIDER_LINE_VISIBILITY) {
+            mDividerLineVisibilityPercentage = value;
+        }
+    }
+
+    @Override
+    public void onPropertyAnimationFinished(AnimationType prop) {}
 }

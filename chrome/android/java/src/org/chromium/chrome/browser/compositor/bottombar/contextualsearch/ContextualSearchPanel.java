@@ -604,6 +604,7 @@ public class ContextualSearchPanel extends OverlayPanel {
 
         getPromoControl().onUpdateFromPeekToExpand(percentage);
         getPeekPromoControl().onUpdateFromPeekToExpand(percentage);
+        getSearchBarControl().onUpdateFromPeekToExpand(percentage);
     }
 
     @Override
