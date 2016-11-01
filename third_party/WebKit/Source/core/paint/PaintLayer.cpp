@@ -2709,6 +2709,14 @@ bool PaintLayer::paintsWithTransform(GlobalPaintFlags globalPaintFlags) const {
           compositingState() != PaintsIntoOwnBacking);
 }
 
+bool PaintLayer::compositesWithTransform() const {
+  return transformAncestor() || transform();
+}
+
+bool PaintLayer::compositesWithOpacity() const {
+  return opacityAncestor() || layoutObject()->style()->hasOpacity();
+}
+
 bool PaintLayer::backgroundIsKnownToBeOpaqueInRect(
     const LayoutRect& localRect) const {
   if (paintsWithTransparency(GlobalPaintNormalPhase))

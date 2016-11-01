@@ -187,7 +187,8 @@ bool CompositingReasonFinder::requiresCompositingForScrollDependentPosition(
   if (!(m_compositingTriggers & ViewportConstrainedPositionedTrigger) &&
       (!RuntimeEnabledFeatures::compositeOpaqueFixedPositionEnabled() ||
        !layer->backgroundIsKnownToBeOpaqueInRect(
-           LayoutRect(layer->boundingBoxForCompositing())))) {
+           LayoutRect(layer->boundingBoxForCompositing())) ||
+       layer->compositesWithTransform() || layer->compositesWithOpacity())) {
     return false;
   }
   // Don't promote fixed position elements that are descendants of a non-view

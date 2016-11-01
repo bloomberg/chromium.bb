@@ -1687,9 +1687,7 @@ static bool layerNeedsCompositedScrolling(
       layer->canPaintBackgroundOntoScrollingContentsLayer() &&
       layer->backgroundIsKnownToBeOpaqueInRect(
           toLayoutBox(layer->layoutObject())->paddingBoxRect()) &&
-      !layer->transformAncestor() && !layer->transform() &&
-      !layer->opacityAncestor() &&
-      !layer->layoutObject()->style()->hasOpacity();
+      !layer->compositesWithTransform() && !layer->compositesWithOpacity();
   if (mode == PaintLayerScrollableArea::ConsiderLCDText &&
       !layer->compositor()->preferCompositingToLCDTextEnabled() &&
       !backgroundSupportsLCDText)
