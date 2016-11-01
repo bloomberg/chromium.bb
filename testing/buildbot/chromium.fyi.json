@@ -3066,12 +3066,6 @@
         "swarming": {
           "can_use_on_swarming_builders": false
         },
-        "test": "accessibility_unittests"
-      },
-      {
-        "swarming": {
-          "can_use_on_swarming_builders": false
-        },
         "test": "angle_unittests"
       },
       {
@@ -3151,12 +3145,6 @@
           "can_use_on_swarming_builders": false
         },
         "test": "display_unittests"
-      },
-      {
-        "swarming": {
-          "can_use_on_swarming_builders": false
-        },
-        "test": "extensions_unittests"
       },
       {
         "swarming": {
@@ -3270,19 +3258,13 @@
         "swarming": {
           "can_use_on_swarming_builders": false
         },
-        "test": "printing_unittests"
-      },
-      {
-        "swarming": {
-          "can_use_on_swarming_builders": false
-        },
         "test": "remoting_unittests"
       },
       {
         "swarming": {
           "can_use_on_swarming_builders": false
         },
-        "test": "sandbox_mac_unittests"
+        "test": "sandbox_linux_unittests"
       },
       {
         "swarming": {
