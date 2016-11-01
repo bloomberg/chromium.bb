@@ -12,6 +12,7 @@
 #include "base/memory/ptr_util.h"
 #include "base/memory/weak_ptr.h"
 #include "base/values.h"
+#include "content/public/common/browser_side_navigation_policy.h"
 #include "content/public/renderer/render_frame.h"
 #include "content/public/renderer/render_frame_observer.h"
 #include "content/public/renderer/render_thread.h"
@@ -26,6 +27,7 @@
 #include "extensions/renderer/scripts_run_info.h"
 #include "extensions/renderer/web_ui_injection_host.h"
 #include "ipc/ipc_message_macros.h"
+#include "third_party/WebKit/public/platform/WebURLError.h"
 #include "third_party/WebKit/public/web/WebDocument.h"
 #include "third_party/WebKit/public/web/WebFrame.h"
 #include "third_party/WebKit/public/web/WebLocalFrame.h"
@@ -77,6 +79,7 @@ class ScriptInjectionManager::RFOHelper : public content::RenderFrameObserver {
   void DidFinishLoad() override;
   void FrameDetached() override;
   void OnDestruct() override;
+  void OnStop() override;
 
   virtual void OnExecuteCode(const ExtensionMsg_ExecuteCode_Params& params);
   virtual void OnExecuteDeclarativeScript(int tab_id,
@@ -203,6 +206,15 @@ void ScriptInjectionManager::RFOHelper::FrameDetached() {
 
 void ScriptInjectionManager::RFOHelper::OnDestruct() {
   manager_->RemoveObserver(this);
+}
+
+void ScriptInjectionManager::RFOHelper::OnStop() {
+  // With PlzNavigate, we won't get a provisional load failed notification
+  // for 204/205/downloads since these don't notify the renderer. However the
+  // browser does fire the OnStop IPC. So use that signal instead to avoid
+  // keeping the frame in a START state indefinitely which leads to deadlocks.
+  if (content::IsBrowserSideNavigationEnabled())
+    DidFailProvisionalLoad(blink::WebURLError());
 }
 
 void ScriptInjectionManager::RFOHelper::OnExecuteCode(
