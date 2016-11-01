@@ -79,6 +79,9 @@ class PasswordsPrivateGetSavedPasswordListFunction
   ResponseAction Run() override;
 
  private:
+  void GetList();
+  void GotList(const PasswordsPrivateDelegate::UiEntries& entries);
+
   DISALLOW_COPY_AND_ASSIGN(PasswordsPrivateGetSavedPasswordListFunction);
 };
 
@@ -96,6 +99,9 @@ class PasswordsPrivateGetPasswordExceptionListFunction
   ResponseAction Run() override;
 
  private:
+  void GetList();
+  void GotList(const PasswordsPrivateDelegate::ExceptionPairs& pairs);
+
   DISALLOW_COPY_AND_ASSIGN(PasswordsPrivateGetPasswordExceptionListFunction);
 };
 

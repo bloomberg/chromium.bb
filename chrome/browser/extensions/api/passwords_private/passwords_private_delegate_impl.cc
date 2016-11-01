@@ -32,8 +32,8 @@ namespace extensions {
 PasswordsPrivateDelegateImpl::PasswordsPrivateDelegateImpl(Profile* profile)
     : profile_(profile),
       password_manager_presenter_(new PasswordManagerPresenter(this)),
-      set_password_list_called_(false),
-      set_password_exception_list_called_(false),
+      current_entries_initialized_(false),
+      current_exceptions_initialized_(false),
       is_initialized_(false),
       web_contents_(nullptr) {
   password_manager_presenter_->Initialize();
@@ -49,9 +49,12 @@ void PasswordsPrivateDelegateImpl::SendSavedPasswordsList() {
     router->OnSavedPasswordsListChanged(current_entries_);
 }
 
-const std::vector<api::passwords_private::PasswordUiEntry>*
-PasswordsPrivateDelegateImpl::GetSavedPasswordsList() const {
-  return &current_entries_;
+void PasswordsPrivateDelegateImpl::GetSavedPasswordsList(
+    const UiEntriesCallback& callback) {
+  if (is_initialized_)
+    callback.Run(current_entries_);
+  else
+    get_saved_passwords_list_callbacks_.push_back(callback);
 }
 
 void PasswordsPrivateDelegateImpl::SendPasswordExceptionsList() {
@@ -61,9 +64,12 @@ void PasswordsPrivateDelegateImpl::SendPasswordExceptionsList() {
     router->OnPasswordExceptionsListChanged(current_exceptions_);
 }
 
-const std::vector<api::passwords_private::ExceptionPair>*
-PasswordsPrivateDelegateImpl::GetPasswordExceptionsList() const {
-  return &current_exceptions_;
+void PasswordsPrivateDelegateImpl::GetPasswordExceptionsList(
+    const ExceptionPairsCallback& callback) {
+  if (is_initialized_)
+    callback.Run(current_exceptions_);
+  else
+    get_password_exception_list_callbacks_.push_back(callback);
 }
 
 void PasswordsPrivateDelegateImpl::RemoveSavedPassword(
@@ -189,7 +195,7 @@ void PasswordsPrivateDelegateImpl::SetPasswordList(
 
   SendSavedPasswordsList();
 
-  set_password_list_called_ = true;
+  current_entries_initialized_ = true;
   InitializeIfNecessary();
 }
 
@@ -216,7 +222,7 @@ void PasswordsPrivateDelegateImpl::SetPasswordExceptionList(
 
   SendPasswordExceptionsList();
 
-  set_password_exception_list_called_ = true;
+  current_exceptions_initialized_ = true;
   InitializeIfNecessary();
 }
 
@@ -232,7 +238,7 @@ void PasswordsPrivateDelegateImpl::Shutdown() {
 }
 
 void PasswordsPrivateDelegateImpl::ExecuteFunction(
-    const base::Callback<void()>& callback) {
+    const base::Closure& callback) {
   if (is_initialized_) {
     callback.Run();
     return;
@@ -242,16 +248,25 @@ void PasswordsPrivateDelegateImpl::ExecuteFunction(
 }
 
 void PasswordsPrivateDelegateImpl::InitializeIfNecessary() {
-  if (is_initialized_ ||
-      !set_password_list_called_ ||
-      !set_password_exception_list_called_)
+  if (is_initialized_ || !current_entries_initialized_ ||
+      !current_exceptions_initialized_)
     return;
 
   is_initialized_ = true;
 
-  for (const base::Callback<void()>& callback : pre_initialization_callbacks_) {
+  for (const base::Closure& callback : pre_initialization_callbacks_) {
     callback.Run();
   }
+  for (const auto& callback : get_saved_passwords_list_callbacks_) {
+    callback.Run(current_entries_);
+  }
+  for (const auto& callback : get_password_exception_list_callbacks_) {
+    callback.Run(current_exceptions_);
+  }
+
+  pre_initialization_callbacks_.clear();
+  get_saved_passwords_list_callbacks_.clear();
+  get_password_exception_list_callbacks_.clear();
 }
 
 }  // namespace extensions
