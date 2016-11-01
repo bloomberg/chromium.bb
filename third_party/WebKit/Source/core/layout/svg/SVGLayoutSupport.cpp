@@ -160,8 +160,7 @@ void SVGLayoutSupport::mapLocalToAncestor(const LayoutObject* object,
 
 void SVGLayoutSupport::mapAncestorToLocal(const LayoutObject& object,
                                           const LayoutBoxModelObject* ancestor,
-                                          TransformState& transformState,
-                                          MapCoordinatesFlags flags) {
+                                          TransformState& transformState) {
   // |object| is either a LayoutSVGModelObject or a LayoutSVGBlock here. In
   // the former case, |object| can never be an ancestor while in the latter
   // the caller is responsible for doing the ancestor check. Because of this,
@@ -174,7 +173,7 @@ void SVGLayoutSupport::mapAncestorToLocal(const LayoutObject& object,
   const LayoutSVGRoot& svgRoot =
       computeTransformToSVGRoot(object, localToSVGRoot);
 
-  MapCoordinatesFlags mode = flags | UseTransforms | ApplyContainerFlip;
+  MapCoordinatesFlags mode = UseTransforms | ApplyContainerFlip;
   svgRoot.mapAncestorToLocal(ancestor, transformState, mode);
 
   transformState.applyTransform(localToSVGRoot);

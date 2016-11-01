@@ -65,8 +65,8 @@ LayoutRect LayoutSVGModelObject::absoluteClippedOverflowRect() const {
 void LayoutSVGModelObject::mapAncestorToLocal(
     const LayoutBoxModelObject* ancestor,
     TransformState& transformState,
-    MapCoordinatesFlags flags) const {
-  SVGLayoutSupport::mapAncestorToLocal(*this, ancestor, transformState, flags);
+    MapCoordinatesFlags) const {
+  SVGLayoutSupport::mapAncestorToLocal(*this, ancestor, transformState);
 }
 
 const LayoutObject* LayoutSVGModelObject::pushMappingToContainer(

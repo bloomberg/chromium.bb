@@ -63,7 +63,6 @@ class ComputedStyle;
 class DocumentLifecycle;
 class Cursor;
 class Element;
-class ElementVisibilityObserver;
 class FloatSize;
 class JSONArray;
 class JSONObject;
@@ -676,11 +675,10 @@ class CORE_EXPORT FrameView final
   // scheduling visual updates.
   bool canThrottleRendering() const;
   bool isHiddenForThrottling() const { return m_hiddenForThrottling; }
-  void setupRenderThrottling();
 
   // For testing, run pending intersection observer notifications for this
   // frame.
-  void updateRenderThrottlingStatusForTesting();
+  void notifyRenderThrottlingObserversForTesting();
 
   // Paint properties for SPv2 Only.
   void setPreTranslation(
@@ -921,7 +919,9 @@ class CORE_EXPORT FrameView final
   void setNeedsUpdateViewportIntersection();
   void updateViewportIntersectionsForSubtree(
       DocumentLifecycle::LifecycleState targetState);
-  void updateRenderThrottlingStatus(bool hidden, bool subtreeThrottled);
+  void updateViewportIntersectionIfNeeded();
+  void notifyRenderThrottlingObservers();
+  void updateThrottlingStatus();
   void notifyResizeObservers();
 
   // PaintInvalidationCapableScrollableArea
@@ -963,6 +963,8 @@ class CORE_EXPORT FrameView final
   unsigned m_nestedLayoutCount;
   Timer<FrameView> m_postLayoutTasksTimer;
   Timer<FrameView> m_updateWidgetsTimer;
+  std::unique_ptr<CancellableTaskFactory>
+      m_renderThrottlingObserverNotificationFactory;
 
   bool m_firstLayout;
   bool m_isTransparent;
@@ -1042,10 +1044,16 @@ class CORE_EXPORT FrameView final
   // main frame.
   Member<RootFrameViewport> m_viewportScrollableArea;
 
+  // This frame's bounds in the root frame's content coordinates, clipped
+  // recursively through every ancestor view.
+  IntRect m_viewportIntersection;
+  bool m_viewportIntersectionValid;
+
   // The following members control rendering pipeline throttling for this
   // frame. They are only updated in response to intersection observer
   // notifications, i.e., not in the middle of the lifecycle.
   bool m_hiddenForThrottling;
+  bool m_crossOriginForThrottling;
   bool m_subtreeThrottled;
 
   // Paint properties for SPv2 Only.
@@ -1081,8 +1089,6 @@ class CORE_EXPORT FrameView final
   bool m_needsScrollbarsUpdate;
   bool m_suppressAdjustViewSize;
   bool m_allowsLayoutInvalidationAfterLayoutClean;
-
-  Member<ElementVisibilityObserver> m_visibilityObserver;
 
   // For testing.
   struct ObjectPaintInvalidation {

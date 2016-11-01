@@ -10,13 +10,13 @@
         window.iframe = document.querySelector('iframe').contentDocument;
 
         log('Before Reparenting');
-        shouldBe('window.internals.activeDOMObjectCount(document)', 3);
+        shouldBe('window.internals.activeDOMObjectCount(document)', 2);
         shouldBe('window.internals.activeDOMObjectCount(iframe)', 3);
 
         document.body.appendChild(window.iframe.querySelector('video'));
 
         log('After Reparenting');
-        shouldBe('window.internals.activeDOMObjectCount(document)', 4);
+        shouldBe('window.internals.activeDOMObjectCount(document)', 3);
         shouldBe('window.internals.activeDOMObjectCount(iframe)', 2);
     }
 </script>

@@ -203,8 +203,7 @@ IntersectionObserver::IntersectionObserver(
       m_topMargin(Fixed),
       m_rightMargin(Fixed),
       m_bottomMargin(Fixed),
-      m_leftMargin(Fixed),
-      m_initialState(InitialState::kHidden) {
+      m_leftMargin(Fixed) {
   switch (rootMargin.size()) {
     case 0:
       break;
@@ -292,11 +291,6 @@ void IntersectionObserver::observe(Element* target,
     return;
   }
 
-  if (m_initialState == InitialState::kAuto) {
-    for (auto& observation : m_observations)
-      observation->setLastThresholdIndex(std::numeric_limits<unsigned>::max());
-  }
-
   if (!rootFrame)
     return;
   if (FrameView* rootFrameView = rootFrame->view())
@@ -349,11 +343,6 @@ void IntersectionObserver::disconnect(ExceptionState& exceptionState) {
 void IntersectionObserver::removeObservation(
     IntersectionObservation& observation) {
   m_observations.remove(&observation);
-}
-
-void IntersectionObserver::setInitialState(InitialState initialState) {
-  DCHECK(m_observations.isEmpty());
-  m_initialState = initialState;
 }
 
 HeapVector<Member<IntersectionObserverEntry>> IntersectionObserver::takeRecords(
