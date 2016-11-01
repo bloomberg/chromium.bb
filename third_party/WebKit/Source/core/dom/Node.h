@@ -835,19 +835,18 @@ class CORE_EXPORT Node : public EventTarget {
     CustomElementStateMask = 0x3 << nodeCustomElementShift,
 
     HasNameOrIsEditingTextFlag = 1 << 23,
-    HasWeakReferencesFlag = 1 << 24,
-    HasEventTargetDataFlag = 1 << 25,
+    HasEventTargetDataFlag = 1 << 24,
 
-    V0CustomElementFlag = 1 << 26,
-    V0CustomElementUpgradedFlag = 1 << 27,
+    V0CustomElementFlag = 1 << 25,
+    V0CustomElementUpgradedFlag = 1 << 26,
 
-    NeedsReattachLayoutTree = 1 << 28,
-    ChildNeedsReattachLayoutTree = 1 << 29,
+    NeedsReattachLayoutTree = 1 << 27,
+    ChildNeedsReattachLayoutTree = 1 << 28,
 
     DefaultNodeFlags = IsFinishedParsingChildrenFlag | NeedsReattachStyleChange
   };
 
-  // 1 bit remaining.
+  // 3 bits remaining.
 
   bool getFlag(NodeFlags mask) const { return m_nodeFlags & mask; }
   void setFlag(bool f, NodeFlags mask) {
