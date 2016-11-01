@@ -596,15 +596,13 @@ void CompositorImpl::RequestNewCompositorFrameSink() {
 }
 
 void CompositorImpl::DidInitializeCompositorFrameSink() {
-  num_successive_context_creation_failures_ = 0;
   compositor_frame_sink_request_pending_ = false;
 }
 
 void CompositorImpl::DidFailToInitializeCompositorFrameSink() {
-  LOG(ERROR) << "Failed to init CompositorFrameSink for compositor.";
-  LOG_IF(FATAL, ++num_successive_context_creation_failures_ >= 2)
-      << "Too many context creation failures. Giving up... ";
-  HandlePendingCompositorFrameSinkRequest();
+  // The context is bound/initialized before handing it to the
+  // CompositorFrameSink.
+  NOTREACHED();
 }
 
 void CompositorImpl::HandlePendingCompositorFrameSinkRequest() {
@@ -679,15 +677,18 @@ void CompositorImpl::OnGpuChannelEstablished(
                   GetCompositorContextAttributes(has_transparent_background_),
                   false /*support_locking*/, false /*automatic_flushes*/,
                   std::move(gpu_channel_host));
+      if (!context_provider->BindToCurrentThread()) {
+        LOG(ERROR) << "Failed to init ContextProvider for compositor.";
+        LOG_IF(FATAL, ++num_successive_context_creation_failures_ >= 2)
+            << "Too many context creation failures. Giving up... ";
+        HandlePendingCompositorFrameSinkRequest();
+        break;
+      }
 
       scoped_refptr<ContextProviderCommandBuffer>
           context_provider_command_buffer =
               static_cast<ContextProviderCommandBuffer*>(
                   context_provider.get());
-      context_provider_command_buffer->BindToCurrentThread();
-      gpu_capabilities_ =
-          context_provider_command_buffer->ContextCapabilities();
-
       auto display_output_surface = base::MakeUnique<AndroidOutputSurface>(
           std::move(context_provider_command_buffer));
       InitializeDisplay(std::move(display_output_surface), nullptr,
@@ -703,6 +704,13 @@ void CompositorImpl::InitializeDisplay(
   DCHECK(compositor_frame_sink_request_pending_);
 
   pending_swapbuffers_ = 0;
+  num_successive_context_creation_failures_ = 0;
+
+  if (context_provider) {
+    gpu_capabilities_ = context_provider->ContextCapabilities();
+  } else {
+    // TODO(danakj): Populate gpu_capabilities_ for VulkanContextProvider.
+  }
 
   cc::SurfaceManager* manager =
       ui::ContextProviderFactory::GetInstance()->GetSurfaceManager();
