@@ -826,7 +826,6 @@ chrome_java_sources = [
   "java/src/org/chromium/chrome/browser/preferences/website/WebsitePreferenceBridge.java",
   "java/src/org/chromium/chrome/browser/prerender/ChromePrerenderService.java",
   "java/src/org/chromium/chrome/browser/prerender/ExternalPrerenderHandler.java",
-  "java/src/org/chromium/chrome/browser/printing/PrintingControllerFactory.java",
   "java/src/org/chromium/chrome/browser/printing/PrintShareActivity.java",
   "java/src/org/chromium/chrome/browser/printing/TabPrinter.java",
   "java/src/org/chromium/chrome/browser/profiles/MostVisitedSites.java",

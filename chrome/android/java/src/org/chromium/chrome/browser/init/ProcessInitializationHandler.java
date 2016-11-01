@@ -11,10 +11,12 @@ import android.view.View;
 
 import com.google.ipc.invalidation.external.client.android.service.AndroidLogger;
 
+import org.chromium.base.ApiCompatibilityUtils;
 import org.chromium.base.CommandLine;
 import org.chromium.base.ContextUtils;
 import org.chromium.base.Log;
 import org.chromium.base.ThreadUtils;
+import org.chromium.chrome.R;
 import org.chromium.chrome.browser.ChromeActivitySessionTracker;
 import org.chromium.chrome.browser.ChromeApplication;
 import org.chromium.chrome.browser.DeferredStartupHandler;
@@ -35,6 +37,8 @@ import org.chromium.chrome.browser.services.GoogleServicesManager;
 import org.chromium.chrome.browser.sync.SyncController;
 import org.chromium.components.signin.AccountManagerHelper;
 import org.chromium.content.common.ContentSwitches;
+import org.chromium.printing.PrintDocumentAdapterWrapper;
+import org.chromium.printing.PrintingControllerImpl;
 import org.chromium.ui.UiUtils;
 
 /**
@@ -243,6 +247,12 @@ public class ProcessInitializationHandler {
                 if (!CommandLine.getInstance().hasSwitch(ContentSwitches.SWITCH_PROCESS_TYPE)) {
                     DownloadController.setDownloadNotificationService(
                             DownloadManagerService.getDownloadManagerService(application));
+                }
+
+                if (ApiCompatibilityUtils.isPrintingSupported()) {
+                    String errorText = application.getResources().getString(
+                            R.string.error_printing_failed);
+                    PrintingControllerImpl.create(new PrintDocumentAdapterWrapper(), errorText);
                 }
             }
         });

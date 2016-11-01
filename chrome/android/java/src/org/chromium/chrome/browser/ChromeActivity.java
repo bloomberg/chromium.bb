@@ -137,6 +137,7 @@ import org.chromium.policy.CombinedPolicyProvider;
 import org.chromium.policy.CombinedPolicyProvider.PolicyChangeListener;
 import org.chromium.printing.PrintManagerDelegateImpl;
 import org.chromium.printing.PrintingController;
+import org.chromium.printing.PrintingControllerImpl;
 import org.chromium.ui.base.ActivityWindowAndroid;
 import org.chromium.ui.base.DeviceFormFactor;
 import org.chromium.ui.base.PageTransition;
@@ -1088,7 +1089,7 @@ public abstract class ChromeActivity extends AsyncInitializationActivity
         final Tab currentTab = getActivityTab();
         if (currentTab == null) return;
 
-        PrintingController printingController = getChromeApplication().getPrintingController();
+        PrintingController printingController = PrintingControllerImpl.getInstance();
         if (printingController != null && !currentTab.isNativePage() && !printingController.isBusy()
                 && PrefServiceBridge.getInstance().isPrintingEnabled()) {
             PrintShareActivity.enablePrintShareOption(this, new Runnable() {
@@ -1669,7 +1670,7 @@ public abstract class ChromeActivity extends AsyncInitializationActivity
             onShareMenuItemSelected(id == R.id.direct_share_menu_id,
                     getCurrentTabModel().isIncognito());
         } else if (id == R.id.print_id) {
-            PrintingController printingController = getChromeApplication().getPrintingController();
+            PrintingController printingController = PrintingControllerImpl.getInstance();
             if (printingController != null && !printingController.isBusy()
                     && PrefServiceBridge.getInstance().isPrintingEnabled()) {
                 printingController.startPrint(new TabPrinter(currentTab),
