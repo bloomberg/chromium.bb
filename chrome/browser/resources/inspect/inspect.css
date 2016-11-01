@@ -430,11 +430,11 @@ dialog.target-discovery .port-forwarding {
 }
 @media (min-width: 47em) {
   #container {
-    height: 100vh;
+    max-height: 100vh;
   }
   #navigation,
   #content {
-    height: 100vh;
+    max-height: 100vh;
     overflow: auto;
   }
 }
