@@ -20,6 +20,7 @@
 
 #include "core/html/forms/FormController.h"
 
+#include "core/events/ScopedEventQueue.h"
 #include "core/html/HTMLFormControlElementWithState.h"
 #include "core/html/HTMLFormElement.h"
 #include "core/html/HTMLInputElement.h"
@@ -536,6 +537,7 @@ void FormController::restoreControlStateFor(
 }
 
 void FormController::restoreControlStateIn(HTMLFormElement& form) {
+  EventQueueScope scope;
   const FormAssociatedElement::List& elements = form.associatedElements();
   for (const auto& element : elements) {
     if (!element->isFormControlElementWithState())
@@ -547,8 +549,10 @@ void FormController::restoreControlStateIn(HTMLFormElement& form) {
     if (ownerFormForState(*control) != &form)
       continue;
     FormControlState state = takeStateForFormElement(*control);
-    if (state.valueSize() > 0)
+    if (state.valueSize() > 0) {
+      // restoreFormControlState might dispatch input/change events.
       control->restoreFormControlState(state);
+    }
   }
 }
 
