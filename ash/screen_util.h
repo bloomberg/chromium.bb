@@ -25,11 +25,6 @@ namespace ash {
 
 class ASH_EXPORT ScreenUtil {
  public:
-  // Finds the display that contains |point| in screeen coordinates.
-  // Returns invalid display if there is no display that can satisfy
-  // the condition.
-  static display::Display FindDisplayContainingPoint(const gfx::Point& point);
-
   // Returns the bounds for maximized windows in parent coordinates.
   // Maximized windows trigger auto-hiding the shelf.
   static gfx::Rect GetMaximizedWindowBoundsInParent(aura::Window* window);

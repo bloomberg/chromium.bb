@@ -12,7 +12,6 @@
 #include <utility>
 
 #include "ash/display/window_tree_host_manager.h"
-#include "ash/screen_util.h"
 #include "ash/shell.h"
 #include "base/strings/string_util.h"
 #include "ui/aura/client/cursor_client.h"
@@ -49,8 +48,9 @@ gfx::Point GetMouseLocationInScreen() {
 }
 
 void SetMouseLocationInScreen(const gfx::Point& screen_location) {
-  display::Display display =
-      ash::ScreenUtil::FindDisplayContainingPoint(screen_location);
+  const display::Display& display =
+      Shell::GetInstance()->display_manager()->FindDisplayContainingPoint(
+          screen_location);
   if (!display.is_valid())
     return;
   aura::Window* root_window = Shell::GetInstance()

@@ -17,18 +17,6 @@
 
 namespace ash {
 
-namespace {
-display::DisplayManager* GetDisplayManager() {
-  return Shell::GetInstance()->display_manager();
-}
-}
-
-// static
-display::Display ScreenUtil::FindDisplayContainingPoint(
-    const gfx::Point& point) {
-  return GetDisplayManager()->FindDisplayContainingPoint(point);
-}
-
 // static
 gfx::Rect ScreenUtil::GetMaximizedWindowBoundsInParent(aura::Window* window) {
   aura::Window* root_window = window->GetRootWindow();
