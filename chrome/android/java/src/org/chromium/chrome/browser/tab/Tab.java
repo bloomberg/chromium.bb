@@ -977,10 +977,7 @@ public class Tab implements ViewGroup.OnHierarchyChangeListener,
         } else if (isOfflinePage()) {
             // If current page is an offline page, reload it with custom behavior defined in extra
             // header respected.
-            LoadUrlParams params =
-                    new LoadUrlParams(getOriginalUrl(), PageTransition.RELOAD);
-            params.setVerbatimHeaders(OfflinePageUtils.getOfflinePageHeaderForReload(this));
-            loadUrl(params);
+            OfflinePageUtils.reload(this);
         } else {
             if (getWebContents() != null) getWebContents().getNavigationController().reload(true);
         }

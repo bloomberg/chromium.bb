@@ -31,9 +31,11 @@ import org.chromium.chrome.browser.tab.Tab;
 import org.chromium.chrome.browser.tabmodel.TabModelSelector;
 import org.chromium.components.bookmarks.BookmarkId;
 import org.chromium.components.offlinepages.SavePageResult;
+import org.chromium.content_public.browser.LoadUrlParams;
 import org.chromium.content_public.browser.WebContents;
 import org.chromium.net.ConnectionType;
 import org.chromium.net.NetworkChangeNotifier;
+import org.chromium.ui.base.PageTransition;
 
 import java.io.File;
 import java.io.FileInputStream;
@@ -553,6 +555,19 @@ public class OfflinePageUtils {
         OfflinePageBridge offlinePageBridge = getInstance().getOfflinePageBridge(tab.getProfile());
         if (offlinePageBridge == null) return false;
         return offlinePageBridge.isShowingOfflinePreview(tab.getWebContents());
+    }
+
+    /**
+     * Reloads specified tab, which should allow to open an online version of the page.
+     * @param tab The tab to be reloaded.
+     */
+    public static void reload(Tab tab) {
+        // If current page is an offline page, reload it with custom behavior defined in extra
+        // header respected.
+        LoadUrlParams params =
+                new LoadUrlParams(tab.getOriginalUrl(), PageTransition.RELOAD);
+        params.setVerbatimHeaders(getOfflinePageHeaderForReload(tab));
+        tab.loadUrl(params);
     }
 
     private static boolean isPowerConnected(Intent batteryStatus) {

@@ -245,6 +245,7 @@ public class WebsiteSettingsPopup implements OnClickListener {
     private final Profile mProfile;
     private final WebContents mWebContents;
     private final WindowAndroid mWindowAndroid;
+    private final Tab mTab;
 
     // A pointer to the C++ object for this UI.
     private long mNativeWebsiteSettingsPopup;
@@ -258,6 +259,7 @@ public class WebsiteSettingsPopup implements OnClickListener {
     private final LinearLayout mPermissionsList;
     private final Button mInstantAppButton;
     private final Button mSiteSettingsButton;
+    private final Button mOpenOnlineButton;
 
     // The dialog the container is placed in.
     private final Dialog mDialog;
@@ -304,17 +306,16 @@ public class WebsiteSettingsPopup implements OnClickListener {
      * Creates the WebsiteSettingsPopup, but does not display it. Also initializes the corresponding
      * C++ object and saves a pointer to it.
      * @param activity                 Activity which is used for showing a popup.
-     * @param profile                  Profile of the tab that will show the popup.
-     * @param webContents              The WebContents for which to show Website information. This
-     *                                 information is retrieved for the visible entry.
+     * @param tab                      Tab for which the pop up is shown.
      * @param offlinePageCreationDate  Date when the offline page was created.
      * @param publisher                The name of the content publisher, if any.
      */
-    private WebsiteSettingsPopup(Activity activity, Profile profile, WebContents webContents,
-            String offlinePageCreationDate, String publisher) {
+    private WebsiteSettingsPopup(Activity activity, Tab tab, String offlinePageCreationDate,
+            String publisher) {
         mContext = activity;
-        mProfile = profile;
-        mWebContents = webContents;
+        mProfile = tab.getProfile();
+        mWebContents = tab.getWebContents();
+        mTab = tab;
         if (offlinePageCreationDate != null) {
             mOfflinePageCreationDate = offlinePageCreationDate;
         }
@@ -366,6 +367,10 @@ public class WebsiteSettingsPopup implements OnClickListener {
                 (Button) mContainer.findViewById(R.id.website_settings_site_settings_button);
         mSiteSettingsButton.setOnClickListener(this);
 
+        mOpenOnlineButton =
+                (Button) mContainer.findViewById(R.id.website_settings_open_online_button);
+        mOpenOnlineButton.setOnClickListener(this);
+
         mDisplayedPermissions = new ArrayList<PageInfoPermissionEntry>();
 
         // Hide the permissions list for sites with no permissions.
@@ -413,7 +418,7 @@ public class WebsiteSettingsPopup implements OnClickListener {
         }
 
         // This needs to come after other member initialization.
-        mNativeWebsiteSettingsPopup = nativeInit(this, webContents);
+        mNativeWebsiteSettingsPopup = nativeInit(this, mWebContents);
         final WebContentsObserver webContentsObserver = new WebContentsObserver(mWebContents) {
             @Override
             public void navigationEntryCommitted() {
@@ -479,6 +484,10 @@ public class WebsiteSettingsPopup implements OnClickListener {
                 || !(mParsedUrl.getScheme().equals("http")
                            || mParsedUrl.getScheme().equals("https"))) {
             mSiteSettingsButton.setVisibility(View.GONE);
+        }
+
+        if (!isShowingOfflinePage() || !OfflinePageUtils.isConnected()) {
+            mOpenOnlineButton.setVisibility(View.GONE);
         }
 
         mInstantAppIntent = mIsInternalPage ? null
@@ -825,6 +834,16 @@ public class WebsiteSettingsPopup implements OnClickListener {
                     mContext.startActivity(settingsIntent);
                 }
             });
+        } else if (view == mOpenOnlineButton) {
+            runAfterDismiss(new Runnable() {
+                @Override
+                public void run() {
+                    // Attempt to reload to an online version of the viewed offline web page. This
+                    // attempt might fail if the user is offline, in which case an offline copy will
+                    // be reloaded.
+                    OfflinePageUtils.reload(mTab);
+                }
+            });
         }
     }
 
@@ -963,8 +982,7 @@ public class WebsiteSettingsPopup implements OnClickListener {
             offlinePageCreationDate = df.format(creationDate);
         }
 
-        new WebsiteSettingsPopup(activity, tab.getProfile(), tab.getWebContents(),
-                offlinePageCreationDate, contentPublisher);
+        new WebsiteSettingsPopup(activity, tab, offlinePageCreationDate, contentPublisher);
     }
 
     private static native long nativeInit(WebsiteSettingsPopup popup, WebContents webContents);
