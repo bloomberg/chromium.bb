@@ -11,7 +11,10 @@
 #include <memory>
 
 #ifdef INSIDE_BLINK
+#include "wtf/Compiler.h"
 #include "wtf/Functional.h"
+#include "wtf/RefCounted.h"
+#include "wtf/WeakPtr.h"
 #endif
 
 namespace base {
@@ -21,6 +24,41 @@ class SingleThreadTaskRunner;
 namespace blink {
 
 using SingleThreadTaskRunner = base::SingleThreadTaskRunner;
+
+#ifdef INSIDE_BLINK
+
+class BLINK_PLATFORM_EXPORT TaskHandle
+    : public WTF::ThreadSafeRefCounted<TaskHandle> {
+ public:
+  // Returns true if the task will run later. Returns false if the task is
+  // cancelled or the task is run already.
+  // This function is not thread safe. Call this on the thread that has posted
+  // the task.
+  bool isActive() const;
+
+  // Cancels the task invocation. Do nothing if the task is cancelled or run
+  // already.
+  // This function is not thread safe. Call this on the thread that has posted
+  // the task.
+  void cancel();
+
+  ~TaskHandle();
+
+ private:
+  class CancelOnTaskDestruction;
+  friend class WebTaskRunner;
+
+  explicit TaskHandle(std::unique_ptr<WTF::Closure> task);
+  void run(const CancelOnTaskDestruction&);
+  WTF::WeakPtr<TaskHandle> asWeakPtr();
+
+  std::unique_ptr<WTF::Closure> m_task;
+  WTF::WeakPtrFactory<TaskHandle> m_weakPtrFactory;
+
+  DISALLOW_COPY_AND_ASSIGN(TaskHandle);
+};
+
+#endif
 
 // The blink representation of a chromium SingleThreadTaskRunner.
 class BLINK_PLATFORM_EXPORT WebTaskRunner {
@@ -92,6 +130,16 @@ class BLINK_PLATFORM_EXPORT WebTaskRunner {
   void postDelayedTask(const WebTraceLocation&,
                        std::unique_ptr<WTF::Closure>,
                        long long delayMs);
+
+  // For same-thread cancellable task posting. Returns a TaskHandle object for
+  // cancellation.
+  RefPtr<TaskHandle> postCancellableTask(const WebTraceLocation&,
+                                         std::unique_ptr<WTF::Closure>)
+      WARN_UNUSED_RETURN;
+  RefPtr<TaskHandle> postDelayedCancellableTask(const WebTraceLocation&,
+                                                std::unique_ptr<WTF::Closure>,
+                                                long long delayMs)
+      WARN_UNUSED_RETURN;
 #endif
 };
 

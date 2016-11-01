@@ -1623,6 +1623,7 @@ test("blink_platform_unittests") {
     "UserGestureIndicatorTest.cpp",
     "WebIconSizesParserTest.cpp",
     "WebScreenInfoTest.cpp",
+    "WebTaskRunnerTest.cpp",
     "WebVectorTest.cpp",
     "animation/AnimationTranslationUtilTest.cpp",
     "animation/CompositorAnimationHostTest.cpp",

@@ -16,6 +16,27 @@
 #include <memory>
 #include <type_traits>
 
+// WebTaskRunner::postCancellableTask will replace CancellableTaskFactory.
+// Use postCancellableTask in new code.
+// Example: For |task_runner| and |foo| below.
+//   WebTaskRunner* task_runner;
+//   Foo* foo;
+//
+//   CancellableTaskFactory factory(foo, &Foo::bar);
+//   task_runner->postTask(BLINK_FROM_HERE, factory.cancelAndCreate());
+//   factory.cancel();
+//
+// Above is equivalent to below:
+//
+//   std::unique_ptr<WTF::Closure> task =
+//       WTF::bind(wrapPersistent(foo), &Foo::bar);
+//   RefPtr<TaskHandle> handle =
+//       task_runner->postCancellableTask(BLINK_FROM_HERE, std::move(task));
+//   handle->cancel();
+//
+// Note that the task is not automatically cancelled on the scope out of
+// RefPtr<TaskHandle>, since the wrapped task has a reference to the TaskHandle.
+
 namespace blink {
 
 class TraceLocation;
