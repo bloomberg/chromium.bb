@@ -1690,7 +1690,7 @@ TEST_F(TemplateURLTest, ContextualSearchParameters) {
   TemplateURLRef::SearchTermsArgs search_terms_args(ASCIIToUTF16("foo"));
   std::string result = url.url_ref().ReplaceSearchTerms(search_terms_args,
                                                         search_terms_data_);
-  EXPECT_EQ("http://bar/_/contextualsearch?ctxsl_coca=0", result);
+  EXPECT_EQ("http://bar/_/contextualsearch?", result);
 
   TemplateURLRef::SearchTermsArgs::ContextualSearchParams params(
       1, 6, 11, "allen", "woody+allen+movies", "www.wikipedia.org", "utf-8", 1);
@@ -1707,6 +1707,19 @@ TEST_F(TemplateURLTest, ContextualSearchParameters) {
       "ctxsl_url=www.wikipedia.org&"
       "ctxs_encoding=utf-8&"
       "ctxsl_coca=1",
+      result);
+
+  // Test the current common case, which uses the shorter constructor.
+  search_terms_args.contextual_search_params =
+      TemplateURLRef::SearchTermsArgs::ContextualSearchParams(2, "allen",
+                                                              std::string(), 0);
+  result =
+      url.url_ref().ReplaceSearchTerms(search_terms_args, search_terms_data_);
+
+  EXPECT_EQ(
+      "http://bar/_/contextualsearch?"
+      "ctxs=2&"
+      "q=allen",
       result);
 }
 

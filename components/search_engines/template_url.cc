@@ -987,41 +987,31 @@ std::string TemplateURLRef::HandleReplacements(
 
       case GOOGLE_CONTEXTUAL_SEARCH_CONTEXT_DATA: {
         DCHECK(!i->is_post_param);
-        std::string context_data;
 
         const SearchTermsArgs::ContextualSearchParams& params =
             search_terms_args.contextual_search_params;
+        std::vector<std::string> args;
 
-        if (params.start != std::string::npos) {
-          context_data.append("ctxs_start=" +
-                              base::SizeTToString(params.start) + "&");
-        }
-
-        if (params.end != std::string::npos) {
-          context_data.append("ctxs_end=" +
-                              base::SizeTToString(params.end) + "&");
-        }
+        if (params.start != std::string::npos)
+          args.push_back("ctxs_start=" + base::SizeTToString(params.start));
+        if (params.end != std::string::npos)
+          args.push_back("ctxs_end=" + base::SizeTToString(params.end));
 
         if (!params.selection.empty())
-          context_data.append("q=" + params.selection + "&");
-
+          args.push_back("q=" + params.selection);
         if (!params.content.empty())
-          context_data.append("ctxs_content=" + params.content + "&");
-
+          args.push_back("ctxs_content=" + params.content);
         if (!params.base_page_url.empty())
-          context_data.append("ctxsl_url=" + params.base_page_url + "&");
+          args.push_back("ctxsl_url=" + params.base_page_url);
+        if (!params.encoding.empty())
+          args.push_back("ctxs_encoding=" + params.encoding);
 
-        if (!params.encoding.empty()) {
-          context_data.append("ctxs_encoding=" + params.encoding + "&");
+        if (params.contextual_cards_version > 0) {
+          args.push_back("ctxsl_coca=" +
+                         base::IntToString(params.contextual_cards_version));
         }
 
-        // The above parameters all add a trailing "&" so there must be one last
-        // parameter that's always added at the end.
-        context_data.append("ctxsl_coca=" +
-                            base::IntToString(
-                                params.contextual_cards_version));
-
-        HandleReplacement(std::string(), context_data, *i, &url);
+        HandleReplacement(std::string(), base::JoinString(args, "&"), *i, &url);
         break;
       }
 
