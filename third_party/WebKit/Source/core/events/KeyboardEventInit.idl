@@ -9,5 +9,5 @@ dictionary KeyboardEventInit : EventModifierInit {
     DOMString code = "";
     unsigned long location = 0;
     boolean repeat = false;
-    // TODO(foolip): boolean isComposing = false;
+    boolean isComposing = false;
 };

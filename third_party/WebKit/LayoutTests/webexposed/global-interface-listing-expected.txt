@@ -3656,6 +3656,7 @@ interface KeyboardEvent : UIEvent
     getter charCode
     getter code
     getter ctrlKey
+    getter isComposing
     getter key
     getter keyCode
     getter location

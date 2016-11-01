@@ -47,27 +47,15 @@ class CORE_EXPORT KeyboardEvent final : public UIEventWithKeyState {
   static KeyboardEvent* create() { return new KeyboardEvent; }
 
   static KeyboardEvent* create(const WebKeyboardEvent& webEvent,
-                               AbstractView* view) {
-    return new KeyboardEvent(webEvent, view);
+                               LocalDOMWindow* domWindow) {
+    return new KeyboardEvent(webEvent, domWindow);
   }
 
   static KeyboardEvent* create(ScriptState*,
                                const AtomicString& type,
                                const KeyboardEventInit&);
 
-  static KeyboardEvent* create(const AtomicString& type,
-                               bool canBubble,
-                               bool cancelable,
-                               AbstractView* view,
-                               const String& code,
-                               const String& key,
-                               unsigned location,
-                               PlatformEvent::Modifiers modifiers,
-                               double platformTimeStamp) {
-    return new KeyboardEvent(type, canBubble, cancelable, view, code, key,
-                             location, modifiers, platformTimeStamp);
-  }
-
+  KeyboardEvent(const AtomicString&, const KeyboardEventInit&);
   ~KeyboardEvent() override;
 
   void initKeyboardEvent(ScriptState*,
@@ -97,22 +85,13 @@ class CORE_EXPORT KeyboardEvent final : public UIEventWithKeyState {
   const AtomicString& interfaceName() const override;
   bool isKeyboardEvent() const override;
   int which() const override;
+  bool isComposing() const { return m_isComposing; }
 
   DECLARE_VIRTUAL_TRACE();
 
  private:
   KeyboardEvent();
-  KeyboardEvent(const WebKeyboardEvent&, AbstractView*);
-  KeyboardEvent(const AtomicString&, const KeyboardEventInit&);
-  KeyboardEvent(const AtomicString& type,
-                bool canBubble,
-                bool cancelable,
-                AbstractView*,
-                const String& code,
-                const String& key,
-                unsigned location,
-                PlatformEvent::Modifiers,
-                double platformTimeStamp);
+  KeyboardEvent(const WebKeyboardEvent&, LocalDOMWindow*);
 
   void initLocationModifiers(unsigned location);
 
@@ -120,6 +99,7 @@ class CORE_EXPORT KeyboardEvent final : public UIEventWithKeyState {
   String m_code;
   String m_key;
   unsigned m_location;
+  bool m_isComposing;
 };
 
 DEFINE_EVENT_TYPE_CASTS(KeyboardEvent);

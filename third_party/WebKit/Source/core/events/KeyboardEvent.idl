@@ -37,7 +37,7 @@
     readonly attribute boolean          altKey;
     readonly attribute boolean          metaKey;
     readonly attribute boolean          repeat;
-    // TODO(foolip): readonly attribute boolean isComposing;
+    readonly attribute boolean          isComposing;
     boolean getModifierState(DOMString keyArg);
 
     // https://w3c.github.io/uievents/#idl-interface-KeyboardEvent-initializers

@@ -56,8 +56,11 @@ namespace blink {
 
 KeyboardEvent* createKeyboardEventWithLocation(
     KeyboardEvent::KeyLocationCode location) {
-  return KeyboardEvent::create("keydown", true, true, 0, "", "", location,
-                               PlatformEvent::NoModifiers, 0);
+  KeyboardEventInit keyEventInit;
+  keyEventInit.setBubbles(true);
+  keyEventInit.setCancelable(true);
+  keyEventInit.setLocation(location);
+  return new KeyboardEvent("keydown", keyEventInit);
 }
 
 int getModifiersForKeyLocationCode(KeyboardEvent::KeyLocationCode location) {
