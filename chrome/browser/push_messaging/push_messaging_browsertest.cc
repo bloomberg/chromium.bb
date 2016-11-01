@@ -289,13 +289,6 @@ class PushMessagingBrowserTest : public InProcessBrowserTest {
   DISALLOW_COPY_AND_ASSIGN(PushMessagingBrowserTest);
 };
 
-class PushMessagingBrowserTestEmptySubscriptionOptions
-    : public PushMessagingBrowserTest {
-  std::string GetTestURL() override {
-    return "/push_messaging/test_no_subscription_options.html";
-  }
-};
-
 void PushMessagingBrowserTest::RequestAndAcceptPermission() {
   std::string script_result;
   GetPermissionRequestManager()->set_auto_response_for_test(
@@ -497,7 +490,7 @@ IN_PROC_BROWSER_TEST_F(PushMessagingBrowserTest, SubscribeFailureNoSenderId) {
       script_result);
 }
 
-IN_PROC_BROWSER_TEST_F(PushMessagingBrowserTestEmptySubscriptionOptions,
+IN_PROC_BROWSER_TEST_F(PushMessagingBrowserTest,
                        RegisterFailureEmptyPushSubscriptionOptions) {
   std::string script_result;
 
@@ -506,7 +499,8 @@ IN_PROC_BROWSER_TEST_F(PushMessagingBrowserTestEmptySubscriptionOptions,
 
   ASSERT_NO_FATAL_FAILURE(RequestAndAcceptPermission());
 
-  ASSERT_TRUE(RunScript("documentSubscribePush()", &script_result));
+  ASSERT_TRUE(
+      RunScript("documentSubscribePushWithEmptyOptions()", &script_result));
   EXPECT_EQ("NotAllowedError - Registration failed - permission denied",
             script_result);
 }

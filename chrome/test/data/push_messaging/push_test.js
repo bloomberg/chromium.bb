@@ -8,10 +8,6 @@
 // framework.
 var resultQueue = new ResultQueue();
 
-var pushSubscriptionOptions = {
-  userVisibleOnly: true
-};
-
 // Waits for the given ServiceWorkerRegistration to become ready.
 // Shim for https://github.com/w3c/ServiceWorker/issues/770.
 function swRegistrationReady(reg) {
@@ -94,8 +90,16 @@ function swapManifestNoSenderId() {
 // from, where the subscription used a sender ID instead of public key.
 function documentSubscribePushWithoutKey() {
   navigator.serviceWorker.ready.then(function(swRegistration) {
-    return swRegistration.pushManager.subscribe(
-        pushSubscriptionOptions)
+    return swRegistration.pushManager.subscribe({userVisibleOnly: true})
+        .then(function(subscription) {
+          sendResultToTest(subscription.endpoint);
+        });
+  }).catch(sendErrorToTest);
+}
+
+function documentSubscribePushWithEmptyOptions() {
+  navigator.serviceWorker.ready.then(function(swRegistration) {
+    return swRegistration.pushManager.subscribe()
         .then(function(subscription) {
           sendResultToTest(subscription.endpoint);
         });
@@ -104,8 +108,10 @@ function documentSubscribePushWithoutKey() {
 
 function documentSubscribePush() {
   navigator.serviceWorker.ready.then(function(swRegistration) {
-    pushSubscriptionOptions.applicationServerKey = kApplicationServerKey.buffer;
-    return swRegistration.pushManager.subscribe(pushSubscriptionOptions)
+    return swRegistration.pushManager.subscribe({
+          userVisibleOnly: true,
+          applicationServerKey: kApplicationServerKey.buffer
+        })
         .then(function(subscription) {
           sendResultToTest(subscription.endpoint);
         });
@@ -136,7 +142,7 @@ function GetP256dh() {
 
 function permissionState() {
   navigator.serviceWorker.ready.then(function(swRegistration) {
-    return swRegistration.pushManager.permissionState(pushSubscriptionOptions)
+    return swRegistration.pushManager.permissionState({userVisibleOnly: true})
         .then(function(permission) {
           sendResultToTest('permission status - ' + permission);
         });
