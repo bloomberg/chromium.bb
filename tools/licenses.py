@@ -63,8 +63,6 @@ PRUNE_PATHS = set([
     os.path.join('third_party','pyelftools'),
     os.path.join('third_party','pylib'),
     os.path.join('third_party','pywebsocket'),
-    os.path.join('third_party','qunit'),
-    os.path.join('third_party','sinonjs'),
     os.path.join('third_party','syzygy'),
 
     # Chromium code in third_party.
