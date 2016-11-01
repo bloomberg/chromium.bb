@@ -2097,11 +2097,17 @@ void WebViewImpl::exitFullscreenForElement(Element* element) {
 }
 
 bool WebViewImpl::hasHorizontalScrollbar() {
-  return mainFrameImpl()->frameView()->horizontalScrollbar();
+  return mainFrameImpl()
+      ->frameView()
+      ->layoutViewportScrollableArea()
+      ->horizontalScrollbar();
 }
 
 bool WebViewImpl::hasVerticalScrollbar() {
-  return mainFrameImpl()->frameView()->verticalScrollbar();
+  return mainFrameImpl()
+      ->frameView()
+      ->layoutViewportScrollableArea()
+      ->verticalScrollbar();
 }
 
 const WebInputEvent* WebViewImpl::m_currentInputEvent = nullptr;
