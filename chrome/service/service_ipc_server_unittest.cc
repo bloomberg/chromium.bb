@@ -17,7 +17,6 @@
 #include "build/build_config.h"
 #include "chrome/common/service_messages.h"
 #include "ipc/ipc_channel.h"
-#include "ipc/ipc_channel_handle.h"
 #include "ipc/ipc_channel_mojo.h"
 #include "mojo/public/cpp/system/message_pipe.h"
 #include "testing/gtest/include/gtest/gtest.h"

@@ -280,7 +280,7 @@ bool ServiceProcessState::CreateSharedData() {
   return true;
 }
 
-IPC::ChannelHandle ServiceProcessState::GetServiceProcessChannel() {
+mojo::edk::NamedPlatformHandle ServiceProcessState::GetServiceProcessChannel() {
   return ::GetServiceProcessChannel();
 }
 

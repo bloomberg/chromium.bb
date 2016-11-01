@@ -481,8 +481,7 @@ void CloudPrintProxyPolicyStartupTest::WaitForConnect() {
   mojo::MessagePipe pipe;
   BrowserThread::PostBlockingPoolTask(
       FROM_HERE, base::Bind(&ConnectOnBlockingPool, base::Passed(&pipe.handle1),
-                            mojo::edk::NamedPlatformHandle(
-                                GetServiceProcessChannel().name)));
+                            GetServiceProcessChannel()));
   ServiceProcessControl::GetInstance()->SetChannel(
       IPC::ChannelProxy::Create(IPC::ChannelMojo::CreateClientFactory(
                                     std::move(pipe.handle0), IOTaskRunner()),

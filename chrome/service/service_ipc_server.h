@@ -13,7 +13,6 @@
 #include "base/macros.h"
 #include "base/memory/scoped_vector.h"
 #include "base/single_thread_task_runner.h"
-#include "ipc/ipc_channel_handle.h"
 #include "ipc/ipc_listener.h"
 #include "ipc/ipc_sender.h"
 #include "ipc/ipc_sync_channel.h"

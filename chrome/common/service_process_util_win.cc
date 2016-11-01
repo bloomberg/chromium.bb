@@ -80,8 +80,9 @@ class ServiceProcessTerminateMonitor
 }  // namespace
 
 // Gets the name of the service process IPC channel.
-IPC::ChannelHandle GetServiceProcessChannel() {
-  return GetServiceProcessScopedVersionedName("_service_ipc");
+mojo::edk::NamedPlatformHandle GetServiceProcessChannel() {
+  return mojo::edk::NamedPlatformHandle(
+      GetServiceProcessScopedVersionedName("_service_ipc"));
 }
 
 bool ForceServiceProcessShutdown(const std::string& version,

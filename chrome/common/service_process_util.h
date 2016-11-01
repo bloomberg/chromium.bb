@@ -12,7 +12,8 @@
 #include "base/memory/shared_memory.h"
 #include "base/process/process.h"
 #include "build/build_config.h"
-#include "ipc/ipc_channel_handle.h"
+#include "mojo/edk/embedder/named_platform_handle.h"
+#include "mojo/edk/embedder/scoped_platform_handle.h"
 
 class MultiProcessLock;
 
@@ -30,7 +31,7 @@ class SingleThreadTaskRunner;
 }
 
 // Return the IPC channel to connect to the service process.
-IPC::ChannelHandle GetServiceProcessChannel();
+mojo::edk::NamedPlatformHandle GetServiceProcessChannel();
 
 // Return a name that is scoped to this instance of the service process. We
 // use the user-data-dir as a scoping prefix.
@@ -103,7 +104,11 @@ class ServiceProcessState {
   bool RemoveFromAutoRun();
 
   // Return the channel handle used for communicating with the service.
-  IPC::ChannelHandle GetServiceProcessChannel();
+#if defined(OS_MACOSX)
+  mojo::edk::ScopedPlatformHandle GetServiceProcessChannel();
+#else
+  mojo::edk::NamedPlatformHandle GetServiceProcessChannel();
+#endif
 
  private:
 #if !defined(OS_MACOSX)

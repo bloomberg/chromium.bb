@@ -216,6 +216,7 @@ static_library("common") {
     "//gpu/config",
     "//ipc",
     "//media",
+    "//mojo/edk/system",
     "//mojo/public/cpp/bindings",
     "//net",
     "//ppapi/features",

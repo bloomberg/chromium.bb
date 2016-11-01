@@ -122,20 +122,6 @@ void PrepareRestartOnCrashEnviroment(
   env->SetVar(env_vars::kRestartInfo, base::UTF16ToUTF8(dlg_strings));
 }
 
-#if defined(OS_POSIX)
-mojo::edk::ScopedPlatformHandle CreateServerHandle(
-    const IPC::ChannelHandle& channel_handle) {
-#if defined(OS_MACOSX)
-  mojo::edk::PlatformHandle platform_handle(channel_handle.socket.fd);
-  platform_handle.needs_connection = true;
-  return mojo::edk::ScopedPlatformHandle(platform_handle);
-#else
-  return mojo::edk::CreateServerHandle(
-      mojo::edk::NamedPlatformHandle(channel_handle.name));
-#endif
-}
-#endif
-
 }  // namespace
 
 ServiceProcess::ServiceProcess()
@@ -320,12 +306,16 @@ bool ServiceProcess::OnIPCClientDisconnect() {
 
 mojo::ScopedMessagePipeHandle ServiceProcess::CreateChannelMessagePipe() {
   if (!server_handle_.is_valid()) {
-#if defined(OS_POSIX)
-    server_handle_ =
-        CreateServerHandle(service_process_state_->GetServiceProcessChannel());
+#if defined(OS_MACOSX)
+    mojo::edk::PlatformHandle platform_handle(
+        service_process_state_->GetServiceProcessChannel().release());
+    platform_handle.needs_connection = true;
+    server_handle_.reset(platform_handle);
+#elif defined(OS_POSIX)
+    server_handle_ = mojo::edk::CreateServerHandle(
+        service_process_state_->GetServiceProcessChannel());
 #elif defined(OS_WIN)
-    server_handle_ = mojo::edk::NamedPlatformHandle(
-        service_process_state_->GetServiceProcessChannel().name);
+    server_handle_ = service_process_state_->GetServiceProcessChannel();
 #endif
     DCHECK(server_handle_.is_valid());
   }

@@ -101,10 +101,10 @@ base::FilePath GetServiceProcessSocketName() {
 
 }  // namespace
 
-IPC::ChannelHandle GetServiceProcessChannel() {
+mojo::edk::NamedPlatformHandle GetServiceProcessChannel() {
   base::FilePath socket_name = GetServiceProcessSocketName();
   VLOG(1) << "ServiceProcessChannel: " << socket_name.value();
-  return IPC::ChannelHandle(socket_name.value());
+  return mojo::edk::NamedPlatformHandle(socket_name.value());
 }
 
 bool ForceServiceProcessShutdown(const std::string& /* version */,
@@ -182,7 +182,8 @@ bool ServiceProcessState::Initialize() {
   return true;
 }
 
-IPC::ChannelHandle ServiceProcessState::GetServiceProcessChannel() {
+mojo::edk::ScopedPlatformHandle
+ServiceProcessState::GetServiceProcessChannel() {
   DCHECK(state_);
   NSDictionary* ns_launchd_conf = base::mac::CFToNSCast(state_->launchd_conf);
   NSDictionary* socket_dict =
@@ -191,8 +192,7 @@ IPC::ChannelHandle ServiceProcessState::GetServiceProcessChannel() {
       [socket_dict objectForKey:GetServiceProcessLaunchDSocketKey()];
   DCHECK_EQ([sockets count], 1U);
   int socket = [[sockets objectAtIndex:0] intValue];
-  base::FileDescriptor fd(socket, false);
-  return IPC::ChannelHandle(std::string(), fd);
+  return mojo::edk::ScopedPlatformHandle(mojo::edk::PlatformHandle(socket));
 }
 
 bool CheckServiceProcessReady() {
