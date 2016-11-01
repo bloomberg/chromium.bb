@@ -38,8 +38,16 @@ class ChromeSitePerProcessTest : public InProcessBrowserTest {
 
   void SetUpOnMainThread() override {
     host_resolver()->AddRule("*", "127.0.0.1");
-    ASSERT_TRUE(embedded_test_server()->Start());
+    ASSERT_TRUE(embedded_test_server()->InitializeAndListen());
     content::SetupCrossSiteRedirector(embedded_test_server());
+
+    // Serve from the root so that flash_object.html can load the swf file.
+    // Needed for the PluginWithRemoteTopFrame test.
+    base::FilePath test_data_dir;
+    CHECK(base::PathService::Get(base::DIR_SOURCE_ROOT, &test_data_dir));
+    embedded_test_server()->ServeFilesFromDirectory(test_data_dir);
+
+    embedded_test_server()->StartAcceptingConnections();
   }
 
  private:
@@ -177,11 +185,6 @@ IN_PROC_BROWSER_TEST_F(ChromeSitePerProcessTest,
 // involves querying content settings from the renderer process and using the
 // top frame's origin as one of the parameters.  See https://crbug.com/426658.
 IN_PROC_BROWSER_TEST_F(ChromeSitePerProcessTest, PluginWithRemoteTopFrame) {
-  // Serve from the root so that flash_object.html can load the swf file.
-  base::FilePath test_data_dir;
-  CHECK(base::PathService::Get(base::DIR_SOURCE_ROOT, &test_data_dir));
-  embedded_test_server()->ServeFilesFromDirectory(test_data_dir);
-
   GURL main_url(
       embedded_test_server()->GetURL("a.com", "/chrome/test/data/iframe.html"));
   ui_test_utils::NavigateToURL(browser(), main_url);
