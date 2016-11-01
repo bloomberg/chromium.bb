@@ -6,9 +6,13 @@ package org.chromium.content_shell_apk;
 
 import static org.chromium.base.test.util.ScalableTimeout.scaleTimeout;
 
+import android.annotation.TargetApi;
 import android.content.ComponentName;
+import android.content.Context;
 import android.content.Intent;
 import android.net.Uri;
+import android.os.Build;
+import android.os.PowerManager;
 import android.text.TextUtils;
 import android.view.ViewGroup;
 
@@ -50,6 +54,24 @@ public class ContentShellTestBase
 
     public ContentShellTestBase() {
         super(ContentShellActivity.class);
+    }
+
+    @Override
+    protected void setUp() throws Exception {
+        assertScreenIsOn();
+    }
+
+    @TargetApi(Build.VERSION_CODES.KITKAT_WATCH)
+    @SuppressWarnings("deprecation")
+    private void assertScreenIsOn() {
+        PowerManager pm = (PowerManager) getInstrumentation().getContext().getSystemService(
+                Context.POWER_SERVICE);
+
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.KITKAT_WATCH) {
+            assertTrue("Many tests will fail if the screen is not on.", pm.isInteractive());
+        } else {
+            assertTrue("Many tests will fail if the screen is not on.", pm.isScreenOn());
+        }
     }
 
     /**
