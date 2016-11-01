@@ -75,6 +75,22 @@ TEST(ModPagespeedMetricsTest, CountPageSpeedHeadersTest) {
   EXPECT_EQ(num_bucket_33, version_samples->GetCount(33));
   headers->RemoveHeader("X-Mod-Pagespeed");
 
+  // X-Mod-Pagespeed header in expected format, without (optional) SVN commit
+  // number.
+  headers->AddHeader("X-Mod-Pagespeed: 1.2.24.1");
+  RecordMetrics(content::RESOURCE_TYPE_MAIN_FRAME, url, headers.get());
+  server_samples = server_histogram->SnapshotSamples();
+  version_samples = version_histogram->SnapshotSamples();
+  EXPECT_EQ(++num_responses, server_samples->GetCount(0));
+  EXPECT_EQ(++num_mps, server_samples->GetCount(1));
+  EXPECT_EQ(num_ngx, server_samples->GetCount(2));
+  EXPECT_EQ(num_pss, server_samples->GetCount(3));
+  EXPECT_EQ(num_other, server_samples->GetCount(4));
+  EXPECT_EQ(num_bucket_1, version_samples->GetCount(1));
+  EXPECT_EQ(++num_bucket_30, version_samples->GetCount(30));  // +1 for #30
+  EXPECT_EQ(num_bucket_33, version_samples->GetCount(33));
+  headers->RemoveHeader("X-Mod-Pagespeed");
+
   // X-Mod-Pagespeed header in unexpected format.
   headers->AddHeader("X-Mod-Pagespeed: Powered By PageSpeed!");
   RecordMetrics(content::RESOURCE_TYPE_MAIN_FRAME, url, headers.get());

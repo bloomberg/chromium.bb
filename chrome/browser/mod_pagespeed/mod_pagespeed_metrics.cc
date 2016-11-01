@@ -45,7 +45,7 @@ int GetXModPagespeedBucketFromVersion(const std::string& version) {
   int num_parsed = sscanf(version.c_str(), "%d.%d.%d.%d-%d", &unused_major,
                           &unused_minor, &branch, &point, &unused_commit);
   int output = 0;
-  if (num_parsed == 5) {
+  if (num_parsed >= 4) {
     output = 2;
     if (branch > 10)
       output += 2 * (branch - 10);
