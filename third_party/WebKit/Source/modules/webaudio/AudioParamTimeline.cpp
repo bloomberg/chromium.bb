@@ -398,7 +398,7 @@ float AudioParamTimeline::valueForContextTime(
   double sampleRate = audioDestination.sampleRate();
   size_t startFrame = audioDestination.currentSampleFrame();
   // One parameter change per render quantum.
-  double controlRate = sampleRate / AudioHandler::ProcessingSizeInFrames;
+  double controlRate = sampleRate / AudioUtilities::kRenderQuantumFrames;
   value = valuesForFrameRange(startFrame, startFrame + 1, defaultValue, &value,
                               1, sampleRate, controlRate, minValue, maxValue);
 

@@ -47,7 +47,8 @@ MediaStreamAudioDestinationHandler::MediaStreamAudioDestinationHandler(
                                  node,
                                  node.context()->sampleRate(),
                                  numberOfChannels),
-      m_mixBus(AudioBus::create(numberOfChannels, ProcessingSizeInFrames)) {
+      m_mixBus(AudioBus::create(numberOfChannels,
+                                AudioUtilities::kRenderQuantumFrames)) {
   m_source = MediaStreamSource::create(
       "WebAudio-" + createCanonicalUUIDString(), MediaStreamSource::TypeAudio,
       "MediaStreamAudioDestinationNode", false,
@@ -91,7 +92,7 @@ void MediaStreamAudioDestinationHandler::process(size_t numberOfFrames) {
   if (tryLocker.locked()) {
     unsigned count = channelCount();
     if (count != m_mixBus->numberOfChannels()) {
-      m_mixBus = AudioBus::create(count, ProcessingSizeInFrames);
+      m_mixBus = AudioBus::create(count, AudioUtilities::kRenderQuantumFrames);
       // setAudioFormat has an internal lock.  This can cause audio to
       // glitch.  This is outside of our control.
       m_source->setAudioFormat(count, context()->sampleRate());

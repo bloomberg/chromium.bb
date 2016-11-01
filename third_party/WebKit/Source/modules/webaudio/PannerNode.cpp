@@ -166,17 +166,17 @@ void PannerHandler::process(size_t framesToProcess) {
 void PannerHandler::processSampleAccurateValues(AudioBus* destination,
                                                 const AudioBus* source,
                                                 size_t framesToProcess) {
-  RELEASE_ASSERT(framesToProcess <= ProcessingSizeInFrames);
+  RELEASE_ASSERT(framesToProcess <= AudioUtilities::kRenderQuantumFrames);
 
   // Get the sample accurate values from all of the AudioParams, including the
   // values from the AudioListener.
-  float pannerX[ProcessingSizeInFrames];
-  float pannerY[ProcessingSizeInFrames];
-  float pannerZ[ProcessingSizeInFrames];
+  float pannerX[AudioUtilities::kRenderQuantumFrames];
+  float pannerY[AudioUtilities::kRenderQuantumFrames];
+  float pannerZ[AudioUtilities::kRenderQuantumFrames];
 
-  float orientationX[ProcessingSizeInFrames];
-  float orientationY[ProcessingSizeInFrames];
-  float orientationZ[ProcessingSizeInFrames];
+  float orientationX[AudioUtilities::kRenderQuantumFrames];
+  float orientationY[AudioUtilities::kRenderQuantumFrames];
+  float orientationZ[AudioUtilities::kRenderQuantumFrames];
 
   m_positionX->calculateSampleAccurateValues(pannerX, framesToProcess);
   m_positionY->calculateSampleAccurateValues(pannerY, framesToProcess);
@@ -187,24 +187,30 @@ void PannerHandler::processSampleAccurateValues(AudioBus* destination,
 
   // Get the automation values from the listener.
   const float* listenerX =
-      listener()->getPositionXValues(ProcessingSizeInFrames);
+      listener()->getPositionXValues(AudioUtilities::kRenderQuantumFrames);
   const float* listenerY =
-      listener()->getPositionYValues(ProcessingSizeInFrames);
+      listener()->getPositionYValues(AudioUtilities::kRenderQuantumFrames);
   const float* listenerZ =
-      listener()->getPositionZValues(ProcessingSizeInFrames);
+      listener()->getPositionZValues(AudioUtilities::kRenderQuantumFrames);
 
-  const float* forwardX = listener()->getForwardXValues(ProcessingSizeInFrames);
-  const float* forwardY = listener()->getForwardYValues(ProcessingSizeInFrames);
-  const float* forwardZ = listener()->getForwardZValues(ProcessingSizeInFrames);
+  const float* forwardX =
+      listener()->getForwardXValues(AudioUtilities::kRenderQuantumFrames);
+  const float* forwardY =
+      listener()->getForwardYValues(AudioUtilities::kRenderQuantumFrames);
+  const float* forwardZ =
+      listener()->getForwardZValues(AudioUtilities::kRenderQuantumFrames);
 
-  const float* upX = listener()->getUpXValues(ProcessingSizeInFrames);
-  const float* upY = listener()->getUpYValues(ProcessingSizeInFrames);
-  const float* upZ = listener()->getUpZValues(ProcessingSizeInFrames);
+  const float* upX =
+      listener()->getUpXValues(AudioUtilities::kRenderQuantumFrames);
+  const float* upY =
+      listener()->getUpYValues(AudioUtilities::kRenderQuantumFrames);
+  const float* upZ =
+      listener()->getUpZValues(AudioUtilities::kRenderQuantumFrames);
 
   // Compute the azimuth, elevation, and total gains for each position.
-  double azimuth[ProcessingSizeInFrames];
-  double elevation[ProcessingSizeInFrames];
-  float totalGain[ProcessingSizeInFrames];
+  double azimuth[AudioUtilities::kRenderQuantumFrames];
+  double elevation[AudioUtilities::kRenderQuantumFrames];
+  float totalGain[AudioUtilities::kRenderQuantumFrames];
 
   for (unsigned k = 0; k < framesToProcess; ++k) {
     FloatPoint3D pannerPosition(pannerX[k], pannerY[k], pannerZ[k]);

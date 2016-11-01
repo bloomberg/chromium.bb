@@ -74,7 +74,8 @@ class AudioDestinationHandler : public AudioHandler, public AudioIOCallback {
     LocalAudioInputProvider()
         : m_sourceBus(AudioBus::create(
               2,
-              ProcessingSizeInFrames))  // FIXME: handle non-stereo local input.
+              AudioUtilities::kRenderQuantumFrames))  // FIXME: handle
+                                                      // non-stereo local input.
     {}
 
     void set(AudioBus* bus) {

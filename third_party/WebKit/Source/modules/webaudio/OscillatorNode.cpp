@@ -49,8 +49,8 @@ OscillatorHandler::OscillatorHandler(AudioNode& node,
       m_detune(detune),
       m_firstRender(true),
       m_virtualReadIndex(0),
-      m_phaseIncrements(ProcessingSizeInFrames),
-      m_detuneValues(ProcessingSizeInFrames) {
+      m_phaseIncrements(AudioUtilities::kRenderQuantumFrames),
+      m_detuneValues(AudioUtilities::kRenderQuantumFrames) {
   // Sets up default wavetable.
   setType(m_type);
 

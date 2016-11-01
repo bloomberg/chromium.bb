@@ -33,7 +33,7 @@ namespace blink {
 const float SmoothingTimeConstant = 0.020f;  // 20ms
 
 DelayDSPKernel::DelayDSPKernel(DelayProcessor* processor)
-    : AudioDelayDSPKernel(processor, AudioHandler::ProcessingSizeInFrames) {
+    : AudioDelayDSPKernel(processor, AudioUtilities::kRenderQuantumFrames) {
   DCHECK(processor);
   DCHECK_GT(processor->sampleRate(), 0);
   if (!(processor && processor->sampleRate() > 0))

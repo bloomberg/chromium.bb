@@ -136,9 +136,9 @@ void ConvolverHandler::setBuffer(AudioBuffer* buffer,
   bufferBus->setSampleRate(buffer->sampleRate());
 
   // Create the reverb with the given impulse response.
-  std::unique_ptr<Reverb> reverb = wrapUnique(
-      new Reverb(bufferBus.get(), ProcessingSizeInFrames, MaxFFTSize, 2,
-                 context() && context()->hasRealtimeConstraint(), m_normalize));
+  std::unique_ptr<Reverb> reverb = wrapUnique(new Reverb(
+      bufferBus.get(), AudioUtilities::kRenderQuantumFrames, MaxFFTSize, 2,
+      context() && context()->hasRealtimeConstraint(), m_normalize));
 
   {
     // Synchronize with process().

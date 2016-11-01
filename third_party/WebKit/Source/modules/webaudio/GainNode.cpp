@@ -37,9 +37,10 @@ GainHandler::GainHandler(AudioNode& node,
     : AudioHandler(NodeTypeGain, node, sampleRate),
       m_lastGain(1.0),
       m_gain(gain),
-      m_sampleAccurateGainValues(ProcessingSizeInFrames)  // FIXME: can probably
-                                                          // share temp buffer
-                                                          // in context
+      m_sampleAccurateGainValues(
+          AudioUtilities::kRenderQuantumFrames)  // FIXME: can probably
+                                                 // share temp buffer
+                                                 // in context
 {
   addInput();
   addOutput(1);

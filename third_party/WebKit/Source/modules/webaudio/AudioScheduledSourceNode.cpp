@@ -54,8 +54,9 @@ void AudioScheduledSourceHandler::updateSchedulingInfo(
   if (!outputBus)
     return;
 
-  DCHECK_EQ(quantumFrameSize, static_cast<size_t>(ProcessingSizeInFrames));
-  if (quantumFrameSize != ProcessingSizeInFrames)
+  DCHECK_EQ(quantumFrameSize,
+            static_cast<size_t>(AudioUtilities::kRenderQuantumFrames));
+  if (quantumFrameSize != AudioUtilities::kRenderQuantumFrames)
     return;
 
   double sampleRate = this->sampleRate();

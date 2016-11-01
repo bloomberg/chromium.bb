@@ -21,7 +21,7 @@ StereoPannerHandler::StereoPannerHandler(AudioNode& node,
                                          AudioParamHandler& pan)
     : AudioHandler(NodeTypeStereoPanner, node, sampleRate),
       m_pan(pan),
-      m_sampleAccuratePanValues(ProcessingSizeInFrames) {
+      m_sampleAccuratePanValues(AudioUtilities::kRenderQuantumFrames) {
   addInput();
   addOutput(2);
 

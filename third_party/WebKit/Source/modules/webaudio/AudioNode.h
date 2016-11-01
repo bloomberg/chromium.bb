@@ -29,6 +29,7 @@
 #include "modules/EventTargetModules.h"
 #include "modules/ModulesExport.h"
 #include "platform/audio/AudioBus.h"
+#include "platform/audio/AudioUtilities.h"
 #include "wtf/Forward.h"
 #include "wtf/RefPtr.h"
 #include "wtf/ThreadSafeRefCounted.h"
@@ -72,8 +73,6 @@ class ExceptionState;
 // collected.
 class MODULES_EXPORT AudioHandler : public ThreadSafeRefCounted<AudioHandler> {
  public:
-  enum { ProcessingSizeInFrames = 128 };
-
   enum NodeType {
     NodeTypeUnknown = 0,
     NodeTypeDestination = 1,
