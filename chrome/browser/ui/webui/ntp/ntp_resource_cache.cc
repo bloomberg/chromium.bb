@@ -576,8 +576,6 @@ void NTPResourceCache::CreateNewTabCSS() {
   substitutions["backgroundBarAttached"] = GetNewTabBackgroundCSS(tp, true);
   substitutions["backgroundTiling"] = GetNewTabBackgroundTilingCSS(tp);
   substitutions["colorTextRgba"] = SkColorToRGBAString(color_text);
-  substitutions["colorSectionBorder"] =
-      SkColorToRGBAString(color_section_border);
   substitutions["colorTextLight"] = SkColorToRGBAString(color_text_light);
   substitutions["colorSectionBorder"] =
       SkColorToRGBComponents(color_section_border);

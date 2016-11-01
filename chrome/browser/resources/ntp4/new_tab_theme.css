@@ -78,11 +78,6 @@ body {
   background-color: $i18n{colorBackground};
 }
 
-.thumbnail-wrapper {
-  /* This shows through at the (rounded) thumbnail's corners. */
-  background-color: $i18n{colorSectionBorder};
-}
-
 .filler .thumbnail {
   border-color: $i18n{colorBackground};
 }
