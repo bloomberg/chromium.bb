@@ -209,6 +209,10 @@ SK_API void SkDebugf_FileLine(const char* file, int line, bool fatal,
 #define SK_SUPPORT_LEGACY_COLOR_SPACE_FACTORIES
 #endif
 
+#ifndef    SK_SUPPORT_LEGACY_SETIMAGEFILTER_PTR
+#   define SK_SUPPORT_LEGACY_SETIMAGEFILTER_PTR
+#endif
+
 // Workaround for poor anisotropic mipmap quality,
 // pending Skia ripmap support.
 // (https://bugs.chromium.org/p/skia/issues/detail?id=4863)
