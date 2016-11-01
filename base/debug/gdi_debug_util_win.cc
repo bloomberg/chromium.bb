@@ -39,7 +39,7 @@ void CollectChildGDIUsageAndDie(DWORD parent_pid) {
     base::win::ScopedHandle process(
         OpenProcess(PROCESS_QUERY_INFORMATION,
                     FALSE,
-                    proc_entry.th32ParentProcessID));
+                    proc_entry.th32ProcessID));
     if (!process.IsValid())
       continue;
 
