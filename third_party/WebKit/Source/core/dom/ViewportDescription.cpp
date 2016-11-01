@@ -119,12 +119,12 @@ PageScaleConstraints ViewportDescription::resolve(
   float resultMaxZoom = maxZoom;
   bool resultUserZoom = userZoom;
 
-  // 1. Resolve min-zoom and max-zoom values.
+  // Resolve min-zoom and max-zoom values.
   if (resultMinZoom != ViewportDescription::ValueAuto &&
       resultMaxZoom != ViewportDescription::ValueAuto)
     resultMaxZoom = std::max(resultMinZoom, resultMaxZoom);
 
-  // 2. Constrain zoom value to the [min-zoom, max-zoom] range.
+  // Constrain zoom value to the [min-zoom, max-zoom] range.
   if (resultZoom != ViewportDescription::ValueAuto)
     resultZoom = compareIgnoringAuto(
         resultMinZoom, compareIgnoringAuto(resultMaxZoom, resultZoom, std::min),
@@ -132,7 +132,7 @@ PageScaleConstraints ViewportDescription::resolve(
 
   float extendZoom = compareIgnoringAuto(resultZoom, resultMaxZoom, std::min);
 
-  // 3. Resolve non-"auto" lengths to pixel lengths.
+  // Resolve non-"auto" lengths to pixel lengths.
   if (extendZoom == ViewportDescription::ValueAuto) {
     if (resultMaxWidth == ViewportDescription::ValueExtendToZoom)
       resultMaxWidth = ViewportDescription::ValueAuto;
@@ -164,7 +164,7 @@ PageScaleConstraints ViewportDescription::resolve(
           compareIgnoringAuto(extendHeight, resultMaxHeight, std::max);
   }
 
-  // 4. Resolve initial width from min/max descriptors.
+  // Resolve initial width from min/max descriptors.
   if (resultMinWidth != ViewportDescription::ValueAuto ||
       resultMaxWidth != ViewportDescription::ValueAuto)
     resultWidth = compareIgnoringAuto(
@@ -173,7 +173,7 @@ PageScaleConstraints ViewportDescription::resolve(
                             std::min),
         std::max);
 
-  // 5. Resolve initial height from min/max descriptors.
+  // Resolve initial height from min/max descriptors.
   if (resultMinHeight != ViewportDescription::ValueAuto ||
       resultMaxHeight != ViewportDescription::ValueAuto)
     resultHeight = compareIgnoringAuto(
@@ -182,7 +182,7 @@ PageScaleConstraints ViewportDescription::resolve(
                             std::min),
         std::max);
 
-  // 6-7. Resolve width value.
+  // Resolve width value.
   if (resultWidth == ViewportDescription::ValueAuto) {
     if (resultHeight == ViewportDescription::ValueAuto ||
         !initialViewportSize.height())
@@ -192,7 +192,7 @@ PageScaleConstraints ViewportDescription::resolve(
                                     initialViewportSize.height());
   }
 
-  // 8. Resolve height value.
+  // Resolve height value.
   if (resultHeight == ViewportDescription::ValueAuto) {
     if (!initialViewportSize.width())
       resultHeight = initialViewportSize.height();
@@ -210,6 +210,11 @@ PageScaleConstraints ViewportDescription::resolve(
       resultZoom = std::max<float>(resultZoom,
                                    initialViewportSize.height() / resultHeight);
     }
+
+    // Reconstrain zoom value to the [min-zoom, max-zoom] range.
+    resultZoom = compareIgnoringAuto(
+        resultMinZoom, compareIgnoringAuto(resultMaxZoom, resultZoom, std::min),
+        std::max);
   }
 
   // If user-scalable = no, lock the min/max scale to the computed initial

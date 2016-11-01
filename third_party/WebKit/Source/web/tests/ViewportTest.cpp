@@ -2914,24 +2914,31 @@ TEST_F(ViewportTest, viewportLimitsAdjustedForNoUserScale) {
       m_baseURL + "viewport/viewport-limits-adjusted-for-no-user-scale.html",
       true, nullptr, nullptr, nullptr, setViewportSettings);
 
+  webViewHelper.webView()->updateAllLifecyclePhases();
   Page* page = webViewHelper.webView()->page();
+  PageScaleConstraints constraints = runViewportTest(page, 10, 10);
 
   EXPECT_FALSE(page->viewportDescription().userZoom);
+  EXPECT_NEAR(1.0f, constraints.initialScale, 0.01f);
+  EXPECT_NEAR(1.0f, constraints.minimumScale, 0.01f);
 }
 
-TEST_F(ViewportTest, viewportLimitsAdjustedForNoUserScaleControl) {
+TEST_F(ViewportTest, viewportLimitsAdjustedForUserScale) {
   registerMockedHttpURLLoad(
-      "viewport/viewport-limits-adjusted-for-no-user-scale-control.html");
+      "viewport/viewport-limits-adjusted-for-user-scale.html");
 
   FrameTestHelpers::WebViewHelper webViewHelper;
   webViewHelper.initializeAndLoad(
-      m_baseURL +
-          "viewport/viewport-limits-adjusted-for-no-user-scale-control.html",
-      true, nullptr, nullptr, nullptr, setViewportSettings);
+      m_baseURL + "viewport/viewport-limits-adjusted-for-user-scale.html", true,
+      nullptr, nullptr, nullptr, setViewportSettings);
 
+  webViewHelper.webView()->updateAllLifecyclePhases();
   Page* page = webViewHelper.webView()->page();
+  PageScaleConstraints constraints = runViewportTest(page, 10, 10);
 
   EXPECT_TRUE(page->viewportDescription().userZoom);
+  EXPECT_NEAR(1.0f, constraints.initialScale, 0.01f);
+  EXPECT_NEAR(1.0f, constraints.minimumScale, 0.01f);
 }
 
 TEST_F(ViewportTest, viewportTriggersGpuRasterization) {
