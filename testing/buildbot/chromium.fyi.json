@@ -3243,6 +3243,9 @@
         "test": "remoting_unittests"
       },
       {
+        "override_compile_targets": [
+          "sandbox_linux_unittests_deps"
+        ],
         "swarming": {
           "can_use_on_swarming_builders": false
         },
