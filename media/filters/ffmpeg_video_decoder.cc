@@ -50,21 +50,41 @@ static int GetThreadCount(const VideoDecoderConfig& config) {
   const base::CommandLine* cmd_line = base::CommandLine::ForCurrentProcess();
   std::string threads(cmd_line->GetSwitchValueASCII(switches::kVideoThreads));
   if (threads.empty() || !base::StringToInt(threads, &decode_threads)) {
-    // Normalize to three threads for 1080p content, then scale linearly
-    // with number of pixels.
-    // Examples:
-    // 4k: 12 threads
-    // 1440p: 5 threads
-    // 1080p: 3 threads
-    // anything lower than 1080p: 2 threads
-    decode_threads = config.coded_size().width() *
-                     config.coded_size().height() * 3 / 1920 / 1080;
+    // Some ffmpeg codecs don't actually benefit from using more threads.
+    // Only add more threads for those codecs that we know will benefit.
+    switch (config.codec()) {
+      case kUnknownVideoCodec:
+      case kCodecVC1:
+      case kCodecMPEG2:
+      case kCodecHEVC:
+      case kCodecVP9:
+        // We do not compile ffmpeg with support for any of these codecs.
+        break;
 
-    int cores = base::SysInfo::NumberOfProcessors();
-    // Leave two execution contexts for other things to run.
-    decode_threads = std::min(decode_threads, cores - 2);
-    // Use at least two threads, or ffmpeg will decode on the calling thread.
-    decode_threads = std::max(decode_threads, kDecodeThreads);
+      case kCodecTheora:
+        // No extra threads for these codecs.
+        break;
+
+      case kCodecH264:
+      case kCodecMPEG4:
+      case kCodecVP8:
+        // Normalize to three threads for 1080p content, then scale linearly
+        // with number of pixels.
+        // Examples:
+        // 4k: 12 threads
+        // 1440p: 5 threads
+        // 1080p: 3 threads
+        // anything lower than 1080p: 2 threads
+        decode_threads = config.coded_size().width() *
+                         config.coded_size().height() * 3 / 1920 / 1080;
+
+        int cores = base::SysInfo::NumberOfProcessors();
+        // Leave two execution contexts for other things to run.
+        decode_threads = std::min(decode_threads, cores - 2);
+        // Use at least two threads, or ffmpeg will decode on the calling
+        // thread.
+        decode_threads = std::max(decode_threads, kDecodeThreads);
+    }
   }
 
   decode_threads = std::max(decode_threads, 0);
