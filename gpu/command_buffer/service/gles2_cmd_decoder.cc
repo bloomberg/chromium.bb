@@ -3534,7 +3534,7 @@ Capabilities GLES2DecoderImpl::GetCapabilities() {
                 1);
   DoGetIntegerv(GL_BIND_GENERATES_RESOURCE_CHROMIUM,
                 &caps.bind_generates_resource_chromium, 1);
-  if (feature_info_->IsWebGL2OrES3Context()) {
+  if (unsafe_es3_apis_enabled()) {
     // TODO(zmo): Note that some parameter values could be more than 32-bit,
     // but for now we clamp them to 32-bit max.
     DoGetIntegerv(GL_MAX_3D_TEXTURE_SIZE, &caps.max_3d_texture_size, 1);
@@ -3596,7 +3596,7 @@ Capabilities GLES2DecoderImpl::GetCapabilities() {
   }
   if (feature_info_->feature_flags().multisampled_render_to_texture ||
       feature_info_->feature_flags().chromium_framebuffer_multisample ||
-      feature_info_->IsWebGL2OrES3Context()) {
+      unsafe_es3_apis_enabled()) {
     DoGetIntegerv(GL_MAX_SAMPLES, &caps.max_samples, 1);
   }
 
@@ -6221,7 +6221,7 @@ bool GLES2DecoderImpl::GetHelper(
         return true;
       }
   }
-  if (feature_info_->IsWebGL2OrES3Context()) {
+  if (unsafe_es3_apis_enabled()) {
     switch (pname) {
       case GL_MAX_VARYING_COMPONENTS: {
         if (gl_version_info().is_es) {
@@ -6813,7 +6813,7 @@ void GLES2DecoderImpl::DoGetInteger64v(GLenum pname,
                                        GLint64* params,
                                        GLsizei params_size) {
   DCHECK(params);
-  if (feature_info_->IsWebGL2OrES3Context()) {
+  if (unsafe_es3_apis_enabled()) {
     switch (pname) {
       case GL_MAX_ELEMENT_INDEX: {
         DCHECK_EQ(params_size, 1);
@@ -7695,7 +7695,7 @@ void GLES2DecoderImpl::DoGetFramebufferAttachmentParameteriv(
   const char kFunctionName[] = "glGetFramebufferAttachmentParameteriv";
   Framebuffer* framebuffer = GetFramebufferInfoForTarget(target);
   if (!framebuffer) {
-    if (!feature_info_->IsWebGL2OrES3Context()) {
+    if (!unsafe_es3_apis_enabled()) {
       LOCAL_SET_GL_ERROR(GL_INVALID_OPERATION, kFunctionName,
           "no framebuffer bound");
       return;
@@ -9035,7 +9035,7 @@ void GLES2DecoderImpl::DoUniformMatrix2fv(GLint fake_location,
                                           const volatile GLfloat* value) {
   GLenum type = 0;
   GLint real_location = -1;
-  if (transpose && !feature_info_->IsWebGL2OrES3Context()) {
+  if (transpose && !unsafe_es3_apis_enabled()) {
     LOCAL_SET_GL_ERROR(
         GL_INVALID_VALUE, "glUniformMatrix2fv", "transpose not FALSE");
     return;
@@ -9058,7 +9058,7 @@ void GLES2DecoderImpl::DoUniformMatrix3fv(GLint fake_location,
                                           const volatile GLfloat* value) {
   GLenum type = 0;
   GLint real_location = -1;
-  if (transpose && !feature_info_->IsWebGL2OrES3Context()) {
+  if (transpose && !unsafe_es3_apis_enabled()) {
     LOCAL_SET_GL_ERROR(
         GL_INVALID_VALUE, "glUniformMatrix3fv", "transpose not FALSE");
     return;
@@ -9081,7 +9081,7 @@ void GLES2DecoderImpl::DoUniformMatrix4fv(GLint fake_location,
                                           const volatile GLfloat* value) {
   GLenum type = 0;
   GLint real_location = -1;
-  if (transpose && !feature_info_->IsWebGL2OrES3Context()) {
+  if (transpose && !unsafe_es3_apis_enabled()) {
     LOCAL_SET_GL_ERROR(
         GL_INVALID_VALUE, "glUniformMatrix4fv", "transpose not FALSE");
     return;
@@ -10711,7 +10711,7 @@ void GLES2DecoderImpl::DoVertexAttribI4uiv(GLuint index,
 error::Error GLES2DecoderImpl::HandleVertexAttribIPointer(
     uint32_t immediate_data_size,
     const volatile void* cmd_data) {
-  if (!feature_info_->IsWebGL2OrES3Context())
+  if (!unsafe_es3_apis_enabled())
     return error::kUnknownCommand;
   const volatile gles2::cmds::VertexAttribIPointer& c =
       *static_cast<const volatile gles2::cmds::VertexAttribIPointer*>(cmd_data);
@@ -11771,7 +11771,7 @@ error::Error GLES2DecoderImpl::HandleGetAttribLocation(
 error::Error GLES2DecoderImpl::HandleGetBufferSubDataAsyncCHROMIUM(
     uint32_t immediate_data_size,
     const volatile void* cmd_data) {
-  if (!feature_info_->IsWebGL2OrES3Context()) {
+  if (!unsafe_es3_apis_enabled()) {
     return error::kUnknownCommand;
   }
   const volatile gles2::cmds::GetBufferSubDataAsyncCHROMIUM& c =
@@ -11873,7 +11873,7 @@ error::Error GLES2DecoderImpl::HandleGetUniformLocation(
 error::Error GLES2DecoderImpl::HandleGetUniformIndices(
     uint32_t immediate_data_size,
     const volatile void* cmd_data) {
-  if (!feature_info_->IsWebGL2OrES3Context())
+  if (!unsafe_es3_apis_enabled())
     return error::kUnknownCommand;
   const volatile gles2::cmds::GetUniformIndices& c =
       *static_cast<const volatile gles2::cmds::GetUniformIndices*>(cmd_data);
@@ -11954,7 +11954,7 @@ error::Error GLES2DecoderImpl::GetFragDataLocationHelper(
 error::Error GLES2DecoderImpl::HandleGetFragDataLocation(
     uint32_t immediate_data_size,
     const volatile void* cmd_data) {
-  if (!feature_info_->IsWebGL2OrES3Context())
+  if (!unsafe_es3_apis_enabled())
     return error::kUnknownCommand;
   const volatile gles2::cmds::GetFragDataLocation& c =
       *static_cast<const volatile gles2::cmds::GetFragDataLocation*>(cmd_data);
@@ -12022,7 +12022,7 @@ error::Error GLES2DecoderImpl::HandleGetFragDataIndexEXT(
 error::Error GLES2DecoderImpl::HandleGetUniformBlockIndex(
     uint32_t immediate_data_size,
     const volatile void* cmd_data) {
-  if (!feature_info_->IsWebGL2OrES3Context())
+  if (!unsafe_es3_apis_enabled())
     return error::kUnknownCommand;
   const volatile gles2::cmds::GetUniformBlockIndex& c =
       *static_cast<const volatile gles2::cmds::GetUniformBlockIndex*>(cmd_data);
@@ -12066,13 +12066,13 @@ error::Error GLES2DecoderImpl::HandleGetString(uint32_t immediate_data_size,
   std::string extensions;
   switch (name) {
     case GL_VERSION:
-      if (feature_info_->IsWebGL2OrES3Context())
+      if (unsafe_es3_apis_enabled())
         str = "OpenGL ES 3.0 Chromium";
       else
         str = "OpenGL ES 2.0 Chromium";
       break;
     case GL_SHADING_LANGUAGE_VERSION:
-      if (feature_info_->IsWebGL2OrES3Context())
+      if (unsafe_es3_apis_enabled())
         str = "OpenGL ES GLSL ES 3.0 Chromium";
       else
         str = "OpenGL ES GLSL ES 1.0 Chromium";
