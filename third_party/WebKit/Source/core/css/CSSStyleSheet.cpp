@@ -111,12 +111,8 @@ CSSStyleSheet* CSSStyleSheet::createInline(Node& ownerNode,
 CSSStyleSheet::CSSStyleSheet(StyleSheetContents* contents,
                              CSSImportRule* ownerRule)
     : m_contents(contents),
-      m_isInlineStylesheet(false),
-      m_isDisabled(false),
-      m_ownerNode(nullptr),
       m_ownerRule(ownerRule),
-      m_startPosition(TextPosition::minimumPosition()),
-      m_loadCompleted(false) {
+      m_startPosition(TextPosition::minimumPosition()) {
   m_contents->registerClient(this);
 }
 
@@ -126,11 +122,8 @@ CSSStyleSheet::CSSStyleSheet(StyleSheetContents* contents,
                              const TextPosition& startPosition)
     : m_contents(contents),
       m_isInlineStylesheet(isInlineStylesheet),
-      m_isDisabled(false),
       m_ownerNode(&ownerNode),
-      m_ownerRule(nullptr),
-      m_startPosition(startPosition),
-      m_loadCompleted(false) {
+      m_startPosition(startPosition) {
 #if DCHECK_IS_ON()
   DCHECK(isAcceptableCSSStyleSheetParent(ownerNode));
 #endif

@@ -152,8 +152,9 @@ class CORE_EXPORT CSSStyleSheet final : public StyleSheet {
   void setLoadCompleted(bool);
 
   Member<StyleSheetContents> m_contents;
-  bool m_isInlineStylesheet;
-  bool m_isDisabled;
+  bool m_isInlineStylesheet = false;
+  bool m_isDisabled = false;
+  bool m_loadCompleted = false;
   String m_title;
   Member<MediaQuerySet> m_mediaQueries;
 
@@ -163,7 +164,6 @@ class CORE_EXPORT CSSStyleSheet final : public StyleSheet {
   Member<CSSRule> m_ownerRule;
 
   TextPosition m_startPosition;
-  bool m_loadCompleted;
   mutable Member<MediaList> m_mediaCSSOMWrapper;
   mutable HeapVector<Member<CSSRule>> m_childRuleCSSOMWrappers;
   mutable Member<CSSRuleList> m_ruleListCSSOMWrapper;
@@ -176,7 +176,7 @@ inline CSSStyleSheet::RuleMutationScope::RuleMutationScope(CSSStyleSheet* sheet)
 }
 
 inline CSSStyleSheet::RuleMutationScope::RuleMutationScope(CSSRule* rule)
-    : m_styleSheet(rule ? rule->parentStyleSheet() : 0) {
+    : m_styleSheet(rule ? rule->parentStyleSheet() : nullptr) {
   if (m_styleSheet)
     m_styleSheet->willMutateRules();
 }
