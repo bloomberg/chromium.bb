@@ -3,6 +3,7 @@
 // found in the LICENSE file.
 
 #include "chromecast/public/cast_media_shlib.h"
+#include "chromecast/public/media/media_capabilities_shlib.h"
 #include "chromecast/public/media_codec_support_shlib.h"
 
 namespace chromecast {
@@ -45,6 +46,12 @@ bool CastMediaShlib::SetMediaClockRate(double new_rate) {
 
 bool CastMediaShlib::SupportsMediaClockRateChange() {
   return false;
+}
+
+bool MediaCapabilitiesShlib::IsSupportedVideoConfig(VideoCodec codec,
+                                                    VideoProfile profile,
+                                                    int level) {
+  return (codec == kCodecH264 || codec == kCodecVP8);
 }
 
 }  // namespace media

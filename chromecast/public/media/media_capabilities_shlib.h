@@ -18,11 +18,13 @@ class CHROMECAST_EXPORT MediaCapabilitiesShlib {
  public:
   // Return true if the current platform supports the given combination of video
   // codec, profile and level. For a list of supported codecs and profiles see
-  // decoder_config.h. The level value is codec specific. For H.264 and HEVC the
-  // level value corresponds to level_idc defined in the H.264 / HEVC standard.
+  // decoder_config.h. The level value is codec specific. For H.264 and VP9 the
+  // level value is multiplied by ten, i.e. level=51 corresponds to level 5.1
+  // For HEVC the level value is multiplied by 30, to match level_idc value in
+  // HEVC bitstream. So for HEVC level=153 corresponds to level 5.1
   static bool IsSupportedVideoConfig(VideoCodec codec,
                                      VideoProfile profile,
-                                     int level) __attribute__((__weak__));
+                                     int level);
 };
 
 }  // namespace media

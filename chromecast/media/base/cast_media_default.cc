@@ -11,6 +11,7 @@
 #include "chromecast/media/cma/backend/media_pipeline_backend_default.h"
 #include "chromecast/public/cast_media_shlib.h"
 #include "chromecast/public/graphics_types.h"
+#include "chromecast/public/media/media_capabilities_shlib.h"
 #include "chromecast/public/media/media_pipeline_device_params.h"
 #include "chromecast/public/media_codec_support_shlib.h"
 #include "chromecast/public/video_plane.h"
@@ -103,6 +104,12 @@ bool CastMediaShlib::SetMediaClockRate(double new_rate) {
 
 bool CastMediaShlib::SupportsMediaClockRateChange() {
   return false;
+}
+
+bool MediaCapabilitiesShlib::IsSupportedVideoConfig(VideoCodec codec,
+                                                    VideoProfile profile,
+                                                    int level) {
+  return (codec == kCodecH264 || codec == kCodecVP8);
 }
 
 }  // namespace media
