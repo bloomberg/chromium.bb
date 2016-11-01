@@ -11,6 +11,7 @@
 #include "content/renderer/pepper/host_globals.h"
 #include "content/renderer/pepper/pepper_plugin_instance_impl.h"
 #include "content/renderer/pepper/plugin_module.h"
+#include "content/renderer/pepper/renderer_ppapi_host_impl.h"
 #include "ppapi/c/pp_errors.h"
 #include "ppapi/c/pp_var.h"
 #include "ppapi/c/ppp_instance.h"
@@ -80,13 +81,18 @@ void PpapiUnittest::SetUp() {
   message_loop_.reset(new base::MessageLoop());
 
   // Initialize the mock module.
+  ppapi::PpapiPermissions perms;
   module_ = new PluginModule("Mock plugin", "1.0", base::FilePath(),
-                             ppapi::PpapiPermissions());
+                             perms);
   ppapi::PpapiGlobals::Get()->ResetMainThreadMessageLoopForTesting();
   PepperPluginInfo::EntryPoints entry_points;
   entry_points.get_interface = &MockGetInterface;
   entry_points.initialize_module = &MockInitializeModule;
   ASSERT_TRUE(module_->InitAsInternalPlugin(entry_points));
+
+  // Initialize renderer ppapi host.
+  CHECK(RendererPpapiHostImpl::CreateOnModuleForInProcess(module(), perms));
+  CHECK(module_->renderer_ppapi_host());
 
   // Initialize the mock instance.
   instance_ = PepperPluginInstanceImpl::Create(NULL, module(), NULL, GURL());

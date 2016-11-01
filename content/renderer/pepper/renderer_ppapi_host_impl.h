@@ -49,7 +49,7 @@ class RendererPpapiHostImpl : public RendererPpapiHost {
       PluginModule* module,
       ppapi::proxy::HostDispatcher* dispatcher,
       const ppapi::PpapiPermissions& permissions);
-  static RendererPpapiHostImpl* CreateOnModuleForInProcess(
+  CONTENT_EXPORT static RendererPpapiHostImpl* CreateOnModuleForInProcess(
       PluginModule* module,
       const ppapi::PpapiPermissions& permissions);
 
