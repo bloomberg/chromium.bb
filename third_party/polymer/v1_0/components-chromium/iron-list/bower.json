@@ -7,7 +7,7 @@
     "list",
     "virtual-list"
   ],
-  "version": "1.3.10",
+  "version": "1.3.12",
   "homepage": "https://github.com/PolymerElements/iron-list",
   "authors": [
     "The Polymer Authors"
@@ -23,7 +23,7 @@
     "polymer": "Polymer/polymer#^1.1.0",
     "iron-resizable-behavior": "polymerelements/iron-resizable-behavior#^1.0.0",
     "iron-a11y-keys-behavior": "polymerelements/iron-a11y-keys-behavior#^1.0.0",
-    "iron-scroll-target-behavior": "PolymerElements/iron-scroll-target-behavior#^1.0.0"
+    "iron-scroll-target-behavior": "PolymerElements/iron-scroll-target-behavior#^1.1.0"
   },
   "devDependencies": {
     "app-layout": "polymerelements/app-layout#^0.10.0",

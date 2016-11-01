@@ -556,7 +556,7 @@
       var virtualStart = this._virtualStart;
       var virtualEnd = this._virtualEnd;
       var physicalCount = this._physicalCount;
-      var physicalTop = this._physicalTop;
+      var physicalTop = this._physicalTop + this._scrollerPaddingTop;
       var scrollTop = this._scrollTop;
       var scrollBottom = this._scrollBottom;
 
@@ -601,7 +601,7 @@
           ith = (ith === 0) ? physicalCount - 1 : ith - 1;
         }
       }
-      return { indexes: idxs, physicalTop: physicalTop };
+      return { indexes: idxs, physicalTop: physicalTop - this._scrollerPaddingTop };
     },
 
     /**
@@ -1004,7 +1004,7 @@
         newPhysicalSize += this._physicalSizes[pidx];
         this._physicalAverageCount += this._physicalSizes[pidx] ? 1 : 0;
       }, itemSet);
-      
+
       if (this.grid) {
         this._updateGridMetrics();
         this._physicalSize = Math.ceil(this._physicalCount / this._itemsPerRow) * this._rowHeight;
@@ -1197,7 +1197,8 @@
      */
     _resizeHandler: function() {
       // iOS fires the resize event when the address bar slides up
-      if (IOS && Math.abs(this._viewportHeight - this._scrollTargetHeight) < 100) {
+      var delta = Math.abs(this._viewportHeight - this._scrollTargetHeight);
+      if (IOS && delta > 0 && delta < 100) {
         return;
       }
       // In Desktop Safari 9.0.3, if the scroll bars are always shown,
@@ -1464,27 +1465,24 @@
     },
 
     _createFocusBackfillItem: function() {
-      var pidx, fidx = this._focusedIndex;
-      if (this._offscreenFocusedItem || fidx < 0) {
+      var fidx = this._focusedIndex;
+      var pidx = this._getPhysicalIndex(fidx);
+
+      if (this._offscreenFocusedItem || pidx == null || fidx < 0) {
         return;
       }
       if (!this._focusBackfillItem) {
-        // create a physical item, so that it backfills the focused item.
+        // Create a physical item.
         var stampedTemplate = this.stamp(null);
         this._focusBackfillItem = stampedTemplate.root.querySelector('*');
         Polymer.dom(this).appendChild(stampedTemplate.root);
       }
-      // get the physical index for the focused index
-      pidx = this._getPhysicalIndex(fidx);
-
-      if (pidx != null) {
-        // set the offcreen focused physical item
-        this._offscreenFocusedItem = this._physicalItems[pidx];
-        // backfill the focused physical item
-        this._physicalItems[pidx] = this._focusBackfillItem;
-        // hide the focused physical
-        this.translate3d(0, HIDDEN_Y, 0, this._offscreenFocusedItem);
-      }
+      // Set the offcreen focused physical item.
+      this._offscreenFocusedItem = this._physicalItems[pidx];
+      this._offscreenFocusedItem._templateInstance.tabIndex = 0;
+      this._physicalItems[pidx] = this._focusBackfillItem;
+      // Hide the focused physical.
+      this.translate3d(0, HIDDEN_Y, 0, this._offscreenFocusedItem);
     },
 
     _restoreFocusedItem: function() {
@@ -1493,19 +1491,20 @@
       if (!this._offscreenFocusedItem || this._focusedIndex < 0) {
         return;
       }
-      // assign models to the focused index
+      // Assign models to the focused index.
       this._assignModels();
-      // get the new physical index for the focused index
+      // Get the new physical index for the focused index.
       pidx = this._getPhysicalIndex(fidx);
 
       if (pidx != null) {
-        // flip the focus backfill
+        // Flip the focus backfill.
         this._focusBackfillItem = this._physicalItems[pidx];
-        // restore the focused physical item
+        this._focusBackfillItem._templateInstance.tabIndex = -1;
+        // Restore the focused physical item.
         this._physicalItems[pidx] = this._offscreenFocusedItem;
-        // reset the offscreen focused item
+        // Reset the offscreen focused item.
         this._offscreenFocusedItem = null;
-        // hide the physical item that backfills
+        // Hide the physical item that backfills.
         this.translate3d(0, HIDDEN_Y, 0, this._focusBackfillItem);
       }
     },
@@ -1533,7 +1532,6 @@
         fidx = targetModel[this.indexAs];
         this._focusedIndex = fidx;
         this._focusedItem = this._physicalItems[this._getPhysicalIndex(fidx)];
-
         if (hasOffscreenFocusedItem && !this._offscreenFocusedItem) {
           this._update();
         }
