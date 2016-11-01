@@ -696,6 +696,8 @@ chrome_java_sources = [
   "java/src/org/chromium/chrome/browser/payments/ui/PaymentRequestUiErrorView.java",
   "java/src/org/chromium/chrome/browser/payments/ui/SectionInformation.java",
   "java/src/org/chromium/chrome/browser/payments/ui/ShoppingCart.java",
+  "java/src/org/chromium/chrome/browser/permissions/PermissionDialogController.java",
+  "java/src/org/chromium/chrome/browser/permissions/PermissionDialogDelegate.java",
   "java/src/org/chromium/chrome/browser/physicalweb/BitmapHttpRequest.java",
   "java/src/org/chromium/chrome/browser/physicalweb/ClearNotificationAlarmReceiver.java",
   "java/src/org/chromium/chrome/browser/physicalweb/HttpRequest.java",

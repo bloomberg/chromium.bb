@@ -1334,7 +1334,7 @@ To obtain new licenses, connect to the internet and play your downloaded content
       </message>
 
       <!-- PermissionInfoBar -->
-      <message name="IDS_PERMISSION_INFOBAR_PERSIST_TEXT" desc="Toggle to persist a permission prompt decision">
+      <message name="IDS_PERMISSION_PROMPT_PERSIST_TEXT" desc="Toggle to persist a permission prompt decision">
         Remember my decision
       </message>
 

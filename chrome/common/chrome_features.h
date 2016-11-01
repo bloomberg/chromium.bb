@@ -61,6 +61,8 @@ extern const base::Feature kMaterialDesignHistory;
 
 extern const base::Feature kMaterialDesignSettings;
 
+extern const base::Feature kModalPermissionPrompts;
+
 #if defined(OS_MACOSX)
 extern const base::Feature kNativeNotifications;
 #endif  // defined(OS_MACOSX)

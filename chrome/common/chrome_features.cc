@@ -114,6 +114,10 @@ const base::Feature kMaterialDesignHistory{
 const base::Feature kMaterialDesignSettings{
     "MaterialDesignSettings", base::FEATURE_DISABLED_BY_DEFAULT};
 
+// Enables or disables modal permission prompts.
+const base::Feature kModalPermissionPrompts{"ModalPermissionPrompts",
+                                            base::FEATURE_DISABLED_BY_DEFAULT};
+
 // Enables the use of native notification centers instead of using the Message
 // Center for displaying the toasts.
 #if defined(OS_MACOSX)

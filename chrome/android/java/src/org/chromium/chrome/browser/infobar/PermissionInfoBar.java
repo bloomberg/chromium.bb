@@ -56,7 +56,7 @@ public class PermissionInfoBar extends ConfirmInfoBar {
         if (mShowPersistenceToggle) {
             InfoBarControlLayout controlLayout = layout.addControlLayout();
             String description =
-                    layout.getContext().getString(R.string.permission_infobar_persist_text);
+                    layout.getContext().getString(R.string.permission_prompt_persist_text);
             controlLayout.addSwitch(
                     0, 0, description, R.id.permission_infobar_persist_toggle, true);
         }

@@ -4,6 +4,8 @@
 
 #include "chrome/browser/permissions/permission_infobar_delegate.h"
 
+#include <utility>
+
 #include "build/build_config.h"
 #include "chrome/browser/geolocation/geolocation_infobar_delegate_android.h"
 #include "chrome/browser/infobars/infobar_service.h"
@@ -15,40 +17,56 @@
 #include "chrome/grit/generated_resources.h"
 #include "components/infobars/core/infobar.h"
 #include "components/url_formatter/elide_url.h"
+#include "content/public/browser/web_contents.h"
 #include "ui/base/l10n/l10n_util.h"
 
 // static
 infobars::InfoBar* PermissionInfoBarDelegate::Create(
-    content::PermissionType type,
     InfoBarService* infobar_service,
+    content::PermissionType type,
+    const GURL& requesting_frame,
+    bool user_gesture,
+    Profile* profile,
+    const PermissionSetCallback& callback) {
+  std::unique_ptr<PermissionInfoBarDelegate> delegate =
+      PermissionInfoBarDelegate::CreateDelegate(
+          type, requesting_frame, user_gesture, profile, callback);
+
+  if (!delegate)
+    return nullptr;
+
+  return infobar_service->AddInfoBar(
+      CreatePermissionInfoBar(std::move(delegate)));
+}
+
+// static
+std::unique_ptr<PermissionInfoBarDelegate>
+PermissionInfoBarDelegate::CreateDelegate(
+    content::PermissionType type,
     const GURL& requesting_frame,
     bool user_gesture,
     Profile* profile,
     const PermissionSetCallback& callback) {
   switch (type) {
     case content::PermissionType::GEOLOCATION:
-      return infobar_service->AddInfoBar(
-          CreatePermissionInfoBar(std::unique_ptr<PermissionInfoBarDelegate>(
+      return std::unique_ptr<PermissionInfoBarDelegate>(
               new GeolocationInfoBarDelegateAndroid(
-                  requesting_frame, user_gesture, profile, callback))));
+                  requesting_frame, user_gesture, profile, callback));
 #if defined(ENABLE_NOTIFICATIONS)
     case content::PermissionType::NOTIFICATIONS:
     case content::PermissionType::PUSH_MESSAGING:
-      return infobar_service->AddInfoBar(
-          CreatePermissionInfoBar(std::unique_ptr<PermissionInfoBarDelegate>(
-              new NotificationPermissionInfoBarDelegate(
-                  requesting_frame, user_gesture, profile, callback))));
+      return std::unique_ptr<PermissionInfoBarDelegate>(
+          new NotificationPermissionInfoBarDelegate(
+              requesting_frame, user_gesture, profile, callback));
 #endif  // ENABLE_NOTIFICATIONS
     case content::PermissionType::MIDI_SYSEX:
-      return infobar_service->AddInfoBar(
-          CreatePermissionInfoBar(std::unique_ptr<PermissionInfoBarDelegate>(
+      return std::unique_ptr<PermissionInfoBarDelegate>(
               new MidiPermissionInfoBarDelegateAndroid(
-                  requesting_frame, user_gesture, profile, callback))));
+                  requesting_frame, user_gesture, profile, callback));
     case content::PermissionType::PROTECTED_MEDIA_IDENTIFIER:
-      return infobar_service->AddInfoBar(
-          CreatePermissionInfoBar(std::unique_ptr<PermissionInfoBarDelegate>(
+      return std::unique_ptr<PermissionInfoBarDelegate>(
               new ProtectedMediaIdentifierInfoBarDelegateAndroid(
-                  requesting_frame, user_gesture, profile, callback))));
+                  requesting_frame, user_gesture, profile, callback));
     default:
       NOTREACHED();
       return nullptr;
@@ -74,6 +92,40 @@ bool PermissionInfoBarDelegate::ShouldShowPersistenceToggle() const {
           permission_type_ == content::PermissionType::AUDIO_CAPTURE ||
           permission_type_ == content::PermissionType::VIDEO_CAPTURE) &&
          PermissionUtil::ShouldShowPersistenceToggle();
+}
+
+bool PermissionInfoBarDelegate::Accept() {
+  bool update_content_setting = true;
+  if (ShouldShowPersistenceToggle()) {
+    update_content_setting = persist_;
+    PermissionUmaUtil::PermissionPromptAcceptedWithPersistenceToggle(
+        permission_type_, persist_);
+  }
+
+  SetPermission(update_content_setting, GRANTED);
+  return true;
+}
+
+bool PermissionInfoBarDelegate::Cancel() {
+  bool update_content_setting = true;
+  if (ShouldShowPersistenceToggle()) {
+    update_content_setting = persist_;
+    PermissionUmaUtil::PermissionPromptDeniedWithPersistenceToggle(
+        permission_type_, persist_);
+  }
+
+  SetPermission(update_content_setting, DENIED);
+  return true;
+}
+
+void PermissionInfoBarDelegate::InfoBarDismissed() {
+  SetPermission(false, DISMISSED);
+}
+
+base::string16 PermissionInfoBarDelegate::GetButtonLabel(
+    InfoBarButton button) const {
+  return l10n_util::GetStringUTF16((button == BUTTON_OK) ? IDS_PERMISSION_ALLOW
+                                                         : IDS_PERMISSION_DENY);
 }
 
 base::string16 PermissionInfoBarDelegate::GetMessageText() const {
@@ -105,43 +157,9 @@ infobars::InfoBarDelegate::Type PermissionInfoBarDelegate::GetInfoBarType()
   return PAGE_ACTION_TYPE;
 }
 
-void PermissionInfoBarDelegate::InfoBarDismissed() {
-  SetPermission(false, DISMISSED);
-}
-
 PermissionInfoBarDelegate*
 PermissionInfoBarDelegate::AsPermissionInfoBarDelegate() {
   return this;
-}
-
-base::string16 PermissionInfoBarDelegate::GetButtonLabel(
-    InfoBarButton button) const {
-  return l10n_util::GetStringUTF16((button == BUTTON_OK) ?
-      IDS_PERMISSION_ALLOW : IDS_PERMISSION_DENY);
-}
-
-bool PermissionInfoBarDelegate::Accept() {
-  bool update_content_setting = true;
-  if (ShouldShowPersistenceToggle()) {
-    update_content_setting = persist_;
-    PermissionUmaUtil::PermissionPromptAcceptedWithPersistenceToggle(
-        permission_type_, persist_);
-  }
-
-  SetPermission(update_content_setting, GRANTED);
-  return true;
-}
-
-bool PermissionInfoBarDelegate::Cancel() {
-  bool update_content_setting = true;
-  if (ShouldShowPersistenceToggle()) {
-    update_content_setting = persist_;
-    PermissionUmaUtil::PermissionPromptDeniedWithPersistenceToggle(
-        permission_type_, persist_);
-  }
-
-  SetPermission(update_content_setting, DENIED);
-  return true;
 }
 
 void PermissionInfoBarDelegate::SetPermission(bool update_content_setting,
