@@ -178,11 +178,9 @@ bool FileInputType::canSetValue(const String& value) {
   return value.isEmpty();
 }
 
-bool FileInputType::getTypeSpecificValue(String& value) {
-  if (m_fileList->isEmpty()) {
-    value = String();
-    return true;
-  }
+String FileInputType::valueInFilenameValueMode() const {
+  if (m_fileList->isEmpty())
+    return String();
 
   // HTML5 tells us that we're supposed to use this goofy value for
   // file input controls. Historically, browsers revealed the real
@@ -190,8 +188,7 @@ bool FileInputType::getTypeSpecificValue(String& value) {
   // decided to try to parse the value by looking for backslashes
   // (because that's what Windows file paths use). To be compatible
   // with that code, we make up a fake path for the file.
-  value = "C:\\fakepath\\" + m_fileList->item(0)->name();
-  return true;
+  return "C:\\fakepath\\" + m_fileList->item(0)->name();
 }
 
 void FileInputType::setValue(const String&,

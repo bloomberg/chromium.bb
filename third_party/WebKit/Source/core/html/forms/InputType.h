@@ -88,12 +88,10 @@ class CORE_EXPORT InputType : public GarbageCollectedFinalized<InputType> {
   // DOM property functions
 
   // Returns a string value in ValueMode::kFilename.
-  virtual bool getTypeSpecificValue(String&);
-  // TODO(tkent): Remove fallbackValue().
-  virtual String fallbackValue() const;
-  // Checked after even fallbackValue, only when the valueWithDefault function
-  // is called.
-  virtual String defaultValue() const;
+  virtual String valueInFilenameValueMode() const;
+  // Default string to be used for showing button and form submission if |value|
+  // is missing.
+  virtual String defaultLabel() const;
 
   // https://html.spec.whatwg.org/multipage/forms.html#dom-input-value
   enum class ValueMode { kValue, kDefault, kDefaultOn, kFilename };

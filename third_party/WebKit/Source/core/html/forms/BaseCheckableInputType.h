@@ -60,7 +60,6 @@ class BaseCheckableInputType : public InputType, public InputTypeView {
   bool canSetStringValue() const final;
   void accessKeyAction(bool sendMouseEvents) final;
   bool matchesDefaultPseudoClass() override;
-  String fallbackValue() const final;
   ValueMode valueMode() const override;
   void setValue(const String&, bool, TextFieldEventBehavior) final;
   void readingChecked() const final;

@@ -67,7 +67,7 @@ void BaseButtonInputType::valueAttributeChanged() {
 }
 
 String BaseButtonInputType::displayValue() const {
-  return element().valueWithDefault().removeCharacters(isHTMLLineBreak);
+  return element().valueOrDefaultLabel().removeCharacters(isHTMLLineBreak);
 }
 
 bool BaseButtonInputType::shouldSaveAndRestoreFormControlState() const {

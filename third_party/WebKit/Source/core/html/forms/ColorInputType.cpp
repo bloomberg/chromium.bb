@@ -109,14 +109,9 @@ bool ColorInputType::supportsRequired() const {
   return false;
 }
 
-String ColorInputType::fallbackValue() const {
-  return String("#000000");
-}
-
 String ColorInputType::sanitizeValue(const String& proposedValue) const {
   if (!isValidColorString(proposedValue))
-    return fallbackValue();
-
+    return "#000000";
   return proposedValue.lower();
 }
 

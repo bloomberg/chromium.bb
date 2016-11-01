@@ -150,7 +150,7 @@ class CORE_EXPORT HTMLInputElement : public HTMLTextFormControlElement {
                         ExceptionState&,
                         TextFieldEventBehavior = DispatchNoEvent);
 
-  String valueWithDefault() const;
+  String valueOrDefaultLabel() const;
 
   // This function dispatches 'input' event for non-textfield types. Callers
   // need to handle any DOM structure changes by event handlers, or need to
@@ -408,8 +408,7 @@ class CORE_EXPORT HTMLInputElement : public HTMLTextFormControlElement {
 
   AtomicString m_name;
   // The value string in |value| value mode.
-  // TODO(tkent): Rename it to m_nonAttributeValue.
-  String m_valueIfDirty;
+  String m_nonAttributeValue;
   String m_suggestedValue;
   int m_size;
   int m_maxLength;

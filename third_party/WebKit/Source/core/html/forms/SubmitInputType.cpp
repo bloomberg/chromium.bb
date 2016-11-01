@@ -51,7 +51,7 @@ const AtomicString& SubmitInputType::formControlType() const {
 
 void SubmitInputType::appendToFormData(FormData& formData) const {
   if (element().isActivatedSubmit())
-    formData.append(element().name(), element().valueWithDefault());
+    formData.append(element().name(), element().valueOrDefaultLabel());
 }
 
 bool SubmitInputType::supportsRequired() const {
@@ -70,7 +70,7 @@ bool SubmitInputType::canBeSuccessfulSubmitButton() {
   return true;
 }
 
-String SubmitInputType::defaultValue() const {
+String SubmitInputType::defaultLabel() const {
   return locale().queryString(WebLocalizedString::SubmitButtonDefaultLabel);
 }
 

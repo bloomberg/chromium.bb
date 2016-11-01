@@ -483,15 +483,12 @@ void InputType::setFiles(FileList*) {}
 
 void InputType::setFilesFromPaths(const Vector<String>& paths) {}
 
-bool InputType::getTypeSpecificValue(String&) {
-  return false;
-}
-
-String InputType::fallbackValue() const {
+String InputType::valueInFilenameValueMode() const {
+  NOTREACHED();
   return String();
 }
 
-String InputType::defaultValue() const {
+String InputType::defaultLabel() const {
   return String();
 }
 

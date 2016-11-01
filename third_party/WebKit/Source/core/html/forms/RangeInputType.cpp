@@ -295,10 +295,6 @@ void RangeInputType::updateView() {
   sliderThumbElement()->setPositionFromValue();
 }
 
-String RangeInputType::fallbackValue() const {
-  return serializeForNumberType(createStepRange(RejectAny).defaultValue());
-}
-
 String RangeInputType::sanitizeValue(const String& proposedValue) const {
   StepRange stepRange(createStepRange(RejectAny));
   const Decimal proposedNumericValue =

@@ -58,7 +58,7 @@ void ResetInputType::handleDOMActivateEvent(Event* event) {
   event->setDefaultHandled();
 }
 
-String ResetInputType::defaultValue() const {
+String ResetInputType::defaultLabel() const {
   return locale().queryString(WebLocalizedString::ResetButtonDefaultLabel);
 }
 
