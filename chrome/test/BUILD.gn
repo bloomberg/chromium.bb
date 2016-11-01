@@ -2369,7 +2369,6 @@ test("browser_tests") {
       sources += [
         "../browser/safe_browsing/permission_reporter_browsertest.cc",
         "../browser/safe_browsing/safe_browsing_blocking_page_test.cc",
-        "../browser/safe_browsing/safe_browsing_navigation_observer_browsertest.cc",
         "../browser/safe_browsing/safe_browsing_service_browsertest.cc",
         "../renderer/safe_browsing/phishing_classifier_browsertest.cc",
         "../renderer/safe_browsing/phishing_classifier_delegate_browsertest.cc",
@@ -4209,7 +4208,6 @@ test("unit_tests") {
       "../browser/safe_browsing/protocol_manager_unittest.cc",
       "../browser/safe_browsing/protocol_parser_unittest.cc",
       "../browser/safe_browsing/safe_browsing_database_unittest.cc",
-      "../browser/safe_browsing/safe_browsing_navigation_observer_unittest.cc",
       "../browser/safe_browsing/safe_browsing_store_file_unittest.cc",
       "../browser/safe_browsing/safe_browsing_store_unittest.cc",
       "../browser/safe_browsing/sandboxed_dmg_analyzer_mac_unittest.cc",

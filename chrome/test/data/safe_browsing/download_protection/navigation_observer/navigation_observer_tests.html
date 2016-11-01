@@ -1,30 +1,50 @@
 <html>
   <head>
     <script>
-    // Click on a link by id to star a test case.
-    function clickLink(linkId) {
-      var node = document.getElementById(linkId);
-      if (node != null) {
+    // Identify the link by id and click on it.
+    //   targetId: document element id
+    //   newTab: whether open link in new tab.  
+    function clickLink(targetId, newTab) {
+      var node = document.getElementById(targetId);
+      if (newTab == 1) {
+        // Click and opens link in new tab.
+        var evt = document.createEvent("MouseEvents");
+        evt.initMouseEvent("click", false, true, window, 0, 0, 0, 0, 0,
+           newTab, false, false, false, 0, null);
+        node.dispatchEvent(evt);
+      } else {
         // Click and open link in the same tab.
         node.click();
       }
     }
-
-    // Redirect to download via window.location.href
-    function windowLocationHrefDownload() {
-      window.location.href = "../signed.exe";
+    
+    // Helper function to query string parmeter in the URL.
+    function getParameterByName(name) {
+      url = window.location.href;
+      name = name.replace(/[\[\]]/g, "\\$&");
+      var regex = new RegExp("[?&]" + name + "(=([^&#]*)|&|#|$)"),
+          results = regex.exec(url);
+      if (!results) return null;
+      if (!results[2]) return '';
+      return decodeURIComponent(results[2].replace(/\+/g, " "));
     }
 
-    function mixRedirectDownload() {
-      window.location.href = "redirect.html";
+    // Start test case based on URL query string paramter.
+    function startTestCase() {
+      var node = getParameterByName("test_case");
+      var openInNewTab = getParameterByName("new_tab");
+      if (node != null)
+        clickLink(node, openInNewTab);
     }
 
-    // This triggers a download in a new tab with no opener.
-    function downloadInNewTab() {
+    // Trigger a download in new tab and old tab navigate to an irrelevant page.
+    function downloadInNewTab(willNavigateAway) {
       var tab = window.open('');
       tab.opener = null;
       tab.document.write('<META HTTP-EQUIV="refresh" content="0; url=../signed.exe">');
       tab.document.close();
+      if (willNavigateAway)
+        window.location.href = "safe_page.html";
     }
     
     // Trigger download in a new tab and the download is from a data url.
@@ -34,13 +54,12 @@
        tab.document.write('<META HTTP-EQUIV="refresh" content="0; url=data:application/octet-stream;base64,a2poYWxrc2hkbGtoYXNka2xoYXNsa2RoYWxraGtoYWxza2hka2xzamFoZGxramhhc2xka2hhc2xrZGgKYXNrZGpoa2FzZGpoYWtzaGRrYXNoZGtoYXNrZGhhc2tkaGthc2hka2Foc2RraGFrc2hka2FzaGRraGFzCmFza2pkaGFrc2hkbSxjbmtzamFoZGtoYXNrZGhhc2tka2hrYXNkCjg3MzQ2ODEyNzQ2OGtqc2hka2FoZHNrZGhraApha3NqZGthc2Roa3NkaGthc2hka2FzaGtkaAohISomXkAqJl4qYWhpZGFzeWRpeWlhc1xcb1wKa2Fqc2Roa2FzaGRrYXNoZGsKYWtzamRoc2tkaAplbmQK">');
        tab.document.close();
     }
-    
-    // Create a data blob and save it as a test.exe file in filesystem's
-    // space with use URL filesystem:http://test_host/temporary/test.exe
-    // to download it.
-    function downloadViaFileApi(){
+
+    // Trigger download by using html5 system API.
+    var fileLocation = null;
+    (function getFileLocationByHtml5FileSystemAPI(){
       var errorize = function(e){console.log(e);};
-      var filename = 'test.exe';
+      var filename = 'msghello-bypass.exe';
       var blob = new Blob([new Uint8Array([1, 2, 3, 4])],{type:'application/octet-stream'});
       window.webkitRequestFileSystem(
         window.TEMPORARY,1048576,
@@ -52,9 +71,7 @@
               function(fileEntry){
                 fileEntry.createWriter(
                   function(writer){
-                    writer.onwriteend = function(){
-                      window.location.href = fileEntry.toURL();
-                    };
+                    writer.onwriteend = function(){fileLocation = fileEntry.toURL();};
                     writer.onerror = errorize;
                     writer.write(blob);
                   },
@@ -70,53 +87,19 @@
             createFile);
           },
           errorize);
-    }
-
+    })();
     </script>
   </head>
-  <body>
-    <a id="direct_download" href="../signed.exe">
-      Direct download
-    </a><br>
-
-    <a id="direct_download_noreferrer" href="../signed.exe" rel="noreferrer">
-      Direct download noreferrer
-    </a><br>
-
-    <a id="direct_download_noreferrer_target_blank" href="../signed.exe" rel="noreferrer" target=_blank>
-      Direct download noreferrer target blank
-    </a><br>
-
-    <a id="single_meta_refresh_redirect" href="redirect.html">
-      Redirect download via meta refresh
-    </a><br>
-
-    <a id="single_meta_refresh_redirect_target_blank" href="redirect.html" target=_blank>
-      Redirect download via meta refresh target blank
-    </a><br>
-
-    <a id="multiple_meta_refresh_redirects" href="double_redirect.html">
-      Redirect download multiple times via meta refresh
-    </a><br>
-
-    <a id="window_location_href_redirect" href="#" onclick="windowLocationHrefDownload()">
-      Redirect download via window.location.href
-    </a><br>
-
-    <a id="mix_redirects" href="#" onclick="mixRedirectDownload()">
-      Redirect download via mix of window.location.href and meta refresh
-    </a><br>
-
-    <a id="new_tab_download" href="#" onclick="downloadInNewTab()">
-      Open download in new tab
-    </a><br>
-
-    <a id="new_tab_download_with_data_url" href="#" onclick="downloadInNewTabWithDataURL()">
-      Open download in new tab with data url
-    </a><br>
-
-    <a id="html5_file_api" href="#" onclick="downloadViaFileApi()">
-      Download via HTML5 file system API
-    </a>
+  <body onload="startTestCase();">
+    <a id="direct_download" href="../signed.exe">Direct download</a><br>
+    <a id="noreferrer" href="../signed.exe" rel="noreferrer">Direct download noreferrer</a><br>
+    <a id="single_meta_refresh_redirect" href="redirect.html" >Redirect download</a><br>
+    <a id="single_meta_refresh_redirect_noreferrer" href="redirect.html" rel="noreferrer">Redirect download with noreferrer</a><br>
+    <a id="multiple_meta_refresh_redirects" href="double_redirect.html"> Redirect download multiple times</a><br>
+    <a id="new_tab_download" href="#" onclick="downloadInNewTab(false)"> Open download in new tab</a><br>
+    <a id="new_tab_download_navigate_away" href="#" onclick="downloadInNewTab(true)"> Open download in new tab and navigate away </a><br>
+    <a id="new_tab_download_with_data_url" href="#" onclick="downloadInNewTabWithDataURL()"> Open download in new tab with data url </a><br>
+    <button id="html5_file_api" onclick="window.location.href=fileLocation; return false"> Download via html5 file system API</button><br>
+    More testing cases are coming soon...   
   </body>
 </html>
