@@ -257,7 +257,7 @@ IN_PROC_BROWSER_TEST_F(AppBannerManagerBrowserTest,
 }
 
 // Disabled. See http://crbug.com/660798
-#if defined(OS_LINUX) || defined(OS_MACOSX)
+#if defined(OS_LINUX) || defined(OS_MACOSX) || defined(OS_WIN)
 #define MAYBE_WebAppBannerCreatedIndirectMultipleLargerTotal \
   DISABLED_WebAppBannerCreatedIndirectMultipleLargerTotal
 #else
