@@ -86,7 +86,7 @@ const int kMenuSeparatorVerticalPadding = 4;
 const int kMenuExtraMarginFromLeftEdge = 4;
 
 const int kHitRegionPadding = 4;
-const SkColor kSeparatorColor = SkColorSetA(SK_ColorWHITE, 0x4D);
+const SkColor kSeparatorColor = SkColorSetA(SK_ColorWHITE, 0x99);
 const int kSeparatorWidth = 1;
 
 const SkColor kHorizontalSeparatorColor = SkColorSetA(SK_ColorBLACK, 0x1F);
