@@ -364,10 +364,13 @@ WebInputEventResult GestureManager::sendContextMenuEventForGesture(
   PlatformEvent::EventType eventType = PlatformEvent::MousePressed;
   if (m_frame->settings() && m_frame->settings()->showContextMenuOnMouseUp())
     eventType = PlatformEvent::MouseReleased;
+  // TODO(crbug.com/661200): We don't want a mousedown here but text area
+  // cursor doesn't appear on long-tap focus w/o the mousedown.
   PlatformMouseEvent mouseEvent(
       targetedEvent.event().position(), targetedEvent.event().globalPosition(),
-      WebPointerProperties::Button::NoButton, eventType, /* clickCount */ 0,
-      static_cast<PlatformEvent::Modifiers>(modifiers),
+      WebPointerProperties::Button::Right, eventType, /* clickCount */ 1,
+      static_cast<PlatformEvent::Modifiers>(
+          modifiers | PlatformEvent::Modifiers::RightButtonDown),
       PlatformMouseEvent::FromTouch, WTF::monotonicallyIncreasingTime(),
       WebPointerProperties::PointerType::Mouse);
 
