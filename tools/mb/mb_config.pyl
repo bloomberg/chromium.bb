@@ -181,6 +181,7 @@
       'Mac deterministic (dbg)': 'debug_bot',
       'Mojo ChromiumOS': 'chromeos_with_codecs_ozone_release_trybot',
       'Mojo Windows': 'release_bot_x86',
+      'Ozone Linux': 'release_bot_ozone_linux',
       'Site Isolation Android': 'android_release_bot_minimal_symbols_arm64',
       'Site Isolation Linux': 'release_trybot',
       'Site Isolation Win': 'release_trybot_x86',
@@ -1320,6 +1321,10 @@
       'official', 'x86',
     ],
 
+    'release_bot_ozone_linux': [
+      'release_bot', 'ozone_linux',
+    ],
+
     'release_afl_asan': [
       'release', 'afl', 'asan', 'chromeos_codecs', 'pdf_xfa', 'disable_nacl',
     ],
@@ -1722,6 +1727,12 @@
 
     'ozone': {
       'gn_args': 'use_ozone=true',
+    },
+
+    'ozone_linux': {
+      'gn_args': ('ozone_auto_platforms=false ozone_platform_wayland=true '
+                  'ozone_platform_x11=true enable_package_mash_services=true '
+                  'use_ash=false'),
     },
 
     'pdf_xfa': {
