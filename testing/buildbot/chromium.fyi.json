@@ -3126,12 +3126,6 @@
         "swarming": {
           "can_use_on_swarming_builders": false
         },
-        "test": "chromedriver_unittests"
-      },
-      {
-        "swarming": {
-          "can_use_on_swarming_builders": false
-        },
         "test": "components_unittests"
       },
       {
