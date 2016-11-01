@@ -207,12 +207,12 @@ bool LayoutTextControl::hasValidAvgCharWidth(const SimpleFontData* fontData,
   // Some fonts match avgCharWidth to CJK full-width characters.
   // Heuristic check to avoid such fonts.
   DCHECK(fontData);
-  if (fontData) {
-    const FontMetrics& metrics = fontData->getFontMetrics();
-    if (metrics.hasZeroWidth() &&
-        fontData->avgCharWidth() > metrics.zeroWidth() * 1.7)
-      return false;
-  }
+  if (!fontData)
+    return false;
+  const FontMetrics& metrics = fontData->getFontMetrics();
+  if (metrics.hasZeroWidth() &&
+      fontData->avgCharWidth() > metrics.zeroWidth() * 1.7)
+    return false;
 
   static HashSet<AtomicString>* fontFamiliesWithInvalidCharWidthMap = nullptr;
 
