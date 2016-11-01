@@ -132,6 +132,7 @@ std::ostream& operator<<(std::ostream& os, const ListIdentifier& id);
 PlatformType GetCurrentPlatformType();
 const ListIdentifier GetChromeUrlApiId();
 const ListIdentifier GetChromeUrlClientIncidentId();
+const ListIdentifier GetChromeUrlMalwareId();
 const ListIdentifier GetUrlMalwareId();
 const ListIdentifier GetUrlMalBinId();
 const ListIdentifier GetUrlSocEngId();
@@ -251,7 +252,7 @@ class V4ProtocolManagerUtil {
 
   // Generate the set of FullHashes to check for |url|.
   static void UrlToFullHashes(const GURL& url,
-                              std::unordered_set<FullHash>* full_hashes);
+                              std::vector<FullHash>* full_hashes);
 
   static bool FullHashToHashPrefix(const FullHash& full_hash,
                                    PrefixSize prefix_size,

@@ -45,7 +45,11 @@ class V4LocalDatabaseManager : public SafeBrowsingDatabaseManager {
   bool CheckBrowseUrl(const GURL& url, Client* client) override;
   bool CheckDownloadUrl(const std::vector<GURL>& url_chain,
                         Client* client) override;
-  bool CheckExtensionIDs(const std::set<std::string>& extension_ids,
+  // TODO(vakh): |CheckExtensionIDs| in the base class accepts a set of
+  // std::strings but the overriding method in this class accepts a set of
+  // FullHash objects. Since FullHash is currently std::string, it compiles,
+  // but this difference should be eliminated.
+  bool CheckExtensionIDs(const std::set<FullHash>& extension_ids,
                          Client* client) override;
   bool CheckResourceUrl(const GURL& url, Client* client) override;
   bool MatchCsdWhitelistUrl(const GURL& url) override;
@@ -90,6 +94,10 @@ class V4LocalDatabaseManager : public SafeBrowsingDatabaseManager {
     // This represents the case when we're trying to determine if a URL is an
     // unsafe resource.
     CHECK_RESOURCE_URL = 2,
+
+    // This represents the case where we're trying to determine if a Chrome
+    // extension is a unsafe.
+    CHECK_EXTENSION_IDS = 3
   };
 
   // The information we need to process a URL safety reputation request and
@@ -102,6 +110,11 @@ class V4LocalDatabaseManager : public SafeBrowsingDatabaseManager {
                  ClientCallbackType client_callback_type,
                  const StoresToCheck& stores_to_check,
                  const std::vector<GURL>& urls);
+
+    PendingCheck(Client* client,
+                 ClientCallbackType client_callback_type,
+                 const StoresToCheck& stores_to_check,
+                 const std::set<FullHash>& full_hashes);
 
     ~PendingCheck();
 
@@ -123,8 +136,13 @@ class V4LocalDatabaseManager : public SafeBrowsingDatabaseManager {
     // The SafeBrowsing lists to check hash prefixes in.
     const StoresToCheck stores_to_check;
 
-    // The URLs that are being checked for being unsafe.
+    // The URLs that are being checked for being unsafe. The size of exactly
+    // one of |full_hashes| and |urls| should be greater than 0.
     const std::vector<GURL> urls;
+
+    // The full hashes that are being checked for being safe. The size of
+    // exactly one of |full_hashes| and |urls| should be greater than 0.
+    std::vector<FullHash> full_hashes;
 
     // The metadata associated with the full hash of the severest match found
     // for that URL.
@@ -160,8 +178,8 @@ class V4LocalDatabaseManager : public SafeBrowsingDatabaseManager {
   // Called when the database has been updated and schedules the next update.
   void DatabaseUpdated();
 
-  // Return the prefixes and the store they matched in, for a given URL. Returns
-  // true if a hash prefix match is found; false otherwise.
+  // Identifies the prefixes and the store they matched in, for a given |check|.
+  // Returns true if one or more hash prefix matches are found; false otherwise.
   bool GetPrefixMatches(
       const std::unique_ptr<PendingCheck>& check,
       FullHashToStoreAndHashPrefixesMap* full_hash_to_store_and_hash_prefixes);

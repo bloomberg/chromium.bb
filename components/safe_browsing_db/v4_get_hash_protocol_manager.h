@@ -259,7 +259,7 @@ class V4GetHashProtocolManager : public net::URLFetcherDelegate,
   // permission API metadata for full hashes in those |full_hash_infos| that
   // have a full hash in |full_hashes|.
   void OnFullHashForApi(const ThreatMetadataForApiCallback& api_callback,
-                        const std::unordered_set<FullHash>& full_hashes,
+                        const std::vector<FullHash>& full_hashes,
                         const std::vector<FullHashInfo>& full_hash_infos);
 
   // Parses a FindFullHashesResponse protocol buffer and fills the results in

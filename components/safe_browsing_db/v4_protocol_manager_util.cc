@@ -93,6 +93,10 @@ const ListIdentifier GetChromeUrlClientIncidentId() {
   return ListIdentifier(CHROME_PLATFORM, URL, CLIENT_INCIDENT);
 }
 
+const ListIdentifier GetChromeUrlMalwareId() {
+  return ListIdentifier(CHROME_PLATFORM, URL, MALWARE_THREAT);
+}
+
 const ListIdentifier GetUrlMalwareId() {
   return ListIdentifier(GetCurrentPlatformType(), URL, MALWARE_THREAT);
 }
@@ -249,7 +253,7 @@ void V4ProtocolManagerUtil::UpdateHeaders(net::HttpRequestHeaders* headers) {
 // static
 void V4ProtocolManagerUtil::UrlToFullHashes(
     const GURL& url,
-    std::unordered_set<FullHash>* full_hashes) {
+    std::vector<FullHash>* full_hashes) {
   std::string canon_host, canon_path, canon_query;
   CanonicalizeUrl(url, &canon_host, &canon_path, &canon_query);
 
@@ -264,7 +268,7 @@ void V4ProtocolManagerUtil::UrlToFullHashes(
   GeneratePathVariantsToCheck(canon_path, canon_query, &paths);
   for (const std::string& host : hosts) {
     for (const std::string& path : paths) {
-      full_hashes->insert(crypto::SHA256HashString(host + path));
+      full_hashes->push_back(crypto::SHA256HashString(host + path));
     }
   }
 }

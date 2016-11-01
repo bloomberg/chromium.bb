@@ -68,7 +68,23 @@ V4LocalDatabaseManager::PendingCheck::PendingCheck(
       client_callback_type(client_callback_type),
       result_threat_type(SB_THREAT_TYPE_SAFE),
       stores_to_check(stores_to_check),
-      urls(urls) {}
+      urls(urls) {
+  for (const auto& url : urls) {
+    V4ProtocolManagerUtil::UrlToFullHashes(url, &full_hashes);
+  }
+}
+
+V4LocalDatabaseManager::PendingCheck::PendingCheck(
+    Client* client,
+    ClientCallbackType client_callback_type,
+    const StoresToCheck& stores_to_check,
+    const std::set<FullHash>& full_hashes_set)
+    : client(client),
+      client_callback_type(client_callback_type),
+      result_threat_type(SB_THREAT_TYPE_SAFE),
+      stores_to_check(stores_to_check) {
+  full_hashes.assign(full_hashes_set.begin(), full_hashes_set.end());
+}
 
 V4LocalDatabaseManager::PendingCheck::~PendingCheck() {}
 
@@ -168,11 +184,19 @@ bool V4LocalDatabaseManager::CheckDownloadUrl(
 }
 
 bool V4LocalDatabaseManager::CheckExtensionIDs(
-    const std::set<std::string>& extension_ids,
+    const std::set<FullHash>& extension_ids,
     Client* client) {
-  // TODO(vakh): Implement this skeleton.
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
-  return true;
+
+  if (!enabled_) {
+    return true;
+  }
+
+  std::unique_ptr<PendingCheck> check = base::MakeUnique<PendingCheck>(
+      client, ClientCallbackType::CHECK_EXTENSION_IDS,
+      StoresToCheck({GetChromeUrlMalwareId()}), extension_ids);
+
+  return HandleCheck(std::move(check));
 }
 
 bool V4LocalDatabaseManager::CheckResourceUrl(const GURL& url, Client* client) {
@@ -341,19 +365,16 @@ bool V4LocalDatabaseManager::GetPrefixMatches(
 
   DCHECK(enabled_);
   DCHECK(v4_database_);
-  full_hash_to_store_and_hash_prefixes->clear();
 
   const base::TimeTicks before = TimeTicks::Now();
   if (check->client_callback_type == ClientCallbackType::CHECK_BROWSE_URL ||
-      check->client_callback_type == ClientCallbackType::CHECK_DOWNLOAD_URLS) {
-    std::unordered_set<FullHash> full_hashes;
-    for (const auto& url : check->urls) {
-      V4ProtocolManagerUtil::UrlToFullHashes(url, &full_hashes);
-    }
+      check->client_callback_type == ClientCallbackType::CHECK_DOWNLOAD_URLS ||
+      check->client_callback_type == ClientCallbackType::CHECK_EXTENSION_IDS) {
+    DCHECK(!check->full_hashes.empty());
 
-    StoreAndHashPrefixes matched_store_and_hash_prefixes;
-    for (const auto& full_hash : full_hashes) {
-      matched_store_and_hash_prefixes.clear();
+    full_hash_to_store_and_hash_prefixes->clear();
+    for (const auto& full_hash : check->full_hashes) {
+      StoreAndHashPrefixes matched_store_and_hash_prefixes;
       v4_database_->GetStoresMatchingFullHash(full_hash, check->stores_to_check,
                                               &matched_store_and_hash_prefixes);
       if (!matched_store_and_hash_prefixes.empty()) {
@@ -509,6 +530,11 @@ void V4LocalDatabaseManager::RespondToClient(
              ClientCallbackType::CHECK_DOWNLOAD_URLS) {
     check->client->OnCheckDownloadUrlResult(check->urls,
                                             check->result_threat_type);
+  } else if (check->client_callback_type ==
+             ClientCallbackType::CHECK_EXTENSION_IDS) {
+    const std::set<FullHash> extension_ids(check->full_hashes.begin(),
+                                           check->full_hashes.end());
+    check->client->OnCheckExtensionsResult(extension_ids);
   } else {
     NOTREACHED() << "Unexpected client_callback_type encountered";
   }

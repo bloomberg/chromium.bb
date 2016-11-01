@@ -314,7 +314,7 @@ void V4GetHashProtocolManager::GetFullHashesWithApis(
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
   DCHECK(url.SchemeIs(url::kHttpScheme) || url.SchemeIs(url::kHttpsScheme));
 
-  std::unordered_set<FullHash> full_hashes;
+  std::vector<FullHash> full_hashes;
   V4ProtocolManagerUtil::UrlToFullHashes(url.GetOrigin(), &full_hashes);
 
   FullHashToStoreAndHashPrefixesMap full_hash_to_store_and_hash_prefixes;
@@ -472,12 +472,13 @@ void V4GetHashProtocolManager::HandleGetHashError(const Time& now) {
 
 void V4GetHashProtocolManager::OnFullHashForApi(
     const ThreatMetadataForApiCallback& api_callback,
-    const std::unordered_set<FullHash>& full_hashes,
+    const std::vector<FullHash>& full_hashes,
     const std::vector<FullHashInfo>& full_hash_infos) {
   ThreatMetadata md;
   for (const FullHashInfo& full_hash_info : full_hash_infos) {
     DCHECK_EQ(GetChromeUrlApiId(), full_hash_info.list_id);
-    DCHECK(full_hashes.find(full_hash_info.full_hash) != full_hashes.end());
+    DCHECK(std::find(full_hashes.begin(), full_hashes.end(),
+                     full_hash_info.full_hash) != full_hashes.end());
     md.api_permissions.insert(full_hash_info.metadata.api_permissions.begin(),
                               full_hash_info.metadata.api_permissions.end());
   }
