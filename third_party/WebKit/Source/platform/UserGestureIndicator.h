@@ -60,7 +60,7 @@ class PLATFORM_EXPORT UserGestureToken : public RefCounted<UserGestureToken> {
   enum Status { NewGesture, PossiblyExistingGesture };
   enum TimeoutPolicy { Default, OutOfProcess, HasPaused };
 
-  virtual ~UserGestureToken() {}
+  ~UserGestureToken() {}
   bool hasGestures() const;
   void transferGestureTo(UserGestureToken*);
   bool consumeGesture();

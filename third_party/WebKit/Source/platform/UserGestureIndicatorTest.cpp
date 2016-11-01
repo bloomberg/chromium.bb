@@ -17,8 +17,6 @@ class TestUserGestureToken final : public UserGestureToken {
     return adoptRef(new TestUserGestureToken(status));
   }
 
-  ~TestUserGestureToken() final {}
-
  private:
   TestUserGestureToken(Status status) : UserGestureToken(status) {}
 };

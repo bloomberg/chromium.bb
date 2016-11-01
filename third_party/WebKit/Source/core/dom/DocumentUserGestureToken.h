@@ -20,14 +20,22 @@ class DocumentUserGestureToken final : public UserGestureToken {
   static PassRefPtr<UserGestureToken> create(
       Document* document,
       Status status = PossiblyExistingGesture) {
-    return adoptRef(new DocumentUserGestureToken(document, status));
+    setHasReceivedUserGesture(document);
+    return adoptRef(new DocumentUserGestureToken(status));
   }
 
-  ~DocumentUserGestureToken() final {}
+  static PassRefPtr<UserGestureToken> adopt(Document* document,
+                                            UserGestureToken* token) {
+    if (!token || !token->hasGestures())
+      return nullptr;
+    setHasReceivedUserGesture(document);
+    return token;
+  }
 
  private:
-  DocumentUserGestureToken(Document* document, Status status)
-      : UserGestureToken(status) {
+  DocumentUserGestureToken(Status status) : UserGestureToken(status) {}
+
+  static void setHasReceivedUserGesture(Document* document) {
     if (!document || document->hasReceivedUserGesture())
       return;
     document->setHasReceivedUserGesture();

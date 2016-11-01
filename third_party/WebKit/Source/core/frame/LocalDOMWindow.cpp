@@ -36,6 +36,7 @@
 #include "core/css/StyleMedia.h"
 #include "core/css/resolver/StyleResolver.h"
 #include "core/dom/DOMImplementation.h"
+#include "core/dom/DocumentUserGestureToken.h"
 #include "core/dom/ExecutionContextTask.h"
 #include "core/dom/FrameRequestCallback.h"
 #include "core/dom/SandboxFlags.h"
@@ -633,7 +634,8 @@ void LocalDOMWindow::postMessageTimerFired(PostMessageTimer* timer) {
 
   MessageEvent* event = timer->event();
 
-  UserGestureIndicator gestureIndicator(timer->userGestureToken());
+  UserGestureIndicator gestureIndicator(
+      DocumentUserGestureToken::adopt(document(), timer->userGestureToken()));
 
   event->entangleMessagePorts(document());
 
