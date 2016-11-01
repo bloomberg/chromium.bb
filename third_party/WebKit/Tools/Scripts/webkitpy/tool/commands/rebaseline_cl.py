@@ -187,13 +187,15 @@ class RebaselineCL(AbstractParallelRebaselineCommand):
         """Fetches a list of tests that should be rebaselined."""
         buildbot = self._tool.buildbot
         results_url = buildbot.results_url(build.builder_name, build.build_number)
+
         layout_test_results = buildbot.fetch_layout_test_results(results_url)
         if layout_test_results is None:
             _log.warning('Failed to request layout test results from "%s".', results_url)
             return []
-        failure_results = layout_test_results.unexpected_mismatch_results()
-        missing_results = layout_test_results.missing_results()
-        tests = sorted(r.test_name() for r in failure_results + missing_results)
+
+        unexpected_results = layout_test_results.didnt_run_as_expected_results()
+        tests = sorted(r.test_name() for r in unexpected_results
+                       if r.is_missing_baseline() or r.has_mismatch_result())
 
         new_failures = self._fetch_tests_with_new_failures(build)
         if new_failures is None:

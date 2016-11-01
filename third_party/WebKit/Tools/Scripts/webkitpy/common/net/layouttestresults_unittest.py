@@ -117,18 +117,16 @@ class LayoutTestResultsTest(unittest.TestCase):
         self.assertEqual(results.result_for_test("fast/dom/prototype-taco.html").actual_results(), "PASS TEXT")
         self.assertFalse(results.result_for_test("nonexistant.html"))
 
-    def test_unexpected_mismatch_results(self):
+    def test_didnt_run_as_expected_results(self):
         results = LayoutTestResults.results_from_string(self.example_full_results_json)
         self.assertEqual(
-            [r.test_name() for r in results.unexpected_mismatch_results()],
+            [r.test_name() for r in results.didnt_run_as_expected_results()],
             [
+                'fast/dom/prototype-banana.html',
+                'fast/dom/prototype-crashy.html',
                 'fast/dom/prototype-inheritance.html',
+                'fast/dom/prototype-newtest.html',
+                'fast/dom/prototype-strawberry.html',
                 'fast/dom/prototype-taco.html',
-                'svg/dynamic-updates/SVGFEDropShadowElement-dom-stdDeviation-attr.html'
+                'svg/dynamic-updates/SVGFEDropShadowElement-dom-stdDeviation-attr.html',
             ])
-
-    def test_missing_baseline(self):
-        results = LayoutTestResults.results_from_string(self.example_full_results_json)
-        missing_results = results.missing_results()
-        self.assertEqual(len(missing_results), 1)
-        self.assertEqual(missing_results[0].test_name(), "fast/dom/prototype-newtest.html")

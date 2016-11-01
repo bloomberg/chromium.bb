@@ -157,11 +157,6 @@ class LayoutTestResults(object):
         LayoutTestResults._for_each_test(self._test_result_tree(), add_if_passes)
         return sorted(results, key=lambda r: r.test_name())
 
-    def unexpected_mismatch_results(self):
-        return self._filter_tests(lambda r: r.has_mismatch_result() and not r.did_run_as_expected())
-
-    def missing_results(self):
-        return self._filter_tests(lambda r: r.is_missing_baseline())
-
     def didnt_run_as_expected_results(self):
+        # TODO(qyearsley): Rename this method.
         return self._filter_tests(lambda r: not r.did_run_as_expected())
