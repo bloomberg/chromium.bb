@@ -63,7 +63,7 @@
 {%      if packed_field.min_version > last_checked_version %}
 {%        set last_checked_version = packed_field.min_version %}
     // version check {{name}}
-    if (!messageValidator.isFieldInStructVersion({{packed_field.min_version}}))
+    if (!messageValidator.isFieldInStructVersion(offset, {{packed_field.min_version}}))
       return validator.validationError.NONE;
 {%-     endif -%}
 {{validate_struct_field(field, offset, name)|indent(4)}}
