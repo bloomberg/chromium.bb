@@ -68,6 +68,7 @@ public class MockResourcesForLayout extends MockResources {
         mFloats.put(org.chromium.chrome.R.dimen.contextual_search_peek_promo_height, 48.f);
         mFloats.put(org.chromium.chrome.R.dimen.contextual_search_peek_promo_padding, 12.f);
         mFloats.put(org.chromium.chrome.R.dimen.contextual_search_end_button_width, 41.f);
+        mFloats.put(org.chromium.chrome.R.dimen.toolbar_height_no_shadow, 56.f);
     }
 
     @Override

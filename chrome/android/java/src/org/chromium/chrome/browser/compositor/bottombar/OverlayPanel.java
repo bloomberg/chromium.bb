@@ -247,10 +247,6 @@ public class OverlayPanel extends OverlayPanelAnimation implements ActivityState
             ApplicationStatus.registerStateListenerForActivity(this, mActivity);
         }
 
-        // TODO(pedrosimonetti): Coordinate with mdjones@ to move this to the OverlayPanelBase
-        // constructor, once we are able to get the Activity during instantiation. The Activity
-        // is needed in order to get the correct height of the Toolbar, which varies depending
-        // on the Activity (WebApps have a smaller toolbar for example).
         initializeUiState();
     }
 

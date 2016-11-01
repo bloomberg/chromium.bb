@@ -94,16 +94,16 @@ abstract class OverlayPanelBase {
     private float mToolbarHeight;
 
     /** The height of the Bar when the Panel is peeking, in dps. */
-    private float mBarHeightPeeking;
+    private final float mBarHeightPeeking;
 
     /** The height of the Bar when the Panel is expanded, in dps. */
-    private float mBarHeightExpanded;
+    private final float mBarHeightExpanded;
 
     /** The height of the Bar when the Panel is maximized, in dps. */
-    private float mBarHeightMaximized;
+    private final float mBarHeightMaximized;
 
     /** Ratio of dps per pixel. */
-    protected float mPxToDp;
+    protected final float mPxToDp;
 
     /**
      * The Y coordinate to apply to the Base Page in order to keep the selection
@@ -139,6 +139,20 @@ abstract class OverlayPanelBase {
      */
     public OverlayPanelBase(Context context) {
         mContext = context;
+        mPxToDp = 1.f / mContext.getResources().getDisplayMetrics().density;
+
+        mBarHeightPeeking = mContext.getResources().getDimension(
+                R.dimen.overlay_panel_bar_height) * mPxToDp;
+        mBarHeightMaximized = mContext.getResources().getDimension(
+                R.dimen.toolbar_height_no_shadow) * mPxToDp;
+        mBarHeightExpanded =
+                Math.round((mBarHeightPeeking + mBarHeightMaximized) / 2.f);
+
+        mBarMarginSide = BAR_ICON_SIDE_PADDING_DP;
+        mProgressBarHeight = PROGRESS_BAR_HEIGHT_DP;
+        mBarBorderHeight = BAR_BORDER_HEIGHT_DP;
+
+        mBarHeight = mBarHeightPeeking;
     }
 
     // ============================================================================================
@@ -690,23 +704,12 @@ abstract class OverlayPanelBase {
      * Initializes the UI state.
      */
     protected void initializeUiState() {
-        mPxToDp = 1.f / mContext.getResources().getDisplayMetrics().density;
-
+        // TODO(pedrosimonetti): Coordinate with mdjones@ to move this to the OverlayPanelBase
+        // constructor, once we are able to get the Activity during instantiation. The Activity
+        // is needed in order to get the correct height of the Toolbar, which varies depending
+        // on the Activity (WebApps have a smaller toolbar for example).
         mToolbarHeight = mContext.getResources().getDimension(
                 getControlContainerHeightResource()) * mPxToDp;
-
-        mBarHeightPeeking = mContext.getResources().getDimension(
-                R.dimen.overlay_panel_bar_height) * mPxToDp;
-        mBarHeightMaximized = mContext.getResources().getDimension(
-                R.dimen.toolbar_height_no_shadow) * mPxToDp;
-        mBarHeightExpanded =
-                Math.round((mBarHeightPeeking + mBarHeightMaximized) / 2.f);
-
-        mBarMarginSide = BAR_ICON_SIDE_PADDING_DP;
-        mProgressBarHeight = PROGRESS_BAR_HEIGHT_DP;
-        mBarBorderHeight = BAR_BORDER_HEIGHT_DP;
-
-        mBarHeight = mBarHeightPeeking;
     }
 
     /**
