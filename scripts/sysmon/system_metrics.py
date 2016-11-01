@@ -307,7 +307,7 @@ def get_proc_info():
   autoserv_count = 0
   total = 0
   for proc in psutil.process_iter():
-    if _is_autoserv_proc(proc):
+    if _is_parent_autoserv(proc):
       autoserv_count += 1
     total += 1
   logging.debug('autoserv_count: %s', autoserv_count)
@@ -315,10 +315,17 @@ def get_proc_info():
   _proc_count_metric.set(total)
 
 
-def _is_autoserv_proc(proc):
-  return (
-      proc.name == 'python'
-      and '/usr/local/autotest/server/autoserv' in proc.cmdline)
+def _is_parent_autoserv(proc):
+  """Return whether proc is a parent (not forked) autoserv process."""
+  return _is_autoserv(proc) and not _is_autoserv(proc.parent())
+
+
+def _is_autoserv(proc):
+  """Return whether proc is an autoserv process."""
+  # This relies on the autoserv script being run directly.  The script should
+  # be named autoserv exactly and start with a shebang that is /usr/bin/python,
+  # NOT /bin/env
+  return proc.name() == 'autoserv'
 
 
 def get_load_avg():
