@@ -29,7 +29,13 @@
   "tests": [
     {
       "app": "ios_web_shell_test_host",
-      "device type": "iPhone 5s",
+      "device type": "iPhone 6s",
+      "os": "10.0",
+      "xctest": true
+    },
+    {
+      "app": "ios_web_shell_test_host",
+      "device type": "iPad Air 2",
       "os": "10.0",
       "xctest": true
     }
