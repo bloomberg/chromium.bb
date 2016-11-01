@@ -131,11 +131,9 @@ bool FileEnumerator::ReadDirectory(std::vector<FileInfo>* entries,
          additional space for pathname may be needed
 #endif
 
-  // In all implementations of the C library that Chromium can run with,
-  // concurrent calls to readdir that specify different directory streams are
-  // thread-safe. This is the case here, since the directory stream is scoped to
-  // the current function. See https://codereview.chromium.org/2411833004/#msg3
-  for (struct dirent* dent = readdir(dir); dent; dent = readdir(dir)) {
+  struct dirent dent_buf;
+  struct dirent* dent;
+  while (readdir_r(dir, &dent_buf, &dent) == 0 && dent) {
     FileInfo info;
     info.filename_ = FilePath(dent->d_name);
 
