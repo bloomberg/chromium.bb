@@ -118,6 +118,7 @@ public class EditorFieldModel {
     @Nullable private CharSequence mMidLabel;
     @Nullable private CharSequence mBottomLabel;
     @Nullable private CharSequence mValue;
+    @Nullable private CharSequence mHint;
     @Nullable private Callback<Pair<String, Runnable>> mDropdownCallback;
     @Nullable private Runnable mActionIconAction;
     private int mLabelIconResourceId;
@@ -194,13 +195,16 @@ public class EditorFieldModel {
      * @param label             The human-readable label for user to understand the type of data
      *                          that should be entered into this field.
      * @param dropdownKeyValues The keyed values to display in the dropdown.
+     * @param hint              The optional hint to be displayed when no value is selected.
      */
     public static EditorFieldModel createDropdown(
-            @Nullable CharSequence label, List<DropdownKeyValue> dropdownKeyValues) {
+            @Nullable CharSequence label, List<DropdownKeyValue> dropdownKeyValues,
+            @Nullable CharSequence hint) {
         assert dropdownKeyValues != null;
         EditorFieldModel result = new EditorFieldModel(INPUT_TYPE_HINT_DROPDOWN);
         result.mLabel = label;
         result.mDropdownKeyValues = dropdownKeyValues;
+        result.mHint = hint;
         result.mDropdownKeys = new HashSet<>();
         for (int i = 0; i < result.mDropdownKeyValues.size(); i++) {
             result.mDropdownKeys.add(result.mDropdownKeyValues.get(i).getKey());
@@ -220,12 +224,11 @@ public class EditorFieldModel {
      */
     public static EditorFieldModel createDropdown(
             @Nullable CharSequence label, List<DropdownKeyValue> dropdownKeyValues,
-            EditorFieldValidator validator,
-            CharSequence invalidErrorMessage) {
+            EditorFieldValidator validator, CharSequence invalidErrorMessage) {
         assert dropdownKeyValues != null;
         assert validator != null;
         assert invalidErrorMessage != null;
-        EditorFieldModel result = createDropdown(label, dropdownKeyValues);
+        EditorFieldModel result = createDropdown(label, dropdownKeyValues, null /* hint */);
         result.mValidator = validator;
         result.mInvalidErrorMessage = invalidErrorMessage;
         return result;
@@ -383,6 +386,12 @@ public class EditorFieldModel {
     /** @return The human-readable label for this field. */
     public CharSequence getLabel() {
         return mLabel;
+    }
+
+    /** @return The human-readable hint for this dropdown field. */
+    public CharSequence getHint() {
+        assert mInputTypeHint == INPUT_TYPE_HINT_DROPDOWN;
+        return mHint;
     }
 
     /** @return The human-readable mid-level label for this field. */

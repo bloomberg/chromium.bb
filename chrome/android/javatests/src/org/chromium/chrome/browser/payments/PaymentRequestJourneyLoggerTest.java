@@ -254,7 +254,7 @@ public class PaymentRequestJourneyLoggerTest extends PaymentRequestTestBase {
         clickInPaymentMethodAndWait(R.id.payments_section, mReadyForInput);
         clickInPaymentMethodAndWait(R.id.payments_add_option_button, mReadyToEdit);
         setSpinnerSelectionsInCardEditorAndWait(
-                new int[] {11, 1, 1}, mBillingAddressChangeProcessed);
+                new int[] {11, 1, 0}, mBillingAddressChangeProcessed);
         setTextInCardEditorAndWait(new String[] {"4111111111111111", "Jon Doe"}, mEditorTextUpdate);
         clickInCardEditorAndWait(R.id.payments_edit_done_button, mReadyToPay);
 

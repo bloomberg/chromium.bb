@@ -20,7 +20,7 @@ import java.util.concurrent.TimeoutException;
  * A test for paying with an incomplete server card.
  */
 public class PaymentRequestIncompleteServerCardTest extends PaymentRequestTestBase {
-    private static final int FIRST_BILLING_ADDRESS = 1;
+    private static final int FIRST_BILLING_ADDRESS = 0;
 
     public PaymentRequestIncompleteServerCardTest() {
         super("payment_request_no_shipping_test.html");

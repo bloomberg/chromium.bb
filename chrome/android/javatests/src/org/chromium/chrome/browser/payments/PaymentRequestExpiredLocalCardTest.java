@@ -102,12 +102,12 @@ public class PaymentRequestExpiredLocalCardTest extends PaymentRequestTestBase {
         clickInPaymentMethodAndWait(R.id.payments_add_option_button, mReadyToEdit);
         // Set the expiration date to past month of the current year.
         setSpinnerSelectionsInCardEditorAndWait(
-                new int[] {now.get(Calendar.MONTH) - 1, 0, 1}, mBillingAddressChangeProcessed);
+                new int[] {now.get(Calendar.MONTH) - 1, 0, 0}, mBillingAddressChangeProcessed);
         setTextInCardEditorAndWait(new String[] {"4111111111111111", "Jon Doe"}, mEditorTextUpdate);
         clickInCardEditorAndWait(R.id.payments_edit_done_button, mEditorValidationError);
 
         // Set the expiration date to the current month of the current year.
-        setSpinnerSelectionsInCardEditorAndWait(new int[] {now.get(Calendar.MONTH), 0, 1},
+        setSpinnerSelectionsInCardEditorAndWait(new int[] {now.get(Calendar.MONTH), 0, 0},
                 mExpirationMonthChange);
 
         clickInCardEditorAndWait(R.id.payments_edit_done_button, mReadyToPay);

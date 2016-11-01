@@ -113,7 +113,8 @@ public class AddressEditor extends EditorBase<AutofillAddress> {
         if (mCountryField == null) {
             mCountryField = EditorFieldModel.createDropdown(
                     mContext.getString(R.string.autofill_profile_editor_country),
-                    AutofillProfileBridge.getSupportedCountries());
+                    AutofillProfileBridge.getSupportedCountries(),
+                    null /* hint */);
         }
 
         // Changing the country will update which fields are in the model. The actual fields are not

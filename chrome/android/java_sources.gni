@@ -688,6 +688,7 @@ chrome_java_sources = [
   "java/src/org/chromium/chrome/browser/payments/ui/EditorTextField.java",
   "java/src/org/chromium/chrome/browser/payments/ui/EditorView.java",
   "java/src/org/chromium/chrome/browser/payments/ui/FadingEdgeScrollView.java",
+  "java/src/org/chromium/chrome/browser/payments/ui/HintArrayAdapter.java",
   "java/src/org/chromium/chrome/browser/payments/ui/LineItem.java",
   "java/src/org/chromium/chrome/browser/payments/ui/PaymentInformation.java",
   "java/src/org/chromium/chrome/browser/payments/ui/PaymentOption.java",

@@ -67,9 +67,6 @@ public class CardEditor extends EditorBase<AutofillPaymentInstrument>
         }
     }
 
-    /** The dropdown key that indicates absence of billing address. */
-    private static final String BILLING_ADDRESS_NONE = "";
-
     /** The dropdown key that triggers the address editor to add a new billing address. */
     private static final String BILLING_ADDRESS_ADD_NEW = "add";
 
@@ -468,7 +465,8 @@ public class CardEditor extends EditorBase<AutofillPaymentInstrument>
         // Expiration year dropdown is side-by-side with the expiration year dropdown. The dropdown
         // should include the card's expiration year, so it's not cached.
         mYearField = EditorFieldModel.createDropdown(
-                null /* label */, buildYearDropdownKeyValues(calendar, card.getYear()));
+                null /* label */, buildYearDropdownKeyValues(calendar, card.getYear()),
+                null /* hint */);
         mYearField.setIsFullLine(false);
         if (mYearField.getDropdownKeys().contains(card.getYear())) {
             mYearField.setValue(card.getYear());
@@ -529,8 +527,6 @@ public class CardEditor extends EditorBase<AutofillPaymentInstrument>
      */
     private void addBillingAddressDropdown(EditorModel editor, final CreditCard card) {
         final List<DropdownKeyValue> billingAddresses = new ArrayList<>();
-        billingAddresses.add(new DropdownKeyValue(BILLING_ADDRESS_NONE,
-                mContext.getString(R.string.select)));
 
         for (Map.Entry<String, AutofillProfile> address : mProfilesForBillingAddress.entrySet()) {
             // Key is profile GUID. Value is profile label.
@@ -542,10 +538,10 @@ public class CardEditor extends EditorBase<AutofillPaymentInstrument>
                 mContext.getString(R.string.autofill_create_profile)));
 
         // Don't cache the billing address dropdown, because the user may have added or removed
-        // profiles.
+        // profiles. Also pass the "Select" dropdown item as a hint to the dropdown constructor.
         mBillingAddressField = EditorFieldModel.createDropdown(
                 mContext.getString(R.string.autofill_credit_card_editor_billing_address),
-                billingAddresses);
+                billingAddresses, mContext.getString(R.string.select));
 
         // The billing address is required.
         mBillingAddressField.setRequiredErrorMessage(

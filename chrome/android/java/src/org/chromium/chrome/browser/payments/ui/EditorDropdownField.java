@@ -56,8 +56,22 @@ class EditorDropdownField implements EditorFieldView {
         final List<DropdownKeyValue> dropdownKeyValues = mFieldModel.getDropdownKeyValues();
         mSelectedIndex = getDropdownIndex(dropdownKeyValues, mFieldModel.getValue());
 
-        ArrayAdapter<DropdownKeyValue> adapter = new ArrayAdapter<DropdownKeyValue>(
-                context, R.layout.multiline_spinner_item, dropdownKeyValues);
+        ArrayAdapter<DropdownKeyValue> adapter;
+        if (mFieldModel.getHint() != null) {
+            // Add the hint as the last value.
+            dropdownKeyValues.add(new DropdownKeyValue("", mFieldModel.getHint().toString()));
+
+            // Use the HintArrayAdapter so the hint is not displayed as an option.
+            adapter = new HintArrayAdapter<DropdownKeyValue>(
+                    context, R.layout.multiline_spinner_item, dropdownKeyValues);
+
+            // If no value is selected, select the hint entry. Using getCount will not result in an
+            // out of bounds index because the hint value is ommited in the count.
+            if (mFieldModel.getValue() == null) mSelectedIndex = adapter.getCount();
+        } else {
+            adapter = new ArrayAdapter<DropdownKeyValue>(
+                    context, R.layout.multiline_spinner_item, dropdownKeyValues);
+        }
         adapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
 
         mDropdown = (Spinner) mLayout.findViewById(R.id.spinner);
