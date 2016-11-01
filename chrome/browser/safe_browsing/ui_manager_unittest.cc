@@ -12,6 +12,7 @@
 #include "chrome/test/base/testing_profile.h"
 #include "components/safe_browsing_db/safe_browsing_prefs.h"
 #include "components/safe_browsing_db/util.h"
+#include "content/public/browser/navigation_entry.h"
 #include "content/public/browser/render_process_host.h"
 #include "content/public/browser/render_view_host.h"
 #include "content/public/browser/web_contents.h"
@@ -73,6 +74,7 @@ class SafeBrowsingUIManagerTest : public ChromeRenderViewHostTestHarness {
   void SetUp() override {
     SetThreadBundleOptions(content::TestBrowserThreadBundle::REAL_IO_THREAD);
     ChromeRenderViewHostTestHarness::SetUp();
+    SafeBrowsingUIManager::CreateWhitelistForTesting(web_contents());
   }
 
   void TearDown() override { ChromeRenderViewHostTestHarness::TearDown(); }
@@ -82,7 +84,10 @@ class SafeBrowsingUIManagerTest : public ChromeRenderViewHostTestHarness {
   }
 
   void AddToWhitelist(SafeBrowsingUIManager::UnsafeResource resource) {
-    ui_manager_->AddToWhitelistUrlSet(resource, false);
+    ui_manager_->AddToWhitelistUrlSet(
+        SafeBrowsingUIManager::GetMainFrameWhitelistUrlForResourceForTesting(
+            resource),
+        web_contents(), false);
   }
 
   SafeBrowsingUIManager::UnsafeResource MakeUnsafeResource(
@@ -113,7 +118,14 @@ class SafeBrowsingUIManagerTest : public ChromeRenderViewHostTestHarness {
   void SimulateBlockingPageDone(
       const std::vector<SafeBrowsingUIManager::UnsafeResource>& resources,
       bool proceed) {
-    ui_manager_->OnBlockingPageDone(resources, proceed);
+    GURL main_frame_url;
+    content::NavigationEntry* entry =
+        web_contents()->GetController().GetVisibleEntry();
+    if (entry)
+      main_frame_url = entry->GetURL();
+
+    ui_manager_->OnBlockingPageDone(resources, proceed, web_contents(),
+                                    main_frame_url);
   }
 
  protected:

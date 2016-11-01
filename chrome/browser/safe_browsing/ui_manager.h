@@ -128,11 +128,13 @@ class SafeBrowsingUIManager
   // A convenience wrapper method for IsUrlWhitelistedOrPendingForWebContents.
   bool IsWhitelisted(const UnsafeResource& resource);
 
-  // Checks if we already displayed an interstitial for that top-level
-  // site in a given WebContents. If |whitelist_only|, it returns true only if
-  // the user chose to ignore the interstitial; otherwise it returns true as
-  // long as the user has seen an interstitial (regardless of response).
-  // Called on the UI thread.
+  // Checks if we already displayed or are displaying an interstitial
+  // for the top-level site |url| in a given WebContents. If
+  // |whitelist_only|, it returns true only if the user chose to ignore
+  // the interstitial. Otherwise, it returns true if an interstitial for
+  // |url| is already displaying *or* if the user has seen an
+  // interstitial for |url| before in this WebContents and proceeded
+  // through it. Called on the UI thread.
   bool IsUrlWhitelistedOrPendingForWebContents(
       const GURL& url,
       bool is_subresource,
@@ -140,9 +142,18 @@ class SafeBrowsingUIManager
       content::WebContents* web_contents,
       bool whitelist_only);
 
-  // The blocking page on the UI thread has completed.
+  // The blocking page for |web_contents| on the UI thread has
+  // completed, with |proceed| set to true if the user has chosen to
+  // proceed through the blocking page and false
+  // otherwise. |web_contents| is the WebContents that was displaying
+  // the blocking page. |main_frame_url| is the top-level URL on which
+  // the blocking page was displayed. If |proceed| is true,
+  // |main_frame_url| is whitelisted so that the user will not see
+  // another warning for that URL in this WebContents.
   void OnBlockingPageDone(const std::vector<UnsafeResource>& resources,
-                          bool proceed);
+                          bool proceed,
+                          content::WebContents* web_contents,
+                          const GURL& main_frame_url);
 
   // Log the user perceived delay caused by SafeBrowsing. This delay is the time
   // delta starting from when we would have started reading data from the
@@ -174,6 +185,12 @@ class SafeBrowsingUIManager
   void AddObserver(Observer* observer);
   void RemoveObserver(Observer* remove);
 
+  // Creates the whitelist URL set for tests that create a blocking page
+  // themselves and then simulate OnBlockingPageDone(). OnBlockingPageDone()
+  // expects the whitelist to exist, but the tests don't necessarily call
+  // DisplayBlockingPage(), which creates it.
+  static void CreateWhitelistForTesting(content::WebContents* web_contents);
+
  protected:
   virtual ~SafeBrowsingUIManager();
 
@@ -194,8 +211,18 @@ class SafeBrowsingUIManager
   void ReportPermissionActionOnIOThread(
       const PermissionReportInfo& report_info);
 
-  // Updates the whitelist URL set.  Called on the UI thread.
-  void AddToWhitelistUrlSet(const UnsafeResource& resource, bool is_pending);
+  // Updates the whitelist URL set for |web_contents|. Called on the UI thread.
+  void AddToWhitelistUrlSet(const GURL& whitelist_url,
+                            content::WebContents* web_contents,
+                            bool is_pending);
+
+  // Removes |whitelist_url| from the pending whitelist for
+  // |web_contents|. Called on the UI thread.
+  void RemoveFromPendingWhitelistUrlSet(const GURL& whitelist_url,
+                                        content::WebContents* web_contents);
+
+  static GURL GetMainFrameWhitelistUrlForResourceForTesting(
+      const safe_browsing::SafeBrowsingUIManager::UnsafeResource& resource);
 
   // Safebrowsing service.
   scoped_refptr<SafeBrowsingService> sb_service_;

@@ -92,6 +92,7 @@ class SafeBrowsingBlockingPageTest : public ChromeRenderViewHostTestHarness {
     ChromeRenderViewHostTestHarness::SetUp();
     SafeBrowsingBlockingPage::RegisterFactory(&factory_);
     ResetUserResponse();
+    SafeBrowsingUIManager::CreateWhitelistForTesting(web_contents());
   }
 
   void TearDown() override {

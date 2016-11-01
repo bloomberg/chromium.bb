@@ -324,7 +324,8 @@ void SafeBrowsingBlockingPage::OnProceed() {
   FinishThreatDetails(threat_details_proceed_delay_ms_, true, /* did_proceed */
                       controller()->metrics_helper()->NumVisits());
 
-  ui_manager_->OnBlockingPageDone(unsafe_resources_, true);
+  ui_manager_->OnBlockingPageDone(unsafe_resources_, true, web_contents(),
+                                  main_frame_url_);
 
   // Check to see if some new notifications of unsafe resources have been
   // received while we were showing the interstitial.
@@ -373,14 +374,16 @@ void SafeBrowsingBlockingPage::OnDontProceed() {
   FinishThreatDetails(0, false /* did_proceed */,
                       controller()->metrics_helper()->NumVisits());  // No delay
 
-  ui_manager_->OnBlockingPageDone(unsafe_resources_, false);
+  ui_manager_->OnBlockingPageDone(unsafe_resources_, false, web_contents(),
+                                  main_frame_url_);
 
   // The user does not want to proceed, clear the queued unsafe resources
   // notifications we received while the interstitial was showing.
   UnsafeResourceMap* unsafe_resource_map = GetUnsafeResourcesMap();
   UnsafeResourceMap::iterator iter = unsafe_resource_map->find(web_contents());
   if (iter != unsafe_resource_map->end() && !iter->second.empty()) {
-    ui_manager_->OnBlockingPageDone(iter->second, false);
+    ui_manager_->OnBlockingPageDone(iter->second, false, web_contents(),
+                                    main_frame_url_);
     unsafe_resource_map->erase(iter);
   }
 
