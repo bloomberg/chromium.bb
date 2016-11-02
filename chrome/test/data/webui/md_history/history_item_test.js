@@ -10,7 +10,6 @@ cr.define('md_history.history_item_test', function() {
       var SEARCH_HISTORY_RESULTS;
 
       suiteSetup(function() {
-        element = $('history-app').$['history'].$['infinite-list'];
         TEST_HISTORY_RESULTS = [
           createHistoryEntry('2016-03-16 10:00', 'http://www.google.com'),
           createHistoryEntry('2016-03-16 9:00', 'http://www.example.com'),
@@ -25,6 +24,10 @@ cr.define('md_history.history_item_test', function() {
           createSearchEntry('2016-03-14 11:00', "http://calendar.google.com"),
           createSearchEntry('2016-03-14 10:00', "http://mail.google.com")
         ];
+      });
+
+      setup(function() {
+        element = replaceApp().$['history'].$['infinite-list'];
       });
 
       test('basic separator insertion', function() {
@@ -97,9 +100,27 @@ cr.define('md_history.history_item_test', function() {
         });
       });
 
-      teardown(function() {
-        element.historyData_ = [];
-        element.searchedTerm = '';
+      test('click targets for selection', function() {
+        var item = document.createElement('history-item');
+        var selectionCount = 0;
+        item.item = TEST_HISTORY_RESULTS[0];
+        item.addEventListener('history-checkbox-select', function() {
+          selectionCount++;
+        });
+
+        replaceBody(item);
+
+        // Checkbox should trigger selection.
+        MockInteractions.tap(item.$.checkbox);
+        assertEquals(1, selectionCount);
+
+        // Non-interactive text should trigger selection.
+        MockInteractions.tap(item.$['time-accessed']);
+        assertEquals(2, selectionCount);
+
+        // Menu button should not trigger selection.
+        MockInteractions.tap(item.$['menu-button']);
+        assertEquals(2, selectionCount);
       });
     });
   }

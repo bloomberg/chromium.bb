@@ -168,25 +168,34 @@ cr.define('md_history', function() {
     },
 
     /**
-     * When a history-item is selected the toolbar is notified and increases
-     * or decreases its count of selected items accordingly.
+     * Toggle item selection whenever the checkbox or any non-interactive part
+     * of the item is clicked.
      * @param {MouseEvent} e
      * @private
      */
-    onCheckboxSelected_: function(e) {
-      // TODO(calamity): Fire this event whenever |selected| changes.
+    onItemClick_: function(e) {
+      for (var i = 0; i < e.path.length; i++) {
+        var elem = e.path[i];
+        if (elem.id != 'checkbox' &&
+            (elem.nodeName == 'A' || elem.nodeName == 'BUTTON')) {
+          return;
+        }
+      }
+
+      if (this.selectionNotAllowed_())
+        return;
+
       this.fire('history-checkbox-select', {
         element: this,
         shiftKey: e.shiftKey,
       });
-      e.preventDefault();
     },
 
     /**
      * @param {MouseEvent} e
      * @private
      */
-    onCheckboxMousedown_: function(e) {
+    onItemMousedown_: function(e) {
       // Prevent shift clicking a checkbox from selecting text.
       if (e.shiftKey)
         e.preventDefault();

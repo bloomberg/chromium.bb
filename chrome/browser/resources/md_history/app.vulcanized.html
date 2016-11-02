@@ -3233,8 +3233,8 @@ button {
       <div id="date-accessed" class="card-title">
         [[cardTitle_(numberOfItems, item.dateRelativeDay, searchTerm)]]
       </div>
-      <div id="item-container">
-        <button is="paper-icon-button-light" id="checkbox" on-mousedown="onCheckboxMousedown_" on-click="onCheckboxSelected_" disabled="[[selectionNotAllowed_()]]" role="checkbox" aria-checked$="[[getAriaChecked_(selected)]]" aria-label$="[[getEntrySummary_(item)]]">
+      <div id="item-container" on-mousedown="onItemMousedown_" on-click="onItemClick_">
+        <button is="paper-icon-button-light" id="checkbox" disabled="[[selectionNotAllowed_()]]" role="checkbox" aria-checked$="[[getAriaChecked_(selected)]]" aria-label$="[[getEntrySummary_(item)]]">
           <div id="checkmark"></div>
         </button>
         <span id="time-accessed" on-mouseover="addTimeTitle_">
