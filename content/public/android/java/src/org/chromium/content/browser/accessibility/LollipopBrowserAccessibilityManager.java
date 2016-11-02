@@ -20,7 +20,7 @@ import org.chromium.content.browser.ContentViewCore;
 @JNINamespace("content")
 @TargetApi(Build.VERSION_CODES.LOLLIPOP)
 public class LollipopBrowserAccessibilityManager extends KitKatBrowserAccessibilityManager {
-    private SparseArray<AccessibilityAction> mAccessibilityActionMap =
+    private static SparseArray<AccessibilityAction> sAccessibilityActionMap =
             new SparseArray<AccessibilityAction>();
 
     LollipopBrowserAccessibilityManager(long nativeBrowserAccessibilityManagerAndroid,
@@ -116,10 +116,10 @@ public class LollipopBrowserAccessibilityManager extends KitKatBrowserAccessibil
         // The Lollipop SDK requires us to call AccessibilityNodeInfo.addAction with an
         // AccessibilityAction argument, but to simplify things and share more code with
         // the pre-L SDK, we just cache a set of AccessibilityActions mapped by their ID.
-        AccessibilityAction action = mAccessibilityActionMap.get(actionId);
+        AccessibilityAction action = sAccessibilityActionMap.get(actionId);
         if (action == null) {
             action = new AccessibilityAction(actionId, null);
-            mAccessibilityActionMap.put(actionId, action);
+            sAccessibilityActionMap.put(actionId, action);
         }
         node.addAction(action);
     }
