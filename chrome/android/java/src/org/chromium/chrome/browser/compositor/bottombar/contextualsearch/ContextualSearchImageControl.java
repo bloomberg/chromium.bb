@@ -48,10 +48,9 @@ public class ContextualSearchImageControl
         mExpandedPercentage = percentage;
 
         if (mQuickActionIconVisible || mThumbnailVisible) {
-            mOverlayPanelAnimation.cancelAnimation(this, AnimationType.STATIC_IMAGE_VISIBILITY);
 
             mStaticImageVisibilityPercentage = 1.f - percentage;
-            if (mStaticImageVisibilityPercentage < 1.f) getIconSpriteControl().setIsVisible(true);
+            getIconSpriteControl().setIsVisible(mStaticImageVisibilityPercentage < 1.f);
         }
     }
 
@@ -231,7 +230,6 @@ public class ContextualSearchImageControl
         mThumbnailVisible = false;
         getIconSpriteControl().setIsVisible(true);
         mStaticImageVisibilityPercentage = 0.f;
-        mExpandedPercentage = 0.f;
     }
 
     // ============================================================================================
@@ -262,7 +260,9 @@ public class ContextualSearchImageControl
     @Override
     public void setProperty(AnimationType prop, float val) {
         if (prop == AnimationType.STATIC_IMAGE_VISIBILITY) {
-            mStaticImageVisibilityPercentage = val;
+            // If the panel is expanded, #onUpdateFromPeekedToExpanded() is responsible for setting
+            // mStaticImageVisiblityPercentage.
+            if (mExpandedPercentage == 0.f) mStaticImageVisibilityPercentage = val;
         }
     }
 

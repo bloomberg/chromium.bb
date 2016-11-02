@@ -11,6 +11,7 @@ import android.view.ViewGroup;
 import android.view.animation.Interpolator;
 import android.widget.TextView;
 
+import org.chromium.base.VisibleForTesting;
 import org.chromium.chrome.R;
 import org.chromium.chrome.browser.compositor.bottombar.OverlayPanel;
 import org.chromium.chrome.browser.compositor.bottombar.OverlayPanelAnimation;
@@ -29,6 +30,12 @@ public class ContextualSearchCaptionControl extends OverlayPanelInflater
     private static final float ANIMATION_PERCENTAGE_COMPLETE = 1.f;
     private static final float EXPANDED_CAPTION_THRESHOLD = 0.5f;
     private static final Interpolator ANIMATION_INTERPOLATOR = new FastOutSlowInInterpolator();
+
+    /**
+     * The resource id for the string to display when the Bar is expanded.
+     */
+    @VisibleForTesting
+    public static final int EXPANED_CAPTION_ID = R.string.contextmenu_open_in_new_tab;
 
     /**
      * Animation properties.
@@ -58,11 +65,6 @@ public class ContextualSearchCaptionControl extends OverlayPanelInflater
     private boolean mShowingExpandedCaption;
 
     /**
-     * The resource id for the string to display when the Bar is expanded.
-     */
-    private final int mExpandedCaptionId;
-
-    /**
      * The caption visibility.
      */
     private boolean mIsVisible;
@@ -90,7 +92,6 @@ public class ContextualSearchCaptionControl extends OverlayPanelInflater
             DynamicResourceLoader resourceLoader) {
         super(panel, R.layout.contextual_search_caption_view, R.id.contextual_search_caption_view,
                 context, container, resourceLoader);
-        mExpandedCaptionId = R.string.contextmenu_open_in_new_tab;
     }
 
     /**
@@ -131,7 +132,7 @@ public class ContextualSearchCaptionControl extends OverlayPanelInflater
             } else if (percentage >= EXPANDED_CAPTION_THRESHOLD && !mShowingExpandedCaption) {
                 // Start showing the expanded caption.
                 mShowingExpandedCaption = true;
-                mCaption.setText(mExpandedCaptionId);
+                mCaption.setText(EXPANED_CAPTION_ID);
                 invalidate();
             }
 
@@ -141,14 +142,14 @@ public class ContextualSearchCaptionControl extends OverlayPanelInflater
         } else {
             // If the expanded caption is not showing, set the caption text to the expanded
             // caption.
-            if (!mShowingExpandedCaption) {
+            if (!mShowingExpandedCaption && percentage > 0.f) {
                 mShowingExpandedCaption = true;
                 // Inflate the caption view if it has not already been inflated
                 if (mCaption == null) {
                     inflate();
                 }
 
-                mCaption.setText(mExpandedCaptionId);
+                mCaption.setText(EXPANED_CAPTION_ID);
                 invalidate();
                 show();
             }
@@ -215,6 +216,14 @@ public class ContextualSearchCaptionControl extends OverlayPanelInflater
         mDidCapture = true;
 
         if (!mShowingExpandedCaption) animateTransitionIn();
+    }
+
+    /**
+     * @return The text currently showing in the caption view.
+     */
+    @VisibleForTesting
+    public CharSequence getCaptionText() {
+        return mCaption.getText();
     }
 
     // ============================================================================================

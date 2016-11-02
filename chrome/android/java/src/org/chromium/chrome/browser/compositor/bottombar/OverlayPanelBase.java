@@ -326,13 +326,6 @@ abstract class OverlayPanelBase {
     }
 
     /**
-     * @return The width of the Overlay Panel Content View in dp.
-     */
-    public float getContentViewWidthDp() {
-        return getContentViewWidthPx() * mPxToDp;
-    }
-
-    /**
      * @return The height of the Overlay Panel Content View in pixels.
      */
     public int getContentViewHeightPx() {
@@ -877,19 +870,16 @@ abstract class OverlayPanelBase {
         float completionPercent = startSize == 0.f && endSize == 0.f ? 0.f
                 : (height - startSize) / (endSize - startSize);
 
-        // Since the completion percent is being calculated it often will get close to 1.f or 0.f
-        // without ever reaching those values. If completionPercent is within completionPrecision,
-        // round up or down.
-        float completionPrecision = 0.002f;
-        if (completionPercent < completionPrecision) completionPercent = 0.f;
-        if (completionPercent > 1.f - completionPrecision) completionPercent = 1.f;
-
         return completionPercent;
     }
 
     /**
      * Updates the UI state for the closed to peeked transition (and vice
      * versa), according to a completion |percentage|.
+     *
+     * Note that this method may be called when the panel is going from expanded to peeked because
+     * the end panel state for the transitions is calculated based on the panel height. When the
+     * panel reaches the peeking height, the calculated end state is peeked.
      *
      * @param percentage The completion percentage.
      */
@@ -922,6 +912,10 @@ abstract class OverlayPanelBase {
     /**
      * Updates the UI state for the peeked to expanded transition (and vice
      * versa), according to a completion |percentage|.
+     *
+     * Note that this method will never be called with percentage = 0.f. Once the panel
+     * reaches the peeked state #updatePanelForCloseOrPeek() will be called instead of this method
+     * because the end panel state for transitions is calculated based on the panel height.
      *
      * @param percentage The completion percentage.
      */

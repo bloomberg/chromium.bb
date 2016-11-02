@@ -8,6 +8,7 @@ import android.content.Context;
 import android.view.ViewGroup;
 
 import org.chromium.base.ApiCompatibilityUtils;
+import org.chromium.base.VisibleForTesting;
 import org.chromium.chrome.R;
 import org.chromium.chrome.browser.compositor.bottombar.OverlayPanel;
 import org.chromium.chrome.browser.compositor.bottombar.OverlayPanelAnimation;
@@ -99,6 +100,11 @@ public class ContextualSearchBarControl
     private final float mEndButtonWidth;
 
     /**
+     * The percentage the panel is expanded. 1.f is fully expanded and 0.f is peeked.
+     */
+    private float mExpandedPercent;
+
+    /**
      * Constructs a new bottom bar control container by inflating views from XML.
      *
      * @param panel     The panel.
@@ -165,10 +171,29 @@ public class ContextualSearchBarControl
     }
 
     /**
+     * Updates this bar when in transition between closed to peeked states.
+     * @param percentage The percentage to the more opened state.
+     */
+    public void onUpdateFromCloseToPeek(float percentage) {
+        // #onUpdateFromPeekToExpanded() never reaches the 0.f value because this method is called
+        // instead. If the panel is fully peeked, call #onUpdateFromPeekToExpanded().
+        if (percentage == 1.f) onUpdateFromPeekToExpand(0.f);
+
+        // When the panel is completely closed the caption and static image should be hidden.
+        if (percentage == 0.f) {
+            mQuickActionControl.reset();
+            mCaptionControl.hide();
+            getImageControl().hideStaticImage(false);
+        }
+    }
+
+    /**
      * Updates this bar when in transition between peeked to expanded states.
      * @param percentage The percentage to the more opened state.
      */
     public void onUpdateFromPeekToExpand(float percentage) {
+        mExpandedPercent = percentage;
+
         // If there is a quick action, the divider line's appearance was animated when the quick
         // action was set.
         if (!getQuickActionControl().hasQuickAction()) {
@@ -202,7 +227,10 @@ public class ContextualSearchBarControl
         mQuickActionControl.reset();
         mSearchTermControl.setSearchTerm(searchTerm);
         resetSearchBarTermOpacity();
-        animateDividerLine(false);
+
+        // If the panel is expanded, the divider line should not be hidden. This may happen if the
+        // panel is opened before the search term is resolved.
+        if (mExpandedPercent == 0.f) animateDividerLine(false);
     }
 
     /**
@@ -249,6 +277,14 @@ public class ContextualSearchBarControl
      */
     public int getCaptionViewId() {
         return mCaptionControl.getViewId();
+    }
+
+    /**
+     * @return The text currently showing in the caption view.
+     */
+    @VisibleForTesting
+    public CharSequence getCaptionText() {
+        return mCaptionControl.getCaptionText();
     }
 
     /**
