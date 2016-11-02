@@ -693,7 +693,6 @@ class LayerTreeHostScrollTestCaseWithChild : public LayerTreeHostScrollTest {
         LayerImpl* scrolling_layer = impl->CurrentlyScrollingLayer();
         CHECK(scrolling_layer);
         impl->ScrollEnd(EndState().get());
-        impl->ClearCurrentlyScrollingLayerForTesting();
         CHECK(!impl->CurrentlyScrollingLayer());
         EXPECT_EQ(scrolling_layer->id(),
                   impl->active_tree()->LastScrolledLayerId());

@@ -2643,11 +2643,6 @@ InputHandler::ScrollStatus LayerTreeHostImpl::ScrollBegin(
       MainThreadScrollingReason::kNotScrollingOnMain;
   TRACE_EVENT0("cc", "LayerTreeHostImpl::ScrollBegin");
 
-  // On Mac a scroll begin with |inertial_phase| = true happens to handle a
-  // fling.
-  if (scroll_state->is_in_inertial_phase())
-    return FlingScrollBegin();
-
   ClearCurrentlyScrollingLayer();
 
   gfx::Point viewport_point(scroll_state->position_x(),
@@ -2815,6 +2810,7 @@ InputHandler::ScrollStatus LayerTreeHostImpl::ScrollAnimated(
   ScrollStateData scroll_state_data;
   scroll_state_data.position_x = viewport_point.x();
   scroll_state_data.position_y = viewport_point.y();
+  scroll_state_data.is_in_inertial_phase = true;
   ScrollState scroll_state(scroll_state_data);
 
   // ScrollAnimated is used for animated wheel scrolls. We find the first layer
@@ -2852,12 +2848,7 @@ InputHandler::ScrollStatus LayerTreeHostImpl::ScrollAnimated(
     }
   }
   scroll_state.set_is_ending(true);
-  // TODO(Sahel): Once the touchpad scroll latching for Non-mac devices is
-  // implemented, the current scrolling layer should not get cleared after
-  // each animation (crbug.com/526463).
   ScrollEnd(&scroll_state);
-  ClearCurrentlyScrollingLayer();
-
   return scroll_status;
 }
 
@@ -3177,12 +3168,7 @@ void LayerTreeHostImpl::ScrollEnd(ScrollState* scroll_state) {
 
   DistributeScrollDelta(scroll_state);
   browser_controls_offset_manager_->ScrollEnd();
-
-  if (scroll_state->is_in_inertial_phase()) {
-    // Only clear the currently scrolling layer if we know the scroll is done.
-    // A non-inertial scroll end could be followed by an inertial scroll.
-    ClearCurrentlyScrollingLayer();
-  }
+  ClearCurrentlyScrollingLayer();
 }
 
 InputHandler::ScrollStatus LayerTreeHostImpl::FlingScrollBegin() {
@@ -4031,11 +4017,7 @@ void LayerTreeHostImpl::ScrollOffsetAnimationFinished() {
   // TODO(majidvp): We should pass in the original starting scroll position here
   ScrollStateData scroll_state_data;
   ScrollState scroll_state(scroll_state_data);
-  // TODO(Sahel): Once the touchpad scroll latching for Non-mac devices is
-  // implemented, the current scrolling layer should not get cleared after
-  // each animation (crbug.com/526463).
   ScrollEnd(&scroll_state);
-  ClearCurrentlyScrollingLayer();
 }
 
 gfx::ScrollOffset LayerTreeHostImpl::GetScrollOffsetForAnimation(
