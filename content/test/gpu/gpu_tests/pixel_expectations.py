@@ -24,8 +24,6 @@ class PixelExpectations(GpuTestExpectations):
     self.Fail('Pixel_ScissorTestWithPreserveDrawingBuffer',
         ['android'], bug=521588)
 
-    self.Fail('Pixel_ScissorTestWithPreserveDrawingBufferES3',
-              ['mac'], bug=540039)
     self.Fail('Pixel_WebGLGreenTriangleES3',
               ['mac', ('intel', 0x116)], bug=540531)
 
