@@ -1420,6 +1420,7 @@ XVisualManager* XVisualManager::GetInstance() {
 
 XVisualManager::XVisualManager()
     : display_(gfx::GetXDisplay()),
+      default_visual_id_(0),
       system_visual_id_(0),
       transparent_visual_id_(0),
       using_software_rendering_(false),
@@ -1436,11 +1437,9 @@ XVisualManager::XVisualManager()
   using_compositing_wm_ = XGetSelectionOwner(display_, NET_WM_CM_S0) != None;
 
   // Choose the opaque visual.
-  XWindowAttributes attribs;
-  Window root = XDefaultRootWindow(display_);
-  Status status = XGetWindowAttributes(display_, root, &attribs);
-  DCHECK_NE(0, status);
-  system_visual_id_ = attribs.visual->visualid;
+  default_visual_id_ =
+      XVisualIDFromVisual(DefaultVisual(display_, DefaultScreen(display_)));
+  system_visual_id_ = default_visual_id_;
   DCHECK(system_visual_id_);
   DCHECK(visuals_.find(system_visual_id_) != visuals_.end());
 
@@ -1470,15 +1469,20 @@ void XVisualManager::ChooseVisualForWindow(bool want_argb_visual,
                                            bool* using_argb_visual) {
   bool use_argb = want_argb_visual && using_compositing_wm_ &&
                   (using_software_rendering_ || have_gpu_argb_visual_);
-  XVisualData& visual_data =
-      *visuals_[use_argb && transparent_visual_id_ ? transparent_visual_id_
-                                                   : system_visual_id_];
+  VisualID visual_id = use_argb && transparent_visual_id_
+                           ? transparent_visual_id_
+                           : system_visual_id_;
+  XVisualData& visual_data = *visuals_[visual_id];
+  const XVisualInfo& visual_info = visual_data.visual_info;
+
+  bool is_default_visual = visual_id == default_visual_id_;
+
   if (visual)
-    *visual = visual_data.visual_info.visual;
+    *visual = is_default_visual ? CopyFromParent : visual_info.visual;
   if (depth)
-    *depth = visual_data.visual_info.depth;
+    *depth = is_default_visual ? CopyFromParent : visual_info.depth;
   if (colormap)
-    *colormap = visual_data.GetColormap();
+    *colormap = is_default_visual ? CopyFromParent : visual_data.GetColormap();
   if (using_argb_visual)
     *using_argb_visual = use_argb;
 }
