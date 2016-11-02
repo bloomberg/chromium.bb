@@ -401,10 +401,6 @@ std::unique_ptr<NavigationUIData> ContentBrowserClient::GetNavigationUIData(
 }
 
 #if defined(OS_WIN)
-const wchar_t* ContentBrowserClient::GetResourceDllName() {
-  return nullptr;
-}
-
 bool ContentBrowserClient::PreSpawnRenderer(sandbox::TargetPolicy* policy) {
   return true;
 }

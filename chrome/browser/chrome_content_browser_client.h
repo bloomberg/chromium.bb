@@ -271,7 +271,6 @@ class ChromeContentBrowserClient : public content::ContentBrowserClient {
       content::FileDescriptorInfo* mappings) override;
 #endif  // defined(OS_ANDROID)
 #if defined(OS_WIN)
-  const wchar_t* GetResourceDllName() override;
   bool PreSpawnRenderer(sandbox::TargetPolicy* policy) override;
   base::string16 GetAppContainerSidForSandboxType(
       int sandbox_type) const override;

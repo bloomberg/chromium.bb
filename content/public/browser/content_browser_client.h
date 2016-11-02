@@ -762,9 +762,6 @@ class CONTENT_EXPORT ContentBrowserClient {
 #endif  // defined(OS_ANDROID)
 
 #if defined(OS_WIN)
-  // Returns the name of the dll that contains cursors and other resources.
-  virtual const wchar_t* GetResourceDllName();
-
   // This is called on the PROCESS_LAUNCHER thread before the renderer process
   // is launched. It gives the embedder a chance to add loosen the sandbox
   // policy.

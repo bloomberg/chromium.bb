@@ -2810,10 +2810,6 @@ void ChromeContentBrowserClient::GetAdditionalMappedFilesForChildProcess(
 #endif  // defined(OS_ANDROID)
 
 #if defined(OS_WIN)
-const wchar_t* ChromeContentBrowserClient::GetResourceDllName() {
-  return chrome::kBrowserResourcesDll;
-}
-
 base::string16 ChromeContentBrowserClient::GetAppContainerSidForSandboxType(
     int sandbox_type) const {
   base::string16 sid;
