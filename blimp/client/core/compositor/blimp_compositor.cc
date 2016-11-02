@@ -60,6 +60,62 @@ void RequireCallback(cc::SurfaceManager* manager,
 
 }  // namespace
 
+class BlimpCompositor::FrameTrackingSwapPromise : public cc::SwapPromise {
+ public:
+  FrameTrackingSwapPromise(
+      std::unique_ptr<cc::CopyOutputRequest> copy_request,
+      base::WeakPtr<BlimpCompositor> compositor,
+      scoped_refptr<base::SingleThreadTaskRunner> main_task_runner)
+      : copy_request_(std::move(copy_request)),
+        compositor_weak_ptr_(compositor),
+        main_task_runner_(std::move(main_task_runner)) {}
+  ~FrameTrackingSwapPromise() override = default;
+
+  // cc::SwapPromise implementation.
+  void DidActivate() override {}
+  void DidSwap(cc::CompositorFrameMetadata* metadata) override {
+    // DidSwap is called right before the CompositorFrame is submitted to the
+    // CompositorFrameSink, so we make sure to delay the copy request till that
+    // frame is submitted.
+    main_task_runner_->PostTask(
+        FROM_HERE,
+        base::Bind(&BlimpCompositor::MakeCopyRequestOnNextSwap,
+                   compositor_weak_ptr_, base::Passed(&copy_request_)));
+  }
+  DidNotSwapAction DidNotSwap(DidNotSwapReason reason) override {
+    switch (reason) {
+      case DidNotSwapReason::SWAP_FAILS:
+        // The swap will fail if there is no frame damage, we can queue the
+        // request right away.
+        main_task_runner_->PostTask(
+            FROM_HERE, base::Bind(&BlimpCompositor::RequestCopyOfOutput,
+                                  compositor_weak_ptr_,
+                                  base::Passed(&copy_request_), false));
+        break;
+      case DidNotSwapReason::COMMIT_FAILS:
+        // The commit fails when the host is going away.
+        break;
+      case DidNotSwapReason::COMMIT_NO_UPDATE:
+        main_task_runner_->PostTask(
+            FROM_HERE, base::Bind(&BlimpCompositor::RequestCopyOfOutput,
+                                  compositor_weak_ptr_,
+                                  base::Passed(&copy_request_), false));
+        break;
+      case DidNotSwapReason::ACTIVATION_FAILS:
+        // Failure to activate the pending tree implies either the host in going
+        // away or the FrameSink was lost.
+        break;
+    }
+    return DidNotSwapAction::BREAK_PROMISE;
+  }
+  int64_t TraceId() const override { return 0; }
+
+ private:
+  std::unique_ptr<cc::CopyOutputRequest> copy_request_;
+  base::WeakPtr<BlimpCompositor> compositor_weak_ptr_;
+  scoped_refptr<base::SingleThreadTaskRunner> main_task_runner_;
+};
+
 BlimpCompositor::BlimpCompositor(
     BlimpCompositorDependencies* compositor_dependencies,
     BlimpCompositorClient* client,
@@ -99,25 +155,50 @@ BlimpCompositor::~BlimpCompositor() {
 
   DestroyLayerTreeHost();
   GetEmbedderDeps()->GetSurfaceManager()->InvalidateFrameSinkId(frame_sink_id_);
-
-  CheckPendingCommitCounts(true /* flush */);
 }
 
 void BlimpCompositor::SetVisible(bool visible) {
   host_->SetVisible(visible);
-
-  if (!visible)
-    CheckPendingCommitCounts(true /* flush */);
 }
 
-void BlimpCompositor::NotifyWhenDonePendingCommits(base::Closure callback) {
+void BlimpCompositor::RequestCopyOfOutput(
+    std::unique_ptr<cc::CopyOutputRequest> copy_request,
+    bool flush_pending_update) {
+  // If we don't have a FrameSink, fail right away.
+  if (!surface_factory_)
+    return;
+
+  if (!use_threaded_layer_tree_host_) {
+    RequestCopyOfOutputDeprecated(std::move(copy_request));
+    return;
+  }
+
+  if (flush_pending_update) {
+    // Always request a commit when queuing the promise to make sure that any
+    // frames pending draws are cleared from the pipeline.
+    host_->QueueSwapPromise(base::MakeUnique<FrameTrackingSwapPromise>(
+        std::move(copy_request), weak_ptr_factory_.GetWeakPtr(),
+        base::ThreadTaskRunnerHandle::Get()));
+    host_->SetNeedsCommit();
+  } else if (!local_frame_id_.is_null()) {
+    // Make a copy request for the surface directly.
+    surface_factory_->RequestCopyOfSurface(local_frame_id_,
+                                           std::move(copy_request));
+  }
+}
+
+void BlimpCompositor::RequestCopyOfOutputDeprecated(
+    std::unique_ptr<cc::CopyOutputRequest> copy_request) {
+  DCHECK(!use_threaded_layer_tree_host_);
+
   if (outstanding_commits_ == 0) {
-    base::ThreadTaskRunnerHandle::Get()->PostTask(FROM_HERE, callback);
+    surface_factory_->RequestCopyOfSurface(local_frame_id_,
+                                           std::move(copy_request));
     return;
   }
 
   pending_commit_trackers_.push_back(
-      std::make_pair(outstanding_commits_, callback));
+      std::make_pair(outstanding_commits_, std::move(copy_request)));
 }
 
 void BlimpCompositor::UpdateLayerTreeHost() {
@@ -147,12 +228,23 @@ void BlimpCompositor::DidInitializeCompositorFrameSink() {
 }
 
 void BlimpCompositor::DidCommitAndDrawFrame() {
-  BlimpStats::GetInstance()->Add(BlimpStats::COMMIT, 1);
+  if (use_threaded_layer_tree_host_)
+    return;
 
   DCHECK_GT(outstanding_commits_, 0U);
   outstanding_commits_--;
 
-  CheckPendingCommitCounts(false /* flush */);
+  for (auto it = pending_commit_trackers_.begin();
+       it != pending_commit_trackers_.end();) {
+    if (--it->first == 0) {
+      if (surface_factory_)
+        surface_factory_->RequestCopyOfSurface(local_frame_id_,
+                                               std::move(it->second));
+      it = pending_commit_trackers_.erase(it);
+    } else {
+      ++it;
+    }
+  }
 }
 
 void BlimpCompositor::SetProtoReceiver(ProtoReceiver* receiver) {
@@ -181,8 +273,8 @@ void BlimpCompositor::OnCompositorMessageReceived(
 
   UMA_HISTOGRAM_MEMORY_KB("Blimp.Compositor.CommitSizeKb",
                           (float)message->ByteSize() / 1024);
+  BlimpStats::GetInstance()->Add(BlimpStats::COMMIT, 1);
   pending_frame_update_ = std::move(message);
-  outstanding_commits_++;
   host_->SetNeedsAnimate();
 }
 
@@ -196,6 +288,7 @@ void BlimpCompositor::HandleCompositorMessageToImpl(
 
   if (to_impl_proto.message_type() ==
       cc::proto::CompositorMessageToImpl::START_COMMIT) {
+    BlimpStats::GetInstance()->Add(BlimpStats::COMMIT, 1);
     outstanding_commits_++;
   }
 
@@ -293,6 +386,12 @@ void BlimpCompositor::SubmitCompositorFrame(cc::CompositorFrame frame) {
       local_frame_id_, std::move(frame),
       base::Bind(&BlimpCompositor::SubmitCompositorFrameAck,
                  weak_ptr_factory_.GetWeakPtr()));
+
+  for (auto& copy_request : copy_requests_for_next_swap_) {
+    surface_factory_->RequestCopyOfSurface(local_frame_id_,
+                                           std::move(copy_request));
+  }
+  copy_requests_for_next_swap_.clear();
 }
 
 void BlimpCompositor::SubmitCompositorFrameAck() {
@@ -301,6 +400,11 @@ void BlimpCompositor::SubmitCompositorFrameAck() {
       FROM_HERE,
       base::Bind(&BlimpCompositorFrameSinkProxyClient::SubmitCompositorFrameAck,
                  proxy_client_));
+}
+
+void BlimpCompositor::MakeCopyRequestOnNextSwap(
+    std::unique_ptr<cc::CopyOutputRequest> copy_request) {
+  copy_requests_for_next_swap_.push_back(std::move(copy_request));
 }
 
 void BlimpCompositor::UnbindProxyClient() {
@@ -357,7 +461,6 @@ void BlimpCompositor::DestroyDelegatedContent() {
 
 void BlimpCompositor::CreateLayerTreeHost() {
   DCHECK(!host_);
-  VLOG(1) << "Creating LayerTreeHost.";
 
   // Create the LayerTreeHost
   cc::LayerTreeHostInProcess::InitParams params;
@@ -389,7 +492,6 @@ void BlimpCompositor::CreateLayerTreeHost() {
 
 void BlimpCompositor::DestroyLayerTreeHost() {
   DCHECK(host_);
-  VLOG(1) << "Destroying LayerTreeHost.";
 
   // Tear down the output surface connection with the old LayerTreeHost
   // instance.
@@ -405,18 +507,6 @@ void BlimpCompositor::DestroyLayerTreeHost() {
 
   // Make sure we don't have a receiver at this point.
   DCHECK(!remote_proto_channel_receiver_);
-}
-
-void BlimpCompositor::CheckPendingCommitCounts(bool flush) {
-  for (auto it = pending_commit_trackers_.begin();
-       it != pending_commit_trackers_.end();) {
-    if (flush || --it->first == 0) {
-      it->second.Run();
-      it = pending_commit_trackers_.erase(it);
-    } else {
-      ++it;
-    }
-  }
 }
 
 }  // namespace client

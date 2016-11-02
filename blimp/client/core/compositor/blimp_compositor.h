@@ -36,6 +36,7 @@ class CompositorMessage;
 
 class CompositorStateDeserializer;
 class ContextProvider;
+class CopyOutputRequest;
 class Layer;
 class LayerTreeHost;
 class LayerTreeSettings;
@@ -90,10 +91,12 @@ class BlimpCompositor : public cc::LayerTreeHostClient,
 
   virtual void SetVisible(bool visible);
 
-  // Notifies |callback| when all pending commits have been drawn to the screen.
-  // If this compositor is destroyed or becomes hidden |callback| will be
-  // notified.
-  void NotifyWhenDonePendingCommits(base::Closure callback);
+  // Requests a copy of the compositor frame.
+  // Setting |flush_pending_update| to true ensures that if a frame update on
+  // the main thread is pending, then it is drawn before copying from the
+  // surface.
+  void RequestCopyOfOutput(std::unique_ptr<cc::CopyOutputRequest> copy_request,
+                           bool flush_pending_update);
 
   // Called to forward the compositor message from the remote server
   // LayerTreeHost of the render widget for this compositor.
@@ -109,6 +112,7 @@ class BlimpCompositor : public cc::LayerTreeHostClient,
 
  private:
   friend class BlimpCompositorForTesting;
+  class FrameTrackingSwapPromise;
 
   // LayerTreeHostClient implementation.
   void WillBeginMainFrame() override {}
@@ -176,11 +180,6 @@ class BlimpCompositor : public cc::LayerTreeHostClient,
   // associated state.
   void DestroyLayerTreeHost();
 
-  // Updates |pending_commit_trackers_|, decrementing the count and, if 0,
-  // notifying the callback.  If |flush| is true, flushes all entries regardless
-  // of the count.
-  void CheckPendingCommitCounts(bool flush);
-
   // Acks a submitted CompositorFrame when it has been processed and another
   // frame should be started.
   void SubmitCompositorFrameAck();
@@ -192,6 +191,12 @@ class BlimpCompositor : public cc::LayerTreeHostClient,
   // Set to true if we are using a LayerTreeHostInProcess to process frame
   // updates from the engine.
   const bool use_threaded_layer_tree_host_;
+
+  void MakeCopyRequestOnNextSwap(
+      std::unique_ptr<cc::CopyOutputRequest> copy_request);
+
+  void RequestCopyOfOutputDeprecated(
+      std::unique_ptr<cc::CopyOutputRequest> copy_request);
 
   BlimpCompositorClient* client_;
 
@@ -224,16 +229,21 @@ class BlimpCompositor : public cc::LayerTreeHostClient,
   // to |render_widget_id_|.
   cc::RemoteProtoChannel::ProtoReceiver* remote_proto_channel_receiver_;
 
+  std::vector<std::unique_ptr<cc::CopyOutputRequest>>
+      copy_requests_for_next_swap_;
+
   // The number of times a START_COMMIT proto has been received but a call to
   // DidCommitAndDrawFrame hasn't been seen.  This should track the number of
   // outstanding commits.
   size_t outstanding_commits_;
 
-  // When NotifyWhenDonePendingCommitsis called |outstanding_commits_| is copied
-  // along with the |callback| into this vector.  Each time
-  // DidCommitAndDrawFrame is called these entries get decremented.  If they hit
-  // 0 the callback is triggered.
-  std::vector<std::pair<size_t, base::Closure>> pending_commit_trackers_;
+  // When RequestCopyOfOutput is called with a request to flush any pending
+  // updates, |outstanding_commits_| is copied along with the |copy_request|
+  // into this vector. Each time DidCommitAndDrawFrame is called these entries
+  // get decremented.  If they hit 0 the copy request is queued for the current
+  // |local_frame_id_|.
+  std::vector<std::pair<size_t, std::unique_ptr<cc::CopyOutputRequest>>>
+      pending_commit_trackers_;
 
   // Stores a frame update received from the engine, when a threaded
   // LayerTreeHost is used. There can only be a single frame in flight at any

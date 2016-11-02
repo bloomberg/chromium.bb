@@ -7,6 +7,7 @@
 #include "base/memory/ptr_util.h"
 #include "blimp/client/core/compositor/blimp_compositor_dependencies.h"
 #include "blimp/client/core/render_widget/blimp_document.h"
+#include "cc/output/copy_output_request.h"
 #include "cc/proto/compositor_message.pb.h"
 
 namespace blimp {
@@ -44,14 +45,14 @@ bool BlimpDocumentManager::OnTouchEvent(const ui::MotionEvent& motion_event) {
   return false;
 }
 
-void BlimpDocumentManager::NotifyWhenDonePendingCommits(
-    base::Closure callback) {
-  if (!active_document_ || !visible_) {
-    callback.Run();
+void BlimpDocumentManager::RequestCopyOfCompositorOutput(
+    std::unique_ptr<cc::CopyOutputRequest> copy_request,
+    bool flush_pending_update) {
+  if (!active_document_)
     return;
-  }
 
-  active_document_->GetCompositor()->NotifyWhenDonePendingCommits(callback);
+  active_document_->GetCompositor()->RequestCopyOfOutput(
+      std::move(copy_request), flush_pending_update);
 }
 
 std::unique_ptr<BlimpDocument> BlimpDocumentManager::CreateBlimpDocument(

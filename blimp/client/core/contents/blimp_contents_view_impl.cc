@@ -15,6 +15,16 @@
 namespace blimp {
 namespace client {
 
+namespace {
+
+void SendReadbackResult(
+    const BlimpContentsView::ReadbackRequestCallback& callback,
+    std::unique_ptr<cc::CopyOutputResult> result) {
+  callback.Run(result->TakeBitmap());
+}
+
+}  // namespace
+
 BlimpContentsViewImpl::BlimpContentsViewImpl(
     BlimpContentsImpl* blimp_contents,
     scoped_refptr<cc::Layer> contents_layer)
@@ -42,24 +52,10 @@ bool BlimpContentsViewImpl::OnTouchEvent(const ui::MotionEvent& motion_event) {
 
 void BlimpContentsViewImpl::CopyFromCompositingSurface(
     const ReadbackRequestCallback& callback) {
-  blimp_contents_->document_manager()->NotifyWhenDonePendingCommits(
-      base::Bind(&BlimpContentsViewImpl::StartReadbackRequest,
-                 weak_ptr_factory_.GetWeakPtr(), callback));
-}
-
-void BlimpContentsViewImpl::StartReadbackRequest(
-    const ReadbackRequestCallback& callback) {
-  std::unique_ptr<cc::CopyOutputRequest> request =
+  blimp_contents_->document_manager()->RequestCopyOfCompositorOutput(
       cc::CopyOutputRequest::CreateBitmapRequest(
-          base::Bind(&BlimpContentsViewImpl::OnReadbackComplete,
-                     weak_ptr_factory_.GetWeakPtr(), callback));
-  contents_layer_->RequestCopyOfOutput(std::move(request));
-}
-
-void BlimpContentsViewImpl::OnReadbackComplete(
-    const ReadbackRequestCallback& callback,
-    std::unique_ptr<cc::CopyOutputResult> result) {
-  callback.Run(result->TakeBitmap());
+          base::Bind(&SendReadbackResult, callback)),
+      true);
 }
 
 }  // namespace client
