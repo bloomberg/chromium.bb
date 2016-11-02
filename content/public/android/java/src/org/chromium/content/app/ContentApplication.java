@@ -9,6 +9,7 @@ import android.os.MessageQueue;
 
 import org.chromium.base.BaseChromiumApplication;
 import org.chromium.base.VisibleForTesting;
+import org.chromium.base.annotations.MainDex;
 import org.chromium.base.library_loader.LibraryLoader;
 import org.chromium.content.browser.TracingControllerAndroid;
 
@@ -16,6 +17,7 @@ import org.chromium.content.browser.TracingControllerAndroid;
  * Basic application functionality that should be shared among all browser applications
  * based on the content layer.
  */
+@MainDex
 public abstract class ContentApplication extends BaseChromiumApplication {
     private TracingControllerAndroid mTracingController;
     private boolean mLibraryDependenciesInitialized;

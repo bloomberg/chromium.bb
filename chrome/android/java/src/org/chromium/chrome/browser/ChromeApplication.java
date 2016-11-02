@@ -20,6 +20,7 @@ import org.chromium.base.ContextUtils;
 import org.chromium.base.ThreadUtils;
 import org.chromium.base.TraceEvent;
 import org.chromium.base.annotations.CalledByNative;
+import org.chromium.base.annotations.MainDex;
 import org.chromium.base.annotations.SuppressFBWarnings;
 import org.chromium.base.library_loader.ProcessInitException;
 import org.chromium.chrome.browser.banners.AppDetailsDelegate;
@@ -70,6 +71,7 @@ import org.chromium.policy.CombinedPolicyProvider;
  * Basic application functionality that should be shared among all browser applications that use
  * chrome layer.
  */
+@MainDex
 public class ChromeApplication extends ContentApplication {
     public static final String COMMAND_LINE_FILE = "chrome-command-line";
 
