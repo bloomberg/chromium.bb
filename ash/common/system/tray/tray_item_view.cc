@@ -82,10 +82,11 @@ int TrayItemView::GetAnimationDurationMS() {
 }
 
 gfx::Size TrayItemView::GetPreferredSize() const {
+  DCHECK_EQ(1, child_count());
   gfx::Size size;
   if (MaterialDesignController::UseMaterialDesignSystemIcons()) {
     gfx::Size inner_size = views::View::GetPreferredSize();
-    if (image_view_ && child_count() == 1)
+    if (image_view_)
       inner_size = gfx::Size(kTrayIconSize, kTrayIconSize);
     gfx::Rect rect(inner_size);
     rect.Inset(gfx::Insets(-GetTrayConstant(TRAY_IMAGE_ITEM_PADDING)));

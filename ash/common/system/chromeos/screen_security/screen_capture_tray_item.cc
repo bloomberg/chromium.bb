@@ -37,11 +37,6 @@ ScreenCaptureTrayItem::~ScreenCaptureTrayItem() {
   WmShell::Get()->system_tray_notifier()->RemoveScreenCaptureObserver(this);
 }
 
-views::View* ScreenCaptureTrayItem::CreateTrayView(LoginStatus status) {
-  set_tray_view(new tray::ScreenTrayView(this));
-  return tray_view();
-}
-
 views::View* ScreenCaptureTrayItem::CreateDefaultView(LoginStatus status) {
   set_default_view(new tray::ScreenStatusView(
       this, screen_capture_status_,

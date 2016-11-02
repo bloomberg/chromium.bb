@@ -36,6 +36,7 @@ class ASH_EXPORT TrayItemView : public views::View,
   static void DisableAnimationsForTest();
 
   // Convenience function for creating a child Label or ImageView.
+  // Only one of the two should be called.
   void CreateLabel();
   void CreateImageView();
 
@@ -67,6 +68,7 @@ class ASH_EXPORT TrayItemView : public views::View,
 
   SystemTrayItem* owner_;
   std::unique_ptr<gfx::SlideAnimation> animation_;
+  // Only one of |label_| and |image_view_| should be non-null.
   views::Label* label_;
   views::ImageView* image_view_;
 

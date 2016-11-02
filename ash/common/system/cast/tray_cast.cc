@@ -348,10 +348,6 @@ class CastTrayView : public TrayItemView {
   explicit CastTrayView(SystemTrayItem* tray_item);
   ~CastTrayView() override;
 
-  // Called when the tray alignment changes so that the icon can recenter
-  // itself.
-  void UpdateAlignment(ShelfAlignment alignment);
-
  private:
   DISALLOW_COPY_AND_ASSIGN(CastTrayView);
 };
@@ -370,15 +366,6 @@ CastTrayView::CastTrayView(SystemTrayItem* tray_item)
 }
 
 CastTrayView::~CastTrayView() {}
-
-void CastTrayView::UpdateAlignment(ShelfAlignment alignment) {
-  // Center the item dependent on the orientation of the shelf.
-  views::BoxLayout::Orientation layout = IsHorizontalAlignment(alignment)
-                                             ? views::BoxLayout::kHorizontal
-                                             : views::BoxLayout::kVertical;
-  SetLayoutManager(new views::BoxLayout(layout, 0, 0, 0));
-  Layout();
-}
 
 // This view displays a list of cast receivers that can be clicked on and casted
 // to. It is activated by clicking on the chevron inside of
@@ -679,11 +666,6 @@ void TrayCast::UpdatePrimaryView() {
 void TrayCast::OnCastingSessionStartedOrStopped(bool started) {
   is_casting_ = started;
   UpdatePrimaryView();
-}
-
-void TrayCast::UpdateAfterShelfAlignmentChange(ShelfAlignment alignment) {
-  if (tray_)
-    tray_->UpdateAlignment(alignment);
 }
 
 }  // namespace ash

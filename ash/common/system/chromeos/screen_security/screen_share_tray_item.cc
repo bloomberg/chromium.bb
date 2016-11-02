@@ -33,11 +33,6 @@ ScreenShareTrayItem::~ScreenShareTrayItem() {
   WmShell::Get()->system_tray_notifier()->RemoveScreenShareObserver(this);
 }
 
-views::View* ScreenShareTrayItem::CreateTrayView(LoginStatus status) {
-  set_tray_view(new tray::ScreenTrayView(this));
-  return tray_view();
-}
-
 views::View* ScreenShareTrayItem::CreateDefaultView(LoginStatus status) {
   set_default_view(new tray::ScreenStatusView(
       this,

@@ -25,11 +25,10 @@ class MultiProfileMediaTrayView : public TrayItemView,
   explicit MultiProfileMediaTrayView(SystemTrayItem* system_tray_item)
       : TrayItemView(system_tray_item) {
     SetLayoutManager(new views::FillLayout);
-    views::ImageView* icon = new views::ImageView;
+    CreateImageView();
     ui::ResourceBundle& bundle = ui::ResourceBundle::GetSharedInstance();
-    icon->SetImage(
+    image_view()->SetImage(
         bundle.GetImageNamed(IDR_AURA_UBER_TRAY_RECORDING).ToImageSkia());
-    AddChildView(icon);
     OnMediaCaptureChanged();
     WmShell::Get()->system_tray_notifier()->AddMediaCaptureObserver(this);
     set_id(VIEW_ID_MEDIA_TRAY_VIEW);

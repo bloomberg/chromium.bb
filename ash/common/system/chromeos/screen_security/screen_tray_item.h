@@ -93,9 +93,6 @@ class ASH_EXPORT ScreenTrayItem : public SystemTrayItem {
   ~ScreenTrayItem() override;
 
   tray::ScreenTrayView* tray_view() { return tray_view_; }
-  void set_tray_view(tray::ScreenTrayView* tray_view) {
-    tray_view_ = tray_view;
-  }
 
   tray::ScreenStatusView* default_view() { return default_view_; }
   void set_default_view(tray::ScreenStatusView* default_view) {
@@ -122,11 +119,10 @@ class ASH_EXPORT ScreenTrayItem : public SystemTrayItem {
   virtual void RecordStoppedFromNotificationViewMetric() = 0;
 
   // Overridden from SystemTrayItem.
-  views::View* CreateTrayView(LoginStatus status) override = 0;
+  views::View* CreateTrayView(LoginStatus status) override;
   views::View* CreateDefaultView(LoginStatus status) override = 0;
   void DestroyTrayView() override;
   void DestroyDefaultView() override;
-  void UpdateAfterShelfAlignmentChange(ShelfAlignment alignment) override;
 
  private:
   tray::ScreenTrayView* tray_view_;

@@ -183,6 +183,11 @@ void ScreenTrayItem::Stop() {
   callback.Run();
 }
 
+views::View* ScreenTrayItem::CreateTrayView(LoginStatus status) {
+  tray_view_ = new tray::ScreenTrayView(this);
+  return tray_view_;
+}
+
 void ScreenTrayItem::RecordStoppedFromDefaultViewMetric() {}
 
 void ScreenTrayItem::RecordStoppedFromNotificationViewMetric() {}
@@ -193,18 +198,6 @@ void ScreenTrayItem::DestroyTrayView() {
 
 void ScreenTrayItem::DestroyDefaultView() {
   default_view_ = NULL;
-}
-
-void ScreenTrayItem::UpdateAfterShelfAlignmentChange(ShelfAlignment alignment) {
-  if (!tray_view_)
-    return;
-
-  // Center the item dependent on the orientation of the shelf.
-  views::BoxLayout::Orientation layout = IsHorizontalAlignment(alignment)
-                                             ? views::BoxLayout::kHorizontal
-                                             : views::BoxLayout::kVertical;
-  tray_view_->SetLayoutManager(new views::BoxLayout(layout, 0, 0, 0));
-  tray_view_->Layout();
 }
 
 }  // namespace ash

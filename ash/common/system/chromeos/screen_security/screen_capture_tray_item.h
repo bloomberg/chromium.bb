@@ -25,7 +25,6 @@ class ASH_EXPORT ScreenCaptureTrayItem : public ScreenTrayItem,
 
  private:
   // Overridden from SystemTrayItem.
-  views::View* CreateTrayView(LoginStatus status) override;
   views::View* CreateDefaultView(LoginStatus status) override;
 
   // Overridden from ScreenTrayItem.
