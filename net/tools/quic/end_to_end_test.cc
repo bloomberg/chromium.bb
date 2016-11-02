@@ -655,7 +655,7 @@ TEST_P(EndToEndTest, SimpleRequestResponse) {
   ASSERT_TRUE(Initialize());
 
   EXPECT_EQ(kFooResponseBody, client_->SendSynchronousRequest("/foo"));
-  EXPECT_EQ(200u, client_->response_headers()->parsed_response_code());
+  EXPECT_EQ("200", client_->response_headers()->find(":status")->second);
   EXPECT_EQ(2, client_->client()->GetNumSentClientHellos());
 }
 
@@ -664,7 +664,7 @@ TEST_P(EndToEndTest, SimpleRequestResponseWithLargeReject) {
   ASSERT_TRUE(Initialize());
 
   EXPECT_EQ(kFooResponseBody, client_->SendSynchronousRequest("/foo"));
-  EXPECT_EQ(200u, client_->response_headers()->parsed_response_code());
+  EXPECT_EQ("200", client_->response_headers()->find(":status")->second);
   EXPECT_EQ(3, client_->client()->GetNumSentClientHellos());
 }
 
@@ -676,7 +676,7 @@ TEST_P(EndToEndTest, DISABLED_SimpleRequestResponsev6) {
   ASSERT_TRUE(Initialize());
 
   EXPECT_EQ(kFooResponseBody, client_->SendSynchronousRequest("/foo"));
-  EXPECT_EQ(200u, client_->response_headers()->parsed_response_code());
+  EXPECT_EQ("200", client_->response_headers()->find(":status")->second);
 }
 
 TEST_P(EndToEndTest, SeparateFinPacket) {
@@ -690,7 +690,7 @@ TEST_P(EndToEndTest, SeparateFinPacket) {
   client_->SendData("", true);
   client_->WaitForResponse();
   EXPECT_EQ(kFooResponseBody, client_->response_body());
-  EXPECT_EQ(200u, client_->response_headers()->parsed_response_code());
+  EXPECT_EQ("200", client_->response_headers()->find(":status")->second);
 
   // Now do the same thing but with a content length.
   request.AddBody("foo", true);
@@ -698,16 +698,16 @@ TEST_P(EndToEndTest, SeparateFinPacket) {
   client_->SendData("", true);
   client_->WaitForResponse();
   EXPECT_EQ(kFooResponseBody, client_->response_body());
-  EXPECT_EQ(200u, client_->response_headers()->parsed_response_code());
+  EXPECT_EQ("200", client_->response_headers()->find(":status")->second);
 }
 
 TEST_P(EndToEndTest, MultipleRequestResponse) {
   ASSERT_TRUE(Initialize());
 
   EXPECT_EQ(kFooResponseBody, client_->SendSynchronousRequest("/foo"));
-  EXPECT_EQ(200u, client_->response_headers()->parsed_response_code());
+  EXPECT_EQ("200", client_->response_headers()->find(":status")->second);
   EXPECT_EQ(kBarResponseBody, client_->SendSynchronousRequest("/bar"));
-  EXPECT_EQ(200u, client_->response_headers()->parsed_response_code());
+  EXPECT_EQ("200", client_->response_headers()->find(":status")->second);
 }
 
 TEST_P(EndToEndTest, MultipleClients) {
@@ -724,12 +724,12 @@ TEST_P(EndToEndTest, MultipleClients) {
   client_->SendData("bar", true);
   client_->WaitForResponse();
   EXPECT_EQ(kFooResponseBody, client_->response_body());
-  EXPECT_EQ(200u, client_->response_headers()->parsed_response_code());
+  EXPECT_EQ("200", client_->response_headers()->find(":status")->second);
 
   client2->SendData("eep", true);
   client2->WaitForResponse();
   EXPECT_EQ(kFooResponseBody, client2->response_body());
-  EXPECT_EQ(200u, client2->response_headers()->parsed_response_code());
+  EXPECT_EQ("200", client2->response_headers()->find(":status")->second);
 }
 
 TEST_P(EndToEndTest, RequestOverMultiplePackets) {
@@ -740,7 +740,7 @@ TEST_P(EndToEndTest, RequestOverMultiplePackets) {
   ASSERT_TRUE(Initialize());
 
   EXPECT_EQ(kBarResponseBody, client_->SendSynchronousRequest(huge_request));
-  EXPECT_EQ(200u, client_->response_headers()->parsed_response_code());
+  EXPECT_EQ("200", client_->response_headers()->find(":status")->second);
 }
 
 TEST_P(EndToEndTest, MultiplePacketsRandomOrder) {
@@ -753,7 +753,7 @@ TEST_P(EndToEndTest, MultiplePacketsRandomOrder) {
   SetReorderPercentage(50);
 
   EXPECT_EQ(kBarResponseBody, client_->SendSynchronousRequest(huge_request));
-  EXPECT_EQ(200u, client_->response_headers()->parsed_response_code());
+  EXPECT_EQ("200", client_->response_headers()->find(":status")->second);
 }
 
 TEST_P(EndToEndTest, PostMissingBytes) {
@@ -769,7 +769,7 @@ TEST_P(EndToEndTest, PostMissingBytes) {
   client_->SendCustomSynchronousRequest(request);
   EXPECT_EQ(QuicSimpleServerStream::kErrorResponseBody,
             client_->response_body());
-  EXPECT_EQ(500u, client_->response_headers()->parsed_response_code());
+  EXPECT_EQ("500", client_->response_headers()->find(":status")->second);
 }
 
 TEST_P(EndToEndTest, LargePostNoPacketLoss) {
@@ -1202,7 +1202,7 @@ TEST_P(EndToEndTest, LargeHeaders) {
   } else {
     EXPECT_EQ(QUIC_STREAM_NO_ERROR, client_->stream_error());
     EXPECT_EQ(kFooResponseBody, client_->response_body());
-    EXPECT_EQ(200u, client_->response_headers()->parsed_response_code());
+    EXPECT_EQ("200", client_->response_headers()->find(":status")->second);
   }
   EXPECT_EQ(QUIC_NO_ERROR, client_->connection_error());
 }
@@ -1224,7 +1224,7 @@ TEST_P(EndToEndTest, EarlyResponseWithQuicStreamNoError) {
   request.set_skip_message_validation(true);
   client_->SendCustomSynchronousRequest(request);
   EXPECT_EQ("bad", client_->response_body());
-  EXPECT_EQ(500u, client_->response_headers()->parsed_response_code());
+  EXPECT_EQ("500", client_->response_headers()->find(":status")->second);
   EXPECT_EQ(QUIC_STREAM_NO_ERROR, client_->stream_error());
   EXPECT_EQ(QUIC_NO_ERROR, client_->connection_error());
 }
@@ -1506,7 +1506,7 @@ TEST_P(EndToEndTest, 0ByteConnectionId) {
   ASSERT_TRUE(Initialize());
 
   EXPECT_EQ(kFooResponseBody, client_->SendSynchronousRequest("/foo"));
-  EXPECT_EQ(200u, client_->response_headers()->parsed_response_code());
+  EXPECT_EQ("200", client_->response_headers()->find(":status")->second);
 
   QuicPacketHeader* header = QuicConnectionPeer::GetLastHeader(
       client_->client()->session()->connection());
@@ -1519,7 +1519,7 @@ TEST_P(EndToEndTest, 8ByteConnectionId) {
   ASSERT_TRUE(Initialize());
 
   EXPECT_EQ(kFooResponseBody, client_->SendSynchronousRequest("/foo"));
-  EXPECT_EQ(200u, client_->response_headers()->parsed_response_code());
+  EXPECT_EQ("200", client_->response_headers()->find(":status")->second);
   QuicPacketHeader* header = QuicConnectionPeer::GetLastHeader(
       client_->client()->session()->connection());
   EXPECT_EQ(PACKET_8BYTE_CONNECTION_ID,
@@ -1532,7 +1532,7 @@ TEST_P(EndToEndTest, 15ByteConnectionId) {
 
   // Our server is permissive and allows for out of bounds values.
   EXPECT_EQ(kFooResponseBody, client_->SendSynchronousRequest("/foo"));
-  EXPECT_EQ(200u, client_->response_headers()->parsed_response_code());
+  EXPECT_EQ("200", client_->response_headers()->find(":status")->second);
   QuicPacketHeader* header = QuicConnectionPeer::GetLastHeader(
       client_->client()->session()->connection());
   EXPECT_EQ(PACKET_8BYTE_CONNECTION_ID,
@@ -1544,10 +1544,10 @@ TEST_P(EndToEndTest, ResetConnection) {
   client_->client()->WaitForCryptoHandshakeConfirmed();
 
   EXPECT_EQ(kFooResponseBody, client_->SendSynchronousRequest("/foo"));
-  EXPECT_EQ(200u, client_->response_headers()->parsed_response_code());
+  EXPECT_EQ("200", client_->response_headers()->find(":status")->second);
   client_->ResetConnection();
   EXPECT_EQ(kBarResponseBody, client_->SendSynchronousRequest("/bar"));
-  EXPECT_EQ(200u, client_->response_headers()->parsed_response_code());
+  EXPECT_EQ("200", client_->response_headers()->find(":status")->second);
 }
 
 TEST_P(EndToEndTest, MaxStreamsUberTest) {
@@ -1631,7 +1631,7 @@ TEST_P(EndToEndTest, ConnectionMigrationClientIPChanged) {
   ASSERT_TRUE(Initialize());
 
   EXPECT_EQ(kFooResponseBody, client_->SendSynchronousRequest("/foo"));
-  EXPECT_EQ(200u, client_->response_headers()->parsed_response_code());
+  EXPECT_EQ("200", client_->response_headers()->find(":status")->second);
 
   // Store the client IP address which was used to send the first request.
   IPAddress old_host = client_->client()->GetLatestClientAddress().address();
@@ -1643,7 +1643,7 @@ TEST_P(EndToEndTest, ConnectionMigrationClientIPChanged) {
 
   // Send a request using the new socket.
   EXPECT_EQ(kBarResponseBody, client_->SendSynchronousRequest("/bar"));
-  EXPECT_EQ(200u, client_->response_headers()->parsed_response_code());
+  EXPECT_EQ("200", client_->response_headers()->find(":status")->second);
 }
 
 TEST_P(EndToEndTest, ConnectionMigrationClientPortChanged) {
@@ -1653,7 +1653,7 @@ TEST_P(EndToEndTest, ConnectionMigrationClientPortChanged) {
   ASSERT_TRUE(Initialize());
 
   EXPECT_EQ(kFooResponseBody, client_->SendSynchronousRequest("/foo"));
-  EXPECT_EQ(200u, client_->response_headers()->parsed_response_code());
+  EXPECT_EQ("200", client_->response_headers()->find(":status")->second);
 
   // Store the client address which was used to send the first request.
   IPEndPoint old_address = client_->client()->GetLatestClientAddress();
@@ -1689,7 +1689,7 @@ TEST_P(EndToEndTest, ConnectionMigrationClientPortChanged) {
 
   // Send a second request, using the new FD.
   EXPECT_EQ(kBarResponseBody, client_->SendSynchronousRequest("/bar"));
-  EXPECT_EQ(200u, client_->response_headers()->parsed_response_code());
+  EXPECT_EQ("200", client_->response_headers()->find(":status")->second);
 
   // Verify that the client's ephemeral port is different.
   IPEndPoint new_address = client_->client()->GetLatestClientAddress();
@@ -1849,7 +1849,7 @@ TEST_P(EndToEndTest, RequestWithNoBodyWillNeverSendStreamFrameWithFIN) {
 
   // Send a simple headers only request, and receive response.
   EXPECT_EQ(kFooResponseBody, client_->SendSynchronousRequest("/foo"));
-  EXPECT_EQ(200u, client_->response_headers()->parsed_response_code());
+  EXPECT_EQ("200", client_->response_headers()->find(":status")->second);
 
   // Now verify that the server is not waiting for a final FIN or RST.
   server_thread_->Pause();
@@ -1931,7 +1931,7 @@ TEST_P(EndToEndTest, AckNotifierWithPacketLossAndBlockedSocket) {
   client_->SendData(request_string, true, delegate.get());
   client_->WaitForResponse();
   EXPECT_EQ(kFooResponseBody, client_->response_body());
-  EXPECT_EQ(200u, client_->response_headers()->parsed_response_code());
+  EXPECT_EQ("200", client_->response_headers()->find(":status")->second);
 
   // Send another request to flush out any pending ACKs on the server.
   client_->SendSynchronousRequest("/bar");
@@ -1972,7 +1972,7 @@ TEST_P(EndToEndTest, ServerSendPublicReset) {
 
   // The request should fail.
   EXPECT_EQ("", client_->SendSynchronousRequest("/foo"));
-  EXPECT_EQ(0u, client_->response_headers()->parsed_response_code());
+  EXPECT_TRUE(client_->response_headers()->empty());
   EXPECT_EQ(QUIC_PUBLIC_RESET, client_->connection_error());
 }
 
@@ -2009,7 +2009,7 @@ TEST_P(EndToEndTest, ServerSendPublicResetWithDifferentConnectionId) {
 
   // The connection should be unaffected.
   EXPECT_EQ(kFooResponseBody, client_->SendSynchronousRequest("/foo"));
-  EXPECT_EQ(200u, client_->response_headers()->parsed_response_code());
+  EXPECT_EQ("200", client_->response_headers()->find(":status")->second);
 
   client_->client()->session()->connection()->set_debug_visitor(nullptr);
 }
@@ -2038,7 +2038,7 @@ TEST_P(EndToEndTest, ClientSendPublicResetWithDifferentConnectionId) {
 
   // The connection should be unaffected.
   EXPECT_EQ(kFooResponseBody, client_->SendSynchronousRequest("/foo"));
-  EXPECT_EQ(200u, client_->response_headers()->parsed_response_code());
+  EXPECT_EQ("200", client_->response_headers()->find(":status")->second);
 }
 
 // Send a version negotiation packet from the server for a different
@@ -2068,7 +2068,7 @@ TEST_P(EndToEndTest, ServerSendVersionNegotiationWithDifferentConnectionId) {
 
   // The connection should be unaffected.
   EXPECT_EQ(kFooResponseBody, client_->SendSynchronousRequest("/foo"));
-  EXPECT_EQ(200u, client_->response_headers()->parsed_response_code());
+  EXPECT_EQ("200", client_->response_headers()->find(":status")->second);
 
   client_->client()->session()->connection()->set_debug_visitor(nullptr);
 }
@@ -2080,7 +2080,7 @@ TEST_P(EndToEndTest, BadPacketHeaderTruncated) {
 
   // Start the connection.
   EXPECT_EQ(kFooResponseBody, client_->SendSynchronousRequest("/foo"));
-  EXPECT_EQ(200u, client_->response_headers()->parsed_response_code());
+  EXPECT_EQ("200", client_->response_headers()->find(":status")->second);
 
   // Packet with invalid public flags.
   char packet[] = {// public flags (8 byte connection_id)
@@ -2103,7 +2103,7 @@ TEST_P(EndToEndTest, BadPacketHeaderTruncated) {
 
   // The connection should not be terminated.
   EXPECT_EQ(kFooResponseBody, client_->SendSynchronousRequest("/foo"));
-  EXPECT_EQ(200u, client_->response_headers()->parsed_response_code());
+  EXPECT_EQ("200", client_->response_headers()->find(":status")->second);
 }
 
 // A bad header shouldn't tear down the connection, because the receiver can't
@@ -2113,7 +2113,7 @@ TEST_P(EndToEndTest, BadPacketHeaderFlags) {
 
   // Start the connection.
   EXPECT_EQ(kFooResponseBody, client_->SendSynchronousRequest("/foo"));
-  EXPECT_EQ(200u, client_->response_headers()->parsed_response_code());
+  EXPECT_EQ("200", client_->response_headers()->find(":status")->second);
 
   // Packet with invalid public flags.
   char packet[] = {
@@ -2142,7 +2142,7 @@ TEST_P(EndToEndTest, BadPacketHeaderFlags) {
 
   // The connection should not be terminated.
   EXPECT_EQ(kFooResponseBody, client_->SendSynchronousRequest("/foo"));
-  EXPECT_EQ(200u, client_->response_headers()->parsed_response_code());
+  EXPECT_EQ("200", client_->response_headers()->find(":status")->second);
 }
 
 // Send a packet from the client with bad encrypted data.  The server should not
@@ -2152,7 +2152,7 @@ TEST_P(EndToEndTest, BadEncryptedData) {
 
   // Start the connection.
   EXPECT_EQ(kFooResponseBody, client_->SendSynchronousRequest("/foo"));
-  EXPECT_EQ(200u, client_->response_headers()->parsed_response_code());
+  EXPECT_EQ("200", client_->response_headers()->find(":status")->second);
 
   std::unique_ptr<QuicEncryptedPacket> packet(ConstructEncryptedPacket(
       client_->client()->session()->connection()->connection_id(), false, false,
@@ -2180,7 +2180,7 @@ TEST_P(EndToEndTest, BadEncryptedData) {
 
   // The connection should not be terminated.
   EXPECT_EQ(kFooResponseBody, client_->SendSynchronousRequest("/foo"));
-  EXPECT_EQ(200u, client_->response_headers()->parsed_response_code());
+  EXPECT_EQ("200", client_->response_headers()->find(":status")->second);
 }
 
 // A test stream that gives |response_body_| as an error response body.
@@ -2448,7 +2448,7 @@ TEST_P(EndToEndTest, EarlyResponseFinRecording) {
   // Send the request.
   client_->SendMessage(request);
   client_->WaitForResponse();
-  EXPECT_EQ(500u, client_->response_headers()->parsed_response_code());
+  EXPECT_EQ("500", client_->response_headers()->find(":status")->second);
 
   // Pause the server so we can access the server's internals without races.
   server_thread_->Pause();
@@ -2494,7 +2494,7 @@ TEST_P(EndToEndTest, LargePostEarlyResponse) {
   client_->SendMessage(request);
   // Receive the response and let the server close writing.
   client_->WaitForInitialResponse();
-  EXPECT_EQ(500u, client_->response_headers()->parsed_response_code());
+  EXPECT_EQ("500", client_->response_headers()->find(":status")->second);
 
   // Receive the reset stream from server on early response.
   ReliableQuicStream* stream =
@@ -2528,7 +2528,7 @@ TEST_P(EndToEndTest, Trailers) {
       trailers.Clone());
 
   EXPECT_EQ(kBody, client_->SendSynchronousRequest("/trailer_url"));
-  EXPECT_EQ(200u, client_->response_headers()->parsed_response_code());
+  EXPECT_EQ("200", client_->response_headers()->find(":status")->second);
   EXPECT_EQ(trailers, client_->response_trailers());
 }
 

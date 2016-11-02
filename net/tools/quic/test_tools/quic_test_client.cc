@@ -421,10 +421,6 @@ bool QuicTestClient::response_complete() const {
   return response_complete_;
 }
 
-int QuicTestClient::response_header_size() const {
-  return response_header_size_;
-}
-
 int64_t QuicTestClient::response_body_size() const {
   return response_body_size_;
 }
@@ -552,10 +548,9 @@ void QuicTestClient::ClearPerRequestState() {
   response_ = "";
   response_complete_ = false;
   response_headers_complete_ = false;
-  response_headers_.Clear();
+  response_headers_.clear();
   bytes_read_ = 0;
   bytes_written_ = 0;
-  response_header_size_ = 0;
   response_body_size_ = 0;
 }
 
@@ -601,14 +596,11 @@ bool QuicTestClient::response_headers_complete() const {
   return response_headers_complete_;
 }
 
-const BalsaHeaders* QuicTestClient::response_headers() const {
+const SpdyHeaderBlock* QuicTestClient::response_headers() const {
   if (stream_ != nullptr) {
-    SpdyBalsaUtils::SpdyHeadersToResponseHeaders(stream_->response_headers(),
-                                                 &response_headers_);
-    return &response_headers_;
-  } else {
-    return &response_headers_;
+    response_headers_ = stream_->response_headers().Clone();
   }
+  return &response_headers_;
 }
 
 const SpdyHeaderBlock& QuicTestClient::response_trailers() const {
@@ -655,14 +647,12 @@ void QuicTestClient::OnClose(QuicSpdyStream* stream) {
   }
   response_complete_ = true;
   response_headers_complete_ = stream_->headers_decompressed();
-  SpdyBalsaUtils::SpdyHeadersToResponseHeaders(stream_->response_headers(),
-                                               &response_headers_);
+  response_headers_ = stream_->response_headers().Clone();
   response_trailers_ = stream_->received_trailers().Clone();
   stream_error_ = stream_->stream_error();
   bytes_read_ = stream_->stream_bytes_read() + stream_->header_bytes_read();
   bytes_written_ =
       stream_->stream_bytes_written() + stream_->header_bytes_written();
-  response_header_size_ = response_headers_.GetSizeForWriteBuffer();
   response_body_size_ = stream_->data().size();
   stream_ = nullptr;
 }

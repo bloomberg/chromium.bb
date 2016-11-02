@@ -141,9 +141,8 @@ class QuicTestClient : public QuicSpdyStream::Visitor,
   ssize_t Send(const void* buffer, size_t size);
   bool response_complete() const;
   bool response_headers_complete() const;
-  const BalsaHeaders* response_headers() const;
+  const SpdyHeaderBlock* response_headers() const;
   int64_t response_size() const;
-  int response_header_size() const;
   int64_t response_body_size() const;
   size_t bytes_read() const;
   size_t bytes_written() const;
@@ -298,7 +297,7 @@ class QuicTestClient : public QuicSpdyStream::Visitor,
 
   bool response_complete_;
   bool response_headers_complete_;
-  mutable BalsaHeaders response_headers_;
+  mutable SpdyHeaderBlock response_headers_;
 
   // Parsed response trailers (if present), copied from the stream in OnClose.
   SpdyHeaderBlock response_trailers_;
@@ -309,8 +308,6 @@ class QuicTestClient : public QuicSpdyStream::Visitor,
   // prefer bytes_read() and bytes_written() member functions.
   uint64_t bytes_read_;
   uint64_t bytes_written_;
-  // The number of uncompressed HTTP header bytes received.
-  int response_header_size_;
   // The number of HTTP body bytes received.
   int64_t response_body_size_;
   // True if we tried to connect already since the last call to Disconnect().
