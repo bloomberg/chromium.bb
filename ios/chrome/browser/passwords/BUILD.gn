@@ -2,6 +2,8 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
+import("//ios/web/js_compile.gni")
+
 source_set("passwords") {
   sources = [
     "credential_manager.h",
@@ -38,6 +40,7 @@ source_set("passwords") {
     "update_password_infobar_controller.mm",
   ]
   deps = [
+    ":injected_js",
     "//base",
     "//base:i18n",
     "//components/autofill/core/browser",
@@ -121,5 +124,15 @@ source_set("unit_tests") {
     "//testing/gtest",
     "//third_party/ocmock",
     "//url",
+  ]
+}
+
+# TODO(crbug.com/487804): use js_compile_checked instead once the errors have
+# been fixed.
+js_compile_unchecked("injected_js") {
+  visibility = [ ":passwords" ]
+  sources = [
+    "resources/credential_manager.js",
+    "resources/password_controller.js",
   ]
 }
