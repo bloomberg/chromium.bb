@@ -54,14 +54,13 @@ class MODULES_EXPORT InspectorDatabaseAgent final
   ~InspectorDatabaseAgent() override;
   DECLARE_VIRTUAL_TRACE();
 
-  void disable(ErrorString*) override;
+  Response disable() override;
   void restore() override;
   void didCommitLoadForLocalFrame(LocalFrame*) override;
 
   // Called from the front-end.
-  void enable(ErrorString*) override;
-  void getDatabaseTableNames(
-      ErrorString*,
+  Response enable() override;
+  Response getDatabaseTableNames(
       const String& databaseId,
       std::unique_ptr<protocol::Array<String>>* names) override;
   void executeSQL(const String& databaseId,
