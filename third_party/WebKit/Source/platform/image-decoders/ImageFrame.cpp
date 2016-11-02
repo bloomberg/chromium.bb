@@ -124,7 +124,7 @@ bool ImageFrame::setSizeAndColorSpace(int newWidth,
   m_bitmap.setInfo(SkImageInfo::MakeN32(
       newWidth, newHeight,
       m_premultiplyAlpha ? kPremul_SkAlphaType : kUnpremul_SkAlphaType,
-      std::move(colorSpace)));
+      m_colorSpace));
   if (!m_bitmap.tryAllocPixels(m_allocator, 0))
     return false;
 
