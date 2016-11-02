@@ -64,10 +64,6 @@ class ServerWindowCompositorFrameSinkManager {
 
   ServerWindow* window() { return window_; }
 
-  ServerWindowCompositorFrameSink* GetDefaultCompositorFrameSink() const;
-  ServerWindowCompositorFrameSink* GetUnderlayCompositorFrameSink() const;
-  ServerWindowCompositorFrameSink* GetCompositorFrameSinkByType(
-      mojom::CompositorFrameSinkType type) const;
   bool HasCompositorFrameSinkOfType(mojom::CompositorFrameSinkType type) const;
   bool HasAnyCompositorFrameSink() const;
 

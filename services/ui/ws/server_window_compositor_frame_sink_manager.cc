@@ -59,32 +59,15 @@ void ServerWindowCompositorFrameSinkManager::CreateCompositorFrameSink(
   data.surface_sequence_generator.set_frame_sink_id(frame_sink_id);
 }
 
-ServerWindowCompositorFrameSink*
-ServerWindowCompositorFrameSinkManager::GetDefaultCompositorFrameSink() const {
-  return GetCompositorFrameSinkByType(mojom::CompositorFrameSinkType::DEFAULT);
-}
-
-ServerWindowCompositorFrameSink*
-ServerWindowCompositorFrameSinkManager::GetUnderlayCompositorFrameSink() const {
-  return GetCompositorFrameSinkByType(mojom::CompositorFrameSinkType::UNDERLAY);
-}
-
-ServerWindowCompositorFrameSink*
-ServerWindowCompositorFrameSinkManager::GetCompositorFrameSinkByType(
-    mojom::CompositorFrameSinkType type) const {
-  auto iter = type_to_compositor_frame_sink_map_.find(type);
-  return iter == type_to_compositor_frame_sink_map_.end()
-             ? nullptr
-             : iter->second.compositor_frame_sink.get();
-}
-
 bool ServerWindowCompositorFrameSinkManager::HasCompositorFrameSinkOfType(
     mojom::CompositorFrameSinkType type) const {
   return type_to_compositor_frame_sink_map_.count(type) > 0;
 }
 
 bool ServerWindowCompositorFrameSinkManager::HasAnyCompositorFrameSink() const {
-  return GetDefaultCompositorFrameSink() || GetUnderlayCompositorFrameSink();
+  return HasCompositorFrameSinkOfType(
+             mojom::CompositorFrameSinkType::DEFAULT) ||
+         HasCompositorFrameSinkOfType(mojom::CompositorFrameSinkType::UNDERLAY);
 }
 
 cc::SurfaceSequence
