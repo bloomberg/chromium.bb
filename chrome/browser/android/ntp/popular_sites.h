@@ -5,14 +5,22 @@
 #ifndef CHROME_BROWSER_ANDROID_NTP_POPULAR_SITES_H_
 #define CHROME_BROWSER_ANDROID_NTP_POPULAR_SITES_H_
 
+#include <memory>
+
 #include "base/files/file_path.h"
 #include "base/macros.h"
-#include "components/ntp_tiles/popular_sites.h"
+
+class Profile;
+
+namespace ntp_tiles {
+class PopularSites;
+}  // namespace ntp_tiles
 
 // TODO(sfiera): move to chrome_popular_sites.h
 class ChromePopularSites {
  public:
-  static base::FilePath GetDirectory();
+  static std::unique_ptr<ntp_tiles::PopularSites> NewForProfile(
+      Profile* profile);
 
  private:
   DISALLOW_IMPLICIT_CONSTRUCTORS(ChromePopularSites);

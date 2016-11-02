@@ -1,29 +1,22 @@
-// Copyright 2015 The Chromium Authors. All rights reserved.
+// Copyright 2016 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/ui/webui/popular_sites_internals_message_handler.h"
-
-#include <utility>
+#include "components/ntp_tiles/webui/popular_sites_internals_message_handler.h"
 
 #include "base/bind.h"
-#include "base/files/file_path.h"
+#include "base/callback.h"
 #include "base/files/file_util.h"
-#include "base/memory/ref_counted.h"
+#include "base/logging.h"
+#include "base/memory/ptr_util.h"
 #include "base/task_runner_util.h"
 #include "base/values.h"
-#include "chrome/browser/android/ntp/popular_sites.h"
-#include "chrome/browser/browser_process.h"
-#include "chrome/browser/profiles/profile.h"
-#include "chrome/browser/search_engines/template_url_service_factory.h"
+#include "components/ntp_tiles/popular_sites.h"
 #include "components/ntp_tiles/pref_names.h"
+#include "components/ntp_tiles/webui/popular_sites_internals_message_handler_client.h"
 #include "components/prefs/pref_service.h"
-#include "components/safe_json/safe_json_parser.h"
 #include "components/url_formatter/url_fixer.h"
-#include "content/public/browser/browser_thread.h"
-#include "content/public/browser/web_ui.h"
-
-using ntp_tiles::PopularSites;
+#include "url/gurl.h"
 
 namespace {
 
@@ -36,21 +29,31 @@ std::string ReadFileToString(const base::FilePath& path) {
 
 }  // namespace
 
-PopularSitesInternalsMessageHandler::PopularSitesInternalsMessageHandler()
-    : weak_ptr_factory_(this) {}
+namespace ntp_tiles {
 
-PopularSitesInternalsMessageHandler::~PopularSitesInternalsMessageHandler() {}
+PopularSitesInternalsMessageHandlerClient::
+    PopularSitesInternalsMessageHandlerClient() = default;
+PopularSitesInternalsMessageHandlerClient::
+    ~PopularSitesInternalsMessageHandlerClient() = default;
+
+PopularSitesInternalsMessageHandler::PopularSitesInternalsMessageHandler(
+    PopularSitesInternalsMessageHandlerClient* web_ui)
+    : web_ui_(web_ui), weak_ptr_factory_(this) {}
+
+PopularSitesInternalsMessageHandler::~PopularSitesInternalsMessageHandler() =
+    default;
 
 void PopularSitesInternalsMessageHandler::RegisterMessages() {
-  web_ui()->RegisterMessageCallback("registerForEvents",
+  web_ui_->RegisterMessageCallback(
+      "registerForEvents",
       base::Bind(&PopularSitesInternalsMessageHandler::HandleRegisterForEvents,
                  base::Unretained(this)));
 
-  web_ui()->RegisterMessageCallback("update",
-      base::Bind(&PopularSitesInternalsMessageHandler::HandleUpdate,
-                 base::Unretained(this)));
+  web_ui_->RegisterMessageCallback(
+      "update", base::Bind(&PopularSitesInternalsMessageHandler::HandleUpdate,
+                           base::Unretained(this)));
 
-  web_ui()->RegisterMessageCallback(
+  web_ui_->RegisterMessageCallback(
       "viewJson",
       base::Bind(&PopularSitesInternalsMessageHandler::HandleViewJson,
                  base::Unretained(this)));
@@ -62,13 +65,7 @@ void PopularSitesInternalsMessageHandler::HandleRegisterForEvents(
 
   SendOverrides();
 
-  Profile* profile = Profile::FromWebUI(web_ui());
-  popular_sites_.reset(new PopularSites(
-      content::BrowserThread::GetBlockingPool(), profile->GetPrefs(),
-      TemplateURLServiceFactory::GetForProfile(profile),
-      g_browser_process->variations_service(), profile->GetRequestContext(),
-      ChromePopularSites::GetDirectory(),
-      base::Bind(safe_json::SafeJsonParser::Parse)));
+  popular_sites_ = web_ui_->MakePopularSites();
   popular_sites_->StartFetch(
       false,
       base::Bind(&PopularSitesInternalsMessageHandler::OnPopularSitesAvailable,
@@ -78,12 +75,8 @@ void PopularSitesInternalsMessageHandler::HandleRegisterForEvents(
 void PopularSitesInternalsMessageHandler::HandleUpdate(
     const base::ListValue* args) {
   DCHECK_EQ(3u, args->GetSize());
-  Profile* profile = Profile::FromWebUI(web_ui());
-  auto callback =
-      base::Bind(&PopularSitesInternalsMessageHandler::OnPopularSitesAvailable,
-                 base::Unretained(this), true);
 
-  PrefService* prefs = profile->GetPrefs();
+  PrefService* prefs = web_ui_->GetPrefs();
 
   std::string url;
   args->GetString(0, &url);
@@ -107,13 +100,11 @@ void PopularSitesInternalsMessageHandler::HandleUpdate(
   else
     prefs->SetString(ntp_tiles::prefs::kPopularSitesOverrideVersion, version);
 
-  popular_sites_.reset(new PopularSites(
-      content::BrowserThread::GetBlockingPool(), prefs,
-      TemplateURLServiceFactory::GetForProfile(profile),
-      g_browser_process->variations_service(), profile->GetRequestContext(),
-      ChromePopularSites::GetDirectory(),
-      base::Bind(safe_json::SafeJsonParser::Parse)));
-  popular_sites_->StartFetch(true, callback);
+  popular_sites_ = web_ui_->MakePopularSites();
+  popular_sites_->StartFetch(
+      true,
+      base::Bind(&PopularSitesInternalsMessageHandler::OnPopularSitesAvailable,
+                 base::Unretained(this), true));
 }
 
 void PopularSitesInternalsMessageHandler::HandleViewJson(
@@ -122,7 +113,7 @@ void PopularSitesInternalsMessageHandler::HandleViewJson(
 
   const base::FilePath& path = popular_sites_->local_path();
   base::PostTaskAndReplyWithResult(
-      content::BrowserThread::GetBlockingPool()
+      web_ui_->GetBlockingPool()
           ->GetTaskRunnerWithShutdownBehavior(
               base::SequencedWorkerPool::CONTINUE_ON_SHUTDOWN)
           .get(),
@@ -132,28 +123,28 @@ void PopularSitesInternalsMessageHandler::HandleViewJson(
 }
 
 void PopularSitesInternalsMessageHandler::SendOverrides() {
-  PrefService* prefs = Profile::FromWebUI(web_ui())->GetPrefs();
+  PrefService* prefs = web_ui_->GetPrefs();
   std::string url =
       prefs->GetString(ntp_tiles::prefs::kPopularSitesOverrideURL);
   std::string country =
       prefs->GetString(ntp_tiles::prefs::kPopularSitesOverrideCountry);
   std::string version =
       prefs->GetString(ntp_tiles::prefs::kPopularSitesOverrideVersion);
-  web_ui()->CallJavascriptFunctionUnsafe(
+  web_ui_->CallJavascriptFunction(
       "chrome.popular_sites_internals.receiveOverrides", base::StringValue(url),
       base::StringValue(country), base::StringValue(version));
 }
 
 void PopularSitesInternalsMessageHandler::SendDownloadResult(bool success) {
   base::StringValue result(success ? "Success" : "Fail");
-  web_ui()->CallJavascriptFunctionUnsafe(
+  web_ui_->CallJavascriptFunction(
       "chrome.popular_sites_internals.receiveDownloadResult", result);
 }
 
 void PopularSitesInternalsMessageHandler::SendSites() {
-  std::unique_ptr<base::ListValue> sites_list(new base::ListValue);
+  auto sites_list = base::MakeUnique<base::ListValue>();
   for (const PopularSites::Site& site : popular_sites_->sites()) {
-    std::unique_ptr<base::DictionaryValue> entry(new base::DictionaryValue);
+    auto entry = base::MakeUnique<base::DictionaryValue>();
     entry->SetString("title", site.title);
     entry->SetString("url", site.url.spec());
     sites_list->Append(std::move(entry));
@@ -162,18 +153,21 @@ void PopularSitesInternalsMessageHandler::SendSites() {
   base::DictionaryValue result;
   result.Set("sites", std::move(sites_list));
   result.SetString("url", popular_sites_->LastURL().spec());
-  web_ui()->CallJavascriptFunctionUnsafe(
-      "chrome.popular_sites_internals.receiveSites", result);
+  web_ui_->CallJavascriptFunction("chrome.popular_sites_internals.receiveSites",
+                                  result);
 }
 
 void PopularSitesInternalsMessageHandler::SendJson(const std::string& json) {
-  web_ui()->CallJavascriptFunctionUnsafe(
-      "chrome.popular_sites_internals.receiveJson", base::StringValue(json));
+  web_ui_->CallJavascriptFunction("chrome.popular_sites_internals.receiveJson",
+                                  base::StringValue(json));
 }
 
 void PopularSitesInternalsMessageHandler::OnPopularSitesAvailable(
-    bool explicit_request, bool success) {
+    bool explicit_request,
+    bool success) {
   if (explicit_request)
     SendDownloadResult(success);
   SendSites();
 }
+
+}  // namespace ntp_tiles

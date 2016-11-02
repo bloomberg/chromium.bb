@@ -9,6 +9,7 @@ include_rules = [
   "+components/prefs",
   "+components/search_engines",
   "+components/suggestions",
+  "+components/url_formatter",
   "+components/variations",
   "+jni",
   "+net",

@@ -2201,8 +2201,6 @@ split_static_library("ui") {
         "webui/offline/offline_internals_ui.h",
         "webui/offline/offline_internals_ui_message_handler.cc",
         "webui/offline/offline_internals_ui_message_handler.h",
-        "webui/popular_sites_internals_message_handler.cc",
-        "webui/popular_sites_internals_message_handler.h",
         "webui/popular_sites_internals_ui.cc",
         "webui/popular_sites_internals_ui.h",
         "webui/snippets_internals_message_handler.cc",

@@ -210,9 +210,6 @@
         <include name="IDR_OFFLINE_INTERNALS_CSS" file="resources\offline_pages\offline_internals.css" type="BINDATA" compress="gzip" />
         <include name="IDR_OFFLINE_INTERNALS_JS" file="resources\offline_pages\offline_internals.js" type="BINDATA" compress="gzip" />
         <include name="IDR_OFFLINE_INTERNALS_BROWSER_PROXY_JS" file="resources\offline_pages\offline_internals_browser_proxy.js" type="BINDATA" compress="gzip" />
-        <include name="IDR_POPULAR_SITES_INTERNALS_HTML" file="resources\popular_sites_internals.html" allowexternalscript="true" compress="gzip" type="BINDATA" />
-        <include name="IDR_POPULAR_SITES_INTERNALS_CSS" file="resources\popular_sites_internals.css" compress="gzip" type="BINDATA" />
-        <include name="IDR_POPULAR_SITES_INTERNALS_JS" file="resources\popular_sites_internals.js" compress="gzip" type="BINDATA" />
         <include name="IDR_SNIPPETS_INTERNALS_HTML" file="resources\snippets_internals.html" allowexternalscript="true" compress="gzip" type="BINDATA" />
         <include name="IDR_SNIPPETS_INTERNALS_CSS" file="resources\snippets_internals.css" compress="gzip" type="BINDATA" />
         <include name="IDR_SNIPPETS_INTERNALS_JS" file="resources\snippets_internals.js" compress="gzip" type="BINDATA" />

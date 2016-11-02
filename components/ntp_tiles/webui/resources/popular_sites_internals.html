@@ -19,6 +19,10 @@ found in the LICENSE file.
 <script src="chrome://resources/js/jstemplate_compiled.js"></script>
 <script src="chrome://resources/js/load_time_data.js"></script>
 <script src="chrome://resources/js/util.js"></script>
+<if expr="is_ios">
+<!-- TODO(crbug.com/487000): Remove this once injected by web. -->
+<script src="chrome://resources/js/ios/web_ui.js"></script>
+</if>
 <script src="popular_sites_internals.js"></script>
 </head>
 

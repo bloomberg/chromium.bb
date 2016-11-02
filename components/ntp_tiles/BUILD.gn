@@ -24,6 +24,8 @@ static_library("ntp_tiles") {
     "pref_names.h",
     "switches.cc",
     "switches.h",
+    "webui/popular_sites_internals_message_handler.cc",
+    "webui/popular_sites_internals_message_handler.h",
   ]
 
   public_deps = [
@@ -40,6 +42,7 @@ static_library("ntp_tiles") {
     "//components/pref_registry",
     "//components/prefs",
     "//components/search_engines",
+    "//components/url_formatter",
     "//components/variations",
     "//components/variations/service",
   ]

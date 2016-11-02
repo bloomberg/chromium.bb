@@ -159,14 +159,7 @@ MostVisitedSitesBridge::MostVisitedSitesBridge(Profile* profile)
       most_visited_(profile->GetPrefs(),
                     TopSitesFactory::GetForProfile(profile),
                     SuggestionsServiceFactory::GetForProfile(profile),
-                    base::MakeUnique<ntp_tiles::PopularSites>(
-                        BrowserThread::GetBlockingPool(),
-                        profile->GetPrefs(),
-                        TemplateURLServiceFactory::GetForProfile(profile),
-                        g_browser_process->variations_service(),
-                        profile->GetRequestContext(),
-                        ChromePopularSites::GetDirectory(),
-                        base::Bind(safe_json::SafeJsonParser::Parse)),
+                    ChromePopularSites::NewForProfile(profile),
                     base::MakeUnique<ntp_tiles::IconCacher>(
                         FaviconServiceFactory::GetForProfile(
                             profile,
