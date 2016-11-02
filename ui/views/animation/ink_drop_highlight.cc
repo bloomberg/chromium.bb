@@ -139,7 +139,10 @@ gfx::Transform InkDropHighlight::CalculateTransform(
     const gfx::Size& size) const {
   gfx::Transform transform;
   transform.Translate(center_point_.x(), center_point_.y());
-  transform.Scale(size.width() / size_.width(), size.height() / size_.height());
+  // TODO(bruthig): Fix the InkDropHighlight to work well when initialized with
+  // a (0x0) size. See https://crbug.com/661618.
+  transform.Scale(size_.width() == 0 ? 0 : size.width() / size_.width(),
+                  size_.height() == 0 ? 0 : size.height() / size_.height());
   gfx::Vector2dF layer_offset = layer_delegate_->GetCenteringOffset();
   transform.Translate(-layer_offset.x(), -layer_offset.y());
   return transform;

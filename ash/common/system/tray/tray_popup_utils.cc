@@ -39,7 +39,7 @@ std::unique_ptr<views::LayoutManager> CreateDefaultEndsLayoutManager() {
   box_layout->set_main_axis_alignment(
       views::BoxLayout::MAIN_AXIS_ALIGNMENT_CENTER);
   box_layout->set_cross_axis_alignment(
-      views::BoxLayout::CROSS_AXIS_ALIGNMENT_CENTER);
+      views::BoxLayout::CROSS_AXIS_ALIGNMENT_STRETCH);
   return std::unique_ptr<views::LayoutManager>(box_layout);
 }
 

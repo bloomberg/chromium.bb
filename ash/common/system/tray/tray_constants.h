@@ -39,7 +39,6 @@ extern const int kTrayPopupAutoCloseDelayForTextInSeconds;
 extern const int kTrayPopupPaddingHorizontal;
 extern const int kTrayPopupPaddingBetweenItems;
 extern const int kTrayPopupUserCardVerticalPadding;
-
 // The padding used on the left and right of labels. This applies to all labels
 // in the system menu.
 extern const int kTrayPopupLabelHorizontalPadding;
@@ -53,6 +52,9 @@ extern const int kTrayPopupDetailsLabelExtraLeftMargin;
 extern const SkColor kTrayPopupHoverBackgroundColor;
 extern const int kTrayPopupScrollSeparatorHeight;
 extern const int kTrayRoundedBorderRadius;
+
+// The padding used on the left and right of labels.
+extern const int kTrayPopupLabelHorizontalPadding;
 
 extern const SkColor kBackgroundColor;
 extern const SkColor kHoverBackgroundColor;

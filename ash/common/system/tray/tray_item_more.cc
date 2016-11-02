@@ -52,6 +52,9 @@ TrayItemMore::TrayItemMore(SystemTrayItem* owner, bool show_more)
   } else {
     tri_view->SetContainerVisible(TriView::Container::END, false);
   }
+
+  if (MaterialDesignController::IsSystemTrayMenuMaterial())
+    SetInkDropMode(InkDropHostView::InkDropMode::ON);
 }
 
 TrayItemMore::~TrayItemMore() {}

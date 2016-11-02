@@ -10,6 +10,7 @@
 #include "ash/common/system/tray/tray_constants.h"
 #include "ui/accessibility/ax_view_state.h"
 #include "ui/gfx/canvas.h"
+#include "ui/gfx/geometry/rect_f.h"
 #include "ui/views/animation/flood_fill_ink_drop_ripple.h"
 #include "ui/views/animation/ink_drop_highlight.h"
 
@@ -22,6 +23,7 @@ ActionableView::ActionableView(SystemTrayItem* owner)
     : views::CustomButton(this), destroyed_(nullptr), owner_(owner) {
   SetFocusBehavior(FocusBehavior::ALWAYS);
   set_has_ink_drop_action_on_click(false);
+  set_notify_enter_exit_on_child(true);
 }
 
 ActionableView::~ActionableView() {
@@ -76,6 +78,23 @@ void ActionableView::OnBlur() {
   CustomButton::OnBlur();
   // We render differently when focused.
   SchedulePaint();
+}
+
+std::unique_ptr<views::InkDropRipple> ActionableView::CreateInkDropRipple()
+    const {
+  return base::MakeUnique<views::FloodFillInkDropRipple>(
+      GetLocalBounds(), GetInkDropCenterBasedOnLastEvent(),
+      kTrayPopupInkDropBaseColor, kTrayPopupInkDropRippleOpacity);
+}
+
+std::unique_ptr<views::InkDropHighlight>
+ActionableView::CreateInkDropHighlight() const {
+  std::unique_ptr<views::InkDropHighlight> highlight(
+      new views::InkDropHighlight(size(), 0,
+                                  gfx::RectF(GetLocalBounds()).CenterPoint(),
+                                  kTrayPopupInkDropBaseColor));
+  highlight->set_visible_opacity(kTrayPopupInkDropHighlightOpacity);
+  return highlight;
 }
 
 void ActionableView::CloseSystemBubble() {

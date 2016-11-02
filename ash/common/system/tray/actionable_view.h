@@ -7,6 +7,7 @@
 
 #include "ash/ash_export.h"
 #include "base/macros.h"
+#include "ui/gfx/geometry/rect.h"
 #include "ui/views/controls/button/custom_button.h"
 
 namespace ash {
@@ -58,6 +59,9 @@ class ASH_EXPORT ActionableView : public views::ButtonListener,
   void OnPaint(gfx::Canvas* canvas) override;
   void OnFocus() override;
   void OnBlur() override;
+  std::unique_ptr<views::InkDropRipple> CreateInkDropRipple() const override;
+  std::unique_ptr<views::InkDropHighlight> CreateInkDropHighlight()
+      const override;
 
   // Overridden from views::ButtonListener.
   void ButtonPressed(Button* sender, const ui::Event& event) override;

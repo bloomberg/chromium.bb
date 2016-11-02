@@ -64,6 +64,9 @@ class CapsLockDefaultView : public ActionableView {
 
     shortcut_label_->SetEnabled(false);
     AddChildView(shortcut_label_);
+
+    if (MaterialDesignController::IsSystemTrayMenuMaterial())
+      SetInkDropMode(InkDropHostView::InkDropMode::ON);
   }
 
   ~CapsLockDefaultView() override {}

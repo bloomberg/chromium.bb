@@ -108,6 +108,9 @@ class UpdateView : public ActionableView {
     label_ = new views::Label(label_text);
     AddChildView(label_);
     SetAccessibleName(label_text);
+
+    if (MaterialDesignController::IsSystemTrayMenuMaterial())
+      SetInkDropMode(InkDropHostView::InkDropMode::ON);
   }
 
   ~UpdateView() override {}

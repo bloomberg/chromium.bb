@@ -4,6 +4,7 @@
 
 #include "ash/common/system/chromeos/settings/tray_settings.h"
 
+#include "ash/common/material_design/material_design_controller.h"
 #include "ash/common/session/session_state_delegate.h"
 #include "ash/common/system/chromeos/power/power_status.h"
 #include "ash/common/system/chromeos/power/power_status_view.h"
@@ -72,6 +73,9 @@ class SettingsDefaultView : public ActionableView,
       AddChildView(power_status_view_);
       OnPowerStatusChanged();
     }
+
+    if (MaterialDesignController::IsSystemTrayMenuMaterial())
+      SetInkDropMode(InkDropHostView::InkDropMode::ON);
   }
 
   ~SettingsDefaultView() override { PowerStatus::Get()->RemoveObserver(this); }

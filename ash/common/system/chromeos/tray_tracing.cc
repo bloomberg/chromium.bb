@@ -49,6 +49,9 @@ class DefaultTracingView : public ActionableView {
     label_->SetHorizontalAlignment(gfx::ALIGN_LEFT);
     label_->SetText(bundle.GetLocalizedString(IDS_ASH_STATUS_TRAY_TRACING));
     AddChildView(label_);
+
+    if (MaterialDesignController::IsSystemTrayMenuMaterial())
+      SetInkDropMode(InkDropHostView::InkDropMode::ON);
   }
 
   ~DefaultTracingView() override {}
