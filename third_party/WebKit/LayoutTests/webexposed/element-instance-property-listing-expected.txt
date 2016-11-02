@@ -84,6 +84,7 @@ namespace http://www.w3.org/1999/xhtml
     property id
     property innerHTML
     property innerText
+    property inputMode
     property insertAdjacentElement
     property insertAdjacentHTML
     property insertAdjacentText
@@ -622,7 +623,6 @@ html element input
     property height
     property incremental
     property indeterminate
-    property inputMode
     property labels
     property list
     property max
@@ -961,7 +961,6 @@ html element textarea
     property dirName
     property disabled
     property form
-    property inputMode
     property labels
     property maxLength
     property minLength
@@ -1198,6 +1197,7 @@ namespace http://www.w3.org/2000/svg
     property id
     property innerHTML
     property innerText
+    property inputMode
     property insertAdjacentElement
     property insertAdjacentHTML
     property insertAdjacentText

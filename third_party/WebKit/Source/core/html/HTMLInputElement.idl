@@ -43,7 +43,6 @@ interface HTMLInputElement : HTMLElement {
     [CEReactions, Reflect] attribute DOMString formTarget;
     [CEReactions, CustomElementCallbacks] attribute unsigned long height;
     attribute boolean indeterminate;
-    [RuntimeEnabled=InputModeAttribute, CEReactions, Reflect] attribute DOMString inputMode;
     readonly attribute HTMLElement? list;
     [CEReactions, Reflect] attribute DOMString max;
     [CEReactions, RaisesException=Setter, CustomElementCallbacks] attribute long maxLength;

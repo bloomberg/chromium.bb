@@ -138,6 +138,29 @@ void insertTextDuringCompositionWithEvents(
   // TODO(chongz): Fire 'input' event.
 }
 
+AtomicString getInputModeAttribute(Element* element) {
+  if (!element)
+    return AtomicString();
+
+  bool queryAttribute = false;
+  if (isHTMLInputElement(*element)) {
+    queryAttribute = toHTMLInputElement(*element).supportsInputModeAttribute();
+  } else if (isHTMLTextAreaElement(*element)) {
+    queryAttribute = true;
+  } else {
+    element->document().updateStyleAndLayoutTree();
+    if (hasEditableStyle(*element))
+      queryAttribute = true;
+  }
+
+  if (!queryAttribute)
+    return AtomicString();
+
+  // TODO(dtapuska): We may wish to restrict this to a yet to be proposed
+  // <contenteditable> or <richtext> element Mozilla discussed at TPAC 2016.
+  return element->fastGetAttribute(HTMLNames::inputmodeAttr).lower();
+}
+
 }  // anonymous namespace
 
 InputMethodController* InputMethodController::create(LocalFrame& frame) {
@@ -1048,20 +1071,8 @@ WebTextInputMode InputMethodController::inputModeOfFocusedElement() const {
   if (!RuntimeEnabledFeatures::inputModeAttributeEnabled())
     return kWebTextInputModeDefault;
 
-  Element* element = frame().document()->focusedElement();
-  if (!element)
-    return kWebTextInputModeDefault;
-
-  AtomicString mode;
-  if (isHTMLInputElement(*element)) {
-    const HTMLInputElement& input = toHTMLInputElement(*element);
-    if (input.supportsInputModeAttribute())
-      mode = input.fastGetAttribute(HTMLNames::inputmodeAttr).lower();
-  }
-  if (isHTMLTextAreaElement(*element)) {
-    const HTMLTextAreaElement& textarea = toHTMLTextAreaElement(*element);
-    mode = textarea.fastGetAttribute(HTMLNames::inputmodeAttr).lower();
-  }
+  AtomicString mode =
+      getInputModeAttribute(frame().document()->focusedElement());
 
   if (mode.isEmpty())
     return kWebTextInputModeDefault;

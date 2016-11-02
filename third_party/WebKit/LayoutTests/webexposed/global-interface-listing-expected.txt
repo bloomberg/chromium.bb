@@ -2145,6 +2145,7 @@ interface HTMLElement : Element
     getter draggable
     getter hidden
     getter innerText
+    getter inputMode
     getter isContentEditable
     getter lang
     getter offsetHeight
@@ -2243,6 +2244,7 @@ interface HTMLElement : Element
     setter draggable
     setter hidden
     setter innerText
+    setter inputMode
     setter lang
     setter onabort
     setter onauxclick
@@ -2594,7 +2596,6 @@ interface HTMLInputElement : HTMLElement
     getter height
     getter incremental
     getter indeterminate
-    getter inputMode
     getter labels
     getter list
     getter max
@@ -2653,7 +2654,6 @@ interface HTMLInputElement : HTMLElement
     setter height
     setter incremental
     setter indeterminate
-    setter inputMode
     setter max
     setter maxLength
     setter min
@@ -3300,7 +3300,6 @@ interface HTMLTextAreaElement : HTMLElement
     getter dirName
     getter disabled
     getter form
-    getter inputMode
     getter labels
     getter maxLength
     getter minLength
@@ -3332,7 +3331,6 @@ interface HTMLTextAreaElement : HTMLElement
     setter defaultValue
     setter dirName
     setter disabled
-    setter inputMode
     setter maxLength
     setter minLength
     setter name
