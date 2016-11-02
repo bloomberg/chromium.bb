@@ -186,6 +186,8 @@ uint32_t DrmWindowHost::DispatchEvent(const PlatformEvent& native_event) {
   return POST_DISPATCH_STOP_PROPAGATION;
 }
 
+void DrmWindowHost::OnGpuProcessLaunched() {}
+
 void DrmWindowHost::OnGpuThreadReady() {
   sender_->GpuCreateWindow(widget_);
   SendBoundsChange();

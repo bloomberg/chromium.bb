@@ -106,7 +106,11 @@ class FakeGpuProcessHost {
 
     ui::OzonePlatform::GetInstance()
         ->GetGpuPlatformSupportHost()
-        ->OnChannelEstablished(kGpuProcessHostId, gpu_io_task_runner_, sender);
+        ->OnGpuProcessLaunched(kGpuProcessHostId, gpu_io_task_runner_, sender);
+
+    ui::OzonePlatform::GetInstance()
+        ->GetGpuPlatformSupportHost()
+        ->OnChannelEstablished();
   }
 
  private:

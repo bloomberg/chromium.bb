@@ -12,10 +12,15 @@ class GpuThreadObserver {
  public:
   virtual ~GpuThreadObserver() {}
 
+  // Called when the GPU process is launched.
+  // This is called from browser IO thread.
+  virtual void OnGpuProcessLaunched() = 0;
   // Called when a GPU thread implementation has become available.
+  // This is called from browser UI thread.
   virtual void OnGpuThreadReady() = 0;
   // Called when the GPU thread implementation has ceased to be
   // available.
+  // This is called from browser UI thread.
   virtual void OnGpuThreadRetired() = 0;
 };
 

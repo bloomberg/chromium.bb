@@ -82,6 +82,8 @@
 #endif
 
 #if defined(USE_OZONE)
+#include "ui/ozone/public/gpu_platform_support_host.h"
+#include "ui/ozone/public/ozone_platform.h"
 #include "ui/ozone/public/ozone_switches.h"
 #endif
 
@@ -184,6 +186,17 @@ void SendGpuProcessMessage(GpuProcessHost::GpuProcessKind kind,
     delete message;
   }
 }
+
+#if defined(USE_OZONE)
+void SendGpuProcessMessageByHostId(int host_id, IPC::Message* message) {
+  GpuProcessHost* host = GpuProcessHost::FromID(host_id);
+  if (host) {
+    host->Send(message);
+  } else {
+    delete message;
+  }
+}
+#endif
 
 // NOTE: changes to this class need to be reviewed by the security team.
 class GpuSandboxedProcessLauncherDelegate
@@ -603,6 +616,16 @@ bool GpuProcessHost::Init() {
 
   if (!Send(new GpuMsg_Initialize(gpu_preferences)))
     return false;
+
+#if defined(USE_OZONE)
+  // Ozone needs to send the primary DRM device to GPU process as early as
+  // possible to ensure the latter always has a valid device. crbug.com/608839
+  ui::OzonePlatform::GetInstance()
+      ->GetGpuPlatformSupportHost()
+      ->OnGpuProcessLaunched(
+          host_id_, BrowserThread::GetTaskRunnerForThread(BrowserThread::IO),
+          base::Bind(&SendGpuProcessMessageByHostId, host_id_));
+#endif
 
   return true;
 }

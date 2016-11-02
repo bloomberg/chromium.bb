@@ -111,6 +111,8 @@ void DrmDisplayHost::SetColorCorrection(
                                  gamma_lut, correction_matrix);
 }
 
+void DrmDisplayHost::OnGpuProcessLaunched() {}
+
 void DrmDisplayHost::OnGpuThreadReady() {
   is_dummy_ = false;
 

@@ -80,6 +80,7 @@ class DrmWindowHost : public PlatformWindow,
   uint32_t DispatchEvent(const PlatformEvent& event) override;
 
   // GpuThreadObserver:
+  void OnGpuProcessLaunched() override;
   void OnGpuThreadReady() override;
   void OnGpuThreadRetired() override;
 

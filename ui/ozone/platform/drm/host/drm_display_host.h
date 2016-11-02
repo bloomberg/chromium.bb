@@ -44,6 +44,7 @@ class DrmDisplayHost : public GpuThreadObserver {
   void OnHDCPStateUpdated(bool status);
 
   // GpuThreadObserver:
+  void OnGpuProcessLaunched() override;
   void OnGpuThreadReady() override;
   void OnGpuThreadRetired() override;
 
