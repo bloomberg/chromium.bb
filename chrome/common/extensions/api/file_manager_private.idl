@@ -347,6 +347,10 @@ dictionary VolumeMetadata {
   // Flag that specifies if volume is mounted in read-only mode.
   boolean isReadOnly;
 
+  // Flag that specifies if the device is write-protected.
+  // Valid only for the volumes of removable device partitions.
+  boolean isReadOnlyRemovableDevice;
+
   // Flag that specifies whether the volume contains media.
   boolean hasMedia;
 

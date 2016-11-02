@@ -46,7 +46,7 @@ struct TestDiskInfo {
   chromeos::DeviceType device_type;
   uint64_t size_in_bytes;
   bool is_parent;
-  bool is_read_only;
+  bool is_read_only_hardware;
   bool has_media;
   bool on_boot_device;
   bool on_removable_device;
@@ -109,7 +109,7 @@ TestDiskInfo kTestDisks[] = {
   {
     "system_path3",
     "file_path3",
-    false,
+    true,  // write_disabled_by_policy
     "device_label3",
     "drive_label3",
     "89ab",
@@ -121,7 +121,7 @@ TestDiskInfo kTestDisks[] = {
     chromeos::DEVICE_TYPE_OPTICAL_DISC,
     0,
     true,
-    false,
+    false,  // is_hardware_read_only
     false,
     true,
     false,
@@ -289,7 +289,7 @@ class FileManagerPrivateApiTest : public ExtensionApiTest {
                 kTestDisks[disk_info_index].device_type,
                 kTestDisks[disk_info_index].size_in_bytes,
                 kTestDisks[disk_info_index].is_parent,
-                kTestDisks[disk_info_index].is_read_only,
+                kTestDisks[disk_info_index].is_read_only_hardware,
                 kTestDisks[disk_info_index].has_media,
                 kTestDisks[disk_info_index].on_boot_device,
                 kTestDisks[disk_info_index].on_removable_device,

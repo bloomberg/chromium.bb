@@ -116,7 +116,18 @@ class Volume : public base::SupportsWeakPtr<Volume> {
   }
   const std::string& volume_label() const { return volume_label_; }
   bool is_parent() const { return is_parent_; }
+  // Whether the applications can write to the volume. True if not writable.
+  // For example, when write access to external storage is restricted by the
+  // policy (ExternalStorageReadOnly), is_read_only() will be true even when
+  // is_read_only_removable_device() is false.
   bool is_read_only() const { return is_read_only_; }
+  // Whether the device is write-protected by hardware. This field is valid
+  // only when device_type is VOLUME_TYPE_REMOVABLE_DISK_PARTITION and
+  // source is SOURCE_DEVICE.
+  // When this value is true, is_read_only() is also true.
+  bool is_read_only_removable_device() const {
+    return is_read_only_removable_device_;
+  }
   bool has_media() const { return has_media_; }
   bool configurable() const { return configurable_; }
   bool watchable() const { return watchable_; }
@@ -175,8 +186,12 @@ class Volume : public base::SupportsWeakPtr<Volume> {
   // Is the device is a parent device (i.e. sdb rather than sdb1).
   bool is_parent_;
 
-  // True if the volume is read only.
+  // True if the volume is not writable by applications.
   bool is_read_only_;
+
+  // True if the volume is made read_only due to its hardware.
+  // This implies is_read_only_.
+  bool is_read_only_removable_device_;
 
   // True if the volume contains media.
   bool has_media_;

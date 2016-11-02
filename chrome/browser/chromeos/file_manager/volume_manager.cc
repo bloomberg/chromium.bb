@@ -151,6 +151,7 @@ Volume::Volume()
       mount_context_(MOUNT_CONTEXT_UNKNOWN),
       is_parent_(false),
       is_read_only_(false),
+      is_read_only_removable_device_(false),
       has_media_(false),
       configurable_(false),
       watchable_(false) {
@@ -207,6 +208,7 @@ Volume* Volume::CreateForRemovable(
     volume->system_path_prefix_ = base::FilePath(disk->system_path_prefix());
     volume->is_parent_ = disk->is_parent();
     volume->is_read_only_ = disk->is_read_only();
+    volume->is_read_only_removable_device_ = disk->is_read_only_hardware();
     volume->has_media_ = disk->has_media();
   } else {
     volume->device_type_ = chromeos::DEVICE_TYPE_UNKNOWN;

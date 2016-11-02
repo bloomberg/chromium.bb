@@ -196,6 +196,8 @@ void VolumeToVolumeMetadata(
       break;
     case SOURCE_DEVICE:
       volume_metadata->source = file_manager_private::SOURCE_DEVICE;
+      volume_metadata->is_read_only_removable_device = volume
+          .is_read_only_removable_device();
       break;
     case SOURCE_NETWORK:
       volume_metadata->source =
