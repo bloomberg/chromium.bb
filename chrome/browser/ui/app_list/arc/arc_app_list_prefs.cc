@@ -564,11 +564,13 @@ void ArcAppListPrefs::NotifyRegisteredApps() {
       NOTREACHED();
       continue;
     }
+
     // Default apps are reported earlier.
-    if (default_apps_.HasApp(app_id))
-      continue;
-    for (auto& observer : observer_list_)
-      observer.OnAppRegistered(app_id, *app_info);
+    if (!tracked_apps_.count(app_id)) {
+      for (auto& observer : observer_list_)
+        observer.OnAppRegistered(app_id, *app_info);
+      tracked_apps_.insert(app_id);
+    }
   }
 
   apps_restored_ = true;
@@ -726,8 +728,8 @@ void ArcAppListPrefs::AddAppAndShortcut(
   if (app_id == arc::kPlayStoreAppId)
     updated_name = l10n_util::GetStringUTF8(IDS_ARC_PLAYSTORE_ICON_TITLE_BETA);
 
-  const bool was_registered = IsRegistered(app_id);
-  if (was_registered) {
+  const bool was_tracked = tracked_apps_.count(app_id);
+  if (was_tracked) {
     std::unique_ptr<ArcAppListPrefs::AppInfo> app_old_info = GetApp(app_id);
     DCHECK(app_old_info);
     DCHECK(launchable);
@@ -763,7 +765,7 @@ void ArcAppListPrefs::AddAppAndShortcut(
   if (was_disabled && app_ready)
     ready_apps_.insert(app_id);
 
-  if (was_registered) {
+  if (was_tracked) {
     if (was_disabled && app_ready) {
       for (auto& observer : observer_list_)
         observer.OnAppReadyChanged(app_id, true);
@@ -776,6 +778,7 @@ void ArcAppListPrefs::AddAppAndShortcut(
                      launchable, orientation_lock);
     for (auto& observer : observer_list_)
       observer.OnAppRegistered(app_id, app_info);
+    tracked_apps_.insert(app_id);
   }
 
   if (app_ready) {
@@ -818,8 +821,10 @@ void ArcAppListPrefs::RemoveApp(const std::string& app_id) {
   const bool removed = apps->Remove(app_id, nullptr);
   DCHECK(removed);
 
+  DCHECK(tracked_apps_.count(app_id));
   for (auto& observer : observer_list_)
     observer.OnAppRemoved(app_id);
+  tracked_apps_.erase(app_id);
 
   // Remove local data on file system.
   content::BrowserThread::GetBlockingPool()->PostTask(

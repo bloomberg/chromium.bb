@@ -360,6 +360,8 @@ class ArcAppListPrefs
   base::FilePath base_path_;
   // Contains set of ARC apps that are currently ready.
   std::unordered_set<std::string> ready_apps_;
+  // Contains set of ARC apps that are currently tracked.
+  std::unordered_set<std::string> tracked_apps_;
   // Keeps deferred icon load requests. Each app may contain several requests
   // for different scale factor. Scale factor is defined by specific bit
   // position.
