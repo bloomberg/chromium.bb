@@ -194,11 +194,14 @@ APIBinding::APIBinding(const std::string& api_name,
 
 APIBinding::~APIBinding() {}
 
-v8::Local<v8::Object> APIBinding::CreateInstance(v8::Local<v8::Context> context,
-                                                 v8::Isolate* isolate) {
+v8::Local<v8::Object> APIBinding::CreateInstance(
+    v8::Local<v8::Context> context,
+    v8::Isolate* isolate,
+    const AvailabilityCallback& is_available) {
   // TODO(devlin): APIs may change depending on which features are available,
   // but we should be able to cache the unconditional methods on an object
-  // template, create the object, and then add any conditional methods.
+  // template, create the object, and then add any conditional methods. Ideally,
+  // this information should be available on the generated API specification.
   v8::Local<v8::Object> object = v8::Object::New(isolate);
   gin::PerContextData* per_context_data = gin::PerContextData::From(context);
   DCHECK(per_context_data);
@@ -213,6 +216,10 @@ v8::Local<v8::Object> APIBinding::CreateInstance(v8::Local<v8::Context> context,
   for (const auto& sig : signatures_) {
     std::string full_method_name =
         base::StringPrintf("%s.%s", api_name_.c_str(), sig.first.c_str());
+
+    if (!is_available.Run(full_method_name))
+      continue;
+
     auto handler_callback = base::MakeUnique<HandlerCallback>(
         base::Bind(&APIBinding::HandleCall, weak_factory_.GetWeakPtr(),
                    full_method_name, sig.second.get()));

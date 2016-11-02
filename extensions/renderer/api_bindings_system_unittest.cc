@@ -66,6 +66,10 @@ const char kBetaAPISpec[] =
     "  }]"
     "}";
 
+bool AllowAllAPIs(const std::string& name) {
+  return true;
+}
+
 }  // namespace
 
 // The base class to test the APIBindingsSystem. This allows subclasses to
@@ -212,11 +216,11 @@ TEST_F(APIBindingsSystemTest, TestInitializationAndCallbacks) {
   v8::Local<v8::Context> context =
       v8::Local<v8::Context>::New(isolate, context_);
 
-  v8::Local<v8::Object> alpha_api =
-      bindings_system()->CreateAPIInstance(kAlphaAPIName, context, isolate);
+  v8::Local<v8::Object> alpha_api = bindings_system()->CreateAPIInstance(
+      kAlphaAPIName, context, isolate, base::Bind(&AllowAllAPIs));
   ASSERT_FALSE(alpha_api.IsEmpty());
-  v8::Local<v8::Object> beta_api =
-      bindings_system()->CreateAPIInstance(kBetaAPIName, context, isolate);
+  v8::Local<v8::Object> beta_api = bindings_system()->CreateAPIInstance(
+      kBetaAPIName, context, isolate, base::Bind(&AllowAllAPIs));
   ASSERT_FALSE(beta_api.IsEmpty());
 
   {
@@ -349,7 +353,7 @@ TEST_F(APIBindingsSystemTestWithRealAPI, RealAPIs) {
   auto add_api_to_chrome = [this, &chrome,
                             &context](const std::string& api_name) {
     v8::Local<v8::Object> api = bindings_system()->CreateAPIInstance(
-        api_name, context, context->GetIsolate());
+        api_name, context, context->GetIsolate(), base::Bind(&AllowAllAPIs));
     ASSERT_FALSE(api.IsEmpty()) << api_name;
     v8::Maybe<bool> res = chrome->Set(
         context, gin::StringToV8(context->GetIsolate(), api_name), api);

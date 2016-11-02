@@ -46,6 +46,10 @@ class APIBinding {
                           v8::Local<v8::Context>,
                           v8::Local<v8::Function>)>;
 
+  // The callback for determining if a given API method (specified by |name|)
+  // is available.
+  using AvailabilityCallback = base::Callback<bool(const std::string& name)>;
+
   // The callback type for handling an API call.
   using HandlerCallback = base::Callback<void(gin::Arguments*)>;
 
@@ -59,8 +63,10 @@ class APIBinding {
   ~APIBinding();
 
   // Returns a new v8::Object for the API this APIBinding represents.
-  v8::Local<v8::Object> CreateInstance(v8::Local<v8::Context> context,
-                                       v8::Isolate* isolate);
+  v8::Local<v8::Object> CreateInstance(
+      v8::Local<v8::Context> context,
+      v8::Isolate* isolate,
+      const AvailabilityCallback& is_available);
 
  private:
   using APISignature = std::vector<std::unique_ptr<ArgumentSpec>>;

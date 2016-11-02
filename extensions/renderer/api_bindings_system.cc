@@ -7,7 +7,6 @@
 #include "base/bind.h"
 #include "base/memory/ptr_util.h"
 #include "base/values.h"
-#include "extensions/renderer/api_binding.h"
 
 namespace extensions {
 
@@ -27,11 +26,12 @@ APIBindingsSystem::~APIBindingsSystem() {}
 v8::Local<v8::Object> APIBindingsSystem::CreateAPIInstance(
     const std::string& api_name,
     v8::Local<v8::Context> context,
-    v8::Isolate* isolate) {
+    v8::Isolate* isolate,
+    const APIBinding::AvailabilityCallback& is_available) {
   std::unique_ptr<APIBinding>& binding = api_bindings_[api_name];
   if (!binding)
     binding = CreateNewAPIBinding(api_name);
-  return binding->CreateInstance(context, isolate);
+  return binding->CreateInstance(context, isolate, is_available);
 }
 
 std::unique_ptr<APIBinding> APIBindingsSystem::CreateNewAPIBinding(

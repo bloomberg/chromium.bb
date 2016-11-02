@@ -11,6 +11,7 @@
 
 #include "base/callback.h"
 #include "base/macros.h"
+#include "extensions/renderer/api_binding.h"
 #include "extensions/renderer/api_request_handler.h"
 #include "extensions/renderer/argument_spec.h"
 
@@ -20,7 +21,6 @@ class ListValue;
 }
 
 namespace extensions {
-class APIBinding;
 class APIRequestHandler;
 
 // A class encompassing the necessary pieces to construct the JS entry points
@@ -49,9 +49,11 @@ class APIBindingsSystem {
   ~APIBindingsSystem();
 
   // Returns a new v8::Object representing the api specified by |api_name|.
-  v8::Local<v8::Object> CreateAPIInstance(const std::string& api_name,
-                                          v8::Local<v8::Context> context,
-                                          v8::Isolate* isolate);
+  v8::Local<v8::Object> CreateAPIInstance(
+      const std::string& api_name,
+      v8::Local<v8::Context> context,
+      v8::Isolate* isolate,
+      const APIBinding::AvailabilityCallback& is_available);
 
   // Responds to the request with the given |request_id|, calling the callback
   // with |response|.

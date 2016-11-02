@@ -96,6 +96,10 @@ const char kFunctions[] =
 
 const char kError[] = "Uncaught TypeError: Invalid invocation";
 
+bool AllowAllAPIs(const std::string& name) {
+  return true;
+}
+
 }  // namespace
 
 class APIBindingTest : public gin::V8Test {
@@ -210,7 +214,7 @@ TEST_F(APIBindingTest, Test) {
       v8::Local<v8::Context>::New(isolate, context_);
 
   v8::Local<v8::Object> binding_object =
-      binding.CreateInstance(context, isolate);
+      binding.CreateInstance(context, isolate, base::Bind(&AllowAllAPIs));
 
   ExpectPass(binding_object, "obj.oneString('foo');", "['foo']");
   ExpectPass(binding_object, "obj.oneString('');", "['']");
@@ -314,7 +318,7 @@ TEST_F(APIBindingTest, TypeRefsTest) {
       v8::Local<v8::Context>::New(isolate, context_);
 
   v8::Local<v8::Object> binding_object =
-      binding.CreateInstance(context, isolate);
+      binding.CreateInstance(context, isolate, base::Bind(&AllowAllAPIs));
 
   ExpectPass(binding_object, "obj.takesRefObj({prop1: 'foo'})",
              "[{'prop1':'foo'}]");
@@ -325,6 +329,59 @@ TEST_F(APIBindingTest, TypeRefsTest) {
   ExpectPass(binding_object, "obj.takesRefEnum('alpha')", "['alpha']");
   ExpectPass(binding_object, "obj.takesRefEnum('beta')", "['beta']");
   ExpectFailure(binding_object, "obj.takesRefEnum('gamma')", kError);
+}
+
+TEST_F(APIBindingTest, RestrictedAPIs) {
+  const char kRestrictedFunctions[] =
+      "[{"
+      "  'name': 'allowedOne',"
+      "  'parameters': []"
+      "}, {"
+      "  'name': 'allowedTwo',"
+      "  'parameters': []"
+      "}, {"
+      "  'name': 'restrictedOne',"
+      "  'parameters': []"
+      "}, {"
+      "  'name': 'restrictedTwo',"
+      "  'parameters': []"
+      "}]";
+  std::unique_ptr<base::ListValue> functions =
+      ListValueFromString(kRestrictedFunctions);
+  ASSERT_TRUE(functions);
+  ArgumentSpec::RefMap refs;
+  APIBinding binding(
+      "test", *functions, nullptr,
+      base::Bind(&APIBindingTest::OnFunctionCall, base::Unretained(this)),
+      &refs);
+
+  v8::Isolate* isolate = instance_->isolate();
+  v8::HandleScope handle_scope(isolate);
+  v8::Local<v8::Context> context =
+      v8::Local<v8::Context>::New(isolate, context_);
+
+  auto is_available = [](const std::string& name) {
+    std::set<std::string> functions = {"test.allowedOne", "test.allowedTwo",
+                                       "test.restrictedOne",
+                                       "test.restrictedTwo"};
+    EXPECT_TRUE(functions.count(name));
+    return name == "test.allowedOne" || name == "test.allowedTwo";
+  };
+
+  v8::Local<v8::Object> binding_object =
+      binding.CreateInstance(context, isolate, base::Bind(is_available));
+
+  auto is_defined = [&binding_object, context](const std::string& name) {
+    v8::Local<v8::Value> val =
+        GetPropertyFromObject(binding_object, context, name);
+    EXPECT_FALSE(val.IsEmpty());
+    return !val->IsUndefined() && !val->IsNull();
+  };
+
+  EXPECT_TRUE(is_defined("allowedOne"));
+  EXPECT_TRUE(is_defined("allowedTwo"));
+  EXPECT_FALSE(is_defined("restrictedOne"));
+  EXPECT_FALSE(is_defined("restrictedTwo"));
 }
 
 }  // namespace extensions
