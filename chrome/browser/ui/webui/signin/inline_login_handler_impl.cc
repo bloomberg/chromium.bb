@@ -538,7 +538,7 @@ bool InlineLoginHandlerImpl::CanOffer(Profile* profile,
     if (!current_email.empty() && !same_email) {
       UMA_HISTOGRAM_ENUMERATION("Signin.Reauth",
                                 signin_metrics::HISTOGRAM_ACCOUNT_MISSMATCH,
-                                signin_metrics::HISTOGRAM_MAX);
+                                signin_metrics::HISTOGRAM_REAUTH_MAX);
       if (error_message) {
         error_message->assign(
             l10n_util::GetStringFUTF8(IDS_SYNC_WRONG_EMAIL,
