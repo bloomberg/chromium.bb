@@ -98,3 +98,6 @@ class TestExpectationsTestCase(unittest.TestCase):
     def test_tab(self):
         self.assert_lines_lint(["\twebkit.org/b/1 passes/text.html [ Pass ]"], should_pass=False,
                                expected_output="Line contains tab character.  [whitespace/tab] [5]")
+
+    def test_missing_expectation_not_allowed(self):
+        self.assert_lines_lint(["crbug.com/1234 [ Mac ] passes/text.html [ Missing ]"], should_pass=False)

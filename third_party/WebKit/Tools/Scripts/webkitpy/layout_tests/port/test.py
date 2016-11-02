@@ -103,9 +103,9 @@ class TestList(object):
 #
 # These numbers may need to be updated whenever we add or delete tests. This includes virtual tests.
 #
-TOTAL_TESTS = 114
-TOTAL_SKIPS = 26
-TOTAL_CRASHES = 80
+TOTAL_TESTS = 106
+TOTAL_SKIPS = 22
+TOTAL_CRASHES = 76
 UNEXPECTED_PASSES = 1
 UNEXPECTED_FAILURES = 26
 
@@ -117,7 +117,6 @@ def unit_test_list():
     tests.add('failures/expected/device_failure.html', device_failure=True)
     tests.add('failures/expected/timeout.html', timeout=True)
     tests.add('failures/expected/leak.html', leak=True)
-    tests.add('failures/expected/missing_text.html', expected_text=None)
     tests.add('failures/expected/needsrebaseline.html', actual_text='needsrebaseline text')
     tests.add('failures/expected/needsmanualrebaseline.html', actual_text='needsmanualrebaseline text')
     tests.add('failures/expected/image.html',
@@ -132,14 +131,6 @@ def unit_test_list():
               actual_image=None, expected_image=None,
               actual_checksum=None)
     tests.add('failures/expected/keyboard.html', keyboard=True)
-    tests.add('failures/expected/missing_check.html',
-              expected_image='missing_check-png')
-    tests.add('failures/expected/missing_image.html', expected_image=None)
-    tests.add('failures/expected/missing_audio.html', expected_audio=None,
-              actual_text=None, expected_text=None,
-              actual_image=None, expected_image=None,
-              actual_checksum=None)
-    tests.add('failures/expected/missing_text.html', expected_text=None)
     tests.add('failures/expected/newlines_leading.html',
               expected_text="\nfoo\n", actual_text="foo\n")
     tests.add('failures/expected/newlines_trailing.html',
@@ -293,10 +284,6 @@ Bug(test) failures/expected/needsmanualrebaseline.html [ NeedsManualRebaseline ]
 Bug(test) failures/expected/audio.html [ Failure ]
 Bug(test) failures/expected/image_checksum.html [ Failure ]
 Bug(test) failures/expected/mismatch.html [ Failure ]
-Bug(test) failures/expected/missing_check.html [ Missing Pass ]
-Bug(test) failures/expected/missing_image.html [ Missing Pass ]
-Bug(test) failures/expected/missing_audio.html [ Missing Pass ]
-Bug(test) failures/expected/missing_text.html [ Missing Pass ]
 Bug(test) failures/expected/newlines_leading.html [ Failure ]
 Bug(test) failures/expected/newlines_trailing.html [ Failure ]
 Bug(test) failures/expected/newlines_with_excess_CR.html [ Failure ]

@@ -435,6 +435,11 @@ class TestExpectationLine(object):
         if not expectations and not has_unrecognized_expectation:
             warnings.append('Missing expectations.')
 
+        if 'MISSING' in expectations:
+            warnings.append(
+                '"Missing" expectations are not allowed; either download new baselines '
+                '(see https://goo.gl/SHVYrZ) or use "NeedsRebaseline" expecatations.')
+
         expectation_line.bugs = bugs
         expectation_line.specifiers = specifiers
         expectation_line.expectations = expectations

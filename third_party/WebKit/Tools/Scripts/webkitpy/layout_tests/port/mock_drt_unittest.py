@@ -184,12 +184,6 @@ class MockDRTTest(unittest.TestCase):
     def test_checksum_in_png(self):
         self.assertTest('passes/checksum_in_image.html', True)
 
-    def test_missing_image(self):
-        self.assertTest('failures/expected/missing_image.html', True)
-
-    def test_missing_text(self):
-        self.assertTest('failures/expected/missing_text.html', True)
-
     def test_reftest_match(self):
         self.assertTest('passes/reftest.html', True, expected_checksum='mock-checksum', expected_text='reference text\n')
 

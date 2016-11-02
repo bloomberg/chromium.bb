@@ -55,7 +55,6 @@ class Base(unittest.TestCase):
                 'failures/expected/crash.html',
                 'failures/expected/needsrebaseline.html',
                 'failures/expected/needsmanualrebaseline.html',
-                'failures/expected/missing_text.html',
                 'failures/expected/image.html',
                 'failures/expected/timeout.html',
                 'passes/text.html',
@@ -71,7 +70,6 @@ Bug(test) failures/expected/text.html [ Failure ]
 Bug(test) failures/expected/crash.html [ Crash ]
 Bug(test) failures/expected/needsrebaseline.html [ NeedsRebaseline ]
 Bug(test) failures/expected/needsmanualrebaseline.html [ NeedsManualRebaseline ]
-Bug(test) failures/expected/missing_image.html [ Rebaseline Missing ]
 Bug(test) failures/expected/image_checksum.html [ Crash ]
 Bug(test) failures/expected/image.html [ Crash Mac ]
 """

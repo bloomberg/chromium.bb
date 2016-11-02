@@ -332,11 +332,19 @@ class RunTest(unittest.TestCase, StreamTestingMixin):
         self.assertContains(err, 'No tests to run.\n')
 
     def test_natural_order(self):
-        tests_to_run = ['passes/audio.html', 'failures/expected/text.html',
-                        'failures/expected/missing_text.html', 'passes/args.html']
+        tests_to_run = [
+            'passes/audio.html',
+            'failures/expected/text.html',
+            'failures/unexpected/missing_text.html',
+            'passes/args.html'
+        ]
         tests_run = get_tests_run(['--order=natural'] + tests_to_run)
-        self.assertEqual(['failures/expected/missing_text.html', 'failures/expected/text.html',
-                          'passes/args.html', 'passes/audio.html'], tests_run)
+        self.assertEqual([
+            'failures/expected/text.html',
+            'failures/unexpected/missing_text.html',
+            'passes/args.html',
+            'passes/audio.html'
+        ], tests_run)
 
     def test_natural_order_test_specified_multiple_times(self):
         tests_to_run = ['passes/args.html', 'passes/audio.html', 'passes/audio.html', 'passes/args.html']
@@ -344,30 +352,35 @@ class RunTest(unittest.TestCase, StreamTestingMixin):
         self.assertEqual(['passes/args.html', 'passes/args.html', 'passes/audio.html', 'passes/audio.html'], tests_run)
 
     def test_random_order(self):
-        tests_to_run = ['passes/audio.html', 'failures/expected/text.html',
-                        'failures/expected/missing_text.html', 'passes/args.html']
+        tests_to_run = [
+            'passes/audio.html',
+            'failures/expected/text.html',
+            'failures/unexpected/missing_text.html',
+            'passes/args.html'
+        ]
         tests_run = get_tests_run(['--order=random'] + tests_to_run)
         self.assertEqual(sorted(tests_to_run), sorted(tests_run))
 
     def test_random_order_with_seed(self):
         tests_to_run = [
-            'failures/expected/missing_text.html',
             'failures/expected/text.html',
+            'failures/unexpected/missing_text.html',
             'passes/args.html',
             'passes/audio.html',
         ]
         tests_run = get_tests_run(['--order=random', '--seed=5'] + sorted(tests_to_run))
         expected_order = [
-            'failures/expected/missing_text.html',
             'failures/expected/text.html',
+            'failures/unexpected/missing_text.html',
             'passes/audio.html',
             'passes/args.html',
         ]
+
         self.assertEqual(tests_run, expected_order)
 
     def test_random_order_with_timestamp_seed(self):
         tests_to_run = sorted([
-            'failures/expected/missing_text.html',
+            'failures/unexpected/missing_text.html',
             'failures/expected/text.html',
             'passes/args.html',
             'passes/audio.html',
@@ -387,8 +400,12 @@ class RunTest(unittest.TestCase, StreamTestingMixin):
         self.assertEqual(tests_run.count('passes/args.html'), 2)
 
     def test_no_order(self):
-        tests_to_run = ['passes/audio.html', 'failures/expected/text.html',
-                        'failures/expected/missing_text.html', 'passes/args.html']
+        tests_to_run = [
+            'passes/audio.html',
+            'failures/expected/text.html',
+            'failures/unexpected/missing_text.html',
+            'passes/args.html'
+        ]
         tests_run = get_tests_run(['--order=none'] + tests_to_run)
         self.assertEqual(tests_to_run, tests_run)
 
@@ -571,7 +588,6 @@ class RunTest(unittest.TestCase, StreamTestingMixin):
         # is missing, update the expected generic location.
         host = MockHost()
         details, _, _ = logging_run(['--no-show-results', '--retry-failures',
-                                     'failures/expected/missing_image.html',
                                      'failures/unexpected/missing_text.html',
                                      'failures/unexpected/text-image-checksum.html'],
                                     tests_included=True, host=host)
@@ -1067,13 +1083,12 @@ class RebaselineTest(unittest.TestCase, StreamTestingMixin):
         # is missing, update the expected generic location.
         host = MockHost()
         details, err, _ = logging_run(
-            ['--pixel-tests', '--reset-results', 'passes/image.html', 'failures/expected/missing_image.html'],
+            ['--pixel-tests', '--reset-results', 'passes/image.html'],
             tests_included=True, host=host, new_results=True)
         file_list = host.filesystem.written_files.keys()
         self.assertEqual(details.exit_code, 0)
-        self.assertEqual(len(file_list), 9)
+        self.assertEqual(len(file_list), 7)
         self.assertBaselines(file_list, "passes/image", [".txt", ".png"], err)
-        self.assertBaselines(file_list, "failures/expected/missing_image", [".txt", ".png"], err)
 
     def test_missing_results(self):
         # Test that we update expectations in place. If the expectation
@@ -1091,72 +1106,18 @@ class RebaselineTest(unittest.TestCase, StreamTestingMixin):
         self.assertBaselines(file_list, "platform/test/failures/unexpected/missing_image", [".png"], err)
         self.assertBaselines(file_list, "platform/test/failures/unexpected/missing_render_tree_dump", [".txt"], err)
 
-    def test_missing_results_not_added_if_expected_missing(self):
-        # Test that we update expectations in place. If the expectation
-        # is missing, update the expected generic location.
-        host = MockHost()
-        options, _ = run_webkit_tests.parse_args([])
-
-        port = test.TestPort(host, options=options)
-        host.filesystem.write_text_file(port.path_to_generic_test_expectations_file(), """
-Bug(foo) failures/unexpected/missing_text.html [ Missing ]
-Bug(foo) failures/unexpected/missing_image.html [ NeedsRebaseline ]
-Bug(foo) failures/unexpected/missing_audio.html [ NeedsManualRebaseline ]
-Bug(foo) failures/unexpected/missing_render_tree_dump.html [ Missing ]
-""")
-        details, _, _ = logging_run(['--no-show-results',
-                                     'failures/unexpected/missing_text.html',
-                                     'failures/unexpected/missing_image.html',
-                                     'failures/unexpected/missing_audio.html',
-                                     'failures/unexpected/missing_render_tree_dump.html'],
-                                    tests_included=True, host=host, new_results=True, port_obj=port)
-        file_list = host.filesystem.written_files.keys()
-        self.assertEqual(details.exit_code, 0)
-        self.assertEqual(len(file_list), 8)
-        self.assertFalse(any('failures/unexpected/missing_text-expected' in file for file in file_list))
-        self.assertFalse(any('failures/unexpected/missing_image-expected' in file for file in file_list))
-        self.assertFalse(any('failures/unexpected/missing_render_tree_dump-expected' in file for file in file_list))
-
-    def test_missing_results_not_added_if_expected_missing_and_reset_results(self):
-        # Test that we update expectations in place. If the expectation
-        # is missing, update the expected generic location.
-        host = MockHost()
-        options, _ = run_webkit_tests.parse_args(['--pixel-tests', '--reset-results'])
-
-        port = test.TestPort(host, options=options)
-        host.filesystem.write_text_file(port.path_to_generic_test_expectations_file(), """
-Bug(foo) failures/unexpected/missing_text.html [ Missing ]
-Bug(foo) failures/unexpected/missing_image.html [ NeedsRebaseline ]
-Bug(foo) failures/unexpected/missing_audio.html [ NeedsManualRebaseline ]
-Bug(foo) failures/unexpected/missing_render_tree_dump.html [ Missing ]
-""")
-        details, err, _ = logging_run(['--pixel-tests', '--reset-results',
-                                       'failures/unexpected/missing_text.html',
-                                       'failures/unexpected/missing_image.html',
-                                       'failures/unexpected/missing_audio.html',
-                                       'failures/unexpected/missing_render_tree_dump.html'],
-                                      tests_included=True, host=host, new_results=True, port_obj=port)
-        file_list = host.filesystem.written_files.keys()
-        self.assertEqual(details.exit_code, 0)
-        self.assertEqual(len(file_list), 12)
-        self.assertBaselines(file_list, "failures/unexpected/missing_text", [".txt"], err)
-        self.assertBaselines(file_list, "failures/unexpected/missing_image", [".png"], err)
-        self.assertBaselines(file_list, "failures/unexpected/missing_render_tree_dump", [".txt"], err)
-
     def test_new_baseline(self):
         # Test that we update the platform expectations in the version-specific directories
         # for both existing and new baselines.
         host = MockHost()
         details, err, _ = logging_run(
-            ['--pixel-tests', '--new-baseline', 'passes/image.html', 'failures/expected/missing_image.html'],
+            ['--pixel-tests', '--new-baseline', 'passes/image.html'],
             tests_included=True, host=host, new_results=True)
         file_list = host.filesystem.written_files.keys()
         self.assertEqual(details.exit_code, 0)
-        self.assertEqual(len(file_list), 9)
+        self.assertEqual(len(file_list), 7)
         self.assertBaselines(file_list,
                              "platform/test-mac-mac10.10/passes/image", [".txt", ".png"], err)
-        self.assertBaselines(file_list,
-                             "platform/test-mac-mac10.10/failures/expected/missing_image", [".txt", ".png"], err)
 
     def test_reftest_reset_results(self):
         # Test rebaseline of reftests.

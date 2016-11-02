@@ -928,7 +928,7 @@ class Port(object):
         """
         fs = self.host.filesystem
         if self.default_smoke_test_only():
-            smoke_test_filename = fs.join(self.layout_tests_dir(), 'SmokeTests')
+            smoke_test_filename = self.path_to_smoke_tests_file()
             if fs.exists(smoke_test_filename) and test not in fs.read_text_file(smoke_test_filename):
                 return True
 
@@ -940,6 +940,9 @@ class Port(object):
         # two copies of the test expectations.
         return (SKIP in full_expectations.get_expectations(test) and
                 SKIP not in generic_expectations.get_expectations(test))
+
+    def path_to_smoke_tests_file(self):
+        return self.host.filesystem.join(self.layout_tests_dir(), 'SmokeTests')
 
     def _tests_from_skipped_file_contents(self, skipped_file_contents):
         tests_to_skip = []
