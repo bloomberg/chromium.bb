@@ -4,6 +4,7 @@
 
 import("//build/config/ui.gni")
 import("//ui/ozone/ozone.gni")
+import("//ui/ozone/ozone_extra.gni")
 import("//testing/test.gni")
 
 assert(use_ozone)
@@ -11,13 +12,13 @@ assert(use_ozone)
 visibility = [ ":*" ]
 
 # The list of platforms that will be built.
-ozone_platforms = []
+ozone_platforms = ozone_external_platforms
 
 # Extra dependencies to pull into ui/ozone for built platforms.
-ozone_platform_deps = []
+ozone_platform_deps = ozone_external_platform_deps
 
 # Extra dependencies to pull into ozone_unittests for built platforms.
-ozone_platform_test_deps = []
+ozone_platform_test_deps = ozone_external_platform_test_deps
 
 if (ozone_platform_headless) {
   ozone_platforms += [ "headless" ]
