@@ -25,6 +25,16 @@ Panel = function() {
 };
 
 /**
+ * @enum {string}
+ */
+Panel.Mode = {
+  COLLAPSED: 'collapsed',
+  FOCUSED: 'focused',
+  FULLSCREEN_MENUS: 'menus',
+  FULLSCREEN_TUTORIAL: 'tutorial'
+};
+
+/**
  * Initialize the panel.
  */
 Panel.init = function() {
@@ -46,6 +56,9 @@ Panel.init = function() {
   /** @type {Element} @private */
   this.brailleTableElement_ = $('braille-table');
   this.brailleTableElement2_ = $('braille-table2');
+
+  /** @type {Panel.Mode} @private */
+  this.mode_ = Panel.Mode.COLLAPSED;
 
   /**
    * The array of top-level menus.
@@ -126,15 +139,15 @@ Panel.init = function() {
  */
 Panel.updateFromPrefs = function() {
   if (Panel.searching_) {
-    this.speechContainer_.style.display = 'none';
-    this.brailleContainer_.style.display = 'none';
-    this.searchContainer_.style.display = 'block';
+    this.speechContainer_.hidden = true;
+    this.brailleContainer_.hidden = true;
+    this.searchContainer_.hidden = false;
     return;
   }
 
-  this.speechContainer_.style.display = 'block';
-  this.brailleContainer_.style.display = 'block';
-  this.searchContainer_.style.display = 'none';
+  this.speechContainer_.hidden = false;
+  this.brailleContainer_.hidden = false;
+  this.searchContainer_.hidden = true;
 
   if (localStorage['brailleCaptions'] === String(true)) {
     this.speechContainer_.style.visibility = 'hidden';
@@ -211,7 +224,7 @@ Panel.exec = function(command) {
 Panel.onEnableMenus = function() {
   Panel.menusEnabled_ = true;
   $('menus_button').disabled = false;
-  $('triangle').style.display = '';
+  $('triangle').hidden = false;
 };
 
 /**
@@ -220,7 +233,38 @@ Panel.onEnableMenus = function() {
 Panel.onDisableMenus = function() {
   Panel.menusEnabled_ = false;
   $('menus_button').disabled = true;
-  $('triangle').style.display = 'none';
+  $('triangle').hidden = true;
+};
+
+/**
+ * Sets the mode, which determines the size of the panel and what objects
+ *     are shown or hidden.
+ * @param {Panel.Mode} mode The new mode.
+ */
+Panel.setMode = function(mode) {
+  if (this.mode_ == mode)
+    return;
+
+  this.mode_ = mode;
+
+  if (this.mode_ == Panel.Mode.FULLSCREEN_MENUS ||
+      this.mode_ == Panel.Mode.FULLSCREEN_TUTORIAL) {
+    // Change the url fragment to 'fullscreen', which signals the native
+    // host code to make the window fullscreen and give it focus.
+    window.location = '#fullscreen';
+  } else if (this.mode_ == Panel.Mode.FOCUSED) {
+    // // Change the url fragment to 'focus', which signals the native
+    // host code to give the window focus.
+    window.location = '#focus';
+  } else {
+    // Remove the url fragment, which signals the native host code to
+    // collapse the panel to its normal size and cause it to lose focus.
+    window.location = '#';
+  }
+
+  $('main').hidden = (this.mode_ == Panel.Mode.FULLSCREEN_TUTORIAL);
+  $('menus_background').hidden = (this.mode_ != Panel.Mode.FULLSCREEN_MENUS);
+  $('tutorial').hidden = (this.mode_ != Panel.Mode.FULLSCREEN_TUTORIAL);
 };
 
 /**
@@ -241,9 +285,7 @@ Panel.onOpenMenus = function(opt_event, opt_activateMenuTitle) {
     opt_event.preventDefault();
   }
 
-  // Change the url fragment to 'fullscreen', which signals the native
-  // host code to make the window fullscreen, revealing the menus.
-  window.location = '#fullscreen';
+  Panel.setMode(Panel.Mode.FULLSCREEN_MENUS);
 
   // Clear any existing menus and clear the callback.
   Panel.clearMenus();
@@ -367,8 +409,7 @@ Panel.onSearch = function() {
   Panel.pendingCallback_ = null;
   Panel.searching_ = true;
   Panel.updateFromPrefs();
-
-  window.location = '#focus';
+  Panel.setMode(Panel.Mode.FOCUSED);
 
   ISearchUI.get(Panel.searchInput_);
 };
@@ -600,6 +641,11 @@ Panel.onMouseUp = function(event) {
  * @param {Event} event The key event.
  */
 Panel.onKeyDown = function(event) {
+  if (event.key == 'Escape' && Panel.mode_ == Panel.Mode.FULLSCREEN_TUTORIAL) {
+    Panel.setMode(Panel.Mode.COLLAPSED);
+    return;
+  }
+
   if (!Panel.activeMenu_)
     return;
 
@@ -655,8 +701,7 @@ Panel.onSearchInputBlur = function() {
   if (Panel.searching_) {
     if (document.activeElement != Panel.searchInput_ || !document.hasFocus()) {
       Panel.searching_ = false;
-      if (window.location == '#focus')
-        window.location = '#';
+      Panel.setMode(Panel.Mode.COLLAPSED);
       Panel.updateFromPrefs();
       Panel.searchInput_.value = '';
     }
@@ -670,13 +715,15 @@ Panel.onOptions = function() {
   var bkgnd =
       chrome.extension.getBackgroundPage()['ChromeVoxState']['instance'];
   bkgnd['showOptionsPage']();
-  window.location = '#';
+  Panel.setMode(Panel.Mode.COLLAPSED);
 };
 
 /**
  * Exit ChromeVox.
  */
 Panel.onClose = function() {
+  // Change the url fragment to 'close', which signals the native code
+  // to exit ChromeVox.
   window.location = '#close';
 };
 
@@ -698,7 +745,13 @@ Panel.closeMenusAndRestoreFocus = function() {
   // Watch for the next focus event.
   var onFocus = function(desktop, evt) {
     desktop.removeEventListener(chrome.automation.EventType.focus, onFocus);
-    Panel.pendingCallback_ && Panel.pendingCallback_();
+    if (Panel.pendingCallback_) {
+      // Clear it before calling it, in case the callback itself triggers
+      // another pending callback.
+      var pendingCallback = Panel.pendingCallback_;
+      Panel.pendingCallback_ = null;
+      pendingCallback();
+    }
   }.bind(this);
 
   chrome.automation.getDesktop(function(desktop) {
@@ -712,7 +765,7 @@ Panel.closeMenusAndRestoreFocus = function() {
     Panel.clearMenus();
 
     // Make sure we're not in full-screen mode.
-    window.location = '#';
+    Panel.setMode(Panel.Mode.COLLAPSED);
 
     this.activeMenu_ = null;
   });
@@ -724,11 +777,7 @@ Panel.closeMenusAndRestoreFocus = function() {
 Panel.onTutorial = function() {
   // Change the url fragment to 'fullscreen', which signals the native
   // host code to make the window fullscreen, revealing the menus.
-  window.location = '#fullscreen';
-
-  $('main').style.display = 'none';
-  $('menus_background').style.display = 'none';
-  $('tutorial').style.display = 'block';
+  Panel.setMode(Panel.Mode.FULLSCREEN_TUTORIAL);
 
   Panel.tutorial_.firstPage();
 };
@@ -751,9 +800,7 @@ Panel.onTutorialPrevious = function() {
  * Close the tutorial.
  */
 Panel.onCloseTutorial = function() {
-  $('main').style.display = 'block';
-  $('tutorial').style.display = 'none';
-  Panel.closeMenusAndRestoreFocus();
+  Panel.setMode(Panel.Mode.COLLAPSED);
 };
 
 window.addEventListener('load', function() {
