@@ -506,7 +506,7 @@ void FrameView::setFrameRect(const IntRect& newRect) {
 
   frameRectsChanged();
 
-  updateScrollableAreaSet();
+  updateParentScrollableAreaSet();
 
   if (LayoutViewItem layoutView = this->layoutViewItem()) {
     // TODO(majidvp): It seems that this only needs to be called when size
@@ -620,7 +620,7 @@ void FrameView::setContentsSize(const IntSize& size) {
   if (!page)
     return;
 
-  updateScrollableAreaSet();
+  updateParentScrollableAreaSet();
 
   page->chromeClient().contentsSizeChanged(m_frame.get(), size);
   frame().loader().restoreScrollPositionAndViewState();
@@ -2462,7 +2462,7 @@ FrameView::ScrollingReasons FrameView::getScrollingReasons() {
   return Scrollable;
 }
 
-void FrameView::updateScrollableAreaSet() {
+void FrameView::updateParentScrollableAreaSet() {
   // That ensures that only inner frames are cached.
   FrameView* parentFrameView = this->parentFrameView();
   if (!parentFrameView)
@@ -3432,7 +3432,7 @@ void FrameView::setParent(Widget* parentView) {
 
   Widget::setParent(parentView);
 
-  updateScrollableAreaSet();
+  updateParentScrollableAreaSet();
   setNeedsUpdateViewportIntersection();
   setupRenderThrottling();
 
@@ -4282,8 +4282,11 @@ void FrameView::setParentVisible(bool visible) {
 void FrameView::show() {
   if (!isSelfVisible()) {
     setSelfVisible(true);
+    if (ScrollingCoordinator* scrollingCoordinator =
+            this->scrollingCoordinator())
+      scrollingCoordinator->frameViewVisibilityDidChange();
     setNeedsCompositingUpdate(layoutViewItem(), CompositingUpdateRebuildTree);
-    updateScrollableAreaSet();
+    updateParentScrollableAreaSet();
     if (isParentVisible()) {
       for (const auto& child : m_children)
         child->setParentVisible(true);
@@ -4300,8 +4303,11 @@ void FrameView::hide() {
         child->setParentVisible(false);
     }
     setSelfVisible(false);
+    if (ScrollingCoordinator* scrollingCoordinator =
+            this->scrollingCoordinator())
+      scrollingCoordinator->frameViewVisibilityDidChange();
     setNeedsCompositingUpdate(layoutViewItem(), CompositingUpdateRebuildTree);
-    updateScrollableAreaSet();
+    updateParentScrollableAreaSet();
   }
 
   Widget::hide();

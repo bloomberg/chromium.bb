@@ -144,6 +144,11 @@
   },
   {
     "prefix": "rootlayerscrolls",
+    "base": "scrollingcoordinator",
+    "args": ["--root-layer-scrolls"]
+  },
+  {
+    "prefix": "rootlayerscrolls",
     "base": "fast/scrolling",
     "args": ["--root-layer-scrolls"]
   },

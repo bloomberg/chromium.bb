@@ -854,7 +854,7 @@ class CORE_EXPORT FrameView final
   bool wasViewportResized();
   void sendResizeEventIfNeeded();
 
-  void updateScrollableAreaSet();
+  void updateParentScrollableAreaSet();
 
   void scheduleUpdateWidgetsIfNecessary();
   void updateWidgetsTimerFired(TimerBase*);

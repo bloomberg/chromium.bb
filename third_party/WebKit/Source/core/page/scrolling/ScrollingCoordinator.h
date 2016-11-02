@@ -77,6 +77,9 @@ class CORE_EXPORT ScrollingCoordinator final
 
   void updateAfterCompositingChangeIfNeeded();
 
+  // Should be called whenever a frameview visibility is changed.
+  void frameViewVisibilityDidChange();
+
   // Should be called whenever a scrollable area is added or removed, or
   // gains/loses a composited layer.
   void scrollableAreasDidChange();

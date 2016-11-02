@@ -131,6 +131,10 @@ void ScrollingCoordinator::notifyOverflowUpdated() {
   m_scrollGestureRegionIsDirty = true;
 }
 
+void ScrollingCoordinator::frameViewVisibilityDidChange() {
+  m_scrollGestureRegionIsDirty = true;
+}
+
 void ScrollingCoordinator::scrollableAreasDidChange() {
   ASSERT(m_page);
   if (!m_page->mainFrame()->isLocalFrame() ||
@@ -873,7 +877,8 @@ Region ScrollingCoordinator::computeShouldHandleScrollGestureOnMainThreadRegion(
     const IntPoint& frameLocation) const {
   Region shouldHandleScrollGestureOnMainThreadRegion;
   FrameView* frameView = frame->view();
-  if (!frameView || frameView->shouldThrottleRendering())
+  if (!frameView || frameView->shouldThrottleRendering() ||
+      !frameView->isVisible())
     return shouldHandleScrollGestureOnMainThreadRegion;
 
   IntPoint offset = frameLocation;
