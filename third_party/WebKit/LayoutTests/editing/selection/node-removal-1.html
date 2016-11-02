@@ -1,24 +1,13 @@
 <!doctype html>
 <script src="../../resources/testharness.js"></script>
 <script src="../../resources/testharnessreport.js"></script>
-<p>This tests behavior when a node that serves as the start or end of a selection is removed from the document.  Ideally, we would just adjust the selection when an endpoint is removed, for now, we just blow away the selection.</p>
-<p>This test creates a selection that ends inside of a node that will be removed.  Then the node is removed.  There should be no selection afterward.</p>
-<div id="sample">
-hello <span style="color:red;" id="removeMe">removeme</span> world!
-</div>
-<div id="log"></div>
+<script src="../assert_selection.js"></script>
 <script>
-test(function() {
-    var selection = window.getSelection();
-    var sample = document.getElementById("sample");
-    var removeMe = document.getElementById("removeMe");
-    selection.collapse(sample, 0);
-    selection.extend(removeMe, 1);
-    removeMe.remove();
-
-    assert_equals(selection.anchorNode, sample.firstChild, 'anchorNode');
-    assert_equals(selection.anchorOffset, 1, 'anchorOffset');
-    assert_equals(selection.focusNode, sample, 'focusNode');
-    assert_equals(selection.focusOffset, 1, 'focusOffset');
-});
+test(() => assert_selection(
+    '<div>^hello <span id="removeMe">removeMe|</span> world!</div>',
+    selection => {
+        selection.document.getElementById('removeMe').remove();
+    },
+    '<div>^hello | world!</div>'),
+    'Verify selection after node removal');
 </script>
