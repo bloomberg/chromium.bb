@@ -1340,6 +1340,17 @@ class ChromeDriverTest(ChromeDriverBaseTestWithWebServer):
     self._driver.Load(self.GetHttpUrlForFile(
         '/chromedriver/log_undefined_value.html'))
 
+  def testCanSetCheckboxWithSpaceKey(self):
+     self._driver.Load('about:blank')
+     self._driver.ExecuteScript(
+         "document.body.innerHTML = '<input type=\"checkbox\">';")
+     checkbox = self._driver.FindElement('tag name', 'input')
+     self.assertFalse(
+         self._driver.ExecuteScript('return arguments[0].checked', checkbox))
+     checkbox.SendKeys(' ')
+     self.assertTrue(
+         self._driver.ExecuteScript('return arguments[0].checked', checkbox))
+
 
 class ChromeDriverPageLoadTimeoutTest(ChromeDriverBaseTestWithWebServer):
 

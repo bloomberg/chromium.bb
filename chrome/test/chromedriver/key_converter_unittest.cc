@@ -20,42 +20,38 @@
 namespace {
 
 void CheckEvents(const base::string16& keys,
-                 KeyEvent expected_events[],
+                 const std::list<KeyEvent>& expected_events,
                  bool release_modifiers,
-                 size_t expected_size,
                  int expected_modifiers) {
   int modifiers = 0;
   std::list<KeyEvent> events;
   EXPECT_EQ(kOk, ConvertKeysToKeyEvents(keys, release_modifiers,
                                         &modifiers, &events).code());
-  EXPECT_EQ(expected_size, events.size());
-  size_t i = 0;
-  std::list<KeyEvent>::const_iterator it = events.begin();
-  while (i < expected_size && it != events.end()) {
-    EXPECT_EQ(expected_events[i].type, it->type);
-    EXPECT_EQ(expected_events[i].modifiers, it->modifiers);
-    EXPECT_EQ(expected_events[i].modified_text, it->modified_text);
-    EXPECT_EQ(expected_events[i].unmodified_text, it->unmodified_text);
-    EXPECT_EQ(expected_events[i].key_code, it->key_code);
+  EXPECT_EQ(expected_events.size(), events.size());
+  std::list<KeyEvent>::const_iterator expected = expected_events.begin();
+  std::list<KeyEvent>::const_iterator actual = events.begin();
+  while (expected != expected_events.end() && actual != events.end()) {
+    EXPECT_EQ(expected->type, actual->type);
+    EXPECT_EQ(expected->modifiers, actual->modifiers);
+    EXPECT_EQ(expected->modified_text, actual->modified_text);
+    EXPECT_EQ(expected->unmodified_text, actual->unmodified_text);
+    EXPECT_EQ(expected->key_code, actual->key_code);
 
-    ++i;
-    ++it;
+    ++expected;
+    ++actual;
   }
   EXPECT_EQ(expected_modifiers, modifiers);
 }
 
 void CheckEventsReleaseModifiers(const base::string16& keys,
-                                 KeyEvent expected_events[],
-                                 size_t expected_size) {
+                                 const std::list<KeyEvent>& expected_events) {
   CheckEvents(keys, expected_events, true /* release_modifier */,
-      expected_size, 0 /* expected_modifiers */);
+      0 /* expected_modifiers */);
 }
 
 void CheckEventsReleaseModifiers(const std::string& keys,
-                                 KeyEvent expected_events[],
-                                 size_t expected_size) {
-  CheckEventsReleaseModifiers(base::UTF8ToUTF16(keys),
-      expected_events, expected_size);
+                                 std::list<KeyEvent>& expected_events) {
+  CheckEventsReleaseModifiers(base::UTF8ToUTF16(keys), expected_events);
 }
 
 void CheckNonShiftChar(ui::KeyboardCode key_code, char character) {
@@ -105,129 +101,154 @@ void CheckShiftChar(ui::KeyboardCode key_code, char character, char lower) {
 }  // namespace
 
 TEST(KeyConverter, SingleChar) {
-  KeyEvent event_array[] = {
-      CreateKeyDownEvent(ui::VKEY_H, 0),
-      CreateCharEvent("h", "h", 0),
-      CreateKeyUpEvent(ui::VKEY_H, 0)};
-  CheckEventsReleaseModifiers("h", event_array, arraysize(event_array));
+  KeyEventBuilder builder;
+  std::list<KeyEvent> key_events;
+  builder.SetText("h", "h")->SetKeyCode(ui::VKEY_H)->Generate(&key_events);
+  CheckEventsReleaseModifiers("h", key_events);
 }
 
 TEST(KeyConverter, SingleNumber) {
-  KeyEvent event_array[] = {
-      CreateKeyDownEvent(ui::VKEY_1, 0),
-      CreateCharEvent("1", "1", 0),
-      CreateKeyUpEvent(ui::VKEY_1, 0)};
-  CheckEventsReleaseModifiers("1", event_array, arraysize(event_array));
+  KeyEventBuilder builder;
+  std::list<KeyEvent> key_events;
+  builder.SetText("1", "1")->SetKeyCode(ui::VKEY_1)->Generate(&key_events);
+  CheckEventsReleaseModifiers("1", key_events);
 }
 
 TEST(KeyConverter, MultipleChars) {
-  KeyEvent event_array[] = {
-      CreateKeyDownEvent(ui::VKEY_H, 0),
-      CreateCharEvent("h", "h", 0),
-      CreateKeyUpEvent(ui::VKEY_H, 0),
-      CreateKeyDownEvent(ui::VKEY_E, 0),
-      CreateCharEvent("e", "e", 0),
-      CreateKeyUpEvent(ui::VKEY_E, 0),
-      CreateKeyDownEvent(ui::VKEY_Y, 0),
-      CreateCharEvent("y", "y", 0),
-      CreateKeyUpEvent(ui::VKEY_Y, 0)};
-  CheckEventsReleaseModifiers("hey", event_array, arraysize(event_array));
+  KeyEventBuilder builder;
+  std::list<KeyEvent> key_events;
+  builder.SetText("h", "h")->SetKeyCode(ui::VKEY_H)->Generate(&key_events);
+  builder.SetText("e", "e")->SetKeyCode(ui::VKEY_E)->Generate(&key_events);
+  builder.SetText("y", "y")->SetKeyCode(ui::VKEY_Y)->Generate(&key_events);
+  CheckEventsReleaseModifiers("hey", key_events);
 }
 
 TEST(KeyConverter, WebDriverSpecialChar) {
-  KeyEvent event_array[] = {
-      CreateKeyDownEvent(ui::VKEY_SPACE, 0),
-      CreateCharEvent(" ", " ", 0),
-      CreateKeyUpEvent(ui::VKEY_SPACE, 0)};
+  KeyEventBuilder builder;
+  std::list<KeyEvent> key_events;
+  builder.SetKeyCode(ui::VKEY_SPACE)->SetText(" ", " ")->Generate(&key_events);
   base::string16 keys;
   keys.push_back(static_cast<base::char16>(0xE00DU));
-  CheckEventsReleaseModifiers(keys, event_array, arraysize(event_array));
+  CheckEventsReleaseModifiers(keys, key_events);
 }
 
 TEST(KeyConverter, WebDriverSpecialNonCharKey) {
-  KeyEvent event_array[] = {
-      CreateKeyDownEvent(ui::VKEY_F1, 0),
-      CreateKeyUpEvent(ui::VKEY_F1, 0)};
+  KeyEventBuilder builder;
+  std::list<KeyEvent> key_events;
+  builder.SetKeyCode(ui::VKEY_F1)->Generate(&key_events);
   base::string16 keys;
   keys.push_back(static_cast<base::char16>(0xE031U));
-  CheckEventsReleaseModifiers(keys, event_array, arraysize(event_array));
+  CheckEventsReleaseModifiers(keys, key_events);
 }
 
 TEST(KeyConverter, FrenchKeyOnEnglishLayout) {
-  KeyEvent event_array[] = {
-      CreateKeyDownEvent(ui::VKEY_UNKNOWN, 0),
-      CreateCharEvent(base::WideToUTF8(L"\u00E9"),
-                      base::WideToUTF8(L"\u00E9"), 0),
-      CreateKeyUpEvent(ui::VKEY_UNKNOWN, 0)};
-  CheckEventsReleaseModifiers(base::WideToUTF16(L"\u00E9"),
-      event_array, arraysize(event_array));
+  KeyEventBuilder builder;
+  std::string e_acute = base::WideToUTF8(L"\u00E9");
+  std::list<KeyEvent> key_events;
+  builder.SetText(e_acute, e_acute)->Generate(&key_events);
+  CheckEventsReleaseModifiers(base::WideToUTF16(L"\u00E9"), key_events);
 }
 
 #if defined(OS_WIN)
 TEST(KeyConverter, NeedsCtrlAndAlt) {
-  int ctrl_and_alt = kControlKeyModifierMask | kAltKeyModifierMask;
-  KeyEvent event_array[] = {
-      CreateKeyDownEvent(ui::VKEY_CONTROL, 0),
-      CreateKeyDownEvent(ui::VKEY_MENU, 0),
-      CreateKeyDownEvent(ui::VKEY_Q, ctrl_and_alt),
-      CreateCharEvent("q", "@", ctrl_and_alt),
-      CreateKeyUpEvent(ui::VKEY_Q, ctrl_and_alt),
-      CreateKeyUpEvent(ui::VKEY_MENU, 0),
-      CreateKeyUpEvent(ui::VKEY_CONTROL, 0)};
+  KeyEventBuilder ctrl_builder;
+  ctrl_builder.SetKeyCode(ui::VKEY_CONTROL);
+
+  KeyEventBuilder alt_builder;
+  alt_builder.SetKeyCode(ui::VKEY_MENU);
+
+  KeyEventBuilder q_builder;
+  q_builder.SetModifiers(kControlKeyModifierMask | kAltKeyModifierMask)
+      ->SetKeyCode(ui::VKEY_Q)
+      ->SetText("q", "@");
+
+  std::list<KeyEvent> key_events;
+  key_events.push_back(ctrl_builder.SetType(kRawKeyDownEventType)->Build());
+  key_events.push_back(alt_builder.SetType(kRawKeyDownEventType)->Build());
+  q_builder.Generate(&key_events);
+  key_events.push_back(alt_builder.SetType(kKeyUpEventType)->Build());
+  key_events.push_back(ctrl_builder.SetType(kKeyUpEventType)->Build());
+
   ui::ScopedKeyboardLayout keyboard_layout(ui::KEYBOARD_LAYOUT_GERMAN);
-  CheckEventsReleaseModifiers("@", event_array, arraysize(event_array));
+  CheckEventsReleaseModifiers("@", key_events);
 }
 #endif
 
 TEST(KeyConverter, UppercaseCharDoesShift) {
-  KeyEvent event_array[] = {
-      CreateKeyDownEvent(ui::VKEY_SHIFT, 0),
-      CreateKeyDownEvent(ui::VKEY_A, kShiftKeyModifierMask),
-      CreateCharEvent("a", "A", kShiftKeyModifierMask),
-      CreateKeyUpEvent(ui::VKEY_A, kShiftKeyModifierMask),
-      CreateKeyUpEvent(ui::VKEY_SHIFT, 0)};
-  CheckEventsReleaseModifiers("A", event_array, arraysize(event_array));
+  KeyEventBuilder shift_builder;
+  shift_builder.SetKeyCode(ui::VKEY_SHIFT);
+  KeyEventBuilder a_builder;
+  a_builder.SetKeyCode(ui::VKEY_A)
+      ->SetModifiers(kShiftKeyModifierMask)
+      ->SetText("a", "A");
+  std::list<KeyEvent> key_events;
+  key_events.push_back(shift_builder.SetType(kRawKeyDownEventType)->Build());
+  a_builder.Generate(&key_events);
+  key_events.push_back(shift_builder.SetType(kKeyUpEventType)->Build());
+  CheckEventsReleaseModifiers("A", key_events);
 }
 
 TEST(KeyConverter, UppercaseSymbolCharDoesShift) {
-  KeyEvent event_array[] = {
-      CreateKeyDownEvent(ui::VKEY_SHIFT, 0),
-      CreateKeyDownEvent(ui::VKEY_1, kShiftKeyModifierMask),
-      CreateCharEvent("1", "!", kShiftKeyModifierMask),
-      CreateKeyUpEvent(ui::VKEY_1, kShiftKeyModifierMask),
-      CreateKeyUpEvent(ui::VKEY_SHIFT, 0)};
-  CheckEventsReleaseModifiers("!", event_array, arraysize(event_array));
+  KeyEventBuilder shift_builder;
+  shift_builder.SetKeyCode(ui::VKEY_SHIFT);
+  KeyEventBuilder one_builder;
+  one_builder.SetModifiers(kShiftKeyModifierMask)
+      ->SetKeyCode(ui::VKEY_1)
+      ->SetText("1", "!");
+  std::list<KeyEvent> key_events;
+  key_events.push_back(shift_builder.SetType(kRawKeyDownEventType)->Build());
+  one_builder.Generate(&key_events);
+  key_events.push_back(shift_builder.SetType(kKeyUpEventType)->Build());
+  CheckEventsReleaseModifiers("!", key_events);
 }
 
 TEST(KeyConverter, UppercaseCharUsesShiftOnlyIfNecessary) {
-  KeyEvent event_array[] = {
-      CreateKeyDownEvent(ui::VKEY_SHIFT, kShiftKeyModifierMask),
-      CreateKeyDownEvent(ui::VKEY_A, kShiftKeyModifierMask),
-      CreateCharEvent("a", "A", kShiftKeyModifierMask),
-      CreateKeyUpEvent(ui::VKEY_A, kShiftKeyModifierMask),
-      CreateKeyDownEvent(ui::VKEY_B, kShiftKeyModifierMask),
-      CreateCharEvent("b", "B", kShiftKeyModifierMask),
-      CreateKeyUpEvent(ui::VKEY_B, kShiftKeyModifierMask),
-      CreateKeyDownEvent(ui::VKEY_C, kShiftKeyModifierMask),
-      CreateCharEvent("c", "C", kShiftKeyModifierMask),
-      CreateKeyUpEvent(ui::VKEY_C, kShiftKeyModifierMask),
-      CreateKeyUpEvent(ui::VKEY_SHIFT, 0)};
+  std::list<KeyEvent> key_events;
+  KeyEventBuilder shift_builder;
+  key_events.push_back(shift_builder.SetType(kRawKeyDownEventType)
+                           ->SetKeyCode(ui::VKEY_SHIFT)
+                           ->SetModifiers(kShiftKeyModifierMask)
+                           ->Build());
+  KeyEventBuilder builder;
+  builder.SetModifiers(kShiftKeyModifierMask);
+  builder.SetKeyCode(ui::VKEY_A)->SetText("a", "A")->Generate(&key_events);
+  builder.SetKeyCode(ui::VKEY_B)->SetText("b", "B")->Generate(&key_events);
+  builder.SetKeyCode(ui::VKEY_C)->SetText("c", "C")->Generate(&key_events);
+  key_events.push_back(
+      shift_builder.SetType(kKeyUpEventType)->SetModifiers(0)->Build());
   base::string16 keys;
   keys.push_back(static_cast<base::char16>(0xE008U));
   keys.append(base::UTF8ToUTF16("aBc"));
-  CheckEventsReleaseModifiers(keys, event_array, arraysize(event_array));
+  CheckEventsReleaseModifiers(keys, key_events);
 }
 
 TEST(KeyConverter, ToggleModifiers) {
-  KeyEvent event_array[] = {
-      CreateKeyDownEvent(ui::VKEY_SHIFT, kShiftKeyModifierMask),
-      CreateKeyUpEvent(ui::VKEY_SHIFT, 0),
-      CreateKeyDownEvent(ui::VKEY_CONTROL, kControlKeyModifierMask),
-      CreateKeyUpEvent(ui::VKEY_CONTROL, 0),
-      CreateKeyDownEvent(ui::VKEY_MENU, kAltKeyModifierMask),
-      CreateKeyUpEvent(ui::VKEY_MENU, 0),
-      CreateKeyDownEvent(ui::VKEY_COMMAND, kMetaKeyModifierMask),
-      CreateKeyUpEvent(ui::VKEY_COMMAND, 0)};
+  std::list<KeyEvent> key_events;
+  KeyEventBuilder builder;
+  key_events.push_back(builder.SetType(kRawKeyDownEventType)
+                           ->SetKeyCode(ui::VKEY_SHIFT)
+                           ->SetModifiers(kShiftKeyModifierMask)
+                           ->Build());
+  key_events.push_back(
+      builder.SetType(kKeyUpEventType)->SetModifiers(0)->Build());
+  key_events.push_back(builder.SetType(kRawKeyDownEventType)
+                           ->SetKeyCode(ui::VKEY_CONTROL)
+                           ->SetModifiers(kControlKeyModifierMask)
+                           ->Build());
+  key_events.push_back(
+      builder.SetType(kKeyUpEventType)->SetModifiers(0)->Build());
+  key_events.push_back(builder.SetType(kRawKeyDownEventType)
+                           ->SetKeyCode(ui::VKEY_MENU)
+                           ->SetModifiers(kAltKeyModifierMask)
+                           ->Build());
+  key_events.push_back(
+      builder.SetType(kKeyUpEventType)->SetModifiers(0)->Build());
+  key_events.push_back(builder.SetType(kRawKeyDownEventType)
+                           ->SetKeyCode(ui::VKEY_COMMAND)
+                           ->SetModifiers(kMetaKeyModifierMask)
+                           ->Build());
+  key_events.push_back(
+      builder.SetType(kKeyUpEventType)->SetModifiers(0)->Build());
   base::string16 keys;
   keys.push_back(static_cast<base::char16>(0xE008U));
   keys.push_back(static_cast<base::char16>(0xE008U));
@@ -237,7 +258,7 @@ TEST(KeyConverter, ToggleModifiers) {
   keys.push_back(static_cast<base::char16>(0xE00AU));
   keys.push_back(static_cast<base::char16>(0xE03DU));
   keys.push_back(static_cast<base::char16>(0xE03DU));
-  CheckEventsReleaseModifiers(keys, event_array, arraysize(event_array));
+  CheckEventsReleaseModifiers(keys, key_events);
 }
 
 #if defined(OS_WIN)
@@ -248,28 +269,16 @@ TEST(KeyConverter, ToggleModifiers) {
 #endif
 
 TEST(KeyConverter, MAYBE_AllShorthandKeys) {
-  KeyEvent event_array[] = {
-      CreateKeyDownEvent(ui::VKEY_RETURN, 0),
-      CreateCharEvent("\r", "\r", 0),
-      CreateKeyUpEvent(ui::VKEY_RETURN, 0),
-      CreateKeyDownEvent(ui::VKEY_RETURN, 0),
-      CreateCharEvent("\r", "\r", 0),
-      CreateKeyUpEvent(ui::VKEY_RETURN, 0),
-      CreateKeyDownEvent(ui::VKEY_TAB, 0),
-#if defined(USE_AURA) || defined(OS_LINUX)
-      CreateCharEvent("\t", "\t", 0),
-#endif
-      CreateKeyUpEvent(ui::VKEY_TAB, 0),
-      CreateKeyDownEvent(ui::VKEY_BACK, 0),
-#if defined(USE_AURA) || defined(OS_LINUX)
-      CreateCharEvent("\b", "\b", 0),
-#endif
-      CreateKeyUpEvent(ui::VKEY_BACK, 0),
-      CreateKeyDownEvent(ui::VKEY_SPACE, 0),
-      CreateCharEvent(" ", " ", 0),
-      CreateKeyUpEvent(ui::VKEY_SPACE, 0)};
-  CheckEventsReleaseModifiers("\n\r\n\t\b ",
-      event_array,arraysize(event_array));
+  KeyEventBuilder builder;
+  std::list<KeyEvent> key_events;
+  builder.SetKeyCode(ui::VKEY_RETURN)
+      ->SetText("\r", "\r")
+      ->Generate(&key_events);
+  builder.Generate(&key_events);
+  builder.SetKeyCode(ui::VKEY_TAB)->SetText("\t", "\t")->Generate(&key_events);
+  builder.SetKeyCode(ui::VKEY_BACK)->SetText("\b", "\b")->Generate(&key_events);
+  builder.SetKeyCode(ui::VKEY_SPACE)->SetText(" ", " ")->Generate(&key_events);
+  CheckEventsReleaseModifiers("\n\r\n\t\b ", key_events);
 }
 
 #if defined(OS_LINUX)
@@ -381,36 +390,51 @@ TEST(KeyConverter, MAYBE_AllSpecialWebDriverKeysOnEnglishKeyboard) {
 }
 
 TEST(KeyConverter, ModifiersState) {
-  int shift_key_modifier = kShiftKeyModifierMask;
-  int control_key_modifier = shift_key_modifier | kControlKeyModifierMask;
-  int alt_key_modifier = control_key_modifier | kAltKeyModifierMask;
-  int meta_key_modifier = alt_key_modifier | kMetaKeyModifierMask;
-  KeyEvent event_array[] = {
-      CreateKeyDownEvent(ui::VKEY_SHIFT, shift_key_modifier),
-      CreateKeyDownEvent(ui::VKEY_CONTROL, control_key_modifier),
-      CreateKeyDownEvent(ui::VKEY_MENU, alt_key_modifier),
-      CreateKeyDownEvent(ui::VKEY_COMMAND, meta_key_modifier)};
+  KeyEventBuilder builder;
+  builder.SetType(kRawKeyDownEventType);
+  std::list<KeyEvent> key_events;
+  key_events.push_back(builder.SetKeyCode(ui::VKEY_SHIFT)
+                           ->AddModifiers(kShiftKeyModifierMask)
+                           ->Build());
+  key_events.push_back(builder.SetKeyCode(ui::VKEY_CONTROL)
+                           ->AddModifiers(kControlKeyModifierMask)
+                           ->Build());
+  key_events.push_back(builder.SetKeyCode(ui::VKEY_MENU)
+                           ->AddModifiers(kAltKeyModifierMask)
+                           ->Build());
+  key_events.push_back(builder.SetKeyCode(ui::VKEY_COMMAND)
+                           ->AddModifiers(kMetaKeyModifierMask)
+                           ->Build());
+
   base::string16 keys;
   keys.push_back(static_cast<base::char16>(0xE008U));
   keys.push_back(static_cast<base::char16>(0xE009U));
   keys.push_back(static_cast<base::char16>(0xE00AU));
   keys.push_back(static_cast<base::char16>(0xE03DU));
 
-  CheckEvents(keys, event_array, false /* release_modifiers */,
-      arraysize(event_array), meta_key_modifier);
+  CheckEvents(keys, key_events, false /* release_modifiers */,
+              kShiftKeyModifierMask | kControlKeyModifierMask |
+                  kAltKeyModifierMask | kMetaKeyModifierMask);
 }
 
 TEST(KeyConverter, ReleaseModifiers) {
-  KeyEvent event_array[] = {
-      CreateKeyDownEvent(ui::VKEY_SHIFT, kShiftKeyModifierMask),
-      CreateKeyDownEvent(ui::VKEY_CONTROL,
-          kShiftKeyModifierMask | kControlKeyModifierMask),
-      CreateKeyUpEvent(ui::VKEY_SHIFT, 0),
-      CreateKeyUpEvent(ui::VKEY_CONTROL, 0)};
+  std::list<KeyEvent> key_events;
+  KeyEventBuilder builder;
+  key_events.push_back(builder.SetType(kRawKeyDownEventType)
+                           ->SetKeyCode(ui::VKEY_SHIFT)
+                           ->AddModifiers(kShiftKeyModifierMask)
+                           ->Build());
+  key_events.push_back(builder.SetKeyCode(ui::VKEY_CONTROL)
+                           ->AddModifiers(kControlKeyModifierMask)
+                           ->Build());
+  key_events.push_back(builder.SetType(kKeyUpEventType)
+                           ->SetKeyCode(ui::VKEY_SHIFT)
+                           ->SetModifiers(0)
+                           ->Build());
+  key_events.push_back(builder.SetKeyCode(ui::VKEY_CONTROL)->Build());
   base::string16 keys;
   keys.push_back(static_cast<base::char16>(0xE008U));
   keys.push_back(static_cast<base::char16>(0xE009U));
 
-  CheckEvents(keys, event_array, true /* release_modifiers */,
-      arraysize(event_array), 0);
+  CheckEvents(keys, key_events, true /* release_modifiers */, 0);
 }

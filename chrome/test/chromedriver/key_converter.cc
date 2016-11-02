@@ -170,26 +170,6 @@ bool KeyCodeFromShorthandKey(base::char16 key_utf16,
 
 }  // namespace
 
-KeyEvent CreateKeyDownEvent(ui::KeyboardCode key_code, int modifiers) {
-  return KeyEvent(
-      kRawKeyDownEventType, modifiers, std::string(), std::string(), key_code);
-}
-
-KeyEvent CreateKeyUpEvent(ui::KeyboardCode key_code, int modifiers) {
-  return KeyEvent(
-      kKeyUpEventType, modifiers, std::string(), std::string(), key_code);
-}
-
-KeyEvent CreateCharEvent(const std::string& unmodified_text,
-                         const std::string& modified_text,
-                         int modifiers) {
-  return KeyEvent(kCharEventType,
-                  modifiers,
-                  modified_text,
-                  unmodified_text,
-                  ui::VKEY_UNKNOWN);
-}
-
 Status ConvertKeysToKeyEvents(const base::string16& client_keys,
                               bool release_modifiers,
                               int* modifiers,
@@ -208,14 +188,16 @@ Status ConvertKeysToKeyEvents(const base::string16& client_keys,
 
     if (key == kWebDriverNullKey) {
       // Release all modifier keys and clear |stick_modifiers|.
+      KeyEventBuilder builder;
+      builder.SetType(kKeyUpEventType);
       if (sticky_modifiers & kShiftKeyModifierMask)
-        key_events.push_back(CreateKeyUpEvent(ui::VKEY_SHIFT, 0));
+        key_events.push_back(builder.SetKeyCode(ui::VKEY_SHIFT)->Build());
       if (sticky_modifiers & kControlKeyModifierMask)
-        key_events.push_back(CreateKeyUpEvent(ui::VKEY_CONTROL, 0));
+        key_events.push_back(builder.SetKeyCode(ui::VKEY_CONTROL)->Build());
       if (sticky_modifiers & kAltKeyModifierMask)
-        key_events.push_back(CreateKeyUpEvent(ui::VKEY_MENU, 0));
+        key_events.push_back(builder.SetKeyCode(ui::VKEY_MENU)->Build());
       if (sticky_modifiers & kMetaKeyModifierMask)
-        key_events.push_back(CreateKeyUpEvent(ui::VKEY_COMMAND, 0));
+        key_events.push_back(builder.SetKeyCode(ui::VKEY_COMMAND)->Build());
       sticky_modifiers = 0;
       continue;
     }
@@ -242,10 +224,14 @@ Status ConvertKeysToKeyEvents(const base::string16& client_keys,
       } else {
         return Status(kUnknownError, "unknown modifier key");
       }
+      KeyEventBuilder builder;
       if (modifier_down)
-        key_events.push_back(CreateKeyDownEvent(key_code, sticky_modifiers));
+        builder.SetType(kRawKeyDownEventType);
       else
-        key_events.push_back(CreateKeyUpEvent(key_code, sticky_modifiers));
+        builder.SetType(kKeyUpEventType);
+      key_events.push_back(builder.SetKeyCode(key_code)
+                               ->SetModifiers(sticky_modifiers)
+                               ->Build());
       continue;
     }
 
@@ -319,22 +305,27 @@ Status ConvertKeysToKeyEvents(const base::string16& client_keys,
           all_modifiers & kModifiers[i].mask &&
           !(sticky_modifiers & kModifiers[i].mask);
       if (necessary_modifiers[i]) {
-        key_events.push_back(
-            CreateKeyDownEvent(kModifiers[i].key_code, sticky_modifiers));
+        KeyEventBuilder builder;
+        key_events.push_back(builder.SetType(kRawKeyDownEventType)
+                                   ->SetKeyCode(kModifiers[i].key_code)
+                                   ->SetModifiers(sticky_modifiers)
+                                   ->Build());
       }
     }
 
-    key_events.push_back(CreateKeyDownEvent(key_code, all_modifiers));
-    if (unmodified_text.length() || modified_text.length()) {
-      key_events.push_back(
-          CreateCharEvent(unmodified_text, modified_text, all_modifiers));
-    }
-    key_events.push_back(CreateKeyUpEvent(key_code, all_modifiers));
+    KeyEventBuilder builder;
+    builder.SetModifiers(all_modifiers)
+        ->SetText(unmodified_text, modified_text)
+        ->SetKeyCode(key_code)
+        ->Generate(&key_events);
 
     for (int i = 2; i > -1; --i) {
       if (necessary_modifiers[i]) {
-        key_events.push_back(
-            CreateKeyUpEvent(kModifiers[i].key_code, sticky_modifiers));
+        KeyEventBuilder builder;
+        key_events.push_back(builder.SetType(kKeyUpEventType)
+                                   ->SetKeyCode(kModifiers[i].key_code)
+                                   ->SetModifiers(sticky_modifiers)
+                                   ->Build());
       }
     }
   }
