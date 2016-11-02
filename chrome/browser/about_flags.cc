@@ -2070,6 +2070,12 @@ const FeatureEntry kFeatureEntries[] = {
     {"print-scaling", IDS_FLAGS_PRINT_SCALING_NAME,
      IDS_FLAGS_PRINT_SCALING_DESCRIPTION, kOsDesktop,
      FEATURE_VALUE_TYPE(features::kPrintScaling)},
+#endif  // !defined(OS_ANDROID)
+#if defined(OS_ANDROID)
+    {"enable-consistent-omnibox-geolocation",
+     IDS_FLAGS_ENABLE_CONSISTENT_OMNIBOX_GEOLOCATION_NAME,
+     IDS_FLAGS_ENABLE_CONSISTENT_OMNIBOX_GEOLOCATION_DESCRIPTION, kOsAndroid,
+     FEATURE_VALUE_TYPE(features::kConsistentOmniboxGeolocation)},
 #endif
     // NOTE: Adding new command-line switches requires adding corresponding
     // entries to enum "LoginCustomFlags" in histograms.xml. See note in

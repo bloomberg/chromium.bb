@@ -48,6 +48,13 @@ const base::Feature kBlockSmallContent{"BlockSmallPluginContent",
 const base::Feature kBrowserHangFixesExperiment{
     "BrowserHangFixesExperiment", base::FEATURE_DISABLED_BY_DEFAULT};
 
+#if defined(OS_ANDROID)
+// Experiment to make Geolocation permissions in the omnibox and the default
+// search engine's search page consistent.
+const base::Feature kConsistentOmniboxGeolocation{
+    "ConsistentOmniboxGeolocation", base::FEATURE_DISABLED_BY_DEFAULT};
+#endif
+
 #if defined(OS_WIN)
 // Disables the AutoImport feature on first run. See crbug.com/555550
 const base::Feature kDisableFirstRunAutoImportWin{

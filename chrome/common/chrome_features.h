@@ -35,6 +35,10 @@ extern const base::Feature kBlockSmallContent;
 
 extern const base::Feature kBrowserHangFixesExperiment;
 
+#if defined(OS_ANDROID)
+extern const base::Feature kConsistentOmniboxGeolocation;
+#endif
+
 #if defined(OS_WIN)
 extern const base::Feature kDisableFirstRunAutoImportWin;
 #endif  // defined(OS_WIN)
