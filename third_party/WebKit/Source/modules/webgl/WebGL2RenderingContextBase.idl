@@ -336,8 +336,17 @@ typedef unsigned long long GLuint64;
     [RaisesException] void texSubImage3D(GLenum target, GLint level, GLint xoffset, GLint yoffset, GLint zoffset, GLenum format, GLenum type, ImageBitmap bitmap);
 
     void copyTexSubImage3D(GLenum target, GLint level, GLint xoffset, GLint yoffset, GLint zoffset, GLint x, GLint y, GLsizei width, GLsizei height);
-    void compressedTexImage3D(GLenum target, GLint level, GLenum internalformat, GLsizei width, GLsizei height, GLsizei depth, GLint border, ArrayBufferView data);
-    void compressedTexSubImage3D(GLenum target, GLint level, GLint xoffset, GLint yoffset, GLint zoffset, GLsizei width, GLsizei height, GLsizei depth, GLenum format, ArrayBufferView data);
+
+    void compressedTexImage2D(GLenum target, GLint level, GLenum internalformat,
+                              GLsizei width, GLsizei height, GLint border,
+                              ArrayBufferView data, GLuint srcOffset,
+                              optional GLuint srcLengthOverride = 0);
+    void compressedTexSubImage2D(GLenum target, GLint level, GLint xoffset, GLint yoffset,
+                                 GLsizei width, GLsizei height, GLenum format,
+                                 ArrayBufferView data, GLuint srcOffset,
+                                 optional GLuint srcLengthOverride = 0);
+    void compressedTexImage3D(GLenum target, GLint level, GLenum internalformat, GLsizei width, GLsizei height, GLsizei depth, GLint border, ArrayBufferView data, optional GLuint srcOffset = 0, optional GLuint srcLengthOverride = 0);
+    void compressedTexSubImage3D(GLenum target, GLint level, GLint xoffset, GLint yoffset, GLint zoffset, GLsizei width, GLsizei height, GLsizei depth, GLenum format, ArrayBufferView data, optional GLuint srcOffset = 0, optional GLuint srcLengthOverride = 0);
 
     /* Programs and shaders */
     GLint getFragDataLocation(WebGLProgram? program, DOMString name);
@@ -449,6 +458,7 @@ typedef unsigned long long GLuint64;
     void bindVertexArray(WebGLVertexArrayObject? vertexArray);
 
     /* Reading */
+    void readPixels(GLint x, GLint y, GLsizei width, GLsizei height, GLenum format, GLenum type, ArrayBufferView dstData, GLintptr offset);
     void readPixels(GLint x, GLint y, GLsizei width, GLsizei height, GLenum format, GLenum type, GLintptr offset);
 };
 WebGL2RenderingContextBase implements WebGLRenderingContextBase;

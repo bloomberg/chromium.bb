@@ -1541,6 +1541,16 @@ class MODULES_EXPORT WebGLRenderingContextBase : public CanvasRenderingContext,
   IntRect sentinelEmptyRect();
   IntRect safeGetImageSize(Image*);
 
+  // Helper implementing readPixels for WebGL 1.0 and 2.0.
+  void readPixelsHelper(GLint x,
+                        GLint y,
+                        GLsizei width,
+                        GLsizei height,
+                        GLenum format,
+                        GLenum type,
+                        DOMArrayBufferView* pixels,
+                        GLuint offset);
+
  private:
   WebGLRenderingContextBase(HTMLCanvasElement*,
                             OffscreenCanvas*,

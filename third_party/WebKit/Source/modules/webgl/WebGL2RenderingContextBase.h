@@ -532,6 +532,26 @@ class WebGL2RenderingContextBase : public WebGLRenderingContextBase {
                          GLint,
                          GLsizei,
                          GLsizei);
+
+  void compressedTexImage2D(GLenum target,
+                            GLint level,
+                            GLenum internalformat,
+                            GLsizei width,
+                            GLsizei height,
+                            GLint border,
+                            DOMArrayBufferView* data,
+                            GLuint srcOffset,
+                            GLuint srcLengthOverride);
+  void compressedTexSubImage2D(GLenum target,
+                               GLint level,
+                               GLint xoffset,
+                               GLint yoffset,
+                               GLsizei width,
+                               GLsizei height,
+                               GLenum format,
+                               DOMArrayBufferView* data,
+                               GLuint srcOffset,
+                               GLuint srcLengthOverride);
   void compressedTexImage3D(GLenum,
                             GLint,
                             GLenum,
@@ -539,7 +559,9 @@ class WebGL2RenderingContextBase : public WebGLRenderingContextBase {
                             GLsizei,
                             GLsizei,
                             GLint,
-                            DOMArrayBufferView*);
+                            DOMArrayBufferView*,
+                            GLuint,
+                            GLuint);
   void compressedTexSubImage3D(GLenum,
                                GLint,
                                GLint,
@@ -549,7 +571,28 @@ class WebGL2RenderingContextBase : public WebGLRenderingContextBase {
                                GLsizei,
                                GLsizei,
                                GLenum,
-                               DOMArrayBufferView*);
+                               DOMArrayBufferView*,
+                               GLuint,
+                               GLuint);
+
+  // Have to re-declare/re-define the following compressedTex{Sub}Image2D
+  // functions from the base class. This is because the above
+  // compressedTex{Sub}Image2D() hide the name from base class.
+  void compressedTexImage2D(GLenum target,
+                            GLint level,
+                            GLenum internalformat,
+                            GLsizei width,
+                            GLsizei height,
+                            GLint border,
+                            DOMArrayBufferView* data);
+  void compressedTexSubImage2D(GLenum target,
+                               GLint level,
+                               GLint xoffset,
+                               GLint yoffset,
+                               GLsizei width,
+                               GLsizei height,
+                               GLenum format,
+                               DOMArrayBufferView* data);
 
   /* Programs and shaders */
   GLint getFragDataLocation(WebGLProgram*, const String&);
@@ -702,6 +745,14 @@ class WebGL2RenderingContextBase : public WebGLRenderingContextBase {
   void bindVertexArray(WebGLVertexArrayObject*);
 
   /* Reading */
+  void readPixels(GLint x,
+                  GLint y,
+                  GLsizei width,
+                  GLsizei height,
+                  GLenum format,
+                  GLenum type,
+                  DOMArrayBufferView* pixels,
+                  GLuint offset);
   void readPixels(GLint x,
                   GLint y,
                   GLsizei width,

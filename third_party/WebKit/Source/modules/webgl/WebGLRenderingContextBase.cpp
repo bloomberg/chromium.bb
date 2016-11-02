@@ -4061,6 +4061,17 @@ void WebGLRenderingContextBase::readPixels(GLint x,
                                            GLenum format,
                                            GLenum type,
                                            DOMArrayBufferView* pixels) {
+  readPixelsHelper(x, y, width, height, format, type, pixels, 0);
+}
+
+void WebGLRenderingContextBase::readPixelsHelper(GLint x,
+                                                 GLint y,
+                                                 GLsizei width,
+                                                 GLsizei height,
+                                                 GLenum format,
+                                                 GLenum type,
+                                                 DOMArrayBufferView* pixels,
+                                                 GLuint offset) {
   if (isContextLost())
     return;
   // Due to WebGL's same-origin restrictions, it is not possible to
@@ -4070,6 +4081,14 @@ void WebGLRenderingContextBase::readPixels(GLint x,
   if (!pixels) {
     synthesizeGLError(GL_INVALID_VALUE, "readPixels",
                       "no destination ArrayBufferView");
+    return;
+  }
+  CheckedNumeric<GLuint> offsetInBytes = offset;
+  offsetInBytes *= pixels->typeSize();
+  if (!offsetInBytes.IsValid() ||
+      offsetInBytes.ValueOrDie() > pixels->byteLength()) {
+    synthesizeGLError(GL_INVALID_VALUE, "readPixels",
+                      "destination offset out of range");
     return;
   }
   const char* reason = "framebuffer incomplete";
@@ -4082,12 +4101,13 @@ void WebGLRenderingContextBase::readPixels(GLint x,
   }
   if (!validateReadPixelsFuncParameters(
           width, height, format, type, pixels,
-          static_cast<long long>(pixels->byteLength())))
+          static_cast<long long>(pixels->byteLength() -
+                                 offsetInBytes.ValueOrDie()))) {
     return;
-
+  }
   clearIfComposited();
-  void* data = pixels->baseAddress();
-
+  uint8_t* data =
+      static_cast<uint8_t*>(pixels->baseAddress()) + offsetInBytes.ValueOrDie();
   {
     ScopedDrawingBufferBinder binder(drawingBuffer(), framebuffer);
     contextGL()->ReadPixels(x, y, width, height, format, type, data);
