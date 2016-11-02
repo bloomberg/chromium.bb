@@ -103,20 +103,16 @@ class CORE_EXPORT InspectorPageAgent final
   static String cachedResourceTypeJson(const Resource&);
 
   // Page API for frontend
-  void enable(ErrorString*) override;
-  void disable(ErrorString*) override;
-  void addScriptToEvaluateOnLoad(ErrorString*,
-                                 const String& scriptSource,
-                                 String* identifier) override;
-  void removeScriptToEvaluateOnLoad(ErrorString*,
-                                    const String& identifier) override;
-  void setAutoAttachToCreatedPages(ErrorString*, bool autoAttach) override;
-  void reload(ErrorString*,
-              const Maybe<bool>& bypassCache,
-              const Maybe<String>& scriptToEvaluateOnLoad) override;
-  void navigate(ErrorString*, const String& url, String* frameId) override;
-  void getResourceTree(
-      ErrorString*,
+  Response enable() override;
+  Response disable() override;
+  Response addScriptToEvaluateOnLoad(const String& scriptSource,
+                                     String* identifier) override;
+  Response removeScriptToEvaluateOnLoad(const String& identifier) override;
+  Response setAutoAttachToCreatedPages(bool) override;
+  Response reload(Maybe<bool> bypassCache,
+                  Maybe<String> scriptToEvaluateOnLoad) override;
+  Response navigate(const String& url, String* frameId) override;
+  Response getResourceTree(
       std::unique_ptr<protocol::Page::FrameResourceTree>* frameTree) override;
   void getResourceContent(const String& frameId,
                           const String& url,
@@ -124,26 +120,21 @@ class CORE_EXPORT InspectorPageAgent final
   void searchInResource(const String& frameId,
                         const String& url,
                         const String& query,
-                        const Maybe<bool>& caseSensitive,
-                        const Maybe<bool>& isRegex,
+                        Maybe<bool> caseSensitive,
+                        Maybe<bool> isRegex,
                         std::unique_ptr<SearchInResourceCallback>) override;
-  void setDocumentContent(ErrorString*,
-                          const String& frameId,
-                          const String& html) override;
-  void startScreencast(ErrorString*,
-                       const Maybe<String>& format,
-                       const Maybe<int>& quality,
-                       const Maybe<int>& maxWidth,
-                       const Maybe<int>& maxHeight,
-                       const Maybe<int>& everyNthFrame) override;
-  void stopScreencast(ErrorString*) override;
-  void configureOverlay(ErrorString*,
-                        const Maybe<bool>& suspended,
-                        const Maybe<String>& message) override;
-  void setBlockedEventsWarningThreshold(ErrorString*,
-                                        double threshold) override;
-  void getLayoutMetrics(
-      ErrorString*,
+  Response setDocumentContent(const String& frameId,
+                              const String& html) override;
+  Response startScreencast(Maybe<String> format,
+                           Maybe<int> quality,
+                           Maybe<int> maxWidth,
+                           Maybe<int> maxHeight,
+                           Maybe<int> everyNthFrame) override;
+  Response stopScreencast() override;
+  Response configureOverlay(Maybe<bool> suspended,
+                            Maybe<String> message) override;
+  Response setBlockedEventsWarningThreshold(double) override;
+  Response getLayoutMetrics(
       std::unique_ptr<protocol::Page::LayoutViewport>*,
       std::unique_ptr<protocol::Page::VisualViewport>*) override;
 
