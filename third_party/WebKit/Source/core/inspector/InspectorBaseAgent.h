@@ -44,6 +44,7 @@ class LocalFrame;
 
 using protocol::ErrorString;
 using protocol::Maybe;
+using protocol::Response;
 
 class CORE_EXPORT InspectorAgent
     : public GarbageCollectedFinalized<InspectorAgent> {
@@ -85,11 +86,8 @@ class InspectorBaseAgent : public InspectorAgent,
     }
   }
 
-  void disable(ErrorString*) override {}
-
   void dispose() override {
-    ErrorString error;
-    disable(&error);
+    DomainMetainfo::BackendClass::disableMe(this);
     m_frontend.reset();
     m_state = nullptr;
     m_instrumentingAgents = nullptr;

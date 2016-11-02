@@ -52,7 +52,7 @@ Tests that InspectorBackendDispatcher is catching incorrect messages.
     error : {
         code : -32602
         data : "frameId: string value expected; url: string value expected"
-        message : "Invalid request"
+        message : "Invalid parameters"
     }
     id : 4
 }
@@ -61,7 +61,7 @@ Tests that InspectorBackendDispatcher is catching incorrect messages.
     error : {
         code : -32602
         data : "frameId: string value expected; url: string value expected"
-        message : "Invalid request"
+        message : "Invalid parameters"
     }
     id : 5
 }
@@ -70,7 +70,7 @@ Tests that InspectorBackendDispatcher is catching incorrect messages.
     error : {
         code : -32602
         data : "frameId: string value expected; url: string value expected"
-        message : "Invalid request"
+        message : "Invalid parameters"
     }
     id : 6
 }
@@ -79,7 +79,7 @@ Tests that InspectorBackendDispatcher is catching incorrect messages.
     error : {
         code : -32602
         data : "url: string value expected"
-        message : "Invalid request"
+        message : "Invalid parameters"
     }
     id : 7
 }

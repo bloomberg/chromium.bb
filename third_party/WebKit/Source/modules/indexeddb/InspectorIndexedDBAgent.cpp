@@ -70,7 +70,6 @@ using blink::protocol::IndexedDB::KeyRange;
 using blink::protocol::IndexedDB::ObjectStore;
 using blink::protocol::IndexedDB::ObjectStoreIndex;
 
-typedef blink::protocol::BackendCallback RequestCallback;
 typedef blink::protocol::IndexedDB::Backend::RequestDatabaseNamesCallback
     RequestDatabaseNamesCallback;
 typedef blink::protocol::IndexedDB::Backend::RequestDatabaseCallback
@@ -141,12 +140,37 @@ class GetDatabaseNamesCallback final : public EventListener {
   String m_securityOrigin;
 };
 
-class ExecutableWithDatabase : public RefCounted<ExecutableWithDatabase> {
+template <typename RequestCallback>
+class OpenDatabaseCallback;
+template <typename RequestCallback>
+class UpgradeDatabaseCallback;
+
+template <typename RequestCallback>
+class ExecutableWithDatabase
+    : public RefCounted<ExecutableWithDatabase<RequestCallback>> {
  public:
   ExecutableWithDatabase(ScriptState* scriptState)
       : m_scriptState(scriptState) {}
   virtual ~ExecutableWithDatabase() {}
-  void start(IDBFactory*, SecurityOrigin*, const String& databaseName);
+  void start(IDBFactory* idbFactory,
+             SecurityOrigin*,
+             const String& databaseName) {
+    OpenDatabaseCallback<RequestCallback>* openCallback =
+        OpenDatabaseCallback<RequestCallback>::create(this);
+    UpgradeDatabaseCallback<RequestCallback>* upgradeCallback =
+        UpgradeDatabaseCallback<RequestCallback>::create(this);
+    TrackExceptionState exceptionState;
+    IDBOpenDBRequest* idbOpenDBRequest =
+        idbFactory->open(getScriptState(), databaseName, exceptionState);
+    if (exceptionState.hadException()) {
+      getRequestCallback()->sendFailure("Could not open database.");
+      return;
+    }
+    idbOpenDBRequest->addEventListener(EventTypeNames::upgradeneeded,
+                                       upgradeCallback, false);
+    idbOpenDBRequest->addEventListener(EventTypeNames::success, openCallback,
+                                       false);
+  }
   virtual void execute(IDBDatabase*) = 0;
   virtual RequestCallback* getRequestCallback() = 0;
   ExecutionContext* context() const {
@@ -158,10 +182,11 @@ class ExecutableWithDatabase : public RefCounted<ExecutableWithDatabase> {
   RefPtr<ScriptState> m_scriptState;
 };
 
+template <typename RequestCallback>
 class OpenDatabaseCallback final : public EventListener {
  public:
   static OpenDatabaseCallback* create(
-      ExecutableWithDatabase* executableWithDatabase) {
+      ExecutableWithDatabase<RequestCallback>* executableWithDatabase) {
     return new OpenDatabaseCallback(executableWithDatabase);
   }
 
@@ -196,16 +221,18 @@ class OpenDatabaseCallback final : public EventListener {
   }
 
  private:
-  OpenDatabaseCallback(ExecutableWithDatabase* executableWithDatabase)
+  OpenDatabaseCallback(
+      ExecutableWithDatabase<RequestCallback>* executableWithDatabase)
       : EventListener(EventListener::CPPEventListenerType),
         m_executableWithDatabase(executableWithDatabase) {}
-  RefPtr<ExecutableWithDatabase> m_executableWithDatabase;
+  RefPtr<ExecutableWithDatabase<RequestCallback>> m_executableWithDatabase;
 };
 
+template <typename RequestCallback>
 class UpgradeDatabaseCallback final : public EventListener {
  public:
   static UpgradeDatabaseCallback* create(
-      ExecutableWithDatabase* executableWithDatabase) {
+      ExecutableWithDatabase<RequestCallback>* executableWithDatabase) {
     return new UpgradeDatabaseCallback(executableWithDatabase);
   }
 
@@ -234,30 +261,12 @@ class UpgradeDatabaseCallback final : public EventListener {
   }
 
  private:
-  UpgradeDatabaseCallback(ExecutableWithDatabase* executableWithDatabase)
+  UpgradeDatabaseCallback(
+      ExecutableWithDatabase<RequestCallback>* executableWithDatabase)
       : EventListener(EventListener::CPPEventListenerType),
         m_executableWithDatabase(executableWithDatabase) {}
-  RefPtr<ExecutableWithDatabase> m_executableWithDatabase;
+  RefPtr<ExecutableWithDatabase<RequestCallback>> m_executableWithDatabase;
 };
-
-void ExecutableWithDatabase::start(IDBFactory* idbFactory,
-                                   SecurityOrigin*,
-                                   const String& databaseName) {
-  OpenDatabaseCallback* openCallback = OpenDatabaseCallback::create(this);
-  UpgradeDatabaseCallback* upgradeCallback =
-      UpgradeDatabaseCallback::create(this);
-  TrackExceptionState exceptionState;
-  IDBOpenDBRequest* idbOpenDBRequest =
-      idbFactory->open(getScriptState(), databaseName, exceptionState);
-  if (exceptionState.hadException()) {
-    getRequestCallback()->sendFailure("Could not open database.");
-    return;
-  }
-  idbOpenDBRequest->addEventListener(EventTypeNames::upgradeneeded,
-                                     upgradeCallback, false);
-  idbOpenDBRequest->addEventListener(EventTypeNames::success, openCallback,
-                                     false);
-}
 
 static IDBTransaction* transactionForDatabase(
     ScriptState* scriptState,
@@ -324,7 +333,8 @@ static std::unique_ptr<KeyPath> keyPathFromIDBKeyPath(
   return keyPath;
 }
 
-class DatabaseLoader final : public ExecutableWithDatabase {
+class DatabaseLoader final
+    : public ExecutableWithDatabase<RequestDatabaseCallback> {
  public:
   static PassRefPtr<DatabaseLoader> create(
       ScriptState* scriptState,
@@ -381,7 +391,7 @@ class DatabaseLoader final : public ExecutableWithDatabase {
     m_requestCallback->sendSuccess(std::move(result));
   }
 
-  RequestCallback* getRequestCallback() override {
+  RequestDatabaseCallback* getRequestCallback() override {
     return m_requestCallback.get();
   }
 
@@ -563,7 +573,7 @@ class OpenCursorCallback final : public EventListener {
   std::unique_ptr<Array<DataEntry>> m_result;
 };
 
-class DataLoader final : public ExecutableWithDatabase {
+class DataLoader final : public ExecutableWithDatabase<RequestDataCallback> {
  public:
   static PassRefPtr<DataLoader> create(
       v8_inspector::V8InspectorSession* v8Session,
@@ -616,7 +626,7 @@ class DataLoader final : public ExecutableWithDatabase {
                                  false);
   }
 
-  RequestCallback* getRequestCallback() override {
+  RequestDataCallback* getRequestCallback() override {
     return m_requestCallback.get();
   }
   DataLoader(v8_inspector::V8InspectorSession* v8Session,
@@ -843,7 +853,8 @@ class ClearObjectStoreListener final : public EventListener {
   std::unique_ptr<ClearObjectStoreCallback> m_requestCallback;
 };
 
-class ClearObjectStore final : public ExecutableWithDatabase {
+class ClearObjectStore final
+    : public ExecutableWithDatabase<ClearObjectStoreCallback> {
  public:
   static PassRefPtr<ClearObjectStore> create(
       ScriptState* scriptState,
@@ -890,7 +901,7 @@ class ClearObjectStore final : public ExecutableWithDatabase {
         ClearObjectStoreListener::create(std::move(m_requestCallback)), false);
   }
 
-  RequestCallback* getRequestCallback() override {
+  ClearObjectStoreCallback* getRequestCallback() override {
     return m_requestCallback.get();
   }
 

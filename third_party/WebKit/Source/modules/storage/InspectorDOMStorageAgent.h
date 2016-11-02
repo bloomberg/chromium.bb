@@ -69,26 +69,23 @@ class MODULES_EXPORT InspectorDOMStorageAgent final
   void restore() override;
 
   // protocol::Dispatcher::DOMStorageCommandHandler overrides.
-  void enable(ErrorString*) override;
-  void disable(ErrorString*) override;
-  void getDOMStorageItems(
-      ErrorString*,
+  Response enable() override;
+  Response disable() override;
+  Response getDOMStorageItems(
       std::unique_ptr<protocol::DOMStorage::StorageId> in_storageId,
       std::unique_ptr<protocol::Array<protocol::Array<String>>>* out_entries)
       override;
-  void setDOMStorageItem(
-      ErrorString*,
+  Response setDOMStorageItem(
       std::unique_ptr<protocol::DOMStorage::StorageId> in_storageId,
       const String& in_key,
       const String& in_value) override;
-  void removeDOMStorageItem(
-      ErrorString*,
+  Response removeDOMStorageItem(
       std::unique_ptr<protocol::DOMStorage::StorageId> in_storageId,
       const String& in_key) override;
 
-  StorageArea* findStorageArea(ErrorString*,
-                               std::unique_ptr<protocol::DOMStorage::StorageId>,
-                               LocalFrame*&);
+  Response findStorageArea(std::unique_ptr<protocol::DOMStorage::StorageId>,
+                           LocalFrame*&,
+                           StorageArea*&);
   std::unique_ptr<protocol::DOMStorage::StorageId> storageId(
       SecurityOrigin*,
       bool isLocalStorage);

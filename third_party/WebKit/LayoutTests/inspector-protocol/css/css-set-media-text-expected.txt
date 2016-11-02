@@ -64,7 +64,7 @@ handheld and (max-width: 700px),
 
 
 Running test: testInvalidParameters
-Expected protocol error: Invalid request (range.startLine: integer value expected)
+Expected protocol error: Invalid parameters (range.startLine: integer value expected)
 
 Running test: testInvalidText
 Expected protocol error: SyntaxError Selector or media text is not valid.
