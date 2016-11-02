@@ -10,7 +10,6 @@
 #include "base/threading/worker_pool.h"
 #include "base/trace_event/trace_event.h"
 #include "gin/per_isolate_data.h"
-#include "v8/include/v8-tracing.h"
 
 namespace gin {
 
@@ -155,11 +154,7 @@ namespace {
 class EnabledStateObserverImpl final
     : public base::trace_event::TraceLog::EnabledStateObserver {
  public:
-  EnabledStateObserverImpl() {
-    tracing_category_observer_ = v8::tracing::TracingCategoryObserver::Create();
-    observers_.insert(reinterpret_cast<v8::Platform::TraceStateObserver*>(
-        tracing_category_observer_.get()));
-  }
+  EnabledStateObserverImpl() = default;
 
   void OnTraceLogEnabled() final {
     base::AutoLock lock(mutex_);
@@ -197,8 +192,6 @@ class EnabledStateObserverImpl final
  private:
   base::Lock mutex_;
   std::unordered_set<v8::Platform::TraceStateObserver*> observers_;
-  std::unique_ptr<v8::tracing::TracingCategoryObserver>
-      tracing_category_observer_;
 
   DISALLOW_COPY_AND_ASSIGN(EnabledStateObserverImpl);
 };
