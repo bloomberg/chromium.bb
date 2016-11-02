@@ -41,7 +41,6 @@ RefPtr<SerializedScriptValue> V8ScriptValueSerializer::serialize(
 #endif
   DCHECK(m_serializedScriptValue);
   AutoReset<const ExceptionState*> reset(&m_exceptionState, &exceptionState);
-  ScriptState::Scope scope(m_scriptState.get());
 
   // Prepare to transfer the provided transferables.
   prepareTransfer(transferables);
