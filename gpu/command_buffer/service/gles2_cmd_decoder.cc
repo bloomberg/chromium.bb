@@ -8699,22 +8699,26 @@ bool GLES2DecoderImpl::ValidateAndAdjustDrawBuffers(const char* func_name) {
 }
 
 bool GLES2DecoderImpl::ValidateUniformBlockBackings(const char* func_name) {
-  if (feature_info_->IsWebGL1OrES2Context()) {
-    // Uniform blocks do not exist in ES2 contexts.
-    return true;
-  }
+  DCHECK(feature_info_->IsWebGL2OrES3Context());
   DCHECK(state_.current_program.get());
+  int32_t max_index = -1;
   for (auto info : state_.current_program->uniform_block_size_info()) {
-    uint32_t buffer_size = static_cast<uint32_t>(
-        state_.indexed_uniform_buffer_bindings->GetEffectiveBufferSize(
-            info.binding));
-    if (info.data_size > buffer_size) {
-      LOCAL_SET_GL_ERROR(GL_INVALID_OPERATION, func_name,
-          "uniform blocks are not backed by a buffer with sufficient data");
-      return false;
-    }
+    int32_t index = static_cast<int32_t>(info.binding);
+    if (index > max_index)
+      max_index = index;
   }
-  return true;
+  if (max_index < 0)
+    return true;
+  std::vector<GLsizeiptr> uniform_block_sizes(max_index + 1);
+  for (int32_t ii = 0; ii <= max_index; ++ii)
+    uniform_block_sizes[ii] = 0;
+  for (auto info : state_.current_program->uniform_block_size_info()) {
+    uint32_t index = info.binding;
+    uniform_block_sizes[index] = static_cast<GLsizeiptr>(info.data_size);
+  }
+  return buffer_manager()->RequestBuffersAccess(
+      state_.GetErrorState(), state_.indexed_uniform_buffer_bindings.get(),
+      uniform_block_sizes, 1, func_name, "uniform buffers");
 }
 
 bool GLES2DecoderImpl::CheckUniformForApiType(
@@ -9825,6 +9829,10 @@ error::Error GLES2DecoderImpl::DoDrawArrays(
         return error::kNoError;
       }
     }
+
+    if (!ValidateUniformBlockBackings(function_name)) {
+      return error::kNoError;
+    }
   }
 
   if (count == 0 || primcount == 0) {
@@ -9859,9 +9867,6 @@ error::Error GLES2DecoderImpl::DoDrawArrays(
       bool textures_set = !PrepareTexturesForRender();
       ApplyDirtyState();
       if (!ValidateAndAdjustDrawBuffers(function_name)) {
-        return error::kNoError;
-      }
-      if (!ValidateUniformBlockBackings(function_name)) {
         return error::kNoError;
       }
       if (!instanced) {
@@ -9965,16 +9970,19 @@ error::Error GLES2DecoderImpl::DoDrawElements(const char* function_name,
     return error::kNoError;
   }
 
-  if (count == 0 || primcount == 0) {
-    return error::kNoError;
-  }
-
   if (feature_info_->IsWebGL2OrES3Context()) {
     if (!AttribsTypeMatch()) {
       LOCAL_SET_GL_ERROR(GL_INVALID_OPERATION, function_name,
                          "vertexAttrib function must match shader attrib type");
       return error::kNoError;
     }
+    if (!ValidateUniformBlockBackings(function_name)) {
+      return error::kNoError;
+    }
+  }
+
+  if (count == 0 || primcount == 0) {
+    return error::kNoError;
   }
 
   GLuint max_vertex_accessed;
@@ -10013,9 +10021,6 @@ error::Error GLES2DecoderImpl::DoDrawElements(const char* function_name,
         indices = element_array_buffer->GetRange(offset, 0);
       }
       if (!ValidateAndAdjustDrawBuffers(function_name)) {
-        return error::kNoError;
-      }
-      if (!ValidateUniformBlockBackings(function_name)) {
         return error::kNoError;
       }
       if (state_.enable_flags.primitive_restart_fixed_index &&

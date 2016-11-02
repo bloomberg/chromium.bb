@@ -338,10 +338,6 @@ class GPU_EXPORT BufferManager : public base::trace_event::MemoryDumpProvider {
       const char* func_name,
       const char* message_tag);
 
-  uint32_t mapped_buffer_count() const {
-    return mapped_buffer_count_;
-  }
-
  private:
   friend class Buffer;
   friend class TestHelper;  // Needs access to DoBufferData.
@@ -392,9 +388,6 @@ class GPU_EXPORT BufferManager : public base::trace_event::MemoryDumpProvider {
                GLenum usage,
                bool use_shadow);
 
-  void IncreaseMappedBufferCount();
-  void DecreaseMappedBufferCount();
-
   // Same as public RequestBufferAccess taking similar arguments, but
   // allows caller to assemble the va_list.
   bool RequestBufferAccessV(ErrorState* error_state,
@@ -428,10 +421,6 @@ class GPU_EXPORT BufferManager : public base::trace_event::MemoryDumpProvider {
 
   bool lost_context_;
   bool use_client_side_arrays_for_stream_buffers_;
-
-  // Keep track of total mapped buffer count. In most use cases it should be 0,
-  // so we could bypass checking each individual buffer as an optimization.
-  uint32_t mapped_buffer_count_;
 
   DISALLOW_COPY_AND_ASSIGN(BufferManager);
 };

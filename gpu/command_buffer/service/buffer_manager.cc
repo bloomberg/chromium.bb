@@ -47,8 +47,7 @@ BufferManager::BufferManager(MemoryTracker* memory_tracker,
           feature_info
               ? feature_info->workarounds()
                     .use_client_side_arrays_for_stream_buffers
-              : 0),
-      mapped_buffer_count_(0) {
+              : 0) {
   // When created from InProcessCommandBuffer, we won't have a |memory_tracker_|
   // so don't register a dump provider.
   if (memory_tracker_) {
@@ -339,12 +338,9 @@ void Buffer::SetMappedRange(GLintptr offset, GLsizeiptr size, GLenum access,
                             unsigned int shm_offset) {
   mapped_range_.reset(
       new MappedRange(offset, size, access, pointer, shm, shm_offset));
-  manager_->IncreaseMappedBufferCount();
 }
 
 void Buffer::RemoveMappedRange() {
-  if (mapped_range_.get())
-    manager_->DecreaseMappedBufferCount();
   mapped_range_.reset(nullptr);
 }
 
@@ -813,6 +809,8 @@ bool BufferManager::RequestBuffersAccess(
   DCHECK(error_state);
   DCHECK(bindings);
   for (size_t ii = 0; ii < variable_sizes.size(); ++ii) {
+    if (variable_sizes[ii] == 0)
+      continue;
     Buffer* buffer = bindings->GetBufferBinding(ii);
     if (!buffer) {
       std::string msg = base::StringPrintf(
@@ -842,16 +840,6 @@ bool BufferManager::RequestBuffersAccess(
     }
   }
   return true;
-}
-
-void BufferManager::IncreaseMappedBufferCount() {
-  DCHECK_GT(std::numeric_limits<uint32_t>::max(), mapped_buffer_count_);
-  mapped_buffer_count_++;
-}
-
-void BufferManager::DecreaseMappedBufferCount() {
-  DCHECK_LT(0u, mapped_buffer_count_);
-  mapped_buffer_count_--;
 }
 
 bool BufferManager::RequestBufferAccessV(ErrorState* error_state,
