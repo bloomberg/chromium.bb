@@ -38,8 +38,11 @@ extern const int kTrayPopupAutoCloseDelayInSeconds;
 extern const int kTrayPopupAutoCloseDelayForTextInSeconds;
 extern const int kTrayPopupPaddingHorizontal;
 extern const int kTrayPopupPaddingBetweenItems;
-extern const int kTrayPopupTextSpacingVertical;
 extern const int kTrayPopupUserCardVerticalPadding;
+
+// The padding used on the left and right of labels. This applies to all labels
+// in the system menu.
+extern const int kTrayPopupLabelHorizontalPadding;
 
 // Padding used to adjust the slider position in volume row and brightness
 // row horizontally.
@@ -128,6 +131,15 @@ enum TrayConstant {
 
   // The height of the rows in the system tray menu.
   TRAY_POPUP_ITEM_HEIGHT,
+
+  // The width used for the main image of the row. This applies to all rows
+  // in the system menu that have a main image (e.g. default and detailed).
+  TRAY_POPUP_ITEM_MAIN_IMAGE_CONTAINER_WIDTH,
+
+  // The width used for the 'more' arrow images. In general this applies to all
+  // rows in the system menu that have a 'more' image however most, if not all,
+  // are default rows.
+  TRAY_POPUP_ITEM_MORE_IMAGE_CONTAINER_WIDTH,
 
   // The left inset for all tray system menu rows.
   TRAY_POPUP_ITEM_LEFT_INSET,

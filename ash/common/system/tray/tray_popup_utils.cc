@@ -2,12 +2,16 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "ash/common/system/tray/tray_popup_layout_factory.h"
+#include "ash/common/system/tray/tray_popup_utils.h"
 
 #include "ash/common/material_design/material_design_controller.h"
+#include "ash/common/system/tray/fixed_sized_image_view.h"
 #include "ash/common/system/tray/tray_constants.h"
-#include "ash/common/system/tray/tri_view.h"
+#include "ash/common/system/tray/tray_popup_label_button.h"
+#include "ui/views/border.h"
 #include "ui/views/controls/button/label_button.h"
+#include "ui/views/controls/image_view.h"
+#include "ui/views/controls/label.h"
 #include "ui/views/layout/box_layout.h"
 
 namespace ash {
@@ -41,7 +45,7 @@ std::unique_ptr<views::LayoutManager> CreateDefaultEndsLayoutManager() {
 
 }  // namespace
 
-TriView* TrayPopupLayoutFactory::CreateDefaultRowView() {
+TriView* TrayPopupUtils::CreateDefaultRowView() {
   TriView* tri_view = new TriView(0 /* padding_between_items */);
 
   tri_view->SetInsets(
@@ -56,30 +60,62 @@ TriView* TrayPopupLayoutFactory::CreateDefaultRowView() {
   return tri_view;
 }
 
-void TrayPopupLayoutFactory::ConfigureDefaultLayout(
-    TriView* tri_view,
+std::unique_ptr<views::LayoutManager> TrayPopupUtils::CreateLayoutManager(
     TriView::Container container) {
   switch (container) {
     case TriView::Container::START:
-      tri_view->SetContainerLayout(TriView::Container::START,
-                                   CreateDefaultEndsLayoutManager());
+    case TriView::Container::END:
+      return CreateDefaultEndsLayoutManager();
+    case TriView::Container::CENTER:
+      return CreateDefaultCenterLayoutManager();
+  }
+  // Required by some compilers.
+  NOTREACHED();
+  return nullptr;
+}
+
+views::Label* TrayPopupUtils::CreateDefaultLabel() {
+  views::Label* label = new views::Label();
+  label->SetHorizontalAlignment(gfx::ALIGN_LEFT);
+  label->SetBorder(
+      views::Border::CreateEmptyBorder(0, kTrayPopupLabelHorizontalPadding, 0,
+                                       kTrayPopupLabelHorizontalPadding));
+  return label;
+}
+
+views::ImageView* TrayPopupUtils::CreateMainImageView() {
+  return new FixedSizedImageView(
+      GetTrayConstant(TRAY_POPUP_ITEM_MAIN_IMAGE_CONTAINER_WIDTH),
+      GetTrayConstant(TRAY_POPUP_ITEM_HEIGHT));
+}
+
+views::ImageView* TrayPopupUtils::CreateMoreImageView() {
+  views::ImageView* image = new FixedSizedImageView(
+      GetTrayConstant(TRAY_POPUP_ITEM_MORE_IMAGE_CONTAINER_WIDTH),
+      GetTrayConstant(TRAY_POPUP_ITEM_HEIGHT));
+  image->EnableCanvasFlippingForRTLUI(true);
+  return image;
+}
+
+void TrayPopupUtils::ConfigureDefaultLayout(TriView* tri_view,
+                                            TriView::Container container) {
+  switch (container) {
+    case TriView::Container::START:
       tri_view->SetMinSize(
           TriView::Container::START,
           gfx::Size(GetTrayConstant(TRAY_POPUP_ITEM_MIN_START_WIDTH), 0));
       break;
     case TriView::Container::CENTER:
-      tri_view->SetContainerLayout(TriView::Container::CENTER,
-                                   CreateDefaultCenterLayoutManager());
       tri_view->SetFlexForContainer(TriView::Container::CENTER, 1.f);
       break;
     case TriView::Container::END:
-      tri_view->SetContainerLayout(TriView::Container::END,
-                                   CreateDefaultEndsLayoutManager());
       tri_view->SetMinSize(
           TriView::Container::END,
           gfx::Size(GetTrayConstant(TRAY_POPUP_ITEM_MIN_END_WIDTH), 0));
       break;
   }
+
+  tri_view->SetContainerLayout(container, CreateLayoutManager(container));
 }
 
 }  // namespace ash

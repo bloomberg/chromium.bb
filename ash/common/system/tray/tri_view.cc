@@ -112,8 +112,6 @@ void TriView::SetContainerLayout(
     Container container,
     std::unique_ptr<views::LayoutManager> layout_manager) {
   GetLayoutManager(container)->SetLayoutManager(std::move(layout_manager));
-  if (GetLayoutManager(container))
-    GetLayoutManager(container)->Installed(GetContainer(container));
 }
 
 void TriView::ViewHierarchyChanged(
