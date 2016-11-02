@@ -21,22 +21,22 @@ class VideoCaptureDeviceFactoryImpl : public mojom::VideoCaptureDeviceFactory {
   ~VideoCaptureDeviceFactoryImpl() override;
 
   void AddMojoDevice(std::unique_ptr<VideoCaptureDeviceProxyImpl> device,
-                     mojom::VideoCaptureDeviceDescriptorPtr descriptor);
+                     const media::VideoCaptureDeviceDescriptor& descriptor);
 
   void AddMediaDevice(std::unique_ptr<media::VideoCaptureDevice> device,
-                      mojom::VideoCaptureDeviceDescriptorPtr descriptor);
+                      const media::VideoCaptureDeviceDescriptor& descriptor);
 
   void AddMockDevice(mojom::MockVideoCaptureDevicePtr device,
-                     mojom::VideoCaptureDeviceDescriptorPtr descriptor);
+                     const media::VideoCaptureDeviceDescriptor& descriptor);
 
   // mojom::VideoCaptureDeviceFactory:
   void EnumerateDeviceDescriptors(
       const EnumerateDeviceDescriptorsCallback& callback) override;
   void GetSupportedFormats(
-      mojom::VideoCaptureDeviceDescriptorPtr device_descriptor,
+      const media::VideoCaptureDeviceDescriptor& device_descriptor,
       const GetSupportedFormatsCallback& callback) override;
   void CreateDeviceProxy(
-      mojom::VideoCaptureDeviceDescriptorPtr device_descriptor,
+      const media::VideoCaptureDeviceDescriptor& device_descriptor,
       mojom::VideoCaptureDeviceProxyRequest proxy_request,
       const CreateDeviceProxyCallback& callback) override;
 
@@ -49,15 +49,15 @@ class VideoCaptureDeviceFactoryImpl : public mojom::VideoCaptureDeviceFactory {
   // the number of capture devices is typically small.
   class DeviceEntry {
    public:
-    DeviceEntry(mojom::VideoCaptureDeviceDescriptorPtr descriptor,
+    DeviceEntry(const media::VideoCaptureDeviceDescriptor& descriptor,
                 std::unique_ptr<VideoCaptureDeviceProxyImpl> bindable_target);
     ~DeviceEntry();
     DeviceEntry(DeviceEntry&& other);
     DeviceEntry& operator=(DeviceEntry&& other);
 
-    mojom::VideoCaptureDeviceDescriptorPtr MakeDescriptorCopy() const;
+    const media::VideoCaptureDeviceDescriptor& descriptor() const;
     bool DescriptorEquals(
-        const mojom::VideoCaptureDeviceDescriptorPtr& other) const;
+        const media::VideoCaptureDeviceDescriptor& other) const;
     bool is_bound() const;
     void Bind(mojom::VideoCaptureDeviceProxyRequest request);
     void Unbind();
@@ -65,7 +65,7 @@ class VideoCaptureDeviceFactoryImpl : public mojom::VideoCaptureDeviceFactory {
     void OnConnectionErrorOrClose();
 
    private:
-    mojom::VideoCaptureDeviceDescriptorPtr descriptor_;
+    media::VideoCaptureDeviceDescriptor descriptor_;
     std::unique_ptr<VideoCaptureDeviceProxyImpl> device_proxy_;
     // TODO(chfremer) Use mojo::Binding<> directly instead of unique_ptr<> when
     // mojo::Binding<> supports move operators.

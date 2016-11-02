@@ -41,7 +41,7 @@ class VideoCaptureService
       mojom::VideoCaptureDeviceFactoryRequest request) override;
   void AddDeviceToMockFactory(
       mojom::MockVideoCaptureDevicePtr device,
-      mojom::VideoCaptureDeviceDescriptorPtr descriptor,
+      const media::VideoCaptureDeviceDescriptor& descriptor,
       const AddDeviceToMockFactoryCallback& callback) override;
 
  private:

@@ -20,14 +20,14 @@ void MockDeviceTest::SetUp() {
   // Set up a mock device and add it to the factory
   mock_device_ = base::MakeUnique<MockVideoCaptureDeviceImpl>(
       mojo::GetProxy(&mock_device_proxy_));
-  auto mock_descriptor = mojom::VideoCaptureDeviceDescriptor::New();
-  mock_descriptor->device_id = "MockDeviceId";
+  media::VideoCaptureDeviceDescriptor mock_descriptor;
+  mock_descriptor.device_id = "MockDeviceId";
   ASSERT_TRUE(service_->AddDeviceToMockFactory(std::move(mock_device_proxy_),
-                                               mock_descriptor->Clone()));
+                                               mock_descriptor));
 
   // Obtain the mock device from the factory
   factory_->CreateDeviceProxy(
-      mock_descriptor->Clone(), mojo::GetProxy(&device_proxy_),
+      mock_descriptor, mojo::GetProxy(&device_proxy_),
       base::Bind([](mojom::DeviceAccessResultCode result_code) {}));
 
   requested_settings_.format.frame_size = gfx::Size(800, 600);

@@ -17,13 +17,8 @@ class MockDeviceDescriptorReceiver {
   MockDeviceDescriptorReceiver();
   ~MockDeviceDescriptorReceiver();
 
-  // Use forwarding method to work around gmock not supporting move-only types.
-  void HandleEnumerateDeviceDescriptorsCallback(
-      std::vector<mojom::VideoCaptureDeviceDescriptorPtr> descriptors);
-
-  MOCK_METHOD1(
-      OnEnumerateDeviceDescriptorsCallback,
-      void(const std::vector<mojom::VideoCaptureDeviceDescriptorPtr>&));
+  MOCK_METHOD1(OnEnumerateDeviceDescriptorsCallback,
+               void(const std::vector<media::VideoCaptureDeviceDescriptor>&));
 };
 
 }  // namespace video_capture

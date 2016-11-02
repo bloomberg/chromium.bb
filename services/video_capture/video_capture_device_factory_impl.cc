@@ -14,7 +14,7 @@
 namespace video_capture {
 
 VideoCaptureDeviceFactoryImpl::DeviceEntry::DeviceEntry(
-    mojom::VideoCaptureDeviceDescriptorPtr descriptor,
+    const media::VideoCaptureDeviceDescriptor& descriptor,
     std::unique_ptr<VideoCaptureDeviceProxyImpl> bindable_target)
     : descriptor_(std::move(descriptor)),
       binding_(base::MakeUnique<mojo::Binding<mojom::VideoCaptureDeviceProxy>>(
@@ -31,14 +31,14 @@ VideoCaptureDeviceFactoryImpl::DeviceEntry&
 VideoCaptureDeviceFactoryImpl::DeviceEntry::operator=(
     VideoCaptureDeviceFactoryImpl::DeviceEntry&& other) = default;
 
-mojom::VideoCaptureDeviceDescriptorPtr
-VideoCaptureDeviceFactoryImpl::DeviceEntry::MakeDescriptorCopy() const {
-  return descriptor_.Clone();
+const media::VideoCaptureDeviceDescriptor&
+VideoCaptureDeviceFactoryImpl::DeviceEntry::descriptor() const {
+  return descriptor_;
 }
 
 bool VideoCaptureDeviceFactoryImpl::DeviceEntry::DescriptorEquals(
-    const mojom::VideoCaptureDeviceDescriptorPtr& other) const {
-  return descriptor_.Equals(other);
+    const media::VideoCaptureDeviceDescriptor& other) const {
+  return descriptor_ == other;
 }
 
 bool VideoCaptureDeviceFactoryImpl::DeviceEntry::is_bound() const {
@@ -71,13 +71,13 @@ VideoCaptureDeviceFactoryImpl::~VideoCaptureDeviceFactoryImpl() = default;
 
 void VideoCaptureDeviceFactoryImpl::AddMojoDevice(
     std::unique_ptr<VideoCaptureDeviceProxyImpl> device,
-    mojom::VideoCaptureDeviceDescriptorPtr descriptor) {
+    const media::VideoCaptureDeviceDescriptor& descriptor) {
   devices_.emplace_back(std::move(descriptor), std::move(device));
 }
 
 void VideoCaptureDeviceFactoryImpl::AddMediaDevice(
     std::unique_ptr<media::VideoCaptureDevice> device,
-    mojom::VideoCaptureDeviceDescriptorPtr descriptor) {
+    const media::VideoCaptureDeviceDescriptor& descriptor) {
   AddMojoDevice(base::MakeUnique<VideoCaptureDeviceProxyImpl>(
                     std::move(device), jpeg_decoder_factory_callback_),
                 std::move(descriptor));
@@ -85,27 +85,27 @@ void VideoCaptureDeviceFactoryImpl::AddMediaDevice(
 
 void VideoCaptureDeviceFactoryImpl::AddMockDevice(
     mojom::MockVideoCaptureDevicePtr device,
-    mojom::VideoCaptureDeviceDescriptorPtr descriptor) {
+    const media::VideoCaptureDeviceDescriptor& descriptor) {
   AddMediaDevice(base::MakeUnique<DeviceMockToMediaAdapter>(std::move(device)),
                  std::move(descriptor));
 }
 
 void VideoCaptureDeviceFactoryImpl::EnumerateDeviceDescriptors(
     const EnumerateDeviceDescriptorsCallback& callback) {
-  std::vector<mojom::VideoCaptureDeviceDescriptorPtr> descriptors;
+  std::vector<media::VideoCaptureDeviceDescriptor> descriptors;
   for (const auto& entry : devices_)
-    descriptors.push_back(entry.MakeDescriptorCopy());
+    descriptors.push_back(entry.descriptor());
   callback.Run(std::move(descriptors));
 }
 
 void VideoCaptureDeviceFactoryImpl::GetSupportedFormats(
-    mojom::VideoCaptureDeviceDescriptorPtr device_descriptor,
+    const media::VideoCaptureDeviceDescriptor& device_descriptor,
     const GetSupportedFormatsCallback& callback) {
   NOTIMPLEMENTED();
 }
 
 void VideoCaptureDeviceFactoryImpl::CreateDeviceProxy(
-    mojom::VideoCaptureDeviceDescriptorPtr device_descriptor,
+    const media::VideoCaptureDeviceDescriptor& device_descriptor,
     mojom::VideoCaptureDeviceProxyRequest proxy_request,
     const CreateDeviceProxyCallback& callback) {
   for (auto& entry : devices_) {

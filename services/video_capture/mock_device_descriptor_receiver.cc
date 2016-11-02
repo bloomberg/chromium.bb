@@ -10,9 +10,4 @@ MockDeviceDescriptorReceiver::MockDeviceDescriptorReceiver() = default;
 
 MockDeviceDescriptorReceiver::~MockDeviceDescriptorReceiver() = default;
 
-void MockDeviceDescriptorReceiver::HandleEnumerateDeviceDescriptorsCallback(
-    std::vector<mojom::VideoCaptureDeviceDescriptorPtr> descriptors) {
-  OnEnumerateDeviceDescriptorsCallback(descriptors);
-}
-
 }  // namespace video_capture

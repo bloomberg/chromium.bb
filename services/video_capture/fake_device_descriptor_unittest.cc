@@ -27,7 +27,7 @@ TEST_F(FakeDeviceDescriptorTest, AccessIsRevokedOnSecondAccess) {
               Run(mojom::DeviceAccessResultCode::SUCCESS))
       .Times(1);
   factory_->CreateDeviceProxy(
-      fake_device_descriptor_->Clone(), mojo::GetProxy(&device_proxy_1),
+      fake_device_descriptor_, mojo::GetProxy(&device_proxy_1),
       base::Bind(&MockCreateDeviceProxyCallback::Run,
                  base::Unretained(&create_device_proxy_callback_1)));
   device_proxy_1.set_connection_error_handler(
@@ -43,7 +43,7 @@ TEST_F(FakeDeviceDescriptorTest, AccessIsRevokedOnSecondAccess) {
       .Times(1)
       .WillOnce(InvokeWithoutArgs([&wait_loop]() { wait_loop.Quit(); }));
   factory_->CreateDeviceProxy(
-      fake_device_descriptor_->Clone(), mojo::GetProxy(&device_proxy_2),
+      fake_device_descriptor_, mojo::GetProxy(&device_proxy_2),
       base::Bind(&MockCreateDeviceProxyCallback::Run,
                  base::Unretained(&create_device_proxy_callback_2)));
   device_proxy_2.set_connection_error_handler(
@@ -58,13 +58,13 @@ TEST_F(FakeDeviceDescriptorTest, AccessIsRevokedOnSecondAccess) {
 TEST_F(FakeDeviceDescriptorTest, CanUseSecondRequestedProxy) {
   mojom::VideoCaptureDeviceProxyPtr device_proxy_1;
   factory_->CreateDeviceProxy(
-      fake_device_descriptor_->Clone(), mojo::GetProxy(&device_proxy_1),
+      fake_device_descriptor_, mojo::GetProxy(&device_proxy_1),
       base::Bind([](mojom::DeviceAccessResultCode result_code) {}));
 
   base::RunLoop wait_loop;
   mojom::VideoCaptureDeviceProxyPtr device_proxy_2;
   factory_->CreateDeviceProxy(
-      fake_device_descriptor_->Clone(), mojo::GetProxy(&device_proxy_2),
+      fake_device_descriptor_, mojo::GetProxy(&device_proxy_2),
       base::Bind(
           [](base::RunLoop* wait_loop,
              mojom::DeviceAccessResultCode result_code) { wait_loop->Quit(); },

@@ -19,7 +19,7 @@ class FakeDeviceDescriptorTest : public VideoCaptureServiceTest {
   void SetUp() override;
 
  protected:
-  mojom::VideoCaptureDeviceDescriptorPtr fake_device_descriptor_;
+  media::VideoCaptureDeviceDescriptor fake_device_descriptor_;
 };
 
 }  // namespace video_capture

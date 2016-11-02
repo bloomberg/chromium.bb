@@ -28,7 +28,7 @@ TEST_F(VideoCaptureServiceTest, EnumerateDeviceDescriptorsCallbackArrives) {
       .WillOnce(InvokeWithoutArgs([&wait_loop]() { wait_loop.Quit(); }));
 
   factory_->EnumerateDeviceDescriptors(base::Bind(
-      &MockDeviceDescriptorReceiver::HandleEnumerateDeviceDescriptorsCallback,
+      &MockDeviceDescriptorReceiver::OnEnumerateDeviceDescriptorsCallback,
       base::Unretained(&descriptor_receiver_)));
   wait_loop.Run();
 }
@@ -39,14 +39,13 @@ TEST_F(VideoCaptureServiceTest, FakeDeviceFactoryEnumeratesOneDevice) {
   EXPECT_CALL(descriptor_receiver_, OnEnumerateDeviceDescriptorsCallback(_))
       .Times(Exactly(1))
       .WillOnce(Invoke([&wait_loop, &num_devices_enumerated](
-          const std::vector<mojom::VideoCaptureDeviceDescriptorPtr>&
-              descriptors) {
+          const std::vector<media::VideoCaptureDeviceDescriptor>& descriptors) {
         num_devices_enumerated = descriptors.size();
         wait_loop.Quit();
       }));
 
   factory_->EnumerateDeviceDescriptors(base::Bind(
-      &MockDeviceDescriptorReceiver::HandleEnumerateDeviceDescriptorsCallback,
+      &MockDeviceDescriptorReceiver::OnEnumerateDeviceDescriptorsCallback,
       base::Unretained(&descriptor_receiver_)));
   wait_loop.Run();
   ASSERT_EQ(1u, num_devices_enumerated);
@@ -55,9 +54,9 @@ TEST_F(VideoCaptureServiceTest, FakeDeviceFactoryEnumeratesOneDevice) {
 // Tests that VideoCaptureDeviceFactory::CreateDeviceProxy() returns an error
 // code when trying to create a device for an invalid descriptor.
 TEST_F(VideoCaptureServiceTest, ErrorCodeOnCreateDeviceForInvalidDescriptor) {
-  auto invalid_descriptor = mojom::VideoCaptureDeviceDescriptor::New();
-  invalid_descriptor->device_id = "invalid";
-  invalid_descriptor->model_id = "invalid";
+  media::VideoCaptureDeviceDescriptor invalid_descriptor;
+  invalid_descriptor.device_id = "invalid";
+  invalid_descriptor.model_id = "invalid";
   base::RunLoop wait_loop;
   mojom::VideoCaptureDeviceProxyPtr fake_device_proxy;
   MockCreateDeviceProxyCallback create_device_proxy_callback;

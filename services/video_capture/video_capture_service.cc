@@ -63,7 +63,7 @@ void VideoCaptureService::ConnectToMockDeviceFactory(
 
 void VideoCaptureService::AddDeviceToMockFactory(
     mojom::MockVideoCaptureDevicePtr device,
-    mojom::VideoCaptureDeviceDescriptorPtr descriptor,
+    const media::VideoCaptureDeviceDescriptor& descriptor,
     const AddDeviceToMockFactoryCallback& callback) {
   LazyInitializeMockDeviceFactory();
   mock_device_factory_->AddMockDevice(std::move(device), std::move(descriptor));
@@ -82,13 +82,13 @@ void VideoCaptureService::LazyInitializeFakeDeviceFactory() {
     return;
   fake_device_factory_ = base::MakeUnique<VideoCaptureDeviceFactoryImpl>(
       base::Bind(CreateJpegDecoder));
-  auto fake_device_descriptor = mojom::VideoCaptureDeviceDescriptor::New();
-  fake_device_descriptor->display_name = kFakeDeviceDisplayName;
-  fake_device_descriptor->device_id = kFakeDeviceId;
-  fake_device_descriptor->model_id = kFakeModelId;
-  fake_device_descriptor->capture_api = mojom::VideoCaptureApi::UNKNOWN;
-  fake_device_descriptor->transport_type =
-      mojom::VideoCaptureTransportType::OTHER_TRANSPORT;
+  media::VideoCaptureDeviceDescriptor fake_device_descriptor;
+  fake_device_descriptor.display_name = kFakeDeviceDisplayName;
+  fake_device_descriptor.device_id = kFakeDeviceId;
+  fake_device_descriptor.model_id = kFakeModelId;
+  fake_device_descriptor.capture_api = media::VideoCaptureApi::UNKNOWN;
+  fake_device_descriptor.transport_type =
+      media::VideoCaptureTransportType::OTHER_TRANSPORT;
   fake_device_factory_->AddMediaDevice(
       base::MakeUnique<media::FakeVideoCaptureDevice>(
           media::FakeVideoCaptureDevice::BufferOwnership::OWN_BUFFERS,
