@@ -151,11 +151,13 @@ const char kStdinConfigPath[] = "-";
 // The command line switch used to pass name of the pipe to capture audio on
 // linux.
 const char kAudioPipeSwitchName[] = "audio-pipe-name";
+#endif  // defined(OS_LINUX)
 
+#if defined(OS_POSIX)
 // The command line switch used to pass name of the unix domain socket used to
 // listen for security key requests.
 const char kAuthSocknameSwitchName[] = "ssh-auth-sockname";
-#endif  // defined(OS_LINUX)
+#endif  // defined(OS_POSIX)
 
 // The command line switch used by the parent to request the host to signal it
 // when it is successfully started.
@@ -377,7 +379,7 @@ class HostProcess : public ConfigWatcher::Delegate,
   bool curtain_required_ = false;
   ThirdPartyAuthConfig third_party_auth_config_;
   bool security_key_auth_policy_enabled_ = false;
-  bool security_key_extension_supported_ = false;
+  bool security_key_extension_supported_ = true;
 
   // Boolean to change flow, where necessary, if we're
   // capturing a window instead of the entire desktop.
@@ -805,19 +807,19 @@ void HostProcess::StartOnUiThread() {
     remoting::AudioCapturerLinux::InitializePipeReader(
         context_->audio_task_runner(), audio_pipe_name);
   }
+#endif  // defined(OS_LINUX)
 
+#if defined(OS_POSIX)
   base::FilePath security_key_socket_name =
       base::CommandLine::ForCurrentProcess()->GetSwitchValuePath(
           kAuthSocknameSwitchName);
   if (!security_key_socket_name.empty()) {
     remoting::SecurityKeyAuthHandler::SetSecurityKeySocketName(
         security_key_socket_name);
-    security_key_extension_supported_ = true;
+  } else {
+    security_key_extension_supported_ = false;
   }
-#elif defined(OS_WIN)
-  // TODO(joedow): Remove the conditional once this is supported on OSX.
-  security_key_extension_supported_ = true;
-#endif  // defined(OS_WIN)
+#endif  // defined(OS_POSIX)
 
   // Create a desktop environment factory appropriate to the build type &
   // platform.
@@ -1232,7 +1234,7 @@ bool HostProcess::OnCurtainPolicyUpdate(base::DictionaryValue* policies) {
     // TODO(jamiewalch): Fix this once we have implemented the multi-process
     // daemon architecture (crbug.com/134894)
     if (getuid() == 0) {
-      LOG(ERROR) << "Running the host in the console login session is yet not "
+      LOG(ERROR) << "Running the host in the console login session is not yet "
                     "supported.";
       ShutdownHost(kLoginScreenNotSupportedExitCode);
       return false;

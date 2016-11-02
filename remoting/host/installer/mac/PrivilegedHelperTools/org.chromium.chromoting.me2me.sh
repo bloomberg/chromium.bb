@@ -82,7 +82,8 @@ run_host() {
     # Execute the host asynchronously and forward signals to it.
     trap "handle_signal" $SIGNAL_LIST
     host_start_time=$(date +%s)
-    "$HOST_EXE" --host-config="$CONFIG_FILE" &
+    "$HOST_EXE" --host-config="$CONFIG_FILE" \
+                --ssh-auth-sockname="/tmp/chromoting.$USER.ssh_auth_sock" &
     HOST_PID="$!"
 
     # Wait for the host to return and process its exit code.
