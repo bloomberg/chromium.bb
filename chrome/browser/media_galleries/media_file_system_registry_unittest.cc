@@ -17,11 +17,11 @@
 #include "base/files/file_util.h"
 #include "base/files/scoped_temp_dir.h"
 #include "base/macros.h"
+#include "base/memory/ptr_util.h"
 #include "base/memory/ref_counted.h"
 #include "base/memory/scoped_vector.h"
 #include "base/path_service.h"
 #include "base/run_loop.h"
-#include "base/stl_util.h"
 #include "base/strings/stringprintf.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/threading/sequenced_worker_pool.h"
@@ -206,9 +206,9 @@ class MockProfileSharedRenderProcessHostFactory
       content::SiteInstance* site_instance) const override;
 
  private:
-  typedef std::map<content::BrowserContext*, content::MockRenderProcessHost*>
-      ProfileRPHMap;
-  mutable ProfileRPHMap rph_map_;
+  mutable std::map<content::BrowserContext*,
+                   std::unique_ptr<content::MockRenderProcessHost>>
+      rph_map_;
 
   DISALLOW_COPY_AND_ASSIGN(MockProfileSharedRenderProcessHostFactory);
 };
@@ -397,30 +397,30 @@ bool MediaFileSystemInfoComparator(const MediaFileSystemInfo& a,
 
 MockProfileSharedRenderProcessHostFactory::
     ~MockProfileSharedRenderProcessHostFactory() {
-  base::STLDeleteValues(&rph_map_);
 }
 
 content::MockRenderProcessHost*
 MockProfileSharedRenderProcessHostFactory::ReleaseRPH(
     content::BrowserContext* browser_context) {
-  ProfileRPHMap::iterator existing = rph_map_.find(browser_context);
+  auto existing = rph_map_.find(browser_context);
   if (existing == rph_map_.end())
     return NULL;
-  content::MockRenderProcessHost* result = existing->second;
+  std::unique_ptr<content::MockRenderProcessHost> result =
+      std::move(existing->second);
   rph_map_.erase(existing);
-  return result;
+  return result.release();
 }
 
 content::RenderProcessHost*
 MockProfileSharedRenderProcessHostFactory::CreateRenderProcessHost(
     content::BrowserContext* browser_context,
     content::SiteInstance* site_instance) const {
-  ProfileRPHMap::const_iterator existing = rph_map_.find(browser_context);
+  auto existing = rph_map_.find(browser_context);
   if (existing != rph_map_.end())
-    return existing->second;
+    return existing->second.get();
   rph_map_[browser_context] =
-      new content::MockRenderProcessHost(browser_context);
-  return rph_map_[browser_context];
+      base::MakeUnique<content::MockRenderProcessHost>(browser_context);
+  return rph_map_[browser_context].get();
 }
 
 //////////////////

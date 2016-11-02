@@ -13,6 +13,7 @@
 #include "base/callback.h"
 #include "base/files/file_path.h"
 #include "base/macros.h"
+#include "base/memory/ptr_util.h"
 #include "base/stl_util.h"
 #include "chrome/browser/media_galleries/fileapi/media_file_system_backend.h"
 #include "chrome/browser/media_galleries/gallery_watch_manager.h"
@@ -94,9 +95,9 @@ class RPHReferenceManager {
   virtual ~RPHReferenceManager();
 
   // Remove all references, but don't call |no_references_callback|.
-  void Reset() { base::STLDeleteValues(&observer_map_); }
+  void Reset() { observer_map_.clear(); }
 
-  // Returns true if there are no references;
+  // Returns true if there are no references.
   bool empty() const { return observer_map_.empty(); }
 
   // Adds a reference to the passed |contents|. Calling this multiple times with
@@ -134,10 +135,9 @@ class RPHReferenceManager {
 
     RPHReferenceManager* manager_;
     RenderProcessHost* host_;
-    typedef std::map<WebContents*, RPHWebContentsObserver*> WCObserverMap;
-    WCObserverMap observed_web_contentses_;
+    std::map<WebContents*, std::unique_ptr<RPHWebContentsObserver>>
+        observed_web_contentses_;
   };
-  typedef std::map<const RenderProcessHost*, RPHObserver*> RPHObserverMap;
 
   // Handlers for observed events.
   void OnRenderProcessHostDestroyed(RenderProcessHost* rph);
@@ -148,7 +148,8 @@ class RPHReferenceManager {
 
   // The set of render processes and web contents that may have references to
   // the file system ids this instance manages.
-  RPHObserverMap observer_map_;
+  std::map<const RenderProcessHost*, std::unique_ptr<RPHObserver>>
+      observer_map_;
 };
 
 RPHReferenceManager::RPHReferenceManager(
@@ -163,15 +164,10 @@ RPHReferenceManager::~RPHReferenceManager() {
 void RPHReferenceManager::ReferenceFromWebContents(
     content::WebContents* contents) {
   RenderProcessHost* rph = contents->GetRenderProcessHost();
-  RPHObserver* state = NULL;
   if (!base::ContainsKey(observer_map_, rph)) {
-    state = new RPHObserver(this, rph);
-    observer_map_[rph] = state;
-  } else {
-    state = observer_map_[rph];
+    observer_map_[rph] = base::MakeUnique<RPHObserver>(this, rph);
   }
-
-  state->AddWebContentsObserver(contents);
+  observer_map_[rph]->AddWebContentsObserver(contents);
 }
 
 RPHReferenceManager::RPHWebContentsObserver::RPHWebContentsObserver(
@@ -201,7 +197,7 @@ RPHReferenceManager::RPHObserver::RPHObserver(
 }
 
 RPHReferenceManager::RPHObserver::~RPHObserver() {
-  base::STLDeleteValues(&observed_web_contentses_);
+  observed_web_contentses_.clear();
   if (host_)
     host_->RemoveObserver(this);
 }
@@ -211,18 +207,15 @@ void RPHReferenceManager::RPHObserver::AddWebContentsObserver(
   if (base::ContainsKey(observed_web_contentses_, web_contents))
     return;
 
-  RPHWebContentsObserver* observer =
-    new RPHWebContentsObserver(manager_, web_contents);
-  observed_web_contentses_[web_contents] = observer;
+  observed_web_contentses_[web_contents] =
+      base::MakeUnique<RPHWebContentsObserver>(manager_, web_contents);
 }
 
 void RPHReferenceManager::RPHObserver::RemoveWebContentsObserver(
     WebContents* web_contents) {
-  WCObserverMap::iterator wco_iter =
-      observed_web_contentses_.find(web_contents);
-  DCHECK(wco_iter != observed_web_contentses_.end());
-  delete wco_iter->second;
-  observed_web_contentses_.erase(wco_iter);
+  DCHECK(observed_web_contentses_.find(web_contents) !=
+         observed_web_contentses_.end());
+  observed_web_contentses_.erase(web_contents);
 }
 
 void RPHReferenceManager::RPHObserver::RenderProcessHostDestroyed(
@@ -233,7 +226,7 @@ void RPHReferenceManager::RPHObserver::RenderProcessHostDestroyed(
 
 void RPHReferenceManager::OnRenderProcessHostDestroyed(
     RenderProcessHost* rph) {
-  RPHObserverMap::iterator rph_info = observer_map_.find(rph);
+  auto rph_info = observer_map_.find(rph);
   // This could be a potential problem if the RPH is navigated to a page on the
   // same renderer (triggering OnWebContentsDestroyedOrNavigated()) and then the
   // renderer crashes.
@@ -241,7 +234,6 @@ void RPHReferenceManager::OnRenderProcessHostDestroyed(
     NOTREACHED();
     return;
   }
-  delete rph_info->second;
   observer_map_.erase(rph_info);
   if (observer_map_.empty())
     no_references_callback_.Run();
@@ -250,7 +242,7 @@ void RPHReferenceManager::OnRenderProcessHostDestroyed(
 void RPHReferenceManager::OnWebContentsDestroyedOrNavigated(
     WebContents* contents) {
   RenderProcessHost* rph = contents->GetRenderProcessHost();
-  RPHObserverMap::iterator rph_info = observer_map_.find(rph);
+  auto rph_info = observer_map_.find(rph);
   DCHECK(rph_info != observer_map_.end());
 
   rph_info->second->RemoveWebContentsObserver(contents);
