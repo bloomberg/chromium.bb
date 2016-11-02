@@ -1,80 +1,101 @@
-<!DOCTYPE html>
-<html>
-<head>
-<title>Spellcheck Attribute Settings Default Test</title>
-<script src="../editing.js"></script>
-<script src="resources/util.js"></script>
-<script src="../../resources/js-test.js"></script>
-</head>
-<body>
-<div id="testRoot">
-<label>1.1.</label><input id="test1_1" type="text"></input><br/>
-<label>1.2.</label><input id="test1_2" type="text" spellcheck="true"></input><br/>
-<label>1.3.</label><input id="test1_3" type="text" spellcheck="false"></input><br/>
-<label>1.4.</label><input id="test1_4" type="text" spellcheck="InvalidValue"></input><br/>
-<label>1.5.</label><input id="test1_5" type="text" spellcheck></input><br/>
-</div>
+<!doctype html>
+<script src="../../resources/testharness.js"></script>
+<script src="../../resources/testharnessreport.js"></script>
+<script src="../assert_selection.js"></script>
+<script src="spellcheck_test.js"></script>
+
 <script>
-description('This tests that the spellcheck default value is as specified in '
-    + 'internal blink settings. This allows embedders to specify spellchecking '
-    + 'behavior when the spellcheck attribute is not explicitly set.');
+// Tests with spellcheck enabled by default.
 
-jsTestIsAsync = true;
-if (window.testRunner)
-    testRunner.setMockSpellCheckerEnabled(true);
+spellcheck_test(
+  '<input type="text" value="zz.">',
+  document => {
+    internals.settings.setSpellCheckEnabledByDefault(true);
+    document.querySelector('input').focus();
+  },
+  '<input type="text" value="#zz#.">',
+  'INPUT without spellcheck attribute is checked when spellcheck is enabled by default.');
 
-// Type misspelling to all input elements.
-var inputs = document.getElementsByTagName('input');
-for (var i = 0; i < inputs.length; i++)
-    typeText(inputs[i], 'zz ');
+spellcheck_test(
+  '<input spellcheck="true" type="text" value="zz.">',
+  document => {
+    internals.settings.setSpellCheckEnabledByDefault(true);
+    document.querySelector('input').focus();
+  },
+  '<input spellcheck="true" type="text" value="#zz#.">',
+  'INPUT with spellcheck=true is checked when spellcheck is enabled by default.');
 
-var shouldBeMarked;
+spellcheck_test(
+  '<input spellcheck="false" type="text" value="zz.">',
+  document => {
+    internals.settings.setSpellCheckEnabledByDefault(true);
+    document.querySelector('input').focus();
+  },
+  '<input spellcheck="false" type="text" value="zz.">',
+  'INPUT with spellcheck=false is not checked when spellcheck is enabled by default.');
 
-function testMarkerForMisspelledWord(id, isMisspelled, enabled_by_default) {
-    if (!window.internals)
-        return done();
+spellcheck_test(
+  '<input spellcheck="invalidValue" type="text" value="zz.">',
+  document => {
+    internals.settings.setSpellCheckEnabledByDefault(true);
+    document.querySelector('input').focus();
+  },
+  '<input spellcheck="invalidValue" type="text" value="#zz#.">',
+  'INPUT with invalid spellcheck attribute value is checked when spellcheck is enabled by default.');
 
-    internals.settings.setSpellCheckEnabledByDefault(enabled_by_default);
+spellcheck_test(
+  '<input spellcheck type="text" value="zz.">',
+  document => {
+    internals.settings.setSpellCheckEnabledByDefault(true);
+    document.querySelector('input').focus();
+  },
+  '<input spellcheck type="text" value="#zz#.">',
+  'INPUT with empty spellcheck attribute is checked when spellcheck is enabled by default.');
 
-    var inputElement = document.getElementById(id);
-    // Spelling markers for input will appear if it's focused.
-    inputElement.focus();
+// Tests with spellcheck disabled by default.
 
-    debug("id=" + id + " type=" + inputElement.type + " spellcheck=" + inputElement.spellcheck + " enabled_by_default=" + enabled_by_default);
+spellcheck_test(
+  '<input type="text" value="zz.">',
+  document => {
+    internals.settings.setSpellCheckEnabledByDefault(false);
+    document.querySelector('input').focus();
+  },
+  '<input type="text" value="zz.">',
+  'INPUT without spellcheck attribute is not checked when spellcheck is disabled by default.');
 
-    shouldBeMarked = isMisspelled;
-    shouldBecomeEqual('internals.hasSpellingMarker(document, 0, 2)', 'shouldBeMarked', done);
-}
+spellcheck_test(
+  '<input spellcheck="true" type="text" value="zz.">',
+  document => {
+    internals.settings.setSpellCheckEnabledByDefault(false);
+    document.querySelector('input').focus();
+  },
+  '<input spellcheck="true" type="text" value="#zz#.">',
+  'INPUT with spellcheck=true is checked when spellcheck is disabled by default.');
 
-var tests = [
-    // spellcheck enabled by default
-    function() { testMarkerForMisspelledWord('test1_1', true, true); },
-    function() { testMarkerForMisspelledWord('test1_2', true, true); },
-    function() { testMarkerForMisspelledWord('test1_3', false, true); },
-    function() { testMarkerForMisspelledWord('test1_4', true, true); },
-    function() { testMarkerForMisspelledWord('test1_5', true, true); },
-    // spellcheck disabled by default
-    function() { testMarkerForMisspelledWord('test1_1', false, false); },
-    function() { testMarkerForMisspelledWord('test1_2', true, false); },
-    function() { testMarkerForMisspelledWord('test1_3', false, false); },
-    function() { testMarkerForMisspelledWord('test1_4', false, false); },
-    function() { testMarkerForMisspelledWord('test1_5', false, false); },
-];
+spellcheck_test(
+  '<input spellcheck="false" type="text" value="zz.">',
+  document => {
+    internals.settings.setSpellCheckEnabledByDefault(false);
+    document.querySelector('input').focus();
+  },
+  '<input spellcheck="false" type="text" value="zz.">',
+  'INPUT with spellcheck=false is not checked when spellcheck is disabled by default.');
 
-function done()
-{
-    var next = tests.shift();
-    if (next)
-        return window.setTimeout(next, 0);
+spellcheck_test(
+  '<input spellcheck="invalidValue" type="text" value="zz.">',
+  document => {
+    internals.settings.setSpellCheckEnabledByDefault(false);
+    document.querySelector('input').focus();
+  },
+  '<input spellcheck="invalidValue" type="text" value="zz.">',
+  'INPUT with invalid spellcheck attribute value is not checked when spellcheck is disabled by default.');
 
-    if (window.testRunner) {
-        // Cleaning up for expectation text if running on DRT.
-        document.getElementById("testRoot").style.display = "none";
-    }
-    finishJSTest();
-}
-done();
-
+spellcheck_test(
+  '<input spellcheck type="text" value="zz.">',
+  document => {
+    internals.settings.setSpellCheckEnabledByDefault(false);
+    document.querySelector('input').focus();
+  },
+  '<input spellcheck type="text" value="#zz#.">',
+  'INPUT with empty spellcheck attribute is checked when spellcheck is disabled by default.');
 </script>
-</body>
-</html>
