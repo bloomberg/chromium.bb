@@ -1099,6 +1099,10 @@ dialog::backdrop {
     background: rgba(0,0,0,0.1)
 }
 
+slot {
+    display: contents;
+}
+
 /* page */
 
 @page {

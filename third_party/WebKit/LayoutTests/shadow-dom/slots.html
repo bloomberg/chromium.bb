@@ -3,6 +3,8 @@
 <script src="../resources/testharnessreport.js"></script>
 <script src="resources/shadow-dom.js"></script>
 
+<slot id='slot_in_document'></slot>
+
 <div id="test_basic">
   <div id="host">
     <template data-mode="open">
@@ -14,6 +16,9 @@
 
 <script>
 test(() => {
+  assert_equals(window.getComputedStyle(slot_in_document).getPropertyValue('display'),
+                'contents');
+
   let n = createTestTree(test_basic);
   removeWhiteSpaceOnlyTextNodes(n.test_basic);
 
