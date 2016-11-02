@@ -93,6 +93,8 @@ class LayoutMedia : public LayoutImage {
 
   bool backgroundShouldAlwaysBeClipped() const final { return false; }
 
+  LayoutUnit computePanelWidth(const LayoutRect& mediaWidth) const;
+
   LayoutObjectChildList m_children;
 };
 

@@ -25,9 +25,13 @@
 
 #include "core/layout/LayoutMedia.h"
 
+#include "core/frame/FrameHost.h"
+#include "core/frame/FrameView.h"
+#include "core/frame/VisualViewport.h"
 #include "core/html/HTMLMediaElement.h"
 #include "core/html/shadow/MediaControls.h"
 #include "core/layout/LayoutView.h"
+#include "core/page/Page.h"
 
 namespace blink {
 
@@ -50,6 +54,8 @@ void LayoutMedia::layout() {
 
   LayoutState state(*this);
 
+  Optional<LayoutUnit> newPanelWidth;
+
 // Iterate the children in reverse order so that the media controls are laid
 // out before the text track container. This is to ensure that the text
 // track rendering has an up-to-date position of the media controls for
@@ -68,15 +74,26 @@ void LayoutMedia::layout() {
       ASSERT_NOT_REACHED();
 #endif
 
+    // TODO(mlamouri): we miss some layouts because needsLayout returns false in
+    // some cases where we want to change the width of the controls because the
+    // visible viewport has changed for example.
     if (newRect.size() == oldSize && !child->needsLayout())
       continue;
+
+    LayoutUnit width = newRect.width();
+    if (child->node()->isMediaControls()) {
+      width = computePanelWidth(newRect);
+      if (width != oldSize.width())
+        newPanelWidth = width;
+    }
 
     LayoutBox* layoutBox = toLayoutBox(child);
     layoutBox->setLocation(newRect.location());
     // TODO(foolip): Remove the mutableStyleRef() and depend on CSS
     // width/height: inherit to match the media element size.
     layoutBox->mutableStyleRef().setHeight(Length(newRect.height(), Fixed));
-    layoutBox->mutableStyleRef().setWidth(Length(newRect.width(), Fixed));
+    layoutBox->mutableStyleRef().setWidth(Length(width, Fixed));
+
     layoutBox->forceLayout();
   }
 
@@ -84,8 +101,10 @@ void LayoutMedia::layout() {
 
   // Notify our MediaControls that a layout has happened.
   if (mediaElement() && mediaElement()->mediaControls() &&
-      newRect.width() != oldSize.width())
-    mediaElement()->mediaControls()->notifyPanelWidthChanged(newRect.width());
+      newPanelWidth.has_value()) {
+    mediaElement()->mediaControls()->notifyPanelWidthChanged(
+        newPanelWidth.value());
+  }
 }
 
 bool LayoutMedia::isChildAllowed(LayoutObject* child,
@@ -137,6 +156,28 @@ void LayoutMedia::setRequestPositionUpdates(bool want) {
     view()->registerMediaForPositionChangeNotification(*this);
   else
     view()->unregisterMediaForPositionChangeNotification(*this);
+}
+
+LayoutUnit LayoutMedia::computePanelWidth(const LayoutRect& mediaRect) const {
+  FrameHost* frameHost = document().frameHost();
+  LocalFrame* mainFrame = document().page()->deprecatedLocalMainFrame();
+  FrameView* pageView = mainFrame ? mainFrame->view() : nullptr;
+  if (!frameHost || !mainFrame || !pageView)
+    return mediaRect.width();
+
+  if (pageView->horizontalScrollbarMode() != ScrollbarAlwaysOff)
+    return mediaRect.width();
+
+  // On desktop, this will include scrollbars when they stay visible.
+  const LayoutUnit visibleWidth(frameHost->visualViewport().visibleWidth());
+  const LayoutUnit absoluteXOffset(
+      localToAbsolute(
+          FloatPoint(mediaRect.location()),
+          UseTransforms | ApplyContainerFlip | TraverseDocumentBoundaries)
+          .x());
+  DCHECK_GE(visibleWidth - absoluteXOffset, 0);
+
+  return std::min(mediaRect.width(), visibleWidth - absoluteXOffset);
 }
 
 }  // namespace blink
