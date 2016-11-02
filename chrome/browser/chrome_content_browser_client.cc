@@ -3079,14 +3079,14 @@ ChromeContentBrowserClient::CreateThrottlesForNavigation(
     content::NavigationHandle* handle) {
   ScopedVector<content::NavigationThrottle> throttles;
 
-  if (handle->IsInMainFrame()) {
 #if defined(ENABLE_PLUGINS)
-    std::unique_ptr<content::NavigationThrottle> flash_url_throttle =
-        FlashDownloadInterception::MaybeCreateThrottleFor(handle);
-    if (flash_url_throttle)
-      throttles.push_back(std::move(flash_url_throttle));
+  std::unique_ptr<content::NavigationThrottle> flash_url_throttle =
+      FlashDownloadInterception::MaybeCreateThrottleFor(handle);
+  if (flash_url_throttle)
+    throttles.push_back(std::move(flash_url_throttle));
 #endif
 
+  if (handle->IsInMainFrame()) {
     throttles.push_back(
         page_load_metrics::MetricsNavigationThrottle::Create(handle));
   }

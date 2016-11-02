@@ -120,11 +120,21 @@ FlashDownloadInterception::MaybeCreateThrottleFor(NavigationHandle* handle) {
   if (handle->GetWebContents()->HasOpener())
     return nullptr;
 
+  // Browser initiated navigations like the Back button or the context menu
+  // should never be intercepted.
+  if (!handle->IsRendererInitiated())
+    return nullptr;
+
+  // The source URL may be empty, it's a new tab. Intercepting that navigation
+  // would lead to a blank new tab, which would be bad.
+  GURL source_url = handle->GetWebContents()->GetLastCommittedURL();
+  if (source_url.is_empty())
+    return nullptr;
+
   Profile* profile = Profile::FromBrowserContext(
       handle->GetWebContents()->GetBrowserContext());
   HostContentSettingsMap* host_content_settings_map =
       HostContentSettingsMapFactory::GetForProfile(profile);
-  GURL source_url = handle->GetWebContents()->GetLastCommittedURL();
   if (!ShouldStopFlashDownloadAction(host_content_settings_map, source_url,
                                      handle->GetURL(),
                                      handle->HasUserGesture())) {
