@@ -35,6 +35,7 @@ message LayerNode {
 
     // Layer Types for testing only.
     FAKE_PICTURE_LAYER = 5;
+    PUSH_PROPERTIES_COUNTING_LAYER = 6;
 
     // TODO(nyquist): Add the rest of the necessary LayerTypes.
   };

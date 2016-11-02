@@ -38,15 +38,6 @@ class DefaultLayerFactory : public LayerFactory {
       ContentLayerClient* content_layer_client) override {
     return PictureLayer::Create(content_layer_client);
   }
-
-  scoped_refptr<PictureLayer> CreateFakePictureLayer(
-      int engine_layer_id,
-      ContentLayerClient* content_layer_client) override {
-    // We should never create fake layers in production code.
-    NOTREACHED();
-    return PictureLayer::Create(content_layer_client);
-  }
-
   scoped_refptr<SolidColorScrollbarLayer> CreateSolidColorScrollbarLayer(
       int engine_layer_id,
       ScrollbarOrientation orientation,
@@ -57,6 +48,19 @@ class DefaultLayerFactory : public LayerFactory {
     return SolidColorScrollbarLayer::Create(
         orientation, thumb_thickness, track_start,
         is_left_side_vertical_scrollbar, scroll_layer_id);
+  }
+  scoped_refptr<PictureLayer> CreateFakePictureLayer(
+      int engine_layer_id,
+      ContentLayerClient* content_layer_client) override {
+    // We should never create fake layers in production code.
+    NOTREACHED();
+    return PictureLayer::Create(content_layer_client);
+  }
+  scoped_refptr<Layer> CreatePushPropertiesCountingLayer(
+      int engine_layer_id) override {
+    // We should never create fake layers in production code.
+    NOTREACHED();
+    return Layer::Create();
   }
 };
 
@@ -371,6 +375,7 @@ scoped_refptr<Layer> CompositorStateDeserializer::GetLayerAndAddToNewMap(
           layer_node.id(), layer_data.content_layer_client.get());
       break;
     case proto::LayerNode::FAKE_PICTURE_LAYER:
+      // FAKE_PICTURE_LAYER is for testing only.
       layer_data.content_layer_client =
           base::MakeUnique<DeserializedContentLayerClient>();
       layer_data.layer = layer_factory_->CreateFakePictureLayer(
@@ -403,6 +408,12 @@ scoped_refptr<Layer> CompositorStateDeserializer::GetLayerAndAddToNewMap(
     case proto::LayerNode::HEADS_UP_DISPLAY_LAYER:
       // TODO(khushalsagar): Remove this from proto.
       NOTREACHED();
+      break;
+    case proto::LayerNode::PUSH_PROPERTIES_COUNTING_LAYER:
+      // PUSH_PROPERTIES_COUNTING_LAYER is for testing only.
+      layer_data.layer =
+          layer_factory_->CreatePushPropertiesCountingLayer(layer_node.id());
+      break;
   }
 
   layer = layer_data.layer;

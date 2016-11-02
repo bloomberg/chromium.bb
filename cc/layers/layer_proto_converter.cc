@@ -97,6 +97,7 @@ scoped_refptr<Layer> LayerProtoConverter::FindOrAllocateAndConstruct(
     // layer type we don't support.
     case proto::LayerNode::UNKNOWN:
     case proto::LayerNode::LAYER:
+    case proto::LayerNode::PUSH_PROPERTIES_COUNTING_LAYER:
       return Layer::Create().get();
     case proto::LayerNode::PICTURE_LAYER:
     case proto::LayerNode::FAKE_PICTURE_LAYER:

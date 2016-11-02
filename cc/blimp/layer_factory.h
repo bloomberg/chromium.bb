@@ -27,10 +27,6 @@ class LayerFactory {
       int engine_layer_id,
       ContentLayerClient* content_layer_client) = 0;
 
-  virtual scoped_refptr<PictureLayer> CreateFakePictureLayer(
-      int engine_layer_id,
-      ContentLayerClient* content_layer_client) = 0;
-
   virtual scoped_refptr<SolidColorScrollbarLayer>
   CreateSolidColorScrollbarLayer(int engine_layer_id,
                                  ScrollbarOrientation orientation,
@@ -38,6 +34,14 @@ class LayerFactory {
                                  int track_start,
                                  bool is_left_side_vertical_scrollbar,
                                  int scroll_layer_id) = 0;
+
+  // Create layers for testing.
+  virtual scoped_refptr<PictureLayer> CreateFakePictureLayer(
+      int engine_layer_id,
+      ContentLayerClient* content_layer_client) = 0;
+
+  virtual scoped_refptr<Layer> CreatePushPropertiesCountingLayer(
+      int engine_layer_id) = 0;
 };
 
 }  // namespace cc

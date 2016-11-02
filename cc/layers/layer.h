@@ -377,8 +377,8 @@ class CC_EXPORT Layer : public base::RefCounted<Layer> {
   // a LayerImpl, it pushes the properties to proto::LayerProperties. It is
   // called only on layers that have changed properties. The properties
   // themselves are pushed to proto::LayerProperties.
-  void ToLayerPropertiesProto(proto::LayerUpdate* layer_update,
-                              bool inputs_only);
+  virtual void ToLayerPropertiesProto(proto::LayerUpdate* layer_update,
+                                      bool inputs_only);
 
   // Read all property values from the given LayerProperties object and update
   // the current layer. The values for |needs_push_properties_| and

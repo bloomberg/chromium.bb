@@ -8,6 +8,7 @@
 #include "cc/layers/picture_layer.h"
 #include "cc/layers/solid_color_scrollbar_layer.h"
 #include "cc/test/fake_picture_layer.h"
+#include "cc/test/push_properties_counting_layer.h"
 
 namespace cc {
 
@@ -31,15 +32,6 @@ scoped_refptr<PictureLayer> RemoteClientLayerFactory::CreatePictureLayer(
   return layer;
 }
 
-scoped_refptr<PictureLayer> RemoteClientLayerFactory::CreateFakePictureLayer(
-    int engine_layer_id,
-    ContentLayerClient* content_layer_client) {
-  scoped_refptr<PictureLayer> layer =
-      FakePictureLayer::Create(content_layer_client);
-  layer->SetLayerIdForTesting(engine_layer_id);
-  return layer;
-}
-
 scoped_refptr<SolidColorScrollbarLayer>
 RemoteClientLayerFactory::CreateSolidColorScrollbarLayer(
     int engine_layer_id,
@@ -52,6 +44,24 @@ RemoteClientLayerFactory::CreateSolidColorScrollbarLayer(
       SolidColorScrollbarLayer::Create(
           orientation, thumb_thickness, track_start,
           is_left_side_vertical_scrollbar, scroll_layer_id);
+  layer->SetLayerIdForTesting(engine_layer_id);
+  return layer;
+}
+
+scoped_refptr<PictureLayer> RemoteClientLayerFactory::CreateFakePictureLayer(
+    int engine_layer_id,
+    ContentLayerClient* content_layer_client) {
+  scoped_refptr<PictureLayer> layer =
+      FakePictureLayer::Create(content_layer_client);
+  layer->SetLayerIdForTesting(engine_layer_id);
+  return layer;
+}
+
+scoped_refptr<Layer>
+RemoteClientLayerFactory::CreatePushPropertiesCountingLayer(
+    int engine_layer_id) {
+  scoped_refptr<PushPropertiesCountingLayer> layer =
+      PushPropertiesCountingLayer::Create();
   layer->SetLayerIdForTesting(engine_layer_id);
   return layer;
 }

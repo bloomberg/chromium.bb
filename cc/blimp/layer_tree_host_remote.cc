@@ -515,10 +515,13 @@ void LayerTreeHostRemote::SerializeCurrentState(
                           inputs_only);
 
   // Serialize the dirty layers.
-  for (auto* layer : layer_tree_->LayersThatShouldPushProperties())
+  std::unordered_set<Layer*> layers_need_push_properties;
+  layers_need_push_properties.swap(
+      layer_tree_->LayersThatShouldPushProperties());
+
+  for (auto* layer : layers_need_push_properties)
     layer->ToLayerPropertiesProto(
         layer_tree_host_proto->mutable_layer_updates(), inputs_only);
-  layer_tree_->LayersThatShouldPushProperties().clear();
 
   std::vector<PictureData> pictures =
       engine_picture_cache_->CalculateCacheUpdateAndFlush();

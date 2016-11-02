@@ -4,12 +4,16 @@
 
 #include "cc/blimp/layer_tree_host_remote.h"
 
+#include <memory>
+#include <unordered_set>
+
 #include "base/bind.h"
 #include "base/run_loop.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "cc/animation/animation_host.h"
 #include "cc/layers/layer.h"
 #include "cc/output/begin_frame_args.h"
+#include "cc/proto/compositor_message.pb.h"
 #include "cc/test/fake_image_serialization_processor.h"
 #include "cc/test/fake_remote_compositor_bridge.h"
 #include "cc/test/stub_layer_tree_host_client.h"
@@ -48,6 +52,7 @@ class UpdateTrackingRemoteCompositorBridge : public FakeRemoteCompositorBridge {
   void ProcessCompositorStateUpdate(
       std::unique_ptr<CompositorProtoState> compositor_proto_state) override {
     num_updates_received_++;
+    compositor_proto_state_ = std::move(compositor_proto_state);
   };
 
   bool SendUpdates(const std::unordered_map<int, gfx::ScrollOffset>& scroll_map,
@@ -57,8 +62,13 @@ class UpdateTrackingRemoteCompositorBridge : public FakeRemoteCompositorBridge {
 
   int num_updates_received() const { return num_updates_received_; }
 
+  CompositorProtoState* compositor_proto_state() {
+    return compositor_proto_state_.get();
+  }
+
  private:
   int num_updates_received_ = 0;
+  std::unique_ptr<CompositorProtoState> compositor_proto_state_;
 };
 
 class MockLayerTreeHostClient : public StubLayerTreeHostClient {
@@ -454,6 +464,55 @@ TEST_F(LayerTreeHostRemoteTest, IdentifiedLayersToSkipUpdates) {
   EXPECT_FALSE(empty_bound_layer->did_update());
   EXPECT_FALSE(transparent_layer->did_update());
   EXPECT_TRUE(updated_layer->did_update());
+}
+
+TEST_F(LayerTreeHostRemoteTest, OnlyPushPropertiesOnChangingLayers) {
+  EXPECT_BEGIN_MAIN_FRAME_AND_COMMIT(mock_layer_tree_host_client_, 2);
+
+  // Setup a tree with 3 nodes.
+  scoped_refptr<Layer> child_layer = Layer::Create();
+  scoped_refptr<Layer> grandchild_layer = Layer::Create();
+  root_layer_->AddChild(child_layer);
+  child_layer->AddChild(grandchild_layer);
+  layer_tree_host_->SetNeedsCommit();
+
+  base::RunLoop().RunUntilIdle();
+
+  // Ensure the first proto contains all layer updates.
+  EXPECT_EQ(1, remote_compositor_bridge_->num_updates_received());
+  CompositorProtoState* compositor_proto_state =
+      remote_compositor_bridge_->compositor_proto_state();
+  const proto::LayerUpdate& layer_updates_first_commit =
+      compositor_proto_state->compositor_message->layer_tree_host()
+          .layer_updates();
+
+  std::unordered_set<int> layer_updates_id_set;
+  for (int i = 0; i < layer_updates_first_commit.layers_size(); ++i) {
+    layer_updates_id_set.insert(layer_updates_first_commit.layers(i).id());
+  }
+
+  EXPECT_TRUE(layer_updates_id_set.find(root_layer_->id()) !=
+              layer_updates_id_set.end());
+  EXPECT_TRUE(layer_updates_id_set.find(child_layer->id()) !=
+              layer_updates_id_set.end());
+  EXPECT_TRUE(layer_updates_id_set.find(grandchild_layer->id()) !=
+              layer_updates_id_set.end());
+  EXPECT_EQ(3, layer_updates_first_commit.layers_size());
+
+  // Modify the |child_layer|, and run the second frame.
+  child_layer->SetNeedsPushProperties();
+  layer_tree_host_->SetNeedsCommit();
+  base::RunLoop().RunUntilIdle();
+
+  // Ensure the second proto only contains |child_layer|.
+  EXPECT_EQ(2, remote_compositor_bridge_->num_updates_received());
+  compositor_proto_state = remote_compositor_bridge_->compositor_proto_state();
+  DCHECK(compositor_proto_state);
+  const proto::LayerUpdate& layer_updates_second_commit =
+      compositor_proto_state->compositor_message->layer_tree_host()
+          .layer_updates();
+  EXPECT_EQ(1, layer_updates_second_commit.layers_size());
+  EXPECT_EQ(child_layer->id(), layer_updates_second_commit.layers(0).id());
 }
 
 }  // namespace
