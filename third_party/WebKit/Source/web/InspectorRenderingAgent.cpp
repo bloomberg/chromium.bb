@@ -37,78 +37,79 @@ WebViewImpl* InspectorRenderingAgent::webViewImpl() {
 }
 
 void InspectorRenderingAgent::restore() {
-  ErrorString error;
   setShowDebugBorders(
-      &error,
       m_state->booleanProperty(RenderingAgentState::showDebugBorders, false));
-  setShowFPSCounter(&error, m_state->booleanProperty(
-                                RenderingAgentState::showFPSCounter, false));
-  setShowPaintRects(&error, m_state->booleanProperty(
-                                RenderingAgentState::showPaintRects, false));
-  setShowScrollBottleneckRects(
-      &error, m_state->booleanProperty(
-                  RenderingAgentState::showScrollBottleneckRects, false));
+  setShowFPSCounter(
+      m_state->booleanProperty(RenderingAgentState::showFPSCounter, false));
+  setShowPaintRects(
+      m_state->booleanProperty(RenderingAgentState::showPaintRects, false));
+  setShowScrollBottleneckRects(m_state->booleanProperty(
+      RenderingAgentState::showScrollBottleneckRects, false));
   setShowViewportSizeOnResize(
-      &error,
       m_state->booleanProperty(RenderingAgentState::showSizeOnResize, false));
 }
 
-void InspectorRenderingAgent::disable(ErrorString*) {
-  ErrorString error;
-  setShowDebugBorders(&error, false);
-  setShowFPSCounter(&error, false);
-  setShowPaintRects(&error, false);
-  setShowScrollBottleneckRects(&error, false);
-  setShowViewportSizeOnResize(&error, false);
+Response InspectorRenderingAgent::disable() {
+  setShowDebugBorders(false);
+  setShowFPSCounter(false);
+  setShowPaintRects(false);
+  setShowScrollBottleneckRects(false);
+  setShowViewportSizeOnResize(false);
+  return Response::OK();
 }
 
-void InspectorRenderingAgent::setShowDebugBorders(ErrorString* errorString,
-                                                  bool show) {
+Response InspectorRenderingAgent::setShowDebugBorders(bool show) {
   m_state->setBoolean(RenderingAgentState::showDebugBorders, show);
-  if (show && !compositingEnabled(errorString))
-    return;
+  if (show) {
+    Response response = compositingEnabled();
+    if (!response.isSuccess())
+      return response;
+  }
   webViewImpl()->setShowDebugBorders(show);
+  return Response::OK();
 }
 
-void InspectorRenderingAgent::setShowFPSCounter(ErrorString* errorString,
-                                                bool show) {
+Response InspectorRenderingAgent::setShowFPSCounter(bool show) {
   m_state->setBoolean(RenderingAgentState::showFPSCounter, show);
-  if (show && !compositingEnabled(errorString))
-    return;
+  if (show) {
+    Response response = compositingEnabled();
+    if (!response.isSuccess())
+      return response;
+  }
   webViewImpl()->setShowFPSCounter(show);
+  return Response::OK();
 }
 
-void InspectorRenderingAgent::setShowPaintRects(ErrorString*, bool show) {
+Response InspectorRenderingAgent::setShowPaintRects(bool show) {
   m_state->setBoolean(RenderingAgentState::showPaintRects, show);
   webViewImpl()->setShowPaintRects(show);
   if (!show && m_webLocalFrameImpl->frameView())
     m_webLocalFrameImpl->frameView()->invalidate();
+  return Response::OK();
 }
 
-void InspectorRenderingAgent::setShowScrollBottleneckRects(
-    ErrorString* errorString,
-    bool show) {
+Response InspectorRenderingAgent::setShowScrollBottleneckRects(bool show) {
   m_state->setBoolean(RenderingAgentState::showScrollBottleneckRects, show);
-  if (show && !compositingEnabled(errorString))
-    return;
+  if (show) {
+    Response response = compositingEnabled();
+    if (!response.isSuccess())
+      return response;
+  }
   webViewImpl()->setShowScrollBottleneckRects(show);
+  return Response::OK();
 }
 
-void InspectorRenderingAgent::setShowViewportSizeOnResize(
-    ErrorString* errorString,
-    bool show) {
+Response InspectorRenderingAgent::setShowViewportSizeOnResize(bool show) {
   m_state->setBoolean(RenderingAgentState::showSizeOnResize, show);
   if (m_overlay)
     m_overlay->setShowViewportSizeOnResize(show);
+  return Response::OK();
 }
 
-bool InspectorRenderingAgent::compositingEnabled(ErrorString* errorString) {
-  if (!webViewImpl()->page()->settings().acceleratedCompositingEnabled()) {
-    if (errorString)
-      *errorString = "Compositing mode is not supported";
-    return false;
-  }
-  return true;
+Response InspectorRenderingAgent::compositingEnabled() {
+  if (!webViewImpl()->page()->settings().acceleratedCompositingEnabled())
+    return Response::Error("Compositing mode is not supported");
+  return Response::OK();
 }
 
 DEFINE_TRACE(InspectorRenderingAgent) {

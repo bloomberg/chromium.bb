@@ -14,4 +14,5 @@ description.
 Local modifications:
 - This only includes the lib/ and templates/ directories, scripts, build
   and the LICENSE files.
-- DOMStorage is added to new style domains in CodeGenerator.py.
+- DOMStorage, Rendering, Emulation are added to new style domains in
+  CodeGenerator.py.

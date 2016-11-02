@@ -52,49 +52,42 @@ WebViewImpl* InspectorEmulationAgent::webViewImpl() {
 }
 
 void InspectorEmulationAgent::restore() {
-  ErrorString error;
-  setScriptExecutionDisabled(
-      &error, m_state->booleanProperty(
-                  EmulationAgentState::scriptExecutionDisabled, false));
+  setScriptExecutionDisabled(m_state->booleanProperty(
+      EmulationAgentState::scriptExecutionDisabled, false));
   setTouchEmulationEnabled(
-      &error, m_state->booleanProperty(
-                  EmulationAgentState::touchEventEmulationEnabled, false),
+      m_state->booleanProperty(EmulationAgentState::touchEventEmulationEnabled,
+                               false),
       protocol::Maybe<String>());
   String emulatedMedia;
   m_state->getString(EmulationAgentState::emulatedMedia, &emulatedMedia);
-  setEmulatedMedia(&error, emulatedMedia);
+  setEmulatedMedia(emulatedMedia);
   if (m_state->booleanProperty(EmulationAgentState::forcedViewportEnabled,
                                false)) {
     forceViewport(
-        &error,
+
         m_state->doubleProperty(EmulationAgentState::forcedViewportX, 0),
         m_state->doubleProperty(EmulationAgentState::forcedViewportY, 0),
         m_state->doubleProperty(EmulationAgentState::forcedViewportScale, 1));
   }
 }
 
-void InspectorEmulationAgent::disable(ErrorString*) {
-  ErrorString error;
-  setScriptExecutionDisabled(&error, false);
-  setTouchEmulationEnabled(&error, false, protocol::Maybe<String>());
-  setEmulatedMedia(&error, String());
-  setCPUThrottlingRate(&error, 1);
-  resetViewport(&error);
+Response InspectorEmulationAgent::disable() {
+  setScriptExecutionDisabled(false);
+  setTouchEmulationEnabled(false, Maybe<String>());
+  setEmulatedMedia(String());
+  setCPUThrottlingRate(1);
+  resetViewport();
+  return Response::OK();
 }
 
-void InspectorEmulationAgent::forceViewport(ErrorString* error,
-                                            double x,
-                                            double y,
-                                            double scale) {
-  if (x < 0 || y < 0) {
-    *error = "Coordinates must be non-negative";
-    return;
-  }
+Response InspectorEmulationAgent::forceViewport(double x,
+                                                double y,
+                                                double scale) {
+  if (x < 0 || y < 0)
+    return Response::Error("Coordinates must be non-negative");
 
-  if (scale <= 0) {
-    *error = "Scale must be positive";
-    return;
-  }
+  if (scale <= 0)
+    return Response::Error("Scale must be positive");
 
   m_state->setBoolean(EmulationAgentState::forcedViewportEnabled, true);
   m_state->setDouble(EmulationAgentState::forcedViewportX, x);
@@ -102,72 +95,74 @@ void InspectorEmulationAgent::forceViewport(ErrorString* error,
   m_state->setDouble(EmulationAgentState::forcedViewportScale, scale);
 
   webViewImpl()->devToolsEmulator()->forceViewport(WebFloatPoint(x, y), scale);
+  return Response::OK();
 }
 
-void InspectorEmulationAgent::resetViewport(ErrorString*) {
+Response InspectorEmulationAgent::resetViewport() {
   m_state->setBoolean(EmulationAgentState::forcedViewportEnabled, false);
   webViewImpl()->devToolsEmulator()->resetViewport();
+  return Response::OK();
 }
 
-void InspectorEmulationAgent::resetPageScaleFactor(ErrorString*) {
+Response InspectorEmulationAgent::resetPageScaleFactor() {
   webViewImpl()->resetScaleStateImmediately();
+  return Response::OK();
 }
 
-void InspectorEmulationAgent::setPageScaleFactor(ErrorString*,
-                                                 double pageScaleFactor) {
+Response InspectorEmulationAgent::setPageScaleFactor(double pageScaleFactor) {
   webViewImpl()->setPageScaleFactor(static_cast<float>(pageScaleFactor));
+  return Response::OK();
 }
 
-void InspectorEmulationAgent::setScriptExecutionDisabled(ErrorString*,
-                                                         bool value) {
+Response InspectorEmulationAgent::setScriptExecutionDisabled(bool value) {
   m_state->setBoolean(EmulationAgentState::scriptExecutionDisabled, value);
   webViewImpl()->devToolsEmulator()->setScriptExecutionDisabled(value);
+  return Response::OK();
 }
 
-void InspectorEmulationAgent::setTouchEmulationEnabled(
-    ErrorString*,
+Response InspectorEmulationAgent::setTouchEmulationEnabled(
     bool enabled,
-    const Maybe<String>& configuration) {
+    Maybe<String> configuration) {
   m_state->setBoolean(EmulationAgentState::touchEventEmulationEnabled, enabled);
   webViewImpl()->devToolsEmulator()->setTouchEventEmulationEnabled(enabled);
+  return Response::OK();
 }
 
-void InspectorEmulationAgent::setEmulatedMedia(ErrorString*,
-                                               const String& media) {
+Response InspectorEmulationAgent::setEmulatedMedia(const String& media) {
   m_state->setString(EmulationAgentState::emulatedMedia, media);
   webViewImpl()->page()->settings().setMediaTypeOverride(media);
+  return Response::OK();
 }
 
-void InspectorEmulationAgent::setCPUThrottlingRate(ErrorString*,
-                                                   double throttlingRate) {
+Response InspectorEmulationAgent::setCPUThrottlingRate(double throttlingRate) {
   m_client->setCPUThrottlingRate(throttlingRate);
+  return Response::OK();
 }
 
-void InspectorEmulationAgent::setVirtualTimePolicy(
-    ErrorString*,
-    const String& in_policy,
-    const Maybe<int>& in_budget) {
-  if (protocol::Emulation::VirtualTimePolicyEnum::Advance == in_policy) {
+Response InspectorEmulationAgent::setVirtualTimePolicy(const String& policy,
+                                                       Maybe<int> budget) {
+  if (protocol::Emulation::VirtualTimePolicyEnum::Advance == policy) {
     m_webLocalFrameImpl->view()->scheduler()->setVirtualTimePolicy(
         WebViewScheduler::VirtualTimePolicy::ADVANCE);
-  } else if (protocol::Emulation::VirtualTimePolicyEnum::Pause == in_policy) {
+  } else if (protocol::Emulation::VirtualTimePolicyEnum::Pause == policy) {
     m_webLocalFrameImpl->view()->scheduler()->setVirtualTimePolicy(
         WebViewScheduler::VirtualTimePolicy::PAUSE);
   } else if (protocol::Emulation::VirtualTimePolicyEnum::
-                 PauseIfNetworkFetchesPending == in_policy) {
+                 PauseIfNetworkFetchesPending == policy) {
     m_webLocalFrameImpl->view()->scheduler()->setVirtualTimePolicy(
         WebViewScheduler::VirtualTimePolicy::DETERMINISTIC_LOADING);
   }
   m_webLocalFrameImpl->view()->scheduler()->enableVirtualTime();
 
-  if (in_budget.isJust()) {
+  if (budget.isJust()) {
     WebTaskRunner* taskRunner =
         Platform::current()->currentThread()->getWebTaskRunner();
-    long long delayMillis = static_cast<long long>(in_budget.fromJust());
+    long long delayMillis = static_cast<long long>(budget.fromJust());
     taskRunner->postDelayedTask(
         BLINK_FROM_HERE, m_virtualTimeBudgetExpiredTask->cancelAndCreate(),
         delayMillis);
   }
+  return Response::OK();
 }
 
 void InspectorEmulationAgent::virtualTimeBudgetExpired() {
