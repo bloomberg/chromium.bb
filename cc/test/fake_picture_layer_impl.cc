@@ -19,12 +19,7 @@ FakePictureLayerImpl::FakePictureLayerImpl(
     int id,
     scoped_refptr<RasterSource> raster_source,
     bool is_mask)
-    : PictureLayerImpl(tree_impl, id, is_mask),
-      append_quads_count_(0),
-      did_become_active_call_count_(0),
-      has_valid_tile_priorities_(false),
-      use_set_valid_tile_priorities_flag_(false),
-      release_resources_count_(0) {
+    : PictureLayerImpl(tree_impl, id, is_mask) {
   SetBounds(raster_source->GetSize());
   SetRasterSourceOnPending(raster_source, Region());
 }
@@ -35,12 +30,7 @@ FakePictureLayerImpl::FakePictureLayerImpl(
     scoped_refptr<RasterSource> raster_source,
     bool is_mask,
     const gfx::Size& layer_bounds)
-    : PictureLayerImpl(tree_impl, id, is_mask),
-      append_quads_count_(0),
-      did_become_active_call_count_(0),
-      has_valid_tile_priorities_(false),
-      use_set_valid_tile_priorities_flag_(false),
-      release_resources_count_(0) {
+    : PictureLayerImpl(tree_impl, id, is_mask) {
   SetBounds(layer_bounds);
   SetRasterSourceOnPending(raster_source, Region());
 }
@@ -48,12 +38,7 @@ FakePictureLayerImpl::FakePictureLayerImpl(
 FakePictureLayerImpl::FakePictureLayerImpl(LayerTreeImpl* tree_impl,
                                            int id,
                                            bool is_mask)
-    : PictureLayerImpl(tree_impl, id, is_mask),
-      append_quads_count_(0),
-      did_become_active_call_count_(0),
-      has_valid_tile_priorities_(false),
-      use_set_valid_tile_priorities_flag_(false),
-      release_resources_count_(0) {}
+    : PictureLayerImpl(tree_impl, id, is_mask) {}
 
 std::unique_ptr<LayerImpl> FakePictureLayerImpl::CreateLayerImpl(
     LayerTreeImpl* tree_impl) {
@@ -218,6 +203,11 @@ size_t FakePictureLayerImpl::CountTilesRequiredForDraw() const {
 void FakePictureLayerImpl::ReleaseResources() {
   PictureLayerImpl::ReleaseResources();
   ++release_resources_count_;
+}
+
+void FakePictureLayerImpl::ReleaseTileResources() {
+  PictureLayerImpl::ReleaseTileResources();
+  ++release_tile_resources_count_;
 }
 
 }  // namespace cc

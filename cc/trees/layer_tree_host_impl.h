@@ -629,7 +629,8 @@ class CC_EXPORT LayerTreeHostImpl
   void CleanUpTileManagerAndUIResources();
   void CreateTileManagerResources();
   void ReleaseTreeResources();
-  void RecreateTreeResources();
+  void ReleaseTileResources();
+  void RecreateTileResources();
 
   void AnimateInternal(bool active_tree);
 

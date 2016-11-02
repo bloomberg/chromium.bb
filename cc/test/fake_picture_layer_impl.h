@@ -140,9 +140,12 @@ class FakePictureLayerImpl : public PictureLayerImpl {
   }
 
   size_t release_resources_count() const { return release_resources_count_; }
-  void reset_release_resources_count() { release_resources_count_ = 0; }
+  size_t release_tile_resources_count() const {
+    return release_tile_resources_count_;
+  }
 
   void ReleaseResources() override;
+  void ReleaseTileResources() override;
 
   bool only_used_low_res_last_append_quads() const {
     return only_used_low_res_last_append_quads_;
@@ -163,11 +166,12 @@ class FakePictureLayerImpl : public PictureLayerImpl {
  private:
   gfx::Size fixed_tile_size_;
 
-  size_t append_quads_count_;
-  size_t did_become_active_call_count_;
-  bool has_valid_tile_priorities_;
-  bool use_set_valid_tile_priorities_flag_;
-  size_t release_resources_count_;
+  size_t append_quads_count_ = 0;
+  size_t did_become_active_call_count_ = 0;
+  bool has_valid_tile_priorities_ = false;
+  bool use_set_valid_tile_priorities_flag_ = false;
+  size_t release_resources_count_ = 0;
+  size_t release_tile_resources_count_ = 0;
 };
 
 }  // namespace cc

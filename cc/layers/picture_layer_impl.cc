@@ -671,7 +671,12 @@ void PictureLayerImpl::ReleaseResources() {
   ResetRasterScale();
 }
 
-void PictureLayerImpl::RecreateResources() {
+void PictureLayerImpl::ReleaseTileResources() {
+  // All resources are tile resources.
+  ReleaseResources();
+}
+
+void PictureLayerImpl::RecreateTileResources() {
   tilings_ = CreatePictureLayerTilingSet();
   if (raster_source_) {
     raster_source_->set_image_decode_controller(

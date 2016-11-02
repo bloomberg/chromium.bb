@@ -48,7 +48,8 @@ class CC_EXPORT PictureLayerImpl
   void ResetRasterScale();
   void DidBeginTracing() override;
   void ReleaseResources() override;
-  void RecreateResources() override;
+  void ReleaseTileResources() override;
+  void RecreateTileResources() override;
   Region GetInvalidationRegionForDebugging() override;
 
   // PictureLayerTilingClient overrides.

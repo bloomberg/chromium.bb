@@ -230,16 +230,16 @@ class PictureLayerImplTest : public TestLayerTreeHostBase {
 
   void ResetTilingsAndRasterScales() {
     if (pending_layer()) {
-      pending_layer()->ReleaseResources();
+      pending_layer()->ReleaseTileResources();
       EXPECT_FALSE(pending_layer()->tilings());
-      pending_layer()->RecreateResources();
+      pending_layer()->RecreateTileResources();
       EXPECT_EQ(0u, pending_layer()->tilings()->num_tilings());
     }
 
     if (active_layer()) {
-      active_layer()->ReleaseResources();
+      active_layer()->ReleaseTileResources();
       EXPECT_FALSE(active_layer()->tilings());
-      active_layer()->RecreateResources();
+      active_layer()->RecreateTileResources();
       EXPECT_EQ(0u, active_layer()->tilings()->num_tilings());
     }
   }
@@ -588,9 +588,9 @@ TEST_F(PictureLayerImplTest, UpdateTilesCreatesTilings) {
   float low_res_factor = host_impl()->settings().low_res_contents_scale_factor;
   EXPECT_LT(low_res_factor, 1.f);
 
-  active_layer()->ReleaseResources();
+  active_layer()->ReleaseTileResources();
   EXPECT_FALSE(active_layer()->tilings());
-  active_layer()->RecreateResources();
+  active_layer()->RecreateTileResources();
   EXPECT_EQ(0u, active_layer()->tilings()->num_tilings());
 
   SetupDrawPropertiesAndUpdateTiles(active_layer(),
@@ -657,9 +657,9 @@ TEST_F(PictureLayerImplTest, PendingLayerOnlyHasHighResTiling) {
   float low_res_factor = host_impl()->settings().low_res_contents_scale_factor;
   EXPECT_LT(low_res_factor, 1.f);
 
-  pending_layer()->ReleaseResources();
+  pending_layer()->ReleaseTileResources();
   EXPECT_FALSE(pending_layer()->tilings());
-  pending_layer()->RecreateResources();
+  pending_layer()->RecreateTileResources();
   EXPECT_EQ(0u, pending_layer()->tilings()->num_tilings());
 
   SetupDrawPropertiesAndUpdateTiles(pending_layer(),
@@ -1213,8 +1213,8 @@ TEST_F(PictureLayerImplTest, DontAddLowResForSmallLayers) {
       pending_layer()->test_properties()->mask_layer);
   // We did an UpdateDrawProperties above, which will set a contents scale on
   // the mask layer, so allow us to reset the contents scale.
-  mask_raw->ReleaseResources();
-  mask_raw->RecreateResources();
+  mask_raw->ReleaseTileResources();
+  mask_raw->RecreateTileResources();
 
   SetupDrawPropertiesAndUpdateTiles(
       mask_raw, contents_scale, device_scale, page_scale,
@@ -1269,10 +1269,10 @@ TEST_F(PictureLayerImplTest, HugeMasksGetScaledDown) {
   EXPECT_EQ(active_mask->bounds(), mask_texture_size);
 
   // Drop resources and recreate them, still the same.
-  pending_mask->ReleaseResources();
-  active_mask->ReleaseResources();
-  pending_mask->RecreateResources();
-  active_mask->RecreateResources();
+  pending_mask->ReleaseTileResources();
+  active_mask->ReleaseTileResources();
+  pending_mask->RecreateTileResources();
+  active_mask->RecreateTileResources();
   SetupDrawPropertiesAndUpdateTiles(active_mask, 1.f, 1.f, 1.f, 1.f, 0.f,
                                     false);
   active_mask->HighResTiling()->CreateAllTilesForTesting();
@@ -1312,10 +1312,10 @@ TEST_F(PictureLayerImplTest, HugeMasksGetScaledDown) {
   EXPECT_EQ(expected_size, mask_texture_size);
 
   // Drop resources and recreate them, still the same.
-  pending_mask->ReleaseResources();
-  active_mask->ReleaseResources();
-  pending_mask->RecreateResources();
-  active_mask->RecreateResources();
+  pending_mask->ReleaseTileResources();
+  active_mask->ReleaseTileResources();
+  pending_mask->RecreateTileResources();
+  active_mask->RecreateTileResources();
   SetupDrawPropertiesAndUpdateTiles(active_mask, 1.f, 1.f, 1.f, 1.f, 0.f,
                                     false);
   active_mask->HighResTiling()->CreateAllTilesForTesting();
@@ -1401,19 +1401,19 @@ TEST_F(PictureLayerImplTest, ScaledMaskLayer) {
   EXPECT_EQ(mask_texture_size, expected_mask_texture_size);
 }
 
-TEST_F(PictureLayerImplTest, ReleaseResources) {
+TEST_F(PictureLayerImplTest, ReleaseTileResources) {
   gfx::Size layer_bounds(1300, 1900);
   SetupDefaultTrees(layer_bounds);
   EXPECT_EQ(1u, pending_layer()->tilings()->num_tilings());
 
   // All tilings should be removed when losing output surface.
-  active_layer()->ReleaseResources();
+  active_layer()->ReleaseTileResources();
   EXPECT_FALSE(active_layer()->tilings());
-  active_layer()->RecreateResources();
+  active_layer()->RecreateTileResources();
   EXPECT_EQ(0u, active_layer()->tilings()->num_tilings());
-  pending_layer()->ReleaseResources();
+  pending_layer()->ReleaseTileResources();
   EXPECT_FALSE(pending_layer()->tilings());
-  pending_layer()->RecreateResources();
+  pending_layer()->RecreateTileResources();
   EXPECT_EQ(0u, pending_layer()->tilings()->num_tilings());
 
   // This should create new tilings.
@@ -1425,6 +1425,23 @@ TEST_F(PictureLayerImplTest, ReleaseResources) {
                                     0.f,  // starting animation_scale
                                     false);
   EXPECT_EQ(1u, pending_layer()->tilings()->num_tilings());
+}
+
+// ReleaseResources should behave identically to ReleaseTileResources.
+TEST_F(PictureLayerImplTest, ReleaseResources) {
+  gfx::Size layer_bounds(1300, 1900);
+  SetupDefaultTrees(layer_bounds);
+  EXPECT_EQ(1u, pending_layer()->tilings()->num_tilings());
+
+  // All tilings should be removed when losing output surface.
+  active_layer()->ReleaseResources();
+  EXPECT_FALSE(active_layer()->tilings());
+  active_layer()->RecreateTileResources();
+  EXPECT_EQ(0u, active_layer()->tilings()->num_tilings());
+  pending_layer()->ReleaseResources();
+  EXPECT_FALSE(pending_layer()->tilings());
+  pending_layer()->RecreateTileResources();
+  EXPECT_EQ(0u, pending_layer()->tilings()->num_tilings());
 }
 
 TEST_F(PictureLayerImplTest, ClampTilesToMaxTileSize) {
@@ -2332,12 +2349,16 @@ TEST_F(PictureLayerImplTest, SyncTilingAfterGpuRasterizationToggles) {
 
   // Gpu rasterization is disabled by default.
   EXPECT_FALSE(host_impl()->use_gpu_rasterization());
+  EXPECT_EQ(0u, pending_layer()->release_tile_resources_count());
+  EXPECT_EQ(0u, active_layer()->release_tile_resources_count());
   EXPECT_EQ(0u, pending_layer()->release_resources_count());
   EXPECT_EQ(0u, active_layer()->release_resources_count());
   // Toggling the gpu rasterization clears all tilings on both trees.
   host_impl()->SetHasGpuRasterizationTrigger(true);
   host_impl()->SetContentIsSuitableForGpuRasterization(true);
   host_impl()->CommitComplete();
+  EXPECT_EQ(1u, pending_layer()->release_tile_resources_count());
+  EXPECT_EQ(1u, active_layer()->release_tile_resources_count());
   EXPECT_EQ(1u, pending_layer()->release_resources_count());
   EXPECT_EQ(1u, active_layer()->release_resources_count());
 
@@ -2357,6 +2378,8 @@ TEST_F(PictureLayerImplTest, SyncTilingAfterGpuRasterizationToggles) {
   host_impl()->CommitComplete();
   EXPECT_EQ(GpuRasterizationStatus::OFF_VIEWPORT,
             host_impl()->gpu_rasterization_status());
+  EXPECT_EQ(2u, pending_layer()->release_tile_resources_count());
+  EXPECT_EQ(2u, active_layer()->release_tile_resources_count());
   EXPECT_EQ(2u, pending_layer()->release_resources_count());
   EXPECT_EQ(2u, active_layer()->release_resources_count());
 
@@ -3520,20 +3543,20 @@ TEST_F(NoLowResPictureLayerImplTest, CleanUpTilings) {
   ASSERT_EQ(1u, active_layer()->tilings()->num_tilings());
 }
 
-TEST_F(NoLowResPictureLayerImplTest, ReleaseResources) {
+TEST_F(NoLowResPictureLayerImplTest, ReleaseTileResources) {
   gfx::Size layer_bounds(1300, 1900);
   SetupDefaultTrees(layer_bounds);
   EXPECT_EQ(1u, pending_layer()->tilings()->num_tilings());
   EXPECT_EQ(1u, active_layer()->tilings()->num_tilings());
 
   // All tilings should be removed when losing output surface.
-  active_layer()->ReleaseResources();
+  active_layer()->ReleaseTileResources();
   EXPECT_FALSE(active_layer()->tilings());
-  active_layer()->RecreateResources();
+  active_layer()->RecreateTileResources();
   EXPECT_EQ(0u, active_layer()->tilings()->num_tilings());
-  pending_layer()->ReleaseResources();
+  pending_layer()->ReleaseTileResources();
   EXPECT_FALSE(pending_layer()->tilings());
-  pending_layer()->RecreateResources();
+  pending_layer()->RecreateTileResources();
   EXPECT_EQ(0u, pending_layer()->tilings()->num_tilings());
 
   // This should create new tilings.

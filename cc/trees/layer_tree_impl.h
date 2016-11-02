@@ -69,7 +69,8 @@ class CC_EXPORT LayerTreeImpl {
 
   void Shutdown();
   void ReleaseResources();
-  void RecreateResources();
+  void ReleaseTileResources();
+  void RecreateTileResources();
 
   // Methods called by the layer tree that pass-through or access LTHI.
   // ---------------------------------------------------------------------------

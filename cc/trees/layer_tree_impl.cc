@@ -124,10 +124,17 @@ void LayerTreeImpl::ReleaseResources() {
   }
 }
 
-void LayerTreeImpl::RecreateResources() {
+void LayerTreeImpl::ReleaseTileResources() {
   if (!LayerListIsEmpty()) {
     LayerTreeHostCommon::CallFunctionForEveryLayer(
-        this, [](LayerImpl* layer) { layer->RecreateResources(); });
+        this, [](LayerImpl* layer) { layer->ReleaseTileResources(); });
+  }
+}
+
+void LayerTreeImpl::RecreateTileResources() {
+  if (!LayerListIsEmpty()) {
+    LayerTreeHostCommon::CallFunctionForEveryLayer(
+        this, [](LayerImpl* layer) { layer->RecreateTileResources(); });
   }
 }
 

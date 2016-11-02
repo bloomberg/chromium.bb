@@ -375,12 +375,16 @@ class CC_EXPORT LayerImpl {
   virtual void DidBeginTracing();
 
   // Release resources held by this layer. Called when the output surface
-  // that rendered this layer was lost or a rendering mode switch has occured.
+  // that rendered this layer was lost.
   virtual void ReleaseResources();
 
-  // Recreate resources that are required after they were released by a
-  // ReleaseResources call.
-  virtual void RecreateResources();
+  // Release tile resources held by this layer. Called when a rendering mode
+  // switch has occured and tiles are no longer valid.
+  virtual void ReleaseTileResources();
+
+  // Recreate tile resources held by this layer after they were released by a
+  // ReleaseTileResources call.
+  virtual void RecreateTileResources();
 
   virtual std::unique_ptr<LayerImpl> CreateLayerImpl(LayerTreeImpl* tree_impl);
   virtual bool IsSnapped();
