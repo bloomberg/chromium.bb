@@ -9,6 +9,7 @@
 #include "base/logging.h"
 #include "base/mac/scoped_nsobject.h"
 #include "base/memory/ptr_util.h"
+#include "ios/public/provider/chrome/browser/distribution/test_app_distribution_provider.h"
 #include "ios/public/provider/chrome/browser/signin/fake_chrome_identity_service.h"
 #import "ios/public/provider/chrome/browser/test_updatable_resource_provider.h"
 #import "ios/public/provider/chrome/browser/voice/test_voice_search_provider.h"
@@ -28,7 +29,9 @@
 namespace ios {
 
 TestChromeBrowserProvider::TestChromeBrowserProvider()
-    : updatable_resource_provider_(
+    : app_distribution_provider_(
+          base::MakeUnique<TestAppDistributionProvider>()),
+      updatable_resource_provider_(
           base::MakeUnique<TestUpdatableResourceProvider>()),
       voice_search_provider_(base::MakeUnique<TestVoiceSearchProvider>()) {}
 
@@ -69,6 +72,11 @@ NSArray* TestChromeBrowserProvider::GetAvailableVoiceSearchLanguages() const {
 
 VoiceSearchProvider* TestChromeBrowserProvider::GetVoiceSearchProvider() const {
   return voice_search_provider_.get();
+}
+
+AppDistributionProvider* TestChromeBrowserProvider::GetAppDistributionProvider()
+    const {
+  return app_distribution_provider_.get();
 }
 
 }  // namespace ios

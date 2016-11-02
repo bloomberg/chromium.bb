@@ -17,6 +17,7 @@
 #include "base/memory/ref_counted.h"
 #include "components/favicon_base/favicon_callback.h"
 
+class AppDistributionProvider;
 class AutocompleteProvider;
 class GURL;
 class InfoBarViewDelegate;
@@ -152,6 +153,9 @@ class ChromeBrowserProvider {
 
   // Returns an instance of the voice search provider, if one exists.
   virtual VoiceSearchProvider* GetVoiceSearchProvider() const;
+
+  // Returns an instance of the app distribution provider.
+  virtual AppDistributionProvider* GetAppDistributionProvider() const;
 
   // Creates and returns an object that can fetch and vend search engine logos.
   // The caller assumes ownership of the returned object.

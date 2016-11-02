@@ -9,6 +9,8 @@ source_set("browser") {
   sources = [
     "chrome_browser_provider.h",
     "chrome_browser_provider.mm",
+    "distribution/app_distribution_provider.h",
+    "distribution/app_distribution_provider.mm",
     "geolocation_updater_provider.h",
     "geolocation_updater_provider.mm",
     "signin/chrome_identity.h",
@@ -76,6 +78,8 @@ source_set("test_support") {
   testonly = true
 
   sources = [
+    "distribution/test_app_distribution_provider.h",
+    "distribution/test_app_distribution_provider.mm",
     "signin/fake_chrome_identity.h",
     "signin/fake_chrome_identity.mm",
     "signin/fake_chrome_identity_interaction_manager.h",

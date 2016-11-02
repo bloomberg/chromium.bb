@@ -30,8 +30,10 @@ class TestChromeBrowserProvider : public ChromeBrowserProvider {
       CGRect frame) const override NS_RETURNS_RETAINED;
   NSArray* GetAvailableVoiceSearchLanguages() const override;
   VoiceSearchProvider* GetVoiceSearchProvider() const override;
+  AppDistributionProvider* GetAppDistributionProvider() const override;
 
  private:
+  std::unique_ptr<AppDistributionProvider> app_distribution_provider_;
   std::unique_ptr<ChromeIdentityService> chrome_identity_service_;
   std::unique_ptr<UpdatableResourceProvider> updatable_resource_provider_;
   std::unique_ptr<VoiceSearchProvider> voice_search_provider_;
