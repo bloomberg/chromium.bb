@@ -52,10 +52,10 @@ class DictionaryValue;
 
 namespace cc {
 
-class AnimationHost;
 class LayerTreeHostImpl;
 class LayerTreeImpl;
 class MicroBenchmarkImpl;
+class MutatorHost;
 class Occlusion;
 class EffectTree;
 class PrioritizedTile;
@@ -461,7 +461,7 @@ class CC_EXPORT LayerImpl {
   }
   void ClearPreferredRasterBounds();
 
-  AnimationHost* GetAnimationHost() const;
+  MutatorHost* GetMutatorHost() const;
 
   ElementListType GetElementTypeForAnimation() const;
 

@@ -97,4 +97,8 @@ void FakeLayerTreeHostImpl::UpdateNumChildrenAndDrawProperties(
                                   force_skip_verify_visible_rect_calculations);
 }
 
+AnimationHost* FakeLayerTreeHostImpl::animation_host() const {
+  return static_cast<AnimationHost*>(mutator_host());
+}
+
 }  // namespace cc

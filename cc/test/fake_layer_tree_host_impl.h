@@ -55,6 +55,8 @@ class FakeLayerTreeHostImpl : public LayerTreeHostImpl {
     notify_tile_state_changed_called_ = called;
   }
 
+  AnimationHost* animation_host() const;
+
  private:
   FakeLayerTreeHostImplClient client_;
   FakeRenderingStatsInstrumentation stats_instrumentation_;

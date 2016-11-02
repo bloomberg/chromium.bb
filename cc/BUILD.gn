@@ -533,6 +533,7 @@ component("cc") {
     "trees/layer_tree_impl.h",
     "trees/layer_tree_settings.cc",
     "trees/layer_tree_settings.h",
+    "trees/mutator_host.h",
     "trees/mutator_host_client.h",
     "trees/occlusion.cc",
     "trees/occlusion.h",

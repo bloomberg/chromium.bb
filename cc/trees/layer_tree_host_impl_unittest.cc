@@ -185,6 +185,10 @@ class LayerTreeHostImplTest : public testing::Test,
         settings, std::move(compositor_frame_sink), &task_runner_provider_);
   }
 
+  AnimationHost* GetImplAnimationHost() const {
+    return static_cast<AnimationHost*>(host_impl_->mutator_host());
+  }
+
   virtual bool CreateHostImplWithTaskRunnerProvider(
       const LayerTreeSettings& settings,
       std::unique_ptr<CompositorFrameSink> compositor_frame_sink,
@@ -208,7 +212,7 @@ class LayerTreeHostImplTest : public testing::Test,
 
     timeline_ =
         AnimationTimeline::Create(AnimationIdProvider::NextTimelineId());
-    host_impl_->animation_host()->AddAnimationTimeline(timeline_);
+    GetImplAnimationHost()->AddAnimationTimeline(timeline_);
 
     return init;
   }
@@ -10375,7 +10379,7 @@ TEST_F(LayerTreeHostImplTimelinesTest, ScrollAnimatedAborted) {
   host_impl_->Animate();
   host_impl_->UpdateAnimationState(true);
 
-  EXPECT_TRUE(host_impl_->animation_host()->HasAnyAnimationTargetingProperty(
+  EXPECT_TRUE(GetImplAnimationHost()->HasAnyAnimationTargetingProperty(
       scrolling_layer->element_id(), TargetProperty::SCROLL_OFFSET));
 
   EXPECT_EQ(gfx::ScrollOffset(), scrolling_layer->CurrentScrollOffset());
@@ -10408,7 +10412,7 @@ TEST_F(LayerTreeHostImplTimelinesTest, ScrollAnimatedAborted) {
 
   // The instant scroll should have marked the smooth scroll animation as
   // aborted.
-  EXPECT_FALSE(host_impl_->animation_host()->HasActiveAnimationForTesting(
+  EXPECT_FALSE(GetImplAnimationHost()->HasActiveAnimationForTesting(
       scrolling_layer->element_id()));
 
   EXPECT_VECTOR2DF_EQ(gfx::ScrollOffset(0, y + 50),
@@ -10446,7 +10450,7 @@ TEST_F(LayerTreeHostImplTimelinesTest,
   host_impl_->Animate();
   host_impl_->UpdateAnimationState(true);
 
-  EXPECT_TRUE(host_impl_->animation_host()->HasAnyAnimationTargetingProperty(
+  EXPECT_TRUE(GetImplAnimationHost()->HasAnyAnimationTargetingProperty(
       scrolling_layer->element_id(), TargetProperty::SCROLL_OFFSET));
 
   EXPECT_EQ(gfx::ScrollOffset(), scrolling_layer->CurrentScrollOffset());
@@ -10462,12 +10466,12 @@ TEST_F(LayerTreeHostImplTimelinesTest,
   EXPECT_TRUE(y > 1 && y < 49);
 
   // Abort animation.
-  host_impl_->animation_host()->ScrollAnimationAbort(true /*needs_completion*/);
+  GetImplAnimationHost()->ScrollAnimationAbort(true /*needs_completion*/);
   host_impl_->UpdateAnimationState(true);
 
   // Aborting with the needs completion param should have marked the smooth
   // scroll animation as finished.
-  EXPECT_FALSE(host_impl_->animation_host()->HasActiveAnimationForTesting(
+  EXPECT_FALSE(GetImplAnimationHost()->HasActiveAnimationForTesting(
       scrolling_layer->element_id()));
   EXPECT_TRUE(y > 1 && y < 49);
   EXPECT_EQ(NULL, host_impl_->CurrentlyScrollingLayer());

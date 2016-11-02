@@ -494,7 +494,7 @@ class CC_EXPORT Layer : public base::RefCounted<Layer> {
   }
   void ClearPreferredRasterBounds();
 
-  AnimationHost* GetAnimationHost() const;
+  AnimationHost* GetMutatorHost() const;
 
   ElementListType GetElementTypeForAnimation() const;
 

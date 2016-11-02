@@ -99,7 +99,7 @@ TEST_F(AnimationHostTest, ImplOnlyScrollAnimationUpdateTargetIfDetached) {
       element_id_, scroll_delta, max_scroll_offset, time, base::TimeDelta()));
 
   // Detach all players from layers and timelines.
-  host_impl_->ClearTimelines();
+  host_impl_->ClearMutators();
 
   time += base::TimeDelta::FromSecondsD(0.1);
   EXPECT_FALSE(host_impl_->ImplOnlyScrollAnimationUpdateTarget(

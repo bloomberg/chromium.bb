@@ -14,6 +14,7 @@
 #include "base/time/time.h"
 #include "cc/animation/animation.h"
 #include "cc/base/cc_export.h"
+#include "cc/trees/mutator_host.h"
 #include "cc/trees/mutator_host_client.h"
 #include "ui/gfx/geometry/box_f.h"
 #include "ui/gfx/geometry/vector2d_f.h"
@@ -41,8 +42,8 @@ enum class ThreadInstance { MAIN, IMPL };
 // We synchronize them during the commit process in a one-way data flow process
 // (PushPropertiesTo).
 // An AnimationHost talks to its correspondent LayerTreeHost via
-// LayerTreeMutatorsClient interface.
-class CC_EXPORT AnimationHost {
+// MutatorHostClient interface.
+class CC_EXPORT AnimationHost : public NON_EXPORTED_BASE(MutatorHost) {
  public:
   using ElementToAnimationsMap =
       std::unordered_map<ElementId,
@@ -52,18 +53,11 @@ class CC_EXPORT AnimationHost {
   static std::unique_ptr<AnimationHost> CreateMainInstance();
   static std::unique_ptr<AnimationHost> CreateForTesting(
       ThreadInstance thread_instance);
-  std::unique_ptr<AnimationHost> CreateImplInstance(
-      bool supports_impl_scrolling) const;
-  ~AnimationHost();
+  ~AnimationHost() override;
 
   void AddAnimationTimeline(scoped_refptr<AnimationTimeline> timeline);
   void RemoveAnimationTimeline(scoped_refptr<AnimationTimeline> timeline);
   AnimationTimeline* GetTimelineById(int timeline_id) const;
-
-  void ClearTimelines();
-
-  void RegisterElement(ElementId element_id, ElementListType list_type);
-  void UnregisterElement(ElementId element_id, ElementListType list_type);
 
   void RegisterPlayerForElement(ElementId element_id, AnimationPlayer* player);
   void UnregisterPlayerForElement(ElementId element_id,
@@ -77,82 +71,100 @@ class CC_EXPORT AnimationHost {
   const MutatorHostClient* mutator_host_client() const {
     return mutator_host_client_;
   }
-  void SetMutatorHostClient(MutatorHostClient* client);
 
   void SetNeedsCommit();
   void SetNeedsPushProperties();
   bool needs_push_properties() const { return needs_push_properties_; }
 
-  void PushPropertiesTo(AnimationHost* host_impl);
-
-  void SetSupportsScrollAnimations(bool supports_scroll_animations);
   bool SupportsScrollAnimations() const;
-  bool NeedsAnimateLayers() const;
 
-  bool ActivateAnimations();
-  bool AnimateLayers(base::TimeTicks monotonic_time);
+  // MutatorHost implementation.
+  std::unique_ptr<MutatorHost> CreateImplInstance(
+      bool supports_impl_scrolling) const override;
+  void ClearMutators() override;
+
+  void RegisterElement(ElementId element_id,
+                       ElementListType list_type) override;
+  void UnregisterElement(ElementId element_id,
+                         ElementListType list_type) override;
+
+  void SetMutatorHostClient(MutatorHostClient* client) override;
+
+  void PushPropertiesTo(MutatorHost* host_impl) override;
+
+  void SetSupportsScrollAnimations(bool supports_scroll_animations) override;
+  bool NeedsAnimateLayers() const override;
+
+  bool ActivateAnimations() override;
+  bool AnimateLayers(base::TimeTicks monotonic_time) override;
   bool UpdateAnimationState(bool start_ready_animations,
-                            AnimationEvents* events);
+                            AnimationEvents* events) override;
 
-  std::unique_ptr<AnimationEvents> CreateEvents();
-  void SetAnimationEvents(std::unique_ptr<AnimationEvents> events);
+  std::unique_ptr<AnimationEvents> CreateEvents() override;
+  void SetAnimationEvents(std::unique_ptr<AnimationEvents> events) override;
 
-  bool ScrollOffsetAnimationWasInterrupted(ElementId element_id) const;
+  bool ScrollOffsetAnimationWasInterrupted(ElementId element_id) const override;
 
   bool IsAnimatingFilterProperty(ElementId element_id,
-                                 ElementListType list_type) const;
+                                 ElementListType list_type) const override;
   bool IsAnimatingOpacityProperty(ElementId element_id,
-                                  ElementListType list_type) const;
+                                  ElementListType list_type) const override;
   bool IsAnimatingTransformProperty(ElementId element_id,
-                                    ElementListType list_type) const;
+                                    ElementListType list_type) const override;
 
-  bool HasPotentiallyRunningFilterAnimation(ElementId element_id,
-                                            ElementListType list_type) const;
-  bool HasPotentiallyRunningOpacityAnimation(ElementId element_id,
-                                             ElementListType list_type) const;
-  bool HasPotentiallyRunningTransformAnimation(ElementId element_id,
-                                               ElementListType list_type) const;
+  bool HasPotentiallyRunningFilterAnimation(
+      ElementId element_id,
+      ElementListType list_type) const override;
+  bool HasPotentiallyRunningOpacityAnimation(
+      ElementId element_id,
+      ElementListType list_type) const override;
+  bool HasPotentiallyRunningTransformAnimation(
+      ElementId element_id,
+      ElementListType list_type) const override;
 
-  bool HasAnyAnimationTargetingProperty(ElementId element_id,
-                                        TargetProperty::Type property) const;
+  bool HasAnyAnimationTargetingProperty(
+      ElementId element_id,
+      TargetProperty::Type property) const override;
 
-  bool HasFilterAnimationThatInflatesBounds(ElementId element_id) const;
-  bool HasTransformAnimationThatInflatesBounds(ElementId element_id) const;
-  bool HasAnimationThatInflatesBounds(ElementId element_id) const;
+  bool HasFilterAnimationThatInflatesBounds(
+      ElementId element_id) const override;
+  bool HasTransformAnimationThatInflatesBounds(
+      ElementId element_id) const override;
+  bool HasAnimationThatInflatesBounds(ElementId element_id) const override;
 
   bool FilterAnimationBoundsForBox(ElementId element_id,
                                    const gfx::BoxF& box,
-                                   gfx::BoxF* bounds) const;
+                                   gfx::BoxF* bounds) const override;
   bool TransformAnimationBoundsForBox(ElementId element_id,
                                       const gfx::BoxF& box,
-                                      gfx::BoxF* bounds) const;
+                                      gfx::BoxF* bounds) const override;
 
   bool HasOnlyTranslationTransforms(ElementId element_id,
-                                    ElementListType list_type) const;
-  bool AnimationsPreserveAxisAlignment(ElementId element_id) const;
+                                    ElementListType list_type) const override;
+  bool AnimationsPreserveAxisAlignment(ElementId element_id) const override;
 
   bool MaximumTargetScale(ElementId element_id,
                           ElementListType list_type,
-                          float* max_scale) const;
+                          float* max_scale) const override;
   bool AnimationStartScale(ElementId element_id,
                            ElementListType list_type,
-                           float* start_scale) const;
+                           float* start_scale) const override;
 
-  bool HasAnyAnimation(ElementId element_id) const;
-  bool HasActiveAnimationForTesting(ElementId element_id) const;
+  bool HasAnyAnimation(ElementId element_id) const override;
+  bool HasActiveAnimationForTesting(ElementId element_id) const override;
 
   void ImplOnlyScrollAnimationCreate(ElementId element_id,
                                      const gfx::ScrollOffset& target_offset,
                                      const gfx::ScrollOffset& current_offset,
-                                     base::TimeDelta delayed_by);
+                                     base::TimeDelta delayed_by) override;
   bool ImplOnlyScrollAnimationUpdateTarget(
       ElementId element_id,
       const gfx::Vector2dF& scroll_delta,
       const gfx::ScrollOffset& max_scroll_offset,
       base::TimeTicks frame_monotonic_time,
-      base::TimeDelta delayed_by);
+      base::TimeDelta delayed_by) override;
 
-  void ScrollAnimationAbort(bool needs_completion);
+  void ScrollAnimationAbort(bool needs_completion) override;
 
   // This should only be called from the main thread.
   ScrollOffsetAnimations& scroll_offset_animations() const;

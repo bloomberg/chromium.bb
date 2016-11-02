@@ -256,6 +256,10 @@ class LayerTreeHostImplForTesting : public LayerTreeHostImpl {
     test_hooks_->NotifyTileStateChangedOnThread(this, tile);
   }
 
+  AnimationHost* animation_host() const {
+    return static_cast<AnimationHost*>(mutator_host());
+  }
+
  private:
   TestHooks* test_hooks_;
   bool block_notify_ready_to_activate_for_testing_;

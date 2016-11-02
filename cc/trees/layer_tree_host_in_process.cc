@@ -483,9 +483,8 @@ void LayerTreeHostInProcess::FinishCommitOnImplThread(
     sync_tree->UpdatePropertyTreeScrollingAndAnimationFromMainThread();
 
     TRACE_EVENT0("cc", "LayerTreeHostInProcess::AnimationHost::PushProperties");
-    DCHECK(host_impl->animation_host());
-    layer_tree_->animation_host()->PushPropertiesTo(
-        host_impl->animation_host());
+    DCHECK(host_impl->mutator_host());
+    layer_tree_->animation_host()->PushPropertiesTo(host_impl->mutator_host());
   }
 
   micro_benchmark_controller_.ScheduleImplBenchmarks(host_impl);
@@ -554,14 +553,14 @@ LayerTreeHostInProcess::CreateLayerTreeHostImpl(
   DCHECK(task_runner_provider_->IsImplThread());
 
   const bool supports_impl_scrolling = task_runner_provider_->HasImplThread();
-  std::unique_ptr<AnimationHost> animation_host_impl =
+  std::unique_ptr<MutatorHost> mutator_host_impl =
       layer_tree_->animation_host()->CreateImplInstance(
           supports_impl_scrolling);
 
   std::unique_ptr<LayerTreeHostImpl> host_impl = LayerTreeHostImpl::Create(
       settings_, client, task_runner_provider_.get(),
       rendering_stats_instrumentation_.get(), task_graph_runner_,
-      std::move(animation_host_impl), id_);
+      std::move(mutator_host_impl), id_);
   host_impl->SetHasGpuRasterizationTrigger(has_gpu_rasterization_trigger_);
   host_impl->SetContentIsSuitableForGpuRasterization(
       content_is_suitable_for_gpu_rasterization_);

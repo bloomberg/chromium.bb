@@ -20,6 +20,7 @@
 #include "cc/trees/effect_node.h"
 #include "cc/trees/layer_tree_host_common.h"
 #include "cc/trees/layer_tree_impl.h"
+#include "cc/trees/mutator_host.h"
 #include "cc/trees/property_tree.h"
 #include "cc/trees/scroll_node.h"
 #include "cc/trees/transform_node.h"
@@ -2028,11 +2029,11 @@ CombinedAnimationScale PropertyTrees::GetAnimationScales(
       // TODO(sunxd): make LayerTreeImpl::MaximumTargetScale take layer id as
       // parameter.
       LayerImpl* layer_impl = layer_tree_impl->LayerById(node->owner_id);
-      layer_impl->GetAnimationHost()->MaximumTargetScale(
+      layer_impl->GetMutatorHost()->MaximumTargetScale(
           layer_impl->element_id(), layer_impl->GetElementTypeForAnimation(),
           &cached_data_.animation_scales[transform_node_id]
                .local_maximum_animation_target_scale);
-      layer_impl->GetAnimationHost()->AnimationStartScale(
+      layer_impl->GetMutatorHost()->AnimationStartScale(
           layer_impl->element_id(), layer_impl->GetElementTypeForAnimation(),
           &cached_data_.animation_scales[transform_node_id]
                .local_starting_animation_scale);

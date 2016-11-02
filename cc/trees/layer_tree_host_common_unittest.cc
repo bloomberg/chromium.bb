@@ -9241,8 +9241,8 @@ TEST_F(LayerTreeHostCommonTest, SkippingLayerImpl) {
   std::unique_ptr<Animation> transform_animation(
       Animation::Create(std::move(curve), 3, 3, TargetProperty::TRANSFORM));
   scoped_refptr<AnimationPlayer> player(AnimationPlayer::Create(1));
-  host_impl.active_tree()->animation_host()->RegisterPlayerForElement(
-      root_ptr->element_id(), player.get());
+  host_impl.animation_host()->RegisterPlayerForElement(root_ptr->element_id(),
+                                                       player.get());
   player->AddAnimation(std::move(transform_animation));
   grandchild_ptr->set_visible_layer_rect(gfx::Rect());
   child_ptr->SetScrollClipLayer(root_ptr->id());
@@ -9252,8 +9252,8 @@ TEST_F(LayerTreeHostCommonTest, SkippingLayerImpl) {
   ExecuteCalculateDrawPropertiesAndSaveUpdateLayerList(root_ptr);
   EXPECT_EQ(gfx::Rect(0, 0), grandchild_ptr->visible_layer_rect());
 
-  host_impl.active_tree()->animation_host()->UnregisterPlayerForElement(
-      root_ptr->element_id(), player.get());
+  host_impl.animation_host()->UnregisterPlayerForElement(root_ptr->element_id(),
+                                                         player.get());
 }
 
 TEST_F(LayerTreeHostCommonTest, LayerSkippingInSubtreeOfSingularTransform) {
@@ -9289,7 +9289,7 @@ TEST_F(LayerTreeHostCommonTest, LayerSkippingInSubtreeOfSingularTransform) {
   std::unique_ptr<Animation> transform_animation(
       Animation::Create(std::move(curve), 3, 3, TargetProperty::TRANSFORM));
   scoped_refptr<AnimationPlayer> player(AnimationPlayer::Create(1));
-  host_impl()->active_tree()->animation_host()->RegisterPlayerForElement(
+  host_impl()->animation_host()->RegisterPlayerForElement(
       grand_child->element_id(), player.get());
   player->AddAnimation(std::move(transform_animation));
 
@@ -9297,7 +9297,7 @@ TEST_F(LayerTreeHostCommonTest, LayerSkippingInSubtreeOfSingularTransform) {
   EXPECT_EQ(gfx::Rect(0, 0), grand_child->visible_layer_rect());
   EXPECT_EQ(gfx::Rect(0, 0), child->visible_layer_rect());
 
-  host_impl()->active_tree()->animation_host()->UnregisterPlayerForElement(
+  host_impl()->animation_host()->UnregisterPlayerForElement(
       grand_child->element_id(), player.get());
 }
 
@@ -9349,8 +9349,8 @@ TEST_F(LayerTreeHostCommonTest, SkippingPendingLayerImpl) {
   std::unique_ptr<Animation> animation(
       Animation::Create(std::move(curve), 3, 3, TargetProperty::OPACITY));
   scoped_refptr<AnimationPlayer> player(AnimationPlayer::Create(1));
-  host_impl.active_tree()->animation_host()->RegisterPlayerForElement(
-      root_ptr->element_id(), player.get());
+  host_impl.animation_host()->RegisterPlayerForElement(root_ptr->element_id(),
+                                                       player.get());
   player->AddAnimation(std::move(animation));
   root_ptr->test_properties()->opacity = 0.f;
   grandchild_ptr->set_visible_layer_rect(gfx::Rect());
@@ -9358,8 +9358,8 @@ TEST_F(LayerTreeHostCommonTest, SkippingPendingLayerImpl) {
   ExecuteCalculateDrawPropertiesAndSaveUpdateLayerList(root_ptr);
   EXPECT_EQ(gfx::Rect(10, 10), grandchild_ptr->visible_layer_rect());
 
-  host_impl.active_tree()->animation_host()->UnregisterPlayerForElement(
-      root_ptr->element_id(), player.get());
+  host_impl.animation_host()->UnregisterPlayerForElement(root_ptr->element_id(),
+                                                         player.get());
 }
 
 TEST_F(LayerTreeHostCommonTest, SkippingLayer) {

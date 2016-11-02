@@ -51,7 +51,6 @@ class ScrollOffset;
 namespace cc {
 
 class AnimationEvents;
-class AnimationHost;
 class BrowserControlsOffsetManager;
 class CompletionEvent;
 class CompositorFrameMetadata;
@@ -62,6 +61,7 @@ class FrameRateCounter;
 class LayerImpl;
 class LayerTreeImpl;
 class MemoryHistory;
+class MutatorHost;
 class PageScaleAnimation;
 class PendingTreeDurationHistogramTimer;
 class PictureLayerImpl;
@@ -150,7 +150,7 @@ class CC_EXPORT LayerTreeHostImpl
       TaskRunnerProvider* task_runner_provider,
       RenderingStatsInstrumentation* rendering_stats_instrumentation,
       TaskGraphRunner* task_graph_runner,
-      std::unique_ptr<AnimationHost> animation_host,
+      std::unique_ptr<MutatorHost> mutator_host,
       int id);
   ~LayerTreeHostImpl() override;
 
@@ -483,7 +483,7 @@ class CC_EXPORT LayerTreeHostImpl
     return task_runner_provider_;
   }
 
-  AnimationHost* animation_host() const { return animation_host_.get(); }
+  MutatorHost* mutator_host() const { return mutator_host_.get(); }
 
   void SetDebugState(const LayerTreeDebugState& new_debug_state);
   const LayerTreeDebugState& debug_state() const { return debug_state_; }
@@ -601,7 +601,7 @@ class CC_EXPORT LayerTreeHostImpl
       TaskRunnerProvider* task_runner_provider,
       RenderingStatsInstrumentation* rendering_stats_instrumentation,
       TaskGraphRunner* task_graph_runner,
-      std::unique_ptr<AnimationHost> animation_host,
+      std::unique_ptr<MutatorHost> mutator_host,
       int id);
 
   // Virtual for testing.
@@ -793,7 +793,7 @@ class CC_EXPORT LayerTreeHostImpl
 
   gfx::Rect viewport_damage_rect_;
 
-  std::unique_ptr<AnimationHost> animation_host_;
+  std::unique_ptr<MutatorHost> mutator_host_;
   std::set<VideoFrameController*> video_frame_controllers_;
 
   // Map from scroll layer ID to scrollbar animation controller.

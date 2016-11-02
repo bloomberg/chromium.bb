@@ -25,7 +25,6 @@
 #include "base/strings/stringprintf.h"
 #include "base/trace_event/trace_event_argument.h"
 #include "cc/animation/animation_events.h"
-#include "cc/animation/animation_host.h"
 #include "cc/base/histograms.h"
 #include "cc/base/math_util.h"
 #include "cc/debug/benchmark_instrumentation.h"
@@ -78,6 +77,7 @@
 #include "cc/trees/latency_info_swap_promise_monitor.h"
 #include "cc/trees/layer_tree_host_common.h"
 #include "cc/trees/layer_tree_impl.h"
+#include "cc/trees/mutator_host.h"
 #include "cc/trees/scroll_node.h"
 #include "cc/trees/single_thread_proxy.h"
 #include "cc/trees/tree_synchronizer.h"
@@ -173,11 +173,11 @@ std::unique_ptr<LayerTreeHostImpl> LayerTreeHostImpl::Create(
     TaskRunnerProvider* task_runner_provider,
     RenderingStatsInstrumentation* rendering_stats_instrumentation,
     TaskGraphRunner* task_graph_runner,
-    std::unique_ptr<AnimationHost> animation_host,
+    std::unique_ptr<MutatorHost> mutator_host,
     int id) {
   return base::WrapUnique(new LayerTreeHostImpl(
       settings, client, task_runner_provider, rendering_stats_instrumentation,
-      task_graph_runner, std::move(animation_host), id));
+      task_graph_runner, std::move(mutator_host), id));
 }
 
 LayerTreeHostImpl::LayerTreeHostImpl(
@@ -186,7 +186,7 @@ LayerTreeHostImpl::LayerTreeHostImpl(
     TaskRunnerProvider* task_runner_provider,
     RenderingStatsInstrumentation* rendering_stats_instrumentation,
     TaskGraphRunner* task_graph_runner,
-    std::unique_ptr<AnimationHost> animation_host,
+    std::unique_ptr<MutatorHost> mutator_host,
     int id)
     : client_(client),
       task_runner_provider_(task_runner_provider),
@@ -225,7 +225,7 @@ LayerTreeHostImpl::LayerTreeHostImpl(
       debug_rect_history_(DebugRectHistory::Create()),
       max_memory_needed_bytes_(0),
       resourceless_software_draw_(false),
-      animation_host_(std::move(animation_host)),
+      mutator_host_(std::move(mutator_host)),
       rendering_stats_instrumentation_(rendering_stats_instrumentation),
       micro_benchmark_controller_(this),
       task_graph_runner_(task_graph_runner),
@@ -234,8 +234,8 @@ LayerTreeHostImpl::LayerTreeHostImpl(
       is_likely_to_require_a_draw_(false),
       has_valid_compositor_frame_sink_(false),
       mutator_(nullptr) {
-  DCHECK(animation_host_);
-  animation_host_->SetMutatorHostClient(this);
+  DCHECK(mutator_host_);
+  mutator_host_->SetMutatorHostClient(this);
 
   DCHECK(task_runner_provider_->IsImplThread());
   DidVisibilityChange(this, visible_);
@@ -279,9 +279,7 @@ LayerTreeHostImpl::~LayerTreeHostImpl() {
   if (scroll_elasticity_helper_)
     scroll_elasticity_helper_.reset();
 
-  // The layer trees must be destroyed before the layer tree host. We've
-  // made a contract with our animation controllers that the animation_host
-  // will outlive them, and we must make good.
+  // The layer trees must be destroyed before the layer tree host.
   if (recycle_tree_)
     recycle_tree_->Shutdown();
   if (pending_tree_)
@@ -291,8 +289,8 @@ LayerTreeHostImpl::~LayerTreeHostImpl() {
   pending_tree_ = nullptr;
   active_tree_ = nullptr;
 
-  animation_host_->ClearTimelines();
-  animation_host_->SetMutatorHostClient(nullptr);
+  mutator_host_->ClearMutators();
+  mutator_host_->SetMutatorHostClient(nullptr);
 }
 
 void LayerTreeHostImpl::BeginMainFrameAborted(
@@ -1553,7 +1551,7 @@ CompositorFrameMetadata LayerTreeHostImpl::MakeCompositorFrameMetadata() const {
 
   if (GetDrawMode() == DRAW_MODE_RESOURCELESS_SOFTWARE) {
     metadata.is_resourceless_software_draw_with_scroll_or_animation =
-        IsActivelyScrolling() || animation_host_->NeedsAnimateLayers();
+        IsActivelyScrolling() || mutator_host_->NeedsAnimateLayers();
   }
 
   for (LayerImpl* surface_layer : active_tree_->SurfaceLayers()) {
@@ -2781,7 +2779,7 @@ bool LayerTreeHostImpl::ScrollAnimationCreate(ScrollNode* scroll_node,
       ElementId(active_tree()->LayerById(scroll_node->owner_id)->element_id()),
       scroll_node->element_id);
 
-  animation_host_->ImplOnlyScrollAnimationCreate(
+  mutator_host_->ImplOnlyScrollAnimationCreate(
       scroll_node->element_id, target_offset, current_offset, delayed_by);
 
   SetNeedsOneBeginImplFrame();
@@ -3434,7 +3432,7 @@ bool LayerTreeHostImpl::AnimateScrollbars(base::TimeTicks monotonic_time) {
 }
 
 bool LayerTreeHostImpl::AnimateLayers(base::TimeTicks monotonic_time) {
-  const bool animated = animation_host_->AnimateLayers(monotonic_time);
+  const bool animated = mutator_host_->AnimateLayers(monotonic_time);
 
   // TODO(crbug.com/551134): Only do this if the animations are on the active
   // tree, or if they are on the pending tree waiting for some future time to
@@ -3451,10 +3449,10 @@ bool LayerTreeHostImpl::AnimateLayers(base::TimeTicks monotonic_time) {
 }
 
 void LayerTreeHostImpl::UpdateAnimationState(bool start_ready_animations) {
-  std::unique_ptr<AnimationEvents> events = animation_host_->CreateEvents();
+  std::unique_ptr<AnimationEvents> events = mutator_host_->CreateEvents();
 
-  const bool has_active_animations = animation_host_->UpdateAnimationState(
-      start_ready_animations, events.get());
+  const bool has_active_animations =
+      mutator_host_->UpdateAnimationState(start_ready_animations, events.get());
 
   if (!events->events_.empty())
     client_->PostAnimationEventsToMainThreadOnImplThread(std::move(events));
@@ -3464,7 +3462,7 @@ void LayerTreeHostImpl::UpdateAnimationState(bool start_ready_animations) {
 }
 
 void LayerTreeHostImpl::ActivateAnimations() {
-  const bool activated = animation_host_->ActivateAnimations();
+  const bool activated = mutator_host_->ActivateAnimations();
   if (activated) {
     // Activating an animation changes layer draw properties, such as
     // screen_space_transform_is_animating. So when we see a new animation get
@@ -3835,7 +3833,7 @@ void LayerTreeHostImpl::UpdateRootLayerStateForSynchronousInputHandler() {
 }
 
 void LayerTreeHostImpl::ScrollAnimationAbort(LayerImpl* layer_impl) {
-  return animation_host_->ScrollAnimationAbort(false /* needs_completion */);
+  return mutator_host_->ScrollAnimationAbort(false /* needs_completion */);
 }
 
 bool LayerTreeHostImpl::ScrollAnimationUpdateTarget(
@@ -3846,7 +3844,7 @@ bool LayerTreeHostImpl::ScrollAnimationUpdateTarget(
       ElementId(active_tree()->LayerById(scroll_node->owner_id)->element_id()),
       scroll_node->element_id);
 
-  return animation_host_->ImplOnlyScrollAnimationUpdateTarget(
+  return mutator_host_->ImplOnlyScrollAnimationUpdateTarget(
       scroll_node->element_id, scroll_delta,
       active_tree_->property_trees()->scroll_tree.MaxScrollOffset(
           scroll_node->id),
@@ -3953,7 +3951,7 @@ void LayerTreeHostImpl::SetTreeLayerScrollOffsetMutated(
 
 bool LayerTreeHostImpl::AnimationsPreserveAxisAlignment(
     const LayerImpl* layer) const {
-  return animation_host_->AnimationsPreserveAxisAlignment(layer->element_id());
+  return mutator_host_->AnimationsPreserveAxisAlignment(layer->element_id());
 }
 
 void LayerTreeHostImpl::SetNeedUpdateGpuRasterizationStatus() {

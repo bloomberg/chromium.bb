@@ -55,18 +55,19 @@ AnimationHost::AnimationHost(ThreadInstance thread_instance)
 AnimationHost::~AnimationHost() {
   scroll_offset_animations_impl_ = nullptr;
 
-  ClearTimelines();
+  ClearMutators();
   DCHECK(!mutator_host_client());
   DCHECK(element_to_animations_map_.empty());
 }
 
-std::unique_ptr<AnimationHost> AnimationHost::CreateImplInstance(
+std::unique_ptr<MutatorHost> AnimationHost::CreateImplInstance(
     bool supports_impl_scrolling) const {
   DCHECK_EQ(thread_instance_, ThreadInstance::MAIN);
-  auto animation_host_impl =
-      base::WrapUnique(new AnimationHost(ThreadInstance::IMPL));
-  animation_host_impl->SetSupportsScrollAnimations(supports_impl_scrolling);
-  return animation_host_impl;
+
+  auto mutator_host_impl =
+      base::WrapUnique<MutatorHost>(new AnimationHost(ThreadInstance::IMPL));
+  mutator_host_impl->SetSupportsScrollAnimations(supports_impl_scrolling);
+  return mutator_host_impl;
 }
 
 AnimationTimeline* AnimationHost::GetTimelineById(int timeline_id) const {
@@ -74,7 +75,7 @@ AnimationTimeline* AnimationHost::GetTimelineById(int timeline_id) const {
   return f == id_to_timeline_map_.end() ? nullptr : f->second.get();
 }
 
-void AnimationHost::ClearTimelines() {
+void AnimationHost::ClearMutators() {
   for (auto& kv : id_to_timeline_map_)
     EraseTimeline(kv.second);
   id_to_timeline_map_.clear();
@@ -179,7 +180,9 @@ void AnimationHost::SetNeedsPushProperties() {
   needs_push_properties_ = true;
 }
 
-void AnimationHost::PushPropertiesTo(AnimationHost* host_impl) {
+void AnimationHost::PushPropertiesTo(MutatorHost* mutator_host_impl) {
+  auto host_impl = static_cast<AnimationHost*>(mutator_host_impl);
+
   if (needs_push_properties_) {
     needs_push_properties_ = false;
     PushTimelinesToImplThread(host_impl);

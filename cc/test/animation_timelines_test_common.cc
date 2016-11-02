@@ -367,8 +367,8 @@ void AnimationTimelinesTest::SetUp() {
 }
 
 void AnimationTimelinesTest::TearDown() {
-  host_impl_->ClearTimelines();
-  host_->ClearTimelines();
+  host_impl_->ClearMutators();
+  host_->ClearMutators();
 }
 
 void AnimationTimelinesTest::CreateTestLayer(

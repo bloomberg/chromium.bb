@@ -16,7 +16,6 @@
 #include "base/strings/stringprintf.h"
 #include "base/trace_event/trace_event.h"
 #include "base/trace_event/trace_event_argument.h"
-#include "cc/animation/animation_host.h"
 #include "cc/animation/mutable_properties.h"
 #include "cc/base/math_util.h"
 #include "cc/base/simple_enclosed_region.h"
@@ -37,6 +36,7 @@
 #include "cc/trees/layer_tree_host_common.h"
 #include "cc/trees/layer_tree_impl.h"
 #include "cc/trees/layer_tree_settings.h"
+#include "cc/trees/mutator_host.h"
 #include "cc/trees/proxy.h"
 #include "cc/trees/scroll_node.h"
 #include "cc/trees/transform_node.h"
@@ -120,8 +120,8 @@ void LayerImpl::ClearPreferredRasterBounds() {
   preferred_raster_bounds_ = gfx::Size();
 }
 
-AnimationHost* LayerImpl::GetAnimationHost() const {
-  return layer_tree_impl_ ? layer_tree_impl_->animation_host() : nullptr;
+MutatorHost* LayerImpl::GetMutatorHost() const {
+  return layer_tree_impl_ ? layer_tree_impl_->mutator_host() : nullptr;
 }
 
 ElementListType LayerImpl::GetElementTypeForAnimation() const {
@@ -708,12 +708,12 @@ SkColor LayerImpl::SafeOpaqueBackgroundColor() const {
 }
 
 bool LayerImpl::FilterIsAnimating() const {
-  return GetAnimationHost()->IsAnimatingFilterProperty(
+  return GetMutatorHost()->IsAnimatingFilterProperty(
       element_id(), GetElementTypeForAnimation());
 }
 
 bool LayerImpl::HasPotentiallyRunningFilterAnimation() const {
-  return GetAnimationHost()->HasPotentiallyRunningFilterAnimation(
+  return GetMutatorHost()->HasPotentiallyRunningFilterAnimation(
       element_id(), GetElementTypeForAnimation());
 }
 
@@ -779,49 +779,49 @@ void LayerImpl::Set3dSortingContextId(int id) {
 }
 
 bool LayerImpl::TransformIsAnimating() const {
-  return GetAnimationHost()->IsAnimatingTransformProperty(
+  return GetMutatorHost()->IsAnimatingTransformProperty(
       element_id(), GetElementTypeForAnimation());
 }
 
 bool LayerImpl::HasPotentiallyRunningTransformAnimation() const {
-  return GetAnimationHost()->HasPotentiallyRunningTransformAnimation(
+  return GetMutatorHost()->HasPotentiallyRunningTransformAnimation(
       element_id(), GetElementTypeForAnimation());
 }
 
 bool LayerImpl::HasOnlyTranslationTransforms() const {
-  return GetAnimationHost()->HasOnlyTranslationTransforms(
+  return GetMutatorHost()->HasOnlyTranslationTransforms(
       element_id(), GetElementTypeForAnimation());
 }
 
 bool LayerImpl::HasAnyAnimationTargetingProperty(
     TargetProperty::Type property) const {
-  return GetAnimationHost()->HasAnyAnimationTargetingProperty(element_id(),
-                                                              property);
+  return GetMutatorHost()->HasAnyAnimationTargetingProperty(element_id(),
+                                                            property);
 }
 
 bool LayerImpl::HasFilterAnimationThatInflatesBounds() const {
-  return GetAnimationHost()->HasFilterAnimationThatInflatesBounds(element_id());
+  return GetMutatorHost()->HasFilterAnimationThatInflatesBounds(element_id());
 }
 
 bool LayerImpl::HasTransformAnimationThatInflatesBounds() const {
-  return GetAnimationHost()->HasTransformAnimationThatInflatesBounds(
+  return GetMutatorHost()->HasTransformAnimationThatInflatesBounds(
       element_id());
 }
 
 bool LayerImpl::HasAnimationThatInflatesBounds() const {
-  return GetAnimationHost()->HasAnimationThatInflatesBounds(element_id());
+  return GetMutatorHost()->HasAnimationThatInflatesBounds(element_id());
 }
 
 bool LayerImpl::FilterAnimationBoundsForBox(const gfx::BoxF& box,
                                             gfx::BoxF* bounds) const {
-  return GetAnimationHost()->FilterAnimationBoundsForBox(element_id(), box,
-                                                         bounds);
+  return GetMutatorHost()->FilterAnimationBoundsForBox(element_id(), box,
+                                                       bounds);
 }
 
 bool LayerImpl::TransformAnimationBoundsForBox(const gfx::BoxF& box,
                                                gfx::BoxF* bounds) const {
-  return GetAnimationHost()->TransformAnimationBoundsForBox(element_id(), box,
-                                                            bounds);
+  return GetMutatorHost()->TransformAnimationBoundsForBox(element_id(), box,
+                                                          bounds);
 }
 
 void LayerImpl::SetUpdateRect(const gfx::Rect& update_rect) {
