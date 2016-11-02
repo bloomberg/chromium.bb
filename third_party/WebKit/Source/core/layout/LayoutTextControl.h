@@ -77,6 +77,7 @@ class CORE_EXPORT LayoutTextControl : public LayoutBlockFlow {
   LayoutObject* layoutSpecialExcludedChild(bool relayoutChildren,
                                            SubtreeLayoutScope&) override;
 
+  int firstLineBoxBaseline() const override;
   // We need to override this function because we don't want overflow:hidden on
   // an <input> to affect the baseline calculation. This is necessary because we
   // are an inline-block element as an implementation detail which would

@@ -332,4 +332,32 @@ LayoutObject* LayoutTextControl::layoutSpecialExcludedChild(
   return placeholderLayoutObject;
 }
 
+int LayoutTextControl::firstLineBoxBaseline() const {
+  int result = LayoutBlock::firstLineBoxBaseline();
+  if (result != -1)
+    return result;
+
+  // When the text is empty, |LayoutBlock::firstLineBoxBaseline()| cannot
+  // compute the baseline because lineboxes do not exist.
+  Element* innerEditor = innerEditorElement();
+  if (!innerEditor || !innerEditor->layoutObject())
+    return -1;
+
+  LayoutBlock* innerEditorLayoutObject =
+      toLayoutBlock(innerEditor->layoutObject());
+  const SimpleFontData* fontData =
+      innerEditorLayoutObject->style(true)->font().primaryFont();
+  DCHECK(fontData);
+  if (!fontData)
+    return -1;
+
+  LayoutUnit baseline(fontData->getFontMetrics().ascent(AlphabeticBaseline));
+  for (LayoutObject* box = innerEditorLayoutObject; box && box != this;
+       box = box->parent()) {
+    if (box->isBox())
+      baseline += toLayoutBox(box)->logicalTop();
+  }
+  return baseline.toInt();
+}
+
 }  // namespace blink
