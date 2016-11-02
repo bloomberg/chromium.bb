@@ -41,21 +41,18 @@ using content::Referrer;
 
 namespace {
 
-void LaunchDateAndTimeSettingsOnFile() {
+#if !defined(OS_CHROMEOS)
+void LaunchDateAndTimeSettingsOnFileThread() {
   DCHECK_CURRENTLY_ON(content::BrowserThread::FILE);
 // The code for each OS is completely separate, in order to avoid bugs like
-// https://crbug.com/430877 .
+// https://crbug.com/430877 . ChromeOS is handled on the UI thread.
 #if defined(OS_ANDROID)
   chrome::android::OpenDateAndTimeSettings();
 
-#elif defined(OS_CHROMEOS)
-  chrome::ShowSettingsSubPageForProfile(ProfileManager::GetActiveUserProfile(),
-                                        chrome::kDateTimeSubPage);
-
 #elif defined(OS_LINUX)
   struct ClockCommand {
-    const char* pathname;
-    const char* argument;
+    const char* const pathname;
+    const char* const argument;
   };
   static const ClockCommand kClockCommands[] = {
       // Unity
@@ -119,6 +116,7 @@ void LaunchDateAndTimeSettingsOnFile() {
 #endif
   // Don't add code here! (See the comment at the beginning of the function.)
 }
+#endif
 
 }  // namespace
 
@@ -146,9 +144,16 @@ bool ChromeControllerClient::CanLaunchDateAndTimeSettings() {
 }
 
 void ChromeControllerClient::LaunchDateAndTimeSettings() {
+  DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
+
+#if defined(OS_CHROMEOS)
+  chrome::ShowSettingsSubPageForProfile(ProfileManager::GetActiveUserProfile(),
+                                        chrome::kDateTimeSubPage);
+#else
   content::BrowserThread::PostTask(
       content::BrowserThread::FILE, FROM_HERE,
-      base::Bind(&LaunchDateAndTimeSettingsOnFile));
+      base::Bind(&LaunchDateAndTimeSettingsOnFileThread));
+#endif
 }
 
 void ChromeControllerClient::GoBack() {
