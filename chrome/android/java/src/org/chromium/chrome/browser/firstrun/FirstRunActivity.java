@@ -168,8 +168,6 @@ public class FirstRunActivity extends AppCompatActivity implements FirstRunPageD
         mPager.setId(R.id.fre_pager);
         setContentView(mPager);
 
-        mProfileDataCache = new ProfileDataCache(FirstRunActivity.this, null);
-        mProfileDataCache.setProfile(Profile.getLastUsedProfile());
         new FirstRunFlowSequencer(this, mFreProperties) {
             @Override
             public void onFlowIsKnown(Bundle freProperties) {
@@ -263,6 +261,10 @@ public class FirstRunActivity extends AppCompatActivity implements FirstRunPageD
 
     @Override
     public ProfileDataCache getProfileDataCache() {
+        if (mProfileDataCache == null) {
+            mProfileDataCache = new ProfileDataCache(FirstRunActivity.this, null);
+            mProfileDataCache.setProfile(Profile.getLastUsedProfile());
+        }
         return mProfileDataCache;
     }
 
