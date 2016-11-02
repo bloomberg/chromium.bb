@@ -346,6 +346,11 @@ ServiceWorkerVersion::~ServiceWorkerVersion() {
   embedded_worker_->RemoveListener(this);
 }
 
+void ServiceWorkerVersion::SetNavigationPreloadState(
+    const NavigationPreloadState& state) {
+  navigation_preload_state_ = state;
+}
+
 void ServiceWorkerVersion::SetStatus(Status status) {
   if (status_ == status)
     return;

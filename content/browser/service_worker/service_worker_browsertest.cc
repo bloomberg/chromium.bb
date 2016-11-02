@@ -1505,7 +1505,7 @@ class ServiceWorkerNavigationPreloadTest : public ServiceWorkerBrowserTest {
       scoped_refptr<ServiceWorkerRegistration> registration) {
     EXPECT_EQ(SERVICE_WORKER_OK, status);
     ASSERT_TRUE(registration->active_version());
-    registration->active_version()->set_navigation_preload_enabled(true);
+    registration->EnableNavigationPreload(true);
     continuation.Run();
   }
 

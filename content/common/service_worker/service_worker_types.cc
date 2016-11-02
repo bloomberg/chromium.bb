@@ -153,4 +153,13 @@ ExtendableMessageEventSource::ExtendableMessageEventSource(
     const ServiceWorkerObjectInfo& service_worker_info)
     : service_worker_info(service_worker_info) {}
 
+NavigationPreloadState::NavigationPreloadState()
+    : enabled(false), header("true") {}
+
+NavigationPreloadState::NavigationPreloadState(bool enabled, std::string header)
+    : enabled(enabled), header(header) {}
+
+NavigationPreloadState::NavigationPreloadState(
+    const NavigationPreloadState& other) = default;
+
 }  // namespace content

@@ -207,17 +207,17 @@ TEST_P(ServiceWorkerRegistrationTestP, NavigationPreload) {
   version_2->SetStatus(ServiceWorkerVersion::INSTALLED);
 
   // Navigation preload is disabled by default.
-  EXPECT_FALSE(version_1->navigation_preload_enabled());
+  EXPECT_FALSE(version_1->navigation_preload_state().enabled);
   // Enabling it sets the flag on the active version.
   registration->EnableNavigationPreload(true);
-  EXPECT_TRUE(version_1->navigation_preload_enabled());
+  EXPECT_TRUE(version_1->navigation_preload_state().enabled);
   // A new active version gets the flag.
   registration->SetActiveVersion(version_2);
   version_2->SetStatus(ServiceWorkerVersion::ACTIVATING);
-  EXPECT_TRUE(version_2->navigation_preload_enabled());
+  EXPECT_TRUE(version_2->navigation_preload_state().enabled);
   // Disabling it unsets the flag on the active version.
   registration->EnableNavigationPreload(false);
-  EXPECT_FALSE(version_2->navigation_preload_enabled());
+  EXPECT_FALSE(version_2->navigation_preload_state().enabled);
 }
 
 // Sets up a registration with a waiting worker, and an active worker

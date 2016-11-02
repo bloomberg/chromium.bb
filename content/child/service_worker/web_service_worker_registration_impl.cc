@@ -173,6 +173,20 @@ void WebServiceWorkerRegistrationImpl::getNavigationPreloadState(
       provider_impl->provider_id(), registration_id(), std::move(callbacks));
 }
 
+void WebServiceWorkerRegistrationImpl::setNavigationPreloadHeader(
+    const blink::WebString& value,
+    blink::WebServiceWorkerProvider* provider,
+    std::unique_ptr<WebSetNavigationPreloadHeaderCallbacks> callbacks) {
+  WebServiceWorkerProviderImpl* provider_impl =
+      static_cast<WebServiceWorkerProviderImpl*>(provider);
+  ServiceWorkerDispatcher* dispatcher =
+      ServiceWorkerDispatcher::GetThreadSpecificInstance();
+  DCHECK(dispatcher);
+  dispatcher->SetNavigationPreloadHeader(provider_impl->provider_id(),
+                                         registration_id(), value.utf8(),
+                                         std::move(callbacks));
+}
+
 int64_t WebServiceWorkerRegistrationImpl::registration_id() const {
   return handle_ref_->registration_id();
 }

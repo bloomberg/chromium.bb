@@ -10,6 +10,8 @@ function handle(message) {
       return np.enable();
     case 'disable':
       return np.disable();
+    case 'setHeaderValue':
+      return np.setHeaderValue('insightful');
   }
   return Promise.reject('bad message');
 }

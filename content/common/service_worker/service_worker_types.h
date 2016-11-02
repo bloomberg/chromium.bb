@@ -272,6 +272,14 @@ struct ExtendableMessageEventSource {
   ServiceWorkerObjectInfo service_worker_info;
 };
 
+struct CONTENT_EXPORT NavigationPreloadState {
+  NavigationPreloadState();
+  NavigationPreloadState(bool enabled, std::string header);
+  NavigationPreloadState(const NavigationPreloadState& other);
+  bool enabled;
+  std::string header;
+};
+
 }  // namespace content
 
 #endif  // CONTENT_COMMON_SERVICE_WORKER_SERVICE_WORKER_TYPES_H_

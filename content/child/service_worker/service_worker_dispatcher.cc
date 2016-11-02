@@ -84,6 +84,8 @@ void ServiceWorkerDispatcher::OnMessageReceived(const IPC::Message& msg) {
                         OnDidEnableNavigationPreload)
     IPC_MESSAGE_HANDLER(ServiceWorkerMsg_DidGetNavigationPreloadState,
                         OnDidGetNavigationPreloadState)
+    IPC_MESSAGE_HANDLER(ServiceWorkerMsg_DidSetNavigationPreloadHeader,
+                        OnDidSetNavigationPreloadHeader)
     IPC_MESSAGE_HANDLER(ServiceWorkerMsg_ServiceWorkerRegistrationError,
                         OnRegistrationError)
     IPC_MESSAGE_HANDLER(ServiceWorkerMsg_ServiceWorkerUpdateError,
@@ -98,6 +100,8 @@ void ServiceWorkerDispatcher::OnMessageReceived(const IPC::Message& msg) {
                         OnEnableNavigationPreloadError)
     IPC_MESSAGE_HANDLER(ServiceWorkerMsg_GetNavigationPreloadStateError,
                         OnGetNavigationPreloadStateError)
+    IPC_MESSAGE_HANDLER(ServiceWorkerMsg_SetNavigationPreloadHeaderError,
+                        OnSetNavigationPreloadHeaderError)
     IPC_MESSAGE_HANDLER(ServiceWorkerMsg_ServiceWorkerStateChanged,
                         OnServiceWorkerStateChanged)
     IPC_MESSAGE_HANDLER(ServiceWorkerMsg_SetVersionAttributes,
@@ -236,6 +240,18 @@ void ServiceWorkerDispatcher::GetNavigationPreloadState(
       get_navigation_preload_state_callbacks_.Add(callbacks.release());
   thread_safe_sender_->Send(new ServiceWorkerHostMsg_GetNavigationPreloadState(
       CurrentWorkerId(), request_id, provider_id, registration_id));
+}
+
+void ServiceWorkerDispatcher::SetNavigationPreloadHeader(
+    int provider_id,
+    int64_t registration_id,
+    const std::string& value,
+    std::unique_ptr<WebSetNavigationPreloadHeaderCallbacks> callbacks) {
+  DCHECK(callbacks);
+  int request_id =
+      set_navigation_preload_header_callbacks_.Add(callbacks.release());
+  thread_safe_sender_->Send(new ServiceWorkerHostMsg_SetNavigationPreloadHeader(
+      CurrentWorkerId(), request_id, provider_id, registration_id, value));
 }
 
 void ServiceWorkerDispatcher::AddProviderContext(
@@ -563,18 +579,29 @@ void ServiceWorkerDispatcher::OnDidEnableNavigationPreload(int thread_id,
   enable_navigation_preload_callbacks_.Remove(request_id);
 }
 
-void ServiceWorkerDispatcher::OnDidGetNavigationPreloadState(int thread_id,
-                                                             int request_id,
-                                                             bool enabled) {
+void ServiceWorkerDispatcher::OnDidGetNavigationPreloadState(
+    int thread_id,
+    int request_id,
+    const NavigationPreloadState& state) {
   WebGetNavigationPreloadStateCallbacks* callbacks =
       get_navigation_preload_state_callbacks_.Lookup(request_id);
   DCHECK(callbacks);
   if (!callbacks)
     return;
-  // TODO(falken): Implement populating headerValue.
-  callbacks->onSuccess(
-      blink::WebNavigationPreloadState(enabled, blink::WebString()));
+  callbacks->onSuccess(blink::WebNavigationPreloadState(
+      state.enabled, blink::WebString::fromUTF8(state.header)));
   get_navigation_preload_state_callbacks_.Remove(request_id);
+}
+
+void ServiceWorkerDispatcher::OnDidSetNavigationPreloadHeader(int thread_id,
+                                                              int request_id) {
+  WebSetNavigationPreloadHeaderCallbacks* callbacks =
+      set_navigation_preload_header_callbacks_.Lookup(request_id);
+  DCHECK(callbacks);
+  if (!callbacks)
+    return;
+  callbacks->onSuccess();
+  set_navigation_preload_header_callbacks_.Remove(request_id);
 }
 
 void ServiceWorkerDispatcher::OnRegistrationError(
@@ -717,6 +744,21 @@ void ServiceWorkerDispatcher::OnGetNavigationPreloadStateError(
   callbacks->onError(
       WebServiceWorkerError(error_type, blink::WebString::fromUTF8(message)));
   get_navigation_preload_state_callbacks_.Remove(request_id);
+}
+
+void ServiceWorkerDispatcher::OnSetNavigationPreloadHeaderError(
+    int thread_id,
+    int request_id,
+    WebServiceWorkerError::ErrorType error_type,
+    const std::string& message) {
+  WebSetNavigationPreloadHeaderCallbacks* callbacks =
+      set_navigation_preload_header_callbacks_.Lookup(request_id);
+  DCHECK(callbacks);
+  if (!callbacks)
+    return;
+  callbacks->onError(
+      WebServiceWorkerError(error_type, blink::WebString::fromUTF8(message)));
+  set_navigation_preload_header_callbacks_.Remove(request_id);
 }
 
 void ServiceWorkerDispatcher::OnServiceWorkerStateChanged(

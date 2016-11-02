@@ -286,7 +286,7 @@ void ServiceWorkerFetchDispatcher::MaybeStartNavigationPreload(
       resource_type_ != RESOURCE_TYPE_SUB_FRAME) {
     return;
   }
-  if (!version_->navigation_preload_enabled())
+  if (!version_->navigation_preload_state().enabled)
     return;
   // TODO(horo): Currently NavigationPreload doesn't support request body.
   if (!request_->blob_uuid.empty())

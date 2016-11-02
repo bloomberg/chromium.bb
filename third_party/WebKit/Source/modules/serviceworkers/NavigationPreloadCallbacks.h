@@ -16,7 +16,7 @@ struct WebServiceWorkerError;
 class EnableNavigationPreloadCallbacks final
     : public WebServiceWorkerRegistration::WebEnableNavigationPreloadCallbacks {
  public:
-  EnableNavigationPreloadCallbacks(ScriptPromiseResolver*);
+  explicit EnableNavigationPreloadCallbacks(ScriptPromiseResolver*);
   ~EnableNavigationPreloadCallbacks() override;
 
   // WebEnableNavigationPreloadCallbacks interface.
@@ -32,7 +32,7 @@ class GetNavigationPreloadStateCallbacks final
     : public WebServiceWorkerRegistration::
           WebGetNavigationPreloadStateCallbacks {
  public:
-  GetNavigationPreloadStateCallbacks(ScriptPromiseResolver*);
+  explicit GetNavigationPreloadStateCallbacks(ScriptPromiseResolver*);
   ~GetNavigationPreloadStateCallbacks() override;
 
   // WebGetNavigationPreloadStateCallbacks interface.
@@ -42,6 +42,22 @@ class GetNavigationPreloadStateCallbacks final
  private:
   Persistent<ScriptPromiseResolver> m_resolver;
   WTF_MAKE_NONCOPYABLE(GetNavigationPreloadStateCallbacks);
+};
+
+class SetNavigationPreloadHeaderCallbacks final
+    : public WebServiceWorkerRegistration::
+          WebSetNavigationPreloadHeaderCallbacks {
+ public:
+  explicit SetNavigationPreloadHeaderCallbacks(ScriptPromiseResolver*);
+  ~SetNavigationPreloadHeaderCallbacks() override;
+
+  // WebSetNavigationPreloadHeaderCallbacks interface.
+  void onSuccess(void) override;
+  void onError(const WebServiceWorkerError&) override;
+
+ private:
+  Persistent<ScriptPromiseResolver> m_resolver;
+  WTF_MAKE_NONCOPYABLE(SetNavigationPreloadHeaderCallbacks);
 };
 
 }  // namespace blink

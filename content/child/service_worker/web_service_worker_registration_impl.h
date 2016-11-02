@@ -63,6 +63,11 @@ class CONTENT_EXPORT WebServiceWorkerRegistrationImpl
       blink::WebServiceWorkerProvider* provider,
       std::unique_ptr<WebGetNavigationPreloadStateCallbacks> callbacks)
       override;
+  void setNavigationPreloadHeader(
+      const blink::WebString& value,
+      blink::WebServiceWorkerProvider* provider,
+      std::unique_ptr<WebSetNavigationPreloadHeaderCallbacks> callbacks)
+      override;
 
   int64_t registration_id() const;
 

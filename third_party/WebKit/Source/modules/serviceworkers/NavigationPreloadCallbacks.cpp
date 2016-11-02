@@ -50,12 +50,34 @@ void GetNavigationPreloadStateCallbacks::onSuccess(
     return;
   NavigationPreloadState dict;
   dict.setEnabled(state.enabled);
-  if (!state.headerValue.isNull())
-    dict.setHeaderValue(state.headerValue);
+  dict.setHeaderValue(state.headerValue);
   m_resolver->resolve(dict);
 }
 
 void GetNavigationPreloadStateCallbacks::onError(
+    const WebServiceWorkerError& error) {
+  if (!m_resolver->getExecutionContext() ||
+      m_resolver->getExecutionContext()->activeDOMObjectsAreStopped())
+    return;
+  m_resolver->reject(ServiceWorkerError::take(m_resolver.get(), error));
+}
+
+SetNavigationPreloadHeaderCallbacks::SetNavigationPreloadHeaderCallbacks(
+    ScriptPromiseResolver* resolver)
+    : m_resolver(resolver) {
+  DCHECK(m_resolver);
+}
+
+SetNavigationPreloadHeaderCallbacks::~SetNavigationPreloadHeaderCallbacks() {}
+
+void SetNavigationPreloadHeaderCallbacks::onSuccess() {
+  if (!m_resolver->getExecutionContext() ||
+      m_resolver->getExecutionContext()->activeDOMObjectsAreStopped())
+    return;
+  m_resolver->resolve();
+}
+
+void SetNavigationPreloadHeaderCallbacks::onError(
     const WebServiceWorkerError& error) {
   if (!m_resolver->getExecutionContext() ||
       m_resolver->getExecutionContext()->activeDOMObjectsAreStopped())
