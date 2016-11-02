@@ -113,7 +113,8 @@ import org.chromium.ui.gfx.DeviceDisplayInfo;
         @Override
         public void onConfigurationChanged(Configuration newConfig) {
             updateDeviceDisplayInfo();
-            mIdMap.get(mMainSdkDisplayId).updateFromDisplay(getDisplayFromContext(getContext()));
+            mIdMap.get(mMainSdkDisplayId).updateFromDisplay(
+                    getDefaultDisplayForContext(getContext()));
         }
 
         @Override
@@ -183,7 +184,7 @@ import org.chromium.ui.gfx.DeviceDisplayInfo;
         return sDisplayAndroidManager;
     }
 
-    /* package */ static Display getDisplayFromContext(Context context) {
+    /* package */ static Display getDefaultDisplayForContext(Context context) {
         WindowManager windowManager =
                 (WindowManager) context.getSystemService(Context.WINDOW_SERVICE);
         return windowManager.getDefaultDisplay();
@@ -210,7 +211,7 @@ import org.chromium.ui.gfx.DeviceDisplayInfo;
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.JELLY_BEAN_MR1) {
             mBackend = new DisplayListenerBackendImpl();
         } else {
-            Display display = getDisplayFromContext(getContext());
+            Display display = getDefaultDisplayForContext(getContext());
             mBackend = new DisplayListenerAPI16(display.getDisplayId());
             addDisplay(display);  // Note this display is never removed.
         }

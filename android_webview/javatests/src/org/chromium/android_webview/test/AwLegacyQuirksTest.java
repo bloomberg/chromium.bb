@@ -41,7 +41,8 @@ public class AwLegacyQuirksTest extends AwTestBase {
 
         settings.setJavaScriptEnabled(true);
 
-        DisplayAndroid displayAndroid = DisplayAndroid.get(getInstrumentation().getTargetContext());
+        DisplayAndroid displayAndroid = DisplayAndroid.getNonMultiDisplay(
+                getInstrumentation().getTargetContext());
         loadDataSync(awContents, onPageFinishedHelper, pageDeviceDpi, "text/html", false);
         int actualWidth = Integer.parseInt(getTitleOnUiThread(awContents));
         assertEquals(displayAndroid.getDisplayWidth(), actualWidth, 10f);
@@ -75,7 +76,8 @@ public class AwLegacyQuirksTest extends AwTestBase {
         settings.setJavaScriptEnabled(true);
         settings.setUseWideViewPort(true);
 
-        DisplayAndroid displayAndroid = DisplayAndroid.get(getInstrumentation().getTargetContext());
+        DisplayAndroid displayAndroid = DisplayAndroid.getNonMultiDisplay(
+                getInstrumentation().getTargetContext());
         loadDataSync(awContents, onPageFinishedHelper, page, "text/html", false);
         float displayWidth =
                 displayAndroid.getDisplayWidth() / displayAndroid.getDIPScale();
@@ -101,7 +103,8 @@ public class AwLegacyQuirksTest extends AwTestBase {
 
         settings.setJavaScriptEnabled(true);
 
-        DisplayAndroid displayAndroid = DisplayAndroid.get(getInstrumentation().getTargetContext());
+        DisplayAndroid displayAndroid = DisplayAndroid.getNonMultiDisplay(
+                getInstrumentation().getTargetContext());
         loadDataSync(awContents, onPageFinishedHelper, page, "text/html", false);
         float displayWidth =
                 displayAndroid.getDisplayWidth() / displayAndroid.getDIPScale();
@@ -131,8 +134,9 @@ public class AwLegacyQuirksTest extends AwTestBase {
 
         loadUrlSync(awContents, onPageFinishedHelper, "about:blank");
 
-        DisplayAndroid displayAndroid = DisplayAndroid.get(getInstrumentation().getTargetContext());
-        float dipScale = (float) displayAndroid.getDIPScale();
+        DisplayAndroid displayAndroid = DisplayAndroid.getNonMultiDisplay(
+                getInstrumentation().getTargetContext());
+        float dipScale = displayAndroid.getDIPScale();
         float physicalDisplayWidth = displayAndroid.getPhysicalDisplayWidth() != 0
                                      ? displayAndroid.getPhysicalDisplayWidth()
                                      : displayAndroid.getDisplayWidth();

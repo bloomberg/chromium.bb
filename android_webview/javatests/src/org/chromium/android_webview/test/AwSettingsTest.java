@@ -959,7 +959,7 @@ public class AwSettingsTest extends AwTestBase {
         }
 
         protected String getData() {
-            DisplayAndroid displayAndroid = DisplayAndroid.get(mContext);
+            DisplayAndroid displayAndroid = DisplayAndroid.getNonMultiDisplay(mContext);
             int displayWidth =
                     (int) (displayAndroid.getDisplayWidth() / displayAndroid.getDIPScale());
             int layoutWidth = (int) (displayWidth * 2.5f); // Use 2.5 as autosizing layout tests do.
@@ -1466,7 +1466,7 @@ public class AwSettingsTest extends AwTestBase {
             loadDataSync(getData());
             final int reportedClientWidth = Integer.parseInt(getTitleOnUiThread());
             if (value) {
-                final DisplayAndroid displayAndroid = DisplayAndroid.get(mContext);
+                final DisplayAndroid displayAndroid = DisplayAndroid.getNonMultiDisplay(mContext);
                 // The clientWidth is subject to pixel snapping.
                 final int displayWidth = (int) Math.ceil(
                         displayAndroid.getDisplayWidth() / displayAndroid.getDIPScale());
@@ -2538,7 +2538,8 @@ public class AwSettingsTest extends AwTestBase {
                 pageTemplate,
                 "<meta name='viewport' content='width=" + viewportTagSpecifiedWidth + "' />");
 
-        DisplayAndroid displayAndroid = DisplayAndroid.get(testContainer.getContext());
+        DisplayAndroid displayAndroid = DisplayAndroid.getNonMultiDisplay(
+                testContainer.getContext());
         int displayWidth = (int) (displayAndroid.getDisplayWidth() / displayAndroid.getDIPScale());
 
         settings.setJavaScriptEnabled(true);
@@ -2607,7 +2608,7 @@ public class AwSettingsTest extends AwTestBase {
         settings.setBuiltInZoomControls(true);
 
         DisplayAndroid displayAndroid =
-                DisplayAndroid.get(testContainerView.getContext());
+                DisplayAndroid.getNonMultiDisplay(testContainerView.getContext());
         int displayWidth = (int) (displayAndroid.getDisplayWidth() / displayAndroid.getDIPScale());
         int layoutWidth = displayWidth * 2;
         final String page = "<html>"

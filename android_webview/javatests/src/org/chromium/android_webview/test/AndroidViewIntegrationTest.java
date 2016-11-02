@@ -85,7 +85,7 @@ public class AndroidViewIntegrationTest extends AwTestBase {
     private AwTestContainerView createCustomTestContainerViewOnMainSync(
             final AwContentsClient awContentsClient, final int visibility) throws Exception {
         final AtomicReference<AwTestContainerView> testContainerView =
-                new AtomicReference<AwTestContainerView>();
+                new AtomicReference<>();
         getInstrumentation().runOnMainSync(new Runnable() {
             @Override
             public void run() {
@@ -100,7 +100,7 @@ public class AndroidViewIntegrationTest extends AwTestBase {
     private AwTestContainerView createDetachedTestContainerViewOnMainSync(
             final AwContentsClient awContentsClient) {
         final AtomicReference<AwTestContainerView> testContainerView =
-                new AtomicReference<AwTestContainerView>();
+                new AtomicReference<>();
         getInstrumentation().runOnMainSync(new Runnable() {
             @Override
             public void run() {
@@ -121,7 +121,7 @@ public class AndroidViewIntegrationTest extends AwTestBase {
     }
 
     private int getRootLayoutWidthOnMainThread() throws Exception {
-        final AtomicReference<Integer> width = new AtomicReference<Integer>();
+        final AtomicReference<Integer> width = new AtomicReference<>();
         getInstrumentation().runOnMainSync(new Runnable() {
             @Override
             public void run() {
@@ -308,7 +308,7 @@ public class AndroidViewIntegrationTest extends AwTestBase {
         assertZeroHeight(testContainerView);
 
         final double deviceDIPScale =
-                DisplayAndroid.get(testContainerView.getContext()).getDIPScale();
+                DisplayAndroid.getNonMultiDisplay(testContainerView.getContext()).getDIPScale();
 
         final int contentWidthCss = 142;
         final int contentHeightCss = 180;
@@ -335,7 +335,7 @@ public class AndroidViewIntegrationTest extends AwTestBase {
         assertZeroHeight(testContainerView);
 
         final double deviceDIPScale =
-                DisplayAndroid.get(testContainerView.getContext()).getDIPScale();
+                DisplayAndroid.getNonMultiDisplay(testContainerView.getContext()).getDIPScale();
 
         final int contentWidthCss = 142;
         final int contentHeightCss = 180;
@@ -363,7 +363,7 @@ public class AndroidViewIntegrationTest extends AwTestBase {
         assertZeroHeight(testContainerView);
 
         final double deviceDIPScale =
-                DisplayAndroid.get(testContainerView.getContext()).getDIPScale();
+                DisplayAndroid.getNonMultiDisplay(testContainerView.getContext()).getDIPScale();
 
         final int contentWidthCss = 142;
         final int contentHeightCss = 180;
@@ -389,7 +389,7 @@ public class AndroidViewIntegrationTest extends AwTestBase {
         final AwContents awContents = testContainerView.getAwContents();
 
         final double deviceDIPScale =
-                DisplayAndroid.get(testContainerView.getContext()).getDIPScale();
+                DisplayAndroid.getNonMultiDisplay(testContainerView.getContext()).getDIPScale();
         final int physicalWidth = 600;
         final int spanWidth = 42;
         final int expectedWidthCss =

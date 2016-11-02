@@ -52,7 +52,7 @@ public class ScreenOrientationProvider {
                 // If the tab is being reparented, we don't have a display strongly associated with
                 // it, so we get the default display.
                 DisplayAndroid displayAndroid = (window != null) ? window.getDisplay()
-                        : DisplayAndroid.get(context);
+                        : DisplayAndroid.getNonMultiDisplay(context);
                 int rotation = displayAndroid.getRotation();
                 if (rotation == Surface.ROTATION_0 || rotation == Surface.ROTATION_180) {
                     if (displayAndroid.getDisplayHeight() >= displayAndroid.getDisplayWidth()) {

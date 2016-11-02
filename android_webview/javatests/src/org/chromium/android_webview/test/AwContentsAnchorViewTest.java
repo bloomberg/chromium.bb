@@ -181,7 +181,7 @@ public class AwContentsAnchorViewTest extends AwTestBase {
     }
 
     private LayoutParams setLayoutParams(View anchorView, int coords, int dimension) {
-        float scale = (float) DisplayAndroid.get(mContainerView.getContext()).getDIPScale();
+        float scale = DisplayAndroid.getNonMultiDisplay(mContainerView.getContext()).getDIPScale();
         mViewDelegate.setViewPosition(
                 anchorView, coords, coords, dimension, dimension, scale, 10, 10);
         return anchorView.getLayoutParams();
@@ -191,7 +191,7 @@ public class AwContentsAnchorViewTest extends AwTestBase {
         FrameLayout containerView  = new FrameLayout(getActivity());
         getActivity().addView(containerView);
         mViewDelegate.updateCurrentContainerView(containerView,
-                DisplayAndroid.get(mContainerView.getContext()));
+                DisplayAndroid.getNonMultiDisplay(mContainerView.getContext()));
         return containerView;
     }
 

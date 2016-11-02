@@ -177,7 +177,7 @@ public class WindowAndroid {
         mVSyncMonitor = new VSyncMonitor(context, mVSyncListener);
         mAccessibilityManager = (AccessibilityManager) mApplicationContext.getSystemService(
                 Context.ACCESSIBILITY_SERVICE);
-        mDisplayAndroid = DisplayAndroid.get(context);
+        mDisplayAndroid = DisplayAndroid.getNonMultiDisplay(context);
     }
 
     @CalledByNative

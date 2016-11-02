@@ -87,12 +87,22 @@ public class DisplayAndroid {
     }
 
     /**
-     * Get the DisplayAndroid for this context. It's safe to call this with any type of context
-     * including the Application. However to support multi-display, prefer to use the Activity
-     * context if available, or obtain DisplayAndroid from WindowAndroid instead.
+     * Get the non-multi-display DisplayAndroid for the given context. It's safe to call this with
+     * any type of context, including the Application.
+     *
+     * To support multi-display, obtain DisplayAndroid from WindowAndroid instead.
+     *
+     * This function is intended to be analogous to GetPrimaryDisplay() for other platforms.
+     * However, Android has historically had no real concept of a Primary Display, and instead uses
+     * the notion of a default display for an Activity. Under normal circumstances, this function,
+     * called with the correct context, will return the expected display for an Activity. However,
+     * virtual, or "fake", displays that are not associated with any context may be used in special
+     * cases, like Virtual Reality, and will lead to this function returning the incorrect display.
+     *
+     * @return What the Android WindowManager considers to be the default display for this context.
      */
-    public static DisplayAndroid get(Context context) {
-        Display display = DisplayAndroidManager.getDisplayFromContext(context);
+    public static DisplayAndroid getNonMultiDisplay(Context context) {
+        Display display = DisplayAndroidManager.getDefaultDisplayForContext(context);
         return getManager().getDisplayAndroid(display);
     }
 
