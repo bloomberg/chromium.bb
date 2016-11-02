@@ -218,6 +218,10 @@ void EngineNetworkComponents::Initialize(
   net::IPEndPoint address(GetListeningAddress(), GetListeningPort());
   connection_manager_->ConnectTransport(&address, GetTransportType());
   port_ = address.port();
+
+  // Print the engine port for client_engine_integration script, please do not
+  // remove this log.
+  DVLOG(1) << "Engine port #: " << port_;
 }
 
 void EngineNetworkComponents::HandleConnection(
