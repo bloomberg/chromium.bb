@@ -58,7 +58,6 @@ HTMLFormControlElement::HTMLFormControlElement(const QualifiedName& tagName,
       m_willValidate(true),
       m_isValid(true),
       m_validityIsDirty(false),
-      m_wasChangedSinceLastFormControlChangeEvent(false),
       m_wasFocusedByMouse(false) {
   setHasCustomStyleCallbacks();
   associateByParser(form);
@@ -311,23 +310,8 @@ void HTMLFormControlElement::fieldSetAncestorsSetNeedsValidityCheck(
   }
 }
 
-void HTMLFormControlElement::setChangedSinceLastFormControlChangeEvent(
-    bool changed) {
-  m_wasChangedSinceLastFormControlChangeEvent = changed;
-}
-
 void HTMLFormControlElement::dispatchChangeEvent() {
   dispatchScopedEvent(Event::createBubble(EventTypeNames::change));
-}
-
-void HTMLFormControlElement::dispatchFormControlChangeEvent() {
-  dispatchChangeEvent();
-  setChangedSinceLastFormControlChangeEvent(false);
-}
-
-void HTMLFormControlElement::dispatchFormControlInputEvent() {
-  setChangedSinceLastFormControlChangeEvent(true);
-  HTMLElement::dispatchInputEvent();
 }
 
 HTMLFormElement* HTMLFormControlElement::formOwner() const {
@@ -635,13 +619,6 @@ String HTMLFormControlElement::nameForAutofill() const {
   fullName = getIdAttribute();
   trimmedName = fullName.stripWhiteSpace();
   return trimmedName;
-}
-
-void HTMLFormControlElement::setFocused(bool flag) {
-  LabelableElement::setFocused(flag);
-
-  if (!flag && wasChangedSinceLastFormControlChangeEvent())
-    dispatchFormControlChangeEvent();
 }
 
 void HTMLFormControlElement::copyNonAttributePropertiesFromElement(

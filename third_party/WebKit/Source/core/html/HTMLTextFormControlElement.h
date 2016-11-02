@@ -59,6 +59,7 @@ class CORE_EXPORT HTMLTextFormControlElement
 
   void forwardEvent(Event*);
 
+  void setFocused(bool flag) override;
   InsertionNotificationRequest insertedInto(ContainerNode*) override;
 
   // The derived class should return true if placeholder processing is needed.
@@ -102,8 +103,21 @@ class CORE_EXPORT HTMLTextFormControlElement
   const AtomicString& autocapitalize() const;
   void setAutocapitalize(const AtomicString&);
 
-  void dispatchFormControlChangeEvent() final;
+  // Dispatch 'input' event, and update
+  // m_wasChangedSinceLastFormControlChangeEvent flag.
+  void dispatchFormControlInputEvent();
+  // Dispatch 'change' event if the value is updated.
+  void dispatchFormControlChangeEvent();
+  // Enqueue 'change' event if the value is updated.
   void enqueueChangeEvent();
+  void setTextAsOfLastFormControlChangeEvent(const String& text) {
+    m_textAsOfLastFormControlChangeEvent = text;
+  }
+  // A user has changed the value since the last 'change' event.
+  bool wasChangedSinceLastFormControlChangeEvent() const {
+    return m_wasChangedSinceLastFormControlChangeEvent;
+  }
+  void setChangedSinceLastFormControlChangeEvent(bool);
 
   virtual String value() const = 0;
   virtual void setValue(const String&,
@@ -118,10 +132,6 @@ class CORE_EXPORT HTMLTextFormControlElement
   Node* createPlaceholderBreakElement() const;
 
   String directionForFormData() const;
-
-  void setTextAsOfLastFormControlChangeEvent(const String& text) {
-    m_textAsOfLastFormControlChangeEvent = text;
-  }
 
   // These functions don't cause synchronous layout and SpellChecker uses
   // them to improve performance.
@@ -191,6 +201,7 @@ class CORE_EXPORT HTMLTextFormControlElement
   bool placeholderShouldBeVisible() const;
 
   String m_textAsOfLastFormControlChangeEvent;
+  bool m_wasChangedSinceLastFormControlChangeEvent = false;
   bool m_lastChangeWasUserEdit;
 
   int m_cachedSelectionStart;

@@ -62,14 +62,7 @@ class CORE_EXPORT HTMLFormControlElement : public LabelableElement,
 
   void reset();
 
-  bool wasChangedSinceLastFormControlChangeEvent() const {
-    return m_wasChangedSinceLastFormControlChangeEvent;
-  }
-  void setChangedSinceLastFormControlChangeEvent(bool);
-
-  virtual void dispatchFormControlChangeEvent();
   void dispatchChangeEvent();
-  void dispatchFormControlInputEvent();
 
   HTMLFormElement* formOwner() const final;
 
@@ -132,7 +125,6 @@ class CORE_EXPORT HTMLFormControlElement : public LabelableElement,
 
   String nameForAutofill() const;
 
-  void setFocused(bool flag) override;
   void copyNonAttributePropertiesFromElement(const Element&) override;
 
  protected:
@@ -212,7 +204,6 @@ class CORE_EXPORT HTMLFormControlElement : public LabelableElement,
   bool m_isValid : 1;
   bool m_validityIsDirty : 1;
 
-  bool m_wasChangedSinceLastFormControlChangeEvent : 1;
   bool m_wasFocusedByMouse : 1;
 };
 

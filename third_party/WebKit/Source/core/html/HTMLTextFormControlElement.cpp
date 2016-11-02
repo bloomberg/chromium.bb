@@ -208,6 +208,18 @@ void HTMLTextFormControlElement::select() {
   restoreCachedSelection();
 }
 
+void HTMLTextFormControlElement::setChangedSinceLastFormControlChangeEvent(
+    bool changed) {
+  m_wasChangedSinceLastFormControlChangeEvent = changed;
+}
+
+void HTMLTextFormControlElement::setFocused(bool flag) {
+  HTMLFormControlElementWithState::setFocused(flag);
+
+  if (!flag && wasChangedSinceLastFormControlChangeEvent())
+    dispatchFormControlChangeEvent();
+}
+
 bool HTMLTextFormControlElement::shouldDispatchFormControlChangeEvent(
     String& oldValue,
     String& newValue) {
@@ -234,6 +246,11 @@ void HTMLTextFormControlElement::enqueueChangeEvent() {
     document().enqueueAnimationFrameEvent(event);
   }
   setChangedSinceLastFormControlChangeEvent(false);
+}
+
+void HTMLTextFormControlElement::dispatchFormControlInputEvent() {
+  setChangedSinceLastFormControlChangeEvent(true);
+  HTMLFormControlElementWithState::dispatchInputEvent();
 }
 
 void HTMLTextFormControlElement::setRangeText(const String& replacement,
