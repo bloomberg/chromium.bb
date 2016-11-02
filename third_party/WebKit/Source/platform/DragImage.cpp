@@ -257,6 +257,7 @@ std::unique_ptr<DragImage> DragImage::create(const KURL& url,
   IntRect rect(IntPoint(), imageSize);
   SkPaint backgroundPaint;
   backgroundPaint.setColor(SkColorSetRGB(140, 140, 140));
+  backgroundPaint.setAntiAlias(true);
   SkRRect rrect;
   rrect.setRectXY(SkRect::MakeWH(imageSize.width(), imageSize.height()),
                   DragLabelRadius, DragLabelRadius);
