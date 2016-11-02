@@ -395,7 +395,7 @@ bool ImageBuffer::getImageData(Multiply multiplied,
       useF16Workaround ? kN32_SkColorType : kRGBA_8888_SkColorType;
   SkImageInfo info =
       SkImageInfo::Make(rect.width(), rect.height(), colorType, alphaType,
-                        SkColorSpace::NewNamed(SkColorSpace::kSRGB_Named));
+                        SkColorSpace::MakeNamed(SkColorSpace::kSRGB_Named));
 
   snapshot->readPixels(info, result.data(), 4 * rect.width(), rect.x(),
                        rect.y());
@@ -456,7 +456,7 @@ void ImageBuffer::putByteArray(Multiply multiplied,
                                                         : kUnpremul_SkAlphaType;
   SkImageInfo info = SkImageInfo::Make(
       sourceRect.width(), sourceRect.height(), kRGBA_8888_SkColorType,
-      alphaType, SkColorSpace::NewNamed(SkColorSpace::kSRGB_Named));
+      alphaType, SkColorSpace::MakeNamed(SkColorSpace::kSRGB_Named));
 
   m_surface->writePixels(info, srcAddr, srcBytesPerRow, destX, destY);
 }

@@ -228,7 +228,7 @@ class MODULES_EXPORT BaseRenderingContext2D : public GarbageCollectedMixin,
   virtual void didDraw(const SkIRect& dirtyRect) = 0;
 
   virtual bool stateHasFilter() = 0;
-  virtual SkImageFilter* stateGetFilter() = 0;
+  virtual sk_sp<SkImageFilter> stateGetFilter() = 0;
   virtual void snapshotStateForFilter() = 0;
 
   virtual void validateStateStack() const = 0;
@@ -422,7 +422,7 @@ void BaseRenderingContext2D::compositedDraw(
     SkCanvas* c,
     CanvasRenderingContext2DState::PaintType paintType,
     CanvasRenderingContext2DState::ImageType imageType) {
-  SkImageFilter* filter = stateGetFilter();
+  sk_sp<SkImageFilter> filter = stateGetFilter();
   ASSERT(isFullCanvasCompositeMode(state().globalComposite()) || filter);
   SkMatrix ctm = c->getTotalMatrix();
   c->resetMatrix();
@@ -440,8 +440,8 @@ void BaseRenderingContext2D::compositedDraw(
           sk_ref_sp(foregroundPaint.getImageFilter());
       composedFilter = SkComposeImageFilter::Make(
           std::move(composedFilter), sk_ref_sp(shadowPaint.getImageFilter()));
-      composedFilter = SkComposeImageFilter::Make(std::move(composedFilter),
-                                                  sk_ref_sp(filter));
+      composedFilter =
+          SkComposeImageFilter::Make(std::move(composedFilter), filter);
       foregroundPaint.setImageFilter(std::move(composedFilter));
       c->setMatrix(ctm);
       drawFunc(c, &foregroundPaint);
@@ -455,7 +455,7 @@ void BaseRenderingContext2D::compositedDraw(
     c->restoreToCount(saveCount);
   }
 
-  compositePaint.setImageFilter(filter);
+  compositePaint.setImageFilter(std::move(filter));
   c->saveLayer(nullptr, &compositePaint);
   SkPaint foregroundPaint =
       *state().getPaint(paintType, DrawForegroundOnly, imageType);

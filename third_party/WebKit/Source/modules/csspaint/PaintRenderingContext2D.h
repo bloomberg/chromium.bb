@@ -63,7 +63,7 @@ class MODULES_EXPORT PaintRenderingContext2D
   // host to determine 'em' units etc in filters. At the moment just pretend
   // that we don't have a filter set.
   bool stateHasFilter() final { return false; }
-  SkImageFilter* stateGetFilter() final { return nullptr; }
+  sk_sp<SkImageFilter> stateGetFilter() final { return nullptr; }
   void snapshotStateForFilter() final {}
 
   void validateStateStack() const final;

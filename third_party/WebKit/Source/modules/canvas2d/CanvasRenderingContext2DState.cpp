@@ -279,7 +279,7 @@ static void updateFilterReferences(HTMLCanvasElement* canvasElement,
   context->addFilterReferences(filters, canvasElement->document());
 }
 
-SkImageFilter* CanvasRenderingContext2DState::getFilter(
+sk_sp<SkImageFilter> CanvasRenderingContext2DState::getFilter(
     Element* styleResolutionHost,
     IntSize canvasSize,
     CanvasRenderingContext2D* context) const {
@@ -330,7 +330,7 @@ SkImageFilter* CanvasRenderingContext2DState::getFilter(
     }
   }
 
-  return m_resolvedFilter.get();
+  return m_resolvedFilter;
 }
 
 bool CanvasRenderingContext2DState::hasFilter(
@@ -381,7 +381,8 @@ SkDrawLooper* CanvasRenderingContext2DState::shadowAndForegroundDrawLooper()
   return m_shadowAndForegroundDrawLooper.get();
 }
 
-SkImageFilter* CanvasRenderingContext2DState::shadowOnlyImageFilter() const {
+sk_sp<SkImageFilter> CanvasRenderingContext2DState::shadowOnlyImageFilter()
+    const {
   if (!m_shadowOnlyImageFilter) {
     double sigma = skBlurRadiusToSigma(m_shadowBlur);
     m_shadowOnlyImageFilter = SkDropShadowImageFilter::Make(
@@ -389,11 +390,11 @@ SkImageFilter* CanvasRenderingContext2DState::shadowOnlyImageFilter() const {
         m_shadowColor, SkDropShadowImageFilter::kDrawShadowOnly_ShadowMode,
         nullptr);
   }
-  return m_shadowOnlyImageFilter.get();
+  return m_shadowOnlyImageFilter;
 }
 
-SkImageFilter* CanvasRenderingContext2DState::shadowAndForegroundImageFilter()
-    const {
+sk_sp<SkImageFilter>
+CanvasRenderingContext2DState::shadowAndForegroundImageFilter() const {
   if (!m_shadowAndForegroundImageFilter) {
     double sigma = skBlurRadiusToSigma(m_shadowBlur);
     m_shadowAndForegroundImageFilter = SkDropShadowImageFilter::Make(
@@ -401,7 +402,7 @@ SkImageFilter* CanvasRenderingContext2DState::shadowAndForegroundImageFilter()
         m_shadowColor,
         SkDropShadowImageFilter::kDrawShadowAndForeground_ShadowMode, nullptr);
   }
-  return m_shadowAndForegroundImageFilter.get();
+  return m_shadowAndForegroundImageFilter;
 }
 
 void CanvasRenderingContext2DState::shadowParameterChanged() {

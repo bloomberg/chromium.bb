@@ -149,7 +149,7 @@ sk_sp<SkColorSpace> ColorSpace::ToSkColorSpace() const {
   // result are notified of this incomplete functionality.
   std::vector<char> icc_data = gfx::ICCProfile::FromColorSpace(*this).GetData();
   sk_sp<SkColorSpace> result =
-      SkColorSpace::NewICC(icc_data.data(), icc_data.size());
+      SkColorSpace::MakeICC(icc_data.data(), icc_data.size());
   DCHECK(result);
   return result;
 }

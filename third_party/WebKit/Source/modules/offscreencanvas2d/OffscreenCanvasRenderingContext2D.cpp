@@ -224,7 +224,7 @@ bool OffscreenCanvasRenderingContext2D::stateHasFilter() {
   return false;
 }
 
-SkImageFilter* OffscreenCanvasRenderingContext2D::stateGetFilter() {
+sk_sp<SkImageFilter> OffscreenCanvasRenderingContext2D::stateGetFilter() {
   // TODO: make getFilter accept nullptr
   // return state().getFilter(nullptr, nullptr, IntSize(width(), height()),
   // this);

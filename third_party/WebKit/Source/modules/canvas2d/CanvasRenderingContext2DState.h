@@ -92,9 +92,9 @@ class CanvasRenderingContext2DState final
     m_unparsedFilter = filterString;
   }
   const String& unparsedFilter() const { return m_unparsedFilter; }
-  SkImageFilter* getFilter(Element*,
-                           IntSize canvasSize,
-                           CanvasRenderingContext2D*) const;
+  sk_sp<SkImageFilter> getFilter(Element*,
+                                 IntSize canvasSize,
+                                 CanvasRenderingContext2D*) const;
   bool hasFilter(Element*, IntSize canvasSize, CanvasRenderingContext2D*) const;
   void clearResolvedFilter() const;
 
@@ -194,8 +194,8 @@ class CanvasRenderingContext2DState final
   SkDrawLooper* emptyDrawLooper() const;
   SkDrawLooper* shadowOnlyDrawLooper() const;
   SkDrawLooper* shadowAndForegroundDrawLooper() const;
-  SkImageFilter* shadowOnlyImageFilter() const;
-  SkImageFilter* shadowAndForegroundImageFilter() const;
+  sk_sp<SkImageFilter> shadowOnlyImageFilter() const;
+  sk_sp<SkImageFilter> shadowAndForegroundImageFilter() const;
 
   unsigned m_unrealizedSaveCount;
 

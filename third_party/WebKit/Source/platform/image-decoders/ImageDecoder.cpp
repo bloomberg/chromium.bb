@@ -352,7 +352,7 @@ void ImageDecoder::setTargetColorProfile(const WebVector<char>& profile) {
     return;
 
   gTargetColorSpace =
-      SkColorSpace::NewICC(profile.data(), profile.size()).release();
+      SkColorSpace::MakeICC(profile.data(), profile.size()).release();
 
   // UMA statistics.
   BitmapImageMetrics::countGamma(gTargetColorSpace);
@@ -368,15 +368,15 @@ sk_sp<SkColorSpace> ImageDecoder::colorSpace() const {
 
   if (m_embeddedColorSpace)
     return m_embeddedColorSpace;
-  return SkColorSpace::NewNamed(SkColorSpace::kSRGB_Named);
+  return SkColorSpace::MakeNamed(SkColorSpace::kSRGB_Named);
 }
 
 void ImageDecoder::setColorProfileAndComputeTransform(const char* iccData,
                                                       unsigned iccLength) {
-  sk_sp<SkColorSpace> colorSpace = SkColorSpace::NewICC(iccData, iccLength);
+  sk_sp<SkColorSpace> colorSpace = SkColorSpace::MakeICC(iccData, iccLength);
   if (!colorSpace)
     DLOG(ERROR) << "Failed to parse image ICC profile";
-  setColorSpaceAndComputeTransform(colorSpace);
+  setColorSpaceAndComputeTransform(std::move(colorSpace));
 }
 
 void ImageDecoder::setColorSpaceAndComputeTransform(
@@ -404,7 +404,7 @@ void ImageDecoder::setColorSpaceAndComputeTransform(
   // initialized.
   if (!gTargetColorSpace) {
     gTargetColorSpace =
-        SkColorSpace::NewNamed(SkColorSpace::kSRGB_Named).release();
+        SkColorSpace::MakeNamed(SkColorSpace::kSRGB_Named).release();
   }
 
   if (SkColorSpace::Equals(m_embeddedColorSpace.get(), gTargetColorSpace)) {

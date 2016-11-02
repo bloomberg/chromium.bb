@@ -176,7 +176,7 @@ class MODULES_EXPORT CanvasRenderingContext2D final
   void didDraw(const SkIRect& dirtyRect) final;
 
   bool stateHasFilter() final;
-  SkImageFilter* stateGetFilter() final;
+  sk_sp<SkImageFilter> stateGetFilter() final;
   void snapshotStateForFilter() final;
 
   void validateStateStack() const final;

@@ -379,7 +379,7 @@ bool CanvasRenderingContext2D::stateHasFilter() {
   return state().hasFilter(canvas(), canvas()->size(), this);
 }
 
-SkImageFilter* CanvasRenderingContext2D::stateGetFilter() {
+sk_sp<SkImageFilter> CanvasRenderingContext2D::stateGetFilter() {
   return state().getFilter(canvas(), canvas()->size(), this);
 }
 

@@ -1033,7 +1033,7 @@ void BaseRenderingContext2D::drawImageInternal(SkCanvas* c,
     ctm.mapRect(&bounds);
     SkPaint layerPaint;
     layerPaint.setBlendMode(paint->getBlendMode());
-    layerPaint.setImageFilter(paint->getImageFilter());
+    layerPaint.setImageFilter(sk_ref_sp(paint->getImageFilter()));
 
     c->saveLayer(&bounds, &layerPaint);
     c->concat(ctm);
