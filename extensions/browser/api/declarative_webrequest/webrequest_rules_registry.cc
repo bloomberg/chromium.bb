@@ -218,13 +218,6 @@ std::string WebRequestRulesRegistry::AddRulesImpl(
 
   ClearCacheOnNavigation();
 
-  if (browser_context_ && !registered_rules.empty()) {
-    content::BrowserThread::PostTask(
-        content::BrowserThread::UI, FROM_HERE,
-        base::Bind(&extension_web_request_api_helpers::NotifyWebRequestAPIUsed,
-                   browser_context_, extension->id()));
-  }
-
   return std::string();
 }
 

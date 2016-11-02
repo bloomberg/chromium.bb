@@ -38,15 +38,6 @@ void RuntimeData::SetBeingUpgraded(const std::string& extension_id,
   SetFlag(extension_id, BEING_UPGRADED, value);
 }
 
-bool RuntimeData::HasUsedWebRequest(const std::string& extension_id) const {
-  return HasFlag(extension_id, HAS_USED_WEBREQUEST);
-}
-
-void RuntimeData::SetHasUsedWebRequest(const std::string& extension_id,
-                                       bool value) {
-  SetFlag(extension_id, HAS_USED_WEBREQUEST, value);
-}
-
 bool RuntimeData::HasExtensionForTesting(
     const std::string& extension_id) const {
   return extension_flags_.find(extension_id) != extension_flags_.end();

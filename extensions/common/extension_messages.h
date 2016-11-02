@@ -539,10 +539,6 @@ IPC_MESSAGE_CONTROL3(ExtensionMsg_ClearTabSpecificPermissions,
 IPC_MESSAGE_ROUTED1(ExtensionMsg_NotifyRenderViewType,
                     extensions::ViewType /* view_type */)
 
-// Deliver a message sent with ExtensionHostMsg_PostMessage.
-IPC_MESSAGE_CONTROL1(ExtensionMsg_UsingWebRequestAPI,
-                     bool /* webrequest_used */)
-
 // The browser's response to the ExtensionMsg_WakeEventPage IPC.
 IPC_MESSAGE_CONTROL2(ExtensionMsg_WakeEventPageResponse,
                      int /* request_id */,

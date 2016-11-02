@@ -564,7 +564,6 @@ void ChromeContentBrowserClientExtensionsPart::RenderProcessWillLaunch(
     host->AddFilter(new ExtensionServiceWorkerMessageFilter(
         id, profile, host->GetStoragePartition()->GetServiceWorkerContext()));
   }
-  extension_web_request_api_helpers::SendExtensionWebRequestStatusToHost(host);
 }
 
 void ChromeContentBrowserClientExtensionsPart::SiteInstanceGotProcess(

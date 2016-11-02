@@ -2148,12 +2148,6 @@ WebRequestInternalAddEventListenerFunction::Run() {
 
   helpers::ClearCacheOnNavigation();
 
-  if (!extension_id_safe().empty()) {
-    BrowserThread::PostTask(BrowserThread::UI, FROM_HERE,
-                            base::Bind(&helpers::NotifyWebRequestAPIUsed,
-                                       profile_id(), extension_id_safe()));
-  }
-
   return RespondNow(NoArguments());
 }
 

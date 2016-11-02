@@ -149,8 +149,6 @@ class Dispatcher : public content::RenderThreadObserver,
                                      RequestSender* request_sender,
                                      V8SchemaRegistry* v8_schema_registry);
 
-  bool WasWebRequestUsedBySomeExtensions() const { return webrequest_used_; }
-
  private:
   // The RendererPermissionsPolicyDelegateTest.CannotScriptWebstore test needs
   // to call the OnActivateExtension IPCs.
@@ -202,7 +200,7 @@ class Dispatcher : public content::RenderThreadObserver,
       const std::vector<std::string>& extension_ids,
       bool update_origin_whitelist,
       int tab_id);
-  void OnUsingWebRequestAPI(bool webrequest_used);
+
   void OnSetActivityLoggingEnabled(bool enabled);
 
   // UserScriptSetManager::Observer implementation.
@@ -309,9 +307,6 @@ class Dispatcher : public content::RenderThreadObserver,
   // the observer is destroyed before the UserScriptSet.
   ScopedObserver<UserScriptSetManager, UserScriptSetManager::Observer>
       user_script_set_manager_observer_;
-
-  // Status of webrequest usage.
-  bool webrequest_used_;
 
   // Whether or not extension activity is enabled.
   bool activity_logging_enabled_;

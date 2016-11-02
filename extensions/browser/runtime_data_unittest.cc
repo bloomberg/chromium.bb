@@ -74,19 +74,6 @@ TEST_F(RuntimeDataTest, IsBeingUpgraded) {
   EXPECT_FALSE(runtime_data_.IsBeingUpgraded(extension->id()));
 }
 
-TEST_F(RuntimeDataTest, HasUsedWebRequest) {
-  scoped_refptr<Extension> extension = test_util::CreateEmptyExtension();
-
-  // An extension has not used web request until the flag is set.
-  EXPECT_FALSE(runtime_data_.HasUsedWebRequest(extension->id()));
-
-  // The flag can be toggled.
-  runtime_data_.SetHasUsedWebRequest(extension->id(), true);
-  EXPECT_TRUE(runtime_data_.HasUsedWebRequest(extension->id()));
-  runtime_data_.SetHasUsedWebRequest(extension->id(), false);
-  EXPECT_FALSE(runtime_data_.HasUsedWebRequest(extension->id()));
-}
-
 // Unloading an extension erases any data that shouldn't explicitly be kept
 // across loads.
 TEST_F(RuntimeDataTest, OnExtensionUnloaded) {

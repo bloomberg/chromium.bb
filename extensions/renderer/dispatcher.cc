@@ -213,7 +213,6 @@ Dispatcher::Dispatcher(DispatcherDelegate* delegate)
       source_map_(&ResourceBundle::GetSharedInstance()),
       v8_schema_registry_(new V8SchemaRegistry),
       user_script_set_manager_observer_(this),
-      webrequest_used_(false),
       activity_logging_enabled_(false) {
   const base::CommandLine& command_line =
       *(base::CommandLine::ForCurrentProcess());
@@ -938,7 +937,6 @@ bool Dispatcher::OnControlMessageReceived(const IPC::Message& message) {
                       OnUpdateTabSpecificPermissions)
   IPC_MESSAGE_HANDLER(ExtensionMsg_ClearTabSpecificPermissions,
                       OnClearTabSpecificPermissions)
-  IPC_MESSAGE_HANDLER(ExtensionMsg_UsingWebRequestAPI, OnUsingWebRequestAPI)
   IPC_MESSAGE_HANDLER(ExtensionMsg_SetActivityLoggingEnabled,
                       OnSetActivityLoggingEnabled)
   IPC_MESSAGE_FORWARD(ExtensionMsg_WatchPages,
@@ -1254,10 +1252,6 @@ void Dispatcher::OnClearTabSpecificPermissions(
       }
     }
   }
-}
-
-void Dispatcher::OnUsingWebRequestAPI(bool webrequest_used) {
-  webrequest_used_ = webrequest_used;
 }
 
 void Dispatcher::OnSetActivityLoggingEnabled(bool enabled) {

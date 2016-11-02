@@ -1232,50 +1232,6 @@ void ClearCacheOnNavigation() {
   }
 }
 
-void NotifyWebRequestAPIUsed(void* browser_context_id,
-                             const std::string& extension_id) {
-  DCHECK(!extension_id.empty());
-  DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
-  content::BrowserContext* browser_context =
-      reinterpret_cast<content::BrowserContext*>(browser_context_id);
-  if (!extensions::ExtensionsBrowserClient::Get()->IsValidContext(
-      browser_context))
-    return;
-
-  extensions::RuntimeData* runtime_data =
-      extensions::ExtensionSystem::Get(browser_context)->runtime_data();
-  if (runtime_data->HasUsedWebRequest(extension_id))
-    return;
-  runtime_data->SetHasUsedWebRequest(extension_id, true);
-
-  for (content::RenderProcessHost::iterator it =
-           content::RenderProcessHost::AllHostsIterator();
-       !it.IsAtEnd(); it.Advance()) {
-    content::RenderProcessHost* host = it.GetCurrentValue();
-    if (host->GetBrowserContext() == browser_context)
-      SendExtensionWebRequestStatusToHost(host);
-  }
-}
-
-void SendExtensionWebRequestStatusToHost(content::RenderProcessHost* host) {
-  content::BrowserContext* browser_context = host->GetBrowserContext();
-  if (!browser_context)
-    return;
-
-  bool webrequest_used = false;
-  const extensions::ExtensionSet& extensions =
-      extensions::ExtensionRegistry::Get(browser_context)->enabled_extensions();
-  extensions::RuntimeData* runtime_data =
-      extensions::ExtensionSystem::Get(browser_context)->runtime_data();
-  for (extensions::ExtensionSet::const_iterator it = extensions.begin();
-       !webrequest_used && it != extensions.end();
-       ++it) {
-    webrequest_used |= runtime_data->HasUsedWebRequest((*it)->id());
-  }
-
-  host->Send(new ExtensionMsg_UsingWebRequestAPI(webrequest_used));
-}
-
 // Converts the |name|, |value| pair of a http header to a HttpHeaders
 // dictionary.
 std::unique_ptr<base::DictionaryValue> CreateHeaderDictionary(

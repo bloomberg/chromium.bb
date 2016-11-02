@@ -41,11 +41,6 @@ class RuntimeData : public ExtensionRegistryObserver {
   bool IsBeingUpgraded(const std::string& extension_id) const;
   void SetBeingUpgraded(const std::string& extension_id, bool value);
 
-  // Getter and setter for the flag that specifies if the extension has used
-  // the webrequest API.
-  bool HasUsedWebRequest(const std::string& extension_id) const;
-  void SetHasUsedWebRequest(const std::string& extension_id, bool value);
-
   // Returns true if the extension is being tracked. Used only for testing.
   bool HasExtensionForTesting(const std::string& extension_id) const;
 
@@ -65,8 +60,6 @@ class RuntimeData : public ExtensionRegistryObserver {
     BACKGROUND_PAGE_READY = 1 << 0,
     // Set while the extension is being upgraded.
     BEING_UPGRADED        = 1 << 1,
-    // Set if the extension has used the webRequest API.
-    HAS_USED_WEBREQUEST   = 1 << 2,
   };
 
   // The mask of any data that should persist across the extension being
