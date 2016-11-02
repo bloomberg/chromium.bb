@@ -641,8 +641,6 @@ void ContentViewCoreImpl::ShowPastePopup(int x_dip, int y_dip) {
   if (!view)
     return;
 
-  view->OnShowingPastePopup(gfx::PointF(x_dip, y_dip));
-
   JNIEnv* env = AttachCurrentThread();
   ScopedJavaLocalRef<jobject> obj = java_ref_.get(env);
   if (obj.is_null())

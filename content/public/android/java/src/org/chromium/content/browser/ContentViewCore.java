@@ -2523,7 +2523,7 @@ public class ContentViewCore implements AccessibilityStateChangeListener, Displa
             return;
         }
 
-        if (!mHasInsertion || (!supportsFloatingActionMode() && !canPaste())) return;
+        if (!supportsFloatingActionMode() && !canPaste()) return;
 
         PastePopupMenu pastePopupMenu = getPastePopup();
         if (pastePopupMenu == null) return;
