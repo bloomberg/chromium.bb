@@ -140,7 +140,7 @@ class CloudPolicyClientTest : public testing::Test {
     em::RemoteCommandResult* command_result =
         remote_command_request_.mutable_remote_command_request()
             ->add_command_results();
-    command_result->set_unique_id(kLastCommandId);
+    command_result->set_command_id(kLastCommandId);
     command_result->set_result(
         em::RemoteCommandResult_ResultType_RESULT_SUCCESS);
     command_result->set_payload(kResultPayload);
@@ -151,7 +151,7 @@ class CloudPolicyClientTest : public testing::Test {
             ->add_commands();
     command->set_age_of_command(kAgeOfCommand);
     command->set_payload(kPayload);
-    command->set_unique_id(kLastCommandId + 1);
+    command->set_command_id(kLastCommandId + 1);
     command->set_type(em::RemoteCommand_Type_COMMAND_ECHO_TEST);
 
     attribute_update_permission_request_.

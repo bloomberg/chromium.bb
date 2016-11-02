@@ -32,11 +32,11 @@ bool RemoteCommandJob::Init(base::TimeTicks now,
 
   status_ = INVALID;
 
-  if (!command.has_type() || !command.has_unique_id())
+  if (!command.has_type() || !command.has_command_id())
     return false;
   DCHECK_EQ(command.type(), GetType());
 
-  unique_id_ = command.unique_id();
+  unique_id_ = command.command_id();
 
   if (command.has_age_of_command()) {
     // Use age of command provided by server to estimate the command issued time

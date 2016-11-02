@@ -221,7 +221,7 @@ void PolicyBuilder::Build() {
     policy_.set_new_public_key(raw_new_public_signing_key.data(),
                                raw_new_public_signing_key.size());
 
-    policy_.set_new_public_key_verification_signature(
+    policy_.set_new_public_key_verification_signature_deprecated(
         raw_new_signing_key_signature_);
 
     // The new public key must be signed by the old key.

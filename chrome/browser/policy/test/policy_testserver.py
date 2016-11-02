@@ -821,7 +821,8 @@ class PolicyRequestHandler(BaseHTTPServer.BaseHTTPRequestHandler):
       # Don't do key rotations for these messages.
       fetch_response.ClearField('new_public_key')
       fetch_response.ClearField('new_public_key_signature')
-      fetch_response.ClearField('new_public_key_verification_signature')
+      fetch_response.ClearField(
+          'new_public_key_verification_signature_deprecated')
 
   def ProcessCloudPolicy(self, msg, token_info, response, username=None):
     """Handles a cloud policy request. (New protocol for policy requests.)
@@ -953,7 +954,8 @@ class PolicyRequestHandler(BaseHTTPServer.BaseHTTPRequestHandler):
           if verification_sig:
             assert len(verification_sig) == 256, \
                 'bad signature size: %d' % len(verification_sig)
-            response.new_public_key_verification_signature = verification_sig
+            response.new_public_key_verification_signature_deprecated = (
+                verification_sig)
 
         if req_key:
           response.new_public_key_signature = (
@@ -1407,7 +1409,7 @@ class PolicyServerRunner(testserver_base.TestServerRunner):
                                   'in the same location: <filename>.sig and if '
                                   'present will add the signature to the '
                                   'policy blob as appropriate via the '
-                                  'new_public_key_verification_signature '
+                             'new_public_key_verification_signature_deprecated '
                                   'field.')
     self.option_parser.add_option('--log-level', dest='log_level',
                                   default='WARN',

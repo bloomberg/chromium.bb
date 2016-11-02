@@ -62,7 +62,7 @@ void TestingRemoteCommandsServer::IssueCommand(
 
   em::RemoteCommand command;
   command.set_type(type);
-  command.set_unique_id(++last_generated_unique_id_);
+  command.set_command_id(++last_generated_unique_id_);
   if (!payload.empty())
     command.set_payload(payload);
 
@@ -81,7 +81,7 @@ TestingRemoteCommandsServer::FetchCommands(
   base::AutoLock auto_lock(lock_);
 
   for (const auto& job_result : previous_job_results) {
-    EXPECT_TRUE(job_result.has_unique_id());
+    EXPECT_TRUE(job_result.has_command_id());
     EXPECT_TRUE(job_result.has_result());
 
     bool found_command = false;
@@ -89,11 +89,11 @@ TestingRemoteCommandsServer::FetchCommands(
 
     if (last_command_id) {
       // This relies on us generating commands with increasing IDs.
-      EXPECT_GE(*last_command_id, job_result.unique_id());
+      EXPECT_GE(*last_command_id, job_result.command_id());
     }
 
     for (auto it = commands_.begin(); it != commands_.end(); ++it) {
-      if (it->command_proto.unique_id() == job_result.unique_id()) {
+      if (it->command_proto.command_id() == job_result.command_id()) {
         reported_callback = it->reported_callback;
         commands_.erase(it);
         found_command = true;
@@ -118,7 +118,7 @@ TestingRemoteCommandsServer::FetchCommands(
   RemoteCommands fetched_commands;
   for (const auto& command_with_callback : commands_) {
     if (!last_command_id ||
-        command_with_callback.command_proto.unique_id() > *last_command_id) {
+        command_with_callback.command_proto.command_id() > *last_command_id) {
       fetched_commands.push_back(command_with_callback.command_proto);
       // Simulate the age of commands calculation on the server side.
       fetched_commands.back().set_age_of_command(

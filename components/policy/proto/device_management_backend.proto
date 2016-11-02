@@ -455,12 +455,13 @@ message PolicyFetchResponse {
   optional bytes new_public_key = 5;
   optional bytes new_public_key_signature = 6;
 
-  // DEPRECATED ON THE SERVER: Exists only to support older clients.  This
-  // signature is similar to new_public_key_verification_data_signature, but is
-  // computed over PublicKeyVerificationData proto with version field unset.  In
-  // other words, we set the new public key value, and domain value and then
-  // produce this signature.
-  optional bytes new_public_key_verification_signature = 7;
+  // DEPRECATED: Exists only to support older clients. This signature is similar
+  // to new_public_key_verification_data_signature, but is computed over
+  // PublicKeyVerificationData proto with version field unset.
+  // In other words, DMServer sets the new public key value, and domain value
+  // and then produces this signature.
+  optional bytes new_public_key_verification_signature_deprecated = 7
+      [deprecated = true];
 
   // This is a serialized |PublicKeyVerificationData| protobuf
   // (defined above). See comments for |new_public_key_verification_signature|
@@ -499,9 +500,9 @@ message PolicyFetchResponse {
   optional bytes new_public_key_verification_data_signature = 9;
 }
 
-// DEPRECATED ON THE SERVER: Protobuf used to generate the deprecated
+// DEPRECATED: Protobuf used to generate the deprecated
 // new_public_key_verification_signature field.
-message PolicyPublicKeyAndDomain {
+message DEPRECATEDPolicyPublicKeyAndDomain {
   // The public key to sign (taken from the |new_public_key| field in
   // PolicyFetchResponse).
   optional bytes new_public_key = 1;
@@ -555,7 +556,7 @@ message InstallableLaunch {
   optional int64 total_count = 4;
 }
 
-// Used to report the device location.
+// OBSOLETE: Used to report the device location.
 message OBSOLETE_DeviceLocation {
   enum ErrorCode {
     ERROR_CODE_NONE                 = 0;
@@ -705,7 +706,7 @@ message DeviceStatusReportRequest {
   // If the mode is unknown, this field should not be set.
   optional string boot_mode = 3;
 
-  // Device active times collection since last report rpc call.
+  // OBSOLETE: Device active times collection since last report rpc call.
   // No longer used -- use active_period instead.
   repeated TimePeriod OBSOLETE_active_time = 4 [deprecated = true];
 
@@ -716,8 +717,9 @@ message DeviceStatusReportRequest {
   // A list of periods when the device was active, aggregated by day.
   repeated ActiveTimePeriod active_period = 6;
 
-  // The device location.
-  optional OBSOLETE_DeviceLocation OBSOLETE_device_location = 7 [deprecated = true];
+  // OBSOLETE: The device location.
+  optional OBSOLETE_DeviceLocation OBSOLETE_device_location = 7
+    [deprecated = true];
 
   // List of network interfaces.
   repeated NetworkInterface network_interface = 8;
@@ -734,7 +736,7 @@ message DeviceStatusReportRequest {
   // Samples of CPU utilization (0-100), sampled once every 120 seconds.
   repeated int32 cpu_utilization_pct = 12;
 
-  // Free RAM (unreliable due to GC).
+  // OBSOLETE: Free RAM (unreliable due to GC).
   optional int64 OBSOLETE_system_ram_free = 13 [deprecated = true];
 
   // Total RAM on the device.
@@ -805,11 +807,11 @@ message AndroidStatus {
 
 // Report current active session (a user on one device) level status.
 message SessionStatusReportRequest {
-  // Installed apps for this user on this device.
+  // OBSOLETE: Installed apps for this user on this device.
   // No longer used -- use installed_apps instead.
   repeated string OBSOLETE_installed_app_id = 1 [deprecated = true];
 
-  // Installed extensions for this user on this device.
+  // OBSOLETE: Installed extensions for this user on this device.
   // No longer used -- use installed_extensions instead.
   repeated string OBSOLETE_installed_extension_id = 2 [deprecated = true];
 
@@ -1045,14 +1047,17 @@ message RemoteCommand {
   // The command type.
   optional Type type = 1;
 
-  // An opaque unique identifier for the command.
-  optional int64 unique_id = 2;
+  // An opaque unique identifier for the command. The client processes
+  // the commands in the order of the command list it receives.
+  optional int64 command_id = 2;
 
   // The age of the command (in milliseconds) when it is sent from server to
   // client, defined as current_server_time - command_generated_time.
   optional int64 age_of_command = 3;
 
   // Extra parameters for this command, expected to be a JSON string.
+  // If the command type is DEVICE_SCREENSHOT, the format of the JSON payload
+  // is: {"fileUploadUrl" : url_string}
   optional string payload = 4;
 }
 
@@ -1070,7 +1075,7 @@ message RemoteCommandResult {
 
   // The opaque unique identifier of the command. This value is copied from the
   // RemoteCommand protobuf that contained the command.
-  optional int64 unique_id = 2;
+  optional int64 command_id = 2;
 
   // The time at which the command was executed, if the the result is
   // RESULT_SUCCESS.

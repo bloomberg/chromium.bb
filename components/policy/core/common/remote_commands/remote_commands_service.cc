@@ -83,18 +83,18 @@ void RemoteCommandsService::SetClockForTesting(
 
 void RemoteCommandsService::EnqueueCommand(
     const enterprise_management::RemoteCommand& command) {
-  if (!command.has_type() || !command.has_unique_id()) {
+  if (!command.has_type() || !command.has_command_id()) {
     SYSLOG(ERROR) << "Invalid remote command from server.";
     return;
   }
 
   // If the command is already fetched, ignore it.
   if (std::find(fetched_command_ids_.begin(), fetched_command_ids_.end(),
-                command.unique_id()) != fetched_command_ids_.end()) {
+                command.command_id()) != fetched_command_ids_.end()) {
     return;
   }
 
-  fetched_command_ids_.push_back(command.unique_id());
+  fetched_command_ids_.push_back(command.command_id());
 
   std::unique_ptr<RemoteCommandJob> job =
       factory_->BuildJobForType(command.type());
@@ -104,7 +104,7 @@ void RemoteCommandsService::EnqueueCommand(
     em::RemoteCommandResult ignored_result;
     ignored_result.set_result(
         em::RemoteCommandResult_ResultType_RESULT_IGNORED);
-    ignored_result.set_unique_id(command.unique_id());
+    ignored_result.set_command_id(command.command_id());
     unsent_results_.push_back(ignored_result);
     return;
   }
@@ -124,7 +124,7 @@ void RemoteCommandsService::OnJobFinished(RemoteCommandJob* command) {
   // See http://crbug.com/466572.
 
   em::RemoteCommandResult result;
-  result.set_unique_id(command->unique_id());
+  result.set_command_id(command->unique_id());
   result.set_timestamp((command->execution_started_time() -
                         base::TimeTicks::UnixEpoch()).InMilliseconds());
 

@@ -369,7 +369,8 @@ TEST_F(CloudPolicyValidatorTest, ErrorInvalidPublicKeySignature) {
 // (http://crbug.com/328038).
 TEST_F(CloudPolicyValidatorTest, ErrorInvalidPublicKeyVerificationSignature) {
   policy_.Build();
-  policy_.policy().set_new_public_key_verification_signature("invalid");
+  policy_.policy().set_new_public_key_verification_signature_deprecated(
+      "invalid");
   ValidatePolicy(CheckStatus(
       CloudPolicyValidatorBase::VALIDATION_BAD_KEY_VERIFICATION_SIGNATURE),
                  policy_.GetCopy());

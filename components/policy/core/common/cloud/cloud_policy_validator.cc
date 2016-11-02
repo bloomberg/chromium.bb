@@ -262,8 +262,8 @@ void CloudPolicyValidatorBase::RunChecks() {
   }
 }
 
-// Verifies the |new_public_key_verification_signature| for the |new_public_key|
-// in the policy blob.
+// Verifies the |new_public_key_verification_signature_deprecated| for the
+// |new_public_key| in the policy blob.
 bool CloudPolicyValidatorBase::CheckNewPublicKeyVerificationSignature() {
   // If there's no local verification key, then just return true (no
   // validation possible).
@@ -274,7 +274,7 @@ bool CloudPolicyValidatorBase::CheckNewPublicKeyVerificationSignature() {
     return true;
   }
 
-  if (!policy_->has_new_public_key_verification_signature()) {
+  if (!policy_->has_new_public_key_verification_signature_deprecated()) {
     // Policy does not contain a verification signature, so log an error.
     LOG(ERROR) << "Policy is missing public_key_verification_signature";
     UMA_HISTOGRAM_ENUMERATION(kMetricPolicyKeyVerification,
@@ -286,7 +286,7 @@ bool CloudPolicyValidatorBase::CheckNewPublicKeyVerificationSignature() {
   if (!CheckVerificationKeySignature(
           policy_->new_public_key(),
           verification_key_,
-          policy_->new_public_key_verification_signature())) {
+          policy_->new_public_key_verification_signature_deprecated())) {
     LOG(ERROR) << "Signature verification failed";
     UMA_HISTOGRAM_ENUMERATION(kMetricPolicyKeyVerification,
                               METRIC_POLICY_KEY_VERIFICATION_FAILED,
@@ -306,7 +306,7 @@ bool CloudPolicyValidatorBase::CheckVerificationKeySignature(
     const std::string& verification_key,
     const std::string& signature) {
   DCHECK(!verification_key.empty());
-  em::PolicyPublicKeyAndDomain signed_data;
+  em::DEPRECATEDPolicyPublicKeyAndDomain signed_data;
   signed_data.set_new_public_key(key);
 
   // If no owning_domain_ supplied, try extracting the domain from the policy

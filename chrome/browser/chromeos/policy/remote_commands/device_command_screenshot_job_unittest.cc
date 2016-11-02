@@ -49,7 +49,7 @@ em::RemoteCommand GenerateScreenshotCommandProto(
   em::RemoteCommand command_proto;
   command_proto.set_type(
       enterprise_management::RemoteCommand_Type_DEVICE_SCREENSHOT);
-  command_proto.set_unique_id(unique_id);
+  command_proto.set_command_id(unique_id);
   command_proto.set_age_of_command(age_of_command.InMilliseconds());
   std::string payload;
   base::DictionaryValue root_dict;

@@ -154,7 +154,7 @@ void StorePolicyToDiskOnBackgroundThread(
     em::PolicySigningKey key_info;
     key_info.set_signing_key(policy.new_public_key());
     key_info.set_signing_key_signature(
-        policy.new_public_key_verification_signature());
+        policy.new_public_key_verification_signature_deprecated());
     key_info.set_verification_key(verification_key);
     std::string key_data;
     if (!key_info.SerializeToString(&key_data)) {

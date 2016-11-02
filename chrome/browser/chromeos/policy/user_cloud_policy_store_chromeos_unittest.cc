@@ -251,7 +251,8 @@ TEST_F(UserCloudPolicyStoreChromeOSTest, InitialStoreValidationFail) {
   // Make the policy blob contain a new public key.
   policy_.SetDefaultSigningKey();
   policy_.Build();
-  *policy_.policy().mutable_new_public_key_verification_signature() = "garbage";
+  *policy_.policy().mutable_new_public_key_verification_signature_deprecated() =
+      "garbage";
 
   EXPECT_CALL(session_manager_client_,
               StorePolicyForUser(cryptohome_id_, policy_.GetBlob(), _))
@@ -267,7 +268,7 @@ TEST_F(UserCloudPolicyStoreChromeOSTest, InitialStoreMissingSignatureFailure) {
   // Make the policy blob contain a new public key.
   policy_.SetDefaultSigningKey();
   policy_.Build();
-  policy_.policy().clear_new_public_key_verification_signature();
+  policy_.policy().clear_new_public_key_verification_signature_deprecated();
 
   EXPECT_CALL(session_manager_client_,
               StorePolicyForUser(cryptohome_id_, policy_.GetBlob(), _))
@@ -297,7 +298,7 @@ TEST_F(UserCloudPolicyStoreChromeOSTest,
   // Make the policy blob contain a new public key.
   policy_.SetDefaultNewSigningKey();
   policy_.Build();
-  policy_.policy().clear_new_public_key_verification_signature();
+  policy_.policy().clear_new_public_key_verification_signature_deprecated();
 
   EXPECT_CALL(session_manager_client_,
               StorePolicyForUser(cryptohome_id_, policy_.GetBlob(), _))
@@ -311,7 +312,8 @@ TEST_F(UserCloudPolicyStoreChromeOSTest, StoreWithRotationValidationError) {
   // Make the policy blob contain a new public key.
   policy_.SetDefaultNewSigningKey();
   policy_.Build();
-  *policy_.policy().mutable_new_public_key_verification_signature() = "garbage";
+  *policy_.policy().mutable_new_public_key_verification_signature_deprecated() =
+      "garbage";
 
   EXPECT_CALL(session_manager_client_,
               StorePolicyForUser(cryptohome_id_, policy_.GetBlob(), _))
