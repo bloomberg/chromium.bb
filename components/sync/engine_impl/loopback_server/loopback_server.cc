@@ -523,10 +523,6 @@ bool LoopbackServer::SaveStateToFile(const base::FilePath& filename) const {
   SerializeState(&proto);
 
   std::string serialized = proto.SerializeAsString();
-  if (!base::CreateDirectory(filename.DirName())) {
-    LOG(ERROR) << "Loopback sync could not create the storage directory.";
-    return false;
-  }
   int result = base::WriteFile(filename, serialized.data(), serialized.size());
   return result == static_cast<int>(serialized.size());
 }

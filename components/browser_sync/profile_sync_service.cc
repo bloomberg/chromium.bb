@@ -20,7 +20,6 @@
 #include "base/memory/ptr_util.h"
 #include "base/memory/ref_counted.h"
 #include "base/metrics/histogram.h"
-#include "base/path_service.h"
 #include "base/profiler/scoped_tracker.h"
 #include "base/single_thread_task_runner.h"
 #include "base/strings/stringprintf.h"
@@ -118,9 +117,6 @@ namespace browser_sync {
 typedef GoogleServiceAuthError AuthError;
 
 const char kSyncUnrecoverableErrorHistogram[] = "Sync.UnrecoverableErrors";
-
-const base::FilePath::StringType kLoopbackServerBackendFilename =
-    FILE_PATH_LITERAL("profile.pb");
 
 const net::BackoffEntry::Policy kRequestAccessTokenBackoffPolicy = {
     // Number of initial errors (in sequence) to ignore before applying
@@ -506,36 +502,6 @@ void ProfileSyncService::InitializeBackend(bool delete_stale_data) {
   if (delete_stale_data)
     ClearStaleErrors();
 
-  bool enable_local_sync_backend = false;
-  base::FilePath local_sync_backend_folder;
-#if defined(OS_WIN)
-  enable_local_sync_backend = base::CommandLine::ForCurrentProcess()->HasSwitch(
-      switches::kEnableLocalSyncBackend);
-  if (base::CommandLine::ForCurrentProcess()->HasSwitch(
-          switches::kLocalSyncBackendDir)) {
-    local_sync_backend_folder =
-        base::CommandLine::ForCurrentProcess()->GetSwitchValuePath(
-            switches::kLocalSyncBackendDir);
-  } else {
-    // TODO(pastarmovj): Add DIR_ROAMING_USER_DATA to PathService to simplify
-    // this code and move the logic in its right place. See crbug/657810.
-    CHECK(
-        base::PathService::Get(base::DIR_APP_DATA, &local_sync_backend_folder));
-    local_sync_backend_folder =
-        local_sync_backend_folder.Append(FILE_PATH_LITERAL("Chrome/User Data"));
-  }
-  // This code as it is now will assume the same profile order is present on all
-  // machines, which is not a given. It is to be defined if only the Default
-  // profile should get this treatment or all profile as is the case now. The
-  // solution for now will be to assume profiles are created in the same order
-  // on all machines and in the future decide if only the Default one should be
-  // considered roamed.
-  local_sync_backend_folder =
-      local_sync_backend_folder.Append(base_directory_.BaseName());
-  local_sync_backend_folder =
-      local_sync_backend_folder.Append(kLoopbackServerBackendFilename);
-#endif  // defined(OS_WIN)
-
   SyncBackendHost::HttpPostProviderFactoryGetter
       http_post_provider_factory_getter =
           base::Bind(&syncer::NetworkResources::GetHttpPostProviderFactory,
@@ -545,9 +511,9 @@ void ProfileSyncService::InitializeBackend(bool delete_stale_data) {
   backend_->Initialize(
       this, std::move(sync_thread_), db_thread_, file_thread_,
       GetJsEventHandler(), sync_service_url_, local_device_->GetSyncUserAgent(),
-      credentials, delete_stale_data, enable_local_sync_backend,
-      local_sync_backend_folder, std::unique_ptr<syncer::SyncManagerFactory>(
-                                     new syncer::SyncManagerFactory()),
+      credentials, delete_stale_data,
+      std::unique_ptr<syncer::SyncManagerFactory>(
+          new syncer::SyncManagerFactory()),
       MakeWeakHandle(sync_enabled_weak_factory_.GetWeakPtr()),
       base::Bind(syncer::ReportUnrecoverableError, channel_),
       http_post_provider_factory_getter, std::move(saved_nigori_state_));

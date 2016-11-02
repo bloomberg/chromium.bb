@@ -19,8 +19,7 @@ SyncManager::ChangeObserver::~ChangeObserver() {}
 SyncManager::Observer::~Observer() {}
 
 SyncManager::InitArgs::InitArgs()
-    : enable_local_sync_backend(false),
-      extensions_activity(nullptr),
+    : extensions_activity(nullptr),
       change_delegate(nullptr),
       encryptor(nullptr),
       cancelation_signal(nullptr) {}

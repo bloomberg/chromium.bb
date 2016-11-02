@@ -79,8 +79,6 @@ void SyncBackendHostImpl::Initialize(
     const std::string& sync_user_agent,
     const SyncCredentials& credentials,
     bool delete_sync_data_folder,
-    bool enable_local_sync_backend,
-    const base::FilePath& local_sync_backend_folder,
     std::unique_ptr<SyncManagerFactory> sync_manager_factory,
     const WeakHandle<UnrecoverableErrorHandler>& unrecoverable_error_handler,
     const base::Closure& report_unrecoverable_error_function,
@@ -121,7 +119,6 @@ void SyncBackendHostImpl::Initialize(
                            core_->GetRequestContextCancelationSignal()),
       credentials, invalidator_ ? invalidator_->GetInvalidatorClientId() : "",
       std::move(sync_manager_factory), delete_sync_data_folder,
-      enable_local_sync_backend, local_sync_backend_folder,
       sync_prefs_->GetEncryptionBootstrapToken(),
       sync_prefs_->GetKeystoreEncryptionBootstrapToken(),
       std::unique_ptr<EngineComponentsFactory>(
