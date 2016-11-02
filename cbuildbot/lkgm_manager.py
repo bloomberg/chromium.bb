@@ -119,7 +119,8 @@ class LKGMManager(manifest_version.BuildSpecsManager):
   def __init__(self, source_repo, manifest_repo, build_names, build_type,
                incr_type, force, branch, manifest=constants.DEFAULT_MANIFEST,
                dry_run=True, master=False,
-               lkgm_path_rel=constants.LKGM_MANIFEST, buildbucket_client=None):
+               lkgm_path_rel=constants.LKGM_MANIFEST, testjob=False,
+               buildbucket_client=None):
     """Initialize an LKGM Manager.
 
     Args:
@@ -136,13 +137,14 @@ class LKGMManager(manifest_version.BuildSpecsManager):
       dry_run: Whether we actually commit changes we make or not.
       master: Whether we are the master builder.
       lkgm_path_rel: Path to the LKGM symlink, relative to manifest dir.
+      testjob: Whether to use the test instance of the buildbucket server.
       buildbucket_client: Instance of buildbucket_lib.buildbucket_client.
     """
     super(LKGMManager, self).__init__(
         source_repo=source_repo, manifest_repo=manifest_repo,
         manifest=manifest, build_names=build_names, incr_type=incr_type,
         force=force, branch=branch, dry_run=dry_run, master=master,
-        buildbucket_client=buildbucket_client)
+        testjob=testjob, buildbucket_client=buildbucket_client)
 
     self.lkgm_path = os.path.join(self.manifest_dir, lkgm_path_rel)
     self.compare_versions_fn = _LKGMCandidateInfo.VersionCompare

@@ -251,10 +251,10 @@ class ManifestVersionedSyncStageTest(
     self.sync_stage = None
     self.PatchObject(manifest_version.BuildSpecsManager, 'SetInFlight')
 
-    repo = repository.RepoRepository(
+    self.repo = repository.RepoRepository(
         self.source_repo, self.tempdir, self.branch)
     self.manager = manifest_version.BuildSpecsManager(
-        repo, self.manifest_version_url, [self.build_name], self.incr_type,
+        self.repo, self.manifest_version_url, [self.build_name], self.incr_type,
         force=False, branch=self.branch, dry_run=True)
 
     self._Prepare()
@@ -287,6 +287,11 @@ class ManifestVersionedSyncStageTest(
     self.PatchObject(repository.RepoRepository, 'Sync', autospec=True)
 
     self.sync_stage.Run()
+
+  def testInitialize(self):
+    self.PatchObject(sync_stages.SyncStage, '_InitializeRepo')
+    self.sync_stage.repo = self.repo
+    self.sync_stage.Initialize()
 
 
 class MockPatch(mock.MagicMock):
@@ -1410,10 +1415,10 @@ class MasterSlaveLKGMSyncTest(generic_stages_unittest.StageTestCase):
     self.next_version = 'next_version'
     self.sync_stage = None
 
-    repo = repository.RepoRepository(
+    self.repo = repository.RepoRepository(
         self.source_repo, self.tempdir, self.branch)
     self.manager = lkgm_manager.LKGMManager(
-        source_repo=repo, manifest_repo=self.manifest_version_url,
+        source_repo=self.repo, manifest_repo=self.manifest_version_url,
         build_names=[self.build_name],
         build_type=constants.CHROME_PFQ_TYPE,
         incr_type=self.incr_type,
@@ -1465,3 +1470,7 @@ class MasterSlaveLKGMSyncTest(generic_stages_unittest.StageTestCase):
     v = self.sync_stage.GetLastChromeOSVersion()
     self.assertEqual(v.milestone, '43')
     self.assertEqual(v.platform, '7141.0.0-rc1')
+
+  def testGetInitializedManager(self):
+    self.sync_stage.repo = self.repo
+    self.sync_stage._GetInitializedManager(True)

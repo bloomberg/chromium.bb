@@ -699,6 +699,7 @@ class ManifestVersionedSyncStage(SyncStage):
         branch=self._run.manifest_branch,
         dry_run=dry_run,
         master=self._run.config.master,
+        testjob=self._run.options.test_tryjob,
         buildbucket_client=self.buildbucket_client))
 
   def _SetAndroidVersionIfApplicable(self, manifest):
@@ -928,6 +929,7 @@ class MasterSlaveLKGMSyncStage(ManifestVersionedSyncStage):
         branch=self._run.manifest_branch,
         dry_run=self._run.options.debug,
         master=self._run.config.master,
+        testjob=self._run.options.test_tryjob,
         buildbucket_client=self.buildbucket_client)
 
   def Initialize(self):
