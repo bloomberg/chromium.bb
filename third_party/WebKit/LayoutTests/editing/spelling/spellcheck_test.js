@@ -174,11 +174,11 @@ class MarkerSerializer {
     assert_not_equals(
         shadowRoot, undefined,
         'Internal error: text form control element not having shadow tree as ' +
-        'inner editor.');
+        'internal implementation.');
     /** @type {!HTMLDivElement} */
-    const innerEditor = shadowRoot.firstChild;
+    const innerEditor = shadowRoot.getElementById('inner-editor');
     assert_equals(innerEditor.tagName, 'DIV',
-                  'Internal error: inner editor is not DIV');
+                  'Internal error: DIV#inner-editor not found in shadow tree.');
     innerEditor.childNodes.forEach(child => {
       assert_true(isCharacterData(child),
                   'Internal error: inner editor having child node that is ' +
