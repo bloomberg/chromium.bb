@@ -36,7 +36,7 @@ class SecurityKeyIpcServerImpl : public SecurityKeyIpcServer,
  public:
   SecurityKeyIpcServerImpl(
       int connection_id,
-      uint32_t peer_session_id,
+      ClientSessionDetails* client_session_details,
       base::TimeDelta initial_connect_timeout,
       const SecurityKeyAuthHandler::SendMessageCallback& message_callback,
       const base::Closure& done_callback);
@@ -59,8 +59,8 @@ class SecurityKeyIpcServerImpl : public SecurityKeyIpcServer,
   // The value assigned to identify the current IPC channel.
   int connection_id_;
 
-  // The expected session id of the process connecting to the IPC channel.
-  uint32_t peer_session_id_;
+  // Interface which provides details about the client session.
+  ClientSessionDetails* client_session_details_ = nullptr;
 
   // Tracks whether the connection is in the process of being closed.
   bool connection_close_pending_ = false;

@@ -166,19 +166,21 @@ void IpcDesktopEnvironmentFactory::SetScreenResolution(
 
 void IpcDesktopEnvironmentFactory::OnDesktopSessionAgentAttached(
     int terminal_id,
+    int session_id,
     const IPC::ChannelHandle& desktop_pipe) {
   if (!caller_task_runner_->BelongsToCurrentThread()) {
     caller_task_runner_->PostTask(
         FROM_HERE,
         base::Bind(&IpcDesktopEnvironmentFactory::OnDesktopSessionAgentAttached,
-                   base::Unretained(this), terminal_id, desktop_pipe));
+                   base::Unretained(this), terminal_id, session_id,
+                   desktop_pipe));
     return;
   }
 
   ActiveConnectionsList::iterator i = active_connections_.find(terminal_id);
   if (i != active_connections_.end()) {
     i->second->DetachFromDesktop();
-    i->second->AttachToDesktop(desktop_pipe);
+    i->second->AttachToDesktop(desktop_pipe, session_id);
   } else {
     mojo::ScopedMessagePipeHandle closer(desktop_pipe.mojo_handle);
   }

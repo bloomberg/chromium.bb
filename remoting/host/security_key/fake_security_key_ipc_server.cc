@@ -22,7 +22,7 @@ namespace remoting {
 
 FakeSecurityKeyIpcServer::FakeSecurityKeyIpcServer(
     int connection_id,
-    uint32_t peer_session_id,
+    ClientSessionDetails* client_session_details,
     base::TimeDelta initial_connect_timeout,
     const SecurityKeyAuthHandler::SendMessageCallback& send_message_callback,
     const base::Closure& channel_closed_callback)
@@ -98,12 +98,12 @@ FakeSecurityKeyIpcServerFactory::~FakeSecurityKeyIpcServerFactory() {
 
 std::unique_ptr<SecurityKeyIpcServer> FakeSecurityKeyIpcServerFactory::Create(
     int connection_id,
-    uint32_t peer_session_id,
+    ClientSessionDetails* client_session_details,
     base::TimeDelta initial_connect_timeout,
     const SecurityKeyAuthHandler::SendMessageCallback& send_message_callback,
     const base::Closure& done_callback) {
   std::unique_ptr<FakeSecurityKeyIpcServer> fake_ipc_server(
-      new FakeSecurityKeyIpcServer(connection_id, peer_session_id,
+      new FakeSecurityKeyIpcServer(connection_id, client_session_details,
                                    initial_connect_timeout,
                                    send_message_callback, done_callback));
 

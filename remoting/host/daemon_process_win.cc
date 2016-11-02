@@ -83,6 +83,7 @@ class DaemonProcessWin : public DaemonProcess {
   void SendToNetwork(IPC::Message* message) override;
   bool OnDesktopSessionAgentAttached(
       int terminal_id,
+      int session_id,
       const IPC::ChannelHandle& desktop_pipe) override;
 
  protected:
@@ -174,9 +175,10 @@ void DaemonProcessWin::SendToNetwork(IPC::Message* message) {
 
 bool DaemonProcessWin::OnDesktopSessionAgentAttached(
     int terminal_id,
+    int session_id,
     const IPC::ChannelHandle& desktop_pipe) {
   SendToNetwork(new ChromotingDaemonNetworkMsg_DesktopAttached(
-      terminal_id, desktop_pipe));
+      terminal_id, session_id, desktop_pipe));
   return true;
 }
 

@@ -658,12 +658,14 @@ void DesktopSessionWin::OnSessionAttached(uint32_t session_id) {
 
   // Create a launcher for the desktop process, using the per-session delegate.
   launcher_.reset(new WorkerProcessLauncher(std::move(delegate), this));
+  session_id_ = session_id;
 }
 
 void DesktopSessionWin::OnSessionDetached() {
   DCHECK(caller_task_runner_->BelongsToCurrentThread());
 
   launcher_.reset();
+  session_id_ = UINT32_MAX;
 
   if (monitoring_notifications_) {
     ReportElapsedTime("detached");
@@ -676,7 +678,8 @@ void DesktopSessionWin::OnSessionDetached() {
 
 void DesktopSessionWin::OnDesktopSessionAgentAttached(
       const IPC::ChannelHandle& desktop_pipe) {
-  if (!daemon_process()->OnDesktopSessionAgentAttached(id(), desktop_pipe)) {
+  if (!daemon_process()->OnDesktopSessionAgentAttached(id(), session_id_,
+                                                       desktop_pipe)) {
     CrashDesktopProcess(FROM_HERE);
   }
 }

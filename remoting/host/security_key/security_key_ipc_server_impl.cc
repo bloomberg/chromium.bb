@@ -19,6 +19,7 @@
 #include "ipc/ipc_message_macros.h"
 #include "remoting/base/logging.h"
 #include "remoting/host/chromoting_messages.h"
+#include "remoting/host/client_session_details.h"
 
 #if defined(OS_WIN)
 #include "base/strings/stringprintf.h"
@@ -41,12 +42,12 @@ namespace remoting {
 
 SecurityKeyIpcServerImpl::SecurityKeyIpcServerImpl(
     int connection_id,
-    uint32_t peer_session_id,
+    ClientSessionDetails* client_session_details,
     base::TimeDelta initial_connect_timeout,
     const SecurityKeyAuthHandler::SendMessageCallback& message_callback,
     const base::Closure& done_callback)
     : connection_id_(connection_id),
-      peer_session_id_(peer_session_id),
+      client_session_details_(client_session_details),
       initial_connect_timeout_(initial_connect_timeout),
       done_callback_(done_callback),
       message_callback_(message_callback),
@@ -143,7 +144,7 @@ void SecurityKeyIpcServerImpl::OnChannelConnected(int32_t peer_pid) {
   if (!ProcessIdToSessionId(peer_pid, &peer_session_id)) {
     PLOG(ERROR) << "ProcessIdToSessionId() failed";
     connection_close_pending_ = true;
-  } else if (peer_session_id != peer_session_id_) {
+  } else if (peer_session_id != client_session_details_->desktop_session_id()) {
     LOG(ERROR) << "Ignoring connection attempt from outside remoted session.";
     connection_close_pending_ = true;
   }
@@ -154,7 +155,7 @@ void SecurityKeyIpcServerImpl::OnChannelConnected(int32_t peer_pid) {
     return;
   }
 #else   // !defined(OS_WIN)
-  CHECK_EQ(peer_session_id_, UINT32_MAX);
+  CHECK_EQ(client_session_details_->desktop_session_id(), UINT32_MAX);
 #endif  // !defined(OS_WIN)
 
   // Reset the timer to give the client a chance to send the request.

@@ -202,13 +202,6 @@ void DesktopSessionProxy::OnChannelConnected(int32_t peer_pid) {
   DCHECK(caller_task_runner_->BelongsToCurrentThread());
 
   VLOG(1) << "IPC: network <- desktop (" << peer_pid << ")";
-
-#if defined(OS_WIN)
-  if (!ProcessIdToSessionId(peer_pid,
-                            reinterpret_cast<DWORD*>(&desktop_session_id_))) {
-    PLOG(ERROR) << "ProcessIdToSessionId() failed!";
-  }
-#endif  // defined(OS_WIN)
 }
 
 void DesktopSessionProxy::OnChannelError() {
@@ -218,7 +211,8 @@ void DesktopSessionProxy::OnChannelError() {
 }
 
 bool DesktopSessionProxy::AttachToDesktop(
-    const IPC::ChannelHandle& desktop_pipe) {
+    const IPC::ChannelHandle& desktop_pipe,
+    int session_id) {
   DCHECK(caller_task_runner_->BelongsToCurrentThread());
   DCHECK(!desktop_channel_);
 
@@ -238,6 +232,8 @@ bool DesktopSessionProxy::AttachToDesktop(
       client_session_control_->client_jid(),
       screen_resolution_,
       virtual_terminal_));
+
+  desktop_session_id_ = session_id;
 
   return true;
 }

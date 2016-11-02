@@ -93,7 +93,7 @@ class DesktopSessionProxy
   void OnChannelError() override;
 
   // Connects to the desktop session agent.
-  bool AttachToDesktop(const IPC::ChannelHandle& desktop_pipe);
+  bool AttachToDesktop(const IPC::ChannelHandle& desktop_pipe, int session_id);
 
   // Closes the connection to the desktop session agent and cleans up
   // the associated resources.

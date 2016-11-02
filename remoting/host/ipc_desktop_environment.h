@@ -95,6 +95,7 @@ class IpcDesktopEnvironmentFactory
                            const ScreenResolution& resolution) override;
   void OnDesktopSessionAgentAttached(
       int terminal_id,
+      int session_id,
       const IPC::ChannelHandle& desktop_pipe) override;
   void OnTerminalDisconnected(int terminal_id) override;
 

@@ -14,6 +14,7 @@
 #include "base/message_loop/message_loop.h"
 #include "base/run_loop.h"
 #include "ipc/ipc_channel.h"
+#include "remoting/host/client_session_details.h"
 #include "remoting/host/security_key/fake_security_key_ipc_client.h"
 #include "remoting/host/security_key/security_key_ipc_constants.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -27,7 +28,8 @@ const int kLargeMessageSizeBytes = 256 * 1024;
 
 namespace remoting {
 
-class SecurityKeyIpcServerTest : public testing::Test {
+class SecurityKeyIpcServerTest : public testing::Test,
+                                 public ClientSessionDetails {
  public:
   SecurityKeyIpcServerTest();
   ~SecurityKeyIpcServerTest() override;
@@ -47,6 +49,10 @@ class SecurityKeyIpcServerTest : public testing::Test {
   // Waits until the current |run_loop_| instance is signaled, then resets it.
   void WaitForOperationComplete();
 
+  // ClientSessionControl overrides:
+  ClientSessionControl* session_control() override { return nullptr; }
+  uint32_t desktop_session_id() const override { return peer_session_id_; }
+
   // IPC tests require a valid MessageLoop to run.
   base::MessageLoopForIO message_loop_;
 
@@ -64,20 +70,21 @@ class SecurityKeyIpcServerTest : public testing::Test {
   // Stores the contents of the last IPC message received for validation.
   std::string last_message_received_;
 
+  uint32_t peer_session_id_ = UINT32_MAX;
+
  private:
   DISALLOW_COPY_AND_ASSIGN(SecurityKeyIpcServerTest);
 };
 
 SecurityKeyIpcServerTest::SecurityKeyIpcServerTest()
     : run_loop_(new base::RunLoop()) {
-  uint32_t peer_session_id = UINT32_MAX;
 #if defined(OS_WIN)
-  EXPECT_TRUE(ProcessIdToSessionId(GetCurrentProcessId(),
-                                   reinterpret_cast<DWORD*>(&peer_session_id)));
+  EXPECT_TRUE(ProcessIdToSessionId(
+      GetCurrentProcessId(), reinterpret_cast<DWORD*>(&peer_session_id_)));
 #endif  // defined(OS_WIN)
 
   security_key_ipc_server_ = remoting::SecurityKeyIpcServer::Create(
-      kTestConnectionId, peer_session_id,
+      kTestConnectionId, this,
       base::TimeDelta::FromMilliseconds(kInitialConnectTimeoutMs),
       base::Bind(&SecurityKeyIpcServerTest::SendRequestToClient,
                  base::Unretained(this)),
@@ -376,18 +383,8 @@ TEST_F(SecurityKeyIpcServerTest, SendResponseTimeout) {
 
 #if defined(OS_WIN)
 TEST_F(SecurityKeyIpcServerTest, IpcConnectionFailsFromInvalidSession) {
-  uint32_t peer_session_id = UINT32_MAX;
-  ASSERT_TRUE(ProcessIdToSessionId(GetCurrentProcessId(),
-                                   reinterpret_cast<DWORD*>(&peer_session_id)));
-  peer_session_id++;
-
-  // Reinitialize the object under test.
-  security_key_ipc_server_ = remoting::SecurityKeyIpcServer::Create(
-      kTestConnectionId, peer_session_id,
-      base::TimeDelta::FromMilliseconds(kInitialConnectTimeoutMs),
-      base::Bind(&SecurityKeyIpcServerTest::SendRequestToClient,
-                 base::Unretained(this)),
-      base::Bind(&base::DoNothing));
+  // Change the expected session ID to not match the current session.
+  peer_session_id_++;
 
   base::TimeDelta request_timeout(base::TimeDelta::FromMilliseconds(500));
   std::string channel_name(GetUniqueTestChannelName());
@@ -398,6 +395,7 @@ TEST_F(SecurityKeyIpcServerTest, IpcConnectionFailsFromInvalidSession) {
   FakeSecurityKeyIpcClient fake_ipc_client(base::Bind(
       &SecurityKeyIpcServerTest::OperationComplete, base::Unretained(this)));
   ASSERT_TRUE(fake_ipc_client.ConnectViaIpc(channel_name));
+  WaitForOperationComplete();
   WaitForOperationComplete();
   WaitForOperationComplete();
 

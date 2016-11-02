@@ -54,10 +54,12 @@ IPC_MESSAGE_CONTROL1(ChromotingDaemonNetworkMsg_TerminalDisconnected,
                      int /* terminal_id */)
 
 // Notifies the network process that |terminal_id| is now attached to
-// a desktop integration process. |desktop_pipe| is the client end of the
-// desktop-to-network pipe opened.
-IPC_MESSAGE_CONTROL2(ChromotingDaemonNetworkMsg_DesktopAttached,
+// a desktop integration process. |session_id| is the id of the desktop session
+// being attached. |desktop_pipe| is the client end of the desktop-to-network
+// pipe opened.
+IPC_MESSAGE_CONTROL3(ChromotingDaemonNetworkMsg_DesktopAttached,
                      int /* terminal_id */,
+                     int /* session_id */,
                      IPC::ChannelHandle /* desktop_pipe */)
 
 //-----------------------------------------------------------------------------

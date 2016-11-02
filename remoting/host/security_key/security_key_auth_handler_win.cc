@@ -281,7 +281,7 @@ void SecurityKeyAuthHandlerWin::OnChannelConnected(int32_t peer_pid) {
 
   int new_connection_id = ++last_connection_id_;
   std::unique_ptr<SecurityKeyIpcServer> ipc_server(SecurityKeyIpcServer::Create(
-      new_connection_id, peer_session_id, disconnect_timeout_,
+      new_connection_id, client_session_details_, disconnect_timeout_,
       send_message_callback_,
       base::Bind(&SecurityKeyAuthHandlerWin::CloseSecurityKeyRequestIpcChannel,
                  base::Unretained(this), new_connection_id)));

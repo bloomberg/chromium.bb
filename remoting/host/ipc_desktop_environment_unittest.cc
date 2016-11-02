@@ -451,7 +451,7 @@ void IpcDesktopEnvironmentTest::OnDesktopAttached(
     const IPC::ChannelHandle& desktop_pipe) {
   // Instruct DesktopSessionProxy to connect to the network-to-desktop pipe.
   desktop_environment_factory_->OnDesktopSessionAgentAttached(
-      terminal_id_, desktop_pipe);
+      terminal_id_, /*session_id=*/0, desktop_pipe);
 }
 
 void IpcDesktopEnvironmentTest::RunMainLoopUntilDone() {

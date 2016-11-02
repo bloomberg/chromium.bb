@@ -76,10 +76,12 @@ class DaemonProcess
   virtual void SendToNetwork(IPC::Message* message) = 0;
 
   // Called when a desktop integration process attaches to |terminal_id|.
+  // |session_id| is the id of the desktop session being attached.
   // |desktop_pipe| specifies the client end of the desktop pipe. Returns true
   // on success, false otherwise.
   virtual bool OnDesktopSessionAgentAttached(
       int terminal_id,
+      int session_id,
       const IPC::ChannelHandle& desktop_pipe) = 0;
 
   // Closes the desktop session identified by |terminal_id|.

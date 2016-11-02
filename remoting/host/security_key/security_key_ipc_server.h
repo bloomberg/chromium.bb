@@ -15,6 +15,7 @@
 
 namespace remoting {
 
+class ClientSessionDetails;
 class SecurityKeyIpcServerFactory;
 
 // Responsible for handing the server end of the IPC channel between the
@@ -26,7 +27,7 @@ class SecurityKeyIpcServer {
   // Creates a new SecurityKeyIpcServer instance.
   static std::unique_ptr<SecurityKeyIpcServer> Create(
       int connection_id,
-      uint32_t peer_session_id,
+      ClientSessionDetails* client_session_details,
       base::TimeDelta initial_connect_timeout,
       const SecurityKeyAuthHandler::SendMessageCallback& message_callback,
       const base::Closure& done_callback);
@@ -50,7 +51,7 @@ class SecurityKeyIpcServerFactory {
 
   virtual std::unique_ptr<SecurityKeyIpcServer> Create(
       int connection_id,
-      uint32_t peer_session_id,
+      ClientSessionDetails* client_session_details,
       base::TimeDelta connect_timeout,
       const SecurityKeyAuthHandler::SendMessageCallback& message_callback,
       const base::Closure& done_callback) = 0;

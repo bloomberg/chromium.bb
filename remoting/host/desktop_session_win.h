@@ -131,6 +131,10 @@ class DesktopSessionWin
 
   base::Time last_timestamp_;
 
+  // The id of the current desktop session being remoted or UINT32_MAX if no
+  // session exists.
+  int session_id_ = UINT32_MAX;
+
   DISALLOW_COPY_AND_ASSIGN(DesktopSessionWin);
 };
 

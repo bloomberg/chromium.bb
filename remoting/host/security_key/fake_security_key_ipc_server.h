@@ -32,7 +32,7 @@ class FakeSecurityKeyIpcServer : public SecurityKeyIpcServer,
  public:
   FakeSecurityKeyIpcServer(
       int connection_id,
-      uint32_t peer_session_id,
+      ClientSessionDetails* client_session_details,
       base::TimeDelta initial_connect_timeout,
       const SecurityKeyAuthHandler::SendMessageCallback& send_message_callback,
       const base::Closure& channel_closed_callback);
@@ -112,7 +112,7 @@ class FakeSecurityKeyIpcServerFactory : public SecurityKeyIpcServerFactory {
   // SecurityKeyIpcServerFactory implementation.
   std::unique_ptr<SecurityKeyIpcServer> Create(
       int connection_id,
-      uint32_t peer_session_id,
+      ClientSessionDetails* client_session_details,
       base::TimeDelta initial_connect_timeout,
       const SecurityKeyAuthHandler::SendMessageCallback& message_callback,
       const base::Closure& done_callback) override;

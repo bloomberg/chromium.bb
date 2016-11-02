@@ -35,17 +35,17 @@ void SecurityKeyIpcServer::SetFactoryForTest(
 
 std::unique_ptr<SecurityKeyIpcServer> SecurityKeyIpcServer::Create(
     int connection_id,
-    uint32_t peer_session_id,
+    ClientSessionDetails* client_session_details,
     base::TimeDelta initial_connect_timeout,
     const SecurityKeyAuthHandler::SendMessageCallback& message_callback,
     const base::Closure& done_callback) {
   std::unique_ptr<SecurityKeyIpcServer> ipc_server =
       g_factory
-          ? g_factory->Create(connection_id, peer_session_id,
+          ? g_factory->Create(connection_id, client_session_details,
                               initial_connect_timeout, message_callback,
                               done_callback)
           : base::WrapUnique(new SecurityKeyIpcServerImpl(
-                connection_id, peer_session_id, initial_connect_timeout,
+                connection_id, client_session_details, initial_connect_timeout,
                 message_callback, done_callback));
 
   return ipc_server;

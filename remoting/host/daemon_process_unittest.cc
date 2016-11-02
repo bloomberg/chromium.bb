@@ -74,8 +74,8 @@ class MockDaemonProcess : public DaemonProcess {
   MOCK_METHOD1(Received, void(const IPC::Message&));
   MOCK_METHOD1(Sent, void(const IPC::Message&));
 
-  MOCK_METHOD2(OnDesktopSessionAgentAttached,
-               bool(int, const IPC::ChannelHandle&));
+  MOCK_METHOD3(OnDesktopSessionAgentAttached,
+               bool(int, int, const IPC::ChannelHandle&));
 
   MOCK_METHOD1(DoCreateDesktopSessionPtr, DesktopSession*(int));
   MOCK_METHOD1(DoCrashNetworkProcess, void(const tracked_objects::Location&));
