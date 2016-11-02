@@ -49,11 +49,6 @@ ServiceWorkerRegistration::ServiceWorkerRegistration(
 }
 
 ServiceWorkerRegistration::~ServiceWorkerRegistration() {
-  // Can be false during shutdown, in which case the DCHECK_CURRENTLY_ON below
-  // would cry.
-  if (!BrowserThread::IsThreadInitialized(BrowserThread::IO))
-    return;
-
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
   DCHECK(!listeners_.might_have_observers());
   if (context_)
