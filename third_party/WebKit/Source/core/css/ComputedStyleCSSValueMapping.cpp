@@ -865,6 +865,12 @@ static CSSValue* specifiedValueForGridTrackSize(const GridTrackSize& trackSize,
       return specifiedValueForGridTrackBreadth(trackSize.minTrackBreadth(),
                                                style);
     case MinMaxTrackSizing: {
+      if (trackSize.minTrackBreadth().isAuto() &&
+          trackSize.maxTrackBreadth().isFlex()) {
+        return CSSPrimitiveValue::create(trackSize.maxTrackBreadth().flex(),
+                                         CSSPrimitiveValue::UnitType::Fraction);
+      }
+
       auto* minMaxTrackBreadths = CSSFunctionValue::create(CSSValueMinmax);
       minMaxTrackBreadths->append(*specifiedValueForGridTrackBreadth(
           trackSize.minTrackBreadth(), style));
