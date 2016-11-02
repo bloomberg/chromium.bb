@@ -97,6 +97,7 @@ using content::RenderFrameHost;
 using content::RenderViewHost;
 using content::RenderViewHostImpl;
 using content::RenderWidgetHostImpl;
+using content::RenderWidgetHostView;
 using content::RenderWidgetHostViewMac;
 using content::RenderWidgetHostViewMacEditCommandHelper;
 using content::TextInputClientMac;
@@ -118,7 +119,7 @@ BOOL EventIsReservedBySystem(NSEvent* event) {
   return helper->map()->IsEventReserved(event);
 }
 
-RenderWidgetHostViewMac* GetRenderWidgetHostViewToUse(
+RenderWidgetHostView* GetRenderWidgetHostViewToUse(
     RenderWidgetHostViewMac* render_widget_host_view) {
   WebContents* web_contents = render_widget_host_view->GetWebContents();
   if (!web_contents)
@@ -131,8 +132,7 @@ RenderWidgetHostViewMac* GetRenderWidgetHostViewToUse(
       guest_manager->GetFullPageGuest(web_contents);
   if (!guest)
     return render_widget_host_view;
-  return static_cast<RenderWidgetHostViewMac*>(
-      guest->GetRenderWidgetHostView());
+  return guest->GetRenderWidgetHostView();
 }
 
 }  // namespace
