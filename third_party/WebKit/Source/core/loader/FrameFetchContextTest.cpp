@@ -35,6 +35,7 @@
 #include "core/fetch/UniqueIdentifier.h"
 #include "core/frame/FrameHost.h"
 #include "core/frame/FrameOwner.h"
+#include "core/frame/FrameTypes.h"
 #include "core/frame/FrameView.h"
 #include "core/frame/Settings.h"
 #include "core/html/HTMLIFrameElement.h"
@@ -85,7 +86,7 @@ class FrameFetchContextTest : public ::testing::Test {
     dummyPageHolder->page().setDeviceScaleFactor(1.0);
     documentLoader = DocumentLoader::create(
         &dummyPageHolder->frame(), ResourceRequest("http://www.example.com"),
-        SubstituteData());
+        SubstituteData(), ClientRedirectPolicy::NotClientRedirect);
     document = &dummyPageHolder->document();
     fetchContext =
         static_cast<FrameFetchContext*>(&documentLoader->fetcher()->context());
@@ -112,7 +113,7 @@ class FrameFetchContextTest : public ::testing::Test {
     childFrame->init();
     childDocumentLoader = DocumentLoader::create(
         childFrame.get(), ResourceRequest("http://www.example.com"),
-        SubstituteData());
+        SubstituteData(), ClientRedirectPolicy::NotClientRedirect);
     childDocument = childFrame->document();
     FrameFetchContext* childFetchContext = static_cast<FrameFetchContext*>(
         &childDocumentLoader->fetcher()->context());
@@ -149,9 +150,9 @@ class FrameFetchContextDisplayedCertificateErrorsTest
     dummyPageHolder =
         DummyPageHolder::create(IntSize(500, 500), nullptr, client);
     dummyPageHolder->page().setDeviceScaleFactor(1.0);
-    documentLoader = DocumentLoader::create(&dummyPageHolder->frame(),
-                                            ResourceRequest(mainResourceUrl),
-                                            SubstituteData());
+    documentLoader = DocumentLoader::create(
+        &dummyPageHolder->frame(), ResourceRequest(mainResourceUrl),
+        SubstituteData(), ClientRedirectPolicy::NotClientRedirect);
     document = &dummyPageHolder->document();
     document->setURL(mainResourceUrl);
     fetchContext =

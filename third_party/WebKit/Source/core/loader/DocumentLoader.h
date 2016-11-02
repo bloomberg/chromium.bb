@@ -37,6 +37,7 @@
 #include "core/fetch/RawResource.h"
 #include "core/fetch/ResourceLoaderOptions.h"
 #include "core/fetch/SubstituteData.h"
+#include "core/frame/FrameTypes.h"
 #include "core/frame/csp/ContentSecurityPolicy.h"
 #include "core/loader/DocumentLoadTiming.h"
 #include "core/loader/DocumentWriter.h"
@@ -70,8 +71,9 @@ class CORE_EXPORT DocumentLoader
  public:
   static DocumentLoader* create(LocalFrame* frame,
                                 const ResourceRequest& request,
-                                const SubstituteData& data) {
-    return new DocumentLoader(frame, request, data);
+                                const SubstituteData& data,
+                                ClientRedirectPolicy clientRedirectPolicy) {
+    return new DocumentLoader(frame, request, data, clientRedirectPolicy);
   }
   ~DocumentLoader() override;
 
@@ -183,7 +185,10 @@ class CORE_EXPORT DocumentLoader
   DECLARE_VIRTUAL_TRACE();
 
  protected:
-  DocumentLoader(LocalFrame*, const ResourceRequest&, const SubstituteData&);
+  DocumentLoader(LocalFrame*,
+                 const ResourceRequest&,
+                 const SubstituteData&,
+                 ClientRedirectPolicy);
 
   void didRedirect(const KURL& oldURL, const KURL& newURL);
 

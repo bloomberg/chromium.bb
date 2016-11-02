@@ -143,8 +143,10 @@ void EmptyFrameLoaderClient::dispatchWillSubmitForm(HTMLFormElement*) {}
 DocumentLoader* EmptyFrameLoaderClient::createDocumentLoader(
     LocalFrame* frame,
     const ResourceRequest& request,
-    const SubstituteData& substituteData) {
-  return DocumentLoader::create(frame, request, substituteData);
+    const SubstituteData& substituteData,
+    ClientRedirectPolicy clientRedirectPolicy) {
+  return DocumentLoader::create(frame, request, substituteData,
+                                clientRedirectPolicy);
 }
 
 LocalFrame* EmptyFrameLoaderClient::createFrame(const FrameLoadRequest&,

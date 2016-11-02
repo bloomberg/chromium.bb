@@ -31,6 +31,7 @@
 #ifndef WebDataSourceImpl_h
 #define WebDataSourceImpl_h
 
+#include "core/frame/FrameTypes.h"
 #include "core/loader/DocumentLoader.h"
 #include "platform/exported/WrappedResourceRequest.h"
 #include "platform/exported/WrappedResourceResponse.h"
@@ -46,7 +47,8 @@ class WebDataSourceImpl final : public DocumentLoader, public WebDataSource {
  public:
   static WebDataSourceImpl* create(LocalFrame*,
                                    const ResourceRequest&,
-                                   const SubstituteData&);
+                                   const SubstituteData&,
+                                   ClientRedirectPolicy);
 
   static WebDataSourceImpl* fromDocumentLoader(DocumentLoader* loader) {
     return static_cast<WebDataSourceImpl*>(loader);
@@ -77,7 +79,10 @@ class WebDataSourceImpl final : public DocumentLoader, public WebDataSource {
   DECLARE_VIRTUAL_TRACE();
 
  private:
-  WebDataSourceImpl(LocalFrame*, const ResourceRequest&, const SubstituteData&);
+  WebDataSourceImpl(LocalFrame*,
+                    const ResourceRequest&,
+                    const SubstituteData&,
+                    ClientRedirectPolicy);
   ~WebDataSourceImpl() override;
   void detachFromFrame() override;
   String debugName() const override { return "WebDataSourceImpl"; }

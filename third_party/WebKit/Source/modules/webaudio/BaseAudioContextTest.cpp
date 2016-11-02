@@ -7,6 +7,7 @@
 #include "core/dom/Document.h"
 #include "core/dom/DocumentUserGestureToken.h"
 #include "core/frame/FrameOwner.h"
+#include "core/frame/FrameTypes.h"
 #include "core/frame/FrameView.h"
 #include "core/frame/Settings.h"
 #include "core/loader/DocumentLoader.h"
@@ -102,7 +103,7 @@ class BaseAudioContextTest : public ::testing::Test {
     m_childFrame->init();
     m_childDocumentLoader = DocumentLoader::create(
         m_childFrame.get(), ResourceRequest("https://www.example.com"),
-        SubstituteData());
+        SubstituteData(), ClientRedirectPolicy::NotClientRedirect);
 
     childDocument().updateSecurityOrigin(
         SecurityOrigin::create("https", "cross-origin.com", 80));

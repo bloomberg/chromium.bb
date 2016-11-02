@@ -136,7 +136,8 @@ class FrameLoaderClientImpl final : public FrameLoaderClient {
                             const Vector<String>& removedSelectors) override;
   DocumentLoader* createDocumentLoader(LocalFrame*,
                                        const ResourceRequest&,
-                                       const SubstituteData&) override;
+                                       const SubstituteData&,
+                                       ClientRedirectPolicy) override;
   WTF::String userAgent() override;
   WTF::String doNotTrackValue() override;
   void transitionToCommittedForNewPage() override;

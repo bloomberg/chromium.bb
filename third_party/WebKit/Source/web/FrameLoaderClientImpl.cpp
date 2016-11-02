@@ -678,8 +678,10 @@ void FrameLoaderClientImpl::selectorMatchChanged(
 DocumentLoader* FrameLoaderClientImpl::createDocumentLoader(
     LocalFrame* frame,
     const ResourceRequest& request,
-    const SubstituteData& data) {
-  WebDataSourceImpl* ds = WebDataSourceImpl::create(frame, request, data);
+    const SubstituteData& data,
+    ClientRedirectPolicy clientRedirectPolicy) {
+  WebDataSourceImpl* ds =
+      WebDataSourceImpl::create(frame, request, data, clientRedirectPolicy);
   if (m_webFrame->client())
     m_webFrame->client()->didCreateDataSource(m_webFrame, ds);
   return ds;

@@ -36,6 +36,7 @@
 #include "core/dom/IconURL.h"
 #include "core/fetch/ResourceLoaderOptions.h"
 #include "core/frame/FrameClient.h"
+#include "core/frame/FrameTypes.h"
 #include "core/html/LinkResource.h"
 #include "core/loader/FrameLoadRequest.h"
 #include "core/loader/FrameLoaderTypes.h"
@@ -167,7 +168,8 @@ class CORE_EXPORT FrameLoaderClient : public FrameClient {
 
   virtual DocumentLoader* createDocumentLoader(LocalFrame*,
                                                const ResourceRequest&,
-                                               const SubstituteData&) = 0;
+                                               const SubstituteData&,
+                                               ClientRedirectPolicy) = 0;
 
   virtual String userAgent() = 0;
 

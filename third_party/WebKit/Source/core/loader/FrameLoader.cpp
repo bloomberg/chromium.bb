@@ -220,7 +220,8 @@ void FrameLoader::init() {
                                   ? WebURLRequest::FrameTypeTopLevel
                                   : WebURLRequest::FrameTypeNested);
   m_provisionalDocumentLoader =
-      client()->createDocumentLoader(m_frame, initialRequest, SubstituteData());
+      client()->createDocumentLoader(m_frame, initialRequest, SubstituteData(),
+                                     ClientRedirectPolicy::NotClientRedirect);
   m_provisionalDocumentLoader->startLoadingMainResource();
   m_frame->document()->cancelParsing();
   m_stateMachine.advanceTo(
@@ -1659,14 +1660,11 @@ void FrameLoader::startLoad(FrameLoadRequest& frameLoadRequest,
   m_provisionalDocumentLoader = client()->createDocumentLoader(
       m_frame, request, frameLoadRequest.substituteData().isValid()
                             ? frameLoadRequest.substituteData()
-                            : defaultSubstituteDataForURL(request.url()));
+                            : defaultSubstituteDataForURL(request.url()),
+      frameLoadRequest.clientRedirect());
   m_provisionalDocumentLoader->setNavigationType(navigationType);
   m_provisionalDocumentLoader->setReplacesCurrentHistoryItem(
       type == FrameLoadTypeReplaceCurrentItem);
-  m_provisionalDocumentLoader->setIsClientRedirect(
-      frameLoadRequest.clientRedirect() ==
-      ClientRedirectPolicy::ClientRedirect);
-
   m_frame->navigationScheduler().cancel();
   m_checkTimer.stop();
 
@@ -1676,8 +1674,6 @@ void FrameLoader::startLoad(FrameLoadRequest& frameLoadRequest,
     client()->dispatchWillSubmitForm(frameLoadRequest.form());
 
   m_progressTracker->progressStarted();
-  if (m_provisionalDocumentLoader->isClientRedirect())
-    m_provisionalDocumentLoader->appendRedirect(m_frame->document()->url());
   m_provisionalDocumentLoader->appendRedirect(
       m_provisionalDocumentLoader->request().url());
   double triggeringEventTime =

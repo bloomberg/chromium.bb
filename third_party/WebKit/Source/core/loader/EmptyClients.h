@@ -290,7 +290,8 @@ class CORE_EXPORT EmptyFrameLoaderClient : public FrameLoaderClient {
 
   DocumentLoader* createDocumentLoader(LocalFrame*,
                                        const ResourceRequest&,
-                                       const SubstituteData&) override;
+                                       const SubstituteData&,
+                                       ClientRedirectPolicy) override;
 
   String userAgent() override { return ""; }
 

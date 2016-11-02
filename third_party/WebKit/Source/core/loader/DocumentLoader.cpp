@@ -96,13 +96,15 @@ static bool shouldInheritSecurityOriginFromOwner(const KURL& url) {
 
 DocumentLoader::DocumentLoader(LocalFrame* frame,
                                const ResourceRequest& req,
-                               const SubstituteData& substituteData)
+                               const SubstituteData& substituteData,
+                               ClientRedirectPolicy clientRedirectPolicy)
     : m_frame(frame),
       m_fetcher(FrameFetchContext::createContextAndFetcher(this, nullptr)),
       m_originalRequest(req),
       m_substituteData(substituteData),
       m_request(req),
-      m_isClientRedirect(false),
+      m_isClientRedirect(clientRedirectPolicy ==
+                         ClientRedirectPolicy::ClientRedirect),
       m_replacesCurrentHistoryItem(false),
       m_dataReceived(false),
       m_navigationType(NavigationTypeOther),
@@ -112,7 +114,12 @@ DocumentLoader::DocumentLoader(LocalFrame* frame,
       m_wasBlockedAfterXFrameOptionsOrCSP(false),
       m_state(NotStarted),
       m_inDataReceived(false),
-      m_dataBuffer(SharedBuffer::create()) {}
+      m_dataBuffer(SharedBuffer::create()) {
+  // The document URL needs to be added to the head of the list as that is
+  // where the redirects originated.
+  if (m_isClientRedirect)
+    appendRedirect(m_frame->document()->url());
+}
 
 FrameLoader* DocumentLoader::frameLoader() const {
   if (!m_frame)
