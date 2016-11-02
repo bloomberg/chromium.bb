@@ -13,6 +13,11 @@ goog.require('__crWeb.common');
  */
 __gCrWeb.message = {};
 
+// Store message namespace object in a global __gCrWeb object referenced by a
+// string, so it does not get renamed by closure compiler during the
+// minification.
+__gCrWeb['message'] = __gCrWeb.message;
+
 /* Beginning of anonymous object. */
 (function() {
   /**
@@ -35,7 +40,7 @@ __gCrWeb.message = {};
   /**
    * Invokes a command on the Objective-C side.
    * @param {Object} command The command in a JavaScript object.
-   * @private
+   * @public
    */
   __gCrWeb.message.invokeOnHost = function(command) {
     messageQueue_.queue.push(command);
@@ -74,7 +79,7 @@ __gCrWeb.message = {};
     queueObject.queue.forEach(function(command) {
         var stringifiedMessage = __gCrWeb.common.JSONStringify({
             "crwCommand": command,
-            "crwWindowId": __gCrWeb.windowId
+            "crwWindowId": __gCrWeb['windowId']
         });
         // A web page can override |window.webkit| with any value. Deleting the
         // object ensures that original and working implementation of

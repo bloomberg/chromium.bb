@@ -2,8 +2,20 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-__gCrWeb['languageDetection'] = {};
+/**
+ * @fileoverview Installs Language Detection management functions on the
+ * __gCrWeb object.
+ *
+ * TODO(crbug.com/659442): Enable checkTypes error for this file.
+ * @suppress {checkTypes}
+ */
 
+__gCrWeb.languageDetection = {};
+
+// Store languageDetection namespace object in a global __gCrWeb object
+// referenced by a string, so it does not get renamed by closure compiler during
+// the minification.
+__gCrWeb['languageDetection'] = __gCrWeb.languageDetection;
 
 (function() {
 /**

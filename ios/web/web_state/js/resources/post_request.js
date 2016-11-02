@@ -76,9 +76,9 @@ __crPostRequestWorkaround.runPostRequest = function(
   document.open();
   try {
     document.write(createAndSendPostRequest(url, headers, body, contentType));
-    window.webkit.messageHandlers.POSTSuccessHandler.postMessage("");
+    window.webkit.messageHandlers['POSTSuccessHandler'].postMessage("");
   } catch(error) {
-    window.webkit.messageHandlers.POSTErrorHandler.postMessage(error);
+    window.webkit.messageHandlers['POSTErrorHandler'].postMessage(error);
   }
   document.close();
 }

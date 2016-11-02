@@ -113,15 +113,13 @@ template("js_compile_checked") {
         "$target_gen_dir/{{source_file_part}}",
       ]
 
-      # TODO(crbug.com/487804): need to enable the following compilation checks
-      # once the corresponding errors have been fixed:
-      #   --jscomp_error=checkTypes
-      #   --jscomp_error=checkVars
-      #   --jscomp_error=missingProperties
-      #   --jscomp_error=undefinedVars
       args = [
         "--compilation_level",
         "SIMPLE_OPTIMIZATIONS",
+        "--jscomp_error=checkTypes",
+        "--jscomp_error=checkVars",
+        "--jscomp_error=missingProperties",
+        "--jscomp_error=undefinedVars",
         "--jscomp_error=accessControls",
         "--jscomp_error=ambiguousFunctionDecl",
         "--jscomp_error=constantProperty",

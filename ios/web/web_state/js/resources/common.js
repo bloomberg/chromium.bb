@@ -17,7 +17,12 @@ var FormControlElement;
  * injected. String 'common' is used in |__gCrWeb['common']| as it needs to be
  * accessed in Objective-C code.
  */
-__gCrWeb['common'] = {};
+__gCrWeb.common = {};
+
+// Store common namespace object in a global __gCrWeb object referenced by a
+// string, so it does not get renamed by closure compiler during the
+// minification.
+__gCrWeb['common'] = __gCrWeb.common;
 
 /* Beginning of anonymous object. */
 (function() {
@@ -26,13 +31,13 @@ __gCrWeb['common'] = {};
    * in host pages.
    * @constructor
    */
-  __gCrWeb['common'].JSONSafeObject = function JSONSafeObject() {
+  __gCrWeb.common.JSONSafeObject = function JSONSafeObject() {
   };
 
   /**
    * Protect against custom implementation of Object.toJSON in host pages.
    */
-  __gCrWeb['common'].JSONSafeObject.prototype.toJSON = null;
+  delete __gCrWeb.common.JSONSafeObject.prototype.toJSON;
 
   /**
    * Retain the original JSON.stringify method where possible to reduce the

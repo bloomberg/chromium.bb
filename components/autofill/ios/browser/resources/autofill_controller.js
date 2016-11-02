@@ -2,14 +2,19 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-// Installs Autofill management functions on the |__gCrWeb| object.
-//
-// It scans the DOM, extracting and storing forms and returns a JSON string
-// representing an array of objects, each of which represents an Autofill form
-// with information about a form to be filled and/or submitted and it can be
-// translated to struct FormData
-// (chromium/src/components/autofill/core/common/form_data.h) for further
-// processing.
+/**
+  * @fileoverview Installs Autofill management functions on the __gCrWeb object.
+  *
+  * It scans the DOM, extracting and storing forms and returns a JSON string
+  * representing an array of objects, each of which represents an Autofill form
+  * with information about a form to be filled and/or submitted and it can be
+  * translated to struct FormData
+  * (chromium/src/components/autofill/core/common/form_data.h) for further
+  * processing.
+
+  * TODO(crbug.com/647084): Enable checkTypes error for this file.
+  * @suppress {checkTypes}
+  */
 
 /**
   * @typedef {{
@@ -47,7 +52,12 @@ var AutofillFormData;
  * Namespace for this file. It depends on |__gCrWeb| having already been
  * injected.
  */
-__gCrWeb['autofill'] = {};
+__gCrWeb.autofill = {};
+
+// Store autofill namespace object in a global __gCrWeb object referenced by a
+// string, so it does not get renamed by closure compiler during the
+// minification.
+__gCrWeb['autofill'] = __gCrWeb.autofill;
 
 /**
  * The maximum length allowed for form data.

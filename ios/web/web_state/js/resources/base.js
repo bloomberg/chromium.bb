@@ -11,5 +11,9 @@
 goog.provide('__crWeb.base');
 
 // This object is checked on the main app to know when to inject (or not).
-window['__gCrWeb'] = {};
+var __gCrWeb = {};
+
+// Store __gCrWeb global namespace object referenced by a string, so it does not
+// get renamed by closure compiler during the minification.
+window['__gCrWeb'] = __gCrWeb;
 

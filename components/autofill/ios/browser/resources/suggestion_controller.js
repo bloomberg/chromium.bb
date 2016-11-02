@@ -2,7 +2,13 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-// Installs suggestion management functions on the |__gCrWeb| object.
+/**
+ * @fileoverview Installs suggestion management functions on the
+ * __gCrWeb object.
+ *
+ * TODO(crbug.com/647084): Enable checkTypes error for this file.
+ * @suppress {checkTypes}
+ */
 
 /* Beginning of anonymous object. */
 (function() {
@@ -11,7 +17,12 @@
  * Namespace for this file. It depends on |__gCrWeb| having already been
  * injected.
  */
-__gCrWeb['suggestion'] = {};
+__gCrWeb.suggestion = {};
+
+// Store suggestion namespace object in a global __gCrWeb object referenced by a
+// string, so it does not get renamed by closure compiler during the
+// minification.
+__gCrWeb['suggestion'] = __gCrWeb.suggestion;
 
 /**
  * Returns the first element in |elements| that is later than |elementToCompare|
