@@ -14,12 +14,12 @@
 
 #include "base/macros.h"
 #include "base/optional.h"
+#include "cc/ipc/display_compositor.mojom.h"
 #include "mojo/public/cpp/bindings/array.h"
 #include "mojo/public/cpp/bindings/binding.h"
 #include "services/ui/public/interfaces/window_manager_window_tree_factory.mojom.h"
 #include "services/ui/public/interfaces/window_tree.mojom.h"
 #include "services/ui/surfaces/display_compositor.h"
-#include "services/ui/surfaces/display_compositor_client.h"
 #include "services/ui/ws/display.h"
 #include "services/ui/ws/gpu_service_proxy_delegate.h"
 #include "services/ui/ws/ids.h"
@@ -51,7 +51,7 @@ class WindowServer : public ServerWindowDelegate,
                      public GpuServiceProxyDelegate,
                      public UserDisplayManagerDelegate,
                      public UserIdTrackerObserver,
-                     public DisplayCompositorClient {
+                     public cc::mojom::DisplayCompositorClient {
  public:
   explicit WindowServer(WindowServerDelegate* delegate);
   ~WindowServer() override;
@@ -339,7 +339,7 @@ class WindowServer : public ServerWindowDelegate,
   void OnGpuChannelEstablished(
       scoped_refptr<gpu::GpuChannelHost> gpu_channel) override;
 
-  // DisplayCompositorClient:
+  // cc::mojom::DisplayCompositorClient:
   void OnSurfaceCreated(const cc::SurfaceId& surface_id,
                         const gfx::Size& frame_size,
                         float device_scale_factor) override;
@@ -353,9 +353,6 @@ class WindowServer : public ServerWindowDelegate,
   UserIdTracker user_id_tracker_;
 
   WindowServerDelegate* delegate_;
-
-  // State for rendering into a Surface.
-  scoped_refptr<ui::DisplayCompositor> display_compositor_;
 
   // ID to use for next WindowTree.
   ClientSpecificId next_client_id_;
@@ -389,6 +386,11 @@ class WindowServer : public ServerWindowDelegate,
   UserActivityMonitorMap activity_monitor_map_;
 
   WindowManagerWindowTreeFactorySet window_manager_window_tree_factory_set_;
+
+  mojo::Binding<cc::mojom::DisplayCompositorClient>
+      display_compositor_client_binding_;
+  // State for rendering into a Surface.
+  scoped_refptr<ui::DisplayCompositor> display_compositor_;
 
   DISALLOW_COPY_AND_ASSIGN(WindowServer);
 };

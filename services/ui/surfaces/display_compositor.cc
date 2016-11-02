@@ -4,12 +4,11 @@
 
 #include "services/ui/surfaces/display_compositor.h"
 
-#include "services/ui/surfaces/display_compositor_client.h"
-
 namespace ui {
 
-DisplayCompositor::DisplayCompositor(DisplayCompositorClient* client)
-    : client_(client), next_client_id_(1u) {
+DisplayCompositor::DisplayCompositor(
+    cc::mojom::DisplayCompositorClientPtr client)
+    : client_(std::move(client)), next_client_id_(1u) {
   manager_.AddObserver(this);
 }
 

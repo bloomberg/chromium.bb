@@ -57,13 +57,25 @@ mojom("interfaces") {
     "transferable_resource.mojom",
   ]
 
-  deps = [
+  public_deps = [
     "//gpu/ipc/common:interfaces",
     "//mojo/common:common_custom_types",
     "//skia/public/interfaces",
     "//ui/events/mojo:interfaces",
     "//ui/gfx/geometry/mojo",
     "//ui/gfx/mojo",
+  ]
+}
+
+# Interfaces between two privileged services.
+mojom("internal_interfaces") {
+  sources = [
+    "display_compositor.mojom",
+  ]
+
+  public_deps = [
+    ":interfaces",
+    "//ui/gfx/geometry/mojo",
   ]
 }
 

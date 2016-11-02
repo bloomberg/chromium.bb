@@ -44,16 +44,20 @@ struct WindowServer::CurrentDragLoopState {
   WindowTree* initiator;
 };
 
+// TODO(fsamuel): DisplayCompositor should be a mojo interface dispensed by
+// GpuServiceProxy.
 WindowServer::WindowServer(WindowServerDelegate* delegate)
     : delegate_(delegate),
-      display_compositor_(new DisplayCompositor(this)),
       next_client_id_(1),
       display_manager_(new DisplayManager(this, &user_id_tracker_)),
       current_operation_(nullptr),
       in_destructor_(false),
       next_wm_change_id_(0),
       gpu_proxy_(new GpuServiceProxy(this)),
-      window_manager_window_tree_factory_set_(this, &user_id_tracker_) {
+      window_manager_window_tree_factory_set_(this, &user_id_tracker_),
+      display_compositor_client_binding_(this),
+      display_compositor_(new DisplayCompositor(
+          display_compositor_client_binding_.CreateInterfacePtrAndBind())) {
   user_id_tracker_.AddObserver(this);
   OnUserIdAdded(user_id_tracker_.active_id());
 }
