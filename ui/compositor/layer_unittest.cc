@@ -2245,4 +2245,15 @@ TEST_F(LayerWithRealCompositorTest, CompositorAnimationObserverTest) {
   EXPECT_TRUE(animation_observer.shutdown());
 }
 
+TEST(LayerDebugInfoTest, LayerNameDoesNotClobber) {
+  Layer layer(LAYER_NOT_DRAWN);
+  layer.set_name("foo");
+  std::unique_ptr<base::trace_event::ConvertableToTraceFormat> debug_info =
+      layer.TakeDebugInfo(nullptr);
+  std::string trace_format("bar,");
+  debug_info->AppendAsTraceFormat(&trace_format);
+  std::string expected("bar,{\"layer_name\":\"foo\"}");
+  EXPECT_EQ(expected, trace_format);
+}
+
 }  // namespace ui
