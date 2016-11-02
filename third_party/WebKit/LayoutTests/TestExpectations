@@ -536,8 +536,6 @@ crbug.com/411164 [ Win ] http/tests/security/powerfulFeatureRestrictions/service
 
 crbug.com/660492 [ Linux ] storage/indexeddb/structured-clone.html [ Timeout ]
 
-crbug.com/475984 [ Mac Debug ] css2.1/t100801-c544-valgn-03-d-agi.html [ Failure ]
-
 # Diff of -expected.txt is too large to upload.
 Bug(tkent) imported/wpt/html/dom/reflection-embedded.html [ NeedsManualRebaseline ]
 Bug(tkent) imported/wpt/html/dom/reflection-forms.html [ NeedsManualRebaseline ]
