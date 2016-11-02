@@ -67,10 +67,6 @@ class CORE_EXPORT ScrollAnchor final {
   DEFINE_INLINE_TRACE() { visitor->trace(m_scroller); }
 
  private:
-  // Releases the anchor and conditionally clears the IsScrollAnchorObject bit
-  // on the LayoutObject.
-  void clearSelf(bool unconditionally);
-
   void findAnchor();
   bool computeScrollAnchorDisablingStyleChanged();
 

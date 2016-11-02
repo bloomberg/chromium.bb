@@ -270,6 +270,47 @@ TEST_F(ScrollAnchorTest, ClearScrollAnchorsOnAncestors) {
   EXPECT_EQ(nullptr, scrollAnchor(viewport).anchorObject());
 }
 
+TEST_F(ScrollAnchorTest, AncestorClearingWithSiblingReference) {
+  setBodyInnerHTML(
+      "<style>"
+      ".scroller {"
+      "  overflow: scroll;"
+      "  width: 400px;"
+      "  height: 400px;"
+      "}"
+      ".space {"
+      "  width: 100px;"
+      "  height: 600px;"
+      "}"
+      "</style>"
+      "<div id='s1' class='scroller'>"
+      "  <div id='anchor' class='space'></div>"
+      "</div>"
+      "<div id='s2' class='scroller'>"
+      "  <div class='space'></div>"
+      "</div>");
+  Element* s1 = document().getElementById("s1");
+  Element* s2 = document().getElementById("s2");
+  Element* anchor = document().getElementById("anchor");
+
+  // Set non-zero scroll offsets for #s1 and #document
+  s1->setScrollTop(100);
+  scrollLayoutViewport(ScrollOffset(0, 100));
+
+  // Invalidate layout.
+  setHeight(anchor, 500);
+
+  // This forces layout, during which both #s1 and #document will anchor to
+  // #anchor. Then the scroll clears #s2 and #document.  Since #anchor is still
+  // referenced by #s1, its IsScrollAnchorObject bit must remain set.
+  s2->setScrollTop(100);
+
+  // This should clear #s1.  If #anchor had its bit cleared already we would
+  // crash in update().
+  s1->removeChild(anchor);
+  update();
+}
+
 TEST_F(ScrollAnchorTest, FractionalOffsetsAreRoundedBeforeComparing) {
   setBodyInnerHTML(
       "<style> body { height: 1000px } </style>"

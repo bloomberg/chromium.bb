@@ -306,16 +306,12 @@ void ScrollAnchor::adjust() {
                     UseCounter::ScrollAnchored);
 }
 
-void ScrollAnchor::clearSelf(bool unconditionally) {
+void ScrollAnchor::clearSelf() {
   LayoutObject* anchorObject = m_anchorObject;
   m_anchorObject = nullptr;
 
   if (anchorObject)
-    anchorObject->clearIsScrollAnchorObject(unconditionally);
-}
-
-void ScrollAnchor::clearSelf() {
-  clearSelf(false);
+    anchorObject->maybeClearIsScrollAnchorObject();
 }
 
 void ScrollAnchor::clear() {
@@ -330,7 +326,7 @@ void ScrollAnchor::clear() {
     if (PaintLayerScrollableArea* scrollableArea = layer->getScrollableArea()) {
       ScrollAnchor* anchor = scrollableArea->scrollAnchor();
       DCHECK(anchor);
-      anchor->clearSelf(true);
+      anchor->clearSelf();
     }
     layer = layer->parent();
   }
@@ -338,7 +334,7 @@ void ScrollAnchor::clear() {
   if (FrameView* view = layoutObject->frameView()) {
     ScrollAnchor* anchor = view->scrollAnchor();
     DCHECK(anchor);
-    anchor->clearSelf(true);
+    anchor->clearSelf();
   }
 }
 
