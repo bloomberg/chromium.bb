@@ -83,6 +83,7 @@ var CookieTreeBehaviorImpl = {
   onTreeItemRemoved_: function(args) {
     this.rootCookieNode.removeByParentId(args.id, args.start, args.count);
     this.sites = this.rootCookieNode.getSummaryList();
+    this.fire('cookie-tree-changed');
   },
 
   /**

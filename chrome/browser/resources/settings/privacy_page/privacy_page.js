@@ -80,6 +80,17 @@ Polymer({
 </if>
   },
 
+  /**
+   * This is a workaround to connect the remove all button to the subpage.
+   * @private
+   */
+  onRemoveAllCookiesFromSite_: function() {
+    var node = /** @type {?SiteDataDetailsSubpageElement} */(this.$$(
+        'site-data-details-subpage'));
+    if (node)
+      node.removeAll();
+  },
+
   /** @private */
   onSiteSettingsTap_: function() {
     settings.navigateTo(settings.Route.SITE_SETTINGS);

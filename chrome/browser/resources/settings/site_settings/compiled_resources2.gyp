@@ -89,11 +89,10 @@
       'includes': ['../../../../../third_party/closure_compiler/compile_js2.gypi'],
     },
     {
-      'target_name': 'site_data_details_dialog',
+      'target_name': 'site_data_details_subpage',
       'dependencies': [
-        '<(DEPTH)/ui/webui/resources/cr_elements/cr_dialog/compiled_resources2.gyp:cr_dialog',
-        'cookie_tree_node',
-        'site_settings_behavior',
+        '<(DEPTH)/ui/webui/resources/js/compiled_resources2.gyp:cr',
+        'cookie_tree_behavior',
       ],
       'includes': ['../../../../../third_party/closure_compiler/compile_js2.gypi'],
     },

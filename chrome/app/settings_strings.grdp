@@ -1826,9 +1826,6 @@
   <message name="IDS_SETTINGS_SITE_SETTINGS_COOKIE_DIALOG" desc="A label for cookie dialog, stating which site we're showing data for.">
     <ph name="SITE">$1<ex>www.example.com</ex></ph> locally stored data
   </message>
-  <message name="IDS_SETTINGS_SITE_SETTINGS_COOKIE" desc="Label prefix for a cookie.">
-    Cookie: <ph name="NAME">$1<ex>cookie_1</ex></ph>
-  </message>
   <message name="IDS_SETTINGS_SITE_SETTINGS_COOKIE_REMOVE" desc="Label for the button to delete a single site cookie.">
     Remove
   </message>
@@ -2386,10 +2383,10 @@
     <message name="IDS_SETTINGS_DISPLAY_SCREEN" desc="In Device Settings > Displays, the label for the dropdown menu for changing the dispay type.">
       Screen
     </message>
-    <message name="IDS_SETTINGS_DISPLAY_SCREEN_PRIMARY" desc="The label for the dropdown menu list item to set the seleted screen as primary display.">
+    <message name="IDS_SETTINGS_DISPLAY_SCREEN_PRIMARY" desc="The label for the dropdown menu list item to set the selected screen as primary display.">
       Primary display
     </message>
-    <message name="IDS_SETTINGS_DISPLAY_SCREEN_EXTENDED" desc="The label for the dropdown menu list item to set the seleted screen as extended display.">
+    <message name="IDS_SETTINGS_DISPLAY_SCREEN_EXTENDED" desc="The label for the dropdown menu list item to set the selected screen as extended display.">
       Extended display
     </message>
     <message name="IDS_SETTINGS_DISPLAY_RESOLUTION_TITLE" desc="In Device Settings > Displays, the label for the section for changing a display's resolution.">

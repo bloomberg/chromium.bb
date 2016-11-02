@@ -151,6 +151,8 @@ cr.define('settings', function() {
       r.SITE_SETTINGS.createChild('backgroundSync');
   r.SITE_SETTINGS_CAMERA = r.SITE_SETTINGS.createChild('camera');
   r.SITE_SETTINGS_COOKIES = r.SITE_SETTINGS.createChild('cookies');
+  r.SITE_SETTINGS_DATA_DETAILS =
+      r.SITE_SETTINGS_COOKIES.createChild('/cookies/detail');
   r.SITE_SETTINGS_IMAGES = r.SITE_SETTINGS.createChild('images');
   r.SITE_SETTINGS_JAVASCRIPT = r.SITE_SETTINGS.createChild('javascript');
   r.SITE_SETTINGS_KEYGEN = r.SITE_SETTINGS.createChild('keygen');

@@ -783,11 +783,11 @@
       <structure name="IDR_SETTINGS_SITE_DATA_JS"
                  file="site_settings/site_data.js"
                  type="chrome_html" />
-      <structure name="IDR_SETTINGS_SITE_DATA_DETAILS_DIALOG_HTML"
-                 file="site_settings/site_data_details_dialog.html"
+      <structure name="IDR_SETTINGS_SITE_DATA_DETAILS_SUBPAGE_HTML"
+                 file="site_settings/site_data_details_subpage.html"
                  type="chrome_html" />
-      <structure name="IDR_SETTINGS_SITE_DATA_DETAILS_DIALOG_JS"
-                 file="site_settings/site_data_details_dialog.js"
+      <structure name="IDR_SETTINGS_SITE_DATA_DETAILS_SUBPAGE_JS"
+                 file="site_settings/site_data_details_subpage.js"
                  type="chrome_html" />
       <structure name="IDR_SETTINGS_SITE_LIST_HTML"
                  file="site_settings/site_list.html"

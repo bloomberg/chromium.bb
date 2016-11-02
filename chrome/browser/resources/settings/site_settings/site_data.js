@@ -125,15 +125,7 @@ Polymer({
    * @private
    */
   onSiteTap_: function(event) {
-    var dialog = document.createElement('site-data-details-dialog');
-    dialog.category = this.category;
-    this.shadowRoot.appendChild(dialog);
-
-    var node = this.rootCookieNode.fetchNodeById(event.model.item.id, false);
-    dialog.open(node);
-
-    dialog.addEventListener('close', function(event) {
-      dialog.remove();
-    });
+    settings.navigateTo(settings.Route.SITE_SETTINGS_DATA_DETAILS,
+        new URLSearchParams('site=' + event.model.item.site));
   },
 });

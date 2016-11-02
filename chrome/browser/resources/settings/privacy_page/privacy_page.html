@@ -15,6 +15,7 @@
 <link rel="import" href="/site_settings/constants.html">
 <link rel="import" href="/site_settings/media_picker.html">
 <link rel="import" href="/site_settings/protocol_handlers.html">
+<link rel="import" href="/site_settings/site_data_details_subpage.html">
 <link rel="import" href="/site_settings/site_settings_category.html">
 <link rel="import" href="/site_settings/usb_devices.html">
 <link rel="import" href="/site_settings/site_data.html">
@@ -347,6 +348,17 @@
       <template is="dom-if" route-path="/content/siteDetails" no-search>
         <settings-subpage page-title="$i18n{siteSettingsSiteDetails}">
           <site-details site="[[selectedSite]]"></site-details>
+        </settings-subpage>
+      </template>
+      <template is="dom-if" route-path="/cookies/detail"
+          no-search>
+        <settings-subpage page-title="[[pageTitle]]">
+          <paper-button class="subpage-title-extra"
+              on-tap="onRemoveAllCookiesFromSite_">
+            $i18n{siteSettingsCookieRemoveAll}
+          </paper-button>
+          <site-data-details-subpage page-title="{{pageTitle}}">
+          </site-data-details-subpage>
         </settings-subpage>
       </template>
     </settings-animated-pages>
