@@ -62,3 +62,8 @@ void BlockedActionBubbleDelegate::OnBubbleShown() {}
 void BlockedActionBubbleDelegate::OnBubbleClosed(CloseAction action) {
   base::ResetAndReturn(&callback_).Run(action);
 }
+
+std::unique_ptr<ToolbarActionsBarBubbleDelegate::ExtraViewInfo>
+BlockedActionBubbleDelegate::GetExtraViewInfo() {
+  return nullptr;
+}

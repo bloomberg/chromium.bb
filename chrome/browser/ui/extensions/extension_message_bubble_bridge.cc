@@ -6,7 +6,14 @@
 
 #include <utility>
 
+#include "base/memory/ptr_util.h"
 #include "chrome/browser/extensions/extension_message_bubble_controller.h"
+#include "chrome/browser/profiles/profile.h"
+#include "chrome/grit/generated_resources.h"
+#include "components/grit/components_scaled_resources.h"
+#include "extensions/browser/extension_registry.h"
+#include "ui/base/l10n/l10n_util.h"
+#include "ui/gfx/vector_icons_public.h"
 
 ExtensionMessageBubbleBridge::ExtensionMessageBubbleBridge(
     std::unique_ptr<extensions::ExtensionMessageBubbleController> controller)
@@ -20,6 +27,12 @@ bool ExtensionMessageBubbleBridge::ShouldShow() {
 
 bool ExtensionMessageBubbleBridge::ShouldCloseOnDeactivate() {
   return controller_->CloseOnDeactivate();
+}
+
+bool ExtensionMessageBubbleBridge::IsPolicyIndicationNeeded(
+    const extensions::Extension* extension) {
+  return controller_->delegate()->SupportsPolicyIndicator() &&
+         extensions::Manifest::IsPolicyLocation(extension->location());
 }
 
 base::string16 ExtensionMessageBubbleBridge::GetHeadingText() {
@@ -37,6 +50,18 @@ base::string16 ExtensionMessageBubbleBridge::GetItemListText() {
 }
 
 base::string16 ExtensionMessageBubbleBridge::GetActionButtonText() {
+  const extensions::ExtensionIdList& list = controller_->GetExtensionIdList();
+  DCHECK(!list.empty());
+  const extensions::Extension* extension =
+      extensions::ExtensionRegistry::Get(controller_->profile())
+          ->enabled_extensions()
+          .GetByID(list[0]);
+
+  DCHECK(extension);
+  // An empty string is returned so that we don't display the button prompting
+  // to remove policy-installed extensions.
+  if (IsPolicyIndicationNeeded(extension))
+    return base::string16();
   return controller_->delegate()->GetActionButtonLabel();
 }
 
@@ -73,4 +98,31 @@ void ExtensionMessageBubbleBridge::OnBubbleClosed(CloseAction action) {
       controller_->OnLinkClicked();
       break;
   }
+}
+
+std::unique_ptr<ToolbarActionsBarBubbleDelegate::ExtraViewInfo>
+ExtensionMessageBubbleBridge::GetExtraViewInfo() {
+  const extensions::ExtensionIdList& list = controller_->GetExtensionIdList();
+  const extensions::Extension* extension =
+      extensions::ExtensionRegistry::Get(controller_->profile())
+          ->enabled_extensions()
+          .GetByID(list[0]);
+
+  DCHECK(extension);
+
+  std::unique_ptr<ExtraViewInfo> extra_view_info =
+      base::MakeUnique<ExtraViewInfo>();
+
+  if (IsPolicyIndicationNeeded(extension)) {
+    DCHECK_EQ(1u, list.size());
+    extra_view_info->resource_id = gfx::VectorIconId::BUSINESS;
+    extra_view_info->text =
+        l10n_util::GetStringUTF16(IDS_EXTENSIONS_INSTALLED_BY_ADMIN);
+    extra_view_info->is_text_linked = false;
+  } else {
+    extra_view_info->text = controller_->delegate()->GetLearnMoreLabel();
+    extra_view_info->is_text_linked = true;
+  }
+
+  return extra_view_info;
 }

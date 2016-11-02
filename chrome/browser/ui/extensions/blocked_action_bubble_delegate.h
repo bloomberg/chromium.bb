@@ -27,6 +27,8 @@ class BlockedActionBubbleDelegate : public ToolbarActionsBarBubbleDelegate {
   base::string16 GetActionButtonText() override;
   base::string16 GetDismissButtonText() override;
   base::string16 GetLearnMoreButtonText() override;
+  std::unique_ptr<ToolbarActionsBarBubbleDelegate::ExtraViewInfo>
+  GetExtraViewInfo() override;
   std::string GetAnchorActionId() override;
   void OnBubbleShown() override;
   void OnBubbleClosed(CloseAction action) override;

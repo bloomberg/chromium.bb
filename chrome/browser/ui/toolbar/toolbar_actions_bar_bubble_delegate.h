@@ -8,6 +8,7 @@
 #include <string>
 
 #include "base/strings/string16.h"
+#include "ui/gfx/vector_icons_public.h"
 
 // A delegate for a generic bubble that hangs off the toolbar actions bar.
 class ToolbarActionsBarBubbleDelegate {
@@ -17,6 +18,26 @@ class ToolbarActionsBarBubbleDelegate {
     CLOSE_EXECUTE,
     CLOSE_DISMISS_USER_ACTION,
     CLOSE_DISMISS_DEACTIVATION,
+  };
+
+  // Content populating an optional view, containing an image icon and/or
+  // (linked) text, in the bubble.
+  struct ExtraViewInfo {
+    ExtraViewInfo()
+        : resource_id(gfx::VectorIconId::VECTOR_ICON_NONE),
+          is_text_linked(false) {}
+
+    // The resource id referencing the image icon. If has a value of -1, then no
+    // image icon will be added.
+    gfx::VectorIconId resource_id;
+
+    // Text in the view. If this is an empty string, no text will be added.
+    base::string16 text;
+
+    // If the struct's text is nonempty and this value is true, then a link of
+    // the text is added. If this value is false, the text is not treated as a
+    // link.
+    bool is_text_linked;
   };
 
   virtual ~ToolbarActionsBarBubbleDelegate() {}
@@ -64,6 +85,11 @@ class ToolbarActionsBarBubbleDelegate {
 
   // Called when the bubble is closed with the type of action the user took.
   virtual void OnBubbleClosed(CloseAction action) = 0;
+
+  // Returns the ExtraViewInfo struct associated with the bubble delegate. If
+  // this returns a nullptr, no extra view (image icon and/or (linked) text) is
+  // added to the bubble.
+  virtual std::unique_ptr<ExtraViewInfo> GetExtraViewInfo() = 0;
 };
 
 #endif  // CHROME_BROWSER_UI_TOOLBAR_TOOLBAR_ACTIONS_BAR_BUBBLE_DELEGATE_H_

@@ -101,14 +101,15 @@ const Extension* ExtensionServiceTestWithInstall::PackAndInstallCRX(
     const base::FilePath& dir_path,
     const base::FilePath& pem_path,
     InstallState install_state,
-    int creation_flags) {
+    int creation_flags,
+    Manifest::Location install_location) {
   base::FilePath crx_path;
   base::ScopedTempDir temp_dir;
   EXPECT_TRUE(temp_dir.CreateUniqueTempDir());
   crx_path = temp_dir.GetPath().AppendASCII("temp.crx");
-
   PackCRX(dir_path, pem_path, crx_path);
-  return InstallCRX(crx_path, install_state, creation_flags);
+
+  return InstallCRX(crx_path, install_location, install_state, creation_flags);
 }
 
 const Extension* ExtensionServiceTestWithInstall::PackAndInstallCRX(
@@ -116,14 +117,22 @@ const Extension* ExtensionServiceTestWithInstall::PackAndInstallCRX(
     const base::FilePath& pem_path,
     InstallState install_state) {
   return PackAndInstallCRX(dir_path, pem_path, install_state,
-                           Extension::NO_FLAGS);
+                           Extension::NO_FLAGS, Manifest::Location::INTERNAL);
 }
 
 const Extension* ExtensionServiceTestWithInstall::PackAndInstallCRX(
     const base::FilePath& dir_path,
     InstallState install_state) {
   return PackAndInstallCRX(dir_path, base::FilePath(), install_state,
-                           Extension::NO_FLAGS);
+                           Extension::NO_FLAGS, Manifest::Location::INTERNAL);
+}
+
+const Extension* ExtensionServiceTestWithInstall::PackAndInstallCRX(
+    const base::FilePath& dir_path,
+    Manifest::Location install_location,
+    InstallState install_state) {
+  return PackAndInstallCRX(dir_path, base::FilePath(), install_state,
+                           Extension::NO_FLAGS, install_location);
 }
 
 // Attempts to install an extension. Use INSTALL_FAILED if the installation
@@ -136,8 +145,18 @@ const Extension* ExtensionServiceTestWithInstall::InstallCRX(
     InstallState install_state,
     int creation_flags,
     const std::string& expected_old_name) {
-  InstallCRXInternal(path, creation_flags);
-  return VerifyCrxInstall(path, install_state, expected_old_name);
+  InstallCRXInternal(path, Manifest::Location::INTERNAL, install_state,
+                     creation_flags);
+  return VerifyCrxInstall(path, install_state);
+}
+
+const Extension* ExtensionServiceTestWithInstall::InstallCRX(
+    const base::FilePath& path,
+    Manifest::Location install_location,
+    InstallState install_state,
+    int creation_flags) {
+  InstallCRXInternal(path, install_location, install_state, creation_flags);
+  return VerifyCrxInstall(path, install_state);
 }
 
 // Attempts to install an extension. Use INSTALL_FAILED if the installation
@@ -160,28 +179,9 @@ const Extension* ExtensionServiceTestWithInstall::InstallCRX(
 const Extension* ExtensionServiceTestWithInstall::InstallCRXFromWebStore(
     const base::FilePath& path,
     InstallState install_state) {
-  InstallCRXInternal(path, Extension::FROM_WEBSTORE);
+  InstallCRXInternal(path, Manifest::Location::INTERNAL, install_state,
+                     Extension::FROM_WEBSTORE);
   return VerifyCrxInstall(path, install_state);
-}
-
-const Extension* ExtensionServiceTestWithInstall::InstallCRXWithLocation(
-    const base::FilePath& crx_path,
-    Manifest::Location install_location,
-    InstallState install_state) {
-  EXPECT_TRUE(base::PathExists(crx_path))
-      << "Path does not exist: "<< crx_path.value().c_str();
-  // no client (silent install)
-  scoped_refptr<CrxInstaller> installer(
-      CrxInstaller::CreateSilent(service()));
-  installer->set_install_source(install_location);
-
-  content::WindowedNotificationObserver observer(
-      extensions::NOTIFICATION_CRX_INSTALLER_DONE,
-      content::NotificationService::AllSources());
-  installer->InstallCrx(crx_path);
-  observer.Wait();
-
-  return VerifyCrxInstall(crx_path, install_state);
 }
 
 const Extension* ExtensionServiceTestWithInstall::VerifyCrxInstall(
@@ -330,6 +330,9 @@ void ExtensionServiceTestWithInstall::UninstallExtension(
   EXPECT_GT(pref_key_count, 0u);
   ValidateIntegerPref(id, "state", expected_state);
 
+  // We make a copy of the extension's id since the extension can be deleted
+  // once it's uninstalled.
+  std::string extension_id = id;
   // Uninstall it.
   if (use_helper) {
     EXPECT_TRUE(ExtensionService::UninstallExtensionHelper(
@@ -343,7 +346,7 @@ void ExtensionServiceTestWithInstall::UninstallExtension(
 
   // We should get an unload notification.
   EXPECT_FALSE(unloaded_id_.empty());
-  EXPECT_EQ(id, unloaded_id_);
+  EXPECT_EQ(extension_id, unloaded_id_);
 
   // Verify uninstalled state.
   size_t new_pref_key_count = GetPrefKeyCount();
@@ -355,7 +358,7 @@ void ExtensionServiceTestWithInstall::UninstallExtension(
   }
 
   // The extension should not be in the service anymore.
-  EXPECT_FALSE(service()->GetInstalledExtension(id));
+  EXPECT_FALSE(service()->GetInstalledExtension(extension_id));
   base::RunLoop().RunUntilIdle();
 
   // The directory should be gone.
@@ -411,11 +414,15 @@ void ExtensionServiceTestWithInstall::OnExtensionWillBeInstalled(
 // error checking.
 void ExtensionServiceTestWithInstall::InstallCRXInternal(
     const base::FilePath& crx_path,
+    Manifest::Location install_location,
+    InstallState install_state,
     int creation_flags) {
-  ASSERT_TRUE(base::PathExists(crx_path))
-      << "Path does not exist: "<< crx_path.value().c_str();
+  EXPECT_TRUE(base::PathExists(crx_path)) << "Path does not exist: "
+                                          << crx_path.value().c_str();
+  // no client (silent install)
   scoped_refptr<CrxInstaller> installer(
       CrxInstaller::CreateSilent(service()));
+  installer->set_install_source(install_location);
   installer->set_creation_flags(creation_flags);
   if (!(creation_flags & Extension::WAS_INSTALLED_BY_DEFAULT))
     installer->set_allow_silent_install(true);
@@ -425,7 +432,6 @@ void ExtensionServiceTestWithInstall::InstallCRXInternal(
       content::Source<extensions::CrxInstaller>(installer.get()));
 
   installer->InstallCrx(crx_path);
-
   observer.Wait();
 }
 

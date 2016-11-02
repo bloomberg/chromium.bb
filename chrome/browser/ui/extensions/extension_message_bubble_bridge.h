@@ -11,6 +11,7 @@
 #include "chrome/browser/ui/toolbar/toolbar_actions_bar_bubble_delegate.h"
 
 namespace extensions {
+class Extension;
 class ExtensionMessageBubbleController;
 }
 
@@ -26,12 +27,14 @@ class ExtensionMessageBubbleBridge : public ToolbarActionsBarBubbleDelegate {
   // ToolbarActionsBarBubbleDelegate:
   bool ShouldShow() override;
   bool ShouldCloseOnDeactivate() override;
+  bool IsPolicyIndicationNeeded(const extensions::Extension* extension);
   base::string16 GetHeadingText() override;
   base::string16 GetBodyText(bool anchored_to_action) override;
   base::string16 GetItemListText() override;
   base::string16 GetActionButtonText() override;
   base::string16 GetDismissButtonText() override;
   base::string16 GetLearnMoreButtonText() override;
+  std::unique_ptr<ExtraViewInfo> GetExtraViewInfo() override;
   std::string GetAnchorActionId() override;
   void OnBubbleShown() override;
   void OnBubbleClosed(CloseAction action) override;

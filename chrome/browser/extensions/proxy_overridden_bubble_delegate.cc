@@ -146,4 +146,8 @@ const char* ProxyOverriddenBubbleDelegate::GetKey() {
   return "ProxyOverriddenBubbleDelegate";
 }
 
+bool ProxyOverriddenBubbleDelegate::SupportsPolicyIndicator() {
+  return true;
+}
+
 }  // namespace extensions

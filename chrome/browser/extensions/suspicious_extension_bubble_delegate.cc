@@ -133,4 +133,8 @@ const char* SuspiciousExtensionBubbleDelegate::GetKey() {
   return "SuspiciousExtensionBubbleDelegate";
 }
 
+bool SuspiciousExtensionBubbleDelegate::SupportsPolicyIndicator() {
+  return false;
+}
+
 }  // namespace extensions

@@ -251,4 +251,8 @@ const char* SettingsApiBubbleDelegate::GetKey() {
   return "";
 }
 
+bool SettingsApiBubbleDelegate::SupportsPolicyIndicator() {
+  return true;
+}
+
 }  // namespace extensions

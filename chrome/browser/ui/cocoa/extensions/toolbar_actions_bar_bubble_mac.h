@@ -33,8 +33,14 @@ class ToolbarActionsBarBubbleDelegate;
   // The dismiss button. Optional.
   NSButton* dismissButton_;
 
-  // The "learn more" link-style button. Optional.
-  NSButton* learnMoreButton_;
+  // The extra view text as a link-style button. Optional.
+  NSButton* link_;
+
+  // The extra view text as a label. Optional.
+  NSTextField* label_;
+
+  // The extra view icon that can accompany the extra view text. Optional.
+  NSImageView* iconView_;
 
   // This bubble's delegate.
   std::unique_ptr<ToolbarActionsBarBubbleDelegate> delegate_;
@@ -53,7 +59,9 @@ class ToolbarActionsBarBubbleDelegate;
 @property(readonly, nonatomic) NSButton* actionButton;
 @property(readonly, nonatomic) NSTextField* itemList;
 @property(readonly, nonatomic) NSButton* dismissButton;
-@property(readonly, nonatomic) NSButton* learnMoreButton;
+@property(readonly, nonatomic) NSButton* link;
+@property(readonly, nonatomic) NSTextField* label;
+@property(readonly, nonatomic) NSImageView* iconView;
 
 @end
 

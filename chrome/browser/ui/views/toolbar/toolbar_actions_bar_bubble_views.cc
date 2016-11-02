@@ -8,7 +8,11 @@
 #include "chrome/browser/ui/view_ids.h"
 #include "chrome/grit/locale_settings.h"
 #include "ui/base/resource/resource_bundle.h"
+#include "ui/gfx/color_palette.h"
+#include "ui/gfx/paint_vector_icon.h"
+#include "ui/gfx/vector_icons_public.h"
 #include "ui/views/controls/button/label_button.h"
+#include "ui/views/controls/image_view.h"
 #include "ui/views/controls/label.h"
 #include "ui/views/controls/link.h"
 #include "ui/views/layout/box_layout.h"
@@ -16,6 +20,7 @@
 
 namespace {
 const int kListPadding = 10;
+const int kIconSize = 16;
 }
 
 ToolbarActionsBarBubbleViews::ToolbarActionsBarBubbleViews(
@@ -25,7 +30,7 @@ ToolbarActionsBarBubbleViews::ToolbarActionsBarBubbleViews(
                                       views::BubbleBorder::TOP_RIGHT),
       delegate_(std::move(delegate)),
       item_list_(nullptr),
-      learn_more_button_(nullptr) {
+      link_(nullptr) {
   set_close_on_deactivate(delegate_->ShouldCloseOnDeactivate());
 }
 
@@ -37,13 +42,44 @@ void ToolbarActionsBarBubbleViews::Show() {
 }
 
 views::View* ToolbarActionsBarBubbleViews::CreateExtraView() {
-  base::string16 text = delegate_->GetLearnMoreButtonText();
-  if (text.empty())
+  std::unique_ptr<ToolbarActionsBarBubbleDelegate::ExtraViewInfo>
+      extra_view_info = delegate_->GetExtraViewInfo();
+
+  if (!extra_view_info)
     return nullptr;
 
-  learn_more_button_ = new views::Link(text);
-  learn_more_button_->set_listener(this);
-  return learn_more_button_;
+  gfx::VectorIconId resource_id = extra_view_info->resource_id;
+  std::unique_ptr<views::ImageView> icon;
+  if (resource_id != gfx::VectorIconId::VECTOR_ICON_NONE) {
+    icon.reset(new views::ImageView);
+    icon->SetImage(
+        gfx::CreateVectorIcon(resource_id, kIconSize, gfx::kChromeIconGrey));
+  }
+
+  std::unique_ptr<views::Label> label;
+  const base::string16& text = extra_view_info->text;
+  if (!text.empty()) {
+    if (extra_view_info->is_text_linked) {
+      link_ = new views::Link(text);
+      link_->set_listener(this);
+      label.reset(link_);
+    } else {
+      label.reset(new views::Label(text));
+    }
+  }
+
+  if (icon && label) {
+    views::View* parent = new views::View();
+    parent->SetLayoutManager(
+        new views::BoxLayout(views::BoxLayout::kHorizontal, 0, 0,
+                             views::kRelatedControlVerticalSpacing));
+    parent->AddChildView(icon.release());
+    parent->AddChildView(label.release());
+    return parent;
+  }
+
+  return icon ? static_cast<views::View*>(icon.release())
+              : static_cast<views::View*>(label.release());
 }
 
 base::string16 ToolbarActionsBarBubbleViews::GetWindowTitle() const {
@@ -96,7 +132,9 @@ void ToolbarActionsBarBubbleViews::Init() {
 }
 
 int ToolbarActionsBarBubbleViews::GetDialogButtons() const {
-  int buttons = ui::DIALOG_BUTTON_OK;
+  int buttons = ui::DIALOG_BUTTON_NONE;
+  if (!delegate_->GetActionButtonText().empty())
+    buttons |= ui::DIALOG_BUTTON_OK;
   if (!delegate_->GetDismissButtonText().empty())
     buttons |= ui::DIALOG_BUTTON_CANCEL;
   return buttons;

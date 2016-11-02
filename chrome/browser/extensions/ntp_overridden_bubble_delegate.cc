@@ -132,4 +132,8 @@ const char* NtpOverriddenBubbleDelegate::GetKey() {
   return "NtpOverriddenBubbleDelegate";
 }
 
+bool NtpOverriddenBubbleDelegate::SupportsPolicyIndicator() {
+  return true;
+}
+
 }  // namespace extensions

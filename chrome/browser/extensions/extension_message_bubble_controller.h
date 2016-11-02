@@ -87,6 +87,12 @@ class ExtensionMessageBubbleController : public chrome::BrowserListObserver {
     // state specific to the type (e.g., shown for profiles).
     virtual const char* GetKey() = 0;
 
+    // Returns true if the bubble is informing about a single extension that can
+    // be policy-installed.
+    // E.g. A proxy-type extension can be policy installed, but a developer-type
+    // extension cannot.
+    virtual bool SupportsPolicyIndicator() = 0;
+
     // Whether the "shown for profiles" set should be cleared if an action is
     // taken on the bubble. This defaults to true, since once an action is
     // taken, the extension will usually either be acknowledged or removed, and

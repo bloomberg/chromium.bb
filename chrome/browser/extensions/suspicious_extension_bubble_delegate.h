@@ -41,6 +41,7 @@ class SuspiciousExtensionBubbleDelegate
   void LogExtensionCount(size_t count) override;
   void LogAction(ExtensionMessageBubbleController::BubbleAction) override;
   const char* GetKey() override;
+  bool SupportsPolicyIndicator() override;
 
  private:
   DISALLOW_COPY_AND_ASSIGN(SuspiciousExtensionBubbleDelegate);

@@ -16,7 +16,11 @@
 #include "third_party/skia/include/core/SkColor.h"
 #import "ui/base/cocoa/controls/hyperlink_button_cell.h"
 #import "ui/base/cocoa/hover_button.h"
+#include "ui/base/resource/resource_bundle.h"
 #import "ui/base/cocoa/window_size_constants.h"
+#include "ui/gfx/color_palette.h"
+#include "ui/gfx/image/image_skia_util_mac.h"
+#include "ui/gfx/paint_vector_icon.h"
 #include "ui/native_theme/native_theme.h"
 #include "ui/native_theme/native_theme_mac.h"
 
@@ -59,7 +63,9 @@ CGFloat kMinWidth = 320.0;
 @synthesize actionButton = actionButton_;
 @synthesize itemList = itemList_;
 @synthesize dismissButton = dismissButton_;
-@synthesize learnMoreButton = learnMoreButton_;
+@synthesize link = link_;
+@synthesize label = label_;
+@synthesize iconView = iconView_;
 
 - (id)initWithParentWindow:(NSWindow*)parentWindow
                anchorPoint:(NSPoint)anchorPoint
@@ -149,19 +155,19 @@ CGFloat kMinWidth = 320.0;
                               fontSize:fontSize
                              alignment:alignment];
 
-  base::scoped_nsobject<NSTextField> textField(
-      [[NSTextField alloc] initWithFrame:NSZeroRect]);
+  NSTextField* textField =
+      [[[NSTextField alloc] initWithFrame:NSZeroRect] autorelease];
   [textField setEditable:NO];
   [textField setBordered:NO];
   [textField setDrawsBackground:NO];
   [textField setAttributedStringValue:attributedString];
   [[[self window] contentView] addSubview:textField];
   [textField sizeToFit];
-  return textField.autorelease();
+  return textField;
 }
 
 - (NSButton*)addButtonWithString:(const base::string16&)string {
-  NSButton* button = [[NSButton alloc] initWithFrame:NSZeroRect];
+  NSButton* button = [[[NSButton alloc] initWithFrame:NSZeroRect] autorelease];
   NSAttributedString* buttonString =
       [self attributedStringWithString:string
                               fontSize:13.0
@@ -177,29 +183,52 @@ CGFloat kMinWidth = 320.0;
 
 - (void)layout {
   // First, construct the pieces of the bubble that have a fixed width: the
-  // heading, and the button strip (the learn more link, the action button, and
-  // the dismiss button).
+  // heading, and the button strip (the extra view (icon and/or (linked) text),
+  // the action button, and the dismiss button).
   NSTextField* heading =
       [self addTextFieldWithString:delegate_->GetHeadingText()
                           fontSize:13.0
                          alignment:NSLeftTextAlignment];
   NSSize headingSize = [heading frame].size;
 
-  base::string16 learnMore = delegate_->GetLearnMoreButtonText();
-  NSSize learnMoreSize = NSZeroSize;
-  if (!learnMore.empty()) {  // The "learn more" link is optional.
-    NSAttributedString* learnMoreString =
-        [self attributedStringWithString:learnMore
-                                fontSize:13.0
-                               alignment:NSLeftTextAlignment];
-    learnMoreButton_ =
-        [[HyperlinkButtonCell buttonWithString:learnMoreString.string] retain];
-    [learnMoreButton_ setTarget:self];
-    [learnMoreButton_ setAction:@selector(onButtonClicked:)];
-    [[[self window] contentView] addSubview:learnMoreButton_];
-    [learnMoreButton_ sizeToFit];
-    learnMoreSize = NSMakeSize(NSWidth([learnMoreButton_ frame]),
-                               NSHeight([learnMoreButton_ frame]));
+  std::unique_ptr<ToolbarActionsBarBubbleDelegate::ExtraViewInfo>
+      extra_view_info = delegate_->GetExtraViewInfo();
+
+  gfx::VectorIconId resource_id = extra_view_info->resource_id;
+
+  NSSize extraViewIconSize = NSZeroSize;
+  // The extra view icon is optional.
+  if (resource_id != gfx::VectorIconId::VECTOR_ICON_NONE) {
+    NSImage* image =
+        gfx::Image(gfx::CreateVectorIcon(resource_id, 16, gfx::kChromeIconGrey))
+            .ToNSImage();
+    NSRect frame = NSMakeRect(0, 0, image.size.width, image.size.height);
+    iconView_ = [[[NSImageView alloc] initWithFrame:frame] autorelease];
+    [iconView_ setImage:image];
+    extraViewIconSize = frame.size;
+
+    [[[self window] contentView] addSubview:iconView_];
+  }
+
+  NSSize extraViewTextSize = NSZeroSize;
+  const base::string16& text = extra_view_info->text;
+  if (!text.empty()) {  // The extra view text is optional.
+    if (extra_view_info->is_text_linked) {
+      NSAttributedString* linkString =
+          [self attributedStringWithString:text
+                                  fontSize:13.0
+                                 alignment:NSLeftTextAlignment];
+      link_ = [HyperlinkButtonCell buttonWithString:linkString.string];
+      [link_ setTarget:self];
+      [link_ setAction:@selector(onButtonClicked:)];
+      [[[self window] contentView] addSubview:link_];
+      [link_ sizeToFit];
+    } else {
+      label_ = [self addTextFieldWithString:text
+                                   fontSize:13.0
+                                  alignment:NSLeftTextAlignment];
+    }
+    extraViewTextSize = label_ ? [label_ frame].size : [link_ frame].size;
   }
 
   base::string16 cancelStr = delegate_->GetDismissButtonText();
@@ -230,8 +259,10 @@ CGFloat kMinWidth = 320.0;
     buttonStripWidth += actionButtonSize.width + kButtonPadding;
   if (dismissButton_)
     buttonStripWidth += dismissButtonSize.width + kButtonPadding;
-  if (learnMoreButton_)
-    buttonStripWidth += learnMoreSize.width + kButtonPadding;
+  if (iconView_)
+    buttonStripWidth += extraViewIconSize.width + kButtonPadding;
+  if (link_ || label_)
+    buttonStripWidth += extraViewTextSize.width + kButtonPadding;
 
   CGFloat headingWidth = headingSize.width;
   CGFloat windowWidth =
@@ -287,13 +318,27 @@ CGFloat kMinWidth = 320.0;
         dismissButtonSize.height)];
     currentMaxWidth -= (dismissButtonSize.width + kButtonPadding);
   }
-  if (learnMoreButton_) {
-    CGFloat learnMoreHeight =
-        currentHeight + (buttonStripHeight - learnMoreSize.height) / 2.0;
-    [learnMoreButton_ setFrame:NSMakeRect(kHorizontalPadding,
-                                          learnMoreHeight,
-                                          learnMoreSize.width,
-                                          learnMoreSize.height)];
+  if (label_ || link_) {
+    CGFloat extraViewTextHeight =
+        currentHeight + (buttonStripHeight - extraViewTextSize.height) / 2.0;
+    NSRect frame = NSMakeRect(currentMaxWidth - extraViewTextSize.width,
+                              extraViewTextHeight, extraViewTextSize.width,
+                              extraViewTextSize.height);
+    if (link_) {
+      [link_ setFrame:frame];
+    } else {
+      [label_ setFrame:frame];
+    }
+    currentMaxWidth -= extraViewTextSize.width + kButtonPadding;
+  }
+  if (iconView_) {
+    CGFloat extraViewIconHeight =
+        currentHeight + (buttonStripHeight - extraViewIconSize.height) / 2.0;
+
+    [iconView_
+        setFrame:NSMakeRect(kHorizontalPadding, extraViewIconHeight,
+                            extraViewIconSize.width, extraViewIconSize.height)];
+    currentMaxWidth -= extraViewIconSize.width + kButtonPadding;
   }
   // Buttons have some inherit padding of their own, so we don't need quite as
   // much space here.
@@ -336,7 +381,7 @@ CGFloat kMinWidth = 320.0;
     return;
   ToolbarActionsBarBubbleDelegate::CloseAction action =
       ToolbarActionsBarBubbleDelegate::CLOSE_EXECUTE;
-  if (learnMoreButton_ && sender == learnMoreButton_) {
+  if (link_ && sender == link_) {
     action = ToolbarActionsBarBubbleDelegate::CLOSE_LEARN_MORE;
   } else if (dismissButton_ && sender == dismissButton_) {
     action = ToolbarActionsBarBubbleDelegate::CLOSE_DISMISS_USER_ACTION;

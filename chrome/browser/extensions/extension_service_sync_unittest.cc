@@ -705,8 +705,8 @@ TEST_F(ExtensionServiceSyncTest, GetSyncExtensionDataUserSettings) {
 
 TEST_F(ExtensionServiceSyncTest, SyncForUninstalledExternalExtension) {
   InitializeEmptyExtensionService();
-  InstallCRXWithLocation(
-      data_dir().AppendASCII("good.crx"), Manifest::EXTERNAL_PREF, INSTALL_NEW);
+  InstallCRX(data_dir().AppendASCII("good.crx"), Manifest::EXTERNAL_PREF,
+             INSTALL_NEW, Extension::NO_FLAGS);
   const Extension* extension = service()->GetInstalledExtension(good_crx);
   ASSERT_TRUE(extension);
 

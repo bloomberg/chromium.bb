@@ -44,6 +44,7 @@ class DevModeBubbleDelegate
   void LogAction(ExtensionMessageBubbleController::BubbleAction) override;
   const char* GetKey() override;
   bool ClearProfileSetAfterAction() override;
+  bool SupportsPolicyIndicator() override;
 
  private:
   DISALLOW_COPY_AND_ASSIGN(DevModeBubbleDelegate);

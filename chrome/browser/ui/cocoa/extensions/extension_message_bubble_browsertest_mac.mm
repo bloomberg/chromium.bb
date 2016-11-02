@@ -161,7 +161,7 @@ void ExtensionMessageBubbleBrowserTestMac::CheckBubbleIsNotPresentNative(
 void ExtensionMessageBubbleBrowserTestMac::ClickLearnMoreButton(
     Browser* browser) {
   ToolbarActionsBarBubbleMac* bubble = GetBubbleForBrowser(browser);
-  ClickInView([bubble learnMoreButton]);
+  ClickInView([bubble link]);
 }
 
 void ExtensionMessageBubbleBrowserTestMac::ClickActionButton(Browser* browser) {

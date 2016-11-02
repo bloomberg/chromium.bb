@@ -24,17 +24,29 @@ class TestToolbarActionsBarBubbleDelegate {
   // it would be deleted once the bubble closes.
   std::unique_ptr<ToolbarActionsBarBubbleDelegate> GetDelegate();
 
+  void set_action_button_text(const base::string16& action) {
+    action_ = action;
+  }
   void set_dismiss_button_text(const base::string16& dismiss) {
     dismiss_ = dismiss;
   }
   void set_learn_more_button_text(const base::string16& learn_more) {
     learn_more_ = learn_more;
+
+    ToolbarActionsBarBubbleDelegate::ExtraViewInfo extra_view_info_linked_text;
+    extra_view_info_linked_text.text = learn_more;
+    extra_view_info_linked_text.is_text_linked = true;
+    set_extra_view_info(extra_view_info_linked_text);
   }
   void set_item_list_text(const base::string16& item_list) {
     item_list_ = item_list;
   }
   void set_close_on_deactivate(bool close_on_deactivate) {
     close_on_deactivate_ = close_on_deactivate;
+  }
+  void set_extra_view_info(
+      const ToolbarActionsBarBubbleDelegate::ExtraViewInfo& extra_view_info) {
+    extra_view_info_ = extra_view_info;
   }
 
   const ToolbarActionsBarBubbleDelegate::CloseAction* close_action() const {
@@ -61,6 +73,9 @@ class TestToolbarActionsBarBubbleDelegate {
 
   // Whether to close the bubble on deactivation.
   bool close_on_deactivate_;
+
+  // Information about the extra view to show, if any.
+  ToolbarActionsBarBubbleDelegate::ExtraViewInfo extra_view_info_;
 
   DISALLOW_COPY_AND_ASSIGN(TestToolbarActionsBarBubbleDelegate);
 };

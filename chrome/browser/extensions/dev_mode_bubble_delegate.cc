@@ -106,4 +106,8 @@ bool DevModeBubbleDelegate::ClearProfileSetAfterAction() {
   return false;
 }
 
+bool DevModeBubbleDelegate::SupportsPolicyIndicator() {
+  return false;
+}
+
 }  // namespace extensions
