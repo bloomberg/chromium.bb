@@ -98,7 +98,7 @@ class CommandBufferSetup {
 
     gl::GLSurfaceTestSupport::InitializeOneOffWithMockBindings();
 
-    api_.set_version("OpenGL ES 3.0");
+    api_.set_version("OpenGL ES 3.1");
     api_.set_extensions(kExtensions);
     gl::SetStubGLApi(&api_);
 
