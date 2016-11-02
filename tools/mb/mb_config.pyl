@@ -1322,7 +1322,7 @@
     ],
 
     'release_bot_ozone_linux': [
-      'release_bot', 'ozone_linux',
+      'release_bot', 'ozone', 'ozone_linux',
     ],
 
     'release_afl_asan': [
