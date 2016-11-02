@@ -388,6 +388,8 @@ crbug.com/492664 [ Win ] imported/csswg-test/css-writing-modes-3/bidi-plaintext-
 
 crbug.com/267206 [ Mac ] virtual/rootlayerscrolls/fast/scrolling/scrollbar-tickmarks-hittest.html [ Timeout ]
 
+crbug.com/657839 [ Android ] fast/images/png-suite/test.html [ NeedsRebaseline ]
+
 crbug.com/280342 [ Linux Win ] http/tests/media/progress-events-generated-correctly.html [ Failure ]
 
 crbug.com/520739 [ Mac ] http/tests/websocket/close-code-and-reason.html [ Failure Pass Timeout ]
