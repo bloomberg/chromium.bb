@@ -7,6 +7,7 @@ package org.chromium.chrome.browser.payments;
 import android.test.suitebuilder.annotation.MediumTest;
 
 import org.chromium.base.ThreadUtils;
+import org.chromium.base.test.util.DisabledTest;
 import org.chromium.base.test.util.Feature;
 import org.chromium.chrome.R;
 import org.chromium.chrome.browser.autofill.AutofillTestHelper;
@@ -59,8 +60,10 @@ public class PaymentRequestTabTest extends PaymentRequestTestBase {
     }
 
     /** If the user closes the tab, the dialog is dismissed. */
-    @MediumTest
-    @Feature({"Payments"})
+    //@MediumTest
+    //@Feature({"Payments"})
+    // Disabled due to recent flakiness: crbug.com/661450.
+    @DisabledTest
     public void testDismissOnTabClose() throws InterruptedException, ExecutionException,
             TimeoutException {
         triggerUIAndWait(mReadyForInput);
