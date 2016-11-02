@@ -50,6 +50,9 @@ struct CrxUpdateItem;
 
 namespace component_updater {
 
+// Called when a non-blocking call in this module completes.
+using Callback = update_client::Callback;
+
 class OnDemandUpdater;
 
 using Configurator = update_client::Configurator;
@@ -83,7 +86,6 @@ struct ComponentInfo {
 // All methods are safe to call ONLY from the browser's main thread.
 class ComponentUpdateService {
  public:
-  using CompletionCallback = update_client::UpdateClient::CompletionCallback;
   using Observer = update_client::UpdateClient::Observer;
 
   // Adds an observer for this class. An observer should not be added more
@@ -172,9 +174,8 @@ class OnDemandUpdater {
   // the update will be applied. The caller can subscribe to component update
   // service notifications and provide an optional callback to get the result
   // of the call. The function does not implement any cooldown interval.
-  virtual void OnDemandUpdate(
-      const std::string& id,
-      ComponentUpdateService::CompletionCallback callback) = 0;
+  virtual void OnDemandUpdate(const std::string& id,
+                              const Callback& callback) = 0;
 };
 
 // Creates the component updater.

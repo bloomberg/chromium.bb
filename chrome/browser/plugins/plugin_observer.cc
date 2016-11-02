@@ -409,8 +409,7 @@ void PluginObserver::OnBlockedComponentUpdatedPlugin(
   component_observers_[placeholder_id] =
       base::MakeUnique<ComponentObserver>(this, placeholder_id, identifier);
   g_browser_process->component_updater()->GetOnDemandUpdater().OnDemandUpdate(
-      identifier,
-      component_updater::ComponentUpdateService::CompletionCallback());
+      identifier, component_updater::Callback());
 }
 
 void PluginObserver::RemoveComponentObserver(int placeholder_id) {

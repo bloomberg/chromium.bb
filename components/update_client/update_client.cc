@@ -98,23 +98,22 @@ UpdateClientImpl::~UpdateClientImpl() {
 
 void UpdateClientImpl::Install(const std::string& id,
                                const CrxDataCallback& crx_data_callback,
-                               const CompletionCallback& completion_callback) {
+                               const Callback& callback) {
   DCHECK(thread_checker_.CalledOnValidThread());
 
   if (IsUpdating(id)) {
-    completion_callback.Run(Error::UPDATE_IN_PROGRESS);
+    callback.Run(Error::UPDATE_IN_PROGRESS);
     return;
   }
 
   std::vector<std::string> ids;
   ids.push_back(id);
 
-  // Partially applies |completion_callback| to OnTaskComplete, so this
-  // argument is available when the task completes, along with the task itself.
-  const auto callback =
-      base::Bind(&UpdateClientImpl::OnTaskComplete, this, completion_callback);
+  // Partially applies |callback| to OnTaskComplete, so this argument is
+  // available when the task completes, along with the task itself.
   std::unique_ptr<TaskUpdate> task(new TaskUpdate(
-      update_engine_.get(), true, ids, crx_data_callback, callback));
+      update_engine_.get(), true, ids, crx_data_callback,
+      base::Bind(&UpdateClientImpl::OnTaskComplete, this, callback)));
 
   // Install tasks are run concurrently and never queued up.
   RunTask(std::move(task));
@@ -122,13 +121,12 @@ void UpdateClientImpl::Install(const std::string& id,
 
 void UpdateClientImpl::Update(const std::vector<std::string>& ids,
                               const CrxDataCallback& crx_data_callback,
-                              const CompletionCallback& completion_callback) {
+                              const Callback& callback) {
   DCHECK(thread_checker_.CalledOnValidThread());
 
-  const auto callback =
-      base::Bind(&UpdateClientImpl::OnTaskComplete, this, completion_callback);
   std::unique_ptr<TaskUpdate> task(new TaskUpdate(
-      update_engine_.get(), false, ids, crx_data_callback, callback));
+      update_engine_.get(), false, ids, crx_data_callback,
+      base::Bind(&UpdateClientImpl::OnTaskComplete, this, callback)));
 
   // If no other tasks are running at the moment, run this update task.
   // Otherwise, queue the task up.
@@ -146,15 +144,14 @@ void UpdateClientImpl::RunTask(std::unique_ptr<Task> task) {
   tasks_.insert(task.release());
 }
 
-void UpdateClientImpl::OnTaskComplete(
-    const CompletionCallback& completion_callback,
-    Task* task,
-    Error error) {
+void UpdateClientImpl::OnTaskComplete(const Callback& callback,
+                                      Task* task,
+                                      Error error) {
   DCHECK(thread_checker_.CalledOnValidThread());
   DCHECK(task);
 
-  base::ThreadTaskRunnerHandle::Get()->PostTask(
-      FROM_HERE, base::Bind(completion_callback, error));
+  base::ThreadTaskRunnerHandle::Get()->PostTask(FROM_HERE,
+                                                base::Bind(callback, error));
 
   // Remove the task from the set of the running tasks. Only tasks handled by
   // the update engine can be in this data structure.

@@ -31,7 +31,6 @@ struct UpdateContext;
 // update engine as part of an update.
 class Action {
  public:
-  using Callback = base::Callback<void(Error error)>;
   virtual ~Action() {}
 
   // Runs the code encapsulated by the action. When an action completes, it can
@@ -47,7 +46,7 @@ class ActionImpl {
   ActionImpl();
   ~ActionImpl();
 
-  void Run(UpdateContext* update_context, Action::Callback callback);
+  void Run(UpdateContext* update_context, Callback callback);
 
   // Changes the current state of the |item| to the new state |to|.
   void ChangeItemState(CrxUpdateItem* item, CrxUpdateItem::State to);
@@ -78,7 +77,7 @@ class ActionImpl {
   base::ThreadChecker thread_checker_;
 
   UpdateContext* update_context_;  // Not owned by this class.
-  Action::Callback callback_;
+  Callback callback_;
 
  private:
   DISALLOW_COPY_AND_ASSIGN(ActionImpl);

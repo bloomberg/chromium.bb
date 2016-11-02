@@ -61,8 +61,7 @@ class CrxUpdateService : public ComponentUpdateService,
   void OnEvent(Events event, const std::string& id) override;
 
   // Overrides for OnDemandUpdater.
-  void OnDemandUpdate(const std::string& id,
-                      CompletionCallback callback) override;
+  void OnDemandUpdate(const std::string& id, const Callback& callback) override;
 
  private:
   void Start();
@@ -70,8 +69,7 @@ class CrxUpdateService : public ComponentUpdateService,
 
   bool CheckForUpdates();
 
-  void OnDemandUpdateInternal(const std::string& id,
-                              CompletionCallback callback);
+  void OnDemandUpdateInternal(const std::string& id, const Callback& callback);
   bool OnDemandUpdateWithCooldown(const std::string& id);
 
   bool DoUnregisterComponent(const CrxComponent& component);
@@ -82,7 +80,7 @@ class CrxUpdateService : public ComponentUpdateService,
 
   void OnUpdate(const std::vector<std::string>& ids,
                 std::vector<CrxComponent>* components);
-  void OnUpdateComplete(CompletionCallback callback,
+  void OnUpdateComplete(Callback callback,
                         const base::TimeTicks& start_time,
                         update_client::Error error);
 

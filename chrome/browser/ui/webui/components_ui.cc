@@ -158,9 +158,8 @@ ComponentsUI::~ComponentsUI() {
 void ComponentsUI::OnDemandUpdate(const std::string& component_id) {
   component_updater::ComponentUpdateService* cus =
       g_browser_process->component_updater();
-  cus->GetOnDemandUpdater().OnDemandUpdate(
-      component_id,
-      component_updater::ComponentUpdateService::CompletionCallback());
+  cus->GetOnDemandUpdater().OnDemandUpdate(component_id,
+                                           component_updater::Callback());
 }
 
 // static

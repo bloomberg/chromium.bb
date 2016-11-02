@@ -143,6 +143,9 @@ class Configurator;
 enum class Error;
 struct CrxUpdateItem;
 
+// Called when a non-blocking call in this module completes.
+using Callback = base::Callback<void(Error error)>;
+
 // Defines an interface for a generic CRX installer.
 class CrxInstaller : public base::RefCountedThreadSafe<CrxInstaller> {
  public:
@@ -231,7 +234,6 @@ class UpdateClient : public base::RefCounted<UpdateClient> {
   using CrxDataCallback =
       base::Callback<void(const std::vector<std::string>& ids,
                           std::vector<CrxComponent>* components)>;
-  using CompletionCallback = base::Callback<void(Error error)>;
 
   // Defines an interface to observe the UpdateClient. It provides
   // notifications when state changes occur for the service itself or for the
@@ -284,8 +286,8 @@ class UpdateClient : public base::RefCounted<UpdateClient> {
   // the observers are being notified.
   virtual void RemoveObserver(Observer* observer) = 0;
 
-  // Installs the specified CRX. Calls back on |completion_callback| after the
-  // update has been handled. The |error| parameter of the |completion_callback|
+  // Installs the specified CRX. Calls back on |callback| after the
+  // update has been handled. The |error| parameter of the |callback|
   // contains an error code in the case of a run-time error, or 0 if the
   // install has been handled successfully. Overlapping calls of this function
   // are executed concurrently, as long as the id parameter is different,
@@ -296,7 +298,7 @@ class UpdateClient : public base::RefCounted<UpdateClient> {
   // queued up.
   virtual void Install(const std::string& id,
                        const CrxDataCallback& crx_data_callback,
-                       const CompletionCallback& completion_callback) = 0;
+                       const Callback& callback) = 0;
 
   // Updates the specified CRXs. Calls back on |crx_data_callback| before the
   // update is attempted to give the caller the opportunity to provide the
@@ -307,7 +309,7 @@ class UpdateClient : public base::RefCounted<UpdateClient> {
   // installs are running.
   virtual void Update(const std::vector<std::string>& ids,
                       const CrxDataCallback& crx_data_callback,
-                      const CompletionCallback& completion_callback) = 0;
+                      const Callback& callback) = 0;
 
   // Sends an uninstall ping for the CRX identified by |id| and |version|. The
   // |reason| parameter is defined by the caller. The current implementation of

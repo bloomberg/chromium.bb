@@ -42,7 +42,7 @@ struct UpdateContext;
 // applied one at a time.
 class UpdateEngine {
  public:
-  using CompletionCallback = base::Callback<void(Error error)>;
+  using Callback = base::Callback<void(Error error)>;
   using NotifyObserversCallback =
       base::Callback<void(UpdateClient::Observer::Events event,
                           const std::string& id)>;
@@ -60,7 +60,7 @@ class UpdateEngine {
   void Update(bool is_foreground,
               const std::vector<std::string>& ids,
               const UpdateClient::CrxDataCallback& crx_data_callback,
-              const CompletionCallback& update_callback);
+              const Callback& update_callback);
 
  private:
   void UpdateComplete(UpdateContext* update_context, Error error);
@@ -104,7 +104,7 @@ struct UpdateContext {
       const std::vector<std::string>& ids,
       const UpdateClient::CrxDataCallback& crx_data_callback,
       const UpdateEngine::NotifyObserversCallback& notify_observers_callback,
-      const UpdateEngine::CompletionCallback& callback,
+      const UpdateEngine::Callback& callback,
       UpdateChecker::Factory update_checker_factory,
       CrxDownloader::Factory crx_downloader_factory,
       PingManager* ping_manager);
@@ -129,7 +129,7 @@ struct UpdateContext {
   const UpdateEngine::NotifyObserversCallback notify_observers_callback;
 
   // Called when the all updates associated with this context have completed.
-  const UpdateEngine::CompletionCallback callback;
+  const UpdateEngine::Callback callback;
 
   // Posts replies back to the main thread.
   scoped_refptr<base::SingleThreadTaskRunner> main_task_runner;

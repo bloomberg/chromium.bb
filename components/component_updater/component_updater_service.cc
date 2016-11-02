@@ -248,7 +248,7 @@ void CrxUpdateService::MaybeThrottle(const std::string& id,
 }
 
 void CrxUpdateService::OnDemandUpdate(const std::string& id,
-                                      CompletionCallback callback) {
+                                      const Callback& callback) {
   DCHECK(thread_checker_.CalledOnValidThread());
 
   if (!GetComponent(id)) {
@@ -275,12 +275,12 @@ bool CrxUpdateService::OnDemandUpdateWithCooldown(const std::string& id) {
       return false;
   }
 
-  OnDemandUpdateInternal(id, CompletionCallback());
+  OnDemandUpdateInternal(id, Callback());
   return true;
 }
 
 void CrxUpdateService::OnDemandUpdateInternal(const std::string& id,
-                                              CompletionCallback callback) {
+                                              const Callback& callback) {
   DCHECK(thread_checker_.CalledOnValidThread());
 
   UMA_HISTOGRAM_ENUMERATION("ComponentUpdater.Calls", UPDATE_TYPE_MANUAL,
@@ -314,7 +314,7 @@ bool CrxUpdateService::CheckForUpdates() {
         unsecure_ids,
         base::Bind(&CrxUpdateService::OnUpdate, base::Unretained(this)),
         base::Bind(&CrxUpdateService::OnUpdateComplete, base::Unretained(this),
-                   CompletionCallback(), base::TimeTicks::Now()));
+                   Callback(), base::TimeTicks::Now()));
   }
 
   if (!secure_ids.empty()) {
@@ -322,7 +322,7 @@ bool CrxUpdateService::CheckForUpdates() {
         secure_ids,
         base::Bind(&CrxUpdateService::OnUpdate, base::Unretained(this)),
         base::Bind(&CrxUpdateService::OnUpdateComplete, base::Unretained(this),
-                   CompletionCallback(), base::TimeTicks::Now()));
+                   Callback(), base::TimeTicks::Now()));
   }
 
   return true;
@@ -375,7 +375,7 @@ void CrxUpdateService::OnUpdate(const std::vector<std::string>& ids,
   }
 }
 
-void CrxUpdateService::OnUpdateComplete(CompletionCallback callback,
+void CrxUpdateService::OnUpdateComplete(Callback callback,
                                         const base::TimeTicks& start_time,
                                         update_client::Error error) {
   DCHECK(thread_checker_.CalledOnValidThread());

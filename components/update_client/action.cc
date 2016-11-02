@@ -44,7 +44,7 @@ ActionImpl::~ActionImpl() {
   DCHECK(thread_checker_.CalledOnValidThread());
 }
 
-void ActionImpl::Run(UpdateContext* update_context, Action::Callback callback) {
+void ActionImpl::Run(UpdateContext* update_context, Callback callback) {
   DCHECK(thread_checker_.CalledOnValidThread());
 
   update_context_ = update_context;
