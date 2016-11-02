@@ -10,6 +10,7 @@
   <release seq="1">
     <includes>
       <include name="IDR_HEADLESS_LIB_DEVTOOLS_DISCOVERY_PAGE" file="devtools_discovery_page.html" type="BINDATA" />
+      <include name="IDR_HEADLESS_BROWSER_MANIFEST_OVERLAY" file="../browser/headless_browser_manifest_overlay.json" type="BINDATA" />
     </includes>
   </release>
 </grit>

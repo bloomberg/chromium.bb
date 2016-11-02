@@ -24,6 +24,8 @@ class HeadlessContentBrowserClient : public content::ContentBrowserClient {
   void OverrideWebkitPrefs(content::RenderViewHost* render_view_host,
                            content::WebPreferences* prefs) override;
   content::DevToolsManagerDelegate* GetDevToolsManagerDelegate() override;
+  std::unique_ptr<base::Value> GetServiceManifestOverlay(
+      const std::string& name) override;
 
  private:
   HeadlessBrowserImpl* browser_;  // Not owned.

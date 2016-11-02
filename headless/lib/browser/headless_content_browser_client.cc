@@ -7,15 +7,19 @@
 #include <memory>
 
 #include "base/callback.h"
+#include "base/json/json_reader.h"
 #include "base/memory/ptr_util.h"
 #include "content/public/browser/browser_context.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/render_process_host.h"
 #include "content/public/browser/render_view_host.h"
+#include "content/public/common/service_names.h"
+#include "headless/grit/headless_lib_resources.h"
 #include "headless/lib/browser/headless_browser_context_impl.h"
 #include "headless/lib/browser/headless_browser_impl.h"
 #include "headless/lib/browser/headless_browser_main_parts.h"
 #include "headless/lib/browser/headless_devtools_manager_delegate.h"
+#include "ui/base/resource/resource_bundle.h"
 
 namespace headless {
 
@@ -47,6 +51,17 @@ void HeadlessContentBrowserClient::OverrideWebkitPrefs(
 content::DevToolsManagerDelegate*
 HeadlessContentBrowserClient::GetDevToolsManagerDelegate() {
   return new HeadlessDevToolsManagerDelegate(browser_->GetWeakPtr());
+}
+
+std::unique_ptr<base::Value>
+HeadlessContentBrowserClient::GetServiceManifestOverlay(
+    const std::string& name) {
+  if (name != content::kBrowserServiceName)
+    return nullptr;
+  base::StringPiece manifest_contents =
+      ui::ResourceBundle::GetSharedInstance().GetRawDataResource(
+          IDR_HEADLESS_BROWSER_MANIFEST_OVERLAY);
+  return base::JSONReader::Read(manifest_contents);
 }
 
 }  // namespace headless

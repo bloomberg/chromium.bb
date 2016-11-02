@@ -1,0 +1,12 @@
+{
+  "name": "service:content_browser",
+  "interface_provider_specs": {
+    "navigation:frame": {
+      "provides": {
+        "renderer": [
+          "embedder_test::TestEmbedderService"
+        ]
+      }
+    }
+  }
+}
