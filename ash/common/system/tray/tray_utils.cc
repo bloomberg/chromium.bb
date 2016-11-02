@@ -4,20 +4,48 @@
 
 #include "ash/common/system/tray/tray_utils.h"
 
+#include "ash/common/ash_constants.h"
 #include "ash/common/material_design/material_design_controller.h"
 #include "ash/common/session/session_state_delegate.h"
 #include "ash/common/shelf/wm_shelf_util.h"
 #include "ash/common/system/tray/tray_constants.h"
 #include "ash/common/system/tray/tray_item_view.h"
+#include "ash/common/system/tray/tray_popup_label_button_border.h"
 #include "ash/common/wm_shell.h"
 #include "ui/accessibility/ax_view_state.h"
 #include "ui/gfx/font_list.h"
 #include "ui/gfx/geometry/vector2d.h"
 #include "ui/views/border.h"
+#include "ui/views/controls/button/label_button.h"
+#include "ui/views/controls/button/md_text_button.h"
 #include "ui/views/controls/label.h"
 #include "ui/views/controls/separator.h"
 
 namespace ash {
+
+views::LabelButton* CreateTrayPopupBorderlessButton(
+    views::ButtonListener* listener,
+    const base::string16& text) {
+  auto* button = new views::LabelButton(listener, text);
+  button->SetBorder(
+      std::unique_ptr<views::Border>(new TrayPopupLabelButtonBorder));
+  button->SetFocusForPlatform();
+  button->set_animate_on_state_change(false);
+  button->SetHorizontalAlignment(gfx::ALIGN_CENTER);
+  button->SetFocusPainter(views::Painter::CreateSolidFocusPainter(
+      kFocusBorderColor, gfx::Insets(1, 1, 2, 2)));
+  return button;
+}
+
+views::LabelButton* CreateTrayPopupButton(views::ButtonListener* listener,
+                                          const base::string16& text) {
+  if (!MaterialDesignController::IsSystemTrayMenuMaterial())
+    return CreateTrayPopupBorderlessButton(listener, text);
+
+  auto* button = views::MdTextButton::Create(listener, text);
+  button->SetProminent(true);
+  return button;
+}
 
 void SetupLabelForTray(views::Label* label) {
   if (MaterialDesignController::IsShelfMaterial()) {

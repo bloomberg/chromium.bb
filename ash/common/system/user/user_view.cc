@@ -17,6 +17,7 @@
 #include "ash/common/system/tray/tray_constants.h"
 #include "ash/common/system/tray/tray_popup_label_button.h"
 #include "ash/common/system/tray/tray_popup_label_button_border.h"
+#include "ash/common/system/tray/tray_utils.h"
 #include "ash/common/system/user/button_from_view.h"
 #include "ash/common/system/user/login_status.h"
 #include "ash/common/system/user/rounded_image_view.h"
@@ -34,6 +35,8 @@
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/base/resource/resource_bundle.h"
 #include "ui/gfx/paint_vector_icon.h"
+#include "ui/views/controls/button/label_button.h"
+#include "ui/views/controls/label.h"
 #include "ui/views/layout/fill_layout.h"
 #include "ui/views/painter.h"
 
@@ -41,6 +44,10 @@ namespace ash {
 namespace tray {
 
 namespace {
+
+bool UseMd() {
+  return MaterialDesignController::IsSystemTrayMenuMaterial();
+}
 
 const int kPublicAccountLogoutButtonBorderImagesNormal[] = {
     IDR_AURA_TRAY_POPUP_PUBLIC_ACCOUNT_LOGOUT_BUTTON_BORDER,
@@ -166,7 +173,7 @@ void AddUserView::AddContent() {
   AddChildViewAt(add_user_, 0);
 
   // Add the icon which is also the anchor for messages.
-  if (MaterialDesignController::IsSystemTrayMenuMaterial()) {
+  if (UseMd()) {
     views::ImageView* icon = new views::ImageView();
     icon->SetImage(
         gfx::CreateVectorIcon(kSystemMenuNewUserIcon, kMenuIconColor));
@@ -216,6 +223,18 @@ UserView::UserView(SystemTrayItem* owner, LoginStatus login, UserIndex index)
   if (!user_index_)
     AddLogoutButton(login);
   AddUserCard(login);
+
+  if (UseMd()) {
+    auto layout = new views::BoxLayout(views::BoxLayout::kHorizontal, 0, 0,
+                                       kTrayPopupPaddingBetweenItems);
+    SetLayoutManager(layout);
+    // Only the active user panel will be forced to a certain height.
+    if (!user_index_) {
+      layout->set_minimum_cross_axis_size(
+          GetTrayConstant(TRAY_POPUP_ITEM_HEIGHT));
+    }
+    layout->SetFlexForView(user_card_view_, 1);
+  }
 }
 
 UserView::~UserView() {
@@ -245,10 +264,12 @@ gfx::Rect UserView::GetBoundsInScreenOfUserButtonForTest() {
 }
 
 gfx::Size UserView::GetPreferredSize() const {
+  // MD uses a layout manager.
+  if (UseMd())
+    return View::GetPreferredSize();
+
   // The width is more or less ignored (set by other rows in the system menu).
-  gfx::Size size;
-  if (user_card_view_)
-    size = user_card_view_->GetPreferredSize();
+  gfx::Size size = user_card_view_->GetPreferredSize();
   if (logout_button_)
     size.SetToMax(logout_button_->GetPreferredSize());
   // Only the active user panel will be forced to a certain height.
@@ -265,8 +286,12 @@ int UserView::GetHeightForWidth(int width) const {
 }
 
 void UserView::Layout() {
+  // MD uses a layout manager.
+  if (UseMd())
+    return views::View::Layout();
+
   gfx::Rect contents_area(GetContentsBounds());
-  if (user_card_view_ && logout_button_) {
+  if (logout_button_) {
     // Give the logout button the space it requests.
     gfx::Rect logout_area = contents_area;
     logout_area.ClampToCenteredSize(logout_button_->GetPreferredSize());
@@ -302,10 +327,8 @@ void UserView::Layout() {
     user_card_area.set_width(remaining_width);
     user_card_view_->SetBoundsRect(user_card_area);
     logout_button_->SetBoundsRect(logout_area);
-  } else if (user_card_view_) {
+  } else {
     user_card_view_->SetBoundsRect(contents_area);
-  } else if (logout_button_) {
-    logout_button_->SetBoundsRect(contents_area);
   }
 }
 
@@ -349,7 +372,7 @@ void UserView::OnDidChangeFocus(View* focused_before, View* focused_now) {
 void UserView::AddLogoutButton(LoginStatus login) {
   const base::string16 title =
       user::GetLocalizedSignOutStringForStatus(login, true);
-  auto* logout_button = new TrayPopupLabelButton(this, title);
+  auto* logout_button = CreateTrayPopupBorderlessButton(this, title);
   logout_button->SetAccessibleName(title);
   logout_button_ = logout_button;
   // In public account mode, the logout button border has a custom color.
@@ -373,9 +396,7 @@ void UserView::AddLogoutButton(LoginStatus login) {
 void UserView::AddUserCard(LoginStatus login) {
   // Add padding around the panel.
   // TODO(estade): share this constant?
-  const int kSidePadding = MaterialDesignController::IsSystemTrayMenuMaterial()
-                               ? 12
-                               : kTrayPopupPaddingHorizontal;
+  const int kSidePadding = UseMd() ? 12 : kTrayPopupPaddingHorizontal;
   SetBorder(views::Border::CreateEmptyBorder(
       kTrayPopupUserCardVerticalPadding, kSidePadding,
       kTrayPopupUserCardVerticalPadding, kSidePadding));
@@ -413,12 +434,11 @@ void UserView::AddUserCard(LoginStatus login) {
           kTrayPopupUserCardVerticalPadding, kSidePadding,
           kTrayPopupUserCardVerticalPadding, kSidePadding));
       contents_view->SetLayoutManager(new views::FillLayout());
-      SetBorder(views::Border::CreateEmptyBorder(0, 0, 0, 0));
+      SetBorder(nullptr);
       contents_view->AddChildView(user_card_view_);
       insets = gfx::Insets(1, 1, 1, 3);
     }
-    bool highlight = !MaterialDesignController::IsSystemTrayMenuMaterial() &&
-                     user_index_ == 0;
+    bool highlight = !UseMd() && user_index_ == 0;
     auto* button = new ButtonFromView(contents_view, this, highlight, insets);
     user_card_view_ = button;
     is_user_card_button_ = true;

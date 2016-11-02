@@ -46,20 +46,22 @@ class ScreenStatusView : public views::View, public views::ButtonListener {
                    const base::string16& stop_button_text);
   ~ScreenStatusView() override;
 
-  // Overridden from views::View.
-  void Layout() override;
-
   // Overridden from views::ButtonListener.
   void ButtonPressed(views::Button* sender, const ui::Event& event) override;
 
   void CreateItems();
-  void Update();
+  void UpdateFromScreenTrayItem();
+
+ protected:
+  views::ImageView* icon() { return icon_; }
+  views::Label* label() { return label_; }
 
  private:
+  // The controller for this view. May be null.
   ScreenTrayItem* screen_tray_item_;
   views::ImageView* icon_;
   views::Label* label_;
-  TrayPopupLabelButton* stop_button_;
+  views::View* stop_button_;
   base::string16 label_text_;
   base::string16 stop_button_text_;
 

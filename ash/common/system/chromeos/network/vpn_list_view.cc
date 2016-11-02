@@ -8,6 +8,7 @@
 #include <utility>
 #include <vector>
 
+#include "ash/common/material_design/material_design_controller.h"
 #include "ash/common/system/chromeos/network/network_icon.h"
 #include "ash/common/system/chromeos/network/network_icon_animation.h"
 #include "ash/common/system/chromeos/network/network_icon_animation_observer.h"
@@ -17,6 +18,7 @@
 #include "ash/common/system/tray/system_tray_delegate.h"
 #include "ash/common/system/tray/tray_constants.h"
 #include "ash/common/system/tray/tray_popup_label_button.h"
+#include "ash/common/system/tray/tray_utils.h"
 #include "ash/common/wm_shell.h"
 #include "base/bind.h"
 #include "base/bind_helpers.h"
@@ -42,6 +44,10 @@
 namespace ash {
 
 namespace {
+
+bool UseMd() {
+  return MaterialDesignController::IsSystemTrayMenuMaterial();
+}
 
 bool IsConnectedOrConnecting(const chromeos::NetworkState* network) {
   return network->IsConnectedState() || network->IsConnectingState();
@@ -110,7 +116,7 @@ class VPNListNetworkEntry : public VPNListEntryBase,
 
   const std::string service_path_;
 
-  DisconnectButton* disconnect_button_ = nullptr;
+  views::LabelButton* disconnect_button_ = nullptr;
 
   DISALLOW_COPY_AND_ASSIGN(VPNListNetworkEntry);
 };
@@ -166,6 +172,7 @@ VPNListNetworkEntry::DisconnectButton::DisconnectButton(
           parent,
           l10n_util::GetStringUTF16(IDS_ASH_STATUS_TRAY_VPN_DISCONNECT)),
       parent_(parent) {
+  DCHECK(!UseMd());
   DCHECK(parent_);
 }
 
@@ -212,10 +219,16 @@ void VPNListNetworkEntry::UpdateFromNetworkState(
       network_icon::GetLabelForNetwork(network, network_icon::ICON_TYPE_LIST),
       IsConnectedOrConnecting(network));
   if (IsConnectedOrConnecting(network)) {
-    disconnect_button_ = new DisconnectButton(this);
+    if (UseMd()) {
+      disconnect_button_ = CreateTrayPopupButton(
+          this, l10n_util::GetStringUTF16(IDS_ASH_STATUS_TRAY_VPN_DISCONNECT));
+    } else {
+      disconnect_button_ = new DisconnectButton(this);
+    }
     AddChildView(disconnect_button_);
-    SetBorder(
-        views::Border::CreateEmptyBorder(0, kTrayPopupPaddingHorizontal, 0, 3));
+    SetBorder(views::Border::CreateEmptyBorder(
+        0, kTrayPopupPaddingHorizontal, 0,
+        UseMd() ? kTrayPopupButtonEndMargin : 3));
   } else {
     SetBorder(
         views::Border::CreateEmptyBorder(0, kTrayPopupPaddingHorizontal, 0, 0));
@@ -223,8 +236,13 @@ void VPNListNetworkEntry::UpdateFromNetworkState(
 
   // The icon and the disconnect button are always set to their preferred size.
   // All remaining space is used for the network name.
-  views::BoxLayout* layout = new views::BoxLayout(
-      views::BoxLayout::kHorizontal, 0, 3, kTrayPopupPaddingBetweenItems);
+  views::BoxLayout* layout =
+      new views::BoxLayout(views::BoxLayout::kHorizontal, 0, UseMd() ? 0 : 3,
+                           kTrayPopupPaddingBetweenItems);
+  if (UseMd()) {
+    layout->set_cross_axis_alignment(
+        views::BoxLayout::CROSS_AXIS_ALIGNMENT_CENTER);
+  }
   SetLayoutManager(layout);
   layout->SetDefaultFlex(0);
   layout->SetFlexForView(text_label(), 1);

@@ -75,6 +75,10 @@ namespace ash {
 namespace tray {
 namespace {
 
+bool UseMd() {
+  return MaterialDesignController::IsSystemTrayMenuMaterial();
+}
+
 // Delay between scan requests.
 const int kRequestScanDelaySeconds = 10;
 
@@ -330,7 +334,7 @@ NetworkStateListDetailedView::NetworkStateListDetailedView(
     // TODO(varkha): NetworkListViewMd is a temporary fork of NetworkListView.
     // NetworkListView will go away when Material Design becomes default.
     // See crbug.com/614453.
-    if (MaterialDesignController::IsSystemTrayMenuMaterial())
+    if (UseMd())
       network_list_view_.reset(new NetworkListViewMd(this));
     else
       network_list_view_.reset(new NetworkListView(this));
@@ -367,7 +371,7 @@ void NetworkStateListDetailedView::Init() {
   scanning_throbber_ = nullptr;
 
   CreateScrollableList();
-  if (!MaterialDesignController::IsSystemTrayMenuMaterial())
+  if (!UseMd())
     CreateNetworkExtra();
   CreateTitleRow(IDS_ASH_STATUS_TRAY_NETWORK);
 
@@ -385,7 +389,7 @@ NetworkStateListDetailedView::GetViewType() const {
 
 void NetworkStateListDetailedView::HandleButtonPressed(views::Button* sender,
                                                        const ui::Event& event) {
-  if (MaterialDesignController::IsSystemTrayMenuMaterial()) {
+  if (UseMd()) {
     if (sender == info_button_md_) {
       ToggleInfoBubble();
       return;
@@ -470,7 +474,7 @@ void NetworkStateListDetailedView::HandleViewClicked(views::View* view) {
 }
 
 void NetworkStateListDetailedView::CreateExtraTitleRowButtons() {
-  if (MaterialDesignController::IsSystemTrayMenuMaterial()) {
+  if (UseMd()) {
     if (login_ == LoginStatus::LOCKED)
       return;
 
@@ -568,6 +572,7 @@ void NetworkStateListDetailedView::ShowSettings() {
 }
 
 void NetworkStateListDetailedView::CreateNetworkExtra() {
+  DCHECK(!UseMd());
   if (login_ == LoginStatus::LOCKED)
     return;
 
@@ -628,8 +633,7 @@ void NetworkStateListDetailedView::UpdateHeaderButtons() {
   if (proxy_settings_)
     proxy_settings_->SetEnabled(handler->DefaultNetwork() != nullptr);
 
-  if (list_type_ != LIST_TYPE_VPN &&
-      !MaterialDesignController::IsSystemTrayMenuMaterial()) {
+  if (list_type_ != LIST_TYPE_VPN && !UseMd()) {
     // Update Wifi Scanning throbber.
     bool scanning =
         NetworkHandler::Get()->network_state_handler()->GetScanningByType(
@@ -662,7 +666,7 @@ void NetworkStateListDetailedView::UpdateHeaderButtons() {
 
 void NetworkStateListDetailedView::SetScanningStateForThrobberView(
     bool is_scanning) {
-  if (MaterialDesignController::IsSystemTrayMenuMaterial())
+  if (UseMd())
     return;
 
   // Hide the network info button if the device is scanning for Wi-Fi networks
@@ -782,6 +786,7 @@ void NetworkStateListDetailedView::UpdateNetworkExtra() {
 }
 
 void NetworkStateListDetailedView::CreateSettingsEntry() {
+  DCHECK(!UseMd());
   ui::ResourceBundle& rb = ui::ResourceBundle::GetSharedInstance();
   bool show_settings =
       WmShell::Get()->system_tray_delegate()->ShouldShowSettings();
@@ -808,10 +813,8 @@ void NetworkStateListDetailedView::ToggleInfoBubble() {
   if (ResetInfoBubble())
     return;
 
-  info_bubble_ = new InfoBubble(
-      MaterialDesignController::IsSystemTrayMenuMaterial() ? info_button_md_
-                                                           : info_icon_,
-      CreateNetworkInfoView(), this);
+  info_bubble_ = new InfoBubble(UseMd() ? info_button_md_ : info_icon_,
+                                CreateNetworkInfoView(), this);
   views::BubbleDialogDelegateView::CreateBubble(info_bubble_)->Show();
   info_bubble_->NotifyAccessibilityEvent(ui::AX_EVENT_ALERT, false);
 }

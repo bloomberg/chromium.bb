@@ -121,8 +121,6 @@ static_library("test_support_common") {
     "test_system_tray_item.h",
     "test_wallpaper_delegate.cc",
     "test_wallpaper_delegate.h",
-    "tray_cast_test_api.cc",
-    "tray_cast_test_api.h",
     "ui_controls_factory_ash.cc",
     "ui_controls_factory_ash.h",
     "user_metrics_recorder_test_api.cc",
@@ -184,6 +182,8 @@ static_library("test_support_common") {
       "../laser/laser_pointer_controller_test_api.h",
       "../laser/laser_pointer_points_test_api.cc",
       "../laser/laser_pointer_points_test_api.h",
+      "tray_cast_test_api.cc",
+      "tray_cast_test_api.h",
     ]
   }
 }

@@ -12,6 +12,8 @@
 namespace ash {
 
 // A label button with custom alignment, border and focus border.
+// TODO(estade): deprecated for MD. Use CreateTrayPopupButton instead.
+// See crbug.com/614453
 class TrayPopupLabelButton : public views::LabelButton {
  public:
   TrayPopupLabelButton(views::ButtonListener* listener,

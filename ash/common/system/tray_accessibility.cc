@@ -39,6 +39,10 @@
 namespace ash {
 namespace {
 
+bool UseMdMenu() {
+  return MaterialDesignController::IsSystemTrayMenuMaterial();
+}
+
 enum AccessibilityState {
   A11Y_NONE = 0,
   A11Y_SPOKEN_FEEDBACK = 1 << 0,
@@ -102,7 +106,7 @@ class DefaultAccessibilityView : public TrayItemMore {
   void UpdateStyle() override {
     TrayItemMore::UpdateStyle();
 
-    if (!MaterialDesignController::IsSystemTrayMenuMaterial())
+    if (!UseMdMenu())
       return;
 
     std::unique_ptr<TrayPopupItemStyle> style = CreateStyle();
@@ -169,7 +173,7 @@ AccessibilityDetailedView::AccessibilityDetailedView(SystemTrayItem* owner,
 
   AppendAccessibilityList();
 
-  if (!MaterialDesignController::IsSystemTrayMenuMaterial())
+  if (!UseMdMenu())
     AppendHelpEntries();
 
   CreateTitleRow(IDS_ASH_STATUS_TRAY_ACCESSIBILITY_TITLE);
@@ -230,6 +234,7 @@ void AccessibilityDetailedView::AppendAccessibilityList() {
 }
 
 void AccessibilityDetailedView::AppendHelpEntries() {
+  DCHECK(!UseMdMenu());
   // Currently the help page requires a browser window.
   // TODO(yoshiki): show this even on login/lock screen. crbug.com/158286
   if (!CanOpenWebUISettings(login_))
@@ -265,7 +270,7 @@ HoverHighlightView* AccessibilityDetailedView::AddScrollListItem(
     bool checked,
     const gfx::VectorIcon& icon) {
   HoverHighlightView* container = new HoverHighlightView(this);
-  if (MaterialDesignController::IsSystemTrayMenuMaterial()) {
+  if (UseMdMenu()) {
     gfx::ImageSkia image = CreateVectorIcon(icon, kMenuIconColor);
     const int padding = (kMenuButtonSize - image.width()) / 2;
     container->AddIconAndLabelCustomSize(
@@ -330,7 +335,7 @@ void AccessibilityDetailedView::HandleButtonPressed(views::Button* sender,
 }
 
 void AccessibilityDetailedView::CreateExtraTitleRowButtons() {
-  if (MaterialDesignController::IsSystemTrayMenuMaterial()) {
+  if (UseMdMenu()) {
     help_view_ = title_row()->AddHelpButton(this, login_);
     settings_view_ = title_row()->AddSettingsButton(this, login_);
   }

@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "ash/common/system/cast/tray_cast.h"
+#include "ash/common/system/chromeos/cast/tray_cast.h"
 
 #include "ash/common/material_design/material_design_controller.h"
 #include "ash/common/session/session_state_delegate.h"
@@ -18,7 +18,7 @@
 #include "ash/common/system/tray/tray_details_view.h"
 #include "ash/common/system/tray/tray_item_more.h"
 #include "ash/common/system/tray/tray_item_view.h"
-#include "ash/common/system/tray/tray_popup_label_button.h"
+#include "ash/common/system/tray/tray_utils.h"
 #include "ash/common/wm_shell.h"
 #include "ash/public/cpp/shelf_types.h"
 #include "ash/resources/vector_icons/vector_icons.h"
@@ -30,6 +30,8 @@
 #include "ui/gfx/image/image.h"
 #include "ui/gfx/paint_vector_icon.h"
 #include "ui/gfx/text_elider.h"
+#include "ui/views/background.h"
+#include "ui/views/border.h"
 #include "ui/views/controls/button/button.h"
 #include "ui/views/controls/image_view.h"
 #include "ui/views/controls/label.h"
@@ -41,7 +43,6 @@ namespace ash {
 namespace {
 
 const size_t kMaximumStatusStringLength = 100;
-const int kStopButtonRightPadding = 18;
 
 // Returns the active CastConfigDelegate instance.
 CastConfigDelegate* GetCastConfigDelegate() {
@@ -105,7 +106,7 @@ CastSelectDefaultView::~CastSelectDefaultView() {}
 // This view is displayed when the screen is actively being casted; it allows
 // the user to easily stop casting. It fully replaces the
 // |CastSelectDefaultView| view inside of the |CastDuplexView|.
-class CastCastView : public views::View, public views::ButtonListener {
+class CastCastView : public ScreenStatusView {
  public:
   CastCastView();
   ~CastCastView() override;
@@ -122,10 +123,6 @@ class CastCastView : public views::View, public views::ButtonListener {
       const CastConfigDelegate::ReceiversAndActivities& receivers_activities);
 
  private:
-  // Overridden from views::View.
-  int GetHeightForWidth(int width) const override;
-  void Layout() override;
-
   // Overridden from views::ButtonListener.
   void ButtonPressed(views::Button* sender, const ui::Event& event) override;
 
@@ -133,80 +130,24 @@ class CastCastView : public views::View, public views::ButtonListener {
   // send this value to the config delegate so that we stop the right cast.
   std::string displayed_activity_id_;
 
-  views::ImageView* icon_;
-  views::Label* label_;
-  TrayPopupLabelButton* stop_button_;
-
   DISALLOW_COPY_AND_ASSIGN(CastCastView);
 };
 
-CastCastView::CastCastView() {
-  // We will initialize the primary tray view which shows a stop button here.
-
-  set_background(views::Background::CreateSolidBackground(kBackgroundColor));
-  ui::ResourceBundle& bundle = ui::ResourceBundle::GetSharedInstance();
-  SetLayoutManager(new views::BoxLayout(views::BoxLayout::kHorizontal,
-                                        kTrayPopupPaddingHorizontal, 0,
-                                        kTrayPopupPaddingBetweenItems));
-  icon_ = new FixedSizedImageView(0, GetTrayConstant(TRAY_POPUP_ITEM_HEIGHT));
+CastCastView::CastCastView()
+    : ScreenStatusView(
+          nullptr,
+          l10n_util::GetStringUTF16(IDS_ASH_STATUS_TRAY_CAST_CAST_UNKNOWN),
+          l10n_util::GetStringUTF16(IDS_ASH_STATUS_TRAY_CAST_STOP)) {
   if (MaterialDesignController::IsSystemTrayMenuMaterial()) {
-    icon_->SetImage(GetCastIconForSystemMenu(true));
+    icon()->SetImage(GetCastIconForSystemMenu(true));
   } else {
-    icon_->SetImage(
+    ui::ResourceBundle& bundle = ui::ResourceBundle::GetSharedInstance();
+    icon()->SetImage(
         bundle.GetImageNamed(IDR_AURA_UBER_TRAY_CAST_ENABLED).ToImageSkia());
   }
-  AddChildView(icon_);
-
-  // The label which describes both what we are casting (ie, the desktop) and
-  // where we are casting it to.
-  label_ = new views::Label;
-  label_->SetHorizontalAlignment(gfx::ALIGN_LEFT);
-  label_->SetMultiLine(true);
-  label_->SetText(
-      bundle.GetLocalizedString(IDS_ASH_STATUS_TRAY_CAST_CAST_UNKNOWN));
-  AddChildView(label_);
-
-  // Add the stop bottom on the far-right. We customize how this stop button is
-  // displayed inside of |Layout()|.
-  base::string16 stop_button_text =
-      ui::ResourceBundle::GetSharedInstance().GetLocalizedString(
-          IDS_ASH_STATUS_TRAY_CAST_STOP);
-  stop_button_ = new TrayPopupLabelButton(this, stop_button_text);
-  AddChildView(stop_button_);
 }
 
 CastCastView::~CastCastView() {}
-
-int CastCastView::GetHeightForWidth(int width) const {
-  // We are reusing the cached label_->bounds() calculation which was
-  // done inside of Layout(). Due to the way this object is initialized,
-  // Layout() will always get initially invoked with the dummy text
-  // (which will compute the proper label width) and then when we know
-  // the cast receiver we will update the label text, which will cause
-  // this method to get invoked.
-  return std::max(views::View::GetHeightForWidth(width),
-                  kTrayPopupPaddingBetweenItems * 2 +
-                      label_->GetHeightForWidth(label_->bounds().width()));
-}
-
-void CastCastView::Layout() {
-  views::View::Layout();
-
-  // Give the stop button the space it requests.
-  gfx::Size stop_size = stop_button_->GetPreferredSize();
-  gfx::Rect stop_bounds(stop_size);
-  stop_bounds.set_x(width() - stop_size.width() - kStopButtonRightPadding);
-  stop_bounds.set_y((height() - stop_size.height()) / 2);
-  stop_button_->SetBoundsRect(stop_bounds);
-
-  // Adjust the label's bounds in case it got cut off by |stop_button_|.
-  if (label_->bounds().Intersects(stop_button_->bounds())) {
-    gfx::Rect label_bounds = label_->bounds();
-    label_bounds.set_width(stop_button_->x() - kTrayPopupPaddingBetweenItems -
-                           label_->x());
-    label_->SetBoundsRect(label_bounds);
-  }
-}
 
 void CastCastView::StopCasting() {
   GetCastConfigDelegate()->StopCasting(displayed_activity_id_);
@@ -226,13 +167,13 @@ void CastCastView::UpdateLabel(
       // what we are actually casting - either the desktop, a tab, or a fallback
       // that catches everything else (ie, an extension tab).
       if (activity.tab_id == CastConfigDelegate::Activity::TabId::DESKTOP) {
-        label_->SetText(ElideString(l10n_util::GetStringFUTF16(
+        label()->SetText(ElideString(l10n_util::GetStringFUTF16(
             IDS_ASH_STATUS_TRAY_CAST_CAST_DESKTOP, receiver.name)));
       } else if (activity.tab_id >= 0) {
-        label_->SetText(ElideString(l10n_util::GetStringFUTF16(
+        label()->SetText(ElideString(l10n_util::GetStringFUTF16(
             IDS_ASH_STATUS_TRAY_CAST_CAST_TAB, activity.title, receiver.name)));
       } else {
-        label_->SetText(
+        label()->SetText(
             l10n_util::GetStringUTF16(IDS_ASH_STATUS_TRAY_CAST_CAST_UNKNOWN));
       }
 
@@ -250,7 +191,6 @@ void CastCastView::UpdateLabel(
 
 void CastCastView::ButtonPressed(views::Button* sender,
                                  const ui::Event& event) {
-  DCHECK(sender == stop_button_);
   StopCasting();
 }
 

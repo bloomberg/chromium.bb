@@ -12,7 +12,9 @@
 #include "base/strings/string16.h"
 
 namespace views {
+class ButtonListener;
 class Label;
+class LabelButton;
 class Separator;
 class View;
 }
@@ -20,6 +22,18 @@ class View;
 namespace ash {
 
 class TrayItemView;
+
+// Creates a button for use in the system menu that only has a visible border
+// when being hovered/clicked. Caller assumes ownership.
+views::LabelButton* CreateTrayPopupBorderlessButton(
+    views::ButtonListener* listener,
+    const base::string16& text);
+
+// Creates a button for use in the system menu. For MD, this is a prominent text
+// button. For non-MD, this does the same thing as the above. Caller assumes
+// ownership.
+views::LabelButton* CreateTrayPopupButton(views::ButtonListener* listener,
+                                          const base::string16& text);
 
 // Sets up a Label properly for the tray (sets color, font etc.).
 void SetupLabelForTray(views::Label* label);

@@ -5,6 +5,7 @@
 #include "ash/common/system/tray/tray_popup_label_button.h"
 
 #include "ash/common/ash_constants.h"
+#include "ash/common/material_design/material_design_controller.h"
 #include "ash/common/system/tray/tray_popup_label_button_border.h"
 #include "ui/gfx/canvas.h"
 #include "ui/gfx/geometry/rect.h"
@@ -15,6 +16,7 @@ namespace ash {
 TrayPopupLabelButton::TrayPopupLabelButton(views::ButtonListener* listener,
                                            const base::string16& text)
     : views::LabelButton(listener, text) {
+  DCHECK(!MaterialDesignController::IsSystemTrayMenuMaterial());
   SetBorder(std::unique_ptr<views::Border>(new TrayPopupLabelButtonBorder));
   SetFocusForPlatform();
   set_animate_on_state_change(false);

@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef ASH_COMMON_SYSTEM_CAST_TRAY_CAST_H_
-#define ASH_COMMON_SYSTEM_CAST_TRAY_CAST_H_
+#ifndef ASH_COMMON_SYSTEM_CHROMEOS_CAST_TRAY_CAST_H_
+#define ASH_COMMON_SYSTEM_CHROMEOS_CAST_TRAY_CAST_H_
 
 #include "ash/common/cast_config_delegate.h"
 #include "ash/common/shell_observer.h"
@@ -76,4 +76,4 @@ class ASH_EXPORT TrayCast : public SystemTrayItem,
 
 }  // namespace ash
 
-#endif  // ASH_COMMON_SYSTEM_CAST_TRAY_CAST_H_
+#endif  // ASH_COMMON_SYSTEM_CHROMEOS_CAST_TRAY_CAST_H_
