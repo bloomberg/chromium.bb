@@ -224,6 +224,11 @@ class SyncManager {
     // URL of the sync server.
     GURL service_url;
 
+    // Whether the local backend provided by the LoopbackServer should be used
+    // and the location of the local sync backend storage.
+    bool enable_local_sync_backend;
+    base::FilePath local_sync_backend_folder;
+
     // Used to communicate with the sync server.
     std::unique_ptr<HttpPostProviderFactory> post_factory;
 

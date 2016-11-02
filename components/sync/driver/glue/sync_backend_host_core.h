@@ -43,6 +43,8 @@ struct DoInitializeOptions {
       const std::string& invalidator_client_id,
       std::unique_ptr<SyncManagerFactory> sync_manager_factory,
       bool delete_sync_data_folder,
+      bool enable_local_sync_backend,
+      const base::FilePath& local_sync_backend_folder,
       const std::string& restored_key_for_bootstrapping,
       const std::string& restored_keystore_key_for_bootstrapping,
       std::unique_ptr<EngineComponentsFactory> engine_components_factory,
@@ -66,6 +68,8 @@ struct DoInitializeOptions {
   std::unique_ptr<SyncManagerFactory> sync_manager_factory;
   std::string lsid;
   bool delete_sync_data_folder;
+  bool enable_local_sync_backend;
+  const base::FilePath local_sync_backend_folder;
   std::string restored_key_for_bootstrapping;
   std::string restored_keystore_key_for_bootstrapping;
   std::unique_ptr<EngineComponentsFactory> engine_components_factory;

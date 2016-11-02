@@ -38,7 +38,6 @@ class GURL;
 namespace syncer {
 
 class ModelTypeRegistry;
-class SyncServerConnectionManager;
 class SyncCycleContext;
 class TypeDebugInfoObserver;
 class WriteNode;
@@ -278,7 +277,7 @@ class SyncManagerImpl
 
   // The ServerConnectionManager used to abstract communication between the
   // client (the Syncer) and the sync server.
-  std::unique_ptr<SyncServerConnectionManager> connection_manager_;
+  std::unique_ptr<ServerConnectionManager> connection_manager_;
 
   // Maintains state that affects the way we interact with different sync types.
   // This state changes when entering or exiting a configuration cycle.

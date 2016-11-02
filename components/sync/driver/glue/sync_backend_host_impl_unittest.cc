@@ -215,8 +215,8 @@ class SyncBackendHostTest : public testing::Test {
         &mock_frontend_, std::unique_ptr<base::Thread>(),
         base::ThreadTaskRunnerHandle::Get(),
         base::ThreadTaskRunnerHandle::Get(), WeakHandle<JsEventHandler>(),
-        GURL(std::string()), std::string(), credentials_, true,
-        std::move(fake_manager_factory_),
+        GURL(std::string()), std::string(), credentials_, true, false,
+        base::FilePath(), std::move(fake_manager_factory_),
         MakeWeakHandle(test_unrecoverable_error_handler_.GetWeakPtr()),
         base::Closure(), http_post_provider_factory_getter,
         std::move(saved_nigori_state_));

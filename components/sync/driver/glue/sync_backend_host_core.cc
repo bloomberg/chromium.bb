@@ -66,6 +66,8 @@ DoInitializeOptions::DoInitializeOptions(
     const std::string& invalidator_client_id,
     std::unique_ptr<SyncManagerFactory> sync_manager_factory,
     bool delete_sync_data_folder,
+    bool enable_local_sync_backend,
+    const base::FilePath& local_sync_backend_folder,
     const std::string& restored_key_for_bootstrapping,
     const std::string& restored_keystore_key_for_bootstrapping,
     std::unique_ptr<EngineComponentsFactory> engine_components_factory,
@@ -85,6 +87,8 @@ DoInitializeOptions::DoInitializeOptions(
       invalidator_client_id(invalidator_client_id),
       sync_manager_factory(std::move(sync_manager_factory)),
       delete_sync_data_folder(delete_sync_data_folder),
+      enable_local_sync_backend(enable_local_sync_backend),
+      local_sync_backend_folder(local_sync_backend_folder),
       restored_key_for_bootstrapping(restored_key_for_bootstrapping),
       restored_keystore_key_for_bootstrapping(
           restored_keystore_key_for_bootstrapping),
@@ -407,6 +411,8 @@ void SyncBackendHostCore::DoInitialize(
   args.database_location = sync_data_folder_path_;
   args.event_handler = options->event_handler;
   args.service_url = options->service_url;
+  args.enable_local_sync_backend = options->enable_local_sync_backend;
+  args.local_sync_backend_folder = options->local_sync_backend_folder;
   args.post_factory = std::move(options->http_bridge_factory);
   args.workers = options->workers;
   args.extensions_activity = options->extensions_activity.get();
