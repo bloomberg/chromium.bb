@@ -36,6 +36,7 @@ PluginsTest.prototype = {
     ROOT_PATH + 'chrome/test/data/webui/mocha_adapter.js',
     ROOT_PATH + 'ui/webui/resources/js/promise_resolver.js',
     ROOT_PATH + 'ui/webui/resources/js/cr.js',
+    ROOT_PATH + 'ui/webui/resources/js/util.js',
     ROOT_PATH + 'chrome/test/data/webui/settings/test_browser_proxy.js',
   ],
 

@@ -82,20 +82,6 @@
   };
 
   /**
-   * TODO(crbug.com/652361): Move to shared location.
-   * Helper to convert callback-based define() API to a promise-based API.
-   * @param {!Array<string>} moduleNames
-   * @return {!Promise}
-   */
-  function importModules(moduleNames) {
-    return new Promise(function(resolve, reject) {
-      define(moduleNames, function(var_args) {
-        resolve(Array.prototype.slice.call(arguments, 0));
-      });
-    });
-  }
-
-  /**
    * Initializes Mojo proxies for page and Bluetooth services.
    * @return {!Promise} resolves if adapter is acquired, rejects if Bluetooth
    *     is not supported.

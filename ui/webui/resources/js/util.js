@@ -486,3 +486,17 @@ if (!('key' in KeyboardEvent.prototype)) {
   window.console.log("KeyboardEvent.Key polyfill not required");
 }
 // </if>  /* is_ios */
+
+/**
+ * Helper to convert callback-based define() API to a promise-based API.
+ * @suppress {undefinedVars}
+ * @param {!Array<string>} moduleNames
+ * @return {!Promise}
+ */
+function importModules(moduleNames) {
+  return new Promise(function(resolve) {
+    define(moduleNames, function() {
+      resolve(Array.from(arguments));
+    });
+  });
+}

@@ -261,19 +261,6 @@ function isPluginPolicyClickToPlay(plugin) {
     return plugin.policy_click_to_play == true;
 }
 
-/**
- * Helper to convert callback-based define() API to a promise-based API.
- * @param {!Array<string>} moduleNames
- * @return {!Promise}
- */
-function importModules(moduleNames) {
-  return new Promise(function(resolve, reject) {
-    define(moduleNames, function(var_args) {
-      resolve(Array.prototype.slice.call(arguments, 0));
-    });
-  });
-}
-
 // NOTE: Need to keep a global reference to the |pageImpl| such that it is not
 // garbage collected, which causes the pipe to close and future calls from C++
 // to JS to get dropped. This also allows tests to make direct calls on it.

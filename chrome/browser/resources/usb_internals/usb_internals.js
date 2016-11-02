@@ -59,19 +59,6 @@
     event.preventDefault();
   }
 
-  /**
-   * Helper to convert callback-based define() API to a promise-based API.
-   * @param {!Array<string>} moduleNames
-   * @return {!Promise}
-   */
-  function importModules(moduleNames) {
-    return new Promise(function(resolve, reject) {
-      define(moduleNames, function(var_args) {
-        resolve(Array.prototype.slice.call(arguments, 0));
-      });
-    });
-  }
-
   function initializeProxies() {
     return importModules([
       'mojo/public/js/connection',
