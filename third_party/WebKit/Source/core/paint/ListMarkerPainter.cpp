@@ -147,7 +147,7 @@ void ListMarkerPainter::paint(const PaintInfo& paintInfo,
     reversedText.reserveCapacity(length);
     for (int i = length - 1; i >= 0; --i)
       reversedText.append(m_layoutListMarker.text()[i]);
-    ASSERT(reversedText.length() == length);
+    DCHECK(reversedText.length() == length);
     textRun.setText(reversedText.toString());
   }
 

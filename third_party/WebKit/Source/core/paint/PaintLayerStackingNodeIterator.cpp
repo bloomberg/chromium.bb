@@ -145,7 +145,7 @@ void PaintLayerStackingNodeReverseIterator::setIndexToLastItem() {
   }
 
   // No more list to visit.
-  ASSERT(!m_remainingChildren);
+  DCHECK(!m_remainingChildren);
   m_index = -1;
 }
 

@@ -19,7 +19,7 @@ namespace blink {
 
 void SVGRootInlineBoxPainter::paint(const PaintInfo& paintInfo,
                                     const LayoutPoint& paintOffset) {
-  ASSERT(paintInfo.phase == PaintPhaseForeground ||
+  DCHECK(paintInfo.phase == PaintPhaseForeground ||
          paintInfo.phase == PaintPhaseSelection);
 
   bool hasSelection = !paintInfo.isPrinting() &&

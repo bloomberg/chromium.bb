@@ -296,7 +296,7 @@ void ObjectPaintInvalidator::invalidatePaintUsingContainer(
     PaintInvalidationReason invalidationReason) {
   // TODO(wangxianzhu): Enable the following assert after paint invalidation for
   // spv2 is ready.
-  // ASSERT(!RuntimeEnabledFeatures::slimmingPaintV2Enabled());
+  // DCHECK(!RuntimeEnabledFeatures::slimmingPaintV2Enabled());
 
   if (paintInvalidationContainer.frameView()->shouldThrottleRendering())
     return;
@@ -310,7 +310,7 @@ void ObjectPaintInvalidator::invalidatePaintUsingContainer(
   if (dirtyRect.isEmpty())
     return;
 
-  RELEASE_ASSERT(m_object.isRooted());
+  CHECK(m_object.isRooted());
 
   // FIXME: Unify "devtools.timeline.invalidationTracking" and
   // "blink.invalidation". crbug.com/413527.

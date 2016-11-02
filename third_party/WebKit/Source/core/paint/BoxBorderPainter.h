@@ -92,7 +92,7 @@ class BoxBorderPainter {
                                     bool antialias);
 
   const BorderEdge& firstEdge() const {
-    ASSERT(m_visibleEdgeSet);
+    DCHECK(m_visibleEdgeSet);
     return m_edges[m_firstVisibleEdge];
   }
 

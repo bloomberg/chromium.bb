@@ -18,7 +18,7 @@ void InlineFlowBoxPainter::paint(const PaintInfo& paintInfo,
                                  const LayoutPoint& paintOffset,
                                  const LayoutUnit lineTop,
                                  const LayoutUnit lineBottom) {
-  ASSERT(!shouldPaintSelfOutline(paintInfo.phase) &&
+  DCHECK(!shouldPaintSelfOutline(paintInfo.phase) &&
          !shouldPaintDescendantOutlines(paintInfo.phase));
 
   LayoutRect overflowRect(
@@ -229,7 +229,7 @@ void InlineFlowBoxPainter::paintBoxDecorationBackground(
     const PaintInfo& paintInfo,
     const LayoutPoint& paintOffset,
     const LayoutRect& cullRect) {
-  ASSERT(paintInfo.phase == PaintPhaseForeground);
+  DCHECK(paintInfo.phase == PaintPhaseForeground);
   if (m_inlineFlowBox.getLineLayoutItem().style()->visibility() !=
       EVisibility::Visible)
     return;

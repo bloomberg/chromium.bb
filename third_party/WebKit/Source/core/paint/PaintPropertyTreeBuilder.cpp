@@ -837,7 +837,7 @@ static void deriveBorderBoxFromContainerContext(
     // Similar adjustment is done in LayoutTableCell::offsetFromContainer().
     if (boxModelObject.isTableCell()) {
       LayoutObject* parentRow = boxModelObject.parent();
-      ASSERT(parentRow && parentRow->isTableRow());
+      DCHECK(parentRow && parentRow->isTableRow());
       context.current.paintOffset.moveBy(
           -toLayoutBox(parentRow)->topLeftLocation());
     }

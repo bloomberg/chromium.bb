@@ -85,7 +85,7 @@ void SVGImagePainter::paintForeground(const PaintInfo& paintInfo) {
 }
 
 FloatSize SVGImagePainter::computeImageViewportSize() const {
-  ASSERT(m_layoutSVGImage.imageResource()->hasImage());
+  DCHECK(m_layoutSVGImage.imageResource()->hasImage());
 
   if (toSVGImageElement(m_layoutSVGImage.element())
           ->preserveAspectRatio()

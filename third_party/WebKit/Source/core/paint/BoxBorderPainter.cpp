@@ -305,7 +305,7 @@ void drawBleedAdjustedDRRect(GraphicsContext& context,
       // Based on this, we can avoid background bleeding by filling the
       // *outside* of inner rrect, all the way to the layer bounds (enclosing
       // int rect for the clip, in device space).
-      ASSERT(outer.isRounded());
+      DCHECK(outer.isRounded());
 
       SkPath path;
       path.addRRect(inner);
@@ -413,7 +413,7 @@ struct BoxBorderPainter::ComplexBorderInfo {
       if (includesEdge(borderPainter.m_visibleEdgeSet, side))
         sortedSides.append(side);
     }
-    ASSERT(!sortedSides.isEmpty());
+    DCHECK(!sortedSides.isEmpty());
 
     // Then sort them in paint order, based on three (prioritized) criteria:
     // alpha, style, side.
@@ -458,29 +458,29 @@ struct BoxBorderPainter::ComplexBorderInfo {
       const BorderEdge& edge = borderPainter.m_edges[side];
       const unsigned edgeAlpha = edge.color.alpha();
 
-      ASSERT(edgeAlpha > 0);
-      ASSERT(edgeAlpha >= currentAlpha);
+      DCHECK_GT(edgeAlpha, 0u);
+      DCHECK_GE(edgeAlpha, currentAlpha);
       if (edgeAlpha != currentAlpha) {
         opacityGroups.append(OpacityGroup(edgeAlpha));
         currentAlpha = edgeAlpha;
       }
 
-      ASSERT(!opacityGroups.isEmpty());
+      DCHECK(!opacityGroups.isEmpty());
       OpacityGroup& currentGroup = opacityGroups.last();
       currentGroup.sides.append(side);
       currentGroup.edgeFlags |= edgeFlagForSide(side);
     }
 
-    ASSERT(!opacityGroups.isEmpty());
+    DCHECK(!opacityGroups.isEmpty());
   }
 };
 
 void BoxBorderPainter::drawDoubleBorder(GraphicsContext& context,
                                         const LayoutRect& borderRect) const {
-  ASSERT(m_isUniformColor);
-  ASSERT(m_isUniformStyle);
-  ASSERT(firstEdge().borderStyle() == BorderStyleDouble);
-  ASSERT(m_visibleEdgeSet == AllBorderEdges);
+  DCHECK(m_isUniformColor);
+  DCHECK(m_isUniformStyle);
+  DCHECK(firstEdge().borderStyle() == BorderStyleDouble);
+  DCHECK(m_visibleEdgeSet == AllBorderEdges);
 
   const Color color = firstEdge().color;
 
@@ -524,7 +524,7 @@ bool BoxBorderPainter::paintBorderFastPath(GraphicsContext& context,
       }
     } else {
       // 4-side, double border => 2x drawDRRect()
-      ASSERT(firstEdge().borderStyle() == BorderStyleDouble);
+      DCHECK(firstEdge().borderStyle() == BorderStyleDouble);
       drawDoubleBorder(context, borderRect);
     }
 
@@ -535,7 +535,7 @@ bool BoxBorderPainter::paintBorderFastPath(GraphicsContext& context,
   // creating transparency layers (when the border is translucent).
   if (firstEdge().borderStyle() == BorderStyleSolid && !m_outer.isRounded() &&
       m_hasAlpha) {
-    ASSERT(m_visibleEdgeSet != AllBorderEdges);
+    DCHECK(m_visibleEdgeSet != AllBorderEdges);
     // solid, rectangular border => one drawPath()
     Path path;
     path.setWindRule(RULE_NONZERO);
@@ -624,7 +624,7 @@ void BoxBorderPainter::computeBorderProperties() {
       continue;
     }
 
-    ASSERT(edge.color.alpha() > 0);
+    DCHECK_GT(edge.color.alpha(), 0);
 
     m_visibleEdgeCount++;
     m_visibleEdgeSet |= edgeFlagForSide(static_cast<BoxSide>(i));
@@ -718,7 +718,7 @@ BorderEdgeFlags BoxBorderPainter::paintOpacityGroup(
     const ComplexBorderInfo& borderInfo,
     unsigned index,
     float effectiveOpacity) const {
-  ASSERT(effectiveOpacity > 0 && effectiveOpacity <= 1);
+  DCHECK(effectiveOpacity > 0 && effectiveOpacity <= 1);
 
   const size_t opacityGroupCount = borderInfo.opacityGroups.size();
 
@@ -734,7 +734,7 @@ BorderEdgeFlags BoxBorderPainter::paintOpacityGroup(
   // Adjust this group's paint opacity to account for ancestor transparency
   // layers (needed in case we avoid creating a layer below).
   unsigned paintAlpha = group.alpha / effectiveOpacity;
-  ASSERT(paintAlpha <= 255);
+  DCHECK_LE(paintAlpha, 255u);
 
   // For the last (bottom) group, we can skip the layer even in the presence of
   // opacity iff it contains no adjecent edges (no in-group overdraw
@@ -745,7 +745,7 @@ BorderEdgeFlags BoxBorderPainter::paintOpacityGroup(
 
   if (needsLayer) {
     const float groupOpacity = static_cast<float>(group.alpha) / 255;
-    ASSERT(groupOpacity < effectiveOpacity);
+    DCHECK_LT(groupOpacity, effectiveOpacity);
 
     context.beginLayer(groupOpacity / effectiveOpacity);
     effectiveOpacity = groupOpacity;
@@ -781,7 +781,7 @@ void BoxBorderPainter::paintSide(GraphicsContext& context,
                                  unsigned alpha,
                                  BorderEdgeFlags completedEdges) const {
   const BorderEdge& edge = m_edges[side];
-  ASSERT(edge.shouldRender());
+  DCHECK(edge.shouldRender());
   const Color color(edge.color.red(), edge.color.green(), edge.color.blue(),
                     alpha);
 
@@ -910,7 +910,7 @@ void BoxBorderPainter::paintOneBorderSide(
     Color color,
     BorderEdgeFlags completedEdges) const {
   const BorderEdge& edgeToRender = m_edges[side];
-  ASSERT(edgeToRender.width);
+  DCHECK(edgeToRender.width);
   const BorderEdge& adjacentEdge1 = m_edges[adjacentSide1];
   const BorderEdge& adjacentEdge2 = m_edges[adjacentSide2];
 
@@ -1122,7 +1122,7 @@ void BoxBorderPainter::clipBorderSidePolygon(GraphicsContext& graphicsContext,
                                              BoxSide side,
                                              MiterType firstMiter,
                                              MiterType secondMiter) const {
-  ASSERT(firstMiter != NoMiter || secondMiter != NoMiter);
+  DCHECK(firstMiter != NoMiter || secondMiter != NoMiter);
 
   FloatPoint quad[4];
 

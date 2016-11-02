@@ -15,7 +15,7 @@ namespace blink {
 
 void SVGInlineFlowBoxPainter::paintSelectionBackground(
     const PaintInfo& paintInfo) {
-  ASSERT(paintInfo.phase == PaintPhaseForeground ||
+  DCHECK(paintInfo.phase == PaintPhaseForeground ||
          paintInfo.phase == PaintPhaseSelection);
 
   PaintInfo childPaintInfo(paintInfo);
@@ -32,7 +32,7 @@ void SVGInlineFlowBoxPainter::paintSelectionBackground(
 
 void SVGInlineFlowBoxPainter::paint(const PaintInfo& paintInfo,
                                     const LayoutPoint& paintOffset) {
-  ASSERT(paintInfo.phase == PaintPhaseForeground ||
+  DCHECK(paintInfo.phase == PaintPhaseForeground ||
          paintInfo.phase == PaintPhaseSelection);
 
   SVGPaintContext paintContext(*LineLayoutAPIShim::constLayoutObjectFrom(

@@ -17,7 +17,7 @@ namespace blink {
 
 bool SVGMaskPainter::prepareEffect(const LayoutObject& object,
                                    GraphicsContext& context) {
-  ASSERT(m_mask.style());
+  DCHECK(m_mask.style());
   SECURITY_DCHECK(!m_mask.needsLayout());
 
   m_mask.clearInvalidationMask();
@@ -34,7 +34,7 @@ bool SVGMaskPainter::prepareEffect(const LayoutObject& object,
 
 void SVGMaskPainter::finishEffect(const LayoutObject& object,
                                   GraphicsContext& context) {
-  ASSERT(m_mask.style());
+  DCHECK(m_mask.style());
   SECURITY_DCHECK(!m_mask.needsLayout());
 
   FloatRect paintInvalidationRect =

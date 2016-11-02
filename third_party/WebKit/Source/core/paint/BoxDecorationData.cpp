@@ -18,7 +18,7 @@ BoxDecorationData::BoxDecorationData(const LayoutBox& layoutBox) {
       layoutBox.style()->visitedDependentColor(CSSPropertyBackgroundColor);
   hasBackground =
       backgroundColor.alpha() || layoutBox.style()->hasBackgroundImage();
-  ASSERT(hasBackground == layoutBox.style()->hasBackground());
+  DCHECK(hasBackground == layoutBox.style()->hasBackground());
   hasBorderDecoration = layoutBox.style()->hasBorderDecoration();
   hasAppearance = layoutBox.style()->hasAppearance();
   bleedAvoidance = determineBackgroundBleedAvoidance(layoutBox);

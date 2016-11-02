@@ -238,7 +238,7 @@ void FramePainter::paintScrollbar(GraphicsContext& context,
 }
 
 const FrameView& FramePainter::frameView() {
-  ASSERT(m_frameView);
+  DCHECK(m_frameView);
   return *m_frameView;
 }
 

@@ -63,7 +63,7 @@ void InlineTextBoxPainter::paint(const PaintInfo& paintInfo,
   if (!shouldPaintTextBox(paintInfo))
     return;
 
-  ASSERT(!shouldPaintSelfOutline(paintInfo.phase) &&
+  DCHECK(!shouldPaintSelfOutline(paintInfo.phase) &&
          !shouldPaintDescendantOutlines(paintInfo.phase));
 
   LayoutRect logicalVisualOverflow = m_inlineTextBox.logicalOverflowRect();
@@ -629,7 +629,7 @@ void InlineTextBoxPainter::paintSelection(GraphicsContext& context,
   GraphicsContextStateSaver stateSaver(context);
 
   if (options == InlineTextBoxPainter::PaintOptions::CombinedText) {
-    ASSERT(combinedText);
+    DCHECK(combinedText);
     // We can't use the height of m_inlineTextBox because LayoutTextCombine's
     // inlineTextBox is horizontal within vertical flow
     combinedText->transformToInlineCoordinates(context, boxRect, true);
@@ -761,7 +761,7 @@ static StrokeStyle textDecorationStyleToStrokeStyle(
 static void adjustStepToDecorationLength(float& step,
                                          float& controlPointDistance,
                                          float length) {
-  ASSERT(step > 0);
+  DCHECK_GT(step, 0);
 
   if (length <= 0)
     return;
@@ -830,7 +830,7 @@ static void strokeWavyTextDecoration(GraphicsContext& context,
   bool isVerticalLine = (p1.x() == p2.x());
 
   if (isVerticalLine) {
-    ASSERT(p1.x() == p2.x());
+    DCHECK(p1.x() == p2.x());
 
     float xAxis = p1.x();
     float y1;
@@ -855,7 +855,7 @@ static void strokeWavyTextDecoration(GraphicsContext& context,
       path.addBezierCurveTo(controlPoint1, controlPoint2, FloatPoint(xAxis, y));
     }
   } else {
-    ASSERT(p1.y() == p2.y());
+    DCHECK(p1.y() == p2.y());
 
     float yAxis = p1.y();
     float x1;

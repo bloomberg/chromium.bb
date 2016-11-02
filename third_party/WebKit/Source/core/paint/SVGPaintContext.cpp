@@ -37,10 +37,10 @@ namespace blink {
 
 SVGPaintContext::~SVGPaintContext() {
   if (m_filter) {
-    ASSERT(SVGResourcesCache::cachedResourcesForLayoutObject(&m_object));
-    ASSERT(SVGResourcesCache::cachedResourcesForLayoutObject(&m_object)
+    DCHECK(SVGResourcesCache::cachedResourcesForLayoutObject(&m_object));
+    DCHECK(SVGResourcesCache::cachedResourcesForLayoutObject(&m_object)
                ->filter() == m_filter);
-    ASSERT(m_filterRecordingContext);
+    DCHECK(m_filterRecordingContext);
     SVGFilterPainter(*m_filter).finishEffect(m_object,
                                              *m_filterRecordingContext);
 
@@ -49,8 +49,8 @@ SVGPaintContext::~SVGPaintContext() {
   }
 
   if (m_masker) {
-    ASSERT(SVGResourcesCache::cachedResourcesForLayoutObject(&m_object));
-    ASSERT(SVGResourcesCache::cachedResourcesForLayoutObject(&m_object)
+    DCHECK(SVGResourcesCache::cachedResourcesForLayoutObject(&m_object));
+    DCHECK(SVGResourcesCache::cachedResourcesForLayoutObject(&m_object)
                ->masker() == m_masker);
     SVGMaskPainter(*m_masker).finishEffect(m_object, paintInfo().context);
   }
@@ -58,7 +58,7 @@ SVGPaintContext::~SVGPaintContext() {
 
 bool SVGPaintContext::applyClipMaskAndFilterIfNecessary() {
 #if ENABLE(ASSERT)
-  ASSERT(!m_applyClipMaskAndFilterIfNecessaryCalled);
+  DCHECK(!m_applyClipMaskAndFilterIfNecessaryCalled);
   m_applyClipMaskAndFilterIfNecessaryCalled = true;
 #endif
 
@@ -109,7 +109,7 @@ bool SVGPaintContext::applyClipMaskAndFilterIfNecessary() {
 }
 
 void SVGPaintContext::applyCompositingIfNecessary() {
-  ASSERT(!paintInfo().isRenderingClipPathAsMaskImage());
+  DCHECK(!paintInfo().isRenderingClipPathAsMaskImage());
 
   const ComputedStyle& style = m_object.styleRef();
   float opacity = style.opacity();
@@ -191,8 +191,8 @@ bool SVGPaintContext::isIsolationInstalled() const {
 
 void SVGPaintContext::paintSubtree(GraphicsContext& context,
                                    const LayoutObject* item) {
-  ASSERT(item);
-  ASSERT(!item->needsLayout());
+  DCHECK(item);
+  DCHECK(!item->needsLayout());
 
   PaintInfo info(context, LayoutRect::infiniteIntRect(), PaintPhaseForeground,
                  GlobalPaintNormalPhase, PaintLayerNoFlag);

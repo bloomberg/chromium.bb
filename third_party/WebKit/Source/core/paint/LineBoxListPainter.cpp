@@ -32,7 +32,7 @@ static void addPDFURLRectsForInlineChildrenRecursively(
 void LineBoxListPainter::paint(const LayoutBoxModelObject& layoutObject,
                                const PaintInfo& paintInfo,
                                const LayoutPoint& paintOffset) const {
-  ASSERT(!shouldPaintSelfOutline(paintInfo.phase) &&
+  DCHECK(!shouldPaintSelfOutline(paintInfo.phase) &&
          !shouldPaintDescendantOutlines(paintInfo.phase));
 
   // Only paint during the foreground/selection phases.
@@ -43,7 +43,7 @@ void LineBoxListPainter::paint(const LayoutBoxModelObject& layoutObject,
     return;
 
   // The only way an inline could paint like this is if it has a layer.
-  ASSERT(layoutObject.isLayoutBlock() ||
+  DCHECK(layoutObject.isLayoutBlock() ||
          (layoutObject.isLayoutInline() && layoutObject.hasLayer()));
 
   if (paintInfo.phase == PaintPhaseForeground && paintInfo.isPrinting())

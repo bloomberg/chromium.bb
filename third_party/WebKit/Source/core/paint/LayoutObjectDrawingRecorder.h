@@ -89,7 +89,7 @@ class LayoutObjectDrawingRecorder final {
                                     FloatRect(clip)) {}
 
   void setKnownToBeOpaque() {
-    ASSERT(RuntimeEnabledFeatures::slimmingPaintV2Enabled());
+    DCHECK(RuntimeEnabledFeatures::slimmingPaintV2Enabled());
     m_drawingRecorder->setKnownToBeOpaque();
   }
 

@@ -38,7 +38,7 @@ bool PartPainter::isSelected() const {
   if (s == SelectionBoth)
     return selectionStart == 0 && selectionEnd == end;
 
-  ASSERT(0);
+  DCHECK(0);
   return false;
 }
 
@@ -72,7 +72,7 @@ void PartPainter::paint(const PaintInfo& paintInfo,
     // TODO(schenney) crbug.com/93805 Speculative release assert to verify that
     // the crashes we see in widget painting are due to a destroyed LayoutPart
     // object.
-    RELEASE_ASSERT(m_layoutPart.node());
+    CHECK(m_layoutPart.node());
     Optional<RoundedInnerRectClipper> clipper;
     if (m_layoutPart.style()->hasBorderRadius()) {
       if (borderRect.isEmpty())
@@ -118,7 +118,7 @@ void PartPainter::paintContents(const PaintInfo& paintInfo,
   LayoutPoint adjustedPaintOffset = paintOffset + m_layoutPart.location();
 
   Widget* widget = m_layoutPart.widget();
-  RELEASE_ASSERT(widget);
+  CHECK(widget);
 
   IntPoint paintLocation(roundedIntPoint(
       adjustedPaintOffset + m_layoutPart.replacedContentRect().location()));

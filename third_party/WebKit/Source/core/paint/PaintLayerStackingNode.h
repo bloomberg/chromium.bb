@@ -145,14 +145,14 @@ class CORE_EXPORT PaintLayerStackingNode {
   friend class LayoutTreeAsText;
 
   Vector<PaintLayerStackingNode*>* posZOrderList() const {
-    ASSERT(!m_zOrderListsDirty);
-    ASSERT(isStackingContext() || !m_posZOrderList);
+    DCHECK(!m_zOrderListsDirty);
+    DCHECK(isStackingContext() || !m_posZOrderList);
     return m_posZOrderList.get();
   }
 
   Vector<PaintLayerStackingNode*>* negZOrderList() const {
-    ASSERT(!m_zOrderListsDirty);
-    ASSERT(isStackingContext() || !m_negZOrderList);
+    DCHECK(!m_zOrderListsDirty);
+    DCHECK(isStackingContext() || !m_negZOrderList);
     return m_negZOrderList.get();
   }
 
@@ -206,7 +206,7 @@ class CORE_EXPORT PaintLayerStackingNode {
 };
 
 inline void PaintLayerStackingNode::clearZOrderLists() {
-  ASSERT(!isStackingContext());
+  DCHECK(!isStackingContext());
 
 #if ENABLE(ASSERT)
   updateStackingParentForZOrderLists(0);

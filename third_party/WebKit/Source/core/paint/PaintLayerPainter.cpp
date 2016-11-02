@@ -117,7 +117,7 @@ PaintLayerPainter::paintLayerContentsCompositingAllPhases(
     const PaintLayerPaintingInfo& paintingInfo,
     PaintLayerFlags paintFlags,
     FragmentPolicy fragmentPolicy) {
-  ASSERT(m_paintLayer.isSelfPaintingLayer() ||
+  DCHECK(m_paintLayer.isSelfPaintingLayer() ||
          m_paintLayer.hasSelfPaintingLayerDescendant());
 
   PaintLayerFlags localPaintFlags = paintFlags & ~(PaintLayerAppliedTransform);
@@ -233,9 +233,9 @@ PaintLayerPainter::PaintResult PaintLayerPainter::paintLayerContents(
     const PaintLayerPaintingInfo& paintingInfoArg,
     PaintLayerFlags paintFlags,
     FragmentPolicy fragmentPolicy) {
-  ASSERT(m_paintLayer.isSelfPaintingLayer() ||
+  DCHECK(m_paintLayer.isSelfPaintingLayer() ||
          m_paintLayer.hasSelfPaintingLayerDescendant());
-  ASSERT(!(paintFlags & PaintLayerAppliedTransform));
+  DCHECK(!(paintFlags & PaintLayerAppliedTransform));
 
   bool isSelfPaintingLayer = m_paintLayer.isSelfPaintingLayer();
   bool isPaintingOverlayScrollbars =
@@ -422,7 +422,7 @@ PaintLayerPainter::PaintResult PaintLayerPainter::paintLayerContents(
     if (RuntimeEnabledFeatures::slimmingPaintV2Enabled()) {
       const auto* objectPaintProperties =
           m_paintLayer.layoutObject()->paintProperties();
-      ASSERT(objectPaintProperties &&
+      DCHECK(objectPaintProperties &&
              objectPaintProperties->localBorderBoxProperties());
       PaintChunkProperties properties(
           context.getPaintController().currentPaintChunkProperties());
@@ -837,7 +837,7 @@ void PaintLayerPainter::paintFragmentWithPhase(
     const PaintLayerPaintingInfo& paintingInfo,
     PaintLayerFlags paintFlags,
     ClipState clipState) {
-  ASSERT(m_paintLayer.isSelfPaintingLayer());
+  DCHECK(m_paintLayer.isSelfPaintingLayer());
 
   Optional<LayerClipRecorder> clipRecorder;
   if (clipState != HasClipped && paintingInfo.clipToDirtyRect &&
@@ -868,7 +868,7 @@ void PaintLayerPainter::paintFragmentWithPhase(
   if (RuntimeEnabledFeatures::slimmingPaintV2Enabled()) {
     const auto* objectPaintProperties =
         m_paintLayer.layoutObject()->paintProperties();
-    ASSERT(objectPaintProperties &&
+    DCHECK(objectPaintProperties &&
            objectPaintProperties->localBorderBoxProperties());
     paintOffset +=
         toSize(objectPaintProperties->localBorderBoxProperties()->paintOffset);

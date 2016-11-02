@@ -141,7 +141,7 @@ void ViewPainter::paintBoxDecorationBackground(const PaintInfo& paintInfo) {
       BoxPainter(m_layoutView)
           .calculateFillLayerOcclusionCulling(
               reversedPaintList, m_layoutView.style()->backgroundLayers());
-  ASSERT(reversedPaintList.size());
+  DCHECK(reversedPaintList.size());
 
   // If the root background color is opaque, isolation group can be skipped
   // because the canvas
@@ -181,7 +181,7 @@ void ViewPainter::paintBoxDecorationBackground(const PaintInfo& paintInfo) {
 
   for (auto it = reversedPaintList.rbegin(); it != reversedPaintList.rend();
        ++it) {
-    ASSERT((*it)->clip() == BorderFillBox);
+    DCHECK((*it)->clip() == BorderFillBox);
 
     bool shouldPaintInViewportSpace =
         (*it)->attachment() == FixedBackgroundAttachment;

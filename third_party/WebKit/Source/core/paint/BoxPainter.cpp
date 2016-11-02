@@ -915,7 +915,7 @@ void BoxPainter::paintMaskImages(const PaintInfo& paintInfo,
 
 void BoxPainter::paintClippingMask(const PaintInfo& paintInfo,
                                    const LayoutPoint& paintOffset) {
-  ASSERT(paintInfo.phase == PaintPhaseClippingMask);
+  DCHECK(paintInfo.phase == PaintPhaseClippingMask);
 
   if (m_layoutBox.style()->visibility() != EVisibility::Visible)
     return;

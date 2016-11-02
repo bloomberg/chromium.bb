@@ -23,7 +23,7 @@ void paintSingleRectangleOutline(const PaintInfo& paintInfo,
                                  const IntRect& rect,
                                  const ComputedStyle& style,
                                  const Color& color) {
-  ASSERT(!style.outlineStyleIsAuto());
+  DCHECK(!style.outlineStyleIsAuto());
 
   LayoutRect inner(rect);
   inner.inflate(style.outlineOffset());
@@ -109,7 +109,7 @@ void paintComplexOutline(GraphicsContext& graphicsContext,
                          const Vector<IntRect> rects,
                          const ComputedStyle& style,
                          const Color& color) {
-  ASSERT(!style.outlineStyleIsAuto());
+  DCHECK(!style.outlineStyleIsAuto());
 
   // Construct a clockwise path along the outer edge of the outline.
   SkRegion region;
@@ -150,7 +150,7 @@ void paintComplexOutline(GraphicsContext& graphicsContext,
         edge.side = BSLeft;
       }
     } else {
-      ASSERT(edge.y1 == edge.y2);
+      DCHECK(edge.y1 == edge.y2);
       if (edge.x1 < edge.x2) {
         edge.y2 += width;
         edge.side = BSTop;
@@ -173,7 +173,7 @@ void paintComplexOutline(GraphicsContext& graphicsContext,
         Color(outlineColor.red(), outlineColor.green(), outlineColor.blue());
   }
 
-  ASSERT(count >= 4 && edges.size() == count);
+  DCHECK(count >= 4 && edges.size() == count);
   int firstAdjacentWidth = adjustJoint(width, edges.last(), edges.first());
 
   // The width of the angled part of starting and ending joint of the current
@@ -219,7 +219,7 @@ void fillQuad(GraphicsContext& context,
 
 void ObjectPainter::paintOutline(const PaintInfo& paintInfo,
                                  const LayoutPoint& paintOffset) {
-  ASSERT(shouldPaintSelfOutline(paintInfo.phase));
+  DCHECK(shouldPaintSelfOutline(paintInfo.phase));
 
   const ComputedStyle& styleToUse = m_layoutObject.styleRef();
   if (!styleToUse.hasOutline() ||
@@ -288,7 +288,7 @@ void ObjectPainter::paintOutline(const PaintInfo& paintInfo,
 void ObjectPainter::paintInlineChildrenOutlines(
     const PaintInfo& paintInfo,
     const LayoutPoint& paintOffset) {
-  ASSERT(shouldPaintDescendantOutlines(paintInfo.phase));
+  DCHECK(shouldPaintDescendantOutlines(paintInfo.phase));
 
   PaintInfo paintInfoForDescendants = paintInfo.forDescendants();
   for (LayoutObject* child = m_layoutObject.slowFirstChild(); child;
@@ -301,7 +301,7 @@ void ObjectPainter::paintInlineChildrenOutlines(
 
 void ObjectPainter::addPDFURLRectIfNeeded(const PaintInfo& paintInfo,
                                           const LayoutPoint& paintOffset) {
-  ASSERT(paintInfo.isPrinting());
+  DCHECK(paintInfo.isPrinting());
   if (m_layoutObject.isElementContinuation() || !m_layoutObject.node() ||
       !m_layoutObject.node()->isLink() ||
       m_layoutObject.styleRef().visibility() != EVisibility::Visible)
@@ -413,7 +413,7 @@ void ObjectPainter::drawDashedOrDottedBoxSide(GraphicsContext& graphicsContext,
                                               int thickness,
                                               EBorderStyle style,
                                               bool antialias) {
-  ASSERT(thickness > 0);
+  DCHECK_GT(thickness, 0);
 
   bool wasAntialiased = graphicsContext.shouldAntialias();
   StrokeStyle oldStrokeStyle = graphicsContext.getStrokeStyle();
@@ -454,7 +454,7 @@ void ObjectPainter::drawDoubleBoxSide(GraphicsContext& graphicsContext,
                                       int adjacentWidth2,
                                       bool antialias) {
   int thirdOfThickness = (thickness + 1) / 3;
-  ASSERT(thirdOfThickness > 0);
+  DCHECK_GT(thirdOfThickness, 0);
 
   if (!adjacentWidth1 && !adjacentWidth2) {
     StrokeStyle oldStrokeStyle = graphicsContext.getStrokeStyle();
@@ -623,8 +623,8 @@ void ObjectPainter::drawSolidBoxSide(GraphicsContext& graphicsContext,
                                      int adjacentWidth1,
                                      int adjacentWidth2,
                                      bool antialias) {
-  ASSERT(x2 >= x1);
-  ASSERT(y2 >= y1);
+  DCHECK_GE(x2, x1);
+  DCHECK_GE(y2, y1);
 
   if (!adjacentWidth1 && !adjacentWidth2) {
     // Tweak antialiasing to match the behavior of fillQuad();

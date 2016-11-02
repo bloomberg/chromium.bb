@@ -32,7 +32,7 @@ void SVGContainerPainter::paint(const PaintInfo& paintInfo) {
     return;
 
   // Spec: An empty viewBox on the <svg> element disables rendering.
-  ASSERT(m_layoutSVGContainer.element());
+  DCHECK(m_layoutSVGContainer.element());
   if (isSVGSVGElement(*m_layoutSVGContainer.element()) &&
       toSVGSVGElement(*m_layoutSVGContainer.element()).hasEmptyViewBox())
     return;

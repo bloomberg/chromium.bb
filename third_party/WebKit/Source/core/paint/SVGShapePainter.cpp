@@ -189,7 +189,7 @@ void SVGShapePainter::strokeShape(GraphicsContext& context,
       context.drawOval(m_layoutSVGShape.objectBoundingBox(), paint);
       break;
     default:
-      ASSERT(m_layoutSVGShape.hasPath());
+      DCHECK(m_layoutSVGShape.hasPath());
       Path* usePath = &m_layoutSVGShape.path();
       if (m_layoutSVGShape.hasNonScalingStroke())
         usePath = m_layoutSVGShape.nonScalingStrokePath(

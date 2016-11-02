@@ -46,7 +46,7 @@ static inline bool compareOrderModifiedDocumentOrder(
 
 void GridPainter::paintChildren(const PaintInfo& paintInfo,
                                 const LayoutPoint& paintOffset) {
-  ASSERT(!m_layoutGrid.needsLayout());
+  DCHECK(!m_layoutGrid.needsLayout());
 
   LayoutRect localPaintInvalidationRect =
       LayoutRect(paintInfo.cullRect().m_rect);

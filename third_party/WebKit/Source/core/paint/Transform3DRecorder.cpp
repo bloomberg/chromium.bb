@@ -16,7 +16,7 @@ Transform3DRecorder::Transform3DRecorder(GraphicsContext& context,
                                          const TransformationMatrix& transform,
                                          const FloatPoint3D& transformOrigin)
     : m_context(context), m_client(client), m_type(type) {
-  ASSERT(DisplayItem::isTransform3DType(type));
+  DCHECK(DisplayItem::isTransform3DType(type));
   m_skipRecordingForIdentityTransform = transform.isIdentity();
 
   if (m_skipRecordingForIdentityTransform)

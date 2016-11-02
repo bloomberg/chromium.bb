@@ -60,7 +60,7 @@ namespace blink {
 // layer about some of its state.
 PaintLayerStackingNode::PaintLayerStackingNode(PaintLayer* layer)
     : m_layer(layer)
-#if ENABLE(ASSERT)
+#if DCHECK_IS_ON()
       ,
       m_layerListMutationAllowed(true),
       m_stackingParent(0)
@@ -76,7 +76,7 @@ PaintLayerStackingNode::PaintLayerStackingNode(PaintLayer* layer)
 PaintLayerStackingNode::~PaintLayerStackingNode() {
 #if ENABLE(ASSERT)
   if (!layoutObject()->documentBeingDestroyed()) {
-    ASSERT(!isInStackingParentZOrderLists());
+    DCHECK(!isInStackingParentZOrderLists());
 
     updateStackingParentForZOrderLists(0);
   }
@@ -90,13 +90,15 @@ static inline bool compareZIndex(PaintLayerStackingNode* first,
 }
 
 PaintLayerCompositor* PaintLayerStackingNode::compositor() const {
-  ASSERT(layoutObject()->view());
+  DCHECK(layoutObject()->view());
   return layoutObject()->view()->compositor();
 }
 
 void PaintLayerStackingNode::dirtyZOrderLists() {
-  ASSERT(m_layerListMutationAllowed);
-  ASSERT(isStackingContext());
+#if DCHECK_IS_ON()
+  DCHECK(m_layerListMutationAllowed);
+#endif
+  DCHECK(isStackingContext());
 
 #if ENABLE(ASSERT)
   updateStackingParentForZOrderLists(0);
@@ -118,8 +120,10 @@ void PaintLayerStackingNode::dirtyStackingContextZOrderLists() {
 }
 
 void PaintLayerStackingNode::rebuildZOrderLists() {
-  ASSERT(m_layerListMutationAllowed);
-  ASSERT(isDirtyStackingContext());
+#if DCHECK_IS_ON()
+  DCHECK(m_layerListMutationAllowed);
+#endif
+  DCHECK(isDirtyStackingContext());
 
   for (PaintLayer* child = layer()->firstChild(); child;
        child = child->nextSibling())

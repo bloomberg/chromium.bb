@@ -140,7 +140,7 @@ void BlockPainter::paintInlineBox(const InlineBox& inlineBox,
 
   // Text clips are painted only for the direct inline children of the object
   // that has a text clip style on it, not block children.
-  ASSERT(paintInfo.phase != PaintPhaseTextClip);
+  DCHECK(paintInfo.phase != PaintPhaseTextClip);
 
   LayoutPoint childPoint = paintOffset;
   if (inlineBox.parent()

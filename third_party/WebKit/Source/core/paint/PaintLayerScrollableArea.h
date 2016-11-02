@@ -398,7 +398,7 @@ class CORE_EXPORT PaintLayerScrollableArea final
   // controls need to be repositioned in the GraphicsLayer tree.
   void setTopmostScrollChild(PaintLayer*);
   PaintLayer* topmostScrollChild() const {
-    ASSERT(!m_nextTopmostScrollChild);
+    DCHECK(!m_nextTopmostScrollChild);
     return m_topmostScrollChild;
   }
 

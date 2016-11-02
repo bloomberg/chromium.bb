@@ -40,7 +40,7 @@ void BlockFlowPainter::paintFloats(const PaintInfo& paintInfo,
   if (!m_layoutBlockFlow.floatingObjects())
     return;
 
-  ASSERT(paintInfo.phase == PaintPhaseFloat ||
+  DCHECK(paintInfo.phase == PaintPhaseFloat ||
          paintInfo.phase == PaintPhaseSelection ||
          paintInfo.phase == PaintPhaseTextClip);
   PaintInfo floatPaintInfo(paintInfo);
