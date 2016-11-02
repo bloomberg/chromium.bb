@@ -461,16 +461,17 @@ drv_format_t drv_resolve_format(struct driver *drv, drv_format_t format)
  */
 int drv_stride_from_format(uint32_t format, uint32_t width, size_t plane)
 {
-	/* Get stride of the first plane */
-	int stride = width * DIV_ROUND_UP(drv_bpp_from_format(format, 0), 8);
+	int stride = width * DIV_ROUND_UP(drv_bpp_from_format(format, plane),
+					  8);
 
 	/*
-	 * Only downsample for certain multiplanar formats which are not
-	 * interleaved and have horizontal subsampling.  Only formats supported
-	 * by our drivers are listed here -- add more as needed.
+	 * Only downsample for certain multiplanar formats which have horizontal
+	 * subsampling for chroma planes.  Only formats supported by our drivers
+	 * are listed here -- add more as needed.
 	 */
 	if (plane != 0) {
 		switch (format) {
+		case DRV_FORMAT_NV12:
 		case DRV_FORMAT_YVU420:
 			stride = stride / 2;
 			break;
@@ -478,6 +479,85 @@ int drv_stride_from_format(uint32_t format, uint32_t width, size_t plane)
 	}
 
 	return stride;
+}
+
+size_t drv_num_planes_from_format(uint32_t format)
+{
+	switch (format) {
+	case DRV_FORMAT_C8:
+	case DRV_FORMAT_R8:
+	case DRV_FORMAT_RG88:
+	case DRV_FORMAT_GR88:
+	case DRV_FORMAT_RGB332:
+	case DRV_FORMAT_BGR233:
+	case DRV_FORMAT_XRGB4444:
+	case DRV_FORMAT_XBGR4444:
+	case DRV_FORMAT_RGBX4444:
+	case DRV_FORMAT_BGRX4444:
+	case DRV_FORMAT_ARGB4444:
+	case DRV_FORMAT_ABGR4444:
+	case DRV_FORMAT_RGBA4444:
+	case DRV_FORMAT_BGRA4444:
+	case DRV_FORMAT_XRGB1555:
+	case DRV_FORMAT_XBGR1555:
+	case DRV_FORMAT_RGBX5551:
+	case DRV_FORMAT_BGRX5551:
+	case DRV_FORMAT_ARGB1555:
+	case DRV_FORMAT_ABGR1555:
+	case DRV_FORMAT_RGBA5551:
+	case DRV_FORMAT_BGRA5551:
+	case DRV_FORMAT_RGB565:
+	case DRV_FORMAT_BGR565:
+	case DRV_FORMAT_YUYV:
+	case DRV_FORMAT_YVYU:
+	case DRV_FORMAT_UYVY:
+	case DRV_FORMAT_VYUY:
+	case DRV_FORMAT_RGB888:
+	case DRV_FORMAT_BGR888:
+	case DRV_FORMAT_XRGB8888:
+	case DRV_FORMAT_XBGR8888:
+	case DRV_FORMAT_RGBX8888:
+	case DRV_FORMAT_BGRX8888:
+	case DRV_FORMAT_ARGB8888:
+	case DRV_FORMAT_ABGR8888:
+	case DRV_FORMAT_RGBA8888:
+	case DRV_FORMAT_BGRA8888:
+	case DRV_FORMAT_XRGB2101010:
+	case DRV_FORMAT_XBGR2101010:
+	case DRV_FORMAT_RGBX1010102:
+	case DRV_FORMAT_BGRX1010102:
+	case DRV_FORMAT_ARGB2101010:
+	case DRV_FORMAT_ABGR2101010:
+	case DRV_FORMAT_RGBA1010102:
+	case DRV_FORMAT_BGRA1010102:
+	case DRV_FORMAT_AYUV:
+		return 1;
+	case DRV_FORMAT_NV12:
+		return 2;
+	case DRV_FORMAT_YVU420:
+		return 3;
+	}
+
+	fprintf(stderr, "drv: UNKNOWN FORMAT %d\n", format);
+	return 0;
+}
+
+uint32_t drv_size_from_format(drv_format_t format, uint32_t stride,
+			      uint32_t height, size_t plane)
+{
+	assert(plane < drv_num_planes_from_format(format));
+	uint32_t vertical_subsampling;
+
+	switch (format) {
+	case DRV_FORMAT_YVU420:
+	case DRV_FORMAT_NV12:
+		vertical_subsampling = (plane == 0) ? 1 : 2;
+		break;
+	default:
+		vertical_subsampling = 1;
+	}
+
+	return stride * DIV_ROUND_UP(height, vertical_subsampling);
 }
 
 uint32_t drv_num_buffers_per_bo(struct bo *bo)

@@ -9,7 +9,6 @@
 
 #include "drv.h"
 
-size_t drv_num_planes_from_format(uint32_t format);
 int drv_bpp_from_format(uint32_t format, size_t plane);
 int drv_bo_from_format(struct bo *bo, uint32_t width, uint32_t height,
 		       drv_format_t format);

@@ -16,67 +16,6 @@
 #include "helpers.h"
 #include "util.h"
 
-size_t drv_num_planes_from_format(uint32_t format)
-{
-	switch (format) {
-	case DRV_FORMAT_C8:
-	case DRV_FORMAT_R8:
-	case DRV_FORMAT_RG88:
-	case DRV_FORMAT_GR88:
-	case DRV_FORMAT_RGB332:
-	case DRV_FORMAT_BGR233:
-	case DRV_FORMAT_XRGB4444:
-	case DRV_FORMAT_XBGR4444:
-	case DRV_FORMAT_RGBX4444:
-	case DRV_FORMAT_BGRX4444:
-	case DRV_FORMAT_ARGB4444:
-	case DRV_FORMAT_ABGR4444:
-	case DRV_FORMAT_RGBA4444:
-	case DRV_FORMAT_BGRA4444:
-	case DRV_FORMAT_XRGB1555:
-	case DRV_FORMAT_XBGR1555:
-	case DRV_FORMAT_RGBX5551:
-	case DRV_FORMAT_BGRX5551:
-	case DRV_FORMAT_ARGB1555:
-	case DRV_FORMAT_ABGR1555:
-	case DRV_FORMAT_RGBA5551:
-	case DRV_FORMAT_BGRA5551:
-	case DRV_FORMAT_RGB565:
-	case DRV_FORMAT_BGR565:
-	case DRV_FORMAT_YUYV:
-	case DRV_FORMAT_YVYU:
-	case DRV_FORMAT_UYVY:
-	case DRV_FORMAT_VYUY:
-	case DRV_FORMAT_RGB888:
-	case DRV_FORMAT_BGR888:
-	case DRV_FORMAT_XRGB8888:
-	case DRV_FORMAT_XBGR8888:
-	case DRV_FORMAT_RGBX8888:
-	case DRV_FORMAT_BGRX8888:
-	case DRV_FORMAT_ARGB8888:
-	case DRV_FORMAT_ABGR8888:
-	case DRV_FORMAT_RGBA8888:
-	case DRV_FORMAT_BGRA8888:
-	case DRV_FORMAT_XRGB2101010:
-	case DRV_FORMAT_XBGR2101010:
-	case DRV_FORMAT_RGBX1010102:
-	case DRV_FORMAT_BGRX1010102:
-	case DRV_FORMAT_ARGB2101010:
-	case DRV_FORMAT_ABGR2101010:
-	case DRV_FORMAT_RGBA1010102:
-	case DRV_FORMAT_BGRA1010102:
-	case DRV_FORMAT_AYUV:
-		return 1;
-	case DRV_FORMAT_NV12:
-		return 2;
-	case DRV_FORMAT_YVU420:
-		return 3;
-	}
-
-	fprintf(stderr, "drv: UNKNOWN FORMAT %d\n", format);
-	return 0;
-}
-
 int drv_bpp_from_format(uint32_t format, size_t plane)
 {
 	assert(plane < drv_num_planes_from_format(format));
@@ -86,12 +25,28 @@ int drv_bpp_from_format(uint32_t format, size_t plane)
 	case DRV_FORMAT_R8:
 	case DRV_FORMAT_RGB332:
 	case DRV_FORMAT_BGR233:
+	case DRV_FORMAT_YVU420:
 		return 8;
 
+	/*
+	 * NV12 is laid out as follows. Each letter represents a byte.
+	 * Y plane:
+	 * Y0_0, Y0_1, Y0_2, Y0_3, ..., Y0_N
+	 * Y1_0, Y1_1, Y1_2, Y1_3, ..., Y1_N
+	 * ...
+	 * YM_0, YM_1, YM_2, YM_3, ..., YM_N
+	 * CbCr plane:
+	 * Cb01_01, Cr01_01, Cb01_23, Cr01_23, ..., Cb01_(N-1)N, Cr01_(N-1)N
+	 * Cb23_01, Cr23_01, Cb23_23, Cr23_23, ..., Cb23_(N-1)N, Cr23_(N-1)N
+	 * ...
+	 * Cb(M-1)M_01, Cr(M-1)M_01, ..., Cb(M-1)M_(N-1)N, Cr(M-1)M_(N-1)N
+	 *
+	 * Pixel (0, 0) requires Y0_0, Cb01_01 and Cr01_01. Pixel (0, 1) requires
+	 * Y0_1, Cb01_01 and Cr01_01.  So for a single pixel, 2 bytes of luma data
+	 * are required.
+	 */
 	case DRV_FORMAT_NV12:
-		return (plane == 0) ? 8 : 4;
-	case DRV_FORMAT_YVU420:
-		return (plane == 0) ? 8 : 2;
+		return (plane == 0) ? 8 : 16;
 
 	case DRV_FORMAT_RG88:
 	case DRV_FORMAT_GR88:
@@ -156,29 +111,18 @@ int drv_bo_from_format(struct bo *bo, uint32_t width, uint32_t height,
 		       drv_format_t format)
 {
 
-	switch (format) {
-	case DRV_FORMAT_YVU420:
-		bo->strides[0] = drv_stride_from_format(format, width, 0);
-		bo->strides[1] = drv_stride_from_format(format, width, 1);
-		bo->strides[2] = drv_stride_from_format(format, width, 2);
-		bo->sizes[0] = height * bo->strides[0];
-		bo->sizes[1] = bo->sizes[2] = (height / 2) * bo->strides[1];
-		bo->offsets[0] = 0;
-		bo->offsets[1] = bo->sizes[0];
-		bo->offsets[2] = bo->offsets[1] + bo->sizes[1];
-		break;
-	case DRV_FORMAT_NV12:
-		bo->strides[0] = drv_stride_from_format(format, width, 0);
-		bo->strides[1] = drv_stride_from_format(format, width, 1);
-		bo->sizes[0] = height * bo->strides[0];
-		bo->sizes[1] = height * bo->strides[1] / 2;
-		bo->offsets[0] = 0;
-		bo->offsets[1] = height * bo->strides[0];
-		break;
-	default:
-		bo->strides[0] = drv_stride_from_format(format, width, 0);
-		bo->sizes[0] = height * bo->strides[0];
-		bo->offsets[0] = 0;
+	size_t p, num_planes;
+	uint32_t offset = 0;
+
+	num_planes = drv_num_planes_from_format(format);
+	assert(num_planes);
+
+	for (p = 0; p < num_planes; p++) {
+		bo->strides[p] = drv_stride_from_format(format, width, p);
+		bo->sizes[p] = drv_size_from_format(format, bo->strides[p],
+						    height, p);
+		bo->offsets[p] = offset;
+		offset += bo->sizes[p];
 	}
 
 	bo->total_size = bo->offsets[bo->num_planes - 1] +

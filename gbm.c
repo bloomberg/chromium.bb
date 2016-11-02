@@ -160,7 +160,7 @@ gbm_bo_import(struct gbm_device *gbm, uint32_t type,
 	struct gbm_import_fd_data *fd_data = buffer;
 	struct gbm_import_fd_planar_data *fd_planar_data = buffer;
 	uint32_t gbm_format;
-	int i;
+	size_t num_planes, i;
 
 	memset(&drv_data, 0, sizeof(drv_data));
 
@@ -179,15 +179,27 @@ gbm_bo_import(struct gbm_device *gbm, uint32_t type,
 		drv_data.width = fd_planar_data->width;
 		drv_data.height = fd_planar_data->height;
 		drv_data.format = gbm_convert_format(fd_planar_data->format);
-		for (i = 0; i < GBM_MAX_PLANES; i++) {
+		num_planes = drv_num_planes_from_format(drv_data.format);
+
+		assert(num_planes);
+
+		for (i = 0; i < num_planes; i++) {
 			drv_data.fds[i] = fd_planar_data->fds[i];
 			drv_data.offsets[i] = fd_planar_data->offsets[i];
 			drv_data.strides[i] = fd_planar_data->strides[i];
-			drv_data.sizes[i] = fd_planar_data->height *
-					    fd_planar_data->strides[i];
 			drv_data.format_modifiers[i] =
 				fd_planar_data->format_modifiers[i];
+
+			drv_data.sizes[i] = drv_size_from_format(
+						drv_data.format,
+						drv_data.strides[i],
+						drv_data.height,
+						i);
 		}
+
+		for (i = num_planes; i < GBM_MAX_PLANES; i++)
+			drv_data.fds[i] = -1;
+
 		break;
 	default:
 		return NULL;
