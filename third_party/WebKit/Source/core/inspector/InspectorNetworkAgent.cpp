@@ -164,12 +164,12 @@ class InspectorFileReaderLoaderClient final : public FileReaderLoaderClient {
             m_rawData, m_mimeType, m_textEncodingName, &result, &base64Encoded))
       m_callback->sendSuccess(result, base64Encoded);
     else
-      m_callback->sendFailure("Couldn't encode data");
+      m_callback->sendFailure(Response::Error("Couldn't encode data"));
     dispose();
   }
 
   virtual void didFail(FileError::ErrorCode) {
-    m_callback->sendFailure("Couldn't read BLOB");
+    m_callback->sendFailure(Response::Error("Couldn't read BLOB"));
     dispose();
   }
 
@@ -249,8 +249,7 @@ String buildBlockedReason(ResourceRequestBlockedReason reason) {
   }
 }
 
-WebConnectionType toWebConnectionType(ErrorString* errorString,
-                                      const String& connectionType) {
+WebConnectionType toWebConnectionType(const String& connectionType) {
   if (connectionType == protocol::Network::ConnectionTypeEnum::None)
     return WebConnectionTypeNone;
   if (connectionType == protocol::Network::ConnectionTypeEnum::Cellular2g)
@@ -269,7 +268,6 @@ WebConnectionType toWebConnectionType(ErrorString* errorString,
     return WebConnectionTypeWimax;
   if (connectionType == protocol::Network::ConnectionTypeEnum::Other)
     return WebConnectionTypeOther;
-  *errorString = "Unknown connection type";
   return WebConnectionTypeUnknown;
 }
 
@@ -1133,11 +1131,11 @@ void InspectorNetworkAgent::didReceiveWebSocketFrameError(
                                   monotonicallyIncreasingTime(), errorMessage);
 }
 
-void InspectorNetworkAgent::enable(ErrorString*,
-                                   const Maybe<int>& totalBufferSize,
-                                   const Maybe<int>& resourceBufferSize) {
+Response InspectorNetworkAgent::enable(Maybe<int> totalBufferSize,
+                                       Maybe<int> resourceBufferSize) {
   enable(totalBufferSize.fromMaybe(maximumTotalBufferSize),
          resourceBufferSize.fromMaybe(maximumResourceBufferSize));
+  return Response::OK();
 }
 
 void InspectorNetworkAgent::enable(int totalBufferSize,
@@ -1153,30 +1151,30 @@ void InspectorNetworkAgent::enable(int totalBufferSize,
   m_instrumentingAgents->addInspectorNetworkAgent(this);
 }
 
-void InspectorNetworkAgent::disable(ErrorString*) {
+Response InspectorNetworkAgent::disable() {
   DCHECK(!m_pendingRequest);
   m_state->setBoolean(NetworkAgentState::networkAgentEnabled, false);
   m_state->setString(NetworkAgentState::userAgentOverride, "");
   m_instrumentingAgents->removeInspectorNetworkAgent(this);
   m_resourcesData->clear();
   m_knownRequestIdMap.clear();
+  return Response::OK();
 }
 
-void InspectorNetworkAgent::setUserAgentOverride(ErrorString* errorString,
-                                                 const String& userAgent) {
+Response InspectorNetworkAgent::setUserAgentOverride(const String& userAgent) {
   if (userAgent.contains('\n') || userAgent.contains('\r') ||
       userAgent.contains('\0')) {
-    *errorString = "Invalid characters found in userAgent";
-    return;
+    return Response::Error("Invalid characters found in userAgent");
   }
   m_state->setString(NetworkAgentState::userAgentOverride, userAgent);
+  return Response::OK();
 }
 
-void InspectorNetworkAgent::setExtraHTTPHeaders(
-    ErrorString*,
+Response InspectorNetworkAgent::setExtraHTTPHeaders(
     const std::unique_ptr<protocol::Network::Headers> headers) {
   m_state->setObject(NetworkAgentState::extraRequestHeaders,
                      headers->serialize());
+  return Response::OK();
 }
 
 bool InspectorNetworkAgent::canGetResponseBodyBlob(const String& requestId) {
@@ -1213,7 +1211,8 @@ void InspectorNetworkAgent::getResponseBody(
   NetworkResourcesData::ResourceData const* resourceData =
       m_resourcesData->data(requestId);
   if (!resourceData) {
-    callback->sendFailure("No resource with given identifier found");
+    callback->sendFailure(
+        Response::Error("No resource with given identifier found"));
     return;
   }
 
@@ -1230,7 +1229,8 @@ void InspectorNetworkAgent::getResponseBody(
   }
 
   if (resourceData->isContentEvicted()) {
-    callback->sendFailure("Request content was evicted from inspector cache");
+    callback->sendFailure(
+        Response::Error("Request content was evicted from inspector cache"));
     return;
   }
 
@@ -1260,10 +1260,11 @@ void InspectorNetworkAgent::getResponseBody(
     return;
   }
 
-  callback->sendFailure("No data found for resource with given identifier");
+  callback->sendFailure(
+      Response::Error("No data found for resource with given identifier"));
 }
 
-void InspectorNetworkAgent::addBlockedURL(ErrorString*, const String& url) {
+Response InspectorNetworkAgent::addBlockedURL(const String& url) {
   protocol::DictionaryValue* blockedURLs =
       m_state->getObject(NetworkAgentState::blockedURLs);
   if (!blockedURLs) {
@@ -1273,26 +1274,28 @@ void InspectorNetworkAgent::addBlockedURL(ErrorString*, const String& url) {
     m_state->setObject(NetworkAgentState::blockedURLs, std::move(newList));
   }
   blockedURLs->setBoolean(url, true);
+  return Response::OK();
 }
 
-void InspectorNetworkAgent::removeBlockedURL(ErrorString*, const String& url) {
+Response InspectorNetworkAgent::removeBlockedURL(const String& url) {
   protocol::DictionaryValue* blockedURLs =
       m_state->getObject(NetworkAgentState::blockedURLs);
   if (blockedURLs)
     blockedURLs->remove(url);
+  return Response::OK();
 }
 
-void InspectorNetworkAgent::replayXHR(ErrorString*, const String& requestId) {
+Response InspectorNetworkAgent::replayXHR(const String& requestId) {
   String actualRequestId = requestId;
 
   XHRReplayData* xhrReplayData = m_resourcesData->xhrReplayData(requestId);
   if (!xhrReplayData)
-    return;
+    return Response::Error("Given id does not correspond to XHR");
 
   ExecutionContext* executionContext = xhrReplayData->getExecutionContext();
   if (!executionContext) {
     m_resourcesData->setXHRReplayData(requestId, 0);
-    return;
+    return Response::Error("Document is already detached");
   }
 
   XMLHttpRequest* xhr = XMLHttpRequest::create(executionContext);
@@ -1308,33 +1311,35 @@ void InspectorNetworkAgent::replayXHR(ErrorString*, const String& requestId) {
   xhr->sendForInspectorXHRReplay(xhrReplayData->formData(), IGNORE_EXCEPTION);
 
   m_replayXHRs.add(xhr);
+  return Response::OK();
 }
 
-void InspectorNetworkAgent::setMonitoringXHREnabled(ErrorString*,
-                                                    bool enabled) {
+Response InspectorNetworkAgent::setMonitoringXHREnabled(bool enabled) {
   m_state->setBoolean(NetworkAgentState::monitoringXHR, enabled);
+  return Response::OK();
 }
 
-void InspectorNetworkAgent::canClearBrowserCache(ErrorString*, bool* result) {
+Response InspectorNetworkAgent::canClearBrowserCache(bool* result) {
   *result = true;
+  return Response::OK();
 }
 
-void InspectorNetworkAgent::canClearBrowserCookies(ErrorString*, bool* result) {
+Response InspectorNetworkAgent::canClearBrowserCookies(bool* result) {
   *result = true;
+  return Response::OK();
 }
 
-void InspectorNetworkAgent::emulateNetworkConditions(
-    ErrorString* errorString,
+Response InspectorNetworkAgent::emulateNetworkConditions(
     bool offline,
     double latency,
     double downloadThroughput,
     double uploadThroughput,
-    const Maybe<String>& connectionType) {
+    Maybe<String> connectionType) {
   WebConnectionType type = WebConnectionTypeUnknown;
   if (connectionType.isJust()) {
-    type = toWebConnectionType(errorString, connectionType.fromJust());
-    if (!errorString->isEmpty())
-      return;
+    type = toWebConnectionType(connectionType.fromJust());
+    if (type == WebConnectionTypeUnknown)
+      return Response::Error("Unknown connection type");
   }
   // TODO(dgozman): networkStateNotifier is per-process. It would be nice to
   // have per-frame override instead.
@@ -1343,26 +1348,28 @@ void InspectorNetworkAgent::emulateNetworkConditions(
                                        downloadThroughput / (1024 * 1024 / 8));
   else
     networkStateNotifier().clearOverride();
+  return Response::OK();
 }
 
-void InspectorNetworkAgent::setCacheDisabled(ErrorString*, bool cacheDisabled) {
+Response InspectorNetworkAgent::setCacheDisabled(bool cacheDisabled) {
   m_state->setBoolean(NetworkAgentState::cacheDisabled, cacheDisabled);
   if (cacheDisabled)
     memoryCache()->evictResources();
+  return Response::OK();
 }
 
-void InspectorNetworkAgent::setBypassServiceWorker(ErrorString*, bool bypass) {
+Response InspectorNetworkAgent::setBypassServiceWorker(bool bypass) {
   m_state->setBoolean(NetworkAgentState::bypassServiceWorker, bypass);
+  return Response::OK();
 }
 
-void InspectorNetworkAgent::setDataSizeLimitsForTest(ErrorString*,
-                                                     int maxTotal,
-                                                     int maxResource) {
+Response InspectorNetworkAgent::setDataSizeLimitsForTest(int maxTotal,
+                                                         int maxResource) {
   m_resourcesData->setResourcesDataSizeLimits(maxTotal, maxResource);
+  return Response::OK();
 }
 
-void InspectorNetworkAgent::getCertificate(
-    ErrorString*,
+Response InspectorNetworkAgent::getCertificate(
     const String& origin,
     std::unique_ptr<protocol::Array<String>>* certificate) {
   *certificate = protocol::Array<String>::create();
@@ -1374,9 +1381,10 @@ void InspectorNetworkAgent::getCertificate(
     if (resourceOrigin->isSameSchemeHostPort(securityOrigin.get())) {
       for (auto& cert : resource->certificate())
         certificate->get()->addItem(base64Encode(cert.latin1()));
-      return;
+      return Response::OK();
     }
   }
+  return Response::OK();
 }
 
 void InspectorNetworkAgent::didCommitLoad(LocalFrame* frame,
