@@ -238,13 +238,18 @@ CheckedMul(T x, T y, RangeConstraint* validity) {
   return static_cast<T>(*validity == RANGE_VALID ? x * y : 0);
 }
 
-// Division just requires a check for an invalid negation on signed min/-1.
+// Division just requires a check for a zero denominator or an invalid negation
+// on signed min/-1.
 template <typename T>
 T CheckedDiv(T x,
              T y,
              RangeConstraint* validity,
              typename std::enable_if<std::numeric_limits<T>::is_integer,
                                      int>::type = 0) {
+  if (y == 0) {
+    *validity = RANGE_INVALID;
+    return static_cast<T>(0);
+  }
   if (std::numeric_limits<T>::is_signed && x == std::numeric_limits<T>::min() &&
       y == static_cast<T>(-1)) {
     *validity = RANGE_OVERFLOW;
@@ -269,8 +274,8 @@ typename std::enable_if<std::numeric_limits<T>::is_integer &&
                             !std::numeric_limits<T>::is_signed,
                         T>::type
 CheckedMod(T x, T y, RangeConstraint* validity) {
-  *validity = RANGE_VALID;
-  return static_cast<T>(x % y);
+  *validity = y != 0 ? RANGE_VALID : RANGE_INVALID;
+  return static_cast<T>(*validity == RANGE_VALID ? x % y: 0);
 }
 
 template <typename T>
