@@ -84,9 +84,4 @@ MessageBoxResult ShowQuestionMessageBox(gfx::NativeWindow parent,
                         MESSAGE_BOX_TYPE_QUESTION);
 }
 
-bool CloseMessageBoxForTest(bool accept) {
-  NOTIMPLEMENTED();
-  return false;
-}
-
 }  // namespace chrome

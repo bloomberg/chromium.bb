@@ -13,4 +13,8 @@
 // will be called.
 void TrySwitchingActiveUser(const base::Callback<void()> switch_user);
 
+// Terminates the "DesktopCastingWarning" dialog from a unit tests and |accept|s
+// it. False will be returned if there was no dialog shown.
+bool TestAndTerminateDesktopCastingWarningForTest(bool accept);
+
 #endif  // CHROME_BROWSER_UI_ASH_MULTI_USER_USER_SWITCH_UTIL_H_

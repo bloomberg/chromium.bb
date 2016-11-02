@@ -7,10 +7,7 @@
 #include "ash/common/wm/overview/window_selector_controller.h"
 #include "ash/common/wm_shell.h"
 #include "ash/test/ash_test_base.h"
-#include "base/run_loop.h"
-#include "base/threading/thread_task_runner_handle.h"
 #include "chrome/browser/ui/ash/multi_user/user_switch_util.h"
-#include "chrome/browser/ui/simple_message_box.h"
 #include "ui/aura/window.h"
 
 namespace ash {
@@ -71,11 +68,19 @@ class TrySwitchingUserTest : public ash::test::AshTestBase {
   // The passed |action| type parameter defines the outcome (which will be
   // checked) and the action the user will choose.
   void SwitchUser(ActionType action) {
-    base::ThreadTaskRunnerHandle::Get()->PostTask(
-        FROM_HERE, base::Bind(&CloseMessageBox, action));
     TrySwitchingActiveUser(base::Bind(&TrySwitchingUserTest::SwitchCallback,
                                       base::Unretained(this)));
-    base::RunLoop().RunUntilIdle();
+    switch (action) {
+      case NO_DIALOG:
+        EXPECT_TRUE(!TestAndTerminateDesktopCastingWarningForTest(true));
+        return;
+      case ACCEPT_DIALOG:
+        EXPECT_TRUE(TestAndTerminateDesktopCastingWarningForTest(true));
+        return;
+      case DECLINE_DIALOG:
+        EXPECT_TRUE(TestAndTerminateDesktopCastingWarningForTest(false));
+        return;
+    }
   }
 
   // Called when the user will get actually switched.
@@ -105,20 +110,6 @@ class TrySwitchingUserTest : public ash::test::AshTestBase {
   int switch_callback_hit_count() const { return switch_callback_hit_count_; }
 
  private:
-  static void CloseMessageBox(ActionType action) {
-    switch (action) {
-      case NO_DIALOG:
-        EXPECT_FALSE(chrome::CloseMessageBoxForTest(true));
-        return;
-      case ACCEPT_DIALOG:
-        EXPECT_TRUE(chrome::CloseMessageBoxForTest(true));
-        return;
-      case DECLINE_DIALOG:
-        EXPECT_TRUE(chrome::CloseMessageBoxForTest(false));
-        return;
-    }
-  }
-
   // The two items from the SystemTray for the screen capture / share
   // functionality.
   ScreenTrayItem* capture_item_;

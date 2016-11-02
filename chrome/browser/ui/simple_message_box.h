@@ -5,7 +5,6 @@
 #ifndef CHROME_BROWSER_UI_SIMPLE_MESSAGE_BOX_H_
 #define CHROME_BROWSER_UI_SIMPLE_MESSAGE_BOX_H_
 
-#include "base/compiler_specific.h"
 #include "base/strings/string16.h"
 #include "ui/gfx/native_widget_types.h"
 
@@ -61,10 +60,6 @@ MessageBoxResult ShowMessageBoxWithButtonText(gfx::NativeWindow parent,
                                               const base::string16& message,
                                               const base::string16& yes_text,
                                               const base::string16& no_text);
-
-// Closes the current message box, if any, accepting or declining based on
-// |accept|. Returns whether there was a message box showing.
-bool CloseMessageBoxForTest(bool accept) WARN_UNUSED_RESULT;
 
 }  // namespace chrome
 
