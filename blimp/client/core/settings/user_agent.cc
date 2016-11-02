@@ -2,12 +2,17 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "blimp/client/app/user_agent.h"
+#include "blimp/client/core/settings/user_agent.h"
 #include "base/macros.h"
 #include "base/strings/stringprintf.h"
 #include "base/sys_info.h"
 
+#if defined(OS_POSIX) && !defined(OS_ANDROID)
+#include <sys/utsname.h>
+#endif
+
 namespace blimp {
+namespace client {
 
 /**
  * Returns a string for building user agent such as :
@@ -83,4 +88,5 @@ std::string GetOSVersionInfoForUserAgent() {
   return os_cpu;
 }
 
+}  // namespace client
 }  // namespace blimp

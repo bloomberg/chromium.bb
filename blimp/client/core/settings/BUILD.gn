@@ -22,6 +22,8 @@ source_set("settings") {
     "settings_observer.h",
     "settings_prefs.cc",
     "settings_prefs.h",
+    "user_agent.cc",
+    "user_agent.h",
   ]
 
   deps = [

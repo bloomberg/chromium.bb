@@ -26,8 +26,6 @@ class SettingsFeature : public BlimpMessageProcessor, public SettingsObserver {
   void set_outgoing_message_processor(
       std::unique_ptr<BlimpMessageProcessor> processor);
 
-  void SendUserAgentOSVersionInfo(const std::string& client_os_info);
-
   // BlimpMessageProcessor implementation.
   void ProcessMessage(std::unique_ptr<BlimpMessage> message,
                       const net::CompletionCallback& callback) override;

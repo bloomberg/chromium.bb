@@ -13,6 +13,7 @@
 
 namespace blimp {
 namespace client {
+namespace {
 
 const CommandLinePrefStore::BooleanSwitchToPreferenceMapEntry
     boolean_switch_map[] = {
@@ -20,6 +21,8 @@ const CommandLinePrefStore::BooleanSwitchToPreferenceMapEntry
         {blimp::switches::kDownloadWholeDocument, prefs::kRecordWholeDocument,
          true},
 };
+
+}  // namespace
 
 Settings::Settings(PrefService* local_state)
     : local_state_(local_state), show_network_stats_(false) {

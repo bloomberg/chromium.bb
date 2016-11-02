@@ -40,7 +40,6 @@ class GeolocationFeature;
 class NavigationFeature;
 class ImeFeature;
 class RenderWidgetFeature;
-class SettingsFeature;
 class TabControlFeature;
 
 // BlimpClientSession represents a single active session of Blimp on the client
@@ -68,7 +67,6 @@ class BlimpClientSession
   NavigationFeature* GetNavigationFeature() const;
   ImeFeature* GetImeFeature() const;
   RenderWidgetFeature* GetRenderWidgetFeature() const;
-  SettingsFeature* GetSettingsFeature() const;
 
   // The AssignmentCallback for when an assignment is ready. This will trigger
   // a connection to the engine.
@@ -113,7 +111,6 @@ class BlimpClientSession
   std::unique_ptr<NavigationFeature> navigation_feature_;
   std::unique_ptr<ImeFeature> ime_feature_;
   std::unique_ptr<RenderWidgetFeature> render_widget_feature_;
-  std::unique_ptr<SettingsFeature> settings_feature_;
 
   // The AssignmentSource is used when the user of BlimpClientSession calls
   // Connect() to get a valid assignment and later connect to the engine.

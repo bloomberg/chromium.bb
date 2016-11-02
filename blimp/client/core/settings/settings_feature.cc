@@ -5,6 +5,7 @@
 #include "blimp/client/core/settings/settings_feature.h"
 
 #include "blimp/client/core/settings/settings.h"
+#include "blimp/client/core/settings/user_agent.h"
 #include "blimp/common/create_blimp_message.h"
 #include "blimp/common/proto/blimp_message.pb.h"
 #include "blimp/common/proto/settings.pb.h"
@@ -13,23 +14,15 @@
 namespace blimp {
 namespace client {
 
-SettingsFeature::SettingsFeature(Settings* settings) : settings_(settings) {}
+SettingsFeature::SettingsFeature(Settings* settings) : settings_(settings) {
+  DCHECK(settings_);
+}
 
 SettingsFeature::~SettingsFeature() = default;
 
 void SettingsFeature::set_outgoing_message_processor(
     std::unique_ptr<BlimpMessageProcessor> processor) {
   outgoing_message_processor_ = std::move(processor);
-}
-
-// TODO(mlliu): remove this method once we set the user agent in PushSettings()
-// http://crbug.com/652032.
-void SettingsFeature::SendUserAgentOSVersionInfo(const std::string& osVersion) {
-  EngineSettingsMessage* engine_settings;
-  std::unique_ptr<BlimpMessage> message = CreateBlimpMessage(&engine_settings);
-  engine_settings->set_client_os_info(osVersion);
-  outgoing_message_processor_->ProcessMessage(std::move(message),
-                                              net::CompletionCallback());
 }
 
 void SettingsFeature::ProcessMessage(std::unique_ptr<BlimpMessage> message,
@@ -48,12 +41,11 @@ void SettingsFeature::OnRecordWholeDocumentChanged(bool enable) {
 }
 
 void SettingsFeature::PushSettings() {
-  // TODO(mlliu): set the user agent on the proto as well after moving
-  // blimp/client/app/user_agent.* to this directory (http://crbug.com/652032).
   EngineSettingsMessage* engine_settings;
   std::unique_ptr<BlimpMessage> message = CreateBlimpMessage(&engine_settings);
   engine_settings->set_record_whole_document(
       settings_->IsRecordWholeDocument());
+  engine_settings->set_client_os_info(GetOSVersionInfoForUserAgent());
   outgoing_message_processor_->ProcessMessage(std::move(message),
                                               net::CompletionCallback());
 }

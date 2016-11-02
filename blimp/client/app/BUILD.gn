@@ -376,8 +376,6 @@ if (is_android) {
       "android/tab_control_feature_android.h",
       "android/toolbar.cc",
       "android/toolbar.h",
-      "user_agent.cc",
-      "user_agent.h",
     ]
 
     libs = [ "android" ]

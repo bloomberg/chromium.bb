@@ -9,7 +9,6 @@
 #include "base/android/jni_string.h"
 #include "base/android/scoped_java_ref.h"
 #include "base/threading/thread_task_runner_handle.h"
-#include "blimp/client/app/user_agent.h"
 #include "blimp/client/core/contents/tab_control_feature.h"
 #include "blimp/client/core/session/assignment_source.h"
 #include "blimp/client/core/settings/settings_feature.h"
@@ -66,10 +65,6 @@ BlimpClientSessionAndroid::BlimpClientSessionAndroid(
       reinterpret_cast<ui::WindowAndroid*>(window_android_ptr);
   ime_dialog_.reset(new ImeHelperDialog(window));
   GetImeFeature()->set_delegate(ime_dialog_.get());
-
-  // Send OS info before creating any tab.
-  GetSettingsFeature()->SendUserAgentOSVersionInfo(
-      GetOSVersionInfoForUserAgent());
 
   // Create a single tab's WebContents.
   // TODO(kmarshall): Remove this once we add tab-literacy to Blimp.

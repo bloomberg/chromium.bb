@@ -24,7 +24,6 @@
 #include "blimp/client/core/render_widget/render_widget_feature.h"
 #include "blimp/client/core/session/client_network_components.h"
 #include "blimp/client/core/session/cross_thread_network_event_observer.h"
-#include "blimp/client/core/settings/settings_feature.h"
 #include "blimp/client/core/switches/blimp_client_switches.h"
 #include "blimp/common/blob_cache/in_memory_blob_cache.h"
 #include "blimp/net/blimp_message_thread_pipe.h"
@@ -55,7 +54,6 @@ BlimpClientSession::BlimpClientSession(const GURL& assigner_endpoint)
       navigation_feature_(new NavigationFeature),
       ime_feature_(new ImeFeature),
       render_widget_feature_(new RenderWidgetFeature),
-      settings_feature_(new SettingsFeature(nullptr)),
       weak_factory_(this) {
   base::Thread::Options options;
   options.message_loop_type = base::MessageLoop::TYPE_IO;
@@ -137,9 +135,6 @@ void BlimpClientSession::RegisterFeatures() {
   render_widget_feature_->set_outgoing_compositor_message_processor(
       thread_pipe_manager_->RegisterFeature(BlimpMessage::kCompositor,
                                             render_widget_feature_.get()));
-  settings_feature_->set_outgoing_message_processor(
-      thread_pipe_manager_->RegisterFeature(BlimpMessage::kSettings,
-                                            settings_feature_.get()));
   thread_pipe_manager_->RegisterFeature(BlimpMessage::kBlobChannel,
                                         blob_delegate_);
 
@@ -180,10 +175,6 @@ ImeFeature* BlimpClientSession::GetImeFeature() const {
 
 RenderWidgetFeature* BlimpClientSession::GetRenderWidgetFeature() const {
   return render_widget_feature_.get();
-}
-
-SettingsFeature* BlimpClientSession::GetSettingsFeature() const {
-  return settings_feature_.get();
 }
 
 }  // namespace client
