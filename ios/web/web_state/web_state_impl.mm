@@ -677,10 +677,8 @@ void WebStateImpl::OnProvisionalNavigationStarted(const GURL& url) {
 
 #pragma mark - NavigationManagerDelegate implementation
 
-// Mirror WebContentsImpl::NavigateToPendingEntry() so that
-// NavigationControllerIO::GoBack() actually goes back.
-void WebStateImpl::NavigateToPendingEntry() {
-  [web_controller_ loadCurrentURL];
+void WebStateImpl::GoToOffset(int offset) {
+  [web_controller_ goDelta:offset];
 }
 
 void WebStateImpl::LoadURLWithParams(

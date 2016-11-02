@@ -289,19 +289,11 @@ bool NavigationManagerImpl::CanGoForward() const {
 }
 
 void NavigationManagerImpl::GoBack() {
-  if (CanGoBack()) {
-    [session_controller_ goBack];
-    // Signal the delegate to load the old page.
-    delegate_->NavigateToPendingEntry();
-  }
+  delegate_->GoToOffset(-1);
 }
 
 void NavigationManagerImpl::GoForward() {
-  if (CanGoForward()) {
-    [session_controller_ goForward];
-    // Signal the delegate to load the new page.
-    delegate_->NavigateToPendingEntry();
-  }
+  delegate_->GoToOffset(1);
 }
 
 void NavigationManagerImpl::Reload(bool check_for_reposts) {
