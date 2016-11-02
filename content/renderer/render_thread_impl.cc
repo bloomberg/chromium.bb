@@ -1439,10 +1439,6 @@ void RenderThreadImpl::SetIdleNotificationDelayInMs(
   idle_notification_delay_in_ms_ = idle_notification_delay_in_ms;
 }
 
-void RenderThreadImpl::UpdateHistograms(int sequence_number) {
-  child_histogram_message_filter()->SendHistograms(sequence_number);
-}
-
 int RenderThreadImpl::PostTaskToAllWebWorkers(const base::Closure& closure) {
   return WorkerThreadRegistry::Instance()->PostTaskToAllThreads(closure);
 }

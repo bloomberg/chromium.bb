@@ -29,8 +29,6 @@ class ChildHistogramMessageFilter : public IPC::MessageFilter {
   void OnFilterRemoved() override;
   bool OnMessageReceived(const IPC::Message& message) override;
 
-  void SendHistograms(int sequence_number);
-
  private:
   typedef std::vector<std::string> HistogramPickledList;
 

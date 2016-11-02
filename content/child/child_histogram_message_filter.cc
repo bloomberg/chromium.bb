@@ -60,12 +60,6 @@ void ChildHistogramMessageFilter::OnSetHistogramMemory(
     global_allocator->CreateTrackingHistograms(global_allocator->Name());
 }
 
-void ChildHistogramMessageFilter::SendHistograms(int sequence_number) {
-  io_task_runner_->PostTask(
-      FROM_HERE, base::Bind(&ChildHistogramMessageFilter::UploadAllHistograms,
-                            this, sequence_number));
-}
-
 void ChildHistogramMessageFilter::OnGetChildHistogramData(int sequence_number) {
   UploadAllHistograms(sequence_number);
 }

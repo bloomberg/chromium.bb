@@ -217,9 +217,6 @@ int64_t MockRenderThread::GetIdleNotificationDelayInMs() const {
 void MockRenderThread::SetIdleNotificationDelayInMs(
     int64_t idle_notification_delay_in_ms) {}
 
-void MockRenderThread::UpdateHistograms(int sequence_number) {
-}
-
 int MockRenderThread::PostTaskToAllWebWorkers(const base::Closure& closure) {
   return 0;
 }

@@ -94,8 +94,6 @@ class CONTENT_EXPORT RenderThread : virtual public ChildThread {
   virtual void SetIdleNotificationDelayInMs(
       int64_t idle_notification_delay_in_ms) = 0;
 
-  virtual void UpdateHistograms(int sequence_number) = 0;
-
   // Post task to all worker threads. Returns number of workers.
   virtual int PostTaskToAllWebWorkers(const base::Closure& closure) = 0;
 
