@@ -12,6 +12,7 @@
 #include "fake_ppapi/fake_core_interface.h"
 #include "fake_ppapi/fake_file_io_interface.h"
 #include "fake_ppapi/fake_file_ref_interface.h"
+#include "fake_ppapi/fake_file_system_interface.h"
 #include "fake_ppapi/fake_var_interface.h"
 #include "fake_ppapi/fake_var_manager.h"
 #include "nacl_io/pepper_interface_dummy.h"
@@ -95,22 +96,6 @@ class FakeHtml5FsFilesystem {
   typedef std::map<Path, FakeHtml5FsNode> NodeMap;
   NodeMap node_map_;
   PP_FileSystemType filesystem_type_;
-};
-
-class FakeFileSystemInterface : public nacl_io::FileSystemInterface {
- public:
-  FakeFileSystemInterface(FakeCoreInterface* core_interface);
-
-  virtual PP_Bool IsFileSystem(PP_Resource resource);
-  virtual PP_Resource Create(PP_Instance instance, PP_FileSystemType type);
-  virtual int32_t Open(PP_Resource file_system,
-                       int64_t expected_size,
-                       PP_CompletionCallback callback);
-
- private:
-  FakeCoreInterface* core_interface_;  // Weak reference.
-
-  DISALLOW_COPY_AND_ASSIGN(FakeFileSystemInterface);
 };
 
 class FakePepperInterfaceHtml5Fs : public nacl_io::PepperInterfaceDummy {

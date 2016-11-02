@@ -8,24 +8,11 @@
 
 #include <algorithm>
 
-#include <ppapi/c/pp_completion_callback.h>
 #include <ppapi/c/pp_errors.h>
 
 #include "gtest/gtest.h"
 
 #include "fake_ppapi/fake_util.h"
-
-namespace {
-
-class FakeInstanceResource : public FakeResource {
- public:
-  FakeInstanceResource() : filesystem_template(NULL) {}
-  static const char* classname() { return "FakeInstanceResource"; }
-
-  FakeHtml5FsFilesystem* filesystem_template;  // Weak reference.
-};
-
-}  // namespace
 
 FakeHtml5FsNode::FakeHtml5FsNode(const PP_FileInfo& info) : info_(info) {}
 
@@ -242,46 +229,6 @@ FakeHtml5FsFilesystem::Path FakeHtml5FsFilesystem::GetParentPath(
   return path.substr(0, last_slash);
 }
 
-FakeFileSystemInterface::FakeFileSystemInterface(
-    FakeCoreInterface* core_interface)
-    : core_interface_(core_interface) {}
-
-PP_Bool FakeFileSystemInterface::IsFileSystem(PP_Resource resource) {
-  bool not_found_ok = true;
-  FakeFileSystemResource* file_system_resource =
-      core_interface_->resource_manager()->Get<FakeFileSystemResource>(
-          resource, not_found_ok);
-  return file_system_resource != NULL ? PP_TRUE : PP_FALSE;
-}
-
-PP_Resource FakeFileSystemInterface::Create(PP_Instance instance,
-                                            PP_FileSystemType filesystem_type) {
-  FakeInstanceResource* instance_resource =
-      core_interface_->resource_manager()->Get<FakeInstanceResource>(instance);
-  if (instance_resource == NULL)
-    return PP_ERROR_BADRESOURCE;
-
-  FakeFileSystemResource* file_system_resource = new FakeFileSystemResource;
-  file_system_resource->filesystem = new FakeHtml5FsFilesystem(
-      *instance_resource->filesystem_template, filesystem_type);
-
-  return CREATE_RESOURCE(core_interface_->resource_manager(),
-                         FakeFileSystemResource, file_system_resource);
-}
-
-int32_t FakeFileSystemInterface::Open(PP_Resource file_system,
-                                      int64_t expected_size,
-                                      PP_CompletionCallback callback) {
-  FakeFileSystemResource* file_system_resource =
-      core_interface_->resource_manager()->Get<FakeFileSystemResource>(
-          file_system);
-  if (file_system_resource == NULL)
-    return PP_ERROR_BADRESOURCE;
-
-  file_system_resource->opened = true;
-  return RunCompletionCallback(&callback, PP_OK);
-}
-
 FakePepperInterfaceHtml5Fs::FakePepperInterfaceHtml5Fs()
     : core_interface_(&resource_manager_),
       var_interface_(&var_manager_),
@@ -304,11 +251,11 @@ FakePepperInterfaceHtml5Fs::FakePepperInterfaceHtml5Fs(
 }
 
 void FakePepperInterfaceHtml5Fs::Init() {
-  FakeInstanceResource* instance_resource = new FakeInstanceResource;
+  FakeHtml5FsResource* instance_resource = new FakeHtml5FsResource;
   instance_resource->filesystem_template = &filesystem_template_;
 
   instance_ = CREATE_RESOURCE(core_interface_.resource_manager(),
-                              FakeInstanceResource, instance_resource);
+                              FakeHtml5FsResource, instance_resource);
 }
 
 FakePepperInterfaceHtml5Fs::~FakePepperInterfaceHtml5Fs() {

@@ -32,6 +32,14 @@ class FakeFileSystemResource : public FakeResource {
   bool opened;
 };
 
+class FakeHtml5FsResource : public FakeResource {
+ public:
+  FakeHtml5FsResource() : filesystem_template(NULL) {}
+  static const char* classname() { return "FakeHtml5FsResource"; }
+
+  FakeHtml5FsFilesystem* filesystem_template;  // Weak reference.
+};
+
 int32_t RunCompletionCallback(PP_CompletionCallback* callback, int32_t result);
 
 #endif  // LIBRARIES_NACL_IO_TEST_FAKE_UTIL_H_
