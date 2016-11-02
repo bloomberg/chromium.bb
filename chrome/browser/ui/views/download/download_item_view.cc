@@ -972,7 +972,8 @@ gfx::ImageSkia DownloadItemView::GetWarningIcon() {
     case content::DOWNLOAD_DANGER_TYPE_UNCOMMON_CONTENT:
     case content::DOWNLOAD_DANGER_TYPE_DANGEROUS_HOST:
     case content::DOWNLOAD_DANGER_TYPE_POTENTIALLY_UNWANTED:
-      return gfx::CreateVectorIcon(gfx::VectorIconId::REMOVE_CIRCLE,
+    case content::DOWNLOAD_DANGER_TYPE_DANGEROUS_FILE:
+      return gfx::CreateVectorIcon(gfx::VectorIconId::WARNING,
                                    kWarningIconSize, gfx::kGoogleRed700);
 
     case content::DOWNLOAD_DANGER_TYPE_NOT_DANGEROUS:
@@ -981,10 +982,6 @@ gfx::ImageSkia DownloadItemView::GetWarningIcon() {
     case content::DOWNLOAD_DANGER_TYPE_MAX:
       NOTREACHED();
       break;
-
-    case content::DOWNLOAD_DANGER_TYPE_DANGEROUS_FILE:
-      return gfx::CreateVectorIcon(gfx::VectorIconId::WARNING, kWarningIconSize,
-                                   gfx::kGoogleYellow700);
   }
   return gfx::ImageSkia();
 }

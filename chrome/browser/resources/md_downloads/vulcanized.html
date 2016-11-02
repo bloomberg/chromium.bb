@@ -1135,12 +1135,8 @@ paper-button {
         width: 32px;
 }
 
-#danger-icon[icon='cr:warning'] {
-  color: rgb(255, 193, 7);
-}
-
-#danger-icon[icon='downloads:remove-circle'] {
-  color: rgb(244, 67, 54);
+#danger-icon[icon='cr:warning'], .dangerous #description {
+  color: var(--google-red-700);
 }
 
 #name, #file-link, #url {
@@ -1185,10 +1181,6 @@ paper-button {
 
 .is-active #description {
   color: #616161;
-}
-
-.dangerous #description {
-  color: rgb(239, 108, 0);
 }
 
 #progress {
