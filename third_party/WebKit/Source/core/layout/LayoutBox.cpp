@@ -706,8 +706,8 @@ void LayoutBox::updateLayerTransformAfterLayout() {
     layer()->updateTransformationMatrix();
 }
 
-LayoutUnit LayoutBox::logicalHeightIncludingOverflow() const {
-  if (!m_overflow)
+LayoutUnit LayoutBox::logicalHeightWithVisibleOverflow() const {
+  if (!m_overflow || hasOverflowClip())
     return logicalHeight();
   LayoutRect overflow = layoutOverflowRect();
   if (style()->isHorizontalWritingMode())
@@ -4711,7 +4711,7 @@ void LayoutBox::updateFragmentationInfoForChild(LayoutBox& child) {
     return;
 
   LayoutUnit logicalTop = child.logicalTop();
-  LayoutUnit logicalHeight = child.logicalHeightIncludingOverflow();
+  LayoutUnit logicalHeight = child.logicalHeightWithVisibleOverflow();
   LayoutUnit spaceLeft =
       pageRemainingLogicalHeightForOffset(logicalTop, AssociateWithLatterPage);
   if (spaceLeft < logicalHeight)
@@ -4728,7 +4728,7 @@ bool LayoutBox::childNeedsRelayoutForPagination(const LayoutBox& child) const {
   // to do this if there's a chance that we need to recalculate pagination
   // struts inside.
   if (LayoutUnit pageLogicalHeight = pageLogicalHeightForOffset(logicalTop)) {
-    LayoutUnit logicalHeight = child.logicalHeightIncludingOverflow();
+    LayoutUnit logicalHeight = child.logicalHeightWithVisibleOverflow();
     LayoutUnit remainingSpace = pageRemainingLogicalHeightForOffset(
         logicalTop, AssociateWithLatterPage);
     if (child.offsetToNextPage()) {

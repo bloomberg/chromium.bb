@@ -251,7 +251,10 @@ class CORE_EXPORT LayoutBox : public LayoutBoxModelObject {
     return style()->isHorizontalWritingMode() ? m_frameRect.height()
                                               : m_frameRect.width();
   }
-  LayoutUnit logicalHeightIncludingOverflow() const;
+
+  // Logical height of the object, including content overflowing the
+  // border-after edge.
+  LayoutUnit logicalHeightWithVisibleOverflow() const;
 
   LayoutUnit constrainLogicalWidthByMinMax(LayoutUnit,
                                            LayoutUnit,
