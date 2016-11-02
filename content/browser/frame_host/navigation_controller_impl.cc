@@ -1789,6 +1789,22 @@ void NavigationControllerImpl::NavigateToPendingEntry(ReloadType reload_type) {
         CancelForNavigation();
   }
 
+  // Convert Enter-in-omnibox to a reload. This is what Blink does in
+  // FrameLoader, but we want to handle it here so that if the navigation is
+  // redirected or handled purely on the browser side in PlzNavigate we have the
+  // same behaviour as Blink would. Note that we don't want to convert to a
+  // reload for history navigations, so this must be above the retrieval of the
+  // pending_entry_ below when pending_entry_index_ is used.
+  if (reload_type == ReloadType::NONE && GetLastCommittedEntry() &&
+      pending_entry_ && pending_entry_->frame_tree_node_id() == -1 &&
+      pending_entry_->GetURL() == GetLastCommittedEntry()->GetURL() &&
+      !pending_entry_->GetHasPostData() &&
+      // This check is required for Android WebView loadDataWithBaseURL.
+      GetLastCommittedEntry()->GetVirtualURL() ==
+          pending_entry_->GetVirtualURL()) {
+    reload_type = ReloadType::MAIN_RESOURCE;
+  }
+
   // For session history navigations only the pending_entry_index_ is set.
   if (!pending_entry_) {
     CHECK_NE(pending_entry_index_, -1);
