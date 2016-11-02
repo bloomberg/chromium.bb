@@ -86,8 +86,7 @@ TEST_F('MaterialHistoryBrowserTest', 'HistoryItemTest', function() {
   mocha.run();
 });
 
-// Flaky on chromeos, http://crbug.com/640862
-TEST_F('MaterialHistoryBrowserTest', 'DISABLED_HistoryListTest', function() {
+TEST_F('MaterialHistoryBrowserTest', 'HistoryListTest', function() {
   md_history.history_list_test.registerTests();
   mocha.run();
 });
