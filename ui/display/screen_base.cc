@@ -13,26 +13,26 @@
 namespace display {
 
 ScreenBase::ScreenBase() {
-  display::Screen::SetScreenInstance(this);
+  Screen::SetScreenInstance(this);
 }
 
 ScreenBase::~ScreenBase() {
-  DCHECK_EQ(this, display::Screen::GetScreen());
-  display::Screen::SetScreenInstance(nullptr);
+  DCHECK_EQ(this, Screen::GetScreen());
+  Screen::SetScreenInstance(nullptr);
 }
 
-void ScreenBase::ProcessDisplayChanged(const display::Display& changed_display,
+void ScreenBase::ProcessDisplayChanged(const Display& changed_display,
                                        bool is_primary) {
   if (display_list_.FindDisplayById(changed_display.id()) ==
       display_list_.displays().end()) {
-    display_list_.AddDisplay(
-        changed_display, is_primary ? display::DisplayList::Type::PRIMARY
-                                    : display::DisplayList::Type::NOT_PRIMARY);
+    display_list_.AddDisplay(changed_display,
+                             is_primary ? DisplayList::Type::PRIMARY
+                                        : DisplayList::Type::NOT_PRIMARY);
     return;
   }
   display_list_.UpdateDisplay(
-      changed_display, is_primary ? display::DisplayList::Type::PRIMARY
-                                  : display::DisplayList::Type::NOT_PRIMARY);
+      changed_display,
+      is_primary ? DisplayList::Type::PRIMARY : DisplayList::Type::NOT_PRIMARY);
 }
 
 gfx::Point ScreenBase::GetCursorScreenPoint() {
@@ -50,41 +50,41 @@ gfx::NativeWindow ScreenBase::GetWindowAtScreenPoint(const gfx::Point& point) {
   return nullptr;
 }
 
-display::Display ScreenBase::GetPrimaryDisplay() const {
-  return *display_list_.GetPrimaryDisplayIterator();
+Display ScreenBase::GetPrimaryDisplay() const {
+  auto iter = display_list_.GetPrimaryDisplayIterator();
+  if (iter == display_list_.displays().end())
+    return Display();  // Invalid display since we have no primary display.
+  return *iter;
 }
 
-display::Display ScreenBase::GetDisplayNearestWindow(
-    gfx::NativeView view) const {
+Display ScreenBase::GetDisplayNearestWindow(gfx::NativeView view) const {
   NOTIMPLEMENTED();
-  return *display_list_.GetPrimaryDisplayIterator();
+  return GetPrimaryDisplay();
 }
 
-display::Display ScreenBase::GetDisplayNearestPoint(
-    const gfx::Point& point) const {
-  return *display::FindDisplayNearestPoint(display_list_.displays(), point);
+Display ScreenBase::GetDisplayNearestPoint(const gfx::Point& point) const {
+  return *FindDisplayNearestPoint(display_list_.displays(), point);
 }
 
 int ScreenBase::GetNumDisplays() const {
   return static_cast<int>(display_list_.displays().size());
 }
 
-std::vector<display::Display> ScreenBase::GetAllDisplays() const {
+std::vector<Display> ScreenBase::GetAllDisplays() const {
   return display_list_.displays();
 }
 
-display::Display ScreenBase::GetDisplayMatching(
-    const gfx::Rect& match_rect) const {
-  const display::Display* match = display::FindDisplayWithBiggestIntersection(
-      display_list_.displays(), match_rect);
+Display ScreenBase::GetDisplayMatching(const gfx::Rect& match_rect) const {
+  const Display* match =
+      FindDisplayWithBiggestIntersection(display_list_.displays(), match_rect);
   return match ? *match : GetPrimaryDisplay();
 }
 
-void ScreenBase::AddObserver(display::DisplayObserver* observer) {
+void ScreenBase::AddObserver(DisplayObserver* observer) {
   display_list_.AddObserver(observer);
 }
 
-void ScreenBase::RemoveObserver(display::DisplayObserver* observer) {
+void ScreenBase::RemoveObserver(DisplayObserver* observer) {
   display_list_.RemoveObserver(observer);
 }
 
