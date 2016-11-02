@@ -51,7 +51,7 @@ void PasswordsPrivateDelegateImpl::SendSavedPasswordsList() {
 
 void PasswordsPrivateDelegateImpl::GetSavedPasswordsList(
     const UiEntriesCallback& callback) {
-  if (is_initialized_)
+  if (current_entries_initialized_)
     callback.Run(current_entries_);
   else
     get_saved_passwords_list_callbacks_.push_back(callback);
@@ -66,7 +66,7 @@ void PasswordsPrivateDelegateImpl::SendPasswordExceptionsList() {
 
 void PasswordsPrivateDelegateImpl::GetPasswordExceptionsList(
     const ExceptionPairsCallback& callback) {
-  if (is_initialized_)
+  if (current_exceptions_initialized_)
     callback.Run(current_exceptions_);
   else
     get_password_exception_list_callbacks_.push_back(callback);
@@ -195,8 +195,15 @@ void PasswordsPrivateDelegateImpl::SetPasswordList(
 
   SendSavedPasswordsList();
 
+  DCHECK(!current_entries_initialized_ ||
+         get_saved_passwords_list_callbacks_.empty());
+
   current_entries_initialized_ = true;
   InitializeIfNecessary();
+
+  for (const auto& callback : get_saved_passwords_list_callbacks_)
+    callback.Run(current_entries_);
+  get_saved_passwords_list_callbacks_.clear();
 }
 
 void PasswordsPrivateDelegateImpl::SetPasswordExceptionList(
@@ -222,8 +229,15 @@ void PasswordsPrivateDelegateImpl::SetPasswordExceptionList(
 
   SendPasswordExceptionsList();
 
+  DCHECK(!current_entries_initialized_ ||
+         get_saved_passwords_list_callbacks_.empty());
+
   current_exceptions_initialized_ = true;
   InitializeIfNecessary();
+
+  for (const auto& callback : get_password_exception_list_callbacks_)
+    callback.Run(current_exceptions_);
+  get_password_exception_list_callbacks_.clear();
 }
 
 #if !defined(OS_ANDROID)
@@ -254,19 +268,9 @@ void PasswordsPrivateDelegateImpl::InitializeIfNecessary() {
 
   is_initialized_ = true;
 
-  for (const base::Closure& callback : pre_initialization_callbacks_) {
+  for (const base::Closure& callback : pre_initialization_callbacks_)
     callback.Run();
-  }
-  for (const auto& callback : get_saved_passwords_list_callbacks_) {
-    callback.Run(current_entries_);
-  }
-  for (const auto& callback : get_password_exception_list_callbacks_) {
-    callback.Run(current_exceptions_);
-  }
-
   pre_initialization_callbacks_.clear();
-  get_saved_passwords_list_callbacks_.clear();
-  get_password_exception_list_callbacks_.clear();
 }
 
 }  // namespace extensions

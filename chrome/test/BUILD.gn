@@ -3770,6 +3770,7 @@ test("unit_tests") {
       "../browser/extensions/api/image_writer_private/write_from_url_operation_unittest.cc",
       "../browser/extensions/api/management/management_api_unittest.cc",
       "../browser/extensions/api/omnibox/omnibox_unittest.cc",
+      "../browser/extensions/api/passwords_private/passwords_private_delegate_impl_unittest.cc",
       "../browser/extensions/api/permissions/permissions_api_helpers_unittest.cc",
       "../browser/extensions/api/permissions/permissions_api_unittest.cc",
       "../browser/extensions/api/preference/preference_api_prefs_unittest.cc",
