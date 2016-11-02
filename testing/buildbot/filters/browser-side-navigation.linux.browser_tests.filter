@@ -1,7 +1,6 @@
 -ChromeServiceWorkerTest.FallbackMainResourceRequestWhenJSDisabled
 -LogWebUIUrlTest.TestUberPage
 -MediaGalleriesPlatformAppBrowserTest.MediaGalleriesRead
--MediaGalleriesPlatformAppBrowserTest.Scan
 -MediaGalleriesPlatformAppBrowserTest.ToURL
 -OptionsWebUIExtendedTest.OverlayBackToChild
 -PDFExtensionTest.PdfAccessibilityInOOPIF
