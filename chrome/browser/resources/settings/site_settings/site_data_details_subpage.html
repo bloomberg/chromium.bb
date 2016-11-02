@@ -1,4 +1,6 @@
+<link rel="import" href="chrome://resources/cr_elements/cr_expand_button/cr_expand_button.html">
 <link rel="import" href="chrome://resources/html/polymer.html">
+<link rel="import" href="chrome://resources/polymer/v1_0/iron-collapse/iron-collapse.html">
 <link rel="import" href="chrome://resources/polymer/v1_0/paper-icon-button/paper-icon-button.html">
 <link rel="import" href="/route.html">
 <link rel="import" href="/settings_shared_css.html">
@@ -14,12 +16,14 @@
     <template is="dom-repeat" items="[[entries_]]">
       <div class="settings-box" first$="[[!index]]">
         <div class="start">[[getEntryDescription_(item)]]</div>
-        <!-- TODO(dschuyler): expand/collapse details. -->
+        <cr-expand-button expanded="{{item.expanded_}}">
+        </cr-expand-button>
         <paper-icon-button data-id$="[[item.id]]" icon="cr:close"
             on-tap="onRemove_">
         </paper-icon-button>
       </div>
-      <div class="list-frame vertical-list">
+      <iron-collapse class="list-frame vertical-list"
+          opened="[[item.expanded_]]">
         <template is="dom-repeat" items="[[getCookieNodes_(item)]]">
           <div class="list-item two-line">
             <div class="start">
@@ -28,7 +32,7 @@
             </div>
           </div>
         </template>
-      </div>
+      </iron-collapse>
     </template>
   </template>
   <script src="cookie_info.js"></script>

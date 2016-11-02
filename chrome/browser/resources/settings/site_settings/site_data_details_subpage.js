@@ -72,6 +72,8 @@ Polymer({
     if (node) {
       this.site_ = node;
       this.entries_ = this.site_.getCookieList();
+      // Set up flag for expanding cookie details.
+      this.entries_.map(function(e) { return e.expanded_ = false; });
     } else {
       this.entries_ = [];
     }
