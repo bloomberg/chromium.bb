@@ -12,6 +12,7 @@
 #include "chrome/browser/policy/cloud/user_policy_signin_service.h"
 #include "chrome/browser/policy/cloud/user_policy_signin_service_factory.h"
 #include "chrome/browser/profiles/profile.h"
+#include "chrome/browser/profiles/profile_attributes_entry.h"
 #include "chrome/browser/profiles/profile_attributes_storage.h"
 #include "chrome/browser/profiles/profile_avatar_icon_util.h"
 #include "chrome/browser/profiles/profile_io_data.h"
@@ -141,6 +142,7 @@ void OneClickSigninSyncStarter::Initialize(Profile* profile, Browser* browser) {
   // will not be able to complete successfully.
   syncer::SyncPrefs sync_prefs(profile_->GetPrefs());
   sync_prefs.SetSyncRequested(true);
+  skip_sync_confirm_ = false;
 }
 
 void OneClickSigninSyncStarter::ConfirmSignin(const std::string& oauth_token) {
@@ -310,6 +312,7 @@ void OneClickSigninSyncStarter::CompleteInitForNewProfile(
       FinishProfileSyncServiceSetup();
       Initialize(new_profile, nullptr);
       DCHECK_EQ(profile_, new_profile);
+      skip_sync_confirm_ = true;
 
       // We've transferred our credentials to the new profile - notify that
       // the signin for the original profile was cancelled (must do this after
@@ -321,6 +324,15 @@ void OneClickSigninSyncStarter::CompleteInitForNewProfile(
       // Load policy for the just-created profile - once policy has finished
       // loading the signin process will complete.
       LoadPolicyWithCachedCredentials();
+
+      // Unlock the new profile.
+      ProfileAttributesEntry* entry;
+      bool has_entry =
+          g_browser_process->profile_manager()
+              ->GetProfileAttributesStorage()
+              .GetProfileAttributesWithPath(new_profile->GetPath(), &entry);
+      DCHECK(has_entry);
+      entry->SetIsSigninRequired(false);
 
       // Open the profile's first window, after all initialization.
       profiles::FindOrCreateNewWindowForProfile(
@@ -465,6 +477,15 @@ void OneClickSigninSyncStarter::AccountAddedToCookie(
 
   // Regardless of whether the account was successfully added or not,
   // continue with sync starting.
+
+  // TODO(zmin): Remove this hack once the https://crbug.com/657924 fixed.
+  // Skip the Sync confirmation dialog if user choose to create a new profile
+  // for the corp signin. This is because the dialog doesn't work properly
+  // after the corp signin.
+  if (skip_sync_confirm_) {
+    OnSyncConfirmationUIClosed(LoginUIService::ABORT_SIGNIN);
+    return;
+  }
 
   if (switches::UsePasswordSeparatedSigninFlow()) {
     // Under the new signin flow, the sync confirmation dialog should always be

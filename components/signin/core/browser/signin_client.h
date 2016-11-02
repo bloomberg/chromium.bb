@@ -34,7 +34,7 @@ class SigninClient : public KeyedService {
   // The subcription for cookie changed notifications.
   class CookieChangedSubscription {
    public:
-    virtual ~CookieChangedSubscription() {};
+    virtual ~CookieChangedSubscription() {}
   };
 
   ~SigninClient() override {}
@@ -97,6 +97,10 @@ class SigninClient : public KeyedService {
                             const std::string& username,
                             const std::string& password) {}
 
+  // Called before Google signout started, call |sign_out| to start the sign out
+  // process.
+  virtual void PreSignOut(const base::Callback<void()>& sign_out);
+
   virtual bool IsFirstRun() const = 0;
   virtual base::Time GetInstallDate() = 0;
 
@@ -119,6 +123,9 @@ class SigninClient : public KeyedService {
       GaiaAuthConsumer* consumer,
       const std::string& source,
       net::URLRequestContextGetter* getter) = 0;
+
+  // Called once the credentials has been copied to another SigninManager.
+  virtual void AfterCredentialsCopied() {}
 
  protected:
   // Returns device id that is scoped to single signin.

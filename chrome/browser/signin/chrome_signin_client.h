@@ -77,6 +77,7 @@ class ChromeSigninClient
   void PostSignedIn(const std::string& account_id,
                     const std::string& username,
                     const std::string& password) override;
+  void PreSignOut(const base::Callback<void()>& sign_out) override;
 
   // SigninErrorController::Observer implementation.
   void OnErrorChanged() override;
@@ -100,15 +101,26 @@ class ChromeSigninClient
       override;
 #endif
 
+  void AfterCredentialsCopied() override;
+
+ protected:
+  virtual void ShowUserManager(const base::FilePath& profile_path);
+  virtual void LockProfile(const base::FilePath& profile_path);
+
  private:
   void MaybeFetchSigninTokenHandle();
-
+  void OnCloseBrowsersSuccess(const base::Callback<void()>& sign_out,
+                              const base::FilePath& profile_path);
+  void OnCloseBrowsersAborted(const base::FilePath& profile_path);
   Profile* profile_;
 
   SigninErrorController* signin_error_controller_;
 #if !defined(OS_CHROMEOS)
   std::list<base::Closure> delayed_callbacks_;
 #endif
+
+  bool is_force_signin_enabled_;
+  bool should_display_user_manager_ = true;
 
   std::unique_ptr<gaia::GaiaOAuthClient> oauth_client_;
   std::unique_ptr<OAuth2TokenService::Request> oauth_request_;

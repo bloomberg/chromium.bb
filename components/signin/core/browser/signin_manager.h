@@ -147,6 +147,10 @@ class SigninManager : public SigninManagerBase,
   // Flag saying whether signing out is allowed.
   bool prohibit_signout_;
 
+  // The sign out process which is started by SigninClient::PreSignOut()
+  virtual void DoSignOut(signin_metrics::ProfileSignout signout_source_metric,
+                         signin_metrics::SignoutDelete signout_delete_metric);
+
  private:
   enum SigninType { SIGNIN_TYPE_NONE, SIGNIN_TYPE_WITH_REFRESH_TOKEN };
 

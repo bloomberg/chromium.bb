@@ -125,6 +125,7 @@ void SigninManager::CopyCredentialsFrom(const SigninManager& source) {
   possibly_invalid_email_ = source.possibly_invalid_email_;
   temp_refresh_token_ = source.temp_refresh_token_;
   password_ = source.password_;
+  source.client_->AfterCredentialsCopied();
 }
 
 void SigninManager::ClearTransientSigninData() {
@@ -146,6 +147,14 @@ void SigninManager::HandleAuthError(const GoogleServiceAuthError& error) {
 }
 
 void SigninManager::SignOut(
+    signin_metrics::ProfileSignout signout_source_metric,
+    signin_metrics::SignoutDelete signout_delete_metric) {
+  client_->PreSignOut(base::Bind(&SigninManager::DoSignOut,
+                                 base::Unretained(this), signout_source_metric,
+                                 signout_delete_metric));
+}
+
+void SigninManager::DoSignOut(
     signin_metrics::ProfileSignout signout_source_metric,
     signin_metrics::SignoutDelete signout_delete_metric) {
   DCHECK(IsInitialized());

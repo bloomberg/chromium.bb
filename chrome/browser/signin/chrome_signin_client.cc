@@ -7,6 +7,7 @@
 #include <stddef.h>
 #include <utility>
 
+#include "base/bind.h"
 #include "base/command_line.h"
 #include "base/strings/utf_string_conversions.h"
 #include "build/build_config.h"
@@ -21,9 +22,12 @@
 #include "chrome/browser/signin/local_auth.h"
 #include "chrome/browser/signin/profile_oauth2_token_service_factory.h"
 #include "chrome/browser/signin/signin_manager_factory.h"
+#include "chrome/browser/ui/browser_list.h"
+#include "chrome/browser/ui/user_manager.h"
 #include "chrome/browser/web_data_service_factory.h"
 #include "chrome/common/channel_info.h"
 #include "chrome/common/features.h"
+#include "chrome/common/pref_names.h"
 #include "components/content_settings/core/browser/cookie_settings.h"
 #include "components/metrics/metrics_service.h"
 #include "components/prefs/pref_service.h"
@@ -53,11 +57,22 @@
 #include "chrome/browser/first_run/first_run.h"
 #endif
 
+namespace {
+
+bool IsForceSigninEnabled() {
+  PrefService* prefs = g_browser_process->local_state();
+  return prefs && prefs->GetBoolean(prefs::kForceBrowserSignin);
+}
+
+}  // namespace
+
 ChromeSigninClient::ChromeSigninClient(
-    Profile* profile, SigninErrorController* signin_error_controller)
+    Profile* profile,
+    SigninErrorController* signin_error_controller)
     : OAuth2TokenService::Consumer("chrome_signin_client"),
       profile_(profile),
-      signin_error_controller_(signin_error_controller) {
+      signin_error_controller_(signin_error_controller),
+      is_force_signin_enabled_(IsForceSigninEnabled()) {
   signin_error_controller_->AddObserver(this);
 #if !defined(OS_CHROMEOS)
   net::NetworkChangeNotifier::AddNetworkChangeObserver(this);
@@ -260,6 +275,23 @@ void ChromeSigninClient::PostSignedIn(const std::string& account_id,
 #endif
 }
 
+void ChromeSigninClient::PreSignOut(const base::Callback<void()>& sign_out) {
+#if !defined(OS_ANDROID) && !defined(OS_CHROMEOS)
+  if (is_force_signin_enabled_ && !profile_->IsSystemProfile() &&
+      !profile_->IsGuestSession()) {
+    BrowserList::CloseAllBrowsersWithProfile(
+        profile_, base::Bind(&ChromeSigninClient::OnCloseBrowsersSuccess,
+                             base::Unretained(this), sign_out),
+        base::Bind(&ChromeSigninClient::OnCloseBrowsersAborted,
+                   base::Unretained(this)));
+  } else {
+#else
+  {
+#endif
+    SigninClient::PreSignOut(sign_out);
+  }
+}
+
 void ChromeSigninClient::OnErrorChanged() {
   // Some tests don't have a ProfileManager.
   if (g_browser_process->profile_manager() == nullptr)
@@ -383,5 +415,51 @@ void ChromeSigninClient::MaybeFetchSigninTokenHandle() {
       }
     }
   }
+#endif
+}
+
+void ChromeSigninClient::AfterCredentialsCopied() {
+  if (is_force_signin_enabled_) {
+    // The signout after credential copy won't open UserManager after all
+    // browser window are closed. Because the browser window will be opened for
+    // the new profile soon.
+    should_display_user_manager_ = false;
+  }
+}
+
+void ChromeSigninClient::OnCloseBrowsersSuccess(
+    const base::Callback<void()>& sign_out,
+    const base::FilePath& profile_path) {
+  SigninClient::PreSignOut(sign_out);
+
+  LockProfile(profile_path);
+  // After sign out, lock the profile and show UserManager if necessary.
+  if (should_display_user_manager_) {
+    ShowUserManager(profile_path);
+  } else {
+    should_display_user_manager_ = true;
+  }
+}
+
+void ChromeSigninClient::OnCloseBrowsersAborted(
+    const base::FilePath& profile_path) {
+  should_display_user_manager_ = true;
+}
+
+void ChromeSigninClient::LockProfile(const base::FilePath& profile_path) {
+  ProfileAttributesEntry* entry;
+  bool has_entry =
+      g_browser_process->profile_manager()
+          ->GetProfileAttributesStorage()
+          .GetProfileAttributesWithPath(profile_->GetPath(), &entry);
+  if (!has_entry)
+    return;
+  entry->SetIsSigninRequired(true);
+}
+
+void ChromeSigninClient::ShowUserManager(const base::FilePath& profile_path) {
+#if !defined(OS_ANDROID) && !defined(OS_CHROMEOS)
+  UserManager::Show(profile_path, profiles::USER_MANAGER_NO_TUTORIAL,
+                    profiles::USER_MANAGER_SELECT_PROFILE_NO_ACTION);
 #endif
 }
