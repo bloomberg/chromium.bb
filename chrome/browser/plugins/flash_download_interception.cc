@@ -6,7 +6,6 @@
 
 #include "base/bind.h"
 #include "base/memory/ptr_util.h"
-#include "base/strings/string_util.h"
 #include "chrome/browser/content_settings/host_content_settings_map_factory.h"
 #include "chrome/browser/content_settings/tab_specific_content_settings.h"
 #include "chrome/browser/permissions/permission_manager.h"
@@ -21,6 +20,7 @@
 #include "content/public/browser/permission_type.h"
 #include "content/public/browser/web_contents.h"
 #include "third_party/WebKit/public/platform/modules/permissions/permission_status.mojom.h"
+#include "third_party/re2/src/re2/re2.h"
 #include "url/origin.h"
 
 using content::BrowserThread;
@@ -29,16 +29,12 @@ using content::NavigationThrottle;
 
 namespace {
 
-const char kWwwPrefix[] = "www.";
-
-// The URL of the page where Flash can be downloaded.
-const char kFlashDownloadURL[] = "get.adobe.com/flash";
-
-// URLs that will be intercepted with any www. prefix pruned. These should all
-// redirect to |kFlashDownloadURL|.
-const char* kFlashDownloadURLs[] = {
-    kFlashDownloadURL, "macromedia.com/go/getflashplayer",
-    "adobe.com/go/getflashplayer", "adobe.com/go/gntray_dl_getflashplayer"};
+// Regexes matching
+const char kGetFlashURLCanonicalRegex[] = "(?i)get\\.adobe\\.com/.*flash.*";
+const char kGetFlashURLSecondaryRegex[] =
+    "(?i)(www\\.)?(adobe|macromedia)\\.com/go.*"
+    "(get[-_]?flash|fl(ash)?.?pl(ayer)?|flash_completion|flashpm|flashdownload|"
+    "fp|h-m-a-?2|chrome|download_player|gnav_fl|pdcredirect).*";
 
 void DoNothing(blink::mojom::PermissionStatus result) {}
 
@@ -95,32 +91,21 @@ bool FlashDownloadInterception::ShouldStopFlashDownloadAction(
 
   // If the navigation source is already the Flash download page, don't
   // intercept the download. The user may be trying to download Flash.
-  if (base::StartsWith(source_url.GetContent(), kFlashDownloadURL,
-                       base::CompareCase::INSENSITIVE_ASCII)) {
+  if (RE2::PartialMatch(source_url.GetContent(), kGetFlashURLCanonicalRegex))
     return false;
-  }
 
   std::string target_url_str = target_url.GetContent();
-  // Ignore www. if it's at the start of the URL.
-  if (base::StartsWith(target_url_str, kWwwPrefix,
-                       base::CompareCase::INSENSITIVE_ASCII)) {
-    target_url_str =
-        target_url_str.substr(sizeof(kWwwPrefix) - 1, std::string::npos);
-  }
+  if (RE2::FullMatch(target_url_str, kGetFlashURLCanonicalRegex) ||
+      RE2::FullMatch(target_url_str, kGetFlashURLSecondaryRegex)) {
+    ContentSetting flash_setting = PluginUtils::GetFlashPluginContentSetting(
+        host_content_settings_map, url::Origin(source_url), source_url,
+        nullptr);
+    flash_setting = PluginsFieldTrial::EffectiveContentSetting(
+        host_content_settings_map, CONTENT_SETTINGS_TYPE_PLUGINS,
+        flash_setting);
 
-  for (const char* flash_url : kFlashDownloadURLs) {
-    if (base::StartsWith(target_url_str, flash_url,
-                         base::CompareCase::INSENSITIVE_ASCII)) {
-      ContentSetting flash_setting = PluginUtils::GetFlashPluginContentSetting(
-          host_content_settings_map, url::Origin(source_url), source_url,
-          nullptr);
-      flash_setting = PluginsFieldTrial::EffectiveContentSetting(
-          host_content_settings_map, CONTENT_SETTINGS_TYPE_PLUGINS,
-          flash_setting);
-
-      return flash_setting == CONTENT_SETTING_DETECT_IMPORTANT_CONTENT ||
-             flash_setting == CONTENT_SETTING_BLOCK;
-    }
+    return flash_setting == CONTENT_SETTING_DETECT_IMPORTANT_CONTENT ||
+           flash_setting == CONTENT_SETTING_BLOCK;
   }
 
   return false;

@@ -22,57 +22,56 @@ class FlashDownloadInterceptionTest : public ChromeRenderViewHostTestHarness {
   HostContentSettingsMap* host_content_settings_map() {
     return HostContentSettingsMapFactory::GetForProfile(profile());
   }
+
+  bool ShouldStopFlashDownloadAction(const std::string& target_url) {
+    return FlashDownloadInterception::ShouldStopFlashDownloadAction(
+        host_content_settings_map(), GURL("https://source-url.com/"),
+        GURL(target_url), true);
+  }
 };
 
 TEST_F(FlashDownloadInterceptionTest, PreferHtmlOverPluginsOff) {
   base::test::ScopedFeatureList feature_list;
   feature_list.InitAndDisableFeature(features::kPreferHtmlOverPlugins);
 
-  EXPECT_FALSE(FlashDownloadInterception::ShouldStopFlashDownloadAction(
-      host_content_settings_map(), GURL("http://source-page.com"),
-      GURL("https://get.adobe.com/flashplayer/"), true));
+  EXPECT_FALSE(
+      ShouldStopFlashDownloadAction("https://get.adobe.com/flashplayer/"));
 }
 
 TEST_F(FlashDownloadInterceptionTest, DownloadUrlVariations) {
   base::test::ScopedFeatureList feature_list;
   feature_list.InitAndEnableFeature(features::kPreferHtmlOverPlugins);
 
-  EXPECT_TRUE(FlashDownloadInterception::ShouldStopFlashDownloadAction(
-      host_content_settings_map(), GURL("http://source-page.com"),
-      GURL("https://get.adobe.com/flashplayer/"), true));
+  const char* flash_intercept_urls[] = {
+      "https://get.adobe.com/flashplayer/",
+      "http://get.adobe.com/flash",
+      "http://get.adobe.com/fr/flashplayer/",
+      "http://get.adobe.com/flashplayer",
+      "http://macromedia.com/go/getflashplayer",
+      "http://adobe.com/go/getflashplayer",
+      "http://adobe.com/go/gntray_dl_getflashplayer_jp",
+  };
 
-  // HTTP and path variant.
-  EXPECT_TRUE(FlashDownloadInterception::ShouldStopFlashDownloadAction(
-      host_content_settings_map(), GURL("http://source-page.com"),
-      GURL("http://get.adobe.com/flash"), true));
+  for (auto& url : flash_intercept_urls) {
+    EXPECT_TRUE(ShouldStopFlashDownloadAction(url))
+        << "Should have intercepted: " << url;
+  }
 
-  EXPECT_TRUE(FlashDownloadInterception::ShouldStopFlashDownloadAction(
-      host_content_settings_map(), GURL("http://source-page.com"),
-      GURL("http://www.macromedia.com/go/getflashplayer"), true));
+  const char* flash_no_intercept_urls[] = {
+      "https://www.example.com",
+      "http://example.com/get.adobe.com/flashplayer",
+      "http://ww.macromedia.com/go/getflashplayer",
+      "http://wwwxmacromedia.com/go/getflashplayer",
+      "http://www.adobe.com/software/flash/about/",
+      "http://www.adobe.com/products/flashplayer.html",
+      "http://www.adobe.com/products/flashruntimes.html",
+      "http://www.adobe.com/go/flash",
+  };
 
-  EXPECT_TRUE(FlashDownloadInterception::ShouldStopFlashDownloadAction(
-      host_content_settings_map(), GURL("http://source-page.com"),
-      GURL("http://macromedia.com/go/getflashplayer"), true));
-
-  EXPECT_TRUE(FlashDownloadInterception::ShouldStopFlashDownloadAction(
-      host_content_settings_map(), GURL("http://source-page.com"),
-      GURL("http://adobe.com/go/getflashplayer"), true));
-
-  EXPECT_TRUE(FlashDownloadInterception::ShouldStopFlashDownloadAction(
-      host_content_settings_map(), GURL("http://source-page.com"),
-      GURL("http://adobe.com/go/gntray_dl_getflashplayer_jp"), true));
-
-  EXPECT_FALSE(FlashDownloadInterception::ShouldStopFlashDownloadAction(
-      host_content_settings_map(), GURL("http://source-page.com"),
-      GURL("https://www.example.com"), true));
-
-  EXPECT_FALSE(FlashDownloadInterception::ShouldStopFlashDownloadAction(
-      host_content_settings_map(), GURL("http://source-page.com"),
-      GURL("http://example.com/get.adobe.com/flashplayer"), true));
-
-  EXPECT_FALSE(FlashDownloadInterception::ShouldStopFlashDownloadAction(
-      host_content_settings_map(), GURL("http://source-page.com"),
-      GURL("http://ww.macromedia.com/go/getflashplayer"), true));
+  for (auto& url : flash_no_intercept_urls) {
+    EXPECT_FALSE(ShouldStopFlashDownloadAction(url))
+        << "Should not have intercepted: " << url;
+  }
 
   // Don't intercept navigations occurring on the flash download page.
   EXPECT_FALSE(FlashDownloadInterception::ShouldStopFlashDownloadAction(
@@ -105,28 +104,24 @@ TEST_F(FlashDownloadInterceptionTest, OnlyInterceptOnDetectContentSetting) {
   feature_list.InitAndEnableFeature(features::kPreferHtmlOverPlugins);
 
   // Default Setting (which is DETECT)
-  EXPECT_TRUE(FlashDownloadInterception::ShouldStopFlashDownloadAction(
-      host_content_settings_map(), GURL("http://source-page.com"),
-      GURL("https://get.adobe.com/flashplayer/"), true));
+  EXPECT_TRUE(
+      ShouldStopFlashDownloadAction("https://get.adobe.com/flashplayer/"));
 
   // No intercept on ALLOW.
   HostContentSettingsMap* map =
       HostContentSettingsMapFactory::GetForProfile(profile());
   map->SetDefaultContentSetting(CONTENT_SETTINGS_TYPE_PLUGINS,
                                 CONTENT_SETTING_ALLOW);
-  EXPECT_FALSE(FlashDownloadInterception::ShouldStopFlashDownloadAction(
-      host_content_settings_map(), GURL("http://source-page.com"),
-      GURL("https://get.adobe.com/flashplayer/"), true));
+  EXPECT_FALSE(
+      ShouldStopFlashDownloadAction("https://get.adobe.com/flashplayer/"));
 
   // Intercept on both explicit DETECT and BLOCK.
   map->SetDefaultContentSetting(CONTENT_SETTINGS_TYPE_PLUGINS,
                                 CONTENT_SETTING_BLOCK);
-  EXPECT_TRUE(FlashDownloadInterception::ShouldStopFlashDownloadAction(
-      host_content_settings_map(), GURL("http://source-page.com"),
-      GURL("https://get.adobe.com/flashplayer/"), true));
+  EXPECT_TRUE(
+      ShouldStopFlashDownloadAction("https://get.adobe.com/flashplayer/"));
   map->SetDefaultContentSetting(CONTENT_SETTINGS_TYPE_PLUGINS,
                                 CONTENT_SETTING_DETECT_IMPORTANT_CONTENT);
-  EXPECT_TRUE(FlashDownloadInterception::ShouldStopFlashDownloadAction(
-      host_content_settings_map(), GURL("http://source-page.com"),
-      GURL("https://get.adobe.com/flashplayer/"), true));
+  EXPECT_TRUE(
+      ShouldStopFlashDownloadAction("https://get.adobe.com/flashplayer/"));
 }
