@@ -303,12 +303,11 @@ class SDKTestStage(generic_stages.BuilderStage):
     # Build all the boards with the new sdk.
     for board in self._boards:
       logging.PrintBuildbotStepText(board)
-      cmd = ['./setup_board', '--board', board, '--skip_chroot_upgrade']
-      cros_build_lib.RunCommand(
-          cmd, cwd=self._build_root, enter_chroot=True,
-          chroot_args=new_chroot_args, extra_env=self._portage_extra_env)
-      cmd = ['./build_packages', '--board', board, '--nousepkg',
-             '--skip_chroot_upgrade']
-      cros_build_lib.RunCommand(cmd, cwd=self._build_root, enter_chroot=True,
-                                chroot_args=new_chroot_args,
-                                extra_env=self._portage_extra_env)
+      commands.SetupBoard(self._build_root, board, usepkg=True,
+                          chroot_upgrade=False,
+                          extra_env=self._portage_extra_env,
+                          chroot_args=new_chroot_args)
+      commands.Build(self._build_root, board, build_autotest=True,
+                     usepkg=False, chrome_binhost_only=False,
+                     extra_env=self._portage_extra_env,
+                     chroot_args=new_chroot_args)

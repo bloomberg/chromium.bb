@@ -323,7 +323,8 @@ def UpdateChroot(buildroot, usepkg, toolchain_boards=None, extra_env=None):
 
 
 def SetupBoard(buildroot, board, usepkg, chrome_binhost_only=False,
-               extra_env=None, force=False, profile=None, chroot_upgrade=True):
+               extra_env=None, force=False, profile=None, chroot_upgrade=True,
+               chroot_args=None):
   """Wrapper around setup_board.
 
   Args:
@@ -337,6 +338,7 @@ def SetupBoard(buildroot, board, usepkg, chrome_binhost_only=False,
     profile: The profile to use with this board.
     chroot_upgrade: Whether to update the chroot. If the chroot is already up to
       date, you can specify chroot_upgrade=False.
+    chroot_args: The args to the chroot.
   """
   cmd = ['./setup_board', '--board=%s' % board,
          '--accept_licenses=@CHROMEOS']
@@ -359,7 +361,8 @@ def SetupBoard(buildroot, board, usepkg, chrome_binhost_only=False,
   if force:
     cmd.append('--force')
 
-  RunBuildScript(buildroot, cmd, extra_env=extra_env, enter_chroot=True)
+  RunBuildScript(buildroot, cmd, extra_env=extra_env, enter_chroot=True,
+                 chroot_args=chroot_args)
 
 
 class MissingBinpkg(failures_lib.StepFailure):
@@ -438,7 +441,8 @@ def UpdateBinhostJson(buildroot):
 
 def Build(buildroot, board, build_autotest, usepkg, chrome_binhost_only,
           packages=(), skip_chroot_upgrade=True, noworkon=False,
-          extra_env=None, chrome_root=None, noretry=False):
+          extra_env=None, chrome_root=None, noretry=False,
+          chroot_args=None):
   """Wrapper around build_packages.
 
   Args:
@@ -456,6 +460,7 @@ def Build(buildroot, board, build_autotest, usepkg, chrome_binhost_only,
     extra_env: A dictionary of environmental variables to set during generation.
     chrome_root: The directory where chrome is stored.
     noretry: Do not retry package failures.
+    chroot_args: The args to the chroot.
   """
   cmd = ['./build_packages', '--board=%s' % board,
          '--accept_licenses=@CHROMEOS', '--withdebugsymbols']
@@ -478,7 +483,9 @@ def Build(buildroot, board, build_autotest, usepkg, chrome_binhost_only,
   if noretry:
     cmd.append('--nobuildretry')
 
-  chroot_args = []
+  if not chroot_args:
+    chroot_args = []
+
   if chrome_root:
     chroot_args.append('--chrome_root=%s' % chrome_root)
 
