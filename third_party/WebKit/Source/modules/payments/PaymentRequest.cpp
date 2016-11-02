@@ -348,43 +348,45 @@ bool validatePaymentDetails(const PaymentDetails& details,
 }
 
 void validateAndConvertPaymentMethodData(
-    const HeapVector<PaymentMethodData>& paymentMethodData,
+    const HeapVector<PaymentMethodData>& paymentMethodDataVector,
     Vector<PaymentRequest::MethodData>* methodData,
     ExceptionState& exceptionState) {
-  if (paymentMethodData.isEmpty()) {
+  if (paymentMethodDataVector.isEmpty()) {
     exceptionState.throwTypeError(
         "Must specify at least one payment method identifier");
     return;
   }
 
-  for (const auto& pmd : paymentMethodData) {
-    if (pmd.supportedMethods().isEmpty()) {
+  for (const auto& paymentMethodData : paymentMethodDataVector) {
+    if (paymentMethodData.supportedMethods().isEmpty()) {
       exceptionState.throwTypeError(
           "Must specify at least one payment method identifier");
       return;
     }
 
     String stringifiedData = "";
-    if (pmd.hasData() && !pmd.data().isEmpty()) {
-      if (!pmd.data().v8Value()->IsObject() ||
-          pmd.data().v8Value()->IsArray()) {
+    if (paymentMethodData.hasData() && !paymentMethodData.data().isEmpty()) {
+      if (!paymentMethodData.data().v8Value()->IsObject() ||
+          paymentMethodData.data().v8Value()->IsArray()) {
         exceptionState.throwTypeError(
             "Data should be a JSON-serializable object");
         return;
       }
 
-      v8::MaybeLocal<v8::String> value = v8::JSON::Stringify(
-          pmd.data().context(), pmd.data().v8Value().As<v8::Object>());
-      if (value.IsEmpty()) {
+      v8::Local<v8::String> value;
+      if (!v8::JSON::Stringify(
+               paymentMethodData.data().context(),
+               paymentMethodData.data().v8Value().As<v8::Object>())
+               .ToLocal(&value)) {
         exceptionState.throwTypeError(
             "Unable to parse payment method specific data");
         return;
       }
-      stringifiedData = v8StringToWebCoreString<String>(value.ToLocalChecked(),
-                                                        DoNotExternalize);
+      stringifiedData =
+          v8StringToWebCoreString<String>(value, DoNotExternalize);
     }
-    methodData->append(
-        PaymentRequest::MethodData(pmd.supportedMethods(), stringifiedData));
+    methodData->append(PaymentRequest::MethodData(
+        paymentMethodData.supportedMethods(), stringifiedData));
   }
 }
 

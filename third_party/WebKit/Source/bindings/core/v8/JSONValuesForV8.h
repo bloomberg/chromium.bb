@@ -15,11 +15,6 @@ namespace blink {
 class ExceptionState;
 class ScriptState;
 
-CORE_EXPORT std::unique_ptr<JSONValue> toJSONValue(
-    v8::Local<v8::Context>,
-    v8::Local<v8::Value>,
-    int maxDepth = JSONValue::maxDepth);
-
 CORE_EXPORT v8::Local<v8::Value> fromJSONString(ScriptState*,
                                                 const String& stringifiedJSON,
                                                 ExceptionState&);
