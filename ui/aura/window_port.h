@@ -28,11 +28,6 @@ struct AURA_EXPORT WindowPortPropertyData {
   virtual ~WindowPortPropertyData() {}
 };
 
-// See comments in Init() for details.
-struct AURA_EXPORT WindowPortInitData {
-  virtual ~WindowPortInitData() {}
-};
-
 // WindowPort defines an interface to enable Window to be used with or without
 // mus. WindowPort is owned by Window and called at key points in Windows
 // lifetime that enable Window to be used in both environments.
@@ -43,12 +38,8 @@ class AURA_EXPORT WindowPort {
  public:
   virtual ~WindowPort() {}
 
-  // Called from Window::Init(). The return value of this is supplied to
-  // OnInitDone() and is used to allow the WindowPort to pass data between the
-  // two functions.
-  virtual std::unique_ptr<WindowPortInitData> OnPreInit(Window* window) = 0;
-
-  virtual void OnPostInit(std::unique_ptr<WindowPortInitData> data) = 0;
+  // Called from Window::Init().
+  virtual void OnPreInit(Window* window) = 0;
 
   virtual void OnDeviceScaleFactorChanged(float device_scale_factor) = 0;
 

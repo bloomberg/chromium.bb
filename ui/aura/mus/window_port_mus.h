@@ -36,9 +36,8 @@ class WindowTreeClientPrivate;
 // calling back to WindowTreeClient.
 class AURA_EXPORT WindowPortMus : public WindowPort, public WindowMus {
  public:
-  // See WindowMus's constructor for details on |create_remote_window|.
-  explicit WindowPortMus(WindowTreeClient* client,
-                         bool create_remote_window = true);
+  // See WindowMus's constructor for details on |window_mus_type|.
+  WindowPortMus(WindowTreeClient* client, WindowMusType window_mus_type);
   ~WindowPortMus() override;
 
   static WindowPortMus* Get(Window* window);
@@ -190,8 +189,7 @@ class AURA_EXPORT WindowPortMus : public WindowPort, public WindowMus {
   void NotifyEmbeddedAppDisconnected() override;
 
   // WindowPort:
-  std::unique_ptr<WindowPortInitData> OnPreInit(Window* window) override;
-  void OnPostInit(std::unique_ptr<WindowPortInitData> init_data) override;
+  void OnPreInit(Window* window) override;
   void OnDeviceScaleFactorChanged(float device_scale_factor) override;
   void OnWillAddChild(Window* child) override;
   void OnWillRemoveChild(Window* child) override;

@@ -19,6 +19,7 @@
 #include "ui/aura/mus/window_mus.h"
 #include "ui/aura/mus/window_tree_client_delegate.h"
 #include "ui/aura/mus/window_tree_client_observer.h"
+#include "ui/aura/mus/window_tree_host_mus.h"
 #include "ui/aura/test/aura_mus_test_base.h"
 #include "ui/aura/test/mus/test_window_tree.h"
 #include "ui/aura/test/mus/window_tree_client_private.h"
@@ -438,22 +439,25 @@ class InputEventBasicTestWindowDelegate : public test::TestWindowDelegate {
 
 TEST_F(WindowTreeClientClientTest, InputEventBasic) {
   InputEventBasicTestWindowDelegate window_delegate(window_tree());
-  std::unique_ptr<Window> top_level(base::MakeUnique<Window>(&window_delegate));
-  top_level->SetType(ui::wm::WINDOW_TYPE_NORMAL);
-  top_level->Init(ui::LAYER_NOT_DRAWN);
-  WindowTreeHost* window_tree_host = top_level->GetRootWindow()->GetHost();
+  WindowTreeHostMus window_tree_host(window_tree_client_impl());
+  Window* top_level = window_tree_host.window();
   const gfx::Rect bounds(0, 0, 100, 100);
-  window_tree_host->SetBounds(bounds);
-  window_tree_host->Show();
+  window_tree_host.SetBounds(bounds);
+  window_tree_host.Show();
   EXPECT_EQ(bounds, top_level->bounds());
-  EXPECT_EQ(bounds, window_tree_host->window()->bounds());
+  EXPECT_EQ(bounds, window_tree_host.GetBounds());
+  Window child(&window_delegate);
+  child.Init(ui::LAYER_NOT_DRAWN);
+  top_level->AddChild(&child);
+  child.SetBounds(gfx::Rect(0, 0, 100, 100));
+  child.Show();
   EXPECT_FALSE(window_delegate.got_move());
   EXPECT_FALSE(window_delegate.was_acked());
   std::unique_ptr<ui::Event> ui_event(
       new ui::MouseEvent(ui::ET_MOUSE_MOVED, gfx::Point(), gfx::Point(),
                          ui::EventTimeForNow(), ui::EF_NONE, 0));
   window_tree_client()->OnWindowInputEvent(
-      InputEventBasicTestWindowDelegate::kEventId, server_id(top_level.get()),
+      InputEventBasicTestWindowDelegate::kEventId, server_id(top_level),
       ui::Event::Clone(*ui_event.get()), 0);
   EXPECT_TRUE(window_tree()->WasEventAcked(1));
   EXPECT_TRUE(window_delegate.got_move());
@@ -667,25 +671,24 @@ TEST_F(WindowTreeClientWmTest, ToggleVisibilityFromWindowDestroyed) {
 TEST_F(WindowTreeClientClientTest, NewTopLevelWindow) {
   const size_t initial_root_count =
       window_tree_client_impl()->GetRoots().size();
-  std::unique_ptr<Window> top_level(base::MakeUnique<Window>(nullptr));
-  top_level->SetType(ui::wm::WINDOW_TYPE_NORMAL);
-  top_level->Init(ui::LAYER_NOT_DRAWN);
+  std::unique_ptr<WindowTreeHostMus> window_tree_host =
+      base::MakeUnique<WindowTreeHostMus>(window_tree_client_impl());
+  aura::Window* top_level = window_tree_host->window();
   // TODO: need to check WindowTreeHost visibility.
   // EXPECT_TRUE(WindowPrivate(root2).parent_drawn());
-  EXPECT_NE(server_id(top_level.get()), server_id(root_window()));
+  EXPECT_NE(server_id(top_level), server_id(root_window()));
   EXPECT_EQ(initial_root_count + 1,
             window_tree_client_impl()->GetRoots().size());
-  EXPECT_TRUE(window_tree_client_impl()->GetRoots().count(top_level.get()) >
-              0u);
+  EXPECT_TRUE(window_tree_client_impl()->GetRoots().count(top_level) > 0u);
 
   // Ack the request to the windowtree to create the new window.
   uint32_t change_id;
   ASSERT_TRUE(window_tree()->GetAndRemoveFirstChangeOfType(
       WindowTreeChangeType::NEW_TOP_LEVEL, &change_id));
-  EXPECT_EQ(window_tree()->window_id(), server_id(top_level.get()));
+  EXPECT_EQ(window_tree()->window_id(), server_id(top_level));
 
   ui::mojom::WindowDataPtr data = ui::mojom::WindowData::New();
-  data->window_id = server_id(top_level.get());
+  data->window_id = server_id(top_level);
   const int64_t display_id = 1;
   window_tree_client()->OnTopLevelCreated(change_id, std::move(data),
                                           display_id, false);
@@ -695,34 +698,33 @@ TEST_F(WindowTreeClientClientTest, NewTopLevelWindow) {
 
   // Should not be able to add a top level as a child of another window.
   // TODO(sky): decide how to handle this.
-  // root_window()->AddChild(top_level.get());
+  // root_window()->AddChild(top_level);
   // ASSERT_EQ(nullptr, top_level->parent());
 
   // Destroy the first root, shouldn't initiate tear down.
-  top_level.reset();
+  window_tree_host.reset();
   EXPECT_EQ(initial_root_count, window_tree_client_impl()->GetRoots().size());
 }
 
 TEST_F(WindowTreeClientClientTest, NewTopLevelWindowGetsPropertiesFromData) {
   const size_t initial_root_count =
       window_tree_client_impl()->GetRoots().size();
-  std::unique_ptr<Window> top_level(base::MakeUnique<Window>(nullptr));
-  top_level->SetType(ui::wm::WINDOW_TYPE_NORMAL);
-  top_level->Init(ui::LAYER_NOT_DRAWN);
+  WindowTreeHostMus window_tree_host(window_tree_client_impl());
+  Window* top_level = window_tree_host.window();
   EXPECT_EQ(initial_root_count + 1,
             window_tree_client_impl()->GetRoots().size());
 
-  EXPECT_FALSE(IsWindowHostVisible(top_level.get()));
+  EXPECT_FALSE(IsWindowHostVisible(top_level));
   EXPECT_FALSE(top_level->TargetVisibility());
 
   // Ack the request to the windowtree to create the new window.
-  EXPECT_EQ(window_tree()->window_id(), server_id(top_level.get()));
+  EXPECT_EQ(window_tree()->window_id(), server_id(top_level));
 
   ui::mojom::WindowDataPtr data = ui::mojom::WindowData::New();
-  data->window_id = server_id(top_level.get());
+  data->window_id = server_id(top_level);
   data->bounds.SetRect(1, 2, 3, 4);
   data->visible = true;
-  const int64_t display_id = 1;
+  const int64_t display_id = 10;
   uint32_t change_id;
   ASSERT_TRUE(window_tree()->GetAndRemoveFirstChangeOfType(
       WindowTreeChangeType::NEW_TOP_LEVEL, &change_id));
@@ -732,10 +734,10 @@ TEST_F(WindowTreeClientClientTest, NewTopLevelWindowGetsPropertiesFromData) {
       0u, window_tree()->GetChangeCountForType(WindowTreeChangeType::VISIBLE));
 
   // Make sure all the properties took.
-  EXPECT_TRUE(IsWindowHostVisible(top_level.get()));
+  EXPECT_TRUE(IsWindowHostVisible(top_level));
   EXPECT_TRUE(top_level->TargetVisibility());
   // TODO: check display_id.
-  // EXPECT_EQ(1, root2->display_id());
+  EXPECT_EQ(display_id, window_tree_host.display_id());
   EXPECT_EQ(gfx::Rect(0, 0, 3, 4), top_level->bounds());
   EXPECT_EQ(gfx::Rect(1, 2, 3, 4), top_level->GetHost()->GetBounds());
 }
@@ -743,9 +745,8 @@ TEST_F(WindowTreeClientClientTest, NewTopLevelWindowGetsPropertiesFromData) {
 TEST_F(WindowTreeClientClientTest, NewWindowGetsAllChangesInFlight) {
   SetPropertyConverter(base::MakeUnique<TestPropertyConverter>());
 
-  std::unique_ptr<Window> top_level(base::MakeUnique<Window>(nullptr));
-  top_level->SetType(ui::wm::WINDOW_TYPE_NORMAL);
-  top_level->Init(ui::LAYER_NOT_DRAWN);
+  WindowTreeHostMus window_tree_host(window_tree_client_impl());
+  Window* top_level = window_tree_host.window();
 
   EXPECT_FALSE(top_level->TargetVisibility());
 
@@ -754,7 +755,8 @@ TEST_F(WindowTreeClientClientTest, NewWindowGetsAllChangesInFlight) {
   top_level->Hide();
 
   // Change bounds to 5, 6, 7, 8.
-  top_level->SetBounds(gfx::Rect(5, 6, 7, 8));
+  window_tree_host.SetBounds(gfx::Rect(5, 6, 7, 8));
+  EXPECT_EQ(gfx::Rect(0, 0, 7, 8), window_tree_host.window()->bounds());
 
   const uint8_t explicitly_set_test_property1_value = 2;
   top_level->SetProperty(kTestPropertyKey1,
@@ -762,7 +764,7 @@ TEST_F(WindowTreeClientClientTest, NewWindowGetsAllChangesInFlight) {
 
   // Ack the new window top level top_level Vis and bounds shouldn't change.
   ui::mojom::WindowDataPtr data = ui::mojom::WindowData::New();
-  data->window_id = server_id(top_level.get());
+  data->window_id = server_id(top_level);
   const gfx::Rect bounds_from_server(1, 2, 3, 4);
   data->bounds = bounds_from_server;
   data->visible = true;
@@ -783,7 +785,8 @@ TEST_F(WindowTreeClientClientTest, NewWindowGetsAllChangesInFlight) {
   // The only value that should take effect is the property for 'yy' as it was
   // not in flight.
   EXPECT_FALSE(top_level->TargetVisibility());
-  EXPECT_EQ(gfx::Rect(5, 6, 7, 8), top_level->bounds());
+  EXPECT_EQ(gfx::Rect(5, 6, 7, 8), window_tree_host.GetBounds());
+  EXPECT_EQ(gfx::Rect(0, 0, 7, 8), top_level->bounds());
   EXPECT_EQ(explicitly_set_test_property1_value,
             top_level->GetProperty(kTestPropertyKey1));
   EXPECT_EQ(server_test_property2_value,
@@ -868,18 +871,17 @@ TEST_F(WindowTreeClientClientTest,
        TopLevelWindowDestroyedBeforeCreateComplete) {
   const size_t initial_root_count =
       window_tree_client_impl()->GetRoots().size();
-  std::unique_ptr<Window> top_level(base::MakeUnique<Window>(nullptr));
-  top_level->SetType(ui::wm::WINDOW_TYPE_NORMAL);
-  top_level->Init(ui::LAYER_NOT_DRAWN);
+  std::unique_ptr<WindowTreeHostMus> window_tree_host =
+      base::MakeUnique<WindowTreeHostMus>(window_tree_client_impl());
   EXPECT_EQ(initial_root_count + 1,
             window_tree_client_impl()->GetRoots().size());
 
   ui::mojom::WindowDataPtr data = ui::mojom::WindowData::New();
-  data->window_id = server_id(top_level.get());
+  data->window_id = server_id(window_tree_host->window());
 
   // Destroy the window before the server has a chance to ack the window
   // creation.
-  top_level.reset();
+  window_tree_host.reset();
   EXPECT_EQ(initial_root_count, window_tree_client_impl()->GetRoots().size());
 
   // Get the id of the in flight change for creating the new window.

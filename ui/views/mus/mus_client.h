@@ -76,7 +76,8 @@ class VIEWS_MUS_EXPORT MusClient
   std::unique_ptr<aura::WindowPort> CreateWindowPort(aura::Window* window);
 
   // aura::WindowTreeClientDelegate:
-  void OnEmbed(aura::Window* root) override;
+  void OnEmbed(
+      std::unique_ptr<aura::WindowTreeHostMus> window_tree_host) override;
   void OnLostConnection(aura::WindowTreeClient* client) override;
   void OnEmbedRootDestroyed(aura::Window* root) override;
   void OnPointerEventObserved(const ui::PointerEvent& event,

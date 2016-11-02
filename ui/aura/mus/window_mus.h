@@ -45,7 +45,6 @@ struct AURA_EXPORT WindowMusChangeData {
 // change the bounds too. See WindowPortMus for details.
 class AURA_EXPORT WindowMus {
  public:
-
   enum class ChangeSource {
     // The change was made locally.
     LOCAL,
@@ -53,11 +52,8 @@ class AURA_EXPORT WindowMus {
     SERVER,
   };
 
-  // |create_remote_window| indicates whether a window should be created on the
-  // server. Generally |create_remote_window| should be true, only in rare
-  // exceptions (such as the root of a WindowTreeHost) is it false.
-  explicit WindowMus(bool create_remote_window)
-      : create_remote_window_(create_remote_window) {}
+  explicit WindowMus(WindowMusType window_mus_type)
+      : window_mus_type_(window_mus_type) {}
   virtual ~WindowMus() {}
 
   // Returns the WindowMus associated with |window|.
@@ -65,14 +61,7 @@ class AURA_EXPORT WindowMus {
 
   Id server_id() const { return server_id_; }
 
-  // Top level windows may have a root window with no associated server window.
-  // This happens because the client creates the top level window first, and
-  // then the WindowTreeHost. Each WindowTreeHost has a Window, so the
-  // WindowTreeHost for top-levels has no server window.
-  bool has_server_window() const { return server_id() != kInvalidServerId; }
-
-  // See constructor for details.
-  bool create_remote_window() const { return create_remote_window_; }
+  WindowMusType window_mus_type() const { return window_mus_type_; }
 
   virtual Window* GetWindow() = 0;
 
@@ -118,7 +107,7 @@ class AURA_EXPORT WindowMus {
   void set_server_id(Id id) { server_id_ = id; }
 
   Id server_id_ = kInvalidServerId;
-  const bool create_remote_window_;
+  const WindowMusType window_mus_type_;
 };
 
 }  // namespace aura

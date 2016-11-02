@@ -13,14 +13,24 @@ class Rect;
 
 namespace aura {
 
-class Window;
+class WindowPortMus;
+class WindowTreeHostMus;
 
 class AURA_EXPORT WindowTreeHostMusDelegate {
  public:
-  // Called to set the bounds of the root window. |bounds| is the bounds
-  // supplied to SetBounds() and may be adjusted by the default. After this call
-  // |bounds| is applied to WindowTreeHost. |bounds| is in dips.
-  virtual void SetRootWindowBounds(Window* window, gfx::Rect* bounds) = 0;
+  // Called when the bounds of a WindowTreeHostMus is about to change.
+  // |bounds| is the bounds supplied to WindowTreeHostMus::SetBounds() and is
+  // in screen pixel coordinates.
+  virtual void OnWindowTreeHostBoundsWillChange(
+      WindowTreeHostMus* window_tree_host,
+      const gfx::Rect& bounds) = 0;
+
+  // Called when a WindowTreeHostMus is created without a WindowPort.
+  virtual std::unique_ptr<WindowPortMus> CreateWindowPortForTopLevel() = 0;
+
+  // Called from WindowTreeHostMus's constructor once the Window has been
+  // created.
+  virtual void OnWindowTreeHostCreated(WindowTreeHostMus* window_tree_host) = 0;
 
  protected:
   virtual ~WindowTreeHostMusDelegate() {}

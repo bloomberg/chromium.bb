@@ -19,8 +19,7 @@ class AURA_EXPORT WindowPortLocal : public WindowPort {
   ~WindowPortLocal() override;
 
   // WindowPort:
-  std::unique_ptr<WindowPortInitData> OnPreInit(Window* window) override;
-  void OnPostInit(std::unique_ptr<WindowPortInitData> init_data) override;
+  void OnPreInit(Window* window) override;
   void OnDeviceScaleFactorChanged(float device_scale_factor) override;
   void OnWillAddChild(Window* child) override;
   void OnWillRemoveChild(Window* child) override;

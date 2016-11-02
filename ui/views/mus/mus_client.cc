@@ -15,6 +15,7 @@
 #include "ui/aura/mus/property_converter.h"
 #include "ui/aura/mus/window_port_mus.h"
 #include "ui/aura/mus/window_tree_client.h"
+#include "ui/aura/mus/window_tree_host_mus.h"
 #include "ui/aura/window.h"
 #include "ui/aura/window_tree_host.h"
 #include "ui/views/mus/aura_init.h"
@@ -140,10 +141,12 @@ NativeWidget* MusClient::CreateNativeWidget(
 
 std::unique_ptr<aura::WindowPort> MusClient::CreateWindowPort(
     aura::Window* window) {
-  return base::MakeUnique<aura::WindowPortMus>(window_tree_client_.get());
+  return base::MakeUnique<aura::WindowPortMus>(window_tree_client_.get(),
+                                               aura::WindowMusType::LOCAL);
 }
 
-void MusClient::OnEmbed(aura::Window* root) {}
+void MusClient::OnEmbed(
+    std::unique_ptr<aura::WindowTreeHostMus> window_tree_host) {}
 
 void MusClient::OnLostConnection(aura::WindowTreeClient* client) {}
 

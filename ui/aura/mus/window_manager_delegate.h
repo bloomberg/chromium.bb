@@ -37,6 +37,7 @@ class Event;
 namespace aura {
 
 class Window;
+class WindowTreeHostMus;
 
 // See the mojom with the same name for details on the functions in this
 // interface.
@@ -103,10 +104,11 @@ class AURA_EXPORT WindowManagerDelegate {
       const std::set<Window*>& client_windows,
       bool janky) = 0;
 
-  // Called when a display is added. |window| is the root of the window tree for
-  // the specified display.
-  virtual void OnWmNewDisplay(Window* window,
-                              const display::Display& display) = 0;
+  // Called when a display is added. |window_tree_host| is the WindowTreeHost
+  // for the new display.
+  virtual void OnWmNewDisplay(
+      std::unique_ptr<WindowTreeHostMus> window_tree_host,
+      const display::Display& display) = 0;
 
   // Called when a display is removed. |window| is the root of the display.
   virtual void OnWmDisplayRemoved(Window* window) = 0;

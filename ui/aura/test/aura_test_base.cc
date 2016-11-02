@@ -7,6 +7,7 @@
 #include "ui/aura/client/window_parenting_client.h"
 #include "ui/aura/mus/property_converter.h"
 #include "ui/aura/mus/window_tree_client.h"
+#include "ui/aura/mus/window_tree_host_mus.h"
 #include "ui/aura/test/test_window_delegate.h"
 #include "ui/aura/window.h"
 #include "ui/base/ime/input_method_initializer.h"
@@ -174,7 +175,8 @@ void AuraTestBase::SetPropertyConverter(
   property_converter_ = std::move(helper);
 }
 
-void AuraTestBase::OnEmbed(Window* root) {}
+void AuraTestBase::OnEmbed(
+    std::unique_ptr<WindowTreeHostMus> window_tree_host) {}
 
 void AuraTestBase::OnUnembed(Window* root) {}
 
@@ -207,8 +209,9 @@ void AuraTestBase::OnWmClientJankinessChanged(
     const std::set<Window*>& client_windows,
     bool janky) {}
 
-void AuraTestBase::OnWmNewDisplay(Window* window,
-                                  const display::Display& display) {}
+void AuraTestBase::OnWmNewDisplay(
+    std::unique_ptr<WindowTreeHostMus> window_tree_host,
+    const display::Display& display) {}
 
 void AuraTestBase::OnWmDisplayRemoved(Window* window) {}
 

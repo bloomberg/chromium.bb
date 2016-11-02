@@ -58,6 +58,7 @@ class WindowTreeClientDelegate;
 class WindowTreeClientPrivate;
 class WindowTreeClientObserver;
 class WindowTreeHost;
+class WindowTreeHostMus;
 
 namespace client {
 class FocusClient;
@@ -94,9 +95,6 @@ class AURA_EXPORT WindowTreeClient
 
   // Establishes the connection by way of WindowManagerWindowTreeFactory.
   void ConnectAsWindowManager(service_manager::Connector* connector);
-
-  // Wait for OnEmbed(), returning when done.
-  void WaitForEmbed();
 
   bool connected() const { return tree_ != nullptr; }
   ClientSpecificId client_id() const { return client_id_; }
@@ -206,25 +204,20 @@ class AURA_EXPORT WindowTreeClient
                        WindowMus* initial_parent);
 
   // Creates a WindowPortMus from the server side data.
-  // NOTE: this *must* be followed by SetLocalPropertiesFromServerProperties()
   std::unique_ptr<WindowPortMus> CreateWindowPortMus(
-      const ui::mojom::WindowDataPtr& window_data);
+      const ui::mojom::WindowDataPtr& window_data,
+      WindowMusType window_mus_type);
 
   // Sets local properties on the associated Window from the server properties.
   void SetLocalPropertiesFromServerProperties(
       WindowMus* window,
       const ui::mojom::WindowDataPtr& window_data);
 
-  // Creates a WindowTreeHostMus and returns the window associated with it.
-  // The returned window is either the content window of the WindowTreeHostMus
-  // or the window created by WindowTreeHost. See WindowTreeHostMus for
-  // details.
-  // TODO(sky): it would be nice to always have a single window and not the
-  // two different. That requires ownership changes to WindowTreeHost though.
-  Window* CreateWindowTreeHost(RootWindowType type,
-                               const ui::mojom::WindowDataPtr& window_data,
-                               int64_t display_id,
-                               Window* content_window);
+  // Creates a new WindowTreeHostMus.
+  std::unique_ptr<WindowTreeHostMus> CreateWindowTreeHost(
+      WindowMusType window_mus_type,
+      const ui::mojom::WindowDataPtr& window_data,
+      int64_t display_id);
 
   WindowMus* NewWindowFromWindowData(
       WindowMus* parent,
@@ -267,10 +260,13 @@ class AURA_EXPORT WindowTreeClient
                                  const gfx::Rect& revert_bounds);
   void SetWindowVisibleFromServer(WindowMus* window, bool visible);
 
+  // Called from OnWindowMusBoundsChanged() and SetRootWindowBounds().
+  void ScheduleInFlightBoundsChange(WindowMus* window,
+                                    const gfx::Rect& old_bounds,
+                                    const gfx::Rect& new_bounds);
+
   // Following are called from WindowMus.
-  std::unique_ptr<WindowPortInitData> OnWindowMusCreated(WindowMus* window);
-  void OnWindowMusInitDone(WindowMus* window,
-                           std::unique_ptr<WindowPortInitData> init_data);
+  void OnWindowMusCreated(WindowMus* window);
   void OnWindowMusDestroyed(WindowMus* window);
   void OnWindowMusBoundsChanged(WindowMus* window,
                                 const gfx::Rect& old_bounds,
@@ -427,7 +423,10 @@ class AURA_EXPORT WindowTreeClient
   void OnWindowFocused(Window* gained_focus, Window* lost_focus) override;
 
   // Overriden from WindowTreeHostMusDelegate:
-  void SetRootWindowBounds(Window* window, gfx::Rect* bounds) override;
+  void OnWindowTreeHostBoundsWillChange(WindowTreeHostMus* window_tree_host,
+                                        const gfx::Rect& bounds) override;
+  std::unique_ptr<WindowPortMus> CreateWindowPortForTopLevel() override;
+  void OnWindowTreeHostCreated(WindowTreeHostMus* window_tree_host) override;
 
   // Override from client::TransientWindowClientObserver:
   void OnTransientChildWindowAdded(Window* parent,

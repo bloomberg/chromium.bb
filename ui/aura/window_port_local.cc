@@ -59,12 +59,7 @@ WindowPortLocal::WindowPortLocal(Window* window) : window_(window) {}
 
 WindowPortLocal::~WindowPortLocal() {}
 
-std::unique_ptr<WindowPortInitData> WindowPortLocal::OnPreInit(Window* window) {
-  return nullptr;
-}
-
-void WindowPortLocal::OnPostInit(
-    std::unique_ptr<WindowPortInitData> init_data) {}
+void WindowPortLocal::OnPreInit(Window* window) {}
 
 void WindowPortLocal::OnDeviceScaleFactorChanged(float device_scale_factor) {
   ScopedCursorHider hider(window_);

@@ -144,13 +144,12 @@ void Window::Init(ui::LayerType layer_type) {
     port_ = port_owner_.get();
   }
   SetLayer(base::MakeUnique<ui::Layer>(layer_type));
-  std::unique_ptr<WindowPortInitData> init_data = port_->OnPreInit(this);
+  port_->OnPreInit(this);
   layer()->SetVisible(false);
   layer()->set_delegate(this);
   UpdateLayerName();
   layer()->SetFillsBoundsOpaquely(!transparent_);
   Env::GetInstance()->NotifyWindowInitialized(this);
-  port_->OnPostInit(std::move(init_data));
 }
 
 void Window::SetType(ui::wm::WindowType type) {

@@ -170,7 +170,8 @@ Env::WindowPortFactory AuraTestHelper::InitMus() {
 
 std::unique_ptr<WindowPort> AuraTestHelper::CreateWindowPortMus(
     Window* window) {
-  return base::MakeUnique<WindowPortMus>(window_tree_client());
+  return base::MakeUnique<WindowPortMus>(window_tree_client(),
+                                         WindowMusType::LOCAL);
 }
 
 }  // namespace test

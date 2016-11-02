@@ -22,18 +22,28 @@ using ClientSpecificId = uint16_t;
 
 constexpr Id kInvalidServerId = 0;
 
-// Identifies the type of root window.
-enum class RootWindowType {
+enum class WindowMusType {
   // The window is an embed root. That is, the client received this window by
   // way of another client calling Embed().
+  // NOTE: in the client that called Embed() the window type is LOCAL.
   EMBED,
 
-  // The window is a top level window, that is the client created it by way of
-  // NewTopLevelWindow().
+  // The window was created by requesting a top level
+  // (WindowTree::NewTopLevel()).
+  // NOTE: in the window manager (the one responsible for actually creating the
+  // real window) the window is of type LOCAL.
   TOP_LEVEL,
 
   // The window is a display root for the window manager.
-  DISPLAY
+  DISPLAY,
+
+  // The window was created locally.
+  LOCAL,
+
+  // Not one of the above. This means the window is visible to the client and
+  // not one of the above values. Practially this means this client is the
+  // window manager and the window was created by another client.
+  OTHER,
 };
 
 }  // namespace ui

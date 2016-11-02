@@ -8,10 +8,10 @@
 #include "ui/aura/env.h"
 #include "ui/aura/mus/input_method_mus.h"
 #include "ui/aura/mus/window_port_mus.h"
+#include "ui/aura/mus/window_tree_client.h"
 #include "ui/aura/mus/window_tree_host_mus_delegate.h"
 #include "ui/aura/window.h"
 #include "ui/aura/window_event_dispatcher.h"
-#include "ui/aura/window_observer.h"
 #include "ui/display/display.h"
 #include "ui/display/screen.h"
 #include "ui/events/event.h"
@@ -28,39 +28,15 @@ bool IsUsingTestContext() {
 
 }  // namespace
 
-class WindowTreeHostMus::ContentWindowObserver : public WindowObserver {
- public:
-  ContentWindowObserver(WindowTreeHostMus* window_tree_host_mus, Window* window)
-      : window_tree_host_mus_(window_tree_host_mus), window_(window) {
-    window_->AddObserver(this);
-  }
-  ~ContentWindowObserver() override { window_->RemoveObserver(this); }
-
-  // WindowObserver:
-  void OnWindowDestroyed(Window* window) override {
-    window_tree_host_mus_->ContentWindowDestroyed();
-  }
-
- private:
-  WindowTreeHostMus* window_tree_host_mus_;
-  Window* window_;
-
-  DISALLOW_COPY_AND_ASSIGN(ContentWindowObserver);
-};
-
 ////////////////////////////////////////////////////////////////////////////////
 // WindowTreeHostMus, public:
 
 WindowTreeHostMus::WindowTreeHostMus(std::unique_ptr<WindowPortMus> window_port,
                                      WindowTreeHostMusDelegate* delegate,
-                                     RootWindowType root_window_type,
-                                     int64_t display_id,
-                                     Window* content_window)
+                                     int64_t display_id)
     : WindowTreeHostPlatform(std::move(window_port)),
       display_id_(display_id),
-      root_window_type_(root_window_type),
-      delegate_(delegate),
-      content_window_(content_window) {
+      delegate_(delegate) {
   gfx::AcceleratedWidget accelerated_widget;
   if (IsUsingTestContext()) {
     accelerated_widget = gfx::kNullAcceleratedWidget;
@@ -79,22 +55,13 @@ WindowTreeHostMus::WindowTreeHostMus(std::unique_ptr<WindowPortMus> window_port,
   // TODO(markdittmer): Use correct device-scale-factor from |window|.
   OnAcceleratedWidgetAvailable(accelerated_widget, 1.f);
 
+  delegate_->OnWindowTreeHostCreated(this);
+
   SetPlatformWindow(base::MakeUnique<ui::StubWindow>(
       this,
       false));  // Do not advertise accelerated widget; already set manually.
 
-  if (content_window_) {
-    window()->AddChild(content_window_);
-    window()->SetBounds(gfx::Rect(content_window_->bounds().size()));
-    content_window_observer_ =
-        base::MakeUnique<ContentWindowObserver>(this, content_window_);
-  } else {
-    // Initialize the stub platform window bounds to those of the ui::Window.
-    platform_window()->SetBounds(window()->bounds());
-  }
-
-  input_method_ = base::MakeUnique<InputMethodMus>(
-      this, content_window_ ? content_window_ : window());
+  input_method_ = base::MakeUnique<InputMethodMus>(this, window());
 
   // TODO: hook up to compositor correctly.
   // compositor()->SetWindow(window);
@@ -104,6 +71,13 @@ WindowTreeHostMus::WindowTreeHostMus(std::unique_ptr<WindowPortMus> window_port,
   // Mus windows are assumed hidden.
   compositor()->SetVisible(false);
 }
+
+WindowTreeHostMus::WindowTreeHostMus(WindowTreeClient* window_tree_client)
+    : WindowTreeHostMus(
+          static_cast<WindowTreeHostMusDelegate*>(window_tree_client)
+              ->CreateWindowPortForTopLevel(),
+          window_tree_client,
+          display::Screen::GetScreen()->GetPrimaryDisplay().id()) {}
 
 WindowTreeHostMus::~WindowTreeHostMus() {
   DestroyCompositor();
@@ -124,53 +98,20 @@ display::Display WindowTreeHostMus::GetDisplay() const {
   return display::Display();
 }
 
-Window* WindowTreeHostMus::GetWindowWithServerWindow() {
-  return content_window_ ? content_window_ : window();
-}
-
-void WindowTreeHostMus::ContentWindowDestroyed() {
-  delete this;
-}
-
 void WindowTreeHostMus::ShowImpl() {
   WindowTreeHostPlatform::ShowImpl();
   window()->Show();
-  if (content_window_)
-    content_window_->Show();
 }
 
 void WindowTreeHostMus::HideImpl() {
   WindowTreeHostPlatform::HideImpl();
   window()->Hide();
-  if (content_window_)
-    content_window_->Hide();
 }
 
 void WindowTreeHostMus::SetBounds(const gfx::Rect& bounds) {
-  gfx::Rect adjusted_bounds(bounds);
-  if (!in_set_bounds_from_server_) {
-    delegate_->SetRootWindowBounds(GetWindowWithServerWindow(),
-                                   &adjusted_bounds);
-  }
-  WindowTreeHostPlatform::SetBounds(adjusted_bounds);
-  if (content_window_)
-    content_window_->SetBounds(adjusted_bounds);
-}
-
-gfx::Rect WindowTreeHostMus::GetBounds() const {
-  // TODO(sky): this is wrong, root windows need to be told their location
-  // relative to the display.
-  const display::Display display(GetDisplay());
-  const gfx::Vector2d origin(origin_offset_ +
-                             display.bounds().OffsetFromOrigin());
-  return gfx::Rect(gfx::Point(origin.x(), origin.y()),
-                   WindowTreeHostPlatform::GetBounds().size());
-}
-
-gfx::Point WindowTreeHostMus::GetLocationOnNativeScreen() const {
-  // TODO(sky): this is wrong, root windows need to be told their location
-  // relative to the display.
-  return gfx::Point(origin_offset_.x(), origin_offset_.y());
+  if (!in_set_bounds_from_server_)
+    delegate_->OnWindowTreeHostBoundsWillChange(this, bounds);
+  WindowTreeHostPlatform::SetBounds(bounds);
 }
 
 void WindowTreeHostMus::DispatchEvent(ui::Event* event) {

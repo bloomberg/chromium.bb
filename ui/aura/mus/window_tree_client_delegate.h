@@ -20,8 +20,8 @@ namespace aura {
 
 class PropertyConverter;
 class Window;
-class WindowPortMus;
 class WindowTreeClient;
+class WindowTreeHostMus;
 
 namespace client {
 class CaptureClient;
@@ -31,11 +31,10 @@ class FocusClient;
 // Interface implemented by an application using mus.
 class AURA_EXPORT WindowTreeClientDelegate {
  public:
-  // Called when the application implementing this interface is embedded at
-  // |root|.
+  // Called when the application implementing this interface is embedded.
   // NOTE: this is only invoked if the WindowTreeClient is created with an
   // InterfaceRequest.
-  virtual void OnEmbed(Window* root) = 0;
+  virtual void OnEmbed(std::unique_ptr<WindowTreeHostMus> window_tree_host) = 0;
 
   // Sent when another app is embedded in |root| (one of the roots of the
   // connection). Afer this call |root| is deleted. If the associated
