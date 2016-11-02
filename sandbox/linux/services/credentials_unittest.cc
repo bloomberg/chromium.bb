@@ -246,18 +246,19 @@ void SignalHandler(int sig) {
   signal_handler_called = 1;
 }
 
+// glibc (and some other libcs) caches the PID and TID in TLS. This test
+// verifies that these values are correct after DropFilesystemAccess.
 // Disabled on ASAN because of crbug.com/451603.
 SANDBOX_TEST(Credentials, DISABLE_ON_ASAN(DropFileSystemAccessPreservesTLS)) {
   // Probably missing kernel support.
   if (!Credentials::MoveToNewUserNS()) return;
   CHECK(Credentials::DropFileSystemAccess(ProcUtil::OpenProc().get()));
 
-  // In glibc, pthread_getattr_np makes an assertion about the cached PID/TID in
-  // TLS.
-  pthread_attr_t attr;
-  EXPECT_EQ(0, pthread_getattr_np(pthread_self(), &attr));
+  // The libc getpid implementation may return a cached PID. Ensure that
+  // it matches the PID returned from the getpid system call.
+  CHECK_EQ(sys_getpid(), getpid());
 
-  // raise also uses the cached TID in glibc.
+  // raise uses the cached TID in glibc.
   struct sigaction action = {};
   action.sa_handler = &SignalHandler;
   PCHECK(sigaction(SIGUSR1, &action, nullptr) == 0);
