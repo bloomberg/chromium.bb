@@ -13,6 +13,7 @@ import android.os.Bundle;
 
 import org.chromium.base.Callback;
 import org.chromium.base.ContextUtils;
+import org.chromium.base.metrics.RecordHistogram;
 
 /**
  * Listens to te account change notifications from GSA.
@@ -42,9 +43,9 @@ public class GSAAccountChangeListener {
     private int mUsersCount;
     private GSAServiceClient mClient;
 
-    /**
-     * @return the instance of GSAAccountChangeListener.
-     */
+    private boolean mAlreadyReportedHistogram;
+
+    /** @return the instance of GSAAccountChangeListener. */
     public static GSAAccountChangeListener getInstance() {
         if (sInstance == null) {
             Context context = ContextUtils.getApplicationContext();
@@ -106,8 +107,17 @@ public class GSAAccountChangeListener {
         Callback<Bundle> onMessageReceived = new Callback<Bundle>() {
             @Override
             public void onResult(Bundle result) {
-                if (result.getBoolean(KEY_SSB_BROADCASTS_ACCOUNT_CHANGE_TO_CHROME)) {
-                    notifyGsaBroadcastsAccountChanges();
+                boolean supportsBroadcast =
+                        result.getBoolean(KEY_SSB_BROADCASTS_ACCOUNT_CHANGE_TO_CHROME);
+                if (supportsBroadcast) notifyGsaBroadcastsAccountChanges();
+                // If GSA doesn't support the broadcast, we connect several times to the service per
+                // Chrome session (since there is a disconnect() call in
+                // ChromeActivity#onStopWithNative()). Only record the histogram once per startup to
+                // avoid skewing the results.
+                if (!mAlreadyReportedHistogram) {
+                    RecordHistogram.recordBooleanHistogram(
+                            "Search.GsaBroadcastsAccountChanges", supportsBroadcast);
+                    mAlreadyReportedHistogram = true;
                 }
             }
         };
