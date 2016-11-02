@@ -92,8 +92,7 @@ class PNGImageReader final {
         m_readOffset(readOffset),
         m_currentBufferSize(0),
         m_decodingSizeOnly(false),
-        m_hasAlpha(false)
-  {
+        m_hasAlpha(false) {
     m_png = png_create_read_struct(PNG_LIBPNG_VER_STRING, 0, pngFailed, 0);
     m_info = png_create_info_struct(m_png);
     png_set_progressive_read_fn(m_png, m_decoder, pngHeaderAvailable,
@@ -164,6 +163,60 @@ PNGImageDecoder::PNGImageDecoder(AlphaOption alphaOption,
 
 PNGImageDecoder::~PNGImageDecoder() {}
 
+inline float pngFixedToFloat(png_fixed_point x) {
+  return ((float)x) * 0.00001f;
+}
+
+inline sk_sp<SkColorSpace> readColorSpace(png_structp png, png_infop info) {
+  if (png_get_valid(png, info, PNG_INFO_sRGB)) {
+    return SkColorSpace::MakeNamed(SkColorSpace::kSRGB_Named);
+  }
+
+  png_charp name = nullptr;
+  int compression = 0;
+  png_bytep profile = nullptr;
+  png_uint_32 length = 0;
+  if (png_get_iCCP(png, info, &name, &compression, &profile, &length)) {
+    return SkColorSpace::MakeICC(profile, length);
+  }
+
+  png_fixed_point chrm[8];
+  if (png_get_cHRM_fixed(png, info, &chrm[0], &chrm[1], &chrm[2], &chrm[3],
+                         &chrm[4], &chrm[5], &chrm[6], &chrm[7])) {
+    SkColorSpacePrimaries primaries;
+    primaries.fRX = pngFixedToFloat(chrm[2]);
+    primaries.fRY = pngFixedToFloat(chrm[3]);
+    primaries.fGX = pngFixedToFloat(chrm[4]);
+    primaries.fGY = pngFixedToFloat(chrm[5]);
+    primaries.fBX = pngFixedToFloat(chrm[6]);
+    primaries.fBY = pngFixedToFloat(chrm[7]);
+    primaries.fWX = pngFixedToFloat(chrm[0]);
+    primaries.fWY = pngFixedToFloat(chrm[1]);
+
+    SkMatrix44 toXYZD50(SkMatrix44::kUninitialized_Constructor);
+    if (primaries.toXYZD50(&toXYZD50)) {
+      png_fixed_point gammaFixed;
+      if (PNG_INFO_gAMA == png_get_gAMA_fixed(png, info, &gammaFixed)) {
+        SkColorSpaceTransferFn fn;
+        fn.fA = 1.0f;
+        fn.fB = fn.fC = fn.fD = fn.fE = fn.fF = 0.0f;
+        // This is necessary because the gAMA chunk actually stores 1/gamma.
+        fn.fG = 1.0f / pngFixedToFloat(gammaFixed);
+        return SkColorSpace::MakeRGB(fn, toXYZD50);
+      }
+
+      // Note that we only use the cHRM tag when gAMA is present.  The
+      // specification states that the cHRM is valid even without a gAMA
+      // tag, but we cannot apply the cHRM without guessing a transfer
+      // function.  It's possible that we should guess sRGB transfer
+      // function, given that unmarked PNGs should be treated as sRGB.
+      // However, the current behavior matches Safari and Firefox.
+    }
+  }
+
+  return nullptr;
+}
+
 void PNGImageDecoder::headerAvailable() {
   png_structp png = m_reader->pngPtr();
   png_infop info = m_reader->infoPtr();
@@ -215,26 +268,10 @@ void PNGImageDecoder::headerAvailable() {
     // images to RGB but we do not similarly transform the color profile. We'd
     // either need to transform the color profile or we'd need to decode into a
     // gray-scale image buffer and hand that to CoreGraphics.
-#ifdef PNG_iCCP_SUPPORTED
-    if (png_get_valid(png, info, PNG_INFO_sRGB)) {
-      setColorSpaceAndComputeTransform(
-          SkColorSpace::NewNamed(SkColorSpace::kSRGB_Named));
-    } else {
-      char* profileName = nullptr;
-      int compressionType = 0;
-#if (PNG_LIBPNG_VER < 10500)
-      png_charp profile = nullptr;
-#else
-      png_bytep profile = nullptr;
-#endif
-      png_uint_32 profileLength = 0;
-      if (png_get_iCCP(png, info, &profileName, &compressionType, &profile,
-                       &profileLength)) {
-        setColorProfileAndComputeTransform(reinterpret_cast<char*>(profile),
-                                           profileLength);
-      }
+    sk_sp<SkColorSpace> colorSpace = readColorSpace(png, info);
+    if (colorSpace) {
+      setColorSpaceAndComputeTransform(colorSpace);
     }
-#endif  // PNG_iCCP_SUPPORTED
   }
 
   if (!hasEmbeddedColorSpace()) {

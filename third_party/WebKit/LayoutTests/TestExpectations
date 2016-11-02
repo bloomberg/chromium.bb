@@ -364,6 +364,24 @@ crbug.com/635619 virtual/layout_ng/fast/block/float/width-update-after-clear.htm
 crbug.com/649558 http/tests/serviceworker/navigation-preload/ [ Skip ]
 crbug.com/649558 virtual/mojo-service-worker/http/tests/serviceworker/navigation-preload/ [ Skip ]
 
+crbug.com/657839 virtual/gpu-rasterization/fast/images/cHRM_color_spin.html [ NeedsRebaseline ]
+crbug.com/657839 svg/W3C-SVG-1.1/struct-use-01-t.svg [ NeedsRebaseline ]
+crbug.com/657839 paint/invalidation/svg/relative-sized-image.xhtml [ NeedsRebaseline ]
+crbug.com/657839 svg/filters/filteredImage.svg [ NeedsRebaseline ]
+crbug.com/657839 fast/images/cHRM_color_spin.html [ NeedsRebaseline ]
+crbug.com/657839 svg/as-image/image-preserveAspectRatio-all.svg [ NeedsRebaseline ]
+crbug.com/657839 svg/W3C-SVG-1.1-SE/filters-image-05-f.svg [ NeedsRebaseline ]
+crbug.com/657839 svg/W3C-SVG-1.1/render-groups-01-b.svg [ NeedsRebaseline ]
+crbug.com/657839 svg/W3C-SVG-1.1-SE/filters-image-03-f.svg [ NeedsRebaseline ]
+crbug.com/657839 svg/filters/feImage-preserveAspectratio.svg [ NeedsRebaseline ]
+crbug.com/657839 fast/images/png-suite/test.html [ NeedsRebaseline ]
+crbug.com/657839 svg/W3C-SVG-1.1/struct-image-06-t.svg [ NeedsRebaseline ]
+crbug.com/657839 svg/W3C-SVG-1.1/render-groups-03-t.svg [ NeedsRebaseline ]
+crbug.com/657839 svg/filters/feImage-preserveAspectRatio-all.svg [ NeedsRebaseline ]
+crbug.com/657839 virtual/gpu-rasterization/fast/images/png-suite/test.html [ NeedsRebaseline ]
+crbug.com/657839 fast/layers/perspective-inline-no-display.html [ NeedsRebaseline ]
+crbug.com/657839 paint/invalidation/svg/scrolling-embedded-svg-file-image-repaint-problem.html [ NeedsRebaseline ]
+
 # Run these tests with under virtual/scalefactor... only.
 crbug.com/567837 fast/hidpi/static [ Skip ]
 
