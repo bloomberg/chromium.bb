@@ -28,7 +28,7 @@
 
 #include "core/CoreExport.h"
 #include "core/layout/LayoutGeometryMapStep.h"
-#include "core/layout/LayoutObject.h"
+#include "core/layout/MapCoordinatesFlags.h"
 #include "platform/geometry/FloatPoint.h"
 #include "platform/geometry/FloatQuad.h"
 #include "platform/geometry/IntSize.h"
@@ -39,6 +39,7 @@ namespace blink {
 
 class PaintLayer;
 class LayoutBoxModelObject;
+class LayoutObject;
 class TransformationMatrix;
 class TransformState;
 

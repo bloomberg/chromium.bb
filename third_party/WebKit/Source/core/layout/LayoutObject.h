@@ -33,6 +33,7 @@
 #include "core/editing/PositionWithAffinity.h"
 #include "core/fetch/ImageResourceObserver.h"
 #include "core/layout/LayoutObjectChildList.h"
+#include "core/layout/MapCoordinatesFlags.h"
 #include "core/layout/PaintInvalidationState.h"
 #include "core/layout/ScrollAlignment.h"
 #include "core/layout/SubtreeLayoutScope.h"
@@ -79,27 +80,6 @@ enum MarkingBehavior {
   MarkOnlyThis,
   MarkContainerChain,
 };
-
-enum MapCoordinatesMode {
-  IsFixed = 1 << 0,
-  UseTransforms = 1 << 1,
-
-  // When walking up the containing block chain, applies a container flip for
-  // the first element found, if any, for which isFlippedBlocksWritingMode is
-  // true. This option should generally be used when mapping a source rect in
-  // the "physical coordinates with flipped block-flow" coordinate space (see
-  // LayoutBoxModelObject.h) to one in a physical destination space.
-  ApplyContainerFlip = 1 << 2,
-  TraverseDocumentBoundaries = 1 << 3,
-
-  // Applies to LayoutView::mapLocalToAncestor() and LayoutView::
-  // mapToVisualRectInAncestorSpace() only, to indicate the input point or rect
-  // is in frame coordinates instead of frame contents coordinates. This
-  // disables view clipping and scroll offset adjustment.
-  // TODO(wangxianzhu): Remove this when root-layer-scrolls launches.
-  InputIsInFrameCoordinates = 1 << 4,
-};
-typedef unsigned MapCoordinatesFlags;
 
 enum ScheduleRelayoutBehavior { ScheduleRelayout, DontScheduleRelayout };
 
