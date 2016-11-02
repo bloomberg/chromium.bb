@@ -80,7 +80,6 @@ class StoragePartitionImpl;
 
 namespace mojom {
 class StoragePartitionService;
-class URLLoaderFactory;
 }  // namespace mojom
 
 typedef base::Thread* (*RendererMainThreadFactoryFunction)(
@@ -379,11 +378,6 @@ class CONTENT_EXPORT RenderProcessHostImpl
 
   // GpuSwitchingObserver implementation.
   void OnGpuSwitched() override;
-
-  // Creates a mojom::URLLoaderFactory interface by passing
-  // URLLoaderFactoryRequest.
-  void CreateURLLoaderFactory(
-      mojo::InterfaceRequest<mojom::URLLoaderFactory> request);
 
 #if defined(ENABLE_WEBRTC)
   void OnRegisterAecDumpConsumer(int id);

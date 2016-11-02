@@ -70,14 +70,12 @@ void RunSoon(const base::Closure& callback) {
 ServiceWorkerDispatcherHost::ServiceWorkerDispatcherHost(
     int render_process_id,
     MessagePortMessageFilter* message_port_message_filter,
-    ResourceContext* resource_context,
-    const MojoURLLoaderFactoryGetter& url_loader_factory_getter)
+    ResourceContext* resource_context)
     : BrowserMessageFilter(kFilteredMessageClasses,
                            arraysize(kFilteredMessageClasses)),
       render_process_id_(render_process_id),
       message_port_message_filter_(message_port_message_filter),
       resource_context_(resource_context),
-      url_loader_factory_getter_(url_loader_factory_getter),
       channel_ready_(false),
       weak_factory_(this) {
   AddAssociatedInterface(

@@ -209,7 +209,6 @@ ServiceWorkerURLRequestJob::ServiceWorkerURLRequestJob(
     RequestContextFrameType frame_type,
     scoped_refptr<ResourceRequestBodyImpl> body,
     ServiceWorkerFetchType fetch_type,
-    const MojoURLLoaderFactoryGetter& url_loader_factory_getter,
     Delegate* delegate)
     : net::URLRequestJob(request, network_delegate),
       delegate_(delegate),
@@ -228,7 +227,6 @@ ServiceWorkerURLRequestJob::ServiceWorkerURLRequestJob(
       fall_back_required_(false),
       body_(body),
       fetch_type_(fetch_type),
-      url_loader_factory_getter_(url_loader_factory_getter),
       weak_factory_(this) {
   DCHECK(delegate_) << "ServiceWorkerURLRequestJob requires a delegate";
 }
@@ -895,8 +893,7 @@ void ServiceWorkerURLRequestJob::RequestBodyBlobsCompleted(bool success) {
       base::Bind(&ServiceWorkerURLRequestJob::DidDispatchFetchEvent,
                  weak_factory_.GetWeakPtr())));
   worker_start_time_ = base::TimeTicks::Now();
-  fetch_dispatcher_->MaybeStartNavigationPreload(request(),
-                                                 url_loader_factory_getter_);
+  fetch_dispatcher_->MaybeStartNavigationPreload(request());
   fetch_dispatcher_->Run();
 }
 

@@ -12,7 +12,9 @@
 #include "base/time/time.h"
 #include "base/trace_event/trace_event.h"
 #include "content/browser/loader/resource_dispatcher_host_impl.h"
+#include "content/browser/loader/resource_message_filter.h"
 #include "content/browser/loader/resource_request_info_impl.h"
+#include "content/browser/loader/url_loader_factory_impl.h"
 #include "content/browser/service_worker/embedded_worker_status.h"
 #include "content/browser/service_worker/service_worker_version.h"
 #include "content/common/service_worker/fetch_event_dispatcher.mojom.h"
@@ -279,8 +281,7 @@ void ServiceWorkerFetchDispatcher::Complete(
 }
 
 void ServiceWorkerFetchDispatcher::MaybeStartNavigationPreload(
-    net::URLRequest* original_request,
-    const MojoURLLoaderFactoryGetter& url_loader_factory_getter) {
+    net::URLRequest* original_request) {
   if (resource_type_ != RESOURCE_TYPE_MAIN_FRAME &&
       resource_type_ != RESOURCE_TYPE_SUB_FRAME) {
     return;
@@ -301,15 +302,16 @@ void ServiceWorkerFetchDispatcher::MaybeStartNavigationPreload(
     NOTIMPLEMENTED();
     return;
   }
-  DCHECK(!url_loader_factory_getter.is_null());
-  mojom::URLLoaderFactoryPtr factory;
-  url_loader_factory_getter.Run(mojo::GetProxy(&factory));
-  if (url_loader_factory_getter.IsCancelled())
-    return;
 
-  preload_handle_ = mojom::FetchEventPreloadHandle::New();
   const ResourceRequestInfoImpl* original_info =
       ResourceRequestInfoImpl::ForRequest(original_request);
+  if (!original_info->filter())
+    return;
+  mojom::URLLoaderFactoryPtr factory;
+  URLLoaderFactoryImpl::Create(original_info->filter(),
+                               mojo::GetProxy(&factory));
+
+  preload_handle_ = mojom::FetchEventPreloadHandle::New();
 
   mojom::URLLoaderClientPtr url_loader_client;
   preload_handle_->url_loader_client_request = GetProxy(&url_loader_client);

@@ -62,10 +62,7 @@ class TestingServiceWorkerDispatcherHost : public ServiceWorkerDispatcherHost {
       ServiceWorkerContextWrapper* context_wrapper,
       ResourceContext* resource_context,
       EmbeddedWorkerTestHelper* helper)
-      : ServiceWorkerDispatcherHost(process_id,
-                                    nullptr,
-                                    resource_context,
-                                    MojoURLLoaderFactoryGetter()),
+      : ServiceWorkerDispatcherHost(process_id, nullptr, resource_context),
         bad_messages_received_count_(0),
         helper_(helper) {
     Init(context_wrapper);

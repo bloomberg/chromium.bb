@@ -10,7 +10,6 @@
 #include <map>
 #include <string>
 
-#include "base/callback.h"
 #include "base/strings/string_util.h"
 #include "base/time/time.h"
 #include "content/common/content_export.h"
@@ -18,7 +17,6 @@
 #include "content/public/common/referrer.h"
 #include "content/public/common/request_context_frame_type.h"
 #include "content/public/common/request_context_type.h"
-#include "mojo/public/cpp/bindings/interface_request.h"
 #include "third_party/WebKit/public/platform/WebPageVisibilityState.h"
 #include "third_party/WebKit/public/platform/modules/serviceworker/WebServiceWorkerClientType.h"
 #include "third_party/WebKit/public/platform/modules/serviceworker/WebServiceWorkerResponseError.h"
@@ -30,10 +28,6 @@
 // browser and child process.
 
 namespace content {
-
-namespace mojom {
-class URLLoaderFactory;
-}  // namespace mojom
 
 // Indicates the document main thread ID in the child process. This is used for
 // messaging between the browser process and the child process.
@@ -141,11 +135,6 @@ using ServiceWorkerHeaderMap =
     std::map<std::string, std::string, ServiceWorkerCaseInsensitiveCompare>;
 
 using ServiceWorkerHeaderList = std::vector<std::string>;
-
-// Callback function type to get a mojom::URLLoaderFactory interface by passing
-// URLLoaderFactoryRequest.
-using MojoURLLoaderFactoryGetter =
-    base::Callback<void(mojo::InterfaceRequest<mojom::URLLoaderFactory>)>;
 
 // To dispatch fetch request from browser to child process.
 struct CONTENT_EXPORT ServiceWorkerFetchRequest {

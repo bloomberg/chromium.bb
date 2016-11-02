@@ -341,14 +341,11 @@ ServiceWorkerProviderHost::CreateRequestHandler(
   }
   if (ServiceWorkerUtils::IsMainResourceType(resource_type) ||
       controlling_version()) {
-    // |dispatcher_host_| may be null in some unittests.
     return std::unique_ptr<ServiceWorkerRequestHandler>(
         new ServiceWorkerControlleeRequestHandler(
             context_, AsWeakPtr(), blob_storage_context, request_mode,
             credentials_mode, redirect_mode, resource_type,
-            request_context_type, frame_type, body,
-            dispatcher_host_ ? dispatcher_host_->url_loader_factory_getter()
-                             : MojoURLLoaderFactoryGetter()));
+            request_context_type, frame_type, body));
   }
   return std::unique_ptr<ServiceWorkerRequestHandler>();
 }

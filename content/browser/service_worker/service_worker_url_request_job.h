@@ -95,7 +95,6 @@ class CONTENT_EXPORT ServiceWorkerURLRequestJob : public net::URLRequestJob {
       RequestContextFrameType frame_type,
       scoped_refptr<ResourceRequestBodyImpl> body,
       ServiceWorkerFetchType fetch_type,
-      const MojoURLLoaderFactoryGetter& url_loader_factory_getter,
       Delegate* delegate);
 
   ~ServiceWorkerURLRequestJob() override;
@@ -284,10 +283,6 @@ class CONTENT_EXPORT ServiceWorkerURLRequestJob : public net::URLRequestJob {
 
   bool worker_already_activated_ = false;
   EmbeddedWorkerStatus initial_worker_status_ = EmbeddedWorkerStatus::STOPPED;
-
-  // This is used for Navigation Preload. It may be a null callback in some
-  // unittests or for Foreign Fetch.
-  const MojoURLLoaderFactoryGetter url_loader_factory_getter_;
 
   base::WeakPtrFactory<ServiceWorkerURLRequestJob> weak_factory_;
 

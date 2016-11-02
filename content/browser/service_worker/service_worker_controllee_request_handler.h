@@ -48,8 +48,7 @@ class CONTENT_EXPORT ServiceWorkerControlleeRequestHandler
       ResourceType resource_type,
       RequestContextType request_context_type,
       RequestContextFrameType frame_type,
-      scoped_refptr<ResourceRequestBodyImpl> body,
-      const MojoURLLoaderFactoryGetter& url_loader_factory_getter);
+      scoped_refptr<ResourceRequestBodyImpl> body);
   ~ServiceWorkerControlleeRequestHandler() override;
 
   // Called via custom URLRequestJobFactory.
@@ -117,8 +116,6 @@ class CONTENT_EXPORT ServiceWorkerControlleeRequestHandler
   // delivered from the network, bypassing the ServiceWorker. Cleared after the
   // next intercept opportunity, for main frame requests.
   bool use_network_;
-
-  const MojoURLLoaderFactoryGetter url_loader_factory_getter_;
 
   base::WeakPtrFactory<ServiceWorkerControlleeRequestHandler> weak_factory_;
 

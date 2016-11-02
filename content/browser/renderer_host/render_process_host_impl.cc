@@ -1136,9 +1136,7 @@ void RenderProcessHostImpl::CreateMessageFilters() {
 
   scoped_refptr<ServiceWorkerDispatcherHost> service_worker_filter =
       new ServiceWorkerDispatcherHost(
-          GetID(), message_port_message_filter_.get(), resource_context,
-          base::Bind(&RenderProcessHostImpl::CreateURLLoaderFactory,
-                     weak_factory_.GetWeakPtr()));
+          GetID(), message_port_message_filter_.get(), resource_context);
   service_worker_filter->Init(
       storage_partition_impl_->GetServiceWorkerContext());
   AddFilter(service_worker_filter.get());
@@ -2982,11 +2980,6 @@ void RenderProcessHostImpl::OnMojoError(int render_process_id,
   base::debug::Alias(&error);
   bad_message::ReceivedBadMessage(render_process_id,
                                   bad_message::RPH_MOJO_PROCESS_ERROR);
-}
-
-void RenderProcessHostImpl::CreateURLLoaderFactory(
-    mojo::InterfaceRequest<mojom::URLLoaderFactory> request) {
-  URLLoaderFactoryImpl::Create(resource_message_filter_, std::move(request));
 }
 
 }  // namespace content

@@ -79,8 +79,7 @@ class ServiceWorkerControlleeRequestHandlerTest : public testing::Test {
               type,
               REQUEST_CONTEXT_TYPE_HYPERLINK,
               REQUEST_CONTEXT_FRAME_TYPE_TOP_LEVEL,
-              scoped_refptr<ResourceRequestBodyImpl>(),
-              MojoURLLoaderFactoryGetter())),
+              scoped_refptr<ResourceRequestBodyImpl>())),
           job_(nullptr) {}
 
     ServiceWorkerURLRequestJob* MaybeCreateJob() {

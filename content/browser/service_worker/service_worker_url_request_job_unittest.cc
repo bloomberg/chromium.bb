@@ -101,7 +101,7 @@ class MockHttpProtocolHandler
         resource_type_, REQUEST_CONTEXT_TYPE_HYPERLINK,
         REQUEST_CONTEXT_FRAME_TYPE_TOP_LEVEL,
         scoped_refptr<ResourceRequestBodyImpl>(), ServiceWorkerFetchType::FETCH,
-        MojoURLLoaderFactoryGetter(), delegate_);
+        delegate_);
     job_->ForwardToServiceWorker();
     return job_;
   }
