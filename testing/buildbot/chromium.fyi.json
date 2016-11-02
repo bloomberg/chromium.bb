@@ -3079,18 +3079,6 @@
         "swarming": {
           "can_use_on_swarming_builders": false
         },
-        "test": "blink_platform_unittests"
-      },
-      {
-        "swarming": {
-          "can_use_on_swarming_builders": false
-        },
-        "test": "browser_tests"
-      },
-      {
-        "swarming": {
-          "can_use_on_swarming_builders": false
-        },
         "test": "cacheinvalidation_unittests"
       },
       {
