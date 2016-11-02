@@ -43,8 +43,9 @@ extern const char kSnippetThumbnailsInteractiveRequestCount[];
 // thumbnails.
 extern const char kSnippetThumbnailsRequestsDay[];
 
+extern const char kDismissedAssetDownloadSuggestions[];
 extern const char kDismissedRecentOfflineTabSuggestions[];
-extern const char kDismissedDownloadSuggestions[];
+extern const char kDismissedOfflinePageDownloadSuggestions[];
 extern const char kDismissedForeignSessionsSuggestions[];
 extern const char kDismissedCategories[];
 

@@ -3159,6 +3159,7 @@ test("unit_tests") {
     "../browser/net/spdyproxy/data_reduction_proxy_chrome_settings_unittest.cc",
     "../browser/net/spdyproxy/data_reduction_proxy_settings_unittest_android.cc",
     "../browser/net/url_info_unittest.cc",
+    "../browser/ntp_snippets/download_suggestions_provider_unittest.cc",
     "../browser/page_load_metrics/metrics_web_contents_observer_unittest.cc",
     "../browser/page_load_metrics/observers/aborts_page_load_metrics_observer_unittest.cc",
     "../browser/page_load_metrics/observers/core_page_load_metrics_observer_unittest.cc",
@@ -3443,10 +3444,12 @@ test("unit_tests") {
 
   if (!is_ios) {
     deps += [
+      "//chrome/browser/ntp_snippets:test_support",
       "//components/autofill/content/renderer:test_support",
       "//components/data_reduction_proxy/core/browser:test_support",
       "//components/data_use_measurement/core",
       "//components/metrics/proto",
+      "//components/ntp_snippets:test_support",
       "//components/os_crypt:test_support",
       "//components/safe_browsing_db",
       "//components/safe_json:test_support",

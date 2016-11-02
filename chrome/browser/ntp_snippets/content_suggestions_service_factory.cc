@@ -55,11 +55,13 @@
 #include "chrome/browser/android/chrome_feature_list.h"
 #include "chrome/browser/android/ntp/ntp_snippets_launcher.h"
 #include "chrome/browser/android/offline_pages/offline_page_model_factory.h"
+#include "chrome/browser/ntp_snippets/download_suggestions_provider.h"
 #include "components/ntp_snippets/offline_pages/offline_page_proxy.h"
 #include "components/ntp_snippets/offline_pages/recent_tab_suggestions_provider.h"
 #include "components/ntp_snippets/physical_web_pages/physical_web_page_suggestions_provider.h"
 #include "components/offline_pages/offline_page_model.h"
 
+using content::DownloadManager;
 using ntp_snippets::OfflinePageProxy;
 using ntp_snippets::PhysicalWebPageSuggestionsProvider;
 using ntp_snippets::RecentTabSuggestionsProvider;
@@ -96,12 +98,26 @@ void ClearScheduledTasks() {
 
 #if defined(OS_ANDROID)
 void RegisterRecentTabProvider(
-    const scoped_refptr<OfflinePageProxy>& offline_page_proxy,
+    scoped_refptr<OfflinePageProxy> offline_page_proxy,
     ContentSuggestionsService* service,
     CategoryFactory* category_factory,
     PrefService* pref_service) {
   auto provider = base::MakeUnique<RecentTabSuggestionsProvider>(
-      service, category_factory, offline_page_proxy, pref_service);
+      service, category_factory, std::move(offline_page_proxy), pref_service);
+  service->RegisterProvider(std::move(provider));
+}
+
+void RegisterDownloadsProvider(
+    scoped_refptr<OfflinePageProxy> offline_page_proxy,
+    DownloadManager* download_manager,
+    ContentSuggestionsService* service,
+    CategoryFactory* category_factory,
+    PrefService* pref_service) {
+  bool download_manager_ui_enabled =
+      base::FeatureList::IsEnabled(chrome::android::kDownloadsUiFeature);
+  auto provider = base::MakeUnique<DownloadSuggestionsProvider>(
+      service, category_factory, std::move(offline_page_proxy),
+      download_manager, pref_service, download_manager_ui_enabled);
   service->RegisterProvider(std::move(provider));
 }
 #endif  // OS_ANDROID
@@ -245,6 +261,8 @@ KeyedService* ContentSuggestionsServiceFactory::BuildServiceInstanceFor(
       OfflinePageModelFactory::GetForBrowserContext(profile);
   scoped_refptr<OfflinePageProxy> offline_page_proxy(
       new OfflinePageProxy(offline_page_model));
+  DownloadManager* download_manager =
+      content::BrowserContext::GetDownloadManager(profile);
 #endif  // OS_ANDROID
   BookmarkModel* bookmark_model =
       BookmarkModelFactory::GetForBrowserContext(profile);
@@ -262,6 +280,11 @@ KeyedService* ContentSuggestionsServiceFactory::BuildServiceInstanceFor(
           ntp_snippets::kRecentOfflineTabSuggestionsFeature)) {
     RegisterRecentTabProvider(offline_page_proxy, service, category_factory,
                               pref_service);
+  }
+
+  if (base::FeatureList::IsEnabled(ntp_snippets::kDownloadSuggestionsFeature)) {
+    RegisterDownloadsProvider(offline_page_proxy, download_manager, service,
+                              category_factory, pref_service);
   }
 #endif  // OS_ANDROID
 

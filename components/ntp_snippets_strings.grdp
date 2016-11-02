@@ -25,8 +25,9 @@
     Recent tabs
   </message>
 
-  <message name="IDS_NTP_DOWNLOAD_SUGGESTIONS_SECTION_HEADER" desc="Header of the downloads section, which is a list of pages (or files) that the user downloaded, displayed as cards on the New Tab Page.">
-    Downloads
+  <!-- TODO(vitaliii): Remove this item when crbug.com/660343 is resolved. -->
+  <message name="IDS_NTP_UNUSED_PLACEHOLDER_WORKAROUND" desc="Please ignore this item.">
+    Ignore
   </message>
 
   <message name="IDS_NTP_BOOKMARK_SUGGESTIONS_SECTION_HEADER" desc="Header of the bookmarks section, which is a list of the user's most recently used bookmarks displayed as cards on the New Tab Page.">

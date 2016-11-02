@@ -686,6 +686,8 @@ split_static_library("browser") {
     "ntp_snippets/bookmark_last_visit_updater.h",
     "ntp_snippets/content_suggestions_service_factory.cc",
     "ntp_snippets/content_suggestions_service_factory.h",
+    "ntp_snippets/download_suggestions_provider.cc",
+    "ntp_snippets/download_suggestions_provider.h",
     "page_load_metrics/browser_page_track_decider.cc",
     "page_load_metrics/browser_page_track_decider.h",
     "page_load_metrics/metrics_navigation_throttle.cc",
