@@ -89,7 +89,7 @@ int32_t PepperFlashBrowserHost::OnUpdateActivity(
     ppapi::host::HostMessageContext* host_context) {
   if (!power_save_blocker_) {
     power_save_blocker_.reset(new device::PowerSaveBlocker(
-        device::PowerSaveBlocker::kPowerSaveBlockPreventAppSuspension,
+        device::PowerSaveBlocker::kPowerSaveBlockPreventDisplaySleep,
         device::PowerSaveBlocker::kReasonOther, "Requested By PepperFlash",
         BrowserThread::GetTaskRunnerForThread(BrowserThread::UI),
         BrowserThread::GetTaskRunnerForThread(BrowserThread::FILE)));
