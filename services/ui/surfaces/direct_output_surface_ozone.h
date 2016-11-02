@@ -11,6 +11,7 @@
 #include "cc/output/context_provider.h"
 #include "cc/output/output_surface.h"
 #include "components/display_compositor/gl_helper.h"
+#include "services/ui/surfaces/surfaces_context_provider.h"
 #include "ui/gfx/geometry/size.h"
 #include "ui/gfx/native_widget_types.h"
 #include "ui/gfx/swap_result.h"
@@ -30,8 +31,6 @@ class GpuMemoryBufferManager;
 }
 
 namespace ui {
-
-class SurfacesContextProvider;
 
 // An OutputSurface implementation that directly draws and swap to a GL
 // "surfaceless" surface (aka one backed by a buffer managed explicitly in

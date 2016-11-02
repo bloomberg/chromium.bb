@@ -1354,7 +1354,7 @@ void WindowTree::SetWindowOpacity(uint32_t change_id,
 void WindowTree::AttachCompositorFrameSink(
     Id transport_window_id,
     mojom::CompositorFrameSinkType type,
-    mojo::InterfaceRequest<cc::mojom::MojoCompositorFrameSink> surface,
+    cc::mojom::MojoCompositorFrameSinkRequest compositor_frame_sink,
     cc::mojom::MojoCompositorFrameSinkClientPtr client) {
   ServerWindow* window =
       GetWindowByClientId(ClientWindowId(transport_window_id));
@@ -1364,7 +1364,8 @@ void WindowTree::AttachCompositorFrameSink(
     DVLOG(1) << "request to AttachCompositorFrameSink failed";
     return;
   }
-  window->CreateCompositorFrameSink(type, std::move(surface),
+  window->CreateCompositorFrameSink(type, gfx::kNullAcceleratedWidget, nullptr,
+                                    nullptr, std::move(compositor_frame_sink),
                                     std::move(client));
 }
 

@@ -43,6 +43,7 @@ class CommandBufferDriver;
 class CommandBufferImpl;
 class SurfacesContextProviderDelegate;
 
+// TODO(fsamuel): This can probably be merged with ContextProviderCommandBuffer.
 class SurfacesContextProvider : public cc::ContextProvider,
                                 public base::NonThreadSafe {
  public:

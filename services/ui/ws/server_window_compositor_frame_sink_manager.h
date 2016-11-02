@@ -9,11 +9,17 @@
 
 #include "base/macros.h"
 #include "cc/ipc/compositor_frame.mojom.h"
+#include "cc/output/context_provider.h"
 #include "cc/surfaces/surface_factory.h"
 #include "cc/surfaces/surface_id.h"
 #include "cc/surfaces/surface_sequence_generator.h"
 #include "mojo/public/cpp/bindings/binding.h"
 #include "services/ui/public/interfaces/window_tree.mojom.h"
+#include "services/ui/surfaces/surfaces_context_provider.h"
+
+namespace gpu {
+class GpuMemoryBufferManager;
+}
 
 namespace ui {
 namespace ws {
@@ -50,7 +56,10 @@ class ServerWindowCompositorFrameSinkManager {
   // the specified type.
   void CreateCompositorFrameSink(
       mojom::CompositorFrameSinkType surface_type,
-      mojo::InterfaceRequest<cc::mojom::MojoCompositorFrameSink> request,
+      gfx::AcceleratedWidget widget,
+      gpu::GpuMemoryBufferManager* gpu_memory_buffer_manager,
+      scoped_refptr<SurfacesContextProvider> context_provider,
+      cc::mojom::MojoCompositorFrameSinkRequest request,
       cc::mojom::MojoCompositorFrameSinkClientPtr client);
 
   ServerWindow* window() { return window_; }

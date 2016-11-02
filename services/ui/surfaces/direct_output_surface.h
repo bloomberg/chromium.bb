@@ -23,7 +23,7 @@ namespace ui {
 class DirectOutputSurface : public cc::OutputSurface,
                             public SurfacesContextProviderDelegate {
  public:
-  explicit DirectOutputSurface(
+  DirectOutputSurface(
       scoped_refptr<SurfacesContextProvider> context_provider,
       cc::SyntheticBeginFrameSource* synthetic_begin_frame_source);
   ~DirectOutputSurface() override;

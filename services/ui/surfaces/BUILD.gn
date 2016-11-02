@@ -10,8 +10,6 @@ source_set("surfaces") {
     "direct_output_surface.h",
     "display_compositor.cc",
     "display_compositor.h",
-    "display_compositor_frame_sink.cc",
-    "display_compositor_frame_sink.h",
     "surfaces_context_provider.cc",
     "surfaces_context_provider.h",
     "surfaces_context_provider_delegate.h",

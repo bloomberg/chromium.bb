@@ -419,7 +419,7 @@ class WindowTree : public mojom::WindowTree,
   void AttachCompositorFrameSink(
       Id transport_window_id,
       mojom::CompositorFrameSinkType type,
-      mojo::InterfaceRequest<cc::mojom::MojoCompositorFrameSink> surface,
+      cc::mojom::MojoCompositorFrameSinkRequest compositor_frame_sink,
       cc::mojom::MojoCompositorFrameSinkClientPtr client) override;
   void OnWindowSurfaceDetached(Id transport_window_id,
                                const cc::SurfaceSequence& sequence) override;

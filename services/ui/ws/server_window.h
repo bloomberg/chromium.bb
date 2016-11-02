@@ -57,9 +57,17 @@ class ServerWindow {
   void RemoveObserver(ServerWindowObserver* observer);
   bool HasObserver(ServerWindowObserver* observer);
 
-  // Creates a new surface of the specified type, replacing the existing.
+  // Creates a new CompositorFrameSink of the specified type, replacing the
+  // existing.
+  // TODO(fsamuel): We should not be passing in |gpu_memory_buffer_manager| and
+  // |context_provider|. The window server should not know anything about them.
+  // Instead, they should be a CompositorFrameSink service-side implementation
+  // detail.
   void CreateCompositorFrameSink(
       mojom::CompositorFrameSinkType compositor_frame_sink_type,
+      gfx::AcceleratedWidget widget,
+      gpu::GpuMemoryBufferManager* gpu_memory_buffer_manager,
+      scoped_refptr<SurfacesContextProvider> context_provider,
       cc::mojom::MojoCompositorFrameSinkRequest request,
       cc::mojom::MojoCompositorFrameSinkClientPtr client);
 

@@ -10,9 +10,11 @@
 #include "cc/quads/render_pass_draw_quad.h"
 #include "cc/quads/shared_quad_state.h"
 #include "cc/quads/surface_draw_quad.h"
+#include "cc/surfaces/surface.h"
 #include "cc/surfaces/surface_id.h"
 #include "gpu/ipc/client/gpu_channel_host.h"
-#include "services/ui/surfaces/display_compositor_frame_sink.h"
+#include "services/ui/surfaces/display_compositor.h"
+#include "services/ui/surfaces/surfaces_context_provider.h"
 #include "services/ui/ws/frame_generator_delegate.h"
 #include "services/ui/ws/server_window.h"
 #include "services/ui/ws/server_window_compositor_frame_sink.h"
@@ -31,7 +33,9 @@ FrameGenerator::FrameGenerator(
       frame_sink_id_(
           WindowIdToTransportId(root_window->id()),
           static_cast<uint32_t>(mojom::CompositorFrameSinkType::DEFAULT)),
+      root_window_(root_window),
       draw_timer_(false, false),
+      binding_(this),
       weak_factory_(this) {
   DCHECK(delegate_);
   surface_sequence_generator_.set_frame_sink_id(frame_sink_id_);
@@ -48,9 +52,16 @@ FrameGenerator::~FrameGenerator() {
 void FrameGenerator::OnGpuChannelEstablished(
     scoped_refptr<gpu::GpuChannelHost> channel) {
   if (widget_ != gfx::kNullAcceleratedWidget) {
-    compositor_frame_sink_ = base::MakeUnique<DisplayCompositorFrameSink>(
-        frame_sink_id_, base::ThreadTaskRunnerHandle::Get(), widget_,
-        std::move(channel), display_compositor_);
+    cc::mojom::MojoCompositorFrameSinkRequest request =
+        mojo::GetProxy(&compositor_frame_sink_);
+    // TODO(fsamuel): FrameGenerator should not know about
+    // SurfacesContextProvider. In fact, FrameGenerator should not know
+    // about GpuChannelHost.
+    root_window_->CreateCompositorFrameSink(
+        mojom::CompositorFrameSinkType::DEFAULT, widget_,
+        channel->gpu_memory_buffer_manager(),
+        new SurfacesContextProvider(widget_, channel), std::move(request),
+        binding_.CreateInterfacePtrAndBind());
   } else {
     gpu_channel_ = std::move(channel);
   }
@@ -65,10 +76,26 @@ void FrameGenerator::OnAcceleratedWidgetAvailable(
     gfx::AcceleratedWidget widget) {
   widget_ = widget;
   if (gpu_channel_ && widget != gfx::kNullAcceleratedWidget) {
-    compositor_frame_sink_ = base::MakeUnique<DisplayCompositorFrameSink>(
-        frame_sink_id_, base::ThreadTaskRunnerHandle::Get(), widget_,
-        std::move(gpu_channel_), display_compositor_);
+    cc::mojom::MojoCompositorFrameSinkRequest request =
+        mojo::GetProxy(&compositor_frame_sink_);
+    root_window_->CreateCompositorFrameSink(
+        mojom::CompositorFrameSinkType::DEFAULT, widget_,
+        gpu_channel_->gpu_memory_buffer_manager(),
+        new SurfacesContextProvider(widget_, std::move(gpu_channel_)),
+        std::move(request), binding_.CreateInterfacePtrAndBind());
   }
+}
+
+void FrameGenerator::DidReceiveCompositorFrameAck() {
+  frame_pending_ = false;
+  if (!dirty_rect_.IsEmpty())
+    WantToDraw();
+}
+
+void FrameGenerator::ReclaimResources(
+    const cc::ReturnedResourceArray& resources) {
+  // Nothing to do here because FrameGenerator CompositorFrames don't reference
+  // any resources.
 }
 
 void FrameGenerator::WantToDraw() {
@@ -91,17 +118,9 @@ void FrameGenerator::Draw() {
   cc::CompositorFrame frame(GenerateCompositorFrame(output_rect));
   if (compositor_frame_sink_) {
     frame_pending_ = true;
-    compositor_frame_sink_->SubmitCompositorFrame(
-        std::move(frame),
-        base::Bind(&FrameGenerator::DidDraw, weak_factory_.GetWeakPtr()));
+    compositor_frame_sink_->SubmitCompositorFrame(std::move(frame));
   }
   dirty_rect_ = gfx::Rect();
-}
-
-void FrameGenerator::DidDraw() {
-  frame_pending_ = false;
-  if (!dirty_rect_.IsEmpty())
-    WantToDraw();
 }
 
 cc::CompositorFrame FrameGenerator::GenerateCompositorFrame(

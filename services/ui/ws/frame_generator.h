@@ -48,7 +48,8 @@ class ServerWindowCompositorFrameSink;
 
 // Responsible for redrawing the display in response to the redraw requests by
 // submitting CompositorFrames to the owned CompositorFrameSink.
-class FrameGenerator : public ServerWindowTracker {
+class FrameGenerator : public ServerWindowTracker,
+                       public cc::mojom::MojoCompositorFrameSinkClient {
  public:
   FrameGenerator(FrameGeneratorDelegate* delegate,
                  ServerWindow* root_window,
@@ -66,16 +67,16 @@ class FrameGenerator : public ServerWindowTracker {
  private:
   friend class ui::ws::test::FrameGeneratorTest;
 
+  // cc::mojom::MojoCompositorFrameSinkClient implementation:
+  void DidReceiveCompositorFrameAck() override;
+  void ReclaimResources(const cc::ReturnedResourceArray& resources) override;
+
   void WantToDraw();
 
   // This method initiates a top level redraw of the display.
   // TODO(fsamuel): In polliwog, this only gets called when the window manager
   // changes.
   void Draw();
-
-  // This is called after the CompositorFrameSink has completed generating a new
-  // frame for the display.
-  void DidDraw();
 
   // Generates the CompositorFrame for the current |dirty_rect_|.
   cc::CompositorFrame GenerateCompositorFrame(const gfx::Rect& output_rect);
@@ -115,10 +116,11 @@ class FrameGenerator : public ServerWindowTracker {
   FrameGeneratorDelegate* delegate_;
   scoped_refptr<DisplayCompositor> display_compositor_;
   cc::FrameSinkId frame_sink_id_;
+  ServerWindow* const root_window_;
   cc::SurfaceSequenceGenerator surface_sequence_generator_;
   scoped_refptr<gpu::GpuChannelHost> gpu_channel_;
 
-  std::unique_ptr<DisplayCompositorFrameSink> compositor_frame_sink_;
+  cc::mojom::MojoCompositorFrameSinkPtr compositor_frame_sink_;
   gfx::AcceleratedWidget widget_ = gfx::kNullAcceleratedWidget;
 
   // The region that needs to be redrawn next time the compositor frame is
@@ -132,6 +134,8 @@ class FrameGenerator : public ServerWindowTracker {
   };
   std::unordered_map<cc::FrameSinkId, SurfaceDependency, cc::FrameSinkIdHash>
       dependencies_;
+
+  mojo::Binding<cc::mojom::MojoCompositorFrameSinkClient> binding_;
 
   base::WeakPtrFactory<FrameGenerator> weak_factory_;
 
