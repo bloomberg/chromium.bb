@@ -1,70 +1,51 @@
 Check to see that FilteredItemSelectionDialog uses proper regex to filter results.
 
-
-Running: emptyQueryMatchesEverything
+test: emptyQueryMatchesEverything
 Input:["a","bc"]
 Query:""
 Output:["a","bc"]
-Completion:""
 Selected item index: 0
 History:[""]
 
-Running: caseSensitiveMatching
+test: caseSensitiveMatching
 Input:["abc","acB"]
 Query:"aB"
 Output:["abc","acB"]
-Completion:"aB"
 Selected item index: 0
 History:["","aB"]
 
-Running: caseInsensitiveMatching
+test: caseInsensitiveMatching
 Input:["abc","bac","a_B"]
 Query:"ab"
 Output:["abc","a_B"]
-Completion:"ab"
 Selected item index: 0
 History:["","aB","ab"]
 
-Running: dumplicateSymbolsInQuery
+test: dumplicateSymbolsInQuery
 Input:["abab","abaa","caab","baac","fooaab"]
 Query:"aab"
 Output:["abab","caab","fooaab"]
-Completion:"aab"
 Selected item index: 0
 History:["","aB","ab","aab"]
 
-Running: dangerousInputEscaping
+test: dangerousInputEscaping
 Input:["^[]{}()\\.$*+?|","0123456789abcdef"]
 Query:"^[]{}()\\.$*+?|"
 Output:["^[]{}()\\.$*+?|"]
-Completion:"^[]{}()\\.$*+?|"
 Selected item index: 0
 History:["","aB","ab","aab","^[]{}()\\.$*+?|"]
 
-Running: itemIndexIsNotReportedInGoToLine
+test: itemIndexIsNotReportedInGoToLine
 Input:[":1:2:3.js"]
 Query:":1"
 Output:[":1:2:3.js"]
-Completion:":1"
 Selected item index: null
 History:["","aB","ab","aab","^[]{}()\\.$*+?|",":1"]
 
-Running: autoCompleteIsLast
+test: autoCompleteIsLast
 Input:["abc","abcd"]
 Query:""
 Output:["abc","abcd"]
-Completion:":1"
 Selected item index: 0
 History:["","aB","ab","aab","^[]{}()\\.$*+?|",":1",""]
-
-Running: autoCompleteAccept
-Input:["abc","abcd","aabcd"]
-Query:"a"
-Output:["abc","abcd","aabcd"]
-Completion:"aab"
-Query:"aab"
-Output:["aabcd"]
-Completion:"aab"
-Selected item index: 2
-History:["","aB","ab","aab","^[]{}()\\.$*+?|",":1","","aab"]
 

@@ -1,6 +1,7 @@
 var UnitTest = {};
 (function()
 {
+    var lazyModules = [];
     var oldLoadResourcePromise = Runtime.loadResourcePromise;
     Runtime.loadResourcePromise = function(url)
     {
@@ -46,7 +47,7 @@ var UnitTest = {};
         }
         results = [];
         testRunner.notifyDone();
-    }
+    };
 
     UnitTest.addResult = function(text)
     {
@@ -54,7 +55,7 @@ var UnitTest = {};
             results.push(String(text));
         else
             console.log(text);
-    }
+    };
 
     UnitTest.runTests = function(tests)
     {
@@ -73,7 +74,47 @@ var UnitTest = {};
                 testPromise = Promise.resolve();
             testPromise.then(nextTest);
         }
-    }
+    };
+
+    UnitTest.addSniffer = function(receiver, methodName)
+    {
+        return new Promise(function(resolve, reject)
+        {
+            var original = receiver[methodName];
+            if (typeof original !== "function") {
+                reject("Cannot find method to override: " + methodName);
+                return;
+            }
+
+            receiver[methodName] = function(var_args)
+            {
+                try {
+                    var result = original.apply(this, arguments);
+                } finally {
+                    receiver[methodName] = original;
+                }
+                // In case of exception the override won't be called.
+                try {
+                    Array.prototype.push.call(arguments, result);
+                    resolve.apply(this, arguments);
+                } catch (e) {
+                    reject("Exception in overriden method '" + methodName + "': " + e);
+                    UnitTest.completeTest();
+                }
+                return result;
+            };
+        });
+    };
+
+    UnitTest.addDependency = function(lazyModule)
+    {
+        lazyModules.push(lazyModule);
+    };
+
+    UnitTest.createKeyEvent = function(key, ctrlKey, altKey, shiftKey, metaKey)
+    {
+        return new KeyboardEvent("keydown", { key: key, bubbles: true, cancelable: true, ctrlKey: ctrlKey, altKey: altKey, shiftKey: shiftKey, metaKey: metaKey });
+    };
 
     function completeTestOnError(message, source, lineno, colno, error)
     {
@@ -96,8 +137,10 @@ var UnitTest = {};
             InspectorFrontendHost.removePreference,
             InspectorFrontendHost.clearPreferences));
 
+
         WebInspector.viewManager = new WebInspector.ViewManager();
         WebInspector.initializeUIUtils(document, WebInspector.settings.createSetting("uiTheme", "default"));
+        WebInspector.installComponentRootStyles(document.body);
 
         WebInspector.zoomManager = new WebInspector.ZoomManager(window, InspectorFrontendHost);
         WebInspector.inspectorView = WebInspector.InspectorView.instance();
@@ -108,7 +151,7 @@ var UnitTest = {};
         var rootView = new WebInspector.RootView();
         WebInspector.inspectorView.show(rootView.element);
         rootView.attachToDocument(document);
-
-        test();
+        Promise.all(lazyModules.map(lazyModule => window.runtime.loadModulePromise(lazyModule))).then(test);
     }
 })();
+

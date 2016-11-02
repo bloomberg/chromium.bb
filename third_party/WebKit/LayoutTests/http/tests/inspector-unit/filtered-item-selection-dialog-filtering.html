@@ -1,0 +1,109 @@
+<html>
+<head>
+<base href="/inspector-debug/"></base>
+<script src="/inspector-debug/Runtime.js"></script>
+<script src="/inspector-unit/inspector-unit-test.js"></script>
+<script>
+UnitTest.addDependency("ui_lazy");
+function test()
+{
+    var overridenInput = [];
+    var overrideShowMatchingItems = true;
+    var history = [];
+
+    var StubDelegate = class extends WebInspector.FilteredListWidget.Delegate {
+        constructor()
+        {
+            super(history);
+        }
+
+        itemKeyAt(itemIndex) { return overridenInput[itemIndex]; }
+        itemScoreAt(itemIndex) { return 0; }
+        itemCount() { return overridenInput.length; }
+        selectItem(itemIndex, promptValue)
+        {
+            UnitTest.addResult("Selected item index: " + itemIndex);
+        }
+        shouldShowMatchingItems () { return overrideShowMatchingItems; }
+    };
+
+    var delegate = new StubDelegate();
+
+    function checkQuery(query, input, hideMatchingItems)
+    {
+        overridenInput = input;
+        overrideShowMatchingItems = !hideMatchingItems;
+
+        UnitTest.addResult("Input:" + JSON.stringify(input));
+
+        var filteredSelectionDialog = new WebInspector.FilteredListWidget(delegate);
+        filteredSelectionDialog.showAsDialog();
+        var promise = UnitTest.addSniffer(filteredSelectionDialog, "_itemsFilteredForTest").then(accept);
+        filteredSelectionDialog.setQuery(query);
+        filteredSelectionDialog._updateAfterItemsLoaded();
+        return promise;
+
+        function dump()
+        {
+            UnitTest.addResult("Query:" + JSON.stringify(filteredSelectionDialog._value()));
+            var items = filteredSelectionDialog._filteredItems;
+            var output = [];
+            for (var i = 0; i < items.length; ++i)
+                output.push(delegate.itemKeyAt(items[i]));
+            UnitTest.addResult("Output:" + JSON.stringify(output));
+        }
+
+        function accept()
+        {
+            dump();
+            filteredSelectionDialog._onEnter(UnitTest.createKeyEvent("Enter"));
+            UnitTest.addResult("History:" + JSON.stringify(history));
+        }
+    }
+
+    UnitTest.runTests([
+        function emptyQueryMatchesEverything()
+        {
+            return checkQuery("", ["a", "bc"]);
+        },
+
+        function caseSensitiveMatching()
+        {
+            return checkQuery("aB", ["abc", "acB"]);
+        },
+
+        function caseInsensitiveMatching()
+        {
+            return checkQuery("ab", ["abc", "bac", "a_B"]);
+        },
+
+        function dumplicateSymbolsInQuery(next)
+        {
+            return checkQuery("aab", ["abab", "abaa", "caab", "baac", "fooaab"]);
+        },
+
+        function dangerousInputEscaping(next)
+        {
+            return checkQuery("^[]{}()\\.$*+?|", ["^[]{}()\\.$*+?|", "0123456789abcdef"]);
+        },
+
+        function itemIndexIsNotReportedInGoToLine(next)
+        {
+            return checkQuery(":1", [":1:2:3.js"], true, next);
+        },
+
+        function autoCompleteIsLast(next)
+        {
+            return checkQuery("", ["abc", "abcd"]);
+        }
+    ]);
+}
+
+</script>
+</head>
+
+<body>
+<p>Check to see that FilteredItemSelectionDialog uses proper regex to filter results.</p>
+</body>
+</html>
+
