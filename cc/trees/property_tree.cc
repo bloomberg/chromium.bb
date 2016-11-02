@@ -181,23 +181,6 @@ void TransformTree::set_needs_update(bool needs_update) {
   needs_update_ = needs_update;
 }
 
-bool TransformTree::ComputeTransformForTesting(
-    int source_id,
-    int dest_id,
-    gfx::Transform* transform) const {
-  transform->MakeIdentity();
-
-  if (source_id == dest_id)
-    return true;
-
-  if (source_id > dest_id) {
-    CombineTransformsBetween(source_id, dest_id, transform);
-    return true;
-  }
-
-  return CombineInversesBetween(source_id, dest_id, transform);
-}
-
 bool TransformTree::ComputeTranslation(int source_id,
                                        int dest_id,
                                        gfx::Transform* transform) const {
@@ -270,6 +253,7 @@ void TransformTree::ResetChangeTracking() {
 void TransformTree::UpdateTransforms(int id) {
   TransformNode* node = Node(id);
   TransformNode* parent_node = parent(node);
+  DCHECK(parent_node);
   TransformNode* target_node = Node(TargetId(id));
   TransformNode* source_node = Node(node->source_node_id);
   // TODO(flackr): Only dirty when scroll offset changes.
@@ -560,21 +544,15 @@ void TransformTree::UpdateLocalTransform(TransformNode* node) {
 void TransformTree::UpdateScreenSpaceTransform(TransformNode* node,
                                                TransformNode* parent_node,
                                                TransformNode* target_node) {
-  if (!parent_node) {
-    SetToScreen(node->id, node->to_parent);
-    node->ancestors_are_invertible = true;
-    node->to_screen_is_potentially_animated = false;
-    node->node_and_ancestors_are_flat = node->to_parent.IsFlat();
-  } else {
-    gfx::Transform to_screen_space_transform = ToScreen(parent_node->id);
-    if (node->flattens_inherited_transform)
-      to_screen_space_transform.FlattenTo2d();
-    to_screen_space_transform.PreconcatTransform(node->to_parent);
-    node->ancestors_are_invertible = parent_node->ancestors_are_invertible;
-    node->node_and_ancestors_are_flat =
-        parent_node->node_and_ancestors_are_flat && node->to_parent.IsFlat();
-    SetToScreen(node->id, to_screen_space_transform);
-  }
+  DCHECK(parent_node);
+  gfx::Transform to_screen_space_transform = ToScreen(parent_node->id);
+  if (node->flattens_inherited_transform)
+    to_screen_space_transform.FlattenTo2d();
+  to_screen_space_transform.PreconcatTransform(node->to_parent);
+  node->ancestors_are_invertible = parent_node->ancestors_are_invertible;
+  node->node_and_ancestors_are_flat =
+      parent_node->node_and_ancestors_are_flat && node->to_parent.IsFlat();
+  SetToScreen(node->id, to_screen_space_transform);
 
   gfx::Transform from_screen;
   if (!ToScreen(node->id).GetInverse(&from_screen))
@@ -584,9 +562,9 @@ void TransformTree::UpdateScreenSpaceTransform(TransformNode* node,
 
 void TransformTree::UpdateAnimationProperties(TransformNode* node,
                                               TransformNode* parent_node) {
+  DCHECK(parent_node);
   bool ancestor_is_animating = false;
-  if (parent_node)
-    ancestor_is_animating = parent_node->to_screen_is_potentially_animated;
+  ancestor_is_animating = parent_node->to_screen_is_potentially_animated;
   node->to_screen_is_potentially_animated =
       node->has_potential_animation || ancestor_is_animating;
 }
@@ -636,7 +614,8 @@ void TransformTree::UpdateSnapping(TransformNode* node) {
 void TransformTree::UpdateTransformChanged(TransformNode* node,
                                            TransformNode* parent_node,
                                            TransformNode* source_node) {
-  if (parent_node && parent_node->transform_changed) {
+  DCHECK(parent_node);
+  if (parent_node->transform_changed) {
     node->transform_changed = true;
     return;
   }
@@ -649,11 +628,7 @@ void TransformTree::UpdateTransformChanged(TransformNode* node,
 void TransformTree::UpdateNodeAndAncestorsAreAnimatedOrInvertible(
     TransformNode* node,
     TransformNode* parent_node) {
-  if (!parent_node) {
-    node->node_and_ancestors_are_animated_or_invertible =
-        node->has_potential_animation || node->is_invertible;
-    return;
-  }
+  DCHECK(parent_node);
   if (!parent_node->node_and_ancestors_are_animated_or_invertible) {
     node->node_and_ancestors_are_animated_or_invertible = false;
     return;
@@ -1151,12 +1126,10 @@ void EffectTree::ResetChangeTracking() {
 void TransformTree::UpdateNodeAndAncestorsHaveIntegerTranslations(
     TransformNode* node,
     TransformNode* parent_node) {
+  DCHECK(parent_node);
   node->node_and_ancestors_have_only_integer_translation =
-      node->to_parent.IsIdentityOrIntegerTranslation();
-  if (parent_node)
-    node->node_and_ancestors_have_only_integer_translation =
-        node->node_and_ancestors_have_only_integer_translation &&
-        parent_node->node_and_ancestors_have_only_integer_translation;
+      node->to_parent.IsIdentityOrIntegerTranslation() &&
+      parent_node->node_and_ancestors_have_only_integer_translation;
 }
 
 void ClipTree::SetViewportClip(gfx::RectF viewport_rect) {
