@@ -48,8 +48,6 @@ static_library("renderer") {
     "net/net_error_page_controller.h",
     "net_benchmarking_extension.cc",
     "net_benchmarking_extension.h",
-    "page_load_histograms.cc",
-    "page_load_histograms.h",
     "page_load_metrics/metrics_render_frame_observer.cc",
     "page_load_metrics/metrics_render_frame_observer.h",
     "page_load_metrics/page_timing_metrics_sender.cc",
