@@ -16,7 +16,7 @@
 #include "./aom_config.h"
 
 #if CONFIG_EC_ADAPT && !CONFIG_EC_MULTISYMBOL
-# error "CONFIG_EC_ADAPT is enabled without enabling CONFIG_EC_MULTISYMBOL"
+#error "CONFIG_EC_ADAPT is enabled without enabling CONFIG_EC_MULTISYMBOL"
 #endif
 
 #if CONFIG_BITSTREAM_DEBUG
