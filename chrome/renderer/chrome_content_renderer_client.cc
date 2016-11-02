@@ -1356,7 +1356,7 @@ void ChromeContentRendererClient::AddImageContextMenuProperties(
     std::map<std::string, std::string>* properties) {
   DCHECK(properties);
   WebString header_key(ASCIIToUTF16(
-      data_reduction_proxy::chrome_proxy_header()));
+      data_reduction_proxy::chrome_proxy_content_transform_header()));
   if (!response.httpHeaderField(header_key).isNull() &&
       data_reduction_proxy::IsEmptyImagePreview(
           response.httpHeaderField(header_key).utf8())) {

@@ -6,6 +6,8 @@
 
 #include <stddef.h>
 
+#include <map>
+#include <string>
 #include <vector>
 
 #include "base/metrics/histogram_samples.h"
@@ -13,8 +15,11 @@
 #include "base/test/histogram_tester.h"
 #include "build/build_config.h"
 #include "chrome/renderer/searchbox/search_bouncer.h"
+#include "components/data_reduction_proxy/core/common/data_reduction_proxy_headers.h"
 #include "content/public/common/webplugininfo.h"
 #include "testing/gtest/include/gtest/gtest.h"
+#include "third_party/WebKit/public/platform/WebString.h"
+#include "third_party/WebKit/public/platform/WebURLResponse.h"
 #include "url/gurl.h"
 
 #if defined(ENABLE_EXTENSIONS)
@@ -409,6 +414,22 @@ TEST_F(ChromeContentRendererClientTest, ShouldSuppressErrorPage) {
                                              GURL("http://example.com/n")));
   SearchBouncer::GetInstance()->OnSetSearchURLs(
       std::vector<GURL>(), GURL::EmptyGURL());
+}
+
+TEST_F(ChromeContentRendererClientTest, AddImageContextMenuProperties) {
+  ChromeContentRendererClient client;
+  blink::WebURLResponse web_url_response;
+  web_url_response.addHTTPHeaderField(
+      blink::WebString::fromUTF8(
+          data_reduction_proxy::chrome_proxy_content_transform_header()),
+      blink::WebString::fromUTF8(
+          data_reduction_proxy::empty_image_directive()));
+  std::map<std::string, std::string> properties;
+  client.AddImageContextMenuProperties(web_url_response, &properties);
+  EXPECT_EQ(
+      data_reduction_proxy::empty_image_directive(),
+      properties
+          [data_reduction_proxy::chrome_proxy_content_transform_header()]);
 }
 
 // These are tests that are common for both Android and desktop browsers.
