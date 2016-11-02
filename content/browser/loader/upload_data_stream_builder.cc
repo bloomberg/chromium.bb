@@ -14,6 +14,7 @@
 #include "base/macros.h"
 #include "base/memory/ptr_util.h"
 #include "base/memory/ref_counted.h"
+#include "base/single_thread_task_runner.h"
 #include "content/browser/fileapi/upload_file_system_file_element_reader.h"
 #include "content/common/resource_request_body_impl.h"
 #include "net/base/elements_upload_data_stream.h"
@@ -23,6 +24,10 @@
 #include "storage/browser/blob/blob_reader.h"
 #include "storage/browser/blob/blob_storage_context.h"
 #include "storage/browser/blob/upload_blob_element_reader.h"
+
+namespace base {
+class TaskRunner;
+}
 
 namespace disk_cache {
 class Entry;

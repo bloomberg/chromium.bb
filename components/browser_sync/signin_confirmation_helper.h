@@ -11,6 +11,10 @@
 #include "base/memory/ref_counted.h"
 #include "base/task/cancelable_task_tracker.h"
 
+namespace base {
+class SingleThreadTaskRunner;
+}
+
 namespace history {
 class HistoryService;
 class QueryResults;

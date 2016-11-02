@@ -19,6 +19,7 @@ class CommandLine;
 class File;
 class FilePath;
 class ScopedTempDir;
+class SingleThreadTaskRunner;
 }  // namespace base
 
 namespace content {

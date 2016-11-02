@@ -20,6 +20,10 @@
 #include "net/url_request/url_request_context_getter.h"
 #include "url/gurl.h"
 
+namespace base {
+class SequencedTaskRunner;
+}
+
 namespace policy {
 
 // This implementation of UploadJob uses the OAuth2TokenService to acquire

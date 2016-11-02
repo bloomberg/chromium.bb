@@ -11,13 +11,13 @@
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
 #include "base/memory/weak_ptr.h"
+#include "base/single_thread_task_runner.h"
 #include "cc/base/cc_export.h"
 
 class GrContext;
 
 namespace base {
 class Lock;
-class SingleThreadTaskRunner;
 }
 
 namespace gpu {

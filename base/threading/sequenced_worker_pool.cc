@@ -30,10 +30,10 @@
 #include "base/task_scheduler/post_task.h"
 #include "base/task_scheduler/task_scheduler.h"
 #include "base/threading/platform_thread.h"
+#include "base/threading/sequenced_task_runner_handle.h"
 #include "base/threading/simple_thread.h"
 #include "base/threading/thread_local.h"
 #include "base/threading/thread_restrictions.h"
-#include "base/threading/thread_task_runner_handle.h"
 #include "base/time/time.h"
 #include "base/trace_event/trace_event.h"
 #include "base/tracked_objects.h"
@@ -1462,7 +1462,7 @@ void SequencedWorkerPool::ResetRedirectToTaskSchedulerForProcessForTesting() {
 SequencedWorkerPool::SequencedWorkerPool(size_t max_threads,
                                          const std::string& thread_name_prefix,
                                          base::TaskPriority task_priority)
-    : constructor_task_runner_(ThreadTaskRunnerHandle::Get()),
+    : constructor_task_runner_(SequencedTaskRunnerHandle::Get()),
       inner_(new Inner(this,
                        max_threads,
                        thread_name_prefix,
@@ -1473,7 +1473,7 @@ SequencedWorkerPool::SequencedWorkerPool(size_t max_threads,
                                          const std::string& thread_name_prefix,
                                          base::TaskPriority task_priority,
                                          TestingObserver* observer)
-    : constructor_task_runner_(ThreadTaskRunnerHandle::Get()),
+    : constructor_task_runner_(SequencedTaskRunnerHandle::Get()),
       inner_(new Inner(this,
                        max_threads,
                        thread_name_prefix,
@@ -1609,7 +1609,7 @@ void SequencedWorkerPool::SignalHasWorkForTesting() {
 }
 
 void SequencedWorkerPool::Shutdown(int max_new_blocking_tasks_after_shutdown) {
-  DCHECK(constructor_task_runner_->BelongsToCurrentThread());
+  DCHECK(constructor_task_runner_->RunsTasksOnCurrentThread());
   inner_->Shutdown(max_new_blocking_tasks_after_shutdown);
 }
 

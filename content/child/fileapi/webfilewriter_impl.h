@@ -13,6 +13,10 @@
 #include "base/memory/weak_ptr.h"
 #include "content/child/fileapi/webfilewriter_base.h"
 
+namespace base {
+class SingleThreadTaskRunner;
+}
+
 namespace content {
 
 // An implementation of WebFileWriter for use in chrome renderers and workers.

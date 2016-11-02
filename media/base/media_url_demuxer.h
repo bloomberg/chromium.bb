@@ -13,6 +13,10 @@
 #include "media/base/demuxer.h"
 #include "url/gurl.h"
 
+namespace base {
+class SingleThreadTaskRunner;
+}
+
 namespace media {
 
 // Class that saves a URL for later retrieval. To be used in conjunction with

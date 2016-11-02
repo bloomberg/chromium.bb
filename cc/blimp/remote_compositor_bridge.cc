@@ -4,7 +4,7 @@
 
 #include "cc/blimp/remote_compositor_bridge.h"
 
-#include "base/single_thread_task_runner.h"
+#include <utility>
 
 namespace cc {
 

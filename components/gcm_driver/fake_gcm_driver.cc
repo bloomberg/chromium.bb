@@ -5,6 +5,7 @@
 #include "components/gcm_driver/fake_gcm_driver.h"
 
 #include "base/files/file_path.h"
+#include "base/sequenced_task_runner.h"
 
 namespace gcm {
 

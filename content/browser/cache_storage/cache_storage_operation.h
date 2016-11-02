@@ -9,6 +9,7 @@
 #include "base/callback.h"
 #include "base/memory/ref_counted.h"
 #include "base/memory/weak_ptr.h"
+#include "base/single_thread_task_runner.h"
 #include "base/time/time.h"
 #include "content/browser/cache_storage/cache_storage_scheduler_client.h"
 #include "content/common/content_export.h"

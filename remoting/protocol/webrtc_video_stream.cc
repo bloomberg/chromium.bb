@@ -71,7 +71,7 @@ void WebrtcVideoStream::Start(
   DCHECK(peer_connection_factory);
   DCHECK(peer_connection_);
 
-  encode_task_runner_ = encode_task_runner;
+  encode_task_runner_ = std::move(encode_task_runner);
   capturer_ = std::move(desktop_capturer);
   webrtc_transport_ = webrtc_transport;
   // TODO(isheriff): make this codec independent

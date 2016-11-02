@@ -14,6 +14,8 @@
 
 #include "base/files/file_path.h"
 #include "base/macros.h"
+#include "base/memory/ref_counted.h"
+#include "base/sequenced_task_runner.h"
 #include "base/threading/thread_checker.h"
 #include "components/drive/file_errors.h"
 #include "components/drive/resource_metadata_storage.h"

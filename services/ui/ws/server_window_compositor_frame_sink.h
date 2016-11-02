@@ -5,9 +5,11 @@
 #ifndef SERVICES_UI_WS_SERVER_WINDOW_COMPOSITOR_FRAME_SINK_H_
 #define SERVICES_UI_WS_SERVER_WINDOW_COMPOSITOR_FRAME_SINK_H_
 
+#include <memory>
 #include <set>
 
 #include "base/macros.h"
+#include "base/memory/ref_counted.h"
 #include "cc/ipc/compositor_frame.mojom.h"
 #include "cc/ipc/mojo_compositor_frame_sink.mojom.h"
 #include "cc/output/context_provider.h"
@@ -22,6 +24,10 @@
 #include "services/ui/public/interfaces/window_tree.mojom.h"
 #include "services/ui/surfaces/surfaces_context_provider.h"
 #include "services/ui/ws/ids.h"
+
+namespace base {
+class SingleThreadTaskRunner;
+}
 
 namespace gpu {
 class GpuMemoryBufferManager;

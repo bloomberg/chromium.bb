@@ -21,6 +21,10 @@
 #include "device/bluetooth/bluetooth_socket.h"
 #include "device/hid/input_service_linux.h"
 
+namespace base {
+class SingleThreadTaskRunner;
+}
+
 namespace device {
 class BluetoothAdapter;
 }

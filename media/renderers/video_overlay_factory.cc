@@ -4,6 +4,7 @@
 
 #include "media/renderers/video_overlay_factory.h"
 
+#include "base/single_thread_task_runner.h"
 #include "gpu/GLES2/gl2extchromium.h"
 #include "gpu/command_buffer/client/gles2_interface.h"
 #include "gpu/command_buffer/common/mailbox.h"

@@ -12,6 +12,7 @@
 #include "base/callback.h"
 #include "base/logging.h"
 #include "base/metrics/histogram_macros.h"
+#include "base/sequenced_task_runner.h"
 #include "components/gcm_driver/crypto/p256_key_util.h"
 #include "components/leveldb_proto/proto_database_impl.h"
 #include "crypto/random.h"

@@ -8,6 +8,7 @@
 #include <string>
 
 #include "base/callback.h"
+#include "base/memory/ref_counted.h"
 #include "base/memory/weak_ptr.h"
 #include "blimp/client/public/session/assignment.h"
 #include "net/url_request/url_fetcher_delegate.h"

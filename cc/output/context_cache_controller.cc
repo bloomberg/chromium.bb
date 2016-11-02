@@ -7,7 +7,6 @@
 #include "base/bind.h"
 #include "base/logging.h"
 #include "base/memory/ptr_util.h"
-#include "base/single_thread_task_runner.h"
 #include "base/synchronization/lock.h"
 #include "gpu/command_buffer/client/context_support.h"
 #include "third_party/skia/include/gpu/GrContext.h"

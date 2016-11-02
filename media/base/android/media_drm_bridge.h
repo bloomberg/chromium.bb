@@ -15,6 +15,7 @@
 #include "base/android/scoped_java_ref.h"
 #include "base/callback.h"
 #include "base/macros.h"
+#include "base/memory/ref_counted.h"
 #include "base/memory/weak_ptr.h"
 #include "media/base/android/media_drm_bridge_cdm_context.h"
 #include "media/base/android/provision_fetcher.h"
@@ -27,6 +28,10 @@
 #include "url/gurl.h"
 
 class GURL;
+
+namespace base {
+class SingleThreadTaskRunner;
+}
 
 namespace media {
 

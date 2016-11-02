@@ -16,6 +16,7 @@
 #include "base/location.h"
 #include "base/memory/ref_counted.h"
 #include "base/numerics/safe_conversions.h"
+#include "base/single_thread_task_runner.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/task_runner_util.h"
 #include "base/threading/thread_restrictions.h"

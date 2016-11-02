@@ -9,6 +9,7 @@
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
 #include "base/process/process_handle.h"
+#include "base/single_thread_task_runner.h"
 #include "base/synchronization/lock.h"
 #include "build/build_config.h"
 #include "ipc/brokerable_attachment.h"

@@ -9,6 +9,8 @@
 
 #include "base/bind.h"
 #include "base/files/file_util.h"
+#include "base/sequenced_task_runner.h"
+#include "base/single_thread_task_runner.h"
 #include "components/drive/chromeos/change_list_loader.h"
 #include "components/drive/chromeos/directory_loader.h"
 #include "components/drive/chromeos/file_cache.h"

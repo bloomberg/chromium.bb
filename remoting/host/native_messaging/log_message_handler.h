@@ -10,8 +10,13 @@
 #include <memory>
 
 #include "base/callback.h"
+#include "base/memory/ref_counted.h"
 #include "base/memory/weak_ptr.h"
 #include "base/values.h"
+
+namespace base {
+class SingleThreadTaskRunner;
+}
 
 namespace remoting {
 

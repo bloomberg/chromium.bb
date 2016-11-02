@@ -15,6 +15,8 @@
 #include "base/files/file_path_watcher.h"
 #include "base/macros.h"
 #include "base/memory/ptr_util.h"
+#include "base/memory/ref_counted.h"
+#include "base/single_thread_task_runner.h"
 #include "base/timer/timer.h"
 #include "google_apis/drive/task_util.h"
 

@@ -18,6 +18,7 @@ namespace base {
 class FilePath;
 class ScopedClosureRunner;
 class SequencedTaskRunner;
+class SingleThreadTaskRunner;
 }  // namespace base
 
 namespace drive {

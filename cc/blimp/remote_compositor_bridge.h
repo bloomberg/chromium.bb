@@ -7,13 +7,11 @@
 
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
+#include "base/single_thread_task_runner.h"
 #include "cc/base/cc_export.h"
 
-namespace base {
-class SingleThreadTaskRunner;
-}  // namespace base
-
 namespace cc {
+
 class CompositorProtoState;
 class RemoteCompositorBridgeClient;
 
@@ -52,4 +50,5 @@ class CC_EXPORT RemoteCompositorBridge {
 };
 
 }  // namespace cc
+
 #endif  // CC_BLIMP_REMOTE_COMPOSITOR_BRIDGE_H_

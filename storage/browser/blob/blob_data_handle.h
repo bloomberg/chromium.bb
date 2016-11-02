@@ -47,6 +47,9 @@ class STORAGE_EXPORT BlobDataHandle
   BlobDataHandle(const BlobDataHandle& other);  // May be copied on any thread.
   ~BlobDataHandle() override;                   // May be deleted on any thread.
 
+  // Assignment operator matching copy constructor.
+  BlobDataHandle& operator=(const BlobDataHandle& other);
+
   // Returns if this blob is still constructing. If so, one can use the
   // RunOnConstructionComplete to wait.
   // Must be called on IO thread.

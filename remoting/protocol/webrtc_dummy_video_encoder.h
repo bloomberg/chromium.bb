@@ -11,6 +11,7 @@
 #include "base/callback.h"
 #include "base/memory/ref_counted.h"
 #include "base/memory/weak_ptr.h"
+#include "base/single_thread_task_runner.h"
 #include "base/synchronization/lock.h"
 #include "remoting/codec/webrtc_video_encoder.h"
 #include "third_party/webrtc/media/engine/webrtcvideoencoderfactory.h"

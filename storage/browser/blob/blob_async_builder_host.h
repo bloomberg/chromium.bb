@@ -17,7 +17,6 @@
 #include "base/callback.h"
 #include "base/files/file.h"
 #include "base/macros.h"
-#include "base/memory/ref_counted.h"
 #include "base/memory/shared_memory_handle.h"
 #include "base/memory/weak_ptr.h"
 #include "storage/browser/blob/blob_async_transport_request_builder.h"

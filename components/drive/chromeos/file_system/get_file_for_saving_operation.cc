@@ -9,6 +9,7 @@
 #include "base/bind.h"
 #include "base/bind_helpers.h"
 #include "base/callback_helpers.h"
+#include "base/sequenced_task_runner.h"
 #include "components/drive/chromeos/file_cache.h"
 #include "components/drive/chromeos/file_system/create_file_operation.h"
 #include "components/drive/chromeos/file_system/download_operation.h"

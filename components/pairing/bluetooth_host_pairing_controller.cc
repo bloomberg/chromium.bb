@@ -8,6 +8,7 @@
 #include "base/hash.h"
 #include "base/location.h"
 #include "base/logging.h"
+#include "base/single_thread_task_runner.h"
 #include "base/strings/stringprintf.h"
 #include "base/task_runner_util.h"
 #include "chromeos/system/devicetype.h"

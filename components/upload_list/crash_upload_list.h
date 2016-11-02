@@ -7,11 +7,11 @@
 
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
+#include "base/task_runner.h"
 #include "components/upload_list/upload_list.h"
 
 namespace base {
 class FilePath;
-class TaskRunner;
 }
 
 // An upload list manager for crash reports from breakpad.

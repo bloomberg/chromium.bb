@@ -56,8 +56,9 @@ void FakeScreenControls::SetScreenResolution(
 
 FakeDesktopEnvironment::FakeDesktopEnvironment(
     scoped_refptr<base::SingleThreadTaskRunner> capture_thread)
-    : capture_thread_(capture_thread) {}
-FakeDesktopEnvironment::~FakeDesktopEnvironment() {}
+    : capture_thread_(std::move(capture_thread)) {}
+
+FakeDesktopEnvironment::~FakeDesktopEnvironment() = default;
 
 // DesktopEnvironment implementation.
 std::unique_ptr<AudioCapturer> FakeDesktopEnvironment::CreateAudioCapturer() {
@@ -104,8 +105,9 @@ uint32_t FakeDesktopEnvironment::GetDesktopSessionId() const {
 
 FakeDesktopEnvironmentFactory::FakeDesktopEnvironmentFactory(
     scoped_refptr<base::SingleThreadTaskRunner> capture_thread)
-    : capture_thread_(capture_thread) {}
-FakeDesktopEnvironmentFactory::~FakeDesktopEnvironmentFactory() {}
+    : capture_thread_(std::move(capture_thread)) {}
+
+FakeDesktopEnvironmentFactory::~FakeDesktopEnvironmentFactory() = default;
 
 // DesktopEnvironmentFactory implementation.
 std::unique_ptr<DesktopEnvironment> FakeDesktopEnvironmentFactory::Create(

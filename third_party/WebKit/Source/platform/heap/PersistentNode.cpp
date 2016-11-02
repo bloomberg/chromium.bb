@@ -4,6 +4,7 @@
 
 #include "platform/heap/PersistentNode.h"
 
+#include "base/debug/alias.h"
 #include "platform/heap/Handle.h"
 
 namespace blink {

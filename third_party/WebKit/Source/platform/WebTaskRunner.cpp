@@ -4,6 +4,8 @@
 
 #include "public/platform/WebTaskRunner.h"
 
+#include "base/single_thread_task_runner.h"
+
 namespace blink {
 
 // This class holds a reference to a TaskHandle to keep it alive while a task is

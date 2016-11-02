@@ -4,6 +4,8 @@
 
 #include "remoting/protocol/webrtc_audio_source_adapter.h"
 
+#include <utility>
+
 #include "base/bind.h"
 #include "base/logging.h"
 #include "base/synchronization/lock.h"
@@ -144,7 +146,7 @@ void WebrtcAudioSourceAdapter::Core::OnAudioPacket(
 
 WebrtcAudioSourceAdapter::WebrtcAudioSourceAdapter(
     scoped_refptr<base::SingleThreadTaskRunner> audio_task_runner)
-    : audio_task_runner_(audio_task_runner), core_(new Core()) {}
+    : audio_task_runner_(std::move(audio_task_runner)), core_(new Core()) {}
 
 WebrtcAudioSourceAdapter::~WebrtcAudioSourceAdapter() {
   audio_task_runner_->DeleteSoon(FROM_HERE, core_.release());

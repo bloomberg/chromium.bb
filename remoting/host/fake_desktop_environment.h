@@ -11,6 +11,8 @@
 #include <vector>
 
 #include "base/macros.h"
+#include "base/memory/ref_counted.h"
+#include "base/single_thread_task_runner.h"
 #include "remoting/host/desktop_environment.h"
 #include "remoting/host/fake_mouse_cursor_monitor.h"
 #include "remoting/host/input_injector.h"

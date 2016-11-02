@@ -11,6 +11,8 @@
 #include <string>
 
 #include "base/macros.h"
+#include "base/memory/ref_counted.h"
+#include "base/single_thread_task_runner.h"
 #include "base/threading/thread_checker.h"
 #include "remoting/protocol/channel_dispatcher_base.h"
 #include "remoting/protocol/connection_to_client.h"

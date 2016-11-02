@@ -11,6 +11,7 @@
 #include <vector>
 
 #include "base/macros.h"
+#include "base/single_thread_task_runner.h"
 #include "gpu/command_buffer/client/gles2_implementation.h"
 
 namespace gpu {

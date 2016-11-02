@@ -10,6 +10,7 @@
 
 #include "base/location.h"
 #include "base/macros.h"
+#include "base/sequenced_task_runner.h"
 #include "base/strings/stringprintf.h"
 #include "base/syslog_logging.h"
 #include "google_apis/gaia/gaia_constants.h"

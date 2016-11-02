@@ -16,6 +16,10 @@
 #include "third_party/WebKit/public/platform/WebSize.h"
 #include "third_party/skia/include/core/SkRefCnt.h"
 
+namespace base{
+class SingleThreadTaskRunner;
+}
+
 namespace blink {
 class WebMediaPlayer;
 }  // namespace blink

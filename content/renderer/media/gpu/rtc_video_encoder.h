@@ -21,6 +21,10 @@
 #include "third_party/webrtc/modules/video_coding/include/video_codec_interface.h"
 #include "ui/gfx/geometry/size.h"
 
+namespace base {
+class SingleThreadTaskRunner;
+}
+
 namespace media {
 class GpuVideoAcceleratorFactories;
 }  // namespace media

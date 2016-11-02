@@ -10,10 +10,6 @@
 #include "base/macros.h"
 #include "cc/base/cc_export.h"
 
-namespace base {
-class SingleThreadTaskRunner;
-}  // namespace base
-
 namespace gfx {
 class ScrollOffset;
 }  // namespace gfx

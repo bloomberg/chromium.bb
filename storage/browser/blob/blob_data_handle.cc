@@ -103,10 +103,7 @@ BlobDataHandle::BlobDataHandle(const std::string& uuid,
   DCHECK(io_task_runner_->RunsTasksOnCurrentThread());
 }
 
-BlobDataHandle::BlobDataHandle(const BlobDataHandle& other) {
-  io_task_runner_ = other.io_task_runner_;
-  shared_ = other.shared_;
-}
+BlobDataHandle::BlobDataHandle(const BlobDataHandle& other) = default;
 
 BlobDataHandle::~BlobDataHandle() {
   if (!io_task_runner_->RunsTasksOnCurrentThread()) {
@@ -116,6 +113,9 @@ BlobDataHandle::~BlobDataHandle() {
     io_task_runner_->ReleaseSoon(FROM_HERE, raw);
   }
 }
+
+BlobDataHandle& BlobDataHandle::operator=(
+    const BlobDataHandle& other) = default;
 
 bool BlobDataHandle::IsBeingBuilt() const {
   DCHECK(io_task_runner_->RunsTasksOnCurrentThread());
