@@ -12,6 +12,7 @@
 #include "base/debug/alias.h"
 #include "base/logging.h"
 #include "base/win/scoped_handle.h"
+#include "base/win/win_util.h"
 
 namespace {
 
@@ -64,16 +65,18 @@ void CollectChildGDIUsageAndDie(DWORD parent_pid) {
 namespace base {
 namespace debug {
 
-void GDIBitmapAllocFailure(BITMAPINFOHEADER* header, HANDLE shared_section) {
+void CollectGDIUsageAndDie(BITMAPINFOHEADER* header, HANDLE shared_section) {
   // Make sure parameters are saved in the minidump.
   DWORD last_error = GetLastError();
+  bool is_gdi_available = base::win::IsUser32AndGdi32Available();
 
-  LONG width = header->biWidth;
-  LONG heigth = header->biHeight;
+  LONG width = header ? header->biWidth : 0;
+  LONG height = header ? header->biHeight : 0;
 
   base::debug::Alias(&last_error);
+  base::debug::Alias(&is_gdi_available);
   base::debug::Alias(&width);
-  base::debug::Alias(&heigth);
+  base::debug::Alias(&height);
   base::debug::Alias(&shared_section);
 
   DWORD num_user_handles = GetGuiResources(GetCurrentProcess(), GR_USEROBJECTS);
@@ -100,19 +103,19 @@ void GDIBitmapAllocFailure(BITMAPINFOHEADER* header, HANDLE shared_section) {
   CHECK_LE(pmc.PagefileUsage, kLotsOfMemory);
   CHECK_LE(pmc.PrivateUsage, kLotsOfMemory);
 
-  void* small_data = NULL;
+  void* small_data = nullptr;
   base::debug::Alias(&small_data);
 
-  if (std::abs(heigth) * width > 100) {
+  if (std::abs(height) * width > 100) {
     // Huh, that's weird.  We don't have crazy handle count, we don't have
     // ridiculous memory usage. Try to allocate a small bitmap and see if that
     // fails too.
     header->biWidth = 5;
     header->biHeight = -5;
     HBITMAP small_bitmap = CreateDIBSection(
-        NULL, reinterpret_cast<BITMAPINFO*>(&header),
+        nullptr, reinterpret_cast<BITMAPINFO*>(&header),
         0, &small_data, shared_section, 0);
-    CHECK(small_bitmap != NULL);
+    CHECK(small_bitmap != nullptr);
     DeleteObject(small_bitmap);
   }
   // Maybe the child processes are the ones leaking GDI or USER resouces.

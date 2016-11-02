@@ -214,7 +214,7 @@ HBITMAP CreateHBitmap(int width, int height, bool is_opaque,
   // If CreateDIBSection() failed, try to get some useful information out
   // before we crash for post-mortem analysis.
   if (!hbitmap)
-    base::debug::GDIBitmapAllocFailure(&hdr, shared_section);
+    base::debug::CollectGDIUsageAndDie(&hdr, shared_section);
 
   return hbitmap;
 }
