@@ -65,8 +65,8 @@ void CSSGlobalRuleSet::update(Document& document) {
 
   document.styleEngine().collectScopedStyleFeaturesTo(m_features);
 
-  m_siblingRuleSet = makeRuleSet(m_features.siblingRules);
-  m_uncommonAttributeRuleSet = makeRuleSet(m_features.uncommonAttributeRules);
+  m_siblingRuleSet = makeRuleSet(m_features.siblingRules());
+  m_uncommonAttributeRuleSet = makeRuleSet(m_features.uncommonAttributeRules());
 }
 
 DEFINE_TRACE(CSSGlobalRuleSet) {

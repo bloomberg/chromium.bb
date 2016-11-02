@@ -76,7 +76,7 @@ class CORE_EXPORT RuleFeatureSet {
 
   SelectorPreMatch collectFeaturesFromRuleData(const RuleData&);
 
-  bool usesSiblingRules() const { return !siblingRules.isEmpty(); }
+  bool usesSiblingRules() const { return !m_siblingRules.isEmpty(); }
   bool usesFirstLineRules() const { return m_metadata.usesFirstLineRules; }
   bool usesWindowInactiveSelector() const {
     return m_metadata.usesWindowInactiveSelector;
@@ -101,6 +101,11 @@ class CORE_EXPORT RuleFeatureSet {
 
   bool hasSelectorForId(const AtomicString& idValue) const {
     return m_idInvalidationSets.contains(idValue);
+  }
+
+  const HeapVector<RuleFeature>& siblingRules() const { return m_siblingRules; }
+  const HeapVector<RuleFeature>& uncommonAttributeRules() const {
+    return m_uncommonAttributeRules;
   }
 
   // Collect descendant and sibling invalidation sets.
@@ -138,9 +143,6 @@ class CORE_EXPORT RuleFeatureSet {
   bool hasIdsInSelectors() const { return m_idInvalidationSets.size() > 0; }
 
   DECLARE_TRACE();
-
-  HeapVector<RuleFeature> siblingRules;
-  HeapVector<RuleFeature> uncommonAttributeRules;
 
   bool isAlive() const { return m_isAlive; }
 
@@ -273,6 +275,8 @@ class CORE_EXPORT RuleFeatureSet {
   PseudoTypeInvalidationSetMap m_pseudoInvalidationSets;
   RefPtr<SiblingInvalidationSet> m_universalSiblingInvalidationSet;
   RefPtr<DescendantInvalidationSet> m_nthInvalidationSet;
+  HeapVector<RuleFeature> m_siblingRules;
+  HeapVector<RuleFeature> m_uncommonAttributeRules;
 
   // If true, the RuleFeatureSet is alive and can be used.
   unsigned m_isAlive : 1;

@@ -159,8 +159,8 @@ bool CSSDefaultStyleSheets::ensureDefaultStyleSheetsForElement(
     changedDefaultStyle = true;
   }
 
-  ASSERT(!m_defaultStyle->features().hasIdsInSelectors());
-  ASSERT(m_defaultStyle->features().siblingRules.isEmpty());
+  DCHECK(!m_defaultStyle->features().hasIdsInSelectors());
+  DCHECK(!m_defaultStyle->features().usesSiblingRules());
   return changedDefaultStyle;
 }
 

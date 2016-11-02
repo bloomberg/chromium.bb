@@ -791,13 +791,15 @@ RuleFeatureSet::SelectorPreMatch RuleFeatureSet::collectFeaturesFromRuleData(
 
   m_metadata.add(metadata);
 
-  if (metadata.foundSiblingSelector)
-    siblingRules.append(RuleFeature(ruleData.rule(), ruleData.selectorIndex(),
-                                    ruleData.hasDocumentSecurityOrigin()));
-  if (ruleData.containsUncommonAttributeSelector())
-    uncommonAttributeRules.append(
+  if (metadata.foundSiblingSelector) {
+    m_siblingRules.append(RuleFeature(ruleData.rule(), ruleData.selectorIndex(),
+                                      ruleData.hasDocumentSecurityOrigin()));
+  }
+  if (ruleData.containsUncommonAttributeSelector()) {
+    m_uncommonAttributeRules.append(
         RuleFeature(ruleData.rule(), ruleData.selectorIndex(),
                     ruleData.hasDocumentSecurityOrigin()));
+  }
 
   updateInvalidationSets(ruleData);
   return SelectorMayMatch;
@@ -924,14 +926,14 @@ void RuleFeatureSet::add(const RuleFeatureSet& other) {
 
   m_metadata.add(other.m_metadata);
 
-  siblingRules.appendVector(other.siblingRules);
-  uncommonAttributeRules.appendVector(other.uncommonAttributeRules);
+  m_siblingRules.appendVector(other.m_siblingRules);
+  m_uncommonAttributeRules.appendVector(other.m_uncommonAttributeRules);
 }
 
 void RuleFeatureSet::clear() {
   RELEASE_ASSERT(m_isAlive);
-  siblingRules.clear();
-  uncommonAttributeRules.clear();
+  m_siblingRules.clear();
+  m_uncommonAttributeRules.clear();
   m_metadata.clear();
   m_classInvalidationSets.clear();
   m_attributeInvalidationSets.clear();
@@ -1156,8 +1158,8 @@ void RuleFeatureSet::addFeaturesToUniversalSiblingInvalidationSet(
 }
 
 DEFINE_TRACE(RuleFeatureSet) {
-  visitor->trace(siblingRules);
-  visitor->trace(uncommonAttributeRules);
+  visitor->trace(m_siblingRules);
+  visitor->trace(m_uncommonAttributeRules);
 }
 
 void RuleFeatureSet::InvalidationSetFeatures::add(

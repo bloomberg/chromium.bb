@@ -255,11 +255,11 @@ class RuleFeatureSetTest : public ::testing::Test {
   }
 
   void expectSiblingRuleCount(unsigned count) {
-    EXPECT_EQ(count, m_ruleFeatureSet->siblingRules.size());
+    EXPECT_EQ(count, m_ruleFeatureSet->siblingRules().size());
   }
 
   void expectUncommonAttributeRuleCount(unsigned count) {
-    EXPECT_EQ(count, m_ruleFeatureSet->uncommonAttributeRules.size());
+    EXPECT_EQ(count, m_ruleFeatureSet->uncommonAttributeRules().size());
   }
 
   void expectFullRecalcForRuleSetInvalidation(bool expected) {

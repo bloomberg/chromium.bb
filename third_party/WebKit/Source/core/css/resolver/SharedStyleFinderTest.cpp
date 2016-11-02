@@ -37,9 +37,9 @@ class SharedStyleFinderTest : public ::testing::Test {
   }
 
   void finishAddingSelectors() {
-    m_siblingRuleSet = makeRuleSet(m_ruleSet->features().siblingRules);
+    m_siblingRuleSet = makeRuleSet(m_ruleSet->features().siblingRules());
     m_uncommonAttributeRuleSet =
-        makeRuleSet(m_ruleSet->features().uncommonAttributeRules);
+        makeRuleSet(m_ruleSet->features().uncommonAttributeRules());
   }
 
   bool matchesUncommonAttributeRuleSet(Element& element) {
