@@ -19,6 +19,8 @@
 #include "base/values.h"
 #include "chrome/browser/chromeos/arc/arc_support_host.h"
 #include "chrome/browser/extensions/extension_service.h"
+#include "chrome/browser/policy/profile_policy_connector.h"
+#include "chrome/browser/policy/profile_policy_connector_factory.h"
 #include "chrome/browser/ui/app_list/app_list_test_util.h"
 #include "chrome/browser/ui/app_list/arc/arc_app_icon.h"
 #include "chrome/browser/ui/app_list/arc/arc_app_icon_loader.h"
@@ -97,6 +99,7 @@ class ArcAppModelBuilderTest : public AppListTestBase {
 
   void SetUp() override {
     AppListTestBase::SetUp();
+    OnBeforeArcTestSetup();
     arc_test_.SetUp(profile_.get());
     CreateBuilder();
 
@@ -110,6 +113,10 @@ class ArcAppModelBuilderTest : public AppListTestBase {
   }
 
  protected:
+  // Notifies that initial preparation is done, profile is ready and it is time
+  // to initialize Arc subsystem.
+  virtual void OnBeforeArcTestSetup() {}
+
   // Creates a new builder, destroying any existing one.
   void CreateBuilder() {
     ResetBuilder();  // Destroy any existing builder in the correct order.
@@ -355,31 +362,46 @@ class ArcDefaulAppTest : public ArcAppModelBuilderTest {
   ArcDefaulAppTest() {}
   ~ArcDefaulAppTest() override {}
 
-
-  void SetUp() override {
+ protected:
+  // ArcAppModelBuilderTest:
+  void OnBeforeArcTestSetup() override {
     ArcDefaultAppList::UseTestAppsDirectory();
-    ArcAppModelBuilderTest::SetUp();
   }
 
  private:
   DISALLOW_COPY_AND_ASSIGN(ArcDefaulAppTest);
 };
 
-class ArcPlayStoreAppTest : public ArcAppModelBuilderTest {
+class ArcDefaulAppForManagedUserTest : public ArcDefaulAppTest {
+ public:
+  ArcDefaulAppForManagedUserTest() {}
+  ~ArcDefaulAppForManagedUserTest() override {}
+
+ protected:
+  // ArcAppModelBuilderTest:
+  void OnBeforeArcTestSetup() override {
+    ArcDefaulAppTest::OnBeforeArcTestSetup();
+
+    policy::ProfilePolicyConnector* const connector =
+        policy::ProfilePolicyConnectorFactory::GetForBrowserContext(
+            profile());
+    connector->OverrideIsManagedForTesting(true);
+  }
+
+ private:
+  DISALLOW_COPY_AND_ASSIGN(ArcDefaulAppForManagedUserTest);
+};
+
+class ArcPlayStoreAppTest : public ArcDefaulAppTest {
  public:
   ArcPlayStoreAppTest() {}
   ~ArcPlayStoreAppTest() override {}
 
+ protected:
+  // ArcAppModelBuilderTest:
+  void OnBeforeArcTestSetup() override {
+    ArcDefaulAppTest::OnBeforeArcTestSetup();
 
-  void SetUp() override {
-    AppListTestBase::SetUp();
-    CreateArcHost();
-    arc_test()->SetUp(profile_.get());
-    CreateBuilder();
-  }
-
- private:
-  void CreateArcHost() {
     base::DictionaryValue manifest;
     manifest.SetString(extensions::manifest_keys::kName,
                        "Play Store");
@@ -399,11 +421,11 @@ class ArcPlayStoreAppTest : public ArcAppModelBuilderTest {
     extension_service->AddExtension(arc_support_host_.get());
   }
 
+ private:
   scoped_refptr<extensions::Extension> arc_support_host_;
 
   DISALLOW_COPY_AND_ASSIGN(ArcPlayStoreAppTest);
 };
-
 
 TEST_F(ArcAppModelBuilderTest, ArcPackagePref) {
   ValidateHavePackages(std::vector<arc::mojom::ArcPackageInfo>());
@@ -1120,4 +1142,16 @@ TEST_F(ArcDefaulAppTest, DefaultApps) {
   all_apps = fake_default_apps();
   all_apps.erase(all_apps.begin());
   ValidateHaveApps(all_apps);
+}
+
+TEST_F(ArcDefaulAppForManagedUserTest, DefaultAppsForManagedUser) {
+  const ArcAppListPrefs* const prefs = ArcAppListPrefs::Get(profile_.get());
+  ASSERT_TRUE(prefs);
+
+  // There is no default app for managed users except Play Store
+  for (const auto& app : fake_default_apps()) {
+    const std::string app_id = ArcAppTest::GetAppId(app);
+    EXPECT_FALSE(prefs->IsRegistered(app_id));
+    EXPECT_FALSE(prefs->GetApp(app_id));
+  }
 }

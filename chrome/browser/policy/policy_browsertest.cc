@@ -199,8 +199,6 @@
 #include "chrome/browser/chromeos/login/test/js_checker.h"
 #include "chrome/browser/chromeos/system/timezone_resolver_manager.h"
 #include "chrome/browser/profiles/profile_manager.h"
-#include "chrome/browser/ui/app_list/arc/arc_app_list_prefs.h"
-#include "chrome/browser/ui/app_list/arc/arc_default_app_list.h"
 #include "chrome/browser/ui/ash/chrome_screenshot_grabber.h"
 #include "chrome/browser/ui/ash/multi_user/multi_user_util.h"
 #include "chromeos/audio/cras_audio_handler.h"
@@ -4001,21 +3999,6 @@ class ArcPolicyTest : public PolicyTest {
   DISALLOW_COPY_AND_ASSIGN(ArcPolicyTest);
 };
 
-class ArcPolicyDefaultAppTest : public ArcPolicyTest {
- public:
-  ArcPolicyDefaultAppTest() {}
-  ~ArcPolicyDefaultAppTest() override {}
-
- protected:
-  void SetUpInProcessBrowserTestFixture() override {
-    ArcDefaultAppList::UseTestAppsDirectory();
-    ArcPolicyTest::SetUpInProcessBrowserTestFixture();
-  }
-
- private:
-  DISALLOW_COPY_AND_ASSIGN(ArcPolicyDefaultAppTest);
-};
-
 // Test ArcEnabled policy.
 IN_PROC_BROWSER_TEST_F(ArcPolicyTest, ArcEnabled) {
   SetUpTest();
@@ -4035,33 +4018,6 @@ IN_PROC_BROWSER_TEST_F(ArcPolicyTest, ArcEnabled) {
   // Disable ARC.
   SetArcEnabledByPolicy(false);
   EXPECT_TRUE(arc_bridge_service->stopped());
-
-  TearDownTest();
-}
-
-// Test Arc default apps do not appear when Arc is disabled by policy.
-IN_PROC_BROWSER_TEST_F(ArcPolicyDefaultAppTest, DefaultApps) {
-  // Started disabled.
-  SetArcEnabledByPolicy(false);
-
-  SetUpTest();
-
-  ArcAppListPrefs* prefs = ArcAppListPrefs::Get(browser()->profile());
-  ASSERT_NE(nullptr, prefs);
-
-  base::RunLoop run_loop;
-  prefs->SetDefaltAppsReadyCallback(run_loop.QuitClosure());
-  run_loop.Run();
-
-  EXPECT_TRUE(prefs->GetAppIds().empty());
-
-  // Enable Arc
-  SetArcEnabledByPolicy(true);
-  EXPECT_FALSE(prefs->GetAppIds().empty());
-
-  // Disable Arc again.
-  SetArcEnabledByPolicy(false);
-  EXPECT_TRUE(prefs->GetAppIds().empty());
 
   TearDownTest();
 }
