@@ -41,7 +41,7 @@ static struct TargetCamera {
   bool use_fake;
 } const kTestParameters[] = {
     {true},
-#if !defined(OS_LINUX)
+#if defined(OS_LINUX)
     {false}
 #endif
 };
