@@ -23,6 +23,7 @@
 #include "mojo/edk/js/tests/js_to_cpp.mojom.h"
 #include "mojo/edk/test/test_utils.h"
 #include "mojo/public/cpp/bindings/binding.h"
+#include "mojo/public/cpp/bindings/lib/validation_errors.h"
 #include "mojo/public/cpp/system/core.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
@@ -433,12 +434,18 @@ TEST_F(JsToCppTest, Echo) {
 }
 
 TEST_F(JsToCppTest, BitFlip) {
+  // These tests generate a lot of expected validation errors. Suppress logging.
+  mojo::internal::ScopedSuppressValidationErrorLoggingForTests log_suppression;
+
   BitFlipCppSideConnection cpp_side_connection;
   RunTest("mojo/edk/js/tests/js_to_cpp_tests", &cpp_side_connection);
   EXPECT_TRUE(cpp_side_connection.DidSucceed());
 }
 
 TEST_F(JsToCppTest, BackPointer) {
+  // These tests generate a lot of expected validation errors. Suppress logging.
+  mojo::internal::ScopedSuppressValidationErrorLoggingForTests log_suppression;
+
   BackPointerCppSideConnection cpp_side_connection;
   RunTest("mojo/edk/js/tests/js_to_cpp_tests", &cpp_side_connection);
   EXPECT_TRUE(cpp_side_connection.DidSucceed());

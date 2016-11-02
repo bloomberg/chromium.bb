@@ -14,6 +14,7 @@ namespace {
 ValidationErrorObserverForTesting* g_validation_error_observer = nullptr;
 SerializationWarningObserverForTesting* g_serialization_warning_observer =
     nullptr;
+bool g_suppress_logging = false;
 
 }  // namespace
 
@@ -71,8 +72,10 @@ void ReportValidationError(ValidationContext* context,
   }
 
   if (description) {
-    LOG(ERROR) << "Invalid message: " << ValidationErrorToString(error) << " ("
-               << description << ")";
+    if (!g_suppress_logging) {
+      LOG(ERROR) << "Invalid message: " << ValidationErrorToString(error)
+                 << " (" << description << ")";
+    }
     if (context->message()) {
       context->message()->NotifyBadMessage(
           base::StringPrintf("Validation failed for %s [%s (%s)]",
@@ -80,7 +83,8 @@ void ReportValidationError(ValidationContext* context,
                              ValidationErrorToString(error), description));
     }
   } else {
-    LOG(ERROR) << "Invalid message: " << ValidationErrorToString(error);
+    if (!g_suppress_logging)
+      LOG(ERROR) << "Invalid message: " << ValidationErrorToString(error);
     if (context->message()) {
       context->message()->NotifyBadMessage(
           base::StringPrintf("Validation failed for %s [%s]",
@@ -99,6 +103,17 @@ void ReportValidationErrorForMessage(
       message->handles()->size(), message,
       description);
   ReportValidationError(&validation_context, error);
+}
+
+ScopedSuppressValidationErrorLoggingForTests
+    ::ScopedSuppressValidationErrorLoggingForTests()
+    : was_suppressed_(g_suppress_logging) {
+  g_suppress_logging = true;
+}
+
+ScopedSuppressValidationErrorLoggingForTests
+    ::~ScopedSuppressValidationErrorLoggingForTests() {
+  g_suppress_logging = was_suppressed_;
 }
 
 ValidationErrorObserverForTesting::ValidationErrorObserverForTesting(

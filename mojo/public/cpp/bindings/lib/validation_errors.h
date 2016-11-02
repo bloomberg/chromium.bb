@@ -89,6 +89,20 @@ MOJO_CPP_BINDINGS_EXPORT void ReportValidationErrorForMessage(
     ValidationError error,
     const char* description = nullptr);
 
+// This class may be used by tests to suppress validation error logging. This is
+// not thread-safe and must only be instantiated on the main thread with no
+// other threads using Mojo bindings at the time of construction or destruction.
+class MOJO_CPP_BINDINGS_EXPORT ScopedSuppressValidationErrorLoggingForTests {
+ public:
+  ScopedSuppressValidationErrorLoggingForTests();
+  ~ScopedSuppressValidationErrorLoggingForTests();
+
+ private:
+  const bool was_suppressed_;
+
+  DISALLOW_COPY_AND_ASSIGN(ScopedSuppressValidationErrorLoggingForTests);
+};
+
 // Only used by validation tests and when there is only one thread doing message
 // validation.
 class MOJO_CPP_BINDINGS_EXPORT ValidationErrorObserverForTesting {
