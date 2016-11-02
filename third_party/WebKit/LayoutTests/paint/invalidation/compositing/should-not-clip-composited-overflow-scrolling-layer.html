@@ -6,20 +6,20 @@ if (window.internals)
 function repaintTest() {
   document.getElementById('content').style.backgroundColor = 'green';
   var container = document.getElementById('container');
-  container.scrollLeft = 2000;
-  container.scrollTop = 2000;
+  container.scrollLeft = 500;
+  container.scrollTop = 400;
 }
 window.onload = runRepaintAndPixelTest;
 </script>
 <style>
 #container {
-  width: 500px;
-  height: 500px;
+  width: 400px;
+  height: 300px;
   overflow: scroll;
 }
 #content {
-  width: 5000px;
-  height: 5000px;
+  width: 1000px;
+  height: 1000px;
   background-color: red;
 }
 </style>

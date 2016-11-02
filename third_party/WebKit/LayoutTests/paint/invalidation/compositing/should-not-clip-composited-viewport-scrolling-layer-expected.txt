@@ -2,13 +2,13 @@
   "layers": [
     {
       "name": "LayoutView #document",
-      "bounds": [5008, 5016],
+      "bounds": [2008, 1516],
       "contentsOpaque": true,
       "drawsContent": true,
       "paintInvalidations": [
         {
           "object": "LayoutBlockFlow DIV id='content'",
-          "rect": [8, 8, 5000, 5000],
+          "rect": [8, 8, 2000, 1500],
           "reason": "style change"
         }
       ]

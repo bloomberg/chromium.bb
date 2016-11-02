@@ -5,14 +5,14 @@ if (window.internals)
   internals.settings.setPreferCompositingToLCDTextEnabled(true);
 function repaintTest() {
   document.getElementById('content').style.backgroundColor = 'green';
-  window.scrollTo(2000, 2000);
+  window.scrollTo(900, 700);
 }
 window.onload = runRepaintAndPixelTest;
 </script>
 <style>
 #content {
-  width: 5000px;
-  height: 5000px;
+  width: 2000px;
+  height: 1500px;
   background-color: red;
 }
 </style>

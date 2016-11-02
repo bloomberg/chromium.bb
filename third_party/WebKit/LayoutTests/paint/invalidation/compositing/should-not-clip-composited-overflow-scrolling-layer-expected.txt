@@ -9,58 +9,58 @@
     {
       "name": "LayoutBlockFlow DIV id='container'",
       "position": [8, 8],
-      "bounds": [500, 500],
+      "bounds": [400, 300],
       "shouldFlattenTransform": false,
       "drawsContent": true
     },
     {
       "name": "Scrolling Layer",
-      "bounds": [485, 485],
+      "bounds": [385, 285],
       "shouldFlattenTransform": false
     },
     {
       "name": "Scrolling Contents Layer",
-      "bounds": [5000, 5000],
+      "bounds": [1000, 1000],
       "drawsContent": true,
       "paintInvalidations": [
         {
           "object": "LayoutBlockFlow DIV id='content'",
-          "rect": [0, 0, 5000, 5000],
+          "rect": [0, 0, 1000, 1000],
           "reason": "style change"
         }
       ]
     },
     {
       "name": "Overflow Controls Host Layer",
-      "bounds": [500, 500]
+      "bounds": [400, 300]
     },
     {
       "name": "Horizontal Scrollbar Layer",
-      "position": [0, 485],
-      "bounds": [485, 15],
+      "position": [0, 285],
+      "bounds": [385, 15],
       "paintInvalidations": [
         {
           "object": "Horizontal Scrollbar Layer",
-          "rect": [0, 0, 485, 15],
+          "rect": [0, 0, 385, 15],
           "reason": "full"
         }
       ]
     },
     {
       "name": "Vertical Scrollbar Layer",
-      "position": [485, 0],
-      "bounds": [15, 485],
+      "position": [385, 0],
+      "bounds": [15, 285],
       "paintInvalidations": [
         {
           "object": "Vertical Scrollbar Layer",
-          "rect": [0, 0, 15, 485],
+          "rect": [0, 0, 15, 285],
           "reason": "full"
         }
       ]
     },
     {
       "name": "Scroll Corner Layer",
-      "position": [485, 485],
+      "position": [385, 285],
       "bounds": [15, 15],
       "drawsContent": true
     }
