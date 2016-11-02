@@ -12,6 +12,7 @@
 #include "ash/common/system/tray/system_tray_notifier.h"
 #include "ash/common/system/tray/tray_constants.h"
 #include "ash/common/system/tray/tray_popup_item_style.h"
+#include "ash/common/system/tray/tray_popup_utils.h"
 #include "ash/common/wm_shell.h"
 #include "ash/resources/vector_icons/vector_icons.h"
 #include "grit/ash_resources.h"
@@ -105,7 +106,8 @@ class UpdateView : public ActionableView {
             ? bundle.GetLocalizedString(
                   IDS_ASH_STATUS_TRAY_RESTART_AND_POWERWASH_TO_UPDATE)
             : bundle.GetLocalizedString(IDS_ASH_STATUS_TRAY_UPDATE);
-    label_ = new views::Label(label_text);
+    label_ = TrayPopupUtils::CreateDefaultLabel();
+    label_->SetText(label_text);
     AddChildView(label_);
     SetAccessibleName(label_text);
 

@@ -13,6 +13,7 @@
 #include "ash/common/system/tray/system_tray_notifier.h"
 #include "ash/common/system/tray/tray_constants.h"
 #include "ash/common/system/tray/tray_popup_item_style.h"
+#include "ash/common/system/tray/tray_popup_utils.h"
 #include "ash/common/wm_shell.h"
 #include "grit/ash_resources.h"
 #include "grit/ash_strings.h"
@@ -44,9 +45,8 @@ class DefaultTracingView : public ActionableView {
     }
     AddChildView(image_);
 
-    label_ = new views::Label();
+    label_ = TrayPopupUtils::CreateDefaultLabel();
     label_->SetMultiLine(true);
-    label_->SetHorizontalAlignment(gfx::ALIGN_LEFT);
     label_->SetText(bundle.GetLocalizedString(IDS_ASH_STATUS_TRAY_TRACING));
     AddChildView(label_);
 

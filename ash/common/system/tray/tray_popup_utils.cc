@@ -80,6 +80,15 @@ views::Label* TrayPopupUtils::CreateDefaultLabel() {
   label->SetBorder(
       views::Border::CreateEmptyBorder(0, kTrayPopupLabelHorizontalPadding, 0,
                                        kTrayPopupLabelHorizontalPadding));
+
+  // TODO(bruthig): Fix this so that |label| uses the kBackgroundColor to
+  // perform subpixel rendering instead of disabling subpixel rendering.
+  //
+  // Text rendered on a non-opaque background looks ugly and it is possible for
+  // labels to given a a clear canvas at paint time when an ink drop is visible.
+  // See http://crbug.com/661714.
+  label->SetSubpixelRenderingEnabled(false);
+
   return label;
 }
 

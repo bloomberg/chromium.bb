@@ -13,6 +13,7 @@
 #include "ash/common/system/tray/system_tray_controller.h"
 #include "ash/common/system/tray/system_tray_delegate.h"
 #include "ash/common/system/tray/tray_constants.h"
+#include "ash/common/system/tray/tray_popup_utils.h"
 #include "ash/common/wm_shell.h"
 #include "base/logging.h"
 #include "base/strings/utf_string_conversions.h"
@@ -61,7 +62,8 @@ class SettingsDefaultView : public ActionableView,
       AddChildView(icon);
 
       base::string16 text = rb.GetLocalizedString(IDS_ASH_STATUS_TRAY_SETTINGS);
-      label_ = new views::Label(text);
+      label_ = TrayPopupUtils::CreateDefaultLabel();
+      label_->SetText(text);
       AddChildView(label_);
       SetAccessibleName(text);
 
