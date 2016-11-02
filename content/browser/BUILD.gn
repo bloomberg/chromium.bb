@@ -1901,10 +1901,6 @@ source_set("browser") {
     deps += [ "//ui/compositor" ]
   }
 
-  if (is_android || is_mac) {
-    deps += [ "//gpu/ipc/common:gpu_surface_tracker" ]
-  }
-
   if (enable_web_speech) {
     deps += [ "//third_party/flac" ]
   }
