@@ -16914,8 +16914,13 @@ void GLES2DecoderImpl::DoApplyScreenSpaceAntialiasingCHROMIUM() {
           GL_NO_ERROR)
         return;
     }
+    static const char kFunctionName[] =
+        "glApplyScreenSpaceAntialiasingCHROMIUM";
+    if (!InitializeCopyTextureCHROMIUM(kFunctionName))
+      return;
     apply_framebuffer_attachment_cmaa_intel_
-        ->ApplyFramebufferAttachmentCMAAINTEL(this, bound_framebuffer);
+        ->ApplyFramebufferAttachmentCMAAINTEL(this, bound_framebuffer,
+                                              copy_texture_CHROMIUM_.get());
   }
 }
 

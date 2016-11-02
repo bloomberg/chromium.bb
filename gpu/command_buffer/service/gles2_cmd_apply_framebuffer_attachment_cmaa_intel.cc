@@ -6,6 +6,7 @@
 
 #include "base/logging.h"
 #include "gpu/command_buffer/service/framebuffer_manager.h"
+#include "gpu/command_buffer/service/gles2_cmd_copy_texture_chromium.h"
 #include "gpu/command_buffer/service/gles2_cmd_decoder.h"
 #include "ui/gl/gl_context.h"
 #include "ui/gl/gl_gl_api_implementation.h"
@@ -28,14 +29,12 @@ ApplyFramebufferAttachmentCMAAINTELResourceManager::
       frame_id_(0),
       width_(0),
       height_(0),
-      copy_to_framebuffer_shader_(0),
       edges0_shader_(0),
       edges1_shader_(0),
       edges_combine_shader_(0),
       process_and_apply_shader_(0),
       debug_display_edges_shader_(0),
       cmaa_framebuffer_(0),
-      copy_framebuffer_(0),
       rgba8_texture_(0),
       working_color_texture_(0),
       edges0_texture_(0),
@@ -58,9 +57,6 @@ void ApplyFramebufferAttachmentCMAAINTELResourceManager::Initialize(
   DCHECK(decoder);
   is_gles31_compatible_ =
       decoder->GetGLContext()->GetVersionInfo()->IsAtLeastGLES(3, 1);
-
-  copy_to_framebuffer_shader_ =
-      CreateProgram("", vert_str_, copy_frag_str_);
 
   // Check if RGBA8UI is supported as an FBO colour target with depth.
   // If not supported, GLSL needs to convert the data to/from float so there is
@@ -197,7 +193,6 @@ void ApplyFramebufferAttachmentCMAAINTELResourceManager::Destroy() {
 
   ReleaseTextures();
 
-  glDeleteProgram(copy_to_framebuffer_shader_);
   glDeleteProgram(process_and_apply_shader_);
   glDeleteProgram(edges_combine_shader_);
   glDeleteProgram(edges1_shader_);
@@ -211,8 +206,10 @@ void ApplyFramebufferAttachmentCMAAINTELResourceManager::Destroy() {
 // color attachments of currently bound draw framebuffer.
 // Reference GL_INTEL_framebuffer_CMAA for details.
 void ApplyFramebufferAttachmentCMAAINTELResourceManager::
-    ApplyFramebufferAttachmentCMAAINTEL(gles2::GLES2Decoder* decoder,
-                                        gles2::Framebuffer* framebuffer) {
+    ApplyFramebufferAttachmentCMAAINTEL(
+        gles2::GLES2Decoder* decoder,
+        gles2::Framebuffer* framebuffer,
+        gles2::CopyTextureCHROMIUMResourceManager* copier) {
   DCHECK(decoder);
   DCHECK(initialized_);
   if (!framebuffer)
@@ -249,7 +246,11 @@ void ApplyFramebufferAttachmentCMAAINTELResourceManager::
       // CMAA Effect
       if (do_copy) {
         ApplyCMAAEffectTexture(source_texture, rgba8_texture_, do_copy);
-        CopyTexture(rgba8_texture_, source_texture);
+
+        copier->DoCopySubTexture(
+            decoder, GL_TEXTURE_2D, rgba8_texture_, GL_RGBA8, GL_TEXTURE_2D,
+            source_texture, internal_format, 0, 0, 0, 0, width_, height_,
+            width_, height_, width_, height_, false, false, false);
       } else {
         ApplyCMAAEffectTexture(source_texture, source_texture, do_copy);
       }
@@ -473,13 +474,9 @@ void ApplyFramebufferAttachmentCMAAINTELResourceManager::OnSize(GLint width,
   height_ = height;
   width_ = width;
 
-  glGenFramebuffersEXT(1, &copy_framebuffer_);
   glGenTextures(1, &rgba8_texture_);
   glBindTexture(GL_TEXTURE_2D, rgba8_texture_);
   glTexStorage2DEXT(GL_TEXTURE_2D, 1, GL_RGBA8, width, height);
-  glBindFramebufferEXT(GL_FRAMEBUFFER, copy_framebuffer_);
-  glFramebufferTexture2DEXT(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D,
-                            rgba8_texture_, 0);
 
   // Edges texture - R8
   // OpenGLES has no single component 8/16-bit image support, so needs to be R32
@@ -537,7 +534,6 @@ void ApplyFramebufferAttachmentCMAAINTELResourceManager::OnSize(GLint width,
 
 void ApplyFramebufferAttachmentCMAAINTELResourceManager::ReleaseTextures() {
   if (textures_initialized_) {
-    glDeleteFramebuffersEXT(1, &copy_framebuffer_);
     glDeleteFramebuffersEXT(1, &cmaa_framebuffer_);
     glDeleteTextures(1, &rgba8_texture_);
     glDeleteTextures(1, &edges0_texture_);
@@ -547,27 +543,6 @@ void ApplyFramebufferAttachmentCMAAINTELResourceManager::ReleaseTextures() {
     glDeleteTextures(1, &working_color_texture_);
   }
   textures_initialized_ = false;
-}
-
-// TODO(dshwang): reuse CopyTextureCHROMIUMResourceManager. crbug.com/535198
-void ApplyFramebufferAttachmentCMAAINTELResourceManager::CopyTexture(
-    GLint source,
-    GLint dest) {
-  glBindFramebufferEXT(GL_FRAMEBUFFER, copy_framebuffer_);
-  glFramebufferTexture2DEXT(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0,
-                            GL_TEXTURE_2D, dest, 0);
-  glViewport(0, 0, width_, height_);
-
-  glActiveTexture(GL_TEXTURE0);
-  glBindTexture(GL_TEXTURE_2D, source);
-  glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
-  glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
-
-  glUseProgram(copy_to_framebuffer_shader_);
-
-  glDrawArrays(GL_TRIANGLES, 0, 3);
-  glUseProgram(0);
-  glBindTexture(GL_TEXTURE_2D, 0);
 }
 
 GLuint ApplyFramebufferAttachmentCMAAINTELResourceManager::CreateProgram(
@@ -1869,20 +1844,6 @@ const char ApplyFramebufferAttachmentCMAAINTELResourceManager::cmaa_frag_s2_[] =
     \n#endif\n
     }
   );
-
-const char
-  ApplyFramebufferAttachmentCMAAINTELResourceManager::copy_frag_str_[] =
-    SHADER(
-      precision highp float;
-      layout(binding = 0) uniform highp sampler2D inTexture;
-      layout(location = 0) out vec4 outColor;
-
-      void main() {
-        ivec2 screenPosI = ivec2( gl_FragCoord.xy );
-        vec4 pixel = texelFetch(inTexture, screenPosI, 0);
-        outColor = pixel;
-      }
-    );
 /* clang-format on */
 
 }  // namespace gles2

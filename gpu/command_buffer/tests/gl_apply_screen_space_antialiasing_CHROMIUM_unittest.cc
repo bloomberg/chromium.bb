@@ -137,7 +137,8 @@ TEST_F(GLApplyScreenSpaceAntialiasingCHROMIUMTest, InternalFormat) {
   if (!available_)
     return;
 
-  GLint formats[] = {GL_RGB, GL_RGBA};
+  GLint formats[] = {GL_RGB, GL_RGBA, GL_ALPHA, GL_LUMINANCE,
+                     GL_LUMINANCE_ALPHA};
   for (size_t index = 0; index < arraysize(formats); index++) {
     glTexImage2D(GL_TEXTURE_2D, 0, formats[index], 1, 1, 0, formats[index],
                  GL_UNSIGNED_BYTE, nullptr);
@@ -146,7 +147,12 @@ TEST_F(GLApplyScreenSpaceAntialiasingCHROMIUMTest, InternalFormat) {
     glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D,
                            textures_, 0);
 
+    // Only if the format is supported by FBO, supported by this extension.
+    if (glCheckFramebufferStatus(GL_FRAMEBUFFER) != GL_FRAMEBUFFER_COMPLETE)
+      continue;
+
     glClear(GL_COLOR_BUFFER_BIT);
+    EXPECT_EQ(static_cast<GLenum>(GL_NO_ERROR), glGetError());
 
     glApplyScreenSpaceAntialiasingCHROMIUM();
     EXPECT_EQ(static_cast<GLenum>(GL_NO_ERROR), glGetError()) << "index:"
@@ -155,29 +161,6 @@ TEST_F(GLApplyScreenSpaceAntialiasingCHROMIUMTest, InternalFormat) {
     uint8_t pixels[1 * 4] = {0u, 255u, 0u, 255u};
     GLTestHelper::CheckPixels(0, 0, 1, 1, 0, pixels);
     EXPECT_EQ(static_cast<GLenum>(GL_NO_ERROR), glGetError());
-  }
-}
-
-TEST_F(GLApplyScreenSpaceAntialiasingCHROMIUMTest, InternalFormatNotSupported) {
-  if (!available_)
-    return;
-
-  // Check unsupported format reports error.
-  GLint unsupported_formats[] = {GL_ALPHA, GL_LUMINANCE, GL_LUMINANCE_ALPHA};
-  for (size_t index = 0; index < arraysize(unsupported_formats); index++) {
-    glTexImage2D(GL_TEXTURE_2D, 0, unsupported_formats[index], 1, 1, 0,
-                 unsupported_formats[index], GL_UNSIGNED_BYTE, nullptr);
-    EXPECT_EQ(static_cast<GLenum>(GL_NO_ERROR), glGetError());
-
-    glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D,
-                           textures_, 0);
-
-    glClear(GL_COLOR_BUFFER_BIT);
-
-    glApplyScreenSpaceAntialiasingCHROMIUM();
-    EXPECT_EQ(static_cast<GLenum>(GL_INVALID_FRAMEBUFFER_OPERATION),
-              glGetError())
-        << "index:" << index;
   }
 }
 
