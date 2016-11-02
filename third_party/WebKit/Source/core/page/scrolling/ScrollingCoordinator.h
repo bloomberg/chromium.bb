@@ -27,9 +27,10 @@
 #define ScrollingCoordinator_h
 
 #include "core/CoreExport.h"
-#include "core/layout/LayoutObject.h"
+#include "core/paint/LayerHitTestRects.h"
 #include "platform/PlatformWheelEvent.h"
 #include "platform/geometry/IntRect.h"
+#include "platform/heap/Handle.h"
 #include "platform/scroll/MainThreadScrollingReason.h"
 #include "platform/scroll/ScrollTypes.h"
 #include "wtf/Noncopyable.h"
@@ -37,21 +38,18 @@
 #include <memory>
 
 namespace blink {
-class WebScrollbarLayer;
-}
-
-namespace blink {
-
 using MainThreadScrollingReasons = uint32_t;
 
 class LocalFrame;
 class FrameView;
 class GraphicsLayer;
 class Page;
+class PaintLayer;
 class Region;
 class ScrollableArea;
 class CompositorAnimationTimeline;
 class WebLayerTreeView;
+class WebScrollbarLayer;
 
 class CORE_EXPORT ScrollingCoordinator final
     : public GarbageCollectedFinalized<ScrollingCoordinator> {

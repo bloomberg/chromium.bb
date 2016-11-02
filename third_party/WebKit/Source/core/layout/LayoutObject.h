@@ -40,6 +40,7 @@
 #include "core/layout/api/HitTestAction.h"
 #include "core/layout/api/SelectionState.h"
 #include "core/layout/compositing/CompositingState.h"
+#include "core/paint/LayerHitTestRects.h"
 #include "core/paint/PaintPhase.h"
 #include "core/style/ComputedStyle.h"
 #include "platform/geometry/FloatQuad.h"
@@ -94,8 +95,6 @@ struct AnnotatedRegionValue {
   LayoutRect bounds;
   bool draggable;
 };
-
-typedef WTF::HashMap<const PaintLayer*, Vector<LayoutRect>> LayerHitTestRects;
 
 #ifndef NDEBUG
 const int showTreeCharacterOffset = 39;

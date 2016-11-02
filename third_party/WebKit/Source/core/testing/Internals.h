@@ -42,6 +42,7 @@
 
 namespace blink {
 
+class Animation;
 class CallbackFunctionTest;
 class CanvasRenderingContext;
 class ClientRect;
@@ -54,12 +55,14 @@ class DocumentMarker;
 class Element;
 class ExceptionState;
 class GCObservation;
+class HTMLSelectElement;
 class HTMLMediaElement;
 class InternalRuntimeFlags;
 class InternalSettings;
 class LayerRectList;
 class LocalDOMWindow;
 class LocalFrame;
+class Location;
 class Node;
 class OriginTrialsTest;
 class Page;
