@@ -14,6 +14,12 @@
 #include "ui/compositor/compositor.h"
 #include "ui/views/mus/mus_export.h"
 
+namespace aura {
+class GpuService;
+}
+
+// TODO(mfomitchev): Remove this clause once all clients switch to using
+// Aura-Mus.
 namespace ui {
 class GpuService;
 }
@@ -22,7 +28,10 @@ namespace views {
 
 class VIEWS_MUS_EXPORT SurfaceContextFactory : public ui::ContextFactory {
  public:
+  // TODO(mfomitchev): Remove this clause once all clients switch to using
+  // Aura-Mus.
   explicit SurfaceContextFactory(ui::GpuService* gpu_service);
+  explicit SurfaceContextFactory(aura::GpuService* gpu_service);
   ~SurfaceContextFactory() override;
 
  private:
@@ -59,7 +68,10 @@ class VIEWS_MUS_EXPORT SurfaceContextFactory : public ui::ContextFactory {
   cc::SurfaceManager surface_manager_;
   uint32_t next_sink_id_;
   ui::RasterThreadHelper raster_thread_helper_;
-  ui::GpuService* gpu_service_;
+  aura::GpuService* gpu_service_;
+
+  // TODO(mfomitchev): Remove once all clients switch to using Aura-Mus.
+  ui::GpuService* gpu_service_ui_;
 
   DISALLOW_COPY_AND_ASSIGN(SurfaceContextFactory);
 };

@@ -59,6 +59,7 @@
 #if defined(USE_AURA)
 #include "content/browser/compositor/mus_browser_compositor_output_surface.h"
 #include "content/public/common/service_manager_connection.h"
+#include "ui/aura/window_tree_host.h"
 #endif
 
 #if defined(OS_WIN)
@@ -511,11 +512,24 @@ void GpuProcessTransportFactory::EstablishedGpuChannel(
                   begin_frame_source.get(), std::move(validator));
         } else {
 #if defined(USE_AURA)
-          display_output_surface =
-              base::MakeUnique<MusBrowserCompositorOutputSurface>(
-                  compositor->window(), context_provider,
-                  GetGpuMemoryBufferManager(), compositor->vsync_manager(),
-                  begin_frame_source.get(), std::move(validator));
+          if (compositor->window()) {
+            // TODO(mfomitchev): Remove this clause once we complete the switch
+            // to Aura-Mus.
+            display_output_surface =
+                base::MakeUnique<MusBrowserCompositorOutputSurface>(
+                    compositor->window(), context_provider,
+                    GetGpuMemoryBufferManager(), compositor->vsync_manager(),
+                    begin_frame_source.get(), std::move(validator));
+          } else {
+            aura::WindowTreeHost* host =
+                aura::WindowTreeHost::GetForAcceleratedWidget(
+                    compositor->widget());
+            display_output_surface =
+                base::MakeUnique<MusBrowserCompositorOutputSurface>(
+                    host->window(), context_provider,
+                    GetGpuMemoryBufferManager(), compositor->vsync_manager(),
+                    begin_frame_source.get(), std::move(validator));
+          }
 #else
           NOTREACHED();
 #endif

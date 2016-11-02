@@ -63,9 +63,6 @@ WindowTreeHostMus::WindowTreeHostMus(std::unique_ptr<WindowPortMus> window_port,
 
   input_method_ = base::MakeUnique<InputMethodMus>(this, window());
 
-  // TODO: hook up to compositor correctly.
-  // compositor()->SetWindow(window);
-
   compositor()->SetHostHasTransparentBackground(true);
 
   // Mus windows are assumed hidden.

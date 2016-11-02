@@ -11,6 +11,8 @@
 #include "services/ui/public/cpp/gpu_service.h"
 #include "services/ui/public/cpp/window.h"
 #include "services/ui/public/cpp/window_compositor_frame_sink.h"
+#include "ui/aura/mus/gpu_service.h"
+#include "ui/aura/mus/window_port_mus.h"
 #include "ui/compositor/reflector.h"
 #include "ui/gl/gl_bindings.h"
 #include "ui/views/mus/native_widget_mus.h"
@@ -30,6 +32,9 @@ class FakeReflector : public ui::Reflector {
 }  // namespace
 
 SurfaceContextFactory::SurfaceContextFactory(ui::GpuService* gpu_service)
+    : next_sink_id_(1u), gpu_service_ui_(gpu_service) {}
+
+SurfaceContextFactory::SurfaceContextFactory(aura::GpuService* gpu_service)
     : next_sink_id_(1u), gpu_service_(gpu_service) {}
 
 SurfaceContextFactory::~SurfaceContextFactory() {}
@@ -37,14 +42,30 @@ SurfaceContextFactory::~SurfaceContextFactory() {}
 void SurfaceContextFactory::CreateCompositorFrameSink(
     base::WeakPtr<ui::Compositor> compositor) {
   ui::Window* window = compositor->window();
-  NativeWidgetMus* native_widget = NativeWidgetMus::GetForWindow(window);
-  ui::mojom::CompositorFrameSinkType compositor_frame_sink_type =
-      native_widget->compositor_frame_sink_type();
-  auto compositor_frame_sink = window->RequestCompositorFrameSink(
-      compositor_frame_sink_type, make_scoped_refptr(new ui::ContextProvider(
-                                      gpu_service_->EstablishGpuChannelSync())),
-      gpu_service_->gpu_memory_buffer_manager());
-  compositor->SetCompositorFrameSink(std::move(compositor_frame_sink));
+  if (window) {
+    // TODO(mfomitchev): Remove this clause once all clients switch to using
+    // Aura-Mus.
+    NativeWidgetMus* native_widget = NativeWidgetMus::GetForWindow(window);
+    ui::mojom::CompositorFrameSinkType compositor_frame_sink_type =
+        native_widget->compositor_frame_sink_type();
+    auto compositor_frame_sink = window->RequestCompositorFrameSink(
+        compositor_frame_sink_type,
+        make_scoped_refptr(new ui::ContextProvider(
+            gpu_service_ui_->EstablishGpuChannelSync())),
+        gpu_service_ui_->gpu_memory_buffer_manager());
+    compositor->SetCompositorFrameSink(std::move(compositor_frame_sink));
+  } else {
+    aura::WindowTreeHost* host =
+        aura::WindowTreeHost::GetForAcceleratedWidget(compositor->widget());
+    aura::WindowPortMus* window_port = aura::WindowPortMus::Get(host->window());
+    DCHECK(window_port);
+    auto compositor_frame_sink = window_port->RequestCompositorFrameSink(
+        ui::mojom::CompositorFrameSinkType::DEFAULT,
+        make_scoped_refptr(
+            new ui::ContextProvider(gpu_service_->EstablishGpuChannelSync())),
+        gpu_service_->gpu_memory_buffer_manager());
+    compositor->SetCompositorFrameSink(std::move(compositor_frame_sink));
+  }
 }
 
 std::unique_ptr<ui::Reflector> SurfaceContextFactory::CreateReflector(
@@ -80,6 +101,8 @@ uint32_t SurfaceContextFactory::GetImageTextureTarget(gfx::BufferFormat format,
 
 gpu::GpuMemoryBufferManager*
 SurfaceContextFactory::GetGpuMemoryBufferManager() {
+  if (gpu_service_ui_)
+    return gpu_service_ui_->gpu_memory_buffer_manager();
   return gpu_service_->gpu_memory_buffer_manager();
 }
 

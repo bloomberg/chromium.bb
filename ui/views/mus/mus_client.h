@@ -16,6 +16,7 @@
 
 namespace aura {
 class Env;
+class GpuService;
 class PropertyConverter;
 class Window;
 class WindowPort;
@@ -29,10 +30,6 @@ class SingleThreadTaskRunner;
 namespace service_manager {
 class Connector;
 class Identity;
-}
-
-namespace ui {
-class GpuService;
 }
 
 namespace wm {
@@ -109,7 +106,7 @@ class VIEWS_MUS_EXPORT MusClient
 
   std::unique_ptr<aura::WindowTreeClient> window_tree_client_;
 
-  std::unique_ptr<ui::GpuService> gpu_service_;
+  std::unique_ptr<aura::GpuService> gpu_service_;
 
   std::unique_ptr<SurfaceContextFactory> compositor_context_factory_;
 

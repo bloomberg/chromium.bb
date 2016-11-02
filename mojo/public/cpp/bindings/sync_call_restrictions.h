@@ -19,6 +19,10 @@ namespace ui {
 class GpuService;
 }
 
+namespace aura {
+class GpuService;
+}
+
 namespace views {
 class ClipboardMus;
 }
@@ -52,6 +56,7 @@ class MOJO_CPP_BINDINGS_EXPORT SyncCallRestrictions {
   // DO NOT ADD ANY OTHER FRIEND STATEMENTS, talk to mojo/OWNERS first.
   // BEGIN ALLOWED USAGE.
   friend class ui::GpuService;  // http://crbug.com/620058
+  friend class aura::GpuService;  // http://crbug.com/620058
   // END ALLOWED USAGE.
 
   // BEGIN USAGE THAT NEEDS TO BE FIXED.

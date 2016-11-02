@@ -13,8 +13,10 @@
 #include "base/logging.h"
 #include "base/macros.h"
 #include "services/ui/public/interfaces/cursor.mojom.h"
+#include "services/ui/public/interfaces/window_tree_constants.mojom.h"
 #include "ui/aura/aura_export.h"
 #include "ui/aura/mus/mus_types.h"
+#include "ui/aura/mus/window_compositor_frame_sink.h"
 #include "ui/aura/mus/window_mus.h"
 #include "ui/aura/window_port.h"
 #include "ui/gfx/geometry/rect.h"
@@ -50,6 +52,16 @@ class AURA_EXPORT WindowPortMus : public WindowPort, public WindowMus {
 
   ui::mojom::Cursor predefined_cursor() const { return predefined_cursor_; }
   void SetPredefinedCursor(ui::mojom::Cursor cursor_id);
+
+  std::unique_ptr<WindowCompositorFrameSink> RequestCompositorFrameSink(
+      ui::mojom::CompositorFrameSinkType type,
+      scoped_refptr<cc::ContextProvider> context_provider,
+      gpu::GpuMemoryBufferManager* gpu_memory_buffer_manager);
+
+  void AttachCompositorFrameSink(
+      ui::mojom::CompositorFrameSinkType type,
+      std::unique_ptr<WindowCompositorFrameSinkBinding>
+          compositor_frame_sink_binding);
 
   void set_surface_id_handler(SurfaceIdHandler* surface_id_handler) {
     surface_id_handler_ = surface_id_handler;
