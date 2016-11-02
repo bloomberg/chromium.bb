@@ -7,7 +7,6 @@ package org.chromium.chrome.browser.customtabs;
 import android.app.Activity;
 import android.content.Intent;
 import android.net.Uri;
-import android.test.suitebuilder.annotation.LargeTest;
 import android.test.suitebuilder.annotation.MediumTest;
 import android.util.Base64;
 
@@ -15,6 +14,7 @@ import org.chromium.base.ActivityState;
 import org.chromium.base.ApplicationStatus;
 import org.chromium.base.ThreadUtils;
 import org.chromium.base.test.util.CommandLineFlags;
+import org.chromium.base.test.util.DisabledTest;
 import org.chromium.base.test.util.Feature;
 import org.chromium.chrome.browser.ChromeSwitches;
 import org.chromium.chrome.browser.customtabs.CustomTabDelegateFactory.CustomTabNavigationDelegate;
@@ -92,8 +92,10 @@ public class CustomTabFromChromeExternalNavigationTest extends CustomTabActivity
                 instanceof CustomTabNavigationDelegate);
     }
 
-    @Feature("CustomTabFromChrome")
-    @LargeTest
+    //@Feature("CustomTabFromChrome")
+    //@LargeTest
+    // Disabled due to flakiness on linux_android_rel_ng (crbug.com/661444).
+    @DisabledTest
     public void testIntentWithRedirectToApp() throws Exception {
         final String redirectUrl = "https://maps.google.com/maps?q=1600+amphitheatre+parkway";
         final String initialUrl = mTestServer.getURL(
