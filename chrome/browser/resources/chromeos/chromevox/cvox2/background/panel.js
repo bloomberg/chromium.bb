@@ -386,13 +386,23 @@ Panel.onOpenMenus = function(opt_event, opt_activateMenuTitle) {
         Panel.onClose();
       });
 
-  // Add menus for various role types.
+  var roleListMenuMapping = [
+    { menuTitle: 'role_heading', predicate: AutomationPredicate.heading },
+    { menuTitle: 'role_landmark', predicate: AutomationPredicate.landmark },
+    { menuTitle: 'role_link', predicate: AutomationPredicate.link },
+    { menuTitle: 'role_form', predicate: AutomationPredicate.formField },
+    { menuTitle: 'role_table', predicate: AutomationPredicate.table }];
+
   var node = bkgnd.ChromeVoxState.instance.getCurrentRange().start.node;
-  Panel.addNodeMenu('role_heading', node, AutomationPredicate.heading);
-  Panel.addNodeMenu('role_landmark', node, AutomationPredicate.landmark);
-  Panel.addNodeMenu('role_link', node, AutomationPredicate.link);
-  Panel.addNodeMenu('role_form', node, AutomationPredicate.formField);
-  Panel.addNodeMenu('role_table', node, AutomationPredicate.table);
+  for (var i = 0; i < roleListMenuMapping.length; ++i) {
+    var menuTitle = roleListMenuMapping[i].menuTitle;
+    var predicate = roleListMenuMapping[i].predicate;
+    // Create node menus asynchronously (because it may require searching a
+    // long document) unless that's the specific menu the
+    // user requested.
+    var async = (menuTitle != opt_activateMenuTitle);
+    Panel.addNodeMenu(menuTitle, node, predicate, async);
+  }
 
   // Activate either the specified menu or the first menu.
   var selectedMenu = Panel.menus_[0];
@@ -524,12 +534,13 @@ Panel.onUpdateBraille = function(data) {
 /**
  * Create a new node menu with the given name and add it to the menu bar.
  * @param {string} menuMsg The msg id of the new menu to add.
- * @param {chrome.automation.AutomationNode} node
+ * @param {!chrome.automation.AutomationNode} node
  * @param {AutomationPredicate.Unary} pred
+ * @param {boolean} defer If true, defers populating the menu.
  * @return {PanelMenu} The menu just created.
  */
-Panel.addNodeMenu = function(menuMsg, node, pred) {
-  var menu = new PanelNodeMenu(menuMsg, node, pred);
+Panel.addNodeMenu = function(menuMsg, node, pred, defer) {
+  var menu = new PanelNodeMenu(menuMsg, node, pred, defer);
   $('menu-bar').appendChild(menu.menuBarItemElement);
   menu.menuBarItemElement.addEventListener('mouseover', function() {
     Panel.activateMenu(menu);
