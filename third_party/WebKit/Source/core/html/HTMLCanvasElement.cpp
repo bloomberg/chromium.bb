@@ -857,6 +857,9 @@ class UnacceleratedSurfaceFactory
 };
 
 bool HTMLCanvasElement::shouldUseDisplayList(const IntSize& deviceSize) {
+  if (m_context->colorSpace() != kLegacyCanvasColorSpace)
+    return false;
+
   if (RuntimeEnabledFeatures::forceDisplayList2dCanvasEnabled())
     return true;
 
