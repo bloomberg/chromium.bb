@@ -230,7 +230,7 @@ void SpellChecker::didBeginEditing(Element* element) {
     // blur.
     const VisibleSelection selection = createVisibleSelection(
         SelectionInDOMTree::Builder().selectAllChildren(*element).build());
-    markMisspellingsAndBadGrammar(selection);
+    markMisspellingsInternal(selection);
     if (!isTextField)
       parent->setAlreadySpellChecked(true);
   }
@@ -365,12 +365,12 @@ void SpellChecker::showSpellingGuessPanel() {
   spellCheckerClient().showSpellingUI(true);
 }
 
-void SpellChecker::clearMisspellingsAndBadGrammarForMovingParagraphs(
+void SpellChecker::clearMisspellingsForMovingParagraphs(
     const VisibleSelection& movingSelection) {
   removeMarkers(movingSelection, DocumentMarker::MisspellingMarkers());
 }
 
-void SpellChecker::markMisspellingsAndBadGrammarForMovingParagraphs(
+void SpellChecker::markMisspellingsForMovingParagraphs(
     const VisibleSelection& movingSelection) {
   // TODO(xiaochengh): The use of updateStyleAndLayoutIgnorePendingStylesheets
   // needs to be audited.  See http://crbug.com/590369 for more details.
@@ -381,11 +381,10 @@ void SpellChecker::markMisspellingsAndBadGrammarForMovingParagraphs(
   DocumentLifecycle::DisallowTransitionScope disallowTransition(
       frame().document()->lifecycle());
 
-  markMisspellingsAndBadGrammar(movingSelection);
+  markMisspellingsInternal(movingSelection);
 }
 
-void SpellChecker::markMisspellingsAndBadGrammar(
-    const VisibleSelection& selection) {
+void SpellChecker::markMisspellingsInternal(const VisibleSelection& selection) {
   if (!isSpellCheckingEnabled() || !isSpellCheckingEnabledFor(selection))
     return;
 
@@ -400,7 +399,7 @@ void SpellChecker::markMisspellingsAndBadGrammar(
 
   TextCheckingParagraph fullParagraphToCheck(
       expandRangeToSentenceBoundary(range));
-  chunkAndMarkAllMisspellingsAndBadGrammar(fullParagraphToCheck);
+  chunkAndMarkAllMisspellings(fullParagraphToCheck);
 }
 
 void SpellChecker::markMisspellingsAfterApplyingCommand(
@@ -478,7 +477,7 @@ void SpellChecker::markMisspellingsAfterLineBreak(
     const VisibleSelection& wordSelection) {
   TRACE_EVENT0("blink", "SpellChecker::markMisspellingsAfterLineBreak");
 
-  markMisspellingsAndBadGrammar(wordSelection);
+  markMisspellingsInternal(wordSelection);
 }
 
 void SpellChecker::markMisspellingsAfterTypingToWord(
@@ -487,7 +486,7 @@ void SpellChecker::markMisspellingsAfterTypingToWord(
 
   VisibleSelection adjacentWords =
       createVisibleSelection(selectWord(wordStart));
-  markMisspellingsAndBadGrammar(adjacentWords);
+  markMisspellingsInternal(adjacentWords);
 }
 
 bool SpellChecker::isSpellCheckingEnabledInFocusedNode() const {
@@ -518,10 +517,10 @@ void SpellChecker::markMisspellingsAfterReplaceSelectionCommand(
   EphemeralRange paragraphRange(Position::firstPositionInNode(node),
                                 Position::lastPositionInNode(node));
   TextCheckingParagraph textToCheck(insertedRange, paragraphRange);
-  chunkAndMarkAllMisspellingsAndBadGrammar(textToCheck);
+  chunkAndMarkAllMisspellings(textToCheck);
 }
 
-void SpellChecker::chunkAndMarkAllMisspellingsAndBadGrammar(
+void SpellChecker::chunkAndMarkAllMisspellings(
     const TextCheckingParagraph& fullParagraphToCheck) {
   if (fullParagraphToCheck.isEmpty())
     return;
@@ -945,7 +944,7 @@ void SpellChecker::spellCheckOldSelection(
       createVisibleSelection(selectWord(oldStart));
   if (oldAdjacentWords == newAdjacentWords)
     return;
-  markMisspellingsAndBadGrammar(oldAdjacentWords);
+  markMisspellingsInternal(oldAdjacentWords);
 }
 
 static Node* findFirstMarkable(Node* node) {

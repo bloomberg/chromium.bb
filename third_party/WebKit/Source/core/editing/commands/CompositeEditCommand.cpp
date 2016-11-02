@@ -1599,10 +1599,8 @@ void CompositeEditCommand::moveParagraphs(
 
   setEndingSelection(
       SelectionInDOMTree::Builder().collapse(start).extend(end).build());
-  document()
-      .frame()
-      ->spellChecker()
-      .clearMisspellingsAndBadGrammarForMovingParagraphs(endingSelection());
+  document().frame()->spellChecker().clearMisspellingsForMovingParagraphs(
+      endingSelection());
   deleteSelection(editingState, false, false, false);
   if (editingState->isAborted())
     return;
@@ -1670,10 +1668,8 @@ void CompositeEditCommand::moveParagraphs(
 
   document().updateStyleAndLayoutIgnorePendingStylesheets();
 
-  document()
-      .frame()
-      ->spellChecker()
-      .markMisspellingsAndBadGrammarForMovingParagraphs(endingSelection());
+  document().frame()->spellChecker().markMisspellingsForMovingParagraphs(
+      endingSelection());
 
   // If the selection is in an empty paragraph, restore styles from the old
   // empty paragraph to the new empty paragraph.
