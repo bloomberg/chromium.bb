@@ -28,7 +28,7 @@ using web_modal::ModalDialogHostObserver;
 namespace constrained_window {
 namespace {
 
-ConstrainedWindowViewsClient* constrained_window_views_client = NULL;
+ConstrainedWindowViewsClient* constrained_window_views_client = nullptr;
 
 // The name of a key to store on the window handle to associate
 // WidgetModalDialogHostObserverViews with the Widget.
@@ -56,7 +56,7 @@ class WidgetModalDialogHostObserverViews
     if (host_)
       host_->RemoveObserver(this);
     target_widget_->RemoveObserver(this);
-    target_widget_->SetNativeWindowProperty(native_window_property_, NULL);
+    target_widget_->SetNativeWindowProperty(native_window_property_, nullptr);
   }
 
   // WidgetObserver overrides
@@ -69,7 +69,7 @@ class WidgetModalDialogHostObserverViews
 
   void OnHostDestroying() override {
     host_->RemoveObserver(this);
-    host_ = NULL;
+    host_ = nullptr;
   }
 
  private:
@@ -200,13 +200,13 @@ views::Widget* CreateBrowserModalDialogViews(views::DialogDelegate* dialog,
                                              gfx::NativeWindow parent) {
   DCHECK_NE(ui::MODAL_TYPE_CHILD, dialog->GetModalType());
   DCHECK_NE(ui::MODAL_TYPE_NONE, dialog->GetModalType());
+  DCHECK(!parent || constrained_window_views_client);
 
-  DCHECK(constrained_window_views_client);
   gfx::NativeView parent_view =
       parent ? constrained_window_views_client->GetDialogHostView(parent)
              : nullptr;
   views::Widget* widget =
-      views::DialogDelegate::CreateDialogWidget(dialog, NULL, parent_view);
+      views::DialogDelegate::CreateDialogWidget(dialog, nullptr, parent_view);
 
   bool requires_positioning = dialog->ShouldUseCustomFrame();
 
@@ -219,8 +219,9 @@ views::Widget* CreateBrowserModalDialogViews(views::DialogDelegate* dialog,
   if (!requires_positioning)
     return widget;
 
-  ModalDialogHost* host = constrained_window_views_client->
-      GetModalDialogHost(parent);
+  ModalDialogHost* host =
+      parent ? constrained_window_views_client->GetModalDialogHost(parent)
+             : nullptr;
   if (host) {
     DCHECK_EQ(parent_view, host->GetHostView());
     ModalDialogHostObserver* dialog_host_observer =

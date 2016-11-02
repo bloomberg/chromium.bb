@@ -73,6 +73,9 @@ class SimpleMessageBoxViews : public views::DialogDelegate {
   DISALLOW_COPY_AND_ASSIGN(SimpleMessageBoxViews);
 };
 
+// The currently showing message box, if there is one. Used for tests.
+SimpleMessageBoxViews* g_current_message_box = nullptr;
+
 ////////////////////////////////////////////////////////////////////////////////
 // SimpleMessageBoxViews, public:
 
@@ -112,6 +115,7 @@ SimpleMessageBoxViews::~SimpleMessageBoxViews() {
 }
 
 MessageBoxResult SimpleMessageBoxViews::RunDialogAndGetResult() {
+  g_current_message_box = this;
   MessageBoxResult result = MESSAGE_BOX_RESULT_NO;
   result_ = &result;
   // TODO(pkotwicz): Exit message loop when the dialog is closed by some other
@@ -121,6 +125,7 @@ MessageBoxResult SimpleMessageBoxViews::RunDialogAndGetResult() {
   base::RunLoop run_loop;
   quit_runloop_ = run_loop.QuitClosure();
   run_loop.Run();
+  g_current_message_box = nullptr;
   return result;
 }
 
@@ -246,6 +251,17 @@ MessageBoxResult ShowMessageBoxImpl(gfx::NativeWindow parent,
 }
 
 }  // namespace
+
+bool CloseMessageBoxForTest(bool accept) {
+  if (!g_current_message_box)
+    return false;
+
+  if (accept)
+    g_current_message_box->Accept();
+  else
+    g_current_message_box->Cancel();
+  return true;
+}
 
 void ShowWarningMessageBox(gfx::NativeWindow parent,
                            const base::string16& title,
