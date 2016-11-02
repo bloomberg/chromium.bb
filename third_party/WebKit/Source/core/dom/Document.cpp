@@ -504,7 +504,8 @@ Document::Document(const DocumentInit& initializer,
       m_hasViewportUnits(false),
       m_parserSyncPolicy(AllowAsynchronousParsing),
       m_nodeCount(0),
-      m_wouldLoadReason(Created) {
+      m_wouldLoadReason(Created),
+      m_passwordCount(0) {
   if (m_frame) {
     DCHECK(m_frame->page());
     provideContextFeaturesToDocumentFrom(*this, *m_frame->page());
@@ -6357,6 +6358,18 @@ PropertyRegistry* Document::propertyRegistry() {
   if (!m_propertyRegistry && RuntimeEnabledFeatures::cssVariables2Enabled())
     m_propertyRegistry = PropertyRegistry::create();
   return m_propertyRegistry;
+}
+
+void Document::incrementPasswordCount() {
+  ++m_passwordCount;
+}
+
+void Document::decrementPasswordCount() {
+  --m_passwordCount;
+}
+
+unsigned Document::passwordCount() const {
+  return m_passwordCount;
 }
 
 DEFINE_TRACE(Document) {

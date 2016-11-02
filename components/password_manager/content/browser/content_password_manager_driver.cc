@@ -211,6 +211,13 @@ void ContentPasswordManagerDriver::PasswordFieldVisibleInInsecureContext() {
   MaybeNotifyPasswordInputShownOnHttp(render_frame_host_);
 }
 
+void ContentPasswordManagerDriver::
+    AllPasswordFieldsInInsecureContextInvisible() {
+  // TODO(estark): if all frames in the frame tree have their password
+  // fields hidden, then notify the WebContents that there are no
+  // visible password fields left. https://crbug.com/658764
+}
+
 void ContentPasswordManagerDriver::DidNavigateFrame(
     const content::LoadCommittedDetails& details,
     const content::FrameNavigateParams& params) {

@@ -1310,6 +1310,13 @@ class CORE_EXPORT Document : public ContainerNode,
   void setHasReceivedUserGesture() { m_hasReceivedUserGesture = true; }
   bool hasReceivedUserGesture() const { return m_hasReceivedUserGesture; }
 
+  // Document maintains a counter of visible non-secure password
+  // fields in the page. Used to notify the embedder when all visible
+  // non-secure passwords fields are no longer visible.
+  void incrementPasswordCount();
+  void decrementPasswordCount();
+  unsigned passwordCount() const;
+
  protected:
   Document(const DocumentInit&, DocumentClassFlags = DefaultDocumentClass);
 
@@ -1665,6 +1672,8 @@ class CORE_EXPORT Document : public ContainerNode,
   WouldLoadReason m_wouldLoadReason;
 
   Member<PropertyRegistry> m_propertyRegistry;
+
+  unsigned m_passwordCount;
 };
 
 extern template class CORE_EXTERN_TEMPLATE_EXPORT Supplement<Document>;

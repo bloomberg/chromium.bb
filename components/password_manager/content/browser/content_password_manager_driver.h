@@ -122,6 +122,7 @@ class ContentPasswordManagerDriver
 
   // blink::mojom::SensitiveInputVisibility:
   void PasswordFieldVisibleInInsecureContext() override;
+  void AllPasswordFieldsInInsecureContextInvisible() override;
 
  private:
   bool CheckChildProcessSecurityPolicy(const GURL& url,

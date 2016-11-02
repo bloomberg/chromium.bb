@@ -36,12 +36,65 @@
 #include "core/frame/LocalFrame.h"
 #include "core/html/HTMLInputElement.h"
 #include "core/html/forms/FormController.h"
+#include "core/layout/LayoutTextControlSingleLine.h"
 #include "public/platform/InterfaceProvider.h"
 #include "public/platform/modules/sensitive_input_visibility/sensitive_input_visibility_service.mojom-blink.h"
 #include "wtf/Assertions.h"
 #include "wtf/PassRefPtr.h"
 
 namespace blink {
+
+namespace {
+
+class PasswordLayoutObject : public LayoutTextControlSingleLine {
+ public:
+  explicit PasswordLayoutObject(HTMLInputElement* element)
+      : LayoutTextControlSingleLine(element) {
+    Document& document = element->document();
+    DCHECK(document.frame());
+    if (document.isSecureContext()) {
+      // The browser process only cares about passwords on pages where the
+      // top-level URL is not secure. Secure contexts must have a top-level
+      // URL that is secure, so there is no need to send notifications for
+      // password fields in secure contexts.
+      return;
+    }
+
+    document.incrementPasswordCount();
+    if (document.passwordCount() > 1) {
+      // Only send a message on the first visible password field; the
+      // browser process doesn't care about the presence of additional
+      // password fields beyond that.
+      return;
+    }
+    mojom::blink::SensitiveInputVisibilityServicePtr sensitiveInputServicePtr;
+    document.frame()->interfaceProvider()->getInterface(
+        mojo::GetProxy(&sensitiveInputServicePtr));
+    sensitiveInputServicePtr->PasswordFieldVisibleInInsecureContext();
+  }
+
+  ~PasswordLayoutObject() override {}
+
+ protected:
+  void willBeDestroyed() override {
+    LayoutTextControlSingleLine::willBeDestroyed();
+    Document& document = inputElement()->document();
+    DCHECK(document.frame());
+    if (document.isSecureContext()) {
+      return;
+    }
+    document.decrementPasswordCount();
+    if (document.passwordCount() > 0)
+      return;
+
+    mojom::blink::SensitiveInputVisibilityServicePtr sensitiveInputServicePtr;
+    document.frame()->interfaceProvider()->getInterface(
+        mojo::GetProxy(&sensitiveInputServicePtr));
+    sensitiveInputServicePtr->AllPasswordFieldsInInsecureContextInvisible();
+  }
+};
+
+}  // namespace
 
 InputType* PasswordInputType::create(HTMLInputElement& element) {
   return new PasswordInputType(element);
@@ -88,21 +141,7 @@ void PasswordInputType::disableSecureTextInput() {
 
 LayoutObject* PasswordInputType::createLayoutObject(
     const ComputedStyle& style) const {
-  LayoutObject* layoutObject = TextFieldInputType::createLayoutObject(style);
-  Document& document = element().document();
-  if (document.isSecureContext() || !layoutObject) {
-    // The browser process only cares about passwords on pages where the
-    // top-level URL is not secure. Secure contexts must have a top-level
-    // URL that is secure, so there is no need to send notifications for
-    // password fields in secure contexts.
-    return layoutObject;
-  }
-
-  mojom::blink::SensitiveInputVisibilityServicePtr sensitiveInputServicePtr;
-  element().document().frame()->interfaceProvider()->getInterface(
-      mojo::GetProxy(&sensitiveInputServicePtr));
-  sensitiveInputServicePtr->PasswordFieldVisibleInInsecureContext();
-  return layoutObject;
+  return new PasswordLayoutObject(&element());
 }
 
 }  // namespace blink

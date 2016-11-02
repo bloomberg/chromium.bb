@@ -7,8 +7,8 @@
 #include "core/frame/FrameView.h"
 #include "core/html/HTMLInputElement.h"
 #include "core/testing/DummyPageHolder.h"
+#include "mojo/public/cpp/bindings/binding_set.h"
 #include "mojo/public/cpp/bindings/interface_request.h"
-#include "mojo/public/cpp/bindings/strong_binding.h"
 #include "platform/testing/UnitTestHelpers.h"
 #include "public/platform/InterfaceProvider.h"
 #include "public/platform/modules/sensitive_input_visibility/sensitive_input_visibility_service.mojom-blink.h"
@@ -18,18 +18,18 @@ namespace blink {
 
 class MockInterfaceProvider : public blink::InterfaceProvider {
  public:
-  MockInterfaceProvider() : m_passwordFieldVisibleCalled(false) {}
+  MockInterfaceProvider()
+      : m_mockSensitiveInputVisibilityService(this),
+        m_passwordFieldVisibleCalled(false),
+        m_numPasswordFieldsInvisibleCalls(0) {}
+
   virtual ~MockInterfaceProvider() {}
 
   void getInterface(const char* name,
                     mojo::ScopedMessagePipeHandle handle) override {
-    if (!m_mockSensitiveInputVisibilityService) {
-      m_mockSensitiveInputVisibilityService.reset(
-          new MockSensitiveInputVisibilityService(
-              this,
-              mojo::MakeRequest<mojom::blink::SensitiveInputVisibilityService>(
-                  std::move(handle))));
-    }
+    m_mockSensitiveInputVisibilityService.bindRequest(
+        mojo::MakeRequest<mojom::blink::SensitiveInputVisibilityService>(
+            std::move(handle)));
   }
 
   void setPasswordFieldVisibleCalled() { m_passwordFieldVisibleCalled = true; }
@@ -38,15 +38,27 @@ class MockInterfaceProvider : public blink::InterfaceProvider {
     return m_passwordFieldVisibleCalled;
   }
 
+  void incrementPasswordFieldsInvisibleCalled() {
+    ++m_numPasswordFieldsInvisibleCalls;
+  }
+
+  unsigned numPasswordFieldsInvisibleCalls() const {
+    return m_numPasswordFieldsInvisibleCalls;
+  }
+
  private:
   class MockSensitiveInputVisibilityService
       : public mojom::blink::SensitiveInputVisibilityService {
    public:
-    MockSensitiveInputVisibilityService(
-        MockInterfaceProvider* registry,
-        mojom::blink::SensitiveInputVisibilityServiceRequest request)
-        : m_binding(this, std::move(request)), m_registry(registry) {}
+    explicit MockSensitiveInputVisibilityService(
+        MockInterfaceProvider* registry)
+        : m_registry(registry) {}
     ~MockSensitiveInputVisibilityService() override {}
+
+    void bindRequest(
+        mojom::blink::SensitiveInputVisibilityServiceRequest request) {
+      m_bindingSet.AddBinding(this, std::move(request));
+    }
 
    private:
     // mojom::SensitiveInputVisibilityService
@@ -54,13 +66,17 @@ class MockInterfaceProvider : public blink::InterfaceProvider {
       m_registry->setPasswordFieldVisibleCalled();
     }
 
-    mojo::Binding<SensitiveInputVisibilityService> m_binding;
+    void AllPasswordFieldsInInsecureContextInvisible() override {
+      m_registry->incrementPasswordFieldsInvisibleCalled();
+    }
+
+    mojo::BindingSet<SensitiveInputVisibilityService> m_bindingSet;
     MockInterfaceProvider* const m_registry;
   };
 
-  std::unique_ptr<MockSensitiveInputVisibilityService>
-      m_mockSensitiveInputVisibilityService;
+  MockSensitiveInputVisibilityService m_mockSensitiveInputVisibilityService;
   bool m_passwordFieldVisibleCalled;
+  unsigned m_numPasswordFieldsInvisibleCalls;
 };
 
 // Tests that a Mojo message is sent when a visible password field
@@ -159,6 +175,129 @@ TEST(PasswordInputTypeTest,
   pageHolder->document().view()->updateAllLifecyclePhases();
   blink::testing::runPendingTasks();
   EXPECT_FALSE(interfaceProvider.passwordFieldVisibleCalled());
+}
+
+// Tests that a Mojo message is sent when the only visible password
+// field becomes invisible.
+TEST(PasswordInputTypeTest, VisiblePasswordFieldBecomesInvisible) {
+  MockInterfaceProvider interfaceProvider;
+  std::unique_ptr<DummyPageHolder> pageHolder = DummyPageHolder::create(
+      IntSize(2000, 2000), nullptr, nullptr, nullptr, &interfaceProvider);
+  pageHolder->document().body()->setInnerHTML("<input type='password'>",
+                                              ASSERT_NO_EXCEPTION);
+  pageHolder->document().view()->updateAllLifecyclePhases();
+  blink::testing::runPendingTasks();
+  EXPECT_TRUE(interfaceProvider.passwordFieldVisibleCalled());
+  EXPECT_EQ(0u, interfaceProvider.numPasswordFieldsInvisibleCalls());
+
+  // Now make the input invisible.
+  HTMLInputElement* input =
+      toHTMLInputElement(pageHolder->document().body()->firstChild());
+  input->setAttribute("style", "display:none;", ASSERT_NO_EXCEPTION);
+  pageHolder->document().view()->updateAllLifecyclePhases();
+  blink::testing::runPendingTasks();
+  EXPECT_EQ(1u, interfaceProvider.numPasswordFieldsInvisibleCalls());
+}
+
+// Tests that a Mojo message is sent when all visible password fields
+// become invisible.
+TEST(PasswordInputTypeTest, AllVisiblePasswordFieldBecomeInvisible) {
+  MockInterfaceProvider interfaceProvider;
+  std::unique_ptr<DummyPageHolder> pageHolder = DummyPageHolder::create(
+      IntSize(2000, 2000), nullptr, nullptr, nullptr, &interfaceProvider);
+  pageHolder->document().body()->setInnerHTML(
+      "<input type='password'><input type='password'>", ASSERT_NO_EXCEPTION);
+  pageHolder->document().view()->updateAllLifecyclePhases();
+  blink::testing::runPendingTasks();
+  EXPECT_EQ(0u, interfaceProvider.numPasswordFieldsInvisibleCalls());
+
+  // Make the first input invisible. There should be no message because
+  // there is still a visible input.
+  HTMLInputElement* input =
+      toHTMLInputElement(pageHolder->document().body()->firstChild());
+  input->setAttribute("style", "display:none;", ASSERT_NO_EXCEPTION);
+  pageHolder->document().view()->updateAllLifecyclePhases();
+  blink::testing::runPendingTasks();
+  EXPECT_EQ(0u, interfaceProvider.numPasswordFieldsInvisibleCalls());
+
+  // When all inputs are invisible, then a message should be sent.
+  input = toHTMLInputElement(pageHolder->document().body()->lastChild());
+  input->setAttribute("style", "display:none;", ASSERT_NO_EXCEPTION);
+  pageHolder->document().view()->updateAllLifecyclePhases();
+  blink::testing::runPendingTasks();
+  EXPECT_EQ(1u, interfaceProvider.numPasswordFieldsInvisibleCalls());
+
+  // If the count of visible inputs goes positive again and then back to
+  // zero, a message should be sent again.
+  input->setAttribute("style", "", ASSERT_NO_EXCEPTION);
+  pageHolder->document().view()->updateAllLifecyclePhases();
+  blink::testing::runPendingTasks();
+  EXPECT_EQ(1u, interfaceProvider.numPasswordFieldsInvisibleCalls());
+  input->setAttribute("style", "display:none;", ASSERT_NO_EXCEPTION);
+  pageHolder->document().view()->updateAllLifecyclePhases();
+  blink::testing::runPendingTasks();
+  EXPECT_EQ(2u, interfaceProvider.numPasswordFieldsInvisibleCalls());
+}
+
+// Tests that a Mojo message is sent when the containing element of a
+// visible password field becomes invisible.
+TEST(PasswordInputTypeTest, PasswordFieldContainerBecomesInvisible) {
+  MockInterfaceProvider interfaceProvider;
+  std::unique_ptr<DummyPageHolder> pageHolder = DummyPageHolder::create(
+      IntSize(2000, 2000), nullptr, nullptr, nullptr, &interfaceProvider);
+  pageHolder->document().body()->setInnerHTML(
+      "<div><input type='password'></div>", ASSERT_NO_EXCEPTION);
+  pageHolder->document().view()->updateAllLifecyclePhases();
+  blink::testing::runPendingTasks();
+  EXPECT_EQ(0u, interfaceProvider.numPasswordFieldsInvisibleCalls());
+
+  // If the containing div becomes invisible, a message should be sent.
+  HTMLElement* div =
+      toHTMLDivElement(pageHolder->document().body()->firstChild());
+  div->setAttribute("style", "display:none;", ASSERT_NO_EXCEPTION);
+  pageHolder->document().view()->updateAllLifecyclePhases();
+  blink::testing::runPendingTasks();
+  EXPECT_EQ(1u, interfaceProvider.numPasswordFieldsInvisibleCalls());
+
+  // If the containing div becomes visible and then invisible again, a message
+  // should be sent.
+  div->setAttribute("style", "", ASSERT_NO_EXCEPTION);
+  pageHolder->document().view()->updateAllLifecyclePhases();
+  blink::testing::runPendingTasks();
+  EXPECT_EQ(1u, interfaceProvider.numPasswordFieldsInvisibleCalls());
+  div->setAttribute("style", "display:none;", ASSERT_NO_EXCEPTION);
+  pageHolder->document().view()->updateAllLifecyclePhases();
+  blink::testing::runPendingTasks();
+  EXPECT_EQ(2u, interfaceProvider.numPasswordFieldsInvisibleCalls());
+}
+
+// Tests that a Mojo message is sent when all visible password fields
+// become non-password fields.
+TEST(PasswordInputTypeTest, PasswordFieldsBecomeNonPasswordFields) {
+  MockInterfaceProvider interfaceProvider;
+  std::unique_ptr<DummyPageHolder> pageHolder = DummyPageHolder::create(
+      IntSize(2000, 2000), nullptr, nullptr, nullptr, &interfaceProvider);
+  pageHolder->document().body()->setInnerHTML(
+      "<input type='password'><input type='password'>", ASSERT_NO_EXCEPTION);
+  pageHolder->document().view()->updateAllLifecyclePhases();
+  blink::testing::runPendingTasks();
+  EXPECT_EQ(0u, interfaceProvider.numPasswordFieldsInvisibleCalls());
+
+  // Make the first input a non-password input. There should be no
+  // message because there is still a visible password input.
+  HTMLInputElement* input =
+      toHTMLInputElement(pageHolder->document().body()->firstChild());
+  input->setType("text");
+  pageHolder->document().view()->updateAllLifecyclePhases();
+  blink::testing::runPendingTasks();
+  EXPECT_EQ(0u, interfaceProvider.numPasswordFieldsInvisibleCalls());
+
+  // When all inputs are no longer passwords, then a message should be sent.
+  input = toHTMLInputElement(pageHolder->document().body()->lastChild());
+  input->setType("text");
+  pageHolder->document().view()->updateAllLifecyclePhases();
+  blink::testing::runPendingTasks();
+  EXPECT_EQ(1u, interfaceProvider.numPasswordFieldsInvisibleCalls());
 }
 
 }  // namespace blink
