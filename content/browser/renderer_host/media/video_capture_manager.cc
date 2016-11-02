@@ -89,9 +89,10 @@ void ConsolidateCaptureFormats(media::VideoCaptureFormats* formats) {
   formats->erase(last, formats->end());
   // Mark all formats as I420, since this is what the renderer side will get
   // anyhow: the actual pixel format is decided at the device level.
-  for (media::VideoCaptureFormats::iterator it = formats->begin();
-       it != formats->end(); ++it) {
-    it->pixel_format = media::PIXEL_FORMAT_I420;
+  // Don't do this for Y16 format as it is handled separatelly.
+  for (auto& format : *formats) {
+    if (format.pixel_format != media::PIXEL_FORMAT_Y16)
+      format.pixel_format = media::PIXEL_FORMAT_I420;
   }
 }
 

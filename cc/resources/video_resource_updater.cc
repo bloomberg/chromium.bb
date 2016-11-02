@@ -428,16 +428,22 @@ VideoFrameExternalResources VideoResourceUpdater::CreateForSoftwarePlanes(
       break;
   }
 
-  // TODO(dshwang): support PIXEL_FORMAT_Y16. crbug.com/624436
-  DCHECK_NE(bits_per_channel, 16);
-
-  // Only YUV software video frames are supported.
-  DCHECK(media::IsYuvPlanar(input_frame_format));
+  // Only YUV and Y16 software video frames are supported.
+  DCHECK(media::IsYuvPlanar(input_frame_format) ||
+         input_frame_format == media::PIXEL_FORMAT_Y16);
 
   const bool software_compositor = context_provider_ == NULL;
 
-  ResourceFormat output_resource_format =
-      resource_provider_->YuvResourceFormat(bits_per_channel);
+  ResourceFormat output_resource_format;
+  if (input_frame_format == media::PIXEL_FORMAT_Y16) {
+    // Unable to display directly as yuv planes so convert it to RGBA for
+    // compositing.
+    output_resource_format = RGBA_8888;
+  } else {
+    // Can be composited directly from yuv planes.
+    output_resource_format =
+        resource_provider_->YuvResourceFormat(bits_per_channel);
+  }
 
   // If GPU compositing is enabled, but the output resource format
   // returned by the resource provider is RGBA_8888, then a GPU driver

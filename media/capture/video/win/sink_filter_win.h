@@ -31,6 +31,11 @@ extern GUID kMediaSubTypeI420;
 // pixel format with the characters HDYC encoded in the first array word.
 extern GUID kMediaSubTypeHDYC;
 
+// 16-bit grey-scale single plane formats provided by some depth cameras.
+extern GUID kMediaSubTypeZ16;
+extern GUID kMediaSubTypeINVZ;
+extern GUID kMediaSubTypeY16;
+
 class SinkInputPin;
 
 class __declspec(uuid("88cdbbdc-a73b-4afa-acbf-15d5e2ce12c3")) SinkFilter

@@ -167,7 +167,8 @@ TEST_F(VideoCaptureDeviceClientTest, DataCaptureGoodPixelFormats) {
     media::PIXEL_FORMAT_RGB24,
 #endif
     media::PIXEL_FORMAT_RGB32,
-    media::PIXEL_FORMAT_ARGB
+    media::PIXEL_FORMAT_ARGB,
+    media::PIXEL_FORMAT_Y16,
   };
 
   for (media::VideoPixelFormat format : kSupportedFormats) {

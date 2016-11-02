@@ -27,6 +27,14 @@ using media::VideoCaptureFormat;
 using media::VideoFrame;
 using media::VideoFrameMetadata;
 
+namespace {
+
+bool IsFormatSupported(media::VideoPixelFormat pixel_format) {
+  return (pixel_format == media::PIXEL_FORMAT_I420 ||
+          pixel_format == media::PIXEL_FORMAT_Y16);
+}
+}
+
 namespace media {
 
 // Class combining a Client::Buffer interface implementation and a pool buffer
@@ -105,6 +113,11 @@ void VideoCaptureDeviceClient::OnIncomingCapturedData(
 
   if (!frame_format.IsValid())
     return;
+
+  if (frame_format.pixel_format == media::PIXEL_FORMAT_Y16) {
+    return OnIncomingCapturedY16Data(data, length, frame_format, reference_time,
+                                     timestamp);
+  }
 
   // |chopped_{width,height} and |new_unrotated_{width,height}| are the lowest
   // bit decomposition of {width, height}, grabbing the odd and even parts.
@@ -257,8 +270,7 @@ VideoCaptureDeviceClient::ReserveOutputBuffer(
     media::VideoPixelStorage pixel_storage) {
   DCHECK_GT(frame_size.width(), 0);
   DCHECK_GT(frame_size.height(), 0);
-  // Currently, only I420 pixel format is supported.
-  DCHECK_EQ(media::PIXEL_FORMAT_I420, pixel_format);
+  DCHECK(IsFormatSupported(pixel_format));
 
   // TODO(mcasas): For PIXEL_STORAGE_GPUMEMORYBUFFER, find a way to indicate if
   // it's a ShMem GMB or a DmaBuf GMB.
@@ -278,8 +290,7 @@ void VideoCaptureDeviceClient::OnIncomingCapturedBuffer(
     const VideoCaptureFormat& frame_format,
     base::TimeTicks reference_time,
     base::TimeDelta timestamp) {
-  // Currently, only I420 pixel format is supported.
-  DCHECK_EQ(media::PIXEL_FORMAT_I420, frame_format.pixel_format);
+  DCHECK(IsFormatSupported(frame_format.pixel_format));
   DCHECK_EQ(media::PIXEL_STORAGE_CPU, frame_format.pixel_storage);
 
   scoped_refptr<VideoFrame> frame;
@@ -288,10 +299,10 @@ void VideoCaptureDeviceClient::OnIncomingCapturedBuffer(
     frame->set_timestamp(timestamp);
   } else {
     frame = VideoFrame::WrapExternalSharedMemory(
-        media::PIXEL_FORMAT_I420, frame_format.frame_size,
+        frame_format.pixel_format, frame_format.frame_size,
         gfx::Rect(frame_format.frame_size), frame_format.frame_size,
         reinterpret_cast<uint8_t*>(buffer->data()),
-        VideoFrame::AllocationSize(media::PIXEL_FORMAT_I420,
+        VideoFrame::AllocationSize(frame_format.pixel_format,
                                    frame_format.frame_size),
         base::SharedMemory::NULLHandle(), 0u, timestamp);
   }
@@ -370,6 +381,34 @@ VideoCaptureDeviceClient::ReserveI420OutputBuffer(
       *u_plane_data +
       VideoFrame::PlaneSize(format, VideoFrame::kUPlane, dimensions).GetArea();
   return buffer;
+}
+
+void VideoCaptureDeviceClient::OnIncomingCapturedY16Data(
+    const uint8_t* data,
+    int length,
+    const VideoCaptureFormat& frame_format,
+    base::TimeTicks reference_time,
+    base::TimeDelta timestamp) {
+  std::unique_ptr<Buffer> buffer(ReserveOutputBuffer(frame_format.frame_size,
+                                                     media::PIXEL_FORMAT_Y16,
+                                                     media::PIXEL_STORAGE_CPU));
+  // The input |length| can be greater than the required buffer size because of
+  // paddings and/or alignments, but it cannot be smaller.
+  DCHECK_GE(static_cast<size_t>(length), frame_format.ImageAllocationSize());
+#if DCHECK_IS_ON()
+  dropped_frame_counter_ = buffer.get() ? 0 : dropped_frame_counter_ + 1;
+  if (dropped_frame_counter_ >= kMaxDroppedFrames)
+    OnError(FROM_HERE, "Too many frames dropped");
+#endif
+  // Failed to reserve output buffer, so drop the frame.
+  if (!buffer.get())
+    return;
+  memcpy(buffer->data(), data, length);
+  const VideoCaptureFormat output_format =
+      VideoCaptureFormat(frame_format.frame_size, frame_format.frame_rate,
+                         media::PIXEL_FORMAT_Y16, media::PIXEL_STORAGE_CPU);
+  OnIncomingCapturedBuffer(std::move(buffer), output_format, reference_time,
+                           timestamp);
 }
 
 }  // namespace media

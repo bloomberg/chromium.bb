@@ -4,6 +4,7 @@
 
 #include "media/capture/video/linux/v4l2_capture_delegate.h"
 
+#include <linux/version.h>
 #include <poll.h>
 #include <sys/fcntl.h>
 #include <sys/ioctl.h>
@@ -18,6 +19,13 @@
 #include "media/base/bind_to_current_loop.h"
 #include "media/capture/video/blob_utils.h"
 #include "media/capture/video/linux/video_capture_device_linux.h"
+
+#if LINUX_VERSION_CODE < KERNEL_VERSION(4, 6, 0)
+// 16 bit depth, Realsense F200.
+#define V4L2_PIX_FMT_Z16 v4l2_fourcc('Z', '1', '6', ' ')
+// 16 bit depth, Realsense SR300.
+#define V4L2_PIX_FMT_INVZ v4l2_fourcc('I', 'N', 'V', 'Z')
+#endif
 
 namespace media {
 
@@ -50,6 +58,9 @@ static struct {
   size_t num_planes;
 } const kSupportedFormatsAndPlanarity[] = {
     {V4L2_PIX_FMT_YUV420, PIXEL_FORMAT_I420, 1},
+    {V4L2_PIX_FMT_Y16, PIXEL_FORMAT_Y16, 1},
+    {V4L2_PIX_FMT_Z16, PIXEL_FORMAT_Y16, 1},
+    {V4L2_PIX_FMT_INVZ, PIXEL_FORMAT_Y16, 1},
     {V4L2_PIX_FMT_YUYV, PIXEL_FORMAT_YUY2, 1},
     {V4L2_PIX_FMT_UYVY, PIXEL_FORMAT_UYVY, 1},
     {V4L2_PIX_FMT_RGB24, PIXEL_FORMAT_RGB24, 1},
@@ -567,9 +578,16 @@ void V4L2CaptureDelegate::DoCapture() {
     base::TimeDelta timestamp =
         base::TimeDelta::FromSeconds(buffer.timestamp.tv_sec) +
         base::TimeDelta::FromMicroseconds(buffer.timestamp.tv_usec);
-    client_->OnIncomingCapturedData(
-        buffer_tracker->start(), buffer_tracker->payload_size(),
-        capture_format_, rotation_, base::TimeTicks::Now(), timestamp);
+#ifdef V4L2_BUF_FLAG_ERROR
+    if (buffer.flags & V4L2_BUF_FLAG_ERROR) {
+      LOG(ERROR) << "Dequeued v4l2 buffer contains corrupted data ("
+                 << buffer.bytesused << " bytes).";
+      buffer.bytesused = 0;
+    } else
+#endif
+      client_->OnIncomingCapturedData(
+          buffer_tracker->start(), buffer_tracker->payload_size(),
+          capture_format_, rotation_, base::TimeTicks::Now(), timestamp);
 
     while (!take_photo_callbacks_.empty()) {
       VideoCaptureDevice::TakePhotoCallback cb =

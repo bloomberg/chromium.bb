@@ -5,6 +5,7 @@
 #include <stdint.h>
 
 #include "base/macros.h"
+#include "base/memory/aligned_memory.h"
 #include "base/message_loop/message_loop.h"
 #include "gpu/GLES2/gl2extchromium.h"
 #include "gpu/command_buffer/client/gles2_interface_stub.h"
@@ -510,6 +511,50 @@ TEST_F(SkCanvasVideoRendererTest, HighBits) {
             GetColorAt(target_canvas(), kWidth * 1 / 8 - 1, kHeight * 3 / 6));
   EXPECT_EQ(SK_ColorBLUE,
             GetColorAt(target_canvas(), kWidth * 3 / 8, kHeight * 3 / 6));
+}
+
+TEST_F(SkCanvasVideoRendererTest, Y16) {
+  SkBitmap bitmap;
+  bitmap.allocPixels(SkImageInfo::MakeN32(16, 16, kPremul_SkAlphaType));
+
+  // |offset_x| and |offset_y| define visible rect's offset to coded rect.
+  const int offset_x = 3;
+  const int offset_y = 5;
+  const int stride = bitmap.width() + offset_x;
+  const size_t byte_size = stride * (bitmap.height() + offset_y) * 2;
+  std::unique_ptr<unsigned char, base::AlignedFreeDeleter> memory(
+      static_cast<unsigned char*>(base::AlignedAlloc(
+          byte_size, media::VideoFrame::kFrameAddressAlignment)));
+
+  // In the visible rect, fill upper byte with [0-255] and lower with [255-0].
+  uint16_t* data = reinterpret_cast<uint16_t*>(memory.get());
+  for (int j = 0; j < bitmap.height(); j++) {
+    for (int i = 0; i < bitmap.width(); i++) {
+      const int value = i + j * bitmap.width();
+      data[(stride * (j + offset_y)) + i + offset_x] =
+          ((value & 0xFF) << 8) | (~value & 0xFF);
+    }
+  }
+  const gfx::Rect rect(offset_x, offset_y, bitmap.width(), bitmap.height());
+  scoped_refptr<media::VideoFrame> video_frame =
+      media::VideoFrame::WrapExternalData(
+          media::PIXEL_FORMAT_Y16,
+          gfx::Size(stride, offset_y + bitmap.height()), rect, rect.size(),
+          memory.get(), byte_size, cropped_frame()->timestamp());
+
+  SkCanvas canvas(bitmap);
+  SkPaint paint;
+  paint.setFilterQuality(kNone_SkFilterQuality);
+  renderer_.Paint(video_frame, &canvas,
+                  gfx::RectF(bitmap.width(), bitmap.height()), paint,
+                  VIDEO_ROTATION_0, Context3D());
+  SkAutoLockPixels lock(bitmap);
+  for (int j = 0; j < bitmap.height(); j++) {
+    for (int i = 0; i < bitmap.width(); i++) {
+      const int value = i + j * bitmap.width();
+      EXPECT_EQ(SkColorSetRGB(value, value, value), bitmap.getColor(i, j));
+    }
+  }
 }
 
 namespace {

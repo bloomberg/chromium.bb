@@ -94,6 +94,13 @@ class CAPTURE_EXPORT VideoCaptureDeviceClient
       uint8_t** u_plane_data,
       uint8_t** v_plane_data);
 
+  // A branch of OnIncomingCapturedData for Y16 frame_format.pixel_format.
+  void OnIncomingCapturedY16Data(const uint8_t* data,
+                                 int length,
+                                 const VideoCaptureFormat& frame_format,
+                                 base::TimeTicks reference_time,
+                                 base::TimeDelta timestamp);
+
   // The receiver to which we post events.
   const std::unique_ptr<VideoFrameReceiver> receiver_;
 

@@ -213,7 +213,8 @@ void VideoCaptureController::AddClient(
   // Check that requested VideoCaptureParams are valid and supported.  If not,
   // report an error immediately and punt.
   if (!params.IsValid() ||
-      params.requested_format.pixel_format != media::PIXEL_FORMAT_I420 ||
+      !(params.requested_format.pixel_format == media::PIXEL_FORMAT_I420 ||
+        params.requested_format.pixel_format == media::PIXEL_FORMAT_Y16) ||
       params.requested_format.pixel_storage != media::PIXEL_STORAGE_CPU) {
     // Crash in debug builds since the renderer should not have asked for
     // invalid or unsupported parameters.
@@ -416,8 +417,9 @@ void VideoCaptureController::OnIncomingCapturedVideoFrame(
         new base::DictionaryValue());
     frame->metadata()->MergeInternalValuesInto(metadata.get());
 
-    // Only I420 pixel format is currently supported.
-    DCHECK_EQ(frame->format(), media::PIXEL_FORMAT_I420)
+    // Only I420 and Y16 pixel formats are currently supported.
+    DCHECK(frame->format() == media::PIXEL_FORMAT_I420 ||
+           frame->format() == media::PIXEL_FORMAT_Y16)
         << "Unsupported pixel format: "
         << media::VideoPixelFormatToString(frame->format());
 

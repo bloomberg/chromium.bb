@@ -170,6 +170,9 @@ VideoCaptureDeviceWin::TranslateMediaSubtypeToPixelFormat(
       {MEDIASUBTYPE_UYVY, PIXEL_FORMAT_UYVY},
       {MEDIASUBTYPE_ARGB32, PIXEL_FORMAT_ARGB},
       {kMediaSubTypeHDYC, PIXEL_FORMAT_UYVY},
+      {kMediaSubTypeY16, PIXEL_FORMAT_Y16},
+      {kMediaSubTypeZ16, PIXEL_FORMAT_Y16},
+      {kMediaSubTypeINVZ, PIXEL_FORMAT_Y16},
   };
   for (const auto& pixel_format : kMediaSubtypeToPixelFormatCorrespondence) {
     if (sub_type == pixel_format.sub_type)

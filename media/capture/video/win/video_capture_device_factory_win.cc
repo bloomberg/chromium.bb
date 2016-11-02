@@ -380,8 +380,10 @@ static void GetDeviceSupportedFormatsMediaFoundation(
     VideoCaptureDeviceMFWin::FormatFromGuid(type_guid,
                                             &capture_format.pixel_format);
     type.Release();
-    formats->push_back(capture_format);
     ++stream_index;
+    if (capture_format.pixel_format == PIXEL_FORMAT_UNKNOWN)
+      continue;
+    formats->push_back(capture_format);
 
     DVLOG(1) << descriptor.display_name << " "
              << VideoCaptureFormat::ToString(capture_format);

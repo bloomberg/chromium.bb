@@ -95,6 +95,21 @@ bool SinkInputPin::IsMediaTypeValid(const AM_MEDIA_TYPE* media_type) {
     resulting_format_.pixel_format = PIXEL_FORMAT_RGB32;
     return true;
   }
+  if (sub_type == kMediaSubTypeY16 &&
+      pvi->bmiHeader.biCompression == MAKEFOURCC('Y', '1', '6', ' ')) {
+    resulting_format_.pixel_format = PIXEL_FORMAT_Y16;
+    return true;
+  }
+  if (sub_type == kMediaSubTypeZ16 &&
+      pvi->bmiHeader.biCompression == MAKEFOURCC('Z', '1', '6', ' ')) {
+    resulting_format_.pixel_format = PIXEL_FORMAT_Y16;
+    return true;
+  }
+  if (sub_type == kMediaSubTypeINVZ &&
+      pvi->bmiHeader.biCompression == MAKEFOURCC('I', 'N', 'V', 'Z')) {
+    resulting_format_.pixel_format = PIXEL_FORMAT_Y16;
+    return true;
+  }
 
 #ifndef NDEBUG
   WCHAR guid_str[128];
@@ -123,8 +138,9 @@ bool SinkInputPin::GetValidMediaType(int index, AM_MEDIA_TYPE* media_type) {
   media_type->formattype = FORMAT_VideoInfo;
   media_type->bTemporalCompression = FALSE;
 
-  if (requested_pixel_format_ == PIXEL_FORMAT_MJPEG) {
-    // If the requested pixel format is MJPEG, accept only MJPEG.
+  if (requested_pixel_format_ == PIXEL_FORMAT_MJPEG ||
+      requested_pixel_format_ == PIXEL_FORMAT_Y16) {
+    // If the requested pixel format is MJPEG or Y16, don't accept other.
     // This is ok since the capabilities of the capturer have been
     // enumerated and we know that it is supported.
     if (index != 0)

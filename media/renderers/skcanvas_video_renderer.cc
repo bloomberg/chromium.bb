@@ -347,6 +347,7 @@ void SkCanvasVideoRenderer::Paint(const scoped_refptr<VideoFrame>& video_frame,
   // frame has an unexpected format.
   if (!video_frame.get() || video_frame->natural_size().IsEmpty() ||
       !(media::IsYuvPlanar(video_frame->format()) ||
+        video_frame->format() == media::PIXEL_FORMAT_Y16 ||
         video_frame->HasTextures())) {
     SkPaint blackWithAlphaPaint;
     blackWithAlphaPaint.setAlpha(paint.getAlpha());
@@ -520,7 +521,30 @@ scoped_refptr<VideoFrame> DownShiftHighbitVideoFrame(
   }
   return ret;
 }
+
+// We take the upper 8 bits of 16-bit data and convert it as luminance to ARGB.
+// We loose the precision here, but it is important not to render Y16 as RG_88.
+// To get the full precision use float textures with WebGL1 and e.g. R16UI or
+// R32F textures with WebGL2.
+void ConvertY16ToARGB(const VideoFrame* video_frame,
+                      void* argb_pixels,
+                      size_t argb_row_bytes) {
+  const uint8_t* row_head = video_frame->visible_data(0);
+  uint8_t* out = static_cast<uint8_t*>(argb_pixels);
+  const size_t stride = video_frame->stride(0);
+  for (int i = 0; i < video_frame->visible_rect().height(); ++i) {
+    uint32_t* rgba = reinterpret_cast<uint32_t*>(out);
+    const uint8_t* row_end = row_head + video_frame->visible_rect().width() * 2;
+    for (const uint8_t* row = row_head; row < row_end; ++row) {
+      uint32_t gray_value = *++row;
+      *rgba++ = SkColorSetRGB(gray_value, gray_value, gray_value);
+    }
+    out += argb_row_bytes;
+    row_head += stride;
+  }
 }
+
+}  // anonymous namespace
 
 // static
 void SkCanvasVideoRenderer::ConvertVideoFrameToRGBPixels(
@@ -529,10 +553,6 @@ void SkCanvasVideoRenderer::ConvertVideoFrameToRGBPixels(
     size_t row_bytes) {
   if (!video_frame->IsMappable()) {
     NOTREACHED() << "Cannot extract pixels from non-CPU frame formats.";
-    return;
-  }
-  if (!media::IsYuvPlanar(video_frame->format())) {
-    NOTREACHED() << "Non YUV formats are not supported";
     return;
   }
 
@@ -627,6 +647,10 @@ void SkCanvasVideoRenderer::ConvertVideoFrameToRGBPixels(
       break;
     }
 
+    case PIXEL_FORMAT_Y16:
+      ConvertY16ToARGB(video_frame, rgb_pixels, row_bytes);
+      break;
+
     case PIXEL_FORMAT_NV12:
     case PIXEL_FORMAT_NV21:
     case PIXEL_FORMAT_UYVY:
@@ -637,14 +661,9 @@ void SkCanvasVideoRenderer::ConvertVideoFrameToRGBPixels(
     case PIXEL_FORMAT_RGB32:
     case PIXEL_FORMAT_MJPEG:
     case PIXEL_FORMAT_MT21:
-    // TODO(dshwang): Use either I400ToARGB or J400ToARGB depending if we want
-    // BT.601 constrained range of 16 to 240, or JPEG full range BT.601
-    // coefficients. Implement it when Y8/16 foramt is supported.
-    // crbug.com/624436
     case PIXEL_FORMAT_Y8:
-    case PIXEL_FORMAT_Y16:
     case PIXEL_FORMAT_UNKNOWN:
-      NOTREACHED();
+      NOTREACHED() << "Only YUV formats and Y16 are supported.";
   }
 }
 

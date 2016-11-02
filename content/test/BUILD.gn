@@ -841,6 +841,7 @@ test("content_browsertests") {
       "../browser/webrtc/webrtc_content_browsertest_base.h",
       "../browser/webrtc/webrtc_data_browsertest.cc",
       "../browser/webrtc/webrtc_datachannel_browsertest.cc",
+      "../browser/webrtc/webrtc_depth_capture_browsertest.cc",
       "../browser/webrtc/webrtc_getusermedia_browsertest.cc",
       "../browser/webrtc/webrtc_image_capture_browsertest.cc",
       "../browser/webrtc/webrtc_internals_browsertest.cc",

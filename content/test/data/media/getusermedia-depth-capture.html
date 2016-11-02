@@ -1,0 +1,56 @@
+<html>
+<head>
+  <script type="text/javascript" src="webrtc_test_utilities.js"></script>
+  <script type="text/javascript" src="depth_stream_test_utilities.js"></script>
+  <script type="text/javascript">
+
+  $ = function(id) {
+    return document.getElementById(id);
+  };
+  
+  setAllEventsOccuredHandler(function() {
+    reportTestSuccess();
+  });
+
+  // testVideoToImageBitmap is a layout test that we run here because
+  // it requires --use-fake-device-for-media-capture.
+  function getDepthStreamAndCallCreateImageBitmap() {
+    console.log('Calling getDepthStreamAndCallCreateImageBitmap');
+    getFake16bitStream().then(function(stream) {
+      detectVideoInLocalView1(stream, function() {
+        testVideoToImageBitmap('local-view-1', function() {
+          stream.getVideoTracks()[0].stop();
+          waitForVideoToStop('local-view-1');
+        }, failedCallback);
+      });
+    },
+    failedCallback);
+  }
+
+  function failedCallback(error) {
+    failTest('GetUserMedia call failed with error name ' + error.name);
+  }
+
+  function attachMediaStream(stream, videoElement) {
+    var localStreamUrl = URL.createObjectURL(stream);
+    $(videoElement).src = localStreamUrl;
+  }
+
+  function detectVideoInLocalView1(stream, callback) {
+    attachMediaStream(stream, 'local-view-1');
+    detectVideoPlaying('local-view-1', callback);
+  }
+  </script>
+</head>
+<body>
+  <table border="0">
+    <!-- Canvases are named after their corresponding video elements. -->
+    <tr>
+      <td><video id="local-view-1" width="96" height="96" autoplay
+          style="display:none"></video></td>
+      <td><canvas id="local-view-1-canvas" width="96" height="96"
+          style="display:none"></canvas></td>
+    </tr>
+  </table>
+</body>
+</html>

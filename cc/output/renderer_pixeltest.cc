@@ -285,6 +285,35 @@ void CreateTestYUVVideoDrawQuad_FromVideoFrame(
                    bits_per_channel);
 }
 
+void CreateTestY16TextureDrawQuad_FromVideoFrame(
+    const SharedQuadState* shared_state,
+    scoped_refptr<media::VideoFrame> video_frame,
+    const gfx::RectF& tex_coord_rect,
+    RenderPass* render_pass,
+    VideoResourceUpdater* video_resource_updater,
+    const gfx::Rect& rect,
+    const gfx::Rect& visible_rect,
+    ResourceProvider* resource_provider) {
+  VideoFrameExternalResources resources =
+      video_resource_updater->CreateExternalResourcesFromVideoFrame(
+          video_frame);
+
+  EXPECT_EQ(VideoFrameExternalResources::RGBA_RESOURCE, resources.type);
+  EXPECT_EQ(1u, resources.mailboxes.size());
+  EXPECT_EQ(1u, resources.release_callbacks.size());
+
+  ResourceId y_resource = resource_provider->CreateResourceFromTextureMailbox(
+      resources.mailboxes[0],
+      SingleReleaseCallbackImpl::Create(resources.release_callbacks[0]));
+
+  TextureDrawQuad* quad =
+      render_pass->CreateAndAppendDrawQuad<TextureDrawQuad>();
+  float vertex_opacity[4] = {1.0f, 1.0f, 1.0f, 1.0f};
+  quad->SetNew(shared_state, rect, gfx::Rect(), rect, y_resource, false,
+               tex_coord_rect.origin(), tex_coord_rect.bottom_right(),
+               SK_ColorBLACK, vertex_opacity, false, false, false);
+}
+
 // Upshift video frame to 10 bit.
 scoped_refptr<media::VideoFrame> CreateHighbitVideoFrame(
     media::VideoFrame* video_frame) {
@@ -539,6 +568,61 @@ void CreateTestYUVVideoDrawQuad_NV12(const SharedQuadState* shared_state,
                    color_space, video_color_space, 0.0f, 1.0f, 8);
 }
 
+void CreateTestY16TextureDrawQuad_TwoColor(
+    const SharedQuadState* shared_state,
+    const gfx::RectF& tex_coord_rect,
+    uint8_t g_foreground,
+    uint8_t g_background,
+    RenderPass* render_pass,
+    VideoResourceUpdater* video_resource_updater,
+    const gfx::Rect& rect,
+    const gfx::Rect& visible_rect,
+    const gfx::Rect& foreground_rect,
+    ResourceProvider* resource_provider) {
+  std::unique_ptr<unsigned char, base::AlignedFreeDeleter> memory(
+      static_cast<unsigned char*>(
+          base::AlignedAlloc(rect.size().GetArea() * 2,
+                             media::VideoFrame::kFrameAddressAlignment)));
+  scoped_refptr<media::VideoFrame> video_frame =
+      media::VideoFrame::WrapExternalData(
+          media::PIXEL_FORMAT_Y16, rect.size(), visible_rect,
+          visible_rect.size(), memory.get(), rect.size().GetArea() * 2,
+          base::TimeDelta());
+  DCHECK_EQ(video_frame->rows(0) % 2, 0);
+  DCHECK_EQ(video_frame->stride(0) % 2, 0);
+
+  for (int j = 0; j < video_frame->rows(0); ++j) {
+    uint8_t* row = video_frame->data(0) + j * video_frame->stride(0);
+    if (j < foreground_rect.y() || j >= foreground_rect.bottom()) {
+      for (int i = 0; i < video_frame->stride(0) / 2; ++i) {
+        *row++ = i & 0xFF;  // Fill R with anything. It is not rendered.
+        *row++ = g_background;
+      }
+    } else {
+      for (int i = 0;
+           i < std::min(video_frame->stride(0) / 2, foreground_rect.x()); ++i) {
+        *row++ = i & 0xFF;
+        *row++ = g_background;
+      }
+      for (int i = foreground_rect.x();
+           i < std::min(video_frame->stride(0) / 2, foreground_rect.right());
+           ++i) {
+        *row++ = i & 0xFF;
+        *row++ = g_foreground;
+      }
+      for (int i = foreground_rect.right(); i < video_frame->stride(0) / 2;
+           ++i) {
+        *row++ = i & 0xFF;
+        *row++ = g_background;
+      }
+    }
+  }
+
+  CreateTestY16TextureDrawQuad_FromVideoFrame(
+      shared_state, video_frame, tex_coord_rect, render_pass,
+      video_resource_updater, rect, visible_rect, resource_provider);
+}
+
 typedef ::testing::Types<GLRenderer,
                          SoftwareRenderer,
                          GLRendererWithExpandedViewport,
@@ -711,19 +795,6 @@ TYPED_TEST(RendererPixelTest, PremultipliedTextureWithBackground) {
       FuzzyPixelOffByOneComparator(true)));
 }
 
-template <typename QuadType>
-static const base::FilePath::CharType* IntersectingQuadImage() {
-  return FILE_PATH_LITERAL("intersecting_blue_green_squares.png");
-}
-template <>
-const base::FilePath::CharType* IntersectingQuadImage<SolidColorDrawQuad>() {
-  return FILE_PATH_LITERAL("intersecting_blue_green.png");
-}
-template <>
-const base::FilePath::CharType* IntersectingQuadImage<YUVVideoDrawQuad>() {
-  return FILE_PATH_LITERAL("intersecting_blue_green_squares_video.png");
-}
-
 template <typename TypeParam>
 class IntersectingQuadPixelTest : public RendererPixelTest<TypeParam> {
  protected:
@@ -763,8 +834,8 @@ class IntersectingQuadPixelTest : public RendererPixelTest<TypeParam> {
     back_quad_state_->sorting_context_id = 1;
     back_quad_state_->clip_rect = quad_rect_;
   }
-  template <typename T>
-  void AppendBackgroundAndRunTest(const PixelComparator& comparator) {
+  void AppendBackgroundAndRunTest(const PixelComparator& comparator,
+                                  const base::FilePath::CharType* ref_file) {
     SharedQuadState* background_quad_state = CreateTestSharedQuadState(
         gfx::Transform(), viewport_rect_, render_pass_.get());
     SolidColorDrawQuad* background_quad =
@@ -772,9 +843,8 @@ class IntersectingQuadPixelTest : public RendererPixelTest<TypeParam> {
     background_quad->SetNew(background_quad_state, viewport_rect_,
                             viewport_rect_, SK_ColorWHITE, false);
     pass_list_.push_back(std::move(render_pass_));
-    const base::FilePath::CharType* fileName = IntersectingQuadImage<T>();
     EXPECT_TRUE(
-        this->RunPixelTest(&pass_list_, base::FilePath(fileName), comparator));
+        this->RunPixelTest(&pass_list_, base::FilePath(ref_file), comparator));
   }
   template <typename T>
   T* CreateAndAppendDrawQuad() {
@@ -834,8 +904,9 @@ TYPED_TEST(IntersectingQuadPixelTest, SolidColorQuads) {
   quad2->SetNew(this->back_quad_state_, this->quad_rect_, this->quad_rect_,
                 SK_ColorGREEN, false);
   SCOPED_TRACE("IntersectingSolidColorQuads");
-  this->template AppendBackgroundAndRunTest<SolidColorDrawQuad>(
-      FuzzyPixelComparator(false, 2.f, 0.f, 256.f, 256, 0.f));
+  this->AppendBackgroundAndRunTest(
+      FuzzyPixelComparator(false, 2.f, 0.f, 256.f, 256, 0.f),
+      FILE_PATH_LITERAL("intersecting_blue_green.png"));
 }
 
 template <typename TypeParam>
@@ -867,8 +938,9 @@ TYPED_TEST(IntersectingQuadPixelTest, TexturedQuads) {
       this->render_pass_.get());
 
   SCOPED_TRACE("IntersectingTexturedQuads");
-  this->template AppendBackgroundAndRunTest<TextureDrawQuad>(
-      FuzzyPixelComparator(false, 2.f, 0.f, 256.f, 256, 0.f));
+  this->AppendBackgroundAndRunTest(
+      FuzzyPixelComparator(false, 2.f, 0.f, 256.f, 256, 0.f),
+      FILE_PATH_LITERAL("intersecting_blue_green_squares.png"));
 }
 
 TYPED_TEST(IntersectingQuadSoftwareTest, PictureQuads) {
@@ -917,8 +989,9 @@ TYPED_TEST(IntersectingQuadSoftwareTest, PictureQuads) {
                      this->quad_rect_.size(), false, RGBA_8888,
                      this->quad_rect_, 1.f, green_raster_source);
   SCOPED_TRACE("IntersectingPictureQuadsPass");
-  this->template AppendBackgroundAndRunTest<PictureDrawQuad>(
-      FuzzyPixelComparator(false, 2.f, 0.f, 256.f, 256, 0.f));
+  this->AppendBackgroundAndRunTest(
+      FuzzyPixelComparator(false, 2.f, 0.f, 256.f, 256, 0.f),
+      FILE_PATH_LITERAL("intersecting_blue_green_squares.png"));
 }
 
 TYPED_TEST(IntersectingQuadPixelTest, RenderPassQuads) {
@@ -953,8 +1026,9 @@ TYPED_TEST(IntersectingQuadPixelTest, RenderPassQuads) {
   this->pass_list_.push_back(std::move(child_pass1));
   this->pass_list_.push_back(std::move(child_pass2));
   SCOPED_TRACE("IntersectingRenderQuadsPass");
-  this->template AppendBackgroundAndRunTest<RenderPassDrawQuad>(
-      FuzzyPixelComparator(false, 2.f, 0.f, 256.f, 256, 0.f));
+  this->AppendBackgroundAndRunTest(
+      FuzzyPixelComparator(false, 2.f, 0.f, 256.f, 256, 0.f),
+      FILE_PATH_LITERAL("intersecting_blue_green_squares.png"));
 }
 
 TYPED_TEST(IntersectingQuadGLPixelTest, YUVVideoQuads) {
@@ -980,8 +1054,35 @@ TYPED_TEST(IntersectingQuadGLPixelTest, YUVVideoQuads) {
       this->resource_provider_.get());
 
   SCOPED_TRACE("IntersectingVideoQuads");
-  this->template AppendBackgroundAndRunTest<YUVVideoDrawQuad>(
-      FuzzyPixelOffByOneComparator(false));
+  this->AppendBackgroundAndRunTest(
+      FuzzyPixelOffByOneComparator(false),
+      FILE_PATH_LITERAL("intersecting_blue_green_squares_video.png"));
+}
+
+TYPED_TEST(IntersectingQuadGLPixelTest, Y16VideoQuads) {
+  this->SetupQuadStateAndRenderPass();
+  gfx::Rect inner_rect(
+      ((this->quad_rect_.x() + (this->quad_rect_.width() / 4)) & ~0xF),
+      ((this->quad_rect_.y() + (this->quad_rect_.height() / 4)) & ~0xF),
+      (this->quad_rect_.width() / 2) & ~0xF,
+      (this->quad_rect_.height() / 2) & ~0xF);
+
+  CreateTestY16TextureDrawQuad_TwoColor(
+      this->front_quad_state_, gfx::RectF(0.0f, 0.0f, 1.0f, 1.0f), 18, 0,
+      this->render_pass_.get(), this->video_resource_updater_.get(),
+      this->quad_rect_, this->quad_rect_, inner_rect,
+      this->resource_provider_.get());
+
+  CreateTestY16TextureDrawQuad_TwoColor(
+      this->back_quad_state_, gfx::RectF(0.0f, 0.0f, 1.0f, 1.0f), 0, 182,
+      this->render_pass_.get(), this->video_resource_updater2_.get(),
+      this->quad_rect_, this->quad_rect_, inner_rect,
+      this->resource_provider_.get());
+
+  SCOPED_TRACE("IntersectingVideoQuads");
+  this->AppendBackgroundAndRunTest(
+      FuzzyPixelOffByOneComparator(false),
+      FILE_PATH_LITERAL("intersecting_light_dark_squares_video.png"));
 }
 
 // TODO(skaslev): The software renderer does not support non-premultplied alpha.
@@ -1343,6 +1444,30 @@ TEST_F(VideoGLRendererPixelTest, FullyTransparentYUVARect) {
       &pass_list,
       base::FilePath(FILE_PATH_LITERAL("black.png")),
       ExactPixelComparator(true)));
+}
+
+TEST_F(VideoGLRendererPixelTest, TwoColorY16Rect) {
+  gfx::Rect rect(this->device_viewport_size_);
+
+  RenderPassId id(1, 1);
+  std::unique_ptr<RenderPass> pass = CreateTestRootRenderPass(id, rect);
+
+  SharedQuadState* shared_state =
+      CreateTestSharedQuadState(gfx::Transform(), rect, pass.get());
+
+  gfx::Rect upper_rect(rect.x(), rect.y(), rect.width(), rect.height() / 2);
+  CreateTestY16TextureDrawQuad_TwoColor(
+      shared_state, gfx::RectF(0.0f, 0.0f, 1.0f, 1.0f), 68, 123, pass.get(),
+      video_resource_updater_.get(), rect, rect, upper_rect,
+      resource_provider_.get());
+
+  RenderPassList pass_list;
+  pass_list.push_back(std::move(pass));
+
+  EXPECT_TRUE(this->RunPixelTest(
+      &pass_list,
+      base::FilePath(FILE_PATH_LITERAL("blue_yellow_filter_chain.png")),
+      FuzzyPixelOffByOneComparator(true)));
 }
 
 TYPED_TEST(RendererPixelTest, FastPassColorFilterAlpha) {

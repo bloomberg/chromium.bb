@@ -18,6 +18,7 @@
 #include "base/win/scoped_co_mem.h"
 #include "base/win/windows_version.h"
 #include "media/capture/video/win/capability_list_win.h"
+#include "media/capture/video/win/sink_filter_win.h"
 
 using base::win::ScopedCoMem;
 using base::win::ScopedComPtr;
@@ -170,6 +171,9 @@ bool VideoCaptureDeviceMFWin::FormatFromGuid(const GUID& guid,
       {MFVideoFormat_ARGB32, PIXEL_FORMAT_ARGB},
       {MFVideoFormat_MJPG, PIXEL_FORMAT_MJPEG},
       {MFVideoFormat_YV12, PIXEL_FORMAT_YV12},
+      {kMediaSubTypeY16, PIXEL_FORMAT_Y16},
+      {kMediaSubTypeZ16, PIXEL_FORMAT_Y16},
+      {kMediaSubTypeINVZ, PIXEL_FORMAT_Y16},
   };
 
   for (const auto& kFormat : kFormatMap) {

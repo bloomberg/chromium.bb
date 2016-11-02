@@ -23,7 +23,6 @@
 #include "third_party/skia/include/core/SkXfermode.h"
 
 class SkCanvas;
-class SkImage;
 
 namespace gfx {
 class RectF;

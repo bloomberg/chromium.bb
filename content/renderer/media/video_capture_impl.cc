@@ -258,12 +258,17 @@ void VideoCaptureImpl::OnBufferReady(int32_t buffer_id,
                                      mojom::VideoFrameInfoPtr info) {
   DVLOG(1) << __func__ << " buffer_id: " << buffer_id;
   DCHECK(io_thread_checker_.CalledOnValidThread());
-  DCHECK_EQ(media::PIXEL_FORMAT_I420, info->pixel_format);
-  DCHECK_EQ(media::PIXEL_STORAGE_CPU, info->storage_type);
 
-  if (state_ != VIDEO_CAPTURE_STATE_STARTED ||
-      info->pixel_format != media::PIXEL_FORMAT_I420 ||
+  bool consume_buffer = state_ == VIDEO_CAPTURE_STATE_STARTED;
+  if ((info->pixel_format != media::PIXEL_FORMAT_I420 &&
+       info->pixel_format != media::PIXEL_FORMAT_Y16) ||
       info->storage_type != media::PIXEL_STORAGE_CPU) {
+    consume_buffer = false;
+    LOG(DFATAL) << "Wrong pixel format or storage, got pixel format:"
+                << VideoPixelFormatToString(info->pixel_format)
+                << ", storage:" << info->storage_type;
+  }
+  if (!consume_buffer) {
     GetVideoCaptureHost()->ReleaseBuffer(device_id_, buffer_id,
                                          gpu::SyncToken(), -1.0);
     return;
