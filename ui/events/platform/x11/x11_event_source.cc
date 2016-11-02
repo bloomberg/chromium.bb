@@ -200,19 +200,28 @@ X11EventSource::GetRootCursorLocationFromCurrentEvent() const {
 
   XEvent* event = dispatching_events_.top();
   DCHECK(event);
+
+  bool is_xi2_event = event->type == GenericEvent;
+  int event_type = is_xi2_event
+                       ? reinterpret_cast<XIDeviceEvent*>(event)->evtype
+                       : event->type;
+
   bool is_valid_event = false;
-  switch (event->type) {
+  static_assert(XI_ButtonPress == ButtonPress, "");
+  static_assert(XI_ButtonRelease == ButtonRelease, "");
+  static_assert(XI_Motion == MotionNotify, "");
+  static_assert(XI_Enter == EnterNotify, "");
+  static_assert(XI_Leave == LeaveNotify, "");
+  switch (event_type) {
     case ButtonPress:
     case ButtonRelease:
     case MotionNotify:
     case EnterNotify:
     case LeaveNotify:
-      is_valid_event = true;
-      break;
-    case GenericEvent:
-      if (!ui::TouchFactory::GetInstance()->ShouldProcessXI2Event(event))
-        break;
-      is_valid_event = true;
+      is_valid_event =
+          is_xi2_event
+              ? ui::TouchFactory::GetInstance()->ShouldProcessXI2Event(event)
+              : true;
   }
 
   if (is_valid_event)

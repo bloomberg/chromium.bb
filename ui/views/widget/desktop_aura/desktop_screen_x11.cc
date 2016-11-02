@@ -138,7 +138,7 @@ gfx::Point DesktopScreenX11::GetCursorScreenPoint() {
     auto point = ui::X11EventSource::GetInstance()
                      ->GetRootCursorLocationFromCurrentEvent();
     if (point)
-      return point.value();
+      return PixelToDIPPoint(point.value());
   }
 
   ::Window root, child;
