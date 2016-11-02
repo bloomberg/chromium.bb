@@ -14,14 +14,14 @@ layer at (-3831,0) size 4631x600 backgroundClip at (0,0) size 800x600 clip at (0
           LayoutBR {BR} at (0,0) size 19x0
           LayoutBR {BR} at (20,0) size 19x0
           LayoutBR {BR} at (40,0) size 19x0
-          LayoutText {#text} at (60,0) size 19x144
-            text run at (60,0) width 144: "\x{3000}\x{3000}\x{3000}\x{3000}\x{3000}\x{3000}\x{3000}\x{3000}\x{4E00}"
-          LayoutBR {BR} at (60,144) size 19x0
+          LayoutText {#text} at (60,0) size 19x168
+            text run at (60,0) width 168: "\x{3000}\x{3000}\x{3000}\x{3000}\x{3000}\x{3000}\x{3000}\x{3000}\x{4E00}"
+          LayoutBR {BR} at (60,168) size 19x0
           LayoutBR {BR} at (80,0) size 19x0
-          LayoutText {#text} at (111,0) size 19x16
-            text run at (111,0) width 16: "\x{3000}"
+          LayoutText {#text} at (111,0) size 19x19
+            text run at (111,0) width 19: "\x{3000}"
           LayoutRuby (inline) {RUBY} at (0,0) size 19x34
-            LayoutRubyRun (anonymous) at (111,15) size 20x36
+            LayoutRubyRun (anonymous) at (111,18) size 20x36
               LayoutRubyText {RT} at (-12,0) size 12x36
                 LayoutText {#text} at (0,0) size 12x36
                   text run at (0,0) width 36: "\x{3084}\x{307E}\x{307F}\x{3061}"
@@ -29,13 +29,13 @@ layer at (-3831,0) size 4631x600 backgroundClip at (0,0) size 800x600 clip at (0
                 LayoutInline {RB} at (0,0) size 19x34
                   LayoutText {#text} at (0,1) size 19x34
                     text run at (0,1) width 34: "\x{5C71}\x{8DEF}"
-          LayoutText {#text} at (111,50) size 19x208
-            text run at (111,50) width 208: "\x{3092}\x{767B}\x{308A}\x{306A}\x{304C}\x{3089}\x{3001}\x{3053}\x{3046}\x{8003}\x{3048}\x{305F}\x{3002}"
-          LayoutBR {BR} at (111,258) size 19x0
-          LayoutText {#text} at (142,0) size 19x16
-            text run at (142,0) width 16: "\x{3000}"
+          LayoutText {#text} at (111,53) size 19x208
+            text run at (111,53) width 208: "\x{3092}\x{767B}\x{308A}\x{306A}\x{304C}\x{3089}\x{3001}\x{3053}\x{3046}\x{8003}\x{3048}\x{305F}\x{3002}"
+          LayoutBR {BR} at (111,261) size 19x0
+          LayoutText {#text} at (142,0) size 19x19
+            text run at (142,0) width 19: "\x{3000}"
           LayoutRuby (inline) {RUBY} at (0,0) size 19x16
-            LayoutRubyRun (anonymous) at (142,16) size 20x16
+            LayoutRubyRun (anonymous) at (142,19) size 20x16
               LayoutRubyText {RT} at (-12,0) size 12x16
                 LayoutText {#text} at (0,3) size 12x10
                   text run at (0,3) width 9: "\x{3061}"
@@ -43,10 +43,10 @@ layer at (-3831,0) size 4631x600 backgroundClip at (0,0) size 800x600 clip at (0
                 LayoutInline {RB} at (0,0) size 19x16
                   LayoutText {#text} at (0,0) size 19x16
                     text run at (0,0) width 16: "\x{667A}"
-          LayoutText {#text} at (142,32) size 19x64
-            text run at (142,32) width 64: "\x{306B}\x{50CD}\x{3051}\x{3070}"
+          LayoutText {#text} at (142,35) size 19x64
+            text run at (142,35) width 64: "\x{306B}\x{50CD}\x{3051}\x{3070}"
           LayoutRuby (inline) {RUBY} at (0,0) size 19x16
-            LayoutRubyRun (anonymous) at (142,95) size 20x18
+            LayoutRubyRun (anonymous) at (142,98) size 20x18
               LayoutRubyText {RT} at (-12,0) size 12x18
                 LayoutText {#text} at (0,0) size 12x18
                   text run at (0,0) width 18: "\x{304B}\x{3069}"
@@ -54,10 +54,10 @@ layer at (-3831,0) size 4631x600 backgroundClip at (0,0) size 800x600 clip at (0
                 LayoutInline {RB} at (0,0) size 19x16
                   LayoutText {#text} at (0,1) size 19x16
                     text run at (0,1) width 16: "\x{89D2}"
-          LayoutText {#text} at (142,112) size 19x64
-            text run at (142,112) width 64: "\x{304C}\x{7ACB}\x{3064}\x{3002}"
+          LayoutText {#text} at (142,115) size 19x64
+            text run at (142,115) width 64: "\x{304C}\x{7ACB}\x{3064}\x{3002}"
           LayoutRuby (inline) {RUBY} at (0,0) size 19x19
-            LayoutRubyRun (anonymous) at (142,172) size 20x27
+            LayoutRubyRun (anonymous) at (142,175) size 20x27
               LayoutRubyText {RT} at (-12,0) size 12x27
                 LayoutText {#text} at (0,0) size 12x27
                   text run at (0,0) width 27: "\x{3058}\x{3087}\x{3046}"
@@ -65,10 +65,10 @@ layer at (-3831,0) size 4631x600 backgroundClip at (0,0) size 800x600 clip at (0
                 LayoutInline {RB} at (0,0) size 19x17
                   LayoutText {#text} at (0,5) size 19x17
                     text run at (0,5) width 16: "\x{60C5}"
-          LayoutText {#text} at (142,195) size 19x16
-            text run at (142,195) width 16: "\x{306B}"
+          LayoutText {#text} at (142,198) size 19x16
+            text run at (142,198) width 16: "\x{306B}"
           LayoutRuby (inline) {RUBY} at (0,0) size 19x16
-            LayoutRubyRun (anonymous) at (142,210) size 20x18
+            LayoutRubyRun (anonymous) at (142,213) size 20x18
               LayoutRubyText {RT} at (-12,0) size 12x18
                 LayoutText {#text} at (0,0) size 12x18
                   text run at (0,0) width 18: "\x{3055}\x{304A}"
@@ -76,10 +76,10 @@ layer at (-3831,0) size 4631x600 backgroundClip at (0,0) size 800x600 clip at (0
                 LayoutInline {RB} at (0,0) size 19x16
                   LayoutText {#text} at (0,1) size 19x16
                     text run at (0,1) width 16: "\x{68F9}"
-          LayoutText {#text} at (142,227) size 19x176
-            text run at (142,227) width 176: "\x{3055}\x{305B}\x{3070}\x{6D41}\x{3055}\x{308C}\x{308B}\x{3002}\x{610F}\x{5730}\x{3092}"
+          LayoutText {#text} at (142,230) size 19x176
+            text run at (142,230) width 176: "\x{3055}\x{305B}\x{3070}\x{6D41}\x{3055}\x{308C}\x{308B}\x{3002}\x{610F}\x{5730}\x{3092}"
           LayoutRuby (inline) {RUBY} at (0,0) size 19x16
-            LayoutRubyRun (anonymous) at (142,402) size 20x18
+            LayoutRubyRun (anonymous) at (142,405) size 20x18
               LayoutRubyText {RT} at (-12,0) size 12x18
                 LayoutText {#text} at (0,0) size 12x18
                   text run at (0,0) width 18: "\x{3068}\x{304A}"
@@ -87,10 +87,10 @@ layer at (-3831,0) size 4631x600 backgroundClip at (0,0) size 800x600 clip at (0
                 LayoutInline {RB} at (0,0) size 19x16
                   LayoutText {#text} at (0,1) size 19x16
                     text run at (0,1) width 16: "\x{901A}"
-          LayoutText {#text} at (142,419) size 19x32
-            text run at (142,419) width 32: "\x{305B}\x{3070}"
+          LayoutText {#text} at (142,422) size 19x32
+            text run at (142,422) width 32: "\x{305B}\x{3070}"
           LayoutRuby (inline) {RUBY} at (0,0) size 19x42
-            LayoutRubyRun (anonymous) at (142,448) size 20x45
+            LayoutRubyRun (anonymous) at (142,451) size 20x45
               LayoutRubyText {RT} at (-12,0) size 12x45
                 LayoutText {#text} at (0,0) size 12x45
                   text run at (0,0) width 45: "\x{304D}\x{3085}\x{3046}\x{304F}\x{3064}"
@@ -101,10 +101,10 @@ layer at (-3831,0) size 4631x600 backgroundClip at (0,0) size 800x600 clip at (0
           LayoutText {#text} at (162,0) size 19x256
             text run at (162,0) width 256: "\x{3060}\x{3002}\x{3068}\x{304B}\x{304F}\x{306B}\x{4EBA}\x{306E}\x{4E16}\x{306F}\x{4F4F}\x{307F}\x{306B}\x{304F}\x{3044}\x{3002}"
           LayoutBR {BR} at (162,256) size 19x0
-          LayoutText {#text} at (193,0) size 19x112
-            text run at (193,0) width 112: "\x{3000}\x{4F4F}\x{307F}\x{306B}\x{304F}\x{3055}\x{304C}"
+          LayoutText {#text} at (193,0) size 19x115
+            text run at (193,0) width 115: "\x{3000}\x{4F4F}\x{307F}\x{306B}\x{304F}\x{3055}\x{304C}"
           LayoutRuby (inline) {RUBY} at (0,0) size 19x16
-            LayoutRubyRun (anonymous) at (193,111) size 20x18
+            LayoutRubyRun (anonymous) at (193,114) size 20x18
               LayoutRubyText {RT} at (-12,0) size 12x18
                 LayoutText {#text} at (0,0) size 12x18
                   text run at (0,0) width 18: "\x{3053}\x{3046}"
@@ -112,8 +112,8 @@ layer at (-3831,0) size 4631x600 backgroundClip at (0,0) size 800x600 clip at (0
                 LayoutInline {RB} at (0,0) size 19x16
                   LayoutText {#text} at (0,1) size 19x16
                     text run at (0,1) width 16: "\x{9AD8}"
-          LayoutText {#text} at (193,128) size 50x496
-            text run at (193,128) width 368: "\x{3058}\x{308B}\x{3068}\x{3001}\x{5B89}\x{3044}\x{6240}\x{3078}\x{5F15}\x{304D}\x{8D8A}\x{3057}\x{305F}\x{304F}\x{306A}\x{308B}\x{3002}\x{3069}\x{3053}\x{3078}\x{8D8A}\x{3057}\x{3066}"
+          LayoutText {#text} at (193,131) size 50x499
+            text run at (193,131) width 368: "\x{3058}\x{308B}\x{3068}\x{3001}\x{5B89}\x{3044}\x{6240}\x{3078}\x{5F15}\x{304D}\x{8D8A}\x{3057}\x{305F}\x{304F}\x{306A}\x{308B}\x{3002}\x{3069}\x{3053}\x{3078}\x{8D8A}\x{3057}\x{3066}"
             text run at (224,0) width 112: "\x{3082}\x{4F4F}\x{307F}\x{306B}\x{304F}\x{3044}\x{3068}"
           LayoutRuby (inline) {RUBY} at (0,0) size 19x16
             LayoutRubyRun (anonymous) at (224,111) size 20x18
@@ -138,13 +138,13 @@ layer at (-3831,0) size 4631x600 backgroundClip at (0,0) size 800x600 clip at (0
           LayoutText {#text} at (224,304) size 19x80
             text run at (224,304) width 80: "\x{304C}\x{51FA}\x{6765}\x{308B}\x{3002}"
           LayoutBR {BR} at (224,384) size 19x0
-          LayoutText {#text} at (244,0) size 19x16
-            text run at (244,0) width 16: "\x{3000}"
+          LayoutText {#text} at (244,0) size 19x19
+            text run at (244,0) width 19: "\x{3000}"
           LayoutInline {STRONG} at (0,0) size 19x48
-            LayoutText {#text} at (244,16) size 19x48
-              text run at (244,16) width 48: "\x{4EBA}\x{306E}\x{4E16}"
-          LayoutText {#text} at (244,64) size 19x432
-            text run at (244,64) width 432: "\x{3092}\x{4F5C}\x{3063}\x{305F}\x{3082}\x{306E}\x{306F}\x{795E}\x{3067}\x{3082}\x{306A}\x{3051}\x{308C}\x{3070}\x{9B3C}\x{3067}\x{3082}\x{306A}\x{3044}\x{3002}\x{3084}\x{306F}\x{308A}\x{5411}\x{3046}\x{4E09}\x{8ED2}"
+            LayoutText {#text} at (244,19) size 19x48
+              text run at (244,19) width 48: "\x{4EBA}\x{306E}\x{4E16}"
+          LayoutText {#text} at (244,67) size 19x432
+            text run at (244,67) width 432: "\x{3092}\x{4F5C}\x{3063}\x{305F}\x{3082}\x{306E}\x{306F}\x{795E}\x{3067}\x{3082}\x{306A}\x{3051}\x{308C}\x{3070}\x{9B3C}\x{3067}\x{3082}\x{306A}\x{3044}\x{3002}\x{3084}\x{306F}\x{308A}\x{5411}\x{3046}\x{4E09}\x{8ED2}"
           LayoutRuby (inline) {RUBY} at (0,0) size 19x42
             LayoutRubyRun (anonymous) at (275,0) size 20x45
               LayoutRubyText {RT} at (-12,0) size 12x45
@@ -179,8 +179,8 @@ layer at (-3831,0) size 4631x600 backgroundClip at (0,0) size 800x600 clip at (0
           LayoutText {#text} at (315,240) size 19x208
             text run at (315,240) width 208: "\x{3088}\x{308A}\x{3082}\x{306A}\x{304A}\x{4F4F}\x{307F}\x{306B}\x{304F}\x{304B}\x{308D}\x{3046}\x{3002}"
           LayoutBR {BR} at (315,448) size 19x0
-          LayoutText {#text} at (335,0) size 19x496
-            text run at (335,0) width 496: "\x{3000}\x{8D8A}\x{3059}\x{4E8B}\x{306E}\x{306A}\x{3089}\x{306C}\x{4E16}\x{304C}\x{4F4F}\x{307F}\x{306B}\x{304F}\x{3051}\x{308C}\x{3070}\x{3001}\x{4F4F}\x{307F}\x{306B}\x{304F}\x{3044}\x{6240}\x{3092}\x{3069}\x{308C}\x{307B}\x{3069}\x{304B}\x{3001}"
+          LayoutText {#text} at (335,0) size 19x499
+            text run at (335,0) width 499: "\x{3000}\x{8D8A}\x{3059}\x{4E8B}\x{306E}\x{306A}\x{3089}\x{306C}\x{4E16}\x{304C}\x{4F4F}\x{307F}\x{306B}\x{304F}\x{3051}\x{308C}\x{3070}\x{3001}\x{4F4F}\x{307F}\x{306B}\x{304F}\x{3044}\x{6240}\x{3092}\x{3069}\x{308C}\x{307B}\x{3069}\x{304B}\x{3001}"
           LayoutRuby (inline) {RUBY} at (0,0) size 19x35
             LayoutRubyRun (anonymous) at (366,0) size 20x36
               LayoutRubyText {RT} at (-12,0) size 12x36
@@ -261,10 +261,10 @@ layer at (-3831,0) size 4631x600 backgroundClip at (0,0) size 800x600 clip at (0
           LayoutText {#text} at (428,400) size 19x48
             text run at (428,400) width 48: "\x{3068}\x{3044}\x{3002}"
           LayoutBR {BR} at (428,448) size 19x0
-          LayoutText {#text} at (459,0) size 19x240
-            text run at (459,0) width 240: "\x{3000}\x{4F4F}\x{307F}\x{306B}\x{304F}\x{304D}\x{4E16}\x{304B}\x{3089}\x{3001}\x{4F4F}\x{307F}\x{306B}\x{304F}\x{304D}"
+          LayoutText {#text} at (459,0) size 19x243
+            text run at (459,0) width 243: "\x{3000}\x{4F4F}\x{307F}\x{306B}\x{304F}\x{304D}\x{4E16}\x{304B}\x{3089}\x{3001}\x{4F4F}\x{307F}\x{306B}\x{304F}\x{304D}"
           LayoutRuby (inline) {RUBY} at (0,0) size 19x19
-            LayoutRubyRun (anonymous) at (459,236) size 20x27
+            LayoutRubyRun (anonymous) at (459,239) size 20x27
               LayoutRubyText {RT} at (-12,0) size 12x27
                 LayoutText {#text} at (0,0) size 12x27
                   text run at (0,0) width 27: "\x{308F}\x{305A}\x{3089}"
@@ -272,8 +272,8 @@ layer at (-3831,0) size 4631x600 backgroundClip at (0,0) size 800x600 clip at (0
                 LayoutInline {RB} at (0,0) size 19x17
                   LayoutText {#text} at (0,5) size 19x17
                     text run at (0,5) width 16: "\x{7169}"
-          LayoutText {#text} at (459,259) size 50x499
-            text run at (459,259) width 240: "\x{3044}\x{3092}\x{5F15}\x{304D}\x{629C}\x{3044}\x{3066}\x{3001}\x{3042}\x{308A}\x{304C}\x{305F}\x{3044}\x{4E16}\x{754C}"
+          LayoutText {#text} at (459,262) size 50x502
+            text run at (459,262) width 240: "\x{3044}\x{3092}\x{5F15}\x{304D}\x{629C}\x{3044}\x{3066}\x{3001}\x{3042}\x{308A}\x{304C}\x{305F}\x{3044}\x{4E16}\x{754C}"
             text run at (490,0) width 256: "\x{3092}\x{307E}\x{306E}\x{3042}\x{305F}\x{308A}\x{306B}\x{5199}\x{3059}\x{306E}\x{304C}\x{8A69}\x{3067}\x{3042}\x{308B}\x{3001}"
           LayoutRuby (inline) {RUBY} at (0,0) size 19x16
             LayoutRubyRun (anonymous) at (490,256) size 20x16
@@ -682,10 +682,10 @@ layer at (-3831,0) size 4631x600 backgroundClip at (0,0) size 800x600 clip at (0
             text run at (800,361) width 112: "\x{3088}\x{308A}\x{3082}\x{5E78}\x{798F}\x{3067}\x{3042}"
             text run at (820,0) width 32: "\x{308B}\x{3002}"
           LayoutBR {BR} at (820,32) size 19x0
-          LayoutText {#text} at (851,0) size 19x272
-            text run at (851,0) width 272: "\x{3000}\x{4E16}\x{306B}\x{4F4F}\x{3080}\x{3053}\x{3068}\x{4E8C}\x{5341}\x{5E74}\x{306B}\x{3057}\x{3066}\x{3001}\x{4F4F}\x{3080}\x{306B}"
+          LayoutText {#text} at (851,0) size 19x275
+            text run at (851,0) width 275: "\x{3000}\x{4E16}\x{306B}\x{4F4F}\x{3080}\x{3053}\x{3068}\x{4E8C}\x{5341}\x{5E74}\x{306B}\x{3057}\x{3066}\x{3001}\x{4F4F}\x{3080}\x{306B}"
           LayoutRuby (inline) {RUBY} at (0,0) size 19x32
-            LayoutRubyRun (anonymous) at (851,272) size 20x32
+            LayoutRubyRun (anonymous) at (851,275) size 20x32
               LayoutRubyText {RT} at (-12,0) size 12x32
                 LayoutText {#text} at (0,3) size 12x26
                   text run at (0,3) width 25: "\x{304B}\x{3044}"
@@ -693,8 +693,8 @@ layer at (-3831,0) size 4631x600 backgroundClip at (0,0) size 800x600 clip at (0
                 LayoutInline {RB} at (0,0) size 19x32
                   LayoutText {#text} at (0,0) size 19x32
                     text run at (0,0) width 32: "\x{7532}\x{6590}"
-          LayoutText {#text} at (851,304) size 50x496
-            text run at (851,304) width 192: "\x{3042}\x{308B}\x{4E16}\x{3068}\x{77E5}\x{3063}\x{305F}\x{3002}\x{4E8C}\x{5341}\x{4E94}\x{5E74}"
+          LayoutText {#text} at (851,307) size 50x499
+            text run at (851,307) width 192: "\x{3042}\x{308B}\x{4E16}\x{3068}\x{77E5}\x{3063}\x{305F}\x{3002}\x{4E8C}\x{5341}\x{4E94}\x{5E74}"
             text run at (882,0) width 96: "\x{306B}\x{3057}\x{3066}\x{660E}\x{6697}\x{306F}"
           LayoutRuby (inline) {RUBY} at (0,0) size 19x34
             LayoutRubyRun (anonymous) at (882,95) size 20x36
@@ -836,10 +836,10 @@ layer at (-3831,0) size 4631x600 backgroundClip at (0,0) size 800x600 clip at (0
           LayoutText {#text} at (1099,176) size 19x288
             text run at (1099,176) width 288: "\x{3089}\x{306C}\x{3002}\x{5B58}\x{5206}\x{98DF}\x{3048}\x{3070}\x{3042}\x{3068}\x{304C}\x{4E0D}\x{6109}\x{5FEB}\x{3060}\x{3002}\x{2026}\x{2026}"
           LayoutBR {BR} at (1099,464) size 19x0
-          LayoutText {#text} at (1130,0) size 19x16
-            text run at (1130,0) width 16: "\x{3000}"
+          LayoutText {#text} at (1130,0) size 19x19
+            text run at (1130,0) width 19: "\x{3000}"
           LayoutRuby (inline) {RUBY} at (0,0) size 19x16
-            LayoutRubyRun (anonymous) at (1130,16) size 20x16
+            LayoutRubyRun (anonymous) at (1130,19) size 20x16
               LayoutRubyText {RT} at (-12,0) size 12x16
                 LayoutText {#text} at (0,3) size 12x10
                   text run at (0,3) width 9: "\x{3088}"
@@ -847,10 +847,10 @@ layer at (-3831,0) size 4631x600 backgroundClip at (0,0) size 800x600 clip at (0
                 LayoutInline {RB} at (0,0) size 19x16
                   LayoutText {#text} at (0,0) size 19x16
                     text run at (0,0) width 16: "\x{4F59}"
-          LayoutText {#text} at (1130,32) size 19x16
-            text run at (1130,32) width 16: "\x{306E}"
+          LayoutText {#text} at (1130,35) size 19x16
+            text run at (1130,35) width 16: "\x{306E}"
           LayoutRuby (inline) {RUBY} at (0,0) size 19x28
-            LayoutRubyRun (anonymous) at (1130,44) size 20x36
+            LayoutRubyRun (anonymous) at (1130,47) size 20x36
               LayoutRubyText {RT} at (-12,0) size 12x36
                 LayoutText {#text} at (0,0) size 12x36
                   text run at (0,0) width 36: "\x{304B}\x{3093}\x{304C}\x{3048}"
@@ -858,10 +858,10 @@ layer at (-3831,0) size 4631x600 backgroundClip at (0,0) size 800x600 clip at (0
                 LayoutInline {RB} at (0,0) size 19x16
                   LayoutText {#text} at (0,10) size 19x16
                     text run at (0,10) width 16: "\x{8003}"
-          LayoutText {#text} at (1130,76) size 19x256
-            text run at (1130,76) width 256: "\x{304C}\x{3053}\x{3053}\x{307E}\x{3067}\x{6F02}\x{6D41}\x{3057}\x{3066}\x{6765}\x{305F}\x{6642}\x{306B}\x{3001}\x{4F59}\x{306E}"
+          LayoutText {#text} at (1130,79) size 19x256
+            text run at (1130,79) width 256: "\x{304C}\x{3053}\x{3053}\x{307E}\x{3067}\x{6F02}\x{6D41}\x{3057}\x{3066}\x{6765}\x{305F}\x{6642}\x{306B}\x{3001}\x{4F59}\x{306E}"
           LayoutRuby (inline) {RUBY} at (0,0) size 19x32
-            LayoutRubyRun (anonymous) at (1130,332) size 20x32
+            LayoutRubyRun (anonymous) at (1130,335) size 20x32
               LayoutRubyText {RT} at (-12,0) size 12x32
                 LayoutText {#text} at (0,0) size 12x31
                   text run at (0,0) width 30: "\x{3046}\x{305D}\x{304F}"
@@ -869,10 +869,10 @@ layer at (-3831,0) size 4631x600 backgroundClip at (0,0) size 800x600 clip at (0
                 LayoutInline {RB} at (0,0) size 19x32
                   LayoutText {#text} at (0,0) size 19x32
                     text run at (0,0) width 32: "\x{53F3}\x{8DB3}"
-          LayoutText {#text} at (1130,364) size 19x48
-            text run at (1130,364) width 48: "\x{306F}\x{7A81}\x{7136}"
+          LayoutText {#text} at (1130,367) size 19x48
+            text run at (1130,367) width 48: "\x{306F}\x{7A81}\x{7136}"
           LayoutRuby (inline) {RUBY} at (0,0) size 19x16
-            LayoutRubyRun (anonymous) at (1130,411) size 20x18
+            LayoutRubyRun (anonymous) at (1130,414) size 20x18
               LayoutRubyText {RT} at (-12,0) size 12x18
                 LayoutText {#text} at (0,0) size 12x18
                   text run at (0,0) width 18: "\x{3059}\x{308F}"
@@ -880,8 +880,8 @@ layer at (-3831,0) size 4631x600 backgroundClip at (0,0) size 800x600 clip at (0
                 LayoutInline {RB} at (0,0) size 19x16
                   LayoutText {#text} at (0,1) size 19x16
                     text run at (0,1) width 16: "\x{5750}"
-          LayoutText {#text} at (1130,428) size 50x492
-            text run at (1130,428) width 64: "\x{308A}\x{306E}\x{308F}\x{308B}"
+          LayoutText {#text} at (1130,431) size 50x495
+            text run at (1130,431) width 64: "\x{308A}\x{306E}\x{308F}\x{308B}"
             text run at (1161,0) width 16: "\x{3044}"
           LayoutRuby (inline) {RUBY} at (0,0) size 19x34
             LayoutRubyRun (anonymous) at (1161,15) size 20x36
@@ -1029,10 +1029,10 @@ layer at (-3831,0) size 4631x600 backgroundClip at (0,0) size 800x600 clip at (0
           LayoutText {#text} at (1254,160) size 19x128
             text run at (1254,160) width 128: "\x{306E}\x{4E8B}\x{3082}\x{306A}\x{304B}\x{3063}\x{305F}\x{3002}"
           LayoutBR {BR} at (1254,288) size 19x0
-          LayoutText {#text} at (1285,0) size 19x240
-            text run at (1285,0) width 240: "\x{3000}\x{7ACB}\x{3061}\x{4E0A}\x{304C}\x{308B}\x{6642}\x{306B}\x{5411}\x{3046}\x{3092}\x{898B}\x{308B}\x{3068}\x{3001}"
+          LayoutText {#text} at (1285,0) size 19x243
+            text run at (1285,0) width 243: "\x{3000}\x{7ACB}\x{3061}\x{4E0A}\x{304C}\x{308B}\x{6642}\x{306B}\x{5411}\x{3046}\x{3092}\x{898B}\x{308B}\x{3068}\x{3001}"
           LayoutRuby (inline) {RUBY} at (0,0) size 19x16
-            LayoutRubyRun (anonymous) at (1285,239) size 20x18
+            LayoutRubyRun (anonymous) at (1285,242) size 20x18
               LayoutRubyText {RT} at (-12,0) size 12x18
                 LayoutText {#text} at (0,0) size 12x18
                   text run at (0,0) width 18: "\x{307F}\x{3061}"
@@ -1040,8 +1040,8 @@ layer at (-3831,0) size 4631x600 backgroundClip at (0,0) size 800x600 clip at (0
                 LayoutInline {RB} at (0,0) size 19x16
                   LayoutText {#text} at (0,1) size 19x16
                     text run at (0,1) width 16: "\x{8DEF}"
-          LayoutText {#text} at (1285,256) size 50x496
-            text run at (1285,256) width 240: "\x{304B}\x{3089}\x{5DE6}\x{306E}\x{65B9}\x{306B}\x{30D0}\x{30B1}\x{30C4}\x{3092}\x{4F0F}\x{305B}\x{305F}\x{3088}\x{3046}"
+          LayoutText {#text} at (1285,259) size 50x499
+            text run at (1285,259) width 240: "\x{304B}\x{3089}\x{5DE6}\x{306E}\x{65B9}\x{306B}\x{30D0}\x{30B1}\x{30C4}\x{3092}\x{4F0F}\x{305B}\x{305F}\x{3088}\x{3046}"
             text run at (1316,0) width 48: "\x{306A}\x{5CF0}\x{304C}"
           LayoutRuby (inline) {RUBY} at (0,0) size 19x16
             LayoutRubyRun (anonymous) at (1316,47) size 20x18
@@ -1290,10 +1290,10 @@ layer at (-3831,0) size 4631x600 backgroundClip at (0,0) size 800x600 clip at (0
           LayoutText {#text} at (1533,80) size 19x32
             text run at (1533,80) width 32: "\x{3060}\x{3002}"
           LayoutBR {BR} at (1533,112) size 19x0
-          LayoutText {#text} at (1564,0) size 19x208
-            text run at (1564,0) width 208: "\x{3000}\x{571F}\x{3092}\x{306A}\x{3089}\x{3059}\x{3060}\x{3051}\x{306A}\x{3089}\x{3055}\x{307B}\x{3069}"
+          LayoutText {#text} at (1564,0) size 19x211
+            text run at (1564,0) width 211: "\x{3000}\x{571F}\x{3092}\x{306A}\x{3089}\x{3059}\x{3060}\x{3051}\x{306A}\x{3089}\x{3055}\x{307B}\x{3069}"
           LayoutRuby (inline) {RUBY} at (0,0) size 19x32
-            LayoutRubyRun (anonymous) at (1564,208) size 20x32
+            LayoutRubyRun (anonymous) at (1564,211) size 20x32
               LayoutRubyText {RT} at (-12,0) size 12x32
                 LayoutText {#text} at (0,3) size 12x26
                   text run at (0,3) width 25: "\x{3066}\x{307E}"
@@ -1301,10 +1301,10 @@ layer at (-3831,0) size 4631x600 backgroundClip at (0,0) size 800x600 clip at (0
                 LayoutInline {RB} at (0,0) size 19x32
                   LayoutText {#text} at (0,0) size 19x32
                     text run at (0,0) width 32: "\x{624B}\x{9593}"
-          LayoutText {#text} at (1564,240) size 19x16
-            text run at (1564,240) width 16: "\x{3082}"
+          LayoutText {#text} at (1564,243) size 19x16
+            text run at (1564,243) width 16: "\x{3082}"
           LayoutRuby (inline) {RUBY} at (0,0) size 19x16
-            LayoutRubyRun (anonymous) at (1564,256) size 20x16
+            LayoutRubyRun (anonymous) at (1564,259) size 20x16
               LayoutRubyText {RT} at (-12,0) size 12x16
                 LayoutText {#text} at (0,3) size 12x10
                   text run at (0,3) width 9: "\x{3044}"
@@ -1312,8 +1312,8 @@ layer at (-3831,0) size 4631x600 backgroundClip at (0,0) size 800x600 clip at (0
                 LayoutInline {RB} at (0,0) size 19x16
                   LayoutText {#text} at (0,0) size 19x16
                     text run at (0,0) width 16: "\x{5165}"
-          LayoutText {#text} at (1564,272) size 50x496
-            text run at (1564,272) width 224: "\x{308B}\x{307E}\x{3044}\x{304C}\x{3001}\x{571F}\x{306E}\x{4E2D}\x{306B}\x{306F}\x{5927}\x{304D}\x{306A}\x{77F3}"
+          LayoutText {#text} at (1564,275) size 50x499
+            text run at (1564,275) width 224: "\x{308B}\x{307E}\x{3044}\x{304C}\x{3001}\x{571F}\x{306E}\x{4E2D}\x{306B}\x{306F}\x{5927}\x{304D}\x{306A}\x{77F3}"
             text run at (1595,0) width 96: "\x{304C}\x{3042}\x{308B}\x{3002}\x{571F}\x{306F}"
           LayoutRuby (inline) {RUBY} at (0,0) size 19x16
             LayoutRubyRun (anonymous) at (1595,95) size 20x18
@@ -1485,10 +1485,10 @@ layer at (-3831,0) size 4631x600 backgroundClip at (0,0) size 800x600 clip at (0
           LayoutText {#text} at (1781,307) size 19x96
             text run at (1781,307) width 96: "\x{308A}\x{3078}\x{304B}\x{304B}\x{308B}\x{3002}"
           LayoutBR {BR} at (1781,403) size 19x0
-          LayoutText {#text} at (1812,0) size 19x144
-            text run at (1812,0) width 144: "\x{3000}\x{305F}\x{3061}\x{307E}\x{3061}\x{8DB3}\x{306E}\x{4E0B}\x{3067}"
+          LayoutText {#text} at (1812,0) size 19x147
+            text run at (1812,0) width 147: "\x{3000}\x{305F}\x{3061}\x{307E}\x{3061}\x{8DB3}\x{306E}\x{4E0B}\x{3067}"
           LayoutRuby (inline) {RUBY} at (0,0) size 19x32
-            LayoutRubyRun (anonymous) at (1812,144) size 20x32
+            LayoutRubyRun (anonymous) at (1812,147) size 20x32
               LayoutRubyText {RT} at (-12,0) size 12x32
                 LayoutText {#text} at (0,0) size 12x31
                   text run at (0,0) width 30: "\x{3072}\x{3070}\x{308A}"
@@ -1496,10 +1496,10 @@ layer at (-3831,0) size 4631x600 backgroundClip at (0,0) size 800x600 clip at (0
                 LayoutInline {RB} at (0,0) size 19x32
                   LayoutText {#text} at (0,0) size 19x32
                     text run at (0,0) width 32: "\x{96F2}\x{96C0}"
-          LayoutText {#text} at (1812,176) size 19x160
-            text run at (1812,176) width 160: "\x{306E}\x{58F0}\x{304C}\x{3057}\x{51FA}\x{3057}\x{305F}\x{3002}\x{8C37}\x{3092}"
+          LayoutText {#text} at (1812,179) size 19x160
+            text run at (1812,179) width 160: "\x{306E}\x{58F0}\x{304C}\x{3057}\x{51FA}\x{3057}\x{305F}\x{3002}\x{8C37}\x{3092}"
           LayoutRuby (inline) {RUBY} at (0,0) size 19x32
-            LayoutRubyRun (anonymous) at (1812,336) size 20x32
+            LayoutRubyRun (anonymous) at (1812,339) size 20x32
               LayoutRubyText {RT} at (-12,0) size 12x32
                 LayoutText {#text} at (0,0) size 12x31
                   text run at (0,0) width 30: "\x{307F}\x{304A}\x{308D}"
@@ -1507,8 +1507,8 @@ layer at (-3831,0) size 4631x600 backgroundClip at (0,0) size 800x600 clip at (0
                 LayoutInline {RB} at (0,0) size 19x32
                   LayoutText {#text} at (0,0) size 19x32
                     text run at (0,0) width 32: "\x{898B}\x{4E0B}"
-          LayoutText {#text} at (1812,368) size 50x496
-            text run at (1812,368) width 128: "\x{3057}\x{305F}\x{304C}\x{3001}\x{3069}\x{3053}\x{3067}\x{9CF4}"
+          LayoutText {#text} at (1812,371) size 50x499
+            text run at (1812,371) width 128: "\x{3057}\x{305F}\x{304C}\x{3001}\x{3069}\x{3053}\x{3067}\x{9CF4}"
             text run at (1843,0) width 480: "\x{3044}\x{3066}\x{308B}\x{304B}\x{5F71}\x{3082}\x{5F62}\x{3082}\x{898B}\x{3048}\x{306C}\x{3002}\x{305F}\x{3060}\x{58F0}\x{3060}\x{3051}\x{304C}\x{660E}\x{3089}\x{304B}\x{306B}\x{805E}\x{3048}\x{308B}\x{3002}\x{305B}\x{3063}\x{305B}\x{3068}"
           LayoutRuby (inline) {RUBY} at (0,0) size 19x17
             LayoutRubyRun (anonymous) at (1843,479) size 20x18
@@ -1616,10 +1616,10 @@ layer at (-3831,0) size 4631x600 backgroundClip at (0,0) size 800x600 clip at (0
           LayoutText {#text} at (2038,96) size 19x176
             text run at (2038,96) width 176: "\x{306B}\x{6B8B}\x{308B}\x{306E}\x{304B}\x{3082}\x{77E5}\x{308C}\x{306A}\x{3044}\x{3002}"
           LayoutBR {BR} at (2038,272) size 19x0
-          LayoutText {#text} at (2069,0) size 19x16
-            text run at (2069,0) width 16: "\x{3000}"
+          LayoutText {#text} at (2069,0) size 19x19
+            text run at (2069,0) width 19: "\x{3000}"
           LayoutRuby (inline) {RUBY} at (0,0) size 19x34
-            LayoutRubyRun (anonymous) at (2069,15) size 20x36
+            LayoutRubyRun (anonymous) at (2069,18) size 20x36
               LayoutRubyText {RT} at (-12,0) size 12x36
                 LayoutText {#text} at (0,0) size 12x36
                   text run at (0,0) width 36: "\x{3044}\x{308F}\x{304B}\x{3069}"
@@ -1627,10 +1627,10 @@ layer at (-3831,0) size 4631x600 backgroundClip at (0,0) size 800x600 clip at (0
                 LayoutInline {RB} at (0,0) size 19x34
                   LayoutText {#text} at (0,1) size 19x34
                     text run at (0,1) width 34: "\x{5DCC}\x{89D2}"
-          LayoutText {#text} at (2069,50) size 19x128
-            text run at (2069,50) width 128: "\x{3092}\x{92ED}\x{3069}\x{304F}\x{5EFB}\x{3063}\x{3066}\x{3001}"
+          LayoutText {#text} at (2069,53) size 19x128
+            text run at (2069,53) width 128: "\x{3092}\x{92ED}\x{3069}\x{304F}\x{5EFB}\x{3063}\x{3066}\x{3001}"
           LayoutRuby (inline) {RUBY} at (0,0) size 19x32
-            LayoutRubyRun (anonymous) at (2069,178) size 20x32
+            LayoutRubyRun (anonymous) at (2069,181) size 20x32
               LayoutRubyText {RT} at (-12,0) size 12x32
                 LayoutText {#text} at (0,0) size 12x31
                   text run at (0,0) width 30: "\x{3042}\x{3093}\x{307E}"
@@ -1638,10 +1638,10 @@ layer at (-3831,0) size 4631x600 backgroundClip at (0,0) size 800x600 clip at (0
                 LayoutInline {RB} at (0,0) size 19x32
                   LayoutText {#text} at (0,0) size 19x32
                     text run at (0,0) width 32: "\x{6309}\x{6469}"
-          LayoutText {#text} at (2069,210) size 19x32
-            text run at (2069,210) width 32: "\x{306A}\x{3089}"
+          LayoutText {#text} at (2069,213) size 19x32
+            text run at (2069,213) width 32: "\x{306A}\x{3089}"
           LayoutRuby (inline) {RUBY} at (0,0) size 19x52
-            LayoutRubyRun (anonymous) at (2069,241) size 20x54
+            LayoutRubyRun (anonymous) at (2069,244) size 20x54
               LayoutRubyText {RT} at (-12,0) size 12x54
                 LayoutText {#text} at (0,0) size 12x54
                   text run at (0,0) width 54: "\x{307E}\x{3063}\x{3055}\x{304B}\x{3055}\x{307E}"
@@ -1649,10 +1649,10 @@ layer at (-3831,0) size 4631x600 backgroundClip at (0,0) size 800x600 clip at (0
                 LayoutInline {RB} at (0,0) size 19x52
                   LayoutText {#text} at (0,1) size 19x52
                     text run at (0,1) width 52: "\x{771F}\x{9006}\x{69D8}"
-          LayoutText {#text} at (2069,294) size 19x144
-            text run at (2069,294) width 144: "\x{306B}\x{843D}\x{3064}\x{308B}\x{3068}\x{3053}\x{308D}\x{3092}\x{3001}"
+          LayoutText {#text} at (2069,297) size 19x144
+            text run at (2069,297) width 144: "\x{306B}\x{843D}\x{3064}\x{308B}\x{3068}\x{3053}\x{308D}\x{3092}\x{3001}"
           LayoutRuby (inline) {RUBY} at (0,0) size 19x16
-            LayoutRubyRun (anonymous) at (2069,437) size 20x18
+            LayoutRubyRun (anonymous) at (2069,440) size 20x18
               LayoutRubyText {RT} at (-12,0) size 12x18
                 LayoutText {#text} at (0,0) size 12x18
                   text run at (0,0) width 18: "\x{304D}\x{308F}"
@@ -1660,11 +1660,11 @@ layer at (-3831,0) size 4631x600 backgroundClip at (0,0) size 800x600 clip at (0
                 LayoutInline {RB} at (0,0) size 19x16
                   LayoutText {#text} at (0,1) size 19x16
                     text run at (0,1) width 16: "\x{969B}"
-          LayoutText {#text} at (2069,454) size 50x502
-            text run at (2069,454) width 48: "\x{3069}\x{304F}\x{53F3}"
-            text run at (2100,0) width 112: "\x{3078}\x{5207}\x{308C}\x{3066}\x{3001}\x{6A2A}\x{306B}"
+          LayoutText {#text} at (2069,457) size 50x489
+            text run at (2069,457) width 32: "\x{3069}\x{304F}"
+            text run at (2100,0) width 128: "\x{53F3}\x{3078}\x{5207}\x{308C}\x{3066}\x{3001}\x{6A2A}\x{306B}"
           LayoutRuby (inline) {RUBY} at (0,0) size 19x32
-            LayoutRubyRun (anonymous) at (2100,112) size 20x32
+            LayoutRubyRun (anonymous) at (2100,128) size 20x32
               LayoutRubyText {RT} at (-12,0) size 12x32
                 LayoutText {#text} at (0,0) size 12x31
                   text run at (0,0) width 30: "\x{307F}\x{304A}\x{308D}"
@@ -1672,10 +1672,10 @@ layer at (-3831,0) size 4631x600 backgroundClip at (0,0) size 800x600 clip at (0
                 LayoutInline {RB} at (0,0) size 19x32
                   LayoutText {#text} at (0,0) size 19x32
                     text run at (0,0) width 32: "\x{898B}\x{4E0B}"
-          LayoutText {#text} at (2100,144) size 19x48
-            text run at (2100,144) width 48: "\x{3059}\x{3068}\x{3001}"
+          LayoutText {#text} at (2100,160) size 19x48
+            text run at (2100,160) width 48: "\x{3059}\x{3068}\x{3001}"
           LayoutRuby (inline) {RUBY} at (0,0) size 19x16
-            LayoutRubyRun (anonymous) at (2100,192) size 20x16
+            LayoutRubyRun (anonymous) at (2100,208) size 20x16
               LayoutRubyText {RT} at (-12,0) size 12x16
                 LayoutText {#text} at (0,3) size 12x10
                   text run at (0,3) width 9: "\x{306A}"
@@ -1683,11 +1683,11 @@ layer at (-3831,0) size 4631x600 backgroundClip at (0,0) size 800x600 clip at (0
                 LayoutInline {RB} at (0,0) size 19x16
                   LayoutText {#text} at (0,0) size 19x16
                     text run at (0,0) width 16: "\x{83DC}"
-          LayoutText {#text} at (2100,208) size 50x496
-            text run at (2100,208) width 288: "\x{306E}\x{82B1}\x{304C}\x{4E00}\x{9762}\x{306B}\x{898B}\x{3048}\x{308B}\x{3002}\x{96F2}\x{96C0}\x{306F}\x{3042}\x{3059}\x{3053}\x{3078}\x{843D}"
-            text run at (2131,0) width 240: "\x{3061}\x{308B}\x{306E}\x{304B}\x{3068}\x{601D}\x{3063}\x{305F}\x{3002}\x{3044}\x{3044}\x{3084}\x{3001}\x{3042}\x{306E}"
+          LayoutText {#text} at (2100,224) size 50x496
+            text run at (2100,224) width 272: "\x{306E}\x{82B1}\x{304C}\x{4E00}\x{9762}\x{306B}\x{898B}\x{3048}\x{308B}\x{3002}\x{96F2}\x{96C0}\x{306F}\x{3042}\x{3059}\x{3053}\x{3078}"
+            text run at (2131,0) width 256: "\x{843D}\x{3061}\x{308B}\x{306E}\x{304B}\x{3068}\x{601D}\x{3063}\x{305F}\x{3002}\x{3044}\x{3044}\x{3084}\x{3001}\x{3042}\x{306E}"
           LayoutRuby (inline) {RUBY} at (0,0) size 19x32
-            LayoutRubyRun (anonymous) at (2131,240) size 20x32
+            LayoutRubyRun (anonymous) at (2131,256) size 20x32
               LayoutRubyText {RT} at (-12,0) size 12x32
                 LayoutText {#text} at (0,0) size 12x31
                   text run at (0,0) width 30: "\x{3053}\x{304C}\x{306D}"
@@ -1695,11 +1695,11 @@ layer at (-3831,0) size 4631x600 backgroundClip at (0,0) size 800x600 clip at (0
                 LayoutInline {RB} at (0,0) size 19x32
                   LayoutText {#text} at (0,0) size 19x32
                     text run at (0,0) width 32: "\x{9EC4}\x{91D1}"
-          LayoutText {#text} at (2131,272) size 50x496
-            text run at (2131,272) width 224: "\x{306E}\x{539F}\x{304B}\x{3089}\x{98DB}\x{3073}\x{4E0A}\x{304C}\x{3063}\x{3066}\x{304F}\x{308B}\x{306E}\x{304B}"
-            text run at (2162,0) width 240: "\x{3068}\x{601D}\x{3063}\x{305F}\x{3002}\x{6B21}\x{306B}\x{306F}\x{843D}\x{3061}\x{308B}\x{96F2}\x{96C0}\x{3068}\x{3001}"
+          LayoutText {#text} at (2131,288) size 50x496
+            text run at (2131,288) width 208: "\x{306E}\x{539F}\x{304B}\x{3089}\x{98DB}\x{3073}\x{4E0A}\x{304C}\x{3063}\x{3066}\x{304F}\x{308B}\x{306E}"
+            text run at (2162,0) width 256: "\x{304B}\x{3068}\x{601D}\x{3063}\x{305F}\x{3002}\x{6B21}\x{306B}\x{306F}\x{843D}\x{3061}\x{308B}\x{96F2}\x{96C0}\x{3068}\x{3001}"
           LayoutRuby (inline) {RUBY} at (0,0) size 19x16
-            LayoutRubyRun (anonymous) at (2162,239) size 20x18
+            LayoutRubyRun (anonymous) at (2162,255) size 20x18
               LayoutRubyText {RT} at (-12,0) size 12x18
                 LayoutText {#text} at (0,0) size 12x18
                   text run at (0,0) width 18: "\x{3042}\x{304C}"
@@ -1707,10 +1707,10 @@ layer at (-3831,0) size 4631x600 backgroundClip at (0,0) size 800x600 clip at (0
                 LayoutInline {RB} at (0,0) size 19x16
                   LayoutText {#text} at (0,1) size 19x16
                     text run at (0,1) width 16: "\x{4E0A}"
-          LayoutText {#text} at (2162,256) size 19x16
-            text run at (2162,256) width 16: "\x{308B}"
+          LayoutText {#text} at (2162,272) size 19x16
+            text run at (2162,272) width 16: "\x{308B}"
           LayoutRuby (inline) {RUBY} at (0,0) size 19x32
-            LayoutRubyRun (anonymous) at (2162,272) size 20x32
+            LayoutRubyRun (anonymous) at (2162,288) size 20x32
               LayoutRubyText {RT} at (-12,0) size 12x32
                 LayoutText {#text} at (0,0) size 12x31
                   text run at (0,0) width 30: "\x{3072}\x{3070}\x{308A}"
@@ -1718,11 +1718,11 @@ layer at (-3831,0) size 4631x600 backgroundClip at (0,0) size 800x600 clip at (0
                 LayoutInline {RB} at (0,0) size 19x32
                   LayoutText {#text} at (0,0) size 19x32
                     text run at (0,0) width 32: "\x{96F2}\x{96C0}"
-          LayoutText {#text} at (2162,304) size 50x496
-            text run at (2162,304) width 192: "\x{304C}\x{5341}\x{6587}\x{5B57}\x{306B}\x{3059}\x{308C}\x{9055}\x{3046}\x{306E}\x{304B}\x{3068}"
-            text run at (2193,0) width 400: "\x{601D}\x{3063}\x{305F}\x{3002}\x{6700}\x{5F8C}\x{306B}\x{3001}\x{843D}\x{3061}\x{308B}\x{6642}\x{3082}\x{3001}\x{4E0A}\x{308B}\x{6642}\x{3082}\x{3001}\x{307E}\x{305F}\x{5341}\x{6587}\x{5B57}\x{306B}"
+          LayoutText {#text} at (2162,320) size 50x496
+            text run at (2162,320) width 176: "\x{304C}\x{5341}\x{6587}\x{5B57}\x{306B}\x{3059}\x{308C}\x{9055}\x{3046}\x{306E}\x{304B}"
+            text run at (2193,0) width 416: "\x{3068}\x{601D}\x{3063}\x{305F}\x{3002}\x{6700}\x{5F8C}\x{306B}\x{3001}\x{843D}\x{3061}\x{308B}\x{6642}\x{3082}\x{3001}\x{4E0A}\x{308B}\x{6642}\x{3082}\x{3001}\x{307E}\x{305F}\x{5341}\x{6587}\x{5B57}\x{306B}"
           LayoutRuby (inline) {RUBY} at (0,0) size 19x16
-            LayoutRubyRun (anonymous) at (2193,400) size 20x16
+            LayoutRubyRun (anonymous) at (2193,416) size 20x16
               LayoutRubyText {RT} at (-12,0) size 12x16
                 LayoutText {#text} at (0,3) size 12x10
                   text run at (0,3) width 9: "\x{3059}"
@@ -1730,14 +1730,14 @@ layer at (-3831,0) size 4631x600 backgroundClip at (0,0) size 800x600 clip at (0
                 LayoutInline {RB} at (0,0) size 19x16
                   LayoutText {#text} at (0,0) size 19x16
                     text run at (0,0) width 16: "\x{64E6}"
-          LayoutText {#text} at (2193,416) size 39x496
-            text run at (2193,416) width 80: "\x{308C}\x{9055}\x{3046}\x{3068}\x{304D}"
-            text run at (2213,0) width 320: "\x{306B}\x{3082}\x{5143}\x{6C17}\x{3088}\x{304F}\x{9CF4}\x{304D}\x{3064}\x{3065}\x{3051}\x{308B}\x{3060}\x{308D}\x{3046}\x{3068}\x{601D}\x{3063}\x{305F}\x{3002}"
-          LayoutBR {BR} at (2213,320) size 19x0
-          LayoutText {#text} at (2244,0) size 19x192
-            text run at (2244,0) width 192: "\x{3000}\x{6625}\x{306F}\x{7720}\x{304F}\x{306A}\x{308B}\x{3002}\x{732B}\x{306F}\x{9F20}\x{3092}"
+          LayoutText {#text} at (2193,432) size 39x496
+            text run at (2193,432) width 64: "\x{308C}\x{9055}\x{3046}\x{3068}"
+            text run at (2213,0) width 336: "\x{304D}\x{306B}\x{3082}\x{5143}\x{6C17}\x{3088}\x{304F}\x{9CF4}\x{304D}\x{3064}\x{3065}\x{3051}\x{308B}\x{3060}\x{308D}\x{3046}\x{3068}\x{601D}\x{3063}\x{305F}\x{3002}"
+          LayoutBR {BR} at (2213,336) size 19x0
+          LayoutText {#text} at (2244,0) size 19x195
+            text run at (2244,0) width 195: "\x{3000}\x{6625}\x{306F}\x{7720}\x{304F}\x{306A}\x{308B}\x{3002}\x{732B}\x{306F}\x{9F20}\x{3092}"
           LayoutRuby (inline) {RUBY} at (0,0) size 19x16
-            LayoutRubyRun (anonymous) at (2244,192) size 20x16
+            LayoutRubyRun (anonymous) at (2244,195) size 20x16
               LayoutRubyText {RT} at (-12,0) size 12x16
                 LayoutText {#text} at (0,3) size 12x10
                   text run at (0,3) width 9: "\x{3068}"
@@ -1745,8 +1745,8 @@ layer at (-3831,0) size 4631x600 backgroundClip at (0,0) size 800x600 clip at (0
                 LayoutInline {RB} at (0,0) size 19x16
                   LayoutText {#text} at (0,0) size 19x16
                     text run at (0,0) width 16: "\x{6355}"
-          LayoutText {#text} at (2244,208) size 50x496
-            text run at (2244,208) width 288: "\x{308B}\x{4E8B}\x{3092}\x{5FD8}\x{308C}\x{3001}\x{4EBA}\x{9593}\x{306F}\x{501F}\x{91D1}\x{306E}\x{3042}\x{308B}\x{4E8B}\x{3092}\x{5FD8}\x{308C}"
+          LayoutText {#text} at (2244,211) size 50x499
+            text run at (2244,211) width 288: "\x{308B}\x{4E8B}\x{3092}\x{5FD8}\x{308C}\x{3001}\x{4EBA}\x{9593}\x{306F}\x{501F}\x{91D1}\x{306E}\x{3042}\x{308B}\x{4E8B}\x{3092}\x{5FD8}\x{308C}"
             text run at (2275,0) width 128: "\x{308B}\x{3002}\x{6642}\x{306B}\x{306F}\x{81EA}\x{5206}\x{306E}"
           LayoutRuby (inline) {RUBY} at (0,0) size 19x28
             LayoutRubyRun (anonymous) at (2275,124) size 20x36
@@ -1796,8 +1796,8 @@ layer at (-3831,0) size 4631x600 backgroundClip at (0,0) size 800x600 clip at (0
             text run at (2357,0) width 496: "\x{9B42}\x{306E}\x{6D3B}\x{52D5}\x{304C}\x{58F0}\x{306B}\x{3042}\x{3089}\x{308F}\x{308C}\x{305F}\x{3082}\x{306E}\x{306E}\x{3046}\x{3061}\x{3067}\x{3001}\x{3042}\x{308C}\x{307B}\x{3069}\x{5143}\x{6C17}\x{306E}\x{3042}\x{308B}\x{3082}\x{306E}\x{306F}"
             text run at (2377,0) width 464: "\x{306A}\x{3044}\x{3002}\x{3042}\x{3042}\x{6109}\x{5FEB}\x{3060}\x{3002}\x{3053}\x{3046}\x{601D}\x{3063}\x{3066}\x{3001}\x{3053}\x{3046}\x{6109}\x{5FEB}\x{306B}\x{306A}\x{308B}\x{306E}\x{304C}\x{8A69}\x{3067}\x{3042}\x{308B}\x{3002}"
           LayoutBR {BR} at (2377,464) size 19x0
-          LayoutText {#text} at (2397,0) size 50x496
-            text run at (2397,0) width 496: "\x{3000}\x{305F}\x{3061}\x{307E}\x{3061}\x{30B7}\x{30A7}\x{30EC}\x{30FC}\x{306E}\x{96F2}\x{96C0}\x{306E}\x{8A69}\x{3092}\x{601D}\x{3044}\x{51FA}\x{3057}\x{3066}\x{3001}\x{53E3}\x{306E}\x{3046}\x{3061}\x{3067}\x{899A}\x{3048}\x{305F}\x{3068}\x{3053}"
+          LayoutText {#text} at (2397,0) size 50x499
+            text run at (2397,0) width 499: "\x{3000}\x{305F}\x{3061}\x{307E}\x{3061}\x{30B7}\x{30A7}\x{30EC}\x{30FC}\x{306E}\x{96F2}\x{96C0}\x{306E}\x{8A69}\x{3092}\x{601D}\x{3044}\x{51FA}\x{3057}\x{3066}\x{3001}\x{53E3}\x{306E}\x{3046}\x{3061}\x{3067}\x{899A}\x{3048}\x{305F}\x{3068}\x{3053}"
             text run at (2428,0) width 48: "\x{308D}\x{3060}\x{3051}"
           LayoutRuby (inline) {RUBY} at (0,0) size 19x39
             LayoutRubyRun (anonymous) at (2428,45) size 20x45
@@ -1813,18 +1813,18 @@ layer at (-3831,0) size 4631x600 backgroundClip at (0,0) size 800x600 clip at (0
             text run at (2448,0) width 256: "\x{306E}\x{4E8C}\x{4E09}\x{53E5}\x{306E}\x{306A}\x{304B}\x{306B}\x{3053}\x{3093}\x{306A}\x{306E}\x{304C}\x{3042}\x{308B}\x{3002}"
           LayoutBR {BR} at (2448,256) size 19x0
         LayoutBlockFlow {DIV} at (2468,32) size 100x472
-          LayoutText {#text} at (0,0) size 19x184
-            text run at (0,0) width 184: "\x{3000}\x{3000}We look before and after"
-          LayoutBR {BR} at (0,183) size 19x1
-          LayoutText {#text} at (20,0) size 19x212
-            text run at (20,0) width 212: "\x{3000}\x{3000}\x{3000}\x{3000}And pine for what is not:"
-          LayoutBR {BR} at (20,212) size 19x0
-          LayoutText {#text} at (40,0) size 19x163
-            text run at (40,0) width 163: "\x{3000}\x{3000}Our sincerest laughter"
-          LayoutBR {BR} at (40,163) size 19x0
-          LayoutText {#text} at (60,0) size 19x220
-            text run at (60,0) width 220: "\x{3000}\x{3000}\x{3000}\x{3000}With some pain is fraught;"
-          LayoutBR {BR} at (60,219) size 19x1
+          LayoutText {#text} at (0,0) size 19x190
+            text run at (0,0) width 190: "\x{3000}\x{3000}We look before and after"
+          LayoutBR {BR} at (0,189) size 19x1
+          LayoutText {#text} at (20,0) size 19x224
+            text run at (20,0) width 224: "\x{3000}\x{3000}\x{3000}\x{3000}And pine for what is not:"
+          LayoutBR {BR} at (20,224) size 19x0
+          LayoutText {#text} at (40,0) size 19x169
+            text run at (40,0) width 169: "\x{3000}\x{3000}Our sincerest laughter"
+          LayoutBR {BR} at (40,169) size 19x0
+          LayoutText {#text} at (60,0) size 19x232
+            text run at (60,0) width 232: "\x{3000}\x{3000}\x{3000}\x{3000}With some pain is fraught;"
+          LayoutBR {BR} at (60,231) size 19x1
           LayoutText {#text} at (80,0) size 19x342
             text run at (80,0) width 342: "Our sweetest songs are those that tell of saddest thought."
           LayoutBR {BR} at (80,342) size 19x0
@@ -1889,8 +1889,8 @@ layer at (-3831,0) size 4631x600 backgroundClip at (0,0) size 800x600 clip at (0
           LayoutText {#text} at (74,227) size 19x96
             text run at (74,227) width 96: "\x{308B}\x{3068}\x{305E}\x{77E5}\x{308C}\x{300D}"
           LayoutBR {BR} at (74,323) size 19x0
-          LayoutText {#text} at (94,0) size 50x496
-            text run at (94,0) width 496: "\x{3000}\x{306A}\x{308B}\x{307B}\x{3069}\x{3044}\x{304F}\x{3089}\x{8A69}\x{4EBA}\x{304C}\x{5E78}\x{798F}\x{3067}\x{3082}\x{3001}\x{3042}\x{306E}\x{96F2}\x{96C0}\x{306E}\x{3088}\x{3046}\x{306B}\x{601D}\x{3044}\x{5207}\x{3063}\x{3066}\x{3001}\x{4E00}"
+          LayoutText {#text} at (94,0) size 50x499
+            text run at (94,0) width 499: "\x{3000}\x{306A}\x{308B}\x{307B}\x{3069}\x{3044}\x{304F}\x{3089}\x{8A69}\x{4EBA}\x{304C}\x{5E78}\x{798F}\x{3067}\x{3082}\x{3001}\x{3042}\x{306E}\x{96F2}\x{96C0}\x{306E}\x{3088}\x{3046}\x{306B}\x{601D}\x{3044}\x{5207}\x{3063}\x{3066}\x{3001}\x{4E00}"
             text run at (125,0) width 320: "\x{5FC3}\x{4E0D}\x{4E71}\x{306B}\x{3001}\x{524D}\x{5F8C}\x{3092}\x{5FD8}\x{5374}\x{3057}\x{3066}\x{3001}\x{308F}\x{304C}\x{559C}\x{3073}\x{3092}\x{6B4C}\x{3046}"
           LayoutRuby (inline) {RUBY} at (0,0) size 19x16
             LayoutRubyRun (anonymous) at (125,319) size 20x18
@@ -1975,10 +1975,10 @@ layer at (-3831,0) size 4631x600 backgroundClip at (0,0) size 800x600 clip at (0
             text run at (249,236) width 256: "\x{3082}\x{591A}\x{304B}\x{308D}\x{3046}\x{3002}\x{305D}\x{3093}\x{306A}\x{3089}\x{3070}\x{8A69}\x{4EBA}\x{306B}\x{306A}\x{308B}"
             text run at (269,0) width 112: "\x{306E}\x{3082}\x{8003}\x{3048}\x{7269}\x{3060}\x{3002}"
           LayoutBR {BR} at (269,112) size 19x0
-          LayoutText {#text} at (300,0) size 19x128
-            text run at (300,0) width 128: "\x{3000}\x{3057}\x{3070}\x{3089}\x{304F}\x{306F}\x{8DEF}\x{304C}"
+          LayoutText {#text} at (300,0) size 19x131
+            text run at (300,0) width 131: "\x{3000}\x{3057}\x{3070}\x{3089}\x{304F}\x{306F}\x{8DEF}\x{304C}"
           LayoutRuby (inline) {RUBY} at (0,0) size 19x19
-            LayoutRubyRun (anonymous) at (300,124) size 20x27
+            LayoutRubyRun (anonymous) at (300,127) size 20x27
               LayoutRubyText {RT} at (-12,0) size 12x27
                 LayoutText {#text} at (0,0) size 12x27
                   text run at (0,0) width 27: "\x{305F}\x{3044}\x{3089}"
@@ -1986,10 +1986,10 @@ layer at (-3831,0) size 4631x600 backgroundClip at (0,0) size 800x600 clip at (0
                 LayoutInline {RB} at (0,0) size 19x17
                   LayoutText {#text} at (0,5) size 19x17
                     text run at (0,5) width 16: "\x{5E73}"
-          LayoutText {#text} at (300,147) size 19x64
-            text run at (300,147) width 64: "\x{3067}\x{3001}\x{53F3}\x{306F}"
+          LayoutText {#text} at (300,150) size 19x64
+            text run at (300,150) width 64: "\x{3067}\x{3001}\x{53F3}\x{306F}"
           LayoutRuby (inline) {RUBY} at (0,0) size 19x48
-            LayoutRubyRun (anonymous) at (300,211) size 20x48
+            LayoutRubyRun (anonymous) at (300,214) size 20x48
               LayoutRubyText {RT} at (-12,0) size 12x48
                 LayoutText {#text} at (0,0) size 12x48
                   text run at (0,0) width 47: "\x{305E}\x{3046}\x{304D}\x{3084}\x{307E}"
@@ -1997,8 +1997,8 @@ layer at (-3831,0) size 4631x600 backgroundClip at (0,0) size 800x600 clip at (0
                 LayoutInline {RB} at (0,0) size 19x48
                   LayoutText {#text} at (0,0) size 19x48
                     text run at (0,0) width 48: "\x{96D1}\x{6728}\x{5C71}"
-          LayoutText {#text} at (300,259) size 50x499
-            text run at (300,259) width 240: "\x{3001}\x{5DE6}\x{306F}\x{83DC}\x{306E}\x{82B1}\x{306E}\x{898B}\x{3064}\x{3065}\x{3051}\x{3067}\x{3042}\x{308B}\x{3002}"
+          LayoutText {#text} at (300,262) size 50x502
+            text run at (300,262) width 240: "\x{3001}\x{5DE6}\x{306F}\x{83DC}\x{306E}\x{82B1}\x{306E}\x{898B}\x{3064}\x{3065}\x{3051}\x{3067}\x{3042}\x{308B}\x{3002}"
             text run at (331,0) width 96: "\x{8DB3}\x{306E}\x{4E0B}\x{306B}\x{6642}\x{3005}"
           LayoutRuby (inline) {RUBY} at (0,0) size 19x48
             LayoutRubyRun (anonymous) at (331,96) size 20x48
@@ -2060,10 +2060,10 @@ layer at (-3831,0) size 4631x600 backgroundClip at (0,0) size 800x600 clip at (0
             text run at (413,304) width 192: "\x{306A}\x{3082}\x{306E}\x{3060}\x{3002}\x{307E}\x{305F}\x{8003}\x{3048}\x{3092}\x{3064}\x{3065}"
             text run at (433,0) width 48: "\x{3051}\x{308B}\x{3002}"
           LayoutBR {BR} at (433,48) size 19x0
-          LayoutText {#text} at (464,0) size 19x64
-            text run at (464,0) width 64: "\x{3000}\x{8A69}\x{4EBA}\x{306B}"
+          LayoutText {#text} at (464,0) size 19x67
+            text run at (464,0) width 67: "\x{3000}\x{8A69}\x{4EBA}\x{306B}"
           LayoutRuby (inline) {RUBY} at (0,0) size 19x19
-            LayoutRubyRun (anonymous) at (464,60) size 20x27
+            LayoutRubyRun (anonymous) at (464,63) size 20x27
               LayoutRubyText {RT} at (-12,0) size 12x27
                 LayoutText {#text} at (0,0) size 12x27
                   text run at (0,0) width 27: "\x{3046}\x{308C}\x{3044}"
@@ -2071,10 +2071,10 @@ layer at (-3831,0) size 4631x600 backgroundClip at (0,0) size 800x600 clip at (0
                 LayoutInline {RB} at (0,0) size 19x17
                   LayoutText {#text} at (0,5) size 19x17
                     text run at (0,5) width 16: "\x{6182}"
-          LayoutText {#text} at (464,83) size 19x240
-            text run at (464,83) width 240: "\x{306F}\x{3064}\x{304D}\x{3082}\x{306E}\x{304B}\x{3082}\x{77E5}\x{308C}\x{306A}\x{3044}\x{304C}\x{3001}\x{3042}\x{306E}"
+          LayoutText {#text} at (464,86) size 19x240
+            text run at (464,86) width 240: "\x{306F}\x{3064}\x{304D}\x{3082}\x{306E}\x{304B}\x{3082}\x{77E5}\x{308C}\x{306A}\x{3044}\x{304C}\x{3001}\x{3042}\x{306E}"
           LayoutRuby (inline) {RUBY} at (0,0) size 19x32
-            LayoutRubyRun (anonymous) at (464,323) size 20x32
+            LayoutRubyRun (anonymous) at (464,326) size 20x32
               LayoutRubyText {RT} at (-12,0) size 12x32
                 LayoutText {#text} at (0,0) size 12x31
                   text run at (0,0) width 30: "\x{3072}\x{3070}\x{308A}"
@@ -2082,8 +2082,8 @@ layer at (-3831,0) size 4631x600 backgroundClip at (0,0) size 800x600 clip at (0
                 LayoutInline {RB} at (0,0) size 19x32
                   LayoutText {#text} at (0,0) size 19x32
                     text run at (0,0) width 32: "\x{96F2}\x{96C0}"
-          LayoutText {#text} at (464,355) size 19x144
-            text run at (464,355) width 144: "\x{3092}\x{805E}\x{304F}\x{5FC3}\x{6301}\x{306B}\x{306A}\x{308C}\x{3070}"
+          LayoutText {#text} at (464,358) size 19x144
+            text run at (464,358) width 144: "\x{3092}\x{805E}\x{304F}\x{5FC3}\x{6301}\x{306B}\x{306A}\x{308C}\x{3070}"
           LayoutRuby (inline) {RUBY} at (0,0) size 19x32
             LayoutRubyRun (anonymous) at (495,0) size 20x32
               LayoutRubyText {RT} at (-12,0) size 12x32
@@ -2155,10 +2155,10 @@ layer at (-3831,0) size 4631x600 backgroundClip at (0,0) size 800x600 clip at (0
             text run at (577,480) width 16: "\x{3044}"
             text run at (597,0) width 272: "\x{3082}\x{306E}\x{304C}\x{98DF}\x{3079}\x{3089}\x{308C}\x{306C}\x{304F}\x{3089}\x{3044}\x{306E}\x{4E8B}\x{3060}\x{308D}\x{3046}\x{3002}"
           LayoutBR {BR} at (597,272) size 19x0
-          LayoutText {#text} at (628,0) size 19x416
-            text run at (628,0) width 416: "\x{3000}\x{3057}\x{304B}\x{3057}\x{82E6}\x{3057}\x{307F}\x{306E}\x{306A}\x{3044}\x{306E}\x{306F}\x{306A}\x{305C}\x{3060}\x{308D}\x{3046}\x{3002}\x{305F}\x{3060}\x{3053}\x{306E}\x{666F}\x{8272}\x{3092}\x{4E00}"
+          LayoutText {#text} at (628,0) size 19x419
+            text run at (628,0) width 419: "\x{3000}\x{3057}\x{304B}\x{3057}\x{82E6}\x{3057}\x{307F}\x{306E}\x{306A}\x{3044}\x{306E}\x{306F}\x{306A}\x{305C}\x{3060}\x{308D}\x{3046}\x{3002}\x{305F}\x{3060}\x{3053}\x{306E}\x{666F}\x{8272}\x{3092}\x{4E00}"
           LayoutRuby (inline) {RUBY} at (0,0) size 19x16
-            LayoutRubyRun (anonymous) at (628,415) size 20x18
+            LayoutRubyRun (anonymous) at (628,418) size 20x18
               LayoutRubyText {RT} at (-12,0) size 12x18
                 LayoutText {#text} at (0,0) size 12x18
                   text run at (0,0) width 18: "\x{3077}\x{304F}"
@@ -2166,10 +2166,10 @@ layer at (-3831,0) size 4631x600 backgroundClip at (0,0) size 800x600 clip at (0
                 LayoutInline {RB} at (0,0) size 19x16
                   LayoutText {#text} at (0,1) size 19x16
                     text run at (0,1) width 16: "\x{5E45}"
-          LayoutText {#text} at (628,432) size 19x16
-            text run at (628,432) width 16: "\x{306E}"
+          LayoutText {#text} at (628,435) size 19x16
+            text run at (628,435) width 16: "\x{306E}"
           LayoutRuby (inline) {RUBY} at (0,0) size 19x16
-            LayoutRubyRun (anonymous) at (628,448) size 20x16
+            LayoutRubyRun (anonymous) at (628,451) size 20x16
               LayoutRubyText {RT} at (-12,0) size 12x16
                 LayoutText {#text} at (0,3) size 12x10
                   text run at (0,3) width 9: "\x{3048}"
@@ -2177,8 +2177,8 @@ layer at (-3831,0) size 4631x600 backgroundClip at (0,0) size 800x600 clip at (0
                 LayoutInline {RB} at (0,0) size 19x16
                   LayoutText {#text} at (0,0) size 19x16
                     text run at (0,0) width 16: "\x{753B}"
-          LayoutText {#text} at (628,464) size 50x496
-            text run at (628,464) width 32: "\x{3068}\x{3057}"
+          LayoutText {#text} at (628,467) size 50x499
+            text run at (628,467) width 32: "\x{3068}\x{3057}"
             text run at (659,0) width 16: "\x{3066}"
           LayoutRuby (inline) {RUBY} at (0,0) size 19x16
             LayoutRubyRun (anonymous) at (659,16) size 20x16
@@ -2306,8 +2306,8 @@ layer at (-3831,0) size 4631x600 backgroundClip at (0,0) size 800x600 clip at (0
             text run at (803,178) width 320: "\x{3068}\x{3057}\x{3066}\x{9187}\x{306A}\x{308B}\x{8A69}\x{5883}\x{306B}\x{5165}\x{3089}\x{3057}\x{3080}\x{308B}\x{306E}\x{306F}\x{81EA}\x{7136}\x{3067}\x{3042}"
             text run at (823,0) width 32: "\x{308B}\x{3002}"
           LayoutBR {BR} at (823,32) size 19x0
-          LayoutText {#text} at (843,0) size 50x496
-            text run at (843,0) width 496: "\x{3000}\x{604B}\x{306F}\x{3046}\x{3064}\x{304F}\x{3057}\x{304B}\x{308D}\x{3001}\x{5B5D}\x{3082}\x{3046}\x{3064}\x{304F}\x{3057}\x{304B}\x{308D}\x{3001}\x{5FE0}\x{541B}\x{611B}\x{56FD}\x{3082}\x{7D50}\x{69CB}\x{3060}\x{308D}\x{3046}\x{3002}\x{3057}"
+          LayoutText {#text} at (843,0) size 50x499
+            text run at (843,0) width 499: "\x{3000}\x{604B}\x{306F}\x{3046}\x{3064}\x{304F}\x{3057}\x{304B}\x{308D}\x{3001}\x{5B5D}\x{3082}\x{3046}\x{3064}\x{304F}\x{3057}\x{304B}\x{308D}\x{3001}\x{5FE0}\x{541B}\x{611B}\x{56FD}\x{3082}\x{7D50}\x{69CB}\x{3060}\x{308D}\x{3046}\x{3002}\x{3057}"
             text run at (874,0) width 112: "\x{304B}\x{3057}\x{81EA}\x{8EAB}\x{304C}\x{305D}\x{306E}"
           LayoutRuby (inline) {RUBY} at (0,0) size 19x19
             LayoutRubyRun (anonymous) at (874,108) size 20x27
@@ -2367,8 +2367,8 @@ layer at (-3831,0) size 4631x600 backgroundClip at (0,0) size 800x600 clip at (0
           LayoutText {#text} at (936,96) size 19x80
             text run at (936,96) width 80: "\x{3057}\x{304B}\x{306D}\x{308B}\x{3002}"
           LayoutBR {BR} at (936,176) size 19x0
-          LayoutText {#text} at (956,0) size 50x496
-            text run at (956,0) width 496: "\x{3000}\x{3053}\x{308C}\x{304C}\x{308F}\x{304B}\x{308B}\x{305F}\x{3081}\x{306B}\x{306F}\x{3001}\x{308F}\x{304B}\x{308B}\x{3060}\x{3051}\x{306E}\x{4F59}\x{88D5}\x{306E}\x{3042}\x{308B}\x{7B2C}\x{4E09}\x{8005}\x{306E}\x{5730}\x{4F4D}\x{306B}\x{7ACB}"
+          LayoutText {#text} at (956,0) size 50x499
+            text run at (956,0) width 499: "\x{3000}\x{3053}\x{308C}\x{304C}\x{308F}\x{304B}\x{308B}\x{305F}\x{3081}\x{306B}\x{306F}\x{3001}\x{308F}\x{304B}\x{308B}\x{3060}\x{3051}\x{306E}\x{4F59}\x{88D5}\x{306E}\x{3042}\x{308B}\x{7B2C}\x{4E09}\x{8005}\x{306E}\x{5730}\x{4F4D}\x{306B}\x{7ACB}"
             text run at (987,0) width 336: "\x{305F}\x{306D}\x{3070}\x{306A}\x{3089}\x{306C}\x{3002}\x{4E09}\x{8005}\x{306E}\x{5730}\x{4F4D}\x{306B}\x{7ACB}\x{3066}\x{3070}\x{3053}\x{305D}\x{829D}\x{5C45}\x{306F}"
           LayoutRuby (inline) {RUBY} at (0,0) size 19x16
             LayoutRubyRun (anonymous) at (987,336) size 20x16
@@ -2395,10 +2395,10 @@ layer at (-3831,0) size 4631x600 backgroundClip at (0,0) size 800x600 clip at (0
           LayoutText {#text} at (1038,64) size 19x416
             text run at (1038,64) width 416: "\x{3078}\x{4E0A}\x{3052}\x{3066}\x{3044}\x{308B}\x{3002}\x{898B}\x{305F}\x{308A}\x{8AAD}\x{3093}\x{3060}\x{308A}\x{3059}\x{308B}\x{9593}\x{3060}\x{3051}\x{306F}\x{8A69}\x{4EBA}\x{3067}\x{3042}\x{308B}\x{3002}"
           LayoutBR {BR} at (1038,480) size 19x0
-          LayoutText {#text} at (1069,0) size 19x304
-            text run at (1069,0) width 304: "\x{3000}\x{305D}\x{308C}\x{3059}\x{3089}\x{3001}\x{666E}\x{901A}\x{306E}\x{829D}\x{5C45}\x{3084}\x{5C0F}\x{8AAC}\x{3067}\x{306F}\x{4EBA}\x{60C5}\x{3092}"
+          LayoutText {#text} at (1069,0) size 19x307
+            text run at (1069,0) width 307: "\x{3000}\x{305D}\x{308C}\x{3059}\x{3089}\x{3001}\x{666E}\x{901A}\x{306E}\x{829D}\x{5C45}\x{3084}\x{5C0F}\x{8AAC}\x{3067}\x{306F}\x{4EBA}\x{60C5}\x{3092}"
           LayoutRuby (inline) {RUBY} at (0,0) size 19x16
-            LayoutRubyRun (anonymous) at (1069,303) size 20x18
+            LayoutRubyRun (anonymous) at (1069,306) size 20x18
               LayoutRubyText {RT} at (-12,0) size 12x18
                 LayoutText {#text} at (0,0) size 12x18
                   text run at (0,0) width 18: "\x{307E}\x{306C}"
@@ -2406,8 +2406,8 @@ layer at (-3831,0) size 4631x600 backgroundClip at (0,0) size 800x600 clip at (0
                 LayoutInline {RB} at (0,0) size 19x16
                   LayoutText {#text} at (0,1) size 19x16
                     text run at (0,1) width 16: "\x{514D}"
-          LayoutText {#text} at (1069,320) size 70x496
-            text run at (1069,320) width 176: "\x{304B}\x{308C}\x{306C}\x{3002}\x{82E6}\x{3057}\x{3093}\x{3060}\x{308A}\x{3001}\x{6012}"
+          LayoutText {#text} at (1069,323) size 70x499
+            text run at (1069,323) width 176: "\x{304B}\x{308C}\x{306C}\x{3002}\x{82E6}\x{3057}\x{3093}\x{3060}\x{308A}\x{3001}\x{6012}"
             text run at (1089,0) width 496: "\x{3063}\x{305F}\x{308A}\x{3001}\x{9A12}\x{3044}\x{3060}\x{308A}\x{3001}\x{6CE3}\x{3044}\x{305F}\x{308A}\x{3059}\x{308B}\x{3002}\x{898B}\x{308B}\x{3082}\x{306E}\x{3082}\x{3044}\x{3064}\x{304B}\x{305D}\x{306E}\x{4E2D}\x{306B}\x{540C}\x{5316}\x{3057}"
             text run at (1120,0) width 384: "\x{3066}\x{82E6}\x{3057}\x{3093}\x{3060}\x{308A}\x{3001}\x{6012}\x{3063}\x{305F}\x{308A}\x{3001}\x{9A12}\x{3044}\x{3060}\x{308A}\x{3001}\x{6CE3}\x{3044}\x{305F}\x{308A}\x{3059}\x{308B}\x{3002}"
           LayoutRuby (inline) {RUBY} at (0,0) size 19x32
@@ -2467,8 +2467,8 @@ layer at (-3831,0) size 4631x600 backgroundClip at (0,0) size 800x600 clip at (0
           LayoutText {#text} at (1182,288) size 19x32
             text run at (1182,288) width 32: "\x{3060}\x{3002}"
           LayoutBR {BR} at (1182,320) size 19x0
-          LayoutText {#text} at (1202,0) size 50x480
-            text run at (1202,0) width 480: "\x{3000}\x{82E6}\x{3057}\x{3093}\x{3060}\x{308A}\x{3001}\x{6012}\x{3063}\x{305F}\x{308A}\x{3001}\x{9A12}\x{3044}\x{3060}\x{308A}\x{3001}\x{6CE3}\x{3044}\x{305F}\x{308A}\x{306F}\x{4EBA}\x{306E}\x{4E16}\x{306B}\x{3064}\x{304D}\x{3082}\x{306E}"
+          LayoutText {#text} at (1202,0) size 50x483
+            text run at (1202,0) width 483: "\x{3000}\x{82E6}\x{3057}\x{3093}\x{3060}\x{308A}\x{3001}\x{6012}\x{3063}\x{305F}\x{308A}\x{3001}\x{9A12}\x{3044}\x{3060}\x{308A}\x{3001}\x{6CE3}\x{3044}\x{305F}\x{308A}\x{306F}\x{4EBA}\x{306E}\x{4E16}\x{306B}\x{3064}\x{304D}\x{3082}\x{306E}"
             text run at (1233,0) width 192: "\x{3060}\x{3002}\x{4F59}\x{3082}\x{4E09}\x{5341}\x{5E74}\x{306E}\x{9593}\x{305D}\x{308C}\x{3092}"
           LayoutRuby (inline) {RUBY} at (0,0) size 19x32
             LayoutRubyRun (anonymous) at (1233,192) size 20x32
@@ -2635,10 +2635,10 @@ layer at (-3831,0) size 4631x600 backgroundClip at (0,0) size 800x600 clip at (0
           LayoutText {#text} at (1499,112) size 19x256
             text run at (1499,112) width 256: "\x{3092}\x{805E}\x{3044}\x{3066}\x{5606}\x{606F}\x{3057}\x{305F}\x{306E}\x{3082}\x{7121}\x{7406}\x{306F}\x{306A}\x{3044}\x{3002}"
           LayoutBR {BR} at (1499,368) size 19x0
-          LayoutText {#text} at (1530,0) size 19x160
-            text run at (1530,0) width 160: "\x{3000}\x{3046}\x{308C}\x{3057}\x{3044}\x{4E8B}\x{306B}\x{6771}\x{6D0B}\x{306E}"
+          LayoutText {#text} at (1530,0) size 19x163
+            text run at (1530,0) width 163: "\x{3000}\x{3046}\x{308C}\x{3057}\x{3044}\x{4E8B}\x{306B}\x{6771}\x{6D0B}\x{306E}"
           LayoutRuby (inline) {RUBY} at (0,0) size 19x32
-            LayoutRubyRun (anonymous) at (1530,160) size 20x32
+            LayoutRubyRun (anonymous) at (1530,163) size 20x32
               LayoutRubyText {RT} at (-12,0) size 12x32
                 LayoutText {#text} at (0,0) size 12x31
                   text run at (0,0) width 30: "\x{3057}\x{3044}\x{304B}"
@@ -2646,10 +2646,10 @@ layer at (-3831,0) size 4631x600 backgroundClip at (0,0) size 800x600 clip at (0
                 LayoutInline {RB} at (0,0) size 19x32
                   LayoutText {#text} at (0,0) size 19x32
                     text run at (0,0) width 32: "\x{8A69}\x{6B4C}"
-          LayoutText {#text} at (1530,192) size 19x64
-            text run at (1530,192) width 64: "\x{306F}\x{305D}\x{3053}\x{3092}"
+          LayoutText {#text} at (1530,195) size 19x64
+            text run at (1530,195) width 64: "\x{306F}\x{305D}\x{3053}\x{3092}"
           LayoutRuby (inline) {RUBY} at (0,0) size 19x32
-            LayoutRubyRun (anonymous) at (1530,256) size 20x32
+            LayoutRubyRun (anonymous) at (1530,259) size 20x32
               LayoutRubyText {RT} at (-12,0) size 12x32
                 LayoutText {#text} at (0,0) size 12x31
                   text run at (0,0) width 30: "\x{3052}\x{3060}\x{3064}"
@@ -2657,10 +2657,10 @@ layer at (-3831,0) size 4631x600 backgroundClip at (0,0) size 800x600 clip at (0
                 LayoutInline {RB} at (0,0) size 19x32
                   LayoutText {#text} at (0,0) size 19x32
                     text run at (0,0) width 32: "\x{89E3}\x{8131}"
-          LayoutText {#text} at (1530,288) size 19x112
-            text run at (1530,288) width 112: "\x{3057}\x{305F}\x{306E}\x{304C}\x{3042}\x{308B}\x{3002}"
+          LayoutText {#text} at (1530,291) size 19x112
+            text run at (1530,291) width 112: "\x{3057}\x{305F}\x{306E}\x{304C}\x{3042}\x{308B}\x{3002}"
           LayoutRuby (inline) {RUBY} at (0,0) size 19x42
-            LayoutRubyRun (anonymous) at (1530,397) size 20x45
+            LayoutRubyRun (anonymous) at (1530,400) size 20x45
               LayoutRubyText {RT} at (-12,0) size 12x45
                 LayoutText {#text} at (0,0) size 12x45
                   text run at (0,0) width 45: "\x{304D}\x{304F}\x{3092}\x{3068}\x{308B}"
