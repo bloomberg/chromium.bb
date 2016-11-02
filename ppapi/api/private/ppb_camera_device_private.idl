@@ -51,8 +51,8 @@ interface PPB_CameraDevice_Private {
    * @param[in] camera_device A <code>PP_Resource</code> corresponding to a
    * camera device resource.
    * @param[in] device_id A <code>PP_Var</code> identifying a camera device. The
-   * type is string. The ID can be obtained from MediaStreamTrack.getSources()
-   * or MediaStreamVideoTrack.id.
+   * type is string. The ID can be obtained from
+   * navigator.mediaDevices.enumerateDevices() or MediaStreamVideoTrack.id.
    * @param[in] callback A <code>PP_CompletionCallback</code> to be called upon
    * completion of <code>Open()</code>.
    *

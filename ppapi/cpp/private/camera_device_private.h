@@ -66,7 +66,7 @@ class CameraDevice_Private : public Resource {
   ///
   /// @param[in] device_id A <code>Var</code> identifying a camera
   /// device. The type is string. The ID can be obtained from
-  /// MediaStreamTrack.getSources() or MediaStreamVideoTrack.id.
+  /// navigator.mediaDevices.enumerateDevices() or MediaStreamVideoTrack.id.
   /// @param[in] callback A <code>CompletionCallback</code> to be called upon
   /// completion of <code>Open()</code>.
   ///

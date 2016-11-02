@@ -4,7 +4,7 @@
  */
 
 /* From private/ppb_camera_device_private.idl,
- *   modified Fri Feb 20 13:48:52 2015.
+ *   modified Wed Nov  2 15:54:24 2016.
  */
 
 #ifndef PPAPI_C_PRIVATE_PPB_CAMERA_DEVICE_PRIVATE_H_
@@ -68,8 +68,8 @@ struct PPB_CameraDevice_Private_0_1 {
    * @param[in] camera_device A <code>PP_Resource</code> corresponding to a
    * camera device resource.
    * @param[in] device_id A <code>PP_Var</code> identifying a camera device. The
-   * type is string. The ID can be obtained from MediaStreamTrack.getSources()
-   * or MediaStreamVideoTrack.id.
+   * type is string. The ID can be obtained from
+   * navigator.mediaDevices.enumerateDevices() or MediaStreamVideoTrack.id.
    * @param[in] callback A <code>PP_CompletionCallback</code> to be called upon
    * completion of <code>Open()</code>.
    *
