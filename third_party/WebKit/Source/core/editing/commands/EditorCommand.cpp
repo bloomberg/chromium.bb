@@ -1096,8 +1096,7 @@ static bool executeMovePageDown(LocalFrame& frame,
   if (!distance)
     return false;
   return frame.selection().modify(FrameSelection::AlterationMove, distance,
-                                  FrameSelection::DirectionDown, UserTriggered,
-                                  CursorAlignOnScroll::Always);
+                                  FrameSelection::DirectionDown);
 }
 
 static bool executeMovePageDownAndModifySelection(LocalFrame& frame,
@@ -1108,8 +1107,7 @@ static bool executeMovePageDownAndModifySelection(LocalFrame& frame,
   if (!distance)
     return false;
   return frame.selection().modify(FrameSelection::AlterationExtend, distance,
-                                  FrameSelection::DirectionDown, UserTriggered,
-                                  CursorAlignOnScroll::Always);
+                                  FrameSelection::DirectionDown);
 }
 
 static bool executeMovePageUp(LocalFrame& frame,
@@ -1120,8 +1118,7 @@ static bool executeMovePageUp(LocalFrame& frame,
   if (!distance)
     return false;
   return frame.selection().modify(FrameSelection::AlterationMove, distance,
-                                  FrameSelection::DirectionUp, UserTriggered,
-                                  CursorAlignOnScroll::Always);
+                                  FrameSelection::DirectionUp);
 }
 
 static bool executeMovePageUpAndModifySelection(LocalFrame& frame,
@@ -1132,8 +1129,7 @@ static bool executeMovePageUpAndModifySelection(LocalFrame& frame,
   if (!distance)
     return false;
   return frame.selection().modify(FrameSelection::AlterationExtend, distance,
-                                  FrameSelection::DirectionUp, UserTriggered,
-                                  CursorAlignOnScroll::Always);
+                                  FrameSelection::DirectionUp);
 }
 
 static bool executeMoveRight(LocalFrame& frame,

@@ -164,11 +164,7 @@ class CORE_EXPORT FrameSelection final
               TextGranularity,
               EUserTriggered = NotUserTriggered);
   enum VerticalDirection { DirectionUp, DirectionDown };
-  bool modify(EAlteration,
-              unsigned verticalDistance,
-              VerticalDirection,
-              EUserTriggered = NotUserTriggered,
-              CursorAlignOnScroll = CursorAlignOnScroll::IfNeeded);
+  bool modify(EAlteration, unsigned verticalDistance, VerticalDirection);
 
   // Moves the selection extent based on the selection granularity strategy.
   // This function does not allow the selection to collapse. If the new

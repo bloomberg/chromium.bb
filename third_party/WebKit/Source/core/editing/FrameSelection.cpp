@@ -672,23 +672,19 @@ bool FrameSelection::modify(EAlteration alter,
 
 bool FrameSelection::modify(EAlteration alter,
                             unsigned verticalDistance,
-                            VerticalDirection direction,
-                            EUserTriggered userTriggered,
-                            CursorAlignOnScroll align) {
+                            VerticalDirection direction) {
   SelectionModifier selectionModifier(*frame(), selection());
   if (!selectionModifier.modifyWithPageGranularity(alter, verticalDistance,
-                                                   direction))
+                                                   direction)) {
     return false;
+  }
 
-  const SetSelectionOptions options =
-      CloseTyping | ClearTypingStyle | userTriggered;
-  if (alter == AlterationMove)
-    setSelection(selectionModifier.selection(), options, align);
-  else
-    setSelection(selectionModifier.selection(), options);
+  setSelection(selectionModifier.selection(),
+               CloseTyping | ClearTypingStyle | UserTriggered,
+               alter == AlterationMove ? CursorAlignOnScroll::Always
+                                       : CursorAlignOnScroll::IfNeeded);
 
-  if (userTriggered == UserTriggered)
-    m_granularity = CharacterGranularity;
+  m_granularity = CharacterGranularity;
 
   return true;
 }
