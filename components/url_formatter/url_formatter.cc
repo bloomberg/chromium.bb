@@ -250,8 +250,8 @@ class IDNSpoofChecker {
 
   USpoofChecker* checker_;
   icu::UnicodeSet deviation_characters_;
-  icu::UnicodeSet latin_letters_;
   icu::UnicodeSet non_ascii_latin_letters_;
+  icu::UnicodeSet kana_letters_exceptions_;
 
   DISALLOW_COPY_AND_ASSIGN(IDNSpoofChecker);
 };
@@ -289,22 +289,9 @@ IDNSpoofChecker::IDNSpoofChecker() {
   SetAllowedUnicodeSet(&status);
 
   // Enable the return of auxillary (non-error) information.
+  // We used to disable WHOLE_SCRIPT_CONFUSABLE check explicitly, but as of
+  // ICU 58.1, WSC is a no-op in a single string check API.
   int32_t checks = uspoof_getChecks(checker_, &status) | USPOOF_AUX_INFO;
-
-  // Disable WHOLE_SCRIPT_CONFUSABLE check. The check has a marginal value when
-  // used against a single string as opposed to comparing a pair of strings. In
-  // addition, it would also flag a number of common labels including the IDN
-  // TLD for Russian.
-  // A possible alternative would be to turn on the check and block a label
-  // only under the following conditions, but it'd better be done on the
-  // server-side (e.g. SafeBrowsing):
-  // 1. The label is whole-script confusable.
-  // 2. And the skeleton of the label matches the skeleton of one of top
-  // domain labels. See http://unicode.org/reports/tr39/#Confusable_Detection
-  // for the definition of skeleton.
-  // 3. And the label is different from the matched top domain label in #2.
-  checks &= ~USPOOF_WHOLE_SCRIPT_CONFUSABLE;
-
   uspoof_setChecks(checker_, checks, &status);
 
   // Four characters handled differently by IDNA 2003 and IDNA 2008. UTS46
@@ -315,16 +302,17 @@ IDNSpoofChecker::IDNSpoofChecker() {
                       status);
   deviation_characters_.freeze();
 
-  latin_letters_ =
-      icu::UnicodeSet(UNICODE_STRING_SIMPLE("[:Latin:]"), status);
-  latin_letters_.freeze();
-
   // Latin letters outside ASCII. 'Script_Extensions=Latin' is not necessary
   // because additional characters pulled in with scx=Latn are not included in
   // the allowed set.
   non_ascii_latin_letters_ = icu::UnicodeSet(
       UNICODE_STRING_SIMPLE("[[:Latin:] - [a-zA-Z]]"), status);
   non_ascii_latin_letters_.freeze();
+
+  // These letters are parts of |dangerous_patterns_|.
+  kana_letters_exceptions_ = icu::UnicodeSet(UNICODE_STRING_SIMPLE(
+      "[\\u3078-\\u307a\\u30d8-\\u30da\\u30fb\\u30fc]"), status);
+  kana_letters_exceptions_.freeze();
 
   DCHECK(U_SUCCESS(status));
 }
@@ -357,19 +345,16 @@ bool IDNSpoofChecker::Check(base::StringPiece16 label) {
     return false;
 
   // If there's no script mixing, the input is regarded as safe without any
-  // extra check.
-  result &= USPOOF_RESTRICTION_LEVEL_MASK;
-  if (result == USPOOF_ASCII || result == USPOOF_SINGLE_SCRIPT_RESTRICTIVE)
-    return true;
-
-  // When check is passed at 'highly restrictive' level, |label| is
-  // made up of one of the following script sets optionally mixed with Latin.
+  // extra check unless it contains Kana letter exceptions. Note that
+  // the following combinations of scripts are treated as a 'logical' single
+  // script.
   //  - Chinese: Han, Bopomofo, Common
   //  - Japanese: Han, Hiragana, Katakana, Common
   //  - Korean: Hangul, Han, Common
-  // Treat this case as a 'logical' single script unless Latin is mixed.
-  if (result == USPOOF_HIGHLY_RESTRICTIVE &&
-      latin_letters_.containsNone(label_string))
+  result &= USPOOF_RESTRICTION_LEVEL_MASK;
+  if (result == USPOOF_ASCII ||
+      (result == USPOOF_SINGLE_SCRIPT_RESTRICTIVE &&
+       kana_letters_exceptions_.containsNone(label_string)))
     return true;
 
   // Additional checks for |label| with multiple scripts, one of which is Latin.
@@ -389,11 +374,32 @@ bool IDNSpoofChecker::Check(base::StringPiece16 label) {
     // '{vitamin in Katakana}b6' are blocked. Note that trying to block those
     // characters when used alone as a label is futile because those cases
     // would not reach here.
+    // Also disallow what used to be blocked by mixed-script-confusable (MSC)
+    // detection. ICU 58 does not detect MSC any more for a single input string.
+    // See http://bugs.icu-project.org/trac/ticket/12823 .
+    // TODO(jshin): adjust the pattern once the above ICU bug is fixed.
+    // - Disallow U+30FB (Katakana Middle Dot) and U+30FC (Hiragana-Katakana
+    //   Prolonged Sound) used out-of-context.
+    // - Disallow three Hiragana letters (U+307[8-A]) or Katakana letters
+    //   (U+30D[8-A]) that look exactly like each other when they're used in a
+    //   label otherwise entirely in Katakna or Hiragana.
+    // - Disallow U+0585 (Armenian Small Letter Oh) and U+0581 (Armenian Small
+    //   Letter Co) to be next to Latin.
+    // - Disallow Latin 'o' and 'g' next to Armenian.
     dangerous_pattern = new icu::RegexMatcher(
         icu::UnicodeString(
             "[^\\p{scx=kana}\\p{scx=hira}\\p{scx=hani}]"
             "[\\u30ce\\u30f3\\u30bd\\u30be]"
-            "[^\\p{scx=kana}\\p{scx=hira}\\p{scx=hani}]", -1, US_INV),
+            "[^\\p{scx=kana}\\p{scx=hira}\\p{scx=hani}]|"
+            "[^\\p{scx=kana}\\p{scx=hira}]\\u30fc|"
+            "\\u30fc[^\\p{scx=kana}\\p{scx=hira}]|"
+            "^[\\p{scx=kana}]+[\\u3078-\\u307a][\\p{scx=kana}]+$|"
+            "^[\\p{scx=hira}]+[\\u30d8-\\u30da][\\p{scx=hira}]+$|"
+            "[a-z]\\u30fb|\\u30fb[a-z]|"
+            "^[\\u0585\\u0581]+[a-z]|[a-z][\\u0585\\u0581]+$|"
+            "[a-z][\\u0585\\u0581]+[a-z]|"
+            "^[og]+[\\p{scx=armn}]|[\\p{scx=armn}][og]+$|"
+            "[\\p{scx=armn}][og]+[\\p{scx=armn}]", -1, US_INV),
         0, status);
     tls_index.Set(dangerous_pattern);
   }

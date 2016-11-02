@@ -35,9 +35,9 @@ layer at (0,0) size 800x600
         LayoutBR {BR} at (433,14) size 1x0
         LayoutText {#text} at (0,18) size 240x17
           text run at (0,18) width 240: "Color swatches should not be visible."
-      LayoutBlockFlow {P} at (0,378) size 784x32
-        LayoutText {#text} at (0,5) size 418x26
-          text run at (0,5) width 418: "zero-width-joiners: \x{270C}\x{200D}\x{D83C}\x{DFFF}\x{270C}\x{200D}\x{D83C}\x{DFFC}\x{D83D}\x{DC6F}\x{200D}\x{D83C}\x{DFFB}\x{D83D}\x{DC6F}\x{200D}\x{D83C}\x{DFFF}\x{D83D}\x{DC72}\x{200D}\x{D83C}\x{DFFD}\x{D83D}\x{DC72}\x{200D}\x{D83C}\x{DFFB}"
+      LayoutBlockFlow {P} at (0,378) size 784x28
+        LayoutText {#text} at (0,1) size 406x26
+          text run at (0,1) width 406: "zero-width-joiners: \x{270C}\x{200D}\x{D83C}\x{DFFF}\x{270C}\x{200D}\x{D83C}\x{DFFC}\x{D83D}\x{DC6F}\x{200D}\x{D83C}\x{DFFB}\x{D83D}\x{DC6F}\x{200D}\x{D83C}\x{DFFF}\x{D83D}\x{DC72}\x{200D}\x{D83C}\x{DFFD}\x{D83D}\x{DC72}\x{200D}\x{D83C}\x{DFFB}"
 layer at (500,200) size 200x200
   LayoutBlockFlow (positioned) {DIV} at (500,200) size 200x200
     LayoutBlockFlow {P} at (0,24) size 200x96

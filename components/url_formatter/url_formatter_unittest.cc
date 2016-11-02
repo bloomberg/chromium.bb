@@ -190,6 +190,11 @@ const IDNTestCase idn_cases[] = {
   // Mixed script confusable
   // google with Armenian Small Letter Oh(U+0585)
   {"xn--gogle-lkg.com", L"g\x0585ogle.com", false},
+  {"xn--range-kkg.com", L"\x0585range.com", false},
+  {"xn--cucko-pkg.com", L"cucko\x0585.com", false},
+  // Latin 'o' in Armenian.
+  {"xn--o-ybcg0cu0cq.com",
+    L"o\x0585\x0580\x0574\x0578\x0582\x0566\x0568.com", false},
   // Hiragana HE(U+3078) mixed with Katakana
   {"xn--49jxi3as0d0fpc.com",
     L"\x30e2\x30d2\x30fc\x30c8\x3078\x30d6\x30f3.com", false},

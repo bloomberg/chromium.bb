@@ -15,13 +15,19 @@
     </style>
 </head>
 <p>The following box should break the sequence of symbols at the 5 character mark
-and not overflow the blue box. This is because U+1D49 is a number category
-    unicode character, for which break-all applies.</p>
+and not overflow the blue box. This is because U+1D49E has a general category(gC) of Letter, for which break-all applies.</p>
 <div class="breakbox">
     &#x1d49e;&#x1d49e;&#x1d49e;&#x1d49e;&#x1d49e;&#x1d49e;&#x1d49e;&#x1d49e;&#x1d49e;&#x1d49e;
 </div>
-<p>The following box should not break the sequence of symbols since U+1F1EF is not
-    a letter or number category character.</p>
+<p>The following box should break between a pair of regional indicators
+( U+1F1EF and U+1F1F5 ) because
+they (as a pair) act like Ideographs (LB=ID) whether or not 'word-break' is break-all.
+</p>
 <div class="breakbox">
     &#x1f1ef;&#x1f1f5;&#x1f1ef;&#x1f1f5;&#x1f1ef;&#x1f1f5;&#x1f1ef;&#x1f1f5;&#x1f1ef;&#x1f1f5;&#x1f1ef;&#x1f1f5;&#x1f1ef;&#x1f1f5;&#x1f1ef;&#x1f1f5;
 </div>
+<!--
+     TODO(jshin): Add a test string made of non-BMP characters that would
+     overflow even with 'word-break: break-all'. LB=IS or LB=NS would work.
+     https://bugs.chromium.org/p/chromium/issues/detail?id=661320
+-->
