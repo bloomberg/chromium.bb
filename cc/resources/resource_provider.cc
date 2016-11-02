@@ -1227,7 +1227,6 @@ ResourceProvider::ScopedReadLockSkImage::ScopedReadLockSkImage(
     texture_info.fID = resource->gl_id;
     texture_info.fTarget = resource->target;
     GrBackendTextureDesc desc;
-    desc.fFlags = kRenderTarget_GrBackendTextureFlag;
     desc.fWidth = resource->size.width();
     desc.fHeight = resource->size.height();
     desc.fConfig = ToGrPixelConfig(resource->format);
