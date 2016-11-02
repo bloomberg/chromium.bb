@@ -819,16 +819,21 @@ def Init(git_repo):
   RunGit(git_repo, ['init'])
 
 
-def Clone(git_repo, git_url):
+def Clone(git_repo, git_url, branch=None):
   """Clone a git repository, into the given directory.
 
   Args:
     git_repo: Path for where to create a git repo. Directory will be created if
               it doesnt exist.
     git_url: Url to clone the git repository from.
+    branch: Branch to checkout ('stabilize.5978.51.B'), or None.
   """
   osutils.SafeMakedirs(git_repo)
-  RunGit(git_repo, ['clone', git_url, git_repo])
+
+  cmd = ['clone', git_url, git_repo]
+  if branch:
+    cmd += ['-b', branch]
+  RunGit(git_repo, cmd)
 
 
 def GetProjectUserEmail(git_repo):
