@@ -3627,10 +3627,7 @@ WebDragOperation WebViewImpl::dragTargetDragEnterOrOver(
                     static_cast<DragOperation>(m_operationsAllowed));
 
   DragSession dragSession;
-  if (dragAction == DragEnter)
-    dragSession = m_page->dragController().dragEntered(&dragData);
-  else
-    dragSession = m_page->dragController().dragUpdated(&dragData);
+  dragSession = m_page->dragController().dragEnteredOrUpdated(&dragData);
 
   DragOperation dropEffect = dragSession.operation;
 

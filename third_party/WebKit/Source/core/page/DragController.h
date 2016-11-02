@@ -56,9 +56,8 @@ class CORE_EXPORT DragController final
  public:
   static DragController* create(Page*);
 
-  DragSession dragEntered(DragData*);
+  DragSession dragEnteredOrUpdated(DragData*);
   void dragExited(DragData*);
-  DragSession dragUpdated(DragData*);
   bool performDrag(DragData*);
 
   enum SelectionDragPolicy {
@@ -88,7 +87,6 @@ class CORE_EXPORT DragController final
   DispatchEventResult dispatchTextInputEventFor(LocalFrame*, DragData*);
   bool canProcessDrag(DragData*);
   bool concludeEditDrag(DragData*);
-  DragSession dragEnteredOrUpdated(DragData*);
   DragOperation operationForLoad(DragData*);
   bool tryDocumentDrag(DragData*, DragDestinationAction, DragSession&);
   bool tryDHTMLDrag(DragData*, DragOperation&);

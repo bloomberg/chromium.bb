@@ -208,10 +208,6 @@ void DragController::dragEnded() {
   m_page->dragCaretController().clear();
 }
 
-DragSession DragController::dragEntered(DragData* dragData) {
-  return dragEnteredOrUpdated(dragData);
-}
-
 void DragController::dragExited(DragData* dragData) {
   DCHECK(dragData);
   LocalFrame* mainFrame = m_page->deprecatedLocalMainFrame();
@@ -234,10 +230,6 @@ void DragController::dragExited(DragData* dragData) {
   if (m_fileInputElementUnderMouse)
     m_fileInputElementUnderMouse->setCanReceiveDroppedFiles(false);
   m_fileInputElementUnderMouse = nullptr;
-}
-
-DragSession DragController::dragUpdated(DragData* dragData) {
-  return dragEnteredOrUpdated(dragData);
 }
 
 bool DragController::performDrag(DragData* dragData) {
