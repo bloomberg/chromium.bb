@@ -224,9 +224,10 @@ class CC_EXPORT TransformTree final : public PropertyTree<TransformNode> {
   }
   float device_scale_factor() const { return device_scale_factor_; }
 
-  void SetDeviceTransform(const gfx::Transform& transform,
-                          gfx::PointF root_position);
-  void SetDeviceTransformScaleFactor(const gfx::Transform& transform);
+  void SetRootTransformsAndScales(float device_scale_factor,
+                                  float page_scale_factor_for_root,
+                                  const gfx::Transform& device_transform,
+                                  gfx::PointF root_position);
   float device_transform_scale_factor() const {
     return device_transform_scale_factor_;
   }

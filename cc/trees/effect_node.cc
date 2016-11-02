@@ -33,7 +33,7 @@ EffectNode::EffectNode()
       has_unclipped_descendants(false),
       transform_id(0),
       clip_id(0),
-      target_id(0),
+      target_id(1),
       mask_layer_id(-1) {}
 
 EffectNode::EffectNode(const EffectNode& other) = default;

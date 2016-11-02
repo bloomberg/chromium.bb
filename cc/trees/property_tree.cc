@@ -668,30 +668,51 @@ void TransformTree::UpdateNodeAndAncestorsAreAnimatedOrInvertible(
       node->has_potential_animation || is_invertible;
 }
 
-void TransformTree::SetDeviceTransform(const gfx::Transform& transform,
-                                       gfx::PointF root_position) {
-  gfx::Transform root_post_local = transform;
-  TransformNode* node = Node(1);
-  root_post_local.Scale(node->post_local_scale_factor,
-                        node->post_local_scale_factor);
-  root_post_local.Translate(root_position.x(), root_position.y());
-  if (node->post_local == root_post_local)
-    return;
-
-  node->post_local = root_post_local;
-  node->needs_local_transform_update = true;
-  set_needs_update(true);
-}
-
-void TransformTree::SetDeviceTransformScaleFactor(
-    const gfx::Transform& transform) {
+void TransformTree::SetRootTransformsAndScales(
+    float device_scale_factor,
+    float page_scale_factor_for_root,
+    const gfx::Transform& device_transform,
+    gfx::PointF root_position) {
   gfx::Vector2dF device_transform_scale_components =
-      MathUtil::ComputeTransform2dScaleComponents(transform, 1.f);
+      MathUtil::ComputeTransform2dScaleComponents(device_transform, 1.f);
 
   // Not handling the rare case of different x and y device scale.
   device_transform_scale_factor_ =
       std::max(device_transform_scale_components.x(),
                device_transform_scale_components.y());
+
+  // If DT is the device transform, DSF is the matrix scaled by (device scale
+  // factor * page scale factor for root), RP is the matrix translated by root's
+  // position,
+  // Let Screen Space Scale(SSS) = scale component of DT*DSF*RP,
+  // then the screen space transform of the root transform node is set to SSS
+  // and the post local transform of the contents root node is set to
+  // SSS^-1*DT*DSF*RP.
+  gfx::Transform transform = device_transform;
+  transform.Scale(device_scale_factor * page_scale_factor_for_root,
+                  device_scale_factor * page_scale_factor_for_root);
+  transform.Translate(root_position.x(), root_position.y());
+  float fallback_value = device_scale_factor * page_scale_factor_for_root;
+  gfx::Vector2dF screen_space_scale =
+      MathUtil::ComputeTransform2dScaleComponents(transform, fallback_value);
+  DCHECK_NE(screen_space_scale.x(), 0.f);
+  DCHECK_NE(screen_space_scale.y(), 0.f);
+
+  gfx::Transform root_to_screen;
+  root_to_screen.Scale(screen_space_scale.x(), screen_space_scale.y());
+  gfx::Transform root_from_screen;
+  bool invertible = root_to_screen.GetInverse(&root_from_screen);
+  DCHECK(invertible);
+  SetToScreen(kRootNodeId, root_to_screen);
+  SetFromScreen(kRootNodeId, root_from_screen);
+  set_needs_update(true);
+
+  transform.ConcatTransform(root_from_screen);
+  TransformNode* contents_root_node = Node(kContentsRootNodeId);
+  if (contents_root_node->post_local != transform) {
+    contents_root_node->post_local = transform;
+    contents_root_node->needs_local_transform_update = true;
+  }
 }
 
 void TransformTree::UpdateInnerViewportContainerBoundsDelta() {
@@ -952,8 +973,7 @@ void EffectTree::UpdateBackfaceVisibility(EffectNode* node,
 }
 
 void EffectTree::UpdateSurfaceContentsScale(EffectNode* effect_node) {
-  if (!effect_node->has_render_surface ||
-      effect_node->transform_id == kRootNodeId) {
+  if (!effect_node->has_render_surface) {
     effect_node->surface_contents_scale = gfx::Vector2dF(1.0f, 1.0f);
     return;
   }
@@ -2178,10 +2198,9 @@ DrawTransforms& PropertyTrees::GetDrawTransforms(int transform_id,
   } else if (transform_id > dest_id) {
     transform_tree.CombineTransformsBetween(transform_id, dest_id,
                                             &target_space_transform);
-    if (dest_id != TransformTree::kRootNodeId)
-      target_space_transform.matrix().postScale(
-          effect_node->surface_contents_scale.x(),
-          effect_node->surface_contents_scale.y(), 1.f);
+    target_space_transform.matrix().postScale(
+        effect_node->surface_contents_scale.x(),
+        effect_node->surface_contents_scale.y(), 1.f);
     data.transforms.to_valid = true;
     data.transforms.from_valid = false;
     data.transforms.might_be_invertible = true;
