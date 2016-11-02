@@ -95,8 +95,9 @@ class PDFExtensionTest : public ExtensionApiTest,
   void SetUpOnMainThread() override {
     ExtensionApiTest::SetUpOnMainThread();
     host_resolver()->AddRule("*", "127.0.0.1");
-    ASSERT_TRUE(embedded_test_server()->Start());
+    ASSERT_TRUE(embedded_test_server()->InitializeAndListen());
     content::SetupCrossSiteRedirector(embedded_test_server());
+    embedded_test_server()->StartAcceptingConnections();
   }
 
   void TearDownOnMainThread() override {

@@ -161,8 +161,6 @@ class ChromeContentRendererClientBrowserTest :
   }
 
   void SetUpOnMainThread() override {
-    ASSERT_TRUE(embedded_test_server()->Start());
-
     host_resolver()->AddRule("*", "127.0.0.1");
 
     embedded_test_server()->ServeFilesFromSourceDirectory(
@@ -170,6 +168,7 @@ class ChromeContentRendererClientBrowserTest :
     embedded_test_server()->RegisterRequestMonitor(base::Bind(
         &ChromeContentRendererClientBrowserTest::MonitorRequestHandler,
         base::Unretained(this)));
+    ASSERT_TRUE(embedded_test_server()->Start());
     message_runner_ = new content::MessageLoopRunner();
   }
 
