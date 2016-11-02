@@ -848,9 +848,9 @@ SequencedWorkerPool::Inner::GetTaskSchedulerTaskRunner(
   // same shutdown behavior.
 
   if (!task_runner) {
-    ExecutionMode execution_mode =
-        sequence_token_id ? ExecutionMode::SEQUENCED : ExecutionMode::PARALLEL;
-    task_runner = CreateTaskRunnerWithTraits(traits, execution_mode);
+    task_runner = sequence_token_id
+                      ? CreateSequencedTaskRunnerWithTraits(traits)
+                      : CreateTaskRunnerWithTraits(traits);
   }
 
   return task_runner;
@@ -862,8 +862,7 @@ bool SequencedWorkerPool::Inner::RunsTasksOnCurrentThread() const {
       AllPoolsState::REDIRECTED_TO_TASK_SCHEDULER) {
     if (!runs_tasks_on_verifier_) {
       runs_tasks_on_verifier_ = CreateTaskRunnerWithTraits(
-          TaskTraits().WithFileIO().WithPriority(task_priority_),
-          ExecutionMode::PARALLEL);
+          TaskTraits().WithFileIO().WithPriority(task_priority_));
     }
     return runs_tasks_on_verifier_->RunsTasksOnCurrentThread();
   } else {
