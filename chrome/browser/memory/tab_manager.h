@@ -159,9 +159,6 @@ class TabManager : public TabStripModelObserver {
   static int64_t IdFromWebContents(content::WebContents* web_contents);
 
  private:
-  FRIEND_TEST_ALL_PREFIXES(TabManagerTest,
-                           ActivateTabResetPurgeAndSuspendState);
-  FRIEND_TEST_ALL_PREFIXES(TabManagerTest, NextPurgeAndSuspendState);
   FRIEND_TEST_ALL_PREFIXES(TabManagerTest, AutoDiscardable);
   FRIEND_TEST_ALL_PREFIXES(TabManagerTest, CanOnlyDiscardOnce);
   FRIEND_TEST_ALL_PREFIXES(TabManagerTest, ChildProcessNotifications);
@@ -273,14 +270,6 @@ class TabManager : public TabStripModelObserver {
     RESUMED,
     SUSPENDED,
   };
-  // Returns WebContents whose contents id matches the given tab_contents_id.
-  content::WebContents* GetWebContentsById(int64_t tab_contents_id);
-
-  // Returns the next state of the purge and suspend.
-  PurgeAndSuspendState GetNextPurgeAndSuspendState(
-      content::WebContents* content,
-      base::TimeTicks current_time,
-      const base::TimeDelta& time_to_first_suspension) const;
 
   // Purges and suspends renderers in backgrounded tabs.
   void PurgeAndSuspendBackgroundedTabs();

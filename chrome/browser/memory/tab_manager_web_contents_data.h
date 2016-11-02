@@ -90,10 +90,6 @@ class TabManager::WebContentsData
   // MemoryCoordinator.
   base::TimeTicks LastPurgeAndSuspendModifiedTime() const;
 
-  // Sets the timestamp of the last modified time the purge-and-suspend state
-  // of the tab was changed for testing.
-  void SetLastPurgeAndSuspendModifiedTimeForTesting(base::TimeTicks timestamp);
-
   // Returns the current state of purge-and-suspend.
   // TODO(tasak): remove this after PurgeAndSuspend code is moved into
   // MemoryCoordinator.

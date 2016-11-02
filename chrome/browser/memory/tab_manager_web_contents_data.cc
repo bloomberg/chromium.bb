@@ -204,18 +204,13 @@ bool TabManager::WebContentsData::IsAutoDiscardable() {
 
 void TabManager::WebContentsData::SetPurgeAndSuspendState(
     PurgeAndSuspendState state) {
-  last_purge_and_suspend_modified_time_ = NowTicks();
+  last_purge_and_suspend_modified_time_ = TimeTicks::Now();
   purge_and_suspend_state_ = state;
 }
 
 base::TimeTicks TabManager::WebContentsData::LastPurgeAndSuspendModifiedTime()
     const {
   return last_purge_and_suspend_modified_time_;
-}
-
-void TabManager::WebContentsData::SetLastPurgeAndSuspendModifiedTimeForTesting(
-    base::TimeTicks timestamp) {
-  last_purge_and_suspend_modified_time_ = timestamp;
 }
 
 TabManager::PurgeAndSuspendState
