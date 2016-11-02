@@ -803,7 +803,7 @@
     ],
 
     'android_debug_static_bot_vr_shell': [
-      'android', 'debug_shared_bot', 'vr_shell',
+      'android', 'debug_static_bot', 'vr_shell',
     ],
 
     'android_debug_static_minimal_symbols_mipsel': [
@@ -1581,10 +1581,6 @@
 
     'debug_symbols_static_bot': {
       'mixins': ['debug', 'static', 'goma'],
-    },
-
-    'debug_shared_bot': {
-      'mixins': ['debug', 'shared', 'minimal_symbols', 'goma'],
     },
 
     'debug_static_bot': {
