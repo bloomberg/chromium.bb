@@ -182,18 +182,19 @@ void InspectorLayerTreeAgent::restore() {
   // front-end request document and re-enable the agent manually after this.
 }
 
-void InspectorLayerTreeAgent::enable(ErrorString*) {
+Response InspectorLayerTreeAgent::enable() {
   m_instrumentingAgents->addInspectorLayerTreeAgent(this);
   Document* document = m_inspectedFrames->root()->document();
   if (document &&
       document->lifecycle().state() >= DocumentLifecycle::CompositingClean)
     layerTreeDidChange();
+  return Response::OK();
 }
 
-void InspectorLayerTreeAgent::disable(ErrorString*) {
+Response InspectorLayerTreeAgent::disable() {
   m_instrumentingAgents->removeInspectorLayerTreeAgent(this);
   m_snapshotById.clear();
-  ErrorString unused;
+  return Response::OK();
 }
 
 void InspectorLayerTreeAgent::layerTreeDidChange() {
@@ -315,33 +316,29 @@ static GraphicsLayer* findLayerById(GraphicsLayer* root, int layerId) {
   return nullptr;
 }
 
-GraphicsLayer* InspectorLayerTreeAgent::layerById(ErrorString* errorString,
-                                                  const String& layerId) {
+Response InspectorLayerTreeAgent::layerById(const String& layerId,
+                                            GraphicsLayer*& result) {
   bool ok;
   int id = layerId.toInt(&ok);
-  if (!ok) {
-    *errorString = "Invalid layer id";
-    return nullptr;
-  }
+  if (!ok)
+    return Response::Error("Invalid layer id");
   PaintLayerCompositor* compositor = paintLayerCompositor();
-  if (!compositor) {
-    *errorString = "Not in compositing mode";
-    return nullptr;
-  }
+  if (!compositor)
+    return Response::Error("Not in compositing mode");
 
-  GraphicsLayer* result = findLayerById(rootGraphicsLayer(), id);
+  result = findLayerById(rootGraphicsLayer(), id);
   if (!result)
-    *errorString = "No layer matching given id found";
-  return result;
+    return Response::Error("No layer matching given id found");
+  return Response::OK();
 }
 
-void InspectorLayerTreeAgent::compositingReasons(
-    ErrorString* errorString,
+Response InspectorLayerTreeAgent::compositingReasons(
     const String& layerId,
     std::unique_ptr<Array<String>>* reasonStrings) {
-  const GraphicsLayer* graphicsLayer = layerById(errorString, layerId);
-  if (!graphicsLayer)
-    return;
+  GraphicsLayer* graphicsLayer = nullptr;
+  Response response = layerById(layerId, graphicsLayer);
+  if (!response.isSuccess())
+    return response;
   CompositingReasons reasonsBitmask = graphicsLayer->getCompositingReasons();
   *reasonStrings = Array<String>::create();
   for (size_t i = 0; i < kNumberOfCompositingReasons; ++i) {
@@ -353,14 +350,17 @@ void InspectorLayerTreeAgent::compositingReasons(
 #endif
   }
   ASSERT(!reasonsBitmask);
+  return Response::OK();
 }
 
-void InspectorLayerTreeAgent::makeSnapshot(ErrorString* errorString,
-                                           const String& layerId,
-                                           String* snapshotId) {
-  GraphicsLayer* layer = layerById(errorString, layerId);
-  if (!layer || !layer->drawsContent())
-    return;
+Response InspectorLayerTreeAgent::makeSnapshot(const String& layerId,
+                                               String* snapshotId) {
+  GraphicsLayer* layer = nullptr;
+  Response response = layerById(layerId, layer);
+  if (!response.isSuccess())
+    return response;
+  if (!layer->drawsContent())
+    return Response::Error("Layer does not draw content");
 
   IntSize size = expandedIntSize(layer->size());
 
@@ -378,83 +378,71 @@ void InspectorLayerTreeAgent::makeSnapshot(ErrorString* errorString,
   *snapshotId = String::number(++s_lastSnapshotId);
   bool newEntry = m_snapshotById.add(*snapshotId, snapshot).isNewEntry;
   DCHECK(newEntry);
+  return Response::OK();
 }
 
-void InspectorLayerTreeAgent::loadSnapshot(
-    ErrorString* errorString,
+Response InspectorLayerTreeAgent::loadSnapshot(
     std::unique_ptr<Array<protocol::LayerTree::PictureTile>> tiles,
     String* snapshotId) {
-  if (!tiles->length()) {
-    *errorString = "Invalid argument, no tiles provided";
-    return;
-  }
+  if (!tiles->length())
+    return Response::Error("Invalid argument, no tiles provided");
   Vector<RefPtr<PictureSnapshot::TilePictureStream>> decodedTiles;
   decodedTiles.grow(tiles->length());
   for (size_t i = 0; i < tiles->length(); ++i) {
     protocol::LayerTree::PictureTile* tile = tiles->get(i);
     decodedTiles[i] = adoptRef(new PictureSnapshot::TilePictureStream());
     decodedTiles[i]->layerOffset.set(tile->getX(), tile->getY());
-    if (!base64Decode(tile->getPicture(), decodedTiles[i]->data)) {
-      *errorString = "Invalid base64 encoding";
-      return;
-    }
+    if (!base64Decode(tile->getPicture(), decodedTiles[i]->data))
+      return Response::Error("Invalid base64 encoding");
   }
   RefPtr<PictureSnapshot> snapshot = PictureSnapshot::load(decodedTiles);
-  if (!snapshot) {
-    *errorString = "Invalid snapshot format";
-    return;
-  }
-  if (snapshot->isEmpty()) {
-    *errorString = "Empty snapshot";
-    return;
-  }
+  if (!snapshot)
+    return Response::Error("Invalid snapshot format");
+  if (snapshot->isEmpty())
+    return Response::Error("Empty snapshot");
 
   *snapshotId = String::number(++s_lastSnapshotId);
   bool newEntry = m_snapshotById.add(*snapshotId, snapshot).isNewEntry;
   DCHECK(newEntry);
+  return Response::OK();
 }
 
-void InspectorLayerTreeAgent::releaseSnapshot(ErrorString* errorString,
-                                              const String& snapshotId) {
+Response InspectorLayerTreeAgent::releaseSnapshot(const String& snapshotId) {
   SnapshotById::iterator it = m_snapshotById.find(snapshotId);
-  if (it == m_snapshotById.end()) {
-    *errorString = "Snapshot not found";
-    return;
-  }
+  if (it == m_snapshotById.end())
+    return Response::Error("Snapshot not found");
   m_snapshotById.remove(it);
+  return Response::OK();
 }
 
-const PictureSnapshot* InspectorLayerTreeAgent::snapshotById(
-    ErrorString* errorString,
-    const String& snapshotId) {
+Response InspectorLayerTreeAgent::snapshotById(const String& snapshotId,
+                                               const PictureSnapshot*& result) {
   SnapshotById::iterator it = m_snapshotById.find(snapshotId);
-  if (it == m_snapshotById.end()) {
-    *errorString = "Snapshot not found";
-    return nullptr;
-  }
-  return it->value.get();
+  if (it == m_snapshotById.end())
+    return Response::Error("Snapshot not found");
+  result = it->value.get();
+  return Response::OK();
 }
 
-void InspectorLayerTreeAgent::replaySnapshot(ErrorString* errorString,
-                                             const String& snapshotId,
-                                             const Maybe<int>& fromStep,
-                                             const Maybe<int>& toStep,
-                                             const Maybe<double>& scale,
-                                             String* dataURL) {
-  const PictureSnapshot* snapshot = snapshotById(errorString, snapshotId);
-  if (!snapshot)
-    return;
+Response InspectorLayerTreeAgent::replaySnapshot(const String& snapshotId,
+                                                 Maybe<int> fromStep,
+                                                 Maybe<int> toStep,
+                                                 Maybe<double> scale,
+                                                 String* dataURL) {
+  const PictureSnapshot* snapshot = nullptr;
+  Response response = snapshotById(snapshotId, snapshot);
+  if (!response.isSuccess())
+    return response;
   std::unique_ptr<Vector<char>> base64Data = snapshot->replay(
       fromStep.fromMaybe(0), toStep.fromMaybe(0), scale.fromMaybe(1.0));
-  if (!base64Data) {
-    *errorString = "Image encoding failed";
-    return;
-  }
+  if (!base64Data)
+    return Response::Error("Image encoding failed");
   StringBuilder url;
   url.append("data:image/png;base64,");
   url.reserveCapacity(url.length() + base64Data->size());
   url.append(base64Data->begin(), base64Data->size());
   *dataURL = url.toString();
+  return Response::OK();
 }
 
 static void parseRect(protocol::DOM::Rect* object, FloatRect* rect) {
@@ -462,16 +450,16 @@ static void parseRect(protocol::DOM::Rect* object, FloatRect* rect) {
                     object->getHeight());
 }
 
-void InspectorLayerTreeAgent::profileSnapshot(
-    ErrorString* errorString,
+Response InspectorLayerTreeAgent::profileSnapshot(
     const String& snapshotId,
-    const protocol::Maybe<int>& minRepeatCount,
-    const protocol::Maybe<double>& minDuration,
-    const Maybe<protocol::DOM::Rect>& clipRect,
+    Maybe<int> minRepeatCount,
+    Maybe<double> minDuration,
+    Maybe<protocol::DOM::Rect> clipRect,
     std::unique_ptr<protocol::Array<protocol::Array<double>>>* outTimings) {
-  const PictureSnapshot* snapshot = snapshotById(errorString, snapshotId);
-  if (!snapshot)
-    return;
+  const PictureSnapshot* snapshot = nullptr;
+  Response response = snapshotById(snapshotId, snapshot);
+  if (!response.isSuccess())
+    return response;
   FloatRect rect;
   if (clipRect.isJust())
     parseRect(clipRect.fromJust(), &rect);
@@ -486,20 +474,24 @@ void InspectorLayerTreeAgent::profileSnapshot(
       outRow->addItem(row[j]);
     (*outTimings)->addItem(std::move(outRow));
   }
+  return Response::OK();
 }
 
-void InspectorLayerTreeAgent::snapshotCommandLog(
-    ErrorString* errorString,
+Response InspectorLayerTreeAgent::snapshotCommandLog(
     const String& snapshotId,
     std::unique_ptr<Array<protocol::DictionaryValue>>* commandLog) {
-  const PictureSnapshot* snapshot = snapshotById(errorString, snapshotId);
-  if (!snapshot)
-    return;
-  protocol::ErrorSupport errors(errorString);
+  const PictureSnapshot* snapshot = nullptr;
+  Response response = snapshotById(snapshotId, snapshot);
+  if (!response.isSuccess())
+    return response;
+  protocol::ErrorSupport errors;
   std::unique_ptr<protocol::Value> logValue =
       protocol::parseJSON(snapshot->snapshotCommandLog()->toJSONString());
   *commandLog =
       Array<protocol::DictionaryValue>::parse(logValue.get(), &errors);
+  if (errors.hasErrors())
+    return Response::Error(errors.errors());
+  return Response::OK();
 }
 
 void InspectorLayerTreeAgent::willAddPageOverlay(const GraphicsLayer* layer) {
