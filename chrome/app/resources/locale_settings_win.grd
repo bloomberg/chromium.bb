@@ -220,13 +220,7 @@
       <!-- The default value for |WebPreference::standard_font_family_map| for
            Japanese script. -->
       <message name="IDS_STANDARD_FONT_FAMILY_JAPANESE" use_name_for_id="true">
-        Meiryo
-      </message>
-
-      <!-- The alternate value for |WebPreference::standard_font_family_map| for
-           Japanese script. -->
-      <message name="IDS_STANDARD_FONT_FAMILY_JAPANESE_ALT_WIN" use_name_for_id="true">
-        Yu Gothic
+        ,Meiryo,Yu Gothic
       </message>
 
       <!-- The default value for |WebPreference::fixed_font_family_map| for
@@ -238,19 +232,13 @@
       <!-- The default value for |WebPreference::serif_font_family_map| for
            Japanese script. -->
       <message name="IDS_SERIF_FONT_FAMILY_JAPANESE" use_name_for_id="true">
-        MS PMincho
+        ,Yu Mincho,MS PMincho
       </message>
 
       <!-- The default value for |WebPreference::sans_serif_font_family_map| for
            Japanese script.  -->
       <message name="IDS_SANS_SERIF_FONT_FAMILY_JAPANESE" use_name_for_id="true">
-        Meiryo
-      </message>
-
-      <!-- The alternate value for |WebPreference::sans_serif_font_family_map| for
-           Japanese script. -->
-      <message name="IDS_SANS_SERIF_FONT_FAMILY_JAPANESE_ALT_WIN" use_name_for_id="true">
-        Yu Gothic
+        ,Meiryo,Yu Gothic
       </message>
 
 
@@ -308,6 +296,12 @@
         Microsoft YaHei
       </message>
 
+      <!-- The default value for |WebPreference::cursive_font_family_map| for
+           Simplified Chinese script.  -->
+      <message name="IDS_CURSIVE_FONT_FAMILY_SIMPLIFIED_HAN" use_name_for_id="true">
+        KaiTi
+      </message>
+
       <!-- The default value for |WebPreference::standard_font_family_map| for
            Traditional Chinese script. -->
       <message name="IDS_STANDARD_FONT_FAMILY_TRADITIONAL_HAN" use_name_for_id="true">
@@ -330,6 +324,12 @@
            Traditional Chinese script.  -->
       <message name="IDS_SANS_SERIF_FONT_FAMILY_TRADITIONAL_HAN" use_name_for_id="true">
         Microsoft JhengHei
+      </message>
+
+      <!-- The default value for |WebPreference::cursive_font_family_map| for
+           Traditional Chinese script.  -->
+      <message name="IDS_CURSIVE_FONT_FAMILY_TRADITIONAL_HAN" use_name_for_id="true">
+        DFKai-SB
       </message>
 
       <!-- The default value for |WebPreference::default_font_size| -->

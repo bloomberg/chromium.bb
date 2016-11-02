@@ -310,6 +310,12 @@ const char kWebKitSerifFontFamilyTraditionalHan[] =
     "webkit.webprefs.fonts.serif.Hant";
 const char kWebKitSansSerifFontFamilyTraditionalHan[] =
     "webkit.webprefs.fonts.sansserif.Hant";
+#if defined(OS_WIN) || defined(OS_MACOSX)
+const char kWebKitCursiveFontFamilySimplifiedHan[] =
+    "webkit.webprefs.fonts.cursive.Hans";
+const char kWebKitCursiveFontFamilyTraditionalHan[] =
+    "webkit.webprefs.fonts.cursive.Hant";
+#endif
 
 // WebKit preferences.
 const char kWebKitWebSecurityEnabled[] = "webkit.webprefs.web_security_enabled";

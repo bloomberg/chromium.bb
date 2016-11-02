@@ -127,6 +127,10 @@ extern const char kWebKitStandardFontFamilyTraditionalHan[];
 extern const char kWebKitFixedFontFamilyTraditionalHan[];
 extern const char kWebKitSerifFontFamilyTraditionalHan[];
 extern const char kWebKitSansSerifFontFamilyTraditionalHan[];
+#if defined(OS_WIN) || defined(OS_MACOSX)
+extern const char kWebKitCursiveFontFamilySimplifiedHan[];
+extern const char kWebKitCursiveFontFamilyTraditionalHan[];
+#endif
 
 extern const char kWebKitDefaultFontSize[];
 extern const char kWebKitDefaultFixedFontSize[];
