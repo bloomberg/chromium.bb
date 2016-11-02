@@ -45,6 +45,7 @@ source_set("ppapi_plugin_sources") {
 
   deps = [
     "//base",
+    "//components/discardable_memory/client",
     "//content:export",
     "//content/child",
     "//content/public/child:child_sources",

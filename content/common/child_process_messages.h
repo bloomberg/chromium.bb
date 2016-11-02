@@ -15,9 +15,9 @@
 #include "base/values.h"
 #include "build/build_config.h"
 #include "cc/resources/shared_bitmap_manager.h"
+#include "components/discardable_memory/common/discardable_shared_memory_id.h"
 #include "content/common/content_export.h"
 #include "content/common/content_param_traits_macros.h"
-#include "content/common/host_discardable_shared_memory_manager.h"
 #include "gpu/command_buffer/common/sync_token.h"
 #include "gpu/ipc/common/gpu_param_traits_macros.h"
 #include "ipc/ipc_channel_handle.h"
@@ -216,13 +216,13 @@ IPC_MESSAGE_CONTROL2(ChildProcessHostMsg_DeletedGpuMemoryBuffer,
 IPC_SYNC_MESSAGE_CONTROL2_1(
     ChildProcessHostMsg_SyncAllocateLockedDiscardableSharedMemory,
     uint32_t /* size */,
-    content::DiscardableSharedMemoryId,
+    discardable_memory::DiscardableSharedMemoryId,
     base::SharedMemoryHandle)
 
 // Informs the browser that the child deleted a block of discardable shared
 // memory.
 IPC_MESSAGE_CONTROL1(ChildProcessHostMsg_DeletedDiscardableSharedMemory,
-                     content::DiscardableSharedMemoryId)
+                     discardable_memory::DiscardableSharedMemoryId)
 
 #if defined(OS_LINUX)
 // Asks the browser to change the priority of thread.

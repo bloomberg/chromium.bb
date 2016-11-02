@@ -48,10 +48,10 @@
 #include "cc/raster/task_graph_runner.h"
 #include "cc/trees/layer_tree_host_common.h"
 #include "cc/trees/layer_tree_settings.h"
+#include "components/discardable_memory/client/client_discardable_shared_memory_manager.h"
 #include "content/child/appcache/appcache_dispatcher.h"
 #include "content/child/appcache/appcache_frontend_impl.h"
 #include "content/child/blob_storage/blob_message_filter.h"
-#include "content/child/child_discardable_shared_memory_manager.h"
 #include "content/child/child_gpu_memory_buffer_manager.h"
 #include "content/child/child_histogram_message_filter.h"
 #include "content/child/child_resource_message_filter.h"
@@ -1848,8 +1848,9 @@ void RenderThreadImpl::RecordPurgeAndSuspendMetrics() const {
   UMA_HISTOGRAM_MEMORY_MB("PurgeAndSuspend.Memory.MallocMB",
                           malloc_usage / 1024 / 1024);
 
-  ChildDiscardableSharedMemoryManager::Statistics discardable_stats =
-      ChildThreadImpl::discardable_shared_memory_manager()->GetStatistics();
+  discardable_memory::ClientDiscardableSharedMemoryManager::Statistics
+      discardable_stats =
+          ChildThreadImpl::discardable_shared_memory_manager()->GetStatistics();
   size_t discardable_usage =
       discardable_stats.total_size - discardable_stats.freelist_size;
   UMA_HISTOGRAM_MEMORY_KB("PurgeAndSuspend.Memory.DiscardableKB",

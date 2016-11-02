@@ -2,31 +2,44 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CONTENT_CHILD_CHILD_DISCARDABLE_SHARED_MEMORY_MANAGER_H_
-#define CONTENT_CHILD_CHILD_DISCARDABLE_SHARED_MEMORY_MANAGER_H_
+#ifndef COMPONENTS_DISCARDABLE_MEMORY_CLIENT_CLIENT_DISCARDABLE_SHARED_MEMORY_MANAGER_H_
+#define COMPONENTS_DISCARDABLE_MEMORY_CLIENT_CLIENT_DISCARDABLE_SHARED_MEMORY_MANAGER_H_
 
 #include <stddef.h>
 
 #include "base/macros.h"
 #include "base/memory/discardable_memory_allocator.h"
 #include "base/memory/ref_counted.h"
+#include "base/memory/shared_memory_handle.h"
 #include "base/synchronization/lock.h"
 #include "base/trace_event/memory_dump_provider.h"
-#include "content/child/thread_safe_sender.h"
-#include "content/common/content_export.h"
-#include "content/common/discardable_shared_memory_heap.h"
-#include "content/common/host_discardable_shared_memory_manager.h"
+#include "components/discardable_memory/common/discardable_memory_export.h"
+#include "components/discardable_memory/common/discardable_shared_memory_heap.h"
+#include "components/discardable_memory/common/discardable_shared_memory_id.h"
 
-namespace content {
+namespace discardable_memory {
 
 // Implementation of DiscardableMemoryAllocator that allocates
 // discardable memory segments through the browser process.
-class CONTENT_EXPORT ChildDiscardableSharedMemoryManager
+class DISCARDABLE_MEMORY_EXPORT ClientDiscardableSharedMemoryManager
     : public base::DiscardableMemoryAllocator,
       public base::trace_event::MemoryDumpProvider {
  public:
-  explicit ChildDiscardableSharedMemoryManager(ThreadSafeSender* sender);
-  ~ChildDiscardableSharedMemoryManager() override;
+  class Delegate {
+   public:
+    virtual void AllocateLockedDiscardableSharedMemory(
+        size_t size,
+        DiscardableSharedMemoryId id,
+        base::SharedMemoryHandle* handle) = 0;
+    virtual void DeletedDiscardableSharedMemory(
+        DiscardableSharedMemoryId id) = 0;
+
+   protected:
+    virtual ~Delegate() {}
+  };
+
+  explicit ClientDiscardableSharedMemoryManager(Delegate* delegate);
+  ~ClientDiscardableSharedMemoryManager() override;
 
   // Overridden from base::DiscardableMemoryAllocator:
   std::unique_ptr<base::DiscardableMemory> AllocateLockedDiscardableMemory(
@@ -64,11 +77,11 @@ class CONTENT_EXPORT ChildDiscardableSharedMemoryManager
 
   mutable base::Lock lock_;
   DiscardableSharedMemoryHeap heap_;
-  scoped_refptr<ThreadSafeSender> sender_;
+  Delegate* const delegate_;
 
-  DISALLOW_COPY_AND_ASSIGN(ChildDiscardableSharedMemoryManager);
+  DISALLOW_COPY_AND_ASSIGN(ClientDiscardableSharedMemoryManager);
 };
 
-}  // namespace content
+}  // namespace discardable_memory
 
-#endif  // CONTENT_CHILD_CHILD_DISCARDABLE_SHARED_MEMORY_MANAGER_H_
+#endif  // COMPONENTS_DISCARDABLE_MEMORY_CLIENT_CLIENT_DISCARDABLE_SHARED_MEMORY_MANAGER_H_

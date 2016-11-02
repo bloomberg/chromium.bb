@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "content/child/child_discardable_shared_memory_manager.h"
+#include "components/discardable_memory/client/client_discardable_shared_memory_manager.h"
 
 #include <inttypes.h>
 
@@ -24,9 +24,8 @@
 #include "base/threading/thread_task_runner_handle.h"
 #include "base/trace_event/memory_dump_manager.h"
 #include "base/trace_event/trace_event.h"
-#include "content/common/child_process_messages.h"
 
-namespace content {
+namespace discardable_memory {
 namespace {
 
 // Default allocation size.
@@ -37,7 +36,7 @@ base::StaticAtomicSequenceNumber g_next_discardable_shared_memory_id;
 
 class DiscardableMemoryImpl : public base::DiscardableMemory {
  public:
-  DiscardableMemoryImpl(ChildDiscardableSharedMemoryManager* manager,
+  DiscardableMemoryImpl(ClientDiscardableSharedMemoryManager* manager,
                         std::unique_ptr<DiscardableSharedMemoryHeap::Span> span)
       : manager_(manager), span_(std::move(span)), is_locked_(true) {}
 
@@ -76,7 +75,7 @@ class DiscardableMemoryImpl : public base::DiscardableMemory {
   }
 
  private:
-  ChildDiscardableSharedMemoryManager* const manager_;
+  ClientDiscardableSharedMemoryManager* const manager_;
   std::unique_ptr<DiscardableSharedMemoryHeap::Span> span_;
   bool is_locked_;
 
@@ -84,22 +83,22 @@ class DiscardableMemoryImpl : public base::DiscardableMemory {
 };
 
 void SendDeletedDiscardableSharedMemoryMessage(
-    scoped_refptr<ThreadSafeSender> sender,
+    ClientDiscardableSharedMemoryManager::Delegate* delegate,
     DiscardableSharedMemoryId id) {
-  sender->Send(new ChildProcessHostMsg_DeletedDiscardableSharedMemory(id));
+  delegate->DeletedDiscardableSharedMemory(id);
 }
 
 }  // namespace
 
-ChildDiscardableSharedMemoryManager::ChildDiscardableSharedMemoryManager(
-    ThreadSafeSender* sender)
-    : heap_(base::GetPageSize()), sender_(sender) {
+ClientDiscardableSharedMemoryManager::ClientDiscardableSharedMemoryManager(
+    Delegate* delegate)
+    : heap_(base::GetPageSize()), delegate_(delegate) {
   base::trace_event::MemoryDumpManager::GetInstance()->RegisterDumpProvider(
-      this, "ChildDiscardableSharedMemoryManager",
+      this, "ClientDiscardableSharedMemoryManager",
       base::ThreadTaskRunnerHandle::Get());
 }
 
-ChildDiscardableSharedMemoryManager::~ChildDiscardableSharedMemoryManager() {
+ClientDiscardableSharedMemoryManager::~ClientDiscardableSharedMemoryManager() {
   base::trace_event::MemoryDumpManager::GetInstance()->UnregisterDumpProvider(
       this);
   // TODO(reveman): Determine if this DCHECK can be enabled. crbug.com/430533
@@ -109,14 +108,15 @@ ChildDiscardableSharedMemoryManager::~ChildDiscardableSharedMemoryManager() {
 }
 
 std::unique_ptr<base::DiscardableMemory>
-ChildDiscardableSharedMemoryManager::AllocateLockedDiscardableMemory(
+ClientDiscardableSharedMemoryManager::AllocateLockedDiscardableMemory(
     size_t size) {
   base::AutoLock lock(lock_);
 
   DCHECK_NE(size, 0u);
 
+  auto size_in_kb = static_cast<base::HistogramBase::Sample>(size / 1024);
   UMA_HISTOGRAM_CUSTOM_COUNTS("Memory.DiscardableAllocationSize",
-                              size / 1024,  // In KB
+                              size_in_kb,  // In KB
                               1,
                               4 * 1024 * 1024,  // 4 GB
                               50);
@@ -189,9 +189,10 @@ ChildDiscardableSharedMemoryManager::AllocateLockedDiscardableMemory(
       AllocateLockedDiscardableSharedMemory(allocation_size_in_bytes, new_id));
 
   // Create span for allocated memory.
-  std::unique_ptr<DiscardableSharedMemoryHeap::Span> new_span(heap_.Grow(
-      std::move(shared_memory), allocation_size_in_bytes, new_id,
-      base::Bind(&SendDeletedDiscardableSharedMemoryMessage, sender_, new_id)));
+  std::unique_ptr<DiscardableSharedMemoryHeap::Span> new_span(
+      heap_.Grow(std::move(shared_memory), allocation_size_in_bytes, new_id,
+                 base::Bind(&SendDeletedDiscardableSharedMemoryMessage,
+                            delegate_, new_id)));
   new_span->set_is_locked(true);
 
   // Unlock and insert any left over memory into free lists.
@@ -211,7 +212,7 @@ ChildDiscardableSharedMemoryManager::AllocateLockedDiscardableMemory(
   return base::MakeUnique<DiscardableMemoryImpl>(this, std::move(new_span));
 }
 
-bool ChildDiscardableSharedMemoryManager::OnMemoryDump(
+bool ClientDiscardableSharedMemoryManager::OnMemoryDump(
     const base::trace_event::MemoryDumpArgs& args,
     base::trace_event::ProcessMemoryDump* pmd) {
   base::AutoLock lock(lock_);
@@ -235,8 +236,8 @@ bool ChildDiscardableSharedMemoryManager::OnMemoryDump(
   return heap_.OnMemoryDump(pmd);
 }
 
-ChildDiscardableSharedMemoryManager::Statistics
-ChildDiscardableSharedMemoryManager::GetStatistics() const {
+ClientDiscardableSharedMemoryManager::Statistics
+ClientDiscardableSharedMemoryManager::GetStatistics() const {
   base::AutoLock lock(lock_);
   Statistics stats;
   stats.total_size = heap_.GetSize();
@@ -244,7 +245,7 @@ ChildDiscardableSharedMemoryManager::GetStatistics() const {
   return stats;
 }
 
-void ChildDiscardableSharedMemoryManager::ReleaseFreeMemory() {
+void ClientDiscardableSharedMemoryManager::ReleaseFreeMemory() {
   base::AutoLock lock(lock_);
 
   size_t heap_size_prior_to_releasing_memory = heap_.GetSize();
@@ -257,7 +258,7 @@ void ChildDiscardableSharedMemoryManager::ReleaseFreeMemory() {
     MemoryUsageChanged(heap_.GetSize(), heap_.GetSizeOfFreeLists());
 }
 
-bool ChildDiscardableSharedMemoryManager::LockSpan(
+bool ClientDiscardableSharedMemoryManager::LockSpan(
     DiscardableSharedMemoryHeap::Span* span) {
   base::AutoLock lock(lock_);
 
@@ -265,7 +266,7 @@ bool ChildDiscardableSharedMemoryManager::LockSpan(
     return false;
 
   size_t offset = span->start() * base::GetPageSize() -
-      reinterpret_cast<size_t>(span->shared_memory()->memory());
+                  reinterpret_cast<size_t>(span->shared_memory()->memory());
   size_t length = span->length() * base::GetPageSize();
 
   switch (span->shared_memory()->Lock(offset, length)) {
@@ -284,20 +285,20 @@ bool ChildDiscardableSharedMemoryManager::LockSpan(
   return false;
 }
 
-void ChildDiscardableSharedMemoryManager::UnlockSpan(
+void ClientDiscardableSharedMemoryManager::UnlockSpan(
     DiscardableSharedMemoryHeap::Span* span) {
   base::AutoLock lock(lock_);
 
   DCHECK(span->shared_memory());
   size_t offset = span->start() * base::GetPageSize() -
-      reinterpret_cast<size_t>(span->shared_memory()->memory());
+                  reinterpret_cast<size_t>(span->shared_memory()->memory());
   size_t length = span->length() * base::GetPageSize();
 
   span->set_is_locked(false);
   return span->shared_memory()->Unlock(offset, length);
 }
 
-void ChildDiscardableSharedMemoryManager::ReleaseSpan(
+void ClientDiscardableSharedMemoryManager::ReleaseSpan(
     std::unique_ptr<DiscardableSharedMemoryHeap::Span> span) {
   base::AutoLock lock(lock_);
 
@@ -312,7 +313,7 @@ void ChildDiscardableSharedMemoryManager::ReleaseSpan(
 }
 
 base::trace_event::MemoryAllocatorDump*
-ChildDiscardableSharedMemoryManager::CreateMemoryAllocatorDump(
+ClientDiscardableSharedMemoryManager::CreateMemoryAllocatorDump(
     DiscardableSharedMemoryHeap::Span* span,
     const char* name,
     base::trace_event::ProcessMemoryDump* pmd) const {
@@ -321,18 +322,16 @@ ChildDiscardableSharedMemoryManager::CreateMemoryAllocatorDump(
 }
 
 std::unique_ptr<base::DiscardableSharedMemory>
-ChildDiscardableSharedMemoryManager::AllocateLockedDiscardableSharedMemory(
+ClientDiscardableSharedMemoryManager::AllocateLockedDiscardableSharedMemory(
     size_t size,
     DiscardableSharedMemoryId id) {
   TRACE_EVENT2("renderer",
-               "ChildDiscardableSharedMemoryManager::"
+               "ClientDiscardableSharedMemoryManager::"
                "AllocateLockedDiscardableSharedMemory",
                "size", size, "id", id);
 
   base::SharedMemoryHandle handle = base::SharedMemory::NULLHandle();
-  sender_->Send(
-      new ChildProcessHostMsg_SyncAllocateLockedDiscardableSharedMemory(
-          size, id, &handle));
+  delegate_->AllocateLockedDiscardableSharedMemory(size, id, &handle);
   std::unique_ptr<base::DiscardableSharedMemory> memory(
       new base::DiscardableSharedMemory(handle));
   if (!memory->Map(size))
@@ -340,7 +339,7 @@ ChildDiscardableSharedMemoryManager::AllocateLockedDiscardableSharedMemory(
   return memory;
 }
 
-void ChildDiscardableSharedMemoryManager::MemoryUsageChanged(
+void ClientDiscardableSharedMemoryManager::MemoryUsageChanged(
     size_t new_bytes_total,
     size_t new_bytes_free) const {
   static const char kDiscardableMemoryAllocatedKey[] =
@@ -353,4 +352,4 @@ void ChildDiscardableSharedMemoryManager::MemoryUsageChanged(
                                 base::Uint64ToString(new_bytes_free));
 }
 
-}  // namespace content
+}  // namespace discardable_memory

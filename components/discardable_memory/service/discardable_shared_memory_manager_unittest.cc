@@ -1,19 +1,20 @@
 // Copyright 2014 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
-
-#include "content/common/host_discardable_shared_memory_manager.h"
+#include "components/discardable_memory/service/discardable_shared_memory_manager.h"
 
 #include <stddef.h>
 #include <stdint.h>
 #include <string.h>
 
+#include "base/message_loop/message_loop.h"
 #include "base/threading/simple_thread.h"
-#include "content/public/common/child_process_host.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
-namespace content {
+namespace discardable_memory {
 namespace {
+
+const int kInvalidUniqueID = -1;
 
 class TestDiscardableSharedMemory : public base::DiscardableSharedMemory {
  public:
@@ -31,10 +32,10 @@ class TestDiscardableSharedMemory : public base::DiscardableSharedMemory {
   base::Time now_;
 };
 
-class TestHostDiscardableSharedMemoryManager
-    : public HostDiscardableSharedMemoryManager {
+class TestDiscardableSharedMemoryManager
+    : public DiscardableSharedMemoryManager {
  public:
-  TestHostDiscardableSharedMemoryManager()
+  TestDiscardableSharedMemoryManager()
       : enforce_memory_policy_pending_(false) {}
 
   void SetNow(base::Time now) { now_ = now; }
@@ -47,7 +48,7 @@ class TestHostDiscardableSharedMemoryManager
   }
 
  private:
-  // Overriden from HostDiscardableSharedMemoryManager:
+  // Overriden from DiscardableSharedMemoryManager:
   base::Time Now() const override { return now_; }
   void ScheduleEnforceMemoryPolicy() override {
     enforce_memory_policy_pending_ = true;
@@ -57,27 +58,27 @@ class TestHostDiscardableSharedMemoryManager
   bool enforce_memory_policy_pending_;
 };
 
-class HostDiscardableSharedMemoryManagerTest : public testing::Test {
+class DiscardableSharedMemoryManagerTest : public testing::Test {
  protected:
   // Overridden from testing::Test:
   void SetUp() override {
-    manager_.reset(new TestHostDiscardableSharedMemoryManager);
+    manager_.reset(new TestDiscardableSharedMemoryManager);
   }
 
-  // HostDiscardableSharedMemoryManager requires a message loop.
+  // DiscardableSharedMemoryManager requires a message loop.
   base::MessageLoop message_loop_;
-  std::unique_ptr<TestHostDiscardableSharedMemoryManager> manager_;
+  std::unique_ptr<TestDiscardableSharedMemoryManager> manager_;
 };
 
-TEST_F(HostDiscardableSharedMemoryManagerTest, AllocateForChild) {
+TEST_F(DiscardableSharedMemoryManagerTest, AllocateForClient) {
   const int kDataSize = 1024;
   uint8_t data[kDataSize];
   memset(data, 0x80, kDataSize);
 
   base::SharedMemoryHandle shared_handle;
-  manager_->AllocateLockedDiscardableSharedMemoryForChild(
-      base::GetCurrentProcessHandle(), ChildProcessHost::kInvalidUniqueID,
-      kDataSize, 0, &shared_handle);
+  manager_->AllocateLockedDiscardableSharedMemoryForClient(
+      base::GetCurrentProcessHandle(), kInvalidUniqueID, kDataSize, 0,
+      &shared_handle);
   ASSERT_TRUE(base::SharedMemory::IsHandleValid(shared_handle));
 
   TestDiscardableSharedMemory memory(shared_handle);
@@ -93,13 +94,13 @@ TEST_F(HostDiscardableSharedMemoryManagerTest, AllocateForChild) {
   memory.Unlock(0, 0);
 }
 
-TEST_F(HostDiscardableSharedMemoryManagerTest, Purge) {
+TEST_F(DiscardableSharedMemoryManagerTest, Purge) {
   const int kDataSize = 1024;
 
   base::SharedMemoryHandle shared_handle1;
-  manager_->AllocateLockedDiscardableSharedMemoryForChild(
-      base::GetCurrentProcessHandle(), ChildProcessHost::kInvalidUniqueID,
-      kDataSize, 1, &shared_handle1);
+  manager_->AllocateLockedDiscardableSharedMemoryForClient(
+      base::GetCurrentProcessHandle(), kInvalidUniqueID, kDataSize, 1,
+      &shared_handle1);
   ASSERT_TRUE(base::SharedMemory::IsHandleValid(shared_handle1));
 
   TestDiscardableSharedMemory memory1(shared_handle1);
@@ -107,9 +108,9 @@ TEST_F(HostDiscardableSharedMemoryManagerTest, Purge) {
   ASSERT_TRUE(rv);
 
   base::SharedMemoryHandle shared_handle2;
-  manager_->AllocateLockedDiscardableSharedMemoryForChild(
-      base::GetCurrentProcessHandle(), ChildProcessHost::kInvalidUniqueID,
-      kDataSize, 2, &shared_handle2);
+  manager_->AllocateLockedDiscardableSharedMemoryForClient(
+      base::GetCurrentProcessHandle(), kInvalidUniqueID, kDataSize, 2,
+      &shared_handle2);
   ASSERT_TRUE(base::SharedMemory::IsHandleValid(shared_handle2));
 
   TestDiscardableSharedMemory memory2(shared_handle2);
@@ -159,13 +160,13 @@ TEST_F(HostDiscardableSharedMemoryManagerTest, Purge) {
   EXPECT_EQ(base::DiscardableSharedMemory::SUCCESS, lock_rv);
 }
 
-TEST_F(HostDiscardableSharedMemoryManagerTest, EnforceMemoryPolicy) {
+TEST_F(DiscardableSharedMemoryManagerTest, EnforceMemoryPolicy) {
   const int kDataSize = 1024;
 
   base::SharedMemoryHandle shared_handle;
-  manager_->AllocateLockedDiscardableSharedMemoryForChild(
-      base::GetCurrentProcessHandle(), ChildProcessHost::kInvalidUniqueID,
-      kDataSize, 0, &shared_handle);
+  manager_->AllocateLockedDiscardableSharedMemoryForClient(
+      base::GetCurrentProcessHandle(), kInvalidUniqueID, kDataSize, 0,
+      &shared_handle);
   ASSERT_TRUE(base::SharedMemory::IsHandleValid(shared_handle));
 
   TestDiscardableSharedMemory memory(shared_handle);
@@ -197,14 +198,14 @@ TEST_F(HostDiscardableSharedMemoryManagerTest, EnforceMemoryPolicy) {
   EXPECT_EQ(base::DiscardableSharedMemory::FAILED, memory.Lock(0, 0));
 }
 
-TEST_F(HostDiscardableSharedMemoryManagerTest,
+TEST_F(DiscardableSharedMemoryManagerTest,
        ReduceMemoryAfterSegmentHasBeenDeleted) {
   const int kDataSize = 1024;
 
   base::SharedMemoryHandle shared_handle1;
-  manager_->AllocateLockedDiscardableSharedMemoryForChild(
-      base::GetCurrentProcessHandle(), ChildProcessHost::kInvalidUniqueID,
-      kDataSize, 1, &shared_handle1);
+  manager_->AllocateLockedDiscardableSharedMemoryForClient(
+      base::GetCurrentProcessHandle(), kInvalidUniqueID, kDataSize, 1,
+      &shared_handle1);
   ASSERT_TRUE(base::SharedMemory::IsHandleValid(shared_handle1));
 
   TestDiscardableSharedMemory memory1(shared_handle1);
@@ -212,9 +213,9 @@ TEST_F(HostDiscardableSharedMemoryManagerTest,
   ASSERT_TRUE(rv);
 
   base::SharedMemoryHandle shared_handle2;
-  manager_->AllocateLockedDiscardableSharedMemoryForChild(
-      base::GetCurrentProcessHandle(), ChildProcessHost::kInvalidUniqueID,
-      kDataSize, 2, &shared_handle2);
+  manager_->AllocateLockedDiscardableSharedMemoryForClient(
+      base::GetCurrentProcessHandle(), kInvalidUniqueID, kDataSize, 2,
+      &shared_handle2);
   ASSERT_TRUE(base::SharedMemory::IsHandleValid(shared_handle2));
 
   TestDiscardableSharedMemory memory2(shared_handle2);
@@ -226,8 +227,7 @@ TEST_F(HostDiscardableSharedMemoryManagerTest,
   memory1.Unlock(0, 0);
   memory1.Unmap();
   memory1.Close();
-  manager_->ChildDeletedDiscardableSharedMemory(
-      1, ChildProcessHost::kInvalidUniqueID);
+  manager_->ClientDeletedDiscardableSharedMemory(1, kInvalidUniqueID);
 
   // Make sure the manager is able to reduce memory after the segment 1 was
   // deleted.
@@ -239,41 +239,38 @@ TEST_F(HostDiscardableSharedMemoryManagerTest,
   memory2.Unlock(0, 0);
 }
 
-class HostDiscardableSharedMemoryManagerScheduleEnforceMemoryPolicyTest
+class DiscardableSharedMemoryManagerScheduleEnforceMemoryPolicyTest
     : public testing::Test {
  protected:
   // Overridden from testing::Test:
-  void SetUp() override {
-    manager_.reset(new HostDiscardableSharedMemoryManager);
-  }
+  void SetUp() override { manager_.reset(new DiscardableSharedMemoryManager); }
 
-  // HostDiscardableSharedMemoryManager requires a message loop.
+  // DiscardableSharedMemoryManager requires a message loop.
   base::MessageLoop message_loop_;
-  std::unique_ptr<HostDiscardableSharedMemoryManager> manager_;
+  std::unique_ptr<DiscardableSharedMemoryManager> manager_;
 };
 
 class SetMemoryLimitRunner : public base::DelegateSimpleThread::Delegate {
  public:
-  SetMemoryLimitRunner(HostDiscardableSharedMemoryManager* manager,
-                       size_t limit)
+  SetMemoryLimitRunner(DiscardableSharedMemoryManager* manager, size_t limit)
       : manager_(manager), limit_(limit) {}
   ~SetMemoryLimitRunner() override {}
 
   void Run() override { manager_->SetMemoryLimit(limit_); }
 
  private:
-  HostDiscardableSharedMemoryManager* const manager_;
+  DiscardableSharedMemoryManager* const manager_;
   const size_t limit_;
 };
 
-TEST_F(HostDiscardableSharedMemoryManagerScheduleEnforceMemoryPolicyTest,
+TEST_F(DiscardableSharedMemoryManagerScheduleEnforceMemoryPolicyTest,
        SetMemoryLimitOnSimpleThread) {
   const int kDataSize = 1024;
 
   base::SharedMemoryHandle shared_handle;
-  manager_->AllocateLockedDiscardableSharedMemoryForChild(
-      base::GetCurrentProcessHandle(), ChildProcessHost::kInvalidUniqueID,
-      kDataSize, 0, &shared_handle);
+  manager_->AllocateLockedDiscardableSharedMemoryForClient(
+      base::GetCurrentProcessHandle(), kInvalidUniqueID, kDataSize, 0,
+      &shared_handle);
   ASSERT_TRUE(base::SharedMemory::IsHandleValid(shared_handle));
 
   // Set the memory limit to a value that will require EnforceMemoryPolicy()
@@ -285,4 +282,4 @@ TEST_F(HostDiscardableSharedMemoryManagerScheduleEnforceMemoryPolicyTest,
 }
 
 }  // namespace
-}  // namespace content
+}  // namespace discardable_memory

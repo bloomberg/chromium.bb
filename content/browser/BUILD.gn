@@ -34,6 +34,8 @@ source_set("browser") {
     "//base/third_party/dynamic_annotations",
     "//cc",
     "//cc/surfaces",
+    "//components/discardable_memory/common",
+    "//components/discardable_memory/service",
     "//components/display_compositor",
     "//components/filesystem:lib",
     "//components/leveldb:lib",

@@ -23,7 +23,6 @@
 #include "base/threading/thread_checker.h"
 #include "base/timer/timer.h"
 #include "build/build_config.h"
-#include "content/child/child_discardable_shared_memory_manager.h"
 #include "content/child/child_thread_impl.h"
 #include "content/child/memory/child_memory_coordinator_impl.h"
 #include "content/common/associated_interface_registry_impl.h"

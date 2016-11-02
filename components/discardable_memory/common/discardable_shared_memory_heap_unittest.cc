@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "content/common/discardable_shared_memory_heap.h"
+#include "components/discardable_memory/common/discardable_shared_memory_heap.h"
 
 #include <stddef.h>
 #include <utility>
@@ -12,11 +12,10 @@
 #include "base/process/process_metrics.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
-namespace content {
+namespace discardable_memory {
 namespace {
 
-void NullTask() {
-}
+void NullTask() {}
 
 TEST(DiscardableSharedMemoryHeapTest, Basic) {
   size_t block_size = base::GetPageSize();

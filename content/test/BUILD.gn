@@ -662,6 +662,8 @@ test("content_browsertests") {
     ":test_support",
     ":web_ui_test_mojo_bindings",
     "//base/test:test_support",
+    "//components/discardable_memory/client",
+    "//components/discardable_memory/common",
     "//content:resources",
     "//content/app:both_for_content_tests",
     "//content/browser:for_content_tests",
@@ -884,6 +886,12 @@ test("content_browsertests") {
       "../renderer/dom_serializer_browsertest.cc",
       "../renderer/resource_fetcher_browsertest.cc",
       "../renderer/savable_resources_browsertest.cc",
+    ]
+
+    deps += [
+      "//components/discardable_memory/client",
+      "//components/discardable_memory/common",
+      "//components/discardable_memory/service",
     ]
   }
 
@@ -1264,10 +1272,8 @@ test("content_unittests") {
     "../common/cursors/webcursor_unittest.cc",
     "../common/database_connections_unittest.cc",
     "../common/database_identifier_unittest.cc",
-    "../common/discardable_shared_memory_heap_unittest.cc",
     "../common/dom_storage/dom_storage_map_unittest.cc",
     "../common/fileapi/file_system_util_unittest.cc",
-    "../common/host_discardable_shared_memory_manager_unittest.cc",
     "../common/host_shared_bitmap_manager_unittest.cc",
     "../common/indexed_db/indexed_db_key_unittest.cc",
     "../common/input/event_with_latency_info_unittest.cc",
@@ -1677,7 +1683,6 @@ test("content_perftests") {
 
   sources = [
     "../browser/renderer_host/input/input_router_impl_perftest.cc",
-    "../common/discardable_shared_memory_heap_perftest.cc",
     "../test/run_all_perftests.cc",
   ]
   deps = [

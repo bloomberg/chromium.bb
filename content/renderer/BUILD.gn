@@ -403,6 +403,7 @@ target(link_target_type, "renderer") {
     "//cc/proto",
     "//cc/surfaces",
     "//cc/surfaces:surface_id",
+    "//components/discardable_memory/client",
     "//components/url_formatter",
     "//content:resources",
     "//content/child",

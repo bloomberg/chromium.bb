@@ -1,6 +1,7 @@
 include_rules = [
   "-storage/browser",
 
+  "+components/discardable_memory/common",
   "+device/base/synchronization",
   "+services/service_manager/public/cpp",
   "+services/video_capture/public/interfaces",

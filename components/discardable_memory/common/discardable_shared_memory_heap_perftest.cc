@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "content/common/discardable_shared_memory_heap.h"
+#include "components/discardable_memory/common/discardable_shared_memory_heap.h"
 
 #include <stddef.h>
 #include <algorithm>
@@ -18,14 +18,13 @@
 #include "testing/gtest/include/gtest/gtest.h"
 #include "testing/perf/perf_test.h"
 
-namespace content {
+namespace discardable_memory {
 namespace {
 
 const int kTimeLimitMs = 2000;
 const int kTimeCheckInterval = 8192;
 
-void NullTask() {
-}
+void NullTask() {}
 
 TEST(DiscardableSharedMemoryHeapTest, SearchFreeLists) {
   size_t block_size = base::GetPageSize();
@@ -98,4 +97,4 @@ TEST(DiscardableSharedMemoryHeapTest, SearchFreeLists) {
 }
 
 }  // namespace
-}  // namespace content
+}  // namespace discardable_memory

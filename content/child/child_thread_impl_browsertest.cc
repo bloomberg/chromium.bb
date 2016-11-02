@@ -13,9 +13,9 @@
 #include "base/memory/discardable_memory.h"
 #include "base/memory/scoped_vector.h"
 #include "base/time/time.h"
-#include "content/child/child_discardable_shared_memory_manager.h"
+#include "components/discardable_memory/client/client_discardable_shared_memory_manager.h"
+#include "components/discardable_memory/service/discardable_shared_memory_manager.h"
 #include "content/child/child_gpu_memory_buffer_manager.h"
-#include "content/common/host_discardable_shared_memory_manager.h"
 #include "content/public/common/content_switches.h"
 #include "content/public/test/content_browser_test.h"
 #include "content/public/test/content_browser_test_utils.h"
@@ -43,7 +43,7 @@ class ChildThreadImplBrowserTest : public ContentBrowserTest {
                    base::Unretained(this)));
   }
 
-  ChildDiscardableSharedMemoryManager*
+  discardable_memory::ClientDiscardableSharedMemoryManager*
   child_discardable_shared_memory_manager() {
     return child_discardable_shared_memory_manager_;
   }
@@ -54,7 +54,8 @@ class ChildThreadImplBrowserTest : public ContentBrowserTest {
         ChildThreadImpl::current()->discardable_shared_memory_manager();
   }
 
-  ChildDiscardableSharedMemoryManager* child_discardable_shared_memory_manager_;
+  discardable_memory::ClientDiscardableSharedMemoryManager*
+      child_discardable_shared_memory_manager_;
 };
 
 IN_PROC_BROWSER_TEST_F(ChildThreadImplBrowserTest, LockDiscardableMemory) {
@@ -71,7 +72,8 @@ IN_PROC_BROWSER_TEST_F(ChildThreadImplBrowserTest, LockDiscardableMemory) {
   memory->Unlock();
 
   // Purge all unlocked memory.
-  HostDiscardableSharedMemoryManager::current()->SetMemoryLimit(0);
+  discardable_memory::DiscardableSharedMemoryManager::current()->SetMemoryLimit(
+      0);
 
   // Should fail as memory should have been purged.
   EXPECT_FALSE(memory->Lock());
@@ -106,7 +108,8 @@ IN_PROC_BROWSER_TEST_F(ChildThreadImplBrowserTest,
   EXPECT_TRUE(memory);
   memory.reset();
 
-  EXPECT_GE(HostDiscardableSharedMemoryManager::current()->GetBytesAllocated(),
+  EXPECT_GE(discardable_memory::DiscardableSharedMemoryManager::current()
+                ->GetBytesAllocated(),
             kSize);
 
   child_discardable_shared_memory_manager()->ReleaseFreeMemory();
@@ -115,7 +118,8 @@ IN_PROC_BROWSER_TEST_F(ChildThreadImplBrowserTest,
   base::TimeTicks end =
       base::TimeTicks::Now() + base::TimeDelta::FromSeconds(5);
   while (base::TimeTicks::Now() < end) {
-    if (!HostDiscardableSharedMemoryManager::current()->GetBytesAllocated())
+    if (!discardable_memory::DiscardableSharedMemoryManager::current()
+             ->GetBytesAllocated())
       break;
   }
 

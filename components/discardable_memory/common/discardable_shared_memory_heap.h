@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CONTENT_COMMON_DISCARDABLE_SHARED_MEMORY_HEAP_H_
-#define CONTENT_COMMON_DISCARDABLE_SHARED_MEMORY_HEAP_H_
+#ifndef COMPONENTS_DISCARDABLE_MEMORY_COMMON_DISCARDABLE_SHARED_MEMORY_HEAP_H_
+#define COMPONENTS_DISCARDABLE_MEMORY_COMMON_DISCARDABLE_SHARED_MEMORY_HEAP_H_
 
 #include <stddef.h>
 #include <stdint.h>
@@ -16,19 +16,19 @@
 #include "base/macros.h"
 #include "base/memory/scoped_vector.h"
 #include "base/trace_event/process_memory_dump.h"
-#include "content/common/content_export.h"
+#include "components/discardable_memory/common/discardable_memory_export.h"
 
 namespace base {
 class DiscardableSharedMemory;
 }
 
-namespace content {
+namespace discardable_memory {
 
 // Implements a heap of discardable shared memory. An array of free lists
 // is used to keep track of free blocks.
-class CONTENT_EXPORT DiscardableSharedMemoryHeap {
+class DISCARDABLE_MEMORY_EXPORT DiscardableSharedMemoryHeap {
  public:
-  class CONTENT_EXPORT Span : public base::LinkNode<Span> {
+  class DISCARDABLE_MEMORY_EXPORT Span : public base::LinkNode<Span> {
    public:
     ~Span();
 
@@ -181,6 +181,6 @@ class CONTENT_EXPORT DiscardableSharedMemoryHeap {
   DISALLOW_COPY_AND_ASSIGN(DiscardableSharedMemoryHeap);
 };
 
-}  // namespace content
+}  // namespace discardable_memory
 
-#endif  // CONTENT_COMMON_DISCARDABLE_SHARED_MEMORY_HEAP_H_
+#endif  // COMPONENTS_DISCARDABLE_MEMORY_COMMON_DISCARDABLE_SHARED_MEMORY_HEAP_H_

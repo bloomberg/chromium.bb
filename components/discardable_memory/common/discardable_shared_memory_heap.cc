@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "content/common/discardable_shared_memory_heap.h"
+#include "components/discardable_memory/common/discardable_shared_memory_heap.h"
 
 #include <algorithm>
 #include <utility>
@@ -14,7 +14,7 @@
 #include "base/strings/stringprintf.h"
 #include "base/trace_event/memory_dump_manager.h"
 
-namespace content {
+namespace discardable_memory {
 namespace {
 
 bool IsPowerOfTwo(size_t x) {
@@ -36,8 +36,7 @@ DiscardableSharedMemoryHeap::Span::Span(
       length_(length),
       is_locked_(false) {}
 
-DiscardableSharedMemoryHeap::Span::~Span() {
-}
+DiscardableSharedMemoryHeap::Span::~Span() {}
 
 DiscardableSharedMemoryHeap::ScopedMemorySegment::ScopedMemorySegment(
     DiscardableSharedMemoryHeap* heap,
@@ -254,11 +253,10 @@ size_t DiscardableSharedMemoryHeap::GetSizeOfFreeLists() const {
 
 bool DiscardableSharedMemoryHeap::OnMemoryDump(
     base::trace_event::ProcessMemoryDump* pmd) {
-  std::for_each(
-      memory_segments_.begin(), memory_segments_.end(),
-      [pmd](const ScopedMemorySegment* segment) {
-        segment->OnMemoryDump(pmd);
-      });
+  std::for_each(memory_segments_.begin(), memory_segments_.end(),
+                [pmd](const ScopedMemorySegment* segment) {
+                  segment->OnMemoryDump(pmd);
+                });
   return true;
 }
 
@@ -280,7 +278,7 @@ std::unique_ptr<DiscardableSharedMemoryHeap::Span>
 DiscardableSharedMemoryHeap::Carve(Span* span, size_t blocks) {
   std::unique_ptr<Span> serving = RemoveFromFreeList(span);
 
-  const int extra = serving->length_ - blocks;
+  const size_t extra = serving->length_ - blocks;
   if (extra) {
     std::unique_ptr<Span> leftover(
         new Span(serving->shared_memory_, serving->start_ + blocks, extra));
@@ -418,7 +416,7 @@ void DiscardableSharedMemoryHeap::OnMemoryDump(
                       locked_objects_size_in_bytes);
 
   // Emit an ownership edge towards a global allocator dump node. This allows
-  // to avoid double-counting segments when both browser and child process emit
+  // to avoid double-counting segments when both browser and client process emit
   // them. In the special case of single-process-mode, this will be the only
   // dumper active and the single ownership edge will become a no-op in the UI.
   // The global dump is created as a weak dump so that the segment is removed if
@@ -438,7 +436,8 @@ void DiscardableSharedMemoryHeap::OnMemoryDump(
                   allocated_objects_size_in_bytes);
 
   // By creating an edge with a higher |importance| (w.r.t. browser-side dumps)
-  // the tracing UI will account the effective size of the segment to the child.
+  // the tracing UI will account the effective size of the segment to the
+  // client.
   const int kImportance = 2;
   pmd->AddOwnershipEdge(segment_dump->guid(), shared_segment_guid, kImportance);
 }
@@ -474,4 +473,4 @@ DiscardableSharedMemoryHeap::CreateMemoryAllocatorDump(
   return (*it)->CreateMemoryAllocatorDump(span, block_size_, name, pmd);
 }
 
-}  // namespace content
+}  // namespace discardable_memory

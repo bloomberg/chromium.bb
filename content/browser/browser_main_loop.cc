@@ -37,6 +37,7 @@
 #include "base/trace_event/memory_dump_manager.h"
 #include "base/trace_event/trace_event.h"
 #include "build/build_config.h"
+#include "components/discardable_memory/service/discardable_shared_memory_manager.h"
 #include "components/tracing/browser/trace_config_file.h"
 #include "components/tracing/common/process_metrics_memory_dump_provider.h"
 #include "components/tracing/common/trace_to_console.h"
@@ -68,7 +69,6 @@
 #include "content/browser/webui/content_web_ui_controller_factory.h"
 #include "content/browser/webui/url_data_manager.h"
 #include "content/common/content_switches_internal.h"
-#include "content/common/host_discardable_shared_memory_manager.h"
 #include "content/common/host_shared_bitmap_manager.h"
 #include "content/common/service_manager/service_manager_connection_impl.h"
 #include "content/public/browser/browser_main_parts.h"
@@ -634,7 +634,7 @@ void BrowserMainLoop::PostMainMessageLoopStart() {
   // in-process Android WebView. crbug.com/503724 tracks proper fix.
   if (!parsed_command_line_.HasSwitch(switches::kSingleProcess)) {
     base::DiscardableMemoryAllocator::SetInstance(
-        HostDiscardableSharedMemoryManager::current());
+        discardable_memory::DiscardableSharedMemoryManager::current());
   }
 
   if (parts_)

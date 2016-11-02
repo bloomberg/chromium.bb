@@ -55,8 +55,6 @@ target(link_target_type, "child") {
     "blob_storage/webblobregistry_impl.h",
     "browser_font_resource_trusted.cc",
     "browser_font_resource_trusted.h",
-    "child_discardable_shared_memory_manager.cc",
-    "child_discardable_shared_memory_manager.h",
     "child_gpu_memory_buffer_manager.cc",
     "child_gpu_memory_buffer_manager.h",
     "child_histogram_message_filter.cc",
@@ -226,6 +224,7 @@ target(link_target_type, "child") {
 
   deps = [
     "//base",
+    "//components/discardable_memory/client",
     "//components/mime_util",
     "//components/tracing",
     "//components/tracing:startup_tracing",

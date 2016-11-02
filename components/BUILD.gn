@@ -170,6 +170,8 @@ test("components_unittests") {
       "//components/data_reduction_proxy/core/browser:unit_tests",
       "//components/data_reduction_proxy/core/common:unit_tests",
       "//components/data_use_measurement/content:unit_tests",
+      "//components/discardable_memory/common:unit_tests",
+      "//components/discardable_memory/service:unit_tests",
       "//components/display_compositor:unit_tests",
       "//components/dom_distiller/content/browser:unit_tests",
       "//components/domain_reliability:unit_tests",
@@ -476,5 +478,10 @@ if (!is_ios) {
       "//testing/perf",
       "//url",
     ]
+
+    if (!is_ios) {
+      sources += [ "discardable_memory/common/discardable_shared_memory_heap_perftest.cc" ]
+      deps += [ "//components/discardable_memory/common" ]
+    }
   }
 }

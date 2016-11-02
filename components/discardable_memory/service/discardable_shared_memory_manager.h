@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CONTENT_COMMON_HOST_DISCARDABLE_SHARED_MEMORY_MANAGER_H_
-#define CONTENT_COMMON_HOST_DISCARDABLE_SHARED_MEMORY_MANAGER_H_
+#ifndef COMPONENTS_DISCARDABLE_MEMORY_SERVICE_DISCARDABLE_SHARED_MEMORY_MANAGER_H_
+#define COMPONENTS_DISCARDABLE_MEMORY_SERVICE_DISCARDABLE_SHARED_MEMORY_MANAGER_H_
 
 #include <stddef.h>
 #include <stdint.h>
@@ -26,24 +26,26 @@
 #include "base/synchronization/lock.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "base/trace_event/memory_dump_provider.h"
-#include "content/common/content_export.h"
+#include "components/discardable_memory/common/discardable_memory_export.h"
+#include "components/discardable_memory/common/discardable_shared_memory_id.h"
 
-namespace content {
-typedef int32_t DiscardableSharedMemoryId;
+namespace discardable_memory {
 
 // Implementation of DiscardableMemoryAllocator that allocates and manages
-// discardable memory segments for the browser process and child processes.
+// discardable memory segments for the process which hosts this class, and
+// for remote processes which request discardable memory from this class via
+// IPC.
 // This class is thread-safe and instances can safely be used on any thread.
-class CONTENT_EXPORT HostDiscardableSharedMemoryManager
+class DISCARDABLE_MEMORY_EXPORT DiscardableSharedMemoryManager
     : public base::DiscardableMemoryAllocator,
       public base::trace_event::MemoryDumpProvider,
       public base::MemoryCoordinatorClient {
  public:
-  HostDiscardableSharedMemoryManager();
-  ~HostDiscardableSharedMemoryManager() override;
+  DiscardableSharedMemoryManager();
+  ~DiscardableSharedMemoryManager() override;
 
   // Returns a singleton instance.
-  static HostDiscardableSharedMemoryManager* current();
+  static DiscardableSharedMemoryManager* current();
 
   // Overridden from base::DiscardableMemoryAllocator:
   std::unique_ptr<base::DiscardableMemory> AllocateLockedDiscardableMemory(
@@ -53,24 +55,25 @@ class CONTENT_EXPORT HostDiscardableSharedMemoryManager
   bool OnMemoryDump(const base::trace_event::MemoryDumpArgs& args,
                     base::trace_event::ProcessMemoryDump* pmd) override;
 
+  // TODO(penghuang): Get ride of the |process_handle| when we switch to mojo.
   // This allocates a discardable memory segment for |process_handle|.
   // A valid shared memory handle is returned on success.
-  void AllocateLockedDiscardableSharedMemoryForChild(
+  void AllocateLockedDiscardableSharedMemoryForClient(
       base::ProcessHandle process_handle,
-      int child_process_id,
+      int client_id,
       size_t size,
       DiscardableSharedMemoryId id,
       base::SharedMemoryHandle* shared_memory_handle);
 
-  // Call this to notify the manager that child process associated with
-  // |child_process_id| has deleted discardable memory segment with |id|.
-  void ChildDeletedDiscardableSharedMemory(DiscardableSharedMemoryId id,
-                                           int child_process_id);
+  // Call this to notify the manager that client process associated with
+  // |client_id| has deleted discardable memory segment with |id|.
+  void ClientDeletedDiscardableSharedMemory(DiscardableSharedMemoryId id,
+                                            int client_id);
 
-  // Call this to notify the manager that child process associated with
-  // |child_process_id| has been removed. The manager will use this to release
-  // memory segments allocated for child process to the OS.
-  void ProcessRemoved(int child_process_id);
+  // Call this to notify the manager that client associated with |client_id|
+  // has been removed. The manager will use this to release memory segments
+  // allocated for client to the OS.
+  void ClientRemoved(int client_id);
 
   // The maximum number of bytes of memory that may be allocated. This will
   // cause memory usage to be reduced if currently above |limit|.
@@ -108,14 +111,15 @@ class CONTENT_EXPORT HostDiscardableSharedMemoryManager
   // base::MemoryCoordinatorClient implementation:
   void OnMemoryStateChange(base::MemoryState state) override;
 
+  // TODO(penghuang): Get ride of the |process_handle| when we switch to mojo.
   void AllocateLockedDiscardableSharedMemory(
       base::ProcessHandle process_handle,
-      int client_process_id,
+      int client_id,
       size_t size,
       DiscardableSharedMemoryId id,
       base::SharedMemoryHandle* shared_memory_handle);
   void DeletedDiscardableSharedMemory(DiscardableSharedMemoryId id,
-                                      int client_process_id);
+                                      int client_id);
   void OnMemoryPressure(
       base::MemoryPressureListener::MemoryPressureLevel memory_pressure_level);
   void ReduceMemoryUsageUntilWithinMemoryLimit();
@@ -129,9 +133,10 @@ class CONTENT_EXPORT HostDiscardableSharedMemoryManager
 
   base::Lock lock_;
   typedef base::hash_map<DiscardableSharedMemoryId,
-                         scoped_refptr<MemorySegment>> MemorySegmentMap;
-  typedef base::hash_map<int, MemorySegmentMap> ProcessMap;
-  ProcessMap processes_;
+                         scoped_refptr<MemorySegment>>
+      MemorySegmentMap;
+  typedef base::hash_map<int, MemorySegmentMap> ClientMap;
+  ClientMap clients_;
   // Note: The elements in |segments_| are arranged in such a way that they form
   // a heap. The LRU memory segment always first.
   typedef std::vector<scoped_refptr<MemorySegment>> MemorySegmentVector;
@@ -144,11 +149,11 @@ class CONTENT_EXPORT HostDiscardableSharedMemoryManager
       enforce_memory_policy_task_runner_;
   base::Closure enforce_memory_policy_callback_;
   bool enforce_memory_policy_pending_;
-  base::WeakPtrFactory<HostDiscardableSharedMemoryManager> weak_ptr_factory_;
+  base::WeakPtrFactory<DiscardableSharedMemoryManager> weak_ptr_factory_;
 
-  DISALLOW_COPY_AND_ASSIGN(HostDiscardableSharedMemoryManager);
+  DISALLOW_COPY_AND_ASSIGN(DiscardableSharedMemoryManager);
 };
 
-}  // namespace content
+}  // namespace discardable_memory
 
-#endif  // CONTENT_COMMON_HOST_DISCARDABLE_SHARED_MEMORY_MANAGER_H_
+#endif  // COMPONENTS_DISCARDABLE_MEMORY_SERVICE_DISCARDABLE_SHARED_MEMORY_MANAGER_H_
