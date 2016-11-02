@@ -45,6 +45,7 @@
 #include "core/layout/LayoutFullScreen.h"
 #include "core/layout/api/LayoutFullScreenItem.h"
 #include "core/page/ChromeClient.h"
+#include "core/svg/SVGSVGElement.h"
 #include "platform/ScopedOrientationChangeIndicator.h"
 #include "platform/UserGestureIndicator.h"
 
@@ -307,19 +308,25 @@ void Fullscreen::requestFullscreen(Element& element,
     return;
 
   do {
-    // 1. If any of the following conditions are true, terminate these steps and
-    // queue a task to fire an event named fullscreenerror with its bubbles
-    // attribute set to true on the context object's node document:
+    // 1. If any of the following conditions are false, then terminate these
+    // steps and queue a task to fire an event named fullscreenerror with its
+    // bubbles attribute set to true on the context object's node document:
 
-    // The fullscreen element ready check returns false.
+    // |element|'s namespace is the HTML namespace or |element| is an SVG
+    // svg or MathML math element.
+    // Note: MathML is not supported.
+    if (!element.isHTMLElement() && !isSVGSVGElement(element))
+      break;
+
+    // The fullscreen element ready check for |element| returns true.
     if (!fullscreenElementReady(element))
       break;
 
-    // Fullscreen is not supported.
+    // Fullscreen is supported.
     if (!fullscreenIsSupported(document))
       break;
 
-    // This algorithm is not allowed to request fullscreen.
+    // This algorithm is allowed to request fullscreen.
     // OOPIF: If |forCrossProcessDescendant| is true, requestFullscreen was
     // already called on a descendant element in another process, and
     // getting here means that it was already allowed to request fullscreen.

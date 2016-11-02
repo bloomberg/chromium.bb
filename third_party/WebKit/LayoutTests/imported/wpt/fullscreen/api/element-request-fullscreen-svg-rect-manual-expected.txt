@@ -1,4 +1,0 @@
-This is a testharness.js-based test.
-FAIL Element.requestFullscreen() for SVG rect element assert_unreached: fullscreenerror event Reached unreachable code
-Harness: the test ran to completion.
-
