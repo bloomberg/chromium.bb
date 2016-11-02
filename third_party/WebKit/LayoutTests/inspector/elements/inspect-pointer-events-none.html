@@ -59,7 +59,7 @@ function test()
 
     function step1()
     {
-        InspectorTest.domModel.setInspectMode(DOMAgent.InspectMode.SearchForNode, step2);
+        InspectorTest.domModel.setInspectMode(Protocol.DOM.InspectMode.SearchForNode, step2);
     }
 
     function step2()
@@ -72,7 +72,7 @@ function test()
     {
         InspectorTest.firstElementsTreeOutline().removeEventListener(WebInspector.ElementsTreeOutline.Events.SelectedNodeChanged, step3);
         expectSelectedNode("inner");
-        InspectorTest.domModel.setInspectMode(DOMAgent.InspectMode.SearchForNode, step4);
+        InspectorTest.domModel.setInspectMode(Protocol.DOM.InspectMode.SearchForNode, step4);
     }
 
     function step4()

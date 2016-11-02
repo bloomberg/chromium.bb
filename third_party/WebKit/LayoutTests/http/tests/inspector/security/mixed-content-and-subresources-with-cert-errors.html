@@ -5,10 +5,10 @@
 <script>
 function test()
 {
-    /** @type {!SecurityAgent.InsecureContentStatus} */
-    var insecureContentStatus = { ranMixedContent: true, displayedMixedContent: true, ranContentWithCertErrors: true, displayedContentWithCertErrors: true, ranInsecureContentStyle: SecurityAgent.SecurityState.Insecure, displayedInsecureContentStyle: SecurityAgent.SecurityState.Neutral };
+    /** @type {!Protocol.Security.InsecureContentStatus} */
+    var insecureContentStatus = { ranMixedContent: true, displayedMixedContent: true, ranContentWithCertErrors: true, displayedContentWithCertErrors: true, ranInsecureContentStyle: Protocol.Security.SecurityState.Insecure, displayedInsecureContentStyle: Protocol.Security.SecurityState.Neutral };
 
-    InspectorTest.mainTarget.model(WebInspector.SecurityModel).dispatchEventToListeners(WebInspector.SecurityModel.Events.SecurityStateChanged, new WebInspector.PageSecurityState(SecurityAgent.SecurityState.Insecure, [], insecureContentStatus, true));
+    InspectorTest.mainTarget.model(WebInspector.SecurityModel).dispatchEventToListeners(WebInspector.SecurityModel.Events.SecurityStateChanged, new WebInspector.PageSecurityState(Protocol.Security.SecurityState.Insecure, [], insecureContentStatus, true));
 
     var request = new WebInspector.NetworkRequest(InspectorTest.mainTarget, 0, "http://foo.test", "https://foo.test", 0, 0, null);
     InspectorTest.dispatchRequestFinished(request);

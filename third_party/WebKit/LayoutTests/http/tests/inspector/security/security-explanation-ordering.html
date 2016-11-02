@@ -5,8 +5,8 @@
 <script>
 function test()
 {
-    /** @type {!SecurityAgent.InsecureContentStatus} */
-    var insecureContentStatus = { ranMixedContent: false, displayedMixedContent: false, ranContentWithCertErrors: false, displayedContentWithCertErrors: false, ranInsecureContentStyle: SecurityAgent.SecurityState.Insecure, displayedInsecureContentStyle: SecurityAgent.SecurityState.Neutral };
+    /** @type {!Protocol.Security.InsecureContentStatus} */
+    var insecureContentStatus = { ranMixedContent: false, displayedMixedContent: false, ranContentWithCertErrors: false, displayedContentWithCertErrors: false, ranInsecureContentStyle: Protocol.Security.SecurityState.Insecure, displayedInsecureContentStyle: Protocol.Security.SecurityState.Neutral };
 
     // Explanations from https://cbc.badssl.com/ as of 2016-06-13.
     // We explicitly place the explanation with the security state "info"
@@ -31,7 +31,7 @@ function test()
         }
     ];
 
-    InspectorTest.mainTarget.model(WebInspector.SecurityModel).dispatchEventToListeners(WebInspector.SecurityModel.Events.SecurityStateChanged, new WebInspector.PageSecurityState(SecurityAgent.SecurityState.Secure, explanations, insecureContentStatus, true));
+    InspectorTest.mainTarget.model(WebInspector.SecurityModel).dispatchEventToListeners(WebInspector.SecurityModel.Events.SecurityStateChanged, new WebInspector.PageSecurityState(Protocol.Security.SecurityState.Secure, explanations, insecureContentStatus, true));
 
     var request = new WebInspector.NetworkRequest(InspectorTest.mainTarget, 0, "http://foo.test", "https://foo.test", 0, 0, null);
     InspectorTest.dispatchRequestFinished(request);

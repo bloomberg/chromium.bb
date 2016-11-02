@@ -6,15 +6,15 @@
 function test()
 {
     var ordering = [
-        SecurityAgent.SecurityState.Info,
-        SecurityAgent.SecurityState.Insecure,
-        SecurityAgent.SecurityState.Neutral,
-        SecurityAgent.SecurityState.Warning,
-        SecurityAgent.SecurityState.Secure,
-        SecurityAgent.SecurityState.Unknown
+        Protocol.Security.SecurityState.Info,
+        Protocol.Security.SecurityState.Insecure,
+        Protocol.Security.SecurityState.Neutral,
+        Protocol.Security.SecurityState.Warning,
+        Protocol.Security.SecurityState.Secure,
+        Protocol.Security.SecurityState.Unknown
     ];
 
-    InspectorTest.assertEquals(ordering.length, Object.keys(SecurityAgent.SecurityState).length);
+    InspectorTest.assertEquals(ordering.length, Object.keys(Protocol.Security.SecurityState).length);
 
     for (var i = 0; i < ordering.length; i++) {
         InspectorTest.assertEquals(WebInspector.SecurityModel.SecurityStateComparator(ordering[i], ordering[i]), 0, "Security state comparison failed when checking that \"" + ordering[i] + "\" == \"" + ordering[i] + "\"");

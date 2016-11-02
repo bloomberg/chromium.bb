@@ -7,11 +7,11 @@ function test()
 {
 
     var request1 = new WebInspector.NetworkRequest(InspectorTest.mainTarget, 0, "https://foo.test/", "https://foo.test", 0, 0, null);
-    request1.setSecurityState(SecurityAgent.SecurityState.Secure);
+    request1.setSecurityState(Protocol.Security.SecurityState.Secure);
     InspectorTest.dispatchRequestFinished(request1);
 
     var request2 = new WebInspector.NetworkRequest(InspectorTest.mainTarget, 0, "https://bar.test/foo.jpg", "https://bar.test", 0, 0, null);
-    request2.setSecurityState(SecurityAgent.SecurityState.Secure);
+    request2.setSecurityState(Protocol.Security.SecurityState.Secure);
     InspectorTest.dispatchRequestFinished(request2);
 
     InspectorTest.addResult("Before interstitial is shown:");

@@ -30,7 +30,7 @@ function test()
     {
         var callsLeft = 2;
         nodeId = node.id;
-        InspectorTest.addSniffer(Protocol.Target.prototype, "_wrapCallbackAndSendMessageObject", onBackendCall, true);
+        InspectorTest.addSniffer(Protocol.TargetBase.prototype, "_wrapCallbackAndSendMessageObject", onBackendCall, true);
         InspectorTest.cssModel.computedStylePromise(nodeId).then(styleCallback);
         InspectorTest.cssModel.computedStylePromise(nodeId).then(styleCallback);
         function styleCallback()

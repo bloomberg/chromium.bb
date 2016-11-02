@@ -5,10 +5,10 @@
 <script>
 function test()
 {
-    /** @type {!SecurityAgent.InsecureContentStatus} */
-    var insecureContentStatus = { ranMixedContent: true, displayedMixedContent: true, ranContentWithCertErrors: false, displayedContentWithCertErrors: false, ranInsecureContentStyle: SecurityAgent.SecurityState.Insecure, displayedInsecureContentStyle: SecurityAgent.SecurityState.Neutral };
+    /** @type {!Protocol.Security.InsecureContentStatus} */
+    var insecureContentStatus = { ranMixedContent: true, displayedMixedContent: true, ranContentWithCertErrors: false, displayedContentWithCertErrors: false, ranInsecureContentStyle: Protocol.Security.SecurityState.Insecure, displayedInsecureContentStyle: Protocol.Security.SecurityState.Neutral };
 
-    InspectorTest.mainTarget.model(WebInspector.SecurityModel).dispatchEventToListeners(WebInspector.SecurityModel.Events.SecurityStateChanged, new WebInspector.PageSecurityState(SecurityAgent.SecurityState.Neutral, [], insecureContentStatus, true));
+    InspectorTest.mainTarget.model(WebInspector.SecurityModel).dispatchEventToListeners(WebInspector.SecurityModel.Events.SecurityStateChanged, new WebInspector.PageSecurityState(Protocol.Security.SecurityState.Neutral, [], insecureContentStatus, true));
 
     // At this point, the page has mixed content but no mixed requests have been recorded, so the user should be prompted to refresh.
     var explanations = WebInspector.SecurityPanel._instance()._mainView.contentElement.getElementsByClassName("security-explanation");
@@ -17,7 +17,7 @@ function test()
 
     // Now simulate a refresh.
 
-    InspectorTest.mainTarget.model(WebInspector.SecurityModel).dispatchEventToListeners(WebInspector.SecurityModel.Events.SecurityStateChanged, new WebInspector.PageSecurityState(SecurityAgent.SecurityState.Neutral, [], insecureContentStatus, true));
+    InspectorTest.mainTarget.model(WebInspector.SecurityModel).dispatchEventToListeners(WebInspector.SecurityModel.Events.SecurityStateChanged, new WebInspector.PageSecurityState(Protocol.Security.SecurityState.Neutral, [], insecureContentStatus, true));
 
     var passive = new WebInspector.NetworkRequest(InspectorTest.mainTarget, 0, "http://foo.test", "https://foo.test", 0, 0, null);
     passive.mixedContentType = "optionally-blockable";
