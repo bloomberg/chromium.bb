@@ -46,9 +46,7 @@ class AudioSyncReader : public media::AudioOutputController::SyncReader {
   }
 
   // media::AudioOutputController::SyncReader implementations.
-  void RequestMoreData(base::TimeDelta delay,
-                       base::TimeTicks delay_timestamp,
-                       int prior_frames_skipped) override;
+  void UpdatePendingBytes(uint32_t bytes, uint32_t frames_skipped) override;
   void Read(media::AudioBus* dest) override;
   void Close() override;
 

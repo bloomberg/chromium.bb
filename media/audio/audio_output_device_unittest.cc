@@ -53,11 +53,10 @@ class MockRenderCallback : public AudioRendererSink::RenderCallback {
   MockRenderCallback() {}
   virtual ~MockRenderCallback() {}
 
-  MOCK_METHOD4(Render,
-               int(base::TimeDelta delay,
-                   base::TimeTicks timestamp,
-                   int prior_frames_skipped,
-                   AudioBus* dest));
+  MOCK_METHOD3(Render,
+               int(AudioBus* dest,
+                   uint32_t frames_delayed,
+                   uint32_t frames_skipped));
   MOCK_METHOD0(OnRenderError, void());
 };
 
@@ -80,11 +79,8 @@ class MockAudioOutputIPC : public AudioOutputIPC {
   MOCK_METHOD1(SetVolume, void(double volume));
 };
 
-ACTION_P2(SendPendingData, socket, delay) {
-  const auto delay_timestamp = base::TimeTicks::Now();
-  media::AudioDeviceThread::Packet packet = {delay.ToInternalValue(),
-                                             delay_timestamp.ToInternalValue()};
-  socket->Send(&packet, sizeof(packet));
+ACTION_P2(SendPendingBytes, socket, pending_bytes) {
+  socket->Send(&pending_bytes, sizeof(pending_bytes));
 }
 
 // Used to terminate a loop from a different thread than the loop belongs to.
@@ -231,9 +227,10 @@ void AudioOutputDeviceTest::ExpectRenderCallback() {
   // Respond by asking for some audio data.  This should ask our callback
   // to provide some audio data that AudioOutputDevice then writes into the
   // shared memory section.
-  const auto delay = base::TimeDelta::FromSeconds(1);
+  const int kMemorySize = CalculateMemorySize();
+
   EXPECT_CALL(*audio_output_ipc_, PlayStream())
-      .WillOnce(SendPendingData(&browser_socket_, delay));
+      .WillOnce(SendPendingBytes(&browser_socket_, kMemorySize));
 
   // We expect calls to our audio renderer callback, which returns the number
   // of frames written to the memory section.
@@ -243,7 +240,7 @@ void AudioOutputDeviceTest::ExpectRenderCallback() {
   // So, for the sake of this test, we consider the call to Render a sign
   // of success and quit the loop.
   const int kNumberOfFramesToProcess = 0;
-  EXPECT_CALL(callback_, Render(_, _, _, _))
+  EXPECT_CALL(callback_, Render(_, _, _))
       .WillOnce(DoAll(QuitLoop(io_loop_.task_runner()),
                       Return(kNumberOfFramesToProcess)));
 }

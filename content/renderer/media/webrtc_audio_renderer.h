@@ -160,10 +160,9 @@ class CONTENT_EXPORT WebRtcAudioRenderer
 
   // media::AudioRendererSink::RenderCallback implementation.
   // These two methods are called on the AudioOutputDevice worker thread.
-  int Render(base::TimeDelta delay,
-             base::TimeTicks delay_timestamp,
-             int prior_frames_skipped,
-             media::AudioBus* audio_bus) override;
+  int Render(media::AudioBus* audio_bus,
+             uint32_t frames_delayed,
+             uint32_t frames_skipped) override;
   void OnRenderError() override;
 
   // Called by AudioPullFifo when more data is necessary.
@@ -229,7 +228,7 @@ class CONTENT_EXPORT WebRtcAudioRenderer
 
   // Contains the accumulated delay estimate which is provided to the WebRTC
   // AEC.
-  base::TimeDelta audio_delay_;
+  int audio_delay_milliseconds_;
 
   base::TimeDelta current_time_;
 

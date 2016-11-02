@@ -163,14 +163,12 @@ class AudioRendererMixerTest
     }
 
     // Render actual audio data.
-    int frames = mixer_callback_->Render(
-        base::TimeDelta(), base::TimeTicks::Now(), 0, audio_bus_.get());
+    int frames = mixer_callback_->Render(audio_bus_.get(), 0, 0);
     if (frames != audio_bus_->frames())
       return false;
 
     // Render expected audio data (without scaling).
-    expected_callback_->Render(base::TimeDelta(), base::TimeTicks::Now(), 0,
-                               expected_audio_bus_.get());
+    expected_callback_->Render(expected_audio_bus_.get(), 0, 0);
 
     if (half_fill_) {
       // In this case, just verify that every frame was initialized, this will
@@ -491,8 +489,7 @@ TEST_P(AudioRendererMixerBehavioralTest, MixerPausesStream) {
   const base::TimeDelta kSleepTime = base::TimeDelta::FromMilliseconds(100);
   base::TimeTicks start_time = base::TimeTicks::Now();
   while (!pause_event.IsSignaled()) {
-    mixer_callback_->Render(base::TimeDelta(), base::TimeTicks::Now(), 0,
-                            audio_bus_.get());
+    mixer_callback_->Render(audio_bus_.get(), 0, 0);
     base::PlatformThread::Sleep(kSleepTime);
     ASSERT_TRUE(base::TimeTicks::Now() - start_time < kTestTimeout);
   }
@@ -507,8 +504,7 @@ TEST_P(AudioRendererMixerBehavioralTest, MixerPausesStream) {
   // Ensure once the input is paused the sink eventually pauses.
   start_time = base::TimeTicks::Now();
   while (!pause_event.IsSignaled()) {
-    mixer_callback_->Render(base::TimeDelta(), base::TimeTicks::Now(), 0,
-                            audio_bus_.get());
+    mixer_callback_->Render(audio_bus_.get(), 0, 0);
     base::PlatformThread::Sleep(kSleepTime);
     ASSERT_TRUE(base::TimeTicks::Now() - start_time < kTestTimeout);
   }

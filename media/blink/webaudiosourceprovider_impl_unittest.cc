@@ -215,8 +215,7 @@ TEST_F(WebAudioSourceProviderImplTest, ProvideInput) {
 
   // Ensure volume adjustment is working.
   fake_callback_.reset();
-  fake_callback_.Render(base::TimeDelta(), base::TimeTicks::Now(), 0,
-                        bus2.get());
+  fake_callback_.Render(bus2.get(), 0, 0);
   bus2->Scale(kTestVolume);
 
   fake_callback_.reset();
@@ -235,11 +234,9 @@ TEST_F(WebAudioSourceProviderImplTest, ProvideInput) {
   // configuring the fake callback to return half the data.  After these calls
   // bus1 is full of junk data, and bus2 is partially filled.
   wasp_impl_->SetVolume(1);
-  fake_callback_.Render(base::TimeDelta(), base::TimeTicks::Now(), 0,
-                        bus1.get());
+  fake_callback_.Render(bus1.get(), 0, 0);
   fake_callback_.reset();
-  fake_callback_.Render(base::TimeDelta(), base::TimeTicks::Now(), 0,
-                        bus2.get());
+  fake_callback_.Render(bus2.get(), 0, 0);
   bus2->ZeroFramesPartial(bus2->frames() / 2,
                           bus2->frames() - bus2->frames() / 2);
   fake_callback_.reset();
