@@ -9,7 +9,9 @@ xiyuan@chromium.org
 # Emeritus
 estade@chromium.org
 
+per-file devtools_ui*=dgozman@chromium.org
 per-file devtools_ui*=pfeldman@chromium.org
+per-file inspect_ui*=dgozman@chromium.org
 per-file inspect_ui*=pfeldman@chromium.org
 
 # chrome://history is going through a lot of changes right now; make sure to

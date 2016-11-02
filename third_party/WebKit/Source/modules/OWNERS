@@ -3,7 +3,8 @@ haraken@chromium.org
 mkwst@chromium.org
 mlamouri@chromium.org
 
-# Reviewer for inspector-related code:
+# Reviewers for inspector-related code:
+dgozman@chromium.org
 pfeldman@chromium.org
 
 per-file modules.gypi=*
