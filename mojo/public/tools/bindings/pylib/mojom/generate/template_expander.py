@@ -2,8 +2,7 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
-# Based on:
-# http://src.chromium.org/viewvc/blink/trunk/Source/build/scripts/template_expander.py
+# Based on third_party/WebKit/Source/build/scripts/template_expander.py.
 
 import imp
 import os.path

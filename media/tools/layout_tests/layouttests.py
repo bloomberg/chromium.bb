@@ -17,12 +17,9 @@ import urllib2
 
 import pysvn
 
-# LayoutTests SVN root location.
 DEFAULT_LAYOUTTEST_LOCATION = (
-    'http://src.chromium.org/blink/trunk/LayoutTests/')
-# LayoutTests SVN view link
-DEFAULT_LAYOUTTEST_SVN_VIEW_LOCATION = (
-    'http://src.chromium.org/viewvc/blink/trunk/LayoutTests/')
+   'https://chromium.googlesource.com/chromium/src/'
+   '+/master/third_party/WebKit/LayoutTests/')
 
 
 # When parsing the test HTML file and finding the test description,

@@ -87,7 +87,7 @@ private
 
     SMALLEST_EQUAL_OPERATION = 3
 
-    OPENSOURCE_URL = "http://src.chromium.org/viewvc/blink/"
+    OPENSOURCE_URL = "https://chromium.googlesource.com/chromium/src/+/master/third_party/WebKit/"
 
     OPENSOURCE_DIRS = Set.new %w[
         LayoutTests

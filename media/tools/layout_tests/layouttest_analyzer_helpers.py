@@ -24,7 +24,6 @@ LEGACY_DEFAULT_TEST_EXPECTATION_PATH = (
     'trunk/LayoutTests/platform/chromium/test_expectations.txt')
 REVISION_LOG_URL = ('http://build.chromium.org/f/chromium/perf/dashboard/ui/'
     'changelog_blink.html?url=/trunk/LayoutTests/%s&range=%d:%d')
-DEFAULT_REVISION_VIEW_URL = 'http://src.chromium.org/viewvc/blink?revision=%s'
 
 
 class AnalyzerResultMap:

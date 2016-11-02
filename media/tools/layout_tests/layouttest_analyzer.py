@@ -14,7 +14,7 @@ import time
 import layouttest_analyzer_helpers
 from layouttest_analyzer_helpers import DEFAULT_REVISION_VIEW_URL
 import layouttests
-from layouttests import DEFAULT_LAYOUTTEST_SVN_VIEW_LOCATION
+from layouttests import DEFAULT_LAYOUTTEST_LOCATION
 
 from test_expectations import TestExpectations
 from trend_graph import TrendGraph
@@ -322,7 +322,7 @@ def UpdateTrendGraph(start_time, analyzer_result_map, diff_map, simple_rev_str,
           test_str += name + ','
           # This is link to test HTML in SVN.
           links += ('<a href="%s%s">%s</a>' %
-                    (DEFAULT_LAYOUTTEST_SVN_VIEW_LOCATION, name, name))
+                    (DEFAULT_LAYOUTTEST_LOCATION, name, name))
       if test_str:
         anno = '\'' + test_str + '\''
         # The annotation of passing rate is a union of all annotations.

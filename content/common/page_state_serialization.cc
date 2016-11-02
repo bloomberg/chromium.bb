@@ -83,12 +83,12 @@ bool AppendReferencedFilesFromDocumentState(
   if (document_state.empty())
     return true;
 
-  // This algorithm is adapted from Blink's core/html/FormController.cpp code.
+  // This algorithm is adapted from Blink's FormController code.
   // We only care about how that code worked when this code snapshot was taken
   // as this code is only needed for backwards compat.
   //
-  // For reference, see FormController::formStatesFromStateVector at:
-  // http://src.chromium.org/viewvc/blink/trunk/Source/core/html/FormController.cpp?pathrev=152274
+  // For reference, see FormController::formStatesFromStateVector in
+  // third_party/WebKit/Source/core/html/forms/FormController.cpp.
 
   size_t index = 0;
 
