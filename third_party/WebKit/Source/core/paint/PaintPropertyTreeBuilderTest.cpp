@@ -239,11 +239,8 @@ TEST_P(PaintPropertyTreeBuilderTest, PositionAndScroll) {
   EXPECT_EQ(FloatRoundedRect(120, 340, 413, 317),
             scrollerProperties->overflowClip()->clipRect());
   EXPECT_EQ(frameContentClip(), scrollerProperties->overflowClip()->parent());
-  // http://crbug.com/638415
-  if (!RuntimeEnabledFeatures::rootLayerScrollingEnabled()) {
-    CHECK_EXACT_VISUAL_RECT(LayoutRect(120, 340, 413, 317),
-                            scroller->layoutObject(), frameView->layoutView());
-  }
+  CHECK_EXACT_VISUAL_RECT(LayoutRect(120, 340, 413, 317),
+                          scroller->layoutObject(), frameView->layoutView());
 
   // The relative-positioned element should have accumulated box offset (exclude
   // scrolling), and should be affected by ancestor scroll transforms.
@@ -277,11 +274,8 @@ TEST_P(PaintPropertyTreeBuilderTest, PositionAndScroll) {
   EXPECT_EQ(FloatRoundedRect(0, 0, 300, 400),
             absPosProperties->overflowClip()->clipRect());
   EXPECT_EQ(frameContentClip(), absPosProperties->overflowClip()->parent());
-  // http://crbug.com/638415
-  if (!RuntimeEnabledFeatures::rootLayerScrollingEnabled()) {
     CHECK_EXACT_VISUAL_RECT(LayoutRect(123, 456, 300, 400),
                             absPos->layoutObject(), frameView->layoutView());
-  }
 }
 
 TEST_P(PaintPropertyTreeBuilderTest, FrameScrollingTraditional) {
@@ -301,16 +295,13 @@ TEST_P(PaintPropertyTreeBuilderTest, FrameScrollingTraditional) {
   EXPECT_EQ(FloatRoundedRect(0, 0, 800, 600), frameContentClip()->clipRect());
   EXPECT_TRUE(frameContentClip()->parent()->isRoot());
 
-  LayoutViewItem layoutViewItem = document().layoutViewItem();
-  const ObjectPaintProperties* layoutViewProperties =
-      layoutViewItem.paintProperties();
-  // http://crbug.com/638415
   if (!RuntimeEnabledFeatures::rootLayerScrollingEnabled()) {
-    EXPECT_EQ(nullptr, layoutViewProperties->scrollTranslation());
-    CHECK_EXACT_VISUAL_RECT(LayoutRect(8, 8, 784, 10000),
-                            document().body()->layoutObject(),
-                            frameView->layoutView());
+    const auto* viewProperties = frameView->layoutView()->paintProperties();
+    EXPECT_EQ(nullptr, viewProperties->scrollTranslation());
   }
+  CHECK_EXACT_VISUAL_RECT(LayoutRect(8, 8, 784, 10000),
+                          document().body()->layoutObject(),
+                          frameView->layoutView());
 }
 
 TEST_P(PaintPropertyTreeBuilderTest, Perspective) {
@@ -357,12 +348,9 @@ TEST_P(PaintPropertyTreeBuilderTest, Transform) {
             transformProperties->paintOffsetTranslation()->matrix());
   EXPECT_EQ(frameScrollTranslation(),
             transformProperties->paintOffsetTranslation()->parent());
-  // http://crbug.com/638415
-  if (!RuntimeEnabledFeatures::rootLayerScrollingEnabled()) {
     CHECK_EXACT_VISUAL_RECT(LayoutRect(173, 556, 400, 300),
                             transform->layoutObject(),
                             document().view()->layoutView());
-  }
 }
 
 TEST_P(PaintPropertyTreeBuilderTest, RelativePositionInline) {
@@ -989,11 +977,8 @@ TEST_P(PaintPropertyTreeBuilderTest, TransformNodesAcrossSubframes) {
       divWithTransform->paintProperties();
   EXPECT_EQ(TransformationMatrix().translate3d(1, 2, 3),
             divWithTransformProperties->transform()->matrix());
-  // http://crbug.com/638415
-  if (!RuntimeEnabledFeatures::rootLayerScrollingEnabled()) {
     CHECK_EXACT_VISUAL_RECT(LayoutRect(1, 2, 800, 164), divWithTransform,
                             frameView->layoutView());
-  }
 
   LayoutObject* innerDivWithTransform =
       frameDocument.getElementById("transform")->layoutObject();
@@ -1082,11 +1067,8 @@ TEST_P(PaintPropertyTreeBuilderTest, TransformNodesInTransformedSubframes) {
       document().getElementById("divWithTransform")->layoutObject();
   EXPECT_EQ(divWithTransformTransform,
             divWithTransform->paintProperties()->transform());
-  // http://crbug.com/638415
-  if (!RuntimeEnabledFeatures::rootLayerScrollingEnabled()) {
     CHECK_EXACT_VISUAL_RECT(LayoutRect(1, 2, 800, 248), divWithTransform,
                             frameView->layoutView());
-  }
 }
 
 TEST_P(PaintPropertyTreeBuilderTest, TreeContextClipByNonStackingContext) {
@@ -1153,10 +1135,8 @@ TEST_P(PaintPropertyTreeBuilderTest,
   EXPECT_EQ(
       scrollerProperties->effect(),
       childProperties->localBorderBoxProperties()->propertyTreeState.effect());
-  if (!RuntimeEnabledFeatures::rootLayerScrollingEnabled()) {
     CHECK_EXACT_VISUAL_RECT(LayoutRect(0, 0, 800, 10000), &scroller,
                             document().view()->layoutView());
-  }
   CHECK_EXACT_VISUAL_RECT(LayoutRect(0, 0, 100, 200), &child,
                           document().view()->layoutView());
 }

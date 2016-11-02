@@ -102,33 +102,19 @@ void updateFrameViewScroll(
   }
 }
 
-void PaintPropertyTreeBuilder::updatePropertiesAndContext(
+void PaintPropertyTreeBuilder::updateFramePropertiesAndContext(
     FrameView& frameView,
     PaintPropertyTreeBuilderContext& context) {
   if (RuntimeEnabledFeatures::rootLayerScrollingEnabled()) {
-    LayoutView* layoutView = frameView.layoutView();
-    if (!layoutView)
-      return;
-
-    TransformationMatrix frameTranslate;
-    frameTranslate.translate(frameView.x() + layoutView->location().x() +
-                                 context.current.paintOffset.x(),
-                             frameView.y() + layoutView->location().y() +
-                                 context.current.paintOffset.y());
-    layoutView->getMutableForPainting()
-        .ensurePaintProperties()
-        .updatePaintOffsetTranslation(context.current.transform, frameTranslate,
-                                      FloatPoint3D());
-
-    const auto* properties = layoutView->paintProperties();
-    DCHECK(properties && properties->paintOffsetTranslation());
-    context.current.transform = properties->paintOffsetTranslation();
-    context.current.paintOffset = LayoutPoint();
+    // With root layer scrolling, the LayoutView (a LayoutObject) properties are
+    // updated like other objects (see updatePropertiesAndContextForSelf and
+    // updatePropertiesAndContextForChildren) instead of needing LayoutView-
+    // specific property updates here.
+    context.current.paintOffset.moveBy(frameView.location());
     context.current.renderingContextID = 0;
     context.current.shouldFlattenInheritedTransform = true;
     context.absolutePosition = context.current;
-    context.containerForAbsolutePosition =
-        nullptr;  // This will get set in updateOutOfFlowContext().
+    context.containerForAbsolutePosition = nullptr;
     context.fixedPosition = context.current;
     return;
   }
@@ -200,15 +186,14 @@ void PaintPropertyTreeBuilder::updatePropertiesAndContext(
 void PaintPropertyTreeBuilder::updatePaintOffsetTranslation(
     const LayoutObject& object,
     PaintPropertyTreeBuilderContext& context) {
-  // LayoutView's paint offset is updated in the FrameView property update.
-  if (object.isLayoutView()) {
-    DCHECK(context.current.paintOffset == LayoutPoint());
-    return;
-  }
-
   bool usesPaintOffsetTranslation = false;
-  if (object.isBoxModelObject() &&
-      context.current.paintOffset != LayoutPoint()) {
+  if (RuntimeEnabledFeatures::rootLayerScrollingEnabled() &&
+      object.isLayoutView()) {
+    // Root layer scrolling always creates a translation node for LayoutView to
+    // ensure fixed and absolute contexts use the correct transform space.
+    usesPaintOffsetTranslation = true;
+  } else if (object.isBoxModelObject() &&
+             context.current.paintOffset != LayoutPoint()) {
     // TODO(trchen): Eliminate PaintLayer dependency.
     PaintLayer* layer = toLayoutBoxModelObject(object).layer();
     if (layer && layer->paintsWithTransform(GlobalPaintNormalPhase))
@@ -244,6 +229,13 @@ void PaintPropertyTreeBuilder::updatePaintOffsetTranslation(
   if (properties && properties->paintOffsetTranslation()) {
     context.current.transform = properties->paintOffsetTranslation();
     context.current.paintOffset = fractionalPaintOffset;
+    if (RuntimeEnabledFeatures::rootLayerScrollingEnabled() &&
+        object.isLayoutView()) {
+      context.absolutePosition.transform = properties->paintOffsetTranslation();
+      context.fixedPosition.transform = properties->paintOffsetTranslation();
+      context.absolutePosition.paintOffset = LayoutPoint();
+      context.fixedPosition.paintOffset = LayoutPoint();
+    }
   }
 }
 

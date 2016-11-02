@@ -41,7 +41,7 @@ void PrePaintTreeWalk::walk(FrameView& frameView,
     return;
 
   PrePaintTreeWalkContext localContext(context);
-  m_propertyTreeBuilder.updatePropertiesAndContext(
+  m_propertyTreeBuilder.updateFramePropertiesAndContext(
       frameView, localContext.treeBuilderContext);
 
   if (RuntimeEnabledFeatures::slimmingPaintInvalidationEnabled()) {
