@@ -748,6 +748,7 @@ group("gn_only") {
       "//media/mojo/services:media_mojo_shell_unittests",
       "//mojo",
       "//services/navigation",
+      "//services/preferences:tests",
       "//services/ui/demo",
       "//services/ui/demo:mus_demo_unittests",
       "//services/ui/public/interfaces:ui_struct_traits_unittests",
