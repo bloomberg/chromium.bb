@@ -24,7 +24,8 @@ NSString* const kGMOLocationDescriptorFormat =
   GTMStringEncoding* encoder =
       [GTMStringEncoding rfc4648Base64WebsafeStringEncoding];
   NSString* base64 =
-      [encoder encode:[data dataUsingEncoding:NSUTF8StringEncoding]];
+      [encoder encode:[data dataUsingEncoding:NSUTF8StringEncoding]
+                error:nullptr];
   if (base64) {
     return base64;
   } else {

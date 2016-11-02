@@ -75,7 +75,7 @@ vars = {
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling google-toolbox-for-mac
   # and whatever else without interference from each other.
-  'google_toolbox_for_mac_revision': 'e7b41fad2e7f77abf560c79f984c60d5ec6d419c',
+  'google_toolbox_for_mac_revision': '038a2399b20e67ab17685e23ee873a66811fa107',
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling lighttpd
   # and whatever else without interference from each other.

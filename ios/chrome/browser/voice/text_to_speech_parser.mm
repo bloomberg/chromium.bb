@@ -91,7 +91,7 @@ NSData* ExtractVoiceSearchAudioDataFromPageHTML(NSString* page_html) {
                                      range:search_range];
 
   GTMStringEncoding* base64 = [GTMStringEncoding rfc4648Base64StringEncoding];
-  return [base64 decode:base64_encoded_audio_string];
+  return [base64 decode:base64_encoded_audio_string error:nullptr];
 }
 
 void ExtractVoiceSearchAudioDataFromWebState(
