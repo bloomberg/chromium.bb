@@ -3,7 +3,7 @@ include_rules = [
     # directories and files instead of writing 'base/'.
     "+base/callback.h",
     "+base/message_loop/message_loop.h",
-    "+base/strings/latin1_string_conversions.h",
+    "+base/strings/string16.h",
     "+mojo/public/cpp/bindings/binding.h",
     "+mojo/public/cpp/bindings/wtf_array.h",
     "+mojo/common/common_custom_types.mojom-blink.h",

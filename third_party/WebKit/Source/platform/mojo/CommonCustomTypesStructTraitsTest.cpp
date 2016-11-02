@@ -46,11 +46,18 @@ TEST_F(CommonCustomTypesStructTraitsTest, String16) {
   mojo::common::test::blink::TestString16Ptr ptr;
   TestString16Impl impl(GetProxy(&ptr));
 
+  // |str| is 8-bit.
   String str = String::fromUTF8("hello world");
   String output;
 
   ptr->BounceString16(str, &output);
+  ASSERT_EQ(str, output);
 
+  // Replace the "o"s in "hello world" with "o"s with acute, so that |str| is
+  // 16-bit.
+  str = String::fromUTF8("hell\xC3\xB3 w\xC3\xB3rld");
+
+  ptr->BounceString16(str, &output);
   ASSERT_EQ(str, output);
 }
 

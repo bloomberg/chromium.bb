@@ -8,4 +8,5 @@ traits_headers = [ "//third_party/WebKit/Source/platform/mojo/CommonCustomTypesS
 deps = [
   "//mojo/public/cpp/bindings",
 ]
-type_mappings = [ "mojo.common.mojom.String16=::WTF::String" ]
+type_mappings =
+    [ "mojo.common.mojom.String16=WTF::String[nullable_is_same_type]" ]
