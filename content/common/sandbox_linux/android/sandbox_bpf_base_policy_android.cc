@@ -15,6 +15,10 @@
 #include "sandbox/linux/bpf_dsl/bpf_dsl.h"
 #include "sandbox/linux/seccomp-bpf-helpers/syscall_parameters_restrictions.h"
 
+#if defined(__x86_64__)
+#include <asm/prctl.h>
+#endif
+
 using sandbox::bpf_dsl::AllOf;
 using sandbox::bpf_dsl::Allow;
 using sandbox::bpf_dsl::AnyOf;
@@ -80,6 +84,10 @@ ResultExpr SandboxBPFBasePolicyAndroid::EvaluateSyscall(int sysno) const {
     case __NR_getpriority:
     case __NR_ioctl:
     case __NR_mremap:
+#if defined(__i386__)
+    // Used on pre-N to initialize threads in ART.
+    case __NR_modify_ldt:
+#endif
     case __NR_msync:
     // File system access cannot be restricted with seccomp-bpf on Android,
     // since the JVM classloader and other Framework features require file
@@ -97,6 +105,10 @@ ResultExpr SandboxBPFBasePolicyAndroid::EvaluateSyscall(int sysno) const {
     case __NR_sched_getscheduler:
     case __NR_sched_setscheduler:
     case __NR_setpriority:
+#if defined(__i386__)
+    // Used on N+ instead of __NR_modify_ldt to initialize threads in ART.
+    case __NR_set_thread_area:
+#endif
     case __NR_set_tid_address:
     case __NR_sigaltstack:
 #if defined(__i386__) || defined(__arm__)
@@ -136,6 +148,13 @@ ResultExpr SandboxBPFBasePolicyAndroid::EvaluateSyscall(int sysno) const {
   if (sysno == __NR_clock_getres) {
     return sandbox::RestrictClockID();
   }
+
+#if defined(__x86_64__)
+  if (sysno == __NR_arch_prctl) {
+    const Arg<int> code(0);
+    return If(code == ARCH_SET_GS, Allow()).Else(Error(EPERM));
+  }
+#endif
 
 #if defined(__x86_64__) || defined(__arm__) || defined(__aarch64__) || \
       defined(__mips__)
