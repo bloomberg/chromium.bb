@@ -340,17 +340,20 @@ CrxInstallError CrxInstaller::AllowInstall(const Extension* extension) {
     } else {
       const char kHistogramName[] = "Extensions.OffStoreInstallDecisionHard";
       if (is_gallery_install()) {
-        UMA_HISTOGRAM_ENUMERATION(kHistogramName, OnStoreInstall,
+        UMA_HISTOGRAM_ENUMERATION(kHistogramName,
+                                  OffStoreInstallDecision::OnStoreInstall,
                                   NumOffStoreInstallDecision);
       } else if (off_store_install_allow_reason_ != OffStoreInstallDisallowed) {
-        UMA_HISTOGRAM_ENUMERATION(kHistogramName, OffStoreInstallAllowed,
-                                  NumOffStoreInstallDecision);
+        UMA_HISTOGRAM_ENUMERATION(
+            kHistogramName, OffStoreInstallDecision::OffStoreInstallAllowed,
+            NumOffStoreInstallDecision);
         UMA_HISTOGRAM_ENUMERATION("Extensions.OffStoreInstallAllowReason",
                                   off_store_install_allow_reason_,
                                   NumOffStoreInstallAllowReasons);
       } else {
-        UMA_HISTOGRAM_ENUMERATION(kHistogramName, OffStoreInstallDisallowed,
-                                  NumOffStoreInstallDecision);
+        UMA_HISTOGRAM_ENUMERATION(
+            kHistogramName, OffStoreInstallDecision::OffStoreInstallDisallowed,
+            NumOffStoreInstallDecision);
         // Don't delete source in this case so that the user can install
         // manually if they want.
         delete_source_ = false;
