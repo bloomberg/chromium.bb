@@ -47,6 +47,7 @@
 namespace blink {
 class Frame;
 class Element;
+class InspectorOverlay;
 class LocalFrame;
 class Page;
 class PaintLayerCompositor;
@@ -161,6 +162,7 @@ class WebFrameWidgetImpl final
   void mouseContextMenu(const WebMouseEvent&);
 
   WebLayerTreeView* layerTreeView() const { return m_layerTreeView; }
+  GraphicsLayer* rootGraphicsLayer() const { return m_rootGraphicsLayer; };
 
   Color baseBackgroundColor() const { return m_baseBackgroundColor; }
 
@@ -192,6 +194,7 @@ class WebFrameWidgetImpl final
   WebInputEventResult handleCharEvent(const WebKeyboardEvent&) override;
 
   WebViewImpl* view() const { return m_localRoot->viewImpl(); }
+  InspectorOverlay* inspectorOverlay();
 
   // This method returns the focused frame belonging to this WebWidget, that
   // is, a focused frame with the same local root as the one corresponding

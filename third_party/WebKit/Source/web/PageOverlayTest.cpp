@@ -86,7 +86,8 @@ class PageOverlayTest : public ::testing::Test {
 
   std::unique_ptr<PageOverlay> createSolidYellowOverlay() {
     return PageOverlay::create(
-        webViewImpl(), wrapUnique(new SolidColorOverlay(SK_ColorYELLOW)));
+        webViewImpl()->mainFrameImpl(),
+        wrapUnique(new SolidColorOverlay(SK_ColorYELLOW)));
   }
 
   template <typename OverlayType>

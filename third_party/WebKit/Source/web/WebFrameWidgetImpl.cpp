@@ -61,6 +61,8 @@
 #include "web/CompositorMutatorImpl.h"
 #include "web/CompositorProxyClientImpl.h"
 #include "web/ContextMenuAllowedScope.h"
+#include "web/InspectorOverlay.h"
+#include "web/PageOverlay.h"
 #include "web/WebDevToolsAgentImpl.h"
 #include "web/WebInputEventConversion.h"
 #include "web/WebLocalFrameImpl.h"
@@ -248,6 +250,12 @@ void WebFrameWidgetImpl::updateAllLifecyclePhases() {
   if (!m_localRoot)
     return;
 
+  if (InspectorOverlay* overlay = inspectorOverlay()) {
+    overlay->updateAllLifecyclePhases();
+    // TODO(chrishtr): integrate paint into the overlay's lifecycle.
+    if (overlay->pageOverlay() && overlay->pageOverlay()->graphicsLayer())
+      overlay->pageOverlay()->graphicsLayer()->paint(nullptr);
+  }
   PageWidgetDelegate::updateAllLifecyclePhases(*page(), *m_localRoot->frame());
   updateLayerTreeBackgroundColor();
 }
@@ -318,6 +326,11 @@ WebInputEventResult WebFrameWidgetImpl::handleInputEvent(
   // Don't handle events once we've started shutting down.
   if (!page())
     return WebInputEventResult::NotHandled;
+
+  if (InspectorOverlay* overlay = inspectorOverlay()) {
+    if (overlay->handleInputEvent(inputEvent))
+      return WebInputEventResult::HandledSuppressed;
+  }
 
   // Report the event to be NOT processed by WebKit, so that the browser can
   // handle it appropriately.
@@ -1194,6 +1207,14 @@ HitTestResult WebFrameWidgetImpl::hitTestResultForRootFramePos(
           docPoint, HitTestRequest::ReadOnly | HitTestRequest::Active);
   result.setToShadowHostIfInUserAgentShadowRoot();
   return result;
+}
+
+InspectorOverlay* WebFrameWidgetImpl::inspectorOverlay() {
+  if (!m_localRoot)
+    return nullptr;
+  if (WebDevToolsAgentImpl* devtools = m_localRoot->devToolsAgentImpl())
+    return devtools->overlay();
+  return nullptr;
 }
 
 LocalFrame* WebFrameWidgetImpl::focusedLocalFrameInWidget() const {

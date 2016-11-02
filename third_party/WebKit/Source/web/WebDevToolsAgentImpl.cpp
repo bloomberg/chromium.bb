@@ -284,9 +284,11 @@ ClientMessageLoopAdapter* ClientMessageLoopAdapter::s_instance = nullptr;
 WebDevToolsAgentImpl* WebDevToolsAgentImpl::create(
     WebLocalFrameImpl* frame,
     WebDevToolsAgentClient* client) {
+  InspectorOverlay* overlay = new InspectorOverlay(frame);
+
   if (!isMainFrame(frame)) {
     WebDevToolsAgentImpl* agent =
-        new WebDevToolsAgentImpl(frame, client, nullptr, false);
+        new WebDevToolsAgentImpl(frame, client, overlay, false);
     if (frame->frameWidget())
       agent->layerTreeViewChanged(
           toWebFrameWidgetImpl(frame->frameWidget())->layerTreeView());
@@ -294,8 +296,8 @@ WebDevToolsAgentImpl* WebDevToolsAgentImpl::create(
   }
 
   WebViewImpl* view = frame->viewImpl();
-  WebDevToolsAgentImpl* agent = new WebDevToolsAgentImpl(
-      frame, client, InspectorOverlay::create(view), true);
+  WebDevToolsAgentImpl* agent =
+      new WebDevToolsAgentImpl(frame, client, overlay, true);
   agent->layerTreeViewChanged(view->layerTreeView());
   return agent;
 }
