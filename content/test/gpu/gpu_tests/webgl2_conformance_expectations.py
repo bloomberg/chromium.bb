@@ -67,10 +67,6 @@ class WebGL2ConformanceExpectations(WebGLConformanceExpectations):
     self.Flaky('deqp/functional/gles3/fbomultisample*',
         ['win', 'nvidia'], bug=631317)
 
-    # This should be fixed in the latest driver.
-    self.Fail('deqp/functional/gles3/fboinvalidate/sub.html',
-        ['win', 'nvidia'], bug=1246) # ANGLE bug.
-
     # Win / AMD
 
     # Failing on old R5 230 configuration.
@@ -105,29 +101,14 @@ class WebGL2ConformanceExpectations(WebGLConformanceExpectations):
     # Win / Intel
     self.Skip('conformance2/textures/misc/copy-texture-image.html',
         ['win', 'intel'], bug=617449)
-    self.Fail('conformance2/textures/video/tex-2d-rgb9_e5-rgb-half_float.html',
-        ['win', 'intel'], bug=628395)
     # Seems to cause the harness to fail immediately afterward
     self.Skip('conformance2/textures/video/tex-2d-rgba16f-rgba-half_float.html',
         ['win', 'intel'], bug=648337)
-    self.Fail('deqp/functional/gles3/shaderderivate_*',
-        ['win', 'intel'], bug=483282)
-    self.Fail('deqp/functional/gles3/shaderstruct.html',
-        ['win', 'intel'], bug=483282)
     self.Flaky('deqp/functional/gles3/lifetime.html',
         ['win', 'intel'], bug=620379)
-    self.Fail('deqp/functional/gles3/texturespecification/' +
-        'teximage3d_depth.html',
-        ['win', 'intel'], bug=614418)
     self.Skip('deqp/functional/gles3/texturespecification/' +
         'teximage3d_depth_pbo.html',
         ['win', 'intel'], bug=617449)
-    self.Fail('deqp/functional/gles3/texturespecification/' +
-        'texsubimage3d_depth.html',
-        ['win', 'intel'], bug=614418)
-    self.Fail('deqp/functional/gles3/texturespecification/' +
-        'texstorage3d_format_depth_stencil.html',
-        ['win', 'intel'], bug=614418)
     self.Fail('deqp/functional/gles3/textureformat/sized_color_3d_pot_00.html',
         ['win', 'intel'], bug=614418)
     self.Fail('deqp/functional/gles3/textureformat/sized_color_3d_pot_01.html',
@@ -140,11 +121,6 @@ class WebGL2ConformanceExpectations(WebGLConformanceExpectations):
         ['win', 'intel'], bug=614418)
     self.Flaky('deqp/functional/gles3/textureformat/unsized_3d.html',
         ['win', 'intel'], bug=614418)
-    self.Fail('deqp/functional/gles3/shadertexturefunction/' +
-        'texelfetchoffset.html',
-        ['win', 'intel'], bug=483282)
-    self.Fail('deqp/functional/gles3/textureshadow/2d_array_*.html',
-        ['win', 'intel'], bug=483282)
 
     self.Fail('deqp/functional/gles3/fbomultisample*',
         ['win', 'intel'], bug=483282)
