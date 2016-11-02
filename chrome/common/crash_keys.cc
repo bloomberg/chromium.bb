@@ -243,6 +243,10 @@ size_t RegisterChromeCrashKeys() {
     // Temporary for https://crbug.com/630496.
     { "swdh_get_registration_cannot_host_url", crash_keys::kLargeSize },
     { "swdh_get_registration_cannot_document_url", crash_keys::kLargeSize },
+
+    // Temporary for https://crbug.com/660427.
+    { "blink_scheduler_task_function_name", kMediumSize },
+    { "blink_scheduler_task_file_name", kMediumSize },
   };
 
   // This dynamic set of keys is used for sets of key value pairs when gathering

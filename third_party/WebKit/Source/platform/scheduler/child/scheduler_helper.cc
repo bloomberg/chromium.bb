@@ -17,13 +17,15 @@ SchedulerHelper::SchedulerHelper(
     scoped_refptr<SchedulerTqmDelegate> task_queue_manager_delegate,
     const char* tracing_category,
     const char* disabled_by_default_tracing_category,
-    const char* disabled_by_default_verbose_tracing_category)
+    const char* disabled_by_default_verbose_tracing_category,
+    bool set_crash_keys)
     : task_queue_manager_delegate_(task_queue_manager_delegate),
       task_queue_manager_(
           new TaskQueueManager(task_queue_manager_delegate,
                                tracing_category,
                                disabled_by_default_tracing_category,
-                               disabled_by_default_verbose_tracing_category)),
+                               disabled_by_default_verbose_tracing_category,
+                               set_crash_keys)),
       control_task_runner_(
           NewTaskQueue(TaskQueue::Spec(TaskQueue::QueueType::CONTROL)
                            .SetShouldNotifyObservers(false))),

@@ -31,7 +31,8 @@ class BLINK_PLATFORM_EXPORT SchedulerHelper
       scoped_refptr<SchedulerTqmDelegate> task_queue_manager_delegate,
       const char* tracing_category,
       const char* disabled_by_default_tracing_category,
-      const char* disabled_by_default_verbose_tracing_category);
+      const char* disabled_by_default_verbose_tracing_category,
+      bool set_crash_keys = false);
   ~SchedulerHelper() override;
 
   // TaskQueueManager::Observer implementation:

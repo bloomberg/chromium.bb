@@ -8,6 +8,7 @@
 #include <set>
 
 #include "base/bind.h"
+#include "base/debug/crash_logging.h"
 #include "base/metrics/histogram_macros.h"
 #include "base/trace_event/trace_event.h"
 #include "platform/scheduler/base/real_time_domain.h"
@@ -54,11 +55,13 @@ TaskQueueManager::TaskQueueManager(
     scoped_refptr<TaskQueueManagerDelegate> delegate,
     const char* tracing_category,
     const char* disabled_by_default_tracing_category,
-    const char* disabled_by_default_verbose_tracing_category)
+    const char* disabled_by_default_verbose_tracing_category,
+    bool set_crash_keys)
     : real_time_domain_(new RealTimeDomain(tracing_category)),
       delegate_(delegate),
       task_was_run_on_quiescence_monitored_queue_(false),
       other_thread_pending_wakeup_(false),
+      set_crash_keys_(set_crash_keys),
       work_batch_size_(1),
       task_count_(0),
       tracing_category_(tracing_category),
@@ -317,6 +320,10 @@ TaskQueueManager::ProcessTaskResult TaskQueueManager::ProcessTaskFromWorkQueue(
   internal::TaskQueueImpl::Task pending_task =
       work_queue->TakeTaskFromWorkQueue();
 
+  // Temporary for https://crbug.com/660427
+  CHECK(!pending_task.task.is_null()) << "Posted from "
+                                      << pending_task.posted_from.ToString();
+
   // It's possible the task was canceled, if so bail out.
   if (pending_task.task.IsCancelled())
     return ProcessTaskResult::EXECUTED;
@@ -324,6 +331,19 @@ TaskQueueManager::ProcessTaskResult TaskQueueManager::ProcessTaskFromWorkQueue(
   internal::TaskQueueImpl* queue = work_queue->task_queue();
   if (queue->GetQuiescenceMonitored())
     task_was_run_on_quiescence_monitored_queue_ = true;
+
+  static const char kBlinkSchedulerTaskFunctionNameKey[] =
+      "blink_scheduler_task_function_name";
+  static const char kBlinkSchedulerTaskFileNameKey[] =
+      "blink_scheduler_task_file_name";
+
+  bool is_nested = delegate_->IsNested();
+  if (!is_nested && set_crash_keys_) {
+    base::debug::SetCrashKeyValue(kBlinkSchedulerTaskFunctionNameKey,
+                                  pending_task.posted_from.file_name());
+    base::debug::SetCrashKeyValue(kBlinkSchedulerTaskFileNameKey,
+                                  pending_task.posted_from.function_name());
+  }
 
   if (!pending_task.nestable && delegate_->IsNested()) {
     // Defer non-nestable work to the main task runner.  NOTE these tasks can be
@@ -356,10 +376,16 @@ TaskQueueManager::ProcessTaskResult TaskQueueManager::ProcessTaskFromWorkQueue(
       currently_executing_task_queue_;
   currently_executing_task_queue_ = queue;
   task_annotator_.RunTask("TaskQueueManager::PostTask", &pending_task);
+
   // Detect if the TaskQueueManager just got deleted.  If this happens we must
   // not access any member variables after this point.
   if (protect->HasOneRef())
     return ProcessTaskResult::TASK_QUEUE_MANAGER_DELETED;
+
+  if (!is_nested && set_crash_keys_) {
+    base::debug::ClearCrashKey(kBlinkSchedulerTaskFunctionNameKey);
+    base::debug::ClearCrashKey(kBlinkSchedulerTaskFileNameKey);
+  }
 
   currently_executing_task_queue_ = prev_executing_task_queue;
 

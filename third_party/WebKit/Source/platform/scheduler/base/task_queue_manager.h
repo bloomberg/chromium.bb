@@ -62,7 +62,8 @@ class BLINK_PLATFORM_EXPORT TaskQueueManager
   TaskQueueManager(scoped_refptr<TaskQueueManagerDelegate> delegate,
                    const char* tracing_category,
                    const char* disabled_by_default_tracing_category,
-                   const char* disabled_by_default_verbose_tracing_category);
+                   const char* disabled_by_default_verbose_tracing_category,
+                   bool set_crash_keys = false);
   ~TaskQueueManager() override;
 
   // Requests that a task to process work is posted on the main task runner.
@@ -240,6 +241,8 @@ class BLINK_PLATFORM_EXPORT TaskQueueManager
   // Protects |other_thread_pending_wakeup_|.
   mutable base::Lock other_thread_lock_;
   bool other_thread_pending_wakeup_;
+
+  bool set_crash_keys_;
 
   int work_batch_size_;
   size_t task_count_;

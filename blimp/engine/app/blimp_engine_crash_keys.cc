@@ -109,6 +109,10 @@ size_t RegisterEngineCrashKeys() {
       // Temporary for https://crbug.com/630496.
       { "swdh_get_registration_cannot_host_url", crash_keys::kLargeSize },
       { "swdh_get_registration_cannot_document_url", crash_keys::kLargeSize },
+
+      // Temporary for https://crbug.com/660427.
+      { "blink_scheduler_task_function_name", crash_keys::kMediumSize },
+      { "blink_scheduler_task_file_name", crash_keys::kMediumSize },
     };
 
   return base::debug::InitCrashKeys(engine_keys, arraysize(engine_keys),
