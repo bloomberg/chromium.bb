@@ -58,6 +58,11 @@ void ScreenRotationAnimation::OnGetTarget(TargetValue* target) const {
 }
 
 void ScreenRotationAnimation::OnAbort(ui::LayerAnimationDelegate* delegate) {
+  // ui::Layer's d'tor passes its ui::LayerAnimator a null delegate before
+  // deleting it. This is then passed here: http://crbug.com/661313
+  if (!delegate)
+    return;
+
   TargetValue target_value;
   OnGetTarget(&target_value);
   delegate->SetTransformFromAnimation(target_value.transform);

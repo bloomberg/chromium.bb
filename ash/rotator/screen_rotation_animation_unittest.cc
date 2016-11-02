@@ -8,6 +8,7 @@
 
 #include "ash/test/ash_test_base.h"
 #include "base/macros.h"
+#include "base/memory/ptr_util.h"
 #include "base/time/time.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "ui/aura/window.h"
@@ -67,6 +68,31 @@ TEST_F(ScreenRotationAnimationTest, LayerTransformGetsSetToTargetWhenAborted) {
   layer->GetAnimator()->AbortAllAnimations();
 
   EXPECT_EQ(identity_transform, layer->transform());
+}
+
+// Tests that ScreenRotationAnimation::OnAbort() doesn't segfault when passed a
+// null delegate in response to its ui::Layer being destroyed:
+// http://crbug.com/661313
+TEST_F(ScreenRotationAnimationTest, DestroyLayerDuringAnimation) {
+  // Create a ui::Layer directly rather than an aura::Window, as the latter
+  // finishes all of its animation before destroying its layer.
+  std::unique_ptr<ui::Layer> layer = base::MakeUnique<ui::Layer>();
+
+  ui::Layer* root_layer = CurrentContext()->layer();
+  layer->SetBounds(gfx::Rect(root_layer->bounds().size()));
+  root_layer->Add(layer.get());
+
+  std::unique_ptr<ScreenRotationAnimation> screen_rotation(
+      new ScreenRotationAnimation(layer.get(), 45, 0, 1.0f, 1.0f, gfx::Point(),
+                                  base::TimeDelta::FromSeconds(1),
+                                  gfx::Tween::LINEAR));
+  ui::LayerAnimator* animator = layer->GetAnimator();
+  std::unique_ptr<ui::LayerAnimationSequence> animation_sequence(
+      new ui::LayerAnimationSequence(screen_rotation.release()));
+  animator->StartAnimation(animation_sequence.release());
+
+  // Explicitly destroy the layer to verify that the animation doesn't crash.
+  layer.reset();
 }
 
 }  // namespace test

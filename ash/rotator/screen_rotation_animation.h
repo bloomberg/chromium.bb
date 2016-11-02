@@ -41,7 +41,7 @@ class ASH_EXPORT ScreenRotationAnimation : public ui::LayerAnimationElement {
   ~ScreenRotationAnimation() override;
 
  private:
-  // Implementation of ui::LayerAnimationDelegate
+  // Implementation of ui::LayerAnimationElement:
   void OnStart(ui::LayerAnimationDelegate* delegate) override;
   bool OnProgress(double current,
                   ui::LayerAnimationDelegate* delegate) override;
