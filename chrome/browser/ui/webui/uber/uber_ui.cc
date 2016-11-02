@@ -28,6 +28,7 @@
 #include "content/public/browser/web_contents.h"
 #include "content/public/browser/web_ui.h"
 #include "content/public/browser/web_ui_data_source.h"
+#include "content/public/common/browser_side_navigation_policy.h"
 #include "extensions/browser/extension_registry.h"
 #include "extensions/common/extension_set.h"
 
@@ -156,9 +157,14 @@ void SubframeLogger::DidCommitProvisionalLoadForFrame(
   }
 }
 
-UberUI::UberUI(content::WebUI* web_ui)
-    : WebUIController(web_ui),
-      subframe_logger_(web_ui->GetWebContents()) {
+UberUI::UberUI(content::WebUI* web_ui) : WebUIController(web_ui) {
+  if (!content::IsBrowserSideNavigationEnabled()) {
+    // This isn't needed with PlzNavigate because when
+    // CreateWebUIControllerForURL is called there's always a RenderFrame
+    // and the logging happens there.
+    subframe_logger_ =
+        base::MakeUnique<SubframeLogger>(web_ui->GetWebContents());
+  }
   content::WebUIDataSource::Add(web_ui->GetWebContents()->GetBrowserContext(),
                                 CreateUberHTMLSource());
 

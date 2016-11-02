@@ -61,7 +61,7 @@ class UberUI : public content::WebUIController {
   void RegisterSubpage(const std::string& page_url,
                        const std::string& page_host);
 
-  SubframeLogger subframe_logger_;
+  std::unique_ptr<SubframeLogger> subframe_logger_;
 
   // Map from URL origin to WebUI instance.
   std::map<std::string, std::unique_ptr<content::WebUI>> sub_uis_;
