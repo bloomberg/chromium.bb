@@ -15,6 +15,7 @@
 #include "chrome/browser/chrome_notification_types.h"
 #include "chrome/browser/infobars/infobar_service.h"
 #include "chrome/common/channel_info.h"
+#include "chrome/common/crash_keys.h"
 #include "chrome/grit/generated_resources.h"
 #include "chrome/grit/theme_resources.h"
 #include "components/infobars/core/confirm_infobar_delegate.h"
@@ -85,7 +86,7 @@ void DumpRenderersInBlockingPool(OwnedHandleVector* renderer_handles) {
 
 void DumpAndTerminatePluginInBlockingPool(
     base::win::ScopedHandle* plugin_handle) {
-  base::StringPairs crash_keys;
+  base::StringPairs crash_keys = {{crash_keys::kHungRendererReason, "plugin"}};
   CrashDumpAndTerminateHungChildProcess(plugin_handle->Get(), crash_keys);
 }
 
