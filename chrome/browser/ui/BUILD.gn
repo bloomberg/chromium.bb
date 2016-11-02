@@ -1520,8 +1520,6 @@ split_static_library("ui") {
       sources += [
         "external_protocol_dialog_delegate.cc",
         "external_protocol_dialog_delegate.h",
-        "views/chrome_browser_main_extra_parts_views_linux.cc",
-        "views/chrome_browser_main_extra_parts_views_linux.h",
         "views/external_protocol_dialog.cc",
         "views/external_protocol_dialog.h",
         "views/frame/opaque_browser_frame_view.cc",
@@ -1540,6 +1538,18 @@ split_static_library("ui") {
         "views/sync/one_click_signin_dialog_view.h",
         "views/sync/profile_signin_confirmation_dialog_views.cc",
         "views/sync/profile_signin_confirmation_dialog_views.h",
+      ]
+    }
+
+    # These files do Gtk+-based theming, but Gtk+ is not available on
+    # Ozone builds, or on common environments where Ozone will be used.
+    #
+    # TODO(tonikitoo): It seems sensible to make it possible to opt-in
+    # the use of these files in case Gtk is available with its Wayland.
+    if (use_aura && !use_ozone && is_desktop_linux) {
+      sources += [
+        "views/chrome_browser_main_extra_parts_views_linux.cc",
+        "views/chrome_browser_main_extra_parts_views_linux.h",
       ]
     }
     if (enable_extensions && (!is_mac || mac_views_browser)) {

@@ -24,7 +24,6 @@ class ChromeBrowserMainExtraPartsViewsLinux
   void PreEarlyInitialization() override;
   void ToolkitInitialized() override;
   void PreCreateThreads() override;
-  void PreProfileInit() override;
 
   // Overridden from views::X11DesktopHandlerObserver.
   void OnWorkspaceChanged(const std::string& new_workspace) override;

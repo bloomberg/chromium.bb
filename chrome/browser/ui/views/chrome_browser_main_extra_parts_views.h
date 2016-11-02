@@ -33,6 +33,7 @@ class ChromeBrowserMainExtraPartsViews : public ChromeBrowserMainExtraParts {
   // Overridden from ChromeBrowserMainExtraParts:
   void ToolkitInitialized() override;
   void PreCreateThreads() override;
+  void PreProfileInit() override;
   void ServiceManagerConnectionStarted(
       content::ServiceManagerConnection* connection) override;
 
