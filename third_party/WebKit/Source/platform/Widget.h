@@ -40,7 +40,6 @@ namespace blink {
 class CullRect;
 class Event;
 class GraphicsContext;
-class HostWindow;
 
 // The Widget class serves as a base class for FrameView, Scrollbar, and
 // PluginView.

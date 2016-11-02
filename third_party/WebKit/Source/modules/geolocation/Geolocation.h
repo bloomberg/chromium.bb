@@ -49,7 +49,6 @@ namespace blink {
 
 class Document;
 class LocalFrame;
-class GeolocationError;
 class ExecutionContext;
 
 class MODULES_EXPORT Geolocation final

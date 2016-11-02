@@ -46,7 +46,6 @@
 
 namespace blink {
 
-class CSSFontFace;
 class CSSFontSelector;
 class ExceptionState;
 class Font;

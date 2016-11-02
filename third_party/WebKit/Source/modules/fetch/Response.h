@@ -19,9 +19,7 @@
 namespace blink {
 
 class Blob;
-class DOMArrayBuffer;
 class ExceptionState;
-class FetchDataConsumerHandle;
 class ResponseInit;
 class ScriptState;
 class WebServiceWorkerResponse;

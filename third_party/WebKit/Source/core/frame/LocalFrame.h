@@ -65,7 +65,6 @@ class InterfaceProvider;
 class InterfaceRegistry;
 class IntPoint;
 class IntSize;
-class JSONObject;
 class LayoutView;
 class LayoutViewItem;
 class LocalDOMWindow;

@@ -13,7 +13,6 @@ namespace blink {
 
 class CanvasContextCreationAttributes;
 class HTMLCanvasElement;
-class ScriptState;
 class OffscreenCanvas;
 
 class MODULES_EXPORT HTMLCanvasElementModule {

@@ -50,7 +50,6 @@ namespace blink {
 class BlobDataHandle;
 class KURL;
 class ExecutionContext;
-class ExecutionContextTask;
 class WebSocketChannelSyncHelper;
 class WorkerGlobalScope;
 class WorkerLoaderProxy;

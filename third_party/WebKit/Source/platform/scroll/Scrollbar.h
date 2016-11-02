@@ -41,7 +41,6 @@ class HostWindow;
 class IntRect;
 class PlatformGestureEvent;
 class PlatformMouseEvent;
-class ScrollAnimatorBase;
 class ScrollableArea;
 class ScrollbarTheme;
 

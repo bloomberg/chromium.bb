@@ -18,13 +18,11 @@ namespace base {
 namespace trace_event {
 class BlameContext;
 }  // namespace trace_event
-class SingleThreadTaskRunner;
 }  // namespace base
 
 namespace blink {
 namespace scheduler {
 
-class AutoAdvancingVirtualTimeDomain;
 class RendererSchedulerImpl;
 class TaskQueue;
 class WebTaskRunnerImpl;

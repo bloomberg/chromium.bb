@@ -41,7 +41,6 @@
 #include "wtf/Allocator.h"
 #include "wtf/Noncopyable.h"
 
-class SkBitmap;
 class SkCanvas;
 class SkColorSpace;
 class SkImage;

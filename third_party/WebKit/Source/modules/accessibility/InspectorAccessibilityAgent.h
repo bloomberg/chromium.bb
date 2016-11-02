@@ -12,9 +12,7 @@
 namespace blink {
 
 class AXObject;
-class AXObjectCacheImpl;
 class InspectorDOMAgent;
-class LocalFrame;
 class Page;
 
 class MODULES_EXPORT InspectorAccessibilityAgent

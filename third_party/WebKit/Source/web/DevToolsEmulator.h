@@ -17,7 +17,6 @@
 
 namespace blink {
 
-class InspectorEmulationAgent;
 class IntPoint;
 class IntRect;
 class TransformationMatrix;

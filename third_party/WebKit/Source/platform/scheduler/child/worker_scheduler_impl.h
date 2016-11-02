@@ -10,12 +10,6 @@
 #include "platform/scheduler/child/scheduler_helper.h"
 #include "public/platform/scheduler/child/worker_scheduler.h"
 
-namespace base {
-namespace trace_event {
-class ConvertableToTraceFormat;
-}
-}
-
 namespace blink {
 namespace scheduler {
 

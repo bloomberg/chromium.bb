@@ -57,7 +57,6 @@ class BasePage;
 class CallbackStack;
 struct GCInfo;
 class GarbageCollectedMixinConstructorMarker;
-class HeapObjectHeader;
 class PersistentNode;
 class PersistentRegion;
 class BaseArena;

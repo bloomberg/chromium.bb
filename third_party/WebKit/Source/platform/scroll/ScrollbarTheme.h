@@ -38,7 +38,6 @@ namespace blink {
 class CullRect;
 class GraphicsContext;
 class PlatformMouseEvent;
-class ScrollbarThemePaintParams;
 
 class PLATFORM_EXPORT ScrollbarTheme {
   WTF_MAKE_NONCOPYABLE(ScrollbarTheme);

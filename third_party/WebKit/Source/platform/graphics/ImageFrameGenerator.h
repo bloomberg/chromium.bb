@@ -41,7 +41,6 @@
 #include "wtf/Vector.h"
 #include <memory>
 
-class SkData;
 struct SkYUVSizeInfo;
 
 namespace blink {

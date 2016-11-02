@@ -40,7 +40,6 @@ class MediaDevices;
 class MediaDevicesRequest;
 class UserMediaRequest;
 class WebUserMediaClient;
-class WebLocalFrameImpl;
 
 class UserMediaClientImpl final : public UserMediaClient {
  public:

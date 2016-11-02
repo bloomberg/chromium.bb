@@ -56,7 +56,6 @@ class GLES2Interface;
 
 namespace blink {
 
-class Canvas2DLayerBridgeHistogramLogger;
 class Canvas2DLayerBridgeTest;
 class ImageBuffer;
 class WebGraphicsContext3DProvider;

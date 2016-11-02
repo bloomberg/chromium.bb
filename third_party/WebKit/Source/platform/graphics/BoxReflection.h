@@ -9,7 +9,6 @@
 #include "third_party/skia/include/core/SkPicture.h"
 #include "third_party/skia/include/core/SkRefCnt.h"
 
-class SkImageFilter;
 class SkMatrix;
 
 namespace blink {

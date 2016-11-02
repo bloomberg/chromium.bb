@@ -20,14 +20,11 @@ class Layer;
 }
 
 namespace gfx {
-class Transform;
 class Vector2dF;
 }
 
 namespace blink {
 
-class DisplayItemClient;
-class IntRect;
 class JSONObject;
 class PaintArtifact;
 class WebLayer;

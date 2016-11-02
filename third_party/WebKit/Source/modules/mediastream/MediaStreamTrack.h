@@ -42,6 +42,7 @@ namespace blink {
 class AudioSourceProvider;
 class ExceptionState;
 class MediaTrackConstraints;
+class MediaStream;
 class MediaStreamTrackSourcesCallback;
 class MediaTrackSettings;
 

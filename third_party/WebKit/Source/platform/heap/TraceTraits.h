@@ -31,6 +31,8 @@ class CrossThreadWeakPersistent;
 template <typename T>
 class Member;
 template <typename T>
+class TraceEagerlyTrait;
+template <typename T>
 class TraceTrait;
 template <typename T>
 class WeakMember;

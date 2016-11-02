@@ -9,11 +9,6 @@
 #include "platform/PlatformExport.h"
 #include "wtf/text/Unicode.h"
 
-namespace WTF {
-
-class StringUTF8Adaptor;
-}
-
 namespace blink {
 
 typedef std::pair<unsigned, DigestValue> CSPHashValue;

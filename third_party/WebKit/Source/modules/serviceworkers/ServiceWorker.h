@@ -43,8 +43,6 @@
 
 namespace blink {
 
-class ScriptPromiseResolver;
-
 class MODULES_EXPORT ServiceWorker final : public AbstractWorker,
                                            public ActiveScriptWrappable,
                                            public WebServiceWorkerProxy {

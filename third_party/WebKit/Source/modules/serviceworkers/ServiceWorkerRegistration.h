@@ -22,7 +22,6 @@ namespace blink {
 
 class ScriptPromise;
 class ScriptState;
-class WebServiceWorkerProvider;
 
 // The implementation of a service worker registration object in Blink. Actual
 // registration representation is in the embedder and this class accesses it

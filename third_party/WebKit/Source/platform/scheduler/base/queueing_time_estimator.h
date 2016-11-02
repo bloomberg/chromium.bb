@@ -9,10 +9,6 @@
 #include "base/time/time.h"
 #include "public/platform/WebCommon.h"
 
-namespace base {
-class TickClock;
-}
-
 namespace blink {
 namespace scheduler {
 

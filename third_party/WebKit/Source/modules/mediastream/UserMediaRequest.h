@@ -41,7 +41,6 @@
 
 namespace blink {
 
-class Dictionary;
 class Document;
 class MediaErrorState;
 class MediaStreamConstraints;

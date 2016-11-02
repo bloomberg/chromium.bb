@@ -21,7 +21,6 @@
 namespace blink {
 namespace scheduler {
 namespace internal {
-class TaskQueueImpl;
 
 // There is a WorkQueueSet for each scheduler priority and each WorkQueueSet
 // uses a EnqueueOrderToWorkQueueMap to keep track of which queue in the set has

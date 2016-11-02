@@ -18,7 +18,6 @@ namespace blink {
 
 class ExecutionContext;
 class ScriptPromiseResolver;
-class ScriptState;
 
 class MODULES_EXPORT ServiceWorkerClient
     : public GarbageCollectedFinalized<ServiceWorkerClient>,

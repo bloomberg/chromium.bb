@@ -73,7 +73,6 @@ typedef uint32_t SkFontID;
 namespace blink {
 
 class Font;
-class GraphicsContext;
 class HarfBuzzFace;
 
 class PLATFORM_EXPORT FontPlatformData {

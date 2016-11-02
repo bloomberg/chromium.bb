@@ -34,8 +34,6 @@
 #include "wtf/RefPtr.h"
 #include "wtf/VectorTraits.h"
 
-class SkImage;
-
 namespace blink {
 
 struct FrameData {

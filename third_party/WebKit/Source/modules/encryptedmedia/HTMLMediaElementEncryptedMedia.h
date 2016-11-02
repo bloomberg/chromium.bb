@@ -16,7 +16,6 @@
 
 namespace blink {
 
-class ExceptionState;
 class HTMLMediaElement;
 class MediaKeys;
 class ScriptPromise;

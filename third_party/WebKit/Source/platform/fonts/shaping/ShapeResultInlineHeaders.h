@@ -41,9 +41,7 @@
 namespace blink {
 
 class Font;
-class GlyphBuffer;
 class SimpleFontData;
-class HarfBuzzShaper;
 
 struct HarfBuzzRunGlyphData {
   DISALLOW_NEW_EXCEPT_PLACEMENT_NEW();

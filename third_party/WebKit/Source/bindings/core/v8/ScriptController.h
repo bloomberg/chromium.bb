@@ -48,9 +48,7 @@ namespace blink {
 
 class DOMWrapperWorld;
 class Element;
-class ExecutionContext;
 class HTMLDocument;
-class HTMLPlugInElement;
 class KURL;
 class ScriptState;
 class ScriptSourceCode;

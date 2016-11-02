@@ -15,7 +15,6 @@ namespace blink {
 class Dictionary;
 class ScriptPromiseResolver;
 class ScriptState;
-class ScriptValue;
 
 class Permissions final : public GarbageCollectedFinalized<Permissions>,
                           public ScriptWrappable {

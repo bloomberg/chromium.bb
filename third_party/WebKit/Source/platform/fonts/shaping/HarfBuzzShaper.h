@@ -50,7 +50,6 @@
 namespace blink {
 
 class Font;
-class GlyphBuffer;
 class SimpleFontData;
 class HarfBuzzShaper;
 class UnicodeRangeSet;

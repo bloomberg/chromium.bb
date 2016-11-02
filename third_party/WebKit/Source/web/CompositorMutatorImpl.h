@@ -16,7 +16,6 @@ namespace blink {
 
 class CompositorProxy;
 class CompositorProxyClientImpl;
-class CompositorWorkerGlobalScope;
 class CompositorMutatorClient;
 
 // Fans out requests from the compositor to all of the registered ProxyClients

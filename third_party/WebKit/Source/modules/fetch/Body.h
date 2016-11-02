@@ -18,7 +18,6 @@ namespace blink {
 
 class BodyStreamBuffer;
 class ExecutionContext;
-class ReadableByteStream;
 class ScriptState;
 
 // This class represents Body mix-in defined in the fetch spec

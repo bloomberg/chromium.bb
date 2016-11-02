@@ -50,6 +50,7 @@ class IDBDatabase;
 class IDBIndex;
 class IDBObjectStore;
 class IDBOpenDBRequest;
+class IDBRequest;
 class ScriptState;
 
 class MODULES_EXPORT IDBTransaction final : public EventTargetWithInlineData,

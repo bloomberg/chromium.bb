@@ -30,8 +30,6 @@
 
 namespace blink {
 
-class CSSParserToken;
-
 // This is only for the inspector and shouldn't be used elsewhere.
 class CSSParserObserver {
   STACK_ALLOCATED();

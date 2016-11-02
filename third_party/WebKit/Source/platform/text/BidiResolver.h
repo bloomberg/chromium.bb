@@ -34,8 +34,6 @@
 
 namespace blink {
 
-class LayoutObject;
-
 template <class Iterator>
 class MidpointState final {
   DISALLOW_NEW();

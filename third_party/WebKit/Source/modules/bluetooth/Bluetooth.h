@@ -12,7 +12,6 @@
 
 namespace blink {
 
-class BluetoothUUIDs;
 class RequestDeviceOptions;
 class ScriptPromise;
 class ScriptState;

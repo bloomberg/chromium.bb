@@ -12,10 +12,6 @@
 #include "platform/scheduler/base/task_queue_manager.h"
 #include "platform/scheduler/base/task_queue_selector.h"
 
-namespace base {
-class TickClock;
-}
-
 namespace blink {
 namespace scheduler {
 

@@ -15,7 +15,6 @@
 namespace blink {
 
 class GraphicsContext;
-class GraphicsLayer;
 class WebDisplayItemList;
 
 // The output of painting, consisting of a series of drawings in paint order,

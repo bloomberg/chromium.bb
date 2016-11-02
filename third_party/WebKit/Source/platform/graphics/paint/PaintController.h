@@ -31,8 +31,6 @@ class SkPicture;
 
 namespace blink {
 
-class GraphicsContext;
-
 static const size_t kInitialDisplayItemListCapacityBytes = 512;
 
 template class RasterInvalidationTrackingMap<const PaintChunk>;

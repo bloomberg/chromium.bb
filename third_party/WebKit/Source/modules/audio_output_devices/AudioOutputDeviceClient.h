@@ -15,7 +15,6 @@ namespace blink {
 
 class ExecutionContext;
 class WebString;
-class ScriptState;
 
 class MODULES_EXPORT AudioOutputDeviceClient : public Supplement<LocalFrame> {
  public:

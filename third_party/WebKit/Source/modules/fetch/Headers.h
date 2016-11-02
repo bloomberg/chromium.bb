@@ -16,7 +16,6 @@ namespace blink {
 
 class Dictionary;
 class ExceptionState;
-class Iterator;
 
 // http://fetch.spec.whatwg.org/#headers-class
 class MODULES_EXPORT Headers final : public GarbageCollected<Headers>,

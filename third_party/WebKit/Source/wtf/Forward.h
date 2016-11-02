@@ -30,8 +30,6 @@ template <typename T>
 class PassRefPtr;
 template <typename T>
 class RefPtr;
-template <size_t size>
-class SizeSpecificPartitionAllocator;
 template <typename T>
 class StringBuffer;
 template <typename T, size_t inlineCapacity, typename Allocator>

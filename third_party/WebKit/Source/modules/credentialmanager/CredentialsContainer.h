@@ -12,7 +12,6 @@ namespace blink {
 
 class Credential;
 class CredentialRequestOptions;
-class Dictionary;
 class ScriptPromise;
 class ScriptState;
 

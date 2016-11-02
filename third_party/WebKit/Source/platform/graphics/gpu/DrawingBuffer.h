@@ -62,9 +62,7 @@ class ArrayBufferContents;
 
 namespace blink {
 class Extensions3DUtil;
-class ImageBuffer;
 class StaticBitmapImage;
-class WebExternalBitmap;
 class WebExternalTextureLayer;
 class WebGraphicsContext3DProvider;
 class WebLayer;

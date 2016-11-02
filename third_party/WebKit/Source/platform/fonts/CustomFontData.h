@@ -27,8 +27,6 @@
 
 namespace blink {
 
-class SimpleFontData;
-
 class PLATFORM_EXPORT CustomFontData : public RefCounted<CustomFontData> {
  public:
   static PassRefPtr<CustomFontData> create() {

@@ -47,6 +47,9 @@
 
 namespace blink {
 
+class FreePagePool;
+class OrphanedPagePool;
+
 class PLATFORM_EXPORT HeapAllocHooks {
  public:
   // TODO(hajimehoshi): Pass a type name of the allocated object.

@@ -50,7 +50,6 @@ class SkPaint;
 class SkPath;
 class SkPicture;
 class SkRRect;
-class SkTextBlob;
 struct SkImageInfo;
 struct SkRect;
 
@@ -58,7 +57,6 @@ namespace blink {
 
 class FloatRect;
 class FloatRoundedRect;
-class ImageBuffer;
 class KURL;
 class PaintController;
 class Path;

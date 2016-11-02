@@ -43,7 +43,6 @@ class FrameView;
 class HTMLAreaElement;
 class IntPoint;
 class Node;
-class Widget;
 
 class MODULES_EXPORT AXLayoutObject : public AXNodeObject {
   WTF_MAKE_NONCOPYABLE(AXLayoutObject);

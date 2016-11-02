@@ -21,7 +21,6 @@ namespace scheduler {
 
 class RendererSchedulerImpl;
 class ThrottledTimeDomain;
-class WebFrameSchedulerImpl;
 
 // The job of the TaskQueueThrottler is to control when tasks posted on
 // throttled queues get run. The TaskQueueThrottler:

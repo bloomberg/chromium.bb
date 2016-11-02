@@ -29,8 +29,6 @@
 
 namespace WTF {
 
-class AtomicString;
-
 template <typename T>
 struct VectorTraitsBase {
   static const bool needsDestruction = !IsTriviallyDestructible<T>::value;

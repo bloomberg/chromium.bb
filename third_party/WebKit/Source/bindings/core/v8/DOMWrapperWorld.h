@@ -55,7 +55,6 @@ enum WorldIdConstants {
 };
 
 class DOMObjectHolderBase;
-class DOMWrapperWorldVisitor;
 template <typename T>
 class DOMObjectHolder;
 

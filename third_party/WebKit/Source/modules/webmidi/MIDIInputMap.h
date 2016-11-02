@@ -11,8 +11,6 @@
 
 namespace blink {
 
-class ScriptState;
-
 class MIDIInputMap : public MIDIPortMap<MIDIInput>, public ScriptWrappable {
   DEFINE_WRAPPERTYPEINFO();
 

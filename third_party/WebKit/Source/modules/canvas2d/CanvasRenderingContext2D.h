@@ -51,8 +51,6 @@ namespace blink {
 class CanvasImageSource;
 class Element;
 class ExceptionState;
-class FloatRect;
-class FloatSize;
 class Font;
 class FontMetrics;
 class HitRegion;
@@ -60,7 +58,6 @@ class HitRegionOptions;
 class HitRegionManager;
 class HitTestCanvasResult;
 class Path2D;
-class SVGMatrixTearOff;
 class TextMetrics;
 
 typedef CSSImageValueOrHTMLImageElementOrHTMLVideoElementOrHTMLCanvasElementOrImageBitmapOrOffscreenCanvas

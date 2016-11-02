@@ -11,8 +11,6 @@
 #include "wtf/Alignment.h"
 #include "wtf/Assertions.h"
 
-class SkPictureGpuAnalyzer;
-
 namespace blink {
 
 struct PaintChunk;

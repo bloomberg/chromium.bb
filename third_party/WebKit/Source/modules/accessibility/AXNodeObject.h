@@ -38,7 +38,6 @@ namespace blink {
 class AXObjectCacheImpl;
 class Element;
 class HTMLLabelElement;
-class LayoutRect;
 class Node;
 
 class MODULES_EXPORT AXNodeObject : public AXObject {

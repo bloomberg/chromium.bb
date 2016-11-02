@@ -92,7 +92,6 @@ class CompositorMutatorImpl;
 class WebPagePopupImpl;
 class WebPlugin;
 class WebRemoteFrame;
-class WebSelection;
 class WebSettingsImpl;
 class WebViewScheduler;
 

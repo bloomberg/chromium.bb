@@ -14,6 +14,7 @@ namespace blink {
 
 template <typename T>
 class GarbageCollected;
+class HeapObjectHeader;
 class InlinedGlobalMarkingVisitor;
 class WrapperVisitor;
 

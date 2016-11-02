@@ -48,8 +48,6 @@ class HeapObjectHeader;
 class InlinedGlobalMarkingVisitor;
 template <typename T>
 class TraceTrait;
-template <typename T>
-class TraceEagerlyTrait;
 class ThreadState;
 class Visitor;
 template <typename T>

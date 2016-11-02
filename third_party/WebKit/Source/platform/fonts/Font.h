@@ -50,7 +50,6 @@ class FloatPoint;
 class FloatRect;
 class FontFallbackIterator;
 class FontData;
-class FontMetrics;
 class FontSelector;
 class GlyphBuffer;
 class TextRun;

@@ -46,7 +46,6 @@ class MediaStreamComponent;
 class MediaStreamDescriptor;
 class WebMediaStream;
 class WebMediaStreamCenter;
-class WebMediaStreamTrack;
 
 class PLATFORM_EXPORT MediaStreamCenter final
     : public WebMediaStreamCenterClient {

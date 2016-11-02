@@ -20,11 +20,8 @@
 #include "platform/scheduler/base/task_queue_selector.h"
 
 namespace base {
-class TickClock;
-
 namespace trace_event {
 class ConvertableToTraceFormat;
-class TracedValue;
 }  // namespace trace_event
 }  // namespace base
 

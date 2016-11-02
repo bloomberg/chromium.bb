@@ -42,10 +42,6 @@ class LocalFrame;
 class Page;
 class StorageArea;
 
-namespace protocol {
-class DictionaryValue;
-}
-
 class MODULES_EXPORT InspectorDOMStorageAgent final
     : public InspectorBaseAgent<protocol::DOMStorage::Metainfo> {
  public:

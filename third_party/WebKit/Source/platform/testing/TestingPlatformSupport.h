@@ -58,7 +58,6 @@ class RendererScheduler;
 class RendererSchedulerImpl;
 }
 class TestingPlatformMockWebTaskRunner;
-class TestingPlatformMockWebThread;
 class WebCompositorSupport;
 class WebThread;
 

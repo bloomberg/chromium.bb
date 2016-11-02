@@ -33,7 +33,6 @@
 namespace blink {
 
 class Document;
-class ExecutionContext;
 class UnsignedLongOrUnsignedLongSequence;
 
 class MODULES_EXPORT VibrationController final

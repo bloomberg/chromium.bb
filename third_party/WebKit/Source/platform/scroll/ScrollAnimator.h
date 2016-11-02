@@ -40,7 +40,6 @@
 
 namespace blink {
 
-class ScrollAnimatorTest;
 class CompositorAnimationTimeline;
 
 class PLATFORM_EXPORT ScrollAnimator : public ScrollAnimatorBase {

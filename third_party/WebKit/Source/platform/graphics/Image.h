@@ -43,7 +43,6 @@
 #include "wtf/ThreadSafeRefCounted.h"
 #include "wtf/text/WTFString.h"
 
-class SkBitmap;
 class SkCanvas;
 class SkImage;
 class SkMatrix;
@@ -55,7 +54,6 @@ class FloatPoint;
 class FloatRect;
 class FloatSize;
 class GraphicsContext;
-class Length;
 class Image;
 
 class PLATFORM_EXPORT Image : public ThreadSafeRefCounted<Image> {

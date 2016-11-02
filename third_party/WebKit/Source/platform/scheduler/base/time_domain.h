@@ -23,7 +23,6 @@ namespace internal {
 class TaskQueueImpl;
 }  // internal
 class TaskQueueManager;
-class TaskQueueManagerDelegate;
 
 // The TimeDomain's job is to wake task queues up when their next delayed tasks
 // are due to fire. TaskQueues request a wake up via ScheduleDelayedWork, when

@@ -39,8 +39,6 @@
 
 namespace blink {
 
-class TraceLocation;
-
 class PLATFORM_EXPORT CancellableTaskFactory {
   WTF_MAKE_NONCOPYABLE(CancellableTaskFactory);
   USING_FAST_MALLOC(CancellableTaskFactory);

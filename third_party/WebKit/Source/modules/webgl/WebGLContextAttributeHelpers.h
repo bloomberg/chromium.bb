@@ -11,8 +11,6 @@
 
 namespace blink {
 
-class Settings;
-
 WebGLContextAttributes toWebGLContextAttributes(
     const CanvasContextCreationAttributes&);
 

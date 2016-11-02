@@ -51,7 +51,6 @@
 namespace blink {
 
 class WebFrame;
-class WebFrameWidget;
 class WebLocalFrameImpl;
 class WebRemoteFrameImpl;
 class WebSettings;

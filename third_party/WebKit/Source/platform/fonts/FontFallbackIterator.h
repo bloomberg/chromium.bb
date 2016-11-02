@@ -21,7 +21,6 @@ using namespace WTF;
 class FontDescription;
 class FontFallbackList;
 class SimpleFontData;
-class FontFamily;
 
 class FontFallbackIterator : public RefCounted<FontFallbackIterator> {
   WTF_MAKE_NONCOPYABLE(FontFallbackIterator);

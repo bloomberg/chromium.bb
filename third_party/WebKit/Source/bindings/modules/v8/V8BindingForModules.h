@@ -11,13 +11,11 @@
 
 namespace blink {
 
-class IDBAny;
 class IDBKey;
 class IDBKeyPath;
 class IDBKeyRange;
 class IDBValue;
 class SerializedScriptValue;
-class SharedBuffer;
 class WebBlobInfo;
 
 // Exposed for unit testing:

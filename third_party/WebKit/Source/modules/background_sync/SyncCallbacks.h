@@ -19,7 +19,6 @@ class ServiceWorkerRegistration;
 class ScriptPromiseResolver;
 struct WebSyncError;
 struct WebSyncRegistration;
-class WebString;
 
 // SyncRegistrationCallbacks is an implementation of
 // WebSyncRegistrationCallbacks that will resolve the underlying promise

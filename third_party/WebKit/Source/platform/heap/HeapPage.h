@@ -130,13 +130,8 @@ const uint8_t reuseForbiddenZapValue = 0x2c;
 #define USE_4BYTE_HEADER_PADDING 0
 #endif
 
-class CallbackStack;
-class FreePagePool;
 class NormalPageArena;
-class OrphanedPagePool;
 class PageMemory;
-class PageMemoryRegion;
-class WebMemoryAllocatorDump;
 
 // HeapObjectHeader is 4 byte (32 bit) that has the following layout:
 //

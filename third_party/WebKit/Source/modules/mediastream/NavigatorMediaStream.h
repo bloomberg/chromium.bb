@@ -27,9 +27,7 @@
 
 namespace blink {
 
-class Dictionary;
 class ExceptionState;
-class MediaDeviceInfoCallback;
 class MediaStreamConstraints;
 class Navigator;
 class NavigatorUserMediaErrorCallback;

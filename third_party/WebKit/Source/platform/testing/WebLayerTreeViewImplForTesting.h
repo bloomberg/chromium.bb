@@ -18,7 +18,6 @@ class LayerTreeSettings;
 
 namespace blink {
 
-class WebCompositorAnimationTimeline;
 class WebLayer;
 
 // Dummy WeblayerTeeView that does not support any actual compositing.

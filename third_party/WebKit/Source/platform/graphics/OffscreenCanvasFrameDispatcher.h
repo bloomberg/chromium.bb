@@ -11,7 +11,6 @@
 namespace blink {
 
 class StaticBitmapImage;
-class WebLayer;
 
 class PLATFORM_EXPORT OffscreenCanvasFrameDispatcher {
  public:

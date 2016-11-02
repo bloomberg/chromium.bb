@@ -41,7 +41,6 @@
 
 namespace blink {
 
-class InspectorWebPerfAgent;
 class ScriptState;
 class ScriptValue;
 

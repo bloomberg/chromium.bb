@@ -11,8 +11,6 @@
 
 namespace blink {
 
-class RoundedRect;
-
 class PLATFORM_EXPORT FloatClipDisplayItem final
     : public PairedBeginDisplayItem {
  public:

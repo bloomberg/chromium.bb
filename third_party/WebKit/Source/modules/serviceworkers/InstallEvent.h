@@ -12,8 +12,6 @@
 
 namespace blink {
 
-class USVStringOrUSVStringSequence;
-
 class MODULES_EXPORT InstallEvent : public ExtendableEvent {
   DEFINE_WRAPPERTYPEINFO();
 

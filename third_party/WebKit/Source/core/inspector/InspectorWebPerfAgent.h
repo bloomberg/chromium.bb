@@ -16,7 +16,6 @@ class DOMWindow;
 class ExecutionContext;
 class Frame;
 class LocalFrame;
-class Location;
 class Performance;
 
 // Inspector Agent for Web Performance APIs

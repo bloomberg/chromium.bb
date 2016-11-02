@@ -35,7 +35,6 @@
 namespace blink {
 
 class Document;
-class ExceptionState;
 class UserMediaController;
 class ScriptState;
 class ScriptPromiseResolver;

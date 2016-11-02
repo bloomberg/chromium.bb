@@ -14,7 +14,6 @@
 namespace blink {
 
 class ExceptionState;
-class Iterator;
 class ScriptState;
 class WebData;
 

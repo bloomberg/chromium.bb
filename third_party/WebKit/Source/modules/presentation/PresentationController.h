@@ -18,7 +18,6 @@
 namespace blink {
 
 class PresentationConnection;
-class WebPresentationAvailabilityCallback;
 class WebPresentationConnectionClient;
 enum class WebPresentationConnectionCloseReason;
 enum class WebPresentationConnectionState;

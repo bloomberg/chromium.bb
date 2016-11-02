@@ -22,7 +22,6 @@ namespace blink {
 class CompositorProxy;
 class DOMArrayBuffer;
 class DOMArrayBufferView;
-class DOMSharedArrayBuffer;
 class File;
 class FileList;
 class ImageData;

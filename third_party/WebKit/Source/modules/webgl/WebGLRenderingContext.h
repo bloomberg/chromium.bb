@@ -32,7 +32,18 @@
 
 namespace blink {
 
+class ANGLEInstancedArrays;
 class CanvasContextCreationAttributes;
+class EXTBlendMinMax;
+class EXTFragDepth;
+class EXTShaderTextureLOD;
+class EXTTextureFilterAnisotropic;
+class OESElementIndexUint;
+class OESStandardDerivatives;
+class OESTextureFloatLinear;
+class OESTextureHalfFloatLinear;
+class WebGLDebugRendererInfo;
+class WebGLLoseContext;
 
 class WebGLRenderingContext final : public WebGLRenderingContextBase {
   DEFINE_WRAPPERTYPEINFO();

@@ -19,9 +19,7 @@
 namespace blink {
 
 class BodyStreamBuffer;
-class ExecutionContext;
 class FetchHeaderList;
-class PasswordCredential;
 class SecurityOrigin;
 class ScriptState;
 class WebServiceWorkerRequest;

@@ -16,12 +16,8 @@
 namespace blink {
 
 class FloatRect;
-class LayoutBoxModelObject;
-class LayoutInline;
-class LayoutObject;
 class LayoutRect;
 class LayoutUnit;
-class PaintInvalidationState;
 
 class PLATFORM_EXPORT CullRect {
   DISALLOW_NEW();

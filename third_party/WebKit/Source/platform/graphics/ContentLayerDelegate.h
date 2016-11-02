@@ -32,15 +32,12 @@
 #include "wtf/Allocator.h"
 #include "wtf/Noncopyable.h"
 
-class SkCanvas;
-
 namespace gfx {
 class Rect;
 }
 
 namespace blink {
 
-class IntRect;
 class GraphicsLayer;
 
 class PLATFORM_EXPORT ContentLayerDelegate : public WebContentLayerClient {

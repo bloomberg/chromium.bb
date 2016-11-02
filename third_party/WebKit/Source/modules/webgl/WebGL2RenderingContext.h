@@ -13,6 +13,10 @@ namespace blink {
 
 class CanvasContextCreationAttributes;
 class EXTColorBufferFloat;
+class EXTTextureFilterAnisotropic;
+class OESTextureFloatLinear;
+class WebGLDebugRendererInfo;
+class WebGLLoseContext;
 
 class WebGL2RenderingContext : public WebGL2RenderingContextBase {
   DEFINE_WRAPPERTYPEINFO();

@@ -33,7 +33,6 @@
 #include "wtf/text/WTFString.h"
 
 class SkPaint;
-class SkShader;
 
 namespace blink {
 

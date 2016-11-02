@@ -64,7 +64,6 @@ class Frame;
 class LocalDOMWindow;
 class LocalFrame;
 class NodeFilter;
-class TracedValue;
 class WorkerGlobalScope;
 class WorkerOrWorkletGlobalScope;
 class XPathNSResolver;

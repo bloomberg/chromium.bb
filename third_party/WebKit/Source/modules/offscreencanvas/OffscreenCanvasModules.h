@@ -15,7 +15,6 @@ namespace blink {
 
 class CanvasContextCreationAttributes;
 class OffscreenCanvas;
-class OffscreenCanvasRenderingContext2D;
 
 class MODULES_EXPORT OffscreenCanvasModules {
   STATIC_ONLY(OffscreenCanvasModules)

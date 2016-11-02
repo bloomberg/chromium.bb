@@ -57,7 +57,6 @@
 namespace blink {
 
 class CompositorFilterOperations;
-class FloatRect;
 class Image;
 class JSONObject;
 class LinkHighlight;

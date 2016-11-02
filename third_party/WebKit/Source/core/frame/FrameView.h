@@ -58,7 +58,6 @@
 namespace blink {
 
 class AXObjectCache;
-class CancellableTaskFactory;
 class ComputedStyle;
 class DocumentLifecycle;
 class Cursor;

@@ -46,10 +46,7 @@
 namespace blink {
 
 class Color;
-class EmptyChromeClient;
 class LocalFrame;
-class GraphicsContext;
-class GraphicsLayer;
 class InspectorCSSAgent;
 class LayoutEditor;
 class Node;

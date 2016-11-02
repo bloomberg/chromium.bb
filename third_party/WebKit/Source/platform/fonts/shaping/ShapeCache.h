@@ -39,8 +39,6 @@
 namespace blink {
 
 class Font;
-class GlyphBuffer;
-class SimpleFontData;
 
 struct ShapeCacheEntry {
   DISALLOW_NEW_EXCEPT_PLACEMENT_NEW();

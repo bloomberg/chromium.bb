@@ -41,7 +41,6 @@ class IDBCursorWithValue;
 class IDBDatabase;
 class IDBIndex;
 class IDBObjectStore;
-class WebBlobInfo;
 
 // IDBAny is used for:
 //  * source of IDBCursor (IDBObjectStore or IDBIndex)

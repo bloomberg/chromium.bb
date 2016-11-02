@@ -12,7 +12,6 @@
 namespace blink {
 
 class BudgetService;
-class Navigator;
 
 // This exposes the BudgetState interface which is returned from BudgetService
 // when there is a GetBudget call.

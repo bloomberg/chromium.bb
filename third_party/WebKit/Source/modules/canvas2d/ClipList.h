@@ -14,8 +14,6 @@ class SkPath;
 
 namespace blink {
 
-class AffineTransform;
-
 class ClipList {
   DISALLOW_NEW();
 

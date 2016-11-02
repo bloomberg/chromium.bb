@@ -14,10 +14,6 @@
 
 class GrContext;
 
-namespace cc {
-class SingleReleaseCallback;
-}
-
 namespace blink {
 class WebThread;
 

@@ -12,7 +12,6 @@
 
 namespace blink {
 
-class ExecutionContext;
 class ScriptState;
 
 class SensorReading : public GarbageCollectedFinalized<SensorReading>,

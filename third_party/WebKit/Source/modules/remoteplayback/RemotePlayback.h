@@ -22,7 +22,6 @@ namespace blink {
 
 class ExecutionContext;
 class HTMLMediaElement;
-class LocalFrame;
 class RemotePlaybackAvailabilityCallback;
 class ScriptPromiseResolver;
 
