@@ -6,6 +6,7 @@
 #define CHROME_BROWSER_ANDROID_VR_SHELL_VR_CONTROLLER_H_
 
 #include <memory>
+#include <vector>
 
 #include "base/macros.h"
 #include "third_party/WebKit/public/web/WebInputEvent.h"
@@ -37,7 +38,8 @@ class VrController {
 
   // Must be called when the GL renderer gets OnDrawFrame().
   void UpdateState();
-  std::unique_ptr<WebGestureEvent> DetectGesture();
+
+  std::vector<std::unique_ptr<WebGestureEvent>> DetectGestures();
 
   bool IsTouching();
 

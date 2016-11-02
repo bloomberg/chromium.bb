@@ -270,16 +270,7 @@ void VrShell::InitializeGl(JNIEnv* env,
 
 void VrShell::UpdateController(const gvr::Vec3f& forward_vector) {
   controller_->UpdateState();
-  std::unique_ptr<WebGestureEvent> gesture = controller_->DetectGesture();
 
-  // TODO(asimjour) for now, scroll is sent to the main content.
-  if (gesture->type == WebInputEvent::GestureScrollBegin ||
-      gesture->type == WebInputEvent::GestureScrollUpdate ||
-      gesture->type == WebInputEvent::GestureScrollEnd) {
-    content_input_manager_->ProcessUpdatedGesture(*gesture.get());
-  }
-
-  WebInputEvent::Type original_type = gesture->type;
   gvr::Vec3f ergo_neutral_pose;
   if (!controller_->IsConnected()) {
     // No controller detected, set up a gaze cursor that tracks the
@@ -370,6 +361,32 @@ void VrShell::UpdateController(const gvr::Vec3f& forward_vector) {
                                          : ui_input_manager_.get();
     }
   }
+  SendEventsToTarget(input_target, pixel_x, pixel_y);
+}
+
+void VrShell::SendEventsToTarget(VrInputManager* input_target,
+                                 int pixel_x,
+                                 int pixel_y) {
+  std::vector<std::unique_ptr<WebGestureEvent>> gesture_list =
+      controller_->DetectGestures();
+  std::unique_ptr<WebGestureEvent> gesture = std::move(gesture_list.front());
+
+  // TODO(asimjour) for now, scroll is sent to the main content.
+  if (gesture->type == WebInputEvent::GestureScrollBegin ||
+      gesture->type == WebInputEvent::GestureScrollUpdate ||
+      gesture->type == WebInputEvent::GestureScrollEnd) {
+    content_input_manager_->ProcessUpdatedGesture(*gesture.get());
+  }
+
+  if (gesture->type == WebInputEvent::GestureScrollEnd) {
+    CHECK(gesture_list.size() == 2);
+    std::unique_ptr<WebGestureEvent> fling_gesture =
+        std::move(gesture_list.back());
+    content_input_manager_->ProcessUpdatedGesture(*fling_gesture.get());
+  }
+
+  WebInputEvent::Type original_type = gesture->type;
+
   bool new_target = input_target != current_input_target_;
   if (new_target && current_input_target_ != nullptr) {
     // Send a move event indicating that the pointer moved off of an element.

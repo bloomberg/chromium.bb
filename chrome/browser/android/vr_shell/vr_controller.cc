@@ -185,29 +185,40 @@ void VrController::Initialize(gvr_context* gvr_context) {
   controller_api_->Resume();
 }
 
-std::unique_ptr<WebGestureEvent> VrController::DetectGesture() {
+std::vector<std::unique_ptr<WebGestureEvent>> VrController::DetectGestures() {
+  std::vector<std::unique_ptr<WebGestureEvent>> gesture_list;
   std::unique_ptr<WebGestureEvent> gesture(new WebGestureEvent());
+
   if (controller_state_->GetConnectionState() != gvr::kControllerConnected) {
-    return gesture;
+    gesture_list.push_back(std::move(gesture));
+    return gesture_list;
   }
   UpdateTouchInfo();
   UpdateGestureFromTouchInfo(gesture.get());
 
-  gesture->sourceDevice = blink::WebGestureDeviceTouchpad;
-  if (gesture->type == WebInputEvent::GestureScrollBegin ||
-      gesture->type == WebInputEvent::GestureScrollUpdate ||
-      gesture->type == WebInputEvent::GestureScrollEnd) {
-    return gesture;
-  }
-
-  if (IsButtonDown(gvr::kControllerButtonClick)) {
+  if (gesture->type == WebInputEvent::Undefined &&
+      IsButtonDown(gvr::kControllerButtonClick)) {
     gesture->type = WebInputEvent::GestureTapDown;
     gesture->data.tapDown.width = 0;
     gesture->data.tapDown.height = 0;
-    return gesture;
+  }
+  gesture->sourceDevice = blink::WebGestureDeviceTouchpad;
+  gesture_list.push_back(std::move(gesture));
+
+  if (gesture_list.back()->type == WebInputEvent::GestureScrollEnd) {
+    std::unique_ptr<WebGestureEvent> fling(new WebGestureEvent());
+    fling->timeStampSeconds = gesture_list.back()->timeStampSeconds;
+    fling->sourceDevice = blink::WebGestureDeviceTouchpad;
+    fling->type = WebInputEvent::GestureFlingStart;
+    fling->data.flingStart.velocityX =
+        overall_velocity_.x * kDisplacementScaleFactor;
+    fling->data.flingStart.velocityY =
+        overall_velocity_.y * kDisplacementScaleFactor;
+    gesture_list.push_back(std::move(fling));
+    Reset();
   }
 
-  return gesture;
+  return gesture_list;
 }
 
 void VrController::UpdateGestureFromTouchInfo(WebGestureEvent* gesture) {
@@ -271,7 +282,6 @@ void VrController::HandleScrollingState(WebGestureEvent* gesture) {
     // Gesture ends.
     gesture->type = WebInputEvent::GestureScrollEnd;
     UpdateGesture(gesture);
-    Reset();
   } else if (touch_position_changed) {
     // User continues scrolling and there is a change in touch position.
     gesture->type = WebInputEvent::GestureScrollUpdate;

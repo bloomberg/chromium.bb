@@ -45,9 +45,7 @@ void VrInputManager::ProcessUpdatedGesture(const WebInputEvent& event) {
 }
 
 void VrInputManager::SendGesture(const WebGestureEvent& gesture) {
-  if (gesture.type != WebGestureEvent::GestureTapDown) {
-    ForwardGestureEvent(gesture);
-  } else {
+  if (gesture.type == WebGestureEvent::GestureTapDown) {
     ForwardGestureEvent(gesture);
 
     // Generate and forward Tap
@@ -56,6 +54,8 @@ void VrInputManager::SendGesture(const WebGestureEvent& gesture) {
         gesture.data.tapDown.width, gesture.data.tapDown.height);
     tap_event.data.tap.tapCount = 1;
     ForwardGestureEvent(tap_event);
+  } else {
+    ForwardGestureEvent(gesture);
   }
 }
 

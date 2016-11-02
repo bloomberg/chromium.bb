@@ -128,6 +128,9 @@ class VrShell : public device::GvrDelegate, content::WebContentsObserver {
   void DrawWebVr();
 
   void UpdateController(const gvr::Vec3f& forward_vector);
+  void SendEventsToTarget(VrInputManager* input_target,
+                          int pixel_x,
+                          int pixel_y);
 
   void HandleQueuedTasks();
 
