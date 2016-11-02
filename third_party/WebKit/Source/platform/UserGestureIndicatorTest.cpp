@@ -111,6 +111,24 @@ TEST(UserGestureIndicatorTest, ScopedNewUserGestureIndicators) {
   EXPECT_NE(nullptr, UserGestureIndicator::currentToken());
 }
 
+TEST(UserGestureIndicatorTest, MultipleGesturesWithTheSameToken) {
+  UserGestureIndicator indicator(
+      TestUserGestureToken::create(UserGestureToken::NewGesture));
+  EXPECT_TRUE(UserGestureIndicator::processingUserGesture());
+  EXPECT_NE(nullptr, UserGestureIndicator::currentToken());
+  {
+    // Construct an inner indicator that shares the same token.
+    UserGestureIndicator innerIndicator(UserGestureIndicator::currentToken());
+    EXPECT_TRUE(UserGestureIndicator::processingUserGesture());
+    EXPECT_NE(nullptr, UserGestureIndicator::currentToken());
+  }
+  // Though the inner indicator was destroyed, the outer is still present (and
+  // the gesture hasn't been consumed), so it should still be processing a user
+  // gesture.
+  EXPECT_TRUE(UserGestureIndicator::processingUserGesture());
+  EXPECT_NE(nullptr, UserGestureIndicator::currentToken());
+}
+
 class UsedCallback : public UserGestureUtilizedCallback {
  public:
   UsedCallback() : m_usedCount(0) {}
