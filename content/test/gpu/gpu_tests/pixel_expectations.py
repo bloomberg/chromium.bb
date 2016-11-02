@@ -34,10 +34,6 @@ class PixelExpectations(GpuTestExpectations):
     # TODO(vmiura) check / generate reference images for Android devices
     self.Fail('Pixel_SolidColorBackground', ['mac', 'android'], bug=624256)
 
-    # TODO(erikchen) check / generate reference images.
-    self.Fail('Pixel_CSSFilterEffects', ['mac'], bug=581526)
-    self.Fail('Pixel_CSSFilterEffects_NoOverlays', ['mac'], bug=581526)
-
     self.Fail('Pixel_OffscreenCanvasUnaccelerated2DGPUCompositing', bug=615325)
     self.Fail('Pixel_OffscreenCanvasUnaccelerated2DGPUCompositingWorker',
               bug=615325)
