@@ -132,7 +132,6 @@ void WebSocketHandleImpl::onConnectionError(uint32_t customReason,
     // function is called. On the other hand, blink objects became invalid
     // *silently*, which means we must not touch |*client_| any more.
     // TODO(yhirano): Remove this code once the shutdown sequence is fixed.
-    disconnect();
     return;
   }
 
