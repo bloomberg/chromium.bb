@@ -42,7 +42,7 @@ struct UpdateContext;
 // applied one at a time.
 class UpdateEngine {
  public:
-  using CompletionCallback = base::Callback<void(int error)>;
+  using CompletionCallback = base::Callback<void(Error error)>;
   using NotifyObserversCallback =
       base::Callback<void(UpdateClient::Observer::Events event,
                           const std::string& id)>;
@@ -63,7 +63,7 @@ class UpdateEngine {
               const CompletionCallback& update_callback);
 
  private:
-  void UpdateComplete(UpdateContext* update_context, int error);
+  void UpdateComplete(UpdateContext* update_context, Error error);
 
   // Returns true if the update engine rejects this update call because it
   // occurs too soon.

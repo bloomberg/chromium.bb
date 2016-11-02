@@ -29,6 +29,7 @@
 #include "components/update_client/ping_manager.h"
 #include "components/update_client/task_update.h"
 #include "components/update_client/update_checker.h"
+#include "components/update_client/update_client_errors.h"
 #include "components/update_client/update_client_internal.h"
 #include "components/update_client/update_engine.h"
 #include "components/update_client/update_response.h"
@@ -101,7 +102,7 @@ void UpdateClientImpl::Install(const std::string& id,
   DCHECK(thread_checker_.CalledOnValidThread());
 
   if (IsUpdating(id)) {
-    completion_callback.Run(Error::ERROR_UPDATE_IN_PROGRESS);
+    completion_callback.Run(Error::UPDATE_IN_PROGRESS);
     return;
   }
 
@@ -148,7 +149,7 @@ void UpdateClientImpl::RunTask(std::unique_ptr<Task> task) {
 void UpdateClientImpl::OnTaskComplete(
     const CompletionCallback& completion_callback,
     Task* task,
-    int error) {
+    Error error) {
   DCHECK(thread_checker_.CalledOnValidThread());
   DCHECK(task);
 

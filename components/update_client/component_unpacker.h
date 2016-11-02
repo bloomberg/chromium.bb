@@ -17,6 +17,7 @@
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
 #include "base/sequenced_task_runner.h"
+#include "components/update_client/update_client_errors.h"
 
 namespace update_client {
 
@@ -64,36 +65,12 @@ std::unique_ptr<base::DictionaryValue> ReadManifest(
 // be skipped and EndUnpacking will be called.
 class ComponentUnpacker : public base::RefCountedThreadSafe<ComponentUnpacker> {
  public:
-  // Possible error conditions.
-  // Add only to the bottom of this enum; the order must be kept stable.
-  // TODO(sorin): move errors to update_client/errors.h header file.
-  enum Error {
-    kNone = 0,
-    kInvalidParams,
-    kInvalidFile,
-    kUnzipPathError,
-    kUnzipFailed,
-    kNoManifest,
-    kBadManifest,
-    kBadExtension,
-    kInvalidId,
-    kInstallerError,
-    kIoError,
-    kDeltaVerificationFailure,
-    kDeltaBadCommands,
-    kDeltaUnsupportedCommand,
-    kDeltaOperationFailure,
-    kDeltaPatchProcessFailure,
-    kDeltaMissingExistingFile,
-    kFingerprintWriteFailed,
-  };
-
   // Contains the result of the unpacking.
   struct Result {
     Result();
 
     // Unpack error: 0 indicates success.
-    enum Error error = kNone;
+    UnpackerError error = UnpackerError::kNone;
 
     // Additional error information, such as errno or last error.
     int extended_error = 0;
@@ -139,7 +116,7 @@ class ComponentUnpacker : public base::RefCountedThreadSafe<ComponentUnpacker> {
   // (non-differential) updates. This step is asynchronous. Returns false if an
   // error is encountered.
   bool BeginPatching();
-  void EndPatching(Error error, int extended_error);
+  void EndPatching(UnpackerError error, int extended_error);
 
   // The final step is to do clean-up for things that can't be tidied as we go.
   // If there is an error at any step, the remaining steps are skipped and
@@ -156,7 +133,7 @@ class ComponentUnpacker : public base::RefCountedThreadSafe<ComponentUnpacker> {
   scoped_refptr<CrxInstaller> installer_;
   Callback callback_;
   scoped_refptr<OutOfProcessPatcher> oop_patcher_;
-  Error error_;
+  UnpackerError error_;
   int extended_error_;
   scoped_refptr<base::SequencedTaskRunner> task_runner_;
 

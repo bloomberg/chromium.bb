@@ -44,6 +44,7 @@ namespace update_client {
 class CrxInstaller;
 class DeltaUpdateOp;
 class OutOfProcessPatcher;
+enum class UnpackerError;
 
 // The type of a patch file.
 enum PatchType {
@@ -55,7 +56,7 @@ enum PatchType {
 // Encapsulates a task for applying a differential update to a component.
 class ComponentPatcher : public base::RefCountedThreadSafe<ComponentPatcher> {
  public:
-  using Callback = base::Callback<void(ComponentUnpacker::Error, int)>;
+  using Callback = base::Callback<void(UnpackerError, int)>;
 
   // Takes an unpacked differential CRX (|input_dir|) and a component installer,
   // and sets up the class to create a new (non-differential) unpacked CRX.
@@ -83,9 +84,9 @@ class ComponentPatcher : public base::RefCountedThreadSafe<ComponentPatcher> {
 
   void PatchNextFile();
 
-  void DonePatchingFile(ComponentUnpacker::Error error, int extended_error);
+  void DonePatchingFile(UnpackerError error, int extended_error);
 
-  void DonePatching(ComponentUnpacker::Error error, int extended_error);
+  void DonePatching(UnpackerError error, int extended_error);
 
   const base::FilePath input_dir_;
   const base::FilePath unpack_dir_;

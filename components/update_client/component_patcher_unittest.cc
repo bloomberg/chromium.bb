@@ -17,6 +17,7 @@
 #include "components/update_client/component_patcher_operation.h"
 #include "components/update_client/component_patcher_unittest.h"
 #include "components/update_client/test_installer.h"
+#include "components/update_client/update_client_errors.h"
 #include "courgette/courgette.h"
 #include "courgette/third_party/bsdiff/bsdiff.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -27,9 +28,9 @@ class TestCallback {
  public:
   TestCallback();
   virtual ~TestCallback() {}
-  void Set(update_client::ComponentUnpacker::Error error, int extra_code);
+  void Set(update_client::UnpackerError error, int extra_code);
 
-  int error_;
+  update_client::UnpackerError error_;
   int extra_code_;
   bool called_;
 
@@ -37,21 +38,16 @@ class TestCallback {
   DISALLOW_COPY_AND_ASSIGN(TestCallback);
 };
 
-TestCallback::TestCallback() : error_(-1), extra_code_(-1), called_(false) {
-}
+TestCallback::TestCallback()
+    : error_(update_client::UnpackerError::kNone),
+      extra_code_(-1),
+      called_(false) {}
 
-void TestCallback::Set(update_client::ComponentUnpacker::Error error,
-                       int extra_code) {
+void TestCallback::Set(update_client::UnpackerError error, int extra_code) {
   error_ = error;
   extra_code_ = extra_code;
   called_ = true;
 }
-
-}  // namespace
-
-namespace update_client {
-
-namespace {
 
 base::FilePath test_file(const char* file) {
   base::FilePath path;
@@ -64,6 +60,8 @@ base::FilePath test_file(const char* file) {
 }
 
 }  // namespace
+
+namespace update_client {
 
 ComponentPatcherOperationTest::ComponentPatcherOperationTest() {
   EXPECT_TRUE(unpack_dir_.CreateUniqueTempDir());
@@ -97,7 +95,7 @@ TEST_F(ComponentPatcherOperationTest, CheckCreateOperation) {
   base::RunLoop().RunUntilIdle();
 
   EXPECT_EQ(true, callback.called_);
-  EXPECT_EQ(ComponentUnpacker::kNone, callback.error_);
+  EXPECT_EQ(UnpackerError::kNone, callback.error_);
   EXPECT_EQ(0, callback.extra_code_);
   EXPECT_TRUE(base::ContentsEqual(
       unpack_dir_.GetPath().Append(FILE_PATH_LITERAL("output.bin")),
@@ -126,7 +124,7 @@ TEST_F(ComponentPatcherOperationTest, CheckCopyOperation) {
   base::RunLoop().RunUntilIdle();
 
   EXPECT_EQ(true, callback.called_);
-  EXPECT_EQ(ComponentUnpacker::kNone, callback.error_);
+  EXPECT_EQ(UnpackerError::kNone, callback.error_);
   EXPECT_EQ(0, callback.extra_code_);
   EXPECT_TRUE(base::ContentsEqual(
       unpack_dir_.GetPath().Append(FILE_PATH_LITERAL("output.bin")),
@@ -160,7 +158,7 @@ TEST_F(ComponentPatcherOperationTest, CheckCourgetteOperation) {
   base::RunLoop().RunUntilIdle();
 
   EXPECT_EQ(true, callback.called_);
-  EXPECT_EQ(ComponentUnpacker::kNone, callback.error_);
+  EXPECT_EQ(UnpackerError::kNone, callback.error_);
   EXPECT_EQ(0, callback.extra_code_);
   EXPECT_TRUE(base::ContentsEqual(
       unpack_dir_.GetPath().Append(FILE_PATH_LITERAL("output.bin")),
@@ -194,7 +192,7 @@ TEST_F(ComponentPatcherOperationTest, CheckBsdiffOperation) {
   base::RunLoop().RunUntilIdle();
 
   EXPECT_EQ(true, callback.called_);
-  EXPECT_EQ(ComponentUnpacker::kNone, callback.error_);
+  EXPECT_EQ(UnpackerError::kNone, callback.error_);
   EXPECT_EQ(0, callback.extra_code_);
   EXPECT_TRUE(base::ContentsEqual(
       unpack_dir_.GetPath().Append(FILE_PATH_LITERAL("output.bin")),

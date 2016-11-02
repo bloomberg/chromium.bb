@@ -17,6 +17,7 @@
 #include "components/update_client/action_update.h"
 #include "components/update_client/action_wait.h"
 #include "components/update_client/configurator.h"
+#include "components/update_client/update_client_errors.h"
 #include "components/update_client/update_engine.h"
 #include "components/update_client/utils.h"
 
@@ -126,10 +127,8 @@ void ActionImpl::UpdateCrx() {
 
   if (item->component.supports_group_policy_enable_component_updates &&
       !update_context_->enabled_component_updates) {
-    item->error_category =
-        static_cast<int>(Action::ErrorCategory::kServiceError);
-    item->error_code =
-        static_cast<int>(Action::ServiceError::ERROR_UPDATE_DISABLED);
+    item->error_category = static_cast<int>(ErrorCategory::kServiceError);
+    item->error_code = static_cast<int>(ServiceError::UPDATE_DISABLED);
     item->extra_code1 = 0;
     ChangeItemState(item, CrxUpdateItem::State::kNoUpdate);
 
@@ -158,7 +157,7 @@ void ActionImpl::UpdateCrxComplete(CrxUpdateItem* item) {
   update_context_->queue.pop();
 
   if (update_context_->queue.empty()) {
-    UpdateComplete(0);
+    UpdateComplete(Error::NONE);
   } else {
     DCHECK(!item->update_begin.is_null());
 
@@ -182,7 +181,7 @@ void ActionImpl::UpdateCrxComplete(CrxUpdateItem* item) {
   }
 }
 
-void ActionImpl::UpdateComplete(int error) {
+void ActionImpl::UpdateComplete(Error error) {
   DCHECK(thread_checker_.CalledOnValidThread());
 
   base::ThreadTaskRunnerHandle::Get()->PostTask(FROM_HERE,

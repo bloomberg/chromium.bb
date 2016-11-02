@@ -7,6 +7,7 @@
 #include "base/bind.h"
 #include "base/files/file_util.h"
 #include "components/update_client/update_client.h"
+#include "components/update_client/update_client_errors.h"
 #include "content/public/browser/browser_context.h"
 #include "extensions/browser/extension_system.h"
 #include "extensions/browser/extensions_browser_client.h"
@@ -15,7 +16,7 @@
 
 namespace {
 
-void UpdateCheckCompleteCallback(int error) {}
+void UpdateCheckCompleteCallback(update_client::Error error) {}
 
 void InstallUpdateCallback(content::BrowserContext* context,
                            const std::string& extension_id,

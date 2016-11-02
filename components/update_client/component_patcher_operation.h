@@ -27,6 +27,7 @@ extern const char kInput[];
 extern const char kPatch[];
 
 class CrxInstaller;
+enum class UnpackerError;
 
 class DeltaUpdateOp : public base::RefCountedThreadSafe<DeltaUpdateOp> {
  public:
@@ -52,12 +53,12 @@ class DeltaUpdateOp : public base::RefCountedThreadSafe<DeltaUpdateOp> {
  private:
   friend class base::RefCountedThreadSafe<DeltaUpdateOp>;
 
-  ComponentUnpacker::Error CheckHash();
+  UnpackerError CheckHash();
 
   // Subclasses must override DoParseArguments to parse operation-specific
   // arguments. DoParseArguments returns DELTA_OK on success; any other code
   // represents failure.
-  virtual ComponentUnpacker::Error DoParseArguments(
+  virtual UnpackerError DoParseArguments(
       const base::DictionaryValue* command_args,
       const base::FilePath& input_dir,
       const scoped_refptr<CrxInstaller>& installer) = 0;
@@ -70,7 +71,7 @@ class DeltaUpdateOp : public base::RefCountedThreadSafe<DeltaUpdateOp> {
   // Callback given to subclasses for when they complete their operation.
   // Validates the output, and posts a task to the patching operation's
   // callback.
-  void DoneRunning(ComponentUnpacker::Error error, int extended_error);
+  void DoneRunning(UnpackerError error, int extended_error);
 
   ComponentPatcher::Callback callback_;
   scoped_refptr<base::SequencedTaskRunner> task_runner_;
@@ -89,7 +90,7 @@ class DeltaUpdateOpCopy : public DeltaUpdateOp {
   ~DeltaUpdateOpCopy() override;
 
   // Overrides of DeltaUpdateOp.
-  ComponentUnpacker::Error DoParseArguments(
+  UnpackerError DoParseArguments(
       const base::DictionaryValue* command_args,
       const base::FilePath& input_dir,
       const scoped_refptr<CrxInstaller>& installer) override;
@@ -113,7 +114,7 @@ class DeltaUpdateOpCreate : public DeltaUpdateOp {
   ~DeltaUpdateOpCreate() override;
 
   // Overrides of DeltaUpdateOp.
-  ComponentUnpacker::Error DoParseArguments(
+  UnpackerError DoParseArguments(
       const base::DictionaryValue* command_args,
       const base::FilePath& input_dir,
       const scoped_refptr<CrxInstaller>& installer) override;
@@ -157,7 +158,7 @@ class DeltaUpdateOpPatch : public DeltaUpdateOp {
   ~DeltaUpdateOpPatch() override;
 
   // Overrides of DeltaUpdateOp.
-  ComponentUnpacker::Error DoParseArguments(
+  UnpackerError DoParseArguments(
       const base::DictionaryValue* command_args,
       const base::FilePath& input_dir,
       const scoped_refptr<CrxInstaller>& installer) override;

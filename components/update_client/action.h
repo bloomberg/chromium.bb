@@ -18,6 +18,7 @@
 namespace update_client {
 
 class Configurator;
+enum class Error;
 struct CrxUpdateItem;
 struct UpdateContext;
 
@@ -30,20 +31,7 @@ struct UpdateContext;
 // update engine as part of an update.
 class Action {
  public:
-  enum class ErrorCategory {
-    kErrorNone = 0,
-    kNetworkError,
-    kUnpackError,
-    kInstallError,
-    kServiceError,  // Runtime errors which occur in the service itself.
-  };
-
-  enum class ServiceError {
-    ERROR_WAIT = 1,
-    ERROR_UPDATE_DISABLED = 2,
-  };
-
-  using Callback = base::Callback<void(int error)>;
+  using Callback = base::Callback<void(Error error)>;
   virtual ~Action() {}
 
   // Runs the code encapsulated by the action. When an action completes, it can
@@ -85,7 +73,7 @@ class ActionImpl {
 
   // Called when the updates for all CRXs have finished and the execution
   // flow must return back to the update engine.
-  void UpdateComplete(int error);
+  void UpdateComplete(Error error);
 
   base::ThreadChecker thread_checker_;
 

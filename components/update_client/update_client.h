@@ -140,14 +140,8 @@ class FilePath;
 namespace update_client {
 
 class Configurator;
+enum class Error;
 struct CrxUpdateItem;
-
-enum Error {
-  ERROR_UPDATE_INVALID_ARGUMENT = -1,
-  ERROR_UPDATE_IN_PROGRESS = 1,
-  ERROR_UPDATE_CANCELED = 2,
-  ERROR_UPDATE_RETRY_LATER = 3,
-};
 
 // Defines an interface for a generic CRX installer.
 class CrxInstaller : public base::RefCountedThreadSafe<CrxInstaller> {
@@ -237,7 +231,7 @@ class UpdateClient : public base::RefCounted<UpdateClient> {
   using CrxDataCallback =
       base::Callback<void(const std::vector<std::string>& ids,
                           std::vector<CrxComponent>* components)>;
-  using CompletionCallback = base::Callback<void(int error)>;
+  using CompletionCallback = base::Callback<void(Error error)>;
 
   // Defines an interface to observe the UpdateClient. It provides
   // notifications when state changes occur for the service itself or for the

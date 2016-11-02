@@ -16,6 +16,7 @@
 #include "components/update_client/crx_update_item.h"
 #include "components/update_client/persisted_data.h"
 #include "components/update_client/update_checker.h"
+#include "components/update_client/update_client_errors.h"
 
 namespace update_client {
 
@@ -85,7 +86,7 @@ void UpdateEngine::Update(
 
   if (IsThrottled(is_foreground)) {
     base::ThreadTaskRunnerHandle::Get()->PostTask(
-        FROM_HERE, base::Bind(callback, Error::ERROR_UPDATE_RETRY_LATER));
+        FROM_HERE, base::Bind(callback, Error::RETRY_LATER));
     return;
   }
 
@@ -110,7 +111,7 @@ void UpdateEngine::Update(
   ignore_result(update_context.release());
 }
 
-void UpdateEngine::UpdateComplete(UpdateContext* update_context, int error) {
+void UpdateEngine::UpdateComplete(UpdateContext* update_context, Error error) {
   DCHECK(thread_checker_.CalledOnValidThread());
   DCHECK(update_contexts_.find(update_context) != update_contexts_.end());
 

@@ -17,6 +17,7 @@
 #include "base/values.h"
 #include "components/update_client/component_patcher_operation.h"
 #include "components/update_client/update_client.h"
+#include "components/update_client/update_client_errors.h"
 
 namespace update_client {
 
@@ -66,7 +67,7 @@ void ComponentPatcher::Start(const Callback& callback) {
 void ComponentPatcher::StartPatching() {
   commands_.reset(ReadCommands(input_dir_));
   if (!commands_.get()) {
-    DonePatching(ComponentUnpacker::kDeltaBadCommands, 0);
+    DonePatching(UnpackerError::kDeltaBadCommands, 0);
   } else {
     next_command_ = commands_->begin();
     PatchNextFile();
@@ -75,12 +76,12 @@ void ComponentPatcher::StartPatching() {
 
 void ComponentPatcher::PatchNextFile() {
   if (next_command_ == commands_->end()) {
-    DonePatching(ComponentUnpacker::kNone, 0);
+    DonePatching(UnpackerError::kNone, 0);
     return;
   }
   const base::DictionaryValue* command_args;
   if (!(*next_command_)->GetAsDictionary(&command_args)) {
-    DonePatching(ComponentUnpacker::kDeltaBadCommands, 0);
+    DonePatching(UnpackerError::kDeltaBadCommands, 0);
     return;
   }
 
@@ -91,7 +92,7 @@ void ComponentPatcher::PatchNextFile() {
   }
 
   if (!current_operation_.get()) {
-    DonePatching(ComponentUnpacker::kDeltaUnsupportedCommand, 0);
+    DonePatching(UnpackerError::kDeltaUnsupportedCommand, 0);
     return;
   }
   current_operation_->Run(command_args, input_dir_, unpack_dir_, installer_,
@@ -100,9 +101,9 @@ void ComponentPatcher::PatchNextFile() {
                           task_runner_);
 }
 
-void ComponentPatcher::DonePatchingFile(ComponentUnpacker::Error error,
+void ComponentPatcher::DonePatchingFile(UnpackerError error,
                                         int extended_error) {
-  if (error != ComponentUnpacker::kNone) {
+  if (error != UnpackerError::kNone) {
     DonePatching(error, extended_error);
   } else {
     ++next_command_;
@@ -110,8 +111,7 @@ void ComponentPatcher::DonePatchingFile(ComponentUnpacker::Error error,
   }
 }
 
-void ComponentPatcher::DonePatching(ComponentUnpacker::Error error,
-                                    int extended_error) {
+void ComponentPatcher::DonePatching(UnpackerError error, int extended_error) {
   current_operation_ = NULL;
   task_runner_->PostTask(FROM_HERE,
                          base::Bind(callback_, error, extended_error));

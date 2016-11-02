@@ -118,6 +118,7 @@
 #include "components/strings/grit/components_strings.h"
 #include "components/translate/core/browser/language_state.h"
 #include "components/translate/core/browser/translate_infobar_delegate.h"
+#include "components/update_client/update_client_errors.h"
 #include "components/update_client/url_request_post_interceptor.h"
 #include "components/user_prefs/user_prefs.h"
 #include "components/variations/service/variations_service.h"
@@ -3586,7 +3587,7 @@ class ComponentUpdaterPolicyTest : public PolicyTest {
   static const bool kUpdateDisabled = true;
 
  private:
-  void OnDemandComplete(int error);
+  void OnDemandComplete(update_client::Error error);
 
   std::unique_ptr<update_client::URLRequestPostInterceptorFactory>
       interceptor_factory_;
@@ -3670,7 +3671,7 @@ void ComponentUpdaterPolicyTest::CallAsync(TestCaseAction action) {
                           base::Bind(action, base::Unretained(this)));
 }
 
-void ComponentUpdaterPolicyTest::OnDemandComplete(int error) {
+void ComponentUpdaterPolicyTest::OnDemandComplete(update_client::Error error) {
   CallAsync(cur_test_case_.second);
 }
 

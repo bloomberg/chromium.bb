@@ -20,6 +20,7 @@
 #include "components/update_client/configurator.h"
 #include "components/update_client/update_checker.h"
 #include "components/update_client/update_client.h"
+#include "components/update_client/update_client_errors.h"
 #include "components/update_client/utils.h"
 
 using std::string;
@@ -189,7 +190,7 @@ void ActionUpdateCheck::OnUpdateCheckSucceeded(
 
   if (update_context_->queue.empty()) {
     VLOG(1) << "Update check completed but no update is needed.";
-    UpdateComplete(0);
+    UpdateComplete(Error::NONE);
     return;
   }
 
@@ -206,7 +207,7 @@ void ActionUpdateCheck::OnUpdateCheckFailed(int error) {
   ChangeAllItemsState(CrxUpdateItem::State::kChecking,
                       CrxUpdateItem::State::kNoUpdate);
 
-  UpdateComplete(error);
+  UpdateComplete(Error::UPDATE_CHECK_ERROR);
 }
 
 }  // namespace update_client

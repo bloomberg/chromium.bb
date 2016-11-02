@@ -28,9 +28,9 @@ class TestCallback {
  public:
   TestCallback();
   virtual ~TestCallback() {}
-  void Set(update_client::ComponentUnpacker::Error error, int extra_code);
+  void Set(update_client::UnpackerError error, int extra_code);
 
-  int error_;
+  update_client::UnpackerError error_;
   int extra_code_;
   bool called_;
 
@@ -38,20 +38,16 @@ class TestCallback {
   DISALLOW_COPY_AND_ASSIGN(TestCallback);
 };
 
-TestCallback::TestCallback() : error_(-1), extra_code_(-1), called_(false) {}
+TestCallback::TestCallback()
+    : error_(update_client::UnpackerError::kNone),
+      extra_code_(-1),
+      called_(false) {}
 
-void TestCallback::Set(update_client::ComponentUnpacker::Error error,
-                       int extra_code) {
+void TestCallback::Set(update_client::UnpackerError error, int extra_code) {
   error_ = error;
   extra_code_ = extra_code;
   called_ = true;
 }
-
-}  // namespace
-
-namespace update_client {
-
-namespace {
 
 base::FilePath test_file(const char* file) {
   base::FilePath path;
@@ -64,6 +60,8 @@ base::FilePath test_file(const char* file) {
 }
 
 }  // namespace
+
+namespace update_client {
 
 class ComponentUnpackerTest : public testing::Test {
  public:
@@ -116,7 +114,7 @@ TEST_F(ComponentUnpackerTest, UnpackFullCrx) {
                                         base::Unretained(this)));
   RunThreads();
 
-  EXPECT_EQ(ComponentUnpacker::Error::kNone, result_.error);
+  EXPECT_EQ(UnpackerError::kNone, result_.error);
   EXPECT_EQ(0, result_.extended_error);
 
   base::FilePath unpack_path = result_.unpack_path;
@@ -146,7 +144,7 @@ TEST_F(ComponentUnpackerTest, UnpackFileNotFound) {
                                         base::Unretained(this)));
   RunThreads();
 
-  EXPECT_EQ(ComponentUnpacker::Error::kInvalidFile, result_.error);
+  EXPECT_EQ(UnpackerError::kInvalidFile, result_.error);
   EXPECT_EQ(0, result_.extended_error);
 
   EXPECT_TRUE(result_.unpack_path.empty());
@@ -162,7 +160,7 @@ TEST_F(ComponentUnpackerTest, UnpackFileHashMismatch) {
                                         base::Unretained(this)));
   RunThreads();
 
-  EXPECT_EQ(ComponentUnpacker::Error::kInvalidId, result_.error);
+  EXPECT_EQ(UnpackerError::kInvalidId, result_.error);
   EXPECT_EQ(0, result_.extended_error);
 
   EXPECT_TRUE(result_.unpack_path.empty());

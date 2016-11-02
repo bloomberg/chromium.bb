@@ -25,6 +25,7 @@
 #include "components/update_client/component_patcher.h"
 #include "components/update_client/component_patcher_operation.h"
 #include "components/update_client/update_client.h"
+#include "components/update_client/update_client_errors.h"
 #include "crypto/secure_hash.h"
 #include "crypto/sha2.h"
 #include "third_party/zlib/google/zip.h"
@@ -67,7 +68,7 @@ ComponentUnpacker::ComponentUnpacker(
       is_delta_(false),
       installer_(installer),
       oop_patcher_(oop_patcher),
-      error_(kNone),
+      error_(UnpackerError::kNone),
       extended_error_(0),
       task_runner_(task_runner) {}
 
@@ -86,7 +87,7 @@ void ComponentUnpacker::Unpack(const Callback& callback) {
 bool ComponentUnpacker::Verify() {
   VLOG(1) << "Verifying component: " << path_.value();
   if (pk_hash_.empty() || path_.empty()) {
-    error_ = kInvalidParams;
+    error_ = UnpackerError::kInvalidParams;
     return false;
   }
   // First, validate the CRX header and signature. As of today
@@ -98,7 +99,7 @@ bool ComponentUnpacker::Verify() {
       path_, std::string(), &public_key_base64, nullptr, &header);
   if (error != CrxFile::ValidateError::NONE ||
       !base::Base64Decode(public_key_base64, &public_key_bytes)) {
-    error_ = kInvalidFile;
+    error_ = UnpackerError::kInvalidFile;
     return false;
   }
   is_delta_ = CrxFile::HeaderIsDelta(header);
@@ -113,7 +114,7 @@ bool ComponentUnpacker::Verify() {
 
   if (!std::equal(pk_hash_.begin(), pk_hash_.end(), hash)) {
     VLOG(1) << "Hash mismatch: " << path_.value();
-    error_ = kInvalidId;
+    error_ = UnpackerError::kInvalidId;
     return false;
   }
   VLOG(1) << "Verification successful: " << path_.value();
@@ -126,13 +127,13 @@ bool ComponentUnpacker::Unzip() {
   if (!base::CreateNewTempDirectory(base::FilePath::StringType(),
                                     &destination)) {
     VLOG(1) << "Unable to create temporary directory for unpacking.";
-    error_ = kUnzipPathError;
+    error_ = UnpackerError::kUnzipPathError;
     return false;
   }
   VLOG(1) << "Unpacking in: " << destination.value();
   if (!zip::Unzip(path_, destination)) {
     VLOG(1) << "Unzipping failed.";
-    error_ = kUnzipFailed;
+    error_ = UnpackerError::kUnzipFailed;
     return false;
   }
   VLOG(1) << "Unpacked successfully";
@@ -144,7 +145,7 @@ bool ComponentUnpacker::BeginPatching() {
     // Use a different temp directory for the patch output files.
     if (!base::CreateNewTempDirectory(base::FilePath::StringType(),
                                       &unpack_path_)) {
-      error_ = kUnzipPathError;
+      error_ = UnpackerError::kUnzipPathError;
       return false;
     }
     patcher_ = new ComponentPatcher(unpack_diff_path_, unpack_path_, installer_,
@@ -155,15 +156,15 @@ bool ComponentUnpacker::BeginPatching() {
                    base::Bind(&ComponentUnpacker::EndPatching,
                               scoped_refptr<ComponentUnpacker>(this))));
   } else {
-    task_runner_->PostTask(
-        FROM_HERE,
-        base::Bind(&ComponentUnpacker::EndPatching,
-                   scoped_refptr<ComponentUnpacker>(this), kNone, 0));
+    task_runner_->PostTask(FROM_HERE,
+                           base::Bind(&ComponentUnpacker::EndPatching,
+                                      scoped_refptr<ComponentUnpacker>(this),
+                                      UnpackerError::kNone, 0));
   }
   return true;
 }
 
-void ComponentUnpacker::EndPatching(Error error, int extended_error) {
+void ComponentUnpacker::EndPatching(UnpackerError error, int extended_error) {
   error_ = error;
   extended_error_ = extended_error;
   patcher_ = NULL;
@@ -174,13 +175,13 @@ void ComponentUnpacker::EndPatching(Error error, int extended_error) {
 void ComponentUnpacker::EndUnpacking() {
   if (!unpack_diff_path_.empty())
     base::DeleteFile(unpack_diff_path_, true);
-  if (error_ != kNone && !unpack_path_.empty())
+  if (error_ != UnpackerError::kNone && !unpack_path_.empty())
     base::DeleteFile(unpack_path_, true);
 
   Result result;
   result.error = error_;
   result.extended_error = extended_error_;
-  if (error_ == kNone)
+  if (error_ == UnpackerError::kNone)
     result.unpack_path = unpack_path_;
 
   task_runner_->PostTask(FROM_HERE, base::Bind(callback_, result));

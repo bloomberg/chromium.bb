@@ -18,11 +18,12 @@
 namespace update_client {
 
 class UpdateEngine;
+enum class Error;
 
 // Defines a specialized task for updating a group of CRXs.
 class TaskUpdate : public Task {
  public:
-  using Callback = base::Callback<void(Task* task, int error)>;
+  using Callback = base::Callback<void(Task* task, Error error)>;
 
   // |update_engine| is injected here to handle the task.
   // |is_foreground| is true when the update task is initiated by the user,
@@ -47,7 +48,7 @@ class TaskUpdate : public Task {
  private:
   // Called when the task has completed either because the task has run or
   // it has been canceled.
-  void TaskComplete(int error);
+  void TaskComplete(Error error);
 
   base::ThreadChecker thread_checker_;
 

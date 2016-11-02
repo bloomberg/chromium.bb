@@ -21,6 +21,10 @@ namespace base {
 class TimeTicks;
 }
 
+namespace update_client {
+enum class Error;
+}
+
 namespace component_updater {
 
 class OnDemandUpdater;
@@ -80,7 +84,7 @@ class CrxUpdateService : public ComponentUpdateService,
                 std::vector<CrxComponent>* components);
   void OnUpdateComplete(CompletionCallback callback,
                         const base::TimeTicks& start_time,
-                        int error);
+                        update_client::Error error);
 
   // Returns the map of installer attributes for the recovery component
   // installer. This data corresponds to the Omaha updater state and it is

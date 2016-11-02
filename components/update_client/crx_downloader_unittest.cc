@@ -15,6 +15,7 @@
 #include "base/run_loop.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "build/build_config.h"
+#include "components/update_client/update_client_errors.h"
 #include "net/base/net_errors.h"
 #include "net/url_request/test_url_request_interceptor.h"
 #include "net/url_request/url_request_test_util.h"
@@ -175,7 +176,8 @@ TEST_F(CrxDownloaderTest, NoUrl) {
 
   EXPECT_EQ(1, num_download_complete_calls_);
   EXPECT_EQ(kExpectedContext, crx_context_);
-  EXPECT_EQ(CrxDownloader::Error::NO_URL, download_complete_result_.error);
+  EXPECT_EQ(static_cast<int>(CrxDownloaderError::NO_URL),
+            download_complete_result_.error);
   EXPECT_TRUE(download_complete_result_.response.empty());
   EXPECT_EQ(-1, download_complete_result_.downloaded_bytes);
   EXPECT_EQ(-1, download_complete_result_.total_bytes);
@@ -191,7 +193,8 @@ TEST_F(CrxDownloaderTest, NoHash) {
 
   EXPECT_EQ(1, num_download_complete_calls_);
   EXPECT_EQ(kExpectedContext, crx_context_);
-  EXPECT_EQ(CrxDownloader::Error::NO_HASH, download_complete_result_.error);
+  EXPECT_EQ(static_cast<int>(CrxDownloaderError::NO_HASH),
+            download_complete_result_.error);
   EXPECT_TRUE(download_complete_result_.response.empty());
   EXPECT_EQ(-1, download_complete_result_.downloaded_bytes);
   EXPECT_EQ(-1, download_complete_result_.total_bytes);
@@ -246,7 +249,8 @@ TEST_F(CrxDownloaderTest, OneUrlBadHash) {
 
   EXPECT_EQ(1, num_download_complete_calls_);
   EXPECT_EQ(kExpectedContext, crx_context_);
-  EXPECT_EQ(CrxDownloader::Error::BAD_HASH, download_complete_result_.error);
+  EXPECT_EQ(static_cast<int>(CrxDownloaderError::BAD_HASH),
+            download_complete_result_.error);
   EXPECT_EQ(1843, download_complete_result_.downloaded_bytes);
   EXPECT_EQ(1843, download_complete_result_.total_bytes);
   EXPECT_TRUE(download_complete_result_.response.empty());

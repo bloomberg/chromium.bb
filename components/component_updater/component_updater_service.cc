@@ -35,6 +35,7 @@
 #include "components/update_client/configurator.h"
 #include "components/update_client/crx_update_item.h"
 #include "components/update_client/update_client.h"
+#include "components/update_client/update_client_errors.h"
 #include "components/update_client/utils.h"
 #include "url/gurl.h"
 
@@ -253,8 +254,7 @@ void CrxUpdateService::OnDemandUpdate(const std::string& id,
   if (!GetComponent(id)) {
     base::ThreadTaskRunnerHandle::Get()->PostTask(
         FROM_HERE,
-        base::Bind(callback,
-                   update_client::Error::ERROR_UPDATE_INVALID_ARGUMENT));
+        base::Bind(callback, update_client::Error::INVALID_ARGUMENT));
     return;
   }
 
@@ -377,11 +377,12 @@ void CrxUpdateService::OnUpdate(const std::vector<std::string>& ids,
 
 void CrxUpdateService::OnUpdateComplete(CompletionCallback callback,
                                         const base::TimeTicks& start_time,
-                                        int error) {
+                                        update_client::Error error) {
   DCHECK(thread_checker_.CalledOnValidThread());
-  VLOG(1) << "Update completed with error " << error;
+  VLOG(1) << "Update completed with error " << static_cast<int>(error);
 
-  UMA_HISTOGRAM_BOOLEAN("ComponentUpdater.UpdateCompleteResult", error != 0);
+  UMA_HISTOGRAM_BOOLEAN("ComponentUpdater.UpdateCompleteResult",
+                        error != update_client::Error::NONE);
   UMA_HISTOGRAM_LONG_TIMES_100("ComponentUpdater.UpdateCompleteTime",
                                base::TimeTicks::Now() - start_time);
 

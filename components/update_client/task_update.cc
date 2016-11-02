@@ -33,7 +33,7 @@ void TaskUpdate::Run() {
   DCHECK(thread_checker_.CalledOnValidThread());
 
   if (ids_.empty()) {
-    TaskComplete(Error::ERROR_UPDATE_INVALID_ARGUMENT);
+    TaskComplete(Error::INVALID_ARGUMENT);
     return;
   }
 
@@ -45,14 +45,14 @@ void TaskUpdate::Run() {
 void TaskUpdate::Cancel() {
   DCHECK(thread_checker_.CalledOnValidThread());
 
-  TaskComplete(Error::ERROR_UPDATE_CANCELED);
+  TaskComplete(Error::UPDATE_CANCELED);
 }
 
 std::vector<std::string> TaskUpdate::GetIds() const {
   return ids_;
 }
 
-void TaskUpdate::TaskComplete(int error) {
+void TaskUpdate::TaskComplete(Error error) {
   DCHECK(thread_checker_.CalledOnValidThread());
 
   base::ThreadTaskRunnerHandle::Get()->PostTask(

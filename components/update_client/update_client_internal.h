@@ -29,8 +29,9 @@ namespace update_client {
 class Configurator;
 class PingManager;
 class Task;
-struct TaskContext;
 class UpdateEngine;
+enum class Error;
+struct TaskContext;
 
 class UpdateClientImpl : public UpdateClient {
  public:
@@ -62,7 +63,7 @@ class UpdateClientImpl : public UpdateClient {
   void RunTask(std::unique_ptr<Task> task);
   void OnTaskComplete(const CompletionCallback& completion_callback,
                       Task* task,
-                      int error);
+                      Error error);
 
   void NotifyObservers(Observer::Events event, const std::string& id);
 

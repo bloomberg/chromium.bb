@@ -17,6 +17,7 @@
 #if defined(OS_WIN)
 #include "components/update_client/background_downloader_win.h"
 #endif
+#include "components/update_client/update_client_errors.h"
 #include "components/update_client/url_fetcher_downloader.h"
 #include "components/update_client/utils.h"
 
@@ -96,16 +97,16 @@ void CrxDownloader::StartDownload(const std::vector<GURL>& urls,
                                   const DownloadCallback& download_callback) {
   DCHECK(thread_checker_.CalledOnValidThread());
 
-  auto error = Error::SUCCESS;
+  auto error = CrxDownloaderError::NONE;
   if (urls.empty()) {
-    error = Error::NO_URL;
+    error = CrxDownloaderError::NO_URL;
   } else if (expected_hash.empty()) {
-    error = Error::NO_HASH;
+    error = CrxDownloaderError::NO_HASH;
   }
 
-  if (error != Error::SUCCESS) {
+  if (error != CrxDownloaderError::NONE) {
     Result result;
-    result.error = error;
+    result.error = static_cast<int>(error);
     base::ThreadTaskRunnerHandle::Get()->PostTask(
         FROM_HERE, base::Bind(download_callback, result));
     return;
@@ -125,7 +126,7 @@ void CrxDownloader::OnDownloadComplete(
     const DownloadMetrics& download_metrics) {
   DCHECK(thread_checker_.CalledOnValidThread());
 
-  if (result.error == Error::SUCCESS)
+  if (!result.error)
     task_runner()->PostTask(
         FROM_HERE,
         base::Bind(&CrxDownloader::VerifyResponse, base::Unretained(this),
@@ -152,8 +153,8 @@ void CrxDownloader::VerifyResponse(bool is_handled,
                                    Result result,
                                    DownloadMetrics download_metrics) {
   DCHECK(task_runner()->RunsTasksOnCurrentThread());
-  DCHECK_EQ(Error::SUCCESS, result.error);
-  DCHECK_EQ(Error::SUCCESS, download_metrics.error);
+  DCHECK_EQ(0, result.error);
+  DCHECK_EQ(0, download_metrics.error);
   DCHECK(is_handled);
 
   if (VerifyFileHash256(result.response, expected_hash_)) {
@@ -166,7 +167,7 @@ void CrxDownloader::VerifyResponse(bool is_handled,
   // The download was successful but the response is not trusted. Clean up
   // the download, mutate the result, and try the remaining fallbacks when
   // handling the error.
-  result.error = Error::BAD_HASH;
+  result.error = static_cast<int>(CrxDownloaderError::BAD_HASH);
   download_metrics.error = result.error;
   DeleteFileAndEmptyParentDirectory(result.response);
   result.response.clear();
@@ -182,8 +183,8 @@ void CrxDownloader::HandleDownloadError(
     const Result& result,
     const DownloadMetrics& download_metrics) {
   DCHECK(thread_checker_.CalledOnValidThread());
-  DCHECK_NE(Error::SUCCESS, result.error);
-  DCHECK_NE(Error::SUCCESS, download_metrics.error);
+  DCHECK_NE(0, result.error);
+  DCHECK_NE(0, download_metrics.error);
 
   download_metrics_.push_back(download_metrics);
 

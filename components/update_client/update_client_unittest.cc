@@ -27,6 +27,7 @@
 #include "components/update_client/test_configurator.h"
 #include "components/update_client/test_installer.h"
 #include "components/update_client/update_checker.h"
+#include "components/update_client/update_client_errors.h"
 #include "components/update_client/update_client_internal.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -218,8 +219,8 @@ TEST_F(UpdateClientTest, OneCrxNoUpdate) {
 
   class CompletionCallbackFake {
    public:
-    static void Callback(const base::Closure& quit_closure, int error) {
-      EXPECT_EQ(0, error);
+    static void Callback(const base::Closure& quit_closure, Error error) {
+      EXPECT_EQ(Error::NONE, error);
       quit_closure.Run();
     }
   };
@@ -328,8 +329,8 @@ TEST_F(UpdateClientTest, TwoCrxUpdateNoUpdate) {
 
   class CompletionCallbackFake {
    public:
-    static void Callback(const base::Closure& quit_closure, int error) {
-      EXPECT_EQ(0, error);
+    static void Callback(const base::Closure& quit_closure, Error error) {
+      EXPECT_EQ(Error::NONE, error);
       quit_closure.Run();
     }
   };
@@ -516,8 +517,8 @@ TEST_F(UpdateClientTest, TwoCrxUpdate) {
 
   class CompletionCallbackFake {
    public:
-    static void Callback(const base::Closure& quit_closure, int error) {
-      EXPECT_EQ(0, error);
+    static void Callback(const base::Closure& quit_closure, Error error) {
+      EXPECT_EQ(Error::NONE, error);
       quit_closure.Run();
     }
   };
@@ -766,8 +767,8 @@ TEST_F(UpdateClientTest, TwoCrxUpdateDownloadTimeout) {
 
   class CompletionCallbackFake {
    public:
-    static void Callback(const base::Closure& quit_closure, int error) {
-      EXPECT_EQ(0, error);
+    static void Callback(const base::Closure& quit_closure, Error error) {
+      EXPECT_EQ(Error::NONE, error);
       quit_closure.Run();
     }
   };
@@ -1019,8 +1020,8 @@ TEST_F(UpdateClientTest, OneCrxDiffUpdate) {
 
   class CompletionCallbackFake {
    public:
-    static void Callback(const base::Closure& quit_closure, int error) {
-      EXPECT_EQ(0, error);
+    static void Callback(const base::Closure& quit_closure, Error error) {
+      EXPECT_EQ(Error::NONE, error);
       quit_closure.Run();
     }
   };
@@ -1312,8 +1313,8 @@ TEST_F(UpdateClientTest, OneCrxInstallError) {
 
   class CompletionCallbackFake {
    public:
-    static void Callback(const base::Closure& quit_closure, int error) {
-      EXPECT_EQ(0, error);
+    static void Callback(const base::Closure& quit_closure, Error error) {
+      EXPECT_EQ(Error::NONE, error);
       quit_closure.Run();
     }
   };
@@ -1498,8 +1499,8 @@ TEST_F(UpdateClientTest, OneCrxDiffUpdateFailsFullUpdateSucceeds) {
 
   class CompletionCallbackFake {
    public:
-    static void Callback(const base::Closure& quit_closure, int error) {
-      EXPECT_EQ(0, error);
+    static void Callback(const base::Closure& quit_closure, Error error) {
+      EXPECT_EQ(Error::NONE, error);
       quit_closure.Run();
     }
   };
@@ -1784,11 +1785,11 @@ TEST_F(UpdateClientTest, OneCrxNoUpdateQueuedCall) {
 
   class CompletionCallbackFake {
    public:
-    static void Callback(const base::Closure& quit_closure, int error) {
+    static void Callback(const base::Closure& quit_closure, Error error) {
       static int num_call = 0;
       ++num_call;
 
-      EXPECT_EQ(0, error);
+      EXPECT_EQ(Error::NONE, error);
 
       if (num_call == 2)
         quit_closure.Run();
@@ -1891,8 +1892,8 @@ TEST_F(UpdateClientTest, OneCrxInstall) {
 
   class CompletionCallbackFake {
    public:
-    static void Callback(const base::Closure& quit_closure, int error) {
-      EXPECT_EQ(0, error);
+    static void Callback(const base::Closure& quit_closure, Error error) {
+      EXPECT_EQ(Error::NONE, error);
       quit_closure.Run();
     }
   };
@@ -2069,18 +2070,18 @@ TEST_F(UpdateClientTest, ConcurrentInstallSameCRX) {
 
   class CompletionCallbackFake {
    public:
-    static void Callback(const base::Closure& quit_closure, int error) {
+    static void Callback(const base::Closure& quit_closure, Error error) {
       static int num_call = 0;
       ++num_call;
 
       EXPECT_LE(num_call, 2);
 
       if (num_call == 1) {
-        EXPECT_EQ(Error::ERROR_UPDATE_IN_PROGRESS, error);
+        EXPECT_EQ(Error::UPDATE_IN_PROGRESS, error);
         return;
       }
       if (num_call == 2) {
-        EXPECT_EQ(0, error);
+        EXPECT_EQ(Error::NONE, error);
         quit_closure.Run();
       }
     }
@@ -2178,7 +2179,7 @@ TEST_F(UpdateClientTest, EmptyIdList) {
 
   class CompletionCallbackFake {
    public:
-    static void Callback(const base::Closure& quit_closure, int error) {
+    static void Callback(const base::Closure& quit_closure, Error error) {
       quit_closure.Run();
     }
   };
@@ -2304,26 +2305,26 @@ TEST_F(UpdateClientTest, RetryAfter) {
 
   class CompletionCallbackFake {
    public:
-    static void Callback(const base::Closure& quit_closure, int error) {
+    static void Callback(const base::Closure& quit_closure, Error error) {
       static int num_call = 0;
       ++num_call;
 
       EXPECT_LE(num_call, 4);
 
       if (num_call == 1) {
-        EXPECT_EQ(0, error);
+        EXPECT_EQ(Error::NONE, error);
       } else if (num_call == 2) {
         // This request is throttled since the update engine received a
         // positive |retry_after_sec| value in the update check response.
-        EXPECT_EQ(Error::ERROR_UPDATE_RETRY_LATER, error);
+        EXPECT_EQ(Error::RETRY_LATER, error);
       } else if (num_call == 3) {
         // This request is a foreground Install, which is never throttled.
         // The update engine received a |retry_after_sec| value of 0, which
         // resets the throttling.
-        EXPECT_EQ(0, error);
+        EXPECT_EQ(Error::NONE, error);
       } else if (num_call == 4) {
         // This request succeeds since there is no throttling in effect.
-        EXPECT_EQ(0, error);
+        EXPECT_EQ(Error::NONE, error);
       }
 
       quit_closure.Run();
@@ -2490,8 +2491,8 @@ TEST_F(UpdateClientTest, TwoCrxUpdateOneUpdateDisabled) {
 
   class CompletionCallbackFake {
    public:
-    static void Callback(const base::Closure& quit_closure, int error) {
-      EXPECT_EQ(0, error);
+    static void Callback(const base::Closure& quit_closure, Error error) {
+      EXPECT_EQ(Error::NONE, error);
       quit_closure.Run();
     }
   };

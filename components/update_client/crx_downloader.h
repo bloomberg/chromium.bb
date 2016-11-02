@@ -38,17 +38,6 @@ namespace update_client {
 // The members of this class expect to be called from the main thread only.
 class CrxDownloader {
  public:
-  // The clients of this class are not expected to handle these errors. The
-  // errors are propagated as pings for logging and diagnostic purposes. They
-  // are meaningful only in the context of this class.
-  enum Error {
-    SUCCESS = 0,
-    NO_URL = 10,
-    NO_HASH = 11,
-    BAD_HASH = 12,  // The downloaded file fails the hash verification.
-    GENERIC_ERROR = -1
-  };
-
   struct DownloadMetrics {
     enum Downloader { kNone = 0, kUrlFetcher, kBits };
 
