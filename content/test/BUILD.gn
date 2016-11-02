@@ -264,6 +264,10 @@ static_library("test_support") {
     "//v8",
   ]
 
+  data_deps = [
+    "//content/shell:pak",
+  ]
+
   if (is_android) {
     sources -= [
       "mock_google_streaming_server.cc",
@@ -720,6 +724,7 @@ test("content_browsertests") {
   data = []
 
   data_deps = [
+    "//content/shell:pak",
     "//third_party/mesa:osmesa",
   ]
 

@@ -402,6 +402,9 @@ group("resources") {
   deps = [
     "//components/test_runner:resources",
   ]
+  data_deps = [
+    "//components/test_runner:resources",
+  ]
 }
 
 repack("pak") {
@@ -505,6 +508,10 @@ if (is_android) {
       ":pak",
       "//build/config/sanitizers:deps",
       "//build/win:default_exe_manifest",
+    ]
+
+    data_deps = [
+      ":pak",
     ]
 
     if (is_win) {
