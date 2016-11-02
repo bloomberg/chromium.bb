@@ -65,6 +65,7 @@ class PLATFORM_EXPORT UserGestureToken : public RefCounted<UserGestureToken> {
   void transferGestureTo(UserGestureToken*);
   bool consumeGesture();
   void setTimeoutPolicy(TimeoutPolicy);
+  void resetTimestamp();
 
   // If this UserGestureToken is wrapped in a UserGestureIndicator, and the
   // UserGestureIndicator is the lowest on the callstack (and therefore this

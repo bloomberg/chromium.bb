@@ -55,7 +55,6 @@ void UserGestureToken::transferGestureTo(UserGestureToken* other) {
     return;
   m_consumableGestures--;
   other->m_consumableGestures++;
-  other->m_timestamp = WTF::currentTime();
 }
 
 bool UserGestureToken::consumeGesture() {
@@ -68,6 +67,10 @@ bool UserGestureToken::consumeGesture() {
 void UserGestureToken::setTimeoutPolicy(TimeoutPolicy policy) {
   if (!hasTimedOut() && hasGestures() && policy > m_timeoutPolicy)
     m_timeoutPolicy = policy;
+}
+
+void UserGestureToken::resetTimestamp() {
+  m_timestamp = WTF::currentTime();
 }
 
 bool UserGestureToken::hasTimedOut() const {
@@ -127,6 +130,7 @@ UserGestureIndicator::UserGestureIndicator(PassRefPtr<UserGestureToken> token)
     RecordUserGestureMerge(*s_rootToken, *m_token);
     m_token->transferGestureTo(s_rootToken);
   }
+  m_token->resetTimestamp();
 }
 
 UserGestureIndicator::~UserGestureIndicator() {

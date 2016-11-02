@@ -5,8 +5,19 @@
 #include "platform/UserGestureIndicator.h"
 
 #include "testing/gtest/include/gtest/gtest.h"
+#include "wtf/CurrentTime.h"
 
 namespace blink {
+
+static double s_currentTime = 1000.0;
+
+static void advanceClock(double seconds) {
+  s_currentTime += seconds;
+}
+
+static double mockTimeFunction() {
+  return s_currentTime;
+}
 
 class TestUserGestureToken final : public UserGestureToken {
   WTF_MAKE_NONCOPYABLE(TestUserGestureToken);
@@ -171,6 +182,37 @@ TEST(UserGestureIndicatorTest, Callback) {
   EXPECT_EQ(0u, cb.getAndResetUsedCount());
   EXPECT_FALSE(UserGestureIndicator::consumeUserGesture());
   EXPECT_EQ(0u, cb.getAndResetUsedCount());
+}
+
+TEST(UserGestureIndicatorTest, Timeouts) {
+  TimeFunction previous = setTimeFunctionsForTesting(mockTimeFunction);
+
+  {
+    // Token times out after 1 second.
+    RefPtr<UserGestureToken> token = TestUserGestureToken::create();
+    EXPECT_TRUE(token->hasGestures());
+    UserGestureIndicator userGestureScope(token.get());
+    EXPECT_TRUE(token->hasGestures());
+    advanceClock(0.75);
+    EXPECT_TRUE(token->hasGestures());
+    advanceClock(0.75);
+    EXPECT_FALSE(token->hasGestures());
+  }
+
+  {
+    // Timestamp is reset when a token is put in a UserGestureIndicator.
+    RefPtr<UserGestureToken> token = TestUserGestureToken::create();
+    EXPECT_TRUE(token->hasGestures());
+    advanceClock(0.75);
+    EXPECT_TRUE(token->hasGestures());
+    UserGestureIndicator userGestureScope(token.get());
+    advanceClock(0.75);
+    EXPECT_TRUE(token->hasGestures());
+    advanceClock(0.75);
+    EXPECT_FALSE(token->hasGestures());
+  }
+
+  setTimeFunctionsForTesting(previous);
 }
 
 }  // namespace blink
