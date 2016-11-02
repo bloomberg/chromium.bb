@@ -215,7 +215,11 @@ base::FilePath GetDevicePath(XDisplay* dpy, const XIDeviceInfo& device) {
   unsigned long nitems, bytes_after;
   unsigned char* data;
   XDevice* dev = XOpenDevice(dpy, device.deviceid);
-  if (!dev)
+
+  // Sometimes XOpenDevice() doesn't return null but the contents aren't valid.
+  // Calling XGetDeviceProperty() when dev->device_id is invalid triggers a
+  // BadDevice error. Return early to avoid a crash. http://crbug.com/659261
+  if (!dev || dev->device_id != base::checked_cast<XID>(device.deviceid))
     return base::FilePath();
 
   if (XGetDeviceProperty(dpy,
