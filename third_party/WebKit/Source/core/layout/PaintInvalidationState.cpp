@@ -437,42 +437,38 @@ PaintInvalidationState::computePositionFromPaintInvalidationBacking() const {
   return LayoutPoint(point);
 }
 
-LayoutRect PaintInvalidationState::computePaintInvalidationRectInBacking()
-    const {
+LayoutRect PaintInvalidationState::computeVisualRectInBacking() const {
 #if ENABLE(ASSERT)
   DCHECK(!m_didUpdateForChildren);
 #endif
 
   if (m_currentObject.isSVG() && !m_currentObject.isSVGRoot())
-    return computePaintInvalidationRectInBackingForSVG();
+    return computeVisualRectInBackingForSVG();
 
-  LayoutRect rect = m_currentObject.localOverflowRectForPaintInvalidation();
+  LayoutRect rect = m_currentObject.localVisualRect();
   mapLocalRectToPaintInvalidationBacking(rect);
   return rect;
 }
 
-LayoutRect PaintInvalidationState::computePaintInvalidationRectInBackingForSVG()
-    const {
+LayoutRect PaintInvalidationState::computeVisualRectInBackingForSVG() const {
   LayoutRect rect;
   if (m_cachedOffsetsEnabled) {
-    FloatRect svgRect = SVGLayoutSupport::localOverflowRectForPaintInvalidation(
-        m_currentObject);
-    rect = SVGLayoutSupport::transformPaintInvalidationRect(
-        m_currentObject, m_svgTransform, svgRect);
+    FloatRect svgRect = SVGLayoutSupport::localVisualRect(m_currentObject);
+    rect = SVGLayoutSupport::transformVisualRect(m_currentObject,
+                                                 m_svgTransform, svgRect);
     rect.move(m_paintOffset);
     if (m_clipped)
       rect.intersect(m_clipRect);
 #ifdef CHECK_FAST_PATH_SLOW_PATH_EQUALITY
-    LayoutRect slowPathRect =
-        SVGLayoutSupport::clippedOverflowRectForPaintInvalidation(
-            m_currentObject, *m_paintInvalidationContainer);
+    LayoutRect slowPathRect = SVGLayoutSupport::visualRectInAncestorSpace(
+        m_currentObject, *m_paintInvalidationContainer);
     assertFastPathAndSlowPathRectsEqual(rect, slowPathRect);
 #endif
   } else {
     // TODO(wangxianzhu): Sometimes m_cachedOffsetsEnabled==false doesn't mean
     // we can't use cached m_svgTransform. We can use hybrid fast path (for SVG)
     // and slow path (for things above the SVGRoot).
-    rect = SVGLayoutSupport::clippedOverflowRectForPaintInvalidation(
+    rect = SVGLayoutSupport::visualRectInAncestorSpace(
         m_currentObject, *m_paintInvalidationContainer);
   }
 
@@ -597,11 +593,9 @@ void PaintInvalidationState::assertFastPathAndSlowPathRectsEqual(
       return;
   }
 
-  WTFLogAlways(
-      "Fast path paint invalidation rect differs from slow path: fast: %s vs "
-      "slow: %s",
-      fastPathRect.toString().ascii().data(),
-      slowPathRect.toString().ascii().data());
+  LOG(ERROR) << "Fast path visual rect differs from slow path: fast: "
+             << fastPathRect.toString()
+             << " vs slow: " << slowPathRect.toString();
   showLayoutTree(&m_currentObject);
 
   ASSERT_NOT_REACHED();

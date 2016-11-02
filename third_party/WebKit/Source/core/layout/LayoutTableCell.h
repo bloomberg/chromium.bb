@@ -356,7 +356,7 @@ class CORE_EXPORT LayoutTableCell final : public LayoutBlockFlow {
       const InlineFlowBox*) const override;
 
   LayoutSize offsetFromContainer(const LayoutObject*) const override;
-  LayoutRect localOverflowRectForPaintInvalidation() const override;
+  LayoutRect localVisualRect() const override;
 
   int borderHalfLeft(bool outer) const;
   int borderHalfRight(bool outer) const;

@@ -867,7 +867,7 @@ class CORE_EXPORT LayoutBox : public LayoutBoxModelObject {
   bool needsForcedBreakBefore(EBreak previousBreakAfterValue) const;
 
   bool paintedOutputOfObjectHasNoEffectRegardlessOfSize() const override;
-  LayoutRect localOverflowRectForPaintInvalidation() const override;
+  LayoutRect localVisualRect() const override;
   bool mapToVisualRectInAncestorSpace(
       const LayoutBoxModelObject* ancestor,
       LayoutRect&,
@@ -1272,7 +1272,7 @@ class CORE_EXPORT LayoutBox : public LayoutBoxModelObject {
                           TransformState&,
                           MapCoordinatesFlags) const override;
 
-  void clearPreviousPaintInvalidationRects() override;
+  void clearPreviousVisualRects() override;
 
   LayoutBlock* percentHeightContainer() const {
     return m_rareData ? m_rareData->m_percentHeightContainer : nullptr;

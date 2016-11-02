@@ -130,7 +130,7 @@ StyleDifference SVGComputedStyle::diff(const SVGComputedStyle* other) const {
 bool SVGComputedStyle::diffNeedsLayoutAndPaintInvalidation(
     const SVGComputedStyle* other) const {
   // If resources change, we need a relayout, as the presence of resources
-  // influences the paint invalidation rect.
+  // influences the visual rect.
   if (resources != other->resources)
     return true;
 

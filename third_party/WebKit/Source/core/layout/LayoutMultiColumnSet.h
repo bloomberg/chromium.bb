@@ -231,7 +231,7 @@ class CORE_EXPORT LayoutMultiColumnSet : public LayoutBlockFlow {
   bool computeColumnRuleBounds(const LayoutPoint& paintOffset,
                                Vector<LayoutRect>& columnRuleBounds) const;
 
-  LayoutRect localOverflowRectForPaintInvalidation() const override;
+  LayoutRect localVisualRect() const override;
 
  protected:
   LayoutMultiColumnSet(LayoutFlowThread*);

@@ -42,15 +42,12 @@ class LayoutSVGGradientStop final : public LayoutObject {
 
   void layout() override;
 
-  // This overrides are needed to prevent ASSERTs on <svg><stop /></svg>
-  // LayoutObject's default implementations ASSERT_NOT_REACHED()
-  // https://bugs.webkit.org/show_bug.cgi?id=20400
-  LayoutRect localOverflowRectForPaintInvalidation() const override {
-    return LayoutRect();
-  }
+  // These overrides are needed to prevent NOTREACHED on <svg><stop /></svg> in
+  // LayoutObject's default implementations.
+  LayoutRect localVisualRect() const override { return LayoutRect(); }
   FloatRect objectBoundingBox() const override { return FloatRect(); }
   FloatRect strokeBoundingBox() const override { return FloatRect(); }
-  FloatRect paintInvalidationRectInLocalSVGCoordinates() const override {
+  FloatRect visualRectInLocalSVGCoordinates() const override {
     return FloatRect();
   }
   FloatRect localBoundingBoxRectForAccessibility() const final {

@@ -92,8 +92,7 @@ class PaintPropertyTreeBuilderTest
                           slopFactor)                                          \
   do {                                                                         \
     GeometryMapper geometryMapper;                                             \
-    LayoutRect source(                                                         \
-        (sourceLayoutObject)->localOverflowRectForPaintInvalidation());        \
+    LayoutRect source((sourceLayoutObject)->localVisualRect());                \
     source.moveBy((sourceLayoutObject)                                         \
                       ->paintProperties()                                      \
                       ->localBorderBoxProperties()                             \
@@ -116,8 +115,7 @@ class PaintPropertyTreeBuilderTest
                                                                                \
     if (slopFactor == LayoutUnit::max())                                       \
       break;                                                                   \
-    LayoutRect slowPathRect =                                                  \
-        (sourceLayoutObject)->localOverflowRectForPaintInvalidation();         \
+    LayoutRect slowPathRect = (sourceLayoutObject)->localVisualRect();         \
     (sourceLayoutObject)                                                       \
         ->mapToVisualRectInAncestorSpace(ancestorLayoutObject, slowPathRect);  \
     if (slopFactor) {                                                          \

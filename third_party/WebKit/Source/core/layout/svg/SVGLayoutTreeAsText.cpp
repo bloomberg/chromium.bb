@@ -327,9 +327,8 @@ static void writeStyle(TextStream& ts, const LayoutObject& object) {
 
 static TextStream& writePositionAndStyle(TextStream& ts,
                                          const LayoutObject& object) {
-  ts << " "
-     << enclosingIntRect(
-            const_cast<LayoutObject&>(object).absoluteClippedOverflowRect());
+  ts << " " << enclosingIntRect(
+                   const_cast<LayoutObject&>(object).absoluteVisualRect());
   writeStyle(ts, object);
   return ts;
 }

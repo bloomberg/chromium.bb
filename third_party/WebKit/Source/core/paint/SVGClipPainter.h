@@ -37,7 +37,7 @@ class SVGClipPainter {
   bool drawClipAsMask(GraphicsContext&,
                       const LayoutObject&,
                       const FloatRect& targetBoundingBox,
-                      const FloatRect& targetPaintInvalidationRect,
+                      const FloatRect& targetVisualRect,
                       const AffineTransform&,
                       const FloatPoint&);
 

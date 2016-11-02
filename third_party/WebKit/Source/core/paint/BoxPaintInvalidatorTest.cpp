@@ -125,8 +125,7 @@ TEST_F(BoxPaintInvalidatorTest, SubpixelChangeWithoutVisualRectChange) {
 
   Element* target = document().getElementById("target");
   LayoutObject* targetObject = target->layoutObject();
-  EXPECT_EQ(LayoutRect(0, 0, 70, 140),
-            targetObject->previousPaintInvalidationRect());
+  EXPECT_EQ(LayoutRect(0, 0, 70, 140), targetObject->previousVisualRect());
 
   // Should do full invalidation if new geometry has subpixels even if the paint
   // invalidation rect doesn't change.
@@ -134,8 +133,7 @@ TEST_F(BoxPaintInvalidatorTest, SubpixelChangeWithoutVisualRectChange) {
   target->setAttribute(HTMLNames::styleAttr,
                        "margin-top: 0.6px; width: 50px; height: 99.3px");
   document().view()->updateAllLifecyclePhases();
-  EXPECT_EQ(LayoutRect(0, 0, 70, 140),
-            targetObject->previousPaintInvalidationRect());
+  EXPECT_EQ(LayoutRect(0, 0, 70, 140), targetObject->previousVisualRect());
   const auto* rasterInvalidations =
       &getRasterInvalidationTracking()->trackedRasterInvalidations;
   EXPECT_EQ(1u, rasterInvalidations->size());
@@ -147,8 +145,7 @@ TEST_F(BoxPaintInvalidatorTest, SubpixelChangeWithoutVisualRectChange) {
   target->setAttribute(HTMLNames::styleAttr,
                        "margin-top: 0.6px; width: 49.3px; height: 98.5px");
   document().view()->updateAllLifecyclePhases();
-  EXPECT_EQ(LayoutRect(0, 0, 70, 140),
-            targetObject->previousPaintInvalidationRect());
+  EXPECT_EQ(LayoutRect(0, 0, 70, 140), targetObject->previousVisualRect());
   rasterInvalidations =
       &getRasterInvalidationTracking()->trackedRasterInvalidations;
   EXPECT_EQ(1u, rasterInvalidations->size());

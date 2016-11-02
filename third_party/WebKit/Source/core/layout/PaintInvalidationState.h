@@ -95,7 +95,7 @@ class CORE_EXPORT PaintInvalidationState {
 
   // Returns the rect bounds needed to invalidate paint of this object,
   // in the space of paint invalidation backing.
-  LayoutRect computePaintInvalidationRectInBacking() const;
+  LayoutRect computeVisualRectInBacking() const;
 
   void mapLocalRectToPaintInvalidationBacking(LayoutRect&) const;
 
@@ -112,7 +112,7 @@ class CORE_EXPORT PaintInvalidationState {
   void updateForCurrentObject(const PaintInvalidationState& parentState);
   void updateForNormalChildren();
 
-  LayoutRect computePaintInvalidationRectInBackingForSVG() const;
+  LayoutRect computeVisualRectInBackingForSVG() const;
 
   void addClipRectRelativeToPaintOffset(const LayoutRect& localClipRect);
 

@@ -49,8 +49,7 @@ void SVGShapePainter::paint(const PaintInfo& paintInfo) {
       m_layoutSVGShape.isShapeEmpty())
     return;
 
-  FloatRect boundingBox =
-      m_layoutSVGShape.paintInvalidationRectInLocalSVGCoordinates();
+  FloatRect boundingBox = m_layoutSVGShape.visualRectInLocalSVGCoordinates();
   if (!paintInfo.cullRect().intersectsCullRect(
           m_layoutSVGShape.localSVGTransform(), boundingBox))
     return;

@@ -22,13 +22,12 @@ bool SVGMaskPainter::prepareEffect(const LayoutObject& object,
 
   m_mask.clearInvalidationMask();
 
-  FloatRect paintInvalidationRect =
-      object.paintInvalidationRectInLocalSVGCoordinates();
-  if (paintInvalidationRect.isEmpty() || !m_mask.element()->hasChildren())
+  FloatRect visualRect = object.visualRectInLocalSVGCoordinates();
+  if (visualRect.isEmpty() || !m_mask.element()->hasChildren())
     return false;
 
   context.getPaintController().createAndAppend<BeginCompositingDisplayItem>(
-      object, SkBlendMode::kSrcOver, 1, &paintInvalidationRect);
+      object, SkBlendMode::kSrcOver, 1, &visualRect);
   return true;
 }
 
@@ -37,18 +36,16 @@ void SVGMaskPainter::finishEffect(const LayoutObject& object,
   DCHECK(m_mask.style());
   SECURITY_DCHECK(!m_mask.needsLayout());
 
-  FloatRect paintInvalidationRect =
-      object.paintInvalidationRectInLocalSVGCoordinates();
+  FloatRect visualRect = object.visualRectInLocalSVGCoordinates();
   {
     ColorFilter maskLayerFilter =
         m_mask.style()->svgStyle().maskType() == MT_LUMINANCE
             ? ColorFilterLuminanceToAlpha
             : ColorFilterNone;
     CompositingRecorder maskCompositing(context, object, SkBlendMode::kDstIn, 1,
-                                        &paintInvalidationRect,
-                                        maskLayerFilter);
+                                        &visualRect, maskLayerFilter);
     drawMaskForLayoutObject(context, object, object.objectBoundingBox(),
-                            paintInvalidationRect);
+                            visualRect);
   }
 
   context.getPaintController().endItem<EndCompositingDisplayItem>(object);
@@ -58,7 +55,7 @@ void SVGMaskPainter::drawMaskForLayoutObject(
     GraphicsContext& context,
     const LayoutObject& layoutObject,
     const FloatRect& targetBoundingBox,
-    const FloatRect& targetPaintInvalidationRect) {
+    const FloatRect& targetVisualRect) {
   AffineTransform contentTransformation;
   sk_sp<const SkPicture> maskContentPicture = m_mask.createContentPicture(
       contentTransformation, targetBoundingBox, context);
@@ -67,9 +64,8 @@ void SVGMaskPainter::drawMaskForLayoutObject(
           context, layoutObject, DisplayItem::kSVGMask))
     return;
 
-  LayoutObjectDrawingRecorder drawingRecorder(context, layoutObject,
-                                              DisplayItem::kSVGMask,
-                                              targetPaintInvalidationRect);
+  LayoutObjectDrawingRecorder drawingRecorder(
+      context, layoutObject, DisplayItem::kSVGMask, targetVisualRect);
   context.save();
   context.concatCTM(contentTransformation);
   context.drawPicture(maskContentPicture.get());

@@ -47,9 +47,9 @@ class LayoutSVGModelObject : public LayoutObject {
 
   bool isChildAllowed(LayoutObject*, const ComputedStyle&) const override;
 
-  LayoutRect absoluteClippedOverflowRect() const override;
-  FloatRect paintInvalidationRectInLocalSVGCoordinates() const override {
-    return m_paintInvalidationBoundingBox;
+  LayoutRect absoluteVisualRect() const override;
+  FloatRect visualRectInLocalSVGCoordinates() const override {
+    return m_localVisualRect;
   }
 
   void absoluteRects(Vector<IntRect>&,
@@ -95,7 +95,7 @@ class LayoutSVGModelObject : public LayoutObject {
   IntRect absoluteElementBoundingBoxRect() const final;
 
  protected:
-  FloatRect m_paintInvalidationBoundingBox;
+  FloatRect m_localVisualRect;
 };
 
 }  // namespace blink

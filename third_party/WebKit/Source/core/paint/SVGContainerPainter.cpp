@@ -23,9 +23,9 @@ void SVGContainerPainter::paint(const PaintInfo& paintInfo) {
     return;
 
   FloatRect boundingBox =
-      m_layoutSVGContainer.paintInvalidationRectInLocalSVGCoordinates();
-  // LayoutSVGHiddenContainer's paint invalidation rect is always empty but we
-  // need to paint its descendants.
+      m_layoutSVGContainer.visualRectInLocalSVGCoordinates();
+  // LayoutSVGHiddenContainer's visual rect is always empty but we need to
+  // paint its descendants.
   if (!m_layoutSVGContainer.isSVGHiddenContainer() &&
       !paintInfo.cullRect().intersectsCullRect(
           m_layoutSVGContainer.localToSVGParentTransform(), boundingBox))

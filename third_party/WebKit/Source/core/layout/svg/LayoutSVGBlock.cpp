@@ -110,9 +110,8 @@ const LayoutObject* LayoutSVGBlock::pushMappingToContainer(
                                                   geometryMap);
 }
 
-LayoutRect LayoutSVGBlock::absoluteClippedOverflowRect() const {
-  return SVGLayoutSupport::clippedOverflowRectForPaintInvalidation(*this,
-                                                                   *view());
+LayoutRect LayoutSVGBlock::absoluteVisualRect() const {
+  return SVGLayoutSupport::visualRectInAncestorSpace(*this, *view());
 }
 
 bool LayoutSVGBlock::mapToVisualRectInAncestorSpace(

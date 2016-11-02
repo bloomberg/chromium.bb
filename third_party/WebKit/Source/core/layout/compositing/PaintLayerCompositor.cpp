@@ -357,21 +357,19 @@ void PaintLayerCompositor::updateWithoutAcceleratedCompositing(
 #endif
 }
 
-static void
-forceRecomputePaintInvalidationRectsIncludingNonCompositingDescendants(
+static void forceRecomputeVisualRectsIncludingNonCompositingDescendants(
     LayoutObject* layoutObject) {
-  // We clear the previous paint invalidation rect as it's wrong (paint
-  // invalidation container changed, ...). Forcing a full invalidation will make
-  // us recompute it. Also we are not changing the previous position from our
-  // paint invalidation container, which is fine as we want a full paint
-  // invalidation anyway.
-  layoutObject->clearPreviousPaintInvalidationRects();
+  // We clear the previous visual rect as it's wrong (paint invalidation
+  // container changed, ...). Forcing a full invalidation will make us recompute
+  // it. Also we are not changing the previous position from our paint
+  // invalidation container, which is fine as we want a full paint invalidation
+  // anyway.
+  layoutObject->clearPreviousVisualRects();
 
   for (LayoutObject* child = layoutObject->slowFirstChild(); child;
        child = child->nextSibling()) {
     if (!child->isPaintInvalidationContainer())
-      forceRecomputePaintInvalidationRectsIncludingNonCompositingDescendants(
-          child);
+      forceRecomputeVisualRectsIncludingNonCompositingDescendants(child);
   }
 }
 
@@ -481,7 +479,7 @@ void PaintLayerCompositor::updateIfNeeded() {
   }
 
   for (unsigned i = 0; i < layersNeedingPaintInvalidation.size(); i++)
-    forceRecomputePaintInvalidationRectsIncludingNonCompositingDescendants(
+    forceRecomputeVisualRectsIncludingNonCompositingDescendants(
         layersNeedingPaintInvalidation[i]->layoutObject());
 
   // Inform the inspector that the layer tree has changed.

@@ -41,7 +41,7 @@ class LayoutSVGText final : public LayoutSVGBlock {
   }
   void setNeedsTransformUpdate() override { m_needsTransformUpdate = true; }
   void setNeedsTextMetricsUpdate() { m_needsTextMetricsUpdate = true; }
-  FloatRect paintInvalidationRectInLocalSVGCoordinates() const override;
+  FloatRect visualRectInLocalSVGCoordinates() const override;
   FloatRect objectBoundingBox() const override {
     return FloatRect(frameRect());
   }

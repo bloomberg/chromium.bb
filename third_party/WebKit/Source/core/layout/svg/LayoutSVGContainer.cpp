@@ -168,15 +168,13 @@ void LayoutSVGContainer::addOutlineRects(
     Vector<LayoutRect>& rects,
     const LayoutPoint&,
     IncludeBlockVisualOverflowOrNot) const {
-  rects.append(LayoutRect(paintInvalidationRectInLocalSVGCoordinates()));
+  rects.append(LayoutRect(visualRectInLocalSVGCoordinates()));
 }
 
 void LayoutSVGContainer::updateCachedBoundaries() {
   SVGLayoutSupport::computeContainerBoundingBoxes(
       this, m_objectBoundingBox, m_objectBoundingBoxValid, m_strokeBoundingBox,
-      m_paintInvalidationBoundingBox);
-  SVGLayoutSupport::intersectPaintInvalidationRectWithResources(
-      this, m_paintInvalidationBoundingBox);
+      m_localVisualRect);
   if (element())
     element()->setNeedsResizeObserverUpdate();
 }

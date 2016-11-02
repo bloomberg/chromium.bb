@@ -118,7 +118,7 @@ void SVGPaintContext::applyCompositingIfNecessary() {
                                : WebBlendModeNormal;
   if (opacity < 1 || blendMode != WebBlendModeNormal) {
     const FloatRect compositingBounds =
-        m_object.paintInvalidationRectInLocalSVGCoordinates();
+        m_object.visualRectInLocalSVGCoordinates();
     m_compositingRecorder = wrapUnique(new CompositingRecorder(
         paintInfo().context, m_object,
         WebCoreCompositeToSkiaComposite(CompositeSourceOver, blendMode),

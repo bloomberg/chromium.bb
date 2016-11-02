@@ -275,7 +275,7 @@ class CORE_EXPORT LayoutText : public LayoutObject {
   bool isText() const =
       delete;  // This will catch anyone doing an unnecessary check.
 
-  LayoutRect localOverflowRectForPaintInvalidation() const override;
+  LayoutRect localVisualRect() const override;
 
   void checkConsistency() const;
 

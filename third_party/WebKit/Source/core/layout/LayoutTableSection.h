@@ -296,9 +296,8 @@ class CORE_EXPORT LayoutTableSection final : public LayoutTableBoxComponent {
   // columnPos vectors.
   LayoutRect logicalRectForWritingModeAndDirection(const LayoutRect&) const;
 
-  CellSpan dirtiedRows(const LayoutRect& paintInvalidationRect) const;
-  CellSpan dirtiedEffectiveColumns(
-      const LayoutRect& paintInvalidationRect) const;
+  CellSpan dirtiedRows(const LayoutRect& visualRect) const;
+  CellSpan dirtiedEffectiveColumns(const LayoutRect& visualRect) const;
   const HashSet<LayoutTableCell*>& overflowingCells() const {
     return m_overflowingCells;
   }

@@ -24,8 +24,7 @@ void SVGImagePainter::paint(const PaintInfo& paintInfo) {
       !m_layoutSVGImage.imageResource()->hasImage())
     return;
 
-  FloatRect boundingBox =
-      m_layoutSVGImage.paintInvalidationRectInLocalSVGCoordinates();
+  FloatRect boundingBox = m_layoutSVGImage.visualRectInLocalSVGCoordinates();
   if (!paintInfo.cullRect().intersectsCullRect(
           m_layoutSVGImage.localToSVGParentTransform(), boundingBox))
     return;

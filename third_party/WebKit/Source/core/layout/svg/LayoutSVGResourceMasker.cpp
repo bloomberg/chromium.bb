@@ -71,7 +71,7 @@ sk_sp<const SkPicture> LayoutSVGResourceMasker::createContentPicture(
 
   SubtreeContentTransformScope contentTransformScope(contentTransformation);
 
-  // Using strokeBoundingBox instead of paintInvalidationRectInLocalCoordinates
+  // Using strokeBoundingBox instead of visualRectInLocalCoordinates
   // to avoid the intersection with local clips/mask, which may yield incorrect
   // results when mixing objectBoundingBox and userSpaceOnUse units.
   // http://crbug.com/294900
@@ -103,7 +103,7 @@ sk_sp<const SkPicture> LayoutSVGResourceMasker::createContentPicture(
   return m_maskContentPicture;
 }
 
-void LayoutSVGResourceMasker::calculateMaskContentPaintInvalidationRect() {
+void LayoutSVGResourceMasker::calculateMaskContentVisualRect() {
   for (SVGElement* childElement = Traversal<SVGElement>::firstChild(*element());
        childElement;
        childElement = Traversal<SVGElement>::nextSibling(*childElement)) {
@@ -116,7 +116,7 @@ void LayoutSVGResourceMasker::calculateMaskContentPaintInvalidationRect() {
       continue;
     m_maskContentBoundaries.unite(
         layoutObject->localToSVGParentTransform().mapRect(
-            layoutObject->paintInvalidationRectInLocalSVGCoordinates()));
+            layoutObject->visualRectInLocalSVGCoordinates()));
   }
 }
 
@@ -135,7 +135,7 @@ FloatRect LayoutSVGResourceMasker::resourceBoundingBox(
     return maskBoundaries;
 
   if (m_maskContentBoundaries.isEmpty())
-    calculateMaskContentPaintInvalidationRect();
+    calculateMaskContentVisualRect();
 
   FloatRect maskRect = m_maskContentBoundaries;
   if (maskElement->maskContentUnits()->currentValue()->value() ==

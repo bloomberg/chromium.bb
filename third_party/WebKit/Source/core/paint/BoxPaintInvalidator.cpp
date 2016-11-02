@@ -72,16 +72,17 @@ bool BoxPaintInvalidator::incrementallyInvalidatePaint() {
     // for LayoutView in non-rootLayerScrolling mode. In rootLayerScrolling
     // mode, we'll do full paint invalidation (see crbug.com/660156).
     DCHECK(!RuntimeEnabledFeatures::rootLayerScrollingEnabled());
-    DCHECK(m_context.oldBounds.location() == m_context.newBounds.location());
-    rightDelta = computeRightDelta(m_context.newBounds.location(),
-                                   m_context.oldBounds.size(),
-                                   m_context.newBounds.size(), 0);
-    bottomDelta = computeBottomDelta(m_context.newBounds.location(),
-                                     m_context.oldBounds.size(),
-                                     m_context.newBounds.size(), 0);
+    DCHECK(m_context.oldVisualRect.location() ==
+           m_context.newVisualRect.location());
+    rightDelta = computeRightDelta(m_context.newVisualRect.location(),
+                                   m_context.oldVisualRect.size(),
+                                   m_context.newVisualRect.size(), 0);
+    bottomDelta = computeBottomDelta(m_context.newVisualRect.location(),
+                                     m_context.oldVisualRect.size(),
+                                     m_context.newVisualRect.size(), 0);
   } else {
     LayoutSize oldBorderBoxSize =
-        computePreviousBorderBoxSize(m_context.oldBounds.size());
+        computePreviousBorderBoxSize(m_context.oldVisualRect.size());
     LayoutSize newBorderBoxSize = m_box.size();
     DCHECK(m_context.oldLocation == m_context.newLocation);
     rightDelta = computeRightDelta(m_context.newLocation, oldBorderBoxSize,
@@ -158,11 +159,11 @@ PaintInvalidationReason BoxPaintInvalidator::computePaintInvalidationReason() {
   }
 
   LayoutSize oldBorderBoxSize =
-      computePreviousBorderBoxSize(m_context.oldBounds.size());
+      computePreviousBorderBoxSize(m_context.oldVisualRect.size());
   LayoutSize newBorderBoxSize = m_box.size();
   bool borderBoxChanged = oldBorderBoxSize != newBorderBoxSize;
 
-  if (!borderBoxChanged && m_context.oldBounds == m_context.newBounds)
+  if (!borderBoxChanged && m_context.oldVisualRect == m_context.newVisualRect)
     return PaintInvalidationNone;
 
   // If either border box changed or bounds changed, and old or new border box
@@ -171,9 +172,9 @@ PaintInvalidationReason BoxPaintInvalidator::computePaintInvalidationReason() {
   // - pixel snapping of paint invalidation bounds,
   // - scale, rotate, skew etc. transforms,
   // - visual overflows.
-  if (m_context.oldBounds !=
+  if (m_context.oldVisualRect !=
           LayoutRect(m_context.oldLocation, oldBorderBoxSize) ||
-      m_context.newBounds !=
+      m_context.newVisualRect !=
           LayoutRect(m_context.newLocation, newBorderBoxSize)) {
     return borderBoxChanged ? PaintInvalidationBorderBoxChange
                             : PaintInvalidationBoundsChange;
@@ -233,7 +234,7 @@ PaintInvalidationReason BoxPaintInvalidator::invalidatePaintIfNeeded() {
 }
 
 bool BoxPaintInvalidator::needsToSavePreviousBoxSizes() {
-  LayoutSize paintInvalidationSize = m_context.newBounds.size();
+  LayoutSize paintInvalidationSize = m_context.newVisualRect.size();
   // Don't save old box sizes if the paint rect is empty because we'll
   // full invalidate once the paint rect becomes non-empty.
   if (paintInvalidationSize.isEmpty())
@@ -282,7 +283,7 @@ LayoutSize BoxPaintInvalidator::computePreviousBorderBoxSize(
     return it->value.borderBoxSize;
 
   // We didn't save the old border box size because it was the same as the size
-  // of oldBounds.
+  // of oldVisualRect.
   return previousBoundsSize;
 }
 

@@ -67,7 +67,7 @@ class LayoutSVGResourceMasker final : public LayoutSVGResourceContainer {
                                               GraphicsContext&);
 
  private:
-  void calculateMaskContentPaintInvalidationRect();
+  void calculateMaskContentVisualRect();
 
   sk_sp<const SkPicture> m_maskContentPicture;
   FloatRect m_maskContentBoundaries;

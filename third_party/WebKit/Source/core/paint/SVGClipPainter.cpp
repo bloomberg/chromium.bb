@@ -39,7 +39,7 @@ class SVGClipExpansionCycleHelper {
 
 bool SVGClipPainter::prepareEffect(const LayoutObject& target,
                                    const FloatRect& targetBoundingBox,
-                                   const FloatRect& paintInvalidationRect,
+                                   const FloatRect& visualRect,
                                    const FloatPoint& layerPositionOffset,
                                    GraphicsContext& context,
                                    ClipperState& clipperState) {
@@ -48,7 +48,7 @@ bool SVGClipPainter::prepareEffect(const LayoutObject& target,
 
   m_clip.clearInvalidationMask();
 
-  if (paintInvalidationRect.isEmpty() || m_clip.hasCycle())
+  if (visualRect.isEmpty() || m_clip.hasCycle())
     return false;
 
   SVGClipExpansionCycleHelper inClipExpansionChange(m_clip);
@@ -83,11 +83,10 @@ bool SVGClipPainter::prepareEffect(const LayoutObject& target,
 
   // Begin compositing the clip mask.
   CompositingRecorder::beginCompositing(context, target, SkBlendMode::kSrcOver,
-                                        1, &paintInvalidationRect);
+                                        1, &visualRect);
   {
-    if (!drawClipAsMask(context, target, targetBoundingBox,
-                        paintInvalidationRect, animatedLocalTransform,
-                        layerPositionOffset)) {
+    if (!drawClipAsMask(context, target, targetBoundingBox, visualRect,
+                        animatedLocalTransform, layerPositionOffset)) {
       // End the clip mask's compositor.
       CompositingRecorder::endCompositing(context, target);
       return false;
@@ -96,7 +95,7 @@ bool SVGClipPainter::prepareEffect(const LayoutObject& target,
 
   // Masked content layer start.
   CompositingRecorder::beginCompositing(context, target, SkBlendMode::kSrcIn, 1,
-                                        &paintInvalidationRect);
+                                        &visualRect);
 
   return true;
 }
@@ -122,19 +121,17 @@ void SVGClipPainter::finishEffect(const LayoutObject& target,
   }
 }
 
-bool SVGClipPainter::drawClipAsMask(
-    GraphicsContext& context,
-    const LayoutObject& layoutObject,
-    const FloatRect& targetBoundingBox,
-    const FloatRect& targetPaintInvalidationRect,
-    const AffineTransform& localTransform,
-    const FloatPoint& layerPositionOffset) {
+bool SVGClipPainter::drawClipAsMask(GraphicsContext& context,
+                                    const LayoutObject& layoutObject,
+                                    const FloatRect& targetBoundingBox,
+                                    const FloatRect& targetVisualRect,
+                                    const AffineTransform& localTransform,
+                                    const FloatPoint& layerPositionOffset) {
   if (LayoutObjectDrawingRecorder::useCachedDrawingIfPossible(
           context, layoutObject, DisplayItem::kSVGClip))
     return true;
 
-  SkPictureBuilder maskPictureBuilder(targetPaintInvalidationRect, nullptr,
-                                      &context);
+  SkPictureBuilder maskPictureBuilder(targetVisualRect, nullptr, &context);
   GraphicsContext& maskContext = maskPictureBuilder.context();
   {
     TransformRecorder recorder(maskContext, layoutObject, localTransform);
@@ -163,9 +160,8 @@ bool SVGClipPainter::drawClipAsMask(
     }
   }
 
-  LayoutObjectDrawingRecorder drawingRecorder(context, layoutObject,
-                                              DisplayItem::kSVGClip,
-                                              targetPaintInvalidationRect);
+  LayoutObjectDrawingRecorder drawingRecorder(
+      context, layoutObject, DisplayItem::kSVGClip, targetVisualRect);
   sk_sp<SkPicture> maskPicture = maskPictureBuilder.endRecording();
   context.drawPicture(maskPicture.get());
   return true;

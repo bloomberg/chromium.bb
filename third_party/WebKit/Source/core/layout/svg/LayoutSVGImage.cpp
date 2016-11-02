@@ -134,9 +134,8 @@ void LayoutSVGImage::layout() {
   }
 
   if (m_needsBoundariesUpdate) {
-    m_paintInvalidationBoundingBox = m_objectBoundingBox;
-    SVGLayoutSupport::intersectPaintInvalidationRectWithResources(
-        this, m_paintInvalidationBoundingBox);
+    m_localVisualRect = m_objectBoundingBox;
+    SVGLayoutSupport::adjustVisualRectWithResources(this, m_localVisualRect);
     m_needsBoundariesUpdate = false;
     updateParentBoundaries = true;
   }
@@ -206,7 +205,7 @@ void LayoutSVGImage::addOutlineRects(Vector<LayoutRect>& rects,
                                      IncludeBlockVisualOverflowOrNot) const {
   // this is called from paint() after the localTransform has already been
   // applied
-  rects.append(LayoutRect(paintInvalidationRectInLocalSVGCoordinates()));
+  rects.append(LayoutRect(visualRectInLocalSVGCoordinates()));
 }
 
 }  // namespace blink

@@ -62,10 +62,9 @@ class CORE_EXPORT SVGLayoutSupport {
   // Helper function determining whether overflow is hidden.
   static bool isOverflowHidden(const LayoutObject*);
 
-  // Calculates the paintInvalidationRect in combination with filter, clipper
-  // and masker in local coordinates.
-  static void intersectPaintInvalidationRectWithResources(const LayoutObject*,
-                                                          FloatRect&);
+  // Adjusts the visualRect in combination with filter, clipper and masker
+  // in local coordinates.
+  static void adjustVisualRectWithResources(const LayoutObject*, FloatRect&);
 
   // Determine if the LayoutObject references a filter resource object.
   static bool hasFilterResource(const LayoutObject&);
@@ -82,26 +81,25 @@ class CORE_EXPORT SVGLayoutSupport {
       const FloatPoint& pointInParent,
       FloatPoint& localPoint);
 
-  static void computeContainerBoundingBoxes(
-      const LayoutObject* container,
-      FloatRect& objectBoundingBox,
-      bool& objectBoundingBoxValid,
-      FloatRect& strokeBoundingBox,
-      FloatRect& paintInvalidationBoundingBox);
+  static void computeContainerBoundingBoxes(const LayoutObject* container,
+                                            FloatRect& objectBoundingBox,
+                                            bool& objectBoundingBoxValid,
+                                            FloatRect& strokeBoundingBox,
+                                            FloatRect& localVisualRect);
 
   // Important functions used by nearly all SVG layoutObjects centralizing
-  // coordinate transformations / paint invalidation rect calculations
-  static FloatRect localOverflowRectForPaintInvalidation(const LayoutObject&);
-  static LayoutRect clippedOverflowRectForPaintInvalidation(
+  // coordinate transformations / visual rect calculations
+  static FloatRect localVisualRect(const LayoutObject&);
+  static LayoutRect visualRectInAncestorSpace(
       const LayoutObject&,
-      const LayoutBoxModelObject& paintInvalidationContainer);
-  static LayoutRect transformPaintInvalidationRect(const LayoutObject&,
-                                                   const AffineTransform&,
-                                                   const FloatRect&);
+      const LayoutBoxModelObject& ancestor);
+  static LayoutRect transformVisualRect(const LayoutObject&,
+                                        const AffineTransform&,
+                                        const FloatRect&);
   static bool mapToVisualRectInAncestorSpace(
       const LayoutObject&,
       const LayoutBoxModelObject* ancestor,
-      const FloatRect& localPaintInvalidationRect,
+      const FloatRect& localVisualRect,
       LayoutRect& resultRect,
       VisualRectFlags = DefaultVisualRectFlags);
   static void mapLocalToAncestor(const LayoutObject*,

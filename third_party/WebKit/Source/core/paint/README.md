@@ -87,6 +87,9 @@ treated in different ways during painting:
 *   Paint invalidation container: the nearest object on the compositing container
     chain which is composited.
 
+*   Visual rect: the bounding box of all pixels that will be painted by a
+    display item client.
+
 ## Paint invalidation
 
 Paint invalidation marks anything that need to be painted differently from the original
@@ -103,9 +106,12 @@ if needed by style change, layout change, compositing change, etc. In paint inva
 we traverse the layout tree in pre-order, crossing frame boundaries, for marked subtrees
 and objects and send the following information to `GraphicsLayer`s and `PaintController`s:
 
-*   paint invalidation rects: must cover all areas that will generete different pixels.
-*   invalidated display item clients: must invalidate all display item clients that will
-    generate different display items.
+*   invalidated display item clients: must invalidate all display item clients
+    that will generate different display items.
+
+*   paint invalidation rects: must cover all areas that will generate different
+    pixels. They are generated based on visual rects of invalidated display item
+    clients.
 
 #### `PaintInvalidationState`
 
@@ -142,8 +148,9 @@ we will fall back to slow-path using `LayoutObject::localToAncestorPoint()` or
     causing we can't simply accumulate paint offset for mapping a local rect to paint invalidation
     container;
 
-*   An object has has filter or reflection, which needs to expand paint invalidation rect
-    for descendants, because currently we don't include and reflection extents into visual overflow;
+*   An object has has filter (including filter induced by reflection), which
+    needs to expand visual rect for descendants, because currently we don't
+    include and filter extents into visual overflow;
 
 *   For a fixed-position object we calculate its offset using `LayoutObject::localToAncestorPoint()`,
     but map for its descendants in fast-path if no other things prevent us from doing this;

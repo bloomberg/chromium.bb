@@ -830,8 +830,6 @@ void LayoutBlockFlow::layoutBlockChild(LayoutBox& child,
   LayoutUnit logicalTopEstimate =
       estimateLogicalTopPosition(child, layoutInfo, estimateWithoutPagination);
 
-  // Cache our old rect so that we can dirty the proper paint invalidation rects
-  // if the child moves.
   LayoutRect oldRect = child.frameRect();
 
   if (LayoutFlowThread* flowThread = flowThreadContainingBlock())

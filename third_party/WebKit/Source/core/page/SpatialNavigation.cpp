@@ -188,7 +188,7 @@ bool hasOffscreenRect(Node* node, WebFocusType type) {
   if (!layoutObject)
     return true;
 
-  LayoutRect rect(layoutObject->absoluteClippedOverflowRect());
+  LayoutRect rect(layoutObject->absoluteVisualRect());
   if (rect.isEmpty())
     return true;
 

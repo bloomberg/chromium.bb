@@ -102,7 +102,7 @@ class LayoutTableCol final : public LayoutTableBoxComponent {
   bool canHaveChildren() const override;
   PaintLayerType layerTypeRequired() const override { return NoPaintLayer; }
 
-  LayoutRect localOverflowRectForPaintInvalidation() const override;
+  LayoutRect localVisualRect() const override;
 
   void styleDidChange(StyleDifference, const ComputedStyle* oldStyle) override;
 

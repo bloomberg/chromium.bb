@@ -19,23 +19,22 @@ namespace blink {
 
 static bool gDisablePaintInvalidationStateAsserts = false;
 
-typedef HashMap<const LayoutObject*, LayoutRect> SelectionPaintInvalidationMap;
-static SelectionPaintInvalidationMap& selectionPaintInvalidationMap() {
-  DEFINE_STATIC_LOCAL(SelectionPaintInvalidationMap, map, ());
+typedef HashMap<const LayoutObject*, LayoutRect> SelectionVisualRectMap;
+static SelectionVisualRectMap& selectionVisualRectMap() {
+  DEFINE_STATIC_LOCAL(SelectionVisualRectMap, map, ());
   return map;
 }
 
-static void setPreviousSelectionPaintInvalidationRect(
-    const LayoutObject& object,
-    const LayoutRect& rect) {
+static void setPreviousSelectionVisualRect(const LayoutObject& object,
+                                           const LayoutRect& rect) {
   if (rect.isEmpty())
-    selectionPaintInvalidationMap().remove(&object);
+    selectionVisualRectMap().remove(&object);
   else
-    selectionPaintInvalidationMap().set(&object, rect);
+    selectionVisualRectMap().set(&object, rect);
 }
 
 void ObjectPaintInvalidator::objectWillBeDestroyed(const LayoutObject& object) {
-  selectionPaintInvalidationMap().remove(&object);
+  selectionVisualRectMap().remove(&object);
 }
 
 // TODO(trchen): Use std::function<void, LayoutObject&> when available.
@@ -126,7 +125,7 @@ void ObjectPaintInvalidator::
 }
 
 DISABLE_CFI_PERF
-void ObjectPaintInvalidator::invalidatePaintOfPreviousPaintInvalidationRect(
+void ObjectPaintInvalidator::invalidatePaintOfPreviousVisualRect(
     const LayoutBoxModelObject& paintInvalidationContainer,
     PaintInvalidationReason reason) {
   // It's caller's responsibility to ensure enclosingSelfPaintingLayer's
@@ -140,17 +139,16 @@ void ObjectPaintInvalidator::invalidatePaintOfPreviousPaintInvalidationRect(
   DisablePaintInvalidationStateAsserts invalidationDisabler;
   DisableCompositingQueryAsserts compositingDisabler;
 
-  LayoutRect invalidationRect = m_object.previousPaintInvalidationRect();
+  LayoutRect invalidationRect = m_object.previousVisualRect();
   invalidatePaintUsingContainer(paintInvalidationContainer, invalidationRect,
                                 reason);
   m_object.invalidateDisplayItemClients(reason);
 
   // This method may be used to invalidate paint of an object changing paint
-  // invalidation container.  Clear previous paint invalidation rect on the
-  // original paint invalidation container to avoid under-invalidation if the
-  // new paint invalidation rect on the new paint invalidation container happens
-  // to be the same as the old one.
-  m_object.getMutableForPainting().clearPreviousPaintInvalidationRects();
+  // invalidation container.  Clear previous visual rect on the original paint
+  // invalidation container to avoid under-invalidation if the visual rect on
+  // the new paint invalidation container happens to be the same as the old one.
+  m_object.getMutableForPainting().clearPreviousVisualRects();
 }
 
 void ObjectPaintInvalidator::
@@ -163,17 +161,16 @@ void ObjectPaintInvalidator::
       m_object, [&paintInvalidationContainer](const LayoutObject& object) {
         if (object.hasLayer())
           toLayoutBoxModelObject(object).layer()->setNeedsRepaint();
-        ObjectPaintInvalidator(object)
-            .invalidatePaintOfPreviousPaintInvalidationRect(
-                paintInvalidationContainer, PaintInvalidationSubtree);
+        ObjectPaintInvalidator(object).invalidatePaintOfPreviousVisualRect(
+            paintInvalidationContainer, PaintInvalidationSubtree);
       });
 }
 
 void ObjectPaintInvalidator::
     invalidatePaintIncludingNonSelfPaintingLayerDescendantsInternal(
         const LayoutBoxModelObject& paintInvalidationContainer) {
-  invalidatePaintOfPreviousPaintInvalidationRect(paintInvalidationContainer,
-                                                 PaintInvalidationSubtree);
+  invalidatePaintOfPreviousVisualRect(paintInvalidationContainer,
+                                      PaintInvalidationSubtree);
   for (LayoutObject* child = m_object.slowFirstChild(); child;
        child = child->nextSibling()) {
     if (!child->hasLayer() ||
@@ -375,21 +372,21 @@ void ObjectPaintInvalidator::slowSetPaintingLayerNeedsRepaint() {
 
 void ObjectPaintInvalidatorWithContext::fullyInvalidatePaint(
     PaintInvalidationReason reason,
-    const LayoutRect& oldBounds,
-    const LayoutRect& newBounds) {
+    const LayoutRect& oldVisualRect,
+    const LayoutRect& newVisualRect) {
   // The following logic avoids invalidating twice if one set of bounds contains
   // the other.
-  if (!newBounds.contains(oldBounds)) {
-    LayoutRect invalidationRect = oldBounds;
+  if (!newVisualRect.contains(oldVisualRect)) {
+    LayoutRect invalidationRect = oldVisualRect;
     invalidatePaintUsingContainer(*m_context.paintInvalidationContainer,
                                   invalidationRect, reason);
 
-    if (invalidationRect.contains(newBounds))
+    if (invalidationRect.contains(newVisualRect))
       return;
   }
 
   invalidatePaintUsingContainer(*m_context.paintInvalidationContainer,
-                                newBounds, reason);
+                                newVisualRect, reason);
 }
 
 PaintInvalidationReason
@@ -411,7 +408,7 @@ ObjectPaintInvalidatorWithContext::computePaintInvalidationReason() {
   if (m_object.shouldDoFullPaintInvalidation())
     return m_object.fullPaintInvalidationReason();
 
-  if (m_context.oldBounds.isEmpty() && m_context.newBounds.isEmpty())
+  if (m_context.oldVisualRect.isEmpty() && m_context.newVisualRect.isEmpty())
     return PaintInvalidationNone;
 
   if (backgroundObscurationChanged)
@@ -431,28 +428,29 @@ ObjectPaintInvalidatorWithContext::computePaintInvalidationReason() {
 
   // If the size is zero on one of our bounds then we know we're going to have
   // to do a full invalidation of either old bounds or new bounds.
-  if (m_context.oldBounds.isEmpty())
+  if (m_context.oldVisualRect.isEmpty())
     return PaintInvalidationBecameVisible;
-  if (m_context.newBounds.isEmpty())
+  if (m_context.newVisualRect.isEmpty())
     return PaintInvalidationBecameInvisible;
 
   // If we shifted, we don't know the exact reason so we are conservative and
   // trigger a full invalidation. Shifting could be caused by some layout
   // property (left / top) or some in-flow layoutObject inserted / removed
   // before us in the tree.
-  if (m_context.newBounds.location() != m_context.oldBounds.location())
+  if (m_context.newVisualRect.location() != m_context.oldVisualRect.location())
     return PaintInvalidationBoundsChange;
 
   if (m_context.newLocation != m_context.oldLocation)
     return PaintInvalidationLocationChange;
 
   // Incremental invalidation is only applicable to LayoutBoxes. Return
-  // PaintInvalidationIncremental no matter if oldBounds and newBounds are equal
+  // PaintInvalidationIncremental no matter if oldVisualRect and newVisualRect
+  // are equal
   // because a LayoutBox may need paint invalidation if its border box changes.
   if (m_object.isBox())
     return PaintInvalidationIncremental;
 
-  if (m_context.oldBounds != m_context.newBounds)
+  if (m_context.oldVisualRect != m_context.newVisualRect)
     return PaintInvalidationBoundsChange;
 
   return PaintInvalidationNone;
@@ -468,7 +466,7 @@ void ObjectPaintInvalidatorWithContext::invalidateSelectionIfNeeded(
   if (!fullInvalidation && !m_object.shouldInvalidateSelection())
     return;
 
-  LayoutRect oldSelectionRect = selectionPaintInvalidationMap().get(&m_object);
+  LayoutRect oldSelectionRect = selectionVisualRectMap().get(&m_object);
   LayoutRect newSelectionRect = m_object.localSelectionRect();
   if (!newSelectionRect.isEmpty()) {
     m_context.mapLocalRectToPaintInvalidationBacking(m_object,
@@ -477,7 +475,7 @@ void ObjectPaintInvalidatorWithContext::invalidateSelectionIfNeeded(
         *m_context.paintInvalidationContainer));
   }
 
-  setPreviousSelectionPaintInvalidationRect(m_object, newSelectionRect);
+  setPreviousSelectionVisualRect(m_object, newSelectionRect);
 
   if (!fullInvalidation) {
     fullyInvalidatePaint(PaintInvalidationSelection, oldSelectionRect,
@@ -513,7 +511,8 @@ ObjectPaintInvalidatorWithContext::invalidatePaintIfNeededWithComputedReason(
       return PaintInvalidationDelayedFull;
     default:
       DCHECK(isImmediateFullPaintInvalidationReason(reason));
-      fullyInvalidatePaint(reason, m_context.oldBounds, m_context.newBounds);
+      fullyInvalidatePaint(reason, m_context.oldVisualRect,
+                           m_context.newVisualRect);
   }
 
   m_context.paintingLayer->setNeedsRepaint();

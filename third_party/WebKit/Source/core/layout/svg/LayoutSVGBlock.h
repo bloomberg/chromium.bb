@@ -58,7 +58,7 @@ class LayoutSVGBlock : public LayoutBlockFlow {
   }
 
  private:
-  LayoutRect absoluteClippedOverflowRect() const final;
+  LayoutRect absoluteVisualRect() const final;
 
   bool allowsOverflowClip() const final;
 

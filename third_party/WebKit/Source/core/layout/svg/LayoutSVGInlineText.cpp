@@ -401,13 +401,12 @@ void LayoutSVGInlineText::computeNewScaledFontForStyle(
   scaledFont.update(document.styleEngine().fontSelector());
 }
 
-LayoutRect LayoutSVGInlineText::absoluteClippedOverflowRect() const {
-  return parent()->absoluteClippedOverflowRect();
+LayoutRect LayoutSVGInlineText::absoluteVisualRect() const {
+  return parent()->absoluteVisualRect();
 }
 
-FloatRect LayoutSVGInlineText::paintInvalidationRectInLocalSVGCoordinates()
-    const {
-  return parent()->paintInvalidationRectInLocalSVGCoordinates();
+FloatRect LayoutSVGInlineText::visualRectInLocalSVGCoordinates() const {
+  return parent()->visualRectInLocalSVGCoordinates();
 }
 
 PassRefPtr<StringImpl> LayoutSVGInlineText::originalText() const {

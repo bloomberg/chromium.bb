@@ -125,8 +125,8 @@ class CORE_EXPORT LayoutSVGRoot final : public LayoutReplaced {
 
   FloatRect objectBoundingBox() const override { return m_objectBoundingBox; }
   FloatRect strokeBoundingBox() const override { return m_strokeBoundingBox; }
-  FloatRect paintInvalidationRectInLocalSVGCoordinates() const override {
-    return m_paintInvalidationBoundingBox;
+  FloatRect visualRectInLocalSVGCoordinates() const override {
+    return m_visualRectInLocalSVGCoordinates;
   }
 
   bool nodeAtPoint(HitTestResult&,
@@ -134,7 +134,7 @@ class CORE_EXPORT LayoutSVGRoot final : public LayoutReplaced {
                    const LayoutPoint& accumulatedOffset,
                    HitTestAction) override;
 
-  LayoutRect localOverflowRectForPaintInvalidation() const override;
+  LayoutRect localVisualRect() const override;
 
   bool paintedOutputOfObjectHasNoEffectRegardlessOfSize() const final {
     // The rule is the same as LayoutBox's instead of LayoutReplaced's.
@@ -164,7 +164,7 @@ class CORE_EXPORT LayoutSVGRoot final : public LayoutReplaced {
   FloatRect m_objectBoundingBox;
   bool m_objectBoundingBoxValid;
   FloatRect m_strokeBoundingBox;
-  FloatRect m_paintInvalidationBoundingBox;
+  FloatRect m_visualRectInLocalSVGCoordinates;
   mutable AffineTransform m_localToParentTransform;
   AffineTransform m_localToBorderBoxTransform;
   bool m_isLayoutSizeChanged : 1;

@@ -57,9 +57,8 @@ void LayoutSVGModelObject::mapLocalToAncestor(
   SVGLayoutSupport::mapLocalToAncestor(this, ancestor, transformState, flags);
 }
 
-LayoutRect LayoutSVGModelObject::absoluteClippedOverflowRect() const {
-  return SVGLayoutSupport::clippedOverflowRectForPaintInvalidation(*this,
-                                                                   *view());
+LayoutRect LayoutSVGModelObject::absoluteVisualRect() const {
+  return SVGLayoutSupport::visualRectInAncestorSpace(*this, *view());
 }
 
 void LayoutSVGModelObject::mapAncestorToLocal(
@@ -144,8 +143,7 @@ bool LayoutSVGModelObject::nodeAtPoint(HitTestResult&,
 // default absoluteElementBoundingBoxRect() returns incorrect values for SVG
 // objects. Overriding this method provides access to the absolute bounds.
 IntRect LayoutSVGModelObject::absoluteElementBoundingBoxRect() const {
-  return localToAbsoluteQuad(
-             FloatQuad(paintInvalidationRectInLocalSVGCoordinates()))
+  return localToAbsoluteQuad(FloatQuad(visualRectInLocalSVGCoordinates()))
       .enclosingBoundingBox();
 }
 

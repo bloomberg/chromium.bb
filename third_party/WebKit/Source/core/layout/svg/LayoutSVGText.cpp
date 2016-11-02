@@ -368,15 +368,14 @@ FloatRect LayoutSVGText::strokeBoundingBox() const {
   return strokeBoundaries;
 }
 
-FloatRect LayoutSVGText::paintInvalidationRectInLocalSVGCoordinates() const {
-  FloatRect paintInvalidationRect = strokeBoundingBox();
-  SVGLayoutSupport::intersectPaintInvalidationRectWithResources(
-      this, paintInvalidationRect);
+FloatRect LayoutSVGText::visualRectInLocalSVGCoordinates() const {
+  FloatRect visualRect = strokeBoundingBox();
+  SVGLayoutSupport::adjustVisualRectWithResources(this, visualRect);
 
   if (const ShadowList* textShadow = style()->textShadow())
-    textShadow->adjustRectForShadow(paintInvalidationRect);
+    textShadow->adjustRectForShadow(visualRect);
 
-  return paintInvalidationRect;
+  return visualRect;
 }
 
 bool LayoutSVGText::isObjectBoundingBoxValid() const {

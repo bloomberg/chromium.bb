@@ -498,8 +498,7 @@ void LayoutBoxModelObject::invalidateTreeIfNeeded(
     newPaintInvalidationState
         .setForceSubtreeInvalidationCheckingWithinContainer();
 
-  LayoutRect previousPaintInvalidationRect =
-      this->previousPaintInvalidationRect();
+  LayoutRect previousVisualRect = this->previousVisualRect();
   LayoutPoint previousPosition = previousPositionFromPaintInvalidationBacking();
   PaintInvalidationReason reason =
       invalidatePaintIfNeeded(newPaintInvalidationState);
@@ -522,7 +521,7 @@ void LayoutBoxModelObject::invalidateTreeIfNeeded(
   // enough saved information to do accurate check of clipping change. Will
   // remove when we remove rect-based paint invalidation.
   if (!RuntimeEnabledFeatures::slimmingPaintV2Enabled() &&
-      previousPaintInvalidationRect != this->previousPaintInvalidationRect() &&
+      previousVisualRect != this->previousVisualRect() &&
       !usesCompositedScrolling()
       // Note that isLayoutView() below becomes unnecessary after the launch of
       // root layer scrolling.

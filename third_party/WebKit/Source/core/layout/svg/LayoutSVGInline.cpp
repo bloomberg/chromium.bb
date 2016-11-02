@@ -73,17 +73,16 @@ FloatRect LayoutSVGInline::strokeBoundingBox() const {
   return FloatRect();
 }
 
-FloatRect LayoutSVGInline::paintInvalidationRectInLocalSVGCoordinates() const {
+FloatRect LayoutSVGInline::visualRectInLocalSVGCoordinates() const {
   if (const LayoutSVGText* textRoot =
           LayoutSVGText::locateLayoutSVGTextAncestor(this))
-    return textRoot->paintInvalidationRectInLocalSVGCoordinates();
+    return textRoot->visualRectInLocalSVGCoordinates();
 
   return FloatRect();
 }
 
-LayoutRect LayoutSVGInline::absoluteClippedOverflowRect() const {
-  return SVGLayoutSupport::clippedOverflowRectForPaintInvalidation(*this,
-                                                                   *view());
+LayoutRect LayoutSVGInline::absoluteVisualRect() const {
+  return SVGLayoutSupport::visualRectInAncestorSpace(*this, *view());
 }
 
 void LayoutSVGInline::mapLocalToAncestor(const LayoutBoxModelObject* ancestor,

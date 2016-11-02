@@ -111,7 +111,7 @@ bool LayoutTableCol::canHaveChildren() const {
   return isTableColumnGroup();
 }
 
-LayoutRect LayoutTableCol::localOverflowRectForPaintInvalidation() const {
+LayoutRect LayoutTableCol::localVisualRect() const {
   // Entire table gets invalidated, instead of invalidating
   // every cell in the column. This is simpler, but suboptimal.
 
@@ -123,7 +123,7 @@ LayoutRect LayoutTableCol::localOverflowRectForPaintInvalidation() const {
   // location is always zero.
   ASSERT(this->location() == LayoutPoint());
 
-  return table->localOverflowRectForPaintInvalidation();
+  return table->localVisualRect();
 }
 
 void LayoutTableCol::clearPreferredLogicalWidthsDirtyBits() {

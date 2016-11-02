@@ -339,7 +339,7 @@ bool SVGSVGElement::checkIntersectionOrEnclosure(
   AffineTransform ctm = toSVGGraphicsElement(element).computeCTM(
       AncestorScope, DisallowStyleUpdate, this);
   FloatRect mappedRepaintRect =
-      ctm.mapRect(layoutObject->paintInvalidationRectInLocalSVGCoordinates());
+      ctm.mapRect(layoutObject->visualRectInLocalSVGCoordinates());
 
   bool result = false;
   switch (mode) {

@@ -600,9 +600,8 @@ bool LayoutMultiColumnSet::computeColumnRuleBounds(
   return true;
 }
 
-LayoutRect LayoutMultiColumnSet::localOverflowRectForPaintInvalidation() const {
-  LayoutRect blockFlowBounds =
-      LayoutBlockFlow::localOverflowRectForPaintInvalidation();
+LayoutRect LayoutMultiColumnSet::localVisualRect() const {
+  LayoutRect blockFlowBounds = LayoutBlockFlow::localVisualRect();
 
   // Now add in column rule bounds, if present.
   Vector<LayoutRect> columnRuleBounds;

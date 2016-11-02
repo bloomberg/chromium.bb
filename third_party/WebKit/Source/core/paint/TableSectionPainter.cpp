@@ -165,13 +165,12 @@ void TableSectionPainter::paintCollapsedSectionBorders(
   BoxClipper boxClipper(m_layoutTableSection, paintInfo, adjustedPaintOffset,
                         ForceContentsClip);
 
-  LayoutRect localPaintInvalidationRect =
-      LayoutRect(paintInfo.cullRect().m_rect);
-  localPaintInvalidationRect.moveBy(-adjustedPaintOffset);
+  LayoutRect localVisualRect = LayoutRect(paintInfo.cullRect().m_rect);
+  localVisualRect.moveBy(-adjustedPaintOffset);
 
   LayoutRect tableAlignedRect =
       m_layoutTableSection.logicalRectForWritingModeAndDirection(
-          localPaintInvalidationRect);
+          localVisualRect);
 
   CellSpan dirtiedRows = m_layoutTableSection.dirtiedRows(tableAlignedRect);
   CellSpan dirtiedColumns =
@@ -204,13 +203,12 @@ void TableSectionPainter::paintCollapsedSectionBorders(
 
 void TableSectionPainter::paintObject(const PaintInfo& paintInfo,
                                       const LayoutPoint& paintOffset) {
-  LayoutRect localPaintInvalidationRect =
-      LayoutRect(paintInfo.cullRect().m_rect);
-  localPaintInvalidationRect.moveBy(-paintOffset);
+  LayoutRect localVisualRect = LayoutRect(paintInfo.cullRect().m_rect);
+  localVisualRect.moveBy(-paintOffset);
 
   LayoutRect tableAlignedRect =
       m_layoutTableSection.logicalRectForWritingModeAndDirection(
-          localPaintInvalidationRect);
+          localVisualRect);
 
   CellSpan dirtiedRows = m_layoutTableSection.dirtiedRows(tableAlignedRect);
   CellSpan dirtiedColumns =

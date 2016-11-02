@@ -181,8 +181,8 @@ void LayoutSVGShape::layout() {
 
   bool updateParentBoundaries = false;
   // updateShapeFromElement() also updates the object & stroke bounds - which
-  // feeds into the paint invalidation rect - so we need to call it for both
-  // the shape-update and the bounds-update flag, since .
+  // feeds into the visual rect - so we need to call it for both the
+  // shape-update and the bounds-update flag.
   if (m_needsShapeUpdate || m_needsBoundariesUpdate) {
     FloatRect oldObjectBoundingBox = objectBoundingBox();
     updateShapeFromElement();
@@ -190,9 +190,8 @@ void LayoutSVGShape::layout() {
       setShouldDoFullPaintInvalidation();
     m_needsShapeUpdate = false;
 
-    m_paintInvalidationBoundingBox = strokeBoundingBox();
-    SVGLayoutSupport::intersectPaintInvalidationRectWithResources(
-        this, m_paintInvalidationBoundingBox);
+    m_localVisualRect = strokeBoundingBox();
+    SVGLayoutSupport::adjustVisualRectWithResources(this, m_localVisualRect);
     m_needsBoundariesUpdate = false;
 
     updateParentBoundaries = true;
@@ -248,7 +247,7 @@ void LayoutSVGShape::paint(const PaintInfo& paintInfo,
 void LayoutSVGShape::addOutlineRects(Vector<LayoutRect>& rects,
                                      const LayoutPoint&,
                                      IncludeBlockVisualOverflowOrNot) const {
-  rects.append(LayoutRect(paintInvalidationRectInLocalSVGCoordinates()));
+  rects.append(LayoutRect(visualRectInLocalSVGCoordinates()));
 }
 
 bool LayoutSVGShape::nodeAtFloatPoint(HitTestResult& result,

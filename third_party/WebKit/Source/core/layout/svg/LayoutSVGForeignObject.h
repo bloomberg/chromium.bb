@@ -58,7 +58,7 @@ class LayoutSVGForeignObject final : public LayoutSVGBlock {
   FloatRect strokeBoundingBox() const override {
     return FloatRect(FloatPoint(), m_viewport.size());
   }
-  FloatRect paintInvalidationRectInLocalSVGCoordinates() const override {
+  FloatRect visualRectInLocalSVGCoordinates() const override {
     return FloatRect(FloatPoint(), m_viewport.size());
   }
 

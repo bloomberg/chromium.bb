@@ -27,7 +27,7 @@ class SVGMaskPainter {
   void drawMaskForLayoutObject(GraphicsContext&,
                                const LayoutObject&,
                                const FloatRect& targetBoundingBox,
-                               const FloatRect& targetPaintInvalidationRect);
+                               const FloatRect& targetVisualRect);
 
   LayoutSVGResourceMasker& m_mask;
 };

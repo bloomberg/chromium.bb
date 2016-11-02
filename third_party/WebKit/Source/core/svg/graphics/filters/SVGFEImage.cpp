@@ -84,7 +84,7 @@ FEImage* FEImage::createWithIRIReference(
 
 static FloatRect getLayoutObjectRepaintRect(LayoutObject* layoutObject) {
   return layoutObject->localToSVGParentTransform().mapRect(
-      layoutObject->paintInvalidationRectInLocalSVGCoordinates());
+      layoutObject->visualRectInLocalSVGCoordinates());
 }
 
 AffineTransform makeMapBetweenRects(const FloatRect& source,

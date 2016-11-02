@@ -126,9 +126,8 @@ struct SameSizeAsLayoutObject : DisplayItemClient {
 #endif
   unsigned m_bitfields;
   unsigned m_bitfields2;
-  LayoutRect rect;       // Stores the previous paint invalidation rect.
-  LayoutPoint position;  // Stores the previous position from the paint
-                         // invalidation container.
+  LayoutRect m_previousVisualRect;
+  LayoutPoint m_previousPosition;
 };
 
 static_assert(sizeof(LayoutObject) == sizeof(SameSizeAsLayoutObject),
@@ -1095,7 +1094,7 @@ String LayoutObject::debugName() const {
 }
 
 LayoutRect LayoutObject::visualRect() const {
-  return previousPaintInvalidationRect();
+  return previousVisualRect();
 }
 
 bool LayoutObject::isPaintInvalidationContainer() const {
@@ -1205,28 +1204,27 @@ PaintInvalidationReason LayoutObject::invalidatePaintIfNeeded(
       paintInvalidationState.paintInvalidationContainer();
   DCHECK(paintInvalidationContainer == containerForPaintInvalidation());
 
-  context.oldBounds = previousPaintInvalidationRect();
+  context.oldVisualRect = previousVisualRect();
   context.oldLocation = previousPositionFromPaintInvalidationBacking();
-  context.newBounds =
-      paintInvalidationState.computePaintInvalidationRectInBacking();
+  context.newVisualRect = paintInvalidationState.computeVisualRectInBacking();
   context.newLocation =
       paintInvalidationState.computePositionFromPaintInvalidationBacking();
 
   IntSize adjustment =
       scrollAdjustmentForPaintInvalidation(paintInvalidationContainer);
   context.newLocation.move(adjustment);
-  context.newBounds.move(adjustment);
+  context.newVisualRect.move(adjustment);
 
-  adjustVisualRectForRasterEffects(context.newBounds);
+  adjustVisualRectForRasterEffects(context.newVisualRect);
 
-  setPreviousPaintInvalidationRect(context.newBounds);
+  setPreviousVisualRect(context.newVisualRect);
   setPreviousPositionFromPaintInvalidationBacking(context.newLocation);
 
   if (!shouldCheckForPaintInvalidationRegardlessOfPaintInvalidationState() &&
       paintInvalidationState
           .forcedSubtreeInvalidationRectUpdateWithinContainerOnly()) {
-    // We are done updating the paint invalidation rect. No other paint
-    // invalidation work to do for this object.
+    // We are done updating the visual rect. No other paint invalidation work
+    // to do for this object.
     return PaintInvalidationNone;
   }
 
@@ -1240,7 +1238,7 @@ PaintInvalidationReason LayoutObject::invalidatePaintIfNeeded(
       .invalidatePaintIfNeeded();
 }
 
-void LayoutObject::adjustInvalidationRectForCompositedScrolling(
+void LayoutObject::adjustVisualRectForCompositedScrolling(
     LayoutRect& rect,
     const LayoutBoxModelObject& paintInvalidationContainer) const {
   if (compositedScrollsWithRespectTo(paintInvalidationContainer)) {
@@ -1250,37 +1248,35 @@ void LayoutObject::adjustInvalidationRectForCompositedScrolling(
   }
 }
 
-LayoutRect
-LayoutObject::previousPaintInvalidationRectIncludingCompositedScrolling(
+LayoutRect LayoutObject::previousVisualRectIncludingCompositedScrolling(
     const LayoutBoxModelObject& paintInvalidationContainer) const {
-  LayoutRect invalidationRect = previousPaintInvalidationRect();
-  adjustInvalidationRectForCompositedScrolling(invalidationRect,
-                                               paintInvalidationContainer);
-  return invalidationRect;
+  LayoutRect rect = previousVisualRect();
+  adjustVisualRectForCompositedScrolling(rect, paintInvalidationContainer);
+  return rect;
 }
 
 void LayoutObject::adjustPreviousPaintInvalidationForScrollIfNeeded(
     const DoubleSize& scrollDelta) {
   if (containerForPaintInvalidation().usesCompositedScrolling())
     return;
-  m_previousPaintInvalidationRect.move(LayoutSize(scrollDelta));
+  m_previousVisualRect.move(LayoutSize(scrollDelta));
 }
 
-void LayoutObject::clearPreviousPaintInvalidationRects() {
-  setPreviousPaintInvalidationRect(LayoutRect());
-  // After clearing ("invalidating" the paint invalidation rects, mark this
-  // object as needing to re-compute them.
+void LayoutObject::clearPreviousVisualRects() {
+  setPreviousVisualRect(LayoutRect());
+  // After clearing ("invalidating" the visual rects, mark this object as
+  // needing to re-compute them.
   setShouldDoFullPaintInvalidation();
 }
 
-LayoutRect LayoutObject::absoluteClippedOverflowRect() const {
-  LayoutRect rect = localOverflowRectForPaintInvalidation();
+LayoutRect LayoutObject::absoluteVisualRect() const {
+  LayoutRect rect = localVisualRect();
   mapToVisualRectInAncestorSpace(view(), rect);
   return rect;
 }
 
-LayoutRect LayoutObject::localOverflowRectForPaintInvalidation() const {
-  ASSERT_NOT_REACHED();
+LayoutRect LayoutObject::localVisualRect() const {
+  NOTREACHED();
   return LayoutRect();
 }
 
@@ -3340,17 +3336,17 @@ void LayoutObject::setNeedsBoundariesUpdate() {
 }
 
 FloatRect LayoutObject::objectBoundingBox() const {
-  ASSERT_NOT_REACHED();
+  NOTREACHED();
   return FloatRect();
 }
 
 FloatRect LayoutObject::strokeBoundingBox() const {
-  ASSERT_NOT_REACHED();
+  NOTREACHED();
   return FloatRect();
 }
 
-FloatRect LayoutObject::paintInvalidationRectInLocalSVGCoordinates() const {
-  ASSERT_NOT_REACHED();
+FloatRect LayoutObject::visualRectInLocalSVGCoordinates() const {
+  NOTREACHED();
   return FloatRect();
 }
 

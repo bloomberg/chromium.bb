@@ -1119,7 +1119,7 @@ LayoutRect LayoutInline::linesVisualOverflowBoundingBox() const {
   return rect;
 }
 
-LayoutRect LayoutInline::absoluteClippedOverflowRect() const {
+LayoutRect LayoutInline::absoluteVisualRect() const {
   if (!continuation()) {
     LayoutRect rect = visualOverflowRect();
     mapToVisualRectInAncestorSpace(view(), rect);
@@ -1139,7 +1139,7 @@ LayoutRect LayoutInline::absoluteClippedOverflowRect() const {
        currBlock = toLayoutBlock(currBlock->nextSibling())) {
     for (LayoutObject* curr = currBlock->firstChild(); curr;
          curr = curr->nextSibling()) {
-      LayoutRect rect(curr->localOverflowRectForPaintInvalidation());
+      LayoutRect rect(curr->localVisualRect());
       context(FloatRect(rect));
       if (curr == endContinuation) {
         LayoutRect rect(enclosingIntRect(floatResult));
@@ -1151,7 +1151,7 @@ LayoutRect LayoutInline::absoluteClippedOverflowRect() const {
   return LayoutRect();
 }
 
-LayoutRect LayoutInline::localOverflowRectForPaintInvalidation() const {
+LayoutRect LayoutInline::localVisualRect() const {
   // If we don't create line boxes, we don't have any invalidations to do.
   if (!alwaysCreateLineBoxes())
     return LayoutRect();

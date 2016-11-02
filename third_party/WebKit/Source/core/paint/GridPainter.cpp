@@ -48,9 +48,8 @@ void GridPainter::paintChildren(const PaintInfo& paintInfo,
                                 const LayoutPoint& paintOffset) {
   DCHECK(!m_layoutGrid.needsLayout());
 
-  LayoutRect localPaintInvalidationRect =
-      LayoutRect(paintInfo.cullRect().m_rect);
-  localPaintInvalidationRect.moveBy(-paintOffset);
+  LayoutRect localVisualRect = LayoutRect(paintInfo.cullRect().m_rect);
+  localVisualRect.moveBy(-paintOffset);
 
   Vector<LayoutUnit> columnPositions = m_layoutGrid.columnPositions();
   if (!m_layoutGrid.styleRef().isLeftToRightDirection()) {
@@ -64,12 +63,10 @@ void GridPainter::paintChildren(const PaintInfo& paintInfo,
     std::sort(columnPositions.begin(), columnPositions.end());
   }
 
-  GridSpan dirtiedColumns =
-      dirtiedGridAreas(columnPositions, localPaintInvalidationRect.x(),
-                       localPaintInvalidationRect.maxX());
-  GridSpan dirtiedRows = dirtiedGridAreas(m_layoutGrid.rowPositions(),
-                                          localPaintInvalidationRect.y(),
-                                          localPaintInvalidationRect.maxY());
+  GridSpan dirtiedColumns = dirtiedGridAreas(
+      columnPositions, localVisualRect.x(), localVisualRect.maxX());
+  GridSpan dirtiedRows = dirtiedGridAreas(
+      m_layoutGrid.rowPositions(), localVisualRect.y(), localVisualRect.maxY());
 
   if (!m_layoutGrid.styleRef().isLeftToRightDirection()) {
     // As we changed the order of tracks previously, we need to swap the dirtied
@@ -93,7 +90,7 @@ void GridPainter::paintChildren(const PaintInfo& paintInfo,
   }
 
   for (auto* item : m_layoutGrid.itemsOverflowingGridArea()) {
-    if (item->frameRect().intersects(localPaintInvalidationRect))
+    if (item->frameRect().intersects(localVisualRect))
       gridItemsToBePainted.append(
           std::make_pair(item, m_layoutGrid.paintIndexForGridItem(item)));
   }

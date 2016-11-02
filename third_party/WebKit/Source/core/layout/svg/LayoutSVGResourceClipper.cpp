@@ -170,10 +170,10 @@ sk_sp<const SkPicture> LayoutSVGResourceClipper::createContentPicture() {
   if (m_clipContentPicture)
     return m_clipContentPicture;
 
-  // Using strokeBoundingBox (instead of
-  // paintInvalidationRectInLocalSVGCoordinates) to avoid the intersection with
-  // local clips/mask, which may yield incorrect results when mixing
-  // objectBoundingBox and userSpaceOnUse units (http://crbug.com/294900).
+  // Using strokeBoundingBox (instead of visualRectInLocalSVGCoordinates) to
+  // avoid the intersection with local clips/mask, which may yield incorrect
+  // results when mixing objectBoundingBox and userSpaceOnUse units
+  // (http://crbug.com/294900).
   FloatRect bounds = strokeBoundingBox();
 
   SkPictureBuilder pictureBuilder(bounds, nullptr, nullptr);
@@ -250,7 +250,7 @@ void LayoutSVGResourceClipper::calculateLocalClipBounds() {
       continue;
 
     m_localClipBounds.unite(layoutObject->localToSVGParentTransform().mapRect(
-        layoutObject->paintInvalidationRectInLocalSVGCoordinates()));
+        layoutObject->visualRectInLocalSVGCoordinates()));
   }
 }
 

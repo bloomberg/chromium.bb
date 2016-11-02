@@ -68,8 +68,8 @@ struct PaintInvalidatorContext {
 
   PaintLayer* paintingLayer = nullptr;
 
-  LayoutRect oldBounds;
-  LayoutRect newBounds;
+  LayoutRect oldVisualRect;
+  LayoutRect newVisualRect;
   LayoutPoint oldLocation;
   LayoutPoint newLocation;
 };
@@ -88,9 +88,8 @@ class PaintInvalidator {
       const LayoutObject&,
       const FloatRect&,
       const PaintInvalidatorContext&);
-  LayoutRect computePaintInvalidationRectInBacking(
-      const LayoutObject&,
-      const PaintInvalidatorContext&);
+  LayoutRect computeVisualRectInBacking(const LayoutObject&,
+                                        const PaintInvalidatorContext&);
   LayoutPoint computeLocationFromPaintInvalidationBacking(
       const LayoutObject&,
       const PaintInvalidatorContext&);

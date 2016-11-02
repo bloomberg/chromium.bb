@@ -2265,7 +2265,7 @@ bool LayoutBox::paintedOutputOfObjectHasNoEffectRegardlessOfSize() const {
   return true;
 }
 
-LayoutRect LayoutBox::localOverflowRectForPaintInvalidation() const {
+LayoutRect LayoutBox::localVisualRect() const {
   if (style()->visibility() != EVisibility::Visible)
     return LayoutRect();
 
@@ -2403,11 +2403,9 @@ bool LayoutBox::mapToVisualRectInAncestorSpace(
                                                      visualRectFlags);
 }
 
-void LayoutBox::inflateVisualRectForFilter(
-    LayoutRect& paintInvalidationRect) const {
+void LayoutBox::inflateVisualRectForFilter(LayoutRect& visualRect) const {
   if (layer() && layer()->hasFilterInducingProperty())
-    paintInvalidationRect =
-        layer()->mapLayoutRectForFilter(paintInvalidationRect);
+    visualRect = layer()->mapLayoutRectForFilter(visualRect);
 }
 
 void LayoutBox::updateLogicalWidth() {
@@ -5272,8 +5270,7 @@ LayoutObject* LayoutBox::splitAnonymousBoxesAroundChild(
       LayoutBox* parentBox = toLayoutBox(boxToSplit->parent());
       // We need to invalidate the |parentBox| before inserting the new node
       // so that the table paint invalidation logic knows the structure is
-      // dirty.
-      // See for example LayoutTableCell:localOverflowRectForPaintInvalidation.
+      // dirty. See for example LayoutTableCell:localVisualRect().
       markBoxForRelayoutAfterSplit(parentBox);
       parentBox->virtualChildren()->insertChildNode(parentBox, postBox,
                                                     boxToSplit->nextSibling());
@@ -5493,10 +5490,10 @@ ShapeOutsideInfo* LayoutBox::shapeOutsideInfo() const {
                                                : nullptr;
 }
 
-void LayoutBox::clearPreviousPaintInvalidationRects() {
-  LayoutBoxModelObject::clearPreviousPaintInvalidationRects();
+void LayoutBox::clearPreviousVisualRects() {
+  LayoutBoxModelObject::clearPreviousVisualRects();
   if (PaintLayerScrollableArea* scrollableArea = this->getScrollableArea())
-    scrollableArea->clearPreviousPaintInvalidationRects();
+    scrollableArea->clearPreviousVisualRects();
 }
 
 void LayoutBox::setPercentHeightContainer(LayoutBlock* container) {

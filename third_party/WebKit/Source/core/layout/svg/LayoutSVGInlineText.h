@@ -80,8 +80,8 @@ class LayoutSVGInlineText final : public LayoutText {
   LayoutRect linesBoundingBox() const override;
   InlineTextBox* createTextBox(int start, unsigned short length) override;
 
-  LayoutRect absoluteClippedOverflowRect() const final;
-  FloatRect paintInvalidationRectInLocalSVGCoordinates() const final;
+  LayoutRect absoluteVisualRect() const final;
+  FloatRect visualRectInLocalSVGCoordinates() const final;
 
   float m_scalingFactor;
   Font m_scaledFont;
