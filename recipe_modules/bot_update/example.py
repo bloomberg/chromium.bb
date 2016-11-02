@@ -146,6 +146,17 @@ def GenTests(api):
       patch_issue=338811,
       patch_set=3,
   )
-  yield (api.test('tryjob_gerrit_angle_deprecated') +
-         api.properties.tryserver_gerrit(full_project_name='angle/angle')
+  yield api.test('tryjob_gerrit_angle_deprecated') + api.properties.tryserver(
+      patch_project='angle/angle',
+      gerrit='https://chromium-review.googlesource.com',
+      patch_storage='gerrit',
+      repository='https://chromium.googlesource.com/angle/angle',
+      rietveld=None,
+      **{
+        'event.change.id': 'angle%2Fangle~master~Ideadbeaf',
+        'event.change.number': 338811,
+        'event.change.url':
+          'https://chromium-review.googlesource.com/#/c/338811',
+        'event.patchSet.ref': 'refs/changes/11/338811/3',
+      }
   )

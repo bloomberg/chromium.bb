@@ -65,9 +65,20 @@ def GenTests(api):
          api.properties.tryserver(test_patch_root='sub/project') +
          description_step)
 
-  yield (api.test('with_gerrit_patch_deprecated') +
-         api.properties.tryserver_gerrit(
-           full_project_name='infra/infra'))
+  yield api.test('with_gerrit_patch_deprecated') + api.properties.tryserver(
+      patch_project='infra/infra',
+      gerrit='https://chromium-review.googlesource.com',
+      patch_storage='gerrit',
+      repository='https://chromium.googlesource.com/infra/infra',
+      rietveld=None,
+      **{
+        'event.change.id': 'infra%2Finfra~master~Ideadbeaf',
+        'event.change.number': 338811,
+        'event.change.url':
+          'https://chromium-review.googlesource.com/#/c/338811',
+        'event.patchSet.ref': 'refs/changes/11/338811/3',
+      }
+  )
 
   yield (api.test('with_gerrit_patch') +
          api.properties.tryserver(gerrit_project='infra/infra'))
