@@ -80,8 +80,6 @@ class CC_EXPORT BrowserControlsOffsetManager
   void StartAnimationIfNecessary();
   bool IsAnimationComplete(float new_ratio);
   void ResetBaseline();
-  // Offset computation regardless of top or bottom control state.
-  float ContentOffsetInternal() const;
 
   // The client manages the lifecycle of this.
   BrowserControlsOffsetManagerClient* client_;

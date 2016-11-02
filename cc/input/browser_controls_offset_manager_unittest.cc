@@ -498,24 +498,6 @@ TEST(BrowserControlsOffsetManagerTest, ScrollThenRestoreBottomControls) {
   manager->ScrollEnd();
 }
 
-TEST(BrowserControlsOffsetManagerTest,
-     ScrollThenRestoreBottomControlsNoBrowserControls) {
-  MockBrowserControlsOffsetManagerClient client(0.f, 0.5f, 0.5f);
-  client.SetBottomControlsHeight(100.f);
-  BrowserControlsOffsetManager* manager = client.manager();
-  manager->ScrollBegin();
-  manager->ScrollBy(gfx::Vector2dF(0.f, 20.f));
-  EXPECT_FLOAT_EQ(80.f, manager->ContentBottomOffset());
-  EXPECT_FLOAT_EQ(0.8f, manager->BottomControlsShownRatio());
-  manager->ScrollEnd();
-
-  manager->ScrollBegin();
-  manager->ScrollBy(gfx::Vector2dF(0.f, -200.f));
-  EXPECT_FLOAT_EQ(100.f, manager->ContentBottomOffset());
-  EXPECT_FLOAT_EQ(1.f, manager->BottomControlsShownRatio());
-  manager->ScrollEnd();
-}
-
 TEST(BrowserControlsOffsetManagerTest, HideAndPeekBottomControls) {
   MockBrowserControlsOffsetManagerClient client(100.f, 0.5f, 0.5f);
   client.SetBottomControlsHeight(100.f);
