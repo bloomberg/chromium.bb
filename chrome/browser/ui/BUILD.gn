@@ -435,7 +435,6 @@ split_static_library("ui") {
     ":ui_warnings",
     "//build/config:precompiled_headers",
     "//build/config/compiler:wexit_time_destructors",
-    "//third_party/WebKit/public:debug_devtools",
   ]
 
   # Since browser and browser_ui actually depend on each other,
@@ -569,6 +568,7 @@ split_static_library("ui") {
     "//skia",
     "//storage/browser",
     "//storage/common",
+    "//third_party/WebKit/public:features",
     "//third_party/WebKit/public:resources",
     "//third_party/adobe/flash:flapper_version_h",
     "//third_party/brotli",

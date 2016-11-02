@@ -1257,7 +1257,6 @@ split_static_library("browser") {
   configs += [
     "//build/config/compiler:wexit_time_destructors",
     "//build/config:precompiled_headers",
-    "//third_party/WebKit/public:debug_devtools",
   ]
   defines = []
   libs = []
@@ -1445,6 +1444,7 @@ split_static_library("browser") {
     "//sql",
     "//storage/browser",
     "//storage/common",
+    "//third_party/WebKit/public:features",
     "//third_party/WebKit/public:image_resources",
     "//third_party/WebKit/public:resources",
     "//third_party/cacheinvalidation",

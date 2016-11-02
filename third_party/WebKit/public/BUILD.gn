@@ -2,7 +2,9 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
+import("//build/buildflag_header.gni")
 import("//mojo/public/tools/bindings/mojom.gni")
+import("//third_party/WebKit/public/public_features.gni")
 import("//third_party/WebKit/Source/config.gni")
 import("//tools/grit/grit_rule.gni")
 
@@ -65,10 +67,10 @@ config("blink_headers_config") {
   configs = [ "//v8:external_config" ]
 }
 
-config("debug_devtools") {
-  if (debug_devtools) {
-    defines = [ "DEBUG_DEVTOOLS=1" ]
-  }
+# Public feature flags usabout outside of Blink.
+buildflag_header("features") {
+  header = "public_features.h"
+  flags = [ "DEBUG_DEVTOOLS=$debug_devtools" ]
 }
 
 if (is_android) {

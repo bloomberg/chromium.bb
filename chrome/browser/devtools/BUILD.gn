@@ -55,7 +55,6 @@ static_library("devtools") {
     "//build/config/compiler:no_size_t_to_int_warning",
     "//build/config/compiler:wexit_time_destructors",
     "//build/config:precompiled_headers",
-    "//third_party/WebKit/public:debug_devtools",
   ]
 
   deps = [
@@ -63,6 +62,7 @@ static_library("devtools") {
     "//base",
     "//content/public/browser",
     "//net",
+    "//third_party/WebKit/public:features",
     "//ui/events:dom_keycode_converter",
   ]
 

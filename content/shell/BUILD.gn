@@ -199,8 +199,6 @@ static_library("content_shell_lib") {
 
     # TODO(jschuh): crbug.com/167187 fix size_t to int truncations.
     "//build/config/compiler:no_size_t_to_int_warning",
-
-    "//third_party/WebKit/public:debug_devtools",
   ]
 
   defines = [ "CONTENT_SHELL_VERSION=\"$content_shell_version\"" ]
@@ -251,6 +249,7 @@ static_library("content_shell_lib") {
     "//testing/gmock",
     "//testing/gtest",
     "//third_party/WebKit/public:blink",
+    "//third_party/WebKit/public:features",
     "//third_party/WebKit/public:image_resources",
     "//third_party/WebKit/public:resources",
     "//third_party/WebKit/public:test_support",

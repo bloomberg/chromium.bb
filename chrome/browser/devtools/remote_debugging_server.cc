@@ -25,6 +25,7 @@
 #include "net/base/net_errors.h"
 #include "net/log/net_log_source.h"
 #include "net/socket/tcp_server_socket.h"
+#include "third_party/WebKit/public/public_features.h"
 #include "ui/base/resource/resource_bundle.h"
 
 namespace {
@@ -104,7 +105,7 @@ RemoteDebuggingServer::RemoteDebuggingServer(const std::string& ip,
   }
 
   base::FilePath debug_frontend_dir;
-#if defined(DEBUG_DEVTOOLS)
+#if BUILDFLAG(DEBUG_DEVTOOLS)
   PathService::Get(chrome::DIR_INSPECTOR_DEBUG, &debug_frontend_dir);
 #endif
 

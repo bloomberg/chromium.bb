@@ -18,6 +18,7 @@
 #include "net/base/net_errors.h"
 #include "net/log/net_log_source.h"
 #include "net/socket/tcp_client_socket.h"
+#include "third_party/WebKit/public/public_features.h"
 
 namespace {
 
@@ -309,20 +310,20 @@ void AdbClientSocket::AdbQuery(int port,
   new AdbQuerySocket(port, query, callback);
 }
 
-#if defined(DEBUG_DEVTOOLS)
+#if BUILDFLAG(DEBUG_DEVTOOLS)
 static void UseTransportQueryForDesktop(const SocketCallback& callback,
                                         net::StreamSocket* socket,
                                         int result) {
   callback.Run(result, socket);
 }
-#endif  // defined(DEBUG_DEVTOOLS)
+#endif  // BUILDFLAG(DEBUG_DEVTOOLS)
 
 // static
 void AdbClientSocket::TransportQuery(int port,
                                      const std::string& serial,
                                      const std::string& socket_name,
                                      const SocketCallback& callback) {
-#if defined(DEBUG_DEVTOOLS)
+#if BUILDFLAG(DEBUG_DEVTOOLS)
   if (serial.empty()) {
     // Use plain socket for remote debugging on Desktop (debugging purposes).
     int tcp_port = 0;
@@ -336,7 +337,7 @@ void AdbClientSocket::TransportQuery(int port,
     socket->Connect(base::Bind(&UseTransportQueryForDesktop, callback, socket));
     return;
   }
-#endif  // defined(DEBUG_DEVTOOLS)
+#endif  // BUILDFLAG(DEBUG_DEVTOOLS)
   new AdbTransportSocket(port, serial, socket_name, callback);
 }
 

@@ -12,7 +12,8 @@
 #include "chrome/browser/devtools/device/android_device_manager.h"
 #include "net/base/host_port_pair.h"
 
-// Instantiate this class only in a test and/or when DEBUG_DEVTOOLS is defined.
+// Instantiate this class only in a test and/or when the DEBUG_DEVTOOLS
+// BUILDFLAG is set.
 class TCPDeviceProvider : public AndroidDeviceManager::DeviceProvider {
  public:
   static scoped_refptr<TCPDeviceProvider> CreateForLocalhost(uint16_t port);

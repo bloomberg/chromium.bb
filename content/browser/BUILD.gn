@@ -22,7 +22,6 @@ source_set("browser") {
   configs += [
     "//build/config:precompiled_headers",
     "//content:content_implementation",
-    "//third_party/WebKit/public:debug_devtools",
     "//v8:external_startup_data",
   ]
   defines = []

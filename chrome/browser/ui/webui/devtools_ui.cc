@@ -26,6 +26,7 @@
 #include "net/url_request/url_fetcher.h"
 #include "net/url_request/url_fetcher_delegate.h"
 #include "net/url_request/url_request_context_getter.h"
+#include "third_party/WebKit/public/public_features.h"
 
 using content::BrowserThread;
 using content::WebContents;
@@ -43,7 +44,7 @@ const char kRemoteFrontendBase[] =
 const char kRemoteFrontendPath[] = "serve_file";
 const char kHttpNotFound[] = "HTTP/1.1 404 Not Found\n\n";
 
-#if defined(DEBUG_DEVTOOLS)
+#if BUILDFLAG(DEBUG_DEVTOOLS)
 // Local frontend url provided by InspectUI.
 const char kFallbackFrontendURL[] =
     "chrome-devtools://devtools/bundled/inspector.html";
@@ -51,7 +52,7 @@ const char kFallbackFrontendURL[] =
 // URL causing the DevTools window to display a plain text warning.
 const char kFallbackFrontendURL[] =
     "data:text/plain,Cannot load DevTools frontend from an untrusted origin";
-#endif  // defined(DEBUG_DEVTOOLS)
+#endif  // BUILDFLAG(DEBUG_DEVTOOLS)
 
 GURL SanitizeFrontendURL(
     const GURL& url,

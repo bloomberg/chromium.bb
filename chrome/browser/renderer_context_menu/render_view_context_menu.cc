@@ -105,6 +105,7 @@
 #include "content/public/common/menu_item.h"
 #include "content/public/common/url_utils.h"
 #include "net/base/escape.h"
+#include "third_party/WebKit/public/public_features.h"
 #include "third_party/WebKit/public/web/WebContextMenuData.h"
 #include "third_party/WebKit/public/web/WebMediaPlayerAction.h"
 #include "third_party/WebKit/public/web/WebPluginAction.h"
@@ -934,7 +935,7 @@ void RenderViewContextMenu::AppendDeveloperItems() {
   // devtools build.
   bool show_developer_items = !IsDevToolsURL(params_.page_url);
 
-#if defined(DEBUG_DEVTOOLS)
+#if BUILDFLAG(DEBUG_DEVTOOLS)
   show_developer_items = true;
 #endif
 

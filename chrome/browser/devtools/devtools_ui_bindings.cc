@@ -68,6 +68,7 @@
 #include "net/http/http_response_headers.h"
 #include "net/url_request/url_fetcher.h"
 #include "net/url_request/url_fetcher_response_writer.h"
+#include "third_party/WebKit/public/public_features.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/base/page_transition_types.h"
 
@@ -1167,7 +1168,7 @@ void DevToolsUIBindings::DocumentOnLoadCompletedInMainFrame() {
   // In the DEBUG_DEVTOOLS mode, the DocumentOnLoadCompletedInMainFrame event
   // arrives before the LoadCompleted event, thus it should not trigger the
   // frontend load handling.
-#if !defined(DEBUG_DEVTOOLS)
+#if !BUILDFLAG(DEBUG_DEVTOOLS)
   FrontendLoaded();
 #endif
 }

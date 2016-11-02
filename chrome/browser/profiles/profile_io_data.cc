@@ -110,6 +110,7 @@
 #include "net/url_request/url_request_intercepting_job_factory.h"
 #include "net/url_request/url_request_interceptor.h"
 #include "net/url_request/url_request_job_factory_impl.h"
+#include "third_party/WebKit/public/public_features.h"
 
 #if defined(ENABLE_EXTENSIONS)
 #include "chrome/browser/extensions/extension_cookie_monster_delegate.h"
@@ -178,7 +179,7 @@ namespace {
 
 net::CertVerifier* g_cert_verifier_for_testing = nullptr;
 
-#if defined(DEBUG_DEVTOOLS)
+#if BUILDFLAG(DEBUG_DEVTOOLS)
 bool IsSupportedDevToolsURL(const GURL& url, base::FilePath* path) {
   std::string bundled_path_prefix(chrome::kChromeUIDevToolsBundledPath);
   bundled_path_prefix = "/" + bundled_path_prefix + "/";
@@ -244,7 +245,7 @@ class DebugDevToolsInterceptor : public net::URLRequestInterceptor {
     return NULL;
   }
 };
-#endif  // defined(DEBUG_DEVTOOLS)
+#endif  // BUILDFLAG(DEBUG_DEVTOOLS)
 
 #if defined(OS_CHROMEOS)
 // The following four functions are responsible for initializing NSS for each
@@ -1232,7 +1233,7 @@ ProfileIOData::SetUpJobFactoryDefaults(
       url::kFtpScheme, net::FtpProtocolHandler::Create(host_resolver));
 #endif  // !BUILDFLAG(DISABLE_FTP_SUPPORT)
 
-#if defined(DEBUG_DEVTOOLS)
+#if BUILDFLAG(DEBUG_DEVTOOLS)
   request_interceptors.push_back(new DebugDevToolsInterceptor);
 #endif
 

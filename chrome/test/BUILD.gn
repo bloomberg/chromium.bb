@@ -1219,10 +1219,7 @@ test("browser_tests") {
     # implemented. See crbug.com/611756
   ]
 
-  configs += [
-    "//build/config:precompiled_headers",
-    "//third_party/WebKit/public:debug_devtools",
-  ]
+  configs += [ "//build/config:precompiled_headers" ]
 
   deps = [
     ":browser_tests_runner",
@@ -1230,6 +1227,7 @@ test("browser_tests") {
     ":test_support",
     "//base",
     "//components/sync:test_support_model",
+    "//third_party/WebKit/public:features",
   ]
 
   data_deps = []

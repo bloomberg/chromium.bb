@@ -34,12 +34,6 @@ declare_args() {
   # Non-SFI is not yet supported on mipsel
   enable_nacl_nonsfi = current_cpu != "mipsel"
 
-  # If debug_devtools is set to true, JavaScript files for DevTools are stored
-  # as is and loaded from disk. Otherwise, a concatenated file is stored in
-  # resources.pak. It is still possible to load JS files from disk by passing
-  # --debug-devtools cmdline switch.
-  debug_devtools = false
-
   # Enables WebRTC.
   enable_webrtc = !is_ios
 
