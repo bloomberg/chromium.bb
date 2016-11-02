@@ -12,11 +12,12 @@
 namespace {
 
 // Bits for FakeStartupTabProvider options.
-constexpr uint32_t kOnboardingTabs = 0x01;
-constexpr uint32_t kDistributionFirstRunTabs = 0x02;
-constexpr uint32_t kResetTriggerTabs = 0x04;
-constexpr uint32_t kPinnedTabs = 0x08;
-constexpr uint32_t kPreferencesTabs = 0x10;
+constexpr uint32_t kOnboardingTabs = 1 << 0;
+constexpr uint32_t kDistributionFirstRunTabs = 1 << 1;
+constexpr uint32_t kResetTriggerTabs = 1 << 2;
+constexpr uint32_t kPinnedTabs = 1 << 3;
+constexpr uint32_t kPreferencesTabs = 1 << 4;
+constexpr uint32_t kNewTabPageTabs = 1 << 5;
 
 class FakeStartupTabProvider : public StartupTabProvider {
  public:
@@ -46,7 +47,8 @@ class FakeStartupTabProvider : public StartupTabProvider {
     return tabs;
   }
 
-  StartupTabs GetPinnedTabs(Profile* profile) const override {
+  StartupTabs GetPinnedTabs(const base::CommandLine& command_line_,
+                            Profile* profile) const override {
     StartupTabs tabs;
     if (options_ & kPinnedTabs)
       tabs.emplace_back(GURL("https://pinned"), true);
@@ -61,6 +63,14 @@ class FakeStartupTabProvider : public StartupTabProvider {
     return tabs;
   }
 
+  StartupTabs GetNewTabPageTabs(const base::CommandLine& command_line_,
+                                Profile* profile) const override {
+    StartupTabs tabs;
+    if (options_ & kNewTabPageTabs)
+      tabs.emplace_back(GURL("https://new-tab"), false);
+    return tabs;
+  }
+
  private:
   const uint32_t options_;
 };
@@ -72,7 +82,8 @@ class FakeStartupTabProvider : public StartupTabProvider {
 // command line. Reset trigger always appears first.
 TEST(StartupBrowserCreatorImplTest, DetermineStartupTabs) {
   FakeStartupTabProvider provider(kOnboardingTabs | kResetTriggerTabs |
-                                  kPinnedTabs | kPreferencesTabs);
+                                  kPinnedTabs | kPreferencesTabs |
+                                  kNewTabPageTabs);
   StartupBrowserCreatorImpl impl(
       base::FilePath(), base::CommandLine(base::CommandLine::NO_PROGRAM),
       chrome::startup::IS_FIRST_RUN);
@@ -91,7 +102,7 @@ TEST(StartupBrowserCreatorImplTest, DetermineStartupTabs) {
 TEST(StartupBrowserCreatorImplTest, DetermineStartupTabs_IncognitoOrCrash) {
   FakeStartupTabProvider provider(kOnboardingTabs | kDistributionFirstRunTabs |
                                   kResetTriggerTabs | kPinnedTabs |
-                                  kPreferencesTabs);
+                                  kPreferencesTabs | kNewTabPageTabs);
   StartupBrowserCreatorImpl impl(
       base::FilePath(), base::CommandLine(base::CommandLine::NO_PROGRAM),
       chrome::startup::IS_FIRST_RUN);
@@ -100,6 +111,9 @@ TEST(StartupBrowserCreatorImplTest, DetermineStartupTabs_IncognitoOrCrash) {
   StartupTabs output =
       impl.DetermineStartupTabs(provider, StartupTabs(), true, false);
   ASSERT_EQ(1U, output.size());
+  // Check for the actual NTP URL, rather than the sentinel returned by the
+  // fake, because the Provider is ignored entirely when short-circuited by
+  // incognito/crash.
   EXPECT_EQ(GURL(chrome::kChromeUINewTabURL), output[0].url);
 
   // Crash Recovery case:
@@ -113,7 +127,7 @@ TEST(StartupBrowserCreatorImplTest, DetermineStartupTabs_IncognitoOrCrash) {
 TEST(StartupBrowserCreatorImplTest, DetermineStartupTabs_MasterPrefs) {
   FakeStartupTabProvider provider(kOnboardingTabs | kDistributionFirstRunTabs |
                                   kResetTriggerTabs | kPinnedTabs |
-                                  kPreferencesTabs);
+                                  kPreferencesTabs | kNewTabPageTabs);
   StartupBrowserCreatorImpl impl(
       base::FilePath(), base::CommandLine(base::CommandLine::NO_PROGRAM),
       chrome::startup::IS_FIRST_RUN);
@@ -129,7 +143,7 @@ TEST(StartupBrowserCreatorImplTest, DetermineStartupTabs_MasterPrefs) {
 TEST(StartupBrowserCreatorImplTest, DetermineStartupTabs_CommandLine) {
   FakeStartupTabProvider provider(kOnboardingTabs | kDistributionFirstRunTabs |
                                   kResetTriggerTabs | kPinnedTabs |
-                                  kPreferencesTabs);
+                                  kPreferencesTabs | kNewTabPageTabs);
   StartupBrowserCreatorImpl impl(
       base::FilePath(), base::CommandLine(base::CommandLine::NO_PROGRAM),
       chrome::startup::IS_FIRST_RUN);
@@ -159,7 +173,8 @@ TEST(StartupBrowserCreatorImplTest, DetermineStartupTabs_CommandLine) {
 // New Tab Page should appear alongside pinned tabs and the reset trigger, but
 // should be superseded by onboarding tabs and by tabs specified in preferences.
 TEST(StartupBrowserCreatorImplTest, DetermineStartupTabs_NewTabPage) {
-  FakeStartupTabProvider provider_allows_ntp(kPinnedTabs | kResetTriggerTabs);
+  FakeStartupTabProvider provider_allows_ntp(kPinnedTabs | kResetTriggerTabs |
+                                             kNewTabPageTabs);
   StartupBrowserCreatorImpl impl(
       base::FilePath(), base::CommandLine(base::CommandLine::NO_PROGRAM),
       chrome::startup::IS_FIRST_RUN);
@@ -168,6 +183,6 @@ TEST(StartupBrowserCreatorImplTest, DetermineStartupTabs_NewTabPage) {
                                                  StartupTabs(), false, false);
   ASSERT_EQ(3U, output.size());
   EXPECT_EQ("reset-trigger", output[0].url.host());
-  EXPECT_EQ(GURL(chrome::kChromeUINewTabURL), output[1].url);
+  EXPECT_EQ("new-tab", output[1].url.host());
   EXPECT_EQ("pinned", output[2].url.host());
 }

@@ -53,14 +53,25 @@ StartupTabs StartupTabProviderImpl::GetResetTriggerTabs(
   return CheckResetTriggerTabPolicy(has_reset_trigger);
 }
 
-StartupTabs StartupTabProviderImpl::GetPinnedTabs(Profile* profile) const {
-  return PinnedTabCodec::ReadPinnedTabs(profile);
+StartupTabs StartupTabProviderImpl::GetPinnedTabs(
+    const base::CommandLine& command_line,
+    Profile* profile) const {
+  return CheckPinnedTabPolicy(
+      StartupBrowserCreator::GetSessionStartupPref(command_line, profile),
+      PinnedTabCodec::ReadPinnedTabs(profile));
 }
 
 StartupTabs StartupTabProviderImpl::GetPreferencesTabs(
     const base::CommandLine& command_line,
     Profile* profile) const {
   return CheckPreferencesTabPolicy(
+      StartupBrowserCreator::GetSessionStartupPref(command_line, profile));
+}
+
+StartupTabs StartupTabProviderImpl::GetNewTabPageTabs(
+    const base::CommandLine& command_line,
+    Profile* profile) const {
+  return CheckNewTabPageTabPolicy(
       StartupBrowserCreator::GetSessionStartupPref(command_line, profile));
 }
 
@@ -106,13 +117,30 @@ StartupTabs StartupTabProviderImpl::CheckResetTriggerTabPolicy(
 }
 
 // static
+StartupTabs StartupTabProviderImpl::CheckPinnedTabPolicy(
+    const SessionStartupPref& pref,
+    const StartupTabs& pinned_tabs) {
+  return (pref.type == SessionStartupPref::Type::LAST) ? StartupTabs()
+                                                       : pinned_tabs;
+}
+
+// static
 StartupTabs StartupTabProviderImpl::CheckPreferencesTabPolicy(
-    SessionStartupPref pref) {
+    const SessionStartupPref& pref) {
   StartupTabs tabs;
   if (pref.type == SessionStartupPref::Type::URLS && !pref.urls.empty()) {
-    for (auto& url : pref.urls)
+    for (const auto& url : pref.urls)
       tabs.push_back(StartupTab(url, false));
   }
+  return tabs;
+}
+
+// static
+StartupTabs StartupTabProviderImpl::CheckNewTabPageTabPolicy(
+    const SessionStartupPref& pref) {
+  StartupTabs tabs;
+  if (pref.type != SessionStartupPref::Type::LAST)
+    tabs.emplace_back(GURL(chrome::kChromeUINewTabURL), false);
   return tabs;
 }
 

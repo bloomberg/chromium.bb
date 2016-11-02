@@ -68,6 +68,33 @@ TEST(StartupTabProviderTest, CheckResetTriggerTabPolicy_Negative) {
   ASSERT_TRUE(output.empty());
 }
 
+TEST(StartupTabProviderTest, CheckPinnedTabPolicy) {
+  StartupTabs pinned = {StartupTab(GURL("https://www.google.com"), true)};
+  SessionStartupPref pref_default(SessionStartupPref::Type::DEFAULT);
+  SessionStartupPref pref_urls(SessionStartupPref::Type::URLS);
+
+  StartupTabs output =
+      StartupTabProviderImpl::CheckPinnedTabPolicy(pref_default, pinned);
+
+  ASSERT_EQ(1U, output.size());
+  EXPECT_EQ("www.google.com", output[0].url.host());
+
+  output = StartupTabProviderImpl::CheckPinnedTabPolicy(pref_urls, pinned);
+
+  ASSERT_EQ(1U, output.size());
+  EXPECT_EQ("www.google.com", output[0].url.host());
+}
+
+TEST(StartupTabProviderTest, CheckPinnedTabPolicy_Negative) {
+  StartupTabs pinned = {StartupTab(GURL("https://www.google.com"), true)};
+  SessionStartupPref pref_last(SessionStartupPref::Type::LAST);
+
+  StartupTabs output =
+      StartupTabProviderImpl::CheckPinnedTabPolicy(pref_last, pinned);
+
+  ASSERT_TRUE(output.empty());
+}
+
 TEST(StartupTabProviderTest, CheckPreferencesTabPolicy) {
   SessionStartupPref pref(SessionStartupPref::Type::URLS);
   pref.urls = {GURL(base::ASCIIToUTF16("https://www.google.com"))};
@@ -93,4 +120,29 @@ TEST(StartupTabProviderTest, CheckPreferencesTabPolicy_Negative) {
   output = StartupTabProviderImpl::CheckPreferencesTabPolicy(pref_last);
 
   EXPECT_TRUE(output.empty());
+}
+
+TEST(StartupTabProviderTest, CheckNewTabPageTabPolicy) {
+  SessionStartupPref pref_default(SessionStartupPref::Type::DEFAULT);
+  SessionStartupPref pref_urls(SessionStartupPref::Type::URLS);
+
+  StartupTabs output =
+      StartupTabProviderImpl::CheckNewTabPageTabPolicy(pref_default);
+
+  ASSERT_EQ(1U, output.size());
+  EXPECT_EQ(GURL(chrome::kChromeUINewTabURL), output[0].url);
+
+  output = StartupTabProviderImpl::CheckNewTabPageTabPolicy(pref_urls);
+
+  ASSERT_EQ(1U, output.size());
+  EXPECT_EQ(GURL(chrome::kChromeUINewTabURL), output[0].url);
+}
+
+TEST(StartupTabProviderTest, CheckNewTabPageTabPolicy_Negative) {
+  SessionStartupPref pref_last(SessionStartupPref::Type::LAST);
+
+  StartupTabs output =
+      StartupTabProviderImpl::CheckNewTabPageTabPolicy(pref_last);
+
+  ASSERT_TRUE(output.empty());
 }

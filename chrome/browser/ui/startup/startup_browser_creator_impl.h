@@ -84,6 +84,12 @@ class StartupBrowserCreatorImpl {
     FIRST_RUN_LAST_TAB,  // Inject the welcome page as the last first-run tab.
   };
 
+  enum class BrowserOpenBehavior {
+    NEW,                  // Open in a new browser.
+    SYNCHRONOUS_RESTORE,  // Attempt a synchronous session restore.
+    USE_EXISTING,         // Attempt to add to an existing tabbed browser.
+  };
+
   // Creates a tab for each of the Tabs in |tabs|. If browser is non-null
   // and a tabbed browser, the tabs are added to it. Otherwise a new tabbed
   // browser is created and the tabs are added to it. The browser the tabs
@@ -119,8 +125,26 @@ class StartupBrowserCreatorImpl {
   // and the interactions between those policies.
   StartupTabs DetermineStartupTabs(const StartupTabProvider& provider,
                                    const StartupTabs& cmd_line_tabs,
-                                   bool is_incognito,
+                                   bool is_ephemeral_profile,
                                    bool is_post_crash_launch);
+
+  // Begins an asynchronous session restore if current state allows it (e.g.,
+  // this is not process startup) and SessionService indicates that one is
+  // necessary. Returns true if restore was initiated, or false if launch
+  // should continue (either synchronously, or asynchronously without
+  // restoring).
+  bool MaybeAsyncRestore(const StartupTabs& tabs,
+                         bool process_startup,
+                         bool is_post_crash_launch);
+
+  // Returns a browser displaying the contents of |tabs|. Based on |behavior|,
+  // this may attempt a session restore or create a new browser. May also allow
+  // DOM Storage to begin cleanup once it's clear it is not needed anymore.
+  Browser* RestoreOrCreateBrowser(const StartupTabs& tabs,
+                                  BrowserOpenBehavior behavior,
+                                  uint32_t restore_options,
+                                  bool process_startup,
+                                  bool is_post_crash_launch);
 
   // Adds a Tab to |tabs| for each url in |urls| that doesn't already exist
   // in |tabs|.
@@ -133,6 +157,22 @@ class StartupBrowserCreatorImpl {
 
   // Records Rappor metrics on startup URLs.
   void RecordRapporOnStartupURLs(const std::vector<GURL>& urls_to_open);
+
+  // Determines how the launch flow should obtain a Browser.
+  static BrowserOpenBehavior DetermineBrowserOpenBehavior(
+      const SessionStartupPref& pref,
+      bool process_startup,
+      bool is_post_crash_launch,
+      bool has_restore_switch,
+      bool has_new_window_switch,
+      bool has_cmd_line_tabs);
+
+  // Returns the relevant bitmask options which must be passed when restoring a
+  // session.
+  static uint32_t DetermineSynchronousRestoreOptions(
+      bool has_create_browser_default,
+      bool has_create_browser_switch,
+      bool was_mac_login_or_resume);
 
   // TODO(crbug.com/651465): The following functions are deprecated. They will
   // be removed once kUseConsolidatedStartupFlow is enabled by default.

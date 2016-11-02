@@ -35,13 +35,19 @@ class StartupTabProvider {
   // Reset on this profile. Returns any tabs which should be shown accordingly.
   virtual StartupTabs GetResetTriggerTabs(Profile* profile) const = 0;
 
-  // Returns the user's pinned tabs.
-  virtual StartupTabs GetPinnedTabs(Profile* profile) const = 0;
+  // Returns the user's pinned tabs, if they should be shown.
+  virtual StartupTabs GetPinnedTabs(const base::CommandLine& command_line,
+                                    Profile* profile) const = 0;
 
   // Returns tabs, if any, specified in the user's preferences as the default
   // content for a new window.
   virtual StartupTabs GetPreferencesTabs(const base::CommandLine& command_line,
                                          Profile* profile) const = 0;
+
+  // Returns the New Tab Page, if the user's preferences indicate a
+  // configuration where it must be passed explicitly.
+  virtual StartupTabs GetNewTabPageTabs(const base::CommandLine& command_line,
+                                        Profile* profile) const = 0;
 };
 
 class StartupTabProviderImpl : public StartupTabProvider {
@@ -66,10 +72,20 @@ class StartupTabProviderImpl : public StartupTabProvider {
   // of a Reset Trigger on this profile.
   static StartupTabs CheckResetTriggerTabPolicy(bool profile_has_trigger);
 
+  // Determines whether the startup preference requires the contents of
+  // |pinned_tabs| to be shown. This is needed to avoid duplicates, as the
+  // session restore logic will also resurface pinned tabs on its own.
+  static StartupTabs CheckPinnedTabPolicy(const SessionStartupPref& pref,
+                                          const StartupTabs& pinned_tabs);
+
   // Determines whether preferences indicate that user-specified tabs should be
   // shown as the default new window content, and returns the specified tabs if
   // so.
-  static StartupTabs CheckPreferencesTabPolicy(SessionStartupPref pref);
+  static StartupTabs CheckPreferencesTabPolicy(const SessionStartupPref& pref);
+
+  // Determines whether startup preferences require the New Tab Page to be
+  // explicitly specified. Session Restore does not expect the NTP to be passed.
+  static StartupTabs CheckNewTabPageTabPolicy(const SessionStartupPref& pref);
 
   // Gets the URL for the "Welcome to Chrome" page.
   static GURL GetWelcomePageUrl();
@@ -83,9 +99,12 @@ class StartupTabProviderImpl : public StartupTabProvider {
   StartupTabs GetDistributionFirstRunTabs(
       StartupBrowserCreator* browser_creator) const override;
   StartupTabs GetResetTriggerTabs(Profile* profile) const override;
-  StartupTabs GetPinnedTabs(Profile* profile) const override;
+  StartupTabs GetPinnedTabs(const base::CommandLine& command_line,
+                            Profile* profile) const override;
   StartupTabs GetPreferencesTabs(const base::CommandLine& command_line,
                                  Profile* profile) const override;
+  StartupTabs GetNewTabPageTabs(const base::CommandLine& command_line,
+                                Profile* profile) const override;
 
  private:
   DISALLOW_COPY_AND_ASSIGN(StartupTabProviderImpl);

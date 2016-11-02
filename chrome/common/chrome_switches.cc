@@ -840,9 +840,7 @@ const char kQuicVersion[] = "quic-version";
 const char kRemoteDebuggingTargets[] = "remote-debugging-targets";
 
 // Indicates the last session should be restored on startup. This overrides the
-// preferences value and is primarily intended for testing. The value of this
-// switch is the number of tabs to wait until loaded before 'load completed' is
-// sent to the ui_test.
+// preferences value.
 const char kRestoreLastSession[]            = "restore-last-session";
 
 // Disable saving pages as HTML-only, disable saving pages as HTML Complete
