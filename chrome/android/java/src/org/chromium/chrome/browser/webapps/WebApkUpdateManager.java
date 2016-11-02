@@ -57,9 +57,9 @@ public class WebApkUpdateManager implements ManifestUpgradeDetector.Callback {
      * Checks whether the WebAPK's Web Manifest has changed. Requests an updated WebAPK if the
      * Web Manifest has changed. Skips the check if the check was done recently.
      * @param tab  The tab of the WebAPK.
-     * @param info The WebappInfo of the WebAPK.
+     * @param info The WebApkInfo of the WebAPK.
      */
-    public void updateIfNeeded(Tab tab, WebappInfo info) {
+    public void updateIfNeeded(Tab tab, WebApkInfo info) {
         mMetaData = WebApkMetaDataUtils.extractMetaDataFromWebApk(info.webApkPackageName());
         if (mMetaData == null) return;
 

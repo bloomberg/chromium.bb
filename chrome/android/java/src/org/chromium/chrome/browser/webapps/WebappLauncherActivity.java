@@ -9,6 +9,7 @@ import android.content.Intent;
 import android.net.Uri;
 import android.os.Build;
 import android.os.Bundle;
+import android.text.TextUtils;
 import android.util.Base64;
 
 import org.chromium.base.ApiCompatibilityUtils;
@@ -49,41 +50,33 @@ public class WebappLauncherActivity extends Activity {
 
     public void launchActivity() {
         Intent intent = getIntent();
-        WebappInfo webappInfo = WebappInfo.create(intent);
 
-        // {@link WebappInfo#create()} returns null if the intent does not specify the id or the
-        // uri.
+        ChromeWebApkHost.init();
+        boolean validWebApk = isValidWebApk(intent);
+
+        WebappInfo webappInfo;
+        if (validWebApk) {
+            webappInfo = WebApkInfo.create(intent);
+        } else {
+            webappInfo = WebappInfo.create(intent);
+        }
+
+        // {@link WebApkInfo#create()} and {@link WebappInfo#create()} return null if the intent
+        // does not specify required values such as the uri.
         if (webappInfo == null) return;
 
         String webappUrl = webappInfo.uri().toString();
-        String webApkPackageName = webappInfo.webApkPackageName();
         int webappSource = webappInfo.source();
         String webappMac = IntentUtils.safeGetStringExtra(intent, ShortcutHelper.EXTRA_MAC);
-
-        ChromeWebApkHost.init();
-        boolean isValidWebApk = isValidWebApk(webApkPackageName, webappUrl);
-
-        if (isValidWebApk) {
-            // {@link #isValidWebApk} checks whether the start URL sent in the intent is in the
-            // scope of a WebAPK but it does not check that the intent was sent from Chrome. Unlike
-            // non-WebAPK web apps, WebAPK ids are predictable. A malicious actor may send an intent
-            // with a valid start URL and arbitrary other data. Only use the start URL, the package
-            // name and the ShortcutSource from the launch intent and extract the remaining data
-            // from the <meta-data> in the WebAPK's Android manifest.
-            webappInfo = WebApkMetaDataUtils.extractWebappInfoFromWebApk(
-                    webApkPackageName, webappUrl, webappInfo.source());
-
-            if (webappInfo == null) return;
-        }
 
         // Permit the launch to a standalone web app frame if any of the following are true:
         // - the request was for a WebAPK that is valid;
         // - the MAC is present and valid for the homescreen shortcut to be opened;
         // - the intent was sent by Chrome.
-        if (isValidWebApk || isValidMacForUrl(webappUrl, webappMac)
+        if (validWebApk || isValidMacForUrl(webappUrl, webappMac)
                 || wasIntentFromChrome(intent)) {
             LaunchMetrics.recordHomeScreenLaunchIntoStandaloneActivity(webappUrl, webappSource);
-            Intent launchIntent = createWebappLaunchIntent(webappInfo, webappSource, isValidWebApk);
+            Intent launchIntent = createWebappLaunchIntent(webappInfo, webappSource, validWebApk);
             startActivity(launchIntent);
             return;
         }
@@ -192,17 +185,22 @@ public class WebappLauncherActivity extends Activity {
     }
 
     /**
-     * Checks whether the package being targeted is a valid WebAPK and whether the url supplied
-     * can be fulfilled by that WebAPK.
+     * Checks whether the WebAPK package specified in the intent is a valid WebAPK and whether the
+     * url specified in the intent can be fulfilled by the WebAPK.
      *
-     * @param webApkPackage The package name of the requested WebAPK.
-     * @param url The url to navigate to.
+     * @param intent The intent
      * @return true iff all validation criteria are met.
      */
-    private boolean isValidWebApk(String webApkPackage, String url) {
-        if (webApkPackage == null || !ChromeWebApkHost.isEnabled()) {
-            return false;
-        }
+    private boolean isValidWebApk(Intent intent) {
+        if (!ChromeWebApkHost.isEnabled()) return false;
+
+        String webApkPackage = IntentUtils.safeGetStringExtra(intent,
+                ShortcutHelper.EXTRA_WEBAPK_PACKAGE_NAME);
+        if (TextUtils.isEmpty(webApkPackage)) return false;
+
+        String url = IntentUtils.safeGetStringExtra(intent, ShortcutHelper.EXTRA_URL);
+        if (TextUtils.isEmpty(url)) return false;
+
         if (!webApkPackage.equals(WebApkValidator.queryWebApkPackage(this, url))) {
             Log.d(TAG, "%s is not within scope of %s WebAPK", url, webApkPackage);
             return false;

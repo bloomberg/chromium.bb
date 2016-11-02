@@ -76,7 +76,7 @@ public class WebappActivity extends FullScreenActivity {
      * of the WebappActivity.
      */
     public WebappActivity() {
-        mWebappInfo = WebappInfo.createEmpty();
+        mWebappInfo = createWebappInfo(null);
         mDirectoryManager = new WebappDirectoryManager();
         mWebappUma = new WebappUma();
     }
@@ -86,7 +86,7 @@ public class WebappActivity extends FullScreenActivity {
         if (intent == null) return;
         super.onNewIntent(intent);
 
-        WebappInfo newWebappInfo = WebappInfo.create(intent);
+        WebappInfo newWebappInfo = createWebappInfo(intent);
         if (newWebappInfo == null) {
             Log.e(TAG, "Failed to parse new Intent: " + intent);
             finish();
@@ -101,6 +101,10 @@ public class WebappActivity extends FullScreenActivity {
 
     protected boolean isInitialized() {
         return mIsInitialized;
+    }
+
+    protected WebappInfo createWebappInfo(Intent intent) {
+        return (intent == null) ? WebappInfo.createEmpty() : WebappInfo.create(intent);
     }
 
     private void initializeUI(Bundle savedInstanceState) {
@@ -123,7 +127,7 @@ public class WebappActivity extends FullScreenActivity {
 
     @Override
     public void preInflationStartup() {
-        WebappInfo info = WebappInfo.create(getIntent());
+        WebappInfo info = createWebappInfo(getIntent());
 
         String id = "";
         if (info != null) {

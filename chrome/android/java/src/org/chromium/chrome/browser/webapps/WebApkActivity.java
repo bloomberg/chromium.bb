@@ -47,6 +47,11 @@ public class WebApkActivity extends WebappActivity {
     }
 
     @Override
+    protected WebappInfo createWebappInfo(Intent intent) {
+        return (intent == null) ? WebApkInfo.createEmpty() : WebApkInfo.create(intent);
+    }
+
+    @Override
     protected void onStorageIsNull(final int backgroundColor) {
         // Register the WebAPK. It is possible that a WebAPK's meta data was deleted when user
         // cleared Chrome's data. When it is launched again, we know that the WebAPK is still
@@ -138,7 +143,7 @@ public class WebApkActivity extends WebappActivity {
         super.onDeferredStartup();
 
         mUpdateManager = new WebApkUpdateManager();
-        mUpdateManager.updateIfNeeded(getActivityTab(), mWebappInfo);
+        mUpdateManager.updateIfNeeded(getActivityTab(), (WebApkInfo) mWebappInfo);
     }
 
     @Override

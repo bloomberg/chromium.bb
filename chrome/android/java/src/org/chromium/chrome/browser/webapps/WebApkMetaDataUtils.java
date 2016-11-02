@@ -30,7 +30,7 @@ public class WebApkMetaDataUtils {
      * @param url WebAPK start URL.
      * @param source {@link ShortcutSource} that the WebAPK was opened from.
      */
-    public static WebappInfo extractWebappInfoFromWebApk(
+    public static WebApkInfo extractWebappInfoFromWebApk(
             String webApkPackageName, String url, int source) {
         WebApkMetaData metaData = extractMetaDataFromWebApk(webApkPackageName);
         if (metaData == null) return null;
@@ -45,7 +45,7 @@ public class WebApkMetaDataUtils {
         Bitmap icon = BitmapFactory.decodeResource(resources, metaData.iconId);
         String encodedIcon = ShortcutHelper.encodeBitmapAsString(icon);
 
-        return WebappInfo.create(WebApkConstants.WEBAPK_ID_PREFIX + webApkPackageName, url,
+        return WebApkInfo.create(WebApkConstants.WEBAPK_ID_PREFIX + webApkPackageName, url,
                 metaData.scope, encodedIcon, metaData.name, metaData.shortName,
                 metaData.displayMode, metaData.orientation, source, metaData.themeColor,
                 metaData.backgroundColor, TextUtils.isEmpty(metaData.iconUrl), webApkPackageName);

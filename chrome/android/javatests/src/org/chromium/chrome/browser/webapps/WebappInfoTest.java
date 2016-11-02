@@ -13,7 +13,6 @@ import org.chromium.blink_public.platform.WebDisplayMode;
 import org.chromium.chrome.browser.ShortcutHelper;
 import org.chromium.chrome.browser.ShortcutSource;
 import org.chromium.content_public.common.ScreenOrientationValues;
-import org.chromium.webapk.lib.common.WebApkConstants;
 
 /**
  * Tests the WebappInfo class's ability to parse various URLs.
@@ -30,7 +29,7 @@ public class WebappInfoTest extends InstrumentationTestCase {
         WebappInfo info = WebappInfo.create(id, url, null, null, name, shortName,
                 WebDisplayMode.Standalone, ScreenOrientationValues.DEFAULT, ShortcutSource.UNKNOWN,
                 ShortcutHelper.MANIFEST_COLOR_INVALID_OR_MISSING,
-                ShortcutHelper.MANIFEST_COLOR_INVALID_OR_MISSING, false, null);
+                ShortcutHelper.MANIFEST_COLOR_INVALID_OR_MISSING, false);
         assertNotNull(info);
     }
 
@@ -45,7 +44,7 @@ public class WebappInfoTest extends InstrumentationTestCase {
         WebappInfo info = WebappInfo.create(id, url, null, null, name, shortName,
                 WebDisplayMode.Standalone, ScreenOrientationValues.DEFAULT, ShortcutSource.UNKNOWN,
                 ShortcutHelper.MANIFEST_COLOR_INVALID_OR_MISSING,
-                ShortcutHelper.MANIFEST_COLOR_INVALID_OR_MISSING, false, null);
+                ShortcutHelper.MANIFEST_COLOR_INVALID_OR_MISSING, false);
         assertNotNull(info);
     }
 
@@ -134,7 +133,7 @@ public class WebappInfoTest extends InstrumentationTestCase {
         WebappInfo info = WebappInfo.create(id, url, null, null, name, shortName,
                 WebDisplayMode.Fullscreen, ScreenOrientationValues.DEFAULT, ShortcutSource.UNKNOWN,
                 ShortcutHelper.MANIFEST_COLOR_INVALID_OR_MISSING,
-                ShortcutHelper.MANIFEST_COLOR_INVALID_OR_MISSING, false, null);
+                ShortcutHelper.MANIFEST_COLOR_INVALID_OR_MISSING, false);
         assertEquals(WebDisplayMode.Fullscreen, info.displayMode());
         assertEquals(ScreenOrientationValues.DEFAULT, info.orientation());
         assertEquals(ShortcutSource.UNKNOWN, info.source());
@@ -152,7 +151,7 @@ public class WebappInfoTest extends InstrumentationTestCase {
 
         WebappInfo info = WebappInfo.create(id, url, null, null, name, shortName,
                 WebDisplayMode.Standalone, ScreenOrientationValues.DEFAULT,
-                ShortcutSource.UNKNOWN, themeColor, backgroundColor, false, null);
+                ShortcutSource.UNKNOWN, themeColor, backgroundColor, false);
         assertEquals(themeColor, info.themeColor());
         assertEquals(backgroundColor, info.backgroundColor());
     }
@@ -168,7 +167,7 @@ public class WebappInfoTest extends InstrumentationTestCase {
         WebappInfo info = WebappInfo.create(id, url, null, null, name, shortName,
                 WebDisplayMode.Standalone, ScreenOrientationValues.DEFAULT, ShortcutSource.UNKNOWN,
                 ShortcutHelper.MANIFEST_COLOR_INVALID_OR_MISSING,
-                ShortcutHelper.MANIFEST_COLOR_INVALID_OR_MISSING, false, null);
+                ShortcutHelper.MANIFEST_COLOR_INVALID_OR_MISSING, false);
         assertEquals(ShortcutHelper.MANIFEST_COLOR_INVALID_OR_MISSING, info.themeColor());
         assertEquals(ShortcutHelper.MANIFEST_COLOR_INVALID_OR_MISSING, info.backgroundColor());
     }
@@ -189,7 +188,7 @@ public class WebappInfoTest extends InstrumentationTestCase {
     }
 
     @SmallTest
-    @Feature({"Webapps", "WebApk"})
+    @Feature({"Webapps"})
     public void testScopeIntentCreation() {
         String scope = "https://www.foo.com";
         Intent intent = createIntentWithUrlAndId();
@@ -199,7 +198,7 @@ public class WebappInfoTest extends InstrumentationTestCase {
     }
 
     @SmallTest
-    @Feature({"Webapps", "WebApk"})
+    @Feature({"Webapps"})
     public void testIntentScopeFallback() {
         String url = "https://www.foo.com/homepage.html";
         Intent intent = createIntentWithUrlAndId();
@@ -209,7 +208,7 @@ public class WebappInfoTest extends InstrumentationTestCase {
     }
 
     @SmallTest
-    @Feature({"Webapps", "WebApk"})
+    @Feature({"Webapps"})
     public void testIntentDisplayMode() {
         Intent intent = createIntentWithUrlAndId();
         intent.putExtra(ShortcutHelper.EXTRA_DISPLAY_MODE, WebDisplayMode.MinimalUi);
@@ -218,7 +217,7 @@ public class WebappInfoTest extends InstrumentationTestCase {
     }
 
     @SmallTest
-    @Feature({"Webapps", "WebApk"})
+    @Feature({"Webapps"})
     public void testIntentOrientation() {
         Intent intent = createIntentWithUrlAndId();
         intent.putExtra(ShortcutHelper.EXTRA_ORIENTATION, ScreenOrientationValues.LANDSCAPE);
@@ -280,18 +279,6 @@ public class WebappInfoTest extends InstrumentationTestCase {
 
             assertFalse(name, WebappInfo.create(intent).isIconGenerated());
         }
-    }
-
-    @SmallTest
-    @Feature({"WebApk"})
-    public void testIntentWebApkPackageName() {
-        String packageName = WebApkConstants.WEBAPK_PACKAGE_PREFIX + ".foo";
-
-        Intent intent = createIntentWithUrlAndId();
-        intent.putExtra(ShortcutHelper.EXTRA_WEBAPK_PACKAGE_NAME, packageName);
-
-        WebappInfo info = WebappInfo.create(intent);
-        assertEquals(packageName, info.webApkPackageName());
     }
 
     /**

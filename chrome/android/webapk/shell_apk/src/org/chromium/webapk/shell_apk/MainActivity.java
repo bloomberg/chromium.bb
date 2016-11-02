@@ -94,8 +94,7 @@ public class MainActivity extends Activity {
         Intent intent = new Intent();
         intent.setAction(ACTION_START_WEBAPK);
         intent.setPackage(runtimeHost);
-        intent.putExtra(WebApkConstants.EXTRA_ID, WebApkConstants.WEBAPK_ID_PREFIX + packageName)
-                .putExtra(WebApkConstants.EXTRA_URL, startUrl)
+        intent.putExtra(WebApkConstants.EXTRA_URL, startUrl)
                 .putExtra(WebApkConstants.EXTRA_SOURCE, source)
                 .putExtra(WebApkConstants.EXTRA_WEBAPK_PACKAGE_NAME, packageName);
 
