@@ -87,18 +87,16 @@ bool UseOnlyLocalHeuristicsForPasswordGeneration() {
 }
 
 bool IsTabSwitcherEnabled() {
-  // Check if the experimental flag is forced on or off.
+  // Check if the experimental flag is forced off.
   base::CommandLine* command_line = base::CommandLine::ForCurrentProcess();
-  if (command_line->HasSwitch(switches::kEnableTabSwitcher)) {
-    return true;
-  } else if (command_line->HasSwitch(switches::kDisableTabSwitcher)) {
+  if (command_line->HasSwitch(switches::kDisableTabSwitcher)) {
     return false;
   }
 
-  // Check if the finch experiment is turned on.
+  // Check if the finch experiment is turned off.
   std::string group_name = base::FieldTrialList::FindFullName("IOSTabSwitcher");
-  return base::StartsWith(group_name, "Enabled",
-                          base::CompareCase::INSENSITIVE_ASCII);
+  return !base::StartsWith(group_name, "Disabled",
+                           base::CompareCase::INSENSITIVE_ASCII);
 }
 
 bool IsReadingListEnabled() {
