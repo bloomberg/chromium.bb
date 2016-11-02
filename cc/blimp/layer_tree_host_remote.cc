@@ -29,6 +29,31 @@ namespace {
 base::TimeDelta kDefaultFrameInterval = base::TimeDelta::FromMilliseconds(16);
 
 static base::StaticAtomicSequenceNumber s_layer_tree_host_sequence_number;
+
+bool ShouldUpdateLayer(Layer* layer) {
+  // If the embedder has marked the layer as non-drawable.
+  if (!layer->DrawsContent())
+    return false;
+
+  // If the layer bounds are empty.
+  if (layer->bounds().IsEmpty())
+    return false;
+
+  // If the layer is transparent and has no background filters applied.
+  // See EffectTree::UpdateIsDrawn for the logic details.
+  // A few things have been ignored:
+  // 1) We don't support threaded animations at the moment, so the opacity can
+  //    not change on the client.
+  // 2) This does not account for layer hiding its subtree, but that is never
+  //    used by the renderer.
+  // 3) Also updates a transparent layer's subtree when it will be skipped while
+  //    drawing on the client.
+  if (layer->opacity() == 0.f && layer->background_filters().IsEmpty())
+    return false;
+
+  return true;
+}
+
 }  // namespace
 
 LayerTreeHostRemote::InitParams::InitParams() = default;
@@ -363,6 +388,8 @@ void LayerTreeHostRemote::BeginMainFrame() {
     // layers. See crbug.com/650885.
     LayerTreeHostCommon::CallFunctionForEveryLayer(
         layer_tree_.get(), [&layer_list](Layer* layer) {
+          if (!ShouldUpdateLayer(layer))
+            return;
           layer->SavePaintProperties();
           layer_list.push_back(layer);
         });

@@ -164,7 +164,11 @@ class LayerTreeHostRemoteTest : public testing::Test {
     params.settings = &settings;
 
     layer_tree_host_ = base::MakeUnique<LayerTreeHostRemoteForTesting>(&params);
+
+    // Make sure the root layer always updates.
     root_layer_ = make_scoped_refptr(new MockLayer(false));
+    root_layer_->SetIsDrawable(true);
+    root_layer_->SetBounds(gfx::Size(5, 10));
     layer_tree_host_->GetLayerTree()->SetRootLayer(root_layer_);
   }
 
@@ -348,6 +352,8 @@ TEST_F(LayerTreeHostRemoteTest, RequestCommitDuringMainFrame) {
 TEST_F(LayerTreeHostRemoteTest, RequestCommitDuringLayerUpdates) {
   // A layer update during a main frame should result in a commit.
   scoped_refptr<Layer> child_layer = make_scoped_refptr(new MockLayer(true));
+  child_layer->SetIsDrawable(true);
+  child_layer->SetBounds(gfx::Size(5, 10));
   root_layer_->AddChild(child_layer);
   EXPECT_BEGIN_MAIN_FRAME_AND_COMMIT(mock_layer_tree_host_client_, 1);
 
@@ -411,6 +417,43 @@ TEST_F(LayerTreeHostRemoteTest, ScrollAndScaleSync) {
   updates_applied =
       remote_compositor_bridge_->SendUpdates(scroll_updates, new_scale_factor);
   EXPECT_FALSE(updates_applied);
+}
+
+TEST_F(LayerTreeHostRemoteTest, IdentifiedLayersToSkipUpdates) {
+  EXPECT_BEGIN_MAIN_FRAME_AND_COMMIT(mock_layer_tree_host_client_, 1);
+
+  scoped_refptr<MockLayer> non_drawable_layer = new MockLayer(true);
+  non_drawable_layer->SetIsDrawable(false);
+  non_drawable_layer->SetBounds(gfx::Size(5, 5));
+
+  scoped_refptr<MockLayer> empty_bound_layer = new MockLayer(true);
+  empty_bound_layer->SetIsDrawable(true);
+  empty_bound_layer->SetBounds(gfx::Size());
+
+  scoped_refptr<MockLayer> transparent_layer = new MockLayer(true);
+  transparent_layer->SetIsDrawable(true);
+  transparent_layer->SetBounds(gfx::Size(5, 5));
+  transparent_layer->SetOpacity(0.f);
+
+  scoped_refptr<MockLayer> updated_layer = new MockLayer(true);
+  updated_layer->SetIsDrawable(true);
+  updated_layer->SetBounds(gfx::Size(5, 5));
+
+  root_layer_->AddChild(non_drawable_layer);
+  root_layer_->AddChild(empty_bound_layer);
+  empty_bound_layer->SetMaskLayer(transparent_layer.get());
+  empty_bound_layer->AddChild(updated_layer);
+  DCHECK(updated_layer->GetLayerTreeHostForTesting());
+
+  // Commit and serialize.
+  layer_tree_host_->SetNeedsCommit();
+  base::RunLoop().RunUntilIdle();
+
+  // Only the updated_layer should have been updated.
+  EXPECT_FALSE(non_drawable_layer->did_update());
+  EXPECT_FALSE(empty_bound_layer->did_update());
+  EXPECT_FALSE(transparent_layer->did_update());
+  EXPECT_TRUE(updated_layer->did_update());
 }
 
 }  // namespace

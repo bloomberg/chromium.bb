@@ -420,6 +420,9 @@ void Layer::SetMaskLayer(Layer* mask_layer) {
   }
   inputs_.mask_layer = mask_layer;
   if (inputs_.mask_layer.get()) {
+    // The mask layer should not have any children.
+    DCHECK(inputs_.mask_layer->children().empty());
+
     inputs_.mask_layer->RemoveFromParent();
     DCHECK(!inputs_.mask_layer->parent());
     inputs_.mask_layer->SetParent(this);

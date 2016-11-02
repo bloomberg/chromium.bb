@@ -502,6 +502,8 @@ TEST_F(CompositorStateDeserializerTest, SolidColorScrollbarLayer) {
 
 TEST_F(CompositorStateDeserializerTest, PictureLayer) {
   scoped_refptr<Layer> root_layer = Layer::Create();
+  root_layer->SetBounds(gfx::Size(10, 10));
+  root_layer->SetIsDrawable(true);
   layer_tree_host_remote_->GetLayerTree()->SetRootLayer(root_layer);
 
   gfx::Size layer_size = gfx::Size(5, 5);
@@ -530,6 +532,7 @@ TEST_F(CompositorStateDeserializerTest, PictureLayer) {
   scoped_refptr<PictureLayer> picture_layer =
       PictureLayer::Create(&content_client);
   picture_layer->SetBounds(layer_size);
+  picture_layer->SetIsDrawable(true);
   root_layer->AddChild(picture_layer);
 
   // Synchronize State and verify.
@@ -548,7 +551,8 @@ TEST_F(CompositorStateDeserializerTest, PictureLayer) {
   // Now attach new layer with the same DisplayList.
   scoped_refptr<PictureLayer> picture_layer2 =
       PictureLayer::Create(&content_client);
-  picture_layer->SetBounds(layer_size);
+  picture_layer2->SetBounds(layer_size);
+  picture_layer2->SetIsDrawable(true);
   root_layer->AddChild(picture_layer2);
 
   // Synchronize State and verify.
