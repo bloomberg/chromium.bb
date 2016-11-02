@@ -137,29 +137,6 @@ static ConditionalClip ComputeTargetRectInLocalSpace(
                          MathUtil::ProjectClippedRect(target_to_local, rect)};
 }
 
-static ConditionalClip ConvertRectBetweenSurfaceSpaces(
-    gfx::RectF rect,
-    const PropertyTrees* property_trees,
-    int source_transform_id,
-    int source_effect_id,
-    int dest_transform_id,
-    int dest_effect_id) {
-  gfx::Transform source_to_dest;
-  bool success = property_trees->GetToTarget(source_transform_id,
-                                             dest_effect_id, &source_to_dest);
-  if (!success)
-    return ConditionalClip{false, gfx::RectF()};
-  const EffectTree& effect_tree = property_trees->effect_tree;
-  const EffectNode* source_effect_node = effect_tree.Node(source_effect_id);
-  ConcatInverseSurfaceContentsScale(source_effect_node, &source_to_dest);
-  if (source_transform_id > dest_transform_id) {
-    return ConditionalClip{true,  // is_clipped
-                           MathUtil::MapClippedRect(source_to_dest, rect)};
-  }
-  return ConditionalClip{true,  // is_clipped
-                         MathUtil::ProjectClippedRect(source_to_dest, rect)};
-}
-
 static ConditionalClip ComputeLocalRectInTargetSpace(
     gfx::RectF rect,
     const PropertyTrees* property_trees,
@@ -199,71 +176,9 @@ static ConditionalClip ComputeCurrentClip(const ClipNode* clip_node,
   return ConditionalClip{true /* is_clipped */, current_clip};
 }
 
-static bool ApplyClipNodeToAccumulatedClip(const PropertyTrees* property_trees,
-                                           bool include_expanding_clips,
-                                           int target_id,
-                                           int target_transform_id,
-                                           const ClipNode* clip_node,
-                                           gfx::RectF* accumulated_clip) {
-  switch (clip_node->clip_type) {
-    case ClipNode::ClipType::APPLIES_LOCAL_CLIP: {
-      ConditionalClip current_clip = ComputeCurrentClip(
-          clip_node, property_trees, target_transform_id, target_id);
-
-      // If transform is not invertible, no clip will be applied.
-      if (!current_clip.is_clipped)
-        return false;
-
-      *accumulated_clip =
-          gfx::IntersectRects(*accumulated_clip, current_clip.clip_rect);
-      return true;
-    }
-    case ClipNode::ClipType::EXPANDS_CLIP: {
-      if (!include_expanding_clips)
-        return true;
-
-      // Bring the accumulated clip to the space of the expanding effect.
-      const EffectNode* expanding_effect_node =
-          property_trees->effect_tree.Node(
-              clip_node->clip_expander->target_effect_id());
-      ConditionalClip accumulated_clip_in_expanding_space =
-          ConvertRectBetweenSurfaceSpaces(
-              *accumulated_clip, property_trees, target_transform_id, target_id,
-              expanding_effect_node->transform_id, expanding_effect_node->id);
-      // If transform is not invertible, no clip will be applied.
-      if (!accumulated_clip_in_expanding_space.is_clipped)
-        return false;
-
-      // Do the expansion.
-      gfx::RectF expanded_clip_in_expanding_space =
-          gfx::RectF(clip_node->clip_expander->MapRectReverse(
-              gfx::ToEnclosingRect(
-                  accumulated_clip_in_expanding_space.clip_rect),
-              property_trees));
-
-      // Put the expanded clip back into the original target space.
-      ConditionalClip expanded_clip_in_target_space =
-          ConvertRectBetweenSurfaceSpaces(
-              expanded_clip_in_expanding_space, property_trees,
-              expanding_effect_node->transform_id, expanding_effect_node->id,
-              target_transform_id, target_id);
-      // If transform is not invertible, no clip will be applied.
-      if (!expanded_clip_in_target_space.is_clipped)
-        return false;
-      *accumulated_clip = expanded_clip_in_target_space.clip_rect;
-      return true;
-    }
-    case ClipNode::ClipType::NONE:
-      return true;
-  }
-  NOTREACHED();
-  return true;
-}
-
 static ConditionalClip ComputeAccumulatedClip(
     const PropertyTrees* property_trees,
     bool include_viewport_clip,
-    bool include_expanding_clips,
     int local_clip_id,
     int target_id) {
   DCHECK(!include_viewport_clip ||
@@ -274,6 +189,7 @@ static ConditionalClip ComputeAccumulatedClip(
   const ClipNode* clip_node = clip_tree.Node(local_clip_id);
   const EffectNode* target_node = effect_tree.Node(target_id);
   int target_transform_id = target_node->transform_id;
+  bool is_clipped = false;
 
   // Collect all the clips that need to be accumulated.
   std::stack<const ClipNode*> parent_chain;
@@ -302,42 +218,43 @@ static ConditionalClip ComputeAccumulatedClip(
     parent_chain.pop();
   }
 
-  // Find the first clip in the chain that we need to apply.
+  // TODO(weiliangc): If we don't create clip for render surface, we don't need
+  // to check applies_local_clip.
   while (clip_node->clip_type != ClipNode::ClipType::APPLIES_LOCAL_CLIP &&
          parent_chain.size() > 0) {
     clip_node = parent_chain.top();
     parent_chain.pop();
   }
 
-  if (clip_node->clip_type != ClipNode::ClipType::APPLIES_LOCAL_CLIP) {
+  if (clip_node->clip_type != ClipNode::ClipType::APPLIES_LOCAL_CLIP)
     // No clip node applying clip in between.
     return ConditionalClip{false, gfx::RectF()};
-  }
 
   ConditionalClip current_clip = ComputeCurrentClip(
       clip_node, property_trees, target_transform_id, target_id);
-
-  // If transform is not invertible, no clip will be applied.
-  if (!current_clip.is_clipped)
-    return ConditionalClip{false, gfx::RectF()};
+  is_clipped = current_clip.is_clipped;
   gfx::RectF accumulated_clip = current_clip.clip_rect;
 
   while (parent_chain.size() > 0) {
     clip_node = parent_chain.top();
     parent_chain.pop();
-    bool success = ApplyClipNodeToAccumulatedClip(
-        property_trees, include_expanding_clips, target_id, target_transform_id,
-        clip_node, &accumulated_clip);
+    if (clip_node->clip_type != ClipNode::ClipType::APPLIES_LOCAL_CLIP) {
+      continue;
+    }
+    ConditionalClip current_clip = ComputeCurrentClip(
+        clip_node, property_trees, target_transform_id, target_id);
 
-    // Failure to apply the clip means we encountered an uninvertible transform,
-    // so no clip will be applied.
-    if (!success)
-      return ConditionalClip{false /* is_clipped */, gfx::RectF()};
+    // If transform is not invertible, no clip will be applied.
+    if (!current_clip.is_clipped)
+      return ConditionalClip{false, gfx::RectF()};
+
+    is_clipped = true;
+    accumulated_clip =
+        gfx::IntersectRects(accumulated_clip, current_clip.clip_rect);
   }
 
-  return ConditionalClip{true /* is_clipped */, accumulated_clip.IsEmpty()
-                                                    ? gfx::RectF()
-                                                    : accumulated_clip};
+  return ConditionalClip{
+      is_clipped, accumulated_clip.IsEmpty() ? gfx::RectF() : accumulated_clip};
 }
 
 static gfx::RectF ComputeAccumulatedClipInRootSpaceForVisibleRect(
@@ -345,10 +262,8 @@ static gfx::RectF ComputeAccumulatedClipInRootSpaceForVisibleRect(
     int local_clip_id) {
   const int root_effect_id = EffectTree::kContentsRootNodeId;
   bool include_viewport_clip = true;
-  bool include_expanding_clips = true;
   ConditionalClip accumulated_clip = ComputeAccumulatedClip(
-      property_trees, include_viewport_clip, include_expanding_clips,
-      local_clip_id, root_effect_id);
+      property_trees, include_viewport_clip, local_clip_id, root_effect_id);
   DCHECK(accumulated_clip.is_clipped);
   return accumulated_clip.clip_rect;
 }
@@ -420,10 +335,9 @@ void CalculateVisibleRects(const LayerImplList& visible_layer_list,
     if (effect_ancestor_with_copy_request > 1) {
       // Non root copy request.
       bool include_viewport_clip = false;
-      bool include_expanding_clips = true;
       ConditionalClip accumulated_clip_rect = ComputeAccumulatedClip(
-          property_trees, include_viewport_clip, include_expanding_clips,
-          layer->clip_tree_index(), effect_ancestor_with_copy_request);
+          property_trees, include_viewport_clip, layer->clip_tree_index(),
+          effect_ancestor_with_copy_request);
       if (!accumulated_clip_rect.is_clipped) {
         layer->set_visible_layer_rect(gfx::Rect(layer_bounds));
         continue;
@@ -877,12 +791,6 @@ void ComputeClips(PropertyTrees* property_trees,
         continue;
       parent_combined_clip_in_target_space = MathUtil::ProjectClippedRect(
           parent_to_current, parent_clip_node->combined_clip_in_target_space);
-      if (clip_node->clip_type == ClipNode::ClipType::EXPANDS_CLIP) {
-        parent_combined_clip_in_target_space =
-            gfx::RectF(clip_node->clip_expander->MapRectReverse(
-                gfx::ToEnclosingRect(parent_combined_clip_in_target_space),
-                property_trees));
-      }
       parent_clip_in_target_space = MathUtil::ProjectClippedRect(
           parent_to_current, parent_clip_node->clip_in_target_space);
     }
@@ -1021,10 +929,9 @@ static void ComputeClipsWithEffectTree(PropertyTrees* property_trees) {
     EffectNode* effect_node = effect_tree->Node(i);
     const EffectNode* target_node = effect_tree->Node(effect_node->target_id);
     bool include_viewport_clip = false;
-    bool include_expanding_clips = false;
-    ConditionalClip accumulated_clip_rect = ComputeAccumulatedClip(
-        property_trees, include_viewport_clip, include_expanding_clips,
-        effect_node->clip_id, target_node->id);
+    ConditionalClip accumulated_clip_rect =
+        ComputeAccumulatedClip(property_trees, include_viewport_clip,
+                               effect_node->clip_id, target_node->id);
     gfx::RectF accumulated_clip = accumulated_clip_rect.clip_rect;
     const RenderSurfaceImpl* render_surface = effect_node->render_surface;
     if (render_surface && render_surface->is_clipped()) {
@@ -1054,10 +961,9 @@ static void ComputeLayerClipRect(const PropertyTrees* property_trees,
   }
 
   bool include_viewport_clip = false;
-  bool include_expanding_clips = false;
-  ConditionalClip accumulated_clip_rect = ComputeAccumulatedClip(
-      property_trees, include_viewport_clip, include_expanding_clips,
-      layer->clip_tree_index(), target_node->id);
+  ConditionalClip accumulated_clip_rect =
+      ComputeAccumulatedClip(property_trees, include_viewport_clip,
+                             layer->clip_tree_index(), target_node->id);
 
   gfx::RectF accumulated_clip = accumulated_clip_rect.clip_rect;
 
@@ -1188,10 +1094,9 @@ gfx::Rect ComputeLayerVisibleRectDynamic(const PropertyTrees* property_trees,
   gfx::RectF accumulated_clip_in_root_space;
   if (non_root_copy_request) {
     bool include_viewport_clip = false;
-    bool include_expanding_clips = true;
     ConditionalClip accumulated_clip = ComputeAccumulatedClip(
-        property_trees, include_viewport_clip, include_expanding_clips,
-        layer->clip_tree_index(), effect_ancestor_with_copy_request);
+        property_trees, include_viewport_clip, layer->clip_tree_index(),
+        effect_ancestor_with_copy_request);
     if (!accumulated_clip.is_clipped)
       return layer_content_rect;
     accumulated_clip_in_root_space = accumulated_clip.clip_rect;

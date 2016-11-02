@@ -5,10 +5,7 @@
 #ifndef CC_TREES_CLIP_NODE_H_
 #define CC_TREES_CLIP_NODE_H_
 
-#include <memory>
-
 #include "cc/base/cc_export.h"
-#include "cc/trees/clip_expander.h"
 #include "ui/gfx/geometry/rect_f.h"
 
 namespace base {
@@ -27,10 +24,6 @@ struct CC_EXPORT ClipNode {
   ClipNode();
   ClipNode(const ClipNode& other);
 
-  ClipNode& operator=(const ClipNode& other);
-
-  ~ClipNode();
-
   int id;
   int parent_id;
   int owner_id;
@@ -41,15 +34,7 @@ struct CC_EXPORT ClipNode {
     NONE,
 
     // The node contributes a new clip (that is, |clip| needs to be applied).
-    APPLIES_LOCAL_CLIP,
-
-    // This node represents a space expansion. When computing visible rects,
-    // the accumulated clip inherited by this node gets expanded. Similarly,
-    // when mapping a rect in descendant space to the rect in ancestor space
-    // that depends on the descendant rect's contents, this node expands the
-    // descendant rect. This is used for effects like pixel-moving filters,
-    // where clipped-out content can affect visible output.
-    EXPANDS_CLIP
+    APPLIES_LOCAL_CLIP
   };
 
   ClipType clip_type;
@@ -57,9 +42,6 @@ struct CC_EXPORT ClipNode {
   // The clip rect that this node contributes, expressed in the space of its
   // transform node.
   gfx::RectF clip;
-
-  // For nodes that expand, this represents the amount of expansion.
-  std::unique_ptr<ClipExpander> clip_expander;
 
   // Clip nodes are used for two reasons. First, they are used for determining
   // which parts of each layer are visible. Second, they are used for

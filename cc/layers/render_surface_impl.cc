@@ -188,17 +188,6 @@ void RenderSurfaceImpl::SetContentRectForTesting(const gfx::Rect& rect) {
   SetContentRect(rect);
 }
 
-gfx::Rect RenderSurfaceImpl::CalculateExpandedClipForFilters(
-    const gfx::Transform& target_to_surface) {
-  gfx::Rect clip_in_surface_space =
-      MathUtil::ProjectEnclosingClippedRect(target_to_surface, clip_rect());
-  gfx::Rect expanded_clip_in_surface_space = Filters().MapRectReverse(
-      clip_in_surface_space, FiltersTransform().matrix());
-  gfx::Rect expanded_clip_in_target_space = MathUtil::MapEnclosingClippedRect(
-      draw_transform(), expanded_clip_in_surface_space);
-  return expanded_clip_in_target_space;
-}
-
 gfx::Rect RenderSurfaceImpl::CalculateClippedAccumulatedContentRect() {
   if (HasCopyRequest() || !is_clipped())
     return accumulated_content_rect();
@@ -223,13 +212,7 @@ gfx::Rect RenderSurfaceImpl::CalculateClippedAccumulatedContentRect() {
   if (clip_rect().Contains(accumulated_rect_in_target_space))
     return accumulated_content_rect();
 
-  gfx::Rect clipped_accumulated_rect_in_target_space;
-  if (Filters().HasFilterThatMovesPixels()) {
-    clipped_accumulated_rect_in_target_space =
-        CalculateExpandedClipForFilters(target_to_surface);
-  } else {
-    clipped_accumulated_rect_in_target_space = clip_rect();
-  }
+  gfx::Rect clipped_accumulated_rect_in_target_space = clip_rect();
   clipped_accumulated_rect_in_target_space.Intersect(
       accumulated_rect_in_target_space);
 

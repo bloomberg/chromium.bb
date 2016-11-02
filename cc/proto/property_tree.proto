@@ -74,12 +74,11 @@ message StickyPositionNodeData {
 }
 
 // Proto for struct ClipNodeData.
-// NEXT ID: 15
+// NEXT ID: 14
 message ClipNodeData {
   enum ClipType {
     NONE = 1;
     APPLIES_LOCAL_CLIP = 2;
-    EXPANDS_CLIP = 3;
   }
   optional ClipType clip_type = 13;
   optional RectF clip = 1;
@@ -89,7 +88,6 @@ message ClipNodeData {
   optional int64 transform_id = 4;
   optional int64 target_transform_id = 5;
   optional int64 target_effect_id = 12;
-  optional int64 clip_expander_effect_id = 14;
   optional bool applies_local_clip = 6;
   optional bool layer_clipping_uses_only_local_clip = 7;
   optional bool target_is_clipped = 8;

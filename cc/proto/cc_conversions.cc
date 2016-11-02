@@ -52,8 +52,6 @@ proto::ClipNodeData::ClipType ClipNodeTypeToProto(
       return proto::ClipNodeData::NONE;
     case ClipNode::ClipType::APPLIES_LOCAL_CLIP:
       return proto::ClipNodeData::APPLIES_LOCAL_CLIP;
-    case ClipNode::ClipType::EXPANDS_CLIP:
-      return proto::ClipNodeData::EXPANDS_CLIP;
   }
   NOTREACHED();
   return proto::ClipNodeData::NONE;
@@ -66,8 +64,6 @@ ClipNode::ClipType ClipNodeTypeFromProto(
       return ClipNode::ClipType::NONE;
     case proto::ClipNodeData::APPLIES_LOCAL_CLIP:
       return ClipNode::ClipType::APPLIES_LOCAL_CLIP;
-    case proto::ClipNodeData::EXPANDS_CLIP:
-      return ClipNode::ClipType::EXPANDS_CLIP;
   }
   NOTREACHED();
   return ClipNode::ClipType::NONE;
