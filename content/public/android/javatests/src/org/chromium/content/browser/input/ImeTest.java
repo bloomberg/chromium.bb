@@ -1248,7 +1248,7 @@ public class ImeTest extends ContentShellTestBase {
 
     @SmallTest
     @Feature({"TextInput"})
-    @RetryOnFailure
+    @DisabledTest(message = "crbug.com/661572")
     public void testPastePopupShowAndHide() throws Throwable {
         commitText("hello", 1);
         waitAndVerifyUpdateSelection(0, 5, 5, -1, -1);
