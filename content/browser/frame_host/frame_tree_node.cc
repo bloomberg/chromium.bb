@@ -128,6 +128,13 @@ FrameTreeNode::~FrameTreeNode() {
     opener_->RemoveObserver(opener_observer_.get());
 
   g_frame_tree_node_id_map.Get().erase(frame_tree_node_id_);
+
+  if (navigation_request_) {
+    // PlzNavigate: if a frame with a pending navigation is detached, make sure
+    // the WebContents (and its observers) update their loading state.
+    navigation_request_.reset();
+    DidStopLoading();
+  }
 }
 
 void FrameTreeNode::AddObserver(Observer* observer) {
