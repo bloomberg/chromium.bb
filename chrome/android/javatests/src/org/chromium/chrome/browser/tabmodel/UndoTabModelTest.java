@@ -1313,8 +1313,10 @@ public class UndoTabModelTest extends ChromeTabbedActivityTestBase {
      * 8.  CreateTab(5)               [ 5s ]             -                 [ 5s ]
      * @throws InterruptedException
      */
-    @MediumTest
-    @Restriction(ChromeRestriction.RESTRICTION_TYPE_PHONE) // See crbug.com/633607
+    //@MediumTest
+    //@Restriction(ChromeRestriction.RESTRICTION_TYPE_PHONE) // See crbug.com/633607
+    // Disabled due to flakiness on linux_android_rel_ng (crbug.com/661429)
+    @DisabledTest
     public void testAddTab() throws InterruptedException {
         TabModel model = getActivity().getTabModelSelector().getModel(false);
         ChromeTabCreator tabCreator = getActivity().getTabCreator(false);
