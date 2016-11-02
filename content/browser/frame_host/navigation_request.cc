@@ -355,7 +355,7 @@ void NavigationRequest::OnRequestRedirected(
   // TODO(clamy): pass the real value for |is_external_protocol| if needed.
   navigation_handle_->WillRedirectRequest(
       common_params_.url, common_params_.method, common_params_.referrer.url,
-      false, response->head.headers,
+      false, response->head.headers, response->head.connection_info,
       base::Bind(&NavigationRequest::OnRedirectChecksComplete,
                  base::Unretained(this)));
 }
@@ -425,9 +425,10 @@ void NavigationRequest::OnResponseStarted(
   // TODO(clamy): pass the right values for request_id, is_download and
   // is_stream.
   navigation_handle_->WillProcessResponse(
-      render_frame_host, response->head.headers.get(), ssl_status,
-      GlobalRequestID(), common_params_.should_replace_current_entry, false,
-      false, base::Closure(),
+      render_frame_host, response->head.headers.get(),
+      response->head.connection_info, ssl_status, GlobalRequestID(),
+      common_params_.should_replace_current_entry, false, false,
+      base::Closure(),
       base::Bind(&NavigationRequest::OnWillProcessResponseChecksComplete,
                  base::Unretained(this)));
 }

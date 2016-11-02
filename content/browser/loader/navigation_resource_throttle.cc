@@ -123,7 +123,8 @@ void CheckWillRedirectRequestOnUIThread(
     const std::string& new_method,
     const GURL& new_referrer_url,
     bool new_is_external_protocol,
-    scoped_refptr<net::HttpResponseHeaders> headers) {
+    scoped_refptr<net::HttpResponseHeaders> headers,
+    net::HttpResponseInfo::ConnectionInfo connection_info) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
   NavigationHandleImpl* navigation_handle =
       FindNavigationHandle(render_process_id, render_frame_host_id, callback);
@@ -135,7 +136,8 @@ void CheckWillRedirectRequestOnUIThread(
       ->FilterURL(false, &new_validated_url);
   navigation_handle->WillRedirectRequest(
       new_validated_url, new_method, new_referrer_url, new_is_external_protocol,
-      headers, base::Bind(&SendCheckResultToIOThread, callback));
+      headers, connection_info,
+      base::Bind(&SendCheckResultToIOThread, callback));
 }
 
 void WillProcessResponseOnUIThread(
@@ -143,6 +145,7 @@ void WillProcessResponseOnUIThread(
     int render_process_id,
     int render_frame_host_id,
     scoped_refptr<net::HttpResponseHeaders> headers,
+    net::HttpResponseInfo::ConnectionInfo connection_info,
     const SSLStatus& ssl_status,
     const GlobalRequestID& request_id,
     bool should_replace_current_entry,
@@ -168,7 +171,7 @@ void WillProcessResponseOnUIThread(
       RenderFrameHostImpl::FromID(render_process_id, render_frame_host_id);
   DCHECK(render_frame_host);
   navigation_handle->WillProcessResponse(
-      render_frame_host, headers, ssl_status, request_id,
+      render_frame_host, headers, connection_info, ssl_status, request_id,
       should_replace_current_entry, is_download, is_stream, transfer_callback,
       base::Bind(&SendCheckResultToIOThread, callback));
 }
@@ -256,7 +259,8 @@ void NavigationResourceThrottle::WillRedirectRequest(
       base::Bind(&CheckWillRedirectRequestOnUIThread, callback,
                  render_process_id, render_frame_id, redirect_info.new_url,
                  redirect_info.new_method, GURL(redirect_info.new_referrer),
-                 new_is_external_protocol, response_headers));
+                 new_is_external_protocol, response_headers,
+                 request_->response_info().connection_info));
   *defer = true;
 }
 
@@ -306,7 +310,8 @@ void NavigationResourceThrottle::WillProcessResponse(bool* defer) {
   BrowserThread::PostTask(
       BrowserThread::UI, FROM_HERE,
       base::Bind(&WillProcessResponseOnUIThread, callback, render_process_id,
-                 render_frame_id, response_headers, ssl_status,
+                 render_frame_id, response_headers,
+                 request_->response_info().connection_info, ssl_status,
                  info->GetGlobalRequestID(),
                  info->should_replace_current_entry(), info->IsDownload(),
                  info->is_stream(), transfer_callback,

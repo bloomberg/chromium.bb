@@ -75,6 +75,7 @@ NavigationHandleImpl::NavigationHandleImpl(
       is_same_page_(is_same_page),
       is_srcdoc_(is_srcdoc),
       was_redirected_(false),
+      connection_info_(net::HttpResponseInfo::CONNECTION_INFO_UNKNOWN),
       original_url_(url),
       state_(INITIAL),
       is_transferring_(false),
@@ -225,6 +226,11 @@ const net::HttpResponseHeaders* NavigationHandleImpl::GetResponseHeaders() {
   return response_headers_.get();
 }
 
+net::HttpResponseInfo::ConnectionInfo
+NavigationHandleImpl::GetConnectionInfo() {
+  return connection_info_;
+}
+
 bool NavigationHandleImpl::HasCommitted() {
   return state_ == DID_COMMIT || state_ == DID_COMMIT_ERROR_PAGE;
 }
@@ -314,6 +320,7 @@ NavigationHandleImpl::CallWillRedirectRequestForTesting(
   WillRedirectRequest(new_url, new_method_is_post ? "POST" : "GET",
                       new_referrer_url, new_is_external_protocol,
                       scoped_refptr<net::HttpResponseHeaders>(),
+                      net::HttpResponseInfo::CONNECTION_INFO_UNKNOWN,
                       base::Bind(&UpdateThrottleCheckResult, &result));
 
   // Reset the callback to ensure it will not be called later.
@@ -329,8 +336,9 @@ NavigationHandleImpl::CallWillProcessResponseForTesting(
       new net::HttpResponseHeaders(raw_response_headers);
   NavigationThrottle::ThrottleCheckResult result = NavigationThrottle::DEFER;
   WillProcessResponse(static_cast<RenderFrameHostImpl*>(render_frame_host),
-                      headers, SSLStatus(), GlobalRequestID(), false, false,
-                      false, base::Closure(),
+                      headers, net::HttpResponseInfo::CONNECTION_INFO_UNKNOWN,
+                      SSLStatus(), GlobalRequestID(), false, false, false,
+                      base::Closure(),
                       base::Bind(&UpdateThrottleCheckResult, &result));
 
   // Reset the callback to ensure it will not be called later.
@@ -416,6 +424,7 @@ void NavigationHandleImpl::WillRedirectRequest(
     const GURL& new_referrer_url,
     bool new_is_external_protocol,
     scoped_refptr<net::HttpResponseHeaders> response_headers,
+    net::HttpResponseInfo::ConnectionInfo connection_info,
     const ThrottleChecksFinishedCallback& callback) {
   // Update the navigation parameters.
   url_ = new_url;
@@ -424,6 +433,7 @@ void NavigationHandleImpl::WillRedirectRequest(
   sanitized_referrer_ = Referrer::SanitizeForRequest(url_, sanitized_referrer_);
   is_external_protocol_ = new_is_external_protocol;
   response_headers_ = response_headers;
+  connection_info_ = connection_info;
   was_redirected_ = true;
   redirect_chain_.push_back(new_url);
   if (new_method != "POST")
@@ -443,6 +453,7 @@ void NavigationHandleImpl::WillRedirectRequest(
 void NavigationHandleImpl::WillProcessResponse(
     RenderFrameHostImpl* render_frame_host,
     scoped_refptr<net::HttpResponseHeaders> response_headers,
+    net::HttpResponseInfo::ConnectionInfo connection_info,
     const SSLStatus& ssl_status,
     const GlobalRequestID& request_id,
     bool should_replace_current_entry,
@@ -453,6 +464,7 @@ void NavigationHandleImpl::WillProcessResponse(
   DCHECK(!render_frame_host_ || render_frame_host_ == render_frame_host);
   render_frame_host_ = render_frame_host;
   response_headers_ = response_headers;
+  connection_info_ = connection_info;
   request_id_ = request_id;
   should_replace_current_entry_ = should_replace_current_entry;
   is_download_ = is_download;

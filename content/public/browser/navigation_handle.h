@@ -11,6 +11,7 @@
 #include "content/public/browser/navigation_throttle.h"
 #include "content/public/common/referrer.h"
 #include "net/base/net_errors.h"
+#include "net/http/http_response_info.h"
 #include "ui/base/page_transition_types.h"
 
 class GURL;
@@ -166,6 +167,12 @@ class CONTENT_EXPORT NavigationHandle {
   // redirect). The headers returned should not be modified, as modifications
   // will not be reflected in the network stack.
   virtual const net::HttpResponseHeaders* GetResponseHeaders() = 0;
+
+  // Returns the connection info for the request, the default value is
+  // CONNECTION_INFO_UNKNOWN if there hasn't been a response (or redirect)
+  // yet. The connection info may change during the navigation (e.g. after
+  // encountering a server redirect).
+  virtual net::HttpResponseInfo::ConnectionInfo GetConnectionInfo() = 0;
 
   // Resumes a navigation that was previously deferred by a NavigationThrottle.
   virtual void Resume() = 0;

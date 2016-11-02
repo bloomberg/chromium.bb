@@ -20,6 +20,7 @@
 #include "chrome/browser/page_load_metrics/observers/https_engagement_metrics/https_engagement_page_load_metrics_observer.h"
 #include "chrome/browser/page_load_metrics/observers/no_state_prefetch_page_load_metrics_observer.h"
 #include "chrome/browser/page_load_metrics/observers/previews_page_load_metrics_observer.h"
+#include "chrome/browser/page_load_metrics/observers/protocol_page_load_metrics_observer.h"
 #include "chrome/browser/page_load_metrics/observers/service_worker_page_load_metrics_observer.h"
 #include "chrome/browser/page_load_metrics/page_load_metrics_embedder_interface.h"
 #include "chrome/browser/page_load_metrics/page_load_tracker.h"
@@ -76,7 +77,8 @@ void PageLoadMetricsEmbedder::RegisterObservers(
       base::MakeUnique<ServiceWorkerPageLoadMetricsObserver>());
   tracker->AddObserver(base::MakeUnique<HttpsEngagementPageLoadMetricsObserver>(
       web_contents_->GetBrowserContext()));
-  tracker->AddObserver(base::WrapUnique(new CssScanningMetricsObserver()));
+  tracker->AddObserver(base::MakeUnique<CssScanningMetricsObserver>());
+  tracker->AddObserver(base::MakeUnique<ProtocolPageLoadMetricsObserver>());
   std::unique_ptr<page_load_metrics::PageLoadMetricsObserver>
       no_state_prefetch_observer =
           NoStatePrefetchPageLoadMetricsObserver::CreateIfNeeded(web_contents_);
