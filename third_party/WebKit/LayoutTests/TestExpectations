@@ -1189,7 +1189,6 @@ crbug.com/591500 [ Win10 ] virtual/threaded/printing/list-item-with-empty-first-
 crbug.com/618082 [ Win10 ] printing/thead-repeats-at-top-of-each-page.html [ Failure ]
 crbug.com/618082 [ Win10 ] virtual/threaded/printing/thead-repeats-at-top-of-each-page.html [ Failure ]
 
-crbug.com/331582 [ Win ] fast/inline/justify-emphasis-inline-box.html [ Failure ]
 crbug.com/474759 fast/writing-mode/vertical-rl-replaced-selection.html [ Failure ]
 
 crbug.com/353746 virtual/android/fullscreen/video-specified-size.html [ Failure Pass ]
