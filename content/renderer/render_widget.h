@@ -531,12 +531,8 @@ class CONTENT_EXPORT RenderWidget
 
   // Override points to notify derived classes that a paint has happened.
   // DidInitiatePaint happens when that has completed, and subsequent rendering
-  // won't affect the painted content. DidFlushPaint happens once we've received
-  // the ACK that the screen has been updated. For a given paint operation,
-  // these overrides will always be called in the order DidInitiatePaint,
-  // DidFlushPaint.
+  // won't affect the painted content.
   virtual void DidInitiatePaint() {}
-  virtual void DidFlushPaint();
 
   virtual GURL GetURLForGraphicsContext3D();
 

@@ -527,7 +527,6 @@ class CONTENT_EXPORT RenderViewImpl
       const blink::WebGestureEvent& event) override;
   bool RenderWidgetWillHandleMouseEvent(
       const blink::WebMouseEvent& event) override;
-  void RenderWidgetDidFlushPaint() override;
 
   // Old WebFrameClient implementations ----------------------------------------
 

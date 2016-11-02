@@ -39,10 +39,6 @@ class CONTENT_EXPORT RenderWidgetOwnerDelegate {
   virtual bool RenderWidgetWillHandleMouseEvent(
       const blink::WebMouseEvent& event) = 0;
 
-  // Painting notifications. DidFlushPaint happens once we've received the ACK
-  // that the screen has been updated.
-  virtual void RenderWidgetDidFlushPaint() = 0;
-
  protected:
   virtual ~RenderWidgetOwnerDelegate() {}
 };

@@ -64,7 +64,6 @@ class RenderWidgetFullscreenPepper : public RenderWidgetFullscreen,
 
   // RenderWidget API.
   void DidInitiatePaint() override;
-  void DidFlushPaint() override;
   void Close() override;
   void OnResize(const ResizeParams& params) override;
 

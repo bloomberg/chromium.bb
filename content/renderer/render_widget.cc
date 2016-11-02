@@ -775,9 +775,6 @@ void RenderWidget::DidCompletePageScaleAnimation() {}
 void RenderWidget::DidReceiveCompositorFrameAck() {
   TRACE_EVENT0("renderer", "RenderWidget::DidReceiveCompositorFrameAck");
 
-  // Notify subclasses threaded composited rendering was flushed to the screen.
-  DidFlushPaint();
-
   if (!next_paint_flags_ && !need_update_rect_for_auto_resize_) {
     return;
   }
@@ -1689,11 +1686,6 @@ bool RenderWidget::SetDeviceColorProfile(
 }
 
 void RenderWidget::OnOrientationChange() {
-}
-
-void RenderWidget::DidFlushPaint() {
-  if (owner_delegate_)
-    owner_delegate_->RenderWidgetDidFlushPaint();
 }
 
 void RenderWidget::SetHidden(bool hidden) {

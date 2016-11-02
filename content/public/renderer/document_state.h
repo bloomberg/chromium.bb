@@ -101,20 +101,6 @@ class CONTENT_EXPORT DocumentState
     finish_load_time_ = value;
   }
 
-  // The time that painting first happened after a new navigation.
-  const base::Time& first_paint_time() const { return first_paint_time_; }
-  void set_first_paint_time(const base::Time& value) {
-    first_paint_time_ = value;
-  }
-
-  // The time that painting first happened after the document loaded.
-  const base::Time& first_paint_after_load_time() const {
-    return first_paint_after_load_time_;
-  }
-  void set_first_paint_after_load_time(const base::Time& value) {
-    first_paint_after_load_time_ = value;
-  }
-
   // True iff the histograms for the associated frame have been dumped.
   bool load_histograms_recorded() const { return load_histograms_recorded_; }
   void set_load_histograms_recorded(bool value) {
@@ -192,8 +178,6 @@ class CONTENT_EXPORT DocumentState
   base::Time commit_load_time_;
   base::Time finish_document_load_time_;
   base::Time finish_load_time_;
-  base::Time first_paint_time_;
-  base::Time first_paint_after_load_time_;
   bool load_histograms_recorded_;
   bool web_timing_histograms_recorded_;
   bool was_fetched_via_spdy_;

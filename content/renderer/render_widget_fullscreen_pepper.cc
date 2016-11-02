@@ -348,9 +348,6 @@ void RenderWidgetFullscreenPepper::DidInitiatePaint() {
     plugin_->ViewInitiatedPaint();
 }
 
-void RenderWidgetFullscreenPepper::DidFlushPaint() {
-}
-
 void RenderWidgetFullscreenPepper::Close() {
   // If the fullscreen window is closed (e.g. user pressed escape), reset to
   // normal mode.

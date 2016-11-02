@@ -2520,52 +2520,6 @@ void RenderViewImpl::OnResize(const ResizeParams& params) {
     has_scrolled_focused_editable_node_into_rect_ = false;
 }
 
-void RenderViewImpl::RenderWidgetDidFlushPaint() {
-  // If the RenderWidget is closing down then early-exit, otherwise we'll crash.
-  // See crbug.com/112921.
-  if (!webview())
-    return;
-
-  WebFrame* main_frame = webview()->mainFrame();
-  for (WebFrame* frame = main_frame; frame; frame = frame->traverseNext()) {
-    // TODO(nasko): This is a hack for the case in which the top-level
-    // frame is being rendered in another process. It will not
-    // behave correctly for out of process iframes.
-    if (frame->isWebLocalFrame()) {
-      main_frame = frame;
-      break;
-    }
-  }
-
-  // There's nothing to do if there are no local frames in this RenderView's
-  // frame tree. This can happen if DidFlushPaint is called after the
-  // RenderView's local main frame is swapped to a remote frame. See
-  // http://crbug.com/513552.
-  if (main_frame->isWebRemoteFrame())
-    return;
-
-  // If we have a provisional frame we are between the start and commit stages
-  // of loading and we don't want to save stats.
-  if (!main_frame->provisionalDataSource()) {
-    WebDataSource* ds = main_frame->dataSource();
-    if (!ds)
-      return;
-
-    DocumentState* document_state = DocumentState::FromDataSource(ds);
-
-    // TODO(jar): The following code should all be inside a method, probably in
-    // NavigatorState.
-    Time now = Time::Now();
-    if (document_state->first_paint_time().is_null()) {
-      document_state->set_first_paint_time(now);
-    }
-    if (document_state->first_paint_after_load_time().is_null() &&
-        !document_state->finish_load_time().is_null()) {
-      document_state->set_first_paint_after_load_time(now);
-    }
-  }
-}
-
 void RenderViewImpl::OnClearFocusedElement() {
   if (webview())
     webview()->clearFocusedElement();

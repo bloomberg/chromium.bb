@@ -904,30 +904,6 @@ TEST_F(RenderViewImplTest, NavigateProxyAndDetachBeforeOnNavigate) {
   provisional_frame->GetWebFrame()->detach();
 }
 
-// Verify that DidFlushPaint doesn't crash if called after a RenderView is
-// swapped out. See https://crbug.com/513552.
-TEST_F(RenderViewImplTest, PaintAfterSwapOut) {
-  // Create a new main frame RenderFrame so that we don't interfere with the
-  // shutdown of frame() in RenderViewTest.TearDown.
-  blink::WebURLRequest popup_request(GURL("http://foo.com"));
-  blink::WebView* new_web_view = view()->createView(
-      GetMainFrame(), popup_request, blink::WebWindowFeatures(), "foo",
-      blink::WebNavigationPolicyNewForegroundTab, false);
-  RenderViewImpl* new_view = RenderViewImpl::FromWebView(new_web_view);
-
-  // Respond to a swap out request.
-  TestRenderFrame* new_main_frame =
-      static_cast<TestRenderFrame*>(new_view->GetMainRenderFrame());
-  new_main_frame->SwapOut(
-      kProxyRoutingId, true,
-      ReconstructReplicationStateForTesting(new_main_frame));
-
-  // Simulate getting painted after swapping out.
-  new_view->DidFlushPaint();
-
-  CloseRenderView(new_view);
-}
-
 // Verify that the renderer process doesn't crash when device scale factor
 // changes after a cross-process navigation has commited.
 // See https://crbug.com/571603.
