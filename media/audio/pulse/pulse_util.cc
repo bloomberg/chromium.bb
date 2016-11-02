@@ -285,8 +285,7 @@ bool CreateOutputStream(pa_threaded_mainloop** mainloop,
 
   // Set sample specifications.
   pa_sample_spec sample_specifications;
-  sample_specifications.format = BitsToPASampleFormat(
-      params.bits_per_sample());
+  sample_specifications.format = PA_SAMPLE_FLOAT32;
   sample_specifications.rate = params.sample_rate();
   sample_specifications.channels = params.channels();
 
