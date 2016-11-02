@@ -5,6 +5,7 @@
 #include "ash/common/system/user/button_from_view.h"
 
 #include "ash/common/ash_constants.h"
+#include "ash/common/material_design/material_design_controller.h"
 #include "ash/common/system/tray/tray_constants.h"
 #include "ash/common/system/tray/tray_utils.h"
 #include "base/strings/string_util.h"
@@ -49,6 +50,8 @@ ButtonFromView::ButtonFromView(views::View* content,
 ButtonFromView::~ButtonFromView() {}
 
 void ButtonFromView::ForceBorderVisible(bool show) {
+  if (MaterialDesignController::IsSystemTrayMenuMaterial())
+    return;
   show_border_ = show;
   ShowActive();
 }

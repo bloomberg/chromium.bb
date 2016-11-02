@@ -38,6 +38,7 @@
 #include "ui/views/controls/button/label_button.h"
 #include "ui/views/controls/label.h"
 #include "ui/views/layout/fill_layout.h"
+#include "ui/views/mouse_watcher_view_host.h"
 #include "ui/views/painter.h"
 
 namespace ash {
@@ -116,6 +117,34 @@ class UserViewMouseWatcherHost : public views::MouseWatcherHost {
   DISALLOW_COPY_AND_ASSIGN(UserViewMouseWatcherHost);
 };
 
+// A view that acts as the contents of the widget that appears when clicking
+// the active user. If the mouse exits this view or an otherwise unhandled
+// click is detected, it will invoke a closure passed at construction time.
+class AddUserWidgetContents : public views::View {
+ public:
+  explicit AddUserWidgetContents(const base::Closure& close_widget)
+      : close_widget_(close_widget) {
+    // Don't want to receive a mouse exit event when the cursor enters a child.
+    set_notify_enter_exit_on_child(true);
+  }
+
+  ~AddUserWidgetContents() override {}
+
+  bool OnMousePressed(const ui::MouseEvent& event) override { return true; }
+  void OnMouseReleased(const ui::MouseEvent& event) override {
+    close_widget_.Run();
+  }
+  void OnMouseExited(const ui::MouseEvent& event) override {
+    close_widget_.Run();
+  }
+  void OnGestureEvent(ui::GestureEvent* event) override { close_widget_.Run(); }
+
+ private:
+  base::Closure close_widget_;
+
+  DISALLOW_COPY_AND_ASSIGN(AddUserWidgetContents);
+};
+
 // The menu item view which gets shown when the user clicks in multi profile
 // mode onto the user item.
 class AddUserView : public views::View {
@@ -147,7 +176,7 @@ class AddUserView : public views::View {
 };
 
 AddUserView::AddUserView(ButtonFromView* owner)
-    : add_user_(NULL), owner_(owner), anchor_(NULL) {
+    : add_user_(nullptr), owner_(owner), anchor_(nullptr) {
   AddContent();
   owner_->ForceBorderVisible(true);
 }
@@ -203,12 +232,12 @@ void AddUserView::AddContent() {
 
 UserView::UserView(SystemTrayItem* owner, LoginStatus login, UserIndex index)
     : user_index_(index),
-      user_card_view_(NULL),
+      user_card_view_(nullptr),
       owner_(owner),
       is_user_card_button_(false),
-      logout_button_(NULL),
+      logout_button_(nullptr),
       add_user_enabled_(true),
-      focus_manager_(NULL) {
+      focus_manager_(nullptr) {
   CHECK_NE(LoginStatus::NOT_LOGGED_IN, login);
   if (!index) {
     // Only the logged in user will have a background. All other users will have
@@ -242,6 +271,7 @@ UserView::~UserView() {
 }
 
 void UserView::MouseMovedOutOfHost() {
+  DCHECK(!UseMd());
   RemoveAddUserMenuOption();
 }
 
@@ -349,7 +379,7 @@ void UserView::ButtonPressed(views::Button* sender, const ui::Event& event) {
       owner_->system_tray()->CloseSystemBubble();
     }
   } else if (add_menu_option_.get() &&
-             sender == add_menu_option_->GetContentsView()) {
+             sender->GetWidget() == add_menu_option_.get()) {
     RemoveAddUserMenuOption();
     // Let the user add another account to the session.
     MultiProfileUMA::RecordSigninUser(MultiProfileUMA::SIGNIN_USER_BY_TRAY);
@@ -465,7 +495,8 @@ void UserView::ToggleAddUserMenuOption() {
   params.keep_on_top = true;
   params.accept_events = true;
   params.ownership = views::Widget::InitParams::WIDGET_OWNS_NATIVE_WIDGET;
-  params.shadow_type = views::Widget::InitParams::SHADOW_TYPE_NONE;
+  if (!UseMd())
+    params.shadow_type = views::Widget::InitParams::SHADOW_TYPE_NONE;
   params.opacity = views::Widget::InitParams::TRANSLUCENT_WINDOW;
   params.name = "AddUserMenuOption";
   WmLookup::Get()
@@ -475,33 +506,47 @@ void UserView::ToggleAddUserMenuOption() {
           add_menu_option_.get(), kShellWindowId_DragImageAndTooltipContainer,
           &params);
   add_menu_option_->Init(params);
-  add_menu_option_->SetOpacity(1.f);
 
-  // Position it below our user card.
-  gfx::Rect bounds = user_card_view_->GetBoundsInScreen();
-  bounds.set_y(bounds.y() + bounds.height());
-  add_menu_option_->SetBounds(bounds);
+  const SessionStateDelegate* delegate =
+      WmShell::Get()->GetSessionStateDelegate();
+  SessionStateDelegate::AddUserError add_user_error;
+  add_user_enabled_ = delegate->CanAddUserToMultiProfile(&add_user_error);
+
+  AddUserView* add_user_view =
+      new AddUserView(static_cast<ButtonFromView*>(user_card_view_));
+  ButtonFromView* button = new ButtonFromView(
+      add_user_view, add_user_enabled_ ? this : nullptr,
+      !UseMd() && add_user_enabled_, gfx::Insets(1, 1, 1, 1));
+  button->SetAccessibleName(
+      l10n_util::GetStringUTF16(IDS_ASH_STATUS_TRAY_SIGN_IN_ANOTHER_ACCOUNT));
+  button->ForceBorderVisible(true);
+
+  if (UseMd()) {
+    // Position the widget on top of the user card view (which is still in the
+    // system menu). The top half of the widget will be transparent to allow
+    // the active user to show through.
+    gfx::Rect bounds = user_card_view_->GetBoundsInScreen();
+    int row_height = bounds.height();
+    bounds.set_height(row_height * 2);
+    add_menu_option_->SetBounds(bounds);
+    views::View* container = new AddUserWidgetContents(
+        base::Bind(&UserView::RemoveAddUserMenuOption, base::Unretained(this)));
+    container->SetBorder(views::Border::CreateEmptyBorder(row_height, 0, 0, 0));
+    container->SetLayoutManager(new views::FillLayout());
+    container->AddChildView(button);
+    add_menu_option_->SetContentsView(container);
+  } else {
+    add_menu_option_->SetOpacity(1.f);
+    add_menu_option_->SetContentsView(button);
+    // Position it below our user card.
+    gfx::Rect bounds = user_card_view_->GetBoundsInScreen();
+    bounds.set_y(bounds.y() + bounds.height());
+    add_menu_option_->SetBounds(bounds);
+  }
 
   // Show the content.
   add_menu_option_->SetAlwaysOnTop(true);
   add_menu_option_->Show();
-
-  AddUserView* add_user_view =
-      new AddUserView(static_cast<ButtonFromView*>(user_card_view_));
-
-  const SessionStateDelegate* delegate =
-      WmShell::Get()->GetSessionStateDelegate();
-
-  SessionStateDelegate::AddUserError add_user_error;
-  add_user_enabled_ = delegate->CanAddUserToMultiProfile(&add_user_error);
-
-  ButtonFromView* button =
-      new ButtonFromView(add_user_view, add_user_enabled_ ? this : NULL,
-                         add_user_enabled_, gfx::Insets(1, 1, 1, 1));
-  button->SetAccessibleName(
-      l10n_util::GetStringUTF16(IDS_ASH_STATUS_TRAY_SIGN_IN_ANOTHER_ACCOUNT));
-  button->ForceBorderVisible(true);
-  add_menu_option_->SetContentsView(button);
 
   if (add_user_enabled_) {
     // We activate the entry automatically if invoked with focus.
@@ -533,13 +578,15 @@ void UserView::ToggleAddUserMenuOption() {
         gfx::Size(parent()->bounds().width() - kPopupMessageOffset, 0),
         2 * kPopupMessageOffset));
   }
-  // Find the screen area which encloses both elements and sets then a mouse
-  // watcher which will close the "menu".
-  gfx::Rect area = user_card_view_->GetBoundsInScreen();
-  area.set_height(2 * area.height());
-  mouse_watcher_.reset(
-      new views::MouseWatcher(new UserViewMouseWatcherHost(area), this));
-  mouse_watcher_->Start();
+  if (!UseMd()) {
+    // Find the screen area which encloses both elements and sets then a mouse
+    // watcher which will close the "menu".
+    gfx::Rect area = user_card_view_->GetBoundsInScreen();
+    area.set_height(2 * area.height());
+    mouse_watcher_.reset(
+        new views::MouseWatcher(new UserViewMouseWatcherHost(area), this));
+    mouse_watcher_->Start();
+  }
   // Install a listener to focus changes so that we can remove the card when
   // the focus gets changed. When called through the destruction of the bubble,
   // the FocusManager cannot be determined anymore and we remember it here.
@@ -551,7 +598,7 @@ void UserView::RemoveAddUserMenuOption() {
   if (!add_menu_option_.get())
     return;
   focus_manager_->RemoveFocusChangeListener(this);
-  focus_manager_ = NULL;
+  focus_manager_ = nullptr;
   if (user_card_view_->GetFocusManager())
     user_card_view_->GetFocusManager()->ClearFocus();
   popup_message_.reset();

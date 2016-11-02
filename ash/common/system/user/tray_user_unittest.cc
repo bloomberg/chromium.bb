@@ -234,6 +234,7 @@ TEST_F(TrayUserTest, MultiUserModeDoesNotAllowToAddUser) {
 
     // Click the button again to see that the menu goes away.
     ClickUserItem(&generator, 0);
+    MoveOverUserItem(&generator, 0);
     EXPECT_EQ(TrayUser::HOVERED, tray_user(0)->GetStateForTest());
 
     // Close and check that everything is deleted.
