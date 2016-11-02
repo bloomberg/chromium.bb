@@ -17,6 +17,7 @@
 #include "base/strings/string_split.h"
 #include "base/strings/string_util.h"
 #include "media/base/data_buffer.h"
+#include "media/base/decoder_buffer.h"
 #include "media/base/media_log.h"
 #include "media/base/media_util.h"
 #include "media/base/mock_media_log.h"
@@ -58,22 +59,12 @@ MATCHER_P(ContainsTrackBufferExhaustionSkipLog, skip_milliseconds, "") {
                              "appear temporarily frozen.");
 }
 
-MATCHER_P2(ContainsGeneratedSpliceLog,
-           duration_microseconds,
-           time_microseconds,
-           "") {
-  return CONTAINS_STRING(arg, "Generated splice of overlap duration " +
-                                  base::IntToString(duration_microseconds) +
-                                  "us into new buffer at " +
-                                  base::IntToString(time_microseconds) + "us.");
-}
-
 class SourceBufferStreamTest : public testing::Test {
  protected:
   SourceBufferStreamTest() : media_log_(new StrictMock<MockMediaLog>()) {
     video_config_ = TestVideoConfig::Normal();
     SetStreamInfo(kDefaultFramesPerSecond, kDefaultKeyframesPerSecond);
-    stream_.reset(new SourceBufferStream(video_config_, media_log_, true));
+    stream_.reset(new SourceBufferStream(video_config_, media_log_));
   }
 
   void SetMemoryLimit(size_t buffers_of_data) {
@@ -89,7 +80,7 @@ class SourceBufferStreamTest : public testing::Test {
   void SetTextStream() {
     video_config_ = TestVideoConfig::Invalid();
     TextTrackConfig config(kTextSubtitles, "", "", "");
-    stream_.reset(new SourceBufferStream(config, media_log_, true));
+    stream_.reset(new SourceBufferStream(config, media_log_));
     SetStreamInfo(2, 2);
   }
 
@@ -98,7 +89,7 @@ class SourceBufferStreamTest : public testing::Test {
     audio_config_.Initialize(kCodecVorbis, kSampleFormatPlanarF32,
                              CHANNEL_LAYOUT_STEREO, 1000, EmptyExtraData(),
                              Unencrypted(), base::TimeDelta(), 0);
-    stream_.reset(new SourceBufferStream(audio_config_, media_log_, true));
+    stream_.reset(new SourceBufferStream(audio_config_, media_log_));
 
     // Equivalent to 2ms per frame.
     SetStreamInfo(500, 500);
@@ -306,7 +297,6 @@ class SourceBufferStreamTest : public testing::Test {
         expected, " ", base::TRIM_WHITESPACE, base::SPLIT_WANT_ALL);
     std::stringstream ss;
     const SourceBufferStream::Type type = stream_->GetType();
-    base::TimeDelta active_splice_timestamp = kNoTimestamp;
     for (size_t i = 0; i < timestamps.size(); i++) {
       scoped_refptr<StreamParserBuffer> buffer;
       SourceBufferStream::Status status = stream_->GetNextBuffer(&buffer);
@@ -380,17 +370,6 @@ class SourceBufferStreamTest : public testing::Test {
       } else if (buffer->is_key_frame()) {
         ss << "K";
       }
-
-      // Until the last splice frame is seen, indicated by a matching timestamp,
-      // all buffers must have the same splice_timestamp().
-      if (buffer->timestamp() == active_splice_timestamp) {
-        ASSERT_EQ(buffer->splice_timestamp(), kNoTimestamp);
-      } else {
-        ASSERT_TRUE(active_splice_timestamp == kNoTimestamp ||
-                    active_splice_timestamp == buffer->splice_timestamp());
-      }
-
-      active_splice_timestamp = buffer->splice_timestamp();
     }
     EXPECT_EQ(expected, ss.str());
   }
@@ -527,52 +506,18 @@ class SourceBufferStreamTest : public testing::Test {
   //
   // K:
   // Indicates the buffer is a keyframe. E.g., "0K 1|2K 2|4D2K 6 8".
-  //
-  // S(a# ... y# z#)
-  // Indicates a splice frame buffer should be created with timestamp z#.  The
-  // preceding timestamps a# ... y# will be treated as the fade out preroll for
-  // the splice frame.  If a timestamp within the preroll ends with C the config
-  // id to use for that and subsequent preroll appends is incremented by one.
-  // The config id for non-splice frame appends will not be affected.
   BufferQueue StringToBufferQueue(const std::string& buffers_to_append) {
     std::vector<std::string> timestamps = base::SplitString(
         buffers_to_append, " ", base::TRIM_WHITESPACE, base::SPLIT_WANT_ALL);
 
     CHECK_GT(timestamps.size(), 0u);
 
-    bool splice_frame = false;
-    size_t splice_config_id = stream_->append_config_index_;
-    BufferQueue pre_splice_buffers;
     BufferQueue buffers;
     for (size_t i = 0; i < timestamps.size(); i++) {
       bool is_keyframe = false;
       bool has_preroll = false;
-      bool last_splice_frame = false;
       bool is_duration_estimated = false;
 
-      // Handle splice frame starts.
-      if (base::StartsWith(timestamps[i], "S(", base::CompareCase::SENSITIVE)) {
-        CHECK(!splice_frame);
-        splice_frame = true;
-        // Remove the "S(" off of the token.
-        timestamps[i] = timestamps[i].substr(2, timestamps[i].length());
-      }
-      if (splice_frame &&
-          base::EndsWith(timestamps[i], ")", base::CompareCase::SENSITIVE)) {
-        splice_frame = false;
-        last_splice_frame = true;
-        // Remove the ")" off of the token.
-        timestamps[i] = timestamps[i].substr(0, timestamps[i].length() - 1);
-      }
-      // Handle config changes within the splice frame.
-      if (splice_frame &&
-          base::EndsWith(timestamps[i], "C", base::CompareCase::SENSITIVE)) {
-        splice_config_id++;
-        CHECK(splice_config_id < stream_->audio_configs_.size() ||
-              splice_config_id < stream_->video_configs_.size());
-        // Remove the "C" off of the token.
-        timestamps[i] = timestamps[i].substr(0, timestamps[i].length() - 1);
-      }
       if (base::EndsWith(timestamps[i], "K", base::CompareCase::SENSITIVE)) {
         is_keyframe = true;
         // Remove the "K" off of the token.
@@ -592,7 +537,7 @@ class SourceBufferStreamTest : public testing::Test {
         timestamps[i] = timestamps[i].substr(0, timestamps[i].length() - 1);
       }
 
-      int duration_in_ms = 0;
+      int duration_in_ms = -1;
       size_t duration_pos = timestamps[i].find('D');
       if (duration_pos != std::string::npos) {
         CHECK(base::StringToInt(timestamps[i].substr(duration_pos + 1),
@@ -625,7 +570,7 @@ class SourceBufferStreamTest : public testing::Test {
             DecodeTimestamp::FromMilliseconds(dts_in_ms));
       }
 
-      if (duration_in_ms)
+      if (duration_in_ms >= 0)
         buffer->set_duration(base::TimeDelta::FromMilliseconds(duration_in_ms));
 
       // Simulate preroll buffers by just generating another buffer and sticking
@@ -638,43 +583,13 @@ class SourceBufferStreamTest : public testing::Test {
         buffer->SetPrerollBuffer(preroll_buffer);
       }
 
-      if (splice_frame) {
-        // Make sure that splice frames aren't used with content where decode
-        // and presentation timestamps can differ. (i.e., B-frames)
-        CHECK_EQ(buffer->GetDecodeTimestamp().InMicroseconds(),
-                 buffer->timestamp().InMicroseconds());
-        if (!pre_splice_buffers.empty()) {
-          // Enforce strictly monotonically increasing timestamps.
-          CHECK_GT(
-              buffer->timestamp().InMicroseconds(),
-              pre_splice_buffers.back()->timestamp().InMicroseconds());
-          CHECK_GT(
-              buffer->GetDecodeTimestamp().InMicroseconds(),
-              pre_splice_buffers.back()->GetDecodeTimestamp().InMicroseconds());
-        }
-        buffer->SetConfigId(splice_config_id);
-        UpdateLastBufferDuration(buffer->GetDecodeTimestamp(),
-                                 &pre_splice_buffers);
-        pre_splice_buffers.push_back(buffer);
-        continue;
-      }
-
-      if (last_splice_frame) {
-        // Require at least one additional buffer for a splice.
-        CHECK(!pre_splice_buffers.empty());
-        buffer->SetConfigId(splice_config_id);
-        buffer->ConvertToSpliceBuffer(pre_splice_buffers);
-        pre_splice_buffers.clear();
-      }
-
       UpdateLastBufferDuration(buffer->GetDecodeTimestamp(), &buffers);
       buffers.push_back(buffer);
     }
 
     // If the last buffer doesn't have a duration, assume it is the
     // same as the second to last buffer.
-    if (buffers.size() >= 2 &&
-        buffers.back()->duration() <= base::TimeDelta()) {
+    if (buffers.size() >= 2 && buffers.back()->duration() == kNoTimestamp) {
       buffers.back()->set_duration(
           buffers[buffers.size() - 2]->duration());
     }
@@ -3666,7 +3581,7 @@ TEST_F(SourceBufferStreamTest, SameTimestamp_Video_SingleAppend) {
 // in different appends.
 TEST_F(SourceBufferStreamTest, SameTimestamp_Video_TwoAppends) {
   Seek(0);
-  NewCodedFrameGroupAppend("0K 30");
+  NewCodedFrameGroupAppend("0K 30D0");
   AppendBuffers("30 60 90 120K 150");
   CheckExpectedBuffers("0K 30 30 60 90 120K 150");
 }
@@ -3685,7 +3600,7 @@ TEST_F(SourceBufferStreamTest, SameTimestamp_Video_TwoAppends_Warning) {
   EXPECT_MEDIA_LOG(ContainsSameTimestampAt30MillisecondsLog());
 
   Seek(0);
-  NewCodedFrameGroupAppend("0K 30");
+  NewCodedFrameGroupAppend("0K 30D0");
   AppendBuffers("30K 60");
   CheckExpectedBuffers("0K 30 30K 60");
 }
@@ -3694,7 +3609,7 @@ TEST_F(SourceBufferStreamTest, SameTimestamp_Video_TwoAppends_Warning) {
 // is allowed.
 TEST_F(SourceBufferStreamTest, SameTimestamp_VideoKeyFrame_TwoAppends) {
   Seek(0);
-  NewCodedFrameGroupAppend("0K 30K");
+  NewCodedFrameGroupAppend("0K 30D0K");
   AppendBuffers("30 60");
   CheckExpectedBuffers("0K 30K 30 60");
 }
@@ -3723,7 +3638,7 @@ TEST_F(SourceBufferStreamTest, SameTimestamp_Video_Overlap_2) {
 TEST_F(SourceBufferStreamTest, SameTimestamp_Video_Overlap_3) {
   Seek(0);
   NewCodedFrameGroupAppend("0K 20 40 60 80 100K 101 102 103K");
-  NewCodedFrameGroupAppend("0K 20 40 60 80 90");
+  NewCodedFrameGroupAppend("0K 20 40 60 80 90D0");
   CheckExpectedBuffers("0K 20 40 60 80 90 100K 101 102 103K");
   AppendBuffers("90 110K 150");
   Seek(0);
@@ -3736,7 +3651,7 @@ TEST_F(SourceBufferStreamTest, SameTimestamp_Video_Overlap_3) {
 TEST_F(SourceBufferStreamTest, SameTimestamp_Audio) {
   AudioDecoderConfig config(kCodecMP3, kSampleFormatF32, CHANNEL_LAYOUT_STEREO,
                             44100, EmptyExtraData(), Unencrypted());
-  stream_.reset(new SourceBufferStream(config, media_log_, true));
+  stream_.reset(new SourceBufferStream(config, media_log_));
   Seek(0);
   NewCodedFrameGroupAppend("0K 0K 30K 30 60 60");
   CheckExpectedBuffers("0K 0K 30K 30 60 60");
@@ -3747,7 +3662,7 @@ TEST_F(SourceBufferStreamTest, SameTimestamp_Audio_SingleAppend_Warning) {
 
   AudioDecoderConfig config(kCodecMP3, kSampleFormatF32, CHANNEL_LAYOUT_STEREO,
                             44100, EmptyExtraData(), Unencrypted());
-  stream_.reset(new SourceBufferStream(config, media_log_, true));
+  stream_.reset(new SourceBufferStream(config, media_log_));
   Seek(0);
 
   // Note, in reality, a non-keyframe audio frame is rare or perhaps not
@@ -4139,222 +4054,160 @@ TEST_F(SourceBufferStreamTest, Text_OverlapBefore) {
   CheckExpectedBuffers("0K 501K 1001K 1501K 2001K 3000K 3500K");
 }
 
-TEST_F(SourceBufferStreamTest, SpliceFrame_Basic) {
-  Seek(0);
-  NewCodedFrameGroupAppend("0K S(3K 6 9D3 10D5) 15 20 S(25K 30D5 35D5) 40");
-  CheckExpectedBuffers("0K 3K 6 9 C 10 15 20 25K 30 C 35 40");
-  CheckNoNextBuffer();
-}
-
-TEST_F(SourceBufferStreamTest, SpliceFrame_SeekClearsSplice) {
-  Seek(0);
-  NewCodedFrameGroupAppend("0K S(3K 6 9D3 10D5) 15K 20");
-  CheckExpectedBuffers("0K 3K 6");
-
-  SeekToTimestampMs(15);
-  CheckExpectedBuffers("15K 20");
-  CheckNoNextBuffer();
-}
-
-TEST_F(SourceBufferStreamTest, SpliceFrame_SeekClearsSpliceFromTrackBuffer) {
-  Seek(0);
-  NewCodedFrameGroupAppend("0K 2K S(3K 6 9D3 10D5) 15K 20");
-  CheckExpectedBuffers("0K 2K");
-
-  // Overlap the existing coded frame group.
-  NewCodedFrameGroupAppend("5K 15K 20");
-  CheckExpectedBuffers("3K 6");
-
-  SeekToTimestampMs(15);
-  CheckExpectedBuffers("15K 20");
-  CheckNoNextBuffer();
-}
-
-TEST_F(SourceBufferStreamTest, SpliceFrame_ConfigChangeWithinSplice) {
-  VideoDecoderConfig new_config = TestVideoConfig::Large();
-  ASSERT_FALSE(new_config.Matches(video_config_));
-
-  // Add a new video config, then reset the config index back to the original.
-  stream_->UpdateVideoConfig(new_config);
-  stream_->UpdateVideoConfig(video_config_);
-
-  Seek(0);
-  CheckVideoConfig(video_config_);
-  NewCodedFrameGroupAppend("0K S(3K 6C 9D3 10D5) 15");
-
-  CheckExpectedBuffers("0K 3K C");
-  CheckVideoConfig(new_config);
-  CheckExpectedBuffers("6 9 C");
-  CheckExpectedBuffers("10 C");
-  CheckVideoConfig(video_config_);
-  CheckExpectedBuffers("15");
-  CheckNoNextBuffer();
-}
-
-TEST_F(SourceBufferStreamTest, SpliceFrame_BasicFromTrackBuffer) {
-  Seek(0);
-  NewCodedFrameGroupAppend("0K 5K S(8K 9D1 10D10) 20");
-  CheckExpectedBuffers("0K 5K");
-
-  // Overlap the existing coded frame group.
-  NewCodedFrameGroupAppend("5K 20");
-  CheckExpectedBuffers("8K 9 C 10 20");
-  CheckNoNextBuffer();
-}
-
-TEST_F(SourceBufferStreamTest,
-       SpliceFrame_ConfigChangeWithinSpliceFromTrackBuffer) {
-  VideoDecoderConfig new_config = TestVideoConfig::Large();
-  ASSERT_FALSE(new_config.Matches(video_config_));
-
-  // Add a new video config, then reset the config index back to the original.
-  stream_->UpdateVideoConfig(new_config);
-  stream_->UpdateVideoConfig(video_config_);
-
-  Seek(0);
-  CheckVideoConfig(video_config_);
-  NewCodedFrameGroupAppend("0K 5K S(7K 8C 9D1 10D10) 20");
-  CheckExpectedBuffers("0K 5K");
-
-  // Overlap the existing coded frame group.
-  NewCodedFrameGroupAppend("5K 20");
-  CheckExpectedBuffers("7K C");
-  CheckVideoConfig(new_config);
-  CheckExpectedBuffers("8 9 C");
-  CheckExpectedBuffers("10 C");
-  CheckVideoConfig(video_config_);
-  CheckExpectedBuffers("20");
-  CheckNoNextBuffer();
-}
-
-TEST_F(SourceBufferStreamTest, Audio_SpliceFrame_Basic) {
-  EXPECT_MEDIA_LOG(ContainsGeneratedSpliceLog(3000, 11000));
-
+TEST_F(SourceBufferStreamTest, Audio_SpliceTrimmingForOverlap) {
   SetAudioStream();
   Seek(0);
   NewCodedFrameGroupAppend("0K 2K 4K 6K 8K 10K 12K");
-  NewCodedFrameGroupAppend("11K 13K 15K 17K");
-  CheckExpectedBuffers("0K 2K 4K 6K 8K 10K 12K C 11K 13K 15K 17K");
+  CheckExpectedRangesByTimestamp("{ [0,14) }");
+  // Note that duration  of frame at time 10 is verified to be 2 ms.
+  CheckExpectedBuffers("0K 2K 4K 6K 8K 10D2K 12K");
   CheckNoNextBuffer();
-}
 
-TEST_F(SourceBufferStreamTest, Audio_SpliceFrame_NoExactSplices) {
-  EXPECT_MEDIA_LOG(
-      HasSubstr("Skipping splice frame generation: first new buffer at 10000us "
-                "begins at or before existing buffer at 10000us."));
-
-  SetAudioStream();
-  Seek(0);
-  NewCodedFrameGroupAppend("0K 2K 4K 6K 8K 10K 12K");
-  NewCodedFrameGroupAppend("10K 14K");
-  CheckExpectedBuffers("0K 2K 4K 6K 8K 10K 14K");
-  CheckNoNextBuffer();
-}
-
-// Do not allow splices on top of splices.
-TEST_F(SourceBufferStreamTest, Audio_SpliceFrame_NoDoubleSplice) {
-  InSequence s;
-  EXPECT_MEDIA_LOG(ContainsGeneratedSpliceLog(3000, 11000));
-  EXPECT_MEDIA_LOG(
-      HasSubstr("Skipping splice frame generation: overlapped buffers at "
-                "10000us are in a previously buffered splice."));
-
-  SetAudioStream();
-  Seek(0);
-  NewCodedFrameGroupAppend("0K 2K 4K 6K 8K 10K 12K");
+  // Append new group with front slightly overlapping existing buffer at 10ms.
+  EXPECT_MEDIA_LOG(TrimmedSpliceOverlap(11000, 10000, 1000));
   NewCodedFrameGroupAppend("11K 13K 15K 17K");
 
-  // Verify the splice was created.
-  CheckExpectedBuffers("0K 2K 4K 6K 8K 10K 12K C 11K 13K 15K 17K");
-  CheckNoNextBuffer();
+  // Cross-fade splicing is no longer implemented. Instead we should expect
+  // wholly overlapped buffers to be removed (12K). If a buffer is partially
+  // overlapped (e.g. last millisecond of 10K), the existing buffer should be
+  // trimmed to perfectly abut the newly appended buffers.
   Seek(0);
 
-  // Create a splice before the first splice which would include it.
-  NewCodedFrameGroupAppend("9D2K");
-
-  // A splice on top of a splice should result in a discard of the original
-  // splice and no new splice frame being generated.
-  CheckExpectedBuffers("0K 2K 4K 6K 8K 9K 13K 15K 17K");
+  CheckExpectedRangesByTimestamp("{ [0,19) }");
+  CheckExpectedBuffers("0K 2K 4K 6K 8K 10D1K 11D2K 13K 15K 17K");
   CheckNoNextBuffer();
 }
 
 // Test that a splice is not created if an end timestamp and start timestamp
-// overlap.
+// perfectly overlap.
 TEST_F(SourceBufferStreamTest, Audio_SpliceFrame_NoSplice) {
   SetAudioStream();
   Seek(0);
+
+  // Add 10 frames across 2 *non-overlapping* appends.
   NewCodedFrameGroupAppend("0K 2K 4K 6K 8K 10K");
   NewCodedFrameGroupAppend("12K 14K 16K 18K");
-  CheckExpectedBuffers("0K 2K 4K 6K 8K 10K 12K 14K 16K 18K");
+
+  // Manually inspect the buffers at the no-splice boundary to verify duration
+  // and lack of discard padding (set when splicing).
+  scoped_refptr<StreamParserBuffer> buffer;
+  const DecoderBuffer::DiscardPadding kEmptyDiscardPadding;
+  for (int i = 0; i < 10; i++) {
+    // Verify buffer timestamps and durations are preserved and no buffers have
+    // discard padding (indicating no splice trimming).
+    EXPECT_EQ(SourceBufferStream::kSuccess, stream_->GetNextBuffer(&buffer));
+    EXPECT_EQ(base::TimeDelta::FromMilliseconds(i * 2), buffer->timestamp());
+    EXPECT_EQ(base::TimeDelta::FromMilliseconds(2), buffer->duration());
+    EXPECT_EQ(kEmptyDiscardPadding, buffer->discard_padding());
+  }
+
   CheckNoNextBuffer();
 }
 
-TEST_F(SourceBufferStreamTest, Audio_SpliceFrame_CorrectGroupStartTime) {
-  EXPECT_MEDIA_LOG(ContainsGeneratedSpliceLog(5000, 1000));
-
-  SetAudioStream();
-  Seek(0);
-  NewCodedFrameGroupAppend("0K 2K 4K");
-  CheckExpectedRangesByTimestamp("{ [0,6) }");
-  NewCodedFrameGroupAppend("6K 8K 10K");
-  CheckExpectedRangesByTimestamp("{ [0,12) }");
-  NewCodedFrameGroupAppend("1K 4D2K");
-  CheckExpectedRangesByTimestamp("{ [0,12) }");
-  CheckExpectedBuffers("0K 2K 4K C 1K 4K 6K 8K 10K");
-  CheckNoNextBuffer();
-}
-
-TEST_F(SourceBufferStreamTest, Audio_SpliceFrame_ConfigChange) {
-  EXPECT_MEDIA_LOG(ContainsGeneratedSpliceLog(3000, 5000));
-
-  SetAudioStream();
-
-  AudioDecoderConfig new_config(kCodecVorbis, kSampleFormatPlanarF32,
-                                CHANNEL_LAYOUT_MONO, 1000, EmptyExtraData(),
-                                Unencrypted());
-  ASSERT_NE(new_config.channel_layout(), audio_config_.channel_layout());
-
-  Seek(0);
-  CheckAudioConfig(audio_config_);
-  NewCodedFrameGroupAppend("0K 2K 4K 6K");
-  stream_->UpdateAudioConfig(new_config);
-  NewCodedFrameGroupAppend("5K 8K 12K");
-  CheckExpectedBuffers("0K 2K 4K 6K C 5K 8K 12K");
-  CheckAudioConfig(new_config);
-  CheckNoNextBuffer();
-}
-
-// Ensure splices are not created if there are not enough frames to crossfade.
-TEST_F(SourceBufferStreamTest, Audio_SpliceFrame_NoTinySplices) {
-  EXPECT_MEDIA_LOG(HasSubstr(
-      "Skipping splice frame generation: not enough samples for splicing new "
-      "buffer at 1000us. Have 1000us, but need 2000us."));
+TEST_F(SourceBufferStreamTest, Audio_SpliceTrimming_ExistingTrimming) {
+  const base::TimeDelta kDuration = base::TimeDelta::FromMilliseconds(4);
+  const base::TimeDelta kNoDiscard = base::TimeDelta();
+  const bool is_keyframe = true;
 
   SetAudioStream();
   Seek(0);
 
-  // Overlap the range [0, 2) with [1, 3).  Since each frame has a duration of
-  // 2ms this results in an overlap of 1ms between the ranges.  A splice frame
-  // should not be generated since it requires at least 2 frames, or 2ms in this
-  // case, of data to crossfade.
-  NewCodedFrameGroupAppend("0D2K");
-  CheckExpectedRangesByTimestamp("{ [0,2) }");
-  NewCodedFrameGroupAppend("1D2K");
-  CheckExpectedRangesByTimestamp("{ [0,3) }");
-  CheckExpectedBuffers("0K 1K");
+  // Make two BufferQueues with a mix of buffers containing start/end discard.
+  // Buffer PTS and duration have been adjusted to reflect discard. A_buffers
+  // will be appended first, then B_buffers. The start of B will overlap A
+  // to generate a splice.
+  BufferQueue A_buffers;
+  BufferQueue B_buffers;
+
+  // Buffer A1: PTS = 0, front discard = 2ms, duration = 2ms.
+  scoped_refptr<StreamParserBuffer> bufferA1 = StreamParserBuffer::CopyFrom(
+      &kDataA, kDataSize, is_keyframe, DemuxerStream::AUDIO, 0);
+  bufferA1->set_timestamp(base::TimeDelta::FromMilliseconds(0));
+  bufferA1->set_duration(kDuration / 2);
+  const DecoderBuffer::DiscardPadding discardA1 =
+      std::make_pair(kDuration / 2, kNoDiscard);
+  bufferA1->set_discard_padding(discardA1);
+  A_buffers.push_back(bufferA1);
+
+  // Buffer A2: PTS = 2, end discard = 2ms, duration = 2ms.
+  scoped_refptr<StreamParserBuffer> bufferA2 = StreamParserBuffer::CopyFrom(
+      &kDataA, kDataSize, is_keyframe, DemuxerStream::AUDIO, 0);
+  bufferA2->set_timestamp(base::TimeDelta::FromMilliseconds(2));
+  bufferA2->set_duration(kDuration / 2);
+  const DecoderBuffer::DiscardPadding discardA2 =
+      std::make_pair(kNoDiscard, kDuration / 2);
+  bufferA2->set_discard_padding(discardA2);
+  A_buffers.push_back(bufferA2);
+
+  // Buffer B1: PTS = 3, front discard = 2ms, duration = 2ms.
+  scoped_refptr<StreamParserBuffer> bufferB1 = StreamParserBuffer::CopyFrom(
+      &kDataA, kDataSize, is_keyframe, DemuxerStream::AUDIO, 0);
+  bufferB1->set_timestamp(base::TimeDelta::FromMilliseconds(3));
+  bufferB1->set_duration(kDuration / 2);
+  const DecoderBuffer::DiscardPadding discardB1 =
+      std::make_pair(kDuration / 2, kNoDiscard);
+  bufferB1->set_discard_padding(discardB1);
+  B_buffers.push_back(bufferB1);
+
+  // Buffer B2: PTS = 5, no discard padding, duration = 4ms.
+  scoped_refptr<StreamParserBuffer> bufferB2 = StreamParserBuffer::CopyFrom(
+      &kDataA, kDataSize, is_keyframe, DemuxerStream::AUDIO, 0);
+  bufferB2->set_timestamp(base::TimeDelta::FromMilliseconds(5));
+  bufferB2->set_duration(kDuration);
+  B_buffers.push_back(bufferB2);
+
+  // Append buffers, trigger splice trimming.
+  stream_->OnStartOfCodedFrameGroup(bufferA1->GetDecodeTimestamp());
+  stream_->Append(A_buffers);
+  EXPECT_MEDIA_LOG(TrimmedSpliceOverlap(3000, 2000, 1000));
+  stream_->Append(B_buffers);
+
+  // Verify buffers.
+  scoped_refptr<StreamParserBuffer> read_buffer;
+
+  // Buffer A1 was not spliced, should be unchanged.
+  EXPECT_EQ(SourceBufferStream::kSuccess, stream_->GetNextBuffer(&read_buffer));
+  EXPECT_EQ(base::TimeDelta::FromMilliseconds(0), read_buffer->timestamp());
+  EXPECT_EQ(kDuration / 2, read_buffer->duration());
+  EXPECT_EQ(discardA1, read_buffer->discard_padding());
+
+  // Buffer A2 was overlapped by buffer B1 1ms. Splice trimming should trim A2's
+  // duration and increase its discard padding by 1ms.
+  const base::TimeDelta overlap = base::TimeDelta::FromMilliseconds(1);
+  EXPECT_EQ(SourceBufferStream::kSuccess, stream_->GetNextBuffer(&read_buffer));
+  EXPECT_EQ(base::TimeDelta::FromMilliseconds(2), read_buffer->timestamp());
+  EXPECT_EQ((kDuration / 2) - overlap, read_buffer->duration());
+  const DecoderBuffer::DiscardPadding overlap_discard =
+      std::make_pair(discardA2.first, discardA2.second + overlap);
+  EXPECT_EQ(overlap_discard, read_buffer->discard_padding());
+
+  // Buffer B1 is overlapping A2, but B1 should be unchanged - splice trimming
+  // only modifies the earlier buffer (A1).
+  EXPECT_EQ(SourceBufferStream::kSuccess, stream_->GetNextBuffer(&read_buffer));
+  EXPECT_EQ(base::TimeDelta::FromMilliseconds(3), read_buffer->timestamp());
+  EXPECT_EQ(kDuration / 2, read_buffer->duration());
+  EXPECT_EQ(discardB1, read_buffer->discard_padding());
+
+  // Buffer B2 is not spliced, should be unchanged.
+  EXPECT_EQ(SourceBufferStream::kSuccess, stream_->GetNextBuffer(&read_buffer));
+  EXPECT_EQ(base::TimeDelta::FromMilliseconds(5), read_buffer->timestamp());
+  EXPECT_EQ(kDuration, read_buffer->duration());
+  EXPECT_EQ(std::make_pair(kNoDiscard, kNoDiscard),
+            read_buffer->discard_padding());
+
   CheckNoNextBuffer();
 }
 
 TEST_F(SourceBufferStreamTest, Audio_SpliceFrame_NoMillisecondSplices) {
   EXPECT_MEDIA_LOG(
-      HasSubstr("Skipping splice frame generation: not enough samples for "
-                "splicing new buffer at 1250us. Have 750us, but need 1000us."));
+      HasSubstr("Skipping audio splice trimming at PTS=1250us. Found only 250us"
+                " of overlap, need at least 1000us."));
 
   video_config_ = TestVideoConfig::Invalid();
   audio_config_.Initialize(kCodecVorbis, kSampleFormatPlanarF32,
                            CHANNEL_LAYOUT_STEREO, 4000, EmptyExtraData(),
                            Unencrypted(), base::TimeDelta(), 0);
-  stream_.reset(new SourceBufferStream(audio_config_, media_log_, true));
+  stream_.reset(new SourceBufferStream(audio_config_, media_log_));
   // Equivalent to 0.5ms per frame.
   SetStreamInfo(2000, 2000);
   Seek(0);
@@ -4364,26 +4217,15 @@ TEST_F(SourceBufferStreamTest, Audio_SpliceFrame_NoMillisecondSplices) {
   CheckExpectedRangesByTimestamp("{ [0,2) }");
 
   // Overlap the range [0, 2) with [1.25, 2); this results in an overlap of
-  // 0.75ms between the ranges.
+  // 0.25ms between the original buffer at time 1.0 and the new buffer at time
+  // 1.25.
   NewCodedFrameGroupAppend_OffsetFirstBuffer(
       2, 2, base::TimeDelta::FromMillisecondsD(0.25));
   CheckExpectedRangesByTimestamp("{ [0,2) }");
 
-  // A splice frame should not be generated (indicated by the lack of a config
-  // change in the expected buffer string) since it requires at least 1ms of
+  // A splice frame should not be generated since it requires at least 1ms of
   // data to crossfade.
   CheckExpectedBuffers("0K 0K 1K 1K");
-  CheckNoNextBuffer();
-}
-
-TEST_F(SourceBufferStreamTest, Audio_SpliceFrame_Preroll) {
-  EXPECT_MEDIA_LOG(ContainsGeneratedSpliceLog(3000, 11000));
-
-  SetAudioStream();
-  Seek(0);
-  NewCodedFrameGroupAppend("0K 2K 4K 6K 8K 10K 12K");
-  NewCodedFrameGroupAppend("11P 13K 15K 17K");
-  CheckExpectedBuffers("0K 2K 4K 6K 8K 10K 12K C 11P 13K 15K 17K");
   CheckNoNextBuffer();
 }
 
@@ -4391,6 +4233,46 @@ TEST_F(SourceBufferStreamTest, Audio_PrerollFrame) {
   Seek(0);
   NewCodedFrameGroupAppend("0K 3P 6K");
   CheckExpectedBuffers("0K 3P 6K");
+  CheckNoNextBuffer();
+}
+
+TEST_F(SourceBufferStreamTest, Audio_ConfigChangeWithPreroll) {
+  AudioDecoderConfig new_config(kCodecVorbis, kSampleFormatPlanarF32,
+                                CHANNEL_LAYOUT_MONO, 2000, EmptyExtraData(),
+                                Unencrypted());
+  SetAudioStream();
+  Seek(0);
+
+  // Append some audio using the default configuration.
+  CheckAudioConfig(audio_config_);
+  NewCodedFrameGroupAppend("0K 3K 6K");
+
+  // Update the configuration.
+  stream_->UpdateAudioConfig(new_config);
+
+  // We haven't read any buffers at this point, so the config for the next
+  // buffer at time 0 should still be the original config.
+  CheckAudioConfig(audio_config_);
+
+  // Append new audio containing preroll and using the new config.
+  EXPECT_MEDIA_LOG(TrimmedSpliceOverlap(7000, 6000, 2000));
+  NewCodedFrameGroupAppend("7P 8K");
+
+  // Check buffers from the first append.
+  CheckExpectedBuffers("0K 3K 6K");
+
+  // Verify the next attempt to get a buffer will signal that a config change
+  // has happened.
+  scoped_refptr<StreamParserBuffer> buffer;
+  EXPECT_EQ(SourceBufferStream::kConfigChange, stream_->GetNextBuffer(&buffer));
+
+  // Verify upcoming buffers will use the new config.
+  CheckAudioConfig(new_config);
+
+  // Check buffers from the second append, including preroll.
+  // CheckExpectedBuffers("6P 7K 8K");
+  CheckExpectedBuffers("7P 8K");
+
   CheckNoNextBuffer();
 }
 

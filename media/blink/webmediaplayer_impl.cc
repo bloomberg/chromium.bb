@@ -1546,7 +1546,7 @@ void WebMediaPlayerImpl::StartPipeline() {
 
     chunk_demuxer_ = new ChunkDemuxer(
         BIND_TO_RENDER_LOOP(&WebMediaPlayerImpl::OnDemuxerOpened),
-        encrypted_media_init_data_cb, media_log_, true);
+        encrypted_media_init_data_cb, media_log_);
     demuxer_.reset(chunk_demuxer_);
   }
 

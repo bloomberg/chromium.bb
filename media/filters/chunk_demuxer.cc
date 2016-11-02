@@ -31,13 +31,11 @@ using base::TimeDelta;
 namespace media {
 
 ChunkDemuxerStream::ChunkDemuxerStream(Type type,
-                                       bool splice_frames_enabled,
                                        MediaTrack::Id media_track_id)
     : type_(type),
       liveness_(DemuxerStream::LIVENESS_UNKNOWN),
       media_track_id_(media_track_id),
       state_(UNINITIALIZED),
-      splice_frames_enabled_(splice_frames_enabled),
       partial_append_window_trimming_enabled_(false),
       is_enabled_(true) {}
 
@@ -187,17 +185,13 @@ bool ChunkDemuxerStream::UpdateAudioConfig(
   if (!stream_) {
     DCHECK_EQ(state_, UNINITIALIZED);
 
-    // On platforms which support splice frames, enable splice frames and
-    // partial append window support for most codecs (notably: not opus).
-    const bool codec_supported = config.codec() == kCodecMP3 ||
-                                 config.codec() == kCodecAAC ||
-                                 config.codec() == kCodecVorbis;
-    splice_frames_enabled_ = splice_frames_enabled_ && codec_supported;
-    partial_append_window_trimming_enabled_ =
-        splice_frames_enabled_ && codec_supported;
+    // Enable partial append window support for most audio codecs (notably: not
+    // opus).
+    partial_append_window_trimming_enabled_ = config.codec() == kCodecMP3 ||
+                                              config.codec() == kCodecAAC ||
+                                              config.codec() == kCodecVorbis;
 
-    stream_.reset(
-        new SourceBufferStream(config, media_log, splice_frames_enabled_));
+    stream_.reset(new SourceBufferStream(config, media_log));
     return true;
   }
 
@@ -213,8 +207,7 @@ bool ChunkDemuxerStream::UpdateVideoConfig(
 
   if (!stream_) {
     DCHECK_EQ(state_, UNINITIALIZED);
-    stream_.reset(
-        new SourceBufferStream(config, media_log, splice_frames_enabled_));
+    stream_.reset(new SourceBufferStream(config, media_log));
     return true;
   }
 
@@ -228,8 +221,7 @@ void ChunkDemuxerStream::UpdateTextConfig(
   base::AutoLock auto_lock(lock_);
   DCHECK(!stream_);
   DCHECK_EQ(state_, UNINITIALIZED);
-  stream_.reset(
-      new SourceBufferStream(config, media_log, splice_frames_enabled_));
+  stream_.reset(new SourceBufferStream(config, media_log));
 }
 
 void ChunkDemuxerStream::MarkEndOfStream() {
@@ -400,8 +392,7 @@ void ChunkDemuxerStream::CompletePendingReadIfPossible_Locked() {
 ChunkDemuxer::ChunkDemuxer(
     const base::Closure& open_cb,
     const EncryptedMediaInitDataCB& encrypted_media_init_data_cb,
-    const scoped_refptr<MediaLog>& media_log,
-    bool splice_frames_enabled)
+    const scoped_refptr<MediaLog>& media_log)
     : state_(WAITING_FOR_INIT),
       cancel_next_seek_(false),
       host_(NULL),
@@ -412,7 +403,6 @@ ChunkDemuxer::ChunkDemuxer(
       duration_(kNoTimestamp),
       user_specified_duration_(-1),
       liveness_(DemuxerStream::LIVENESS_UNKNOWN),
-      splice_frames_enabled_(splice_frames_enabled),
       detected_audio_track_count_(0),
       detected_video_track_count_(0),
       detected_text_track_count_(0) {
@@ -1196,8 +1186,7 @@ ChunkDemuxerStream* ChunkDemuxer::CreateDemuxerStream(
   }
 
   std::unique_ptr<ChunkDemuxerStream> stream =
-      base::MakeUnique<ChunkDemuxerStream>(type, splice_frames_enabled_,
-                                           media_track_id);
+      base::MakeUnique<ChunkDemuxerStream>(type, media_track_id);
   DCHECK(track_id_to_demux_stream_map_.find(media_track_id) ==
          track_id_to_demux_stream_map_.end());
   track_id_to_demux_stream_map_[media_track_id] = stream.get();

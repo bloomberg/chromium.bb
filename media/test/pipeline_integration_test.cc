@@ -479,8 +479,7 @@ class MockMediaSource {
             base::Bind(&MockMediaSource::DemuxerOpened, base::Unretained(this)),
             base::Bind(&MockMediaSource::OnEncryptedMediaInitData,
                        base::Unretained(this)),
-            scoped_refptr<MediaLog>(new MediaLog()),
-            true)),
+            scoped_refptr<MediaLog>(new MediaLog()))),
         owned_chunk_demuxer_(chunk_demuxer_) {
     file_data_ = ReadTestDataFile(filename);
 

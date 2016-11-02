@@ -34,9 +34,7 @@ class MEDIA_EXPORT ChunkDemuxerStream : public DemuxerStream {
  public:
   typedef std::deque<scoped_refptr<StreamParserBuffer> > BufferQueue;
 
-  ChunkDemuxerStream(Type type,
-                     bool splice_frames_enabled,
-                     MediaTrack::Id media_track_id);
+  ChunkDemuxerStream(Type type, MediaTrack::Id media_track_id);
   ~ChunkDemuxerStream() override;
 
   // ChunkDemuxerStream control methods.
@@ -156,7 +154,6 @@ class MEDIA_EXPORT ChunkDemuxerStream : public DemuxerStream {
   mutable base::Lock lock_;
   State state_;
   ReadCB read_cb_;
-  bool splice_frames_enabled_;
   bool partial_append_window_trimming_enabled_;
   bool is_enabled_;
   StreamStatusChangeCB stream_status_change_cb_;
@@ -179,13 +176,9 @@ class MEDIA_EXPORT ChunkDemuxer : public Demuxer {
   // |encrypted_media_init_data_cb| Run when the demuxer determines that an
   //   encryption key is needed to decrypt the content.
   // |media_log| Used to report content and engine debug messages.
-  // |splice_frames_enabled| Indicates that it's okay to generate splice frames
-  //   per the MSE specification.  Renderers must understand DecoderBuffer's
-  //   splice_timestamp() field.
   ChunkDemuxer(const base::Closure& open_cb,
                const EncryptedMediaInitDataCB& encrypted_media_init_data_cb,
-               const scoped_refptr<MediaLog>& media_log,
-               bool splice_frames_enabled);
+               const scoped_refptr<MediaLog>& media_log);
   ~ChunkDemuxer() override;
 
   // Demuxer implementation.
@@ -443,9 +436,6 @@ class MEDIA_EXPORT ChunkDemuxer : public Demuxer {
   // references to these streams, so we need to keep them alive. But they'll be
   // in a shut down state, so reading from them will return EOS.
   std::vector<std::unique_ptr<ChunkDemuxerStream>> removed_streams_;
-
-  // Indicates that splice frame generation is enabled.
-  const bool splice_frames_enabled_;
 
   // Accumulate, by type, detected track counts across the SourceBuffers.
   int detected_audio_track_count_;

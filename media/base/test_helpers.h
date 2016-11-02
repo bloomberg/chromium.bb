@@ -194,13 +194,6 @@ MATCHER_P2(UnexpectedTrack, track_type, id, "") {
                                   " track track_id=" + id);
 }
 
-MATCHER_P2(GeneratedSplice, duration_microseconds, time_microseconds, "") {
-  return CONTAINS_STRING(arg, "Generated splice of overlap duration " +
-                                  base::IntToString(duration_microseconds) +
-                                  "us into new buffer at " +
-                                  base::IntToString(time_microseconds) + "us.");
-}
-
 MATCHER_P2(SkippingSpliceAtOrBefore,
            new_microseconds,
            existing_microseconds,
@@ -240,6 +233,18 @@ MATCHER(WebMOutOfOrderTimecode, "") {
 
 MATCHER(WebMClusterBeforeFirstInfo, "") {
   return CONTAINS_STRING(arg, "Found Cluster element before Info.");
+}
+
+MATCHER_P3(TrimmedSpliceOverlap,
+           splice_time_us,
+           overlapped_start_us,
+           trim_duration_us,
+           "") {
+  return CONTAINS_STRING(
+      arg, "Audio buffer splice at PTS=" + base::IntToString(splice_time_us) +
+               "us. Trimmed tail of overlapped buffer (PTS=" +
+               base::IntToString(overlapped_start_us) + "us) by " +
+               base::IntToString(trim_duration_us));
 }
 
 }  // namespace media

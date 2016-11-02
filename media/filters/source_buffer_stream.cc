@@ -7,11 +7,11 @@
 #include <algorithm>
 #include <map>
 #include <sstream>
+#include <string>
 
 #include "base/bind.h"
 #include "base/logging.h"
 #include "base/trace_event/trace_event.h"
-#include "media/base/audio_splicer.h"
 #include "media/base/timestamp_constants.h"
 #include "media/filters/source_buffer_platform.h"
 #include "media/filters/source_buffer_range.h"
@@ -24,18 +24,14 @@ namespace {
 // set and there's not enough information to get a better estimate.
 const int kDefaultBufferDurationInMs = 125;
 
-// Limit the number of MEDIA_LOG() logs for splice buffer generation warnings
-// and successes. Though these values are high enough to possibly exhaust the
-// media internals event cache (along with other events), these logs are
-// important for debugging splice generation.
-const int kMaxSpliceGenerationWarningLogs = 50;
-const int kMaxSpliceGenerationSuccessLogs = 20;
-
 // Limit the number of MEDIA_LOG() logs for track buffer time gaps.
 const int kMaxTrackBufferGapWarningLogs = 20;
 
 // Limit the number of MEDIA_LOG() logs for MSE GC algorithm warnings.
 const int kMaxGarbageCollectAlgorithmWarningLogs = 20;
+
+// Limit the number of MEDIA_LOG() logs for splice overlap trimming.
+const int kMaxAudioSpliceLogs = 20;
 
 // Limit the number of MEDIA_LOG() logs for same DTS for non-keyframe followed
 // by keyframe. Prior to relaxing the "media segments must begin with a
@@ -65,7 +61,7 @@ bool IsRangeListSorted(const std::list<media::SourceBufferRange*>& ranges) {
 // TODO(wolenetz): Once all stream parsers emit accurate frame durations, use
 // logic like FrameProcessor (2*last_frame_duration + last_decode_timestamp)
 // instead of an overall maximum interbuffer delta for range discontinuity
-// detection, and adjust similarly for splice frame discontinuity detection.
+// detection.
 // See http://crbug.com/351489 and http://crbug.com/351166.
 base::TimeDelta ComputeFudgeRoom(base::TimeDelta approximate_duration) {
   // Because we do not know exactly when is the next timestamp, any buffer
@@ -142,38 +138,33 @@ SourceBufferRange::GapPolicy TypeToGapPolicy(SourceBufferStream::Type type) {
 }  // namespace
 
 SourceBufferStream::SourceBufferStream(const AudioDecoderConfig& audio_config,
-                                       const scoped_refptr<MediaLog>& media_log,
-                                       bool splice_frames_enabled)
+                                       const scoped_refptr<MediaLog>& media_log)
     : media_log_(media_log),
       seek_buffer_timestamp_(kNoTimestamp),
       coded_frame_group_start_time_(kNoDecodeTimestamp()),
       range_for_next_append_(ranges_.end()),
       last_output_buffer_timestamp_(kNoDecodeTimestamp()),
       max_interbuffer_distance_(kNoTimestamp),
-      memory_limit_(kSourceBufferAudioMemoryLimit),
-      splice_frames_enabled_(splice_frames_enabled) {
+      memory_limit_(kSourceBufferAudioMemoryLimit) {
   DCHECK(audio_config.IsValidConfig());
   audio_configs_.push_back(audio_config);
 }
 
 SourceBufferStream::SourceBufferStream(const VideoDecoderConfig& video_config,
-                                       const scoped_refptr<MediaLog>& media_log,
-                                       bool splice_frames_enabled)
+                                       const scoped_refptr<MediaLog>& media_log)
     : media_log_(media_log),
       seek_buffer_timestamp_(kNoTimestamp),
       coded_frame_group_start_time_(kNoDecodeTimestamp()),
       range_for_next_append_(ranges_.end()),
       last_output_buffer_timestamp_(kNoDecodeTimestamp()),
       max_interbuffer_distance_(kNoTimestamp),
-      memory_limit_(kSourceBufferVideoMemoryLimit),
-      splice_frames_enabled_(splice_frames_enabled) {
+      memory_limit_(kSourceBufferVideoMemoryLimit) {
   DCHECK(video_config.IsValidConfig());
   video_configs_.push_back(video_config);
 }
 
 SourceBufferStream::SourceBufferStream(const TextTrackConfig& text_config,
-                                       const scoped_refptr<MediaLog>& media_log,
-                                       bool splice_frames_enabled)
+                                       const scoped_refptr<MediaLog>& media_log)
     : media_log_(media_log),
       text_track_config_(text_config),
       seek_buffer_timestamp_(kNoTimestamp),
@@ -181,8 +172,7 @@ SourceBufferStream::SourceBufferStream(const TextTrackConfig& text_config,
       range_for_next_append_(ranges_.end()),
       last_output_buffer_timestamp_(kNoDecodeTimestamp()),
       max_interbuffer_distance_(kNoTimestamp),
-      memory_limit_(kSourceBufferAudioMemoryLimit),
-      splice_frames_enabled_(splice_frames_enabled) {}
+      memory_limit_(kSourceBufferAudioMemoryLimit) {}
 
 SourceBufferStream::~SourceBufferStream() {
   while (!ranges_.empty()) {
@@ -263,18 +253,13 @@ bool SourceBufferStream::Append(const BufferQueue& buffers) {
   // If there's a range for |buffers|, insert |buffers| accordingly. Otherwise,
   // create a new range with |buffers|.
   if (range_for_next_append_ != ranges_.end()) {
-    if (new_coded_frame_group_ && (!splice_frames_enabled_ ||
-                                   buffers.front()->splice_buffers().empty())) {
+    if (new_coded_frame_group_) {
       // If the first append to this stream in a new coded frame group continues
       // a previous range, use the new group's start time instead of the first
       // new buffer's timestamp as the proof of adjacency to the existing range.
       // A large gap (larger than our normal buffer adjacency test) can occur in
       // a muxed set of streams (which share a common coded frame group start
       // time) with a significantly jagged start across the streams.
-      // Don't do this logic if there was a splice frame generated for the first
-      // new buffer, since splices are guaranteed to be in the same range and
-      // adjacent, and since the splice frame's timestamp can be less than
-      // |coded_frame_group_start_time_| due to the splicing.
       (*range_for_next_append_)
           ->AppendBuffersToEnd(buffers, coded_frame_group_start_time_);
     } else {
@@ -312,8 +297,8 @@ bool SourceBufferStream::Append(const BufferQueue& buffers) {
         last_appended_buffer_is_keyframe_ = buffers.back()->is_key_frame();
         DVLOG(1) << __func__ << " " << GetStreamTypeName()
                  << ": new buffers in the middle of coded frame group depend on"
-                    "keyframe that has been removed, and contain no keyframes."
-                    "Skipping further processing.";
+                    " keyframe that has been removed, and contain no keyframes."
+                    " Skipping further processing.";
         DVLOG(1) << __func__ << " " << GetStreamTypeName()
                  << ": done. ranges_=" << RangesToString(ranges_);
         return true;
@@ -603,7 +588,6 @@ void SourceBufferStream::ResetSeekState() {
   config_change_pending_ = false;
   last_output_buffer_timestamp_ = kNoDecodeTimestamp();
   just_exhausted_track_buffer_ = false;
-  splice_buffers_index_ = 0;
   pending_buffer_ = NULL;
   pending_buffers_complete_ = false;
 }
@@ -1019,51 +1003,141 @@ size_t SourceBufferStream::FreeBuffers(size_t total_bytes_to_free,
   return bytes_freed;
 }
 
+void SourceBufferStream::TrimSpliceOverlap(const BufferQueue& new_buffers) {
+  DCHECK(!new_buffers.empty());
+  DCHECK_EQ(kAudio, GetType());
+
+  // Find the overlapped range (if any).
+  const base::TimeDelta splice_timestamp = new_buffers.front()->timestamp();
+  const DecodeTimestamp splice_dts =
+      DecodeTimestamp::FromPresentationTime(splice_timestamp);
+  RangeList::iterator range_itr = FindExistingRangeFor(splice_dts);
+  if (range_itr == ranges_.end()) {
+    DVLOG(3) << __func__ << " No splice trimming. No range overlap at time "
+             << splice_timestamp.InMicroseconds();
+    return;
+  }
+
+  // Search for overlapped buffer needs exclusive end value. Choosing smallest
+  // possible value.
+  const DecodeTimestamp end_dts =
+      splice_dts + base::TimeDelta::FromInternalValue(1);
+
+  // Find if new buffer's start would overlap an existing buffer.
+  BufferQueue overlapped_buffers;
+  if (!(*range_itr)
+           ->GetBuffersInRange(splice_dts, end_dts, &overlapped_buffers)) {
+    // Bail if no overlapped buffers found.
+    DVLOG(3) << __func__ << " No splice trimming. No buffer overlap at time "
+             << splice_timestamp.InMicroseconds();
+    return;
+  }
+
+  // At most one buffer should exist containing the time of the newly appended
+  // buffer's start. GetBuffersInRange does not currently return buffers with
+  // zero duration.
+  DCHECK_EQ(overlapped_buffers.size(), 1U)
+      << __func__ << " Found more than one overlapped buffer";
+  StreamParserBuffer* overlapped_buffer = overlapped_buffers.front().get();
+
+  if (overlapped_buffer->timestamp() == splice_timestamp) {
+    // Ignore buffers with the same start time. They will be completely removed
+    // in PrepareRangesForNextAppend().
+    DVLOG(3) << __func__ << " No splice trimming at time "
+             << splice_timestamp.InMicroseconds()
+             << ". Overlapped buffer will be completely removed.";
+    return;
+  }
+
+  // Determine the duration of overlap.
+  base::TimeDelta overlapped_end_time =
+      overlapped_buffer->timestamp() + overlapped_buffer->duration();
+  base::TimeDelta overlap_duration = overlapped_end_time - splice_timestamp;
+
+  // At this point overlap should be non-empty (ruled out same-timestamp above).
+  DCHECK_GT(overlap_duration, base::TimeDelta());
+
+  // Don't trim for overlaps of less than one millisecond (which is frequently
+  // the extent of timestamp resolution for poorly encoded media).
+  if (overlap_duration < base::TimeDelta::FromMilliseconds(1)) {
+    std::stringstream log_string;
+    log_string << "Skipping audio splice trimming at PTS="
+               << splice_timestamp.InMicroseconds() << "us. Found only "
+               << overlap_duration.InMicroseconds()
+               << "us of overlap, need at least 1000us. Multiple occurrences "
+               << "may result in loss of A/V sync.";
+    LIMITED_MEDIA_LOG(DEBUG, media_log_, num_splice_logs_, kMaxAudioSpliceLogs)
+        << log_string.str();
+    DVLOG(1) << __func__ << log_string.str();
+    return;
+  }
+
+  // Trim overlap from the existing buffer.
+  DecoderBuffer::DiscardPadding discard_padding =
+      overlapped_buffer->discard_padding();
+  discard_padding.second += overlap_duration;
+  overlapped_buffer->set_discard_padding(discard_padding);
+  overlapped_buffer->set_duration(overlapped_buffer->duration() -
+                                  overlap_duration);
+
+  std::stringstream log_string;
+  log_string << "Audio buffer splice at PTS="
+             << splice_timestamp.InMicroseconds()
+             << "us. Trimmed tail of overlapped buffer (PTS="
+             << overlapped_buffer->timestamp().InMicroseconds() << "us) by "
+             << overlap_duration.InMicroseconds() << "us.";
+  LIMITED_MEDIA_LOG(DEBUG, media_log_, num_splice_logs_, kMaxAudioSpliceLogs)
+      << log_string.str();
+  DVLOG(1) << __func__ << log_string.str();
+}
+
 void SourceBufferStream::PrepareRangesForNextAppend(
     const BufferQueue& new_buffers, BufferQueue* deleted_buffers) {
   DCHECK(deleted_buffers);
 
-  // Handle splices between the existing buffers and the new buffers.  If a
-  // splice is generated the timestamp and duration of the first buffer in
-  // |new_buffers| will be modified.
-  if (splice_frames_enabled_)
-    GenerateSpliceFrame(new_buffers);
+  if (GetType() == kAudio)
+    TrimSpliceOverlap(new_buffers);
 
+  base::TimeDelta prev_duration = last_appended_buffer_duration_;
   DecodeTimestamp prev_timestamp = last_appended_buffer_timestamp_;
   DecodeTimestamp next_timestamp = new_buffers.front()->GetDecodeTimestamp();
 
+  // 1. Clean up the old buffers between the last appended buffer and the
+  //    beginning of |new_buffers|.
   if (prev_timestamp != kNoDecodeTimestamp() &&
       prev_timestamp != next_timestamp) {
-    // Clean up the old buffers between the last appended buffer and the
-    // beginning of |new_buffers|.
     RemoveInternal(prev_timestamp, next_timestamp, true, deleted_buffers);
   }
 
-  // Always make the start of the delete range exclusive for same timestamp
-  // across the last buffer in the previous append and the first buffer in the
-  // current append. Never be exclusive if a splice frame was generated because
-  // we don't generate splice frames for same timestamp situations.
-  DCHECK(new_buffers.front()->splice_timestamp() !=
-         new_buffers.front()->timestamp());
-  const bool exclude_start = new_buffers.front()->splice_buffers().empty() &&
-                             prev_timestamp == next_timestamp;
-
-  // Delete the buffers that |new_buffers| overlaps.
-  DecodeTimestamp start = new_buffers.front()->GetDecodeTimestamp();
+  // 2. Delete the buffers that |new_buffers| overlaps.
   if (new_coded_frame_group_) {
     // Extend the deletion range earlier to the coded frame group start time if
-    // this is the first append in a new coded frame group. Note that |start|
-    // could already be less than |coded_frame_group_start_time_| if a splice
-    // was generated.
+    // this is the first append in a new coded frame group.
     DCHECK(coded_frame_group_start_time_ != kNoDecodeTimestamp());
-    start = std::min(coded_frame_group_start_time_, start);
+    next_timestamp = std::min(coded_frame_group_start_time_, next_timestamp);
   }
-  DecodeTimestamp end = new_buffers.back()->GetDecodeTimestamp();
-  base::TimeDelta duration = new_buffers.back()->duration();
+
+  // Exclude the start from removal to avoid deleting the last appended buffer
+  // in cases where the timestamps match. Only do this when :
+  //   A. Type is video. This may occur in cases of VP9 alt-ref frames or frames
+  //      with incorrect timestamps. Removing a frame may break decode
+  //      dependencies and there are no downsides to just keeping it (other than
+  //      some throw-away decoder work).
+  //   B. Type is text. TODO(chcunningham): Implement text splicing. See
+  //      http://crbug.com/661408
+  //   C. Type is audio and overlapped duration is 0. We've encountered Vorbis
+  //      streams containing zero-duration buffers (i.e. no real overlap). For
+  //      non-zero duration removing overlapped frames is important to preserve
+  //      A/V sync (see AudioClock).
+  const bool exclude_start = prev_timestamp == next_timestamp &&
+                             (GetType() == kVideo || GetType() == kText ||
+                              prev_duration == base::TimeDelta());
 
   // Set end time for remove to include the duration of last buffer. If the
   // duration is estimated, use 1 microsecond instead to ensure frames are not
   // accidentally removed due to over-estimation.
+  DecodeTimestamp end = new_buffers.back()->GetDecodeTimestamp();
+  base::TimeDelta duration = new_buffers.back()->duration();
   if (duration != kNoTimestamp && duration > base::TimeDelta() &&
       !new_buffers.back()->is_duration_estimated()) {
     end += duration;
@@ -1073,7 +1147,8 @@ void SourceBufferStream::PrepareRangesForNextAppend(
     end += base::TimeDelta::FromInternalValue(1);
   }
 
-  RemoveInternal(start, end, exclude_start, deleted_buffers);
+  // Finally do the deletion of overlap.
+  RemoveInternal(next_timestamp, end, exclude_start, deleted_buffers);
 }
 
 bool SourceBufferStream::AreAdjacentInSequence(
@@ -1198,15 +1273,6 @@ SourceBufferStream::Status SourceBufferStream::GetNextBuffer(
     }
   }
 
-  if (!pending_buffer_->splice_buffers().empty()) {
-    const SourceBufferStream::Status status =
-        HandleNextBufferWithSplice(out_buffer);
-    DVLOG(2) << __func__ << " " << GetStreamTypeName()
-             << ": handled next buffer with splice, returning status "
-             << status;
-    return status;
-  }
-
   DCHECK(pending_buffer_->preroll_buffer().get());
 
   const SourceBufferStream::Status status =
@@ -1214,57 +1280,6 @@ SourceBufferStream::Status SourceBufferStream::GetNextBuffer(
   DVLOG(2) << __func__ << " " << GetStreamTypeName()
            << ": handled next buffer with preroll, returning status " << status;
   return status;
-}
-
-SourceBufferStream::Status SourceBufferStream::HandleNextBufferWithSplice(
-    scoped_refptr<StreamParserBuffer>* out_buffer) {
-  const BufferQueue& splice_buffers = pending_buffer_->splice_buffers();
-  const size_t last_splice_buffer_index = splice_buffers.size() - 1;
-
-  // Are there any splice buffers left to hand out?  The last buffer should be
-  // handed out separately since it represents the first post-splice buffer.
-  if (splice_buffers_index_ < last_splice_buffer_index) {
-    // Account for config changes which occur between fade out buffers.
-    if (current_config_index_ !=
-        splice_buffers[splice_buffers_index_]->GetConfigId()) {
-      config_change_pending_ = true;
-      DVLOG(1) << "Config change (splice buffer config ID does not match).";
-      return SourceBufferStream::kConfigChange;
-    }
-
-    // Every pre splice buffer must have the same splice_timestamp().
-    DCHECK(pending_buffer_->splice_timestamp() ==
-           splice_buffers[splice_buffers_index_]->splice_timestamp());
-
-    // No pre splice buffers should have preroll.
-    DCHECK(!splice_buffers[splice_buffers_index_]->preroll_buffer().get());
-
-    *out_buffer = splice_buffers[splice_buffers_index_++];
-    return SourceBufferStream::kSuccess;
-  }
-
-  // Did we hand out the last pre-splice buffer on the previous call?
-  if (!pending_buffers_complete_) {
-    DCHECK_EQ(splice_buffers_index_, last_splice_buffer_index);
-    pending_buffers_complete_ = true;
-    config_change_pending_ = true;
-    DVLOG(1) << "Config change (forced for fade in of splice frame).";
-    return SourceBufferStream::kConfigChange;
-  }
-
-  // All pre-splice buffers have been handed out and a config change completed,
-  // so hand out the final buffer for fade in.  Because a config change is
-  // always issued prior to handing out this buffer, any changes in config id
-  // have been inherently handled.
-  DCHECK(pending_buffers_complete_);
-  DCHECK_EQ(splice_buffers_index_, splice_buffers.size() - 1);
-  DCHECK(splice_buffers.back()->splice_timestamp() == kNoTimestamp);
-  *out_buffer = splice_buffers.back();
-  pending_buffer_ = NULL;
-
-  // If the last splice buffer has preroll, hand off to the preroll handler.
-  return SetPendingBuffer(out_buffer) ? HandleNextBufferWithPreroll(out_buffer)
-                                      : SourceBufferStream::kSuccess;
 }
 
 SourceBufferStream::Status SourceBufferStream::HandleNextBufferWithPreroll(
@@ -1575,12 +1590,6 @@ bool SourceBufferStream::UpdateVideoConfig(const VideoDecoderConfig& config) {
 void SourceBufferStream::CompleteConfigChange() {
   config_change_pending_ = false;
 
-  if (pending_buffer_.get()) {
-    current_config_index_ =
-        pending_buffer_->GetSpliceBufferConfigId(splice_buffers_index_);
-    return;
-  }
-
   if (!track_buffer_.empty()) {
     current_config_index_ = track_buffer_.front()->GetSpliceBufferConfigId(0);
     return;
@@ -1727,125 +1736,16 @@ void SourceBufferStream::DeleteAndRemoveRange(RangeList::iterator* itr) {
   *itr = ranges_.erase(*itr);
 }
 
-void SourceBufferStream::GenerateSpliceFrame(const BufferQueue& new_buffers) {
-  DCHECK(!new_buffers.empty());
-
-  // Splice frames are only supported for audio.
-  if (GetType() != kAudio)
-    return;
-
-  // Find the overlapped range (if any).
-  const base::TimeDelta splice_timestamp = new_buffers.front()->timestamp();
-  const DecodeTimestamp splice_dts =
-      DecodeTimestamp::FromPresentationTime(splice_timestamp);
-  RangeList::iterator range_itr = FindExistingRangeFor(splice_dts);
-  if (range_itr == ranges_.end())
-    return;
-
-  const DecodeTimestamp max_splice_end_dts =
-      splice_dts + base::TimeDelta::FromMilliseconds(
-          AudioSplicer::kCrossfadeDurationInMilliseconds);
-
-  // Find all buffers involved before the splice point.
-  BufferQueue pre_splice_buffers;
-  if (!(*range_itr)->GetBuffersInRange(
-          splice_dts, max_splice_end_dts, &pre_splice_buffers)) {
-    return;
-  }
-
-  // If there are gaps in the timeline, it's possible that we only find buffers
-  // after the splice point but within the splice range.  For simplicity, we do
-  // not generate splice frames in this case.
-  //
-  // We also do not want to generate splices if the first new buffer replaces an
-  // existing buffer exactly.
-  if (pre_splice_buffers.front()->timestamp() >= splice_timestamp) {
-    LIMITED_MEDIA_LOG(DEBUG, media_log_, num_splice_generation_warning_logs_,
-                      kMaxSpliceGenerationWarningLogs)
-        << "Skipping splice frame generation: first new buffer at "
-        << splice_timestamp.InMicroseconds()
-        << "us begins at or before existing buffer at "
-        << pre_splice_buffers.front()->timestamp().InMicroseconds() << "us.";
-    DVLOG(1) << "Skipping splice: overlapped buffers begin at or after the "
-                "first new buffer.";
-    return;
-  }
-
-  // If any |pre_splice_buffers| are already splices or preroll, do not generate
-  // a splice.
-  for (size_t i = 0; i < pre_splice_buffers.size(); ++i) {
-    const BufferQueue& original_splice_buffers =
-        pre_splice_buffers[i]->splice_buffers();
-    if (!original_splice_buffers.empty()) {
-      LIMITED_MEDIA_LOG(DEBUG, media_log_, num_splice_generation_warning_logs_,
-                        kMaxSpliceGenerationWarningLogs)
-          << "Skipping splice frame generation: overlapped buffers at "
-          << pre_splice_buffers[i]->timestamp().InMicroseconds()
-          << "us are in a previously buffered splice.";
-      DVLOG(1) << "Can't generate splice: overlapped buffers contain a "
-                  "pre-existing splice.";
-      return;
-    }
-
-    if (pre_splice_buffers[i]->preroll_buffer().get()) {
-      LIMITED_MEDIA_LOG(DEBUG, media_log_, num_splice_generation_warning_logs_,
-                        kMaxSpliceGenerationWarningLogs)
-          << "Skipping splice frame generation: overlapped buffers at "
-          << pre_splice_buffers[i]->timestamp().InMicroseconds()
-          << "us contain preroll.";
-      DVLOG(1) << "Can't generate splice: overlapped buffers contain preroll.";
-      return;
-    }
-  }
-
-  // Don't generate splice frames which represent less than a millisecond (which
-  // is frequently the extent of timestamp resolution for poorly encoded media)
-  // or less than two samples (need at least two to crossfade).
-  const base::TimeDelta splice_duration =
-      pre_splice_buffers.back()->timestamp() +
-      pre_splice_buffers.back()->duration() - splice_timestamp;
-  const base::TimeDelta minimum_splice_duration = std::max(
-      base::TimeDelta::FromMilliseconds(1),
-      base::TimeDelta::FromSecondsD(
-          2.0 / audio_configs_[append_config_index_].samples_per_second()));
-  if (splice_duration < minimum_splice_duration) {
-    LIMITED_MEDIA_LOG(DEBUG, media_log_, num_splice_generation_warning_logs_,
-                      kMaxSpliceGenerationWarningLogs)
-        << "Skipping splice frame generation: not enough samples for splicing "
-           "new buffer at "
-        << splice_timestamp.InMicroseconds() << "us. Have "
-        << splice_duration.InMicroseconds() << "us, but need "
-        << minimum_splice_duration.InMicroseconds() << "us.";
-    DVLOG(1) << "Can't generate splice: not enough samples for crossfade; have "
-             << splice_duration.InMicroseconds() << "us, but need "
-             << minimum_splice_duration.InMicroseconds() << "us.";
-    return;
-  }
-
-  DVLOG(1) << "Generating splice frame @ " << new_buffers.front()->timestamp()
-           << ", splice duration: " << splice_duration.InMicroseconds()
-           << " us";
-  LIMITED_MEDIA_LOG(DEBUG, media_log_, num_splice_generation_success_logs_,
-                    kMaxSpliceGenerationSuccessLogs)
-      << "Generated splice of overlap duration "
-      << splice_duration.InMicroseconds() << "us into new buffer at "
-      << splice_timestamp.InMicroseconds() << "us.";
-  new_buffers.front()->ConvertToSpliceBuffer(pre_splice_buffers);
-}
-
 bool SourceBufferStream::SetPendingBuffer(
     scoped_refptr<StreamParserBuffer>* out_buffer) {
   DCHECK(out_buffer->get());
   DCHECK(!pending_buffer_.get());
 
-  const bool have_splice_buffers = !(*out_buffer)->splice_buffers().empty();
   const bool have_preroll_buffer = !!(*out_buffer)->preroll_buffer().get();
 
-  if (!have_splice_buffers && !have_preroll_buffer)
+  if (!have_preroll_buffer)
     return false;
 
-  DCHECK_NE(have_splice_buffers, have_preroll_buffer);
-  splice_buffers_index_ = 0;
   pending_buffer_.swap(*out_buffer);
   pending_buffers_complete_ = false;
   return true;

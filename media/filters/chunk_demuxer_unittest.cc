@@ -187,8 +187,8 @@ class ChunkDemuxerTest : public ::testing::Test {
         base::Bind(&ChunkDemuxerTest::DemuxerOpened, base::Unretained(this));
     Demuxer::EncryptedMediaInitDataCB encrypted_media_init_data_cb = base::Bind(
         &ChunkDemuxerTest::OnEncryptedMediaInitData, base::Unretained(this));
-    demuxer_.reset(new ChunkDemuxer(open_cb, encrypted_media_init_data_cb,
-                                    media_log_, true));
+    demuxer_.reset(
+        new ChunkDemuxer(open_cb, encrypted_media_init_data_cb, media_log_));
   }
 
   virtual ~ChunkDemuxerTest() {
@@ -870,7 +870,7 @@ class ChunkDemuxerTest : public ::testing::Test {
 
     // Append a media segment that goes from [0.527000, 1.014000).
     EXPECT_MEDIA_LOG(WebMSimpleBlockDurationEstimated(2));
-    EXPECT_MEDIA_LOG(GeneratedSplice(20000, 527000));
+    EXPECT_MEDIA_LOG(TrimmedSpliceOverlap(527000, 524000, 20000));
     EXPECT_TRUE(AppendData(bear2->data() + 55290, 18785));
     CheckExpectedRanges("{ [0,1027) [1201,2736) }");
 
@@ -879,7 +879,7 @@ class ChunkDemuxerTest : public ::testing::Test {
     EXPECT_CALL(*this, InitSegmentReceivedMock(_));
     EXPECT_TRUE(AppendData(bear1->data(), 4370));
     EXPECT_MEDIA_LOG(WebMSimpleBlockDurationEstimated(23));
-    EXPECT_MEDIA_LOG(GeneratedSplice(26000, 779000));
+    EXPECT_MEDIA_LOG(TrimmedSpliceOverlap(779000, 759000, 3000));
     EXPECT_TRUE(AppendData(bear1->data() + 72737, 28183));
     CheckExpectedRanges("{ [0,2736) }");
 
@@ -1735,22 +1735,38 @@ TEST_F(ChunkDemuxerTest, Read) {
 
 TEST_F(ChunkDemuxerTest, OutOfOrderClusters) {
   ASSERT_TRUE(InitDemuxer(HAS_AUDIO | HAS_VIDEO));
+  DemuxerStream* audio_stream = demuxer_->GetStream(DemuxerStream::AUDIO);
+  DemuxerStream* video_stream = demuxer_->GetStream(DemuxerStream::VIDEO);
+
   ASSERT_TRUE(AppendCluster(kDefaultFirstCluster()));
-  EXPECT_MEDIA_LOG(GeneratedSplice(13000, 10000));
+  CheckExpectedBuffers(audio_stream, "0K 23K");
+  CheckExpectedBuffers(video_stream, "0K 33");
+  // Note: splice trimming changes durations. These are verified in lower level
+  // tests. See SourceBufferStreamTest.Audio_SpliceTrimmingForOverlap.
+  EXPECT_MEDIA_LOG(TrimmedSpliceOverlap(10000, 0, 13000));
   ASSERT_TRUE(AppendCluster(GenerateCluster(10, 4)));
+  Seek(base::TimeDelta());
+  CheckExpectedBuffers(audio_stream, "0K 10K 33K");
+  CheckExpectedBuffers(video_stream, "0K 10K 43");
 
   // Make sure that AppendCluster() does not fail with a cluster that has
   // overlaps with the previously appended cluster.
-  EXPECT_MEDIA_LOG(SkippingSpliceAlreadySpliced(0));
+  EXPECT_MEDIA_LOG(TrimmedSpliceOverlap(5000, 0, 5000));
   ASSERT_TRUE(AppendCluster(GenerateCluster(5, 4)));
+  Seek(base::TimeDelta());
+  CheckExpectedBuffers(audio_stream, "0K 5K 28K");
+  CheckExpectedBuffers(video_stream, "0K 5K 38");
 
   // Verify that AppendData() can still accept more data.
   std::unique_ptr<Cluster> cluster_c(GenerateCluster(45, 2));
-  EXPECT_MEDIA_LOG(GeneratedSplice(6000, 45000));
+  EXPECT_MEDIA_LOG(TrimmedSpliceOverlap(45000, 28000, 6000));
   ASSERT_TRUE(demuxer_->AppendData(
       kSourceId, cluster_c->data(), cluster_c->size(),
       append_window_start_for_next_append_, append_window_end_for_next_append_,
       &timestamp_offset_map_[kSourceId]));
+  Seek(base::TimeDelta::FromMilliseconds(45));
+  CheckExpectedBuffers(audio_stream, "45K");
+  CheckExpectedBuffers(video_stream, "45K");
 }
 
 TEST_F(ChunkDemuxerTest, NonMonotonicButAboveClusterTimecode) {
@@ -2079,7 +2095,6 @@ TEST_F(ChunkDemuxerTest, EndOfStreamRangeChanges) {
 
   // Add text track data and verify that the buffered ranges don't change
   // since the intersection of all the tracks doesn't change.
-  EXPECT_MEDIA_LOG(SkippingSpliceAtOrBefore(0, 0));
   EXPECT_CALL(host_, SetDuration(base::TimeDelta::FromMilliseconds(200)));
   AppendMuxedCluster(MuxedStreamInfo(kVideoTrackNum, "0K 33", 33),
                      MuxedStreamInfo(kAudioTrackNum, "0K 23K", 23),
@@ -2785,16 +2800,23 @@ TEST_F(ChunkDemuxerTest, GetBufferedRanges_SeparateStreams) {
   CheckExpectedRangesForMediaSource(
       "{ [0,23) [320,400) [520,570) [720,750) [920,950) }");
 
-  // Appending within buffered range should not affect buffered ranges.
-  EXPECT_MEDIA_LOG(GeneratedSplice(40000, 930000));
+  // Audio buffered ranges are trimmed from 970 to 950 due to splicing the
+  // previously buffered audio frame
+  // - existing frame trimmed from [900, 970) to [900,930),
+  // - newly appended audio from [930, 950).
+  EXPECT_MEDIA_LOG(TrimmedSpliceOverlap(930000, 900000, 40000));
   ASSERT_TRUE(AppendCluster(
       audio_id, GenerateSingleStreamCluster(930, 950, kAudioTrackNum, 20)));
+  CheckExpectedRanges(DemuxerStream::AUDIO,
+                      "{ [0,23) [300,400) [520,590) [720,750) [900,950) }");
+
+  // Video buffer range is unchanged by next append. The time and duration of
+  // the new key frame line up with previous range boundaries.
   ASSERT_TRUE(AppendCluster(
       video_id, GenerateSingleStreamCluster(930, 950, kVideoTrackNum, 20)));
-  CheckExpectedRanges(DemuxerStream::AUDIO,
-                      "{ [0,23) [300,400) [520,590) [720,750) [900,970) }");
   CheckExpectedRanges(DemuxerStream::VIDEO,
                       "{ [0,33) [320,420) [500,570) [700,770) [920,950) }");
+
   CheckExpectedRangesForMediaSource(
       "{ [0,23) [320,400) [520,570) [720,750) [920,950) }");
 }
@@ -2866,14 +2888,22 @@ TEST_F(ChunkDemuxerTest, GetBufferedRanges_AudioVideo) {
                       "{ [0,33) [300,420) [500,570) [700,770) [900,950) }");
   CheckExpectedRanges("{ [0,23) [300,400) [500,570) [700,750) [900,950) }");
 
-  // Appending within buffered range should not affect buffered ranges.
-  EXPECT_MEDIA_LOG(GeneratedSplice(40000, 930000));
+  // Appending within existing buffered range.
+  EXPECT_MEDIA_LOG(TrimmedSpliceOverlap(930000, 900000, 40000));
   AppendMuxedCluster(MuxedStreamInfo(kAudioTrackNum, "930D20K"),
                      MuxedStreamInfo(kVideoTrackNum, "930D20K"));
-  CheckExpectedRanges(DemuxerStream::AUDIO,
-                      "{ [0,23) [300,400) [500,590) [700,750) [900,970) }");
+  // Video buffer range is unchanged. The time and duration of the new key frame
+  // line up with previous range boundaries.
   CheckExpectedRanges(DemuxerStream::VIDEO,
                       "{ [0,33) [300,420) [500,570) [700,770) [900,950) }");
+
+  // Audio buffered ranges are trimmed from 970 to 950 due to splicing the
+  // previously buffered audio frame.
+  // - existing frame trimmed from [900, 970) to [900, 930),
+  // - newly appended audio from [930, 950).
+  CheckExpectedRanges(DemuxerStream::AUDIO,
+                      "{ [0,23) [300,400) [500,590) [700,750) [900,950) }");
+
   CheckExpectedRanges("{ [0,23) [300,400) [500,570) [700,750) [900,950) }");
 }
 
@@ -3209,8 +3239,7 @@ TEST_F(ChunkDemuxerTest, ConfigChange_Audio) {
 
   ExpectRead(DemuxerStream::AUDIO, 0);
 
-  // The first config change seen is from a splice frame representing an overlap
-  // of buffer from config 1 by buffers from config 2.
+  // Read until we encounter config 2.
   ReadUntilNotOkOrEndOfStream(DemuxerStream::AUDIO, &status, &last_timestamp);
   ASSERT_EQ(status, DemuxerStream::kConfigChanged);
   EXPECT_EQ(last_timestamp.InMilliseconds(), 524);
@@ -3221,11 +3250,10 @@ TEST_F(ChunkDemuxerTest, ConfigChange_Audio) {
   EXPECT_EQ(audio_config_2.samples_per_second(), 44100);
   EXPECT_EQ(audio_config_2.extra_data().size(), 3935u);
 
-  // The next config change is from a splice frame representing an overlap of
-  // buffers from config 2 by buffers from config 1.
+  // Read until we encounter config 1 again.
   ReadUntilNotOkOrEndOfStream(DemuxerStream::AUDIO, &status, &last_timestamp);
   ASSERT_EQ(status, DemuxerStream::kConfigChanged);
-  EXPECT_EQ(last_timestamp.InMilliseconds(), 782);
+  EXPECT_EQ(last_timestamp.InMilliseconds(), 759);
   ASSERT_TRUE(audio_config_1.Matches(audio->audio_decoder_config()));
 
   // Read until the end of the stream just to make sure there aren't any other
@@ -3531,7 +3559,7 @@ TEST_F(ChunkDemuxerTest, WebMIsParsingMediaSegmentDetection) {
 
   ASSERT_TRUE(InitDemuxer(HAS_AUDIO));
   EXPECT_MEDIA_LOG(WebMSimpleBlockDurationEstimated(23)).Times(2);
-  EXPECT_MEDIA_LOG(GeneratedSplice(22000, 2000));
+  EXPECT_MEDIA_LOG(TrimmedSpliceOverlap(2000, 1000, 22000));
   for (size_t i = 0; i < sizeof(kBuffer); i++) {
     DVLOG(3) << "Appending and testing index " << i;
     ASSERT_TRUE(AppendData(kBuffer + i, 1));
