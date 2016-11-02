@@ -52,6 +52,9 @@ void ColumnBalancer::traverseChildren(const LayoutObject& object) {
   // joined with the break-before value of the next in-flow block-level sibling.
   EBreak previousBreakAfterValue = BreakAuto;
 
+  const LayoutFlowThread* flowThread = columnSet().flowThread();
+  bool isHorizontalWritingMode = flowThread->isHorizontalWritingMode();
+
   for (const LayoutObject* child = object.slowFirstChild(); child;
        child = child->nextSibling()) {
     if (!child->isBox()) {
@@ -62,33 +65,20 @@ void ColumnBalancer::traverseChildren(const LayoutObject& object) {
     }
 
     const LayoutBox& childBox = toLayoutBox(*child);
-
-    LayoutUnit borderEdgeOffset;
-    LayoutUnit logicalTop = childBox.logicalTop();
-    LayoutUnit logicalHeight = childBox.logicalHeightWithVisibleOverflow();
-    // Floats' margins don't collapse with column boundaries, and we don't want
-    // to break inside them, or separate them from the float's border box. Set
-    // the offset to the margin-before edge (rather than border-before edge),
-    // and include the block direction margins in the child height.
-    if (childBox.isFloating()) {
-      LayoutUnit marginBefore = childBox.marginBefore(object.style());
-      LayoutUnit marginAfter = childBox.marginAfter(object.style());
-      logicalHeight =
-          std::max(logicalHeight, childBox.logicalHeight() + marginAfter);
-      logicalTop -= marginBefore;
-      logicalHeight += marginBefore;
-
-      // As soon as we want to process content inside this child, though, we
-      // need to get to its border-before edge.
-      borderEdgeOffset = marginBefore;
-    }
-
-    if (m_flowThreadOffset + logicalTop + logicalHeight <=
+    LayoutRect overflowRect = childBox.layoutOverflowRect();
+    LayoutUnit childLogicalBottomWithOverflow =
+        childBox.logicalTop() +
+        (isHorizontalWritingMode ? overflowRect.maxY() : overflowRect.maxX());
+    if (m_flowThreadOffset + childLogicalBottomWithOverflow <=
         logicalTopInFlowThread()) {
       // This child is fully above the flow thread portion we're examining.
       continue;
     }
-    if (m_flowThreadOffset + logicalTop >= logicalBottomInFlowThread()) {
+    LayoutUnit childLogicalTopWithOverflow =
+        childBox.logicalTop() +
+        (isHorizontalWritingMode ? overflowRect.y() : overflowRect.x());
+    if (m_flowThreadOffset + childLogicalTopWithOverflow >=
+        logicalBottomInFlowThread()) {
       // This child is fully below the flow thread portion we're examining. We
       // cannot just stop here, though, thanks to negative margins.
       // So keep looking.
@@ -100,25 +90,18 @@ void ColumnBalancer::traverseChildren(const LayoutObject& object) {
     // Tables are wicked. Both table rows and table cells are relative to their
     // table section.
     LayoutUnit offsetForThisChild =
-        childBox.isTableRow() ? LayoutUnit() : logicalTop;
-
+        childBox.isTableRow() ? LayoutUnit() : childBox.logicalTop();
     m_flowThreadOffset += offsetForThisChild;
 
-    examineBoxAfterEntering(childBox, logicalHeight, previousBreakAfterValue);
+    examineBoxAfterEntering(childBox, previousBreakAfterValue);
     // Unless the child is unsplittable, or if the child establishes an inner
     // multicol container, we descend into its subtree for further examination.
     if (childBox.getPaginationBreakability() != LayoutBox::ForbidBreaks &&
         (!childBox.isLayoutBlockFlow() ||
-         !toLayoutBlockFlow(childBox).multiColumnFlowThread())) {
-      // We need to get to the border edge before processing content inside
-      // this child. If the child is floated, we're currently at the margin
-      // edge.
-      m_flowThreadOffset += borderEdgeOffset;
+         !toLayoutBlockFlow(childBox).multiColumnFlowThread()))
       traverseSubtree(childBox);
-      m_flowThreadOffset -= borderEdgeOffset;
-    }
     previousBreakAfterValue = childBox.breakAfter();
-    examineBoxBeforeLeaving(childBox, logicalHeight);
+    examineBoxBeforeLeaving(childBox);
 
     m_flowThreadOffset -= offsetForThisChild;
   }
@@ -151,7 +134,6 @@ LayoutUnit InitialColumnHeightFinder::initialMinimalBalancedHeight() const {
 
 void InitialColumnHeightFinder::examineBoxAfterEntering(
     const LayoutBox& box,
-    LayoutUnit childLogicalHeight,
     EBreak previousBreakAfterValue) {
   if (isLogicalTopWithinBounds(flowThreadOffset() - box.paginationStrut())) {
     if (box.needsForcedBreakBefore(previousBreakAfterValue)) {
@@ -165,8 +147,11 @@ void InitialColumnHeightFinder::examineBoxAfterEntering(
   }
 
   if (box.getPaginationBreakability() != LayoutBox::AllowAnyBreaks) {
+    LayoutUnit unsplittableLogicalHeight = box.logicalHeight();
+    if (box.isFloating())
+      unsplittableLogicalHeight += box.marginBefore() + box.marginAfter();
     m_tallestUnbreakableLogicalHeight =
-        std::max(m_tallestUnbreakableLogicalHeight, childLogicalHeight);
+        std::max(m_tallestUnbreakableLogicalHeight, unsplittableLogicalHeight);
     return;
   }
   // Need to examine inner multicol containers to find their tallest unbreakable
@@ -186,9 +171,7 @@ void InitialColumnHeightFinder::examineBoxAfterEntering(
       std::max(m_tallestUnbreakableLogicalHeight, innerUnbreakableHeight);
 }
 
-void InitialColumnHeightFinder::examineBoxBeforeLeaving(
-    const LayoutBox& box,
-    LayoutUnit childLogicalHeight) {}
+void InitialColumnHeightFinder::examineBoxBeforeLeaving(const LayoutBox& box) {}
 
 static inline LayoutUnit columnLogicalHeightRequirementForLine(
     const ComputedStyle& style,
@@ -313,7 +296,6 @@ MinimumSpaceShortageFinder::MinimumSpaceShortageFinder(
 
 void MinimumSpaceShortageFinder::examineBoxAfterEntering(
     const LayoutBox& box,
-    LayoutUnit childLogicalHeight,
     EBreak previousBreakAfterValue) {
   LayoutBox::PaginationBreakability breakability =
       box.getPaginationBreakability();
@@ -328,7 +310,7 @@ void MinimumSpaceShortageFinder::examineBoxAfterEntering(
         LayoutUnit strut = box.paginationStrut();
         // Figure out how much more space we would need to prevent it from being
         // pushed to the next column.
-        recordSpaceShortage(childLogicalHeight - strut);
+        recordSpaceShortage(box.logicalHeight() - strut);
         if (breakability != LayoutBox::ForbidBreaks &&
             m_pendingStrut == LayoutUnit::min()) {
           // We now want to look for the first piece of unbreakable content
@@ -345,7 +327,7 @@ void MinimumSpaceShortageFinder::examineBoxAfterEntering(
 
   if (breakability != LayoutBox::ForbidBreaks) {
     // See if this breakable box crosses column boundaries.
-    LayoutUnit bottomInFlowThread = flowThreadOffset() + childLogicalHeight;
+    LayoutUnit bottomInFlowThread = flowThreadOffset() + box.logicalHeight();
     const MultiColumnFragmentainerGroup& group =
         groupAtOffset(flowThreadOffset());
     if (isFirstAfterBreak(flowThreadOffset()) ||
@@ -385,9 +367,7 @@ void MinimumSpaceShortageFinder::examineBoxAfterEntering(
   }
 }
 
-void MinimumSpaceShortageFinder::examineBoxBeforeLeaving(
-    const LayoutBox& box,
-    LayoutUnit childLogicalHeight) {
+void MinimumSpaceShortageFinder::examineBoxBeforeLeaving(const LayoutBox& box) {
   if (m_pendingStrut == LayoutUnit::min() ||
       box.getPaginationBreakability() != LayoutBox::ForbidBreaks)
     return;
@@ -398,7 +378,7 @@ void MinimumSpaceShortageFinder::examineBoxBeforeLeaving(
   // shortage.
   LayoutUnit logicalOffsetFromCurrentColumn =
       offsetFromColumnLogicalTop(flowThreadOffset());
-  recordSpaceShortage(logicalOffsetFromCurrentColumn + childLogicalHeight -
+  recordSpaceShortage(logicalOffsetFromCurrentColumn + box.logicalHeight() -
                       m_pendingStrut);
   m_pendingStrut = LayoutUnit::min();
 }

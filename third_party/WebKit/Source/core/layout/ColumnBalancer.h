@@ -73,10 +73,8 @@ class ColumnBalancer {
   // right after entering and before traversing the subtree of the box, and the
   // second one right after having traversed the subtree.
   virtual void examineBoxAfterEntering(const LayoutBox&,
-                                       LayoutUnit childLogicalHeight,
                                        EBreak previousBreakAfterValue) = 0;
-  virtual void examineBoxBeforeLeaving(const LayoutBox&,
-                                       LayoutUnit childLogicalHeight) = 0;
+  virtual void examineBoxBeforeLeaving(const LayoutBox&) = 0;
 
   // Examine and collect column balancing data from a line that has been found
   // to intersect with the flow thread portion. Does not recurse into layout
@@ -131,9 +129,8 @@ class InitialColumnHeightFinder final : public ColumnBalancer {
 
  private:
   void examineBoxAfterEntering(const LayoutBox&,
-                               LayoutUnit childLogicalHeight,
                                EBreak previousBreakAfterValue);
-  void examineBoxBeforeLeaving(const LayoutBox&, LayoutUnit childLogicalHeight);
+  void examineBoxBeforeLeaving(const LayoutBox&);
   void examineLine(const RootInlineBox&);
 
   // Record that there's a pagination strut that ends at the specified
@@ -226,9 +223,8 @@ class MinimumSpaceShortageFinder final : public ColumnBalancer {
 
  private:
   void examineBoxAfterEntering(const LayoutBox&,
-                               LayoutUnit childLogicalHeight,
                                EBreak previousBreakAfterValue);
-  void examineBoxBeforeLeaving(const LayoutBox&, LayoutUnit childLogicalHeight);
+  void examineBoxBeforeLeaving(const LayoutBox&);
   void examineLine(const RootInlineBox&);
 
   void recordSpaceShortage(LayoutUnit shortage) {
