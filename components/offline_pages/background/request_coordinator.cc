@@ -118,6 +118,23 @@ void RecordAttemptCount(const SavePageRequest& request,
   }
 }
 
+// Record the network quality at request creation time per namespace.
+void RecordSavePageLaterNetworkQuality(
+    const ClientId& client_id,
+    const net::EffectiveConnectionType effective_connection) {
+  // The histogram below is an expansion of the UMA_HISTOGRAM_ENUMERATION
+  // macro adapted to allow for a dynamically suffixed histogram name.
+  // Note: The factory creates and owns the histogram.
+  base::HistogramBase* histogram = base::LinearHistogram::FactoryGet(
+      AddHistogramSuffix(
+          client_id,
+          "OfflinePages.Background.EffectiveConnectionType.SavePageLater"),
+      1, net::EFFECTIVE_CONNECTION_TYPE_LAST - 1,
+      net::EFFECTIVE_CONNECTION_TYPE_LAST,
+      base::HistogramBase::kUmaTargetedHistogramFlag);
+  histogram->Add(effective_connection);
+}
+
 // This should use the same algorithm as we use for OfflinePageItem, so the IDs
 // are similar.
 int64_t GenerateOfflineId() {
@@ -195,6 +212,13 @@ int64_t RequestCoordinator::SavePageLater(const GURL& url,
   queue_->AddRequest(request,
                      base::Bind(&RequestCoordinator::AddRequestResultCallback,
                                 weak_ptr_factory_.GetWeakPtr()));
+
+  // Record the network quality when this request is made.
+  if (network_quality_estimator_) {
+    RecordSavePageLaterNetworkQuality(
+        client_id, network_quality_estimator_->GetEffectiveConnectionType());
+  }
+
   return id;
 }
 void RequestCoordinator::GetAllRequests(const GetRequestsCallback& callback) {
@@ -332,6 +356,15 @@ void RequestCoordinator::RemoveRequests(
       base::Bind(&RequestCoordinator::HandleRemovedRequestsAndCallback,
                  weak_ptr_factory_.GetWeakPtr(), callback,
                  BackgroundSavePageResult::REMOVED));
+
+  // Record the network quality when this request is made.
+  if (network_quality_estimator_) {
+    UMA_HISTOGRAM_ENUMERATION(
+        "OfflinePages.Background.EffectiveConnectionType.RemoveRequests",
+        network_quality_estimator_->GetEffectiveConnectionType(),
+        net::EFFECTIVE_CONNECTION_TYPE_LAST);
+  }
+
   if (canceled)
     TryNextRequest();
 }
@@ -344,6 +377,14 @@ void RequestCoordinator::PauseRequests(
       base::Bind(&RequestCoordinator::UpdateMultipleRequestsCallback,
                  weak_ptr_factory_.GetWeakPtr()));
 
+  // Record the network quality when this request is made.
+  if (network_quality_estimator_) {
+    UMA_HISTOGRAM_ENUMERATION(
+        "OfflinePages.Background.EffectiveConnectionType.PauseRequests",
+        network_quality_estimator_->GetEffectiveConnectionType(),
+        net::EFFECTIVE_CONNECTION_TYPE_LAST);
+  }
+
   if (canceled)
     TryNextRequest();
 }
@@ -354,6 +395,15 @@ void RequestCoordinator::ResumeRequests(
       request_ids, SavePageRequest::RequestState::AVAILABLE,
       base::Bind(&RequestCoordinator::UpdateMultipleRequestsCallback,
                  weak_ptr_factory_.GetWeakPtr()));
+
+  // Record the network quality when this request is made.
+  if (network_quality_estimator_) {
+    UMA_HISTOGRAM_ENUMERATION(
+        "OfflinePages.Background.EffectiveConnectionType.ResumeRequests",
+        network_quality_estimator_->GetEffectiveConnectionType(),
+        net::EFFECTIVE_CONNECTION_TYPE_LAST);
+  }
+
   // Schedule a task, in case there is not one scheduled.
   ScheduleAsNeeded();
 }
@@ -506,14 +556,6 @@ RequestCoordinator::TryImmediateStart() {
     // Let the scheduler know we are done processing and failed due to svelte.
     immediate_schedule_callback_.Run(false);
     return OfflinerImmediateStartStatus::NOT_STARTED_ON_SVELTE;
-  }
-
-  if (network_quality_estimator_) {
-    // TODO(dougarnett): Add UMA for quality type experienced.
-    net::EffectiveConnectionType quality =
-        network_quality_estimator_->GetEffectiveConnectionType();
-    VLOG(2) << "TryImmediateStart:  Quality estimate "
-        << static_cast<int>(quality);
   }
 
   if (GetConnectionType() ==
