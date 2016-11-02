@@ -688,7 +688,7 @@ TEST_F(CRWSessionControllerTest, CanGoBackWithMultipleCommitedEntries) {
 }
 
 TEST_F(CRWSessionControllerTest, CanGoForwardWithoutCommitedEntry) {
-  EXPECT_FALSE([session_controller_ canGoBack]);
+  EXPECT_FALSE([session_controller_ canGoForward]);
 }
 
 TEST_F(CRWSessionControllerTest, CanGoForwardWithSingleCommitedEntry) {
@@ -699,7 +699,7 @@ TEST_F(CRWSessionControllerTest, CanGoForwardWithSingleCommitedEntry) {
       rendererInitiated:NO];
   [session_controller_ commitPendingEntry];
 
-  EXPECT_FALSE([session_controller_ canGoBack]);
+  EXPECT_FALSE([session_controller_ canGoForward]);
 }
 
 TEST_F(CRWSessionControllerTest, CanGoForwardWithMultipleCommitedEntries) {
