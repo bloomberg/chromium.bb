@@ -48,6 +48,7 @@ enum AttestationCertificateProfile {
 
 enum PrivacyCAType {
   DEFAULT_PCA,    // The Google-operated Privacy CA.
+  TEST_PCA,       // The test version of the Google-operated Privacy CA.
   ALTERNATE_PCA,  // An alternate Privacy CA specified by enterprise policy.
 };
 
