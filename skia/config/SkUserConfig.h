@@ -265,6 +265,10 @@ SK_API void SkDebugf_FileLine(const char* file, int line, bool fatal,
 // Enabling the screenspace AA tessellating path renderer needs rebaselines.
 #define SK_DISABLE_SCREENSPACE_TESS_AA_PATH_RENDERER
 
+// Disable analytic AA until we fix all the Chrome tests.
+// (we now set analytic AA as default in Skia.)
+#define SK_NO_ANALYTIC_AA
+
 // ===== End Chrome-specific definitions =====
 
 #endif
