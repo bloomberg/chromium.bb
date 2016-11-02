@@ -10,6 +10,7 @@ import os
 import re
 import subprocess
 import sys
+import tempfile
 import textwrap
 
 
@@ -211,8 +212,18 @@ Press ^C to abort.
 
     # Commit everything.
     subprocess.check_call(['git', 'add', readme_path], shell=IS_WINDOWS)
-    subprocess.check_call(['git', 'commit', '--message=' + new_message],
-                          shell=IS_WINDOWS)
+
+    try:
+        commit_message_name = None
+        with tempfile.NamedTemporaryFile(delete=False) as commit_message_f:
+            commit_message_name = commit_message_f.name
+            commit_message_f.write(new_message)
+        subprocess.check_call(['git',
+                               'commit', '--file=' + commit_message_name],
+                              shell=IS_WINDOWS)
+    finally:
+        if commit_message_name:
+            os.unlink(commit_message_name)
 
     if has_local_modifications:
         print >>sys.stderr, (
