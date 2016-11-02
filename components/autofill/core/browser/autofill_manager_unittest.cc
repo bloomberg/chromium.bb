@@ -62,6 +62,7 @@ using base::ASCIIToUTF16;
 using base::UTF8ToUTF16;
 using testing::_;
 using testing::AtLeast;
+using testing::Return;
 using testing::SaveArg;
 
 namespace autofill {
@@ -1598,6 +1599,41 @@ TEST_F(AutofillManagerTest, GetCreditCardSuggestions_NonSecureContext) {
   GetAutofillSuggestions(form, field);
   // Autocomplete suggestions are queried, but not Autofill.
   EXPECT_FALSE(external_delegate_->on_suggestions_returned_seen());
+}
+
+// Test that we will eventually return the credit card signin promo when there
+// are no credit card suggestions and the promo is active. See the tests in
+// AutofillExternalDelegateTest that test whether the promo is added.
+TEST_F(AutofillManagerTest, GetCreditCardSuggestions_OnlySigninPromo) {
+  // Enable the signin promo feature with no impression limit.
+  EnableCreditCardSigninPromoFeatureWithLimit(0);
+
+  // Make sure there are no credit cards.
+  personal_data_.ClearCreditCards();
+
+  // Set up our form data.
+  FormData form;
+  CreateTestCreditCardFormData(&form, true, false);
+  std::vector<FormData> forms(1, form);
+  FormsSeen(forms);
+  FormFieldData field = form.fields[1];
+
+  ON_CALL(autofill_client_, ShouldShowSigninPromo())
+      .WillByDefault(Return(true));
+  EXPECT_CALL(autofill_client_, ShouldShowSigninPromo()).Times(2);
+  EXPECT_TRUE(autofill_manager_->ShouldShowCreditCardSigninPromo(form, field));
+
+  // Autocomplete suggestions are not queried.
+  MockAutocompleteHistoryManager* m = RecreateMockAutocompleteHistoryManager();
+  EXPECT_CALL(*m, OnGetAutocompleteSuggestions(_, _, _, _)).Times(0);
+
+  GetAutofillSuggestions(form, field);
+
+  // Test that we sent no values to the external delegate. It will add the promo
+  // before passing along the results.
+  external_delegate_->CheckNoSuggestions(kDefaultPageID);
+
+  EXPECT_TRUE(external_delegate_->on_suggestions_returned_seen());
 }
 
 // Test that we return a warning explaining that credit card profile suggestions

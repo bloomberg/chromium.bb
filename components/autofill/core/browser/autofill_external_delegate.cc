@@ -33,7 +33,7 @@ AutofillExternalDelegate::AutofillExternalDelegate(AutofillManager* manager,
     : manager_(manager),
       driver_(driver),
       query_id_(0),
-      has_suggestion_(false),
+      has_autofill_suggestions_(false),
       has_shown_popup_for_current_edit_(false),
       should_show_scan_credit_card_(false),
       should_show_cc_signin_promo_(false),
@@ -67,15 +67,19 @@ void AutofillExternalDelegate::OnSuggestionsReturned(
   if (query_id != query_id_)
     return;
 
+  // The suggestions and warnings are "above the fold" and are separated from
+  // other menu items with a separator.
   std::vector<Suggestion> suggestions(input_suggestions);
-
   // Add or hide warnings as appropriate.
   ApplyAutofillWarnings(&suggestions);
 
 #if !defined(OS_ANDROID)
-  // Add a separator to go between the values and menu items.
-  suggestions.push_back(Suggestion());
-  suggestions.back().frontend_id = POPUP_ITEM_ID_SEPARATOR;
+  // If there are above the fold suggestions at this point, add a separator to
+  // go between the values and menu items.
+  if (!suggestions.empty()) {
+    suggestions.push_back(Suggestion());
+    suggestions.back().frontend_id = POPUP_ITEM_ID_SEPARATOR;
+  }
 #endif
 
   if (should_show_scan_credit_card_) {
@@ -93,24 +97,27 @@ void AutofillExternalDelegate::OnSuggestionsReturned(
 
   // Only include "Autofill Options" special menu item if we have Autofill
   // suggestions.
-  has_suggestion_ = false;
+  has_autofill_suggestions_ = false;
   for (size_t i = 0; i < suggestions.size(); ++i) {
     if (suggestions[i].frontend_id > 0) {
-      has_suggestion_ = true;
+      has_autofill_suggestions_ = true;
       break;
     }
   }
 
-  if (has_suggestion_)
+  if (has_autofill_suggestions_)
     ApplyAutofillOptions(&suggestions);
 
   // Append the credit card signin promo, if appropriate.
-  if (has_suggestion_ && should_show_cc_signin_promo_) {
+  if (should_show_cc_signin_promo_) {
 // No separator on Android.
 #if !defined(OS_ANDROID)
-    Suggestion separator;
-    separator.frontend_id = POPUP_ITEM_ID_SEPARATOR;
-    suggestions.push_back(separator);
+    // If there are autofill suggestions, the "Autofill options" row was added
+    // above. Add a separator between it and the signin promo.
+    if (has_autofill_suggestions_) {
+      suggestions.push_back(Suggestion());
+      suggestions.back().frontend_id = POPUP_ITEM_ID_SEPARATOR;
+    }
 #endif
 
     Suggestion signin_promo_suggestion(
@@ -123,10 +130,11 @@ void AutofillExternalDelegate::OnSuggestionsReturned(
   }
 
 #if !defined(OS_ANDROID)
-  // Remove the separator if it is the last element.
-  DCHECK_GT(suggestions.size(), 0U);
-  if (suggestions.back().frontend_id == POPUP_ITEM_ID_SEPARATOR)
+  // Remove the separator if there is one, and if it is the last element.
+  if (!suggestions.empty() &&
+      suggestions.back().frontend_id == POPUP_ITEM_ID_SEPARATOR) {
     suggestions.pop_back();
+  }
 #endif
 
   // If anything else is added to modify the values after inserting the data
@@ -161,10 +169,9 @@ void AutofillExternalDelegate::SetCurrentDataListValues(
 
 void AutofillExternalDelegate::OnPopupShown() {
   manager_->DidShowSuggestions(
-      has_suggestion_ && !has_shown_popup_for_current_edit_,
-      query_form_,
-      query_field_);
-  has_shown_popup_for_current_edit_ |= has_suggestion_;
+      has_autofill_suggestions_ && !has_shown_popup_for_current_edit_,
+      query_form_, query_field_);
+  has_shown_popup_for_current_edit_ |= has_autofill_suggestions_;
 }
 
 void AutofillExternalDelegate::OnPopupHidden() {

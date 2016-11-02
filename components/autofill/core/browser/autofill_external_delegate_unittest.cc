@@ -196,8 +196,9 @@ TEST_F(AutofillExternalDelegateUnitTest, TestExternalDelegateVirtualCalls) {
 }
 
 // Test that our external delegate properly adds the signin promo and its
-// separator in the popup items.
-TEST_F(AutofillExternalDelegateUnitTest, TestSigninPromoIsAdded) {
+// separator in the popup items when there are suggestions.
+TEST_F(AutofillExternalDelegateUnitTest,
+       TestSigninPromoIsAdded_WithSuggestions) {
   EXPECT_CALL(*autofill_manager_, ShouldShowCreditCardSigninPromo(_, _))
       .WillOnce(testing::Return(true));
 
@@ -237,6 +238,39 @@ TEST_F(AutofillExternalDelegateUnitTest, TestSigninPromoIsAdded) {
   // option.
   external_delegate_->DidAcceptSuggestion(autofill_item[0].value,
                                           autofill_item[0].frontend_id, 0);
+}
+
+// Test that our external delegate properly adds the signin promo and no
+// separator in the dropdown, when there are no suggestions.
+TEST_F(AutofillExternalDelegateUnitTest,
+       TestSigninPromoIsAdded_WithNoSuggestions) {
+  EXPECT_CALL(*autofill_manager_, ShouldShowCreditCardSigninPromo(_, _))
+      .WillOnce(testing::Return(true));
+
+  IssueOnQuery(kQueryId);
+
+  // The enums must be cast to ints to prevent compile errors on linux_rel.
+  auto element_ids = testing::ElementsAre(
+      static_cast<int>(POPUP_ITEM_ID_CREDIT_CARD_SIGNIN_PROMO));
+
+  EXPECT_CALL(autofill_client_,
+              ShowAutofillPopup(_, _, SuggestionVectorIdsAre(element_ids), _));
+
+  base::UserActionTester user_action_tester;
+
+  // This should call ShowAutofillPopup.
+  std::vector<Suggestion> items;
+  external_delegate_->OnSuggestionsReturned(kQueryId, items);
+  EXPECT_EQ(1, user_action_tester.GetActionCount(
+                   "Signin_Impression_FromAutofillDropdown"));
+
+  EXPECT_CALL(autofill_client_, StartSigninFlow());
+  EXPECT_CALL(autofill_client_, HideAutofillPopup());
+
+  // This should trigger a call to start the signin flow and hide the popup
+  // since we've selected the sign-in promo option.
+  external_delegate_->DidAcceptSuggestion(
+      base::string16(), POPUP_ITEM_ID_CREDIT_CARD_SIGNIN_PROMO, 0);
 }
 
 // Test that data list elements for a node will appear in the Autofill popup.

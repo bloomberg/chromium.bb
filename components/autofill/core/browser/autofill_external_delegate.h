@@ -132,7 +132,7 @@ class AutofillExternalDelegate : public AutofillPopupDelegate {
   gfx::RectF element_bounds_;
 
   // Does the popup include any Autofill profile or credit card suggestions?
-  bool has_suggestion_;
+  bool has_autofill_suggestions_;
 
   // Have we already shown Autofill suggestions for the field the user is
   // currently editing?  Used to keep track of state for metrics logging.
