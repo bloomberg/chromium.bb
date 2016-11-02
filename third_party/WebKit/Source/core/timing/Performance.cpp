@@ -63,6 +63,9 @@ Performance::Performance(LocalFrame* frame)
       m_observingLongTasks(false) {}
 
 Performance::~Performance() {
+  if (!frame()) {
+    return;
+  }
   LocalFrame* localRoot = frame()->localFrameRoot();
   if (m_observingLongTasks && localRoot) {
     m_observingLongTasks = false;
