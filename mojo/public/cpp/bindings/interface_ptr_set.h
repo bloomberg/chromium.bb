@@ -16,6 +16,10 @@
 namespace mojo {
 namespace internal {
 
+// TODO(blundell): This class should be rewritten to be structured
+// similarly to BindingSet if possible, with PtrSet owning its
+// Elements and those Elements calling back into PtrSet on connection
+// error.
 template <typename Interface, template <typename> class Ptr>
 class PtrSet {
  public:
@@ -55,7 +59,13 @@ class PtrSet {
 
     ~Element() {}
 
-    void Close() { ptr_.reset(); }
+    void Close() {
+      ptr_.reset();
+
+      // Resetting the interface ptr means that it won't call this object back
+      // on connection error anymore, so this object must delete itself now.
+      DeleteElement(this);
+    }
 
     Interface* get() { return ptr_.get(); }
 
