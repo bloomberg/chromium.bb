@@ -6,7 +6,7 @@
 
 #include "components/os_crypt/os_crypt.h"
 
-#if defined(USE_LIBSECRET)
+#if defined(USE_LIBSECRET) || defined(USE_KEYRING) || defined(USE_KWALLET)
 #include "components/os_crypt/os_crypt_mocker_linux.h"
 #endif
 
