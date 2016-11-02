@@ -743,14 +743,14 @@ Buffer* BufferManager::RequestBufferAccess(ContextState* context_state,
   DCHECK(context_state);
   ErrorState* error_state = context_state->GetErrorState();
 
-  std::string msg_tag = base::StringPrintf("bound to target 0x%04x", target);
   Buffer* buffer = GetBufferInfoForTarget(context_state, target);
-  if (!RequestBufferAccess(error_state, buffer, func_name, msg_tag.c_str())) {
+  if (!RequestBufferAccess(error_state, buffer, func_name,
+                           "bound to target 0x%04x", target)) {
     return nullptr;
   }
   if (!buffer->CheckRange(offset, size)) {
     std::string msg = base::StringPrintf(
-        "%s : offset/size out of range", msg_tag.c_str());
+        "bound to target 0x%04x : offset/size out of range", target);
     ERRORSTATE_SET_GL_ERROR(
         error_state, GL_INVALID_VALUE, func_name, msg.c_str());
     return nullptr;
@@ -764,31 +764,24 @@ Buffer* BufferManager::RequestBufferAccess(ContextState* context_state,
   DCHECK(context_state);
   ErrorState* error_state = context_state->GetErrorState();
 
-  std::string msg_tag = base::StringPrintf("bound to target 0x%04x", target);
   Buffer* buffer = GetBufferInfoForTarget(context_state, target);
   return RequestBufferAccess(
-      error_state, buffer, func_name, msg_tag.c_str()) ? buffer : nullptr;
+      error_state, buffer, func_name,
+      "bound to target 0x%04x", target) ? buffer : nullptr;
 }
 
 bool BufferManager::RequestBufferAccess(ErrorState* error_state,
                                         Buffer* buffer,
                                         const char* func_name,
-                                        const char* message_tag) {
+                                        const char* error_message_format, ...) {
   DCHECK(error_state);
 
-  if (!buffer || buffer->IsDeleted()) {
-    std::string msg = base::StringPrintf("%s : no buffer", message_tag);
-    ERRORSTATE_SET_GL_ERROR(error_state, GL_INVALID_OPERATION, func_name,
-                            msg.c_str());
-    return false;
-  }
-  if (buffer->GetMappedRange()) {
-    std::string msg = base::StringPrintf("%s : buffer is mapped", message_tag);
-    ERRORSTATE_SET_GL_ERROR(error_state, GL_INVALID_OPERATION, func_name,
-                            msg.c_str());
-    return false;
-  }
-  return true;
+  va_list varargs;
+  va_start(varargs, error_message_format);
+  bool result = RequestBufferAccessV(error_state, buffer, func_name,
+                                     error_message_format, varargs);
+  va_end(varargs);
+  return result;
 }
 
 bool BufferManager::RequestBufferAccess(ErrorState* error_state,
@@ -796,13 +789,13 @@ bool BufferManager::RequestBufferAccess(ErrorState* error_state,
                                         GLintptr offset,
                                         GLsizeiptr size,
                                         const char* func_name,
-                                        const char* message_tag) {
-  if (!RequestBufferAccess(error_state, buffer, func_name, message_tag)) {
+                                        const char* error_message) {
+  if (!RequestBufferAccess(error_state, buffer, func_name, error_message)) {
     return false;
   }
   if (!buffer->CheckRange(offset, size)) {
     std::string msg = base::StringPrintf(
-        "%s : offset/size out of range", message_tag);
+        "%s : offset/size out of range", error_message);
     ERRORSTATE_SET_GL_ERROR(
         error_state, GL_INVALID_OPERATION, func_name, msg.c_str());
     return false;
@@ -859,6 +852,31 @@ void BufferManager::IncreaseMappedBufferCount() {
 void BufferManager::DecreaseMappedBufferCount() {
   DCHECK_LT(0u, mapped_buffer_count_);
   mapped_buffer_count_--;
+}
+
+bool BufferManager::RequestBufferAccessV(ErrorState* error_state,
+                                         Buffer* buffer,
+                                         const char* func_name,
+                                         const char* error_message_format,
+                                         va_list varargs) {
+  DCHECK(error_state);
+
+  if (!buffer || buffer->IsDeleted()) {
+    std::string message_tag = base::StringPrintV(error_message_format, varargs);
+    std::string msg = base::StringPrintf("%s : no buffer", message_tag.c_str());
+    ERRORSTATE_SET_GL_ERROR(error_state, GL_INVALID_OPERATION, func_name,
+                            msg.c_str());
+    return false;
+  }
+  if (buffer->GetMappedRange()) {
+    std::string message_tag = base::StringPrintV(error_message_format, varargs);
+    std::string msg = base::StringPrintf("%s : buffer is mapped",
+                                         message_tag.c_str());
+    ERRORSTATE_SET_GL_ERROR(error_state, GL_INVALID_OPERATION, func_name,
+                            msg.c_str());
+    return false;
+  }
+  return true;
 }
 
 }  // namespace gles2

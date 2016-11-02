@@ -202,10 +202,10 @@ bool VertexAttribManager::ValidateBindings(
        it != enabled_vertex_attribs_.end(); ++it) {
     VertexAttrib* attrib = *it;
     Buffer* buffer = attrib->buffer();
-    std::string msg_tag = base::StringPrintf(
-        "attached to enabled attrib %u", attrib->index());
     if (!buffer_manager->RequestBufferAccess(
-            error_state, buffer, function_name, msg_tag.c_str())) {
+            error_state, buffer, function_name,
+            "attached to enabled attrib %u",
+            attrib->index())) {
       return false;
     }
     const Program::VertexAttrib* attrib_info =
