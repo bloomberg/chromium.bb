@@ -316,7 +316,8 @@ NSAttributedString* GetAttributedString(
     cursorTrackingArea_.reset([[CrTrackingArea alloc]
         initWithRect:NSZeroRect
              options:NSTrackingMouseMoved | NSTrackingCursorUpdate |
-                     NSTrackingActiveInActiveApp | NSTrackingInVisibleRect
+                     NSTrackingActiveInActiveApp | NSTrackingInVisibleRect |
+                     NSTrackingMouseEnteredAndExited
                owner:self
             userInfo:nil]);
     [self addTrackingArea:cursorTrackingArea_.get()];
