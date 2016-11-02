@@ -8,12 +8,8 @@ namespace ui {
 
 DisplayCompositor::DisplayCompositor(
     cc::mojom::DisplayCompositorClientPtr client)
-    : client_(std::move(client)), next_client_id_(1u) {
+    : client_(std::move(client)) {
   manager_.AddObserver(this);
-}
-
-uint32_t DisplayCompositor::GenerateNextClientId() {
-  return next_client_id_++;
 }
 
 void DisplayCompositor::ReturnSurfaceReference(

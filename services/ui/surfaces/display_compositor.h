@@ -32,8 +32,6 @@ class DisplayCompositor : public cc::SurfaceObserver,
  public:
   explicit DisplayCompositor(cc::mojom::DisplayCompositorClientPtr client);
 
-  uint32_t GenerateNextClientId();
-
   void ReturnSurfaceReference(const cc::SurfaceSequence& sequence);
 
   cc::SurfaceManager* manager() { return &manager_; }
@@ -50,7 +48,6 @@ class DisplayCompositor : public cc::SurfaceObserver,
                         bool* changed) override;
 
   cc::mojom::DisplayCompositorClientPtr client_;
-  uint32_t next_client_id_;
   cc::SurfaceManager manager_;
 
   DISALLOW_COPY_AND_ASSIGN(DisplayCompositor);
