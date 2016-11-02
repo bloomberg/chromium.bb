@@ -210,7 +210,7 @@ def filter_has_accessor_configuration(attributes):
             attribute['should_be_exposed_to_script']]
 
 
-def filter_has_attribute_configuration(attributes):
+def filter_has_data_attribute_configuration(attributes):
     return [attribute for attribute in attributes if
             not (attribute['exposed_test'] or
                  attribute['secure_context_test'] or
@@ -218,6 +218,18 @@ def filter_has_attribute_configuration(attributes):
                  attribute['runtime_enabled_function']) and
             attribute['is_data_type_property'] and
             attribute['should_be_exposed_to_script']]
+
+
+def is_lazy_data_attribute(attribute):
+    return attribute['constructor_type'] and not attribute['needs_constructor_getter_callback']
+
+
+def filter_has_attribute_configuration(attributes):
+    return [attribute for attribute in filter_has_data_attribute_configuration(attributes) if not is_lazy_data_attribute(attribute)]
+
+
+def filter_has_lazy_data_attribute_configuration(attributes):
+    return [attribute for attribute in filter_has_data_attribute_configuration(attributes) if is_lazy_data_attribute(attribute)]
 
 
 def filter_origin_trial_enabled(attributes):
@@ -236,6 +248,7 @@ def filter_purely_runtime_enabled(attributes):
 def attribute_filters():
     return {'has_accessor_configuration': filter_has_accessor_configuration,
             'has_attribute_configuration': filter_has_attribute_configuration,
+            'has_lazy_data_attribute_configuration': filter_has_lazy_data_attribute_configuration,
             'origin_trial_enabled_attributes': filter_origin_trial_enabled,
             'purely_runtime_enabled_attributes': filter_purely_runtime_enabled}
 

@@ -102,6 +102,20 @@ class CORE_EXPORT V8DOMConfiguration final {
                                v8::Local<v8::Object> prototype,
                                const AttributeConfiguration&);
 
+  // A lazy data attribute is like one of the attributes added via
+  // installAttributes(), however, V8 will attempt to replace it with the value
+  // returned by the getter callback, turning it into a real data value.
+  //
+  // This also means that the AttributeConfiguration must not specify a setter,
+  // nor any non-default attributes or access control settings.
+  static void installLazyDataAttributes(
+      v8::Isolate*,
+      const DOMWrapperWorld&,
+      v8::Local<v8::ObjectTemplate> instanceTemplate,
+      v8::Local<v8::ObjectTemplate> prototypeTemplate,
+      const AttributeConfiguration*,
+      size_t attributeCount);
+
   // AccessorConfiguration translates into calls to SetAccessorProperty()
   // on prototype ObjectTemplate.
   struct AccessorConfiguration {

@@ -119,6 +119,43 @@ void installAttributeInternal(
     NOTREACHED();
 }
 
+void installLazyDataAttributeInternal(
+    v8::Isolate* isolate,
+    v8::Local<v8::ObjectTemplate> instanceTemplate,
+    v8::Local<v8::ObjectTemplate> prototypeTemplate,
+    const V8DOMConfiguration::AttributeConfiguration& attribute,
+    const DOMWrapperWorld& world) {
+  if (attribute.exposeConfiguration ==
+          V8DOMConfiguration::OnlyExposedToPrivateScript &&
+      !world.isPrivateScriptIsolatedWorld())
+    return;
+
+  v8::Local<v8::Name> name = v8AtomicString(isolate, attribute.name);
+  v8::AccessorNameGetterCallback getter = attribute.getter;
+  DCHECK(!attribute.setter);
+  DCHECK(!attribute.getterForMainWorld);
+  DCHECK(!attribute.setterForMainWorld);
+  v8::Local<v8::Value> data =
+      v8::External::New(isolate, const_cast<WrapperTypeInfo*>(attribute.data));
+  DCHECK(static_cast<v8::AccessControl>(attribute.settings) == v8::DEFAULT);
+
+  DCHECK(attribute.propertyLocationConfiguration);
+  if (attribute.propertyLocationConfiguration &
+      V8DOMConfiguration::OnInstance) {
+    instanceTemplate->SetLazyDataProperty(
+        name, getter, data,
+        static_cast<v8::PropertyAttribute>(attribute.attribute));
+  }
+  if (attribute.propertyLocationConfiguration &
+      V8DOMConfiguration::OnPrototype) {
+    prototypeTemplate->SetLazyDataProperty(
+        name, getter, data,
+        static_cast<v8::PropertyAttribute>(attribute.attribute));
+  }
+  if (attribute.propertyLocationConfiguration & V8DOMConfiguration::OnInterface)
+    NOTREACHED();
+}
+
 template <class FunctionOrTemplate>
 v8::Local<FunctionOrTemplate> createAccessorFunctionOrTemplate(
     v8::Isolate*,
@@ -421,6 +458,19 @@ void V8DOMConfiguration::installAttribute(
     v8::Local<v8::Object> prototype,
     const AttributeConfiguration& attribute) {
   installAttributeInternal(isolate, instance, prototype, attribute, world);
+}
+
+void V8DOMConfiguration::installLazyDataAttributes(
+    v8::Isolate* isolate,
+    const DOMWrapperWorld& world,
+    v8::Local<v8::ObjectTemplate> instanceTemplate,
+    v8::Local<v8::ObjectTemplate> prototypeTemplate,
+    const AttributeConfiguration* attributes,
+    size_t attributeCount) {
+  for (size_t i = 0; i < attributeCount; ++i) {
+    installLazyDataAttributeInternal(isolate, instanceTemplate,
+                                     prototypeTemplate, attributes[i], world);
+  }
 }
 
 void V8DOMConfiguration::installAccessors(
