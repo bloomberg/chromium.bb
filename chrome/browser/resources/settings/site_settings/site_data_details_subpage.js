@@ -49,7 +49,8 @@ Polymer({
     if (!this.siteTitle_)
       return;
     this.loadCookies().then(this.onCookiesLoaded_.bind(this));
-    this.pageTitle = this.siteTitle_;
+    this.pageTitle = loadTimeData.getStringF('siteSettingsCookieSubpage',
+        this.siteTitle_);
   },
 
   /**

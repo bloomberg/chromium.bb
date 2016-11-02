@@ -1823,9 +1823,6 @@
   <message name="IDS_SETTINGS_SITE_SETTINGS_COOKIE_HEADER" desc="A header for the list of showing all sites and their data.">
     All cookies and site data
   </message>
-  <message name="IDS_SETTINGS_SITE_SETTINGS_COOKIE_DIALOG" desc="A label for cookie dialog, stating which site we're showing data for.">
-    <ph name="SITE">$1<ex>www.example.com</ex></ph> locally stored data
-  </message>
   <message name="IDS_SETTINGS_SITE_SETTINGS_COOKIE_REMOVE" desc="Label for the button to delete a single site cookie.">
     Remove
   </message>
@@ -1837,6 +1834,9 @@
   </message>
   <message name="IDS_SETTINGS_SITE_SETTINGS_COOKIE_REMOVE_DIALOG_TITLE" desc="Title of the dialog that warns about deleting all site data.">
     Clear site data
+  </message>
+  <message name="IDS_SETTINGS_SITE_SETTINGS_COOKIE_SUBPAGE" desc="A label for cookie subpage, stating which site we're showing data for.">
+    <ph name="SITE">$1<ex>www.example.com</ex></ph> locally stored data
   </message>
   <message name="IDS_SETTINGS_SITE_SETTINGS_SITE_REMOVE_DIALOG_TITLE" desc="Title of the dialog that warns about deleting all site data and resetting permissions.">
     Clear and reset site
