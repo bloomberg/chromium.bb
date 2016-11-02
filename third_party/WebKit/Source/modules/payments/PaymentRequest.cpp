@@ -5,9 +5,9 @@
 #include "modules/payments/PaymentRequest.h"
 
 #include "bindings/core/v8/ExceptionState.h"
-#include "bindings/core/v8/JSONValuesForV8.h"
 #include "bindings/core/v8/ScriptPromiseResolver.h"
 #include "bindings/core/v8/ScriptState.h"
+#include "bindings/core/v8/V8StringResource.h"
 #include "bindings/modules/v8/V8PaymentDetails.h"
 #include "core/EventTypeNames.h"
 #include "core/dom/DOMException.h"
@@ -366,21 +366,22 @@ void validateAndConvertPaymentMethodData(
 
     String stringifiedData = "";
     if (pmd.hasData() && !pmd.data().isEmpty()) {
-      std::unique_ptr<JSONValue> value =
-          toJSONValue(pmd.data().context(), pmd.data().v8Value());
-      if (!value) {
+      if (!pmd.data().v8Value()->IsObject() ||
+          pmd.data().v8Value()->IsArray()) {
+        exceptionState.throwTypeError(
+            "Data should be a JSON-serializable object");
+        return;
+      }
+
+      v8::MaybeLocal<v8::String> value = v8::JSON::Stringify(
+          pmd.data().context(), pmd.data().v8Value().As<v8::Object>());
+      if (value.IsEmpty()) {
         exceptionState.throwTypeError(
             "Unable to parse payment method specific data");
         return;
       }
-      if (!value->isNull()) {
-        if (value->getType() != JSONValue::TypeObject) {
-          exceptionState.throwTypeError(
-              "Data should be a JSON-serializable object");
-          return;
-        }
-        stringifiedData = JSONObject::cast(value.get())->toJSONString();
-      }
+      stringifiedData = v8StringToWebCoreString<String>(value.ToLocalChecked(),
+                                                        DoNotExternalize);
     }
     methodData->append(
         PaymentRequest::MethodData(pmd.supportedMethods(), stringifiedData));
