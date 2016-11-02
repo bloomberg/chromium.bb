@@ -2,20 +2,20 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-package org.chromium.chrome.browser.util;
+package org.chromium.base;
 
-import org.chromium.base.test.util.Feature;
 import org.junit.Assert;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.junit.runners.BlockJUnit4ClassRunner;
+
+import org.chromium.base.test.util.Feature;
 
 /**
  * Tests for NonThreadSafe.
  */
 @RunWith(BlockJUnit4ClassRunner.class)
 public class NonThreadSafeTest {
-
     /**
      * Test for creating and using on the same thread
      */
