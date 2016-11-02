@@ -47,7 +47,7 @@ class FakeSignalStrategy : public SignalStrategy,
 
   // Simulate IQ messages re-ordering by swapping the delivery order of
   // next pair of messages.
-  void SimulatePackgeReordering();
+  void SimulateMessageReordering();
 
   // SignalStrategy interface.
   void Connect() override;

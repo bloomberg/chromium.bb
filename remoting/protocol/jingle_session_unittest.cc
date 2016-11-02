@@ -330,7 +330,7 @@ TEST_F(JingleSessionTest, ConnectWithMultistep) {
 TEST_F(JingleSessionTest, ConnectWithOutOfOrderIqs) {
   CreateSessionManagers(1, FakeAuthenticator::ACCEPT);
   InitiateConnection(1, FakeAuthenticator::ACCEPT, false);
-  client_signal_strategy_->SimulatePackgeReordering();
+  client_signal_strategy_->SimulateMessageReordering();
 
   // Verify that out of order transport messages are received correctly.
   host_transport_.send_transport_info_callback().Run(CreateTransportInfo("1"));
@@ -347,7 +347,7 @@ TEST_F(JingleSessionTest, ConnectWithOutOfOrderIqs) {
 TEST_F(JingleSessionTest, ConnectWithOutOfOrderIqsDestroyOnFirstMessage) {
   CreateSessionManagers(1, FakeAuthenticator::ACCEPT);
   InitiateConnection(1, FakeAuthenticator::ACCEPT, false);
-  client_signal_strategy_->SimulatePackgeReordering();
+  client_signal_strategy_->SimulateMessageReordering();
 
   // Verify that out of order transport messages are received correctly.
   host_transport_.send_transport_info_callback().Run(CreateTransportInfo("1"));

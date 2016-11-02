@@ -63,7 +63,7 @@ void FakeSignalStrategy::SetLocalJid(const std::string& jid) {
   jid_ = jid;
 }
 
-void FakeSignalStrategy::SimulatePackgeReordering() {
+void FakeSignalStrategy::SimulateMessageReordering() {
   DCHECK(CalledOnValidThread());
   simulate_reorder_ = true;
 }
