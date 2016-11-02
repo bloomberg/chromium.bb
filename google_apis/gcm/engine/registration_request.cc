@@ -45,11 +45,12 @@ const char kDeviceRegistrationError[] = "PHONE_REGISTRATION_ERROR";
 const char kAuthenticationFailed[] = "AUTHENTICATION_FAILED";
 const char kInvalidSender[] = "INVALID_SENDER";
 const char kInvalidParameters[] = "INVALID_PARAMETERS";
+const char kInternalServerError[] = "InternalServerError";
+const char kQuotaExceeded[] = "QUOTA_EXCEEDED";
+const char kTooManyRegistrations[] = "TOO_MANY_REGISTRATIONS";
 
 // Gets correct status from the error message.
 RegistrationRequest::Status GetStatusFromError(const std::string& error) {
-  // TODO(fgorski): Improve error parsing in case there is nore then just an
-  // Error=ERROR_STRING in response.
   if (error.find(kDeviceRegistrationError) != std::string::npos)
     return RegistrationRequest::DEVICE_REGISTRATION_ERROR;
   if (error.find(kAuthenticationFailed) != std::string::npos)
@@ -58,6 +59,13 @@ RegistrationRequest::Status GetStatusFromError(const std::string& error) {
     return RegistrationRequest::INVALID_SENDER;
   if (error.find(kInvalidParameters) != std::string::npos)
     return RegistrationRequest::INVALID_PARAMETERS;
+  if (error.find(kInternalServerError) != std::string::npos)
+    return RegistrationRequest::INTERNAL_SERVER_ERROR;
+  if (error.find(kQuotaExceeded) != std::string::npos)
+    return RegistrationRequest::QUOTA_EXCEEDED;
+  if (error.find(kTooManyRegistrations) != std::string::npos)
+    return RegistrationRequest::TOO_MANY_REGISTRATIONS;
+  // Should not be reached, unless the server adds new error types.
   return RegistrationRequest::UNKNOWN_ERROR;
 }
 
@@ -70,10 +78,14 @@ bool ShouldRetryWithStatus(RegistrationRequest::Status status) {
     case RegistrationRequest::URL_FETCHING_FAILED:
     case RegistrationRequest::HTTP_NOT_OK:
     case RegistrationRequest::NO_RESPONSE_BODY:
+    case RegistrationRequest::RESPONSE_PARSING_FAILED:
+    case RegistrationRequest::INTERNAL_SERVER_ERROR:
       return true;
     case RegistrationRequest::SUCCESS:
     case RegistrationRequest::INVALID_PARAMETERS:
     case RegistrationRequest::INVALID_SENDER:
+    case RegistrationRequest::QUOTA_EXCEEDED:
+    case RegistrationRequest::TOO_MANY_REGISTRATIONS:
     case RegistrationRequest::REACHED_MAX_RETRIES:
       return false;
     case RegistrationRequest::STATUS_COUNT:
@@ -199,42 +211,41 @@ void RegistrationRequest::RetryWithBackoff() {
 RegistrationRequest::Status RegistrationRequest::ParseResponse(
     const net::URLFetcher* source, std::string* token) {
   if (!source->GetStatus().is_success()) {
-    LOG(ERROR) << "URL fetching failed.";
+    DVLOG(1) << "Registration URL fetching failed.";
     return URL_FETCHING_FAILED;
   }
 
   std::string response;
   if (!source->GetResponseAsString(&response)) {
-    LOG(ERROR) << "Failed to parse registration response as a string.";
+    DVLOG(1) << "Failed to get registration response body.";
     return NO_RESPONSE_BODY;
   }
 
-  if (source->GetResponseCode() == net::HTTP_OK) {
-    size_t token_pos = response.find(kTokenPrefix);
-    if (token_pos != std::string::npos) {
-      *token = response.substr(token_pos + arraysize(kTokenPrefix) - 1);
-      return SUCCESS;
-    }
-  }
-
-  // If we are able to parse a meaningful known error, let's do so. Some errors
-  // will have HTTP_BAD_REQUEST, some will have HTTP_OK response code.
+  // If we are able to parse a meaningful known error, let's do so. Note that
+  // some errors will have HTTP_OK response code!
   size_t error_pos = response.find(kErrorPrefix);
   if (error_pos != std::string::npos) {
     std::string error = response.substr(
         error_pos + arraysize(kErrorPrefix) - 1);
+    DVLOG(1) << "Registration response error message: " << error;
     return GetStatusFromError(error);
   }
 
   // If we cannot tell what the error is, but at least we know response code was
   // not OK.
   if (source->GetResponseCode() != net::HTTP_OK) {
-    DLOG(ERROR) << "URL fetching HTTP response code is not OK. It is "
-                << source->GetResponseCode();
+    DVLOG(1) << "Registration HTTP response code not OK: "
+             << source->GetResponseCode();
     return HTTP_NOT_OK;
   }
 
-  return UNKNOWN_ERROR;
+  size_t token_pos = response.find(kTokenPrefix);
+  if (token_pos != std::string::npos) {
+    *token = response.substr(token_pos + arraysize(kTokenPrefix) - 1);
+    return SUCCESS;
+  }
+
+  return RESPONSE_PARSING_FAILED;
 }
 
 void RegistrationRequest::OnURLFetchComplete(const net::URLFetcher* source) {

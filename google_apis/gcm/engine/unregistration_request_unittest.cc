@@ -197,6 +197,17 @@ TEST_F(GCMUnregistrationRequestTest, InvalidParametersError) {
   EXPECT_EQ(UnregistrationRequest::INVALID_PARAMETERS, status_);
 }
 
+TEST_F(GCMUnregistrationRequestTest, DeviceRegistrationError) {
+  CreateRequest();
+  request_->Start();
+
+  SetResponse(net::HTTP_OK, "Error=PHONE_REGISTRATION_ERROR");
+  CompleteFetch();
+
+  EXPECT_TRUE(callback_called_);
+  EXPECT_EQ(UnregistrationRequest::DEVICE_REGISTRATION_ERROR, status_);
+}
+
 TEST_F(GCMUnregistrationRequestTest, UnkwnownError) {
   CreateRequest();
   request_->Start();

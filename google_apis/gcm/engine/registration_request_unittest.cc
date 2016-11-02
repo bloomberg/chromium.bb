@@ -193,6 +193,24 @@ TEST_F(GCMRegistrationRequestTest, ResponseParsing) {
   EXPECT_EQ("2501", registration_id_);
 }
 
+TEST_F(GCMRegistrationRequestTest, ResponseParsingFailed) {
+  CreateRequest("sender1,sender2");
+  request_->Start();
+
+  SetResponse(net::HTTP_OK, "tok");  // Simulate truncated message.
+  CompleteFetch();
+
+  EXPECT_FALSE(callback_called_);
+
+  // Ensuring a retry happened and succeeds.
+  SetResponse(net::HTTP_OK, "token=2501");
+  CompleteFetch();
+
+  EXPECT_TRUE(callback_called_);
+  EXPECT_EQ(RegistrationRequest::SUCCESS, status_);
+  EXPECT_EQ("2501", registration_id_);
+}
+
 TEST_F(GCMRegistrationRequestTest, ResponseHttpStatusNotOK) {
   CreateRequest("sender1,sender2");
   request_->Start();
@@ -270,6 +288,24 @@ TEST_F(GCMRegistrationRequestTest, ResponseAuthenticationError) {
   EXPECT_EQ("2501", registration_id_);
 }
 
+TEST_F(GCMRegistrationRequestTest, ResponseInternalServerError) {
+  CreateRequest("sender1,sender2");
+  request_->Start();
+
+  SetResponse(net::HTTP_INTERNAL_SERVER_ERROR, "Error=InternalServerError");
+  CompleteFetch();
+
+  EXPECT_FALSE(callback_called_);
+
+  // Ensuring a retry happened and succeeds.
+  SetResponse(net::HTTP_OK, "token=2501");
+  CompleteFetch();
+
+  EXPECT_TRUE(callback_called_);
+  EXPECT_EQ(RegistrationRequest::SUCCESS, status_);
+  EXPECT_EQ("2501", registration_id_);
+}
+
 TEST_F(GCMRegistrationRequestTest, ResponseInvalidParameters) {
   CreateRequest("sender1,sender2");
   request_->Start();
@@ -303,6 +339,30 @@ TEST_F(GCMRegistrationRequestTest, ResponseInvalidSenderBadRequest) {
 
   EXPECT_TRUE(callback_called_);
   EXPECT_EQ(RegistrationRequest::INVALID_SENDER, status_);
+  EXPECT_EQ(std::string(), registration_id_);
+}
+
+TEST_F(GCMRegistrationRequestTest, ResponseQuotaExceeded) {
+  CreateRequest("sender1");
+  request_->Start();
+
+  SetResponse(net::HTTP_SERVICE_UNAVAILABLE, "Error=QUOTA_EXCEEDED");
+  CompleteFetch();
+
+  EXPECT_TRUE(callback_called_);
+  EXPECT_EQ(RegistrationRequest::QUOTA_EXCEEDED, status_);
+  EXPECT_EQ(std::string(), registration_id_);
+}
+
+TEST_F(GCMRegistrationRequestTest, ResponseTooManyRegistrations) {
+  CreateRequest("sender1");
+  request_->Start();
+
+  SetResponse(net::HTTP_OK, "Error=TOO_MANY_REGISTRATIONS");
+  CompleteFetch();
+
+  EXPECT_TRUE(callback_called_);
+  EXPECT_EQ(RegistrationRequest::TOO_MANY_REGISTRATIONS, status_);
   EXPECT_EQ(std::string(), registration_id_);
 }
 

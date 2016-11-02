@@ -40,8 +40,7 @@ class GCM_EXPORT UnregistrationRequest : public net::URLFetcherDelegate {
     URL_FETCHING_FAILED,      // URL fetching failed.
     NO_RESPONSE_BODY,         // No response body.
     RESPONSE_PARSING_FAILED,  // Failed to parse a meaningful output from
-                              // response
-                              // body.
+                              // response body.
     INCORRECT_APP_ID,         // App ID returned by the fetcher does not match
                               // request.
     INVALID_PARAMETERS,       // Request parameters were invalid.
@@ -50,6 +49,7 @@ class GCM_EXPORT UnregistrationRequest : public net::URLFetcherDelegate {
     HTTP_NOT_OK,              // HTTP response code was not OK.
     UNKNOWN_ERROR,            // Unknown error.
     REACHED_MAX_RETRIES,      // Reached maximum number of retries.
+    DEVICE_REGISTRATION_ERROR,// Chrome is not properly registered.
     // NOTE: Always keep this entry at the end. Add new status types only
     // immediately above this line. Make sure to update the corresponding
     // histogram enum accordingly.
@@ -96,7 +96,7 @@ class GCM_EXPORT UnregistrationRequest : public net::URLFetcherDelegate {
 
     // Parses the HTTP response. It is called after
     // UnregistrationRequest::ParseResponse to proceed the parsing.
-    virtual Status ParseResponse(const net::URLFetcher* source) = 0;
+    virtual Status ParseResponse(const std::string& response) = 0;
 
     // Reports various UMAs, including status, retry count and completion time.
     virtual void ReportUMAs(Status status,

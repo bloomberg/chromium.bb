@@ -106,6 +106,14 @@ std::string GetRegistrationStatusString(
       return "NO_RESPONSE_BODY";
     case gcm::RegistrationRequest::REACHED_MAX_RETRIES:
       return "REACHED_MAX_RETRIES";
+    case gcm::RegistrationRequest::RESPONSE_PARSING_FAILED:
+      return "RESPONSE_PARSING_FAILED";
+    case gcm::RegistrationRequest::INTERNAL_SERVER_ERROR:
+      return "INTERNAL_SERVER_ERROR";
+    case gcm::RegistrationRequest::QUOTA_EXCEEDED:
+      return "QUOTA_EXCEEDED";
+    case gcm::RegistrationRequest::TOO_MANY_REGISTRATIONS:
+      return "TOO_MANY_REGISTRATIONS";
     case gcm::RegistrationRequest::STATUS_COUNT:
       NOTREACHED();
       break;
@@ -140,6 +148,8 @@ std::string GetUnregistrationStatusString(
       return "UNKNOWN_ERROR";
     case gcm::UnregistrationRequest::REACHED_MAX_RETRIES:
       return "REACHED_MAX_RETRIES";
+    case gcm::UnregistrationRequest::DEVICE_REGISTRATION_ERROR:
+      return "DEVICE_REGISTRATION_ERROR";
     case gcm::UnregistrationRequest::UNREGISTRATION_STATUS_COUNT:
       NOTREACHED();
       break;

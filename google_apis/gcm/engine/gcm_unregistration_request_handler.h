@@ -21,7 +21,7 @@ class GCM_EXPORT GCMUnregistrationRequestHandler :
   // UnregistrationRequest::CustomRequestHandler overrides:
   void BuildRequestBody(std::string* body) override;
   UnregistrationRequest::Status ParseResponse(
-      const net::URLFetcher* source) override;
+      const std::string& response) override;
   void ReportUMAs(UnregistrationRequest::Status status,
                   int retry_count,
                   base::TimeDelta complete_time) override;
