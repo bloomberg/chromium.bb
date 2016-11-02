@@ -64,7 +64,7 @@ class ScriptInjector {
   virtual PermissionsData::AccessType CanExecuteOnFrame(
       const InjectionHost* injection_host,
       blink::WebLocalFrame* web_frame,
-      int tab_id) const = 0;
+      int tab_id) = 0;
 
   // Returns the javascript sources to inject at the given |run_location|.
   // Only called if ShouldInjectJs() is true.

@@ -50,7 +50,7 @@ class UserScriptInjector : public ScriptInjector,
   PermissionsData::AccessType CanExecuteOnFrame(
       const InjectionHost* injection_host,
       blink::WebLocalFrame* web_frame,
-      int tab_id) const override;
+      int tab_id) override;
   std::vector<blink::WebScriptSource> GetJsSources(
       UserScript::RunLocation run_location,
       std::set<std::string>* executing_scripts,

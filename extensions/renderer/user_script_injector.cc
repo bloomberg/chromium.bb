@@ -164,7 +164,7 @@ bool UserScriptInjector::ShouldInjectCss(
 PermissionsData::AccessType UserScriptInjector::CanExecuteOnFrame(
     const InjectionHost* injection_host,
     blink::WebLocalFrame* web_frame,
-    int tab_id) const {
+    int tab_id) {
   // There is no harm in allowing the injection when the script is gone,
   // because there is nothing to inject.
   if (!script_)

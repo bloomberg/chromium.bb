@@ -26,16 +26,9 @@
 namespace extensions {
 
 ProgrammaticScriptInjector::ProgrammaticScriptInjector(
-    const ExtensionMsg_ExecuteCode_Params& params,
-    content::RenderFrame* render_frame)
+    const ExtensionMsg_ExecuteCode_Params& params)
     : params_(new ExtensionMsg_ExecuteCode_Params(params)),
-      url_(
-          ScriptContext::GetDataSourceURLForFrame(render_frame->GetWebFrame())),
       finished_(false) {
-  if (url_.SchemeIs(url::kAboutScheme)) {
-    origin_for_about_error_ =
-        render_frame->GetWebFrame()->getSecurityOrigin().toString().utf8();
-  }
 }
 
 ProgrammaticScriptInjector::~ProgrammaticScriptInjector() {
@@ -73,7 +66,15 @@ bool ProgrammaticScriptInjector::ShouldInjectCss(
 PermissionsData::AccessType ProgrammaticScriptInjector::CanExecuteOnFrame(
     const InjectionHost* injection_host,
     blink::WebLocalFrame* frame,
-    int tab_id) const {
+    int tab_id) {
+  // Note: we calculate url_ now and not in the constructor because with
+  // PlzNavigate we won't have the URL at that point when loads start. The
+  // browser issues the request and only when it has a response does the
+  // renderer see the provisional data source which the method below uses.
+  url_ = ScriptContext::GetDataSourceURLForFrame(frame);
+  if (url_.SchemeIs(url::kAboutScheme)) {
+    origin_for_about_error_ = frame->getSecurityOrigin().toString().utf8();
+  }
   GURL effective_document_url = ScriptContext::GetEffectiveDocumentURL(
       frame, frame->document().url(), params_->match_about_blank);
   if (params_->is_web_view) {

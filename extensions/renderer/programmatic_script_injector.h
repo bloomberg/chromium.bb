@@ -23,8 +23,8 @@ namespace extensions {
 // A ScriptInjector to handle tabs.executeScript().
 class ProgrammaticScriptInjector : public ScriptInjector {
  public:
-  ProgrammaticScriptInjector(const ExtensionMsg_ExecuteCode_Params& params,
-                             content::RenderFrame* render_frame);
+  explicit ProgrammaticScriptInjector(
+      const ExtensionMsg_ExecuteCode_Params& params);
   ~ProgrammaticScriptInjector() override;
 
  private:
@@ -42,7 +42,7 @@ class ProgrammaticScriptInjector : public ScriptInjector {
   PermissionsData::AccessType CanExecuteOnFrame(
       const InjectionHost* injection_host,
       blink::WebLocalFrame* web_frame,
-      int tab_id) const override;
+      int tab_id) override;
   std::vector<blink::WebScriptSource> GetJsSources(
       UserScript::RunLocation run_location,
       std::set<std::string>* executing_scripts,
