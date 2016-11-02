@@ -7,6 +7,7 @@
 
 #include <stddef.h>
 
+#include <memory>
 #include <vector>
 
 #include "base/macros.h"
@@ -34,7 +35,7 @@ enum class MatchingAlgorithm {
   ALWAYS_PREFIX_SEARCH,
 };
 
-typedef std::vector<query_parser::QueryWord> QueryWordVector;
+using QueryWordVector = std::vector<query_parser::QueryWord>;
 
 // QueryNode is used by QueryParser to represent the elements that constitute a
 // query. While QueryNode is exposed by way of ParseQuery, it really isn't meant
@@ -67,7 +68,7 @@ class QueryNode {
   virtual void AppendWords(std::vector<base::string16>* words) const = 0;
 };
 
-typedef std::vector<query_parser::QueryNode*> QueryNodeStarVector;
+using QueryNodeVector = std::vector<std::unique_ptr<query_parser::QueryNode>>;
 
 // This class is used to parse queries entered into the history search into more
 // normalized queries that can be passed to the SQLite backend.
@@ -105,19 +106,19 @@ class QueryParser {
   // the nodes passes to the caller.
   void ParseQueryNodes(const base::string16& query,
                        MatchingAlgorithm matching_algorithm,
-                       QueryNodeStarVector* nodes);
+                       QueryNodeVector* nodes);
 
   // Returns true if the string text matches the query nodes created by a call
   // to ParseQuery. If the query does match, each of the matching positions in
   // the text is added to |match_positions|.
   bool DoesQueryMatch(const base::string16& text,
-                      const QueryNodeStarVector& nodes,
+                      const QueryNodeVector& nodes,
                       Snippet::MatchPositions* match_positions);
 
   // Returns true if all of the |words| match the query |nodes| created by a
   // call to ParseQuery.
   bool DoesQueryMatch(const QueryWordVector& words,
-                      const QueryNodeStarVector& nodes);
+                      const QueryNodeVector& nodes);
 
   // Extracts the words from |text|, placing each word into |words|.
   void ExtractQueryWords(const base::string16& text,

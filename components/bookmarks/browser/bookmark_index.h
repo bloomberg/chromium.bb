@@ -58,11 +58,10 @@ class BookmarkIndex {
   void SortMatches(const NodeSet& matches, Nodes* sorted_nodes) const;
 
   // Add |node| to |results| if the node matches the query.
-  void AddMatchToResults(
-      const BookmarkNode* node,
-      query_parser::QueryParser* parser,
-      const query_parser::QueryNodeStarVector& query_nodes,
-      std::vector<BookmarkMatch>* results);
+  void AddMatchToResults(const BookmarkNode* node,
+                         query_parser::QueryParser* parser,
+                         const query_parser::QueryNodeVector& query_nodes,
+                         std::vector<BookmarkMatch>* results);
 
   // Populates |matches| for the specified term. If |first_term| is true, this
   // is the first term in the query. Returns true if there is at least one node

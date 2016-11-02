@@ -10,7 +10,6 @@
 
 #include "base/i18n/case_conversion.h"
 #include "base/macros.h"
-#include "base/memory/scoped_vector.h"
 #include "base/strings/utf_string_conversions.h"
 #include "components/history/core/browser/keyword_search_term.h"
 #include "components/url_formatter/url_formatter.h"
@@ -363,8 +362,8 @@ bool URLDatabase::GetTextMatchesWithAlgorithm(
     const base::string16& query,
     query_parser::MatchingAlgorithm algorithm,
     URLRows* results) {
-  ScopedVector<query_parser::QueryNode> query_nodes;
-  query_parser_.ParseQueryNodes(query, algorithm, &query_nodes.get());
+  query_parser::QueryNodeVector query_nodes;
+  query_parser_.ParseQueryNodes(query, algorithm, &query_nodes);
 
   results->clear();
   sql::Statement statement(GetDB().GetCachedStatement(SQL_FROM_HERE,
@@ -385,7 +384,7 @@ bool URLDatabase::GetTextMatchesWithAlgorithm(
     base::string16 title = base::i18n::ToLower(statement.ColumnString16(2));
     query_parser_.ExtractQueryWords(title, &query_words);
 
-    if (query_parser_.DoesQueryMatch(query_words, query_nodes.get())) {
+    if (query_parser_.DoesQueryMatch(query_words, query_nodes)) {
       URLResult info;
       FillURLRow(statement, &info);
       if (info.url().is_valid())
