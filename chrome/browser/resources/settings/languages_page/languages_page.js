@@ -185,7 +185,7 @@ Polymer({
       // Reset the chosen UI language to the actual UI language.
       this.languageHelper.resetUILanguage();
     }
-    /** @type {!SettingsActionMenuElement} */(this.$.menu.get()).close();
+    /** @type {!CrActionMenuElement} */(this.$.menu.get()).close();
   },
 
    /**
@@ -215,7 +215,7 @@ Polymer({
       this.languageHelper.disableTranslateLanguage(
           this.detailLanguage_.language.code);
     }
-    /** @type {!SettingsActionMenuElement} */(this.$.menu.get()).close();
+    /** @type {!CrActionMenuElement} */(this.$.menu.get()).close();
   },
 
   /**
@@ -235,7 +235,7 @@ Polymer({
    * @private
    */
   onMoveToTopTap_: function() {
-    /** @type {!SettingsActionMenuElement} */(this.$.menu.get()).close();
+    /** @type {!CrActionMenuElement} */(this.$.menu.get()).close();
     this.languageHelper.moveLanguageToFront(this.detailLanguage_.language.code);
   },
 
@@ -244,7 +244,7 @@ Polymer({
    * @private
    */
   onMoveUpTap_: function() {
-    /** @type {!SettingsActionMenuElement} */(this.$.menu.get()).close();
+    /** @type {!CrActionMenuElement} */(this.$.menu.get()).close();
     this.languageHelper.moveLanguage(this.detailLanguage_.language.code, -1);
   },
 
@@ -253,7 +253,7 @@ Polymer({
    * @private
    */
   onMoveDownTap_: function() {
-    /** @type {!SettingsActionMenuElement} */(this.$.menu.get()).close();
+    /** @type {!CrActionMenuElement} */(this.$.menu.get()).close();
     this.languageHelper.moveLanguage(this.detailLanguage_.language.code, 1);
   },
 
@@ -262,7 +262,7 @@ Polymer({
    * @private
    */
   onRemoveLanguageTap_: function() {
-    /** @type {!SettingsActionMenuElement} */(this.$.menu.get()).close();
+    /** @type {!CrActionMenuElement} */(this.$.menu.get()).close();
     this.languageHelper.disableLanguage(this.detailLanguage_.language.code);
   },
 
@@ -457,10 +457,10 @@ Polymer({
         /** @type {!{model: !{item: !LanguageState}}} */(e).model.item;
 
     // Ensure the template has been stamped.
-    var menu = /** @type {?SettingsActionMenuElement} */(
+    var menu = /** @type {?CrActionMenuElement} */(
         this.$.menu.getIfExists());
     if (!menu) {
-      menu = /** @type {!SettingsActionMenuElement} */(this.$.menu.get());
+      menu = /** @type {!CrActionMenuElement} */(this.$.menu.get());
       this.initializeMenu_(menu);
     }
 
@@ -469,7 +469,7 @@ Polymer({
 
   /**
    * Applies Chrome OS session tweaks to the menu.
-   * @param {!SettingsActionMenuElement} menu
+   * @param {!CrActionMenuElement} menu
    * @private
    */
   initializeMenu_: function(menu) {

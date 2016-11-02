@@ -27,7 +27,7 @@ Polymer({
    */
   onMenuButtonTap_: function(event) {
     let button = /** @type {!HTMLElement} */ (event.target);
-    let menu = /** @type {!SettingsActionMenuElement} */ (this.$.dotsMenu);
+    let menu = /** @type {!CrActionMenuElement} */ (this.$.dotsMenu);
     menu.showAt(button);
     event.stopPropagation();
   },
@@ -39,7 +39,7 @@ Polymer({
       action: action,
       device: this.device,
     });
-    /** @type {!SettingsActionMenuElement} */ (this.$.dotsMenu).close();
+    /** @type {!CrActionMenuElement} */ (this.$.dotsMenu).close();
   },
 
   /** @private */
@@ -48,7 +48,7 @@ Polymer({
       action: 'remove',
       device: this.device,
     });
-    /** @type {!SettingsActionMenuElement} */ (this.$.dotsMenu).close();
+    /** @type {!CrActionMenuElement} */ (this.$.dotsMenu).close();
   },
 
   /**

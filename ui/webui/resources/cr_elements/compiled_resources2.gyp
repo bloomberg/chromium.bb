@@ -7,6 +7,7 @@
       'target_name': 'cr_elements_resources',
       'type': 'none',
       'dependencies': [
+        'cr_action_menu/compiled_resources2.gyp:*',
         'cr_dialog/compiled_resources2.gyp:*',
         'cr_profile_avatar_selector/compiled_resources2.gyp:*',
         'cr_slider/compiled_resources2.gyp:*',

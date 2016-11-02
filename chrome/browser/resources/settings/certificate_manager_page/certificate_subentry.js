@@ -151,12 +151,12 @@ Polymer({
 
   /** @private */
   closePopupMenu_: function() {
-    this.$$('dialog[is=settings-action-menu]').close();
+    this.$$('dialog[is=cr-action-menu]').close();
   },
 
   /** @private */
   onDotsTap_: function() {
-    var actionMenu = /** @type {!SettingsActionMenuElement} */(
+    var actionMenu = /** @type {!CrActionMenuElement} */(
         this.$.menu.get());
     actionMenu.showAt(assert(this.$$('paper-icon-button')));
   },

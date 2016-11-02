@@ -3,7 +3,7 @@
 // found in the LICENSE file.
 
 Polymer({
-  is: 'settings-action-menu',
+  is: 'cr-action-menu',
   extends: 'dialog',
 
   /**
@@ -122,7 +122,7 @@ Polymer({
     this.showModal();
 
     var rect = anchorElement.getBoundingClientRect();
-    if (new settings.DirectionDelegateImpl().isRtl()) {
+    if (getComputedStyle(anchorElement).direction == 'rtl') {
       var right = window.innerWidth - rect.left - this.offsetWidth;
       this.style.right = right + 'px';
     } else {

@@ -21,7 +21,7 @@
     {
       'target_name': 'autofill_section',
       'dependencies': [
-        '../compiled_resources2.gyp:settings_action_menu',
+        '<(DEPTH)/ui/webui/resources/cr_elements/cr_action_menu/compiled_resources2.gyp:cr_action_menu',
         '<(EXTERNS_GYP):autofill_private',
         'address_edit_dialog',
         'credit_card_edit_dialog',
@@ -49,7 +49,7 @@
       'target_name': 'passwords_section',
       'dependencies': [
         '../compiled_resources2.gyp:global_scroll_target_behavior',
-        '../compiled_resources2.gyp:settings_action_menu',
+        '<(DEPTH)/ui/webui/resources/cr_elements/cr_action_menu/compiled_resources2.gyp:cr_action_menu',
         '<(EXTERNS_GYP):passwords_private',
         'password_edit_dialog',
       ],

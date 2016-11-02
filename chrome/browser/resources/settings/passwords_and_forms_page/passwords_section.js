@@ -90,7 +90,7 @@ Polymer({
    * @private
    */
   onMenuEditPasswordTap_: function() {
-    /** @type {SettingsActionMenuElement} */(this.$.menu).close();
+    /** @type {CrActionMenuElement} */(this.$.menu).close();
     this.showPasswordEditDialog_ = true;
   },
 
@@ -132,7 +132,7 @@ Polymer({
    */
   onMenuRemovePasswordTap_: function() {
     this.fire('remove-saved-password', this.activePassword.loginPair);
-    /** @type {SettingsActionMenuElement} */(this.$.menu).close();
+    /** @type {CrActionMenuElement} */(this.$.menu).close();
   },
 
   /**
@@ -157,7 +157,7 @@ Polymer({
    * @private
    */
   onPasswordMenuTap_: function(e) {
-    var menu = /** @type {!SettingsActionMenuElement} */(this.$.menu);
+    var menu = /** @type {!CrActionMenuElement} */(this.$.menu);
     var target = /** @type {!Element} */(Polymer.dom(e).localTarget);
     var passwordUiEntryEvent = /** @type {!PasswordUiEntryEvent} */(e);
 

@@ -75,7 +75,7 @@
           menuEvent.model.item);
 
       var dotsButton = /** @type {!HTMLElement} */ (Polymer.dom(e).localTarget);
-      /** @type {!SettingsActionMenuElement} */ (
+      /** @type {!CrActionMenuElement} */ (
           this.$.addressSharedMenu).showAt(dotsButton);
     },
 
@@ -127,7 +127,7 @@
               menuEvent.model.item);
 
       var dotsButton = /** @type {!HTMLElement} */ (Polymer.dom(e).localTarget);
-      /** @type {!SettingsActionMenuElement} */ (
+      /** @type {!CrActionMenuElement} */ (
           this.$.creditCardSharedMenu).showAt(dotsButton);
     },
 

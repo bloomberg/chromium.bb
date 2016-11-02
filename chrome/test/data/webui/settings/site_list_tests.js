@@ -327,7 +327,7 @@ cr.define('site_list', function() {
        * Fetch the non-hidden menu items from the action menu.
        */
       function getMenuItems() {
-        var menu = testElement.$$('dialog[is=settings-action-menu]');
+        var menu = testElement.$$('dialog[is=cr-action-menu]');
         assertTrue(!!menu);
         return menu.querySelectorAll('button:not([hidden])');
       }
@@ -346,7 +346,7 @@ cr.define('site_list', function() {
 
       /** Closes the action menu. */
       function closeActionMenu() {
-        var menu = testElement.$$('dialog[is=settings-action-menu]');
+        var menu = testElement.$$('dialog[is=cr-action-menu]');
         if (menu.open)
           menu.close();
       }

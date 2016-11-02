@@ -41,8 +41,8 @@ Polymer({
    */
   onOpenActionMenuTap_: function(e) {
     this.activePrinter_ = e.model.item;
-    var menu = /** @type {!SettingsActionMenuElement} */ (
-        this.$$('dialog[is=settings-action-menu]'));
+    var menu = /** @type {!CrActionMenuElement} */ (
+        this.$$('dialog[is=cr-action-menu]'));
     menu.showAt(/** @type {!Element} */ (
         Polymer.dom(/** @type {!Event} */ (e)).localTarget));
   },
@@ -72,8 +72,8 @@ Polymer({
   /** @private */
   closeDropdownMenu_: function() {
     this.activePrinter_ = null;
-    var menu = /** @type {!SettingsActionMenuElement} */ (
-        this.$$('dialog[is=settings-action-menu]'));
+    var menu = /** @type {!CrActionMenuElement} */ (
+        this.$$('dialog[is=cr-action-menu]'));
     menu.close();
   },
 

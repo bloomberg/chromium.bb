@@ -2,9 +2,9 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-/** @fileoverview Tests for settings-action-menu element. */
-suite('SettingsActionMenu', function() {
-  /** @type {?SettingsActionMenuElement} */
+/** @fileoverview Tests for cr-action-menu element. */
+suite('CrActionMenu', function() {
+  /** @type {?CrActionMenuElement} */
   var menu = null;
 
   /** @type {?NodeList<HTMLElement>} */
@@ -15,7 +15,7 @@ suite('SettingsActionMenu', function() {
 
     document.body.innerHTML = `
       <button id="dots">...</button>
-      <dialog is="settings-action-menu">
+      <dialog is="cr-action-menu">
         <button class="dropdown-item">Un</button>
         <hr>
         <button class="dropdown-item">Dos</button>
@@ -23,7 +23,7 @@ suite('SettingsActionMenu', function() {
       </dialog>
     `;
 
-    menu = document.querySelector('dialog[is=settings-action-menu]');
+    menu = document.querySelector('dialog[is=cr-action-menu]');
     items = menu.querySelectorAll('.dropdown-item');
     assertEquals(3, items.length);
   });

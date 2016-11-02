@@ -499,8 +499,8 @@ Polymer({
    */
   onShowActionMenuTap_: function(e) {
     this.actionMenuSite_ = e.model.item;
-    /** @type {!SettingsActionMenuElement} */ (
-        this.$$('dialog[is=settings-action-menu]')).showAt(
+    /** @type {!CrActionMenuElement} */ (
+        this.$$('dialog[is=cr-action-menu]')).showAt(
             /** @type {!Element} */ (
                 Polymer.dom(/** @type {!Event} */ (e)).localTarget));
   },
@@ -508,7 +508,7 @@ Polymer({
   /** @private */
   closeActionMenu_: function() {
     this.actionMenuSite_ = null;
-    /** @type {!SettingsActionMenuElement} */ (
-        this.$$('dialog[is=settings-action-menu]')).close();
+    /** @type {!CrActionMenuElement} */ (
+        this.$$('dialog[is=cr-action-menu]')).close();
   },
 });

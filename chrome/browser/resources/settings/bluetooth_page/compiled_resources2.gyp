@@ -36,7 +36,7 @@
       'dependencies': [
         '<(DEPTH)/ui/webui/resources/js/compiled_resources2.gyp:i18n_behavior',
         '<(EXTERNS_GYP):bluetooth',
-        '../compiled_resources2.gyp:settings_action_menu',
+        '<(DEPTH)/ui/webui/resources/cr_elements/cr_action_menu/compiled_resources2.gyp:cr_action_menu',
       ],
       'includes': ['../../../../../third_party/closure_compiler/compile_js2.gypi'],
     },

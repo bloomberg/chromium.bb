@@ -1,10 +1,10 @@
+<link rel="import" href="chrome://resources/cr_elements/cr_action_menu/cr_action_menu.html">
 <link rel="import" href="chrome://resources/cr_elements/cr_lazy_render/cr_lazy_render.html">
 <link rel="import" href="chrome://resources/cr_elements/icons.html">
 <link rel="import" href="chrome://resources/html/polymer.html">
 <link rel="import" href="chrome://resources/html/icon.html">
 <link rel="import" href="chrome://resources/polymer/v1_0/paper-icon-button/paper-icon-button.html">
 <link rel="import" href="/on_startup_page/startup_urls_page_browser_proxy.html">
-<link rel="import" href="/settings_action_menu.html">
 <link rel="import" href="/settings_shared_css.html">
 
 <dom-module id="settings-startup-url-entry">
@@ -26,7 +26,7 @@
           on-tap="onDotsTap_">
       </paper-icon-button>
       <template is="cr-lazy-render" id="menu">
-        <dialog is="settings-action-menu">
+        <dialog is="cr-action-menu">
           <button class="dropdown-item" role="option" on-tap="onEditTap_">
             $i18n{onStartupEdit}
           </button>

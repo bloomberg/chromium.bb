@@ -256,10 +256,10 @@ cr.define('settings_startup_urls_page', function() {
       document.body.appendChild(element);
 
       // Bring up the popup menu for the following tests to use.
-      assertFalse(!!element.$$('dialog[is=settings-action-menu]'));
+      assertFalse(!!element.$$('dialog[is=cr-action-menu]'));
       MockInteractions.tap(element.$.dots);
       Polymer.dom.flush();
-      assertTrue(!!element.$$('dialog[is=settings-action-menu]'));
+      assertTrue(!!element.$$('dialog[is=cr-action-menu]'));
     });
 
     teardown(function() { element.remove(); });

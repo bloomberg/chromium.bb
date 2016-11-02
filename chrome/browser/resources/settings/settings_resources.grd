@@ -244,12 +244,6 @@
                  file="settings_ui/settings_ui.js"
                  type="chrome_html"
                  flattenhtml="true" />
-      <structure name="IDR_SETTINGS_SETTINGS_ACTION_MENU_HTML"
-                 file="settings_action_menu.html"
-                 type="chrome_html" />
-      <structure name="IDR_SETTINGS_SETTINGS_ACTION_MENU_JS"
-                 file="settings_action_menu.js"
-                 type="chrome_html" />
       <structure name="IDR_SETTINGS_GLOBAL_SCROLL_TARGET_BEHAVIOR_HTML"
                  file="global_scroll_target_behavior.html"
                  type="chrome_html" />

@@ -44,7 +44,7 @@
       'dependencies': [
         'certificate_manager_types',
         'certificates_browser_proxy',
-        '../compiled_resources2.gyp:settings_action_menu',
+        '<(DEPTH)/ui/webui/resources/cr_elements/cr_action_menu/compiled_resources2.gyp:cr_action_menu',
         '<(DEPTH)/ui/webui/resources/cr_elements/cr_lazy_render/compiled_resources2.gyp:cr_lazy_render',
         '<(DEPTH)/ui/webui/resources/js/compiled_resources2.gyp:cr',
       ],

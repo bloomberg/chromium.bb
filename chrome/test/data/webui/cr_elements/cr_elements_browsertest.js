@@ -134,3 +134,21 @@ CrElementsSharedMenuTest.prototype = {
 TEST_F('CrElementsSharedMenuTest', 'All', function() {
   mocha.run();
 });
+
+function CrElementsActionMenuTest() {}
+
+CrElementsActionMenuTest.prototype = {
+  __proto__: CrElementsBrowserTest.prototype,
+
+  /** @override */
+  browsePreload:
+      'chrome://resources/cr_elements/cr_action_menu/cr_action_menu.html',
+
+  extraLibraries: CrElementsBrowserTest.prototype.extraLibraries.concat([
+    'cr_action_menu_test.js',
+  ]),
+};
+
+TEST_F('CrElementsActionMenuTest', 'All', function() {
+  mocha.run();
+});

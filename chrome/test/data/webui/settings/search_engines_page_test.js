@@ -178,7 +178,7 @@ cr.define('settings_search_engines_page', function() {
       test('Remove_Enabled', function() {
         // Open action menu.
         MockInteractions.tap(entry.$$('paper-icon-button'));
-        var menu = entry.$$('dialog[is=settings-action-menu]');
+        var menu = entry.$$('dialog[is=cr-action-menu]');
         assertTrue(menu.open);
 
         var deleteButton = entry.$.delete;
@@ -195,7 +195,7 @@ cr.define('settings_search_engines_page', function() {
       test('MakeDefault_Enabled', function() {
         // Open action menu.
         MockInteractions.tap(entry.$$('paper-icon-button'));
-        var menu = entry.$$('dialog[is=settings-action-menu]');
+        var menu = entry.$$('dialog[is=cr-action-menu]');
         assertTrue(menu.open);
 
         var makeDefaultButton = entry.$.makeDefault;
@@ -212,7 +212,7 @@ cr.define('settings_search_engines_page', function() {
       test('Edit_Enabled', function() {
         // Open action menu.
         MockInteractions.tap(entry.$$('paper-icon-button'));
-        var menu = entry.$$('dialog[is=settings-action-menu]');
+        var menu = entry.$$('dialog[is=cr-action-menu]');
         assertTrue(menu.open);
 
         var engine = entry.engine;

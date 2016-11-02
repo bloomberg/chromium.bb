@@ -36,20 +36,20 @@ Polymer({
 
   /** @private */
   onRemoveTap_: function() {
-    this.$$('dialog[is=settings-action-menu]').close();
+    this.$$('dialog[is=cr-action-menu]').close();
     settings.StartupUrlsPageBrowserProxyImpl.getInstance().removeStartupPage(
         this.model.modelIndex);
   },
 
   /** @private */
   onEditTap_: function() {
-    this.$$('dialog[is=settings-action-menu]').close();
+    this.$$('dialog[is=cr-action-menu]').close();
     this.fire(settings.EDIT_STARTUP_URL_EVENT, this.model);
   },
 
   /** @private */
   onDotsTap_: function() {
-    var actionMenu = /** @type {!SettingsActionMenuElement} */(
+    var actionMenu = /** @type {!CrActionMenuElement} */(
         this.$.menu.get());
     actionMenu.showAt(assert(this.$.dots));
   },
