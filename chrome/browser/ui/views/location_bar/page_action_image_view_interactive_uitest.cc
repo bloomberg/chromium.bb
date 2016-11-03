@@ -6,6 +6,7 @@
 
 #include "base/macros.h"
 #include "base/run_loop.h"
+#include "chrome/browser/extensions/extension_action.h"
 #include "chrome/browser/extensions/extension_action_manager.h"
 #include "chrome/browser/extensions/extension_browsertest.h"
 #include "chrome/browser/sessions/session_tab_helper.h"
@@ -118,8 +119,8 @@ IN_PROC_BROWSER_TEST_F(PageActionImageViewInteractiveUITest,
 
   // We need to resize the expected icon to be the size of the page action
   // button for comparison purposes.
-  const gfx::Size size(extension_misc::EXTENSION_ICON_ACTION,
-                       extension_misc::EXTENSION_ICON_ACTION);
+  const gfx::Size size(ExtensionAction::ActionIconSize(),
+                       ExtensionAction::ActionIconSize());
   gfx::ImageSkia bg(new BlankImageSource(size), size);
   expected_icon =
       gfx::ImageSkiaOperations::CreateSuperimposedImage(bg, expected_icon);

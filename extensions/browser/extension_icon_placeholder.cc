@@ -26,7 +26,6 @@ ui::ResourceBundle::FontStyle GetFontStyleForIconSize(
     case extension_misc::EXTENSION_ICON_INVALID:
     case extension_misc::EXTENSION_ICON_BITTY:
       return ui::ResourceBundle::SmallFont;
-    case extension_misc::EXTENSION_ICON_ACTION:
     case extension_misc::EXTENSION_ICON_SMALLISH:
     case extension_misc::EXTENSION_ICON_SMALL:
       return ui::ResourceBundle::MediumFont;
@@ -51,7 +50,6 @@ gfx::Image GetBackgroundImageForIconSize(extension_misc::ExtensionIcons size) {
   switch (size) {
     case extension_misc::EXTENSION_ICON_INVALID:
     case extension_misc::EXTENSION_ICON_BITTY:
-    case extension_misc::EXTENSION_ICON_ACTION:
     case extension_misc::EXTENSION_ICON_SMALLISH:
     case extension_misc::EXTENSION_ICON_SMALL:
       resource_id = IDR_EXTENSION_ACTION_PLAIN_BACKGROUND;

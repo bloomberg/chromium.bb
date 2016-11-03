@@ -188,8 +188,6 @@ const int kUnknownWindowId = -1;
 // Matches chrome.windows.WINDOW_ID_CURRENT.
 const int kCurrentWindowId = -2;
 
-// NOTE: If you change this list, you should also change kExtensionIconSizes
-// in cc file.
 enum ExtensionIcons {
   EXTENSION_ICON_GIGANTOR = 512,
   EXTENSION_ICON_EXTRA_LARGE = 256,
@@ -197,7 +195,6 @@ enum ExtensionIcons {
   EXTENSION_ICON_MEDIUM = 48,
   EXTENSION_ICON_SMALL = 32,
   EXTENSION_ICON_SMALLISH = 24,
-  EXTENSION_ICON_ACTION = 19,
   EXTENSION_ICON_BITTY = 16,
   EXTENSION_ICON_INVALID = 0,
 };

@@ -9,6 +9,7 @@
 #include <algorithm>
 
 #include "base/bind.h"
+#include "base/files/file_util.h"
 #include "base/location.h"
 #include "base/memory/ref_counted_memory.h"
 #include "base/sequenced_task_runner.h"
@@ -40,7 +41,6 @@
 #include "extensions/common/extension.h"
 #include "extensions/common/extension_set.h"
 #include "ui/base/layout.h"
-#include "ui/base/material_design/material_design_controller.h"
 #include "ui/base/resource/resource_bundle.h"
 #include "ui/gfx/color_palette.h"
 #include "ui/gfx/image/image_skia.h"
@@ -87,9 +87,16 @@ SkColor IncreaseLightness(SkColor color, double percent) {
 
 // Writes the theme pack to disk on a separate thread.
 void WritePackToDiskCallback(BrowserThemePack* pack,
-                             const base::FilePath& path) {
+                             const base::FilePath& directory) {
+  base::FilePath path = directory.Append(chrome::kThemePackFilename);
   if (!pack->WriteToDisk(path))
     NOTREACHED() << "Could not write theme pack to disk";
+
+  // Clean up any theme .pak that was generated during the Material Design
+  // transitional period.
+  // TODO(estade): remove this line in Q2 2017.
+  base::DeleteFile(directory.AppendASCII("Cached Theme Material Design.pak"),
+                   false);
 }
 
 // Heuristic to determine if color is grayscale. This is used to decide whether
@@ -574,13 +581,10 @@ void ThemeService::LoadThemePrefs() {
 
   bool loaded_pack = false;
 
-  // If we don't have a file pack, we're updating from an old version, or the
-  // pack was created for an alternative MaterialDesignController::Mode.
+  // If we don't have a file pack, we're updating from an old version.
   base::FilePath path = prefs->GetFilePath(prefs::kCurrentThemePackFilename);
   if (path != base::FilePath()) {
-    path = path.Append(ui::MaterialDesignController::IsModeMaterial()
-                           ? chrome::kThemePackMaterialDesignFilename
-                           : chrome::kThemePackFilename);
+    path = path.Append(chrome::kThemePackFilename);
     SwapThemeSupplier(BrowserThemePack::BuildFromDataPack(path, current_id));
     if (theme_supplier_)
       loaded_pack = true;
@@ -858,16 +862,12 @@ void ThemeService::BuildFromExtension(const Extension* extension) {
     return;
 
   // Write the packed file to disk.
-  base::FilePath pack_path =
-      extension->path().Append(ui::MaterialDesignController::IsModeMaterial()
-                                   ? chrome::kThemePackMaterialDesignFilename
-                                   : chrome::kThemePackFilename);
   service->GetFileTaskRunner()->PostTask(
-      FROM_HERE,
-      base::Bind(&WritePackToDiskCallback, base::RetainedRef(pack), pack_path));
+      FROM_HERE, base::Bind(&WritePackToDiskCallback, base::RetainedRef(pack),
+                            extension->path()));
 
-  // Save only the extension path. The packed file which matches the
-  // MaterialDesignController::Mode will be loaded via LoadThemePrefs().
+  // Save only the extension path. The packed file will be loaded via
+  // LoadThemePrefs().
   SavePackName(extension->path());
   SwapThemeSupplier(pack);
 }

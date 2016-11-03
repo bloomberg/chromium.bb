@@ -23,7 +23,6 @@
 #include "third_party/skia/include/core/SkCanvas.h"
 #include "third_party/skia/include/core/SkPaint.h"
 #include "third_party/skia/include/effects/SkGradientShader.h"
-#include "ui/base/material_design/material_design_controller.h"
 #include "ui/base/resource/resource_bundle.h"
 #include "ui/gfx/animation/animation_delegate.h"
 #include "ui/gfx/canvas.h"
@@ -79,9 +78,7 @@ bool HasValue(const std::map<int, T>& map, int tab_id) {
 }  // namespace
 
 extension_misc::ExtensionIcons ExtensionAction::ActionIconSize() {
-  return ui::MaterialDesignController::IsModeMaterial()
-             ? extension_misc::EXTENSION_ICON_BITTY
-             : extension_misc::EXTENSION_ICON_ACTION;
+  return extension_misc::EXTENSION_ICON_BITTY;
 }
 
 const int ExtensionAction::kDefaultTabId = -1;
@@ -148,12 +145,11 @@ bool ExtensionAction::ParseIconFromCanvasDictionary(
     CHECK(!bitmap.isNull());
 
     // Chrome helpfully scales the provided icon(s), but let's not go overboard.
-    const int kActionIconMaxSize = 10 * extension_misc::EXTENSION_ICON_ACTION;
+    const int kActionIconMaxSize = 10 * ActionIconSize();
     if (bitmap.drawsNothing() || bitmap.width() > kActionIconMaxSize)
       continue;
 
-    float scale =
-        static_cast<float>(bitmap.width()) / ExtensionAction::ActionIconSize();
+    float scale = static_cast<float>(bitmap.width()) / ActionIconSize();
     icon->AddRepresentation(gfx::ImageSkiaRep(bitmap, scale));
   }
   return true;

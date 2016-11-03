@@ -73,7 +73,8 @@ std::unique_ptr<ActionInfo> ActionInfo::Load(const Extension* extension,
         *error = base::ASCIIToUTF16(errors::kInvalidPageActionIconPath);
         return std::unique_ptr<ActionInfo>();
       }
-      result->default_icon.Add(extension_misc::EXTENSION_ICON_ACTION, path);
+      // Extension icons were 19 DIP when kPageActionIcons was supported.
+      result->default_icon.Add(19, path);
     }
 
     std::string id;

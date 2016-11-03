@@ -105,8 +105,8 @@ void PageActionImageView::UpdateVisibility(content::WebContents* contents) {
   SetTooltipText(base::UTF8ToUTF16(tooltip_));
 
   // Set the image.
-  gfx::Size size(extension_misc::EXTENSION_ICON_ACTION,
-                 extension_misc::EXTENSION_ICON_ACTION);
+  gfx::Size size(ExtensionAction::ActionIconSize(),
+                 ExtensionAction::ActionIconSize());
   gfx::Image icon = view_controller_->GetIcon(contents, size);
   if (!icon.IsEmpty())
     SetImage(*icon.ToImageSkia());

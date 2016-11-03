@@ -81,8 +81,7 @@ TEST_F(PageActionManifestTest, LoadPageActionHelper) {
   // No title, so fall back to name.
   ASSERT_EQ(name, action->default_title);
   ASSERT_EQ(img1,
-            action->default_icon.Get(extension_misc::EXTENSION_ICON_ACTION,
-                                     ExtensionIconSet::MATCH_EXACTLY));
+            action->default_icon.Get(19, ExtensionIconSet::MATCH_EXACTLY));
 
   // Same test with explicitly set type.
   action = LoadAction("page_action_type.json");
