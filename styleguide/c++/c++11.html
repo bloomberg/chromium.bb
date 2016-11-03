@@ -474,6 +474,14 @@ template &lt;typename T&gt;<br/>void Function(T&& t) { ... }</code></td>
 </tr>
 
 <tr>
+<td>Raw String Literals</td>
+<td><code>string <i>var</i>=R&quot;(<i>raw_string</i>)&quot;;</code></td>
+<td>Allows a string to be encoded without any escape sequences, easing parsing in regex expressions, for example</td>
+<td><a href="http://en.cppreference.com/w/cpp/language/string_literal">string literal</a></td>
+<td>Beware of passing these as macro arguments, which can trigger a <a href="https://gcc.gnu.org/bugzilla/show_bug.cgi?id=57824">lexer bug</a> on older GCC versions. <a href="https://groups.google.com/a/chromium.org/forum/#!topic/chromium-dev/2kWQHbbuMHI">Discussion thread</a></td>
+</tr>
+
+<tr>
 <td>String Direct Reference Functions</td>
 <td><code>std::string::front()</code>, <code>std::string::back()</code></td>
 <td>Returns a reference to the front or back of a string</td>
@@ -683,14 +691,6 @@ work in all our compilers yet.</p>
 <td>Attaches properties to declarations that specific compiler implementations may use.</td>
 <td><a href="http://www.codesynthesis.com/~boris/blog/2012/04/18/cxx11-generalized-attributes/">C++11 generalized attributes</a></td>
 <td></td>
-</tr>
-
-<tr>
-<td>Raw String Literals</td>
-<td><code>string <i>var</i>=R&quot;(<i>raw_string</i>)&quot;;</code></td>
-<td>Allows a string to be encoded without any escape sequences, easing parsing in regex expressions, for example</td>
-<td><a href="http://en.cppreference.com/w/cpp/language/string_literal">string literal</a></td>
-<td>Beware of passing these as macro arguments, which can trigger a <a href="https://gcc.gnu.org/bugzilla/show_bug.cgi?id=57824">lexer bug</a> on older GCC versions. <a href="https://groups.google.com/a/chromium.org/forum/#!topic/chromium-dev/2kWQHbbuMHI">Discussion thread</a></td>
 </tr>
 
 <tr>
