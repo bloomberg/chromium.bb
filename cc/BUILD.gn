@@ -115,6 +115,7 @@ component("cc") {
     "input/input_handler.h",
     "input/layer_selection_bound.cc",
     "input/layer_selection_bound.h",
+    "input/main_thread_scrolling_reason.h",
     "input/page_scale_animation.cc",
     "input/page_scale_animation.h",
     "input/scroll_elasticity_helper.cc",
