@@ -110,7 +110,7 @@ void ProfilePolicyConnector::Init(
     // Note that |DeviceLocalAccountPolicyProvider::Create| returns nullptr when
     // the user supplied is not a device-local account user.
     special_user_policy_provider_ = DeviceLocalAccountPolicyProvider::Create(
-        user->email(),
+        user->GetAccountId().GetUserEmail(),
         connector->GetDeviceLocalAccountPolicyService());
   }
   if (special_user_policy_provider_) {

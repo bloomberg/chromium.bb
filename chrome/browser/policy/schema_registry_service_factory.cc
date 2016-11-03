@@ -53,7 +53,7 @@ DeviceLocalAccountPolicyBroker* GetBroker(content::BrowserContext* context) {
   if (!service)
     return NULL;
 
-  return service->GetBrokerForUser(user->email());
+  return service->GetBrokerForUser(user->GetAccountId().GetUserEmail());
 }
 
 }  // namespace
