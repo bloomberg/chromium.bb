@@ -27,6 +27,7 @@ import org.chromium.base.test.util.CommandLineFlags;
 import org.chromium.base.test.util.DisabledTest;
 import org.chromium.base.test.util.Feature;
 import org.chromium.base.test.util.RetryOnFailure;
+import org.chromium.base.test.util.UrlUtils;
 import org.chromium.base.test.util.parameter.Parameter;
 import org.chromium.base.test.util.parameter.ParameterizedTest;
 import org.chromium.content.browser.ContentViewCore;
@@ -116,6 +117,36 @@ public class ImeTest extends ContentShellTestBase {
         clearEventLogs();
 
         resetAllStates();
+    }
+
+    private void fullyLoadUrl(final String url) throws Throwable {
+        ThreadUtils.runOnUiThreadBlocking(new Runnable() {
+            @Override
+            public void run() {
+                getActivity().getActiveShell().loadUrl(url);
+            }
+        });
+        waitForActiveShellToBeDoneLoading();
+    }
+
+    @MediumTest
+    @Feature({"TextInput", "Main"})
+    @RetryOnFailure
+    public void testKeyboardDismissedWhenNavigating() throws Throwable {
+        assertWaitForKeyboardStatus(true);
+
+        // Hide keyboard when loading a new Url.
+        fullyLoadUrl(UrlUtils.getIsolatedTestFileUrl(INPUT_FORM_HTML));
+        assertWaitForKeyboardStatus(false);
+
+        DOMUtils.clickNode(this, mContentViewCore, "input_text");
+        assertWaitForKeyboardStatus(true);
+
+        // Hide keyboard when navigating.
+        final String code = "document.getElementById(\"link\").click()";
+        JavaScriptUtils.executeJavaScriptAndWaitForResult(
+                getContentViewCore().getWebContents(), code);
+        assertWaitForKeyboardStatus(false);
     }
 
     @MediumTest
@@ -636,21 +667,15 @@ public class ImeTest extends ContentShellTestBase {
         });
     }
 
-    private void reloadPage() {
+    private void reloadPage() throws Throwable {
         // Reload the page, then focus will be lost and keyboard should be hidden.
-        ThreadUtils.runOnUiThreadBlocking(new Runnable() {
-            @Override
-            public void run() {
-                final String currentUrl = getContentViewCore().getWebContents().getUrl();
-                getActivity().getActiveShell().loadUrl(currentUrl);
-            }
-        });
+        fullyLoadUrl(getContentViewCore().getWebContents().getUrl());
     }
 
     @SmallTest
     @Feature({"TextInput"})
     @RetryOnFailure
-    public void testPhysicalKeyboard_AttachDetach() throws Exception {
+    public void testPhysicalKeyboard_AttachDetach() throws Throwable {
         attachPhysicalKeyboard();
         // We still call showSoftKeyboard, which will be ignored by physical keyboard.
         waitForKeyboardStates(1, 0, 1, new Integer[] {TextInputType.TEXT});

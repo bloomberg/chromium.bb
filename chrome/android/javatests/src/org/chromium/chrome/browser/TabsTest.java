@@ -62,6 +62,7 @@ import org.chromium.chrome.test.util.OverviewModeBehaviorWatcher;
 import org.chromium.content.browser.ContentViewCore;
 import org.chromium.content.browser.test.util.Criteria;
 import org.chromium.content.browser.test.util.CriteriaHelper;
+import org.chromium.content.browser.test.util.DOMUtils;
 import org.chromium.content.browser.test.util.JavaScriptUtils;
 import org.chromium.content.browser.test.util.UiUtils;
 import org.chromium.content.common.ContentSwitches;
@@ -275,6 +276,59 @@ public class TabsTest extends ChromeTabbedActivityTestBase {
                 assertEquals(tabCount, getActivity().getCurrentTabModel().getCount());
             }
         });
+    }
+
+    private void assertWaitForKeyboardStatus(final boolean show) throws InterruptedException {
+        CriteriaHelper.pollUiThread(new Criteria() {
+            @Override
+            public boolean isSatisfied() {
+                updateFailureReason("expected keyboard show: " + show);
+                return show
+                        == org.chromium.ui.UiUtils.isKeyboardShowing(
+                                   getActivity(), getActivity().getTabsView());
+            }
+        });
+    }
+
+    /**
+     * Verify that opening a new tab, switching to an existing tab and closing current tab hide
+     * keyboard.
+     */
+    @LargeTest
+    @Restriction(ChromeRestriction.RESTRICTION_TYPE_TABLET)
+    @Feature({"Android-TabSwitcher"})
+    @RetryOnFailure
+    public void testHideKeyboard() throws Exception {
+        mTestServer = EmbeddedTestServer.createAndStartServer(getInstrumentation().getContext());
+
+        // Open a new tab(The 1st tab) and click node.
+        ChromeTabUtils.fullyLoadUrlInNewTab(
+                getInstrumentation(), getActivity(), mTestServer.getURL(TEST_FILE_PATH), false);
+        assertEquals("Failed to click node.", true,
+                DOMUtils.clickNode(
+                        this, getActivity().getActivityTab().getContentViewCore(), "input_text"));
+        assertWaitForKeyboardStatus(true);
+
+        // Open a new tab(the 2nd tab).
+        ChromeTabUtils.fullyLoadUrlInNewTab(
+                getInstrumentation(), getActivity(), mTestServer.getURL(TEST_FILE_PATH), false);
+        assertWaitForKeyboardStatus(false);
+
+        // Click node in the 2nd tab.
+        DOMUtils.clickNode(this, getActivity().getActivityTab().getContentViewCore(), "input_text");
+        assertWaitForKeyboardStatus(true);
+
+        // Switch to the 1st tab.
+        ChromeTabUtils.switchTabInCurrentTabModel(getActivity(), 1);
+        assertWaitForKeyboardStatus(false);
+
+        // Click node in the 1st tab.
+        DOMUtils.clickNode(this, getActivity().getActivityTab().getContentViewCore(), "input_text");
+        assertWaitForKeyboardStatus(true);
+
+        // Close current tab(the 1st tab).
+        ChromeTabUtils.closeCurrentTab(getInstrumentation(), getActivity());
+        assertWaitForKeyboardStatus(false);
     }
 
     /**

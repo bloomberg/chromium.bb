@@ -373,7 +373,6 @@ android_library("content_javatests") {
     "javatests/src/org/chromium/content/browser/ClipboardTest.java",
     "javatests/src/org/chromium/content/browser/ContentCommandLineTest.java",
     "javatests/src/org/chromium/content/browser/ContentDetectionTestBase.java",
-    "javatests/src/org/chromium/content/browser/ContentViewCoreFocusTest.java",
     "javatests/src/org/chromium/content/browser/ContentViewCoreSelectionTest.java",
     "javatests/src/org/chromium/content/browser/ContentViewLocationTest.java",
     "javatests/src/org/chromium/content/browser/ContentViewPopupZoomerTest.java",
