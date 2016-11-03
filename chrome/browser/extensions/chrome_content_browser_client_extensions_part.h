@@ -56,7 +56,6 @@ class ChromeContentBrowserClientExtensionsPart
   // Similiar to ChromeContentBrowserClient::ShouldAllowOpenURL(), but the
   // return value indicates whether to use |result| or not.
   static bool ShouldAllowOpenURL(content::SiteInstance* site_instance,
-                                 const GURL& from_url,
                                  const GURL& to_url,
                                  bool* result);
 

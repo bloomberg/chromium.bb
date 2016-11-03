@@ -9,6 +9,9 @@
 #include <set>
 
 #include "base/command_line.h"
+#include "base/debug/alias.h"
+#include "base/debug/dump_without_crashing.h"
+#include "base/metrics/histogram_macros.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/extensions/extension_service.h"
 #include "chrome/browser/extensions/extension_web_ui.h"
@@ -81,6 +84,20 @@ enum RenderProcessHostPrivilege {
   PRIV_HOSTED,
   PRIV_ISOLATED,
   PRIV_EXTENSION,
+};
+
+// Specifies reasons why web-accessible resource checks in ShouldAllowOpenURL
+// might fail.
+//
+// This enum backs an UMA histogram.  The order of existing values
+// should not be changed, and new values should only be added before
+// FAILURE_LAST.
+enum ShouldAllowOpenURLFailureReason {
+  FAILURE_FILE_SYSTEM_URL = 0,
+  FAILURE_BLOB_URL,
+  FAILURE_SCHEME_NOT_HTTP_OR_HTTPS_OR_EXTENSION,
+  FAILURE_RESOURCE_NOT_WEB_ACCESSIBLE,
+  FAILURE_LAST,
 };
 
 RenderProcessHostPrivilege GetPrivilegeRequiredByUrl(
@@ -195,6 +212,11 @@ void OnHttpHeaderReceived(const std::string& header,
   } else {
     callback.Run(true, 0);
   }
+}
+
+void RecordShowAllowOpenURLFailure(ShouldAllowOpenURLFailureReason reason) {
+  UMA_HISTOGRAM_ENUMERATION("Extensions.ShouldAllowOpenURL.Failure", reason,
+                            FAILURE_LAST);
 }
 
 }  // namespace
@@ -496,43 +518,92 @@ bool ChromeContentBrowserClientExtensionsPart::AllowServiceWorker(
 // static
 bool ChromeContentBrowserClientExtensionsPart::ShouldAllowOpenURL(
     content::SiteInstance* site_instance,
-    const GURL& from_url,
     const GURL& to_url,
     bool* result) {
   DCHECK(result);
 
+  // Using url::Origin is important to properly handle blob: and filesystem:
+  // URLs.
+  url::Origin to_origin(to_url);
+  if (to_origin.scheme() != kExtensionScheme) {
+    // We're not responsible for protecting this resource.  Note that hosted
+    // apps fall into this category.
+    return false;
+  }
+
   // Do not allow pages from the web or other extensions navigate to
   // non-web-accessible extension resources.
-  if (to_url.SchemeIs(kExtensionScheme) &&
-      (from_url.SchemeIsHTTPOrHTTPS() || from_url.SchemeIs(kExtensionScheme))) {
-    Profile* profile = Profile::FromBrowserContext(
-        site_instance->GetProcess()->GetBrowserContext());
-    ExtensionRegistry* registry = ExtensionRegistry::Get(profile);
-    if (!registry) {
-      *result = true;
-      return true;
-    }
-    const Extension* extension =
-        registry->enabled_extensions().GetExtensionOrAppByURL(to_url);
-    if (!extension) {
-      *result = true;
-      return true;
-    }
-    const Extension* from_extension =
-        registry->enabled_extensions().GetExtensionOrAppByURL(
-            site_instance->GetSiteURL());
-    if (from_extension && from_extension->id() == extension->id()) {
-      *result = true;
-      return true;
-    }
 
-    if (!WebAccessibleResourcesInfo::IsResourceWebAccessible(
-            extension, to_url.path())) {
-      *result = false;
-      return true;
-    }
+  ExtensionRegistry* registry =
+      ExtensionRegistry::Get(site_instance->GetBrowserContext());
+  const Extension* to_extension =
+      registry->enabled_extensions().GetByID(to_origin.host());
+  if (!to_extension) {
+    *result = true;
+    return true;
   }
-  return false;
+
+  GURL site_url(site_instance->GetSiteURL());
+  const Extension* from_extension =
+      registry->enabled_extensions().GetExtensionOrAppByURL(site_url);
+  if (from_extension && from_extension == to_extension) {
+    *result = true;
+    return true;
+  }
+
+  // Blob and filesystem URLs are never considered web-accessible.  See
+  // https://crbug.com/656752.
+  if (to_url.SchemeIsFileSystem() || to_url.SchemeIsBlob()) {
+    if (to_url.SchemeIsFileSystem())
+      RecordShowAllowOpenURLFailure(FAILURE_FILE_SYSTEM_URL);
+    else
+      RecordShowAllowOpenURLFailure(FAILURE_BLOB_URL);
+
+    // TODO(alexmos): Temporary instrumentation to find any regressions for
+    // this blocking.  Remove after verifying that this is not breaking any
+    // legitimate use cases.
+    char site_url_copy[256];
+    base::strlcpy(site_url_copy, site_url.spec().c_str(),
+                  arraysize(site_url_copy));
+    base::debug::Alias(&site_url_copy);
+    char to_origin_copy[256];
+    base::strlcpy(to_origin_copy, to_origin.Serialize().c_str(),
+                  arraysize(to_origin_copy));
+    base::debug::Alias(&to_origin_copy);
+    base::debug::DumpWithoutCrashing();
+
+    *result = false;
+    return true;
+  }
+
+  if (WebAccessibleResourcesInfo::IsResourceWebAccessible(to_extension,
+                                                          to_url.path())) {
+    *result = true;
+    return true;
+  }
+
+  if (!site_url.SchemeIsHTTPOrHTTPS() && !site_url.SchemeIs(kExtensionScheme)) {
+    RecordShowAllowOpenURLFailure(
+        FAILURE_SCHEME_NOT_HTTP_OR_HTTPS_OR_EXTENSION);
+
+    // TODO(alexmos): Previous version of this function skipped the
+    // web-accessible resource checks in this case.  Collect data to catch
+    // any regressions, and then remove this.
+    char site_url_copy[256];
+    base::strlcpy(site_url_copy, site_url.spec().c_str(),
+                  arraysize(site_url_copy));
+    base::debug::Alias(&site_url_copy);
+    char to_origin_copy[256];
+    base::strlcpy(to_origin_copy, to_origin.Serialize().c_str(),
+                  arraysize(to_origin_copy));
+    base::debug::Alias(&to_origin_copy);
+    base::debug::DumpWithoutCrashing();
+  } else {
+    RecordShowAllowOpenURLFailure(FAILURE_RESOURCE_NOT_WEB_ACCESSIBLE);
+  }
+
+  *result = false;
+  return true;
 }
 
 // static

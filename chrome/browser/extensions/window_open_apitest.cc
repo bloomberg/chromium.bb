@@ -6,6 +6,7 @@
 
 #include "base/path_service.h"
 #include "base/strings/stringprintf.h"
+#include "base/test/histogram_tester.h"
 #include "build/build_config.h"
 #include "chrome/browser/extensions/extension_apitest.h"
 #include "chrome/browser/profiles/profile.h"
@@ -15,6 +16,9 @@
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
 #include "chrome/common/chrome_paths.h"
 #include "chrome/test/base/ui_test_utils.h"
+#include "content/public/browser/notification_service.h"
+#include "content/public/browser/notification_types.h"
+#include "content/public/browser/render_frame_host.h"
 #include "content/public/browser/render_process_host.h"
 #include "content/public/browser/web_contents.h"
 #include "content/public/common/result_codes.h"
@@ -283,4 +287,43 @@ IN_PROC_BROWSER_TEST_F(ExtensionBrowserTest, WindowOpenNoPrivileges) {
   ASSERT_TRUE(content::ExecuteScriptAndExtractBool(newtab, "testExtensionApi()",
                                                    &result));
   EXPECT_TRUE(result);
+}
+
+// Tests that calling window.open for an extension URL from a non-HTTP or HTTPS
+// URL on a new tab cannot access non-web-accessible resources.
+IN_PROC_BROWSER_TEST_F(ExtensionBrowserTest,
+                       WindowOpenInaccessibleResourceFromDataURL) {
+  base::HistogramTester uma;
+  ASSERT_TRUE(LoadExtension(
+      test_data_dir_.AppendASCII("uitest").AppendASCII("window_open")));
+
+  ui_test_utils::NavigateToURL(browser(), GURL("data:text/html,foo"));
+
+  // test.html is not web-accessible and should not be loaded.
+  GURL extension_url(extensions::Extension::GetResourceURL(
+      extensions::Extension::GetBaseURLFromExtensionId(
+          last_loaded_extension_id()),
+      "test.html"));
+
+  content::WindowedNotificationObserver windowed_observer(
+      content::NOTIFICATION_LOAD_STOP,
+      content::NotificationService::AllSources());
+  ASSERT_TRUE(content::ExecuteScript(
+      browser()->tab_strip_model()->GetActiveWebContents(),
+      "window.open('" + extension_url.spec() + "');"));
+  windowed_observer.Wait();
+  content::NavigationController* controller =
+      content::Source<content::NavigationController>(windowed_observer.source())
+          .ptr();
+  content::WebContents* newtab = controller->GetWebContents();
+  ASSERT_TRUE(newtab);
+
+  EXPECT_NE(extension_url, newtab->GetMainFrame()->GetLastCommittedURL());
+  EXPECT_FALSE(newtab->GetMainFrame()->GetSiteInstance()->GetSiteURL().SchemeIs(
+      extensions::kExtensionScheme));
+
+  // Verify that the blocking was recorded correctly in UMA.
+  uma.ExpectUniqueSample("Extensions.ShouldAllowOpenURL.Failure",
+                         2, /* FAILURE_SCHEME_NOT_HTTP_OR_HTTPS_OR_EXTENSION */
+                         1);
 }

@@ -1191,17 +1191,16 @@ bool ChromeContentBrowserClient::CanCommitURL(
 
 bool ChromeContentBrowserClient::ShouldAllowOpenURL(
     content::SiteInstance* site_instance, const GURL& url) {
-  GURL from_url = site_instance->GetSiteURL();
-
 #if defined(ENABLE_EXTENSIONS)
   bool result;
   if (ChromeContentBrowserClientExtensionsPart::ShouldAllowOpenURL(
-      site_instance, from_url, url, &result))
+          site_instance, url, &result))
     return result;
 #endif
 
   // Do not allow chrome://chrome-signin navigate to other chrome:// URLs, since
   // the signin page may host untrusted web content.
+  GURL from_url = site_instance->GetSiteURL();
   if (from_url.GetOrigin().spec() == chrome::kChromeUIChromeSigninURL &&
       url.SchemeIs(content::kChromeUIScheme) &&
       url.host_piece() != chrome::kChromeUIChromeSigninHost) {

@@ -735,6 +735,9 @@ void NavigatorImpl::RequestOpenURL(
   // redirects.  http://crbug.com/311721.
   std::vector<GURL> redirect_chain;
 
+  // Note that unlike RequestTransferURL, this uses the navigating
+  // RenderFrameHost's current SiteInstance, as that's where this navigation
+  // originated.
   GURL dest_url(url);
   if (!GetContentClient()->browser()->ShouldAllowOpenURL(
           current_site_instance, url)) {
@@ -822,9 +825,17 @@ void NavigatorImpl::RequestTransferURL(
   Referrer referrer_to_use(referrer);
   FrameTreeNode* node = render_frame_host->frame_tree_node();
   SiteInstance* current_site_instance = render_frame_host->GetSiteInstance();
-  if (!GetContentClient()->browser()->ShouldAllowOpenURL(current_site_instance,
-                                                         url)) {
-    dest_url = GURL(url::kAboutBlankURL);
+  // It is important to pass in the source_site_instance if it is available
+  // (such as when navigating a proxy).  See https://crbug.com/656752.
+  if (!GetContentClient()->browser()->ShouldAllowOpenURL(
+          source_site_instance ? source_site_instance : current_site_instance,
+          url)) {
+    // It is important to return here, rather than rewrite the dest_url to
+    // about:blank.  The latter won't actually have any effect when
+    // transferring, as NavigateToEntry will think that the transfer is to the
+    // same RFH that started the navigation and let the existing navigation
+    // (for the disallowed URL) proceed.
+    return;
   }
 
   // TODO(creis): Determine if this transfer started as a browser-initiated

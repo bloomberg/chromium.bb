@@ -337,39 +337,6 @@ IN_PROC_BROWSER_TEST_F(ExtensionResourceRequestPolicyTest,
   ASSERT_TRUE(RunExtensionSubtest("accessible_cer", "main.html")) << message_;
 }
 
-class NavigationErrorObserver : public content::WebContentsObserver {
- public:
-  NavigationErrorObserver(content::WebContents* web_contents, const GURL& url)
-      : content::WebContentsObserver(web_contents),
-        url_(url),
-        saw_navigation_(false) {}
-
-  void DidFinishNavigation(content::NavigationHandle* handle) override {
-    if (handle->GetURL() != url_)
-      return;
-    EXPECT_TRUE(handle->IsErrorPage());
-    saw_navigation_ = true;
-    if (run_loop_.running())
-      run_loop_.Quit();
-  }
-
-  void Wait() {
-    if (!saw_navigation_)
-      run_loop_.Run();
-  }
-
- private:
-  // The url we want to see a navigation for.
-  GURL url_;
-
-  // Have we seen the navigation for |url_| yet?
-  bool saw_navigation_;
-
-  base::RunLoop run_loop_;
-
-  DISALLOW_COPY_AND_ASSIGN(NavigationErrorObserver);
-};
-
 IN_PROC_BROWSER_TEST_F(ExtensionResourceRequestPolicyTest,
                        IframeNavigateToInaccessible) {
   ASSERT_TRUE(embedded_test_server()->Start());
@@ -388,7 +355,21 @@ IN_PROC_BROWSER_TEST_F(ExtensionResourceRequestPolicyTest,
 
   GURL private_page(
       "chrome-extension://kegmjfcnjamahdnldjmlpachmpielcdk/private.html");
-  NavigationErrorObserver observer(web_contents, private_page);
   ASSERT_TRUE(content::ExecuteScript(web_contents, "navigateFrameNow()"));
-  observer.Wait();
+  WaitForLoadStop(web_contents);
+  EXPECT_NE(private_page, web_contents->GetLastCommittedURL());
+  std::string content;
+  EXPECT_TRUE(ExecuteScriptAndExtractString(
+      ChildFrameAt(web_contents->GetMainFrame(), 0),
+      "domAutomationController.send(document.body.innerText)", &content));
+
+  // The iframe should not load |private_page|, which is not web-accessible.
+  //
+  // TODO(alexmos): The failure mode differs on whether or not
+  // --isolate-extensions is used: if it is on, the request is canceled and we
+  // stay on public.html (see https://crbug.com/656752), and if it's off, the
+  // request is blocked in ExtensionNavigationThrottle, which loads an error
+  // page into the iframe.  This check handles both cases, but we should make
+  // the check stricter once --isolate-extensions is on by default.
+  EXPECT_NE("Private", content);
 }

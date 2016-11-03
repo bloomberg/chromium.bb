@@ -3,5 +3,6 @@
   "manifest_version": 2,
   "name": "window.open test",
   "description": "An extension for an extension UITest.",
-  "permissions": ["tabs"]
+  "permissions": ["tabs"],
+  "web_accessible_resources": ["newtab.html"]
 }
