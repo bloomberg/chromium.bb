@@ -782,20 +782,18 @@ void LayoutInline::absoluteQuadsForSelf(Vector<FloatQuad>& quads) const {
     context(FloatRect());
 }
 
+LayoutPoint LayoutInline::firstLineBoxTopLeft() const {
+  if (InlineBox* firstBox = firstLineBoxIncludingCulling())
+    return firstBox->topLeft();
+  return LayoutPoint();
+}
+
 LayoutUnit LayoutInline::offsetLeft(const Element* parent) const {
-  LayoutPoint topLeft;
-  if (InlineBox* firstBox = firstLineBoxIncludingCulling()) {
-    topLeft = firstBox->topLeft();
-  }
-  return adjustedPositionRelativeTo(topLeft, parent).x();
+  return adjustedPositionRelativeTo(firstLineBoxTopLeft(), parent).x();
 }
 
 LayoutUnit LayoutInline::offsetTop(const Element* parent) const {
-  LayoutPoint topLeft;
-  if (InlineBox* firstBox = firstLineBoxIncludingCulling()) {
-    topLeft = firstBox->topLeft();
-  }
-  return adjustedPositionRelativeTo(topLeft, parent).y();
+  return adjustedPositionRelativeTo(firstLineBoxTopLeft(), parent).y();
 }
 
 static LayoutUnit computeMargin(const LayoutInline* layoutObject,

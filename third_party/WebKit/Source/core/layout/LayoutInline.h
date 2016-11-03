@@ -211,6 +211,8 @@ class CORE_EXPORT LayoutInline : public LayoutBoxModelObject {
                            const HitTestLocation& locationInContainer,
                            const LayoutPoint& accumulatedOffset);
 
+  LayoutPoint firstLineBoxTopLeft() const;
+
   const char* name() const override { return "LayoutInline"; }
 
   LayoutRect debugRect() const override;

@@ -979,7 +979,7 @@ LayoutSize LayoutBoxModelObject::stickyPositionOffset() const {
 
 LayoutPoint LayoutBoxModelObject::adjustedPositionRelativeTo(
     const LayoutPoint& startPoint,
-    const Element* element) const {
+    const Element* offsetParent) const {
   // If the element is the HTML body element or doesn't have a parent
   // return 0 and stop this algorithm.
   if (isBody() || !parent())
@@ -987,13 +987,13 @@ LayoutPoint LayoutBoxModelObject::adjustedPositionRelativeTo(
 
   LayoutPoint referencePoint = startPoint;
 
-  // If the base element is null, return the distance between the canvas origin
-  // and the left border edge of the element and stop this algorithm.
-  if (!element)
+  // If the offsetParent is null, return the distance between the canvas origin
+  // and the left/top border edge of the element and stop this algorithm.
+  if (!offsetParent)
     return referencePoint;
 
-  if (const LayoutBoxModelObject* offsetParent =
-          element->layoutBoxModelObject()) {
+  if (const LayoutBoxModelObject* offsetParentObject =
+          offsetParent->layoutBoxModelObject()) {
     if (!isOutOfFlowPositioned()) {
       if (isInFlowPositioned())
         referencePoint.move(offsetForInFlowPosition());
@@ -1003,9 +1003,8 @@ LayoutPoint LayoutBoxModelObject::adjustedPositionRelativeTo(
       // continuations: <body style="display:inline;" id="offsetParent">
       // <div id="this">
       // This is why we have to do a nullptr check here.
-      // offset(Left|Top) is generally broken when offsetParent is inline.
       for (const LayoutObject* current = container();
-           current && current->node() != element;
+           current && current->node() != offsetParent;
            current = current->container()) {
         // FIXME: What are we supposed to do inside SVG content?
         referencePoint.move(current->columnOffset(referencePoint));
@@ -1013,13 +1012,31 @@ LayoutPoint LayoutBoxModelObject::adjustedPositionRelativeTo(
           referencePoint.moveBy(toLayoutBox(current)->topLeftLocation());
       }
 
-      if (offsetParent->isBox() && offsetParent->isBody() &&
-          !offsetParent->isPositioned())
-        referencePoint.moveBy(toLayoutBox(offsetParent)->topLeftLocation());
+      if (offsetParentObject->isBox() && offsetParentObject->isBody() &&
+          !offsetParentObject->isPositioned()) {
+        referencePoint.moveBy(
+            toLayoutBox(offsetParentObject)->topLeftLocation());
+      }
     }
-    if (offsetParent->isBox() && !offsetParent->isBody())
-      referencePoint.move(-toLayoutBox(offsetParent)->borderLeft(),
-                          -toLayoutBox(offsetParent)->borderTop());
+
+    if (offsetParentObject->isLayoutInline()) {
+      const LayoutInline* inlineParent = toLayoutInline(offsetParentObject);
+
+      if (isBox() && style()->position() == AbsolutePosition &&
+          inlineParent->isInFlowPositioned()) {
+        // Offset for absolute elements with inline parent is a special
+        // case in the CSS spec
+        referencePoint +=
+            inlineParent->offsetForInFlowPositionedInline(*toLayoutBox(this));
+      }
+
+      referencePoint -= inlineParent->firstLineBoxTopLeft();
+    }
+
+    if (offsetParentObject->isBox() && !offsetParentObject->isBody()) {
+      referencePoint.move(-toLayoutBox(offsetParentObject)->borderLeft(),
+                          -toLayoutBox(offsetParentObject)->borderTop());
+    }
   }
 
   return referencePoint;
