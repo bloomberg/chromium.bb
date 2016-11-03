@@ -9,6 +9,7 @@
 #include <vector>
 
 #include "base/memory/ptr_util.h"
+#include "base/strings/string_util.h"
 #include "base/time/time.h"
 #include "net/base/completion_callback.h"
 #include "net/base/net_errors.h"
@@ -27,8 +28,6 @@
 #include "net/tools/quic/quic_epoll_connection_helper.h"
 #include "net/tools/quic/quic_packet_writer_wrapper.h"
 #include "net/tools/quic/quic_spdy_client_stream.h"
-#include "net/tools/quic/spdy_balsa_utils.h"
-#include "net/tools/quic/test_tools/http_message.h"
 #include "net/tools/quic/test_tools/quic_client_peer.h"
 #include "url/gurl.h"
 
