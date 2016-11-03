@@ -1162,7 +1162,8 @@ TELEMETRY_GPU_INTEGRATION_TESTS = {
     'tester_configs': [
       {
         'fyi_only': True,
-        'os_types': ['linux']
+        'os_types': ['linux'],
+        'run_on_optional': True,
       }
     ],
     'target_name': 'webgl_conformance',
