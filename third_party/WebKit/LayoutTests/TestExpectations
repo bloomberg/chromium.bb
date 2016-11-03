@@ -531,8 +531,6 @@ crbug.com/264138 dom/xhtml/level3/core/nodecomparedocumentposition38.xhtml [ Fai
 crbug.com/410145 [ Win ] fast/table/column-in-inline.html [ Failure ]
 crbug.com/411164 [ Win ] http/tests/security/powerfulFeatureRestrictions/serviceworker-on-insecure-origin.html [ Pass ]
 
-crbug.com/660492 [ Linux ] storage/indexeddb/structured-clone.html [ Timeout ]
-
 # Diff of -expected.txt is too large to upload.
 Bug(tkent) imported/wpt/html/dom/reflection-embedded.html [ NeedsManualRebaseline ]
 Bug(tkent) imported/wpt/html/dom/reflection-forms.html [ NeedsManualRebaseline ]
@@ -1553,4 +1551,3 @@ crbug.com/657646 [ Win ] fast/text/font-stretch-variant.html [ Failure Pass ]
 crbug.com/657646 [ Win ] fast/text/drawBidiText.html [ Failure Pass ]
 crbug.com/657646 [ Win ] fast/text/font-features/caps-native-synthesis.html [ Failure Pass ]
 crbug.com/657646 [ Win ] fast/text/international/thai-line-breaks.html [ Failure Pass ]
-

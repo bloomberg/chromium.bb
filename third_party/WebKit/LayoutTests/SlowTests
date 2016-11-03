@@ -350,3 +350,5 @@ crbug.com/646528 compositing/lots-of-img-layers-with-opacity.html [ Slow ]
 # IndexedDB, which can be slow.
 crbug.com/660468 [ Linux ] storage/indexeddb/observer-frame.html [ Slow ]
 crbug.com/660468 [ Linux ] storage/indexeddb/observer-workers.html [ Slow ]
+
+crbug.com/660492 [ Linux ] storage/indexeddb/structured-clone.html [ Slow ]
