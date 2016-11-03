@@ -107,30 +107,6 @@ NGLogicalOffset& NGLogicalOffset::operator+=(const NGLogicalOffset& other) {
   return *this;
 }
 
-bool NGLogicalOffset::operator>(const NGLogicalOffset& other) const {
-  return inline_offset > other.inline_offset &&
-         block_offset > other.block_offset;
-}
-
-bool NGLogicalOffset::operator>=(const NGLogicalOffset& other) const {
-  return inline_offset >= other.inline_offset &&
-         block_offset >= other.block_offset;
-}
-
-bool NGLogicalOffset::operator<(const NGLogicalOffset& other) const {
-  return inline_offset < other.inline_offset &&
-         block_offset < other.block_offset;
-}
-
-bool NGLogicalOffset::operator<=(const NGLogicalOffset& other) const {
-  return inline_offset <= other.inline_offset &&
-         block_offset <= other.block_offset;
-}
-
-String NGLogicalOffset::ToString() const {
-  return String::format("%dx%d", inline_offset.toInt(), block_offset.toInt());
-}
-
 bool NGBoxStrut::IsEmpty() const {
   return *this == NGBoxStrut();
 }
