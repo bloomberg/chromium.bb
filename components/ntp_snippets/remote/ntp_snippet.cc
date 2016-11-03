@@ -187,7 +187,9 @@ std::unique_ptr<NTPSnippet> NTPSnippet::CreateFromContentSuggestionsDictionary(
   GetURLValue(dict, "ampUrl", &source->amp_url);  // May fail; OK.
   // TODO(sfiera): also favicon URL.
 
-  snippet->score_ = 0.0;  // TODO(sfiera): put score in protocol.
+  double score;
+  if (dict.GetDouble("score", &score))
+    snippet->set_score(score);
 
   return snippet;
 }

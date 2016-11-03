@@ -42,7 +42,8 @@ TEST(NTPSnippetTest, FromChromeContentSuggestionsDictionary) {
       "  \"attribution\" : \"Foo News\","
       "  \"imageUrl\" : \"http://localhost/foobar.jpg\","
       "  \"ampUrl\" : \"http://localhost/amp\","
-      "  \"faviconUrl\" : \"http://localhost/favicon.ico\" "
+      "  \"faviconUrl\" : \"http://localhost/favicon.ico\", "
+      "  \"score\": 9001\n"
       "}";
   auto snippet = SnippetFromContentSuggestionJSON(kJsonStr);
   ASSERT_THAT(snippet, testing::NotNull());
@@ -51,6 +52,7 @@ TEST(NTPSnippetTest, FromChromeContentSuggestionsDictionary) {
   EXPECT_EQ(snippet->title(), "Foo Barred from Baz");
   EXPECT_EQ(snippet->snippet(), "...");
   EXPECT_EQ(snippet->salient_image_url(), GURL("http://localhost/foobar.jpg"));
+  EXPECT_EQ(snippet->score(), 9001);
   auto unix_publish_date = snippet->publish_date() - base::Time::UnixEpoch();
   auto expiry_duration = snippet->expiry_date() - snippet->publish_date();
   EXPECT_FLOAT_EQ(unix_publish_date.InSecondsF(), 1467284497.000000f);
