@@ -119,6 +119,7 @@ class USER_MANAGER_EXPORT User : public UserInfo {
 
   // The email the user used to log in.
   // TODO(alemate): rename this to GetUserEmail() (see crbug.com/548923)
+  // Deprecated, do not use! Use GetAccountId().GetUserEmail() instead.
   const std::string& email() const;
 
   // The displayed user name.
