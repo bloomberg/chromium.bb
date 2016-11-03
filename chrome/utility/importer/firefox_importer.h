@@ -9,6 +9,7 @@
 #include <stdint.h>
 
 #include <map>
+#include <memory>
 #include <set>
 #include <string>
 #include <vector>
@@ -39,7 +40,7 @@ class FirefoxImporter : public Importer {
                    ImporterBridge* bridge) override;
 
  private:
-  typedef std::map<int64_t, std::set<GURL>> FaviconMap;
+  using FaviconMap = std::map<int64_t, std::set<GURL>>;
 
   ~FirefoxImporter() override;
 
@@ -57,7 +58,7 @@ class FirefoxImporter : public Importer {
 
   // The struct stores the information about a bookmark item.
   struct BookmarkItem;
-  typedef std::vector<BookmarkItem*> BookmarkList;
+  using BookmarkList = std::vector<std::unique_ptr<BookmarkItem>>;
 
   // Gets the specific IDs of bookmark root node from |db|.
   void LoadRootNodeID(sql::Connection* db, int* toolbar_folder_id,
