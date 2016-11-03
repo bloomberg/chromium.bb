@@ -108,8 +108,9 @@ void AutofillExternalDelegate::OnSuggestionsReturned(
   if (has_autofill_suggestions_)
     ApplyAutofillOptions(&suggestions);
 
-  // Append the credit card signin promo, if appropriate.
-  if (should_show_cc_signin_promo_) {
+  // Append the credit card signin promo, if appropriate (there are no other
+  // suggestions).
+  if (suggestions.empty() && should_show_cc_signin_promo_) {
 // No separator on Android.
 #if !defined(OS_ANDROID)
     // If there are autofill suggestions, the "Autofill options" row was added

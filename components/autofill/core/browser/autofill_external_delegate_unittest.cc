@@ -195,26 +195,22 @@ TEST_F(AutofillExternalDelegateUnitTest, TestExternalDelegateVirtualCalls) {
                                           0);
 }
 
-// Test that our external delegate properly adds the signin promo and its
+// Test that our external delegate does not add the signin promo and its
 // separator in the popup items when there are suggestions.
 TEST_F(AutofillExternalDelegateUnitTest,
-       TestSigninPromoIsAdded_WithSuggestions) {
+       TestSigninPromoIsNotAdded_WithSuggestions) {
   EXPECT_CALL(*autofill_manager_, ShouldShowCreditCardSigninPromo(_, _))
       .WillOnce(testing::Return(true));
 
   IssueOnQuery(kQueryId);
 
   // The enums must be cast to ints to prevent compile errors on linux_rel.
-  auto element_ids = testing::ElementsAre(
-      kAutofillProfileId,
+  auto element_ids =
+      testing::ElementsAre(kAutofillProfileId,
 #if !defined(OS_ANDROID)
-      static_cast<int>(POPUP_ITEM_ID_SEPARATOR),
+                           static_cast<int>(POPUP_ITEM_ID_SEPARATOR),
 #endif
-      static_cast<int>(POPUP_ITEM_ID_AUTOFILL_OPTIONS),
-#if !defined(OS_ANDROID)
-      static_cast<int>(POPUP_ITEM_ID_SEPARATOR),
-#endif
-      static_cast<int>(POPUP_ITEM_ID_CREDIT_CARD_SIGNIN_PROMO));
+                           static_cast<int>(POPUP_ITEM_ID_AUTOFILL_OPTIONS));
 
   EXPECT_CALL(autofill_client_,
               ShowAutofillPopup(_, _, SuggestionVectorIdsAre(element_ids), _));
@@ -226,7 +222,7 @@ TEST_F(AutofillExternalDelegateUnitTest,
   autofill_item.push_back(Suggestion());
   autofill_item[0].frontend_id = kAutofillProfileId;
   external_delegate_->OnSuggestionsReturned(kQueryId, autofill_item);
-  EXPECT_EQ(1, user_action_tester.GetActionCount(
+  EXPECT_EQ(0, user_action_tester.GetActionCount(
                    "Signin_Impression_FromAutofillDropdown"));
 
   EXPECT_CALL(
