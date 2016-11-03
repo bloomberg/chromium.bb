@@ -8,12 +8,12 @@ import android.content.Context;
 import android.content.Intent;
 import android.os.AsyncTask;
 
-import org.chromium.base.CommandLine;
 import org.chromium.base.annotations.CalledByNative;
 import org.chromium.chrome.browser.tab.Tab;
 import org.chromium.chrome.browser.tabmodel.TabModel.TabLaunchType;
 import org.chromium.chrome.browser.tabmodel.document.AsyncTabCreationParams;
 import org.chromium.chrome.browser.tabmodel.document.TabDelegate;
+import org.chromium.chrome.browser.webapps.ChromeWebApkHost;
 import org.chromium.chrome.browser.webapps.WebappDataStorage;
 import org.chromium.chrome.browser.webapps.WebappRegistry;
 import org.chromium.content_public.browser.LoadUrlParams;
@@ -58,7 +58,7 @@ public class ServiceTabLauncher {
         final TabDelegate tabDelegate = new TabDelegate(incognito);
 
         // 1. Launch WebAPK if one matches the target URL.
-        if (CommandLine.getInstance().hasSwitch(ChromeSwitches.ENABLE_WEBAPK)) {
+        if (ChromeWebApkHost.isEnabled()) {
             String webApkPackageName = WebApkValidator.queryWebApkPackage(context, url);
             if (webApkPackageName != null) {
                 Intent intent =
