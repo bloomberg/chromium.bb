@@ -254,7 +254,7 @@ class CORE_EXPORT LayoutBox : public LayoutBoxModelObject {
 
   // Logical height of the object, including content overflowing the
   // border-after edge.
-  LayoutUnit logicalHeightWithVisibleOverflow() const;
+  virtual LayoutUnit logicalHeightWithVisibleOverflow() const;
 
   LayoutUnit constrainLogicalWidthByMinMax(LayoutUnit,
                                            LayoutUnit,

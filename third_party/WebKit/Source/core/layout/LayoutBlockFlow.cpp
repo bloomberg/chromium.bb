@@ -3899,6 +3899,11 @@ LayoutUnit LayoutBlockFlow::nextFloatLogicalBottomBelowForBlock(
       logicalHeight);
 }
 
+LayoutUnit LayoutBlockFlow::logicalHeightWithVisibleOverflow() const {
+  LayoutUnit logicalHeight = LayoutBlock::logicalHeightWithVisibleOverflow();
+  return std::max(logicalHeight, lowestFloatLogicalBottom());
+}
+
 Node* LayoutBlockFlow::nodeForHitTest() const {
   // If we are in the margins of block elements that are part of a
   // continuation we're actually still inside the enclosing element
