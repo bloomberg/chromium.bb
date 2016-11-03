@@ -56,18 +56,6 @@ public abstract class MediaSessionObserver {
     public void mediaSessionMetadataChanged(MediaMetadata metadata) {}
 
     /**
-     * Called when the observed {@link MediaSession} has enabled an action.
-     * @param action The enabled action.
-     */
-    public void mediaSessionEnabledAction(int action) {}
-
-    /**
-     * Called when the observed {@link MediaSession} has disabled an action.
-     * @param action The disabled action.
-     */
-    public void mediaSessionDisabledAction(int action) {}
-
-    /**
      * Stop observing the media session. Users must explicitly call this before dereferencing the
      * observer.
      */

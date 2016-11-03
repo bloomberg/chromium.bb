@@ -12,7 +12,6 @@
 
 namespace content {
 
-class MediaSessionImpl;
 class RenderFrameHost;
 
 // There is one MediaSessionService per frame.
@@ -22,7 +21,6 @@ class MediaSessionServiceImpl : public blink::mojom::MediaSessionService {
 
   static void Create(RenderFrameHost* render_frame_host,
                      blink::mojom::MediaSessionServiceRequest request);
-  const blink::mojom::MediaSessionClientPtr& GetClient() { return client_; }
 
  private:
   explicit MediaSessionServiceImpl(RenderFrameHost* render_frame_host);
@@ -35,10 +33,6 @@ class MediaSessionServiceImpl : public blink::mojom::MediaSessionService {
 
   void EnableAction(blink::mojom::MediaSessionAction action) override;
   void DisableAction(blink::mojom::MediaSessionAction action) override;
-
-  // Returns the content::MediaSession this service is associated with. Only
-  // returns non-null when this service is in the top-level frame.
-  MediaSessionImpl* GetMediaSession();
 
   void Bind(blink::mojom::MediaSessionServiceRequest request);
 

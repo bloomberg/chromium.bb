@@ -10,12 +10,6 @@
 #include "content/common/content_export.h"
 #include "content/public/common/media_metadata.h"
 
-namespace blink {
-namespace mojom {
-enum class MediaSessionAction;
-}  // namespace mojom
-}  // namespace blink
-
 namespace content {
 
 class MediaSession;
@@ -40,14 +34,6 @@ class CONTENT_EXPORT MediaSessionObserver {
   // Called when the observed MediaSession has changed metadata.
   virtual void MediaSessionMetadataChanged(
       const base::Optional<MediaMetadata>& metadata) {}
-
-  // Called when media session action is enabled.
-  virtual void MediaSessionEnabledAction(
-      blink::mojom::MediaSessionAction action) {}
-
-  // Called when media session action is disabled.
-  virtual void MediaSessionDisabledAction(
-      blink::mojom::MediaSessionAction action) {}
 
  protected:
   // Create a MediaSessionObserver and start observing a session.

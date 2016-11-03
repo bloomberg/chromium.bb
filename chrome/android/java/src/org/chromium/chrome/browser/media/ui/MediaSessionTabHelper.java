@@ -13,7 +13,6 @@ import android.text.TextUtils;
 import org.chromium.base.ContextUtils;
 import org.chromium.base.Log;
 import org.chromium.base.VisibleForTesting;
-import org.chromium.blink.mojom.MediaSessionAction;
 import org.chromium.chrome.R;
 import org.chromium.chrome.browser.metrics.MediaNotificationUma;
 import org.chromium.chrome.browser.metrics.MediaSessionUMA;
@@ -29,8 +28,6 @@ import org.chromium.ui.base.WindowAndroid;
 
 import java.net.URI;
 import java.net.URISyntaxException;
-import java.util.HashSet;
-import java.util.Set;
 
 import javax.annotation.Nullable;
 
@@ -59,7 +56,6 @@ public class MediaSessionTabHelper implements MediaImageCallback {
     // The currently showing metadata.
     private MediaMetadata mCurrentMetadata = null;
     private MediaImageManager mMediaImageManager = null;
-    private Set<Integer> mMediaSessionActions = new HashSet<Integer>();
 
     @VisibleForTesting
     @Nullable
@@ -95,14 +91,6 @@ public class MediaSessionTabHelper implements MediaImageCallback {
 
             if (mMediaSessionObserver.getMediaSession() != null) {
                 mMediaSessionObserver.getMediaSession().stop();
-            }
-        }
-
-        @Override
-        public void onMediaSessionAction(int action) {
-            if (!MediaSessionAction.isKnownValue(action)) return;
-            if (mMediaSessionObserver != null) {
-                mMediaSessionObserver.getMediaSession().didReceiveAction(action);
             }
         }
     };
@@ -157,8 +145,7 @@ public class MediaSessionTabHelper implements MediaImageCallback {
                                         | MediaNotificationInfo.ACTION_SWIPEAWAY)
                                 .setContentIntent(contentIntent)
                                 .setId(R.id.media_playback_notification)
-                                .setListener(mControlsListener)
-                                .setMediaSessionActions(mMediaSessionActions);
+                                .setListener(mControlsListener);
 
                 MediaNotificationManager.show(ContextUtils.getApplicationContext(),
                         mNotificationInfoBuilder.build());
@@ -177,20 +164,6 @@ public class MediaSessionTabHelper implements MediaImageCallback {
                             MediaSessionTabHelper.this);
                 }
                 updateNotificationMetadata();
-            }
-
-            @Override
-            public void mediaSessionEnabledAction(int action) {
-                if (!MediaSessionAction.isKnownValue(action)) return;
-                mMediaSessionActions.add(action);
-                updateNotificationActions();
-            }
-
-            @Override
-            public void mediaSessionDisabledAction(int action) {
-                if (!MediaSessionAction.isKnownValue(action)) return;
-                mMediaSessionActions.remove(action);
-                updateNotificationActions();
             }
         };
     }
@@ -213,7 +186,6 @@ public class MediaSessionTabHelper implements MediaImageCallback {
         if (mMediaSessionObserver == null) return;
         mMediaSessionObserver.stopObserving();
         mMediaSessionObserver = null;
-        mMediaSessionActions.clear();
     }
 
     private final TabObserver mTabObserver = new EmptyTabObserver() {
@@ -396,14 +368,6 @@ public class MediaSessionTabHelper implements MediaImageCallback {
         }
 
         return new MediaMetadata(title, artist, album);
-    }
-
-    private void updateNotificationActions() {
-        if (mNotificationInfoBuilder == null) return;
-
-        mNotificationInfoBuilder.setMediaSessionActions(mMediaSessionActions);
-        MediaNotificationManager.show(
-                ContextUtils.getApplicationContext(), mNotificationInfoBuilder.build());
     }
 
     @Override

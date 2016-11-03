@@ -217,9 +217,6 @@ public class CastNotificationControl implements MediaRouteController.UiListener,
         mMediaRouteController.release();
     }
 
-    @Override
-    public void onMediaSessionAction(int action) {}
-
     // AudioManager.OnAudioFocusChangeListener methods
     @Override
     public void onAudioFocusChange(int focusChange) {

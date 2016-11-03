@@ -14,17 +14,9 @@ namespace content {
 
 MediaSessionServiceImpl::MediaSessionServiceImpl(
     RenderFrameHost* render_frame_host)
-    : render_frame_host_(render_frame_host) {
-  MediaSessionImpl* session = GetMediaSession();
-  if (session)
-    session->SetMediaSessionService(this);
-}
+    : render_frame_host_(render_frame_host) {}
 
-MediaSessionServiceImpl::~MediaSessionServiceImpl() {
-  MediaSessionImpl* session = GetMediaSession();
-  if (session && session->GetMediaSessionService() == this)
-    session->SetMediaSessionService(nullptr);
-}
+MediaSessionServiceImpl::~MediaSessionServiceImpl() = default;
 
 // static
 void MediaSessionServiceImpl::Create(
@@ -51,33 +43,22 @@ void MediaSessionServiceImpl::SetMetadata(
     return;
   }
 
-  MediaSessionImpl* session = GetMediaSession();
-  if (session)
-    session->SetMetadata(metadata);
+  WebContentsImpl* contents = static_cast<WebContentsImpl*>(
+      WebContentsImpl::FromRenderFrameHost(render_frame_host_));
+  if (contents)
+    MediaSessionImpl::Get(contents)->SetMetadata(metadata);
 }
 
 void MediaSessionServiceImpl::EnableAction(
     blink::mojom::MediaSessionAction action) {
-  MediaSessionImpl* session = GetMediaSession();
-  if (session)
-    session->OnMediaSessionEnabledAction(action);
+  // TODO(zqzhang): Plumb this signal to Java. See https://crbug.com/656563
+  NOTIMPLEMENTED();
 }
 
 void MediaSessionServiceImpl::DisableAction(
     blink::mojom::MediaSessionAction action) {
-  MediaSessionImpl* session = GetMediaSession();
-  if (session)
-    session->OnMediaSessionDisabledAction(action);
-}
-
-MediaSessionImpl* MediaSessionServiceImpl::GetMediaSession() {
-  WebContentsImpl* contents = static_cast<WebContentsImpl*>(
-      WebContentsImpl::FromRenderFrameHost(render_frame_host_));
-  if (!contents)
-    return nullptr;
-  if (render_frame_host_ != contents->GetMainFrame())
-    return nullptr;
-  return MediaSessionImpl::Get(contents);
+  // TODO(zqzhang): Plumb this signal to Java. See https://crbug.com/656563
+  NOTIMPLEMENTED();
 }
 
 void MediaSessionServiceImpl::Bind(

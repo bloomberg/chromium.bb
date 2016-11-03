@@ -35,7 +35,6 @@ import android.view.KeyEvent;
 
 import org.chromium.base.ContextUtils;
 import org.chromium.base.VisibleForTesting;
-import org.chromium.blink.mojom.MediaSessionAction;
 import org.chromium.chrome.R;
 import org.chromium.content_public.common.MediaMetadata;
 
@@ -56,9 +55,6 @@ public class MediaNotificationManager {
     // TODO(zqzhang): use android.R.dimen.media_notification_expanded_image_max_size when Android
     // SDK is rolled to level 24. See https://crbug.com/645059
     private static final int N_LARGE_ICON_SIZE_DP = 94;
-
-    // The maximum number of actions in CompactView media notification.
-    private static final int MAXIMUM_NUM_ACTIONS_IN_COMPACT_VIEW = 3;
 
     // We're always used on the UI thread but the LOCK is required by lint when creating the
     // singleton.
@@ -83,10 +79,6 @@ public class MediaNotificationManager {
                 "MediaNotificationManager.ListenerService.SWIPE";
         private static final String ACTION_CANCEL =
                 "MediaNotificationManager.ListenerService.CANCEL";
-        private static final String ACTION_PREVIOUS_TRACK =
-                "MediaNotificationManager.ListenerService.PREVIOUS_TRACK";
-        private static final String ACTION_NEXT_TRACK =
-                "MediaNotificationManager.ListenerService.NEXT_TRACK";
 
         @Override
         public IBinder onBind(Intent intent) {
@@ -170,10 +162,6 @@ public class MediaNotificationManager {
                 manager.onPause(MediaNotificationListener.ACTION_SOURCE_MEDIA_NOTIFICATION);
             } else if (AudioManager.ACTION_AUDIO_BECOMING_NOISY.equals(action)) {
                 manager.onPause(MediaNotificationListener.ACTION_SOURCE_HEADSET_UNPLUG);
-            } else if (ACTION_PREVIOUS_TRACK.equals(action)) {
-                manager.onMediaSessionAction(MediaSessionAction.PREVIOUS_TRACK);
-            } else if (ACTION_NEXT_TRACK.equals(action)) {
-                manager.onMediaSessionAction(MediaSessionAction.NEXT_TRACK);
             }
         }
     }
@@ -462,8 +450,6 @@ public class MediaNotificationManager {
     private final String mPlayDescription;
     private final String mPauseDescription;
     private final String mStopDescription;
-    private final String mPreviousTrackDescription;
-    private final String mNextTrackDescription;
 
     private NotificationCompat.Builder mNotificationBuilder;
 
@@ -495,9 +481,6 @@ public class MediaNotificationManager {
         mPlayDescription = context.getResources().getString(R.string.accessibility_play);
         mPauseDescription = context.getResources().getString(R.string.accessibility_pause);
         mStopDescription = context.getResources().getString(R.string.accessibility_stop);
-        mPreviousTrackDescription =
-                context.getResources().getString(R.string.accessibility_previous_track);
-        mNextTrackDescription = context.getResources().getString(R.string.accessibility_next_track);
     }
 
     /**
@@ -537,10 +520,6 @@ public class MediaNotificationManager {
 
     private void onStop(int actionSource) {
         mMediaNotificationInfo.listener.onStop(actionSource);
-    }
-
-    private void onMediaSessionAction(int action) {
-        mMediaNotificationInfo.listener.onMediaSessionAction(action);
     }
 
     private void showNotification(MediaNotificationInfo mediaNotificationInfo) {
@@ -726,24 +705,11 @@ public class MediaNotificationManager {
         // removing the time.
         builder.setShowWhen(false).setWhen(0);
 
-        addNotificationButtons(builder);
-    }
-
-    private void addNotificationButtons(NotificationCompat.Builder builder) {
         // Only apply MediaStyle when NotificationInfo supports play/pause.
         if (mMediaNotificationInfo.supportsPlayPause()) {
             NotificationCompat.MediaStyle style = new NotificationCompat.MediaStyle();
             style.setMediaSession(mMediaSession.getSessionToken());
 
-            int numAddedActions = 0;
-
-            if (mMediaNotificationInfo.mediaSessionActions.contains(
-                        MediaSessionAction.PREVIOUS_TRACK)) {
-                builder.addAction(R.drawable.ic_media_control_skip_previous,
-                        mPreviousTrackDescription,
-                        createPendingIntent(ListenerService.ACTION_PREVIOUS_TRACK));
-                ++numAddedActions;
-            }
             if (mMediaNotificationInfo.isPaused) {
                 builder.addAction(R.drawable.ic_media_control_play, mPlayDescription,
                         createPendingIntent(ListenerService.ACTION_PLAY));
@@ -752,17 +718,7 @@ public class MediaNotificationManager {
                 builder.addAction(R.drawable.ic_media_control_pause, mPauseDescription,
                         createPendingIntent(ListenerService.ACTION_PAUSE));
             }
-            ++numAddedActions;
-            if (mMediaNotificationInfo.mediaSessionActions.contains(
-                        MediaSessionAction.NEXT_TRACK)) {
-                builder.addAction(R.drawable.ic_media_control_skip_next, mNextTrackDescription,
-                        createPendingIntent(ListenerService.ACTION_NEXT_TRACK));
-                ++numAddedActions;
-            }
-            numAddedActions = Math.min(numAddedActions, MAXIMUM_NUM_ACTIONS_IN_COMPACT_VIEW);
-            int[] compactViewActions = new int[numAddedActions];
-            for (int i = 0; i < numAddedActions; ++i) compactViewActions[i] = i;
-            style.setShowActionsInCompactView(compactViewActions);
+            style.setShowActionsInCompactView(0);
             style.setCancelButtonIntent(createPendingIntent(ListenerService.ACTION_CANCEL));
             style.setShowCancelButton(true);
             builder.setStyle(style);

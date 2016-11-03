@@ -1899,12 +1899,6 @@ To obtain new licenses, connect to the internet and play your downloaded content
       <message name="IDS_ACCESSIBILITY_STOP" desc="Content description for the stop button that stops playing the media.">
         Stop
       </message>
-      <message name="IDS_ACCESSIBILITY_PREVIOUS_TRACK" desc="Content description for the previous track button that switchs media to the previous track.">
-        Previous track
-      </message>
-      <message name="IDS_ACCESSIBILITY_NEXT_TRACK" desc="Content description for the next track button that switchs media to the next track.">
-        Next track
-      </message>
 
       <!-- New Tab Page strings -->
       <message name="IDS_NTP_BOOKMARKS" desc="Text for bookmarks button [CHAR-LIMIT=20]">
