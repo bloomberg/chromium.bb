@@ -179,12 +179,8 @@ ScriptPromise RemotePlayback::prompt() {
     m_promptPromiseResolver = resolver;
     m_mediaElement->requestRemotePlayback();
   } else {
+    m_promptPromiseResolver = resolver;
     m_mediaElement->requestRemotePlaybackControl();
-    // TODO(avayvod): Need to keep the resolver until user chooses to stop
-    // the remote playback (resolve) or dismisses the UI (reject).
-    // Steps 11 and 12 of the prompt() algorithm.
-    // https://crbug.com/647441
-    resolver->resolve();
   }
 
   return promise;
@@ -212,14 +208,20 @@ void RemotePlayback::stateChanged(WebRemotePlaybackState state) {
   // We may get a "disconnected" state change while in the "disconnected"
   // state if initiated connection fails. So cleanup the promise resolvers
   // before checking if anything changed.
-  // TODO(avayvod): cleanup this logic when we implementing the "connecting"
+  // TODO(avayvod): cleanup this logic when implementing the "connecting"
   // state.
   if (m_promptPromiseResolver) {
-    if (state != WebRemotePlaybackState::Disconnected)
-      m_promptPromiseResolver->resolve();
-    else
+    // Changing state to Disconnected from "disconnected" or "connecting" means
+    // that establishing connection with remote playback device failed.
+    // Changing state to anything else means the state change intended by
+    // prompt() succeeded.
+    if (m_state != WebRemotePlaybackState::Connected &&
+        state == WebRemotePlaybackState::Disconnected) {
       m_promptPromiseResolver->reject(DOMException::create(
           AbortError, "Failed to connect to the remote device."));
+    } else {
+      m_promptPromiseResolver->resolve();
+    }
     m_promptPromiseResolver = nullptr;
   }
 
