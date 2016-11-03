@@ -107,8 +107,6 @@ function defineProperty(obj, key, value) {
  *     properties and |readonly| are read-only properties.
  */
 function expose(publicClass, privateClass, exposed) {
-  DCHECK(!(privateClass.prototype instanceof $Object.self));
-
   $Object.setPrototypeOf(exposed, null);
 
   // This should be called by publicClass.
