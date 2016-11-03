@@ -30,7 +30,7 @@ class UserManagerUIBrowserTest : public InProcessBrowserTest,
 
 IN_PROC_BROWSER_TEST_F(UserManagerUIBrowserTest, PageLoads) {
   ui_test_utils::NavigateToURL(
-      browser(), GURL(chrome::kChromeUIUserManagerURL));
+      browser(), GURL(chrome::kChromeUIMdUserManagerUrl));
   content::WebContents* web_contents =
       browser()->tab_strip_model()->GetActiveWebContents();
 
@@ -59,7 +59,7 @@ IN_PROC_BROWSER_TEST_F(UserManagerUIBrowserTest, PageLoads) {
 }
 
 IN_PROC_BROWSER_TEST_F(UserManagerUIBrowserTest, PageRedirectsToAboutChrome) {
-  std::string user_manager_url = chrome::kChromeUIUserManagerURL;
+  std::string user_manager_url = chrome::kChromeUIMdUserManagerUrl;
   user_manager_url += profiles::kUserManagerSelectProfileAboutChrome;
 
   ui_test_utils::NavigateToURL(browser(), GURL(user_manager_url));

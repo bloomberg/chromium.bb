@@ -76,7 +76,6 @@ const char kChromeUIPluginsURL[] = "chrome://plugins/";
 const char kChromeUIPolicyURL[] = "chrome://policy/";
 const char kChromeUIProfileSigninConfirmationURL[] =
     "chrome://profile-signin-confirmation/";
-const char kChromeUIUserManagerURL[] = "chrome://user-manager/";
 const char kChromeUIMdUserManagerUrl[] = "chrome://md-user-manager/";
 const char kChromeUIPrintURL[] = "chrome://print/";
 const char kChromeUIQuitURL[] = "chrome://quit/";
@@ -226,7 +225,6 @@ const char kChromeUIComponentsHost[] = "components";
 const char kChromeUIPolicyHost[] = "policy";
 const char kChromeUIProfileSigninConfirmationHost[] =
     "profile-signin-confirmation";
-const char kChromeUIUserManagerHost[] = "user-manager";
 const char kChromeUIMdUserManagerHost[] = "md-user-manager";
 const char kChromeUIPredictorsHost[] = "predictors";
 const char kChromeUIProfilerHost[] = "profiler";

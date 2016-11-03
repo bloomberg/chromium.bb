@@ -137,15 +137,8 @@ void OnUserManagerSystemProfileCreated(
   if (status != Profile::CREATE_STATUS_INITIALIZED || callback.is_null())
     return;
 
-  // Force Material Design user manager on when Material Design settings are on.
-  bool use_material_design_user_manager =
-      switches::IsMaterialDesignUserManager() ||
-      base::FeatureList::IsEnabled(features::kMaterialDesignSettings);
-
   // Tell the webui which user should be focused.
-  std::string page = use_material_design_user_manager
-                         ? chrome::kChromeUIMdUserManagerUrl
-                         : chrome::kChromeUIUserManagerURL;
+  std::string page = chrome::kChromeUIMdUserManagerUrl;
 
   if (tutorial_mode == profiles::USER_MANAGER_TUTORIAL_OVERVIEW) {
     page += profiles::kUserManagerDisplayTutorial;

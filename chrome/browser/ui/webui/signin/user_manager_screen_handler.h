@@ -77,7 +77,6 @@ class UserManagerScreenHandler
                          const std::string& key_label) override;
 
   void HandleInitialize(const base::ListValue* args);
-  void HandleAddUser(const base::ListValue* args);
   void HandleAuthenticatedLaunchUser(const base::ListValue* args);
   void HandleLaunchGuest(const base::ListValue* args);
   void HandleLaunchUser(const base::ListValue* args);

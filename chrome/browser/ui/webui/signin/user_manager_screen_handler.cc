@@ -92,7 +92,6 @@ const char kKeyIsProfileLoaded[] = "isProfileLoaded";
 
 // JS API callback names.
 const char kJsApiUserManagerInitialize[] = "userManagerInitialize";
-const char kJsApiUserManagerAddUser[] = "addUser";
 const char kJsApiUserManagerAuthLaunchUser[] = "authenticatedLaunchUser";
 const char kJsApiUserManagerLaunchGuest[] = "launchGuest";
 const char kJsApiUserManagerLaunchUser[] = "launchUser";
@@ -405,18 +404,6 @@ void UserManagerScreenHandler::HandleInitialize(const base::ListValue* args) {
   proximity_auth::ScreenlockBridge::Get()->SetLockHandler(this);
 }
 
-void UserManagerScreenHandler::HandleAddUser(const base::ListValue* args) {
-  if (!IsAddPersonEnabled()) {
-    // The 'Add User' UI should not be showing.
-    NOTREACHED();
-    return;
-  }
-  profiles::CreateAndSwitchToNewProfile(
-      base::Bind(&UserManagerScreenHandler::OnSwitchToProfileComplete,
-                 weak_ptr_factory_.GetWeakPtr()),
-      ProfileMetrics::ADD_NEW_USER_MANAGER);
-}
-
 void UserManagerScreenHandler::HandleAuthenticatedLaunchUser(
     const base::ListValue* args) {
   const base::Value* profile_path_value;
@@ -499,8 +486,7 @@ void UserManagerScreenHandler::HandleRemoveUser(const base::ListValue* args) {
 
   DCHECK(profiles::IsMultipleProfilesEnabled());
 
-  if (switches::IsMaterialDesignUserManager() &&
-      profiles::AreAllNonChildNonSupervisedProfilesLocked()) {
+  if (profiles::AreAllNonChildNonSupervisedProfilesLocked()) {
     web_ui()->CallJavascriptFunctionUnsafe(
         "cr.webUIListenerCallback",
         base::StringValue("show-error-dialog"),
@@ -719,9 +705,6 @@ void UserManagerScreenHandler::OnNetworkError(int response_code) {
 void UserManagerScreenHandler::RegisterMessages() {
   web_ui()->RegisterMessageCallback(kJsApiUserManagerInitialize,
       base::Bind(&UserManagerScreenHandler::HandleInitialize,
-                 base::Unretained(this)));
-  web_ui()->RegisterMessageCallback(kJsApiUserManagerAddUser,
-      base::Bind(&UserManagerScreenHandler::HandleAddUser,
                  base::Unretained(this)));
   web_ui()->RegisterMessageCallback(kJsApiUserManagerAuthLaunchUser,
       base::Bind(&UserManagerScreenHandler::HandleAuthenticatedLaunchUser,

@@ -136,10 +136,6 @@ bool UsePasswordSeparatedSigninFlow() {
       switches::kUsePasswordSeparatedSigninFlow);
 }
 
-bool IsMaterialDesignUserManager() {
-  return base::FeatureList::IsEnabled(switches::kMaterialDesignUserManager);
-}
-
 bool IsMaterialDesignUserMenu() {
   return base::FeatureList::IsEnabled(switches::kMaterialDesignUserMenu);
 }

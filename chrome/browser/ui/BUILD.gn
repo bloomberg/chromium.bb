@@ -1965,8 +1965,6 @@ split_static_library("ui") {
       "webui/signin/sync_confirmation_ui.h",
       "webui/signin/user_manager_screen_handler.cc",
       "webui/signin/user_manager_screen_handler.h",
-      "webui/signin/user_manager_ui.cc",
-      "webui/signin/user_manager_ui.h",
       "webui/welcome_handler.cc",
       "webui/welcome_handler.h",
       "webui/welcome_ui.cc",
