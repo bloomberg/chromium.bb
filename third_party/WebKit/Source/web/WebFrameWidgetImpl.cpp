@@ -269,8 +269,10 @@ void WebFrameWidgetImpl::updateLayerTreeViewport() {
   if (!page() || !m_layerTreeView)
     return;
 
-  // FIXME: We need access to page scale information from the WebView.
-  m_layerTreeView->setPageScaleFactorAndLimits(1, 1, 1);
+  // Pass the limits even though this is for subframes, as the limits will be
+  // needed in setting the raster scale.
+  m_layerTreeView->setPageScaleFactorAndLimits(
+      1, view()->minimumPageScaleFactor(), view()->maximumPageScaleFactor());
 }
 
 void WebFrameWidgetImpl::updateLayerTreeBackgroundColor() {
