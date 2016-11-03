@@ -4969,7 +4969,7 @@ void RenderFrameImpl::SendDidCommitProvisionalLoad(
       base::debug::SetCrashKeyValue(
           "origin_mismatch_same_page",
           base::IntToString(params.was_within_same_page));
-      CHECK(params.origin.IsSameOriginWith(url::Origin(params.url)))
+      CHECK(params.origin.IsSamePhysicalOriginWith(url::Origin(params.url)))
           << " url:" << params.url << " origin:" << params.origin;
     }
   }
