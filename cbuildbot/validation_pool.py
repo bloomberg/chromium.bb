@@ -1581,7 +1581,10 @@ class ValidationPool(object):
     changes_in_manifest = []
     changes_not_in_manifest = []
     for change in changes:
+      # TODO: temp log to debug crbug.com/661704
+      logging.info('Checking for change %s', change)
       if change.GetCheckout(manifest, strict=False):
+        logging.info('Found manifest change %s', change)
         changes_in_manifest.append(change)
       elif change.IsMergeable():
         logging.info('Found non-manifest change %s', change)
