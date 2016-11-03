@@ -19,7 +19,7 @@ const base::Feature kRecentOfflineTabSuggestionsFeature{
     "NTPOfflinePageSuggestions", base::FEATURE_DISABLED_BY_DEFAULT};
 
 const base::Feature kSaveToOfflineFeature{
-    "NTPSaveToOffline", base::FEATURE_DISABLED_BY_DEFAULT};
+    "NTPSaveToOffline", base::FEATURE_ENABLED_BY_DEFAULT};
 
 const base::Feature kOfflineBadgeFeature{
     "NTPOfflineBadge", base::FEATURE_DISABLED_BY_DEFAULT};
