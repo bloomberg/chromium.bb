@@ -115,7 +115,7 @@ def _GenerateSmokeTestCase(benchmark_class, story_to_smoke_test):
 def GenerateBenchmarkOptions(benchmark_class):
   # Set the benchmark's default arguments.
   options = options_for_unittests.GetCopy()
-  options.output_format = 'none'
+  options.output_formats = ['none']
   parser = options.CreateParser()
 
   # TODO(nednguyen): probably this logic of setting up the benchmark options
