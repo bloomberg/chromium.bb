@@ -29,7 +29,6 @@ namespace {
 const char kCUPSPrinterInfoOpt[] = "printer-info";
 const char kCUPSPrinterStateOpt[] = "printer-state";
 const char kCUPSPrinterTypeOpt[] = "printer-type";
-const char kCUPSPrinterMakeModelOpt[] = "printer-make-and-model";
 
 bool PrinterBasicInfoFromCUPS(const cups_dest_t& printer,
                               PrinterBasicInfo* printer_info) {
@@ -56,7 +55,7 @@ bool PrinterBasicInfoFromCUPS(const cups_dest_t& printer,
   if (state)
     base::StringToInt(state, &printer_info->printer_status);
 
-  const char* drv_info = cupsGetOption(kCUPSPrinterMakeModelOpt,
+  const char* drv_info = cupsGetOption(kDriverNameTagName,
                                        printer.num_options, printer.options);
   if (drv_info)
     printer_info->options[kDriverInfoTagName] = *drv_info;
@@ -180,7 +179,7 @@ std::string PrintBackendCUPS::GetPrinterDriverInfo(
 
   DCHECK_EQ(printer_name, dest->name);
   const char* info =
-      cupsGetOption(kCUPSPrinterMakeModelOpt, dest->num_options, dest->options);
+      cupsGetOption(kDriverNameTagName, dest->num_options, dest->options);
   if (info)
     result = *info;
   cupsFreeDests(1, dest);
@@ -226,11 +225,11 @@ int PrintBackendCUPS::GetDests(cups_dest_t** dests) {
     // TODO(eugenis): remove this once the leak is fixed.
     ANNOTATE_SCOPED_MEMORY_LEAK;
     return cupsGetDests(dests);
-  } else {
-    HttpConnectionCUPS http(print_server_url_, cups_encryption_);
-    http.SetBlocking(blocking_);
-    return cupsGetDests2(http.http(), dests);
   }
+
+  HttpConnectionCUPS http(print_server_url_, cups_encryption_);
+  http.SetBlocking(blocking_);
+  return cupsGetDests2(http.http(), dests);
 }
 
 base::FilePath PrintBackendCUPS::GetPPD(const char* name) {

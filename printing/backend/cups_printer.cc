@@ -15,14 +15,12 @@
 #include "base/strings/string_number_conversions.h"
 #include "printing/backend/cups_connection.h"
 #include "printing/backend/print_backend.h"
+#include "printing/backend/print_backend_consts.h"
 
 namespace {
 
-const char kDriverInfoTagName[] = "system_driverinfo";
-
 const char kCUPSPrinterInfoOpt[] = "printer-info";
 const char kCUPSPrinterStateOpt[] = "printer-state";
-const char kCUPSPrinterMakeModelOpt[] = "printer-make-and-model";
 
 }  // namespace
 
@@ -63,11 +61,10 @@ ipp_attribute_t* CupsPrinter::GetSupportedOptionValues(
 
 std::vector<base::StringPiece> CupsPrinter::GetSupportedOptionValueStrings(
     base::StringPiece option_name) const {
-  ipp_attribute_t* attr = GetSupportedOptionValues(option_name);
   std::vector<base::StringPiece> values;
-  if (!attr) {
+  ipp_attribute_t* attr = GetSupportedOptionValues(option_name);
+  if (!attr)
     return values;
-  }
 
   base::StringPiece value;
   int num_options = ippGetCount(attr);
@@ -115,7 +112,7 @@ bool CupsPrinter::ToPrinterInfo(PrinterBasicInfo* printer_info) const {
   if (state)
     base::StringToInt(state, &printer_info->printer_status);
 
-  const char* drv_info = cupsGetOption(kCUPSPrinterMakeModelOpt,
+  const char* drv_info = cupsGetOption(kDriverNameTagName,
                                        printer->num_options, printer->options);
   if (drv_info)
     printer_info->options[kDriverInfoTagName] = *drv_info;
@@ -165,7 +162,7 @@ std::string CupsPrinter::GetName() const {
 
 std::string CupsPrinter::GetMakeAndModel() const {
   const char* make_and_model =
-      cupsGetOption(kCUPSPrinterMakeModelOpt, destination_->num_options,
+      cupsGetOption(kDriverNameTagName, destination_->num_options,
                     destination_->options);
 
   return make_and_model ? std::string(make_and_model) : std::string();
