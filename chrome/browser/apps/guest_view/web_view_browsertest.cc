@@ -99,10 +99,6 @@
 #include "chrome/browser/chromeos/accessibility/speech_monitor.h"
 #endif
 
-// Turn these tests off on Mac while we collect data on windows server crashes
-// on mac chromium builders. https://crbug.com/653353
-#if !defined(OS_MACOSX)
-
 using extensions::ContextMenuMatcher;
 using extensions::ExtensionsAPIClient;
 using extensions::MenuItem;
@@ -3853,5 +3849,3 @@ IN_PROC_BROWSER_TEST_P(WebViewFocusTest, TouchFocusesEmbedder) {
   EXPECT_TRUE(aura_webview->HasFocus());
 }
 #endif
-
-#endif  // !defined(OS_MACOSX)
