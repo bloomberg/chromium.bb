@@ -2941,6 +2941,26 @@
         "test": "components_browsertests"
       },
       {
+        "args": [
+          "--enable-browser-side-navigation"
+        ],
+        "name": "browser_side_navigation_components_browsertests",
+        "swarming": {
+          "can_use_on_swarming_builders": true
+        },
+        "test": "components_browsertests"
+      },
+      {
+        "swarming": {
+          "can_use_on_swarming_builders": true
+        },
+        "test": "components_unittests"
+      },
+      {
+        "args": [
+          "--enable-browser-side-navigation"
+        ],
+        "name": "browser_side_navigation_components_unittests",
         "swarming": {
           "can_use_on_swarming_builders": true
         },
@@ -3539,6 +3559,32 @@
         "test": "chromedriver_unittests"
       },
       {
+        "swarming": {
+          "can_use_on_swarming_builders": true
+        },
+        "test": "components_browsertests"
+      },
+      {
+        "args": [
+          "--enable-browser-side-navigation"
+        ],
+        "name": "browser_side_navigation_components_browsertests",
+        "swarming": {
+          "can_use_on_swarming_builders": true
+        },
+        "test": "components_browsertests"
+      },
+      {
+        "swarming": {
+          "can_use_on_swarming_builders": true
+        },
+        "test": "components_unittests"
+      },
+      {
+        "args": [
+          "--enable-browser-side-navigation"
+        ],
+        "name": "browser_side_navigation_components_unittests",
         "swarming": {
           "can_use_on_swarming_builders": true
         },
