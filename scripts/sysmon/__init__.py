@@ -90,7 +90,7 @@ def main(args):
 
   # This call returns a context manager that doesn't do anything, so we
   # ignore the return value.
-  ts_mon_config.SetupTsMonGlobalState('sysmon')
+  ts_mon_config.SetupTsMonGlobalState('sysmon', auto_flush=False)
   # The default prefix is '/chrome/infra/'.
   interface.state.metric_name_prefix = (interface.state.metric_name_prefix
                                         + 'chromeos/sysmon/')
