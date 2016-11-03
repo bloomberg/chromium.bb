@@ -19,6 +19,8 @@ namespace autofill {
 
 namespace {
 
+// Note: if adding an enum value here, update the corresponding description for
+// AutofillTypeQualityByFieldType in histograms.xml.
 enum FieldTypeGroupForMetrics {
   GROUP_AMBIGUOUS = 0,
   GROUP_NAME,
@@ -40,6 +42,7 @@ enum FieldTypeGroupForMetrics {
   GROUP_ADDRESS_LINE_3,
   GROUP_USERNAME,
   GROUP_STREET_ADDRESS,
+  GROUP_CREDIT_CARD_VERIFICATION,
   NUM_FIELD_TYPE_GROUPS_FOR_METRICS
 };
 
@@ -116,7 +119,7 @@ int GetFieldTypeGroupMetric(ServerFieldType field_type,
           group = GROUP_ADDRESS_COUNTRY;
           break;
         default:
-          NOTREACHED();
+          NOTREACHED() << field_type << " has no group assigned (ambiguous)";
           group = GROUP_AMBIGUOUS;
           break;
       }
@@ -151,8 +154,11 @@ int GetFieldTypeGroupMetric(ServerFieldType field_type,
         case CREDIT_CARD_EXP_DATE_4_DIGIT_YEAR:
           group = GROUP_CREDIT_CARD_DATE;
           break;
+        case CREDIT_CARD_VERIFICATION_CODE:
+          group = GROUP_CREDIT_CARD_VERIFICATION;
+          break;
         default:
-          NOTREACHED();
+          NOTREACHED() << field_type << " has no group assigned (ambiguous)";
           group = GROUP_AMBIGUOUS;
           break;
       }
