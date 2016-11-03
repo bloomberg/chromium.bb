@@ -25,6 +25,11 @@ void UiDevToolsClient::AddAgent(std::unique_ptr<UiDevToolsAgent> agent) {
   agents_.push_back(std::move(agent));
 }
 
+void UiDevToolsClient::Disconnect() {
+  connection_id_ = kNotConnected;
+  DisableAllAgents();
+}
+
 void UiDevToolsClient::Dispatch(const std::string& data) {
   dispatcher_.dispatch(protocol::parseJSON(data));
 }
@@ -39,6 +44,11 @@ void UiDevToolsClient::set_connection_id(int connection_id) {
 
 const std::string& UiDevToolsClient::name() const {
   return name_;
+}
+
+void UiDevToolsClient::DisableAllAgents() {
+  for (std::unique_ptr<UiDevToolsAgent>& agent : agents_)
+    agent->Disable();
 }
 
 void UiDevToolsClient::sendProtocolResponse(int callId, const String& message) {

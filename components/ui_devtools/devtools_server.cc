@@ -161,7 +161,7 @@ void UiDevToolsServer::OnClose(int connection_id) {
     return;
   UiDevToolsClient* client = it->second;
   DCHECK(client);
-  client->set_connection_id(UiDevToolsClient::kNotConnected);
+  client->Disconnect();
   connections_.erase(it);
 }
 

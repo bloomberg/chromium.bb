@@ -16,6 +16,7 @@ class UiDevToolsAgent {
   virtual ~UiDevToolsAgent() {}
 
   virtual void Init(protocol::UberDispatcher*) = 0;
+  virtual void Disable() = 0;
 };
 
 // A base agent so that any Backend implementation has access to the
@@ -27,11 +28,24 @@ template <typename DomainMetainfo>
 class UiDevToolsBaseAgent : public UiDevToolsAgent,
                             public DomainMetainfo::BackendClass {
  public:
-  void Init(protocol::UberDispatcher* dispatcher) {
+  // UiDevToolsAgent:
+  void Init(protocol::UberDispatcher* dispatcher) override {
     frontend_.reset(
         new typename DomainMetainfo::FrontendClass(dispatcher->channel()));
     DomainMetainfo::DispatcherClass::wire(dispatcher, this);
   }
+
+  void Disable() override { disable(); }
+
+  // Common methods between all generated Backends, subclasses may
+  // choose to override them (but not necessary).
+  ui::devtools::protocol::Response enable() override {
+    return ui::devtools::protocol::Response::OK();
+  };
+
+  ui::devtools::protocol::Response disable() override {
+    return ui::devtools::protocol::Response::OK();
+  };
 
  protected:
   UiDevToolsBaseAgent() {}

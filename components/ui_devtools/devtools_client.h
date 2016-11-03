@@ -29,6 +29,7 @@ class UiDevToolsClient : public protocol::FrontendChannel {
   ~UiDevToolsClient() override;
 
   void AddAgent(std::unique_ptr<UiDevToolsAgent> agent);
+  void Disconnect();
   void Dispatch(const std::string& data);
 
   bool connected() const;
@@ -36,6 +37,8 @@ class UiDevToolsClient : public protocol::FrontendChannel {
   const std::string& name() const;
 
  private:
+  void DisableAllAgents();
+
   // protocol::FrontendChannel
   void sendProtocolResponse(int callId, const String& message) override;
   void sendProtocolNotification(const String& message) override;
