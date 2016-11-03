@@ -365,10 +365,6 @@ IPC_SYNC_MESSAGE_ROUTED2_1(ResourceHostMsg_SyncLoad,
 IPC_MESSAGE_CONTROL1(ResourceHostMsg_DataReceived_ACK,
                      int /* request_id */)
 
-// Sent when the renderer has processed a DataDownloaded message.
-IPC_MESSAGE_CONTROL1(ResourceHostMsg_DataDownloaded_ACK,
-                     int /* request_id */)
-
 // Sent by the renderer process to acknowledge receipt of a
 // UploadProgress message.
 IPC_MESSAGE_CONTROL1(ResourceHostMsg_UploadProgress_ACK,

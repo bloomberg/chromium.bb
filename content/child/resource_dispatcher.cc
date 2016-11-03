@@ -353,9 +353,6 @@ void ResourceDispatcher::OnReceivedData(int request_id,
 void ResourceDispatcher::OnDownloadedData(int request_id,
                                           int data_len,
                                           int encoded_data_length) {
-  // Acknowledge the reception of this message.
-  message_sender_->Send(new ResourceHostMsg_DataDownloaded_ACK(request_id));
-
   PendingRequestInfo* request_info = GetPendingRequestInfo(request_id);
   if (!request_info)
     return;

@@ -1014,7 +1014,6 @@ bool ResourceDispatcherHostImpl::OnMessageReceived(
     IPC_MESSAGE_HANDLER_DELAY_REPLY(ResourceHostMsg_SyncLoad, OnSyncLoad)
     IPC_MESSAGE_HANDLER(ResourceHostMsg_ReleaseDownloadedFile,
                         OnReleaseDownloadedFile)
-    IPC_MESSAGE_HANDLER(ResourceHostMsg_DataDownloaded_ACK, OnDataDownloadedACK)
     IPC_MESSAGE_HANDLER(ResourceHostMsg_CancelRequest, OnCancelRequest)
     IPC_MESSAGE_HANDLER(ResourceHostMsg_DidChangePriority, OnDidChangePriority)
     IPC_MESSAGE_UNHANDLED(handled = false)
@@ -1758,10 +1757,6 @@ void ResourceDispatcherHostImpl::OnDidChangePriority(
 
   scheduler_->ReprioritizeRequest(loader->request(), new_priority,
                                   intra_priority_value);
-}
-
-void ResourceDispatcherHostImpl::OnDataDownloadedACK(int request_id) {
-  // TODO(michaeln): maybe throttle DataDownloaded messages
 }
 
 void ResourceDispatcherHostImpl::RegisterDownloadedTempFile(

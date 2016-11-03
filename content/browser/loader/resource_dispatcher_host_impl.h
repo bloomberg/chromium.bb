@@ -609,7 +609,6 @@ class CONTENT_EXPORT ResourceDispatcherHostImpl
       int route_id,
       std::unique_ptr<ResourceHandler> handler);
 
-  void OnDataDownloadedACK(int request_id);
   void OnCancelRequest(int request_id);
   void OnReleaseDownloadedFile(int request_id);
   void OnDidChangePriority(int request_id,

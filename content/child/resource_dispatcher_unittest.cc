@@ -209,16 +209,6 @@ class ResourceDispatcherTest : public testing::Test, public IPC::Sender {
     message_queue_.erase(message_queue_.begin());
   }
 
-  void ConsumeDataDownloaded_ACK(int expected_request_id) {
-    ASSERT_FALSE(message_queue_.empty());
-    std::tuple<int> args;
-    ASSERT_EQ(ResourceHostMsg_DataDownloaded_ACK::ID, message_queue_[0].type());
-    ASSERT_TRUE(ResourceHostMsg_DataDownloaded_ACK::Read(
-        &message_queue_[0], &args));
-    EXPECT_EQ(expected_request_id, std::get<0>(args));
-    message_queue_.erase(message_queue_.begin());
-  }
-
   void ConsumeReleaseDownloadedFile(int expected_request_id) {
     ASSERT_FALSE(message_queue_.empty());
     std::tuple<int> args;
@@ -941,7 +931,6 @@ TEST_F(ResourceDispatcherTest, DownloadToFile) {
   int expected_total_encoded_data_length = 0;
   for (int i = 0; i < 10; ++i) {
     NotifyDataDownloaded(id, kDownloadedIncrement, kEncodedIncrement);
-    ConsumeDataDownloaded_ACK(id);
     expected_total_downloaded_length += kDownloadedIncrement;
     expected_total_encoded_data_length += kEncodedIncrement;
     EXPECT_EQ(expected_total_downloaded_length,
