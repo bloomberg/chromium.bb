@@ -1209,6 +1209,7 @@ test("ash_unittests") {
     "ash_touch_exploration_manager_chromeos_unittest.cc",
     "aura/pointer_watcher_adapter_unittest.cc",
     "autoclick/autoclick_unittest.cc",
+    "common/devtools/ash_devtools_unittest.cc",
 
     # TODO: convert to use AshTest http://crbug.com/654489.
     "common/frame/caption_buttons/frame_caption_button_container_view_unittest.cc",

@@ -6,26 +6,28 @@
 #define ASH_COMMON_DEVTOOLS_ASH_DEVTOOLS_DOM_AGENT_H_
 
 #include "ash/common/wm_shell.h"
+#include "base/compiler_specific.h"
 #include "components/ui_devtools/DOM.h"
 #include "components/ui_devtools/devtools_base_agent.h"
 
 namespace ash {
 namespace devtools {
 
-class AshDevToolsDOMAgent : public ui::devtools::UiDevToolsBaseAgent<
-                                ui::devtools::protocol::DOM::Metainfo> {
+class ASH_EXPORT AshDevToolsDOMAgent
+    : public NON_EXPORTED_BASE(ui::devtools::UiDevToolsBaseAgent<
+                               ui::devtools::protocol::DOM::Metainfo>) {
  public:
   explicit AshDevToolsDOMAgent(ash::WmShell* shell);
   ~AshDevToolsDOMAgent() override;
-
- private:
-  std::unique_ptr<ui::devtools::protocol::DOM::Node> BuildInitialTree();
 
   // DOM::Backend
   ui::devtools::protocol::Response enable() override;
   ui::devtools::protocol::Response disable() override;
   ui::devtools::protocol::Response getDocument(
       std::unique_ptr<ui::devtools::protocol::DOM::Node>* out_root) override;
+
+ private:
+  std::unique_ptr<ui::devtools::protocol::DOM::Node> BuildInitialTree();
 
   ash::WmShell* shell_;
 
