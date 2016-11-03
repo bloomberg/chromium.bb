@@ -13,6 +13,7 @@
 #include "base/path_service.h"
 #include "base/strings/string_util.h"
 #include "base/strings/utf_string_conversions.h"
+#include "base/test/test_timeouts.h"
 #include "base/values.h"
 #include "build/build_config.h"
 #include "chrome/browser/apps/app_browsertest_util.h"
@@ -29,6 +30,7 @@
 #include "content/public/browser/web_contents.h"
 #include "content/public/test/test_utils.h"
 #include "extensions/browser/extension_system.h"
+#include "extensions/browser/process_manager.h"
 #include "extensions/common/constants.h"
 #include "extensions/common/extension.h"
 #include "extensions/test/result_catcher.h"
@@ -78,6 +80,11 @@ class MediaGalleriesPlatformAppBrowserTest : public PlatformAppBrowserTest {
   void SetUpOnMainThread() override {
     PlatformAppBrowserTest::SetUpOnMainThread();
     ensure_media_directories_exists_.reset(new EnsureMediaDirectoriesExists);
+    // Prevent the ProcessManager from suspending the chrome-test app. Needed
+    // because the writer.onerror and writer.onwriteend events do not qualify as
+    // pending callbacks, so the app looks dormant.
+    extensions::ProcessManager::SetEventPageIdleTimeForTesting(
+        TestTimeouts::action_max_timeout().InMilliseconds());
 
     int64_t file_size;
     ASSERT_TRUE(base::GetFileSize(GetCommonDataDir().AppendASCII("test.jpg"),

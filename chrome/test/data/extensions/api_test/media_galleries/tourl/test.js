@@ -23,8 +23,6 @@ function TestImageLoadFactory(url, should_load) {
   };
 }
 
-CreateDummyWindowToPreventSleep();
-
 chrome.test.getConfig(function(config) {
   var customArg = JSON.parse(config.customArg);
   var gallery_id = customArg[0];

@@ -52,8 +52,6 @@ function GetMediaFileSystemMetadataTest() {
   TestFirstFilesystem(verifyFilesystem);
 }
 
-CreateDummyWindowToPreventSleep();
-
 chrome.test.getConfig(function(config) {
   customArg = JSON.parse(config.customArg);
   expectedGalleryEntryLength = customArg[0];

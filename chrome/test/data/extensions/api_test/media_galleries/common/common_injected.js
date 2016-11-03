@@ -224,21 +224,3 @@ function verifyJPEG(parentDirectoryEntry, filename, expectedFileLength,
   parentDirectoryEntry.getFile(filename, {create: false}, verifyFileEntry,
                                chrome.test.fail);
 }
-
-// Create a dummy window to prevent the ProcessManager from suspending the
-// chrome-test app. Needed because the writer.onerror and writer.onwriteend
-// events do not qualify as pending callbacks, so the app looks dormant.
-function CreateDummyWindowToPreventSleep() {
-  chrome.app.runtime.onLaunched.addListener(function() {
-    chrome.app.window.create('dummy.html', {
-      outerBounds: {
-        width: 800,
-        height: 600,
-        left: 100,
-        top: 100,
-        minWidth: 800,
-        minHeight: 600
-      }
-    });
-  });
-}

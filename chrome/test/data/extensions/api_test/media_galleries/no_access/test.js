@@ -38,8 +38,6 @@ var mediaFileSystemsListCallback = function(results) {
   galleries = results;
 };
 
-CreateDummyWindowToPreventSleep();
-
 chrome.test.getConfig(function(config) {
   customArg = JSON.parse(config.customArg);
   expectedFileSystems = customArg[0];
