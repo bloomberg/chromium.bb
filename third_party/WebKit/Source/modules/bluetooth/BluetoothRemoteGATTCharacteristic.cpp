@@ -169,7 +169,7 @@ class ReadValueCallback : public WebBluetoothReadValueCallbacks {
   }
 
  private:
-  WeakPersistent<BluetoothRemoteGATTCharacteristic> m_characteristic;
+  Persistent<BluetoothRemoteGATTCharacteristic> m_characteristic;
   Persistent<ScriptPromiseResolver> m_resolver;
 };
 
@@ -240,7 +240,7 @@ class WriteValueCallback : public WebBluetoothWriteValueCallbacks {
   }
 
  private:
-  WeakPersistent<BluetoothRemoteGATTCharacteristic> m_characteristic;
+  Persistent<BluetoothRemoteGATTCharacteristic> m_characteristic;
   Persistent<ScriptPromiseResolver> m_resolver;
 };
 

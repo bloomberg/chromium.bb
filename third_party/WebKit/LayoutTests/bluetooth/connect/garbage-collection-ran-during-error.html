@@ -1,0 +1,17 @@
+<!DOCTYPE html>
+<script src="../../resources/testharness.js"></script>
+<script src="../../resources/testharnessreport.js"></script>
+<script src="../../resources/bluetooth/bluetooth-helpers.js"></script>
+<script>
+'use strict';
+promise_test(() => {
+  return setBluetoothFakeAdapter('FailingConnectionsAdapter')
+    .then(() => requestDeviceWithKeyDown({
+      filters: [{services: [errorUUID(0x1) /* in progress error */]}]}))
+    .then(device => {
+      device.gatt.connect();
+    })
+    .then(runGarbageCollection);
+}, 'Garbage collection ran during a connect call that fails. ' +
+   'Should not crash.');
+</script>
