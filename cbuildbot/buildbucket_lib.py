@@ -194,6 +194,24 @@ class BuildbucketClient(object):
 
     return self.SendBuildbucketRequest(url, POST_METHOD, body, dryrun)
 
+  def RetryBuildRequest(self, buildbucket_id, testjob, dryrun):
+    """Send a Retry request to the Buildbucket server.
+
+    Args:
+      buildbucket_id: Buildbucket_id (string) of the build to retry.
+      testjob: Whether to use the test instance of the buildbucket server.
+      dryrun: Whether a dryrun.
+
+    Returns:
+      See return type of SendBuildbucketRequest.
+    """
+    url = 'https://%(hostname)s/_ah/api/buildbucket/v1/builds/%(id)s/retry' % {
+        'hostname': self.GetHost(testjob),
+        'id': buildbucket_id
+    }
+
+    return self.SendBuildbucketRequest(url, PUT_METHOD, '{}', dryrun)
+
   def SearchBuildsRequest(self, testjob, dryrun, buckets=None, tags=None,
                           status=None, start_cursor=None,
                           max_builds=MAX_BUILDS_DEFAULT):
@@ -329,6 +347,9 @@ def GetNestedAttr(content, nested_attr, default=None):
 
 def GetErrorReason(content):
   return GetNestedAttr(content, ['error', 'reason'])
+
+def GetErrorMessage(content):
+  return GetNestedAttr(content, ['error', 'message'])
 
 def GetBuildId(content):
   return GetNestedAttr(content, ['build', 'id'])

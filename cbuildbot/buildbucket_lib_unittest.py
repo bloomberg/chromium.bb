@@ -128,6 +128,47 @@ class BuildbucketClientTest(cros_test_lib.MockTestCase):
         [buildbucket_id_1, buildbucket_id_2], False, True)
     self.assertIsNone(result_content_2)
 
+  def testRetryBuildRequest(self):
+    """Test RetryBuild."""
+    buildbucket_id = '001'
+    buildbucket_id_2 = '002'
+
+    content = json.dumps({
+        'build':{
+            'status': 'SCHEDULED',
+            'id': buildbucket_id_2,
+            'retry_of': buildbucket_id
+        }
+    })
+
+    self.mock_http.request.return_value = (self.success_response, content)
+    result_content = self.client.RetryBuildRequest(
+        buildbucket_id, False, False)
+    self.assertEqual(buildbucket_lib.GetBuildId(result_content),
+                     buildbucket_id_2)
+
+    reason = 'BUILD_NOT_FOUND'
+    message = 'Build 001 not found'
+    content = json.dumps({
+        'error': {
+            'message': message,
+            'reason': reason
+        }
+    })
+
+    self.mock_http.request.return_value = (self.success_response, content)
+    result_content = self.client.RetryBuildRequest(
+        buildbucket_id, False, False)
+    self.assertEqual(buildbucket_lib.GetErrorReason(result_content),
+                     reason)
+    self.assertEqual(buildbucket_lib.GetErrorMessage(result_content),
+                     message)
+
+    # Test dryrun
+    result_content = self.client.RetryBuildRequest(
+        buildbucket_id, False, True)
+    self.assertIsNone(result_content)
+
   def testSearchBuildsRequest(self):
     """Test SearchBuilds."""
     buildbucket_id_1 = 'test_buildbucket_id_1'
