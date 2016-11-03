@@ -145,11 +145,8 @@ public class ContentViewCoreSelectionTest extends ContentShellTestBase {
         waitForPastePopupStatus(false);
     }
 
-    /*
     @SmallTest
     @Feature({"TextInput"})
-    */
-    @DisabledTest(message = "https://crbug.com/592428")
     public void testPastePopupClearedOnTappingEmptyInput() throws Throwable {
         copyStringToClipboard("SampleTextToCopy");
         DOMUtils.longPressNode(this, mContentViewCore, "empty_input_text");
@@ -158,11 +155,8 @@ public class ContentViewCoreSelectionTest extends ContentShellTestBase {
         waitForPastePopupStatus(false);
     }
 
-    /*
     @SmallTest
     @Feature({"TextInput"})
-    */
-    @DisabledTest(message = "https://crbug.com/592428")
     public void testPastePopupClearedOnTappingNonEmptyInput() throws Throwable {
         copyStringToClipboard("SampleTextToCopy");
         DOMUtils.longPressNode(this, mContentViewCore, "empty_input_text");
@@ -171,11 +165,8 @@ public class ContentViewCoreSelectionTest extends ContentShellTestBase {
         waitForPastePopupStatus(false);
     }
 
-    /*
     @SmallTest
     @Feature({"TextInput"})
-    */
-    @DisabledTest(message = "https://crbug.com/592428")
     public void testPastePopupClearedOnTappingOutsideInput() throws Throwable {
         copyStringToClipboard("SampleTextToCopy");
         DOMUtils.longPressNode(this, mContentViewCore, "empty_input_text");
@@ -184,11 +175,8 @@ public class ContentViewCoreSelectionTest extends ContentShellTestBase {
         waitForPastePopupStatus(false);
     }
 
-    /*
     @SmallTest
     @Feature({"TextInput"})
-    */
-    @DisabledTest(message = "https://crbug.com/592428")
     public void testPastePopupClearedOnLongPressingOutsideInput() throws Throwable {
         copyStringToClipboard("SampleTextToCopy");
         DOMUtils.longPressNode(this, mContentViewCore, "empty_input_text");
@@ -197,19 +185,16 @@ public class ContentViewCoreSelectionTest extends ContentShellTestBase {
         waitForPastePopupStatus(false);
     }
 
-    /*
     @SmallTest
     @Feature({"TextInput"})
-    */
-    @DisabledTest(message = "https://crbug.com/592428")
     public void testPastePopupNotShownOnLongPressingDisabledInput() throws Throwable {
         copyStringToClipboard("SampleTextToCopy");
         DOMUtils.longPressNode(this, mContentViewCore, "empty_input_text");
         waitForPastePopupStatus(true);
-        assertTrue(mContentViewCore.hasInsertion());
+        waitForInsertion(true);
         DOMUtils.longPressNode(this, mContentViewCore, "disabled_text");
         waitForPastePopupStatus(false);
-        assertFalse(mContentViewCore.hasInsertion());
+        waitForInsertion(false);
     }
 
     /*
@@ -737,6 +722,15 @@ public class ContentViewCoreSelectionTest extends ContentShellTestBase {
             @Override
             public Boolean call() {
                 return mContentViewCore.isPastePopupShowing();
+            }
+        }));
+    }
+
+    private void waitForInsertion(final boolean show) throws InterruptedException {
+        CriteriaHelper.pollUiThread(Criteria.equals(show, new Callable<Boolean>() {
+            @Override
+            public Boolean call() {
+                return mContentViewCore.hasInsertion();
             }
         }));
     }
