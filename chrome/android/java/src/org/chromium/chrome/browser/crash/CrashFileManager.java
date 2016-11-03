@@ -292,7 +292,7 @@ public class CrashFileManager {
      */
     @VisibleForTesting
     static File[] getFilesBelowMaxTries(File[] unfilteredFiles, int maxTries) {
-        List<File> filesBelowMaxTries = new ArrayList<>(unfilteredFiles.length);
+        List<File> filesBelowMaxTries = new ArrayList<>();
         for (File file : unfilteredFiles) {
             if (readAttemptNumber(file.getName()) < maxTries) {
                 filesBelowMaxTries.add(file);
@@ -301,6 +301,9 @@ public class CrashFileManager {
         return filesBelowMaxTries.toArray(new File[filesBelowMaxTries.size()]);
     }
 
+    /**
+     * Returns a sorted and filtered list of files within the crash directory.
+     */
     @VisibleForTesting
     File[] listCrashFiles(@Nullable final Pattern pattern) {
         File crashDir = getCrashDirectory();
@@ -314,13 +317,13 @@ public class CrashFileManager {
                 }
             };
         }
-        File[] minidumps = crashDir.listFiles(filter);
-        if (minidumps == null) {
+        File[] foundFiles = crashDir.listFiles(filter);
+        if (foundFiles == null) {
             Log.w(TAG, crashDir.getAbsolutePath() + " does not exist or is not a directory");
             return new File[] {};
         }
-        Arrays.sort(minidumps, sFileComparator);
-        return minidumps;
+        Arrays.sort(foundFiles, sFileComparator);
+        return foundFiles;
     }
 
     @VisibleForTesting
