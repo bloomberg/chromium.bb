@@ -11,7 +11,7 @@
 #include <vector>
 
 #include "base/files/file_path.h"
-#include "base/stl_util.h"
+#include "base/memory/ptr_util.h"
 #include "base/time/time.h"
 #include "chrome/browser/download/download_item_model.h"
 #include "chrome/test/base/testing_profile.h"
@@ -96,9 +96,8 @@ class DownloadsListTrackerTest : public testing::Test {
   DownloadsListTrackerTest() {}
 
   ~DownloadsListTrackerTest() override {
-    for (auto* mock_item : mock_items_)
-      testing::Mock::VerifyAndClear(mock_item);
-    base::STLDeleteElements(&mock_items_);
+    for (const auto& mock_item : mock_items_)
+      testing::Mock::VerifyAndClear(mock_item.get());
   }
 
   // testing::Test:
@@ -110,7 +109,7 @@ class DownloadsListTrackerTest : public testing::Test {
 
   MockDownloadItem* CreateMock(uint64_t id, const base::Time& started) {
     MockDownloadItem* new_item = new testing::NiceMock<MockDownloadItem>();
-    mock_items_.push_back(new_item);
+    mock_items_.push_back(base::WrapUnique(new_item));
 
     ON_CALL(*new_item, GetId()).WillByDefault(Return(id));
     ON_CALL(*new_item, GetStartTime()).WillByDefault(Return(started));
@@ -134,8 +133,8 @@ class DownloadsListTrackerTest : public testing::Test {
 
  private:
   void GetAllDownloads(DownloadVector* result) {
-    for (auto* mock_item : mock_items_)
-      result->push_back(mock_item);
+    for (const auto& mock_item : mock_items_)
+      result->push_back(mock_item.get());
   }
 
   // NOTE: The initialization order of these members matters.
@@ -146,7 +145,7 @@ class DownloadsListTrackerTest : public testing::Test {
   content::TestWebUI web_ui_;
   std::unique_ptr<TestDownloadsListTracker> tracker_;
 
-  std::vector<MockDownloadItem*> mock_items_;
+  std::vector<std::unique_ptr<MockDownloadItem>> mock_items_;
 };
 
 TEST_F(DownloadsListTrackerTest, SetSearchTerms) {
