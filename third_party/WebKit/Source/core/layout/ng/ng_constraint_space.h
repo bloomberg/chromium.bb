@@ -74,14 +74,13 @@ class CORE_EXPORT NGConstraintSpace final
 
   // Offset relative to the root constraint space.
   NGLogicalOffset Offset() const { return offset_; }
+  void SetOffset(const NGLogicalOffset& offset) { offset_ = offset; }
 
   // Returns the effective size of the constraint space. Equal to the
   // ContainerSize() for the root constraint space but derived constraint spaces
   // return the size of the layout opportunity.
   virtual NGLogicalSize Size() const { return size_; }
-
-  // Sets the effective size of the constraint space.
-  void SetSize(NGLogicalSize);
+  void SetSize(const NGLogicalSize& size) { size_ = size; }
 
   // Whether the current constraint space is for the newly established
   // Formatting Context.

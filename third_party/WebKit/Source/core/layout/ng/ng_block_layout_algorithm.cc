@@ -81,18 +81,11 @@ const NGLayoutOpportunity FindLayoutOpportunityForFragment(
 // Calculates the logical offset for opportunity.
 NGLogicalOffset CalculateLogicalOffsetForOpportunity(
     const NGLayoutOpportunity& opportunity,
-    NGBoxStrut border_padding,
     LayoutUnit float_offset,
     NGBoxStrut margins) {
-  // TODO(layout-ng): create children_constraint_space with an offset for the
-  // border and padding.
-  // Offset from parent's border/padding.
-  LayoutUnit inline_offset = border_padding.inline_start;
-  LayoutUnit block_offset = border_padding.block_start;
-
   // Adjust to child's margin.
-  inline_offset += margins.inline_start;
-  block_offset += margins.block_start;
+  LayoutUnit inline_offset = margins.inline_start;
+  LayoutUnit block_offset = margins.block_start;
 
   // Offset from the opportunity's block/inline start.
   inline_offset += opportunity.offset.inline_offset;
@@ -136,17 +129,6 @@ bool IsNewFormattingContextForInFlowBlockLevelChild(
     return true;
 
   return false;
-}
-
-// Creates a new constraint space for a child.
-NGConstraintSpace* CreateConstraintSpaceForChild(
-    const NGConstraintSpace& space,
-    const NGBox& child,
-    NGConstraintSpaceBuilder* builder) {
-  builder->SetIsNewFormattingContext(
-      IsNewFormattingContextForInFlowBlockLevelChild(space, *child.Style()));
-  return new NGConstraintSpace(space.WritingMode(), space.Direction(),
-                               builder->ToConstraintSpace());
 }
 
 }  // namespace
@@ -200,8 +182,7 @@ bool NGBlockLayoutAlgorithm::Layout(NGPhysicalFragment** out) {
       builder_->SetInlineSize(inline_size).SetBlockSize(block_size);
       current_child_ = first_child_;
       if (current_child_)
-        space_for_current_child_ = CreateConstraintSpaceForChild(
-            *constraint_space_, *current_child_, space_builder_);
+        space_for_current_child_ = CreateConstraintSpaceForCurrentChild();
 
       state_ = kStateChildLayout;
       return false;
@@ -212,8 +193,7 @@ bool NGBlockLayoutAlgorithm::Layout(NGPhysicalFragment** out) {
           return false;
         current_child_ = current_child_->NextSibling();
         if (current_child_) {
-          space_for_current_child_ = CreateConstraintSpaceForChild(
-              *constraint_space_, *current_child_, space_builder_);
+          space_for_current_child_ = CreateConstraintSpaceForCurrentChild();
           return false;
         }
       }
@@ -348,8 +328,8 @@ NGLogicalOffset NGBlockLayoutAlgorithm::PositionFloatFragment(
     const NGBoxStrut& margins) {
   // TODO(glebl@chromium.org): Support the top edge alignment rule.
   // Find a layout opportunity that will fit our float.
-  const NGLayoutOpportunity opportunity =
-      FindLayoutOpportunityForFragment(constraint_space_, fragment, margins);
+  const NGLayoutOpportunity opportunity = FindLayoutOpportunityForFragment(
+      space_for_current_child_, fragment, margins);
   DCHECK(!opportunity.IsEmpty()) << "Opportunity is empty but it shouldn't be";
 
   // Calculate the float offset if needed.
@@ -363,8 +343,8 @@ NGLogicalOffset NGBlockLayoutAlgorithm::PositionFloatFragment(
       CreateExclusion(fragment, opportunity, float_offset, margins);
   constraint_space_->AddExclusion(exclusion);
 
-  return CalculateLogicalOffsetForOpportunity(opportunity, border_and_padding_,
-                                              float_offset, margins);
+  return CalculateLogicalOffsetForOpportunity(opportunity, float_offset,
+                                              margins);
 }
 
 void NGBlockLayoutAlgorithm::UpdateMarginStrut(const NGMarginStrut& from) {
@@ -373,6 +353,28 @@ void NGBlockLayoutAlgorithm::UpdateMarginStrut(const NGMarginStrut& from) {
     is_fragment_margin_strut_block_start_updated_ = true;
   }
   builder_->SetMarginStrutBlockEnd(from);
+}
+
+NGConstraintSpace*
+NGBlockLayoutAlgorithm::CreateConstraintSpaceForCurrentChild() const {
+  DCHECK(current_child_);
+  space_builder_->SetIsNewFormattingContext(
+      IsNewFormattingContextForInFlowBlockLevelChild(*constraint_space_,
+                                                     *current_child_->Style()));
+  NGConstraintSpace* child_space = new NGConstraintSpace(
+      constraint_space_->WritingMode(), constraint_space_->Direction(),
+      space_builder_->ToConstraintSpace());
+
+  // TODO(layout-ng): Set offset through the space builder.
+  child_space->SetOffset(
+      NGLogicalOffset(border_and_padding_.inline_start, content_size_));
+
+  // TODO(layout-ng): avoid copying here. A child and parent constraint spaces
+  // should share the same backing space.
+  for (const auto& exclusion : constraint_space_->Exclusions()) {
+    child_space->AddExclusion(*exclusion.get());
+  }
+  return child_space;
 }
 
 DEFINE_TRACE(NGBlockLayoutAlgorithm) {

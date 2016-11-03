@@ -593,32 +593,37 @@ TEST_F(NGBlockLayoutAlgorithmTest, AutoMargin) {
   EXPECT_EQ(LayoutUnit(0), child->TopOffset());
 }
 
-// Verifies that 3 Left/Right float fragments are correctly positioned by the
-// algorithm.
+// Verifies that 3 Left/Right float fragments and one regular block fragment
+// are correctly positioned by the algorithm.
 //
 // Test case's HTML representation:
 //  <div id="parent" style="width: 200px; height: 200px;">
 //    <div style="float:left; width: 30px; height: 30px;
 //        margin-top: 10px;"/>   <!-- DIV1 -->
-//    <div style="float:right; width: 50px; height: 50px;"/>  <!-- DIV2 -->
+//    <div style="width: 30px; height: 30px;"/>   <!-- DIV2 -->
+//    <div style="float:right; width: 50px; height: 50px;"/>  <!-- DIV3 -->
 //    <div style="float:left; width: 120px; height: 120px;
-//        margin-left: 30px;"/>  <!-- DIV3 -->
+//        margin-left: 30px;"/>  <!-- DIV4 -->
 //  </div>
 //
 // Expected:
 // - Left float(DIV1) is positioned at the left.
-// - Right float(DIV2) is positioned at the right.
-// - Left float(DIV3) is positioned at the left below DIV2.
+// - Regular block (DIV2) is positioned behind DIV1.
+// - Right float(DIV3) is positioned at the right below DIV2
+// - Left float(DIV4) is positioned at the left below DIV3.
 TEST_F(NGBlockLayoutAlgorithmTest, PositionFloatFragments) {
+  const int kParentLeftPadding = 10;
   const int kDiv1TopMargin = 10;
   const int kParentSize = 200;
   const int kDiv1Size = 30;
-  const int kDiv2Size = 50;
-  const int kDiv3Size = kParentSize - kDiv1Size - kDiv2Size;
-  const int kDiv3LeftMargin = kDiv1Size;
+  const int kDiv2Size = 30;
+  const int kDiv3Size = 50;
+  const int kDiv4Size = kParentSize - kDiv3Size;
+  const int kDiv4LeftMargin = kDiv1Size;
 
   style_->setHeight(Length(kParentSize, Fixed));
   style_->setWidth(Length(kParentSize, Fixed));
+  style_->setPaddingLeft(Length(kParentLeftPadding, Fixed));
 
   // DIV1
   RefPtr<ComputedStyle> div1_style = ComputedStyle::create();
@@ -632,40 +637,52 @@ TEST_F(NGBlockLayoutAlgorithmTest, PositionFloatFragments) {
   RefPtr<ComputedStyle> div2_style = ComputedStyle::create();
   div2_style->setWidth(Length(kDiv2Size, Fixed));
   div2_style->setHeight(Length(kDiv2Size, Fixed));
-  div2_style->setFloating(EFloat::Right);
   NGBox* div2 = new NGBox(div2_style.get());
 
   // DIV3
   RefPtr<ComputedStyle> div3_style = ComputedStyle::create();
   div3_style->setWidth(Length(kDiv3Size, Fixed));
   div3_style->setHeight(Length(kDiv3Size, Fixed));
-  div3_style->setMarginLeft(Length(kDiv3LeftMargin, Fixed));
-  div3_style->setFloating(EFloat::Left);
+  div3_style->setFloating(EFloat::Right);
   NGBox* div3 = new NGBox(div3_style.get());
+
+  // DIV4
+  RefPtr<ComputedStyle> div4_style = ComputedStyle::create();
+  div4_style->setWidth(Length(kDiv4Size, Fixed));
+  div4_style->setHeight(Length(kDiv4Size, Fixed));
+  div4_style->setMarginLeft(Length(kDiv4LeftMargin, Fixed));
+  div4_style->setFloating(EFloat::Left);
+  NGBox* div4 = new NGBox(div4_style.get());
 
   div1->SetNextSibling(div2);
   div2->SetNextSibling(div3);
+  div3->SetNextSibling(div4);
 
   auto* space = ConstructConstraintSpace(
       HorizontalTopBottom, LeftToRight,
       NGLogicalSize(LayoutUnit(kParentSize), LayoutUnit(kParentSize)));
   NGPhysicalFragment* frag = RunBlockLayoutAlgorithm(space, div1);
-  ASSERT_EQ(frag->Children().size(), 3UL);
+  ASSERT_EQ(frag->Children().size(), 4UL);
 
   // DIV1
   const NGPhysicalFragmentBase* child1 = frag->Children()[0];
   EXPECT_EQ(kDiv1TopMargin, child1->TopOffset());
-  EXPECT_EQ(0, child1->LeftOffset());
+  EXPECT_EQ(kParentLeftPadding, child1->LeftOffset());
 
   // DIV2
   const NGPhysicalFragmentBase* child2 = frag->Children()[1];
   EXPECT_EQ(0, child2->TopOffset());
-  EXPECT_EQ(kParentSize - kDiv2Size, child2->LeftOffset());
+  EXPECT_EQ(kParentLeftPadding, child2->LeftOffset());
 
   // DIV3
   const NGPhysicalFragmentBase* child3 = frag->Children()[2];
   EXPECT_EQ(kDiv2Size, child3->TopOffset());
-  EXPECT_EQ(kDiv3LeftMargin, child3->LeftOffset());
+  EXPECT_EQ(kParentLeftPadding + kParentSize - kDiv3Size, child3->LeftOffset());
+
+  // DIV4
+  const NGPhysicalFragmentBase* child4 = frag->Children()[3];
+  EXPECT_EQ(kDiv2Size + kDiv3Size, child4->TopOffset());
+  EXPECT_EQ(kParentLeftPadding + kDiv4LeftMargin, child4->LeftOffset());
 }
 }  // namespace
 }  // namespace blink

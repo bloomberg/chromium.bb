@@ -37,6 +37,8 @@ class CORE_EXPORT NGBlockLayoutAlgorithm : public NGLayoutAlgorithm {
   DECLARE_VIRTUAL_TRACE();
 
  private:
+  // Creates a new constraint space for the current child.
+  NGConstraintSpace* CreateConstraintSpaceForCurrentChild() const;
   bool LayoutCurrentChild();
 
   // Computes collapsed margins for 2 adjoining blocks and updates the resultant

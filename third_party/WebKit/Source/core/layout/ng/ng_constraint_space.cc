@@ -81,10 +81,6 @@ NGLogicalSize NGConstraintSpace::ContainerSize() const {
       static_cast<NGWritingMode>(writing_mode_));
 }
 
-void NGConstraintSpace::SetSize(NGLogicalSize size) {
-  size_ = size;
-}
-
 bool NGConstraintSpace::IsNewFormattingContext() const {
   return physical_space_->is_new_fc_;
 }
