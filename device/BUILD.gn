@@ -97,6 +97,10 @@ test("device_unittests") {
     deps += [ "//dbus:test_support" ]
   }
 
+  if (is_linux) {
+    sources += [ "generic_sensor/linux/sensor_reader_unittest.cc" ]
+  }
+
   # HID and Serial:
   # Android doesn't compile.
   # Linux, requires udev.
