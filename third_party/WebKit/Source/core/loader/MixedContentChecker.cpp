@@ -101,7 +101,10 @@ bool MixedContentChecker::isMixedContent(SecurityOrigin* securityOrigin,
   // secure. We do a quick check against `SecurityOrigin::isSecure` to catch
   // things like `about:blank`, which cannot be sanely passed into
   // `SecurityOrigin::create` (as their origin depends on their context).
-  bool isAllowed = SecurityOrigin::isSecure(url) ||
+  // blob: and filesystem: URLs never hit the network, and access is restricted
+  // to same-origin contexts, so they are not blocked either.
+  bool isAllowed = url.protocolIs("blob") || url.protocolIs("filesystem") ||
+                   SecurityOrigin::isSecure(url) ||
                    SecurityOrigin::create(url)->isPotentiallyTrustworthy();
   // TODO(mkwst): Remove this once 'localhost' is no longer considered
   // potentially trustworthy.
