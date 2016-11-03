@@ -15,20 +15,34 @@ from urlparse import urljoin
 
 import requests
 
-wptrunner = None
-wptcommandline = None
-reader = None
+BaseHandler = None
+LogActionFilter = None
 LogHandler = None
+LogLevelFilter = None
+StreamHandler = None
+TbplFormatter = None
+reader = None
+wptcommandline = None
+wptrunner = None
+
 
 logger = logging.getLogger(os.path.splitext(__file__)[0])
 
 
 def do_delayed_imports():
-    global wptrunner, wptcommandline, reader
-    from wptrunner import wptrunner
-    from wptrunner import wptcommandline
+    global BaseHandler
+    global LogLevelFilter
+    global StreamHandler
+    global TbplFormatter
+    global reader
+    global wptcommandline
+    global wptrunner
     from mozlog import reader
+    from mozlog.formatters import TbplFormatter
+    from mozlog.handlers import BaseHandler, LogLevelFilter, StreamHandler
+    from wptrunner import wptcommandline, wptrunner
     setup_log_handler()
+    setup_action_filter()
 
 
 def setup_logging():
@@ -39,6 +53,26 @@ def setup_logging():
     logger.setLevel(logging.DEBUG)
 
 setup_logging()
+
+
+def setup_action_filter():
+    global LogActionFilter
+
+    class LogActionFilter(BaseHandler):
+        """Handler that filters out messages with action of log and a level
+        lower than some specified level.
+
+        :param inner: Handler to use for messages that pass this filter
+        :param level: Minimum log level to process
+        """
+        def __init__(self, inner, actions):
+            BaseHandler.__init__(self, inner)
+            self.inner = inner
+            self.actions = actions
+
+        def __call__(self, item):
+            if item["action"] in self.actions:
+                return self.inner(item)
 
 
 class GitHub(object):
@@ -134,7 +168,6 @@ class Firefox(Browser):
         # This is used rather than an API call to avoid rate limits
         tags = call("git", "ls-remote", "--tags", "--refs",
                     "https://github.com/mozilla/geckodriver.git")
-        logger.debug("Found tags:\n%s" % tags)
         release_re = re.compile(".*refs/tags/v(\d+)\.(\d+)\.(\d+)")
         latest_release = 0
         for item in tags.split("\n"):
@@ -382,6 +415,7 @@ def table(headings, data, log):
     log("|%s|" % "|".join("-" * max_widths[i] for i in cols))
     for row in data:
         log("|%s|" % "|".join(" %s" % row[i].ljust(max_widths[i] - 1) for i in cols))
+    log("")
 
 
 def write_inconsistent(inconsistent, iterations):
@@ -391,10 +425,22 @@ def write_inconsistent(inconsistent, iterations):
     table(["Test", "Subtest", "Results"], strings, logger.error)
 
 
-def write_results(results, iterations):
+def write_results(results, iterations, comment_pr):
     logger.info("## All results ##\n")
     for test, test_results in results.iteritems():
-        logger.info("### %s ###" % test)
+        baseurl = "http://w3c-test.org/submissions"
+        if "https" in os.path.splitext(test)[0].split(".")[1:]:
+            baseurl = "https://w3c-test.org/submissions"
+        pr_number = None
+        if comment_pr:
+            try:
+                pr_number = int(comment_pr)
+            except ValueError:
+                pass
+        if pr_number:
+            logger.info("### [%s](%s/%s%s) ###" % (test, baseurl, pr_number, test))
+        else:
+            logger.info("### %s ###" % test)
         parent = test_results.pop(None)
         strings = [("", err_string(parent, iterations))]
         strings.extend(((subtest if subtest else "", err_string(results, iterations))
@@ -484,10 +530,22 @@ def main():
 
     print >> sys.stderr, "travis_fold:end:browser_setup"
     print >> sys.stderr, "travis_fold:start:running_tests"
+    logger.info("Starting %i test iterations" % args.iterations)
     with open("raw.log", "wb") as log:
         wptrunner.setup_logging(kwargs,
-                                {"tbpl": sys.stdout,
-                                 "raw": log})
+                                {"raw": log})
+        # Setup logging for wptrunner that keeps process output and
+        # warning+ level logs only
+        wptrunner.logger.add_handler(
+            LogActionFilter(
+                LogLevelFilter(
+                    StreamHandler(
+                        sys.stdout,
+                        TbplFormatter()
+                    ),
+                    "WARNING"),
+                ["log", "process_output"]))
+
         wptrunner.run_tests(**kwargs)
 
     with open("raw.log", "rb") as log:
@@ -502,7 +560,7 @@ def main():
         else:
             logger.info("All results were stable\n")
         print >> sys.stderr, "travis_fold:start:full_results"
-        write_results(results, args.iterations)
+        write_results(results, args.iterations, args.comment_pr)
         print >> sys.stderr, "travis_fold:end:full_results"
     else:
         logger.info("No tests run.")

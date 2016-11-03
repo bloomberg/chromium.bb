@@ -1,0 +1,91 @@
+This is a testharness.js-based test.
+FAIL testDiv.insertBefore(paras[0], paras[1]), with unselected range collapsed at (paras[0], 0) assert_equals: Wrong start container expected Element node <div id="test"><p id="a">Äb̈c̈d̈ëf̈g̈ḧ
+</p><p id="b" s... but got Element node <p id="a">Äb̈c̈d̈ëf̈g̈ḧ
+</p>
+FAIL testDiv.insertBefore(paras[0], paras[1]), with selected range collapsed at (paras[0], 0) assert_equals: Wrong start container expected Element node <div id="test"><p id="a">Äb̈c̈d̈ëf̈g̈ḧ
+</p><p id="b" s... but got Element node <p id="a">Äb̈c̈d̈ëf̈g̈ḧ
+</p>
+FAIL testDiv.insertBefore(paras[0], paras[1]), with unselected range on paras[0] from 0 to 1 assert_equals: Wrong start container expected Element node <div id="test"><p id="a">Äb̈c̈d̈ëf̈g̈ḧ
+</p><p id="b" s... but got Element node <p id="a">Äb̈c̈d̈ëf̈g̈ḧ
+</p>
+FAIL testDiv.insertBefore(paras[0], paras[1]), with selected range on paras[0] from 0 to 1 assert_equals: Wrong start container expected Element node <div id="test"><p id="a">Äb̈c̈d̈ëf̈g̈ḧ
+</p><p id="b" s... but got Element node <p id="a">Äb̈c̈d̈ëf̈g̈ḧ
+</p>
+FAIL testDiv.insertBefore(paras[0], paras[1]), with unselected range collapsed at (paras[0], 1) assert_equals: Wrong start container expected Element node <div id="test"><p id="a">Äb̈c̈d̈ëf̈g̈ḧ
+</p><p id="b" s... but got Element node <p id="a">Äb̈c̈d̈ëf̈g̈ḧ
+</p>
+FAIL testDiv.insertBefore(paras[0], paras[1]), with selected range collapsed at (paras[0], 1) assert_equals: Wrong start container expected Element node <div id="test"><p id="a">Äb̈c̈d̈ëf̈g̈ḧ
+</p><p id="b" s... but got Element node <p id="a">Äb̈c̈d̈ëf̈g̈ḧ
+</p>
+PASS testDiv.insertBefore(paras[0], paras[1]), with unselected range on testDiv from 0 to 2 
+PASS testDiv.insertBefore(paras[0], paras[1]), with selected range on testDiv from 0 to 2 
+FAIL testDiv.insertBefore(paras[0], paras[1]), with unselected range collapsed at (testDiv, 1) assert_equals: Wrong start offset expected 0 but got 1
+FAIL testDiv.insertBefore(paras[0], paras[1]), with selected range collapsed at (testDiv, 1) assert_equals: Wrong start offset expected 0 but got 1
+FAIL testDiv.insertBefore(paras[0], paras[1]), with unselected range on testDiv from 1 to 2 assert_equals: Wrong start offset expected 0 but got 1
+FAIL testDiv.insertBefore(paras[0], paras[1]), with selected range on testDiv from 1 to 2 assert_equals: Wrong start offset expected 0 but got 1
+PASS testDiv.insertBefore(paras[0], paras[1]), with unselected range collapsed at (testDiv, 2) 
+PASS testDiv.insertBefore(paras[0], paras[1]), with selected range collapsed at (testDiv, 2) 
+PASS paras[0].insertBefore(paras[1], paras[0].firstChild), with unselected range collapsed at (paras[0], 0) 
+PASS paras[0].insertBefore(paras[1], paras[0].firstChild), with selected range collapsed at (paras[0], 0) 
+PASS paras[0].insertBefore(paras[1], paras[0].firstChild), with unselected range on paras[0] from 0 to 1 
+PASS paras[0].insertBefore(paras[1], paras[0].firstChild), with selected range on paras[0] from 0 to 1 
+PASS paras[0].insertBefore(paras[1], paras[0].firstChild), with unselected range collapsed at (paras[0], 1) 
+PASS paras[0].insertBefore(paras[1], paras[0].firstChild), with selected range collapsed at (paras[0], 1) 
+PASS paras[0].insertBefore(paras[1], paras[0].firstChild), with unselected range on testDiv from 0 to 1 
+PASS paras[0].insertBefore(paras[1], paras[0].firstChild), with selected range on testDiv from 0 to 1 
+PASS paras[0].insertBefore(paras[1], paras[0].firstChild), with unselected range on testDiv from 0 to 2 
+PASS paras[0].insertBefore(paras[1], paras[0].firstChild), with selected range on testDiv from 0 to 2 
+PASS paras[0].insertBefore(paras[1], paras[0].firstChild), with unselected range collapsed at (testDiv, 1) 
+PASS paras[0].insertBefore(paras[1], paras[0].firstChild), with selected range collapsed at (testDiv, 1) 
+PASS paras[0].insertBefore(paras[1], paras[0].firstChild), with unselected range on testDiv from 1 to 2 
+PASS paras[0].insertBefore(paras[1], paras[0].firstChild), with selected range on testDiv from 1 to 2 
+PASS paras[0].insertBefore(paras[1], null), with unselected range collapsed at (paras[0], 0) 
+PASS paras[0].insertBefore(paras[1], null), with selected range collapsed at (paras[0], 0) 
+PASS paras[0].insertBefore(paras[1], null), with unselected range on paras[0] from 0 to 1 
+PASS paras[0].insertBefore(paras[1], null), with selected range on paras[0] from 0 to 1 
+PASS paras[0].insertBefore(paras[1], null), with unselected range collapsed at (paras[0], 1) 
+PASS paras[0].insertBefore(paras[1], null), with selected range collapsed at (paras[0], 1) 
+PASS paras[0].insertBefore(paras[1], null), with unselected range on testDiv from 0 to 1 
+PASS paras[0].insertBefore(paras[1], null), with selected range on testDiv from 0 to 1 
+PASS paras[0].insertBefore(paras[1], null), with unselected range on testDiv from 0 to 2 
+PASS paras[0].insertBefore(paras[1], null), with selected range on testDiv from 0 to 2 
+PASS paras[0].insertBefore(paras[1], null), with unselected range collapsed at (testDiv, 1) 
+PASS paras[0].insertBefore(paras[1], null), with selected range collapsed at (testDiv, 1) 
+PASS paras[0].insertBefore(paras[1], null), with unselected range on testDiv from 1 to 2 
+PASS paras[0].insertBefore(paras[1], null), with selected range on testDiv from 1 to 2 
+PASS foreignDoc.insertBefore(detachedComment, foreignDoc.documentElement), with unselected range collapsed at (foreignDoc, 0) 
+PASS foreignDoc.insertBefore(detachedComment, foreignDoc.documentElement), with selected range collapsed at (foreignDoc, 0) 
+PASS foreignDoc.insertBefore(detachedComment, foreignDoc.documentElement), with unselected range on foreignDoc from 0 to 1 
+PASS foreignDoc.insertBefore(detachedComment, foreignDoc.documentElement), with selected range on foreignDoc from 0 to 1 
+PASS foreignDoc.insertBefore(detachedComment, foreignDoc.documentElement), with unselected range on foreignDoc from 0 to 2 
+PASS foreignDoc.insertBefore(detachedComment, foreignDoc.documentElement), with selected range on foreignDoc from 0 to 2 
+PASS foreignDoc.insertBefore(detachedComment, foreignDoc.documentElement), with unselected range collapsed at (foreignDoc, 1) 
+PASS foreignDoc.insertBefore(detachedComment, foreignDoc.documentElement), with selected range collapsed at (foreignDoc, 1) 
+PASS foreignDoc.insertBefore(detachedComment, foreignDoc.doctype), with unselected range collapsed at (foreignDoc, 0) 
+PASS foreignDoc.insertBefore(detachedComment, foreignDoc.doctype), with selected range collapsed at (foreignDoc, 0) 
+PASS foreignDoc.insertBefore(detachedComment, foreignDoc.doctype), with unselected range on foreignDoc from 0 to 1 
+PASS foreignDoc.insertBefore(detachedComment, foreignDoc.doctype), with selected range on foreignDoc from 0 to 1 
+PASS foreignDoc.insertBefore(detachedComment, foreignDoc.doctype), with unselected range on foreignDoc from 0 to 2 
+PASS foreignDoc.insertBefore(detachedComment, foreignDoc.doctype), with selected range on foreignDoc from 0 to 2 
+PASS foreignDoc.insertBefore(detachedComment, foreignDoc.doctype), with unselected range collapsed at (foreignDoc, 1) 
+PASS foreignDoc.insertBefore(detachedComment, foreignDoc.doctype), with selected range collapsed at (foreignDoc, 1) 
+PASS foreignDoc.insertBefore(detachedComment, null), with unselected range on foreignDoc from 0 to 1 
+PASS foreignDoc.insertBefore(detachedComment, null), with selected range on foreignDoc from 0 to 1 
+PASS paras[0].insertBefore(xmlTextNode, paras[0].firstChild), with unselected range collapsed at (paras[0], 0) 
+PASS paras[0].insertBefore(xmlTextNode, paras[0].firstChild), with selected range collapsed at (paras[0], 0) 
+PASS paras[0].insertBefore(xmlTextNode, paras[0].firstChild), with unselected range on paras[0] from 0 to 1 
+PASS paras[0].insertBefore(xmlTextNode, paras[0].firstChild), with selected range on paras[0] from 0 to 1 
+PASS paras[0].insertBefore(xmlTextNode, paras[0].firstChild), with unselected range collapsed at (paras[0], 1) 
+PASS paras[0].insertBefore(xmlTextNode, paras[0].firstChild), with selected range collapsed at (paras[0], 1) 
+PASS paras[0].insertBefore(paras[0], paras[0].firstChild), with unselected range on paras[0] from 0 to 1 
+PASS paras[0].insertBefore(paras[0], paras[0].firstChild), with selected range on paras[0] from 0 to 1 
+PASS paras[0].insertBefore(testDiv, paras[0].firstChild), with unselected range on paras[0] from 0 to 1 
+PASS paras[0].insertBefore(testDiv, paras[0].firstChild), with selected range on paras[0] from 0 to 1 
+PASS paras[0].insertBefore(document, paras[0].firstChild), with unselected range on paras[0] from 0 to 1 
+PASS paras[0].insertBefore(document, paras[0].firstChild), with selected range on paras[0] from 0 to 1 
+PASS paras[0].insertBefore(foreignDoc, paras[0].firstChild), with unselected range on paras[0] from 0 to 1 
+PASS paras[0].insertBefore(foreignDoc, paras[0].firstChild), with selected range on paras[0] from 0 to 1 
+PASS paras[0].insertBefore(document.doctype, paras[0].firstChild), with unselected range on paras[0] from 0 to 1 
+PASS paras[0].insertBefore(document.doctype, paras[0].firstChild), with selected range on paras[0] from 0 to 1 
+Harness: the test ran to completion.
+

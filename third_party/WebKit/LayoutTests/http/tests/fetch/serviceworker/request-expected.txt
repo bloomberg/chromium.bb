@@ -1,0 +1,42 @@
+This is a testharness.js-based test.
+PASS Startup 
+PASS request 
+PASS Request basic test 
+PASS Request default value test 
+PASS Request header test 
+PASS Request header test 
+PASS Request credentials test 
+PASS Request redirect test 
+PASS Request integrity test 
+PASS Request method name throw test 
+PASS Request mode throw test 
+PASS Request: valid method names and normalize test 
+PASS Request construction with URLs with credentials. 
+PASS Request construction without body behavior regardning "bodyUsed" 
+PASS Request construction without body behavior regardning "bodyUsed" 
+PASS Request construction failure should not set "bodyUsed" 
+PASS Request without RequestInit. 
+PASS Request with referrer=about:client. 
+PASS Request with no-referrer. 
+PASS Request with a url referrer 
+PASS Request with a url referrer containing user, pass, and so on 
+PASS Request with a url with another origin 
+PASS Request with an invalid referrer 
+PASS Request with a relative referrer 
+PASS Referrer policy settings 
+PASS Referrer policy should be cleared when any members are set 
+FAIL Request of GET/HEAD method cannot have RequestInit body. assert_not_equals: got disallowed value undefined
+PASS Used => clone 
+PASS Test clone behavior with loading content from Request. 
+PASS Request body test 
+PASS Request throw error test 
+PASS MIME type for Blob 
+PASS MIME type for Blob with non-empty type 
+PASS MIME type for FormData 
+PASS MIME type for USVString 
+PASS Extract a MIME type with clone 
+PASS MIME type unchanged if headers are modified after Request() constructor 
+PASS Extract a MIME type (1) 
+PASS Credentials and body can both be set. 
+Harness: the test ran to completion.
+

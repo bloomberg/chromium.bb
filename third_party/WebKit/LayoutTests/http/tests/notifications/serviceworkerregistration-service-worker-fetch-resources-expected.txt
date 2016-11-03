@@ -1,0 +1,4 @@
+This is a testharness.js-based test.
+FAIL The request for the notification icon is handled by the fetch event handler. assert_not_equals: got disallowed value undefined
+Harness: the test ran to completion.
+

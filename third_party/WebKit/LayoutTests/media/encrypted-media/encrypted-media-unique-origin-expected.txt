@@ -1,0 +1,4 @@
+This is a testharness.js-based test.
+FAIL Unique origin is unable to create MediaKeys assert_not_equals: got disallowed value undefined
+Harness: the test ran to completion.
+

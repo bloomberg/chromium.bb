@@ -1,0 +1,4 @@
+This is a testharness.js-based test.
+FAIL object legacycaller should not be supported assert_equals: typeof expected "object" but got "function"
+Harness: the test ran to completion.
+

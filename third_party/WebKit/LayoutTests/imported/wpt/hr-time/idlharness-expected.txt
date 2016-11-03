@@ -1,0 +1,14 @@
+This is a testharness.js-based test.
+FAIL Window interface: attribute performance assert_true: The prototype object must have a property "performance" expected true got false
+PASS WorkerGlobalScope interface: existence and properties of interface object 
+FAIL Performance interface: existence and properties of interface object Cannot read property 'has_extended_attribute' of undefined
+PASS Performance interface object length 
+PASS Performance interface object name 
+FAIL Performance interface: existence and properties of interface prototype object Cannot read property 'has_extended_attribute' of undefined
+PASS Performance interface: existence and properties of interface prototype object's "constructor" property 
+PASS Performance interface: operation now() 
+PASS Performance must be primary interface of window.performance 
+FAIL Stringification of window.performance Cannot read property 'has_stringifier' of undefined
+PASS Performance interface: window.performance must inherit property "now" with the proper type (0) 
+Harness: the test ran to completion.
+
