@@ -13,7 +13,7 @@
 @protocol LogoVendor<LogoAnimationControllerOwnerOwner, NSObject>
 
 // View that shows a doodle or a search engine logo.
-@property(nonatomic, readonly) UIView* view;
+@property(nonatomic, readonly, retain) UIView* view;
 
 // Whether or not the logo should be shown.  Defaults to YES.
 @property(nonatomic, assign, getter=isShowingLogo) BOOL showingLogo;
