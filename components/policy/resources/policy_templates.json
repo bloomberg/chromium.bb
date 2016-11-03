@@ -5042,11 +5042,11 @@
       'id': 349,
       'caption': '''Report information about status of Android''',
       'tags': ['admin-sharing'],
-      'desc': '''Report information about the status of Android is send back to
-      the server.
+      'desc': '''Information about the status of Android is sent back to the
+      server.
 
-      If the policy is set to false, the information will not be reported.
-      If set to true or left unset, the information will be reported.
+      If the policy is set to false, no status information is reported.
+      If set to true or left unset, status information is reported.
 
       This policy only applies if Android apps are enabled.''',
     },
