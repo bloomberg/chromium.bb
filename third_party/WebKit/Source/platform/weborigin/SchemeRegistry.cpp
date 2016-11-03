@@ -104,6 +104,7 @@ static URLSchemesSet& notAllowingJavascriptURLsSchemes() {
 }
 
 void SchemeRegistry::registerURLSchemeAsLocal(const String& scheme) {
+  DCHECK_EQ(scheme, scheme.lower());
   MutexLocker locker(mutex());
   localURLSchemes().add(scheme);
 }
@@ -186,6 +187,7 @@ void SchemeRegistry::initialize() {
 }
 
 bool SchemeRegistry::shouldTreatURLSchemeAsLocal(const String& scheme) {
+  DCHECK_EQ(scheme, scheme.lower());
   if (scheme.isEmpty())
     return false;
   MutexLocker locker(mutex());
@@ -193,11 +195,13 @@ bool SchemeRegistry::shouldTreatURLSchemeAsLocal(const String& scheme) {
 }
 
 void SchemeRegistry::registerURLSchemeAsNoAccess(const String& scheme) {
+  DCHECK_EQ(scheme, scheme.lower());
   MutexLocker locker(mutex());
   schemesWithUniqueOrigins().add(scheme);
 }
 
 bool SchemeRegistry::shouldTreatURLSchemeAsNoAccess(const String& scheme) {
+  DCHECK_EQ(scheme, scheme.lower());
   if (scheme.isEmpty())
     return false;
   MutexLocker locker(mutex());
@@ -205,12 +209,14 @@ bool SchemeRegistry::shouldTreatURLSchemeAsNoAccess(const String& scheme) {
 }
 
 void SchemeRegistry::registerURLSchemeAsDisplayIsolated(const String& scheme) {
+  DCHECK_EQ(scheme, scheme.lower());
   MutexLocker locker(mutex());
   displayIsolatedURLSchemes().add(scheme);
 }
 
 bool SchemeRegistry::shouldTreatURLSchemeAsDisplayIsolated(
     const String& scheme) {
+  DCHECK_EQ(scheme, scheme.lower());
   if (scheme.isEmpty())
     return false;
   MutexLocker locker(mutex());
@@ -219,12 +225,14 @@ bool SchemeRegistry::shouldTreatURLSchemeAsDisplayIsolated(
 
 void SchemeRegistry::registerURLSchemeAsRestrictingMixedContent(
     const String& scheme) {
+  DCHECK_EQ(scheme, scheme.lower());
   MutexLocker locker(mutex());
   mixedContentRestrictingSchemes().add(scheme);
 }
 
 bool SchemeRegistry::shouldTreatURLSchemeAsRestrictingMixedContent(
     const String& scheme) {
+  DCHECK_EQ(scheme, scheme.lower());
   if (scheme.isEmpty())
     return false;
   MutexLocker locker(mutex());
@@ -232,11 +240,13 @@ bool SchemeRegistry::shouldTreatURLSchemeAsRestrictingMixedContent(
 }
 
 void SchemeRegistry::registerURLSchemeAsSecure(const String& scheme) {
+  DCHECK_EQ(scheme, scheme.lower());
   MutexLocker locker(mutex());
   secureSchemes().add(scheme);
 }
 
 bool SchemeRegistry::shouldTreatURLSchemeAsSecure(const String& scheme) {
+  DCHECK_EQ(scheme, scheme.lower());
   if (scheme.isEmpty())
     return false;
   MutexLocker locker(mutex());
@@ -244,11 +254,13 @@ bool SchemeRegistry::shouldTreatURLSchemeAsSecure(const String& scheme) {
 }
 
 void SchemeRegistry::registerURLSchemeAsEmptyDocument(const String& scheme) {
+  DCHECK_EQ(scheme, scheme.lower());
   MutexLocker locker(mutex());
   emptyDocumentSchemes().add(scheme);
 }
 
 bool SchemeRegistry::shouldLoadURLSchemeAsEmptyDocument(const String& scheme) {
+  DCHECK_EQ(scheme, scheme.lower());
   if (scheme.isEmpty())
     return false;
   MutexLocker locker(mutex());
@@ -258,6 +270,7 @@ bool SchemeRegistry::shouldLoadURLSchemeAsEmptyDocument(const String& scheme) {
 void SchemeRegistry::setDomainRelaxationForbiddenForURLScheme(
     bool forbidden,
     const String& scheme) {
+  DCHECK_EQ(scheme, scheme.lower());
   if (scheme.isEmpty())
     return;
 
@@ -270,6 +283,7 @@ void SchemeRegistry::setDomainRelaxationForbiddenForURLScheme(
 
 bool SchemeRegistry::isDomainRelaxationForbiddenForURLScheme(
     const String& scheme) {
+  DCHECK_EQ(scheme, scheme.lower());
   if (scheme.isEmpty())
     return false;
   MutexLocker locker(mutex());
@@ -277,18 +291,20 @@ bool SchemeRegistry::isDomainRelaxationForbiddenForURLScheme(
 }
 
 bool SchemeRegistry::canDisplayOnlyIfCanRequest(const String& scheme) {
-  return equalIgnoringASCIICase("blob", scheme) ||
-         equalIgnoringASCIICase("filesystem", scheme);
+  DCHECK_EQ(scheme, scheme.lower());
+  return scheme == "blob" || scheme == "filesystem";
 }
 
 void SchemeRegistry::registerURLSchemeAsNotAllowingJavascriptURLs(
     const String& scheme) {
+  DCHECK_EQ(scheme, scheme.lower());
   MutexLocker locker(mutex());
   notAllowingJavascriptURLsSchemes().add(scheme);
 }
 
 bool SchemeRegistry::shouldTreatURLSchemeAsNotAllowingJavascriptURLs(
     const String& scheme) {
+  DCHECK_EQ(scheme, scheme.lower());
   if (scheme.isEmpty())
     return false;
   MutexLocker locker(mutex());
@@ -296,11 +312,13 @@ bool SchemeRegistry::shouldTreatURLSchemeAsNotAllowingJavascriptURLs(
 }
 
 void SchemeRegistry::registerURLSchemeAsCORSEnabled(const String& scheme) {
+  DCHECK_EQ(scheme, scheme.lower());
   MutexLocker locker(mutex());
   CORSEnabledSchemes().add(scheme);
 }
 
 bool SchemeRegistry::shouldTreatURLSchemeAsCORSEnabled(const String& scheme) {
+  DCHECK_EQ(scheme, scheme.lower());
   if (scheme.isEmpty())
     return false;
   MutexLocker locker(mutex());
@@ -327,18 +345,19 @@ String SchemeRegistry::listOfCORSEnabledURLSchemes() {
 }
 
 bool SchemeRegistry::shouldTreatURLSchemeAsLegacy(const String& scheme) {
-  return equalIgnoringASCIICase("ftp", scheme) ||
-         equalIgnoringASCIICase("gopher", scheme);
+  return scheme == "ftp" || scheme == "gopher";
 }
 
 void SchemeRegistry::registerURLSchemeAsAllowingServiceWorkers(
     const String& scheme) {
+  DCHECK_EQ(scheme, scheme.lower());
   MutexLocker locker(mutex());
   serviceWorkerSchemes().add(scheme);
 }
 
 bool SchemeRegistry::shouldTreatURLSchemeAsAllowingServiceWorkers(
     const String& scheme) {
+  DCHECK_EQ(scheme, scheme.lower());
   if (scheme.isEmpty())
     return false;
   MutexLocker locker(mutex());
@@ -347,12 +366,14 @@ bool SchemeRegistry::shouldTreatURLSchemeAsAllowingServiceWorkers(
 
 void SchemeRegistry::registerURLSchemeAsSupportingFetchAPI(
     const String& scheme) {
+  DCHECK_EQ(scheme, scheme.lower());
   MutexLocker locker(mutex());
   fetchAPISchemes().add(scheme);
 }
 
 bool SchemeRegistry::shouldTreatURLSchemeAsSupportingFetchAPI(
     const String& scheme) {
+  DCHECK_EQ(scheme, scheme.lower());
   if (scheme.isEmpty())
     return false;
   MutexLocker locker(mutex());
@@ -361,18 +382,21 @@ bool SchemeRegistry::shouldTreatURLSchemeAsSupportingFetchAPI(
 
 void SchemeRegistry::registerURLSchemeAsFirstPartyWhenTopLevel(
     const String& scheme) {
+  DCHECK_EQ(scheme, scheme.lower());
   MutexLocker locker(mutex());
   firstPartyWhenTopLevelSchemes().add(scheme);
 }
 
 void SchemeRegistry::removeURLSchemeAsFirstPartyWhenTopLevel(
     const String& scheme) {
+  DCHECK_EQ(scheme, scheme.lower());
   MutexLocker locker(mutex());
   firstPartyWhenTopLevelSchemes().remove(scheme);
 }
 
 bool SchemeRegistry::shouldTreatURLSchemeAsFirstPartyWhenTopLevel(
     const String& scheme) {
+  DCHECK_EQ(scheme, scheme.lower());
   if (scheme.isEmpty())
     return false;
   MutexLocker locker(mutex());
@@ -381,6 +405,7 @@ bool SchemeRegistry::shouldTreatURLSchemeAsFirstPartyWhenTopLevel(
 
 void SchemeRegistry::registerURLSchemeAsAllowedForReferrer(
     const String& scheme) {
+  DCHECK_EQ(scheme, scheme.lower());
   MutexLocker locker(mutex());
   allowedInReferrerSchemes().add(scheme);
 }
@@ -392,6 +417,7 @@ void SchemeRegistry::removeURLSchemeAsAllowedForReferrer(const String& scheme) {
 
 bool SchemeRegistry::shouldTreatURLSchemeAsAllowedForReferrer(
     const String& scheme) {
+  DCHECK_EQ(scheme, scheme.lower());
   if (scheme.isEmpty())
     return false;
   MutexLocker locker(mutex());
@@ -401,12 +427,14 @@ bool SchemeRegistry::shouldTreatURLSchemeAsAllowedForReferrer(
 void SchemeRegistry::registerURLSchemeAsBypassingContentSecurityPolicy(
     const String& scheme,
     PolicyAreas policyAreas) {
+  DCHECK_EQ(scheme, scheme.lower());
   MutexLocker locker(mutex());
   ContentSecurityPolicyBypassingSchemes().add(scheme, policyAreas);
 }
 
 void SchemeRegistry::removeURLSchemeRegisteredAsBypassingContentSecurityPolicy(
     const String& scheme) {
+  DCHECK_EQ(scheme, scheme.lower());
   MutexLocker locker(mutex());
   ContentSecurityPolicyBypassingSchemes().remove(scheme);
 }
@@ -427,6 +455,7 @@ bool SchemeRegistry::schemeShouldBypassContentSecurityPolicy(
 
 void SchemeRegistry::registerURLSchemeBypassingSecureContextCheck(
     const String& scheme) {
+  DCHECK_EQ(scheme, scheme.lower());
   MutexLocker locker(mutex());
   secureContextBypassingSchemes().add(scheme.lower());
 }

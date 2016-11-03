@@ -36,10 +36,10 @@
 
 namespace blink {
 
-using URLSchemesSet = HashSet<String, CaseFoldingHash>;
+using URLSchemesSet = HashSet<String>;
 
 template <typename T>
-using URLSchemesMap = HashMap<String, T, CaseFoldingHash>;
+using URLSchemesMap = HashMap<String, T>;
 
 class PLATFORM_EXPORT SchemeRegistry {
   STATIC_ONLY(SchemeRegistry);
