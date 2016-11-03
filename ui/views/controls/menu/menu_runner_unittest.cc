@@ -215,43 +215,113 @@ class MenuLauncherEventHandler : public ui::EventHandler {
 
 }  // namespace
 
+// Test harness that includes a parent Widget and View invoking the menu.
+class MenuRunnerWidgetTest : public MenuRunnerTest {
+ public:
+  MenuRunnerWidgetTest() {}
+
+  Widget* widget() { return widget_; }
+  EventCountView* event_count_view() { return event_count_view_; }
+
+  std::unique_ptr<ui::test::EventGenerator> EventGeneratorForWidget(
+      Widget* widget) {
+    return base::MakeUnique<ui::test::EventGenerator>(
+        IsMus() ? widget->GetNativeWindow() : GetContext(),
+        widget->GetNativeWindow());
+  }
+
+  void AddMenuLauncherEventHandler(Widget* widget) {
+    consumer_ =
+        base::MakeUnique<MenuLauncherEventHandler>(menu_runner(), widget);
+    event_count_view_->AddPostTargetHandler(consumer_.get());
+  }
+
+  // ViewsTestBase:
+  void SetUp() override {
+    MenuRunnerTest::SetUp();
+    widget_ = new Widget;
+    Widget::InitParams params = CreateParams(Widget::InitParams::TYPE_WINDOW);
+    widget_->Init(params);
+    widget_->Show();
+    widget_->SetSize(gfx::Size(300, 300));
+
+    event_count_view_ = new EventCountView();
+    event_count_view_->SetBounds(0, 0, 300, 300);
+    widget_->GetRootView()->AddChildView(event_count_view_);
+
+    InitMenuRunner(MenuRunner::ASYNC);
+  }
+
+  void TearDown() override {
+    widget_->CloseNow();
+    MenuRunnerTest::TearDown();
+  }
+
+ private:
+  Widget* widget_ = nullptr;
+  EventCountView* event_count_view_ = nullptr;
+  std::unique_ptr<MenuLauncherEventHandler> consumer_;
+
+  DISALLOW_COPY_AND_ASSIGN(MenuRunnerWidgetTest);
+};
+
 // Tests that when a mouse press launches a menu, that the target widget does
 // not take explicit capture, nor closes the menu.
-TEST_F(MenuRunnerTest, WidgetDoesntTakeCapture) {
-  Widget* widget = new Widget;
-  Widget::InitParams params = CreateParams(Widget::InitParams::TYPE_WINDOW);
-  widget->Init(params);
-  widget->Show();
-  widget->SetSize(gfx::Size(300, 300));
+TEST_F(MenuRunnerWidgetTest, WidgetDoesntTakeCapture) {
+  AddMenuLauncherEventHandler(owner());
 
-  EventCountView* event_count_view = new EventCountView();
-  event_count_view->SetBounds(0, 0, 300, 300);
-  widget->GetRootView()->AddChildView(event_count_view);
-
-  InitMenuRunner(MenuRunner::ASYNC);
-  MenuRunner* runner = menu_runner();
-
-  MenuLauncherEventHandler consumer(runner, owner());
-  event_count_view->AddPostTargetHandler(&consumer);
   EXPECT_EQ(nullptr, internal::NativeWidgetPrivate::GetGlobalCapture(
-                         widget->GetNativeView()));
-  std::unique_ptr<ui::test::EventGenerator> generator(
-      new ui::test::EventGenerator(
-          IsMus() ? widget->GetNativeWindow() : GetContext(),
-          widget->GetNativeWindow()));
+                         widget()->GetNativeView()));
+  auto generator(EventGeneratorForWidget(widget()));
   // Implicit capture should not be held by |widget|.
   generator->PressLeftButton();
-  EXPECT_EQ(1, event_count_view->GetEventCount(ui::ET_MOUSE_PRESSED));
-  EXPECT_NE(
-      widget->GetNativeView(),
-      internal::NativeWidgetPrivate::GetGlobalCapture(widget->GetNativeView()));
+  EXPECT_EQ(1, event_count_view()->GetEventCount(ui::ET_MOUSE_PRESSED));
+  EXPECT_NE(widget()->GetNativeView(),
+            internal::NativeWidgetPrivate::GetGlobalCapture(
+                widget()->GetNativeView()));
 
   // The menu should still be open.
   TestMenuDelegate* delegate = menu_delegate();
-  EXPECT_TRUE(runner->IsRunning());
+  EXPECT_TRUE(menu_runner()->IsRunning());
   EXPECT_EQ(0, delegate->on_menu_closed_called());
+}
 
-  widget->CloseNow();
+// Tests that after showing a menu on mouse press, that the subsequent mouse
+// will be delivered to the correct view, and not to the one that showed the
+// menu.
+//
+// The original bug is reproducible only when showing the menu on mouse press,
+// as RootView::OnMouseReleased() doesn't have the same behavior.
+TEST_F(MenuRunnerWidgetTest, ClearsMouseHandlerOnRun) {
+  AddMenuLauncherEventHandler(widget());
+
+  // Create a second view that's supposed to get the second mouse press.
+  EventCountView* second_event_count_view = new EventCountView();
+  widget()->GetRootView()->AddChildView(second_event_count_view);
+
+  widget()->SetBounds(gfx::Rect(0, 0, 200, 100));
+  event_count_view()->SetBounds(0, 0, 100, 100);
+  second_event_count_view->SetBounds(100, 0, 100, 100);
+
+  // Click on the first view to show the menu.
+  auto generator(EventGeneratorForWidget(widget()));
+  generator->MoveMouseTo(event_count_view()->bounds().CenterPoint());
+  generator->PressLeftButton();
+
+  // Pretend we dismissed the menu using normal means, as it doesn't matter.
+  EXPECT_TRUE(menu_runner()->IsRunning());
+  menu_runner()->Cancel();
+
+  // EventGenerator won't allow us to re-send the left button press without
+  // releasing it first. We can't send the release event using the same
+  // generator as it would be handled by the RootView in the main Widget.
+  // In actual application the RootView doesn't see the release event.
+  generator.reset();
+  generator = EventGeneratorForWidget(widget());
+
+  generator->MoveMouseTo(second_event_count_view->bounds().CenterPoint());
+  generator->PressLeftButton();
+  EXPECT_EQ(1, second_event_count_view->GetEventCount(ui::ET_MOUSE_PRESSED));
 }
 
 typedef MenuRunnerTest MenuRunnerImplTest;

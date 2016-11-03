@@ -8,6 +8,7 @@
 
 #include "ui/views/controls/menu/menu_runner_handler.h"
 #include "ui/views/controls/menu/menu_runner_impl.h"
+#include "ui/views/widget/widget.h"
 
 namespace views {
 
@@ -32,6 +33,12 @@ MenuRunner::RunResult MenuRunner::RunMenuAt(Widget* parent,
                                             const gfx::Rect& bounds,
                                             MenuAnchorPosition anchor,
                                             ui::MenuSourceType source_type) {
+  // If we are shown on mouse press, we will eat the subsequent mouse down and
+  // the parent widget will not be able to reset its state (it might have mouse
+  // capture from the mouse down). So we clear its state here.
+  if (parent && parent->GetRootView())
+    parent->GetRootView()->SetMouseHandler(nullptr);
+
   if (runner_handler_.get()) {
     return runner_handler_->RunMenuAt(
         parent, button, bounds, anchor, source_type, run_types_);

@@ -401,13 +401,9 @@ MenuItemView* MenuController::Run(Widget* parent,
   menu_start_time_ = base::TimeTicks::Now();
   menu_start_mouse_press_loc_ = gfx::Point();
 
-  // If we are shown on mouse press, we will eat the subsequent mouse down and
-  // the parent widget will not be able to reset its state (it might have mouse
-  // capture from the mouse down). So we clear its state here.
   if (parent) {
     View* root_view = parent->GetRootView();
     if (root_view) {
-      root_view->SetMouseHandler(NULL);
       const ui::Event* event =
           static_cast<internal::RootView*>(root_view)->current_event();
       if (event && event->type() == ui::ET_MOUSE_PRESSED) {

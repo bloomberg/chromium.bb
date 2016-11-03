@@ -944,11 +944,6 @@ void Combobox::OnMenuClosed(Button::ButtonState original_button_state) {
   if (arrow_button_)
     arrow_button_->SetState(original_button_state);
   closed_time_ = base::Time::Now();
-
-  // Need to explicitly clear mouse handler so that events get sent
-  // properly after the menu finishes running. If we don't do this, then
-  // the first click to other parts of the UI is eaten.
-  SetMouseHandler(NULL);
 }
 
 void Combobox::OnPerformAction() {

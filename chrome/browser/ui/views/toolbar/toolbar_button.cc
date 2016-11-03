@@ -233,11 +233,6 @@ void ToolbarButton::OnMenuClosed() {
 
   menu_showing_ = false;
 
-  // Need to explicitly clear mouse handler so that events get sent
-  // properly after the menu finishes running. If we don't do this, then
-  // the first click to other parts of the UI is eaten.
-  SetMouseHandler(nullptr);
-
   // Set the state back to normal after the drop down menu is closed.
   if (state() != STATE_DISABLED)
     SetState(STATE_NORMAL);
