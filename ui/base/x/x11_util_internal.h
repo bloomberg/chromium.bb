@@ -101,10 +101,6 @@ class UI_BASE_X_EXPORT XVisualManager {
 
   XDisplay* display_;
 
-  VisualID default_visual_id_;
-
-  // The system visual is usually the same as the default visual, but
-  // may not be in general.
   VisualID system_visual_id_;
   VisualID transparent_visual_id_;
 

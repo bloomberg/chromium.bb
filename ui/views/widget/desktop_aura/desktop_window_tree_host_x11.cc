@@ -1376,10 +1376,8 @@ void DesktopWindowTreeHostX11::InitX11Window(
       enable_transparent_visuals, &visual, &depth, &colormap,
       &use_argb_visual_);
 
-  if (colormap != CopyFromParent) {
-    attribute_mask |= CWColormap;
-    swa.colormap = colormap;
-  }
+  attribute_mask |= CWColormap;
+  swa.colormap = colormap;
 
   // x.org will BadMatch if we don't set a border when the depth isn't the
   // same as the parent depth.
