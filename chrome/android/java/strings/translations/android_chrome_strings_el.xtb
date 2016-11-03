@@ -95,7 +95,6 @@
 <translation id="200669432486043882">Αντικατάσταση αρχείου</translation>
 <translation id="2020525020270327736">Αντιγραφή ιστοτόπου</translation>
 <translation id="2038563949887743358">Ενεργοποίηση αιτήματος ιστότοπου για υπολογιστές</translation>
-<translation id="2069736994598857257"><ph name="GIGABYTES" /> GB σε χρήση</translation>
 <translation id="2073235970478114994">Φόρτωση εικόνων</translation>
 <translation id="2079545284768500474">Αναίρεση</translation>
 <translation id="2082238445998314030">Αποτέλεσμα <ph name="RESULT_NUMBER" /> από <ph name="TOTAL_RESULTS" /></translation>
@@ -324,6 +323,7 @@
 <translation id="4816465935029283692">Τύποι δεδομένων</translation>
 <translation id="4827948050554950725">Προσθήκη πιστωτικής κάρτας</translation>
 <translation id="4836364883164334657">Η σύνδεσή σας με αυτόν τον ιστότοπο δεν είναι ιδιωτική. Ο τομέας <ph name="DOMAIN_NAME" /> ενδέχεται να δέχεται επίθεση από εισβολείς που προσπαθούν να υποκλέψουν τις πληροφορίες σας (για παράδειγμα, φωτογραφίες, κωδικούς πρόσβασης, μηνύματα και πιστωτικές κάρτες).</translation>
+<translation id="4850886885716139402">Προβολή</translation>
 <translation id="4881695831933465202">Άνοιγμα</translation>
 <translation id="4885273946141277891">Μη υποστηριζόμενος αριθμός παρουσιών Chrome.</translation>
 <translation id="4923459931733593730">Πληρωμή</translation>
@@ -339,7 +339,9 @@
 <translation id="5016205925109358554">Serif</translation>
 <translation id="5039804452771397117">Επιτρέπεται</translation>
 <translation id="5040262127954254034">Απόρρητο</translation>
+<translation id="5053110706349648690">Ενεργοποιήστε το Bluetooth στις <ph name="BEGIN_LINK" />ρυθμίσεις συσκευής<ph name="END_LINK" /> για να επιτρέψετε τη σύζευξη.</translation>
 <translation id="5063480226653192405">Χρήση</translation>
+<translation id="5087580092889165836">Προσθήκη κάρτας</translation>
 <translation id="5100237604440890931">Συμπτυγμένη - Κάντε κλικ για ανάπτυξη</translation>
 <translation id="510275257476243843">Απομένει 1 ώρα</translation>
 <translation id="5127805178023152808">Ο συγχρονισμός είναι απενεργοποιημένος</translation>
@@ -416,6 +418,7 @@
 <translation id="583281660410589416">Άγνωστο</translation>
 <translation id="5832934273103296195">Αναπτυγμένη - Κάντε κλικ για σύμπτυξη</translation>
 <translation id="583891442612896534">Το Chrome δεν είναι δυνατό να επικοινωνήσει με τους διακομιστές της Google για συμπίεση δεδομένων. Η εξοικονόμηση δεδομένων πιθανώς να είναι περιορισμένη.</translation>
+<translation id="5843873952582375185">Δεν βρέθηκαν συσκευές Bluetooth. <ph name="BEGIN_LINK" />Επανάληψη σάρωσης<ph name="END_LINK" />.</translation>
 <translation id="585027516397408832">Η Εξοικονόμηση δεδομένων είναι ενεργοποιημένη</translation>
 <translation id="5860033963881614850">Απενεργοποιημένη</translation>
 <translation id="5867027562311576691">Περισσότερα άρθρα θα εμφανιστούν συντομα. Απολαύστε το πρωινό σας.</translation>
@@ -490,6 +493,7 @@
 <translation id="6657585470893396449">Κωδικός πρόσβασης</translation>
 <translation id="6659594942844771486">Καρτέλα</translation>
 <translation id="666268767214822976">Χρήση υπηρεσίας προβλέψεων για την εμφάνιση σχετικών ερωτημάτων και δημοφιλών ιστότοπων, καθώς πληκτρολογείτε στη γραμμή διευθύνσεων</translation>
+<translation id="666731172850799929">Άνοιγμα σε <ph name="APP_NAME" /></translation>
 <translation id="666981079809192359">Σημείωση Απορρήτου του Chrome</translation>
 <translation id="6698801883190606802">Διαχείριση συγχρονισμένων δεδομένων</translation>
 <translation id="6710213216561001401">Προηγούμενο</translation>
@@ -532,14 +536,12 @@
 <translation id="7074853159844403180">Το <ph name="SITE" /> επιθυμεί σύζευξη με:</translation>
 <translation id="7081639897063626814">Να διατηρηθούν ξεχωριστά τα υπάρχοντα δεδομένα</translation>
 <translation id="7094922512924405309">Δεν βρέθηκαν κοντινές σελίδες Φυσικού δικτύου</translation>
-<translation id="7115197232530297436">Μη υποστηριζόμενη διεύθυνση αποστολής. Επιλέξτε μια διαφορετική διεύθυνση.</translation>
 <translation id="7138678301420049075">Άλλο</translation>
 <translation id="7180611975245234373">Ανανέωση</translation>
 <translation id="7191430249889272776">Η καρτέλα άνοιξε στο παρασκήνιο.</translation>
 <translation id="7208788139759694678">Η Εξοικονόμηση δεδομένων είναι απενεργοποιημένη</translation>
 <translation id="7243308994586599757">Διαθέσιμες επιλογές κοντά κάτω μέρος της οθόνης</translation>
 <translation id="7244362611678346589">Το <ph name="SEARCH_ENGINE_URL" /> χρησιμοποιεί την τοποθεσία σας για την εμφάνιση τοπικών αποτελεσμάτων αναζήτησης</translation>
-<translation id="7347770551817603360">Περιεχόμενο εκτός σύνδεσης</translation>
 <translation id="7353894246028566792">{NUM_SELECTED,plural, =1{Κοινοποίηση 1 επιλεγμένου στοιχείου}other{Κοινοποίηση # επιλεγμένων στοιχείων}}</translation>
 <translation id="7366340029385295517">Μετάδοση στη συσκευή <ph name="SCREEN_NAME" /></translation>
 <translation id="7375125077091615385">Τύπος:</translation>
@@ -576,7 +578,6 @@
 <translation id="7665369617277396874">Προσθήκη λογαριασμού</translation>
 <translation id="7682287625158474539">Αποστολή</translation>
 <translation id="771135159654932189">Δείτε τι υπάρχει κοντά</translation>
-<translation id="7713873128508426081">Να επιτρέπεται πάντα</translation>
 <translation id="7764225426217299476">Προσθήκη διεύθυνσης</translation>
 <translation id="7765158879357617694">Μεταφορά</translation>
 <translation id="7769602470925380267">Αποδοχή και αποσύνδεση</translation>
@@ -645,15 +646,12 @@
 <translation id="8514577642972634246">Είσοδος στην κατάσταση ανώνυμης περιήγησης</translation>
 <translation id="8518901949365209398">Αυτός ο ιστότοπος δεν χρησιμοποιεί ισχυρή ρύθμιση παραμέτρων ασφαλείας (υπογραφές SHA-1), επομένως η σύνδεσή σας ενδέχεται να μην είναι απόρρητη.</translation>
 <translation id="8523928698583292556">Διαγραφή αποθηκευμένου κωδικού πρόσβασης</translation>
-<translation id="8525306231823319788">Πλήρης οθόνη</translation>
-<translation id="85415543246899402"><ph name="MEGABYTES" /> MB καταναλώθηκαν</translation>
 <translation id="854522910157234410">Άνοιγμα αυτής της σελίδας</translation>
 <translation id="8562452229998620586">Οι αποθηκευμένοι κωδικοί πρόσβασής σας θα εμφανιστούν εδώ.</translation>
 <translation id="856481929701340285">Αίτηση ιστότοπου για υπολογιστή</translation>
 <translation id="857943718398505171">Επιτρέπεται (συνιστάται)</translation>
 <translation id="8583805026567836021">Διαγραφή δεδομένων λογαριασμού</translation>
 <translation id="8617240290563765734">Άνοιγμα της προτεινόμενης διεύθυνσης URL που καθορίζεται στο ληφθέν περιεχόμενο;</translation>
-<translation id="8618653050765576793"><ph name="KILOBYTES" /> KB καταναλώθηκαν</translation>
 <translation id="862875433388403934">Ίσως να είναι αδύνατη η αναπαραγωγή λήψεων περιεχομένου (ταινίες, μουσική, κ.λπ.), σε άλλες εφαρμογές έως ότου αποκτήσουν άδειες με νέα διαπιστευτήρια συσκευής.
 
 Για απόκτηση νέων αδειών, συνδεθείτε στο διαδίκτυο και κάντε αναπαραγωγή των λήψεων περιεχομένου.</translation>

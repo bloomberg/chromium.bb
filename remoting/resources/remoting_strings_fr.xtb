@@ -27,6 +27,9 @@ Pour en savoir plus sur la confidentialité, veuillez consulter les règles de c
 <translation id="1654128982815600832">Activation des connexions à distance pour cet ordinateur en cours…</translation>
 <translation id="170207782578677537">Échec de l'enregistrement de cet ordinateur.</translation>
 <translation id="1704090719919187045">Préférences relatives à l'hôte Chromoting</translation>
+<translation id="1730409684442507495">• Amélioration de la qualité d'image du bureau, de la réactivité et de l'autonomie de la batterie.
+• Amélioration de la réactivité des opérations cliquer-faire glisser.
+• Amélioration de plusieurs effets d'animation de l'interface utilisateur.</translation>
 <translation id="174018511426417793">Aucun ordinateur n'est enregistré. Pour activer les connexions à distance à un ordinateur, installez l'application Bureau à distance Google Chrome sur celui-ci, puis cliquez sur "<ph name="BUTTON_NAME" />".</translation>
 <translation id="1742469581923031760">Connexion en cours…</translation>
 <translation id="1770394049404108959">Je n'arrive pas à ouvrir l'application.</translation>
@@ -73,7 +76,6 @@ Pour en savoir plus sur la confidentialité, veuillez consulter les règles de c
 <translation id="2699970397166997657">Google Chromoting</translation>
 <translation id="2747641796667576127">En règle générale, les mises à jour logicielles sont automatiques, mais des problèmes d'installation surviennent parfois. Sachez que quelques minutes devraient suffire pour mettre à jour le logiciel à distance.</translation>
 <translation id="2841013758207633010">Heure</translation>
-<translation id="2851674870054673688">Votre session de partage débutera une fois le code saisi.</translation>
 <translation id="2851754573186462851">Chromium App Streaming</translation>
 <translation id="2855866366045322178">hors connexion</translation>
 <translation id="2888969873284818612">Une erreur réseau s'est produite. L'application va être redémarrée lorsque votre appareil sera de nouveau en ligne.</translation>

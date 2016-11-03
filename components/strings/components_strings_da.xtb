@@ -50,6 +50,7 @@
 <translation id="1491663344921578213">Du kan ikke gå til <ph name="SITE" /> lige nu, da websitet anvender certifikatlåsning. Netværksfejl og hackerangreb er normalt midlertidige, så denne side vil sandsynligvis fungere senere. <ph name="BEGIN_LEARN_MORE_LINK" />Få flere oplysninger<ph name="END_LEARN_MORE_LINK" />.</translation>
 <translation id="1506687042165942984">Vis en gemt (dvs. forældet) kopi af denne side.</translation>
 <translation id="1519264250979466059">Versionsdato</translation>
+<translation id="153384715582417236">Det var det hele indtil videre.</translation>
 <translation id="1549470594296187301">JavaScript skal være aktiveret, før du kan bruge denne funktion.</translation>
 <translation id="1559528461873125649">Filen eller mappen findes ikke</translation>
 <translation id="1559572115229829303">&lt;p&gt;Der kan ikke oprettes en privat forbindelse til <ph name="BEGIN_BOLD" /><ph name="DOMAIN" /><ph name="END_BOLD" />, da datoen og tiden på din enhed (<ph name="DATE_AND_TIME" />) er forkert.&lt;/p&gt;
@@ -350,7 +351,6 @@
 <translation id="4728558894243024398">Platform</translation>
 <translation id="4744603770635761495">Eksekverbar sti</translation>
 <translation id="4756388243121344051">&amp;Historik</translation>
-<translation id="4759238208242260848">Downloads</translation>
 <translation id="4764776831041365478">Websiden på <ph name="URL" /> kan være midlertidigt nede, eller også er den permanent flyttet til en ny webadresse.</translation>
 <translation id="4771973620359291008">Der er opstået en ukendt fejl.</translation>
 <translation id="4782449893814226250">Du har spurgt dine forældre, om det er i orden at besøge denne side.</translation>
@@ -389,6 +389,7 @@
 <translation id="5179510805599951267">Ikke på <ph name="ORIGINAL_LANGUAGE" />? Rapporter denne fejl</translation>
 <translation id="5190835502935405962">Bogmærkelinje</translation>
 <translation id="5199729219167945352">Eksperimenter</translation>
+<translation id="5199841536747119669">Forslag til dig vises her</translation>
 <translation id="5251803541071282808">Skyen</translation>
 <translation id="5277279256032773186">Bruger du Chrome på arbejdet? Virksomheder kan administrere Chrome-indstillinger for deres medarbejdere. Få flere oplysninger</translation>
 <translation id="5299298092464848405">Der opstod en fejl ved parsing af politik</translation>
@@ -468,6 +469,7 @@
 <translation id="6263376278284652872"><ph name="DOMAIN" />-bogmærker</translation>
 <translation id="6264485186158353794">Tilbage i sikkerhed</translation>
 <translation id="6282194474023008486">Postnummer</translation>
+<translation id="6290238015253830360">Forslag til artikler til dig vises her</translation>
 <translation id="6305205051461490394"><ph name="URL" /> kan ikke nås.</translation>
 <translation id="6321917430147971392">Kontrollér dine DNS-indstillinger</translation>
 <translation id="6328639280570009161">Prøv at deaktivere netværksforslag</translation>
@@ -651,6 +653,7 @@ Psst! Prøv at bruge Inkognitotilstand <ph name="SHORTCUT_KEY" /> næste gang.</
 <translation id="8363502534493474904">Deaktivere flytilstand</translation>
 <translation id="8364627913115013041">Ikke angivet.</translation>
 <translation id="8380941800586852976">Farlig</translation>
+<translation id="8382348898565613901">De bogmærker, du har besøgt for nylig, vises her</translation>
 <translation id="8412145213513410671">Nedbrud (<ph name="CRASH_COUNT" />)</translation>
 <translation id="8412392972487953978">Du skal angive den samme adgangssætning to gange.</translation>
 <translation id="8428213095426709021">Indstillinger</translation>
@@ -700,6 +703,7 @@ Psst! Prøv at bruge Inkognitotilstand <ph name="SHORTCUT_KEY" /> næste gang.</
 <translation id="8987927404178983737">Måned</translation>
 <translation id="8989148748219918422"><ph name="ORGANIZATION" /> [<ph name="COUNTRY" />]</translation>
 <translation id="9001074447101275817">Proxyserveren <ph name="DOMAIN" /> kræver et brugernavn og en adgangskode.</translation>
+<translation id="9008201768610948239">Ignorer</translation>
 <translation id="901974403500617787">Markeringer, der gælder for hele systemet, kan kun indstilles af ejeren: <ph name="OWNER_EMAIL" />.</translation>
 <translation id="9020542370529661692">Denne side er oversat til <ph name="TARGET_LANGUAGE" /></translation>
 <translation id="9038649477754266430">Brug en forudsigelsestjeneste til hurtigere sideindlæsning</translation>

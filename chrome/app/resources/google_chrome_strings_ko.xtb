@@ -63,7 +63,6 @@
 <translation id="2588322182880276190">Chrome 로고</translation>
 <translation id="2664962310688259219">Chrome OS 오픈소스 라이선스</translation>
 <translation id="2665296953892887393">비정상 종료 보고서와 <ph name="UMA_LINK" />을(를) Google로 전송하여 Chrome 개선에 참여합니다.</translation>
-<translation id="2669824781555328029"><ph name="FILE_NAME" />이(가) 인터넷 사용 환경을 손상할 수 있어서 Chrome에서 차단했습니다.</translation>
 <translation id="2681064822612051220">Chrome을 시스템에 설치하던 중 이전 설치와 충돌이 발생했습니다. 제거한 다음 다시 시도해 보세요.</translation>
 <translation id="2689103672227170538">Chrome을 시작하면 표시되는 페이지가 이 확장 프로그램으로 인해 변경되었습니다.</translation>
 <translation id="2704356438731803243">기존 Chrome 데이터를 별도로 보관하려는 경우 <ph name="USER_NAME" />의 새 Chrome 사용자를 만들 수 있습니다.</translation>
@@ -153,6 +152,7 @@
 
 일부 기능은 사용하지 못할 수 있습니다. 다른 프로필 디렉토리를 지정하거나 최신 버전의 Chrome을 사용하세요.</translation>
 <translation id="5176234269072261959">현재 설정을 보고하여 Chrome 개선에 참여</translation>
+<translation id="5193136243808726294">Chrome OS에서 이 페이지를 열 수 없음</translation>
 <translation id="5204098752394657250">Chrome <ph name="TERMS_OF_SERVICE_LINK" />서비스 약관<ph name="END_TERMS_OF_SERVICE_LINK" /></translation>
 <translation id="5243785881901838525">Google Payments(Chrome에 복사됨)</translation>
 <translation id="5251420635869119124">손님으로 사용 기록을 남기지 않고 Chrome을 사용할 수 있습니다.</translation>
@@ -213,7 +213,6 @@ Chrome에서 설정을 복구할 수 없습니다.</translation>
 <translation id="699076943483372849">사이트에서 사용 중인 Chrome 프레임 플러그인의 보안 및 안정성 업데이트가 중단되었습니다. 플러그인을 제거하고 최신 브라우저로 업그레이드하세요.</translation>
 <translation id="6991142834212251086">내 Chrome 데이터를 이 계정에 연결</translation>
 <translation id="7060865993964054389">Chrome 앱 실행기</translation>
-<translation id="7084448929020576097"><ph name="FILE_NAME" />은(는) 악성 파일이므로 Chrome에서 차단했습니다.</translation>
 <translation id="7098166902387133879">Chrome에서 마이크를 사용 중입니다.</translation>
 <translation id="7106741999175697885">작업 관리자 - Chrome</translation>
 <translation id="7125719106133729027">Chrome을 최신 버전으로 자동 업데이트할 수 없기 때문에 새로운 기능과 보안 수정사항 업데이트가 누락될 수 있습니다. Chrome을 직접 다시 설치해야 합니다.</translation>
@@ -276,7 +275,6 @@ Chrome에서 설정을 복구할 수 없습니다.</translation>
 <translation id="8669527147644353129">Chrome 도우미</translation>
 <translation id="8679801911857917785">또한 Chrome을 시작할 때 표시되는 페이지를 설정합니다.</translation>
 <translation id="870251953148363156">Chrome 업데이트(&amp;G)</translation>
-<translation id="8793772303278047003">Chrome이 이전 버전입니다.</translation>
 <translation id="8796108026289707191">지금 Chrome을 다시 시작해야 합니다.</translation>
 <translation id="8823341990149967727">Chrome이 이전 버전임</translation>
 <translation id="884296878221830158">또한 Chrome을 시작하거나 홈 버튼을 클릭할 때 표시되는 페이지를 설정합니다.</translation>
@@ -285,7 +283,6 @@ Chrome에서 설정을 복구할 수 없습니다.</translation>
 <translation id="8914504000324227558">Chrome 다시 시작</translation>
 <translation id="9026991721384951619">계정의 로그인 세부정보가 오래되어 Chrome OS에서 데이터를 동기화하지 못했습니다.</translation>
 <translation id="9067395829937117663">Chrome은 Windows 7 이상 버전에서 사용할 수 있습니다.</translation>
-<translation id="9102715433345326100">이 파일은 악성 파일이므로 Chrome에서 차단했습니다.</translation>
 <translation id="9107728822479888688"><ph name="BEGIN_BOLD" />경고:<ph name="END_BOLD" /> Chrome에서는 확장 프로그램에 인터넷 사용기록이 저장될 수 있습니다. 시크릿 모드에서 이 확장 프로그램을 사용 중지하려면 옵션을 선택 취소하세요.</translation>
 <translation id="911206726377975832">인터넷 사용정보도 삭제하시겠습니까?</translation>
 <translation id="924447568950697217">Chrome을 기본 브라우저로 지정</translation>

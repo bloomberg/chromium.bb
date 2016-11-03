@@ -22,6 +22,7 @@
 <translation id="1484102317210609525"><ph name="DEVICE_NAME" /> (HDMI/DP)</translation>
 <translation id="1510238584712386396">Spúšťač</translation>
 <translation id="1525508553941733066">ZATVORIŤ</translation>
+<translation id="153454903766751181">Inicializácia mobilného modemu...</translation>
 <translation id="15373452373711364">Veľký kurzor myši</translation>
 <translation id="1550523713251050646">Kliknutím zobrazíte ďalšie možnosti</translation>
 <translation id="1602076796624386989">Povoliť mobilné dátové pripojenie</translation>
@@ -32,6 +33,7 @@
 <translation id="1747827819627189109">Klávesnica na obrazovke je povolená</translation>
 <translation id="1812696562331527143">Metóda vstupu sa zmenila na <ph name="INPUT_METHOD_ID" />*(<ph name="BEGIN_LINK" />tretia strana<ph name="END_LINK" />).
         Prepnete ju stlačením klávesov Shift + Alt.</translation>
+<translation id="1850504506766569011">Pripojenie Wi-Fi je vypnuté.</translation>
 <translation id="1864454756846565995">Zariadenie USB-C (port vzadu)</translation>
 <translation id="1882897271359938046">Zrkadlenie na displej <ph name="DISPLAY_NAME" /></translation>
 <translation id="1919743966458266018">Skratka otvorenia správcu úloh bola zmenená. Namiesto skratky <ph name="OLD_SHORTCUT" /> používajte kombináciu klávesov <ph name="NEW_SHORTCUT" />.</translation>
@@ -47,6 +49,7 @@
 <translation id="2268813581635650749">Odhlásiť všetkých</translation>
 <translation id="2297568595583585744">Stavový panel</translation>
 <translation id="2303600792989757991">Prepnúť prehľad okien</translation>
+<translation id="2354174487190027830">Aktivujte sa sieť <ph name="NAME" /></translation>
 <translation id="2391579633712104609">180 °</translation>
 <translation id="2429753432712299108">Zariadenie Bluetooth s názvom <ph name="DEVICE_NAME" /> žiada o povolenie párovania. Skôr ako žiadosti vyhoviete, overte, či sa na danom zariadení zobrazuje nasledujúci prístupový kľúč: <ph name="PASSKEY" /></translation>
 <translation id="2475982808118771221">Vyskytla sa chyba</translation>
@@ -59,6 +62,7 @@
 <translation id="2700058918926273959">Relácia sa skončí o <ph name="SESSION_TIME_REMAINING" />. Následne budete odhlásený/-á.</translation>
 <translation id="2727977024730340865">Batéria je zapojená do nabíjačky s nízkym výkonom. Nabíjanie batérie nemusí byť spoľahlivé.</translation>
 <translation id="2761704814324807722">Stavový panel, čas <ph name="TIME" />, <ph name="BATTERY" /></translation>
+<translation id="277257480934873581">Prebieha opätovné pripájanie k sieti <ph name="NAME" /></translation>
 <translation id="2792498699870441125">Alt + Hľadať</translation>
 <translation id="2819276065543622893">Teraz prebehne odhlásenie.</translation>
 <translation id="2825619548187458965">Polička</translation>
@@ -105,21 +109,27 @@ Ak ho chcete zrušiť, stlačte klávesy Hľadať alebo Shift.</translation>
 <translation id="3783640748446814672">alt</translation>
 <translation id="3784455785234192852">Uzamknúť</translation>
 <translation id="3799026279081545374">Je možné, že máte chybnú nabíjačku. Ak žijete v USA, požiadajte o pomoc a výmenu na čísle 866-628-1371. Ak žijete v Spojenom kráľovstve, volajte na číslo 0800-026-0613. Ak žijete v Írsku, volajte na číslo 1-800-832-664. Ak žijete v Kanade, volajte na číslo 866-628-1372. Ak žijete v Austrálii, volajte na číslo 1-800-067-460.</translation>
+<translation id="3846575436967432996">Informácie o sieti nie sú k dispozícii</translation>
 <translation id="3866182280516392520">Adresa IPv6</translation>
 <translation id="3891340733213178823">Ak sa chcete odhlásiť, stlačte dvakrát kombináciu klávesov Ctrl+Shift+Q.</translation>
 <translation id="3892641579809465218">Interný displej</translation>
 <translation id="3893630138897523026">ChromeVox (hlasová spätná väzba)</translation>
 <translation id="3899995891769452915">Hlasový vstup</translation>
+<translation id="3901991538546252627">Pripája sa k sieti <ph name="NAME" /></translation>
 <translation id="3963445509666917109">Reproduktor (vnútorný)</translation>
 <translation id="3967919079500697218">Váš správca zakázal zaznamenávanie snímok obrazovky.</translation>
 <translation id="397105322502079400">Prebieha výpočet...</translation>
 <translation id="3995138139523574647">zariadenia USB-C (port vpravo vzadu)</translation>
 <translation id="4053612967614057854">Vypnúť klávesnicu na obrazovke</translation>
+<translation id="4118990158415604803">Pripojenie k iným sieťam je zakázané vaším správcom.</translation>
 <translation id="4250680216510889253">Nie</translation>
 <translation id="4279490309300973883">Zrkadlenie</translation>
 <translation id="4321179778687042513">ctrl</translation>
 <translation id="4421231901400348175">Ovládanie obrazovky sa prostredníctvom Vzdialenej pomoci zdieľa s používateľom <ph name="HELPER_NAME" />.</translation>
 <translation id="4430019312045809116">Hlasitosť</translation>
+<translation id="4448844063988177157">Prebieha vyhľadávanie sietí Wi-Fi...</translation>
+<translation id="4479639480957787382">Ethernet</translation>
+<translation id="4508225577814909926"><ph name="NAME" />: pripája sa...</translation>
 <translation id="4527045527269911712">Zariadenie Bluetooth s názvom <ph name="DEVICE_NAME" /> žiada o povolenie párovania.</translation>
 <translation id="453661520163887813">Zostávajúci čas do úplného nabitia: <ph name="TIME" /></translation>
 <translation id="4544944664594876241">Skratka uzamknutia obrazovky bola zmenená. Namiesto skratky <ph name="OLD_SHORTCUT" /> používajte kombináciu klávesov <ph name="NEW_SHORTCUT" />.</translation>
@@ -172,6 +182,7 @@ Ak ho chcete zrušiť, stlačte klávesy Hľadať alebo Shift.</translation>
 <translation id="6165508094623778733">Viac informácií</translation>
 <translation id="6203030746557259519">Virtuálna obrazovka</translation>
 <translation id="6248847161401822652">Ak chcete skončiť, stlačte dvakrát kombináciu kláves Ctrl+Shift+Q.</translation>
+<translation id="6267036997247669271"><ph name="NAME" />: Aktivuje sa...</translation>
 <translation id="6297287540776456956">Pomocou dotykového pera vyberte oblasť</translation>
 <translation id="6310121235600822547">Obrazovka <ph name="DISPLAY_NAME" /> bola otočená o <ph name="ROTATION" /></translation>
 <translation id="6359806961507272919">SMS z č. <ph name="PHONE_NUMBER" /></translation>
@@ -184,6 +195,7 @@ Ak ho chcete zrušiť, stlačte klávesy Hľadať alebo Shift.</translation>
 <translation id="6501401484702599040">Prenášanie obrazovky do zariadenia <ph name="RECEIVER_NAME" /></translation>
 <translation id="6521655319214113338">Vstup ručného písania</translation>
 <translation id="6537270692134705506">Nasnímať obrazovku</translation>
+<translation id="6549021752953852991">K dispozícii nie je žiadna mobilná sieť</translation>
 <translation id="6550675742724504774">Možnosti</translation>
 <translation id="6585808820553845416">Relácia sa skončí o <ph name="SESSION_TIME_REMAINING" /></translation>
 <translation id="6596816719288285829">Adresa IP</translation>
@@ -192,6 +204,7 @@ Ak ho chcete zrušiť, stlačte klávesy Hľadať alebo Shift.</translation>
 <translation id="6713285437468012787">Zariadenie Bluetooth s názvom <ph name="DEVICE_NAME" /> bolo spárované a je k dispozícii pre všetkých používateľov. Párovanie môžete zrušiť pomocou ponuky Nastavenia.</translation>
 <translation id="6785414152754474415">Batéria je nabitá na <ph name="PERCENTAGE" /> % a nabíja sa.</translation>
 <translation id="683971173229319003">Hľadať+L</translation>
+<translation id="6857811139397017780">Aktivovať zariadenie <ph name="NETWORKSERVICE" /></translation>
 <translation id="6911468394164995108">Pripojiť k ďalšej...</translation>
 <translation id="6915678159055240887">Chromebox</translation>
 <translation id="6979158407327259162">Disk Google</translation>
@@ -200,6 +213,7 @@ Ak ho chcete zrušiť, stlačte klávesy Hľadať alebo Shift.</translation>
 <translation id="703171847531699602">Žiadne zariadenia na prenos</translation>
 <translation id="7034339000180558234">Prenášanie karty <ph name="TAB_NAME" /> do zariadenia <ph name="RECEIVER_NAME" /></translation>
 <translation id="7052914147756339792">Nastavenie tapety...</translation>
+<translation id="7066646422045619941">Táto sieť je zakázaná správcom.</translation>
 <translation id="7097613348211027502">Hlasová odozva ChromeVox je aktívna.
 Deaktivujete ju stlačením kombinácie klávesov Ctrl+Alt+Z.</translation>
 <translation id="7098389117866926363">Zariadenie USB-C (ľavý port vzadu)</translation>
@@ -209,6 +223,7 @@ Deaktivujete ju stlačením kombinácie klávesov Ctrl+Alt+Z.</translation>
 <translation id="7209101170223508707">Kláves CAPS LOCK je zapnutý.
 Ak ho chcete zrušiť, stlačte klávesy Alt + Hľadať alebo Shift.</translation>
 <translation id="7348093485538360975">Klávesnica na obrazovke</translation>
+<translation id="735745346212279324">Sieť VPN je odpojená</translation>
 <translation id="737451040872859086">Mikrofón (vnútorný)</translation>
 <translation id="742594950370306541">Fotoaparát sa používa.</translation>
 <translation id="743058460480092004">Fotoaparát a mikrofón sa používajú.</translation>
@@ -225,19 +240,24 @@ Ak ho chcete zrušiť, stlačte klávesy Alt + Hľadať alebo Shift.</translatio
 <translation id="7823564328645135659">Po synchronizácii vašich nastavení bol zmenený jazyk „<ph name="FROM_LOCALE" />“ na jazyk „<ph name="TO_LOCALE" />“.</translation>
 <translation id="785750925697875037">Zobraziť mobilný účet</translation>
 <translation id="7864539943188674973">Zakázať rozhranie Bluetooth</translation>
+<translation id="7874779702599364982">Prebieha vyhľadávanie mobilných sietí...</translation>
 <translation id="7893838033650689677">Zapnúť sieť Wi-Fi</translation>
 <translation id="7904094684485781019">Správca tohto účtu zakázal viacnásobné prihlásenie.</translation>
 <translation id="7957227661277029961">Zariadenie <ph name="DEVICE_TYPE" /> sa nemusí nabíjať, keď je zapnuté. Skúste použiť oficiálnu nabíjačku.</translation>
 <translation id="7982789257301363584">Sieť</translation>
+<translation id="8000066093800657092">Žiadna sieť</translation>
 <translation id="8054466585765276473">Výpočet času výdrže batérie.</translation>
 <translation id="8077816382010018681">Tu má byť nadpis upozornenia funkcie rýchleho odomknutia</translation>
 <translation id="8103386449138765447">Správy SMS: <ph name="MESSAGE_COUNT" /></translation>
+<translation id="8132793192354020517">Pripojené k stránke <ph name="NAME" /></translation>
 <translation id="8185286464235484130">Odpovedzte na niekoľko otázok a dajte nám tak vedieť, ako sa nám darí v našom úsilí.</translation>
 <translation id="8190698733819146287">Prebieha prispôsobenie jazykov a vstupu...</translation>
 <translation id="8206859287963243715">Mobilné</translation>
 <translation id="8308637677604853869">Predchádzajúca ponuka</translation>
 <translation id="8356164830168736643">Zavrieť okno <ph name="WINDOW_TITLE" /></translation>
 <translation id="8428213095426709021">Nastavenia</translation>
+<translation id="8454013096329229812">Pripojenie Wi-Fi je zapnuté.</translation>
+<translation id="8484916590211895857"><ph name="NAME" />: Opätovné pripájanie...</translation>
 <translation id="8517041960877371778">Vaše zariadenie <ph name="DEVICE_TYPE" /> sa nemusí nabíjať, keď je zapnuté.</translation>
 <translation id="8528322925433439945">Mobilné siete...</translation>
 <translation id="8639760480004882931">Zostávajúca kapacita: <ph name="PERCENTAGE" /></translation>

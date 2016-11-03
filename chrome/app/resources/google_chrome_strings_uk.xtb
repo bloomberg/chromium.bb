@@ -59,7 +59,6 @@
 <translation id="2588322182880276190">Логотип Chrome</translation>
 <translation id="2664962310688259219">Ліцензії ОС Chrome із відкритим кодом</translation>
 <translation id="2665296953892887393">Допоможіть покращити Google Chrome, надсилаючи звіти про аварійне завершення роботи та <ph name="UMA_LINK" /> в Google</translation>
-<translation id="2669824781555328029">Файл <ph name="FILE_NAME" /> може погіршити перегляд веб-сторінок, тому Chrome блокує його.</translation>
 <translation id="2681064822612051220">У системі виявлено конфліктуюче встановлення Google Chrome. Видаліть його та повторіть спробу.</translation>
 <translation id="2689103672227170538">Це розширення змінило сторінку, яка відкривається під час запуску Chrome.</translation>
 <translation id="2704356438731803243">Якщо ви хочете зберігати існуючі дані Chrome окремо, можна створити нового користувача Chrome для облікового запису <ph name="USER_NAME" />.</translation>
@@ -147,6 +146,7 @@
 <translation id="5148419164691878332">Chrome додасть його в <ph name="SAVED_PASSWORDS_LINK" /> і запам’ятає для наступного разу.</translation>
 <translation id="5170938038195470297">Ваш профіль не можна використати, оскільки його створено в новішій версії Google Chrome. Деякі функції можуть бути недоступними. Укажіть інший каталог профілю чи скористайтеся новішою версією Chrome.</translation>
 <translation id="5176234269072261959">Допоможіть покращити Chrome, надсилаючи звіти про поточні налаштування.</translation>
+<translation id="5193136243808726294">Неможливо відкрити цю сторінку в ОС Google Chrome.</translation>
 <translation id="5204098752394657250"><ph name="TERMS_OF_SERVICE_LINK" />Загальні положення та умови<ph name="END_TERMS_OF_SERVICE_LINK" /> Google Chrome</translation>
 <translation id="5243785881901838525">Google Payments (скопійовано в Chrome)</translation>
 <translation id="5251420635869119124">Гості можуть анонімно користуватися Chrome.</translation>
@@ -205,7 +205,6 @@
 <translation id="699076943483372849">Цей сайт використовує застарілий плагін Chrome Frame. Він більше не підтримується й не оновлюється. Видаліть його та встановіть сучасний веб-переглядач.</translation>
 <translation id="6991142834212251086">Пов’язати мої дані Chrome із цим обліковим записом</translation>
 <translation id="7060865993964054389">Панель запуску програм Google Chrome</translation>
-<translation id="7084448929020576097">Файл <ph name="FILE_NAME" /> шкідливий, тому Chrome заблокував його.</translation>
 <translation id="7098166902387133879">Google Chrome використовує ваш мікрофон.</translation>
 <translation id="7106741999175697885">Диспетчер завдань - Google Chrome</translation>
 <translation id="7125719106133729027">Не вдалось оновити Chrome до останньої версії. Щоб застосувати виправлення системи безпеки та скористатись новими цікавими функціями, перевстановіть Chrome вручну.</translation>
@@ -268,7 +267,6 @@
 <translation id="8669527147644353129">Помічник Google Chrome</translation>
 <translation id="8679801911857917785">Розширення також змінило сторінку, яка відкривається під час запуску Chrome.</translation>
 <translation id="870251953148363156">Оновити &amp;Google Chrome</translation>
-<translation id="8793772303278047003">Версія Chrome застаріла.</translation>
 <translation id="8796108026289707191">Перезапустіть Google Chrome.</translation>
 <translation id="8823341990149967727">Версія Chrome застаріла</translation>
 <translation id="884296878221830158">Розширення також змінило сторінку, яка відкривається під час запуску Chrome або натискання кнопки "Домашня сторінка".</translation>
@@ -277,7 +275,6 @@
 <translation id="8914504000324227558">Перезапустити Chrome</translation>
 <translation id="9026991721384951619">ОС Chrome не вдалося синхронізувати ваші дані, оскільки дані для входу в обліковий запис застаріли.</translation>
 <translation id="9067395829937117663">Для роботи Google Chrome потрібно мати ОС Windows 7 або новішої версії.</translation>
-<translation id="9102715433345326100">Цей файл шкідливий, тому Chrome заблокував його.</translation>
 <translation id="9107728822479888688"><ph name="BEGIN_BOLD" />Застереження:<ph name="END_BOLD" /> Google Chrome не може заборонити розширенням реєструвати вашу історію веб-перегляду. Щоб вимкнути це розширення в режимі анонімного перегляду, зніміть прапорець поруч із цим параметром.</translation>
 <translation id="911206726377975832">Також видалити дані веб-перегляду?</translation>
 <translation id="924447568950697217">Як зробити Chrome веб-переглядачем за умовчанням</translation>

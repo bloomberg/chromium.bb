@@ -1,41 +1,20 @@
 <?xml version="1.0" ?>
 <!DOCTYPE translationbundle>
 <translationbundle lang="et">
-<translation id="153454903766751181">Mobiilimodemi lähtestamine ...</translation>
 <translation id="1829129547161959350">Pingviin</translation>
-<translation id="1850504506766569011">WiFi on välja lülitatud.</translation>
 <translation id="2288278176040912387">Grammofon</translation>
-<translation id="2354174487190027830">Võrgu <ph name="NAME" /> aktiveerimine</translation>
 <translation id="2563185590376525700">Konn</translation>
 <translation id="2649120831653069427">Vikerkaarekala</translation>
-<translation id="277257480934873581">Võrguga <ph name="NAME" /> uuesti ühendamine</translation>
 <translation id="2894654529758326923">Teave</translation>
 <translation id="2951236788251446349">Millimallikas</translation>
-<translation id="3846575436967432996">Võrguteave ei ole saadaval</translation>
-<translation id="3901991538546252627">Võrguga <ph name="NAME" /> ühenduse loomine</translation>
 <translation id="3958548648197196644">Kiivi</translation>
-<translation id="4118990158415604803">Administraator on muude võrkudega ühenduse loomise keelanud.</translation>
 <translation id="4326192123064055915">Kohv</translation>
-<translation id="4448844063988177157">WiFi võrkude otsimine ...</translation>
-<translation id="4479639480957787382">Ethernet</translation>
-<translation id="4508225577814909926"><ph name="NAME" />: ühendamine ...</translation>
 <translation id="4559767610552730302">Bokeh-efekt</translation>
 <translation id="4935975195727477204">Karikakar</translation>
 <translation id="515594325917491223">Male</translation>
 <translation id="5257456363153333584">Kiil</translation>
-<translation id="6267036997247669271"><ph name="NAME" />: aktiveerimine ...</translation>
-<translation id="6549021752953852991">Mobiilivõrk pole saadaval</translation>
-<translation id="6857811139397017780">Aktiveeri <ph name="NETWORKSERVICE" /></translation>
 <translation id="6935521024859866267">Tagurpidi</translation>
-<translation id="7066646422045619941">Teie administraator on selle võrgu keelanud.</translation>
-<translation id="735745346212279324">VPN-i ühendus on katkestatud</translation>
-<translation id="7874779702599364982">Mobiilsidevõrkude otsimine ...</translation>
-<translation id="8000066093800657092">Võrku pole</translation>
 <translation id="8008366997883261463">Jack Russelli terjer</translation>
-<translation id="8132793192354020517">Ühendus <ph name="NAME" />iga</translation>
-<translation id="8454013096329229812">WiFi on sisse lülitatud.</translation>
-<translation id="8484916590211895857"><ph name="NAME" />: uuesti ühendamine …</translation>
 <translation id="8714406895390098252">Jalgratas</translation>
 <translation id="8808686172382650546">Kass</translation>
-<translation id="8814190375133053267">WiFi</translation>
 </translationbundle>

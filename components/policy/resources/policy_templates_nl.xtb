@@ -19,6 +19,9 @@
       Wanneer dit beleid is ingesteld op 'onwaar' of wanneer er geen waarde voor dit beleid is opgegeven, worden cookies die door de IdP zijn ingesteld, alleen de eerste keer dat de gebruiker inlogt op een apparaat, overgedragen naar het profiel van de gebruiker.
 
       Dit beleid is alleen van invloed op gebruikers waarvan het domein overeenkomt met het inschrijvingsdomein van het apparaat. Voor alle overige gebruikers worden cookies die zijn ingesteld door de IdP, alleen de eerste keer dat de gebruiker inlogt op een apparaat, overgedragen naar het profiel van de gebruiker.</translation>
+<translation id="1029536946382325801">Als dit beleid is ingesteld op 'waar', kan de gebruiker met de hardware van Chrome-apparaten de identiteit ervan extern bevestigen aan de privacy-CA via de Enterprise Platform Keys-API chrome.enterprise.platformKeys.challengeUserKey().
+
+          Als dit beleid is ingesteld op 'onwaar' of niet is ingesteld, mislukt het aanroepen van de API en wordt een foutcode weergegeven.</translation>
 <translation id="1040446814317236570">Verwijderen van gegevens uit PAC-URL's toestaan (voor https://)</translation>
 <translation id="1044878202534415707">Hardwarestatistieken melden, zoals CPU-/RAM-gebruik.
 
@@ -344,13 +347,6 @@
 <translation id="2337466621458842053">Hiermee kun je een lijst URL-patronen instellen waarmee sites worden gespecificeerd waarop afbeeldingen kunnen worden weergegeven.
 
           Als dit beleid niet is ingesteld, wordt de algemene standaardwaarde gebruikt voor alle sites op basis van het beleid 'DefaultImagesSetting' (als dit is ingesteld) of anders op basis van de configuratie van de gebruiker.</translation>
-<translation id="2359612025446382967">Als dit beleid is ingesteld op 'onwaar', wordt Bluetooth in <ph name="PRODUCT_OS_NAME" /> uitgeschakeld en kan de gebruiker deze functie niet opnieuw inschakelen.
-
-      Als dit beleid is ingesteld op 'waar' of niet is ingesteld, kan de gebruiker Bluetooth naar wens in- of uitschakelen.
-
-      Als dit beleid is ingesteld, kan de gebruiker het niet wijzigen of overschrijven.
-
-      Nadat Bluetooth is ingeschakeld, moet het apparaat opnieuw worden opgestart om de wijzigingen door te voeren (het apparaat hoeft niet opnieuw te worden opgestart wanneer Bluetooth wordt uitgeschakeld).</translation>
 <translation id="2366415278352956652">Maakt casten mogelijk</translation>
 <translation id="2372547058085956601">De vertraging voor automatisch inloggen bij de openbare sessie.
 
@@ -984,6 +980,9 @@
 
       Als dit beleid is ingesteld op 'waar', worden netwerkpakketten voor bijhouden (zogenaamde <ph name="HEARTBEATS_TERM" />) verzonden.
       Als dit beleid is ingesteld op 'onwaar' of niet is ingesteld, worden er geen pakketten verzonden.</translation>
+<translation id="3963602271515417124">Als dit beleid is ingesteld op 'waar', wordt bevestiging op afstand toegestaan voor het apparaat en wordt er automatisch een certificaat gegenereerd en naar de Device Management Server geüpload.
+
+          Als dit beleid is ingesteld op 'onwaar' of niet is ingesteld, wordt er geen certificaat gegenereerd en mislukt het aanroepen van de extensie-API enterprise.platformKeys.</translation>
 <translation id="3964909636571393861">Toegang verlenen aan een lijst met URL's</translation>
 <translation id="3965339130942650562">Time-out tot de inactieve gebruiker is uitgelogd</translation>
 <translation id="3967075520570946456">Inschakelen dat de welkomstpagina wordt weergegeven bij de eerste keer opstarten van de browser na een upgrade van het besturingssysteem.</translation>
@@ -1554,13 +1553,6 @@
 
       Als het beleid niet is ingesteld, of is ingesteld op 'onwaar', voert <ph name="PRODUCT_NAME" /> geen online intrekkingscontroles uit in <ph name="PRODUCT_NAME" /> 19 en hoger.</translation>
 <translation id="5966615072639944554">Extensies die toestemming hebben de API voor externe bevestiging te gebruiken</translation>
-<translation id="5974970919245996815">Rapportagegegevens over de status van Android wordt teruggestuurd naar
-      de server.
-
-      Als het beleid is ingesteld op 'onwaar', wordt de informatie niet gerapporteerd.
-      Als het beleid is ingesteld op 'waar' of niet wordt ingesteld, wordt de informatie gerapporteerd.
-
-      Dit beleid is alleen van toepassing als Android-apps zijn ingeschakeld.</translation>
 <translation id="5983708779415553259">Standaardgedrag voor sites die zich niet in een inhoudspakket bevinden</translation>
 <translation id="5997543603646547632">Klok met 24-uursnotatie standaard gebruiken</translation>
 <translation id="6009903244351574348"><ph name="PRODUCT_FRAME_NAME" /> toestaan de genoemde soorten content te verwerken.
@@ -1830,7 +1822,7 @@
 <translation id="6828905844648501476">Als dit beleid is ingesteld op 'waar' of niet is geconfigureerd, staat <ph name="PRODUCT_NAME" /> 'Persoon toevoegen' toe vanuit gebruikersbeheer.
 
       Als dit beleid is ingesteld op 'onwaar', staat <ph name="PRODUCT_NAME" /> het maken van nieuwe profielen niet toe vanuit profielbeheer.</translation>
-<translation id="685769593149966548">'Strenge 'Beperkte modus' voor YouTube afdwingen</translation>
+<translation id="685769593149966548">Strenge 'Beperkte modus' voor YouTube afdwingen</translation>
 <translation id="687046793986382807">Dit beleid wordt niet meer gebruikt sinds <ph name="PRODUCT_NAME" /> versie 35.
 
 Geheugengegevens worden in alle gevallen aan de pagina gerapporteerd, afgezien van de optiewaarde, maar de gerapporteerde grootten zijn gekwantiseerd en de snelheid van updates is om veiligheidsredenen beperkt. Om nauwkeurige realtime gegevens te verkrijgen, gebruik je tools zoals Telemetry.</translation>
@@ -2249,6 +2241,9 @@ Geheugengegevens worden in alle gevallen aan de pagina gerapporteerd, afgezien v
           een Active Directory-domein zijn gekoppeld.</translation>
 <translation id="7937766917976512374">Het opnemen van video's toestaan of weigeren</translation>
 <translation id="7941975817681987555">Geen netwerkacties voorspellen voor een netwerkverbinding</translation>
+<translation id="7942429005743031780">Dit beleid geeft aan welke extensies de Enterprise Platform Keys-API chrome.enterprise.platformKeys.challengeUserKey() mogen gebruiken voor externe bevestiging. Je moet extensies aan deze lijst toevoegen om de API te kunnen gebruiken.
+
+          Als een extensie niet in de lijst voorkomt of als de lijst niet is ingesteld, mislukt het aanroepen van de API en wordt een foutcode weergegeven.</translation>
 <translation id="7953256619080733119">Hosts van handmatige uitzonderingen voor beheerde gebruikers</translation>
 <translation id="7971839631300653352">SSL 3.0</translation>
 <translation id="7974114691960514888">Dit beleid wordt niet meer ondersteund.

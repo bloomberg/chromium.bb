@@ -27,6 +27,9 @@ Per obtenir informació sobre la privadesa, vegeu la Política de privadesa de G
 <translation id="1654128982815600832">S'estan activant les connexions remotes en aquest ordinador...</translation>
 <translation id="170207782578677537">No s'ha pogut registrar aquest ordinador.</translation>
 <translation id="1704090719919187045">Preferències de Chromoting Host</translation>
+<translation id="1730409684442507495">• S'ha millorat la qualitat d'imatge de l'escriptori, la capacitat de resposta i el consum de bateria.
+• S'ha millorat la capacitat de resposta de les operacions de fer clic i arrossegar.
+• S'han millorat diversos efectes d'animació de la interfície d'usuari.</translation>
 <translation id="174018511426417793">No teniu cap ordinador registrat. Per activar les connexions remotes a un ordinador, instal·leu-hi l'escriptori remot de Chrome i feu clic a <ph name="BUTTON_NAME" />.</translation>
 <translation id="1742469581923031760">S'està connectant...</translation>
 <translation id="1770394049404108959">No puc obrir l'aplicació.</translation>
@@ -73,7 +76,6 @@ Per obtenir informació sobre la privadesa, vegeu la Política de privadesa de G
 <translation id="2699970397166997657">Chromoting</translation>
 <translation id="2747641796667576127">Les actualitzacions de programari se solen fer automàticament, però poden fallar en casos excepcionals. L'actualització del programari hauria de trigar només uns minuts i es pot fer mentre esteu connectat a l'ordinador de forma remota.</translation>
 <translation id="2841013758207633010">Hora</translation>
-<translation id="2851674870054673688">Quan hagin introduït el codi, la sessió compartida començarà.</translation>
 <translation id="2851754573186462851">Chromium App Streaming</translation>
 <translation id="2855866366045322178">sense connexió</translation>
 <translation id="2888969873284818612">S'ha produït un error a la xarxa. Reiniciarem l'aplicació quan el dispositiu torni a estar en línia.</translation>

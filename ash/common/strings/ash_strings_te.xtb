@@ -22,6 +22,7 @@
 <translation id="1484102317210609525"><ph name="DEVICE_NAME" /> (HDMI/DP)</translation>
 <translation id="1510238584712386396">లాంచర్</translation>
 <translation id="1525508553941733066">తీసివేయి</translation>
+<translation id="153454903766751181">సెల్యులార్ మోడెమ్‌ను ప్రారంభిస్తోంది...</translation>
 <translation id="15373452373711364">పెద్ద మౌస్ కర్సర్</translation>
 <translation id="1550523713251050646">మరిన్ని ఎంపికల కోసం క్లిక్ చేయండి</translation>
 <translation id="1602076796624386989">మొబైల్ డేటాను ప్రారంభించు</translation>
@@ -32,6 +33,7 @@
 <translation id="1747827819627189109">స్క్రీన్‌పై కనిపించే కీబోర్డ్ ప్రారంభించబడింది</translation>
 <translation id="1812696562331527143">మీ ఇన్‌పుట్ పద్ధతి <ph name="INPUT_METHOD_ID" />*(<ph name="BEGIN_LINK" />3వ పక్షం<ph name="END_LINK" />)కు మార్చబడింది.
 మారడానికి Shift + Altను నొక్కండి.</translation>
+<translation id="1850504506766569011">Wi-Fi నిలిపివేయబడింది.</translation>
 <translation id="1864454756846565995">USB-C పరికరం (వెనుకవైపు పోర్ట్)</translation>
 <translation id="1882897271359938046"><ph name="DISPLAY_NAME" />కు దర్పణం చేస్తోంది</translation>
 <translation id="1919743966458266018">విధి నిర్వాహికిని తెరిచే సత్వరమార్గం మార్చబడింది. దయచేసి <ph name="OLD_SHORTCUT" />కి బదులుగా <ph name="NEW_SHORTCUT" />ని ఉపయోగించండి.</translation>
@@ -47,6 +49,7 @@
 <translation id="2268813581635650749">అందరినీ సైన్ అవుట్ చేయి</translation>
 <translation id="2297568595583585744">స్థితి ట్రే</translation>
 <translation id="2303600792989757991">విండో స్థూలదృష్టిని టోగుల్ చేయి</translation>
+<translation id="2354174487190027830"><ph name="NAME" />ని సక్రియం చేస్తోంది</translation>
 <translation id="2391579633712104609">180°</translation>
 <translation id="2429753432712299108">బ్లూటూత్ పరికరం "<ph name="DEVICE_NAME" />" జత కావడానికి అనుమతి కోరుతోంది. ఆమోదించడానికి ముందు, దయచేసి ఆ పరికరంలో ఈ పాస్‌కీ చూపబడుతోందని నిర్ధారించుకోండి: <ph name="PASSKEY" /></translation>
 <translation id="2475982808118771221">ఒక లోపం సంభవించింది</translation>
@@ -59,6 +62,7 @@
 <translation id="2700058918926273959">సెషన్ <ph name="SESSION_TIME_REMAINING" />లో ముగుస్తుంది. మీరు సైన్ అవుట్ చేయబడతారు.</translation>
 <translation id="2727977024730340865">తక్కువ-పవర్ గల ఛార్జర్‌కు ప్లగిన్ చేయబడింది. బ్యాటరీ ఛార్జింగ్ విశ్వసనీయంగా ఉండకపోవచ్చు.</translation>
 <translation id="2761704814324807722">స్థితి ట్రే, సమయం <ph name="TIME" />, <ph name="BATTERY" /></translation>
+<translation id="277257480934873581"><ph name="NAME" />కి మళ్లీ కనెక్ట్ చేస్తోంది</translation>
 <translation id="2792498699870441125">Alt+Search</translation>
 <translation id="2819276065543622893">మీరు ఇప్పుడు సైన్ అవుట్ చేయబడతారు.</translation>
 <translation id="2825619548187458965">అర</translation>
@@ -105,21 +109,27 @@
 <translation id="3783640748446814672">alt</translation>
 <translation id="3784455785234192852">లాక్ చేయి</translation>
 <translation id="3799026279081545374">మీరు పని చేయని ఛార్జర్‌ను కలిగి ఉండవచ్చు. మీరు USలో నివసిస్తుంటే, దయచేసి సహాయం పొందడానికి మరియు భర్తీ అభ్యర్థించడానికి 866-628-1371కి కాల్ చేయండి. మీరు UKలో నివసిస్తుంటే, దయచేసి 0800-026-0613కి కాల్ చేయండి. మీరు ఐర్లాండ్‌లో నివసిస్తుంటే, దయచేసి 1-800-832-664కి కాల్ చేయండి. మీరు కెనడాలో నివసిస్తుంటే, దయచేసి 866-628-1372కి కాల్ చేయండి. మీరు ఆస్ట్రేలియాలో నివసిస్తుంటే, దయచేసి 1-800-067-460కి కాల్ చేయండి.</translation>
+<translation id="3846575436967432996">నెట్‌వర్క్ సమాచారం అందుబాటులో లేదు</translation>
 <translation id="3866182280516392520">IPv6 చిరునామా</translation>
 <translation id="3891340733213178823">సైన్ అవుట్ చేయడానికి Ctrl+Shift+Qని రెండుసార్లు నొక్కండి.</translation>
 <translation id="3892641579809465218">అంతర్గత ప్రదర్శన</translation>
 <translation id="3893630138897523026">ChromeVox (చదవబడే అభిప్రాయం)</translation>
 <translation id="3899995891769452915">వాయిస్ ఇన్‌పుట్</translation>
+<translation id="3901991538546252627"><ph name="NAME" />కి కనెక్ట్ చేస్తోంది</translation>
 <translation id="3963445509666917109">స్పీకర్ (అంతర్గతం)</translation>
 <translation id="3967919079500697218">మీ నిర్వాహకులు స్క్రీన్‌షాట్‌లను తీయగల సామర్థ్యాన్ని నిలిపివేసారు.</translation>
 <translation id="397105322502079400">గణిస్తోంది...</translation>
 <translation id="3995138139523574647">USB-C పరికరం (కుడివైపు వెనుక పోర్ట్)</translation>
 <translation id="4053612967614057854">స్క్రీన్‌పై కీబోర్డ్‌ను నిలిపివేయి</translation>
+<translation id="4118990158415604803">ఇతర నెట్‌వర్క్‌లకు కనెక్ట్ చేయడాన్ని మీ నిర్వాహకులు నిలిపివేసారు.</translation>
 <translation id="4250680216510889253">కాదు</translation>
 <translation id="4279490309300973883">ప్రతిబింబిస్తుంది</translation>
 <translation id="4321179778687042513">ctrl</translation>
 <translation id="4421231901400348175">రిమోట్ సహాయం విధానంలో మీ స్క్రీన్ నియంత్రణ <ph name="HELPER_NAME" />కి భాగస్వామ్యం చేయబడుతోంది.</translation>
 <translation id="4430019312045809116">వాల్యూమ్</translation>
+<translation id="4448844063988177157">Wi-Fi నెట్‌వర్క్‌ల కోసం శోధిస్తోంది...</translation>
+<translation id="4479639480957787382">ఈథర్నెట్</translation>
+<translation id="4508225577814909926"><ph name="NAME" />: కనెక్ట్ అవుతోంది...</translation>
 <translation id="4527045527269911712">బ్లూటూత్ పరికరం "<ph name="DEVICE_NAME" />" జత కావడానికి అనుమతి కోరుతోంది.</translation>
 <translation id="453661520163887813">పూర్తి కావడానికి <ph name="TIME" /> పడుతుంది</translation>
 <translation id="4544944664594876241">స్క్రీన్‌ని లాక్ చేసే సత్వరమార్గం మార్చబడింది. దయచేసి <ph name="OLD_SHORTCUT" />కి బదులుగా <ph name="NEW_SHORTCUT" />ని ఉపయోగించండి.</translation>
@@ -172,6 +182,7 @@
 <translation id="6165508094623778733">మరింత తెలుసుకోండి</translation>
 <translation id="6203030746557259519">వర్చువల్ డిస్‌ప్లే</translation>
 <translation id="6248847161401822652">నిష్క్రమించడానికి రెండుసార్లు Control Shift Q నొక్కండి.</translation>
+<translation id="6267036997247669271"><ph name="NAME" />: సక్రియం చేస్తోంది...</translation>
 <translation id="6297287540776456956">ప్రాంతాన్ని ఎంచుకోవడానికి స్టైలస్‌ను ఉపయోగించండి</translation>
 <translation id="6310121235600822547"><ph name="DISPLAY_NAME" /> <ph name="ROTATION" />కి తిప్పబడింది</translation>
 <translation id="6359806961507272919"><ph name="PHONE_NUMBER" /> నుండి SMS</translation>
@@ -184,6 +195,7 @@
 <translation id="6501401484702599040"><ph name="RECEIVER_NAME" />కి స్క్రీన్‌ను ప్రసారం చేస్తున్నాము</translation>
 <translation id="6521655319214113338">చేతివ్రాత ఇన్‌పుట్</translation>
 <translation id="6537270692134705506">స్క్రీన్‌ని సంగ్రహించు</translation>
+<translation id="6549021752953852991">సెల్యులార్ నెట్‌వర్క్ అందుబాటులో లేదు</translation>
 <translation id="6550675742724504774">ఎంపికలు</translation>
 <translation id="6585808820553845416">సెషన్ <ph name="SESSION_TIME_REMAINING" />లో ముగుస్తుంది.</translation>
 <translation id="6596816719288285829">IP చిరునామా</translation>
@@ -192,6 +204,7 @@
 <translation id="6713285437468012787">బ్లూటూత్ పరికరం "<ph name="DEVICE_NAME" />" జత చేయబడింది మరియు ఇప్పుడు అందరు వినియోగదారులకు అందుబాటులో ఉంది. మీరు సెట్టింగ్‌లను ఉపయోగించి ఈ జతను తీసివేయవచ్చు.</translation>
 <translation id="6785414152754474415">బ్యాటరీ <ph name="PERCENTAGE" />% నిండింది మరియు ఛార్జ్ అవుతోంది.</translation>
 <translation id="683971173229319003">Search+L</translation>
+<translation id="6857811139397017780"><ph name="NETWORKSERVICE" />ని సక్రియం చెయ్యి</translation>
 <translation id="6911468394164995108">మరొక దానిలో చేరండి...</translation>
 <translation id="6915678159055240887">Chromebox</translation>
 <translation id="6979158407327259162">Google డిస్క్</translation>
@@ -200,6 +213,7 @@
 <translation id="703171847531699602">ప్రసార పరికరాలు లేవు</translation>
 <translation id="7034339000180558234"><ph name="RECEIVER_NAME" />కి <ph name="TAB_NAME" />ని ప్రసారం చేస్తున్నాము</translation>
 <translation id="7052914147756339792">వాల్‌పేపర్‌ను సెట్ చేయి...</translation>
+<translation id="7066646422045619941">ఈ నెట్‌వర్క్‌ను మీ నిర్వాహకులు నిలిపివేసారు.</translation>
 <translation id="7097613348211027502">ChromeVox (చదవబడే అభిప్రాయం) ప్రారంభించబడింది.
 నిలిపివేయడానికి Ctrl+Alt+Z నొక్కండి.</translation>
 <translation id="7098389117866926363">USB-C పరికరం (వెనుక భాగంలో ఎడమ పోర్ట్)</translation>
@@ -209,6 +223,7 @@
 <translation id="7209101170223508707">CAPS LOCK ఆన్‌లో ఉంది.
 రద్దు చేయడానికి Alt+Search లేదా Shiftని నొక్కండి.</translation>
 <translation id="7348093485538360975">ఆన్-స్క్రీన్ కీబోర్డ్</translation>
+<translation id="735745346212279324">VPN డిస్‌కనెక్ట్ చేయబడింది</translation>
 <translation id="737451040872859086">మైక్రోఫోన్ (అంతర్గతం)</translation>
 <translation id="742594950370306541">కెమెరా ఉపయోగంలో ఉంది.</translation>
 <translation id="743058460480092004">కెమెరా మరియు మైక్రోఫోన్ ఉపయోగంలో ఉన్నాయి.</translation>
@@ -225,19 +240,24 @@
 <translation id="7823564328645135659">మీ సెట్టింగ్‌లను సమకాలీకరించిన తర్వాత Chrome యొక్క భాష "<ph name="FROM_LOCALE" />" నుండి "<ph name="TO_LOCALE" />"కి మార్చబడింది.</translation>
 <translation id="785750925697875037">మొబైల్ ఖాతాని వీక్షించండి</translation>
 <translation id="7864539943188674973">Bluetoothని నిలిపివేయి</translation>
+<translation id="7874779702599364982">సెల్యులార్ నెట్‌వర్క్‌ల కోసం శోధిస్తోంది...</translation>
 <translation id="7893838033650689677">Wi-Fiని ఆన్ చేయి</translation>
 <translation id="7904094684485781019">ఈ ఖాతా నిర్వాహకులు బహుళ సైన్-ఇన్‌కు అనుమతించలేదు.</translation>
 <translation id="7957227661277029961">మీ <ph name="DEVICE_TYPE" /> ఆన్‌లో ఉన్నప్పుడు ఛార్జ్ కాకపోవచ్చు. అధికారిక ఛార్జర్‌ను ఉపయోగించి ప్రయత్నించండి.</translation>
 <translation id="7982789257301363584">నెట్‌వర్క్</translation>
+<translation id="8000066093800657092">ఏ నెట్‌వర్క్ లేదు</translation>
 <translation id="8054466585765276473">బ్యాటరీ సమయాన్ని లెక్కిస్తోంది.</translation>
 <translation id="8077816382010018681">QU లక్షణం నోటిఫికేషన్ శీర్షిక ఇక్కడ అందించబడుతుంది</translation>
 <translation id="8103386449138765447">SMS సందేశాలు: <ph name="MESSAGE_COUNT" /></translation>
+<translation id="8132793192354020517"><ph name="NAME" />కు కనెక్ట్ చేయబడింది</translation>
 <translation id="8185286464235484130">కొన్ని ప్రశ్నలకు సమాధానం చెప్పడం ద్వారా మా పనితీరు గురించిన అభిప్రాయాలను తెలియజేయండి.</translation>
 <translation id="8190698733819146287">భాషలను అనుకూలీకరించి, ఇన్‌పుట్ చెయ్యి...</translation>
 <translation id="8206859287963243715">సెల్యులార్</translation>
 <translation id="8308637677604853869">మునుపటి మెను</translation>
 <translation id="8356164830168736643"><ph name="WINDOW_TITLE" />ని మూసివేయి</translation>
 <translation id="8428213095426709021">సెట్టింగ్‌లు</translation>
+<translation id="8454013096329229812">Wi-Fi ప్రారంభించబడింది.</translation>
+<translation id="8484916590211895857"><ph name="NAME" />: మళ్లీ కనెక్ట్ చేస్తోంది...</translation>
 <translation id="8517041960877371778">మీ <ph name="DEVICE_TYPE" /> ఆన్‌లో ఉన్నప్పుడు ఛార్జ్ కాకపోవచ్చు.</translation>
 <translation id="8528322925433439945">మొబైల్ ...</translation>
 <translation id="8639760480004882931"><ph name="PERCENTAGE" /> మిగిలి ఉంది</translation>

@@ -59,7 +59,6 @@
 <translation id="2588322182880276190">Chrome ロゴ</translation>
 <translation id="2664962310688259219">Chrome OS オープンソース ライセンス</translation>
 <translation id="2665296953892887393">障害レポートと<ph name="UMA_LINK" />を Google に自動送信して Google Chrome の機能向上に役立てる</translation>
-<translation id="2669824781555328029"><ph name="FILE_NAME" /> はブラウジング環境に害を及ぼす可能性があるため、Chrome によってブロックされました。</translation>
 <translation id="2681064822612051220">システム上に競合している Google Chrome が見つかりました。これをアンインストールしてからもう一度お試しください。</translation>
 <translation id="2689103672227170538">この拡張機能により、Chrome の起動時に表示されるページが変更されました。</translation>
 <translation id="2704356438731803243">既存の Chrome データを個別に保持したい場合は、<ph name="USER_NAME" /> 用の新しい Chrome ユーザーを作成できます。</translation>
@@ -147,6 +146,7 @@
 <translation id="5148419164691878332">Chrome ではこのパスワードが <ph name="SAVED_PASSWORDS_LINK" />に保存され、次回の入力時に使用されます。</translation>
 <translation id="5170938038195470297">バージョンが新しい Google Chrome のプロフィールは使用できません。一部の機能が利用できない可能性があります。別の場所のプロフィールを指定するか、新しいバージョンの Chrome をご使用ください。</translation>
 <translation id="5176234269072261959">現在の設定を送信して Chrome の品質向上にご協力ください。</translation>
+<translation id="5193136243808726294">Google Chrome OS ではこのページを開けません。</translation>
 <translation id="5204098752394657250">Google Chrome <ph name="TERMS_OF_SERVICE_LINK" />利用規約<ph name="END_TERMS_OF_SERVICE_LINK" /></translation>
 <translation id="5243785881901838525">Google ペイメント（Chrome にコピー）</translation>
 <translation id="5251420635869119124">ゲスト ユーザーは、記録を残さずに Chrome を使用できます。</translation>
@@ -205,7 +205,6 @@
 <translation id="699076943483372849">このサイトはサポートが終了した Chrome Frame プラグインを使用しています。セキュリティと安定性のアップデートはこのプラグインで受信されなくなりました。プラグインをアンインストールし、最新のブラウザにアップグレードしてください。</translation>
 <translation id="6991142834212251086">Chrome データをこのアカウントにリンクする</translation>
 <translation id="7060865993964054389">Google Chrome アプリ ランチャー</translation>
-<translation id="7084448929020576097"><ph name="FILE_NAME" /> は不正なファイルです。Chrome はこのファイルをブロックしました。</translation>
 <translation id="7098166902387133879">Google Chrome がマイクを使用しています。</translation>
 <translation id="7106741999175697885">タスク マネージャ - Google Chrome</translation>
 <translation id="7125719106133729027">Chrome を最新バージョンに自動更新できませんでした。新機能とセキュリティの修正が適用されていません。Chrome を手動で再インストールする必要があります。</translation>
@@ -268,7 +267,6 @@
 <translation id="8669527147644353129">Google Chrome Helper</translation>
 <translation id="8679801911857917785">この拡張機能では、Chrome の起動時に表示されるページも制御されます。</translation>
 <translation id="870251953148363156">Google Chrome を更新(&amp;G)</translation>
-<translation id="8793772303278047003">Chrome は古いバージョンです。</translation>
 <translation id="8796108026289707191">今すぐ Google Chrome を再起動してください。</translation>
 <translation id="8823341990149967727">Chrome は古いバージョンです</translation>
 <translation id="884296878221830158">この拡張機能では、Chrome の起動時、またはホーム ボタンのクリック時に表示されるページも制御されます。</translation>
@@ -277,7 +275,6 @@
 <translation id="8914504000324227558">Chrome の再起動</translation>
 <translation id="9026991721384951619">アカウントのログイン情報が最新ではないため、Chrome OS はデータを同期できませんでした。</translation>
 <translation id="9067395829937117663">Google Chrome のご利用には Windows 7 以上が必要です。</translation>
-<translation id="9102715433345326100">不正なファイルです。Chrome はこのファイルをブロックしました。</translation>
 <translation id="9107728822479888688"><ph name="BEGIN_BOLD" />警告:<ph name="END_BOLD" /> 拡張機能による閲覧履歴の記録は Google Chrome で停止することができません。シークレット モードでこの拡張機能を無効にするには、このオプションの選択を解除してください。</translation>
 <translation id="911206726377975832">閲覧データも削除しますか？</translation>
 <translation id="924447568950697217">Google Chrome をデフォルトのブラウザにする</translation>

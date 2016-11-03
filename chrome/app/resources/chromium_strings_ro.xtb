@@ -21,7 +21,6 @@
 <translation id="1688750314291223739">Configurați sincronizarea pentru a salva funcțiile personalizate ale browserului pe web și accesați-le din Chromium de pe orice computer.</translation>
 <translation id="1699664235656412242">Închideți toate ferestrele Chromium (inclusiv pe cele în modul Windows 8) și încercați din nou.</translation>
 <translation id="1708666629004767631">Chromium este disponibil într-o versiune nouă și mai sigură.</translation>
-<translation id="1725059042853530269">Fișierul <ph name="FILE_NAME" /> poate afecta experiența de navigare. De aceea, Chromium l-a blocat.</translation>
 <translation id="1774152462503052664">Permiteți Chromium să ruleze în fundal</translation>
 <translation id="1779356040007214683">Pentru mai multă siguranță în Chromium, am dezactivat câteva extensii care nu sunt incluse în <ph name="IDS_EXTENSION_WEB_STORE_TITLE" /> și care este posibil să fi fost adăugate fără știrea dvs.</translation>
 <translation id="1808667845054772817">Reinstalați Chromium</translation>
@@ -59,7 +58,6 @@
 <translation id="2718390899429598676">Pentru un plus de securitate, Chromium îți va cripta datele.</translation>
 <translation id="2770231113462710648">Schimbă browserul prestabilit la:</translation>
 <translation id="2799223571221894425">Repornește</translation>
-<translation id="2801146392936645542">Fișierul <ph name="FILE_NAME" /> este rău-intenționat și a fost blocat de Chromium.</translation>
 <translation id="2847479871509788944">Elimină din Chromium...</translation>
 <translation id="2886012850691518054">Opțional: contribuie la îmbunătățirea Chromium prin trimiterea automată de statistici privind utilizarea și rapoarte de blocare la Google.</translation>
 <translation id="2905536371227304018">Sistemul de operare Chromium este afișat în această limbă.</translation>
@@ -78,7 +76,6 @@
 <ph name="USER_DATA_DIRECTORY" /></translation>
 <translation id="3264279740686075150">Chromium este browserul prestabilit. Felicitări.</translation>
 <translation id="328888136576916638">Lipsesc chei pentru API-ul Google. Unele funcționalități Chromium vor fi dezactivate.</translation>
-<translation id="3289635842886789612">Chromium nu este actualizat.</translation>
 <translation id="3296368748942286671">Rulați în continuare aplicații de fundal când Chromium este închis</translation>
 <translation id="3312805357485578561">Chromium a detectat un comportament neobișnuit</translation>
 <translation id="331951419404882060">Sistemul de operare Chromium nu a putut sincroniza datele din cauza unei erori la conectare.</translation>
@@ -136,6 +133,7 @@
 <translation id="5398878173008909840">Este disponibilă o nouă versiune Chromium.</translation>
 <translation id="5427571867875391349">Setați Chromium ca browser prestabilit</translation>
 <translation id="5466153949126434691">Chromium se actualizează automat, deci ai întotdeauna cea mai recentă versiune. După această descărcare, Chromium va reporni și va fi gata de utilizare.</translation>
+<translation id="5479196819031988440">Sistemul de operare Chromium nu poate deschide pagina.</translation>
 <translation id="549669000822060376">Așteaptă până când Chromium instalează cele mai recente actualizări de sistem.</translation>
 <translation id="556167189552180495">Chromium este afișat în această limbă.</translation>
 <translation id="5563479599352954471">Caută cu o atingere</translation>
@@ -223,7 +221,6 @@ Verifică e-mailul la <ph name="ACCOUNT_EMAIL" /> pentru instrucțiuni supliment
 <translation id="7421823331379285070">Chromium necesită Windows XP sau o versiune ulterioară. Este posibil ca unele funcții să nu fie disponibile.</translation>
 <translation id="7473891865547856676">Nu, mulțumesc</translation>
 <translation id="7483335560992089831">Nu se poate instala aceeași versiune de Chromium care rulează în prezent. Închideți Chromium și încercați din nou.</translation>
-<translation id="750717762378961310">Acest fișier este rău-intenționat și a fost blocat de Chromium.</translation>
 <translation id="7549178288319965365">Despre sistemul de operare Chromium</translation>
 <translation id="7577193603922410712">Tocmai a fost aplicată o actualizare de securitate specială pentru Chromium; pentru ca aceasta să intre în vigoare, îți recomandăm să repornești acum (filele vor fi restabilite).</translation>
 <translation id="761356813943268536">Chromium utilizează camera foto și microfonul.</translation>

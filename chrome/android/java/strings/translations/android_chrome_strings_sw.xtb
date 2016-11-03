@@ -95,7 +95,6 @@ Lazima uwashe Bluetooth na kipengele cha Mahali ili uweze kutumia Wavuti Kila Ma
 <translation id="200669432486043882">Badilisha faili</translation>
 <translation id="2020525020270327736">Nakili tovuti</translation>
 <translation id="2038563949887743358">Washa Omba Tovuti ya Eneo-kazi</translation>
-<translation id="2069736994598857257">GB <ph name="GIGABYTES" /> zimetumika</translation>
 <translation id="2073235970478114994">Pakia picha</translation>
 <translation id="2079545284768500474">Tendua</translation>
 <translation id="2082238445998314030">Tokeo <ph name="RESULT_NUMBER" /> kati ya <ph name="TOTAL_RESULTS" /></translation>
@@ -324,6 +323,7 @@ Ili kurekebisha hoja yako ya utafutaji, bonyeza kwa muda mrefu ili kuchagua. Ili
 <translation id="4816465935029283692">Aina za data</translation>
 <translation id="4827948050554950725">Ongeza kadi ya malipo</translation>
 <translation id="4836364883164334657">Muunganisho wako kwenye tovuti hii si wa faragha. Huenda wavamizi wanajaribu kuiba maelezo yako (kwa mfano, picha, manenosiri, ujumbe na kadi za mikopo) kutoka <ph name="DOMAIN_NAME" />.</translation>
+<translation id="4850886885716139402">Mwonekano</translation>
 <translation id="4881695831933465202">Fungua</translation>
 <translation id="4885273946141277891">Idadi ya matukio ya Chrome isiyoweza kutumika.</translation>
 <translation id="4923459931733593730">Malipo</translation>
@@ -340,6 +340,7 @@ Ili kurekebisha hoja yako ya utafutaji, bonyeza kwa muda mrefu ili kuchagua. Ili
 <translation id="5039804452771397117">Ruhusu</translation>
 <translation id="5040262127954254034">Faragha</translation>
 <translation id="5063480226653192405">Matumizi</translation>
+<translation id="5087580092889165836">Ongeza kadi</translation>
 <translation id="5100237604440890931">Imekunjwa - bofya ili upanue.</translation>
 <translation id="510275257476243843">Imesalia saa 1</translation>
 <translation id="5127805178023152808">Usawazishaji umezimwa</translation>
@@ -490,6 +491,7 @@ Kwa mfano, baadhi ya tovuti zinaweza kujibu ombi hili kwa kukuonyesha matangazo 
 <translation id="6657585470893396449">Nenosiri</translation>
 <translation id="6659594942844771486">Kichupo</translation>
 <translation id="666268767214822976">Tumia huduma ya ubashiri ili kuonyesha hoja zinazohusiana na tovuti maarufu unapocharaza katika sehemu ya anwani</translation>
+<translation id="666731172850799929">Fungua katika <ph name="APP_NAME" /></translation>
 <translation id="666981079809192359">Ilani ya Faragha ya Chrome</translation>
 <translation id="6698801883190606802">Dhibiti data iliyosawazishwa</translation>
 <translation id="6710213216561001401">Iliyotangulia</translation>
@@ -532,14 +534,12 @@ Kwa mfano, baadhi ya tovuti zinaweza kujibu ombi hili kwa kukuonyesha matangazo 
 <translation id="7074853159844403180"><ph name="SITE" /> ingependa kuoanisha na:</translation>
 <translation id="7081639897063626814">Weka data iliyopo katika sehemu tofauti</translation>
 <translation id="7094922512924405309">Hakuna kurasa za Wavuti Kila Mahali zilizo karibu zilizopatikana</translation>
-<translation id="7115197232530297436">Anwani ya mahali bidhaa zitakapopelekwa haitumiki. Chagua anwani tofauti.</translation>
 <translation id="7138678301420049075">Nyingine</translation>
 <translation id="7180611975245234373">Onyesha upya</translation>
 <translation id="7191430249889272776">Kichupo kimefunguliwa chini chini.</translation>
 <translation id="7208788139759694678">Kiokoa Data kimezimwa</translation>
 <translation id="7243308994586599757">Chaguo zinapatikana karibu na sehemu ya chini ya skrini</translation>
 <translation id="7244362611678346589"><ph name="SEARCH_ENGINE_URL" /> hutumia mahali ulipo ili kuonyesha matokeo ya utafutaji wa karibu</translation>
-<translation id="7347770551817603360">Maudhui ya nje ya mtandao</translation>
 <translation id="7353894246028566792">{NUM_SELECTED,plural, =1{Shiriki kipengee 1 kilichochaguliwa}other{Shiriki vipengee # vilivyochaguliwa}}</translation>
 <translation id="7366340029385295517">Inatuma kwenye <ph name="SCREEN_NAME" /></translation>
 <translation id="7375125077091615385">Aina:</translation>
@@ -576,7 +576,6 @@ Huenda Akaunti yako ya Google ina aina nyingine za historia ya kuvinjari kama vi
 <translation id="7665369617277396874">Ongeza akaunti</translation>
 <translation id="7682287625158474539">Anwani ya Kufikishia</translation>
 <translation id="771135159654932189">Angalia kilicho karibu</translation>
-<translation id="7713873128508426081">Inaruhusiwa kila wakati</translation>
 <translation id="7764225426217299476">Ongeza anwani</translation>
 <translation id="7765158879357617694">Sogeza</translation>
 <translation id="7769602470925380267">Kubali na uondoke kwenye akaunti</translation>
@@ -645,15 +644,12 @@ Huenda Akaunti yako ya Google ina aina nyingine za historia ya kuvinjari kama vi
 <translation id="8514577642972634246">Ingia kwenye hali fiche</translation>
 <translation id="8518901949365209398">Tovuti hii hutumia usanidi dhaifu wa usalama (sahihi za SHA-1), kwa hivyo huenda muunganisho wako usiwe wa faragha.</translation>
 <translation id="8523928698583292556">Futa manenosiri yaliyohifadhiwa</translation>
-<translation id="8525306231823319788">Skrini nzima</translation>
-<translation id="85415543246899402">MB <ph name="MEGABYTES" /> zimetumika</translation>
 <translation id="854522910157234410">Fungua ukurasa huu</translation>
 <translation id="8562452229998620586">Manenosiri yaliyohifadhiwa yataonekana hapa.</translation>
 <translation id="856481929701340285">Omba tovuti ya eneo-kazi</translation>
 <translation id="857943718398505171">Imeruhusiwa (inapendekezwa)</translation>
 <translation id="8583805026567836021">Inafuta data ya akaunti</translation>
 <translation id="8617240290563765734">Ungependa kufungua URL iliyopendekezwa na kubainishwa katika maudhui yaliyopakuliwa?</translation>
-<translation id="8618653050765576793">KB <ph name="KILOBYTES" /> zimetumika</translation>
 <translation id="862875433388403934">Maudhui (filamu, muziki, n.k.) yaliyopakuliwa katika programu nyingine huenda yasichezeke tena hadi programu hizo zipate upya leseni kulingana na kitambulisho kipya cha kifaa.
 
 Ili kupata leseni mpya, unganisha kwenye intaneti na ucheze maudhui yako yaliyopakuliwa.</translation>

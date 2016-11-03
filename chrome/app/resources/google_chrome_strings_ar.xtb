@@ -61,7 +61,6 @@
 <translation id="2588322182880276190">‏شعار Chrome</translation>
 <translation id="2664962310688259219">‏تراخيص مفتوحة المصدر لنظام التشغيل Chrome</translation>
 <translation id="2665296953892887393">‏يمكنك المساعدة في تحسين Google Chrome عن طريق إرسال تقارير الأعطال و<ph name="UMA_LINK" /> إلى Google</translation>
-<translation id="2669824781555328029">‏قد يضر <ph name="FILE_NAME" /> بتجربة متصفحك، لذلك فقد حظره Chrome.</translation>
 <translation id="2681064822612051220">‏تم العثور على تثبيت متضارب لـ Google Chrome على النظام. الرجاء إزالته وإعادة المحاولة.</translation>
 <translation id="2689103672227170538">‏غيّرت هذه الإضافة الصفحة التي تظهر عند بدء تشغيل Chrome.</translation>
 <translation id="2704356438731803243">‏إذا كنت تفضل الإبقاء على بيانات Chrome الحالية بشكل منفصل، فيمكنك إنشاء حساب مستخدم Chrome جديد للمستخدم <ph name="USER_NAME" />.</translation>
@@ -151,6 +150,7 @@
 
 قد تكون بعض الميزات غير متاحة. الرجاء تحديد دليل ملف شخصي مختلف أو استخدام إصدار أحدث من Chrome.</translation>
 <translation id="5176234269072261959">‏ساعد في تحسين Chrome من خلال الإبلاغ عن الإعدادات الحالية.</translation>
+<translation id="5193136243808726294">‏يتعذر على نظام التشغيل Google Chrome فتح هذه الصفحة.</translation>
 <translation id="5204098752394657250">‏<ph name="TERMS_OF_SERVICE_LINK" />بنود خدمة<ph name="END_TERMS_OF_SERVICE_LINK" /> Google Chrome</translation>
 <translation id="5243785881901838525">‏Google Payments (تم النسخ إلى Chrome)</translation>
 <translation id="5251420635869119124">‏يمكن للضيف استخدام Chrome بدون أن يترك أي أثر وراءه.</translation>
@@ -209,7 +209,6 @@
 <translation id="699076943483372849">‏يستخدم هذا الموقع المكوّن الإضافي Chrome Frame الذي تم إيقافه ولم يعد يتلقى تحديثات الأمان والاستقرار. الرجاء إزالته والترقية إلى متصفح حديث.</translation>
 <translation id="6991142834212251086">‏ربط بياناتي في Chrome بهذا الحساب</translation>
 <translation id="7060865993964054389">‏مشغل تطبيقات Google Chrome</translation>
-<translation id="7084448929020576097">‏<ph name="FILE_NAME" /> برنامج ضار، وقد أجرى Chrome حظره.</translation>
 <translation id="7098166902387133879">‏يستخدم Google Chrome الميكروفون.</translation>
 <translation id="7106741999175697885">‏مدير المهام - Google Chrome</translation>
 <translation id="7125719106133729027">‏تعذر تحديث Chrome إلى أحدث إصدار، وبالتالي تفوتك ميزات جديدة رائعة وإصلاحات للأمان. يلزمك إعادة تثبيت Chrome يدويًا.</translation>
@@ -272,7 +271,6 @@
 <translation id="8669527147644353129">‏مساعد Google Chrome</translation>
 <translation id="8679801911857917785">‏كما أنها تتحكم في الصفحة التي تظهر عند تشغيل Chrome.</translation>
 <translation id="870251953148363156">‏&amp;تحديث Google Chrome</translation>
-<translation id="8793772303278047003">‏إصدار Chrome قديم.</translation>
 <translation id="8796108026289707191">‏يجب عليك إعادة تشغيل Google Chrome الآن.</translation>
 <translation id="8823341990149967727">‏إصدار Chrome قديم</translation>
 <translation id="884296878221830158">‏كما أنها تتحكم في الصفحة التي تظهر عند تشغيل Chrome أو النقر على زر الصفحة الرئيسية.</translation>
@@ -281,7 +279,6 @@
 <translation id="8914504000324227558">‏إعادة تشغيل Chrome</translation>
 <translation id="9026991721384951619">‏تعذر على نظام التشغيل Chrome مزامنة البيانات نظرًا لأن تفاصيل تسجيل الدخول إلى حسابك قديمة.</translation>
 <translation id="9067395829937117663">‏يتطلب متصفح Google Chrome نظام التشغيل Windows 7 أو إصدارًا أحدث.</translation>
-<translation id="9102715433345326100">‏يُعد الملف برنامجًا ضارًا، وقد أجرى Chrome حظره.</translation>
 <translation id="9107728822479888688">‏<ph name="BEGIN_BOLD" />تحذير:<ph name="END_BOLD" /> لا يستطيع Google Chrome منع الإضافات من تسجيل سجل التصفح الخاص بك. لتعطيل هذا الإضافة في وضع التصفح المتخفي، ألغ تحديد هذا الخيار.</translation>
 <translation id="911206726377975832">هل تريد أيضًا حذف بيانات التصفح؟</translation>
 <translation id="924447568950697217">‏جعل Chrome المتصفح الافتراضي</translation>

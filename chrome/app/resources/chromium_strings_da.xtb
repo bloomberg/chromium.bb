@@ -21,7 +21,6 @@
 <translation id="1688750314291223739">Konfigurer Synkronisering for at gemme dine personlige browserfunktioner på nettet, og få adgang til dem fra Chromium på en computer.</translation>
 <translation id="1699664235656412242">Luk alle Chromium-vinduer (herunder dem i Windows 8-tilstand), og prøv igen.</translation>
 <translation id="1708666629004767631">Der findes en ny og mere sikker version af Chromium.</translation>
-<translation id="1725059042853530269"><ph name="FILE_NAME" /> kan skade din weboplevelse, så Chromium har blokeret det.</translation>
 <translation id="1774152462503052664">Lad Chromium køre i baggrunden</translation>
 <translation id="1779356040007214683">For at gøre Chromium sikrere har vi slået nogle udvidelser fra, som ikke er anført i <ph name="IDS_EXTENSION_WEB_STORE_TITLE" /> og muligvis er blevet tilføjet, uden at du vidste det.</translation>
 <translation id="1808667845054772817">Geninstaller Chromium</translation>
@@ -59,7 +58,6 @@
 <translation id="2718390899429598676">Som et ekstra sikkerhedsniveau krypterer Chromium dine data.</translation>
 <translation id="2770231113462710648">Skift standardbrowser til:</translation>
 <translation id="2799223571221894425">Genstart</translation>
-<translation id="2801146392936645542"><ph name="FILE_NAME" /> er skadelig, og Chromium har blokeret den.</translation>
 <translation id="2847479871509788944">Fjern fra Chromium...</translation>
 <translation id="2886012850691518054">Valgfrit: Hjælp med at gøre Chromium bedre ved automatisk at sende forbrugsstatistik og nedbrudsrapporter til Google.</translation>
 <translation id="2905536371227304018">Chromium OS vises på dette sprog.</translation>
@@ -78,7 +76,6 @@
 <ph name="USER_DATA_DIRECTORY" /></translation>
 <translation id="3264279740686075150">Chromium er din standardbrowser.</translation>
 <translation id="328888136576916638">Der mangler Google API-nøgler. Nogle funktioner i Chromium deaktiveres.</translation>
-<translation id="3289635842886789612">Chromium er forældet.</translation>
 <translation id="3296368748942286671">Fortsæt med at køre baggrundsapps, når Chromium er lukket</translation>
 <translation id="3312805357485578561">Chromium har registreret usædvanlig adfærd</translation>
 <translation id="331951419404882060">Chromium OS kunne ikke synkronisere dine data på grund af en loginfejl.</translation>
@@ -136,6 +133,7 @@
 <translation id="5398878173008909840">Der er en ny version af Chromium til rådighed.</translation>
 <translation id="5427571867875391349">Angiv Chromium som din standardbrowser</translation>
 <translation id="5466153949126434691">Chromium opdateres automatisk, så du altid har den nyeste version. Når downloaden er fuldført, genstartes Chromium, og så er du godt på vej.</translation>
+<translation id="5479196819031988440">Chromium OS kan ikke åbne denne side.</translation>
 <translation id="549669000822060376">Vent, mens Chromium installerer de nyeste systemopdateringer.</translation>
 <translation id="556167189552180495">Chromium vises på dette sprog.</translation>
 <translation id="5563479599352954471">Søg med én berøring</translation>
@@ -223,7 +221,6 @@ Gå til din e-mail på <ph name="ACCOUNT_EMAIL" /> for at få yderligere vejledn
 <translation id="7421823331379285070">Chromium kræver Windows XP eller nyere. Nogle funktioner virker muligvis ikke.</translation>
 <translation id="7473891865547856676">Nej tak</translation>
 <translation id="7483335560992089831">Kan ikke installere den samme version af Chromium som den, der kører i øjeblikket. Luk Chromium, og prøv igen.</translation>
-<translation id="750717762378961310">Denne fil er skadelig, og Chromium har blokeret den.</translation>
 <translation id="7549178288319965365">Om Chromium OS</translation>
 <translation id="7577193603922410712">En særlig sikkerhedsopdatering til Chromium blev netop anvendt. Du bør genstarte nu, så den kan træde i kraft (dine faner gendannes).</translation>
 <translation id="761356813943268536">Chromium bruger dit kamera og din mikrofon.</translation>

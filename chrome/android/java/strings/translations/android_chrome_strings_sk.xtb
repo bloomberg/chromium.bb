@@ -65,7 +65,7 @@ Ak chcete používať Fyzický web, musíte mať zapnuté rozhranie Bluetooth a�
 <translation id="1643702317193804718">Stránka sa prekladá do jazyka <ph name="SOURCE_LANGUAGE" />…</translation>
 <translation id="1644574205037202324">História</translation>
 <translation id="1647391597548383849">Prístup ku kamere</translation>
-<translation id="1661474178782861119">Čoskoro sa zobrazia ďalšie články. Príjemný večer.</translation>
+<translation id="1661474178782861119">Čoskoro sa zobrazia ďalšie články. Príjemný večer!</translation>
 <translation id="169033420419426091">Súbor <ph name="FILE_NAME" /> sa nepodarilo stiahnuť z dôvodu chýbajúcej SD karty.</translation>
 <translation id="1709438864123551175">Šetrič dát</translation>
 <translation id="1742134235943978220">Preložené do jazyka <ph name="TARGET_LANGUAGE" />.</translation>
@@ -95,7 +95,6 @@ Ak chcete používať Fyzický web, musíte mať zapnuté rozhranie Bluetooth a�
 <translation id="200669432486043882">Nahradiť súbor</translation>
 <translation id="2020525020270327736">Kopírovať web</translation>
 <translation id="2038563949887743358">Zapnutie žiadosti o verziu stránok pre počítače</translation>
-<translation id="2069736994598857257">Využíva sa <ph name="GIGABYTES" /> GB</translation>
 <translation id="2073235970478114994">Načítať obrázky</translation>
 <translation id="2079545284768500474">Späť</translation>
 <translation id="2082238445998314030">Výsledok <ph name="RESULT_NUMBER" /> z <ph name="TOTAL_RESULTS" /></translation>
@@ -324,6 +323,7 @@ Ak chcete upraviť hľadaný výraz, vyberte ho dlhým stlačením. Ak chcete vy
 <translation id="4816465935029283692">Typy údajov</translation>
 <translation id="4827948050554950725">Pridať kreditnú kartu</translation>
 <translation id="4836364883164334657">Vaše pripojenie k týmto webovým stránkam nie je súkromné. Útočníci sa môžu pokúsiť ukradnúť vaše informácie (ako sú napríklad fotky, heslá, správy alebo čísla kreditných kariet) z domény <ph name="DOMAIN_NAME" />.</translation>
+<translation id="4850886885716139402">Zobraziť</translation>
 <translation id="4881695831933465202">Otvoriť</translation>
 <translation id="4885273946141277891">Nepodporovaný počet inštancií prehliadača Chrome.</translation>
 <translation id="4923459931733593730">Platba</translation>
@@ -339,7 +339,9 @@ Ak chcete upraviť hľadaný výraz, vyberte ho dlhým stlačením. Ak chcete vy
 <translation id="5016205925109358554">Pätkové</translation>
 <translation id="5039804452771397117">Povoliť</translation>
 <translation id="5040262127954254034">Ochrana súkromia</translation>
+<translation id="5053110706349648690">Zapnite rozhranie Bluetooth v <ph name="BEGIN_LINK" />nastaveniach zariadenia<ph name="END_LINK" />, čím povolíte párovanie.</translation>
 <translation id="5063480226653192405">Použitie</translation>
+<translation id="5087580092889165836">Pridať kartu</translation>
 <translation id="5100237604440890931">Zbalená (rozbalíte ju kliknutím)</translation>
 <translation id="510275257476243843">Zostáva: 1 h</translation>
 <translation id="5127805178023152808">Synchronizácia je vypnutá.</translation>
@@ -416,9 +418,10 @@ Nie ste však neviditeľný/-á. Používanie režimu inkognito neukryje vaše p
 <translation id="583281660410589416">Neznáme</translation>
 <translation id="5832934273103296195">Rozbalené – kliknutím zbaliť</translation>
 <translation id="583891442612896534">Prehliadaču Chrome sa nepodarilo nadviazať spojenie so servermi Google s cieľom vykonať kompresiu údajov. Ukladanie vašich údajov môže byť obmedzené.</translation>
+<translation id="5843873952582375185">Nenašli sa žiadne zariadenia Bluetooth. <ph name="BEGIN_LINK" />Znova spustiť vyhľadávanie<ph name="END_LINK" /></translation>
 <translation id="585027516397408832">Šetrič dát je zapnutý</translation>
 <translation id="5860033963881614850">Vypnuté</translation>
-<translation id="5867027562311576691">Čoskoro sa zobrazia ďalšie články. Dobré ráno.</translation>
+<translation id="5867027562311576691">Čoskoro sa zobrazia ďalšie články. Dobré ráno!</translation>
 <translation id="5869522115854928033">Uložené heslá</translation>
 <translation id="5899349522111170522">Vytvoriť nový súbor</translation>
 <translation id="5902828464777634901">Všetky miestne údaje uložené týmito stránkami (vrátane súborov cookie) budú odstránené.</translation>
@@ -490,6 +493,7 @@ Niektoré weby môžu napríklad na túto žiadosť reagovať tak, že vám zobr
 <translation id="6657585470893396449">Heslo</translation>
 <translation id="6659594942844771486">Tab</translation>
 <translation id="666268767214822976">Použite službu predpovedí na zobrazovanie súvisiacich dopytov a populárnych webových stránok počas zadávania textu do panela s adresou</translation>
+<translation id="666731172850799929">Otvoriť v aplikácii <ph name="APP_NAME" /></translation>
 <translation id="666981079809192359">Upozornenie o ochrane osobných údajov prehliadača Chrome</translation>
 <translation id="6698801883190606802">Spravovať synchronizované údaje</translation>
 <translation id="6710213216561001401">Dozadu</translation>
@@ -532,14 +536,12 @@ Niektoré weby môžu napríklad na túto žiadosť reagovať tak, že vám zobr
 <translation id="7074853159844403180">Web <ph name="SITE" /> žiada o spárovanie so zariadením:</translation>
 <translation id="7081639897063626814">Ponechať existujúce údaje oddelené</translation>
 <translation id="7094922512924405309">Nenašli sa žiadne stránky Fyzického webu v okolí</translation>
-<translation id="7115197232530297436">Nepodporovaná dodacia adresa. Vyberte inú.</translation>
 <translation id="7138678301420049075">Iné</translation>
 <translation id="7180611975245234373">Obnoviť</translation>
 <translation id="7191430249889272776">Karta je otvorená na pozadí.</translation>
 <translation id="7208788139759694678">Šetrič dát je vypnutý</translation>
 <translation id="7243308994586599757">Možnosti sú k dispozícii v dolnej časti obrazovky</translation>
 <translation id="7244362611678346589"><ph name="SEARCH_ENGINE_URL" /> používa vašu polohu na zobrazovanie miestnych výsledkov vyhľadávania.</translation>
-<translation id="7347770551817603360">Offline obsah</translation>
 <translation id="7353894246028566792">{NUM_SELECTED,plural, =1{Zdieľať 1 vybranú položku}few{Zdieľať # vybrané položky}many{Zdieľať # vybranej položky}other{Zdieľať # vybraných položiek}}</translation>
 <translation id="7366340029385295517">Prenáša sa na obrazovku <ph name="SCREEN_NAME" /></translation>
 <translation id="7375125077091615385">Typ:</translation>
@@ -558,7 +560,7 @@ Váš účet Google môže mať na adrese <ph name="BEGIN_LINK" />history.google
 <translation id="7493994139787901920"><ph name="VERSION" /> (Aktualizované <ph name="TIME_SINCE_UPDATE" />)</translation>
 <translation id="7498271377022651285">Čakajte…</translation>
 <translation id="7521387064766892559">JavaScript</translation>
-<translation id="753693763123565012">To je zatiaľ všetko!</translation>
+<translation id="753693763123565012">To je zatiaľ všetko</translation>
 <translation id="7562080006725997899">Vymazávajú sa údaje prehliadania</translation>
 <translation id="756809126120519699">Údaje Chromu boli vymazané</translation>
 <translation id="7588950540487816470">Fyzický web</translation>
@@ -576,7 +578,6 @@ Váš účet Google môže mať na adrese <ph name="BEGIN_LINK" />history.google
 <translation id="7665369617277396874">Pridať účet</translation>
 <translation id="7682287625158474539">Dodacia</translation>
 <translation id="771135159654932189">Zobraziť webové stránky v okolí</translation>
-<translation id="7713873128508426081">Vždy povolené</translation>
 <translation id="7764225426217299476">Pridať adresu</translation>
 <translation id="7765158879357617694">Presunúť</translation>
 <translation id="7769602470925380267">Prijať a odhlásiť</translation>
@@ -629,7 +630,7 @@ Váš účet Google môže mať na adrese <ph name="BEGIN_LINK" />history.google
 <translation id="8275818695183729150">Povoliť (pre vyhľadávania v paneli s adresou)</translation>
 <translation id="8283853025636624853">Synchronizácia do účtu <ph name="SYNC_ACCOUNT_USER_NAME" /></translation>
 <translation id="8310344678080805313">Štandardné karty</translation>
-<translation id="8321376388213838985">Čoskoro sa zobrazia ďalšie články. Príjemné popoludnie.</translation>
+<translation id="8321376388213838985">Čoskoro sa zobrazia ďalšie články. Príjemné popoludnie!</translation>
 <translation id="8372893542064058268">Povolenie synchronizácie na pozadí na konkrétnom webe.</translation>
 <translation id="8374821112118309944">Aplikáciu TalkBack je potrebné aktualizovať na novšiu verziu.</translation>
 <translation id="8396312449826231789">Iba schválené stránky</translation>
@@ -645,15 +646,12 @@ Váš účet Google môže mať na adrese <ph name="BEGIN_LINK" />history.google
 <translation id="8514577642972634246">Spustiť režim inkognito</translation>
 <translation id="8518901949365209398">Tento web používa slabú konfiguráciu zabezpečenia (podpisy SHA-1). Pripojenie preto nemusí byť súkromné.</translation>
 <translation id="8523928698583292556">Odstrániť uložené heslo</translation>
-<translation id="8525306231823319788">Celá obrazovka</translation>
-<translation id="85415543246899402">Využité miesto: <ph name="MEGABYTES" /> MB</translation>
 <translation id="854522910157234410">Otvoriť túto stránku</translation>
 <translation id="8562452229998620586">Tu sa zobrazia uložené heslá.</translation>
 <translation id="856481929701340285">Verzia webu pre počítače</translation>
 <translation id="857943718398505171">Povolené (odporúčané)</translation>
 <translation id="8583805026567836021">Prebieha vymazávanie údajov účtu</translation>
 <translation id="8617240290563765734">Otvoriť navrhovanú webovú adresu určenú v stiahnutom obsahu?</translation>
-<translation id="8618653050765576793">Využité miesto: <ph name="KILOBYTES" /> kB</translation>
 <translation id="862875433388403934">Obsah (filmy, hudba atď.) stiahnutý v iných aplikáciách sa nemusí dať prehrať, pokiaľ aplikácie opätovne nezískajú licencie na základe nových poverení zariadenia. Ak chcete získať nové licencie, pripojte sa k internetu a prehrajte stiahnutý obsah.</translation>
 <translation id="8636825310635137004">Ak chcete získať karty zo svojich ostatných zariadení, zapnite synchronizáciu.</translation>
 <translation id="8639651215196239211">Všetky stiahnuté súbory</translation>

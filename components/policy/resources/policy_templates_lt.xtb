@@ -19,6 +19,9 @@
       Kai ši politika nustatyta kaip „netiesa“ arba nenustatyta, IdP nustatyti slapukai perkeliami į naudotojo profilį, tik kai naudotojas pirmą kartą prisijungia įrenginyje.
 
       Ši politika paveikia tik tuos naudotojus, kurių domenas sutampa su įrenginio registracijos domenu. Kitų naudotojų atvejais IdP nustatyti slapukai perkeliami į naudotojo profilį, tik kai naudotojas pirmą kartą prisijungia įrenginyje.</translation>
+<translation id="1029536946382325801">Jei ši politika galioja, naudotojas gali naudoti „Chrome“ įrenginių aparatinę įrangą, kad nuotoliniu būdu patvirtintų tapatybę privatumo CA per „Enterprise Platform Keys“ API „chrome.enterprise.platformKeysPrivate.challengeUserKey()“.
+
+Jei ši politika negalioja arba nenustatyta, iškviečiant API įvyks klaida ir bus pateiktas jos kodas.</translation>
 <translation id="1040446814317236570">PAC URL perdavimo įgalinimas (skirta https://)</translation>
 <translation id="1044878202534415707">Teikiamos aparatinės įrangos statistikos, pvz., centrinio procesoriaus / laisvosios prieigos atminties naudojimo, ataskaitos.
 
@@ -346,13 +349,6 @@
 <translation id="2337466621458842053">Leidžiama nustatyti URL šablonų, nurodančių svetaines, kuriose leidžiama pateikti vaizdų, sąrašą.
 
           Nenustačius šios politikos, visose svetainėse naudojama visuotinė numatytoji vertė iš politikos „Numatytasis vaizdų nustatymas“ (jei nustatyta) ar naudotojo asmeninės konfigūracijos.</translation>
-<translation id="2359612025446382967">Jei ši politika bus nustatyta kaip „netiesa“, „<ph name="PRODUCT_OS_NAME" />“ išjungs „Bluetooth“ ir naudotojas negalės jo vėl įjungti.
-
-      Jei ši politika bus nustatyta kaip „tiesa“ arba nenustatyta, naudotojas galės pasirinkti įjungti arba išjungti „Bluetooth“.
-
-      Jei ši politika nustatyta, naudotojas negali jos pakeisti ar nepaisyti.
-
-      Įgalinus „Bluetooth“, įrenginį reikia paleisti iš naujo, kad pakeitimai įsigaliotų (išjungus „Bluetooth“, įrenginio nereikia paleisti iš naujo).</translation>
 <translation id="2366415278352956652">Įgalinamas perdavimas</translation>
 <translation id="2372547058085956601">Viešos sesijos automatinio prisijungimo delsa.
 
@@ -804,7 +800,7 @@
 <translation id="3418871497193485241">Vykdomas minimalus ribotas režimas sistemoje „YouTube“ ir neleidžiama naudotojams
       pasirinkti mažiau riboto režimo.
 
-      Nustačius šį nustatytą į „Griežtas“ sistemoje „YouTube“ visada aktyvus griežtai ribotas režimas.
+      Nustačius šį nustatymą į „Griežtas“, sistemoje „YouTube“ visada aktyvus griežtai ribotas režimas.
 
       Nustačius šį nustatymą į „Vidutiniškas“, naudotojas gali pasirinkti tik vidutiniškai ribotą
       ir griežtai ribotą režimus sistemoje „YouTube“, bet negali išjungti riboto režimo.
@@ -990,6 +986,9 @@
 
       Jei ši politika nustatyta į „true“, bus siunčiami stebėjimo tinklo paketai (<ph name="HEARTBEATS_TERM" />).
       Jei ji nustatyta į „false“ arba yra nenustatyta, paketai siunčiami nebus.</translation>
+<translation id="3963602271515417124">Jei ši politika galioja, leidžiama nuotoliniu būdu patvirtinti įrenginį, o sertifikatas bus automatiškai sugeneruotas ir įkeltas į įrenginių tvarkymo serverį.
+
+          Jei ši politika negalioja arba yra nenustatyta, sertifikatas nebus sugeneruotas ir nepavyks iškviesti „enterprise.platformKeysPrivate“ plėtinio API.</translation>
 <translation id="3964909636571393861">Suteikiama prieiga prie URL sąrašo</translation>
 <translation id="3965339130942650562">Skirtasis laikas, kol vykdomas neveikos būsenos naudotojo atjungimas</translation>
 <translation id="3967075520570946456">Įgalinkite darbo pradžios puslapio rodymą pirmą kartą paleidus naršyklę po OS naujovinimo.</translation>
@@ -1564,13 +1563,6 @@
 
       Jei politika nenustatyta arba jos reikšmė nustatyta kaip „false“, „<ph name="PRODUCT_NAME" />“ neatliks internetinių panaikinimo patikrinimų 19 ar naujesnės versijos „<ph name="PRODUCT_NAME" />“.</translation>
 <translation id="5966615072639944554">Plėtiniams leidžiama naudoti nuotolinio patvirtinimo API</translation>
-<translation id="5974970919245996815">Ataskaitos informacija apie „Android“ būseną siunčiama atgal į
-      serverį.
-
-      Nustačius politiką kaip „False“, informacija nepranešama.
-      Nustačius kaip „True“ arba nenustačius, informacija pranešama.
-
-      Ši politika taikoma tik įgalinus „Android“ programas.</translation>
 <translation id="5983708779415553259">Numatytoji elgsena, skirta svetainėms, neesančioms turinio paketuose</translation>
 <translation id="5997543603646547632">Naudoti 24 val. laikrodį pagal numatytuosius nustatymus</translation>
 <translation id="6009903244351574348">Leisti „<ph name="PRODUCT_FRAME_NAME" />“ tvarkyti nurodytus turinio tipus.
@@ -2266,6 +2258,9 @@
           su aktyvaus katalogo domenu.</translation>
 <translation id="7937766917976512374">Leisti arba blokuoti vaizdo įrašo fiksavimą</translation>
 <translation id="7941975817681987555">Nenumatyti tinklo veiksmų, naudojant bet kurį tinklo ryšį</translation>
+<translation id="7942429005743031780">Pagal š ią politiką nustatomi plėtiniai, kuriems leidžiama naudoti „Enterprise Platform Keys“ API „chrome.enterprise.platformKeysPrivate.challengeUserKey()“ patvirtinant nuotoliniu būdu. Plėtiniai turi būti pridėti prie šio sąrašo, kad galėtų naudoti API.
+
+Jei plėtinio nėra sąraše arba sąrašas nenustatytas, iškviečiant API įvyks klaida ir bus pateiktas jos kodas.</translation>
 <translation id="7953256619080733119">Tvarkomos naudotojo neautomatinių išimčių prieglobos</translation>
 <translation id="7971839631300653352">3.0 versijos SSL</translation>
 <translation id="7974114691960514888">Ši politika nebepalaikoma.

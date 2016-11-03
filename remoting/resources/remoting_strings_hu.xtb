@@ -27,6 +27,9 @@ Adatvédelmi információkért tekintse meg a Google adatvédelmi irányelveit (
 <translation id="1654128982815600832">Távoli kapcsolatok engedélyezése ezen a számítógépen...</translation>
 <translation id="170207782578677537">Nem sikerült regisztrálni a számítógépet.</translation>
 <translation id="1704090719919187045">Chromoting gazdagép-beállítások</translation>
+<translation id="1730409684442507495">• Jobb képminőség asztali rendszeren, nagyobb érzékenység és jobb akkumulátoros üzemidő.
+• Nagyobb érzékenységű kattintási és húzási műveletek.
+• A kezelőfelület néhány animált effektusának továbbfejlesztése.</translation>
 <translation id="174018511426417793">Önnek nincs regisztrált számítógépe. Ahhoz, hogy engedélyezhesse a távoli kapcsolatokat egy számítógépen, telepítse a gépre a Chrome távoliasztal-szolgáltatást, majd kattintson a következő gombra: „<ph name="BUTTON_NAME" />”.</translation>
 <translation id="1742469581923031760">Csatlakozás…</translation>
 <translation id="1770394049404108959">Nem tudom megnyitni az alkalmazást.</translation>
@@ -73,7 +76,6 @@ Adatvédelmi információkért tekintse meg a Google adatvédelmi irányelveit (
 <translation id="2699970397166997657">Chromoting</translation>
 <translation id="2747641796667576127">A szoftverfrissítések általában automatikusan történnek, ám egyes ritka esetekben sikertelenek lehetnek. A szoftverfrissítés nem szokott pár percnél több időt igénybe venni, és a számítógéphez távolról csatlakozva is elvégezhető.</translation>
 <translation id="2841013758207633010">Idő</translation>
-<translation id="2851674870054673688">Miután beírják a kódot, megkezdődik a megosztási munkamenet.</translation>
 <translation id="2851754573186462851">Chromium alkalmazás internetes megjelenítése</translation>
 <translation id="2855866366045322178">offline</translation>
 <translation id="2888969873284818612">Hálózati hiba történt. Újraindítjuk az alkalmazást, amint eszköze ismét online lesz.</translation>

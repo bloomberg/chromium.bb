@@ -1,41 +1,20 @@
 <?xml version="1.0" ?>
 <!DOCTYPE translationbundle>
 <translationbundle lang="fr">
-<translation id="153454903766751181">Initialisation du modem cellulaire en cours…</translation>
 <translation id="1829129547161959350">Pingouin</translation>
-<translation id="1850504506766569011">Le Wi-Fi est désactivé.</translation>
 <translation id="2288278176040912387">Tourne-disque</translation>
-<translation id="2354174487190027830">Activation du réseau <ph name="NAME" /> en cours…</translation>
 <translation id="2563185590376525700">Grenouille</translation>
 <translation id="2649120831653069427">Poisson arc-en-ciel</translation>
-<translation id="277257480934873581">Reconnexion à <ph name="NAME" />…</translation>
 <translation id="2894654529758326923">Informations</translation>
 <translation id="2951236788251446349">Méduse</translation>
-<translation id="3846575436967432996">Aucune information disponible concernant le réseau</translation>
-<translation id="3901991538546252627">Connexion à <ph name="NAME" /> en cours…</translation>
 <translation id="3958548648197196644">Kiwi</translation>
-<translation id="4118990158415604803">Votre administrateur a désactivé la connexion à d'autres réseaux.</translation>
 <translation id="4326192123064055915">Café</translation>
-<translation id="4448844063988177157">Recherche de réseaux Wi-Fi...</translation>
-<translation id="4479639480957787382">Ethernet </translation>
-<translation id="4508225577814909926"><ph name="NAME" /> : Connexion en cours…</translation>
 <translation id="4559767610552730302">Bokeh</translation>
 <translation id="4935975195727477204">Fleur de gazania</translation>
 <translation id="515594325917491223">Échecs</translation>
 <translation id="5257456363153333584">Libellule</translation>
-<translation id="6267036997247669271"><ph name="NAME" /> : activation en cours…</translation>
-<translation id="6549021752953852991">Aucun réseau mobile disponible</translation>
-<translation id="6857811139397017780">Activer <ph name="NETWORKSERVICE" /></translation>
 <translation id="6935521024859866267">À l'envers</translation>
-<translation id="7066646422045619941">Votre administrateur a désactivé ce réseau.</translation>
-<translation id="735745346212279324">VPN déconnecté</translation>
-<translation id="7874779702599364982">Recherche de réseaux cellulaires en cours…</translation>
-<translation id="8000066093800657092">Aucun réseau détecté</translation>
 <translation id="8008366997883261463">Jack Russell Terrier</translation>
-<translation id="8132793192354020517">Connecté à <ph name="NAME" /></translation>
-<translation id="8454013096329229812">Le Wi-Fi est activé.</translation>
-<translation id="8484916590211895857"><ph name="NAME" /> : reconnexion…</translation>
 <translation id="8714406895390098252">Vélo</translation>
 <translation id="8808686172382650546">Chat</translation>
-<translation id="8814190375133053267">Wi-Fi </translation>
 </translationbundle>

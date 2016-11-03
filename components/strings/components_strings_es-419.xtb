@@ -50,6 +50,7 @@
 <translation id="1491663344921578213">No puedes visitar <ph name="SITE" /> ahora mismo porque el sitio web usa la fijación de certificados. Los ataques y errores de red suelen ser temporales, por lo que es posible que esta página funcione más tarde. <ph name="BEGIN_LEARN_MORE_LINK" />Más información<ph name="END_LEARN_MORE_LINK" /></translation>
 <translation id="1506687042165942984">Se muestra una copia guardada (es decir, desactualizada) de la página.</translation>
 <translation id="1519264250979466059">Fecha de compilación</translation>
+<translation id="153384715582417236">Eso es todo por ahora</translation>
 <translation id="1549470594296187301">JavaScript debe estar habilitado para usar esta función.</translation>
 <translation id="1559528461873125649">El archivo o directorio no existe</translation>
 <translation id="1559572115229829303">&lt;p&gt;No se puede establecer una conexión privada a <ph name="BEGIN_BOLD" /><ph name="DOMAIN" /><ph name="END_BOLD" /> porque la fecha y la hora del dispositivo (<ph name="DATE_AND_TIME" />) son incorrectas.&lt;/p&gt;
@@ -351,7 +352,6 @@
 <translation id="4728558894243024398">Plataforma</translation>
 <translation id="4744603770635761495">Ruta ejecutable</translation>
 <translation id="4756388243121344051">&amp;Historial</translation>
-<translation id="4759238208242260848">Descargas</translation>
 <translation id="4764776831041365478">Es posible que la página web en <ph name="URL" /> no funcione temporalmente o se haya trasladado de manera permanente a una nueva dirección web.</translation>
 <translation id="4771973620359291008">Se ha producido un error desconocido.</translation>
 <translation id="4782449893814226250">Les preguntaste a tus padres si puedes visitar esta página.</translation>
@@ -390,6 +390,7 @@
 <translation id="5179510805599951267">¿No está en <ph name="ORIGINAL_LANGUAGE" />? Informa este error</translation>
 <translation id="5190835502935405962">Barra de marcadores</translation>
 <translation id="5199729219167945352">Experimentos</translation>
+<translation id="5199841536747119669">Tus sugerencias aparecen aquí</translation>
 <translation id="5251803541071282808">Nube</translation>
 <translation id="5277279256032773186">¿Usas Chrome en el trabajo? Las empresas pueden administrar la configuración de Chrome para sus empleados. Más información</translation>
 <translation id="5299298092464848405">Error al analizar la política</translation>
@@ -469,6 +470,7 @@
 <translation id="6263376278284652872">Marcadores de <ph name="DOMAIN" /></translation>
 <translation id="6264485186158353794">Volver a seguridad</translation>
 <translation id="6282194474023008486">Código postal</translation>
+<translation id="6290238015253830360">Tus artículos sugeridos aparecen aquí</translation>
 <translation id="6305205051461490394">No se puede acceder a <ph name="URL" />.</translation>
 <translation id="6321917430147971392">Revisa la configuración de DNS.</translation>
 <translation id="6328639280570009161">Intenta inhabilitar la predicción de red.</translation>
@@ -652,6 +654,7 @@
 <translation id="8363502534493474904">Desactivar el modo de avión.</translation>
 <translation id="8364627913115013041">Sin establecer</translation>
 <translation id="8380941800586852976">Peligrosa</translation>
+<translation id="8382348898565613901">Los marcadores que visitaste recientemente aparecen aquí</translation>
 <translation id="8412145213513410671">Bloqueos (<ph name="CRASH_COUNT" />)</translation>
 <translation id="8412392972487953978">Debes ingresar la misma frase de contraseña dos veces.</translation>
 <translation id="8428213095426709021">Configuración</translation>
@@ -701,6 +704,7 @@
 <translation id="8987927404178983737">Mes</translation>
 <translation id="8989148748219918422"><ph name="ORGANIZATION" /> [<ph name="COUNTRY" />]</translation>
 <translation id="9001074447101275817">El proxy <ph name="DOMAIN" /> requiere un nombre de usuario y una contraseña.</translation>
+<translation id="9008201768610948239">Ignorar</translation>
 <translation id="901974403500617787">El propietario es el único que puede especificar las marcas que se aplican a todo el sistema: <ph name="OWNER_EMAIL" />.</translation>
 <translation id="9020542370529661692">Esta página se tradujo al <ph name="TARGET_LANGUAGE" />.</translation>
 <translation id="9038649477754266430">Utilizar un servicio de predicción para cargar las páginas más rápido</translation>

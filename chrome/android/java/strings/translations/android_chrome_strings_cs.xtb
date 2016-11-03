@@ -95,7 +95,6 @@ Chcete-li fyzický web používat, je třeba aktivovat Bluetooth a určování 
 <translation id="200669432486043882">Nahradit soubor</translation>
 <translation id="2020525020270327736">Kopírovat web</translation>
 <translation id="2038563949887743358">Zapnout funkci Verze webu pro PC</translation>
-<translation id="2069736994598857257">Využito <ph name="GIGABYTES" /> GB</translation>
 <translation id="2073235970478114994">Načíst obrázky</translation>
 <translation id="2079545284768500474">Zpět</translation>
 <translation id="2082238445998314030">Výsledek <ph name="RESULT_NUMBER" /> z <ph name="TOTAL_RESULTS" /></translation>
@@ -324,6 +323,7 @@ Chcete-li vyhledávací dotaz upravit, proveďte výběr dlouhým stisknutím. C
 <translation id="4816465935029283692">Typy dat</translation>
 <translation id="4827948050554950725">Přidat platební kartu</translation>
 <translation id="4836364883164334657">Připojení k tomuto webu není soukromé. Útočníci se mohou pokusit ukrást vaše údaje na webu <ph name="DOMAIN_NAME" /> (například fotky, hesla, zprávy nebo informace o platebních kartách).</translation>
+<translation id="4850886885716139402">Zobrazit</translation>
 <translation id="4881695831933465202">Otevřít</translation>
 <translation id="4885273946141277891">Nepodporovaný počet instancí Chromu.</translation>
 <translation id="4923459931733593730">Platba</translation>
@@ -339,7 +339,9 @@ Chcete-li vyhledávací dotaz upravit, proveďte výběr dlouhým stisknutím. C
 <translation id="5016205925109358554">Patková</translation>
 <translation id="5039804452771397117">Povolit</translation>
 <translation id="5040262127954254034">Ochrana soukromí</translation>
+<translation id="5053110706349648690">Chcete-li povolit párování, zapněte v <ph name="BEGIN_LINK" />nastavení zařízení<ph name="END_LINK" /> Bluetooth.</translation>
 <translation id="5063480226653192405">Použití</translation>
+<translation id="5087580092889165836">Přidat kartu</translation>
 <translation id="5100237604440890931">Sbaleno – kliknutím rozbalíte</translation>
 <translation id="510275257476243843">Zbývá: 1 h</translation>
 <translation id="5127805178023152808">Synchronizace je vypnuta</translation>
@@ -416,6 +418,7 @@ Nejste však neviditelní. Anonymní režim neskryje vaši aktivitu před zaměs
 <translation id="583281660410589416">Neznámé</translation>
 <translation id="5832934273103296195">Rozbaleno – kliknutím sbalíte</translation>
 <translation id="583891442612896534">Chrome se nemůže připojit k serverům společnosti Google pro kompresi dat. Úspora dat může být omezena.</translation>
+<translation id="5843873952582375185">Nebyla nalezena žádná zařízení Bluetooth. <ph name="BEGIN_LINK" />Vyhledejte zařízení znovu<ph name="END_LINK" />.</translation>
 <translation id="585027516397408832">Spořič dat je aktivní</translation>
 <translation id="5860033963881614850">Vypnuto</translation>
 <translation id="5867027562311576691">Brzy se zobrazí další články. Užijte si ráno.</translation>
@@ -490,6 +493,7 @@ Některé weby mohou například na tento požadavek reagovat tak, že vám zobr
 <translation id="6657585470893396449">Heslo</translation>
 <translation id="6659594942844771486">Karta</translation>
 <translation id="666268767214822976">Používat službu předpovídání k zobrazení souvisejících dotazů a oblíbených webových stránek.</translation>
+<translation id="666731172850799929">Otevřít v aplikaci <ph name="APP_NAME" /></translation>
 <translation id="666981079809192359">Ochrana soukromí v Chromu</translation>
 <translation id="6698801883190606802">Správa synchronizovaných dat</translation>
 <translation id="6710213216561001401">Předchozí</translation>
@@ -532,14 +536,12 @@ Některé weby mohou například na tento požadavek reagovat tak, že vám zobr
 <translation id="7074853159844403180">Web <ph name="SITE" /> se chce spárovat s:</translation>
 <translation id="7081639897063626814">Uchovat existující data odděleně</translation>
 <translation id="7094922512924405309">V okolí nebyly nalezeny žádné stránky fyzického webu</translation>
-<translation id="7115197232530297436">Nepodporovaná dodací adresa. Vyberte jinou adresu.</translation>
 <translation id="7138678301420049075">Ostatní</translation>
 <translation id="7180611975245234373">Obnovit</translation>
 <translation id="7191430249889272776">Karta je otevřena na pozadí.</translation>
 <translation id="7208788139759694678">Spořič dat není aktivní</translation>
 <translation id="7243308994586599757">Možnosti jsou k dispozici ve spodní části obrazovky</translation>
 <translation id="7244362611678346589">Stránky <ph name="SEARCH_ENGINE_URL" /> zobrazují lokální výsledky vyhledávání na základě vaší polohy</translation>
-<translation id="7347770551817603360">Offline obsah</translation>
 <translation id="7353894246028566792">{NUM_SELECTED,plural, =1{Sdílet 1 vybranou položku}few{Sdílet # vybrané položky}many{Sdílet # vybrané položky}other{Sdílet # vybraných položek}}</translation>
 <translation id="7366340029385295517">Odesílání do zařízení <ph name="SCREEN_NAME" /></translation>
 <translation id="7375125077091615385">Typ:</translation>
@@ -576,7 +578,6 @@ Na stránce <ph name="BEGIN_LINK" />history.google.com<ph name="END_LINK" /> moh
 <translation id="7665369617277396874">Přidat účet</translation>
 <translation id="7682287625158474539">Doprava</translation>
 <translation id="771135159654932189">Zobrazit weby v okolí</translation>
-<translation id="7713873128508426081">Vždy povoleno</translation>
 <translation id="7764225426217299476">Přidat adresu</translation>
 <translation id="7765158879357617694">Přesunout</translation>
 <translation id="7769602470925380267">Přijmout a odhlásit se</translation>
@@ -645,15 +646,12 @@ Na stránce <ph name="BEGIN_LINK" />history.google.com<ph name="END_LINK" /> moh
 <translation id="8514577642972634246">Přejít do anonymního režimu</translation>
 <translation id="8518901949365209398">Tento web používá slabou konfiguraci zabezpečení (podpisy SHA-1). Připojení proto nemusí být soukromé.</translation>
 <translation id="8523928698583292556">Vymazat uložené heslo</translation>
-<translation id="8525306231823319788">Celá obrazovka</translation>
-<translation id="85415543246899402">Využité místo: <ph name="MEGABYTES" /> MB</translation>
 <translation id="854522910157234410">Otevřít tuto stránku</translation>
 <translation id="8562452229998620586">Zde se zobrazí uložená hesla.</translation>
 <translation id="856481929701340285">Verze webu pro PC</translation>
 <translation id="857943718398505171">Povoleno (doporučeno)</translation>
 <translation id="8583805026567836021">Mazání dat účtu</translation>
 <translation id="8617240290563765734">Otevřít navrhovanou adresu URL uvedenou ve staženém obsahu?</translation>
-<translation id="8618653050765576793">Využité místo: <ph name="KILOBYTES" /> kB</translation>
 <translation id="862875433388403934">Obsah (filmy, hudba atd.) stažený v jiných aplikacích možná nebude možné přehrát, dokud dané aplikace znovu nezískají licence s novými identifikačními údaji zařízení.
 
 Chcete-li získat nové licence, připojte se k internetu a přehrajte stažený obsah.</translation>

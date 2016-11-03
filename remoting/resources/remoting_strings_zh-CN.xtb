@@ -27,6 +27,9 @@
 <translation id="1654128982815600832">正在对此计算机启用远程连接…</translation>
 <translation id="170207782578677537">无法注册此计算机。</translation>
 <translation id="1704090719919187045">Chrome 远程访问主机偏好设置</translation>
+<translation id="1730409684442507495">• 提高了桌面设备图片质量、响应速度，降低了电池消耗。
+• 提高了点击拖动操作的响应速度。
+• 改进了多种界面动画效果。</translation>
 <translation id="174018511426417793">您未注册任何计算机。要启用到某台计算机的远程连接，请在该计算机上安装 Chrome 远程桌面并点击“<ph name="BUTTON_NAME" />”。</translation>
 <translation id="1742469581923031760">正在连接…</translation>
 <translation id="1770394049404108959">我无法打开此应用。</translation>
@@ -73,7 +76,6 @@
 <translation id="2699970397166997657">Chrome 远程访问</translation>
 <translation id="2747641796667576127">系统通常会自动执行软件更新，但在极少数情况下，更新可能会失败。更新软件应该只需要几分钟，而且可在远程连接到计算机时执行。</translation>
 <translation id="2841013758207633010">时间</translation>
-<translation id="2851674870054673688">他们输入访问代码后，您的共享会话就会立即开始。</translation>
 <translation id="2851754573186462851">Chromium App Streaming</translation>
 <translation id="2855866366045322178">离线</translation>
 <translation id="2888969873284818612">出现网络错误。当您的设备重新联网后，系统将重新启动该应用。</translation>
@@ -126,6 +128,7 @@
 <translation id="409800995205263688">注意：策略设置仅允许您网络内的计算机之间建立连接。</translation>
 <translation id="4155497795971509630">缺少某些必需的组件。请确保您已安装该软件的最新版本，然后重试。</translation>
 <translation id="4156740505453712750">为防止他人擅自访问此计算机，请选用一个<ph name="BOLD_START" />至少 6 位数<ph name="BOLD_END" />的 PIN。当从其他位置连接时，将需要输入此 PIN。</translation>
+<translation id="4156741816461781891">以 <ph name="EMAIL_ADDRESS" /> 的身份登录。</translation>
 <translation id="4176825807642096119">访问代码</translation>
 <translation id="4207623512727273241">请先运行该安装程序，再继续操作。</translation>
 <translation id="4227991223508142681">主机配置实用程序</translation>

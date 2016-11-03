@@ -19,6 +19,9 @@
       När den här policyn är inställd på falskt eller inte har ställts in överförs cookies som ställts in av IdP:n bara till användarens profil under den första inloggningen på en enhet.
 
       Den här policyn gäller bara användare vars domän matchar enhetens registreringsdomän. För alla andra användare överförs cookies som anges av IdP:n bara till användarens profil under den första inloggningen på enheten.</translation>
+<translation id="1029536946382325801">Om den är inställd på sant kan användaren, genom att använda maskinvaran i Chrome-enheten, fjärrattestera sin identitet i sekretessinställningarna CA via API:et Enterprise Platform Keys – chrome.enterprise.platformKeys.challengeUserKey().
+
+          Om den är inställd på falskt, eller om den saknar inställning, fungerar inte anslutningen till API:et och en felkod att visas.</translation>
 <translation id="1040446814317236570">Aktivera filtrering av webbadresser för PAC (för https://)</translation>
 <translation id="1044878202534415707">Rapportera maskinvarustatistik som exempelvis användning av processor eller RAM-minne.
 
@@ -351,13 +354,6 @@
 <translation id="2337466621458842053">Policyn gör att du kan ställa in en lista med adressmönster som anger webbplatser som får visa bilder.
 
           Om den här policyn inte ställs in används det globala standardvärdet för alla webbplatser, antingen från policyn DefaultImagesSetting om den är inställd, eller från användarens personliga konfiguration om den inte är det.</translation>
-<translation id="2359612025446382967">Om policyn är inställd på falskt inaktiveras Bluetooth för <ph name="PRODUCT_OS_NAME" /> och användaren kan inte aktivera det igen.
-
-      Om policyn är inställd på sant eller inte inställd alls kan användaren aktivera eller inaktivera Bluetooth när som helst.
-
-      Om policyn är inställd kan användaren inte ändra eller åsidosätta den.
-
-      När Bluetooth har aktiverats måste enheten startas om innan ändringarna tillämpas (du behöver inte starta om enheten när du inaktiverar Bluetooth).</translation>
 <translation id="2366415278352956652">Aktiverar cast</translation>
 <translation id="2372547058085956601">Fördröjningen av den automatiska inloggningen till en offentlig session.
 
@@ -995,6 +991,9 @@
 
       Om principen är inställd på sant kommer nätverkspaket för övervakning (så kallade <ph name="HEARTBEATS_TERM" />) att skickas.
       Om principen är inställd på falskt eller inte har angetts skickas inga paket.</translation>
+<translation id="3963602271515417124">Om detta är sant är vidimering på distans tillåtet för enheten och ett certifikat genereras automatiskt. Det laddas upp till enhetshanteringsservern.
+
+          Om detta är falskt, eller om alternativet inte har angetts, skapas inget certifikat och anrop till tilläggs-API:et enterprise.platformKeys misslyckas.</translation>
 <translation id="3964909636571393861">Ger åtkomst till en lista med webbadresser</translation>
 <translation id="3965339130942650562">Tidsgräns för utloggning av inaktiv användare</translation>
 <translation id="3967075520570946456">Gör att välkomstsidan visas när webbläsaren startas för första gången efter en uppgradering av operativsystemet.</translation>
@@ -1571,12 +1570,6 @@
 
      Om ingen inställning görs för principen eller om den ställs in på falskt görs ingen återkallelsekontroll online i <ph name="PRODUCT_NAME" /> från och med <ph name="PRODUCT_NAME" /> 19.</translation>
 <translation id="5966615072639944554">Tilläggen får använda API:et för fjärrattestering</translation>
-<translation id="5974970919245996815">Statusrapporter om Android skickas till servern.
-
-      Om principen har ställts in på falskt rapporteras informationen inte in.
-      Om principen har ställts in på sant eller lämnats utan värde rapporteras informationen in.
-
-      Principen gäller bara om Android-appar har aktiverats.</translation>
 <translation id="5983708779415553259">Standardbeteende för webbplatser som inte ingår i ett innehållspaket</translation>
 <translation id="5997543603646547632">Använd 24-timmarsklocka som standard</translation>
 <translation id="6009903244351574348">Policyn tillåter att <ph name="PRODUCT_FRAME_NAME" /> hanterar de innehållstyper som anges.
@@ -2272,6 +2265,9 @@
           till en Active Directory-domän.</translation>
 <translation id="7937766917976512374">Tillåta eller neka videoinspelning</translation>
 <translation id="7941975817681987555">Förutsäg inte nätverksåtgärder för någon nätverksanslutning</translation>
+<translation id="7942429005743031780">Policyn specificerar vilka tillägg som får använda API:et för Enterprise Platform Keys – chrome.enterprise.platformKeys.challengeUserKey() – för fjärrattestering. Tillägg måste anges på den här listan om de ska kunna använda API:et.
+
+          Om ett tillägg inte finns med på listan, eller om listan inte har fastställts, kommer anslutningen till API:et att misslyckas och en felkod att visas.</translation>
 <translation id="7953256619080733119">Värdar för hanterade användares manuella undantag</translation>
 <translation id="7971839631300653352">SSL 3.0</translation>
 <translation id="7974114691960514888">Policyn stöds inte längre.

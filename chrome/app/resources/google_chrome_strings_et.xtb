@@ -61,7 +61,6 @@ Kui logite siiski sisse, liidetakse Chrome'i teave, nagu järjehoidjad, ajalugu 
 <translation id="2588322182880276190">Chrome'i logo</translation>
 <translation id="2664962310688259219">Chrome OS-i avatud lähtekoodi litsentsid</translation>
 <translation id="2665296953892887393">Aidake Google Chrome'i täiustada, saates Googl'ile krahhiaruandeid ja lingi <ph name="UMA_LINK" /></translation>
-<translation id="2669824781555328029">Fail <ph name="FILE_NAME" /> võib teie kasutuskogemust sirvimisel halvendada, seetõttu on Chrome selle blokeerinud.</translation>
 <translation id="2681064822612051220">Süsteemist leiti Google Chrome'i konfliktne install. Desinstallige see ja proovige uuesti.</translation>
 <translation id="2689103672227170538">See laiendus muutis seda, milline leht kuvatakse Chrome'i käivitamisel.</translation>
 <translation id="2704356438731803243">Kui soovite olemasolevad Chrome'i andmed eraldi hoida, võite kasutajale <ph name="USER_NAME" /> luua uue Chrome'i kasutaja.</translation>
@@ -151,6 +150,7 @@ Täiendavad juhised leiate aadressilt <ph name="ACCOUNT_EMAIL" />.</translation>
 
 Mõned funktsioonid ei pruugi saadaval olla. Määrake muu profiilikataloog või kasutage Chrome'i uuemat versiooni.</translation>
 <translation id="5176234269072261959">Aidake muuta Chrome paremaks, teavitades meid praegustest seadetest.</translation>
+<translation id="5193136243808726294">Google'i Chrome OS ei saa seda lehte avada.</translation>
 <translation id="5204098752394657250">Google Chrome'i <ph name="TERMS_OF_SERVICE_LINK" />teenusetingimused<ph name="END_TERMS_OF_SERVICE_LINK" /></translation>
 <translation id="5243785881901838525">Google Payments (Chrome'i kopeeritud)</translation>
 <translation id="5251420635869119124">Külastajad saavad kasutada Chrome'i jälgi jätmata.</translation>
@@ -209,7 +209,6 @@ Mõned funktsioonid ei pruugi saadaval olla. Määrake muu profiilikataloog või
 <translation id="699076943483372849">See sait kasutab aegunud pistikprogrammi Chrome Frame, millele ei edastata enam turva- ja stabiilsusvärskendusi. Desinstallige see ja täiendage moodsale brauserile.</translation>
 <translation id="6991142834212251086">Lingi minu Chrome'i andmed selle kontoga</translation>
 <translation id="7060865993964054389">Google Chrome'i rakenduste käiviti</translation>
-<translation id="7084448929020576097"><ph name="FILE_NAME" /> on pahatahtlik ja Chrome on selle blokeerinud.</translation>
 <translation id="7098166902387133879">Google Chrome kasutab teie mikrofoni.</translation>
 <translation id="7106741999175697885">Tegumihaldur - Google Chrome</translation>
 <translation id="7125719106133729027">Chrome ei suutnud ennast uusimale versioonile värskendada, nii et te ei saa kasutada lahedaid uusi funktsioone ja turvaparandusi. Peate Chrome'i käsitsi uuesti installima.</translation>
@@ -272,7 +271,6 @@ Mõned funktsioonid ei pruugi saadaval olla. Määrake muu profiilikataloog või
 <translation id="8669527147644353129">Google Chrome Helper</translation>
 <translation id="8679801911857917785">Lisaks juhib see Chrome'i käivitamisel kuvatavat lehte.</translation>
 <translation id="870251953148363156">Värskenda &amp;Google Chrome'i</translation>
-<translation id="8793772303278047003">Chrome on aegunud.</translation>
 <translation id="8796108026289707191">Soovitame Google Chrome'i kohe taaskäivitada.</translation>
 <translation id="8823341990149967727">Chrome on aegunud</translation>
 <translation id="884296878221830158">Lisaks juhib see Chrome'i käivitamise lehte või avalehe nupu  klõpsamist.</translation>
@@ -281,7 +279,6 @@ Mõned funktsioonid ei pruugi saadaval olla. Määrake muu profiilikataloog või
 <translation id="8914504000324227558">Käivita Chrome uuesti</translation>
 <translation id="9026991721384951619">Chrome OS ei saanud andmeid sünkroonida, sest teie konto sisselogimisandmed on aegunud.</translation>
 <translation id="9067395829937117663">Google Chrome vajab operatsioonisüsteemi Windows 7 või uuemat versiooni.</translation>
-<translation id="9102715433345326100">See fail on pahatahtlik ja Chrome on selle blokeerinud.</translation>
 <translation id="9107728822479888688"><ph name="BEGIN_BOLD" />Hoiatus:<ph name="END_BOLD" /> Google Chrome ei saa takistada rakendusi teie sirvimisajalugu talletamast. Kui soovite laienduse inkognitorežiimis keelata, siis tühistage see valik.</translation>
 <translation id="911206726377975832">Kas kustutada ka teie sirvimisandmed?</translation>
 <translation id="924447568950697217">Chrome'i vaikebrauseriks muutmine</translation>

@@ -19,6 +19,9 @@
       Quando esta política é definida como false ou não é configurada, os cookies definidos pelo IdP são transferidos para o perfil do usuário apenas durante o primeiro login dele em um dispositivo.
 
       Esta política afeta os usuários cujo domínio corresponde apenas ao domínio de inscrição do dispositivo. Para todos os outros usuários, os cookies definidos pelo IdP são transferidos para o perfil do usuário somente durante o primeiro login no dispositivo.</translation>
+<translation id="1029536946382325801">Se essa política é definida como verdadeira, o usuário pode usar o hardware em dispositivos Chrome para atestar remotamente a identidade para a Privacy CA por meio da API Enterprise Platform Keys chrome.enterprise.platformKeys.challengeUserKey().
+
+          Quando definida como falsa ou não definida, as chamadas para a API falham com um código de erro.</translation>
 <translation id="1040446814317236570">Ativar a retirada de URL PAC (para https://)</translation>
 <translation id="1044878202534415707">Relatórios sobre estatísticas de hardware, como o uso de CPU/RAM.
 
@@ -320,13 +323,6 @@ Se esta política não for definida, 'AllowPlugins' será usada, e o usuário po
 <translation id="2309390639296060546">Configuração padrão de geolocalização</translation>
 <translation id="2312134445771258233">Permite configurar as páginas que são carregadas na inicialização. O conteúdo da lista "URLs que devem ser abertos na inicialização" é ignorado, a menos que você selecione "Abrir uma lista de URLs" em "Ação na inicialização".</translation>
 <translation id="2337466621458842053">Permite que você defina uma lista de padrões URL para especificar os sites autorizados a exibir imagens. Se esta política for deixada sem definição, o valor padrão global será utilizado para todos os sites a partir da política "DefaultImagesSetting", caso esta tenha sido definida, ou a partir das configurações pessoais do usuário, caso não tenha sido definida.</translation>
-<translation id="2359612025446382967">Se esta política for definida como false, o <ph name="PRODUCT_OS_NAME" /> desativará o Bluetooth, e o usuário não poderá ativá-lo novamente.
-
-      Se esta política for definida como true ou não for definida, o usuário conseguirá ativar ou desativar o Bluetooth conforme desejar.
-
-      Se esta política for definida, o usuário não poderá alterá-la ou modificá-la.
-
-      Após a ativação do Bluetooth, o dispositivo deve ser reinicializado para que as alterações entrem em vigor (não há necessidade de reinicializar o dispositivo ao desativar o Bluetooth).</translation>
 <translation id="2366415278352956652">Permite a transmissão</translation>
 <translation id="2372547058085956601">O período de espera para login automático na sessão pública.
 
@@ -928,6 +924,9 @@ Se esta política não for definida, 'AllowPlugins' será usada, e o usuário po
 
       Se esta política for definida como true, pacotes de monitoramento de rede (os chamados <ph name="HEARTBEATS_TERM" />) serão enviados.
       Se definida como false ou não configurada, nenhum pacote será enviado.</translation>
+<translation id="3963602271515417124">Se for definida como verdadeira, a declaração remota será permitida para o dispositivo e um certificado será gerado automaticamente e enviado ao Servidor de gerenciamento de dispositivos.
+
+          Se for definida como falsa ou se não for definida, nenhum certificado será gerado e ocorrerá falha nas chamadas para a API da extensão enterprise.platformKeys.</translation>
 <translation id="3964909636571393861">Permite acesso a uma lista de URLs</translation>
 <translation id="3965339130942650562">Tempo limite até que a saída do usuário ocioso seja executada</translation>
 <translation id="3967075520570946456">Ativar a exibição da página de boas-vindas na primeira inicialização do navegador após a atualização do sistema operacional.</translation>
@@ -975,13 +974,13 @@ Se esta política não for definida, 'AllowPlugins' será usada, e o usuário po
 
       Especifica uma lista de plug-ins que ficam desativados no <ph name="PRODUCT_NAME" /> e impede que os usuários alterem essa configuração.
 
-      Os caracteres curinga "*" e "?" podem ser usados para combinar sequências de caracteres arbitrários. O "*" corresponde a um número arbitrário de caracteres, enquanto o "?" especifica um único caractere opcional, ou seja, corresponde aos caracteres zero ou um. O caractere de escape é "\". Assim, para corresponder aos caracteres reais "*", "?" ou "\", você pode colocar um "\" na frente deles.
+      Os caracteres curinga "*" e "?" podem ser usados para combinar sequências de caracteres arbitrários. O "*" combina um número arbitrário de caracteres, enquanto o "?" especifica um único caractere opcional, ou seja, combina zero caracteres ou apenas um. O caractere de escape é "\". Assim, para combinar "*", "?" ou "\" literalmente, você pode colocar um "\" na frente deles.
 
       Se você ativa esta configuração, a lista de plug-ins especificada nunca é usada no <ph name="PRODUCT_NAME" />. Os plug-ins são marcados como desativados em "about:plugins" e os usuários não podem ativá-los.
 
-      Não é possível substituir esta política por EnabledPlugins e DisabledPluginsExceptions.
+      É possível substituir esta política por EnabledPlugins e DisabledPluginsExceptions.
 
-      Se esta política for deixada sem definição, o usuário poderá usar qualquer plug-in instalado no sistema, exceto plug-ins codificados incompatíveis, desatualizados ou perigosos.</translation>
+      Se esta política for deixada sem definição, o usuário poderá usar qualquer plug-in instalado no sistema, exceto plug-ins incorporados no código incompatíveis, desatualizados ou perigosos.</translation>
 <translation id="410478022164847452">Especifica depois de quanto tempo de inatividade do usuário é executada a ação de inatividade no funcionamento com alimentação CA.
 
           Quando esta política está definida, ela especifica por quanto tempo o usuário deve permanecer inativo antes que o <ph name="PRODUCT_OS_NAME" /> execute a ação de inatividade, que pode ser configurada separadamente.
@@ -1259,7 +1258,7 @@ Se esta política não for definida, 'AllowPlugins' será usada, e o usuário po
 
       Se esta configuração estiver ativada, o Modo restrito no YouTube sempre será aplicado como, pelo menos, Moderado.
 
-      Se esta configuração estiver desativada ou se nenhum valor for definido, o Modo restrito no YouTube não será aplicado pelo <ph name="PRODUCT_NAME" />. No entanto, as políticas externas, como as políticas do YouTube ainda podem aplicar o Modo restrito.</translation>
+      Se esta configuração estiver desativada ou se nenhum valor for definido, o Modo restrito no YouTube não será aplicado pelo <ph name="PRODUCT_NAME" />. No entanto, as políticas externas, como as políticas do YouTube, ainda podem aplicar o Modo restrito.</translation>
 <translation id="5447306928176905178">Ativar relatórios de informação de memória (JS tamanho da pilha) para a página (obsoleta)</translation>
 <translation id="5457065417344056871">Ativar o modo visitante no navegador</translation>
 <translation id="5457924070961220141">Permite configurar o processador HTML padrão quando <ph name="PRODUCT_FRAME_NAME" /> estiver instalado. A configuração padrão utilizada quando esta política é deixada sem definição é permitir que o navegador host faça o processamento, mas você pode, opcionalmente, substituí-la para que <ph name="PRODUCT_FRAME_NAME" /> processe as páginas HTML por padrão.</translation>
@@ -1367,11 +1366,11 @@ Se esta política não for definida, 'AllowPlugins' será usada, e o usuário po
 
       Especifica uma lista de plug-ins que o usuário pode ativar ou desativar no <ph name="PRODUCT_NAME" />.
 
-      Os caracteres curinga "*" e "?" podem ser usados para combinar sequências de caracteres arbitrários. O "*" corresponde a um número arbitrário de caracteres, enquanto o "?" especifica um único caractere opcional, ou seja, corresponde aos caracteres zero ou um. O caractere de escape é "\". Assim, para corresponder aos caracteres reais "*", "?" ou "\",  você pode colocar um "\" na frente deles.
+      Os caracteres curinga "*" e "?" podem ser usados para combinar sequências de caracteres arbitrários. O "*" combina um número arbitrário de caracteres, enquanto o "?" especifica um único caractere opcional, ou seja, combina zero caracteres ou apenas um. O caractere de escape é "\". Assim, para combinar os caracteres "*", "?" ou "\" literalmente, você pode colocar um "\" na frente deles.
 
       Se você ativa esta configuração, a lista especificada de plug-ins pode ser usada no <ph name="PRODUCT_NAME" />. Os usuários podem ativá-los ou desativá-los em "about:plugins", mesmo se o plug-in também corresponder a um padrão em DisabledPlugins. Os usuários também podem ativar e desativar plug-ins que não correspondem a nenhum padrão em DisabledPlugins, DisabledPluginsExceptions e EnabledPlugins.
 
-      Esta política possibilita a adição restritiva de plug-ins à lista negra, em que a lista "DisabledPlugins" contém entradas com caracteres curinga, como "desativar todos os plug-ins '*'" ou "desativar todos os plug-ins 'Java*'", mas o administrador deseja ativar alguma versão particular, como "IcedTea Java 2.3". Essas versões particulares podem ser especificadas nesta política.
+      Esta política possibilita adição rígida de plug-ins à lista negra, em que a lista "DisabledPlugins" contém entradas com caracteres curinga, como "desativar todos os plug-ins '*'" ou "desativar todos os plug-ins 'Java*'", mas o administrador deseja ativar alguma versão particular, como "IcedTea Java 2.3". Essas versões particulares podem ser especificadas nesta política.
 
       Tanto o nome do plug-in como o nome do grupo de plug-ins devem ser isentados. Cada grupo de plug-in é exibido em uma seção separada em "about:plugins". Cada seção pode ter um ou mais plug-ins. Por exemplo, o plug-in "Shockwave Flash" pertence ao grupo "Adobe Flash Player", e os dois nomes deverão ter uma correspondência na lista de exceções, se esse plug-in tiver que ser isentado da lista negra.
 
@@ -1439,13 +1438,6 @@ Se esta política não for definida, 'AllowPlugins' será usada, e o usuário po
 
       Se a política não é definida ou é definida como "false", o <ph name="PRODUCT_NAME" /> não realiza verificações de revogação on-line no <ph name="PRODUCT_NAME" /> 19 e versões posteriores.</translation>
 <translation id="5966615072639944554">Extensões que podem usar a API de declaração remota</translation>
-<translation id="5974970919245996815">As informações de relatório sobre o status do Android são enviadas de volta para
-      o servidor.
-
-      Se a política for definida como "false", as informações não serão enviadas.
-      Se definida como "true" ou deixada sem definição, as informações serão enviadas.
-
-      Esta política só se aplica se apps Android estiverem ativados.</translation>
 <translation id="5983708779415553259">Comportamento padrão para sites fora de pacotes de conteúdo</translation>
 <translation id="5997543603646547632">Usar relógido de 24 horas por padrão</translation>
 <translation id="6009903244351574348">Permitir que <ph name="PRODUCT_FRAME_NAME" /> administre os tipos de conteúdo listado. Se esta política não estiver definida, o renderizador padrão será usado para todos os sites conforme o especificado pela política "ChromeFrameRendererSettings".</translation>
@@ -1478,7 +1470,7 @@ Se esta política não for definida, 'AllowPlugins' será usada, e o usuário po
 
       Especifica uma lista de plug-ins que ficam ativados no <ph name="PRODUCT_NAME" /> e impede que os usuários alterem essa configuração.
 
-      Os caracteres curinga "*" e "?" podem ser usados para combinar sequências de caracteres arbitrários. O "*" corresponde a um número arbitrário de caracteres, enquanto o "?" especifica um único caractere opcional, ou seja, corresponde aos caracteres zero ou um. O caractere de escape é "\". Assim, para corresponder aos caracteres reais "*", "?" ou "\", você pode colocar um "\" na frente deles.
+      Os caracteres curinga "*" e "?" podem ser usados para combinar sequências de caracteres arbitrários. O "*" combina um número arbitrário de caracteres, enquanto o "?" especifica um único caractere opcional, ou seja, combina zero caracteres ou um só. O caractere de escape é "\". Assim, para usar os caracteres "*", "?" ou "\" literalmente, você pode colocar um "\" na frente deles.
 
       A lista especificada de plug-ins sempre é usada no <ph name="PRODUCT_NAME" /> se eles estiverem instalados. Os plug-ins são marcados como ativados em "about:plugins", e os usuários não podem desativá-los.
 
@@ -2093,6 +2085,9 @@ Se esta política não for definida, 'AllowPlugins' será usada, e o usuário po
           a um domínio Active Directory.</translation>
 <translation id="7937766917976512374">Permitir ou negar captura de vídeo</translation>
 <translation id="7941975817681987555">Não prever ações da rede em nenhuma conexão de rede</translation>
+<translation id="7942429005743031780">Esta política especifica as extensões que podem usar a API Enterprise Platform Keys chrome.enterprise.platformKeys.challengeUserKey() para declaração remota. As extensões devem ser adicionadas a esta lista para usar a API.
+
+          Se uma extensão não estiver na lista ou se a lista não estiver definida, a chamada para a API falhará com um código de erro.</translation>
 <translation id="7953256619080733119">Hosts de exceção manual do usuário gerenciado</translation>
 <translation id="7971839631300653352">SSL 3.0</translation>
 <translation id="7974114691960514888">Esta política não é mais suportada. Ativa o uso de servidores STUN e de retransmissão ao estabelecer conexão a um cliente remoto. Se esta configuração estiver ativada, este computador pode descobrir e conectar-se a computadores host remotos mesmo se separados por um firewall. Se esta configuração estiver desativada e conexões de UDP enviadas forem filtradas pelo firewall, este computador só poderá estabelecer conexões a computadores host na rede local.</translation>

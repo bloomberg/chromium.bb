@@ -19,6 +19,9 @@
       Cuando esta política se establece como falsa o no se configura, las cookies que establece el IdP se transfieren al perfil del usuario únicamente durante el primer acceso en un dispositivo.
 
       Esta política afecta solo a los usuarios cuyo dominio coincide con el dominio de inscripción del dispositivo. Para todos los demás usuarios, las cookies que establece el IdP se transfieren al perfil del usuario únicamente durante el primer acceso en el dispositivo.</translation>
+<translation id="1029536946382325801">Si la política se establece como verdadera, el usuario puede usar el hardware en los dispositivos de Chrome para verificar su identidad de forma remota a la CA de privacidad mediante la API Enterprise Platform Keys chrome.enterprise.platformKeys.challengeUserKey().
+
+          Si se establece como falsa, o no se establece, las llamadas a la API fallarán con un código de error.</translation>
 <translation id="1040446814317236570">Habilitar la eliminación de URL de PAC (para https://)</translation>
 <translation id="1044878202534415707">Informar estadísticas de hardware, como el uso de CPU/RAM
 
@@ -313,13 +316,6 @@ Si esta política no se configura, se utilizará 'Permitir complementos' y el us
 <translation id="2309390639296060546">Configuración de geolocalización predeterminada</translation>
 <translation id="2312134445771258233">Te permite configurar las páginas que se cargan al iniciar. El contenido de la lista "Direcciones URL que se abrirán al iniciar" se ignora a menos que se haya seleccionado "Abrir una lista de direcciones URL en acción al iniciar".</translation>
 <translation id="2337466621458842053">Te permite configurar una lista de patrones de URL que especifican los sitios a los que se les permite mostrar imágenes. Si esta política no se configura, se usará el valor predeterminado global para todos los sitios, ya sea de la política "DefaultImagesSetting", si está configurada, o de otro tipo de configuración personal del usuario.</translation>
-<translation id="2359612025446382967">Si esta política se establece como falsa, <ph name="PRODUCT_OS_NAME" /> inhabilitará Bluetooth, y el usuario no podrá volver a habilitarlo.
-
-      Si esta política se establece como verdadera o no se establece, el usuario podrá habilitar o inhabilitar Bluetooth como lo desee.
-
-      Si esta política está establecida, el usuario no puede cambiarla ni anularla.
-
-      Después de habilitar Bluetooth, debe reiniciarse el dispositivo para que se apliquen los cambios (si se inhabilita Bluetooth, no es necesario reiniciar el dispositivo).</translation>
 <translation id="2366415278352956652">Permite la transmisión</translation>
 <translation id="2372547058085956601">Establece la demora del acceso automático a la sesión pública.
 
@@ -927,6 +923,9 @@ Si esta política no se configura, se utilizará 'Permitir complementos' y el us
 
       Si esta política se establece como verdadera, se enviarán paquetes de red de control (conocidos como <ph name="HEARTBEATS_TERM" />).
       Si se establece como falsa o no se establece, no se enviarán paquetes.</translation>
+<translation id="3963602271515417124">Si esta política se establece como verdadera, se permite la verificación remota para el dispositivo y se generará un certificado de forma automática que se subirá al servidor de administración de dispositivos.
+
+          Si se establece como falsa, o no se establece, no se generará ningún certificado y las llamadas a la API enterprise.platformKeys extension fallarán.</translation>
 <translation id="3964909636571393861">Permite el acceso a una lista de las URL</translation>
 <translation id="3965339130942650562">Está ejecutado el tiempo de espera para salir del navegador cuando el usuario se encuentre inactivo</translation>
 <translation id="3967075520570946456">Habilitar la aparición de la página de bienvenida al iniciar el navegador por primera vez después de la actualización del SO</translation>
@@ -1446,13 +1445,6 @@ Si esta política no se configura, se utilizará 'Permitir complementos' y el us
 
       Si esta política no se establece, o si se establece en false, <ph name="PRODUCT_NAME" /> no realizará comprobaciones de revocación en línea en la versión 19 de <ph name="PRODUCT_NAME" /> ni en versiones posteriores.</translation>
 <translation id="5966615072639944554">Extensiones que tienen permitido utilizar la API de atestación remota</translation>
-<translation id="5974970919245996815">Los datos informados sobre el estado de Android se envían de vuelta
-      al servidor.
-
-      Si la política se establece como falsa, los datos no se informarán.
-      Si se establece como verdadera o no se establece, los datos se informarán.
-
-      Esta política solo se implementa si las apps de Android están habilitadas.</translation>
 <translation id="5983708779415553259">Comportamiento predeterminado de los sitios que no forman parte de ningún paquete de contenido</translation>
 <translation id="5997543603646547632">Utilizar reloj con formato de 24 horas de forma predeterminada</translation>
 <translation id="6009903244351574348">Permite que <ph name="PRODUCT_FRAME_NAME" /> controle los tipos de contenido que figuran en la lista. Si esta política no se configura, se usará el procesador predeterminado para todos los sitios, como lo especifica la política  "ChromeFrameRendererSettings".</translation>
@@ -2100,6 +2092,9 @@ desactivarlo).</translation>
           Esta política no está disponible en instancias de Windows que no estén unidas a un dominio de Active Directory.</translation>
 <translation id="7937766917976512374">Permitir o rechazar la captura de video</translation>
 <translation id="7941975817681987555">No predecir acciones de la red en ninguna conexión de red</translation>
+<translation id="7942429005743031780">Esta política especifica las extensiones con permiso para usar la API Enterprise Platform Keys chrome.enterprise.platformKeys.challengeUserKey() para la verificación remota. Las extensiones deben agregarse a esta lista para usar la API.
+
+          Si una extensión no está en la lista, o no se establece la lista, las llamadas a la API fallarán con un código de error.</translation>
 <translation id="7953256619080733119">Hosts de excepción manual de usuario administrado</translation>
 <translation id="7971839631300653352">SSL 3.0</translation>
 <translation id="7974114691960514888">Esta política ya no es compatible. Habilita el uso de servidores STUN y de retransmisión cuando se establece una conexión con un cliente remoto. Si se habilita esta configuración, esta máquina podrá descubrir y conectarse a máquinas host remotas, incluso si están separadas por un firewall. Si se inhabilita esta configuración y el firewall filtra las conexiones UDP de salida, esta máquina solo se conectará a máquinas host dentro de la red local.</translation>

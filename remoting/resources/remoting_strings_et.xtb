@@ -27,6 +27,9 @@ Lisateavet privaatsuse kohta vaadake Google'i privaatsuseeskirjadest (http://goo
 <translation id="1654128982815600832">Arvuti kaugühenduste lubamine …</translation>
 <translation id="170207782578677537">Arvuti registreerimine ebaõnnestus.</translation>
 <translation id="1704090719919187045">Chromootimise hosti eelistused</translation>
+<translation id="1730409684442507495">• Töölaua täiustatud pildikvaliteet, reageerimisvõime ja akukasutus.
+• Täiustatud reageerimisvõime lohistamiseks klõpsamise toimingute puhul.
+• Täiustatud efektid mitme kasutajaliidese animatsiooni puhul.</translation>
 <translation id="174018511426417793">Ühtki arvutit ei ole registreeritud. Arvutis kaugühenduste lubamiseks installige Chrome Remote Desktop ja klõpsake nupul „<ph name="BUTTON_NAME" />”.</translation>
 <translation id="1742469581923031760">Ühendamine ...</translation>
 <translation id="1770394049404108959">Ma ei saa seda rakendust avada.</translation>
@@ -73,7 +76,6 @@ Lisateavet privaatsuse kohta vaadake Google'i privaatsuseeskirjadest (http://goo
 <translation id="2699970397166997657">Chromoting</translation>
 <translation id="2747641796667576127">Tarkvaravärskendused toimuvad tavaliselt automaatselt, kuid mõnel üksikul juhul võivad need ebaõnnestuda. Tarkvara värskendamine ei tohiks võtta üle paari minuti ja saate seda teha, kui olete oma arvutiga ühendatud kaugühenduse abil.</translation>
 <translation id="2841013758207633010">Aeg</translation>
-<translation id="2851674870054673688">Kui ta on koodi sisestanud, algab teie jagamisseanss.</translation>
 <translation id="2851754573186462851">Chromiumi rakenduste voogesitus</translation>
 <translation id="2855866366045322178">võrguühenduseta</translation>
 <translation id="2888969873284818612">Ilmnes võrguviga. Rakendus taaskäivitatakse, kui seadmes on taas võrguühendus.</translation>

@@ -50,6 +50,7 @@
 <translation id="1491663344921578213">Веб-сайт <ph name="SITE" /> использует механизм Certificate Pinning, поэтому на нем могла произойти подмена сертификата. Открыть сайт в настоящее время нельзя. Сбой мог быть вызван сетевой ошибкой или действиями злоумышленников. Скорее всего, сайт заработает через некоторое время. <ph name="BEGIN_LEARN_MORE_LINK" />Подробнее…<ph name="END_LEARN_MORE_LINK" /></translation>
 <translation id="1506687042165942984">Показывает предыдущую сохраненную копию этой страницы.</translation>
 <translation id="1519264250979466059">Дата сборки</translation>
+<translation id="153384715582417236">Пока это всё</translation>
 <translation id="1549470594296187301">Для использования этой функции необходимо включить JavaScript.</translation>
 <translation id="1559528461873125649">Данный файл или каталог не существует</translation>
 <translation id="1559572115229829303">&lt;p&gt;Не удалось установить защищенное соединение с доменом <ph name="BEGIN_BOLD" /><ph name="DOMAIN" /><ph name="END_BOLD" /> из-за неверных настроек системных часов и календаря (<ph name="DATE_AND_TIME" />).&lt;/p&gt;
@@ -349,7 +350,6 @@
 <translation id="4728558894243024398">Платформа</translation>
 <translation id="4744603770635761495">Путь к исполняемому файлу</translation>
 <translation id="4756388243121344051">&amp;История</translation>
-<translation id="4759238208242260848">Скачанные файлы</translation>
 <translation id="4764776831041365478">Веб-страница по адресу <ph name="URL" />, возможно, временно недоступна или постоянно перемещена по новому адресу.</translation>
 <translation id="4771973620359291008">Произошла неизвестная ошибка.</translation>
 <translation id="4782449893814226250">Вашим родителям отправлен запрос на просмотр страницы.</translation>
@@ -388,6 +388,7 @@
 <translation id="5179510805599951267">Это не <ph name="ORIGINAL_LANGUAGE" />? Сообщите об ошибке</translation>
 <translation id="5190835502935405962">Панель закладок</translation>
 <translation id="5199729219167945352">Экспериментальные функции</translation>
+<translation id="5199841536747119669">Здесь появятся рекомендации</translation>
 <translation id="5251803541071282808">Облако</translation>
 <translation id="5277279256032773186">Используете Chrome на работе? Узнайте, как компании могут управлять настройками Chrome на корпоративных устройствах.</translation>
 <translation id="5299298092464848405">Не удалось выполнить анализ политики</translation>
@@ -467,6 +468,7 @@
 <translation id="6263376278284652872">Закладки <ph name="DOMAIN" /></translation>
 <translation id="6264485186158353794">Назад к безопасности</translation>
 <translation id="6282194474023008486">Почтовый индекс</translation>
+<translation id="6290238015253830360">Здесь появятся рекомендуемые статьи</translation>
 <translation id="6305205051461490394">Сайт <ph name="URL" /> недоступен.</translation>
 <translation id="6321917430147971392">Проверьте настройки DNS</translation>
 <translation id="6328639280570009161">Отключите предсказание сетевых действий</translation>
@@ -650,6 +652,7 @@
 <translation id="8363502534493474904">Отключите режим полета.</translation>
 <translation id="8364627913115013041">Не задано</translation>
 <translation id="8380941800586852976">Опасно</translation>
+<translation id="8382348898565613901">Здесь появятся закладки, которые вы недавно открывали</translation>
 <translation id="8412145213513410671">Сбои (<ph name="CRASH_COUNT" />)</translation>
 <translation id="8412392972487953978">Необходимо дважды ввести одну и ту же кодовую фразу.</translation>
 <translation id="8428213095426709021">Настройки</translation>
@@ -699,6 +702,7 @@
 <translation id="8987927404178983737">Месяц</translation>
 <translation id="8989148748219918422"><ph name="ORGANIZATION" /> [<ph name="COUNTRY" />]</translation>
 <translation id="9001074447101275817">Для доступа на прокси-сервер <ph name="DOMAIN" /> требуется указать имя пользователя и пароль.</translation>
+<translation id="9008201768610948239">Пропустить</translation>
 <translation id="901974403500617787">Системные флаги может устанавливать только владелец (<ph name="OWNER_EMAIL" />).</translation>
 <translation id="9020542370529661692">Эта страница переведена на <ph name="TARGET_LANGUAGE" />.</translation>
 <translation id="9038649477754266430">Использовать подсказки для ускорения загрузки страниц</translation>

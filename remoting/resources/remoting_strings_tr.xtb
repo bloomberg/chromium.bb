@@ -27,6 +27,9 @@ Gizlilikle ilgili daha fazla bilgi edinmek için lütfen Google Gizlilik Politik
 <translation id="1654128982815600832">Bu bilgisayara uzaktan bağlantılar etkinleştiriliyor…</translation>
 <translation id="170207782578677537">Bu bilgisayar kaydettirilemedi.</translation>
 <translation id="1704090719919187045">Chromoting Ana Makine Tercihleri</translation>
+<translation id="1730409684442507495">• Masaüstü resim kalitesi, yanıt verme özelliği ve pil tüketimi iyileştirildi.
+• Tıkla ve sürükle işlemlerinin yanıt verme özelliği iyileştirildi.
+• Kullanıcı arayüzünde çok sayıda animasyon efekti iyileştirildi.</translation>
 <translation id="174018511426417793">Kayıtlı bilgisayarınız yok. Bir bilgisayara uzaktan bağlantıları etkinleştirmek için Chrome Uzaktan Masaüstü uygulamasını o bilgisayara yükleyin ve “<ph name="BUTTON_NAME" />” düğmesini tıklayın.</translation>
 <translation id="1742469581923031760">Bağlanıyor...</translation>
 <translation id="1770394049404108959">Uygulamayı açamıyorum.</translation>
@@ -73,7 +76,6 @@ Gizlilikle ilgili daha fazla bilgi edinmek için lütfen Google Gizlilik Politik
 <translation id="2699970397166997657">Chromoting</translation>
 <translation id="2747641796667576127">Yazılım güncellemeleri genellikle otomatik olarak gerçekleştirilir, ancak bazı nadir durumlarda güncelleme başarısız olabilir. Yazılımın güncellenmesi birkaç dakikadan fazla sürmeyecektir ve bilgisayarınıza uzaktan bağlanılarak yapılabilir.</translation>
 <translation id="2841013758207633010">Zaman</translation>
-<translation id="2851674870054673688">Kullanıcı, kodu girdiğinde paylaşım oturumunuz başlar.</translation>
 <translation id="2851754573186462851">Chromium Uygulama Akışı</translation>
 <translation id="2855866366045322178">çevrimdışı</translation>
 <translation id="2888969873284818612">Ağ hatası oluştu. Cihazınız tekrar çevrimiçi olduğunda uygulamayı yeniden başlatacağız.</translation>
@@ -126,6 +128,7 @@ Ana Makinesi</translation>
 <translation id="409800995205263688">NOT: Politika ayarları, yalnızca ağınızdaki bilgisayarlar arasındaki bağlantılara izin veriyor.</translation>
 <translation id="4155497795971509630">Bazı gerekli bileşenler eksik. Lütfen yazılımın en son sürümünü yüklediğinizden emin olun ve tekrar deneyin.</translation>
 <translation id="4156740505453712750">Bu bilgisayara erişimi korumak için lütfen <ph name="BOLD_START" />en az altı basamaklı<ph name="BOLD_END" /> bir PIN seçin. Başka bir yerden bağlanırken bu PIN gerekecektir.</translation>
+<translation id="4156741816461781891"><ph name="EMAIL_ADDRESS" /> olarak oturum açıldı.</translation>
 <translation id="4176825807642096119">Erişim kodu</translation>
 <translation id="4207623512727273241">Devam etmeden önce lütfen yükleyiciyi çalıştırın.</translation>
 <translation id="4227991223508142681">Ana Makine Temel Hazırlık Yardımcı Programı</translation>

@@ -1,41 +1,20 @@
 <?xml version="1.0" ?>
 <!DOCTYPE translationbundle>
 <translationbundle lang="hi">
-<translation id="153454903766751181">सेल्युलर मॉडम प्रारंभ हो रहा है...</translation>
 <translation id="1829129547161959350">पेंगुइन</translation>
-<translation id="1850504506766569011">वाई-फ़ाई  बंद है.</translation>
 <translation id="2288278176040912387">रिकॉर्ड प्‍लेयर</translation>
-<translation id="2354174487190027830"><ph name="NAME" /> सक्रिय हो रहा है</translation>
 <translation id="2563185590376525700">मेढक</translation>
 <translation id="2649120831653069427">रेनबोफ़िश</translation>
-<translation id="277257480934873581"><ph name="NAME" /> से पुनः कनेक्ट कर रहा है</translation>
 <translation id="2894654529758326923">जानकारी</translation>
 <translation id="2951236788251446349">जेलीफ़िश</translation>
-<translation id="3846575436967432996">कोई नेटवर्क जानकारी उपलब्ध नहीं</translation>
-<translation id="3901991538546252627"><ph name="NAME" /> से कनेक्‍ट हो रहा है</translation>
 <translation id="3958548648197196644">कीवी</translation>
-<translation id="4118990158415604803">अन्य नेटवर्क से कनेक्ट करना आपके व्यवस्थापक द्वारा अक्षम किया गया है.</translation>
 <translation id="4326192123064055915">कॉफ़ी</translation>
-<translation id="4448844063988177157">वाई-फ़ाई  नेटवर्क खोज रहा है...</translation>
-<translation id="4479639480957787382">इथरनेट</translation>
-<translation id="4508225577814909926"><ph name="NAME" />: कनेक्ट हो रहा है...</translation>
 <translation id="4559767610552730302">बोके</translation>
 <translation id="4935975195727477204">जीनिया का फूल</translation>
 <translation id="515594325917491223">शतरंज</translation>
 <translation id="5257456363153333584">ड्रेगनफ़्लाय</translation>
-<translation id="6267036997247669271"><ph name="NAME" />: सक्रिय हो रहा है...</translation>
-<translation id="6549021752953852991">कोई सेल्युलर नेटवर्क उपलब्ध नहीं</translation>
-<translation id="6857811139397017780"><ph name="NETWORKSERVICE" /> को सक्रिय करें</translation>
 <translation id="6935521024859866267">ऊपरी भाग नीचे</translation>
-<translation id="7066646422045619941">यह नेटवर्क आपके व्यवस्थापक द्वारा अक्षम किया गया है.</translation>
-<translation id="735745346212279324">VPN डिस्कनेक्ट है</translation>
-<translation id="7874779702599364982">सेलुलर नेटवर्क खोज रहा है...</translation>
-<translation id="8000066093800657092">नेटवर्क नहीं है</translation>
 <translation id="8008366997883261463">श्वान</translation>
-<translation id="8132793192354020517"><ph name="NAME" /> से कनेक्ट है</translation>
-<translation id="8454013096329229812">वाई-फ़ाई  चालू है.</translation>
-<translation id="8484916590211895857"><ph name="NAME" />: पुनः कनेक्ट कर रहा है...</translation>
 <translation id="8714406895390098252">साइकिल</translation>
 <translation id="8808686172382650546">बिल्ली</translation>
-<translation id="8814190375133053267">वाई-फ़ाई </translation>
 </translationbundle>

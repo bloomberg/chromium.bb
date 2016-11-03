@@ -95,7 +95,6 @@
 <translation id="200669432486043882">Zamenjava datoteke</translation>
 <translation id="2020525020270327736">Kopiranje spletnega mesta</translation>
 <translation id="2038563949887743358">Vklop možnosti »Zahteva za namizno spletno mesto«</translation>
-<translation id="2069736994598857257">Uporabljeni prostor: <ph name="GIGABYTES" /> GB</translation>
 <translation id="2073235970478114994">Naloži slike</translation>
 <translation id="2079545284768500474">Razveljavi</translation>
 <translation id="2082238445998314030"><ph name="RESULT_NUMBER" />. rezultat od <ph name="TOTAL_RESULTS" /></translation>
@@ -324,6 +323,7 @@ Fizični splet lahko nadzirate v Chromovih nastavitvah.
 <translation id="4816465935029283692">Vrste podatkov</translation>
 <translation id="4827948050554950725">Dodaj kreditno kartico</translation>
 <translation id="4836364883164334657">Vaša povezava s tem spletnim mestom ni zasebna. Napadalci morda poskušajo ukrasti vaše podatke (na primer fotografije, gesla, sporočila in podatke o kreditnih karticah) iz domene <ph name="DOMAIN_NAME" />.</translation>
+<translation id="4850886885716139402">Pogled</translation>
 <translation id="4881695831933465202">Odpri</translation>
 <translation id="4885273946141277891">To število primerkov Chroma ni podprto.</translation>
 <translation id="4923459931733593730">Plačilo</translation>
@@ -339,7 +339,9 @@ Fizični splet lahko nadzirate v Chromovih nastavitvah.
 <translation id="5016205925109358554">Serif</translation>
 <translation id="5039804452771397117">Dovoli</translation>
 <translation id="5040262127954254034">Zasebnost</translation>
+<translation id="5053110706349648690">Vklopite Bluetooth v <ph name="BEGIN_LINK" />nastavitvah naprave<ph name="END_LINK" />, če želite omogočiti seznanjanje</translation>
 <translation id="5063480226653192405">Uporaba</translation>
+<translation id="5087580092889165836">Dodaj kartico</translation>
 <translation id="5100237604440890931">Strnjeno – kliknite, če želite razširiti.</translation>
 <translation id="510275257476243843">Še 1 h</translation>
 <translation id="5127805178023152808">Sinhroniziranje je izklopljeno</translation>
@@ -416,6 +418,7 @@ Kljub temu niste nevidni. Če uporabljate način brez beleženja zgodovine, ne s
 <translation id="583281660410589416">Neznano</translation>
 <translation id="5832934273103296195">Razširjeno – kliknite, če želite strniti</translation>
 <translation id="583891442612896534">Chrome ne more dostopati do Googlovih strežnikov za stiskanje podatkov. Prihranek podatkov bo morda omejen.</translation>
+<translation id="5843873952582375185">Najdena ni bila nobena naprava Bluetooth. <ph name="BEGIN_LINK" />Iščite znova<ph name="END_LINK" /></translation>
 <translation id="585027516397408832">Varčevanje s podatki je omogočeno</translation>
 <translation id="5860033963881614850">Izklopljeno</translation>
 <translation id="5867027562311576691">Kmalu bo prikazanih več člankov. Prijetno jutro.</translation>
@@ -490,6 +493,7 @@ Nekatera spletna mesta se lahko na primer na zahtevo odzovejo tako, da prikažej
 <translation id="6657585470893396449">Geslo</translation>
 <translation id="6659594942844771486">Tabulator</translation>
 <translation id="666268767214822976">S storitvijo predvidevanja lahko med vnašanjem v naslovno vrstico prikažete povezane poizvedbe in priljubljena spletna mesta</translation>
+<translation id="666731172850799929">Odpri v: <ph name="APP_NAME" /></translation>
 <translation id="666981079809192359">Obvestilo o zasebnosti za Chrome</translation>
 <translation id="6698801883190606802">Upravljanje sinhroniziranih podatkov</translation>
 <translation id="6710213216561001401">Nazaj</translation>
@@ -532,14 +536,12 @@ Nekatera spletna mesta se lahko na primer na zahtevo odzovejo tako, da prikažej
 <translation id="7074853159844403180"><ph name="SITE" /> želi opraviti seznanitev z napravo:</translation>
 <translation id="7081639897063626814">Obstoječi podatki naj bodo ločeni</translation>
 <translation id="7094922512924405309">Ni strani za Fizični splet v bližini</translation>
-<translation id="7115197232530297436">Nepodprt naslov za pošiljanje. Izberite drug naslov.</translation>
 <translation id="7138678301420049075">Drugo</translation>
 <translation id="7180611975245234373">Osveži</translation>
 <translation id="7191430249889272776">Zavihek se je odprl v ozadju.</translation>
 <translation id="7208788139759694678">Varčevanje s podatki je onemogočeno</translation>
 <translation id="7243308994586599757">Možnosti so na voljo pri dnu zaslona</translation>
 <translation id="7244362611678346589"><ph name="SEARCH_ENGINE_URL" /> uporablja vašo lokacijo za prikaz lokalnih rezultatov iskanja</translation>
-<translation id="7347770551817603360">Vsebina brez povezave</translation>
 <translation id="7353894246028566792">{NUM_SELECTED,plural, =1{Delitev 1 izbranega elementa z drugimi}one{Delitev # izbranega elementa z drugimi}two{Delitev # izbranih elementov z drugimi}few{Delitev # izbranih elementov z drugimi}other{Delitev # izbranih elementov z drugimi}}</translation>
 <translation id="7366340029385295517">Predvajanje na zaslonu <ph name="SCREEN_NAME" /></translation>
 <translation id="7375125077091615385">Vrsta:</translation>
@@ -576,7 +578,6 @@ V Google Računu so morda druge vrste zgodovine brskanja, kot so iskanja in deja
 <translation id="7665369617277396874">Dodaj račun</translation>
 <translation id="7682287625158474539">Pošiljanje</translation>
 <translation id="771135159654932189">Ogled strani v bližini</translation>
-<translation id="7713873128508426081">Vedno dovoljeno</translation>
 <translation id="7764225426217299476">Dodaj naslov</translation>
 <translation id="7765158879357617694">Premakni</translation>
 <translation id="7769602470925380267">Sprejem in odjava</translation>
@@ -645,15 +646,12 @@ V Google Računu so morda druge vrste zgodovine brskanja, kot so iskanja in deja
 <translation id="8514577642972634246">Vklop načina brez beleženja zgodovine</translation>
 <translation id="8518901949365209398">To spletno mesto uporablja šibko varnostno konfiguracijo (podpise SHA-1), zato vaša povezava morda ni zasebna.</translation>
 <translation id="8523928698583292556">Izbris shranjenega gesla</translation>
-<translation id="8525306231823319788">Celozaslonsko</translation>
-<translation id="85415543246899402">Uporabljeno: <ph name="MEGABYTES" /> MB</translation>
 <translation id="854522910157234410">Odpri to stran</translation>
 <translation id="8562452229998620586">Shranjena gesla bodo prikazana tukaj.</translation>
 <translation id="856481929701340285">Zah. za namiz. sp. mesto</translation>
 <translation id="857943718398505171">Dovoljeno (priporočeno)</translation>
 <translation id="8583805026567836021">Brisanje podatkov računa</translation>
 <translation id="8617240290563765734">Želite odpreti predlagani URL, naveden v preneseni vsebini?</translation>
-<translation id="8618653050765576793">Uporabljeno: <ph name="KILOBYTES" /> KB</translation>
 <translation id="862875433388403934">Prenesene vsebine (filmov, glasbe ipd.) morda ne bo mogoče več predvajati v drugih aplikacijah, dokler te znova ne pridobijo licenc na podlagi nove poverilnice naprave.
 
 Nove licence dobite tako, da se povežete v internet in predvajate preneseno vsebino.</translation>
@@ -685,7 +683,7 @@ Nove licence dobite tako, da se povežete v internet in predvajate preneseno vse
 <translation id="8959122750345127698">Krmarjenje ni dosegljivo: <ph name="URL" /></translation>
 <translation id="8979340629087822094">zadnjega dne</translation>
 <translation id="8981454092730389528">Googlovi kontrolniki za dejavnost</translation>
-<translation id="8986494364107987395">Samodejno pošlji statistiko uporabe in poročila o zrušitvi Googlu</translation>
+<translation id="8986494364107987395">Samodejno pošlji statistične podatke o uporabi in poročila o zrušitvah Googlu</translation>
 <translation id="8998729206196772491">Prijavljate se z računom, ki ga upravlja <ph name="MANAGED_DOMAIN" />, in nadzor nad podatki v Chromu predajate skrbniku. Vaši podatki bodo trajno povezani s tem računom. Če se odjavite iz Chroma, boste izbrisali podatke iz te naprave, vendar bodo še naprej shranjeni v Google Računu.</translation>
 <translation id="9019902583201351841">Upravljajo starši</translation>
 <translation id="9038649477754266430">Uporaba storitve predvidevanja za hitrejše nalaganje strani</translation>

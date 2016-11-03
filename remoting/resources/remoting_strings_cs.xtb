@@ -27,6 +27,9 @@ Informace ohledně ochrany soukromí naleznete v zásadách ochrany soukromí sp
 <translation id="1654128982815600832">Povolování vzdálených připojení k tomuto počítači…</translation>
 <translation id="170207782578677537">Registrace tohoto počítače se nezdařila.</translation>
 <translation id="1704090719919187045">Nastavení hostitele funkce Chromoting</translation>
+<translation id="1730409684442507495">• Byla vylepšena kvalita obrazu plochy a responzivita a snížena spotřeba energie.
+• Byla vylepšena responzivita operací kliknutí a přetažení.
+• Bylo vylepšeno několik efektů animace uživatelského rozhraní.</translation>
 <translation id="174018511426417793">Nemáte zaregistrované žádné počítače. Chcete-li umožnit vzdálené připojení k jinému počítači, nainstalujte do něj Vzdálenou plochu Chrome a klikněte na tlačítko <ph name="BUTTON_NAME" />.</translation>
 <translation id="1742469581923031760">Připojování...</translation>
 <translation id="1770394049404108959">Aplikaci nelze otevřít.</translation>
@@ -73,7 +76,6 @@ Informace ohledně ochrany soukromí naleznete v zásadách ochrany soukromí sp
 <translation id="2699970397166997657">Chromoting</translation>
 <translation id="2747641796667576127">Softwarové aktualizace probíhají obvykle automaticky, ve výjimečných případech však mohou selhat. Aktualizace softwaru by neměla trvat déle než několik minut a lze ji provést i během vzdáleného připojení k počítači.</translation>
 <translation id="2841013758207633010">Čas</translation>
-<translation id="2851674870054673688">Po zadání kódu bude spuštěna relace sdílení.</translation>
 <translation id="2851754573186462851">Streamování aplikací Chromium</translation>
 <translation id="2855866366045322178">offline</translation>
 <translation id="2888969873284818612">Došlo k chybě sítě. Aplikaci restartujeme, až bude zařízení opět online.</translation>

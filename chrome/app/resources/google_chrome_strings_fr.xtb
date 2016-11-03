@@ -62,7 +62,6 @@ Si vous vous connectez quand même, toutes les informations Chrome, comme les fa
 <translation id="2588322182880276190">Logo Google Chrome</translation>
 <translation id="2664962310688259219">Licences Chrome OS Open Source</translation>
 <translation id="2665296953892887393">Aidez-nous à améliorer Google Chrome en nous envoyant des rapports d'erreur et des <ph name="UMA_LINK" />.</translation>
-<translation id="2669824781555328029"><ph name="FILE_NAME" /> peut nuire à votre confort de navigation, il a donc été bloqué par Chrome.</translation>
 <translation id="2681064822612051220">Une installation incompatible de Google Chrome a été détectée sur le système. Désinstallez-la et réessayez.</translation>
 <translation id="2689103672227170538">Cette extension a modifié la page qui s'affiche lorsque vous démarrez Chrome.</translation>
 <translation id="2704356438731803243">Si vous préférez conserver vos données Google Chrome à part, vous pouvez créer un utilisateur Google Chrome pour <ph name="USER_NAME" />.</translation>
@@ -153,6 +152,7 @@ Pour obtenir plus d'informations, veuillez consulter votre compte de messagerie 
 
 Certaines fonctionnalités peuvent être indisponibles. Veuillez spécifier un répertoire de profil différent ou utiliser une version plus récente de Google Chrome.</translation>
 <translation id="5176234269072261959">Aidez-nous à améliorer Chrome en nous signalant vos paramètres.</translation>
+<translation id="5193136243808726294">Google Chrome OS ne peut pas ouvrir cette page</translation>
 <translation id="5204098752394657250"><ph name="TERMS_OF_SERVICE_LINK" />Conditions d'utilisation<ph name="END_TERMS_OF_SERVICE_LINK" /> de Google Chrome</translation>
 <translation id="5243785881901838525">Google Payments (copiée vers Chrome)</translation>
 <translation id="5251420635869119124">Les invités peuvent utiliser Chrome sans laisser aucune trace.</translation>
@@ -213,7 +213,6 @@ Google Chrome ne peut pas récupérer vos paramètres.</translation>
 <translation id="699076943483372849">Ce site utilise le plug-in Chrome Frame, qui ne bénéficie plus des mises à jour de sécurité et de stabilité. Veuillez le désinstaller et utiliser un navigateur récent.</translation>
 <translation id="6991142834212251086">Lier mes données Google Chrome à ce compte</translation>
 <translation id="7060865993964054389">Lanceur d'applications Google Chrome</translation>
-<translation id="7084448929020576097">Le fichier "<ph name="FILE_NAME" />" a été bloqué dans Chrome, car son contenu est malveillant.</translation>
 <translation id="7098166902387133879">Votre micro est en cours d'utilisation dans Google Chrome.</translation>
 <translation id="7106741999175697885">Gestionnaire de tâches - Google Chrome</translation>
 <translation id="7125719106133729027">La mise à jour de Chrome a échoué. Vous n'utilisez pas la dernière version, qui vous permet de bénéficier de nouvelles fonctionnalités pratiques et de correctifs de sécurité. Vous devez réinstaller Chrome manuellement.</translation>
@@ -276,7 +275,6 @@ Google Chrome ne peut pas récupérer vos paramètres.</translation>
 <translation id="8669527147644353129">Application d'aide de Google Chrome</translation>
 <translation id="8679801911857917785">Elle contrôle également la page qui s'affiche au démarrage de Chrome.</translation>
 <translation id="870251953148363156">Mettre à jour &amp;Google Chrome</translation>
-<translation id="8793772303278047003">Version de Chrome obsolète.</translation>
 <translation id="8796108026289707191">Redémarrez Google Chrome maintenant</translation>
 <translation id="8823341990149967727">Version de Chrome obsolète</translation>
 <translation id="884296878221830158">Elle contrôle également la page qui s'affiche au démarrage de Chrome ou lorsque vous cliquez sur le bouton Accueil.</translation>
@@ -285,7 +283,6 @@ Google Chrome ne peut pas récupérer vos paramètres.</translation>
 <translation id="8914504000324227558">Relancer Google Chrome</translation>
 <translation id="9026991721384951619">Impossible de synchroniser vos données dans Chrome OS, car les informations de connexion de votre compte ne sont plus à jour.</translation>
 <translation id="9067395829937117663">Vous devez disposer de Windows 7 ou version ultérieure pour utiliser Google Chrome.</translation>
-<translation id="9102715433345326100">Ce fichier est malveillant. Il a donc été bloqué dans Chrome.</translation>
 <translation id="9107728822479888688"><ph name="BEGIN_BOLD" />Avertissement<ph name="END_BOLD" /> : Google Chrome ne peut pas empêcher les extensions d'enregistrer votre historique de navigation. Pour désactiver cette extension en mode navigation privée, désélectionnez-la.</translation>
 <translation id="911206726377975832">Supprimer également vos données de navigation ?</translation>
 <translation id="924447568950697217">Définir Chrome comme navigateur par défaut</translation>

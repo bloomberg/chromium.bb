@@ -18,7 +18,6 @@
 <translation id="3692781555820666866">Keď je tento príznak aktivovaný, všeobecné pole bude zahŕňať návrhy webových stránok, ktoré vysielajú zariadenia v okolí.</translation>
 <translation id="385051799172605136">Naspäť</translation>
 <translation id="4121993058175073134">Ak chcete odoslať údaje čistého exportu, v aplikácii Nastavenia nakonfigurujte svoj e-mailový účet.</translation>
-<translation id="4399225372525667111">Prehliadaču Chrome sa nepodarilo verifikovať, či je webová adresa pre tieto stránky správna.</translation>
 <translation id="4728558894243024398">Platforma</translation>
 <translation id="473775607612524610">Aktualizovať</translation>
 <translation id="4875622588773761625">Chcete, aby <ph name="PASSWORD_MANAGER_BRAND" /> ukladal heslá pre tieto stránky?</translation>
@@ -30,11 +29,9 @@
 <translation id="6314335155547195432">Generovanie hesla</translation>
 <translation id="6344783595350022745">Prehľadný text</translation>
 <translation id="6456425917241817154">Heslo vygenerované prehliadačom Chrome</translation>
-<translation id="6535543971741225613">Stránky, ktoré sa snažíte otvoriť, sa správajú čudne a prehliadaču Chrome sa nepodarilo verifikovať, či je ich webová adresa správna. Z bezpečnostných dôvodov by ste preto nemali pokračovať. Skúste to buď zajtra, alebo prejdite na iné stránky.</translation>
 <translation id="7222245588540287464">Určuje, či je alebo nie je povolené kontextové vyhľadávanie.</translation>
 <translation id="7456847797759667638">Otvoriť umiestnenie...</translation>
 <translation id="7481312909269577407">Dopredu</translation>
-<translation id="7484580869648358686">Upozornenie: Niečo tu nesedí!</translation>
 <translation id="7588950540487816470">Fyzický web</translation>
 <translation id="7961015016161918242">Nikdy</translation>
 </translationbundle>

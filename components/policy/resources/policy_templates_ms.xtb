@@ -20,6 +20,10 @@ Contoh komponen seperti itu termasuk senarai pembatalan sijil dan data semakan i
       Apabila dasar ini ditetapkan kepada palsu atau tidak ditetapkan, kuki yang ditetapkan oleh IdP dipindahkan ke profil pengguna semasa log masuk mereka yang pertama pada peranti sahaja.
 
       Dasar ini mempengaruhi pengguna yang mempunyai domain yang sepadan dengan domain pendaftaran peranti sahaja. Bagi semua pengguna lain, kuki yang ditetapkan oleh IdP dipindahkan ke profil pengguna semasa log masuk mereka yang pertama pada peranti tersebut sahaja.</translation>
+<translation id="1029536946382325801">Jika benar, pengguna boleh menggunakan perkakasan pada peranti Chrome untuk membuktikan identitinya dari jauh pada CA privasi melalui API Enterprise Platform Keys
+chrome.enterprise.platformKeys.challengeUserKey().
+
+          Jika ditetapkan kepada palsu atau jika tidak ditetapkan, panggilan kepada API akan gagal dengan kod ralat.</translation>
 <translation id="1040446814317236570">Dayakan pengeluaran URL PAC (untuk https://)</translation>
 <translation id="1044878202534415707">Laporkan statistik perkakasan seperti penggunaan CPU/RAM.
 
@@ -351,13 +355,6 @@ Contoh komponen seperti itu termasuk senarai pembatalan sijil dan data semakan i
 <translation id="2337466621458842053">Membolehkan anda menetapkan senarai corak url yang menentukan tapak mana yang dibenarkan untuk memaparkan imej.
 
           Jika dasar ini dibiarkan tanpa ditetapkan, nilai lalai global akan digunakan untuk semua tapak sama ada dari dasar 'DefaultImagesSetting' jika dasar ini ditetapkan atau konfigurasi peribadi pengguna tersebut jika sebaliknya.</translation>
-<translation id="2359612025446382967">Jika dasar ini ditetapkan kepada palsu, <ph name="PRODUCT_OS_NAME" /> akan melumpuhkan Bluetooth dan pengguna tidak dapat mendayakannya semula.
-
-      Jika dasar ini ditetapkan kepada benar atau dibiarkan tidak ditetapkan, pengguna akan dapat mendayakan atau melumpuhkan Bluetooth semahunya.
-
-      Jika dasar ini ditetapkan, pengguna tidak boleh mengubah atau membatalkannya.
-
-      Selepas mendayakan Bluetooth, peranti ini mesti dibut semula supaya perubahan dapat diterapkan (tidak perlu but semula peranti apabila melumpuhkan Bluetooth).</translation>
 <translation id="2366415278352956652">Mendayakan penghantaran</translation>
 <translation id="2372547058085956601">Kelewatan log masuk automatik sesi terbuka.
 
@@ -990,6 +987,9 @@ Contoh komponen seperti itu termasuk senarai pembatalan sijil dan data semakan i
 
       Jika dasar ditetapkan kepada benar, pemantauan bingkisan rangkaian (yang dipanggil <ph name="HEARTBEATS_TERM" />) akan dihantar.
       Jika ditetapkan kepada palsu atau tidak ditetapkan, bingkisan tidak akan dihantar.</translation>
+<translation id="3963602271515417124">Jika benar, pembuktian jauh dibenarkan untuk peranti dan sijil akan dihasilkan secara automatik serta dimuat naik ke Pelayan Pengurusan Peranti.
+
+          Jika ditetapkan kepada palsu atau jika tidak ditetapkan, sijil tidak akan dihasilkan dan panggilan kepada API sambungan enterprise.platformKeys akan gagal.</translation>
 <translation id="3964909636571393861">Membenarkan akses kepada senarai URL</translation>
 <translation id="3965339130942650562">Tamat masa sehingga log keluar pengguna melahu dilaksanakan</translation>
 <translation id="3967075520570946456">Dayakan pemaparan halaman aluan semasa pelancaran penyemak imbas yang pertama sesudah peningkatan OS.</translation>
@@ -1048,7 +1048,7 @@ Contoh komponen seperti itu termasuk senarai pembatalan sijil dan data semakan i
 
       Aksara kad bebas '*' dan '?' boleh digunakan untuk memadankan jujukan aksara arbitrari. '*' memadankan bilangan aksara arbitrari manakala '?' menetapkan aksara tunggal pilihan, iaitu sepadan dengan sifar atau satu aksara. Aksara lepasan ialah '\', maka untuk memadankan aksara '*', '?' atau '\' sebenar, anda boleh meletakkan '\' di hadapannya.
 
-      Jika anda mendayakan tetapan ini, senarai pemalam yang ditentukan tidak akan digunakan dalam <ph name="PRODUCT_NAME" />. Pemalam ditandai sebagai dilumpuhkan dalam 'about:plugins' dan pengguna tidak tidak boleh mendayakannya.
+      Jika anda mendayakan tetapan ini, senarai pemalam yang ditentukan tidak akan digunakan dalam <ph name="PRODUCT_NAME" />. Pemalam ditandai sebagai dilumpuhkan dalam 'about:plugins' dan pengguna tidak boleh mendayakannya.
 
       Sila ambil perhatian bahawa dasar ini boleh diatasi oleh EnabledPlugins dan DisabledPluginsExceptions.
 
@@ -1487,10 +1487,9 @@ Contoh komponen seperti itu termasuk senarai pembatalan sijil dan data semakan i
 
       Aksara kad bebas '*' dan '?' boleh digunakan untuk memadankan jujukan aksara arbitrari. '*' memadankan bilangan aksara arbitrari manakala '?' menetapkan aksara tunggal pilihan, iaitu sepadan dengan sifar atau satu aksara. Aksara lepasan ialah '\', maka untuk memadankan aksara '*', '?' atau '\' sebenar, anda boleh meletakkan '\' di hadapannya.
 
-      Jika anda mendayakan tetapan ini, senarai pemalam yang ditentukan boleh digunakan dalam <ph name="PRODUCT_NAME" />. Pengguna boleh mendayakan atau melumpuhkan pemalam dalam 'about:plugins', walaupun pemalam tersebut sepadan dengan corak dalam
-DisabledPlugins. Pengguna turut boleh mendayakan dan melumpuhkan pemalam yang tidak sepadan dengan sebarang corak dalam DisabledPlugins, DisabledPluginsExceptions dan EnabledPlugins.
+      Jika anda mendayakan tetapan ini, senarai pemalam yang ditentukan boleh digunakan dalam <ph name="PRODUCT_NAME" />. Pengguna boleh mendayakan atau melumpuhkan pemalam dalam 'about:plugins', walaupun pemalam tersebut sepadan dengan corak dalam DisabledPlugins. Pengguna turut boleh mendayakan dan melumpuhkan pemalam yang tidak sepadan dengan sebarang corak dalam DisabledPlugins, DisabledPluginsExceptions dan EnabledPlugins.
 
-      Dasar ini bertujuan untuk membenarkan penyenaraian hitam yang ketat bagi pemalam policy dengan senarai 'DisabledPlugins' yang menganddungi masukan kad bebas, seperti lumpuhkan semua pemalam '*' atau lumpuhkan semua pemalam Java '*Java*' tetapi pentadbir ingin mendayakan beberapa versi tertentu seperti 'IcedTea Java 2.3'. Versi khusus ini boleh ditetapkan dalam dasar ini.
+      Dasar ini bertujuan untuk membenarkan penyenaraian hitam yang ketat bagi pemalam dengan senarai 'DisabledPlugins' yang mengandungi masukan kad bebas, seperti lumpuhkan semua pemalam '*' atau lumpuhkan semua pemalam Java '*Java*' tetapi pentadbir ingin mendayakan beberapa versi tertentu seperti 'IcedTea Java 2.3'. Versi khusus ini boleh ditetapkan dalam dasar ini.
 
       Sila ambil perhatian bahawa nama pemalam dan juga nama kumpulan pemalam perlu dikecualikan. Setiap kumpulan pemalam dipaparkan di bahagian yang berasingan dalam about:plugins; setiap bahagian mungkin mempunyai satu atau beberapa pemalam. Contohnya, pemalam "Shockwave Flash" terkandung dalam kumpulan "Adobe Flash Player" dan kedua-dua nama perlu mempunyai padanan dalam senarai pengecualian jika pemalam tersebut mahu dikecualikan daripada senarai hitam.
 
@@ -1564,13 +1563,6 @@ DisabledPlugins. Pengguna turut boleh mendayakan dan melumpuhkan pemalam yang ti
 
       Jika dasar ini tidak ditetapkan atau ditetapkan kepada palsu, maka <ph name="PRODUCT_NAME" /> tidak akan melaksanakan semakan pembatalan dalam talian dalam <ph name="PRODUCT_NAME" /> 19 dan yang lebih baharu.</translation>
 <translation id="5966615072639944554">Sambungan dibenarkan untuk mengguna API pembuktian jauh</translation>
-<translation id="5974970919245996815">Laporkan maklumat tentang status Android dihantar kembali ke
-      pelayan.
-
-      Jika dasar ini ditetapkan kepada palsu, maklumat tidak akan dilaporkan.
-      Jika ditetapkan kepada benar atau dibiarkan tanpa ditetapkan, maklumat akan dilaporkan.
-
-      Dasar ini hanya dikenakan jika apl Android didayakan.</translation>
 <translation id="5983708779415553259">Gelagat lalai untuk tapak yang tidak didapati dalam mana-mana pek kandungan</translation>
 <translation id="5997543603646547632">Gunakan jam 24 jam secara lalai</translation>
 <translation id="6009903244351574348">Benarkan <ph name="PRODUCT_FRAME_NAME" /> mengendalikan jenis kandungan yang disenaraikan.
@@ -2269,6 +2261,9 @@ Jika dasar ini dibiarkan tidak ditetapkan, papan kekunci pada skrin dilumpuhkan 
           ke domain Direktori Aktif.</translation>
 <translation id="7937766917976512374">Benarkan atau nafikan rakaman video</translation>
 <translation id="7941975817681987555">Jangan ramalkan tindakan rangkaian pada sebarang sambungan rangkaian</translation>
+<translation id="7942429005743031780">Dasar ini menentukan sambungan yang dibenarkan menggunakan API Enterprise Platform Keys chrome.enterprise.platformKeys.challengeUserKey() untuk pembuktian jauh. Sambungan hendaklah ditambahkan pada senarai ini untuk menggunakan API tersebut.
+
+          Jika sambungan tidak terdapat dalam senarai atau senarai tidak ditetapkan, panggilan kepada API tersebut akan gagal dengan kod ralat.</translation>
 <translation id="7953256619080733119">Hos pengecualian manual pengguna terurus</translation>
 <translation id="7971839631300653352">SSL 3.0</translation>
 <translation id="7974114691960514888">Dasar ini tidak lagi disokong.

@@ -50,6 +50,7 @@
 <translation id="1491663344921578213">వెబ్‌సైట్ ప్రమాణపత్రం పిన్ చేయబడే పద్ధతిని ఉపయోగిస్తున్నందున మీరు ఇప్పుడు <ph name="SITE" />ని సందర్శించలేరు. నెట్‌వర్క్ లోపాలు మరియు దాడులు సాధారణంగా తాత్కాలికంగానే ఉంటాయి, కావున ఈ పేజీ కాసేపటి తర్వాత పని చేసే అవకాశం ఉంది. <ph name="BEGIN_LEARN_MORE_LINK" />మరింత తెలుసుకోండి<ph name="END_LEARN_MORE_LINK" />.</translation>
 <translation id="1506687042165942984">ఈ పేజీ యొక్క సేవ్ చేసిన (అంటే పాతది) కాపీని చూపుతుంది.</translation>
 <translation id="1519264250979466059">రూపకల్పన తేదీ</translation>
+<translation id="153384715582417236">ఇప్పటికి ఇంతే</translation>
 <translation id="1549470594296187301">ఈ లక్షణాన్ని ఉపయోగించడానికి జావాస్క్రిప్ట్ తప్పనిసరిగా ప్రారంభించాలి.</translation>
 <translation id="1559528461873125649">అటువంటి ఫైల్ లేదా డైరెక్టరీ లేదు</translation>
 <translation id="1559572115229829303">&lt;p&gt;మీ పరికరం తేదీ మరియు సమయం (<ph name="DATE_AND_TIME" />) తప్పుగా ఉన్నందున <ph name="BEGIN_BOLD" /><ph name="DOMAIN" /><ph name="END_BOLD" />కి ప్రైవేట్ కనెక్షన్ ఏర్పాటు చేయడం సాధ్యపడదు.&lt;/p&gt;
@@ -350,7 +351,6 @@
 <translation id="4728558894243024398">ప్లాట్‌ఫారమ్</translation>
 <translation id="4744603770635761495">అమలు చేయగల మార్గం</translation>
 <translation id="4756388243121344051">&amp;చరిత్ర</translation>
-<translation id="4759238208242260848">డౌన్‌లోడ్‌లు</translation>
 <translation id="4764776831041365478"><ph name="URL" /> వద్ద వెబ్‌పేజీ తాత్కాలికంగా తెరుచుకోవటం లేదు లేదా అది క్రొత్త వెబ్ చిరునామాకు శాశ్వతంగా తరలించబడి ఉండవచ్చు.</translation>
 <translation id="4771973620359291008">తెలియని లోపం ఒకటి ఏర్పడింది.</translation>
 <translation id="4782449893814226250">మీరు ఈ పేజీని సందర్శించడానికి అనుమతించమని కోరుతూ మీ తల్లిదండ్రులకు అభ్యర్థన పంపారు.</translation>
@@ -389,6 +389,7 @@
 <translation id="5179510805599951267"><ph name="ORIGINAL_LANGUAGE" />లో లేదా? ఈ లోపాన్ని నివేదించండి</translation>
 <translation id="5190835502935405962">బుక్‌మార్క్‌ల బార్</translation>
 <translation id="5199729219167945352">ప్రయోగాలు</translation>
+<translation id="5199841536747119669">మీ సూచనలు ఇక్కడ కనిపిస్తాయి</translation>
 <translation id="5251803541071282808">క్లౌడ్</translation>
 <translation id="5277279256032773186">కార్యాలయంలో Chrome ఉపయోగిస్తున్నారా? వ్యాపార సంస్థలు తమ ఉద్యోగుల కోసం Chrome సెట్టింగ్‌లను నిర్వహించగలవు. మరింత తెలుసుకోండి</translation>
 <translation id="5299298092464848405">విధానాన్ని అన్వయించడంలో లోపం</translation>
@@ -468,6 +469,7 @@
 <translation id="6263376278284652872"><ph name="DOMAIN" /> బుక్‌మార్క్‌లు</translation>
 <translation id="6264485186158353794">భద్రతకు తిరిగి వెళ్ళు</translation>
 <translation id="6282194474023008486">పోస్టల్ కోడ్</translation>
+<translation id="6290238015253830360">మీరు సూచించిన కథనాలు ఇక్కడ కనిపిస్తాయి</translation>
 <translation id="6305205051461490394"><ph name="URL" />ని చేరుకోలేకపోయాము.</translation>
 <translation id="6321917430147971392">మీ DNS సెట్టింగ్‌లను తనిఖీ చేయండి</translation>
 <translation id="6328639280570009161">నెట్‌వర్క్ సూచనను నిలిపివేసి ప్రయత్నించండి</translation>
@@ -651,6 +653,7 @@
 <translation id="8363502534493474904">ఎయిర్‌ప్లైన్ మోడ్‌ను ఆఫ్ చేయడం</translation>
 <translation id="8364627913115013041">సెట్ చేయలేదు.</translation>
 <translation id="8380941800586852976">అపాయకరమైనది</translation>
+<translation id="8382348898565613901">మీరు ఇటీవల సందర్శించిన బుక్‌మార్క్‌లు ఇక్కడ కనిపిస్తాయి</translation>
 <translation id="8412145213513410671">క్రాష్‌లు (<ph name="CRASH_COUNT" />)</translation>
 <translation id="8412392972487953978">మీరు అదే పాస్‌ఫ్రేజ్‌ని రెండుసార్లు ఖచ్చితంగా ఎంటర్ చెయ్యాలి.</translation>
 <translation id="8428213095426709021">సెట్టింగ్‌లు</translation>
@@ -700,6 +703,7 @@
 <translation id="8987927404178983737">నెల</translation>
 <translation id="8989148748219918422"><ph name="ORGANIZATION" /> [<ph name="COUNTRY" />]</translation>
 <translation id="9001074447101275817"><ph name="DOMAIN" /> ప్రాక్సీకి వినియోగదారు పేరు మరియు పాస్‌వర్డ్ అవసరం.</translation>
+<translation id="9008201768610948239">విస్మరించు</translation>
 <translation id="901974403500617787">సిస్టమ్ వ్యాప్తంగా వర్తింపజేయబడే ఫ్లాగ్‌లు యజమాని ద్వారా మాత్రమే సెట్ చేయబడతాయి: <ph name="OWNER_EMAIL" />.</translation>
 <translation id="9020542370529661692">ఈ పేజీ <ph name="TARGET_LANGUAGE" />కి అనువదించబడింది</translation>
 <translation id="9038649477754266430">పేజీలను మరింత శీఘ్రంగా లోడ్ చేయడానికి సూచన సేవను ఉపయోగించండి</translation>

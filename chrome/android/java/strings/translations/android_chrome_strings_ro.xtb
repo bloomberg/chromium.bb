@@ -95,7 +95,6 @@ Pentru a folosi Webul material, trebuie să activezi Bluetooth și Locația.</tr
 <translation id="200669432486043882">Înlocuiește un fișier</translation>
 <translation id="2020525020270327736">Copiază site-ul</translation>
 <translation id="2038563949887743358">Activează opțiunea Versiune site pentru desktop</translation>
-<translation id="2069736994598857257"><ph name="GIGABYTES" /> GB utilizați</translation>
 <translation id="2073235970478114994">Încarcă imaginile</translation>
 <translation id="2079545284768500474">Anulează</translation>
 <translation id="2082238445998314030">Rezultatul <ph name="RESULT_NUMBER" /> din <ph name="TOTAL_RESULTS" /></translation>
@@ -324,6 +323,7 @@ Pentru a ajusta termenii căutării, apasă lung pentru a selecta. Pentru a rafi
 <translation id="4816465935029283692">Tipuri de date</translation>
 <translation id="4827948050554950725">Adaugă un card de credit</translation>
 <translation id="4836364883164334657">Conexiunea la acest site nu este privată. Atacatorii ar putea încerca să-ți fure informațiile (de exemplu, fotografii, parole, mesaje și carduri de credit) de pe <ph name="DOMAIN_NAME" />.</translation>
+<translation id="4850886885716139402">Afișează</translation>
 <translation id="4881695831933465202">Deschide</translation>
 <translation id="4885273946141277891">Număr de instanțe Chrome neacceptat.</translation>
 <translation id="4923459931733593730">Plată</translation>
@@ -339,7 +339,9 @@ Pentru a ajusta termenii căutării, apasă lung pentru a selecta. Pentru a rafi
 <translation id="5016205925109358554">Serif</translation>
 <translation id="5039804452771397117">Permite</translation>
 <translation id="5040262127954254034">Confidențialitate</translation>
+<translation id="5053110706349648690">Activează Bluetooth în <ph name="BEGIN_LINK" />setările dispozitivului<ph name="END_LINK" /> pentru a permite asocierea</translation>
 <translation id="5063480226653192405">Utilizare</translation>
+<translation id="5087580092889165836">Adaugă un card</translation>
 <translation id="5100237604440890931">Afișare restrânsă – dă clic pentru a extinde.</translation>
 <translation id="510275257476243843">1 oră rămasă</translation>
 <translation id="5127805178023152808">Sincronizarea este dezactivată</translation>
@@ -350,7 +352,7 @@ Pentru a ajusta termenii căutării, apasă lung pentru a selecta. Pentru a rafi
 <translation id="5161254044473106830">Titlul este obligatoriu</translation>
 <translation id="5164482624172255778">Doriți ca data viitoare Google Chrome să propună traducerea paginilor în limba <ph name="LANGUAGE" /> de pe acest site?</translation>
 <translation id="5168917394043976756">Deschide panoul de navigare</translation>
-<translation id="5171045022955879922">Căutați sau introduceți adresa URL</translation>
+<translation id="5171045022955879922">Caută sau introdu adresa URL</translation>
 <translation id="5184329579814168207">Deschide în Chrome</translation>
 <translation id="5199929503336119739">Profilul de serviciu</translation>
 <translation id="5210365745912300556">Închide fila</translation>
@@ -416,6 +418,7 @@ Totuși, nu ești invizibil(ă). Trecerea în modul incognito nu ascunde activit
 <translation id="583281660410589416">Necunoscut</translation>
 <translation id="5832934273103296195">Afișare extinsă – dă clic pentru a restrânge</translation>
 <translation id="583891442612896534">Chrome nu poate să contacteze serverele Google pentru comprimarea datelor. Economiile de date pot fi limitate.</translation>
+<translation id="5843873952582375185">Nu s-a găsit niciun dispozitiv Bluetooth. <ph name="BEGIN_LINK" />Scanează din nou<ph name="END_LINK" /></translation>
 <translation id="585027516397408832">Economizorul de date este activat</translation>
 <translation id="5860033963881614850">Dezactivat</translation>
 <translation id="5867027562311576691">În curând vor apărea mai multe articole. O dimineață plăcută!</translation>
@@ -490,6 +493,7 @@ De exemplu, unele site-uri pot răspunde la această solicitare afișând anunț
 <translation id="6657585470893396449">Parolă</translation>
 <translation id="6659594942844771486">Filă</translation>
 <translation id="666268767214822976">Folosește un serviciu de predicții pentru a afișa interogări similare și site-uri populare în timp ce introduci text în bara de adrese.</translation>
+<translation id="666731172850799929">Deschide în <ph name="APP_NAME" /></translation>
 <translation id="666981079809192359">Notificare privind confidențialitatea Chrome</translation>
 <translation id="6698801883190606802">Gestionează datele sincronizate</translation>
 <translation id="6710213216561001401">Înapoi</translation>
@@ -532,14 +536,12 @@ De exemplu, unele site-uri pot răspunde la această solicitare afișând anunț
 <translation id="7074853159844403180"><ph name="SITE" /> dorește să se asocieze cu:</translation>
 <translation id="7081639897063626814">Păstrează datele existente separat</translation>
 <translation id="7094922512924405309">Nu au fost găsite pagini din Webul material în apropiere</translation>
-<translation id="7115197232530297436">Adresă de expediere neacceptată. Selectează o altă adresă.</translation>
 <translation id="7138678301420049075">Altele</translation>
 <translation id="7180611975245234373">Actualizați</translation>
 <translation id="7191430249889272776">A fost deschisă o filă în fundal.</translation>
 <translation id="7208788139759694678">Economizorul de date este dezactivat</translation>
 <translation id="7243308994586599757">Opțiuni disponibile în partea de jos a ecranului</translation>
 <translation id="7244362611678346589"><ph name="SEARCH_ENGINE_URL" /> folosește locația ta pentru a afișa rezultate locale ale căutării</translation>
-<translation id="7347770551817603360">Conținut offline</translation>
 <translation id="7353894246028566792">{NUM_SELECTED,plural, =1{Trimite un element selectat}few{Trimite # elemente selectate}other{Trimite # de elemente selectate}}</translation>
 <translation id="7366340029385295517">Se proiectează pe <ph name="SCREEN_NAME" /></translation>
 <translation id="7375125077091615385">Tip:</translation>
@@ -576,7 +578,6 @@ Contul Google poate să ofere alte forme ale istoricului de navigare, cum ar fi 
 <translation id="7665369617277396874">Adăugați un cont</translation>
 <translation id="7682287625158474539">Expediere</translation>
 <translation id="771135159654932189">Vezi ce este în apropiere</translation>
-<translation id="7713873128508426081">Permis întotdeauna</translation>
 <translation id="7764225426217299476">Adaugă o adresă</translation>
 <translation id="7765158879357617694">Mută</translation>
 <translation id="7769602470925380267">Acceptă și deconectează-te</translation>
@@ -645,15 +646,12 @@ Contul Google poate să ofere alte forme ale istoricului de navigare, cum ar fi 
 <translation id="8514577642972634246">Intră în modul incognito</translation>
 <translation id="8518901949365209398">Acest site folosește o configurație de securitate slabă (semnături SHA-1), prin urmare, conexiunea poate să nu fie privată.</translation>
 <translation id="8523928698583292556">Șterge parola stocată</translation>
-<translation id="8525306231823319788">Ecran complet</translation>
-<translation id="85415543246899402"><ph name="MEGABYTES" /> MB utilizați</translation>
 <translation id="854522910157234410">Deschide această pagină</translation>
 <translation id="8562452229998620586">Parolele salvate vor fi afișate aici.</translation>
 <translation id="856481929701340285">Versiune site desktop</translation>
 <translation id="857943718398505171">Acordată (recomandat)</translation>
 <translation id="8583805026567836021">Se șterg datele contului</translation>
 <translation id="8617240290563765734">Deschizi adresa URL sugerată specificată în conținutul descărcat?</translation>
-<translation id="8618653050765576793"><ph name="KILOBYTES" /> KB utilizați</translation>
 <translation id="862875433388403934">Conținutul (filme, muzică etc.) descărcat în alte aplicații nu va mai fi redat decât după ce aplicațiile obțin din nou licențe pe baza unor date de conectare noi pe dispozitiv.
 
 Pentru licențe noi, conectează-te la internet și redă conținutul descărcat.</translation>

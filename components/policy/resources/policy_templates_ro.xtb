@@ -19,6 +19,9 @@
       Dacă această politică este dezactivată sau nu este configurată, cookie-urile setate de furnizorul de identitate sunt transferate în profilul utilizatorului doar la prima sa conectare pe un dispozitiv.
 
       Această politică afectează doar utilizatorii ale căror domenii corespund cu domeniul de înregistrare al dispozitivului. Pentru ceilalți utilizatori, cookie-urile setate de furnizorul de identitate sunt transferate în profilurile acestora doar la prima conectare pe un dispozitiv.</translation>
+<translation id="1029536946382325801">Dacă este activată, utilizatorul poate folosi hardware-ul de pe dispozitivele Chrome pentru a-și atesta la distanță identitatea către autoritatea de certificare pentru confidențialitate prin API-ul Enterprise Platform Keys chrome.enterprise.platformKeys.challengeUserKey().
+
+          Dacă este dezactivată sau dacă nu este configurată, apelurile către API nu vor reuși și vor genera un cod de eroare.</translation>
 <translation id="1040446814317236570">Activează eliminarea unor părți din adresele URL pentru PAC (pentru https://)</translation>
 <translation id="1044878202534415707">Raportează statisticile privind hardware-ul cum ar fi utilizarea CPU/RAM.
 
@@ -331,13 +334,6 @@
 
       Conținutul listei „Adrese URL care se deschid la pornire” este ignorat, cu excepția cazului în care selectezi „Deschide o listă cu adrese URL” în „Acțiune la pornire”.</translation>
 <translation id="2337466621458842053">Vă permite să setați o listă de modele pentru adresele URL care specifică site-urile care au permisiunea să afișeze imagini. Dacă această politică rămâne nesetată, valoarea prestabilită la nivel global va fi folosită pentru toate site-urile, fie din politica „DefaultImagesSetting”, în cazul în care politica este setată, fie din configurația personală a utilizatorului, în caz contrar.</translation>
-<translation id="2359612025446382967">Dacă această politică este dezactivată, <ph name="PRODUCT_OS_NAME" /> va dezactiva conexiunea Bluetooth, iar utilizatorul nu o va putea reactiva.
-
-      Dacă această politică este activată sau nu este configurată, utilizatorul va putea activa sau dezactiva conexiunea Bluetooth după cum dorește.
-
-      Dacă această politică este configurată, utilizatorul nu o poate modifica sau ignora.
-
-      După ce conexiunea Bluetooth este activată, dispozitivul trebuie repornit pentru ca modificările să aibă efect (nu este necesar să repornești dispozitivul când dezactivezi conexiunea Bluetooth).</translation>
 <translation id="2366415278352956652">Activează proiecția</translation>
 <translation id="2372547058085956601">Stabilește intervalul de inactivitate până la conectarea automată la o sesiune publică.
 
@@ -916,7 +912,7 @@
 
       Forțează activarea Căutării sigure pentru interogările de pe Căutarea Google pe web și împiedică utilizatorii să modifice această setare. De asemenea, această setare impune Modul restricționat moderat pe YouTube.
 
-      Dacă activezi această setare, Căutarea sigură în Căutarea Google și Modul restricționat pe YouTube vor fi întotdeauna active.
+      Dacă activezi această setare, Căutarea sigură în Căutarea Google și Modul restricționat moderat pe YouTube vor fi întotdeauna active.
 
       Dacă dezactivezi această setare sau nu configurezi nicio valoare, Căutarea sigură în Căutarea Google și Modul restricționat pe YouTube nu vor fi impuse.</translation>
 <translation id="3866249974567520381">Descriere</translation>
@@ -951,6 +947,9 @@
 
       Dacă această politică este activată, se vor trimite pachete de monitorizare din rețea (numite și <ph name="HEARTBEATS_TERM" />).
       Dacă politica este dezactivată sau nu este configurată, nu se vor trimite pachete.</translation>
+<translation id="3963602271515417124">Dacă este activată, atestarea la distanță este permisă pentru dispozitiv. De asemenea, un certificat va fi generat și încărcat automat pe Serverul de gestionare a dispozitivelor.
+
+          Dacă este dezactivată sau dacă nu este configurată, nu se va genera niciun certificat, iar apelurile către API pentru extensia enterprise.platformKeys nu vor reuși.</translation>
 <translation id="3964909636571393861">Permite accesul la o listă de adrese URL</translation>
 <translation id="3965339130942650562">Timp limită până când este executată deconectarea utilizatorului inactiv</translation>
 <translation id="3967075520570946456">Activează afișarea paginii de întâmpinare la prima lansare a browserului după upgrade-ul sistemului de operare.</translation>
@@ -1476,13 +1475,6 @@
 
       Dacă politica nu este configurată sau este dezactivată, <ph name="PRODUCT_NAME" /> nu va efectua verificări de revocare online în <ph name="PRODUCT_NAME" /> versiunea 19 și în versiunile ulterioare.</translation>
 <translation id="5966615072639944554">Extensii cărora li se permite să utilizeze API-ul de atestare la distanță</translation>
-<translation id="5974970919245996815">Raportează informații despre starea Android, informații care sunt trimise înapoi
-      la server.
-
-      Dacă politica este dezactivată, informațiile nu vor fi raportate.
-      Dacă politica este activată sau nu este configurată, informațiile vor fi raportate.
-
-      Politica se aplică numai dacă sunt activate aplicațiile Android.</translation>
 <translation id="5983708779415553259">Comportamentul prestabilit pentru site-urile care nu sunt incluse în niciun pachet de conținut</translation>
 <translation id="5997543603646547632">Utilizați în mod prestabilit formatul de 24 de ore</translation>
 <translation id="6009903244351574348">Permiteți ca <ph name="PRODUCT_FRAME_NAME" /> să gestioneze tipurile de conținut enumerate. Dacă această politică nu este setată, programul de redare prestabilit va fi folosit pentru toate site-urile așa cum se specifică în politica „ChromeFrameRendererSettings”.</translation>
@@ -2136,6 +2128,9 @@ nu poate fi stabilit de utilizator din setările browserului.
           asociate unui domeniu Active Directory.</translation>
 <translation id="7937766917976512374">Permiteți sau refuzați preluarea conținutului video</translation>
 <translation id="7941975817681987555">Nu anticipa acțiunile în rețea pentru nicio conexiune la rețea</translation>
+<translation id="7942429005743031780">Această politică specifică extensiile cărora li se permite să folosească API-ul Enterprise Platform Keys chrome.enterprise.platformKeys.challengeUserKey() pentru atestarea la distanță. Extensiile trebuie să fie adăugate în această listă pentru a folosi API-ul.
+
+          Dacă o extensie nu este în listă sau dacă lista nu este configurată, apelul către API nu va reuși și va genera un cod de eroare.</translation>
 <translation id="7953256619080733119">Gazde pentru excepții adăugate manual ale utilizatorilor gestionați</translation>
 <translation id="7971839631300653352">SSL 3.0</translation>
 <translation id="7974114691960514888">Această politică nu mai este acceptată. Permite utilizarea de servere STUN și de retransmisie în cazul conectării la un client la distanță. Dacă această setare este activată, atunci acest computer poate să descopere computere gazdă la distanță și să se conecteze la acestea, chiar dacă există un firewall. Dacă această setare este dezactivată, iar conexiunile UDP de ieșire sunt filtrate de firewall, atunci acest computer se poate conecta numai la computerele gazdă aflate în rețeaua locală.</translation>

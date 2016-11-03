@@ -21,7 +21,6 @@
 <translation id="1688750314291223739">Sediakan Penyegerakan untuk menyimpan ciri penyemak imbas yang diperibadikan di web dan aksesnya dari Chromium pada mana-mana komputer.</translation>
 <translation id="1699664235656412242">Sila tutup semua tetingkap Chromium (termasuk yang di dalam mod Windows 8) dan cuba lagi.</translation>
 <translation id="1708666629004767631">Terdapat versi Chromium baharu yang lebih selamat tersedia.</translation>
-<translation id="1725059042853530269"><ph name="FILE_NAME" /> boleh membahayakan pelayaran anda, jadi Kromium telah menyekatnya.</translation>
 <translation id="1774152462503052664">Benarkan Chromium dijalankan dalam latar belakang</translation>
 <translation id="1779356040007214683">Untuk menjadikan Chromium lebih selamat, kami melumpuhkan beberapa sambungan yang tidak disenaraikan dalam <ph name="IDS_EXTENSION_WEB_STORE_TITLE" /> dan mungkin telah ditambahkan tanpa pengetahuan anda.</translation>
 <translation id="1808667845054772817">Pasang semula Chromium</translation>
@@ -59,7 +58,6 @@
 <translation id="2718390899429598676">Untuk keselamatan tambahan, Chromium akan menyulitkan data anda.</translation>
 <translation id="2770231113462710648">Tukar penyemak imbas lalai kepada:</translation>
 <translation id="2799223571221894425">Lancarkan semula</translation>
-<translation id="2801146392936645542"><ph name="FILE_NAME" /> bersifat hasad dan Chromium telah menyekatnya.</translation>
 <translation id="2847479871509788944">Alih keluar daripada Chromium...</translation>
 <translation id="2886012850691518054">Pilihan: Bantu jadikan Chromium lebih baik dengan menghantar statistik penggunaan dan laporan ranap kepada Google secara automatik.</translation>
 <translation id="2905536371227304018">OS Chromium dipaparkan dalam bahasa ini.</translation>
@@ -78,7 +76,6 @@
 <ph name="USER_DATA_DIRECTORY" /></translation>
 <translation id="3264279740686075150">Chromium ialah penyemak imbas lalai anda. Bergembiralah!</translation>
 <translation id="328888136576916638">Kunci API Google tiada. Sesetengah fungsi Chromium akan dilumpuhkan.</translation>
-<translation id="3289635842886789612">Chromium sudah usang.</translation>
 <translation id="3296368748942286671">Terus menjalankan apl latar belakang apabila Chromium ditutup</translation>
 <translation id="3312805357485578561">Chromium telah mengesan gelagat yang luar biasa</translation>
 <translation id="331951419404882060">OS Chromium tidak dapat menyegerakkan data anda disebabkan oleh ralat melog masuk.</translation>
@@ -136,6 +133,7 @@
 <translation id="5398878173008909840">Terdapat versi baharu Chromium tersedia.</translation>
 <translation id="5427571867875391349">Tetapkan Chromium sebagai penyemak imbas lalai anda</translation>
 <translation id="5466153949126434691">Chromium dikemas kini secara automatik supaya anda sentiasa mempunyai versi yang terbaharu. Apabila muat turun ini selesai, Chromium akan dimulakan semula dan anda sudah boleh menggunakannya.</translation>
+<translation id="5479196819031988440">OS Chromium tidak boleh membuka halaman ini.</translation>
 <translation id="549669000822060376">Sila tunggu sementara Chromium memasang kemas kini sistem terkini.</translation>
 <translation id="556167189552180495">Chromium dipaparkan dalam bahasa ini.</translation>
 <translation id="5563479599352954471">Carian dengan satu sentuhan</translation>
@@ -223,7 +221,6 @@ Sila semak e-mel anda di <ph name="ACCOUNT_EMAIL" /> untuk arahan lanjut.</trans
 <translation id="7421823331379285070">Chromium memerlukan Windows XP atau yang lebih baharu. Beberapa ciri mungkin tidak berfungsi.</translation>
 <translation id="7473891865547856676">Tidak, Terima Kasih</translation>
 <translation id="7483335560992089831">Tidak boleh memasang versi Chromium yang sama dengan yang sedang dijalankan. Sila tutup Chromium dan cuba lagi.</translation>
-<translation id="750717762378961310">Fail ini bersifat hasad dan Chromium telah menyekatnya.</translation>
 <translation id="7549178288319965365">Mengenai Chromium OS</translation>
 <translation id="7577193603922410712">Kemas kini keselamatan khas untuk Chromium baru sahaja dilakukan; anda perlu memulakan semula peranti ini sekarang supaya kemas kini ini berkesan (kami akan memulihkan tab anda).</translation>
 <translation id="761356813943268536">Chromium menggunakan kamera dan mikrofon anda.</translation>

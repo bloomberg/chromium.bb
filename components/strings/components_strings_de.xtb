@@ -50,6 +50,7 @@
 <translation id="1491663344921578213">Sie können <ph name="SITE" /> zurzeit nicht aufrufen, weil die Website das Zertifikats-Pinning nutzt. Netzwerkfehler und Angriffe sind in der Regel nur vorübergehend, sodass die Seite später wahrscheinlich wieder funktioniert. <ph name="BEGIN_LEARN_MORE_LINK" />Weitere Informationen<ph name="END_LEARN_MORE_LINK" /></translation>
 <translation id="1506687042165942984">Zeigt eine gespeicherte (veraltete) Kopie dieser Seite an</translation>
 <translation id="1519264250979466059">Build-Datum</translation>
+<translation id="153384715582417236">Das ist im Moment alles</translation>
 <translation id="1549470594296187301">Für diese Funktion muss JavaScript aktiviert sein.</translation>
 <translation id="1559528461873125649">Datei oder Verzeichnis nicht vorhanden</translation>
 <translation id="1559572115229829303">&lt;p&gt;Es kann keine private Verbindung zu <ph name="BEGIN_BOLD" /><ph name="DOMAIN" /><ph name="END_BOLD" /> hergestellt werden, weil Datum und Uhrzeit (<ph name="DATE_AND_TIME" />) Ihres Geräts falsch sind.&lt;/p&gt;
@@ -349,7 +350,6 @@
 <translation id="4728558894243024398">Plattform</translation>
 <translation id="4744603770635761495">Ausführbarer Pfad</translation>
 <translation id="4756388243121344051">&amp;Verlauf</translation>
-<translation id="4759238208242260848">Downloads</translation>
 <translation id="4764776831041365478">Die Webseite unter <ph name="URL" /> ist möglicherweise vorübergehend nicht verfügbar oder wurde dauerhaft an eine neue Webadresse verschoben.</translation>
 <translation id="4771973620359291008">Ein unbekannter Fehler ist aufgetreten.</translation>
 <translation id="4782449893814226250">Du hast deine Eltern gefragt, ob du diese Seite besuchen darfst.</translation>
@@ -388,6 +388,7 @@
 <translation id="5179510805599951267">Nicht auf <ph name="ORIGINAL_LANGUAGE" />? Diesen Fehler melden</translation>
 <translation id="5190835502935405962">Lesezeichenleiste</translation>
 <translation id="5199729219167945352">Experimente</translation>
+<translation id="5199841536747119669">Hier werden Ihre Vorschläge angezeigt</translation>
 <translation id="5251803541071282808">Cloud</translation>
 <translation id="5277279256032773186">Nutzen Sie Chrome bei der Arbeit? Unternehmen können Chrome-Einstellungen für ihre Mitarbeiter verwalten. Weitere Informationen</translation>
 <translation id="5299298092464848405">Fehler beim Parsen der Richtlinie</translation>
@@ -467,6 +468,7 @@
 <translation id="6263376278284652872"><ph name="DOMAIN" />-Lesezeichen</translation>
 <translation id="6264485186158353794">Zurück zu sicherer Website</translation>
 <translation id="6282194474023008486">Postleitzahl</translation>
+<translation id="6290238015253830360">Hier werden Ihre vorgeschlagenen Artikel angezeigt</translation>
 <translation id="6305205051461490394"><ph name="URL" /> ist nicht erreichbar.</translation>
 <translation id="6321917430147971392">Überprüfen Sie die DNS-Einstellungen.</translation>
 <translation id="6328639280570009161">Deaktivieren Sie die Netzwerkvervollständigung.</translation>
@@ -650,6 +652,7 @@ Geheimtipp: Verwenden Sie nächstes Mal den Inkognitomodus (<ph name="SHORTCUT_K
 <translation id="8363502534493474904">Flugmodus ausschalten</translation>
 <translation id="8364627913115013041">Nicht eingerichtet</translation>
 <translation id="8380941800586852976">Schädlich</translation>
+<translation id="8382348898565613901">Hier werden Ihre kürzlich aufgerufenen Lesezeichen angezeigt</translation>
 <translation id="8412145213513410671">Abstürze (<ph name="CRASH_COUNT" />)</translation>
 <translation id="8412392972487953978">Sie müssen zweimal dieselbe Passphrase eingeben.</translation>
 <translation id="8428213095426709021">Einstellungen</translation>
@@ -699,6 +702,7 @@ Geheimtipp: Verwenden Sie nächstes Mal den Inkognitomodus (<ph name="SHORTCUT_K
 <translation id="8987927404178983737">Monat</translation>
 <translation id="8989148748219918422"><ph name="ORGANIZATION" /> [<ph name="COUNTRY" />]</translation>
 <translation id="9001074447101275817">Für den Proxy <ph name="DOMAIN" /> sind ein Nutzername und ein Passwort erforderlich.</translation>
+<translation id="9008201768610948239">Ignorieren</translation>
 <translation id="901974403500617787">Parameter, die systemweit gelten, können nur vom Eigentümer festgelegt werden: <ph name="OWNER_EMAIL" />.</translation>
 <translation id="9020542370529661692">Die Seite wurde übersetzt und liegt nun auf <ph name="TARGET_LANGUAGE" /> vor.</translation>
 <translation id="9038649477754266430">Vorhersagedienst zum schnelleren Laden von Seiten verwenden</translation>

@@ -22,6 +22,7 @@
 <translation id="1484102317210609525"><ph name="DEVICE_NAME" /> (HDMI/DP)</translation>
 <translation id="1510238584712386396">Lanceur d'applications</translation>
 <translation id="1525508553941733066">IGNORER</translation>
+<translation id="153454903766751181">Initialisation du modem cellulaire en cours…</translation>
 <translation id="15373452373711364">Grand curseur</translation>
 <translation id="1550523713251050646">Cliquez pour obtenir plus d'options.</translation>
 <translation id="1602076796624386989">Activer les données mobiles</translation>
@@ -32,6 +33,7 @@
 <translation id="1747827819627189109">Clavier à l'écran activé</translation>
 <translation id="1812696562331527143">Votre mode de saisie a été remplacé par <ph name="INPUT_METHOD_ID" />* (<ph name="BEGIN_LINK" />tiers<ph name="END_LINK" />).
 Appuyez sur Maj + Alt pour en utiliser un autre.</translation>
+<translation id="1850504506766569011">Le Wi-Fi est désactivé.</translation>
 <translation id="1864454756846565995">Appareil USB de type C (port situé sur l'arrière de l'appareil)</translation>
 <translation id="1882897271359938046">Mise en miroir pour <ph name="DISPLAY_NAME" /></translation>
 <translation id="1919743966458266018">Le raccourci permettant d'ouvrir le gestionnaire de tâches a été modifié. Utilisez "<ph name="NEW_SHORTCUT" />" au lieu de "<ph name="OLD_SHORTCUT" />".</translation>
@@ -47,6 +49,7 @@ Appuyez sur Maj + Alt pour en utiliser un autre.</translation>
 <translation id="2268813581635650749">Déconnecter tous les utilisateurs</translation>
 <translation id="2297568595583585744">Barre d'état</translation>
 <translation id="2303600792989757991">Activer/Désactiver la vue d'ensemble des fenêtres</translation>
+<translation id="2354174487190027830">Activation du réseau <ph name="NAME" /> en cours…</translation>
 <translation id="2391579633712104609">180°</translation>
 <translation id="2429753432712299108">L'appareil Bluetooth "<ph name="DEVICE_NAME" />" demande l'autorisation de s'associer. Avant d'accepter, veuillez confirmer que le code d'authentification suivant s'affiche sur l'appareil : <ph name="PASSKEY" />.</translation>
 <translation id="2475982808118771221">Une erreur s'est produite.</translation>
@@ -59,6 +62,7 @@ Appuyez sur Maj + Alt pour en utiliser un autre.</translation>
 <translation id="2700058918926273959">Fin de la session dans <ph name="SESSION_TIME_REMAINING" />. Vous allez être déconnecté.</translation>
 <translation id="2727977024730340865">L'appareil est branché à un chargeur de faible puissance. Il se peut que la charge ne soit pas fiable.</translation>
 <translation id="2761704814324807722">Barre d'état – Heure : <ph name="TIME" />, <ph name="BATTERY" /></translation>
+<translation id="277257480934873581">Reconnexion à <ph name="NAME" />…</translation>
 <translation id="2792498699870441125">Alt + Recherche</translation>
 <translation id="2819276065543622893">Vous allez être déconnecté maintenant.</translation>
 <translation id="2825619548187458965">Étagère</translation>
@@ -105,21 +109,27 @@ Appuyez sur Search ou Maj pour le désactiver.</translation>
 <translation id="3783640748446814672">alt</translation>
 <translation id="3784455785234192852">Verrouiller</translation>
 <translation id="3799026279081545374">Votre chargeur est peut-être défaillant. Si vous résidez aux États-Unis, veuillez appeler le 866 628 1371 pour obtenir de l'aide et recevoir un chargeur de substitution. Si vous résidez au Royaume-Uni, veuillez appeler le 0800 026 0613. Si vous résidez en Irlande, veuillez appeler le 1 800 832 664. Si vous résidez au Canada, veuillez appeler le 866 628 1372. Si vous résidez en Australie, veuillez appeler le 1 800 067 460.</translation>
+<translation id="3846575436967432996">Aucune information disponible concernant le réseau</translation>
 <translation id="3866182280516392520">Adresse IPv6</translation>
 <translation id="3891340733213178823">Appuyez deux fois sur Ctrl + Maj + Q pour vous déconnecter.</translation>
 <translation id="3892641579809465218">Affichage interne</translation>
 <translation id="3893630138897523026">ChromeVox (commentaires audio)</translation>
 <translation id="3899995891769452915">Saisie vocale</translation>
+<translation id="3901991538546252627">Connexion à <ph name="NAME" /> en cours…</translation>
 <translation id="3963445509666917109">Haut-parleur (interne)</translation>
 <translation id="3967919079500697218">Votre administrateur a désactivé la fonctionnalité de capture d'écran.</translation>
 <translation id="397105322502079400">Calcul en cours…</translation>
 <translation id="3995138139523574647">Appareil USB de type C (port situé sur la droite de l'appareil, à l'arrière)</translation>
 <translation id="4053612967614057854">Désactiver le clavier à l'écran</translation>
+<translation id="4118990158415604803">Votre administrateur a désactivé la connexion à d'autres réseaux.</translation>
 <translation id="4250680216510889253">Non</translation>
 <translation id="4279490309300973883">Mise en miroir</translation>
 <translation id="4321179778687042513">ctrl</translation>
 <translation id="4421231901400348175">Partager le contrôle de votre écran avec <ph name="HELPER_NAME" /> via l'assistance à distance</translation>
 <translation id="4430019312045809116">Volume</translation>
+<translation id="4448844063988177157">Recherche de réseaux Wi-Fi...</translation>
+<translation id="4479639480957787382">Ethernet </translation>
+<translation id="4508225577814909926"><ph name="NAME" /> : Connexion en cours…</translation>
 <translation id="4527045527269911712">L'appareil Bluetooth "<ph name="DEVICE_NAME" />" demande l'autorisation de s'associer.</translation>
 <translation id="453661520163887813"><ph name="TIME" /> avant charge complète</translation>
 <translation id="4544944664594876241">Le raccourci permettant de verrouiller l'écran a été modifié. Utilisez "<ph name="NEW_SHORTCUT" />" au lieu de "<ph name="OLD_SHORTCUT" />".</translation>
@@ -172,6 +182,7 @@ Appuyez sur Maj + Alt pour en utiliser un autre.</translation>
 <translation id="6165508094623778733">En savoir plus</translation>
 <translation id="6203030746557259519">Affichage virtuel</translation>
 <translation id="6248847161401822652">Pour quitter, appuyez deux fois sur Ctrl+Maj+Q.</translation>
+<translation id="6267036997247669271"><ph name="NAME" /> : activation en cours…</translation>
 <translation id="6297287540776456956">Utiliser le stylet pour sélectionner une zone</translation>
 <translation id="6310121235600822547">L'écran "<ph name="DISPLAY_NAME" />" a effectué une rotation de <ph name="ROTATION" />.</translation>
 <translation id="6359806961507272919">SMS de <ph name="PHONE_NUMBER" /></translation>
@@ -184,6 +195,7 @@ Appuyez sur Maj + Alt pour en utiliser un autre.</translation>
 <translation id="6501401484702599040">Diffusion de l'écran sur "<ph name="RECEIVER_NAME" />"</translation>
 <translation id="6521655319214113338">Écriture manuscrite</translation>
 <translation id="6537270692134705506">Capturer l'écran</translation>
+<translation id="6549021752953852991">Aucun réseau mobile disponible</translation>
 <translation id="6550675742724504774">Options</translation>
 <translation id="6585808820553845416">Fin de la session dans <ph name="SESSION_TIME_REMAINING" /></translation>
 <translation id="6596816719288285829">Adresse IP</translation>
@@ -192,6 +204,7 @@ Appuyez sur Maj + Alt pour en utiliser un autre.</translation>
 <translation id="6713285437468012787">L'appareil Bluetooth "<ph name="DEVICE_NAME" />" a été associé et tous les utilisateurs peuvent désormais y accéder. Vous pouvez supprimer cette association dans les paramètres.</translation>
 <translation id="6785414152754474415">La batterie est chargée à <ph name="PERCENTAGE" /> % et en charge.</translation>
 <translation id="683971173229319003">Recherche+L</translation>
+<translation id="6857811139397017780">Activer <ph name="NETWORKSERVICE" /></translation>
 <translation id="6911468394164995108">Autre réseau…</translation>
 <translation id="6915678159055240887">Chromebox</translation>
 <translation id="6979158407327259162">Google Drive</translation>
@@ -200,6 +213,7 @@ Appuyez sur Maj + Alt pour en utiliser un autre.</translation>
 <translation id="703171847531699602">Aucun appareil Cast</translation>
 <translation id="7034339000180558234">Diffusion de l'onglet "<ph name="TAB_NAME" />" sur "<ph name="RECEIVER_NAME" />"</translation>
 <translation id="7052914147756339792">Définir un fond d'écran…</translation>
+<translation id="7066646422045619941">Votre administrateur a désactivé ce réseau.</translation>
 <translation id="7097613348211027502">ChromeVox (commentaires audio) est activé.
 Appuyez sur les touches Ctrl + Alt + Z pour le désactiver.</translation>
 <translation id="7098389117866926363">Appareil USB de type C (port situé sur l'arrière de l'appareil, à gauche)</translation>
@@ -209,6 +223,7 @@ Appuyez sur les touches Ctrl + Alt + Z pour le désactiver.</translation>
 <translation id="7209101170223508707">Le VERROUILLAGE DES MAJUSCULES est activé.
 Appuyez sur Alt + Recherche ou Maj pour le désactiver.</translation>
 <translation id="7348093485538360975">Clavier virtuel</translation>
+<translation id="735745346212279324">VPN déconnecté</translation>
 <translation id="737451040872859086">Micro (interne)</translation>
 <translation id="742594950370306541">La caméra est en cours d'utilisation.</translation>
 <translation id="743058460480092004">La caméra et le micro sont en cours d'utilisation.</translation>
@@ -225,19 +240,24 @@ Appuyez sur Alt + Recherche ou Maj pour le désactiver.</translation>
 <translation id="7823564328645135659">La langue utilisée est passée de "<ph name="FROM_LOCALE" />" à "<ph name="TO_LOCALE" />" après la synchronisation de vos paramètres.</translation>
 <translation id="785750925697875037">Afficher le compte mobile</translation>
 <translation id="7864539943188674973">Désactiver le Bluetooth</translation>
+<translation id="7874779702599364982">Recherche de réseaux cellulaires en cours…</translation>
 <translation id="7893838033650689677">Activer le Wi-Fi</translation>
 <translation id="7904094684485781019">L'administrateur de ce compte a désactivé la connexion multicompte.</translation>
 <translation id="7957227661277029961">Il est possible que votre appareil <ph name="DEVICE_TYPE" /> ne se recharge pas lorsqu'il est allumé. Essayez d'utiliser le chargeur officiel.</translation>
 <translation id="7982789257301363584">Réseau</translation>
+<translation id="8000066093800657092">Aucun réseau détecté</translation>
 <translation id="8054466585765276473">Calcul de l'autonomie de la batterie en cours…</translation>
 <translation id="8077816382010018681">QU Feature notification title here</translation>
 <translation id="8103386449138765447">Messages SMS : <ph name="MESSAGE_COUNT" /></translation>
+<translation id="8132793192354020517">Connecté à <ph name="NAME" /></translation>
 <translation id="8185286464235484130">Donnez-nous votre avis sur nos services en répondant à quelques questions.</translation>
 <translation id="8190698733819146287">Personnaliser les langues et la saisie...</translation>
 <translation id="8206859287963243715">Mobile</translation>
 <translation id="8308637677604853869">Menu précédent</translation>
 <translation id="8356164830168736643">Fermer <ph name="WINDOW_TITLE" /></translation>
 <translation id="8428213095426709021">Paramètres</translation>
+<translation id="8454013096329229812">Le Wi-Fi est activé.</translation>
+<translation id="8484916590211895857"><ph name="NAME" /> : reconnexion…</translation>
 <translation id="8517041960877371778">Il est possible que votre appareil <ph name="DEVICE_TYPE" /> ne se recharge pas lorsqu'il est allumé.</translation>
 <translation id="8528322925433439945">Mobile…</translation>
 <translation id="8639760480004882931"><ph name="PERCENTAGE" /> restant(s)</translation>

@@ -50,6 +50,7 @@
 <translation id="1491663344921578213">В момента не можете да посетите <ph name="SITE" />, защото уебсайтът използва фиксиране на сертификатите. Обикновено мрежовите грешки и атаки са временни, така че тази страница вероятно ще работи по-късно. <ph name="BEGIN_LEARN_MORE_LINK" />Научете повече<ph name="END_LEARN_MORE_LINK" />.</translation>
 <translation id="1506687042165942984">Показване на запазено копие на тази страница (за което е известно, че не е актуално).</translation>
 <translation id="1519264250979466059">Дата на версията</translation>
+<translation id="153384715582417236">Това е всичко засега</translation>
 <translation id="1549470594296187301">Трябва да активирате JavaScript, за да използвате тази функция.</translation>
 <translation id="1559528461873125649">Няма такъв файл или директория</translation>
 <translation id="1559572115229829303">&lt;p&gt;Не може да се установи частна връзка с/ъс <ph name="BEGIN_BOLD" /><ph name="DOMAIN" /><ph name="END_BOLD" />, тъй като датата и часът на устройството ви (<ph name="DATE_AND_TIME" />) са неправилни.&lt;/p&gt;
@@ -350,7 +351,6 @@
 <translation id="4728558894243024398">Платформа</translation>
 <translation id="4744603770635761495">Път към изпълнимия файл</translation>
 <translation id="4756388243121344051">&amp;История</translation>
-<translation id="4759238208242260848">Изтегляния</translation>
 <translation id="4764776831041365478">До уеб страницата на адрес <ph name="URL" /> може временно да няма достъп или да е преместена за постоянно на нов уеб адрес.</translation>
 <translation id="4771973620359291008">Възникна неизвестна грешка.</translation>
 <translation id="4782449893814226250">Попитахте родителите си дали може да посетите тази страница.</translation>
@@ -389,6 +389,7 @@
 <translation id="5179510805599951267">Не е на <ph name="ORIGINAL_LANGUAGE" />? Подайте сигнал за тази грешка</translation>
 <translation id="5190835502935405962">Лента на отметките</translation>
 <translation id="5199729219167945352">Експерименти</translation>
+<translation id="5199841536747119669">Предложенията за вас ще се показват тук</translation>
 <translation id="5251803541071282808">Облак</translation>
 <translation id="5277279256032773186">Използвате Chrome на работното си място? Бизнесите могат да управляват настройките на браузъра за служителите си. Научете повече</translation>
 <translation id="5299298092464848405">Грешка при синтактичния анализ на правилото</translation>
@@ -468,6 +469,7 @@
 <translation id="6263376278284652872">Отметки от <ph name="DOMAIN" /></translation>
 <translation id="6264485186158353794">Назад към безопасната страница</translation>
 <translation id="6282194474023008486">Пощенски код</translation>
+<translation id="6290238015253830360">Предложените ви статии ще се показват тук</translation>
 <translation id="6305205051461490394">Няма достъп до <ph name="URL" />.</translation>
 <translation id="6321917430147971392">Проверете настройките си за DNS</translation>
 <translation id="6328639280570009161">Опитайте да деактивирате предвижданията за мрежата</translation>
@@ -651,6 +653,7 @@
 <translation id="8363502534493474904">Изключете самолетния режим.</translation>
 <translation id="8364627913115013041">Не е зададено.</translation>
 <translation id="8380941800586852976">Опасно</translation>
+<translation id="8382348898565613901">Наскоро посетените от вас отметки ще се показват тук</translation>
 <translation id="8412145213513410671">Сривове (<ph name="CRASH_COUNT" />)</translation>
 <translation id="8412392972487953978">Трябва да въведете един и същи пропуск два пъти.</translation>
 <translation id="8428213095426709021">Настройки</translation>
@@ -700,6 +703,7 @@
 <translation id="8987927404178983737">Месец</translation>
 <translation id="8989148748219918422"><ph name="ORGANIZATION" /> [<ph name="COUNTRY" />]</translation>
 <translation id="9001074447101275817">Изискват се потребителско име и парола за прокси сървъра <ph name="DOMAIN" />.</translation>
+<translation id="9008201768610948239">Пренебрегване</translation>
 <translation id="901974403500617787">Флаговете, които се прилагат за цялата система, могат да бъдат зададени само от собственика: <ph name="OWNER_EMAIL" />.</translation>
 <translation id="9020542370529661692">Тази страница е преведена на <ph name="TARGET_LANGUAGE" /></translation>
 <translation id="9038649477754266430">Използване на услуга за предвиждане с цел по-бързо зареждане на страниците</translation>

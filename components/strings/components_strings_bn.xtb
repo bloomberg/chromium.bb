@@ -50,6 +50,7 @@
 <translation id="1491663344921578213">আপনি এখন <ph name="SITE" /> এ যেতে পারবেন না কারণ ওয়েবসাইটটি পিন করা শংসাপত্র ব্যবহার করছে। নেটওয়ার্ক ত্রুটি এবং আক্রমণ সাধারণত সাময়িকভাবে হয়ে থাকে, তাই এই পৃষ্ঠাটি সম্ভবত পরে কাজ করবে। <ph name="BEGIN_LEARN_MORE_LINK" />আরো জানুন<ph name="END_LEARN_MORE_LINK" />।</translation>
 <translation id="1506687042165942984">এই পৃষ্ঠার একটি সংরক্ষিত প্রতিলিপি (অর্থাৎ,তারিখ সীমার বাইরে হিসাবে পরিচিত) প্রদর্শন করুন৷</translation>
 <translation id="1519264250979466059">নির্মাণের তারিখ</translation>
+<translation id="153384715582417236">এখন এই পর্যন্তই</translation>
 <translation id="1549470594296187301">এই বৈশিষ্ট্যটি ব্যবহার করার জন্য JavaScript সক্ষম করা প্রয়োজন।</translation>
 <translation id="1559528461873125649">এমন কোন ফাইল বা ডিরেক্টরি নেই</translation>
 <translation id="1559572115229829303">&lt;p&gt;<ph name="BEGIN_BOLD" /><ph name="DOMAIN" /><ph name="END_BOLD" /> এ একটি ব্যক্তিগত সংযোগ স্থাপন করা যায়নি কারণ আপনার ডিভাইসের তারিখ এবং সময় (<ph name="DATE_AND_TIME" />) সঠিক নয়৷&lt;/p&gt;
@@ -351,7 +352,6 @@
 <translation id="4728558894243024398">প্ল্যাটফর্ম</translation>
 <translation id="4744603770635761495">সম্পাদনযোগ্য পথ</translation>
 <translation id="4756388243121344051">&amp;ইতিহাস</translation>
-<translation id="4759238208242260848">ডাউনলোডগুলি</translation>
 <translation id="4764776831041365478"><ph name="URL" />-এ ওয়েবপৃষ্ঠাটি হতে পারে অস্থায়ীভাবে ডাউন আছে অথবা হতে পারে এটি স্থায়ীভাবে কোনো নতুন ওয়েব ঠিকানাতে সরানো হয়েছে৷</translation>
 <translation id="4771973620359291008">একটি অজানা ত্রুটি ঘটেছে৷</translation>
 <translation id="4782449893814226250">এই পৃষ্ঠাটি দেখার জন্য উপযুক্ত কিনা তা আপনি আপনার মাতাপিতাকে জিজ্ঞাসা করেছেন৷</translation>
@@ -390,6 +390,7 @@
 <translation id="5179510805599951267"><ph name="ORIGINAL_LANGUAGE" />-এ নেই? এই ত্রুটি রিপোর্ট করুন</translation>
 <translation id="5190835502935405962">বুকমার্ক দণ্ড</translation>
 <translation id="5199729219167945352">পরীক্ষাদি</translation>
+<translation id="5199841536747119669">আপনার প্রস্তাবনাগুলি এখানে দেখা যাবে</translation>
 <translation id="5251803541071282808">ক্লাউড</translation>
 <translation id="5277279256032773186">কর্মক্ষেত্রে Chrome ব্যবহার করছেন? ব্যবসাগুলো তাদের কর্মচারীদের জন্য Chrome সেটিংস পরিচালনা করতে পারে। আরো জানুন</translation>
 <translation id="5299298092464848405">নীতি বিশ্লেষণ করার সময় ত্রুটি</translation>
@@ -468,6 +469,7 @@
 <translation id="6263376278284652872"><ph name="DOMAIN" /> বুকমার্কগুলি</translation>
 <translation id="6264485186158353794">সুরক্ষাতে ফিরুন</translation>
 <translation id="6282194474023008486">পোস্টাল কোড</translation>
+<translation id="6290238015253830360">আপনার প্রস্তাবিত নিবন্ধগুলি এখানে দেখা যাবে</translation>
 <translation id="6305205051461490394"><ph name="URL" /> এ পৌঁছানো যাচ্ছে না</translation>
 <translation id="6321917430147971392">আপনার DNS সেটিংস পরীক্ষা করুন</translation>
 <translation id="6328639280570009161">নেটওয়ার্ক পূর্বানুমান নিষ্ক্রিয় করার চেষ্টা করুন</translation>
@@ -651,6 +653,7 @@
 <translation id="8363502534493474904">বিমান মোড বন্ধ করে দেখুন</translation>
 <translation id="8364627913115013041">সেট করা নেই৷</translation>
 <translation id="8380941800586852976">বিপজ্জনক</translation>
+<translation id="8382348898565613901">আপনার সম্প্রতি ঘুরে দেখা বুকমার্কগুলি এখানে দেখা যাবে</translation>
 <translation id="8412145213513410671">ক্র্যাশ (<ph name="CRASH_COUNT" />টি)</translation>
 <translation id="8412392972487953978">আপনাকে একই পাসফ্রেজ অবশ্যই দু'বার প্রবেশ করাতে হবে৷</translation>
 <translation id="8428213095426709021">সেটিংস</translation>
@@ -700,6 +703,7 @@
 <translation id="8987927404178983737">মাস</translation>
 <translation id="8989148748219918422"><ph name="ORGANIZATION" /> [<ph name="COUNTRY" />]</translation>
 <translation id="9001074447101275817"><ph name="DOMAIN" /> প্রক্সীটির একটি ব্যবহারকারী নাম এবং পাসওয়ার্ড প্রয়োজন।</translation>
+<translation id="9008201768610948239">উপেক্ষা করুন</translation>
 <translation id="901974403500617787">যে ফ্ল্যাগগুলি সমস্ত সিস্টেম জুড়ে প্রয়োগ করা হয় সেগুলি শুধুমাত্র মালিকের দ্বারা সেট করা যেতে পারে: <ph name="OWNER_EMAIL" />৷</translation>
 <translation id="9020542370529661692">এই পৃষ্ঠাটি <ph name="TARGET_LANGUAGE" /> এ অনুবাদ করা হয়েছে</translation>
 <translation id="9038649477754266430">পৃষ্ঠা আরো দ্রুত লোড করার জন্য কোনো পূর্বাভাষ পরিষেবা ব্যবহার করুন</translation>

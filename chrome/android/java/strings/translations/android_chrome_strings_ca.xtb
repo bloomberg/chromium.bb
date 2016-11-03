@@ -95,7 +95,6 @@ Heu de tenir activats el Bluetooth i la ubicació per poder utilitzar el Web fí
 <translation id="200669432486043882">Substitueix el fitxer</translation>
 <translation id="2020525020270327736">Copia el lloc</translation>
 <translation id="2038563949887743358">Activa Mostra com a ordinador</translation>
-<translation id="2069736994598857257">GB utilitzats: <ph name="GIGABYTES" /></translation>
 <translation id="2073235970478114994">Carrega les imatges</translation>
 <translation id="2079545284768500474">Desfés</translation>
 <translation id="2082238445998314030">Resultat <ph name="RESULT_NUMBER" /> de <ph name="TOTAL_RESULTS" /></translation>
@@ -324,6 +323,7 @@ Per ajustar el terme de la cerca, manteniu-lo premut per seleccionar-lo. Per def
 <translation id="4816465935029283692">Tipus de dades</translation>
 <translation id="4827948050554950725">Afegeix una targeta de crèdit</translation>
 <translation id="4836364883164334657">La vostra connexió a aquest lloc no és privada. És possible que alguns atacants provin de robar-vos informació (per exemple, fotos, contrasenyes, missatges i dades de targetes de crèdit) del domini <ph name="DOMAIN_NAME" />.</translation>
+<translation id="4850886885716139402">Visualització</translation>
 <translation id="4881695831933465202">Obre</translation>
 <translation id="4885273946141277891">No s'admet aquest nombre d'instàncies de Chrome.</translation>
 <translation id="4923459931733593730">Pagament</translation>
@@ -339,7 +339,9 @@ Per ajustar el terme de la cerca, manteniu-lo premut per seleccionar-lo. Per def
 <translation id="5016205925109358554">Serif</translation>
 <translation id="5039804452771397117">Permet</translation>
 <translation id="5040262127954254034">Privadesa</translation>
+<translation id="5053110706349648690">Activa el Bluetooth a la <ph name="BEGIN_LINK" />configuració del dispositiu<ph name="END_LINK" /> per permetre la vinculació</translation>
 <translation id="5063480226653192405">Ús</translation>
+<translation id="5087580092889165836">Afegiu una targeta</translation>
 <translation id="5100237604440890931">Vista replegada (feu clic per desplegar-la)</translation>
 <translation id="510275257476243843">Queda 1 hora</translation>
 <translation id="5127805178023152808">Sincronització desactivada</translation>
@@ -416,6 +418,7 @@ Tanmateix, no sou invisible. El vostre cap, el vostre proveïdor de serveis d'In
 <translation id="583281660410589416">Desconegut</translation>
 <translation id="5832934273103296195">Vista ampliada (feu clic per reduir-la)</translation>
 <translation id="583891442612896534">Chrome no es pot connectar amb els servidors de Google per comprimir les dades. És possible que només pugueu desar dades de manera limitada.</translation>
+<translation id="5843873952582375185">No s'ha trobat cap dispositiu Bluetooth. <ph name="BEGIN_LINK" />Torna a fer la cerca<ph name="END_LINK" /></translation>
 <translation id="585027516397408832">Economitzador de dades està activat</translation>
 <translation id="5860033963881614850">Desactivat</translation>
 <translation id="5867027562311576691">Aviat es mostraran més articles. Que tinguis un bon matí.</translation>
@@ -490,6 +493,7 @@ Per exemple, és possible que alguns llocs web responguin a aquesta sol·licitud
 <translation id="6657585470893396449">Contrasenya</translation>
 <translation id="6659594942844771486">Pestanya</translation>
 <translation id="666268767214822976">Utilitza un servei de predicció per mostrar consultes relacionades i llocs web populars mentre escriviu a la barra d'adreces</translation>
+<translation id="666731172850799929">Obre a <ph name="APP_NAME" /></translation>
 <translation id="666981079809192359">Avís de privadesa de Chrome</translation>
 <translation id="6698801883190606802">Gestioneu les dades sincronitzades</translation>
 <translation id="6710213216561001401">Anterior</translation>
@@ -532,14 +536,12 @@ Per exemple, és possible que alguns llocs web responguin a aquesta sol·licitud
 <translation id="7074853159844403180"><ph name="SITE" /> es vol vincular amb:</translation>
 <translation id="7081639897063626814">Mantén les dades actuals separades</translation>
 <translation id="7094922512924405309">No s'ha trobat cap pàgina del Web físic a prop</translation>
-<translation id="7115197232530297436">No s'admet l'adreça d'enviament. Seleccioneu-ne una altra.</translation>
 <translation id="7138678301420049075">Altres</translation>
 <translation id="7180611975245234373">Actualitza</translation>
 <translation id="7191430249889272776">Pestanya oberta en segon pla</translation>
 <translation id="7208788139759694678">Economitzador de dades està desactivat</translation>
 <translation id="7243308994586599757">Opcions disponibles a la part inferior de la pantalla</translation>
 <translation id="7244362611678346589"><ph name="SEARCH_ENGINE_URL" /> utilitza la vostra ubicació per mostrar resultats de cerca locals</translation>
-<translation id="7347770551817603360">Contingut sense connexió</translation>
 <translation id="7353894246028566792">{NUM_SELECTED,plural, =1{Comparteix 1 element seleccionat}other{Comparteix # elements seleccionats}}</translation>
 <translation id="7366340029385295517">S'està emetent a <ph name="SCREEN_NAME" /></translation>
 <translation id="7375125077091615385">Tipus:</translation>
@@ -576,7 +578,6 @@ Per exemple, és possible que alguns llocs web responguin a aquesta sol·licitud
 <translation id="7665369617277396874">Afegeix un compte</translation>
 <translation id="7682287625158474539">Enviament</translation>
 <translation id="771135159654932189">Vegeu què teniu a prop</translation>
-<translation id="7713873128508426081">Sempre permès</translation>
 <translation id="7764225426217299476">Afegeix una adreça</translation>
 <translation id="7765158879357617694">Desplaça</translation>
 <translation id="7769602470925380267">Accepta i tanca la sessió</translation>
@@ -645,15 +646,12 @@ Per exemple, és possible que alguns llocs web responguin a aquesta sol·licitud
 <translation id="8514577642972634246">Entra al mode d'incògnit</translation>
 <translation id="8518901949365209398">Aquest lloc fa servir una configuració de seguretat dèbil (signatures SHA-1), de manera que és possible que la vostra connexió no sigui privada.</translation>
 <translation id="8523928698583292556">Suprimeix la contrasenya emmagatzemada</translation>
-<translation id="8525306231823319788">Pantalla completa</translation>
-<translation id="85415543246899402"><ph name="MEGABYTES" /> MB en ús</translation>
 <translation id="854522910157234410">Obre aquesta pàgina</translation>
 <translation id="8562452229998620586">Les contrasenyes desades apareixeran aquí.</translation>
 <translation id="856481929701340285">Mostra com a ordinador</translation>
 <translation id="857943718398505171">Permès (recomanat)</translation>
 <translation id="8583805026567836021">S'estan esborrant les dades del compte</translation>
 <translation id="8617240290563765734">Voleu obrir l'URL suggerit que s'especifica al contingut que s'ha baixat?</translation>
-<translation id="8618653050765576793"><ph name="KILOBYTES" /> kB en ús</translation>
 <translation id="862875433388403934">És possible que el contingut (pel·lícules, música, etc.) que hàgiu baixat en altres aplicacions ja no es pugui reproduir fins que aquestes aplicacions no tornin a adquirir llicències basades en les credencials del dispositiu nou.
 
 Per obtenir llicències noves, connecteu-vos a Internet i reproduïu el contingut que tingueu baixat.</translation>

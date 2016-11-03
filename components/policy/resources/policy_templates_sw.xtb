@@ -291,7 +291,7 @@ Sera hii ikiondolewa, chaguo-msingi zitatumika kwa mipangilio yote.</translation
       Kipengee cha HardwareAccelerationModeEnabled kikiwekwa kuwa sivyo,  Disable3DAPIs hupuuzwa na ni sawa na Disable3DAPIs kuwekwa kuwa ndivyo.</translation>
 <translation id="2168397434410358693">Kutokuwa na shughuli kunachelewesha wakati wa kuendesha kwenye nishati ya AC</translation>
 <translation id="2170233653554726857">Washa uboreshaji wa WPAD</translation>
-<translation id="2178899310296064282">Tekeleza angalau Hali Yenye Mipaka kwenye YouTube</translation>
+<translation id="2178899310296064282">Tekeleza angalau Hali Yenye Mipaka Wastani kwenye YouTube</translation>
 <translation id="2188979373208322108">Inawezesha upau wa alamisho kwenye <ph name="PRODUCT_NAME" />.
 
       Ukiwezesha mpangilio huu, <ph name="PRODUCT_NAME" /> itaonyesha upau wa alamisho.
@@ -339,13 +339,6 @@ Sera hii ikiondolewa, chaguo-msingi zitatumika kwa mipangilio yote.</translation
 <translation id="2337466621458842053">Inakuruhusu kuweka orodha ya ruwaza za url zinazobainisha tovuti zinazoruhusiwa kuonyesha picha.
 
          Ikiwa sera hii itaachwa bila thamani chaguo-msingi yote itatumiwa kwa tovuti zote kutoka kwenye sera ya 'DefaultImageSetting' ikiwa imewekwa, au vinginevyo usanidi binafsi wa mtumiaji.</translation>
-<translation id="2359612025446382967">Sera hii ikiwekwa kuwa sivyo, <ph name="PRODUCT_OS_NAME" /> itazima Bluetooth na mtumiaji hawezi kuiwasha tena.
-
-     Sera hii ikiwekwa kuwa ndivyo au isipowekwa, mtumiaji ataweza kuwasha au kuzima Bluetooth apendavyo.
-
-      Sera hii ikiwekwa, mtumiaji hawezi kuibadilisha au kuibatilisha.
-
-      Baada ya kuwasha Bluetooth, lazima kifaa kiwashwe tena ili mabadiliko yatekelezwe (hakuna haja ya kuwasha kifaa tena unapozima Bluetooth).</translation>
 <translation id="2366415278352956652">Huwasha kipengele cha kutuma</translation>
 <translation id="2372547058085956601">Ucheleweshwaji wa kuingia kiotomatiki katika kipindi cha umma.
 
@@ -1036,7 +1029,7 @@ Sera hii inatumika tu kama sera ya 'DefaultSearchProviderEnabled' imewashwa.</tr
 
       Kumbuka kwamba sera hii inaweza kubatilishwa na EnabledPlugins na DisabledPluginsExceptions.
 
-      Sera hii ikiachwa bila kuwekwa mtumiaji anaweza kutumia programu-jalizi yoyote iliyosakinishwa kwenye mfumo isipokuwa programu-jalizi ambazo zimewekwa msimbo dhabiti ambazo hazioani, zilizokwisha muda au ni hatari.</translation>
+      Sera hii ikiachwa bila kuwekwa mtumiaji anaweza kutumia programu-jalizi yoyote iliyosakinishwa kwenye mfumo isipokuwa programu-jalizi ambazo zimewekwa msimbo thabiti ambazo hazioani, zilizokwisha muda au ni hatari.</translation>
 <translation id="410478022164847452">Hubainisha urefu wa muda bila mchango wa mtumiaji ambao baadaye hatua isiyo na shughuli huchukuliwa inapoendeshwa kwenye nishati ya AC.
 
           Sera hii inapowekwa, hubainisha urefu wa muda ambao lazima mtumiaji asalie bila shughuli kabla ya <ph name="PRODUCT_OS_NAME" /> kuchukua hatua ya kutokuwa na shughuli, kinachoweza kusanidiwa tofauti.
@@ -1537,13 +1530,6 @@ Kama sera hii haijawekwa, kishale kikubwa huzimwa wakati skrini ya kuingia katik
 
       Ikiwa sera hii haitawekwa, au ikiwekwa kuwa sivyo, basi <ph name="PRODUCT_NAME" /> haitatekeleza ukaguzi wa ubatilishaji wa mtandaoni katika <ph name="PRODUCT_NAME" /> 19 na matoleo mapya zaidi.</translation>
 <translation id="5966615072639944554">Viendelezi vinaruhusiwa kutumia API ya usahihishaji wa mbali</translation>
-<translation id="5974970919245996815">Ripoti ya maelezo kuhusu hali ya Android imetumwa kwenye
-      seva.
-
-      Sera hii ikiwekwa kuwa sivyo, maelezo hayataripotiwa.
-      Ikiwekwa kuwa ndivyo au iachwe bila kuwekwa, maelezo yataripotiwa.
-
-      Sera hii inatumika tu iwapo progamu za Android zimewashwa.</translation>
 <translation id="5983708779415553259">Tabia chaguo-msingi ya tovuti zisizo katika furushi lolote la maudhui</translation>
 <translation id="5997543603646547632">Tumia saa ya saa 24 kwa chaguo-msingi</translation>
 <translation id="6009903244351574348">Ruhusu <ph name="PRODUCT_FRAME_NAME" /> kushughulikia aina zilizoorodheshwa za maudhui.

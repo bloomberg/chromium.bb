@@ -27,6 +27,9 @@ Para mais informações acerca da privacidade, consulte a Política de Privacida
 <translation id="1654128982815600832">A ativar as ligações remotas neste computador…</translation>
 <translation id="170207782578677537">Falha ao registar o computador.</translation>
 <translation id="1704090719919187045">Preferências do Anfitrião do Chromoting</translation>
+<translation id="1730409684442507495">• Melhor qualidade de imagem no ambiente de trabalho, capacidade de resposta e consumo da bateria.
+• Melhor capacidade de resposta das operações de arrastar e largar.
+• Vários efeitos de animação da IU melhorados.</translation>
 <translation id="174018511426417793">Não existem computadores registados. Para ativar as ligações remotas a um computador, instale o Ambiente de Trabalho Remoto do Chrome aí e clique em “<ph name="BUTTON_NAME" />”.</translation>
 <translation id="1742469581923031760">A ligar...</translation>
 <translation id="1770394049404108959">Não consigo abrir a aplicação.</translation>
@@ -73,7 +76,6 @@ Para mais informações acerca da privacidade, consulte a Política de Privacida
 <translation id="2699970397166997657">Chromoting</translation>
 <translation id="2747641796667576127">As atualizações de software normalmente ocorrem automaticamente, embora possam falhar nalguns casos raros. A atualização de software não deve demorar mais do que alguns minutos e pode ser feita através do acesso remoto ao seu computador.</translation>
 <translation id="2841013758207633010">Tempo</translation>
-<translation id="2851674870054673688">A sessão de partilha começa assim que introduzirem o código.</translation>
 <translation id="2851754573186462851">Chromium App Streaming</translation>
 <translation id="2855866366045322178">offline</translation>
 <translation id="2888969873284818612">Ocorreu um erro de rede. Quando o dispositivo estiver online novamente, reiniciamos a aplicação.</translation>

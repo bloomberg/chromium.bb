@@ -1,41 +1,20 @@
 <?xml version="1.0" ?>
 <!DOCTYPE translationbundle>
 <translationbundle lang="th">
-<translation id="153454903766751181">กำลังเริ่มต้นโมเด็มมือถือ...</translation>
 <translation id="1829129547161959350">นกเพนกวิน</translation>
-<translation id="1850504506766569011">WiFi ปิดอยู่</translation>
 <translation id="2288278176040912387">เครื่องเล่นแผ่นเสียง</translation>
-<translation id="2354174487190027830">กำลังเปิดใช้งาน <ph name="NAME" /></translation>
 <translation id="2563185590376525700">กบ</translation>
 <translation id="2649120831653069427">ปลาเรนโบว์</translation>
-<translation id="277257480934873581">กำลังเชื่อมต่อ <ph name="NAME" /> อีกครั้ง</translation>
 <translation id="2894654529758326923">ข้อมูล</translation>
 <translation id="2951236788251446349">แมงกะพรุน</translation>
-<translation id="3846575436967432996">ไม่มีข้อมูลเครือข่ายที่สามารถใช้งานได้</translation>
-<translation id="3901991538546252627">กำลังเชื่อมต่อกับ <ph name="NAME" /></translation>
 <translation id="3958548648197196644">กีวี</translation>
-<translation id="4118990158415604803">ผู้ดูแลระบบปิดใช้การเชื่อมต่อเครือข่ายอื่นๆ</translation>
 <translation id="4326192123064055915">กาแฟ</translation>
-<translation id="4448844063988177157">กำลังค้นหาเครือข่าย Wi-Fi...</translation>
-<translation id="4479639480957787382">อีเทอร์เน็ต</translation>
-<translation id="4508225577814909926"><ph name="NAME" />: กำลังเชื่อมต่อ...</translation>
 <translation id="4559767610552730302">ชัดตื้น</translation>
 <translation id="4935975195727477204">ดอกทานตะวัน</translation>
 <translation id="515594325917491223">หมากรุก</translation>
 <translation id="5257456363153333584">แมลงปอ</translation>
-<translation id="6267036997247669271"><ph name="NAME" /> กำลังเปิดใช้งาน...</translation>
-<translation id="6549021752953852991">ไม่มีเครือข่ายมือถือที่ใช้งานได้</translation>
-<translation id="6857811139397017780">เปิดใช้งาน <ph name="NETWORKSERVICE" /></translation>
 <translation id="6935521024859866267">กลับหัว</translation>
-<translation id="7066646422045619941">ผู้ดูแลระบบปิดใช้เครือข่ายนี้</translation>
-<translation id="735745346212279324">ยกเลิกการเชื่อมต่อ VPN แล้ว</translation>
-<translation id="7874779702599364982">กำลังค้นหาเครือข่ายโทรศัพท์มือถือ...</translation>
-<translation id="8000066093800657092">ไม่มีเครือข่าย</translation>
 <translation id="8008366997883261463">สุนัข</translation>
-<translation id="8132793192354020517">เชื่อมต่อกับ <ph name="NAME" /></translation>
-<translation id="8454013096329229812">WiFi เปิดอยู่</translation>
-<translation id="8484916590211895857"><ph name="NAME" />: กำลังเชื่อมต่อใหม่...</translation>
 <translation id="8714406895390098252">จักรยาน</translation>
 <translation id="8808686172382650546">แมว</translation>
-<translation id="8814190375133053267">Wi-Fi</translation>
 </translationbundle>

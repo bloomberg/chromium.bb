@@ -1,41 +1,20 @@
 <?xml version="1.0" ?>
 <!DOCTYPE translationbundle>
 <translationbundle lang="fa">
-<translation id="153454903766751181">در حال راه‌اندازی مودم سلولی...</translation>
 <translation id="1829129547161959350">پنگوئن</translation>
-<translation id="1850504506766569011">‏Wi-Fi خاموش است.</translation>
 <translation id="2288278176040912387">ضبط صوت</translation>
-<translation id="2354174487190027830">فعال‌سازی <ph name="NAME" /></translation>
 <translation id="2563185590376525700">قورباغه</translation>
 <translation id="2649120831653069427">ماهی رنگین‌مکان</translation>
-<translation id="277257480934873581">اتصال مجدد به <ph name="NAME" /></translation>
 <translation id="2894654529758326923">اطلاعات</translation>
 <translation id="2951236788251446349">عروس دریایی</translation>
-<translation id="3846575436967432996">اطلاعات شبکه در دسترس نیست</translation>
-<translation id="3901991538546252627">در حال اتصال به <ph name="NAME" /></translation>
 <translation id="3958548648197196644">کیوی</translation>
-<translation id="4118990158415604803">اتصال به شبکه‌های دیگر توسط سرپرست شما غیرفعال شده است.</translation>
 <translation id="4326192123064055915">قهوه</translation>
-<translation id="4448844063988177157">‏در حال جستجوی شبکه‌های Wi-Fi...</translation>
-<translation id="4479639480957787382">اترنت</translation>
-<translation id="4508225577814909926"><ph name="NAME" />: در حال اتصال...</translation>
 <translation id="4559767610552730302">بوکه</translation>
 <translation id="4935975195727477204">گل میخک</translation>
 <translation id="515594325917491223">شطرنج</translation>
 <translation id="5257456363153333584">سنجاقک</translation>
-<translation id="6267036997247669271"><ph name="NAME" />: در حال فعال‌سازی…</translation>
-<translation id="6549021752953852991">هیچ شبکه سلولی در دسترس نیست</translation>
-<translation id="6857811139397017780">فعال سازی <ph name="NETWORKSERVICE" /></translation>
 <translation id="6935521024859866267">وارونه</translation>
-<translation id="7066646422045619941">این شبکه توسط سرپرست شما غیرفعال شده است.</translation>
-<translation id="735745346212279324">‏VPN قطع است</translation>
-<translation id="7874779702599364982">جستجو برای شبکه‌های تلفن همراه ...</translation>
-<translation id="8000066093800657092">بدون شبکه</translation>
 <translation id="8008366997883261463">جک راسل تریر</translation>
-<translation id="8132793192354020517">متصل به <ph name="NAME" /></translation>
-<translation id="8454013096329229812">‏Wi-Fi روشن است.</translation>
-<translation id="8484916590211895857"><ph name="NAME" />: درحال اتصال مجدد...</translation>
 <translation id="8714406895390098252">دوچرخه</translation>
 <translation id="8808686172382650546">گربه</translation>
-<translation id="8814190375133053267">Wi-Fi</translation>
 </translationbundle>

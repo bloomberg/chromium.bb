@@ -350,7 +350,6 @@
 <translation id="4728558894243024398">प्लेटफ़ॉर्म</translation>
 <translation id="4744603770635761495">निष्पादन-योग्य पथ</translation>
 <translation id="4756388243121344051">&amp;इतिहास</translation>
-<translation id="4759238208242260848">डाउनलोड</translation>
 <translation id="4764776831041365478"><ph name="URL" /> पर मौजूद वेबपृष्ठ संभवतः अस्थायी रूप से बंद है या उसे स्थायी रूप से किसी नए वेब पते पर ले जाया गया है.</translation>
 <translation id="4771973620359291008">अज्ञात त्रुटि आई.</translation>
 <translation id="4782449893814226250">आपने अपने अभिभावकों से पूछा था कि इस पृष्‍ठ पर जाना ठीक है या नहीं.</translation>
@@ -698,6 +697,7 @@
 <translation id="8987927404178983737">माह</translation>
 <translation id="8989148748219918422"><ph name="ORGANIZATION" /> [<ph name="COUNTRY" />]</translation>
 <translation id="9001074447101275817">प्रॉक्‍सी <ph name="DOMAIN" /> के लिए उपयोगकर्ता नाम और पासवर्ड की आवश्यकता है.</translation>
+<translation id="9008201768610948239">ध्यान न दें</translation>
 <translation id="901974403500617787">सिस्टम-व्यापी रूप से लागू होने वाले फ़्लैग केवल मालिक द्वारा ही सेट किए जा सकते हैं: <ph name="OWNER_EMAIL" />.</translation>
 <translation id="9020542370529661692">इस पृष्ठ का <ph name="TARGET_LANGUAGE" /> में अनुवाद कर दिया गया है</translation>
 <translation id="9038649477754266430">अधिक तेज़ी से पृष्ठ लोड करने के लिए किसी पूर्वानुमान सेवा का उपयोग करें</translation>

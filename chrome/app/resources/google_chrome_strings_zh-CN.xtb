@@ -59,7 +59,6 @@
 <translation id="2588322182880276190">Chrome 徽标</translation>
 <translation id="2664962310688259219">Chrome操作系统开放源代码许可</translation>
 <translation id="2665296953892887393">将崩溃报告和<ph name="UMA_LINK" />发送给Google，帮助我们完善Google Chrome。</translation>
-<translation id="2669824781555328029"><ph name="FILE_NAME" />会影响您的浏览体验，因此Chrome已将其阻止。</translation>
 <translation id="2681064822612051220">在系统中安装“Google 酷容浏览器”时发现已存在其他版本，请先卸载然后重试。</translation>
 <translation id="2689103672227170538">此扩展程序更改了 Chrome 启动后系统显示的页面。</translation>
 <translation id="2704356438731803243">如果您希望单独保存现有的 Chrome 数据，可以为 <ph name="USER_NAME" /> 新建一个 Chrome 用户。</translation>
@@ -129,6 +128,7 @@
 <translation id="4700157086864140907">Google Chrome会将您在浏览器中输入的内容发送到Google服务器，并使用Google搜索所用的拼写检查技术，因而可为您提供更智能的拼写检查功能。</translation>
 <translation id="4728575227883772061">未知错误导致安装失败。如果 Google Chrome 浏览器正在运行，请将其关闭，然后重试。</translation>
 <translation id="4743926867934016338">接受并搜索</translation>
+<translation id="4750550185319565338">重新启动 Chrome 以启用 <ph name="PLUGIN_NAME" /></translation>
 <translation id="4751441238232965030">此计算机很快将停止接收 32 位 Google Chrome 更新。请升级到 64 位 Google Chrome。</translation>
 <translation id="4754614261631455953">Google Chrome Canary (mDNS-In)</translation>
 <translation id="4771048833395599659">此文件可能存在危险，因此 Chrome 已将其拦截。</translation>
@@ -147,6 +147,7 @@
 <translation id="5148419164691878332">Chromium 会将此密码存储在您的<ph name="SAVED_PASSWORDS_LINK" />中，并会在您下次需要时自动填充此密码。</translation>
 <translation id="5170938038195470297">您的个人资料来自新版 Google Chrome 浏览器，因此无法使用。某些功能可能无法使用。请指定其他个人资料目录，或使用新版 Chrome 浏览器。</translation>
 <translation id="5176234269072261959">报告当前设置，帮助我们改进 Chrome。</translation>
+<translation id="5193136243808726294">Google Chrome 操作系统无法打开此网页。</translation>
 <translation id="5204098752394657250">Google Chrome　<ph name="TERMS_OF_SERVICE_LINK" />服务条款<ph name="END_TERMS_OF_SERVICE_LINK" /></translation>
 <translation id="5243785881901838525">Google Payments（已同步到 Chrome）</translation>
 <translation id="5251420635869119124">访客使用Chrome不会留下任何痕迹。</translation>
@@ -205,7 +206,6 @@
 <translation id="699076943483372849">此网站使用的 Chrome 内嵌框架插件已停用，并且不再接收安全性和稳定性更新。请将其卸载，然后升级到新型浏览器。</translation>
 <translation id="6991142834212251086">将我的 Chrome 数据与此帐户关联</translation>
 <translation id="7060865993964054389">Google Chrome 应用启动器</translation>
-<translation id="7084448929020576097"><ph name="FILE_NAME" /> 是恶意文件，Chrome 已将其拦截。</translation>
 <translation id="7098166902387133879">Google Chrome 正在使用您的麦克风。</translation>
 <translation id="7106741999175697885">任务管理器 - Google Chrome</translation>
 <translation id="7125719106133729027">Chrome无法自动更新到最新版本，因此其中缺少一些非常棒的新功能和安全修复程序。要获得这些内容，您需要手动重新安装Chrome。</translation>
@@ -268,7 +268,6 @@
 <translation id="8669527147644353129">Google Chrome 浏览器帮助程序</translation>
 <translation id="8679801911857917785">它还能够控制Chrome启动后显示的页面。</translation>
 <translation id="870251953148363156">更新 Google Chrome(&amp;G)</translation>
-<translation id="8793772303278047003">Chrome 版本太旧。</translation>
 <translation id="8796108026289707191">您应立即重新启动 Google Chrome。</translation>
 <translation id="8823341990149967727">Chrome版本太旧</translation>
 <translation id="884296878221830158">它还能够控制您启动Chrome或点击“主页”按钮后系统显示的页面。</translation>
@@ -277,7 +276,6 @@
 <translation id="8914504000324227558">重启 Chrome</translation>
 <translation id="9026991721384951619">您的帐户登录详细信息已过期，Chrome操作系统无法同步您的数据。</translation>
 <translation id="9067395829937117663">Google Chrome 仅支持 Windows 7 或更高版本的操作系统。</translation>
-<translation id="9102715433345326100">这是恶意文件，Chrome 已将其拦截。</translation>
 <translation id="9107728822479888688"><ph name="BEGIN_BOLD" />警告<ph name="END_BOLD" />：Google Chrome 浏览器无法阻止扩展程序记录您的浏览记录。要在隐身模式下停用此扩展程序，请取消选中此选项。</translation>
 <translation id="911206726377975832">同时删除您的浏览数据吗？</translation>
 <translation id="924447568950697217">将 Chrome 设置为您的默认浏览器</translation>

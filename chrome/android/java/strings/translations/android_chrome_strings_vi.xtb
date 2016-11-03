@@ -95,7 +95,6 @@ Bạn phải bật Bluetooth và Vị trí để sử dụng Web trong cuộc s�
 <translation id="200669432486043882">Thay thế tệp</translation>
 <translation id="2020525020270327736">Sao chép trang web</translation>
 <translation id="2038563949887743358">Bật Yêu cầu trang web cho máy tính</translation>
-<translation id="2069736994598857257">Đã sử dụng <ph name="GIGABYTES" /> GB</translation>
 <translation id="2073235970478114994">Tải hình ảnh</translation>
 <translation id="2079545284768500474">Hoàn tác</translation>
 <translation id="2082238445998314030">Kết quả <ph name="RESULT_NUMBER" /> trong tổng số <ph name="TOTAL_RESULTS" /></translation>
@@ -324,6 +323,7 @@ Bạn có thể kiểm soát cài đặt Web trong cuộc sống trên Chrome.
 <translation id="4816465935029283692">Loại dữ liệu</translation>
 <translation id="4827948050554950725">Thêm thẻ tín dụng</translation>
 <translation id="4836364883164334657">Kết nối của bạn tới trang web này không ở chế độ riêng tư. Những kẻ tấn công có thể tìm cách lấy cắp thông tin của bạn (ví dụ: ảnh, mật khẩu, tin nhắn và thẻ tín dụng) từ <ph name="DOMAIN_NAME" />.</translation>
+<translation id="4850886885716139402">Xem</translation>
 <translation id="4881695831933465202">Mở</translation>
 <translation id="4885273946141277891">Số phiên bản Chrome không được hỗ trợ.</translation>
 <translation id="4923459931733593730">Thanh toán</translation>
@@ -339,7 +339,9 @@ Bạn có thể kiểm soát cài đặt Web trong cuộc sống trên Chrome.
 <translation id="5016205925109358554">Serif</translation>
 <translation id="5039804452771397117">Cho phép</translation>
 <translation id="5040262127954254034">Bảo mật</translation>
+<translation id="5053110706349648690">Bật Bluetooth trong <ph name="BEGIN_LINK" />cài đặt thiết bị<ph name="END_LINK" /> để cho phép ghép nối</translation>
 <translation id="5063480226653192405">Sử dụng</translation>
+<translation id="5087580092889165836">Thêm thẻ</translation>
 <translation id="5100237604440890931">Đã thu gọn - nhấp để mở rộng.</translation>
 <translation id="510275257476243843">Còn 1 giờ</translation>
 <translation id="5127805178023152808">Đồng bộ hóa đã tắt</translation>
@@ -416,6 +418,7 @@ Tuy nhiên, bạn vẫn hiển thị. Truy cập ẩn danh sẽ không ẩn 
 <translation id="583281660410589416">Không xác định</translation>
 <translation id="5832934273103296195">Đã mở rộng - Nhấp để thu gọn</translation>
 <translation id="583891442612896534">Chrome không thể kết nối với máy chủ của Google để nén dữ liệu. Các khoản tiết kiệm đối với dữ liệu của bạn có thể bị giới hạn.</translation>
+<translation id="5843873952582375185">Không tìm thấy thiết bị Bluetooth nào. <ph name="BEGIN_LINK" />Quét lại<ph name="END_LINK" /></translation>
 <translation id="585027516397408832">Đã bật Trình tiết kiệm dữ liệu</translation>
 <translation id="5860033963881614850">Tắt</translation>
 <translation id="5867027562311576691">Các bài viết khác sẽ sớm xuất hiện. Chúc bạn buổi sáng vui vẻ.</translation>
@@ -490,6 +493,7 @@ Ví dụ: một số trang web có thể phản hồi yêu cầu này bằng cá
 <translation id="6657585470893396449">Mật khẩu</translation>
 <translation id="6659594942844771486">Tab</translation>
 <translation id="666268767214822976">Sử dụng dịch vụ gợi ý để hiển thị các truy vấn có liên quan và các trang web phổ biến khi bạn nhập vào thanh địa chỉ</translation>
+<translation id="666731172850799929">Mở trong <ph name="APP_NAME" /></translation>
 <translation id="666981079809192359">Thông báo bảo mật của Chrome</translation>
 <translation id="6698801883190606802">Quản lý dữ liệu được đồng bộ hóa</translation>
 <translation id="6710213216561001401">Trước đó</translation>
@@ -532,14 +536,12 @@ Ví dụ: một số trang web có thể phản hồi yêu cầu này bằng cá
 <translation id="7074853159844403180"><ph name="SITE" /> muốn ghép nối với:</translation>
 <translation id="7081639897063626814">Luôn tách riêng dữ liệu hiện có</translation>
 <translation id="7094922512924405309">Không tìm thấy trang Web trong cuộc sống lân cận nào</translation>
-<translation id="7115197232530297436">Địa chỉ giao hàng không được hỗ trợ. Hãy chọn một địa chỉ khác.</translation>
 <translation id="7138678301420049075">Khác</translation>
 <translation id="7180611975245234373">Làm mới</translation>
 <translation id="7191430249889272776">Tab được mở dưới nền.</translation>
 <translation id="7208788139759694678">Đã tắt Trình tiết kiệm dữ liệu</translation>
 <translation id="7243308994586599757">Có các tùy chọn ở gần cuối màn hình</translation>
 <translation id="7244362611678346589"><ph name="SEARCH_ENGINE_URL" /> sử dụng vị trí của bạn để hiển thị kết quả tìm kiếm địa phương</translation>
-<translation id="7347770551817603360">Nội dung ngoại tuyến</translation>
 <translation id="7353894246028566792">{NUM_SELECTED,plural, =1{Chia sẻ 1 mục đã chọn}other{Chia sẻ # mục đã chọn}}</translation>
 <translation id="7366340029385295517">Đang truyền tới <ph name="SCREEN_NAME" /></translation>
 <translation id="7375125077091615385">Loại:</translation>
@@ -576,7 +578,6 @@ Tài khoản Google của bạn có thể có các dạng lịch sử duyệt we
 <translation id="7665369617277396874">Thêm tài khoản</translation>
 <translation id="7682287625158474539">Địa chỉ gửi hàng</translation>
 <translation id="771135159654932189">Xem có gì ở gần đây</translation>
-<translation id="7713873128508426081">Luôn cho phép</translation>
 <translation id="7764225426217299476">Thêm địa chỉ</translation>
 <translation id="7765158879357617694">Di chuyển</translation>
 <translation id="7769602470925380267">Chấp nhận và đăng xuất</translation>
@@ -645,15 +646,12 @@ Tài khoản Google của bạn có thể có các dạng lịch sử duyệt we
 <translation id="8514577642972634246">Vào chế độ ẩn danh</translation>
 <translation id="8518901949365209398">Trang web này sử dụng cấu hình bảo mật yếu (chữ ký SHA-1), vì vậy kết nối của bạn có thể không được đảm bảo là riêng tư.</translation>
 <translation id="8523928698583292556">Xóa mật khẩu đã lưu trữ</translation>
-<translation id="8525306231823319788">Toàn màn hình</translation>
-<translation id="85415543246899402">Đã sử dụng <ph name="MEGABYTES" /> MB</translation>
 <translation id="854522910157234410">Mở trang này</translation>
 <translation id="8562452229998620586">Mật khẩu đã lưu của bạn sẽ xuất hiện tại đây.</translation>
 <translation id="856481929701340285">Yêu cầu trang web cho máy tính</translation>
 <translation id="857943718398505171">Được phép (được đề xuất)</translation>
 <translation id="8583805026567836021">Xóa dữ liệu tài khoản</translation>
 <translation id="8617240290563765734">Mở URL đề xuất được chỉ định trong nội dung được tải xuống?</translation>
-<translation id="8618653050765576793">Đã sử dụng <ph name="KILOBYTES" /> KB</translation>
 <translation id="862875433388403934">Nội dung (phim, nhạc, v.v.) được tải xuống trong các ứng dụng khác có thể không còn phát được cho tới khi ứng dụng đó nhận lại giấy phép dựa theo thông tin đăng nhập thiết bị mới.
 
 Để nhận được giấy phép mới, hãy kết nối Internet và phát nội dung đã tải xuống của bạn.</translation>

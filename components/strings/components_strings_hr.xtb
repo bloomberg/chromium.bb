@@ -349,7 +349,6 @@
 <translation id="4728558894243024398">Platforma</translation>
 <translation id="4744603770635761495">Izvršna putanja</translation>
 <translation id="4756388243121344051">&amp;Povijest</translation>
-<translation id="4759238208242260848">Preuzimanje</translation>
 <translation id="4764776831041365478">Web-stranica na adresi <ph name="URL" /> možda privremeno nije dostupna ili je trajno preseljena na novu web-adresu.</translation>
 <translation id="4771973620359291008">Došlo je do nepoznate pogreške.</translation>
 <translation id="4782449893814226250">Pitao si roditelje smiješ li otvoriti tu stranicu.</translation>
@@ -699,6 +698,7 @@ Psst! Sljedeći bi vam put mogao koristiti anonimni način <ph name="SHORTCUT_KE
 <translation id="8987927404178983737">Mjesec</translation>
 <translation id="8989148748219918422"><ph name="ORGANIZATION" /> [<ph name="COUNTRY" />]</translation>
 <translation id="9001074447101275817">Proxy <ph name="DOMAIN" /> zahtijeva korisničko ime i zaporku.</translation>
+<translation id="9008201768610948239">Zanemari</translation>
 <translation id="901974403500617787">Oznake koje se primjenjuju na razini sustava može postaviti samo vlasnik: <ph name="OWNER_EMAIL" />.</translation>
 <translation id="9020542370529661692">Ova je stranica prevedena na <ph name="TARGET_LANGUAGE" /></translation>
 <translation id="9038649477754266430">Upotreba usluge predviđanja za brže učitavanje stranica</translation>

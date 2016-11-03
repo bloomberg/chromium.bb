@@ -50,6 +50,7 @@
 <translation id="1491663344921578213">Je kunt <ph name="SITE" /> op dit moment niet bezoeken, omdat de website gebruikmaakt van certificaatpinning. Aangezien netwerkfouten en aanvallen meestal van tijdelijke aard zijn, zal deze pagina later waarschijnlijk weer correct werken. <ph name="BEGIN_LEARN_MORE_LINK" />Meer informatie<ph name="END_LEARN_MORE_LINK" />.</translation>
 <translation id="1506687042165942984">Een opgeslagen (verouderde) kopie van deze pagina weergeven.</translation>
 <translation id="1519264250979466059">Datum van build</translation>
+<translation id="153384715582417236">Dat is voorlopig alles</translation>
 <translation id="1549470594296187301">JavaScript moet zijn ingeschakeld om deze functie te kunnen gebruiken.</translation>
 <translation id="1559528461873125649">Dit bestand of deze directory bestaat niet</translation>
 <translation id="1559572115229829303">&lt;p&gt;Er kan geen privéverbinding met <ph name="BEGIN_BOLD" /><ph name="DOMAIN" /><ph name="END_BOLD" /> tot stand worden gebracht, omdat de datum en tijd van je apparaat (<ph name="DATE_AND_TIME" />) onjuist zijn.&lt;/p&gt;
@@ -346,7 +347,6 @@
 <translation id="4728558894243024398">Platform</translation>
 <translation id="4744603770635761495">Uitvoerbaar pad</translation>
 <translation id="4756388243121344051">Gesc&amp;hiedenis</translation>
-<translation id="4759238208242260848">Downloads</translation>
 <translation id="4764776831041365478">De webpagina op <ph name="URL" /> is mogelijk tijdelijk uitgeschakeld of permanent verplaatst naar een nieuw webadres.</translation>
 <translation id="4771973620359291008">Er is een onbekende fout opgetreden.</translation>
 <translation id="4782449893814226250">Je hebt je ouders gevraagd of je deze pagina mag bezoeken.</translation>
@@ -385,6 +385,7 @@
 <translation id="5179510805599951267">Niet in het <ph name="ORIGINAL_LANGUAGE" />? Deze fout melden</translation>
 <translation id="5190835502935405962">Bladwijzerbalk</translation>
 <translation id="5199729219167945352">Experimenten</translation>
+<translation id="5199841536747119669">Je suggesties worden hier weergegeven</translation>
 <translation id="5251803541071282808">Cloud</translation>
 <translation id="5277279256032773186">Gebruik je Chrome op het werk? Bedrijven kunnen Chrome-instellingen beheren voor hun werknemers. Meer informatie</translation>
 <translation id="5299298092464848405">Fout bij het parseren van het beleid</translation>
@@ -463,6 +464,7 @@
 <translation id="6263376278284652872">Bladwijzers voor <ph name="DOMAIN" /></translation>
 <translation id="6264485186158353794">Terug naar veilige website</translation>
 <translation id="6282194474023008486">Postcode</translation>
+<translation id="6290238015253830360">Je voorgestelde artikelen worden hier weergegeven</translation>
 <translation id="6305205051461490394"><ph name="URL" /> is niet bereikbaar.</translation>
 <translation id="6321917430147971392">Controleer je DNS-instellingen</translation>
 <translation id="6328639280570009161">Probeer netwerkvoorspelling uit te schakelen</translation>
@@ -646,6 +648,7 @@ De volgende keer kan het handig zijn de incognitomodus <ph name="SHORTCUT_KEY" /
 <translation id="8363502534493474904">Schakel de vliegtuigmodus uit</translation>
 <translation id="8364627913115013041">Niet ingesteld.</translation>
 <translation id="8380941800586852976">Gevaarlijk</translation>
+<translation id="8382348898565613901">Je onlangs bezochte bladwijzers worden hier weergegeven</translation>
 <translation id="8412145213513410671">Crashes (<ph name="CRASH_COUNT" />)</translation>
 <translation id="8412392972487953978">Je moet twee keer dezelfde wachtwoordzin opgeven.</translation>
 <translation id="8428213095426709021">Instellingen</translation>
@@ -695,6 +698,7 @@ De volgende keer kan het handig zijn de incognitomodus <ph name="SHORTCUT_KEY" /
 <translation id="8987927404178983737">Maand</translation>
 <translation id="8989148748219918422"><ph name="ORGANIZATION" /> [<ph name="COUNTRY" />]</translation>
 <translation id="9001074447101275817">Voor de proxy <ph name="DOMAIN" /> zijn een gebruikersnaam en wachtwoord vereist.</translation>
+<translation id="9008201768610948239">Negeren</translation>
 <translation id="901974403500617787">Markeringen die op het hele systeem van toepassing zijn, kunnen alleen worden ingesteld door de eigenaar: <ph name="OWNER_EMAIL" />.</translation>
 <translation id="9020542370529661692">Deze pagina is vertaald naar het <ph name="TARGET_LANGUAGE" /></translation>
 <translation id="9038649477754266430">Een voorspellingsservice gebruiken om pagina's sneller te laden</translation>

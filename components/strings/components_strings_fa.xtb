@@ -50,6 +50,7 @@
 <translation id="1491663344921578213">درحال‌حاضر نمی‌توانید از <ph name="SITE" /> دیدن کنید، زیرا این وب‌سایت از پین کردن گواهینامه استفاده می‌کند. خطاها و حمله‌های شبکه معمولاً موقتی هستند، بنابراین احتمالاً این صفحه بعداً کار خواهد کرد. <ph name="BEGIN_LEARN_MORE_LINK" />بیشتر بدانید<ph name="END_LEARN_MORE_LINK" />.</translation>
 <translation id="1506687042165942984">یک نسخه ذخیره‌شده (یعنی قدیمی) از این صفحه نشان داده شود.</translation>
 <translation id="1519264250979466059">تاریخ ساخت</translation>
+<translation id="153384715582417236">درحال‌حاضر مورد دیگری وجود ندارد</translation>
 <translation id="1549470594296187301">برای استفاده از این قابلیت، جاوا اسکریپت باید فعال باشد.</translation>
 <translation id="1559528461873125649">فاقد چنین فایل یا دایرکتوری است</translation>
 <translation id="1559572115229829303">‏&lt;p&gt;اتصال خصوصی به <ph name="BEGIN_BOLD" /><ph name="DOMAIN" /><ph name="END_BOLD" /> برقرار نشد، زیرا تاریخ و زمان دستگاه شما (<ph name="DATE_AND_TIME" />) نادرست است.&lt;/p&gt;
@@ -350,7 +351,6 @@
 <translation id="4728558894243024398">پلت فورم</translation>
 <translation id="4744603770635761495">مسیر قابل اجرا</translation>
 <translation id="4756388243121344051">&amp;سابقه</translation>
-<translation id="4759238208242260848">بارگیری‌ها</translation>
 <translation id="4764776831041365478">ممکن است صفحهٔ وب <ph name="URL" /> موقتاً خراب باشد یا ممکن است برای همیشه به آدرس وب جدید منتقل شده باشد.</translation>
 <translation id="4771973620359291008">خطای ناشناخته‌ای رخ داد.</translation>
 <translation id="4782449893814226250">از والدینتان پرسیدید آیا اجازه بازدید از این صفحه را دارید.</translation>
@@ -389,6 +389,7 @@
 <translation id="5179510805599951267">به زبان <ph name="ORIGINAL_LANGUAGE" /> نیست؟ گزارش این خطا</translation>
 <translation id="5190835502935405962">نوار نشانک‌ها</translation>
 <translation id="5199729219167945352">آزمایشات</translation>
+<translation id="5199841536747119669">پیشنهادات در اینجا نشان داده می‌شوند</translation>
 <translation id="5251803541071282808">Cloud</translation>
 <translation id="5277279256032773186">‏از Chrome در محل کار استفاده می‌کنید؟ کسب و کارها می‌توانند تنظیمات Chrome را برای کارمندانشان مدیریت کنند. بیشتر بدانید</translation>
 <translation id="5299298092464848405">خطا در تجزیه خط‌‌مشی</translation>
@@ -468,6 +469,7 @@
 <translation id="6263376278284652872">نشانک‌های <ph name="DOMAIN" /></translation>
 <translation id="6264485186158353794">بازگشت به ایمنی</translation>
 <translation id="6282194474023008486">کد پستی</translation>
+<translation id="6290238015253830360">مقاله‌های پیشنهادی شما در اینجا نشان داده می‌شوند</translation>
 <translation id="6305205051461490394">دسترسی به <ph name="URL" /> امکان‌پذیر نیست.</translation>
 <translation id="6321917430147971392">‏تنظیمات DNS خودتان را بررسی کنید</translation>
 <translation id="6328639280570009161">غیرفعال کردن پیش‌بینی شبکه را امتحان کنید</translation>
@@ -651,6 +653,7 @@
 <translation id="8363502534493474904">خاموش کردن حالت هواپیما</translation>
 <translation id="8364627913115013041">تنظیم نشده است.</translation>
 <translation id="8380941800586852976">خطرناک</translation>
+<translation id="8382348898565613901">نشانک‌هایی که به‌تازگی از آن‌ها دیدن کرده‌اید، در اینجا نشان داده می‌شوند</translation>
 <translation id="8412145213513410671">خرابی ها (<ph name="CRASH_COUNT" />)</translation>
 <translation id="8412392972487953978">شما باید همان عبارت عبور را دوبار وارد کنید.</translation>
 <translation id="8428213095426709021">تنظیمات</translation>
@@ -700,6 +703,7 @@
 <translation id="8987927404178983737">ماه</translation>
 <translation id="8989148748219918422"><ph name="ORGANIZATION" /> [<ph name="COUNTRY" />]</translation>
 <translation id="9001074447101275817">پروکسی <ph name="DOMAIN" /> به نام کاربری و گذرواژه نیاز دارد.</translation>
+<translation id="9008201768610948239">نادیده گرفتن</translation>
 <translation id="901974403500617787">پرچم‌هایی که در تمام سیستم اعمال می‌شوند فقط توسط مالک قابل تنظیم هستند: <ph name="OWNER_EMAIL" />.</translation>
 <translation id="9020542370529661692">این صفحه به <ph name="TARGET_LANGUAGE" /> ترجمه شده است</translation>
 <translation id="9038649477754266430">استفاده از یک سرویس پیش‌بینی برای بار کردن سریع‌تر صفحه‌ها</translation>

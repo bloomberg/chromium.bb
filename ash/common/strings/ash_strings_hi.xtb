@@ -22,6 +22,7 @@
 <translation id="1484102317210609525"><ph name="DEVICE_NAME" /> (HDMI/DP)</translation>
 <translation id="1510238584712386396">लॉन्चर</translation>
 <translation id="1525508553941733066">ख़ारिज करें</translation>
+<translation id="153454903766751181">सेल्युलर मॉडम प्रारंभ हो रहा है...</translation>
 <translation id="15373452373711364">बड़ा माउस कर्सर</translation>
 <translation id="1550523713251050646">अधिक विकल्पों के लिए क्लिक करें</translation>
 <translation id="1602076796624386989">मोबाइल डेटा सक्षम करें</translation>
@@ -32,6 +33,7 @@
 <translation id="1747827819627189109">ऑन-स्‍क्रीन कीबोर्ड सक्षम है</translation>
 <translation id="1812696562331527143">आपकी इनपुट विधि <ph name="INPUT_METHOD_ID" />*(<ph name="BEGIN_LINK" />तृतीय पक्ष<ph name="END_LINK" />) में बदल गई है.
 स्विच करने के लिए Shift + Alt दबाएं.</translation>
+<translation id="1850504506766569011">वाई-फ़ाई  बंद है.</translation>
 <translation id="1864454756846565995">USB-C डिवाइस (पिछला पोर्ट)</translation>
 <translation id="1882897271359938046"><ph name="DISPLAY_NAME" /> पर मिरर कर रहा है</translation>
 <translation id="1919743966458266018">काम के प्रबंधक को खोलने का शॉर्टकट बदल गया है. कृपया <ph name="OLD_SHORTCUT" /> के बजाय <ph name="NEW_SHORTCUT" /> का उपयोग करें.</translation>
@@ -47,6 +49,7 @@
 <translation id="2268813581635650749">सभी प्रस्थान करें</translation>
 <translation id="2297568595583585744">स्थिति ट्रे</translation>
 <translation id="2303600792989757991">टॉगल विंडो का संक्षिप्त विवरण</translation>
+<translation id="2354174487190027830"><ph name="NAME" /> सक्रिय हो रहा है</translation>
 <translation id="2391579633712104609">180°</translation>
 <translation id="2429753432712299108">ब्लूटूथ डिवाइस "<ph name="DEVICE_NAME" />" युग्मित करने की अनुमति चाहता है. स्वीकार करने से पहले, कृपया दुबारा पूछें कि यह पासकुंजी उस डिवाइस पर दिखाई जा रही है: <ph name="PASSKEY" /></translation>
 <translation id="2475982808118771221">कोई त्रुटि आई</translation>
@@ -59,6 +62,7 @@
 <translation id="2700058918926273959">सत्र <ph name="SESSION_TIME_REMAINING" /> में समाप्त होने वाला है. आप प्रस्थान कर जाएंगे.</translation>
 <translation id="2727977024730340865">कम-शक्ति वाले चार्जर में प्लग इन करें. बैटरी चार्ज करना संभवत: विश्वसनीय नहीं होगा.</translation>
 <translation id="2761704814324807722">स्थिति ट्रे, समय <ph name="TIME" />, <ph name="BATTERY" /></translation>
+<translation id="277257480934873581"><ph name="NAME" /> से पुनः कनेक्ट कर रहा है</translation>
 <translation id="2792498699870441125">Alt+Search</translation>
 <translation id="2819276065543622893">अब आप प्रस्थान कर जाएंगे.</translation>
 <translation id="2825619548187458965">अलमारी</translation>
@@ -105,21 +109,27 @@
 <translation id="3783640748446814672">alt</translation>
 <translation id="3784455785234192852">लॉक करें</translation>
 <translation id="3799026279081545374">आपका चार्जर खराब हो सकता है. यदि आप यूएस में रहते हैं, तो कृपया सहायता प्राप्त करने और रिप्लेसमेंट के लिए 866-628-1371 पर कॉल करें. यदि आप यूके में रहते हैं, तो कृपया 0800-026-0613 पर कॉल करें. यदि आप आयरलैंड में रहते हैं, तो कृपया 1-800-832-664 पर कॉल करें. यदि आप कनाडा में रहते हैं, तो कृपया 866-628-1372 पर कॉल करें. यदि आप ऑस्ट्रेलिया में रहते हैं, तो कृपया 1-800-067-460 पर कॉल करें.</translation>
+<translation id="3846575436967432996">कोई नेटवर्क जानकारी उपलब्ध नहीं</translation>
 <translation id="3866182280516392520">IPv6 पता</translation>
 <translation id="3891340733213178823">प्रस्थान करने के लिए दो बार Ctrl+Shift+Q दबाएं.</translation>
 <translation id="3892641579809465218">आंतरिक डिस्प्ले</translation>
 <translation id="3893630138897523026">ChromeVox (बोला गया फ़ीडबैक)</translation>
 <translation id="3899995891769452915">ध्‍वनि इनपुट</translation>
+<translation id="3901991538546252627"><ph name="NAME" /> से कनेक्‍ट हो रहा है</translation>
 <translation id="3963445509666917109">स्पीकर (आंतरिक)</translation>
 <translation id="3967919079500697218">स्क्रीनशॉट लेने की क्षमता को आपके व्यवस्थापक द्वारा अक्षम कर दिया गया है.</translation>
 <translation id="397105322502079400">गणना की जा रही है...</translation>
 <translation id="3995138139523574647">USB-C डिवाइस (दायां पिछला पोर्ट)</translation>
 <translation id="4053612967614057854">ऑन-स्‍क्रीन कीबोर्ड अक्षम करें</translation>
+<translation id="4118990158415604803">अन्य नेटवर्क से कनेक्ट करना आपके व्यवस्थापक द्वारा अक्षम किया गया है.</translation>
 <translation id="4250680216510889253">नहीं</translation>
 <translation id="4279490309300973883">मिरर करना</translation>
 <translation id="4321179778687042513">ctrl</translation>
 <translation id="4421231901400348175">आपकी स्‍क्रीन का नियंत्रण दूरस्‍थ सहायक के द्वारा <ph name="HELPER_NAME" /> से साझा किया जा रहा है.</translation>
 <translation id="4430019312045809116">मात्रा</translation>
+<translation id="4448844063988177157">वाई-फ़ाई  नेटवर्क खोज रहा है...</translation>
+<translation id="4479639480957787382">इथरनेट</translation>
+<translation id="4508225577814909926"><ph name="NAME" />: कनेक्ट हो रहा है...</translation>
 <translation id="4527045527269911712">ब्लूटूथ डिवाइस "<ph name="DEVICE_NAME" />" युग्मित करने की अनुमति चाहता है.</translation>
 <translation id="453661520163887813">पूरी तरह चार्ज होने में <ph name="TIME" /></translation>
 <translation id="4544944664594876241">स्‍क्रीन को लॉक करने का शॉर्टकट बदल गया है. कृपया <ph name="OLD_SHORTCUT" /> के बजाय <ph name="NEW_SHORTCUT" /> का उपयोग करें.</translation>
@@ -172,6 +182,7 @@
 <translation id="6165508094623778733">अधिक जानें</translation>
 <translation id="6203030746557259519">वर्चुअल डिस्प्ले</translation>
 <translation id="6248847161401822652">छोड़ने के लिए Control Shift Q दो बार दबाएं.</translation>
+<translation id="6267036997247669271"><ph name="NAME" />: सक्रिय हो रहा है...</translation>
 <translation id="6297287540776456956">कोई क्षेत्र चुनने के लिए स्टाइलस का उपयोग करें</translation>
 <translation id="6310121235600822547"><ph name="DISPLAY_NAME" /> को <ph name="ROTATION" /> पर घुमाया गया</translation>
 <translation id="6359806961507272919"><ph name="PHONE_NUMBER" /> से SMS</translation>
@@ -184,6 +195,7 @@
 <translation id="6501401484702599040">स्‍क्रीन को <ph name="RECEIVER_NAME" /> पर कास्‍ट किया जा रहा है</translation>
 <translation id="6521655319214113338">हस्तलेखन इनपुट</translation>
 <translation id="6537270692134705506">स्क्रीन कैप्चर करें</translation>
+<translation id="6549021752953852991">कोई सेल्युलर नेटवर्क उपलब्ध नहीं</translation>
 <translation id="6550675742724504774">विकल्प</translation>
 <translation id="6585808820553845416">सत्र <ph name="SESSION_TIME_REMAINING" /> में समाप्त होने वाला है.</translation>
 <translation id="6596816719288285829">IP पता</translation>
@@ -192,6 +204,7 @@
 <translation id="6713285437468012787">ब्लूटूथ डिवाइस "<ph name="DEVICE_NAME" />" यु्ग्मित हो गया है और अब वह सभी उपयोगकर्ताओं के लिए उपलब्ध है. आप सेटिंग का उपयोग करके इस युग्मन को निकाल सकते हैं.</translation>
 <translation id="6785414152754474415">बैटरी <ph name="PERCENTAGE" />% भरी हुई है और चार्ज हो रही है.</translation>
 <translation id="683971173229319003">Search+L</translation>
+<translation id="6857811139397017780"><ph name="NETWORKSERVICE" /> को सक्रिय करें</translation>
 <translation id="6911468394164995108">अन्य में शामिल हों...</translation>
 <translation id="6915678159055240887">Chromebox</translation>
 <translation id="6979158407327259162">Google डिस्क</translation>
@@ -200,6 +213,7 @@
 <translation id="703171847531699602">कोई कास्ट डिवाइस नहीं</translation>
 <translation id="7034339000180558234"><ph name="TAB_NAME" /> को <ph name="RECEIVER_NAME" /> पर कास्‍ट किया जा रहा है</translation>
 <translation id="7052914147756339792">वॉलपेपर सेट करें...</translation>
+<translation id="7066646422045619941">यह नेटवर्क आपके व्यवस्थापक द्वारा अक्षम किया गया है.</translation>
 <translation id="7097613348211027502">ChromeVox (बोला गया फ़ीडबैक) सक्षम है. अक्षम करने के लिए Ctrl+Alt+Z दबाएं.</translation>
 <translation id="7098389117866926363">USB-C डिवाइस (पीछे बायां पोर्ट)</translation>
 <translation id="7129360219436193655">लेज़र पॉइंटर मोड</translation>
@@ -208,6 +222,7 @@
 <translation id="7209101170223508707">CAPS LOCK चालू है.
 रद्द करने के लिए Alt+Search या Shift दबाएं.</translation>
 <translation id="7348093485538360975">ऑन-स्‍क्रीन कीबोर्ड</translation>
+<translation id="735745346212279324">VPN डिस्कनेक्ट है</translation>
 <translation id="737451040872859086">माइक्रोफ़ोन (आंतरिक)</translation>
 <translation id="742594950370306541">कैमरे का उपयोग हो रहा है.</translation>
 <translation id="743058460480092004">कैमरे और माइक्रोफ़ोन का उपयोग हो रहा है.</translation>
@@ -224,19 +239,24 @@
 <translation id="7823564328645135659">आपकी सेटिंग समन्वयित करने के बाद भाषा को "<ph name="FROM_LOCALE" />" से "<ph name="TO_LOCALE" />" में बदल दिया गया है.</translation>
 <translation id="785750925697875037">मोबाइल खाते देखें</translation>
 <translation id="7864539943188674973">ब्लूटूथ अक्षम करें</translation>
+<translation id="7874779702599364982">सेलुलर नेटवर्क खोज रहा है...</translation>
 <translation id="7893838033650689677">वाई-फ़ाई चालू करें</translation>
 <translation id="7904094684485781019">इस खाते के व्यवस्थापक ने एकाधिक प्रवेश को अस्वीकार कर दिया है.</translation>
 <translation id="7957227661277029961">हो सकता है आपका <ph name="DEVICE_TYPE" /> चालू होने पर चार्ज नहीं होता हो. अधिकृत चार्जर का उपयोग करने पर विचार करें.</translation>
 <translation id="7982789257301363584">नेटवर्क</translation>
+<translation id="8000066093800657092">नेटवर्क नहीं है</translation>
 <translation id="8054466585765276473">बैटरी समय की गणना की जा रही है.</translation>
 <translation id="8077816382010018681">QU सुविधा नोटिफ़िकेशन का शीर्षक यहां आएगा</translation>
 <translation id="8103386449138765447">SMS संदेश: <ph name="MESSAGE_COUNT" /></translation>
+<translation id="8132793192354020517"><ph name="NAME" /> से कनेक्ट है</translation>
 <translation id="8185286464235484130">कुछ प्रश्नों के उत्तर देकर हमें बताएं कि हमारा प्रदर्शन कैसा है.</translation>
 <translation id="8190698733819146287">भाषाएं और इनपुट कस्टमाइज़ करें...</translation>
 <translation id="8206859287963243715">सेलुलर</translation>
 <translation id="8308637677604853869">पिछला मेनू</translation>
 <translation id="8356164830168736643"><ph name="WINDOW_TITLE" /> बंद करें</translation>
 <translation id="8428213095426709021">सेटिंग्स</translation>
+<translation id="8454013096329229812">वाई-फ़ाई  चालू है.</translation>
+<translation id="8484916590211895857"><ph name="NAME" />: पुनः कनेक्ट कर रहा है...</translation>
 <translation id="8517041960877371778">हो सकता है आपका <ph name="DEVICE_TYPE" /> चालू होने पर चार्ज नहीं होता हो.</translation>
 <translation id="8528322925433439945">मोबाइल ...</translation>
 <translation id="8639760480004882931"><ph name="PERCENTAGE" /> शेष</translation>

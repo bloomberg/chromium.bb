@@ -19,6 +19,9 @@
       Ak je toto pravidlo nastavené na hodnotu False alebo nie je nakonfigurované, súbory cookie nastavené poskytovateľom identity sa prenesú do profilu používateľa iba počas prvého prihlásenia používateľa na zariadení.
 
       Toto pravidlo má vplyv iba na používateľov, ktorých doména sa zhoduje s doménou registrácie zariadenia. Pre všetkých ostatných používateľov platí, že súbory cookie nastavené poskytovateľom identity sa prenesú do profilu používateľa iba počas prvého prihlásenia používateľa na zariadení.</translation>
+<translation id="1029536946382325801">Ak je pravidlo nastavené na hodnotu True, používateľ môže pomocou hardvéru zariadení Chrome diaľkovo overiť identitu pre certifikačnú autoritu ochrany údajov prostredníctvom metódy chrome.enterprise.platformKeys.challengeUserKey() rozhrania Enterprise Platform Keys API.
+
+          Ak je hodnota pravidla nastavená na možnosť False alebo pravidlo nie je nastavené vôbec, volania rozhrania API zlyhajú a nahlásia kód chyby.</translation>
 <translation id="1040446814317236570">Aktivovať odstraňovanie častí z webových adries pred odoslaním do skriptov PAC (pre adresy https://)</translation>
 <translation id="1044878202534415707">Nahlasovanie štatistík hardvéru, napríklad využitia CPU/RAM.
       Ak je pravidlo nastavené na možnosť False, štatistiky nebudú hlásené.
@@ -335,13 +338,6 @@ Ak je toto nastavenie zakázané alebo nie je nakonfigurované, nebudú môcť p
 <translation id="2337466621458842053">Umožňuje nastaviť zoznam vzorov webových adries určujúcich webové stránky, na ktorých sa môžu zobrazovať obrázky.
 
           Ak toto pravidlo ponecháte nenastavené, použije sa v prípade všetkých webových stránok globálna predvolená hodnota buď z pravidla „DefaultImagesSetting“ (ak je nastavené), alebo z osobnej konfigurácie používateľa.</translation>
-<translation id="2359612025446382967">Ak je toto pravidlo nastavené na hodnotu False, <ph name="PRODUCT_OS_NAME" /> vypne rozhranie Bluetooth a používateľ ho nebude môcť znova zapnúť.
-
-      Ak toto pravidlo nie je nastavené alebo ak je nastavené na hodnotu True. používateľ bude môcť rozhranie Bluetooth zapnúť alebo vypnúť podľa svojho uváženia.
-
-      Keď je toto pravidlo nastavené, používateľ ho nemôže zmeniť ani prepísať.
-
-      Na to, aby sa po povolení rozhrania Bluetooth uplatnili zmeny, je potrebné zariadenie reštartovať (pri zakázaní rozhrania Bluetooth sa reštart zariadenia nevyžaduje).</translation>
 <translation id="2366415278352956652">Povolenie prenosu</translation>
 <translation id="2372547058085956601">Oneskorenie automatického prihlásenia do verejnej relácie.
 
@@ -977,6 +973,9 @@ Ak toto nastavenie zakážete, v okne správcu hesiel nebude možné zobraziť 
 
       Ak je toto pravidlo nastavené na hodnotu True, budú sa odosielať sledovacie sieťové pakety (tzv. <ph name="HEARTBEATS_TERM" />).
       Ak je nastavené na hodnotu False alebo nie je nastavené, pakety sa odosielať nebudú.</translation>
+<translation id="3963602271515417124">Ak je toto pravidlo nastavené na hodnotu True, pre zariadenia sa povolí vzdialené overenie a certifikát sa automaticky vygeneruje a nahrá na server na správu zariadení.
+
+          Ak je pravidlo nastavené na hodnotu False alebo je nenastavené, nevygeneruje sa žiadny certifikát a volania rozhrania API rozšírenia enterprise.platformKeys zlyhajú.</translation>
 <translation id="3964909636571393861">Umožňuje prístup k zoznamu webových adries</translation>
 <translation id="3965339130942650562">Časový limit pred odhlásením nečinného používateľa</translation>
 <translation id="3967075520570946456">Aktivovať zobrazenie uvítacej stránky pri prvom spustení prehliadača po prechode na vyššiu verziu OS</translation>
@@ -1033,7 +1032,7 @@ Ak toto nastavenie zakážete, v okne správcu hesiel nebude možné zobraziť 
 
       Umožňuje určiť zoznam doplnkov, ktoré budú v prehliadači <ph name="PRODUCT_NAME" /> zakázané a tiež zabrániť používateľom toto nastavenie meniť.
 
-      Zástupné znaky „*“ a „?“ môžete použiť na zobrazenie sekvencií ľubovoľných znakov. Hviezdička (*) slúži ako zástupný znak pre ľubovoľný počet znakov, zatiaľ čo otáznik (?) špecifikuje jeden voliteľný znak (môže teda zastupovať jeden ľubovoľný znak alebo chýbajúci znak). Znak zrušenia významu je „\“, takže ak chcete zadať samotné znaky „*“ a „?“ alebo „\“, stačí pred ne umiestniť znak „\“.
+      Zástupné znaky „*“ a „?“ môžete použiť na zobrazenie sekvencií ľubovoľných znakov. Hviezdička (*) slúži ako zástupný znak pre ľubovoľný počet znakov, zatiaľ čo otáznik (?) špecifikuje jeden voliteľný znak (môže teda zastupovať jeden ľubovoľný znak alebo žiadny znak). Znak zrušenia významu je „\“, takže ak chcete zadať samotné znaky „*“ a „?“ alebo „\“, stačí pred ne umiestniť znak „\“.
 
       Ak toto nastavenie povolíte, špecifikovaný zoznam doplnkov sa v prehliadači <ph name="PRODUCT_NAME" /> nikdy nepoužije. Doplnky sú na adrese „about:plugins“ označené ako aktívne a používatelia ich nemôžu povoliť.
 
@@ -1473,11 +1472,11 @@ Pozrite si tiež pravidlo RemoteAccessHostDomain.</translation>
 
       Umožňuje určiť zoznam doplnkov, ktoré môžu používatelia povoliť alebo zakázať v prehliadači <ph name="PRODUCT_NAME" />.
 
-      Zástupné znaky „*“ a „?“ môžete použiť na zobrazenie sekvencií ľubovoľných znakov. Hviezdička (*) slúži ako zástupný znak pre ľubovoľný počet znakov, zatiaľ čo otáznik (?) špecifikuje jeden voliteľný znak (môže teda zastupovať jeden ľubovoľný znak alebo chýbajúci znak). Znak zrušenia významu je „\“, takže ak chcete zadať samotné znaky „*“ a „?“ alebo „\“, stačí pred ne umiestniť znak „\“.
+      Zástupné znaky „*“ a „?“ môžete použiť na zobrazenie sekvencií ľubovoľných znakov. Hviezdička (*) slúži ako zástupný znak pre ľubovoľný počet znakov, zatiaľ čo otáznik (?) špecifikuje jeden voliteľný znak (môže teda zastupovať jeden ľubovoľný znak alebo žiadny znak). Znak zrušenia významu je „\“, takže ak chcete zadať samotné znaky „*“ a „?“ alebo „\“, stačí pred ne umiestniť znak „\“.
 
       Ak toto nastavenie povolíte, špecifikovaný zoznam doplnkov sa môže použiť v prehliadači <ph name="PRODUCT_NAME" />. Používatelia ich môžu povoliť alebo zakázať na adrese „about:plugins“, a to aj vtedy, keď sa zhodujú so vzorom v pravidle DisabledPlugins. Používatelia môžu tiež povoliť alebo zakázať doplnky, ktoré sa nezhodujú so žiadnym vzorom v pravidlách DisabledPlugins, DisabledPluginsExceptions a EnabledPlugins.
 
-      Cieľom tohto pravidla je umožniť povolenie prísneho pridávania doplnkov na zoznam zakázaných položiek, keď zoznam DisabledPlugins obsahuje vstupy so zástupnými znakmi (napríklad možnosť Zakázať všetky doplnky „*“ alebo zakázať všetky doplnky Java „*Java*“), ale správca chce povoliť určitú konkrétnu verziu, (napríklad „IcedTea Java 2.3“). Konkrétne verzie môžete určiť v rámci tohto pravidla.
+      Cieľom tohto pravidla je povolenie presne vymedzeného pridávania doplnkov na zoznam zakázaných položiek, keď zoznam DisabledPlugins obsahuje vstupy so zástupnými znakmi (napríklad možnosť Zakázať všetky doplnky „*“ alebo zakázať všetky doplnky Java „*Java*“), ale správca chce povoliť určitú konkrétnu verziu, (napríklad „IcedTea Java 2.3“). Konkrétne verzie môžete určiť v rámci tohto pravidla.
 
       Upozorňujeme, že výnimky musíte uvádzať ako názov doplnku spolu s názvom jeho skupiny. Jednotlivé skupiny doplnkov sa zobrazujú v samostatných častiach na adrese „about:plugins“, pričom každá časť môže mať jeden alebo viac doplnkov. Napríklad doplnok Shockwave Flash patrí do skupiny Adobe Flash Player, takže obidva názvy sa musia zhodovať s položkami uvedenými v zozname výnimiek, ak má byť príslušný doplnok výnimkou vynechanou zo zoznamu zakázaných položiek.
 
@@ -1551,13 +1550,6 @@ Pozrite si tiež pravidlo RemoteAccessHostDomain.</translation>
 
       Ak toto pravidlo nie je nastavené alebo je nastavené na hodnotu false, <ph name="PRODUCT_NAME" /> nebude v aplikácii <ph name="PRODUCT_NAME" /> verzie 19 alebo novšej vykonávať kontroly online odvolania.</translation>
 <translation id="5966615072639944554">Rozšírenia s povolením používať vzdialené overenie API</translation>
-<translation id="5974970919245996815">Prehľady informácií o stave Androidu sa odosielajú späť
-      na server.
-
-      Ak toto pravidlo nastavíte na možnosť False, informácie sa nebudú nahlasovať.
-      Ak ho nastavíte na možnosť True alebo ho ponecháte nenastavené, informácie sa budú nahlasovať.
-
-      Toto pravidlo platí iba vtedy, keď sú povolené aplikácie pre Android.</translation>
 <translation id="5983708779415553259">Predvolené správanie pre webové stránky, ktoré sa nenachádzajú v žiadnom obsahovom balíku</translation>
 <translation id="5997543603646547632">Používať v predvolenom nastavení 24-hodinový formát hodín</translation>
 <translation id="6009903244351574348">Umožňuje doplnku <ph name="PRODUCT_FRAME_NAME" /> spracovávať uvedené typy obsahu.
@@ -1590,11 +1582,11 @@ Pozrite si tiež pravidlo RemoteAccessHostDomain.</translation>
       Ak toto pravidlo nenakonfigurujete, zoznam odpojiteľných zariadení USB bude prázdny.</translation>
 <translation id="608377055310226486">Podpora tohto pravidla bola ukončená. Na ovládanie dostupnosti doplnku Flash použite <ph name="DEFAULT_PLUGINS_SETTING_POLICY" /> a pomocou <ph name="ALWAYS_OPEN_PDF_EXTERNALLY_POLICY" /> ovládajte, či by sa mali súbory PDF otvárať v integrovanom zobrazovači PDF.
 
-      Umožňuje určiť zoznam doplnkov povolených v prehliadači <ph name="PRODUCT_NAME" /> a zabrániť používateľov toto nastavenie meniť.
+      Umožňuje určiť zoznam doplnkov povolených v prehliadači <ph name="PRODUCT_NAME" /> a zabrániť používateľom toto nastavenie meniť.
 
-      Zástupné znaky „*“ a „?“ môžete použiť na zobrazenie sekvencií ľubovoľných znakov. Hviezdička (*) slúži ako zástupný znak pre ľubovoľný počet znakov, zatiaľ čo otáznik (?) špecifikuje jeden voliteľný znak (môže teda zastupovať jeden ľubovoľný znak alebo chýbajúci znak). Znak zrušenia významu je „\“, takže ak chcete zadať samotné znaky „*“ a „?“ alebo „\“, stačí pred ne umiestniť znak „\“.
+      Zástupné znaky „*“ a „?“ môžete použiť na zobrazenie sekvencií ľubovoľných znakov. Hviezdička (*) slúži ako zástupný znak pre ľubovoľný počet znakov, zatiaľ čo otáznik (?) špecifikuje jeden voliteľný znak (môže teda zastupovať jeden ľubovoľný znak alebo žiadny znak). Znak zrušenia významu je „\“, takže ak chcete zadať samotné znaky „*“ a „?“ alebo „\“, stačí pred ne umiestniť znak „\“.
 
-      Špecifikovaný zoznam doplnkov sa v prehliadači <ph name="PRODUCT_NAME" /> vždy použije, ak sú nainštalované. Tieto doplnky sú na adrese „about:plugins“ označené ako povolené a používatelia ich nemôžu zakázať.
+      Špecifikovaný zoznam doplnkov sa v prehliadači <ph name="PRODUCT_NAME" /> použije vždy, ak sú nainštalované. Tieto doplnky sú na adrese „about:plugins“ označené ako povolené a používatelia ich nemôžu zakázať.
 
       Upozorňujeme, že toto pravidlo prepíše pravidlá DisabledPlugins aj DisabledPluginsExceptions.
 
@@ -2250,6 +2242,9 @@ Pozrite si tiež pravidlo RemoteAccessHostClientDomain.</translation>
           k doméne Active Directory.</translation>
 <translation id="7937766917976512374">Povoliť alebo zakázať zaznamenávanie videa</translation>
 <translation id="7941975817681987555">Nepredpovedať akcie siete pri sieťovom pripojení</translation>
+<translation id="7942429005743031780">Toto pravidlo určuje, pre ktoré rozšírenia bude povolené vzdialené prihlásenie pomocou metódy chrome.enterprise.platformKeys.challengeUserKey() rozhrania Enterprise Platform Keys API. Na to, aby mohli rozšírenia používať toto rozhranie API, musia byť pridané do príslušného zoznamu.
+
+          Ak sa rozšírenie na zozname nenachádza alebo zoznam nie je vytvorený, volania rozhrania API zlyhajú a nahlásia kód chyby.</translation>
 <translation id="7953256619080733119">Spravované výnimky hostiteľov ručne nastavené používateľom</translation>
 <translation id="7971839631300653352">SSL 3.0</translation>
 <translation id="7974114691960514888">Toto pravidlo už nie je podporované.

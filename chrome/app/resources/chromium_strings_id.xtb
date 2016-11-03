@@ -21,7 +21,6 @@
 <translation id="1688750314291223739">Siapkan Sinkronisasi untuk menyimpan fitur browser hasil personalisasi Anda ke web dan mengaksesnya dari Chromium di komputer mana saja.</translation>
 <translation id="1699664235656412242">Tutup semua jendela Chromium (termasuk semua jendela dalam mode Windows 8) dan coba lagi.</translation>
 <translation id="1708666629004767631">Tersedia versi Chromium yang baru dan lebih aman.</translation>
-<translation id="1725059042853530269"><ph name="FILE_NAME" /> dapat membahayakan pengalaman penjelajahan Anda sehingga Chromium telah memblokirnya.</translation>
 <translation id="1774152462503052664">Jalankan Chromium di latar belakang</translation>
 <translation id="1779356040007214683">Agar Chromium lebih aman, kami menonaktifkan beberapa ekstensi yang tidak tercantum dalam <ph name="IDS_EXTENSION_WEB_STORE_TITLE" /> dan mungkin telah ditambahkan tanpa sepengetahuan Anda.</translation>
 <translation id="1808667845054772817">Pasang ulang Chromium</translation>
@@ -59,7 +58,6 @@
 <translation id="2718390899429598676">Untuk keamanan tambahan, Chromium akan mengenkripsi data Anda.</translation>
 <translation id="2770231113462710648">Ubah browser default ke:</translation>
 <translation id="2799223571221894425">Luncurkan Ulang</translation>
-<translation id="2801146392936645542"><ph name="FILE_NAME" /> berbahaya dan Chromium memblokirnya.</translation>
 <translation id="2847479871509788944">Buang dari Chromium...</translation>
 <translation id="2886012850691518054">Opsional: Bantu menjadikan Chrome lebih baik dengan mengirim statistik penggunaan dan laporan kerusakan secara otomatis ke Google.</translation>
 <translation id="2905536371227304018">Chromium OS ditampilkan dalam bahasa ini.</translation>
@@ -78,7 +76,6 @@
 <ph name="USER_DATA_DIRECTORY" /></translation>
 <translation id="3264279740686075150">Chromium adalah browser default Anda. Hore!</translation>
 <translation id="328888136576916638">Kunci API Google tidak ada. Beberapa fungsi Chromium tidak akan berfungsi.</translation>
-<translation id="3289635842886789612">Chromium sudah usang.</translation>
 <translation id="3296368748942286671">Lanjutkan aplikasi yang berjalan di latar belakang jika Chromium ditutup</translation>
 <translation id="3312805357485578561">Chromium telah mendeteksi perilaku yang tidak biasa</translation>
 <translation id="331951419404882060">Chromium OS tidak dapat menyinkronkan data Anda karena kesalahan saat masuk.</translation>
@@ -136,6 +133,7 @@
 <translation id="5398878173008909840">Tersedia Chromium versi baru.</translation>
 <translation id="5427571867875391349">Setel Chromium sebagai browser default</translation>
 <translation id="5466153949126434691">Chromium otomatis diperbarui sehingga Anda selalu memiliki versi terbaru. Saat unduhan ini selesai, Chromium akan dimulai ulang dan siap digunakan.</translation>
+<translation id="5479196819031988440">Chromium OS tidak dapat membuka laman ini.</translation>
 <translation id="549669000822060376">Harap tunggu selagi Chromium memasang pembaruan sistem terkini.</translation>
 <translation id="556167189552180495">Chromium ditampilkan dalam bahasa ini.</translation>
 <translation id="5563479599352954471">Telusuri dengan satu sentuhan</translation>
@@ -223,7 +221,6 @@ Lihat email Anda di <ph name="ACCOUNT_EMAIL" /> untuk petunjuk lebih lanjut.</tr
 <translation id="7421823331379285070">Chromium memerlukan Windows XP atau yang lebih baru. Sebagian fitur mungkin tidak berfungsi.</translation>
 <translation id="7473891865547856676">Lain Kali</translation>
 <translation id="7483335560992089831">Tidak dapat memasang Chromium versi yang sama dengan yang sedang Anda jalankan. Tutup Chromium dan coba lagi.</translation>
-<translation id="750717762378961310">File ini berbahaya dan Chromium memblokirnya.</translation>
 <translation id="7549178288319965365">Tentang OS Chromium</translation>
 <translation id="7577193603922410712">Pembaruan keamanan khusus untuk Chromium baru saja diterapkan; mulai ulang Chromium sekarang agar pembaruan diterapkan (nanti kami akan memulihkan tab yang Anda buka).</translation>
 <translation id="761356813943268536">Chromium menggunakan kamera dan mikrofon Anda.</translation>

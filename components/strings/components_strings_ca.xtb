@@ -50,6 +50,7 @@
 <translation id="1491663344921578213">En aquest moment no pots visitar <ph name="SITE" /> perquè el lloc web fa servir la fixació de certificats. Els errors i els atacs de xarxa solen ser temporals, de manera que és probable que aquesta pàgina torni a funcionar més tard. <ph name="BEGIN_LEARN_MORE_LINK" />Obtén més informació<ph name="END_LEARN_MORE_LINK" />.</translation>
 <translation id="1506687042165942984">Mostra una còpia desada (és a dir, no actualitzada) d'aquesta pàgina.</translation>
 <translation id="1519264250979466059">Data de creació</translation>
+<translation id="153384715582417236">De moment, això és tot</translation>
 <translation id="1549470594296187301">Heu d'activar el JavaScript per utilitzar aquesta funció.</translation>
 <translation id="1559528461873125649">No existeix el fitxer o el directori</translation>
 <translation id="1559572115229829303">&lt;p&gt;No es pot establir una connexió privada amb <ph name="BEGIN_BOLD" /><ph name="DOMAIN" /><ph name="END_BOLD" /> perquè la data i l'hora (<ph name="DATE_AND_TIME" />) del vostre dispositiu no són correctes.&lt;/p&gt;
@@ -350,7 +351,6 @@
 <translation id="4728558894243024398">Plataforma</translation>
 <translation id="4744603770635761495">Camí executable</translation>
 <translation id="4756388243121344051">&amp;Historial</translation>
-<translation id="4759238208242260848">Baixades</translation>
 <translation id="4764776831041365478">És possible que la pàgina web de <ph name="URL" /> estigui temporalment inactiva o que s'hagi desplaçat permanentment a una nova adreça web.</translation>
 <translation id="4771973620359291008">S'ha produït un error desconegut.</translation>
 <translation id="4782449893814226250">S'ha enviat una sol·licitud als pares per visitar aquesta pàgina.</translation>
@@ -389,6 +389,7 @@
 <translation id="5179510805599951267">No està escrita en <ph name="ORIGINAL_LANGUAGE" />? Informa d'aquest error</translation>
 <translation id="5190835502935405962">Barra d'adreces d'interès</translation>
 <translation id="5199729219167945352">Experiments</translation>
+<translation id="5199841536747119669">Els suggeriments es mostren aquí</translation>
 <translation id="5251803541071282808">Núvol</translation>
 <translation id="5277279256032773186">Fas servir Chrome a la feina? Les empreses poden gestionar la configuració de Chrome dels empleats. Més informació</translation>
 <translation id="5299298092464848405">S'ha produït un error en analitzar la política</translation>
@@ -468,6 +469,7 @@
 <translation id="6263376278284652872">Adreces d'interès de <ph name="DOMAIN" /></translation>
 <translation id="6264485186158353794">Torna a l'àrea de seguretat</translation>
 <translation id="6282194474023008486">Codi postal</translation>
+<translation id="6290238015253830360">Els suggeriments d'articles es mostren aquí</translation>
 <translation id="6305205051461490394">No es pot accedir a <ph name="URL" />.</translation>
 <translation id="6321917430147971392">Reviseu la configuració de DNS</translation>
 <translation id="6328639280570009161">Proveu de desactivar la predicció de xarxa</translation>
@@ -651,6 +653,7 @@ El mode d'incògnit, <ph name="SHORTCUT_KEY" />, us pot resultar pràctic la pro
 <translation id="8363502534493474904">Desactiveu el mode d'avió</translation>
 <translation id="8364627913115013041">No s'ha definit.</translation>
 <translation id="8380941800586852976">Perillosa</translation>
+<translation id="8382348898565613901">Les adreces d'interès que has visitat fa poc es mostren aquí</translation>
 <translation id="8412145213513410671">Bloqueigs (<ph name="CRASH_COUNT" />)</translation>
 <translation id="8412392972487953978">Heu d'introduir la mateixa frase de contrasenya dues vegades.</translation>
 <translation id="8428213095426709021">Configuració</translation>
@@ -700,6 +703,7 @@ El mode d'incògnit, <ph name="SHORTCUT_KEY" />, us pot resultar pràctic la pro
 <translation id="8987927404178983737">Mes</translation>
 <translation id="8989148748219918422"><ph name="ORGANIZATION" /> [<ph name="COUNTRY" />]</translation>
 <translation id="9001074447101275817">El servidor intermediari del domini <ph name="DOMAIN" /> requereix un nom d'usuari i una contrasenya.</translation>
+<translation id="9008201768610948239">Ignora</translation>
 <translation id="901974403500617787">Les marques que s'apliquen a tot el sistema només les pot definir l'usuari: <ph name="OWNER_EMAIL" />.</translation>
 <translation id="9020542370529661692">Aquesta pàgina s'ha traduït a <ph name="TARGET_LANGUAGE" /></translation>
 <translation id="9038649477754266430">Utilitza un servei de predicció per poder carregar les pàgines més ràpidament</translation>

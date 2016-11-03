@@ -22,6 +22,7 @@
 <translation id="1484102317210609525"><ph name="DEVICE_NAME" /> (HDMI/DP)</translation>
 <translation id="1510238584712386396">লঞ্চার</translation>
 <translation id="1525508553941733066">খারিজ করুন</translation>
+<translation id="153454903766751181">সেলুলার মোডেম আরম্ভ করা হচ্ছে...</translation>
 <translation id="15373452373711364">বড় মাউস কার্সার</translation>
 <translation id="1550523713251050646">আরো বিকল্পের জন্য ক্লিক করুন</translation>
 <translation id="1602076796624386989">মোবাইল ডেটা সক্রিয় করুন</translation>
@@ -32,6 +33,7 @@
 <translation id="1747827819627189109">অন-স্ক্রীন কীবোর্ড সক্ষম করা রয়েছে</translation>
 <translation id="1812696562331527143">আপনার ইনপুট পদ্ধতি <ph name="INPUT_METHOD_ID" />*(<ph name="BEGIN_LINK" />৩য় পক্ষ<ph name="END_LINK" />) এ পরিবর্তিত হয়েছে৷
 স্যুইচ করতে Shift + Alt টিপুন৷</translation>
+<translation id="1850504506766569011">ওয়াই-ফাই বন্ধ আছে৷</translation>
 <translation id="1864454756846565995">USB-C ডিভাইস (পিছনের পোর্ট)</translation>
 <translation id="1882897271359938046"><ph name="DISPLAY_NAME" /> তে প্রতিবিম্বিত হচ্ছে</translation>
 <translation id="1919743966458266018">কার্য পরিচালক খোলার শর্টকাটটি পরিবর্তিত হয়েছে। <ph name="OLD_SHORTCUT" /> এর পরিবর্তে দয়া করে <ph name="NEW_SHORTCUT" /> ব্যবহার করুন।</translation>
@@ -47,6 +49,7 @@
 <translation id="2268813581635650749">সবগুলি প্রস্থান করুন করুন</translation>
 <translation id="2297568595583585744">স্থিতি ট্রে</translation>
 <translation id="2303600792989757991">উইন্ডোর ওভারভিউ টগল করুন</translation>
+<translation id="2354174487190027830"><ph name="NAME" /> সক্রিয় করা হচ্ছে</translation>
 <translation id="2391579633712104609">১৮০°</translation>
 <translation id="2429753432712299108">ব্লুটুথ ডিভাইস "<ph name="DEVICE_NAME" />" যুক্ত করার অনুমতি চাইছে। স্বীকার করার আগে, দয়া করে এই পাস কীটি যে ডিভাইসে প্রদর্শিত হয়েছে তা নিশ্চিত করুন: <ph name="PASSKEY" /></translation>
 <translation id="2475982808118771221">একটি ত্রুটি ঘটেছে</translation>
@@ -59,6 +62,7 @@
 <translation id="2700058918926273959"><ph name="SESSION_TIME_REMAINING" /> এর মধ্যে সেশন শেষ হয়ে যাবে৷ আপনাকে প্রস্থান করুন করা হবে৷</translation>
 <translation id="2727977024730340865">একটি নিম্ন শক্তির চার্জার প্লাগইন করা হয়েছে৷ বিশ্বস্ত ব্যাটারি চার্জ নাও হতে পারে৷</translation>
 <translation id="2761704814324807722">স্থিতি ট্রে, সময় <ph name="TIME" />, <ph name="BATTERY" /></translation>
+<translation id="277257480934873581"><ph name="NAME" /> এ পুনরায় সংযোগ করছে</translation>
 <translation id="2792498699870441125">Alt+Search</translation>
 <translation id="2819276065543622893">আপনি এখনই প্রস্থান করুন হবেন৷</translation>
 <translation id="2825619548187458965">তাক</translation>
@@ -105,21 +109,27 @@ Search অথবা বাতিল করতে Shift টিপুন৷</trans
 <translation id="3783640748446814672">alt</translation>
 <translation id="3784455785234192852">লক করুন</translation>
 <translation id="3799026279081545374">আপনার কাছে একটি খারাপ চার্জার থাকতে পারে৷ যদি আপনি মার্কিন যুক্তরাষ্ট্রে বাস করেন তবে সহায়তা পেতে এবং একটি প্রতিস্থাপনের জন্য দয়া করে ৮৬৬-৬২৮-১৩৭১ এ কল করুন৷ যদি আপনি যুক্তরাজ্য বাস করেন তবে দয়া করে ০৮০০-০২৬-০৬১৩ এ কল করুন৷ যদি আপনি আয়ারল্যান্ডে বাস করেন তবে দয়া করে ১-৮০০-৮৩২-৬৬৪ এ কল করুন৷ যদি আপনি কানাডায় বাস করেন তবে দয়া করে ৮৬৬-৬২৮-১৩৭২ এ কল করুন৷ যদি আপনি অস্ট্রেলিয়ায় বাস করেন তবে দয়া করে ১-৮০০-০৬৭-৪৬০ এ কল করুন৷</translation>
+<translation id="3846575436967432996">কোনো নেটওয়ার্ক সংক্রান্ত তথ্য উপলব্ধ নেই</translation>
 <translation id="3866182280516392520">IPv6 ঠিকানা</translation>
 <translation id="3891340733213178823">প্রস্থান করুন করার জন্য দুবার Ctrl+Shift+Q টিপুন৷</translation>
 <translation id="3892641579809465218">অভ্যন্তরীণ প্রদর্শন</translation>
 <translation id="3893630138897523026">ChromeVox (কথ্য প্রতিক্রিয়া)</translation>
 <translation id="3899995891769452915">ভয়েস ইনপুট</translation>
+<translation id="3901991538546252627"><ph name="NAME" />-এ সংযোগ করা হচ্ছে</translation>
 <translation id="3963445509666917109">স্পিকার (অভ্যন্তরীণ)</translation>
 <translation id="3967919079500697218">স্ক্রীনশট নেওয়ার ক্ষমতা আপনার প্রশাসক দ্বারা অক্ষম করা হয়েছে৷</translation>
 <translation id="397105322502079400">গণনা করা হচ্ছে...</translation>
 <translation id="3995138139523574647">USB-C ডিভাইস (ডান দিকের পিছনের পোর্ট)</translation>
 <translation id="4053612967614057854">অন-স্ক্রীন কীবোর্ড অক্ষম করুন</translation>
+<translation id="4118990158415604803">অন্যান্য নেটওয়ার্কে সংযোগ স্থাপন আপনার প্রশাসক দ্বারা অক্ষম করা হয়েছে।</translation>
 <translation id="4250680216510889253">না</translation>
 <translation id="4279490309300973883">অনুকরণ করা হচ্ছে</translation>
 <translation id="4321179778687042513">ctrl</translation>
 <translation id="4421231901400348175">রিমোট সহায়কের মাধ্যমে <ph name="HELPER_NAME" />-এর সাথে আপনার স্ক্রীন নিয়ন্ত্রন ভাগ করুন৷</translation>
 <translation id="4430019312045809116">ভলিউম</translation>
+<translation id="4448844063988177157">ওয়াই-ফাই নেটওয়ার্কগুলির জন্য অনুসন্ধান করুন...</translation>
+<translation id="4479639480957787382">ইথারনেট</translation>
+<translation id="4508225577814909926"><ph name="NAME" />: সংযুক্ত হচ্ছে...</translation>
 <translation id="4527045527269911712">ব্লুটুথ ডিভাইস "<ph name="DEVICE_NAME" />" যুক্ত করার অনুমতি চাইছে।</translation>
 <translation id="453661520163887813">সম্পূর্ণ হতে <ph name="TIME" /> বাকি</translation>
 <translation id="4544944664594876241">স্ক্রীন লক করার শর্টকাটটি পরিবর্তিত হয়েছে। <ph name="OLD_SHORTCUT" /> এর পরিবর্তে দয়া করে <ph name="NEW_SHORTCUT" /> ব্যবহার করুন।</translation>
@@ -172,6 +182,7 @@ Search অথবা বাতিল করতে Shift টিপুন৷</trans
 <translation id="6165508094623778733">আরো জানুন</translation>
 <translation id="6203030746557259519">ভার্চুয়াল প্রদর্শন</translation>
 <translation id="6248847161401822652">প্রস্থান করার জন্য দুবার Control Shift Q টিপুন৷</translation>
+<translation id="6267036997247669271"><ph name="NAME" />: সক্রিয় করা হচ্ছে...</translation>
 <translation id="6297287540776456956">একটি অঞ্চল নির্বাচন করতে লেখনী ব্যবহার করুন</translation>
 <translation id="6310121235600822547"><ph name="DISPLAY_NAME" /> <ph name="ROTATION" /> আবর্তিত হয়েছে</translation>
 <translation id="6359806961507272919"><ph name="PHONE_NUMBER" />-এর থেকে SMS...</translation>
@@ -184,6 +195,7 @@ Search অথবা বাতিল করতে Shift টিপুন৷</trans
 <translation id="6501401484702599040"><ph name="RECEIVER_NAME" /> এ স্ক্রীন কাস্ট করা হচ্ছে</translation>
 <translation id="6521655319214113338">হাতে লেখা ইনপুট</translation>
 <translation id="6537270692134705506">স্ক্রীন ক্যাপচার করুন</translation>
+<translation id="6549021752953852991">কোনো সেলুলার নেটওয়ার্ক উপলব্ধ নেই</translation>
 <translation id="6550675742724504774">বিকল্পসমূহ</translation>
 <translation id="6585808820553845416"><ph name="SESSION_TIME_REMAINING" /> এর মধ্যে সেশন শেষ হয়ে যাবে৷</translation>
 <translation id="6596816719288285829">IP ঠিকানা</translation>
@@ -192,6 +204,7 @@ Search অথবা বাতিল করতে Shift টিপুন৷</trans
 <translation id="6713285437468012787">ব্লুটুথ ডিভাইস "<ph name="DEVICE_NAME" />" যুক্ত করা হয়েছে এবং এখন সমস্ত ব্যবহারকারীর কাছে উপলব্ধ। আপনি সেটিংস ব্যবহার করে এই সংযুক্তি সরিয়ে দিতে পারেন।</translation>
 <translation id="6785414152754474415">ব্যাটারি <ph name="PERCENTAGE" />% পূর্ণ এবং চার্জ হচ্ছে৷</translation>
 <translation id="683971173229319003">Search+L</translation>
+<translation id="6857811139397017780">সক্রিয় করুন <ph name="NETWORKSERVICE" /></translation>
 <translation id="6911468394164995108">অন্যতে যোগদান করুন ...</translation>
 <translation id="6915678159055240887">ক্রোমবাক্স</translation>
 <translation id="6979158407327259162">Google ড্রাইভ</translation>
@@ -200,6 +213,7 @@ Search অথবা বাতিল করতে Shift টিপুন৷</trans
 <translation id="703171847531699602">কোনো কাস্ট ডিভাইস নেই</translation>
 <translation id="7034339000180558234"><ph name="TAB_NAME" /> কে <ph name="RECEIVER_NAME" /> এ কাস্ট করা হচ্ছে</translation>
 <translation id="7052914147756339792">ওয়ালপেপার সেট করুন...</translation>
+<translation id="7066646422045619941">এই নেটওয়ার্কটি আপনার প্রশাসকের দ্বারা অক্ষম করা হয়েছে৷</translation>
 <translation id="7097613348211027502">ChromeVox (কথ্য প্রতিক্রিয়া) সক্ষম রয়েছে৷ অক্ষম করার জন্য Ctrl+Alt+Z টিপুন৷</translation>
 <translation id="7098389117866926363">USB-C ডিভাইস (পিছনের বাম পোর্ট)</translation>
 <translation id="7129360219436193655">লেজার পয়েন্টার মোড</translation>
@@ -208,6 +222,7 @@ Search অথবা বাতিল করতে Shift টিপুন৷</trans
 <translation id="7209101170223508707">CAPS LOCK চালু আছে৷
 Alt+Search অথবা বাতিল করতে Shift টিপুন৷</translation>
 <translation id="7348093485538360975">অন-স্ক্রীণ কীবোর্ড</translation>
+<translation id="735745346212279324">VPN সংযোগ বিচ্ছিন্ন করা হয়েছে</translation>
 <translation id="737451040872859086">মাইক্রোফোন (অভ্যন্তরীণ)</translation>
 <translation id="742594950370306541">ক্যামেরা ব্যবহার করা হচ্ছে।</translation>
 <translation id="743058460480092004">ক্যামেরা এবং মাইক্রোফোন ব্যবহার করা হচ্ছে।</translation>
@@ -224,19 +239,24 @@ Alt+Search অথবা বাতিল করতে Shift টিপুন৷</t
 <translation id="7823564328645135659">আপনার সেটিংস সিঙ্ক করার পরে ভাষা "<ph name="FROM_LOCALE" />" থেকে "<ph name="TO_LOCALE" />" এ পরিবর্তন করা হয়েছে৷</translation>
 <translation id="785750925697875037">মোবাইল অ্যাকাউন্ট দেখুন</translation>
 <translation id="7864539943188674973">ব্লুটুথ অক্ষম করুন</translation>
+<translation id="7874779702599364982">সেলুলার নেটওয়ার্কগুলির জন্য অনুসন্ধান করছে...</translation>
 <translation id="7893838033650689677">ওয়াই-ফাই চালু করুন</translation>
 <translation id="7904094684485781019">এই অ্যাকাউন্টের প্রশাসক একাধিক প্রবেশ করুন অননুমোদিত করেছেন৷</translation>
 <translation id="7957227661277029961">আপনার <ph name="DEVICE_TYPE" /> চালু থাকা অবস্থায় চার্জ নাও হতে পারে। এটির মূল চার্জার ব্যবহারের কথা ভাবুন।</translation>
 <translation id="7982789257301363584">নেটওয়ার্ক</translation>
+<translation id="8000066093800657092">কোনও নেটওয়ার্ক নেই</translation>
 <translation id="8054466585765276473">ব্যাটারি সময় গণনা করা হচ্ছে।</translation>
 <translation id="8077816382010018681">QU বৈশিষ্ট্য বিজ্ঞপ্তির শিরোনাম এখানে থাকবে</translation>
 <translation id="8103386449138765447">SMS বার্তা: <ph name="MESSAGE_COUNT" /></translation>
+<translation id="8132793192354020517"><ph name="NAME" /> তে সংযুক্ত</translation>
 <translation id="8185286464235484130">আসুন, কয়েকটি প্রশ্নের উত্তর দিয়ে আমরা বুঝি যে আমরা কেমন আছি।</translation>
 <translation id="8190698733819146287">ভাষা এবং ইনপুট কাস্টমাইজ করুন...</translation>
 <translation id="8206859287963243715">সেলুলার</translation>
 <translation id="8308637677604853869">পূর্ববর্তী মেনু</translation>
 <translation id="8356164830168736643"><ph name="WINDOW_TITLE" /> বন্ধ করুন</translation>
 <translation id="8428213095426709021">সেটিংস</translation>
+<translation id="8454013096329229812">ওয়াই-ফাই চালু আছে৷</translation>
+<translation id="8484916590211895857"><ph name="NAME" />: পুনরায় সংযোগ করছে...</translation>
 <translation id="8517041960877371778">আপনার <ph name="DEVICE_TYPE" /> চালু থাকা অবস্থায় চার্জ নাও হতে পারে।</translation>
 <translation id="8528322925433439945">মোবাইল ...</translation>
 <translation id="8639760480004882931"><ph name="PERCENTAGE" /> বাকি আছে</translation>

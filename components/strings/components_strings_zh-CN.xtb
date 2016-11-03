@@ -50,6 +50,7 @@
 <translation id="1491663344921578213">您目前无法访问 <ph name="SITE" />，因为此网站使用了证书锁定功能。网络错误和攻击行为通常是暂时的，因此，此网页稍后可能就会恢复正常。<ph name="BEGIN_LEARN_MORE_LINK" />了解详情<ph name="END_LEARN_MORE_LINK" />。</translation>
 <translation id="1506687042165942984">显示为此页面保存的已知过时副本。</translation>
 <translation id="1519264250979466059">构建日期</translation>
+<translation id="153384715582417236">这就是目前所有的推荐内容</translation>
 <translation id="1549470594296187301">必须启用 JavaScript 才能使用此功能。</translation>
 <translation id="1559528461873125649">不存在此类文件或目录</translation>
 <translation id="1559572115229829303">&lt;p&gt;您设备的日期和时间（<ph name="DATE_AND_TIME" />）不正确，因此无法与 <ph name="BEGIN_BOLD" /><ph name="DOMAIN" /><ph name="END_BOLD" /> 建立私密连接。&lt;/p&gt;
@@ -347,7 +348,6 @@
 <translation id="4728558894243024398">平台</translation>
 <translation id="4744603770635761495">可执行文件路径</translation>
 <translation id="4756388243121344051">历史记录(&amp;H)</translation>
-<translation id="4759238208242260848">下载内容</translation>
 <translation id="4764776831041365478">网址为 <ph name="URL" /> 的网页可能暂时无法连接，或者它已永久性地移动到了新网址。</translation>
 <translation id="4771973620359291008">发生未知错误。</translation>
 <translation id="4782449893814226250">已向您父母提出允许您访问此网页的请求。</translation>
@@ -386,6 +386,7 @@
 <translation id="5179510805599951267">不是<ph name="ORIGINAL_LANGUAGE" />？报告此错误</translation>
 <translation id="5190835502935405962">书签栏</translation>
 <translation id="5199729219167945352">实验</translation>
+<translation id="5199841536747119669">为您推荐的内容会显示在此处</translation>
 <translation id="5251803541071282808">云端</translation>
 <translation id="5277279256032773186">使用 Chrome 办公？企业可以为其员工管理 Chrome 设置。了解详情</translation>
 <translation id="5299298092464848405">解析策略时出错</translation>
@@ -464,6 +465,7 @@
 <translation id="6263376278284652872"><ph name="DOMAIN" /> 书签</translation>
 <translation id="6264485186158353794">返回安全连接</translation>
 <translation id="6282194474023008486">邮编</translation>
+<translation id="6290238015253830360">为您推荐的文章会显示在此处</translation>
 <translation id="6305205051461490394">无法访问 <ph name="URL" />。</translation>
 <translation id="6321917430147971392">请检查您的DNS设置是否正确</translation>
 <translation id="6328639280570009161">请尝试停用网络联想查询功能</translation>
@@ -647,6 +649,7 @@
 <translation id="8363502534493474904">关闭飞行模式</translation>
 <translation id="8364627913115013041">未设置。</translation>
 <translation id="8380941800586852976">危险</translation>
+<translation id="8382348898565613901">您最近访问过的书签会显示在此处</translation>
 <translation id="8412145213513410671">崩溃次数（<ph name="CRASH_COUNT" /> 次）</translation>
 <translation id="8412392972487953978">您两次输入的密码必须相同。</translation>
 <translation id="8428213095426709021">设置</translation>
@@ -696,6 +699,7 @@
 <translation id="8987927404178983737">月</translation>
 <translation id="8989148748219918422"><ph name="ORGANIZATION" /> [<ph name="COUNTRY" />]</translation>
 <translation id="9001074447101275817">代理 (<ph name="DOMAIN" />) 要求提供用户名和密码。</translation>
+<translation id="9008201768610948239">忽略</translation>
 <translation id="901974403500617787">应用于整个系统的设置只能由以下所有者设定：<ph name="OWNER_EMAIL" />。</translation>
 <translation id="9020542370529661692">已将此网页内容翻译成<ph name="TARGET_LANGUAGE" /></translation>
 <translation id="9038649477754266430">使用联想查询服务更快速地加载网页</translation>

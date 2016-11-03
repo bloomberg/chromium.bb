@@ -50,6 +50,7 @@
 <translation id="1491663344921578213">Momentan, nu poți accesa site-ul <ph name="SITE" />, deoarece acesta folosește fixarea certificatelor. Erorile de rețea și atacurile sunt de obicei temporare și probabil că această pagină va funcționa mai târziu. <ph name="BEGIN_LEARN_MORE_LINK" />Află mai multe<ph name="END_LEARN_MORE_LINK" />.</translation>
 <translation id="1506687042165942984">Afișează o copie salvată (adică despre care se știe că este învechită) a acestei pagini.</translation>
 <translation id="1519264250979466059">Dată versiune:</translation>
+<translation id="153384715582417236">Asta este tot</translation>
 <translation id="1549470594296187301">Trebuie să activezi JavaScript pentru a folosi această funcție.</translation>
 <translation id="1559528461873125649">Nu există un astfel de fișier sau director</translation>
 <translation id="1559572115229829303">&lt;p&gt;O conexiune privată la <ph name="BEGIN_BOLD" /><ph name="DOMAIN" /><ph name="END_BOLD" /> nu poate fi stabilită, deoarece data și ora dispozitivului (<ph name="DATE_AND_TIME" />) sunt incorecte.&lt;/p&gt;
@@ -350,7 +351,6 @@
 <translation id="4728558894243024398">Platformă</translation>
 <translation id="4744603770635761495">Cale executabilă</translation>
 <translation id="4756388243121344051">&amp;Istoric</translation>
-<translation id="4759238208242260848">Descărcări</translation>
 <translation id="4764776831041365478">Pagina web de la <ph name="URL" /> poate fi temporar nefuncțională sau a fost mutată definitiv la o nouă adresă web.</translation>
 <translation id="4771973620359291008">A apărut o eroare necunoscută.</translation>
 <translation id="4782449893814226250">Ai întrebat părinții dacă poți accesa această pagină.</translation>
@@ -384,11 +384,12 @@
 <translation id="5115563688576182185">(64 de biți)</translation>
 <translation id="5141240743006678641">Criptează parolele sincronizate cu datele de conectare Google</translation>
 <translation id="5145883236150621069">Răspunsul pentru politică include un cod de eroare</translation>
-<translation id="5171045022955879922">Căutați sau introduceți adresa URL</translation>
+<translation id="5171045022955879922">Caută sau introdu adresa URL</translation>
 <translation id="5172758083709347301">Computer</translation>
 <translation id="5179510805599951267">Nu este în <ph name="ORIGINAL_LANGUAGE" />? Semnalează această eroare.</translation>
 <translation id="5190835502935405962">Bară de marcaje</translation>
 <translation id="5199729219167945352">Experimente</translation>
+<translation id="5199841536747119669">Sugestiile apar aici</translation>
 <translation id="5251803541071282808">Cloud</translation>
 <translation id="5277279256032773186">Folosești Chrome la serviciu? Companiile pot gestiona setările Chrome pentru angajații lor. Află mai multe</translation>
 <translation id="5299298092464848405">Eroare la analizarea politicii</translation>
@@ -468,6 +469,7 @@
 <translation id="6263376278284652872">Marcaje <ph name="DOMAIN" /></translation>
 <translation id="6264485186158353794">Înapoi la zona sigură</translation>
 <translation id="6282194474023008486">Cod poștal</translation>
+<translation id="6290238015253830360">Articolele sugerate apar aici</translation>
 <translation id="6305205051461490394">Adresa URL <ph name="URL" /> nu poate fi accesată.</translation>
 <translation id="6321917430147971392">Verificați setările DNS</translation>
 <translation id="6328639280570009161">Încercați să dezactivați anticiparea rețelei</translation>
@@ -651,6 +653,7 @@ Data viitoare ați putea utiliza combinația <ph name="SHORTCUT_KEY" /> pentru a
 <translation id="8363502534493474904">să dezactivezi modul Avion.</translation>
 <translation id="8364627913115013041">Nesetată.</translation>
 <translation id="8380941800586852976">Periculos</translation>
+<translation id="8382348898565613901">Marcajele accesate recent apar aici</translation>
 <translation id="8412145213513410671">Blocări (<ph name="CRASH_COUNT" />)</translation>
 <translation id="8412392972487953978">Trebuie să introduci aceeași expresie de acces de două ori.</translation>
 <translation id="8428213095426709021">Setări</translation>
@@ -700,6 +703,7 @@ Data viitoare ați putea utiliza combinația <ph name="SHORTCUT_KEY" /> pentru a
 <translation id="8987927404178983737">Lună</translation>
 <translation id="8989148748219918422"><ph name="ORGANIZATION" /> [<ph name="COUNTRY" />]</translation>
 <translation id="9001074447101275817">Pentru a accesa proxy-ul <ph name="DOMAIN" />, trebuie să introduci un nume de utilizator și o parolă.</translation>
+<translation id="9008201768610948239">Ignorați</translation>
 <translation id="901974403500617787">Marcajele care se aplică la nivel de sistem pot fi create numai de proprietar: <ph name="OWNER_EMAIL" />.</translation>
 <translation id="9020542370529661692">Această pagină a fost tradusă în <ph name="TARGET_LANGUAGE" /></translation>
 <translation id="9038649477754266430">Folosește un serviciu de predicții pentru a încărca paginile mai rapid</translation>

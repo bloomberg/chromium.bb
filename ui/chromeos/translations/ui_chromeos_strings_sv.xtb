@@ -1,41 +1,20 @@
 <?xml version="1.0" ?>
 <!DOCTYPE translationbundle>
 <translationbundle lang="sv">
-<translation id="153454903766751181">Mobilt modem initieras ...</translation>
 <translation id="1829129547161959350">Pingvin</translation>
-<translation id="1850504506766569011">Wi-Fi är inaktiverat.</translation>
 <translation id="2288278176040912387">Skivspelare</translation>
-<translation id="2354174487190027830">Aktiverar <ph name="NAME" /></translation>
 <translation id="2563185590376525700">Groda</translation>
 <translation id="2649120831653069427">Regnbågsfisk</translation>
-<translation id="277257480934873581">Återansluter till <ph name="NAME" /></translation>
 <translation id="2894654529758326923">Information</translation>
 <translation id="2951236788251446349">Manet</translation>
-<translation id="3846575436967432996">Det finns ingen nätverksinformation</translation>
-<translation id="3901991538546252627">Ansluter till <ph name="NAME" /></translation>
 <translation id="3958548648197196644">Kiwi</translation>
-<translation id="4118990158415604803">Administratören har inaktiverat anslutning till andra nätverk.</translation>
 <translation id="4326192123064055915">Kaffe</translation>
-<translation id="4448844063988177157">Söker efter Wi-Fi-nätverk...</translation>
-<translation id="4479639480957787382">Ethernet</translation>
-<translation id="4508225577814909926"><ph name="NAME" />: ansluter ...</translation>
 <translation id="4559767610552730302">Bokeh</translation>
 <translation id="4935975195727477204">Gazaniablomma</translation>
 <translation id="515594325917491223">Schack</translation>
 <translation id="5257456363153333584">Trollslända</translation>
-<translation id="6267036997247669271"><ph name="NAME" />: Aktiverar ...</translation>
-<translation id="6549021752953852991">Det finns inget tillgängligt mobilt nätverk</translation>
-<translation id="6857811139397017780">Aktivera <ph name="NETWORKSERVICE" /></translation>
 <translation id="6935521024859866267">Uppochned</translation>
-<translation id="7066646422045619941">Det här nätverket har inaktiverats av administratören.</translation>
-<translation id="735745346212279324">VPN frånkopplat</translation>
-<translation id="7874779702599364982">Söker efter mobilnätverk ...</translation>
-<translation id="8000066093800657092">Inget nätverk</translation>
 <translation id="8008366997883261463">Hund</translation>
-<translation id="8132793192354020517">Ansluten till <ph name="NAME" /></translation>
-<translation id="8454013096329229812">Wi-Fi är aktiverat.</translation>
-<translation id="8484916590211895857"><ph name="NAME" />: återansluter …</translation>
 <translation id="8714406895390098252">Cykel</translation>
 <translation id="8808686172382650546">Katt</translation>
-<translation id="8814190375133053267">Wi-Fi</translation>
 </translationbundle>

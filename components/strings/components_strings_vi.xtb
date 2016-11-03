@@ -50,6 +50,7 @@
 <translation id="1491663344921578213">Bạn không thể truy cập <ph name="SITE" /> ngay bây giờ do trang web sử dụng tính năng ghim chứng chỉ. Lỗi mạng và các cuộc tấn công mạng thường chỉ là tạm thời, do đó, trang này có thể sẽ hoạt động lại sau. <ph name="BEGIN_LEARN_MORE_LINK" />Tìm hiểu thêm<ph name="END_LEARN_MORE_LINK" />.</translation>
 <translation id="1506687042165942984">Hiển thị bản sao đã lưu (nghĩa là đã lỗi thời) của trang này.</translation>
 <translation id="1519264250979466059">Ngày tạo</translation>
+<translation id="153384715582417236">Hiện đã hoàn tất</translation>
 <translation id="1549470594296187301">Bạn phải bật JavaScript để sử dụng tính năng này.</translation>
 <translation id="1559528461873125649">Không có tệp hoặc thư mục nào như vậy</translation>
 <translation id="1559572115229829303">&lt;p&gt;Không thể thiết lập kết nối riêng tư với <ph name="BEGIN_BOLD" /><ph name="DOMAIN" /><ph name="END_BOLD" /> vì ngày và giờ (<ph name="DATE_AND_TIME" />) trên thiết bị của bạn không chính xác.&lt;/p&gt;
@@ -350,7 +351,6 @@
 <translation id="4728558894243024398">Nền tảng</translation>
 <translation id="4744603770635761495">Đường dẫn thực thi</translation>
 <translation id="4756388243121344051">&amp;Lịch sử</translation>
-<translation id="4759238208242260848">Tải xuống</translation>
 <translation id="4764776831041365478">Trang web tại <ph name="URL" /> có thể tạm thời không hoạt động hay được chuyển vĩnh viễn sang địa chỉ web mới.</translation>
 <translation id="4771973620359291008">Xảy ra lỗi chưa biết.</translation>
 <translation id="4782449893814226250">Bạn đã hỏi cha mẹ mình xem có thể truy cập vào trang này hay không.</translation>
@@ -389,6 +389,7 @@
 <translation id="5179510805599951267">Không ở <ph name="ORIGINAL_LANGUAGE" />? Báo cáo lỗi này</translation>
 <translation id="5190835502935405962">Thanh Dấu trang</translation>
 <translation id="5199729219167945352">Thử nghiệm</translation>
+<translation id="5199841536747119669">Đề xuất của bạn sẽ xuất hiện ở đây</translation>
 <translation id="5251803541071282808">Đám mây</translation>
 <translation id="5277279256032773186">Sử dụng Chrome ở cơ quan? Các doanh nghiệp có thể quản lý cài đặt Chrome cho nhân viên của họ. Tìm hiểu thêm</translation>
 <translation id="5299298092464848405">Lỗi phân tích cú pháp chính sách</translation>
@@ -468,6 +469,7 @@
 <translation id="6263376278284652872">Dấu trang trên <ph name="DOMAIN" /></translation>
 <translation id="6264485186158353794">Quay lại an toàn</translation>
 <translation id="6282194474023008486">Mã bưu chính</translation>
+<translation id="6290238015253830360">Bài viết được đề xuất của bạn sẽ xuất hiện ở đây</translation>
 <translation id="6305205051461490394">Không thể truy cập <ph name="URL" />.</translation>
 <translation id="6321917430147971392">Kiểm tra cài đặt DNS của bạn</translation>
 <translation id="6328639280570009161">Thử tắt dự đoán mạng</translation>
@@ -651,6 +653,7 @@ Lưu ý! Chế độ ẩn danh <ph name="SHORTCUT_KEY" /> có thể hữu ích v
 <translation id="8363502534493474904">Tắt chế độ trên máy bay</translation>
 <translation id="8364627913115013041">Chưa được đặt.</translation>
 <translation id="8380941800586852976">Nguy hiểm</translation>
+<translation id="8382348898565613901">Dấu trang bạn truy cập gần đây sẽ xuất hiện ở đây</translation>
 <translation id="8412145213513410671">Sự cố (<ph name="CRASH_COUNT" />)</translation>
 <translation id="8412392972487953978">Bạn phải nhập cùng một cụm mật khẩu hai lần.</translation>
 <translation id="8428213095426709021">Cài đặt</translation>
@@ -700,6 +703,7 @@ Lưu ý! Chế độ ẩn danh <ph name="SHORTCUT_KEY" /> có thể hữu ích v
 <translation id="8987927404178983737">Tháng</translation>
 <translation id="8989148748219918422"><ph name="ORGANIZATION" /> [<ph name="COUNTRY" />]</translation>
 <translation id="9001074447101275817">Proxy <ph name="DOMAIN" /> yêu cầu tên người dùng và mật khẩu.</translation>
+<translation id="9008201768610948239">Bỏ qua</translation>
 <translation id="901974403500617787">Chỉ chủ sở hữu mới có thể đặt cờ áp dụng cho toàn hệ thống: <ph name="OWNER_EMAIL" />.</translation>
 <translation id="9020542370529661692">Trang này đã được dịch sang <ph name="TARGET_LANGUAGE" /></translation>
 <translation id="9038649477754266430">Sử dụng dịch vụ gợi ý để tải trang nhanh hơn</translation>

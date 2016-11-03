@@ -19,6 +19,9 @@
       Če je ta pravilnik onemogočen ali ni nastavljen, se piškotki, ki jih nastavi IdP, prenesejo v uporabnikov profil samo pri prvi prijavi uporabnika v napravi.
 
       Ta pravilnik vpliva na uporabnike, katerih domena se ujema samo z domeno za včlanitev naprave. Pri vseh drugih uporabnikih se piškotki, ki jih nastavi IdP, prenesejo v uporabnikov profil samo pri prvi prijavi uporabnika v napravi.</translation>
+<translation id="1029536946382325801">Če je pravilnik omogočen, lahko uporabnik overitelju potrdil za zasebnost s strojno opremo v napravah Chrome na daljavo potrdi svojo identiteto prek metode chrome.enterprise.platformKeys.challengeUserKey() API-ja Enterprise Platform Keys.
+
+          Če je onemogočen ali če ni nastavljen, pozivi API-ju ne bodo uspeli in bo vrnjena koda napake.</translation>
 <translation id="1040446814317236570">Omogočanje odstranjevanja elementov iz URL-jev za skripte PAC (za https://)</translation>
 <translation id="1044878202534415707">Poročanje statističnih podatkov o strojni opremi, kot je poraba CPE-ja/RAM-a.
 
@@ -298,7 +301,7 @@ Vrednost prilagoditve mora biti 100 % ali več.</translation>
       Če je pravilnik HardwareAccelerationModeEnabled onemogočen, se pravilnik Disable3DAPIs prezre in je enako, kot če je pravilnik Disable3DAPIs omogočen.</translation>
 <translation id="2168397434410358693">Časovni zamik nedejavnosti ob napajanju iz električnega omrežja</translation>
 <translation id="2170233653554726857">Omogočanje optimizacije za WPAD</translation>
-<translation id="2178899310296064282">Uveljavitev vsaj zmerno omejenega načina v YouTubu</translation>
+<translation id="2178899310296064282">Uveljavitev vsaj Zmerno omejenega načina v YouTubu</translation>
 <translation id="2188979373208322108">Omogoča vrstico zaznamkov v brskalniku <ph name="PRODUCT_NAME" />.
 
      Če to nastavitev omogočite, bo <ph name="PRODUCT_NAME" /> prikazoval vrstico z zaznamki.
@@ -346,13 +349,6 @@ Vrednost prilagoditve mora biti 100 % ali več.</translation>
 <translation id="2337466621458842053">Omogoča nastavitev seznama vzorcev URL-jev, s katerim se določijo, ki lahko prikazujejo slike.
 
           Če ta pravilnik ni nastavljen, bo za vsa spletna mesta uporabljena splošna privzeta vrednost iz pravilnika »DefaultImagesSetting«, kadar je ta nastavljen, ali iz uporabnikove osebne konfiguracije, kadar pravilnik »DefaultImagesSetting« ni nastavljen.</translation>
-<translation id="2359612025446382967">Če je ta pravilnik onemogočen, bo sistem <ph name="PRODUCT_OS_NAME" /> onemogočil Bluetooth in ga uporabnik ne bo mogel znova omogočiti.
-
-      Če je ta pravilnik omogočen ali ni nastavljen, bo uporabnik lahko Bluetooth po želji omogočil ali onemogočil.
-
-      Če je ta pravilnik nastavljen, ga uporabnik ne more spremeniti ali preglasiti.
-
-      Ko omogočite Bluetooth, je treba napravo znova zagnati, da bodo spremembe izvedene (če Bluetooth onemogočite, naprave ni treba znova zagnati).</translation>
 <translation id="2366415278352956652">Omogoča predvajanje</translation>
 <translation id="2372547058085956601">Zamik samodejne prijave v javno sejo.
 
@@ -957,7 +953,7 @@ napravi konfiguriran tako, da pri samodejni prijavi ni zakasnitve, naprava pa ni
 
       Če to nastavitev omogočite, sta Varno iskanje v Iskanju Google in Zmerno omejeni način v YouTubu vedno aktivna.
 
-      Če to nastavitev onemogočite ali ne nastavite vrednosti, Varno iskanje v Iskanju Google in Omejeni način v YouTubu nista uveljavljena.</translation>
+      Če to nastavitev onemogočite ali ne nastavite vrednosti, Varno iskanje v Iskanju Google in Omejeni način v YouTubu nista vsiljena.</translation>
 <translation id="3866249974567520381">Opis</translation>
 <translation id="3866530186104388232">Če je pravilnik omogočen ali ni nastavljen, <ph name="PRODUCT_OS_NAME" /> prikaže obstoječe uporabnike na zaslonu za prijavo, ki jih je mogoče izbrati. Če je pravilnik onemogočen, <ph name="PRODUCT_OS_NAME" /> za prijavo uporabi polje za vnos uporabniškega imena/gesla.</translation>
 <translation id="3868347814555911633">Ta pravilnik je aktiven samo v maloprodajnem načinu.
@@ -990,6 +986,9 @@ napravi konfiguriran tako, da pri samodejni prijavi ni zakasnitve, naprava pa ni
 
       Če je pravilnik omogočen, se pošiljajo omrežni paketi za spremljanje (t.i. <ph name="HEARTBEATS_TERM" />).
       Če je onemogočen ali ni nastavljen, se paketi ne pošiljajo.</translation>
+<translation id="3963602271515417124">Če je ta pravilnik omogočen, bo za to napravo dovoljeno potrjevanje na daljavo in samodejno bo ustvarjeno potrdilo, ki bo preneseno v strežnik za upravljanje naprav.
+
+          Če je ta pravilnik onemogočen ali ni nastavljen, ne bo ustvarjeno potrdilo in pozivi API-ju za razširitve enterprise.platformKeys ne bodo uspeli.</translation>
 <translation id="3964909636571393861">Omogoča dostop do seznama spletnih naslovov</translation>
 <translation id="3965339130942650562">Časovna omejitev za odjavo nedejavnega uporabnika</translation>
 <translation id="3967075520570946456">Omogočanje prikaza pozdravne strani ob prvem zagonu brskalnika po nadgradnji operacijskega sistema</translation>
@@ -1042,7 +1041,7 @@ napravi konfiguriran tako, da pri samodejni prijavi ni zakasnitve, naprava pa ni
 
           Če ta pravilnik ni nastavljen, se uporabi »AllowCookies« in uporabnik bo lahko to spremenil.</translation>
 <translation id="4103289232974211388">Preusmeritev na SAML IdP po potrditvi uporabnika</translation>
-<translation id="4103941930938018145">Ta pravilnik je zastarel. Uporabite pravilnik <ph name="DEFAULT_PLUGINS_SETTING_POLICY" /> za nadziranje razpoložljivost vtičnika za Flash in pravilnik <ph name="ALWAYS_OPEN_PDF_EXTERNALLY_POLICY" /> za nadziranje, ali je za odpiranje datotek PDF treba uporabiti vdelan pregledovalnik PDF-jev.
+<translation id="4103941930938018145">Ta pravilnik je zastarel. Uporabite pravilnik <ph name="DEFAULT_PLUGINS_SETTING_POLICY" /> za nadziranje razpoložljivosti vtičnika za Flash in pravilnik <ph name="ALWAYS_OPEN_PDF_EXTERNALLY_POLICY" /> za nadziranje, ali je za odpiranje datotek PDF treba uporabiti vdelan pregledovalnik PDF-jev.
 
       Določi seznam vtičnikov, ki so onemogočeni v brskalniku <ph name="PRODUCT_NAME" />, in uporabnikom prepreči, da bi to nastavitev spremenili.
 
@@ -1482,7 +1481,7 @@ Vrednost pravilnika mora vedno biti navedena v sekundah. Vrednosti so navzdol om
           Če pravilnik ni nastavljen, velja privzeto trajanje.
 
           Vrednost pravilnika naj bo navedena v milisekundah.</translation>
-<translation id="5783595563813359339">Ta pravilnik je zastarel. Uporabite pravilnik <ph name="DEFAULT_PLUGINS_SETTING_POLICY" /> za nadziranje razpoložljivost vtičnika za Flash in pravilnik <ph name="ALWAYS_OPEN_PDF_EXTERNALLY_POLICY" /> za nadziranje, ali je za odpiranje datotek PDF treba uporabiti vdelan pregledovalnik PDF-jev.
+<translation id="5783595563813359339">Ta pravilnik je zastarel. Uporabite pravilnik <ph name="DEFAULT_PLUGINS_SETTING_POLICY" /> za nadziranje razpoložljivosti vtičnika za Flash in pravilnik <ph name="ALWAYS_OPEN_PDF_EXTERNALLY_POLICY" /> za nadziranje, ali je za odpiranje datotek PDF treba uporabiti vdelan pregledovalnik PDF-jev.
 
       Določi seznam vtičnikov, ki jih lahko uporabnik omogoči ali onemogoči v brskalniku <ph name="PRODUCT_NAME" />.
 
@@ -1564,13 +1563,6 @@ Vrednost pravilnika mora vedno biti navedena v sekundah. Vrednosti so navzdol om
 
       Če pravilnik ni nastavljen ali je nastavljen na »false«, <ph name="PRODUCT_NAME" /> v različici <ph name="PRODUCT_NAME" /> 19 ali novejši ne bo izvajal spletnega pregleda preklica.</translation>
 <translation id="5966615072639944554">Razširitve, ki lahko uporabljajo API za oddaljeno potrditev</translation>
-<translation id="5974970919245996815">Podatki poročila o stanju Androida se pošljejo nazaj
-      v strežnik.
-
-      Če je pravilnik onemogočen, se podatki ne poročajo.
-      Če je omogočen ali ni nastavljen, se podatki ne poročajo.
-
-      Ta pravilnik se uporabi samo, če so omogočene aplikacije za Android.</translation>
 <translation id="5983708779415553259">Privzeto delovanje za spletna mesta, ki niso v nobenem paketu vsebine</translation>
 <translation id="5997543603646547632">Privzeto uporabi 24-urni čas</translation>
 <translation id="6009903244351574348">Omogoča, da <ph name="PRODUCT_FRAME_NAME" /> obravnava navedene vrste vsebine.
@@ -1601,7 +1593,7 @@ Vrednost pravilnika mora vedno biti navedena v sekundah. Vrednosti so navzdol om
 <translation id="6076099373507468537">Določa seznam naprav USB, za katere je dovoljena prekinitev povezave z gonilnikom jedra zaradi uporabe prek API-ja chrome.usb neposredno v spletni aplikaciji. Vnosi so pari, ki so sestavljeni iz identifikatorja proizvajalca za USB in identifikatorja izdelka ter ki omogočajo prepoznavo posamezne strojne opreme.
 
       Če ta pravilnik ni nastavljen, je seznam naprav USB, katerih povezavo je mogoče prekiniti, prazen.</translation>
-<translation id="608377055310226486">Ta pravilnik je zastarel. Uporabite pravilnik <ph name="DEFAULT_PLUGINS_SETTING_POLICY" /> za nadziranje razpoložljivost vtičnika za Flash in pravilnik <ph name="ALWAYS_OPEN_PDF_EXTERNALLY_POLICY" /> za nadziranje, ali je za odpiranje datotek PDF treba uporabiti vdelan pregledovalnik PDF-jev.
+<translation id="608377055310226486">Ta pravilnik je zastarel. Uporabite pravilnik <ph name="DEFAULT_PLUGINS_SETTING_POLICY" /> za nadziranje razpoložljivosti vtičnika za Flash in pravilnik <ph name="ALWAYS_OPEN_PDF_EXTERNALLY_POLICY" /> za nadziranje, ali je za odpiranje datotek PDF treba uporabiti vdelan pregledovalnik PDF-jev.
 
 
       Določi seznam vtičnikov, ki so onemogočeni v brskalniku <ph name="PRODUCT_NAME" />, in uporabnikom prepreči, da bi to nastavitev spremenili.
@@ -1612,8 +1604,7 @@ Vrednost pravilnika mora vedno biti navedena v sekundah. Vrednosti so navzdol om
 
       Določen seznam vtičnikov se v brskalniku <ph name="PRODUCT_NAME" /> vedno uporablja, če so vtičniki nameščeni. Vtičniki so v polju »about:plugins« označeni kot omogočeni in uporabniki jih ne morejo onemogočiti.
 
-      Ta pravilnik lahko preglasita pravilnika »EnabledPlugins« in »DisabledPluginsExceptions«.
-
+      Ta pravilnik preglasi pravilnika »DisabledPlugins« in »DisabledPluginsExceptions«.
 
       Če ta pravilnik ni nastavljen, lahko uporabnik onemogoči kateri koli vtičnik, nameščen v sistemu.</translation>
 <translation id="6093156968240188330">Omogoči oddaljenim uporabnikom uporabo oken s skrbniškimi pravicami v sejah oddaljene pomoči</translation>
@@ -1849,7 +1840,7 @@ URL-ji, ki uporabljajo sheme s tega seznama, se ne bodo naložili in dostop do n
 <translation id="6828905844648501476">Če je ta pravilnik omogočen ali ni nastavljen, <ph name="PRODUCT_NAME" /> dovoli dodajanje osebe v upravitelju uporabnikov.
 
       Če je ta pravilnik onemogočen, <ph name="PRODUCT_NAME" /> ne dovoli ustvarjanja novih profilov v upravitelju uporabnikov.</translation>
-<translation id="685769593149966548">Uveljavitev Strogo omejena načina v YouTubu</translation>
+<translation id="685769593149966548">Uveljavitev Strogo omejenega načina v YouTubu</translation>
 <translation id="687046793986382807">Ta pravilnik je zastaral in se ne uporablja več od različice 35 brskalnika <ph name="PRODUCT_NAME" />.
 
       Podatki o pomnilniku se vseeno pošiljajo strani, ne glede na vrednost možnosti, vendar se poslane vrednosti
@@ -2268,6 +2259,9 @@ URL-ji, ki uporabljajo sheme s tega seznama, se ne bodo naložili in dostop do n
           v domeno Active Directory.</translation>
 <translation id="7937766917976512374">Omogočanje ali onemogočanje snemanje videoposnetka</translation>
 <translation id="7941975817681987555">Ne predvidevaj omrežnih dejanj v nobeni omrežni povezavi</translation>
+<translation id="7942429005743031780">Ta pravilnik določa dovoljene razširitve, ki lahko uporabljajo metodo chrome.enterprise.platformKeys.challengeUserKey() API-ja Enterprise Platform Keys za potrjevanje na daljavo. Razširitve, ki lahko uporabljajo API, morate dodati na ta seznam.
+
+          Če razširitve ni na seznamu ali seznam ni nastavljen, poziv API-ju ne bo uspel in bo vrnjena koda napake.</translation>
 <translation id="7953256619080733119">Gostitelji ročnih izjem za upravljanega uporabnika</translation>
 <translation id="7971839631300653352">SSL 3.0</translation>
 <translation id="7974114691960514888">Ta pravilnik ni več podprt.

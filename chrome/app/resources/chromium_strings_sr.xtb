@@ -23,7 +23,6 @@
 <translation id="1688750314291223739">Подесите Синхронизацију како бисте сачували персонализоване функције прегледача на Веб и приступали им из Chromium-а на било ком рачунару.</translation>
 <translation id="1699664235656412242">Затворите све Chromium прозоре (укључујући оне у режиму Windows 8) и покушајте поново.</translation>
 <translation id="1708666629004767631">Доступна је нова, безбеднија верзија Chromium-а.</translation>
-<translation id="1725059042853530269">Датотека <ph name="FILE_NAME" /> може негативно да утиче на доживљај прегледања, па ју је Chromium блокирао.</translation>
 <translation id="1774152462503052664">Нека Chromium ради у позадини</translation>
 <translation id="1779356040007214683">Да бисмо учинили Chromium безбеднијим, онемогућили смо неке додатке које не наводи <ph name="IDS_EXTENSION_WEB_STORE_TITLE" /> и који су можда додати без вашег знања.</translation>
 <translation id="1808667845054772817">Поново инсталирај Chromium</translation>
@@ -61,7 +60,6 @@
 <translation id="2718390899429598676">Chromium ће шифровати податке ради додатне сигурности.</translation>
 <translation id="2770231113462710648">Промени подразумевани прегледач у:</translation>
 <translation id="2799223571221894425">Поново покрени</translation>
-<translation id="2801146392936645542">Датотека <ph name="FILE_NAME" /> је злонамерна, па ју је Chromium блокирао.</translation>
 <translation id="2847479871509788944">Уклони из Chromium-а...</translation>
 <translation id="2886012850691518054">Опционално: Помозите да побољшамо Chromium тако што ћете Google-у аутоматски слати статистику коришћења и извештаје о отказивању.</translation>
 <translation id="2905536371227304018">Chromium ОС се приказује на овом језику.</translation>
@@ -80,7 +78,6 @@
 <ph name="USER_DATA_DIRECTORY" /></translation>
 <translation id="3264279740686075150">Chromium је подразумевани прегледач. Сјајно.</translation>
 <translation id="328888136576916638">Недостају шифре за Google API. Неке функције Chromium-а ће бити онемогућене.</translation>
-<translation id="3289635842886789612">Chromium је застарео.</translation>
 <translation id="3296368748942286671">Настави са покретањем апликација у позадини када се Chromium затвори</translation>
 <translation id="3312805357485578561">Chromium је открио необично понашање</translation>
 <translation id="331951419404882060">Chromium ОС не може да синхронизује податке због грешке при пријављивању.</translation>
@@ -138,6 +135,7 @@
 <translation id="5398878173008909840">Доступна је нова верзија Chromium-а.</translation>
 <translation id="5427571867875391349">Подеси Chromium као подразумевани прегледач</translation>
 <translation id="5466153949126434691">Chromium се аутоматски ажурира, па увек имате најновију верзију. Када ово преузимање буде довршено, Chromium ће се поново покренути и бићете спремни.</translation>
+<translation id="5479196819031988440">Chromium ОС не може да отвори ову страницу.</translation>
 <translation id="549669000822060376">Сачекајте да Chromium инсталира најновија ажурирања система.</translation>
 <translation id="556167189552180495">Chromium се приказује на овом језику.</translation>
 <translation id="5563479599352954471">Претражујте једним додиром</translation>
@@ -225,7 +223,6 @@ Chromium не може да врати подешавања.</translation>
 <translation id="7421823331379285070">Chromium захтева Windows XP или новију верзију. Неке функције можда неће радити.</translation>
 <translation id="7473891865547856676">Не, хвала</translation>
 <translation id="7483335560992089831">Није могуће инсталирати исту верзију Chromium-а која се тренутно користи. Затворите Chromium и покушајте поново.</translation>
-<translation id="750717762378961310">Ова датотека је злонамерна, па ју је Chromium блокирао.</translation>
 <translation id="7549178288319965365">О Chromium ОС-у</translation>
 <translation id="7577193603922410712">Посебно безбедносно ажурирање за Chromium је управо примењено. Сада треба поново да покренете Chromium да би ажурирање ступило на снагу (вратићемо картице).</translation>
 <translation id="761356813943268536">Chromium користи камеру и микрофон.</translation>

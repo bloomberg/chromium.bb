@@ -63,7 +63,6 @@ Kapag nag-sign in ka pa rin, isasama sa <ph name="ACCOUNT_EMAIL_NEW" /> ang impo
 <translation id="2588322182880276190">Logo ng Chrome</translation>
 <translation id="2664962310688259219">Mga lisensya ng open source ng Chrome OS</translation>
 <translation id="2665296953892887393">Tumulong na gawing mas mahusay ang Google Chrome sa pamamagitan ng pagpapadala ng mga ulat ng pag-crash at <ph name="UMA_LINK" /> sa Google</translation>
-<translation id="2669824781555328029">Maaaring makapahamak ang <ph name="FILE_NAME" /> sa iyong karanasan sa pagba-browse, kaya na-block ito ng Chrome.</translation>
 <translation id="2681064822612051220">May nakitang sumasalungat na pag-install ng Google Chrome sa system. Paki-uninstall ito at subukang muli.</translation>
 <translation id="2689103672227170538">Binago ng extension na ito ang ipinapakitang page kapag sinimulan mo ang Chrome.</translation>
 <translation id="2704356438731803243">Kung gusto mong ihiwalay ang iyong umiiral nang data sa Chrome, maaari kang lumikha ng bagong user ng Chrome para kay <ph name="USER_NAME" />.</translation>
@@ -153,6 +152,7 @@ Pakitingnan ang iyong email sa <ph name="ACCOUNT_EMAIL" /> para sa mga karagdaga
 
 Maaaring hindi available ang ilang tampok. Mangyaring tumukoy ng ibang direktoryo ng profile o gumamit ng mas bagong bersyon ng Chrome.</translation>
 <translation id="5176234269072261959">Tumulong na mas mapahusay ang Chrome sa pamamagitan ng pag-uulat sa mga kasalukuyang setting.</translation>
+<translation id="5193136243808726294">Hindi mabuksan ng Google Chrome OS ang page na ito.</translation>
 <translation id="5204098752394657250"><ph name="TERMS_OF_SERVICE_LINK" />Mga Tuntunin ng Serbisyo<ph name="END_TERMS_OF_SERVICE_LINK" /> ng Google Chrome</translation>
 <translation id="5243785881901838525">Google Payments (kinopya sa Chrome)</translation>
 <translation id="5251420635869119124">Makakagamit ng Chrome ang mga bisita nang hindi nag-iiwan ng anumang bakas.</translation>
@@ -213,7 +213,6 @@ Hindi magawang bawiin ng Google Chrome ang iyong mga setting.</translation>
 <translation id="699076943483372849">Ginagamit ng site na ito ang itinigil nang plugin ng Chrome Frame na hindi na nakakatanggap ng mga update para sa seguridad at katatagan. Paki-uninstall ito at mag-upgrade sa isang modernong browser.</translation>
 <translation id="6991142834212251086">I-link ang aking data sa Chrome sa account na ito</translation>
 <translation id="7060865993964054389">App Launcher ng Google Chrome</translation>
-<translation id="7084448929020576097">Nakakahamak ang <ph name="FILE_NAME" />, at na-block ito ng Chrome.</translation>
 <translation id="7098166902387133879">Ginagamit ng Google Chrome ang iyong mikropono.</translation>
 <translation id="7106741999175697885">Task Manager - Google Chrome</translation>
 <translation id="7125719106133729027">Hindi ma-update ng Chrome ang sarili nito patungo sa pinakabagong bersyon, kaya napapalampas mo ang mahuhusay na bagong feature at pag-aayos sa seguridad. Kailangan mong muling i-install ang Chrome nang manu-mano.</translation>
@@ -276,7 +275,6 @@ Hindi magawang bawiin ng Google Chrome ang iyong mga setting.</translation>
 <translation id="8669527147644353129">Google Chrome Helper</translation>
 <translation id="8679801911857917785">Kinokontrol din nito kung anong pahina ang ipinapakita kapag sinimulan mo ang Chrome.</translation>
 <translation id="870251953148363156">I-update ang &amp;Google Chrome</translation>
-<translation id="8793772303278047003">Luma na ang Chrome.</translation>
 <translation id="8796108026289707191">Dapat mo nang i-restart ngayon ang Google Chrome.</translation>
 <translation id="8823341990149967727">Luma na ang Chrome</translation>
 <translation id="884296878221830158">Kinokontrol din nito kung anong pahina ang ipinapakita kapag sinimulan mo ang Chrome o na-click ang button ng Home.</translation>
@@ -285,7 +283,6 @@ Hindi magawang bawiin ng Google Chrome ang iyong mga setting.</translation>
 <translation id="8914504000324227558">Muling ilunsad ang Chrome</translation>
 <translation id="9026991721384951619">Hindi ma-sync ng Chrome OS ang iyong data dahil hindi napapanahon ang mga detalye sa pag-sign in sa iyong account.</translation>
 <translation id="9067395829937117663">Kailangan ng Google Chrome ng Windows 7 o mas bago.</translation>
-<translation id="9102715433345326100">Nakakahamak ang file na ito, at na-block ito ng Chrome.</translation>
 <translation id="9107728822479888688"><ph name="BEGIN_BOLD" />Babala:<ph name="END_BOLD" /> Hindi mapipigilan ng Google Chrome ang pagtatala ng mga extension ng iyong history sa pagba-browse. Upang i-disable ang extension na ito sa incognito mode, alisin sa pagkakapili ang opsyong ito.
 </translation>
 <translation id="911206726377975832">Tatanggalin din ang iyong data sa pag-browse?</translation>

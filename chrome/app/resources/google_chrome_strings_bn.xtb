@@ -61,7 +61,6 @@
 <translation id="2588322182880276190">Chrome লোগো</translation>
 <translation id="2664962310688259219">Chrome OS মুক্ত উৎসের লাইসেন্সগুলি</translation>
 <translation id="2665296953892887393">Google এ <ph name="UMA_LINK" /> এবং ক্র্যাশ প্রতিবেদনগুলি পাঠিয়ে Google Chrome কে আরো ভাল করতে সহায়তা করুন৷</translation>
-<translation id="2669824781555328029"><ph name="FILE_NAME" /> আপনার ব্রাউজিংয়ের অভিজ্ঞতাকে ক্ষতিগ্রস্ত করতে পারে, তাই Chrome এটিকে আটকে দিয়েছে৷</translation>
 <translation id="2681064822612051220">সিস্টেমে Google Chrome-এর একটি বিবাদমূলক ইনস্টলেশন খুঁজে পাওয়া গেছে৷ দয়া করে এটি আনইনস্টল করুন এবং পুনরায় চেষ্টা করুন৷</translation>
 <translation id="2689103672227170538">আপনি Chrome শুরু করলে কোন পৃষ্ঠাটি দেখানো হবে তা এই এক্সটেনশানটি পরিবর্তন করেছে।</translation>
 <translation id="2704356438731803243">যদি আপনি আপনার বিদ্যমান Chrome ডেটা আলাদা রাখতে পছন্দ করেন, তাহলে <ph name="USER_NAME" /> এর জন্য একটি নতুন Chrome ব্যবহারকারী তৈরি করতে পারেন৷</translation>
@@ -130,6 +129,7 @@
 <translation id="4700157086864140907">Google Chrome আপনি Google সার্ভারগুলিতে ব্রাউজারে কী টাইপ করেন তা পাঠিয়ে আরো স্মার্ট বানান-পরীক্ষণ সরবরাহ করতে পারে এতে আপনাকে Google অনুসন্ধানে ব্যবহৃত একই বানান-পরীক্ষণের প্রযুক্তি ব্যবহার করার অনুমতি দেয়৷</translation>
 <translation id="4728575227883772061">অনির্দিষ্ট ত্রুটির জন্য ইনস্টলেশন ব্যর্থ হয়েছে৷ যদি Google Chrome বর্তমানে চলতে থাকে তবে দয়া করে এটি বন্ধ করে আবার চেষ্টা করুন৷</translation>
 <translation id="4743926867934016338">স্বীকার ও অনুসন্ধান করুন</translation>
+<translation id="4750550185319565338"><ph name="PLUGIN_NAME" /> সক্ষম করার জন্য Chrome পুনরায় চালু করুন</translation>
 <translation id="4751441238232965030">এই কম্পিউটারটি শীঘ্রই ৩২-বিট Google Chrome আপডেট গ্রহণ করা বন্ধ করবে। দয়া করে ৬৪-বিট Google Chrome এ আপগ্রেড করুন।</translation>
 <translation id="4754614261631455953">Google Chrome Canary (mDNS-In)</translation>
 <translation id="4771048833395599659">এই ফাইলটি বিপজ্জনক হতে পারে, তাই Chrome এটিকে অবরুদ্ধ করেছে।</translation>
@@ -150,6 +150,7 @@
 
 কিছু বৈশিষ্ট্য অনুপলব্ধ হতে পারে৷ দয়া করে একটি ভিন্ন প্রোফাইল নির্দেশিকা সুনির্দিষ্টভাবে উল্লেখ করুন অথবা Chrome এর নতুন সংস্করণ ব্যবহার করুন৷</translation>
 <translation id="5176234269072261959">বর্তমান সেটিংসের প্রতিবেদন করে Chrome কে আরো ভাল করে তুলতে সাহায্য করুন।</translation>
+<translation id="5193136243808726294">Google Chrome OS এই পৃষ্ঠা খুলতে পারছে না।</translation>
 <translation id="5204098752394657250">Google Chrome <ph name="TERMS_OF_SERVICE_LINK" /> পরিষেবার শর্তাবলী <ph name="END_TERMS_OF_SERVICE_LINK" /></translation>
 <translation id="5243785881901838525">Google Payments (Chrome এ অনুলিপি করা হয়েছে)</translation>
 <translation id="5251420635869119124">অতিথিগণ কোনো কিছুর জন্য অভাব বোধ না করেই Chrome ব্যবহার করতে পারবেন৷</translation>
@@ -208,7 +209,6 @@
 <translation id="699076943483372849">এই সাইটটি বাতিল হয়ে যাওয়া Chrome ফ্রেম প্লাগ ইন ব্যবহার করছে যা আর নিরাপত্তা এবং স্থিতিশীলতার আপডেট গ্রহণ করে না৷ দয়া করে এটিকে আনইনস্টল করুন এবং একটি আধুনিক ব্রাউজারে আপগ্রেড করুন৷</translation>
 <translation id="6991142834212251086">এই অ্যাকাউন্টে আমার Chrome ডেটা লিঙ্ক করুন</translation>
 <translation id="7060865993964054389">Google Chrome অ্যাপ্লিকেশান লঞ্চার</translation>
-<translation id="7084448929020576097"><ph name="FILE_NAME" /> ক্ষতিকারক, এবং Chrome এটিকে অবরুদ্ধ করেছে৷</translation>
 <translation id="7098166902387133879">Google Chrome আপনার মাইক্রোফোন ব্যবহার করছে৷</translation>
 <translation id="7106741999175697885">কার্য পরিচালক - Google Chrome</translation>
 <translation id="7125719106133729027">Chrome নিজে থেকেই এর সর্বশেষ সংস্করণে আপডেট হতে পারেনি, সেহেতু আপনি কিছু অসাধারণ নতুন বৈশিষ্ট্য ও নিরাপত্তা সমাধান উপভোগ করতে পারছেন না। আপনাকে নিজে Chrome পুনরায় ইন্সটল করতে হবে।</translation>
@@ -271,7 +271,6 @@
 <translation id="8669527147644353129">Google Chrome সহায়তাকারী</translation>
 <translation id="8679801911857917785">আপনি Chrome শুরু করলে কোন পৃষ্ঠাটি দেখানো হবে তাও এটি নিয়ন্ত্রণ করে।</translation>
 <translation id="870251953148363156">&amp;Google Chrome আপডেট</translation>
-<translation id="8793772303278047003">Chrome পুরানো হয়ে গেছে।</translation>
 <translation id="8796108026289707191">আপনার এখনই Google Chrome পুনরায় চালু করা উচিত হবে।</translation>
 <translation id="8823341990149967727">Chrome পুরানো হয়ে গেছে</translation>
 <translation id="884296878221830158">আপনি Chrome শুরু করলে বা হোম বোতামটি ক্লিক করলে কোন পৃষ্ঠাটি দেখানো হবে তাও এটি নিয়ন্ত্রণ করে।</translation>
@@ -280,7 +279,6 @@
 <translation id="8914504000324227558">Chrome পুনরায় লঞ্চ করুন</translation>
 <translation id="9026991721384951619">আপনার অ্যাকাউন্টের সাইন ইনের বিবরণটি সেকেলে হওয়ায় Chrome OS আপনার ডেটা সিঙ্ক করতে পারেনি৷</translation>
 <translation id="9067395829937117663">Google Chrome এর জন্য Windows 7 বা উচ্চতর সংস্করণ প্রয়োজন।</translation>
-<translation id="9102715433345326100">এই ফাইলটি ক্ষতিকারক, এবং Chrome এটিকে অবরুদ্ধ করেছে৷</translation>
 <translation id="9107728822479888688"><ph name="BEGIN_BOLD" /> সতর্কতা: <ph name="END_BOLD" /> Google Chrome আপনার ব্রাউজিং ইতিহাস নথিবদ্ধ থেকে এক্সটেনশনগুলি সংরক্ষণ করতে পারেনা৷ এই এক্সটেনশন অজ্ঞাত মোডে অক্ষম করতে, এই বিকল্প নির্বাচন মুক্ত করুন৷</translation>
 <translation id="911206726377975832">আপনার ব্রাউজিং ডেটাও মুছে দেবেন?</translation>
 <translation id="924447568950697217">Chrome কে আপনার ডিফল্ট ব্রাউজার করুন</translation>

@@ -350,7 +350,6 @@
 <translation id="4728558894243024398">प्लॅटफॉर्म</translation>
 <translation id="4744603770635761495">कार्यवाहीयोग्य पथ</translation>
 <translation id="4756388243121344051">&amp;इतिहास</translation>
-<translation id="4759238208242260848">डाउनलोड</translation>
 <translation id="4764776831041365478"><ph name="URL" /> येथील वेबपृष्ठ कदाचित तात्पुरते बंद आहे किंवा ते कदाचित कायमचे नवीन वेब पत्त्यावर हलवले आहे.</translation>
 <translation id="4771973620359291008">एक अज्ञात त्रुटी आली आहे.</translation>
 <translation id="4782449893814226250">या पृष्‍ठास भेट देणे ठीक आहे का ते आपण आपल्‍या पालकांना विचारले.</translation>
@@ -701,6 +700,7 @@
 <translation id="8987927404178983737">महिना</translation>
 <translation id="8989148748219918422"><ph name="ORGANIZATION" /> [<ph name="COUNTRY" />]</translation>
 <translation id="9001074447101275817">प्रॉक्सी <ph name="DOMAIN" /> ला वापरकर्तानाव आणि संकेतशब्द आवश्यक आहेत.</translation>
+<translation id="9008201768610948239">दुर्लक्ष करा</translation>
 <translation id="901974403500617787">सिस्टीम-व्याप्त लागू होणारी ध्वजांकने केवळ मालकाद्वारे सेट केली जाऊ शकतात: <ph name="OWNER_EMAIL" />.</translation>
 <translation id="9020542370529661692">हे पृष्ठ <ph name="TARGET_LANGUAGE" /> मध्ये भाषांतरित केले गेले आहे.</translation>
 <translation id="9038649477754266430">पृष्ठे अधिक द्रुतपणे लोड करण्यासाठी पूर्वानुमान सेवेचा वापर करा</translation>

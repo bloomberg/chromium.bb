@@ -21,7 +21,6 @@
 <translation id="1688750314291223739">同期を設定すると、パーソナライズされたブラウザ機能をウェブ上に保存して、どのパソコンの Chromium からでも使用できるようになります。</translation>
 <translation id="1699664235656412242">Chromium のウィンドウ（Windows 8 モードのウィンドウを含む）をすべて閉じてからもう一度お試しください。</translation>
 <translation id="1708666629004767631">Chromium がさらに安全になりました。最新バージョンをぜひお試しください。</translation>
-<translation id="1725059042853530269"><ph name="FILE_NAME" /> はブラウジング環境に害を及ぼす可能性があるため、Chromium によってブロックされました。</translation>
 <translation id="1774152462503052664">Chromium をバックグラウンドで実行する</translation>
 <translation id="1779356040007214683">Chromium をより安全にご利用いただくため、<ph name="IDS_EXTENSION_WEB_STORE_TITLE" />で提供していない一部の拡張機能を無効にしました。これらは知らないうちに追加された可能性があります。</translation>
 <translation id="1808667845054772817">Chromium を再インストール</translation>
@@ -59,7 +58,6 @@
 <translation id="2718390899429598676">セキュリティ強化のため、Chromium ではデータが暗号化されます。</translation>
 <translation id="2770231113462710648">既定のブラウザを変更:</translation>
 <translation id="2799223571221894425">再起動</translation>
-<translation id="2801146392936645542"><ph name="FILE_NAME" /> は不正なファイルです。Chromium はこのファイルをブロックしました。</translation>
 <translation id="2847479871509788944">Chromium から削除...</translation>
 <translation id="2886012850691518054">オプション: 使用状況データと障害レポートを Google に自動送信して Chromium の機能向上に役立てる。</translation>
 <translation id="2905536371227304018">Chromium OS はこの言語で表示されています。</translation>
@@ -78,7 +76,6 @@
 <ph name="USER_DATA_DIRECTORY" /></translation>
 <translation id="3264279740686075150">既定のブラウザは Chromium です。</translation>
 <translation id="328888136576916638">Google API キーが欠落しています。Chromium の一部の機能は無効になります。</translation>
-<translation id="3289635842886789612">Chromium は古いバージョンです。</translation>
 <translation id="3296368748942286671">Chromium を閉じた際にバックグラウンド アプリの処理を続行する</translation>
 <translation id="3312805357485578561">Chromium で異常な動作が検出されました</translation>
 <translation id="331951419404882060">ログイン時にエラーが発生したため、Chromium OS はデータを同期できませんでした。</translation>
@@ -136,6 +133,7 @@
 <translation id="5398878173008909840">Chromium の最新バージョンをぜひお試しください。</translation>
 <translation id="5427571867875391349">Chromium をデフォルト ブラウザに設定する</translation>
 <translation id="5466153949126434691">Chromium は自動的に更新されるため、常に最新版をご利用になれます。このダウンロードが完了すると、Chromium が再起動し、すぐにお使いいただけます。</translation>
+<translation id="5479196819031988440">Chromium OS ではこのページを開けません。</translation>
 <translation id="549669000822060376">Chromium は最新のシステム アップデートをインストールしています。しばらくお待ちください。</translation>
 <translation id="556167189552180495">Chromium はこの言語で表示されています。</translation>
 <translation id="5563479599352954471">ワンタップで検索</translation>
@@ -223,7 +221,6 @@
 <translation id="7421823331379285070">Chromium は、Windows XP 以降が必要です。一部の機能が動作しない場合があります。</translation>
 <translation id="7473891865547856676">スキップ</translation>
 <translation id="7483335560992089831">実行中の Chromium と同じバージョンをインストールすることはできません。Chromium を閉じてからもう一度お試しください。</translation>
-<translation id="750717762378961310">不正なファイルです。Chromium はこのファイルをブロックしました。</translation>
 <translation id="7549178288319965365">Chromium OS について</translation>
 <translation id="7577193603922410712">Chromium の特別なセキュリティ アップデートが適用されました。アップデートを反映するため、今すぐ Chromium を再起動してください（タブは復元されます）。</translation>
 <translation id="761356813943268536">Chromium がカメラとマイクを使用しています。</translation>

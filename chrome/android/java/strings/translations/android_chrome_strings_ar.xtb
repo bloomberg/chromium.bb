@@ -95,7 +95,6 @@
 <translation id="200669432486043882">استبدال ملف</translation>
 <translation id="2020525020270327736">نسخ الموقع</translation>
 <translation id="2038563949887743358">تشغيل طلب موقع الويب لسطح المكتب</translation>
-<translation id="2069736994598857257"><ph name="GIGABYTES" /> غيغابايت مستخدمة</translation>
 <translation id="2073235970478114994">تحميل الصور</translation>
 <translation id="2079545284768500474">تراجع</translation>
 <translation id="2082238445998314030">النتيجة <ph name="RESULT_NUMBER" /> من <ph name="TOTAL_RESULTS" /></translation>
@@ -325,6 +324,7 @@
 <translation id="4816465935029283692">أنواع البيانات</translation>
 <translation id="4827948050554950725">إضافة بطاقة ائتمان</translation>
 <translation id="4836364883164334657">اتصالك بهذا الموقع ليس له خصوصية. قد يحاول المهاجمون سرقة معلوماتك (على سبيل المثال، الصور، وكلمات المرور، والرسائل وبطاقات الائتمان) من <ph name="DOMAIN_NAME" />.</translation>
+<translation id="4850886885716139402">عرض</translation>
 <translation id="4881695831933465202">فتح</translation>
 <translation id="4885273946141277891">‏عدد نسخ Chrome غير متوافق.</translation>
 <translation id="4923459931733593730">الدفع</translation>
@@ -340,7 +340,9 @@
 <translation id="5016205925109358554">Serif</translation>
 <translation id="5039804452771397117">سماح</translation>
 <translation id="5040262127954254034">الخصوصية</translation>
+<translation id="5053110706349648690">‏تشغيل البلوتوث من <ph name="BEGIN_LINK" />إعدادات الجهاز<ph name="END_LINK" />END_LINK للسماح بالإقران</translation>
 <translation id="5063480226653192405">الاستخدام</translation>
+<translation id="5087580092889165836">إضافة بطاقة</translation>
 <translation id="5100237604440890931">تم التصغير - انقر للتوسيع.</translation>
 <translation id="510275257476243843">يتبقى ساعة واحدة</translation>
 <translation id="5127805178023152808">المزامنة معطلة</translation>
@@ -417,6 +419,7 @@
 <translation id="583281660410589416">غير معروف</translation>
 <translation id="5832934273103296195">تم التوسيع - انقر للتصغير</translation>
 <translation id="583891442612896534">‏لا يمكن لمتصفح Chrome الوصول إلى خوادم Google لضغط البيانات. قد تكون خيارات توفير البيانات محدودة.</translation>
+<translation id="5843873952582375185">لم يتم العثور على أجهزة بلوتوث. <ph name="BEGIN_LINK" />إعادة البحث<ph name="END_LINK" /></translation>
 <translation id="585027516397408832">تمكين توفير البيانات</translation>
 <translation id="5860033963881614850">إيقاف</translation>
 <translation id="5867027562311576691">ستظهر المزيد من المقالات قريبًا. استمتع بصباحك.</translation>
@@ -491,6 +494,7 @@
 <translation id="6657585470893396449">كلمة المرور</translation>
 <translation id="6659594942844771486">علامة تبويب</translation>
 <translation id="666268767214822976">يمكنك استخدام خدمة التوقعات لعرض طلبات البحث ذات الصلة ومواقع الويب الشائعة أثناء الكتابة في شريط العناوين</translation>
+<translation id="666731172850799929">الفتح في <ph name="APP_NAME" /></translation>
 <translation id="666981079809192359">‏إشعار خصوصية Chrome</translation>
 <translation id="6698801883190606802">إدارة البيانات المتزامنة</translation>
 <translation id="6710213216561001401">السابق</translation>
@@ -533,14 +537,12 @@
 <translation id="7074853159844403180">يريد <ph name="SITE" /> الاقتران مع:</translation>
 <translation id="7081639897063626814">الحفاظ على البيانات الموجودة منفصلة</translation>
 <translation id="7094922512924405309">لم يتم العثور على صفحات الشبكة المادية المجاورة</translation>
-<translation id="7115197232530297436">عنوان الشحن غير متوافق. حدِّد عنوانًا آخر.</translation>
 <translation id="7138678301420049075">أخرى</translation>
 <translation id="7180611975245234373">تحديث</translation>
 <translation id="7191430249889272776">تم فتح علامة التبويب في الخلفية.</translation>
 <translation id="7208788139759694678">تعطيل توفير البيانات</translation>
 <translation id="7243308994586599757">الخيارات المتاحة بالقرب من الجزء السفلي من الشاشة</translation>
 <translation id="7244362611678346589"><ph name="SEARCH_ENGINE_URL" /> يستخدم موقعك لعرض نتائج البحث المحلي</translation>
-<translation id="7347770551817603360">محتوى بلا اتصال</translation>
 <translation id="7353894246028566792">{NUM_SELECTED,plural, =1{مشاركة عنصر واحد محدد}zero{مشاركة # عنصر محدد}two{مشاركة عنصرين (#) محددين}few{مشاركة # عناصر محددة}many{مشاركة # عنصرًا محددًا}other{مشاركة # عنصر محدد}}</translation>
 <translation id="7366340029385295517">جارٍ الإرسال إلى <ph name="SCREEN_NAME" /></translation>
 <translation id="7375125077091615385">النوع:</translation>
@@ -559,7 +561,7 @@
 <translation id="7493994139787901920"><ph name="VERSION" /> (تم التحديث منذ <ph name="TIME_SINCE_UPDATE" />)</translation>
 <translation id="7498271377022651285">يُرجى الانتظار...</translation>
 <translation id="7521387064766892559">جافا سكريبت</translation>
-<translation id="753693763123565012">هذا كل شيء الآن</translation>
+<translation id="753693763123565012">هذا كل شيء</translation>
 <translation id="7562080006725997899">جارٍ محو بيانات التصفح</translation>
 <translation id="756809126120519699">‏بيانات Chrome التي تم محوها</translation>
 <translation id="7588950540487816470">الشبكة المادية</translation>
@@ -577,7 +579,6 @@
 <translation id="7665369617277396874">إضافة حساب</translation>
 <translation id="7682287625158474539">الشحن</translation>
 <translation id="771135159654932189">‏الاطلاع على عناوين URL المجاورة</translation>
-<translation id="7713873128508426081">السماح بذلك دائمًا</translation>
 <translation id="7764225426217299476">إضافة عنوان</translation>
 <translation id="7765158879357617694">نقل</translation>
 <translation id="7769602470925380267">قبول وتسجيل الخروج</translation>
@@ -646,15 +647,12 @@
 <translation id="8514577642972634246">الدخول إلى وضع التصفح المتخفي</translation>
 <translation id="8518901949365209398">‏يستخدم هذا الموقع تهيئة أمان ضعيفة (توقيعات SHA-1)، لذا قد لا يتم اتصالك بشكل خاص.</translation>
 <translation id="8523928698583292556">حذف كلمة المرور المخزنة</translation>
-<translation id="8525306231823319788">ملء الشاشة</translation>
-<translation id="85415543246899402">تم استخدام مساحة <ph name="MEGABYTES" /> ميغابايت</translation>
 <translation id="854522910157234410">فتح هذه الصفحة</translation>
 <translation id="8562452229998620586">ستظهر هنا كلمات المرور المحفوظة.</translation>
 <translation id="856481929701340285">طلب موقع الكمبيوتر</translation>
 <translation id="857943718398505171">مسموح به (موصى به)</translation>
 <translation id="8583805026567836021">محو بيانات الحساب</translation>
 <translation id="8617240290563765734">‏هل تريد فتح عنوان URL المقترح والمحدد في المحتوى الذي تم تنزيله؟</translation>
-<translation id="8618653050765576793">تم استخدام مساحة <ph name="KILOBYTES" /> كيلوبايت</translation>
 <translation id="862875433388403934">قد لا يكون المحتوى (أفلام، موسيقى، وما إلى ذلك) الذي تم تنزيله في تطبيقات أخرى قابلاً للتشغيل حتى تُعيد هذه التطبيقات الحصول على التراخيص استنادًا إلى بيانات اعتماد الجهاز الجديدة.
 
 للحصول على تراخيص جديدة، عليك الاتصال بالإنترنت ثم تشغيل المحتوى الذي تم تنزيله.</translation>

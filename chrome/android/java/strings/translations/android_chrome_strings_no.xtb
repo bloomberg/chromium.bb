@@ -95,7 +95,6 @@ Du må ha slått på Bluetooth og Posisjon for å bruke det fysiske nettet.</tra
 <translation id="200669432486043882">Bytt ut fil</translation>
 <translation id="2020525020270327736">Kopiér nettstedet</translation>
 <translation id="2038563949887743358">Slå på Bruk skrivebordsversjon</translation>
-<translation id="2069736994598857257"><ph name="GIGABYTES" /> GB er brukt</translation>
 <translation id="2073235970478114994">Last inn bilder</translation>
 <translation id="2079545284768500474">Angre</translation>
 <translation id="2082238445998314030">Resultat <ph name="RESULT_NUMBER" /> av <ph name="TOTAL_RESULTS" /></translation>
@@ -324,6 +323,7 @@ Hvis du vil endre søkeordet, kan du trykke på det og holde for å merke det. H
 <translation id="4816465935029283692">Datatyper</translation>
 <translation id="4827948050554950725">Legg til et kredittkort</translation>
 <translation id="4836364883164334657">Tilkoblingen din til dette nettstedet er ikke privat. Hackere kan prøve å stjele informasjonen din (for eksempel bilder, passord, meldinger og kredittkortinformasjon) fra <ph name="DOMAIN_NAME" />.</translation>
+<translation id="4850886885716139402">Visning</translation>
 <translation id="4881695831933465202">Åpne</translation>
 <translation id="4885273946141277891">For mange Chrome-forekomster.</translation>
 <translation id="4923459931733593730">Betaling</translation>
@@ -339,7 +339,9 @@ Hvis du vil endre søkeordet, kan du trykke på det og holde for å merke det. H
 <translation id="5016205925109358554">Serif</translation>
 <translation id="5039804452771397117">Tillat</translation>
 <translation id="5040262127954254034">Personvern</translation>
+<translation id="5053110706349648690">Slå på Bluetooth i <ph name="BEGIN_LINK" />enhetsinnstillingene<ph name="END_LINK" /> for å tillate sammenkobling</translation>
 <translation id="5063480226653192405">Bruk</translation>
+<translation id="5087580092889165836">Legg til et kort</translation>
 <translation id="5100237604440890931">Minimert – klikk for å utvide</translation>
 <translation id="510275257476243843">1 time igjen</translation>
 <translation id="5127805178023152808">Synkronisering er slått av</translation>
@@ -416,6 +418,7 @@ Du er imidlertid ikke usynlig. Inkognito-modusen skjuler ikke surfingen din for 
 <translation id="583281660410589416">Ukjent</translation>
 <translation id="5832934273103296195">Utvidet – klikk for å skjule</translation>
 <translation id="583891442612896534">Chrome kunne ikke kontakte Google-tjenerne for datakomprimering. Det kan hende at du bare oppnår begrenset datasparing.</translation>
+<translation id="5843873952582375185">Finner ingen Bluetooth-enheter. <ph name="BEGIN_LINK" />Skann på nytt<ph name="END_LINK" /></translation>
 <translation id="585027516397408832">Datasparing er slått på</translation>
 <translation id="5860033963881614850">Av</translation>
 <translation id="5867027562311576691">Flere artikler kommer snart. Ha en fin morgen.</translation>
@@ -490,6 +493,7 @@ Noen nettsteder kan for eksempel svare på denne forespørselen ved å vise deg 
 <translation id="6657585470893396449">Passord</translation>
 <translation id="6659594942844771486">Tab</translation>
 <translation id="666268767214822976">Bruk en forslagstjeneste for å vise relaterte søkeord og populære nettsteder mens du skriver i adressefeltet</translation>
+<translation id="666731172850799929">Åpne i <ph name="APP_NAME" /></translation>
 <translation id="666981079809192359">Merknad om personvern for Chrome</translation>
 <translation id="6698801883190606802">Administrer synkroniserte data</translation>
 <translation id="6710213216561001401">Forrige</translation>
@@ -532,14 +536,12 @@ Noen nettsteder kan for eksempel svare på denne forespørselen ved å vise deg 
 <translation id="7074853159844403180"><ph name="SITE" /> ønsker å koble til</translation>
 <translation id="7081639897063626814">Hold eksisterende data adskilt</translation>
 <translation id="7094922512924405309">Fant ingen Fysisk nett-sider i nærheten</translation>
-<translation id="7115197232530297436">Fraktadressen støttes ikke. Velg en annen adresse.</translation>
 <translation id="7138678301420049075">Annet</translation>
 <translation id="7180611975245234373">Last inn på nytt</translation>
 <translation id="7191430249889272776">En fane ble åpnet i bakgrunnen.</translation>
 <translation id="7208788139759694678">Datasparing er slått av</translation>
 <translation id="7243308994586599757">Du finner alternativer ved bunnen av skjermen</translation>
 <translation id="7244362611678346589"><ph name="SEARCH_ENGINE_URL" /> bruker posisjonen din for å vise lokale søkeresultater</translation>
-<translation id="7347770551817603360">Innhold uten nett</translation>
 <translation id="7353894246028566792">{NUM_SELECTED,plural, =1{Del 1 valgt element}other{Del # valgte elementer}}</translation>
 <translation id="7366340029385295517">Caster til <ph name="SCREEN_NAME" /></translation>
 <translation id="7375125077091615385">Type:</translation>
@@ -576,7 +578,6 @@ Det kan hende Google-kontoen din har andre typer nettlesingslogger, for eksempel
 <translation id="7665369617277396874">Legg til konto</translation>
 <translation id="7682287625158474539">Forsendelse</translation>
 <translation id="771135159654932189">Se hva som er i nærheten</translation>
-<translation id="7713873128508426081">Alltid tillatt</translation>
 <translation id="7764225426217299476">Legg til adresse</translation>
 <translation id="7765158879357617694">Flytt</translation>
 <translation id="7769602470925380267">Godta og logg av</translation>
@@ -645,15 +646,12 @@ Det kan hende Google-kontoen din har andre typer nettlesingslogger, for eksempel
 <translation id="8514577642972634246">Slå på inkognitomodus</translation>
 <translation id="8518901949365209398">Dette nettstedet bruker en svak sikkerhetskonfigurasjon (SHA-1-signaturer). Det kan derfor hende at tilkoblingen mellom deg og nettstedet ikke er privat.</translation>
 <translation id="8523928698583292556">Slett lagrede passord</translation>
-<translation id="8525306231823319788">Full skjerm</translation>
-<translation id="85415543246899402"><ph name="MEGABYTES" /> MB er brukt</translation>
 <translation id="854522910157234410">Åpne denne siden</translation>
 <translation id="8562452229998620586">Lagrede passord listes opp her.</translation>
 <translation id="856481929701340285">Bruk skrivebordsversjon</translation>
 <translation id="857943718398505171">Tillatt (anbefales)</translation>
 <translation id="8583805026567836021">Fjerner kontodata …</translation>
 <translation id="8617240290563765734">Vil du åpne den foreslåtte nettadressen som er spesifisert i det nedlastede innholdet?</translation>
-<translation id="8618653050765576793"><ph name="KILOBYTES" /> kB er brukt</translation>
 <translation id="862875433388403934">Innhold (filmer, musikk osv.) som er lastet ned i andre apper, kan kanskje ikke spilles av lenger, før appene får nye lisenser basert på ny enhetslegitimasjon.
 
 For å få nye lisenser må du koble deg til Internett og spille av innholdet du har lastet ned.</translation>

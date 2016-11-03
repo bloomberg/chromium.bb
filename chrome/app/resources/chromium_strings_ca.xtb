@@ -21,7 +21,6 @@
 <translation id="1688750314291223739">Configureu la sincronització per desar al web les funcions personalitzades del navegador i per accedir-hi des de qualsevol equip mitjançant Chromium.</translation>
 <translation id="1699664235656412242">Tanqueu totes les finestres de Chromium (incloses les del mode Windows 8) i torneu-ho a provar.</translation>
 <translation id="1708666629004767631">Hi ha disponible una versió nova més segura de Chromium.</translation>
-<translation id="1725059042853530269"><ph name="FILE_NAME" /> podria perjudicar la vostra experiència de navegació i, per això, Chromium l'ha bloquejat.</translation>
 <translation id="1774152462503052664">Permet que Chromium s'executi en segon pla</translation>
 <translation id="1779356040007214683">Perquè Chromium sigui més segur, hem desactivat algunes de les extensions que no apareixen a <ph name="IDS_EXTENSION_WEB_STORE_TITLE" /> i que és possible que s'hagin afegit sense que ho sapigueu.</translation>
 <translation id="1808667845054772817">Torna a instal·lar Chromium</translation>
@@ -59,7 +58,6 @@
 <translation id="2718390899429598676">Per més seguretat, Chromium encriptarà les vostres dades.</translation>
 <translation id="2770231113462710648">Canvia el navegador predeterminat a:</translation>
 <translation id="2799223571221894425">Reinicia</translation>
-<translation id="2801146392936645542"><ph name="FILE_NAME" /> és maliciós i Chromium l'ha bloquejat.</translation>
 <translation id="2847479871509788944">Suprimeix de Chromium...</translation>
 <translation id="2886012850691518054">Opcional: ajuda'ns a millorar Chromium enviant estadístiques d'ús i informes d'error a Google automàticament.</translation>
 <translation id="2905536371227304018">Chromium OS es mostra en aquest idioma.</translation>
@@ -78,7 +76,6 @@
 <ph name="USER_DATA_DIRECTORY" /></translation>
 <translation id="3264279740686075150">Chromium és el navegador predeterminat. Gaudeix-ne.</translation>
 <translation id="328888136576916638">Falten les claus de l'API de Google. Es desactivaran algunes de les funcions de Chromium.</translation>
-<translation id="3289635842886789612">Chromium no està actualitzat.</translation>
 <translation id="3296368748942286671">Continua executant les aplicacions en segon pla quan es tanqui Chromium</translation>
 <translation id="3312805357485578561">Chromium ha detectat un comportament poc habitual</translation>
 <translation id="331951419404882060">Chromium OS no ha pogut sincronitzar les vostres dades a causa d'un error amb l'inici de sessió.</translation>
@@ -136,12 +133,13 @@
 <translation id="5398878173008909840">Hi ha disponible una versió nova de Chromium.</translation>
 <translation id="5427571867875391349">Defineix Chromium com a navegador predeterminat</translation>
 <translation id="5466153949126434691">Chromium s'actualitza automàticament perquè en tingueu sempre la versió més recent. Quan es completi aquesta baixada, Chromium es reiniciarà i ja el podreu utilitzar.</translation>
+<translation id="5479196819031988440">Chromium OS no pot obrir aquesta pàgina.</translation>
 <translation id="549669000822060376">Espereu mentre Chromium instal·la les darreres actualitzacions del sistema.</translation>
 <translation id="556167189552180495">Chromium es mostra en aquest idioma.</translation>
 <translation id="5563479599352954471">Cercar amb un toc</translation>
 <translation id="5620765574781326016">Consulteu més informació sobre els temes en altres llocs web sense sortir de la pàgina.</translation>
 <translation id="5634636535844844681">Chromium requereix Windows 7 o una versió posterior.</translation>
-<translation id="5680901439334282664">Inicieu la sessió a Chromium</translation>
+<translation id="5680901439334282664">Inicia la sessió a Chromium</translation>
 <translation id="5698481217667032250">Mostra Chromium en aquest idioma</translation>
 <translation id="5726838626470692954">El gestor t'ha de suprimir i tornar a afegir a Chromium.</translation>
 <translation id="5768914737813585044">Mostra Chromium OS en aquest idioma</translation>
@@ -223,7 +221,6 @@ Per obtenir més instruccions, consulteu el correu electrònic a <ph name="ACCOU
 <translation id="7421823331379285070">Chromium necessita Windows XP o una versió posterior. És possible que algunes funcions no estiguin disponibles.</translation>
 <translation id="7473891865547856676">No, gràcies</translation>
 <translation id="7483335560992089831">No es pot instal·lar la mateixa versió de Chromium que s'està executant actualment. Tanqueu Chromium i torneu-ho a provar.</translation>
-<translation id="750717762378961310">Aquest fitxer és maliciós i Chromium l'ha bloquejat.</translation>
 <translation id="7549178288319965365">About Chromium OS</translation>
 <translation id="7577193603922410712">S'acaba d'aplicar una actualització de seguretat especial per a Chromium; reinicieu el navegador ara perquè es faci efectiva (restaurarem les pestanyes).</translation>
 <translation id="761356813943268536">Chromium està utilitzant la càmera i el micròfon.</translation>
@@ -267,7 +264,7 @@ Per obtenir més instruccions, consulteu el correu electrònic a <ph name="ACCOU
 En iniciar la sessió, sigui amb l'usuari que sigui, es combinarà amb <ph name="ACCOUNT_EMAIL_NEW" /> la informació de Chromium com ara adreces d'interès, historial i altres configuracions.</translation>
 <translation id="9013087743919948559">Addició a Chromium</translation>
 <translation id="9019929317751753759">Per tal que Chromium sigui més segur, hem desactivat algunes de les extensions que no figuren a <ph name="IDS_EXTENSION_WEB_STORE_TITLE" /> i que és possible que s'hagin afegit sense que ho sapigueu.</translation>
-<translation id="9022552996538154597">Inici de sessió a Chromium</translation>
+<translation id="9022552996538154597">Inicia la sessió a Chromium</translation>
 <translation id="9036189287518468038">Menú d'aplicacions de Chromium</translation>
 <translation id="9089354809943900324">Chromium no està actualitzat</translation>
 <translation id="911206726377975832">També voleu suprimir les dades de navegació?</translation>

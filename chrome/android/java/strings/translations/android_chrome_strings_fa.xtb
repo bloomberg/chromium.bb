@@ -95,7 +95,6 @@
 <translation id="200669432486043882">جایگزینی فایل</translation>
 <translation id="2020525020270327736">کپی کردن سایت</translation>
 <translation id="2038563949887743358">روشن کردن درخواست سایت رایانه‌ای</translation>
-<translation id="2069736994598857257"><ph name="GIGABYTES" /> گیگابایت استفاده شده</translation>
 <translation id="2073235970478114994">بارگیری تصاویر</translation>
 <translation id="2079545284768500474">لغو</translation>
 <translation id="2082238445998314030"><ph name="RESULT_NUMBER" /> نتیجه از <ph name="TOTAL_RESULTS" /></translation>
@@ -324,6 +323,7 @@
 <translation id="4816465935029283692">انواع داده</translation>
 <translation id="4827948050554950725">افزودن کارت اعتباری</translation>
 <translation id="4836364883164334657">اتصال شما به این سایت خصوصی نیست. مهاجمین ممکن است برای سرقت اطلاعاتتان (به‌عنوان مثال، عکس‌ها، گذرواژه‌ها، پیام‌ها و کارت‌های اعتباری) از <ph name="DOMAIN_NAME" /> تلاش کنند.</translation>
+<translation id="4850886885716139402">نما</translation>
 <translation id="4881695831933465202">باز کردن</translation>
 <translation id="4885273946141277891">‏این تعداد از نسخه‌های Chrome پشتیبانی نمی‌شود.</translation>
 <translation id="4923459931733593730">پرداخت</translation>
@@ -339,7 +339,9 @@
 <translation id="5016205925109358554">Serif</translation>
 <translation id="5039804452771397117">اجازه دادن</translation>
 <translation id="5040262127954254034">حریم خصوصی</translation>
+<translation id="5053110706349648690">بلوتوث را در <ph name="BEGIN_LINK" />تنظیمات دستگاه<ph name="END_LINK" /> روشن کنید تا مرتبط‌‌سازی امکان‌پذیر شود</translation>
 <translation id="5063480226653192405">کاربر </translation>
+<translation id="5087580092889165836">افزودن کارت</translation>
 <translation id="5100237604440890931">کوچک شده - برای بزرگ کردن کلیک کنید.</translation>
 <translation id="510275257476243843">۱ ساعت باقی‌مانده است</translation>
 <translation id="5127805178023152808">همگام‌سازی خاموش است</translation>
@@ -415,6 +417,7 @@
 <translation id="583281660410589416">ناشناس</translation>
 <translation id="5832934273103296195">بزرگ‌شده - برای کوچک کردن کلیک کنید</translation>
 <translation id="583891442612896534">‏Chrome نمی‌تواند برای فشرده کردن داده‌ها به سرورهای Google دسترسی پیدا کند. شاید ذخیره داده‌هایتان محدود باشد.</translation>
+<translation id="5843873952582375185">دستگاه بلوتوثی پیدا نشد. <ph name="BEGIN_LINK" />اسکن مجدد<ph name="END_LINK" /></translation>
 <translation id="585027516397408832">صرفه‌جویی داده فعال است</translation>
 <translation id="5860033963881614850">خاموش</translation>
 <translation id="5867027562311576691">مقاله‌های بیشتر به‌زودی نشان داده می‌شوند. از صبحتان لذت ببرید.</translation>
@@ -489,6 +492,7 @@
 <translation id="6657585470893396449">گذرواژه</translation>
 <translation id="6659594942844771486">Tab</translation>
 <translation id="666268767214822976">از یک سرویس پیش‌بینی استفاده می‌شود تا هم‌زمان با تایپ کردن شما در نوار آدرس، عبارت‌های جستجوی مرتبط و وب‌سایت‌های محبوب نشان داده شوند</translation>
+<translation id="666731172850799929">باز کردن در <ph name="APP_NAME" /></translation>
 <translation id="666981079809192359">‏اخطار حریم خصوصی Chrome</translation>
 <translation id="6698801883190606802">مدیریت داده‌های همگام‌سازی شده</translation>
 <translation id="6710213216561001401">قبلی</translation>
@@ -531,14 +535,12 @@
 <translation id="7074853159844403180"><ph name="SITE" /> می‌خواهد با این دستگاه مرتبط شود:</translation>
 <translation id="7081639897063626814">جدا نگه‌داشتن داده‌های موجود</translation>
 <translation id="7094922512924405309">هیچ صفحه وب فیزیکی در اطراف پیدا نشد</translation>
-<translation id="7115197232530297436">آدرس تحویل کالا پشتیبانی نمی‌شود. نشانی دیگری انتخاب کنید.</translation>
 <translation id="7138678301420049075">دیگر</translation>
 <translation id="7180611975245234373">بازخوانی</translation>
 <translation id="7191430249889272776">برگه در پس‌زمینه باز شد.</translation>
 <translation id="7208788139759694678">صرفه‌جویی داده غیرفعال است</translation>
 <translation id="7243308994586599757">گزینه‌ها در نزدیک پایین صفحه نمایش در دسترس هستند</translation>
 <translation id="7244362611678346589"><ph name="SEARCH_ENGINE_URL" /> از موقعیت مکانی شما برای نمایش نتایج جستجوی محلی استفاده می‌کند</translation>
-<translation id="7347770551817603360">محتوای آفلاین</translation>
 <translation id="7353894246028566792">{NUM_SELECTED,plural, =1{اشتراک‌گذاری ۱ مورد انتخاب‌شده}one{اشتراک‌گذاری # مورد انتخاب‌شده}other{اشتراک‌گذاری # مورد انتخاب‌شده}}</translation>
 <translation id="7366340029385295517">درحال فرستادن به <ph name="SCREEN_NAME" /></translation>
 <translation id="7375125077091615385">نوع:</translation>
@@ -575,7 +577,6 @@
 <translation id="7665369617277396874">افزودن حساب</translation>
 <translation id="7682287625158474539">ارسال</translation>
 <translation id="771135159654932189">مشاهده چیزهایی که در نزدیکی است</translation>
-<translation id="7713873128508426081">همیشه مجاز </translation>
 <translation id="7764225426217299476">افزودن آدرس</translation>
 <translation id="7765158879357617694">انتقال</translation>
 <translation id="7769602470925380267">پذیرش و خروج از سیستم</translation>
@@ -644,15 +645,12 @@
 <translation id="8514577642972634246">ورود به حالت ناشناس</translation>
 <translation id="8518901949365209398">‏این سایت از یک پیکربندی امنیتی ضعیف (امضاهای SHA-1) استفاده می‌کند، بنابراین ممکن است اتصال شما خصوصی نباشد.</translation>
 <translation id="8523928698583292556">حذف گذرواژه ذخیره‌شده</translation>
-<translation id="8525306231823319788">تمام صفحه</translation>
-<translation id="85415543246899402"><ph name="MEGABYTES" /> مگابایت استفاده شده است</translation>
 <translation id="854522910157234410">باز کردن این صفحه</translation>
 <translation id="8562452229998620586">گذرواژه‌های ذخیره شده در اینجا ظاهر می‌شود.</translation>
 <translation id="856481929701340285">درخواست نمای رایانه</translation>
 <translation id="857943718398505171">مجاز (توصیه می‌شود)</translation>
 <translation id="8583805026567836021">پاک‌سازی داده‌های حساب</translation>
 <translation id="8617240290563765734">نشانی وب مشخص شده در محتوای بارگیری‌شده باز شود؟</translation>
-<translation id="8618653050765576793"><ph name="KILOBYTES" /> کیلوبایت استفاده شده است</translation>
 <translation id="862875433388403934">شاید دیگر محتوای بارگیری‌شده (فیلم‌ها، موسیقی و غیره) در برنامه‌های دیگر قابل پخش نباشد، مگر آنکه آن برنامه‌ها مجدداً مجوزها را براساس اعتبارنامه دستگاه جدید بدست آورند.
 
 برای بدست آوردن مجوزهای جدید، به اینترنت وصل شوید و محتوای بارگیری‌شده خودتان را پخش کنید.</translation>

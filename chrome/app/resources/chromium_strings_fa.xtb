@@ -21,7 +21,6 @@
 <translation id="1688750314291223739">‏برای ذخیره ویژگی‌های مرورگر سفارشی شده خود در وب و دسترسی به آن‌ها از Chromium از هر رایانه دیگری، همگام‌سازی را راه‌اندازی کنید.</translation>
 <translation id="1699664235656412242">‏لطفاً تمام پنجره‌های Chromium را ببندید (از جمله آنهایی که در حالت Windows 8 هستند) و دوباره امتحان کنید.</translation>
 <translation id="1708666629004767631">‏نسخه جدید و امن‌تری از Chromium موجود است.</translation>
-<translation id="1725059042853530269">‏<ph name="FILE_NAME" /> ممکن است اثر نامطلوبی بر تجربه مرور شما بگذارد، بنابراین Chromium آن را مسدود کرده است.</translation>
 <translation id="1774152462503052664">‏اجازه به Chromium برای اجرا در پس‌زمینه</translation>
 <translation id="1779356040007214683">‏برای ایمن‌تر کردن Chromium، برخی از افزونه‌هایی را که در <ph name="IDS_EXTENSION_WEB_STORE_TITLE" /> فهرست شده‌اند و ممکن است بدون اطلاع شما اضافه شده باشند، غیرفعال کردیم.</translation>
 <translation id="1808667845054772817">‏نصب مجدد Chromium</translation>
@@ -59,7 +58,6 @@
 <translation id="2718390899429598676">‏برای امنیت بیشتر، Chromium داده‌های شما را رمزگذاری می‌کند.</translation>
 <translation id="2770231113462710648">تغییر مرورگر پیش‌فرض به:</translation>
 <translation id="2799223571221894425">راه‌اندازی مجدد</translation>
-<translation id="2801146392936645542">‏<ph name="FILE_NAME" /> مخرب است، و Chromium آن را مسدود کرده است.</translation>
 <translation id="2847479871509788944">‏حذف از Chromium...</translation>
 <translation id="2886012850691518054">‏اختیاری: با ارسال خودکار آمار کاربرد و گزارش‌های خرابی برنامه به Chromium، به پیشرفت Chrome کمک کنید.</translation>
 <translation id="2905536371227304018">‏سیستم عامل Chromium به این زبان نشان داده می‌شود.</translation>
@@ -77,7 +75,6 @@
 <ph name="USER_DATA_DIRECTORY" /></translation>
 <translation id="3264279740686075150">‏Chromium مرورگر پیش‌فرضتان است. هورا.</translation>
 <translation id="328888136576916638">‏کلیدهای Google API وجود ندارند. برخی از عملکردهای Chromium از کار خواهند افتاد.</translation>
-<translation id="3289635842886789612">‏نسخه Chromium قدیمی است.</translation>
 <translation id="3296368748942286671">‏ادامه اجرای برنامه‌ها در پس‌زمینه هنگامیکه Chromium بسته می‌شود</translation>
 <translation id="3312805357485578561">‏Chromium رفتار غیرعادی شناسایی کرده است</translation>
 <translation id="331951419404882060">‏به دلیل وجود خطا در ورود به سیستم، سیستم‌عامل Chromium قادر به همگام‌سازی داده‌های شما نبود.</translation>
@@ -135,6 +132,7 @@
 <translation id="5398878173008909840">‏نسخه جدیدی از Chromium موجود است.</translation>
 <translation id="5427571867875391349">‏تنظیم Chromium به عنوان مرورگر پیش‌فرضتان</translation>
 <translation id="5466153949126434691">‏Chromium به صورت خودکار به‌روزرسانی می‌شود بنابراین همیشه جدیدترین نسخه را دارید. وقتی این بارگیری تمام شد، Chromium دوباره شروع به کار می‌کند و می‌توانید کارتان را ادامه دهید.</translation>
+<translation id="5479196819031988440">‏Chromium OS نمی‌تواند این صفحه را باز کند.</translation>
 <translation id="549669000822060376">‏وقتی Chromium جدیدترین به‌روزرسانی‌های سیستم را نصب می‌کند، لطفاً صبر کنید.</translation>
 <translation id="556167189552180495">‏Chromium به این زبان نشان داده می‌شود.</translation>
 <translation id="5563479599352954471">جستجو فقط با یک تماس</translation>
@@ -221,7 +219,6 @@ Chromium قادر به بازیابی تنظیمات شما نیست.</translati
 <translation id="7421823331379285070">‏Chromium به Windows XP یا نسخه بالاتر آن نیاز دارد. برخی از ویژگی‌ها ممکن است کار نکند.</translation>
 <translation id="7473891865547856676">نه متشکرم</translation>
 <translation id="7483335560992089831">‏نمی‌توانید Chromium دارای نسخه مشابه با نسخه در حال اجرا را نصب کنید. لطفاً Chromium را ببندید و دوباره سعی کنید.</translation>
-<translation id="750717762378961310">‏این فایل مخرب است و Chromium آن را مسدود کرده است.</translation>
 <translation id="7549178288319965365">‏درباره سیستم عامل Chromium </translation>
 <translation id="7577193603922410712">‏لحظاتی پیش به‌روزرسانی امنیتی ویژه برای Chromium اعمال شد؛ برای فعال شدن آن باید هم‌اکنون راه‌اندازی مجدد کنید (برگه‌هایتان را بازیابی خواهیم کرد).</translation>
 <translation id="761356813943268536">‏Chromium درحال استفاده از دوربین و میکروفون شما است.</translation>

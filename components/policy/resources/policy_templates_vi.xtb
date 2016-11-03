@@ -19,6 +19,9 @@
       Khi chính sách này được đặt thành false hoặc không được đặt, cookie do IdP đặt chỉ được chuyển tới hồ sơ của người dùng trong lần đăng nhập đầu tiên của họ trên thiết bị.
 
       Chính sách này chỉ ảnh hưởng đến những người có miền khớp với miền đăng ký của thiết bị. Đối với tất cả người dùng khác, cookie do IdP đặt chỉ được chuyển tới hồ sơ của người dùng trong lần đăng nhập đầu tiên của họ trên thiết bị.</translation>
+<translation id="1029536946382325801">Nếu chính sách này được đặt là true, thì người dùng có thể sử dụng phần cứng trên các thiết bị Chrome để chứng thực từ xa danh tính của mình đối với CA bảo mật qua API khóa nền tảng doanh nghiệp chrome.enterprise.platformKeys.challengeUserKey().
+
+          Nếu chính sách này được đặt là false hoặc không được đặt, thì các lệnh gọi API sẽ không thực hiện được với mã lỗi.</translation>
 <translation id="1040446814317236570">Bật tách URL PAC (cho https://)</translation>
 <translation id="1044878202534415707">Báo cáo thống kê phần cứng chẳng hạn như mức sử dụng CPU/RAM.
 
@@ -342,13 +345,6 @@
 <translation id="2337466621458842053">Cho phép bạn thiết lập danh sách các mẫu url chỉ định những trang web được phép hiển thị hình ảnh.
 
           Nếu không thiết lập chính sách này, giá trị mặc định chung từ chính sách 'DefaultImagesSetting' nếu chính sách này được thiết lập hoặc từ cấu hình cá nhân của người dùng sẽ được sử dụng cho tất cả các trang web.</translation>
-<translation id="2359612025446382967">Nếu chính sách này được đặt thành false, <ph name="PRODUCT_OS_NAME" /> sẽ tắt Bluetooth và người dùng không thể bật trở lại.
-
-      Nếu chính sách này được đặt thành true hoặc không được đặt, người dùng có thể bật hoặc tắt Bluetooth theo ý muốn.
-
-      Nếu chính sách này được đặt, người dùng không thể thay đổi hoặc ghi đè chính sách.
-
-      Sau khi bật Bluetooth, cần khởi động lại thiết bị để các thay đổi có hiệu lực (không cần khởi động lại thiết bị khi tắt Bluetooth).</translation>
 <translation id="2366415278352956652">Bật truyền</translation>
 <translation id="2372547058085956601">Thời gian chờ trước khi tự động đăng nhập vào phiên công khai.
 
@@ -979,6 +975,9 @@ Khi chính sách này được đặt thành false hoặc không được địn
 
       Nếu chính sách này được đặt thành true, thông tin theo dõi gói mạng (được gọi là <ph name="HEARTBEATS_TERM" />) sẽ được gửi.
       Nếu được đặt thành false hoặc không được đặt, thì sẽ không có gói nào được gửi.</translation>
+<translation id="3963602271515417124">Nếu được đặt thành true, cho phép xác nhận từ xa cho thiết bị và chứng chỉ sẽ tự động được tạo và tải lên Máy chủ quản lý thiết bị.
+
+          Nếu được đặt thành false hoặc không được đặt, sẽ không có chứng chỉ nào được tạo và các lệnh gọi đến API enterprise.platformKeys sẽ không thực hiện được.</translation>
 <translation id="3964909636571393861">Cho phép truy cập vào danh sách các URL</translation>
 <translation id="3965339130942650562">Thời gian chờ cho tới khi đăng xuất của người dùng không hoạt động được thực thi</translation>
 <translation id="3967075520570946456">Bật hiển thị trang chào mừng vào lần khởi chạy trình duyệt đầu tiên sau khi nâng cấp hệ điều hành.</translation>
@@ -1552,13 +1551,6 @@ Khi chính sách này được đặt thành false hoặc không được địn
 
       Nếu chính sách không được đặt hoặc được đặt thành false, khi đó <ph name="PRODUCT_NAME" /> sẽ không thực hiện các kiểm tra thu hồi trực tuyến trong <ph name="PRODUCT_NAME" /> 19 và cao hơn.</translation>
 <translation id="5966615072639944554">Tiện ích được phép sử dụng API chứng thực từ xa</translation>
-<translation id="5974970919245996815">Báo cáo thông tin về trạng thái của Android được gửi lại cho
-      máy chủ.
-
-      Nếu chính sách được đặt thành false, thông tin sẽ không được báo cáo.
-      Nếu chính sách được đặt thành true hoặc không được đặt, thông tin sẽ được báo cáo.
-
-      Chính sách này chỉ áp dụng nếu các ứng dụng Android được bật.</translation>
 <translation id="5983708779415553259">Thao tác mặc định cho trang web không nằm trong bất kỳ gói nội dung nào</translation>
 <translation id="5997543603646547632">Sử dụng đồng hồ 24 giờ theo mặc định</translation>
 <translation id="6009903244351574348">Cho phép <ph name="PRODUCT_FRAME_NAME" /> xử lý loại nội dung được liệt kê.
@@ -2237,6 +2229,9 @@ Khi chính sách này được đặt thành false hoặc không được địn
           gia vào miền Active Directory.</translation>
 <translation id="7937766917976512374">Cho phép hoặc từ chối quay video</translation>
 <translation id="7941975817681987555">Không dự đoán tác vụ mạng trên kết nối mạng bất kỳ</translation>
+<translation id="7942429005743031780">Chính sách này nêu rõ các tiện ích được phép để sử dụng API khóa nền tảng doanh nghiệp chrome.enterprise.platformKeys.challengeUserKey() để chứng thực từ xa. Các tiện ích phải được thêm vào danh sách này để sử dụng API.
+
+          Nếu tiện ích không có trong danh sách hoặc danh sách không được đặt thì lệnh gọi đến API sẽ không thực hiện được với mã lỗi.</translation>
 <translation id="7953256619080733119">Lưu trữ ngoại lệ hướng dẫn người dùng được quản lý</translation>
 <translation id="7971839631300653352">SSL 3.0</translation>
 <translation id="7974114691960514888">Chính sách này không còn được hỗ trợ.

@@ -19,6 +19,9 @@
       如果將這項政策設為 false 或不予設定，則只有在使用者首次登入裝置時，系統才會將 IdP 設定的 Cookie 轉移到使用者的設定檔。
 
       這項政策只會影響所屬網域和裝置註冊網域相符的使用者。其他使用者則只有在首次登入裝置時，系統才會將 IdP 設定的 Cookie 轉移到使用者的設定檔。</translation>
+<translation id="1029536946382325801">如果設為 true，使用者就可以使用 Chrome 裝置上的硬體，透過 Enterprise Platform Keys API chrome.enterprise.platformKeys.challengeUserKey() 向隱私權 CA 證明身分。
+
+          如果設為 false 或未設定，API 呼叫作業將會失敗，並傳回錯誤代碼。</translation>
 <translation id="1040446814317236570">啟用 PAC 網址分解功能 (適用於 https://)</translation>
 <translation id="1044878202534415707">回報硬體統計資料，例如 CPU/RAM 使用量。
 
@@ -324,13 +327,6 @@
 <translation id="2309390639296060546">預設地理位置設定</translation>
 <translation id="2312134445771258233">允許您設定起始時載入的網頁。系統會略過 [起始時開啟的網址] 網頁清單內容，除非您在 [起始動作] 中選取 [開啟網址清單]。</translation>
 <translation id="2337466621458842053">允許您設定網址模式清單，指定可以顯示圖片的網站。如果未設定這項政策，系統會從「DefaultImagesSetting」政策 (如果有設定的話) 或使用者的個人設定，將通用預設值套用至所有網站。</translation>
-<translation id="2359612025446382967">如果將這項政策設為 false，<ph name="PRODUCT_OS_NAME" /> 會停用藍牙功能，且使用者無法重新啟用。
-
-      如果將這項政策設為 true 或不予設定，使用者可以視需求啟用或停用藍牙功能。
-
-      設定這項政策後，使用者無法變更或覆寫政策。
-
-      啟用藍牙功能後，必須重新啟動裝置，變更才會生效 (停用藍牙功能時不需重新啟動裝置)。</translation>
 <translation id="2366415278352956652">啟用投放功能</translation>
 <translation id="2372547058085956601">公開工作階段自動登入延遲時間。
 
@@ -934,6 +930,9 @@
 
       如果將這項政策設為 true，系統會傳送網路封包 (所謂的「<ph name="HEARTBEATS_TERM" />」)。
       如果設為 false 或未設定，系統就不會傳送任何封包。</translation>
+<translation id="3963602271515417124">如果設為 true，裝置即可從遠端證明身分，且系統會自動產生憑證並上傳到裝置管理伺服器。
+
+          如果設為 false 或未設定，則不會產生憑證，且 enterprise.platformKeys 擴充功能 API 呼叫作業將會失敗。</translation>
 <translation id="3964909636571393861">允許存取清單中的網址</translation>
 <translation id="3965339130942650562">逾時直到閒置使用者登出</translation>
 <translation id="3967075520570946456">允許在作業系統升級後首次啟動瀏覽器時顯示歡迎網頁。</translation>
@@ -980,9 +979,9 @@
 <translation id="4103289232974211388">經使用者確認後重新導向 SAML IdP</translation>
 <translation id="4103941930938018145">這項政策已淘汰，請使用 <ph name="DEFAULT_PLUGINS_SETTING_POLICY" /> 控制 Flash 外掛程式的可用性，以及使用 <ph name="ALWAYS_OPEN_PDF_EXTERNALLY_POLICY" /> 控制是否應使用整合式 PDF 檢視器開啟 PDF 檔案。
 
-      指定在 <ph name="PRODUCT_NAME" /> 中停用的外掛程式清單，並禁止使用者變更這項設定。
+      指定在 <ph name="PRODUCT_NAME" /> 中應停用哪些外掛程式，並禁止使用者變更這項設定。
 
-      萬用字元「*」和「?」可與任意字元序列比對。「*」可與任意數量的字元相配，而「?」只能指定選擇性的單一字元，例如與零或一個字元相配。逸出字元為「\」，因此如要與真正的「*」、「?」或「\」字元配對，請在這些字元前方插入「\」。
+      萬用字元「*」和「?」可與任意字元序列比對。「*」可比對任意數量的字元，而「?」只能指定選擇性的單一字元，例如與零或一個字元進行比對。逸出字元為「\」，因此如要與真正的「*」、「?」或「\」字元配對，請在這些字元前方插入「\」。
 
       如果啟用這項設定，<ph name="PRODUCT_NAME" /> 將一律不使用清單中指定的外掛程式，並且會在「about:plugins」中將這些外掛程式標示為已停用 (使用者無法予以啟用)。
 
@@ -1269,7 +1268,7 @@
           如果這個選項設定為停用或並未做任何設定，則在共用主機時，本機與遠端使用者皆可操作主機。</translation>
 <translation id="5423001109873148185">如果啟用這項政策，則會強制從目前的預設瀏覽器匯入搜尋引擎，並影響匯入對話方塊。如果停用這項政策，則不會匯入搜尋引擎。如果未設定這項政策，系統會自動匯入搜尋引擎，或詢問使用者是否要匯入搜尋引擎。</translation>
 <translation id="5423197884968724595">Android WebView 限制名稱：</translation>
-<translation id="543559563129402336">這項政策已淘汰，建議你改用 <ph name="FORCEYOUTUBERESTRICT_POLICY_NAME" /> 覆寫這項政策，並可進一步調整更精確的設定。
+<translation id="543559563129402336">這項政策已淘汰，建議你改用 <ph name="FORCEYOUTUBERESTRICT_POLICY_NAME" /> 覆寫這項政策，即可進一步微調各項設定。
 
       強制執行中度的 YouTube 嚴格篩選模式，並禁止使用者變更這項設定。
 
@@ -1381,9 +1380,9 @@
           指定政策值時需以毫秒為單位。</translation>
 <translation id="5783595563813359339">這項政策已淘汰，請使用 <ph name="DEFAULT_PLUGINS_SETTING_POLICY" /> 控制 Flash 外掛程式的可用性，以及使用 <ph name="ALWAYS_OPEN_PDF_EXTERNALLY_POLICY" /> 控制是否應使用整合式 PDF 檢視器開啟 PDF 檔案。
 
-      指定使用者可在 <ph name="PRODUCT_NAME" /> 中啟用或停用的外掛程式清單。
+      指定使用者可在 <ph name="PRODUCT_NAME" /> 中啟用或停用哪些外掛程式。
 
-      萬用字元「*」和「?」可與任意字元序列比對。「*」可與任意數量的字元相配，而「?」只能指定選擇性的單一字元，例如與零或一個字元相配。逸出字元為「\」，因此如要與真正的「*」、「?」或「\」字元配對，請在這些字元前方插入「\」。
+      萬用字元「*」和「?」可與任意字元序列比對。「*」可比對任意數量的字元，而「?」只能指定選擇性的單一字元，例如與零或一個字元進行比對。逸出字元為「\」，因此如要與真正的「*」、「?」或「\」字元配對，請在這些字元前方插入「\」。
 
       如果啟用這項設定，<ph name="PRODUCT_NAME" /> 即可使用清單中指定的外掛程式。使用者可以在「about:plugins」中啟用或停用這些外掛程式，即使該掛程式同時與 DisabledPlugins 中的模式相符亦然。此外，使用者可以啟用及停用與 DisabledPlugins、DisabledPluginsExceptions 和 EnabledPlugins 中任何模式均不相符的外掛程式。
 
@@ -1454,13 +1453,6 @@
 
       如未設定這項政策，或將政策設定為 False，則 <ph name="PRODUCT_NAME" /> 不會在 <ph name="PRODUCT_NAME" /> 19 和更新版本中執行線上撤銷檢查。</translation>
 <translation id="5966615072639944554">允許擴充功能使用 Remote Attestation API</translation>
-<translation id="5974970919245996815">將 Android 狀態的報告資訊傳回
-      伺服器。
-
-      如果將政策設為 false，系統將不會回報資訊。
-      如果設為 true 或不予設定，則會回報資訊。
-
-      必須啟用 Android 應用程式才適用這項政策。</translation>
 <translation id="5983708779415553259">非任何內容套件中網站的預設行為</translation>
 <translation id="5997543603646547632">預設使用 24 小時制時鐘</translation>
 <translation id="6009903244351574348">允許「<ph name="PRODUCT_FRAME_NAME" />」處理列出的內容類型。如果未設定這項政策，所有網站都會使用「ChromeFrameRendererSettings」政策指定的預設轉譯器。</translation>
@@ -1491,9 +1483,9 @@
       如果未設定這項政策，卸離式 USB 裝置清單就不會顯示任何項目。</translation>
 <translation id="608377055310226486">這項政策已淘汰，請使用 <ph name="DEFAULT_PLUGINS_SETTING_POLICY" /> 控制 Flash 外掛程式的可用性，以及使用 <ph name="ALWAYS_OPEN_PDF_EXTERNALLY_POLICY" /> 控制是否應使用整合式 PDF 檢視器開啟 PDF 檔案。
 
-      指定在 <ph name="PRODUCT_NAME" /> 中啟用的外掛程式清單，並禁止使用者變更這項設定。
+      指定在 <ph name="PRODUCT_NAME" /> 中應啟用哪些外掛程式，並禁止使用者變更這項設定。
 
-      萬用字元「*」和「?」可與任意字元序列比對。「*」可與任意數量的字元相配，而「?」只能指定選擇性的單一字元，例如與零或一個字元相配。逸出字元為「\」，因此如要與真正的「*」、「?」或「\」字元配對，請在這些字元前方插入「\」。
+      萬用字元「*」和「?」可與任意字元序列比對。「*」可比對任意數量的字元，而「?」只能指定選擇性的單一字元，例如與零或一個字元進行比對。逸出字元為「\」，因此如要與真正的「*」、「?」或「\」字元配對，請在這些字元前方插入「\」。
 
       如果安裝了清單中指定的外掛程式，<ph name="PRODUCT_NAME" /> 將一律使用，並且會在「about:plugins」中將這些外掛程式標示為已啟用 (使用者無法予以停用)。
 
@@ -2107,6 +2099,9 @@
           這項政策不適用於未加入 Active Directory 網域的 Windows 執行個體。</translation>
 <translation id="7937766917976512374">允許或拒絕擷取視訊</translation>
 <translation id="7941975817681987555">無論使用任何網路連線，皆不預測網路動作</translation>
+<translation id="7942429005743031780">這項政策可讓你指定允許從遠端使用 Enterprise Platform Keys API chrome.enterprise.platformKeys.challengeUserKey() 證明身分的擴充功能。只有加入這份清單的擴充功能可以使用該 API。
+
+          如果不是清單中的擴充功能，或是未設定清單，API 呼叫作業將會失敗，並傳回錯誤代碼。</translation>
 <translation id="7953256619080733119">管理化環境下使用者手動建立的例外主機</translation>
 <translation id="7971839631300653352">SSL 3.0</translation>
 <translation id="7974114691960514888">系統不再支援這項政策。連線至遠端用戶時，啟用 STUN 使用量和轉送伺服器。如果啟用這項設定，那麼即使遠端主機電腦被防火牆隔開，這台電腦也能發現遠端主機電腦並建立連結。如果停用這項設定，並且外傳 UDP 連結遭到防火牆篩選，則這台電腦只會與當地網路內的主機電腦建立連線。</translation>

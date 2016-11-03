@@ -61,7 +61,6 @@
 <translation id="2588322182880276190">Лого на Chrome</translation>
 <translation id="2664962310688259219">Лицензи за отворен код за Chrome OS</translation>
 <translation id="2665296953892887393">Помогнете ни да подобрим Google Chrome, като ни изпращате <ph name="UMA_LINK" /> му и сигнали за сривове</translation>
-<translation id="2669824781555328029">Файлът „<ph name="FILE_NAME" />“ може да навреди на сърфирането ви, поради което Chrome го блокира.</translation>
 <translation id="2681064822612051220">В системата бе намерена несъвместима инсталация на Google Chrome. Моля, деинсталирайте я и опитайте отново.</translation>
 <translation id="2689103672227170538">Това разширение промени страницата, която се показва при стартиране на Chrome.</translation>
 <translation id="2704356438731803243">Ако предпочитате да съхранявате отделно съществуващите си данни в Chrome, можете да създадете в браузъра нов потребител за <ph name="USER_NAME" />.</translation>
@@ -149,6 +148,7 @@
 <translation id="5148419164691878332">Chrome ще съхрани това при <ph name="SAVED_PASSWORDS_LINK" /> и ще си го спомни следващия път, когато ви е необходимо.</translation>
 <translation id="5170938038195470297">Потребителският ви профил не може да се използва, защото е от по-нова версия на Google Chrome. Някои функции може да не са налице. Моля, посочете друга директория в потребителския профил или използвайте по-нова версия на Chrome.</translation>
 <translation id="5176234269072261959">Помогнете за подобряването на Chrome, като подадете сигнал за текущите настройки.</translation>
+<translation id="5193136243808726294">Google Chrome OS не може да отвори тази страница.</translation>
 <translation id="5204098752394657250"><ph name="TERMS_OF_SERVICE_LINK" />Общи условия<ph name="END_TERMS_OF_SERVICE_LINK" /> на Google Chrome</translation>
 <translation id="5243785881901838525">Google Payments (копирано в Chrome)</translation>
 <translation id="5251420635869119124">Гостите могат да използват Chrome, без да оставят следи.</translation>
@@ -207,7 +207,6 @@
 <translation id="699076943483372849">За този сайт се използва оттеглената приставка Chrome Frame, която вече не получава актуализации за подобряване на сигурността и стабилността. Моля, деинсталирайте я и надстройте до модерен браузър.</translation>
 <translation id="6991142834212251086">Свързване на данните ми в Chrome с този профил</translation>
 <translation id="7060865993964054389">Стартов панел с приложения за Google Chrome</translation>
-<translation id="7084448929020576097">Файлът „<ph name="FILE_NAME" />“ е злонамерен и е блокиран от Chrome.</translation>
 <translation id="7098166902387133879">Google Chrome използва микрофона ви.</translation>
 <translation id="7106741999175697885">Диспечер на задачите - Google Chrome</translation>
 <translation id="7125719106133729027">Chrome не можа да се актуализира до последната версия, така че пропускате невероятни нови функции и поправки за подобряване на сигурността. Налага се ръчно да инсталирате отново браузъра.</translation>
@@ -270,7 +269,6 @@
 <translation id="8669527147644353129">Google Chrome Helper</translation>
 <translation id="8679801911857917785">То също контролира коя страница се показва при стартиране на Chrome.</translation>
 <translation id="870251953148363156">Актуализиране на &amp;Google Chrome</translation>
-<translation id="8793772303278047003">Chrome не е актуален.</translation>
 <translation id="8796108026289707191">Трябва да рестартирате Google Chrome сега.</translation>
 <translation id="8823341990149967727">Chrome не е актуален</translation>
 <translation id="884296878221830158">То също контролира коя страница се показва при стартиране на Chrome или при кликване върху бутона „Начална страница“.</translation>
@@ -279,7 +277,6 @@
 <translation id="8914504000324227558">Повторно стартиране на Chrome</translation>
 <translation id="9026991721384951619">Chrome OS не можа да синхронизира данните ви, защото потребителското име и паролата за вход в профила ви не са актуални.</translation>
 <translation id="9067395829937117663">За Google Chrome се изисква Windows 7 или по-нова версия.</translation>
-<translation id="9102715433345326100">Този файл е злонамерен и е блокиран от Chrome.</translation>
 <translation id="9107728822479888688"><ph name="BEGIN_BOLD" />Предупреждение<ph name="END_BOLD" />: Google Chrome не може да попречи на разширенията да записват историята ви на сърфиране. За да деактивирате това разширение в режим „инкогнито“, премахнете отметката от тази опция.</translation>
 <translation id="911206726377975832">Да се изтрият ли и данните от сърфирането?</translation>
 <translation id="924447568950697217">Задаване на Chrome като браузър по подразбиране</translation>

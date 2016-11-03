@@ -21,7 +21,6 @@
 <translation id="1688750314291223739">Seadistage sünkroonimine, et salvestada isikupärastatud brauserifunktsioonid veebi, misjuhul pääsete igast arvutist Chromiumi kaudu nende juurde.</translation>
 <translation id="1699664235656412242">Sulgege kõik Chromiumi aknad (ka Windows 8 režiimis) ja proovige uuesti.</translation>
 <translation id="1708666629004767631">Saadaval on Chromiumi uus, turvalisem versioon.</translation>
-<translation id="1725059042853530269">Fail <ph name="FILE_NAME" /> võib teie kasutuskogemust sirvimisel kahjustada, seetõttu on Chromium selle blokeerinud.</translation>
 <translation id="1774152462503052664">Luba Chromiumil taustal töötada</translation>
 <translation id="1779356040007214683">Chromiumi turvalisemaks muutmiseks keelasime mõned laiendused, mida ei leidu veebipoes <ph name="IDS_EXTENSION_WEB_STORE_TITLE" /> ja mille lisamisest te ei pruugi teadlik olla.</translation>
 <translation id="1808667845054772817">Installi Chromium uuesti</translation>
@@ -59,7 +58,6 @@
 <translation id="2718390899429598676">Turvalisuse suurendamiseks krüptib Chromium teie andmed.</translation>
 <translation id="2770231113462710648">Asenda vaikebrauser:</translation>
 <translation id="2799223571221894425">Taaskäivita</translation>
-<translation id="2801146392936645542"><ph name="FILE_NAME" /> on pahatahtlik ja Chromium on selle blokeerinud.</translation>
 <translation id="2847479871509788944">Chromiumist eemaldamine ...</translation>
 <translation id="2886012850691518054">Valikuline: aidake muuta Chromiumi paremaks, saates Google'ile automaatselt kasutusstatistikat ja krahhiaruandeid.</translation>
 <translation id="2905536371227304018">Chromium OS kuvatakse selles keeles.</translation>
@@ -78,7 +76,6 @@
 <ph name="USER_DATA_DIRECTORY" /></translation>
 <translation id="3264279740686075150">Chromium on teie vaikebrauser. Täname!</translation>
 <translation id="328888136576916638">Google API võtmed on puudu. Teatud Chromiumi funktsioonid keelatakse.</translation>
-<translation id="3289635842886789612">Chromium on aegunud.</translation>
 <translation id="3296368748942286671">Jätka taustarakenduste käitamist pärast Chromiumi sulgemist</translation>
 <translation id="3312805357485578561">Chromium tuvastas tavatu käitumise</translation>
 <translation id="331951419404882060">Chromium OS ei saanud sisselogimisvea tõttu teie andmeid sünkroonida.</translation>
@@ -136,6 +133,7 @@
 <translation id="5398878173008909840">Chromiumi uus versioon on saadaval.</translation>
 <translation id="5427571867875391349">Määra Chromium vaikebrauseriks</translation>
 <translation id="5466153949126434691">Chromium teeb värskendused automaatselt, nii et kasutate alati uusimat versiooni. Kui allalaadimine on lõppenud, siis Chrome taaskäivitub ja võite alustada kasutamist.</translation>
+<translation id="5479196819031988440">Chromium OS ei saa seda lehte avada.</translation>
 <translation id="549669000822060376">Oodake, kuni Chromium installib uusimad süsteemivärskendused.</translation>
 <translation id="556167189552180495">Chromium kuvatakse selles keeles.</translation>
 <translation id="5563479599352954471">Otsing ühe puudutusega</translation>
@@ -223,7 +221,6 @@ Täiendavad juhised leiate aadressilt <ph name="ACCOUNT_EMAIL" />.</translation>
 <translation id="7421823331379285070">Chromium nõuab Windows XP-d või uuemat operatsioonisüsteemi. Mõni funktsioon ei pruugi töötada.</translation>
 <translation id="7473891865547856676">Tänan, ei</translation>
 <translation id="7483335560992089831">Ei saa installida sama Chromiumi versiooni, mis praegu töötab. Sulgege Chromium ja proovige uuesti.</translation>
-<translation id="750717762378961310">See fail on pahatahtlik ja Chromium on selle blokeerinud.</translation>
 <translation id="7549178288319965365">Teave Chromium OS-i kohta</translation>
 <translation id="7577193603922410712">Äsja rakendati Chromiumi spetsiaalne turvavärskendus. Selle jõustamiseks taaskäivitage brauser (teie vahelehed taastatakse).</translation>
 <translation id="761356813943268536">Chromium kasutab kaamerat ja mikrofoni.</translation>

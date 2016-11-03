@@ -59,7 +59,6 @@ Yine de oturum açarsanız, yer işaretleriniz, geçmişiniz ve diğer ayarları
 <translation id="2588322182880276190">Chrome logosu</translation>
 <translation id="2664962310688259219">Chrome OS açık kaynak lisansları</translation>
 <translation id="2665296953892887393">Kilitlenme raporlarını ve <ph name="UMA_LINK" /> bilgilerini Google'a göndererek Google Chrome'u daha iyi hale getirmeye yardımcı olun</translation>
-<translation id="2669824781555328029"><ph name="FILE_NAME" />, göz atma deneyiminize olumsuz etki yapabileceği için Chrome tarafından engellendi.</translation>
 <translation id="2681064822612051220">Sistemde çakışan bir Google Chrome yüklemesi bulundu. Lütfen yüklemeyi kaldırıp tekrar deneyin.</translation>
 <translation id="2689103672227170538">Bu uzantı, Chrome'u başlattığınızda gösterilen sayfayı değiştirdi.</translation>
 <translation id="2704356438731803243">Mevcut Chrome verilerinizi ayrı tutmak isterseniz, <ph name="USER_NAME" /> için yeni bir Chrome kullanıcısı oluşturabilirsiniz.</translation>
@@ -129,6 +128,7 @@ Daha fazla talimat için lütfen e-postanızı <ph name="ACCOUNT_EMAIL" /> kontr
 <translation id="4700157086864140907">Google Chrome, tarayıcıda yazdıklarınızı Google sunucularına gönderip akıllı yazım denetimi olanağı sağlayabilir ve Google arama tarafından kullanılan yazım denetimi teknolojisini kullanmanıza olanak tanır.</translation>
 <translation id="4728575227883772061">Belirlenemeyen bir hata nedeniyle yükleme başarısız oldu. Google Chrome şu anda çalışır durumdaysa, kapatıp yeniden deneyin.</translation>
 <translation id="4743926867934016338">Kabul Et ve Ara</translation>
+<translation id="4750550185319565338"><ph name="PLUGIN_NAME" /> eklentisini etkinleştirmek için Chrome'u yeniden başlatın</translation>
 <translation id="4751441238232965030">Bu bilgisayar yakında 32 bit Google Chrome güncellemelerini almayı durduracak. Lütfen Google Chrome'un 64 bit sürümüne geçin.</translation>
 <translation id="4754614261631455953">Google Chrome Canary (mDNS-In)</translation>
 <translation id="4771048833395599659">Bu dosya tehlikeli olabileceği için Chrome tarafından engellendi.</translation>
@@ -149,6 +149,7 @@ Daha fazla talimat için lütfen e-postanızı <ph name="ACCOUNT_EMAIL" /> kontr
 
 Bazı özellikler kullanılamayabilir. Lütfen farklı bir profil dizini belirtin veya daha yeni bir Chrome sürümü kullanın.</translation>
 <translation id="5176234269072261959">Mevcut ayarlarınızı bildirerek Chrome'u daha iyi hale getirmemize yardımcı olun.</translation>
+<translation id="5193136243808726294">Google Chrome OS bu sayfayı açamıyor.</translation>
 <translation id="5204098752394657250">Google Chrome <ph name="TERMS_OF_SERVICE_LINK" />Hizmet Şartları<ph name="END_TERMS_OF_SERVICE_LINK" /></translation>
 <translation id="5243785881901838525">Google Payments (Chrome'a kopyalandı)</translation>
 <translation id="5251420635869119124">Misafirler Chrome'u geride hiçbir şey bırakmadan kullanabilirler.</translation>
@@ -207,7 +208,6 @@ Bazı özellikler kullanılamayabilir. Lütfen farklı bir profil dizini belirti
 <translation id="699076943483372849">Bu sitede, güvenlik ve kararlılık güncellemelerini artık almayacak olan eski Chrome Frame eklentisi kullanılmaktadır. Lütfen bu eklentinin yüklemesini kaldırın ve modern bir tarayıcı sürümüne geçin.</translation>
 <translation id="6991142834212251086">Chrome verilerimi bu hesaba bağla</translation>
 <translation id="7060865993964054389">Google Chrome Uygulama Başlatıcı</translation>
-<translation id="7084448929020576097"><ph name="FILE_NAME" /> kötü amaçlı bir dosya ve Chrome tarafından engellendi.</translation>
 <translation id="7098166902387133879">Google Chrome mikrofonunuzu kullanıyor.</translation>
 <translation id="7106741999175697885">Görev Yöneticisi - Google Chrome</translation>
 <translation id="7125719106133729027">Chrome kendini en yeni sürüme güncelleyemedi, bundan dolayı yeni ve harika özelliklerin yanı sıra güvenlik düzeltmelerinden mahrum kalıyorsunuz. Chrome'u manuel olarak yeniden yüklemeniz gerekiyor.</translation>
@@ -270,7 +270,6 @@ Bazı özellikler kullanılamayabilir. Lütfen farklı bir profil dizini belirti
 <translation id="8669527147644353129">Google Chrome Helper</translation>
 <translation id="8679801911857917785">Ayrıca Chrome'u başlattığınızda gösterilecek sayfayı da denetler.</translation>
 <translation id="870251953148363156">&amp;Google Chrome'u güncelle</translation>
-<translation id="8793772303278047003">Chrome sürümü eski.</translation>
 <translation id="8796108026289707191">Google Chrome'u şimdi yeniden başlatmalısınız.</translation>
 <translation id="8823341990149967727">Chrome Sürümü Eski</translation>
 <translation id="884296878221830158">Ayrıca Chrome'u başlattığınızda veya Ana Sayfa düğmesini tıkladığınızda gösterilecek sayfayı da denetler.</translation>
@@ -279,7 +278,6 @@ Bazı özellikler kullanılamayabilir. Lütfen farklı bir profil dizini belirti
 <translation id="8914504000324227558">Chrome'u Yeniden Başlat</translation>
 <translation id="9026991721384951619">Hesap oturum açma ayrıntılarınız güncel olmadığından Chrome OS, verilerinizi senkronize edemedi.</translation>
 <translation id="9067395829937117663">Google Chrome, Windows 7 veya daha sonraki bir sürümü gerektirir.</translation>
-<translation id="9102715433345326100">Bu dosya kötü amaçlı ve Chrome tarafından engellendi.</translation>
 <translation id="9107728822479888688"><ph name="BEGIN_BOLD" />Uyarı:<ph name="END_BOLD" /> Google Chrome, uzantıların göz atma geçmişinizi kaydetmesini önleyemez. Gizli modda bu uzantıyı devre dışı bırakmak için, bu seçeneğin onay işaretini kaldırın.</translation>
 <translation id="911206726377975832">Tarama verileriniz de silinsin mi?</translation>
 <translation id="924447568950697217">Chrome'u varsayılan tarayıcınız yapma</translation>

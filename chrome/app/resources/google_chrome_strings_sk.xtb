@@ -61,7 +61,6 @@ Ak sa chcete aj napriek tomu prihlásiť, informácie prehliadača Chrome, ako s
 <translation id="2588322182880276190">Logo Chrome</translation>
 <translation id="2664962310688259219">Licencie open source systému OS Chrome</translation>
 <translation id="2665296953892887393">Pomôcť zlepšiť prehliadač Google Chrome odosielaním správ o zlyhaní a <ph name="UMA_LINK" /> spoločnosti Google</translation>
-<translation id="2669824781555328029">Súbor <ph name="FILE_NAME" /> môže poškodiť vaše prostredie na prehliadanie, a preto ho prehliadač Chrome zablokoval.</translation>
 <translation id="2681064822612051220">V systéme sa našla kolidujúca inštalácia prehliadača Google Chrome. Odinštalujte ju a skúste to znova.</translation>
 <translation id="2689103672227170538">Toto rozšírenie zmenilo stránku, ktorá sa zobrazí pri spustení prehliadača Chrome.</translation>
 <translation id="2704356438731803243">Ak chcete svoje existujúce údaje prehliadača Chrome ponechať oddelené, môžete pre účet <ph name="USER_NAME" /> vytvoriť nového používateľa prehliadača Chrome.</translation>
@@ -151,6 +150,7 @@ Ak chcete profilu <ph name="NEW_PROFILE_NAME" /> zabrániť pristupovať do vá�
 
 Niektoré funkcie môžu byť nedostupné. Zadajte iný adresár profilu alebo použite novšiu verziu prehliadača Chrome.</translation>
 <translation id="5176234269072261959">Nahláste aktuálne nastavenia a pomôžte tak zlepšiť Chrome.</translation>
+<translation id="5193136243808726294">Google Chrome OS nedokáže túto stránku otvoriť.</translation>
 <translation id="5204098752394657250"><ph name="TERMS_OF_SERVICE_LINK" />Zmluvné podmienky<ph name="END_TERMS_OF_SERVICE_LINK" /> prehliadača Google Chrome</translation>
 <translation id="5243785881901838525">Google Payments (skopírované do Chromu)</translation>
 <translation id="5251420635869119124">Hostia môžu používať prehliadač Chrome bez toho, aby po sebe zanechali akékoľvek informácie.</translation>
@@ -211,7 +211,6 @@ Prehliadač Google Chrome nedokáže obnoviť vaše nastavenia.</translation>
 <translation id="699076943483372849">Tieto stránky používajú zastaralý doplnok Chrome Frame, ktorý už nedostáva aktualizácie zabezpečenia a stability. Odinštalujte ho a inovujte na moderný prehliadač.</translation>
 <translation id="6991142834212251086">Prepojiť moje údaje prehliadača Chrome s týmto účtom</translation>
 <translation id="7060865993964054389">Spúšťač aplikácií Google Chrome</translation>
-<translation id="7084448929020576097">Súbor <ph name="FILE_NAME" /> je škodlivý, a preto ho prehliadač Chrome zablokoval.</translation>
 <translation id="7098166902387133879">Google Chrome používa váš mikrofón.</translation>
 <translation id="7106741999175697885">Správca úloh – Google Chrome</translation>
 <translation id="7125719106133729027">Prehliadač Chrome sa nedokázal aktualizovať na najnovšiu verziu. K dispozícii tak nie sú niektoré skvelé nové funkcie a bezpečnostné opravy. Prehliadač Chrome je potrebné preinštalovať ručne.</translation>
@@ -274,7 +273,6 @@ Prehliadač Google Chrome nedokáže obnoviť vaše nastavenia.</translation>
 <translation id="8669527147644353129">Google Chrome Helper</translation>
 <translation id="8679801911857917785">Tiež určuje, ktorá stránka sa zobrazí pri spustení prehliadača Chrome.</translation>
 <translation id="870251953148363156">Aktualizácia prehliadača &amp;Google Chrome</translation>
-<translation id="8793772303278047003">Chrome je zastaraný.</translation>
 <translation id="8796108026289707191">Mali by ste reštartovať prehliadač Google Chrome.</translation>
 <translation id="8823341990149967727">Prehliadač Chrome je zastaraný</translation>
 <translation id="884296878221830158">Tiež určuje, ktorá stránka sa zobrazí pri spustení prehliadača Chrome alebo po kliknutí na tlačidlo Domovská stránka.</translation>
@@ -283,7 +281,6 @@ Prehliadač Google Chrome nedokáže obnoviť vaše nastavenia.</translation>
 <translation id="8914504000324227558">Znova spustiť prehliadač Chrome</translation>
 <translation id="9026991721384951619">Systému OS Chrome sa nepodarilo synchronizovať vaše údaje, pretože vaše prihlasovacie údaje účtu sú zastarané.</translation>
 <translation id="9067395829937117663">Google Chrome vyžaduje Windows 7 alebo vyšší.</translation>
-<translation id="9102715433345326100">Tento súbor je škodlivý, a preto ho prehliadač Chrome zablokoval.</translation>
 <translation id="9107728822479888688"><ph name="BEGIN_BOLD" />Upozornenie:<ph name="END_BOLD" /> Prehliadač Google Chrome nemôže zabrániť rozšíreniam v zaznamenávaní vašej histórie prehliadania. Ak chcete toto rozšírenie v režime inkognito zakázať, zrušte výber tejto možnosti.</translation>
 <translation id="911206726377975832">Chcete tiež odstrániť svoje údaje prehliadania?</translation>
 <translation id="924447568950697217">Nastavenie Chromu ako predvoleného prehliadača</translation>

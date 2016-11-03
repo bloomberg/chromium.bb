@@ -23,7 +23,6 @@
 <translation id="1688750314291223739">맞춤설정한 브라우저 기능을 웹에 저장하고 모든 컴퓨터의 Chromium에서 액세스할 수 있도록 동기화를 설정합니다.</translation>
 <translation id="1699664235656412242">Chromium 창(Windows 8 모드의 창 포함)을 모두 닫고 다시 시도해 보세요.</translation>
 <translation id="1708666629004767631">새롭고 안전한 Chromium의 새 버전을 사용할 수 있습니다.</translation>
-<translation id="1725059042853530269"><ph name="FILE_NAME" />이(가) 인터넷 사용 환경을 손상할 수 있어서 Chromium에서 차단했습니다.</translation>
 <translation id="1774152462503052664">백그라운드에서 Chromium을 실행</translation>
 <translation id="1779356040007214683">Google에서는 Chromium의 보안을 강화하기 위해 <ph name="IDS_EXTENSION_WEB_STORE_TITLE" />에 표시되지 않고 사용자 모르게 추가되었을 수 있는 일부 확장 프로그램의 사용을 중지했습니다.</translation>
 <translation id="1808667845054772817">Chromium 재설치</translation>
@@ -61,7 +60,6 @@
 <translation id="2718390899429598676">보안 강화를 위해 Chromium에서 사용자 데이터를 암호화합니다.</translation>
 <translation id="2770231113462710648">다음으로 기본 브라우저 변경:</translation>
 <translation id="2799223571221894425">다시 시작</translation>
-<translation id="2801146392936645542"><ph name="FILE_NAME" />은(는) 악성 파일이므로 Chromium에서 차단했습니다.</translation>
 <translation id="2847479871509788944">Chromium에서 제거...</translation>
 <translation id="2886012850691518054">선택사항: 사용 통계 및 비정상 종료 보고서가 Google로 자동 전송되도록 선택하시면 Chromium을 개선하는 데 도움이 됩니다.</translation>
 <translation id="2905536371227304018">Chromium OS가 이 언어로 표시됩니다.</translation>
@@ -80,7 +78,6 @@
 <ph name="USER_DATA_DIRECTORY" /></translation>
 <translation id="3264279740686075150">Chromium이 기본 브라우저입니다.</translation>
 <translation id="328888136576916638">Google API 키가 누락되었습니다. Chromium의 일부 기능이 사용 중지됩니다.</translation>
-<translation id="3289635842886789612">Chromium이 이전 버전임</translation>
 <translation id="3296368748942286671">Chromium 종료 후에도 백그라운드 앱을 계속 실행</translation>
 <translation id="3312805357485578561">Chromium에서 비정상적인 동작을 감지했습니다.</translation>
 <translation id="331951419404882060">로그인 중 오류가 발생하여 Chromium OS에서 데이터를 동기화하지 못했습니다.</translation>
@@ -138,6 +135,7 @@
 <translation id="5398878173008909840">Chromium의 새 버전이 출시되었습니다.</translation>
 <translation id="5427571867875391349">Chromium을 기본 브라우저로 설정</translation>
 <translation id="5466153949126434691">Chromium이 자동으로 업데이트되므로 항상 최신 버전을 사용할 수 있습니다. 이 다운로드가 완료되면 Chromium이 다시 시작되며 계속 작업할 수 있습니다.</translation>
+<translation id="5479196819031988440">Chromium OS에서 이 페이지를 열 수 없음</translation>
 <translation id="549669000822060376">Chromium에서 최신 시스템 업데이트를 설치하는 동안 잠시 기다려 주세요.</translation>
 <translation id="556167189552180495">Chromium이 이 언어로 표시됩니다.</translation>
 <translation id="5563479599352954471">터치 한 번으로 검색</translation>
@@ -225,7 +223,6 @@ Chromium에서 설정을 복구할 수 없습니다.</translation>
 <translation id="7421823331379285070">Chromium에는 Windows XP 이상이 필요합니다. 일부 기능이 작동하지 않을 수 있습니다.</translation>
 <translation id="7473891865547856676">건너뛰기</translation>
 <translation id="7483335560992089831">이미 실행 중인 Chromium과 동일한 버전을 설치할 수 없습니다. Chromium을 종료한 뒤 다시 시도하세요.</translation>
-<translation id="750717762378961310">이 파일은 악성 파일이므로 Chromium에서 차단했습니다.</translation>
 <translation id="7549178288319965365">Chromium OS 정보</translation>
 <translation id="7577193603922410712">Chromium 특별 보안 업데이트를 방금 적용했습니다. 실행하려면 지금 다시 시작하세요. 다시 시작 후 탭은 복원됩니다.</translation>
 <translation id="761356813943268536">Chromium이 카메라와 마이크를 사용 중입니다.</translation>

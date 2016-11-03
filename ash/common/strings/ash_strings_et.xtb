@@ -22,6 +22,7 @@
 <translation id="1484102317210609525"><ph name="DEVICE_NAME" /> (HDMI/DP)</translation>
 <translation id="1510238584712386396">Käivitaja</translation>
 <translation id="1525508553941733066">LOOBU</translation>
+<translation id="153454903766751181">Mobiilimodemi lähtestamine ...</translation>
 <translation id="15373452373711364">Suur hiirekursor</translation>
 <translation id="1550523713251050646">Klõpsake lisavalikute nägemiseks</translation>
 <translation id="1602076796624386989">Luba mobiilne andmeside</translation>
@@ -32,6 +33,7 @@
 <translation id="1747827819627189109">Ekraanil kuvatav klaviatuur on lubatud</translation>
 <translation id="1812696562331527143">Teie sisestusmeetod on nüüd <ph name="INPUT_METHOD_ID" />*(<ph name="BEGIN_LINK" />kolmas osapool<ph name="END_LINK" />).
 Selle muutmiseks vajutage klahve Tõstuklahv + Alt.</translation>
+<translation id="1850504506766569011">WiFi on välja lülitatud.</translation>
 <translation id="1864454756846565995">C-tüüpi USB-seade (tagumine port)</translation>
 <translation id="1882897271359938046">Peegeldamine asukohta <ph name="DISPLAY_NAME" /></translation>
 <translation id="1919743966458266018">Tegumihalduri avamise otseteed on muudetud. Kasutage vana otsetee <ph name="OLD_SHORTCUT" /> asemel uut otseteed <ph name="NEW_SHORTCUT" />.</translation>
@@ -47,6 +49,7 @@ Selle muutmiseks vajutage klahve Tõstuklahv + Alt.</translation>
 <translation id="2268813581635650749">Logi kõik kasutajad välja</translation>
 <translation id="2297568595583585744">Olekusalv</translation>
 <translation id="2303600792989757991">Akna ülevaate sisse- ja väljalülitamine</translation>
+<translation id="2354174487190027830">Võrgu <ph name="NAME" /> aktiveerimine</translation>
 <translation id="2391579633712104609">180°</translation>
 <translation id="2429753432712299108">Bluetoothi seade „<ph name="DEVICE_NAME" />” küsib luba sidumiseks. Enne nõustumist veenduge, et selles seadmes oleks kuvatud see parool: <ph name="PASSKEY" /></translation>
 <translation id="2475982808118771221">Tekkis viga</translation>
@@ -59,6 +62,7 @@ Selle muutmiseks vajutage klahve Tõstuklahv + Alt.</translation>
 <translation id="2700058918926273959">Seansi lõpuni on jäänud <ph name="SESSION_TIME_REMAINING" />. Teid logitakse välja.</translation>
 <translation id="2727977024730340865">Ühendatud väikese energiakuluga laadijaga. Aku laadimine võib olla ebastabiilne.</translation>
 <translation id="2761704814324807722">Olekusalv, kellaaeg <ph name="TIME" />, <ph name="BATTERY" /></translation>
+<translation id="277257480934873581">Võrguga <ph name="NAME" /> uuesti ühendamine</translation>
 <translation id="2792498699870441125">Alt + otsinguklahv</translation>
 <translation id="2819276065543622893">Teid logitakse nüüd välja.</translation>
 <translation id="2825619548187458965">Riiul</translation>
@@ -105,21 +109,27 @@ Tühistamiseks vajutage otsinguklahvi või tõstuklahvi</translation>
 <translation id="3783640748446814672">alt</translation>
 <translation id="3784455785234192852">Lukusta</translation>
 <translation id="3799026279081545374">Teil võib olla halb laadija. Kui elate Ameerika Ühendriikides, helistage abi saamiseks ja laadija asendamiseks numbril 866-628-1371. Kui elate Ühendkuningriigis, helistage numbril 0800-026-0613. Kui elate Iirimaal, helistage numbril 1-800-832-664. Kui elate Kanadas, helistage numbril 866-628-1372. Kui elate Austraalias, helistage numbril 1-800-067-460.täis</translation>
+<translation id="3846575436967432996">Võrguteave ei ole saadaval</translation>
 <translation id="3866182280516392520">IPv6 aadress</translation>
 <translation id="3891340733213178823">Väljalogimiseks vajutage kaks korda klahvikombinatsiooni Ctrl + tõstuklahv + Q.</translation>
 <translation id="3892641579809465218">Sisemine kuva</translation>
 <translation id="3893630138897523026">ChromeVox (kõnena esitatud tagasiside)</translation>
 <translation id="3899995891769452915">Häälsisend</translation>
+<translation id="3901991538546252627">Võrguga <ph name="NAME" /> ühenduse loomine</translation>
 <translation id="3963445509666917109">Kõlar (sisemine)</translation>
 <translation id="3967919079500697218">Teie administraator on ekraanipiltide tegemise keelanud.</translation>
 <translation id="397105322502079400">Arvutamine ...</translation>
 <translation id="3995138139523574647">C-tüüpi USB-seade (tagumine parempoolne port)</translation>
 <translation id="4053612967614057854">Keela ekraanil kuvatav klaviatuur</translation>
+<translation id="4118990158415604803">Administraator on muude võrkudega ühenduse loomise keelanud.</translation>
 <translation id="4250680216510889253">Ei</translation>
 <translation id="4279490309300973883">Peegeldamine</translation>
 <translation id="4321179778687042513">ctrl</translation>
 <translation id="4421231901400348175">Ekraani juhtimise jagamine isikuga <ph name="HELPER_NAME" /> kaugabi kaudu.</translation>
 <translation id="4430019312045809116">Helitugevus</translation>
+<translation id="4448844063988177157">WiFi võrkude otsimine ...</translation>
+<translation id="4479639480957787382">Ethernet</translation>
+<translation id="4508225577814909926"><ph name="NAME" />: ühendamine ...</translation>
 <translation id="4527045527269911712">Bluetoothi seade „<ph name="DEVICE_NAME" />” küsib luba sidumiseks.</translation>
 <translation id="453661520163887813"><ph name="TIME" /> täislaadimiseni</translation>
 <translation id="4544944664594876241">Ekraani lukustamise otseteed on muudetud. Kasutage vana otsetee <ph name="OLD_SHORTCUT" /> asemel uut otseteed <ph name="NEW_SHORTCUT" />.</translation>
@@ -172,6 +182,7 @@ Selle muutmiseks vajutage klahve Tõstuklahv + Alt.</translation>
 <translation id="6165508094623778733">Lisateave</translation>
 <translation id="6203030746557259519">Virtuaalne ekraan</translation>
 <translation id="6248847161401822652">Väljumiseks vajutage kaks korda klahvikombinatsiooni Ctrl + tõstuklahv + Q.</translation>
+<translation id="6267036997247669271"><ph name="NAME" />: aktiveerimine ...</translation>
 <translation id="6297287540776456956">Valige piirkond elektronpliiatsiga</translation>
 <translation id="6310121235600822547"><ph name="DISPLAY_NAME" /> vahetati valikule <ph name="ROTATION" /></translation>
 <translation id="6359806961507272919">SMS numbrilt <ph name="PHONE_NUMBER" /></translation>
@@ -184,6 +195,7 @@ Selle muutmiseks vajutage klahve Tõstuklahv + Alt.</translation>
 <translation id="6501401484702599040">Ekraani ülekandmine seadmesse <ph name="RECEIVER_NAME" /></translation>
 <translation id="6521655319214113338">Käsitsikirjasisend</translation>
 <translation id="6537270692134705506">Jäädvusta ekraanikuva</translation>
+<translation id="6549021752953852991">Mobiilivõrk pole saadaval</translation>
 <translation id="6550675742724504774">Valikud</translation>
 <translation id="6585808820553845416">Seansi lõpuni on jäänud <ph name="SESSION_TIME_REMAINING" />.</translation>
 <translation id="6596816719288285829">IP-aadress</translation>
@@ -192,6 +204,7 @@ Selle muutmiseks vajutage klahve Tõstuklahv + Alt.</translation>
 <translation id="6713285437468012787">Bluetoothi seade „<ph name="DEVICE_NAME" />” on nüüd seotud ja saadaval kõikidele kasutajatele. Võite sidumise tühistada jaotises Seaded.</translation>
 <translation id="6785414152754474415">Aku on <ph name="PERCENTAGE" />% täis ja seda laetakse.</translation>
 <translation id="683971173229319003">Otsing + L</translation>
+<translation id="6857811139397017780">Aktiveeri <ph name="NETWORKSERVICE" /></translation>
 <translation id="6911468394164995108">Liitu muu võrguga ...</translation>
 <translation id="6915678159055240887">Chromebox</translation>
 <translation id="6979158407327259162">Google Drive</translation>
@@ -200,6 +213,7 @@ Selle muutmiseks vajutage klahve Tõstuklahv + Alt.</translation>
 <translation id="703171847531699602">Ülekandeseadmeid pole</translation>
 <translation id="7034339000180558234">Vahelehe <ph name="TAB_NAME" /> ülekandmine seadmesse <ph name="RECEIVER_NAME" /></translation>
 <translation id="7052914147756339792">Määra taustapilt ...</translation>
+<translation id="7066646422045619941">Teie administraator on selle võrgu keelanud.</translation>
 <translation id="7097613348211027502">ChromeVox (kõnena esitatud tagasiside) on lubatud.
 Keelamiseks vajutage klahvikombinatsiooni Ctrl + Alt + Z.</translation>
 <translation id="7098389117866926363">C-tüüpi USB-seade (vasakpoolne port taga)</translation>
@@ -209,6 +223,7 @@ Keelamiseks vajutage klahvikombinatsiooni Ctrl + Alt + Z.</translation>
 <translation id="7209101170223508707">SUURTÄHELUKK on sisse lülitatud.
 Tühistamiseks vajutage klahvikombinatsiooni Alt + otsinguklahv või tõstuklahv</translation>
 <translation id="7348093485538360975">Ekraanil kuvatav klaviatuur</translation>
+<translation id="735745346212279324">VPN-i ühendus on katkestatud</translation>
 <translation id="737451040872859086">Mikrofon (sisemine)</translation>
 <translation id="742594950370306541">Kaamera on kasutusel.</translation>
 <translation id="743058460480092004">Kaamera ja mikrofon on kasutusel.</translation>
@@ -225,19 +240,24 @@ Tühistamiseks vajutage klahvikombinatsiooni Alt + otsinguklahv või tõstuklahv
 <translation id="7823564328645135659">Pärast seadete sünkroonimist asendati <ph name="FROM_LOCALE" /> keel <ph name="TO_LOCALE" /> keelega.</translation>
 <translation id="785750925697875037">Kuva mobiilikonto</translation>
 <translation id="7864539943188674973">Keela Bluetooth</translation>
+<translation id="7874779702599364982">Mobiilsidevõrkude otsimine ...</translation>
 <translation id="7893838033650689677">Lülita WiFi sisse</translation>
 <translation id="7904094684485781019">Selle konto administraator on mitmesse kontosse sisselogimise keelanud.</translation>
 <translation id="7957227661277029961">Kui seade <ph name="DEVICE_TYPE" /> on sisse lülitatud, ei pruugita seda laadida. Soovitame kasutada ametlikku laadijat.</translation>
 <translation id="7982789257301363584">Võrk</translation>
+<translation id="8000066093800657092">Võrku pole</translation>
 <translation id="8054466585765276473">Aku tööaja arvutamine.</translation>
 <translation id="8077816382010018681">Siia läheb funktsiooni QU märguande pealkiri</translation>
 <translation id="8103386449138765447">SMS-id: <ph name="MESSAGE_COUNT" /></translation>
+<translation id="8132793192354020517">Ühendus <ph name="NAME" />iga</translation>
 <translation id="8185286464235484130">Andke teada, kuidas meil läheb, vastates mõnele küsimusele.</translation>
 <translation id="8190698733819146287">Keelte ja sisendi kohandamine...</translation>
 <translation id="8206859287963243715">Mobiil</translation>
 <translation id="8308637677604853869">Eelmine menüü</translation>
 <translation id="8356164830168736643">Sule <ph name="WINDOW_TITLE" /></translation>
 <translation id="8428213095426709021">Seaded</translation>
+<translation id="8454013096329229812">WiFi on sisse lülitatud.</translation>
+<translation id="8484916590211895857"><ph name="NAME" />: uuesti ühendamine …</translation>
 <translation id="8517041960877371778">Kui seade <ph name="DEVICE_TYPE" /> on sisse lülitatud, ei pruugita seda laadida.</translation>
 <translation id="8528322925433439945">Mobiil ...</translation>
 <translation id="8639760480004882931"><ph name="PERCENTAGE" /> on jäänud</translation>

@@ -59,7 +59,6 @@
 <translation id="2588322182880276190">Chrome లోగో</translation>
 <translation id="2664962310688259219">Chrome OS ఓపెన్ సోర్స్ లైసెన్స్‌లు</translation>
 <translation id="2665296953892887393">Googleకు వినియోగ గణాంకాలు మరియు <ph name="UMA_LINK" />ను పంపడం ద్వారా Google Chromeను మెరుగుపరచడంలో సహాయపడండి</translation>
-<translation id="2669824781555328029"><ph name="FILE_NAME" /> మీ బ్రౌజింగ్ అనుభవానికి హాని కలిగించవచ్చు, అందువలన Chrome దీన్ని బ్లాక్ చేసింది.</translation>
 <translation id="2681064822612051220">సిస్టమ్‌లో Google Chrome యొక్క సంఘర్షించే వ్యవస్థాపన కనుగొనబడింది. దయచేసి దీన్ని అన్‌ఇన్‌స్టాల్ చేసి, మళ్ళీ ప్రయత్నించండి.</translation>
 <translation id="2689103672227170538">ఈ పొడిగింపు మీరు Chromeని ప్రారంభించినప్పుడు చూపబడే పేజీని మార్చింది.</translation>
 <translation id="2704356438731803243">మీరు ప్రస్తుతం ఉన్న మీ Chrome డేటాను విడిగా ఉంచడానికి ప్రాధాన్యత ఇస్తే, మీరు <ph name="USER_NAME" /> కోసం క్రొత్త Chrome వినియోగదారును సృష్టించవచ్చు.</translation>
@@ -147,6 +146,7 @@
 <translation id="5148419164691878332">Chrome దీన్ని మీ <ph name="SAVED_PASSWORDS_LINK" />లో నిల్వ చేస్తుంది మరియు మీకు అవసరమయ్యే తదుపరి సారి దీన్ని గుర్తు పెట్టుకుంటుంది.</translation>
 <translation id="5170938038195470297">మీ ప్రొఫైల్ ఉపయోగించబడదు ఎందుకంటే ఇది ఒక క్రొత్త Google Chrome సంస్కరణ నుండి తీసుకోబడింది. కొన్ని లక్షణాలు అందుబాటులో ఉండకపోవచ్చు. దయచేసి వేరొక ప్రొఫైల్ డైరెక్టరీని పేర్కొనండి లేదా Chrome యొక్క క్రొత్త సంస్కరణను ఉపయోగించండి.</translation>
 <translation id="5176234269072261959">ప్రస్తుత సెట్టింగ్‌లను నివేదించడం ద్వారా Chromeను మెరుగుపరచడంలో సహాయపడండి.</translation>
+<translation id="5193136243808726294">Google Chrome OS ఈ పేజీని తెరవలేదు.</translation>
 <translation id="5204098752394657250">Google Chrome <ph name="TERMS_OF_SERVICE_LINK" />సేవా నిబంధనలు<ph name="END_TERMS_OF_SERVICE_LINK" /></translation>
 <translation id="5243785881901838525">Google చెల్లింపులు (Chromeకి కాపీ చేయబడింది)</translation>
 <translation id="5251420635869119124">అతిథులు ఎటువంటి చరిత్రను వదలకుండానే Chromeను ఉపయోగించవచ్చు.</translation>
@@ -205,7 +205,6 @@
 <translation id="699076943483372849">ఈ సైట్ ఉపయోగిస్తున్న విరమిత Chrome ఫ్రేమ్‌ ప్లగిన్ భద్రత మరియు స్థిరత్వ నవీకరణలను స్వీకరించదు. దయచేసి దీన్ని అన్‌ఇన్‌స్టాల్ చేసి, ఆధునిక బ్రౌజర్‌కి అప్‌గ్రేడ్ చేయండి.</translation>
 <translation id="6991142834212251086">నా Chrome డేటాను ఈ ఖాతాకు లింక్ చేయి</translation>
 <translation id="7060865993964054389">Google Chrome అనువర్తన లాంచర్</translation>
-<translation id="7084448929020576097"><ph name="FILE_NAME" /> హానికరమైనది మరియు Chrome దీన్ని బ్లాక్ చేసింది.</translation>
 <translation id="7098166902387133879">Google Chrome మీ మైక్రోఫోన్‌ని ఉపయోగిస్తోంది.</translation>
 <translation id="7106741999175697885">విధి నిర్వాహకుడు - Google Chrome</translation>
 <translation id="7125719106133729027">Chrome దానికదే తాజా సంస్కరణకు నవీకరించబడదు, కనుక మీరు అద్భుతమైన కొత్త లక్షణాలను మరియు భద్రతా పరిష్కారాలను కోల్పోతున్నారు. మీరు Chromeను మాన్యువల్‌గా మళ్లీ ఇన్‌స్టాల్ చేయాలి.</translation>
@@ -268,7 +267,6 @@
 <translation id="8669527147644353129">Google Chrome సహాయకారుడు</translation>
 <translation id="8679801911857917785">ఇది మీరు Chromeని ప్రారంభించేటప్పుడు చూపబడే పేజీని కూడా నియంత్రిస్తుంది.</translation>
 <translation id="870251953148363156">&amp;Google Chromeను నవీకరించు</translation>
-<translation id="8793772303278047003">Chrome కాలం చెల్లినది.</translation>
 <translation id="8796108026289707191">మీరు ఇప్పుడు Google Chromeని పునఃప్రారంభించాలి.</translation>
 <translation id="8823341990149967727">Chrome కాలం చెల్లినది</translation>
 <translation id="884296878221830158">ఇది మీరు Chromeని ప్రారంభించేటప్పుడు లేదా హోమ్ బటన్‌ను క్లిక్ చేసేటప్పుడు చూపబడే పేజీని కూడా నియంత్రిస్తుంది.</translation>
@@ -277,7 +275,6 @@
 <translation id="8914504000324227558">Chromeను పునఃప్రారంభించు</translation>
 <translation id="9026991721384951619">మీ ఖాతా సైన్-ఇన్ వివరాల గడువు ముగిసినందున Chrome OS మీ డేటాను సమకాలీకరించలేకపోయింది.</translation>
 <translation id="9067395829937117663">Google Chromeకి Windows 7 లేదా అంతకంటే ఆధునికమైనది ఉండటం ఆవశ్యకం.</translation>
-<translation id="9102715433345326100">ఈ ఫైల్ హానికరమైనది మరియు Chrome దీన్ని బ్లాక్ చేసింది.</translation>
 <translation id="9107728822479888688"><ph name="BEGIN_BOLD" />హెచ్చరిక:<ph name="END_BOLD" /> Google Chrome మీ బ్రౌజింగ్ చరిత్రను రికార్డ్ చేయకుండా పొడిగింపుని నిరోధించలేదు. ఈ పొడిగింపుని అజ్ఞాత మోడ్‌లో ఆపివేయడానికి, ఈ ఎంపికను రద్దు చేయండి.</translation>
 <translation id="911206726377975832">మీ బ్రౌజింగ్ డేటాని కూడా తొలగించాలా?</translation>
 <translation id="924447568950697217">Chromeని మీ డిఫాల్ట్ బ్రౌజర్‌గా చేయండి</translation>

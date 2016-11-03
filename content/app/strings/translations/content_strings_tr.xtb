@@ -40,6 +40,7 @@
 <translation id="2507943997699731163">Lütfen bu alanı doldurun.</translation>
 <translation id="2508569020611168319">sekme listesi</translation>
 <translation id="2548326553472216322">Yeni arama yok</translation>
+<translation id="2561842179657104141">diğer medya kontrollerini göster</translation>
 <translation id="2572483411312390101">oynat</translation>
 <translation id="2613802280814924224">Lütfen geçerli bir değer girin. En yakın geçerli değer şudur: <ph name="VALID_VALUE" /></translation>
 <translation id="2653659639078652383">Gönder</translation>
@@ -113,8 +114,8 @@
 <translation id="561939826962581046">time</translation>
 <translation id="5641012560118721995">oynatmayı duraklat</translation>
 <translation id="5643186887447432888">düğme</translation>
+<translation id="5677946354068040947">diğer seçenekler</translation>
 <translation id="57838592816432529">Sesi kapat</translation>
-<translation id="583281660410589416">Bilinmiyor</translation>
 <translation id="5843503607508392247">Diğer...</translation>
 <translation id="5860033963881614850">Kapalı</translation>
 <translation id="588258955323874662">Tam ekran</translation>
@@ -147,6 +148,7 @@
 <translation id="6853785296079745596">alt yazıları gizle</translation>
 <translation id="6885760532393684712">dizin</translation>
 <translation id="6934078000481955284">blok alıntı</translation>
+<translation id="6941933287844615239">medyayı indir</translation>
 <translation id="7057186640035488495">filmin süresi</translation>
 <translation id="709897737746224366">Lütfen istenen biçimi eşleştirin.</translation>
 <translation id="7223624360433298498">geçen süre</translation>

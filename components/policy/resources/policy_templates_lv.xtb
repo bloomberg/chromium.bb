@@ -19,6 +19,9 @@
       Ja šai politikai ir iestatīta vērtība “Nepatiesa” vai nav iestatīta nekāda vērtība, identitātes nodrošinātāja iestatītie sīkfaili tiek pārsūtīti uz lietotāja profilu tikai pirmajā reizē, kad lietotājs piesakās kādā ierīcē.
 
       Šī politika attiecas tikai uz tiem lietotājiem, kuru domēns ir tāds pats kā ierīces reģistrācijas domēns. Visiem citiem lietotājiem identitātes nodrošinātāja iestatītie sīkfaili tiek pārsūtīti uz lietotāja profilu tikai pirmajā reizē, kad lietotājs piesakās kādā ierīcē.</translation>
+<translation id="1029536946382325801">Ja ir iestatīta vērtība “true”, lietotājs var izmantot aparatūru Chrome ierīcēs, lai attālināti apstiprinātu tās identitāti konfidencialitātes sertificēšanas CA, izmantojot uzņēmumu platformu atslēgu (Enterprise Platform Keys) API chrome.enterprise.platformKeys.challengeUserKey().
+
+          Ja ir iestatīta vērtība “false” vai ja politika nav iestatīta, API izsaukumi neizdosies un tiks rādīts kļūdas kods.</translation>
 <translation id="1040446814317236570">Iespējot PAC URL noņemšanu (protokolam https://)</translation>
 <translation id="1044878202534415707">Tiek ziņota aparatūras statistika, piemēram, centrālā procesora/RAM lietojums.
 
@@ -349,13 +352,6 @@
 <translation id="2337466621458842053">Ļauj iestatīt URL rakstu sarakstu, kurā ir norādītas vietnes, kurām ir atļauts attēlot attēlus.
 
           Ja šī politika nav iestatīta, visām vietnēm tiks izmantota globālā noklusējuma vērtība no politikas DefaultImagesSetting (ja tā ir iestatīta) vai pretējā gadījumā no lietotāja personīgās konfigurācijas.</translation>
-<translation id="2359612025446382967">Ja šai politikai ir iestatīta vērtība “Nepatiesa”, <ph name="PRODUCT_OS_NAME" /> atspējos Bluetooth un lietotājs nevarēs to iespējot.
-
-      Ja šai politikai ir iestatīta vērtība “Patiesa” vai tā nav iestatīta, lietotājs varēs pēc izvēles iespējot vai atspējot Bluetooth.
-
-      Ja šī politika ir iestatīta, lietotājs to nevar mainīt vai ignorēt.
-
-      Pēc Bluetooth iespējošanas ierīce ir atkārtoti jāpalaiž, lai izmaiņas stātos spēkā (atspējojot Bluetooth, ierīce nav atkārtoti jāpalaiž).</translation>
 <translation id="2366415278352956652">Iespējo apraidi</translation>
 <translation id="2372547058085956601">Aizkave līdz automātiskajai piekļuvei publiskajai sesijai.
 
@@ -988,6 +984,9 @@ Ja šis iestatījums ir atspējots vai tam nav iestatīta vērtība, drošā mek
 
       Ja politikai ir iestatīta vērtība “Patiesa”, pārraudzības tīkla paketes (tā saucamie <ph name="HEARTBEATS_TERM" />) tiek sūtītas.
       Ja ir iestatīta vērtība “Nepatiesa” vai nav iestatīta nekāda vērtība, tīkla paketes netiek sūtītas.</translation>
+<translation id="3963602271515417124">Ja politika ir iestatīta uz “true”, ierīcei ir atļauta attālā apstiprināšana un tiks automātiski izveidots sertifikāts, kas tiks augšupielādēts ierīču pārvaldības serverī.
+
+          Ja ir iestatīta vērtība “false” vai ja politika nav iestatīta, netiks izveidots sertifikāts un neizdosies zvani uz paplašinājuma enterprise.platformKeys saskarni API.</translation>
 <translation id="3964909636571393861">Ļauj piekļūt vietrāžu URL sarakstam</translation>
 <translation id="3965339130942650562">Noildze, līdz dīkstāves lietotāja atteikšanās tiek izpildīta</translation>
 <translation id="3967075520570946456">Sveiciena lapas rādīšanas iespējošana pirmajā pārlūka palaišanas reizē pēc operētājsistēmas jaunināšanas</translation>
@@ -1555,12 +1554,6 @@ Ja šī politika nav iestatīta, jebkurš spraudnis, kas atbilst politikā Disab
 
       Ja šī politika nav iestatīta vai tai ir iestatīta vērtība Nepatiesa, pārlūks <ph name="PRODUCT_NAME" /> neveic atsaukšanas pārbaudes tiešsaistē pārlūkā <ph name="PRODUCT_NAME" /> 19 vai jaunākā versijā.</translation>
 <translation id="5966615072639944554">Paplašinājumi, kuriem atļauts izmantot attālinātās apstiprināšanas API.</translation>
-<translation id="5974970919245996815">Ziņojumu informācija par Android statusu tiek sūtīta atpakaļ uz serveri.
-
-Ja politikai ir iestatīta vērtība “Nepatiesa”, informācija netiek sūtīta.
-Ja ir iestatīta vērtība “Patiesa” vai nav iestatīta nekāda vērtība, informācija netiek sūtīta.
-
-Šī politika ir spēkā tikai tad, ja ir iespējotas Android lietotnes.</translation>
 <translation id="5983708779415553259">Noklusējuma darbība vietnēm, kas nav iekļautas nevienā satura pakotnē</translation>
 <translation id="5997543603646547632">Pēc noklusējuma izmantot 24 stundu pulksteni</translation>
 <translation id="6009903244351574348">Ļauj sarakstā iekļauto satura veidu apstrādi veikt produktam <ph name="PRODUCT_FRAME_NAME" />.
@@ -2253,6 +2246,9 @@ Ja šī politika nav iestatīta, lietotājs var atspējot jebkuru sistēmā inst
           Active Directory domēnam.</translation>
 <translation id="7937766917976512374">Video tveršanas ļaušana vai noraidīšana</translation>
 <translation id="7941975817681987555">Neprognozēt tīkla darbības nevienā tīkla savienojumā</translation>
+<translation id="7942429005743031780">Šajā politikā ir norādīti paplašinājumi, kuros atļauts attālinātajai apstiprināšanai izmantot uzņēmumu platformu atslēgu (Enterprise Platform Keys) API chrome.enterprise.platformKeys.challengeUserKey(). Lai izmantotu šo API, paplašinājumiem ir jābūt pievienotiem šajā sarakstā.
+
+          Ja paplašinājums nav iekļauts sarakstā vai ja saraksts nav iestatīts, API izsaukumi neizdosies un tiks rādīts kļūdas kods.</translation>
 <translation id="7953256619080733119">Pārvaldīto lietotāju manuālo izņēmumu saimniekdatori</translation>
 <translation id="7971839631300653352">SSL 3.0</translation>
 <translation id="7974114691960514888">Šī politika vairs netiek atbalstīta.

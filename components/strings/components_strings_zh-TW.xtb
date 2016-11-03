@@ -50,6 +50,7 @@
 <translation id="1491663344921578213">目前無法造訪 <ph name="SITE" />，因為這個網站使用憑證鎖定功能。網路錯誤和攻擊行為通常是暫時性的，因此這個網頁可能稍後就會恢復正常狀態。<ph name="BEGIN_LEARN_MORE_LINK" />瞭解詳情<ph name="END_LEARN_MORE_LINK" /></translation>
 <translation id="1506687042165942984">顯示這個網頁的儲存複本 (亦即現已不再使用的版本)。</translation>
 <translation id="1519264250979466059">建立日期</translation>
+<translation id="153384715582417236">這就是目前的所有內容</translation>
 <translation id="1549470594296187301">您必須啟用 JavaScript 才能使用這項功能。</translation>
 <translation id="1559528461873125649">找不到您所指定的檔案或目錄</translation>
 <translation id="1559572115229829303">&lt;p&gt;您裝置的日期和時間 (<ph name="DATE_AND_TIME" />) 不正確，因此無法與 <ph name="BEGIN_BOLD" /><ph name="DOMAIN" /><ph name="END_BOLD" /> 建立私人連線。&lt;/p&gt;
@@ -350,7 +351,6 @@
 <translation id="4728558894243024398">平台</translation>
 <translation id="4744603770635761495">可執行檔的路徑</translation>
 <translation id="4756388243121344051">記錄(&amp;H)</translation>
-<translation id="4759238208242260848">下載</translation>
 <translation id="4764776831041365478"><ph name="URL" /> 的網頁可能暫時無法使用或被永久移至新網址。</translation>
 <translation id="4771973620359291008">發生不明的錯誤。</translation>
 <translation id="4782449893814226250">您已詢問家長是否同意您造訪這個網頁。</translation>
@@ -389,6 +389,7 @@
 <translation id="5179510805599951267">網頁內容不是<ph name="ORIGINAL_LANGUAGE" />嗎？請回報此錯誤</translation>
 <translation id="5190835502935405962">書籤列</translation>
 <translation id="5199729219167945352">實驗性功能</translation>
+<translation id="5199841536747119669">系統建議你瀏覽的內容會顯示在這裡</translation>
 <translation id="5251803541071282808">雲端</translation>
 <translation id="5277279256032773186">在工作環境使用 Chrome 嗎？企業可以管理員工的 Chrome 設定。瞭解詳情</translation>
 <translation id="5299298092464848405">解析政策時發生錯誤</translation>
@@ -468,6 +469,7 @@
 <translation id="6263376278284652872"><ph name="DOMAIN" /> 書籤</translation>
 <translation id="6264485186158353794">返回安全性瀏覽</translation>
 <translation id="6282194474023008486">郵遞區號</translation>
+<translation id="6290238015253830360">系統建議你瀏覽的文章會顯示在這裡</translation>
 <translation id="6305205051461490394">無法連上 <ph name="URL" />。</translation>
 <translation id="6321917430147971392">檢查 DNS 設定</translation>
 <translation id="6328639280570009161">建議停用網路預測功能</translation>
@@ -651,6 +653,7 @@
 <translation id="8363502534493474904">關閉飛航模式</translation>
 <translation id="8364627913115013041">未設定。</translation>
 <translation id="8380941800586852976">不安全</translation>
+<translation id="8382348898565613901">你最近造訪過的書籤會顯示在這裡</translation>
 <translation id="8412145213513410671">當機次數 (<ph name="CRASH_COUNT" />)</translation>
 <translation id="8412392972487953978">您必須輸入兩次相同的通關密語。</translation>
 <translation id="8428213095426709021">設定</translation>
@@ -700,6 +703,7 @@
 <translation id="8987927404178983737">月</translation>
 <translation id="8989148748219918422"><ph name="ORGANIZATION" /> [<ph name="COUNTRY" />]</translation>
 <translation id="9001074447101275817"><ph name="DOMAIN" /> Proxy 要求提供使用者名稱和密碼。</translation>
+<translation id="9008201768610948239">略過</translation>
 <translation id="901974403500617787">這些設定會套用至整個系統，只有以下使用者可設定：<ph name="OWNER_EMAIL" />。</translation>
 <translation id="9020542370529661692">此網頁內容已翻譯成<ph name="TARGET_LANGUAGE" /></translation>
 <translation id="9038649477754266430">使用預測查詢字串服務，讓系統更快載入網頁</translation>

@@ -21,7 +21,6 @@
 <translation id="1688750314291223739">Kişiselleştirilmiş tarayıcı özelliklerinizi Web'e kaydetmek ve herhangi bir bilgisayardan Chromium ile bu özelliklere erişmek için senkronizasyonu ayarlayın.</translation>
 <translation id="1699664235656412242">Lütfen, (Windows 8 modunda olanlar dahil) Chromium pencerelerinin tümünü kapatın ve tekrar deneyin.</translation>
 <translation id="1708666629004767631">Chromium'un kullanabileceğiniz yeni, daha güvenli bir sürümü var.</translation>
-<translation id="1725059042853530269"><ph name="FILE_NAME" />, göz atma deneyiminize olumsuz etki yapabileceği için Chromium tarafından engellendi.</translation>
 <translation id="1774152462503052664">Chromium'un arka planda çalışmasına izin ver</translation>
 <translation id="1779356040007214683">Chromium'u daha güvenli bir hale getirmek için <ph name="IDS_EXTENSION_WEB_STORE_TITLE" /> altında listelenmeyen ve bilginiz dışında eklenmiş olabilecek bazı uzantıları devre dışı bıraktık.</translation>
 <translation id="1808667845054772817">Chromium'u yeniden yükle</translation>
@@ -45,6 +44,7 @@
 <translation id="2483889755041906834">Chromium'da</translation>
 <translation id="2485422356828889247">Yüklemeyi Kaldır</translation>
 <translation id="2486653164587200256">Chromium artık Windows XP veya Windows Vista üzerinde desteklenmediği için doğru şekilde çalışmayabilir.</translation>
+<translation id="2527042973354814951"><ph name="PLUGIN_NAME" /> eklentisini etkinleştirmek için Chromium'u yeniden başlatın</translation>
 <translation id="2535480412977113886">Hesap oturum açma ayrıntılarınız güncel olmadığından Chromium OS, verilerinizi senkronize edemedi.</translation>
 <translation id="2558641060352364164">Bu site, kısa bir süre sonra artık destek verilmeyecek olan Chromium Frame eklentisini kullanıyor. Lütfen bu eklentinin yüklemesini kaldırın ve modern bir tarayıcı sürümüne geçin.</translation>
 <translation id="2572494885440352020">Chromium Yardımcısı</translation>
@@ -58,7 +58,6 @@
 <translation id="2718390899429598676">Chromium ek güvenlik için verilerinizi şifreler.</translation>
 <translation id="2770231113462710648">Varsayılan tarayıcıyı şuna dönüştür:</translation>
 <translation id="2799223571221894425">Yeniden başlat</translation>
-<translation id="2801146392936645542"><ph name="FILE_NAME" /> kötü amaçlı ve Chromium tarafından engellendi.</translation>
 <translation id="2847479871509788944">Chromium'dan kaldır...</translation>
 <translation id="2886012850691518054">İsteğe Bağlı: Kullanıcı istatistiklerini ve kilitlenme raporlarını Google'a otomatik olarak göndererek Chromium'u iyileştirmemize yardımcı olun.</translation>
 <translation id="2905536371227304018">Chromium OS bu dilde görüntüleniyor.</translation>
@@ -75,7 +74,6 @@
 <translation id="3258596308407688501">Chromium veri dizini üzerinde okuma ve yazma işlemi yapamıyor: <ph name="USER_DATA_DIRECTORY" /></translation>
 <translation id="3264279740686075150">Chromium, varsayılan tarayıcınız oldu. Teşekkürler.</translation>
 <translation id="328888136576916638">Google API anahtarları eksik. Chromium'un bazı işlevleri devre dışı bırakılacak.</translation>
-<translation id="3289635842886789612">Chromium sürümü eski.</translation>
 <translation id="3296368748942286671">Chromium kapandığında arka plan uygulamaları çalıştırmaya devam et</translation>
 <translation id="3312805357485578561">Chromium olağandışı bir davranış algıladı</translation>
 <translation id="331951419404882060">Oturum açma sırasındaki bir hata nedeniyle Chromium OS, verilerinizi senkronize edemedi.</translation>
@@ -133,6 +131,7 @@
 <translation id="5398878173008909840">Chromium'un yeni bir sürümü çıktı.</translation>
 <translation id="5427571867875391349">Chromium'u varsayılan tarayıcım olarak ayarla</translation>
 <translation id="5466153949126434691">Chromium otomatik olarak güncellenerek her zaman en yeni sürüme sahip olmanızı sağlar. Bu indirme işlemi tamamlandığında Chromium yeniden başlatılacak ve yolunuza devam edeceksiniz.</translation>
+<translation id="5479196819031988440">Chromium OS bu sayfayı açamıyor.</translation>
 <translation id="549669000822060376">Chromium en son sistem güncellemelerini yüklerken lütfen bekleyin.</translation>
 <translation id="556167189552180495">Chromium bu dilde görüntüleniyor.</translation>
 <translation id="5563479599352954471">Tek dokunmayla ara</translation>
@@ -220,7 +219,6 @@ Daha fazla talimat için lütfen e-postanızı (<ph name="ACCOUNT_EMAIL" />) kon
 <translation id="7421823331379285070">Chromium, Windows XP veya sonrasını gerektirir. Bazı özellikler çalışmayabilir.</translation>
 <translation id="7473891865547856676">Hayır, Teşekkürler</translation>
 <translation id="7483335560992089831">Şu anda çalışan aynı Chromium sürümünü yükleyemezsiniz. Lütfen Chromium'u kapatın ve yeniden deneyin.</translation>
-<translation id="750717762378961310">Bu dosya kötü amaçlı ve Chromium tarafından engellendi.</translation>
 <translation id="7549178288319965365">Chromium OS hakkında</translation>
 <translation id="7577193603922410712">Chromium için özel bir güvenlik güncellemesi uygulandı. Güncellemenin geçerli olması için cihazı şimdi yeniden başlatmalısınız (sekmeleriniz geri yüklenecektir).</translation>
 <translation id="761356813943268536">Chromium kameranızı ve mikrofonunuzu kullanıyor.</translation>

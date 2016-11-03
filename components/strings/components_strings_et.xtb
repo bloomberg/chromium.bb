@@ -50,6 +50,7 @@
 <translation id="1491663344921578213">Te ei saa saiti <ph name="SITE" /> praegu külastada, sest see kasutab sertifikaadi kinnitamist. Võrguvead ja -rünnakud on tavaliselt ajutised, nii et leht on tõenäoliselt hiljem töökorras. <ph name="BEGIN_LEARN_MORE_LINK" />Vaadake lisateavet<ph name="END_LEARN_MORE_LINK" />.</translation>
 <translation id="1506687042165942984">Lehe salvestatud (s.t teadaolevalt aegunud) koopia kuvamine.</translation>
 <translation id="1519264250979466059">Järgu kuupäev</translation>
+<translation id="153384715582417236">See on praeguseks kõik</translation>
 <translation id="1549470594296187301">Selle funktsiooni kasutamiseks peab JavaScript olema lubatud.</translation>
 <translation id="1559528461873125649">Pole sellist faili või kataloogi</translation>
 <translation id="1559572115229829303">&lt;p&gt;Domeeniga <ph name="BEGIN_BOLD" /><ph name="DOMAIN" /><ph name="END_BOLD" /> ei saa privaatset ühendust luua, kuna seadme kuupäev ja kellaaeg (<ph name="DATE_AND_TIME" />DATE_AND_TIME) on valed.&lt;/p&gt;
@@ -350,7 +351,6 @@
 <translation id="4728558894243024398">Platvorm</translation>
 <translation id="4744603770635761495">Täitmistee</translation>
 <translation id="4756388243121344051">&amp;Ajalugu</translation>
-<translation id="4759238208242260848">Allalaadimised</translation>
 <translation id="4764776831041365478">Veebileht aadressil <ph name="URL" /> võib olla ajutiselt maas või jäädavalt uuele veebiaadressile teisaldatud.</translation>
 <translation id="4771973620359291008">Tekkis tundmatu viga.</translation>
 <translation id="4782449893814226250">Küsisite oma vanemalt, kas võite seda lehte külastada.</translation>
@@ -389,6 +389,7 @@
 <translation id="5179510805599951267">Tegu ei ole <ph name="ORIGINAL_LANGUAGE" /> keelega? Andke veast teada</translation>
 <translation id="5190835502935405962">Järjehoidjariba</translation>
 <translation id="5199729219167945352">Katsed</translation>
+<translation id="5199841536747119669">Teie soovitused kuvatakse siin</translation>
 <translation id="5251803541071282808">Pilv</translation>
 <translation id="5277279256032773186">Kas kasutate Chrome'i tööl? Ettevõtted võivad hallata töötajate Chrome'i seadeid. Lisateave</translation>
 <translation id="5299298092464848405">Reegli sõelumisel ilmnes viga</translation>
@@ -468,6 +469,7 @@
 <translation id="6263376278284652872">Domeeni <ph name="DOMAIN" /> järjehoidjad</translation>
 <translation id="6264485186158353794">Tagasi turvalisusse</translation>
 <translation id="6282194474023008486">Sihtnumber</translation>
+<translation id="6290238015253830360">Teie soovitatud artiklid kuvatakse siin</translation>
 <translation id="6305205051461490394">URL-iga <ph name="URL" /> ei saa ühendust.</translation>
 <translation id="6321917430147971392">Kontrollige DNS-i seadeid</translation>
 <translation id="6328639280570009161">Proovige keelata võrguprognoos</translation>
@@ -651,6 +653,7 @@ Inkognito režiim <ph name="SHORTCUT_KEY" /> võib järgmisel korral kasulikuks 
 <translation id="8363502534493474904">Lülitage lennukirežiim välja</translation>
 <translation id="8364627913115013041">Määramata.</translation>
 <translation id="8380941800586852976">Ohtlik</translation>
+<translation id="8382348898565613901">Teie hiljuti külastatud järjehoidjad kuvatakse siin</translation>
 <translation id="8412145213513410671">Krahhid (<ph name="CRASH_COUNT" />)</translation>
 <translation id="8412392972487953978">Peate sisestama sama parooli kaks korda.</translation>
 <translation id="8428213095426709021">Seaded</translation>
@@ -700,6 +703,7 @@ Inkognito režiim <ph name="SHORTCUT_KEY" /> võib järgmisel korral kasulikuks 
 <translation id="8987927404178983737">kuu</translation>
 <translation id="8989148748219918422"><ph name="ORGANIZATION" /> [<ph name="COUNTRY" />]</translation>
 <translation id="9001074447101275817">Puhverserver <ph name="DOMAIN" /> nõuab kasutajanime ja parooli.</translation>
+<translation id="9008201768610948239">Eira</translation>
 <translation id="901974403500617787">Kogu süsteemis kehtivaid märgiseid saab määrata ainult omanik: <ph name="OWNER_EMAIL" />.</translation>
 <translation id="9020542370529661692">See leht on tõlgitud <ph name="TARGET_LANGUAGE" /> keelde</translation>
 <translation id="9038649477754266430">Kasuta lehtede kiiremaks laadimiseks ennustusteenust</translation>

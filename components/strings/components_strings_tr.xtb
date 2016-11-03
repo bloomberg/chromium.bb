@@ -50,6 +50,7 @@
 <translation id="1491663344921578213"><ph name="SITE" /> web sitesi, sertifika sabitleme yöntemini kullandığı için web sitesini şu anda ziyaret edemezsiniz. Ağ hataları ve saldırılar genellikle geçici olduğundan, bu sayfa muhtemelen daha sonra çalışacaktır. <ph name="BEGIN_LEARN_MORE_LINK" />Daha fazla bilgi edinin<ph name="END_LEARN_MORE_LINK" />.</translation>
 <translation id="1506687042165942984">Bu sayfanın kaydedilmiş (eski olduğu bilinen) bir kopyasını gösterin.</translation>
 <translation id="1519264250979466059">Oluşturma Tarihi</translation>
+<translation id="153384715582417236">Şimdilik hepsi bu</translation>
 <translation id="1549470594296187301">Bu özelliğin kullanılabilmesi için JavaScript etkinleştirilmelidir.</translation>
 <translation id="1559528461873125649">Belirtilen dosya veya dizin yok</translation>
 <translation id="1559572115229829303">&lt;p&gt;Cihazınızın tarih ve saati (<ph name="DATE_AND_TIME" />) yanlış olduğundan <ph name="BEGIN_BOLD" /><ph name="DOMAIN" /><ph name="END_BOLD" /> alan adına gizli bir bağlantı kurulamadı.&lt;/p&gt;
@@ -350,7 +351,6 @@
 <translation id="4728558894243024398">Platform</translation>
 <translation id="4744603770635761495">Çalıştırılabilir Yol</translation>
 <translation id="4756388243121344051">&amp;Geçmiş</translation>
-<translation id="4759238208242260848">İndirilenler</translation>
 <translation id="4764776831041365478"><ph name="URL" /> adresindeki web sayfası, geçici olarak kullanılamıyor veya kalıcı olarak yeni bir web adresine taşınmış olabilir.</translation>
 <translation id="4771973620359291008">Bilinmeyen bir hata oluştu.</translation>
 <translation id="4782449893814226250">Ebeveynlerinize, bu sayfayı ziyaret etmenizin uygun olup olmadığını sordunuz.</translation>
@@ -389,6 +389,7 @@
 <translation id="5179510805599951267"><ph name="ORIGINAL_LANGUAGE" /> dilinde değil mi? Bu hatayı bildirin</translation>
 <translation id="5190835502935405962">Yer İşareti Çubuğu</translation>
 <translation id="5199729219167945352">Deneyler</translation>
+<translation id="5199841536747119669">Önerileriniz burada görünür</translation>
 <translation id="5251803541071282808">Bulut</translation>
 <translation id="5277279256032773186">Chrome'u işte mi kullanıyorsunuz? İşletmeler, çalışanları için Chrome ayarlarını yönetebilir. Daha fazla bilgi edinin</translation>
 <translation id="5299298092464848405">Politika ayrıştırma hatası</translation>
@@ -468,6 +469,7 @@
 <translation id="6263376278284652872"><ph name="DOMAIN" /> yer işaretleri</translation>
 <translation id="6264485186158353794">Güvenliğe geri dön</translation>
 <translation id="6282194474023008486">Posta kodu</translation>
+<translation id="6290238015253830360">Önerdiğiniz makaleler burada görünür</translation>
 <translation id="6305205051461490394"><ph name="URL" /> adresine ulaşılamıyor.</translation>
 <translation id="6321917430147971392">DNS ayarlarınızı kontrol edin</translation>
 <translation id="6328639280570009161">Ağ tahmin özelliğini devre dışı bırakmayı deneyin</translation>
@@ -651,6 +653,7 @@ Hatırlatma! Bir dahaki sefere Gizli mod <ph name="SHORTCUT_KEY" /> kullanışl�
 <translation id="8363502534493474904">Uçak modunu kapatma</translation>
 <translation id="8364627913115013041">Henüz ayarlanmadı.</translation>
 <translation id="8380941800586852976">Tehlikeli</translation>
+<translation id="8382348898565613901">Son ziyaret ettiğiniz yer işaretleri burada görünür</translation>
 <translation id="8412145213513410671">Kilitlenme Sayısı (<ph name="CRASH_COUNT" />)</translation>
 <translation id="8412392972487953978">Aynı parolayı iki kez girmelisiniz.</translation>
 <translation id="8428213095426709021">Ayarlar</translation>
@@ -700,6 +703,7 @@ Hatırlatma! Bir dahaki sefere Gizli mod <ph name="SHORTCUT_KEY" /> kullanışl�
 <translation id="8987927404178983737">Ay</translation>
 <translation id="8989148748219918422"><ph name="ORGANIZATION" /> [<ph name="COUNTRY" />]</translation>
 <translation id="9001074447101275817"><ph name="DOMAIN" /> proxy'si için kullanıcı adı ve şifre gerekiyor.</translation>
+<translation id="9008201768610948239">Yoksay</translation>
 <translation id="901974403500617787">Tüm sistem için geçerli olan işaretler sadece sahibi <ph name="OWNER_EMAIL" /> tarafından ayarlanabilir.</translation>
 <translation id="9020542370529661692">Bu sayfa <ph name="TARGET_LANGUAGE" /> diline çevrildi</translation>
 <translation id="9038649477754266430">Sayfaları daha hızlı yüklemek için bir tahmin hizmeti kullan</translation>

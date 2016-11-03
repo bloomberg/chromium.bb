@@ -1,41 +1,20 @@
 <?xml version="1.0" ?>
 <!DOCTYPE translationbundle>
 <translationbundle lang="sr">
-<translation id="153454903766751181">Покретање модема за мобилну мрежу...</translation>
 <translation id="1829129547161959350">Пингвин</translation>
-<translation id="1850504506766569011">Wi-Fi је искључен.</translation>
 <translation id="2288278176040912387">Грамофон</translation>
-<translation id="2354174487190027830">Активирање мреже <ph name="NAME" /></translation>
 <translation id="2563185590376525700">Жаба</translation>
 <translation id="2649120831653069427">Риба</translation>
-<translation id="277257480934873581">Поново се повезујете са мрежом <ph name="NAME" /></translation>
 <translation id="2894654529758326923">Информације</translation>
 <translation id="2951236788251446349">Медуза</translation>
-<translation id="3846575436967432996">Нису доступне информације о мрежи</translation>
-<translation id="3901991538546252627">Повезивање са мрежом <ph name="NAME" /></translation>
 <translation id="3958548648197196644">Киви</translation>
-<translation id="4118990158415604803">Администратор је онемогућио повезивање са другим мрежама.</translation>
 <translation id="4326192123064055915">Кафа</translation>
-<translation id="4448844063988177157">Тражење Wi-Fi мрежа...</translation>
-<translation id="4479639480957787382">Етернет</translation>
-<translation id="4508225577814909926"><ph name="NAME" />: Повезује се...</translation>
 <translation id="4559767610552730302">Бокех</translation>
 <translation id="4935975195727477204">Цвет газаније</translation>
 <translation id="515594325917491223">Шах</translation>
 <translation id="5257456363153333584">Вилин коњиц</translation>
-<translation id="6267036997247669271"><ph name="NAME" />: Активирање...</translation>
-<translation id="6549021752953852991">Није доступна ниједна мобилна мрежа</translation>
-<translation id="6857811139397017780">Активирај <ph name="NETWORKSERVICE" /></translation>
 <translation id="6935521024859866267">Наопачке</translation>
-<translation id="7066646422045619941">Ову мрежу је онемогућио администратор.</translation>
-<translation id="735745346212279324">Веза са VPN-ом је прекинута</translation>
-<translation id="7874779702599364982">Претраживање мобилних мрежа...</translation>
-<translation id="8000066093800657092">Нема мреже</translation>
 <translation id="8008366997883261463">Пас</translation>
-<translation id="8132793192354020517">Успостављена је веза са <ph name="NAME" /></translation>
-<translation id="8454013096329229812">Wi-Fi је укључен.</translation>
-<translation id="8484916590211895857"><ph name="NAME" />: Поново се повезујете...</translation>
 <translation id="8714406895390098252">Бицикл</translation>
 <translation id="8808686172382650546">Мачка</translation>
-<translation id="8814190375133053267">Wi-Fi</translation>
 </translationbundle>

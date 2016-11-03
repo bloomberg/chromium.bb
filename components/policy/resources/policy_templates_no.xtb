@@ -19,6 +19,9 @@
       Når denne regelen settes til false (usann) eller ikke spesifiseres, overføres informasjonskapsler som er angitt av IdP-en, til brukerens profil bare første gang vedkommende logger på en enhet.
 
       Denne regelen berører bare brukere med domener som samsvarer med enhetens registreringsdomene. For alle andre brukere overføres informasjonskapslene som angis av IdP-en, til brukerens profil bare første gang vedkommende logger på enheten.</translation>
+<translation id="1029536946382325801">Hvis denne verdien er angitt som «true» (sann), kan brukeren bruke maskinvaren i Chrome-enheter til å attestere identiteten eksternt til sertifiseringsinstansen for personvern via chrome.enterprise.platformKeys.challengeUserKey() i Enterprise Platform Keys API.
+
+          Hvis den er angitt som «false» (usann), eller ikke noe er angitt, returneres kall til API-en med en feilkode.</translation>
 <translation id="1040446814317236570">Slå på PAC-nettadressestripping (for https://)</translation>
 <translation id="1044878202534415707">Rapportér maskinvarestatistikk, for eksempel bruk av prosessor og minne.
 
@@ -296,7 +299,7 @@
       Hvis HardwareAccelerationModeEnabled settes til false (usann), ignoreres Disable3DAPIs, og det gir samme effekt som å sette Disable3DAPIs til true (sann).</translation>
 <translation id="2168397434410358693">Inaktivitetsforsinkelse når enheten kjører på vekselstrøm</translation>
 <translation id="2170233653554726857">Slå på WPAD-optimalisering</translation>
-<translation id="2178899310296064282">Fremtving bruk av minst Moderat begrenset innhold-modus på YouTube</translation>
+<translation id="2178899310296064282">Fremtving bruk av minst moderat nivå for Begrenset innhold-modus på YouTube</translation>
 <translation id="2188979373208322108">Aktiverer bokmerkeraden i <ph name="PRODUCT_NAME" />.
 
       Hvis du aktiverer denne innstillingen, viser <ph name="PRODUCT_NAME" /> en bokmerkerad.
@@ -337,13 +340,6 @@
 <translation id="2309390639296060546">Standardinnstilling for geoposisjonering</translation>
 <translation id="2312134445771258233">Lar deg konfigurere sidene som lastes inn ved oppstart. Innholdet i listen «Nettadresser som skal åpnes ved oppstart» ignoreres, med mindre du velger «Åpne en liste over nettadresser» i «Handling ved oppstart».</translation>
 <translation id="2337466621458842053">Gjør at du kan angi en liste over nettadressemønstre for nettsteder som kan vise bilder. Hvis denne retningslinjen ikke angis, blir den globale standardverdien brukt for alle nettsteder, enten fra retningslinjen DefaultImagesSetting hvis den er angitt, eller fra brukerens egen konfigurasjon hvis nevnte retningslinje ikke er angitt.</translation>
-<translation id="2359612025446382967">Hvis denne regelen settes til false (usann), slår <ph name="PRODUCT_OS_NAME" /> av Bluetooth. Brukerne kan ikke slå på Bluetooth igjen.
-
-      Hvis denne regelen settes til true (sann) eller ikke spesifiseres, kan brukerne slå av eller på Bluetooth etter behov.
-
-      Hvis denne regelen spesifiseres, kan ikke brukerne endre eller overstyre den.
-
-      Når Bluetooth er slått på, må enheten startes på nytt for at endringene skal tre i kraft. (Det er ikke nødvendig å starte enheten på nytt når Bluetooth slås av.)</translation>
 <translation id="2366415278352956652">Slår på cast</translation>
 <translation id="2372547058085956601">Tid før automatisk pålogging til offentlig økt.
 
@@ -781,14 +777,14 @@
 <translation id="3418871497193485241">Fremtvinger bruk av et minimumsnivå for Begrenset innhold-modusen på YouTube og hindrer brukerne
       i å velge en mindre begrenset modus.
 
-      Hvis denne innstillingen er angitt som Streng, er Begrenset innhold-modusen på YouTube alltid
-      aktiv.
+      Hvis denne innstillingen er angitt som Streng (Strict), er
+      Begrenset innhold-modusen på YouTube alltid aktiv.
 
-      Hvis denne innstillingen er angitt som Moderat, kan brukerne bare velge mellom
-      Moderat begrenset innhold-modus og Streng begrenset innhold-modus på YouTube, men
+      Hvis denne innstillingen er angitt som Moderat (Moderate), kan brukerne
+      velge mellom moderat eller strengt nivå for begrenset innhold-modus, men
       de kan ikke slå av Begrenset innhold-modusen.
 
-      Hvis denne innstillingen er angitt som av, eller hvis ingen verdi er angitt, fremtvinger ikke <ph name="PRODUCT_NAME" /> bruk av Begrenset innhold-modusen. Eksterne regler, for eksempel YouTube-regler, kan imidlertid fortsatt fremtvinge bruk av Begrenset innhold-modusen.</translation>
+      Hvis denne innstillingen er angitt som av (Off), eller hvis ingen verdi er angitt, fremtvinger ikke <ph name="PRODUCT_NAME" /> bruk av Begrenset innhold-modusen. Eksterne regler, for eksempel YouTube-regler, kan imidlertid fortsatt fremtvinge bruk av Begrenset innhold-modusen.</translation>
 <translation id="3428247105888806363">Slå på nettverksforutsigelse</translation>
 <translation id="3449886121729668969">Konfigurerer innstillingene for proxy-tjenere for <ph name="PRODUCT_NAME" />. Disse er også tilgjengelige for ARC-apper.
 
@@ -905,8 +901,9 @@
 <translation id="3851039766298741586">Rapportér informasjon om den aktive kioskøkten, for eksempel
       app-ID og -versjon.
 
-      Hvis regelen settes til false (usann), rapporteres ikke informasjonen om kioskøkten.
-      Hvis den settes til true (sann) eller ikke angis, rapporteres informasjonen om kioskøkten.</translation>
+      Hvis regelen settes til false (usann), rapporteres ikke
+      informasjonen om kioskøkten. Hvis den settes til true (sann)
+      eller ikke angis, rapporteres informasjonen om kioskøkten.</translation>
 <translation id="3859780406608282662">Legg til en parameter i hentingen av Variasjoner-utgangsverdien i <ph name="PRODUCT_OS_NAME" />.
 
       Hvis dette er angitt, legges en søkeordsparameter kalt «restrict» til i nettadressen som blir brukt til Variasjoner-utgangsverdien. Verdien for parameteren er den samme som er angitt i denne regelen.
@@ -921,11 +918,11 @@
 
           Denne regelen gjelder bare hvis regelen DefaultSearchProviderEnabledpolicy er slått på.</translation>
 <translation id="3864818549971490907">Standardinnstilling for programtillegg</translation>
-<translation id="386487026071140458">Denne regelen er avviklet. Bruk <ph name="FORCEGOOGLESAFESEARCH_POLICY_NAME" /> og <ph name="FORCEYOUTUBERESTRICT_POLICY_NAME" /> i stedet. Denne regelen ignoreres hvis <ph name="FORCEGOOGLESAFESEARCH_POLICY_NAME" />-, <ph name="FORCEYOUTUBERESTRICT_POLICY_NAME" />- eller (den avviklede) <ph name="FORCEYOUTUBESAFETYMODE_POLICY_NAME" />-regelen er angitt.
+<translation id="386487026071140458">Denne regelen er avviklet. Bruk <ph name="FORCEGOOGLESAFESEARCH_POLICY_NAME" /> og <ph name="FORCEYOUTUBERESTRICT_POLICY_NAME" /> i stedet. Denne regelen ignoreres hvis regelen <ph name="FORCEGOOGLESAFESEARCH_POLICY_NAME" />, <ph name="FORCEYOUTUBERESTRICT_POLICY_NAME" /> eller <ph name="FORCEYOUTUBESAFETYMODE_POLICY_NAME" /> (som er avviklet) er angitt.
 
-      Fremtvinger at søk i Google Nettsøk gjøres med Sikkert Søk aktivert, og hindrer brukere i å endre denne innstillingen. Denne innstillingen fremtvinger også bruk av Moderat begrenset innhold-modus på YouTube.
+      Fremtvinger at søk i Google Nettsøk gjøres med Sikkert Søk aktivert, og hindrer brukere i å endre denne innstillingen. Denne innstillingen fremtvinger også bruk av moderat nivå for Begrenset innhold-modus på YouTube.
 
-      Hvis du slår på denne innstillingen, er alltid Sikkert Søk i Google Søk og Moderat begrenset innhold-modus på YouTube aktivert.
+      Hvis du slår på denne innstillingen, er alltid Sikkert Søk i Google Søk og moderat nivå for Begrenset innhold-modus på YouTube aktivert.
 
       Hvis du slår av denne innstillingen eller ikke angir noen verdi, blir verken Sikkert Søk i Google Søk eller Begrenset innhold-modus på YouTube tvunget brukt.</translation>
 <translation id="3866249974567520381">Beskrivelse</translation>
@@ -961,6 +958,9 @@
       Hvis denne regelen er satt til true (sann), sendes nettverkspakker for
       overvåking (såkalte <ph name="HEARTBEATS_TERM" />).
       Hvis den settes til false (usann) eller ikke angis, sendes det ingen pakker.</translation>
+<translation id="3963602271515417124">Hvis denne verdien er angitt som «true» (sann), tillates ekstern attestering for enheten, og et sertifikat genereres automatisk og lastes opp til administreringstjeneren for enheten.
+
+          Hvis den er angitt som «false» (usann), eller hvis ikke noe er angitt, genereres det ikke noe sertifikat, og kall til enterprise.platformKeysPrivate extension API mislykkes.</translation>
 <translation id="3964909636571393861">Gir tilgang til en liste over nettadresser</translation>
 <translation id="3965339130942650562">Tidsavbrudd før inaktiv brukeravlogging utføres</translation>
 <translation id="3967075520570946456">Slå på visning av velkomstsiden ved den første oppstarten av nettleseren etter at operativsystemet er oppgradert.</translation>
@@ -1011,13 +1011,13 @@
 
       Spesifiserer en liste over programtillegg som er slått av i <ph name="PRODUCT_NAME" />, og hindrer brukere i å endre denne innstillingen.
 
-      Jokertegnene «*» og «?» kan brukes for å få treff i sekvenser med vilkårlige tegn. «*» tilsvarer et vilkårlig antall tegn, mens «?» angir et valgfritt enkelttegn og tilsvarer med andre ord ingen eller ett tegn. Omgåelsestegnet er «\», så for å få treff i faktiske tegn av typen «*», «?» eller «\», kan du sette «\»-tegnet foran dem.
+      Jokertegnene «*» og «?» kan brukes for å få treff i sekvenser med vilkårlige tegn. «*» tilsvarer et vilkårlig antall tegn, mens «?» angir ett valgfritt enkelttegn og tilsvarer med andre ord ingen eller ett tegn. Omgåelsestegnet er «\», så for å få treff i faktiske tegn av typen «*», «?» eller «\» kan du sette «\»-tegnet foran dem.
 
       Hvis du slår på denne innstillingen, blir aldri den angitte listen over programtillegg brukt i <ph name="PRODUCT_NAME" />. Programtilleggene merkes som slått av i «about:plugins», og brukerne kan ikke slå dem på.
 
       Vær oppmerksom på at denne regelen kan overstyres av både EnabledPlugins og DisabledPluginsExceptions.
 
-      Hvis denne regelen ikke angis, kan brukerne bruke et hvilket som helst programtillegg, bortsett fra hardkodede programtillegg som ikke er kompatible, utdaterte eller farlige.</translation>
+      Hvis denne regelen ikke spesifiseres, kan brukerne bruke et hvilket som helst programtillegg, bortsett fra hardkodede programtillegg som er ukompatible, utdaterte eller farlige.</translation>
 <translation id="410478022164847452">Angir hvor lenge brukeren kan være inaktiv før inaktivitetshandlingen blir utført når enheten kjører på vekselstrøm.
 
           Når denne innstillingen er konfigurert, angir den hvor lenge brukeren må være inaktiv før <ph name="PRODUCT_OS_NAME" /> utfører inaktivitetshandlingen, som kan konfigureres separat.
@@ -1326,9 +1326,9 @@
 <translation id="5423197884968724595">Navn på Android WebView-begrensning:</translation>
 <translation id="543559563129402336">Denne regelen er avviklet. Du kan bruke <ph name="FORCEYOUTUBERESTRICT_POLICY_NAME" />, som overstyrer denne regelen og tillater mer detaljert justering.
 
-      Fremtvinger bruk av Moderat begrenset innhold-modusen på YouTube og hindrer brukere i å endre denne innstillingen.
+      Fremtvinger bruk av moderat nivå for Begrenset innhold-modusen på YouTube og hindrer brukere i å endre denne innstillingen.
 
-      Hvis denne innstillingen er slått på, blir Begrenset innhold-modusen på YouTube tvunget til alltid å være minst Moderat.
+      Hvis denne innstillingen er slått på, blir Begrenset innhold-modusen på YouTube tvunget til alltid å være minst på moderat nivå.
 
       Hvis denne innstillingen er slått av eller ingen verdi er angitt, fremtvinger ikke <ph name="PRODUCT_NAME" /> bruk av Begrenset innhold-modusen på YouTube. Eksterne regler, for eksempel YouTube-regler, kan imidlertid fortsatt fremtvinge bruk av Begrenset innhold-modusen.</translation>
 <translation id="5447306928176905178">Slå på rapportering av minneinformasjon (heap-størrelse for JavaScript) til siden (avviklet)</translation>
@@ -1441,13 +1441,13 @@
 
       Spesifiserer en liste over programtillegg brukerne kan slå av eller på i <ph name="PRODUCT_NAME" />.
 
-      Jokertegnene «*» og «?» kan brukes for å få treff i sekvenser av vilkårlige tegn. «*» tilsvarer et vilkårlig antall tegn, mens «?» angir et valgfritt enkelttegn og tilsvarer med andre ord ingen eller ett tegn. Omgåelsestegnet er «\», så for å få treff i faktiske tegn av typen «*», «?» eller «\», kan du sette «\»-tegnet foran dem.
+      Jokertegnene «*» og «?» kan brukes for å få treff i sekvenser av vilkårlige tegn. «*» tilsvarer et vilkårlig antall tegn, mens «?» angir ett valgfritt enkelttegn og tilsvarer med andre ord ingen eller ett tegn. Omgåelsestegnet er «\», så for å få treff i faktiske tegn av typen «*», «?» eller «\» kan du sette «\»-tegnet foran dem.
 
       Hvis du slår på denne innstillingen, kan den spesifiserte listen over programtillegg bli brukt i <ph name="PRODUCT_NAME" />. Brukerne kan slå dem av eller på i «about:plugins» – selv for programtillegg som også stemmer overens med et mønster i DisabledPlugins. Brukerne kan også slå av og på programtillegg som ikke stemmer overens med mønstre i DisabledPlugins, DisabledPluginsExceptions eller EnabledPlugins.
 
-      Denne regelen er laget for å muliggjøre streng svartelisting av programtillegg i tilfeller der DisabledPlugins-listen inneholder oppføringer med jokertegn – eksempelvis slå av alle programtillegg (*) eller slå av alle Java-programtillegg (*Java*), men der administratoren vil slå på en bestemt versjon, for eksempel IcedTea Java 2.3. Slike spesifikke versjoner kan angis i denne retningslinjen.
+      Denne regelen er laget for å muliggjøre streng svartelisting av programtillegg i tilfeller der DisabledPlugins-listen inneholder oppføringer med jokertegn – eksempelvis slå av alle programtillegg (*) eller slå av alle Java-programtillegg (*Java*), men der administratoren vil slå på en bestemt versjon, for eksempel IcedTea Java 2.3. Slike spesifikke versjoner kan angis i denne regelen.
 
-      Vær oppmerksom på at både navnet på og gruppenavnet for et programtillegg må fritas. Hver gruppe for programtillegg vises i en egen del i about:plugins, og hver del kan ha ett eller flere programtillegg. Shockwave Flash-programtillegget tilhører for eksempel Adobe Flash Player-gruppen, og begge navnene må få treff på unntakslisten for at det aktuelle programtillegget skal fritas fra svartelisten.
+      Vær oppmerksom på at både navnet på og gruppenavnet for et programtillegg må fritas. Hver gruppe med programtillegg vises i en egen del i about:plugins, og hver del kan ha ett eller flere programtillegg. Shockwave Flash-programtillegget tilhører for eksempel Adobe Flash Player-gruppen, og begge navnene må få treff på unntakslisten for at det aktuelle programtillegget skal fritas fra svartelisten.
 
       Hvis denne regelen ikke angis, blir alle programtillegg som stemmer overens med mønstrene i DisabledPlugins, låst som slått av, og brukerne kan ikke slå dem på.</translation>
 <translation id="5795001131770861387">Slår på støtte for HTTP/0.9 for andre porter enn standardportene</translation>
@@ -1519,13 +1519,6 @@
 
       Hvis regelen ikke spesifiseres eller settes til false (usann), utfører ikke <ph name="PRODUCT_NAME" /> nettbaserte opphevelsekontroller i <ph name="PRODUCT_NAME" /> 19 og nyere.</translation>
 <translation id="5966615072639944554">Utvidelser kan bruke API-et for ekstern attestasjon</translation>
-<translation id="5974970919245996815">Rapportinformasjon om Android-statusen sendes tilbake
-      til tjeneren.
-
-      Hvis regelen angis som «false» (usann), rapporteres informasjonen.
-      Hvis regelen angis som «true» (sann) eller ikke angis, rapporteres ikke informasjonen.
-
-      Denne regelen gjelder bare hvis Android-apper er slått på.</translation>
 <translation id="5983708779415553259">Standard atferd for nettsteder som ikke inngår i noen innholdspakker.</translation>
 <translation id="5997543603646547632">Bruk 24-timersklokken som standard</translation>
 <translation id="6009903244351574348">La <ph name="PRODUCT_FRAME_NAME" /> håndtere de oppførte innholdstypene.
@@ -1560,7 +1553,7 @@
 
       Spesifiserer en liste over programtillegg som er slått på i <ph name="PRODUCT_NAME" />, og hindrer brukere i å endre denne innstillingen.
 
-      Jokertegnene «*» og «?» kan brukes for å få treff i sekvenser av vilkårlige tegn. «*» tilsvarer et vilkårlig antall tegn, mens «?» angir et valgfritt enkelttegn og tilsvarer med andre ord ingen eller ett tegn. Omgåelsestegnet er «\», så for å få treff i faktiske tegn av typen «*», «?» eller «\», kan du sette «\»-tegnet foran dem.
+      Jokertegnene «*» og «?» kan brukes for å få treff i sekvenser av vilkårlige tegn. «*» tilsvarer et vilkårlig antall tegn, mens «?» angir ett valgfritt enkelttegn og tilsvarer med andre ord ingen eller ett tegn. Omgåelsestegnet er «\», så for å få treff i faktiske tegn av typen «*», «?» eller «\» kan du sette «\»-tegnet foran dem.
 
       Den spesifiserte listen over programtillegg brukes alltid i <ph name="PRODUCT_NAME" /> hvis de er installert. Programtilleggene merkes som slått på i «about:plugins», og brukerne kan ikke slå dem av.
 
@@ -1799,7 +1792,7 @@ skjermtastaturet når som helst og statusen den har på påloggingsskjermen er v
 <translation id="6828905844648501476">Hvis denne regelen settes til true (sann) eller ikke konfigureres, tillater <ph name="PRODUCT_NAME" /> «Legg til person» fra brukerbehandlingen.
 
       Hvis denne regelen settes til false (usann), tillater ikke <ph name="PRODUCT_NAME" /> opprettelse av nye profiler fra profilbehandlingen.</translation>
-<translation id="685769593149966548">Fremtvinger bruk av Streng begrenset innhold-modus for YouTube</translation>
+<translation id="685769593149966548">Fremtvinger bruk av strengt nivå for Begrenset innhold-modus på YouTube</translation>
 <translation id="687046793986382807">Disse retningslinjene ble avviklet fra og med versjon 35 av <ph name="PRODUCT_NAME" />.
 
 Minneinformasjon blir uansett rapportert til siden, uavhengig av verdien for alternativet, men de rapporterte størrelsene blir kvantisert, og oppdateringsfrekvensen er av sikkerhetsgrunner begrenset. Hvis du vil ha data med sanntidspresisjon, må du bruke verktøy som telemetri (fjernmåling).</translation>
@@ -2210,6 +2203,9 @@ Minneinformasjon blir uansett rapportert til siden, uavhengig av verdien for alt
           knyttet til et Active Directory-domene.</translation>
 <translation id="7937766917976512374">Tillat eller blokkér videoopptak</translation>
 <translation id="7941975817681987555">Ikke forutsi nettverkshandlinger på noen nettverkstilkoblinger</translation>
+<translation id="7942429005743031780">Denne regelen angir hvilke utvidelser som har tillatelse til å bruke chrome.enterprise.platformKeys.challengeUserKey() i Enterprise Platform Keys API til ekstern attestering. Utvidelser må legges til i listen før de kan bruke API-en.
+
+          Hvis en utvidelse ikke er på listen, eller hvis listen ikke er angitt, returneres kall til API-en med en feilkode..</translation>
 <translation id="7953256619080733119">Verter for manuelle unntak for administrerte brukere</translation>
 <translation id="7971839631300653352">SSL 3.0</translation>
 <translation id="7974114691960514888">Denne retningslinjen støttes ikke lenger. Aktiverer bruk av STUN og relétjenere ved tilkobling til en ekstern klient. Hvis denne innstillingen er aktivert, kan maskinen oppdage og koble seg til eksterne vertsmaskiner selv om de er adskilt av en brannmur. Hvis denne innstillingen er deaktivert og utgående UDP-tilkoblinger filtreres av brannmuren, kan denne maskinen bare koble seg til vertsmaskiner i det lokale nettverket.</translation>

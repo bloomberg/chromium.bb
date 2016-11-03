@@ -27,6 +27,9 @@ For information about privacy, please see the Google Privacy Policy (http://goo.
 <translation id="1654128982815600832">Enabling remote connections for this computer…</translation>
 <translation id="170207782578677537">Failed to register this computer.</translation>
 <translation id="1704090719919187045">Chromoting Host Preferences</translation>
+<translation id="1730409684442507495">• Improved desktop image quality, responsiveness and battery consumption.
+• Improved responsiveness of click-drag operations.
+• Improved several UI animation effects.</translation>
 <translation id="174018511426417793">You have no computers registered. To enable remote connections to a computer, install Chrome Remote Desktop there and click “<ph name="BUTTON_NAME" />”.</translation>
 <translation id="1742469581923031760">Connecting…</translation>
 <translation id="1770394049404108959">I can't open the application.</translation>
@@ -73,7 +76,6 @@ For information about privacy, please see the Google Privacy Policy (http://goo.
 <translation id="2699970397166997657">Chromoting</translation>
 <translation id="2747641796667576127">Software updates usually happen automatically, but can fail in some rare cases. Updating the software should take no more than a few minutes and can be done while connected to your computer remotely.</translation>
 <translation id="2841013758207633010">Time</translation>
-<translation id="2851674870054673688">Once they have entered the code your sharing session will begin.</translation>
 <translation id="2851754573186462851">Chromium App Streaming</translation>
 <translation id="2855866366045322178">offline</translation>
 <translation id="2888969873284818612">A network error occurred. We will restart the app when your device is on-line again.</translation>

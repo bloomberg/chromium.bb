@@ -50,6 +50,7 @@
 <translation id="1491663344921578213">Pillanatnyilag nem tudja felkeresni a(z) <ph name="SITE" /> webhelyet, mivel a webhely tanúsítványrögzítést használ. A hálózati hibák és támadások rendszerint átmenetiek, ezért az említett oldal később valószínűleg már működni fog. <ph name="BEGIN_LEARN_MORE_LINK" />További információ<ph name="END_LEARN_MORE_LINK" />.</translation>
 <translation id="1506687042165942984">Az oldal mentett (pl. köztudottan régi) változatának megjelenítése.</translation>
 <translation id="1519264250979466059">Build dátuma</translation>
+<translation id="153384715582417236">Egyelőre ennyi</translation>
 <translation id="1549470594296187301">A funkció használatához engedélyezni kell a JavaScriptet.</translation>
 <translation id="1559528461873125649">Nincs ilyen fájl vagy könyvtár</translation>
 <translation id="1559572115229829303">&lt;p&gt;Nem hozható létre privát kapcsolat a következővel: <ph name="BEGIN_BOLD" /><ph name="DOMAIN" /><ph name="END_BOLD" />, mert az eszköz dátum- és időbeállítása helytelen (<ph name="DATE_AND_TIME" />).&lt;/p&gt;
@@ -348,7 +349,6 @@
 <translation id="4728558894243024398">Platform</translation>
 <translation id="4744603770635761495">Végrehajtható fájl útvonala</translation>
 <translation id="4756388243121344051">&amp;Előzmények</translation>
-<translation id="4759238208242260848">Letöltések</translation>
 <translation id="4764776831041365478">A <ph name="URL" /> weboldal lehet, hogy ideiglenesen nem érhető el, vagy véglegesen új címre költözött.</translation>
 <translation id="4771973620359291008">Ismeretlen hiba történt.</translation>
 <translation id="4782449893814226250">Megkérdezted a szüleidet, hogy meg szabad-e látogatnod ezt az oldalt.</translation>
@@ -387,6 +387,7 @@
 <translation id="5179510805599951267">Nem <ph name="ORIGINAL_LANGUAGE" /> nyelven van? Hiba bejelentése</translation>
 <translation id="5190835502935405962">Könyvjelzősáv</translation>
 <translation id="5199729219167945352">Kísérletek</translation>
+<translation id="5199841536747119669">A javaslatok helye</translation>
 <translation id="5251803541071282808">Felhő</translation>
 <translation id="5277279256032773186">A munkahelyén használja a Chrome-ot? A cégek kezelhetik a Chrome-beállításokat alkalmazottaik számára. További információ.</translation>
 <translation id="5299298092464848405">Irányelv-előfeldolgozási hiba</translation>
@@ -466,6 +467,7 @@
 <translation id="6263376278284652872"><ph name="DOMAIN" /> könyvjelzők</translation>
 <translation id="6264485186158353794">Vissza a biztonsághoz</translation>
 <translation id="6282194474023008486">Irányítószám</translation>
+<translation id="6290238015253830360">A javasolt cikkek helye</translation>
 <translation id="6305205051461490394">A(z) <ph name="URL" /> nem érhető el.</translation>
 <translation id="6321917430147971392">Ellenőrizze a DNS-beállításokat</translation>
 <translation id="6328639280570009161">Próbálkozzon a hálózati előrejelzések kikapcsolásával</translation>
@@ -649,6 +651,7 @@ Pszt! Az inkognitómód (<ph name="SHORTCUT_KEY" />) hasznos lehet a következő
 <translation id="8363502534493474904">Repülős üzemmód kikapcsolása</translation>
 <translation id="8364627913115013041">Nincs beállítva.</translation>
 <translation id="8380941800586852976">Veszélyes</translation>
+<translation id="8382348898565613901">A közelmúltban megnyitott könyvjelzők helye</translation>
 <translation id="8412145213513410671">Rendszerösszeomlások ( <ph name="CRASH_COUNT" /> )</translation>
 <translation id="8412392972487953978">Mindkét alkalommal ugyanazt az összetett jelszót kell megadnia.</translation>
 <translation id="8428213095426709021">Beállítások</translation>
@@ -698,6 +701,7 @@ Pszt! Az inkognitómód (<ph name="SHORTCUT_KEY" />) hasznos lehet a következő
 <translation id="8987927404178983737">hónap</translation>
 <translation id="8989148748219918422"><ph name="ORGANIZATION" /> [<ph name="COUNTRY" />]</translation>
 <translation id="9001074447101275817">A(z) <ph name="DOMAIN" /> proxy felhasználónevet és jelszót kér.</translation>
+<translation id="9008201768610948239">Mellőzés</translation>
 <translation id="901974403500617787">Rendszerszinten érvényes jelölőket csak a tulajdonos (<ph name="OWNER_EMAIL" />) állíthat be.</translation>
 <translation id="9020542370529661692">Az oldalt lefordítottuk <ph name="TARGET_LANGUAGE" /> nyelvre.</translation>
 <translation id="9038649477754266430">A várható kifejezés szolgáltatás használata az oldalak gyorsabb betöltése érdekében</translation>

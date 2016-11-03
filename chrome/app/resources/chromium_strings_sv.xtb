@@ -23,7 +23,6 @@ Vissa funktioner kanske inte är tillgängliga och ändringar i inställningarna
 <translation id="1688750314291223739">Konfigurera synkronisering för att spara dina webbläsarfunktioner på webben och använda dem i Chromium på alla datorer.</translation>
 <translation id="1699664235656412242">Stäng alla Chromium-fönster (inklusive i Windows 8-läge) och försök igen.</translation>
 <translation id="1708666629004767631">Det finns en ny, ännu säkrare version av Chromium.</translation>
-<translation id="1725059042853530269">Filen <ph name="FILE_NAME" /> kan skada din surfupplevelse och har därför blockerats av Chromium.</translation>
 <translation id="1774152462503052664">Låt Chromium köras i bakgrunden</translation>
 <translation id="1779356040007214683">Vi har gjort Chromium säkrare genom att inaktivera vissa tillägg som inte finns i <ph name="IDS_EXTENSION_WEB_STORE_TITLE" /> och som kan ha lagts till utan att du vet om det.</translation>
 <translation id="1808667845054772817">Installera om Chromium</translation>
@@ -61,7 +60,6 @@ Vissa funktioner kanske inte är tillgängliga och ändringar i inställningarna
 <translation id="2718390899429598676">Din data krypteras i Chromium för att öka säkerheten.</translation>
 <translation id="2770231113462710648">Ändra standardwebbläsare till:</translation>
 <translation id="2799223571221894425">Starta om</translation>
-<translation id="2801146392936645542"><ph name="FILE_NAME" /> är skadlig och har blockerats av Chromium.</translation>
 <translation id="2847479871509788944">Ta bort från Chromium …</translation>
 <translation id="2886012850691518054">Valfritt: Hjälp till att göra Chromium bättre genom att automatiskt skicka användningsstatistik och felrapporter till Google.</translation>
 <translation id="2905536371227304018">Chromium OS visas på det här språket.</translation>
@@ -80,7 +78,6 @@ Vissa funktioner kanske inte är tillgängliga och ändringar i inställningarna
 <ph name="USER_DATA_DIRECTORY" /></translation>
 <translation id="3264279740686075150">Chromium är din standardwebbläsare.</translation>
 <translation id="328888136576916638">Googles API-nycklar saknas. Vissa funktioner i Google Chromium kommer att vara inaktiverade.</translation>
-<translation id="3289635842886789612">Den här versionen av Chromium är inaktuell.</translation>
 <translation id="3296368748942286671">Fortsätt köra bakgrundsappar när Chromium avslutas</translation>
 <translation id="3312805357485578561">Chromium har upptäckt ovanligt beteende</translation>
 <translation id="331951419404882060">Det gick inte att synkronisera data med Chromium OS på grund av ett inloggningsfel.</translation>
@@ -138,6 +135,7 @@ Vissa funktioner kanske inte är tillgängliga och ändringar i inställningarna
 <translation id="5398878173008909840">Det finns en ny version av Chromium.</translation>
 <translation id="5427571867875391349">Använd Chromium som standardwebbläsare</translation>
 <translation id="5466153949126434691">Chromium uppdateras automatiskt så att du alltid har den senaste versionen. När den här nedladdningen är klar startas Chromium om och sedan är du igång.</translation>
+<translation id="5479196819031988440">Det går inte att öppna den här sidan i Chromium OS.</translation>
 <translation id="549669000822060376">Vänta medan de senaste systemuppdateringarna installeras av Chromium.</translation>
 <translation id="556167189552180495">Chromium visas på det här språket.</translation>
 <translation id="5563479599352954471">Sök med en tryckning</translation>
@@ -225,7 +223,6 @@ Ytterligare anvisningar har skickats med e-post till dig på <ph name="ACCOUNT_E
 <translation id="7421823331379285070">För Chromium krävs Windows XP eller senare. En del funktioner fungerar eventuellt inte.</translation>
 <translation id="7473891865547856676">Nej tack</translation>
 <translation id="7483335560992089831">Det går inte att installera samma version av Chromium som den som redan körs. Stäng Chromium och försök igen.</translation>
-<translation id="750717762378961310">Filen är skadlig och har blockerats av Chromium.</translation>
 <translation id="7549178288319965365">Om Chromium OS</translation>
 <translation id="7577193603922410712">En särskild säkerhetsuppdatering för Chromium installerades precis. Tillämpa uppdateringen genom att starta om (vi återställer flikarna).</translation>
 <translation id="761356813943268536">Chromium använder din kamera och mikrofon.</translation>

@@ -21,7 +21,6 @@
 <translation id="1688750314291223739">Настройте синхронизацию, чтобы сохранить в облаке персонализированные функции браузера и получить к ним доступ из Chromium с любого компьютера.</translation>
 <translation id="1699664235656412242">Закройте все окна Chromium (включая открытые в режиме Windows 8) и повторите попытку.</translation>
 <translation id="1708666629004767631">Доступна новая, еще более быстрая версия Chromium.</translation>
-<translation id="1725059042853530269">Chromium блокирует файл <ph name="FILE_NAME" />, так как он может нанести вред браузеру.</translation>
 <translation id="1774152462503052664">Разрешить Chromium работать в фоновом режиме</translation>
 <translation id="1779356040007214683">Чтобы обеспечить безопасность ваших данных, некоторые расширения Chromium были отключены, так как <ph name="IDS_EXTENSION_WEB_STORE_TITLE" /> не содержит сведений о них, то есть эти компоненты могли быть установлены без вашего ведома.</translation>
 <translation id="1808667845054772817">Переустановить Chromium</translation>
@@ -59,7 +58,6 @@
 <translation id="2718390899429598676">В целях повышения безопасности Chromium шифрует ваши данные.</translation>
 <translation id="2770231113462710648">Назначить браузером по умолчанию:</translation>
 <translation id="2799223571221894425">Перезапустить</translation>
-<translation id="2801146392936645542">Chromium заблокировал файл <ph name="FILE_NAME" /> как вредоносный.</translation>
 <translation id="2847479871509788944">Удалить из Chromium</translation>
 <translation id="2886012850691518054">(Необязательно) Помогите сделать Chromium лучше, автоматически отправляя статистику использования и отчеты об ошибках в Google.</translation>
 <translation id="2905536371227304018">Chromium OS отображается на этом языке.</translation>
@@ -76,7 +74,6 @@
 <translation id="3258596308407688501">Chromium не может выполнять операции чтения и записи в своем каталоге: <ph name="USER_DATA_DIRECTORY" /></translation>
 <translation id="3264279740686075150">Chromium используется как браузер по умолчанию</translation>
 <translation id="328888136576916638">Отсутствуют ключи API Google. Некоторые функции Chromium могут не работать.</translation>
-<translation id="3289635842886789612">Версия Chromium устарела.</translation>
 <translation id="3296368748942286671">Продолжить выполнение фоновых приложений после закрытия Chromium</translation>
 <translation id="3312805357485578561">В работе Chromium обнаружены сбои</translation>
 <translation id="331951419404882060">Не удалось синхронизировать данные из-за ошибки входа в аккаунт.</translation>
@@ -134,6 +131,7 @@
 <translation id="5398878173008909840">Доступна новая версия Chromium.</translation>
 <translation id="5427571867875391349">Сделать Chromium браузером по умолчанию</translation>
 <translation id="5466153949126434691">Chromium обновляется автоматически, поэтому у вас всегда будет установлена последняя версия. После завершения скачивания и перезагрузки вы сможете продолжить работу.</translation>
+<translation id="5479196819031988440">Chromium OS не может открыть эту страницу</translation>
 <translation id="549669000822060376">Подождите, пока Chromium устанавливает последние обновления системы</translation>
 <translation id="556167189552180495">Chrominum отображается на этом языке.</translation>
 <translation id="5563479599352954471">Поиск в одно касание</translation>
@@ -219,7 +217,6 @@
 <translation id="7421823331379285070">Для Chromium требуется ОС Windows XP или более поздней версии. Некоторые функции могут не работать.</translation>
 <translation id="7473891865547856676">Пропустить</translation>
 <translation id="7483335560992089831">Невозможно установить ту же версию Chromium, которая уже присутствует в системе. Закройте Chromium и повторите попытку.</translation>
-<translation id="750717762378961310">Chromium заблокировал этот файл как вредоносный.</translation>
 <translation id="7549178288319965365">О Chromium OS</translation>
 <translation id="7577193603922410712">Установлено специальное обновление системы безопасности. Перезапустите Chromium (все вкладки будут восстановлены).</translation>
 <translation id="761356813943268536">Chromium использует камеру и микрофон.</translation>

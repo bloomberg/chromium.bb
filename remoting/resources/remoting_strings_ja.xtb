@@ -27,6 +27,9 @@ US英語以外のキーボードを使用しているリモートパソコンで
 <translation id="1654128982815600832">このパソコンのリモート接続を有効にしています...</translation>
 <translation id="170207782578677537">このパソコンを登録できませんでした。</translation>
 <translation id="1704090719919187045">Chromoting ホスト設定</translation>
+<translation id="1730409684442507495">• デスクトップ画像の品質、処理速度、バッテリー消費量が改善されました。
+• クリックしてドラッグするときの反応性が高まりました。
+• いくつかの UI アニメーション効果がスムーズになりました。</translation>
 <translation id="174018511426417793">パソコンが登録されていません。パソコンへのリモート接続を有効にするには、対象となるパソコンに Chrome リモート デスクトップをインストールし、[<ph name="BUTTON_NAME" />] をクリックしてください。</translation>
 <translation id="1742469581923031760">接続しています...</translation>
 <translation id="1770394049404108959">アプリケーションを開けない。</translation>
@@ -73,7 +76,6 @@ US英語以外のキーボードを使用しているリモートパソコンで
 <translation id="2699970397166997657">Chromoting</translation>
 <translation id="2747641796667576127">通常、ソフトウェアの更新は自動的に行われますが、まれに失敗することがあります。ソフトウェアの更新にかかる時間は数分以内です。パソコンにリモート接続している場合も更新は可能です。</translation>
 <translation id="2841013758207633010">時間</translation>
-<translation id="2851674870054673688">共有するユーザーがこのコードを入力すると、共有セッションが開始されます。</translation>
 <translation id="2851754573186462851">Chromium App Streaming</translation>
 <translation id="2855866366045322178">オフライン</translation>
 <translation id="2888969873284818612">ネットワーク エラーが発生しました。デバイスが再度オンラインになったときにアプリを再開します。</translation>

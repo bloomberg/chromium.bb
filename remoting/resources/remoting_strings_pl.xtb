@@ -27,6 +27,9 @@ Informacje na temat prywatności znajdziesz w Polityce prywatności Google (http
 <translation id="1654128982815600832">Włączam połączenia zdalne z tym komputerem…</translation>
 <translation id="170207782578677537">Nie udało się zarejestrować tego komputera.</translation>
 <translation id="1704090719919187045">Ustawienia hosta funkcji Chromoting</translation>
+<translation id="1730409684442507495">• Wyższa jakość obrazu pulpitu, poprawa reakcji i mniejsze zużycie baterii.
+• Poprawiona reakcja na czynności klikania i przeciągania.
+• Poprawione niektóre animacje interfejsu użytkownika.</translation>
 <translation id="174018511426417793">Nie masz zarejestrowanych komputerów. Aby umożliwić zdalne połączenia z komputerem, zainstaluj na nim Pulpit zdalny Chrome i kliknij „<ph name="BUTTON_NAME" />”.</translation>
 <translation id="1742469581923031760">Łączę…</translation>
 <translation id="1770394049404108959">Nie mogę otworzyć aplikacji.</translation>
@@ -73,7 +76,6 @@ Informacje na temat prywatności znajdziesz w Polityce prywatności Google (http
 <translation id="2699970397166997657">Chromoting</translation>
 <translation id="2747641796667576127">Aktualizacje oprogramowania są zwykle instalowane automatycznie, ale w niektórych rzadkich przypadkach kończą się niepowodzeniem. Aktualizacja oprogramowania nie powinna trwać dłużej niż kilka minut i można ją wykonać przy zdalnym połączeniu z komputerem.</translation>
 <translation id="2841013758207633010">Godzina</translation>
-<translation id="2851674870054673688">Po wprowadzeniu kodu przez drugą stronę rozpocznie się sesja udostępniania.</translation>
 <translation id="2851754573186462851">Chromium App Streaming</translation>
 <translation id="2855866366045322178">offline</translation>
 <translation id="2888969873284818612">Wystąpił błąd sieci. Uruchomimy ponownie aplikację, gdy urządzenie znów będzie online.</translation>

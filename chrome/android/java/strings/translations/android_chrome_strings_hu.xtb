@@ -95,7 +95,6 @@ A Fizikai web használatához be kell kapcsolnia a Bluetooth funkciót és a hel
 <translation id="200669432486043882">Fájl cseréje</translation>
 <translation id="2020525020270327736">Webhely másolása</translation>
 <translation id="2038563949887743358">Kapcsolja be az Asztali webhely kérése funkciót</translation>
-<translation id="2069736994598857257"><ph name="GIGABYTES" /> GB foglalt</translation>
 <translation id="2073235970478114994">Képek betöltése</translation>
 <translation id="2079545284768500474">Visszavonás</translation>
 <translation id="2082238445998314030">Eredmény: <ph name="RESULT_NUMBER" />/<ph name="TOTAL_RESULTS" /></translation>
@@ -324,6 +323,7 @@ A keresési kifejezés módosításához hosszú nyomva tartással hajthat végr
 <translation id="4816465935029283692">Adattípusok</translation>
 <translation id="4827948050554950725">Hitelkártya hozzáadása</translation>
 <translation id="4836364883164334657">Kapcsolódása ehhez a webhelyhez nem privát. Előfordulhat, hogy támadók megpróbálják ellopni az Ön adatait (például fotóit, jelszavait, üzeneteit és bankkártyaadatait) a(z) <ph name="DOMAIN_NAME" /> webhelyről.</translation>
+<translation id="4850886885716139402">Nézet</translation>
 <translation id="4881695831933465202">Megnyitás</translation>
 <translation id="4885273946141277891">Ilyen sok Chrome-példány nem futhat egyszerre.</translation>
 <translation id="4923459931733593730">Fizetés</translation>
@@ -339,7 +339,9 @@ A keresési kifejezés módosításához hosszú nyomva tartással hajthat végr
 <translation id="5016205925109358554">Serif</translation>
 <translation id="5039804452771397117">Engedélyezés</translation>
 <translation id="5040262127954254034">Adatvédelem</translation>
+<translation id="5053110706349648690">A párosítás engedélyezéséhez kapcsolja be a Bluetooth szolgáltatást az <ph name="BEGIN_LINK" />eszköz beállításaiban<ph name="END_LINK" />.</translation>
 <translation id="5063480226653192405">Használat</translation>
+<translation id="5087580092889165836">Kártya hozzáadása</translation>
 <translation id="5100237604440890931">Összecsukva – kattintson a kibontáshoz.</translation>
 <translation id="510275257476243843">1 óra van hátra</translation>
 <translation id="5127805178023152808">Szinkronizálás kikapcsolva</translation>
@@ -416,6 +418,7 @@ Mindazonáltal Ön nem lesz láthatatlan. Az inkognitómód használatával nem 
 <translation id="583281660410589416">Ismeretlen</translation>
 <translation id="5832934273103296195">Kibontva – Kattintson az összecsukáshoz</translation>
 <translation id="583891442612896534">A Chrome nem tudja elérni a Google szervereit az adatok tömörítése céljából. Az adatforgalmi megtakarítás korlátozva lehet.</translation>
+<translation id="5843873952582375185">Nem található Bluetooth-eszköz. <ph name="BEGIN_LINK" />Újbóli keresés<ph name="END_LINK" />.</translation>
 <translation id="585027516397408832">Az Adatforgalom-csökkentő aktiválva van</translation>
 <translation id="5860033963881614850">Kikapcsolva</translation>
 <translation id="5867027562311576691">Hamarosan további cikkek jelennek meg. Kellemes délelőttöt kívánunk.</translation>
@@ -490,6 +493,7 @@ Egyes webhelyek például válaszolhatnak rá úgy, hogy olyan hirdetéseket jel
 <translation id="6657585470893396449">Jelszó</translation>
 <translation id="6659594942844771486">Lap</translation>
 <translation id="666268767214822976">„Várható kifejezések” szolgáltatás használata a kapcsolódó lekérdezések és népszerű webhelyek megjelenítéséhez a címsávba történő gépelés során.</translation>
+<translation id="666731172850799929">Megnyitás itt: <ph name="APP_NAME" /></translation>
 <translation id="666981079809192359">Chrome – Adatvédelmi közlemény</translation>
 <translation id="6698801883190606802">Szinkronizálás kezelése</translation>
 <translation id="6710213216561001401">Előző</translation>
@@ -532,14 +536,12 @@ Egyes webhelyek például válaszolhatnak rá úgy, hogy olyan hirdetéseket jel
 <translation id="7074853159844403180"><ph name="SITE" /> párosítást szeretne kezdeményezni a következővel:</translation>
 <translation id="7081639897063626814">A meglévő adatok elkülönített tárolása</translation>
 <translation id="7094922512924405309">A Fizikai web nem talált oldalakat a közelben</translation>
-<translation id="7115197232530297436">Nem támogatott szállítási cím. Válasszon másik címet.</translation>
 <translation id="7138678301420049075">Egyéb</translation>
 <translation id="7180611975245234373">Frissítés</translation>
 <translation id="7191430249889272776">A lap megnyílt a háttérben.</translation>
 <translation id="7208788139759694678">Az Adatforgalom-csökkentő ki van kapcsolva</translation>
 <translation id="7243308994586599757">A beállítások a képernyő alsó részén találhatók</translation>
 <translation id="7244362611678346589">A(z) <ph name="SEARCH_ENGINE_URL" /> az Ön tartózkodási helye alapján jelenít meg helyi keresési eredményeket</translation>
-<translation id="7347770551817603360">Offline tartalom</translation>
 <translation id="7353894246028566792">{NUM_SELECTED,plural, =1{1 kijelölt elem megosztása}other{# kijelölt elem megosztása}}</translation>
 <translation id="7366340029385295517">Átküldés a következőre: <ph name="SCREEN_NAME" /></translation>
 <translation id="7375125077091615385">Típus:</translation>
@@ -576,7 +578,6 @@ Előfordulhat, hogy Google-fiókjában (a <ph name="BEGIN_LINK" />history.google
 <translation id="7665369617277396874">Fiók hozzáadása</translation>
 <translation id="7682287625158474539">Szállítási cím</translation>
 <translation id="771135159654932189">Közeli URL-ek megtekintése</translation>
-<translation id="7713873128508426081">Mindig engedélyezve</translation>
 <translation id="7764225426217299476">Cím hozzáadása</translation>
 <translation id="7765158879357617694">Áthelyezés</translation>
 <translation id="7769602470925380267">Elfogadás és kijelentkezés</translation>
@@ -645,15 +646,12 @@ Előfordulhat, hogy Google-fiókjában (a <ph name="BEGIN_LINK" />history.google
 <translation id="8514577642972634246">Belépés inkognitómódba</translation>
 <translation id="8518901949365209398">Ez a webhely gyenge biztonsági beállításokat (SHA-1 aláírásokat) használ , ezért előfordulhat, hogy a kapcsolat nem titkos.</translation>
 <translation id="8523928698583292556">Tárolt jelszó törlése</translation>
-<translation id="8525306231823319788">Teljes képernyő</translation>
-<translation id="85415543246899402"><ph name="MEGABYTES" /> MB foglalt</translation>
 <translation id="854522910157234410">Az oldal megnyitása</translation>
 <translation id="8562452229998620586">A mentett jelszavak itt jelennek meg.</translation>
 <translation id="856481929701340285">Asztali webhely kérése</translation>
 <translation id="857943718398505171">Engedélyezve (ajánlott)</translation>
 <translation id="8583805026567836021">Fiókadatok törlése</translation>
 <translation id="8617240290563765734">Megnyitja a letöltött tartalomban szereplő javasolt URL-t?</translation>
-<translation id="8618653050765576793"><ph name="KILOBYTES" /> KB foglalt</translation>
 <translation id="862875433388403934">Az egyéb alkalmazásokban letöltött tartalmakat (filmek, zene stb.) valószínűleg nem lehet majd lejátszani, amíg az egyes alkalmazások új engedélyeket nem kapnak új eszközhitelesítési adatok alapján.
 
 Az új engedélyek beszerzéséhez kapcsolódjon az internethez, és játssza le a letöltött tartalmat.</translation>

@@ -18,7 +18,6 @@
 <translation id="3692781555820666866">सक्षम होने पर खोज वाली पट्टी में आपके नज़दीकी डिवाइस द्वारा प्रसारित किए गए वेबपृष्ठों को लिए सुझाव शामिल होंगे.</translation>
 <translation id="385051799172605136">वापस</translation>
 <translation id="4121993058175073134">कुल निर्यात डेटा भेजने के लिए, कृपया सेटिंग ऐप्स में अपना ईमेल खाता कॉन्फ़िगर करें.</translation>
-<translation id="4399225372525667111">Chrome यह सत्यापित करने में असमर्थ है कि इस साइट का URL सही है.</translation>
 <translation id="4728558894243024398">प्लेटफ़ॉर्म</translation>
 <translation id="473775607612524610">अपडेट करें</translation>
 <translation id="4875622588773761625">क्या आप चाहते हैं कि <ph name="PASSWORD_MANAGER_BRAND" /> इस साइट के लिए आपके पासवर्ड को अपडेट करे?</translation>
@@ -30,11 +29,9 @@
 <translation id="6314335155547195432">पासवर्ड जेनरेट करें</translation>
 <translation id="6344783595350022745">लेख साफ़ करें</translation>
 <translation id="6456425917241817154">Chrome जेनरेटड पासवर्ड</translation>
-<translation id="6535543971741225613">आप जिस साइट में पहुंचने का प्रयास कर रहे हैं वह अजीब व्यवहार कर रही है, और Chrome यह सत्यापित करने में असमर्थ है कि उसका URL सही है. सुरक्षा कारणों से, आपको आगे नहीं बढ़ना चाहिए, और कल पुन: प्रयास करना चाहिए या कहीं और जाना चाहिए.</translation>
 <translation id="7222245588540287464">प्रासंगिक खोज सक्षम है या नहीं.</translation>
 <translation id="7456847797759667638">स्थान खोलें...</translation>
 <translation id="7481312909269577407">आगे भेजें</translation>
-<translation id="7484580869648358686">चेतावनी: यहां कुछ सही नहीं है!</translation>
 <translation id="7588950540487816470">जीता-जागता वेब</translation>
 <translation id="7961015016161918242">कभी नहीं</translation>
 </translationbundle>

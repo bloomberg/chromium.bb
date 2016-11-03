@@ -1,41 +1,20 @@
 <?xml version="1.0" ?>
 <!DOCTYPE translationbundle>
 <translationbundle lang="lv">
-<translation id="153454903766751181">Notiek mobilā modema inicializēšana...</translation>
 <translation id="1829129547161959350">Pingvīns</translation>
-<translation id="1850504506766569011">Wi-Fi tīkls ir izslēgts.</translation>
 <translation id="2288278176040912387">Ierakstu atskaņotājs</translation>
-<translation id="2354174487190027830">Notiek <ph name="NAME" /> aktivizēšana.</translation>
 <translation id="2563185590376525700">Varde</translation>
 <translation id="2649120831653069427">Varavīksnes zivs</translation>
-<translation id="277257480934873581">Notiek atkārtota savienojuma izveide ar <ph name="NAME" /></translation>
 <translation id="2894654529758326923">Informācija</translation>
 <translation id="2951236788251446349">Medūza</translation>
-<translation id="3846575436967432996">Tīkla informācija nav pieejama.</translation>
-<translation id="3901991538546252627">Notiek savienojuma izveide ar <ph name="NAME" /></translation>
 <translation id="3958548648197196644">Kivi</translation>
-<translation id="4118990158415604803">Jūsu administrators atspējoja savienojuma izveidi ar citiem tīkliem.</translation>
 <translation id="4326192123064055915">Kafija</translation>
-<translation id="4448844063988177157">Notiek Wi-Fi tīklu meklēšana...</translation>
-<translation id="4479639480957787382">tīkls Ethernet</translation>
-<translation id="4508225577814909926"><ph name="NAME" />: notiek savienojuma izveide...</translation>
 <translation id="4559767610552730302">Izplūduma efekts</translation>
 <translation id="4935975195727477204">Gazānijas zieds</translation>
 <translation id="515594325917491223">Šahs</translation>
 <translation id="5257456363153333584">Spāre</translation>
-<translation id="6267036997247669271"><ph name="NAME" />: notiek aktivizēšana...</translation>
-<translation id="6549021752953852991">Mobilais tīkls nav pieejams.</translation>
-<translation id="6857811139397017780">Aktivizēt <ph name="NETWORKSERVICE" /></translation>
 <translation id="6935521024859866267">Otrādi</translation>
-<translation id="7066646422045619941">Jūsu administrators atspējoja šo tīklu.</translation>
-<translation id="735745346212279324">VPN ir atvienots</translation>
-<translation id="7874779702599364982">Notiek mobilo sakaru tīklu meklēšana...</translation>
-<translation id="8000066093800657092">Nav tīkla</translation>
 <translation id="8008366997883261463">Džeka Rasela terjers</translation>
-<translation id="8132793192354020517">Savienots ar <ph name="NAME" /></translation>
-<translation id="8454013096329229812">Wi-Fi tīkls ir ieslēgts.</translation>
-<translation id="8484916590211895857"><ph name="NAME" />: notiek atkārtota savienojuma izveide…</translation>
 <translation id="8714406895390098252">Velosipēds</translation>
 <translation id="8808686172382650546">Kaķis</translation>
-<translation id="8814190375133053267">Wi-Fi</translation>
 </translationbundle>

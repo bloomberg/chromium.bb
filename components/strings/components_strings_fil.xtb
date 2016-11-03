@@ -50,6 +50,7 @@
 <translation id="1491663344921578213">Hindi mo mabibisita ang <ph name="SITE" /> sa ngayon dahil gumagamit ang website ng pagpi-pin ng certificate. Kadalasang pansamantala lang ang mga error at atake sa network, kaya malamang na gagana ang page na ito sa ibang pagkakataon. <ph name="BEGIN_LEARN_MORE_LINK" />Matuto nang higit pa<ph name="END_LEARN_MORE_LINK" />.</translation>
 <translation id="1506687042165942984">Magpakita ng naka-save (ibigsabihin alam na hindi napapanahon) na kopya ng page na ito.</translation>
 <translation id="1519264250979466059">Petsa ng Build</translation>
+<translation id="153384715582417236">'Yan na muna sa ngayon</translation>
 <translation id="1549470594296187301">Dapat naka-enable ang JavaScript upang magamit ang feature na ito.</translation>
 <translation id="1559528461873125649">Walang naturang file o direktoryo</translation>
 <translation id="1559572115229829303">&lt;p&gt;Hindi makapagtatag ng pribadong koneksyon sa <ph name="BEGIN_BOLD" /><ph name="DOMAIN" /><ph name="END_BOLD" /> dahil mali ang petsa at oras ng iyong device (<ph name="DATE_AND_TIME" />).&lt;/p&gt;
@@ -350,7 +351,6 @@
 <translation id="4728558894243024398">Platform</translation>
 <translation id="4744603770635761495">Naipapatupad na Path</translation>
 <translation id="4756388243121344051">&amp;History</translation>
-<translation id="4759238208242260848">Mga Download </translation>
 <translation id="4764776831041365478">Ang webpage sa <ph name="URL" /> ay maaaring pansamantalang hindi gumagana o maaaring permanente itong inilipat sa isang bagong web address.</translation>
 <translation id="4771973620359291008">Isang hindi alam na error ang nangyari.</translation>
 <translation id="4782449893814226250">Tinanong mo sa iyong mga magulang kung maaari mong bisitahin ang page na ito.</translation>
@@ -389,6 +389,7 @@
 <translation id="5179510805599951267">Wala sa <ph name="ORIGINAL_LANGUAGE" />? Iulat ang error na ito</translation>
 <translation id="5190835502935405962">Bar ng Mga Bookmark</translation>
 <translation id="5199729219167945352">Mga Eksperimento</translation>
+<translation id="5199841536747119669">Lalabas dito ang lahat ng iyong suhestyon</translation>
 <translation id="5251803541071282808">Cloud</translation>
 <translation id="5277279256032773186">Ginagamit mo ba ang Chrome sa trabaho? Maaaring pamahalaan ng mga negosyo ang mga setting ng Chrome para sa kanilang mga empleyado. Matuto pa</translation>
 <translation id="5299298092464848405">Error sa pag-parse ng patakaran</translation>
@@ -468,6 +469,7 @@
 <translation id="6263376278284652872">Mga bookmark ng <ph name="DOMAIN" /></translation>
 <translation id="6264485186158353794">Bumalik sa safety</translation>
 <translation id="6282194474023008486">Postal code</translation>
+<translation id="6290238015253830360">Lalabas dito ang iminungkahi mong artikulo</translation>
 <translation id="6305205051461490394">Hindi makakonekta sa <ph name="URL" />.</translation>
 <translation id="6321917430147971392">Suriin ang iyong mga setting ng DNS</translation>
 <translation id="6328639280570009161">Subukang i-disable ang paghula ng network</translation>
@@ -651,6 +653,7 @@ Psst! Maaaring maging kapaki-pakinabang ang mode na incognito <ph name="SHORTCUT
 <translation id="8363502534493474904">I-off ang airplane mode</translation>
 <translation id="8364627913115013041">Hindi nakatakda.</translation>
 <translation id="8380941800586852976">Mapanganib</translation>
+<translation id="8382348898565613901">Lalabas dito ang iyong mga kamakailang binisitang bookmark</translation>
 <translation id="8412145213513410671">Mga Pag-crash (<ph name="CRASH_COUNT" />)</translation>
 <translation id="8412392972487953978">Dapat mong ilagay ang parehong passphrase nang dalawang beses.</translation>
 <translation id="8428213095426709021">Mga Setting</translation>
@@ -700,6 +703,7 @@ Psst! Maaaring maging kapaki-pakinabang ang mode na incognito <ph name="SHORTCUT
 <translation id="8987927404178983737">Buwan</translation>
 <translation id="8989148748219918422"><ph name="ORGANIZATION" /> [<ph name="COUNTRY" />]</translation>
 <translation id="9001074447101275817">Nangangailangan ang proxy na <ph name="DOMAIN" /> ng username at password.</translation>
+<translation id="9008201768610948239">Balewalain</translation>
 <translation id="901974403500617787">Ang may-ari lang ang maaaring magtakda ng mga flag na nalalapat sa buong system: <ph name="OWNER_EMAIL" />.</translation>
 <translation id="9020542370529661692">Na-translate sa <ph name="TARGET_LANGUAGE" /> ang pahinang ito</translation>
 <translation id="9038649477754266430">Gumamit ng serbisyo sa paghula upang ma-load ang mga page nang mas mabilis</translation>

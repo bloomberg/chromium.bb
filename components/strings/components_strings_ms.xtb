@@ -50,6 +50,7 @@
 <translation id="1491663344921578213">Anda tidak boleh melawati <ph name="SITE" /> sekarang kerana tapak web ini menggunakan penyematan sijil. Ralat rangkaian dan serangan biasanya bersifat sementara, oleh itu halaman ini mungkin akan berfungsi sebentar lagi. <ph name="BEGIN_LEARN_MORE_LINK" />Ketahui lebih lanjut<ph name="END_LEARN_MORE_LINK" />.</translation>
 <translation id="1506687042165942984">Tunjukkan salinan yang disimpan (iaitu diketahui telah lapuk) bagi halaman ini.</translation>
 <translation id="1519264250979466059">Tarikh Bina</translation>
+<translation id="153384715582417236">Itu sahaja buat masa ini</translation>
 <translation id="1549470594296187301">Javascript mesti didayakan untuk menggunakan ciri ini.</translation>
 <translation id="1559528461873125649">Tiada fail atau direktori sedemikian</translation>
 <translation id="1559572115229829303">&lt;p&gt;Sambungan peribadi ke <ph name="BEGIN_BOLD" /><ph name="DOMAIN" /><ph name="END_BOLD" /> tidak boleh diwujudkan kerana tarikh dan masa peranti anda (<ph name="DATE_AND_TIME" />) tidak betul.&lt;/p&gt;
@@ -351,7 +352,6 @@
 <translation id="4728558894243024398">Platform</translation>
 <translation id="4744603770635761495">Laluan Boleh Laku</translation>
 <translation id="4756388243121344051">&amp;Sejarah</translation>
-<translation id="4759238208242260848">Muat turun</translation>
 <translation id="4764776831041365478">Laman web di <ph name="URL" /> mungkin tergendala buat sementara waktu atau ia mungkin dpindahkan secara kekal ke alamat web baharu.</translation>
 <translation id="4771973620359291008">Ralat tidak diketahui telah berlaku.</translation>
 <translation id="4782449893814226250">Anda telah bertanya kepada ibu bapa anda sama ada ok untuk melawat halaman ini.</translation>
@@ -390,6 +390,7 @@
 <translation id="5179510805599951267">Bukan dalam <ph name="ORIGINAL_LANGUAGE" />? Laporkan ralat ini</translation>
 <translation id="5190835502935405962">Bar Penanda Halaman</translation>
 <translation id="5199729219167945352">Eksperimen</translation>
+<translation id="5199841536747119669">Cadangan anda dipaparkan di sini</translation>
 <translation id="5251803541071282808">Awan</translation>
 <translation id="5277279256032773186">Menggunakan Chrome di tempat kerja? Perniagaan boleh mengurus tetapan Chrome untuk pekerja mereka. Ketahui lebih lanjut</translation>
 <translation id="5299298092464848405">Ralat semasa menghuraikan dasar</translation>
@@ -469,6 +470,7 @@
 <translation id="6263376278284652872">Penanda halaman <ph name="DOMAIN" /></translation>
 <translation id="6264485186158353794">Kembali ke keselamatan</translation>
 <translation id="6282194474023008486">Poskod</translation>
+<translation id="6290238015253830360">Artikel cadangan anda dipaparkan di sini</translation>
 <translation id="6305205051461490394"><ph name="URL" /> tidak dapat dicapai.</translation>
 <translation id="6321917430147971392">Semak tetapan DNS anda</translation>
 <translation id="6328639280570009161">Cuba lumpuhkan ramalan rangkaian</translation>
@@ -652,6 +654,7 @@ Psst! <ph name="SHORTCUT_KEY" /> mod Inkognito mungkin akan berguna pada masa ak
 <translation id="8363502534493474904">Matikan mod pesawat</translation>
 <translation id="8364627913115013041">Tidak ditetapkan.</translation>
 <translation id="8380941800586852976">Berbahaya</translation>
+<translation id="8382348898565613901">Penanda halaman anda yang terbaharu dilawati dipaparkan di sini</translation>
 <translation id="8412145213513410671">Nahas (<ph name="CRASH_COUNT" />)</translation>
 <translation id="8412392972487953978">Anda mesti memasukkan frasa laluan yang sama dua kali.</translation>
 <translation id="8428213095426709021">Tetapan</translation>
@@ -701,6 +704,7 @@ Psst! <ph name="SHORTCUT_KEY" /> mod Inkognito mungkin akan berguna pada masa ak
 <translation id="8987927404178983737">Bulan</translation>
 <translation id="8989148748219918422"><ph name="ORGANIZATION" /> [<ph name="COUNTRY" />]</translation>
 <translation id="9001074447101275817"><ph name="DOMAIN" /> proksi memerlukan nama pengguna dan kata laluan.</translation>
+<translation id="9008201768610948239">Abaikan</translation>
 <translation id="901974403500617787">Bendera yang diguna pakai di seluruh sistem hanya boleh ditetapkan oleh pemilik: <ph name="OWNER_EMAIL" />.</translation>
 <translation id="9020542370529661692">Halaman ini telah diterjemahkan kepada <ph name="TARGET_LANGUAGE" /></translation>
 <translation id="9038649477754266430">Gunakan perkhidmatan ramalan untuk memuatkan halaman lebih cepat</translation>

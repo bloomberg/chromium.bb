@@ -50,6 +50,7 @@
 <translation id="1491663344921578213">Δεν μπορείτε να επισκεφτείτε τον ιστότοπο <ph name="SITE" /> αυτήν τη στιγμή γιατί ο ιστότοπος χρησιμοποιεί certificate pinning (κλείδωμα πιστοποιητικών). Τα σφάλματα δικτύου και οι επιθέσεις είναι συνήθως προσωρινά, συνεπώς αυτή η σελίδα πιθανότατα θα λειτουργήσει αργότερα. <ph name="BEGIN_LEARN_MORE_LINK" />Μάθετε περισσότερα<ph name="END_LEARN_MORE_LINK" />.</translation>
 <translation id="1506687042165942984">Εμφάνιση ενός αποθηκευμένου αντιγράφου (π.χ. επιβεβαιωμένες μη ενημερωμένες εκδόσεις) αυτής της σελίδας.</translation>
 <translation id="1519264250979466059">Ημερομηνία κατασκευής</translation>
+<translation id="153384715582417236">Αυτά προς το παρόν</translation>
 <translation id="1549470594296187301">Θα πρέπει να ενεργοποιηθεί η JavaScript για τη χρήση αυτής της λειτουργίας.</translation>
 <translation id="1559528461873125649">Δεν υπάρχει τέτοιο αρχείο ή κατάλογος</translation>
 <translation id="1559572115229829303">&lt;p&gt;Δεν είναι δυνατή η επίτευξη ιδιωτικής σύνδεσης με τον τομέα <ph name="BEGIN_BOLD" /><ph name="DOMAIN" /><ph name="END_BOLD" /> επειδή η ημερομηνία και η ώρα (<ph name="DATE_AND_TIME" />) της συσκευής σας είναι λανθασμένες.&lt;/p&gt;
@@ -350,7 +351,6 @@
 <translation id="4728558894243024398">Πλατφόρμα</translation>
 <translation id="4744603770635761495">Διαδρομή εκτελέσιμου</translation>
 <translation id="4756388243121344051">&amp;Ιστορικό</translation>
-<translation id="4759238208242260848">Λήψεις</translation>
 <translation id="4764776831041365478">Η ιστοσελίδα στη διεύθυνση <ph name="URL" /> μπορεί να βρίσκεται προσωρινά εκτός λειτουργίας ή ίσως έχει μεταφερθεί μόνιμα σε νέα διεύθυνση ιστού.</translation>
 <translation id="4771973620359291008">Παρουσιάστηκε άγνωστο σφάλμα.</translation>
 <translation id="4782449893814226250">Ρώτησες τους γονείς σου εάν σου επιτρέπουν να επισκεφτείς αυτήν τη σελίδα.</translation>
@@ -389,6 +389,7 @@
 <translation id="5179510805599951267">Δεν είναι στα <ph name="ORIGINAL_LANGUAGE" />; Αναφέρετε αυτό το σφάλμα</translation>
 <translation id="5190835502935405962">Γραμμή σελιδοδεικτών</translation>
 <translation id="5199729219167945352">Πειράματα</translation>
+<translation id="5199841536747119669">Οι προτάσεις σας εμφανίζονται εδώ</translation>
 <translation id="5251803541071282808">Cloud</translation>
 <translation id="5277279256032773186">Χρησιμοποιείτε το Chrome στη δουλειά σας; Οι επιχειρήσεις μπορούν να διαχειρίζονται τις ρυθμίσεις του Chrome για τους εργαζόμενούς τους. Μάθετε περισσότερα</translation>
 <translation id="5299298092464848405">Σφάλμα ανάλυσης πολιτικής</translation>
@@ -468,6 +469,7 @@
 <translation id="6263376278284652872">Σελιδοδείκτες <ph name="DOMAIN" /></translation>
 <translation id="6264485186158353794">Πίσω στην ασφάλεια</translation>
 <translation id="6282194474023008486">Ταχυδρομικός κώδικας</translation>
+<translation id="6290238015253830360">Τα προτεινόμενα άρθρα σας εμφανίζονται εδώ</translation>
 <translation id="6305205051461490394">Δεν είναι δυνατή η πρόσβαση στο <ph name="URL" />.</translation>
 <translation id="6321917430147971392">Ελέγξτε τις ρυθμίσεις DNS</translation>
 <translation id="6328639280570009161">Δοκιμάστε να απενεργοποιήσετε την πρόβλεψη δικτύου</translation>
@@ -651,6 +653,7 @@
 <translation id="8363502534493474904">Απενεργοποιήστε τη λειτουργία πτήσης</translation>
 <translation id="8364627913115013041">Δεν έχει οριστεί.</translation>
 <translation id="8380941800586852976">Επικίνδυνο</translation>
+<translation id="8382348898565613901">Οι σελιδοδείκτες που επισκεφτήκατε πρόσφατα εμφανίζονται εδώ.</translation>
 <translation id="8412145213513410671">Σφάλματα (<ph name="CRASH_COUNT" />)</translation>
 <translation id="8412392972487953978">Πρέπει να εισαγάγετε δύο φορές την ίδια φράση πρόσβασης.</translation>
 <translation id="8428213095426709021">Ρυθμίσεις</translation>
@@ -700,6 +703,7 @@
 <translation id="8987927404178983737">Μήνας</translation>
 <translation id="8989148748219918422"><ph name="ORGANIZATION" /> [<ph name="COUNTRY" />]</translation>
 <translation id="9001074447101275817">Απαιτείται όνομα χρήστη και κωδικός πρόσβασης για το διακομιστή μεσολάβησης <ph name="DOMAIN" />.</translation>
+<translation id="9008201768610948239">Παράβλεψη</translation>
 <translation id="901974403500617787">Οι επισημάνσεις που ισχύουν για ολόκληρο το σύστημα μπορούν να οριστούν μόνο από τον κάτοχο: <ph name="OWNER_EMAIL" />.</translation>
 <translation id="9020542370529661692">Αυτή η σελίδα έχει μεταφραστεί στα <ph name="TARGET_LANGUAGE" />.</translation>
 <translation id="9038649477754266430">Χρήση μιας υπηρεσίας πρόβλεψης για ταχύτερη φόρτωση σελίδων</translation>

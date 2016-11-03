@@ -22,6 +22,7 @@
 <translation id="1484102317210609525"><ph name="DEVICE_NAME" /> (HDMI/DP)</translation>
 <translation id="1510238584712386396">Übersicht</translation>
 <translation id="1525508553941733066">SCHLIESSEN</translation>
+<translation id="153454903766751181">Mobilfunkmodem wird initialisiert...</translation>
 <translation id="15373452373711364">Großer Cursor</translation>
 <translation id="1550523713251050646">Für weitere Optionen klicken</translation>
 <translation id="1602076796624386989">Mobilfunk aktivieren</translation>
@@ -32,6 +33,7 @@
 <translation id="1747827819627189109">Bildschirmtastatur aktiviert</translation>
 <translation id="1812696562331527143">Ihre Eingabemethode hat sich in <ph name="INPUT_METHOD_ID" />*(<ph name="BEGIN_LINK" />Drittanbieter<ph name="END_LINK" />) geändert.
 Drücken Sie zum Wechseln Shift+Alt.</translation>
+<translation id="1850504506766569011">WLAN ist deaktiviert.</translation>
 <translation id="1864454756846565995">USB-C-Gerät (Port hinten)</translation>
 <translation id="1882897271359938046">Wird auf <ph name="DISPLAY_NAME" /> gespiegelt...</translation>
 <translation id="1919743966458266018">Die Tastenkombination zum Öffnen des Task-Managers hat sich geändert. Bitte drücken Sie <ph name="NEW_SHORTCUT" /> statt <ph name="OLD_SHORTCUT" />.</translation>
@@ -47,6 +49,7 @@ Drücken Sie zum Wechseln Shift+Alt.</translation>
 <translation id="2268813581635650749">Alle abmelden</translation>
 <translation id="2297568595583585744">Statusleiste</translation>
 <translation id="2303600792989757991">Fensterübersicht umschalten</translation>
+<translation id="2354174487190027830"><ph name="NAME" /> wird aktiviert</translation>
 <translation id="2391579633712104609">180°</translation>
 <translation id="2429753432712299108">Das Bluetooth-Gerät "<ph name="DEVICE_NAME" />" bittet um Erlaubnis für Kopplung. Bevor Sie akzeptieren, überprüfen Sie, ob folgender Zugangscode auf dem Gerät angezeigt wird: <ph name="PASSKEY" />.</translation>
 <translation id="2475982808118771221">Ein Fehler ist aufgetreten.</translation>
@@ -59,6 +62,7 @@ Drücken Sie zum Wechseln Shift+Alt.</translation>
 <translation id="2700058918926273959">Sitzung endet in <ph name="SESSION_TIME_REMAINING" />. Sie werden dann abgemeldet.</translation>
 <translation id="2727977024730340865">Das Gerät ist an ein Schwachstrom-Ladegerät angeschlossen. Möglicherweise kann der Akku nicht zuverlässig aufgeladen werden.</translation>
 <translation id="2761704814324807722">Statusleiste, Uhrzeit <ph name="TIME" />, <ph name="BATTERY" /></translation>
+<translation id="277257480934873581">Verbindung zu <ph name="NAME" /> wird wiederhergestellt</translation>
 <translation id="2792498699870441125">Alt+Suchtaste</translation>
 <translation id="2819276065543622893">Sie werden jetzt abgemeldet.</translation>
 <translation id="2825619548187458965">Ablage</translation>
@@ -105,21 +109,27 @@ Drücken Sie die Such-Taste oder Shift, um die Aktivierung aufzuheben.</translat
 <translation id="3783640748446814672">Alt</translation>
 <translation id="3784455785234192852">Sperren</translation>
 <translation id="3799026279081545374">Möglicherweise ist Ihr Ladegerät fehlerhaft. Wenn Sie in den USA leben, erhalten Sie unter der Telefonnummer 866-628-1371 Hilfe und ein Ersatzgerät. Wählen Sie im Vereinigten Königreich die Nummer 0800-026-0613, in Irland die Nummer 1-800-832-664, in Kanada die Nummer 866-628-1372 und in Australien die Nummer 1-800-067-460.</translation>
+<translation id="3846575436967432996">Keine Netzwerkinformationen verfügbar</translation>
 <translation id="3866182280516392520">IPv6-Adresse</translation>
 <translation id="3891340733213178823">Drücken Sie zum Abmelden zweimal Strg + Shift + Q.</translation>
 <translation id="3892641579809465218">Interne Anzeige</translation>
 <translation id="3893630138897523026">ChromeVox (gesprochenes Feedback)</translation>
 <translation id="3899995891769452915">Spracheingabe</translation>
+<translation id="3901991538546252627">Verbindung mit <ph name="NAME" /> wird hergestellt.</translation>
 <translation id="3963445509666917109">Lautsprecher (intern)</translation>
 <translation id="3967919079500697218">Die Funktion zum Erfassen von Screenshots wurde vom Administrator deaktiviert.</translation>
 <translation id="397105322502079400">Wird berechnet...</translation>
 <translation id="3995138139523574647">USB-C-Gerät (Port hinten rechts)</translation>
 <translation id="4053612967614057854">Bildschirmtastatur deaktivieren</translation>
+<translation id="4118990158415604803">Die Möglichkeit einer Verbindung zu anderen Netzwerken wurde von Ihrem Administrator deaktiviert.</translation>
 <translation id="4250680216510889253">Nein</translation>
 <translation id="4279490309300973883">Spiegelung</translation>
 <translation id="4321179778687042513">Strg</translation>
 <translation id="4421231901400348175">Sie teilen sich die Bildschirmsteuerung mit <ph name="HELPER_NAME" /> per Remote-Unterstützung.</translation>
 <translation id="4430019312045809116">Lautstärke</translation>
+<translation id="4448844063988177157">Suche nach WLAN-Netzwerken läuft...</translation>
+<translation id="4479639480957787382">Ethernet</translation>
+<translation id="4508225577814909926"><ph name="NAME" />: Verbindung wird hergestellt...</translation>
 <translation id="4527045527269911712">Das Bluetooth-Gerät "<ph name="DEVICE_NAME" />" bittet um Erlaubnis für Kopplung.</translation>
 <translation id="453661520163887813">Vollständig geladen in <ph name="TIME" /> h</translation>
 <translation id="4544944664594876241">Die Tastenkombination zum Sperren des Bildschirms hat sich geändert. Bitte drücken Sie <ph name="NEW_SHORTCUT" /> statt <ph name="OLD_SHORTCUT" />.</translation>
@@ -172,6 +182,7 @@ Drücken Sie zum Wechseln Shift+Alt.</translation>
 <translation id="6165508094623778733">Weitere Informationen</translation>
 <translation id="6203030746557259519">Virtueller Bildschirm</translation>
 <translation id="6248847161401822652">Drücken Sie zum Beenden zweimal Steuerung-Shift-Q.</translation>
+<translation id="6267036997247669271"><ph name="NAME" />: Wird aktiviert...</translation>
 <translation id="6297287540776456956">Diesen Eingabestift verwenden, um einen Bereich auszuwählen</translation>
 <translation id="6310121235600822547"><ph name="DISPLAY_NAME" /> wurde zu <ph name="ROTATION" /> gedreht.</translation>
 <translation id="6359806961507272919">SMS von <ph name="PHONE_NUMBER" /></translation>
@@ -184,6 +195,7 @@ Drücken Sie zum Wechseln Shift+Alt.</translation>
 <translation id="6501401484702599040">Bildschirm wird an <ph name="RECEIVER_NAME" /> gestreamt</translation>
 <translation id="6521655319214113338">Handschrifteingabe</translation>
 <translation id="6537270692134705506">Screenshot aufnehmen</translation>
+<translation id="6549021752953852991">Kein Mobilfunknetz verfügbar</translation>
 <translation id="6550675742724504774">Optionen</translation>
 <translation id="6585808820553845416">Sitzung endet in <ph name="SESSION_TIME_REMAINING" />.</translation>
 <translation id="6596816719288285829">IP-Adresse</translation>
@@ -192,6 +204,7 @@ Drücken Sie zum Wechseln Shift+Alt.</translation>
 <translation id="6713285437468012787">Das Bluetooth-Gerät "<ph name="DEVICE_NAME" />" wurde gekoppelt und ist nun für alle Nutzer verfügbar. Sie können es unter "Einstellungen" wieder entkoppeln.</translation>
 <translation id="6785414152754474415">Akku ist zu <ph name="PERCENTAGE" /> % geladen und wird geladen.</translation>
 <translation id="683971173229319003">Suche + L</translation>
+<translation id="6857811139397017780"><ph name="NETWORKSERVICE" /> aktivieren</translation>
 <translation id="6911468394164995108">Andere Netzwerke...</translation>
 <translation id="6915678159055240887">Chromebox</translation>
 <translation id="6979158407327259162">Google Drive</translation>
@@ -200,6 +213,7 @@ Drücken Sie zum Wechseln Shift+Alt.</translation>
 <translation id="703171847531699602">Keine Übertragungsgeräte</translation>
 <translation id="7034339000180558234"><ph name="TAB_NAME" /> wird an <ph name="RECEIVER_NAME" /> gestreamt</translation>
 <translation id="7052914147756339792">Hintergrund ändern</translation>
+<translation id="7066646422045619941">Dieses Netzwerk wurde von Ihrem Administrator deaktiviert.</translation>
 <translation id="7097613348211027502">ChromeVox (gesprochenes Feedback) ist aktiviert.
 Zum Deaktivieren drücken Sie Strg + Alt + Z.</translation>
 <translation id="7098389117866926363">USB-C-Gerät (linker Port hinten)</translation>
@@ -209,6 +223,7 @@ Zum Deaktivieren drücken Sie Strg + Alt + Z.</translation>
 <translation id="7209101170223508707">Die Feststelltaste ist aktiviert.
 Drücken Sie Alt+Suchen oder Shift, um die Aktivierung aufzuheben.</translation>
 <translation id="7348093485538360975">Bildschirmtastatur</translation>
+<translation id="735745346212279324">VPN-Verbindung getrennt</translation>
 <translation id="737451040872859086">Mikrofon (intern)</translation>
 <translation id="742594950370306541">Kamera wird verwendet.</translation>
 <translation id="743058460480092004">Kamera und Mikrofon werden verwendet.</translation>
@@ -225,19 +240,24 @@ Drücken Sie Alt+Suchen oder Shift, um die Aktivierung aufzuheben.</translation>
 <translation id="7823564328645135659">Nach der Synchronisierung Ihrer Einstellungen wurde die Sprache von "<ph name="FROM_LOCALE" />" in "<ph name="TO_LOCALE" />" geändert.</translation>
 <translation id="785750925697875037">Mobiles Konto aufrufen</translation>
 <translation id="7864539943188674973">Bluetooth deaktivieren</translation>
+<translation id="7874779702599364982">Suche nach Mobilfunknetzen läuft...</translation>
 <translation id="7893838033650689677">WLAN aktivieren</translation>
 <translation id="7904094684485781019">Der Administrator dieses Kontos hat keine Mehrfachanmeldung zugelassen.</translation>
 <translation id="7957227661277029961">Ihr <ph name="DEVICE_TYPE" /> wird möglicherweise nicht aufgeladen, wenn es eingeschaltet ist. Wir empfehlen Ihnen, dass offizielle Ladegerät zu verwenden.</translation>
 <translation id="7982789257301363584">Netzwerk</translation>
+<translation id="8000066093800657092">Nicht verbunden</translation>
 <translation id="8054466585765276473">Akku-Laufzeit wird berechnet.</translation>
 <translation id="8077816382010018681">Titel der Benachrichtigung für schnelles Entsperren hier einfügen</translation>
 <translation id="8103386449138765447">SMS: <ph name="MESSAGE_COUNT" /></translation>
+<translation id="8132793192354020517">Verbunden mit <ph name="NAME" /></translation>
 <translation id="8185286464235484130">Bitte geben Sie uns Feedback, indem Sie ein paar Fragen beantworten.</translation>
 <translation id="8190698733819146287">Sprache und Eingabe anpassen...</translation>
 <translation id="8206859287963243715">Mobil</translation>
 <translation id="8308637677604853869">Vorheriges Menü</translation>
 <translation id="8356164830168736643"><ph name="WINDOW_TITLE" /> schließen</translation>
 <translation id="8428213095426709021">Einstellungen</translation>
+<translation id="8454013096329229812">WLAN ist aktiviert.</translation>
+<translation id="8484916590211895857"><ph name="NAME" />: Verbindung wird wiederhergestellt...</translation>
 <translation id="8517041960877371778">Ihr <ph name="DEVICE_TYPE" /> wird möglicherweise nicht aufgeladen, wenn es eingeschaltet ist.</translation>
 <translation id="8528322925433439945">Mobil...</translation>
 <translation id="8639760480004882931"><ph name="PERCENTAGE" /> % verbleibend</translation>

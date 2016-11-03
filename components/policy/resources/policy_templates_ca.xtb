@@ -19,6 +19,9 @@
       Quan aquesta política s'estableix en "false" o no s'estableix, les galetes establertes per l'IdP només es transfereixen al perfil de l'usuari durant el seu primer inici de sessió en un dispositiu.
 
       Aquesta política només afecta els usuaris amb dominis que coincideixen amb el domini de registre del dispositiu. Per a la resta d'usuaris, les galetes establertes per l'IdP només es transfereixen al perfil de l'usuari durant el seu primer inici de sessió al dispositiu.</translation>
+<translation id="1029536946382325801">Si s'estableix en "true", l'usuari pot fer servir el maquinari dels dispositius Chrome per confirmar la seva identitat de manera remota de cara a l'entitat emissora de certificats de privadesa a través de l'API de Enterprise Platform Keys chrome.enterprise.platformKeys.challengeUserKey().
+
+          Si s'estableix en "false" o no s'estableix, les crides a l'API tornaran un codi d'error.</translation>
 <translation id="1040446814317236570">Activeu la retirada de l'URL de PAC (per a https://)</translation>
 <translation id="1044878202534415707">Informa d'estadístiques del maquinari com ara l'ús de CPU o de RAM.
 
@@ -321,13 +324,6 @@ Si aquesta opció està desactivada o no especificada, no apareix cap botó gran
 <translation id="2309390639296060546">Configuració d'ubicació geogràfica predeterminada</translation>
 <translation id="2312134445771258233">Us permet configurar les pàgines que es carreguen en iniciar. El contingut de la llista "URL que s'han d'obrir en iniciar" s'ignora tret que seleccioneu "Obre una llista d'URL" a "Acció a l'inici".</translation>
 <translation id="2337466621458842053">Us permet definir una llista de patrons d'URL que especifiquen els llocs que poden mostrar imatges. Si no es defineix aquesta política, s'utilitzarà el valor global predeterminat per a tots els llocs tant de la política "DefaultImagesSetting", si es defineix, com d'un altre tipus de configuració personal de l'usuari.</translation>
-<translation id="2359612025446382967">Si aquesta política s'estableix en "false", <ph name="PRODUCT_OS_NAME" /> desactiva el Bluetooth i l'usuari no el pot tornar a activar.
-
-      Si aquesta política s'estableix en "true" o no s'estableix, l'usuari pot activar o desactivar el Bluetooth sempre que vulgui.
-
-      Si aquesta política s'estableix, l'usuari no la pot canviar ni substituir.
-
-      Després d'activar el Bluetooth, cal reiniciar el dispositiu perquè s'apliquin els canvis (no cal fer-ho en desactivar el Bluetooth).</translation>
 <translation id="2366415278352956652">Activa l'emissió</translation>
 <translation id="2372547058085956601">Retard d'inici de sessió automàtic de la sessió pública.
 
@@ -931,6 +927,9 @@ Si no es configura aquesta opció, no s'aplicarà cap restricció sobre els tipu
 
       Si aquesta política s'estableix en "true", s'envien paquets de xarxa de supervisió (anomenats <ph name="HEARTBEATS_TERM" />).
       Si s'estableix en "false" o no s'estableix, no s'envien paquets.</translation>
+<translation id="3963602271515417124">Si s'estableix en "true", es permetrà la confirmació remota per al dispositiu i es crearà i es penjarà automàticament un certificat al servidor de gestió de dispositius.
+
+          Si s'estableix en "false" o no s'estableix, no es crearà cap certificat i les trucades a l'API de l'extensió enterprise.platformKeys fallaran.</translation>
 <translation id="3964909636571393861">Permet l'accés a una llista d'URL</translation>
 <translation id="3965339130942650562">Temps d'espera fins que s'executi el tancament de sessió de l'usuari inactiu</translation>
 <translation id="3967075520570946456">Activa que es mostri la pàgina de benvinguda la primera vegada que s'inicia el navegador després d'actualitzar el sistema operatiu.</translation>
@@ -1448,12 +1447,6 @@ Si desactiveu aquest paràmetre o si no definiu cap valor, SafeSearch de Cerca d
 
       Si la política no s'estableix o si s'estableix en false, <ph name="PRODUCT_NAME" /> no realitzarà cap comprovació de revocació en línia a <ph name="PRODUCT_NAME" /> 19 ni versions posteriors.</translation>
 <translation id="5966615072639944554">Autoritza les extensions a utilitzar l'API de testimoni remot.</translation>
-<translation id="5974970919245996815">Envia al servidor informació sobre l'estat d'Android.
-
-      Si la política s'estableix en "false", la informació no s'envia.
-      Si s'estableix en "true" o es deixa sense establir, la informació s'envia.
-
-      Aquesta política només s'aplica si les aplicacions per a Android estan activades.</translation>
 <translation id="5983708779415553259">Comportament predeterminat per a llocs no inclosos en paquets de contingut</translation>
 <translation id="5997543603646547632">Ús del rellotge de 24 hores de manera predeterminada</translation>
 <translation id="6009903244351574348">Permeteu que <ph name="PRODUCT_FRAME_NAME" /> gestioni els tipus de contingut de la llista. Si no es defineix aquesta política, el processador predeterminat s'utilitzarà per a tots els llocs tal com s'especifica a la política "ChromeFrameRendererSettings".</translation>
@@ -2101,6 +2094,9 @@ Si aquesta política no es defineix o no s'activa, les ordres d'impressió faran
           no formin part d'un domini d'Active Directory.</translation>
 <translation id="7937766917976512374">Permet o bloqueja la captura de vídeo</translation>
 <translation id="7941975817681987555">No prediguis accions de xarxa en cap connexió de xarxa</translation>
+<translation id="7942429005743031780">Aquesta política especifica les extensions que tenen permís per utilitzar l'API de Enterprise Platform Keys chrome.enterprise.platformKeys.challengeUserKey() per a la confirmació remota. Les extensions s'han d'afegir a aquesta llista per poder utilitzar l'API.
+
+          Si no s'estableix la llista o no s'hi inclou alguna extensió, les crides a l'API tornaran un codi d'error.</translation>
 <translation id="7953256619080733119">Amfitrions d'excepcions manuals d'usuari gestionat</translation>
 <translation id="7971839631300653352">SSL 3.0</translation>
 <translation id="7974114691960514888">Aquesta política ja no és compatible. Activa l'ús de servidors STUN i de relé quan us connecteu a un client remot. Si s'activa aquest paràmetre, aquest equip pot descobrir i connectar-se a equips amfitrions remots, fins i tot si estan separats per un tallafoc. Si es desactiva aquest paràmetre i el tallafoc filtra les connexions UDP de sortida, aquest equip només es podrà connectar als equips amfitrions de la xarxa local.</translation>

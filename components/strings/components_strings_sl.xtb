@@ -50,6 +50,7 @@
 <translation id="1491663344921578213">Spletnega mesta <ph name="SITE" /> trenutno ni mogoče obiskati, ker uporablja pripenjanje potrdil. Napake omrežja in napadi na omrežje so običajno začasni, zato bo ta stran verjetno delovala pozneje. <ph name="BEGIN_LEARN_MORE_LINK" />Več o tem<ph name="END_LEARN_MORE_LINK" /></translation>
 <translation id="1506687042165942984">Prikaži shranjeno (zastarelo) kopijo te strani.</translation>
 <translation id="1519264250979466059">Datum gradnje</translation>
+<translation id="153384715582417236">To je vse za zdaj</translation>
 <translation id="1549470594296187301">Če želite uporabljati to funkcijo, mora biti omogočen JavaScript.</translation>
 <translation id="1559528461873125649">Taka datoteka ali imenik ne obstaja</translation>
 <translation id="1559572115229829303">&lt;p&gt;Zasebne povezave z domeno <ph name="BEGIN_BOLD" /><ph name="DOMAIN" /><ph name="END_BOLD" /> ni mogoče vzpostaviti, ker sta datum in ura (<ph name="DATE_AND_TIME" />) v napravi nepravilna.&lt;/p&gt;
@@ -350,7 +351,6 @@
 <translation id="4728558894243024398">Okolje</translation>
 <translation id="4744603770635761495">Pot do izvedljive datoteke</translation>
 <translation id="4756388243121344051">&amp;Zgodovina</translation>
-<translation id="4759238208242260848">Prenosi</translation>
 <translation id="4764776831041365478">Spletna stran na naslovu <ph name="URL" /> morda začasno ne deluje ali pa je trajno premaknjena na novi spletni naslov.</translation>
 <translation id="4771973620359291008">Prišlo je do neznane napake.</translation>
 <translation id="4782449893814226250">Starše si vprašal, ali smeš obiskati to stran.</translation>
@@ -389,6 +389,7 @@
 <translation id="5179510805599951267">Ni v <ph name="ORIGINAL_LANGUAGE" />? Obvestite nas o tej napaki</translation>
 <translation id="5190835502935405962">Vrstica z zaznamki</translation>
 <translation id="5199729219167945352">Poskusi</translation>
+<translation id="5199841536747119669">Tu so prikazani predlogi</translation>
 <translation id="5251803541071282808">Oblak</translation>
 <translation id="5277279256032773186">Uporabljate Chrome v službi? Podjetja lahko upravljajo nastavitve Chroma za zaposlene. Preberite več o tem.</translation>
 <translation id="5299298092464848405">Napaka pri razčlenjevanju pravilnika</translation>
@@ -468,6 +469,7 @@
 <translation id="6263376278284652872">Zaznamki <ph name="DOMAIN" /></translation>
 <translation id="6264485186158353794">Nazaj na varnost</translation>
 <translation id="6282194474023008486">Poštna številka</translation>
+<translation id="6290238015253830360">Tu so prikazani predlagani članki</translation>
 <translation id="6305205051461490394">Naslov <ph name="URL" /> je nedosegljiv.</translation>
 <translation id="6321917430147971392">Preverite nastavitve za DNS</translation>
 <translation id="6328639280570009161">Poskusite onemogočiti omrežno predvidevanje</translation>
@@ -651,6 +653,7 @@ Pst! Naslednjič vam lahko pride prav bližnjica <ph name="SHORTCUT_KEY" /> za n
 <translation id="8363502534493474904">izklopiti način za letalo</translation>
 <translation id="8364627913115013041">Ni nastavljen.</translation>
 <translation id="8380941800586852976">Nevarno</translation>
+<translation id="8382348898565613901">Tu so prikazani nedavno obiskani zaznamki</translation>
 <translation id="8412145213513410671">Zrušitve (<ph name="CRASH_COUNT" />)</translation>
 <translation id="8412392972487953978">Dvakrat morate vnesti isto geslo.</translation>
 <translation id="8428213095426709021">Nastavitve</translation>
@@ -700,6 +703,7 @@ Pst! Naslednjič vam lahko pride prav bližnjica <ph name="SHORTCUT_KEY" /> za n
 <translation id="8987927404178983737">Mesec</translation>
 <translation id="8989148748219918422"><ph name="ORGANIZATION" /> [<ph name="COUNTRY" />]</translation>
 <translation id="9001074447101275817">Strežnik proxy <ph name="DOMAIN" /> zahteva uporabniško ime in geslo.</translation>
+<translation id="9008201768610948239">Prezri</translation>
 <translation id="901974403500617787">Zastavice, ki se uporabijo v celotnem sistemu, lahko nastavi samo lastnik: <ph name="OWNER_EMAIL" />.</translation>
 <translation id="9020542370529661692">Ta stran je prevedena v jezik <ph name="TARGET_LANGUAGE" /></translation>
 <translation id="9038649477754266430">Uporaba storitve predvidevanja za hitrejše nalaganje strani</translation>

@@ -19,6 +19,9 @@
       このポリシーが false に設定されているか未設定の場合は、ユーザーが端末で最初にログインしたときにのみ、IdP によって設定された Cookie がそのユーザーのプロフィールに移行されます。
 
       このポリシーは、ユーザーのドメインが端末の登録ドメインと一致する場合にのみ適用されます。それ以外の場合は、ユーザーが端末で最初にログインしたときにのみ、IdP によって設定された Cookie がプロフィールに移行されます。</translation>
+<translation id="1029536946382325801">このポリシーを true に設定した場合、ユーザーは Enterprise Platform Keys API の chrome.enterprise.platformKeys.challengeUserKey() により、Chrome 搭載デバイスのハードウェアを使用してプライバシー CA に自身をリモート認証できます。
+
+          このポリシーを false に設定するか未設定のままにした場合、API 呼び出しは失敗し、エラーコードが返されます。</translation>
 <translation id="1040446814317236570">PAC URL データ除去を有効にする（https:// の場合）</translation>
 <translation id="1044878202534415707">CPU / RAM 使用率など、ハードウェアの統計情報を報告します。
 
@@ -319,13 +322,6 @@
 <translation id="2309390639296060546">デフォルトの位置情報設定</translation>
 <translation id="2312134445771258233">起動時に読み込まれるページを設定できます。[起動時の操作] の [URL のリストを開く] を選択しない場合、[起動時に開く URL] リストのコンテンツは無視されます。</translation>
 <translation id="2337466621458842053">画像を表示できるサイトを指定する url パターンのリストを設定できます。このポリシーが未設定の場合、グローバルのデフォルト値がすべてのサイトで使用されます。グローバルのデフォルト値は「DefaultImagesSetting」ポリシーの値か、この値が未設定の場合はユーザーの個人設定の値です。</translation>
-<translation id="2359612025446382967">このポリシーが false に設定されている場合、<ph name="PRODUCT_OS_NAME" /> では Bluetooth が無効になります。ユーザーが Bluetooth を再び有効にすることはできません。
-
-      このポリシーが true に設定されているか未設定の場合、ユーザーは必要に応じて Bluetooth を有効または無効にできます。
-
-      このポリシーが設定されている場合、ユーザーは設定内容を変更したり他の設定を優先させたりすることはできません。
-
-      Bluetooth を有効にした後、変更を適用するには端末を再起動する必要があります（Bluetooth を無効にした場合、再起動は不要です）。</translation>
 <translation id="2366415278352956652">キャストを有効にする</translation>
 <translation id="2372547058085956601">公開セッションに自動ログインするまでの時間です。
 
@@ -933,6 +929,9 @@
 
       このポリシーが True に設定されている場合は、監視ネットワーク パケット（<ph name="HEARTBEATS_TERM" />）が送信されます。
       このポリシーが False に設定されているか未設定の場合、パケットは送信されません。</translation>
+<translation id="3963602271515417124">このポリシーを true に設定した場合は、このデバイスでのリモート認証が可能になり、証明書が自動的に生成されてデバイス管理サーバーにアップロードされます。
+
+          このポリシーを false に設定するか未設定のままにした場合、証明書は生成されず、enterprise.platformKeys 拡張機能 API の呼び出しは失敗します。</translation>
 <translation id="3964909636571393861">URL のリストへのアクセスを許可する</translation>
 <translation id="3965339130942650562">アイドル状態のユーザーがログアウトされるまでのタイムアウト</translation>
 <translation id="3967075520570946456">OS アップグレード後に初めてブラウザを起動したときのウェルカム ページの表示を有効にします。</translation>
@@ -1452,12 +1451,6 @@ Active Directory ドメインに参加していない Windows インスタンス
 
       このポリシーが未設定または false に設定された場合、<ph name="PRODUCT_NAME" /> はオンラインによる証明書取り消しの確認を行いません（<ph name="PRODUCT_NAME" /> 19 以降）。</translation>
 <translation id="5966615072639944554">Remote Attestation API の使用が許可されている拡張機能</translation>
-<translation id="5974970919245996815">サーバーに返される Android のステータスに関する情報を報告します。
-
-      このポリシーが false に設定されている場合、この情報は報告されません。
-      このポリシーが true に設定されているか未設定の場合は、この情報が報告されます。
-
-      このポリシーは、Android アプリが有効になっている場合にのみ適用されます。</translation>
 <translation id="5983708779415553259">どのコンテンツ パックにもないサイトに対するデフォルトの動作</translation>
 <translation id="5997543603646547632">デフォルトで 24 時間表示を使用</translation>
 <translation id="6009903244351574348"><ph name="PRODUCT_FRAME_NAME" /> に対して、リストで指定したコンテンツ タイプの処理を許可します。このポリシーが未設定の場合、「ChromeFrameRendererSettings」ポリシーで指定されたデフォルトのレンダラがすべてのサイトで使用されます。</translation>
@@ -1853,7 +1846,7 @@ Active Directory ドメインに参加していない Windows インスタンス
           <ph name="PRODUCT_NAME" /> が「バックグラウンド モード」で動作している場合、最後のブラウザ ウィンドウを閉じてもセッションが終了せず、ブラウザを終了するまでアクティブなままになることがあります。この動作の設定について詳しくは、「BackgroundModeEnabled」ポリシーをご覧ください。
 
           「RestoreOnStartup」ポリシーが前回のセッションから URL を復元するように設定されている場合、このポリシーは適用されず、該当するサイトの Cookie は永続的に保存されます。</translation>
-<translation id="7207095846245296855">Google SafeSearch を強制適用する</translation>
+<translation id="7207095846245296855">Google セーフサーチを強制する</translation>
 <translation id="7216442368414164495">セーフ ブラウジングの詳細レポートを有効にすることをユーザーに許可する</translation>
 <translation id="7227967227357489766">デバイスへのログインを許可するユーザーのリストを定義します。エントリの形式は <ph name="USER_WHITELIST_ENTRY_FORMAT" /> です（例: <ph name="USER_WHITELIST_ENTRY_EXAMPLE" />）。ドメイン上の任意のユーザーを許可するには、<ph name="USER_WHITELIST_ENTRY_WILDCARD" /> のエントリ形式を使用します。
 
@@ -2106,6 +2099,9 @@ Active Directory ドメインに参加していない Windows インスタンス
 Active Directory ドメインに参加していない Windows インスタンスでこのポリシーを使用することはできません。</translation>
 <translation id="7937766917976512374">動画キャプチャを許可または拒否する</translation>
 <translation id="7941975817681987555">ネットワーク接続でネットワーク動作を予測しない</translation>
+<translation id="7942429005743031780">このポリシーでは、Enterprise Platform Keys API の chrome.enterprise.platformKeys.challengeUserKey() を使用してリモート認証を行うことを許可する拡張機能を指定します。この API を使用するには、このリストに拡張機能を追加する必要があります。
+
+          拡張機能がリストに追加されていないか、リストが設定されていない場合、API 呼び出しは失敗し、エラーコードが返されます。</translation>
 <translation id="7953256619080733119">管理対象ユーザーの手動による例外管理 - ホスト</translation>
 <translation id="7971839631300653352">SSL 3.0</translation>
 <translation id="7974114691960514888">このポリシーは現在サポートされていません。リモート クライアントに接続するときの STUN とリレー サーバーの使用を有効にします。この設定が有効になっている場合は、間にファイアウォールがあるかどうかにかかわらず、このコンピュータがリモート ホスト コンピュータを検出して接続することができます。この設定が無効であり、かつ発信 UDP 接続がファイアウォールによってフィルタリングされている場合は、このコンピュータから接続できるのはローカル ネットワーク内のホスト コンピュータのみとなります。</translation>

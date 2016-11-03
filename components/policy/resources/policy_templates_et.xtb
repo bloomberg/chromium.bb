@@ -19,6 +19,9 @@
       Kui reegel on määramata või määratud olekule Väär, kantakse IdP määratud küpsisefailid kasutajaprofiilile üle ainult tema esimesel sisselogimisel seadmesse.
 
       Reegel mõjutab ainult kasutajaid, kelle domeen kattub seadme registreerimisel kasutatava domeeniga. Kõigi muude kasutajate puhul kantakse IdP määratud küpsisefailid kasutajaprofiilile üle ainult tema esimesel sisselogimisel seadmesse.</translation>
+<translation id="1029536946382325801">Kui selle väärtuseks on määratud Tõene, saab kasutaja kasutada Chrome'i seadmete riistvara, et tõendada enda isikut distantsilt privaatsuse CA abil Enterprise Platform Keys API chrome.enterprise.platformKeys.challengeUserKey() kaudu.
+
+          Kui selle väärtuseks on määratud Väär või kui väärtus on määramata, siis kutse esitamine API-le ebaõnnestub ja saate vastuseks veakoodi.</translation>
 <translation id="1040446814317236570">Luba PAC URL-i eemaldamine (https:// puhul)</translation>
 <translation id="1044878202534415707">Saatke aruandeid riistvara statistika kohta (nt protsessori/RAM-i kasutus).
 
@@ -344,13 +347,6 @@
 <translation id="2337466621458842053">Võimaldab teil määrata URL-i mustrite loendi, mis määrab saidid, millel on lubatud kujutisi kuvada.
 
           Kui reeglit ei määrata, siis kasutatakse kõikide saitide puhul reegli „DefaultImagesSetting” globaalset vaikeväärtust, kui see on määratud, või kasutaja isiklikku konfigureerimist.</translation>
-<translation id="2359612025446382967">Kui reegli väärtuseks määratakse Väär, keelab operatsioonisüsteem <ph name="PRODUCT_OS_NAME" /> Bluetoothi ja kasutaja ei saa seda enam uuesti lubada.
-
-      Kui reegli väärtuseks määratakse Tõene või seda ei määrata, saab kasutaja Bluetoothi lubada või keelata.
-
-      Kui see reegel määratakse, ei saa kasutaja seda muuta ega alistada.
-
-      Kui Bluetooth lubatakse, tuleb seade muudatuste jõustamiseks taaskäivitada (Bluetoothi keelamisel pole vaja seadet taaskäivitada).</translation>
 <translation id="2366415278352956652">Lubab ülekandmise</translation>
 <translation id="2372547058085956601">Avaliku seansi automaatse sisselogimise viivitus.
 
@@ -975,6 +971,9 @@
 
       Kui selle reegli väärtuseks on määratud Tõene, saadetakse jälgitavad võrgupaketid (nn <ph name="HEARTBEATS_TERM" />).
       Kui väärtuseks on määratud Väär või reeglit ei määrata, siis pakette ei saadeta.</translation>
+<translation id="3963602271515417124">Kui selle väärtuseks on määratud Tõene, on seadme kaugatesteerimine lubatud ning sertifikaat luuakse ja laaditakse seadmehaldusserverisse üles automaatselt.
+
+          Kui selle väärtuseks on määratud Väär või kui väärtus on määramata, siis sertifikaati ei looda ja kõned üksuse enterprise.platformKeys laienduse API-le ebaõnnestuvad.</translation>
 <translation id="3964909636571393861">Võimaldab juurdepääsu URL-ide loendile</translation>
 <translation id="3965339130942650562">Ajalõpp kuni jõudeolekus kasutaja väljalogimiseni</translation>
 <translation id="3967075520570946456">Tervituslehe kuvamise lubamine brauseri esmakordsel käivitamisel pärast operatsioonisüsteemi täiendamist.</translation>
@@ -1547,13 +1546,6 @@
 
       Kui jätate reegli määramata või seate selle olekuks Väär, ei tee <ph name="PRODUCT_NAME" /> 19. versioonis ja hilisemates versioonides toote <ph name="PRODUCT_NAME" /> veebipõhiseid tühistamiskontrolle.</translation>
 <translation id="5966615072639944554">Kaugatesteerimise API kasutamiseks lubatud laiendused</translation>
-<translation id="5974970919245996815">Saadab teabe Androidi oleku kohta tagasi
-      serverisse.
-
-      Kui reegli väärtuseks määratakse Väär, siis teavet ei saadeta.
-      Kui reegli väärtuseks määratakse Tõene või seda ei määrata, siis teave saadetakse.
-
-      See reegel kehtib ainult juhul, kui Androidi rakendused on lubatud.</translation>
 <translation id="5983708779415553259">Mitte ühessegi sisupaketti kuuluvate saitide vaikekäitumine</translation>
 <translation id="5997543603646547632">Vaikimisi 24-tunnise kella kasutamine</translation>
 <translation id="6009903244351574348">Lubage rakendusel <ph name="PRODUCT_FRAME_NAME" /> käsitleda loetletud sisutüüpe.
@@ -2249,6 +2241,9 @@
           Active Directory domeeniga.</translation>
 <translation id="7937766917976512374">Video jäädvustamise lubamine või keelamine</translation>
 <translation id="7941975817681987555">Ära ennusta võrgutoiminguid ühegi võrguühenduse puhul</translation>
+<translation id="7942429005743031780">Reegel määrab lubatud laiendused, mida kasutada kaugatesteerimisel Enterprise Platform Keys API chrome.enterprise.platformKeys.challengeUserKey() jaoks. API kasutamiseks tuleb laiendused loendisse lisada.
+
+          Kui laiendust loendis pole või kui loendit pole koostatud, siis kõne API-le ebaõnnestub ja saate vastuseks veakoodi.</translation>
 <translation id="7953256619080733119">Kasutaja käsitsi sisestatavate hostide erandite haldamine</translation>
 <translation id="7971839631300653352">SSL 3.0</translation>
 <translation id="7974114691960514888">Seda reeglit ei toetata enam.

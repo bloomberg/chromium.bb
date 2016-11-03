@@ -116,7 +116,6 @@
 <translation id="5643186887447432888">botón</translation>
 <translation id="5677946354068040947">más opciones</translation>
 <translation id="57838592816432529">Silenciar</translation>
-<translation id="583281660410589416">Desconocido</translation>
 <translation id="5843503607508392247">Otra...</translation>
 <translation id="5860033963881614850">No</translation>
 <translation id="588258955323874662">Pantalla completa</translation>
@@ -146,7 +145,7 @@
 <translation id="6820355525329141109">No se ha podido cargar el complemento.</translation>
 <translation id="6843725295806269523">silenciar</translation>
 <translation id="6845533974506654842">pulsar</translation>
-<translation id="6853785296079745596">ocultar subtítulos opcionales</translation>
+<translation id="6853785296079745596">ocultar subtítulos</translation>
 <translation id="6885760532393684712">directorio</translation>
 <translation id="6934078000481955284">blockquote</translation>
 <translation id="6941933287844615239">descargar archivos multimedia</translation>
@@ -161,7 +160,7 @@
 <translation id="7514365320538308">Descargar</translation>
 <translation id="7673697353781729403">Horas</translation>
 <translation id="7720026100085573005">tiempo restante</translation>
-<translation id="7740016676195725605">dejar de mostrar subtítulos opcionales</translation>
+<translation id="7740016676195725605">dejar de mostrar subtítulos</translation>
 <translation id="7740050170769002709">Contenido HTML</translation>
 <translation id="7789962463072032349">pausar</translation>
 <translation id="7802800022689234070">triángulo de revelación</translation>
@@ -169,7 +168,7 @@
 <translation id="7891486169920085145">divisor</translation>
 <translation id="795667975304826397">Ningún archivo seleccionado</translation>
 <translation id="8053789581856978548">campo para buscar texto</translation>
-<translation id="8115662671911883373">iniciar la visualización de subtítulos opcionales</translation>
+<translation id="8115662671911883373">iniciar la visualización de subtítulos</translation>
 <translation id="8117451130807776954">Esta semana</translation>
 <translation id="8141602879876242471">Se trata de un índice que admite búsquedas. Introduce las palabras clave de búsqueda:</translation>
 <translation id="819205353528511139">reproducir la película en modo de pantalla completa</translation>
@@ -195,7 +194,7 @@
 <translation id="9002566407876343676">abrir</translation>
 <translation id="901493112792887934">tiempo actual en segundos</translation>
 <translation id="9048119486235211610">navegación</translation>
-<translation id="9050748414552849310">mostrar subtítulos opcionales</translation>
+<translation id="9050748414552849310">mostrar subtítulos</translation>
 <translation id="9062295712474918030">documento</translation>
 <translation id="9108370397979208512">expresión matemática</translation>
 <translation id="9132465097189459683">Otra...</translation>

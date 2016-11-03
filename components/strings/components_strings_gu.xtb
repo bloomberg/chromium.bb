@@ -50,6 +50,7 @@
 <translation id="1491663344921578213">તમે અત્યારે <ph name="SITE" /> ની મુલાકાત લઈ શકતાં નથી કારણ કે વેબસાઇટ પ્રમાણપત્ર પિનિંગનો ઉપયોગ કરે છે. નેટવર્ક ભૂલો અને હુમલા સામાન્ય રીતે અસ્થાયી છે, તેથી આ પૃષ્ઠ સંભવિત રૂપે પછીથી કાર્ય કરશે. <ph name="BEGIN_LEARN_MORE_LINK" />વધુ જાણો<ph name="END_LEARN_MORE_LINK" /></translation>
 <translation id="1506687042165942984">આ પૃષ્ઠની સાચવેલી (એટલે કે જૂની થઈ ગયેલી તરીકે ઓળખાતી) કૉપિ દર્શાવો.</translation>
 <translation id="1519264250979466059">નિર્માણ તારીખ</translation>
+<translation id="153384715582417236">હમણાં માટે બસ આટલું પૂરતું છે</translation>
 <translation id="1549470594296187301">આ સુવિધાનો ઉપયોગ કરવા માટે JavaScript સક્ષમ કરેલ હોવી આવશ્યક છે.</translation>
 <translation id="1559528461873125649">આવી કોઈ ફાઇલ અથવા નિર્દેશિકા નથી</translation>
 <translation id="1559572115229829303">&lt;p&gt;<ph name="BEGIN_BOLD" /><ph name="DOMAIN" /><ph name="END_BOLD" /> પર ખાનગી કનેક્શન સ્થાપિત કરી શકાતું નથી કારણ કે તમારા ઉપકરણની તારીખ અને સમય (<ph name="DATE_AND_TIME" />) અયોગ્ય છે.&lt;/p&gt;
@@ -350,7 +351,6 @@
 <translation id="4728558894243024398">પ્લેટફોર્મ</translation>
 <translation id="4744603770635761495">અમલ કરવાયોગ્ય પાથ</translation>
 <translation id="4756388243121344051">&amp;ઇતિહાસ</translation>
-<translation id="4759238208242260848">ડાઉનલોડ્સ</translation>
 <translation id="4764776831041365478"><ph name="URL" /> પરનાં વેબપેજ અસ્થાયી ધોરણે બંધ હોઈ શકે છે અથવા તે કાયમ માટે નવા વેબ સરનામાં પર ખસેડવામાં આવ્યા હોઈ શકે છે.</translation>
 <translation id="4771973620359291008">કોઈ અજ્ઞાત ભૂલ આવી.</translation>
 <translation id="4782449893814226250">તમે આ પૃષ્ઠની મુલાકાત લો તે ઠીક છે કે કેમ તેવું તમે તમારા માતાપિતાને પૂછ્યું.</translation>
@@ -389,6 +389,7 @@
 <translation id="5179510805599951267"><ph name="ORIGINAL_LANGUAGE" /> માં નથી? આ ભૂલની જાણ કરો </translation>
 <translation id="5190835502935405962">બુકમાર્ક્સ બાર</translation>
 <translation id="5199729219167945352">પ્રયોગો</translation>
+<translation id="5199841536747119669">તમારા સૂચનો અહીં દેખાય છે</translation>
 <translation id="5251803541071282808">મેઘ</translation>
 <translation id="5277279256032773186">કાર્ય પર Chrome નો ઉપયોગ કરી રહ્યાં છો? વ્યવસાયો તેમના કર્મચારીઓ માટે Chrome સેટિંગ્સને સંચાલિત કરી શકે છે. વધુ જાણો</translation>
 <translation id="5299298092464848405">ભૂલ વિશ્લેષણ નીતિ</translation>
@@ -468,6 +469,7 @@
 <translation id="6263376278284652872"><ph name="DOMAIN" /> બુકમાર્ક્સ</translation>
 <translation id="6264485186158353794">સુરક્ષા પર પાછા</translation>
 <translation id="6282194474023008486">પોસ્ટલ કોડ</translation>
+<translation id="6290238015253830360">તમારા સૂચવેલા લેખ અહીં દેખાય છે</translation>
 <translation id="6305205051461490394"><ph name="URL" />, પહોંચવા યોગ્ય નથી.</translation>
 <translation id="6321917430147971392">તમારી DNS સેટિંગ્સ તપાસો</translation>
 <translation id="6328639280570009161">નેટવર્ક પૂર્વાનુમાનને અક્ષમ કરવાનો પ્રયાસ કરો</translation>
@@ -651,6 +653,7 @@
 <translation id="8363502534493474904">એરપ્લેન મોડ બંધ કરીને</translation>
 <translation id="8364627913115013041">સેટ નથી.</translation>
 <translation id="8380941800586852976">જોખમી</translation>
+<translation id="8382348898565613901">તમારા તાજેતરમાં મુલાકાત લીધેલ બુકમાર્ક્સ અહીં દેખાય છે</translation>
 <translation id="8412145213513410671">ક્રેશેસ (<ph name="CRASH_COUNT" />)</translation>
 <translation id="8412392972487953978">તમારે તે જ પાસફ્રેઝ બે વાર દાખલ કરવો આવશ્યક છે.</translation>
 <translation id="8428213095426709021">સેટિંગ્સ</translation>
@@ -700,6 +703,7 @@
 <translation id="8987927404178983737">મહિનો</translation>
 <translation id="8989148748219918422"><ph name="ORGANIZATION" /> [<ph name="COUNTRY" />]</translation>
 <translation id="9001074447101275817">પ્રોક્સી <ph name="DOMAIN" /> ને વપરાશકર્તાનામ અને પાસવર્ડની જરૂર છે.</translation>
+<translation id="9008201768610948239">અવગણો</translation>
 <translation id="901974403500617787">ધ્વજો કે જે સિસ્ટમ-વ્યાપી લાગુ છે તે ફક્ત માલિક દ્વારા જ સેટ કરી શકાય છે: <ph name="OWNER_EMAIL" />.</translation>
 <translation id="9020542370529661692">આ પૃષ્ઠનો <ph name="TARGET_LANGUAGE" /> માં અનુવાદ કરવામાં આવ્યો છે</translation>
 <translation id="9038649477754266430">પૃષ્ઠોને વધુ ઝડપથી લોડ કરવા માટે પૂર્વાનુમાન સેવાનો ઉપયોગ કરો</translation>

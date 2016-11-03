@@ -19,6 +19,9 @@
       Jika kebijakan ini disetel ke false atau tidak disetel, cookie yang ditetapkan IdP akan ditransfer ke profil pengguna selama proses masuk pertamanya di perangkat saja.
 
       Kebijakan ini memengaruhi pengguna yang domainnya cocok dengan domain pendaftaran perangkat saja. Untuk pengguna lainnya, cookie yang ditetapkan oleh IdP akan ditransfer ke profil pengguna selama proses masuk pertamanya hanya di perangkat.</translation>
+<translation id="1029536946382325801">Jika disetel ke true, pengguna dapat menggunakan perangkat keras di perangkat Chrome untuk membuktikan identitasnya dari jarak jauh ke CA privasi melalui API Kunci Platform Perusahaan chrome.enterprise.platformKeys.challengeUserKey().
+
+          Jika disetel ke false, atau jika tidak disetel, panggilan ke API akan gagal dengan suatu kode kesalahan.</translation>
 <translation id="1040446814317236570">Aktifkan penyembunyian URL PAC (untuk https://)</translation>
 <translation id="1044878202534415707">Melaporkan statistik perangkat keras, seperti penggunaan CPU/RAM.
 
@@ -290,7 +293,7 @@
       Jika HardwareAccelerationModeEnabled disetel ke False, Disable3DAPI akan diabaikan dan setara dengan Disable3DAPI yang disetel ke True.</translation>
 <translation id="2168397434410358693">Menunda waktu menganggur saat menggunakan daya AC</translation>
 <translation id="2170233653554726857">Aktifkan pengoptimalan WPAD</translation>
-<translation id="2178899310296064282">Terapkan setidaknya Mode Terbatas Menengah di Youtube</translation>
+<translation id="2178899310296064282">Terapkan setidaknya Mode Terbatas Menengah di YouTube</translation>
 <translation id="2188979373208322108">Mengaktifkan bilah bookmark di <ph name="PRODUCT_NAME" />. Jika Anda mengaktifkan setelan ini, <ph name="PRODUCT_NAME" /> akan menampilkan bilah bookmark. Jika Anda menonaktifkan setelan ini, pengguna tidak akan pernah melihat bilah bookmark. Jika Anda mengaktifkan atau menonaktifkan setelan ini, pengguna tidak dapat mengubah atau menimpanya di <ph name="PRODUCT_NAME" />. Jika setelan ini tidak disetel, pengguna dapat memutuskan untuk menggunakan fungsi ini atau tidak.</translation>
 <translation id="2201555246697292490">Konfigurasikan daftar putih perpesanan asli</translation>
 <translation id="2204753382813641270">Kontrol sembunyi otomatis rak</translation>
@@ -324,13 +327,6 @@
 <translation id="2309390639296060546">Setelan geolokasi default</translation>
 <translation id="2312134445771258233">Memungkinkan Anda mengonfigurasi laman yang dimuat saat permulaan. Isi daftar 'URL yang dibuka saat permulaan' diabaikan kecuali jika Anda memilih 'Buka daftar URL' dalam 'Tindakan saat permulaan'.</translation>
 <translation id="2337466621458842053">Memungkinkan Anda menyetel daftar pola url yang menentukan situs yang diizinkan untuk menampilkan gambar. Jika kebijakan ini dibiarkan tanpa disetel, nilai global default akan digunakan untuk semua situs, baik dari kebijakan 'DefaultImagesSetting', jika disetel, maupun konfigurasi pribadi pengguna.</translation>
-<translation id="2359612025446382967">Jika kebijakan ini disetel ke false, <ph name="PRODUCT_OS_NAME" /> akan menonaktifkan Bluetooth dan pengguna tidak dapat mengaktifkannya kembali.
-
-      Jika kebijakan ini disetel ke true atau tidak disetel, pengguna dapat mengaktifkan atau menonaktifkan Bluetooth kapan saja.
-
-      Jika kebijakan ini disetel, pengguna tidak dapat mengubah atau menggantinya.
-
-      Setelah mengaktifkan Bluetooth, perangkat harus diboot ulang untuk menerapkan perubahan (perangkat tidak perlu diboot ulang saat menonaktifkan Bluetooth).</translation>
 <translation id="2366415278352956652">Mengaktifkan transmisi</translation>
 <translation id="2372547058085956601">Penundaan masuk otomatis sesi publik.
 
@@ -758,15 +754,15 @@ Pengguna dapat memasang item dari URL apa pun yang cocok dengan item dalam dafta
 <translation id="3417418267404583991">Jika kebijakan ini disetel ke true atau tidak dikonfigurasi, <ph name="PRODUCT_OS_NAME" /> akan mengaktifkan masuk sebagai tamu. Masuk sebagai tamu adalah sesi pengguna anonim dan tidak memerlukan sandi.
 
       Jika kebijakan ini disetel ke false, <ph name="PRODUCT_OS_NAME" /> tidak akan mengizinkan dimulainya sesi tamu.</translation>
-<translation id="3418871497193485241">Menerapkan Mode Terbatas minimum di Youtube dan mencegah pengguna agar tidak
-      memilih mode terbatas yang lebih kecil.
+<translation id="3418871497193485241">Menerapkan Mode Terbatas minimum di YouTube dan mencegah pengguna agar tidak
+      memilih mode dengan pembatasan lebih longgar.
 
-      Jika setelan ini disetel ke Mode Ketat, Mode Terbatas Ketat di Youtube akan selalu aktif.
+      Jika setelan ini disetel ke Mode Ketat, Mode Terbatas Ketat di YouTube akan selalu aktif.
 
       Jika setelan ini disetel ke Mode Menengah, pengguna hanya dapat memilih Mode Terbatas Menengah
-      dan Mode Terbatas Ketat di Youtube, tetapi tidak dapat menonaktifkan Mode Terbatas.
+      dan Mode Terbatas Ketat di YouTube, tetapi tidak dapat menonaktifkan Mode Terbatas.
 
-      Jika setelah ini disetel Nonaktif atau tidak ada pilihan yang disetel, Mode Terbatas di Youtube tidak dapat diterapkan oleh <ph name="PRODUCT_NAME" />. Namun, kebijakan eksternal seperti kebijakan Youtube masih dapat menerapkan Mode Terbatas.</translation>
+      Jika setelan ini disetel Nonaktif atau tidak ada pilihan yang disetel, Mode Terbatas di YouTube tidak dapat diterapkan oleh <ph name="PRODUCT_NAME" />. Namun, kebijakan eksternal seperti kebijakan YouTube masih dapat menerapkan Mode Terbatas.</translation>
 <translation id="3428247105888806363">Aktifkan prediksi jaringan</translation>
 <translation id="3449886121729668969">Mengonfigurasi setelan proxy untuk <ph name="PRODUCT_NAME" />. Setelan proxy ini juga akan tersedia untuk aplikasi ARC.
 
@@ -905,9 +901,9 @@ Pengguna dapat memasang item dari URL apa pun yang cocok dengan item dalam dafta
 
       Memaksa kueri pada Google Penelusuran Web dapat dilakukan dengan fitur TelusurAman yang disetel ke aktif dan mencegah pengguna agar tidak mengubah setelan ini. Setelan ini juga memaksa Mode Terbatas Menengah di YouTube.
 
-      Jika Anda mengaktifkan setelan ini, TelusurAman di Google Penelusuran dan Mode Terbatas Menengah di Youtube akan selalu aktif .
+      Jika Anda mengaktifkan setelan ini, TelusurAman di Google Penelusuran dan Mode Terbatas Menengah di Youtube akan selalu aktif.
 
-      Jika Anda menonaktifkan setelan ini atau tidak menetapkan pilihan, TelusurAman di Google Penelusuran dan Mode Terbatas di YouTube tidak akan ditetapkan.</translation>
+      Jika Anda menonaktifkan setelan ini atau tidak menetapkan pilihan, TelusurAman di Google Penelusuran dan Mode Terbatas di YouTube tidak akan diterapkan.</translation>
 <translation id="3866249974567520381">Deskripsi</translation>
 <translation id="3866530186104388232">Jika kebijakan ini diatur ke true atau tidak dikonfigurasi, <ph name="PRODUCT_OS_NAME" /> akan menampilkan pengguna yang ada pada layar masuk dan diizinkan untuk memilih salah satu. Jika kebijakan ini diatur ke false, <ph name="PRODUCT_OS_NAME" /> akan menggunakan permintaan nama pengguna/sandi untuk masuk.</translation>
 <translation id="3868347814555911633">Kebijakan ini hanya aktif dalam mode ritel.
@@ -940,6 +936,9 @@ Pengguna dapat memasang item dari URL apa pun yang cocok dengan item dalam dafta
 
       Jika kebijakan ini disetel ke true, paket jaringan pemantauan (yang disebut <ph name="HEARTBEATS_TERM" />) akan dikirimkan.
       Jika disetel ke false atau tidak disetel, tidak ada paket yang akan dikirim.</translation>
+<translation id="3963602271515417124">Jika disetel ke true, pengesahan jarak jauh diizinkan untuk perangkat dan sertifikat akan otomatis dibuat serta diupload ke Server Pengelolaan Perangkat.
+
+          Jika disetel ke false, atau jika tidak disetel, sertifikat tidak akan dibuat dan panggilan ke API ekstensi enterprise.platformKeys akan gagal.</translation>
 <translation id="3964909636571393861">Memungkinkan akses ke daftar URL</translation>
 <translation id="3965339130942650562">Waktu tunggu sampai proses keluar pengguna nganggur dieksekusi</translation>
 <translation id="3967075520570946456">Mengaktifkan menampilkan laman selamat datang saat peluncuran browser pertama setelah peningkatan versi OS.</translation>
@@ -984,17 +983,17 @@ Pengguna dapat memasang item dari URL apa pun yang cocok dengan item dalam dafta
 
           Jika kebijakan ini tidak disetel, 'AllowCookies' akan digunakan dan pengguna dapat mengubahnya.</translation>
 <translation id="4103289232974211388">Alihkan ke SAML IdP setelah konfirmasi pengguna</translation>
-<translation id="4103941930938018145">Kebijakan ini tidak berlaku lagi. Gunakan kebijakan <ph name="DEFAULT_PLUGINS_SETTING_POLICY" /> untuk mengontrol ketersediaan plugin Flash dan kebijakan <ph name="ALWAYS_OPEN_PDF_EXTERNALLY_POLICY" /> untuk mengontrol apakah penampil PDF yang diintegrasikan harus digunakan untuk membuka file PDF.
+<translation id="4103941930938018145">rKebijakan ini tidak berlaku lagi. Gunakan kebijakan <ph name="DEFAULT_PLUGINS_SETTING_POLICY" /> untuk mengontrol ketersediaan plugin Flash dan kebijakan <ph name="ALWAYS_OPEN_PDF_EXTERNALLY_POLICY" /> untuk mengontrol apakah penampil PDF yang diintegrasikan harus digunakan untuk membuka file PDF.
 
       Menentukan daftar plugin yang dinonaktifkan di <ph name="PRODUCT_NAME" /> dan mencegah pengguna agar tidak mengubah setelan ini.
 
-      Karakter pengganti '*' dan '?' dapat digunakan untuk mencocokkan urutan karakter arbitrer. '*' mencocokkan beberapa karakter arbitrer sedangkan '?' menentukan karakter tunggal opsional, misalnya, mencocokkan karakter nol atau satu. Karakter keluar berupa '\', jadi untuk mencocokkan karakter sebenarnya '*', '?', atau '\', Anda dapat menambahkan '\' sebelum karakter tersebut.
+      Karakter pengganti '*' dan '?' dapat digunakan untuk mencocokkan urutan karakter arbitrer. Karakter '*' mencocokkan sembarang jumlah karakter sedangkan '?' menentukan karakter tunggal opsional, misalnya, mencocokkan karakter nol atau satu. Karakter keluar berupa '\', jadi untuk mencocokkan karakter sebenarnya '*', '?', atau '\', Anda dapat menambahkan '\' sebelum karakter tersebut.
 
       Jika Anda mengaktifkan setelan ini, daftar plugin yang ditentukan tidak pernah digunakan pada <ph name="PRODUCT_NAME" />. Plugin ditandai nonaktif pada 'about:plugins' dan pengguna tidak dapat mengaktifkan plugin tersebut.
 
-      Perhatikan bahwa kebijakan ini dapat diganti oleh EnabledPlugins dan DisabledPluginsExceptions.
+      Perhatikan bahwa kebijakan ini dapat digantikan oleh EnabledPlugins dan DisabledPluginsExceptions.
 
-      Jika kebijakan ini tidak disetel, pengguna dapat menggunakan plugin apa pun yang dipasang pada sistem kecuali untuk plugin berbahaya, usang, atau tidak kompatibel yang sulit disandikan.</translation>
+      Jika kebijakan ini tidak disetel, pengguna dapat menggunakan plugin apa pun yang dipasang pada sistem kecuali plugin berbahaya, usang, atau tidak kompatibel yang sulit disandikan.</translation>
 <translation id="410478022164847452">Menentukan panjang waktu tanpa masukan pengguna sebelum tindakan menganggur diambil saat menggunakan daya AC.
 
           Saat kebijakan ini disetel, kebijakan menentukan panjang waktu pengguna harus tetap menganggur sebelum <ph name="PRODUCT_OS_NAME" /> melakukan tindakan menganggur, yang dapat dikonfigurasikan secara terpisah.
@@ -1275,13 +1274,13 @@ Pengguna dapat memasang item dari URL apa pun yang cocok dengan item dalam dafta
           Jika setelan ini dinonaktifkan atau tidak disetel, baik pengguna lokal maupun pengguna jarak jauh dapat berinteraksi dengan hosting ketika sedang dibagikan.</translation>
 <translation id="5423001109873148185">Kebijakan ini memaksa mesin telusur untuk diimpor dari browser default yang digunakan, jika diaktifkan. Jika diaktifkan, kebijakan ini juga memengaruhi dialog impor. Jika dinonaktifkan, mesin telusur default tidak diimpor. Jika tidak disetel, pengguna mungkin akan ditanya apakah ingin mengimpor, atau pengimporan dapat terjadi secara otomatis.</translation>
 <translation id="5423197884968724595">Nama batasan Android WebView:</translation>
-<translation id="543559563129402336">Kebijakan ini tidak berlaku. Pertimbangkan untuk menggunakan kebijakan <ph name="FORCEYOUTUBERESTRICT_POLICY_NAME" />, yang dapat menggantikan kebijakan ini dan memungkinkan pemilihan yang lebih detail.
+<translation id="543559563129402336">Kebijakan ini tidak berlaku. Pertimbangkan untuk menggunakan kebijakan <ph name="FORCEYOUTUBERESTRICT_POLICY_NAME" />, yang menggantikan kebijakan ini dan memungkinkan pemilihan yang lebih detail.
 
-      Memaksa Mode Terbatas Menengah di Youtube dan mencegah pengguna agar tidak mengubah setelan ini.
+      Memaksa Mode Terbatas Menengah di YouTube dan mencegah pengguna agar tidak mengubah setelan ini.
 
-      Jika setelan ini diaktifkan, Mode Terbatas di Youtube akan selalu diterapkan setidaknya ke Mode Menengah.
+      Jika setelan ini diaktifkan, Mode Terbatas di YouTube akan selalu diterapkan setidaknya ke Mode Menengah.
 
-      Jika setelan ini dinonaktifkan atau tidak ada pilihan yang ditetapkan, Mode Terbatas di YouTube tidak akan ditetapkan oleh <ph name="PRODUCT_NAME" />. Namun, kebijakan eksternal seperti kebijakan Youtube masih dapat menetapkan Mode Terbatas.</translation>
+      Jika setelan ini dinonaktifkan atau tidak ada pilihan yang ditetapkan, Mode Terbatas di YouTube tidak akan diterapkan oleh <ph name="PRODUCT_NAME" />. Namun, kebijakan eksternal seperti kebijakan YouTube masih dapat menerapkan Mode Terbatas.</translation>
 <translation id="5447306928176905178">Aktifkan pelaporan info memori (JS heap size) ke laman (dipensiunkan)</translation>
 <translation id="5457065417344056871">Mengaktifkan mode tamu dalam browser</translation>
 <translation id="5457924070961220141">Memungkinkan Anda mengonfigurasi perender HTML default saat <ph name="PRODUCT_FRAME_NAME" /> dipasang. Setelan default yang digunakan ketika kebijakan ini tidak disetel adalah mengizinkan browser host melakukan perenderan, tetapi Anda dapat menimpanya secara opsional dan membiarkan <ph name="PRODUCT_FRAME_NAME" /> merender laman HTML secara default.</translation>
@@ -1389,7 +1388,7 @@ Pengguna dapat memasang item dari URL apa pun yang cocok dengan item dalam dafta
 
       Menentukan daftar plugin yang dapat diaktifkan atau dinonaktifkan pengguna pada <ph name="PRODUCT_NAME" />.
 
-      Karakter pengganti '*' dan '?' dapat digunakan untuk mencocokkan urutan karakter arbitrer. '*' mencocokkan beberapa karakter arbitrer sedangkan '?' menentukan karakter tunggal opsional, misalnya, mencocokkan karakter nol atau satu. Karakter keluar berupa '\', sehingga untuk mencocokkan karakter sebenarnya '*', '?', atau '\', Anda dapat menambahkan '\' sebelum karakter tersebut.
+      Karakter pengganti '*' dan '?' dapat digunakan untuk mencocokkan urutan karakter arbitrer. Karakter '*' mencocokkan sembarang jumlah karakter sedangkan '?' menentukan karakter tunggal opsional, misalnya, mencocokkan karakter nol atau satu. Karakter keluar berupa '\', sehingga untuk mencocokkan karakter sebenarnya '*', '?', atau '\', Anda dapat menambahkan '\' sebelum karakter tersebut.
 
       Jika Anda mengaktifkan setelan ini, daftar plugin yang ditentukan dapat digunakan pada <ph name="PRODUCT_NAME" />. Pengguna dapat mengaktifkan atau menonaktifkan plugin tersebut di 'about:plugins', meskipun plugin juga cocok dengan pola dalam DisabledPlugins. Pengguna juga dapat mengaktifkan dan menonaktifkan plugin yang tidak cocok dengan pola apa pun di DisabledPlugins, DisabledPluginsExceptions, dan EnabledPlugins.
 
@@ -1397,7 +1396,7 @@ Pengguna dapat memasang item dari URL apa pun yang cocok dengan item dalam dafta
 
       Harap diingat bahwa baik nama plugin dan grup plugin perlu dibebaskan. Setiap grup plugin ditampilkan dalam bagian yang terpisah di about:plugins; setiap bagian dapat memiliki satu atau lebih plugin. Misalnya, plugin "Shockwave Flash" adalah milik grup "Adobe Flash Player", dan kedua nama tersebut perlu memiliki kecocokan dalam daftar pengecualian apabila plugin tersebut akan dibebaskan dari daftar hitam.
 
-      Jika kebijakan ini tidak disetel, plugin apa pun yang mencocokan pola di 'DisabledPlugins' akan terus dinonaktifkan dan pengguna tidak akan dapat mengaktifkannya.</translation>
+      Jika kebijakan ini tidak disetel, plugin apa pun yang mencocokkan pola di 'DisabledPlugins' akan terus dinonaktifkan dan pengguna tidak akan dapat mengaktifkannya.</translation>
 <translation id="5795001131770861387">Memungkinkan dukungan HTTP/0.9 pada port non-default</translation>
 <translation id="5809728392451418079">Setel nama tampilan untuk akun lokal perangkat</translation>
 <translation id="5814301096961727113">Menyetel status default masukan yang diucapkan di layar masuk</translation>
@@ -1461,13 +1460,6 @@ Pengguna dapat memasang item dari URL apa pun yang cocok dengan item dalam dafta
 
       Jika kebijakan tidak disetel, atau disetel ke false, <ph name="PRODUCT_NAME" /> tidak akan melakukan pemeriksaan pembatalan online di <ph name="PRODUCT_NAME" /> versi 19 dan yang lebih baru.</translation>
 <translation id="5966615072639944554">Ekstensi yang diizinkan untuk menggunakan API pengesahan jarak jauh</translation>
-<translation id="5974970919245996815">Laporkan informasi tentang status Android yang dikirimkan kembali ke
-      server.
-
-      Jika kebijakan disetel ke False, informasi tidak akan dilaporkan.
-      Jika disetel ke True atau tidak disetel, informasi akan dilaporkan.
-
-      Kebijakan ini hanya berlaku jika Android app diaktifkan.</translation>
 <translation id="5983708779415553259">Perilaku default untuk situs tidak ada dalam paket konten mana pun</translation>
 <translation id="5997543603646547632">Menggunakan 24 jam sebagai default</translation>
 <translation id="6009903244351574348">Memungkinkan <ph name="PRODUCT_FRAME_NAME" /> menangani jenis konten yang tercantum. Jika kebijakan ini tidak disetel, perender default akan digunakan untuk semua situs yang ditentukan oleh kebijakan 'ChromeFrameRendererSettings'.</translation>
@@ -1500,7 +1492,7 @@ Pengguna dapat memasang item dari URL apa pun yang cocok dengan item dalam dafta
 
       Menentukan daftar plugin yang diaktifkan pada <ph name="PRODUCT_NAME" /> dan mencegah pengguna agar tidak mengubah setelan ini.
 
-      Karakter pengganti '*' dan '?' dapat digunakan untuk mencocokkan urutan karakter arbitrer. '*' mencocokkan beberapa karakter arbitrer sedangkan '?' menentukan karakter tunggal opsional, misalnya, mencocokkan karakter nol atau satu. Karakter keluar berupa '\', sehingga untuk mencocokkan karakter sebenarnya '*', '?', atau '\', Anda dapat menambahkan '\' sebelum karakter tersebut.
+      Karakter pengganti '*' dan '?' dapat digunakan untuk mencocokkan urutan karakter arbitrer. Karakter '*' mencocokkan sembarang jumlah karakter sedangkan '?' menentukan karakter tunggal opsional, misalnya, mencocokkan karakter nol atau satu. Karakter keluar berupa '\', sehingga untuk mencocokkan karakter sebenarnya '*', '?', atau '\', Anda dapat menambahkan '\' sebelum karakter tersebut.
 
       Jika Anda mengaktifkan setelan ini, daftar plugin yang ditentukan selalu digunakan pada <ph name="PRODUCT_NAME" />. Plugin ditandai aktif pada 'about:plugins' dan pengguna tidak dapat mengaktifkan plugin tersebut.
 
@@ -1724,7 +1716,7 @@ Pengguna dapat memasang item dari URL apa pun yang cocok dengan item dalam dafta
 <translation id="6828905844648501476">Jika kebijakan ini disetel ke True atau tidak dikonfigurasi, <ph name="PRODUCT_NAME" /> akan memungkinkan Tambahkan Orang dari pengelola pengguna.
 
       Jika kebijakan ini disetel ke False, <ph name="PRODUCT_NAME" /> tidak akan mengizinkan pembuatan profil baru dari pengelola profil.</translation>
-<translation id="685769593149966548">Terapkan Mode Terbatas Ketat Youtube</translation>
+<translation id="685769593149966548">Terapkan Mode Terbatas Ketat YouTube</translation>
 <translation id="687046793986382807">Kebijakan ini telah dihentikan pada <ph name="PRODUCT_NAME" /> versi 35.
 
       Bagaimanapun juga info memori dilaporkan ke laman, terlepas dari nilai opsinya, namun ukuran yang dilaporkan
@@ -2118,6 +2110,9 @@ Pengguna dapat memasang item dari URL apa pun yang cocok dengan item dalam dafta
           ke domain Active Directory.</translation>
 <translation id="7937766917976512374">Izinkan atau tolak penangkapan video</translation>
 <translation id="7941975817681987555">Jangan memprediksi tindakan jaringan di sambungan jaringan apa pun</translation>
+<translation id="7942429005743031780">Kebijakan ini menentukan ekstensi yang diizinkan untuk menggunakan API Kunci Platform Perusahaan chrome.enterprise.platformKeys.challengeUserKey() untuk pengesahan jarak jauh. Ekstensi harus ditambahkan ke daftar ini untuk menggunakan API.
+
+          Jika ekstensi tidak ada dalam daftar, atau jika daftar tidak disetel, panggilan ke API akan gagal dengan suatu kode kesalahan.</translation>
 <translation id="7953256619080733119">Hosting pengecualian manual pengguna yang dikelola</translation>
 <translation id="7971839631300653352">SSL 3.0</translation>
 <translation id="7974114691960514888">Kebijakan ini tidak lagi didukung. Mengaktifkan penggunaan STUN dan server relay saat menyambungkan ke klien jarak jauh. Jika setelan ini diaktifkan, maka komputer ini dapat menemukan dan tersambung ke komputer host jarak jauh bahkan jika dipisahkan oleh firewall. Jika setelan ini dinonaktifkan dan sambungan UDP keluar difilter oleh firewall, maka komputer ini hanya dapat tersambung ke komputer host dalam jaringan lokal.</translation>
@@ -2337,7 +2332,7 @@ Pengguna dapat memasang item dari URL apa pun yang cocok dengan item dalam dafta
 <translation id="8704831857353097849">Daftar plugin yang dinonaktifkan</translation>
 <translation id="8711086062295757690">Menentukan kata kunci yang merupakan pintasan yang digunakan dalam omnibox guna memicu penelusuran untuk operator ini. Kebijakan ini bersifat opsional. Jika tidak disetel, kata kunci tidak akan mengaktifkan penyedia penelusuran. Kebijakan ini hanya dipertimbangkan jika kebijakan 'DefaultSearchProviderEnabled' diaktifkan.</translation>
 <translation id="8731693562790917685">Setelan Konten memungkinkan Anda menentukan bagaimana konten jenis tertentu (misalnya Cookie, Gambar, atau JavaScript) ditangani.</translation>
-<translation id="8736538322216687231">Memaksa Mode Terbatas Youtube minimum</translation>
+<translation id="8736538322216687231">Memaksa Mode Terbatas YouTube minimum</translation>
 <translation id="8749370016497832113">Mengaktifkan penghapusan riwayat browser dan riwayat unduhan di <ph name="PRODUCT_NAME" /> dan mencegah pengguna mengubah setelan berikut.
 
       Perhatikan bahwa meskipun kebijakan ini dinonaktifkan, riwayat unduhan dan penjelajahan tidak dijamin akan tersimpan: pengguna dapat mengedit atau menghapus file basis data riwayat secara langsung, dan browser itu sendiri mungkin kedaluwarsa atau mengarsipkan beberapa atau semua item riwayat setiap saat.

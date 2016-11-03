@@ -59,7 +59,6 @@ Jeśli jednak zalogujesz się teraz, informacje Chrome, takie jak zakładki, his
 <translation id="2588322182880276190">Logo Chrome</translation>
 <translation id="2664962310688259219">Licencje oprogramowania typu open source w Chrome OS</translation>
 <translation id="2665296953892887393">Pomóż nam ulepszyć Google Chrome, przesyłając do Google raporty o awariach i <ph name="UMA_LINK" /></translation>
-<translation id="2669824781555328029">Plik <ph name="FILE_NAME" /> może wpływać na działanie Chrome, więc został zablokowany.</translation>
 <translation id="2681064822612051220">W systemie znaleziono zainstalowaną przeglądarkę Google Chrome, która powoduje konflikt. Odinstaluj ją i spróbuj ponownie.</translation>
 <translation id="2689103672227170538">To rozszerzenie ustawiło inną stronę wyświetlaną po uruchomieniu Chrome.</translation>
 <translation id="2704356438731803243">Jeśli chcesz, by Twoje bieżące dane Chrome były przechowywane oddzielnie, możesz utworzyć nowego użytkownika Chrome dla użytkownika <ph name="USER_NAME" />.</translation>
@@ -148,6 +147,7 @@ Więcej instrukcji znajdziesz w e-mailu wysłanym na adres <ph name="ACCOUNT_EM
 <translation id="5148419164691878332">Chrome zapisze to hasło (tutaj: <ph name="SAVED_PASSWORDS_LINK" />) i zapamięta je do użycia w przyszłości.</translation>
 <translation id="5170938038195470297">Nie można użyć Twojego profilu, ponieważ został utworzony w nowszej wersji Google Chrome. Niektóre funkcje mogą być niedostępne. Podaj inny katalog z profilem lub użyj nowszej wersji Chrome.</translation>
 <translation id="5176234269072261959">Pomóż udoskonalić Chrome, zgłaszając bieżące ustawienia.</translation>
+<translation id="5193136243808726294">System operacyjny Google Chrome nie może otworzyć tej strony.</translation>
 <translation id="5204098752394657250"><ph name="TERMS_OF_SERVICE_LINK" />Warunki korzystania z usługi<ph name="END_TERMS_OF_SERVICE_LINK" /> Google Chrome</translation>
 <translation id="5243785881901838525">Google Payments (skopiowana do Chrome)</translation>
 <translation id="5251420635869119124">Goście mogą korzystać z Chrome, nie pozostawiając żadnych danych.</translation>
@@ -206,7 +206,6 @@ Więcej instrukcji znajdziesz w e-mailu wysłanym na adres <ph name="ACCOUNT_EM
 <translation id="699076943483372849">Ta strona korzysta z wycofanej wtyczki Chrome Frame, której zabezpieczenia i stabilność nie są już aktualizowane. Odinstaluj wtyczkę i przejdź na nowoczesną przeglądarkę.</translation>
 <translation id="6991142834212251086">Połącz moje dane Chrome z tym kontem</translation>
 <translation id="7060865993964054389">Program uruchamiający aplikacje Google Chrome</translation>
-<translation id="7084448929020576097">Plik <ph name="FILE_NAME" /> jest złośliwy i został zablokowany przez Chrome.</translation>
 <translation id="7098166902387133879">Google Chrome używa Twojego mikrofonu.</translation>
 <translation id="7106741999175697885">Menedżer zadań – Google Chrome</translation>
 <translation id="7125719106133729027">Nie udało się zaktualizować Chrome do najnowszej wersji, więc nie masz nowych, przydatnych funkcji ani poprawek zabezpieczeń. Musisz ręcznie zainstalować Chrome ponownie.</translation>
@@ -269,7 +268,6 @@ Więcej instrukcji znajdziesz w e-mailu wysłanym na adres <ph name="ACCOUNT_EM
 <translation id="8669527147644353129">Pomoc Google Chrome</translation>
 <translation id="8679801911857917785">Kontroluje także to, jaka strona wyświetla się po uruchomieniu Chrome.</translation>
 <translation id="870251953148363156">Aktualizuj &amp;Google Chrome</translation>
-<translation id="8793772303278047003">Chrome jest nieaktualny.</translation>
 <translation id="8796108026289707191">Należy teraz ponownie uruchomić Google Chrome.</translation>
 <translation id="8823341990149967727">Chrome jest nieaktualny</translation>
 <translation id="884296878221830158">Kontroluje także to, jaka strona wyświetla się po uruchomieniu Chrome lub kliknięciu przycisku strony startowej.</translation>
@@ -278,7 +276,6 @@ Więcej instrukcji znajdziesz w e-mailu wysłanym na adres <ph name="ACCOUNT_EM
 <translation id="8914504000324227558">Uruchom Chrome ponownie</translation>
 <translation id="9026991721384951619">Google Chrome nie może zsynchronizować danych, ponieważ dane logowania na Twoje konto są nieaktualne.</translation>
 <translation id="9067395829937117663">Google Chrome wymaga systemu Windows 7 lub nowszego.</translation>
-<translation id="9102715433345326100">Ten plik jest złośliwy i został zablokowany przez Chrome.</translation>
 <translation id="9107728822479888688"><ph name="BEGIN_BOLD" />Uwaga:<ph name="END_BOLD" /> Google Chrome nie może uniemożliwić rozszerzeniom zapisywania historii przeglądania. Aby wyłączyć to rozszerzenie w trybie incognito, usuń zaznaczenie tej opcji.</translation>
 <translation id="911206726377975832">Czy usunąć także dane przeglądania?</translation>
 <translation id="924447568950697217">Ustawianie Chrome jako przeglądarki domyślnej</translation>

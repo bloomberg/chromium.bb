@@ -21,7 +21,6 @@
 <translation id="1688750314291223739">Configure a sincronização para salvar suas características de navegador personalizadas na web e acessá-las do Chromium em qualquer computador.</translation>
 <translation id="1699664235656412242">Feche todas as janelas do Chromium, (incluindo as que estejam no modo Windows 8) e tente novamente.</translation>
 <translation id="1708666629004767631">Há uma nova versão mais segura do Chromium disponível.</translation>
-<translation id="1725059042853530269">O Chromium bloqueou o arquivo <ph name="FILE_NAME" />, porque ele pode prejudicar sua experiência de navegação.</translation>
 <translation id="1774152462503052664">Permitir que o Chromium seja executado em segundo plano</translation>
 <translation id="1779356040007214683">Para tornar o Chromium mais seguro, desativamos algumas extensões que não estão listadas na <ph name="IDS_EXTENSION_WEB_STORE_TITLE" /> e podem ser sido adicionadas sem seu conhecimento.</translation>
 <translation id="1808667845054772817">Reinstalar o Chromium</translation>
@@ -59,7 +58,6 @@
 <translation id="2718390899429598676">Para maior segurança, o Chromium criptografará seus dados.</translation>
 <translation id="2770231113462710648">Alterar navegador padrão para:</translation>
 <translation id="2799223571221894425">Reiniciar</translation>
-<translation id="2801146392936645542"><ph name="FILE_NAME" /> é malicioso e foi bloqueado pelo Chromium.</translation>
 <translation id="2847479871509788944">Remover do Chromium</translation>
 <translation id="2886012850691518054">Opcional: Ajude a tornar o Chromium melhor enviando automaticamente as estatísticas de uso e os relatórios de erros ao Google.</translation>
 <translation id="2905536371227304018">O Chromium OS é exibido neste idioma.</translation>
@@ -76,7 +74,6 @@
 <translation id="3258596308407688501">O Chromium não pode ler e gravar neste diretório de dados: <ph name="USER_DATA_DIRECTORY" /></translation>
 <translation id="3264279740686075150">Parabéns! O Chromium é seu navegador padrão.</translation>
 <translation id="328888136576916638">As chaves da API do Google não foram encontradas. Algumas funcionalidades do Chromium serão desativadas.</translation>
-<translation id="3289635842886789612">O Chromium está desatualizado.</translation>
 <translation id="3296368748942286671">Continuar executando os aplicativos em segundo plano quando o Chromium for fechado</translation>
 <translation id="3312805357485578561">O Chromium detectou um comportamento incomum</translation>
 <translation id="331951419404882060">O Chromium OS não pôde sincronizar seus dados devido a um erro durante o login.</translation>
@@ -134,6 +131,7 @@
 <translation id="5398878173008909840">Há uma nova versão do Chromium disponível.</translation>
 <translation id="5427571867875391349">Definir o Chromium como seu navegador padrão</translation>
 <translation id="5466153949126434691">O Chromium é atualizado automaticamente para que você sempre tenha a versão mais recente. Quando o download estiver concluído, o Chromium será reiniciado e você estará pronto.</translation>
+<translation id="5479196819031988440">O Chromium OS não pode abrir essa página.</translation>
 <translation id="549669000822060376">Aguarde enquanto o Chromium instala as últimas atualizações do sistema.</translation>
 <translation id="556167189552180495">O Chromium é exibido neste idioma.</translation>
 <translation id="5563479599352954471">Pesquisar com um toque</translation>
@@ -218,7 +216,6 @@ Verifique seu e-mail em <ph name="ACCOUNT_EMAIL" /> para ver mais instruções.<
 <translation id="7421823331379285070">O Chromium requer Windows XP ou posterior. Alguns recursos podem não funcionar.</translation>
 <translation id="7473891865547856676">Não, obrigado</translation>
 <translation id="7483335560992089831">Não é possível instalar a mesma versão do Chromium que está sendo executada. Feche o Chromium e tente novamente.</translation>
-<translation id="750717762378961310">Este arquivo é malicioso e foi bloqueado pelo Chromium.</translation>
 <translation id="7549178288319965365">Sobre o Chromium OS</translation>
 <translation id="7577193603922410712">Uma atualização especial de segurança para o Chromium acaba de ser aplicada. Para que ela tenha efeito, é necessário reiniciar agora (suas guias serão restauradas).</translation>
 <translation id="761356813943268536">O Chromium está usando sua câmera e seu microfone.</translation>

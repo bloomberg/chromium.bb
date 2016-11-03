@@ -18,7 +18,6 @@
 <translation id="3692781555820666866">Özellik etkinleştirildiğinde, yakınınızdaki cihazların yayınladığı web sayfalarına ilişkin öneriler çok amaçlı adres çubuğunda görünür.</translation>
 <translation id="385051799172605136">Geri</translation>
 <translation id="4121993058175073134">Net-export verilerini göndermek için lütfen Ayarlar uygulamasında e-posta hesabınızı yapılandırın.</translation>
-<translation id="4399225372525667111">Chrome bu sitenin URL'sinin doğruluğunu onaylayamıyor.</translation>
 <translation id="4728558894243024398">Platform</translation>
 <translation id="473775607612524610">Güncelle</translation>
 <translation id="4875622588773761625">Bu siteye ait şifrenizin <ph name="PASSWORD_MANAGER_BRAND" /> tarafından güncellenmesini ister misiniz?</translation>
@@ -30,11 +29,9 @@
 <translation id="6314335155547195432">Şifre Oluştur</translation>
 <translation id="6344783595350022745">Metni Temizle</translation>
 <translation id="6456425917241817154">Chrome'un Oluşturduğu Şifre</translation>
-<translation id="6535543971741225613">Erişmeye çalıştığınız site garip davranıyor ve Chrome bu URL'nin doğruluğunu onaylayamıyor. Güvenlik nedenleriyle devam etmemelisiniz; belki de yarın deneyebilir veya başka bir yere gidebilirsiniz.</translation>
 <translation id="7222245588540287464">Bağlama Dayalı Arama'nın etkin olup olmadığı.</translation>
 <translation id="7456847797759667638">Konumu Aç...</translation>
 <translation id="7481312909269577407">İleri</translation>
-<translation id="7484580869648358686">Uyarı: Burada Yanlış Giden Bir Şeyler Var!</translation>
 <translation id="7588950540487816470">Fiziksel Web</translation>
 <translation id="7961015016161918242">Hiçbir Zaman</translation>
 </translationbundle>

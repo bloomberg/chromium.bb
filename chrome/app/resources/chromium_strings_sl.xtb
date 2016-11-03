@@ -23,7 +23,6 @@ Nekatere funkcije morda niso na voljo in spremembe nastavitev ne bodo shranjene.
 <translation id="1688750314291223739">Nastavite sinhronizacijo, da prilagojene funkcije brskalnika shranite v spletu in do njih v Chromiumu dostopate v katerem koli računalniku.</translation>
 <translation id="1699664235656412242">Zaprite vsa okna Chromiuma (tudi tista v načinu Windows 8) in poskusite znova.</translation>
 <translation id="1708666629004767631">Na voljo je nova, varnejša različica Chromiuma.</translation>
-<translation id="1725059042853530269">Datoteka <ph name="FILE_NAME" /> morda škodljivo vpliva na brskanje, zato jo je Chromium blokiral.</translation>
 <translation id="1774152462503052664">Naj se Chromium izvaja v ozadju</translation>
 <translation id="1779356040007214683">Zaradi večje varnosti smo v Chromiumu onemogočili nekatere razširitve, ki niso navedene v storitvi <ph name="IDS_EXTENSION_WEB_STORE_TITLE" /> in so bile morda dodane brez vaše vednosti.</translation>
 <translation id="1808667845054772817">Vnovična namestitev Chromiuma</translation>
@@ -61,7 +60,6 @@ Nekatere funkcije morda niso na voljo in spremembe nastavitev ne bodo shranjene.
 <translation id="2718390899429598676">Zaradi večje varnosti bo Chromium šifriral vaše podatke.</translation>
 <translation id="2770231113462710648">Spremeni privzeti brskalnik na:</translation>
 <translation id="2799223571221894425">Vnovičen zagon</translation>
-<translation id="2801146392936645542">Datoteka <ph name="FILE_NAME" /> je zlonamerna, zato jo je Chromium blokiral.</translation>
 <translation id="2847479871509788944">Odstranitev iz Chromiuma ...</translation>
 <translation id="2886012850691518054">Izbirno: Pomagajte izboljšati Chromium, tako da Googlu samodejno pošiljate statistične podatke o uporabi in poročila o zrušitvah.</translation>
 <translation id="2905536371227304018">Chromium OS je v tem jeziku.</translation>
@@ -80,7 +78,6 @@ Nekatere funkcije morda niso na voljo in spremembe nastavitev ne bodo shranjene.
 <ph name="USER_DATA_DIRECTORY" /></translation>
 <translation id="3264279740686075150">Chromium je privzeti brskalnik. Super.</translation>
 <translation id="328888136576916638">Manjkajo ključi za Google API. Nekatere funkcije Chromiuma bodo onemogočene.</translation>
-<translation id="3289635842886789612">Chromium je zastarel.</translation>
 <translation id="3296368748942286671">Nadaljuj izvajanje aplikacij v ozadju, ko je Chromium zaprt</translation>
 <translation id="3312805357485578561">Chromium je zaznal nenavadno delovanje</translation>
 <translation id="331951419404882060">Chromium OS ni mogel sinhronizirati podatkov zaradi napake pri prijavi.</translation>
@@ -138,6 +135,7 @@ Nekatere funkcije morda niso na voljo in spremembe nastavitev ne bodo shranjene.
 <translation id="5398878173008909840">Na voljo je nova različica Chromiuma.</translation>
 <translation id="5427571867875391349">Nastavitev Chromiuma za privzeti brskalnik</translation>
 <translation id="5466153949126434691">Chromium se samodejno posodablja, zato boste vedno imeli najnovejšo različico. Ko bo ta prenos končan, se bo Chromium znova zagnal in lahko boste nadaljevali z delom.</translation>
+<translation id="5479196819031988440">OS Chromium ne more odpreti te strani.</translation>
 <translation id="549669000822060376">Počakajte, da Chromium namesti najnovejše sistemske posodobitve.</translation>
 <translation id="556167189552180495">Chromium je v tem jeziku.</translation>
 <translation id="5563479599352954471">Iskanje z enim dotikom</translation>
@@ -225,7 +223,6 @@ Nadaljnja navodila preberite v e-poštnem sporočilu, ki ste ga prejeli na <ph n
 <translation id="7421823331379285070">Chromium zahteva Windows XP ali novejši. Nekatere funkcije morda ne bodo delovale.</translation>
 <translation id="7473891865547856676">Ne, hvala</translation>
 <translation id="7483335560992089831">Ni mogoče namestiti iste različice Chromiuma, ki se trenutno izvaja. Zaprite Chromium in poskusite znova.</translation>
-<translation id="750717762378961310">Ta datoteka je zlonamerna, zato jo je Chromium blokiral.</translation>
 <translation id="7549178288319965365">O sistemu Chromium OS</translation>
 <translation id="7577193603922410712">Pravkar je bila nameščena posebna varnostna posodobitev za Chromium. Zdaj znova zaženite računalnik, da bo uveljavljena (vaše zavihke bomo obnovili).</translation>
 <translation id="761356813943268536">Chromium uporablja vašo kamero in mikrofon.</translation>

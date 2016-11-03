@@ -21,7 +21,6 @@
 <translation id="1688750314291223739">Skonfiguruj synchronizację, by zapisać w internecie własne funkcje przeglądarki i mieć do nich dostęp w Chromium na każdym komputerze.</translation>
 <translation id="1699664235656412242">Zamknij wszystkie okna Chromium (także te działające w trybie Windows 8) i spróbuj ponownie.</translation>
 <translation id="1708666629004767631">Dostępna jest nowa, bezpieczniejsza wersja Chromium.</translation>
-<translation id="1725059042853530269">Plik <ph name="FILE_NAME" /> może wpływać na działanie Chromium, więc został zablokowany.</translation>
 <translation id="1774152462503052664">Zezwól Chromium na działanie w tle</translation>
 <translation id="1779356040007214683">Aby poprawić bezpieczeństwo Chromium, wyłączyliśmy niektóre rozszerzenia niedostępne w <ph name="IDS_EXTENSION_WEB_STORE_TITLE" />, które mogły zostać dodane bez Twojej wiedzy.</translation>
 <translation id="1808667845054772817">Ponownie zainstaluj Chromium</translation>
@@ -59,7 +58,6 @@
 <translation id="2718390899429598676">Dla większego bezpieczeństwa Chromium szyfruje dane.</translation>
 <translation id="2770231113462710648">Zmień przeglądarkę domyślną na:</translation>
 <translation id="2799223571221894425">Uruchom ponownie</translation>
-<translation id="2801146392936645542">Plik <ph name="FILE_NAME" /> jest złośliwy i został zablokowany przez Chromium.</translation>
 <translation id="2847479871509788944">Usuń z Chromium...</translation>
 <translation id="2886012850691518054">Opcjonalnie: pomóż nam udoskonalać Chromium, wysyłając do Google statystyki użytkowania i raporty o awariach.</translation>
 <translation id="2905536371227304018">Chromium OS działa obecnie w tym języku.</translation>
@@ -76,7 +74,6 @@
 <translation id="3258596308407688501">Chromium nie może odczytać ani zapisać danych w katalogu <ph name="USER_DATA_DIRECTORY" />.</translation>
 <translation id="3264279740686075150">Chromium jest domyślną przeglądarką. Hura!</translation>
 <translation id="328888136576916638">Brakuje kluczy interfejsu Google API. Niektóre funkcje Chromium będą wyłączone.</translation>
-<translation id="3289635842886789612">Chromium jest nieaktualny.</translation>
 <translation id="3296368748942286671">Kontynuuj działanie aplikacji w tle po zamknięciu Chromium</translation>
 <translation id="3312805357485578561">Chromium wykrył nietypowe zachowanie</translation>
 <translation id="331951419404882060">System operacyjny Chromium nie może zsynchronizować danych z powodu błędu logowania.</translation>
@@ -134,6 +131,7 @@
 <translation id="5398878173008909840">Pojawiła się nowa wersja Chromium.</translation>
 <translation id="5427571867875391349">Ustaw Chromium jako domyślną przeglądarkę</translation>
 <translation id="5466153949126434691">Chromium aktualizuje się automatycznie, więc zawsze masz najnowszą wersję. Po zakończeniu pobierania Chromium uruchomi się ponownie i będzie gotowy do działania.</translation>
+<translation id="5479196819031988440">System operacyjny Chromium nie może otworzyć tej strony.</translation>
 <translation id="549669000822060376">Poczekaj, aż Chromium zainstaluje najnowsze aktualizacje systemu.</translation>
 <translation id="556167189552180495">Chromium działa obecnie w tym języku.</translation>
 <translation id="5563479599352954471">Szukaj jednym kliknięciem</translation>
@@ -221,7 +219,6 @@ Więcej instrukcji znajdziesz w e-mailu wysłanym na adres <ph name="ACCOUNT_EM
 <translation id="7421823331379285070">Chromium wymaga systemu Windows XP lub nowszego. Niektóre funkcje mogą nie działać.</translation>
 <translation id="7473891865547856676">Nie, dziękuję</translation>
 <translation id="7483335560992089831">Nie można zainstalować tej samej wersji Chromium co obecnie uruchomiona. Zamknij Chromium i spróbuj ponownie.</translation>
-<translation id="750717762378961310">Ten plik jest złośliwy i został zablokowany przez Chromium.</translation>
 <translation id="7549178288319965365">System operacyjny Chromium – informacje</translation>
 <translation id="7577193603922410712">Właśnie została zastosowana specjalna aktualizacja zabezpieczeń Chromium. Aby zmiany zostały wprowadzone, uruchom teraz ponownie przeglądarkę (karty zostaną przywrócone).</translation>
 <translation id="761356813943268536">Chromium używa Twojej kamery i mikrofonu.</translation>

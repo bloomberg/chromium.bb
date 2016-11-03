@@ -1,41 +1,20 @@
 <?xml version="1.0" ?>
 <!DOCTYPE translationbundle>
 <translationbundle lang="fil">
-<translation id="153454903766751181">Sinisimulan ang cellular na modem...</translation>
 <translation id="1829129547161959350">Penguin</translation>
-<translation id="1850504506766569011">Naka-off ang Wi-Fi.</translation>
 <translation id="2288278176040912387">Record player</translation>
-<translation id="2354174487190027830">Ina-activate ang <ph name="NAME" /></translation>
 <translation id="2563185590376525700">Palaka</translation>
 <translation id="2649120831653069427">Rainbowfish</translation>
-<translation id="277257480934873581">Muling kumokonekta sa <ph name="NAME" /></translation>
 <translation id="2894654529758326923">Impormasyon</translation>
 <translation id="2951236788251446349">Jellyfish</translation>
-<translation id="3846575436967432996">Walang available na impormasyon sa network</translation>
-<translation id="3901991538546252627">Kumokonekta sa <ph name="NAME" /></translation>
 <translation id="3958548648197196644">Kiwi</translation>
-<translation id="4118990158415604803">Ang pagkonekta sa iba pang mga network ay na-disable ng iyong administrator.</translation>
 <translation id="4326192123064055915">Kape</translation>
-<translation id="4448844063988177157">Naghahanap ng mga network na Wi-Fi...</translation>
-<translation id="4479639480957787382">Ethernet</translation>
-<translation id="4508225577814909926"><ph name="NAME" />: Kumokonekta...</translation>
 <translation id="4559767610552730302">Bokeh</translation>
 <translation id="4935975195727477204">Bulaklak</translation>
 <translation id="515594325917491223">Chess</translation>
 <translation id="5257456363153333584">Tutubi</translation>
-<translation id="6267036997247669271"><ph name="NAME" />: Ina-activate...</translation>
-<translation id="6549021752953852991">Walang available na cellular na network</translation>
-<translation id="6857811139397017780">I-activate <ph name="NETWORKSERVICE" /></translation>
 <translation id="6935521024859866267">Paru-paro</translation>
-<translation id="7066646422045619941">Na-disable ng iyong administrator ang network na ito.</translation>
-<translation id="735745346212279324">Nakadiskonekta ang VPN</translation>
-<translation id="7874779702599364982">Naghahanap ng mga cellular network...</translation>
-<translation id="8000066093800657092">Walang network</translation>
 <translation id="8008366997883261463">Aso</translation>
-<translation id="8132793192354020517">Kumukonekta sa <ph name="NAME" /></translation>
-<translation id="8454013096329229812">Naka-on ang Wi-Fi.</translation>
-<translation id="8484916590211895857"><ph name="NAME" />: Muling kumokonekta...</translation>
 <translation id="8714406895390098252">Bisikleta</translation>
 <translation id="8808686172382650546">Pusa</translation>
-<translation id="8814190375133053267">Wi-Fi</translation>
 </translationbundle>

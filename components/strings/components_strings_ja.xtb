@@ -50,6 +50,7 @@
 <translation id="1491663344921578213"><ph name="SITE" /> では証明書のピン留めが使用されているため、現在このウェブサイトにはアクセスできません。通常、ネットワーク エラーや不正な操作は一時的なものです。少し時間をおくと、ページにアクセスできるようになる可能性があります。<ph name="BEGIN_LEARN_MORE_LINK" />詳細<ph name="END_LEARN_MORE_LINK" /></translation>
 <translation id="1506687042165942984">このページの保存されているコピー（古いバージョン）を表示します。</translation>
 <translation id="1519264250979466059">ビルド日</translation>
+<translation id="153384715582417236">現時点では他にありません</translation>
 <translation id="1549470594296187301">この機能を使用するには JavaScript を有効にする必要があります。</translation>
 <translation id="1559528461873125649">該当するファイルまたはディレクトリがありません</translation>
 <translation id="1559572115229829303">&lt;p&gt;デバイスの日時（<ph name="DATE_AND_TIME" />）が正しくないため、<ph name="BEGIN_BOLD" /><ph name="DOMAIN" /><ph name="END_BOLD" /> へのプライベート接続を確立できません。&lt;/p&gt;
@@ -350,7 +351,6 @@
 <translation id="4728558894243024398">プラットフォーム</translation>
 <translation id="4744603770635761495">実行ファイルのパス</translation>
 <translation id="4756388243121344051">履歴(&amp;H)</translation>
-<translation id="4759238208242260848">ダウンロード</translation>
 <translation id="4764776831041365478"><ph name="URL" /> のウェブページは一時的に停止しているか、新しいウェブアドレスに移動した可能性があります。</translation>
 <translation id="4771973620359291008">不明なエラーが発生しました。</translation>
 <translation id="4782449893814226250">このページを開いてもよいか保護者にたずねました。</translation>
@@ -389,6 +389,7 @@
 <translation id="5179510805599951267"><ph name="ORIGINAL_LANGUAGE" />でない場合はこのエラーを報告する</translation>
 <translation id="5190835502935405962">ブックマーク バー</translation>
 <translation id="5199729219167945352">試験運用機能</translation>
+<translation id="5199841536747119669">おすすめのコンテンツがここに表示されます</translation>
 <translation id="5251803541071282808">クラウド</translation>
 <translation id="5277279256032773186">会社で Chrome を使用する場合は、従業員用に Chrome の設定を管理できます。詳細</translation>
 <translation id="5299298092464848405">ポリシーの解析中にエラーが発生しました</translation>
@@ -468,6 +469,7 @@
 <translation id="6263376278284652872"><ph name="DOMAIN" /> のブックマーク</translation>
 <translation id="6264485186158353794">セキュリティで保護されたページに戻る</translation>
 <translation id="6282194474023008486">郵便番号</translation>
+<translation id="6290238015253830360">おすすめの記事がここに表示されます</translation>
 <translation id="6305205051461490394"><ph name="URL" /> にアクセスできません。</translation>
 <translation id="6321917430147971392">DNS 設定を確認してください</translation>
 <translation id="6328639280570009161">ネットワーク予測を無効にしてみてください</translation>
@@ -651,6 +653,7 @@
 <translation id="8363502534493474904">機内モードをオフにする</translation>
 <translation id="8364627913115013041">未設定</translation>
 <translation id="8380941800586852976">危険</translation>
+<translation id="8382348898565613901">最近アクセスしたブックマークがここに表示されます</translation>
 <translation id="8412145213513410671">障害数（<ph name="CRASH_COUNT" />）</translation>
 <translation id="8412392972487953978">同じパスフレーズを 2 回入力する必要があります。</translation>
 <translation id="8428213095426709021">設定</translation>
@@ -700,6 +703,7 @@
 <translation id="8987927404178983737">月</translation>
 <translation id="8989148748219918422"><ph name="ORGANIZATION" /> [<ph name="COUNTRY" />]</translation>
 <translation id="9001074447101275817">プロキシ <ph name="DOMAIN" /> にはユーザー名とパスワードを指定する必要があります。</translation>
+<translation id="9008201768610948239">無視する</translation>
 <translation id="901974403500617787">システム全体に適用されるフラグは所有者（<ph name="OWNER_EMAIL" />）のみが設定できます。</translation>
 <translation id="9020542370529661692">このページは<ph name="TARGET_LANGUAGE" />に翻訳されています</translation>
 <translation id="9038649477754266430">予測サービスを使用してページをより迅速に読み込む</translation>

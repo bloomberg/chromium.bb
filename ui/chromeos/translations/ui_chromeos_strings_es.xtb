@@ -1,41 +1,20 @@
 <?xml version="1.0" ?>
 <!DOCTYPE translationbundle>
 <translationbundle lang="es">
-<translation id="153454903766751181">Iniciando módem móvil...</translation>
 <translation id="1829129547161959350">Pingüino</translation>
-<translation id="1850504506766569011">La conexión Wi-Fi está desactivada.</translation>
 <translation id="2288278176040912387">Tocadiscos</translation>
-<translation id="2354174487190027830">Activación de <ph name="NAME" /></translation>
 <translation id="2563185590376525700">Rana</translation>
 <translation id="2649120831653069427">Pez arcoíris</translation>
-<translation id="277257480934873581">Volviendo a conectar con <ph name="NAME" /></translation>
 <translation id="2894654529758326923">Información</translation>
 <translation id="2951236788251446349">Medusa</translation>
-<translation id="3846575436967432996">No hay información de red disponible.</translation>
-<translation id="3901991538546252627">Conectando con: <ph name="NAME" /></translation>
 <translation id="3958548648197196644">Kiwi</translation>
-<translation id="4118990158415604803">El administrador ha inhabilitado la conexión a otras redes.</translation>
 <translation id="4326192123064055915">Café</translation>
-<translation id="4448844063988177157">Buscando redes Wi-Fi...</translation>
-<translation id="4479639480957787382">Ethernet</translation>
-<translation id="4508225577814909926"><ph name="NAME" />: conectando...</translation>
 <translation id="4559767610552730302">Bokeh</translation>
 <translation id="4935975195727477204">Gazania</translation>
 <translation id="515594325917491223">Ajedrez</translation>
 <translation id="5257456363153333584">Libélula</translation>
-<translation id="6267036997247669271"><ph name="NAME" />: Activando...</translation>
-<translation id="6549021752953852991">No hay ninguna red móvil disponible.</translation>
-<translation id="6857811139397017780">Activar <ph name="NETWORKSERVICE" /></translation>
 <translation id="6935521024859866267">Boca abajo</translation>
-<translation id="7066646422045619941">El administrador ha inhabilitado esta red.</translation>
-<translation id="735745346212279324">VPN desconectada</translation>
-<translation id="7874779702599364982">Buscando redes móviles...</translation>
-<translation id="8000066093800657092">Ninguna red</translation>
 <translation id="8008366997883261463">Terrier Jack Russell</translation>
-<translation id="8132793192354020517">Conectado a <ph name="NAME" /></translation>
-<translation id="8454013096329229812">La conexión Wi-Fi está activada.</translation>
-<translation id="8484916590211895857"><ph name="NAME" />: volviendo a conectar...</translation>
 <translation id="8714406895390098252">Bicicleta</translation>
 <translation id="8808686172382650546">Gato</translation>
-<translation id="8814190375133053267">Wi-Fi</translation>
 </translationbundle>

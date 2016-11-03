@@ -22,6 +22,7 @@
 <translation id="1484102317210609525"><ph name="DEVICE_NAME" /> (HDMI/DP)</translation>
 <translation id="1510238584712386396">Opstartprogramma</translation>
 <translation id="1525508553941733066">SLUITEN</translation>
+<translation id="153454903766751181">Mobiele modem initialiseren...</translation>
 <translation id="15373452373711364">Grote muisaanwijzer</translation>
 <translation id="1550523713251050646">Klik voor meer opties</translation>
 <translation id="1602076796624386989">Mobiele gegevens inschakelen</translation>
@@ -32,6 +33,7 @@
 <translation id="1747827819627189109">Schermtoetsenbord ingeschakeld</translation>
 <translation id="1812696562331527143">Je invoermethode is gewijzigd in <ph name="INPUT_METHOD_ID" />*(<ph name="BEGIN_LINK" />derden<ph name="END_LINK" />).
 Druk op Shift + Alt om te schakelen.j</translation>
+<translation id="1850504506766569011">Wifi is uitgeschakeld.</translation>
 <translation id="1864454756846565995">USB-C-apparaat (poort aan achterkant)</translation>
 <translation id="1882897271359938046">Spiegelen naar <ph name="DISPLAY_NAME" /></translation>
 <translation id="1919743966458266018">De sneltoets om Taakbeheer te openen is gewijzigd. Gebruik <ph name="NEW_SHORTCUT" /> in plaats van <ph name="OLD_SHORTCUT" />.</translation>
@@ -47,6 +49,7 @@ Druk op Shift + Alt om te schakelen.j</translation>
 <translation id="2268813581635650749">Alle gebruikers uitloggen</translation>
 <translation id="2297568595583585744">Statussysteemvak</translation>
 <translation id="2303600792989757991">Overzicht venster in-/uitschakelen</translation>
+<translation id="2354174487190027830"><ph name="NAME" /> activeren</translation>
 <translation id="2391579633712104609">180°</translation>
 <translation id="2429753432712299108">Bluetooth-apparaat '<ph name="DEVICE_NAME" />' wil toestemming om te koppelen. Bevestig vóór het accepteren dat de volgende toegangscode op dat apparaat wordt weergegeven: <ph name="PASSKEY" /></translation>
 <translation id="2475982808118771221">Er is een fout opgetreden</translation>
@@ -59,6 +62,7 @@ Druk op Shift + Alt om te schakelen.j</translation>
 <translation id="2700058918926273959">Sessie loopt af over <ph name="SESSION_TIME_REMAINING" />. Je wordt uitgelogd.</translation>
 <translation id="2727977024730340865">Aangesloten op een laag-vermogen-lader. Opladen van de batterij mogelijk niet betrouwbaar.</translation>
 <translation id="2761704814324807722">Statusvak, tijd <ph name="TIME" />, <ph name="BATTERY" /></translation>
+<translation id="277257480934873581">Opnieuw verbinding maken met <ph name="NAME" /></translation>
 <translation id="2792498699870441125">Alt+Zoeken</translation>
 <translation id="2819276065543622893">Je wordt nu uitgelogd.</translation>
 <translation id="2825619548187458965">Plank</translation>
@@ -105,21 +109,27 @@ Druk op Zoeken of Shift om te annuleren.</translation>
 <translation id="3783640748446814672">alt</translation>
 <translation id="3784455785234192852">Vergrendelen</translation>
 <translation id="3799026279081545374">Je hebt mogelijk een slechte oplader. Als je in de Verenigde Staten woont, bel je 866-628-1371 om ondersteuning en een vervangende lader te ontvangen. Als je in het Verenigd Koninkrijk woont, bel je 0800-026-0613. Als je in Ierland woont, bel je 1-800-832-664. Als je in Canada woont, bel je 866-628-1372. Als je in Australië woont, bel je 1-800-067-460.</translation>
+<translation id="3846575436967432996">Geen netwerkinformatie beschikbaar</translation>
 <translation id="3866182280516392520">IPv6-adres</translation>
 <translation id="3891340733213178823">Druk twee keer op Ctrl+Shift+Q om uit te loggen.</translation>
 <translation id="3892641579809465218">Interne display</translation>
 <translation id="3893630138897523026">ChromeVox (gesproken feedback)</translation>
 <translation id="3899995891769452915">Spraakinvoer</translation>
+<translation id="3901991538546252627">Verbinding maken met <ph name="NAME" /></translation>
 <translation id="3963445509666917109">Luidspreker (intern)</translation>
 <translation id="3967919079500697218">Je beheerder heeft de mogelijkheid uitgeschakeld om screenshots te maken.</translation>
 <translation id="397105322502079400">Berekenen...</translation>
 <translation id="3995138139523574647">USB-C-apparaat (poort rechts aan de achterkant)</translation>
 <translation id="4053612967614057854">Schermtoetsenbord uitschakelen</translation>
+<translation id="4118990158415604803">Verbinding met andere netwerken is uitgeschakeld door je beheerder.</translation>
 <translation id="4250680216510889253">Nee</translation>
 <translation id="4279490309300973883">Mirroring</translation>
 <translation id="4321179778687042513">ctrl</translation>
 <translation id="4421231901400348175">De controle over je scherm wordt gedeeld met <ph name="HELPER_NAME" /> via externe ondersteuning.</translation>
 <translation id="4430019312045809116">Volume</translation>
+<translation id="4448844063988177157">Zoeken naar wifi-netwerken...</translation>
+<translation id="4479639480957787382">Ethernet</translation>
+<translation id="4508225577814909926"><ph name="NAME" />: verbinden...</translation>
 <translation id="4527045527269911712">Bluetooth-apparaat '<ph name="DEVICE_NAME" />' wil toestemming om te koppelen.</translation>
 <translation id="453661520163887813"><ph name="TIME" /> tot volledig opgeladen</translation>
 <translation id="4544944664594876241">De sneltoets om het scherm te vergrendelen is gewijzigd. Gebruik <ph name="NEW_SHORTCUT" /> in plaats van <ph name="OLD_SHORTCUT" />.</translation>
@@ -172,6 +182,7 @@ Druk op Shift + Alt om te schakelen.</translation>
 <translation id="6165508094623778733">Meer informatie</translation>
 <translation id="6203030746557259519">Virtueel display</translation>
 <translation id="6248847161401822652">Druk twee keer op Control+Shift+Q om te stoppen.</translation>
+<translation id="6267036997247669271"><ph name="NAME" />: activeren...</translation>
 <translation id="6297287540776456956">Gebruik de stylus om een gebied te selecteren</translation>
 <translation id="6310121235600822547"><ph name="DISPLAY_NAME" /> is gedraaid naar <ph name="ROTATION" /></translation>
 <translation id="6359806961507272919">Sms van <ph name="PHONE_NUMBER" /></translation>
@@ -184,6 +195,7 @@ Druk op Shift + Alt om te schakelen.</translation>
 <translation id="6501401484702599040">Scherm casten naar <ph name="RECEIVER_NAME" /></translation>
 <translation id="6521655319214113338">Handschriftinvoer</translation>
 <translation id="6537270692134705506">Screenshot maken</translation>
+<translation id="6549021752953852991">Geen mobiel netwerk beschikbaar</translation>
 <translation id="6550675742724504774">Opties</translation>
 <translation id="6585808820553845416">Sessie loopt af over <ph name="SESSION_TIME_REMAINING" />.</translation>
 <translation id="6596816719288285829">IP-adres</translation>
@@ -192,6 +204,7 @@ Druk op Shift + Alt om te schakelen.</translation>
 <translation id="6713285437468012787">Bluetooth-apparaat '<ph name="DEVICE_NAME" />' is gekoppeld en is nu beschikbaar voor alle gebruikers. Je kunt deze koppeling verwijderen via 'Instellingen'.</translation>
 <translation id="6785414152754474415">De accu is <ph name="PERCENTAGE" />% vol en wordt opgeladen.</translation>
 <translation id="683971173229319003">Zoeken+L</translation>
+<translation id="6857811139397017780"><ph name="NETWORKSERVICE" /> activeren</translation>
 <translation id="6911468394164995108">Verbinding met ander netwerk maken...</translation>
 <translation id="6915678159055240887">Chromebox</translation>
 <translation id="6979158407327259162">Google Drive</translation>
@@ -200,6 +213,7 @@ Druk op Shift + Alt om te schakelen.</translation>
 <translation id="703171847531699602">Geen cast-apparaten</translation>
 <translation id="7034339000180558234"><ph name="TAB_NAME" /> wordt gecast naar <ph name="RECEIVER_NAME" /></translation>
 <translation id="7052914147756339792">Achtergrond instellen...</translation>
+<translation id="7066646422045619941">Dit netwerk is uitgeschakeld door je beheerder.</translation>
 <translation id="7097613348211027502">ChromeVox (gesproken feedback) is ingeschakeld.
 Druk op Ctrl+Alt+Z om uit te schakelen.</translation>
 <translation id="7098389117866926363">USB-C-apparaat (poort links aan de achterkant)</translation>
@@ -209,6 +223,7 @@ Druk op Ctrl+Alt+Z om uit te schakelen.</translation>
 <translation id="7209101170223508707">CAPS LOCK is ingeschakeld.
 Druk op Alt+Zoeken of Shift om te annuleren.</translation>
 <translation id="7348093485538360975">Schermtoetsenbord</translation>
+<translation id="735745346212279324">Verbinding met VPN verbroken</translation>
 <translation id="737451040872859086">Microfoon (intern)</translation>
 <translation id="742594950370306541">Camera is in gebruik.</translation>
 <translation id="743058460480092004">Camera en microfoon zijn in gebruik.</translation>
@@ -225,19 +240,24 @@ Druk op Alt+Zoeken of Shift om te annuleren.</translation>
 <translation id="7823564328645135659">Na het synchroniseren met je instellingen, is de taal gewijzigd van '<ph name="FROM_LOCALE" />' in '<ph name="TO_LOCALE" />'.</translation>
 <translation id="785750925697875037">Mobiel account weergeven</translation>
 <translation id="7864539943188674973">Bluetooth uitschakelen</translation>
+<translation id="7874779702599364982">Zoeken naar mobiele netwerken...</translation>
 <translation id="7893838033650689677">Wifi inschakelen</translation>
 <translation id="7904094684485781019">De beheerder van dit account heeft toegang tot meerdere accounts niet toegestaan.</translation>
 <translation id="7957227661277029961">Je <ph name="DEVICE_TYPE" /> wordt mogelijk niet opgeladen terwijl deze is ingeschakeld. Je kunt overwegen een officiële oplader te gebruiken.</translation>
 <translation id="7982789257301363584">Netwerk</translation>
+<translation id="8000066093800657092">Geen netwerk</translation>
 <translation id="8054466585765276473">Accuduur berekenen.</translation>
 <translation id="8077816382010018681">Titel voor melding over de functie voor snel ontgrendelen komt hier</translation>
 <translation id="8103386449138765447">SMS-berichten: <ph name="MESSAGE_COUNT" /></translation>
+<translation id="8132793192354020517">Verbonden met <ph name="NAME" /></translation>
 <translation id="8185286464235484130">Laat ons weten hoe we het doen door een paar vragen te beantwoorden.</translation>
 <translation id="8190698733819146287">Talen en invoer aanpassen...</translation>
 <translation id="8206859287963243715">Mobiel</translation>
 <translation id="8308637677604853869">Vorig menu</translation>
 <translation id="8356164830168736643"><ph name="WINDOW_TITLE" /> sluiten</translation>
 <translation id="8428213095426709021">Instellingen</translation>
+<translation id="8454013096329229812">Wifi is ingeschakeld.</translation>
+<translation id="8484916590211895857"><ph name="NAME" />: Opnieuw verbinding maken...</translation>
 <translation id="8517041960877371778">Je <ph name="DEVICE_TYPE" /> wordt mogelijk niet opgeladen terwijl deze is ingeschakeld.</translation>
 <translation id="8528322925433439945">Mobiel...</translation>
 <translation id="8639760480004882931"><ph name="PERCENTAGE" /> resterend</translation>

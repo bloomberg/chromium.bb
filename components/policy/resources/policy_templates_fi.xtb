@@ -19,6 +19,9 @@
       Jos käytännön arvo on Epätosi tai sitä ei aseteta, tunnistuspalvelun asettamat evästeet siirretään käyttäjän profiiliin vain hänen kirjautuessaan laitteelle ensimmäisen kerran.
 
       Tämä käytäntö vaikuttaa vain käyttäjiin, joiden verkkotunnus vastaa verkkotunnusta, johon laite on rekisteröity. Muiden käyttäjien osalta tunnistuspalvelun asettamat evästeet siirretään käyttäjän profiiliin vain käyttäjän kirjautuessa laitteelle ensimmäisen kerran.</translation>
+<translation id="1029536946382325801">Jos tämän käytännön arvo on tosi, käyttäjä voi etätodentaa henkilöllisyytensä tietosuojavarmenteen myöntäjälle käyttämällä Chrome-laitteistoa ja Enterprise Platform Keys ‑sovellusliittymää chrome.enterprise.platformKeys.challengeUserKey().
+
+          Jos tämän käytännön arvo on epätosi tai sitä ei ole määritetty, kutsujen lähettäminen sovellusliittymälle epäonnistuu ja palauttaa virhekoodin.</translation>
 <translation id="1040446814317236570">Ota PAC-URL-osoitteiden karsinta käyttöön (https://)</translation>
 <translation id="1044878202534415707">Raportoi laitteistotietoja, kuten suorittimen ja RAM-muistin käyttötietoja.
 
@@ -320,13 +323,6 @@ Jos tämä asetus ei ole käytössä, järjestelmäpalkissa ei näytetä suurta 
 <translation id="2309390639296060546">Maantieteellisen sijainnin oletusasetus</translation>
 <translation id="2312134445771258233">Voit määrittää käynnistettäessä avattavat sivut. Käynnistettäessä avattavat sivut -luettelo ohitetaan, jos et valitse Toiminto käynnistettäessä -asetukseksi vaihtoehtoa Avaa seuraavat sivut:.</translation>
 <translation id="2337466621458842053">Voit määrittää luettelon URL-malleja, joissa määritetään sivustot, jotka saavat näyttää kuvia. Jos tätä käytäntöä ei ole määritetty, kaikille sivustoille käytetään joko DefaultImagesSetting-käytännön yleistä oletusarvoa, jos se on asetettu, tai käyttäjän henkilökohtaisia määrityksiä.</translation>
-<translation id="2359612025446382967">Jos tämän käytännön arvo on epätosi, <ph name="PRODUCT_OS_NAME" /> poistaa Bluetoothin käytöstä eikä käyttäjä voi palauttaa sitä käyttöön.
-
-      Jos tämän käytännön arvo on tosi tai sitä ei määritetä, käyttäjä voi itse ottaa Bluetoothin käyttöön tai poistaa sen käytöstä.
-
-      Jos tämä käytäntö on määritetty, käyttäjä ei voi muuttaa tai ohittaa sitä.
-
-      Bluetoothin käyttöönotto astuu voimaan vasta, kun laite on käynnistetty uudelleen (laitetta ei tarvitse käynnistää uudelleen, kun Bluetooth poistetaan käytöstä).</translation>
 <translation id="2366415278352956652">Mahdollistaa suoratoiston</translation>
 <translation id="2372547058085956601">Julkisen istunnon automaattisen kirjautumisen viive.
 
@@ -899,7 +895,7 @@ Jos tätä asetusta ei ole määritetty, kaikentyyppisiä sovelluksia ja laajenn
 
       Pakottaa tekemään Google-verkkohaun kyselyt niin, että SafeSearch on aktiivinen, ja estää käyttäjiä muuttamasta tätä asetusta. Asetus myös pakottaa rajoitetun tilan käyttöönoton YouTubessa.
 
-      Jos otat tämän asetuksen käyttöön, Google-haun SafeSearch YouTuben keskitason rajoitettu tila ovat aina aktiivisia.
+      Jos otat tämän asetuksen käyttöön, Google-haun SafeSearch ja YouTuben keskitason rajoitettu tila ovat aina aktiivisia.
 
       Jos poistat tämän asetuksen käytöstä tai et määritä sille arvoa, Google-haun SafeSearchia tai YouTuben rajoitettua tilaa ei pakoteta.</translation>
 <translation id="3866249974567520381">Kuvaus</translation>
@@ -934,6 +930,9 @@ Jos tätä asetusta ei ole määritetty, kaikentyyppisiä sovelluksia ja laajenn
 
       Jos tämän käytännön arvo on tosi, verkon valvontapakettien (”<ph name="HEARTBEATS_TERM" />”) lähettäminen on käytössä.
       Jos käytännön arvo on epätosi tai sitä ei ole määritetty, paketteja ei lähetetä.</translation>
+<translation id="3963602271515417124">Jos tämän käytännön arvo on tosi, etätodennuksen käyttö sallitaan laitteelle ja varmenne luodaan ja ladataan laitehallintapalvelimelle automaattisesti.
+
+          Jos tämän käytännön arvo on epätosi tai sitä ei ole määritetty, varmennetta ei luoda ja kutsujen lähettäminen enterprise.platformKeys-laajennussovellusliittymälle epäonnistuu.</translation>
 <translation id="3964909636571393861">Sallii URL-osoiteluettelon käytön</translation>
 <translation id="3965339130942650562">Käyttämättömän käyttökerran uloskirjausaika</translation>
 <translation id="3967075520570946456">Määritä tervetulosivun näyttäminen, kun selain käynnistetään ensimmäisen kerran käyttöjärjestelmän päivityksen jälkeen.</translation>
@@ -1456,12 +1455,6 @@ Jos tämä asetus ei ole käytössä tai jos sitä ei määritetä, SafeSearchia
 
       Jos tätä käytäntöä ei aseteta tai jos sen arvoksi on asetettu epätosi, <ph name="PRODUCT_NAME" /> ei suorita näitä tarkistuksia tuotteen <ph name="PRODUCT_NAME" /> versiossa 19 ja myöhemmissä.</translation>
 <translation id="5966615072639944554">Laajennukset, joille sallitaan etätodennussovellusliittymän käyttö</translation>
-<translation id="5974970919245996815">Androidin tilan raportointitiedot lähetetään takaisin palvelimelle.
-
-      Jos käytännön arvoksi on määritetty epätosi, tietoja ei raportoida.
-      Jos sen arvoksi on määritety tosi tai sitä ei ole määritetty ollenkaan, tiedot raportoidaan.
-
-      Tätä käytäntöä sovelletaan vain, jos Android-sovellukset on otettu käyttöön.</translation>
 <translation id="5983708779415553259">Mihinkään sisältöpakettiin kuulumattomien sivustojen oletustoiminta</translation>
 <translation id="5997543603646547632">Käytä oletuksena 24 tunnin kelloa</translation>
 <translation id="6009903244351574348">Anna tuotteen <ph name="PRODUCT_FRAME_NAME" /> käsitellä lueteltuja sisältötyyppejä. Jos tätä käytäntöä ei ole määritetty, kaikki sivustot hahmonnetaan ChromeFrameRendererSettings-käytännön oletushahmonnusmäärityksien mukaan.</translation>
@@ -2110,6 +2103,9 @@ Jos tätä käytäntöä ei ole määritetty, käytetään oletusarvoa (32).</tr
           Active Directory -toimialueeseen.</translation>
 <translation id="7937766917976512374">Salli tai estä videon kaappaaminen</translation>
 <translation id="7941975817681987555">Älä ennakoi verkon toimia millään verkkoyhteydellä</translation>
+<translation id="7942429005743031780">Tämä käytäntö määrittää laajennukset, joilla on oikeus käyttää etätodennukseen Enterprise Platform Keys ‑sovellusliittymää chrome.enterprise.platformKeys.challengeUserKey(). Vain tässä luettelossa olevat laajennukset voivat käyttää sovellusliittymää.
+
+          Jos laajennus ei ole luettelossa tai luetteloa ei ole määritetty, kutsujen lähettäminen sovellusliittymälle epäonnistuu ja palauttaa virhekoodin.</translation>
 <translation id="7953256619080733119">Hallinnoidun käyttäjän manuaalisten poikkeuksien isännät</translation>
 <translation id="7971839631300653352">SSL 3.0</translation>
 <translation id="7974114691960514888">Tätä käytäntöä ei enää tueta. Ottaa käyttöön STUN- ja relay-palvelimet, kun muodostetaan yhteyttä etäasiakkaaseen. Jos tämä asetus on käytössä, tämä kone voi löytää etäasiakkaan ja muodostaa yhteyden, vaikka asiakkaat olisivat palomuurin takana. Jos asetus ei ole käytössä ja lähtevät UDP-yhteydet menevät palomuurin kautta, tämä kone hyväksyy vain paikallisessa verkossa olevien isäntäkoneiden yhteydet.</translation>

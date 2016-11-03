@@ -22,6 +22,7 @@
 <translation id="1484102317210609525"><ph name="DEVICE_NAME" /> (HDMI/DP)</translation>
 <translation id="1510238584712386396">Launcher</translation>
 <translation id="1525508553941733066">DISMISS</translation>
+<translation id="153454903766751181">Initialising mobile modem...</translation>
 <translation id="15373452373711364">Large mouse cursor</translation>
 <translation id="1550523713251050646">Click for more options</translation>
 <translation id="1602076796624386989">Enable mobile data</translation>
@@ -32,6 +33,7 @@
 <translation id="1747827819627189109">On-screen keyboard enabled</translation>
 <translation id="1812696562331527143">Your input method has changed to <ph name="INPUT_METHOD_ID" />*(<ph name="BEGIN_LINK" />3rd party<ph name="END_LINK" />).
 Press Shift + Alt to switch.</translation>
+<translation id="1850504506766569011">Wi-Fi is turned off.</translation>
 <translation id="1864454756846565995">USB-C device (rear port)</translation>
 <translation id="1882897271359938046">Mirroring to <ph name="DISPLAY_NAME" /></translation>
 <translation id="1919743966458266018">The shortcut to open the task manager has changed. Please use <ph name="NEW_SHORTCUT" /> instead of <ph name="OLD_SHORTCUT" />.</translation>
@@ -47,6 +49,7 @@ Press Shift + Alt to switch.</translation>
 <translation id="2268813581635650749">Sign out all</translation>
 <translation id="2297568595583585744">Status tray</translation>
 <translation id="2303600792989757991">Toggle window overview</translation>
+<translation id="2354174487190027830">Activating <ph name="NAME" /></translation>
 <translation id="2391579633712104609">180°</translation>
 <translation id="2429753432712299108">Bluetooth device "<ph name="DEVICE_NAME" />" would like permission to pair. Before accepting, please confirm that this passkey is shown on that device: <ph name="PASSKEY" /></translation>
 <translation id="2475982808118771221">An error occurred</translation>
@@ -59,6 +62,7 @@ Press Shift + Alt to switch.</translation>
 <translation id="2700058918926273959">Session ends in <ph name="SESSION_TIME_REMAINING" />. You will be signed out.</translation>
 <translation id="2727977024730340865">Plugged in to a low-power charger. Battery charging may not be reliable.</translation>
 <translation id="2761704814324807722">Status tray, time <ph name="TIME" />, <ph name="BATTERY" /></translation>
+<translation id="277257480934873581">Reconnecting to <ph name="NAME" /></translation>
 <translation id="2792498699870441125">Alt+Search</translation>
 <translation id="2819276065543622893">You will be signed out now.</translation>
 <translation id="2825619548187458965">Shelf</translation>
@@ -105,21 +109,27 @@ Press Search or Shift to cancel.</translation>
 <translation id="3783640748446814672">alt</translation>
 <translation id="3784455785234192852">Lock</translation>
 <translation id="3799026279081545374">You may have a bad charger. If you live in the US, please call 866-628-1371 in order to receive help and a replacement. If you live in the UK, please call 0800-026-0613. If you live in Ireland, please call 1-800-832-664. If you live in Canada, please call 866-628-1372. If you live in Australia, please call 1-800-067-460.</translation>
+<translation id="3846575436967432996">No network information available</translation>
 <translation id="3866182280516392520">IPv6 Address</translation>
 <translation id="3891340733213178823">Press Ctrl+Shift+Q twice to sign out.</translation>
 <translation id="3892641579809465218">Internal Display</translation>
 <translation id="3893630138897523026">ChromeVox (spoken feedback)</translation>
 <translation id="3899995891769452915">Voice input</translation>
+<translation id="3901991538546252627">Connecting to <ph name="NAME" /></translation>
 <translation id="3963445509666917109">Speaker (Internal)</translation>
 <translation id="3967919079500697218">The ability to take screenshots has been disabled by your administrator.</translation>
 <translation id="397105322502079400">Calculating...</translation>
 <translation id="3995138139523574647">USB-C device (right-hand-side back port)</translation>
 <translation id="4053612967614057854">Disable on-screen keyboard</translation>
+<translation id="4118990158415604803">Connecting to other networks is disabled by your administrator.</translation>
 <translation id="4250680216510889253">No</translation>
 <translation id="4279490309300973883">Mirroring</translation>
 <translation id="4321179778687042513">ctrl</translation>
 <translation id="4421231901400348175">Sharing control of your screen with <ph name="HELPER_NAME" /> via Remote Assistance.</translation>
 <translation id="4430019312045809116">volume</translation>
+<translation id="4448844063988177157">Searching for Wi-Fi networks...</translation>
+<translation id="4479639480957787382">Ethernet</translation>
+<translation id="4508225577814909926"><ph name="NAME" />: Connecting...</translation>
 <translation id="4527045527269911712">Bluetooth device "<ph name="DEVICE_NAME" />" would like permission to pair.</translation>
 <translation id="453661520163887813"><ph name="TIME" /> until full</translation>
 <translation id="4544944664594876241">The shortcut to lock the screen has changed. Please use <ph name="NEW_SHORTCUT" /> instead of <ph name="OLD_SHORTCUT" />.</translation>
@@ -172,6 +182,7 @@ Press Shift + Alt to switch.</translation>
 <translation id="6165508094623778733">Learn more</translation>
 <translation id="6203030746557259519">Virtual display</translation>
 <translation id="6248847161401822652">Press Control Shift Q twice to exit.</translation>
+<translation id="6267036997247669271"><ph name="NAME" />: Activating...</translation>
 <translation id="6297287540776456956">Use the stylus to select a region</translation>
 <translation id="6310121235600822547"><ph name="DISPLAY_NAME" /> was rotated to <ph name="ROTATION" /></translation>
 <translation id="6359806961507272919">SMS from <ph name="PHONE_NUMBER" /></translation>
@@ -184,6 +195,7 @@ Press Shift + Alt to switch.</translation>
 <translation id="6501401484702599040">Casting screen to <ph name="RECEIVER_NAME" /></translation>
 <translation id="6521655319214113338">Handwriting input</translation>
 <translation id="6537270692134705506">Capture screen</translation>
+<translation id="6549021752953852991">No mobile network available</translation>
 <translation id="6550675742724504774">Options</translation>
 <translation id="6585808820553845416">Session ends in <ph name="SESSION_TIME_REMAINING" />.</translation>
 <translation id="6596816719288285829">IP Address</translation>
@@ -192,6 +204,7 @@ Press Shift + Alt to switch.</translation>
 <translation id="6713285437468012787">Bluetooth device "<ph name="DEVICE_NAME" />" has been paired and is now available to all users. You may remove this pairing using Settings.</translation>
 <translation id="6785414152754474415">Battery is <ph name="PERCENTAGE" />% full and charging.</translation>
 <translation id="683971173229319003">Search+L</translation>
+<translation id="6857811139397017780">Activate <ph name="NETWORKSERVICE" /></translation>
 <translation id="6911468394164995108">Join other ...</translation>
 <translation id="6915678159055240887">Chromebox</translation>
 <translation id="6979158407327259162">Google Drive</translation>
@@ -200,6 +213,7 @@ Press Shift + Alt to switch.</translation>
 <translation id="703171847531699602">No cast devices</translation>
 <translation id="7034339000180558234">Casting <ph name="TAB_NAME" /> to <ph name="RECEIVER_NAME" /></translation>
 <translation id="7052914147756339792">Set wallpaper...</translation>
+<translation id="7066646422045619941">This network is disabled by your administrator.</translation>
 <translation id="7097613348211027502">ChromeVox (spoken feedback) is enabled.
 Press Ctrl+Alt+Z to disable.</translation>
 <translation id="7098389117866926363">USB-C device (left port in the back)</translation>
@@ -209,6 +223,7 @@ Press Ctrl+Alt+Z to disable.</translation>
 <translation id="7209101170223508707">CAPS LOCK is on.
 Press Alt+Search or Shift to cancel.</translation>
 <translation id="7348093485538360975">On-Screen Keyboard</translation>
+<translation id="735745346212279324">VPN disconnected</translation>
 <translation id="737451040872859086">Microphone (Internal)</translation>
 <translation id="742594950370306541">Camera is in use.</translation>
 <translation id="743058460480092004">Camera and microphone are in use.</translation>
@@ -225,19 +240,24 @@ Press Alt+Search or Shift to cancel.</translation>
 <translation id="7823564328645135659">The language has changed from "<ph name="FROM_LOCALE" />" to "<ph name="TO_LOCALE" />" after syncing your settings.</translation>
 <translation id="785750925697875037">View mobile account</translation>
 <translation id="7864539943188674973">Disable Bluetooth</translation>
+<translation id="7874779702599364982">Searching for cellular networks...</translation>
 <translation id="7893838033650689677">Turn Wi-Fi on</translation>
 <translation id="7904094684485781019">The administrator for this account has disallowed multiple sign-in.</translation>
 <translation id="7957227661277029961">Your <ph name="DEVICE_TYPE" /> may not charge while it is turned on. Consider using the official charger.</translation>
 <translation id="7982789257301363584">Network</translation>
+<translation id="8000066093800657092">No network</translation>
 <translation id="8054466585765276473">Calculating battery time.</translation>
 <translation id="8077816382010018681">QU Feature notification title here</translation>
 <translation id="8103386449138765447">SMS messages: <ph name="MESSAGE_COUNT" /></translation>
+<translation id="8132793192354020517">Connected to <ph name="NAME" /></translation>
 <translation id="8185286464235484130">Let us know how we’re doing by answering a few questions.</translation>
 <translation id="8190698733819146287">Customise languages and input...</translation>
 <translation id="8206859287963243715">Mobile</translation>
 <translation id="8308637677604853869">Previous menu</translation>
 <translation id="8356164830168736643">Close <ph name="WINDOW_TITLE" /></translation>
 <translation id="8428213095426709021">Settings</translation>
+<translation id="8454013096329229812">Wi-Fi is turned on.</translation>
+<translation id="8484916590211895857"><ph name="NAME" />: Reconnecting...</translation>
 <translation id="8517041960877371778">Your <ph name="DEVICE_TYPE" /> may not charge while it is turned on.</translation>
 <translation id="8528322925433439945">Mobile ...</translation>
 <translation id="8639760480004882931"><ph name="PERCENTAGE" /> remaining</translation>

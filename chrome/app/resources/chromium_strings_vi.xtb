@@ -21,7 +21,6 @@
 <translation id="1688750314291223739">Thiết lập đồng bộ hóa để lưu các tính năng trình duyệt được cá nhân hóa của bạn vào web và truy cập chúng từ Chromium trên bất kỳ máy tính nào.</translation>
 <translation id="1699664235656412242">Hãy đóng tất cả cửa sổ Chromium (bao gồm cả những cửa sổ trong chế độ Windows 8) và thử lại.</translation>
 <translation id="1708666629004767631">Hiện đã có phiên bản Chromium mới an toàn hơn.</translation>
-<translation id="1725059042853530269"><ph name="FILE_NAME" /> có thể gây hại cho trải nghiệm duyệt web của bạn, vì vậy Chromium đã chặn tệp đó.</translation>
 <translation id="1774152462503052664">Cho phép Chromium chạy dưới nền</translation>
 <translation id="1779356040007214683">Để làm cho Chromium an toàn hơn, chúng tôi đã vô hiệu hóa một số tiện ích không được liệt kê trong <ph name="IDS_EXTENSION_WEB_STORE_TITLE" /> và có thể đã được thêm mà bạn không biết.</translation>
 <translation id="1808667845054772817">Cài đặt lại Chromium</translation>
@@ -59,7 +58,6 @@
 <translation id="2718390899429598676">Để bảo mật hơn, Chromium sẽ mã hóa dữ liệu của bạn.</translation>
 <translation id="2770231113462710648">Thay đổi trình duyệt mặc định thành:</translation>
 <translation id="2799223571221894425">Chạy lại</translation>
-<translation id="2801146392936645542"><ph name="FILE_NAME" /> là tệp độc hại và Chromium đã chặn tệp này.</translation>
 <translation id="2847479871509788944">Xóa khỏi Chromium...</translation>
 <translation id="2886012850691518054">Tùy chọn: giúp cải thiện Chromium bằng cách tự động gửi thống kê sử dụng và báo cáo sự cố cho Google.</translation>
 <translation id="2905536371227304018">Chromium OS được hiển thị bằng ngôn ngữ này.</translation>
@@ -78,7 +76,6 @@
 <ph name="USER_DATA_DIRECTORY" /></translation>
 <translation id="3264279740686075150">Chromium là trình duyệt mặc định của bạn. Xin chúc mừng!</translation>
 <translation id="328888136576916638">Khóa API của Google bị thiếu. Một số chức năng của Chromium sẽ bị tắt.</translation>
-<translation id="3289635842886789612">Chromium đã lỗi thời.</translation>
 <translation id="3296368748942286671">Tiếp tục chạy các ứng dụng dưới nền khi Chromium bị đóng</translation>
 <translation id="3312805357485578561">Chromium đã phát hiện hành vi bất thường</translation>
 <translation id="331951419404882060">Chromium OS không thể đồng bộ hóa dữ liệu của bạn do lỗi khi đăng nhập.</translation>
@@ -136,6 +133,7 @@
 <translation id="5398878173008909840">Hiện đã có phiên bản Chromium mới.</translation>
 <translation id="5427571867875391349">Đặt Chromium là trình duyệt mặc định của bạn</translation>
 <translation id="5466153949126434691">Chromium tự động cập nhật nên bạn luôn có phiên bản mới nhất. Khi quá trình tải xuống này hoàn tất, Chromium sẽ khởi động lại và bạn có thể tiếp tục sử dụng.</translation>
+<translation id="5479196819031988440">Chromium OS không thể mở trang này.</translation>
 <translation id="549669000822060376">Vui lòng đợi khi Chromium cài đặt các bản cập nhật hệ thống mới nhất.</translation>
 <translation id="556167189552180495">Chromium được hiển thị bằng ngôn ngữ này.</translation>
 <translation id="5563479599352954471">Tìm kiếm bằng một lần chạm</translation>
@@ -223,7 +221,6 @@ Vui lòng xem email của bạn tại <ph name="ACCOUNT_EMAIL" /> để được
 <translation id="7421823331379285070">Chromium yêu cầu Windows XP trở lên. Một số tính năng có thể không hoạt động.</translation>
 <translation id="7473891865547856676">Không, cảm ơn</translation>
 <translation id="7483335560992089831">Không thể cài đặt phiên bản Chromium giống với phiên bản hiện đang chạy. Hãy đóng Chromium và thử lại.</translation>
-<translation id="750717762378961310">Đây là tệp độc hại và Chromium đã chặn tệp này.</translation>
 <translation id="7549178288319965365">Giới thiệu về Chromium OS</translation>
 <translation id="7577193603922410712">Cập nhật bảo mật đặc biệt cho Chromium vừa được áp dụng; bạn phải khởi động lại ngay bây giờ để cập nhật có hiệu lực (chúng tôi sẽ khôi phục các tab của bạn).</translation>
 <translation id="761356813943268536">Chromium đang sử dụng máy ảnh và micrô của bạn.</translation>

@@ -50,6 +50,7 @@
 <translation id="1491663344921578213">የድር ጣቢያው የእውቅና ማረጋገጫ ማያያዝን ስለሚጠቀም አሁን <ph name="SITE" />ን መጎብኘት አይችሉም። የአውታረ መረብ ስህተቶች እና ጥቃቶች ብዙውን ጊዜ ጊዜያዊ ናቸው፣ ስለዚህ ይህ ገጽ ምናልባት በኋላ ላይ ሊሠራ ይችላል። <ph name="BEGIN_LEARN_MORE_LINK" />የበለጠ ለመረዳት<ph name="END_LEARN_MORE_LINK" />።</translation>
 <translation id="1506687042165942984">የዚህን ገጽ የተቀመጠ (ለምሳሌ ቀኑ ያለፈበት እንደሆነ የታወቀ) ቅጂን አሳይ።</translation>
 <translation id="1519264250979466059">የግንብ ቀን</translation>
+<translation id="153384715582417236">ለአሁን ያለው ይኸው ነው</translation>
 <translation id="1549470594296187301">ይህን ባህሪ ለመጠቀም ጃቫስክሪፕት መንቃት አለበት።</translation>
 <translation id="1559528461873125649">እንደዚህ ያለ ፋይል ወይም አቃፊ የለም</translation>
 <translation id="1559572115229829303">&lt;p&gt;የእርስዎ መሣሪያ ቀን እና ሰዓት (<ph name="DATE_AND_TIME" />) ትክክል ስላልሆኑ ወደ <ph name="BEGIN_BOLD" /><ph name="DOMAIN" /><ph name="END_BOLD" /> የግል ግንኙነት ሊመሰረት አይችልም።&lt;/p&gt;
@@ -349,7 +350,6 @@
 <translation id="4728558894243024398">የመሣሪያ ስርዓት</translation>
 <translation id="4744603770635761495">የሚፈጸም ዱካ</translation>
 <translation id="4756388243121344051">&amp;ታሪክ</translation>
-<translation id="4759238208242260848">የወረዱ</translation>
 <translation id="4764776831041365478"><ph name="URL" /> ላይ ያለው ድረ-ገጽ ለጊዜው የማይሰራ ወይም እስከመጨረሻው ወደ አዲስ የድር አድራሻ ተዛውሮ ሊሆን ይችላል።</translation>
 <translation id="4771973620359291008">ያልታወቀ ስህተት ተከስቷል።</translation>
 <translation id="4782449893814226250">ይህን ገጽ መጎብኘት ችግር ካለው ጠይቀዋል።</translation>
@@ -388,6 +388,7 @@
 <translation id="5179510805599951267">በ<ph name="ORIGINAL_LANGUAGE" /> አይደለም? ይህን ስህተት ሪፖርት ያድርጉ</translation>
 <translation id="5190835502935405962">የዕልባቶች አሞሌ</translation>
 <translation id="5199729219167945352">ሙከራዎች</translation>
+<translation id="5199841536747119669">የእርስዎ የአስተያየት ጥቆማዎች እዚህ ይመጣሉ</translation>
 <translation id="5251803541071282808">ደመና</translation>
 <translation id="5277279256032773186">በሥራ ላይ Chrome እየተጠቀሙ ነዎት? ንግድ ሥራዎች ለሠራተኞቻቸው የChrome ቅንብሮችን ማስተዳደር ይችላሉ። የበለጠ ይረዱ</translation>
 <translation id="5299298092464848405">መምሪያን መተንተን ላይ ስህተት</translation>
@@ -469,6 +470,7 @@ nil</translation>
 <translation id="6263376278284652872"><ph name="DOMAIN" /> እልባቶች</translation>
 <translation id="6264485186158353794">ወደ አስተማማኝ ተመለስ</translation>
 <translation id="6282194474023008486">የፖስታ ኮድ</translation>
+<translation id="6290238015253830360">የእርስዎ የተጠቆሙ ዘገባዎች እዚህ ይመጣሉ</translation>
 <translation id="6305205051461490394"><ph name="URL" /> ሊደረስበት አይችልም።</translation>
 <translation id="6321917430147971392">የዲኤንኤስ ቅንብሮችዎን ይፈትሹ</translation>
 <translation id="6328639280570009161">የአውታረ መረብ መገመትን አሰናክለው ይሞክሩ</translation>
@@ -652,6 +654,7 @@ nil</translation>
 <translation id="8363502534493474904">የአውሮፕላን ሁነታን ማጥፋት</translation>
 <translation id="8364627913115013041">አልተዋቀረም።</translation>
 <translation id="8380941800586852976">አደገኛ</translation>
+<translation id="8382348898565613901">በቅርቡ የጎበኟቸው ዕልባቶች እዚህ ይመጣሉ</translation>
 <translation id="8412145213513410671">ብልሽቶች (<ph name="CRASH_COUNT" />)</translation>
 <translation id="8412392972487953978">ተመሳሳዩ የይለፍ ሐረጉን ሁለት ጊዜ ማስገባት አለብዎት።</translation>
 <translation id="8428213095426709021">ቅንብሮች</translation>
@@ -701,6 +704,7 @@ nil</translation>
 <translation id="8987927404178983737">ወር</translation>
 <translation id="8989148748219918422"><ph name="ORGANIZATION" /> [<ph name="COUNTRY" />]</translation>
 <translation id="9001074447101275817">ተኪ <ph name="DOMAIN" /> የተጠቃሚ ስም እና የይለፍ ቃል ያስፈልገዋል።</translation>
+<translation id="9008201768610948239">ችላ በል</translation>
 <translation id="901974403500617787">በመላው ስርዓት ላይ የሚተገበሩ ጥቆማዎች በባለቤቱ ብቻ ነው ሊዋቀሩ የሚችሉት፦ <ph name="OWNER_EMAIL" />።</translation>
 <translation id="9020542370529661692">ይህ ገጽ ወደ <ph name="TARGET_LANGUAGE" /> ተተርጉሟል</translation>
 <translation id="9038649477754266430">ገጾችን ይበልጥ በፍጥነት ለመጫን የግመታ አገልግሎትን ይጠቀሙ</translation>

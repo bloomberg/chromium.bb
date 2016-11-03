@@ -59,7 +59,6 @@ Sollten Sie sich trotzdem anmelden, werden die Chrome-Daten wie Lesezeichen, Ver
 <translation id="2588322182880276190">Chrome-Logo</translation>
 <translation id="2664962310688259219">Open-Source-Lizenzen für Chrome OS</translation>
 <translation id="2665296953892887393">Absturzberichte und <ph name="UMA_LINK" /> zur Verbesserung von Google Chrome an Google senden</translation>
-<translation id="2669824781555328029"><ph name="FILE_NAME" /> kann Ihre Browsererfahrung beeinträchtigen und wurde daher von Chrome blockiert.</translation>
 <translation id="2681064822612051220">Auf dem System wurde eine Installation von Google Chrome gefunden, die einen Konflikt verursacht. Deinstallieren Sie sie und versuchen Sie es erneut.</translation>
 <translation id="2689103672227170538">Die beim Start von Chrome angezeigte Seite wurde durch diese Erweiterung geändert.</translation>
 <translation id="2704356438731803243">Wenn Sie Ihre bestehenden Chrome-Daten getrennt verwenden möchten, können Sie einen neuen Chrome-Nutzer für <ph name="USER_NAME" /> erstellen.</translation>
@@ -147,6 +146,7 @@ Weitere Informationen wurden per E-Mail an <ph name="ACCOUNT_EMAIL" /> gesendet.
 <translation id="5148419164691878332">Chrome speichert dies in <ph name="SAVED_PASSWORDS_LINK" />, damit es bei Bedarf verfügbar ist.</translation>
 <translation id="5170938038195470297">Ihr Profil kann nicht verwendet werden, da es von einer neueren Version von Google Chrome stammt. Einige Funktionen stehen möglicherweise nicht zur Verfügung. Geben Sie bitte ein anderes Profilverzeichnis an oder verwenden Sie eine neuere Version von Google Chrome.</translation>
 <translation id="5176234269072261959">Helfen Sie uns mit Ihrem Feedback zu den aktuellen Einstellungen bei der Verbesserung von Chrome.</translation>
+<translation id="5193136243808726294">Google Chrome OS kann diese Seite nicht öffnen.</translation>
 <translation id="5204098752394657250"><ph name="TERMS_OF_SERVICE_LINK" />Google Chrome-Nutzungsbedingungen<ph name="END_TERMS_OF_SERVICE_LINK" /></translation>
 <translation id="5243785881901838525">Google Payments (in Chrome kopiert)</translation>
 <translation id="5251420635869119124">Gastnutzer können Chrome verwenden, ohne Daten zu hinterlassen.</translation>
@@ -205,7 +205,6 @@ Weitere Informationen wurden per E-Mail an <ph name="ACCOUNT_EMAIL" /> gesendet.
 <translation id="699076943483372849">Diese Website verwendet das eingestellte Chrome Frame-Plug-in, für das es keine Sicherheits- und Stabilitätsupdates mehr gibt. Deinstallieren Sie das Plug-in und führen Sie ein Upgrade auf einen neueren Browser aus.</translation>
 <translation id="6991142834212251086">Meine Chrome-Daten mit diesem Konto verknüpfen</translation>
 <translation id="7060865993964054389">Google Chrome App Launcher</translation>
-<translation id="7084448929020576097"><ph name="FILE_NAME" /> ist schädlich und wurde von Chrome blockiert.</translation>
 <translation id="7098166902387133879">Google Chrome verwendet Ihr Mikrofon.</translation>
 <translation id="7106741999175697885">Taskmanager - Google Chrome</translation>
 <translation id="7125719106133729027">Chrome konnte nicht automatisch auf die neueste Version aktualisiert werden. In Ihrer Version fehlen einige neue Funktionen und Sicherheitsmerkmale. Installieren Sie Chrome manuell neu.</translation>
@@ -268,7 +267,6 @@ Weitere Informationen wurden per E-Mail an <ph name="ACCOUNT_EMAIL" /> gesendet.
 <translation id="8669527147644353129">Google Chrome Helper</translation>
 <translation id="8679801911857917785">Die Erweiterung legt auch die Seite fest, die beim Start von Chrome angezeigt wird.</translation>
 <translation id="870251953148363156">&amp;Google Chrome aktualisieren</translation>
-<translation id="8793772303278047003">Chrome ist veraltet.</translation>
 <translation id="8796108026289707191">Google Chrome jetzt neu starten.</translation>
 <translation id="8823341990149967727">Chrome ist veraltet.</translation>
 <translation id="884296878221830158">Die Erweiterung legt auch fest, welche Seite beim Start von Chrome angezeigt wird oder wenn Sie auf die Schaltfläche "Startseite" klicken.</translation>
@@ -277,7 +275,6 @@ Weitere Informationen wurden per E-Mail an <ph name="ACCOUNT_EMAIL" /> gesendet.
 <translation id="8914504000324227558">Chrome neu starten</translation>
 <translation id="9026991721384951619">Chrome OS konnte Ihre Daten nicht synchronisieren, da die Anmeldedaten Ihres Kontos veraltet sind.</translation>
 <translation id="9067395829937117663">Für Google Chrome ist Windows 7 oder höher erforderlich.</translation>
-<translation id="9102715433345326100">Diese Datei ist schädlich und wurde von Chrome blockiert.</translation>
 <translation id="9107728822479888688"><ph name="BEGIN_BOLD" />Achtung:<ph name="END_BOLD" /> Google Chrome kann nicht verhindern, dass Ihr Browserverlauf von Erweiterungen protokolliert wird. Deaktivieren Sie diese Erweiterung für den Inkognitomodus, indem Sie das entsprechende Kästchen deaktivieren.</translation>
 <translation id="911206726377975832">Auch die Browserdaten löschen?</translation>
 <translation id="924447568950697217">Chrome als Standardbrowser festlegen</translation>

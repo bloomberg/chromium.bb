@@ -22,6 +22,7 @@
 <translation id="1484102317210609525"><ph name="DEVICE_NAME" /> (HDMI/DP)</translation>
 <translation id="1510238584712386396">Launcher</translation>
 <translation id="1525508553941733066">I-DISMISS</translation>
+<translation id="153454903766751181">Sinisimulan ang cellular na modem...</translation>
 <translation id="15373452373711364">Malaking mouse cursor</translation>
 <translation id="1550523713251050646">Mag-click para sa higit pang mga opsyon</translation>
 <translation id="1602076796624386989">Paganahin ang mobile data</translation>
@@ -32,6 +33,7 @@
 <translation id="1747827819627189109">Naka-enable ang on-screen na keyboard</translation>
 <translation id="1812696562331527143">Naging <ph name="INPUT_METHOD_ID" />*(<ph name="BEGIN_LINK" />3rd party<ph name="END_LINK" />) ang iyong pamamaraan ng pag-input.
 Pindutin ang Shift + Alt upang magpalit.</translation>
+<translation id="1850504506766569011">Naka-off ang Wi-Fi.</translation>
 <translation id="1864454756846565995">USB-C device (port sa rear)</translation>
 <translation id="1882897271359938046">Nagmi-mirror sa <ph name="DISPLAY_NAME" /></translation>
 <translation id="1919743966458266018">Napalitan na ang shortcut para sa pagbubukas sa task manager. Mangyaring gamitin ang <ph name="NEW_SHORTCUT" /> sa halip na gamitin ang <ph name="OLD_SHORTCUT" />.</translation>
@@ -47,6 +49,7 @@ Pindutin ang Shift + Alt upang magpalit.</translation>
 <translation id="2268813581635650749">I-sign out ang lahat</translation>
 <translation id="2297568595583585744">Tray ng katayuan</translation>
 <translation id="2303600792989757991">I-toggle ang window ng pangkalahatang-ideya</translation>
+<translation id="2354174487190027830">Ina-activate ang <ph name="NAME" /></translation>
 <translation id="2391579633712104609">180°</translation>
 <translation id="2429753432712299108">Gusto ng bluetooth device na "<ph name="DEVICE_NAME" />" ng pahintulot na magpares . Bago tanggapin, pakikumpirma na ipinapakita ang passkey na ito sa device na iyon: <ph name="PASSKEY" /></translation>
 <translation id="2475982808118771221">May isang naganap na error</translation>
@@ -59,6 +62,7 @@ Pindutin ang Shift + Alt upang magpalit.</translation>
 <translation id="2700058918926273959">Matatapos ang session pagkalipas ng <ph name="SESSION_TIME_REMAINING" />. Masa-sign out ka.</translation>
 <translation id="2727977024730340865">Naka-saksak sa isang low-power charger. Maaaring hindi maging tiyak ang pag-charge ng baterya.</translation>
 <translation id="2761704814324807722">Status tray, oras <ph name="TIME" />, <ph name="BATTERY" /></translation>
+<translation id="277257480934873581">Muling kumokonekta sa <ph name="NAME" /></translation>
 <translation id="2792498699870441125">Alt+Search</translation>
 <translation id="2819276065543622893">Masa-sign out ka ngayon.</translation>
 <translation id="2825619548187458965">Shelf</translation>
@@ -105,21 +109,27 @@ Pindutin ang Search o Shift upang kanselahin.</translation>
 <translation id="3783640748446814672">alt</translation>
 <translation id="3784455785234192852">I-lock</translation>
 <translation id="3799026279081545374">Maaaring mayroon kang hindi magandang charger. Kung nakatira ka sa US, mangyaring tumawag sa 866-628-1371 upang makatanggap ng tulong at ng kapalit. Kung nakatira ka sa UK, mangyaring tumawag sa 0800-026-0613. Kung nakatira ka sa Ireland, mangyaring tumawag sa 1-800-832-664. Kung nakatira ka sa Canada, mangyaring tumawag sa 866-628-1372. Kung nakatira ka sa Australia, mangyaring tumawag sa 1-800-067-460.</translation>
+<translation id="3846575436967432996">Walang available na impormasyon sa network</translation>
 <translation id="3866182280516392520">IPv6 Address</translation>
 <translation id="3891340733213178823">Pindutin ang Ctrl+Shift+Q nang dalawang beses upang mag-sign out.</translation>
 <translation id="3892641579809465218">Panloob na Display</translation>
 <translation id="3893630138897523026">ChromeVox (pasalitang feedback)</translation>
 <translation id="3899995891769452915">Input na boses</translation>
+<translation id="3901991538546252627">Kumokonekta sa <ph name="NAME" /></translation>
 <translation id="3963445509666917109">Speaker (Internal)</translation>
 <translation id="3967919079500697218">Na-disable ng iyong administrator ang kakayahang kumuha ng mga screenshot.</translation>
 <translation id="397105322502079400">Kinakalkula...</translation>
 <translation id="3995138139523574647">USB-C device (port sa kanang bahagi sa likod)</translation>
 <translation id="4053612967614057854">I-disable ang on-screen na keyboard</translation>
+<translation id="4118990158415604803">Ang pagkonekta sa iba pang mga network ay na-disable ng iyong administrator.</translation>
 <translation id="4250680216510889253">Hindi</translation>
 <translation id="4279490309300973883">Nagmi-mirror</translation>
 <translation id="4321179778687042513">ctrl</translation>
 <translation id="4421231901400348175">Pagbabahagi ng kontrol sa iyong screen gamit ang <ph name="HELPER_NAME" /> sa pamamagitan ng Remote Assistance.</translation>
 <translation id="4430019312045809116">Volume</translation>
+<translation id="4448844063988177157">Naghahanap ng mga network na Wi-Fi...</translation>
+<translation id="4479639480957787382">Ethernet</translation>
+<translation id="4508225577814909926"><ph name="NAME" />: Kumokonekta...</translation>
 <translation id="4527045527269911712">Gusto ng bluetooth device na "<ph name="DEVICE_NAME" />" na magpares.</translation>
 <translation id="453661520163887813"><ph name="TIME" /> na lang bago mapuno</translation>
 <translation id="4544944664594876241">Napalitan na ang shortcut para sa pagla-lock sa screen. Mangyaring gamitin ang <ph name="NEW_SHORTCUT" /> sa halip na gamitin ang <ph name="OLD_SHORTCUT" />.</translation>
@@ -172,6 +182,7 @@ Pindutin ang Shift + Alt upang magpalit.</translation>
 <translation id="6165508094623778733">Matuto nang higit pa</translation>
 <translation id="6203030746557259519">Virtual na Display</translation>
 <translation id="6248847161401822652">Pindutin ang Control Shift Q nang dalawang beses upang lumabas.</translation>
+<translation id="6267036997247669271"><ph name="NAME" />: Ina-activate...</translation>
 <translation id="6297287540776456956">Gamitin ang stylus upang pumili ng rehiyon</translation>
 <translation id="6310121235600822547">Na-rotate ang <ph name="DISPLAY_NAME" /> sa <ph name="ROTATION" /></translation>
 <translation id="6359806961507272919">SMS mula kay <ph name="PHONE_NUMBER" /></translation>
@@ -184,6 +195,7 @@ Pindutin ang Shift + Alt upang magpalit.</translation>
 <translation id="6501401484702599040">Kina-cast ang screen sa <ph name="RECEIVER_NAME" /></translation>
 <translation id="6521655319214113338">Input ng handwriting</translation>
 <translation id="6537270692134705506">I-capture ang screen</translation>
+<translation id="6549021752953852991">Walang available na cellular na network</translation>
 <translation id="6550675742724504774">Mga Pagpipilian</translation>
 <translation id="6585808820553845416">Matatapos ang session pagkalipas ng <ph name="SESSION_TIME_REMAINING" />.</translation>
 <translation id="6596816719288285829">IP Address</translation>
@@ -192,6 +204,7 @@ Pindutin ang Shift + Alt upang magpalit.</translation>
 <translation id="6713285437468012787">Naipares na ang bluetooth device na "<ph name="DEVICE_NAME" />" at available na ngayon sa lahat ng user. Maaari mong alisin ang pagpapares na ito gamit ang Mga Setting.</translation>
 <translation id="6785414152754474415">Ang baterya ay <ph name="PERCENTAGE" />% na puno at nagcha-charge.</translation>
 <translation id="683971173229319003">Search+L</translation>
+<translation id="6857811139397017780">I-activate <ph name="NETWORKSERVICE" /></translation>
 <translation id="6911468394164995108">Sumali sa iba...</translation>
 <translation id="6915678159055240887">Chromebox</translation>
 <translation id="6979158407327259162">Google Drive</translation>
@@ -200,6 +213,7 @@ Pindutin ang Shift + Alt upang magpalit.</translation>
 <translation id="703171847531699602">Walang mga cast device</translation>
 <translation id="7034339000180558234">Kina-cast ang <ph name="TAB_NAME" /> sa <ph name="RECEIVER_NAME" /></translation>
 <translation id="7052914147756339792">Magtakda ng wallpaper...</translation>
+<translation id="7066646422045619941">Na-disable ng iyong administrator ang network na ito.</translation>
 <translation id="7097613348211027502">Naka-enable ang ChromeVox (pasalitang feedback).
 Pindutin ang Ctrl+Alt+Z upang i-disable.</translation>
 <translation id="7098389117866926363">USB-C device (kaliwang port sa likod)</translation>
@@ -209,6 +223,7 @@ Pindutin ang Ctrl+Alt+Z upang i-disable.</translation>
 <translation id="7209101170223508707">Naka-on ang CAPS LOCK.
 Pindutin ang Alt+Search o Shift upang kanselahin.</translation>
 <translation id="7348093485538360975">Nasa screen na keyboard</translation>
+<translation id="735745346212279324">Nakadiskonekta ang VPN</translation>
 <translation id="737451040872859086">Microphone (Panloob)</translation>
 <translation id="742594950370306541">Ginagamit ang camera.</translation>
 <translation id="743058460480092004">Ginagamit ang camera at mikropono.</translation>
@@ -225,19 +240,24 @@ Pindutin ang Alt+Search o Shift upang kanselahin.</translation>
 <translation id="7823564328645135659">Nagbago ang wika mula "<ph name="FROM_LOCALE" />" patungong "<ph name="TO_LOCALE" />" pagkatapos i-sync ang iyong mga setting.</translation>
 <translation id="785750925697875037">Tingnan ang account sa mobile</translation>
 <translation id="7864539943188674973">Huwag Paganahin ang Bluetooth</translation>
+<translation id="7874779702599364982">Naghahanap ng mga cellular network...</translation>
 <translation id="7893838033650689677">I-on ang Wi-Fi</translation>
 <translation id="7904094684485781019">Hindi pinayagan ng administrator para sa account na ito ang multiple na pag-sign in.</translation>
 <translation id="7957227661277029961">Maaaring hindi mag-charge ang iyong <ph name="DEVICE_TYPE" /> habang naka-on ito. Pag-isipang gamitin ang opisyal na charger.</translation>
 <translation id="7982789257301363584">Network</translation>
+<translation id="8000066093800657092">Walang network</translation>
 <translation id="8054466585765276473">Kinakalkula ang oras ng baterya.</translation>
 <translation id="8077816382010018681">Dito ilalagay ang pamagat ng notification ng Feature na QU</translation>
 <translation id="8103386449138765447">Mga mensaheng SMS: <ph name="MESSAGE_COUNT" /></translation>
+<translation id="8132793192354020517">Kumukonekta sa <ph name="NAME" /></translation>
 <translation id="8185286464235484130">Ipaalam sa amin kung ano ang iyong palagay sa ginagawa namin sa pamamagitan ng pagsagot sa ilang tanong.</translation>
 <translation id="8190698733819146287">I-customize ang mga wika at input...</translation>
 <translation id="8206859287963243715">Cellular</translation>
 <translation id="8308637677604853869">Nakaraang menu</translation>
 <translation id="8356164830168736643">Isara ang <ph name="WINDOW_TITLE" /></translation>
 <translation id="8428213095426709021">Mga Setting</translation>
+<translation id="8454013096329229812">Naka-on ang Wi-Fi.</translation>
+<translation id="8484916590211895857"><ph name="NAME" />: Muling kumokonekta...</translation>
 <translation id="8517041960877371778">Maaaring hindi mag-charge ang iyong <ph name="DEVICE_TYPE" /> habang naka-on ito.</translation>
 <translation id="8528322925433439945">Mobile ...</translation>
 <translation id="8639760480004882931"><ph name="PERCENTAGE" /> na lang ang natitira</translation>

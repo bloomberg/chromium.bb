@@ -22,6 +22,7 @@
 <translation id="1484102317210609525"><ph name="DEVICE_NAME" /> (HDMI/DP)</translation>
 <translation id="1510238584712386396">Indító</translation>
 <translation id="1525508553941733066">ELVETÉS</translation>
+<translation id="153454903766751181">Mobilmodem inicializálása...</translation>
 <translation id="15373452373711364">Nagy egérmutató</translation>
 <translation id="1550523713251050646">Kattintson további lehetőségekért</translation>
 <translation id="1602076796624386989">Mobiladatok engedélyezése</translation>
@@ -32,6 +33,7 @@
 <translation id="1747827819627189109">Képernyő-billentyűzet bekapcsolva</translation>
 <translation id="1812696562331527143">A beviteli mód a következőre változott: <ph name="INPUT_METHOD_ID" />*(<ph name="BEGIN_LINK" />harmadik fél<ph name="END_LINK" />).
 A váltáshoz nyomja meg a Shift + Alt billentyűkódot.</translation>
+<translation id="1850504506766569011">Wi-Fi kikapcsolva.</translation>
 <translation id="1864454756846565995">C típusú USB-vel kompatibilis eszköz (hátsó port)</translation>
 <translation id="1882897271359938046">Tükrözés: <ph name="DISPLAY_NAME" /></translation>
 <translation id="1919743966458266018">Megváltozott a feladatkezelő megnyitásának billentyűkódja. A <ph name="OLD_SHORTCUT" /> helyett használja a következőt: <ph name="NEW_SHORTCUT" />.</translation>
@@ -47,6 +49,7 @@ A váltáshoz nyomja meg a Shift + Alt billentyűkódot.</translation>
 <translation id="2268813581635650749">Összes kijelentkeztetése</translation>
 <translation id="2297568595583585744">Állapottálca</translation>
 <translation id="2303600792989757991">Ablakáttekintési mód váltása</translation>
+<translation id="2354174487190027830"><ph name="NAME" /> aktiválása</translation>
 <translation id="2391579633712104609">180°</translation>
 <translation id="2429753432712299108">A(z) „<ph name="DEVICE_NAME" />” Bluetooth-eszköz engedélyt kér a párosításra. Mielőtt elfogadná, ellenőrizze, hogy ez a biztonsági kód látható-e azon az eszközön is: <ph name="PASSKEY" /></translation>
 <translation id="2475982808118771221">Hiba történt</translation>
@@ -59,6 +62,7 @@ A váltáshoz nyomja meg a Shift + Alt billentyűkódot.</translation>
 <translation id="2700058918926273959">A munkamenet <ph name="SESSION_TIME_REMAINING" /> múlva véget ér. A rendszer ekkor kijelentkezteti Önt.</translation>
 <translation id="2727977024730340865">Kis teljesítményű töltőt csatlakoztatott. Az akkumulátor töltése nem megbízható.</translation>
 <translation id="2761704814324807722">Állapotterület, idő: <ph name="TIME" />, <ph name="BATTERY" /></translation>
+<translation id="277257480934873581">Újracsatlakozás a következőhöz: <ph name="NAME" /></translation>
 <translation id="2792498699870441125">Alt + Keresés</translation>
 <translation id="2819276065543622893">A rendszer most kijelentkezteti Önt.</translation>
 <translation id="2825619548187458965">Polc</translation>
@@ -105,21 +109,27 @@ Kikapcsolásához nyomja meg a Keresés vagy a Shift billentyűt.</translation>
 <translation id="3783640748446814672">alt</translation>
 <translation id="3784455785234192852">Zárolás</translation>
 <translation id="3799026279081545374">Lehet, hogy rossz a töltője. Ha az Amerikai Egyesült Államokban él, segítség és csere ügyében hívja a következő telefonszámot: 866-628-1371. Ha az Egyesült Királyságban él, hívja a következő telefonszámot: 0800-026-0613. Ha Írországban él, hívja a következő telefonszámot: 1-800-832-664. Ha Kanadában él, hívja a következő telefonszámot: 866-628-1372. Ha Ausztráliában él, hívja a következő telefonszámot: 1-800-067-460.</translation>
+<translation id="3846575436967432996">Nem áll rendelkezésre hálózati információ</translation>
 <translation id="3866182280516392520">IPv6-cím</translation>
 <translation id="3891340733213178823">Nyomja meg a Ctrl+Shift+Q billentyűkombinációt kétszer a kijelentkezéshez.</translation>
 <translation id="3892641579809465218">Belső kijelző</translation>
 <translation id="3893630138897523026">ChromeVox (beszélt visszajelzés)</translation>
 <translation id="3899995891769452915">Hangbevitel</translation>
+<translation id="3901991538546252627">Csatlakozás a következőhöz: <ph name="NAME" /></translation>
 <translation id="3963445509666917109">Hangszóró (belső)</translation>
 <translation id="3967919079500697218">A képernyőkép-készítést letiltotta a rendszergazda.</translation>
 <translation id="397105322502079400">Számítás…</translation>
 <translation id="3995138139523574647">C típusú USB-vel kompatibilis eszköz (jobb hátsó port)</translation>
 <translation id="4053612967614057854">Képernyő-billentyűzet letiltása</translation>
+<translation id="4118990158415604803">A rendszergazda nem teszi lehetővé a csatlakozást más hálózatokhoz.</translation>
 <translation id="4250680216510889253">Nem</translation>
 <translation id="4279490309300973883">Tükrözés</translation>
 <translation id="4321179778687042513">ctrl</translation>
 <translation id="4421231901400348175">A képernyő irányításának megosztása <ph name="HELPER_NAME" /> segítővel a Távsegítség szolgáltatás keretein belül.</translation>
 <translation id="4430019312045809116">Hangerő</translation>
+<translation id="4448844063988177157">Wi-Fi hálózatok keresése...</translation>
+<translation id="4479639480957787382">Ethernet</translation>
+<translation id="4508225577814909926"><ph name="NAME" />: csatlakozás...</translation>
 <translation id="4527045527269911712">A(z) „<ph name="DEVICE_NAME" />” Bluetooth-eszköz engedélyt kér a párosításra.</translation>
 <translation id="453661520163887813"><ph name="TIME" /> a teljes feltöltésig</translation>
 <translation id="4544944664594876241">Megváltozott a képernyőzárolás billentyűkódja. A <ph name="OLD_SHORTCUT" /> helyett használja a következőt: <ph name="NEW_SHORTCUT" />.</translation>
@@ -172,6 +182,7 @@ A váltáshoz nyomja meg a Shift + Alt billentyűkódot.</translation>
 <translation id="6165508094623778733">További információ</translation>
 <translation id="6203030746557259519">Virtuális kijelző</translation>
 <translation id="6248847161401822652">A kilépéshez nyomja meg kétszer a Ctrl Shift Q billentyűkódot.</translation>
+<translation id="6267036997247669271"><ph name="NAME" />: aktiválás...</translation>
 <translation id="6297287540776456956">Terület kijelöléséhez használja az érintőceruzát</translation>
 <translation id="6310121235600822547"><ph name="DISPLAY_NAME" /> elfordult erre: <ph name="ROTATION" /></translation>
 <translation id="6359806961507272919">SMS innen: <ph name="PHONE_NUMBER" /></translation>
@@ -184,6 +195,7 @@ A váltáshoz nyomja meg a Shift + Alt billentyűkódot.</translation>
 <translation id="6501401484702599040">Képernyő átküldése ide: <ph name="RECEIVER_NAME" /></translation>
 <translation id="6521655319214113338">Kézírásos bevitel</translation>
 <translation id="6537270692134705506">Képernyőkép rögzítése</translation>
+<translation id="6549021752953852991">Nem érhető el mobilhálózat</translation>
 <translation id="6550675742724504774">Beállítások</translation>
 <translation id="6585808820553845416">A munkamenet <ph name="SESSION_TIME_REMAINING" /> múlva véget ér.</translation>
 <translation id="6596816719288285829">IP-cím</translation>
@@ -192,6 +204,7 @@ A váltáshoz nyomja meg a Shift + Alt billentyűkódot.</translation>
 <translation id="6713285437468012787">A(z) „<ph name="DEVICE_NAME" />” Bluetooth-eszköz párosítva lett, és elérhető az összes felhasználó számára. A párosítást a Beállításokban szüntetheti meg.</translation>
 <translation id="6785414152754474415">Az akkumulátor töltöttsége <ph name="PERCENTAGE" />%, és töltődik.</translation>
 <translation id="683971173229319003">Keresés+L</translation>
+<translation id="6857811139397017780"><ph name="NETWORKSERVICE" /> aktiválása</translation>
 <translation id="6911468394164995108">Csatlakozás másik hálózathoz...</translation>
 <translation id="6915678159055240887">Chromebox</translation>
 <translation id="6979158407327259162">Google Drive</translation>
@@ -200,6 +213,7 @@ A váltáshoz nyomja meg a Shift + Alt billentyűkódot.</translation>
 <translation id="703171847531699602">Nem található Cast-eszköz</translation>
 <translation id="7034339000180558234"><ph name="TAB_NAME" /> átküldése ide: <ph name="RECEIVER_NAME" /></translation>
 <translation id="7052914147756339792">Háttérkép beállítása...</translation>
+<translation id="7066646422045619941">Ezt a hálózatot letiltotta a rendszergazda.</translation>
 <translation id="7097613348211027502">A ChromeVox (hangos visszajelzés) engedélyezett. A
 letiltásához nyomja le a Ctrl+Alt+Z billentyűkombinációt.</translation>
 <translation id="7098389117866926363">C típusú USB-vel kompatibilis eszköz (bal hátsó port)</translation>
@@ -209,6 +223,7 @@ letiltásához nyomja le a Ctrl+Alt+Z billentyűkombinációt.</translation>
 <translation id="7209101170223508707">A CAPS LOCK be van kapcsolva.
 Kikapcsolásához nyomja meg az Alt + Keresés vagy a Shift billentyűt.</translation>
 <translation id="7348093485538360975">Képernyő-billentyűzet</translation>
+<translation id="735745346212279324">A VPN nincs csatlakoztatva</translation>
 <translation id="737451040872859086">Mikrofon (belső)</translation>
 <translation id="742594950370306541">A kamera épp használatban van.</translation>
 <translation id="743058460480092004">A kamera és a mikrofon épp használatban van.</translation>
@@ -225,19 +240,24 @@ Kikapcsolásához nyomja meg az Alt + Keresés vagy a Shift billentyűt.</transl
 <translation id="7823564328645135659">A beállítások szinkronizálását követően "<ph name="FROM_LOCALE" />" nyelvről "<ph name="TO_LOCALE" />" nyelvre változott a nyelvi beállítás.</translation>
 <translation id="785750925697875037">Mobil fiók megtekintése</translation>
 <translation id="7864539943188674973">Bluetooth letiltása</translation>
+<translation id="7874779702599364982">Mobilhálózatok keresése...</translation>
 <translation id="7893838033650689677">Wi-Fi bekapcsolása</translation>
 <translation id="7904094684485781019">A fiók rendszergazdája letiltotta a többfiókos bejelentkezést.</translation>
 <translation id="7957227661277029961">Előfordulhat, hogy a(z) <ph name="DEVICE_TYPE" /> nem töltődik, amíg be van kapcsolva. Érdemes a hivatalos töltőt használnia.</translation>
 <translation id="7982789257301363584">Hálózat</translation>
+<translation id="8000066093800657092">Nincs hálózat</translation>
 <translation id="8054466585765276473">Akkumulátor-időtartam kiszámítása.</translation>
 <translation id="8077816382010018681">A gyorsfeloldás funkció értesítésének a címe ide kerül</translation>
 <translation id="8103386449138765447">SMS-üzenetek: <ph name="MESSAGE_COUNT" /></translation>
+<translation id="8132793192354020517">Csatlakozás a következőhöz megtörtént: <ph name="NAME" /></translation>
 <translation id="8185286464235484130">Néhány kérdés megválaszolásával ossza meg velünk, mennyire van megelégedve munkákkal.</translation>
 <translation id="8190698733819146287">Nyelvek és beviteli módok személyre szabása...</translation>
 <translation id="8206859287963243715">Mobil</translation>
 <translation id="8308637677604853869">Előző menü</translation>
 <translation id="8356164830168736643"><ph name="WINDOW_TITLE" /> bezárása</translation>
 <translation id="8428213095426709021">Beállítások</translation>
+<translation id="8454013096329229812">Wi-Fi bekapcsolva.</translation>
+<translation id="8484916590211895857"><ph name="NAME" />: Újracsatlakozás…</translation>
 <translation id="8517041960877371778">Előfordulhat, hogy a(z) <ph name="DEVICE_TYPE" /> nem töltődik, amíg be van kapcsolva.</translation>
 <translation id="8528322925433439945">Mobil...</translation>
 <translation id="8639760480004882931"><ph name="PERCENTAGE" /> maradt</translation>

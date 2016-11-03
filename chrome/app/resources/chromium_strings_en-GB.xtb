@@ -23,7 +23,6 @@ Some features may be unavailable and changes to preferences won't be saved.</tra
 <translation id="1688750314291223739">Set up Sync to save your personalised browser features to the web and access them from Chromium on any computer.</translation>
 <translation id="1699664235656412242">Please close all Chromium windows (including those in Windows 8 mode) and try again.</translation>
 <translation id="1708666629004767631">There's a new, safer version of Chromium available.</translation>
-<translation id="1725059042853530269"><ph name="FILE_NAME" /> may harm your browsing experience, so Chromium has blocked it.</translation>
 <translation id="1774152462503052664">Let Chromium run in the background</translation>
 <translation id="1779356040007214683">To make Chromium safer, we disabled some extensions that aren't listed in the <ph name="IDS_EXTENSION_WEB_STORE_TITLE" /> and may have been added without your knowledge.</translation>
 <translation id="1808667845054772817">Reinstall Chromium</translation>
@@ -61,7 +60,6 @@ Some features may be unavailable and changes to preferences won't be saved.</tra
 <translation id="2718390899429598676">For added security, Chromium will encrypt your data.</translation>
 <translation id="2770231113462710648">Change default browser to:</translation>
 <translation id="2799223571221894425">Relaunch</translation>
-<translation id="2801146392936645542"><ph name="FILE_NAME" /> is malicious and Chromium has blocked it.</translation>
 <translation id="2847479871509788944">Remove from Chromium...</translation>
 <translation id="2886012850691518054">Optional: Help make Chrome better by automatically sending usage statistics and crash reports to Google.</translation>
 <translation id="2905536371227304018">Chromium OS is displayed in this language.</translation>
@@ -80,7 +78,6 @@ Some features may be unavailable and changes to preferences won't be saved.</tra
 <ph name="USER_DATA_DIRECTORY" /></translation>
 <translation id="3264279740686075150">Chromium is your default browser. Cheers.</translation>
 <translation id="328888136576916638">Google API keys are missing. Some functionality of Chromium will be disabled.</translation>
-<translation id="3289635842886789612">Chromium is out of date.</translation>
 <translation id="3296368748942286671">Continue running background apps when Chromium is closed</translation>
 <translation id="3312805357485578561">Chromium has detected unusual behaviour</translation>
 <translation id="331951419404882060">Chromium OS could not sync your data due to an error signing in.</translation>
@@ -138,6 +135,7 @@ Some features may be unavailable and changes to preferences won't be saved.</tra
 <translation id="5398878173008909840">There is a new version of Chromium available.</translation>
 <translation id="5427571867875391349">Set Chromium as your default browser</translation>
 <translation id="5466153949126434691">Chromium updates automatically so you always have the freshest version. When this download completes, Chromium will restart and you'll be on your way.</translation>
+<translation id="5479196819031988440">Chromium OS can't open this page.</translation>
 <translation id="549669000822060376">Please wait while Chromium installs the latest system updates.</translation>
 <translation id="556167189552180495">Chromium is displayed in this language.</translation>
 <translation id="5563479599352954471">Search with one touch</translation>
@@ -225,7 +223,6 @@ Please check your email at <ph name="ACCOUNT_EMAIL" /> for further instructions.
 <translation id="7421823331379285070">Chromium requires Windows XP or later. Some features may not work.</translation>
 <translation id="7473891865547856676">No Thanks</translation>
 <translation id="7483335560992089831">Can not install the same Chromium version that is currently running. Please close Chromium and try again.</translation>
-<translation id="750717762378961310">This file is malicious and Chromium has blocked it.</translation>
 <translation id="7549178288319965365">About Chromium OS</translation>
 <translation id="7577193603922410712">A special security update for Chromium was just applied; you should restart now for it to take effect (we'll restore your tabs).</translation>
 <translation id="761356813943268536">Chromium is using your camera and microphone.</translation>

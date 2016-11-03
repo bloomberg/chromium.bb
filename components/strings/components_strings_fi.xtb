@@ -50,6 +50,7 @@
 <translation id="1491663344921578213">Et voi siirtyä juuri nyt sivustolle <ph name="SITE" />, sillä se käyttää varmenteiden kiinnittämistä. Verkkovirheet ja ‑hyökkäykset ovat yleensä väliaikaisia, joten voit todennäköisesti vierailla sivustolla myöhemmin. <ph name="BEGIN_LEARN_MORE_LINK" />Lisätietoja<ph name="END_LEARN_MORE_LINK" /></translation>
 <translation id="1506687042165942984">Näytä tallennettu (eli vanhentuneeksi tiedetty) kopio tästä sivusta.</translation>
 <translation id="1519264250979466059">Koontipäivä</translation>
+<translation id="153384715582417236">Siinä kaikki toistaiseksi</translation>
 <translation id="1549470594296187301">Tämän ominaisuuden käyttö edellyttää JavaScriptiä.</translation>
 <translation id="1559528461873125649">Tiedostoa tai hakemistoa ei ole olemassa</translation>
 <translation id="1559572115229829303">&lt;p&gt;Verkkotunnukseen <ph name="BEGIN_BOLD" /><ph name="DOMAIN" /><ph name="END_BOLD" /> ei voi muodostaa salattua yhteyttä, koska laitteesi aika ja päivämäärä (<ph name="DATE_AND_TIME" />) ovat virheelliset.&lt;/p&gt;
@@ -351,7 +352,6 @@
 <translation id="4728558894243024398">Käyttöympäristö</translation>
 <translation id="4744603770635761495">Suoritettavan tiedoston polku</translation>
 <translation id="4756388243121344051">&amp;Historia</translation>
-<translation id="4759238208242260848">Lataukset</translation>
 <translation id="4764776831041365478">Osoitteessa <ph name="URL" /> oleva sivu saattaa olla väliaikaisesti pois käytöstä tai se on voitu siirtää pysyvästi uuteen osoitteeseen.</translation>
 <translation id="4771973620359291008">Tapahtui tuntematon virhe.</translation>
 <translation id="4782449893814226250">Pyysit vanhemmiltasi lupaa käydä tällä sivulla.</translation>
@@ -390,6 +390,7 @@
 <translation id="5179510805599951267">Eikö kieli ole <ph name="ORIGINAL_LANGUAGE" />? Ilmoita virheestä</translation>
 <translation id="5190835502935405962">Kirjanmerkkipalkki</translation>
 <translation id="5199729219167945352">Kokeilut</translation>
+<translation id="5199841536747119669">Ehdotuksesi näkyvät tässä.</translation>
 <translation id="5251803541071282808">Pilvi</translation>
 <translation id="5277279256032773186">Käytätkö Chromea töissä? Yritykset voivat hallita Chromen asetuksia työntekijöidensä puolesta. Lisätietoja</translation>
 <translation id="5299298092464848405">Virhe jäsennettäessä käytäntöä</translation>
@@ -469,6 +470,7 @@
 <translation id="6263376278284652872">Verkkotunnuksen <ph name="DOMAIN" /> kirjanmerkit</translation>
 <translation id="6264485186158353794">Takaisin suojaukseen</translation>
 <translation id="6282194474023008486">Postinumero</translation>
+<translation id="6290238015253830360">Suositellut artikkelit näkyvät tässä.</translation>
 <translation id="6305205051461490394">Sivustoon <ph name="URL" /> ei saada yhteyttä.</translation>
 <translation id="6321917430147971392">Tarkista DNS-asetukset</translation>
 <translation id="6328639280570009161">Kokeile verkon ennakoinnin poistamista käytöstä.</translation>
@@ -652,6 +654,7 @@ Psst! Suosittelemme käyttämään ensi kerralla incognito-tilaa <ph name="SHORT
 <translation id="8363502534493474904">Poista lentokonetila käytöstä.</translation>
 <translation id="8364627913115013041">Ei määritetty.</translation>
 <translation id="8380941800586852976">Vaarallinen</translation>
+<translation id="8382348898565613901">Viimeksi käyttämäsi kirjanmerkit näkyvät tässä.</translation>
 <translation id="8412145213513410671">Kaatumiset (<ph name="CRASH_COUNT" />)</translation>
 <translation id="8412392972487953978">Kirjoita sama tunnuslause kahdesti.</translation>
 <translation id="8428213095426709021">Asetukset</translation>
@@ -701,6 +704,7 @@ Psst! Suosittelemme käyttämään ensi kerralla incognito-tilaa <ph name="SHORT
 <translation id="8987927404178983737">Kuukausi</translation>
 <translation id="8989148748219918422"><ph name="ORGANIZATION" /> [<ph name="COUNTRY" />]</translation>
 <translation id="9001074447101275817">Välityspalvelin <ph name="DOMAIN" /> vaatii käyttäjänimen ja salasanan.</translation>
+<translation id="9008201768610948239">Ohita</translation>
 <translation id="901974403500617787">Koko järjestelmään vaikuttavat merkinnät voi tehdä vain omistaja: <ph name="OWNER_EMAIL" />.</translation>
 <translation id="9020542370529661692">Sivu on käännetty kielelle <ph name="TARGET_LANGUAGE" /></translation>
 <translation id="9038649477754266430">Ennakointipalvelun avulla voit ladata sivuja nopeammin</translation>

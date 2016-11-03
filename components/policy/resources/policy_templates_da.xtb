@@ -19,6 +19,9 @@
       Når denne politik er angivet som falsk eller ikke er indstillet, overføres cookies, der er angivet af IdP'en, kun til brugerens profil, første gang vedkommende logger ind på en enhed.
 
       Denne politik berører kun brugere, hvis domæne svarer til enhedens registreringsdomæne. For alle andre brugere overføres cookies, der er angivet af IdP'en, kun til brugerens profil, første gang vedkommende logger ind på enheden.</translation>
+<translation id="1029536946382325801">Hvis denne er angivet som sand, kan brugeren benytte hardwaren på Chrome-enheder til at fjernbekræfte sin identitet over for privacy CA via Enterprise Platform Keys API chrome.enterprise.platformKeysPrivate.challengeUserKey().
+
+          Hvis den er angivet som falsk eller slet ikke er angivet, vil kald til API'en mislykkes eller returnere en fejlkode.</translation>
 <translation id="1040446814317236570">Aktivér PAC til fjernelse af webadresser (for https://)</translation>
 <translation id="1044878202534415707">Rapportér hardwarestatistik, f.eks. CPU/RAM-forbrug.
 
@@ -324,13 +327,6 @@ Hvis kompatabilitet med en fejlbehæftet server skal opretholdes, kan denne poli
 <translation id="2309390639296060546">Standardindstilling for geoplacering</translation>
 <translation id="2312134445771258233">Giver dig mulighed for at konfigurere de sider, der indlæses ved opstart. Indholdet af listen "Webadresser, der skal åbnes ved opstart" ignoreres, medmindre du vælger "Åbn en liste over webadresser" i "Handling ved opstart".</translation>
 <translation id="2337466621458842053">Giver dig mulighed for at oprette en liste med webadressemønstre, der angiver websites, hvor billedvisning tillades. Hvis denne politik ikke er angivet, anvendes den globale standardværdi for alle websites, enten fra politikken "DefaultImagesSetting", hvis den er angivet, eller fra brugerens personlige konfiguration.</translation>
-<translation id="2359612025446382967">Hvis denne politik angives som falsk, deaktiverer <ph name="PRODUCT_OS_NAME" /> Bluetooth, og brugeren kan ikke aktivere det igen.
-
-      Hvis denne politik er angivet som sand eller ikke er indstillet, kan brugeren aktivere og deaktivere Bluetooth efter forgodtbefindende.
-
-      Hvis denne politik er angivet, kan brugeren ikke ændre eller tilsidesætte den.
-
-      Efter aktivering af Bluetooth skal enheden genstartes, før ændringerne kan træde i kraft (det er ikke nødvendigt at genstarte enheden, når Bluetooth deaktiveres).</translation>
 <translation id="2366415278352956652">Aktiverer casting</translation>
 <translation id="2372547058085956601">Forsinkelse for automatisk login på offentlige sessioner.
 
@@ -948,6 +944,9 @@ Hvis denne indstilling ikke er angivet, vil <ph name="PRODUCT_NAME" /> tillade b
 
       Hvis denne politik er angivet til sand, sendes der netværkspakker til overvågning (også kaldet <ph name="HEARTBEATS_TERM" />).
       Hvis den angives til falsk eller ikke angives, sendes der ingen pakker.</translation>
+<translation id="3963602271515417124">Hvis denne er angivet som sand, tillades fjernbekræftelse for enheden, og der genereres og uploades automatisk et certifikat til Device Management Server.
+
+          Hvis den er angivet som falsk eller slet ikke er angivet, genereres der ikke noget certifikat, og kald til enterprise.platformKeysPrivate extension API mislykkes.</translation>
 <translation id="3964909636571393861">Giver adgang til en liste over webadresser</translation>
 <translation id="3965339130942650562">Timeout, indtil brugeren logges ud på grund af inaktivitet</translation>
 <translation id="3967075520570946456">Aktivér visning af velkomstsiden, når browseren genstartes efter opgradering af operativsystemet.</translation>
@@ -996,7 +995,7 @@ Hvis denne indstilling ikke er angivet, vil <ph name="PRODUCT_NAME" /> tillade b
 
       Angiver en liste over plugins, der er deaktiveret i <ph name="PRODUCT_NAME" />, og forhindrer brugerne i at ændre denne indstilling.
 
-      Jokertegnene "*" og "?" kan bruges til at angive sekvenser af vilkårlige tegn. "*" svarer til et vilkårligt antal tegn, mens "?" angiver et enkelt valgfrit tegn, dvs. nul eller ét tegn. Afslutningstegnet er "\", så hvis du vil angive de reelle tegn "*", "?" eller "\" kan du indsætte "\" foran dem.
+      Jokertegnene "*" og "?" kan bruges til at angive sekvenser af vilkårlige tegn. "*" svarer til et vilkårligt antal tegn, mens "?" angiver et enkelt valgfrit tegn, dvs. nul eller ét tegn. Afslutningstegnet er "\", så hvis du vil angive de reelle tegn "*", "?" eller "\", kan du indsætte "\" foran dem.
 
       Hvis du aktiverer denne indstilling, anvendes den angivne liste over plugins aldrig i <ph name="PRODUCT_NAME" />. Plugins er markeret som deaktiverede i "about:plugins", og brugerne kan ikke aktivere dem.
 
@@ -1400,7 +1399,7 @@ Hvis denne politik ikke er indstillet, er standardfrekvensen 3 minutter. Minimum
 
       Angiver en liste over plugins, som brugerne kan aktivere eller deaktivere i <ph name="PRODUCT_NAME" />.
 
-      Jokertegnene "*" og "?" kan bruges til at angive sekvenser af vilkårlige tegn. "*" svarer til et vilkårligt antal tegn, mens "?" angiver et enkelt valgfrit tegn, dvs. nul eller ét tegn. Afslutningstegnet er "\", så for at angive de reelle tegn "*", "?" eller "\" kan du indsætte "\" foran dem.
+      Jokertegnene "*" og "?" kan bruges til at angive sekvenser af vilkårlige tegn. "*" svarer til et vilkårligt antal tegn, mens "?" angiver et enkelt valgfrit tegn, dvs. nul eller ét tegn. Afslutningstegnet er "\", så for at angive de reelle tegn "*", "?" eller "\", kan du indsætte "\" foran dem.
 
 
       Hvis du aktiverer denne indstilling, kan den angivne liste over plugins anvendes i <ph name="PRODUCT_NAME" />. Brugerne kan aktivere eller deaktivere dem i "about:plugins", selvom pluginnet også svarer til et mønster i DisabledPlugins. Brugerne kan aktivere og deaktivere plugins, som ikke svarer til noget mønster i DisabledPlugins, DisabledPluginsExceptions og EnabledPlugins.
@@ -1473,12 +1472,6 @@ Hvis denne politik ikke er indstillet, er standardfrekvensen 3 minutter. Minimum
 
       Hvis politikken ikke er angivet eller er angivet til Falsk, udfører <ph name="PRODUCT_NAME" /> ikke tilbagekaldskontroller på nettet i <ph name="PRODUCT_NAME" /> 19 og nyere.</translation>
 <translation id="5966615072639944554">Udvidelser har tilladelse til at bruge Remote Attestation API.</translation>
-<translation id="5974970919245996815">Rapportoplysninger om status for Android sendes tilbage til serveren.
-
-      Hvis politikken er angivet som falsk, rapporteres oplysningerne ikke.
-      Hvis den angives som sand eller ikke angives, rapporteres oplysningerne.
-
-      Denne politik gælder kun, hvis Android-apps er aktiveret.</translation>
 <translation id="5983708779415553259">Standardadfærd for websites, der ikke findes i en indholdspakke</translation>
 <translation id="5997543603646547632">Brug 24-timers ur som standard</translation>
 <translation id="6009903244351574348">Tillad, at <ph name="PRODUCT_FRAME_NAME" /> kan håndtere de angivne indholdstyper. Hvis denne politik ikke er angivet, anvendes standardgengiveren for alle websites som angivet i politikken "ChromeFrameRendererSettings".</translation>
@@ -2128,6 +2121,9 @@ Kun hvis allowCorporateKeyUsage er angivet som "sand" for en udvidelse, kan den 
           til et Active Directory-domæne.</translation>
 <translation id="7937766917976512374">Tillad eller afvis videooptagelse</translation>
 <translation id="7941975817681987555">Forudse ikke netværkshandlinger på nogen netværksforbindelse</translation>
+<translation id="7942429005743031780">Denne politik angiver de udvidelser, der har tilladelse til at bruge Enterprise Platform Keys API chrome.enterprise.platformKeys.challengeUserKey() til fjernbekræftelse. Udvidelser skal føjes til denne liste for at kunne anvende API'en.
+
+          Hvis en udvidelse ikke findes på listen, eller listen ikke er angivet, mislykkes kaldet til API'en med en fejlkode.</translation>
 <translation id="7953256619080733119">Manuel undtagelse for host for administreret bruger</translation>
 <translation id="7971839631300653352">SSL 3.0</translation>
 <translation id="7974114691960514888">Denne politik understøttes ikke længere. Muliggør brug af STUN- og relæservere ved oprettelse af forbindelse til en ekstern klient. Hvis denne indstilling er aktiveret, kan denne maskine finde og oprette forbindelse til eksterne værtsmaskiner, selvom de er adskilt af en firewall. Hvis denne indstilling er deaktiveret, og udgående UDP-forbindelser filtreres af firewallen, kan denne maskine kun oprette forbindelse til værtsmaskiner inden for det lokale netværk.</translation>

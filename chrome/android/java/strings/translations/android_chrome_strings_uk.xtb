@@ -95,7 +95,6 @@
 <translation id="200669432486043882">Замінити файл</translation>
 <translation id="2020525020270327736">Копіювати URL-адресу сайту</translation>
 <translation id="2038563949887743358">Увімкнути опцію "Запитувати версію сайту для комп’ютера"</translation>
-<translation id="2069736994598857257">Використовується <ph name="GIGABYTES" /> Гб</translation>
 <translation id="2073235970478114994">Завантажити зображення</translation>
 <translation id="2079545284768500474">Скасувати</translation>
 <translation id="2082238445998314030">Результат <ph name="RESULT_NUMBER" /> з <ph name="TOTAL_RESULTS" /></translation>
@@ -324,6 +323,7 @@
 <translation id="4816465935029283692">Типи даних</translation>
 <translation id="4827948050554950725">Додати кредитну картку</translation>
 <translation id="4836364883164334657">Ваше з’єднання з цим сайтом не конфіденційне. Зловмисники можуть намагатися викрасти ваші дані з домену <ph name="DOMAIN_NAME" /> (зокрема фотографії, паролі, повідомлення та дані кредитних карток).</translation>
+<translation id="4850886885716139402">Перегляд</translation>
 <translation id="4881695831933465202">Відкрити</translation>
 <translation id="4885273946141277891">Забагато копій Chrome.</translation>
 <translation id="4923459931733593730">Оплата</translation>
@@ -339,7 +339,9 @@
 <translation id="5016205925109358554">Serif</translation>
 <translation id="5039804452771397117">Дозволити</translation>
 <translation id="5040262127954254034">Конфіденційність</translation>
+<translation id="5053110706349648690">Щоб створити пару, увімкніть Bluetooth у <ph name="BEGIN_LINK" />налаштуваннях пристрою<ph name="END_LINK" /></translation>
 <translation id="5063480226653192405">Використання</translation>
+<translation id="5087580092889165836">Додати картку</translation>
 <translation id="5100237604440890931">Згорнуто – натисніть, щоб розгорнути.</translation>
 <translation id="510275257476243843">Залишилась 1 година</translation>
 <translation id="5127805178023152808">Синхронізацію вимкнено</translation>
@@ -416,6 +418,7 @@
 <translation id="583281660410589416">Невідомий</translation>
 <translation id="5832934273103296195">Розгорнуто – натисніть, щоб згорнути</translation>
 <translation id="583891442612896534">Chrome не може зв’язатись із серверами Google для стиснення даних. Можливо, у вас обмежене заощадження даних.</translation>
+<translation id="5843873952582375185">Пристрої Bluetooth не знайдено. <ph name="BEGIN_LINK" />Пошукайте ще раз<ph name="END_LINK" /></translation>
 <translation id="585027516397408832">Заощадження трафіку ввімкнено</translation>
 <translation id="5860033963881614850">Вимк.</translation>
 <translation id="5867027562311576691">Згодом тут з’являться інші статті. Гарного ранку.</translation>
@@ -490,6 +493,7 @@
 <translation id="6657585470893396449">Пароль</translation>
 <translation id="6659594942844771486">Вкладка</translation>
 <translation id="666268767214822976">Показувати підказки зі схожими запитами та популярними веб-сайтами під час введення запиту в адресному рядку</translation>
+<translation id="666731172850799929">Відкрити в програмі <ph name="APP_NAME" /></translation>
 <translation id="666981079809192359">Примітка про конфіденційність Chrome</translation>
 <translation id="6698801883190606802">Керування синхронізованими даними</translation>
 <translation id="6710213216561001401">Попереднє</translation>
@@ -532,14 +536,12 @@
 <translation id="7074853159844403180">Сайт <ph name="SITE" /> хоче підключитися до:</translation>
 <translation id="7081639897063626814">Зберігати наявні дані окремо</translation>
 <translation id="7094922512924405309">Немає сторінок із сервісу "Інтернет навколо нас"</translation>
-<translation id="7115197232530297436">Адреса доставки не підтримується. Укажіть іншу адресу.</translation>
 <translation id="7138678301420049075">Інше</translation>
 <translation id="7180611975245234373">Оновити</translation>
 <translation id="7191430249889272776">Вкладку відкрито у фоновому режимі.</translation>
 <translation id="7208788139759694678">Заощадження трафіку вимкнено</translation>
 <translation id="7243308994586599757">Опції можна знайти внизу екрана</translation>
 <translation id="7244362611678346589"><ph name="SEARCH_ENGINE_URL" /> використовує ваші геодані, щоб показувати результати місцевого пошуку</translation>
-<translation id="7347770551817603360">Офлайн-вміст</translation>
 <translation id="7353894246028566792">{NUM_SELECTED,plural, =1{Поділитись 1 вибраним елементом}one{Поділитися # вибраним елементом}few{Поділитися # вибраними елементами}many{Поділитися # вибраними елементами}other{Поділитися # вибраного елемента}}</translation>
 <translation id="7366340029385295517">Трансляція на екран "<ph name="SCREEN_NAME" />"</translation>
 <translation id="7375125077091615385">Тип:</translation>
@@ -576,7 +578,6 @@
 <translation id="7665369617277396874">Додати обліковий запис</translation>
 <translation id="7682287625158474539">Адреса для надсилання</translation>
 <translation id="771135159654932189">Веб-сторінки поблизу</translation>
-<translation id="7713873128508426081">Завжди дозволяти</translation>
 <translation id="7764225426217299476">Додати адресу</translation>
 <translation id="7765158879357617694">Перемістити</translation>
 <translation id="7769602470925380267">Прийняти та вийти</translation>
@@ -645,15 +646,12 @@
 <translation id="8514577642972634246">Перейти в режим анонімного перегляду</translation>
 <translation id="8518901949365209398">На цьому сайті використовується ненадійна конфігурація безпеки (підписи SHA-1), тому ваше з’єднання не конфіденційне.</translation>
 <translation id="8523928698583292556">Видалити збережений пароль</translation>
-<translation id="8525306231823319788">На весь екран</translation>
-<translation id="85415543246899402">Використано <ph name="MEGABYTES" /> Мб</translation>
 <translation id="854522910157234410">Відкрити цю сторінку</translation>
 <translation id="8562452229998620586">Тут відображатимуться збережені паролі.</translation>
 <translation id="856481929701340285">Версія для комп’ютера</translation>
 <translation id="857943718398505171">Дозволено (рекомендується)</translation>
 <translation id="8583805026567836021">Очищення даних облікового запису</translation>
 <translation id="8617240290563765734">Перейти за URL-адресою, указаною в завантаженому вмісті?</translation>
-<translation id="8618653050765576793">Використано <ph name="KILOBYTES" /> Кб</translation>
 <translation id="862875433388403934">Завантажений в інші додатки вміст (фільми, музика тощо) може не відтворюватися, доки ці додатки самі не отримають ліцензії на основі нових облікових даних пристрою.
 
 Щоб отримати нові ліцензії, під’єднайте пристрій до Інтернету та відтворіть завантажений вміст.</translation>

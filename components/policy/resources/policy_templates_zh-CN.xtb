@@ -19,6 +19,9 @@
       如果此政策设为 false 或未设置，仅当用户首次在设备上登录时，由 IdP 设置的 Cookie 才会被转移到其个人资料中。
 
       此政策只会影响所在网域与设备注册网域匹配的用户。对于所有其他用户，仅当他们首次在设备上登录时，由 IdP 设置的 Cookie 才会被转移到其个人资料中。</translation>
+<translation id="1029536946382325801">如果将此政策设为 true，那么用户可以使用 Chrome 设备上的硬件，通过 Enterprise Platform Keys API chrome.enterprise.platformKeys.challengeUserKey() 远程向隐私认证中心 (Privacy CA) 认证自己的身份。
+
+          如果将此政策设为 false 或未进行设置，则会导致无法调用 API，并返回错误代码。</translation>
 <translation id="1040446814317236570">启用 PAC 网址剔除功能（适用于 https:// 类网址）</translation>
 <translation id="1044878202534415707">报告硬件统计数据，例如 CPU/RAM 使用情况。
 
@@ -267,6 +270,7 @@
       如果 HardwareAccelerationModeEnabled 设为 false，系统将忽略 Disable3DAPIs（相当于 Disable3DAPIs 设为 true）。</translation>
 <translation id="2168397434410358693">使用交流电源供电时的闲置延迟时间</translation>
 <translation id="2170233653554726857">启用WPAD优化</translation>
+<translation id="2178899310296064282">至少强制启用 YouTube“适中”受限模式</translation>
 <translation id="2188979373208322108">在 <ph name="PRODUCT_NAME" />中启用书签栏。如果您启用了此设置，<ph name="PRODUCT_NAME" />就会显示书签栏。如果您停用了此设置，用户就从不会看到书签栏。如果您启用或停用了此设置，用户就无法在 <ph name="PRODUCT_NAME" />中更改或替换此设置。如果未进行此设置，用户就可以决定是否使用此功能。</translation>
 <translation id="2201555246697292490">配置本地消息传递主机白名单</translation>
 <translation id="2204753382813641270">控制任务栏是否自动隐藏</translation>
@@ -300,13 +304,6 @@
 <translation id="2309390639296060546">默认地理位置设置</translation>
 <translation id="2312134445771258233">允许您配置在启动时加载的页面。除非您在“启动时的操作”中选择“打开网址列表”，否则系统会忽略“启动时打开的网址”列表中的内容。</translation>
 <translation id="2337466621458842053">可让您设置网址格式的列表，这些网址格式用于指定允许显示图片的网站。在未设置此政策的情况下，如果设置了“DefaultImagesSetting”政策，那么将对该政策中的所有网站使用全局默认值，否则将对用户个人配置中的所有网站使用全局默认值。</translation>
-<translation id="2359612025446382967">如果此政策设为 false，<ph name="PRODUCT_OS_NAME" />将停用蓝牙功能，并且用户无法重新启用该功能。
-
-      如果此政策设为 true 或未设置，用户将能够随意启用或停用蓝牙功能。
-
-      如果您设置了此政策，用户将无法更改或覆盖您的设置。
-
-      启用蓝牙功能后，必须重新启动设备才能使更改生效（停用蓝牙功能后，无需重新启动设备）。</translation>
 <translation id="2366415278352956652">启用投射</translation>
 <translation id="2372547058085956601">公用自助终端自动登录延迟。
 
@@ -507,6 +504,7 @@
       如果您启用或停用了此设置，那么用户将无法在 <ph name="PRODUCT_NAME" /> 中更改或覆盖“启用网上诱骗和恶意软件防护”设置。
 
       如果未设置此政策，则系统将会启用安全浏览功能，但用户可以对其进行更改。</translation>
+<translation id="2787173078141616821">报告有关 Android 状态的信息</translation>
 <translation id="2801230735743888564">允许用户在设备未联网的情况下玩恐龙复活节彩蛋游戏。
 
       如果此政策设为 False，用户将无法在设备未联网的情况下玩恐龙复活节彩蛋游戏。如果此设置设为 True，用户将可以玩恐龙复活节彩蛋游戏。如果此政策未设置，用户将无法在已注册的 Chrome 操作系统上玩恐龙复活节彩蛋游戏，但可以在其他环境下玩该游戏。</translation>
@@ -728,6 +726,13 @@
 <translation id="3417418267404583991">如果未配置此政策或将其设置为 true，<ph name="PRODUCT_OS_NAME" />将启用访客登录。访客登录是匿名用户会话，不需要密码。
 
       如果将此政策设置为 false，<ph name="PRODUCT_OS_NAME" />就不会允许访客会话启动。</translation>
+<translation id="3418871497193485241">启用最低级别的 YouTube 受限模式，并禁止用户选择限制条件更加宽松的模式。
+
+      如果此设置设为“严格”，则 YouTube“严格”受限模式将始终处于启用状态。
+
+      如果此设置设为“适中”，则用户只可选择启用 YouTube“适中”受限模式和 YouTube“严格”受限模式，但无法禁用受限模式。
+
+      如果此设置设为“关闭”或未设置值，则 <ph name="PRODUCT_NAME" /> 不会强制启用 YouTube 受限模式。但是，外部政策（例如 YouTube 政策）仍有可能会强制启用受限模式。</translation>
 <translation id="3428247105888806363">启用网络预测功能</translation>
 <translation id="3449886121729668969">配置 <ph name="PRODUCT_NAME" /> 的代理设置。ARC 应用也将可以使用这些代理设置。
 
@@ -840,6 +845,9 @@
 
           默认情况下，所有本地消息传递主机均在白名单中，但如果所有本地消息传递主机都按相关政策被列入黑名单，则您可以使用白名单来替换该政策。</translation>
 <translation id="384743459174066962">可让您设置网址格式的列表，这些网址格式用于指定不允许打开弹出式窗口的网站。在未设置此政策的情况下，如果设置了“DefaultPopupsSetting”政策，那么将对该政策中的所有网站使用全局默认值，否则将对用户个人配置中的所有网站使用全局默认值。</translation>
+<translation id="3851039766298741586">报告有关当前自助服务终端会话的信息，例如应用 ID 和版本。
+
+      如果此政策设为 false，则系统不会报告自助服务终端会话信息。如果此政策设为 true 或未设置，则系统会报告自助服务终端会话信息。</translation>
 <translation id="3859780406608282662">在提取 <ph name="PRODUCT_OS_NAME" /> 中的变体种子的方法中添加参数。
 
       指定后，系统将会向用来提取变体种子的网址中添加一个名为“restrict”的查询参数。此参数的值就是此政策中指定的值。
@@ -854,6 +862,13 @@
 
           仅当“DefaultSearchProviderEnabled”政策处于启用状态时，此政策才能发挥作用。</translation>
 <translation id="3864818549971490907">默认插件设置</translation>
+<translation id="386487026071140458">此政策已弃用，请改用 <ph name="FORCEGOOGLESAFESEARCH_POLICY_NAME" /> 和 <ph name="FORCEYOUTUBERESTRICT_POLICY_NAME" />。如果设置了 <ph name="FORCEGOOGLESAFESEARCH_POLICY_NAME" /> 政策、<ph name="FORCEYOUTUBERESTRICT_POLICY_NAME" /> 政策或（已弃用）的 <ph name="FORCEYOUTUBESAFETYMODE_POLICY_NAME" /> 政策，则系统会忽略此政策。
+
+      强制启用安全搜索功能来处理 Google 网页搜索中的查询，并禁止用户更改此设置。此设置还会强制启用 YouTube“适中”受限模式。
+
+      如果您启用此设置，则 Google 搜索中的安全搜索功能和 YouTube 中的“适中”受限模式将始终处于启用状态。
+
+      如果您停用此设置或未设置值，则系统不会在 Google 搜索中强制启用安全搜索功能，也不会在 YouTube 中强制启用受限模式。</translation>
 <translation id="3866249974567520381">说明</translation>
 <translation id="3866530186104388232">如果未配置此政策或将其设置为 true，<ph name="PRODUCT_OS_NAME" />将在登录屏幕上显示现有用户，并允许用户选择。如果将此政策设置为 false，<ph name="PRODUCT_OS_NAME" />就会显示用户名/密码登录提示。</translation>
 <translation id="3868347814555911633">此策略仅在零售模式下有效。
@@ -885,6 +900,9 @@
 
       如果此政策设为 true，系统将发送监控网络数据包（所谓的“<ph name="HEARTBEATS_TERM" />”）。
       如果此政策设为 false 或未设置，系统将不会发送任何网络数据包。</translation>
+<translation id="3963602271515417124">如果此政策的值为 True，则系统将允许此设备进行远程认证，然后自动生成证书并将其上传到设备管理服务器。
+
+          如果此政策的值设为 False 或未设置，则不会生成证书，也无法调用 enterprise.platformKeys extension API。</translation>
 <translation id="3964909636571393861">允许访问网址列表</translation>
 <translation id="3965339130942650562">对待机用户执行退出操作前的超时时间</translation>
 <translation id="3967075520570946456">在操作系统升级后，允许该浏览器首次启动时显示欢迎页面。</translation>
@@ -920,6 +938,17 @@
 
           如果此政策未设置，系统将使用“AllowCookies”，并且用户可以更改此政策。</translation>
 <translation id="4103289232974211388">用户确认后重定向至 SAML IdP</translation>
+<translation id="4103941930938018145">此政策已弃用。请使用 <ph name="DEFAULT_PLUGINS_SETTING_POLICY" /> 控制 Flash 插件的可用性，并使用 <ph name="ALWAYS_OPEN_PDF_EXTERNALLY_POLICY" /> 控制是否应使用集成的 PDF 查看器打开 PDF 文件。
+
+      指定在 <ph name="PRODUCT_NAME" /> 中停用的插件的列表，并禁止用户更改此设置。
+
+      可使用通配符“*”和“?”匹配任意字符序列。“*”可匹配任意数量的字符，而“?”可指定单个可选的字符，即匹配零个或一个字符。转义字符为“\”，因此要匹配实际的“*”、“?”或“\”字符，您可以在这些字符前加上“\”。
+
+      如果您启用了此设置，则 <ph name="PRODUCT_NAME" /> 从不会使用列表中指定的插件。这些插件在“about:plugins”中标记为已停用，而且用户无法启用它们。
+
+      请注意，EnabledPlugins 和 DisabledPluginsExceptions 可替换此政策。
+
+      如果未设置此政策，则用户可以使用系统中安装的任何插件（硬编码的不兼容、过期或危险插件除外）。</translation>
 <translation id="410478022164847452">指定在使用交流电源供电时用户停止输入后隔多久才采取闲置操作。
 
           如果设置了此政策，则只要机器处于闲置状态的时间达到此处指定的时长，<ph name="PRODUCT_OS_NAME" />就会采取闲置操作（可单独配置）。
@@ -1196,6 +1225,13 @@
           如果停用或未设定此设置，那么当主机处于共享状态时，本地和远程用户都可以与主机互动。</translation>
 <translation id="5423001109873148185">如果启用此政策，就会强制从当前默认浏览器导入搜索引擎，还会影响导入对话框。如果停用此政策，就不会导入默认搜索引擎。如果未设置此政策，系统就会询问用户是否导入默认搜索引擎，或者系统自动进行导入。</translation>
 <translation id="5423197884968724595">Android WebView 限制名称：</translation>
+<translation id="543559563129402336">此政策已弃用。请考虑使用替换此政策的 <ph name="FORCEYOUTUBERESTRICT_POLICY_NAME" />；借助该政策，您可以进行更加精确的微调。
+
+      强制启用 YouTube“适中”受限模式，并禁止用户更改此设置。
+
+      如果您启用此设置，则系统会始终强制启用 YouTube 受限模式，且至少启用“适中”受限模式。
+
+      如果您停用此设置或未设置值，则 <ph name="PRODUCT_NAME" /> 不会强制启用 YouTube 受限模式。但是，外部政策（例如 YouTube 政策）仍有可能会强制启用受限模式。</translation>
 <translation id="5447306928176905178">向网页报告内存信息（JS堆内存大小）（已停止使用）</translation>
 <translation id="5457065417344056871">在浏览器中启用访客模式</translation>
 <translation id="5457924070961220141">可让您在安装 <ph name="PRODUCT_FRAME_NAME" />时配置默认 HTML 呈现器。如果未设置此政策，则使用默认设置，即允许托管浏览器进行呈现。不过您可以视情况替换此设置，让 <ph name="PRODUCT_FRAME_NAME" />默认呈现 HTML 网页。</translation>
@@ -1297,6 +1333,19 @@
           如果未设置此政策，系统将使用默认的时间长度。
 
           指定的政策值应以毫秒为单位。</translation>
+<translation id="5783595563813359339">此政策已弃用。请使用 <ph name="DEFAULT_PLUGINS_SETTING_POLICY" /> 控制 Flash 插件的可用性，并使用 <ph name="ALWAYS_OPEN_PDF_EXTERNALLY_POLICY" /> 控制是否应使用集成的 PDF 查看器打开 PDF 文件。
+
+      指定在 <ph name="PRODUCT_NAME" /> 中用户可以启用或停用的插件的列表。
+
+      可使用通配符“*”和“?”匹配任意字符序列。“*”可匹配任意数量的字符，而“?”可指定单个可选的字符，即匹配零个或一个字符。转义字符为“\”，因此要匹配实际的“*”、“?”或“\”字符，您可以在这些字符前加上“\”。
+
+      如果您启用了此设置，则可在 <ph name="PRODUCT_NAME" /> 中使用列表中指定的插件。即使这些插件同时与 DisabledPlugins 中的格式匹配，用户也可在“about:plugins”中启用或停用它们。即使插件与 DisabledPlugins、DisabledPluginsExceptions 和 EnabledPlugins 中的任何格式均不匹配，用户也可以启用或停用它们。
+
+      此政策的目的是针对以下情况实现严格的插件黑名单设置：“DisabledPlugins”列表包含带通配符的条目，例如停用所有插件 (*) 或停用所有 Java 插件 (*Java*)，但是管理员又希望启用某些特定版本，例如“IcedTea Java 2.3”。此类特定版本可在此政策中指定。
+
+      请注意，相应插件的名称和组名称都需要予以排除。在“about:plugins”中，每个插件组都会显示在一个单独的部分内；每个部分可以包含一个或多个插件。例如：“Shockwave Flash”插件属于“Adobe Flash Player”组，如果要从黑名单中排除该插件，那么例外列表中必须有这两个名称的匹配项。
+
+      如果此政策未设置，那么与“DisabledPlugins”中的格式匹配的所有插件都将被锁定为停用状态，并且用户无法启用这些插件。</translation>
 <translation id="5795001131770861387">在非默认端口上启用 HTTP/0.9 支持</translation>
 <translation id="5809728392451418079">设置设备本地帐户的显示名称</translation>
 <translation id="5814301096961727113">设置登录屏幕上语音反馈的默认状态</translation>
@@ -1387,6 +1436,17 @@
 <translation id="6076099373507468537">定义可从其内核驱动程序分离以便直接通过网络应用内的 chrome.usb API 使用的 USB 设备列表。列表中的条目是成对的用于标识特定硬件的 USB 供应商标识符和产品标识符。
 
       如果此政策未配置，则分离式 USB 设备列表为空。</translation>
+<translation id="608377055310226486">此政策已弃用。请使用 <ph name="DEFAULT_PLUGINS_SETTING_POLICY" /> 控制 Flash 插件的可用性，并使用 <ph name="ALWAYS_OPEN_PDF_EXTERNALLY_POLICY" /> 控制是否应使用集成的 PDF 查看器打开 PDF 文件。
+
+      指定在 <ph name="PRODUCT_NAME" /> 中启用的插件的列表，并禁止用户更改此设置。
+
+      可使用通配符“*”和“?”匹配任意字符序列。“*”可匹配任意数量的字符，而“?”可指定单个可选的字符，即匹配零个或一个字符。转义字符为“\”，因此要匹配实际的“*”、“?”或“\”字符，您可以在这些字符前加上“\”。
+
+      列表中指定的插件如果已安装，则会始终在 <ph name="PRODUCT_NAME" /> 中使用。这些插件在“about:plugins”中标记为已启用，而且用户无法停用它们。
+
+      请注意，此政策可替换 DisabledPlugins 和 DisabledPluginsExceptions。
+
+      如果未设置此政策，则用户可以停用系统中安装的任何插件。</translation>
 <translation id="6093156968240188330">允许远程用户在远程协助会话中操控提权后的窗口</translation>
 <translation id="6095999036251797924">指定在设备闲置多长时间后屏幕将锁定（使用交流电源或电池供电时）。
 
@@ -1600,6 +1660,7 @@
 <translation id="6828905844648501476">如果此政策设为 true 或未配置，<ph name="PRODUCT_NAME" /> 将允许通过用户管理器添加用户。
 
       如果此政策设为 false，<ph name="PRODUCT_NAME" /> 将禁止通过个人资料管理器创建新的个人资料。</translation>
+<translation id="685769593149966548">强制启用 YouTube“严格”受限模式</translation>
 <translation id="687046793986382807">此政策自35版<ph name="PRODUCT_NAME" />起已停止使用。
 
       无论选项值是什么，系统都会向网页报告内存信息，但出于安全考虑，系统会限制所报告的内存大小，并会限制更新率。要获取准确的实时数据，请使用遥测等工具。</translation>
@@ -1986,6 +2047,9 @@
           此政策不适用于未加入 Active Directory 网域的 Windows 实例。</translation>
 <translation id="7937766917976512374">是否允许视频捕获</translation>
 <translation id="7941975817681987555">采用任何网络连接时，均不预测网络操作</translation>
+<translation id="7942429005743031780">此政策指定了允许使用 Enterprise Platform Keys API chrome.enterprise.platformKeys.challengeUserKey() 进行远程认证的扩展程序。只有添加到此列表中的扩展程序才能使用该 API。
+
+          如果扩展程序不在此列表中，或者未设置此列表，则会导致无法调用 API，并返回错误代码。</translation>
 <translation id="7953256619080733119">托管用户手动管理的例外主机</translation>
 <translation id="7971839631300653352">SSL 3.0</translation>
 <translation id="7974114691960514888">此政策已不再受支持。在连接到远程客户端时，允许使用 STUN 和中继服务器。如果启用此设置，那么即使远程客户端受到防火墙隔离，也仍然可以检测到并连接到此计算机。如果停用此设置，并且防火墙过滤了外发 UDP 连接，那么此计算机将只能与本地网络内的客户端计算机建立连接。</translation>
@@ -2011,6 +2075,7 @@
       如果此政策设为true，设备将使用24小时制的时钟格式。如果此政策设为false，设备将使用12小时制的时钟格式。
 
       如果此政策未设置，设备将默认使用24小时制的时钟格式。</translation>
+<translation id="8114382167597081590">不强制启用 YouTube 受限模式</translation>
 <translation id="8118665053362250806">设置媒体磁盘缓存大小</translation>
 <translation id="8135937294926049787">指定在使用交流电源供电时用户停止输入后隔多久关闭屏幕。
 
@@ -2177,6 +2242,7 @@
 <translation id="8704831857353097849">已停用插件的列表</translation>
 <translation id="8711086062295757690">指定关键字，该关键字在多功能框中作为快捷方式来触发针对此提供商的搜索。此政策是可选的，如果未设置，就没有任何关键字可激活搜索服务提供商。要实施此政策，必须先启用“DefaultSearchProviderEnabled”政策。</translation>
 <translation id="8731693562790917685">“内容设置”可让您指定特定类型的内容（例如 Cookie、图片或 JavaScript）的处理方式。</translation>
+<translation id="8736538322216687231">强制启用最低级别的 YouTube 受限模式</translation>
 <translation id="8749370016497832113">允许删除 <ph name="PRODUCT_NAME" /> 中的浏览器历史记录和下载记录，并禁止用户更改此设置。
 
       请注意，即使停用了此政策，也不保证浏览和下载记录会保留：用户可能能够直接修改或删除历史记录数据库文件，而且浏览器本身也可能会在任何时候删除或归档任意或所有历史记录项。

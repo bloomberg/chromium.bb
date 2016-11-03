@@ -59,7 +59,6 @@ Hvis du logger ind alligevel, flettes Chrome-oplysninger, som f.eks. bogmærker,
 <translation id="2588322182880276190">Chrome-logo</translation>
 <translation id="2664962310688259219">Chrome OS open source-licenser</translation>
 <translation id="2665296953892887393">Hjælp med at gøre Google Chrome bedre ved at sende fejlrapporter og <ph name="UMA_LINK" /> til Google</translation>
-<translation id="2669824781555328029"><ph name="FILE_NAME" /> kan skade din weboplevelse, så Chrome har blokeret det.</translation>
 <translation id="2681064822612051220">Der er registreret en modstridende installation af Google Chrome i dit system. Du skal afinstallere denne og prøve igen.</translation>
 <translation id="2689103672227170538">Denne udvidelse har ændret din startside i Chrome.</translation>
 <translation id="2704356438731803243">Hvis du foretrækker at holde dine eksisterende Chrome-data adskilt, kan du oprette en ny Chromium-bruger for <ph name="USER_NAME" />.</translation>
@@ -147,6 +146,7 @@ Gå til din e-mail på <ph name="ACCOUNT_EMAIL" /> for at få yderligere vejledn
 <translation id="5148419164691878332">Chrome gemmer denne i <ph name="SAVED_PASSWORDS_LINK" /> og husker den, næste gang du skal bruge den.</translation>
 <translation id="5170938038195470297">Din profil kan ikke bruges, fordi den stammer fra en nyere version af Google Chrome. Nogle funktioner er muligvis ikke tilgængelige. Angiv en anden profilmappe, eller brug en nyere version af Chrome.</translation>
 <translation id="5176234269072261959">Hjælp med at gøre Chrome bedre ved at rapportere de aktuelle indstillinger.</translation>
+<translation id="5193136243808726294">Google Chrome OS kan ikke åbne denne side.</translation>
 <translation id="5204098752394657250">Google Chromes <ph name="TERMS_OF_SERVICE_LINK" />Servicevilkår<ph name="END_TERMS_OF_SERVICE_LINK" /></translation>
 <translation id="5243785881901838525">Google Payments (kopieret til Chrome)</translation>
 <translation id="5251420635869119124">Gæster kan bruge Chrome uden at efterlade noget.</translation>
@@ -205,7 +205,6 @@ Gå til din e-mail på <ph name="ACCOUNT_EMAIL" /> for at få yderligere vejledn
 <translation id="699076943483372849">Dette website anvender Chrome Frame-pluginnet, som ikke længere modtager sikkerheds- og stabilitetsopdateringer. Afinstaller pluginnet, og opgrader til en moderne browser.</translation>
 <translation id="6991142834212251086">Link mine Chrome-data til denne konto</translation>
 <translation id="7060865993964054389">Google Chrome-appliste</translation>
-<translation id="7084448929020576097"><ph name="FILE_NAME" /> er skadelig, og Chrome har blokeret den.</translation>
 <translation id="7098166902387133879">Google Chrome bruger din mikrofon.</translation>
 <translation id="7106741999175697885">Jobliste – Google Chrome</translation>
 <translation id="7125719106133729027">Chrome kunne ikke opdatere sig selv til den nyeste version, så du går glip af nye fantastiske funktioner og sikkerhedsrettelser. Du skal geninstallere Chrome manuelt.</translation>
@@ -268,7 +267,6 @@ Gå til din e-mail på <ph name="ACCOUNT_EMAIL" /> for at få yderligere vejledn
 <translation id="8669527147644353129">Hjælp til Google Chrome</translation>
 <translation id="8679801911857917785">Den styrer også, hvilken side der vises, når du åbner Chrome.</translation>
 <translation id="870251953148363156">Opdater &amp;Google Chrome</translation>
-<translation id="8793772303278047003">Chrome er forældet.</translation>
 <translation id="8796108026289707191">Du bør genstarte Google Chrome nu.</translation>
 <translation id="8823341990149967727">Chrome er forældet</translation>
 <translation id="884296878221830158">Den styrer også, hvilken side der vises, når du åbner Chrome eller klikker på knappen Startside.</translation>
@@ -277,7 +275,6 @@ Gå til din e-mail på <ph name="ACCOUNT_EMAIL" /> for at få yderligere vejledn
 <translation id="8914504000324227558">Genstart Chrome</translation>
 <translation id="9026991721384951619">Chrome OS kunne ikke synkronisere dine data, fordi loginoplysningerne til din konto er forældede.</translation>
 <translation id="9067395829937117663">Google Chrome kræver Windows 7 eller nyere.</translation>
-<translation id="9102715433345326100">Denne fil er skadelig, og Chrome har blokeret den.</translation>
 <translation id="9107728822479888688"><ph name="BEGIN_BOLD" />Advarsel!<ph name="END_BOLD" /> Google Chrome kan ikke forhindre udvidelser i at registrere din browserhistorik. Fjern markeringen for at deaktivere denne udvidelse i inkognitotilstand.</translation>
 <translation id="911206726377975832">Slet også dine browserdata?</translation>
 <translation id="924447568950697217">Gør Chrome til din standardbrowser</translation>

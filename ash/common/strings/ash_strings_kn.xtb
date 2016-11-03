@@ -22,6 +22,7 @@
 <translation id="1484102317210609525"><ph name="DEVICE_NAME" /> (HDMI/DP)</translation>
 <translation id="1510238584712386396">ಲಾಂಚರ್</translation>
 <translation id="1525508553941733066">ವಜಾಗೊಳಿಸಿ</translation>
+<translation id="153454903766751181">ಸೆಲ್ಯುಲಾರ್  ಮೋಡೆಮ್  ಅನ್ನು ಪ್ರಾರಂಭಿಸಲಾಗುತ್ತಿದೆ...</translation>
 <translation id="15373452373711364">ದೊಡ್ಡ ಮೌಸ್ ಕರ್ಸರ್</translation>
 <translation id="1550523713251050646">ಇನ್ನಷ್ಟು ಆಯ್ಕೆಗಳಿಗೆ ಕ್ಲಿಕ್ ಮಾಡಿ</translation>
 <translation id="1602076796624386989">ಮೊಬೈಲ್ ಡೇಟಾವನ್ನು ಸಕ್ರಿಯಗೊಳಿಸಿ</translation>
@@ -32,6 +33,7 @@
 <translation id="1747827819627189109">ಆನ್ ಸ್ಕ್ರೀನ್ ಕೀಬೋರ್ಡ್ ಸಕ್ರಿಯಗೊಳಿಸಲಾಗಿದೆ</translation>
 <translation id="1812696562331527143">ನಿಮ್ಮ ಇನ್‌ಪುಟ್ ವಿಧಾನವನ್ನು <ph name="INPUT_METHOD_ID" />* ಗೆ ಬದಲಾಯಿಸಲಾಗಿದೆ (<ph name="BEGIN_LINK" />3ನೇ ವ್ಯಕ್ತಿ<ph name="END_LINK" />).
 ಬದಲಿಸಲು Shift + Alt ಅನ್ನು ಒತ್ತಿರಿ.</translation>
+<translation id="1850504506766569011">ವೈ-ಫೈ ಆಫ್ ಮಾಡಲಾಗಿದೆ.</translation>
 <translation id="1864454756846565995">USB-C ಸಾಧನ (ಹಿಂದಿನ ಪೋರ್ಟ್)</translation>
 <translation id="1882897271359938046"><ph name="DISPLAY_NAME" /> ಗೆ ಪ್ರತಿಬಿಂಬಿಸುತ್ತಿದೆ</translation>
 <translation id="1919743966458266018">ಕಾರ್ಯ ನಿರ್ವಾಹಕರನ್ನು ತೆರೆಯಲು ಶಾರ್ಟ್‌ಕಟ್ ಬದಲಾಗಿದೆ. ದಯವಿಟ್ಟು <ph name="OLD_SHORTCUT" /> ಬದಲಿಗೆ <ph name="NEW_SHORTCUT" /> ಬಳಸಿ.</translation>
@@ -47,6 +49,7 @@
 <translation id="2268813581635650749">ಎಲ್ಲವನ್ನೂ ಸೈನ್ ಔಟ್ ಮಾಡಿ</translation>
 <translation id="2297568595583585744">ಸ್ಥಿತಿ ಟ್ರೆ</translation>
 <translation id="2303600792989757991">ಟಾಗಲ್ ವಿಂಡೋ ಅವಲೋಕನ</translation>
+<translation id="2354174487190027830"><ph name="NAME" /> ಅನ್ನು ಸಕ್ರಿಯಗೊಳಿಸಲಾಗುತ್ತಿದೆ</translation>
 <translation id="2391579633712104609">180°</translation>
 <translation id="2429753432712299108">ಬ್ಲೂಟೂತ್‌‌ ಸಾಧನವು "<ph name="DEVICE_NAME" />" ಜೋಡಣೆಗಾಗಿ ಅನುಮತಿಯನ್ನು ಬಯಸುತ್ತದೆ. ಸಮ್ಮತಿಸುವುದಕ್ಕೂ ಮೊದಲು, ದಯವಿಟ್ಟು ಆ ಸಾಧನದಲ್ಲಿ ಈ ಪಾಸ್‌ಕೀಲಿಯನ್ನು ತೋರಿಸಲಾಗಿದೆಯೇ ಎಂಬುದನ್ನು ಖಾತರಿಪಡಿಸಿಕೊಳ್ಳಿ: <ph name="PASSKEY" /></translation>
 <translation id="2475982808118771221">ದೋಷವೊಂದು ಕಾಣಿಸಿಕೊಂಡಿದೆ</translation>
@@ -59,6 +62,7 @@
 <translation id="2700058918926273959">ಸೆಷನ್ <ph name="SESSION_TIME_REMAINING" /> ರಲ್ಲಿ ಕೊನೆಗೊಳ್ಳಲಿದೆ. ನೀವು ಸೈನ್ ಔಟ್ ಆಗಲಿರುವಿರಿ.</translation>
 <translation id="2727977024730340865">ಕಡಿಮೆ ವಿದ್ಯುತ್ ಚಾರ್ಜರ್‌ಗೆ ಪ್ಲಗ್ ಮಾಡಲಾಗಿದೆ. ಬ್ಯಾಟರಿ ಚಾರ್ಜಿಂಗ್ ವಿಶ್ವಾಸಾರ್ಹವಾಗಿಲ್ಲದಿರಬಹುದು.</translation>
 <translation id="2761704814324807722">ಸ್ಥಿತಿ ಟ್ರೇ, ಸಮಯ <ph name="TIME" />, <ph name="BATTERY" /></translation>
+<translation id="277257480934873581"><ph name="NAME" /> ಗೆ ಮರುಸಂಪರ್ಕಪಡಿಸಲಾಗುತ್ತಿದೆ</translation>
 <translation id="2792498699870441125">Alt+ಹುಡುಕಾಟ</translation>
 <translation id="2819276065543622893">ಈಗ ನಿಮ್ಮನ್ನು ಸೈನ್ ಔಟ್ ಮಾಡಲಾಗುತ್ತದೆ.</translation>
 <translation id="2825619548187458965">ಶೆಲ್ಫ್</translation>
@@ -105,21 +109,27 @@
 <translation id="3783640748446814672">alt</translation>
 <translation id="3784455785234192852">ಲಾಕ್ ಮಾಡಿ</translation>
 <translation id="3799026279081545374">ನೀವು ತಪ್ಪಾದ ಚಾರ್ಜರ್ ಅನ್ನು ಹೊಂದಿರಬಹುದು. ನೀವು US ನಲ್ಲಿ ನೆಲೆಸಿದ್ದರೇ, ಕ್ರಮವಾಗಿ ಸಹಾಯ ಪಡೆಯಲು ಮತ್ತು ಬದಲಾವಣೆಯನ್ನು ಪಡೆಯಲು ದಯವಿಟ್ಟು 866-628-1371 ಗೆ ಕರೆ ಮಾಡಿ. ನೀವು UK ಯಲ್ಲಿ ನೆಲೆಸಿದ್ದರೆ, ದಯವಿಟ್ಟು 0800-026-0613 ಗೆ ಕರೆ ಮಾಡಿ. ನೀವು ಐರ್ಲೆಂಡ್‍‍ನಲ್ಲಿ ನೆಲೆಸಿದ್ದರೆ, ದಯವಿಟ್ಟು 1-800-832-664 ಗೆ ಕರೆ ಮಾಡಿ. ನೀವು ಕೆನಡಾದಲ್ಲಿ ನೆಲೆಸಿದ್ದರೆ, ದಯವಿಟ್ಟು 866-628-1372 ಗೆ ಕರೆ ಮಾಡಿ. ನೀವು ಆಸ್ಟ್ರೇಲಿಯಾದಲ್ಲಿ ನೆಲೆಸಿದ್ದರೆ, ದಯವಿಟ್ಟು 1-800-067-460 ಗೆ ಕರೆ ಮಾಡಿ.</translation>
+<translation id="3846575436967432996">ನೆಟ್‌ವರ್ಕ್ ಮಾಹಿತಿ ಲಭ್ಯವಿಲ್ಲ</translation>
 <translation id="3866182280516392520">IPv6 ವಿಳಾಸ</translation>
 <translation id="3891340733213178823">ಸೈನ್ ಔಟ್ ಮಾಡಲು Ctrl+Shift+Q ಅನ್ನು ಎರಡುಬಾರಿ ಒತ್ತಿರಿ.</translation>
 <translation id="3892641579809465218">ಆಂತರಿಕ ಪ್ರದರ್ಶನ</translation>
 <translation id="3893630138897523026">ChromeVox (ಮಾತಿನ ಪ್ರತಿಕ್ರಿಯೆ)</translation>
 <translation id="3899995891769452915">ಧ್ವನಿ ಇನ್‌ಪುಟ್‌</translation>
+<translation id="3901991538546252627"><ph name="NAME" /> ಗೆ ಸಂಪರ್ಕಿಸಲಾಗುತ್ತಿದೆ</translation>
 <translation id="3963445509666917109">ಸ್ಪೀಕರ್ (ಆಂತರಿಕ)</translation>
 <translation id="3967919079500697218">ಸ್ಕ್ರೀನ್‌ಶಾಟ್‌ಗಳನ್ನು ತೆಗೆದುಕೊಳ್ಳುವ ಸಾಮರ್ಥ್ಯವನ್ನು ನಿಮ್ಮ ನಿರ್ವಾಹಕರಿಂದ ನಿಷ್ಕ್ರಿಯಗೊಳಿಸಲಾಗಿದೆ.</translation>
 <translation id="397105322502079400">ಎಣಿಸಲಾಗುತ್ತಿದೆ...</translation>
 <translation id="3995138139523574647">USB-C ಸಾಧನ (ಬಲ ಭಾಗದ ಹಿಂದಿನ ಪೋರ್ಟ್‌)</translation>
 <translation id="4053612967614057854">ಆನ್‌-ಸ್ಕ್ರೀನ್‌ ಕೀಬೋರ್ಡ್ ನಿಷ್ಕ್ರಿಯಗೊಳಿಸು</translation>
+<translation id="4118990158415604803">ಇತರ ನೆಟ್‌ವರ್ಕ್‌ಗಳಿಗೆ ಸಂಪರ್ಕಗೊಳಿಸುವುದನ್ನು ನಿಮ್ಮ ನಿರ್ವಾಹಕರು ನಿಷ್ಕ್ರಿಯಗೊಳಿಸಿದ್ದಾರೆ.</translation>
 <translation id="4250680216510889253">ಇಲ್ಲ</translation>
 <translation id="4279490309300973883">ಪ್ರತಿಬಿಂಬಿಸುವಿಕೆ</translation>
 <translation id="4321179778687042513">ctrl</translation>
 <translation id="4421231901400348175">ರಿಮೋಟ್ ಸಹಾಯದ ಮೂಲಕ <ph name="HELPER_NAME" /> ಜೊತೆಗೆ ನಿಮ್ಮ ಪರದೆಯ ನಿಯಂತ್ರಣವನ್ನು ಹಂಚಲಾಗುತ್ತಿದೆ.</translation>
 <translation id="4430019312045809116">ವಾಲ್ಯೂಮ್</translation>
+<translation id="4448844063988177157">ವೈ-ಫೈ ನೆಟ್‌ವರ್ಕ್‌ಗಳಿಗಾಗಿ ಹುಡುಕಲಾಗುತ್ತಿದೆ...</translation>
+<translation id="4479639480957787382">ಈಥರ್ನೆಟ್</translation>
+<translation id="4508225577814909926"><ph name="NAME" />: ಸಂಪರ್ಕಿಸಲಾಗುತ್ತಿದೆ...</translation>
 <translation id="4527045527269911712">ಬ್ಲೂಟೂತ್‌‌ ಸಾಧನವು "<ph name="DEVICE_NAME" />" ಜೋಡಣೆಗಾಗಿ ಅನುಮತಿಯನ್ನು ಬಯಸುತ್ತದೆ.</translation>
 <translation id="453661520163887813"><ph name="TIME" /> ಪೂರ್ಣಗೊಳ್ಳುವವರೆಗೆ</translation>
 <translation id="4544944664594876241">ಸ್ಕ್ರೀನ್ ಅನ್ನು ಲಾಕ್ ಮಾಡುವ ಶಾರ್ಟ್‌ಕಟ್ ಬದಲಾಗಿದೆ. <ph name="OLD_SHORTCUT" /> ಬದಲಿಗೆ <ph name="NEW_SHORTCUT" /> ಬಳಸಿ.</translation>
@@ -161,7 +171,7 @@
 <translation id="5958529069007801266">ಮೇಲ್ವಿಚಾರಣೆಗೊಳಪಟ್ಟ ಬಳಕೆದಾರರು</translation>
 <translation id="5977415296283489383">ಹೆಡ್‌ಫೋನ್</translation>
 <translation id="5978382165065462689">ರಿಮೋಟ್ ಸಹಾಯಕದ ಮೂಲಕ ನಿಮ್ಮ ಪರದೆಯ ಹಂಚಿಕೆಯ ನಿಯಂತ್ರಣ</translation>
-<translation id="5980301590375426705">ಅತಿಥಿ ಸೆಶೆನ್‌ನಿಂದ ನಿರ್ಗಮಿಸು</translation>
+<translation id="5980301590375426705">ಅತಿಥಿ ಸೆಶೆನ್‌ನಿಂದ ನಿರ್ಗಮಿಸಿ</translation>
 <translation id="6043994281159824495">ಈಗ ಸೈನ್ ಔಟ್ ಮಾಡಿ</translation>
 <translation id="6047696787498798094">ನೀವು ಬೇರೊಬ್ಬ ಬಳಕೆದಾರರಿಗೆ ಬದಲಾಯಿಸಿದಾಗ ಸ್ಕ್ರೀನ್ ಹಂಚಿಕೆಯು ನಿಲ್ಲುತ್ತದೆ. ನೀವು ಮುಂದುವರಿಸಲು ಬಯಸುತ್ತೀರಾ?</translation>
 <translation id="6062360702481658777"><ph name="LOGOUT_TIME_LEFT" /> ನಲ್ಲಿ ನಿಮ್ಮನ್ನು ಸ್ವಯಂಚಾಲಿತವಾಗಿ ಸೈನ್‌ಔಟ್‌ ಮಾಡಲಾಗುತ್ತದೆ.</translation>
@@ -172,6 +182,7 @@
 <translation id="6165508094623778733">ಇನ್ನಷ್ಟು ತಿಳಿಯಿರಿ</translation>
 <translation id="6203030746557259519">ವರ್ಚುವಲ್ ಪ್ರದರ್ಶನ</translation>
 <translation id="6248847161401822652">ತೊರೆಯಲು Control Shift Q ಅನ್ನು ಎರಡು ಬಾರಿ ಒತ್ತಿರಿ.</translation>
+<translation id="6267036997247669271"><ph name="NAME" />: ಸಕ್ರಿಯಗೊಳಿಸಲಾಗುತ್ತಿದೆ...</translation>
 <translation id="6297287540776456956">ಪ್ರದೇಶವನ್ನು ಆಯ್ಕೆಮಾಡಲು ಸ್ಟೈಲಸ್ ಬಳಸಿ</translation>
 <translation id="6310121235600822547"><ph name="DISPLAY_NAME" /> ಅನ್ನು <ph name="ROTATION" /> ಗೆ ತಿರುಗಿಸಲಾಗಿದೆ</translation>
 <translation id="6359806961507272919"><ph name="PHONE_NUMBER" /> ನಿಂದ SMS</translation>
@@ -184,6 +195,7 @@
 <translation id="6501401484702599040">ಪರದೆಯನ್ನು <ph name="RECEIVER_NAME" /> ಗೆ ಬಿತ್ತರಿಸಲಾಗುತ್ತಿದೆ</translation>
 <translation id="6521655319214113338">ಕೈಬರಹ ಇನ್‌ಪುಟ್</translation>
 <translation id="6537270692134705506">ಸೆರೆಹಿಡಿಯುವ ಪರದೆ</translation>
+<translation id="6549021752953852991">ಯಾವುದೇ ಸೆಲ್ಯುಲಾರ್ ನೆಟ್‌ವರ್ಕ್ ಲಭ್ಯವಿಲ್ಲ</translation>
 <translation id="6550675742724504774">ಆಯ್ಕೆಗಳು</translation>
 <translation id="6585808820553845416">ಸೆಷನ್ <ph name="SESSION_TIME_REMAINING" /> ರಲ್ಲಿ ಕೊನೆಗೊಳ್ಳಲಿದೆ.</translation>
 <translation id="6596816719288285829">IP ವಿಳಾಸ</translation>
@@ -192,14 +204,16 @@
 <translation id="6713285437468012787">Bluetooth ಸಾಧನವನ್ನು "<ph name="DEVICE_NAME" />" ಜೋಡಿಸಲಾಗಿದೆ ಮತ್ತು ಇದೀಗ ಎಲ್ಲಾ ಬಳಕೆದಾರರಿಗೂ ಲಭ್ಯವಿದೆ. ಸೆಟ್ಟಿಂಗ್‌ಗಳನ್ನು ಬಳಸಿಕೊಂಡು ನೀವು ಈ ಜೋಡಣೆಯನ್ನು ತೆಗೆದುಹಾಕಬಹುದು.</translation>
 <translation id="6785414152754474415">ಬ್ಯಾಟರಿ <ph name="PERCENTAGE" />% ಪೂರ್ಣಗೊಂಡಿದೆ ಮತ್ತು ಚಾರ್ಜ್ ಆಗುತ್ತಿದೆ.</translation>
 <translation id="683971173229319003">Search+L</translation>
+<translation id="6857811139397017780">ಸಕ್ರಿಯಗೊಳಿಸಿ<ph name="NETWORKSERVICE" /></translation>
 <translation id="6911468394164995108">ಇತರರನ್ನು ಸೇರಿ...</translation>
 <translation id="6915678159055240887">Chromebox</translation>
 <translation id="6979158407327259162">Google ಡ್ರೈವ್‌‌</translation>
 <translation id="6981982820502123353">ಪ್ರವೇಶ</translation>
-<translation id="7029814467594812963">ಸೆಶನ್‌ನಿಂದ ನಿರ್ಗಮಿಸು</translation>
+<translation id="7029814467594812963">ಸೆಶನ್‌ನಿಂದ ನಿರ್ಗಮಿಸಿ</translation>
 <translation id="703171847531699602">ಯಾವುದೇ ಬಿತ್ತರಿಸುವಿಕೆಯ ಸಾಧನಗಳಿಲ್ಲ</translation>
 <translation id="7034339000180558234"><ph name="TAB_NAME" /> ಅನ್ನು <ph name="RECEIVER_NAME" /> ಗೆ ಬಿತ್ತರಿಸಲಾಗುತ್ತಿದೆ</translation>
 <translation id="7052914147756339792">ವಾಲ್‌ಪೇಪರ್ ಅನ್ನು ಹೊಂದಿಸಿ...</translation>
+<translation id="7066646422045619941">ಈ ನೆಟ್‌ವರ್ಕ್ ಅನ್ನು ನಿಮ್ಮ ನಿರ್ವಾಹಕರು ನಿಷ್ಕ್ರಿಯಗೊಳಿಸಿದ್ದಾರೆ.</translation>
 <translation id="7097613348211027502">ChromeVox (ಮಾತಿನ ಪ್ರತಿಕ್ರಿಯೆ) ಸಕ್ರಿಯಗೊಳಿಸಲಾಗಿದೆ. ನಿಷ್ಕ್ರಿಯಗೊಳಿಸಲು Ctrl+Alt+Z ಒತ್ತಿರಿ.</translation>
 <translation id="7098389117866926363">USB-C ಸಾಧನ (ಹಿಂಭಾಗದಲ್ಲಿ ಎಡ ಪೋರ್ಟ್‌)</translation>
 <translation id="7129360219436193655">ಲೇಸರ್ ಪಾಯಿಂಟರ್ ಮೋಡ್</translation>
@@ -208,6 +222,7 @@
 <translation id="7209101170223508707">CAPS LOCK ಆನ್ ಆಗಿದೆ.
 ರದ್ದುಗೊಳಿಸಲು Alt+ಹುಡುಕಾಟ ಅಥವಾ Shift ಕೀಲಿಯನ್ನು ಒತ್ತಿರಿ</translation>
 <translation id="7348093485538360975">ಆನ್ ಸ್ಕ್ರೀನ್ ಕೀಬೋರ್ಡ್</translation>
+<translation id="735745346212279324">VPN ಸಂಪರ್ಕ ಕಡಿತಗೊಳಿಸಲಾಗಿದೆ</translation>
 <translation id="737451040872859086">ಮೈಕ್ರೊಫೋನ್ (ಆಂತರಿಕ)</translation>
 <translation id="742594950370306541">ಕ್ಯಾಮರಾ ಬಳಕೆಯಲ್ಲಿದೆ.</translation>
 <translation id="743058460480092004">ಕ್ಯಾಮರಾ ಮತ್ತು ಮೈಕ್ರೋಫೋನ್ ಬಳಕೆಯಲ್ಲಿವೆ.</translation>
@@ -224,19 +239,24 @@
 <translation id="7823564328645135659">ನಿಮ್ಮ ಸೆಟ್ಟಿಂಗ್‌ಗಳನ್ನು ಸಿಂಕ್ ಮಾಡಿದ ನಂತರ ಭಾಷೆಯನ್ನು "<ph name="FROM_LOCALE" />" ನಿಂದ "<ph name="TO_LOCALE" />" ಗೆ ಬದಲಾಯಿಸಲಾಗಿದೆ.</translation>
 <translation id="785750925697875037">ಮೊಬೈಲ್ ಖಾತೆಯನ್ನು ವೀಕ್ಷಿಸಿ</translation>
 <translation id="7864539943188674973">bluetooth ನಿಷ್ಕ್ರಿಯಗೊಳಿಸಿ</translation>
+<translation id="7874779702599364982">ಸೆಲ್ಯುಲರ್ ನೆಟ್‌ವರ್ಕ್‌ಗಳಿಗಾಗಿ ಹುಡುಕುತ್ತಿದೆ...</translation>
 <translation id="7893838033650689677">ವೈ-ಫೈ ಆನ್ ಮಾಡಿ</translation>
 <translation id="7904094684485781019">ಈ ಖಾತೆಗಾಗಿ ನಿರ್ವಾಹಕರು ಬಹುವಿಧದ ಸೈನ್ ಇನ್ ಅನುಮತಿಸಿಲ್ಲ.</translation>
 <translation id="7957227661277029961">ನಿಮ್ಮ <ph name="DEVICE_TYPE" /> ಅನ್ನು ಆನ್ ಮಾಡಿರುವಾಗ ಚಾರ್ಜ್ ಆಗುವುದಿಲ್ಲ. ಅಧಿಕೃತ ಚಾರ್ಜರ್ ಬಳಸಲು ಪರಿಗಣಿಸಿ.</translation>
 <translation id="7982789257301363584">ನೆಟ್‌ವರ್ಕ್</translation>
+<translation id="8000066093800657092">ನೆಟ್‌ವರ್ಕ್ ಇಲ್ಲ</translation>
 <translation id="8054466585765276473">ಬ್ಯಾಟರಿ ಸಮಯವನ್ನು ಲೆಕ್ಕಾಚಾರ ಮಾಡಲಾಗುತ್ತಿದೆ.</translation>
 <translation id="8077816382010018681">QU ವೈಶಿಷ್ಟ್ಯ ಅಧಿಸೂಚನೆ ಶೀರ್ಷಿಕೆ ಇಲ್ಲಿದೆ</translation>
 <translation id="8103386449138765447">SMS ಸಂದೇಶಗಳು: <ph name="MESSAGE_COUNT" /></translation>
+<translation id="8132793192354020517"><ph name="NAME" /> ಗೆ ಸಂಪರ್ಕಗೊಂಡಿದೆ</translation>
 <translation id="8185286464235484130">ಕೆಲವು ಪ್ರಶ್ನೆಗಳನ್ನು ಉತ್ತರಿಸುವ ಮೂಲಕ ನಾವು ಹೇಗೆ ಕಾರ್ಯನಿರ್ವಹಿಸುತ್ತಿದ್ದೇವೆ ಎಂಬುವುದನ್ನು ನಮಗೆ ತಿಳಿಸಿ.</translation>
 <translation id="8190698733819146287">ಭಾಷೆಗಳು ಮತ್ತು ಇನ್‌ಪುಟ್ ಅನ್ನು ಕಸ್ಟಮೈಸ್ ಮಾಡಿ...</translation>
 <translation id="8206859287963243715">ಸೆಲ್ಯುಲಾರ್</translation>
 <translation id="8308637677604853869">ಹಿಂದಿನ ಮೆನು</translation>
 <translation id="8356164830168736643"><ph name="WINDOW_TITLE" /> ಮುಚ್ಚಿ</translation>
 <translation id="8428213095426709021">ಸೆಟ್ಟಿಂಗ್‌ಗಳು</translation>
+<translation id="8454013096329229812">ವೈ-ಫೈ ಆನ್ ಮಾಡಲಾಗಿದೆ.</translation>
+<translation id="8484916590211895857"><ph name="NAME" />: ಮರುಸಂಪರ್ಕಿಸಲಾಗುತ್ತಿದೆ...</translation>
 <translation id="8517041960877371778">ನಿಮ್ಮ <ph name="DEVICE_TYPE" /> ಅನ್ನು ಆನ್ ಮಾಡಿರುವಾಗ ಅದನ್ನು ಚಾರ್ಜ್ ಮಾಡಲಾಗುವುದಿಲ್ಲ.</translation>
 <translation id="8528322925433439945">ಮೊಬೈಲ್...</translation>
 <translation id="8639760480004882931"><ph name="PERCENTAGE" /> ಉಳಿದಿದೆ</translation>

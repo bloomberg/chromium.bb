@@ -27,6 +27,9 @@
 <translation id="1654128982815600832">正在啟用這台電腦的遠端連線...</translation>
 <translation id="170207782578677537">無法註冊這台電腦。</translation>
 <translation id="1704090719919187045">Chromoting 主機偏好設定</translation>
+<translation id="1730409684442507495">• 改善桌面圖片畫質、加快回應速度，並降低耗電量。
+• 加快點選拖曳操作的回應速度。
+• 改善多項使用者介面動畫效果。</translation>
 <translation id="174018511426417793">您尚未註冊任何電腦。如要為電腦啟用遠端連線，請在電腦上安裝 Chrome 遠端桌面，然後按一下 [<ph name="BUTTON_NAME" />]。</translation>
 <translation id="1742469581923031760">連線中...</translation>
 <translation id="1770394049404108959">我無法開啟應用程式。</translation>
@@ -73,7 +76,6 @@
 <translation id="2699970397166997657">Chromoting</translation>
 <translation id="2747641796667576127">系統通常會自動執行軟體更新，但在極少數情況下，更新可能會失敗。更新軟體的時間應該僅需數分鐘，而且可透過從遠端連線至電腦的方式完成。</translation>
 <translation id="2841013758207633010">時間</translation>
-<translation id="2851674870054673688">對方輸入存取碼之後，共用工作階段即會開始。</translation>
 <translation id="2851754573186462851">Chromium 應用程式串流</translation>
 <translation id="2855866366045322178">離線</translation>
 <translation id="2888969873284818612">發生網路錯誤。系統將在您的裝置恢復網路連線後重新啟動應用程式。</translation>

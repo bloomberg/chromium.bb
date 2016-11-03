@@ -65,6 +65,7 @@
 <translation id="1643702317193804718">正在将网页翻译成<ph name="SOURCE_LANGUAGE" />…</translation>
 <translation id="1644574205037202324">历史记录</translation>
 <translation id="1647391597548383849">使用您的摄像头</translation>
+<translation id="1661474178782861119">更多报道即将奉上。伴您度过美好的夜晚时光。</translation>
 <translation id="169033420419426091">未能成功下载 <ph name="FILE_NAME" />，因为找不到 SD 卡。</translation>
 <translation id="1709438864123551175">流量节省程序</translation>
 <translation id="1742134235943978220">已翻译成<ph name="TARGET_LANGUAGE" />。</translation>
@@ -94,7 +95,6 @@
 <translation id="200669432486043882">替换文件</translation>
 <translation id="2020525020270327736">复制网站</translation>
 <translation id="2038563949887743358">开启“请求切换到桌面版网站”</translation>
-<translation id="2069736994598857257">已用存储空间：<ph name="GIGABYTES" /> GB</translation>
 <translation id="2073235970478114994">加载图片</translation>
 <translation id="2079545284768500474">撤消</translation>
 <translation id="2082238445998314030">第 <ph name="RESULT_NUMBER" /> 条结果，共 <ph name="TOTAL_RESULTS" /> 条</translation>
@@ -323,6 +323,7 @@
 <translation id="4816465935029283692">数据类型</translation>
 <translation id="4827948050554950725">添加信用卡</translation>
 <translation id="4836364883164334657">您与此网站之间的连接不是私密连接。攻击者可能会试图从 <ph name="DOMAIN_NAME" /> 窃取您的信息（例如照片、密码、电子邮件和信用卡信息）。</translation>
+<translation id="4850886885716139402">视图</translation>
 <translation id="4881695831933465202">打开</translation>
 <translation id="4885273946141277891">Chrome 实例数量已超出上限。</translation>
 <translation id="4923459931733593730">付款</translation>
@@ -338,7 +339,9 @@
 <translation id="5016205925109358554">Serif</translation>
 <translation id="5039804452771397117">允许</translation>
 <translation id="5040262127954254034">隐私设置</translation>
+<translation id="5053110706349648690">请在<ph name="BEGIN_LINK" />设备设置<ph name="END_LINK" />部分开启蓝牙，以允许配对</translation>
 <translation id="5063480226653192405">使用情况</translation>
+<translation id="5087580092889165836">添加新卡</translation>
 <translation id="5100237604440890931">已收起 - 点击此处即可展开。</translation>
 <translation id="510275257476243843">还剩 1 小时</translation>
 <translation id="5127805178023152808">同步功能已关闭</translation>
@@ -415,8 +418,10 @@
 <translation id="583281660410589416">未知</translation>
 <translation id="5832934273103296195">已展开 - 点击即可折叠</translation>
 <translation id="583891442612896534">Chrome 无法连接到 Google 服务器来进行数据压缩，因此您节省的数据流量可能有限。</translation>
+<translation id="5843873952582375185">未找到任何蓝牙设备。<ph name="BEGIN_LINK" />重新搜索<ph name="END_LINK" /></translation>
 <translation id="585027516397408832">流量节省程序已启用</translation>
 <translation id="5860033963881614850">关闭</translation>
+<translation id="5867027562311576691">更多报道即将奉上。伴您度过美好的晨间时光。</translation>
 <translation id="5869522115854928033">已保存的密码</translation>
 <translation id="5899349522111170522">创建新文件</translation>
 <translation id="5902828464777634901">该网站存储的所有本地数据（包括 Cookie）都将被删除。</translation>
@@ -488,6 +493,7 @@
 <translation id="6657585470893396449">密码</translation>
 <translation id="6659594942844771486">Tab</translation>
 <translation id="666268767214822976">当您在地址栏中输入查询内容时，使用联想查询服务显示相关查询和热门网站</translation>
+<translation id="666731172850799929">在 <ph name="APP_NAME" />中打开</translation>
 <translation id="666981079809192359">Chrome 隐私权声明</translation>
 <translation id="6698801883190606802">管理已同步的数据</translation>
 <translation id="6710213216561001401">上一个</translation>
@@ -530,14 +536,12 @@
 <translation id="7074853159844403180"><ph name="SITE" /> 希望与以下设备配对：</translation>
 <translation id="7081639897063626814">将现有数据单独存储</translation>
 <translation id="7094922512924405309">找不到附近的“实物网”网页</translation>
-<translation id="7115197232530297436">不支持的送货地址。请选择其他地址。</translation>
 <translation id="7138678301420049075">其他</translation>
 <translation id="7180611975245234373">刷新</translation>
 <translation id="7191430249889272776">标签页已在后台打开。</translation>
 <translation id="7208788139759694678">流量节省程序已停用</translation>
 <translation id="7243308994586599757">选项在靠近屏幕底部的位置</translation>
 <translation id="7244362611678346589"><ph name="SEARCH_ENGINE_URL" /> 将根据您的位置信息显示本地搜索结果</translation>
-<translation id="7347770551817603360">离线内容</translation>
 <translation id="7353894246028566792">{NUM_SELECTED,plural, =1{分享 1 个所选项}other{分享 # 个所选项}}</translation>
 <translation id="7366340029385295517">正在投射至<ph name="SCREEN_NAME" /></translation>
 <translation id="7375125077091615385">类型：</translation>
@@ -556,6 +560,7 @@
 <translation id="7493994139787901920"><ph name="VERSION" />（上次更新时间：<ph name="TIME_SINCE_UPDATE" />）</translation>
 <translation id="7498271377022651285">请稍候…</translation>
 <translation id="7521387064766892559">JavaScript</translation>
+<translation id="753693763123565012">这就是目前所有的推荐内容</translation>
 <translation id="7562080006725997899">正在清除浏览数据</translation>
 <translation id="756809126120519699">已清除 Chrome 数据</translation>
 <translation id="7588950540487816470">实物网</translation>
@@ -573,7 +578,6 @@
 <translation id="7665369617277396874">添加帐户</translation>
 <translation id="7682287625158474539">送货地址</translation>
 <translation id="771135159654932189">查看附近的实物网网址</translation>
-<translation id="7713873128508426081">始终允许</translation>
 <translation id="7764225426217299476">添加地址</translation>
 <translation id="7765158879357617694">移动</translation>
 <translation id="7769602470925380267">接受并退出</translation>
@@ -626,6 +630,7 @@
 <translation id="8275818695183729150">允许（针对地址栏搜索）</translation>
 <translation id="8283853025636624853">正在同步到 <ph name="SYNC_ACCOUNT_USER_NAME" /></translation>
 <translation id="8310344678080805313">标准标签页</translation>
+<translation id="8321376388213838985">更多报道即将奉上。伴您度过美好的午后时光。</translation>
 <translation id="8372893542064058268">允许特定网站进行后台同步。</translation>
 <translation id="8374821112118309944">您需要将 TalkBack 更新到更高版本。</translation>
 <translation id="8396312449826231789">只能访问经过批准的网站</translation>
@@ -641,15 +646,12 @@
 <translation id="8514577642972634246">进入隐身模式</translation>
 <translation id="8518901949365209398">此网站使用了安全系数较低的安全配置（SHA-1 签名），因此您的连接可能不具有私密性。</translation>
 <translation id="8523928698583292556">删除存储的密码</translation>
-<translation id="8525306231823319788">全屏</translation>
-<translation id="85415543246899402">已用空间：<ph name="MEGABYTES" /> MB</translation>
 <translation id="854522910157234410">打开此网页</translation>
 <translation id="8562452229998620586">已保存的密码将显示在这里。</translation>
 <translation id="856481929701340285">请求切换到桌面版网站</translation>
 <translation id="857943718398505171">已允许（推荐）</translation>
 <translation id="8583805026567836021">清除帐户数据</translation>
 <translation id="8617240290563765734">要打开下载的内容中指定的建议网址吗？</translation>
-<translation id="8618653050765576793">已用空间：<ph name="KILOBYTES" /> KB</translation>
 <translation id="862875433388403934">其他应用中下载的内容（例如电影、音乐等）将无法再播放，除非这些应用根据新的设备凭据重新获得许可。
 
 要获得新的许可，请连接到互联网并播放您下载的内容。</translation>

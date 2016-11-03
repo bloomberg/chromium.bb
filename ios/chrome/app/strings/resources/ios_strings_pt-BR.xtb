@@ -18,7 +18,6 @@
 <translation id="3692781555820666866">Quando ativada, a omnibox inclui sugestões de páginas da Web transmitidas por dispositivos perto de você.</translation>
 <translation id="385051799172605136">Voltar</translation>
 <translation id="4121993058175073134">Para enviar dados de exportação líquida, configure sua conta de e-mail no aplicativo "Configurações".</translation>
-<translation id="4399225372525667111">O Google Chrome não consegue confirmar se o URL deste site está correto.</translation>
 <translation id="4728558894243024398">Plataforma</translation>
 <translation id="473775607612524610">Atualizar</translation>
 <translation id="4875622588773761625">Deseja que <ph name="PASSWORD_MANAGER_BRAND" /> atualize sua senha para este site?</translation>
@@ -30,11 +29,9 @@
 <translation id="6314335155547195432">Gerar senha</translation>
 <translation id="6344783595350022745">Limpar texto</translation>
 <translation id="6456425917241817154">Senha gerada pelo Google Chrome</translation>
-<translation id="6535543971741225613">O site que você está tentando acessar está agindo de forma suspeita e o Google Chrome não consegue confirmar se o URL está correto. Por motivos de segurança, você não deve continuar. Tente novamente amanhã ou acesse outro lugar.</translation>
 <translation id="7222245588540287464">Se a Pesquisa contextual está ou não ativada.</translation>
 <translation id="7456847797759667638">Abrir local...</translation>
 <translation id="7481312909269577407">Avançar</translation>
-<translation id="7484580869648358686">Aviso: algo está errado aqui!</translation>
 <translation id="7588950540487816470">Web física</translation>
 <translation id="7961015016161918242">Nunca</translation>
 </translationbundle>

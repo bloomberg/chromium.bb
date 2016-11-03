@@ -61,7 +61,6 @@ Ja pierakstīsieties tik un tā, Chrome informācija, piemēram, grāmatzīmes, 
 <translation id="2588322182880276190">Chrome logotips</translation>
 <translation id="2664962310688259219">Chrome OS atklātā pirmkoda licences</translation>
 <translation id="2665296953892887393">Palīdzēt uzlabot pārlūku Google Chrome, nosūtot Google serveriem avāriju pārskatus un <ph name="UMA_LINK" /></translation>
-<translation id="2669824781555328029">Fails <ph name="FILE_NAME" /> var kaitēt jūsu pārlūkošanas pieredzei, tādēļ Chrome to ir bloķējis.</translation>
 <translation id="2681064822612051220">Sistēmā konstatēta Google Chrome konfliktējoša instalācija. Atinstalējiet to un mēģiniet vēlreiz.</translation>
 <translation id="2689103672227170538">Šis paplašinājums mainīja iestatījumu, kura lapa tiek parādīta, palaižot pārlūku Chrome.</translation>
 <translation id="2704356438731803243">Ja vēlaties savus esošos Chrome datus glabāt atsevišķi, varat izveidot jaunu Chrome profilu ar lietotājvārdu <ph name="USER_NAME" />.</translation>
@@ -151,6 +150,7 @@ Papildu norādījumus skatiet e-pasta ziņojumā šeit: <ph name="ACCOUNT_EMAIL"
 
 Dažas funkcijas var nebūt pieejamas. Norādiet citu profila direktoriju vai lietojiet jaunāku Chrome versiju.</translation>
 <translation id="5176234269072261959">Palīdziet uzlabot pārlūku Chrome, ziņojot par pašreizējiem iestatījumiem.</translation>
+<translation id="5193136243808726294">Problēma ar lapas atvēršanu pārlūkā Google Chrome OS.</translation>
 <translation id="5204098752394657250">Google Chrome <ph name="TERMS_OF_SERVICE_LINK" />pakalpojumu sniegšanas noteikumi<ph name="END_TERMS_OF_SERVICE_LINK" /></translation>
 <translation id="5243785881901838525">Google Payments (kopēta pārlūkā Chrome)</translation>
 <translation id="5251420635869119124">Viesi var izmantot pārlūku Chrome, neatstājot nekādas pēdas.</translation>
@@ -209,7 +209,6 @@ Dažas funkcijas var nebūt pieejamas. Norādiet citu profila direktoriju vai li
 <translation id="699076943483372849">Šajā vietnē tiek izmantots novecojušais spraudnis Chrome Frame, kuram vairs netiek nodrošināti drošības un stabilitātes atjauninājumi. Lūdzu, atinstalējiet to un veiciet jaunināšanu uz modernu pārlūku.</translation>
 <translation id="6991142834212251086">Saistīt manus Chrome datus ar šo kontu</translation>
 <translation id="7060865993964054389">Google Chrome lietotņu palaišanas programma</translation>
-<translation id="7084448929020576097">Fails <ph name="FILE_NAME" /> ir ļaunprātīgs, un Chrome to bloķēja.</translation>
 <translation id="7098166902387133879">Pārlūkā Google Chrome tiek izmantots mikrofons.</translation>
 <translation id="7106741999175697885">Uzdevumu pārvaldnieks - Google Chrome</translation>
 <translation id="7125719106133729027">Pārlūku Chrome nevarēja automātiski atjaunināt uz jaunāko versiju, tāpēc jums nav pieejamas vairākas jaunas, noderīgas funkcijas un drošības uzlabojumi. Jums manuāli jāpārinstalē pārlūks Chrome.</translation>
@@ -272,7 +271,6 @@ Dažas funkcijas var nebūt pieejamas. Norādiet citu profila direktoriju vai li
 <translation id="8669527147644353129">Google Chrome Helper</translation>
 <translation id="8679801911857917785">Tas nosaka arī to, kāda lapa tiks rādīta, kad atvērsiet pārlūku Chrome.</translation>
 <translation id="870251953148363156">Atjaunināt &amp;Google Chrome</translation>
-<translation id="8793772303278047003">Chrome versija ir novecojusi.</translation>
 <translation id="8796108026289707191">Restartējiet Google Chrome tūlīt.</translation>
 <translation id="8823341990149967727">Chrome versija ir novecojusi</translation>
 <translation id="884296878221830158">Tas nosaka arī to, kāda lapa tiks rādīta, kad atvērsiet pārlūku Chrome vai noklikšķināsiet uz pogas “Sākums”.</translation>
@@ -281,7 +279,6 @@ Dažas funkcijas var nebūt pieejamas. Norādiet citu profila direktoriju vai li
 <translation id="8914504000324227558">Atkārtoti palaist pārlūkprogrammu Chrome</translation>
 <translation id="9026991721384951619">Chrome OS nevarēja sinhronizēt jūsu datus, jo jūsu konta pierakstīšanās informācija ir novecojusi.</translation>
 <translation id="9067395829937117663">Pārlūka Google Chrome izmantošanai nepieciešama operētājsistēma Windows 7 vai jaunāka versija.</translation>
-<translation id="9102715433345326100">Šis fails ir ļaunprātīgs, un Chrome to bloķēja.</translation>
 <translation id="9107728822479888688"><ph name="BEGIN_BOLD" />Brīdinājums!<ph name="END_BOLD" /> Google Chrome nevar novērst to, ka paplašinājumi ieraksta jūsu pārlūkošanas vēsturi. Lai atspējotu šo paplašinājumu inkognito režīmā, noņemiet atzīmi šai opcijai.</translation>
 <translation id="911206726377975832">Vai dzēst arī pārlūkošanas datus?</translation>
 <translation id="924447568950697217">Iestatiet Chrome par noklusējuma pārlūku</translation>

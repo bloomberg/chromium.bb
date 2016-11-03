@@ -59,7 +59,6 @@ Si accedes de todos modos, se fusionará la información de Google Chrome, como 
 <translation id="2588322182880276190">Logo de Chrome</translation>
 <translation id="2664962310688259219">Licencias de código abierto del Sistema operativo Chrome</translation>
 <translation id="2665296953892887393">Envía a Google informes de fallos y <ph name="UMA_LINK" /> para ayudar a mejorar Google Chrome.</translation>
-<translation id="2669824781555328029"><ph name="FILE_NAME" /> puede dañar tu experiencia de navegación, por eso Chrome lo bloqueó.</translation>
 <translation id="2681064822612051220">Se encontró una instalación conflictiva de Google Chrome en el sistema. Desinstálala e intenta nuevamente.</translation>
 <translation id="2689103672227170538">Esta extensión cambió la página que se muestra al iniciar Chrome.</translation>
 <translation id="2704356438731803243">Si prefieres mantener tus datos de Google Chrome existentes por separado, puedes crear un nuevo usuario de Google Chrome para <ph name="USER_NAME" />.</translation>
@@ -147,6 +146,7 @@ Para obtener más instrucciones, revisa tu correo electrónico en <ph name="ACCO
 <translation id="5148419164691878332">Chrome la almacenará en las <ph name="SAVED_PASSWORDS_LINK" /> y la recordará la próxima vez que la necesites.</translation>
 <translation id="5170938038195470297">No se puede usar tu perfil porque pertenece a una nueva versión de Google Chrome. Es posible que algunas características no estén disponibles. Especifica un directorio de perfil diferente o usa una nueva versión de Chrome.</translation>
 <translation id="5176234269072261959">Informa tu configuración actual para ayudarnos a mejorar Chrome.</translation>
+<translation id="5193136243808726294">El Sistema operativo Google Chrome no puede abrir esta página.</translation>
 <translation id="5204098752394657250"><ph name="TERMS_OF_SERVICE_LINK" />Condiciones de servicio<ph name="END_TERMS_OF_SERVICE_LINK" /> de Google Chrome</translation>
 <translation id="5243785881901838525">Google Payments (copiada enChrome)</translation>
 <translation id="5251420635869119124">Los invitados pueden utilizar Chrome sin dejar nada detrás.</translation>
@@ -205,7 +205,6 @@ Para obtener más instrucciones, revisa tu correo electrónico en <ph name="ACCO
 <translation id="699076943483372849">Este sitio usa el complemento Chrome Frame discontinuado que ya no recibe actualizaciones de seguridad ni estabilidad. Debes desinstalarlo y obtener un navegador más moderno.</translation>
 <translation id="6991142834212251086">Vincular mis datos de Google Chrome con esta cuenta</translation>
 <translation id="7060865993964054389">Selector de aplicaciones de Google Chrome</translation>
-<translation id="7084448929020576097">Chrome bloqueó <ph name="FILE_NAME" /> porque es un archivo malicioso.</translation>
 <translation id="7098166902387133879">Google Chrome está usando tu micrófono.</translation>
 <translation id="7106741999175697885">Administrador de tareas - Google Chrome</translation>
 <translation id="7125719106133729027">Chrome no pudo actualizarse a la versión más reciente, por lo que no estás aprovechando las funciones geniales ni las correcciones de seguridad que se agregaron. Debes reinstalar Chrome de forma manual.</translation>
@@ -268,7 +267,6 @@ Para obtener más instrucciones, revisa tu correo electrónico en <ph name="ACCO
 <translation id="8669527147644353129">Ayuda de Google Chrome</translation>
 <translation id="8679801911857917785">También controla qué página se muestra al iniciar Chrome.</translation>
 <translation id="870251953148363156">Actualizar &amp;Google Chrome</translation>
-<translation id="8793772303278047003">Chrome no está actualizado.</translation>
 <translation id="8796108026289707191">Debes reiniciar Google Chrome ahora.</translation>
 <translation id="8823341990149967727">Chrome no actualizado</translation>
 <translation id="884296878221830158">También controla qué página se muestra al iniciar Chrome o al hacer clic en el botón de página principal.</translation>
@@ -277,7 +275,6 @@ Para obtener más instrucciones, revisa tu correo electrónico en <ph name="ACCO
 <translation id="8914504000324227558">Volver a iniciar Chrome</translation>
 <translation id="9026991721384951619">El Sistema operativo Chrome no pudo sincronizar los datos porque la información de acceso de la cuenta está desactualizada.</translation>
 <translation id="9067395829937117663">Para usar Google Chrome, se requiere Windows 7 o versiones posteriores.</translation>
-<translation id="9102715433345326100">Chrome bloqueó este archivo porque es malicioso.</translation>
 <translation id="9107728822479888688"><ph name="BEGIN_BOLD" />Advertencia:<ph name="END_BOLD" /> Google Chrome no puede evitar que las extensiones registren tu historial de búsqueda. Para desactivar la extensión en modo incógnito, desactiva la casilla de esta opción.</translation>
 <translation id="911206726377975832">¿También eliminar datos de navegación?</translation>
 <translation id="924447568950697217">Cómo establecer Chrome como navegador predeterminado</translation>

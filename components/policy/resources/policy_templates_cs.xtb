@@ -19,6 +19,9 @@
       Pokud je tato zásada nastavena na hodnotu False nebo nastavena není, soubory cookie vytvořené poskytovatelem identity se do profilu uživatele přenesou pouze při prvním přihlášení do zařízení.
 
       Tato zásada má vliv pouze na uživatele, jejichž doména odpovídá doméně, ve které je zařízení zaregistrováno. V případě ostatních uživatelů se soubory cookie vytvořené poskytovatelem identity do profilu uživatele přenesou pouze při prvním přihlášení do zařízení.</translation>
+<translation id="1029536946382325801">Pokud má hodnotu true, uživatel může pomocí hardwaru, který je součástí zařízení Chrome, vzdáleně potvrdit svou identitu certifikační autoritě (CA) pro zajištění soukromí prostřednictvím rozhraní Enterprise Platform Keys API chrome.enterprise.platformKeys.challengeUserKey().
+
+          Pokud má tato zásada hodnotu false nebo není nastavena, volání rozhraní API se nezdaří a bude vrácen kód chyby.</translation>
 <translation id="1040446814317236570">Před odesláním skriptu PAC z adres se schématem https:// odstraňovat citlivá data</translation>
 <translation id="1044878202534415707">Nahlášení statistik hardwaru, například využití CPU/RAM.
 
@@ -316,13 +319,6 @@ Pokud tato zásada není nastavena, použije se výchozí hodnota 0 a uživatel
 <translation id="2337466621458842053">Umožňuje nastavit seznam vzorů adres URL pro webové stránky, které mají povoleno zobrazovat obrázky.
 
           Pokud zásadu nenastavíte, použije se pro všechny webové stránky globální výchozí hodnota buď ze zásady DefaultImagesSetting (pokud je nastavena), nebo z osobního nastavení uživatele.</translation>
-<translation id="2359612025446382967">Pokud je tato zásada nastavena na hodnotu False, systém <ph name="PRODUCT_OS_NAME" /> zakáže rozhraní Bluetooth a uživatel jej nebude moci povolit.
-
-      Pokud je tato zásada nastavena na hodnotu True nebo je ponechána nenastavená, uživatel bude moci rozhraní Bluetooth povolit či zakázat dle svého uvážení.
-
-      Pokud je tato zásada nastavena, uživatel ji nemůže změnit ani přepsat.
-
-      Když Bluetooth povolujete, změna se projeví až po restartu zařízení (když Bluetooth zakazujete, restart není potřeba).</translation>
 <translation id="2366415278352956652">Umožňuje odesílání.</translation>
 <translation id="2372547058085956601">Prodleva automatického přihlášení do veřejné relace.
 
@@ -951,6 +947,9 @@ Pokud je toto nastavení ponecháno nenakonfigurované, nebudou ohledně přijat
 
       Je-li tato zásada nastavena na hodnotu True, budou se odesílat sledovací síťové pakety (tzv. <ph name="HEARTBEATS_TERM" />).
       Pokud je nastavena na hodnotu False nebo není nastavena, pakety se odesílat nebudou.</translation>
+<translation id="3963602271515417124">Pokud je tato zásada nastavena na hodnotu true, bude pro zařízení povolena vzdálená atestace a bude automaticky vygenerován certifikát, který se nahraje na server správy zařízení.
+
+          Pokud je tato zásada nastavena na hodnotu false nebo není nakonfigurována, nebude vygenerován žádný certifikát a volání rozhraní API enterprise.platformKeys se nezdaří.</translation>
 <translation id="3964909636571393861">Umožňuje přístup do seznamu adres URL</translation>
 <translation id="3965339130942650562">Časový limit před odhlášením nečinného uživatele</translation>
 <translation id="3967075520570946456">Aktivovat při prvním spuštění prohlížeče po přechodu na vyšší verzi OS zobrazení uvítací stránky</translation>
@@ -1509,12 +1508,6 @@ Pokud tuto zásadu nenastavíte, bude při prvním zobrazení přihlašovací ob
 
 Pokud tato zásada není nastavena nebo je nastavena na hodnotu False, <ph name="PRODUCT_NAME" /> nebude u verzí <ph name="PRODUCT_NAME" /> 19 a novějších provádět online kontroly zamítnutých certifikátů.</translation>
 <translation id="5966615072639944554">Rozšíření, která mohou používat rozhraní API vzdáleného ověření identity</translation>
-<translation id="5974970919245996815">Přehledy informací o stavu systému Android se odesílají zpět na server.
-
-      Pokud je tato zásada nastavena na hodnotu False, informace nebudou hlášeny.
-      Pokud je nastavena na hodnotu True nebo je ponechána nenastavená, informace budou hlášeny.
-
-      Tato zásada se používá pouze v případě, že jsou povoleny aplikace pro Android.</translation>
 <translation id="5983708779415553259">Výchozí chování pro stránky, které nejsou součástí žádného obsahového balíčku</translation>
 <translation id="5997543603646547632">Ve výchozím nastavení použít 24hodinový formát</translation>
 <translation id="6009903244351574348">Umožňuje pluginu <ph name="PRODUCT_FRAME_NAME" /> zpracovávat následující typy obsahu. 
@@ -2194,6 +2187,9 @@ Pokud tuto zásadu nenastavíte, bude aktivován výchozí poskytovatel vyhledá
 Tato zásada není k dispozici v instancích Windows, které nejsou připojené k doméně Active Directory.</translation>
 <translation id="7937766917976512374">Povolit nebo zakázat záznam videa</translation>
 <translation id="7941975817681987555">Nepředvídat síťové akce u žádných síťových připojení</translation>
+<translation id="7942429005743031780">Tato zásada určuje povolená rozšíření, která mohou ke vzdálenému ověření identity použít rozhraní Enterprise Platform Keys API chrome.enterprise.platformKeys.challengeUserKey(). Rozšíření oprávněná používat toto rozhraní API musí být přidána do tohoto seznamu.
+
+          Pokud rozšíření v seznamu není nebo seznam není nastaven, volání rozhraní API se nezdaří a zobrazí se kód chyby.</translation>
 <translation id="7953256619080733119">Hostitelské servery ručních výjimek spravovaného uživatele</translation>
 <translation id="7971839631300653352">SSL 3.0</translation>
 <translation id="7974114691960514888">Tato zásada již není podporována.

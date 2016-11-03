@@ -65,6 +65,7 @@
 <translation id="1643702317193804718">מתרגם את הדף ל<ph name="SOURCE_LANGUAGE" />...</translation>
 <translation id="1644574205037202324">היסטוריה</translation>
 <translation id="1647391597548383849">גישה אל המצלמה שלך</translation>
+<translation id="1661474178782861119">בקרוב יופיעו מאמרים נוספים. תיהנה מהערב שלך.</translation>
 <translation id="169033420419426091">‏הורדת <ph name="FILE_NAME" /> נכשלה מאחר שחסר כרטיס SD.</translation>
 <translation id="1709438864123551175">‏חוסך הנתונים (Data Saver)</translation>
 <translation id="1742134235943978220">תורגם ל<ph name="TARGET_LANGUAGE" />.</translation>
@@ -94,7 +95,6 @@
 <translation id="200669432486043882">החלף קובץ</translation>
 <translation id="2020525020270327736">העתק אתר</translation>
 <translation id="2038563949887743358">הפעל את 'בקש אתר עבור מחשב שולחני'</translation>
-<translation id="2069736994598857257">‏‎<ph name="GIGABYTES" /> GB בשימוש</translation>
 <translation id="2073235970478114994">טען תמונות</translation>
 <translation id="2079545284768500474">בטל</translation>
 <translation id="2082238445998314030">תוצאה <ph name="RESULT_NUMBER" /> מתוך <ph name="TOTAL_RESULTS" /></translation>
@@ -323,6 +323,7 @@
 <translation id="4816465935029283692">סוגי נתונים</translation>
 <translation id="4827948050554950725">הוסף כרטיס אשראי</translation>
 <translation id="4836364883164334657">החיבור אל האתר הזה אינו פרטי. ייתכן שתוקפים מנסים לגנוב את המידע שלך (לדוגמה: תמונות, סיסמאות, הודעות וכרטיסי אשראי) מ-<ph name="DOMAIN_NAME" />.</translation>
+<translation id="4850886885716139402">הצג</translation>
 <translation id="4881695831933465202">פתח</translation>
 <translation id="4885273946141277891">‏מספר בלתי נתמך של מופעי Chrome.</translation>
 <translation id="4923459931733593730">תשלום</translation>
@@ -338,7 +339,9 @@
 <translation id="5016205925109358554">Serif</translation>
 <translation id="5039804452771397117">אפשר</translation>
 <translation id="5040262127954254034">פרטיות</translation>
+<translation id="5053110706349648690">‏הפעל חיבור Bluetooth ב<ph name="BEGIN_LINK" />הגדרות המכשיר<ph name="END_LINK" /> כדי לאפשר התאמה</translation>
 <translation id="5063480226653192405">שימוש</translation>
+<translation id="5087580092889165836">הוסף כרטיס</translation>
 <translation id="5100237604440890931">מכווץ - לחץ כדי להרחיב.</translation>
 <translation id="510275257476243843">נותרה שעה אחת</translation>
 <translation id="5127805178023152808">סנכרון כבוי</translation>
@@ -415,8 +418,10 @@
 <translation id="583281660410589416">לא ידוע</translation>
 <translation id="5832934273103296195">מורחב - הקש כדי לכווץ</translation>
 <translation id="583891442612896534">‏ל-Chrome אין אפשרות לגשת אל שרתי Google לדחיסת נתונים. ייתכן שהחיסכון בנתונים יהיה מוגבל.</translation>
+<translation id="5843873952582375185">‏לא נמצאו מכשירי Bluetooth.‏ <ph name="BEGIN_LINK" />סרוק שוב<ph name="END_LINK" /></translation>
 <translation id="585027516397408832">‏חוסך הנתונים (Data Saver) מופעל</translation>
 <translation id="5860033963881614850">כבוי</translation>
+<translation id="5867027562311576691">בקרוב יופיעו מאמרים נוספים. שיהיה לך יום נפלא.</translation>
 <translation id="5869522115854928033">סיסמאות שמורות</translation>
 <translation id="5899349522111170522">צור קובץ חדש</translation>
 <translation id="5902828464777634901">‏כל הנתונים המקומיים המאוחסנים על ידי האתר הזה יימחקו, כולל קובצי Cookie.</translation>
@@ -488,6 +493,7 @@
 <translation id="6657585470893396449">סיסמה</translation>
 <translation id="6659594942844771486">Tab</translation>
 <translation id="666268767214822976">השתמש בשירות חיזוי כדי להציג שאילתות קשורות ואתרים פופולריים תוך כדי ההקלדה בסרגל הכתובות</translation>
+<translation id="666731172850799929">פתח ב-<ph name="APP_NAME" /></translation>
 <translation id="666981079809192359">‏הודעת הפרטיות של Chrome</translation>
 <translation id="6698801883190606802">נהל נתונים מסונכרנים</translation>
 <translation id="6710213216561001401">הקודם</translation>
@@ -530,14 +536,12 @@
 <translation id="7074853159844403180"><ph name="SITE" /> רוצה לבצע התאמה עם:</translation>
 <translation id="7081639897063626814">שמור בנפרד את הנתונים הקיימים</translation>
 <translation id="7094922512924405309">לא נמצאו דפים של האינטרנט הווירטופיזי בקרבת מקום</translation>
-<translation id="7115197232530297436">כתובת המשלוח אינה נתמכת. בחר כתובת אחרת.</translation>
 <translation id="7138678301420049075">אחר</translation>
 <translation id="7180611975245234373">רענן</translation>
 <translation id="7191430249889272776">הכרטיסייה נפתחה ברקע.</translation>
 <translation id="7208788139759694678">‏חוסך הנתונים (Data Saver) מושבת</translation>
 <translation id="7243308994586599757">אפשרויות הזמינות באזור החלק התחתון של המסך</translation>
 <translation id="7244362611678346589"><ph name="SEARCH_ENGINE_URL" /> משתמש במיקום שלך כדי להציג תוצאות חיפוש מקומיות</translation>
-<translation id="7347770551817603360">תוכן לא מקוון</translation>
 <translation id="7353894246028566792">{NUM_SELECTED,plural, =1{שתף פריט אחד שנבחר}two{שתף # פריטים שנבחרו}many{שתף # פריטים שנבחרו}other{שתף # פריטים שנבחרו}}</translation>
 <translation id="7366340029385295517">מעביר אל <ph name="SCREEN_NAME" /></translation>
 <translation id="7375125077091615385">סוג:</translation>
@@ -556,6 +560,7 @@
 <translation id="7493994139787901920"><ph name="VERSION" /> (עודכן <ph name="TIME_SINCE_UPDATE" />)</translation>
 <translation id="7498271377022651285">המתן…</translation>
 <translation id="7521387064766892559">JavaScript</translation>
+<translation id="753693763123565012">זה הכול בינתיים</translation>
 <translation id="7562080006725997899">מנקה נתוני גלישה</translation>
 <translation id="756809126120519699">‏נתוני Chrome נוקו</translation>
 <translation id="7588950540487816470">האינטרנט הווירטופיזי</translation>
@@ -573,7 +578,6 @@
 <translation id="7665369617277396874">הוסף חשבון</translation>
 <translation id="7682287625158474539">משלוח</translation>
 <translation id="771135159654932189">ראה מה נמצא בקרבת מקום</translation>
-<translation id="7713873128508426081">מותר תמיד</translation>
 <translation id="7764225426217299476">הוסף כתובת</translation>
 <translation id="7765158879357617694">העבר</translation>
 <translation id="7769602470925380267">קבל וצא מהחשבון</translation>
@@ -626,6 +630,7 @@
 <translation id="8275818695183729150">התר (בשביל חיפושים בסרגל הכתובות)</translation>
 <translation id="8283853025636624853">מסנכרן עם <ph name="SYNC_ACCOUNT_USER_NAME" /></translation>
 <translation id="8310344678080805313">כרטיסיות רגילות</translation>
+<translation id="8321376388213838985">בקרוב יופיעו מאמרים נוספים. שיהיה לך המשך יום נפלא.</translation>
 <translation id="8372893542064058268">אפשר סנכרון ברקע לאתר ספציפי.</translation>
 <translation id="8374821112118309944">‏עליך לעדכן את TalkBack לגרסה חדשה יותר.</translation>
 <translation id="8396312449826231789">רק אתרים שאושרו</translation>
@@ -641,15 +646,12 @@
 <translation id="8514577642972634246">עבור למצב גלישה בסתר</translation>
 <translation id="8518901949365209398">‏באתר הזה נעשה שימוש בתצורת אבטחה חלשה (חתימות SHA-1), כך שייתכן שהחיבור שלך לא יהיה פרטי.</translation>
 <translation id="8523928698583292556">מחק את הסיסמה השמורה</translation>
-<translation id="8525306231823319788">מסך מלא</translation>
-<translation id="85415543246899402">‏‎<ph name="MEGABYTES" /> MB בשימוש</translation>
 <translation id="854522910157234410">פתח דף זה</translation>
 <translation id="8562452229998620586">הסיסמאות השמורות יופיעו כאן.</translation>
 <translation id="856481929701340285">בקש אתר לשולחן העבודה</translation>
 <translation id="857943718398505171">מותרת (מומלץ)</translation>
 <translation id="8583805026567836021">מנקה נתוני חשבון</translation>
 <translation id="8617240290563765734">האם לעבור אל כתובת האתר שצוינה כהצעה בתוכן שהורדת?</translation>
-<translation id="8618653050765576793">‏‎<ph name="KILOBYTES" /> KB בשימוש</translation>
 <translation id="862875433388403934">ייתכן שלא תוכל עוד להפעיל תוכן (סרטים, מוזיקה וכו') שהורדת באפליקציות אחרות עד לרכישה מחדש של רישיונות באפליקציות אלה עם פרטי כניסה למכשיר חדש. כדי להשיג רישיונות חדשים, התחבר לאינטרנט והפעל את התוכן שהורדת.</translation>
 <translation id="8636825310635137004">כדי לקבל את הכרטיסיות מהמכשירים האחרים שלך, הפעל את הסנכרון.</translation>
 <translation id="8639651215196239211">כל ההורדות</translation>

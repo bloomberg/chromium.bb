@@ -27,6 +27,9 @@
 <translation id="1654128982815600832">מפעיל חיבורים מרוחקים למחשב זה...</translation>
 <translation id="170207782578677537">הרישום של מחשב זה נכשל.</translation>
 <translation id="1704090719919187045">‏העדפות מארח Chromoting</translation>
+<translation id="1730409684442507495">• שיפור באיכות התמונה, מהירות התגובה וצריכת הסוללה במחשבים שולחניים.
+• שיפור במהירות התגובה של פעולות לחיצה-גרירה.
+• שיפור בהנפשות מסוימות של ממשק המשתמש.</translation>
 <translation id="174018511426417793">‏אין לך מחשבים רשומים. כדי להפעיל חיבורים מרוחקים למחשב, התקן את 'שולחן עבודה מרוחק של Chrome' במחשב היעד ולחץ על '<ph name="BUTTON_NAME" />'.</translation>
 <translation id="1742469581923031760">מתחבר…</translation>
 <translation id="1770394049404108959">איני יכול לפתוח את היישום.</translation>
@@ -73,7 +76,6 @@
 <translation id="2699970397166997657">Chromoting</translation>
 <translation id="2747641796667576127">עדכוני תוכנה מתבצעים בדרך כלל באופן אוטומטי, אבל במקרים נדירים הם עשויים להיכשל. עדכון התוכנה לא אמור לקחת יותר ממספר דקות, וניתן לבצע אותו כשאתה מחובר למחשב באופן מרוחק.</translation>
 <translation id="2841013758207633010">שעה</translation>
-<translation id="2851674870054673688">לאחר שהמשתמש יזין את הקוד, השיתוף יתחיל לפעול.</translation>
 <translation id="2851754573186462851">Chromium App Streaming</translation>
 <translation id="2855866366045322178">לא מקוון</translation>
 <translation id="2888969873284818612">אירעה שגיאת רשת. נפעיל את היישום מחדש כשהמכשיר יהיה שוב מקוון.</translation>
@@ -126,6 +128,7 @@ Chromoting</translation>
 <translation id="409800995205263688">הערה: הגדרות המדיניות מתירות חיבורים רק בין מחשבים הנמצאים בתוך הרשת שלך.</translation>
 <translation id="4155497795971509630">חלק מהרכיבים הדרושים חסרים. ודא שהתקנת את הגרסה העדכנית ביותר של התוכנה ונסה שוב.</translation>
 <translation id="4156740505453712750">‏כדי להגן על הגישה למחשב זה, בחר PIN באורך <ph name="BOLD_START" />שש ספרות לפחות<ph name="BOLD_END" />. PIN זה יידרש בעת התחברות ממיקום אחר.</translation>
+<translation id="4156741816461781891">מחובר באמצעות חשבון <ph name="EMAIL_ADDRESS" />.</translation>
 <translation id="4176825807642096119">קוד גישה</translation>
 <translation id="4207623512727273241">הפעל את המתקין לפני שתמשיך.</translation>
 <translation id="4227991223508142681">Host Provisioning Utility</translation>

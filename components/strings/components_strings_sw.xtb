@@ -345,12 +345,11 @@
 <translation id="4670097147947922288">Unaangalia ukurasa wa kiendelezi.</translation>
 <translation id="4701488924964507374"><ph name="SENTENCE1" /> <ph name="SENTENCE2" /></translation>
 <translation id="4708268264240856090">Muunganisho wako umekatizwa</translation>
-<translation id="4722547256916164131"><ph name="BEGIN_LINK" />Inaendesha Zana ya Kuchunguza Mtandao wa Windows<ph name="END_LINK" /></translation>
+<translation id="4722547256916164131"><ph name="BEGIN_LINK" />Kuendesha Zana ya Windows ya Kuchunguza Mtandao<ph name="END_LINK" /></translation>
 <translation id="4726672564094551039">Pakia sera upya</translation>
 <translation id="4728558894243024398">Mfumo wa uendeshaji</translation>
 <translation id="4744603770635761495">Njia Tekelezi</translation>
 <translation id="4756388243121344051">&amp;Historia</translation>
-<translation id="4759238208242260848">Vipakuliwa</translation>
 <translation id="4764776831041365478">Ukurasa wa wavuti ulio <ph name="URL" /> unaweza kuwa haupatikani kwa muda au unaweza kuwa umehamishwa kabisa hadi anwani mpya ya wavuti.</translation>
 <translation id="4771973620359291008">Hitilafu isiyojulikana imetokea.</translation>
 <translation id="4782449893814226250">Uliwauliza wazazi wako ikiwa ni sawa kuutembelea ukurasa huu.</translation>
@@ -700,6 +699,7 @@ Hebu! Huenda hali fiche <ph name="SHORTCUT_KEY" /> ikakufaa wakati ujao.</transl
 <translation id="8987927404178983737">Mwezi</translation>
 <translation id="8989148748219918422"><ph name="ORGANIZATION" /> [<ph name="COUNTRY" />]</translation>
 <translation id="9001074447101275817">Seva mbadala ya <ph name="DOMAIN" /> inahitaji jina la mtumiaji na nenosiri.</translation>
+<translation id="9008201768610948239">Puuza</translation>
 <translation id="901974403500617787">Alama zinazotumika katika mfumo mzima zinaweza kuwekwa na mmiliki pekee: <ph name="OWNER_EMAIL" />.</translation>
 <translation id="9020542370529661692">Ukurasa huu umetafsiriwa kwenda <ph name="TARGET_LANGUAGE" /></translation>
 <translation id="9038649477754266430">Tumia huduma ya kutabiri ili upakie kurasa kwa haraka zaidi</translation>

@@ -50,6 +50,7 @@
 <translation id="1491663344921578213">Saat ini, Anda tidak dapat mengunjungi <ph name="SITE" /> karena situs web ini menggunakan penyematan sertifikat. Kesalahan dan serangan jaringan biasanya bersifat sementara, jadi laman ini mungkin akan bekerja nanti. <ph name="BEGIN_LEARN_MORE_LINK" />Pelajari lebih lanjut<ph name="END_LEARN_MORE_LINK" />.</translation>
 <translation id="1506687042165942984">Tampilkan salinan tersimpan (yang diketahui telah habis masa berlakunya) dari laman ini.</translation>
 <translation id="1519264250979466059">Tanggal Dibuat</translation>
+<translation id="153384715582417236">Itu saja untuk sekarang</translation>
 <translation id="1549470594296187301">JavaScript harus diaktifkan untuk menggunakan fitur ini.</translation>
 <translation id="1559528461873125649">Tidak ada file atau direktori tersebut</translation>
 <translation id="1559572115229829303">&lt;p&gt;Sambungan pribadi ke <ph name="BEGIN_BOLD" /><ph name="DOMAIN" /><ph name="END_BOLD" /> tidak dapat dibuat karena tanggal dan waktu (<ph name="DATE_AND_TIME" />) perangkat Anda tidak benar.&lt;/p&gt;
@@ -350,7 +351,6 @@
 <translation id="4728558894243024398">Platform</translation>
 <translation id="4744603770635761495">Jalur Yang Dapat Dijalankan</translation>
 <translation id="4756388243121344051">&amp;Riwayat</translation>
-<translation id="4759238208242260848">Unduhan</translation>
 <translation id="4764776831041365478">Laman web di <ph name="URL" /> mungkin sedang tidak aktif untuk sementara atau dipindahkan secara permanen ke alamat web baru.</translation>
 <translation id="4771973620359291008">Terjadi kesalahan yang tidak diketahui.</translation>
 <translation id="4782449893814226250">Anda telah meminta izin kepada orang tua untuk mengunjungi laman ini.</translation>
@@ -389,6 +389,7 @@
 <translation id="5179510805599951267">Bukan <ph name="ORIGINAL_LANGUAGE" />? Laporkan kesalahan deteksi ini</translation>
 <translation id="5190835502935405962">Bilah Bookmark</translation>
 <translation id="5199729219167945352">Eksperimen</translation>
+<translation id="5199841536747119669">Saran Anda ditampilkan di sini</translation>
 <translation id="5251803541071282808">Awan</translation>
 <translation id="5277279256032773186">Menggunakan Chrome di kantor? Perusahaan dapat mengelola setelan Chrome untuk karyawan mereka. Pelajari lebih lanjut</translation>
 <translation id="5299298092464848405">Kebijakan kesalahan penguraian</translation>
@@ -468,6 +469,7 @@
 <translation id="6263376278284652872">Bookmark <ph name="DOMAIN" /></translation>
 <translation id="6264485186158353794">Kembali ke keamanan</translation>
 <translation id="6282194474023008486">Kode pos</translation>
+<translation id="6290238015253830360">Artikel yang disarankan ditampilkan di sini</translation>
 <translation id="6305205051461490394"><ph name="URL" /> tidak dapat dijangkau.</translation>
 <translation id="6321917430147971392">Periksa setelan DNS Anda</translation>
 <translation id="6328639280570009161">Coba nonaktifkan prediksi jaringan</translation>
@@ -651,6 +653,7 @@ Ssst! <ph name="SHORTCUT_KEY" /> mode penyamaran mungkin berguna suatu saat nant
 <translation id="8363502534493474904">Nonaktifkan mode pesawat</translation>
 <translation id="8364627913115013041">Tidak disetel.</translation>
 <translation id="8380941800586852976">Berbahaya</translation>
+<translation id="8382348898565613901">Bookmark yang baru-baru ini dikunjungi ditampilkan di sini</translation>
 <translation id="8412145213513410671">Ngadat (<ph name="CRASH_COUNT" />)</translation>
 <translation id="8412392972487953978">Anda harus memasukkan frasa sandi yang sama dua kali.</translation>
 <translation id="8428213095426709021">Setelan</translation>
@@ -700,6 +703,7 @@ Ssst! <ph name="SHORTCUT_KEY" /> mode penyamaran mungkin berguna suatu saat nant
 <translation id="8987927404178983737">Bulan</translation>
 <translation id="8989148748219918422"><ph name="ORGANIZATION" /> [<ph name="COUNTRY" />]</translation>
 <translation id="9001074447101275817">Proxy <ph name="DOMAIN" /> memerlukan nama pengguna dan sandi.</translation>
+<translation id="9008201768610948239">Abaikan</translation>
 <translation id="901974403500617787">Tanda yang berlaku bagi sistem secara luas hanya dapat disetel oleh pemilik: <ph name="OWNER_EMAIL" />.</translation>
 <translation id="9020542370529661692">Laman ini telah diterjemahkan ke <ph name="TARGET_LANGUAGE" /></translation>
 <translation id="9038649477754266430">Gunakan layanan prediksi agar laman dimuat dengan lebih cepat</translation>

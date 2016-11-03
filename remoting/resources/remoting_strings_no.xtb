@@ -27,6 +27,9 @@ Du kan finne informasjon om personvern i Googles personvernregler (http://goo.gl
 <translation id="1654128982815600832">Slår på eksterne tilkoblinger for denne datamaskinen …</translation>
 <translation id="170207782578677537">Kunne ikke registrere denne datamaskinen.</translation>
 <translation id="1704090719919187045">Alternativer for Chromoting-vert</translation>
+<translation id="1730409684442507495">• Forbedret kvalitet på skrivebordsbilder, respons og batteriforbruk.
+• Forbedret respons for klikk-og-dra-handlinger.
+• Forbedringer i mange animerte UI-effekter.</translation>
 <translation id="174018511426417793">Du har ikke registrert noen datamaskiner. For å aktivere ekstern tilkobling til en datamaskin må du installere Chrome Eksternt skrivebord på maskinen, og klikke på «<ph name="BUTTON_NAME" />».</translation>
 <translation id="1742469581923031760">Kobler til …</translation>
 <translation id="1770394049404108959">Jeg kan ikke åpne appen.</translation>
@@ -73,7 +76,6 @@ Du kan finne informasjon om personvern i Googles personvernregler (http://goo.gl
 <translation id="2699970397166997657">Chromoting</translation>
 <translation id="2747641796667576127">Programvareoppdateringer skjer vanligvis automatisk, men kan i noen sjeldne tilfeller mislykkes. Oppdateringen av programvare bør ikke ta mer enn noen få minutter og kan gjøres via ekstern tilgang.</translation>
 <translation id="2841013758207633010">Klokkeslett</translation>
-<translation id="2851674870054673688">Når brukeren har skrevet inn koden, starter delingsøkten.</translation>
 <translation id="2851754573186462851">Chromium-appstrømming</translation>
 <translation id="2855866366045322178">uten nett</translation>
 <translation id="2888969873284818612">En nettverksfeil oppsto. Appen blir startet på nytt når enheten din er på nettet igjen.</translation>
@@ -126,7 +128,7 @@ Vert</translation>
 <translation id="409800995205263688">MERK: I henhold til lokale retningslinjer er tilkobling tillatt bare mellom datamaskiner i nettverket ditt.</translation>
 <translation id="4155497795971509630">Det mangler noen nødvendige komponenter. Kontrollér at du kjører den nyeste versjonen av programvaren, og prøv på nytt.</translation>
 <translation id="4156740505453712750">For å beskytte tilgangen til denne datamaskinen må du velge en PIN-kode bestående av <ph name="BOLD_START" />minst seks tall<ph name="BOLD_END" />. Denne PIN-koden kreves når man kobler til fra en annen posisjon.</translation>
-<translation id="4156741816461781891">Pålogget som <ph name="EMAIL_ADDRESS" />.</translation>
+<translation id="4156741816461781891">Logget på som <ph name="EMAIL_ADDRESS" />.</translation>
 <translation id="4176825807642096119">Tilgangskode</translation>
 <translation id="4207623512727273241">Kjør installasjonsprogrammet før du fortsetter.</translation>
 <translation id="4227991223508142681">Verktøy for vertsidentitetshåndtering</translation>

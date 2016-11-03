@@ -19,6 +19,9 @@
       Kapag itinakda ang patakarang ito sa false o hindi nakatakda, ililipat ang cookies na itatakda ng IdP sa profile ng user sa unang pag-log in niya lang sa isang device.
 
       Naaapektuhan ng patakarang ito ang mga user na tumutugma ang domain sa domain sa pag-enroll lang ng device. Para sa lahat ng iba pang user, ililipat ang cookies na itatakda ng IdP sa profile ng user sa unang pag-log in lang sa device.</translation>
+<translation id="1029536946382325801">Kung true, magagamit ng user ang hardware sa mga Chrome device upang malayuang patunayan ang pagkakakilanlan nito sa CA ng privacy sa pamamagitan ng Enterprise Platform Keys API chrome.enterprise.platformKeys.challengeUserKey()
+
+          Kung nakatakda ito sa false, o kung hindi ito nakatakda, mabibigo ang mga pagtawag sa API nang may code ng error.</translation>
 <translation id="1040446814317236570">I-enable ang pag-strip ng PAC URL (para sa https://)</translation>
 <translation id="1044878202534415707">Mag-ulat ng mga istatistika ng hardware gaya ng paggamit ng CPU/RAM.
 
@@ -342,13 +345,6 @@
 <translation id="2337466621458842053">Binibigyang-daan kang magtakda ng isang listahan ng mga pattern ng url  na tumutukoy sa mga site na pinapayagang magpakita ng mga larawan.
 
           Kung hinayaang hindi nakatakda ang patakarang ito gagamitin ang global na default na halaga para sa lahat ng site mula sa patakarang 'DefaultImagesSetting' kung nakatakda ito, o kung hindi man, ang personal na configuration ng user.</translation>
-<translation id="2359612025446382967">Kung nakatakda ang patakarang ito sa false, idi-disable ng <ph name="PRODUCT_OS_NAME" /> ang Bluetooth at hindi na ito muling mae-enable ng user.
-
-      Kung nakatakda ang patakarang ito sa true o hindi nakatakda, mae-enable o madi-disable ng user ang Bluetooth kailanman niya gustuhin.
-
-      Kung nakatakda ang patakarang ito, hindi na ito mababago o mao-override ng user.
-
-      Pagkatapos i-enable ang Bluetooth, dapat i-reboot ang device upang malapat ang mga pagbabago (hindi na kailangang i-reboot ang device kapag idi-disable ang Bluetooth).</translation>
 <translation id="2366415278352956652">Ine-enable ang pag-cast</translation>
 <translation id="2372547058085956601">Delay ng awtomatikong pag-log in sa pampublikong session.
 
@@ -979,6 +975,9 @@
 
       Kung nakatakda ang patakarang ito sa true, ipapadala ang mga sinusubaybayang network packet (na tinatawag na <ph name="HEARTBEATS_TERM" />).
       Kung nakatakda sa false o hindi nakatakda, walang ipapadalang mga packet.</translation>
+<translation id="3963602271515417124">Kung true, pinapahintulutan ang remote na pagpapatotoo para sa device at awtomatikong mabubuo at maa-upload ang isang certificate sa Server ng Pamamahala sa Device.
+
+          Kung nakatakda sa false, o kung hindi ito nakatakda, walang certificate na bubuuin at mabibigo ang mga tawag sa enterprise.platformKeys extension API.</translation>
 <translation id="3964909636571393861">Nagbibigay-daan sa pag-access sa isang listahan ng mga URL</translation>
 <translation id="3965339130942650562">Mag-timeout hanggang maisagawa ang pag-log-out ng idle na user</translation>
 <translation id="3967075520570946456">I-enable ang pagpapakita ng welcome page sa unang paglulunsad ng browser kasunod ng pag-upgrade ng OS.</translation>
@@ -1552,13 +1551,6 @@ lumagpas na sa partikular na haba ng panahon ang oras na hindi ito nagamit.
 
       Kung hindi nakatakda ang patakaran, o kung nakatakda sa false, ang <ph name="PRODUCT_NAME" /> ay hindi magsasagawa ng mga online na pagsusuri sa pagbawi sa <ph name="PRODUCT_NAME" /> 19 at mas bago.</translation>
 <translation id="5966615072639944554">Mga extension na pinapayagang gamitin ang API ng malayuang pagpapatotoo</translation>
-<translation id="5974970919245996815">Ang ulat ng impormasyon tungkol sa status ng Android ay ipapadala pabalik sa
-      server.
-
-      Kung itatakda ang patakaran sa false, hindi iuulat ang impormasyon.
-      Kung itatakda ito sa true o kung sadyang hindi itatakda, iuulat ang impormasyon.
-
-      Nalalapat lang ang patakarang ito kung naka-enable ang mga Android app.</translation>
 <translation id="5983708779415553259">Default na pagkilos para sa mga site na wala sa anumang pack ng nilalaman</translation>
 <translation id="5997543603646547632">Gamitin ang 24 na oras na orasan bilang default</translation>
 <translation id="6009903244351574348">Payagan ang <ph name="PRODUCT_FRAME_NAME" /> na pangasiwaan ang mga nakalistang uri ng nilalaman.
@@ -2254,6 +2246,9 @@ lumagpas na sa partikular na haba ng panahon ang oras na hindi ito nagamit.
           sa isang domain ng Aktibong Direktoryo.</translation>
 <translation id="7937766917976512374">Payagan o tanggihan ang pagkuha ng video</translation>
 <translation id="7941975817681987555">Huwag hulaan ang mga pagkilos sa network sa anumang koneksyon sa network</translation>
+<translation id="7942429005743031780">Tinutukoy ng patakarang ito ang mga pinapayagang extension upang magamit ang Enterprise Platform Keys API chrome.enterprise.platformKeys.challengeUserKey() para sa malayuang pagpapatunay. Dapat magdagdag ng mga extension sa listahang ito upang magamit ang API.
+
+          Kung wala sa listahan ang isang extension, o hindi nakatakda ang listahan, mabibigo ang pagtawag sa API nang may code ng error.</translation>
 <translation id="7953256619080733119">Mga pinapamahalaang host ng manu-manong exception ng user</translation>
 <translation id="7971839631300653352">SSL 3.0</translation>
 <translation id="7974114691960514888">Hindi na sinusuportahan ang patakarang ito.

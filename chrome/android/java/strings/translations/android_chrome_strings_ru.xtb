@@ -95,7 +95,6 @@
 <translation id="200669432486043882">Заменить файл</translation>
 <translation id="2020525020270327736">Копировать сайт</translation>
 <translation id="2038563949887743358">Включить полную версию сайта</translation>
-<translation id="2069736994598857257">Использовано: <ph name="GIGABYTES" /> ГБ</translation>
 <translation id="2073235970478114994">Загрузить изображения</translation>
 <translation id="2079545284768500474">Отмена</translation>
 <translation id="2082238445998314030">Результат <ph name="RESULT_NUMBER" />, всего <ph name="TOTAL_RESULTS" /></translation>
@@ -324,6 +323,7 @@
 <translation id="4816465935029283692">Типы данных</translation>
 <translation id="4827948050554950725">Добавить кредитную карту</translation>
 <translation id="4836364883164334657">Подключение не защищено. Злоумышленники могут похитить ваши данные (например, пароли, сообщения или номера банковских карт) в домене <ph name="DOMAIN_NAME" />.</translation>
+<translation id="4850886885716139402">Посмотреть</translation>
 <translation id="4881695831933465202">Открыть</translation>
 <translation id="4885273946141277891">Конфликт версий Chrome</translation>
 <translation id="4923459931733593730">Платеж</translation>
@@ -339,7 +339,9 @@
 <translation id="5016205925109358554">С засечками</translation>
 <translation id="5039804452771397117">Разрешить</translation>
 <translation id="5040262127954254034">Личные данные</translation>
+<translation id="5053110706349648690">Чтобы разрешить соединение, включите Bluetooth в <ph name="BEGIN_LINK" />настройках устройства<ph name="END_LINK" /></translation>
 <translation id="5063480226653192405">Использование</translation>
+<translation id="5087580092889165836">Добавить карту</translation>
 <translation id="5100237604440890931">Свернуто. Нажмите, чтобы развернуть.</translation>
 <translation id="510275257476243843">Остался 1 час</translation>
 <translation id="5127805178023152808">Синхронизация выключена</translation>
@@ -416,6 +418,7 @@
 <translation id="583281660410589416">Неизвестно</translation>
 <translation id="5832934273103296195">Развернуто. Нажмите, чтобы свернуть.</translation>
 <translation id="583891442612896534">Не удалось подключиться к серверам Google для сжатия данных. Объем трафика может увеличиться.</translation>
+<translation id="5843873952582375185">Устройства Bluetooth не найдены. <ph name="BEGIN_LINK" />Повторить поиск<ph name="END_LINK" /></translation>
 <translation id="585027516397408832">Расширение "Экономия трафика" включено</translation>
 <translation id="5860033963881614850">Выкл.</translation>
 <translation id="5867027562311576691">Другие статьи скоро появятся. Хорошего утра!</translation>
@@ -490,6 +493,7 @@
 <translation id="6657585470893396449">Пароль</translation>
 <translation id="6659594942844771486">Вкладка</translation>
 <translation id="666268767214822976">Показывать подсказки с похожими запросами и часто посещаемыми сайтами по мере ввода в адресную строку</translation>
+<translation id="666731172850799929">Открыть в <ph name="APP_NAME" /></translation>
 <translation id="666981079809192359">Примечание о конфиденциальности Chrome</translation>
 <translation id="6698801883190606802">Управление синхронизированными данными</translation>
 <translation id="6710213216561001401">Назад</translation>
@@ -532,14 +536,12 @@
 <translation id="7074853159844403180">Сайт <ph name="SITE" /> запрашивает подключение к следующему устройству:</translation>
 <translation id="7081639897063626814">Хранить добавленные ранее данные отдельно</translation>
 <translation id="7094922512924405309">Ничего не найдено</translation>
-<translation id="7115197232530297436">Адрес доставки не поддерживается. Выберите другой вариант.</translation>
 <translation id="7138678301420049075">Другое</translation>
 <translation id="7180611975245234373">Обновить</translation>
 <translation id="7191430249889272776">Вкладка открыта в фоновом режиме</translation>
 <translation id="7208788139759694678">Расширение "Экономия трафика" отключено</translation>
 <translation id="7243308994586599757">Доступные параметры указаны в нижней части экрана</translation>
 <translation id="7244362611678346589"><ph name="SEARCH_ENGINE_URL" /> использует ваше местоположение, чтобы показывать результаты поиска по адресам.</translation>
-<translation id="7347770551817603360">Офлайн-контент</translation>
 <translation id="7353894246028566792">{NUM_SELECTED,plural, =1{Поделиться 1 выбранным объектом}one{Поделиться # выбранным объектом}few{Поделиться # выбранными объектами}many{Поделиться # выбранными объектами}other{Поделиться # выбранного объекта}}</translation>
 <translation id="7366340029385295517">Транслируется на экран устройства "<ph name="SCREEN_NAME" />"</translation>
 <translation id="7375125077091615385">Тип:</translation>
@@ -576,7 +578,6 @@
 <translation id="7665369617277396874">Добавить аккаунт</translation>
 <translation id="7682287625158474539">Адрес доставки</translation>
 <translation id="771135159654932189">Узнать, что поблизости</translation>
-<translation id="7713873128508426081">Разрешать всегда</translation>
 <translation id="7764225426217299476">Добавить адрес</translation>
 <translation id="7765158879357617694">Переместить</translation>
 <translation id="7769602470925380267">Принять и выйти</translation>
@@ -645,15 +646,12 @@
 <translation id="8514577642972634246">Включить режим инкогнито</translation>
 <translation id="8518901949365209398">Этот сайт шифрует соединение с помощью подписей SHA-1. Поскольку это не самый надежный способ, ваши данные могут быть перехвачены.</translation>
 <translation id="8523928698583292556">Удалить сохраненный пароль</translation>
-<translation id="8525306231823319788">Полноэкранный режим</translation>
-<translation id="85415543246899402">Используется <ph name="MEGABYTES" /> МБ</translation>
 <translation id="854522910157234410">Открыть эту страницу</translation>
 <translation id="8562452229998620586">Здесь будут показаны сохраненные пароли.</translation>
 <translation id="856481929701340285">Полная версия</translation>
 <translation id="857943718398505171">Разрешено (рекомендуется)</translation>
 <translation id="8583805026567836021">Удаление данных аккаунта</translation>
 <translation id="8617240290563765734">Открыть предложенный URL из скачанного контента?</translation>
-<translation id="8618653050765576793">Используется <ph name="KILOBYTES" /> КБ</translation>
 <translation id="862875433388403934">Воспроизведение контента (фильмов, музыки и т. д.), скачанного в других приложениях, может не поддерживаться, пока не будут получены лицензии с новыми учетными данными устройства.
 
 Чтобы получить новые лицензии, подключитесь к Интернету и воспроизведите скачанный контент.</translation>

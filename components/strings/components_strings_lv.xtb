@@ -50,6 +50,7 @@
 <translation id="1491663344921578213">Šobrīd nevarat apmeklēt vietni <ph name="SITE" />, jo tajā tiek izmantota sertifikātu piespraušana. Tīkla kļūdas un brīdinājumi parasti ir īslaicīgi, tāpēc šī lapa vēlāk, visticamāk, darbosies. <ph name="BEGIN_LEARN_MORE_LINK" />Uzziniet vairāk<ph name="END_LEARN_MORE_LINK" />.</translation>
 <translation id="1506687042165942984">Rādīt saglabātu (t.i., novecojušu) šīs lapas versiju.</translation>
 <translation id="1519264250979466059">Būvējuma datums</translation>
+<translation id="153384715582417236">Pagaidām tas arī viss!</translation>
 <translation id="1549470594296187301">Lai izmantotu šo funkciju, ir jābūt iespējotai valodai JavaScript.</translation>
 <translation id="1559528461873125649">Nav tāda faila vai direktorija</translation>
 <translation id="1559572115229829303">&lt;p&gt;Nevar izveidot privātu savienojumu ar <ph name="BEGIN_BOLD" /><ph name="DOMAIN" /><ph name="END_BOLD" />, jo jūsu ierīces datums un laiks (<ph name="DATE_AND_TIME" />) nav pareizi.&lt;/p&gt;
@@ -349,7 +350,6 @@
 <translation id="4728558894243024398">Platforma</translation>
 <translation id="4744603770635761495">Izpildāms ceļš</translation>
 <translation id="4756388243121344051">Vēsture</translation>
-<translation id="4759238208242260848">Lejupielādes</translation>
 <translation id="4764776831041365478">Tīmekļa lapa vietnē <ph name="URL" /> var īslaicīgi nebūt pieejama, vai tā var būt pārvietota uz jaunu tīmekļa adresi.</translation>
 <translation id="4771973620359291008">Radās nezināma kļūda.</translation>
 <translation id="4782449893814226250">Jūs lūdzāt vecākiem atļauju apmeklēt šo lapu.</translation>
@@ -388,6 +388,7 @@
 <translation id="5179510805599951267">Vai nav valodā: <ph name="ORIGINAL_LANGUAGE" />? Ziņot par šo kļūdu</translation>
 <translation id="5190835502935405962">Grāmatzīmju josla</translation>
 <translation id="5199729219167945352">Eksperimenti</translation>
+<translation id="5199841536747119669">Ieteikumi tiek parādīti šeit</translation>
 <translation id="5251803541071282808">Mākonis</translation>
 <translation id="5277279256032773186">Vai izmantojat Chrome darbā? Uzņēmumi var pārvaldīt darbinieku Chrome iestatījumus. Uzziniet vairāk.</translation>
 <translation id="5299298092464848405">Parsējot politiku, radās kļūda.</translation>
@@ -467,6 +468,7 @@
 <translation id="6263376278284652872"><ph name="DOMAIN" /> grāmatzīmes</translation>
 <translation id="6264485186158353794">Atpakaļ drošībā</translation>
 <translation id="6282194474023008486">Pasta indekss</translation>
+<translation id="6290238015253830360">Ieteiktie raksti tiek parādīti šeit</translation>
 <translation id="6305205051461490394">Vietne <ph name="URL" /> nav sasniedzama.</translation>
 <translation id="6321917430147971392">Sistēmas DNS iestatījumu pārbaude</translation>
 <translation id="6328639280570009161">Tīkla prognožu atspējošana</translation>
@@ -650,6 +652,7 @@ Nākamreiz jums varētu noderēt inkognito režīms (<ph name="SHORTCUT_KEY" />)
 <translation id="8363502534493474904">Izslēdziet lidojuma režīmu.</translation>
 <translation id="8364627913115013041">Nav iestatīta.</translation>
 <translation id="8380941800586852976">Bīstama</translation>
+<translation id="8382348898565613901">Nesen izmantotās grāmatzīmes tiek parādītas šeit</translation>
 <translation id="8412145213513410671">Avārijas (<ph name="CRASH_COUNT" />)</translation>
 <translation id="8412392972487953978">Viena un tā pati ieejas frāze jāievada divreiz.</translation>
 <translation id="8428213095426709021">Iestatījumi</translation>
@@ -699,6 +702,7 @@ Nākamreiz jums varētu noderēt inkognito režīms (<ph name="SHORTCUT_KEY" />)
 <translation id="8987927404178983737">Mēnesis</translation>
 <translation id="8989148748219918422"><ph name="ORGANIZATION" /> [<ph name="COUNTRY" />]</translation>
 <translation id="9001074447101275817">Starpniekserveris <ph name="DOMAIN" /> pieprasa lietotājvārdu un paroli.</translation>
+<translation id="9008201768610948239">Ignorēt</translation>
 <translation id="901974403500617787">Atzīmes, kas attiecas uz visu sistēmu, var iestatīt tikai īpašnieks: <ph name="OWNER_EMAIL" />.</translation>
 <translation id="9020542370529661692">Šī lapa ir tulkota <ph name="TARGET_LANGUAGE" /> valodā.</translation>
 <translation id="9038649477754266430">Ieteikumu pakalpojuma izmantošana ātrākai lapu ielādei</translation>

@@ -23,7 +23,6 @@ Niektoré funkcie nemusia byť k dispozícii a zmeny vykonané v predvoľbách s
 <translation id="1688750314291223739">Ak chcete uložiť svoje prispôsobené funkcie prehliadača na webe a pristupovať k nim z prehliadača Chromium v ktoromkoľvek počítači, nastavte synchronizáciu.</translation>
 <translation id="1699664235656412242">Zavrite všetky okná Chromium (vrátane okien v režime systému Windows 8) a skúste to znova.</translation>
 <translation id="1708666629004767631">K dispozícii je nová bezpečnejšia verzia prehliadača Chromium.</translation>
-<translation id="1725059042853530269">Súbor <ph name="FILE_NAME" /> môže poškodiť vaše prostredie na prehliadanie, a preto ho prehliadač Chromium zablokoval.</translation>
 <translation id="1774152462503052664">Povoliť prehliadaču Chromium spustenie na pozadí</translation>
 <translation id="1779356040007214683">Z dôvodu vyššej bezpečnosti prehliadača Chromium sme zakázali niektoré rozšírenia, ktoré nedodáva <ph name="IDS_EXTENSION_WEB_STORE_TITLE" /> a mohli byť pridané bez vášho vedomia.</translation>
 <translation id="1808667845054772817">Preinštalovať prehliadač Chromium</translation>
@@ -61,7 +60,6 @@ Niektoré funkcie nemusia byť k dispozícii a zmeny vykonané v predvoľbách s
 <translation id="2718390899429598676">V záujme vyššej miery zabezpečenia budú dáta v prehliadači Chromium šifrované.</translation>
 <translation id="2770231113462710648">Zmeniť predvolený prehliadač na:</translation>
 <translation id="2799223571221894425">Znova spustiť</translation>
-<translation id="2801146392936645542">Súbor <ph name="FILE_NAME" /> je škodlivý, a preto ho prehliadač Chromium zablokoval.</translation>
 <translation id="2847479871509788944">Odstrániť z prehliadača Chromium...</translation>
 <translation id="2886012850691518054">Voliteľné: Pomôžte vylepšiť služby prehliadača Chromium tým, že nastavíte automatické odosielanie štatistík používania a správ o zlyhaní spoločnosti Google.</translation>
 <translation id="2905536371227304018">Chromium OS sa zobrazuje v tomto jazyku.</translation>
@@ -80,7 +78,6 @@ Niektoré funkcie nemusia byť k dispozícii a zmeny vykonané v predvoľbách s
 <ph name="USER_DATA_DIRECTORY" /></translation>
 <translation id="3264279740686075150">Chromium je vaším predvoleným prehliadačom. Skvelé!</translation>
 <translation id="328888136576916638">Chýbajú kľúče rozhrania Google API. Niektoré funkcie prehliadača Google Chromium budú zakázané.</translation>
-<translation id="3289635842886789612">Prehliadač Chromium je zastaraný.</translation>
 <translation id="3296368748942286671">Po zatvorení prehliadača Chromium ponechať spustené aplikácie na pozadí</translation>
 <translation id="3312805357485578561">Prehliadač Chromium zistil neobvyklé správanie</translation>
 <translation id="331951419404882060">Systému OS Chromium sa nepodarilo synchronizovať vaše údaje, pretože sa pri prihlasovaní vyskytla chyba.</translation>
@@ -138,6 +135,7 @@ Niektoré funkcie nemusia byť k dispozícii a zmeny vykonané v predvoľbách s
 <translation id="5398878173008909840">K dispozícii je nová verzia prehliadača Chromium.</translation>
 <translation id="5427571867875391349">Nastaviť Chromium ako predvolený prehliadač</translation>
 <translation id="5466153949126434691">Chromium sa aktualizuje automaticky, aby ste mali vždy k dispozícii najnovšiu verziu. Po dokončení sťahovania sa Chromium reštartujte a začnete používať aktuálnu verziu.</translation>
+<translation id="5479196819031988440">Chromium OS nedokáže túto stránku otvoriť.</translation>
 <translation id="549669000822060376">Počkajte, kým Chromium nainštaluje najnovšie aktualizácie systému.</translation>
 <translation id="556167189552180495">Chromium sa zobrazuje v tomto jazyku.</translation>
 <translation id="5563479599352954471">Vyhľadávanie jediným klepnutím</translation>
@@ -225,7 +223,6 @@ Ak chcete profilu <ph name="NEW_PROFILE_NAME" /> zabrániť pristupovať do vá�
 <translation id="7421823331379285070">Prehliadač Chromium vyžaduje systém Windows XP alebo novší. Niektoré funkcie nemusia fungovať.</translation>
 <translation id="7473891865547856676">Nie, ďakujem</translation>
 <translation id="7483335560992089831">Nemôžete nainštalovať rovnakú verziu prehliadača Chromium ako je tá, ktorá je momentálne spustená. Zatvorte prehliadač Chromium a skúste to znova.</translation>
-<translation id="750717762378961310">Tento súbor je škodlivý, a preto ho prehliadač Chromium zablokoval.</translation>
 <translation id="7549178288319965365">Informácie o systéme Chromium OS</translation>
 <translation id="7577193603922410712">Práve bola použitá mimoriadna bezpečnostná aktualizácia pre prehliadač Chromium. Zmeny sa prejavia až po jeho reštartovaní (vaše karty sa automaticky obnovia).</translation>
 <translation id="761356813943268536">Chromium používa vašu kameru a mikrofón.</translation>

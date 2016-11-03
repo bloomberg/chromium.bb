@@ -59,7 +59,6 @@
 <translation id="2588322182880276190">โลโก้ Chrome</translation>
 <translation id="2664962310688259219">ใบอนุญาตโอเพนซอร์สของ Chrome OS</translation>
 <translation id="2665296953892887393">ช่วยทำให้ Google Chrome ดียิ่งขึ้นโดยการส่งรายงานข้อขัดข้องและ <ph name="UMA_LINK" /> ไปยัง Google</translation>
-<translation id="2669824781555328029"><ph name="FILE_NAME" /> อาจเป็นอันตรายต่อการท่องเว็บของคุณ Chrome จึงบล็อกไว้</translation>
 <translation id="2681064822612051220">พบข้อขัดแย้งในการติดตั้ง Google Chrome บนระบบ โปรดถอนการติดตั้งและลองอีกครั้ง</translation>
 <translation id="2689103672227170538">ส่วนขยายนี้ได้เปลี่ยนหน้าที่จะแสดงเมื่อคุณเริ่มต้น Chrome</translation>
 <translation id="2704356438731803243">หากคุณต้องการเก็บข้อมูล Chrome ที่มีอยู่ของคุณแยกไว้ต่างหาก คุณสามารถสร้างผู้ใช้ Chrome ใหม่สำหรับ <ph name="USER_NAME" /></translation>
@@ -148,6 +147,7 @@
 <translation id="5148419164691878332">Chrome จะเก็บข้อมูลนี้ไว้ใน <ph name="SAVED_PASSWORDS_LINK" /> และจดจำไว้สำหรับครั้งถัดไปที่คุณต้องการใช้</translation>
 <translation id="5170938038195470297">โปรไฟล์ของคุณไม่สามารถใช้ได้เพราะมาจากรุ่นที่ใหม่กว่าของ Google Chrome คุณลักษณะบางอย่างอาจจะไม่พร้อมใช้งาน โปรดระบุไดเรกทอรีของโปรไฟล์อื่นหรือใช้ Chrome รุ่นที่ใหม่กว่า</translation>
 <translation id="5176234269072261959">ช่วยให้ Chrome ดียิ่งขึ้นด้วยการรายงานการตั้งค่าปัจจุบัน</translation>
+<translation id="5193136243808726294">Google Chrome OS ไม่สามารถเปิดหน้านี้</translation>
 <translation id="5204098752394657250"><ph name="TERMS_OF_SERVICE_LINK" />ข้อกำหนดในการให้บริการ<ph name="END_TERMS_OF_SERVICE_LINK" />ของ Google Chrome</translation>
 <translation id="5243785881901838525">Google Payments (คัดลอกลงใน Chrome แล้ว)</translation>
 <translation id="5251420635869119124">ผู้เยี่ยมชมสามารถใช้ Chrome ได้โดยไม่ทิ้งร่องรอยไว้</translation>
@@ -206,7 +206,6 @@
 <translation id="699076943483372849">เว็บไซต์นี้ใช้ปลั๊กอิน Chrome Frame ซึ่งไม่มีการใช้งานแล้วและไม่ได้รับการอัปเดตด้านความปลอดภัยและความเสถียรอีกต่อไป โปรดถอนการติดตั้งและอัปเกรดเป็นเบราว์เซอร์สมัยใหม่</translation>
 <translation id="6991142834212251086">เชื่อมโยงข้อมูล Chrome ของฉันกับบัญชีนี้</translation>
 <translation id="7060865993964054389">Google Chrome App Launcher</translation>
-<translation id="7084448929020576097"><ph name="FILE_NAME" /> เป็นอันตรายและ Chrome ได้บล็อกไฟล์ดังกล่าวไว้</translation>
 <translation id="7098166902387133879">Google Chrome ใช้ไมโครโฟนอยู่</translation>
 <translation id="7106741999175697885">ตัวจัดการงาน - Google Chrome</translation>
 <translation id="7125719106133729027">Chrome ไม่สามารถอัปเดตตัวเองเป็นเวอร์ชันล่าสุดได้ คุณกำลังพลาดคุณลักษณะเจ๋งๆ และการปรับปรุงความปลอดภัย คุณจำเป็นต้องติดตั้ง Chrome ใหม่ด้วยตนเอง</translation>
@@ -269,7 +268,6 @@
 <translation id="8669527147644353129">ตัวช่วยเหลือของ Google Chrome</translation>
 <translation id="8679801911857917785">อีกทั้งยังควบคุมหน้าที่จะแสดงเมื่อคุณเปิด Chrome ด้วย</translation>
 <translation id="870251953148363156">อัปเดต &amp;Google Chrome</translation>
-<translation id="8793772303278047003">Chrome ล้าสมัย</translation>
 <translation id="8796108026289707191">คุณควรรีสตาร์ท Google Chrome เลย</translation>
 <translation id="8823341990149967727">Chrome ล้าสมัย</translation>
 <translation id="884296878221830158">อีกทั้งยังควบคุมหน้าที่จะแสดงเมื่อคุณเปิด Chrome หรือคลิกปุ่ม "หน้าแรก"</translation>
@@ -278,7 +276,6 @@
 <translation id="8914504000324227558">เปิด Chrome ขึ้นใหม่</translation>
 <translation id="9026991721384951619">Chrome OS ไม่สามารถซิงค์ข้อมูลของคุณเนื่องจากรายละเอียดการลงชื่อเข้าใช้บัญชีของคุณล้าสมัย</translation>
 <translation id="9067395829937117663">Google Chrome ต้องใช้ Windows 7 ขึ้นไป</translation>
-<translation id="9102715433345326100">ไฟล์นี้เป็นอันตรายและ Chrome ได้บล็อกไฟล์ดังกล่าวไว้</translation>
 <translation id="9107728822479888688"><ph name="BEGIN_BOLD" />คำเตือน:<ph name="END_BOLD" /> Google Chrome ไม่สามารถป้องกันส่วนขยายจากการบันทึกประวัติการเรียกดู หากต้องการปิดใช้งานส่วนขยายนี้ในโหมดไม่ระบุตัวตน ให้ยกเลิกการเลือกตัวเลือกนี้</translation>
 <translation id="911206726377975832">ลบข้อมูลการท่องเว็บด้วยหรือไม่</translation>
 <translation id="924447568950697217">กำหนดให้ Chrome เป็นเบราว์เซอร์เริ่มต้น</translation>

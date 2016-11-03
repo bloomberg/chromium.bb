@@ -19,6 +19,9 @@
       Bu politika yanlış (false) seçeneğine ayarlandığında veya ayarlanmadan bırakıldığında, IdP tarafından ayarlanan çerezler kullanıcının profiline sadece bir cihazda ilk defa giriş yaparken aktarılır.
 
       Bu politika yalnızca, alan adı ile cihazın kaydolduğu alan adı eşleşen kullanıcıları etkiler. Diğer tüm kullanıcılar için, IdP tarafından ayarlanan çerezler kullanıcının profiline sadece cihazda ilk defa giriş yaparken aktarılır.</translation>
+<translation id="1029536946382325801">True (doğru) olarak ayarlanırsa kullanıcı, cihaz kimliğini Kurumsal Platform Anahtarlar API'sinin chrome.enterprise.platformKeys.challengeUserKey() işlevi üzerinden gizlilik CA'sına uzaktan doğrulatmak için Chrome cihazlardaki donanımı kullanabilir.
+
+False (yanlış) olarak ayarlanırsa veya hiç ayarlanmazsa, API'ye yapılan çağrılar başarısız olur ve hata kodu görüntülenir.</translation>
 <translation id="1040446814317236570">PAC URL ayırmayı etkinleştir (https:// için)</translation>
 <translation id="1044878202534415707">CPU/RAM kullanımı gibi donanım istatistiklerini bildirin.
 
@@ -305,6 +308,7 @@
       HardwareAccelerationModeEnabled yanlış seçeneğine ayarlanırsa Disable3DAPI'lar yoksayılır, bu da Disable3DAPI öğelerinin doğru seçeneğine ayarlanmasıyla eşdeğerdir.</translation>
 <translation id="2168397434410358693">AC güçle çalışırken boşta kalma gecikmesi</translation>
 <translation id="2170233653554726857">WPAD optimizasyonunu etkinleştir</translation>
+<translation id="2178899310296064282">YouTube'da en azından Orta Düzey Kısıtlı Mod'u zorunlu kıl</translation>
 <translation id="2188979373208322108"><ph name="PRODUCT_NAME" /> ürünündeki yer işareti çubuğunu etkinleştirir.
 
       Bu ayarı etkinleştirirseniz, <ph name="PRODUCT_NAME" /> ürününde bir yer işareti çubuğu gösterilir.
@@ -350,13 +354,6 @@
 <translation id="2337466621458842053">Resimleri görüntülemelerine izin verilen sitelerin belirtildiği bir URL kalıpları listesini ayarlamanıza olanak tanır.
 
           Bu politika ayarlanmadan bırakılırsa, 'DefaultImagesSetting' politikası ayarlandıysa buradaki değer, aksi takdirde kullanıcının kişisel yapılandırması tüm siteler için genel varsayılan değer olarak kullanılır.</translation>
-<translation id="2359612025446382967">Bu politika yanlış (false) değerine ayarlanırsa <ph name="PRODUCT_OS_NAME" />, Bluetooth'u devre dışı bırakır ve kullanıcı, bu işlevi etkinleştiremez.
-
-      Bu politika doğru (true) değerine ayarlanır veya ayarlanmadan bırakılırsa kullanıcı, Bluetooth'u istediği gibi etkinleştirebilir veya devre dışı bırakabilir.
-
-      Bu politika ayarlanırsa kullanıcı, bunu değiştiremez veya geçersiz kılamaz.
-
-      Bluetooth etkinleştirildikten sonra, değişikliklerin yürürlüğe girmesi için cihazın yeniden başlatılması gerekir (Bluetooth devre dışı bırakılırken cihazın yeniden başlatılması gerekmez).</translation>
 <translation id="2366415278352956652">Yayınlamayı etkinleştirir</translation>
 <translation id="2372547058085956601">Herkese açık oturum otomatik giriş gecikmesi.
 
@@ -572,6 +569,7 @@
       Bu ayarı etkinleştirirseniz veya devre dışı bırakırsanız, kullanıcılar <ph name="PRODUCT_NAME" /> içindeki "Kimlik avı ve kötü amaçlı yazılımlara karşı koruma" ayarını değiştiremez veya geçersiz kılamaz.
 
       Bu politika ayarlanmadan bırakılırsa, bu ayar etkinleştirilecek, ancak kullanıcı bunu değiştirebilecektir.</translation>
+<translation id="2787173078141616821">Android'in durumu hakkında rapor bilgileri</translation>
 <translation id="2801230735743888564">Cihaz çevrimdışıyken kullanıcıların dinozor paskalya yumurtası oyununu oynamasına izin ver.
 
       Bu politika Yanlış seçeneğine ayarlanırsa kullanıcılar, cihaz çevrimdışıyken dinozor paskalya yumurtası oyununu oynayamaz. Bu ayar Doğru seçeneğine ayarlanırsa kullanıcıların dinozor oyununu oynamalarına izin verilir. Bu politika ayarlanmazsa kullanıcıların dinozor paskalya yumurtası oyununu oynamalarına kayıtlı Chrome OS'de izin verilmez, ancak diğer durumlarda izin verilir.</translation>
@@ -804,6 +802,13 @@
 <translation id="3417418267404583991">Bu politika true olarak ayarlanırsa veya hiçbir şekilde ayarlanmazsa, <ph name="PRODUCT_OS_NAME" /> misafir modunda giriş yapılmasına izin verir. misafir girişleri adsız kullanıcı oturumlarıdır ve şifre gerektirmez.
 
       Bu politika false değerine ayarlanırsa, <ph name="PRODUCT_OS_NAME" /> misafir oturumlarının başlamasına izin vermez.</translation>
+<translation id="3418871497193485241">YouTube'da Kısıtlı Mod için bir minimum düzeyi zorunlu kılar ve kullanıcıların, daha az kısıtlamalı bir modu seçmelerini engeller.
+
+Bu ayar için Yüksek Düzey değeri seçilirse YouTube'da her zaman Yüksek Düzey Kısıtlı Mod etkin olur.
+
+Bu ayar için Orta Düzey değeri seçilirse kullanıcı, YouTube'da yalnızca Orta Düzey Kısıtlı Mod ve Yüksek Düzey Kısıtlı Mod'u seçebilir, ancak Kısıtlı Mod'u devre dışı bırakamaz.
+
+Bu ayar Kapalı değerine getirilirse veya herhangi bir değer belirlenmezse <ph name="PRODUCT_NAME" /> tarafından YouTube'da Kısıtlı Mod zorunlu kılınmaz. Bununla birlikte, YouTube politikaları gibi harici politikalar Kısıtlı Mod'u zorunlu kılmaya devam edebilir.</translation>
 <translation id="3428247105888806363">Ağ tahminini etkinleştir</translation>
 <translation id="3449886121729668969"><ph name="PRODUCT_NAME" /> ve ARC uygulamaları için proxy ayarlarını yapılandırır. Bu proxy ayarları, ARC uygulamaları için de kullanılabilir.
 
@@ -919,6 +924,9 @@ Bu ayarı etkinleştirirseniz veya yapılandırmazsanız kullanıcılar şifrele
 <translation id="384743459174066962">Pop-up açmasına izin verilmeyen siteleri belirten bir URL kalıpları listesi ayarlamanıza olanak tanır.
 
           Bu politika ayarlanmadan bırakılırsa, 'DefaultPopupsSetting' politikası ayarlandıysa buradaki değer, aksi takdirde kullanıcının kişisel yapılandırması tüm siteler için genel varsayılan değer olarak kullanılır.</translation>
+<translation id="3851039766298741586">Uygulama kimliği ve sürümü gibi aktif kiosk oturumuyla ilgili bilgileri rapor edin.
+
+Bu politika yanlış seçeneğine ayarlanırsa kiosk oturum bilgileri rapor edilmez. Doğru seçeneğine ayarlanırsa veya ayarlanmadan bırakılırsa oturum bilgileri rapor edilir.</translation>
 <translation id="3859780406608282662"><ph name="PRODUCT_OS_NAME" /> içindeki Varyasyonlar çekirdeğini getirmek için bir parametre ekleyin.
 
       Belirtilirse, Varyasyonlar çekirdeğini getirmek için kullanılan URL'ye 'restrict' adında bir sorgu parametresi ekler. Parametrenin değeri bu politikada belirtilen değer olacaktır.
@@ -933,6 +941,13 @@ Bu ayarı etkinleştirirseniz veya yapılandırmazsanız kullanıcılar şifrele
 
           Bu politikaya yalnızca "DefaultSearchProviderEnabled" politikası etkinleştirildiğinde uyulur.</translation>
 <translation id="3864818549971490907">Varsayılan eklentiler ayarı</translation>
+<translation id="386487026071140458">Bu politika kullanımdan kaldırılmıştır, lütfen bunun yerine <ph name="FORCEGOOGLESAFESEARCH_POLICY_NAME" /> ve <ph name="FORCEYOUTUBERESTRICT_POLICY_NAME" /> politikalarını kullanın. <ph name="FORCEGOOGLESAFESEARCH_POLICY_NAME" />, <ph name="FORCEYOUTUBERESTRICT_POLICY_NAME" /> veya (kullanımdan kaldırılan) <ph name="FORCEYOUTUBESAFETYMODE_POLICY_NAME" /> politikası ayarlanırsa bu politika yoksayılır.
+
+Google Web Araması'ndaki sorguların Güvenli Arama etkin olarak yapılmasını zorlar ve kullanıcıların bu ayarı değiştirmesini engeller. Bu ayar, aynı zamanda YouTube'da Orta Düzey Kısıtlı Mod'u da zorlar.
+
+Bu ayarı etkinleştirirseniz Google Arama'da Güvenli Arama ve YouTube'da Orta Düzey Kısıtlı Mod her zaman etkin olur.
+
+Bu ayarı devre dışı bırakır veya bir ayar belirlemezseniz Google Arama'da Güvenli Arama ve YouTube'da Orta Düzey Kısıtlı Mod zorunlu kılınmaz.</translation>
 <translation id="3866249974567520381">Açıklama</translation>
 <translation id="3866530186104388232">Bu politika true olarak ayarlanırsa veya hiçbir şekilde ayarlanmazsa, <ph name="PRODUCT_OS_NAME" /> varolan kullanıcıları giriş ekranında gösterir ve birinin seçilmesine izin verir. Bu politika false olarak ayarlanırsa, <ph name="PRODUCT_OS_NAME" /> giriş için kullanıcı adı/şifre ister.</translation>
 <translation id="3868347814555911633">Bu politika yalnızca perakende modunda etkindir.
@@ -965,6 +980,9 @@ Bu ayarı etkinleştirirseniz veya yapılandırmazsanız kullanıcılar şifrele
 
       Bu politika true (doğru) değerine ayarlanırsa izleme amaçlı ağ paketleri (<ph name="HEARTBEATS_TERM" /> olarak adlandırılır) gönderilir.
       False (yanlış) değerine ayarlanır veya ayarlanmadan bırakılırsa hiçbir paket gönderilmez.</translation>
+<translation id="3963602271515417124">True (doğru) olarak ayarlanırsa, cihaz için uzaktan doğrulamaya izin verilir, otomatik olarak bir sertifika oluşturulup Cihaz Yönetim Sunucusuna yüklenir.
+
+False (yanlış) olarak ayarlanırsa veya hiç ayarlanmazsa, hiçbir sertifika oluşturulmaz ve enterprise.platformKeysPrivate API'sine yapılan çağrılar başarısız olur.</translation>
 <translation id="3964909636571393861">URL listesine erişim izni verir</translation>
 <translation id="3965339130942650562">Boştaki kullanıcının çıkış yapması için geçecek zaman aşımı süresi</translation>
 <translation id="3967075520570946456">OS yeni sürüme geçirildikten sonra, tarayıcı ilk başlatıldığında karşılama sayfasının gösterilmesini etkinleştir.</translation>
@@ -1017,6 +1035,17 @@ Bu ayarı etkinleştirirseniz veya yapılandırmazsanız kullanıcılar şifrele
 
           Bu politika ayarlanmamış halde bırakılırsa "AllowCookies" kullanılır ve kullanıcı bunu değiştirebilir.</translation>
 <translation id="4103289232974211388">Kullanıcı onayından sonra SAML IdP'ye yönlendir</translation>
+<translation id="4103941930938018145">Bu politika kullanımdan kaldırılmıştır. Lütfen Flash eklentisinin kullanılabilirliğini kontrol etmek için <ph name="DEFAULT_PLUGINS_SETTING_POLICY" /> politikasını ve PDF dosyaları açılırken entegre PDF görüntüleyicisinin kullanılıp kullanılmayacağını kontrol etmek için <ph name="ALWAYS_OPEN_PDF_EXTERNALLY_POLICY" /> politikasını kullanın.
+
+<ph name="PRODUCT_NAME" /> ürününde devre dışı bırakılan eklentilerin bir listesini belirtir ve kullanıcıların bu ayarı değiştirmesini önler.
+
+"*" ve "?" joker karakterleri herhangi bir karakter dizesine uyacak şekilde kullanılabilir. "*" herhangi bir sayıda karakter ile eşleşirken "?" isteğe bağlı tek bir karakteri, yani sıfır karakter veya tek bir karakter belirtir. Çıkış karakteri "\" olduğundan gerçek "*", "?" veya "\" joker karakterleri ile eşleştirmek için bu karakterlerin önüne "\" getirebilirsiniz.
+
+Bu ayarı etkinleştirirseniz belirtilen listedeki eklentiler <ph name="PRODUCT_NAME" /> ürününde hiçbir zaman kullanılmaz. Eklentiler, "about:plugins" sayfasında devre dışı olarak işaretlenir ve kullanıcılar bunları etkinleştiremez. 
+
+Bu politikanın EnabledPlugins ve DisabledPluginsExceptions tarafından geçersiz kılınabileceğini unutmayın.
+
+Bu politika ayarlanmadan bırakılırsa kullanıcı sabit kodlu uyumsuz, eski veya tehlikeli olan eklentiler dışında, sistemde yüklü olan tüm eklentileri kullanabilir.</translation>
 <translation id="410478022164847452">AC güçle çalışırken, boşta kalma işleminin uygulanmasından önce kullanıcı girişi olmadan geçecek süreyi belirtir.
 
           Bu politika ayarlandığında, <ph name="PRODUCT_OS_NAME" /> tarafından boşta kalma işleminin (ayrı olarak yapılandırılabilir) uygulanmasından önce kullanıcının boşta kalması gereken süreyi belirtir.
@@ -1333,6 +1362,13 @@ politikayı geçersiz kılamaz.
 
       Ayarlanmazsa, kullanıcıdan içe aktarma işlemini gerçekleştirmesi istenebilir veya içe aktarma otomatik olarak gerçekleşebilir.</translation>
 <translation id="5423197884968724595">Android WebView kısıtlama adı:</translation>
+<translation id="543559563129402336">Bu politika kullanımdan kaldırılmıştır. Bu politikayı geçersiz kılan ve daha ayrıntılı ayarlamaya olanak tanıyan <ph name="FORCEYOUTUBERESTRICT_POLICY_NAME" /> politikasını kullanma seçeneğini değerlendirin.
+
+YouTube Orta Düzey Kısıtlı Modu'nu zorlar ve kullanıcıların bu ayarı değiştirmesini engeller.
+
+Bu ayar etkinleştirilirse YouTube'da Kısıtlı Mod her zaman en azından Orta Düzey olacak şekilde zorunlu kılınır.
+
+Bu ayar devre dışı bırakılır veya herhangi bir değer belirlenmezse <ph name="PRODUCT_NAME" /> tarafından YouTube'da Kısıtlı Mod zorunlu kılınmaz. Bununla birlikte, YouTube politikaları gibi harici politikalar Kısıtlı Mod'u zorunlu kılmaya devam edebilir.</translation>
 <translation id="5447306928176905178">Bellek bilgilerini (JS yığın boyutu) sayfada raporlamayı etkinleştir (kullanımdan kaldırıldı)</translation>
 <translation id="5457065417344056871">Tarayıcıda misafir modunu etkinleştir</translation>
 <translation id="5457924070961220141"><ph name="PRODUCT_FRAME_NAME" /> yüklendiğinde varsayılan HTML oluşturucusunu yapılandırabilmenizi sağlar.
@@ -1440,6 +1476,19 @@ politikayı geçersiz kılamaz.
           Bu politika ayarlanmadan bırakılırsa, varsayılan süre kullanılır.
 
           Politika değeri milisaniye olarak belirtilmelidir.</translation>
+<translation id="5783595563813359339">Bu politika kullanımdan kaldırılmıştır. Lütfen Flash eklentisinin kullanılabilirliğini kontrol etmek için <ph name="DEFAULT_PLUGINS_SETTING_POLICY" /> politikasını ve PDF dosyaları açılırken entegre PDF görüntüleyicisinin kullanılıp kullanılmayacağını kontrol etmek için <ph name="ALWAYS_OPEN_PDF_EXTERNALLY_POLICY" /> politikasını kullanın.
+
+Kullanıcının <ph name="PRODUCT_NAME" /> ürününde etkinleştirebileceği veya devre dışı bırakabileceği eklentilerin bir listesini belirtir.
+
+ "*" ve "?" joker karakterleri herhangi bir karakter dizesine uyacak şekilde kullanılabilir. "*" herhangi bir sayıda karakter ile eşleşirken "?" isteğe bağlı tek bir karakteri, yani sıfır karakter veya tek bir karakteri belirtir. Çıkış karakteri "\" olduğundan gerçek "*", "?" veya "\" joker karakterleri ile eşleştirmek için bu karakterlerin önüne "\" getirebilirsiniz.
+
+Bu ayarı etkinleştirirseniz belirtilen listedeki eklentiler <ph name="PRODUCT_NAME" /> ürününde kullanılabilir. Eklenti DisabledPlugins politikasındaki bir kalıpla eşleşse bile, kullanıcılar bu eklentileri "about:plugins" içinde etkinleştirebilir veya devre dışı bırakabilir. Kullanıcılar, DisabledPlugins, DisabledPluginsExceptions ve EnabledPlugins içindeki herhangi bir kalıpla eşleşmeyen eklentileri de etkinleştirebilir ve devre dışı bırakabilir.
+
+Bu politikayla katı kurallı eklenti kara listelerine izin verilmesi amaçlanmıştır. Örneğin, "DiabledPlugins" listesi tüm eklentileri devre dışı bırakma ("*") veya tüm Java eklentilerini devre dışı bırakma ("*Java*") gibi joker karakterli girişleri içerirken, yönetici "IcedTea Java 2.3" gibi belirli bir sürümü etkinleştirmek isteyebilir. Söz konusu belirli sürümler, bu politikada belirtilebilir.
+
+Hem eklenti adının hem de eklenti grup adının muaf tutulması gerektiğini unutmayın. Her eklenti grubu, about:plugins sayfasında ayrı bir bölümde gösterilir. Her bölümde bir veya daha fazla eklenti bulunabilir. Örneğin, "Shockwave Flash" eklentisi "Adobe Flash Player" grubuna aittir ve söz konusu eklenti kara listeden muaf tutulacaksa her iki adın da istisnalar listesinde bir eşlemesi olması gerekir.
+
+Bu politika ayarlanmadan bırakılırsa "DisabledPlugins" içindeki kalıplarla eşleşen tüm eklentiler devre dışı olarak kilitlenir ve kullanıcı, bunları etkinleştiremez.</translation>
 <translation id="5795001131770861387">Varsayılan olmayan bağlantı noktalarında HTTP/0.9 desteğini etkinleştirir</translation>
 <translation id="5809728392451418079">Cihaz-yerel hesaplar için görünen adı ayarla</translation>
 <translation id="5814301096961727113">Giriş ekranında sesli geri bildirimin varsayılan durumunu ayarla</translation>
@@ -1538,6 +1587,17 @@ politikayı geçersiz kılamaz.
 <translation id="6076099373507468537">chrome.usb API'sı aracılığıyla doğrudan bir web uygulaması içinde kullanılması için çekirdek sürücüsünden çıkarılmasına izin verilen USB cihazlarının listesini tanımlar. Girişler, belirli bir donanımı tanımlamak için kullanılan USB Tedarikçi Tanımlayıcısı ve Ürün Tanımlayıcısı çiftlerinden oluşmaktadır.
 
       Bu politika yapılandırılmazsa, çıkarılabilecek USB cihazları listesi boş olur.</translation>
+<translation id="608377055310226486">Bu politika kullanımdan kaldırılmıştır. Lütfen Flash eklentisinin kullanılabilirliğini kontrol etmek için <ph name="DEFAULT_PLUGINS_SETTING_POLICY" /> politikasını ve PDF dosyaları açılırken entegre PDF görüntüleyicisinin kullanılıp kullanılmayacağını kontrol etmek için <ph name="ALWAYS_OPEN_PDF_EXTERNALLY_POLICY" /> politikasını kullanın.
+
+<ph name="PRODUCT_NAME" /> ürününde etkinleştirilen eklentilerin bir listesini belirtir ve kullanıcıların bu ayarı değiştirmesini önler.
+
+"*" ve "?" joker karakterleri herhangi bir karakter dizesine uyacak şekilde kullanılabilir. "*" herhangi bir sayıda karakter ile eşleşirken "?" isteğe bağlı tek bir karakteri, yani sıfır veya tek bir karakteri belirtir. Çıkış karakteri "\" olduğundan gerçek "*", "?" veya "\" joker karakterleri ile eşleştirmek için bu karakterlerin önüne "\" getirebilirsiniz.
+
+Belirtilen listedeki eklentiler, eğer yüklenmişlerse <ph name="PRODUCT_NAME" /> içinde her zaman kullanılır. Eklentiler "about:plugins" içinde etkinleştirilmiş olarak işaretlenir ve kullanıcılar bu eklentileri devre dışı bırakamaz.
+
+Bu politikanın DisabledPlugins ve DisabledPluginsExceptions politikalarını geçersiz kıldığını unutmayın.
+
+Bu politika ayarlanmadan bırakılırsa kullanıcı sistemde yüklü herhangi bir eklentiyi devre dışı bırakabilir.</translation>
 <translation id="6093156968240188330">Uzaktan yardım oturumlarında uzak kullanıcıların yükseltilmiş pencerelerle etkileşimde bulunmasına izin ver</translation>
 <translation id="6095999036251797924">AC gücü veya pil gücü kullanılırken, ekranın kilitlenmesinden önce kullanıcı girişi olmadan geçmesi gereken süreyi belirtir.
 
@@ -1773,6 +1833,7 @@ politikayı geçersiz kılamaz.
 <translation id="6828905844648501476">Bu politika doğru seçeneğine ayarlanırsa veya yapılandırılmazsa <ph name="PRODUCT_NAME" />, kullanıcı yöneticisinin Kişi Ekle işlevinin kullanılmasına izin verir.
 
       Bu politika yanlış seçeneğine ayarlanırsa <ph name="PRODUCT_NAME" />, profil yöneticisinin yeni profiller oluşturmasına izin vermez.</translation>
+<translation id="685769593149966548">YouTube için Yüksek Düzey Kısıtlı Mod'u zorunlu kıl</translation>
 <translation id="687046793986382807">Bu politika, <ph name="PRODUCT_NAME" /> sürüm 35 itibarı ile kullanımdan kaldırılmıştır.
 
       Bellek bilgisi, seçenek değerinden bağımsız olarak her şekilde sayfada raporlanır, ancak
@@ -2188,6 +2249,9 @@ Bu politika yanlış (false) değerine ayarlanırsa Yeni Sekme sayfasında, otom
           Bu politika bir Active Directory alan adına katılmamış Windows örneklerinde kullanılamaz.</translation>
 <translation id="7937766917976512374">Video yakalamaya izin verme veya reddetme</translation>
 <translation id="7941975817681987555">Ağ bağlantılarında ağ işlemlerini tahmin etme</translation>
+<translation id="7942429005743031780">Bu politika, uzaktan doğrulama için Kurumsal Platform Anahtarları API'sinin chrome.enterprise.platformKeys.challengeUserKey() işlevini kullanmasına izin verilen uzantıları belirtir. API'yi kullanmak için uzantılar bu listeye eklenmelidir.
+
+Bir uzantı listede yoksa veya liste ayarlanmamışsa API'ye yapılan çağrılar başarısız olur ve hata kodu görüntülenir.</translation>
 <translation id="7953256619080733119">Yönetilen kullanıcı manuel istisna ana makineleri</translation>
 <translation id="7971839631300653352">SSL 3.0</translation>
 <translation id="7974114691960514888">Bu politika artık desteklenmiyor.
@@ -2218,6 +2282,7 @@ Bu politika yanlış (false) değerine ayarlanırsa Yeni Sekme sayfasında, otom
       Politika doğru değerine ayarlanırsa cihaz 24 saat biçimini kullanır. Politika yanlış değerine ayarlanırsa cihaz 12 saat biçimini kullanır.
 
       Bu politika ayarlanmazsa cihaz varsayılan olarak 24 saat biçimini kullanır.</translation>
+<translation id="8114382167597081590">YouTube'da Kısıtlı Mod'u zorunlu kılma</translation>
 <translation id="8118665053362250806">Medya diski önbellek boyutunu ayarla</translation>
 <translation id="8135937294926049787">AC güçle çalışırken, ekran kapatılmadan önce kullanıcı girişi olmadan geçecek süreyi belirtir.
 
@@ -2427,6 +2492,7 @@ Bu politika yanlış (false) değerine ayarlanırsa Yeni Sekme sayfasında, otom
 
           Bu politika yalnızca 'DefaultSearchProviderEnabled' politikası etkinleştirildiğinde uygulanır.</translation>
 <translation id="8731693562790917685">İçerik Ayarları belirli türdeki içeriklerin (ör. Çerezler, Resimler veya JavaScript) nasıl işleneceğini belirlemenize izin verir.</translation>
+<translation id="8736538322216687231">Minimum YouTube Kısıtlı Modu'nu zorla</translation>
 <translation id="8749370016497832113"><ph name="PRODUCT_NAME" /> ürününde tarayıcı ve indirme geçmişinin silinmesini etkinleştirir ve kullanıcıların bu ayarı değiştirmesine engel olur.
 
       Bu politika devre dışı bırakılmış olsa dahi, tarama ve indirme geçmişlerinin korunacağı garanti edilemez: Kullanıcılar geçmiş veritabanındaki dosyaları doğrudan düzenleyebilir veya silebilirler. Ayrıca tarayıcının kendisinin süresi dolabilir veya geçmiş öğelerinin herhangi birini veya tümünü her an arşive alabilir.

@@ -22,6 +22,7 @@
 <translation id="1484102317210609525"><ph name="DEVICE_NAME" /> (HDMI/DP)</translation>
 <translation id="1510238584712386396">Selector</translation>
 <translation id="1525508553941733066">IGNORAR</translation>
+<translation id="153454903766751181">Iniciando módem celular...</translation>
 <translation id="15373452373711364">Cursor del mouse grande</translation>
 <translation id="1550523713251050646">Haz clic para obtener más opciones</translation>
 <translation id="1602076796624386989">Habilitar datos de dispositivos móviles</translation>
@@ -32,6 +33,7 @@
 <translation id="1747827819627189109">Teclado en pantalla habilitado</translation>
 <translation id="1812696562331527143">Tu método de introducción cambió a <ph name="INPUT_METHOD_ID" />*(<ph name="BEGIN_LINK" />tercero<ph name="END_LINK" />).
 Para cambiarlo, presiona Shift + Alt.</translation>
+<translation id="1850504506766569011">Wi-Fi desactivada</translation>
 <translation id="1864454756846565995">Dispositivo USB-C (puerto trasero)</translation>
 <translation id="1882897271359938046">Copiando en <ph name="DISPLAY_NAME" /></translation>
 <translation id="1919743966458266018">Se modificó el acceso directo para abrir el administrador de tareas. Utiliza <ph name="NEW_SHORTCUT" /> en vez de <ph name="OLD_SHORTCUT" />.</translation>
@@ -47,6 +49,7 @@ Para cambiarlo, presiona Shift + Alt.</translation>
 <translation id="2268813581635650749">Salir de todo</translation>
 <translation id="2297568595583585744">Bandeja de estado</translation>
 <translation id="2303600792989757991">Activar vista general de ventanas</translation>
+<translation id="2354174487190027830">Activación de <ph name="NAME" /></translation>
 <translation id="2391579633712104609">180°</translation>
 <translation id="2429753432712299108">El dispositivo Bluetooth "<ph name="DEVICE_NAME" />" solicita permiso para sincronizarse. Antes de aceptar, debes confirmar que aparece la siguiente clave de contraseña en el dispositivo: <ph name="PASSKEY" />.</translation>
 <translation id="2475982808118771221">Se ha producido un error</translation>
@@ -59,6 +62,7 @@ Para cambiarlo, presiona Shift + Alt.</translation>
 <translation id="2700058918926273959">La sesión terminará en <ph name="SESSION_TIME_REMAINING" /> y se cerrará.</translation>
 <translation id="2727977024730340865">Conexión a un cargador de baja potencia. Es posible que la carga de la batería no sea confiable.</translation>
 <translation id="2761704814324807722">Bandeja de estado, hora <ph name="TIME" />, <ph name="BATTERY" /></translation>
+<translation id="277257480934873581">Restableciendo conexión con <ph name="NAME" /></translation>
 <translation id="2792498699870441125">Alt+tecla de búsqueda</translation>
 <translation id="2819276065543622893">Saldrás de la sesión ahora.</translation>
 <translation id="2825619548187458965">Biblioteca</translation>
@@ -105,21 +109,27 @@ Presiona Mayús o la tecla de búsqueda para cancelar la operación.</translatio
 <translation id="3783640748446814672">alt</translation>
 <translation id="3784455785234192852">Bloquear</translation>
 <translation id="3799026279081545374">Es posible que el cargador esté fallado. Si vives en Estados Unidos, comunícate al 866-628-1371 para recibir ayuda y un reemplazo. Si vives en el Reino Unido, comunícate al 0800-026-0613. Si vives en Irlanda, comunícate al 1-800-832-664. Si vives en Canadá, comunícate al 866-628-1372. Si vives en Australia, comunícate al 1-800-067-460.</translation>
+<translation id="3846575436967432996">No hay información de red disponible.</translation>
 <translation id="3866182280516392520">Dirección IPv6</translation>
 <translation id="3891340733213178823">Presiona Ctrl + Mayús + Q dos veces para salir.</translation>
 <translation id="3892641579809465218">Pantalla interna</translation>
 <translation id="3893630138897523026">ChromeVox (comentarios por voz)</translation>
 <translation id="3899995891769452915">Entrada de voz</translation>
+<translation id="3901991538546252627">Conectando con: <ph name="NAME" /></translation>
 <translation id="3963445509666917109">Altavoz (interno)</translation>
 <translation id="3967919079500697218">Tu administrador inhabilitó la función para realizar capturas de pantalla.</translation>
 <translation id="397105322502079400">Calculando...</translation>
 <translation id="3995138139523574647">Dispositivo USB-C (puerto lateral derecho trasero)</translation>
 <translation id="4053612967614057854">Inhabilitar el teclado en pantalla</translation>
+<translation id="4118990158415604803">El administrador inhabilitó la conexión a otras redes.</translation>
 <translation id="4250680216510889253">No</translation>
 <translation id="4279490309300973883">Duplicando</translation>
 <translation id="4321179778687042513">ctrl</translation>
 <translation id="4421231901400348175">Se está compartiendo el control de la pantalla con <ph name="HELPER_NAME" /> mediante la Asistencia remota.</translation>
 <translation id="4430019312045809116">Volumen</translation>
+<translation id="4448844063988177157">Buscando redes Wi-Fi...</translation>
+<translation id="4479639480957787382">Ethernet</translation>
+<translation id="4508225577814909926"><ph name="NAME" />: Conectando...</translation>
 <translation id="4527045527269911712">El dispositivo Bluetooth "<ph name="DEVICE_NAME" />" solicita permiso para sincronizarse.</translation>
 <translation id="453661520163887813">Tiempo restante hasta completarse la carga: <ph name="TIME" /></translation>
 <translation id="4544944664594876241">Se modificó el acceso directo para bloquear la pantalla. Utiliza <ph name="NEW_SHORTCUT" /> en vez de <ph name="OLD_SHORTCUT" />.</translation>
@@ -172,6 +182,7 @@ Para cambiarlo, presiona Shift + Alt.</translation>
 <translation id="6165508094623778733">Más información</translation>
 <translation id="6203030746557259519">Virtual Display</translation>
 <translation id="6248847161401822652">Presiona Control+Mayús+Q dos veces para salir.</translation>
+<translation id="6267036997247669271"><ph name="NAME" />: Activando...</translation>
 <translation id="6297287540776456956">Usa la pluma stylus para seleccionar una región</translation>
 <translation id="6310121235600822547"><ph name="DISPLAY_NAME" /> se giró a <ph name="ROTATION" />.</translation>
 <translation id="6359806961507272919">SMS de <ph name="PHONE_NUMBER" /></translation>
@@ -184,6 +195,7 @@ Para cambiarlo, presiona Shift + Alt.</translation>
 <translation id="6501401484702599040">Transmitiendo pantalla a <ph name="RECEIVER_NAME" /></translation>
 <translation id="6521655319214113338">Entrada de escritura a mano</translation>
 <translation id="6537270692134705506">Captura total de pantalla</translation>
+<translation id="6549021752953852991">No hay redes celulares disponibles.</translation>
 <translation id="6550675742724504774">Opciones</translation>
 <translation id="6585808820553845416">La sesión terminará en <ph name="SESSION_TIME_REMAINING" />.</translation>
 <translation id="6596816719288285829">Dirección IP</translation>
@@ -192,6 +204,7 @@ Para cambiarlo, presiona Shift + Alt.</translation>
 <translation id="6713285437468012787">El dispositivo Bluetooth "<ph name="DEVICE_NAME" />" se sincronizó y ahora está disponible para todos los usuarios. Puedes ir a Configuración para eliminar esta sincronización.</translation>
 <translation id="6785414152754474415">La batería tiene un <ph name="PERCENTAGE" /> % de carga y se está cargando.</translation>
 <translation id="683971173229319003">Tecla de búsqueda + L</translation>
+<translation id="6857811139397017780">Activar <ph name="NETWORKSERVICE" /></translation>
 <translation id="6911468394164995108">Conectarte a otra red...</translation>
 <translation id="6915678159055240887">Chromebox</translation>
 <translation id="6979158407327259162">Google Drive</translation>
@@ -200,6 +213,7 @@ Para cambiarlo, presiona Shift + Alt.</translation>
 <translation id="703171847531699602">No hay dispositivos de transmisión.</translation>
 <translation id="7034339000180558234">Transmitiendo <ph name="TAB_NAME" /> a <ph name="RECEIVER_NAME" /></translation>
 <translation id="7052914147756339792">Establecer fondo de pantalla...</translation>
+<translation id="7066646422045619941">El administrador inhabilitó esta red.</translation>
 <translation id="7097613348211027502">ChromeVox (comentarios por voz) está habilitado. Presiona Ctrl + Alt + Z para inhabilitarlo.</translation>
 <translation id="7098389117866926363">Dispositivo USB-C (puerto izquierdo en la parte posterior)</translation>
 <translation id="7129360219436193655">Modo de puntero láser</translation>
@@ -208,6 +222,7 @@ Para cambiarlo, presiona Shift + Alt.</translation>
 <translation id="7209101170223508707">El BLOQUEO DE MAYÚSCULAS está activado.
 Presiona Alt y la tecla de búsqueda o Mayús para cancelar la operación.</translation>
 <translation id="7348093485538360975">Teclado en pantalla</translation>
+<translation id="735745346212279324">VPN desconectada</translation>
 <translation id="737451040872859086">Micrófono (interno)</translation>
 <translation id="742594950370306541">Cámara en uso</translation>
 <translation id="743058460480092004">Cámara y micrófono en uso</translation>
@@ -224,19 +239,24 @@ Presiona Alt y la tecla de búsqueda o Mayús para cancelar la operación.</tran
 <translation id="7823564328645135659">Después de sincronizar tu configuración, el idioma se cambió de "<ph name="FROM_LOCALE" />" a "<ph name="TO_LOCALE" />".</translation>
 <translation id="785750925697875037">Ver cuenta móvil</translation>
 <translation id="7864539943188674973">Desactivar Bluetooth</translation>
+<translation id="7874779702599364982">Buscando redes para celulares...</translation>
 <translation id="7893838033650689677">Encender Wi-Fi</translation>
 <translation id="7904094684485781019">El administrador de esta cuenta inhabilitó el acceso múltiple.</translation>
 <translation id="7957227661277029961">Tu <ph name="DEVICE_TYPE" /> podría no cargarse si el dispositivo está encendido. Considera usar el cargador oficial.</translation>
 <translation id="7982789257301363584">Red</translation>
+<translation id="8000066093800657092">Sin red</translation>
 <translation id="8054466585765276473">Calculando duración de la batería...</translation>
 <translation id="8077816382010018681">QU Feature notification title here</translation>
 <translation id="8103386449138765447">Mensajes SMS: <ph name="MESSAGE_COUNT" /></translation>
+<translation id="8132793192354020517">Conectado a <ph name="NAME" /></translation>
 <translation id="8185286464235484130">Responde algunas preguntas y danos tu opinión sobre nuestro trabajo.</translation>
 <translation id="8190698733819146287">Personalizar idiomas y la entrada de datos</translation>
 <translation id="8206859287963243715">Celular</translation>
 <translation id="8308637677604853869">Menú anterior</translation>
 <translation id="8356164830168736643">Cerrar <ph name="WINDOW_TITLE" /></translation>
 <translation id="8428213095426709021">Configuración</translation>
+<translation id="8454013096329229812">Wi-Fi activada</translation>
+<translation id="8484916590211895857"><ph name="NAME" />: Restableciendo conexión…</translation>
 <translation id="8517041960877371778">Tu <ph name="DEVICE_TYPE" /> podría no cargarse si el dispositivo está encendido.</translation>
 <translation id="8528322925433439945">Dispositivos móviles...</translation>
 <translation id="8639760480004882931"><ph name="PERCENTAGE" /> restante</translation>

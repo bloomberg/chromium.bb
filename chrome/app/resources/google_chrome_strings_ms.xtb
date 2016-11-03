@@ -59,7 +59,6 @@ Teruskan juga log masuk akan menggabungkan maklumat Chrome seperti penanda halam
 <translation id="2588322182880276190">Logo Chrome</translation>
 <translation id="2664962310688259219">Lesen sumber terbuka Chrome OS</translation>
 <translation id="2665296953892887393">Bantu jadikan Google Chrome lebih baik dengan menghantar laporan ranap dan <ph name="UMA_LINK" /> kepada Google.</translation>
-<translation id="2669824781555328029"><ph name="FILE_NAME" /> boleh membahayakan pelayaran anda, jadi Chrome telah menyekatnya.</translation>
 <translation id="2681064822612051220">Pemasangan bercanggah Google Chrome dijumpai pada sistem. Sila nyahpasangnya dan cuba semula.</translation>
 <translation id="2689103672227170538">Sambungan ini telah menukar halaman yang ditunjukkan apabila anda memulakan Chrome.</translation>
 <translation id="2704356438731803243">Jika anda memilih untuk menyimpan data Chrome anda yang sedia ada secara berasingan, anda boleh membuat pengguna Chrome baharu untuk <ph name="USER_NAME" />.</translation>
@@ -147,6 +146,7 @@ Sila semak e-mel anda di <ph name="ACCOUNT_EMAIL" /> untuk arahan lanjut.</trans
 <translation id="5148419164691878332">Chrome akan menyimpan ini dalam <ph name="SAVED_PASSWORDS_LINK" /> anda dan mengingatinya apabila anda memerlukannya nanti.</translation>
 <translation id="5170938038195470297">Profil anda tidak boleh digunakan kerana ia adalah dari versi Google Chrome yang lebih baharu. Beberapa ciri mungkin tidak tersedia. Sila tetapkan direktori profil lain atau gunakan versi Chrome yang lebih baharu.</translation>
 <translation id="5176234269072261959">Bantu menjadikan Chrome lebih baik dengan melaporkan tetapan semasa.</translation>
+<translation id="5193136243808726294">OS Google Chrome tidak boleh membuka halaman ini.</translation>
 <translation id="5204098752394657250"><ph name="TERMS_OF_SERVICE_LINK" />Syarat Perkhidmatan<ph name="END_TERMS_OF_SERVICE_LINK" /> Google Chrome </translation>
 <translation id="5243785881901838525">Google Payments (disalin ke Chrome)</translation>
 <translation id="5251420635869119124">Tetamu boleh menggunakan Chrome tanpa meninggalkan apa-apa.</translation>
@@ -205,7 +205,6 @@ Sila semak e-mel anda di <ph name="ACCOUNT_EMAIL" /> untuk arahan lanjut.</trans
 <translation id="699076943483372849">Tapak ini menggunakan pemalam Chrome Frame lama yang tidak lagi menerima kemas kini keselamatan dan kestabilan. Sila nyahpasang dan tingkatkan kepada penyemak imbas moden.</translation>
 <translation id="6991142834212251086">Pautkan data Chrome saya ke akaun ini</translation>
 <translation id="7060865993964054389">Pelancar Apl Google Chrome</translation>
-<translation id="7084448929020576097"><ph name="FILE_NAME" /> bersifat hasad dan Chrome telah menyekatnya.</translation>
 <translation id="7098166902387133879">Google Chrome menggunakan mikrofon anda.</translation>
 <translation id="7106741999175697885">Pengurus Tugas - Google Chrome</translation>
 <translation id="7125719106133729027">Chrome tidak dapat dikemas kini kepada versi yang terbaharu, jadi anda terlepas ciri baharu yang hebat dan pembetulan keselamatan. Anda perlu memasang semula Chrome secara manual.</translation>
@@ -268,7 +267,6 @@ Sila semak e-mel anda di <ph name="ACCOUNT_EMAIL" /> untuk arahan lanjut.</trans
 <translation id="8669527147644353129">Pembantu Google Chrome</translation>
 <translation id="8679801911857917785">Sambungan turut mengawal halaman yang ditunjukkan apabila anda memulakan Chrome.</translation>
 <translation id="870251953148363156">Kemas kini &amp;Google Chrome</translation>
-<translation id="8793772303278047003">Chrome sudah usang.</translation>
 <translation id="8796108026289707191">Anda perlu memulakan semula Google Chrome sekarang.</translation>
 <translation id="8823341990149967727">Chrome sudah Usang</translation>
 <translation id="884296878221830158">Sambungan turut mengawal halaman yang ditunjukkan apabila anda memulakan Chrome atau mengklik butang Laman Utama.</translation>
@@ -277,7 +275,6 @@ Sila semak e-mel anda di <ph name="ACCOUNT_EMAIL" /> untuk arahan lanjut.</trans
 <translation id="8914504000324227558">Lancarkan semula Chrome</translation>
 <translation id="9026991721384951619">OS Chrome tidak dapat menyegerakkan data anda kerana butiran log masuk akaun anda sudah lapuk.</translation>
 <translation id="9067395829937117663">Google Chrome memerlukan Windows 7 atau lebih tinggi.</translation>
-<translation id="9102715433345326100">Fail ini bersifat hasad dan Chrome telah menyekatnya.</translation>
 <translation id="9107728822479888688"><ph name="BEGIN_BOLD" />Amaran:<ph name="END_BOLD" /> Google Chrome tidak dapat menghalang sambungan daripada merekodkan sejarah penyemakan imbas anda. Untuk melumpuhkan sambungan ini dalam mod inkognito, nyahpilih pilihan ini.</translation>
 <translation id="911206726377975832">Padamkan juga data menyemak imbas anda?</translation>
 <translation id="924447568950697217">Jadikan Chrome penyemak imbas lalai anda</translation>

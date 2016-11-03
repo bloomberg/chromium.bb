@@ -1,41 +1,20 @@
 <?xml version="1.0" ?>
 <!DOCTYPE translationbundle>
 <translationbundle lang="ko">
-<translation id="153454903766751181">휴대전화 모뎀 초기화하는 중...</translation>
 <translation id="1829129547161959350">펭귄</translation>
-<translation id="1850504506766569011">Wi-Fi가 꺼져 있습니다.</translation>
 <translation id="2288278176040912387">레코드 플레이어</translation>
-<translation id="2354174487190027830"><ph name="NAME" /> 활성화 중</translation>
 <translation id="2563185590376525700">개구리</translation>
 <translation id="2649120831653069427">구피</translation>
-<translation id="277257480934873581"><ph name="NAME" />에 다시 연결</translation>
 <translation id="2894654529758326923">정보</translation>
 <translation id="2951236788251446349">해파리</translation>
-<translation id="3846575436967432996">네트워크 정보 없음</translation>
-<translation id="3901991538546252627"><ph name="NAME" />에 연결 중</translation>
 <translation id="3958548648197196644">키위</translation>
-<translation id="4118990158415604803">관리자가 다른 네트워크에 연결하지 못하도록 설정했습니다.</translation>
 <translation id="4326192123064055915">커피</translation>
-<translation id="4448844063988177157">Wi-Fi 네트워크를 검색하는 중...</translation>
-<translation id="4479639480957787382">이더넷</translation>
-<translation id="4508225577814909926"><ph name="NAME" />: 연결하는 중...</translation>
 <translation id="4559767610552730302">흐리게 처리</translation>
 <translation id="4935975195727477204">꽃</translation>
 <translation id="515594325917491223">체스</translation>
 <translation id="5257456363153333584">잠자리</translation>
-<translation id="6267036997247669271"><ph name="NAME" />: 활성화 중...</translation>
-<translation id="6549021752953852991">사용 가능한 휴대전화 네트워크가 없음</translation>
-<translation id="6857811139397017780"><ph name="NETWORKSERVICE" /> 활성화</translation>
 <translation id="6935521024859866267">180도 회전</translation>
-<translation id="7066646422045619941">관리자가 사용 중지한 네트워크입니다.</translation>
-<translation id="735745346212279324">VPN 연결 끊김</translation>
-<translation id="7874779702599364982">휴대전화 네트워크를 검색하는 중...</translation>
-<translation id="8000066093800657092">네트워크 없음</translation>
 <translation id="8008366997883261463">개</translation>
-<translation id="8132793192354020517"><ph name="NAME" />에 연결됨</translation>
-<translation id="8454013096329229812">Wi-Fi가 켜져 있습니다.</translation>
-<translation id="8484916590211895857"><ph name="NAME" />: 다시 연결하는 중...</translation>
 <translation id="8714406895390098252">자전거</translation>
 <translation id="8808686172382650546">고양이</translation>
-<translation id="8814190375133053267">Wi-Fi</translation>
 </translationbundle>

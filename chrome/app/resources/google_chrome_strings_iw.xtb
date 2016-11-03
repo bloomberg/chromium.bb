@@ -59,7 +59,6 @@
 <translation id="2588322182880276190">‏הלוגו של Chrome</translation>
 <translation id="2664962310688259219">‏רישיונות קוד פתוח של מערכת ההפעלה של Chrome</translation>
 <translation id="2665296953892887393">‏עזור לשפר את Google Chrome על ידי שליחת דוחות קריסה ו-<ph name="UMA_LINK" /> אל Google</translation>
-<translation id="2669824781555328029">‏<ph name="FILE_NAME" /> עשוי לפגוע בחוויית הגלישה שלך, ולכן Chrome חסם אותו.</translation>
 <translation id="2681064822612051220">‏נמצאה במערכת התקנה מתנגשת אחרת של Google Chrome. הסר את ההתקנה ונסה שוב.</translation>
 <translation id="2689103672227170538">‏התוסף הזה שינה את הדף שמוצג כשאתה מפעיל את Chrome.</translation>
 <translation id="2704356438731803243">‏אם אתה מעדיף לשמור בנפרד את הנתונים שלך ב-Chrome, תוכל ליצור משתמש Chrome חדש עבור <ph name="USER_NAME" />.</translation>
@@ -128,6 +127,7 @@
 <translation id="4700157086864140907">‏Google Chrome יכול לספק בדיקת איות חכמה יותר על ידי כך שהוא שולח את מה שאתה מקליד בדפדפן לשרתי Google, ומאפשר לך להשתמש באותה טכנולוגיית בדיקת איות ש'חיפוש Google' משתמש בה.</translation>
 <translation id="4728575227883772061">‏ההתקנה נכשלה בשל שגיאה לא צפויה. אם Google Chrome פועל כעת, סגור אותו ונסה שוב.</translation>
 <translation id="4743926867934016338">אשר וחפש</translation>
+<translation id="4750550185319565338">‏הפעל מחדש את Chrome כדי להפעיל את <ph name="PLUGIN_NAME" /></translation>
 <translation id="4751441238232965030">‏מחשב זה יפסיק בקרוב לקבל עדכוני Google Chrome ב-32 סיביות. שדרג ל-Google Chrome ב-64 סיביות.</translation>
 <translation id="4754614261631455953">‏גרסה ניסיונית של Google Chrome‏ (mDNS-In)</translation>
 <translation id="4771048833395599659">‏Chrome‏ חסם את הקובץ הזה כי הוא עלול להיות מסוכן.</translation>
@@ -146,6 +146,7 @@
 <translation id="5148419164691878332">‏Chrome ישמור את הסיסמה הזו ב-<ph name="SAVED_PASSWORDS_LINK" /> ויזכור אותה בפעם הבאה שתזדקק לה.</translation>
 <translation id="5170938038195470297">‏לא ניתן להשתמש בפרופיל שלך משום שהוא מגרסה חדשה יותר של Google Chrome. ייתכן שחלק מהתכונות לא יהיו זמינות. ציין ספריית פרופיל אחרת או השתמש בגרסה חדשה יותר של Chrome.</translation>
 <translation id="5176234269072261959">‏עזור לשפר את Chrome על ידי דיווח על ההגדרות הנוכחיות.</translation>
+<translation id="5193136243808726294">‏מערכת ההפעלה Google Chrome OS אינה יכולה לפתוח את הדף הזה.</translation>
 <translation id="5204098752394657250">‏Google Chrome‏ <ph name="TERMS_OF_SERVICE_LINK" />תנאים והגבלות<ph name="END_TERMS_OF_SERVICE_LINK" /></translation>
 <translation id="5243785881901838525">‏Google Payments (‏הועתק ל-Chrome)</translation>
 <translation id="5251420635869119124">‏אורחים יכולים להשתמש ב-Chrome בלי להשאיר דבר מאחור.</translation>
@@ -204,7 +205,6 @@
 <translation id="699076943483372849">‏האתר הזה משתמש בפלאגין Chrome Frame שיצא משימוש ושאינו מקבל עוד עדכוני אבטחה ויציבות. הסר את ההתקנה שלו ושדרג לדפדפן מודרני.</translation>
 <translation id="6991142834212251086">‏קשר את הנתונים שלי ב-Chrome לחשבון הזה</translation>
 <translation id="7060865993964054389">Google Chrome App Launcher</translation>
-<translation id="7084448929020576097">‏<ph name="FILE_NAME" /> הוא קובץ זדוני, ו-Chrome חסם אותו.</translation>
 <translation id="7098166902387133879">‏Google Chrome משתמש במיקרופון שלך.</translation>
 <translation id="7106741999175697885">‏מנהל המשימות - Google Chrome</translation>
 <translation id="7125719106133729027">‏העדכון העצמי של Chrome לגרסה העדכנית ביותר נכשל, לכן אתה מחמיץ תכונות חדשות מדליקות ותיקוני אבטחה. עליך להתקין מחדש את Chrome באופן ידני.</translation>
@@ -267,7 +267,6 @@
 <translation id="8669527147644353129">Google Chrome Helper</translation>
 <translation id="8679801911857917785">‏הגדרה זו גם קובעת איזה דף מוצג כשאתה מפעיל את Chrome.</translation>
 <translation id="870251953148363156">‏עדכן את Google Chrome&amp;</translation>
-<translation id="8793772303278047003">‏Chrome אינו מעודכן.</translation>
 <translation id="8796108026289707191">‏עליך לאתחל את Google Chrome עכשיו.</translation>
 <translation id="8823341990149967727">‏Chrome אינו מעודכן</translation>
 <translation id="884296878221830158">‏הגדרה זו גם קובעת איזה דף מוצג כשאתה מפעיל את Chrome או לוחץ על הלחצן 'דף הבית'.</translation>
@@ -276,7 +275,6 @@
 <translation id="8914504000324227558">‏הפעל מחדש את Chrome</translation>
 <translation id="9026991721384951619">‏מערכת ההפעלה של Chrome לא הצליחה לסנכרן את הנתונים שלך מפני שפרטי הכניסה של חשבונך אינם מעודכנים.</translation>
 <translation id="9067395829937117663">‏כדי להשתמש ב-Google Chrome יש צורך ב-Windows מגירסה 7 ואילך.</translation>
-<translation id="9102715433345326100">‏הקובץ הזה זדוני, ו-Chrome חסם אותו</translation>
 <translation id="9107728822479888688">‏<ph name="BEGIN_BOLD" />אזהרה:<ph name="END_BOLD" /> ‏‏Google Chrome‏ אינו יכול למנוע מתוספים לתעד את היסטוריית הגלישה שלך. כדי להשבית תוסף זה במצב גלישה פרטית, בטל אפשרות זו.</translation>
 <translation id="911206726377975832">למחוק גם את נתוני הגלישה שלך?</translation>
 <translation id="924447568950697217">‏הגדר את Chrome בתור דפדפן ברירת המחדל</translation>

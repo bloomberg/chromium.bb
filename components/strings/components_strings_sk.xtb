@@ -50,6 +50,7 @@
 <translation id="1491663344921578213">Web <ph name="SITE" /> momentálne nemôžete navštíviť, pretože používa pripínanie certifikátov. Chyby siete a útoky sú zvyčajne dočasné, takže by táto stránka mala neskôr pravdepodobne fungovať. <ph name="BEGIN_LEARN_MORE_LINK" />Ďalšie informácie<ph name="END_LEARN_MORE_LINK" /></translation>
 <translation id="1506687042165942984">Zobrazí sa uložená (t. j. neaktuálna) kópia tejto stránky.</translation>
 <translation id="1519264250979466059">Dátum zostavenia</translation>
+<translation id="153384715582417236">To je zatiaľ všetko</translation>
 <translation id="1549470594296187301">Ak chcete použiť túto funkciu, musíte povoliť JavaScript.</translation>
 <translation id="1559528461873125649">Neexistuje žiadny takýto súbor ani priečinok</translation>
 <translation id="1559572115229829303">&lt;p&gt;Súkromné pripojenie k doméne <ph name="BEGIN_BOLD" /><ph name="DOMAIN" /><ph name="END_BOLD" /> sa nedá nadviazať, pretože dátum a čas (<ph name="DATE_AND_TIME" />) vášho zariadenia sú nesprávne.&lt;/p&gt;
@@ -346,7 +347,6 @@
 <translation id="4728558894243024398">Platforma</translation>
 <translation id="4744603770635761495">Spustiteľná cesta</translation>
 <translation id="4756388243121344051">&amp;História</translation>
-<translation id="4759238208242260848">Stiahnuté</translation>
 <translation id="4764776831041365478">Webové stránky na adrese <ph name="URL" /> môžu byť dočasne nedostupné alebo sa mohli natrvalo premiestniť na novú webovú adresu.</translation>
 <translation id="4771973620359291008">Vyskytla sa neznáma chyba.</translation>
 <translation id="4782449893814226250">Požiadali ste rodičov o povolenie návštevy tejto stránky.</translation>
@@ -385,6 +385,7 @@
 <translation id="5179510805599951267">Text sa nezobrazil v jazyku <ph name="ORIGINAL_LANGUAGE" />? Nahláste túto chybu</translation>
 <translation id="5190835502935405962">Panel so záložkami</translation>
 <translation id="5199729219167945352">Experimenty</translation>
+<translation id="5199841536747119669">Tu sa zobrazia vaše návrhy</translation>
 <translation id="5251803541071282808">Cloud</translation>
 <translation id="5277279256032773186">Používate Chrome v práci? Firmy môžu spravovať nastavenia prehliadača Chrome pre svojich zamestnancov. Ďalšie informácie</translation>
 <translation id="5299298092464848405">Pri analýze pravidla sa vyskytla chyba</translation>
@@ -463,6 +464,7 @@
 <translation id="6263376278284652872">Záložky domény <ph name="DOMAIN" /></translation>
 <translation id="6264485186158353794">Naspäť do bezpečného režimu</translation>
 <translation id="6282194474023008486">Poštový kód</translation>
+<translation id="6290238015253830360">Tu sa zobrazia vaše navrhované články</translation>
 <translation id="6305205051461490394">Web <ph name="URL" /> je nedostupný.</translation>
 <translation id="6321917430147971392">Skontrolujte nastavenia DNS</translation>
 <translation id="6328639280570009161">Skúste zakázať predpovede siete</translation>
@@ -646,6 +648,7 @@ Nabudúce by sa vám mohol hodiť režim inkognito (<ph name="SHORTCUT_KEY" />).
 <translation id="8363502534493474904">Vypnúť režim v lietadle</translation>
 <translation id="8364627913115013041">Nenastavené.</translation>
 <translation id="8380941800586852976">Nebezpečná</translation>
+<translation id="8382348898565613901">Tu sa zobrazia vaše nedávno navštívené záložky</translation>
 <translation id="8412145213513410671">Zlyhania (<ph name="CRASH_COUNT" />)</translation>
 <translation id="8412392972487953978">Rovnakú prístupovú frázu musíte zadať dvakrát.</translation>
 <translation id="8428213095426709021">Nastavenia</translation>
@@ -695,6 +698,7 @@ Nabudúce by sa vám mohol hodiť režim inkognito (<ph name="SHORTCUT_KEY" />).
 <translation id="8987927404178983737">Mesiac</translation>
 <translation id="8989148748219918422"><ph name="ORGANIZATION" /> [<ph name="COUNTRY" />]</translation>
 <translation id="9001074447101275817">Proxy server <ph name="DOMAIN" /> vyžaduje používateľské meno a heslo.</translation>
+<translation id="9008201768610948239">Ignorovať</translation>
 <translation id="901974403500617787">Príznaky, ktoré platia v celom systéme, môže nastaviť iba vlastník: <ph name="OWNER_EMAIL" />.</translation>
 <translation id="9020542370529661692">Táto stránka bola preložená do jazyka <ph name="TARGET_LANGUAGE" /></translation>
 <translation id="9038649477754266430">Používať službu predpovedí na rýchlejšie načítanie stránok</translation>

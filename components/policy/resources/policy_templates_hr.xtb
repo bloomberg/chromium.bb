@@ -324,13 +324,6 @@
 <translation id="2309390639296060546">Zadana postavka zemljopisnog položaja</translation>
 <translation id="2312134445771258233">Omogućuje konfiguriranje stranica koje se učitavaju prilikom pokretanja. Sadržaj popisa "URL-ovi za otvaranje prilikom pokretanja" zanemaruje se, osim ako odaberete "Otvori popis URL-ova" pod "Radnje prilikom pokretanja".</translation>
 <translation id="2337466621458842053">Omogućuje postavljanje popisa uzoraka URL-ova koji određuju web-lokacije koje smiju prikazivati slike. Ako ovo pravilo nije postavljeno, upotrebljavat će se globalna zadana vrijednost za sve web-lokacije iz pravila "DefaultImagesSetting" ako je postavljeno, odnosno iz osobne konfiguracije korisnika ako nije.</translation>
-<translation id="2359612025446382967">Ako se to pravilo postavi na "false", <ph name="PRODUCT_OS_NAME" /> onemogućit će Bluetooth i korisnik ga neće moći omogućiti.
-
-      Ako se to pravilo postavi na "true" ili se ne postavi, korisnik će moći omogućiti ili onemogućiti Bluetooth prema želji.
-
-      Ako se to pravilo postavi, korisnik ga ne može promijeniti niti nadjačati.
-
-      Nakon omogućivanja Bluetootha uređaj se mora ponovo pokrenuti da bi promjene postale aktivne (uređaj se ne mora ponovo pokrenuti kada se Bluetooth onemogući).</translation>
 <translation id="2366415278352956652">Omogućuje emitiranje</translation>
 <translation id="2372547058085956601">Odgoda automatske prijave u javnu sesiju.
 
@@ -1461,13 +1454,6 @@ Ako omogućite tu postavku, <ph name="PRODUCT_NAME" /> zanemarivat će sve opcij
 
       Ako to pravilo nije postavljeno ili je postavljeno na netočno, <ph name="PRODUCT_NAME" /> neće vršiti mrežne provjere opoziva u pregledniku <ph name="PRODUCT_NAME" /> 19 i novijim verzijama.</translation>
 <translation id="5966615072639944554">Proširenja koja smiju upotrebljavati API za daljinsku ovjeru</translation>
-<translation id="5974970919245996815">Prijavljene informacije o statusu Androida šalju se
-      poslužitelju.
-
-      Ako se pravilo postavi na "false", informacije se neće prijavljivati.
-      Ako se postavi na "true" ili se ne postavi, informacije će se prijavljivati.
-
-      Ovo se pravilo primjenjuje samo ako su omogućene Androidove aplikacije.</translation>
 <translation id="5983708779415553259">Zadano ponašanje za web-lokacije koje nisu ni u jednom paketu sadržaja</translation>
 <translation id="5997543603646547632">Upotrijebi sat s 24-satnim prikazom prema zadanim postavkama</translation>
 <translation id="6009903244351574348">Dopustite proizvodu <ph name="PRODUCT_FRAME_NAME" /> rukovanje navedenim vrstama sadržaja. Ako ovo pravilo nije postavljeno, upotrebljavat će se zadani prikazivač za sve web-lokacije kao što je navedeno u pravilu "ChromeFrameRendererSettings".</translation>

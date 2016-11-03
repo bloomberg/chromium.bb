@@ -19,6 +19,9 @@
       Cuando se asigna el valor false a esta política o si esta no se configura, las cookies establecidas por el proveedor de identidad se transfieren al perfil del usuario solo la primera vez que este inicie sesión en un dispositivo.
 
       Esta política afecta a los usuarios cuyo dominio coincida con el dominio de registro del dispositivo. En el caso del resto de usuarios, las cookies establecidas por el proveedor de identidad se transfieren al perfil del usuario solo la primera vez que inicie sesión en un dispositivo.</translation>
+<translation id="1029536946382325801">Si se asigna el valor True, el usuario podrá usar el hardware en dispositivos Chrome para confirmar su identidad de forma remota ante la entidad emisora de certificados de privacidad a través de la API de Enterprise Platform Keys chrome.enterprise.platformKeys.challengeUserKey().
+
+          Si esta política no se establece o se le asigna el valor False, aparecerá un código de error en las llamadas a la API.</translation>
 <translation id="1040446814317236570">Habilitar eliminación de URL PAC (para https://)</translation>
 <translation id="1044878202534415707">Informa sobre estadísticas de hardware, como el uso de CPU o de RAM.
 
@@ -345,14 +348,6 @@ Si no se establece esta política, el teclado en pantalla estará inhabilitado i
 <translation id="2337466621458842053">Permite que definas una lista de patrones de URL para especificar los sitios que pueden mostrar imágenes.
 
           Si no se establece esta política, se usará para todos los sitios el valor general predeterminado que se indique en la política DefaultImagesSetting (si se ha establecido) o el valor personalizado que haya definido el usuario (en caso contrario).</translation>
-<translation id="2359612025446382967">Si se asigna el valor false a esta política, <ph name="PRODUCT_OS_NAME" /> inhabilitará la conexión Bluetooth y el usuario no podrá volver a habilitarla.
-
-      Si se asigna el valor true a esta política o si esta no se configura, el usuario podrá habilitar o inhabilitar la conexión Bluetooth cuando quiera.
-
-
-      Si se establece esta política, el usuario no podrá cambiar esta opción ni anularla.
-
-      Una vez que se haya habilitado la conexión Bluetooth, se debe reiniciar el dispositivo para que se apliquen los cambios (no es necesario reiniciarlo al inhabilitar la conexión Bluetooth).</translation>
 <translation id="2366415278352956652">Habilitar el envío</translation>
 <translation id="2372547058085956601">Permite indicar el tiempo de espera para el inicio de sesión automático en sesiones públicas.
 
@@ -953,7 +948,7 @@ Si no se establece esta política, el teclado en pantalla estará inhabilitado i
 <translation id="3864818549971490907">Configuración de complementos predeterminada</translation>
 <translation id="386487026071140458">Esta política está obsoleta. Te recomendamos que utilices <ph name="FORCEGOOGLESAFESEARCH_POLICY_NAME" /> y <ph name="FORCEYOUTUBERESTRICT_POLICY_NAME" /> en su lugar. Si se establecen las políticas <ph name="FORCEGOOGLESAFESEARCH_POLICY_NAME" />, <ph name="FORCEYOUTUBERESTRICT_POLICY_NAME" /> o <ph name="FORCEYOUTUBESAFETYMODE_POLICY_NAME" /> (obsoleta), esta política se ignorará.
 
-      Fuerza las consultas en la Búsqueda web de Google para que se realicen con la función Búsqueda Segura activada e impide que los usuarios modifiquen esta configuración. Además, esta opción fuerza el modo restringido moderado en YouTube.
+      Obliga a que las consultas en la Búsqueda web de Google se realicen con la función Búsqueda Segura activada e impide que los usuarios modifiquen esta configuración. Además, esta opción fuerza el modo restringido moderado en YouTube.
 
       Si habilitas esta opción, la función Búsqueda Segura estará siempre activa en la Búsqueda de Google y el modo restringido moderado lo estará en YouTube.
 
@@ -989,6 +984,9 @@ Si no se establece esta política, el teclado en pantalla estará inhabilitado i
 
       Si se asigna el valor true a esta política, se enviarán paquetes de red de supervisión (denominados <ph name="HEARTBEATS_TERM" />).
       Si se asigna el valor false o si esta política no se configura, no se enviarán paquetes.</translation>
+<translation id="3963602271515417124">Si se asigna el valor True, se habilitará la confirmación remota para el dispositivo y se generará automáticamente un certificado que se subirá al servidor de administración de dispositivos.
+
+          Si esta política no se establece o se le asigna el valor False, no se generará ningún certificado y se producirán errores en las llamadas a la API de extensión enterprise.platformKeys.</translation>
 <translation id="3964909636571393861">Permite acceder a una lista de URL.</translation>
 <translation id="3965339130942650562">Tiempo de espera para cerrar sesión cuando el usuario se encuentre inactivo</translation>
 <translation id="3967075520570946456">Habilitar la opción para que aparezca la página de bienvenida al abrir el navegador por primera vez después de actualizar el sistema operativo.</translation>
@@ -1560,13 +1558,6 @@ Si esta política está configurada, el usuario no puede cambiarla y el acceso d
 
       Si no se establece la política o se establece en false, <ph name="PRODUCT_NAME" /> no realizará comprobaciones de revocaciones online en <ph name="PRODUCT_NAME" /> 19 ni en versiones posteriores.</translation>
 <translation id="5966615072639944554">Extensiones con permiso para utilizar la API de confirmación remota</translation>
-<translation id="5974970919245996815">Se enviará la información proporcionada sobre el estado de Android
-      al servidor.
-
-       Si se asigna el valor false a la política, no se proporcionará la información.
-      Si se asigna el valor true o si la política no se configura, se proporcionará la información.
-
-      Esta política solo se aplica si las aplicaciones para Android están habilitadas.</translation>
 <translation id="5983708779415553259">Comportamiento predeterminado de sitios no incluidos en un paquete de contenido</translation>
 <translation id="5997543603646547632">Utilizar reloj de formato de 24 horas de forma predeterminada</translation>
 <translation id="6009903244351574348">Permite que <ph name="PRODUCT_FRAME_NAME" /> gestione los tipos de contenido especificados.
@@ -2251,6 +2242,9 @@ Si esta opción no está establecida o está establecida en True, los dispositiv
           Esta política no está disponible en instancias de Windows que no estén vinculadas a un dominio de Active Directory.</translation>
 <translation id="7937766917976512374">Permitir o denegar captura de vídeo</translation>
 <translation id="7941975817681987555">No predecir las acciones de red en ninguna conexión de red</translation>
+<translation id="7942429005743031780">Esta política especifica las extensiones que pueden usar la API de Enterprise Platform Keys chrome.enterprise.platformKeys.challengeUserKey() para la confirmación remota. Las extensiones se deben añadir a esta lista para usar la API.
+
+          Si la lista no se ha establecido o si una extensión no está incluida en ella, aparecerá un código de error en la llamada a la API.</translation>
 <translation id="7953256619080733119">Hosts de excepción manual de usuario administrado</translation>
 <translation id="7971839631300653352">SSL 3.0</translation>
 <translation id="7974114691960514888">Ya no se admite esta política.

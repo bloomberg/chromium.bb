@@ -22,6 +22,7 @@
 <translation id="1484102317210609525"><ph name="DEVICE_NAME" /> (HDMI/DP)</translation>
 <translation id="1510238584712386396">Kizindua</translation>
 <translation id="1525508553941733066">ONDOA</translation>
+<translation id="153454903766751181">Inaanzisha modemu ya simu za mkononi...</translation>
 <translation id="15373452373711364">Kishale kikubwa cha kipanya</translation>
 <translation id="1550523713251050646">Bofya ili upate chaguo zaidi</translation>
 <translation id="1602076796624386989">Wezesha data ya simu</translation>
@@ -32,6 +33,7 @@
 <translation id="1747827819627189109">Kibodi ya skrini imewashwa</translation>
 <translation id="1812696562331527143">Mbinu yako ingizo imebadilika hadi <ph name="INPUT_METHOD_ID" />*(<ph name="BEGIN_LINK" />mhusika mwingine<ph name="END_LINK" />).
 Bonyeza Shift + Alt ili kubadilisha.</translation>
+<translation id="1850504506766569011">Wi-Fi imezimwa.</translation>
 <translation id="1864454756846565995">Kifaa cha USB-C (mlango wa nyuma)</translation>
 <translation id="1882897271359938046">Inaakisi kwenye <ph name="DISPLAY_NAME" /></translation>
 <translation id="1919743966458266018">Njia ya mkato ya kufungua kidhibiti cha shughuli kwenye Chrome imebadilika. Tafadhali tumia <ph name="NEW_SHORTCUT" /> badala ya <ph name="OLD_SHORTCUT" />.</translation>
@@ -47,6 +49,7 @@ Bonyeza Shift + Alt ili kubadilisha.</translation>
 <translation id="2268813581635650749">Ondoa wote</translation>
 <translation id="2297568595583585744">Treya ya hali</translation>
 <translation id="2303600792989757991">Geuza muhtasari wa dirisha</translation>
+<translation id="2354174487190027830">Inaanza kutumia <ph name="NAME" /></translation>
 <translation id="2391579633712104609">180°</translation>
 <translation id="2429753432712299108">Kifaa cha Bluetooth cha "<ph name="DEVICE_NAME" />" kinaomba idhini ya kuoanisha. Kabla hujakubali, tafadhali thibitisha kwamba nenosiri hili linaonyeshwa kwenye kifaa hicho: <ph name="PASSKEY" /></translation>
 <translation id="2475982808118771221">Hitilafu fulani imetokea</translation>
@@ -59,6 +62,7 @@ Bonyeza Shift + Alt ili kubadilisha.</translation>
 <translation id="2700058918926273959">Kipindi kitakwisha baada ya <ph name="SESSION_TIME_REMAINING" />. Utaondolewa katika akaunti.</translation>
 <translation id="2727977024730340865">Imechomekwa katika chaja ya kawi ya chini. Huenda kuchaji kwa betri hakutakuwa kuzuri.</translation>
 <translation id="2761704814324807722">Treya ya hali, saa <ph name="TIME" />, <ph name="BATTERY" /></translation>
+<translation id="277257480934873581">Inaunganisha upya kwenye <ph name="NAME" /></translation>
 <translation id="2792498699870441125">Alt + Utafutaji</translation>
 <translation id="2819276065543622893">Utaondolewa kwenye akaunti sasa hivi.</translation>
 <translation id="2825619548187458965">Rafu</translation>
@@ -105,21 +109,27 @@ Bonyeza Alt + Utafutaji au Hama ili kughairi.</translation>
 <translation id="3783640748446814672">alt</translation>
 <translation id="3784455785234192852">Funga</translation>
 <translation id="3799026279081545374">Huenda una chaja mbaya. Kama unaishi Marekani, tafadhali piga simu 866-628-1371 ili upata usaidizi na chaja nyingine. Kama unaishi nchini Uingereza, tafadhali piga simu 0800-026-0613. Kama unaishi Ayalandi, tafadhali piga simu 1-800-832-664. Kama unaishi Kanada, tafadhali piga simu 866-628-1372. Kama unaishi Australia, tafadhali piga simu 1-800-067-460.</translation>
+<translation id="3846575436967432996">Hakuna maelezo ya mtandao yanayopatikana</translation>
 <translation id="3866182280516392520">Anwani ya IPv6</translation>
 <translation id="3891340733213178823">Bonyeza Ctrl+Shift+Q mara mbili ili kuondoka katika akaunti.</translation>
 <translation id="3892641579809465218">Onyesho la Ndani</translation>
 <translation id="3893630138897523026">ChromeVox (maoni yaliyotamkwa)</translation>
 <translation id="3899995891769452915">Kuweka data kwa kutamka</translation>
+<translation id="3901991538546252627">Inaunganisha kwenye <ph name="NAME" /></translation>
 <translation id="3963445509666917109">Spika (Ya ndani)</translation>
 <translation id="3967919079500697218">Uwezo wa kupiga picha za skrini umezimwa na msimamizi wako.</translation>
 <translation id="397105322502079400">Inakokotoa...</translation>
 <translation id="3995138139523574647">Kifaa cha USB-C (mlango wa upande wa kulia nyuma)</translation>
 <translation id="4053612967614057854">Zima kibodi ya skrini</translation>
+<translation id="4118990158415604803">Kuunganisha kwenye mitandao mingine kumezimwa na msimamizi wako.</translation>
 <translation id="4250680216510889253">La</translation>
 <translation id="4279490309300973883">Kuakisi</translation>
 <translation id="4321179778687042513">ctrl</translation>
 <translation id="4421231901400348175">Kushiriki udhibiti wa skrini yako na <ph name="HELPER_NAME" /> kupitia Usaidizi wa Mbali.</translation>
 <translation id="4430019312045809116">Kiwango</translation>
+<translation id="4448844063988177157">Inatafuta mitandao ya Wi-Fi…</translation>
+<translation id="4479639480957787382">Ethernet</translation>
+<translation id="4508225577814909926"><ph name="NAME" />: Inaunganisha...</translation>
 <translation id="4527045527269911712">Kifaa cha Bluetooth cha "<ph name="DEVICE_NAME" />" kinaomba idhini ya kuoanisha.</translation>
 <translation id="453661520163887813">Zimesalia <ph name="TIME" /> ili ijae</translation>
 <translation id="4544944664594876241">Njia ya mkato ya kufunga skrini imebadilika. Tafadhali tumia <ph name="NEW_SHORTCUT" /> badala ya <ph name="OLD_SHORTCUT" />.</translation>
@@ -172,6 +182,7 @@ Bonyeza Shift + Alt ili kubadili.</translation>
 <translation id="6165508094623778733">Pata maelezo zaidi</translation>
 <translation id="6203030746557259519">Onyesho Pepe</translation>
 <translation id="6248847161401822652">Bofya "Control" na "Shift" na Q kwa pamoja mara mbili ili kuacha.</translation>
+<translation id="6267036997247669271"><ph name="NAME" />: Inaanza kutumia...</translation>
 <translation id="6297287540776456956">Tumia stylus kuchagua eneo</translation>
 <translation id="6310121235600822547"><ph name="DISPLAY_NAME" /> ilizungushwa hadi <ph name="ROTATION" /></translation>
 <translation id="6359806961507272919">SMS kutoka <ph name="PHONE_NUMBER" /></translation>
@@ -184,6 +195,7 @@ Bonyeza Shift + Alt ili kubadili.</translation>
 <translation id="6501401484702599040">Inatuma skrini kwenye <ph name="RECEIVER_NAME" /></translation>
 <translation id="6521655319214113338">Kuingiza data kwa mwandiko wa mkono</translation>
 <translation id="6537270692134705506">Piga skrini picha</translation>
+<translation id="6549021752953852991">Hakuna mtandao wa simu za mkononi unaopatikana</translation>
 <translation id="6550675742724504774">Chaguo</translation>
 <translation id="6585808820553845416">Kipindi kitakwisha baada ya <ph name="SESSION_TIME_REMAINING" />.</translation>
 <translation id="6596816719288285829">Anwani ya IP</translation>
@@ -192,6 +204,7 @@ Bonyeza Shift + Alt ili kubadili.</translation>
 <translation id="6713285437468012787">Kifaa cha Bluetooth cha "<ph name="DEVICE_NAME" />" kimeoanishwa na sasa kinapatikana kwa watumiaji wote. Unaweza kuondoa uoanishaji huu kwa kutumia Mipangilio.</translation>
 <translation id="6785414152754474415">Betri imejaa <ph name="PERCENTAGE" />% na inachaji.</translation>
 <translation id="683971173229319003">Search+L</translation>
+<translation id="6857811139397017780">Amilisha <ph name="NETWORKSERVICE" /></translation>
 <translation id="6911468394164995108">Jiunge na mwingine...</translation>
 <translation id="6915678159055240887">Chromebox</translation>
 <translation id="6979158407327259162">Hifadhi ya Google</translation>
@@ -200,6 +213,7 @@ Bonyeza Shift + Alt ili kubadili.</translation>
 <translation id="703171847531699602">Hakuna vifaa vinavyorusha midia</translation>
 <translation id="7034339000180558234">Inatuma <ph name="TAB_NAME" /> kwenye <ph name="RECEIVER_NAME" /></translation>
 <translation id="7052914147756339792">Weka Mandhari...</translation>
+<translation id="7066646422045619941">Mtandao huu umezimwa na msimamizi wako.</translation>
 <translation id="7097613348211027502">ChromeVox (maoni yaliyotamkwa) yamewashwa. Bonyeza Ctrl+Alt+Z ili uzime.</translation>
 <translation id="7098389117866926363">Kifaa cha USB-C (mlango wa kushoto nyuma)</translation>
 <translation id="7129360219436193655">Hali ya kielekezi leza</translation>
@@ -208,6 +222,7 @@ Bonyeza Shift + Alt ili kubadili.</translation>
 <translation id="7209101170223508707">CAPS LOCK imeamilishwa. 
 Bonyeza Alt + Utafutaji au Hama ili kughairi.</translation>
 <translation id="7348093485538360975">Kibodi ya skrini</translation>
+<translation id="735745346212279324">VPN imekatwa muunganisho</translation>
 <translation id="737451040872859086">Maikrofoni (Ya Ndani)</translation>
 <translation id="742594950370306541">Kamera inatumika.</translation>
 <translation id="743058460480092004">Kamera na maikrofoni zinatumiwa.</translation>
@@ -224,19 +239,24 @@ Bonyeza Alt + Utafutaji au Hama ili kughairi.</translation>
 <translation id="7823564328645135659">Lugha imebadilika kutoka "<ph name="FROM_LOCALE" /> "na kuwa" <ph name="TO_LOCALE" />" baada ya kulinganisha mipangilio yako.</translation>
 <translation id="785750925697875037">Ona akaunti ya simu ya mkononi</translation>
 <translation id="7864539943188674973">Lemaza Bluetooth</translation>
+<translation id="7874779702599364982">Inatafuta mitandao ya simu za mkononi...</translation>
 <translation id="7893838033650689677">Washa Wi-Fi</translation>
 <translation id="7904094684485781019">Msimamizi wa akaunti hii ameondoa uwezo wa kuingia katika akaunti nyingi kwa wakati mmoja</translation>
 <translation id="7957227661277029961">Huenda kifaa chako cha <ph name="DEVICE_TYPE" /> kisichaji kikiwa kimewashwa. Jaribu kutumia chaja rasmi.</translation>
 <translation id="7982789257301363584">Mtandao</translation>
+<translation id="8000066093800657092">Hakuna mtandao</translation>
 <translation id="8054466585765276473">Inakokotoa muda wa betri.</translation>
 <translation id="8077816382010018681">Kichwa cha arifa ya Kipengele cha QU huenda hapa</translation>
 <translation id="8103386449138765447">Ujumbe wa SMS: <ph name="MESSAGE_COUNT" /></translation>
+<translation id="8132793192354020517">Imeunganishwa kwenye <ph name="NAME" /></translation>
 <translation id="8185286464235484130">Tupe maoni yako kuhusu huduma yetu kwa kujibu maswali machache.</translation>
 <translation id="8190698733819146287">Geuza lugha na uingizaji kukufaa...</translation>
 <translation id="8206859287963243715">Simu ya Mkononi</translation>
 <translation id="8308637677604853869">Menyu ya awali</translation>
 <translation id="8356164830168736643">Funga <ph name="WINDOW_TITLE" /></translation>
 <translation id="8428213095426709021">Mipangilio</translation>
+<translation id="8454013096329229812">Wi-Fi imewashwa.</translation>
+<translation id="8484916590211895857"><ph name="NAME" />: Inaunganisha upya...</translation>
 <translation id="8517041960877371778">Huenda kifaa chako cha <ph name="DEVICE_TYPE" /> kisichaji kikiwa kimewashwa.</translation>
 <translation id="8528322925433439945">Simu ya mkononi ...</translation>
 <translation id="8639760480004882931">Imebaki <ph name="PERCENTAGE" />%</translation>

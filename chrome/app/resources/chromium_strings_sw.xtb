@@ -23,7 +23,6 @@ Baadhi ya vipengele huenda visipatikane na mabadiliko katika mapendeleo hayatahi
 <translation id="1688750314291223739">Sanidi Usawazishaji ili uhifadhi vipengele vyako vya kivinjari vilivyobinafsishwa kwenye mtandao na uvifikie kutoka Chromium katika kompyuta yoyote</translation>
 <translation id="1699664235656412242">Tafadhali funga madirisha yote ya Chromium (pamoja na yaliyo kwenye modi ya Window 8) na ujaribu tena.</translation>
 <translation id="1708666629004767631">Kuna toleo jipya, na salama linalopatikana la Chromium.</translation>
-<translation id="1725059042853530269"><ph name="FILE_NAME" /> inaweza kudhuru hali yako ya kuvinjari, kwa hivyo Chromium imeizuia.</translation>
 <translation id="1774152462503052664">Acha Chromium iendeshe katika mandharinyuma</translation>
 <translation id="1779356040007214683">Ili kufanya Chromium salama zaidi, tumezima baadhi ya viendelezi ambavyo havijaorodheshwa katika <ph name="IDS_EXTENSION_WEB_STORE_TITLE" /> na ambavyo huendwa viliongezwa pasipo ridhaa yako.</translation>
 <translation id="1808667845054772817">Sakinisha Chromium Upya</translation>
@@ -47,7 +46,7 @@ Baadhi ya vipengele huenda visipatikane na mabadiliko katika mapendeleo hayatahi
 <translation id="2483889755041906834">Katika Chromium</translation>
 <translation id="2485422356828889247">Ondoa</translation>
 <translation id="2486653164587200256">Huenda Chromium isifanye kazi vizuri kwa sababu haitumiki tena kwenye Windows XP au Windows Vista.</translation>
-<translation id="2527042973354814951">Zima na uwashe Chromium ili uwashe <ph name="PLUGIN_NAME" /></translation>
+<translation id="2527042973354814951">Zima na uwashe Chromium tena ili uwashe <ph name="PLUGIN_NAME" /></translation>
 <translation id="2535480412977113886">Mfumo wa Uendeshaji wa Chromium haukuweza kusawazisha data yako kwa sababu maelezo yako ya kuingia katika akaunti yanahitaji kusasishwa.</translation>
 <translation id="2558641060352364164">Tovuti hii inatumia programu-jalizi ya Fremu ya Chromium ambayo haitaweza kutumika hivi karibuni. Tafadhali iondoe na upate toleo jipya la kivinjari cha kisasa.</translation>
 <translation id="2572494885440352020">Kisaidizi cha Chromium</translation>
@@ -61,7 +60,6 @@ Baadhi ya vipengele huenda visipatikane na mabadiliko katika mapendeleo hayatahi
 <translation id="2718390899429598676">Kwa usalama ulioongezwa, Chromium itasimba data yako kwa njia fiche.</translation>
 <translation id="2770231113462710648">Badilisha kivinjari chaguo msingi kiwe:</translation>
 <translation id="2799223571221894425">Funga na ufungue</translation>
-<translation id="2801146392936645542"><ph name="FILE_NAME" /> ni hasidi, na Chromium imeizuia.</translation>
 <translation id="2847479871509788944">Ondoa kwenye Chromium...</translation>
 <translation id="2886012850691518054">Si lazima: Saidia kuboresha Chromium kwa kutumia Google takwimu za matumizi na ripoti wakati wowote huduma hii inapoacha kufanya kazi.</translation>
 <translation id="2905536371227304018">Mfumo wa Uendeshaji wa Chromium unaonyeshwa katika lugha hii.</translation>
@@ -80,7 +78,6 @@ Baadhi ya vipengele huenda visipatikane na mabadiliko katika mapendeleo hayatahi
 <ph name="USER_DATA_DIRECTORY" /></translation>
 <translation id="3264279740686075150">Chromium ni kivinjari chako chaguo-msingi. Furahia.</translation>
 <translation id="328888136576916638">Funguo za Google API zinakosekana. Utendaji fulani wa Chromium utazimwa.</translation>
-<translation id="3289635842886789612">Toleo hili la Chromium limepitwa na wakati.</translation>
 <translation id="3296368748942286671">Endelea kuendesha programu za mandharinyuma wakati Chromium imefungwa</translation>
 <translation id="3312805357485578561">Chromium imegundua tabia isiyo ya kawaida</translation>
 <translation id="331951419404882060">Mfumo wa Uendeshaji wa Chromium haukuweza kusawazisha data yako kutokana na hitilafu wakati wa kuingia katika akaunti.</translation>
@@ -224,7 +221,6 @@ Tafadhali angalia barua pepe yako katika <ph name="ACCOUNT_EMAIL" /> upate maagi
 <translation id="7421823331379285070">Chromium inahitaji Windows XP au toleo la awali. Huenda vipengele vingine visifanye kazi.</translation>
 <translation id="7473891865547856676">La Asante</translation>
 <translation id="7483335560992089831">Haiwezi kusakinisha toleo sawia la Chromium ambalo linaendeshwa hivi sasa. Tafadhali funga Chromium na ujaribu tena.</translation>
-<translation id="750717762378961310">Faili hili ni hasidi, na Chromium imeizuia.</translation>
 <translation id="7549178288319965365">Kuhusu Chromium OS</translation>
 <translation id="7577193603922410712">Sasisho maalum la usalama wa Chromium limetumiwa; unapaswa kuzima na kuwasha Chromium sasa ili lifanye kazi (tutarejesha vichupo vyako).</translation>
 <translation id="761356813943268536">Chromium inatumia kamera na maikrofoni yako.</translation>

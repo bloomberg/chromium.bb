@@ -27,6 +27,9 @@ Lisätietoja tietosuojasta on Googlen tietosuojakäytännössä (http://goo.gl/S
 <translation id="1654128982815600832">Otetaan tietokoneen etäyhteyksiä käyttöön…</translation>
 <translation id="170207782578677537">Tietokoneen rekisteröinti epäonnistui.</translation>
 <translation id="1704090719919187045">Chromoting-isäntäasetukset</translation>
+<translation id="1730409684442507495">• Parannuksia työpöydän kuvanlaatuun, käytettävyyteen ja virrankulutukseen
+• Parannuksia klikkaamisen ja vetämisen käytettävyyteen
+• Parannuksia useisiin käyttöliittymän animaatioihin</translation>
 <translation id="174018511426417793">Käyttöösi ei ole rekisteröity tietokoneita. Ota käyttöön etäyhteys asentamalla toiselle tietokoneelle Chrome-etäkäyttö ja klikkaamalla painiketta <ph name="BUTTON_NAME" />.</translation>
 <translation id="1742469581923031760">Yhdistetään…</translation>
 <translation id="1770394049404108959">Sovellus ei aukea.</translation>
@@ -73,7 +76,6 @@ Lisätietoja tietosuojasta on Googlen tietosuojakäytännössä (http://goo.gl/S
 <translation id="2699970397166997657">Chromoting</translation>
 <translation id="2747641796667576127">Ohjelmistopäivitykset tapahtuvat yleensä automaattisesti, mutta voivat epäonnistua joissakin harvinaisissa tapauksissa. Ohjelmiston päivittäminen kestää yleensä vain muutaman minuutin, ja se voidaan suorittaa etäyhteyden välityksellä.</translation>
 <translation id="2841013758207633010">Aika</translation>
-<translation id="2851674870054673688">Tietokoneen jakaminen aloitetaan käyttäjän annettua käyttökoodin.</translation>
 <translation id="2851754573186462851">Chromium-sovellusten suoratoisto</translation>
 <translation id="2855866366045322178">offline</translation>
 <translation id="2888969873284818612">Verkkovirhe. Käynnistämme sovelluksen uudelleen, kun laitteesi on seuraavan kerran yhteydessä verkkoon.</translation>

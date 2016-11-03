@@ -61,7 +61,6 @@
 <translation id="2588322182880276190">Biểu trưng Chrome</translation>
 <translation id="2664962310688259219">Giấy phép nguồn mở Chrome OS</translation>
 <translation id="2665296953892887393">Giúp cải thiện Google Chrome bằng cách gửi báo cáo sự cố và <ph name="UMA_LINK" /> tới Google</translation>
-<translation id="2669824781555328029"><ph name="FILE_NAME" /> có thể gây hại cho trải nghiệm duyệt web của bạn, vì vậy Chrome đã chặn tệp đó.</translation>
 <translation id="2681064822612051220">Đã phát hiện cài đặt Google Chrome xung đột trên hệ thống. Vui lòng gỡ cài đặt và thử lại.</translation>
 <translation id="2689103672227170538">Tiện ích này đã thay đổi trang nào được hiển thị khi bạn khởi động Chrome.</translation>
 <translation id="2704356438731803243">Nếu bạn muốn giữ riêng biệt dữ liệu Chrome hiện có, bạn có thể tạo người dùng Chrome mới cho <ph name="USER_NAME" />.</translation>
@@ -152,6 +151,7 @@ Vui lòng xem email của bạn tại <ph name="ACCOUNT_EMAIL" /> để biết t
 
 Một số tính năng có thể không khả dụng. Vui lòng chỉ định thư mục hồ sơ khác hoặc sử dụng phiên bản Chrome mới hơn.</translation>
 <translation id="5176234269072261959">Giúp cải thiện Google Chrome bằng cách báo cáo cài đặt hiện tại.</translation>
+<translation id="5193136243808726294">Google Chrome OS không thể mở trang này.</translation>
 <translation id="5204098752394657250"><ph name="TERMS_OF_SERVICE_LINK" />Điều khoản dịch vụ<ph name="END_TERMS_OF_SERVICE_LINK" /> của Google Chrome</translation>
 <translation id="5243785881901838525">Google Payments (đã sao chép vào Chrome)</translation>
 <translation id="5251420635869119124">Khách có thể sử dụng Chrome mà không phải thoát khỏi bất cứ nội dung nào.</translation>
@@ -210,7 +210,6 @@ Một số tính năng có thể không khả dụng. Vui lòng chỉ định th
 <translation id="699076943483372849">Trang web này đang sử dụng plugin Chrome Frame đã ngừng hoạt động. Plugin này không còn nhận được các bản cập nhật về bảo mật và độ ổn định nữa. Vui lòng gỡ cài đặt và nâng cấp lên trình duyệt hiện đại.</translation>
 <translation id="6991142834212251086">Liên kết dữ liệu Chrome của tôi với tài khoản này</translation>
 <translation id="7060865993964054389">Trình chạy ứng dụng Google Chrome</translation>
-<translation id="7084448929020576097"><ph name="FILE_NAME" /> là tệp độc hại và Chrome đã chặn tệp này.</translation>
 <translation id="7098166902387133879">Google Chrome đang sử dụng micrô của bạn.</translation>
 <translation id="7106741999175697885">Trình quản lý Tác vụ - Google Chrome</translation>
 <translation id="7125719106133729027">Chrome không thể tự cập nhật lên phiên bản mới nhất nên bạn đã bỏ lỡ các tính năng mới tuyệt vời và các bản vá bảo mật. Bạn cần cài đặt lại Chrome theo cách thủ công.</translation>
@@ -273,7 +272,6 @@ Một số tính năng có thể không khả dụng. Vui lòng chỉ định th
 <translation id="8669527147644353129">Trình trợ giúp của Google Chrome</translation>
 <translation id="8679801911857917785">Tiện ích này cũng điều khiển trang nào được hiển thị khi bạn khởi động Chrome.</translation>
 <translation id="870251953148363156">Cập nhật &amp;Google Chrome</translation>
-<translation id="8793772303278047003">Chrome đã lỗi thời.</translation>
 <translation id="8796108026289707191">Bạn phải khởi động lại Google Chrome ngay bây giờ.</translation>
 <translation id="8823341990149967727">Chrome đã lỗi thời</translation>
 <translation id="884296878221830158">Tiện ích này cũng điều khiển trang nào được hiển thị khi bạn khởi động Chrome hoặc nhấp vào nút Trang chủ.</translation>
@@ -282,7 +280,6 @@ Một số tính năng có thể không khả dụng. Vui lòng chỉ định th
 <translation id="8914504000324227558">Chạy lại Chrome</translation>
 <translation id="9026991721384951619">Chrome OS không thể đồng bộ hóa dữ liệu của bạn do chi tiết đăng nhập tài khoản của bạn đã lỗi thời.</translation>
 <translation id="9067395829937117663">Google Chrome yêu cầu Windows 7 trở lên.</translation>
-<translation id="9102715433345326100">Đây là tệp độc hại và Chrome đã chặn tệp này.</translation>
 <translation id="9107728822479888688"><ph name="BEGIN_BOLD" />Cảnh báo:<ph name="END_BOLD" /> Google Chrome không thể ngăn các tiện ích ghi lại lịch sử duyệt web của bạn. Để tắt tiện ích này trong chế độ ẩn danh, hãy bỏ chọn tùy chọn này.</translation>
 <translation id="911206726377975832">Bạn cũng muốn xóa dữ liệu duyệt web của mình?</translation>
 <translation id="924447568950697217">Đặt Chrome làm trình duyệt mặc định của bạn</translation>

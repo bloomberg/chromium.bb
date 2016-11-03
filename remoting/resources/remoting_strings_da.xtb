@@ -27,6 +27,9 @@ Du kan få flere oplysninger om privatliv i privatlivspolitikkerne for Google (h
 <translation id="1654128982815600832">Aktiverer fjernforbindelserne for denne computer…</translation>
 <translation id="170207782578677537">Denne computer kunne ikke registreres.</translation>
 <translation id="1704090719919187045">Præferencer for Chromoting-host</translation>
+<translation id="1730409684442507495">• Forbedring af billedkvaliteten på computere samt af reaktionsevnen og batteriforbruget.
+• Forbedring af reaktionsevnen ved klik og træk-handlinger.
+• Forbedring af flere animationseffekter i brugerfladen.</translation>
 <translation id="174018511426417793">Du har ingen registrerede computere. Hvis du vil aktivere fjernforbindelser til en computer, skal du installere Chrome Fjernskrivebord på den pågældende computer og klikke på "<ph name="BUTTON_NAME" />".</translation>
 <translation id="1742469581923031760">Opretter forbindelse...</translation>
 <translation id="1770394049404108959">Jeg kan ikke åbne applikationen.</translation>
@@ -73,7 +76,6 @@ Du kan få flere oplysninger om privatliv i privatlivspolitikkerne for Google (h
 <translation id="2699970397166997657">Chromoting</translation>
 <translation id="2747641796667576127">Softwareopdateringer udføres sædvanligvis automatisk, men de kan i sjældne tilfælde mislykkes. Det bør ikke tage mere end et par minutter at opdatere softwaren, og opdateringen kan udføres, mens du er forbundet til din computer via en fjernforbindelse.</translation>
 <translation id="2841013758207633010">Tid</translation>
-<translation id="2851674870054673688">Når personen indtaster koden, startes delingssessionen.</translation>
 <translation id="2851754573186462851">Chromium App Streaming</translation>
 <translation id="2855866366045322178">offline</translation>
 <translation id="2888969873284818612">Der opstod en netværksfejl. Vi genstarter appen, når din enhed er online igen.</translation>

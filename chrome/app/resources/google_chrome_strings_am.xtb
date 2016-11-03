@@ -63,7 +63,6 @@
 <translation id="2588322182880276190">የChrome አርማ</translation>
 <translation id="2664962310688259219">Chrome OS የክፍት ምንጭ ፈቃዶች</translation>
 <translation id="2665296953892887393">የብልሽት ሪፖርቶችን እና <ph name="UMA_LINK" /> ወደ Google በመላክ Google Chromeን የተሻለ ለማድረግ እገዛ ያድርጉ</translation>
-<translation id="2669824781555328029"><ph name="FILE_NAME" /> የአሰሳ ተሞክሮዎን ሊጎዳው ይችላል፣ ስለዚህ Chrome አግዶታል።</translation>
 <translation id="2681064822612051220">በስርዓቱ ላይ የGoogle Chrome ጭነት ግጭት ተገኝቷል። እባክዎ ያራግፉት እና እንደገና ይሞክሩ።</translation>
 <translation id="2689103672227170538">ይህ ቅጥያ Chromeን ሲጀምሩት የሚታየውን ገጽ ቀይሮታል።</translation>
 <translation id="2704356438731803243">ነባሩ የChrome ውሂብዎን ለይተው ማስቀመጥ ከፈለጉ ለ<ph name="USER_NAME" /> አዲስ የChrome ተጠቃሚ መፍጠር ይችላሉ።</translation>
@@ -153,6 +152,7 @@
 
 አንዳንድ ባሕሪያት ላይገኙ ይችላሉ። እባክዎ የተለየ የመገለጫ አቃፊ ይግለጹ ወይም አዲሱን የChrome ስሪት ይጠቀሙ።</translation>
 <translation id="5176234269072261959">የአሁኖቹ ቅንብሮችን ሪፖርት በማድረግ Google Chrome የተሻለ እንዲሆን ያግዙ።</translation>
+<translation id="5193136243808726294">Google Chrome OS ይህን ገጽ መክፈት አይችልም።</translation>
 <translation id="5204098752394657250">Google Chrome <ph name="TERMS_OF_SERVICE_LINK" />የአገልግሎት ውል<ph name="END_TERMS_OF_SERVICE_LINK" /></translation>
 <translation id="5243785881901838525">Google Payments (ወደ Chrome ተቀድቷል)</translation>
 <translation id="5251420635869119124">እንግዳዎች ምንም ነገር ሳይተዉ Chromeን መጠቀም ይችላሉ።</translation>
@@ -213,7 +213,6 @@ Google Chrome ቅንጅቶችዎን ማስመለስ አልቻለም።</translat
 <translation id="699076943483372849">ይህ ጣቢያ ከእንግዲህ የደህንነት እና የመረጋጋት ዝማኔዎችን መቀበል የማይችለውን አገልግሎቱ ያበቃውን Chrome ክፈፍ ተሰኪ እየተጠቀመ ነው። እባክዎ ያራግፉትና ወደ ዘመናዊ አሳሽ ያሻሽሉት።</translation>
 <translation id="6991142834212251086">የChrome ውሂቤን ከዚህ መለያ ጋር አገናኝ</translation>
 <translation id="7060865993964054389">Google Chrome የመተግበሪያ አስጀማሪ</translation>
-<translation id="7084448929020576097"><ph name="FILE_NAME" /> ተንኮል-አዘል ነው፣ እና Chrome አግዶታል።</translation>
 <translation id="7098166902387133879">Google Chrome የእርስዎን ማይክሮፎን እየተጠቀመ ነው።</translation>
 <translation id="7106741999175697885">ተግባር መሪ - Google Chrome</translation>
 <translation id="7125719106133729027">Chrome እራሱን ወደ የቅርብ ጊዜው ስሪት ማዘመን አልቻለም፣ ስለዚህ አንዳንድ ግሩም አዲስ ባህሪያት እና የደህንነት ጥገናዎች እያመለጡዎት ነው። Chromeን እራስዎ ዳግም መጫን ያስፈልግዎታል።</translation>
@@ -276,7 +275,6 @@ Google Chrome ቅንጅቶችዎን ማስመለስ አልቻለም።</translat
 <translation id="8669527147644353129">Google Chrome አጋዥ</translation>
 <translation id="8679801911857917785">እንዲሁም Chromeን ሲጀምሩት የሚታየውን ገጽ ይቆጣጠራል።</translation>
 <translation id="870251953148363156">&amp;Google Chromeን አዘምን</translation>
-<translation id="8793772303278047003">Chrome ጊዜው አልፎበታል።</translation>
 <translation id="8796108026289707191">አሁን Google Chromeን ዳግም ማስጀመር አለብዎት።</translation>
 <translation id="8823341990149967727">Chrome ጊዜው አልፎበታል</translation>
 <translation id="884296878221830158">እንዲሁም Chromeን ሲጀምሩት ወይም የመነሻ አዝራሩን ጠቅ ሲያደርጉት የሚታየውን ገጽ ይቆጣጠራል።</translation>
@@ -285,7 +283,6 @@ Google Chrome ቅንጅቶችዎን ማስመለስ አልቻለም።</translat
 <translation id="8914504000324227558">Chromeን ዳግም አስጀምር</translation>
 <translation id="9026991721384951619">የመለያዎ መግቢያ ዝርዝሮች ጊዜያቸው ያለፈባቸው ስለሆኑ Chrome OS ውሂብዎን ማመሳሰል አልቻለም።</translation>
 <translation id="9067395829937117663">Google Chrome Windows 7 ወይም ከዚያ በላይ ያስፈልገዋል።</translation>
-<translation id="9102715433345326100">ይህ ፋይል ተንኮል-አዘል ነው፣ እና Chrome አግዶታል።</translation>
 <translation id="9107728822479888688"><ph name="BEGIN_BOLD" />ማስጠንቀቂያ፦<ph name="END_BOLD" /> Google Chrome ቅጥያዎች የአሰሳ ታሪክዎን እንዳይመዘግቡ መከልከል አይችልም። ይህን ቅጥያ በማንነትን የማያሳውቅ ሁነታ ላይ ለማሰናከል ይህን አማራጭ አይምረጡ።</translation>
 <translation id="911206726377975832">የአሰሳ ውሂብዎም ይሰረዝ?</translation>
 <translation id="924447568950697217">Chromeን የእርስዎ ነባሪ አሳሽ ያድርጉት</translation>

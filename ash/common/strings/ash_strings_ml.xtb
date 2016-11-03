@@ -22,6 +22,7 @@
 <translation id="1484102317210609525"><ph name="DEVICE_NAME" /> (HDMI/DP)</translation>
 <translation id="1510238584712386396">ലോഞ്ചർ</translation>
 <translation id="1525508553941733066">നിരാകരിക്കുക</translation>
+<translation id="153454903766751181">സെല്ലുലാർ മോഡം സമാരംഭിക്കുന്നു...</translation>
 <translation id="15373452373711364">വലിയ മൗസ് കഴ്‌സർ</translation>
 <translation id="1550523713251050646">കൂടുതൽ ഓപ്‌ഷനുകൾക്ക് ക്ലിക്കുചെയ്യുക</translation>
 <translation id="1602076796624386989">മൊബൈൽ ഡാറ്റ പ്രാപ്‌തമാക്കുക</translation>
@@ -32,6 +33,7 @@
 <translation id="1747827819627189109">ഓൺ‌ സ്‌ക്രീൻ കീ‌ബോർഡ് പ്രവർത്തനക്ഷമമാക്കി</translation>
 <translation id="1812696562331527143">നിങ്ങളുടെ ഇൻപുട്ട് രീതി <ph name="INPUT_METHOD_ID" />*(<ph name="BEGIN_LINK" />മൂന്നാം കക്ഷി<ph name="END_LINK" />) എന്നതിലേയ്‌ക്ക് മാറ്റി.
 സ്വിച്ചുചെയ്യുന്നതിന് Shift + Alt അമർത്തുക.</translation>
+<translation id="1850504506766569011">Wi-Fi ഓഫുചെയ്‌തു.</translation>
 <translation id="1864454756846565995">USB-C ഉപകരണം (പുറകിലെ പോർട്ട്)</translation>
 <translation id="1882897271359938046"><ph name="DISPLAY_NAME" /> എന്നതിലേക്ക് മിറർചെയ്യുന്നു</translation>
 <translation id="1919743966458266018">ടാസ്‌ക് മാനേജർ തുറക്കാനുള്ള കുറുക്കുവഴി മാറ്റി. <ph name="OLD_SHORTCUT" /> എന്നതിന് പകരം <ph name="NEW_SHORTCUT" /> ഉപയോഗിക്കുക.</translation>
@@ -47,6 +49,7 @@
 <translation id="2268813581635650749">എല്ലാം സൈൻ ഔട്ട് ചെയ്യുക</translation>
 <translation id="2297568595583585744">സ്റ്റാറ്റസ് ട്രേ</translation>
 <translation id="2303600792989757991">വിൻഡോ ചുരുക്കവിവരണം ടോഗിൾ ചെയ്യുക</translation>
+<translation id="2354174487190027830"><ph name="NAME" /> സജീവമാക്കുന്നു</translation>
 <translation id="2391579633712104609">180°</translation>
 <translation id="2429753432712299108">"<ph name="DEVICE_NAME" />" എന്ന Bluetooth ഉപകരണം ജോടിയാക്കുന്നതിനുള്ള അനുമതി ആവശ്യപ്പെടുന്നു. അനുമതി നൽകുന്നതിനുമുമ്പ്, ആ ഉപകരണത്തിൽ ഈ പാസ്‌കീ കാണിച്ചിരിക്കുന്നുവെന്ന് സ്ഥിരീകരിക്കുക: <ph name="PASSKEY" /></translation>
 <translation id="2475982808118771221">ഒരു പിശക് സംഭവിച്ചു</translation>
@@ -59,6 +62,7 @@
 <translation id="2700058918926273959"><ph name="SESSION_TIME_REMAINING" />-നുള്ളിൽ സെഷൻ അവസാനിക്കുന്നു. നിങ്ങൾ സൈൻ ഔട്ടാകും.</translation>
 <translation id="2727977024730340865">കുറഞ്ഞ തോതിൽ വൈദ്യുതി പ്രവഹിക്കുന്ന ചാർജ്ജറിലേക്ക് പ്ലഗ് ചെയ്‌തിരിക്കുന്നു. ബാറ്ററി ചാർജുചെയ്യൽ വിശ്വസനീയമാകണമെന്നില്ല.</translation>
 <translation id="2761704814324807722">സ്‌റ്റാറ്റസ് ട്രേ, സമയം, <ph name="TIME" />, <ph name="BATTERY" /></translation>
+<translation id="277257480934873581"><ph name="NAME" /> നെറ്റ്‌വർക്കിലേക്ക് വീണ്ടും കണക്‌റ്റുചെയ്യുന്നു</translation>
 <translation id="2792498699870441125">Alt+തിരയൽ</translation>
 <translation id="2819276065543622893">നിങ്ങൾ ഇപ്പോൾ സൈൻ ഔട്ട് ചെയ്യും.</translation>
 <translation id="2825619548187458965">ഷെൽഫ്</translation>
@@ -105,21 +109,27 @@
 <translation id="3783640748446814672">alt</translation>
 <translation id="3784455785234192852">ലോക്കുചെയ്യുക</translation>
 <translation id="3799026279081545374">നിങ്ങളുടെ ചാർജർ മോശമായിരിക്കാം. നിങ്ങൾ യു.എസിലാണ് താമസിക്കുന്നതെങ്കിൽ, സഹായത്തിനും മാറ്റിവാങ്ങുന്നതിനുമായി 866-628-1371 എന്ന നമ്പറിൽ വിളിക്കുക. നിങ്ങൾ യു.കെയിലാണ് താമസിക്കുന്നതെങ്കിൽ, 0800-026-0613 എന്ന നമ്പറിൽ വിളിക്കുക. നിങ്ങൾ അയർലൻഡിലാണ് താമസിക്കുന്നതെങ്കിൽ, 1-800-832-664 എന്ന നമ്പറിൽ വിളിക്കുക. നിങ്ങൾ കാനഡയിലാണ് താമസിക്കുന്നതെങ്കിൽ, 866-628-1372 എന്ന നമ്പറിൽ വിളിക്കുക. നിങ്ങൾ ഓസ്‌ട്രേലിയയിലാണ് താമസിക്കുന്നതെങ്കിൽ, 1-800-067-460 എന്ന നമ്പറിൽ വിളിക്കുക.</translation>
+<translation id="3846575436967432996">നെറ്റ്‌വർക്ക് വിവരങ്ങളൊന്നും ലഭ്യമല്ല</translation>
 <translation id="3866182280516392520">IPv6 വിലാസം</translation>
 <translation id="3891340733213178823">സൈൻ ഔട്ട് ചെയ്യുന്നതിന് രണ്ടു‌തവണ Ctrl+Shift+Q അമർത്തുക.</translation>
 <translation id="3892641579809465218">ആന്തരിക പ്രദർശനം</translation>
 <translation id="3893630138897523026">ChromeVox (സ്‌പോക്കൺ ഫീഡ്‌ബാക്ക്)</translation>
 <translation id="3899995891769452915">വോയ്‌സ് ഇൻപുട്ട്</translation>
+<translation id="3901991538546252627"><ph name="NAME" /> എന്നതിലേക്ക് കണക്റ്റുചെയ്യുന്നു</translation>
 <translation id="3963445509666917109">സ്‌പീക്കർ (ആന്തരികം)</translation>
 <translation id="3967919079500697218">സ്ക്രീൻഷോട്ടുകൾ എടുക്കാനുള്ള കഴിവ് നിങ്ങളുടെ അഡ്‌മിനിസ്ട്രേറ്റർ പ്രവർത്തനരഹിതമാക്കി.</translation>
 <translation id="397105322502079400">കണക്കാക്കുന്നു...</translation>
 <translation id="3995138139523574647">USB-C ഉപകരണം (വലതുവശത്ത് പിന്നിലെ പോർട്ട്)</translation>
 <translation id="4053612967614057854">ഓൺ‌ സ്‌ക്രീൻ കീബോർഡ് പ്രവർത്തനരഹിതമാക്കുക</translation>
+<translation id="4118990158415604803">അഡ്‌മിനിസ്‌ട്രേറ്റർ പ്രവർത്തനരഹിതമാക്കിയിരിക്കുന്ന മറ്റ് നെറ്റ്‌വർക്കുകളിലേക്ക് കണക്റ്റുചെയ്യുന്നു.</translation>
 <translation id="4250680216510889253">ഇല്ല</translation>
 <translation id="4279490309300973883">മിററിംഗ്</translation>
 <translation id="4321179778687042513">ctrl</translation>
 <translation id="4421231901400348175"><ph name="HELPER_NAME" /> ഉപയോഗിച്ച് നിങ്ങളുടെ വിദൂര സഹായി മുഖേന സ്‌ക്രീനിന്റെ നിയന്ത്രണം പങ്കിടുക.</translation>
 <translation id="4430019312045809116">അളവ്</translation>
+<translation id="4448844063988177157">Wi-Fi ശൃംഖലകള്‍ക്കായി തിരയുന്നു...</translation>
+<translation id="4479639480957787382">എതെര്‍‌നെറ്റ്</translation>
+<translation id="4508225577814909926"><ph name="NAME" />: കണക്റ്റുചെയ്യുന്നു...</translation>
 <translation id="4527045527269911712">"<ph name="DEVICE_NAME" />" എന്ന Bluetooth ഉപകരണം ജോടിയാക്കുന്നതിനുള്ള അനുമതി ആവശ്യപ്പെടുന്നു.</translation>
 <translation id="453661520163887813">പൂർത്തിയാകാൻ ശേഷിക്കുന്ന സമയം <ph name="TIME" /></translation>
 <translation id="4544944664594876241">സ്‌ക്രീൻ ലോക്കുചെയ്യുന്നതിനുള്ള കുറുക്കുവഴി മാറ്റി. <ph name="OLD_SHORTCUT" /> എന്നതിന് പകരം <ph name="NEW_SHORTCUT" /> ഉപയോഗിക്കുക.</translation>
@@ -171,6 +181,7 @@
 <translation id="6165508094623778733">കൂടുതൽ‍ മനസിലാക്കുക</translation>
 <translation id="6203030746557259519">വെർച്വൽ ഡിസ്‌പ്ലേ</translation>
 <translation id="6248847161401822652">പുറത്തുപോകുന്നതിന് രണ്ടുതവണ Control Shift Q അമർത്തുക.</translation>
+<translation id="6267036997247669271"><ph name="NAME" />: സജീവമാക്കുന്നു...</translation>
 <translation id="6297287540776456956">ആവശ്യമുള്ള ഏരിയ തിരഞ്ഞെടുക്കാൻ സ്റ്റൈലസ് ഉപയോഗിക്കുക</translation>
 <translation id="6310121235600822547"><ph name="DISPLAY_NAME" /> എന്നതിനെ <ph name="ROTATION" /> എന്നതിലേയ്‌ക്ക് തിരിച്ചു</translation>
 <translation id="6359806961507272919"><ph name="PHONE_NUMBER" /> എന്നതില്‍ നിന്നുള്ള SMS</translation>
@@ -183,6 +194,7 @@
 <translation id="6501401484702599040"><ph name="RECEIVER_NAME" /> എന്നതിലേക്ക് സ്‌ക്രീൻ കാസ്‌റ്റുചെയ്യുന്നു</translation>
 <translation id="6521655319214113338">കൈയ്യക്ഷര ഇൻപുട്ട്</translation>
 <translation id="6537270692134705506">സ്‌ക്രീൻ ക്യാപ്‌ചർ ചെയ്യുക</translation>
+<translation id="6549021752953852991">സെല്ലുലാർ നെറ്റ്‌വർക്കൊന്നും ലഭ്യമല്ല</translation>
 <translation id="6550675742724504774">ഓപ്ഷനുകൾ</translation>
 <translation id="6585808820553845416"><ph name="SESSION_TIME_REMAINING" />-നുള്ളിൽ സെഷൻ അവസാനിക്കുന്നു.</translation>
 <translation id="6596816719288285829">IP വിലാസം</translation>
@@ -191,6 +203,7 @@
 <translation id="6713285437468012787">"<ph name="DEVICE_NAME" />" എന്ന Bluetooth ഉപകരണം ജോടിയാക്കി, അത് ഇപ്പോൾ എല്ലാ ഉപയോക്താക്കൾക്കും ലഭ്യമാണ്. ക്രമീകരണങ്ങൾ ഉപയോഗിച്ച് നിങ്ങൾക്ക് ഈ ജോടിയാക്കൽ നീക്കംചെയ്യാം.</translation>
 <translation id="6785414152754474415">ബാറ്ററി <ph name="PERCENTAGE" />% നിറഞ്ഞിരിക്കുന്നു, ചാർജുചെയ്യൽ തുടരുന്നു.</translation>
 <translation id="683971173229319003">തിരയൽ+L</translation>
+<translation id="6857811139397017780"><ph name="NETWORKSERVICE" /> സജീവമാക്കുക</translation>
 <translation id="6911468394164995108">മറ്റുള്ളവ ചേർക്കുക...</translation>
 <translation id="6915678159055240887">Chromebox</translation>
 <translation id="6979158407327259162">Google ഡ്രൈവ്</translation>
@@ -199,6 +212,7 @@
 <translation id="703171847531699602">കാസ്റ്റ് ഉപകരണങ്ങളൊന്നും ഇല്ല</translation>
 <translation id="7034339000180558234"><ph name="RECEIVER_NAME" /> എന്നതിലേക്ക് <ph name="TAB_NAME" /> കാസ്‌റ്റുചെയ്യുന്നു</translation>
 <translation id="7052914147756339792">വാൾപേപ്പർ സജ്ജമാക്കുക...</translation>
+<translation id="7066646422045619941">നിങ്ങളുടെ അഡ്‌മിനിസ്‌ട്രേറ്റർ ഈ നെറ്റ്‌വർക്ക് പ്രവർത്തനരഹിതമാക്കി.</translation>
 <translation id="7097613348211027502">ChromeVox (സ്‌പോക്കൺ ഫീഡ്‌ബാക്ക്) പ്രവർത്തനക്ഷമമാണ്. പ്രവർത്തനരഹിതമാക്കാൻ Ctrl+Alt+Z അമർത്തുക.</translation>
 <translation id="7098389117866926363">USB-C ഉപകരണം (പുറകിൽ ഇടതുവശത്തെ പോർട്ട്)</translation>
 <translation id="7129360219436193655">ലേസർ പോയിന്റർ മോഡ്</translation>
@@ -207,6 +221,7 @@
 <translation id="7209101170223508707">CAPS LOCK ഓണാണ്.
 റദ്ദാക്കുന്നതിന് Alt+തിരയൽ അല്ലെങ്കിൽ Shift അമർത്തുക.</translation>
 <translation id="7348093485538360975">ഓൺ-സ്‌ക്രീൻ കീബോർഡ്</translation>
+<translation id="735745346212279324">VPN വിച്ഛേദിച്ചു</translation>
 <translation id="737451040872859086">മൈക്രോഫോൺ (ആന്തരികം)</translation>
 <translation id="742594950370306541">ക്യാമറ ഉപയോഗത്തിലാണ്.</translation>
 <translation id="743058460480092004">ക്യാമറയും മൈക്രോഫോണും ഉപയോഗത്തിലാണ്.</translation>
@@ -223,19 +238,24 @@
 <translation id="7823564328645135659">നിങ്ങളുടെ ക്രമീകരണങ്ങള്‍ സമന്വയിപ്പിച്ചതിന് ശേഷം ഭാഷ "<ph name="FROM_LOCALE" />" എന്നതില്‍ നിന്ന് "<ph name="TO_LOCALE" />" എന്നതിലേക്ക് മാറി.</translation>
 <translation id="785750925697875037">മൊബൈൽ അക്കൗണ്ട് കാണുക</translation>
 <translation id="7864539943188674973">Bluetooth അപ്രാപ്‌തമാക്കുക</translation>
+<translation id="7874779702599364982">സെല്ലുലാർ നെറ്റ്‌വർക്കുകൾക്കായി തിരയുന്നു...</translation>
 <translation id="7893838033650689677">Wi-Fi ഓണാക്കുക</translation>
 <translation id="7904094684485781019">ഈ അക്കൗണ്ടിന്റെ അഡ്‌മിനിസ്‌ട്രേറ്റർ ഒന്നിലധികം സൈൻ-ഇൻ അനുവദിക്കുന്നില്ല.</translation>
 <translation id="7957227661277029961">നിങ്ങളുടെ <ph name="DEVICE_TYPE" /> ഓണായിരിക്കുമ്പോൾ അത് ചാർജ്ജാകില്ലായിരിക്കാം. ഔദ്യോഗിക ചാർജ്ജർ ഉപയോഗിക്കുന്നകാര്യം പരിഗണിക്കുക.</translation>
 <translation id="7982789257301363584">നെറ്റ്വര്‍ക്ക്</translation>
+<translation id="8000066093800657092">നെറ്റ്‍വര്‍ക്ക് ഇല്ല</translation>
 <translation id="8054466585765276473">ബാറ്ററി സമയം കണക്കാക്കുന്നു.</translation>
 <translation id="8077816382010018681">QU ഫീച്ചർ അറിയിപ്പ് പേര് ഇവിടെയുണ്ട്</translation>
 <translation id="8103386449138765447">SMS സന്ദേശങ്ങൾ: <ph name="MESSAGE_COUNT" /></translation>
+<translation id="8132793192354020517"><ph name="NAME" /> എന്നതിലേക്ക് ബന്ധിപ്പിച്ചു</translation>
 <translation id="8185286464235484130">കുറച്ച് ചോദ്യങ്ങൾക്ക് ഉത്തരം നൽകിക്കൊണ്ട് ഞങ്ങളുടെ പ്രവർത്തനത്തെക്കുറിച്ചുള്ള അഭിപ്രായം അറിയിക്കൂ.</translation>
 <translation id="8190698733819146287">ഭാഷകൾ‌ ഇച്ഛാനുസൃതമാക്കി നല്‍‌കുക...</translation>
 <translation id="8206859287963243715">സെല്ലുലാര്‍‌</translation>
 <translation id="8308637677604853869">മുൻ മെനു</translation>
 <translation id="8356164830168736643"><ph name="WINDOW_TITLE" /> അടയ്‌ക്കുക</translation>
 <translation id="8428213095426709021">ക്രമീകരണങ്ങള്‍</translation>
+<translation id="8454013096329229812">Wi-Fi ഓൺ ചെയ്‌തു.</translation>
+<translation id="8484916590211895857"><ph name="NAME" />: വീണ്ടും കണക്‌റ്റുചെയ്യുന്നു...</translation>
 <translation id="8517041960877371778">നിങ്ങളുടെ <ph name="DEVICE_TYPE" /> ഓണായിരിക്കുമ്പോൾ അത് ചാർജ്ജാകാതിരിക്കാം.</translation>
 <translation id="8528322925433439945">മൊബൈൽ ...</translation>
 <translation id="8639760480004882931"><ph name="PERCENTAGE" /> ശേഷിക്കുന്നു</translation>

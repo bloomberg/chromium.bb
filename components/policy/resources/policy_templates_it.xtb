@@ -19,6 +19,9 @@
       Se questa norma viene impostata su false o non viene impostata, i cookie impostati dall'IdP vengono trasferiti al profilo dell'utente soltanto durante il primo accesso su un dispositivo.
 
       . Questa norma è valida soltanto per gli utenti il cui dominio corrisponde al dominio di registrazione del dispositivo. Per tutti gli altri utenti, i cookie impostati dall'IdP vengono trasferiti al profilo dell'utente soltanto durante il primo accesso sul dispositivo.</translation>
+<translation id="1029536946382325801">Se la norma è impostata su true, l'utente può utilizzare l'hardware su dispositivi Chrome per attestare da remoto la propria identità presso l'Autorità di certificazione della privacy tramite chrome.enterprise.platformKeys.challengeUserKey() dell'API Enterprise Platform Keys.
+
+          Se la norma è impostata su false o non è impostata, le chiamate all'API non riusciranno e genereranno un codice di errore.</translation>
 <translation id="1040446814317236570">Attiva la rimozione per gli URL PAC (https://)</translation>
 <translation id="1044878202534415707">Consente di segnalare statistiche relative all'hardware, ad esempio l'utilizzo di CPU/RAM.
 
@@ -303,13 +306,6 @@ Questa norma viene rispettata soltanto se la norma "DefaultSearchProviderEnabled
 <translation id="2309390639296060546">Impostazione di geolocalizzazione predefinita</translation>
 <translation id="2312134445771258233">Consente di configurare le pagine che vengono caricate all'avvio. I contenuti dell'elenco "Pagine da aprire all'avvio" vengono ignorati a meno che non selezioni "Apri un elenco di URL" in "Azione all'avvio".</translation>
 <translation id="2337466621458842053">Consente di impostare un elenco di pattern URL che specificano i siti in cui è consentita la visualizzazione di immagini. Se questa norma non viene impostata, per tutti i siti verrà utilizzato il valore predefinito globale della norma "DefaultImagesSetting", se è impostata, oppure verrà utilizzata la configurazione personale dell'utente.</translation>
-<translation id="2359612025446382967">Se questa norma viene impostata su false, il Bluetooth verrà disattivato in <ph name="PRODUCT_OS_NAME" /> e l'utente non potrà riattivarlo.
-
-     Se questa norma viene impostata su true o non viene impostata, l'utente potrà attivare o disattivare il Bluetooth come preferisce.
-
-      Se questa norma viene impostata, l'utente non potrà modificarla o eseguirne l'override.
-
-      Dopo avere attivato il Bluetooth, è necessario riavviare il dispositivo per applicare le modifiche (non è necessario riavviare il dispositivo se il Bluetooth viene disattivato).</translation>
 <translation id="2366415278352956652">Consente di attivare la trasmissione</translation>
 <translation id="2372547058085956601">Il ritardo prima dell'accesso automatico alla sessione pubblica.
 
@@ -858,7 +854,7 @@ Per impostazione predefinita sono autorizzati tutti gli host di messaggi nativi 
 <translation id="384743459174066962">Consente di impostare un elenco di pattern URL che specificano i siti in cui non è consentita l'apertura dei popup. Se questa norma non viene impostata, per tutti i siti verrà utilizzato il valore predefinito globale della norma "DefaultPopupsSetting", se è impostata, oppure verrà utilizzata la configurazione personale dell'utente.</translation>
 <translation id="3851039766298741586">Consente di segnalare informazioni sulla sessione kiosk attiva, ad esempio l'ID e la versione dell'applicazione.
 
-      Se la norma viene impostata su false, le informazioni relative alla sessione non verranno segnalate. Se viene impostata su true o non viene impostata, tali informazioni verranno segnalate.</translation>
+      Se la norma viene impostata su false, le informazioni relative alla sessione kiosk non verranno segnalate. Se viene impostata su true o non viene impostata, tali informazioni verranno segnalate.</translation>
 <translation id="3859780406608282662">Consente di aggiungere un parametro al recupero del numero di inizializzazione delle varianti in <ph name="PRODUCT_OS_NAME" />.
 
       Se la norma è specificata, verrà aggiunto un parametro query chiamato "restrict" all'URL utilizzato per recuperare il numero di inizializzazione delle varianti. Il valore del parametro sarà il valore specificato in questa norma.
@@ -912,6 +908,9 @@ Per impostazione predefinita sono autorizzati tutti gli host di messaggi nativi 
 
       Se la norma è impostata su true, i pacchetti di rete di monitoraggio (chiamati <ph name="HEARTBEATS_TERM" />) verranno inviati.
       Se la norma è impostata su false, i pacchetti non verranno inviati.</translation>
+<translation id="3963602271515417124">Se la norma viene impostata su true, l'attestazione da remoto viene consentita per il dispositivo e viene generato automaticamente un certificato che viene caricato sul Server di gestione del dispositivo.
+
+          Se la norma viene impostata su false o non viene impostata, non verrà generato alcun certificato e le chiamate all'API di estensione enterprise.platformKeys non andranno a buon fine.</translation>
 <translation id="3964909636571393861">Consente l'accesso a un elenco di URL</translation>
 <translation id="3965339130942650562">Timeout fino a esecuzione uscita utente non attivo</translation>
 <translation id="3967075520570946456">Attiva la visualizzazione della pagina di benvenuto al primo avvio del browser successivo all'upgrade del sistema operativo.</translation>
@@ -1413,12 +1412,6 @@ Se la norma non viene impostata, il puntatore grande viene disattivato alla prim
 
       Se la norma non viene impostata o viene impostata su false, <ph name="PRODUCT_NAME" /> non effettuerà controlli della revoca online in <ph name="PRODUCT_NAME" /> 19 e nelle versioni successive.</translation>
 <translation id="5966615072639944554">Estensioni autorizzate a utilizzare l'API di attestazione da remoto</translation>
-<translation id="5974970919245996815">Le informazioni sullo stato di Android segnalate vengono rimandate al server.
-
-      Se la norma viene impostata su false, le informazioni non verranno segnalate.
-      Se la norma viene impostata su true o non viene impostata, le informazioni verranno segnalate.
-
-      Questa norma viene applicata soltanto se le app Android sono attive.</translation>
 <translation id="5983708779415553259">Comportamento predefinito per i siti non presenti in pacchetti di contenuti</translation>
 <translation id="5997543603646547632">Utilizza orologio di 24 ore per impostazione predefinita</translation>
 <translation id="6009903244351574348">Consente di permettere a <ph name="PRODUCT_FRAME_NAME" /> di gestire i tipi di contenuti elencati. Se questa norma non viene impostata, verrà utilizzato per tutti i siti il renderer predefinito specificato dalla norma "ChromeFrameRendererSettings".</translation>
@@ -2054,6 +2047,9 @@ Se questa norma non viene impostata, <ph name="PRODUCT_NAME" /> utilizzerà il v
           Questa norma non è disponibile su istanze di Windows che non fanno parte di un dominio Active Directory.</translation>
 <translation id="7937766917976512374">Consenti o nega acquisizione video</translation>
 <translation id="7941975817681987555">Non prevedere le azioni di rete su qualsiasi connessione di rete</translation>
+<translation id="7942429005743031780">Questa norma specifica le estensioni autorizzate a utilizzare chrome.enterprise.platformKeys.challengeUserKey() dell'API Enterprise Platform Keys per l'attestazione da remoto. Le estensioni devono essere aggiunte a questo elenco per utilizzare l'API.
+
+          Se un'estensione non è presente nell'elenco o l'elenco non è impostato, la chiamata all'API non riuscirà e verrà generato un codice di errore.</translation>
 <translation id="7953256619080733119">Host delle eccezioni manuali per gli utenti gestiti</translation>
 <translation id="7971839631300653352">SSL 3.0</translation>
 <translation id="7974114691960514888">Questa norma non è più supportata. Consente di attivare l'utilizzo di server relay e STUN durante la connessione a un client remoto. Se questa impostazione viene attivata, questo computer potrà rilevare i computer host remoti e collegarsi a essi anche se sono separati da un firewall. Se questa impostazione viene disattivata e le connessioni UDP in uscita vengono filtrate dal firewall, questo computer potrà collegarsi ai computer host soltanto all'interno della rete locale.</translation>

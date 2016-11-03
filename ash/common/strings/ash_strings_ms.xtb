@@ -22,6 +22,7 @@
 <translation id="1484102317210609525"><ph name="DEVICE_NAME" /> (HDMI/DP)</translation>
 <translation id="1510238584712386396">Pelancar</translation>
 <translation id="1525508553941733066">KETEPIKAN</translation>
+<translation id="153454903766751181">Memulakan modem selular...</translation>
 <translation id="15373452373711364">Kursor tetikus besar</translation>
 <translation id="1550523713251050646">Klik untuk mendapatkan lagi pilihan</translation>
 <translation id="1602076796624386989">Dayakan data mudah alih</translation>
@@ -32,6 +33,7 @@
 <translation id="1747827819627189109">Papan kekunci pada skrin didayakan</translation>
 <translation id="1812696562331527143">Kaedah masukan anda telah ditukar kepada <ph name="INPUT_METHOD_ID" />*(<ph name="BEGIN_LINK" />pihak ke-3<ph name="END_LINK" />).
 Tekan Shift + Alt untuk menukar.</translation>
+<translation id="1850504506766569011">Wi-Fi dimatikan.</translation>
 <translation id="1864454756846565995">Peranti USB-C (port belakang)</translation>
 <translation id="1882897271359938046">Mencerminkan <ph name="DISPLAY_NAME" /></translation>
 <translation id="1919743966458266018">Pintasan untuk membuka pengurus tugas telah berubah. Sila gunakan <ph name="NEW_SHORTCUT" /> dan bukannya <ph name="OLD_SHORTCUT" />.</translation>
@@ -47,6 +49,7 @@ Tekan Shift + Alt untuk menukar.</translation>
 <translation id="2268813581635650749">Log keluar semua</translation>
 <translation id="2297568595583585744">Dulang status</translation>
 <translation id="2303600792989757991">Togol gambaran keseluruhan tetingkap</translation>
+<translation id="2354174487190027830">Mengaktifkan <ph name="NAME" /></translation>
 <translation id="2391579633712104609">180°</translation>
 <translation id="2429753432712299108">Peranti Bluetooth "<ph name="DEVICE_NAME" />" ingin kebenaran untuk berpasangan. Sebelum menerimanya, sila sahkan bahawa kekunci laluan ini dipaparkan pada peranti tersebut: <ph name="PASSKEY" /></translation>
 <translation id="2475982808118771221">Ralat berlaku</translation>
@@ -59,6 +62,7 @@ Tekan Shift + Alt untuk menukar.</translation>
 <translation id="2700058918926273959">Sesi tamat dalam <ph name="SESSION_TIME_REMAINING" />. Anda akan dilog keluar.</translation>
 <translation id="2727977024730340865">Dipalamkan pada pengecas berkuasa rendah. Pengecasan bateri mungkin tidak boleh diharapkan.</translation>
 <translation id="2761704814324807722">Dulang status, masa <ph name="TIME" />, <ph name="BATTERY" /></translation>
+<translation id="277257480934873581">Menyambung semula ke <ph name="NAME" /></translation>
 <translation id="2792498699870441125">Alt+Search</translation>
 <translation id="2819276065543622893">Anda akan dilog keluar sekarang.</translation>
 <translation id="2825619548187458965">Rak</translation>
@@ -104,21 +108,27 @@ Tekan Shift + Alt untuk menukar.</translation>
 <translation id="3783640748446814672">alt</translation>
 <translation id="3784455785234192852">Kunci</translation>
 <translation id="3799026279081545374">Anda mungkin mempunyai pengecas yang rosak. Jika anda tinggal di AS, sila hubungi 866-628-1371866-628-1371 untuk mendapatkan bantuan dan pengecas ganti. Jika anda tinggal di UK, sila hubungi 0800-026-06130800-026-0613. Jika anda tinggal di Ireland, sila hubungi 1-800-832-664. Jika anda tinggal di Kanada, sila hubungi 866-628-1372866-628-1372. Jika anda tinggal di Australia, sila hubungi 1-800-067-460.</translation>
+<translation id="3846575436967432996">Tiada maklumat rangkaian tersedia</translation>
 <translation id="3866182280516392520">Alamat IPv6</translation>
 <translation id="3891340733213178823">Tekan Ctrl+Shift+Q dua kali untuk keluar.</translation>
 <translation id="3892641579809465218">Paparan Dalaman</translation>
 <translation id="3893630138897523026">ChromeVox (maklum balas dituturkan)</translation>
 <translation id="3899995891769452915">Input suara</translation>
+<translation id="3901991538546252627">Menyambung ke <ph name="NAME" /></translation>
 <translation id="3963445509666917109">Pembesar Suara (Dalaman)</translation>
 <translation id="3967919079500697218">Keupayaan untuk mengambil tangkapan skrin telah dilumpuhkan oleh pentadbir anda.</translation>
 <translation id="397105322502079400">Mengira...</translation>
 <translation id="3995138139523574647">Peranti USB-C (port belakang sebelah kanan)</translation>
 <translation id="4053612967614057854">Lumpuhkan papan kekunci pada skrin</translation>
+<translation id="4118990158415604803">Penyambungan ke rangkaian lain dilumpuhkan oleh pentadbir anda.</translation>
 <translation id="4250680216510889253">Tidak</translation>
 <translation id="4279490309300973883">Pencerminan</translation>
 <translation id="4321179778687042513">ctrl</translation>
 <translation id="4421231901400348175">Berkongsi kawalan skrin anda dengan <ph name="HELPER_NAME" /> melalui Bantuan Jauh.</translation>
 <translation id="4430019312045809116">Kelantangan</translation>
+<translation id="4448844063988177157">Mencari rangkaian Wi-Fi...</translation>
+<translation id="4479639480957787382">Ethernet</translation>
+<translation id="4508225577814909926"><ph name="NAME" />: Menyambung...</translation>
 <translation id="4527045527269911712">Peranti Bluetooth "<ph name="DEVICE_NAME" />" ingin kebenaran untuk berpasangan.</translation>
 <translation id="453661520163887813"><ph name="TIME" /> sehingga penuh</translation>
 <translation id="4544944664594876241">Pintasan untuk mengunci skrin telah berubah. Sila gunakan <ph name="NEW_SHORTCUT" /> dan bukannya <ph name="OLD_SHORTCUT" />.</translation>
@@ -171,6 +181,7 @@ Tekan Shift + Alt untuk menukar.</translation>
 <translation id="6165508094623778733">Ketahui lebih lanjut</translation>
 <translation id="6203030746557259519">Paparan Maya</translation>
 <translation id="6248847161401822652">Tekan Control Shift Q dua kali untuk keluar.</translation>
+<translation id="6267036997247669271"><ph name="NAME" />: Mengaktifkan...</translation>
 <translation id="6297287540776456956">Gunakan stilus untuk memilih bahagian</translation>
 <translation id="6310121235600822547"><ph name="DISPLAY_NAME" /> telah diputarkan ke <ph name="ROTATION" /></translation>
 <translation id="6359806961507272919">SMS daripada <ph name="PHONE_NUMBER" /></translation>
@@ -183,6 +194,7 @@ Tekan Shift + Alt untuk menukar.</translation>
 <translation id="6501401484702599040">Menghantar skrin ke <ph name="RECEIVER_NAME" /></translation>
 <translation id="6521655319214113338">Input tulisan tangan</translation>
 <translation id="6537270692134705506">Tangkap skrin</translation>
+<translation id="6549021752953852991">Tiada rangkaian selular tersedia</translation>
 <translation id="6550675742724504774">Pilihan</translation>
 <translation id="6585808820553845416">Sesi berakhir dalam <ph name="SESSION_TIME_REMAINING" />.</translation>
 <translation id="6596816719288285829">Alamat IP</translation>
@@ -191,6 +203,7 @@ Tekan Shift + Alt untuk menukar.</translation>
 <translation id="6713285437468012787">Peranti Bluetooth "<ph name="DEVICE_NAME" />" telah dipasangkan dan kini tersedia untuk semua pengguna. Anda boleh mengalih keluar pasangan ini menggunakan Tetapan.</translation>
 <translation id="6785414152754474415">Bateri <ph name="PERCENTAGE" />% penuh dan sedang dicas.</translation>
 <translation id="683971173229319003">Carian+L</translation>
+<translation id="6857811139397017780">Aktifkan <ph name="NETWORKSERVICE" /></translation>
 <translation id="6911468394164995108">Sertai yang lain...</translation>
 <translation id="6915678159055240887">Chromebox</translation>
 <translation id="6979158407327259162">Google Drive</translation>
@@ -199,6 +212,7 @@ Tekan Shift + Alt untuk menukar.</translation>
 <translation id="703171847531699602">Tiada peranti cast</translation>
 <translation id="7034339000180558234">Menghantar <ph name="TAB_NAME" /> ke <ph name="RECEIVER_NAME" /></translation>
 <translation id="7052914147756339792">Tetapkan kertas dinding...</translation>
+<translation id="7066646422045619941">Rangkaian ini dilumpuhkan oleh pentadbir anda.</translation>
 <translation id="7097613348211027502">ChromeVox (maklum balas pertuturan) didayakan.
 Tekan Ctrl+Alt+Z untuk melumpuhkan.</translation>
 <translation id="7098389117866926363">Peranti USB-C (port kiri di belakang)</translation>
@@ -208,6 +222,7 @@ Tekan Ctrl+Alt+Z untuk melumpuhkan.</translation>
 <translation id="7209101170223508707">CAPS LOCK dihidupkan.
 Tekan Alt+Search atau Shift untuk membatalkan.</translation>
 <translation id="7348093485538360975">Papan kekunci pada skrin</translation>
+<translation id="735745346212279324">VPN diputuskan sambungan</translation>
 <translation id="737451040872859086">Mikrofon (Dalaman)</translation>
 <translation id="742594950370306541">Kamera sedang digunakan.</translation>
 <translation id="743058460480092004">Kamera dan mikrofon sedang digunakan.</translation>
@@ -224,19 +239,24 @@ Tekan Alt+Search atau Shift untuk membatalkan.</translation>
 <translation id="7823564328645135659">Bahasa telah ditukar daripada "<ph name="FROM_LOCALE" />" kepada "<ph name="TO_LOCALE" />" selepas menyegerakkan tetapan anda.</translation>
 <translation id="785750925697875037">Lihat akaun mudah alih</translation>
 <translation id="7864539943188674973">Lumpuhkan Bluetooth</translation>
+<translation id="7874779702599364982">Mencari rangkaian selular...</translation>
 <translation id="7893838033650689677">Hidupkan Wi-Fi</translation>
 <translation id="7904094684485781019">Pentadbir akaun ini tidak membenarkan berbilang log masuk.</translation>
 <translation id="7957227661277029961"><ph name="DEVICE_TYPE" /> anda mungkin tidak akan dicas semasa dihidupkan. Pertimbangkan untuk menggunakan pengecas rasmi.</translation>
 <translation id="7982789257301363584">Rangkaian</translation>
+<translation id="8000066093800657092">Tiada rangkaian</translation>
 <translation id="8054466585765276473">Mengira tempoh bateri.</translation>
 <translation id="8077816382010018681">Tajuk pemberitahuan Ciri QU di sini</translation>
 <translation id="8103386449138765447">Mesej SMS: <ph name="MESSAGE_COUNT" /></translation>
+<translation id="8132793192354020517">Disambungkan ke <ph name="NAME" /></translation>
 <translation id="8185286464235484130">Beritahu kami tentang prestasi kami dengan menjawab beberapa soalan.</translation>
 <translation id="8190698733819146287">Sesuaikan bahasa dan input...</translation>
 <translation id="8206859287963243715">Selular</translation>
 <translation id="8308637677604853869">Menu sebelumnya</translation>
 <translation id="8356164830168736643">Tutup <ph name="WINDOW_TITLE" /></translation>
 <translation id="8428213095426709021">Tetapan</translation>
+<translation id="8454013096329229812">Wi-Fi dihidupkan.</translation>
+<translation id="8484916590211895857"><ph name="NAME" />: Menyambung semula...</translation>
 <translation id="8517041960877371778"><ph name="DEVICE_TYPE" /> anda mungkin tidak akan dicas semasa dihidupkan.</translation>
 <translation id="8528322925433439945">Mudah alih ...</translation>
 <translation id="8639760480004882931">Berbaki <ph name="PERCENTAGE" /></translation>

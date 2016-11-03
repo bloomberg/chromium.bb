@@ -50,6 +50,7 @@
 <translation id="1491663344921578213">Зараз не можна перейти на сторінку <ph name="SITE" />, оскільки веб-сайт використовує закріплення сертифікатів. Помилки мережі й атаки зазвичай тимчасові, тому ця сторінка, скоріш за все, запрацює пізніше. <ph name="BEGIN_LEARN_MORE_LINK" />Докладніше<ph name="END_LEARN_MORE_LINK" />.</translation>
 <translation id="1506687042165942984">Показати стару збережену копію цієї сторінки.</translation>
 <translation id="1519264250979466059">Дата створення версії</translation>
+<translation id="153384715582417236">Більше нічого немає</translation>
 <translation id="1549470594296187301">Щоб користуватися цією функцією, потрібно ввімкнути JavaScript.</translation>
 <translation id="1559528461873125649">Такого файла або каталогу немає</translation>
 <translation id="1559572115229829303">&lt;p&gt;Не вдається встановити конфіденційне з’єднання із сайтом <ph name="BEGIN_BOLD" /><ph name="DOMAIN" /><ph name="END_BOLD" />, оскільки на вашому пристрої неправильно налаштовано дату й час (<ph name="DATE_AND_TIME" />).&lt;/p&gt;
@@ -350,7 +351,6 @@
 <translation id="4728558894243024398">Платформа</translation>
 <translation id="4744603770635761495">Виконуваний шлях</translation>
 <translation id="4756388243121344051">&amp;Історія</translation>
-<translation id="4759238208242260848">Завантаження</translation>
 <translation id="4764776831041365478">Веб-сторінка за адресою <ph name="URL" /> може бути тимчасово недоступною або її назавжди переміщено на нову веб-адресу.</translation>
 <translation id="4771973620359291008">Виникла невідома помилка.</translation>
 <translation id="4782449893814226250">Ви надіслали батькам запит на перегляд цієї сторінки.</translation>
@@ -389,6 +389,7 @@
 <translation id="5179510805599951267">Це не <ph name="ORIGINAL_LANGUAGE" />? Повідомте про помилку</translation>
 <translation id="5190835502935405962">Панель закладок</translation>
 <translation id="5199729219167945352">Експерименти</translation>
+<translation id="5199841536747119669">Тут відображатимуться пропозиції</translation>
 <translation id="5251803541071282808">Хмара</translation>
 <translation id="5277279256032773186">Користуєтеся Chrome на роботі? Компанії можуть налаштовувати Chrome для своїх працівників. Докладніше</translation>
 <translation id="5299298092464848405">Помилка аналізу правила</translation>
@@ -468,6 +469,7 @@
 <translation id="6263376278284652872">Закладки <ph name="DOMAIN" /></translation>
 <translation id="6264485186158353794">Повернутися до безпечного режиму</translation>
 <translation id="6282194474023008486">Поштовий код</translation>
+<translation id="6290238015253830360">Тут відображатимуться пропоновані статті</translation>
 <translation id="6305205051461490394">Сторінка <ph name="URL" /> недоступна.</translation>
 <translation id="6321917430147971392">Перевірте налаштування DNS</translation>
 <translation id="6328639280570009161">Спробуйте вимкнути прогнозування мережі.</translation>
@@ -651,6 +653,7 @@
 <translation id="8363502534493474904">вимкнути режим польоту</translation>
 <translation id="8364627913115013041">Не встановлено.</translation>
 <translation id="8380941800586852976">Небезпечна</translation>
+<translation id="8382348898565613901">Тут відображатимуться нещодавно відкриті закладки</translation>
 <translation id="8412145213513410671">Аварійне завершення роботи (<ph name="CRASH_COUNT" />)</translation>
 <translation id="8412392972487953978">Потрібно двічі ввести однакову парольну фразу.</translation>
 <translation id="8428213095426709021">Налаштування</translation>
@@ -700,6 +703,7 @@
 <translation id="8987927404178983737">Місяць</translation>
 <translation id="8989148748219918422"><ph name="ORGANIZATION" /> [<ph name="COUNTRY" />]</translation>
 <translation id="9001074447101275817">Для проксі <ph name="DOMAIN" /> потрібно ввести ім’я користувача та пароль.</translation>
+<translation id="9008201768610948239">Ігнорувати</translation>
 <translation id="901974403500617787">Позначки, які застосовуються до всієї системи, може встановлювати лише власник: <ph name="OWNER_EMAIL" />.</translation>
 <translation id="9020542370529661692">Цю сторінку перекладено такою мовою: <ph name="TARGET_LANGUAGE" /></translation>
 <translation id="9038649477754266430">Користуйтеся службою передбачення, щоб сторінки завантажувалися швидше</translation>

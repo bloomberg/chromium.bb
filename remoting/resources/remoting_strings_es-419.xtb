@@ -27,6 +27,9 @@ Para obtener más información sobre la privacidad, consulta la política de pri
 <translation id="1654128982815600832">Habilitando conexiones remotas para esta computadora…</translation>
 <translation id="170207782578677537">No se pudo registrar esta computadora.</translation>
 <translation id="1704090719919187045">Preferencias del host de Chromoting</translation>
+<translation id="1730409684442507495">• Mejora la calidad de la imagen del escritorio, la capacidad de respuesta y el consumo de la batería.
+• Mejora la capacidad de respuesta en operaciones para hacer clic y arrastrar.
+• Mejora varios efectos de animación en la IU.</translation>
 <translation id="174018511426417793">No tienes ninguna computadora registrada. Para habilitar conexiones remotas con una computadora, instala allí Escritorio remoto de Chrome y haz clic en "<ph name="BUTTON_NAME" />".</translation>
 <translation id="1742469581923031760">Conectando…</translation>
 <translation id="1770394049404108959">No puedo abrir la aplicación.</translation>
@@ -73,7 +76,6 @@ Para obtener más información sobre la privacidad, consulta la política de pri
 <translation id="2699970397166997657">Chromoting</translation>
 <translation id="2747641796667576127">Las actualizaciones de software, por lo general, se realizan de forma automática, pero puede haber errores en casos excepcionales. La actualización del software no debe tardar más de unos minutos y se puede hacer mientras estás conectado a tu computadora de forma remota.</translation>
 <translation id="2841013758207633010">Hora</translation>
-<translation id="2851674870054673688">Una vez que se haya ingresado el código, se iniciará la sesión compartida.</translation>
 <translation id="2851754573186462851">Chromium App Streaming</translation>
 <translation id="2855866366045322178">Sin conexión</translation>
 <translation id="2888969873284818612">Se produjo un error en la red. Reiniciaremos la aplicación cuando el dispositivo esté en línea nuevamente.</translation>

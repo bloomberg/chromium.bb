@@ -19,6 +19,9 @@
       Quando esta política está definida como falsa ou não definida, os cookies definidos pelo IdP são transferidos para o perfil do utilizador durante o primeiro início de sessão apenas num dispositivo.
 
       Esta política afeta os utilizadores cujo domínio coincide com o domínio de inscrição apenas do dispositivo. Para todos os outros utilizadores, os cookies definidos pelo IdP são transferidos para o perfil do utilizador durante o seu primeiro início de sessão apenas no dispositivo.</translation>
+<translation id="1029536946382325801">Se verdadeira, o utilizador pode utilizar o hardware nos dispositivos Chrome para comprovar remotamente a sua identidade perante a AC de privacidade através da API Enterprise Platform Keys chrome.enterprise.platformKeys.challengeUserKey().
+
+          Se estiver definida como falsa ou se não estiver definida, as chamadas para a API falham e resultam num código de erro.</translation>
 <translation id="1040446814317236570">Ativar a remoção de URL de PAC (para https://)</translation>
 <translation id="1044878202534415707">Comunicar estatísticas de hardware como a utilização de CPU/RAM.
 
@@ -324,13 +327,6 @@
 <translation id="2309390639296060546">Definição de geolocalização predefinida</translation>
 <translation id="2312134445771258233">Permite-lhe configurar as páginas que são carregadas no arranque. O conteúdo da lista "URLs a abrir no aranque" é ignorado, a menos que selecione "Abrir uma lista de URLs" em "Ação no arranque".</translation>
 <translation id="2337466621458842053">Permite definir uma lista de padrões de URL que especificam os Web sites autorizados a apresentar imagens. Se esta política não for definida, será utilizado o valor global predefinido para todos os Web sites, seja a partir da política "DefaultImagesSetting", caso esteja definida, ou a partir da configuração pessoal do utilizador.</translation>
-<translation id="2359612025446382967">Se esta política for definida como falsa, o <ph name="PRODUCT_OS_NAME" /> desativa o Bluetooth e o utilizador não o pode reativar.
-
-      Se esta política for definida como verdadeira ou não for definida, o utilizador pode ativar ou desativar o Bluetooth conforme pretender.
-
-      Se esta política for definida, o utilizador não a pode alterar ou substituir.
-
-      Após a ativação do Bluetooth, é necessário reiniciar o dispositivo para que as alterações sejam aplicadas (não é necessário reiniciar o dispositivo quando desativar o Bluetooth).</translation>
 <translation id="2366415278352956652">Ativa a transmissão</translation>
 <translation id="2372547058085956601">O atraso do início automático da sessão pública.
 
@@ -757,13 +753,13 @@ Se esta definição estiver desativada, os utilizadores não podem ativar o prox
 <translation id="3417418267404583991">Se esta política estiver definida como verdadeira ou não estiver configurada, o <ph name="PRODUCT_OS_NAME" /> irá ativar os inícios de sessão de convidado. Os inícios de sessão de convidado são sessões de utilizadores anónimos e não necessitam de uma palavra-passe.
 
      Se esta política estiver definida como falsa, o <ph name="PRODUCT_OS_NAME" /> não permitirá que sejam iniciadas sessões de convidado.</translation>
-<translation id="3418871497193485241">Aplica um Modo restrito mínimo no YouTube e impede que os utilizadores
+<translation id="3418871497193485241">Aplica o Modo restrito mínimo no YouTube e impede que os utilizadores
       escolham um modo menos restrito.
 
       Se esta política estiver definida como Rigorosa, o Modo restrito rigoroso no YouTube está sempre ativo.
 
-      Se esta política estiver definida como Moderada, o utilizador só pode escolher o Modo restrito moderado
-      e o Modo restrito rigoroso no YouTube, mas não pode desativar o Modo restrito.
+      Se esta política estiver definida como Moderada, o utilizador só pode escolher os modos restrito moderado
+      e restrito rigoroso, no YouTube, mas não pode desativar o Modo restrito.
 
       Se esta política estiver definida como Desativada ou não for definido qualquer valor, o <ph name="PRODUCT_NAME" /> não aplica o Modo restrito no YouTube. As políticas externas, tais como as políticas do YouTube, podem ainda assim aplicar o Modo restrito.</translation>
 <translation id="3428247105888806363">Ativar predição de rede</translation>
@@ -938,6 +934,9 @@ Se desativar ou não definir esta opção, permite que o utilizador use as Ferra
 
       Se esta política for definida como verdadeira, os pacotes de monitorização de rede (os chamados <ph name="HEARTBEATS_TERM" />) são enviados.
        Se for definida como falsa ou não for definida, não são enviados pacotes.</translation>
+<translation id="3963602271515417124">Se verdadeira, a comprovação remota é permitida para o dispositivo e será automaticamente gerado um certificado e carregado para o Servidor de Gestão de Dispositivos.
+
+          Se estiver definida como falsa ou não estiver definida, não será gerado qualquer certificado e as chamadas para a API de extensão enterprise.platformKeys falham.</translation>
 <translation id="3964909636571393861">Permitir o acesso a uma lista de URLs</translation>
 <translation id="3965339130942650562">Limite de tempo até ao encerramento da sessão do utilizador por inatividade</translation>
 <translation id="3967075520570946456">Ativar a apresentação da página de boas-vindas da primeira vez que o navegador for iniciado após uma atualização do SO.</translation>
@@ -992,7 +991,7 @@ Se desativar ou não definir esta opção, permite que o utilizador use as Ferra
 
       Tenha em atenção que esta política pode ser substituída por EnabledPlugins e DisabledPluginsExceptions.
 
-      Se esta política não for definida, o utilizador pode utilizar qualquer plug-in instalado no sistema, com exceção de plug-ins incompatíveis, desatualizados ou perigosos determinados pelo hardware.</translation>
+      Se esta política não for definida, o utilizador pode utilizar qualquer plug-in instalado no sistema, com exceção de plug-ins incompatíveis, desatualizados ou perigosos determinados pela codificação.</translation>
 <translation id="410478022164847452">Especifica o período de tempo sem atividade por parte do utilizador após o qual se realiza a ação de inatividade quando o dispositivo está ligado à eletricidade.
 
           Quando esta política está definida, especifica o período de tempo que o utilizador tem de permanecer inativo antes de o <ph name="PRODUCT_OS_NAME" /> realizar a ação de inatividade, que pode ser configurada separadamente.
@@ -1459,13 +1458,6 @@ Se desativar ou não definir esta opção, permite que o utilizador use as Ferra
 
       Se a política não for definida ou for definida como falsa, o <ph name="PRODUCT_NAME" /> não efetuará verificações de revogação online no <ph name="PRODUCT_NAME" /> 19 e posterior.</translation>
 <translation id="5966615072639944554">Extensões que têm permissão para utilizar a API de comprovação remota</translation>
-<translation id="5974970919245996815">As informações do relatório acerca do estado do Android são enviadas de volta para
-      o servidor.
-
-      Se a política estiver definida como falsa, as informações não são comunicadas.
-      Se estiver definida como verdadeira ou não for definida, as informações são comunicadas.
-
-      Esta política aplica-se apenas se as aplicações Android estiverem ativadas.</translation>
 <translation id="5983708779415553259">Comportamento predefinido para sites que não estejam num pacote de conteúdo</translation>
 <translation id="5997543603646547632">Utilizar o relógio de 24 horas por predefinição</translation>
 <translation id="6009903244351574348">Permite que o <ph name="PRODUCT_FRAME_NAME" /> processe os tipos de conteúdo listados. Se esta política não for definida, será utilizado o processador predefinido para todos os Web sites, conforme especificado pela política "ChromeFrameRendererSettings".</translation>
@@ -2116,6 +2108,9 @@ Se desativar ou não definir esta opção, permite que o utilizador use as Ferra
           a um domínio do Active Directory.</translation>
 <translation id="7937766917976512374">Permitir ou impedir a captura de vídeo</translation>
 <translation id="7941975817681987555">Não prever ações de rede em nenhuma ligação de rede</translation>
+<translation id="7942429005743031780">Esta política especifica as extensões com a permissão para utilizar a API Enterprise Platform Keys chrome.enterprise.platformKeys.challengeUserKey() para a comprovação remota. As extensões têm de ser adicionadas a esta lista para poderem utilizar a API.
+
+          Se uma extensão não estiver na lista ou a lista não estiver definida, a chamada para a API falha e resulta num código de erro.</translation>
 <translation id="7953256619080733119">Anfitriões de exceção no manual do utilizador gerido</translation>
 <translation id="7971839631300653352">SSL 3.0</translation>
 <translation id="7974114691960514888">Esta política já não é suportada. Ativa a utilização de servidores STUN e de transmissão ao estabelecer ligação a um cliente remoto. Se esta definição estiver ativada, o computador poderá localizar e estabelecer ligação a computadores anfitrião remotos, mesmo que estejam separados por uma firewall. Se esta definição estiver desativada e as ligações UDP de saída forem filtradas pela firewall, este computador apenas poderá estabelecer ligação a computadores anfitrião dentro da rede local.</translation>

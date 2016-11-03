@@ -19,6 +19,9 @@
       Ha a házirend értéke hamis, vagy ha nincs beállítva, akkor az IdP által beállított cookie-k csak az eszközön történő első bejelentkezéskor kerülnek át a felhasználó profiljába.
 
       Ez a házirend csak azokat a felhasználókat érinti, akiknek a domainje egyezik az eszköz regisztrációs domainjével. Minden más felhasználó esetében az IdP által beállított cookie-k csak az eszközön történő első bejelentkezéskor kerülnek át az adott felhasználó profiljába.</translation>
+<translation id="1029536946382325801">Ha igaz, a felhasználó a Chrome-eszközök hardverei segítségével távolról tanúsíthatja azonosságát az adatvédelmi CA-nál az Enterprise Platform Keys API chrome.enterprise.platformKeys.challengeUserKey() paraméterén keresztül.
+
+          Ha hamis, illetve nincs beállítva, akkor az API hívásai sikertelenek lesznek, és hibakódot adnak vissza.</translation>
 <translation id="1040446814317236570">PAC URL-levágás engedélyezése (https:// esetén)</translation>
 <translation id="1044878202534415707">Hardverstatisztikák, például a processzor- vagy memóriahasználat jelentése.
 
@@ -324,13 +327,6 @@
 <translation id="2309390639296060546">Helymeghatározás alapértelmezett beállítása</translation>
 <translation id="2312134445771258233">Lehetővé teszi az induláskor betöltött lapok beállítását. Az "Indításkor betöltendő URL-ek" listájának tartalmát figyelmen kívül hagyja, hacsak a "Teendő indításkor" részben nem az "URL-ek listájának megnyitása" lehetőséget választja.</translation>
 <translation id="2337466621458842053">Lehetővé teszi az olyan webhelyeket meghatározó URL-minták listájának összeállítását, amelyek esetében engedélyezett a képek megjelenítése. Ha ez a házirend beállítatlanul marad, akkor a globális alapértelmezett érték kerül felhasználásra valamennyi webhelyre vonatkozóan; vagy -- ha be van állítva -- a "DefaultImagesSetting" házirendből, vagy pedig a felhasználó személyes konfigurációjából.</translation>
-<translation id="2359612025446382967">Ha a házirend értéke hamis, a <ph name="PRODUCT_OS_NAME" /> kikapcsolja a Bluetooth funkciót, és a felhasználó nem tudja visszakapcsolni.
-
-      Ha a házirend értéke igaz vagy nincs beállítva, a felhasználó tetszés szerint tudja be- vagy kikapcsolni a Bluetooth funkciót.
-
-      Ha a házirend be van állítva, a felhasználó nem tudja módosítani vagy felülbírálni.
-
-      A Bluetooth engedélyezését követően újra kell indítani az eszközt ahhoz, hogy a változtatások életbe lépjenek (a Bluetooth letiltása után nem szükséges újraindítani az eszközt).</translation>
 <translation id="2366415278352956652">Lehetővé teszi az átküldést</translation>
 <translation id="2372547058085956601">A nyilvános munkamenet automatikus bejelentkezési késleltetése.
 
@@ -933,6 +929,9 @@ Ha a házirend értéke hamis, a böngésző nem jelenti a kioszkmunkamenet info
 
       Ha az irányelvet igaz értékre állítja, a rendszer ellenőrző hálózati csomagokat (úgynevezett <ph name="HEARTBEATS_TERM" />) fog küldeni.
       Ha hamis értékre állítja vagy nem állít be értéket, akkor a rendszer nem küld csomagokat.</translation>
+<translation id="3963602271515417124">Ha igaz, akkor az eszköz használhatja a távoli tanúsítást, és a rendszer automatikusan létrehoz és feltölt egy tanúsítványt az eszközkezelő szerverre.
+
+          Ha hamis, vagy ha nincs beállítva, akkor nem jön létre tanúsítvány, és nem sikerülnek az enterprise.platformKeys extension API-hoz irányuló hívások.</translation>
 <translation id="3964909636571393861">Engedélyezi a hozzáférést az URL-ek egy listájához</translation>
 <translation id="3965339130942650562">Időtúllépés, amely után a felhasználót a rendszer tétlenség esetén kijelentkezteti.</translation>
 <translation id="3967075520570946456">Az üdvözlőoldal megjelenítésének engedélyezése az operációs rendszer frissítését követő első böngészőindításkor.</translation>
@@ -1454,12 +1453,6 @@ Ha a házirend értéke hamis, a böngésző nem jelenti a kioszkmunkamenet info
 
       Ha a házirend értéke hamis, vagy ha nincs beállítva, akkor a <ph name="PRODUCT_NAME" /> nem végez online visszavonási ellenőrzéseket a <ph name="PRODUCT_NAME" /> 19-es és újabb verzióiban.</translation>
 <translation id="5966615072639944554">A távoli tanúsítási API használatára engedélyezett bővítmények</translation>
-<translation id="5974970919245996815">Jelentési információk küldése az Android állapotáról a szervernek.
-
-      Ha az irányelv beállítása hamis, akkor az adatokról nem készül jelentés.
-      Ha a beállítás igaz vagy nincs megadva, az adatokról jelentés készül.
-
-      Az irányelv csak akkor van érvényben, ha engedélyezve vannak az Android-alkalmazások.</translation>
 <translation id="5983708779415553259">Alapértelmezett viselkedés a tartalomcsomagban nem lévő webhelyek esetében</translation>
 <translation id="5997543603646547632">24 órás formátum használata alapértelmezés szerint</translation>
 <translation id="6009903244351574348">Engedélyezi, hogy a(z) <ph name="PRODUCT_FRAME_NAME" /> kezelje a felsorolt tartalomtípusokat. Ha nincs konfigurálva ez a házirend, akkor a rendszer a "ChromeFrameRendererSettings" házirend által meghatározott alapértelmezett megjelenítőt használja valamennyi webhely esetében.</translation>
@@ -2110,6 +2103,9 @@ Ha a házirend értéke hamis, a böngésző nem jelenti a kioszkmunkamenet info
           amelyek nem tartoznak Active Directory-domainhez.</translation>
 <translation id="7937766917976512374">Videorögzítés engedélyezése vagy tiltása</translation>
 <translation id="7941975817681987555">A hálózati műveletek előrejelzése semmilyen hálózaton ne történjen meg</translation>
+<translation id="7942429005743031780">Ez a házirend adja meg, hogy mely bővítmények számára engedélyezett az Enterprise Platform Keys API chrome.enterprise.platformKeys.challengeUserKey() paraméterének használata a távoli tanúsításhoz. Az API használatához fel kell venni a bővítményeket erre a listára.
+
+          Ha egy bővítmény nincs a listán, vagy a lista nincs beállítva, akkor az API hívása hibakóddal leáll.</translation>
 <translation id="7953256619080733119">Felügyelt felhasználó manuális kivételi gazdagépei</translation>
 <translation id="7971839631300653352">SSL 3.0</translation>
 <translation id="7974114691960514888">Ez a házirend már nem támogatott. Távoli ügyfélhez való csatlakozáskor lehetővé teszi a STUN és továbbítószerverek használatát. Ha ez a beállítás engedélyezett, akkor ez a gép láthatja a távoli szervereket, és csatlakozni is tud hozzájuk, még akkor is, ha tűzfal választja el őket. Amennyiben ez a lehetőség ki van kapcsolva, és a tűzfal szűri a kimenő UDP-kapcsolatokat, akkor ez a gép csak a helyi hálózaton belül található szerverekhez tud csatlakozni.</translation>

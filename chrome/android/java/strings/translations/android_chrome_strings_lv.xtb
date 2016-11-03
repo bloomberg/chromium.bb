@@ -95,7 +95,6 @@ Lai izmantotu fizisko tīmekli, ir jābūt ieslēgtam Bluetooth savienojumam un 
 <translation id="200669432486043882">Aizstāt failu</translation>
 <translation id="2020525020270327736">Kopēt vietni</translation>
 <translation id="2038563949887743358">Ieslēgt iestatījumu “Pieprasīt datora vietni”</translation>
-<translation id="2069736994598857257">Izmantoti <ph name="GIGABYTES" /> GB</translation>
 <translation id="2073235970478114994">Ielādēt attēlus</translation>
 <translation id="2079545284768500474">Atsaukt</translation>
 <translation id="2082238445998314030"><ph name="RESULT_NUMBER" />. rezultāts no <ph name="TOTAL_RESULTS" /></translation>
@@ -324,6 +323,7 @@ Lai pielāgotu meklēšanas vienumu, nospiediet un turiet to. Lai veiktu precīz
 <translation id="4816465935029283692">Datu tipi</translation>
 <translation id="4827948050554950725">Pievienot kredītkarti</translation>
 <translation id="4836364883164334657">Jūsu savienojums ar šo vietni nav privāts. Uzbrucēji var mēģināt nozagt jūsu informāciju (piemēram, fotoattēlus, paroles, ziņojumus vai kredītkaršu datus) no domēna <ph name="DOMAIN_NAME" />.</translation>
+<translation id="4850886885716139402">Skatīt</translation>
 <translation id="4881695831933465202">Atvērt</translation>
 <translation id="4885273946141277891">Neatbalstīts Chrome instanču skaits</translation>
 <translation id="4923459931733593730">Maksājums</translation>
@@ -339,7 +339,9 @@ Lai pielāgotu meklēšanas vienumu, nospiediet un turiet to. Lai veiktu precīz
 <translation id="5016205925109358554">Serif</translation>
 <translation id="5039804452771397117">Atļaut</translation>
 <translation id="5040262127954254034">Konfidencialitāte</translation>
+<translation id="5053110706349648690">Lai atļautu savienošanu pārī, <ph name="BEGIN_LINK" />ierīces iestatījumos<ph name="END_LINK" /> ieslēdziet Bluetooth savienojumu.</translation>
 <translation id="5063480226653192405">Lietojums</translation>
+<translation id="5087580092889165836">Pievienot karti</translation>
 <translation id="5100237604440890931">Sakļauts — noklikšķiniet, lai izvērstu.</translation>
 <translation id="510275257476243843">Atlikusi 1 h</translation>
 <translation id="5127805178023152808">Sinhronizācija izslēgta</translation>
@@ -416,6 +418,7 @@ Lai pielāgotu meklēšanas vienumu, nospiediet un turiet to. Lai veiktu precīz
 <translation id="583281660410589416">Nezināms</translation>
 <translation id="5832934273103296195">Izvērsts — noklikšķiniet, lai sakļautu</translation>
 <translation id="583891442612896534">Chrome nevar sasniegt Google serverus, lai veiktu datu saspiešanu. Datu lietojuma samazinājums var būt ierobežots.</translation>
+<translation id="5843873952582375185">Netika atrasta neviena Bluetooth ierīce. <ph name="BEGIN_LINK" />Atkārtojiet meklēšanu<ph name="END_LINK" />.</translation>
 <translation id="585027516397408832">Datu lietojuma samazinātājs ir iespējots.</translation>
 <translation id="5860033963881614850">Izsl.</translation>
 <translation id="5867027562311576691">Drīzumā būs pieejami citi raksti. Jauku rītu!</translation>
@@ -490,6 +493,7 @@ Piemēram, dažas vietnes, reaģējot uz šo pieprasījumu, var rādīt jums rek
 <translation id="6657585470893396449">Parole</translation>
 <translation id="6659594942844771486">Cilne</translation>
 <translation id="666268767214822976">Izmantojiet ieteikumus, lai skatītu saistītos vaicājumus un populāras vietnes, kad rakstāt adreses joslā.</translation>
+<translation id="666731172850799929">Atvērt lietotnē <ph name="APP_NAME" /></translation>
 <translation id="666981079809192359">Chrome konfidencialitātes paziņojums</translation>
 <translation id="6698801883190606802">Pārvaldīt sinhronizētos datus</translation>
 <translation id="6710213216561001401">Iepriekšējais</translation>
@@ -532,14 +536,12 @@ Piemēram, dažas vietnes, reaģējot uz šo pieprasījumu, var rādīt jums rek
 <translation id="7074853159844403180"><ph name="SITE" /> vēlas izveidot savienojumu pārī ar:</translation>
 <translation id="7081639897063626814">Glabāt esošos datus atsevišķi</translation>
 <translation id="7094922512924405309">Tuvumā nav atrasta neviena fiziskā tīmekļa lapa</translation>
-<translation id="7115197232530297436">Neatbalstīta piegādes adrese. Atlasiet citu adresi.</translation>
 <translation id="7138678301420049075">Cits</translation>
 <translation id="7180611975245234373">Atsvaidzināt</translation>
 <translation id="7191430249889272776">Cilne tika atvērta fonā.</translation>
 <translation id="7208788139759694678">Datu lietojuma samazinātājs ir atspējots.</translation>
 <translation id="7243308994586599757">Opcijas, kas pieejamas ekrāna apakšējā daļā</translation>
 <translation id="7244362611678346589"><ph name="SEARCH_ENGINE_URL" /> izmanto jūsu atrašanās vietas informāciju, lai rādītu vietējās meklēšanas rezultātus</translation>
-<translation id="7347770551817603360">Saturs bezsaistē</translation>
 <translation id="7353894246028566792">{NUM_SELECTED,plural, =1{Kopīgot 1 atlasīto vienumu}zero{Kopīgot # atlasītos vienumus}one{Kopīgot # atlasīto vienumu}other{Kopīgot # atlasītos vienumus}}</translation>
 <translation id="7366340029385295517">Notiek apraide uz ekrānu “<ph name="SCREEN_NAME" />”</translation>
 <translation id="7375125077091615385">Veids:</translation>
@@ -576,7 +578,6 @@ Jūsu Google kontam vietnē <ph name="BEGIN_LINK" />history.google.com<ph name=
 <translation id="7665369617277396874">Pievienot kontu</translation>
 <translation id="7682287625158474539">Piegāde</translation>
 <translation id="771135159654932189">Skatīt tuvumā esošos objektus</translation>
-<translation id="7713873128508426081">Vienmēr atļauts</translation>
 <translation id="7764225426217299476">Pievienot adresi</translation>
 <translation id="7765158879357617694">Pārvietot</translation>
 <translation id="7769602470925380267">Piekrist un izrakstīties</translation>
@@ -645,15 +646,12 @@ Jūsu Google kontam vietnē <ph name="BEGIN_LINK" />history.google.com<ph name=
 <translation id="8514577642972634246">Atvērt inkognito režīmā</translation>
 <translation id="8518901949365209398">Šajā vietnē tiek izmantota nedroša aizsardzības konfigurācija (SHA-1 paraksti), tādējādi jūsu savienojums var nebūt privāts.</translation>
 <translation id="8523928698583292556">Dzēst saglabāto paroli</translation>
-<translation id="8525306231823319788">Pilnekrāna režīms</translation>
-<translation id="85415543246899402">Izlietoti <ph name="MEGABYTES" /> MB</translation>
 <translation id="854522910157234410">Atvērt šo lapu</translation>
 <translation id="8562452229998620586">Šeit tiks parādītas saglabātās paroles.</translation>
 <translation id="856481929701340285">Pieprasīt datora vietni</translation>
 <translation id="857943718398505171">Atļauta (ieteicams)</translation>
 <translation id="8583805026567836021">Konta datu dzēšana</translation>
 <translation id="8617240290563765734">Vai atvērt lejupielādētajā saturā norādīto ieteikto URL?</translation>
-<translation id="8618653050765576793">Izlietoti <ph name="KILOBYTES" /> KB</translation>
 <translation id="862875433388403934">Citās lietojumprogrammās lejupielādētu saturu (filmas, mūziku), iespējams, nevarēs atskaņot, kamēr šajās lietojumprogrammās netiks iegūtas licences, pamatojoties uz jauniem ierīces akreditācijas datiem.
 
 Lai iegūtu jaunas licences, izveidojiet savienojumu ar internetu un atskaņojiet lejupielādēto saturu.</translation>

@@ -21,7 +21,6 @@
 <translation id="1688750314291223739">Konfigurer Synkronisering til å lagre de personlig tilpassede nettleserfunksjonene dine på nettet slik at du kan bruke dem fra Chromium på enhver datamaskin.</translation>
 <translation id="1699664235656412242">Lukk alle Chromium-vinduene (inkludert de i Windows 8-modus) og prøv på nytt.</translation>
 <translation id="1708666629004767631">En ny, sikrere versjon av Chromium er tilgjengelig.</translation>
-<translation id="1725059042853530269"><ph name="FILE_NAME" />-filen kan gi deg en dårligere leseopplevelse, så Chromium har blokkert den.</translation>
 <translation id="1774152462503052664">La Chromium kjøre i bakgrunnen</translation>
 <translation id="1779356040007214683">For å gjøre Chromium tryggere, har vi deaktivert noen utvidelser som ikke er oppført i <ph name="IDS_EXTENSION_WEB_STORE_TITLE" />, og som kan ha blitt lagt uten at du har vært klar over det.</translation>
 <translation id="1808667845054772817">Installer Chromium på nytt</translation>
@@ -59,7 +58,6 @@
 <translation id="2718390899429598676">Chromium krypterer dataene dine for å øke sikkerheten.</translation>
 <translation id="2770231113462710648">Endre standardnettleser til:</translation>
 <translation id="2799223571221894425">Start på nytt</translation>
-<translation id="2801146392936645542">Filen <ph name="FILE_NAME" /> er skadelig, og Chromium har blokkert den.</translation>
 <translation id="2847479871509788944">Fjern fra Chromium</translation>
 <translation id="2886012850691518054">Valgfritt: Bidra til å gjøre Chromium bedre ved å sende brukerstatistikk og krasjrapporter automatisk til Google.</translation>
 <translation id="2905536371227304018">Chromium OS vises på dette språket.</translation>
@@ -78,7 +76,6 @@
 <ph name="USER_DATA_DIRECTORY" /></translation>
 <translation id="3264279740686075150">Chromium er standardnettleseren din. Hurra!</translation>
 <translation id="328888136576916638">API-nøkler for Google mangler. Noe funksjonalitet i Chromium blir deaktivert.</translation>
-<translation id="3289635842886789612">Chromium er utdatert.</translation>
 <translation id="3296368748942286671">Fortsett å kjøre bakgrunnsprogrammer når Chromium er lukket</translation>
 <translation id="3312805357485578561">Chromium har oppdaget uvanlig atferd</translation>
 <translation id="331951419404882060">Chromium OS kunne ikke synkronisere dataene dine på grunn av en feil under pålogging.</translation>
@@ -136,6 +133,7 @@
 <translation id="5398878173008909840">En nyere versjon av Chromium er tilgjengelig.</translation>
 <translation id="5427571867875391349">Bruk Chromium som standard nettleser</translation>
 <translation id="5466153949126434691">Chromium oppdateres automatisk, sånn at du alltid har den nyeste versjonen. Når denne nedlastingen er fullført, kommer Chromium til å starte på nytt, og du er i gang.</translation>
+<translation id="5479196819031988440">Chromium OS kan ikke åpne denne siden.</translation>
 <translation id="549669000822060376">Vent mens Chromium installerer de nyeste systemoppdateringene.</translation>
 <translation id="556167189552180495">Chromium vises på dette språket.</translation>
 <translation id="5563479599352954471">Søk med ett trykk</translation>
@@ -223,7 +221,6 @@ Vi har sendt deg (<ph name="ACCOUNT_EMAIL" />) en e-post med nærmere instruksjo
 <translation id="7421823331379285070">Chromium krever Windows XP eller nyere. Enkelte funksjoner vil kanskje ikke fungere.</translation>
 <translation id="7473891865547856676">Nei takk</translation>
 <translation id="7483335560992089831">Kan ikke installere den samme Chromium-versjonen som kjører. Lukk Chromium og prøv på nytt.</translation>
-<translation id="750717762378961310">Denne filen er skadelig, og Chromium har blokkert den.</translation>
 <translation id="7549178288319965365">Om Chromium OS</translation>
 <translation id="7577193603922410712">En spesiell sikkerhetsoppdatering for Chromium ble nettopp installert. Du bør starte på nytt nå for at den skal tre i kraft (vi gjenoppretter fanene dine).</translation>
 <translation id="761356813943268536">Chromium bruker kameraet og mikrofonen din.</translation>

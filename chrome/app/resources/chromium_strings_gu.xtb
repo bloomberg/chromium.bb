@@ -23,7 +23,6 @@
 <translation id="1688750314291223739">તમારી વેબ પરની વ્યક્તિગત કરેલી બ્રાઉઝર સુવિધાઓને સાચવવા અને તેમને કોઈપણ કમ્પ્યુટર પર Chromium માંથી ઍક્સેસ કરવા માટે સમન્વયન સેટ કરો.</translation>
 <translation id="1699664235656412242">કૃપા કરીને તમામ Chromium વિંડોઝ (Windows 8 મોડમાં હોય તે સહિત) બંધ કરો અને ફરીથી પ્રયાસ કરો.</translation>
 <translation id="1708666629004767631">Chromium નું નવું, સલામત સંસ્કરણ ઉપલબ્ધ છે.</translation>
-<translation id="1725059042853530269"><ph name="FILE_NAME" /> તમારા બ્રાઉઝિંગ અનુભવને નુકસાન પહોંચાડી શકે છે, તેથી Chromium એ તેને અવરોધિત કરી છે.</translation>
 <translation id="1774152462503052664">Chromium ને પૃષ્ઠભૂમિમાં ચાલવા દો</translation>
 <translation id="1779356040007214683">Chromium ને સુરક્ષિત બનાવવા માટે, અમે <ph name="IDS_EXTENSION_WEB_STORE_TITLE" /> માં સૂચિબદ્ધ નથી અને તમારી જાણ વિના ઉમેરવામાં આવ્યાં હોઈ શકે છે તેવા કેટલાક એક્સ્ટેન્શન્સને અક્ષમ કર્યા છે.</translation>
 <translation id="1808667845054772817">Chromium ફરીથી ઇન્સ્ટોલ કરો</translation>
@@ -61,7 +60,6 @@
 <translation id="2718390899429598676">ઉમેરેલી સુરક્ષા માટે, Chromium તમારા ડેટાને એન્ક્રિપ્ટ કરશે.</translation>
 <translation id="2770231113462710648">ડિફૉલ્ટ બ્રાઉઝરને આના પર બદલો:</translation>
 <translation id="2799223571221894425">ફરીથી લોંચ કરો</translation>
-<translation id="2801146392936645542"><ph name="FILE_NAME" /> દૂષિત છે અને Chromium એ તેને અવરોધિત કરી છે.</translation>
 <translation id="2847479871509788944">Chromium માંથી દૂર કરો...</translation>
 <translation id="2886012850691518054">વૈકલ્પિક: ઉપયોગનાં આંકડાઓ અને ક્રેશ રીપોર્ટ્સ આપમેળે Google ને મોકલીને Chromium ને વધુ સારું બનાવવમાં સહાય કરો.</translation>
 <translation id="2905536371227304018">આ ભાષામાં Chromium OS પ્રદર્શિત થાય છે.</translation>
@@ -81,7 +79,6 @@
 <ph name="USER_DATA_DIRECTORY" /></translation>
 <translation id="3264279740686075150">Chromium તમારું ડિફૉલ્ટ બ્રાઉઝર છે. વાહ.</translation>
 <translation id="328888136576916638">Google API કીઝ ખૂટે છે. Chromium ની કેટલીક કાર્યક્ષમતા અક્ષમ થશે.</translation>
-<translation id="3289635842886789612">Chromium જૂનું થઈ ગયું છે.</translation>
 <translation id="3296368748942286671">જ્યારે Chromium બંધ થાય ત્યારે પૃષ્ઠભૂમિ ઍપ્લિકેશનો ચલાવવાનું ચાલુ રાખો</translation>
 <translation id="3312805357485578561">Chromium એ અસામાન્ય વર્તન શોધ્યું</translation>
 <translation id="331951419404882060">સાઇન ઇનમાં ભૂલ આવવાને કારણે Chromium તમારા ડેટાને સમન્વયિત કરી શક્યું નથી.</translation>
@@ -139,6 +136,7 @@
 <translation id="5398878173008909840">Chromium નું નવું સંસ્કરણ ઉપલબ્ધ છે.</translation>
 <translation id="5427571867875391349">Chromium ને તમારા ડિફોલ્ટ બ્રાઉઝર તરીકે સેટ કરો</translation>
 <translation id="5466153949126434691">Chromium આપમેળે અપડેટ થાય છે જેથી કરીને તમારી પાસે હંમેશા તાજું સંસ્કરણ રહે છે. જ્યારે આ ડાઉનલોડ પૂર્ણ થાય છે, ત્યારે Chromium પુનઃપ્રારંભ થશે અને તમે તમારા માર્ગે હશો.</translation>
+<translation id="5479196819031988440">Chromium OS, આ પૃષ્ઠને ખોલી શકતું નથી.</translation>
 <translation id="549669000822060376">કૃપા કરીને Chromium, નવીનતમ સિસ્ટમ અપડેટ્સ ઇન્સ્ટોલ કરે ત્યાં સુધી રાહ જુઓ.</translation>
 <translation id="556167189552180495">આ ભાષામાં Chromium પ્રદર્શિત થાય છે.</translation>
 <translation id="5563479599352954471">એક ટચ વડે શોધ કરો</translation>
@@ -226,7 +224,6 @@ Chromium તમારી સેટિંગ્સને પુનઃપ્રા
 <translation id="7421823331379285070">Chromium ને Windows XP અથવા તે પછીનાની આવશ્યકતા છે. કેટલીક સુવિધાઓ કામ કરશે નહીં.</translation>
 <translation id="7473891865547856676">નહીં આભાર</translation>
 <translation id="7483335560992089831">હાલમાં ચાલી રહ્યું છે તેના જેવું સમાન Chromium સંસ્કરણ ઇન્સ્ટોલ કરી શકાતું નથી. કૃપા કરીને Chromium ને બંધ કરો અને ફરી પ્રયાસ કરો.</translation>
-<translation id="750717762378961310">આ ફાઇલ દૂષિત છે અને Chromium એ તેને અવરોધિત કરી છે.</translation>
 <translation id="7549178288319965365">Chromium OS વિશે</translation>
 <translation id="7577193603922410712">Chromium માટેનું વિશિષ્ટ સુરક્ષા અપડેટ હમણાં જ લાગુ થયું; તેને પ્રભાવિત કરવા માટે તમારે અત્યારે પુનઃપ્રારંભ કરવું જોઈએ (અમે તમારા ટૅબ્સ પુનઃસ્થાપિત કરીશું).</translation>
 <translation id="761356813943268536">Chromium તમારા કેમેરા અને માઇક્રોફોનનો ઉપયોગ કરી રહ્યું છે.</translation>

@@ -63,7 +63,6 @@ Als je inlogt, worden Chrome-gegevens zoals bladwijzers, geschiedenis en andere 
 <translation id="2588322182880276190">Chrome-logo</translation>
 <translation id="2664962310688259219">Open-sourcelicenties van Chrome OS</translation>
 <translation id="2665296953892887393">Help ons Google Chrome te verbeteren door crashrapporten en <ph name="UMA_LINK" /> naar Google te verzenden</translation>
-<translation id="2669824781555328029">Chrome heeft <ph name="FILE_NAME" /> geblokkeerd omdat het bestand een negatieve invloed kan hebben op je browserervaring.</translation>
 <translation id="2681064822612051220">Er is een conflicterende installatie van Google Chrome op het systeem gevonden. Verwijder deze en probeer het opnieuw.</translation>
 <translation id="2689103672227170538">Deze extensie heeft gewijzigd welke pagina wordt weergegeven wanneer je Chrome start.</translation>
 <translation id="2704356438731803243">Als je je huidige Chrome-gegevens gescheiden wilt houden, kun je een nieuwe Chrome-gebruiker maken voor <ph name="USER_NAME" />.</translation>
@@ -153,6 +152,7 @@ Controleer je e-mail op <ph name="ACCOUNT_EMAIL" /> voor verdere instructies.</t
 
 Sommige functies zijn wellicht niet beschikbaar. Geef een andere profieldirectory op of gebruik een nieuwere versie van Chrome.</translation>
 <translation id="5176234269072261959">Help Chrome beter te maken door de huidige instellingen te melden.</translation>
+<translation id="5193136243808726294">Google Chrome OS kan deze pagina niet openen.</translation>
 <translation id="5204098752394657250"><ph name="TERMS_OF_SERVICE_LINK" />Servicevoorwaarden<ph name="END_TERMS_OF_SERVICE_LINK" /> van Google Chrome</translation>
 <translation id="5243785881901838525">Google Payments (gekopieerd naar Chrome)</translation>
 <translation id="5251420635869119124">Gasten kunnen Chrome gebruiken zonder iets achter te laten.</translation>
@@ -211,7 +211,6 @@ Sommige functies zijn wellicht niet beschikbaar. Geef een andere profieldirector
 <translation id="699076943483372849">Deze site maakt gebruikt van de Chrome Frame-plug-in die uit roulatie is genomen en waarvoor geen beveiligings- en stabiliteitsupdates meer beschikbaar komen. Verwijder de plug-in en voer een upgrade uit naar een moderne browser.</translation>
 <translation id="6991142834212251086">Mijn Chrome-gegevens koppelen aan dit account</translation>
 <translation id="7060865993964054389">App-opstartprogramma van Google Chrome</translation>
-<translation id="7084448929020576097"><ph name="FILE_NAME" /> is schadelijk en is door Chrome geblokkeerd.</translation>
 <translation id="7098166902387133879">Google Chrome gebruikt je microfoon.</translation>
 <translation id="7106741999175697885">Taakbeheer - Google Chrome</translation>
 <translation id="7125719106133729027">Chrome kan niet automatisch worden geüpdatet naar de nieuwste versie, waardoor je geweldige nieuwe functies en beveiligingsoplossingen misloopt. Je moet Chrome handmatig opnieuw installeren.</translation>
@@ -274,7 +273,6 @@ Sommige functies zijn wellicht niet beschikbaar. Geef een andere profieldirector
 <translation id="8669527147644353129">Google Chrome Helper</translation>
 <translation id="8679801911857917785">Hiermee wordt ook gecontroleerd welke pagina wordt weergegeven wanneer je Chrome start.</translation>
 <translation id="870251953148363156">&amp;Google Chrome updaten</translation>
-<translation id="8793772303278047003">Chrome is verouderd.</translation>
 <translation id="8796108026289707191">Je moet Google Chrome nu opnieuw starten.</translation>
 <translation id="8823341990149967727">Chrome is verouderd</translation>
 <translation id="884296878221830158">Hiermee wordt ook gecontroleerd welke pagina wordt weergegeven wanneer je Chrome start of op de knop 'Startpagina' klikt.</translation>
@@ -283,7 +281,6 @@ Sommige functies zijn wellicht niet beschikbaar. Geef een andere profieldirector
 <translation id="8914504000324227558">Chrome opnieuw starten</translation>
 <translation id="9026991721384951619">Chrome OS kan je gegevens niet synchroniseren omdat de inloggegevens voor je account zijn verouderd.</translation>
 <translation id="9067395829937117663">Voor Google Chrome is Windows 7 of hoger vereist.</translation>
-<translation id="9102715433345326100">Dit bestand is schadelijk en is daarom door Chrome geblokkeerd.</translation>
 <translation id="9107728822479888688"><ph name="BEGIN_BOLD" />Waarschuwing:<ph name="END_BOLD" /> Google Chrome kan niet voorkomen dat extensies je browsegeschiedenis registreren. Als je deze extensie in de incognitomodus wilt uitschakelen, verwijder je het vinkje bij deze optie.</translation>
 <translation id="911206726377975832">Ook browsegegevens wissen?</translation>
 <translation id="924447568950697217">Chrome instellen als je standaardbrowser</translation>

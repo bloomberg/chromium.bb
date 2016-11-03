@@ -1,41 +1,20 @@
 <?xml version="1.0" ?>
 <!DOCTYPE translationbundle>
 <translationbundle lang="uk">
-<translation id="153454903766751181">Ініціалізація мобільного модема…</translation>
 <translation id="1829129547161959350">Пінгвін</translation>
-<translation id="1850504506766569011">Wi-Fi вимкнено.</translation>
 <translation id="2288278176040912387">Грамофон</translation>
-<translation id="2354174487190027830">Активація <ph name="NAME" /></translation>
 <translation id="2563185590376525700">Жаба</translation>
 <translation id="2649120831653069427">Золота рибка</translation>
-<translation id="277257480934873581">Під’єднання до мережі <ph name="NAME" /></translation>
 <translation id="2894654529758326923">Інформація</translation>
 <translation id="2951236788251446349">Медуза</translation>
-<translation id="3846575436967432996">Інформація про мережу не доступна</translation>
-<translation id="3901991538546252627">Під’єднання до <ph name="NAME" /></translation>
 <translation id="3958548648197196644">Ківі</translation>
-<translation id="4118990158415604803">Ваш адміністратор заборонив під’єднуватися до інших мереж.</translation>
 <translation id="4326192123064055915">Кава</translation>
-<translation id="4448844063988177157">Пошук Wi-Fi мереж...</translation>
-<translation id="4479639480957787382">Ethernet</translation>
-<translation id="4508225577814909926"><ph name="NAME" />: Під’єднання…</translation>
 <translation id="4559767610552730302">Боке</translation>
 <translation id="4935975195727477204">Квітка</translation>
 <translation id="515594325917491223">Шахи</translation>
 <translation id="5257456363153333584">Бабка</translation>
-<translation id="6267036997247669271"><ph name="NAME" />: активація…</translation>
-<translation id="6549021752953852991">Мобільна мережа недоступна</translation>
-<translation id="6857811139397017780">Активувати <ph name="NETWORKSERVICE" /></translation>
 <translation id="6935521024859866267">Догори дригом</translation>
-<translation id="7066646422045619941">Ваш адміністратор вимкнув цю мережу.</translation>
-<translation id="735745346212279324">VPN від’єднано</translation>
-<translation id="7874779702599364982">Пошук мобільних мереж…</translation>
-<translation id="8000066093800657092">Немає мережі</translation>
 <translation id="8008366997883261463">Собака</translation>
-<translation id="8132793192354020517">З'єднано з <ph name="NAME" /></translation>
-<translation id="8454013096329229812">Wi-Fi увімкнено.</translation>
-<translation id="8484916590211895857"><ph name="NAME" />: під’єднання…</translation>
 <translation id="8714406895390098252">Велосипед</translation>
 <translation id="8808686172382650546">Кіт</translation>
-<translation id="8814190375133053267">Wi-Fi</translation>
 </translationbundle>

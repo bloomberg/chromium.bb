@@ -22,6 +22,7 @@
 <translation id="1484102317210609525"><ph name="DEVICE_NAME" /> (HDMI/DP)</translation>
 <translation id="1510238584712386396">Стартов панел</translation>
 <translation id="1525508553941733066">ОТХВЪРЛЯНЕ</translation>
+<translation id="153454903766751181">Клетъчният модем се подготвя за работа...</translation>
 <translation id="15373452373711364">Голям курсор на мишката</translation>
 <translation id="1550523713251050646">Кликнете за още опции</translation>
 <translation id="1602076796624386989">Активиране на мобилните данни</translation>
@@ -32,6 +33,7 @@
 <translation id="1747827819627189109">Екранната клавиатура е активирана</translation>
 <translation id="1812696562331527143">Методът ви на въвеждане се промени на <ph name="INPUT_METHOD_ID" />*(<ph name="BEGIN_LINK" />трета страна<ph name="END_LINK" />).
 Натиснете „Shift + Alt“, за да превключите.</translation>
+<translation id="1850504506766569011">Wi-Fi е изключен.</translation>
 <translation id="1864454756846565995">USB-C устройство (задният порт)</translation>
 <translation id="1882897271359938046">Дублира се на „<ph name="DISPLAY_NAME" />“</translation>
 <translation id="1919743966458266018">Комбинацията за отваряне на диспечера на задачите е променена. Моля, използвайте „<ph name="NEW_SHORTCUT" />“ вместо „<ph name="OLD_SHORTCUT" />“.</translation>
@@ -47,6 +49,7 @@
 <translation id="2268813581635650749">Изход за всички</translation>
 <translation id="2297568595583585744">Област на състоянието</translation>
 <translation id="2303600792989757991">Превключване на общия преглед на прозорците</translation>
+<translation id="2354174487190027830">„<ph name="NAME" />“ се активира</translation>
 <translation id="2391579633712104609">180°</translation>
 <translation id="2429753432712299108">Устройството с Bluetooth „<ph name="DEVICE_NAME" />“ иска разрешение за сдвояване. Преди да приемете, моля, уверете се, че на него се показва следният ключ за достъп: <ph name="PASSKEY" /></translation>
 <translation id="2475982808118771221">Възникна грешка</translation>
@@ -59,6 +62,7 @@
 <translation id="2700058918926273959">Сесията приключва след <ph name="SESSION_TIME_REMAINING" />. Ще излезете от профила.</translation>
 <translation id="2727977024730340865">Използва се зарядно устройство с малка мощност. Зареждането на батерията може да не е надеждно.</translation>
 <translation id="2761704814324807722">Област за състоянието, часът е <ph name="TIME" />, <ph name="BATTERY" /></translation>
+<translation id="277257480934873581">Установява се повторна връзка с мрежата „<ph name="NAME" />“</translation>
 <translation id="2792498699870441125">Alt + търсене</translation>
 <translation id="2819276065543622893">Ще излезете сега.</translation>
 <translation id="2825619548187458965">Лавица</translation>
@@ -105,21 +109,27 @@
 <translation id="3783640748446814672">alt</translation>
 <translation id="3784455785234192852">Заключване</translation>
 <translation id="3799026279081545374">Възможно е зарядното ви устройство да е дефектно. За да получите помощ и да го замените, моля, обадете се на номера за държавата, в която живеете – 866-628-1371 за САЩ, 0800-026-0613 за Великобритания, 1-800-832-664 за Ирландия, 866-628-1372 за Канада и 1-800-067-460 за Австралия.</translation>
+<translation id="3846575436967432996">Не е налице информация за мрежата</translation>
 <translation id="3866182280516392520">IPv6 адрес</translation>
 <translation id="3891340733213178823">Натиснете два пъти „Ctrl+Shift+Q“ за изход.</translation>
 <translation id="3892641579809465218">Показване на вътрешна информация</translation>
 <translation id="3893630138897523026">ChromeVox (обратна връзка с говор)</translation>
 <translation id="3899995891769452915">Гласово въвеждане</translation>
+<translation id="3901991538546252627">Установява се връзка със: <ph name="NAME" /></translation>
 <translation id="3963445509666917109">Високоговорител (вътрешен)</translation>
 <translation id="3967919079500697218">Възможността за правене на екранни снимки е деактивирана от администратора ви.</translation>
 <translation id="397105322502079400">Изчислява се...</translation>
 <translation id="3995138139523574647">устройство с USB-C (задният десен порт)</translation>
 <translation id="4053612967614057854">Деактивиране на екранната клавиатура</translation>
+<translation id="4118990158415604803">Връзката с други мрежи е деактивирана от администратора ви.</translation>
 <translation id="4250680216510889253">Не</translation>
 <translation id="4279490309300973883">Дублиране</translation>
 <translation id="4321179778687042513">ctrl</translation>
 <translation id="4421231901400348175">Споделяте с/ъс <ph name="HELPER_NAME" /> контрола върху екрана си чрез отдалечено съдействие.</translation>
 <translation id="4430019312045809116">Звук</translation>
+<translation id="4448844063988177157">Търсят се Wi-Fi мрежи...</translation>
+<translation id="4479639480957787382">Ethernet</translation>
+<translation id="4508225577814909926"><ph name="NAME" />: Установява се връзка...</translation>
 <translation id="4527045527269911712">Устройството с Bluetooth „<ph name="DEVICE_NAME" />“ иска разрешение за сдвояване.</translation>
 <translation id="453661520163887813"><ph name="TIME" /> до пълно зареждане</translation>
 <translation id="4544944664594876241">Комбинацията за заключване на екрана е променена. Моля, използвайте „<ph name="NEW_SHORTCUT" />“ вместо „<ph name="OLD_SHORTCUT" />“.</translation>
@@ -172,6 +182,7 @@
 <translation id="6165508094623778733">Научете повече</translation>
 <translation id="6203030746557259519">Виртуален дисплей</translation>
 <translation id="6248847161401822652">За изход натиснете два пъти Ctrl+Shift+Q.</translation>
+<translation id="6267036997247669271">„<ph name="NAME" />“: Активира се...</translation>
 <translation id="6297287540776456956">Използвайте писалката, за да изберете област</translation>
 <translation id="6310121235600822547">Завъртяхте „<ph name="DISPLAY_NAME" />“ на <ph name="ROTATION" /></translation>
 <translation id="6359806961507272919">SMS от <ph name="PHONE_NUMBER" /></translation>
@@ -184,6 +195,7 @@
 <translation id="6501401484702599040">Екранът се предава към „<ph name="RECEIVER_NAME" />“</translation>
 <translation id="6521655319214113338">Ръкописно въвеждане</translation>
 <translation id="6537270692134705506">Заснемане на екрана</translation>
+<translation id="6549021752953852991">Няма налична клетъчна мрежа</translation>
 <translation id="6550675742724504774">Опции</translation>
 <translation id="6585808820553845416">Сесията приключва след <ph name="SESSION_TIME_REMAINING" />.</translation>
 <translation id="6596816719288285829">IP адрес</translation>
@@ -192,6 +204,7 @@
 <translation id="6713285437468012787">Устройството с Bluetooth „<ph name="DEVICE_NAME" />“ е сдвоено и сега е налице за всички потребители. Може да премахнете това сдвояване посредством „Настройки“.</translation>
 <translation id="6785414152754474415">Батерията е <ph name="PERCENTAGE" />% пълна и се зарежда.</translation>
 <translation id="683971173229319003">търсене + L</translation>
+<translation id="6857811139397017780">Активиране на <ph name="NETWORKSERVICE" /></translation>
 <translation id="6911468394164995108">Присъединяване другаде...</translation>
 <translation id="6915678159055240887">Chromebox</translation>
 <translation id="6979158407327259162">Google Диск</translation>
@@ -200,6 +213,7 @@
 <translation id="703171847531699602">Няма устройства Cast</translation>
 <translation id="7034339000180558234">„<ph name="TAB_NAME" />“ се предава към „<ph name="RECEIVER_NAME" />“</translation>
 <translation id="7052914147756339792">Задаване на тапет...</translation>
+<translation id="7066646422045619941">Тази мрежа е деактивирана от администратора ви.</translation>
 <translation id="7097613348211027502">Функцията ChromeVox (обратна връзка с говор) е активирана.
 Натиснете „Ctrl+Alt+Z“, за да я деактивирате.</translation>
 <translation id="7098389117866926363">Устройство с USB-C (левият порт на гърба)</translation>
@@ -209,6 +223,7 @@
 <translation id="7209101170223508707">„CAPS LOCK“ е включен.
 Натиснете „Alt + търсене“ или „Shift“, за да анулирате.</translation>
 <translation id="7348093485538360975">Екранна клавиатура</translation>
+<translation id="735745346212279324">Връзката с виртуалната частна мрежа (VPN) е прекъсната</translation>
 <translation id="737451040872859086">Микрофон (вътрешен)</translation>
 <translation id="742594950370306541">Камерата се използва.</translation>
 <translation id="743058460480092004">Камерата и микрофонът се използват.</translation>
@@ -225,19 +240,24 @@
 <translation id="7823564328645135659">Езикът се промени от „<ph name="FROM_LOCALE" />“ на „<ph name="TO_LOCALE" />“ след синхронизирането на настройките ви.</translation>
 <translation id="785750925697875037">Преглед на мобилния профил</translation>
 <translation id="7864539943188674973">Деактивиране на Bluetooth</translation>
+<translation id="7874779702599364982">Търсят се мобилни мрежи...</translation>
 <translation id="7893838033650689677">Включване на Wi-Fi</translation>
 <translation id="7904094684485781019">Администраторът на този профил е забранил централизирания вход.</translation>
 <translation id="7957227661277029961">Възможно е вашият <ph name="DEVICE_TYPE" /> да не се зарежда, докато е включен. Добре е да използвате оригиналното зарядно устройство.</translation>
 <translation id="7982789257301363584">Мрежа</translation>
+<translation id="8000066093800657092">Няма мрежа</translation>
 <translation id="8054466585765276473">Издръжливостта на батерията се изчислява.</translation>
 <translation id="8077816382010018681">Място за заглавието на известието за функцията за бързо отключване</translation>
 <translation id="8103386449138765447">SMS съобщения: <ph name="MESSAGE_COUNT" /></translation>
+<translation id="8132793192354020517">Установена е връзка с/ъс <ph name="NAME" /></translation>
 <translation id="8185286464235484130">Уведомете ни как се справяме, като отговорите на няколко въпроса.</translation>
 <translation id="8190698733819146287">Персонализиране на езиците и въвеждането...</translation>
 <translation id="8206859287963243715">Клетъчно</translation>
 <translation id="8308637677604853869">Предишно меню</translation>
 <translation id="8356164830168736643">Затваряне на <ph name="WINDOW_TITLE" /></translation>
 <translation id="8428213095426709021">Настройки</translation>
+<translation id="8454013096329229812">Wi-Fi е включен.</translation>
+<translation id="8484916590211895857"><ph name="NAME" />: Установява се повторна връзка...</translation>
 <translation id="8517041960877371778">Възможно е вашият <ph name="DEVICE_TYPE" /> да не се зарежда, докато е включен.</translation>
 <translation id="8528322925433439945">Мобилни мрежи...</translation>
 <translation id="8639760480004882931">Батерия: <ph name="PERCENTAGE" /></translation>

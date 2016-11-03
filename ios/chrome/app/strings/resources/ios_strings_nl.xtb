@@ -18,7 +18,6 @@
 <translation id="3692781555820666866">Indien ingeschakeld, bevat de omnibox suggesties voor webpagina's die worden uitgezonden door apparaten bij jou in de buurt.</translation>
 <translation id="385051799172605136">Vorige</translation>
 <translation id="4121993058175073134">Als je netto-exportgegevens wilt verzenden, configureer je je e-mailaccount in de app Instellingen.</translation>
-<translation id="4399225372525667111">Chrome kan niet verifiëren of de URL voor deze site correct is.</translation>
 <translation id="4728558894243024398">Platform</translation>
 <translation id="473775607612524610">Updaten</translation>
 <translation id="4875622588773761625">Wil je dat <ph name="PASSWORD_MANAGER_BRAND" /> je wachtwoord voor deze site updatet?</translation>
@@ -30,11 +29,9 @@
 <translation id="6314335155547195432">Wachtwoord genereren</translation>
 <translation id="6344783595350022745">Tekst wissen</translation>
 <translation id="6456425917241817154">Gegenereerd Chrome-wachtw.</translation>
-<translation id="6535543971741225613">De site die je probeert te openen, gedraagt zich vreemd en Chrome kan niet verifiëren of de URL voor deze site correct is. Voor je eigen veiligheid moet je niet doorgaan. Je kunt het morgen opnieuw proberen of naar een andere site gaan.</translation>
 <translation id="7222245588540287464">Of contextueel zoeken al dan niet is ingeschakeld.</translation>
 <translation id="7456847797759667638">Open locatie...</translation>
 <translation id="7481312909269577407">Vooruit</translation>
-<translation id="7484580869648358686">Waarschuwing: hier klopt iets niet!</translation>
 <translation id="7588950540487816470">Fysieke web</translation>
 <translation id="7961015016161918242">Nooit</translation>
 </translationbundle>

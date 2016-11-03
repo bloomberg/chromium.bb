@@ -27,6 +27,9 @@ Các máy tính từ xa có bàn phím không phải tiếng Anh-Mỹ có thể 
 <translation id="1654128982815600832">Đang bật kết nối từ xa cho máy tính này…</translation>
 <translation id="170207782578677537">Không thể đăng ký máy tính này.</translation>
 <translation id="1704090719919187045">Tùy chọn máy chủ kết nối từ xa trên Chrome</translation>
+<translation id="1730409684442507495">• Cải thiện mức tiêu thụ pin, độ phản hồi và chất lượng hình ảnh màn hình.
+• Cải thiện độ phản hồi của thao tác nhấp và kéo.
+• Cải thiện nhiều hiệu ứng hoạt ảnh giao diện người dùng.</translation>
 <translation id="174018511426417793">Bạn chưa đăng ký máy tính nào. Để bật kết nối từ xa với một máy tính, hãy cài đặt Chrome Remote Desktop trên máy tính đó và nhấp “<ph name="BUTTON_NAME" />”.</translation>
 <translation id="1742469581923031760">Đang kết nối...</translation>
 <translation id="1770394049404108959">Tôi không thể mở ứng dụng.</translation>
@@ -73,7 +76,6 @@ Các máy tính từ xa có bàn phím không phải tiếng Anh-Mỹ có thể 
 <translation id="2699970397166997657">Kết nối từ xa trên Chrome</translation>
 <translation id="2747641796667576127">Cập nhật phần mềm thường tự động diễn ra nhưng trong một số trường hợp hiếm gặp, quá trình này có thể không thành công. Quá trình cập nhật phần mềm sẽ chỉ mất tối đa một vài phút và có thể được thực hiện trong khi kết nối từ xa tới máy tính của bạn.</translation>
 <translation id="2841013758207633010">Thời gian</translation>
-<translation id="2851674870054673688">Sau khi họ nhập mã, phiên chia sẻ của bạn sẽ bắt đầu.</translation>
 <translation id="2851754573186462851">Phát trực tuyến ứng dụng Chromium</translation>
 <translation id="2855866366045322178">ngoại tuyến</translation>
 <translation id="2888969873284818612">Đã xảy ra lỗi mạng. Chúng tôi sẽ khởi động lại ứng dụng khi thiết bị của bạn trực tuyến trở lại.</translation>

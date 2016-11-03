@@ -27,6 +27,9 @@ Informácie o ochrane osobných údajov nájdete v Pravidlách ochrany osobných
 <translation id="1654128982815600832">Prebieha povoľovanie vzdialených pripojení pre tento počítač...</translation>
 <translation id="170207782578677537">Registrácia tohto počítača zlyhala.</translation>
 <translation id="1704090719919187045">Predvoľby hostiteľa funkcie Chromoting</translation>
+<translation id="1730409684442507495">• Vylepšená kvalita obrázkov na ploche, rýchlosť reakcií a spotreba batérie.
+• Vylepšená rýchlosť reakcií operácií typu kliknutie a presunutie.
+• Vylepšené viaceré animované efekty používateľského rozhrania.</translation>
 <translation id="174018511426417793">Nie sú zaregistrované žiadne počítače. Ak chcete povoliť vzdialené pripojenie k inému počítaču, nainštalujte na ňom Vzdialenú plochu Chrome a potom kliknite na tlačidlo <ph name="BUTTON_NAME" />.</translation>
 <translation id="1742469581923031760">Prebieha pripájanie...</translation>
 <translation id="1770394049404108959">Aplikáciu nemôžem spustiť.</translation>
@@ -73,7 +76,6 @@ Informácie o ochrane osobných údajov nájdete v Pravidlách ochrany osobných
 <translation id="2699970397166997657">Chromoting</translation>
 <translation id="2747641796667576127">Aktualizácie systému zvyčajne prebiehajú automaticky, ale v zriedkavých prípadoch môžu zlyhať. Aktualizácia softvéru by nemala trvať dlhšie ako niekoľko sekúnd a dá sa vykonať prostredníctvom vzdialeného pripojenia k počítaču.</translation>
 <translation id="2841013758207633010">Čas</translation>
-<translation id="2851674870054673688">Vaša relácia zdieľania začne okamžite po zadaní kódu.</translation>
 <translation id="2851754573186462851">Chromium App Streaming</translation>
 <translation id="2855866366045322178">offline</translation>
 <translation id="2888969873284818612">Vyskytla sa chyba siete. Keď bude vaše zariadenie znova online, aplikáciu reštartujeme.</translation>

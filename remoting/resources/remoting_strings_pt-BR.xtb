@@ -27,6 +27,9 @@ Para ver mais informações sobre privacidade, consulte a Política de Privacida
 <translation id="1654128982815600832">Permitindo conexões remotas a este computador...</translation>
 <translation id="170207782578677537">Falha ao registrar este computador.</translation>
 <translation id="1704090719919187045">Preferências do host do Chromoting</translation>
+<translation id="1730409684442507495">• Melhoria na qualidade de imagem da área de trabalho, capacidade de resposta e consumo de bateria.
+• Melhoria na capacidade de resposta em operações de clicar e arrastar.
+• Melhoria em diversos efeitos de animações de IU.</translation>
 <translation id="174018511426417793">Você não tem computadores cadastrados. Para ativar conexões remotas a um computador, instale a Área de trabalho remota do Google Chrome no computador desejado e clique em "<ph name="BUTTON_NAME" />".</translation>
 <translation id="1742469581923031760">Conectando...</translation>
 <translation id="1770394049404108959">Não consigo abrir o aplicativo.</translation>
@@ -73,7 +76,6 @@ Para ver mais informações sobre privacidade, consulte a Política de Privacida
 <translation id="2699970397166997657">Chromoting</translation>
 <translation id="2747641796667576127">As atualizações de software geralmente ocorrem automaticamente, mas podem falhar em casos raros. Essa atualização não deve demorar mais do que alguns minutos e pode ser feita enquanto você estiver conectado ao computador remotamente.</translation>
 <translation id="2841013758207633010">Tempo</translation>
-<translation id="2851674870054673688">Assim que o código for inserido, sua sessão de compartilhamento será iniciada.</translation>
 <translation id="2851754573186462851">Chromium App Streaming</translation>
 <translation id="2855866366045322178">off-line</translation>
 <translation id="2888969873284818612">Ocorreu um erro de rede. Reiniciaremos o aplicativo quando seu dispositivo estiver on-line novamente.</translation>

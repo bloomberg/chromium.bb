@@ -50,6 +50,7 @@
 <translation id="1491663344921578213">Vous ne pouvez pas consulter le site Web <ph name="SITE" /> pour le moment, car les certificats y sont épinglés. Les attaques et les erreurs réseau sont généralement temporaires. Vous devriez donc pouvoir accéder à cette page ultérieurement. <ph name="BEGIN_LEARN_MORE_LINK" />En savoir plus<ph name="END_LEARN_MORE_LINK" /></translation>
 <translation id="1506687042165942984">Afficher une copie enregistrée (non actualisée) de cette page</translation>
 <translation id="1519264250979466059">Date de création</translation>
+<translation id="153384715582417236">C'est tout !</translation>
 <translation id="1549470594296187301">Vous devez activer JavaScript pour utiliser cette fonctionnalité.</translation>
 <translation id="1559528461873125649">Fichier ou répertoire inexistant</translation>
 <translation id="1559572115229829303">&lt;p&gt;Impossible d'établir une connexion privée à <ph name="BEGIN_BOLD" /><ph name="DOMAIN" /><ph name="END_BOLD" /> : la date et l'heure de votre appareil (<ph name="DATE_AND_TIME" />) sont incorrectes.&lt;/p&gt;
@@ -350,7 +351,6 @@
 <translation id="4728558894243024398">Plate-forme</translation>
 <translation id="4744603770635761495">Chemin d'accès exécutable</translation>
 <translation id="4756388243121344051">&amp;Historique</translation>
-<translation id="4759238208242260848">Téléchargements</translation>
 <translation id="4764776831041365478">Il se peut que la page Web à l'adresse <ph name="URL" /> soit temporairement inaccessible ou qu'elle ait été déplacée de façon permanente à une autre adresse Web.</translation>
 <translation id="4771973620359291008">Une erreur inconnue s'est produite.</translation>
 <translation id="4782449893814226250">Une demande d'autorisation a été envoyée à tes parents pour la consultation de cette page.</translation>
@@ -389,6 +389,7 @@
 <translation id="5179510805599951267">Cette page n'est pas rédigée en <ph name="ORIGINAL_LANGUAGE" /> ? Signaler l'erreur</translation>
 <translation id="5190835502935405962">Barre de favoris</translation>
 <translation id="5199729219167945352">Prototypes</translation>
+<translation id="5199841536747119669">Vos suggestions s'affichent ici</translation>
 <translation id="5251803541071282808">Cloud</translation>
 <translation id="5277279256032773186">Vous utilisez Chrome au travail ? Les entreprises peuvent gérer les paramètres Chrome de leurs employés. En savoir plus</translation>
 <translation id="5299298092464848405">Erreur d'analyse de la règle.</translation>
@@ -468,6 +469,7 @@
 <translation id="6263376278284652872">Favoris de <ph name="DOMAIN" /></translation>
 <translation id="6264485186158353794">Retour à la sécurité</translation>
 <translation id="6282194474023008486">Code postal</translation>
+<translation id="6290238015253830360">Vos articles suggérés s'affichent ici</translation>
 <translation id="6305205051461490394"><ph name="URL" /> est inaccessible.</translation>
 <translation id="6321917430147971392">Vérifiez vos paramètres DNS</translation>
 <translation id="6328639280570009161">Essayez de désactiver la prédiction réseau</translation>
@@ -651,6 +653,7 @@ Conseil : Le mode navigation privée (<ph name="SHORTCUT_KEY" />) pourra vous �
 <translation id="8363502534493474904">Désactiver le mode Avion</translation>
 <translation id="8364627913115013041">Non définie</translation>
 <translation id="8380941800586852976">Dangereux</translation>
+<translation id="8382348898565613901">Vos favoris récemment consultés s'affichent ici</translation>
 <translation id="8412145213513410671">Erreurs (<ph name="CRASH_COUNT" />)</translation>
 <translation id="8412392972487953978">Vous devez saisir deux fois la même phrase secrète.</translation>
 <translation id="8428213095426709021">Paramètres</translation>
@@ -700,6 +703,7 @@ Conseil : Le mode navigation privée (<ph name="SHORTCUT_KEY" />) pourra vous �
 <translation id="8987927404178983737">Mois</translation>
 <translation id="8989148748219918422"><ph name="ORGANIZATION" /> [<ph name="COUNTRY" />]</translation>
 <translation id="9001074447101275817">Le proxy <ph name="DOMAIN" /> nécessite un nom d'utilisateur et un mot de passe.</translation>
+<translation id="9008201768610948239">Ignorer</translation>
 <translation id="901974403500617787">Seul le propriétaire suivant peut définir les options qui s'appliquent à tout le système : <ph name="OWNER_EMAIL" />.</translation>
 <translation id="9020542370529661692">Cette page a été traduite en <ph name="TARGET_LANGUAGE" />.</translation>
 <translation id="9038649477754266430">Utiliser un service de prédiction pour charger les pages plus rapidement</translation>

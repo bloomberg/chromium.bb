@@ -63,7 +63,6 @@
 <translation id="2588322182880276190">Chrome логотип</translation>
 <translation id="2664962310688259219">Лиценце отвореног кода за Chrome ОС</translation>
 <translation id="2665296953892887393">Помозите нам да побољшамо Google Chrome тако што ћете Google-у слати извештаје о отказивању и <ph name="UMA_LINK" /></translation>
-<translation id="2669824781555328029">Датотека <ph name="FILE_NAME" /> може негативно да утиче на доживљај прегледања и зато ју је Chrome блокирао.</translation>
 <translation id="2681064822612051220">У систему је пронађена некомпатибилна инсталација Google Chrome прегледача. Деинсталирајте је и покушајте поново.</translation>
 <translation id="2689103672227170538">Овај додатак је променио страницу која се приказује када покренете Chrome.</translation>
 <translation id="2704356438731803243">Ако желите да постојећи Chrome подаци буду раздвојени, можете да направите новог Chrome корисника за <ph name="USER_NAME" />.</translation>
@@ -153,6 +152,7 @@
 
 Неке функције су можда недоступне. Наведите други директоријум профила или користите новију верзију Chrome-а.</translation>
 <translation id="5176234269072261959">Помозите да побољшамо Chrome тако што ћете послати извештај о актуелним подешавањима.</translation>
+<translation id="5193136243808726294">Google Chrome ОС не може да отвори ову страницу.</translation>
 <translation id="5204098752394657250">Google Chrome <ph name="TERMS_OF_SERVICE_LINK" />услови коришћења услуге<ph name="END_TERMS_OF_SERVICE_LINK" /></translation>
 <translation id="5243785881901838525">Google Payments (копирано у Chrome)</translation>
 <translation id="5251420635869119124">Гости могу да користе Chrome а да не остављају никакве трагове.</translation>
@@ -213,7 +213,6 @@ Google Chrome не може да врати подешавања.</translation>
 <translation id="699076943483372849">Овај сајт користи додатну компоненту Chrome Frame која је повучена из употребе и која више не прима безбедносна ажурирања и ажурирања за стабилност. Деинсталирајте је и надоградите на модеран прегледач.</translation>
 <translation id="6991142834212251086">Повежи моје Chrome податке са овим налогом</translation>
 <translation id="7060865993964054389">Покретач Google Chrome апликација</translation>
-<translation id="7084448929020576097">Датотека <ph name="FILE_NAME" /> је злонамерна, па ју је Chrome блокирао.</translation>
 <translation id="7098166902387133879">Google Chrome користи микрофон.</translation>
 <translation id="7106741999175697885">Менаџер задатака – Google Chrome</translation>
 <translation id="7125719106133729027">Chrome не може сâм да се ажурира на најновију верзију, па пропуштате одличне нове функције и безбедносне исправке. Треба ручно поново да инсталирате Chrome.</translation>
@@ -276,7 +275,6 @@ Google Chrome не може да врати подешавања.</translation>
 <translation id="8669527147644353129">Google Chrome помоћник</translation>
 <translation id="8679801911857917785">Контролише и страницу која се приказује када покренете Chrome.</translation>
 <translation id="870251953148363156">Ажурирај &amp;Google Chrome</translation>
-<translation id="8793772303278047003">Chrome је застарео.</translation>
 <translation id="8796108026289707191">Сада треба поново да покренете Google Chrome.</translation>
 <translation id="8823341990149967727">Chrome је застарео</translation>
 <translation id="884296878221830158">Контролише и страницу која се приказује када покренете Chrome или кликнете на дугме Почетна.</translation>
@@ -285,7 +283,6 @@ Google Chrome не може да врати подешавања.</translation>
 <translation id="8914504000324227558">Поново покрени Chrome</translation>
 <translation id="9026991721384951619">Chrome ОС не може да синхронизује податке зато што су подаци за пријављивање на налог застарели.</translation>
 <translation id="9067395829937117663">За Google Chrome је потребан Windows 7 или новија верзија.</translation>
-<translation id="9102715433345326100">Ова датотека је злонамерна, па ју је Chrome блокирао.</translation>
 <translation id="9107728822479888688"><ph name="BEGIN_BOLD" />Упозорење:<ph name="END_BOLD" /> Google Chrome не може да спречи додатке да снимају историју прегледања. Да бисте онемогућили овај додатак у режиму без архивирања, опозовите избор ове опције.</translation>
 <translation id="911206726377975832">Желите ли да избришете и податке прегледања?</translation>
 <translation id="924447568950697217">Поставите Chrome за подразумевани прегледач</translation>

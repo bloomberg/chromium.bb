@@ -22,6 +22,7 @@
 <translation id="1484102317210609525"><ph name="DEVICE_NAME" /> (HDMI/DP)</translation>
 <translation id="1510238584712386396">Program uruchamiający</translation>
 <translation id="1525508553941733066">ZAMKNIJ</translation>
+<translation id="153454903766751181">Inicjuję modem komórkowy...</translation>
 <translation id="15373452373711364">Duży kursor myszy</translation>
 <translation id="1550523713251050646">Kliknij, by wyświetlić więcej opcji</translation>
 <translation id="1602076796624386989">Włącz komórkową transmisję danych</translation>
@@ -32,6 +33,7 @@
 <translation id="1747827819627189109">Klawiatura ekranowa włączona</translation>
 <translation id="1812696562331527143">Metoda wprowadzania została zmieniona na <ph name="INPUT_METHOD_ID" />*(<ph name="BEGIN_LINK" />innej firmy<ph name="END_LINK" />).
 Naciśnij Shift + Alt, by ją przełączyć.</translation>
+<translation id="1850504506766569011">Wi-Fi wyłączone.</translation>
 <translation id="1864454756846565995">Urządzenie USB-C (tylny port)</translation>
 <translation id="1882897271359938046">Kopia na <ph name="DISPLAY_NAME" /></translation>
 <translation id="1919743966458266018">Zmieniliśmy skrót, który otwiera menedżera zadań. Zamiast <ph name="OLD_SHORTCUT" /> używaj teraz <ph name="NEW_SHORTCUT" />.</translation>
@@ -47,6 +49,7 @@ Naciśnij Shift + Alt, by ją przełączyć.</translation>
 <translation id="2268813581635650749">Wyloguj wszystkich</translation>
 <translation id="2297568595583585744">Zasobnik stanu</translation>
 <translation id="2303600792989757991">Przełącz widok ogólny okna</translation>
+<translation id="2354174487190027830">Aktywuję <ph name="NAME" /></translation>
 <translation id="2391579633712104609">180°</translation>
 <translation id="2429753432712299108">Urządzenie Bluetooth „<ph name="DEVICE_NAME" />” chce się sparować. Zanim to zaakceptujesz, sprawdź, czy na tym urządzeniu wyświetla się klucz: <ph name="PASSKEY" /></translation>
 <translation id="2475982808118771221">Wystąpił błąd</translation>
@@ -59,6 +62,7 @@ Naciśnij Shift + Alt, by ją przełączyć.</translation>
 <translation id="2700058918926273959">Sesja kończy się za <ph name="SESSION_TIME_REMAINING" />. Zostaniesz wylogowany.</translation>
 <translation id="2727977024730340865">Podłączono ładowarkę o małej mocy. Ładowanie baterii może być nieprawidłowe.</translation>
 <translation id="2761704814324807722">Pasek stanu, godzina <ph name="TIME" />, <ph name="BATTERY" /></translation>
+<translation id="277257480934873581">Ponownie łączę z: <ph name="NAME" /></translation>
 <translation id="2792498699870441125">Alt+Szukaj</translation>
 <translation id="2819276065543622893">Zostaniesz teraz wylogowany.</translation>
 <translation id="2825619548187458965">Półka</translation>
@@ -105,21 +109,27 @@ Naciśnij Szukaj lub Shift, by anulować.</translation>
 <translation id="3783640748446814672">alt</translation>
 <translation id="3784455785234192852">Zablokuj</translation>
 <translation id="3799026279081545374">Możesz mieć niewłaściwą ładowarkę. Jeśli mieszkasz w Stanach Zjednoczonych, aby uzyskać pomoc i zamówić ładowarkę zastępczą, zadzwoń pod numer 866-628-1371. W Wielkiej Brytanii – pod numer 0800-026-0613. W Irlandii – pod numer 1-800-832-664. W Kanadzie – pod numer 866-628-1372. W Australii – pod numer 1-800-067-460.</translation>
+<translation id="3846575436967432996">Brak informacji o sieciach</translation>
 <translation id="3866182280516392520">Adres IPv6</translation>
 <translation id="3891340733213178823">Naciśnij dwukrotnie Ctrl+Shift+Q, by się wylogować.</translation>
 <translation id="3892641579809465218">Wyświetlacz wewnętrzny</translation>
 <translation id="3893630138897523026">ChromeVox (potwierdzenia głosowe)</translation>
 <translation id="3899995891769452915">Rozpoznawanie mowy</translation>
+<translation id="3901991538546252627">Łączę z: <ph name="NAME" /></translation>
 <translation id="3963445509666917109">Głośnik (wewnętrzny)</translation>
 <translation id="3967919079500697218">Możliwość robienia zrzutów ekranów została wyłączona przez administratora.</translation>
 <translation id="397105322502079400">Obliczanie...</translation>
 <translation id="3995138139523574647">Urządzenie USB-C (tylny port na prawym boku)</translation>
 <translation id="4053612967614057854">Wyłącz klawiaturę ekranową</translation>
+<translation id="4118990158415604803">Możliwość połączenia się z innymi sieciami została wyłączona przez administratora.</translation>
 <translation id="4250680216510889253">Nie</translation>
 <translation id="4279490309300973883">Odbicie lustrzane</translation>
 <translation id="4321179778687042513">ctrl</translation>
 <translation id="4421231901400348175">Udostępnianie sterowania ekranem użytkownikowi <ph name="HELPER_NAME" /> przy użyciu pomocy zdalnej.</translation>
 <translation id="4430019312045809116">Głośność</translation>
+<translation id="4448844063988177157">Trwa wyszukiwanie sieci Wi-Fi...</translation>
+<translation id="4479639480957787382">Ethernet</translation>
+<translation id="4508225577814909926"><ph name="NAME" />: łączę...</translation>
 <translation id="4527045527269911712">Urządzenie Bluetooth „<ph name="DEVICE_NAME" />” chce się sparować.</translation>
 <translation id="453661520163887813"><ph name="TIME" /> do pełnego naładowania</translation>
 <translation id="4544944664594876241">Zmieniliśmy skrót, który blokuje ekran. Zamiast <ph name="OLD_SHORTCUT" /> używaj teraz <ph name="NEW_SHORTCUT" />.</translation>
@@ -172,6 +182,7 @@ Naciśnij Shift + Alt, by ją przełączyć.</translation>
 <translation id="6165508094623778733">Więcej informacji</translation>
 <translation id="6203030746557259519">Wirtualny wyświetlacz</translation>
 <translation id="6248847161401822652">Naciśnij dwukrotnie Control Shift Q, by zakończyć.</translation>
+<translation id="6267036997247669271"><ph name="NAME" />: aktywuję...</translation>
 <translation id="6297287540776456956">Zaznacz obszar rysikiem</translation>
 <translation id="6310121235600822547">Wyświetlacz <ph name="DISPLAY_NAME" /> został obrócony na <ph name="ROTATION" /></translation>
 <translation id="6359806961507272919">Wiadomość SMS z numeru <ph name="PHONE_NUMBER" /></translation>
@@ -184,6 +195,7 @@ Naciśnij Shift + Alt, by ją przełączyć.</translation>
 <translation id="6501401484702599040">Przesyłam ekran do: <ph name="RECEIVER_NAME" /></translation>
 <translation id="6521655319214113338">Pismo odręczne</translation>
 <translation id="6537270692134705506">Zrzut całego ekranu</translation>
+<translation id="6549021752953852991">Brak dostępnych sieci komórkowych</translation>
 <translation id="6550675742724504774">Opcje</translation>
 <translation id="6585808820553845416">Sesja kończy się za <ph name="SESSION_TIME_REMAINING" />.</translation>
 <translation id="6596816719288285829">Adres IP</translation>
@@ -192,6 +204,7 @@ Naciśnij Shift + Alt, by ją przełączyć.</translation>
 <translation id="6713285437468012787">Urządzenie Bluetooth „<ph name="DEVICE_NAME" />” zostało sparowane i jest teraz dostępne dla wszystkich użytkowników. Możesz usunąć to sparowanie w Ustawieniach.</translation>
 <translation id="6785414152754474415">Naładowanie baterii: <ph name="PERCENTAGE" />%. Trwa ładowanie.</translation>
 <translation id="683971173229319003">Szukaj+L</translation>
+<translation id="6857811139397017780">Aktywuj usługę <ph name="NETWORKSERVICE" /></translation>
 <translation id="6911468394164995108">Połącz z inną...</translation>
 <translation id="6915678159055240887">Chromebox</translation>
 <translation id="6979158407327259162">Dysk Google</translation>
@@ -200,6 +213,7 @@ Naciśnij Shift + Alt, by ją przełączyć.</translation>
 <translation id="703171847531699602">Brak urządzeń przesyłających</translation>
 <translation id="7034339000180558234">Przesyłam kartę <ph name="TAB_NAME" /> do: <ph name="RECEIVER_NAME" /></translation>
 <translation id="7052914147756339792">Ustaw tapetę...</translation>
+<translation id="7066646422045619941">Ta sieć została wyłączona przez administratora.</translation>
 <translation id="7097613348211027502">ChromeVox (potwierdzenia głosowe) jest włączony.
 Aby wyłączyć, naciśnij Ctrl+Alt+Z.</translation>
 <translation id="7098389117866926363">Urządzenie USB-C (lewy port z tyłu)</translation>
@@ -209,6 +223,7 @@ Aby wyłączyć, naciśnij Ctrl+Alt+Z.</translation>
 <translation id="7209101170223508707">CAPS LOCK jest włączony.
 Naciśnij Alt+Szukaj lub Shift, by anulować.</translation>
 <translation id="7348093485538360975">Klawiatura ekranowa</translation>
+<translation id="735745346212279324">VPN odłączona</translation>
 <translation id="737451040872859086">Mikrofon (wewnętrzny)</translation>
 <translation id="742594950370306541">Aparat jest używany.</translation>
 <translation id="743058460480092004">Aparat i mikrofon są używane.</translation>
@@ -225,19 +240,24 @@ Naciśnij Alt+Szukaj lub Shift, by anulować.</translation>
 <translation id="7823564328645135659">Po zsynchronizowaniu ustawień zmieniono język z „<ph name="FROM_LOCALE" />” na „<ph name="TO_LOCALE" />”.</translation>
 <translation id="785750925697875037">Wyświetl konto dla telefonów komórkowych</translation>
 <translation id="7864539943188674973">Wyłącz Bluetooth</translation>
+<translation id="7874779702599364982">Szukam sieci komórkowych...</translation>
 <translation id="7893838033650689677">Włącz Wi-Fi</translation>
 <translation id="7904094684485781019">Administrator tego konta zablokował możliwość wielokrotnego logowania.</translation>
 <translation id="7957227661277029961"><ph name="DEVICE_TYPE" /> nie może się ładować, gdy jest włączony. Użyj oficjalnej ładowarki.</translation>
 <translation id="7982789257301363584">Sieć</translation>
+<translation id="8000066093800657092">Brak sieci</translation>
 <translation id="8054466585765276473">Obliczanie czasu pracy na baterii.</translation>
 <translation id="8077816382010018681">Miejsce na tytuł powiadomienia o funkcji szybkiego odblokowania</translation>
 <translation id="8103386449138765447">SMS-y: <ph name="MESSAGE_COUNT" /></translation>
+<translation id="8132793192354020517">Połączono z <ph name="NAME" /></translation>
 <translation id="8185286464235484130">Co sądzisz o efektach naszej pracy? Odpowiedz na kilka pytań.</translation>
 <translation id="8190698733819146287">Dostosuj języki i metody wprowadzania...</translation>
 <translation id="8206859287963243715">Komórka</translation>
 <translation id="8308637677604853869">Poprzednie menu</translation>
 <translation id="8356164830168736643">Zamknij <ph name="WINDOW_TITLE" /></translation>
 <translation id="8428213095426709021">Ustawienia</translation>
+<translation id="8454013096329229812">Wi-Fi włączone.</translation>
+<translation id="8484916590211895857"><ph name="NAME" />: ponownie łączę...</translation>
 <translation id="8517041960877371778"><ph name="DEVICE_TYPE" /> nie może się ładować, gdy jest włączony.</translation>
 <translation id="8528322925433439945">Komórkowe...</translation>
 <translation id="8639760480004882931">Pozostało <ph name="PERCENTAGE" /></translation>

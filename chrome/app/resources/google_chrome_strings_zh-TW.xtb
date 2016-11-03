@@ -59,7 +59,6 @@
 <translation id="2588322182880276190">Chrome 標誌</translation>
 <translation id="2664962310688259219">Chrome 作業系統開放原始碼授權</translation>
 <translation id="2665296953892887393">將當機報告和<ph name="UMA_LINK" />傳送給 Google，助我們一臂之力，讓 Google Chrome 更臻完美</translation>
-<translation id="2669824781555328029"><ph name="FILE_NAME" /> 可能會影響您的瀏覽品質，因此 Chrome 已經予以封鎖。</translation>
 <translation id="2681064822612051220">系統在安裝 Google Chrome 時發生衝突問題，請先解除安裝，然後再試一次。</translation>
 <translation id="2689103672227170538">這個擴充功能已變更 Chrome 啟動時所顯示的網頁。</translation>
 <translation id="2704356438731803243">如果您想要另行保留現有的 Chrome 資料，可以為 <ph name="USER_NAME" /> 建立新的 Chrome 使用者。</translation>
@@ -147,6 +146,7 @@
 <translation id="5148419164691878332">Chrome 會將此密碼儲存在您的「<ph name="SAVED_PASSWORDS_LINK" />」中，讓您在下次需要使用時套用。</translation>
 <translation id="5170938038195470297">由於您的設定檔是來自較新版本的 Google Chrome，所以系統無法使用該檔案。這表示您可能無法使用部分功能。請指定另一個設定檔目錄，或使用較新版本的 Google Chrome。</translation>
 <translation id="5176234269072261959">只要回報目前的設定，就能助我們一臂之力，讓 Chrome 更臻完美。</translation>
+<translation id="5193136243808726294">Google Chrome 作業系統無法開啟這個網頁。</translation>
 <translation id="5204098752394657250">Google Chrome <ph name="TERMS_OF_SERVICE_LINK" />服務條款<ph name="END_TERMS_OF_SERVICE_LINK" /></translation>
 <translation id="5243785881901838525">Google Payments (已複製到 Chrome)</translation>
 <translation id="5251420635869119124">以訪客身分使用 Chrome 不會留下任何紀錄。</translation>
@@ -207,7 +207,6 @@ Google Chrome 無法復原您的設定。</translation>
 <translation id="699076943483372849">這個網站使用的 Chrome 內嵌框架外掛程式已淘汰，無法再接收安全性和穩定性更新。請解除安裝該外掛程式，並升級至新型瀏覽器。</translation>
 <translation id="6991142834212251086">將我的 Chrome 資料連結至這個帳戶</translation>
 <translation id="7060865993964054389">Google Chrome 應用程式啟動器</translation>
-<translation id="7084448929020576097"><ph name="FILE_NAME" /> 是惡意軟體，因此已遭到 Chrome 封鎖。</translation>
 <translation id="7098166902387133879">Google Chrome 正在使用您的麥克風。</translation>
 <translation id="7106741999175697885">工作管理員 - Google Chrome</translation>
 <translation id="7125719106133729027">由於 Chrome 無法更新至最新版本，您現在無法使用各種最新功能和安全性修正。請以人工方式重新安裝 Chrome。</translation>
@@ -270,7 +269,6 @@ Google Chrome 無法復原您的設定。</translation>
 <translation id="8669527147644353129">Google Chrome 小幫手</translation>
 <translation id="8679801911857917785">這個擴充功能也會控管 Chrome 啟動時所顯示的網頁。</translation>
 <translation id="870251953148363156">更新 Google Chrome(&amp;G)</translation>
-<translation id="8793772303278047003">Chrome 版本過舊。</translation>
 <translation id="8796108026289707191">建議您立即重新啟動 Google Chrome。</translation>
 <translation id="8823341990149967727">Chrome 版本過舊</translation>
 <translation id="884296878221830158">這個擴充功能也會控管 Chrome 啟動時或您點選 [首頁] 按鈕時所顯示的網頁。</translation>
@@ -279,7 +277,6 @@ Google Chrome 無法復原您的設定。</translation>
 <translation id="8914504000324227558">重新啟動 Chrome</translation>
 <translation id="9026991721384951619">您的帳戶登入詳細資料尚未更新，因此 Chrome 作業系統無法同步處理您的資料。</translation>
 <translation id="9067395829937117663">Google Chrome 僅支援 Windows 7 以上版本的作業系統。</translation>
-<translation id="9102715433345326100">這個檔案是惡意軟體，因此已遭到 Chrome 封鎖。</translation>
 <translation id="9107728822479888688"><ph name="BEGIN_BOLD" />警告：<ph name="END_BOLD" />Google Chrome 無法阻止擴充功能記錄您的瀏覽紀錄，如要在無痕模式中停用這個擴充功能，請取消選取這個選項。 </translation>
 <translation id="911206726377975832">您要一併刪除瀏覽資料嗎？</translation>
 <translation id="924447568950697217">將 Chrome 設為預設瀏覽器</translation>

@@ -22,6 +22,7 @@
 <translation id="1484102317210609525"><ph name="DEVICE_NAME" /> (HDMI/DP)</translation>
 <translation id="1510238584712386396">Pokretač</translation>
 <translation id="1525508553941733066">ODBACI</translation>
+<translation id="153454903766751181">Inicijaliziranje modema mobilne mreže...</translation>
 <translation id="15373452373711364">Veliki pokazivač miša</translation>
 <translation id="1550523713251050646">Kliknite za više opcija</translation>
 <translation id="1602076796624386989">Omogući mobilne podatke</translation>
@@ -32,6 +33,7 @@
 <translation id="1747827819627189109">Tipkovnica na zaslonu omogućena je</translation>
 <translation id="1812696562331527143">Vaš je način unosa promijenjen u <ph name="INPUT_METHOD_ID" />*(<ph name="BEGIN_LINK" />treća strana<ph name="END_LINK" />).
 Pritisnite Shift + Alt za promjenu.</translation>
+<translation id="1850504506766569011">Wi-Fi je isključen.</translation>
 <translation id="1864454756846565995">USB-C uređaj (stražnji priključak)</translation>
 <translation id="1882897271359938046">Zrcaljenje na zaslon <ph name="DISPLAY_NAME" /></translation>
 <translation id="1919743966458266018">Promijenio se prečac za otvaranje upravitelja zadataka. Upotrijebite <ph name="NEW_SHORTCUT" /> umjesto <ph name="OLD_SHORTCUT" />.</translation>
@@ -47,6 +49,7 @@ Pritisnite Shift + Alt za promjenu.</translation>
 <translation id="2268813581635650749">Odjavi sve</translation>
 <translation id="2297568595583585744">Ladica statusa</translation>
 <translation id="2303600792989757991">Prebaci na prozor pregleda</translation>
+<translation id="2354174487190027830">Aktiviranje mreže <ph name="NAME" /></translation>
 <translation id="2391579633712104609">180°</translation>
 <translation id="2429753432712299108">Bluetooth uređaj "<ph name="DEVICE_NAME" />" traži dopuštenje za uparivanje. Prije prihvaćanja provjerite prikazuje li se na njemu ovaj pristupni ključ: <ph name="PASSKEY" /></translation>
 <translation id="2475982808118771221">Došlo je do pogreške</translation>
@@ -59,6 +62,7 @@ Pritisnite Shift + Alt za promjenu.</translation>
 <translation id="2700058918926273959">Sesija će završiti za <ph name="SESSION_TIME_REMAINING" />. Odjavit ćete se.</translation>
 <translation id="2727977024730340865">Uređaj je priključen na punjač male snage. Punjenje baterije možda nije pouzdano.</translation>
 <translation id="2761704814324807722">Traka statusa, vrijeme <ph name="TIME" />, <ph name="BATTERY" /></translation>
+<translation id="277257480934873581">Ponovno povezivanje s mrežom <ph name="NAME" /></translation>
 <translation id="2792498699870441125">Alt + Pretraživanje</translation>
 <translation id="2819276065543622893">Odjavit ćete se sada.</translation>
 <translation id="2825619548187458965">Polica</translation>
@@ -105,21 +109,27 @@ Pritisnite tipke Pretraživanje ili Shift da biste ju isključili.</translation>
 <translation id="3783640748446814672">alt</translation>
 <translation id="3784455785234192852">Zaključaj</translation>
 <translation id="3799026279081545374">Možda imate neispravan punjač. Ako živite u SAD-u, nazovite 866-628-1371 da biste dobili pomoć i zamjenski punjač. Ako živite u Velikoj Britaniji, nazovite 0800-026-0613. Ako živite u Irskoj, nazovite 1-800-832-664. Ako živite u Kanadi, nazovite 866-628-1372. Ako živite u Australiji, nazovite 1-800-067-460.</translation>
+<translation id="3846575436967432996">Informacije o mreži nisu dostupne</translation>
 <translation id="3866182280516392520">IPv6 adresa</translation>
 <translation id="3891340733213178823">Pritisnite Ctrl + Shift + Q dvaput da biste se odjavili.</translation>
 <translation id="3892641579809465218">Unutarnji zaslon</translation>
 <translation id="3893630138897523026">ChromeVox (govorne povratne informacije)</translation>
 <translation id="3899995891769452915">Glasovni unos</translation>
+<translation id="3901991538546252627">Povezivanje s mrežom <ph name="NAME" /></translation>
 <translation id="3963445509666917109">Zvučnik (ugrađeni)</translation>
 <translation id="3967919079500697218">Administrator je onemogućio izradu snimki zaslona.</translation>
 <translation id="397105322502079400">Izračun u tijeku…</translation>
 <translation id="3995138139523574647">USB-C uređaj (stražnji desni priključak)</translation>
 <translation id="4053612967614057854">Onemogući tipkovnicu na zaslonu</translation>
+<translation id="4118990158415604803">Povezivanje s drugim mrežama onemogućio je administrator.</translation>
 <translation id="4250680216510889253">Ne</translation>
 <translation id="4279490309300973883">Zrcaljenje</translation>
 <translation id="4321179778687042513">ctrl</translation>
 <translation id="4421231901400348175"><ph name="HELPER_NAME" /> i vi dijelite kontrolu nad zaslonom putem Daljinske pomoći.</translation>
 <translation id="4430019312045809116">Glasnoća</translation>
+<translation id="4448844063988177157">Traženje Wi-Fi mreža...</translation>
+<translation id="4479639480957787382">Eternet</translation>
+<translation id="4508225577814909926"><ph name="NAME" />: povezivanje...</translation>
 <translation id="4527045527269911712">Bluetooth uređaj "<ph name="DEVICE_NAME" />" traži dopuštenje za uparivanje.</translation>
 <translation id="453661520163887813"><ph name="TIME" /> do potpune napunjenosti</translation>
 <translation id="4544944664594876241">Promijenio se prečac za zaključavanje zaslona. Upotrijebite <ph name="NEW_SHORTCUT" /> umjesto <ph name="OLD_SHORTCUT" />.</translation>
@@ -172,6 +182,7 @@ Pritisnite Shift + Alt za promjenu.</translation>
 <translation id="6165508094623778733">Saznajte više</translation>
 <translation id="6203030746557259519">Virtualni prikaz</translation>
 <translation id="6248847161401822652">Pritisnite tipke Control, Shift i Q dvaput da biste odustali.</translation>
+<translation id="6267036997247669271"><ph name="NAME" />: aktiviranje...</translation>
 <translation id="6297287540776456956">Odaberite regiju pisaljkom</translation>
 <translation id="6310121235600822547">Zaslon <ph name="DISPLAY_NAME" /> rotiran je za <ph name="ROTATION" /></translation>
 <translation id="6359806961507272919">SMS šalje <ph name="PHONE_NUMBER" /></translation>
@@ -184,6 +195,7 @@ Pritisnite Shift + Alt za promjenu.</translation>
 <translation id="6501401484702599040">Emitiranje zaslona na <ph name="RECEIVER_NAME" /></translation>
 <translation id="6521655319214113338">Unos rukopisom</translation>
 <translation id="6537270692134705506">Snimi zaslon</translation>
+<translation id="6549021752953852991">Mobilne mreže nisu dostupne</translation>
 <translation id="6550675742724504774">Opcije</translation>
 <translation id="6585808820553845416">Sesija će završiti za <ph name="SESSION_TIME_REMAINING" />.</translation>
 <translation id="6596816719288285829">IP adresa</translation>
@@ -192,6 +204,7 @@ Pritisnite Shift + Alt za promjenu.</translation>
 <translation id="6713285437468012787">Bluetooth uređaj "<ph name="DEVICE_NAME" />" sada je uparen i dostupan svim korisnicima. To uparivanje možete ukloniti u Postavkama.</translation>
 <translation id="6785414152754474415">Baterija je <ph name="PERCENTAGE" />% puna i puni se.</translation>
 <translation id="683971173229319003">Pretraživanje + L</translation>
+<translation id="6857811139397017780">Aktiviraj <ph name="NETWORKSERVICE" /></translation>
 <translation id="6911468394164995108">Pridruži se drugoj...</translation>
 <translation id="6915678159055240887">Chromebox</translation>
 <translation id="6979158407327259162">Google disk</translation>
@@ -200,6 +213,7 @@ Pritisnite Shift + Alt za promjenu.</translation>
 <translation id="703171847531699602">Nema uređaja za emitiranje</translation>
 <translation id="7034339000180558234">Emitiranje kartice <ph name="TAB_NAME" /> na <ph name="RECEIVER_NAME" /></translation>
 <translation id="7052914147756339792">Postavljanje pozadinske slike...</translation>
+<translation id="7066646422045619941">Tu mrežu onemogućio je vaš administrator.</translation>
 <translation id="7097613348211027502">Omogućen je ChromeVox (govorne povratne informacije).
 Pritisnite Ctrl+Alt+Z da biste ga onemogućili.</translation>
 <translation id="7098389117866926363">USB-C uređaj (lijevi priključak sa stražnje strane)</translation>
@@ -209,6 +223,7 @@ Pritisnite Ctrl+Alt+Z da biste ga onemogućili.</translation>
 <translation id="7209101170223508707">Uključena je opcija CAPS LOCK.
 Pritisnite tipke Alt + Pretraživanje ili Shift da biste ju isključili.</translation>
 <translation id="7348093485538360975">Tipkovnica na zaslonu</translation>
+<translation id="735745346212279324">Veza s VPN-om prekinuta</translation>
 <translation id="737451040872859086">Mikrofon (ugrađeni)</translation>
 <translation id="742594950370306541">Fotoaparat je aktivan.</translation>
 <translation id="743058460480092004">Fotoaparat i mikrofon su aktivni.</translation>
@@ -225,19 +240,24 @@ Pritisnite tipke Alt + Pretraživanje ili Shift da biste ju isključili.</transl
 <translation id="7823564328645135659">Jezik je promijenjen iz: "<ph name="FROM_LOCALE" />" u: "<ph name="TO_LOCALE" />" nakon sinkronizacije vaših postavki.</translation>
 <translation id="785750925697875037">Prikaz mobilnog računa</translation>
 <translation id="7864539943188674973">Onemogući Bluetooth</translation>
+<translation id="7874779702599364982">Traženje mobilnih mreža...</translation>
 <translation id="7893838033650689677">Uključite Wi-Fi</translation>
 <translation id="7904094684485781019">Administrator ovog računa onemogućio je višestruku prijavu.</translation>
 <translation id="7957227661277029961">Uređaj <ph name="DEVICE_TYPE" /> možda se neće puniti dok je uključen. Preporučujemo vam upotrebu službenog punjača.</translation>
 <translation id="7982789257301363584">Mreža</translation>
+<translation id="8000066093800657092">Nema mreže</translation>
 <translation id="8054466585765276473">Izračun vremena baterije.</translation>
 <translation id="8077816382010018681">Ovdje treba unijeti naslov obavijesti značajke QU</translation>
 <translation id="8103386449138765447">SMS poruke: <ph name="MESSAGE_COUNT" /></translation>
+<translation id="8132793192354020517">Povezano s <ph name="NAME" /></translation>
 <translation id="8185286464235484130">Javite nam kako napredujemo tako što ćete odgovoriti na nekoliko pitanja.</translation>
 <translation id="8190698733819146287">Prilagodi jezike i unos...</translation>
 <translation id="8206859287963243715">Mobitel</translation>
 <translation id="8308637677604853869">Prethodni izbornik</translation>
 <translation id="8356164830168736643">Zatvori <ph name="WINDOW_TITLE" /></translation>
 <translation id="8428213095426709021">Postavke</translation>
+<translation id="8454013096329229812">Wi-Fi je uključen.</translation>
+<translation id="8484916590211895857"><ph name="NAME" />: ponovno povezivanje...</translation>
 <translation id="8517041960877371778">Uređaj <ph name="DEVICE_TYPE" /> možda se neće puniti dok je uključen.</translation>
 <translation id="8528322925433439945">Mobilne mreže...</translation>
 <translation id="8639760480004882931">Preostalo <ph name="PERCENTAGE" /></translation>

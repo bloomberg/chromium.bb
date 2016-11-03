@@ -23,7 +23,6 @@ Některé funkce možná nebudou k dispozici a změny nastavení se neuloží.</
 <translation id="1688750314291223739">Chcete-li uložit personalizované funkce prohlížeče na web a získat k nim přístup z prohlížeče Chromium v libovolném prohlížeči, nastavte synchronizaci.</translation>
 <translation id="1699664235656412242">Zavřete všechna okna prohlížeče Chromium (včetně oken v režimu Windows 8) a zkuste to znovu.</translation>
 <translation id="1708666629004767631">K dispozici je nová, bezpečnější verze prohlížeče Chromium.</translation>
-<translation id="1725059042853530269">Soubor <ph name="FILE_NAME" /> může narušit prohlížení internetu, aplikace Chromium jej proto zablokovala.</translation>
 <translation id="1774152462503052664">Nechat prohlížeč Chromium spuštěný na pozadí</translation>
 <translation id="1779356040007214683">Aby bylo Chromium bezpečnější, deaktivovali jsme některá rozšíření, která nejsou uvedena na webu <ph name="IDS_EXTENSION_WEB_STORE_TITLE" /> a mohla být přidána bez vašeho vědomí.</translation>
 <translation id="1808667845054772817">Přeinstalovat Chromium</translation>
@@ -61,7 +60,6 @@ Některé funkce možná nebudou k dispozici a změny nastavení se neuloží.</
 <translation id="2718390899429598676">V zájmu lepšího zabezpečení bude Chromium šifrovat vaše data.</translation>
 <translation id="2770231113462710648">Změnit výchozí prohlížeč na:</translation>
 <translation id="2799223571221894425">Restartovat</translation>
-<translation id="2801146392936645542">Soubor <ph name="FILE_NAME" /> je škodlivý a prohlížeč Chromium jej zablokoval.</translation>
 <translation id="2847479871509788944">Odstranit z prohlížeče Chromium...</translation>
 <translation id="2886012850691518054">Volitelné: Pomozte Chromium zlepšit – posílejte automaticky společnosti Google statistiky využití a zprávy o selhání aplikace.</translation>
 <translation id="2905536371227304018">Chromium OS se zobrazuje v tomto jazyce.</translation>
@@ -80,7 +78,6 @@ Některé funkce možná nebudou k dispozici a změny nastavení se neuloží.</
 <ph name="USER_DATA_DIRECTORY" /></translation>
 <translation id="3264279740686075150">Vaším výchozím prohlížečem je Chromium. Paráda!</translation>
 <translation id="328888136576916638">Chybí klíče rozhraní Google API. Některé funkce Chromium nebudou k dispozici.</translation>
-<translation id="3289635842886789612">Prohlížeč Chromium je zastaralý.</translation>
 <translation id="3296368748942286671">Po ukončení prohlížeče Chromium nechat aplikace na pozadí spuštěné</translation>
 <translation id="3312805357485578561">Prohlížeč Chromium zjistil neobvyklé chování</translation>
 <translation id="331951419404882060">Chromium OS vaše data nemohl synchronizovat, protože při přihlašování došlo k chybě.</translation>
@@ -138,6 +135,7 @@ Některé funkce možná nebudou k dispozici a změny nastavení se neuloží.</
 <translation id="5398878173008909840">K dispozici je nová verze prohlížeče Chromium.</translation>
 <translation id="5427571867875391349">Nastavit Chromium jako výchozí prohlížeč</translation>
 <translation id="5466153949126434691">Prohlížeč Chromium se automaticky aktualizuje, abyste vždy měli k dispozici nejnovější verzi. Až toto stahování skončí, Chromium se restartuje a budete moci pokračovat.</translation>
+<translation id="5479196819031988440">Chromium OS tuto stránku nedokáže otevřít</translation>
 <translation id="549669000822060376">Počkejte prosím, než Chromium nainstaluje nejnovější aktualizace systému.</translation>
 <translation id="556167189552180495">Chromium se zobrazuje v tomto jazyce.</translation>
 <translation id="5563479599352954471">Vyhledávání jedním klepnutím</translation>
@@ -225,7 +223,6 @@ Další pokyny naleznete v e-mailu ve svém účtu <ph name="ACCOUNT_EMAIL" />.
 <translation id="7421823331379285070">Chromium vyžaduje operační systém Windows XP nebo novější. Některé funkce možná nebudou dostupné.</translation>
 <translation id="7473891865547856676">Ne, děkuji</translation>
 <translation id="7483335560992089831">Nelze nainstalovat verzi prohlížeče Chromium, která je právě spuštěná. Ukončete prohlížeč Chromium a zkuste to znovu.</translation>
-<translation id="750717762378961310">Tento soubor je škodlivý a prohlížeč Chromium jej zablokoval.</translation>
 <translation id="7549178288319965365">O systému Chromium OS</translation>
 <translation id="7577193603922410712">Právě byla nainstalována mimořádná bezpečnostní aktualizace prohlížeče Chromium. Aby se projevila, měli byste prohlížeč nyní restartovat (otevřené karty se automaticky obnoví).</translation>
 <translation id="761356813943268536">Chromium používá vaši kameru a mikrofon.</translation>

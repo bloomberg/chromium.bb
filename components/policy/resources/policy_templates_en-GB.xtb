@@ -19,6 +19,9 @@
       When this policy is set to false or unset, cookies set by the IdP are transferred to the user's profile during their first login on a device only.
 
       This policy affects users whose domain matches the device's enrolment domain only. For all other users, cookies set by the IdP are transferred to the user's profile during their first login on the device only.</translation>
+<translation id="1029536946382325801">If true, the user can use the hardware on Chrome devices to remotely attest its identity to the privacy CA via the Enterprise Platform Keys API chrome.enterprise.platformKeys.challengeUserKey().
+
+          If it is set to false, or if it is not set, calls to the API will fail with an error code.</translation>
 <translation id="1040446814317236570">Enable PAC URL stripping (for https://)</translation>
 <translation id="1044878202534415707">Report hardware statistics such as CPU/RAM usage.
 
@@ -346,13 +349,6 @@ The contents of the list 'URLs to open at start-up' are ignored unless you selec
 <translation id="2337466621458842053">Allows you to set a list of url patterns that specify sites which are allowed to display images.
 
           If this policy is left unset, the global default value will be used for all sites either from the 'DefaultImagesSetting' policy, if it is set, or the user's personal configuration otherwise.</translation>
-<translation id="2359612025446382967">If this policy is set to false, <ph name="PRODUCT_OS_NAME" /> will disable Bluetooth and the user cannot re-enable it.
-
-      If this policy is set to true or left unset, the user will be able to enable or disable Bluetooth as they wish.
-
-      If this policy is set, the user cannot change or override it.
-
-      After enabling Bluetooth, the device must be rebooted for the changes to take effect (no need to reboot the device when disabling Bluetooth).</translation>
 <translation id="2366415278352956652">Enables cast</translation>
 <translation id="2372547058085956601">The public session auto-login delay.
 
@@ -988,6 +984,9 @@ If this setting is not set, <ph name="PRODUCT_NAME" /> will allow the user to co
 
       If this policy is set to true, monitoring network packets (so-called <ph name="HEARTBEATS_TERM" />) will be sent.
       If set to false or unset, no packets will be sent.</translation>
+<translation id="3963602271515417124">If true, remote attestation is allowed for the device and a certificate will automatically be generated and uploaded to the Device Management Server.
+
+          If it is set to false, or if it is not set, no certificate will be generated and calls to the enterprise.platformKeys extension API will fail.</translation>
 <translation id="3964909636571393861">Allows access to a list of URLs</translation>
 <translation id="3965339130942650562">Timeout until idle user log-out is executed</translation>
 <translation id="3967075520570946456">Enable showing the welcome page on the first browser launch following OS upgrade.</translation>
@@ -1565,13 +1564,6 @@ If this setting is not set, <ph name="PRODUCT_NAME" /> will allow the user to co
 
       If the policy is not set, or is set to false, then <ph name="PRODUCT_NAME" /> will not perform online revocation checks in <ph name="PRODUCT_NAME" /> 19 and later.</translation>
 <translation id="5966615072639944554">Extensions allowed to to use the remote attestation API</translation>
-<translation id="5974970919245996815">Report information about the status of Android is sent back to
-      the server.
-
-      If the policy is set to false, the information will not be reported.
-      If set to true or left unset, the information will be reported.
-
-      This policy only applies if Android apps are enabled.</translation>
 <translation id="5983708779415553259">Default behaviour for sites not in any content pack</translation>
 <translation id="5997543603646547632">Use 24 hour clock by default</translation>
 <translation id="6009903244351574348">Allow <ph name="PRODUCT_FRAME_NAME" /> to handle the listed content types.
@@ -2264,6 +2256,9 @@ If this setting is not set, <ph name="PRODUCT_NAME" /> will allow the user to co
           to an Active Directory domain.</translation>
 <translation id="7937766917976512374">Allow or deny video capture</translation>
 <translation id="7941975817681987555">Do not predict network actions on any network connection</translation>
+<translation id="7942429005743031780">This policy specifies the allowed extensions to use Enterprise Platform Keys API chrome.enterprise.platformKeys.challengeUserKey() for remote attestation. Extensions must be added to this list to use the API.
+
+          If an extension is not in the list, or the list is not set, the call to the API will fail with an error code.</translation>
 <translation id="7953256619080733119">Managed user manual exception hosts</translation>
 <translation id="7971839631300653352">SSL</translation>
 <translation id="7974114691960514888">This policy is no longer supported.

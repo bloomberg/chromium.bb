@@ -22,7 +22,6 @@
 <translation id="1688750314291223739">वेबवर आपली वैयक्तीकृत केलेली ब्राउझर वैशिष्ट्ये जतन करण्यासाठी समक्रमण सेट करा आणि कोणत्याही संगणकावरील Chromium वरून त्यात प्रवेश करा.</translation>
 <translation id="1699664235656412242">कृपया सर्व Chromium विंडो (Windows 8 मोड मधील अशासह) बंद करा आणि पुन्हा प्रयत्न करा.</translation>
 <translation id="1708666629004767631">Chromium ची नवीन, सुरक्षित आवृत्ती उपलब्ध आहे.</translation>
-<translation id="1725059042853530269"><ph name="FILE_NAME" /> आपल्या ब्राउझिंग अनुभवास हानी पोहोचवू शकते, म्हणून Chromium ने हे अवरोधित केले आहे.</translation>
 <translation id="1774152462503052664">Chromium पार्श्वभूमीवर चालू द्या</translation>
 <translation id="1779356040007214683">Chromium अधिक सुरक्षित बनविण्‍यासाठी, आम्‍ही <ph name="IDS_EXTENSION_WEB_STORE_TITLE" /> मध्‍ये सूचीबद्ध नसलेले आणि आपल्‍या माहिती शिवाय कदाचित जोडले गेलेले काही विस्‍तार अक्षम केले.</translation>
 <translation id="1808667845054772817">Chromium पुनर्स्थापित करा</translation>
@@ -60,7 +59,6 @@
 <translation id="2718390899429598676">अतिरिक्त सुरक्षिततेसाठी, Chromium आपला डेटा कूटबद्ध करेल.</translation>
 <translation id="2770231113462710648">डीफॉल्ट ब्राउझर यावर बदला:</translation>
 <translation id="2799223571221894425">पुन्हा लाँच करा</translation>
-<translation id="2801146392936645542"><ph name="FILE_NAME" /> दुर्भावनापूर्ण आहे, आणि Chromium ने ती अवरोधित केली आहे.</translation>
 <translation id="2847479871509788944">Chromium मधून काढा...</translation>
 <translation id="2886012850691518054">पर्यायी: स्वयंचलितपणे वापर आकडेवारी आणि क्रॅश अहवाल Google कडे पाठवून Chromium ला अधिक चांगले करण्यात मदत करा.</translation>
 <translation id="2905536371227304018">Chromium OS या भाषेत प्रदर्शित केले आहे.</translation>
@@ -79,7 +77,6 @@
 <ph name="USER_DATA_DIRECTORY" /></translation>
 <translation id="3264279740686075150">Chromium आपला डीफॉल्ट ब्राउझर आहे. आनंद घ्या.</translation>
 <translation id="328888136576916638">Google API की गहाळ आहेत. Chromium ची काही कार्यक्षमता अक्षम केली जाईल.</translation>
-<translation id="3289635842886789612">Chromium कालबाह्य झाले आहे.</translation>
 <translation id="3296368748942286671">Chromium बंद असताना पार्श्वभूमी अनुप्रयोग चालवणे सुरू ठेवा</translation>
 <translation id="3312805357485578561">Chromium ला असामान्य वर्तन आढळले आहे</translation>
 <translation id="331951419404882060">साइन इन करण्यात त्रुटीमुळे Chromium OS आपला डेटा संकालित करू शकले नाही.</translation>
@@ -223,7 +220,6 @@ Chromium आपली सेटिंग्ज पुनर्प्राप्
 <translation id="7421823331379285070">Chromium साठी Windows XP किंवा नंतरचे आवश्‍यक आहे. काही वैशिष्‍ट्ये कदाचित कार्य करू शकत नाहीत.</translation>
 <translation id="7473891865547856676">नाही धन्यवाद</translation>
 <translation id="7483335560992089831">सध्‍या चालू असलेल्‍या सारख्याच Chromium आवृत्तीची स्‍थापना होऊ शकत नाही. कृपया Chromium बंद करा आणि पुन्‍हा प्रयत्‍न करा.</translation>
-<translation id="750717762378961310">ही फाईल दुर्भावनापूर्ण आहे, आणि Chromium ने ती अवरोधित केली आहे.</translation>
 <translation id="7549178288319965365">Chromium OS बद्दल</translation>
 <translation id="7577193603922410712">Chromium साठी विशिष्ट सुरक्षा अद्यतन आत्ताच लागू केले; ते प्रभावी होण्यासाठी आपण आता रीस्टार्ट करावे (आम्ही आपले टॅब पुनर्संचयित करू).</translation>
 <translation id="761356813943268536">Chromium आपला कॅमेरा आणि मायक्रोफोन वापरत आहे.</translation>

@@ -21,7 +21,6 @@
 <translation id="1688750314291223739">Postavite sinkronizaciju da biste spremili svoje prilagođene značajke preglednika na web i pristupali im s preglednika Chromium na bilo kojem računalu.</translation>
 <translation id="1699664235656412242">Zatvorite sve prozore u Chromiumu (uključujući i one u načinu sustava Windows 8) i pokušajte ponovo.</translation>
 <translation id="1708666629004767631">Dostupna je nova, sigurnija verzija preglednika Chromium.</translation>
-<translation id="1725059042853530269">Datoteka <ph name="FILE_NAME" /> može uzrokovati štetu prilikom pregledavanja, pa ju je Chromium blokirao.</translation>
 <translation id="1774152462503052664">Neka Chromium radi u pozadini</translation>
 <translation id="1779356040007214683">Kako bismo Chromium učinili sigurnijim, onemogućili smo neka proširenja koja nisu navedena u trgovini <ph name="IDS_EXTENSION_WEB_STORE_TITLE" /> i možda su dodana bez vašeg znanja.</translation>
 <translation id="1808667845054772817">Ponovo instaliraj Chromium</translation>
@@ -59,7 +58,6 @@
 <translation id="2718390899429598676">Radi dodatne sigurnosti Chromium će šifrirati vaše podatke.</translation>
 <translation id="2770231113462710648">Promijeni zadani preglednik na:</translation>
 <translation id="2799223571221894425">Pokreni ponovo</translation>
-<translation id="2801146392936645542">Datoteka <ph name="FILE_NAME" /> zlonamjerna je i Chromium ju je blokirao.</translation>
 <translation id="2847479871509788944">Ukloni iz Chromiuma...</translation>
 <translation id="2886012850691518054">Dodatno: pomognite nam da poboljšamo Chromium automatskim slanjem statistike o upotrebi i izvješća o padu programa Googleu.</translation>
 <translation id="2905536371227304018">OS Chromium prikazuje se na tom jeziku.</translation>
@@ -78,7 +76,6 @@
 <ph name="USER_DATA_DIRECTORY" /></translation>
 <translation id="3264279740686075150">Chromium je vaš zadani preglednik. Živjeli.</translation>
 <translation id="328888136576916638">Nedostaju ključevi Google API-ja. Neke funkcije Chromiuma bit će onemogućene.</translation>
-<translation id="3289635842886789612">Chromium je zastario.</translation>
 <translation id="3296368748942286671">Nastavi izvršavati ​​pozadinske aplikacije po zatvaranju preglednika Chromium</translation>
 <translation id="3312805357485578561">Chromium je otkrio neuobičajeno ponašanje</translation>
 <translation id="331951419404882060">OS Chromium nije mogao sinkronizirati vaše podatke zbog pogreške prilikom prijave.</translation>
@@ -223,7 +220,6 @@ Daljnje upute poslali smo vam na e-adresu <ph name="ACCOUNT_EMAIL" />.</translat
 <translation id="7421823331379285070">Chromium zahtijeva Windows XP ili noviju verziju. Neke značajke možda neće raditi.</translation>
 <translation id="7473891865547856676">Ne, hvala</translation>
 <translation id="7483335560992089831">Ne možete instalirati istu verziju Chromiuma koja se trenutačno izvršava. Zatvorite Chromium i pokušajte ponovo.</translation>
-<translation id="750717762378961310">Ta je datoteka zlonamjerna i Chromium ju je blokirao.</translation>
 <translation id="7549178288319965365">O OS-u Chromium</translation>
 <translation id="7577193603922410712">Upravo je primijenjeno posebno sigurnosno ažuriranje za Chromium i trebate ponovo pokrenuti sustav kako bi promjena stupila na snagu (vratit ćemo vaše kartice).</translation>
 <translation id="761356813943268536">Chromium upotrebljava vašu kameru i mikrofon.</translation>

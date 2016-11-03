@@ -1,41 +1,20 @@
 <?xml version="1.0" ?>
 <!DOCTYPE translationbundle>
 <translationbundle lang="ro">
-<translation id="153454903766751181">Se inițializează modemul mobil...</translation>
 <translation id="1829129547161959350">Pinguin</translation>
-<translation id="1850504506766569011">Conexiunea Wi-Fi este dezactivată.</translation>
 <translation id="2288278176040912387">Picup</translation>
-<translation id="2354174487190027830">Se activează <ph name="NAME" /></translation>
 <translation id="2563185590376525700">Broască</translation>
 <translation id="2649120831653069427">Pește</translation>
-<translation id="277257480934873581">Se reconectează la <ph name="NAME" /></translation>
 <translation id="2894654529758326923">Informații</translation>
 <translation id="2951236788251446349">Meduză</translation>
-<translation id="3846575436967432996">Nu sunt disponibile informații despre rețele</translation>
-<translation id="3901991538546252627">Se conectează la <ph name="NAME" /></translation>
 <translation id="3958548648197196644">Kiwi</translation>
-<translation id="4118990158415604803">Conectarea la alte rețele este dezactivată de administrator.</translation>
 <translation id="4326192123064055915">Cafea</translation>
-<translation id="4448844063988177157">Se caută rețele Wi-Fi...</translation>
-<translation id="4479639480957787382">Ethernet</translation>
-<translation id="4508225577814909926"><ph name="NAME" />: se conectează...</translation>
 <translation id="4559767610552730302">Bokeh</translation>
 <translation id="4935975195727477204">Floare</translation>
 <translation id="515594325917491223">Șah</translation>
 <translation id="5257456363153333584">Libelulă</translation>
-<translation id="6267036997247669271"><ph name="NAME" />: se activează...</translation>
-<translation id="6549021752953852991">Nicio rețea mobilă disponibilă</translation>
-<translation id="6857811139397017780">Activează <ph name="NETWORKSERVICE" /></translation>
 <translation id="6935521024859866267">Răsturnat</translation>
-<translation id="7066646422045619941">Această rețea este dezactivată de administrator.</translation>
-<translation id="735745346212279324">Rețea VPN deconectată</translation>
-<translation id="7874779702599364982">Se caută rețele mobile...</translation>
-<translation id="8000066093800657092">Nicio rețea</translation>
 <translation id="8008366997883261463">Terier</translation>
-<translation id="8132793192354020517">Conectat la <ph name="NAME" /></translation>
-<translation id="8454013096329229812">Conexiunea Wi-Fi este activată.</translation>
-<translation id="8484916590211895857"><ph name="NAME" />: se reconectează...</translation>
 <translation id="8714406895390098252">Bicicletă</translation>
 <translation id="8808686172382650546">Pisică</translation>
-<translation id="8814190375133053267">Wi-Fi</translation>
 </translationbundle>

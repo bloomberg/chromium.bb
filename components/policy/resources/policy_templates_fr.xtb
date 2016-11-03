@@ -19,6 +19,9 @@
       Si cette règle est définie sur "False", ou si elle n'est pas configurée, les cookies définis par le fournisseur d'identité ne sont transférés vers le profil de l'utilisateur lors de sa première connexion que sur un appareil.
 
       Cette règle ne concerne que les utilisateurs dont le domaine correspond au domaine d'inscription de l'appareil. Pour tous les autres utilisateurs, les cookies définis par le fournisseur d'identification ne sont transférés au profil de l'utilisateur lors de sa première connexion que sur l'appareil.</translation>
+<translation id="1029536946382325801">Si cette règle est définie sur "True", l'utilisateur peut utiliser le matériel sur des appareils Chrome afin d'attester, à distance, de son identité auprès de l'autorité de certification de la confidentialité par le biais de l'API Enterprise Platform Keys "chrome.enterprise.platformKeys.challengeUserKey()".
+
+          Si cette règle est définie sur "False", ou si vous ne l'avez pas définie, les appels vers l'API échouent, et un code d'erreur est renvoyé.</translation>
 <translation id="1040446814317236570">Activer la suppression des URL via PAC (pour "https://")</translation>
 <translation id="1044878202534415707">Envoyer des rapports sur les statistiques matérielles tels que l'utilisation du processeur et de la RAM.
 
@@ -350,13 +353,6 @@ Si cette règle n'est pas configurée, le paramètre "BlockPopups" est utilisé 
 <translation id="2337466621458842053">Permet de définir une liste de formats d'URL spécifiant les sites qui sont autorisés à afficher des images. 
 
 Si cette règle n'est pas configurée, la valeur par défaut globale est utilisée pour tous les sites à partir de la règle "DefaultImagesSetting" si elle est configurée, ou à défaut, à partir de la configuration personnelle de l'utilisateur.</translation>
-<translation id="2359612025446382967">Si cette règle est définie sur "False", <ph name="PRODUCT_OS_NAME" /> désactivera le Bluetooth, et l'utilisateur ne pourra pas le réactiver.
-
-      Si cette règle est définie sur "True" ou n'est pas configurée, l'utilisateur pourra activer ou désactiver le Bluetooth comme il le souhaite.
-
-      Si cette règle est configurée, l'utilisateur ne pourra ni la modifier ni l'ignorer.
-
-      Après avoir activé le Bluetooth, vous devez redémarrer l'appareil pour que les modifications soient prises en compte. Cette opération n'est pas nécessaire après la désactivation du Bluetooth.</translation>
 <translation id="2366415278352956652">Activer Google Cast</translation>
 <translation id="2372547058085956601">Détermine le délai de connexion automatique à une session publique.
 
@@ -994,6 +990,9 @@ Si cette règle n'est pas configurée, la valeur par défaut globale sera utilis
 
       Si cette règle est définie sur "True", les paquets réseau de contrôle (appelés "<ph name="HEARTBEATS_TERM" />") seront transmis.
       Si elle est définie sur "False" ou si elle n'est pas configurée, aucun paquet ne sera transmis.</translation>
+<translation id="3963602271515417124">Si cette règle est définie sur "True", l'attestation à distance est autorisée pour l'appareil, et un certificat est automatiquement généré et importé sur le serveur de gestion des appareils.
+
+          Si la règle est définie sur "False", ou si vous ne l'avez pas définie, aucun certificat n'est généré et les appels vers l'API d'extension enterprise.platformKeys échouent.</translation>
 <translation id="3964909636571393861">Permet d'accéder à une liste d'URL.</translation>
 <translation id="3965339130942650562">Délai avant exécution de la déconnexion de l'utilisateur en cas d'inactivité</translation>
 <translation id="3967075520570946456">Activer l'affichage de la page d'accueil à la première exécution du navigateur suivant la mise à jour de l'OS</translation>
@@ -1576,13 +1575,6 @@ Si l'option "Forcé" est sélectionnée, les pages peuvent être ouvertes UNIQUE
 
       Si cette règle n'est pas définie ou si elle est définie sur "False", aucun contrôle de révocation en ligne n'est effectué par <ph name="PRODUCT_NAME" /> dans <ph name="PRODUCT_NAME" /> 19 ou version ultérieure.</translation>
 <translation id="5966615072639944554">Extensions autorisées à utiliser l'API d'attestation à distance</translation>
-<translation id="5974970919245996815">Cette règle renvoie au serveur des informations sur l'état d'Android.
-      
-
-      Si cette règle est définie sur "False", les informations ne sont pas transmises.
-      Si cette règle est définie sur "True" ou si elle n'est pas configurée, les informations sont transmises.
-
-      Cette règle ne s'applique que si les applications Android sont activées.</translation>
 <translation id="5983708779415553259">Comportement par défaut des sites ne figurant dans aucun pack de contenu</translation>
 <translation id="5997543603646547632">Utiliser le format d'horloge 24 h par défaut</translation>
 <translation id="6009903244351574348">Autorisez <ph name="PRODUCT_FRAME_NAME" /> à gérer les types de contenu répertoriés. 
@@ -2277,6 +2269,9 @@ Si cette règle n'est pas configurée, la valeur par défaut globale est utilis�
            à un domaine Active Directory.</translation>
 <translation id="7937766917976512374">Autoriser ou interdire la capture vidéo</translation>
 <translation id="7941975817681987555">Ne pas prédire d'actions réseau lors d'une connexion au réseau</translation>
+<translation id="7942429005743031780">Cette règle définit les extensions autorisées à utiliser l'API Enterprise Platform Keys "chrome.enterprise.platformKeys.challengeUserKey()" pour l'attestation à distance. Pour pouvoir utiliser l'API, les extensions doivent être ajoutées à cette liste.
+
+          Si une extension ne figure pas dans la liste, ou si la liste n'est pas définie, l'appel vers l'API échoue, et un code d'erreur est renvoyé.</translation>
 <translation id="7953256619080733119">Hôtes d'exception manuelle des utilisateurs gérés</translation>
 <translation id="7971839631300653352">SSL 3.0</translation>
 <translation id="7974114691960514888">Cette règle n'est plus disponible. 

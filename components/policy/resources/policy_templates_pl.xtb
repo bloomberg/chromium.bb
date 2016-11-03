@@ -19,6 +19,9 @@
       Jeśli zasada jest wyłączona lub nieskonfigurowana, pliki cookie ustawione przez dostawcę tożsamości są przesyłane do profilu użytkownika tylko podczas jego pierwszego logowania na urządzeniu.
 
       Ta zasada dotyczy tylko tych użytkowników, których domena odpowiada domenie rejestracji urządzenia. W przypadku wszystkich pozostałych użytkowników pliki cookie ustawione przez dostawcę tożsamości są przesyłane do profilu użytkownika tylko podczas jego pierwszego logowania na urządzeniu.</translation>
+<translation id="1029536946382325801">Jeśli ustawiono wartość Prawda, użytkownik może używać modułu sprzętowego w urządzeniach z Chrome do zdalnego poświadczania tożsamości przez wywołanie funkcji chrome.enterprise.platformKeys.challengeUserKey() interfejsu API Enterprise Platform Keys.
+
+          Jeśli wartość ustawiono na Fałsz lub nie jest ona określona, wywołania kierowane do interfejsu API zakończą się błędem.</translation>
 <translation id="1040446814317236570">Włącz wycinanie elementów adresów URL PAC (na potrzeby https://)</translation>
 <translation id="1044878202534415707">Raportuj statystki sprzętu, np. użycie procesora i pamięci RAM.
 
@@ -325,13 +328,6 @@
 <translation id="2309390639296060546">Domyślne ustawienie geolokalizacji</translation>
 <translation id="2312134445771258233">Umożliwia skonfigurowanie stron wczytywanych po uruchomieniu. Zawartość listy „Adresy URL otwierane po uruchomieniu” jest ignorowana, chyba że wybierzesz opcję „Otwórz adresy URL z listy” w ustawieniu „Działanie po uruchomieniu”.</translation>
 <translation id="2337466621458842053">Umożliwia skonfigurowanie listy wzorcowych URL-i określających witryny, w których mogą być wyświetlane obrazy. Jeśli ta zasada nie zostanie skonfigurowana, dla wszystkich witryn będzie używana globalna wartość domyślna pochodząca z zasady „DefaultImagesSettings” (jeśli została skonfigurowana) lub z osobistej konfiguracji użytkownika.</translation>
-<translation id="2359612025446382967">Jeśli ta zasada ma wartość Fałsz, <ph name="PRODUCT_OS_NAME" /> wyłącza Bluetooth i użytkownik nie może włączyć go ponownie.
-
-      Jeśli zasada ma wartość Prawda lub nie ma wartości, użytkownik może swobodnie włączać i wyłączać Bluetooth.
-
-      Jeśli ustawisz wartość tej zasady, użytkownik nie może jej zmienić ani zastąpić.
-
-      Aby zmiany zostały zastosowane, po włączeniu Bluetootha musisz ponownie uruchomić urządzenie (po wyłączeniu Bluetootha nie jest to konieczne).</translation>
 <translation id="2366415278352956652">Włącza przesyłanie</translation>
 <translation id="2372547058085956601">Opóźnienie automatycznego logowania się do sesji publicznej.
 
@@ -761,15 +757,13 @@
 <translation id="3417418267404583991">Jeśli ta zasada zostanie włączona lub nie będzie skonfigurowana, <ph name="PRODUCT_OS_NAME" /> będzie umożliwiał logowanie się w trybie gościa. Logowania w trybie gościa to anonimowe sesje użytkownika, które nie wymagają hasła.
 
       W przypadku wyłączenia tej zasady <ph name="PRODUCT_OS_NAME" /> nie będzie zezwalać na uruchamianie sesji gościa.</translation>
-<translation id="3418871497193485241">Wymusza minimalny tryb ograniczonego dostępu w YouTube i uniemożliwia 
-      użytkownikom wybór trybu z mniejszymi ograniczeniami.
+<translation id="3418871497193485241">Wymusza minimalny tryb ograniczonego dostępu w YouTube i uniemożliwia użytkownikom wybór trybu z mniejszymi ograniczeniami.
 
-      Jeśli wybierzesz ustawienie „Ścisły”, ścisły tryb ograniczony będzie zawsze aktywny w YouTube.
+Jeśli wybierzesz ustawienie „Ścisły”, ścisły tryb ograniczony będzie zawsze aktywny w YouTube.
 
-      Jeśli wybierzesz ustawienie „Umiarkowany”, użytkownik może wybrać tylko umiarkowany
-      lub ścisły tryb ograniczonego dostępu w YouTube i nie może go wyłączyć.
+Jeśli wybierzesz ustawienie „Umiarkowany”, użytkownik może wybrać tylko umiarkowany lub ścisły tryb ograniczonego dostępu w YouTube i nie może go wyłączyć.
 
-      Jeśli nie podasz wartości albo wybierzesz ustawienie „Wyłącz”, stosowanie trybu ograniczonego dostępu w YouTube nie będzie wymuszane przez przeglądarkę <ph name="PRODUCT_NAME" />. Zewnętrzne zasady, np. zasady YouTube, mogą jednak nadal wymuszać stosowanie trybu ograniczonego dostępu.</translation>
+Jeśli nie podasz wartości albo wybierzesz ustawienie „Wyłącz”, stosowanie trybu ograniczonego dostępu w YouTube nie będzie wymuszane przez przeglądarkę <ph name="PRODUCT_NAME" />. Zewnętrzne zasady, np. zasady YouTube, mogą jednak nadal wymuszać stosowanie trybu ograniczonego dostępu.</translation>
 <translation id="3428247105888806363">Włącz przewidywanie działań sieciowych</translation>
 <translation id="3449886121729668969">Konfiguruje ustawienia serwera proxy dla <ph name="PRODUCT_NAME" />. Będą one też dostępne dla aplikacji ARC.
 
@@ -862,7 +856,7 @@
 
       Jeśli ustawisz tu wartość fałsz, wyjście audio urządzenia nie będzie dostępne, gdy użytkownik będzie zalogowany.
 
-      Ta zasada wpływa na wszystkie typy wyjść audio, a nie tylko na wbudowane głośniki. Wyłącza też dźwiękowe funkcje ułatwień dostępu. Nie włączaj jej, jeśli użytkownik potrzebuje czytnika ekranu.
+      Ta zasada wpływa na wszystkie typy wyjść audio, a nie tylko na wbudowane głośniki. Wyłącza też dźwiękowe ułatwienia dostępu. Nie włączaj jej, jeśli użytkownik potrzebuje czytnika ekranu.
 
       Jeśli nie skonfigurujesz tego ustawienia lub ustawisz dla niego wartość prawda, użytkownicy będą mogli używać wszystkich obsługiwanych wyjść audio urządzenia.</translation>
 <translation id="3808945828600697669">Określ listę wyłączonych wtyczek</translation>
@@ -883,12 +877,9 @@
 
           Domyślnie wszystkie hosty wiadomości natywnych są umieszczane na białej liście, ale jeśli wszystkie hosty wiadomości natywnych zostały umieszczone na czarnej liście na skutek działania zasad, biała lista może posłużyć do zastąpienia tych zasad.</translation>
 <translation id="384743459174066962">Umożliwia skonfigurowanie listy wzorcowych URL-i określających witryny, w których mogą być otwierane wyskakujące okienka. Jeśli ta zasada nie zostanie skonfigurowana, dla wszystkich witryn będzie używana globalna wartość domyślna pochodząca z zasady „DefaultPopupsSetting” (jeśli została skonfigurowana) lub z osobistej konfiguracji użytkownika.</translation>
-<translation id="3851039766298741586">Przesyłaj informacje o aktywnej sesji publicznej,
-      np. dotyczące identyfikatora i wersji aplikacji.
+<translation id="3851039766298741586">Przesyłaj informacje o aktywnej sesji publicznej, np. identyfikator i wersję aplikacji.
 
-      Jeśli ta zasada jest wyłączona, informacje o sesji nie będą
-      przesyłane. Jeśli zasada jest włączona lub nieustawiona, informacje o sesji
-      będą przesyłane.</translation>
+Jeśli ta zasada jest wyłączona, informacje o sesji nie będą przesyłane. Jeśli zasada jest włączona lub nieustawiona, informacje o sesji będą przesyłane.</translation>
 <translation id="3859780406608282662">Dodaj parametr do pobierania odmian referencyjnych w <ph name="PRODUCT_OS_NAME" />.
 
       Jeśli ta zasada jest ustalona, zostanie dodany parametr zapytania „z ograniczeniem” do adresu URL używanego do pobierania odmian referencyjnych. Wartością parametru będzie wartość tej zasady.
@@ -905,11 +896,11 @@
 <translation id="3864818549971490907">Domyślne ustawienie wtyczek</translation>
 <translation id="386487026071140458">Ta zasada została wycofana. Zamiast niej użyj tych: <ph name="FORCEGOOGLESAFESEARCH_POLICY_NAME" /> lub <ph name="FORCEYOUTUBERESTRICT_POLICY_NAME" />. Zasada zostanie zignorowana, jeśli ustawiona zostanie któraś z tych zasad: <ph name="FORCEGOOGLESAFESEARCH_POLICY_NAME" />, <ph name="FORCEYOUTUBERESTRICT_POLICY_NAME" /> lub <ph name="FORCEYOUTUBESAFETYMODE_POLICY_NAME" /> (wycofana).
 
-      Wymusza realizację zapytań w wyszukiwarce Google przy użyciu filtra SafeSearch i uniemożliwia użytkownikom zmianę tego ustawienia. To ustawienie wymusza też włączenie umiarkowanego trybu ograniczonego dostępu w YouTube.
+Wymusza realizację zapytań w wyszukiwarce Google przy użyciu filtra SafeSearch i uniemożliwia użytkownikom zmianę tego ustawienia. To ustawienie wymusza też włączenie umiarkowanego trybu ograniczonego dostępu w YouTube.
 
-      Jeśli włączysz to ustawienie, filtr SafeSearch w wyszukiwarce Google i umiarkowany tryb ograniczonego dostępu w YouTube będą zawsze aktywne.
+Jeśli włączysz to ustawienie, filtr SafeSearch w wyszukiwarce Google i umiarkowany tryb ograniczonego dostępu w YouTube będą zawsze aktywne.
 
-      Jeśli je wyłączysz albo nie podasz wartości, stosowanie filtra SafeSearch w wyszukiwarce Google i trybu ograniczonego dostępu w YouTube nie będzie wymuszane.</translation>
+Jeśli je wyłączysz albo nie podasz wartości, stosowanie filtra SafeSearch w wyszukiwarce Google i trybu ograniczonego dostępu w YouTube nie będzie wymuszane.</translation>
 <translation id="3866249974567520381">Opis</translation>
 <translation id="3866530186104388232">Jeśli ta zasada jest włączona lub nieskonfigurowana, <ph name="PRODUCT_OS_NAME" /> będzie umożliwiał wybranie nazwy użytkownika spośród zarejestrowanych nazw wyświetlanych na ekranie logowania. W przypadku wyłączenia tej zasady <ph name="PRODUCT_OS_NAME" /> będzie prosił o podanie nazwy użytkownika i hasła.</translation>
 <translation id="3868347814555911633">Ta zasada jest aktywna tylko w trybie sklepu.
@@ -942,6 +933,9 @@
 
       Jeśli ta zasada jest włączona, pakiety sieciowe monitorowania (<ph name="HEARTBEATS_TERM" />) będą wysyłane.
       Jeśli jest wyłączona lub nieskonfigurowana, pakiety nie będą wysyłane.</translation>
+<translation id="3963602271515417124">Jeśli ustawiono wartość Prawda, zdalne poświadczanie na potrzeby urządzenia jest dozwolone, a certyfikat jest automatycznie generowany i przesyłany na serwer zarządzania urządzeniami.
+
+          Jeśli wartość ustawiono na Fałsz lub nie jest ona określona, certyfikat nie jest generowany, a wywołania kierowane do interfejsu API rozszerzenia enterprise.platformKeys zakończą się niepowodzeniem.</translation>
 <translation id="3964909636571393861">Zezwalaj na dostęp do listy adresów URL</translation>
 <translation id="3965339130942650562">Limit czasu bezczynności, po którym następuje wylogowanie</translation>
 <translation id="3967075520570946456">Włącz wyświetlanie strony powitalnej przy pierwszym uruchomieniu przeglądarki po uaktualnieniu systemu operacyjnego.</translation>
@@ -988,17 +982,17 @@ Zwykle ta zasada jest wyłączona w celu ochrony przed phishingiem. W przypadku 
 
           Jeśli ta zasada pozostanie nieskonfigurowana, będzie używane ustawienie AllowCookies, a użytkownik będzie mógł je zmienić.</translation>
 <translation id="4103289232974211388">Przekieruj do dostawcy tożsamości SAML po potwierdzeniu przez użytkownika</translation>
-<translation id="4103941930938018145">Ta zasada została wycofana. Użyj zasady <ph name="DEFAULT_PLUGINS_SETTING_POLICY" />, by zarządzać dostępnością wtyczki Flash, oraz zasady <ph name="ALWAYS_OPEN_PDF_EXTERNALLY_POLICY" />, by ustalić, czy wbudowana przeglądarka PDF ma być używana do otwierania plików PDF.
+<translation id="4103941930938018145">Ta zasada została wycofana. Użyj zasady <ph name="DEFAULT_PLUGINS_SETTING_POLICY" />, by zarządzać dostępnością wtyczki Flash, oraz zasady <ph name="ALWAYS_OPEN_PDF_EXTERNALLY_POLICY" />, by ustalić, czy wbudowana przeglądarka PDF-ów ma być używana do otwierania plików PDF.
 
-      Pozwala określić listę wtyczek wyłączonych w przeglądarce <ph name="PRODUCT_NAME" /> i uniemożliwia użytkownikom zmianę tego ustawienia.
+Pozwala określić listę wtyczek wyłączonych w przeglądarce <ph name="PRODUCT_NAME" /> i uniemożliwia użytkownikom zmianę tego ustawienia.
 
-      Możesz użyć symboli wieloznacznych „*” i „?”, by dopasować sekwencje dowolnych znaków. Symbol „*” odpowiada dowolnej liczbie znaków, natomiast „?” oznacza jeden opcjonalny znak (czyli jeden lub zero znaków). Znakiem zmiany znaczenia jest „\”, dlatego aby wprowadzić faktyczny znak „*”, „?” lub „\”, musisz umieścić przed nim znak „\”.
+Możesz użyć symboli wieloznacznych „*” i „?”, by dopasować sekwencje dowolnych znaków. Symbol „*” odpowiada dowolnej liczbie znaków, natomiast „?” oznacza jeden opcjonalny znak (czyli jeden lub zero znaków). Znakiem zmiany znaczenia jest „\”, dlatego aby wprowadzić faktyczny znak „*”, „?” lub „\”, musisz umieścić przed nim znak „\”.
 
-      Jeśli włączysz to ustawienie, wtyczki wymienione na liście nigdy nie będą używane w przeglądarce <ph name="PRODUCT_NAME" />. Wtyczki będą oznaczone jako wyłączone na stronie „about:plugins”, a użytkownicy nie będą mogli ich włączyć.
+Jeśli włączysz to ustawienie, wtyczki wymienione na liście nigdy nie będą używane w przeglądarce <ph name="PRODUCT_NAME" />. Wtyczki będą oznaczone jako wyłączone na stronie „about:plugins”, a użytkownicy nie będą mogli ich włączyć.
 
-      Pamiętaj, że ta zasada może być zastąpiona przez zasady EnabledPlugins i DisabledPluginsExceptions.
+Pamiętaj, że ta zasada może być zastąpiona przez zasady EnabledPlugins i DisabledPluginsExceptions.
 
-      Jeśli ta zasada nie zostanie ustawiona, użytkownik będzie mógł korzystać ze wszystkich wtyczek zainstalowanych w systemie oprócz przestarzałych, niebezpiecznych i niezgodnych wbudowanych wtyczek.</translation>
+Jeśli ta zasada nie zostanie ustawiona, użytkownik będzie mógł korzystać ze wszystkich wtyczek zainstalowanych w systemie oprócz przestarzałych, niebezpiecznych i niezgodnych wbudowanych wtyczek.</translation>
 <translation id="410478022164847452">Określa, po jakim czasie nieaktywności użytkownika podejmowane jest działanie po bezczynności przy zasilaniu z sieci.
 
           Jeśli ta zasada jest ustawiona, określa czas, przez który użytkownik musi pozostać nieaktywny, zanim <ph name="PRODUCT_OS_NAME" /> wykona działanie związane z bezczynnością (można skonfigurować je osobno).
@@ -1281,11 +1275,11 @@ Zwykle ta zasada jest wyłączona w celu ochrony przed phishingiem. W przypadku 
 <translation id="5423197884968724595">Nazwa ograniczenia w Android WebView:</translation>
 <translation id="543559563129402336">Ta zasada została wycofana. Zamiast niej możesz użyć tej zasady: <ph name="FORCEYOUTUBERESTRICT_POLICY_NAME" />. Zastępuje ona wycofaną zasadę i umożliwia dokładniejszą konfigurację.
 
-      Wymusza umiarkowany tryb ograniczonego dostępu w YouTube i uniemożliwia użytkownikom zmianę tego ustawienia.
+Wymusza umiarkowany tryb ograniczonego dostępu w YouTube i uniemożliwia użytkownikom zmianę tego ustawienia.
 
-      Jeśli to ustawienia jest włączone, tryb ograniczonego dostępu w YouTube będzie zawsze ustawiony co najmniej na poziom „Umiarkowany”.
+Jeśli to ustawienie jest włączone, tryb ograniczonego dostępu w YouTube będzie zawsze ustawiony co najmniej na poziom „Umiarkowany”.
 
-      Jeśli je wyłączysz lub nie podasz wartości, stosowanie trybu ograniczonego dostępu w YouTube nie będzie wymuszane przez przeglądarkę <ph name="PRODUCT_NAME" />. Zewnętrzne zasady, np. zasady YouTube, mogą jednak nadal wymuszać stosowanie trybu ograniczonego dostępu.</translation>
+Jeśli je wyłączysz lub nie podasz wartości, stosowanie trybu ograniczonego dostępu w YouTube nie będzie wymuszane przez przeglądarkę <ph name="PRODUCT_NAME" />. Zewnętrzne zasady, np. zasady YouTube, mogą jednak nadal wymuszać stosowanie trybu ograniczonego dostępu.</translation>
 <translation id="5447306928176905178">Włącz raportowanie informacji o pamięci (rozmiar stosu pamięci JS) do strony (opcja wycofana)</translation>
 <translation id="5457065417344056871">Włącz tryb gościa w przeglądarce</translation>
 <translation id="5457924070961220141">Umożliwia skonfigurowanie domyślnego mechanizmu renderowania HTML po zainstalowaniu wtyczki <ph name="PRODUCT_FRAME_NAME" />. Ustawieniem domyślnym, stosowanym w przypadku nieskonfigurowania tej zasady, jest zezwolenie przeglądarce hosta na wykonywanie renderowania, jednak możesz opcjonalnie zastąpić to ustawienie, tak aby strony HTML były domyślnie renderowane przez wtyczkę <ph name="PRODUCT_FRAME_NAME" />.</translation>
@@ -1389,19 +1383,19 @@ Zwykle ta zasada jest wyłączona w celu ochrony przed phishingiem. W przypadku 
           Jeśli ta zasada nie jest ustawiona, używana jest domyślna wartość długości czasu.
 
           Wartość tej zasady powinna być określona w milisekundach.</translation>
-<translation id="5783595563813359339">Ta zasada została wycofana. Użyj zasady <ph name="DEFAULT_PLUGINS_SETTING_POLICY" />, by zarządzać dostępnością wtyczki Flash, oraz zasady <ph name="ALWAYS_OPEN_PDF_EXTERNALLY_POLICY" />, by ustalić, czy wbudowana przeglądarka PDF ma być używana do otwierania plików PDF.
+<translation id="5783595563813359339">Ta zasada została wycofana. Użyj zasady <ph name="DEFAULT_PLUGINS_SETTING_POLICY" />, by zarządzać dostępnością wtyczki Flash, oraz zasady <ph name="ALWAYS_OPEN_PDF_EXTERNALLY_POLICY" />, by ustalić, czy wbudowana przeglądarka PDF-ów ma być używana do otwierania plików PDF.
 
-      Pozwala określić listę wtyczek, które użytkownik może włączyć lub wyłączyć w przeglądarce <ph name="PRODUCT_NAME" />.
+Pozwala określić listę wtyczek, które użytkownik może włączyć lub wyłączyć w przeglądarce <ph name="PRODUCT_NAME" />.
 
-      Możesz użyć symboli wieloznacznych „*” i „?”, aby dopasować sekwencje dowolnych znaków. Symbol „*” odpowiada dowolnej liczbie znaków, natomiast „?” oznacza jeden opcjonalny znak (czyli jeden lub zero znaków). Znakiem zmiany znaczenia jest „\”, dlatego aby wprowadzić faktyczny znak „*”, „?” lub „\”, musisz umieścić przed nim znak „\”.
+Możesz użyć symboli wieloznacznych „*” i „?”, aby dopasować sekwencje dowolnych znaków. Symbol „*” odpowiada dowolnej liczbie znaków, natomiast „?” oznacza jeden opcjonalny znak (czyli jeden lub zero znaków). Znakiem zmiany znaczenia jest „\”, dlatego aby wprowadzić faktyczny znak „*”, „?” lub „\”, musisz umieścić przed nim znak „\”.
 
-      Jeśli włączysz to ustawienie, wtyczek wymienionych na liście będzie można używać w przeglądarce <ph name="PRODUCT_NAME" />. Użytkownicy będą mogli je włączyć lub wyłączyć na stronie „about:plugins”, nawet jeśli wtyczka będzie pasować także do wzorca wprowadzonego w zasadzie DisabledPlugins. Użytkownicy będą mogli również włączyć lub wyłączyć wtyczki, które nie pasują do żadnych wzorców wprowadzonych w zasadach DisabledPlugins, DisabledPluginsExceptions i EnabledPlugins.
+Jeśli włączysz to ustawienie, wtyczek wymienionych na liście będzie można używać w przeglądarce <ph name="PRODUCT_NAME" />. Użytkownicy będą mogli je włączyć lub wyłączyć na stronie „about:plugins”, nawet jeśli wtyczka będzie pasować także do wzorca wprowadzonego w zasadzie DisabledPlugins. Użytkownicy będą mogli również włączyć lub wyłączyć wtyczki, które nie pasują do żadnych wzorców wprowadzonych w zasadach DisabledPlugins, DisabledPluginsExceptions i EnabledPlugins.
 
-      Ta zasada ma umożliwić ścisłą kontrolę uruchamiania wtyczek, gdy lista „DisabledPlugins” zawiera pozycje z symbolami wieloznacznymi (na przykład wyłączenie wszystkich wtyczek – „*” lub wyłączenie wszystkich wtyczek Java – „*Java*”), a administrator chce włączyć tylko konkretną wersję – na przykład „IcedTea Java 2.3”. Te konkretne wersje można określić w tej zasadzie.
+Ta zasada ma umożliwić ścisłą kontrolę uruchamiania wtyczek, gdy lista „DisabledPlugins” zawiera pozycje z symbolami wieloznacznymi (na przykład wyłączenie wszystkich wtyczek – „*” lub wyłączenie wszystkich wtyczek Java – „*Java*”), a administrator chce włączyć tylko konkretną wersję – na przykład „IcedTea Java 2.3”. Te konkretne wersje można określić w tej zasadzie.
 
-      Pamiętaj, że musisz wykluczyć zarówno nazwę wtyczki, jak i nazwę grupy wtyczek. Każdą grupę wtyczek widać w oddzielnej sekcji na stronie about:plugins, a do każdej sekcji może należeć co najmniej jedna wtyczka. Na przykład wtyczka „Shockwave Flash” należy do grupy „Adobe Flash Player” i jeśli ma być wykluczona z czarnej listy, obie te nazwy muszą mieć swoje odpowiedniki na liście wyjątków.
+Pamiętaj, że musisz wykluczyć zarówno nazwę wtyczki, jak i nazwę grupy wtyczek. Każdą grupę wtyczek widać w oddzielnej sekcji na stronie about:plugins, a do każdej sekcji może należeć co najmniej jedna wtyczka. Na przykład wtyczka „Shockwave Flash” należy do grupy „Adobe Flash Player” i jeśli ma być wykluczona z czarnej listy, obie te nazwy muszą mieć swoje odpowiedniki na liście wyjątków.
 
-      Jeśli ta zasada nie zostanie ustawiona, każda wtyczka zgodna ze wzorcem na liście „DisabledPlugins” zostanie wyłączona i zablokowana, a użytkownik nie będzie mógł jej włączyć.</translation>
+Jeśli ta zasada nie zostanie ustawiona, każda wtyczka zgodna ze wzorcem na liście „DisabledPlugins” zostanie wyłączona i zablokowana, a użytkownik nie będzie mógł jej włączyć.</translation>
 <translation id="5795001131770861387">Włącza obsługę HTTP/0.9 w portach innych niż domyślne</translation>
 <translation id="5809728392451418079">Ustaw nazwę wyświetlaną dla lokalnych kont na urządzeniu</translation>
 <translation id="5814301096961727113">Ustaw domyślny stan potwierdzeń głosowych na ekranie logowania</translation>
@@ -1465,13 +1459,6 @@ Zwykle ta zasada jest wyłączona w celu ochrony przed phishingiem. W przypadku 
 
       Jeśli nie ustawisz tej zasady w <ph name="PRODUCT_NAME" /> lub wybierzesz wartość fałsz, <ph name="PRODUCT_NAME" /> 19 i nowsze wersje nie sprawdzają online, czy certyfikat nie został unieważniony.</translation>
 <translation id="5966615072639944554">Rozszerzenia mają pozwolenie na używanie interfejsu API zaświadczania zdalnego</translation>
-<translation id="5974970919245996815">Informacje o stanie Androida są wysyłane z powrotem
-      na serwer.
-
-      Jeśli ta zasada jest wyłączona, informacje nie będą przesyłane.
-      Jeśli zasada jest włączona lub nieustawiona, informacje będą przesyłane.
-
-      Ta zasada ma zastosowanie tylko wtedy, gdy są włączone aplikacje na Androida.</translation>
 <translation id="5983708779415553259">Domyślne zachowanie dla witryn nie jest zawarte w żadnym pakiecie treści</translation>
 <translation id="5997543603646547632">Domyślnie używaj zegara 24-godzinnego</translation>
 <translation id="6009903244351574348">Pozwól <ph name="PRODUCT_FRAME_NAME" /> obsługiwać wymienione typy treści. Jeśli ta zasada nie zostanie skonfigurowana, dla wszystkich witryn będzie używany domyślny mechanizm renderujący określony przez zasadę „ChromeFrameRendererSettings”.</translation>
@@ -1483,7 +1470,7 @@ Zwykle ta zasada jest wyłączona w celu ochrony przed phishingiem. W przypadku 
 <translation id="6022948604095165524">Działanie po uruchomieniu</translation>
 <translation id="602728333950205286">Adres URL wyszukiwania dynamicznego od domyślnego dostawcy wyszukiwania</translation>
 <translation id="603410445099326293">Parametry dla sugerowania URL-i używających POST</translation>
-<translation id="6036523166753287175">Włącz omijanie zapory sieciowej przez host dostępu zdalnego</translation>
+<translation id="6036523166753287175">Włącz omijanie zapory sieciowej przez hosta dostępu zdalnego</translation>
 <translation id="6059543311891422586">Używanie akceleracji sprzętowej, jeśli jest dostępna.
 
       Jeśli ta zasada jest włączona lub nieustawiona, akceleracja sprzętowa działa, o ile dana funkcja GPU nie znajduje się na czarnej liście.
@@ -1500,17 +1487,17 @@ Zwykle ta zasada jest wyłączona w celu ochrony przed phishingiem. W przypadku 
 <translation id="6076099373507468537">Definiuje listę urządzeń USB, które można odłączać od sterownika jądra i stosować za pomocą interfejsu chrome.usb API bezpośrednio w aplikacji internetowej. W celu wskazania konkretnego urządzenia lista obejmuje pary identyfikatora dostawcy urządzenia USB i identyfikatora produktu.
 
       Jeśli nie skonfigurujesz tej zasady, lista odłączanych urządzeń USB będzie pusta.</translation>
-<translation id="608377055310226486">Ta zasada została wycofana. Użyj zasady <ph name="DEFAULT_PLUGINS_SETTING_POLICY" />, by zarządzać dostępnością wtyczki Flash, oraz zasady <ph name="ALWAYS_OPEN_PDF_EXTERNALLY_POLICY" />, by ustalić, czy wbudowana przeglądarka PDF ma być używana do otwierania plików PDF.
+<translation id="608377055310226486">Ta zasada została wycofana. Użyj zasady <ph name="DEFAULT_PLUGINS_SETTING_POLICY" />, by zarządzać dostępnością wtyczki Flash, oraz zasady <ph name="ALWAYS_OPEN_PDF_EXTERNALLY_POLICY" />, by ustalić, czy wbudowana przeglądarka PDF-ów ma być używana do otwierania plików PDF.
 
-      Pozwala określić listę wtyczek włączonych w przeglądarce <ph name="PRODUCT_NAME" /> i uniemożliwia użytkownikom zmianę tego ustawienia.
+Pozwala określić listę wtyczek włączonych w przeglądarce <ph name="PRODUCT_NAME" /> i uniemożliwia użytkownikom zmianę tego ustawienia.
 
-      Możesz użyć symboli wieloznacznych „*” i „?”, aby dopasować sekwencje dowolnych znaków. Symbol „*” odpowiada dowolnej liczbie znaków, natomiast „?” oznacza jeden opcjonalny znak (czyli jeden lub zero znaków). Znakiem zmiany znaczenia jest „\”, dlatego aby wprowadzić faktyczny znak „*”, „?” lub „\”, musisz umieścić przed nim znak „\”.
+Możesz użyć symboli wieloznacznych „*” i „?”, aby dopasować sekwencje dowolnych znaków. Symbol „*” odpowiada dowolnej liczbie znaków, natomiast „?” oznacza jeden opcjonalny znak (czyli jeden lub zero znaków). Znakiem zmiany znaczenia jest „\”, dlatego aby wprowadzić faktyczny znak „*”, „?” lub „\”, musisz umieścić przed nim znak „\”.
 
-      Wtyczki wymienione na liście są zawsze używane w przeglądarce <ph name="PRODUCT_NAME" />, pod warunkiem, że zostały zainstalowane. Wtyczki są oznaczone jako włączone na stronie „about:plugins”, a użytkownicy nie mogą ich wyłączyć.
+Wtyczki wymienione na liście są zawsze używane w przeglądarce <ph name="PRODUCT_NAME" />, pod warunkiem, że zostały zainstalowane. Wtyczki są oznaczone jako włączone na stronie „about:plugins”, a użytkownicy nie mogą ich wyłączyć.
 
-      Pamiętaj, że ta zasada może być zastąpiona przez zasady DisabledPlugins i DisabledPluginsExceptions.
+Pamiętaj, że ta zasada może być zastąpiona przez zasady DisabledPlugins i DisabledPluginsExceptions.
 
-      Jeśli ta zasada nie zostanie ustawiona, użytkownik może wyłączyć każdą wtyczkę zainstalowaną w systemie.</translation>
+Jeśli ta zasada nie zostanie ustawiona, użytkownik może wyłączyć każdą wtyczkę zainstalowaną w systemie.</translation>
 <translation id="6093156968240188330">Umożliwia użytkownikom zdalnym używanie okien z podwyższonym poziomem uprawnień w sesjach pomocy zdalnej</translation>
 <translation id="6095999036251797924">Określa czas, po jakim ekran jest blokowany przy pracy na zasilaniu sieciowym lub bateryjnym, jeśli użytkownik jest nieaktywny.
 
@@ -1988,7 +1975,7 @@ Zwykle ta zasada jest wyłączona w celu ochrony przed phishingiem. W przypadku 
           Ta zasada jest przeznaczona do użytku wewnętrznego w <ph name="PRODUCT_NAME" />.</translation>
 <translation id="7712109699186360774">Zawsze mnie pytaj, gdy strona chce użyć kamery i/lub mikrofonu</translation>
 <translation id="7715711044277116530">Wartość procentowa skalowania opóźnienia przyciemnienia ekranu w trybie prezentacji</translation>
-<translation id="7717938661004793600">Skonfiguruj funkcje ułatwień dostępu w <ph name="PRODUCT_OS_NAME" />.</translation>
+<translation id="7717938661004793600">Skonfiguruj ułatwienia dostępu w <ph name="PRODUCT_OS_NAME" />.</translation>
 <translation id="7719251660743813569">Określa, czy statystyki użytkowania są przesyłane do Google. W przypadku włączenia tej opcji <ph name="PRODUCT_OS_NAME" /> będzie przesyłać statystyki użytkowania. Jeśli opcja będzie wyłączona lub nieskonfigurowana, przesyłanie statystyk zostanie wyłączone.</translation>
 <translation id="7723433108978650103">Blokuje dostęp do wymienionych adresów URL.
 
@@ -2112,6 +2099,9 @@ Więcej opcji i szczegółowych przykładów znajdziesz na:
           które nie są dołączone do domeny Active Directory.</translation>
 <translation id="7937766917976512374">Zezwól lub nie na przechwytywanie wideo</translation>
 <translation id="7941975817681987555">Nie przewiduj działań w sieci dla żadnego połączenia sieciowego</translation>
+<translation id="7942429005743031780">Ta zasada określa dozwolone rozszerzenia do użycia z funkcją chrome.enterprise.platformKeysPrivate.challengeUserKey() interfejsu API Enterprise Platform Keys do zdalnego poświadczania. Rozszerzenia muszą zostać dodane do tej listy, by były używane z interfejsem API.
+
+          Jeśli rozszerzenie nie znajduje się na liście lub lista nie jest ustawiona, wywołanie interfejsu API zakończy się błędem.</translation>
 <translation id="7953256619080733119">Zarządzane hosty umieszczone przez użytkownika na liście wyjątków</translation>
 <translation id="7971839631300653352">SSL 3.0</translation>
 <translation id="7974114691960514888">Ta zasada nie jest już obsługiwana. Umożliwia stosowanie protokołu STUN i serwerów przekazywania podczas łączenia się z klientem zdalnym. Jeśli ustawienie jest włączone, ten komputer może wykrywać hosty zdalne i łączyć się z nimi nawet wówczas, gdy są oddzielone zaporą sieciową. Jeśli ustawienie jest wyłączone, a wychodzące połączenia UDP są filtrowane przez zaporę sieciową, komputer może łączyć się tylko z hostami w sieci lokalnej.</translation>

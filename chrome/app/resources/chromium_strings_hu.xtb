@@ -21,7 +21,6 @@
 <translation id="1688750314291223739">A szinkronizálás beállításával személyre szabott beállításait az interneten tárolhatja, így azok elérhetők a Chromiumból bármelyik számítógépen.</translation>
 <translation id="1699664235656412242">Kérjük, zárja be az összes Chromium-ablakot (köztük a Windows 8-módban lévőket is), majd próbálja újra.</translation>
 <translation id="1708666629004767631">Elérhető a Chromium új, biztonságosabb verziója.</translation>
-<translation id="1725059042853530269">A(z) <ph name="FILE_NAME" /> káros lehet böngészési élményére, ezért a Chromium letiltotta azt.</translation>
 <translation id="1774152462503052664">A Chromium fusson a háttérben</translation>
 <translation id="1779356040007214683">A Chromium biztonságosabbá tétele érdekében kikapcsoltunk néhány bővítményt, amelyek nem a(z) <ph name="IDS_EXTENSION_WEB_STORE_TITLE" /> szolgáltatásból származnak, és előfordulhat, hogy az Ön tudta nélkül lettek telepítve.</translation>
 <translation id="1808667845054772817">A Chromium újratelepítése</translation>
@@ -59,7 +58,6 @@
 <translation id="2718390899429598676">A nagyobb biztonság érdekében a Chromium titkosítja az Ön adatait.</translation>
 <translation id="2770231113462710648">Alapértelmezett böngésző beállítása:</translation>
 <translation id="2799223571221894425">Újraindítás</translation>
-<translation id="2801146392936645542">A(z) <ph name="FILE_NAME" /> fájl rosszindulatú, ezért a Chromium letiltotta.</translation>
 <translation id="2847479871509788944">Eltávolítás a Chromiumból…</translation>
 <translation id="2886012850691518054">Opcionális: Segítsen a Chromium fejlesztésében azáltal, hogy automatikusan elküldi a használati statisztikákat és hibajelentéseket a Google-nak.</translation>
 <translation id="2905536371227304018">A Chromium operációs rendszer ezen a nyelven jelenik meg.</translation>
@@ -78,7 +76,6 @@
 <ph name="USER_DATA_DIRECTORY" /></translation>
 <translation id="3264279740686075150">A Chromium az alapértelmezett böngésző. Hurrá!</translation>
 <translation id="328888136576916638">Hiányoznak Google API-kulcsok. A Chromium egyes funkciói kikapcsolnak.</translation>
-<translation id="3289635842886789612">A Chromium elavult.</translation>
 <translation id="3296368748942286671">A háttéralkalmazások továbbfuttatása, ha a Chromiumot bezárják</translation>
 <translation id="3312805357485578561">A Chromium szokatlan viselkedést észlelt</translation>
 <translation id="331951419404882060">A Chromium OS egy bejelentkezési hiba miatt nem tudta szinkronizálni az adatokat.</translation>
@@ -136,6 +133,7 @@
 <translation id="5398878173008909840">Elérhető a Chromium új verziója.</translation>
 <translation id="5427571867875391349">A Chromium beállítása alapértelmezett böngészőként</translation>
 <translation id="5466153949126434691">A Chromium automatikusan frissít, így Ön mindig a legújabb verzióval rendelkezik. A letöltés befejezése után a Chromium újraindul, és máris rendelkezésre áll.</translation>
+<translation id="5479196819031988440">A Chromium OS nem tudja megnyitni ezt az oldalt.</translation>
 <translation id="549669000822060376">Kérjük, várjon, amíg a Chromium telepíti a legutóbbi rendszerfrissítéseket.</translation>
 <translation id="556167189552180495">A Chromium ezen a nyelven jelenik meg.</translation>
 <translation id="5563479599352954471">Keresés egyetlen érintéssel</translation>
@@ -221,7 +219,6 @@ További utasításokat a(z) <ph name="ACCOUNT_EMAIL" /> címére küldött e-ma
 <translation id="7421823331379285070">A Chromium Windows XP-t vagy újabb operációs rendszert igényel. Lehet, hogy korábbi verziójú operációs rendszeren néhány funkció nem fog működni.</translation>
 <translation id="7473891865547856676">Nem, köszönöm</translation>
 <translation id="7483335560992089831">Nem lehet ugyanazt a Chromium-verziót telepíteni, amely jelenleg is fut. Zárja be a Chromiumot, és próbálja újra.</translation>
-<translation id="750717762378961310">Ez a fájl rosszindulatú, ezért a Chromium letiltotta.</translation>
 <translation id="7549178288319965365">A Chromium OS névjegye</translation>
 <translation id="7577193603922410712">A rendszer egy speciális biztonsági frissítést alkalmazott a Chromiumon; indítsa újra a számítógépet, hogy a módosítás életbe léphessen (a lapokat visszaállítjuk).</translation>
 <translation id="761356813943268536">A Chromium használja a kamerát és a mikrofont.</translation>

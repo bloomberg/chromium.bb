@@ -63,7 +63,6 @@ Nekatere funkcije morda niso na voljo in spremembe nastavitev ne bodo shranjene.
 <translation id="2588322182880276190">Chromov logotip</translation>
 <translation id="2664962310688259219">Odprtokodne licence za Chrome OS</translation>
 <translation id="2665296953892887393">Pomagajte izboljšati Chrome – Googlu pošiljajte poročila o zrušitvah in ta dokument: <ph name="UMA_LINK" />.</translation>
-<translation id="2669824781555328029">Datoteka <ph name="FILE_NAME" /> morda škodljivo vpliva na brskanje, zato jo je Chrome blokiral.</translation>
 <translation id="2681064822612051220">V sistemu je bila odkrita namestitev Google Chroma v sporu. Odstranite ga in poskusite znova.</translation>
 <translation id="2689103672227170538">Zaradi te razširitve se je spremenila stran, ki je prikazana, ko zaženete Chrome.</translation>
 <translation id="2704356438731803243">Če želite, da bodo vaši obstoječi podatki v Chromu ločeni, lahko ustvarite nov profil v Chromu za uporabnika <ph name="USER_NAME" />.</translation>
@@ -153,6 +152,7 @@ Nadaljnja navodila preberite v e-poštnem sporočilu, ki ste ga prejeli na <ph n
 
 Nekatere funkcije morda ne bodo na voljo. Navedite drug imenik profila ali uporabite novejšo različico Google Chroma.</translation>
 <translation id="5176234269072261959">Pomagajte izboljšati Google Chrome s poročanjem trenutnih nastavitev.</translation>
+<translation id="5193136243808726294">Googlov OS Chrome ne more odpreti te strani.</translation>
 <translation id="5204098752394657250"><ph name="TERMS_OF_SERVICE_LINK" />Pogoji storitve<ph name="END_TERMS_OF_SERVICE_LINK" /> za Google Chrome</translation>
 <translation id="5243785881901838525">Google Payments (kopirano v Chrome)</translation>
 <translation id="5251420635869119124">Gostje lahko uporabljajo Chrome, ne da bi za seboj pustili kar koli.</translation>
@@ -213,7 +213,6 @@ Google Chrome ne more obnoviti vaših nastavitev.</translation>
 <translation id="699076943483372849">To spletno mesto uporablja ukinjen vtičnik Chrome Frame, za katerega več niso na voljo posodobitve varnosti in stabilnosti. Odstranite ga in nadgradite na sodoben brskalnik.</translation>
 <translation id="6991142834212251086">Poveži moje podatke v Chromu s tem računom</translation>
 <translation id="7060865993964054389">Zaganjalnik aplikacij v Google Chromu</translation>
-<translation id="7084448929020576097">Datoteka <ph name="FILE_NAME" /> je zlonamerna, zato jo je Chrome blokiral.</translation>
 <translation id="7098166902387133879">Google Chrome uporablja vaš mikrofon.</translation>
 <translation id="7106741999175697885">Upravitelj opravil – Google Chrome</translation>
 <translation id="7125719106133729027">Chrome se ni mogel posodobiti na najnovejšo različico, zato ste prikrajšani za izjemne nove funkcije in varnostne popravke. Chrome morate znova namestiti ročno.</translation>
@@ -276,7 +275,6 @@ Google Chrome ne more obnoviti vaših nastavitev.</translation>
 <translation id="8669527147644353129">Pomočnik za Google Chrome</translation>
 <translation id="8679801911857917785">Določa tudi, katera stran je prikazana, ko zaženete Chrome.</translation>
 <translation id="870251953148363156">Posodabljanje &amp;Google Chroma</translation>
-<translation id="8793772303278047003">Chrome je zastarel.</translation>
 <translation id="8796108026289707191">Google Chrome zdaj znova zaženite.</translation>
 <translation id="8823341990149967727">Chrome je zastarel</translation>
 <translation id="884296878221830158">Določa tudi, katera stran je prikazana, ko zaženete Chrome ali kliknete gumb za domačo stran.</translation>
@@ -285,7 +283,6 @@ Google Chrome ne more obnoviti vaših nastavitev.</translation>
 <translation id="8914504000324227558">Znova zaženi Chrome</translation>
 <translation id="9026991721384951619">Chrome OS ni mogel sinhronizirati podatkov, ker so podatki za prijavo v račun zastareli.</translation>
 <translation id="9067395829937117663">Za Google Chrome potrebujete Windows 7 ali novejši.</translation>
-<translation id="9102715433345326100">Ta datoteka je zlonamerna, zato jo je Chrome blokiral.</translation>
 <translation id="9107728822479888688"><ph name="BEGIN_BOLD" />Opozorilo:<ph name="END_BOLD" /> Google Chrome razširitvam ne more preprečiti beleženja zgodovine brskanja. Če želite onemogočiti to razširitev v načinu brez beleženja zgodovine, počistite to možnost.</translation>
 <translation id="911206726377975832">Ali želite izbrisati tudi podatke brskanja?</translation>
 <translation id="924447568950697217">Nastavitev Chroma kot privzetega brskalnika</translation>

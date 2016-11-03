@@ -1,41 +1,20 @@
 <?xml version="1.0" ?>
 <!DOCTYPE translationbundle>
 <translationbundle lang="mr">
-<translation id="153454903766751181">सेल्युलर मोडेम आरंभ करत आहे...</translation>
 <translation id="1829129547161959350">पेंग्विन</translation>
-<translation id="1850504506766569011">Wi-Fi बंद आहे.</translation>
 <translation id="2288278176040912387">रेकॉर्ड प्लेयर</translation>
-<translation id="2354174487190027830"><ph name="NAME" /> सक्रिय करत आहे</translation>
 <translation id="2563185590376525700">बेडूक</translation>
 <translation id="2649120831653069427">रेनबोफिश</translation>
-<translation id="277257480934873581"><ph name="NAME" /> शी पुन्हा कनेक्ट करीत आहे</translation>
 <translation id="2894654529758326923">माहिती</translation>
 <translation id="2951236788251446349">जेलिफिश</translation>
-<translation id="3846575436967432996">कोणतीही नेटवर्क माहिती उपलब्ध नाही</translation>
-<translation id="3901991538546252627"><ph name="NAME" /> वर कनेक्ट करीत आहे</translation>
 <translation id="3958548648197196644">किवी</translation>
-<translation id="4118990158415604803">आपल्या प्रशासकाने इतर नेटवर्कशी कनेक्ट करणे अक्षम केले आहे.</translation>
 <translation id="4326192123064055915">कॉफी</translation>
-<translation id="4448844063988177157">Wi-Fi नेटवर्कचा शोधत आहे...</translation>
-<translation id="4479639480957787382">इथरनेट</translation>
-<translation id="4508225577814909926"><ph name="NAME" />: कनेक्ट करत आहे...</translation>
 <translation id="4559767610552730302">Bokeh</translation>
 <translation id="4935975195727477204">गॅझानियाचे फूल</translation>
 <translation id="515594325917491223">बुद्धिबळ</translation>
 <translation id="5257456363153333584">ड्रॅगनफ्लाय</translation>
-<translation id="6267036997247669271"><ph name="NAME" />: सक्रिय करत आहे...</translation>
-<translation id="6549021752953852991">कोणतेही सेल्युलर नेटवर्क उपलब्ध नाही</translation>
-<translation id="6857811139397017780">सक्रिय करा<ph name="NETWORKSERVICE" /></translation>
 <translation id="6935521024859866267">उलट सुलट</translation>
-<translation id="7066646422045619941">हे नेटवर्क आपल्या प्रशासकाने अक्षम केले आहे.</translation>
-<translation id="735745346212279324">VPN डिस्कनेक्ट केले</translation>
-<translation id="7874779702599364982">सेल्यूलर नेटवर्कसाठी शोधत आहे...</translation>
-<translation id="8000066093800657092">कोणतेही नेटवर्क नाही</translation>
 <translation id="8008366997883261463">कुत्रा</translation>
-<translation id="8132793192354020517"><ph name="NAME" /> शी कनेक्ट केलेले</translation>
-<translation id="8454013096329229812">Wi-Fi चालू आहे.</translation>
-<translation id="8484916590211895857"><ph name="NAME" />: पुन्हा कनेक्ट करीत आहे...</translation>
 <translation id="8714406895390098252">सायकल</translation>
 <translation id="8808686172382650546">मांजर</translation>
-<translation id="8814190375133053267">Wi-Fi</translation>
 </translationbundle>

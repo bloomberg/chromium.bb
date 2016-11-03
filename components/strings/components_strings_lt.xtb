@@ -50,6 +50,7 @@
 <translation id="1491663344921578213">Šiuo metu negalite apsilankyti <ph name="SITE" />, nes svetainėje naudojamas sertifikatų prisegimas. Tinklo klaidos ir išpuoliai dažniausiai yra laikini, todėl šis puslapis tikriausiai veiks vėliau. <ph name="BEGIN_LEARN_MORE_LINK" />Sužinokite daugiau<ph name="END_LEARN_MORE_LINK" />.</translation>
 <translation id="1506687042165942984">Rodyti išsaugotą šio puslapio kopiją (kuri yra pasenusi).</translation>
 <translation id="1519264250979466059">Sukūrimo data</translation>
+<translation id="153384715582417236">Kol kas tiek</translation>
 <translation id="1549470594296187301">Norint naudoti šią funkciją, reikia įgalinti „JavaScript“.</translation>
 <translation id="1559528461873125649">Nėra tokio failo ar katalogo</translation>
 <translation id="1559572115229829303">&lt;p&gt;Nepavyksta užmegzti privataus ryšio su <ph name="BEGIN_BOLD" /><ph name="DOMAIN" /><ph name="END_BOLD" />, nes įrenginio data ir laikas (<ph name="DATE_AND_TIME" />) yra netinkami.&lt;/p&gt;
@@ -351,7 +352,6 @@
 <translation id="4728558894243024398">Platforma</translation>
 <translation id="4744603770635761495">Vykdomasis kelias</translation>
 <translation id="4756388243121344051">&amp;Istorija</translation>
-<translation id="4759238208242260848">Atsisiuntimai</translation>
 <translation id="4764776831041365478">Tinklalapis šiuo adresu <ph name="URL" /> gali laikinai neveikti arba visam laikui būti perkeltas kitu žiniatinklio adresu.</translation>
 <translation id="4771973620359291008">Įvyko nežinoma klaida.</translation>
 <translation id="4782449893814226250">Paprašėte tėvų leidimo apsilankyti šiame puslapyje.</translation>
@@ -390,6 +390,7 @@
 <translation id="5179510805599951267">Ne <ph name="ORIGINAL_LANGUAGE" /> k.? Pranešti apie šią klaidą</translation>
 <translation id="5190835502935405962">Žymių juosta</translation>
 <translation id="5199729219167945352">Bandymai</translation>
+<translation id="5199841536747119669">Jūsų pasiūlymai rodomi čia</translation>
 <translation id="5251803541071282808">Debesis</translation>
 <translation id="5277279256032773186">Naudojate „Chrome“ darbe? Įmonės gali tvarkyti darbuotojų „Chrome“ nustatymus. Sužinokite daugiau</translation>
 <translation id="5299298092464848405">Analizuojant politiką įvyko klaida</translation>
@@ -469,6 +470,7 @@
 <translation id="6263376278284652872"><ph name="DOMAIN" /> žymės</translation>
 <translation id="6264485186158353794">Grįžti prie saugumo</translation>
 <translation id="6282194474023008486">Pašto kodas</translation>
+<translation id="6290238015253830360">Jūsų pasiūlyti straipsniai rodomi čia</translation>
 <translation id="6305205051461490394"><ph name="URL" /> nepasiekiama.</translation>
 <translation id="6321917430147971392">Patikrinkite DNS nustatymus</translation>
 <translation id="6328639280570009161">Bandykite neleisti tinklo numatymo</translation>
@@ -652,6 +654,7 @@ Ei! Kitą kartą gali būti naudinga naudoti inkognito režimą (<ph name="SHORT
 <translation id="8363502534493474904">Išjungti lėktuvo režimą</translation>
 <translation id="8364627913115013041">Nenustatyta.</translation>
 <translation id="8380941800586852976">Pavojingas</translation>
+<translation id="8382348898565613901">Čia rodomos žymės, kurias naudojote pastaruoju metu</translation>
 <translation id="8412145213513410671">Strigtys (<ph name="CRASH_COUNT" />)</translation>
 <translation id="8412392972487953978">Reikia du kartus įvesti tą pačią slaptafrazę.</translation>
 <translation id="8428213095426709021">Nustatymai</translation>
@@ -701,6 +704,7 @@ Ei! Kitą kartą gali būti naudinga naudoti inkognito režimą (<ph name="SHORT
 <translation id="8987927404178983737">Mėnuo</translation>
 <translation id="8989148748219918422"><ph name="ORGANIZATION" /> [<ph name="COUNTRY" />]</translation>
 <translation id="9001074447101275817">Tarpiniame serveryje <ph name="DOMAIN" /> būtina įvesti naudotojo vardą ir slaptažodį.</translation>
+<translation id="9008201768610948239">Nepaisyti</translation>
 <translation id="901974403500617787">Visoje sistemoje taikomas žymas gali nustatyti tik savininkas: <ph name="OWNER_EMAIL" />.</translation>
 <translation id="9020542370529661692">Šis puslapis išverstas į <ph name="TARGET_LANGUAGE" /></translation>
 <translation id="9038649477754266430">Naudokite numatymo paslaugą, kad puslapiai būtų įkeliami greičiau</translation>

@@ -50,6 +50,7 @@
 <translation id="1491663344921578213">لا يمكنك زيارة <ph name="SITE" /> الآن نظرًا لأن موقع الويب يستخدم أداة التحقق من صحة الشهادات. أخطاء الشبكة والهجمات عليها عادةً ما تكون مؤقتة، لذا ستعمل هذه الصفحة لاحقًا على الأرجح. <ph name="BEGIN_LEARN_MORE_LINK" />مزيد من المعلومات<ph name="END_LEARN_MORE_LINK" />.</translation>
 <translation id="1506687042165942984">عرض نسخة محفوظة (أي معروف أنها منتهية) من هذه الصفحة.</translation>
 <translation id="1519264250979466059">تاريخ الإصدار</translation>
+<translation id="153384715582417236">هذا كل شيء الآن</translation>
 <translation id="1549470594296187301">‏يجب تمكين JavaScript لاستخدام هذه الميزة.</translation>
 <translation id="1559528461873125649">لا وجود لمثل هذا الملف أو الدليل</translation>
 <translation id="1559572115229829303">‏&lt;p&gt;تعذر إنشاء اتصال خاص بـ <ph name="BEGIN_BOLD" /><ph name="DOMAIN" /><ph name="END_BOLD" /> نظرًا لأن تاريخ ووقت جهازك (<ph name="DATE_AND_TIME" />) غير صحيحين.&lt;/p&gt;
@@ -350,7 +351,6 @@
 <translation id="4728558894243024398">النظام الأساسي</translation>
 <translation id="4744603770635761495">المسار التنفيذي</translation>
 <translation id="4756388243121344051">ال&amp;سجل</translation>
-<translation id="4759238208242260848">التنزيلات</translation>
 <translation id="4764776831041365478">قد تكون صفحة الويب على العنوان <ph name="URL" /> غير متاحة مؤقتًا أو قد يكون تم نقلها نهائيًا إلى عنوان ويب جديد.</translation>
 <translation id="4771973620359291008">حدث خطأ غير محدّد.</translation>
 <translation id="4782449893814226250">لقد سألت والديك ما إذا كان مناسبًا لك زيارة هذه الصفحة.</translation>
@@ -389,6 +389,7 @@
 <translation id="5179510805599951267">هل الصفحة ليست باللغة <ph name="ORIGINAL_LANGUAGE" />؟ الإبلاغ عن هذا الخطأ</translation>
 <translation id="5190835502935405962">شريط الإشارات</translation>
 <translation id="5199729219167945352">التجارب</translation>
+<translation id="5199841536747119669">تظهر اقتراحاتك هنا</translation>
 <translation id="5251803541071282808">السحاب</translation>
 <translation id="5277279256032773186">‏هل تستخدم Chrome في العمل؟ يمكن للأنشطة التجارية إدارة إعدادات Chrome لموظفيها. تعرَّف على المزيد</translation>
 <translation id="5299298092464848405">خطأ في تحليل السياسة</translation>
@@ -468,6 +469,7 @@
 <translation id="6263376278284652872">إشعارات <ph name="DOMAIN" /></translation>
 <translation id="6264485186158353794">الرجوع إلى وضع الأمان</translation>
 <translation id="6282194474023008486">الرمز البريدي</translation>
+<translation id="6290238015253830360">تظهر مقالاتك المقترحة هنا</translation>
 <translation id="6305205051461490394">يتعذر الوصول إلى <ph name="URL" />.</translation>
 <translation id="6321917430147971392">التحقق من إعدادات نظام أسماء النطاقات</translation>
 <translation id="6328639280570009161">تجربة تعطيل التنبؤ بإجراءات الشبكة</translation>
@@ -651,6 +653,7 @@
 <translation id="8363502534493474904">إيقاف تشغيل وضع الطائرة</translation>
 <translation id="8364627913115013041">لم يتم تعيينها.</translation>
 <translation id="8380941800586852976">ضارة</translation>
+<translation id="8382348898565613901">تظهر الإشارات المرجعية التي زرتها مؤخرًا هنا</translation>
 <translation id="8412145213513410671">الأعطال (<ph name="CRASH_COUNT" />)</translation>
 <translation id="8412392972487953978">يجب إدخال عبارة المرور نفسها مرتين.</translation>
 <translation id="8428213095426709021">إعدادات</translation>
@@ -700,6 +703,7 @@
 <translation id="8987927404178983737">شهر</translation>
 <translation id="8989148748219918422"><ph name="ORGANIZATION" />‏ [<ph name="COUNTRY" />]</translation>
 <translation id="9001074447101275817">يتطلب الخادم الوكيل <ph name="DOMAIN" /> اسم مستخدم وكلمة مرور.</translation>
+<translation id="9008201768610948239">تجاهل</translation>
 <translation id="901974403500617787">لا يمكن تعيين العلامات التي تسري عبر النظام إلا من قِبل المالك: <ph name="OWNER_EMAIL" />.</translation>
 <translation id="9020542370529661692">تمت ترجمة هذه الصفحة إلى <ph name="TARGET_LANGUAGE" /></translation>
 <translation id="9038649477754266430">استخدام إحدى خدمات التوقع لتحميل الصفحات بسرعة أكبر</translation>

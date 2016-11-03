@@ -59,7 +59,6 @@ Jos kirjaudut silti sisään, Chrome-tiedot, kuten kirjanmerkit, historia ja ase
 <translation id="2588322182880276190">Chrome-logo</translation>
 <translation id="2664962310688259219">Chrome-käyttöjärjestelmän avoimen lähdekoodin lisenssit</translation>
 <translation id="2665296953892887393">Auta parantamaan Google Chromea lähettämällä kaatumisilmoitukset ja <ph name="UMA_LINK" /> Googlelle</translation>
-<translation id="2669824781555328029"><ph name="FILE_NAME" /> voi vahingoittaa selauskokemustasi, joten Chrome esti sen.</translation>
 <translation id="2681064822612051220">Järjestelmästä löytyi ristiriidan aiheuttava toinen Google Chromen asennus. Poista tuote ja yritä uudelleen.</translation>
 <translation id="2689103672227170538">Tämä laajennus on vaihtanut Chromen aloitussivun.</translation>
 <translation id="2704356438731803243">Jos haluat pitää nykyiset Chrome-tietosi erillään, voit luoda käyttäjälle <ph name="USER_NAME" /> uuden Chrome-tunnuksen.</translation>
@@ -148,6 +147,7 @@ Lähetimme lisäohjeita sähköpostiisi osoitteeseen <ph name="ACCOUNT_EMAIL" />
 <translation id="5148419164691878332">Chrome tallentaa salasanan <ph name="SAVED_PASSWORDS_LINK" /> -ominaisuudella ja muistaa sen, kun tarvitset sitä seuraavan kerran.</translation>
 <translation id="5170938038195470297">Profiiliasi ei voi käyttää, koska se on peräisin uudemmasta Google Chromen versiosta. Kaikkia toimintoja ei välttämättä voi käyttää. Määritä toinen profiilihakemisto tai käytä uudempaa Chromen versiota.</translation>
 <translation id="5176234269072261959">Auta parantamaan Chromea ilmoittamalla nykyiset asetukset.</translation>
+<translation id="5193136243808726294">Google Chrome ‑käyttöjärjestelmä ei voi avata tätä sivua.</translation>
 <translation id="5204098752394657250">Google Chromen <ph name="TERMS_OF_SERVICE_LINK" />käyttöehdot<ph name="END_TERMS_OF_SERVICE_LINK" /></translation>
 <translation id="5243785881901838525">Google Payments (kopioitu Chromeen)</translation>
 <translation id="5251420635869119124">Vierailijat voivat käyttää Chromea jälkiä jättämättä.</translation>
@@ -206,7 +206,6 @@ Lähetimme lisäohjeita sähköpostiisi osoitteeseen <ph name="ACCOUNT_EMAIL" />
 <translation id="699076943483372849">Tämä sivusto käyttää vanhaa Chrome-kehyslaajennusta, johon ei ole enää saatavilla tietoturva- ja vakauspäivityksiä. Poista se ja asenna uudempi selain.</translation>
 <translation id="6991142834212251086">Linkitä Chrome-tietoni tähän tiliin</translation>
 <translation id="7060865993964054389">Google Chromen sovellusten käynnistysohjelma</translation>
-<translation id="7084448929020576097"><ph name="FILE_NAME" /> on haitallinen, ja Chrome on estänyt sen.</translation>
 <translation id="7098166902387133879">Google Chrome käyttää mikrofoniasi.</translation>
 <translation id="7106741999175697885">Tehtävänhallinta - Google Chrome</translation>
 <translation id="7125719106133729027">Chrome ei voinut päivittää uusimpaan versioon, joten uudet ominaisuudet ja tietoturvapäivitykset eivät ole käytössäsi. Asenna Chrome uudelleen manuaalisesti.</translation>
@@ -269,7 +268,6 @@ Lähetimme lisäohjeita sähköpostiisi osoitteeseen <ph name="ACCOUNT_EMAIL" />
 <translation id="8669527147644353129">Google Chrome Helper</translation>
 <translation id="8679801911857917785">Määrittää myös Chromen aloitussivun.</translation>
 <translation id="870251953148363156">Päivitä &amp;Google Chrome</translation>
-<translation id="8793772303278047003">Chrome on vanhentunut.</translation>
 <translation id="8796108026289707191">Käynnistä Google Chrome uudelleen</translation>
 <translation id="8823341990149967727">Chrome on vanhentunut</translation>
 <translation id="884296878221830158">Määrittää myös Chromen aloitussivun ja Etusivu-painikkeella avattavan sivun.</translation>
@@ -278,7 +276,6 @@ Lähetimme lisäohjeita sähköpostiisi osoitteeseen <ph name="ACCOUNT_EMAIL" />
 <translation id="8914504000324227558">Käynnistä Chrome uudelleen</translation>
 <translation id="9026991721384951619">Chrome-käyttöjärjestelmä ei voi synkronoida tietoja, sillä tilin kirjautumistiedot ovat vanhentuneet.</translation>
 <translation id="9067395829937117663">Google Chrome edellyttää Windows 7:ää tai uudempaa versiota.</translation>
-<translation id="9102715433345326100">Tämä tiedosto on haitallinen, ja Chrome on estänyt sen.</translation>
 <translation id="9107728822479888688"><ph name="BEGIN_BOLD" />Varoitus:<ph name="END_BOLD" /> Google Chrome ei voi estää laajennuksia tallentamasta selaushistoriaasi. Voit poistaa tämän laajennuksen käytöstä incognito-tilassa poistamalla tämän valinnan.</translation>
 <translation id="911206726377975832">Poistetaanko myös selailutiedot?</translation>
 <translation id="924447568950697217">Chromen asettaminen oletusselaimeksi</translation>
