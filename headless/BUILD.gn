@@ -346,14 +346,25 @@ test("headless_browsertests") {
   ]
 }
 
-executable("headless_shell") {
+static_library("headless_shell_lib") {
   sources = [
     "app/headless_shell.cc",
     "app/headless_shell_switches.cc",
     "app/headless_shell_switches.h",
+    "public/headless_shell.h",
   ]
 
   deps = [
     "//headless:headless_lib",
+  ]
+}
+
+executable("headless_shell") {
+  sources = [
+    "app/headless_shell_main.cc",
+  ]
+
+  deps = [
+    "//headless:headless_shell_lib",
   ]
 }

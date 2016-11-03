@@ -33,14 +33,7 @@
 #include "net/base/net_errors.h"
 #include "ui/gfx/geometry/size.h"
 
-using headless::HeadlessBrowser;
-using headless::HeadlessBrowserContext;
-using headless::HeadlessDevToolsClient;
-using headless::HeadlessWebContents;
-namespace emulation = headless::emulation;
-namespace page = headless::page;
-namespace runtime = headless::runtime;
-
+namespace headless {
 namespace {
 // Address where to listen to incoming DevTools connections.
 const char kDevToolsHttpServerAddress[] = "127.0.0.1";
@@ -59,7 +52,7 @@ bool ParseWindowSize(std::string window_size, gfx::Size* parsed_window_size) {
 }
 }  // namespace
 
-// A sample application which demonstrates the use of the headless API.
+// An application which implements a simple headless browser.
 class HeadlessShell : public HeadlessWebContents::Observer,
                       emulation::ExperimentalObserver,
                       page::Observer {
@@ -78,24 +71,24 @@ class HeadlessShell : public HeadlessWebContents::Observer,
     HeadlessBrowserContext::Builder context_builder =
         browser_->CreateBrowserContextBuilder();
     if (base::CommandLine::ForCurrentProcess()->HasSwitch(
-            headless::switches::kDeterministicFetch)) {
+            switches::kDeterministicFetch)) {
       deterministic_dispatcher_.reset(
-          new headless::DeterministicDispatcher(browser_->BrowserIOThread()));
+          new DeterministicDispatcher(browser_->BrowserIOThread()));
 
-      headless::ProtocolHandlerMap protocol_handlers;
+      ProtocolHandlerMap protocol_handlers;
       protocol_handlers[url::kHttpScheme] =
-          base::MakeUnique<headless::DeterministicHttpProtocolHandler>(
+          base::MakeUnique<DeterministicHttpProtocolHandler>(
               deterministic_dispatcher_.get(), browser->BrowserIOThread());
       protocol_handlers[url::kHttpsScheme] =
-          base::MakeUnique<headless::DeterministicHttpProtocolHandler>(
+          base::MakeUnique<DeterministicHttpProtocolHandler>(
               deterministic_dispatcher_.get(), browser->BrowserIOThread());
 
       context_builder.SetProtocolHandlers(std::move(protocol_handlers));
     }
     if (base::CommandLine::ForCurrentProcess()->HasSwitch(
-            headless::switches::kHideScrollbars)) {
+            switches::kHideScrollbars)) {
       context_builder.SetOverrideWebPreferencesCallback(
-          base::Bind([](headless::WebPreferences* preferences) {
+          base::Bind([](WebPreferences* preferences) {
             preferences->hide_scrollbars = true;
           }));
     }
@@ -147,10 +140,10 @@ class HeadlessShell : public HeadlessWebContents::Observer,
     devtools_client_->GetEmulation()->GetExperimental()->AddObserver(this);
 
     if (base::CommandLine::ForCurrentProcess()->HasSwitch(
-            headless::switches::kVirtualTimeBudget)) {
+            switches::kVirtualTimeBudget)) {
       std::string budget_ms_ascii =
           base::CommandLine::ForCurrentProcess()->GetSwitchValueASCII(
-              headless::switches::kVirtualTimeBudget);
+              switches::kVirtualTimeBudget);
       int budget_ms;
       CHECK(base::StringToInt(budget_ms_ascii, &budget_ms))
           << "Expected an integer value for --virtual-time-budget=";
@@ -200,7 +193,7 @@ class HeadlessShell : public HeadlessWebContents::Observer,
   // page::Observer implementation:
   void OnLoadEventFired(const page::LoadEventFiredParams& params) override {
     if (base::CommandLine::ForCurrentProcess()->HasSwitch(
-            headless::switches::kVirtualTimeBudget)) {
+            switches::kVirtualTimeBudget)) {
       return;
     }
     OnPageReady();
@@ -211,17 +204,16 @@ class HeadlessShell : public HeadlessWebContents::Observer,
       return;
     processed_page_ready_ = true;
 
-    if (base::CommandLine::ForCurrentProcess()->HasSwitch(
-            headless::switches::kDumpDom)) {
+    if (base::CommandLine::ForCurrentProcess()->HasSwitch(switches::kDumpDom)) {
       FetchDom();
     } else if (base::CommandLine::ForCurrentProcess()->HasSwitch(
-                   headless::switches::kRepl)) {
+                   switches::kRepl)) {
       std::cout
           << "Type a Javascript expression to evaluate or \"quit\" to exit."
           << std::endl;
       InputExpression();
     } else if (base::CommandLine::ForCurrentProcess()->HasSwitch(
-                   headless::switches::kScreenshot)) {
+                   switches::kScreenshot)) {
       CaptureScreenshot();
     } else {
       Shutdown();
@@ -281,7 +273,7 @@ class HeadlessShell : public HeadlessWebContents::Observer,
       std::unique_ptr<page::CaptureScreenshotResult> result) {
     base::FilePath file_name =
         base::CommandLine::ForCurrentProcess()->GetSwitchValuePath(
-            headless::switches::kScreenshot);
+            switches::kScreenshot);
     if (file_name.empty()) {
       file_name = base::FilePath().AppendASCII(kDefaultScreenshotFileName);
     }
@@ -350,7 +342,7 @@ class HeadlessShell : public HeadlessWebContents::Observer,
   bool RemoteDebuggingEnabled() const {
     const base::CommandLine& command_line =
         *base::CommandLine::ForCurrentProcess();
-    return command_line.HasSwitch(switches::kRemoteDebuggingPort);
+    return command_line.HasSwitch(::switches::kRemoteDebuggingPort);
   }
 
  private:
@@ -361,23 +353,23 @@ class HeadlessShell : public HeadlessWebContents::Observer,
   bool processed_page_ready_;
   std::unique_ptr<net::FileStream> screenshot_file_stream_;
   HeadlessBrowserContext* browser_context_;
-  std::unique_ptr<headless::DeterministicDispatcher> deterministic_dispatcher_;
+  std::unique_ptr<DeterministicDispatcher> deterministic_dispatcher_;
 
   DISALLOW_COPY_AND_ASSIGN(HeadlessShell);
 };
 
-int main(int argc, const char** argv) {
-  headless::RunChildProcessIfNeeded(argc, argv);
+int HeadlessShellMain(int argc, const char** argv) {
+  RunChildProcessIfNeeded(argc, argv);
   HeadlessShell shell;
   HeadlessBrowser::Options::Builder builder(argc, argv);
 
   // Enable devtools if requested.
   base::CommandLine command_line(argc, argv);
-  if (command_line.HasSwitch(switches::kRemoteDebuggingPort)) {
+  if (command_line.HasSwitch(::switches::kRemoteDebuggingPort)) {
     std::string address = kDevToolsHttpServerAddress;
-    if (command_line.HasSwitch(headless::switches::kRemoteDebuggingAddress)) {
-      address = command_line.GetSwitchValueASCII(
-          headless::switches::kRemoteDebuggingAddress);
+    if (command_line.HasSwitch(switches::kRemoteDebuggingAddress)) {
+      address =
+          command_line.GetSwitchValueASCII(switches::kRemoteDebuggingAddress);
       net::IPAddress parsed_address;
       if (!net::ParseURLHostnameToAddress(address, &parsed_address)) {
         LOG(ERROR) << "Invalid devtools server address";
@@ -386,7 +378,7 @@ int main(int argc, const char** argv) {
     }
     int parsed_port;
     std::string port_str =
-        command_line.GetSwitchValueASCII(switches::kRemoteDebuggingPort);
+        command_line.GetSwitchValueASCII(::switches::kRemoteDebuggingPort);
     if (!base::StringToInt(port_str, &parsed_port) ||
         !base::IsValueInRangeForNumericType<uint16_t>(parsed_port)) {
       LOG(ERROR) << "Invalid devtools server port";
@@ -399,9 +391,9 @@ int main(int argc, const char** argv) {
         devtools_address, base::checked_cast<uint16_t>(parsed_port)));
   }
 
-  if (command_line.HasSwitch(headless::switches::kProxyServer)) {
+  if (command_line.HasSwitch(switches::kProxyServer)) {
     std::string proxy_server =
-        command_line.GetSwitchValueASCII(headless::switches::kProxyServer);
+        command_line.GetSwitchValueASCII(switches::kProxyServer);
     net::HostPortPair parsed_proxy_server =
         net::HostPortPair::FromString(proxy_server);
     if (parsed_proxy_server.host().empty() || !parsed_proxy_server.port()) {
@@ -411,25 +403,25 @@ int main(int argc, const char** argv) {
     builder.SetProxyServer(parsed_proxy_server);
   }
 
-  if (command_line.HasSwitch(switches::kHostResolverRules)) {
+  if (command_line.HasSwitch(::switches::kHostResolverRules)) {
     builder.SetHostResolverRules(
-        command_line.GetSwitchValueASCII(switches::kHostResolverRules));
+        command_line.GetSwitchValueASCII(::switches::kHostResolverRules));
   }
 
-  if (command_line.HasSwitch(headless::switches::kUseGL)) {
+  if (command_line.HasSwitch(switches::kUseGL)) {
     builder.SetGLImplementation(
-        command_line.GetSwitchValueASCII(headless::switches::kUseGL));
+        command_line.GetSwitchValueASCII(switches::kUseGL));
   }
 
-  if (command_line.HasSwitch(headless::switches::kUserDataDir)) {
+  if (command_line.HasSwitch(switches::kUserDataDir)) {
     builder.SetUserDataDir(
-        command_line.GetSwitchValuePath(headless::switches::kUserDataDir));
+        command_line.GetSwitchValuePath(switches::kUserDataDir));
     builder.SetIncognitoMode(false);
   }
 
-  if (command_line.HasSwitch(headless::switches::kWindowSize)) {
+  if (command_line.HasSwitch(switches::kWindowSize)) {
     std::string window_size =
-        command_line.GetSwitchValueASCII(headless::switches::kWindowSize);
+        command_line.GetSwitchValueASCII(switches::kWindowSize);
     gfx::Size parsed_window_size;
     if (!ParseWindowSize(window_size, &parsed_window_size)) {
       LOG(ERROR) << "Malformed window size";
@@ -442,3 +434,5 @@ int main(int argc, const char** argv) {
       builder.Build(),
       base::Bind(&HeadlessShell::OnStart, base::Unretained(&shell)));
 }
+
+}  // namespace headless
