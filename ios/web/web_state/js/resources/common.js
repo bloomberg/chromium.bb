@@ -37,7 +37,7 @@ __gCrWeb['common'] = __gCrWeb.common;
   /**
    * Protect against custom implementation of Object.toJSON in host pages.
    */
-  __gCrWeb.common.JSONSafeObject.prototype.toJSON = null;
+  __gCrWeb.common.JSONSafeObject.prototype['toJSON'] = null;
 
   /**
    * Retain the original JSON.stringify method where possible to reduce the
