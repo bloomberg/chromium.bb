@@ -63,8 +63,12 @@ ScopedJavaLocalRef<jobject> GetMediaSessionFromWebContents(
 
 void MediaSessionAndroid::MediaSessionDestroyed() {
   ScopedJavaLocalRef<jobject> j_local_session = GetJavaObject();
-  if (j_local_session.is_null())
+  if (j_local_session.is_null()) {
+    // If the Java MediaSession is already garbage collected, unset the weak
+    // Java reference.
+    j_media_session_.reset();
     return;
+  }
 
   JNIEnv* env = base::android::AttachCurrentThread();
   // The Java object will tear down after this call.
