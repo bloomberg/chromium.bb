@@ -273,6 +273,9 @@ class ToolbarActionsModel
   // enabled extensions.
   const extensions::Extension* GetExtensionById(const std::string& id) const;
 
+  // Returns true if the action is visible on the toolbar.
+  bool IsActionVisible(const std::string& action_id) const;
+
   // Our observers.
   base::ObserverList<Observer> observers_;
 

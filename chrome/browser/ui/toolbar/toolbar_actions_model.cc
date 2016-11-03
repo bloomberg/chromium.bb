@@ -233,12 +233,8 @@ void ToolbarActionsModel::OnExtensionUnloaded(
     content::BrowserContext* browser_context,
     const extensions::Extension* extension,
     extensions::UnloadedExtensionInfo::Reason reason) {
-  size_t index = 0u;
-  while (toolbar_items().size() > index &&
-         toolbar_items()[index].id != extension->id())
-    ++index;
   bool was_visible_and_has_overflow =
-      index < visible_icon_count() && !all_icons_visible();
+      IsActionVisible(extension->id()) && !all_icons_visible();
   RemoveExtension(extension);
   // If the extension was previously visible and there are overflowed
   // extensions, and this extension is being uninstalled, we reduce the visible
@@ -648,6 +644,11 @@ void ToolbarActionsModel::AddComponentAction(const std::string& action_id) {
 
 void ToolbarActionsModel::RemoveComponentAction(const std::string& action_id) {
   DCHECK(use_redesign_);
+  // If the action was visible and there are overflowed actions, we reduce the
+  // visible count so that we don't pop out a previously-hidden action.
+  if (IsActionVisible(action_id) && !all_icons_visible())
+    SetVisibleIconCount(visible_icon_count() - 1);
+
   ToolbarItem component_item(action_id, COMPONENT_ACTION);
   DCHECK(HasItem(component_item));
   RemoveItem(component_item);
@@ -809,7 +810,7 @@ bool ToolbarActionsModel::HighlightActions(const std::vector<std::string>& ids,
   // If we have any items in |highlighted_items_|, then we entered highlighting
   // mode.
   if (highlighted_items_.size()) {
-    // It's important that is_highlighting_ is changed immediately before the
+    // It's important that |highlight_type_| is changed immediately before the
     // observers are notified since it changes the result of toolbar_items().
     highlight_type_ = highlight_type;
     for (Observer& observer : observers_)
@@ -833,7 +834,7 @@ bool ToolbarActionsModel::HighlightActions(const std::vector<std::string>& ids,
 
 void ToolbarActionsModel::StopHighlighting() {
   if (is_highlighting()) {
-    // It's important that is_highlighting_ is changed immediately before the
+    // It's important that |highlight_type_| is changed immediately before the
     // observers are notified since it changes the result of toolbar_items().
     highlight_type_ = HIGHLIGHT_NONE;
     for (Observer& observer : observers_)
@@ -856,4 +857,12 @@ void ToolbarActionsModel::StopHighlighting() {
 const extensions::Extension* ToolbarActionsModel::GetExtensionById(
     const std::string& id) const {
   return extension_registry_->enabled_extensions().GetByID(id);
+}
+
+bool ToolbarActionsModel::IsActionVisible(const std::string& action_id) const {
+  size_t index = 0u;
+  while (toolbar_items().size() > index &&
+         toolbar_items()[index].id != action_id)
+    ++index;
+  return index < visible_icon_count();
 }
