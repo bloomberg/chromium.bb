@@ -188,8 +188,11 @@ VRPosePtr GvrDevice::GetPose() {
 
 void GvrDevice::ResetPose() {
   gvr::GvrApi* gvr_api = GetGvrApi();
-  if (gvr_api)
-    gvr_api->ResetTracking();
+
+  // Should never call RecenterTracking when using with Daydream viewers. On
+  // those devices recentering should only be done via the controller.
+  if (gvr_api && gvr_api->GetViewerType() == GVR_VIEWER_TYPE_CARDBOARD)
+    gvr_api->RecenterTracking();
 }
 
 bool GvrDevice::RequestPresent(bool secure_origin) {
