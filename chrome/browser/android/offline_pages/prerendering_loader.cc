@@ -16,7 +16,12 @@
 #include "ui/gfx/geometry/size.h"
 
 namespace {
+// Whether to report DomContentLoaded event to the snapshot controller.
+bool kConsiderDclForSnapshot = false;
+// The delay to wait for snapshotting after DomContentLoaded event if
+// kConsiderDclForSnapshot is true.
 long kOfflinePageDclDelayMs = 25000;
+// The delay to wait for snapshotting after OnLoad event.
 long kOfflinePageOnloadDelayMs = 2000;
 }  // namespace
 
@@ -138,6 +143,11 @@ void PrerenderingLoader::OnPrerenderDomContentLoaded() {
   if (!adapter_->GetWebContents()) {
     // Without a WebContents object at this point, we are done.
     HandleLoadingStopped();
+  } else if (kConsiderDclForSnapshot) {
+    // Inform SnapshotController of DomContentLoaded event so it can
+    // determine when to consider it really LOADED (e.g., some multiple
+    // second delay from this event).
+    snapshot_controller_->DocumentAvailableInMainFrame();
   }
 }
 
