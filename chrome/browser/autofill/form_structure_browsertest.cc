@@ -5,6 +5,7 @@
 #include <algorithm>
 #include <vector>
 
+#include "base/command_line.h"
 #include "base/files/file_enumerator.h"
 #include "base/files/file_path.h"
 #include "base/macros.h"
@@ -22,6 +23,7 @@
 #include "components/autofill/core/browser/autofill_manager.h"
 #include "components/autofill/core/browser/data_driven_test.h"
 #include "components/autofill/core/browser/form_structure.h"
+#include "content/public/common/content_switches.h"
 #include "url/gurl.h"
 
 #if defined(OS_MACOSX)
@@ -80,6 +82,13 @@ class FormStructureBrowserTest
  protected:
   FormStructureBrowserTest();
   ~FormStructureBrowserTest() override;
+
+  // InProcessBrowserTest
+  void SetUpCommandLine(base::CommandLine* command_line) override {
+    // Suppress most output logs because we can't really control the output for
+    // arbitrary test sites.
+    command_line->AppendSwitch(switches::kDisableLogging);
+  }
 
   // DataDrivenTest:
   void GenerateResults(const std::string& input, std::string* output) override;
