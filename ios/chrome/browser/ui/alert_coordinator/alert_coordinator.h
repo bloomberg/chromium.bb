@@ -26,6 +26,8 @@
 // Handler executed when calling |-executeCancelHandler|. This handler is
 // deleted when the alert is dismissed (user interaction or |-stop|).
 @property(nonatomic, copy) ProceduralBlock cancelAction;
+// Block called when the alert is about to be displayed.
+@property(nonatomic, copy) ProceduralBlock startAction;
 
 // Init a coordinator for displaying a alert on this view controller.
 - (instancetype)initWithBaseViewController:(UIViewController*)viewController

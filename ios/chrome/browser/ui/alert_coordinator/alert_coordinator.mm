@@ -15,6 +15,7 @@
   base::scoped_nsobject<UIAlertController> _alertController;
   base::scoped_nsobject<NSString> _message;
   base::mac::ScopedBlock<ProceduralBlock> _cancelAction;
+  base::mac::ScopedBlock<ProceduralBlock> _startAction;
 
   // Title for the alert.
   base::scoped_nsobject<NSString> _title;
@@ -98,6 +99,10 @@
                      style:UIAlertActionStyleDefault];
   }
 
+  // Call the start action before presenting the alert.
+  if (self.startAction)
+    self.startAction();
+
   [self.baseViewController presentViewController:self.alertController
                                         animated:YES
                                       completion:nil];
@@ -136,6 +141,14 @@
 
 - (void)setCancelAction:(ProceduralBlock)cancelAction {
   _cancelAction.reset([cancelAction copy]);
+}
+
+- (ProceduralBlock)startAction {
+  return _startAction;
+}
+
+- (void)setStartAction:(ProceduralBlock)startAction {
+  _startAction.reset([startAction copy]);
 }
 
 #pragma mark - Private Methods.
