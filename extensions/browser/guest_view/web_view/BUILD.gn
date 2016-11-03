@@ -25,7 +25,9 @@ source_set("web_view") {
   ]
 
   deps = [
+    "//components/web_cache/browser",
     "//content/public/common",
     "//extensions/common/api",
+    "//extensions/strings",
   ]
 }

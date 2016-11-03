@@ -17,5 +17,6 @@ source_set("mime_handler_view") {
   deps = [
     "//content/public/common",
     "//extensions/common/api",
+    "//extensions/strings",
   ]
 }

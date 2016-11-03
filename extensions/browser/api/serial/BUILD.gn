@@ -13,6 +13,7 @@ source_set("serial") {
   ]
 
   deps = [
+    "//device/serial",
     "//extensions/common/api",
   ]
 }

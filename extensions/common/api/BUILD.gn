@@ -4,88 +4,20 @@
 
 import("//build/config/features.gni")
 import("//build/json_schema_api.gni")
+import("//extensions/common/api/schema.gni")
 import("//mojo/public/tools/bindings/mojom.gni")
 
 assert(enable_extensions)
 
-schema_files = [
-  "alarms.idl",
-  "app_current_window_internal.idl",
-  "app_runtime.idl",
-  "app_view_guest_internal.json",
-  "app_window.idl",
-  "audio.idl",
-  "bluetooth.idl",
-  "bluetooth_low_energy.idl",
-  "bluetooth_private.idl",
-  "bluetooth_socket.idl",
-  "cast_channel.idl",
-  "clipboard.idl",
-  "document_scan.idl",
-  "display_source.idl",
-  "dns.idl",
-  "events.json",
-  "extensions_manifest_types.json",
-  "extension_options_internal.idl",
-  "extension_view_internal.json",
-  "extension_types.json",
-  "guest_view_internal.json",
-  "management.json",
-  "hid.idl",
-  "idle.json",
-  "metrics_private.json",
-  "mime_handler_private.idl",
-  "mime_handler_view_guest_internal.json",
-  "mojo_private.idl",
-  "networking_private.idl",
-  "power.idl",
-  "printer_provider.idl",
-  "printer_provider_internal.idl",
-  "runtime.json",
-  "serial.idl",
-  "socket.idl",
-  "sockets_tcp.idl",
-  "sockets_tcp_server.idl",
-  "sockets_udp.idl",
-  "storage.json",
-  "system_cpu.idl",
-  "system_display.idl",
-  "system_memory.idl",
-  "system_network.idl",
-  "system_storage.idl",
-  "test.json",
-  "usb.idl",
-  "virtual_keyboard_private.json",
-  "web_request.json",
-  "web_view_internal.json",
-]
-
-if (is_chromeos) {
-  schema_files += [
-    "diagnostics.idl",
-    "networking_config.idl",
-    "vpn_provider.idl",
-    "webcam_private.idl",
-  ]
-}
-
-uncompiled_sources = [ "web_request_internal.json" ]
-
-uncompiled_bundle_schema_sources = [
-  "declarative_web_request.json",
-  "web_view_request.json",
-]
-
-root_namespace = "extensions::api::%(namespace)s"
-
 json_schema_api("generated_api") {
-  sources = schema_files
+  sources = extensions_api_schema_files
   schemas = true
   bundle = true
   bundle_name = ""
-
-  # Inherit uncompiled_sources, uncompiled_bundle_schema_sources, and
-  # root_namespace.
+  root_namespace = extensions_api_root_namespace
+  uncompiled_sources = extensions_api_uncompiled_sources
+  uncompiled_bundle_schema_sources =
+      extensions_api_uncompiled_bundle_schema_sources
 }
 
 mojom("mojom") {
@@ -101,21 +33,4 @@ group("api") {
     ":generated_api",
     ":mojom",
   ]
-}
-
-json_schema_api("api_registration") {
-  sources = schema_files
-  impl_dir = "//extensions/browser/api"
-  bundle_registration = true
-  bundle_name = ""
-
-  deps = [
-    ":api",
-    "//device/serial",
-    "//extensions/common/api/cast_channel:cast_channel_proto",
-    "//skia",
-  ]
-
-  # Inherit uncompiled_sources, uncompiled_bundle_schema_sources, and
-  # root_namespace.
 }

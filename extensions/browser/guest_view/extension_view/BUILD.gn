@@ -13,5 +13,6 @@ source_set("extension_view") {
   deps = [
     "//content/public/common",
     "//extensions/common/api",
+    "//extensions/strings",
   ]
 }

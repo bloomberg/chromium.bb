@@ -29,6 +29,7 @@ source_set("app_window") {
 
   deps = [
     "//content/public/common",
+    "//extensions:extensions_browser_resources",
     "//extensions/strings",
   ]
 }
