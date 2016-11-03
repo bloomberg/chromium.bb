@@ -3648,7 +3648,8 @@ void FrameView::updateScrollOffset(const ScrollOffset& offset,
   if (!scrollbarsSuppressed())
     m_pendingScrollDelta += scrollDelta;
 
-  clearFragmentAnchor();
+  if (scrollTypeClearsFragmentAnchor(scrollType))
+    clearFragmentAnchor();
   updateLayersAndCompositingAfterScrollIfNeeded(scrollDelta);
 
   Document* document = m_frame->document();

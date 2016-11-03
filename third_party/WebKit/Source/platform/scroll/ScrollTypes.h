@@ -64,6 +64,11 @@ enum ScrollType {
   AnchoringScroll
 };
 
+inline bool scrollTypeClearsFragmentAnchor(ScrollType scrollType) {
+  return scrollType == UserScroll || scrollType == ProgrammaticScroll ||
+         scrollType == CompositorScroll;
+}
+
 // Convert logical scroll direction to physical. Physical scroll directions are
 // unaffected.
 inline ScrollDirectionPhysical toPhysicalDirection(ScrollDirection direction,
