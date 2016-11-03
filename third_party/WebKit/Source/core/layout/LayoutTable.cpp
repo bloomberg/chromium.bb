@@ -738,8 +738,8 @@ void LayoutTable::layout() {
     updateAfterLayout();
 
     if (state.pageLogicalHeight()) {
-      m_blockOffsetToFirstRepeatableHeader =
-          state.pageLogicalOffset(*this, LayoutUnit());
+      m_blockOffsetToFirstRepeatableHeader = state.pageLogicalOffset(
+          *this, topSection ? topSection->logicalTop() : LayoutUnit());
     }
   }
 
