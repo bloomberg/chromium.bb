@@ -9,6 +9,7 @@
 #include "bindings/core/v8/ScriptWrappable.h"
 #include "modules/bluetooth/BluetoothDevice.h"
 #include "platform/heap/Handle.h"
+#include <memory>
 
 namespace blink {
 

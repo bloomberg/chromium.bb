@@ -8,6 +8,8 @@ blink_modules_sources("bluetooth") {
   sources = [
     "Bluetooth.cpp",
     "Bluetooth.h",
+    "BluetoothAttributeInstanceMap.cpp",
+    "BluetoothAttributeInstanceMap.h",
     "BluetoothCharacteristicProperties.cpp",
     "BluetoothCharacteristicProperties.h",
     "BluetoothDevice.cpp",

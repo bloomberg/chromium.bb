@@ -39,13 +39,6 @@ class BluetoothRemoteGATTService final
       std::unique_ptr<WebBluetoothRemoteGATTService>,
       BluetoothDevice*);
 
-  // Interface required by CallbackPromiseAdapter:
-  using WebType = std::unique_ptr<WebBluetoothRemoteGATTService>;
-  static BluetoothRemoteGATTService* take(
-      ScriptPromiseResolver*,
-      std::unique_ptr<WebBluetoothRemoteGATTService>,
-      BluetoothDevice*);
-
   // Interface required by garbage collection.
   DECLARE_VIRTUAL_TRACE();
 

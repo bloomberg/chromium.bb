@@ -9,11 +9,13 @@
 #include "bindings/core/v8/ScriptPromiseResolver.h"
 #include "core/dom/DOMException.h"
 #include "core/events/Event.h"
+#include "modules/bluetooth/BluetoothAttributeInstanceMap.h"
 #include "modules/bluetooth/BluetoothError.h"
 #include "modules/bluetooth/BluetoothRemoteGATTServer.h"
 #include "modules/bluetooth/BluetoothSupplement.h"
 #include "public/platform/modules/bluetooth/WebBluetooth.h"
 #include <memory>
+#include <utility>
 
 namespace blink {
 
@@ -21,6 +23,7 @@ BluetoothDevice::BluetoothDevice(
     ExecutionContext* context,
     std::unique_ptr<WebBluetoothDeviceInit> webDevice)
     : ContextLifecycleObserver(context),
+      m_attributeInstanceMap(new BluetoothAttributeInstanceMap(this)),
       m_webDevice(std::move(webDevice)),
       m_gatt(BluetoothRemoteGATTServer::create(this)) {
   // See example in Source/platform/heap/ThreadState.h
@@ -33,6 +36,13 @@ BluetoothDevice* BluetoothDevice::take(
   ASSERT(webDevice);
   return new BluetoothDevice(resolver->getExecutionContext(),
                              std::move(webDevice));
+}
+
+BluetoothRemoteGATTService*
+BluetoothDevice::getOrCreateBluetoothRemoteGATTService(
+    std::unique_ptr<WebBluetoothRemoteGATTService> webService) {
+  return m_attributeInstanceMap->getOrCreateBluetoothRemoteGATTService(
+      std::move(webService));
 }
 
 void BluetoothDevice::dispose() {
@@ -73,6 +83,7 @@ void BluetoothDevice::dispatchGattServerDisconnected() {
 DEFINE_TRACE(BluetoothDevice) {
   EventTargetWithInlineData::trace(visitor);
   ContextLifecycleObserver::trace(visitor);
+  visitor->trace(m_attributeInstanceMap);
   visitor->trace(m_gatt);
 }
 

@@ -4,7 +4,6 @@
 
 #include "modules/bluetooth/BluetoothRemoteGATTService.h"
 
-#include "bindings/core/v8/CallbackPromiseAdapter.h"
 #include "bindings/core/v8/ScriptPromise.h"
 #include "bindings/core/v8/ScriptPromiseResolver.h"
 #include "core/dom/DOMException.h"
@@ -17,6 +16,7 @@
 #include "public/platform/modules/bluetooth/WebBluetooth.h"
 #include "wtf/PtrUtil.h"
 #include <memory>
+#include <utility>
 
 namespace blink {
 
@@ -32,16 +32,8 @@ const char kGATTServerNotConnected[] =
 BluetoothRemoteGATTService::BluetoothRemoteGATTService(
     std::unique_ptr<WebBluetoothRemoteGATTService> webService,
     BluetoothDevice* device)
-    : m_webService(std::move(webService)), m_device(device) {}
-
-BluetoothRemoteGATTService* BluetoothRemoteGATTService::take(
-    ScriptPromiseResolver*,
-    std::unique_ptr<WebBluetoothRemoteGATTService> webService,
-    BluetoothDevice* device) {
-  if (!webService) {
-    return nullptr;
-  }
-  return new BluetoothRemoteGATTService(std::move(webService), device);
+    : m_webService(std::move(webService)), m_device(device) {
+  DCHECK(m_webService);
 }
 
 DEFINE_TRACE(BluetoothRemoteGATTService) {

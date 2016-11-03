@@ -17,6 +17,8 @@
 #include "platform/UserGestureIndicator.h"
 #include "public/platform/modules/bluetooth/WebBluetooth.h"
 #include "public/platform/modules/bluetooth/WebRequestDeviceOptions.h"
+#include <memory>
+#include <utility>
 
 namespace blink {
 
