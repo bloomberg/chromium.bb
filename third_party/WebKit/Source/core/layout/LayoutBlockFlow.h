@@ -767,12 +767,6 @@ class CORE_EXPORT LayoutBlockFlow : public LayoutBlock {
     return maxPositiveMarginAfter() - maxNegativeMarginAfter();
   }
 
-  // Floats' margins do not collapse with page or column boundaries, and we
-  // therefore need to treat them specially in some cases.
-  LayoutUnit marginBeforeIfFloating() const {
-    return isFloating() ? marginBefore() : LayoutUnit();
-  }
-
   LayoutUnit collapseMargins(LayoutBox& child,
                              MarginInfo&,
                              bool childIsSelfCollapsing,

@@ -1038,7 +1038,7 @@ LayoutUnit LayoutBlockFlow::adjustBlockChildForPagination(
       // happens e.g. when a tall break-inside:avoid object with a top margin is
       // the first in-flow child in the fragmentation context.
       if (allowsPaginationStrut()) {
-        paginationStrut += logicalTop + marginBeforeIfFloating();
+        paginationStrut += logicalTop;
         setPaginationStrutPropagatedFromChild(paginationStrut);
         if (childBlockFlow)
           childBlockFlow->setPaginationStrutPropagatedFromChild(LayoutUnit());
@@ -1160,9 +1160,7 @@ void LayoutBlockFlow::adjustLinePositionForPagination(RootInlineBox& lineBox,
       // beginning of a block before a break, if it can be avoided. After all,
       // that's the reason for setting struts on blocks and not lines in the
       // first place.
-      LayoutUnit strut =
-          paginationStrut + logicalOffset + marginBeforeIfFloating();
-      setPaginationStrutPropagatedFromChild(strut);
+      setPaginationStrutPropagatedFromChild(paginationStrut + logicalOffset);
     } else {
       delta += paginationStrut;
       lineBox.setPaginationStrut(paginationStrut);
@@ -1177,27 +1175,24 @@ void LayoutBlockFlow::adjustLinePositionForPagination(RootInlineBox& lineBox,
     // We're at the very top of a page or column.
     if (lineBox != firstRootBox())
       lineBox.setIsFirstAfterPageBreak(true);
-    // If this is the first line in the block, and the block has a top border,
-    // padding, or (in case it's a float) margin, we may want to set a strut on
-    // the block, so that everything ends up in the next column or page. Setting
-    // a strut on the block is also important when it comes to satisfying orphan
-    // requirements.
+    // If this is the first line in the block, and the block has a top border or
+    // padding, we may want to set a strut on the block, so that everything ends
+    // up in the next column or page. Setting a strut on the block is also
+    // important when it comes to satisfying orphan requirements.
     if (shouldSetStrutOnBlock(*this, lineBox, logicalOffset, lineIndex,
                               pageLogicalHeight))
-      strutToPropagate = logicalOffset + marginBeforeIfFloating();
+      strutToPropagate = logicalOffset;
   } else if (lineBox == firstRootBox() && allowsPaginationStrut()) {
     // This is the first line in the block. The block may still start in the
     // previous column or page, and if that's the case, attempt to pull it over
-    // to where this line is, so that we don't split the top border, padding, or
-    // (in case it's a float) margin.
-    LayoutUnit totalLogicalOffset = logicalOffset + marginBeforeIfFloating();
+    // to where this line is, so that we don't split the top border or padding.
     LayoutUnit strut =
-        remainingLogicalHeight + totalLogicalOffset - pageLogicalHeight;
-    if (strut > 0) {
+        remainingLogicalHeight + logicalOffset - pageLogicalHeight;
+    if (strut > LayoutUnit()) {
       // The block starts in a previous column or page. Set a strut on the block
-      // if there's room for the top border, padding and (if it's a float)
-      // margin and the line in one column or page.
-      if (totalLogicalOffset + lineHeight <= pageLogicalHeight)
+      // if there's room for the top border, padding and the line in one column
+      // or page.
+      if (logicalOffset + lineHeight <= pageLogicalHeight)
         strutToPropagate = strut;
     }
   }
@@ -3690,9 +3685,32 @@ bool LayoutBlockFlow::positionNewFloats(LineWidth* width) {
       LayoutUnit strut =
           childBlockFlow ? childBlockFlow->paginationStrutPropagatedFromChild()
                          : LayoutUnit();
+
+      LayoutUnit marginBefore = marginBeforeForChild(*childBox);
+      if (marginBefore > LayoutUnit()) {
+        // Avoid breaking inside the top margin of a float.
+        if (strut) {
+          // If we already had decided to break, just add the margin. The strut
+          // so far only accounts for pushing the top border edge to the next
+          // fragmentainer. We need to push the margin over as well, because
+          // there's no break opportunity between margin and border.
+          strut += marginBefore;
+        } else {
+          // Even if we didn't break before the border box to the next
+          // fragmentainer, we need to check if we can fit the margin before
+          // it.
+          LayoutUnit marginEdge = childBox->logicalTop() - marginBefore;
+          if (LayoutUnit pageHeight = pageLogicalHeightForOffset(marginEdge)) {
+            LayoutUnit remainingSpace = pageRemainingLogicalHeightForOffset(
+                marginEdge, AssociateWithLatterPage);
+            if (remainingSpace <= marginBefore)
+              strut += remainingSpace;
+          }
+        }
+      }
       if (!strut) {
-        // Otherwise, if we are unsplittable and don't fit, move to the next
-        // page or column if that helps the situation.
+        // If we are unsplittable and don't fit, move to the next page or column
+        // if that helps the situation.
         strut =
             adjustForUnsplittableChild(*childBox, floatLogicalLocation.y()) -
             floatLogicalLocation.y();
