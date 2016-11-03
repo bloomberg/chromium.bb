@@ -298,14 +298,6 @@ std::unique_ptr<protocol::DOM::Rect> buildRectForFloatRect(
       .build();
 }
 
-String toErrorString(ExceptionState& exceptionState) {
-  if (exceptionState.hadException()) {
-    return DOMException::getErrorName(exceptionState.code()) + " " +
-           exceptionState.message();
-  }
-  return "";
-}
-
 }  // namespace
 
 namespace CSSAgentState {
@@ -722,7 +714,8 @@ void InspectorCSSAgent::resetNonPersistentData() {
 
 void InspectorCSSAgent::enable(std::unique_ptr<EnableCallback> prpCallback) {
   if (!m_domAgent->enabled()) {
-    prpCallback->sendFailure("DOM agent needs to be enabled first.");
+    prpCallback->sendFailure(
+        Response::Error("DOM agent needs to be enabled first."));
     return;
   }
   m_state->setBoolean(CSSAgentState::cssAgentEnabled, true);
@@ -751,12 +744,13 @@ void InspectorCSSAgent::wasEnabled() {
     updateActiveStyleSheets(document, InitialFrontendLoad);
 }
 
-void InspectorCSSAgent::disable(ErrorString*) {
+Response InspectorCSSAgent::disable() {
   reset();
   m_domAgent->setDOMListener(nullptr);
   m_instrumentingAgents->removeInspectorCSSAgent(this);
   m_state->setBoolean(CSSAgentState::cssAgentEnabled, false);
   m_resourceContentLoader->cancel(m_resourceContentLoaderClientId);
+  return Response::OK();
 }
 
 void InspectorCSSAgent::didCommitLoadForLocalFrame(LocalFrame* frame) {
@@ -875,8 +869,7 @@ bool InspectorCSSAgent::forcePseudoState(Element* element,
   }
 }
 
-void InspectorCSSAgent::getMediaQueries(
-    ErrorString* errorString,
+Response InspectorCSSAgent::getMediaQueries(
     std::unique_ptr<protocol::Array<protocol::CSS::CSSMedia>>* medias) {
   *medias = protocol::Array<protocol::CSS::CSSMedia>::create();
   for (auto& style : m_idToInspectorStyleSheet) {
@@ -891,10 +884,10 @@ void InspectorCSSAgent::getMediaQueries(
         collectMediaQueriesFromRule(rule, medias->get());
     }
   }
+  return Response::OK();
 }
 
-void InspectorCSSAgent::getMatchedStylesForNode(
-    ErrorString* errorString,
+Response InspectorCSSAgent::getMatchedStylesForNode(
     int nodeId,
     Maybe<protocol::CSS::CSSStyle>* inlineStyle,
     Maybe<protocol::CSS::CSSStyle>* attributesStyle,
@@ -905,28 +898,23 @@ void InspectorCSSAgent::getMatchedStylesForNode(
         inheritedEntries,
     Maybe<protocol::Array<protocol::CSS::CSSKeyframesRule>>*
         cssKeyframesRules) {
-  Element* element = elementForId(errorString, nodeId);
-  if (!element) {
-    *errorString = "Node not found";
-    return;
-  }
+  Element* element = nullptr;
+  Response response = m_domAgent->assertElement(nodeId, element);
+  if (!response.isSuccess())
+    return response;
 
   Element* originalElement = element;
   PseudoId elementPseudoId = element->getPseudoId();
   if (elementPseudoId) {
     element = element->parentOrShadowHostElement();
-    if (!element) {
-      *errorString = "Pseudo element has no parent";
-      return;
-    }
+    if (!element)
+      return Response::Error("Pseudo element has no parent");
   }
 
   Document* ownerDocument = element->ownerDocument();
   // A non-active document has no styles.
-  if (!ownerDocument->isActive()) {
-    *errorString = "Document is not active";
-    return;
-  }
+  if (!ownerDocument->isActive())
+    return Response::Error("Document is not active");
 
   // FIXME: It's really gross for the inspector to reach in and access
   // StyleResolver directly here. We need to provide the Inspector better APIs
@@ -943,7 +931,7 @@ void InspectorCSSAgent::getMatchedStylesForNode(
 
   // Pseudo elements.
   if (elementPseudoId)
-    return;
+    return Response::OK();
 
   InspectorStyleSheetForInlineStyle* inlineStyleSheet =
       asInspectorStyleSheet(element);
@@ -998,6 +986,7 @@ void InspectorCSSAgent::getMatchedStylesForNode(
   }
 
   *cssKeyframesRules = animationsForNode(element);
+  return Response::OK();
 }
 
 template <class CSSRuleCollection>
@@ -1081,35 +1070,33 @@ InspectorCSSAgent::animationsForNode(Element* element) {
   return cssKeyframesRules;
 }
 
-void InspectorCSSAgent::getInlineStylesForNode(
-    ErrorString* errorString,
+Response InspectorCSSAgent::getInlineStylesForNode(
     int nodeId,
     Maybe<protocol::CSS::CSSStyle>* inlineStyle,
     Maybe<protocol::CSS::CSSStyle>* attributesStyle) {
-  Element* element = elementForId(errorString, nodeId);
-  if (!element)
-    return;
+  Element* element = nullptr;
+  Response response = m_domAgent->assertElement(nodeId, element);
+  if (!response.isSuccess())
+    return response;
 
   InspectorStyleSheetForInlineStyle* styleSheet =
       asInspectorStyleSheet(element);
   if (!styleSheet)
-    return;
+    return Response::Error("Element is not a style sheet");
 
   *inlineStyle = styleSheet->buildObjectForStyle(element->style());
   *attributesStyle = buildObjectForAttributesStyle(element);
+  return Response::OK();
 }
 
-void InspectorCSSAgent::getComputedStyleForNode(
-    ErrorString* errorString,
+Response InspectorCSSAgent::getComputedStyleForNode(
     int nodeId,
     std::unique_ptr<protocol::Array<protocol::CSS::CSSComputedStyleProperty>>*
         style) {
   Node* node = nullptr;
   Response response = m_domAgent->assertNode(nodeId, node);
-  if (!response.isSuccess()) {
-    *errorString = response.errorMessage();
-    return;
-  }
+  if (!response.isSuccess())
+    return response;
 
   CSSComputedStyleDeclaration* computedStyleInfo =
       CSSComputedStyleDeclaration::create(node, true);
@@ -1140,6 +1127,7 @@ void InspectorCSSAgent::getComputedStyleForNode(
                             .build());
     }
   }
+  return Response::OK();
 }
 
 void InspectorCSSAgent::collectPlatformFontsForLayoutObject(
@@ -1169,17 +1157,14 @@ void InspectorCSSAgent::collectPlatformFontsForLayoutObject(
   }
 }
 
-void InspectorCSSAgent::getPlatformFontsForNode(
-    ErrorString* errorString,
+Response InspectorCSSAgent::getPlatformFontsForNode(
     int nodeId,
     std::unique_ptr<protocol::Array<protocol::CSS::PlatformFontUsage>>*
         platformFonts) {
   Node* node = nullptr;
   Response response = m_domAgent->assertNode(nodeId, node);
-  if (!response.isSuccess()) {
-    *errorString = response.errorMessage();
-    return;
-  }
+  if (!response.isSuccess())
+    return response;
 
   HashCountedSet<std::pair<int, String>> fontStats;
   LayoutObject* root = node->layoutObject();
@@ -1206,73 +1191,65 @@ void InspectorCSSAgent::getPlatformFontsForNode(
                       .setGlyphCount(font.value)
                       .build());
   }
+  return Response::OK();
 }
 
-void InspectorCSSAgent::getStyleSheetText(ErrorString* errorString,
-                                          const String& styleSheetId,
-                                          String* result) {
-  InspectorStyleSheetBase* inspectorStyleSheet =
-      assertStyleSheetForId(errorString, styleSheetId);
-  if (!inspectorStyleSheet)
-    return;
+Response InspectorCSSAgent::getStyleSheetText(const String& styleSheetId,
+                                              String* result) {
+  InspectorStyleSheetBase* inspectorStyleSheet = nullptr;
+  Response response = assertStyleSheetForId(styleSheetId, inspectorStyleSheet);
+  if (!response.isSuccess())
+    return response;
 
   inspectorStyleSheet->getText(result);
+  return Response::OK();
 }
 
-void InspectorCSSAgent::collectClassNames(
-    ErrorString* errorString,
+Response InspectorCSSAgent::collectClassNames(
     const String& styleSheetId,
     std::unique_ptr<protocol::Array<String>>* classNames) {
-  IdToInspectorStyleSheet::iterator it =
-      m_idToInspectorStyleSheet.find(styleSheetId);
-  if (it == m_idToInspectorStyleSheet.end()) {
-    *errorString = "No style sheet with given id found";
-    return;
-  }
-  *classNames = it->value.get()->collectClassNames();
+  InspectorStyleSheet* inspectorStyleSheet = nullptr;
+  Response response =
+      assertInspectorStyleSheetForId(styleSheetId, inspectorStyleSheet);
+  if (!response.isSuccess())
+    return response;
+  *classNames = inspectorStyleSheet->collectClassNames();
+  return Response::OK();
 }
 
-void InspectorCSSAgent::setStyleSheetText(
-    ErrorString* errorString,
+Response InspectorCSSAgent::setStyleSheetText(
     const String& styleSheetId,
     const String& text,
     protocol::Maybe<String>* sourceMapURL) {
   FrontendOperationScope scope;
-  InspectorStyleSheetBase* inspectorStyleSheet =
-      assertStyleSheetForId(errorString, styleSheetId);
-  if (!inspectorStyleSheet) {
-    *errorString = "Style sheet with id " + styleSheetId + " not found";
-    return;
-  }
+  InspectorStyleSheetBase* inspectorStyleSheet = nullptr;
+  Response response = assertStyleSheetForId(styleSheetId, inspectorStyleSheet);
+  if (!response.isSuccess())
+    return response;
 
   TrackExceptionState exceptionState;
   m_domAgent->history()->perform(
       new SetStyleSheetTextAction(inspectorStyleSheet, text), exceptionState);
-  *errorString = toErrorString(exceptionState);
+  response = InspectorDOMAgent::toResponse(exceptionState);
+  if (!response.isSuccess())
+    return response;
   if (!inspectorStyleSheet->sourceMapURL().isEmpty())
     *sourceMapURL = inspectorStyleSheet->sourceMapURL();
+  return Response::OK();
 }
 
-static bool verifyRangeComponent(ErrorString* errorString,
-                                 bool valid,
-                                 const String& component) {
-  if (!valid)
-    *errorString = "range." + component + " must be a non-negative integer";
-  return valid;
-}
-
-static bool jsonRangeToSourceRange(ErrorString* errorString,
-                                   InspectorStyleSheetBase* inspectorStyleSheet,
-                                   protocol::CSS::SourceRange* range,
-                                   SourceRange* sourceRange) {
-  if (!verifyRangeComponent(errorString, range->getStartLine() >= 0,
-                            "startLine") ||
-      !verifyRangeComponent(errorString, range->getStartColumn() >= 0,
-                            "startColumn") ||
-      !verifyRangeComponent(errorString, range->getEndLine() >= 0, "endLine") ||
-      !verifyRangeComponent(errorString, range->getEndColumn() >= 0,
-                            "endColumn"))
-    return false;
+static Response jsonRangeToSourceRange(
+    InspectorStyleSheetBase* inspectorStyleSheet,
+    protocol::CSS::SourceRange* range,
+    SourceRange* sourceRange) {
+  if (range->getStartLine() < 0)
+    return Response::Error("range.startLine must be a non-negative integer");
+  if (range->getStartColumn() < 0)
+    return Response::Error("range.startColumn must be a non-negative integer");
+  if (range->getEndLine() < 0)
+    return Response::Error("range.endLine must be a non-negative integer");
+  if (range->getEndColumn() < 0)
+    return Response::Error("range.endColumn must be a non-negative integer");
 
   unsigned startOffset = 0;
   unsigned endOffset = 0;
@@ -1281,37 +1258,32 @@ static bool jsonRangeToSourceRange(ErrorString* errorString,
           range->getStartLine(), range->getStartColumn(), &startOffset) &&
       inspectorStyleSheet->lineNumberAndColumnToOffset(
           range->getEndLine(), range->getEndColumn(), &endOffset);
-  if (!success) {
-    *errorString = "Specified range is out of bounds";
-    return false;
-  }
+  if (!success)
+    return Response::Error("Specified range is out of bounds");
 
-  if (startOffset > endOffset) {
-    *errorString = "Range start must not succeed its end";
-    return false;
-  }
+  if (startOffset > endOffset)
+    return Response::Error("Range start must not succeed its end");
   sourceRange->start = startOffset;
   sourceRange->end = endOffset;
-  return true;
+  return Response::OK();
 }
 
-void InspectorCSSAgent::setRuleSelector(
-    ErrorString* errorString,
+Response InspectorCSSAgent::setRuleSelector(
     const String& styleSheetId,
     std::unique_ptr<protocol::CSS::SourceRange> range,
     const String& selector,
     std::unique_ptr<protocol::CSS::SelectorList>* result) {
   FrontendOperationScope scope;
-  InspectorStyleSheet* inspectorStyleSheet =
-      assertInspectorStyleSheetForId(errorString, styleSheetId);
-  if (!inspectorStyleSheet) {
-    *errorString = "Stylesheet not found";
-    return;
-  }
+  InspectorStyleSheet* inspectorStyleSheet = nullptr;
+  Response response =
+      assertInspectorStyleSheetForId(styleSheetId, inspectorStyleSheet);
+  if (!response.isSuccess())
+    return response;
   SourceRange selectorRange;
-  if (!jsonRangeToSourceRange(errorString, inspectorStyleSheet, range.get(),
-                              &selectorRange))
-    return;
+  response =
+      jsonRangeToSourceRange(inspectorStyleSheet, range.get(), &selectorRange);
+  if (!response.isSuccess())
+    return response;
 
   TrackExceptionState exceptionState;
   ModifyRuleAction* action =
@@ -1321,32 +1293,29 @@ void InspectorCSSAgent::setRuleSelector(
   if (success) {
     CSSStyleRule* rule = InspectorCSSAgent::asCSSStyleRule(action->takeRule());
     InspectorStyleSheet* inspectorStyleSheet = inspectorStyleSheetForRule(rule);
-    if (!inspectorStyleSheet) {
-      *errorString = "Failed to get inspector style sheet for rule.";
-      return;
-    }
+    if (!inspectorStyleSheet)
+      return Response::Error("Failed to get inspector style sheet for rule.");
     *result = inspectorStyleSheet->buildObjectForSelectorList(rule);
   }
-  *errorString = toErrorString(exceptionState);
+  return InspectorDOMAgent::toResponse(exceptionState);
 }
 
-void InspectorCSSAgent::setKeyframeKey(
-    ErrorString* errorString,
+Response InspectorCSSAgent::setKeyframeKey(
     const String& styleSheetId,
     std::unique_ptr<protocol::CSS::SourceRange> range,
     const String& keyText,
     std::unique_ptr<protocol::CSS::Value>* result) {
   FrontendOperationScope scope;
-  InspectorStyleSheet* inspectorStyleSheet =
-      assertInspectorStyleSheetForId(errorString, styleSheetId);
-  if (!inspectorStyleSheet) {
-    *errorString = "Stylesheet not found";
-    return;
-  }
+  InspectorStyleSheet* inspectorStyleSheet = nullptr;
+  Response response =
+      assertInspectorStyleSheetForId(styleSheetId, inspectorStyleSheet);
+  if (!response.isSuccess())
+    return response;
   SourceRange keyRange;
-  if (!jsonRangeToSourceRange(errorString, inspectorStyleSheet, range.get(),
-                              &keyRange))
-    return;
+  response =
+      jsonRangeToSourceRange(inspectorStyleSheet, range.get(), &keyRange);
+  if (!response.isSuccess())
+    return response;
 
   TrackExceptionState exceptionState;
   ModifyRuleAction* action = new ModifyRuleAction(
@@ -1356,10 +1325,8 @@ void InspectorCSSAgent::setKeyframeKey(
     CSSKeyframeRule* rule = toCSSKeyframeRule(action->takeRule());
     InspectorStyleSheet* inspectorStyleSheet =
         bindStyleSheet(rule->parentStyleSheet());
-    if (!inspectorStyleSheet) {
-      *errorString = "Failed to get inspector style sheet for rule.";
-      return;
-    }
+    if (!inspectorStyleSheet)
+      return Response::Error("Failed to get inspector style sheet for rule.");
 
     CSSRuleSourceData* sourceData =
         inspectorStyleSheet->sourceDataForRule(rule);
@@ -1369,33 +1336,31 @@ void InspectorCSSAgent::setKeyframeKey(
                       sourceData->ruleHeaderRange))
                   .build();
   }
-  *errorString = toErrorString(exceptionState);
+  return InspectorDOMAgent::toResponse(exceptionState);
 }
 
-bool InspectorCSSAgent::multipleStyleTextsActions(
-    ErrorString* errorString,
+Response InspectorCSSAgent::multipleStyleTextsActions(
     std::unique_ptr<protocol::Array<protocol::CSS::StyleDeclarationEdit>> edits,
     HeapVector<Member<StyleSheetAction>>* actions) {
   int n = edits->length();
-  if (n == 0) {
-    *errorString = "Edits should not be empty";
-    return false;
-  }
+  if (n == 0)
+    return Response::Error("Edits should not be empty");
 
   for (int i = 0; i < n; ++i) {
     protocol::CSS::StyleDeclarationEdit* edit = edits->get(i);
-    InspectorStyleSheetBase* inspectorStyleSheet =
-        assertStyleSheetForId(errorString, edit->getStyleSheetId());
-    if (!inspectorStyleSheet) {
-      *errorString =
-          String::format("StyleSheet not found for edit #%d of %d", i + 1, n);
-      return false;
+    InspectorStyleSheetBase* inspectorStyleSheet = nullptr;
+    Response response =
+        assertStyleSheetForId(edit->getStyleSheetId(), inspectorStyleSheet);
+    if (!response.isSuccess()) {
+      return Response::Error(
+          String::format("StyleSheet not found for edit #%d of %d", i + 1, n));
     }
 
     SourceRange range;
-    if (!jsonRangeToSourceRange(errorString, inspectorStyleSheet,
-                                edit->getRange(), &range))
-      return false;
+    response =
+        jsonRangeToSourceRange(inspectorStyleSheet, edit->getRange(), &range);
+    if (!response.isSuccess())
+      return response;
 
     if (inspectorStyleSheet->isInlineStyle()) {
       InspectorStyleSheetForInlineStyle* inlineStyleSheet =
@@ -1411,17 +1376,17 @@ bool InspectorCSSAgent::multipleStyleTextsActions(
       actions->append(action);
     }
   }
-  return true;
+  return Response::OK();
 }
 
-void InspectorCSSAgent::setStyleTexts(
-    ErrorString* errorString,
+Response InspectorCSSAgent::setStyleTexts(
     std::unique_ptr<protocol::Array<protocol::CSS::StyleDeclarationEdit>> edits,
     std::unique_ptr<protocol::Array<protocol::CSS::CSSStyle>>* result) {
   FrontendOperationScope scope;
   HeapVector<Member<StyleSheetAction>> actions;
-  if (!multipleStyleTextsActions(errorString, std::move(edits), &actions))
-    return;
+  Response response = multipleStyleTextsActions(std::move(edits), &actions);
+  if (!response.isSuccess())
+    return response;
 
   TrackExceptionState exceptionState;
 
@@ -1438,10 +1403,9 @@ void InspectorCSSAgent::setStyleTexts(
         revert->undo(undoExceptionState);
         ASSERT(!undoExceptionState.hadException());
       }
-      *errorString =
-          String::format("Failed applying edit #%d: %s", i,
-                         toErrorString(exceptionState).utf8().data());
-      return;
+      return Response::Error(
+          String::format("Failed applying edit #%d: ", i) +
+          InspectorDOMAgent::toResponse(exceptionState).errorMessage());
     }
     serializedStyles->addItem(action->takeSerializedStyle());
   }
@@ -1451,13 +1415,14 @@ void InspectorCSSAgent::setStyleTexts(
     m_domAgent->history()->appendPerformedAction(action);
   }
   *result = std::move(serializedStyles);
+  return Response::OK();
 }
 
-CSSStyleDeclaration* InspectorCSSAgent::setStyleText(
-    ErrorString* errorString,
+Response InspectorCSSAgent::setStyleText(
     InspectorStyleSheetBase* inspectorStyleSheet,
     const SourceRange& range,
-    const String& text) {
+    const String& text,
+    CSSStyleDeclaration*& result) {
   TrackExceptionState exceptionState;
   if (inspectorStyleSheet->isInlineStyle()) {
     InspectorStyleSheetForInlineStyle* inlineStyleSheet =
@@ -1465,8 +1430,10 @@ CSSStyleDeclaration* InspectorCSSAgent::setStyleText(
     SetElementStyleAction* action =
         new SetElementStyleAction(inlineStyleSheet, text);
     bool success = m_domAgent->history()->perform(action, exceptionState);
-    if (success)
-      return inlineStyleSheet->inlineStyle();
+    if (success) {
+      result = inlineStyleSheet->inlineStyle();
+      return Response::OK();
+    }
   } else {
     ModifyRuleAction* action = new ModifyRuleAction(
         ModifyRuleAction::SetStyleText,
@@ -1474,33 +1441,35 @@ CSSStyleDeclaration* InspectorCSSAgent::setStyleText(
     bool success = m_domAgent->history()->perform(action, exceptionState);
     if (success) {
       CSSRule* rule = action->takeRule();
-      if (rule->type() == CSSRule::kStyleRule)
-        return toCSSStyleRule(rule)->style();
-      if (rule->type() == CSSRule::kKeyframeRule)
-        return toCSSKeyframeRule(rule)->style();
+      if (rule->type() == CSSRule::kStyleRule) {
+        result = toCSSStyleRule(rule)->style();
+        return Response::OK();
+      }
+      if (rule->type() == CSSRule::kKeyframeRule) {
+        result = toCSSKeyframeRule(rule)->style();
+        return Response::OK();
+      }
     }
   }
-  *errorString = toErrorString(exceptionState);
-  return nullptr;
+  return InspectorDOMAgent::toResponse(exceptionState);
 }
 
-void InspectorCSSAgent::setMediaText(
-    ErrorString* errorString,
+Response InspectorCSSAgent::setMediaText(
     const String& styleSheetId,
     std::unique_ptr<protocol::CSS::SourceRange> range,
     const String& text,
     std::unique_ptr<protocol::CSS::CSSMedia>* result) {
   FrontendOperationScope scope;
-  InspectorStyleSheet* inspectorStyleSheet =
-      assertInspectorStyleSheetForId(errorString, styleSheetId);
-  if (!inspectorStyleSheet) {
-    *errorString = "Stylesheet not found";
-    return;
-  }
+  InspectorStyleSheet* inspectorStyleSheet = nullptr;
+  Response response =
+      assertInspectorStyleSheetForId(styleSheetId, inspectorStyleSheet);
+  if (!response.isSuccess())
+    return response;
   SourceRange textRange;
-  if (!jsonRangeToSourceRange(errorString, inspectorStyleSheet, range.get(),
-                              &textRange))
-    return;
+  response =
+      jsonRangeToSourceRange(inspectorStyleSheet, range.get(), &textRange);
+  if (!response.isSuccess())
+    return response;
 
   TrackExceptionState exceptionState;
   ModifyRuleAction* action = new ModifyRuleAction(
@@ -1515,75 +1484,66 @@ void InspectorCSSAgent::setMediaText(
     *result = buildMediaObject(rule->media(), MediaListSourceMediaRule,
                                sourceURL, rule->parentStyleSheet());
   }
-  *errorString = toErrorString(exceptionState);
+  return InspectorDOMAgent::toResponse(exceptionState);
 }
 
-void InspectorCSSAgent::createStyleSheet(
-    ErrorString* errorString,
+Response InspectorCSSAgent::createStyleSheet(
     const String& frameId,
     protocol::CSS::StyleSheetId* outStyleSheetId) {
   LocalFrame* frame = IdentifiersFactory::frameById(m_inspectedFrames, frameId);
-  if (!frame) {
-    *errorString = "Frame not found";
-    return;
-  }
+  if (!frame)
+    return Response::Error("Frame not found");
 
   Document* document = frame->document();
-  if (!document) {
-    *errorString = "Frame does not have a document";
-    return;
-  }
+  if (!document)
+    return Response::Error("Frame does not have a document");
 
   InspectorStyleSheet* inspectorStyleSheet = viaInspectorStyleSheet(document);
-  if (!inspectorStyleSheet) {
-    *errorString = "No target stylesheet found";
-    return;
-  }
+  if (!inspectorStyleSheet)
+    return Response::Error("No target stylesheet found");
 
   updateActiveStyleSheets(document, ExistingFrontendRefresh);
 
   *outStyleSheetId = inspectorStyleSheet->id();
+  return Response::OK();
 }
 
-void InspectorCSSAgent::addRule(
-    ErrorString* errorString,
+Response InspectorCSSAgent::addRule(
     const String& styleSheetId,
     const String& ruleText,
     std::unique_ptr<protocol::CSS::SourceRange> location,
     std::unique_ptr<protocol::CSS::CSSRule>* result) {
   FrontendOperationScope scope;
-  InspectorStyleSheet* inspectorStyleSheet =
-      assertInspectorStyleSheetForId(errorString, styleSheetId);
-  if (!inspectorStyleSheet)
-    return;
+  InspectorStyleSheet* inspectorStyleSheet = nullptr;
+  Response response =
+      assertInspectorStyleSheetForId(styleSheetId, inspectorStyleSheet);
+  if (!response.isSuccess())
+    return response;
   SourceRange ruleLocation;
-  if (!jsonRangeToSourceRange(errorString, inspectorStyleSheet, location.get(),
-                              &ruleLocation))
-    return;
+  response = jsonRangeToSourceRange(inspectorStyleSheet, location.get(),
+                                    &ruleLocation);
+  if (!response.isSuccess())
+    return response;
 
   TrackExceptionState exceptionState;
   AddRuleAction* action =
       new AddRuleAction(inspectorStyleSheet, ruleText, ruleLocation);
   bool success = m_domAgent->history()->perform(action, exceptionState);
-  if (!success) {
-    *errorString = toErrorString(exceptionState);
-    return;
-  }
+  if (!success)
+    return InspectorDOMAgent::toResponse(exceptionState);
 
   CSSStyleRule* rule = action->takeRule();
   *result = buildObjectForRule(rule);
+  return Response::OK();
 }
 
-void InspectorCSSAgent::forcePseudoState(
-    ErrorString* errorString,
+Response InspectorCSSAgent::forcePseudoState(
     int nodeId,
     std::unique_ptr<protocol::Array<String>> forcedPseudoClasses) {
   Element* element = nullptr;
   Response response = m_domAgent->assertElement(nodeId, element);
-  if (!response.isSuccess()) {
-    *errorString = response.errorMessage();
-    return;
-  }
+  if (!response.isSuccess())
+    return response;
 
   unsigned forcedPseudoState =
       computePseudoClassMask(std::move(forcedPseudoClasses));
@@ -1593,7 +1553,7 @@ void InspectorCSSAgent::forcePseudoState(
       it == m_nodeIdToForcedPseudoState.end() ? 0 : it->value;
   bool needStyleRecalc = forcedPseudoState != currentForcedPseudoState;
   if (!needStyleRecalc)
-    return;
+    return Response::OK();
 
   if (forcedPseudoState)
     m_nodeIdToForcedPseudoState.set(nodeId, forcedPseudoState);
@@ -1602,6 +1562,7 @@ void InspectorCSSAgent::forcePseudoState(
   element->ownerDocument()->setNeedsStyleRecalc(
       SubtreeStyleChange,
       StyleChangeReasonForTracing::create(StyleChangeReason::Inspector));
+  return Response::OK();
 }
 
 std::unique_ptr<protocol::CSS::CSSMedia> InspectorCSSAgent::buildMediaObject(
@@ -1813,19 +1774,6 @@ InspectorStyleSheetForInlineStyle* InspectorCSSAgent::asInspectorStyleSheet(
   return inspectorStyleSheet;
 }
 
-Element* InspectorCSSAgent::elementForId(ErrorString* errorString, int nodeId) {
-  Node* node = m_domAgent->nodeForId(nodeId);
-  if (!node) {
-    *errorString = "No node with given id found";
-    return nullptr;
-  }
-  if (!node->isElementNode()) {
-    *errorString = "Not an element node";
-    return nullptr;
-  }
-  return toElement(node);
-}
-
 // static
 void InspectorCSSAgent::collectAllDocumentStyleSheets(
     Document* document,
@@ -1917,33 +1865,32 @@ InspectorStyleSheet* InspectorCSSAgent::viaInspectorStyleSheet(
   return m_cssStyleSheetToInspectorStyleSheet.get(&inspectorSheet);
 }
 
-InspectorStyleSheet* InspectorCSSAgent::assertInspectorStyleSheetForId(
-    ErrorString* errorString,
-    const String& styleSheetId) {
+Response InspectorCSSAgent::assertInspectorStyleSheetForId(
+    const String& styleSheetId,
+    InspectorStyleSheet*& result) {
   IdToInspectorStyleSheet::iterator it =
       m_idToInspectorStyleSheet.find(styleSheetId);
-  if (it == m_idToInspectorStyleSheet.end()) {
-    *errorString = "No style sheet with given id found";
-    return nullptr;
-  }
-  return it->value.get();
+  if (it == m_idToInspectorStyleSheet.end())
+    return Response::Error("No style sheet with given id found");
+  result = it->value.get();
+  return Response::OK();
 }
 
-InspectorStyleSheetBase* InspectorCSSAgent::assertStyleSheetForId(
-    ErrorString* errorString,
-    const String& styleSheetId) {
-  ErrorString placeholder;
-  InspectorStyleSheetBase* result =
-      assertInspectorStyleSheetForId(&placeholder, styleSheetId);
-  if (result)
-    return result;
+Response InspectorCSSAgent::assertStyleSheetForId(
+    const String& styleSheetId,
+    InspectorStyleSheetBase*& result) {
+  InspectorStyleSheet* styleSheet = nullptr;
+  Response response = assertInspectorStyleSheetForId(styleSheetId, styleSheet);
+  if (response.isSuccess()) {
+    result = styleSheet;
+    return response;
+  }
   IdToInspectorStyleSheetForInlineStyle::iterator it =
       m_idToInspectorStyleSheetForInlineStyle.find(styleSheetId);
-  if (it == m_idToInspectorStyleSheetForInlineStyle.end()) {
-    *errorString = "No style sheet with given id found";
-    return nullptr;
-  }
-  return it->value.get();
+  if (it == m_idToInspectorStyleSheetForInlineStyle.end())
+    return Response::Error("No style sheet with given id found");
+  result = it->value.get();
+  return Response::OK();
 }
 
 protocol::CSS::StyleSheetOrigin InspectorCSSAgent::detectOrigin(
@@ -2153,12 +2100,11 @@ CSSStyleDeclaration* InspectorCSSAgent::findEffectiveDeclaration(
   return foundStyle ? foundStyle : styles.at(0).get();
 }
 
-void InspectorCSSAgent::setLayoutEditorValue(ErrorString* errorString,
-                                             Element* element,
-                                             CSSStyleDeclaration* style,
-                                             CSSPropertyID propertyId,
-                                             const String& value,
-                                             bool forceImportant) {
+Response InspectorCSSAgent::setLayoutEditorValue(Element* element,
+                                                 CSSStyleDeclaration* style,
+                                                 CSSPropertyID propertyId,
+                                                 const String& value,
+                                                 bool forceImportant) {
   InspectorStyleSheetBase* inspectorStyleSheet = nullptr;
   RefPtr<CSSRuleSourceData> sourceData;
   // An absence of the parent rule means that given style is an inline style.
@@ -2173,10 +2119,8 @@ void InspectorCSSAgent::setLayoutEditorValue(ErrorString* errorString,
     sourceData = inlineStyleSheet->ruleSourceData();
   }
 
-  if (!sourceData) {
-    *errorString = "Can't find a source to edit";
-    return;
-  }
+  if (!sourceData)
+    return Response::Error("Can't find a source to edit");
 
   Vector<StylePropertyShorthand, 4> shorthands;
   getMatchingShorthandsForLonghand(propertyId, &shorthands);
@@ -2236,12 +2180,15 @@ void InspectorCSSAgent::setLayoutEditorValue(ErrorString* errorString,
     changeRange.start = declaration.range.start;
     changeRange.end = changeRange.start + newPropertyText.length();
   }
-  CSSStyleDeclaration* resultStyle =
-      setStyleText(errorString, inspectorStyleSheet, bodyRange, styleText);
-  if (resultStyle)
-    frontend()->layoutEditorChange(
-        inspectorStyleSheet->id(),
-        inspectorStyleSheet->buildSourceRangeObject(changeRange));
+  CSSStyleDeclaration* resultStyle = nullptr;
+  Response response =
+      setStyleText(inspectorStyleSheet, bodyRange, styleText, resultStyle);
+  if (!response.isSuccess())
+    return response;
+  frontend()->layoutEditorChange(
+      inspectorStyleSheet->id(),
+      inspectorStyleSheet->buildSourceRangeObject(changeRange));
+  return Response::OK();
 }
 
 void InspectorCSSAgent::layoutEditorItemSelected(Element* element,
@@ -2265,53 +2212,47 @@ void InspectorCSSAgent::layoutEditorItemSelected(Element* element,
                                        sourceData->ruleHeaderRange));
 }
 
-void InspectorCSSAgent::setEffectivePropertyValueForNode(
-    ErrorString* errorString,
+Response InspectorCSSAgent::setEffectivePropertyValueForNode(
     int nodeId,
     const String& propertyName,
     const String& value) {
   // TODO: move testing from CSSAgent to layout editor.
-  Element* element = elementForId(errorString, nodeId);
-  if (!element || element->getPseudoId())
-    return;
+  Element* element = nullptr;
+  Response response = m_domAgent->assertElement(nodeId, element);
+  if (!response.isSuccess())
+    return response;
+  if (element->getPseudoId())
+    return Response::Error("Elements is pseudo");
 
   CSSPropertyID property = cssPropertyID(propertyName);
-  if (!property) {
-    *errorString = "Invalid property name";
-    return;
-  }
+  if (!property)
+    return Response::Error("Invalid property name");
 
   Document* ownerDocument = element->ownerDocument();
-  if (!ownerDocument->isActive()) {
-    *errorString = "Can't edit a node from a non-active document";
-    return;
-  }
+  if (!ownerDocument->isActive())
+    return Response::Error("Can't edit a node from a non-active document");
 
   CSSPropertyID propertyId = cssPropertyID(propertyName);
   CSSStyleDeclaration* style =
       findEffectiveDeclaration(propertyId, matchingStyles(element));
-  if (!style) {
-    *errorString = "Can't find a style to edit";
-    return;
-  }
+  if (!style)
+    return Response::Error("Can't find a style to edit");
 
-  setLayoutEditorValue(errorString, element, style, propertyId, value);
+  return setLayoutEditorValue(element, style, propertyId, value);
 }
 
-void InspectorCSSAgent::getBackgroundColors(
-    ErrorString* errorString,
+Response InspectorCSSAgent::getBackgroundColors(
     int nodeId,
     Maybe<protocol::Array<String>>* result) {
-  Element* element = elementForId(errorString, nodeId);
-  if (!element) {
-    *errorString = "Node not found";
-    return;
-  }
+  Element* element = nullptr;
+  Response response = m_domAgent->assertElement(nodeId, element);
+  if (!response.isSuccess())
+    return response;
 
   LayoutRect textBounds;
   LayoutObject* elementLayout = element->layoutObject();
   if (!elementLayout)
-    return;
+    return Response::OK();
 
   for (const LayoutObject* child = elementLayout->slowFirstChild(); child;
        child = child->nextSibling()) {
@@ -2320,14 +2261,12 @@ void InspectorCSSAgent::getBackgroundColors(
     textBounds.unite(LayoutRect(child->absoluteBoundingBoxRect()));
   }
   if (textBounds.size().isEmpty())
-    return;
+    return Response::OK();
 
   Vector<Color> colors;
   FrameView* view = element->document().view();
-  if (!view) {
-    *errorString = "No view.";
-    return;
-  }
+  if (!view)
+    return Response::Error("No view.");
   Document& document = element->document();
   bool isMainFrame = document.isInMainFrame();
   bool foundOpaqueColor = false;
@@ -2353,10 +2292,10 @@ void InspectorCSSAgent::getBackgroundColors(
   *result = protocol::Array<String>::create();
   for (auto color : colors)
     result->fromJust()->addItem(color.serializedAsCSSComponentValue());
+  return Response::OK();
 }
 
-void InspectorCSSAgent::getLayoutTreeAndStyles(
-    ErrorString* errorString,
+Response InspectorCSSAgent::getLayoutTreeAndStyles(
     std::unique_ptr<protocol::Array<String>> styleWhitelist,
     std::unique_ptr<protocol::Array<protocol::CSS::LayoutTreeNode>>*
         layoutTreeNodes,
@@ -2381,6 +2320,7 @@ void InspectorCSSAgent::getLayoutTreeAndStyles(
   visitLayoutTreeNodes(m_domAgent->document(), *layoutTreeNodes->get(),
                        cssPropertyWhitelist, styleToIndexMap,
                        *computedStyles->get());
+  return Response::OK();
 }
 
 int InspectorCSSAgent::getStyleIndexForNode(
