@@ -399,7 +399,7 @@ void WebDevToolsAgentImpl::initializeSession(int sessionId,
   m_session->append(cssAgent);
 
   m_session->append(new InspectorAnimationAgent(
-      m_inspectedFrames.get(), m_domAgent, cssAgent, m_session->v8Session()));
+      m_inspectedFrames.get(), cssAgent, m_session->v8Session()));
 
   m_session->append(InspectorMemoryAgent::create());
 

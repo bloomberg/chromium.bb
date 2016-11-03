@@ -19,7 +19,6 @@ namespace blink {
 class AnimationTimeline;
 class InspectedFrames;
 class InspectorCSSAgent;
-class InspectorDOMAgent;
 
 class CORE_EXPORT InspectorAnimationAgent final
     : public InspectorBaseAgent<protocol::Animation::Metainfo> {
@@ -27,7 +26,6 @@ class CORE_EXPORT InspectorAnimationAgent final
 
  public:
   InspectorAnimationAgent(InspectedFrames*,
-                          InspectorDOMAgent*,
                           InspectorCSSAgent*,
                           v8_inspector::V8InspectorSession*);
 
@@ -36,28 +34,21 @@ class CORE_EXPORT InspectorAnimationAgent final
   void didCommitLoadForLocalFrame(LocalFrame*) override;
 
   // Protocol method implementations
-  void enable(ErrorString*) override;
-  void disable(ErrorString*) override;
-  void getPlaybackRate(ErrorString*, double* playbackRate) override;
-  void setPlaybackRate(ErrorString*, double playbackRate) override;
-  void getCurrentTime(ErrorString*,
-                      const String& id,
-                      double* currentTime) override;
-  void setPaused(ErrorString*,
-                 std::unique_ptr<protocol::Array<String>> animations,
-                 bool paused) override;
-  void setTiming(ErrorString*,
-                 const String& animationId,
-                 double duration,
-                 double delay) override;
-  void seekAnimations(ErrorString*,
-                      std::unique_ptr<protocol::Array<String>> animations,
-                      double currentTime) override;
-  void releaseAnimations(
-      ErrorString*,
+  Response enable() override;
+  Response disable() override;
+  Response getPlaybackRate(double* playbackRate) override;
+  Response setPlaybackRate(double) override;
+  Response getCurrentTime(const String& id, double* currentTime) override;
+  Response setPaused(std::unique_ptr<protocol::Array<String>> animations,
+                     bool paused) override;
+  Response setTiming(const String& animationId,
+                     double duration,
+                     double delay) override;
+  Response seekAnimations(std::unique_ptr<protocol::Array<String>> animations,
+                          double currentTime) override;
+  Response releaseAnimations(
       std::unique_ptr<protocol::Array<String>> animations) override;
-  void resolveAnimation(
-      ErrorString*,
+  Response resolveAnimation(
       const String& animationId,
       std::unique_ptr<v8_inspector::protocol::Runtime::API::RemoteObject>*)
       override;
@@ -70,7 +61,7 @@ class CORE_EXPORT InspectorAnimationAgent final
   void didClearDocumentOfWindowObject(LocalFrame*);
 
   // Methods for other agents to use.
-  blink::Animation* assertAnimation(ErrorString*, const String& id);
+  Response assertAnimation(const String& id, blink::Animation*& result);
 
   DECLARE_VIRTUAL_TRACE();
 
@@ -90,7 +81,6 @@ class CORE_EXPORT InspectorAnimationAgent final
   String createCSSId(blink::Animation&);
 
   Member<InspectedFrames> m_inspectedFrames;
-  Member<InspectorDOMAgent> m_domAgent;
   Member<InspectorCSSAgent> m_cssAgent;
   v8_inspector::V8InspectorSession* m_v8Session;
   HeapHashMap<String, Member<blink::Animation>> m_idToAnimation;
