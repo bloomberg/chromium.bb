@@ -12,6 +12,8 @@
 
 namespace gfx {
 
+class Vector2d;
+
 // Represents the widths of the four borders or margins of an unspecified
 // rectangle. An Insets stores the thickness of the top, left, bottom and right
 // edges, without storing the actual size and position of the rectangle itself.
@@ -92,6 +94,11 @@ class GFX_EXPORT Insets {
                   static_cast<int>(bottom() * y_scale),
                   static_cast<int>(right() * x_scale));
   }
+
+  // Adjusts the vertical and horizontal dimensions by the values described in
+  // |vector|. Offsetting insets before applying to a rectangle would be
+  // equivalent to offseting the rectangle then applying the insets.
+  Insets Offset(const gfx::Vector2d& vector) const;
 
   operator InsetsF() const {
     return InsetsF(static_cast<float>(top()), static_cast<float>(left()),

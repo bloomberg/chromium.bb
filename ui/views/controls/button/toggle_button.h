@@ -33,6 +33,8 @@ class VIEWS_EXPORT ToggleButton : public CustomButton {
   // Updates position and color of the thumb.
   void UpdateThumb();
 
+  SkColor GetTrackColor(bool is_on) const;
+
   // CustomButton:
   gfx::Size GetPreferredSize() const override;
   const char* GetClassName() const override;
@@ -51,7 +53,7 @@ class VIEWS_EXPORT ToggleButton : public CustomButton {
 
   bool is_on_;
   gfx::SlideAnimation slide_animation_;
-  std::unique_ptr<ThumbView> thumb_view_;
+  ThumbView* thumb_view_;
 
   DISALLOW_COPY_AND_ASSIGN(ToggleButton);
 };

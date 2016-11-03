@@ -28,30 +28,13 @@ const int kThumbHorizontalMargin = 4;
 // Margin from top/bottom edge of thumb to top/bottom edge of view.
 const int kThumbVerticalMargin = 3;
 
-// TODO(estade): get the base color (black) from the theme?
-const SkColor kTrackOffColor =
-    SkColorSetA(SK_ColorBLACK, gfx::kDisabledControlAlpha);
-
 }  // namespace
 
-// Class representing the thumb. When the thumb is clicked it is separated into
-// its own layer and the ink drop layer is made a child of the thumb layer
-// allowing the two to animate in sync.
-class ToggleButton::ThumbView : public views::View {
+// Class representing the thumb (the circle that slides horizontally).
+class ToggleButton::ThumbView : public InkDropHostView {
  public:
   ThumbView() : color_ratio_(0.) {}
   ~ThumbView() override {}
-
-  void AddInkDropLayer(ui::Layer* ink_drop_layer) {
-    SetPaintToLayer(true);
-    layer()->SetFillsBoundsOpaquely(false);
-    layer()->Add(ink_drop_layer);
-  }
-
-  void RemoveInkDropLayer(ui::Layer* ink_drop_layer) {
-    layer()->Remove(ink_drop_layer);
-    SetPaintToLayer(false);
-  }
 
   void Update(const gfx::Rect& bounds, double color_ratio) {
     SetBoundsRect(bounds);
@@ -59,31 +42,52 @@ class ToggleButton::ThumbView : public views::View {
     SchedulePaint();
   }
 
+  // Returns the extra space needed to draw the shadows around the thumb. Since
+  // the extra space is around the thumb, the insets will be negative.
+  static gfx::Insets GetShadowOutsets() {
+    return gfx::Insets(-kShadowBlur)
+        .Offset(gfx::Vector2d(kShadowOffsetX, kShadowOffsetY));
+  }
+
  private:
+  static const int kShadowOffsetX = 0;
+  static const int kShadowOffsetY = 1;
+  static const int kShadowBlur = 2;
+
   // views::View:
   const char* GetClassName() const override {
     return "ToggleButton::ThumbView";
   }
 
   void OnPaint(gfx::Canvas* canvas) override {
+    const float dsf = canvas->UndoDeviceScaleFactor();
     std::vector<gfx::ShadowValue> shadows;
-    shadows.emplace_back(gfx::Vector2d(0, 1), 4.f,
-                         SkColorSetA(SK_ColorBLACK, 0x99));
+    gfx::ShadowValue shadow(
+        gfx::Vector2d(kShadowOffsetX, kShadowOffsetY), 2 * kShadowBlur,
+        SkColorSetA(GetNativeTheme()->GetSystemColor(
+                        ui::NativeTheme::kColorId_LabelEnabledColor),
+                    0x99));
+    shadows.push_back(shadow.Scale(dsf));
     SkPaint thumb_paint;
     thumb_paint.setLooper(gfx::CreateShadowDrawLooperCorrectBlur(shadows));
-    thumb_paint.setStyle(SkPaint::kFill_Style);
     thumb_paint.setAntiAlias(true);
     const SkColor thumb_on_color = GetNativeTheme()->GetSystemColor(
         ui::NativeTheme::kColorId_ProminentButtonColor);
-    // TODO(estade): get this color from the theme?
-    const SkColor thumb_off_color = SK_ColorWHITE;
+    const SkColor thumb_off_color = GetNativeTheme()->GetSystemColor(
+        ui::NativeTheme::kColorId_DialogBackground);
     const SkAlpha blend = static_cast<SkAlpha>(SK_AlphaOPAQUE * color_ratio_);
     thumb_paint.setColor(
         color_utils::AlphaBlend(thumb_on_color, thumb_off_color, blend));
-    gfx::Rect thumb_bounds = GetLocalBounds();
-    thumb_bounds.Inset(gfx::Insets(kThumbVerticalMargin));
-    canvas->DrawCircle(gfx::RectF(thumb_bounds).CenterPoint(),
-                       thumb_bounds.height() / 2.f, thumb_paint);
+
+    // We want the circle to have an integer pixel diameter and to be aligned
+    // with pixel boundaries, so we scale dip bounds to pixel bounds and round.
+    gfx::RectF thumb_bounds(GetLocalBounds());
+    thumb_bounds.Inset(-GetShadowOutsets());
+    thumb_bounds.Inset(gfx::InsetsF(0.5f));
+    thumb_bounds.Scale(dsf);
+    thumb_bounds = gfx::RectF(gfx::ToEnclosingRect(thumb_bounds));
+    canvas->DrawCircle(thumb_bounds.CenterPoint(), thumb_bounds.height() / 2.f,
+                       thumb_paint);
   }
 
   // Color ratio between 0 and 1 that controls the thumb color.
@@ -99,12 +103,12 @@ ToggleButton::ToggleButton(ButtonListener* listener)
     : CustomButton(listener),
       is_on_(false),
       slide_animation_(this),
-      thumb_view_(new ToggleButton::ThumbView()) {
+      thumb_view_(new ThumbView()) {
   slide_animation_.SetSlideDuration(80 /* ms */);
   slide_animation_.SetTweenType(gfx::Tween::LINEAR);
   SetBorder(Border::CreateEmptyBorder(
       gfx::Insets(kTrackVerticalMargin, kTrackHorizontalMargin)));
-  AddChildView(thumb_view_.get());
+  AddChildView(thumb_view_);
   SetInkDropMode(InkDropMode::ON);
   set_has_ink_drop_action_on_click(true);
 }
@@ -139,13 +143,22 @@ gfx::Rect ToggleButton::GetThumbBounds() const {
   // The thumb is a circle, so the width should match the height.
   thumb_bounds.set_width(thumb_bounds.height());
   thumb_bounds.set_x(GetMirroredXForRect(thumb_bounds));
+  thumb_bounds.Inset(ThumbView::GetShadowOutsets());
   return thumb_bounds;
 }
 
 void ToggleButton::UpdateThumb() {
-  gfx::Rect thumb_bounds = GetThumbBounds();
-  thumb_bounds.Inset(gfx::Insets(-kThumbVerticalMargin));
-  thumb_view_->Update(thumb_bounds, slide_animation_.GetCurrentValue());
+  thumb_view_->Update(GetThumbBounds(), slide_animation_.GetCurrentValue());
+}
+
+SkColor ToggleButton::GetTrackColor(bool is_on) const {
+  const SkAlpha kOffTrackAlpha = 0x29;
+  const SkAlpha kOnTrackAlpha = kOffTrackAlpha * 2;
+  ui::NativeTheme::ColorId color_id =
+      is_on ? ui::NativeTheme::kColorId_ProminentButtonColor
+            : ui::NativeTheme::kColorId_LabelEnabledColor;
+  return SkColorSetA(GetNativeTheme()->GetSystemColor(color_id),
+                     is_on ? kOnTrackAlpha : kOffTrackAlpha);
 }
 
 gfx::Size ToggleButton::GetPreferredSize() const {
@@ -160,17 +173,17 @@ const char* ToggleButton::GetClassName() const {
 }
 
 void ToggleButton::OnPaint(gfx::Canvas* canvas) {
-  // Paint the toggle track.
+  // Paint the toggle track. To look sharp even at fractional scale factors,
+  // round up to pixel boundaries.
+  float dsf = canvas->UndoDeviceScaleFactor();
   gfx::RectF track_rect(GetContentsBounds());
+  track_rect.Scale(dsf);
+  track_rect = gfx::RectF(gfx::ToEnclosingRect(track_rect));
   SkPaint track_paint;
   track_paint.setAntiAlias(true);
-  const SkColor track_on_color =
-      SkColorSetA(GetNativeTheme()->GetSystemColor(
-                      ui::NativeTheme::kColorId_ProminentButtonColor),
-                  0xFF / 2);
   const double color_ratio = slide_animation_.GetCurrentValue();
   track_paint.setColor(color_utils::AlphaBlend(
-      track_on_color, kTrackOffColor,
+      GetTrackColor(true), GetTrackColor(false),
       static_cast<SkAlpha>(SK_AlphaOPAQUE * color_ratio)));
   canvas->DrawRoundRect(track_rect, track_rect.height() / 2, track_paint);
 }
@@ -190,25 +203,20 @@ void ToggleButton::OnNativeThemeChanged(const ui::NativeTheme* theme) {
 
 void ToggleButton::AddInkDropLayer(ui::Layer* ink_drop_layer) {
   thumb_view_->AddInkDropLayer(ink_drop_layer);
-  UpdateThumb();
-  SchedulePaint();
 }
 
 void ToggleButton::RemoveInkDropLayer(ui::Layer* ink_drop_layer) {
   thumb_view_->RemoveInkDropLayer(ink_drop_layer);
-  SchedulePaint();
 }
 
 std::unique_ptr<InkDropRipple> ToggleButton::CreateInkDropRipple() const {
-  const int radius = (kTrackHeight + kTrackVerticalMargin * 2) / 2;
-  return CreateDefaultInkDropRipple(gfx::Point(radius, radius));
+  gfx::Rect rect = thumb_view_->GetLocalBounds();
+  rect.Inset(-ThumbView::GetShadowOutsets());
+  return CreateDefaultInkDropRipple(rect.CenterPoint());
 }
 
 SkColor ToggleButton::GetInkDropBaseColor() const {
-  return is_on()
-             ? GetNativeTheme()->GetSystemColor(
-                   ui::NativeTheme::kColorId_ProminentButtonColor)
-             : kTrackOffColor;
+  return GetTrackColor(is_on());
 }
 
 bool ToggleButton::ShouldShowInkDropHighlight() const {
