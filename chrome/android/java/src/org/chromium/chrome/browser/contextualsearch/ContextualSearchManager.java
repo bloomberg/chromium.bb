@@ -665,8 +665,6 @@ public class ContextualSearchManager implements ContextualSearchManagementDelega
             final String mid, boolean doPreventPreload, int selectionStartAdjust,
             int selectionEndAdjust, final String contextLanguage, final String thumbnailUrl,
             final String caption, final String quickActionUri, final int quickActionCategory) {
-        // TODO(twellington): Convert quickActionCategory to an enum value and pass that instead
-        //                    of an int.
         mNetworkCommunicator.handleSearchTermResolutionResponse(isNetworkUnavailable, responseCode,
                 searchTerm, displayText, alternateTerm, mid, doPreventPreload, selectionStartAdjust,
                 selectionEndAdjust, contextLanguage, thumbnailUrl, caption, quickActionUri,
@@ -714,6 +712,14 @@ public class ContextualSearchManager implements ContextualSearchManagementDelega
             ContextualSearchUma.logContextualCardsDataShown(receivedContextualCardsData);
             mSearchPanel.getPanelMetrics().setWasContextualCardsDataShown(
                     receivedContextualCardsData);
+        }
+
+        if (ContextualSearchFieldTrial.isContextualSearchSingleActionsEnabled()) {
+            boolean quickActionShown =
+                    mSearchPanel.getSearchBarControl().getQuickActionControl().hasQuickAction();
+            ContextualSearchUma.logQuickActionShown(quickActionShown, quickActionCategory);
+            mSearchPanel.getPanelMetrics().setWasQuickActionShown(quickActionShown,
+                    quickActionCategory);
         }
 
         // If there was an error, fall back onto a literal search for the selection.

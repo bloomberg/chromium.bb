@@ -14,6 +14,7 @@ import android.text.TextUtils;
 import android.widget.ImageView;
 
 import org.chromium.chrome.R;
+import org.chromium.chrome.browser.contextualsearch.ContextualSearchUma;
 import org.chromium.chrome.browser.contextualsearch.QuickActionCategory;
 import org.chromium.chrome.browser.util.IntentUtils;
 import org.chromium.ui.resources.dynamics.DynamicResourceLoader;
@@ -92,7 +93,8 @@ public class ContextualSearchQuickActionControl extends ViewResourceInflater {
      * @param quickActionCategory The {@link QuickActionCategory} for the quick action.
      */
     public void setQuickAction(String quickActionUri, int quickActionCategory) {
-        if (TextUtils.isEmpty(quickActionUri) || quickActionCategory == QuickActionCategory.NONE) {
+        if (TextUtils.isEmpty(quickActionUri) || quickActionCategory == QuickActionCategory.NONE
+                || quickActionCategory >= QuickActionCategory.BOUNDARY) {
             reset();
             return;
         }
@@ -155,6 +157,7 @@ public class ContextualSearchQuickActionControl extends ViewResourceInflater {
             mIntent = Intent.parseUri(mQuickActionUri, 0);
         } catch (URISyntaxException e) {
             // If the intent cannot be parsed, there is no quick action available.
+            ContextualSearchUma.logQuickActionIntentResolution(mQuickActionCategory, 0);
             reset();
             return;
         }
@@ -195,6 +198,9 @@ public class ContextualSearchQuickActionControl extends ViewResourceInflater {
                 }
             }
         }
+
+        ContextualSearchUma.logQuickActionIntentResolution(mQuickActionCategory,
+                numMatchingActivities);
 
         if (numMatchingActivities == 0) {
             reset();

@@ -287,6 +287,7 @@ public class ContextualSearchPanel extends OverlayPanel {
         if (isPeeking()) {
             if (getSearchBarControl().getQuickActionControl().hasQuickAction()
                     && isCoordinateInsideActionTarget(x)) {
+                mPanelMetrics.setWasQuickActionClicked();
                 getSearchBarControl().getQuickActionControl().sendIntent();
             } else {
                 // super takes care of expanding the Panel when peeking.
@@ -671,7 +672,6 @@ public class ContextualSearchPanel extends OverlayPanel {
      * Creates the ContextualSearchBarControl, if needed. The Views are set to INVISIBLE, because
      * they won't actually be displayed on the screen (their snapshots will be displayed instead).
      */
-    @VisibleForTesting
     public ContextualSearchBarControl getSearchBarControl() {
         if (mSearchBarControl == null) {
             mSearchBarControl =
