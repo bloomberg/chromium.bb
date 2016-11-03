@@ -10,7 +10,7 @@ cr.define('options', function() {
    */
   function StylusOverlay() {
     options.SettingsDialog.call(this, 'stylus-overlay',
-         loadTimeData.getString('stylusOverlayTabTitle'),
+        loadTimeData.getString('stylusOverlayTabTitle'),
         'stylus-overlay',
         assertInstanceof($('stylus-confirm'), HTMLButtonElement),
         assertInstanceof($('stylus-cancel'), HTMLButtonElement));
@@ -24,6 +24,12 @@ cr.define('options', function() {
     /** @override */
     initializePage: function() {
       options.SettingsDialog.prototype.initializePage.call(this);
+
+      // Disable auto-launch pref when enable stylus tools pref is false.
+      Preferences.getInstance().addEventListener('settings.enable_stylus_tools',
+          function(e) {
+            $('launch-palette-on-eject-input').disabled = !e.value.value;
+          });
     },
   };
 
