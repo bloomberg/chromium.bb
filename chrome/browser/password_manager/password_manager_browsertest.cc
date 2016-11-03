@@ -1268,10 +1268,15 @@ IN_PROC_BROWSER_TEST_F(PasswordManagerBrowserTestBase,
 // a new tab with a URL for which the embedded test server issues a basic auth
 // challenge.
 IN_PROC_BROWSER_TEST_F(PasswordManagerBrowserTestBase, NoLastLoadGoodLastLoad) {
+  // We must use a new test server here because embedded_test_server() is
+  // already started at this point and adding the request handler to it would
+  // not be thread safe.
+  net::EmbeddedTestServer http_test_server;
+
   // Teach the embedded server to handle requests by issuing the basic auth
   // challenge.
-  embedded_test_server()->RegisterRequestHandler(
-      base::Bind(&HandleTestAuthRequest));
+  http_test_server.RegisterRequestHandler(base::Bind(&HandleTestAuthRequest));
+  ASSERT_TRUE(http_test_server.Start());
 
   LoginPromptBrowserTestObserver login_observer;
   // We need to register to all sources, because the navigation observer we are
@@ -1288,7 +1293,7 @@ IN_PROC_BROWSER_TEST_F(PasswordManagerBrowserTestBase, NoLastLoadGoodLastLoad) {
   // WebContents, but don't wait for navigation, which only finishes after
   // authentication.
   ui_test_utils::NavigateToURLWithDisposition(
-      browser(), embedded_test_server()->GetURL("/basic_auth"),
+      browser(), http_test_server.GetURL("/basic_auth"),
       WindowOpenDisposition::NEW_FOREGROUND_TAB,
       ui_test_utils::BROWSER_TEST_WAIT_FOR_TAB);
 
@@ -2543,8 +2548,12 @@ IN_PROC_BROWSER_TEST_F(
 // distributed to them are filtered by the realm.
 IN_PROC_BROWSER_TEST_F(PasswordManagerBrowserTestBase,
                        BasicAuthSeparateRealms) {
-  embedded_test_server()->RegisterRequestHandler(
-      base::Bind(&HandleTestAuthRequest));
+  // We must use a new test server here because embedded_test_server() is
+  // already started at this point and adding the request handler to it would
+  // not be thread safe.
+  net::EmbeddedTestServer http_test_server;
+  http_test_server.RegisterRequestHandler(base::Bind(&HandleTestAuthRequest));
+  ASSERT_TRUE(http_test_server.Start());
 
   // Save credentials for "test realm" in the store.
   scoped_refptr<password_manager::TestPasswordStore> password_store =
@@ -2554,7 +2563,7 @@ IN_PROC_BROWSER_TEST_F(PasswordManagerBrowserTestBase,
               .get());
   autofill::PasswordForm creds;
   creds.scheme = autofill::PasswordForm::SCHEME_BASIC;
-  creds.signon_realm = embedded_test_server()->base_url().spec() + "test realm";
+  creds.signon_realm = http_test_server.base_url().spec() + "test realm";
   creds.password_value = base::ASCIIToUTF16("pw");
   creds.username_value = base::ASCIIToUTF16("temp");
   password_store->AddLogin(creds);
@@ -2583,7 +2592,7 @@ IN_PROC_BROWSER_TEST_F(PasswordManagerBrowserTestBase,
       &WebContents()->GetController();
   WindowedAuthNeededObserver auth_needed_observer(nav_controller);
   ui_test_utils::NavigateToURLWithDisposition(
-      browser(), embedded_test_server()->GetURL("/basic_auth"),
+      browser(), http_test_server.GetURL("/basic_auth"),
       WindowOpenDisposition::CURRENT_TAB, ui_test_utils::BROWSER_TEST_NONE);
   auth_needed_observer.Wait();
 
