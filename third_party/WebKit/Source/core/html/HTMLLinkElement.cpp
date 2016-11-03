@@ -39,6 +39,7 @@
 #include "core/loader/FrameLoaderClient.h"
 #include "core/loader/NetworkHintsInterface.h"
 #include "core/origin_trials/OriginTrials.h"
+#include "platform/weborigin/SecurityPolicy.h"
 #include "public/platform/WebIconSizesParser.h"
 #include "public/platform/WebSize.h"
 
@@ -79,6 +80,10 @@ void HTMLLinkElement::parseAttribute(const QualifiedName& name,
   } else if (name == asAttr) {
     m_as = value;
     process();
+  } else if (name == referrerpolicyAttr) {
+    m_referrerPolicy = ReferrerPolicyDefault;
+    if (!value.isNull())
+      SecurityPolicy::referrerPolicyFromString(value, &m_referrerPolicy);
   } else if (name == sizesAttr) {
     m_sizes->setValue(value);
   } else if (name == mediaAttr) {
@@ -108,11 +113,13 @@ bool HTMLLinkElement::shouldLoadLink() {
 bool HTMLLinkElement::loadLink(const String& type,
                                const String& as,
                                const String& media,
+                               ReferrerPolicy referrerPolicy,
                                const KURL& url) {
   return m_linkLoader->loadLink(
       m_relAttribute,
       crossOriginAttributeValue(fastGetAttribute(HTMLNames::crossoriginAttr)),
-      type, as, media, url, document(), NetworkHintsInterfaceImpl());
+      type, as, media, referrerPolicy, url, document(),
+      NetworkHintsInterfaceImpl());
 }
 
 LinkResource* HTMLLinkElement::linkResourceToProcess() {

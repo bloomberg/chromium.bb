@@ -359,6 +359,12 @@ class TokenPreloadScanner::StartTagScanner {
     } else if (match(attributeName, typeAttr)) {
       m_matched &= MIMETypeRegistry::isSupportedStyleSheetMIMEType(
           ContentType(attributeValue).type());
+    } else if (!m_referrerPolicySet &&
+               match(attributeName, referrerpolicyAttr) &&
+               !attributeValue.isNull()) {
+      m_referrerPolicySet = true;
+      SecurityPolicy::referrerPolicyFromString(attributeValue,
+                                               &m_referrerPolicy);
     }
   }
 

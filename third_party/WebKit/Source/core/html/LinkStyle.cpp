@@ -305,7 +305,8 @@ void LinkStyle::process() {
     }
   }
 
-  if (!m_owner->loadLink(type, as, media, builder.url()))
+  if (!m_owner->loadLink(type, as, media, m_owner->referrerPolicy(),
+                         builder.url()))
     return;
 
   if (m_disabledState != Disabled && m_owner->relAttribute().isStyleSheet() &&

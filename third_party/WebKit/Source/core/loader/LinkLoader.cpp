@@ -268,7 +268,8 @@ static Resource* preloadIfNeeded(const LinkRelAttribute& relAttribute,
                                  CrossOriginAttributeValue crossOrigin,
                                  LinkCaller caller,
                                  bool& errorOccurred,
-                                 ViewportDescription* viewportDescription) {
+                                 ViewportDescription* viewportDescription,
+                                 ReferrerPolicy referrerPolicy) {
   if (!document.loader() || !relAttribute.isLinkPreload())
     return nullptr;
 
@@ -315,6 +316,12 @@ static Resource* preloadIfNeeded(const LinkRelAttribute& relAttribute,
   ResourceRequest resourceRequest(document.completeURL(href));
   ResourceFetcher::determineRequestContext(resourceRequest, resourceType,
                                            false);
+
+  if (referrerPolicy != ReferrerPolicyDefault) {
+    resourceRequest.setHTTPReferrer(SecurityPolicy::generateReferrer(
+        referrerPolicy, href, document.outgoingReferrer()));
+  }
+
   FetchRequest linkRequest(resourceRequest, FetchInitiatorTypeNames::link,
                            document.encodingName());
 
@@ -372,10 +379,12 @@ void LinkLoader::loadLinksFromHeader(
           (viewportDescriptionWrapper && viewportDescriptionWrapper->set)
               ? &(viewportDescriptionWrapper->description)
               : nullptr;
+
       preloadIfNeeded(relAttribute, url, *document, header.as(),
                       header.mimeType(), header.media(),
                       crossOriginAttributeValue(header.crossOrigin()),
-                      LinkCalledFromHeader, errorOccurred, viewportDescription);
+                      LinkCalledFromHeader, errorOccurred, viewportDescription,
+                      ReferrerPolicyDefault);
     }
     // TODO(yoav): Add more supported headers as needed.
   }
@@ -386,6 +395,7 @@ bool LinkLoader::loadLink(const LinkRelAttribute& relAttribute,
                           const String& type,
                           const String& as,
                           const String& media,
+                          ReferrerPolicy referrerPolicy,
                           const KURL& href,
                           Document& document,
                           const NetworkHintsInterface& networkHintsInterface) {
@@ -406,7 +416,7 @@ bool LinkLoader::loadLink(const LinkRelAttribute& relAttribute,
   if (m_client->shouldLoadLink()) {
     createLinkPreloadResourceClient(preloadIfNeeded(
         relAttribute, href, document, as, type, media, crossOrigin,
-        LinkCalledFromMarkup, errorOccurred, nullptr));
+        LinkCalledFromMarkup, errorOccurred, nullptr, referrerPolicy));
   }
   if (errorOccurred)
     m_linkLoadingErrorTimer.startOneShot(0, BLINK_FROM_HERE);

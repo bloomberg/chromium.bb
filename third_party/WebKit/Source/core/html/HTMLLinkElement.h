@@ -57,6 +57,7 @@ class CORE_EXPORT HTMLLinkElement final : public HTMLElement,
   String media() const { return m_media; }
   String typeValue() const { return m_type; }
   String asValue() const { return m_as; }
+  ReferrerPolicy referrerPolicy() const { return m_referrerPolicy; }
   const LinkRelAttribute& relAttribute() const { return m_relAttribute; }
   DOMTokenList& relList() const {
     return static_cast<DOMTokenList&>(*m_relList);
@@ -97,6 +98,7 @@ class CORE_EXPORT HTMLLinkElement final : public HTMLElement,
   bool loadLink(const String& type,
                 const String& as,
                 const String& media,
+                ReferrerPolicy,
                 const KURL&);
   bool isAlternate() const {
     return linkStyle()->isUnset() && m_relAttribute.isAlternate();
@@ -150,6 +152,7 @@ class CORE_EXPORT HTMLLinkElement final : public HTMLElement,
   String m_type;
   String m_as;
   String m_media;
+  ReferrerPolicy m_referrerPolicy;
   Member<DOMTokenList> m_sizes;
   Vector<IntSize> m_iconSizes;
   TraceWrapperMember<RelList> m_relList;

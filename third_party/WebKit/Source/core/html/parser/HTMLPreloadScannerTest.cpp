@@ -615,7 +615,7 @@ TEST_F(HTMLPreloadScannerTest, testReferrerPolicy) {
        "bla.gif", "http://example.test/", Resource::Image, 0,
        ReferrerPolicyDefault},
       {"http://example.test",
-       "<img referrerpolicy='origin' referrerpolicy='origin-when-crossorigin' "
+       "<img referrerpolicy='origin' referrerpolicy='origin-when-cross-origin' "
        "src='bla.gif'/>",
        "bla.gif", "http://example.test/", Resource::Image, 0,
        ReferrerPolicyOrigin},
@@ -627,8 +627,23 @@ TEST_F(HTMLPreloadScannerTest, testReferrerPolicy) {
        "referrerpolicy='origin' src='bla.gif'/>",
        "bla.gif", "http://example.test/", Resource::Image, 0,
        ReferrerPolicyOrigin},
+      {"http://example.test",
+       "<link rel=preload as=image referrerpolicy='origin-when-cross-origin' "
+       "href='bla.gif'/>",
+       "bla.gif", "http://example.test/", Resource::Image, 0,
+       ReferrerPolicyOriginWhenCrossOrigin},
+      {"http://example.test",
+       "<link rel=preload as=image referrerpolicy='origin' "
+       "referrerpolicy='origin-when-cross-origin' href='bla.gif'/>",
+       "bla.gif", "http://example.test/", Resource::Image, 0,
+       ReferrerPolicyOrigin},
       // The scanner's state is not reset between test cases, so all subsequent
       // test cases have a document referrer policy of no-referrer.
+      {"http://example.test",
+       "<link rel=preload as=image referrerpolicy='not-a-valid-policy' "
+       "href='bla.gif'/>",
+       "bla.gif", "http://example.test/", Resource::Image, 0,
+       ReferrerPolicyNever},
       {"http://example.test",
        "<img referrerpolicy='not-a-valid-policy' src='bla.gif'/>", "bla.gif",
        "http://example.test/", Resource::Image, 0, ReferrerPolicyNever},
