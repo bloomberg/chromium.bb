@@ -49,22 +49,24 @@ static INLINE int uabs_read(struct AnsDecoder *ans, AnsP8 p0) {
   AnsP8 p = ANS_P8_PRECISION - p0;
   int s;
   unsigned xp, sp;
-  unsigned state = refill_state(ans, ans->state);
+  unsigned state = ans->state;
   sp = state * p;
   xp = sp / ANS_P8_PRECISION;
   s = (sp & 0xFF) >= p0;
   if (s)
-    ans->state = xp;
+    state = xp;
   else
-    ans->state = state - xp;
+    state -= xp;
+  ans->state = refill_state(ans, state);
   return s;
 }
 
 static INLINE int uabs_read_bit(struct AnsDecoder *ans) {
   int s;
-  unsigned state = refill_state(ans, ans->state);
+  unsigned state = ans->state;
   s = (int)(state & 1);
-  ans->state = state >> 1;
+  state >>= 1;
+  ans->state = refill_state(ans, state);
   return s;
 }
 
@@ -92,11 +94,11 @@ static INLINE int rans_read(struct AnsDecoder *ans, const aom_cdf_prob *tab) {
   unsigned rem;
   unsigned quo;
   struct rans_dec_sym sym;
-  ans->state = refill_state(ans, ans->state);
   quo = ans->state / RANS_PRECISION;
   rem = ans->state % RANS_PRECISION;
   fetch_sym(&sym, tab, rem);
   ans->state = quo * sym.prob + rem - sym.cum_prob;
+  ans->state = refill_state(ans, ans->state);
   return sym.val;
 }
 
