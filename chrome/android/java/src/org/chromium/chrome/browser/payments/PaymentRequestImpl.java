@@ -899,6 +899,8 @@ public class PaymentRequestImpl implements PaymentRequest, PaymentRequestUI.Clie
 
     @Override
     public void loadingInstrumentDetails() {
+        if (mClient == null || mUI == null || mPaymentResponseHelper == null) return;
+
         mUI.showProcessingMessage();
         mPaymentResponseHelper.onInstrumentsDetailsLoading();
     }
