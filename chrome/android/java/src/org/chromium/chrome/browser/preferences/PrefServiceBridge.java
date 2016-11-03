@@ -451,15 +451,6 @@ public final class PrefServiceBridge {
     }
 
     /**
-     * Allow fullscreen without asking user for permission.
-     *
-     * @param allowed Whether to allow fullscreen without user permission.
-     */
-    public void setFullscreenAllowed(boolean allowed) {
-        nativeSetFullscreenAllowed(allowed);
-    }
-
-    /**
      * @return whether Search Suggest is enabled.
      */
     public boolean isSearchSuggestEnabled() {
@@ -604,20 +595,6 @@ public final class PrefServiceBridge {
      */
     public boolean canPrefetchAndPrerender() {
         return nativeCanPrefetchAndPrerender();
-    }
-
-    /**
-     * @return whether fullscreen is configured by policy.
-     */
-    public boolean isFullscreenManaged() {
-        return nativeGetFullscreenManaged();
-    }
-
-    /**
-     * @return whether fullscreen is allowed.
-     */
-    public boolean isFullscreenAllowed() {
-        return nativeGetFullscreenAllowed();
     }
 
     /**
@@ -1086,8 +1063,6 @@ public final class PrefServiceBridge {
     private native void nativeSetMicEnabled(boolean allow);
     private native boolean nativeGetMicUserModifiable();
     private native boolean nativeGetMicManagedByCustodian();
-    private native boolean nativeGetFullscreenAllowed();
-    private native boolean nativeGetFullscreenManaged();
     private native boolean nativeGetTranslateEnabled();
     private native boolean nativeGetTranslateManaged();
     private native boolean nativeGetResolveNavigationErrorEnabled();
@@ -1119,7 +1094,6 @@ public final class PrefServiceBridge {
     private native void nativeSetBackgroundSyncEnabled(boolean allow);
     private native void nativeSetBlockThirdPartyCookiesEnabled(boolean enabled);
     private native void nativeSetDoNotTrackEnabled(boolean enabled);
-    private native void nativeSetFullscreenAllowed(boolean allowed);
     private native void nativeSetRememberPasswordsEnabled(boolean allow);
     private native void nativeSetPasswordManagerAutoSigninEnabled(boolean enabled);
     private native void nativeSetProtectedMediaIdentifierEnabled(boolean enabled);

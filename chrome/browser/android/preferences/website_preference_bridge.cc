@@ -174,34 +174,6 @@ void SetSettingForOrigin(JNIEnv* env,
 
 }  // anonymous namespace
 
-static void GetFullscreenOrigins(JNIEnv* env,
-                                 const JavaParamRef<jclass>& clazz,
-                                 const JavaParamRef<jobject>& list,
-                                 jboolean managedOnly) {
-  GetOrigins(env, CONTENT_SETTINGS_TYPE_FULLSCREEN,
-             &Java_WebsitePreferenceBridge_insertFullscreenInfoIntoList, list,
-             managedOnly);
-}
-
-static jint GetFullscreenSettingForOrigin(JNIEnv* env,
-                                          const JavaParamRef<jclass>& clazz,
-                                          const JavaParamRef<jstring>& origin,
-                                          const JavaParamRef<jstring>& embedder,
-                                          jboolean is_incognito) {
-  return GetSettingForOrigin(env, CONTENT_SETTINGS_TYPE_FULLSCREEN, origin,
-                             embedder, is_incognito);
-}
-
-static void SetFullscreenSettingForOrigin(JNIEnv* env,
-                                          const JavaParamRef<jclass>& clazz,
-                                          const JavaParamRef<jstring>& origin,
-                                          const JavaParamRef<jstring>& embedder,
-                                          jint value,
-                                          jboolean is_incognito) {
-  SetSettingForOrigin(env, CONTENT_SETTINGS_TYPE_FULLSCREEN, origin, embedder,
-                      static_cast<ContentSetting>(value), is_incognito);
-}
-
 static void GetGeolocationOrigins(JNIEnv* env,
                                   const JavaParamRef<jclass>& clazz,
                                   const JavaParamRef<jobject>& list,

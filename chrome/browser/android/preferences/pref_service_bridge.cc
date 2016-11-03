@@ -439,25 +439,6 @@ static jboolean GetIncognitoModeManaged(JNIEnv* env,
       prefs::kIncognitoModeAvailability);
 }
 
-static jboolean GetFullscreenManaged(JNIEnv* env,
-                                     const JavaParamRef<jobject>& obj) {
-  return IsContentSettingManaged(CONTENT_SETTINGS_TYPE_FULLSCREEN);
-}
-
-static jboolean GetFullscreenAllowed(JNIEnv* env,
-                                     const JavaParamRef<jobject>& obj) {
-  // In the simplified fullscreen case, fullscreen is always allowed.
-  // TODO(mgiuca): Remove this pref once all data associated with it is deleted
-  // (https://crbug.com/591896).
-  if (base::FeatureList::IsEnabled(features::kSimplifiedFullscreenUI))
-    return true;
-
-  HostContentSettingsMap* content_settings =
-      HostContentSettingsMapFactory::GetForProfile(GetOriginalProfile());
-  return content_settings->GetDefaultContentSetting(
-      CONTENT_SETTINGS_TYPE_FULLSCREEN, NULL) == CONTENT_SETTING_ALLOW;
-}
-
 static jboolean IsMetricsReportingEnabled(JNIEnv* env,
                                            const JavaParamRef<jobject>& obj) {
   PrefService* local_state = g_browser_process->local_state();
@@ -881,16 +862,6 @@ static void SetMicEnabled(JNIEnv* env,
   host_content_settings_map->SetDefaultContentSetting(
       CONTENT_SETTINGS_TYPE_MEDIASTREAM_MIC,
       allow ? CONTENT_SETTING_ASK : CONTENT_SETTING_BLOCK);
-}
-
-static void SetFullscreenAllowed(JNIEnv* env,
-                                 const JavaParamRef<jobject>& obj,
-                                 jboolean allow) {
-  HostContentSettingsMap* host_content_settings_map =
-      HostContentSettingsMapFactory::GetForProfile(GetOriginalProfile());
-  host_content_settings_map->SetDefaultContentSetting(
-      CONTENT_SETTINGS_TYPE_FULLSCREEN,
-      allow ? CONTENT_SETTING_ALLOW : CONTENT_SETTING_ASK);
 }
 
 static void SetNotificationsEnabled(JNIEnv* env,
