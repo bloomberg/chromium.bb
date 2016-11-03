@@ -20,6 +20,9 @@
 #include "cc/resources/resource_util.h"
 #include "cc/resources/scoped_resource.h"
 
+using base::trace_event::MemoryAllocatorDump;
+using base::trace_event::MemoryDumpLevelOfDetail;
+
 namespace cc {
 base::TimeDelta ResourcePool::kDefaultExpirationDelay =
     base::TimeDelta::FromSeconds(1);
@@ -37,21 +40,16 @@ void ResourcePool::PoolResource::OnMemoryDump(
   std::string dump_name =
       base::StringPrintf("cc/tile_memory/provider_%d/resource_%d",
                          resource_provider->tracing_id(), id());
-  base::trace_event::MemoryAllocatorDump* dump =
-      pmd->CreateAllocatorDump(dump_name);
-
+  MemoryAllocatorDump* dump = pmd->CreateAllocatorDump(dump_name);
   pmd->AddSuballocation(dump->guid(), parent_node);
 
   uint64_t total_bytes =
       ResourceUtil::UncheckedSizeInBytesAligned<size_t>(size(), format());
-  dump->AddScalar(base::trace_event::MemoryAllocatorDump::kNameSize,
-                  base::trace_event::MemoryAllocatorDump::kUnitsBytes,
-                  total_bytes);
+  dump->AddScalar(MemoryAllocatorDump::kNameSize,
+                  MemoryAllocatorDump::kUnitsBytes, total_bytes);
 
   if (is_free) {
-    dump->AddScalar("free_size",
-                    base::trace_event::MemoryAllocatorDump::kUnitsBytes,
-                    total_bytes);
+    dump->AddScalar("free_size", MemoryAllocatorDump::kUnitsBytes, total_bytes);
   }
 }
 
@@ -447,14 +445,23 @@ base::TimeTicks ResourcePool::GetUsageTimeForLRUResource() const {
 
 bool ResourcePool::OnMemoryDump(const base::trace_event::MemoryDumpArgs& args,
                                 base::trace_event::ProcessMemoryDump* pmd) {
-  for (const auto& resource : unused_resources_) {
-    resource->OnMemoryDump(pmd, resource_provider_, true /* is_free */);
-  }
-  for (const auto& resource : busy_resources_) {
-    resource->OnMemoryDump(pmd, resource_provider_, false /* is_free */);
-  }
-  for (const auto& entry : in_use_resources_) {
-    entry.second->OnMemoryDump(pmd, resource_provider_, false /* is_free */);
+  if (args.level_of_detail == MemoryDumpLevelOfDetail::BACKGROUND) {
+    std::string dump_name = base::StringPrintf(
+        "cc/tile_memory/provider_%d", resource_provider_->tracing_id());
+    MemoryAllocatorDump* dump = pmd->CreateAllocatorDump(dump_name);
+    dump->AddScalar(MemoryAllocatorDump::kNameSize,
+                    MemoryAllocatorDump::kUnitsBytes,
+                    total_memory_usage_bytes_);
+  } else {
+    for (const auto& resource : unused_resources_) {
+      resource->OnMemoryDump(pmd, resource_provider_, true /* is_free */);
+    }
+    for (const auto& resource : busy_resources_) {
+      resource->OnMemoryDump(pmd, resource_provider_, false /* is_free */);
+    }
+    for (const auto& entry : in_use_resources_) {
+      entry.second->OnMemoryDump(pmd, resource_provider_, false /* is_free */);
+    }
   }
   return true;
 }
