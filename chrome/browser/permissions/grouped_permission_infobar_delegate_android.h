@@ -71,7 +71,6 @@ class GroupedPermissionInfoBarDelegate : public ConfirmInfoBarDelegate {
 
   const GURL requesting_origin_;
   const std::vector<PermissionRequest*> requests_;
-  std::vector<bool> accept_states_;
   // Whether the accept/deny decision is persisted.
   bool persist_;
   PermissionPromptAndroid* permission_prompt_;

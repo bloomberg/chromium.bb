@@ -56,7 +56,8 @@ base::string16 GroupedPermissionInfoBarDelegate::GetMessageTextFragment(
 void GroupedPermissionInfoBarDelegate::ToggleAccept(size_t position,
                                                     bool new_value) {
   DCHECK_LT(position, requests_.size());
-  accept_states_[position] = new_value;
+  if (permission_prompt_)
+    permission_prompt_->ToggleAccept(position, new_value);
 }
 
 base::string16 GroupedPermissionInfoBarDelegate::GetMessageText() const {
@@ -81,18 +82,12 @@ void GroupedPermissionInfoBarDelegate::PermissionPromptDestroyed() {
   permission_prompt_ = nullptr;
 }
 
-bool GroupedPermissionInfoBarDelegate::GetAcceptState(size_t position) {
-  DCHECK_LT(position, requests_.size());
-  return accept_states_[position];
-}
-
 GroupedPermissionInfoBarDelegate::GroupedPermissionInfoBarDelegate(
     PermissionPromptAndroid* permission_prompt,
     const GURL& requesting_origin,
     const std::vector<PermissionRequest*>& requests)
     : requesting_origin_(requesting_origin),
       requests_(requests),
-      accept_states_(requests_.size(), true),
       persist_(true),
       permission_prompt_(permission_prompt) {
   DCHECK(permission_prompt);

@@ -73,6 +73,11 @@ void PermissionPromptAndroid::Closing() {
     delegate_->Closing();
 }
 
+void PermissionPromptAndroid::ToggleAccept(int index, bool value) {
+  if (delegate_)
+    delegate_->ToggleAccept(index, value);
+}
+
 void PermissionPromptAndroid::Accept() {
   if (delegate_)
     delegate_->Accept();

@@ -34,6 +34,7 @@ class PermissionPromptAndroid : public PermissionPrompt {
   gfx::NativeWindow GetNativeWindow() override;
 
   void Closing();
+  void ToggleAccept(int index, bool value);
   void Accept();
   void Deny();
 
