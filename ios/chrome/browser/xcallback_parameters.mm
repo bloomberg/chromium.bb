@@ -42,6 +42,13 @@ NSString* const kCreateNewTabKey = @"createNewTab";
   return self;
 }
 
+- (instancetype)initWithSourceAppId:(NSString*)sourceAppId {
+  return [self initWithSourceAppId:sourceAppId
+                     sourceAppName:nil
+                        successURL:GURL()
+                      createNewTab:NO];
+}
+
 - (instancetype)init {
   NOTREACHED();
   return nil;

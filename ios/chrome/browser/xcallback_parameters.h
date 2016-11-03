@@ -27,11 +27,16 @@
 // Flag to force the creation of a new tab. Default YES.
 @property(nonatomic, readonly) BOOL createNewTab;
 
+// Designated initializer. |sourceAppId| is required. Others may be nil
+// or empty. This is being deprecated, so use -initWithSourceAppId: instead.
 - (instancetype)initWithSourceAppId:(NSString*)sourceAppId
                       sourceAppName:(NSString*)sourceAppName
                          successURL:(const GURL&)successURL
                        createNewTab:(BOOL)createNewTab
     NS_DESIGNATED_INITIALIZER;
+
+// This will become the designated initializer.
+- (instancetype)initWithSourceAppId:(NSString*)sourceAppId;
 
 - (instancetype)init NS_UNAVAILABLE;
 
