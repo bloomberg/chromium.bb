@@ -12,7 +12,6 @@
 #include "url/gurl.h"
 
 namespace content {
-class WebContentsObserver;
 class WebContents;
 }
 
@@ -22,14 +21,6 @@ namespace background_loader {
 // a renderer but does not have any visible display.
 class BackgroundLoaderContents : public content::WebContentsDelegate {
  public:
-  // Creates BackgroundLoaderContents with specified |browser_context| and
-  // |session_storage_namespace|.  This ctor should only be used if a different
-  // session storage (e.g. non-persistent/incognito) should be used.
-  // |session_storage_namespace| should not be null.
-  BackgroundLoaderContents(
-      content::BrowserContext* browser_context,
-      content::SessionStorageNamespace* session_storage_namespace);
-
   // Creates BackgroundLoaderContents with specified |browser_context|. Uses
   // default session storage space.
   explicit BackgroundLoaderContents(content::BrowserContext* browser_context);
@@ -40,9 +31,8 @@ class BackgroundLoaderContents : public content::WebContentsDelegate {
   void LoadPage(const GURL& url);
   // Cancels loading of the current page. Calls Close() on internal WebContents.
   void Cancel();
-
-  void AddObserver(content::WebContentsObserver* observer);
-  void RemoveObserver(content::WebContentsObserver* observer);
+  // Returns the inner web contents.
+  content::WebContents* web_contents() { return web_contents_.get(); }
 
   // content::WebContentsDelegate implementation:
   bool IsNeverVisible(content::WebContents* web_contents) override;
@@ -64,8 +54,8 @@ class BackgroundLoaderContents : public content::WebContentsDelegate {
       const std::string& partition_id,
       content::SessionStorageNamespace* session_storage_namespace) override;
 
-  void AddNewContents(WebContents* source,
-                      WebContents* new_contents,
+  void AddNewContents(content::WebContents* source,
+                      content::WebContents* new_contents,
                       WindowOpenDisposition disposition,
                       const gfx::Rect& initial_rect,
                       bool user_gesture,
@@ -85,9 +75,7 @@ class BackgroundLoaderContents : public content::WebContentsDelegate {
 
  private:
   std::unique_ptr<content::WebContents> web_contents_;
-  content::SessionStorageNamespaceMap session_storage_namespace_map_;
   content::BrowserContext* browser_context_;
-  base::ObserverList<WebContentsObserver> observers_;
 
   DISALLOW_COPY_AND_ASSIGN(BackgroundLoaderContents);
 };
