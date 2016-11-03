@@ -104,7 +104,7 @@ class CORE_EXPORT PointerEventFactory {
   void setIdTypeButtons(PointerEventInit&,
                         const WebPointerProperties&,
                         unsigned buttons);
-  void setBubblesAndCancelable(PointerEventInit&, const AtomicString& type);
+  void setEventSpecificFields(PointerEventInit&, const AtomicString& type);
 
   // Creates pointerevents like boundary and capture events from another
   // pointerevent (i.e. up/down/move events).

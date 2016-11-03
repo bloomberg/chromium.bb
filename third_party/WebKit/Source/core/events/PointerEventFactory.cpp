@@ -113,7 +113,7 @@ void PointerEventFactory::setIdTypeButtons(
   pointerEventInit.setIsPrimary(isPrimary(pointerId));
 }
 
-void PointerEventFactory::setBubblesAndCancelable(
+void PointerEventFactory::setEventSpecificFields(
     PointerEventInit& pointerEventInit,
     const AtomicString& type) {
   pointerEventInit.setBubbles(type != EventTypeNames::pointerenter &&
@@ -123,6 +123,9 @@ void PointerEventFactory::setBubblesAndCancelable(
                                  type != EventTypeNames::pointercancel &&
                                  type != EventTypeNames::gotpointercapture &&
                                  type != EventTypeNames::lostpointercapture);
+
+  pointerEventInit.setComposed(true);
+  pointerEventInit.setDetail(0);
 }
 
 PointerEvent* PointerEventFactory::create(const AtomicString& mouseEventName,
@@ -139,7 +142,7 @@ PointerEvent* PointerEventFactory::create(const AtomicString& mouseEventName,
   PointerEventInit pointerEventInit;
 
   setIdTypeButtons(pointerEventInit, mouseEvent.pointerProperties(), buttons);
-  setBubblesAndCancelable(pointerEventInit, pointerEventName);
+  setEventSpecificFields(pointerEventInit, pointerEventName);
 
   pointerEventInit.setScreenX(mouseEvent.globalPosition().x());
   pointerEventInit.setScreenY(mouseEvent.globalPosition().y());
@@ -209,8 +212,6 @@ PointerEvent* PointerEventFactory::create(const AtomicString& type,
       pointState == PlatformTouchPoint::TouchPressed ||
       pointState == PlatformTouchPoint::TouchReleased;
 
-  bool isEnterOrLeave = false;
-
   PointerEventInit pointerEventInit;
 
   setIdTypeButtons(pointerEventInit, touchPoint.pointerProperties(),
@@ -233,9 +234,7 @@ PointerEvent* PointerEventFactory::create(const AtomicString& type,
 
   UIEventWithKeyState::setFromPlatformModifiers(pointerEventInit, modifiers);
 
-  pointerEventInit.setBubbles(!isEnterOrLeave);
-  pointerEventInit.setCancelable(
-      !isEnterOrLeave && pointState != PlatformTouchPoint::TouchCancelled);
+  setEventSpecificFields(pointerEventInit, type);
 
   return PointerEvent::create(type, pointerEventInit);
 }
@@ -254,8 +253,8 @@ PointerEvent* PointerEventFactory::createPointerCancelEvent(
   pointerEventInit.setPointerType(
       pointerTypeNameForWebPointPointerType(pointerType));
   pointerEventInit.setIsPrimary(isPrimary(pointerId));
-  pointerEventInit.setBubbles(true);
-  pointerEventInit.setCancelable(false);
+
+  setEventSpecificFields(pointerEventInit, EventTypeNames::pointercancel);
 
   return PointerEvent::create(EventTypeNames::pointercancel, pointerEventInit);
 }
@@ -282,7 +281,7 @@ PointerEvent* PointerEventFactory::createPointerEventFrom(
   pointerEventInit.setTiltY(pointerEvent->tiltY());
   pointerEventInit.setView(pointerEvent->view());
 
-  setBubblesAndCancelable(pointerEventInit, type);
+  setEventSpecificFields(pointerEventInit, type);
 
   if (relatedTarget)
     pointerEventInit.setRelatedTarget(relatedTarget);

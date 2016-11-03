@@ -112,6 +112,9 @@ function init() {
             shouldBeTrue("lastPointerEvents[0].cancelable");
           }
 
+          shouldBeTrue("lastPointerEvents[0].composed");
+          shouldBeEqualToNumber("lastPointerEvents[0].detail", 0);
+
           shouldBeEqualToNumber("lastPointerEvents[0].pointerId",
               (pointerType == "mouse")? 1 : penId);
           shouldBeEqualToString("lastPointerEvents[0].pointerType", pointerType);
@@ -156,12 +159,14 @@ function runMouseTests(x, y) {
   eventSender.mouseMoveTo(x + 5, y + 5);
   debug("");
 
-  debug("--- click each button ---");
-  for (var button = 0; button <=2; button++) {
-    eventSender.mouseDown(button);
-    eventSender.mouseUp(button);
-    // TODO(crbug.com/548226): Investigate missing events in win_chromium_rel_ng on 3rd down/up.
-  }
+  debug("--- click left/right button ---");
+  // TODO(mustaq): Skip middle button because it triggers autoscroll. Consider
+  // bringing it back if we choose to prevent autoscrolling by canceling middle
+  // mousedown. crbug.com/644488.
+  eventSender.mouseDown(0);
+  eventSender.mouseUp(0);
+  eventSender.mouseDown(2);
+  eventSender.mouseUp(2);
   debug("");
 
   debug("--- click with each modifier ---");
