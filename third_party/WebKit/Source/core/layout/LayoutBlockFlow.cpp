@@ -424,11 +424,10 @@ bool LayoutBlockFlow::checkIfIsSelfCollapsingBlock() const {
       return !firstLineBox();
 
     // Whether or not we collapse is dependent on whether all our normal flow
-    // children
-    // are also self-collapsing.
+    // children are also self-collapsing.
     for (LayoutBox* child = firstChildBox(); child;
          child = child->nextSiblingBox()) {
-      if (child->isFloatingOrOutOfFlowPositioned())
+      if (child->isFloatingOrOutOfFlowPositioned() || child->isColumnSpanAll())
         continue;
       if (!child->isSelfCollapsingBlock())
         return false;
