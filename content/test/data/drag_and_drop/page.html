@@ -1,0 +1,46 @@
+<!DOCTYPE html>
+<!-- Page to help with testing of drag-and-drop scenarios.
+
+     Left frame is at (100,100) to (299,299) coordinates.
+     Right frame is at (300,100) to (499,299) coordinates.
+
+     Left frame will load whatever is specified in "left"
+     query parameter (similarily for right frame and "right").
+     Example:
+     .../mouse-tests/page.html?left=image_source.html&right=drop_target.html
+-->
+<head>
+  <meta charset="utf-8">
+  <style>
+    iframe {
+      position: absolute;
+      top: 100px;
+      width: 200px;
+      height: 200px;
+      border: 0px;
+      margin: 0px;
+      padding: 0px;
+    }
+    #left { left: 100px; background: green; }
+    #right { left: 300px; background: cyan; }
+  </style>
+</head>
+<body>
+  <iframe id="left" name="left" srcdoc="blank left frame"></iframe>
+  <iframe id="right" name="right" srcdoc="blank right frame"></iframe>
+  <script>
+    function navigateFrame(id) {
+        var query = new URLSearchParams(window.location.search);
+        if (!query.has(id)) return;
+
+        var url = query.get(id);
+        if (!url) return;
+
+        console.log("Navigating " + id + " to " + url);
+        var frame = document.getElementById(id);
+        frame.contentWindow.location.href = url;
+    }
+    navigateFrame("left");
+    navigateFrame("right");
+  </script>
+</body>

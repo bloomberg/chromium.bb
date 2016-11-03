@@ -823,6 +823,10 @@ test("content_browsertests") {
     deps += [ "//chromeos" ]
   }
 
+  if (use_aura) {
+    sources += [ "../browser/web_contents/drag_and_drop_browsertest.cc" ]
+  }
+
   if (use_aura && !is_win) {
     deps += [ "//ui/events:test_support" ]
   }

@@ -417,12 +417,18 @@ class RenderProcessHostWatcher : public RenderProcessHostObserver {
 
 // Watches for responses from the DOMAutomationController and keeps them in a
 // queue. Useful for waiting for a message to be received.
-class DOMMessageQueue : public NotificationObserver {
+class DOMMessageQueue : public NotificationObserver,
+                        public WebContentsObserver {
  public:
   // Constructs a DOMMessageQueue and begins listening for messages from the
   // DOMAutomationController. Do not construct this until the browser has
   // started.
   DOMMessageQueue();
+
+  // Same as the default constructor, but only listens for messages
+  // sent from a particular |web_contents|.
+  explicit DOMMessageQueue(WebContents* web_contents);
+
   ~DOMMessageQueue() override;
 
   // Removes all messages in the message queue.
@@ -436,6 +442,9 @@ class DOMMessageQueue : public NotificationObserver {
   void Observe(int type,
                const NotificationSource& source,
                const NotificationDetails& details) override;
+
+  // Overridden WebContentsObserver methods.
+  void RenderProcessGone(base::TerminationStatus status) override;
 
  private:
   NotificationRegistrar registrar_;

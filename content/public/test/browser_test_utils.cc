@@ -92,49 +92,6 @@
 namespace content {
 namespace {
 
-class DOMOperationObserver : public NotificationObserver,
-                             public WebContentsObserver {
- public:
-  explicit DOMOperationObserver(RenderFrameHost* rfh)
-      : WebContentsObserver(WebContents::FromRenderFrameHost(rfh)),
-        did_respond_(false) {
-    registrar_.Add(this, NOTIFICATION_DOM_OPERATION_RESPONSE,
-                   Source<WebContents>(web_contents()));
-    message_loop_runner_ = new MessageLoopRunner;
-  }
-
-  void Observe(int type,
-               const NotificationSource& source,
-               const NotificationDetails& details) override {
-    DCHECK(type == NOTIFICATION_DOM_OPERATION_RESPONSE);
-    Details<std::string> dom_op_result(details);
-    if (!did_respond_) {
-      response_ = *dom_op_result.ptr();
-      did_respond_ = true;
-      message_loop_runner_->Quit();
-    }
-  }
-
-  // Overridden from WebContentsObserver:
-  void RenderProcessGone(base::TerminationStatus status) override {
-    message_loop_runner_->Quit();
-  }
-
-  bool WaitAndGetResponse(std::string* response) WARN_UNUSED_RESULT {
-    message_loop_runner_->Run();
-    *response = response_;
-    return did_respond_;
-  }
-
- private:
-  NotificationRegistrar registrar_;
-  std::string response_;
-  bool did_respond_;
-  scoped_refptr<MessageLoopRunner> message_loop_runner_;
-
-  DISALLOW_COPY_AND_ASSIGN(DOMOperationObserver);
-};
-
 class InterstitialObserver : public content::WebContentsObserver {
  public:
   InterstitialObserver(content::WebContents* web_contents,
@@ -173,12 +130,14 @@ bool ExecuteScriptHelper(RenderFrameHost* render_frame_host,
   //                automation id.
   std::string script =
       "window.domAutomationController.setAutomationId(0);" + original_script;
-  DOMOperationObserver dom_op_observer(render_frame_host);
+  // TODO(lukasza): Only get messages from the specific |render_frame_host|.
+  DOMMessageQueue dom_message_queue(
+      WebContents::FromRenderFrameHost(render_frame_host));
   render_frame_host->ExecuteJavaScriptWithUserGestureForTests(
       base::UTF8ToUTF16(script));
   std::string json;
-  if (!dom_op_observer.WaitAndGetResponse(&json)) {
-    DLOG(ERROR) << "Cannot communicate with DOMOperationObserver.";
+  if (!dom_message_queue.WaitForMessage(&json)) {
+    DLOG(ERROR) << "Cannot communicate with DOMMessageQueue.";
     return false;
   }
 
@@ -207,15 +166,19 @@ bool ExecuteScriptInIsolatedWorldHelper(RenderFrameHost* render_frame_host,
                                         const int world_id,
                                         const std::string& original_script,
                                         std::unique_ptr<base::Value>* result) {
+  // TODO(jcampan): we should make the domAutomationController not require an
+  //                automation id.
   std::string script =
       "window.domAutomationController.setAutomationId(0);" + original_script;
-  DOMOperationObserver dom_op_observer(render_frame_host);
+  // TODO(lukasza): Only get messages from the specific |render_frame_host|.
+  DOMMessageQueue dom_message_queue(
+      WebContents::FromRenderFrameHost(render_frame_host));
   render_frame_host->ExecuteJavaScriptInIsolatedWorld(
       base::UTF8ToUTF16(script),
       content::RenderFrameHost::JavaScriptResultCallback(), world_id);
   std::string json;
-  if (!dom_op_observer.WaitAndGetResponse(&json)) {
-    DLOG(ERROR) << "Cannot communicate with DOMOperationObserver.";
+  if (!dom_message_queue.WaitForMessage(&json)) {
+    DLOG(ERROR) << "Cannot communicate with DOMMessageQueue.";
     return false;
   }
 
@@ -1312,6 +1275,12 @@ DOMMessageQueue::DOMMessageQueue() {
                  NotificationService::AllSources());
 }
 
+DOMMessageQueue::DOMMessageQueue(WebContents* web_contents)
+    : WebContentsObserver(web_contents) {
+  registrar_.Add(this, NOTIFICATION_DOM_OPERATION_RESPONSE,
+                 Source<WebContents>(web_contents));
+}
+
 DOMMessageQueue::~DOMMessageQueue() {}
 
 void DOMMessageQueue::Observe(int type,
@@ -1321,6 +1290,17 @@ void DOMMessageQueue::Observe(int type,
   message_queue_.push(*dom_op_result.ptr());
   if (message_loop_runner_.get())
     message_loop_runner_->Quit();
+}
+
+void DOMMessageQueue::RenderProcessGone(base::TerminationStatus status) {
+  switch (status) {
+    case base::TERMINATION_STATUS_NORMAL_TERMINATION:
+    case base::TERMINATION_STATUS_STILL_RUNNING:
+      break;
+    default:
+      message_loop_runner_->Quit();
+      break;
+  }
 }
 
 void DOMMessageQueue::ClearQueue() {
