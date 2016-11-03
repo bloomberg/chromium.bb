@@ -43,6 +43,7 @@ service_manifest("mash_manifest") {
     "//ash/autoclick/mus:manifest",
     "//ash/mus:manifest",
     "//ash/touch_hud/mus:manifest",
+    "//mash/catalog_viewer:manifest",
     "//mash/quick_launch:manifest",
     "//mash/session:manifest",
     "//mash/task_viewer:manifest",
@@ -52,6 +53,7 @@ service_manifest("mash_manifest") {
   packaged_services = [
     "accessibility_autoclick",
     "ash",
+    "catalog_viewer",
     "mash_session",
     "quick_launch",
     "task_viewer",

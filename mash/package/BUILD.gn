@@ -12,6 +12,7 @@ source_set("package") {
     "//ash/autoclick/mus:lib",
     "//ash/mus:lib",
     "//ash/touch_hud/mus:lib",
+    "//mash/catalog_viewer:lib",
     "//mash/public/interfaces",
     "//mash/quick_launch:lib",
     "//mash/session:lib",

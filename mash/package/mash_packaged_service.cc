@@ -7,6 +7,7 @@
 #include "ash/autoclick/mus/autoclick_application.h"
 #include "ash/mus/window_manager_application.h"
 #include "ash/touch_hud/mus/touch_hud_application.h"
+#include "mash/catalog_viewer/catalog_viewer.h"
 #include "mash/quick_launch/quick_launch.h"
 #include "mash/session/session.h"
 #include "mash/task_viewer/task_viewer.h"
@@ -61,6 +62,8 @@ std::unique_ptr<service_manager::Service> MashPackagedService::CreateService(
     return base::WrapUnique(new ash::mus::WindowManagerApplication);
   if (name == "service:accessibility_autoclick")
     return base::WrapUnique(new ash::autoclick::AutoclickApplication);
+  if (name == "service:catalog_viewer")
+    return base::WrapUnique(new mash::catalog_viewer::CatalogViewer);
   if (name == "service:touch_hud")
     return base::WrapUnique(new ash::touch_hud::TouchHudApplication);
   if (name == "service:mash_session")
