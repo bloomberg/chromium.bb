@@ -68,14 +68,12 @@ class LayoutState {
  public:
   // Constructor for root LayoutState created by LayoutView
   LayoutState(LayoutUnit pageLogicalHeight,
-              bool pageLogicalHeightChanged,
               LayoutView&);
   // Constructor for sub-tree layout and orthogonal writing-mode roots
   explicit LayoutState(LayoutObject& root);
 
   LayoutState(LayoutBox&,
               LayoutUnit pageLogicalHeight = LayoutUnit(),
-              bool pageHeightLogicalChanged = false,
               bool containingBlockLogicalWidthChanged = false);
 
   ~LayoutState();
@@ -97,7 +95,6 @@ class LayoutState {
 
   const LayoutSize& paginationOffset() const { return m_paginationOffset; }
   LayoutUnit pageLogicalHeight() const { return m_pageLogicalHeight; }
-  bool pageLogicalHeightChanged() const { return m_pageLogicalHeightChanged; }
   bool containingBlockLogicalWidthChanged() const {
     return m_containingBlockLogicalWidthChanged;
   }
@@ -115,8 +112,7 @@ class LayoutState {
   // Do not add anything apart from bitfields until after m_flowThread. See
   // https://bugs.webkit.org/show_bug.cgi?id=100173
   bool m_isPaginated : 1;
-  // If our page height has changed, this will force all blocks to relayout.
-  bool m_pageLogicalHeightChanged : 1;
+
   bool m_containingBlockLogicalWidthChanged : 1;
   bool m_paginationStateChanged : 1;
 

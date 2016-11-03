@@ -484,8 +484,7 @@ inline bool LayoutBlockFlow::layoutBlockFlow(bool relayoutChildren,
   if (pageLogicalHeightChanged)
     relayoutChildren = true;
 
-  LayoutState state(*this, pageLogicalHeight, pageLogicalHeightChanged,
-                    logicalWidthChanged);
+  LayoutState state(*this, pageLogicalHeight, logicalWidthChanged);
 
   if (m_paginationStateChanged) {
     // We now need a deep layout to clean up struts after pagination, if we
@@ -3533,13 +3532,8 @@ FloatingObject* LayoutBlockFlow::insertFloatingObject(LayoutBox& floatBox) {
 
   std::unique_ptr<FloatingObject> newObj = FloatingObject::create(&floatBox);
 
-  // Our location is irrelevant if we're unsplittable or no pagination is in
-  // effect. Just go ahead and lay out the float.
-  bool isChildLayoutBlock = floatBox.isLayoutBlock();
-  if (isChildLayoutBlock && !floatBox.needsLayout() &&
-      view()->layoutState()->pageLogicalHeightChanged())
-    floatBox.setChildNeedsLayout(MarkOnlyThis);
-
+  // TODO(mstensho): Avoid laying out before positioning the object, as that's
+  // bad for pagination.
   floatBox.layoutIfNeeded();
 
   setLogicalWidthForFloat(*newObj, logicalWidthForChild(floatBox) +

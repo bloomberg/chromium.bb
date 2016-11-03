@@ -32,10 +32,8 @@
 namespace blink {
 
 LayoutState::LayoutState(LayoutUnit pageLogicalHeight,
-                         bool pageLogicalHeightChanged,
                          LayoutView& view)
     : m_isPaginated(pageLogicalHeight),
-      m_pageLogicalHeightChanged(pageLogicalHeightChanged),
       m_containingBlockLogicalWidthChanged(false),
       m_paginationStateChanged(false),
       m_flowThread(nullptr),
@@ -48,7 +46,6 @@ LayoutState::LayoutState(LayoutUnit pageLogicalHeight,
 
 LayoutState::LayoutState(LayoutBox& layoutObject,
                          LayoutUnit pageLogicalHeight,
-                         bool pageLogicalHeightChanged,
                          bool containingBlockLogicalWidthChanged)
     : m_containingBlockLogicalWidthChanged(containingBlockLogicalWidthChanged),
       m_next(layoutObject.view()->layoutState()),
@@ -66,7 +63,6 @@ LayoutState::LayoutState(LayoutBox& layoutObject,
   if (pageLogicalHeight || layoutObject.isLayoutFlowThread()) {
     // Entering a new pagination context.
     m_pageLogicalHeight = pageLogicalHeight;
-    m_pageLogicalHeightChanged = pageLogicalHeightChanged;
     m_paginationOffset = LayoutSize();
     m_isPaginated = true;
     return;
@@ -79,14 +75,12 @@ LayoutState::LayoutState(LayoutBox& layoutObject,
       (m_layoutObject.isSVG() && !m_layoutObject.isSVGRoot())) {
     m_flowThread = nullptr;
     m_pageLogicalHeight = LayoutUnit();
-    m_pageLogicalHeightChanged = false;
     m_isPaginated = false;
     return;
   }
 
   // Propagate the old page height and offset down.
   m_pageLogicalHeight = m_next->m_pageLogicalHeight;
-  m_pageLogicalHeightChanged = m_next->m_pageLogicalHeightChanged;
 
   m_isPaginated = m_pageLogicalHeight || m_flowThread;
   if (!m_isPaginated)
@@ -118,7 +112,6 @@ LayoutState::LayoutState(LayoutBox& layoutObject,
 
 LayoutState::LayoutState(LayoutObject& root)
     : m_isPaginated(false),
-      m_pageLogicalHeightChanged(false),
       m_containingBlockLogicalWidthChanged(false),
       m_paginationStateChanged(false),
       m_flowThread(nullptr),

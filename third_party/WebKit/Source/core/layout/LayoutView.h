@@ -168,13 +168,7 @@ class CORE_EXPORT LayoutView final : public LayoutBlockFlow {
   }
 
   LayoutUnit pageLogicalHeight() const { return m_pageLogicalHeight; }
-  void setPageLogicalHeight(LayoutUnit height) {
-    if (m_pageLogicalHeight != height) {
-      m_pageLogicalHeight = height;
-      m_pageLogicalHeightChanged = true;
-    }
-  }
-  bool pageLogicalHeightChanged() const { return m_pageLogicalHeightChanged; }
+  void setPageLogicalHeight(LayoutUnit height) { m_pageLogicalHeight = height; }
 
   // Notification that this view moved into or out of a native window.
   void setIsInWindow(bool);
@@ -308,7 +302,6 @@ class CORE_EXPORT LayoutView final : public LayoutBlockFlow {
   // This is only used during printing to split the content into pages.
   // Outside of printing, this is 0.
   LayoutUnit m_pageLogicalHeight;
-  bool m_pageLogicalHeightChanged;
 
   // LayoutState is an optimization used during layout.
   // |m_layoutState| will be nullptr outside of layout.

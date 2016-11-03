@@ -90,7 +90,6 @@ LayoutView::LayoutView(Document* document)
       m_selectionEnd(nullptr),
       m_selectionStartPos(-1),
       m_selectionEndPos(-1),
-      m_pageLogicalHeightChanged(false),
       m_layoutState(nullptr),
       m_layoutQuoteHead(nullptr),
       m_layoutCounterCount(0),
@@ -278,10 +277,7 @@ void LayoutView::layout() {
   if (!needsLayout())
     return;
 
-  LayoutState rootLayoutState(pageLogicalHeight(), pageLogicalHeightChanged(),
-                              *this);
-
-  m_pageLogicalHeightChanged = false;
+  LayoutState rootLayoutState(pageLogicalHeight(), *this);
 
   layoutContent();
 
