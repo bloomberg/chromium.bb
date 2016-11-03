@@ -433,6 +433,9 @@ class CORE_EXPORT FrameView final
   Widget* getWidget() override;
   CompositorAnimationTimeline* compositorAnimationTimeline() const override;
   LayoutBox* layoutBox() const override;
+  FloatQuad localToVisibleContentQuad(const FloatQuad&,
+                                      const LayoutObject*,
+                                      unsigned = 0) const final;
 
   LayoutRect scrollIntoView(const LayoutRect& rectInContent,
                             const ScrollAlignment& alignX,

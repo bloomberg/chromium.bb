@@ -28,6 +28,7 @@
 
 #include "platform/PlatformExport.h"
 #include "platform/RuntimeEnabledFeatures.h"
+#include "platform/geometry/FloatQuad.h"
 #include "platform/geometry/LayoutRect.h"
 #include "platform/graphics/Color.h"
 #include "platform/heap/Handle.h"
@@ -43,6 +44,7 @@ namespace blink {
 class GraphicsLayer;
 class HostWindow;
 class LayoutBox;
+class LayoutObject;
 class ProgrammaticScrollAnimator;
 struct ScrollAlignment;
 class ScrollAnchor;
@@ -334,6 +336,14 @@ class PLATFORM_EXPORT ScrollableArea : public GarbageCollectedMixin {
   virtual Widget* getWidget() { return nullptr; }
 
   virtual LayoutBox* layoutBox() const { return nullptr; }
+
+  // Maps a quad from the coordinate system of a LayoutObject contained by the
+  // ScrollableArea to the coordinate system of the ScrollableArea's visible
+  // content rect.  If the LayoutObject* argument is null, the argument quad is
+  // considered to be in the coordinate space of the overflow rect.
+  virtual FloatQuad localToVisibleContentQuad(const FloatQuad&,
+                                              const LayoutObject*,
+                                              unsigned = 0) const;
 
   virtual bool isFrameView() const { return false; }
   virtual bool isPaintLayerScrollableArea() const { return false; }

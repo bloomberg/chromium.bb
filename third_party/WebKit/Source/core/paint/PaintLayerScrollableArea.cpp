@@ -817,6 +817,17 @@ bool PaintLayerScrollableArea::shouldPerformScrollAnchoring() const {
          !box().document().finishingOrIsPrinting();
 }
 
+FloatQuad PaintLayerScrollableArea::localToVisibleContentQuad(
+    const FloatQuad& quad,
+    const LayoutObject* localObject,
+    MapCoordinatesFlags flags) const {
+  LayoutBox* box = layoutBox();
+  if (!box)
+    return quad;
+  DCHECK(localObject);
+  return localObject->localToAncestorQuad(quad, box, flags);
+}
+
 ScrollBehavior PaintLayerScrollableArea::scrollBehaviorStyle() const {
   return box().style()->getScrollBehavior();
 }

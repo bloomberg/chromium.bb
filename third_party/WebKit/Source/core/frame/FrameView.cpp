@@ -552,6 +552,19 @@ LayoutBox* FrameView::layoutBox() const {
   return layoutView();
 }
 
+FloatQuad FrameView::localToVisibleContentQuad(
+    const FloatQuad& quad,
+    const LayoutObject* localObject,
+    MapCoordinatesFlags flags) const {
+  LayoutBox* box = layoutBox();
+  if (!box)
+    return quad;
+  DCHECK(localObject);
+  FloatQuad result = localObject->localToAncestorQuad(quad, box, flags);
+  result.move(-scrollOffset());
+  return result;
+}
+
 void FrameView::setCanHaveScrollbars(bool canHaveScrollbars) {
   m_canHaveScrollbars = canHaveScrollbars;
 

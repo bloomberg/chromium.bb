@@ -101,6 +101,21 @@ LayoutBox* RootFrameViewport::layoutBox() const {
   return layoutViewport().layoutBox();
 }
 
+FloatQuad RootFrameViewport::localToVisibleContentQuad(
+    const FloatQuad& quad,
+    const LayoutObject* localObject,
+    unsigned flags) const {
+  if (!m_layoutViewport)
+    return quad;
+  FloatQuad viewportQuad =
+      m_layoutViewport->localToVisibleContentQuad(quad, localObject, flags);
+  if (m_visualViewport) {
+    viewportQuad = m_visualViewport->localToVisibleContentQuad(
+        viewportQuad, localObject, flags);
+  }
+  return viewportQuad;
+}
+
 void RootFrameViewport::updateScrollAnimator() {
   scrollAnimator().setCurrentOffset(
       toFloatSize(scrollOffsetFromScrollAnimators()));

@@ -98,22 +98,11 @@ static LayoutRect relativeBounds(const LayoutObject* layoutObject,
     // Only LayoutBox and LayoutText are supported.
     ASSERT_NOT_REACHED();
   }
-  LayoutBox* scrollerBox = scrollerLayoutBox(scroller);
 
   LayoutRect relativeBounds = LayoutRect(
-      layoutObject->localToAncestorQuad(FloatRect(localBounds), scrollerBox)
+      scroller->localToVisibleContentQuad(FloatRect(localBounds), layoutObject)
           .boundingBox());
-  // When root layer scrolling is off, the LayoutView will have no scroll
-  // offset (since scrolling is handled by the FrameView) so
-  // localToAncestorQuad returns document coords, so we must subtract scroll
-  // offset to get viewport coords. We discard the fractional part of the
-  // scroll offset so that the rounding in adjust() matches the snapping of
-  // the anchor node to the pixel grid of the layer it paints into. For
-  // non-FrameView scrollers, we rely on the flooring behavior of
-  // LayoutBox::scrolledContentOffset.
-  if (!RuntimeEnabledFeatures::rootLayerScrollingEnabled() &&
-      scrollerBox->isLayoutView())
-    relativeBounds.moveBy(IntPoint(-scroller->scrollOffsetInt()));
+
   return relativeBounds;
 }
 

@@ -11,14 +11,19 @@
 #include "core/page/PrintContext.h"
 #include "core/paint/PaintLayerScrollableArea.h"
 #include "platform/testing/HistogramTester.h"
+#include "platform/testing/RuntimeEnabledFeaturesTestHelpers.h"
 
 namespace blink {
 
 using Corner = ScrollAnchor::Corner;
 
-class ScrollAnchorTest : public RenderingTest {
+typedef bool TestParamRootLayerScrolling;
+class ScrollAnchorTest
+    : public testing::WithParamInterface<TestParamRootLayerScrolling>,
+      private ScopedRootLayerScrollingForTest,
+      public RenderingTest {
  public:
-  ScrollAnchorTest() {
+  ScrollAnchorTest() : ScopedRootLayerScrollingForTest(GetParam()) {
     RuntimeEnabledFeatures::setScrollAnchoringEnabled(true);
   }
   ~ScrollAnchorTest() {
@@ -66,9 +71,11 @@ class ScrollAnchorTest : public RenderingTest {
   }
 };
 
+INSTANTIATE_TEST_CASE_P(All, ScrollAnchorTest, ::testing::Bool());
+
 // TODO(ymalik): Currently, this should be the first test in the file to avoid
 // failure when running with other tests. Dig into this more and fix.
-TEST_F(ScrollAnchorTest, UMAMetricUpdated) {
+TEST_P(ScrollAnchorTest, UMAMetricUpdated) {
   HistogramTester histogramTester;
   setBodyInnerHTML(
       "<style> body { height: 1000px } div { height: 100px } </style>"
@@ -92,7 +99,7 @@ TEST_F(ScrollAnchorTest, UMAMetricUpdated) {
             scrollAnchor(viewport).anchorObject());
 }
 
-TEST_F(ScrollAnchorTest, Basic) {
+TEST_P(ScrollAnchorTest, Basic) {
   setBodyInnerHTML(
       "<style> body { height: 1000px } div { height: 100px } </style>"
       "<div id='block1'>abc</div>"
@@ -115,7 +122,7 @@ TEST_F(ScrollAnchorTest, Basic) {
   EXPECT_EQ(nullptr, scrollAnchor(viewport).anchorObject());
 }
 
-TEST_F(ScrollAnchorTest, VisualViewportAnchors) {
+TEST_P(ScrollAnchorTest, VisualViewportAnchors) {
   setBodyInnerHTML(
       "<style>"
       "    * { font-size: 1.2em; font-family: sans-serif; }"
@@ -153,7 +160,7 @@ TEST_F(ScrollAnchorTest, VisualViewportAnchors) {
 
 // Test that we ignore the clipped content when computing visibility otherwise
 // we may end up with an anchor that we think is in the viewport but is not.
-TEST_F(ScrollAnchorTest, ClippedScrollersSkipped) {
+TEST_P(ScrollAnchorTest, ClippedScrollersSkipped) {
   setBodyInnerHTML(
       "<style>"
       "    body { height: 2000px; }"
@@ -192,7 +199,7 @@ TEST_F(ScrollAnchorTest, ClippedScrollersSkipped) {
 
 // Test that scroll anchoring causes no visible jump when a layout change
 // (such as removal of a DOM element) changes the scroll bounds.
-TEST_F(ScrollAnchorTest, AnchoringWhenContentRemoved) {
+TEST_P(ScrollAnchorTest, AnchoringWhenContentRemoved) {
   setBodyInnerHTML(
       "<style>"
       "    #changer { height: 1500px; }"
@@ -216,7 +223,7 @@ TEST_F(ScrollAnchorTest, AnchoringWhenContentRemoved) {
 // Test that scroll anchoring causes no visible jump when a layout change
 // (such as removal of a DOM element) changes the scroll bounds of a scrolling
 // div.
-TEST_F(ScrollAnchorTest, AnchoringWhenContentRemovedFromScrollingDiv) {
+TEST_P(ScrollAnchorTest, AnchoringWhenContentRemovedFromScrollingDiv) {
   setBodyInnerHTML(
       "<style>"
       "    #scroller { height: 500px; width: 200px; overflow: scroll; }"
@@ -244,7 +251,7 @@ TEST_F(ScrollAnchorTest, AnchoringWhenContentRemovedFromScrollingDiv) {
 
 // Test that a non-anchoring scroll on scroller clears scroll anchors for all
 // parent scrollers.
-TEST_F(ScrollAnchorTest, ClearScrollAnchorsOnAncestors) {
+TEST_P(ScrollAnchorTest, ClearScrollAnchorsOnAncestors) {
   setBodyInnerHTML(
       "<style>"
       "    body { height: 1000px } div { height: 200px }"
@@ -270,7 +277,7 @@ TEST_F(ScrollAnchorTest, ClearScrollAnchorsOnAncestors) {
   EXPECT_EQ(nullptr, scrollAnchor(viewport).anchorObject());
 }
 
-TEST_F(ScrollAnchorTest, AncestorClearingWithSiblingReference) {
+TEST_P(ScrollAnchorTest, AncestorClearingWithSiblingReference) {
   setBodyInnerHTML(
       "<style>"
       ".scroller {"
@@ -311,7 +318,7 @@ TEST_F(ScrollAnchorTest, AncestorClearingWithSiblingReference) {
   update();
 }
 
-TEST_F(ScrollAnchorTest, FractionalOffsetsAreRoundedBeforeComparing) {
+TEST_P(ScrollAnchorTest, FractionalOffsetsAreRoundedBeforeComparing) {
   setBodyInnerHTML(
       "<style> body { height: 1000px } </style>"
       "<div id='block1' style='height: 50.4px'>abc</div>"
@@ -327,7 +334,7 @@ TEST_F(ScrollAnchorTest, FractionalOffsetsAreRoundedBeforeComparing) {
   EXPECT_EQ(101, viewport->scrollOffsetInt().height());
 }
 
-TEST_F(ScrollAnchorTest, AnchorWithLayerInScrollingDiv) {
+TEST_P(ScrollAnchorTest, AnchorWithLayerInScrollingDiv) {
   setBodyInnerHTML(
       "<style>"
       "    #scroller { overflow: scroll; width: 500px; height: 400px; }"
@@ -361,7 +368,7 @@ TEST_F(ScrollAnchorTest, AnchorWithLayerInScrollingDiv) {
 
 // Verify that a nested scroller with a div that has its own PaintLayer can be
 // removed without causing a crash. This test passes if it doesn't crash.
-TEST_F(ScrollAnchorTest, RemoveScrollerWithLayerInScrollingDiv) {
+TEST_P(ScrollAnchorTest, RemoveScrollerWithLayerInScrollingDiv) {
   setBodyInnerHTML(
       "<style>"
       "    body { height: 2000px }"
@@ -399,7 +406,7 @@ TEST_F(ScrollAnchorTest, RemoveScrollerWithLayerInScrollingDiv) {
   update();
 }
 
-TEST_F(ScrollAnchorTest, ExcludeAnonymousCandidates) {
+TEST_P(ScrollAnchorTest, ExcludeAnonymousCandidates) {
   setBodyInnerHTML(
       "<style>"
       "    body { height: 3500px }"
@@ -429,7 +436,7 @@ TEST_F(ScrollAnchorTest, ExcludeAnonymousCandidates) {
             scrollAnchor(viewport).anchorObject());
 }
 
-TEST_F(ScrollAnchorTest, FullyContainedInlineBlock) {
+TEST_P(ScrollAnchorTest, FullyContainedInlineBlock) {
   // Exercises every WalkStatus value:
   // html, body -> Constrain
   // #outer -> Continue
@@ -456,7 +463,7 @@ TEST_F(ScrollAnchorTest, FullyContainedInlineBlock) {
             scrollAnchor(layoutViewport()).anchorObject());
 }
 
-TEST_F(ScrollAnchorTest, TextBounds) {
+TEST_P(ScrollAnchorTest, TextBounds) {
   setBodyInnerHTML(
       "<style>"
       "    body {"
@@ -477,7 +484,7 @@ TEST_F(ScrollAnchorTest, TextBounds) {
             scrollAnchor(layoutViewport()).anchorObject());
 }
 
-TEST_F(ScrollAnchorTest, ExcludeFixedPosition) {
+TEST_P(ScrollAnchorTest, ExcludeFixedPosition) {
   setBodyInnerHTML(
       "<style>"
       "    body { height: 1000px; padding: 20px; }"
@@ -497,7 +504,7 @@ TEST_F(ScrollAnchorTest, ExcludeFixedPosition) {
 
 // This test verifies that position:absolute elements that stick to the viewport
 // are not selected as anchors.
-TEST_F(ScrollAnchorTest, ExcludeAbsolutePositionThatSticksToViewport) {
+TEST_P(ScrollAnchorTest, ExcludeAbsolutePositionThatSticksToViewport) {
   setBodyInnerHTML(
       "<style>"
       "    body { margin: 0; }"
@@ -542,7 +549,7 @@ TEST_F(ScrollAnchorTest, ExcludeAbsolutePositionThatSticksToViewport) {
 
 // Test that we descend into zero-height containers that have overflowing
 // content.
-TEST_F(ScrollAnchorTest, DescendsIntoContainerWithOverflow) {
+TEST_P(ScrollAnchorTest, DescendsIntoContainerWithOverflow) {
   setBodyInnerHTML(
       "<style>"
       "    body { height: 1000; }"
@@ -569,7 +576,7 @@ TEST_F(ScrollAnchorTest, DescendsIntoContainerWithOverflow) {
 }
 
 // Test that we descend into zero-height containers that have floating content.
-TEST_F(ScrollAnchorTest, DescendsIntoContainerWithFloat) {
+TEST_P(ScrollAnchorTest, DescendsIntoContainerWithFloat) {
   setBodyInnerHTML(
       "<style>"
       "    body { height: 1000; }"
@@ -607,7 +614,7 @@ TEST_F(ScrollAnchorTest, DescendsIntoContainerWithFloat) {
 
 // This test verifies that scroll anchoring is disabled when any element within
 // the main scroller changes its in-flow state.
-TEST_F(ScrollAnchorTest, ChangeInFlowStateDisablesAnchoringForMainScroller) {
+TEST_P(ScrollAnchorTest, ChangeInFlowStateDisablesAnchoringForMainScroller) {
   setBodyInnerHTML(
       "<style>"
       "    body { height: 1000px; }"
@@ -629,7 +636,7 @@ TEST_F(ScrollAnchorTest, ChangeInFlowStateDisablesAnchoringForMainScroller) {
 
 // This test verifies that scroll anchoring is disabled when any element within
 // a scrolling div changes its in-flow state.
-TEST_F(ScrollAnchorTest, ChangeInFlowStateDisablesAnchoringForScrollingDiv) {
+TEST_P(ScrollAnchorTest, ChangeInFlowStateDisablesAnchoringForScrollingDiv) {
   setBodyInnerHTML(
       "<style>"
       "    #container { position: relative; width: 500px; }"
@@ -655,7 +662,7 @@ TEST_F(ScrollAnchorTest, ChangeInFlowStateDisablesAnchoringForScrollingDiv) {
   EXPECT_EQ(100, scroller->scrollOffsetInt().height());
 }
 
-TEST_F(ScrollAnchorTest, FlexboxDelayedClampingAlsoDelaysAdjustment) {
+TEST_P(ScrollAnchorTest, FlexboxDelayedClampingAlsoDelaysAdjustment) {
   setBodyInnerHTML(
       "<style>"
       "    html { overflow: hidden; }"
@@ -685,7 +692,7 @@ TEST_F(ScrollAnchorTest, FlexboxDelayedClampingAlsoDelaysAdjustment) {
   EXPECT_EQ(150, scrollerForElement(scroller)->scrollOffsetInt().height());
 }
 
-TEST_F(ScrollAnchorTest, FlexboxDelayedAdjustmentRespectsSANACLAP) {
+TEST_P(ScrollAnchorTest, FlexboxDelayedAdjustmentRespectsSANACLAP) {
   setBodyInnerHTML(
       "<style>"
       "    html { overflow: hidden; }"
@@ -718,7 +725,7 @@ TEST_F(ScrollAnchorTest, FlexboxDelayedAdjustmentRespectsSANACLAP) {
 
 // Test then an element and its children are not selected as the anchor when
 // it has the overflow-anchor property set to none.
-TEST_F(ScrollAnchorTest, OptOutElement) {
+TEST_P(ScrollAnchorTest, OptOutElement) {
   setBodyInnerHTML(
       "<style>"
       "     body { height: 1000px }"
@@ -759,7 +766,7 @@ TEST_F(ScrollAnchorTest, OptOutElement) {
             scrollAnchor(viewport).anchorObject());
 }
 
-TEST_F(ScrollAnchorTest,
+TEST_P(ScrollAnchorTest,
        SuppressAnchorNodeAncestorChangingLayoutAffectingProperty) {
   setBodyInnerHTML(
       "<style> body { height: 1000px } div { height: 100px } </style>"
@@ -775,7 +782,7 @@ TEST_F(ScrollAnchorTest,
   EXPECT_EQ(nullptr, scrollAnchor(viewport).anchorObject());
 }
 
-TEST_F(ScrollAnchorTest, AnchorNodeAncestorChangingNonLayoutAffectingProperty) {
+TEST_P(ScrollAnchorTest, AnchorNodeAncestorChangingNonLayoutAffectingProperty) {
   setBodyInnerHTML(
       "<style> body { height: 1000px } div { height: 100px } </style>"
       "<div id='block1'>abc</div>"
@@ -792,7 +799,7 @@ TEST_F(ScrollAnchorTest, AnchorNodeAncestorChangingNonLayoutAffectingProperty) {
             scrollAnchor(viewport).anchorObject());
 }
 
-TEST_F(ScrollAnchorTest, TransformIsLayoutAffecting) {
+TEST_P(ScrollAnchorTest, TransformIsLayoutAffecting) {
   setBodyInnerHTML(
       "<style>"
       "    body { height: 1000px }"
@@ -817,7 +824,7 @@ TEST_F(ScrollAnchorTest, TransformIsLayoutAffecting) {
   EXPECT_EQ(nullptr, scrollAnchor(viewport).anchorObject());
 }
 
-TEST_F(ScrollAnchorTest, OptOutBody) {
+TEST_P(ScrollAnchorTest, OptOutBody) {
   setBodyInnerHTML(
       "<style>"
       "    body { height: 2000px; overflow-anchor: none; }"
@@ -855,7 +862,7 @@ TEST_F(ScrollAnchorTest, OptOutBody) {
   EXPECT_EQ(nullptr, scrollAnchor(viewport).anchorObject());
 }
 
-TEST_F(ScrollAnchorTest, OptOutScrollingDiv) {
+TEST_P(ScrollAnchorTest, OptOutScrollingDiv) {
   setBodyInnerHTML(
       "<style>"
       "    body { height: 2000px; }"
@@ -896,7 +903,7 @@ TEST_F(ScrollAnchorTest, OptOutScrollingDiv) {
             scrollAnchor(viewport).anchorObject());
 }
 
-TEST_F(ScrollAnchorTest, NonDefaultRootScroller) {
+TEST_P(ScrollAnchorTest, NonDefaultRootScroller) {
   setBodyInnerHTML(
       "<style>"
       "    ::-webkit-scrollbar {"
@@ -953,7 +960,7 @@ TEST_F(ScrollAnchorTest, NonDefaultRootScroller) {
 
 // This test verifies that scroll anchoring is disabled when the document is in
 // printing mode.
-TEST_F(ScrollAnchorTest, AnchoringDisabledForPrinting) {
+TEST_P(ScrollAnchorTest, AnchoringDisabledForPrinting) {
   setBodyInnerHTML(
       "<style> body { height: 1000px } div { height: 100px } </style>"
       "<div id='block1'>abc</div>"
@@ -995,7 +1002,7 @@ class ScrollAnchorCornerTest : public ScrollAnchorTest {
 };
 
 // Verify that we anchor to the top left corner of an element for LTR.
-TEST_F(ScrollAnchorCornerTest, CornersLTR) {
+TEST_P(ScrollAnchorCornerTest, CornersLTR) {
   setBodyInnerHTML(
       "<style>"
       "    body { position: relative; width: 1220px; height: 920px; }"
@@ -1010,7 +1017,7 @@ TEST_F(ScrollAnchorCornerTest, CornersLTR) {
 
 // Verify that we anchor to the top left corner of an anchor element for
 // vertical-lr writing mode.
-TEST_F(ScrollAnchorCornerTest, CornersVerticalLR) {
+TEST_P(ScrollAnchorCornerTest, CornersVerticalLR) {
   setBodyInnerHTML(
       "<style>"
       "    html { writing-mode: vertical-lr; }"
@@ -1025,7 +1032,7 @@ TEST_F(ScrollAnchorCornerTest, CornersVerticalLR) {
 }
 
 // Verify that we anchor to the top right corner of an anchor element for RTL.
-TEST_F(ScrollAnchorCornerTest, CornersRTL) {
+TEST_P(ScrollAnchorCornerTest, CornersRTL) {
   setBodyInnerHTML(
       "<style>"
       "    html { direction: rtl; }"
@@ -1041,7 +1048,7 @@ TEST_F(ScrollAnchorCornerTest, CornersRTL) {
 
 // Verify that we anchor to the top right corner of an anchor element for
 // vertical-lr writing mode.
-TEST_F(ScrollAnchorCornerTest, CornersVerticalRL) {
+TEST_P(ScrollAnchorCornerTest, CornersVerticalRL) {
   setBodyInnerHTML(
       "<style>"
       "    html { writing-mode: vertical-rl; }"
@@ -1055,7 +1062,7 @@ TEST_F(ScrollAnchorCornerTest, CornersVerticalRL) {
   checkCorner(Corner::TopRight, ScrollOffset(-20, 20), ScrollOffset(-100, 0));
 }
 
-TEST_F(ScrollAnchorTest, IgnoreNonBlockLayoutAxis) {
+TEST_P(ScrollAnchorTest, IgnoreNonBlockLayoutAxis) {
   setBodyInnerHTML(
       "<style>"
       "    body {"

@@ -99,6 +99,9 @@ class CORE_EXPORT RootFrameViewport final
   Widget* getWidget() override;
   void clearScrollAnimators() override;
   LayoutBox* layoutBox() const override;
+  FloatQuad localToVisibleContentQuad(const FloatQuad&,
+                                      const LayoutObject*,
+                                      unsigned = 0) const final;
 
  private:
   RootFrameViewport(ScrollableArea& visualViewport,

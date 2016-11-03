@@ -427,6 +427,10 @@ class CORE_EXPORT PaintLayerScrollableArea final
 
   LayoutBox* layoutBox() const override { return &box(); }
 
+  FloatQuad localToVisibleContentQuad(const FloatQuad&,
+                                      const LayoutObject*,
+                                      unsigned = 0) const final;
+
   bool shouldRebuildHorizontalScrollbarLayer() const {
     return m_rebuildHorizontalScrollbarLayer;
   }

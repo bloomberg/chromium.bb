@@ -600,6 +600,14 @@ int ScrollableArea::horizontalScrollbarHeight() const {
   return 0;
 }
 
+FloatQuad ScrollableArea::localToVisibleContentQuad(const FloatQuad& quad,
+                                                    const LayoutObject*,
+                                                    unsigned) const {
+  FloatQuad result(quad);
+  result.move(-scrollOffset());
+  return result;
+}
+
 IntSize ScrollableArea::excludeScrollbars(const IntSize& size) const {
   return IntSize(std::max(0, size.width() - verticalScrollbarWidth()),
                  std::max(0, size.height() - horizontalScrollbarHeight()));
