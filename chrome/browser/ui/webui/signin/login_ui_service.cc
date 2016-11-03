@@ -10,6 +10,7 @@
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_window.h"
 #include "chrome/browser/ui/chrome_pages.h"
+#include "chrome/browser/ui/profile_chooser_constants.h"
 #include "chrome/browser/ui/scoped_tabbed_browser_displayer.h"
 #include "chrome/browser/ui/webui/signin/login_ui_service_factory.h"
 #include "chrome/common/url_constants.h"
@@ -57,9 +58,15 @@ void LoginUIService::ShowLoginPopup() {
   NOTREACHED();
 #else
   chrome::ScopedTabbedBrowserDisplayer displayer(profile_);
-  chrome::ShowBrowserSignin(
-      displayer.browser(),
-      signin_metrics::AccessPoint::ACCESS_POINT_EXTENSIONS);
+  profiles::BubbleViewMode signin_mode = profiles::BUBBLE_VIEW_MODE_GAIA_SIGNIN;
+  if (SigninViewController::ShouldShowModalSigninForMode(signin_mode)) {
+    displayer.browser()->ShowModalSigninWindow(signin_mode,
+        signin_metrics::AccessPoint::ACCESS_POINT_EXTENSIONS);
+  } else {
+    chrome::ShowBrowserSignin(
+        displayer.browser(),
+        signin_metrics::AccessPoint::ACCESS_POINT_EXTENSIONS);
+  }
 #endif
 }
 
