@@ -228,8 +228,11 @@ if (current_cpu == "arm" && arm_assembly_sources != []) {
   action_foreach("convert_arm_assembly") {
     script = "//third_party/libvpx/run_perl.py"
     sources = arm_assembly_sources
+    gen_file =
+        get_label_info("//third_party/libvpx/source/libvpx", "root_gen_dir") +
+        "/{{source_root_relative_dir}}/{{source_file_part}}.S"
     outputs = [
-      "$target_gen_dir/{{source_name_part}}.S",
+      gen_file,
     ]
     if (is_ios) {
       ads2gas_script =
@@ -244,7 +247,7 @@ if (current_cpu == "arm" && arm_assembly_sources != []) {
       "-i",
       "{{source}}",
       "-o",
-      rebase_path("$target_gen_dir/{{source_name_part}}.S"),
+      rebase_path(gen_file),
     ]
   }
 
@@ -255,6 +258,11 @@ if (current_cpu == "arm" && arm_assembly_sources != []) {
     configs += [ ":libvpx_warnings" ]
     if (cpu_arch_full == "arm-neon" || cpu_arch_full == "arm-neon-cpu-detect") {
       asmflags = [ "-mfpu=neon" ]
+
+      # allow asm files to include generated sources which match the source
+      # tree layout, e.g., vpx_dsp/arm/...
+      include_dirs = [ get_label_info("//third_party/libvpx/source/libvpx",
+                                      "target_gen_dir") ]
     }
     deps = [
       ":convert_arm_assembly",
