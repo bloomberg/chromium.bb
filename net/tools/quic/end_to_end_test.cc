@@ -5,6 +5,7 @@
 #include <stddef.h>
 #include <sys/epoll.h>
 
+#include <cstdint>
 #include <list>
 #include <memory>
 #include <string>
@@ -63,23 +64,6 @@ using base::IntToString;
 using base::StringPiece;
 using base::WaitableEvent;
 using net::EpollServer;
-using net::test::ConstructEncryptedPacket;
-using net::test::CryptoTestUtils;
-using net::test::GenerateBody;
-using net::test::Loopback4;
-using net::test::MockQuicConnectionDebugVisitor;
-using net::test::QuicConnectionPeer;
-using net::test::QuicFlowControllerPeer;
-using net::test::QuicSentPacketManagerPeer;
-using net::test::QuicSessionPeer;
-using net::test::QuicSpdySessionPeer;
-using net::test::ReliableQuicStreamPeer;
-using net::test::kClientDataStreamId1;
-using net::test::kInitialSessionFlowControlWindowForTest;
-using net::test::kInitialStreamFlowControlWindowForTest;
-using net::test::PacketDroppingTestWriter;
-using net::test::QuicDispatcherPeer;
-using net::test::QuicServerPeer;
 using std::ostream;
 using std::string;
 using std::vector;
@@ -153,7 +137,7 @@ std::vector<TestParams> GetTestParams() {
   // is compatible. When clients encounter QUIC version negotiation
   // they simply retransmit all packets using the new version's
   // QUIC framing. However, they are unable to change the intra-frame
-  // layout (for example to change HTTP2 headers to SPDY/3). So
+  // layout (for example to change HTTP/2 headers to SPDY/3). So
   // these tests need to ensure that clients are never attempting
   // to do 0-RTT across incompatible versions. Chromium only supports
   // a single version at a time anyway. :)
@@ -184,7 +168,7 @@ std::vector<TestParams> GetTestParams() {
   std::vector<TestParams> params;
   for (bool server_uses_stateless_rejects_if_peer_supported : {true, false}) {
     for (bool client_supports_stateless_rejects : {true, false}) {
-      for (const QuicTag congestion_control_tag : {kRENO, kQBIC}) {
+      for (const QuicTag congestion_control_tag : {kRENO, kTBBR, kQBIC}) {
         for (bool disable_hpack_dynamic_table : {false}) {
           for (bool force_hol_blocking : {true, false}) {
             for (bool use_cheap_stateless_reject : {true, false}) {
@@ -445,9 +429,8 @@ class EndToEndTest : public ::testing::TestWithParam<TestParams> {
     static EpollEvent event(EPOLLOUT, false);
     if (client_writer_ != nullptr) {
       client_writer_->Initialize(
-          reinterpret_cast<QuicEpollConnectionHelper*>(
-              QuicConnectionPeer::GetHelper(
-                  client_->client()->session()->connection())),
+          QuicConnectionPeer::GetHelper(
+              client_->client()->session()->connection()),
           QuicConnectionPeer::GetAlarmFactory(
               client_->client()->session()->connection()),
           new ClientDelegate(client_->client()));
@@ -787,7 +770,6 @@ TEST_P(EndToEndTest, LargePostNoPacketLoss) {
   // 1 MB body.
   string body;
   GenerateBody(&body, 1024 * 1024);
-
   SpdyHeaderBlock headers;
   headers[":method"] = "POST";
   headers[":path"] = "/foo";
@@ -839,7 +821,6 @@ TEST_P(EndToEndTest, LargePostWithPacketLoss) {
   // 10 KB body.
   string body;
   GenerateBody(&body, 1024 * 10);
-  test::GenerateBody(&body, 1024 * 10);
   SpdyHeaderBlock headers;
   headers[":method"] = "POST";
   headers[":path"] = "/foo";
@@ -933,7 +914,7 @@ TEST_P(EndToEndTest, LargePostZeroRTTFailure) {
 
   // The 0-RTT handshake should succeed.
   client_->Connect();
-  client_->WaitForResponseForMs(-1);
+  client_->WaitForInitialResponse();
   ASSERT_TRUE(client_->client()->connected());
   EXPECT_EQ(kFooResponseBody,
             client_->SendCustomSynchronousRequest(headers, body));
@@ -1205,18 +1186,17 @@ TEST_P(EndToEndTest, InvalidStream) {
 
   string body;
   GenerateBody(&body, kMaxPacketSize);
-
   SpdyHeaderBlock headers;
   headers[":method"] = "POST";
   headers[":path"] = "/foo";
   headers[":scheme"] = "https";
   headers[":authority"] = server_hostname_;
+
   // Force the client to write with a stream ID belonging to a nonexistent
   // server-side stream.
   QuicSessionPeer::SetNextOutgoingStreamId(client_->client()->session(), 2);
 
   client_->SendCustomSynchronousRequest(headers, body);
-  // EXPECT_EQ(QUIC_STREAM_CONNECTION_ERROR, client_->stream_error());
   EXPECT_EQ(QUIC_STREAM_CONNECTION_ERROR, client_->stream_error());
   EXPECT_EQ(QUIC_INVALID_STREAM_ID, client_->connection_error());
 }
@@ -1228,8 +1208,7 @@ TEST_P(EndToEndTest, LargeHeaders) {
   client_->client()->WaitForCryptoHandshakeConfirmed();
 
   string body;
-  test::GenerateBody(&body, kMaxPacketSize);
-
+  GenerateBody(&body, kMaxPacketSize);
   SpdyHeaderBlock headers;
   headers[":method"] = "POST";
   headers[":path"] = "/foo";
@@ -1256,13 +1235,11 @@ TEST_P(EndToEndTest, EarlyResponseWithQuicStreamNoError) {
 
   string large_body;
   GenerateBody(&large_body, 1024 * 1024);
-
   SpdyHeaderBlock headers;
   headers[":method"] = "POST";
   headers[":path"] = "/foo";
   headers[":scheme"] = "https";
   headers[":authority"] = server_hostname_;
-
   // Insert an invalid content_length field in request to trigger an early
   // response from server.
   headers["content-length"] = "-3";
@@ -1588,7 +1565,6 @@ TEST_P(EndToEndTest, 15ByteConnectionId) {
 
 TEST_P(EndToEndTest, ResetConnection) {
   ASSERT_TRUE(Initialize());
-  client_->client()->WaitForCryptoHandshakeConfirmed();
 
   EXPECT_EQ(kFooResponseBody, client_->SendSynchronousRequest("/foo"));
   EXPECT_EQ("200", client_->response_headers()->find(":status")->second);
@@ -1987,14 +1963,11 @@ TEST_P(EndToEndTest, AckNotifierWithPacketLossAndBlockedSocket) {
   // Send another request to flush out any pending ACKs on the server.
   client_->SendSynchronousRequest("/bar");
 
-  // Pause the server to avoid races.
-  server_thread_->Pause();
   // Make sure the delegate does get the notification it expects.
   while (!delegate->has_been_notified()) {
     // Waits for up to 50 ms.
     client_->client()->WaitForEvents();
   }
-  server_thread_->Resume();
 }
 
 // Send a public reset from the server.
@@ -2339,15 +2312,15 @@ class ServerStreamThatSendsHugeResponse : public QuicSimpleServerStream {
   void SendResponse() override {
     QuicInMemoryCache::Response response;
     string body;
-    test::GenerateBody(&body, body_bytes_);
+    GenerateBody(&body, body_bytes_);
     response.set_body(body);
     SendHeadersAndBodyAndTrailers(response.headers().Clone(), response.body(),
                                   response.trailers().Clone());
   }
 
  private:
-  // Use a explicit int64 rather than size_t to simulate a 64-bit server talking
-  // to a 32-bit client.
+  // Use a explicit int64_t rather than size_t to simulate a 64-bit server
+  // talking to a 32-bit client.
   int64_t body_bytes_;
 };
 
@@ -2481,11 +2454,14 @@ TEST_P(EndToEndTest, EarlyResponseFinRecording) {
 
   // A POST that gets an early error response, after the headers are received
   // and before the body is received, due to invalid content-length.
+  // Set an invalid content-length, so the request will receive an early 500
+  // response.
   SpdyHeaderBlock headers;
   headers[":method"] = "POST";
   headers[":path"] = "/garbage";
   headers[":scheme"] = "https";
   headers[":authority"] = server_hostname_;
+  headers["content-length"] = "-1";
 
   // The body must be large enough that the FIN will be in a different packet
   // than the end of the headers, but short enough to not require a flow control
@@ -2495,9 +2471,6 @@ TEST_P(EndToEndTest, EarlyResponseFinRecording) {
   const uint32_t kRequestBodySize = kMaxPacketSize + 10;
   string request_body;
   GenerateBody(&request_body, kRequestBodySize);
-  // Set an invalid content-length, so the request will receive an early 500
-  // response.  Must be done after AddBody, which also sets content-length.
-  headers["content-length"] = "-1";
 
   // Send the request.
   client_->SendMessage(headers, request_body);
@@ -2538,17 +2511,16 @@ TEST_P(EndToEndTest, LargePostEarlyResponse) {
   // received and before the body is received.
   SpdyHeaderBlock headers;
   headers[":method"] = "POST";
-  headers[":path"] = "/garbage";
+  headers[":path"] = "/foo";
   headers[":scheme"] = "https";
   headers[":authority"] = server_hostname_;
-
-  // Invalid content-length so the request will receive an early 500 response.
   headers["content-length"] = "-1";
 
   // Tell the client to not close the stream if it receives an early response.
   client_->set_allow_bidirectional_data(true);
   // Send the headers.
-  client_->SendMessage(headers, "", false);
+  client_->SendMessage(headers, "", /*fin=*/false);
+
   // Receive the response and let the server close writing.
   client_->WaitForInitialResponse();
   EXPECT_EQ("500", client_->response_headers()->find(":status")->second);
@@ -2617,7 +2589,7 @@ class EndToEndTestServerPush : public EndToEndTest {
     if (use_large_response) {
       // Generate a response common body larger than flow control window for
       // push response.
-      test::GenerateBody(&large_resource, resource_size);
+      GenerateBody(&large_resource, resource_size);
     }
     std::list<QuicInMemoryCache::ServerPushInfo> push_resources;
     for (size_t i = 0; i < num_resources; ++i) {
@@ -2655,10 +2627,10 @@ TEST_P(EndToEndTestServerPush, ServerPush) {
   // Add a response with headers, body, and push resources.
   const string kBody = "body content";
   size_t kNumResources = 4;
-  string push_urls[] = {
-      "https://google.com/font.woff", "https://google.com/script.js",
-      "https://fonts.google.com/font.woff", "https://google.com/logo-hires.jpg",
-  };
+  string push_urls[] = {"https://example.com/font.woff",
+                        "https://example.com/script.js",
+                        "https://fonts.example.com/font.woff",
+                        "https://example.com/logo-hires.jpg"};
   AddRequestAndResponseWithServerPush("example.com", "/push_example", kBody,
                                       push_urls, kNumResources, 0);
 
@@ -2754,7 +2726,7 @@ TEST_P(EndToEndTestServerPush, ServerPushOverLimitNonBlocking) {
   // One more resource than max number of outgoing stream of this session.
   const size_t kNumResources = 1 + kNumMaxStreams;  // 11.
   string push_urls[11];
-  for (uint32_t i = 0; i < kNumResources; ++i) {
+  for (size_t i = 0; i < kNumResources; ++i) {
     push_urls[i] = "https://example.com/push_resources" + base::UintToString(i);
   }
   AddRequestAndResponseWithServerPush("example.com", "/push_example", kBody,
@@ -2811,7 +2783,7 @@ TEST_P(EndToEndTestServerPush, ServerPushOverLimitWithBlocking) {
 
   const size_t kNumResources = kNumMaxStreams + 1;
   string push_urls[11];
-  for (uint32_t i = 0; i < kNumResources; ++i) {
+  for (size_t i = 0; i < kNumResources; ++i) {
     push_urls[i] = "http://example.com/push_resources" + base::UintToString(i);
   }
   AddRequestAndResponseWithServerPush("example.com", "/push_example", kBody,
@@ -2853,7 +2825,7 @@ TEST_P(EndToEndTestServerPush, ServerPushOverLimitWithBlocking) {
   EXPECT_EQ(2u, client_->num_responses());
 
   // Do same thing for the rest 10 resources.
-  for (uint32_t i = 1; i < kNumResources; ++i) {
+  for (size_t i = 1; i < kNumResources; ++i) {
     client_->SendSynchronousRequest(push_urls[i]);
   }
 
@@ -2918,20 +2890,21 @@ TEST_P(EndToEndTest, DISABLED_TestHugePostWithPacketLoss) {
   // To avoid storing the whole request body in memory, use a loop to repeatedly
   // send body size of kSizeBytes until the whole request body size is reached.
   const int kSizeBytes = 128 * 1024;
+  // Request body size is 4G plus one more kSizeBytes.
+  int64_t request_body_size_bytes = pow(2, 32) + kSizeBytes;
+  ASSERT_LT(INT64_C(4294967296), request_body_size_bytes);
+  string body;
+  GenerateBody(&body, kSizeBytes);
+
   SpdyHeaderBlock headers;
   headers[":method"] = "POST";
   headers[":path"] = "/foo";
   headers[":scheme"] = "https";
   headers[":authority"] = server_hostname_;
-
-  // Request body size is 4G plus one more kSizeBytes.
-  int64_t request_body_size_bytes = pow(2, 32) + kSizeBytes;
-  ASSERT_LT(INT64_C(4294967296), request_body_size_bytes);
   headers["content-length"] = IntToString(request_body_size_bytes);
-  string body;
-  test::GenerateBody(&body, kSizeBytes);
 
   client_->SendMessage(headers, "", /*fin=*/false);
+
   for (int i = 0; i < request_body_size_bytes / kSizeBytes; ++i) {
     bool fin = (i == request_body_size_bytes - 1);
     client_->SendData(string(body.data(), kSizeBytes), fin);
@@ -3038,6 +3011,7 @@ TEST_P(EndToEndBufferedPacketsTest, Buffer0RttRequest) {
   client_->client()->Initialize();
   client_->client()->StartConnect();
   ASSERT_TRUE(client_->client()->connected());
+
   // Send a request before handshake finishes.
   SpdyHeaderBlock headers;
   headers[":method"] = "POST";
