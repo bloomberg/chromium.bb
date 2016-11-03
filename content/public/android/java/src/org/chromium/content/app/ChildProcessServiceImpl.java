@@ -24,6 +24,7 @@ import org.chromium.base.annotations.CalledByNative;
 import org.chromium.base.annotations.JNINamespace;
 import org.chromium.base.annotations.MainDex;
 import org.chromium.base.annotations.SuppressFBWarnings;
+import org.chromium.base.annotations.UsedByReflection;
 import org.chromium.base.library_loader.LibraryLoader;
 import org.chromium.base.library_loader.Linker;
 import org.chromium.base.library_loader.ProcessInitException;
@@ -47,6 +48,7 @@ import java.util.concurrent.atomic.AtomicReference;
 @JNINamespace("content")
 @SuppressWarnings("SynchronizeOnNonFinalField")
 @MainDex
+@UsedByReflection("WebApkSandboxedProcessService")
 public class ChildProcessServiceImpl {
     private static final String MAIN_THREAD_NAME = "ChildProcessMain";
     private static final String TAG = "ChildProcessService";
@@ -133,6 +135,7 @@ public class ChildProcessServiceImpl {
      * @param context The application context.
      * @param hostContext The host context the library should be loaded with (i.e. Chrome).
      */
+    @UsedByReflection("WebApkSandboxedProcessService")
     public void create(final Context context, final Context hostContext) {
         mHostClassLoader = hostContext.getClassLoader();
         Log.i(TAG, "Creating new ChildProcessService pid=%d", Process.myPid());
@@ -271,6 +274,7 @@ public class ChildProcessServiceImpl {
      *        is thrown when an application with a uid other than
      *        {@link authorizedCallerUid} calls the service's methods.
      */
+    @UsedByReflection("WebApkSandboxedProcessService")
     public IBinder bind(Intent intent, int authorizedCallerUid) {
         mAuthorizedCallerUid = authorizedCallerUid;
         initializeParams(intent);
