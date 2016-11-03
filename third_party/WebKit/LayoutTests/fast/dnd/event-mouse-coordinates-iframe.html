@@ -1,0 +1,63 @@
+<!DOCTYPE html>
+<link rel="stylesheet" href="resources/event-mouse-coordinates.css" />
+<script src="../../resources/testharness.js"></script>
+<script src="../../resources/testharnessreport.js"></script>
+<script src="resources/event-mouse-coordinates.js"></script>
+
+<style>
+#target-iframe {
+  margin: 0;
+  padding: 0;
+  border: none;
+
+  position: absolute;
+  left: 200px;
+  top: 100px;
+  width: 600px;
+  height: 500px;
+}
+</style>
+
+<p>
+  Please drag the "Drag Me" box into the "Drop Here" box.
+</p>
+
+<iframe id="target-iframe"></iframe>
+
+<script id="iframe-srcdoc" language="text/html">
+<!DOCTYPE html>
+<link rel="stylesheet" href="resources/event-mouse-coordinates.css" />
+<aside class="dragged box" draggable="true">
+  Drag Me
+</aside>
+
+<aside class="dropzone box">
+  Drop Here
+</aside>
+</script>
+
+<script>
+const iframeLoaded = new Promise((resolve, reject) => {
+  const target = document.getElementById('target-iframe');
+  const html = document.getElementById('iframe-srcdoc').textContent;
+  target.onload = (event) => resolve(true);
+
+  target.setAttribute('srcdoc', html);
+});
+
+promise_test((t) => {
+  return iframeLoaded.then(() => {
+    const frameDocument =
+        document.getElementById('target-iframe').contentDocument;
+    const dragCenter = elementCenter(frameDocument.querySelector('.dragged'));
+    const dropCenter = elementCenter(frameDocument.querySelector('.dropzone'));
+    return runDragTest(t, {
+      domRoot: frameDocument,
+      frameOffset: { x: 200, y: 100 },
+      start: { client: dragCenter, page: { x: 250, y: 150 }},
+      end: { client: dropCenter, page: { x: 450, y: 350 }},
+    });
+  });
+}, 'Dragging and dropping DOM nodes in an iframe');
+
+</script>
