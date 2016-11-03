@@ -31,12 +31,11 @@ const CGFloat kCornerRadius = 3.0;
 
 // How far to inset the left- and right-hand decorations from the field's
 // bounds.
-const CGFloat kRightDecorationXOffset = 5.0;
-const CGFloat kLeftDecorationXOffset = 6.0;
+const CGFloat kRightDecorationXOffset = 2.0;
+const CGFloat kLeftDecorationXOffset = 1.0;
 
-// The amount of padding on either side reserved for drawing
-// decorations.  [Views has |kItemPadding| == 3.]
-const CGFloat kDecorationHorizontalPad = 4.0;
+// How much the text frame needs to overlap the rightmost left decoration.
+const CGFloat kTextFrameDecorationOverlap = 4.0;
 
 // How long to wait for mouse-up on the location icon before assuming
 // that the user wants to drag.
@@ -69,7 +68,7 @@ void CalculatePositionsHelper(
 
   for (size_t i = 0; i < all_decorations.size(); ++i) {
     if (all_decorations[i]->IsVisible()) {
-      CGFloat padding = kDecorationHorizontalPad;
+      CGFloat padding = 0;
       if (is_first_visible_decoration) {
         padding = regular_padding;
         is_first_visible_decoration = false;
@@ -97,9 +96,6 @@ void CalculatePositionsHelper(
         decorations->push_back(all_decorations[i]);
         decoration_frames->push_back(decoration_frame);
         DCHECK_EQ(decorations->size(), decoration_frames->size());
-
-        // Adjust padding for between decorations.
-        padding = kDecorationHorizontalPad;
       }
     }
   }
@@ -135,6 +131,13 @@ size_t CalculatePositionsInFrame(
 
   // Capture the number of visible left-hand decorations.
   const size_t left_count = decorations->size();
+
+  // Extend the text frame so that it slightly overlaps the rightmost left
+  // decoration.
+  if (left_count) {
+    frame.origin.x -= kTextFrameDecorationOverlap;
+    frame.size.width += kTextFrameDecorationOverlap;
+  }
 
   // Layout |right_decorations| against the RHS.
   CalculatePositionsHelper(frame, right_decorations, NSMaxXEdge,
@@ -270,11 +273,10 @@ size_t CalculatePositionsInFrame(
       break;
 
     // If at leftmost decoration, expand to edge of cell.
-    if (!index) {
+    if (!index)
       minX = NSMinX(cellFrame);
-    } else {
-      minX = NSMinX(decorationFrames[index]) - kDecorationHorizontalPad;
-    }
+    else
+      minX = NSMinX(decorationFrames[index]);
   }
 
   // Determine the right-most extent for the i-beam cursor.
@@ -284,11 +286,10 @@ size_t CalculatePositionsInFrame(
       break;
 
     // If at rightmost decoration, expand to edge of cell.
-    if (index == decorations.size() - 1) {
+    if (index == decorations.size() - 1)
       maxX = NSMaxX(cellFrame);
-    } else {
-      maxX = NSMaxX(decorationFrames[index]) + kDecorationHorizontalPad;
-    }
+    else
+      maxX = NSMaxX(decorationFrames[index]);
   }
 
   // I-beam cursor covers left-most to right-most.
@@ -364,10 +365,8 @@ size_t CalculatePositionsInFrame(
   // Draw the decorations.
   for (size_t i = 0; i < decorations.size(); ++i) {
     if (decorations[i]) {
-      NSRect background_frame = NSInsetRect(
-          decorationFrames[i], -(kDecorationHorizontalPad + 1) / 2, 2);
-      decorations[i]->DrawWithBackgroundInFrame(
-          background_frame, decorationFrames[i], controlView);
+      decorations[i]->DrawWithBackgroundInFrame(decorationFrames[i],
+                                                controlView);
     }
   }
 

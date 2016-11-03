@@ -121,10 +121,10 @@ void LocationBarDecoration::DrawInFrame(NSRect frame, NSView* control_view) {
   NOTREACHED();
 }
 
-void LocationBarDecoration::DrawWithBackgroundInFrame(NSRect background_frame,
-                                                      NSRect frame,
+void LocationBarDecoration::DrawWithBackgroundInFrame(NSRect frame,
                                                       NSView* control_view) {
-  // Default to no background.
+  // TODO(spqchan): Draw the hovered/pressed background.
+  // See crbug.com/588377.
   DrawInFrame(frame, control_view);
 }
 

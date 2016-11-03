@@ -6,6 +6,9 @@
 
 #import "chrome/browser/ui/cocoa/location_bar/image_decoration.h"
 
+// The amount of horizontal padding around the image.
+const CGFloat kImageHorizontalPadding = 9.0;
+
 ImageDecoration::ImageDecoration() {
 }
 
@@ -38,7 +41,7 @@ CGFloat ImageDecoration::GetWidthForSpace(CGFloat width) {
   if (image) {
     const CGFloat image_width = [image size].width;
     if (image_width <= width)
-      return image_width;
+      return image_width + kImageHorizontalPadding;
   }
   return kOmittedWidth;
 }

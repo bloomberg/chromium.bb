@@ -29,8 +29,8 @@
 
 namespace {
 
-// This is used to increase the right margin of this decoration.
-const CGFloat kRightSideMargin = 1.0;
+// This is used to increase the left padding of this decoration.
+const CGFloat kLeftSidePadding = 5.0;
 
 // Padding between the icon and label.
 CGFloat kIconLabelPadding = 4.0;
@@ -160,6 +160,7 @@ void SecurityStateBubbleDecoration::DrawInFrame(NSRect frame,
     NSRect image_rect = decoration_frame;
     image_rect.origin.y +=
         std::floor((NSHeight(decoration_frame) - image_size.height) / 2.0);
+    image_rect.origin.x += kLeftSidePadding;
     image_rect.size = image_size;
     [image_ drawInRect:image_rect
               fromRect:NSZeroRect  // Entire image
@@ -240,24 +241,6 @@ void SecurityStateBubbleDecoration::DrawInFrame(NSRect frame,
     [divider_color set];
     [line stroke];
   }
-}
-
-void SecurityStateBubbleDecoration::DrawWithBackgroundInFrame(
-    NSRect background_frame,
-    NSRect frame,
-    NSView* control_view) {
-  NSRect rect = NSInsetRect(background_frame, 0, 3);
-  rect.size.width -= kRightSideMargin;
-
-  CGFloat line_width = [control_view cr_lineWidth];
-  bool in_dark_mode = [[control_view window] inIncognitoModeWithSystemTheme];
-  // Only adjust the path rect by 1/2 the line width if it's going to be
-  // stroked (so that the stroke lines fall along pixel lines).
-  if (!in_dark_mode) {
-    rect = NSInsetRect(rect, line_width / 2., line_width / 2.);
-  }
-
-  DrawInFrame(frame, control_view);
 }
 
 // Pass mouse operations through to location icon.

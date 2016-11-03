@@ -61,9 +61,6 @@ class SecurityStateBubbleDecoration : public BubbleDecoration,
   // LocationBarDecoration:
   CGFloat GetWidthForSpace(CGFloat width) override;
   void DrawInFrame(NSRect frame, NSView* control_view) override;
-  void DrawWithBackgroundInFrame(NSRect background_frame,
-                                 NSRect frame,
-                                 NSView* control_view) override;
   bool IsDraggable() override;
   NSPasteboard* GetDragPasteboard() override;
   NSImage* GetDragImage() override;

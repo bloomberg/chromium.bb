@@ -17,19 +17,19 @@
 namespace {
 
 // This is used to increase the right margin of this decoration.
-const CGFloat kRightSideMargin = 1.0;
+const CGFloat kLeftSidePadding = 6.0;
 
 // Padding between the icon/label and bubble edges.
-const CGFloat kBubblePadding = 8.0;
+const CGFloat kBubblePadding = 7.0;
 
 // Additional padding between the divider and the label.
-const CGFloat kDividerPadding = 2.0;
+const CGFloat kDividerPadding = 6.0;
 
 // Padding between the icon and label.
 const CGFloat kIconLabelPadding = 4.0;
 
-// Inset for the background.
-const CGFloat kBackgroundYInset = 4.0;
+// Inset for the image frame.
+const CGFloat kImageFrameYInset = 4.0;
 
 }  // namespace
 
@@ -61,11 +61,11 @@ CGFloat BubbleDecoration::GetWidthForImageAndLabel(NSImage* image,
   const CGFloat label_width =
       std::floor([label sizeWithAttributes:attributes_].width);
   return kBubblePadding + image_width + kIconLabelPadding + label_width +
-         DividerPadding();
+         DividerPadding() + kLeftSidePadding;
 }
 
 NSRect BubbleDecoration::GetImageRectInFrame(NSRect frame) {
-  NSRect image_rect = NSInsetRect(frame, 0.0, kBackgroundYInset);
+  NSRect image_rect = NSInsetRect(frame, 0.0, kImageFrameYInset);
   if (image_) {
     // Center the image vertically.
     const NSSize image_size = [image_ size];
@@ -94,12 +94,13 @@ CGFloat BubbleDecoration::GetWidthForSpace(CGFloat width) {
 }
 
 void BubbleDecoration::DrawInFrame(NSRect frame, NSView* control_view) {
-  const NSRect decoration_frame = NSInsetRect(frame, 0.0, kBackgroundYInset);
+  const NSRect decoration_frame = NSInsetRect(frame, 0.0, kImageFrameYInset);
   CGFloat text_offset = NSMinX(decoration_frame);
   if (image_) {
     // Center the image vertically.
     const NSSize image_size = [image_ size];
     NSRect image_rect = decoration_frame;
+    image_rect.origin.x += kLeftSidePadding;
     image_rect.origin.y +=
         std::floor((NSHeight(decoration_frame) - image_size.height) / 2.0);
     image_rect.size = image_size;
@@ -143,14 +144,6 @@ void BubbleDecoration::DrawInFrame(NSRect frame, NSView* control_view) {
     }
     DrawLabel(label_, attributes_, text_rect);
   }
-}
-
-void BubbleDecoration::DrawWithBackgroundInFrame(NSRect background_frame,
-                                                 NSRect frame,
-                                                 NSView* control_view) {
-  NSRect rect = NSInsetRect(background_frame, 0, 1);
-  rect.size.width -= kRightSideMargin;
-  DrawInFrame(frame, control_view);
 }
 
 NSFont* BubbleDecoration::GetFont() const {
