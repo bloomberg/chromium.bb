@@ -111,7 +111,6 @@
       'dependencies': [
         # TODO(calamity): Add app-route elements after closure issues are fixed.
         '<(DEPTH)/ui/webui/resources/js/compiled_resources2.gyp:util',
-        '<(DEPTH)/ui/webui/resources/js/compiled_resources2.gyp:web_ui_listener_behavior',
         '<(DEPTH)/ui/webui/resources/js/cr/ui/compiled_resources2.gyp:command',
         'constants',
         'history_toolbar',

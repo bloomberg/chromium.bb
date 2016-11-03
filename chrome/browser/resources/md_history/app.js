@@ -24,7 +24,6 @@ Polymer({
 
   behaviors: [
     Polymer.IronScrollTargetBehavior,
-    WebUIListenerBehavior,
   ],
 
   properties: {
@@ -115,12 +114,6 @@ Polymer({
     cr.ui.decorate('command', cr.ui.Command);
     document.addEventListener('canExecute', this.onCanExecute_.bind(this));
     document.addEventListener('command', this.onCommand_.bind(this));
-  },
-
-  /** @override */
-  attached: function() {
-    this.addWebUIListener('sign-in-state-updated',
-                          this.updateSignInState.bind(this));
   },
 
   onFirstRender: function() {
@@ -259,8 +252,11 @@ Polymer({
       var syncedDeviceManagerElem =
       /** @type {HistorySyncedDeviceManagerElement} */this
           .$$('history-synced-device-manager');
-      if (syncedDeviceManagerElem)
-        syncedDeviceManagerElem.tabSyncDisabled();
+      if (syncedDeviceManagerElem) {
+        md_history.ensureLazyLoaded().then(function() {
+          syncedDeviceManagerElem.tabSyncDisabled();
+        });
+      }
       return;
     }
 
@@ -326,13 +322,15 @@ Polymer({
     // This allows the synced-device-manager to render so that it can be set as
     // the scroll target.
     requestAnimationFrame(function() {
-      // <iron-pages> can occasionally end up with no item selected during
-      // tests.
-      if (!this.$.content.selectedItem)
-        return;
-      this.scrollTarget =
-          this.$.content.selectedItem.getContentScrollTarget();
-      this._scrollHandler();
+      md_history.ensureLazyLoaded().then(function() {
+        // <iron-pages> can occasionally end up with no item selected during
+        // tests.
+        if (!this.$.content.selectedItem)
+          return;
+        this.scrollTarget =
+            this.$.content.selectedItem.getContentScrollTarget();
+        this._scrollHandler();
+      }.bind(this));
     }.bind(this));
     this.recordHistoryPageView_();
   },

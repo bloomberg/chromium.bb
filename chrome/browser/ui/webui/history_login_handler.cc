@@ -49,8 +49,7 @@ void HistoryLoginHandler::ProfileInfoChanged() {
     signin_callback_.Run();
 
   if (IsJavascriptAllowed()) {
-    CallJavascriptFunction("cr.webUIListenerCallback",
-                           base::StringValue("sign-in-state-updated"),
+    CallJavascriptFunction("updateSignInState",
                            base::FundamentalValue(signed_in));
   }
 }
