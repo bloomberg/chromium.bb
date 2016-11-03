@@ -315,7 +315,7 @@ TEST_F(ModelTypeControllerTest, StopWhenDatatypeEnabled) {
   RunAllTasks();
   StartAssociating();
 
-  controller()->Stop();
+  DeactivateDataTypeAndStop();
   RunAllTasks();
   EXPECT_EQ(DataTypeController::NOT_RUNNING, controller()->state());
   // Ensure that DisableSync is not called.
@@ -338,7 +338,7 @@ TEST_F(ModelTypeControllerTest, StopWhenDatatypeDisabled) {
   sync_prefs()->SetPreferredDataTypes(ModelTypeSet(kTestModelType),
                                       ModelTypeSet());
 
-  controller()->Stop();
+  DeactivateDataTypeAndStop();
   EXPECT_EQ(DataTypeController::NOT_RUNNING, controller()->state());
   // Ensure that DisableSync is called.
   PumpModelThread();
@@ -356,7 +356,7 @@ TEST_F(ModelTypeControllerTest, StopWithInitialSyncPrefs) {
 
   // Clearing preferences emulates signing out.
   sync_prefs()->ClearPreferences();
-  controller()->Stop();
+  DeactivateDataTypeAndStop();
   EXPECT_EQ(DataTypeController::NOT_RUNNING, controller()->state());
   // Ensure that DisableSync is called.
   PumpModelThread();

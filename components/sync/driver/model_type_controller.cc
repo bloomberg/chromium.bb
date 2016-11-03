@@ -168,9 +168,10 @@ void ModelTypeController::DeactivateDataType(
     BackendDataTypeConfigurer* configurer) {
   DCHECK(CalledOnValidThread());
   DCHECK(configurer);
-  DCHECK(activated_);
-  configurer->DeactivateNonBlockingDataType(type());
-  activated_ = false;
+  if (activated_) {
+    configurer->DeactivateNonBlockingDataType(type());
+    activated_ = false;
+  }
 }
 
 void ModelTypeController::Stop() {
