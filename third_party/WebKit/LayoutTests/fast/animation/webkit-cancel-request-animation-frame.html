@@ -1,0 +1,7 @@
+<!DOCTYPE html>
+<script src="../../resources/js-test.js"></script>
+<div id="target"></div>
+<script>
+var id = window.webkitRequestAnimationFrame(function() {}, target);
+window.webkitCancelRequestAnimationFrame(id);
+</script>

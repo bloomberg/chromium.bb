@@ -54,6 +54,16 @@ String willBeRemoved(const char* feature,
       feature, milestoneString(milestone), details);
 }
 
+String replacedWillBeRemoved(const char* feature,
+                             const char* replacement,
+                             Milestone milestone,
+                             const char* details) {
+  return String::format(
+      "%s is deprecated and will be removed in %s. Please use %s instead. See "
+      "https://www.chromestatus.com/features/%s for more details.",
+      feature, milestoneString(milestone), replacement, details);
+}
+
 }  // anonymous namespace
 
 namespace blink {
@@ -258,8 +268,9 @@ String Deprecation::deprecationMessage(UseCounter::Feature feature) {
              "standard 'cancelAnimationFrame' instead.";
 
     case UseCounter::PrefixedCancelRequestAnimationFrame:
-      return "'webkitCancelRequestAnimationFrame' is vendor-specific. Please "
-             "use the standard 'cancelAnimationFrame' instead.";
+      return replacedWillBeRemoved("webkitCancelRequestAnimationFrame",
+                                   "cancelAnimationFrame", M57,
+                                   "5588435494502400");
 
     case UseCounter::PictureSourceSrc:
       return "<source src> with a <picture> parent is invalid and therefore "
