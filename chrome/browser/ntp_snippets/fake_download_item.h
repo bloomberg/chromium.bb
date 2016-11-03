@@ -54,6 +54,9 @@ class FakeDownloadItem : public content::DownloadItem {
   void SetState(const DownloadState& state);
   DownloadState GetState() const override;
 
+  void SetMimeType(const std::string& mime_type);
+  std::string GetMimeType() const override;
+
   // The methods below are not supported and are not expected to be called.
   void ValidateDangerousDownload() override;
   void StealDangerousDownload(const AcquireFileCallback& callback) override;
@@ -77,7 +80,6 @@ class FakeDownloadItem : public content::DownloadItem {
   const GURL& GetTabReferrerUrl() const override;
   std::string GetSuggestedFilename() const override;
   std::string GetContentDisposition() const override;
-  std::string GetMimeType() const override;
   std::string GetOriginalMimeType() const override;
   std::string GetRemoteAddress() const override;
   bool HasUserGesture() const override;
@@ -123,6 +125,7 @@ class FakeDownloadItem : public content::DownloadItem {
   bool is_file_externally_removed_;
   base::Time end_time_;
   DownloadState download_state_;
+  std::string mime_type_;
 
   // The members below are to be returned by methods, which return by reference.
   std::string dummy_string;

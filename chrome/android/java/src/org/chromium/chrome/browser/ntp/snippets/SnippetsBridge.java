@@ -202,6 +202,13 @@ public class SnippetsBridge implements SuggestionsSource {
     }
 
     @CalledByNative
+    private static void setDownloadAssetDataForLastSuggestion(
+            List<SnippetArticle> suggestions, String filePath, String mimeType) {
+        assert suggestions.size() > 0;
+        suggestions.get(suggestions.size() - 1).setDownloadAsset(filePath, mimeType);
+    }
+
+    @CalledByNative
     private static SuggestionsCategoryInfo createSuggestionsCategoryInfo(int category, String title,
             int cardLayout, boolean hasMoreAction, boolean hasReloadAction,
             boolean hasViewAllAction, boolean showIfEmpty, String noSuggestionsMessage) {

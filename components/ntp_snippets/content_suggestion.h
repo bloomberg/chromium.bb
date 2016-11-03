@@ -5,8 +5,10 @@
 #ifndef COMPONENTS_NTP_SNIPPETS_CONTENT_SUGGESTION_H_
 #define COMPONENTS_NTP_SNIPPETS_CONTENT_SUGGESTION_H_
 
+#include <memory>
 #include <string>
 
+#include "base/files/file_path.h"
 #include "base/macros.h"
 #include "base/strings/string16.h"
 #include "base/time/time.h"
@@ -14,6 +16,19 @@
 #include "url/gurl.h"
 
 namespace ntp_snippets {
+
+// DownloadSuggestionExtra contains additional data which is only available for
+// download suggestions.
+struct DownloadSuggestionExtra {
+  // The file path of the downloaded file once download completes.
+  // TODO(tschumann): Consider removing this if the Java side doesn't need the
+  // file location and can just get everything out of the URI.
+  base::FilePath target_file_path;
+  // The effective MIME type of downloaded content.
+  std::string mime_type;
+  // Whether or not the download suggestion is a downloaded asset.
+  bool is_download_asset = false;
+};
 
 // A content suggestion for the new tab page, which can be an article or an
 // offline page, for example.
@@ -93,6 +108,15 @@ class ContentSuggestion {
   float score() const { return score_; }
   void set_score(float score) { score_ = score; }
 
+  // Extra information for download suggestions. Only available for DOWNLOADS
+  // suggestions (i.e., if the associated category has the
+  // KnownCategories::DOWNLOADS id).
+  DownloadSuggestionExtra* download_suggestion_extra() const {
+    return download_suggestion_extra_.get();
+  }
+  void set_download_suggestion_extra(
+      std::unique_ptr<DownloadSuggestionExtra> download_suggestion_extra);
+
  private:
   ID id_;
   GURL url_;
@@ -102,6 +126,7 @@ class ContentSuggestion {
   base::Time publish_date_;
   base::string16 publisher_name_;
   float score_;
+  std::unique_ptr<DownloadSuggestionExtra> download_suggestion_extra_;
 
   DISALLOW_COPY_AND_ASSIGN(ContentSuggestion);
 };

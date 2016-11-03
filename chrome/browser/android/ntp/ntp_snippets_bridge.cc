@@ -5,6 +5,8 @@
 #include "chrome/browser/android/ntp/ntp_snippets_bridge.h"
 
 #include <jni.h>
+#include <utility>
+#include <vector>
 
 #include "base/android/callback_android.h"
 #include "base/android/jni_android.h"
@@ -49,7 +51,7 @@ base::Time TimeFromJavaTime(jlong timestamp_ms) {
          base::TimeDelta::FromMilliseconds(timestamp_ms);
 }
 
-} // namespace
+}  // namespace
 
 static jlong Init(JNIEnv* env,
                   const JavaParamRef<jobject>& obj,
@@ -203,6 +205,18 @@ ScopedJavaLocalRef<jobject> NTPSnippetsBridge::GetSuggestionsForCategory(
         ConvertUTF8ToJavaString(env, suggestion.amp_url().spec()),
         suggestion.publish_date().ToJavaTime(), suggestion.score(),
         static_cast<int>(info->card_layout()));
+    if (suggestion.id().category().id() ==
+            static_cast<int>(KnownCategories::DOWNLOADS) &&
+        suggestion.download_suggestion_extra() != nullptr &&
+        suggestion.download_suggestion_extra()->is_download_asset) {
+      Java_SnippetsBridge_setDownloadAssetDataForLastSuggestion(
+          env, result,
+          ConvertUTF8ToJavaString(
+              env,
+              suggestion.download_suggestion_extra()->target_file_path.value()),
+          ConvertUTF8ToJavaString(
+              env, suggestion.download_suggestion_extra()->mime_type));
+    }
   }
   return result;
 }

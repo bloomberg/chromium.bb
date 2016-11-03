@@ -93,6 +93,14 @@ DownloadItem::DownloadState FakeDownloadItem::GetState() const {
   return download_state_;
 }
 
+void FakeDownloadItem::SetMimeType(const std::string& mime_type) {
+  mime_type_ = mime_type;
+}
+
+std::string FakeDownloadItem::GetMimeType() const {
+  return mime_type_;
+}
+
 // The methods below are not supported and are not expected to be called.
 void FakeDownloadItem::ValidateDangerousDownload() {
   NOTREACHED();
@@ -194,11 +202,6 @@ std::string FakeDownloadItem::GetSuggestedFilename() const {
 }
 
 std::string FakeDownloadItem::GetContentDisposition() const {
-  NOTREACHED();
-  return std::string();
-}
-
-std::string FakeDownloadItem::GetMimeType() const {
   NOTREACHED();
   return std::string();
 }

@@ -63,6 +63,15 @@ public class SnippetArticle {
     /** To be run when the offline status of the article or AMP article changes. */
     private Runnable mOfflineStatusChangeRunnable;
 
+    /** Whether the linked article represents a downloaded asset. */
+    public boolean mIsDownloadedAsset;
+
+    /** The path to the downloaded asset (only for download asset articles).*/
+    private String mDownloadAssetPath;
+
+    /** The mime type of the downloaded asset (only for download asset articles).*/
+    private String mDownloadAssetMimeType;
+
     /**
      * Creates a SnippetArticleListItem object that will hold the data.
      */
@@ -151,6 +160,31 @@ public class SnippetArticle {
      */
     public void setOfflineStatusChangeRunnable(Runnable runnable) {
         mOfflineStatusChangeRunnable = runnable;
+    }
+
+    /**
+     * Returns the file path of the downloaded asset. May only be called if mIsDownloadedAsset is
+     * true.
+     */
+    // TODO(tschumann): If this always gets converted into an URI, we should drop this field and
+    // simply use mUrl.
+    public String getDownloadAssetPath() {
+        assert mIsDownloadedAsset;
+        return mDownloadAssetPath;
+    }
+
+    /** Returns the mime type of the download asset. May only be called if mIsDownloadAsset is true.
+     */
+    public String getDownloadAssetMimeType() {
+        assert mIsDownloadedAsset;
+        return mDownloadAssetMimeType;
+    }
+
+    /** Marks the article suggestion as a download asset with the given path and mime type. */
+    public void setDownloadAsset(String filePath, String mimeType) {
+        mIsDownloadedAsset = true;
+        mDownloadAssetPath = filePath;
+        mDownloadAssetMimeType = mimeType;
     }
 
     @Override

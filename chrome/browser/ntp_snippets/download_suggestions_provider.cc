@@ -10,6 +10,7 @@
 #include "base/bind.h"
 #include "base/feature_list.h"
 #include "base/guid.h"
+#include "base/memory/ptr_util.h"
 #include "base/stl_util.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/string_util.h"
@@ -413,6 +414,9 @@ ContentSuggestion DownloadSuggestionsProvider::ConvertOfflinePage(
   }
   suggestion.set_publish_date(offline_page.creation_time);
   suggestion.set_publisher_name(base::UTF8ToUTF16(offline_page.url.host()));
+  auto extra = base::MakeUnique<ntp_snippets::DownloadSuggestionExtra>();
+  extra->is_download_asset = false;
+  suggestion.set_download_suggestion_extra(std::move(extra));
   return suggestion;
 }
 
@@ -430,6 +434,11 @@ ContentSuggestion DownloadSuggestionsProvider::ConvertDownloadItem(
   suggestion.set_publish_date(download_item.GetEndTime());
   suggestion.set_publisher_name(
       base::UTF8ToUTF16(download_item.GetURL().host()));
+  auto extra = base::MakeUnique<ntp_snippets::DownloadSuggestionExtra>();
+  extra->target_file_path = download_item.GetTargetFilePath();
+  extra->mime_type = download_item.GetMimeType();
+  extra->is_download_asset = true;
+  suggestion.set_download_suggestion_extra(std::move(extra));
   // TODO(vitaliii): Set suggestion icon.
   return suggestion;
 }

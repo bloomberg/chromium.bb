@@ -4,6 +4,8 @@
 
 #include "chrome/browser/ntp_snippets/download_suggestions_provider.h"
 
+#include <memory>
+
 #include "base/bind.h"
 #include "base/observer_list.h"
 #include "base/strings/string_number_conversions.h"
@@ -33,6 +35,7 @@ using offline_pages::ClientId;
 using offline_pages::OfflinePageItem;
 using test::FakeDownloadItem;
 using testing::_;
+using testing::AllOf;
 using testing::AnyNumber;
 using testing::ElementsAre;
 using testing::IsEmpty;
@@ -95,9 +98,39 @@ MATCHER_P(HasUrl, url, "") {
   return arg.url().spec() == url;
 }
 
-OfflinePageItem CreateDummyOfflinePage(int id) {
-  return ntp_snippets::test::CreateDummyOfflinePageItem(
-      id, offline_pages::kAsyncNamespace);
+MATCHER_P3(HasDownloadSuggestionExtra,
+           is_download_asset,
+           target_file_path,
+           mime_type,
+           "") {
+  if (arg.download_suggestion_extra() == nullptr) {
+    *result_listener << "has no download_suggestion_extra";
+    return false;
+  }
+  auto extra = *arg.download_suggestion_extra();
+  *result_listener << "expected download asset?: " << is_download_asset
+                   << "\n actual is download asset?: "
+                   << extra.is_download_asset;
+  if (extra.is_download_asset != is_download_asset) {
+    return false;
+  }
+  *result_listener << "expected target_file_path: "
+                   << target_file_path
+                   << "\nactual target_file_path: "
+                   << extra.target_file_path.value();
+  if (extra.target_file_path.value() !=
+      base::FilePath::StringType(target_file_path)) {
+    return false;
+  }
+  *result_listener << "expected mime_type: " << mime_type
+                   << "\nactual mime_type: "
+                   << extra.mime_type;
+  return extra.mime_type == mime_type;
+}
+
+  OfflinePageItem CreateDummyOfflinePage(int id) {
+    return ntp_snippets::test::CreateDummyOfflinePageItem(
+        id, offline_pages::kAsyncNamespace);
 }
 
 std::vector<OfflinePageItem> CreateDummyOfflinePages(
@@ -124,6 +157,7 @@ std::unique_ptr<FakeDownloadItem> CreateDummyAssetDownload(int id) {
   item->SetEndTime(base::Time::Now());
   item->SetFileExternallyRemoved(false);
   item->SetState(DownloadItem::DownloadState::COMPLETE);
+  item->SetMimeType("application/pdf");
   return item;
 }
 
@@ -295,10 +329,17 @@ TEST_F(DownloadSuggestionsProviderTest,
   IgnoreOnCategoryStatusChangedToAvailable();
 
   *(offline_pages_model()->mutable_items()) = CreateDummyOfflinePages({1, 2});
-  EXPECT_CALL(*observer(), OnNewSuggestions(_, downloads_category(),
-                                            UnorderedElementsAre(
-                                                HasUrl("http://dummy.com/1"),
-                                                HasUrl("http://dummy.com/2"))));
+  EXPECT_CALL(*observer(),
+              OnNewSuggestions(
+                  _, downloads_category(),
+                  UnorderedElementsAre(AllOf(HasUrl("http://dummy.com/1"),
+                                             HasDownloadSuggestionExtra(
+                                                 /*is_download_asset=*/false,
+                                                 FILE_PATH_LITERAL(""), "")),
+                                       AllOf(HasUrl("http://dummy.com/2"),
+                                             HasDownloadSuggestionExtra(
+                                                 /*is_download_asset=*/false,
+                                                 FILE_PATH_LITERAL(""), "")))));
   CreateProvider();
 }
 
@@ -315,16 +356,29 @@ TEST_F(DownloadSuggestionsProviderTest,
       CreateDummyAssetDownloads({1, 2});
 
   EXPECT_CALL(*observer(),
-              OnNewSuggestions(
-                  _, downloads_category(),
-                  UnorderedElementsAre(HasUrl("file:///folder/file1.mhtml"))));
+              OnNewSuggestions(_, downloads_category(),
+                               UnorderedElementsAre(AllOf(
+                                   HasUrl("file:///folder/file1.mhtml"),
+                                   HasDownloadSuggestionExtra(
+                                       /*is_download_asset=*/true,
+                                       FILE_PATH_LITERAL("folder/file1.mhtml"),
+                                       "application/pdf")))));
   FireDownloadCreated(asset_downloads[0].get());
 
-  EXPECT_CALL(*observer(),
-              OnNewSuggestions(
-                  _, downloads_category(),
-                  UnorderedElementsAre(HasUrl("file:///folder/file1.mhtml"),
-                                       HasUrl("file:///folder/file2.mhtml"))));
+  EXPECT_CALL(
+      *observer(),
+      OnNewSuggestions(_, downloads_category(),
+                       UnorderedElementsAre(
+                           AllOf(HasUrl("file:///folder/file1.mhtml"),
+                                 HasDownloadSuggestionExtra(
+                                     /*is_download_asset=*/true,
+                                     FILE_PATH_LITERAL("folder/file1.mhtml"),
+                                     "application/pdf")),
+                           AllOf(HasUrl("file:///folder/file2.mhtml"),
+                                 HasDownloadSuggestionExtra(
+                                     /*is_download_asset=*/true,
+                                     FILE_PATH_LITERAL("folder/file2.mhtml"),
+                                     "application/pdf")))));
   FireDownloadCreated(asset_downloads[1].get());
 }
 
