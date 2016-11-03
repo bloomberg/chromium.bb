@@ -2,32 +2,39 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-chrome.audio.OnDevicesChanged.addListener(function (devices) {
-  if (devices.length === 2) {
-    if (devices[0].id != "40001" ||
-      devices[0].stableDeviceId != "90001" ||
-      devices[0].isInput != true ||
-      devices[0].deviceType != "USB" ||
-      devices[0].deviceName != "Jabra Mic" ||
-      devices[0].displayName != "Jabra Mic 1") {
-      console.error("Got wrong device property for device:" +
-          JSON.stringify(devices[0]));
-      chrome.test.sendMessage("failure");
-    }
-    if (devices[1].id != "40002" ||
-        devices[1].stableDeviceId != "90002" ||
-        devices[1].isInput != true ||
-        devices[1].deviceType != "USB" ||
-        devices[1].deviceName != "Jabra Mic" ||
-        devices[1].displayName != "Jabra Mic 2") {
-      console.error("Got wrong device property for device:" +
-          JSON.stringify(devices[1]));
-      chrome.test.sendMessage("failure");
-    }
-    chrome.test.sendMessage("success");
-  } else {
-    console.error("Got unexpected OnNodesChanged event failed");
-    chrome.test.sendMessage("failure");
+chrome.test.runTests([
+  function waitForDeviceChangedEventTests() {
+    chrome.test.listenOnce(chrome.audio.OnDevicesChanged, function (devices) {
+      var deviceList = devices.map(function(device) {
+        return {
+          id: device.id,
+          stableDeviceId: device.stableDeviceId,
+          isInput: device.isInput,
+          deviceType: device.deviceType,
+          deviceName: device.deviceName,
+          displayName: device.displayName
+        };
+      }).sort(function(lhs, rhs) {
+        return Number.parseInt(lhs.id) - Number.parseInt(rhs.id);
+      });
+
+      chrome.test.assertEq([{
+        id: '40001',
+        stableDeviceId: '90001',
+        isInput: true,
+        deviceType: 'USB',
+        deviceName: 'Jabra Mic',
+        displayName: 'Jabra Mic 1'
+      }, {
+        id: '40002',
+        stableDeviceId: '90002',
+        isInput: true,
+        deviceType: 'USB',
+        deviceName: 'Jabra Mic',
+        displayName: 'Jabra Mic 2'
+      }], deviceList);
+    });
   }
-});
-chrome.test.sendMessage("loaded");
+]);
+
+chrome.test.sendMessage('loaded');

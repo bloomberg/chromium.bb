@@ -9,13 +9,15 @@
 #include "base/run_loop.h"
 #include "build/build_config.h"
 #include "extensions/shell/test/shell_apitest.h"
+#include "extensions/test/extension_test_message_listener.h"
+#include "extensions/test/result_catcher.h"
+
 #if defined(OS_CHROMEOS)
 #include "chromeos/audio/audio_devices_pref_handler_stub.h"
 #include "chromeos/audio/cras_audio_handler.h"
 #include "chromeos/dbus/dbus_thread_manager.h"
 #include "chromeos/dbus/fake_cras_audio_client.h"
 #endif
-#include "extensions/test/extension_test_message_listener.h"
 
 namespace extensions {
 
@@ -149,9 +151,8 @@ IN_PROC_BROWSER_TEST_F(AudioApiTest, OnLevelChangedOutputDevice) {
   EXPECT_EQ(device.id, kJabraSpeaker1.id);
 
   // Loads background app.
+  ResultCatcher result_catcher;
   ExtensionTestMessageListener load_listener("loaded", false);
-  ExtensionTestMessageListener result_listener("success", false);
-  result_listener.set_failure_message("failure");
   ASSERT_TRUE(LoadApp("api_test/audio/volume_change"));
   ASSERT_TRUE(load_listener.WaitUntilSatisfied());
 
@@ -166,8 +167,7 @@ IN_PROC_BROWSER_TEST_F(AudioApiTest, OnLevelChangedOutputDevice) {
 
   // Verify the background app got the OnOutputNodeVolumeChanged event
   // with the expected node id and volume value.
-  ASSERT_TRUE(result_listener.WaitUntilSatisfied());
-  EXPECT_EQ("success", result_listener.message());
+  ASSERT_TRUE(result_catcher.GetNextResult()) << result_catcher.message();
 }
 
 IN_PROC_BROWSER_TEST_F(AudioApiTest, OnOutputMuteChanged) {
@@ -186,9 +186,8 @@ IN_PROC_BROWSER_TEST_F(AudioApiTest, OnOutputMuteChanged) {
   EXPECT_TRUE(cras_audio_handler_->IsOutputMuted());
 
   // Loads background app.
+  ResultCatcher result_catcher;
   ExtensionTestMessageListener load_listener("loaded", false);
-  ExtensionTestMessageListener result_listener("success", false);
-  result_listener.set_failure_message("failure");
   ASSERT_TRUE(LoadApp("api_test/audio/output_mute_change"));
   ASSERT_TRUE(load_listener.WaitUntilSatisfied());
 
@@ -198,8 +197,7 @@ IN_PROC_BROWSER_TEST_F(AudioApiTest, OnOutputMuteChanged) {
 
   // Verify the background app got the OnMuteChanged event
   // with the expected output un-muted state.
-  ASSERT_TRUE(result_listener.WaitUntilSatisfied());
-  EXPECT_EQ("success", result_listener.message());
+  EXPECT_TRUE(result_catcher.GetNextResult()) << result_catcher.message();
 }
 
 IN_PROC_BROWSER_TEST_F(AudioApiTest, OnInputMuteChanged) {
@@ -219,9 +217,8 @@ IN_PROC_BROWSER_TEST_F(AudioApiTest, OnInputMuteChanged) {
   EXPECT_FALSE(cras_audio_handler_->IsInputMuted());
 
   // Loads background app.
+  ResultCatcher result_catcher;
   ExtensionTestMessageListener load_listener("loaded", false);
-  ExtensionTestMessageListener result_listener("success", false);
-  result_listener.set_failure_message("failure");
   ASSERT_TRUE(LoadApp("api_test/audio/input_mute_change"));
   ASSERT_TRUE(load_listener.WaitUntilSatisfied());
 
@@ -231,8 +228,7 @@ IN_PROC_BROWSER_TEST_F(AudioApiTest, OnInputMuteChanged) {
 
   // Verify the background app got the OnMuteChanged event
   // with the expected input muted state.
-  ASSERT_TRUE(result_listener.WaitUntilSatisfied());
-  EXPECT_EQ("success", result_listener.message());
+  EXPECT_TRUE(result_catcher.GetNextResult()) << result_catcher.message();
 }
 
 IN_PROC_BROWSER_TEST_F(AudioApiTest, OnNodesChangedAddNodes) {
@@ -247,9 +243,8 @@ IN_PROC_BROWSER_TEST_F(AudioApiTest, OnNodesChangedAddNodes) {
   EXPECT_EQ(init_device_size, audio_devices.size());
 
   // Load background app.
+  ResultCatcher result_catcher;
   ExtensionTestMessageListener load_listener("loaded", false);
-  ExtensionTestMessageListener result_listener("success", false);
-  result_listener.set_failure_message("failure");
   ASSERT_TRUE(LoadApp("api_test/audio/add_nodes"));
   ASSERT_TRUE(load_listener.WaitUntilSatisfied());
 
@@ -261,8 +256,7 @@ IN_PROC_BROWSER_TEST_F(AudioApiTest, OnNodesChangedAddNodes) {
 
   // Verify the background app got the OnNodesChanged event
   // with the new node added.
-  ASSERT_TRUE(result_listener.WaitUntilSatisfied());
-  EXPECT_EQ("success", result_listener.message());
+  EXPECT_TRUE(result_catcher.GetNextResult()) << result_catcher.message();
 }
 
 IN_PROC_BROWSER_TEST_F(AudioApiTest, OnNodesChangedRemoveNodes) {
@@ -278,9 +272,8 @@ IN_PROC_BROWSER_TEST_F(AudioApiTest, OnNodesChangedRemoveNodes) {
   EXPECT_EQ(init_device_size, audio_devices.size());
 
   // Load background app.
+  ResultCatcher result_catcher;
   ExtensionTestMessageListener load_listener("loaded", false);
-  ExtensionTestMessageListener result_listener("success", false);
-  result_listener.set_failure_message("failure");
   ASSERT_TRUE(LoadApp("api_test/audio/remove_nodes"));
   ASSERT_TRUE(load_listener.WaitUntilSatisfied());
 
@@ -292,8 +285,7 @@ IN_PROC_BROWSER_TEST_F(AudioApiTest, OnNodesChangedRemoveNodes) {
 
   // Verify the background app got the onNodesChanged event
   // with the last node removed.
-  ASSERT_TRUE(result_listener.WaitUntilSatisfied());
-  EXPECT_EQ("success", result_listener.message());
+  EXPECT_TRUE(result_catcher.GetNextResult()) << result_catcher.message();
 }
 
 #endif  // OS_CHROMEOS

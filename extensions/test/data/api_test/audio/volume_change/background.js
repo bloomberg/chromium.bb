@@ -2,13 +2,13 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-chrome.audio.OnLevelChanged.addListener(function (id, level) {
-  if (id == 30001 && level == 60) {
-    chrome.test.sendMessage("success");
-  } else {
-    console.error("Got unexpected OnLevelChanged event id:" + id +
-                  " level:" + level);
-    chrome.test.sendMessage("failure");
+chrome.test.runTests([
+  function waitForLevelChangedEventTests() {
+    chrome.test.listenOnce(chrome.audio.OnLevelChanged, function (id, level) {
+      chrome.test.assertEq('30001', id);
+      chrome.test.assertEq(60, level);
+    });
   }
-});
-chrome.test.sendMessage("loaded");
+]);
+
+chrome.test.sendMessage('loaded');

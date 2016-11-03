@@ -2,13 +2,15 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-chrome.audio.OnMuteChanged.addListener(function (is_input, is_muted) {
-  if (is_input === true && is_muted === true) {
-    chrome.test.sendMessage("success");
-  } else {
-    console.error("Got unexpected OnMuteChanged event is_input:" + is_input +
-                  " is_muted:" + is_muted);
-    chrome.test.sendMessage("failure");
+chrome.test.runTests([
+  function waitForMuteChangedEventTests() {
+    chrome.test.listenOnce(
+        chrome.audio.OnMuteChanged,
+        function(isInput, isMuted) {
+          chrome.test.assertTrue(isInput);
+          chrome.test.assertTrue(isMuted);
+        });
   }
-});
-chrome.test.sendMessage("loaded");
+]);
+
+chrome.test.sendMessage('loaded');
