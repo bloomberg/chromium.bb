@@ -1,8 +1,8 @@
 #!/usr/bin/env python
 
-# Copyright 2016 The LUCI Authors. All rights reserved.
-# Use of this source code is governed under the Apache License, Version 2.0
-# that can be found in the LICENSE file.
+# Copyright (c) 2016 The Chromium Authors. All rights reserved.
+# Use of this source code is governed by a BSD-style license that can be
+# found in the LICENSE file.
 
 """Bootstrap script to clone and forward to the recipe engine tool.
 
@@ -161,8 +161,7 @@ def main():
     time.sleep(random.uniform(2,5))
     ensure_engine()
 
-  args = ['--package', recipes_cfg_path,
-          '--bootstrap-script', __file__] + sys.argv[1:]
+  args = ['--package', recipes_cfg_path] + sys.argv[1:]
   return _subprocess_call([
       sys.executable, '-u',
       os.path.join(engine_path, engine_subpath, 'recipes.py')] + args)
