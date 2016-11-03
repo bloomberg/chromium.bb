@@ -83,6 +83,7 @@
     {
       'target_name': 'site_data',
       'dependencies': [
+        '../settings_page/compiled_resources2.gyp:settings_subpage_search',
         'cookie_tree_behavior',
         'cookie_tree_node',
       ],

@@ -11,23 +11,30 @@
 <dom-module id="site-data">
   <template>
     <style include="settings-shared">
-      .secondary-button {
-        margin-top: 12px;  /* Align with <h2>. */
+      paper-button#removeButton {
+        -webkit-margin-start: auto;
+      }
+
+      .subtitle-row {
+        margin-top: 9px;  /* With 15px in sub-items == 24px total margin. */
       }
     </style>
-    <div class="settings-box first">
-      <h2 class="start">$i18n{siteSettingsCookieHeader}</h2>
-      <paper-button class="secondary-button"
+    <div class="settings-box first subtitle-row">
+      <div class="start">
+        <div>$i18n{siteSettingsCookieHeader}</div>
+      </div>
+      <settings-subpage-search id="filter" on-search-changed="onSearchChanged_"
+          label="$i18n{siteSettingsCookieSearch}">
+      </settings-subpage-search>
+    </div>
+    <div class="settings-box continuation">
+      <paper-button class="secondary-button" id="removeButton"
           on-tap="onConfirmDeleteMultipleSites_"
           hidden$="[[!isRemoveButtonVisible_(sites, renderedItemCount)]]">
           [[computeRemoveLabel_(filterString_)]]
       </paper-button>
     </div>
-
     <div class="list-frame vertical-list">
-      <settings-subpage-search id="filter" on-search-changed="onSearchChanged_"
-          label="$i18n{siteSettingsCookieSearch}">
-      </settings-subpage-search>
       <template is="dom-repeat" id="list" items="[[sites]]" filter="showItem_"
           rendered-item-count="{{renderedItemCount}}">
         <div class="list-item two-line" on-tap="onSiteTap_" actionable>
