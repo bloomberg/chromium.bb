@@ -23,15 +23,16 @@ class MEDIA_EXPORT PictureBuffer {
  public:
   using TextureIds = std::vector<uint32_t>;
 
+  PictureBuffer(int32_t id, const gfx::Size& size);
   PictureBuffer(int32_t id,
-                gfx::Size size,
+                const gfx::Size& size,
                 const TextureIds& client_texture_ids);
   PictureBuffer(int32_t id,
-                gfx::Size size,
+                const gfx::Size& size,
                 const TextureIds& client_texture_ids,
                 const TextureIds& service_texture_ids);
   PictureBuffer(int32_t id,
-                gfx::Size size,
+                const gfx::Size& size,
                 const TextureIds& client_texture_ids,
                 const std::vector<gpu::Mailbox>& texture_mailboxes);
   PictureBuffer(const PictureBuffer& other);
@@ -52,9 +53,7 @@ class MEDIA_EXPORT PictureBuffer {
   // |client_texture_ids|.
   const TextureIds& service_texture_ids() const { return service_texture_ids_; }
 
-  const gpu::Mailbox& texture_mailbox(size_t plane) const {
-    return texture_mailboxes_[plane];
-  }
+  gpu::Mailbox texture_mailbox(size_t plane) const;
 
  private:
   int32_t id_;

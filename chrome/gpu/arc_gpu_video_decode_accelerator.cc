@@ -146,12 +146,9 @@ void ArcGpuVideoDecodeAccelerator::SetNumberOfOutputBuffers(size_t number) {
 
   std::vector<media::PictureBuffer> buffers;
   for (size_t id = 0; id < number; ++id) {
-    media::PictureBuffer::TextureIds texture_ids;
-    texture_ids.push_back(0);
-
     // TODO(owenlin): Make sure the |coded_size| is what we want.
-    buffers.push_back(media::PictureBuffer(base::checked_cast<int32_t>(id),
-                                           coded_size_, texture_ids));
+    buffers.push_back(
+        media::PictureBuffer(base::checked_cast<int32_t>(id), coded_size_));
   }
   vda_->AssignPictureBuffers(buffers);
 

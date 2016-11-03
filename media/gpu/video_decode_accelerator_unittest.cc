@@ -692,9 +692,9 @@ void GLRenderingVDAClient::ProvidePictureBuffers(
         active_textures_.insert(std::make_pair(picture_buffer_id, texture_ref))
             .second);
 
-    PictureBuffer::TextureIds ids;
-    ids.push_back(texture_id);
-    buffers.push_back(PictureBuffer(picture_buffer_id, dimensions, ids, ids));
+    PictureBuffer::TextureIds texture_ids(1, texture_id);
+    buffers.push_back(PictureBuffer(picture_buffer_id, dimensions,
+                                    PictureBuffer::TextureIds(), texture_ids));
   }
   decoder_->AssignPictureBuffers(buffers);
 

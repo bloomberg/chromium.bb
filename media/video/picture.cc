@@ -7,24 +7,33 @@
 
 namespace media {
 
-PictureBuffer::PictureBuffer(int32_t id,
-                             gfx::Size size,
-                             const TextureIds& client_texture_ids)
-    : id_(id), size_(size), client_texture_ids_(client_texture_ids) {}
+PictureBuffer::PictureBuffer(int32_t id, const gfx::Size& size)
+    : id_(id), size_(size) {}
 
 PictureBuffer::PictureBuffer(int32_t id,
-                             gfx::Size size,
+                             const gfx::Size& size,
+                             const TextureIds& client_texture_ids)
+    : id_(id), size_(size), client_texture_ids_(client_texture_ids) {
+  DCHECK(!client_texture_ids_.empty());
+}
+
+PictureBuffer::PictureBuffer(int32_t id,
+                             const gfx::Size& size,
                              const TextureIds& client_texture_ids,
                              const TextureIds& service_texture_ids)
     : id_(id),
       size_(size),
       client_texture_ids_(client_texture_ids),
       service_texture_ids_(service_texture_ids) {
-  DCHECK_EQ(client_texture_ids.size(), service_texture_ids.size());
+  DCHECK(!service_texture_ids_.empty());
+  // We either not have client texture ids at all, or if we do, then their
+  // number must be the same as the number of service texture ids.
+  DCHECK(client_texture_ids_.empty() ||
+         client_texture_ids_.size() == service_texture_ids_.size());
 }
 
 PictureBuffer::PictureBuffer(int32_t id,
-                             gfx::Size size,
+                             const gfx::Size& size,
                              const TextureIds& client_texture_ids,
                              const std::vector<gpu::Mailbox>& texture_mailboxes)
     : id_(id),
@@ -37,6 +46,15 @@ PictureBuffer::PictureBuffer(int32_t id,
 PictureBuffer::PictureBuffer(const PictureBuffer& other) = default;
 
 PictureBuffer::~PictureBuffer() {}
+
+gpu::Mailbox PictureBuffer::texture_mailbox(size_t plane) const {
+  if (plane >= texture_mailboxes_.size()) {
+    LOG(ERROR) << "No mailbox for plane " << plane;
+    return gpu::Mailbox();
+  }
+
+  return texture_mailboxes_[plane];
+}
 
 Picture::Picture(int32_t picture_buffer_id,
                  int32_t bitstream_buffer_id,
