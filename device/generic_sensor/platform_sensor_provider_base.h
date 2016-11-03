@@ -35,11 +35,6 @@ class DEVICE_GENERIC_SENSOR_EXPORT PlatformSensorProviderBase
   // alive; 'false' otherwise.
   bool HasSensors() const;
 
-  // Implementations might want to override this in order to be able
-  // to read from sensor files. For example, linux does so.
-  virtual void SetFileTaskRunner(
-      scoped_refptr<base::SingleThreadTaskRunner> file_task_runner) {}
-
  protected:
   PlatformSensorProviderBase();
   virtual ~PlatformSensorProviderBase();

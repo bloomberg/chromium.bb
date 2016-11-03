@@ -32,12 +32,9 @@ void NotifySensorCreated(
 }  // namespace
 
 // static
-void SensorProviderImpl::Create(
-    scoped_refptr<base::SingleThreadTaskRunner> file_task_runner,
-    mojom::SensorProviderRequest request) {
+void SensorProviderImpl::Create(mojom::SensorProviderRequest request) {
   PlatformSensorProvider* provider = PlatformSensorProvider::GetInstance();
   if (provider) {
-    provider->SetFileTaskRunner(file_task_runner);
     mojo::MakeStrongBinding(base::WrapUnique(new SensorProviderImpl(provider)),
                             std::move(request));
   }
