@@ -68,9 +68,9 @@ TEST_F(SimpleMetadataChangeListTest, TransferChangesEmptyChangeList) {
 
   cl.TransferChanges(store(), batch.get());
 
-  EXPECT_EQ(change_map.size(), 0ul);
-  EXPECT_EQ(delete_set.size(), 0ul);
-  EXPECT_EQ(global_metadata.size(), 0ul);
+  EXPECT_EQ(change_map.size(), 0u);
+  EXPECT_EQ(delete_set.size(), 0u);
+  EXPECT_EQ(global_metadata.size(), 0u);
 }
 
 TEST_F(SimpleMetadataChangeListTest, TransferChangesClearsLocalState) {
@@ -83,13 +83,13 @@ TEST_F(SimpleMetadataChangeListTest, TransferChangesClearsLocalState) {
   state.set_encryption_key_name("ekn");
   cl.UpdateModelTypeState(state);
 
-  EXPECT_NE(cl.GetMetadataChanges().size(), 0ul);
+  EXPECT_NE(cl.GetMetadataChanges().size(), 0u);
   EXPECT_TRUE(cl.HasModelTypeStateChange());
 
   std::unique_ptr<WriteBatch> batch = store()->CreateWriteBatch();
   cl.TransferChanges(store(), batch.get());
 
-  EXPECT_EQ(cl.GetMetadataChanges().size(), 0ul);
+  EXPECT_EQ(cl.GetMetadataChanges().size(), 0u);
   EXPECT_FALSE(cl.HasModelTypeStateChange());
 }
 

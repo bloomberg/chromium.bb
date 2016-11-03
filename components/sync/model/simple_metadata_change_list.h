@@ -42,9 +42,9 @@ class SimpleMetadataChangeList : public MetadataChangeList {
   void UpdateModelTypeState(
       const sync_pb::ModelTypeState& model_type_state) override;
   void ClearModelTypeState() override;
-  void UpdateMetadata(const std::string& client_tag,
+  void UpdateMetadata(const std::string& storage_key,
                       const sync_pb::EntityMetadata& metadata) override;
-  void ClearMetadata(const std::string& client_tag) override;
+  void ClearMetadata(const std::string& storage_key) override;
 
   const MetadataChanges& GetMetadataChanges() const;
   bool HasModelTypeStateChange() const;

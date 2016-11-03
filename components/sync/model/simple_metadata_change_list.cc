@@ -20,13 +20,13 @@ void SimpleMetadataChangeList::ClearModelTypeState() {
 }
 
 void SimpleMetadataChangeList::UpdateMetadata(
-    const std::string& client_tag,
+    const std::string& storage_key,
     const sync_pb::EntityMetadata& metadata) {
-  metadata_changes_[client_tag] = {UPDATE, metadata};
+  metadata_changes_[storage_key] = {UPDATE, metadata};
 }
 
-void SimpleMetadataChangeList::ClearMetadata(const std::string& client_tag) {
-  metadata_changes_[client_tag] = {CLEAR, sync_pb::EntityMetadata()};
+void SimpleMetadataChangeList::ClearMetadata(const std::string& storage_key) {
+  metadata_changes_[storage_key] = {CLEAR, sync_pb::EntityMetadata()};
 }
 
 const SimpleMetadataChangeList::MetadataChanges&
@@ -49,15 +49,15 @@ void SimpleMetadataChangeList::TransferChanges(
   DCHECK(write_batch);
   DCHECK(store);
   for (const auto& pair : metadata_changes_) {
-    const std::string& key = pair.first;
+    const std::string& storage_key = pair.first;
     const MetadataChange& change = pair.second;
     switch (change.type) {
       case UPDATE:
-        store->WriteMetadata(write_batch, key,
+        store->WriteMetadata(write_batch, storage_key,
                              change.metadata.SerializeAsString());
         break;
       case CLEAR:
-        store->DeleteMetadata(write_batch, key);
+        store->DeleteMetadata(write_batch, storage_key);
         break;
     }
   }
