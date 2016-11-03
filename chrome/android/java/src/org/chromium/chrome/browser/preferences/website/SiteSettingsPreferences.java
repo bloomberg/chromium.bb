@@ -40,7 +40,6 @@ public class SiteSettingsPreferences extends PreferenceFragment
     static final String BACKGROUND_SYNC_KEY = "background_sync";
     static final String CAMERA_KEY = "camera";
     static final String COOKIES_KEY = "cookies";
-    static final String FULLSCREEN_KEY = "fullscreen";
     static final String JAVASCRIPT_KEY = "javascript";
     static final String LOCATION_KEY = "device_location";
     static final String MEDIA_KEY = "media";
@@ -98,8 +97,6 @@ public class SiteSettingsPreferences extends PreferenceFragment
             return ContentSettingsType.CONTENT_SETTINGS_TYPE_MEDIASTREAM_CAMERA;
         } else if (COOKIES_KEY.equals(key)) {
             return ContentSettingsType.CONTENT_SETTINGS_TYPE_COOKIES;
-        } else if (FULLSCREEN_KEY.equals(key)) {
-            return ContentSettingsType.CONTENT_SETTINGS_TYPE_FULLSCREEN;
         } else if (JAVASCRIPT_KEY.equals(key)) {
             return ContentSettingsType.CONTENT_SETTINGS_TYPE_JAVASCRIPT;
         } else if (LOCATION_KEY.equals(key)) {
@@ -124,7 +121,6 @@ public class SiteSettingsPreferences extends PreferenceFragment
             getPreferenceScreen().removePreference(findPreference(BACKGROUND_SYNC_KEY));
             getPreferenceScreen().removePreference(findPreference(CAMERA_KEY));
             getPreferenceScreen().removePreference(findPreference(COOKIES_KEY));
-            getPreferenceScreen().removePreference(findPreference(FULLSCREEN_KEY));
             getPreferenceScreen().removePreference(findPreference(JAVASCRIPT_KEY));
             getPreferenceScreen().removePreference(findPreference(LOCATION_KEY));
             getPreferenceScreen().removePreference(findPreference(MEDIA_KEY));
@@ -178,7 +174,6 @@ public class SiteSettingsPreferences extends PreferenceFragment
             websitePrefs.add(BACKGROUND_SYNC_KEY);
             websitePrefs.add(CAMERA_KEY);
             websitePrefs.add(COOKIES_KEY);
-            websitePrefs.add(FULLSCREEN_KEY);
             websitePrefs.add(JAVASCRIPT_KEY);
             websitePrefs.add(LOCATION_KEY);
             websitePrefs.add(MICROPHONE_KEY);
@@ -199,8 +194,6 @@ public class SiteSettingsPreferences extends PreferenceFragment
                 checked = PrefServiceBridge.getInstance().isCameraEnabled();
             } else if (COOKIES_KEY.equals(prefName)) {
                 checked = PrefServiceBridge.getInstance().isAcceptCookiesEnabled();
-            } else if (FULLSCREEN_KEY.equals(prefName)) {
-                checked = PrefServiceBridge.getInstance().isFullscreenAllowed();
             } else if (JAVASCRIPT_KEY.equals(prefName)) {
                 checked = PrefServiceBridge.getInstance().javaScriptEnabled();
             } else if (LOCATION_KEY.equals(prefName)) {

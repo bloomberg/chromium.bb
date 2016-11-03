@@ -695,13 +695,6 @@ public class SingleCategoryPreferences extends PreferenceFragment
                 } else if (mCategory.showCookiesSites()) {
                     globalToggle.setChecked(
                             PrefServiceBridge.getInstance().isAcceptCookiesEnabled());
-                } else if (mCategory.showFullscreenSites()) {
-                    globalToggle.setChecked(
-                            PrefServiceBridge.getInstance().isFullscreenAllowed());
-                    // The fullscreen global toggle cannot be disabled.
-                    // TODO(mgiuca): Remove this setting entirely (requires deleting all the data;
-                    // see https://crbug.com/591896).
-                    globalToggle.setEnabled(false);
                 } else if (mCategory.showGeolocationSites()) {
                     globalToggle.setChecked(
                             LocationSettings.getInstance().isChromeLocationSettingEnabled());
