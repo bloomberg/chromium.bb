@@ -2061,6 +2061,19 @@ const FeatureEntry kFeatureEntries[] = {
      IDS_FLAGS_ENABLE_DEFAULT_MEDIA_SESSION_DESCRIPTION, kOsDesktop,
      MULTI_VALUE_TYPE(kEnableDefaultMediaSessionChoices)},
 #endif  // !OS_ANDROID
+#if defined(OS_ANDROID)
+    {"modal-permission-prompts", IDS_FLAGS_MODAL_PERMISSION_PROMPTS_NAME,
+     IDS_FLAGS_MODAL_PERMISSION_PROMPTS_DESCRIPTION, kOsAndroid,
+     FEATURE_VALUE_TYPE(features::kModalPermissionPrompts)},
+#endif
+#if !defined(OS_MACOSX)
+    {"permission-prompt-persistence-toggle",
+     IDS_FLAGS_PERMISSION_PROMPT_PERSISTENCE_TOGGLE_NAME,
+     IDS_FLAGS_PERMISSION_PROMPT_PERSISTENCE_TOGGLE_DESCRIPTION,
+     kOsWin | kOsCrOS | kOsLinux | kOsAndroid,
+     FEATURE_VALUE_TYPE(
+         features::kDisplayPersistenceToggleInPermissionPrompts)},
+#endif
 #if defined(ENABLE_PRINT_PREVIEW)
     {"print-scaling", IDS_FLAGS_PRINT_SCALING_NAME,
      IDS_FLAGS_PRINT_SCALING_DESCRIPTION, kOsDesktop,
