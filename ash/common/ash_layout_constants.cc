@@ -8,12 +8,12 @@
 #include "ui/base/material_design/material_design_controller.h"
 
 gfx::Size GetAshLayoutSize(AshLayoutSize size) {
-  const int kBrowserMaximizedCaptionButtonHeight[] = {27, 29, 33};
-  const int kBrowserMaximizedCaptionButtonWidth[] = {35, 32, 32};
-  const int kBrowserRestoredCaptionButtonHeight[] = {35, 36, 40};
-  const int kBrowserRestoredCaptionButtonWidth[] = {35, 32, 32};
-  const int kNonBrowserCaptionButtonHeight[] = {33, 33, 33};
-  const int kNonBrowserCaptionButtonWidth[] = {32, 32, 32};
+  const int kBrowserMaximizedCaptionButtonHeight[] = {29, 33};
+  const int kBrowserMaximizedCaptionButtonWidth[] = {32, 32};
+  const int kBrowserRestoredCaptionButtonHeight[] = {36, 40};
+  const int kBrowserRestoredCaptionButtonWidth[] = {32, 32};
+  const int kNonBrowserCaptionButtonHeight[] = {33, 33};
+  const int kNonBrowserCaptionButtonWidth[] = {32, 32};
 
   const int mode = ui::MaterialDesignController::GetMode();
   switch (size) {
