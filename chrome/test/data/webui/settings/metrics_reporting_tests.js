@@ -21,6 +21,7 @@ suite('metrics reporting', function() {
   test('changes to whether metrics reporting is enabled/managed', function() {
     return testBrowserProxy.whenCalled('getMetricsReporting').then(function() {
       Polymer.dom.flush();
+      assertFalse(!!page.$$('#metricsReporting paper-button'));
 
       var checkbox = page.$.metricsReportingCheckbox;
       assertEquals(testBrowserProxy.metricsReporting.enabled, checkbox.checked);
@@ -34,6 +35,8 @@ suite('metrics reporting', function() {
       cr.webUIListenerCallback('metrics-reporting-change', changedMetrics);
       Polymer.dom.flush();
 
+      assertTrue(!!page.$$('#metricsReporting paper-button'));
+
       assertEquals(changedMetrics.enabled, checkbox.checked);
       indicatorVisible = !!page.$$('#indicator');
       assertEquals(changedMetrics.managed, indicatorVisible);
@@ -42,6 +45,8 @@ suite('metrics reporting', function() {
 
       MockInteractions.tap(checkbox);
       return testBrowserProxy.whenCalled('setMetricsReportingEnabled', toggled);
+    }).then(function() {
+      assertTrue(!!page.$$('#metricsReporting paper-button'));
     });
   });
 });
