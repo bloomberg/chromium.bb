@@ -5,6 +5,7 @@
 package org.chromium.components.spellcheck;
 
 import android.content.Context;
+import android.os.SystemClock;
 import android.view.textservice.SentenceSuggestionsInfo;
 import android.view.textservice.SpellCheckerSession;
 import android.view.textservice.SpellCheckerSession.SpellCheckerSessionListener;
@@ -14,8 +15,10 @@ import android.view.textservice.TextServicesManager;
 
 import org.chromium.base.ContextUtils;
 import org.chromium.base.annotations.CalledByNative;
+import org.chromium.base.metrics.RecordHistogram;
 
 import java.util.ArrayList;
+import java.util.concurrent.TimeUnit;
 
 /**
  * JNI interface for native SpellCheckerSessionBridge to use Android's spellchecker.
@@ -23,6 +26,8 @@ import java.util.ArrayList;
 public class SpellCheckerSessionBridge implements SpellCheckerSessionListener {
     private long mNativeSpellCheckerSessionBridge;
     private final SpellCheckerSession mSpellCheckerSession;
+    private long mStartMs;
+    private long mStopMs;
 
     /**
      * Constructs a SpellCheckerSessionBridge object as well as its SpellCheckerSession object.
@@ -83,6 +88,7 @@ public class SpellCheckerSessionBridge implements SpellCheckerSessionListener {
         if (text.endsWith(".")) {
             text = text.substring(0, text.length() - 1);
         }
+        mStartMs = SystemClock.elapsedRealtime();
         mSpellCheckerSession.getSentenceSuggestions(new TextInfo[] {new TextInfo(text)}, 0);
     }
 
@@ -92,6 +98,8 @@ public class SpellCheckerSessionBridge implements SpellCheckerSessionListener {
      */
     @Override
     public void onGetSentenceSuggestions(SentenceSuggestionsInfo[] results) {
+        mStopMs = SystemClock.elapsedRealtime();
+
         if (mNativeSpellCheckerSessionBridge == 0) {
             return;
         }
@@ -118,6 +126,9 @@ public class SpellCheckerSessionBridge implements SpellCheckerSessionListener {
         }
         nativeProcessSpellCheckResults(mNativeSpellCheckerSessionBridge,
                 convertListToArray(offsets), convertListToArray(lengths));
+
+        RecordHistogram.recordTimesHistogram("SpellCheck.Android.Latency",
+                mStopMs - mStartMs, TimeUnit.MILLISECONDS);
     }
 
     /**
