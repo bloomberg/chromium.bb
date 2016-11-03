@@ -15,9 +15,10 @@ namespace blink {
 // decides the pixel value of low priority properties with 'em' units.
 
 enum CSSPropertyPriority {
-  ResolveVariables,
+  ResolveVariables = 0,
   HighPropertyPriority,
-  LowPropertyPriority
+  LowPropertyPriority,
+  PropertyPriorityCount,
 };
 
 template <CSSPropertyPriority priority>
@@ -74,6 +75,20 @@ inline CSSPropertyID CSSPropertyPriorityData<LowPropertyPriority>::first() {
 template <>
 inline CSSPropertyID CSSPropertyPriorityData<LowPropertyPriority>::last() {
   return static_cast<CSSPropertyID>(lastCSSProperty);
+}
+
+inline CSSPropertyPriority priorityForProperty(CSSPropertyID property) {
+  if (CSSPropertyPriorityData<LowPropertyPriority>::propertyHasPriority(
+          property)) {
+    return LowPropertyPriority;
+  }
+  if (CSSPropertyPriorityData<HighPropertyPriority>::propertyHasPriority(
+          property)) {
+    return HighPropertyPriority;
+  }
+  DCHECK(
+      CSSPropertyPriorityData<ResolveVariables>::propertyHasPriority(property));
+  return ResolveVariables;
 }
 
 }  // namespace blink

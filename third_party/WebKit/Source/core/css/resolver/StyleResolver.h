@@ -210,16 +210,44 @@ class CORE_EXPORT StyleResolver final
                                const Element* animatingElement);
   void applyCallbackSelectors(StyleResolverState&);
 
+  // These flags indicate whether an apply pass for a given CSSPropertyPriority
+  // and isImportant is required.
+  class NeedsApplyPass {
+   public:
+    bool needsUpdate() const { return m_needsUpdate; }
+    bool setNeedsUpdate(bool needsUpdate) {
+      return m_needsUpdate = needsUpdate;
+    }
+    bool get(CSSPropertyPriority priority, bool isImportant) const {
+      DCHECK(!needsUpdate());
+      return m_flags[getIndex(priority, isImportant)];
+    }
+    void set(CSSPropertyPriority priority, bool isImportant) {
+      DCHECK(needsUpdate());
+      m_flags[getIndex(priority, isImportant)] = true;
+    }
+
+   private:
+    static size_t getIndex(CSSPropertyPriority priority, bool isImportant) {
+      DCHECK(priority >= 0 && priority < PropertyPriorityCount);
+      return priority * 2 + isImportant;
+    }
+    bool m_needsUpdate = true;
+    bool m_flags[PropertyPriorityCount * 2] = {0};
+  };
+
   template <CSSPropertyPriority priority>
   void applyMatchedProperties(StyleResolverState&,
                               const MatchedPropertiesRange&,
                               bool important,
-                              bool inheritedOnly);
+                              bool inheritedOnly,
+                              NeedsApplyPass&);
   template <CSSPropertyPriority priority>
   void applyProperties(StyleResolverState&,
                        const StylePropertySet* properties,
                        bool isImportant,
                        bool inheritedOnly,
+                       NeedsApplyPass&,
                        PropertyWhitelistType = PropertyWhitelistNone);
   template <CSSPropertyPriority priority>
   void applyAnimatedProperties(StyleResolverState&,
@@ -233,6 +261,7 @@ class CORE_EXPORT StyleResolver final
   void applyPropertiesForApplyAtRule(StyleResolverState&,
                                      const CSSValue&,
                                      bool isImportant,
+                                     NeedsApplyPass&,
                                      PropertyWhitelistType);
 
   bool pseudoStyleForElementInternal(Element&,
