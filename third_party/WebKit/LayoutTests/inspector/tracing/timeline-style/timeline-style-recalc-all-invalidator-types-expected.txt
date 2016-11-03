@@ -15,7 +15,6 @@ Running: testClassName
         extraData : undefined
         nodeName : "DIV id='testElementOne' class='red'"
         selectorPart : undefined
-        synthetic : true
         type : "StyleRecalcInvalidationTracking"
     }
     {
@@ -27,7 +26,6 @@ Running: testClassName
         extraData : undefined
         nodeName : "DIV id='testElementTwo' class='red'"
         selectorPart : undefined
-        synthetic : true
         type : "StyleRecalcInvalidationTracking"
     }
 ]
@@ -45,7 +43,6 @@ Running: testId
         extraData : undefined
         nodeName : "DIV id='testElementFour' class='red'"
         selectorPart : undefined
-        synthetic : true
         type : "StyleRecalcInvalidationTracking"
     }
     {
@@ -57,7 +54,6 @@ Running: testId
         extraData : undefined
         nodeName : "DIV id='testElementFive' class='red'"
         selectorPart : undefined
-        synthetic : true
         type : "StyleRecalcInvalidationTracking"
     }
 ]
@@ -121,7 +117,6 @@ Running: testAttributeChange
         extraData : undefined
         nodeName : "DIV id='testElementFour' class='red'"
         selectorPart : undefined
-        synthetic : true
         type : "StyleRecalcInvalidationTracking"
     }
     {
@@ -133,7 +128,6 @@ Running: testAttributeChange
         extraData : undefined
         nodeName : "DIV id='testElementFive' class='red'"
         selectorPart : undefined
-        synthetic : true
         type : "StyleRecalcInvalidationTracking"
     }
 ]

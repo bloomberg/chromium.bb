@@ -13,7 +13,6 @@ first style recalc[
         extraData : undefined
         nodeName : "DIV id='testElementOne' class='red'"
         selectorPart : undefined
-        synthetic : true
         type : "StyleRecalcInvalidationTracking"
     }
 ]
@@ -27,7 +26,6 @@ second style recalc[
         extraData : undefined
         nodeName : "DIV id='testElementOne' class='snow'"
         selectorPart : undefined
-        synthetic : true
         type : "StyleRecalcInvalidationTracking"
     }
     {
@@ -39,7 +37,6 @@ second style recalc[
         extraData : undefined
         nodeName : "DIV id='testElementOne' class='snow'"
         selectorPart : undefined
-        synthetic : true
         type : "StyleRecalcInvalidationTracking"
     }
 ]
@@ -53,7 +50,6 @@ first paint[
         extraData : undefined
         nodeName : "DIV id='testElementOne' class='red'"
         selectorPart : undefined
-        synthetic : true
         type : "StyleRecalcInvalidationTracking"
     }
     {
@@ -65,7 +61,6 @@ first paint[
         extraData : undefined
         nodeName : "DIV id='testElementOne' class='snow'"
         selectorPart : undefined
-        synthetic : true
         type : "StyleRecalcInvalidationTracking"
     }
     {
@@ -77,7 +72,6 @@ first paint[
         extraData : undefined
         nodeName : "DIV id='testElementOne' class='snow'"
         selectorPart : undefined
-        synthetic : true
         type : "StyleRecalcInvalidationTracking"
     }
 ]
