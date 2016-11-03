@@ -35,6 +35,7 @@
 #include "components/onc/onc_pref_names.h"
 #include "components/prefs/pref_service.h"
 #include "components/proxy_config/proxy_config_dictionary.h"
+#include "components/signin/core/account_id/account_id.h"
 #include "components/user_manager/user.h"
 #include "components/user_manager/user_manager.h"
 #include "crypto/encryptor.h"
@@ -73,7 +74,7 @@ class UserStringSubstitution : public chromeos::onc::StringSubstitution {
     if (placeholder == ::onc::substitutes::kLoginIDField)
       *substitute = user_->GetAccountName(false);
     else if (placeholder == ::onc::substitutes::kEmailField)
-      *substitute = user_->email();
+      *substitute = user_->GetAccountId().GetUserEmail();
     else
       return false;
     return true;
