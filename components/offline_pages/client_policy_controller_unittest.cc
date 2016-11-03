@@ -142,7 +142,7 @@ TEST_F(ClientPolicyControllerTest, CheckNTPSuggestionsDefined) {
   EXPECT_EQ(policy.name_space, kNTPSuggestionsNamespace);
   EXPECT_FALSE(isTemporary(policy));
   EXPECT_TRUE(controller()->IsRemovedOnCacheReset(kNTPSuggestionsNamespace));
-  ExpectDownloadSupport(kNTPSuggestionsNamespace, false);
+  ExpectDownloadSupport(kNTPSuggestionsNamespace, true);
   ExpectRecentTab(kNTPSuggestionsNamespace, false);
   ExpectOnlyOriginalTab(kNTPSuggestionsNamespace, false);
 }

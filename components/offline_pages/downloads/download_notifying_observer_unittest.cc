@@ -236,9 +236,8 @@ TEST_F(DownloadNotifyingObserverTest, OnCompletedFailure) {
 }
 
 TEST_F(DownloadNotifyingObserverTest, NamespacesNotVisibleInUI) {
-  std::vector<std::string> name_spaces = {
-      kBookmarkNamespace, kLastNNamespace, kCCTNamespace,
-      kNTPSuggestionsNamespace, kDefaultNamespace};
+  std::vector<std::string> name_spaces = {kBookmarkNamespace, kLastNNamespace,
+                                          kCCTNamespace, kDefaultNamespace};
 
   for (auto name_space : name_spaces) {
     ClientId invisible_client_id(name_space, kTestGuid);

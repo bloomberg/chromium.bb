@@ -52,6 +52,7 @@ ClientPolicyController::ClientPolicyController() {
       OfflinePageClientPolicyBuilder(kNTPSuggestionsNamespace,
                                      LifetimeType::PERSISTENT, kUnlimitedPages,
                                      kUnlimitedPages)
+          .SetIsSupportedByDownload(true)
           .Build()));
 
   // Fallback policy.
