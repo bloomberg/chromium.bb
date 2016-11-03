@@ -268,6 +268,9 @@ component("skia") {
     "//third_party/skia/src/ports/SkTypeface_win_dw.cpp",
     "//third_party/skia/src/sfnt/SkOTTable_name.cpp",
     "//third_party/skia/src/sfnt/SkOTUtils.cpp",
+    "//third_party/skia/src/xps/SkDocument_XPS.cpp",
+    "//third_party/skia/src/xps/SkDocument_XPS_None.cpp",
+    "//third_party/skia/src/xps/SkXPSDevice.cpp",
   ]
 
   if (is_mac) {
@@ -309,6 +312,7 @@ component("skia") {
       # Keeping _win.cpp
       "//third_party/skia/src/utils/SkThreadUtils_pthread.cpp",
     ]
+    libs = [ "fontsub.lib" ]
   } else {
     sources -= [
       # Keeping _pthread.cpp
@@ -321,8 +325,6 @@ component("skia") {
   if (is_win) {
     sources -= [
       #windows
-      "//third_party/skia/src/utils/win/SkAutoCoInitialize.cpp",
-      "//third_party/skia/src/utils/win/SkIStream.cpp",
       "//third_party/skia/src/utils/win/SkWGL_win.cpp",
     ]
   }
