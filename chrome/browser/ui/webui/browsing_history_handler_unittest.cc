@@ -297,6 +297,25 @@ TEST_F(BrowsingHistoryHandlerTest, ObservingWebHistoryDeletions) {
     EXPECT_EQ("historyDeleted", web_ui()->call_data().back()->function_name());
   }
 
+  // BrowsingHistoryHandler does not fire historyDeleted while a web history
+  // delete request is happening.
+  {
+    sync_service()->SetSyncActive(true);
+    BrowsingHistoryHandlerWithWebUIForTesting handler(web_ui());
+    handler.RegisterMessages();
+
+    // Simulate an ongoing delete request.
+    handler.has_pending_delete_request_ = true;
+
+    web_history_service()->ExpireHistoryBetween(
+        std::set<GURL>(), base::Time(), base::Time::Max(),
+        base::Bind(&BrowsingHistoryHandler::RemoveWebHistoryComplete,
+                   handler.weak_factory_.GetWeakPtr()));
+
+    EXPECT_EQ(3U, web_ui()->call_data().size());
+    EXPECT_EQ("deleteComplete", web_ui()->call_data().back()->function_name());
+  }
+
   // When history sync is not active, we don't listen to WebHistoryService
   // deletions. The WebHistoryService object still exists (because it's a
   // BrowserContextKeyedService), but is not visible to BrowsingHistoryHandler.
@@ -309,7 +328,7 @@ TEST_F(BrowsingHistoryHandlerTest, ObservingWebHistoryDeletions) {
                                                 base::Time::Max(), callback);
 
     // No additional WebUI calls were made.
-    EXPECT_EQ(2U, web_ui()->call_data().size());
+    EXPECT_EQ(3U, web_ui()->call_data().size());
   }
 }
 

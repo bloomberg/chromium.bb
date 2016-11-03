@@ -150,6 +150,9 @@ class BrowsingHistoryHandler : public content::WebUIMessageHandler,
                      history::QueryResults* results);
 
  private:
+  FRIEND_TEST_ALL_PREFIXES(BrowsingHistoryHandlerTest,
+                           ObservingWebHistoryDeletions);
+
   // The range for which to return results:
   // - ALLTIME: allows access to all the results in a paginated way.
   // - WEEK: the last 7 days.

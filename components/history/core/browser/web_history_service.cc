@@ -563,13 +563,14 @@ void WebHistoryService::ExpireHistoryCompletionCallback(
     if (response_value)
       response_value->GetString("version_info", &server_version_info_);
   }
-  callback.Run(response_value.get() && success);
 
   // Inform the observers about the history deletion.
   if (response_value.get() && success) {
     for (WebHistoryServiceObserver& observer : observer_list_)
       observer.OnWebHistoryDeleted();
   }
+
+  callback.Run(response_value.get() && success);
 }
 
 void WebHistoryService::AudioHistoryCompletionCallback(

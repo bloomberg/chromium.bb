@@ -1010,5 +1010,6 @@ void BrowsingHistoryHandler::OnURLsDeleted(
 }
 
 void BrowsingHistoryHandler::OnWebHistoryDeleted() {
-  web_ui()->CallJavascriptFunctionUnsafe("historyDeleted");
+  if (!has_pending_delete_request_)
+    web_ui()->CallJavascriptFunctionUnsafe("historyDeleted");
 }
