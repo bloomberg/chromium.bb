@@ -92,6 +92,7 @@
         on-cr-toolbar-menu-tap="onMenuButtonTap_"
         spinner-active="[[toolbarSpinnerActive_]]"
         menu-label="$i18n{menuButtonLabel}"
+        on-search-changed="onSearchChanged_"
         show-menu>
     </cr-toolbar>
     <app-drawer swipe-open>
@@ -106,7 +107,7 @@
       </div>
     </app-drawer>
     <paper-header-panel id="headerPanel" mode="waterfall">
-      <settings-main prefs="{{prefs}}"
+      <settings-main id="main" prefs="{{prefs}}"
           toolbar-spinner-active="{{toolbarSpinnerActive_}}"
           page-visibility="[[pageVisibility_]]"
           advanced-toggle-expanded="{{advancedOpened_}}">

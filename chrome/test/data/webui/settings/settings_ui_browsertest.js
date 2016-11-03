@@ -111,6 +111,29 @@ TEST_F('SettingsUIBrowserTest', 'MAYBE_All', function() {
       assertFalse(ui.advancedOpened_);
       assertFalse(main.advancedToggleExpanded);
     });
+
+    test('URL initiated search propagates to search box', function() {
+      toolbar = /** @type {!CrToolbarElement} */ (ui.$$('cr-toolbar'));
+      var searchField = /** @type {CrToolbarSearchFieldElement} */ (
+          toolbar.getSearchField());
+
+      var query = 'foo';
+      settings.navigateTo(
+          settings.Route.BASIC, new URLSearchParams(`search=${query}`));
+      assertEquals(query, searchField.getSearchInput().bindValue);
+
+      settings.navigateTo(settings.Route.BASIC);
+      assertEquals('', searchField.getSearchInput().bindValue);
+    });
+
+    test('search box initiated search propagates to URL', function() {
+      assertFalse(settings.getQueryParameters().has('search'));
+      var searchField = /** @type {CrToolbarSearchFieldElement} */ (
+          toolbar.getSearchField());
+      var value = 'GOOG';
+      searchField.setValue(value);
+      assertEquals(value, settings.getQueryParameters().get('search'));
+    });
   });
 
   mocha.run();

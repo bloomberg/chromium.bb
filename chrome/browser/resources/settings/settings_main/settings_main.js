@@ -313,22 +313,12 @@ Polymer({
   },
 
   /**
-   * Navigates to the default search page (if necessary).
-   * @private
-   */
-  ensureInDefaultSearchPage_: function() {
-    if (settings.getCurrentRoute() != settings.Route.BASIC)
-      settings.navigateTo(settings.Route.BASIC);
-  },
-
-  /**
    * @param {string} query
    * @return {!Promise} A promise indicating that searching finished.
    */
   searchContents: function(query) {
     // Trigger rendering of the basic and advanced pages and search once ready.
     this.inSearchMode_ = true;
-    this.ensureInDefaultSearchPage_();
     this.toolbarSpinnerActive = true;
 
     return new Promise(function(resolve, reject) {

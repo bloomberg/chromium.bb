@@ -4,9 +4,19 @@
 
 cr.define('settings_main_page', function() {
   /**
+   * Extending TestBrowserProxy even though SearchManager is not a browser proxy
+   * itself. Essentially TestBrowserProxy can act as a "proxy" for any external
+   * dependency, not just "browser proxies" (and maybe should be renamed to
+   * TestProxy).
+   *
    * @implements {SearchManager}
+   * @extends {settings.TestBrowserProxy}
    */
   var TestSearchManager = function() {
+    settings.TestBrowserProxy.call(this, [
+      'search',
+    ]);
+
     /** @private {boolean} */
     this.matchesFound_ = true;
 
@@ -15,6 +25,8 @@ cr.define('settings_main_page', function() {
   }
 
   TestSearchManager.prototype = {
+    __proto__: settings.TestBrowserProxy.prototype,
+
     /**
      * @param {boolean} matchesFound
      */
@@ -24,6 +36,8 @@ cr.define('settings_main_page', function() {
 
     /** @override */
     search: function(text, page) {
+      this.methodCalled('search', text);
+
       if (this.searchRequest_ == null || !this.searchRequest_.isSame(text)) {
         this.searchRequest_ = new settings.SearchRequest(text);
         this.searchRequest_.finished = true;
@@ -61,6 +75,34 @@ cr.define('settings_main_page', function() {
       });
 
       teardown(function() { settingsMain.remove(); });
+
+      test('searchContents() triggers SearchManager', function() {
+        Polymer.dom.flush();
+
+        var expectedQuery1 = 'foo';
+        var expectedQuery2 = 'bar';
+        var expectedQuery3 = '';
+
+        return settingsMain.searchContents(expectedQuery1).then(function() {
+          return searchManager.whenCalled('search');
+        }).then(function(query) {
+          assertEquals(expectedQuery1, query);
+
+          searchManager.resetResolver('search');
+          return settingsMain.searchContents(expectedQuery2);
+        }).then(function() {
+          return searchManager.whenCalled('search');
+        }).then(function(query) {
+          assertEquals(expectedQuery2, query);
+
+          searchManager.resetResolver('search');
+          return settingsMain.searchContents(expectedQuery3);
+        }).then(function() {
+          return searchManager.whenCalled('search');
+        }).then(function(query) {
+          assertEquals(expectedQuery3, query);
+        });
+      });
 
       test('no results page shows and hides', function() {
         Polymer.dom.flush();

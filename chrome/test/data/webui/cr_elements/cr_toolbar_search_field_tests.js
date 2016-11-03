@@ -110,6 +110,14 @@ cr.define('cr_toolbar_search_field', function() {
         assertEquals(['foo', '', 'bar', 'baz'].join(), searches.join());
       });
 
+      test('does not notify on setValue with noEvent=true', function() {
+        MockInteractions.tap(field);
+        field.setValue('foo', true);
+        field.setValue('bar');
+        field.setValue('baz', true);
+        assertEquals(['bar'].join(), searches.join());
+      });
+
       // Tests that calling setValue() from within a 'search-changed' callback
       // does not result in an infinite loop.
       test('no infinite loop', function() {

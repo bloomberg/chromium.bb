@@ -51,12 +51,14 @@ var CrSearchFieldBehavior = {
   /**
    * Sets the value of the search field.
    * @param {string} value
+   * @param {boolean=} opt_noEvent Whether to prevent a 'search-changed' event
+   *     firing for this change.
    */
-  setValue: function(value) {
+  setValue: function(value, opt_noEvent) {
     // Use bindValue when setting the input value so that changes propagate
     // correctly.
     this.getSearchInput().bindValue = value;
-    this.onValueChanged_(value);
+    this.onValueChanged_(value, !!opt_noEvent);
   },
 
   showAndFocus: function() {
@@ -70,21 +72,25 @@ var CrSearchFieldBehavior = {
   },
 
   onSearchTermSearch: function() {
-    this.onValueChanged_(this.getValue());
+    this.onValueChanged_(this.getValue(), false);
   },
 
   /**
    * Updates the internal state of the search field based on a change that has
    * already happened.
    * @param {string} newValue
+   * @param {boolean} noEvent Whether to prevent a 'search-changed' event firing
+   *     for this change.
    * @private
    */
-  onValueChanged_: function(newValue) {
+  onValueChanged_: function(newValue, noEvent) {
     if (newValue == this.lastValue_)
       return;
 
     this.lastValue_ = newValue;
-    this.fire('search-changed', newValue);
+
+    if (!noEvent)
+      this.fire('search-changed', newValue);
   },
 
   onSearchTermKeydown: function(e) {
