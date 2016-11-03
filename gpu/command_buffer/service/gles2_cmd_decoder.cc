@@ -13721,8 +13721,12 @@ bool GLES2DecoderImpl::ValidateCopyTexFormat(
   }
   if (feature_info_->IsWebGL2OrES3Context()) {
     GLint color_encoding = GetColorEncodingFromInternalFormat(read_format);
+    bool float_mismatch= feature_info_->ext_color_buffer_float_available() ?
+        (GLES2Util::IsIntegerFormat(internal_format) !=
+         GLES2Util::IsIntegerFormat(read_format)) :
+        GLES2Util::IsFloatFormat(internal_format);
     if (color_encoding != GetColorEncodingFromInternalFormat(internal_format) ||
-        GLES2Util::IsFloatFormat(internal_format) ||
+        float_mismatch ||
         (GLES2Util::IsSignedIntegerFormat(internal_format) !=
          GLES2Util::IsSignedIntegerFormat(read_format)) ||
         (GLES2Util::IsUnsignedIntegerFormat(internal_format) !=

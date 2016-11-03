@@ -538,7 +538,8 @@ void TestHelper::SetupFeatureInfoInitExpectationsWithGLVersion(
 
   if ((strstr(extensions, "GL_ARB_texture_float") ||
        gl_info.is_desktop_core_profile) ||
-      (gl_info.is_es3 && strstr(extensions, "GL_EXT_color_buffer_float"))) {
+      (gl_info.is_es3 && strstr(extensions, "GL_OES_texture_float") &&
+       strstr(extensions, "GL_EXT_color_buffer_float"))) {
     static const GLuint tx_ids[] = {101, 102};
     static const GLuint fb_ids[] = {103, 104};
     const GLsizei width = 16;
@@ -575,6 +576,7 @@ void TestHelper::SetupFeatureInfoInitExpectationsWithGLVersion(
     EXPECT_CALL(*gl, CheckFramebufferStatusEXT(GL_FRAMEBUFFER))
         .WillOnce(Return(GL_FRAMEBUFFER_COMPLETE))
         .RetiresOnSaturation();
+    GLenum status_rgba = GL_FRAMEBUFFER_COMPLETE;
     EXPECT_CALL(*gl, TexImage2D(GL_TEXTURE_2D, 0, GL_RGB32F, width, width, 0,
         GL_RGB, GL_FLOAT, _))
         .Times(1)
@@ -589,7 +591,7 @@ void TestHelper::SetupFeatureInfoInitExpectationsWithGLVersion(
           .RetiresOnSaturation();
     }
 
-    if (enable_es3) {
+    if (status_rgba == GL_FRAMEBUFFER_COMPLETE && enable_es3) {
       EXPECT_CALL(*gl, TexImage2D(GL_TEXTURE_2D, 0, GL_R16F, width, width,
           0, GL_RED, GL_FLOAT, _))
           .Times(1)
