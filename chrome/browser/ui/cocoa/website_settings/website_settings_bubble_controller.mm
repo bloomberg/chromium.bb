@@ -85,6 +85,9 @@ const CGFloat kPermissionImageSize = 16;
 // Spacing between a permission image and the text.
 const CGFloat kPermissionImageSpacing = 6;
 
+// Minimum distance between the label and its corresponding menu.
+const CGFloat kMinSeparationBetweenLabelAndMenu = 16;
+
 // Square size of the permission delete button image.
 const CGFloat kPermissionDeleteImageSize = 16;
 
@@ -864,6 +867,7 @@ bool IsInternalURL(const GURL& url) {
                                         toView:view
                                        atPoint:position];
   }
+  [label setToolTip:base::SysUTF16ToNSString(labelText)];
 
   [view setFrameSize:NSMakeSize(viewWidth, NSHeight([view frame]))];
 
@@ -880,6 +884,28 @@ bool IsInternalURL(const GURL& url) {
   }
   position.y -= titleRect.origin.y;
   [button setFrameOrigin:position];
+
+  // Truncate the label if it's too wide.
+  // This is a workaround for https://crbug.com/654268 until MacViews ships.
+  NSRect labelFrame = [label frame];
+  if (isRTL) {
+    CGFloat maxLabelWidth = NSMaxX(labelFrame) - NSMaxX([button frame]) -
+                            kMinSeparationBetweenLabelAndMenu;
+    if (NSWidth(labelFrame) > maxLabelWidth) {
+      labelFrame.origin.x = NSMaxX(labelFrame) - maxLabelWidth;
+      labelFrame.size.width = maxLabelWidth;
+      [label setFrame:labelFrame];
+      [[label cell] setLineBreakMode:NSLineBreakByTruncatingTail];
+    }
+  } else {
+    CGFloat maxLabelWidth = NSMinX([button frame]) - NSMinX(labelFrame) -
+                            kMinSeparationBetweenLabelAndMenu;
+    if (NSWidth(labelFrame) > maxLabelWidth) {
+      labelFrame.size.width = maxLabelWidth;
+      [label setFrame:labelFrame];
+      [[label cell] setLineBreakMode:NSLineBreakByTruncatingTail];
+    }
+  }
 
   // Align the icon with the text.
   [self alignPermissionIcon:imageView withTextField:label];
