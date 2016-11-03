@@ -750,6 +750,25 @@ TEST_F(CRWWebControllerPageScrollStateTest, FLAKY_AtTop) {
   ASSERT_FALSE(web_controller().atTop);
 };
 
+// Real WKWebView is required for CRWWebControllerNavigationTest.
+typedef web::WebTestWithWebController CRWWebControllerNavigationTest;
+
+// Tests navigation between 2 URLs which differ only by fragment.
+TEST_F(CRWWebControllerNavigationTest, GoToEntryWithoutDocumentChange) {
+  LoadHtml(@"<html><body></body></html>", GURL("https://chromium.test"));
+  LoadHtml(@"<html><body></body></html>", GURL("https://chromium.test#hash"));
+  NavigationManagerImpl& nav_manager =
+      web_controller().webStateImpl->GetNavigationManagerImpl();
+  CRWSessionController* session_controller = nav_manager.GetSessionController();
+  EXPECT_EQ(2U, session_controller.entries.count);
+  EXPECT_NSEQ(session_controller.entries.lastObject,
+              session_controller.currentEntry);
+
+  [web_controller() goToEntry:session_controller.entries[0]];
+  EXPECT_NSEQ(session_controller.entries.firstObject,
+              session_controller.currentEntry);
+}
+
 // Real WKWebView is required for CRWWebControllerJSExecutionTest.
 typedef web::WebTestWithWebController CRWWebControllerJSExecutionTest;
 

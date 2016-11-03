@@ -200,6 +200,8 @@ class WebStateImpl;
 - (void)goForward;
 // Navigate forwards or backwards by |delta| pages.
 - (void)goDelta:(int)delta;
+// Navigates to the given |entry|.
+- (void)goToEntry:(CRWSessionEntry*)entry;
 
 // Executes |script| in the web view, registering user interaction.
 - (void)executeUserJavaScript:(NSString*)script

@@ -2311,6 +2311,16 @@ const NSTimeInterval kSnapshotOverlayTransition = 0.5;
   }
 }
 
+- (void)goToEntry:(CRWSessionEntry*)entry {
+  DCHECK(entry);
+
+  [self recordStateInHistory];
+  CRWSessionEntry* fromEntry = self.sessionController.currentEntry;
+  [self.sessionController goToEntry:entry];
+  if (fromEntry)
+    [self finishHistoryNavigationFromEntry:fromEntry];
+}
+
 - (BOOL)isLoaded {
   return _loadPhase == web::PAGE_LOADED;
 }
