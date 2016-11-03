@@ -14,32 +14,59 @@ import org.chromium.chrome.browser.ntp.snippets.SnippetsConfig;
 /**
  * Item that allows the user to perform an action on the NTP.
  */
-class ActionItem extends Leaf {
-    private static final String TAG = "NtpCards";
-
+class ActionItem extends OptionalLeaf {
     private final SuggestionsCategoryInfo mCategoryInfo;
+    private final SuggestionsSection mParentSection;
 
-    // The position (index) of this item within its section, for logging purposes.
-    private int mPosition;
     private boolean mImpressionTracked = false;
-    private boolean mDismissable;
 
-    public ActionItem(SuggestionsCategoryInfo categoryInfo) {
+    public ActionItem(SuggestionsCategoryInfo categoryInfo, SuggestionsSection section) {
+        super(section);
         mCategoryInfo = categoryInfo;
+        mParentSection = section;
     }
 
     @Override
-    @ItemViewType
-    protected int getItemViewType() {
+    public int getItemViewType() {
         return ItemViewType.ACTION;
     }
 
-    public int getPosition() {
-        return mPosition;
+    @Override
+    protected void onBindViewHolder(NewTabPageViewHolder holder) {
+        assert holder instanceof ViewHolder;
+        ((ViewHolder) holder).onBindViewHolder(this);
     }
 
-    public void setPosition(int position) {
-        mPosition = position;
+    @Override
+    public boolean isShown() {
+        return mCategoryInfo.hasMoreButton(mParentSection.hasSuggestions());
+    }
+
+    private int getPosition() {
+        // TODO(dgn): looks dodgy. Confirm that's what we want.
+        return mParentSection.getSuggestionsCount();
+    }
+
+    private void performAction(NewTabPageManager manager, NewTabPageAdapter adapter) {
+        manager.trackSnippetCategoryActionClick(mCategoryInfo.getCategory(), getPosition());
+
+        if (mCategoryInfo.hasViewAllAction()) {
+            mCategoryInfo.performViewAllAction(manager);
+            return;
+        }
+
+        if (mCategoryInfo.hasMoreAction() && mParentSection.hasSuggestions()) {
+            // TODO(dgn): Implement fetch more. https://crbug.com/634892
+            throw new UnsupportedOperationException("Fetch more not implemented yet");
+        }
+
+        if (mCategoryInfo.hasReloadAction()) {
+            // TODO(dgn): reload only the current section. https://crbug.com/634892
+            adapter.reloadSnippets();
+        }
+
+        // Should not be reached. Otherwise the action item was shown at an inappropriate moment.
+        assert false;
     }
 
     public static class ViewHolder extends CardViewHolder {
@@ -53,10 +80,7 @@ class ActionItem extends Leaf {
                     .setOnClickListener(new View.OnClickListener() {
                         @Override
                         public void onClick(View v) {
-                            int category = mActionListItem.mCategoryInfo.getCategory();
-                            manager.trackSnippetCategoryActionClick(
-                                    category, mActionListItem.mPosition);
-                            mActionListItem.mCategoryInfo.performEmptyStateAction(
+                            mActionListItem.performAction(
                                     manager, recyclerView.getNewTabPageAdapter());
                         }
                     });
@@ -68,7 +92,7 @@ class ActionItem extends Leaf {
                         mActionListItem.mImpressionTracked = true;
                         manager.trackSnippetCategoryActionImpression(
                                 mActionListItem.mCategoryInfo.getCategory(),
-                                mActionListItem.mPosition);
+                                mActionListItem.getPosition());
                     }
                 }
             });
@@ -76,24 +100,13 @@ class ActionItem extends Leaf {
 
         @Override
         public boolean isDismissable() {
-            return SnippetsConfig.isSectionDismissalEnabled() && mActionListItem.mDismissable;
+            return SnippetsConfig.isSectionDismissalEnabled()
+                    && !mActionListItem.mParentSection.hasSuggestions();
         }
 
         public void onBindViewHolder(ActionItem item) {
             super.onBindViewHolder();
-
             mActionListItem = item;
         }
-    }
-
-    @Override
-    protected void onBindViewHolder(NewTabPageViewHolder holder) {
-        assert holder instanceof ViewHolder;
-        ((ViewHolder) holder).onBindViewHolder(this);
-    }
-
-    /** Set whether this item can be dismissed.*/
-    public void setDismissable(boolean dismissable) {
-        this.mDismissable = dismissable;
     }
 }

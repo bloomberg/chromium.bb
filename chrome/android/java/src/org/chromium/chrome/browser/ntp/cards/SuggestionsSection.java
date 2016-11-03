@@ -43,7 +43,7 @@ public class SuggestionsSection extends InnerNode {
         super(parent);
         mHeader = new SectionHeader(info.getTitle());
         mCategoryInfo = info;
-        mMoreButton = new ActionItem(info);
+        mMoreButton = new ActionItem(info, this);
         mStatus = StatusItem.createNoSuggestionsItem(info);
         resetChildren();
 
@@ -108,7 +108,7 @@ public class SuggestionsSection extends InnerNode {
         mChildren.add(mSuggestionsList);
 
         if (mSuggestions.isEmpty()) mChildren.add(mStatus);
-        if (mCategoryInfo.hasMoreButton() || mSuggestions.isEmpty()) mChildren.add(mMoreButton);
+        mChildren.add(mMoreButton);
         if (mSuggestions.isEmpty()) mChildren.add(mProgressIndicator);
     }
 
@@ -117,7 +117,6 @@ public class SuggestionsSection extends InnerNode {
         if (removedIndex == -1) return;
 
         mSuggestions.remove(removedIndex);
-        if (mMoreButton != null) mMoreButton.setDismissable(!hasSuggestions());
 
         resetChildren();
 
@@ -159,10 +158,6 @@ public class SuggestionsSection extends InnerNode {
 
         markSnippetsAvailableOffline();
 
-        if (mMoreButton != null) {
-            mMoreButton.setPosition(mSuggestions.size());
-            mMoreButton.setDismissable(mSuggestions.isEmpty());
-        }
         resetChildren();
         notifySectionChanged(itemCountBefore);
     }
@@ -221,7 +216,7 @@ public class SuggestionsSection extends InnerNode {
     public int getDismissSiblingPosDelta(int position) {
         // The only dismiss siblings we have so far are the More button and the status card.
         // Exit early if there is no More button.
-        if (mMoreButton == null) return 0;
+        if (!mMoreButton.isShown()) return 0;
 
         // When there are suggestions we won't have contiguous status and action items.
         if (hasSuggestions()) return 0;

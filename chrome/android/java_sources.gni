@@ -578,6 +578,7 @@ chrome_java_sources = [
   "java/src/org/chromium/chrome/browser/ntp/cards/NewTabPageRecyclerView.java",
   "java/src/org/chromium/chrome/browser/ntp/cards/NewTabPageViewHolder.java",
   "java/src/org/chromium/chrome/browser/ntp/cards/NodeParent.java",
+  "java/src/org/chromium/chrome/browser/ntp/cards/OptionalLeaf.java",
   "java/src/org/chromium/chrome/browser/ntp/cards/ProgressIndicatorView.java",
   "java/src/org/chromium/chrome/browser/ntp/cards/ProgressItem.java",
   "java/src/org/chromium/chrome/browser/ntp/cards/ProgressViewHolder.java",

@@ -317,7 +317,9 @@ CategoryInfo NTPSnippetsService::GetCategoryInfo(Category category) {
   const CategoryContent& content = categories_[category];
   return CategoryInfo(
       content.localized_title, ContentSuggestionsCardLayout::FULL_CARD,
-      /*has_more_button=*/false,
+      /*has_more_action=*/false,
+      /*has_reload_action=*/true,
+      /*has_view_all_action=*/false,
       /*show_if_empty=*/true,
       l10n_util::GetStringUTF16(IDS_NTP_ARTICLE_SUGGESTIONS_SECTION_EMPTY));
 }

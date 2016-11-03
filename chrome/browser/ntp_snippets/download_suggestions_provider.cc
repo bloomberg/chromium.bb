@@ -129,12 +129,12 @@ CategoryStatus DownloadSuggestionsProvider::GetCategoryStatus(
 
 CategoryInfo DownloadSuggestionsProvider::GetCategoryInfo(Category category) {
   DCHECK_EQ(provided_category_, category);
-  // TODO(vitaliii): Do not show "More" button when there is no downloads UI.
-  // See crbug.com/660030.
   return CategoryInfo(
       l10n_util::GetStringUTF16(IDS_NTP_DOWNLOAD_SUGGESTIONS_SECTION_HEADER),
       ntp_snippets::ContentSuggestionsCardLayout::MINIMAL_CARD,
-      /*has_more_button=*/download_manager_ui_enabled_,
+      /*has_more_action=*/false,
+      /*has_reload_action=*/false,
+      /*has_view_all_action=*/download_manager_ui_enabled_,
       /*show_if_empty=*/false,
       l10n_util::GetStringUTF16(IDS_NTP_DOWNLOADS_SUGGESTIONS_SECTION_EMPTY));
 }

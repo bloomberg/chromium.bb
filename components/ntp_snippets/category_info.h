@@ -25,12 +25,13 @@ class CategoryInfo {
  public:
   CategoryInfo(const base::string16& title,
                ContentSuggestionsCardLayout card_layout,
-               bool has_more_button,
+               bool has_more_action,
+               bool has_reload_action,
+               bool has_view_all_action,
                bool show_if_empty,
                const base::string16& no_suggestions_message);
-  CategoryInfo(CategoryInfo&&) = default;
-  CategoryInfo& operator=(CategoryInfo&&) = default;
-
+  CategoryInfo(CategoryInfo&&);
+  CategoryInfo& operator=(CategoryInfo&&);
   ~CategoryInfo();
 
   // Localized title of the category.
@@ -39,12 +40,17 @@ class CategoryInfo {
   // Layout of the cards to be used to display suggestions in this category.
   ContentSuggestionsCardLayout card_layout() const { return card_layout_; }
 
-  // Whether the category should show a "More" button even if it's not empty
-  // (there's always a "More" or "Reload" button if it is empty). The button
-  // either triggers a fixed action (like opening a native page) or, if there
-  // is no such fixed action, it queries the provider for more suggestions.
-  // TODO(treib): Rename this to "always_show_more_button".
-  bool has_more_button() const { return has_more_button_; }
+  // Whether the category supports a "More" action, that triggers fetching more
+  // suggestions for the category, while keeping the current ones.
+  bool has_more_action() const { return has_more_action_; }
+
+  // Whether the category supports a "Reload" action, that triggers fetching new
+  // suggestions to replace the current ones.
+  bool has_reload_action() const { return has_reload_action_; }
+
+  // Whether the category supports a "ViewAll" action, that triggers displaying
+  // all the content related to the current categories.
+  bool has_view_all_action() const { return has_view_all_action_; }
 
   // Whether this category should be shown if it offers no suggestions.
   bool show_if_empty() const { return show_if_empty_; }
@@ -59,7 +65,13 @@ class CategoryInfo {
  private:
   base::string16 title_;
   ContentSuggestionsCardLayout card_layout_;
-  bool has_more_button_;
+
+  // Supported actions for the category.
+  bool has_more_action_;
+  bool has_reload_action_;
+  bool has_view_all_action_;
+
+  // Whether to show the category if a fetch returns no suggestions.
   bool show_if_empty_;
   base::string16 no_suggestions_message_;
 

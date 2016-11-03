@@ -203,10 +203,10 @@ public class SnippetsBridge implements SuggestionsSource {
 
     @CalledByNative
     private static SuggestionsCategoryInfo createSuggestionsCategoryInfo(int category, String title,
-            int cardLayout, boolean hasMoreButton, boolean showIfEmpty,
-            String noSuggestionsMessage) {
-        return new SuggestionsCategoryInfo(
-                category, title, cardLayout, hasMoreButton, showIfEmpty, noSuggestionsMessage);
+            int cardLayout, boolean hasMoreAction, boolean hasReloadAction,
+            boolean hasViewAllAction, boolean showIfEmpty, String noSuggestionsMessage) {
+        return new SuggestionsCategoryInfo(category, title, cardLayout, hasMoreAction,
+                hasReloadAction, hasViewAllAction, showIfEmpty, noSuggestionsMessage);
     }
 
     @CalledByNative

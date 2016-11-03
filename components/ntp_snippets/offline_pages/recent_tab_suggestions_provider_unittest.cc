@@ -147,7 +147,12 @@ TEST_F(RecentTabSuggestionsProviderTest, ShouldSortByMostRecentlyVisited) {
 
 TEST_F(RecentTabSuggestionsProviderTest, ShouldDeliverCorrectCategoryInfo) {
   EXPECT_FALSE(
-      provider()->GetCategoryInfo(recent_tabs_category()).has_more_button());
+      provider()->GetCategoryInfo(recent_tabs_category()).has_more_action());
+  EXPECT_FALSE(
+      provider()->GetCategoryInfo(recent_tabs_category()).has_reload_action());
+  EXPECT_FALSE(provider()
+                   ->GetCategoryInfo(recent_tabs_category())
+                   .has_view_all_action());
 }
 
 TEST_F(RecentTabSuggestionsProviderTest, ShouldDismiss) {

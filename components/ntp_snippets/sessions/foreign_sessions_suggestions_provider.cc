@@ -121,7 +121,9 @@ CategoryInfo ForeignSessionsSuggestionsProvider::GetCategoryInfo(
       l10n_util::GetStringUTF16(
           IDS_NTP_FOREIGN_SESSIONS_SUGGESTIONS_SECTION_HEADER),
       ContentSuggestionsCardLayout::MINIMAL_CARD,
-      /*has_more_button=*/true,
+      /*has_more_action=*/false,
+      /*has_reload_action=*/false,
+      /*has_view_all_action=*/true,
       /*show_if_empty=*/false,
       l10n_util::GetStringUTF16(IDS_NTP_SUGGESTIONS_SECTION_EMPTY));
   // TODO(skym): Replace IDS_NTP_SUGGESTIONS_SECTION_EMPTY with a

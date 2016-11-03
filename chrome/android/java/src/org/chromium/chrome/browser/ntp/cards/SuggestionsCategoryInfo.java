@@ -36,11 +36,26 @@ public class SuggestionsCategoryInfo {
     private final int mCardLayout;
 
     /**
-     * Whether the category supports a "More" button. The button either triggers
-     * a fixed action (like opening a native page) or, if there is no such fixed
-     * action, it queries the provider for more suggestions.
+     * Whether the category supports a "More" action, that triggers fetching more suggestions for
+     * the category, while keeping the current ones.
+     * @see ActionItem
      */
-    private final boolean mHasMoreButton;
+    private final boolean mHasMoreAction;
+
+    /**
+     * Whether the category supports a "Reload" action, that triggers fetching new suggestions to
+     * replace the current ones.
+     * @see ActionItem
+     */
+    private final boolean mHasReloadAction;
+
+    /**
+     * Whether the category supports a "ViewAll" action, that triggers displaying all the content
+     * related to the current categories.
+     * @see ActionItem
+     * @see #performViewAllAction(NewTabPageManager)
+     */
+    private final boolean mHasViewAllAction;
 
     /** Whether this category should be shown if it offers no suggestions. */
     private final boolean mShowIfEmpty;
@@ -51,12 +66,15 @@ public class SuggestionsCategoryInfo {
     private final String mNoSuggestionsMessage;
 
     public SuggestionsCategoryInfo(@CategoryInt int category, String title,
-            @ContentSuggestionsCardLayoutEnum int cardLayout, boolean hasMoreButton,
-            boolean showIfEmpty, String noSuggestionsMessage) {
+            @ContentSuggestionsCardLayoutEnum int cardLayout, boolean hasMoreAction,
+            boolean hasReloadAction, boolean hasViewAllAction, boolean showIfEmpty,
+            String noSuggestionsMessage) {
         mCategory = category;
         mTitle = title;
         mCardLayout = cardLayout;
-        mHasMoreButton = hasMoreButton;
+        mHasMoreAction = hasMoreAction;
+        mHasReloadAction = hasReloadAction;
+        mHasViewAllAction = hasViewAllAction;
         mShowIfEmpty = showIfEmpty;
         mNoSuggestionsMessage = noSuggestionsMessage;
     }
@@ -75,8 +93,22 @@ public class SuggestionsCategoryInfo {
         return mCardLayout;
     }
 
-    public boolean hasMoreButton() {
-        return mHasMoreButton;
+    public boolean hasMoreAction() {
+        return mHasMoreAction;
+    }
+
+    public boolean hasReloadAction() {
+        return mHasReloadAction;
+    }
+
+    public boolean hasViewAllAction() {
+        return mHasViewAllAction;
+    }
+
+    public boolean hasMoreButton(boolean hasSuggestions) {
+        if (hasViewAllAction()) return true;
+        if (hasSuggestions) return hasMoreAction();
+        return hasReloadAction();
     }
 
     public boolean showIfEmpty() {
@@ -92,11 +124,10 @@ public class SuggestionsCategoryInfo {
     }
 
     /**
-     * Performs the appropriate action for the provided category, for the case where there are no
-     * suggestions available. In general, this consists in navigating to the view showing all the
-     * content, or fetching new content.
+     * Performs the View All action for the provided category, navigating navigating to the view
+     * showing all the content.
      */
-    public void performEmptyStateAction(NewTabPageManager manager, NewTabPageAdapter adapter) {
+    public void performViewAllAction(NewTabPageManager manager) {
         switch (mCategory) {
             case KnownCategories.BOOKMARKS:
                 manager.navigateToBookmarks();
@@ -109,13 +140,9 @@ public class SuggestionsCategoryInfo {
                 break;
             case KnownCategories.PHYSICAL_WEB_PAGES:
             case KnownCategories.RECENT_TABS:
-                Log.wtf(TAG, "'Empty State' action called for unsupported category: %d", mCategory);
-                break;
             case KnownCategories.ARTICLES:
             default:
-                // TODO(dgn): For now, we assume any unknown sections are remote sections and just
-                // reload all remote sections. crbug.com/656008
-                adapter.reloadSnippets();
+                Log.wtf(TAG, "'Empty State' action called for unsupported category: %d", mCategory);
                 break;
         }
     }

@@ -16,7 +16,6 @@ import org.chromium.base.metrics.RecordUserAction;
 import org.chromium.chrome.R;
 import org.chromium.chrome.browser.ntp.NewTabPage.DestructionObserver;
 import org.chromium.chrome.browser.ntp.UiConfig;
-import org.chromium.chrome.browser.ntp.snippets.SnippetArticle;
 import org.chromium.chrome.browser.preferences.ChromePreferenceManager;
 import org.chromium.chrome.browser.signin.AccountSigninActivity;
 import org.chromium.chrome.browser.signin.SigninAccessPoint;
@@ -28,8 +27,8 @@ import org.chromium.chrome.browser.signin.SigninManager.SignInStateObserver;
  * Shows a card prompting the user to sign in. This item is also a {@link TreeNode}, and calling
  * {@link #hide()} or {@link #maybeShow()} will control its visibility.
  */
-public class SignInPromo
-        extends ChildNode implements StatusCardViewHolder.DataSource, ImpressionTracker.Listener {
+public class SignInPromo extends OptionalLeaf
+        implements StatusCardViewHolder.DataSource, ImpressionTracker.Listener {
     /**
      * Whether the promo should be visible, according to the parent object.
      *
@@ -60,16 +59,8 @@ public class SignInPromo
     }
 
     @Override
-    public int getItemCount() {
-        if (!isShown()) return 0;
-
-        return 1;
-    }
-
-    @Override
     @ItemViewType
-    public int getItemViewType(int position) {
-        checkIndex(position);
+    public int getItemViewType() {
         return ItemViewType.PROMO;
     }
 
@@ -83,23 +74,10 @@ public class SignInPromo
     }
 
     @Override
-    public void onBindViewHolder(NewTabPageViewHolder holder, int position) {
-        checkIndex(position);
+    public void onBindViewHolder(NewTabPageViewHolder holder) {
         assert holder instanceof StatusCardViewHolder;
         ((StatusCardViewHolder) holder).onBindViewHolder(this);
         mImpressionTracker.reset(mImpressionTracker.wasTriggered() ? null : holder.itemView);
-    }
-
-    @Override
-    public SnippetArticle getSuggestionAt(int position) {
-        checkIndex(position);
-        return null;
-    }
-
-    @Override
-    public int getDismissSiblingPosDelta(int position) {
-        checkIndex(position);
-        return 0;
     }
 
     @Override
@@ -131,6 +109,7 @@ public class SignInPromo
         mImpressionTracker.reset(null);
     }
 
+    @Override
     public boolean isShown() {
         return !mDismissed && mVisible;
     }
@@ -262,12 +241,6 @@ public class SignInPromo
         @Override
         public boolean isDismissable() {
             return true;
-        }
-    }
-
-    private void checkIndex(int position) {
-        if (position < 0 || position >= getItemCount()) {
-            throw new IndexOutOfBoundsException(position + "/" + getItemCount());
         }
     }
 }

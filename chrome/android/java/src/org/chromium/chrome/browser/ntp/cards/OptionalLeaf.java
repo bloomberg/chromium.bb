@@ -7,38 +7,44 @@ package org.chromium.chrome.browser.ntp.cards;
 import org.chromium.chrome.browser.ntp.snippets.SnippetArticle;
 
 /**
- * A permanent leaf in the tree, i.e. a single item.
- * If the leaf is not to be a permanent member of the tree, see {@link OptionalLeaf} for an
- * implementation that will take care of hiding or showing the item.
+ * An optional leaf (i.e. single item) in the tree. Depending on its internal state (see
+ * {@link #isShown()}), the item will be present or absent from the tree, by manipulating the values
+ * returned from {@link ChildNode} methods. This allows the parent node to not have to add or remove
+ * the optional leaf from its children manually.
+ *
+ * For a non optional leaf, see {@link Leaf}. They have similar interfaces.
  */
-public abstract class Leaf implements TreeNode {
-    @Override
-    public int getItemCount() {
-        return 1;
+public abstract class OptionalLeaf extends ChildNode {
+    protected OptionalLeaf(NodeParent parent) {
+        super(parent);
     }
 
     @Override
-    @ItemViewType
+    public int getItemCount() {
+        return isShown() ? 1 : 0;
+    }
+
+    @Override
     public int getItemViewType(int position) {
-        if (position != 0) throw new IndexOutOfBoundsException();
+        checkIndex(position);
         return getItemViewType();
     }
 
     @Override
     public void onBindViewHolder(NewTabPageViewHolder holder, int position) {
-        if (position != 0) throw new IndexOutOfBoundsException();
+        checkIndex(position);
         onBindViewHolder(holder);
     }
 
     @Override
     public SnippetArticle getSuggestionAt(int position) {
-        if (position != 0) throw new IndexOutOfBoundsException();
-
+        checkIndex(position);
         return null;
     }
 
     @Override
     public int getDismissSiblingPosDelta(int position) {
+        checkIndex(position);
         return 0;
     }
 
@@ -56,4 +62,13 @@ public abstract class Leaf implements TreeNode {
      */
     @ItemViewType
     protected abstract int getItemViewType();
+
+    /** @return Whether the optional item is currently visible. */
+    public abstract boolean isShown();
+
+    protected void checkIndex(int position) {
+        if (position < 0 || position >= getItemCount()) {
+            throw new IndexOutOfBoundsException(position + "/" + getItemCount());
+        }
+    }
 }

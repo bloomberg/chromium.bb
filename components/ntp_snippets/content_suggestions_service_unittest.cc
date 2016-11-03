@@ -60,7 +60,8 @@ class MockProvider : public ContentSuggestionsProvider {
 
   CategoryInfo GetCategoryInfo(Category category) override {
     return CategoryInfo(base::ASCIIToUTF16("Section title"),
-                        ContentSuggestionsCardLayout::FULL_CARD, true, true,
+                        ContentSuggestionsCardLayout::FULL_CARD, true, false,
+                        true, false,
                         base::ASCIIToUTF16("No suggestions message"));
   }
 
@@ -477,7 +478,9 @@ TEST_F(ContentSuggestionsServiceTest, ShouldReturnCategoryInfo) {
   const CategoryInfo& actual = result.value();
   EXPECT_THAT(expected.title(), Eq(actual.title()));
   EXPECT_THAT(expected.card_layout(), Eq(actual.card_layout()));
-  EXPECT_THAT(expected.has_more_button(), Eq(actual.has_more_button()));
+  EXPECT_THAT(expected.has_more_action(), Eq(actual.has_more_action()));
+  EXPECT_THAT(expected.has_reload_action(), Eq(actual.has_reload_action()));
+  EXPECT_THAT(expected.has_view_all_action(), Eq(actual.has_view_all_action()));
 }
 
 TEST_F(ContentSuggestionsServiceTest,

@@ -30,8 +30,13 @@ public final class ContentSuggestionsTestUtils {
 
     public static SuggestionsCategoryInfo createInfo(
             @CategoryInt int category, boolean moreButton, boolean showIfEmpty) {
-        return new SuggestionsCategoryInfo(
-                category, "", ContentSuggestionsCardLayout.FULL_CARD, moreButton, showIfEmpty, "");
+        return createInfo(category, false, true, moreButton, showIfEmpty);
+    }
+
+    public static SuggestionsCategoryInfo createInfo(@CategoryInt int category, boolean moreAction,
+            boolean reloadAction, boolean viewAllAction, boolean showIfEmpty) {
+        return new SuggestionsCategoryInfo(category, "", ContentSuggestionsCardLayout.FULL_CARD,
+                moreAction, reloadAction, viewAllAction, showIfEmpty, "");
     }
 
     public static SuggestionsSection createSection(boolean moreButton, boolean showIfEmpty,
