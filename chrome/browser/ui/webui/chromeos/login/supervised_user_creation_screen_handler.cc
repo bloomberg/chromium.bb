@@ -232,7 +232,7 @@ void SupervisedUserCreationScreenHandler::Show() {
   for (user_manager::UserList::const_iterator it = users.begin();
        it != users.end();
        ++it) {
-    bool is_owner = ((*it)->email() == owner);
+    bool is_owner = ((*it)->GetAccountId().GetUserEmail() == owner);
     auto user_dict = base::MakeUnique<base::DictionaryValue>();
     UserSelectionScreen::FillUserDictionary(
         *it, is_owner, false, /* is_signin_to_add */

@@ -116,7 +116,8 @@ bool IsSecondaryUser(Profile* profile) {
   user_manager::UserManager* user_manager = user_manager::UserManager::Get();
   const user_manager::User* user =
       ProfileHelper::Get()->GetUserByProfile(profile);
-  return user && user->email() != user_manager->GetPrimaryUser()->email();
+  return user &&
+         user->GetAccountId() != user_manager->GetPrimaryUser()->GetAccountId();
 }
 
 const char kSelectNetworkMessage[] = "selectNetwork";
@@ -328,7 +329,8 @@ void CoreChromeOSOptionsHandler::GetLocalizedValues(
   user_manager::UserManager* user_manager = user_manager::UserManager::Get();
 
   if (IsSecondaryUser(profile)) {
-    const std::string& primary_email = user_manager->GetPrimaryUser()->email();
+    const std::string& primary_email =
+        user_manager->GetPrimaryUser()->GetAccountId().GetUserEmail();
 
     // Set secondaryUser to show the shared icon by the network section header.
     localized_strings->SetBoolean("secondaryUser", true);

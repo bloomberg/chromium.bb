@@ -268,7 +268,7 @@ void ChangePictureOptionsHandler::HandlePageHidden(
 
 void ChangePictureOptionsHandler::SendSelectedImage() {
   const user_manager::User* user = GetUser();
-  DCHECK(!user->email().empty());
+  DCHECK(user->GetAccountId().is_valid());
 
   previous_image_index_ = user->image_index();
   switch (previous_image_index_) {

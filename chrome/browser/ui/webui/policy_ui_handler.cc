@@ -476,9 +476,9 @@ void PolicyUIHandler::RegisterMessages() {
     policy::DeviceLocalAccountPolicyService* local_account_service =
         connector->GetDeviceLocalAccountPolicyService();
     if (local_account_service) {
-      user_status_provider_.reset(
-          new DeviceLocalAccountPolicyStatusProvider(
-              user_manager->GetLoggedInUser()->email(), local_account_service));
+      user_status_provider_.reset(new DeviceLocalAccountPolicyStatusProvider(
+          user_manager->GetLoggedInUser()->GetAccountId().GetUserEmail(),
+          local_account_service));
     }
   } else {
     policy::UserCloudPolicyManagerChromeOS* user_cloud_policy_manager =

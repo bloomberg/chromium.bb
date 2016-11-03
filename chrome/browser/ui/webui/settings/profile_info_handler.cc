@@ -145,7 +145,7 @@ ProfileInfoHandler::GetAccountNameAndIcon() const {
     const user_manager::User* user =
         chromeos::ProfileHelper::Get()->GetUserByProfile(profile_);
     if (user && (user->GetType() != user_manager::USER_TYPE_GUEST))
-      name = user->email();
+      name = user->GetAccountId().GetUserEmail();
   }
   if (!name.empty())
     name = gaia::SanitizeEmail(gaia::CanonicalizeEmail(name));

@@ -127,7 +127,8 @@ bool CanChangeChannel(Profile* profile) {
     const user_manager::User* user =
         profile ? chromeos::ProfileHelper::Get()->GetUserByProfile(profile)
                 : nullptr;
-    std::string email = user ? user->email() : std::string();
+    std::string email =
+        user ? user->GetAccountId().GetUserEmail() : std::string();
     size_t at_pos = email.find('@');
     if (at_pos != std::string::npos && at_pos + 1 < email.length())
       domain = email.substr(email.find('@') + 1);

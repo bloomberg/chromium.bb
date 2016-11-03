@@ -53,7 +53,7 @@ void LanguagesHandler::HandleSetUILanguage(const base::ListValue* args) {
   const user_manager::User* user =
       chromeos::ProfileHelper::Get()->GetUserByProfile(profile_);
   if (user &&
-      user->email() == user_manager->GetPrimaryUser()->email() &&
+      user->GetAccountId() == user_manager->GetPrimaryUser()->GetAccountId() &&
       user->GetType() != user_manager::USER_TYPE_PUBLIC_ACCOUNT) {
     profile_->ChangeAppLocale(language_code,
                               Profile::APP_LOCALE_CHANGED_VIA_SETTINGS);

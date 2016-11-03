@@ -168,8 +168,8 @@ void AccountsOptionsHandler::HandleUpdateWhitelist(
   const user_manager::UserList& users =
       user_manager::UserManager::Get()->GetUsers();
   for (const auto* user : users) {
-    new_list->AppendIfNotPresent(
-        base::MakeUnique<base::StringValue>(user->email()));
+    new_list->AppendIfNotPresent(base::MakeUnique<base::StringValue>(
+        user->GetAccountId().GetUserEmail()));
   }
 
   if (OwnerSettingsServiceChromeOS* service =

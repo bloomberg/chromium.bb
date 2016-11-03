@@ -601,7 +601,7 @@ void BrowserOptionsHandler::GetLocalizedValues(base::DictionaryValue* values) {
     const user_manager::User* user =
         chromeos::ProfileHelper::Get()->GetUserByProfile(profile);
     if (user && (user->GetType() != user_manager::USER_TYPE_GUEST))
-      username = user->email();
+      username = user->GetAccountId().GetUserEmail();
   }
   if (!username.empty())
     username = gaia::SanitizeEmail(gaia::CanonicalizeEmail(username));
@@ -1464,8 +1464,10 @@ void BrowserOptionsHandler::ThemesSetNative(const base::ListValue* args) {
 
 #if defined(OS_CHROMEOS)
 void BrowserOptionsHandler::UpdateAccountPicture() {
-  std::string email =
-      user_manager::UserManager::Get()->GetLoggedInUser()->email();
+  std::string email = user_manager::UserManager::Get()
+                          ->GetLoggedInUser()
+                          ->GetAccountId()
+                          .GetUserEmail();
   if (!email.empty()) {
     web_ui()->CallJavascriptFunctionUnsafe(
         "BrowserOptions.updateAccountPicture");

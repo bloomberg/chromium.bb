@@ -151,9 +151,9 @@ class SharedOptionsTest : public LoginManagerTest {
   // Creates a browser and navigates to the Settings page.
   Browser* CreateBrowserForUser(const user_manager::User* user) {
     Profile* profile = ProfileHelper::Get()->GetProfileByUserUnsafe(user);
-    SigninManagerFactory::GetForProfile(profile)->
-        SetAuthenticatedAccountInfo(GetGaiaIDForUserID(user->email()),
-                                    user->email());
+    SigninManagerFactory::GetForProfile(profile)->SetAuthenticatedAccountInfo(
+        GetGaiaIDForUserID(user->GetAccountId().GetUserEmail()),
+        user->GetAccountId().GetUserEmail());
 
     ui_test_utils::BrowserAddedObserver observer;
     Browser* browser = CreateBrowser(profile);
