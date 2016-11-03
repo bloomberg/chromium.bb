@@ -121,8 +121,9 @@ void ExtensionSystemImpl::Shared::InitPrefs() {
   const user_manager::User* user =
       user_manager::UserManager::Get()->GetActiveUser();
   policy::DeviceLocalAccount::Type device_local_account_type;
-  if (user && policy::IsDeviceLocalAccountUser(user->email(),
-                                               &device_local_account_type)) {
+  if (user &&
+      policy::IsDeviceLocalAccountUser(user->GetAccountId().GetUserEmail(),
+                                       &device_local_account_type)) {
     device_local_account_management_policy_provider_.reset(
         new chromeos::DeviceLocalAccountManagementPolicyProvider(
             device_local_account_type));

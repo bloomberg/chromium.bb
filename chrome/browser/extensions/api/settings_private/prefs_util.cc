@@ -384,8 +384,11 @@ std::unique_ptr<settings_private::PrefObject> PrefsUtil::GetPref(
         settings_private::PolicySource::POLICY_SOURCE_PRIMARY_USER;
     pref_object->policy_enforcement =
         settings_private::PolicyEnforcement::POLICY_ENFORCEMENT_ENFORCED;
-    pref_object->policy_source_name.reset(new std::string(
-        user_manager::UserManager::Get()->GetPrimaryUser()->email()));
+    pref_object->policy_source_name.reset(
+        new std::string(user_manager::UserManager::Get()
+                            ->GetPrimaryUser()
+                            ->GetAccountId()
+                            .GetUserEmail()));
     return pref_object;
   }
   if (IsPrefEnterpriseManaged(name)) {
@@ -609,7 +612,8 @@ bool PrefsUtil::IsPrefPrimaryUserControlled(const std::string& pref_name) {
     user_manager::UserManager* user_manager = user_manager::UserManager::Get();
     const user_manager::User* user =
         chromeos::ProfileHelper::Get()->GetUserByProfile(profile_);
-    if (user && user->email() != user_manager->GetPrimaryUser()->email())
+    if (user &&
+        user->GetAccountId() != user_manager->GetPrimaryUser()->GetAccountId())
       return true;
   }
   return false;

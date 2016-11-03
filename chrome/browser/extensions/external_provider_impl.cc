@@ -504,14 +504,14 @@ void ExternalProviderImpl::CreateExternalProviders(
   const user_manager::User* user =
       chromeos::ProfileHelper::Get()->GetUserByProfile(profile);
   policy::DeviceLocalAccount::Type account_type;
-  if (user &&
-      connector->IsEnterpriseManaged() &&
-      policy::IsDeviceLocalAccountUser(user->email(), &account_type)) {
+  if (user && connector->IsEnterpriseManaged() &&
+      policy::IsDeviceLocalAccountUser(user->GetAccountId().GetUserEmail(),
+                                       &account_type)) {
     if (account_type == policy::DeviceLocalAccount::TYPE_PUBLIC_SESSION)
       is_chrome_os_public_session = true;
     policy::DeviceLocalAccountPolicyBroker* broker =
         connector->GetDeviceLocalAccountPolicyService()->GetBrokerForUser(
-            user->email());
+            user->GetAccountId().GetUserEmail());
     if (broker) {
       external_loader = broker->extension_loader();
       crx_location = Manifest::EXTERNAL_POLICY;
