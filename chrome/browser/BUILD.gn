@@ -1269,6 +1269,7 @@ split_static_library("browser") {
   public_deps = [
     "//chrome/common",
     "//components/autofill/core/browser",
+    "//components/payments:payment_validation",
     "//components/sync",
     "//content/public/browser",
     "//sql",
@@ -2555,6 +2556,7 @@ split_static_library("browser") {
     ]
     deps += [
       "//components/cdm/browser",
+      "//components/payments/android:payments_jni",
       "//components/resources:components_resources",
       "//third_party/android_opengl/etc1",
       "//third_party/android_tools:cpu_features",
@@ -3915,6 +3917,7 @@ if (android_java_ui) {
       "../android/java/src/org/chromium/chrome/browser/password_manager/AccountChooserDialog.java",
       "../android/java/src/org/chromium/chrome/browser/password_manager/AutoSigninFirstRunDialog.java",
       "../android/java/src/org/chromium/chrome/browser/password_manager/Credential.java",
+      "../android/java/src/org/chromium/chrome/browser/payments/PaymentValidator.java",
       "../android/java/src/org/chromium/chrome/browser/permissions/PermissionDialogController.java",
       "../android/java/src/org/chromium/chrome/browser/permissions/PermissionDialogDelegate.java",
       "../android/java/src/org/chromium/chrome/browser/physicalweb/UrlManager.java",

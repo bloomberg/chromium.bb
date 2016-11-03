@@ -107,6 +107,7 @@ test("components_unittests") {
     "//components/password_manager/core/browser:unit_tests",
     "//components/password_manager/core/common:unit_tests",
     "//components/password_manager/sync/browser:unit_tests",
+    "//components/payments:unit_tests",
     "//components/physical_web/data_source:unit_tests",
     "//components/precache/core:unit_tests",
     "//components/prefs:unit_tests",

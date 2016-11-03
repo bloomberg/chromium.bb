@@ -13,3 +13,31 @@ mojom("payment_request") {
     "//mojo/common:common_custom_types",
   ]
 }
+
+static_library("payment_validation") {
+  sources = [
+    "payment_details_validation.cc",
+    "payment_details_validation.h",
+    "payments_validators.cc",
+    "payments_validators.h",
+  ]
+
+  deps = [
+    ":payment_request",
+    "//base",
+    "//third_party/re2:re2",
+    "//url:url",
+  ]
+}
+
+static_library("unit_tests") {
+  testonly = true
+  sources = [
+    "payments_validators_test.cc",
+  ]
+
+  deps = [
+    ":payment_validation",
+    "//testing/gtest",
+  ]
+}
