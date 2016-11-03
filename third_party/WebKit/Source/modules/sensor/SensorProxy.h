@@ -81,9 +81,10 @@ class SensorProxy final : public GarbageCollectedFinalized<SensorProxy>,
   void SensorReadingChanged() override;
 
   // Generic handler for a fatal error.
+  // String parameters are intentionally copied.
   void handleSensorError(ExceptionCode = UnknownError,
-                         const String& sanitizedMessage = String(),
-                         const String& unsanitizedMessage = String());
+                         String sanitizedMessage = String(),
+                         String unsanitizedMessage = String());
 
   void onSensorCreated(device::mojom::blink::SensorInitParamsPtr,
                        device::mojom::blink::SensorClientRequest);

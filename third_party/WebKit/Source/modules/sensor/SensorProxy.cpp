@@ -120,13 +120,16 @@ void SensorProxy::SensorReadingChanged() {
 }
 
 void SensorProxy::handleSensorError(ExceptionCode code,
-                                    const String& sanitizedMessage,
-                                    const String& unsanitizedMessage) {
+                                    String sanitizedMessage,
+                                    String unsanitizedMessage) {
   if (!Platform::current()) {
     // TODO(rockot): Remove this hack once renderer shutdown sequence is fixed.
     return;
   }
+
   m_state = Uninitialized;
+  // The m_sensor.reset() will release all callbacks and its bound parameters,
+  // therefore, handleSensorError accepts messages by value.
   m_sensor.reset();
   m_sharedBuffer.reset();
   m_sharedBufferHandle.reset();

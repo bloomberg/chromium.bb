@@ -112,16 +112,20 @@ function sensor_mocks(mojo) {
       reset() {
         if (this.sensor_reading_timer_id_) {
           window.clearTimeout(this.sensor_reading_timer_id_);
+          this.sensor_reading_timer_id_ = null;
         }
 
         this.start_should_fail_ = false;
-        this.sensor_reading_timer_id_ = null;
+        this.update_reading_function_ = null;
         this.active_sensor_configurations_ = [];
         this.suspend_called_ = null;
         this.resume_called_ = null;
         this.add_configuration_called_ = null;
         this.remove_configuration_called_ = null;
         this.resetBuffer();
+        core.unmapBuffer(this.buffer_array_);
+        this.buffer_array_ = null;
+        bindings.StubBindings(this.stub_).close();
       }
 
       // Zeroes shared buffer.
@@ -257,6 +261,7 @@ function sensor_mocks(mojo) {
       reset() {
         if (this.active_sensor_ != null) {
           this.active_sensor_.reset();
+          this.active_sensor_ = null;
         }
 
         this.get_sensor_should_fail_ = false;
@@ -301,8 +306,19 @@ function sensor_mocks(mojo) {
 
 function sensor_test(func, name, properties) {
   mojo_test(mojo => sensor_mocks(mojo).then(sensor => {
-    let result = Promise.resolve(func(sensor));
-    let cleanUp = () => { sensor.mockSensorProvider.reset(); };
-    return result.then(cleanUp, cleanUp);
+    // Clean up and reset mock sensor stubs asynchronously, so that the blink
+    // side closes its proxies and notifies JS sensor objects before new test is
+    // started.
+    let onSuccess = () => {
+      sensor.mockSensorProvider.reset();
+      return new Promise((resolve, reject) => { setTimeout(resolve, 0); });
+    };
+
+    let onFailure = () => {
+      sensor.mockSensorProvider.reset();
+      return new Promise((resolve, reject) => { setTimeout(reject, 0); });
+    };
+
+    return Promise.resolve(func(sensor)).then(onSuccess, onFailure);
   }), name, properties);
 }

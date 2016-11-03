@@ -44,6 +44,7 @@ sensor_test(sensor => {
       assert_equals(ambientLightSensor.state, 'errored');
       console.log(event.error.message);
       assert_equals(event.error.name, 'NotFoundError');
+      ambientLightSensor.onerror = null;
       resolve();
     };
 
@@ -64,6 +65,7 @@ sensor_test(sensor => {
           ambientLightSensor.onerror = event => {
             assert_equals(ambientLightSensor.state, 'errored');
             assert_equals(event.error.name, 'OperationError');
+            ambientLightSensor.onerror = null;
             resolve();
           };
         });
