@@ -68,24 +68,17 @@ class CORE_EXPORT InspectorDOMDebuggerAgent final
   DECLARE_VIRTUAL_TRACE();
 
   // DOMDebugger API for frontend
-  void setDOMBreakpoint(ErrorString*, int nodeId, const String& type) override;
-  void removeDOMBreakpoint(ErrorString*,
-                           int nodeId,
-                           const String& type) override;
-  void setEventListenerBreakpoint(ErrorString*,
-                                  const String& eventName,
-                                  const Maybe<String>& targetName) override;
-  void removeEventListenerBreakpoint(ErrorString*,
-                                     const String& eventName,
-                                     const Maybe<String>& targetName) override;
-  void setInstrumentationBreakpoint(ErrorString*,
-                                    const String& eventName) override;
-  void removeInstrumentationBreakpoint(ErrorString*,
-                                       const String& eventName) override;
-  void setXHRBreakpoint(ErrorString*, const String& url) override;
-  void removeXHRBreakpoint(ErrorString*, const String& url) override;
-  void getEventListeners(
-      ErrorString*,
+  Response setDOMBreakpoint(int nodeId, const String& type) override;
+  Response removeDOMBreakpoint(int nodeId, const String& type) override;
+  Response setEventListenerBreakpoint(const String& eventName,
+                                      Maybe<String> targetName) override;
+  Response removeEventListenerBreakpoint(const String& eventName,
+                                         Maybe<String> targetName) override;
+  Response setInstrumentationBreakpoint(const String& eventName) override;
+  Response removeInstrumentationBreakpoint(const String& eventName) override;
+  Response setXHRBreakpoint(const String& url) override;
+  Response removeXHRBreakpoint(const String& url) override;
+  Response getEventListeners(
       const String& objectId,
       std::unique_ptr<protocol::Array<protocol::DOMDebugger::EventListener>>*
           listeners) override;
@@ -107,7 +100,7 @@ class CORE_EXPORT InspectorDOMDebuggerAgent final
   void cancelNativeBreakpoint();
   void scriptExecutionBlockedByCSP(const String& directiveText);
 
-  void disable(ErrorString*) override;
+  Response disable() override;
   void restore() override;
   void didCommitLoadForLocalFrame(LocalFrame*) override;
 
@@ -125,12 +118,8 @@ class CORE_EXPORT InspectorDOMDebuggerAgent final
   void breakProgramOnDOMEvent(Node* target, int breakpointType, bool insertion);
   void updateSubtreeBreakpoints(Node*, uint32_t rootMask, bool set);
   bool hasBreakpoint(Node*, int type);
-  void setBreakpoint(ErrorString*,
-                     const String& eventName,
-                     const String& targetName);
-  void removeBreakpoint(ErrorString*,
-                        const String& eventName,
-                        const String& targetName);
+  Response setBreakpoint(const String& eventName, const String& targetName);
+  Response removeBreakpoint(const String& eventName, const String& targetName);
 
   void didAddBreakpoint();
   void didRemoveBreakpoint();

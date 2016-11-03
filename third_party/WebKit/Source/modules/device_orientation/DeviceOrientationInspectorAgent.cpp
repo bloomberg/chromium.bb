@@ -41,8 +41,7 @@ DeviceOrientationController& DeviceOrientationInspectorAgent::controller() {
       *m_page->deprecatedLocalMainFrame()->document());
 }
 
-void DeviceOrientationInspectorAgent::setDeviceOrientationOverride(
-    ErrorString* error,
+Response DeviceOrientationInspectorAgent::setDeviceOrientationOverride(
     double alpha,
     double beta,
     double gamma) {
@@ -53,19 +52,21 @@ void DeviceOrientationInspectorAgent::setDeviceOrientationOverride(
   m_state->setDouble(DeviceOrientationInspectorAgentState::gamma, gamma);
   controller().setOverride(
       DeviceOrientationData::create(alpha, beta, gamma, false));
+  return Response::OK();
 }
 
-void DeviceOrientationInspectorAgent::clearDeviceOrientationOverride(
-    ErrorString* error) {
+Response DeviceOrientationInspectorAgent::clearDeviceOrientationOverride() {
   m_state->setBoolean(DeviceOrientationInspectorAgentState::overrideEnabled,
                       false);
   controller().clearOverride();
+  return Response::OK();
 }
 
-void DeviceOrientationInspectorAgent::disable(ErrorString*) {
+Response DeviceOrientationInspectorAgent::disable() {
   m_state->setBoolean(DeviceOrientationInspectorAgentState::overrideEnabled,
                       false);
   controller().clearOverride();
+  return Response::OK();
 }
 
 void DeviceOrientationInspectorAgent::restore() {

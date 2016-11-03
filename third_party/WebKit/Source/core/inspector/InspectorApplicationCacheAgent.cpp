@@ -48,22 +48,23 @@ InspectorApplicationCacheAgent::InspectorApplicationCacheAgent(
 void InspectorApplicationCacheAgent::restore() {
   if (m_state->booleanProperty(
           ApplicationCacheAgentState::applicationCacheAgentEnabled, false)) {
-    ErrorString error;
-    enable(&error);
+    enable();
   }
 }
 
-void InspectorApplicationCacheAgent::enable(ErrorString*) {
+Response InspectorApplicationCacheAgent::enable() {
   m_state->setBoolean(ApplicationCacheAgentState::applicationCacheAgentEnabled,
                       true);
   m_instrumentingAgents->addInspectorApplicationCacheAgent(this);
   frontend()->networkStateUpdated(networkStateNotifier().onLine());
+  return Response::OK();
 }
 
-void InspectorApplicationCacheAgent::disable(ErrorString*) {
+Response InspectorApplicationCacheAgent::disable() {
   m_state->setBoolean(ApplicationCacheAgentState::applicationCacheAgentEnabled,
                       false);
   m_instrumentingAgents->removeInspectorApplicationCacheAgent(this);
+  return Response::OK();
 }
 
 void InspectorApplicationCacheAgent::updateApplicationCacheStatus(
@@ -88,8 +89,7 @@ void InspectorApplicationCacheAgent::networkStateChanged(LocalFrame* frame,
     frontend()->networkStateUpdated(online);
 }
 
-void InspectorApplicationCacheAgent::getFramesWithManifests(
-    ErrorString*,
+Response InspectorApplicationCacheAgent::getFramesWithManifests(
     std::unique_ptr<
         protocol::Array<protocol::ApplicationCache::FrameWithManifest>>*
         result) {
@@ -99,7 +99,7 @@ void InspectorApplicationCacheAgent::getFramesWithManifests(
   for (LocalFrame* frame : *m_inspectedFrames) {
     DocumentLoader* documentLoader = frame->loader().documentLoader();
     if (!documentLoader)
-      return;
+      continue;
 
     ApplicationCacheHost* host = documentLoader->applicationCacheHost();
     ApplicationCacheHost::CacheInfo info = host->applicationCacheInfo();
@@ -114,46 +114,44 @@ void InspectorApplicationCacheAgent::getFramesWithManifests(
       (*result)->addItem(std::move(value));
     }
   }
+  return Response::OK();
 }
 
-DocumentLoader* InspectorApplicationCacheAgent::assertFrameWithDocumentLoader(
-    ErrorString* errorString,
-    String frameId) {
+Response InspectorApplicationCacheAgent::assertFrameWithDocumentLoader(
+    String frameId,
+    DocumentLoader*& result) {
   LocalFrame* frame = IdentifiersFactory::frameById(m_inspectedFrames, frameId);
-  if (!frame) {
-    *errorString = "No frame for given id found";
-    return nullptr;
-  }
+  if (!frame)
+    return Response::Error("No frame for given id found");
 
-  DocumentLoader* documentLoader = frame->loader().documentLoader();
-  if (!documentLoader)
-    *errorString = "No documentLoader for given frame found";
-  return documentLoader;
+  result = frame->loader().documentLoader();
+  if (!result)
+    return Response::Error("No documentLoader for given frame found");
+  return Response::OK();
 }
 
-void InspectorApplicationCacheAgent::getManifestForFrame(
-    ErrorString* errorString,
+Response InspectorApplicationCacheAgent::getManifestForFrame(
     const String& frameId,
     String* manifestURL) {
-  DocumentLoader* documentLoader =
-      assertFrameWithDocumentLoader(errorString, frameId);
-  if (!documentLoader)
-    return;
+  DocumentLoader* documentLoader = nullptr;
+  Response response = assertFrameWithDocumentLoader(frameId, documentLoader);
+  if (!response.isSuccess())
+    return response;
 
   ApplicationCacheHost::CacheInfo info =
       documentLoader->applicationCacheHost()->applicationCacheInfo();
   *manifestURL = info.m_manifest.getString();
+  return Response::OK();
 }
 
-void InspectorApplicationCacheAgent::getApplicationCacheForFrame(
-    ErrorString* errorString,
+Response InspectorApplicationCacheAgent::getApplicationCacheForFrame(
     const String& frameId,
     std::unique_ptr<protocol::ApplicationCache::ApplicationCache>*
         applicationCache) {
-  DocumentLoader* documentLoader =
-      assertFrameWithDocumentLoader(errorString, frameId);
-  if (!documentLoader)
-    return;
+  DocumentLoader* documentLoader = nullptr;
+  Response response = assertFrameWithDocumentLoader(frameId, documentLoader);
+  if (!response.isSuccess())
+    return response;
 
   ApplicationCacheHost* host = documentLoader->applicationCacheHost();
   ApplicationCacheHost::CacheInfo info = host->applicationCacheInfo();
@@ -162,6 +160,7 @@ void InspectorApplicationCacheAgent::getApplicationCacheForFrame(
   host->fillResourceList(&resources);
 
   *applicationCache = buildObjectForApplicationCache(resources, info);
+  return Response::OK();
 }
 
 std::unique_ptr<protocol::ApplicationCache::ApplicationCache>

@@ -236,12 +236,13 @@ DEFINE_TRACE(InspectorDOMDebuggerAgent) {
   InspectorBaseAgent::trace(visitor);
 }
 
-void InspectorDOMDebuggerAgent::disable(ErrorString*) {
+Response InspectorDOMDebuggerAgent::disable() {
   setEnabled(false);
   m_domBreakpoints.clear();
   m_state->remove(DOMDebuggerAgentState::eventListenerBreakpoints);
   m_state->remove(DOMDebuggerAgentState::xhrBreakpoints);
   m_state->remove(DOMDebuggerAgentState::pauseOnAllXHRs);
+  return Response::OK();
 }
 
 void InspectorDOMDebuggerAgent::restore() {
@@ -249,19 +250,17 @@ void InspectorDOMDebuggerAgent::restore() {
     m_instrumentingAgents->addInspectorDOMDebuggerAgent(this);
 }
 
-void InspectorDOMDebuggerAgent::setEventListenerBreakpoint(
-    ErrorString* error,
+Response InspectorDOMDebuggerAgent::setEventListenerBreakpoint(
     const String& eventName,
-    const Maybe<String>& targetName) {
-  setBreakpoint(error, String(listenerEventCategoryType) + eventName,
-                targetName.fromMaybe(String()));
+    Maybe<String> targetName) {
+  return setBreakpoint(String(listenerEventCategoryType) + eventName,
+                       targetName.fromMaybe(String()));
 }
 
-void InspectorDOMDebuggerAgent::setInstrumentationBreakpoint(
-    ErrorString* error,
+Response InspectorDOMDebuggerAgent::setInstrumentationBreakpoint(
     const String& eventName) {
-  setBreakpoint(error, String(instrumentationEventCategoryType) + eventName,
-                String());
+  return setBreakpoint(String(instrumentationEventCategoryType) + eventName,
+                       String());
 }
 
 static protocol::DictionaryValue* ensurePropertyObject(
@@ -305,14 +304,10 @@ protocol::DictionaryValue* InspectorDOMDebuggerAgent::xhrBreakpoints() {
   return breakpoints;
 }
 
-void InspectorDOMDebuggerAgent::setBreakpoint(ErrorString* error,
-                                              const String& eventName,
-                                              const String& targetName) {
-  if (eventName.isEmpty()) {
-    *error = "Event name is empty";
-    return;
-  }
-
+Response InspectorDOMDebuggerAgent::setBreakpoint(const String& eventName,
+                                                  const String& targetName) {
+  if (eventName.isEmpty())
+    return Response::Error("Event name is empty");
   protocol::DictionaryValue* breakpointsByTarget =
       ensurePropertyObject(eventListenerBreakpoints(), eventName);
   if (targetName.isEmpty())
@@ -321,31 +316,26 @@ void InspectorDOMDebuggerAgent::setBreakpoint(ErrorString* error,
   else
     breakpointsByTarget->setBoolean(targetName.lower(), true);
   didAddBreakpoint();
+  return Response::OK();
 }
 
-void InspectorDOMDebuggerAgent::removeEventListenerBreakpoint(
-    ErrorString* error,
+Response InspectorDOMDebuggerAgent::removeEventListenerBreakpoint(
     const String& eventName,
-    const Maybe<String>& targetName) {
-  removeBreakpoint(error, String(listenerEventCategoryType) + eventName,
-                   targetName.fromMaybe(String()));
+    Maybe<String> targetName) {
+  return removeBreakpoint(String(listenerEventCategoryType) + eventName,
+                          targetName.fromMaybe(String()));
 }
 
-void InspectorDOMDebuggerAgent::removeInstrumentationBreakpoint(
-    ErrorString* error,
+Response InspectorDOMDebuggerAgent::removeInstrumentationBreakpoint(
     const String& eventName) {
-  removeBreakpoint(error, String(instrumentationEventCategoryType) + eventName,
-                   String());
+  return removeBreakpoint(String(instrumentationEventCategoryType) + eventName,
+                          String());
 }
 
-void InspectorDOMDebuggerAgent::removeBreakpoint(ErrorString* error,
-                                                 const String& eventName,
-                                                 const String& targetName) {
-  if (eventName.isEmpty()) {
-    *error = "Event name is empty";
-    return;
-  }
-
+Response InspectorDOMDebuggerAgent::removeBreakpoint(const String& eventName,
+                                                     const String& targetName) {
+  if (eventName.isEmpty())
+    return Response::Error("Event name is empty");
   protocol::DictionaryValue* breakpointsByTarget =
       ensurePropertyObject(eventListenerBreakpoints(), eventName);
   if (targetName.isEmpty())
@@ -353,6 +343,7 @@ void InspectorDOMDebuggerAgent::removeBreakpoint(ErrorString* error,
   else
     breakpointsByTarget->remove(targetName.lower());
   didRemoveBreakpoint();
+  return Response::OK();
 }
 
 void InspectorDOMDebuggerAgent::didInvalidateStyleAttr(Node* node) {
@@ -389,15 +380,20 @@ void InspectorDOMDebuggerAgent::didRemoveDOMNode(Node* node) {
   }
 }
 
-static int domTypeForName(ErrorString* errorString, const String& typeString) {
-  if (typeString == "subtree-modified")
-    return SubtreeModified;
-  if (typeString == "attribute-modified")
-    return AttributeModified;
-  if (typeString == "node-removed")
-    return NodeRemoved;
-  *errorString = String("Unknown DOM breakpoint type: " + typeString);
-  return -1;
+static Response domTypeForName(const String& typeString, int& type) {
+  if (typeString == "subtree-modified") {
+    type = SubtreeModified;
+    return Response::OK();
+  }
+  if (typeString == "attribute-modified") {
+    type = AttributeModified;
+    return Response::OK();
+  }
+  if (typeString == "node-removed") {
+    type = NodeRemoved;
+    return Response::OK();
+  }
+  return Response::Error(String("Unknown DOM breakpoint type: " + typeString));
 }
 
 static String domTypeName(int type) {
@@ -414,19 +410,17 @@ static String domTypeName(int type) {
   return "";
 }
 
-void InspectorDOMDebuggerAgent::setDOMBreakpoint(ErrorString* errorString,
-                                                 int nodeId,
-                                                 const String& typeString) {
+Response InspectorDOMDebuggerAgent::setDOMBreakpoint(int nodeId,
+                                                     const String& typeString) {
   Node* node = nullptr;
   Response response = m_domAgent->assertNode(nodeId, node);
-  if (!response.isSuccess()) {
-    *errorString = response.errorMessage();
-    return;
-  }
+  if (!response.isSuccess())
+    return response;
 
-  int type = domTypeForName(errorString, typeString);
-  if (type == -1)
-    return;
+  int type = -1;
+  response = domTypeForName(typeString, type);
+  if (!response.isSuccess())
+    return response;
 
   uint32_t rootBit = 1 << type;
   m_domBreakpoints.set(node, m_domBreakpoints.get(node) | rootBit);
@@ -436,20 +430,21 @@ void InspectorDOMDebuggerAgent::setDOMBreakpoint(ErrorString* errorString,
       updateSubtreeBreakpoints(child, rootBit, true);
   }
   didAddBreakpoint();
+  return Response::OK();
 }
 
-void InspectorDOMDebuggerAgent::removeDOMBreakpoint(ErrorString* errorString,
-                                                    int nodeId,
-                                                    const String& typeString) {
+Response InspectorDOMDebuggerAgent::removeDOMBreakpoint(
+    int nodeId,
+    const String& typeString) {
   Node* node = nullptr;
   Response response = m_domAgent->assertNode(nodeId, node);
-  if (!response.isSuccess()) {
-    *errorString = response.errorMessage();
-    return;
-  }
-  int type = domTypeForName(errorString, typeString);
-  if (type == -1)
-    return;
+  if (!response.isSuccess())
+    return response;
+
+  int type = -1;
+  response = domTypeForName(typeString, type);
+  if (!response.isSuccess())
+    return response;
 
   uint32_t rootBit = 1 << type;
   uint32_t mask = m_domBreakpoints.get(node) & ~rootBit;
@@ -465,10 +460,10 @@ void InspectorDOMDebuggerAgent::removeDOMBreakpoint(ErrorString* errorString,
       updateSubtreeBreakpoints(child, rootBit, false);
   }
   didRemoveBreakpoint();
+  return Response::OK();
 }
 
-void InspectorDOMDebuggerAgent::getEventListeners(
-    ErrorString* errorString,
+Response InspectorDOMDebuggerAgent::getEventListeners(
     const String& objectId,
     std::unique_ptr<protocol::Array<protocol::DOMDebugger::EventListener>>*
         listenersArray) {
@@ -479,8 +474,7 @@ void InspectorDOMDebuggerAgent::getEventListeners(
   std::unique_ptr<v8_inspector::StringBuffer> objectGroup;
   if (!m_v8Session->unwrapObject(&error, toV8InspectorStringView(objectId),
                                  &object, &context, &objectGroup)) {
-    *errorString = toCoreString(std::move(error));
-    return;
+    return Response::Error(toCoreString(std::move(error)));
   }
   v8::Context::Scope scope(context);
   *listenersArray =
@@ -504,6 +498,7 @@ void InspectorDOMDebuggerAgent::getEventListeners(
     if (listenerObject)
       (*listenersArray)->addItem(std::move(listenerObject));
   }
+  return Response::OK();
 }
 
 std::unique_ptr<protocol::DOMDebugger::EventListener>
@@ -729,22 +724,22 @@ void InspectorDOMDebuggerAgent::scriptExecutionBlockedByCSP(
   pauseOnNativeEventIfNeeded(std::move(eventData), true);
 }
 
-void InspectorDOMDebuggerAgent::setXHRBreakpoint(ErrorString* errorString,
-                                                 const String& url) {
+Response InspectorDOMDebuggerAgent::setXHRBreakpoint(const String& url) {
   if (url.isEmpty())
     m_state->setBoolean(DOMDebuggerAgentState::pauseOnAllXHRs, true);
   else
     xhrBreakpoints()->setBoolean(url, true);
   didAddBreakpoint();
+  return Response::OK();
 }
 
-void InspectorDOMDebuggerAgent::removeXHRBreakpoint(ErrorString* errorString,
-                                                    const String& url) {
+Response InspectorDOMDebuggerAgent::removeXHRBreakpoint(const String& url) {
   if (url.isEmpty())
     m_state->setBoolean(DOMDebuggerAgentState::pauseOnAllXHRs, false);
   else
     xhrBreakpoints()->remove(url);
   didRemoveBreakpoint();
+  return Response::OK();
 }
 
 void InspectorDOMDebuggerAgent::willSendXMLHttpOrFetchNetworkRequest(

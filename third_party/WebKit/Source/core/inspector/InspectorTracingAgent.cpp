@@ -54,17 +54,16 @@ void InspectorTracingAgent::frameStoppedLoading(LocalFrame* frame) {
     m_client->hideReloadingBlanket();
 }
 
-void InspectorTracingAgent::start(
-    const Maybe<String>& categories,
-    const Maybe<String>& options,
-    const Maybe<double>& bufferUsageReportingInterval,
-    const Maybe<String>& transferMode,
-    const Maybe<protocol::Tracing::TraceConfig>& config,
-    std::unique_ptr<StartCallback> callback) {
+void InspectorTracingAgent::start(Maybe<String> categories,
+                                  Maybe<String> options,
+                                  Maybe<double> bufferUsageReportingInterval,
+                                  Maybe<String> transferMode,
+                                  Maybe<protocol::Tracing::TraceConfig> config,
+                                  std::unique_ptr<StartCallback> callback) {
   DCHECK(!isStarted());
   if (config.isJust()) {
-    callback->sendFailure(
-        "Using trace config on renderer targets is not supported yet.");
+    callback->sendFailure(Response::Error(
+        "Using trace config on renderer targets is not supported yet."));
     return;
   }
 
@@ -115,8 +114,9 @@ void InspectorTracingAgent::rootLayerCleared() {
     m_client->hideReloadingBlanket();
 }
 
-void InspectorTracingAgent::disable(ErrorString*) {
+Response InspectorTracingAgent::disable() {
   innerDisable();
+  return Response::OK();
 }
 
 void InspectorTracingAgent::innerDisable() {

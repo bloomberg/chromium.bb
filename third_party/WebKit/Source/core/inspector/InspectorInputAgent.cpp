@@ -139,23 +139,20 @@ InspectorInputAgent::InspectorInputAgent(InspectedFrames* inspectedFrames)
 
 InspectorInputAgent::~InspectorInputAgent() {}
 
-void InspectorInputAgent::dispatchTouchEvent(
-    ErrorString* error,
+Response InspectorInputAgent::dispatchTouchEvent(
     const String& type,
     std::unique_ptr<protocol::Array<protocol::Input::TouchPoint>> touchPoints,
-    const protocol::Maybe<int>& modifiers,
-    const protocol::Maybe<double>& timestamp) {
+    protocol::Maybe<int> modifiers,
+    protocol::Maybe<double> timestamp) {
   PlatformEvent::EventType convertedType;
-  if (type == "touchStart") {
+  if (type == "touchStart")
     convertedType = PlatformEvent::TouchStart;
-  } else if (type == "touchEnd") {
+  else if (type == "touchEnd")
     convertedType = PlatformEvent::TouchEnd;
-  } else if (type == "touchMove") {
+  else if (type == "touchMove")
     convertedType = PlatformEvent::TouchMove;
-  } else {
-    *error = String("Unrecognized type: " + type);
-    return;
-  }
+  else
+    return Response::Error(String("Unrecognized type: " + type));
 
   unsigned convertedModifiers = GetEventModifiers(modifiers.fromMaybe(0));
 
@@ -180,28 +177,25 @@ void InspectorInputAgent::dispatchTouchEvent(
       id = autoId++;
     }
     if (id < 0) {
-      *error =
+      return Response::Error(
           "All or none of the provided TouchPoints must supply positive "
-          "integer ids.";
-      return;
+          "integer ids.");
     }
 
     PlatformTouchPoint::TouchState convertedState;
     String state = point->getState();
-    if (state == "touchPressed") {
+    if (state == "touchPressed")
       convertedState = PlatformTouchPoint::TouchPressed;
-    } else if (state == "touchReleased") {
+    else if (state == "touchReleased")
       convertedState = PlatformTouchPoint::TouchReleased;
-    } else if (state == "touchMoved") {
+    else if (state == "touchMoved")
       convertedState = PlatformTouchPoint::TouchMoved;
-    } else if (state == "touchStationary") {
+    else if (state == "touchStationary")
       convertedState = PlatformTouchPoint::TouchStationary;
-    } else if (state == "touchCancelled") {
+    else if (state == "touchCancelled")
       convertedState = PlatformTouchPoint::TouchCancelled;
-    } else {
-      *error = String("Unrecognized state: " + state);
-      return;
-    }
+    else
+      return Response::Error(String("Unrecognized state: " + state));
 
     // Some platforms may have flipped coordinate systems, but the given
     // coordinates assume the origin is in the top-left of the window. Convert.
@@ -217,6 +211,7 @@ void InspectorInputAgent::dispatchTouchEvent(
   }
 
   m_inspectedFrames->root()->eventHandler().handleTouchEvent(event);
+  return Response::OK();
 }
 
 DEFINE_TRACE(InspectorInputAgent) {

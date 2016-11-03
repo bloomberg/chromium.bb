@@ -42,18 +42,18 @@ class CORE_EXPORT InspectorTracingAgent final
 
   // Base agent methods.
   void restore() override;
-  void disable(ErrorString*) override;
+  Response disable() override;
 
   // InspectorInstrumentation methods
   void frameStartedLoading(LocalFrame*);
   void frameStoppedLoading(LocalFrame*);
 
   // Protocol method implementations.
-  void start(const Maybe<String>& categories,
-             const Maybe<String>& options,
-             const Maybe<double>& bufferUsageReportingInterval,
-             const Maybe<String>& transferMode,
-             const Maybe<protocol::Tracing::TraceConfig>&,
+  void start(Maybe<String> categories,
+             Maybe<String> options,
+             Maybe<double> bufferUsageReportingInterval,
+             Maybe<String> transferMode,
+             Maybe<protocol::Tracing::TraceConfig>,
              std::unique_ptr<StartCallback>) override;
   void end(std::unique_ptr<EndCallback>) override;
 

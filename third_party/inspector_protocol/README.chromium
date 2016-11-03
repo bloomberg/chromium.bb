@@ -15,5 +15,6 @@ Local modifications:
 - This only includes the lib/ and templates/ directories, scripts, build
   and the LICENSE files.
 - DOMStorage, Rendering, Emulation, Network, Memory, Page, LayerTree, Database,
-  IndexedDB, CacheStorage, DOM, CSS are added
-  to new style domains in CodeGenerator.py.
+  IndexedDB, CacheStorage, DOM, CSS, ApplicationCache, DOMDebugger, Input,
+  DeviceOrierntation, Tracing are added to new style domains in
+  CodeGenerator.py.
