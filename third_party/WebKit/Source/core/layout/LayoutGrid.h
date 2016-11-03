@@ -301,6 +301,15 @@ class LayoutGrid final : public LayoutBlock {
   void updateAutoMarginsInColumnAxisIfNeeded(LayoutBox&);
   void updateAutoMarginsInRowAxisIfNeeded(LayoutBox&);
 
+  int baselinePosition(
+      FontBaseline,
+      bool firstLine,
+      LineDirectionMode,
+      LinePositionMode = PositionOnContainingLine) const override;
+  int firstLineBoxBaseline() const override;
+  int inlineBlockBaseline(LineDirectionMode) const override;
+  bool isInlineBaselineAlignedChild(const LayoutBox* child) const;
+
 #if ENABLE(ASSERT)
   bool tracksAreWiderThanMinTrackBreadth(GridTrackSizingDirection,
                                          GridSizingData&) const;

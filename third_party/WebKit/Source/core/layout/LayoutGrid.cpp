@@ -2906,6 +2906,110 @@ void LayoutGrid::updateAutoMarginsInColumnAxisIfNeeded(LayoutBox& child) {
   }
 }
 
+// TODO(lajava): This logic is shared by LayoutFlexibleBox, so it might be
+// refactored somehow.
+static int synthesizedBaselineFromContentBox(const LayoutBox& box,
+                                             LineDirectionMode direction) {
+  if (direction == HorizontalLine) {
+    return (box.size().height() - box.borderBottom() - box.paddingBottom() -
+            box.horizontalScrollbarHeight())
+        .toInt();
+  }
+  return (box.size().width() - box.borderLeft() - box.paddingLeft() -
+          box.verticalScrollbarWidth())
+      .toInt();
+}
+
+static int synthesizedBaselineFromBorderBox(const LayoutBox& box,
+                                            LineDirectionMode direction) {
+  return (direction == HorizontalLine ? box.size().height()
+                                      : box.size().width())
+      .toInt();
+}
+
+// TODO(lajava): This logic is shared by LayoutFlexibleBox, so it might be
+// refactored somehow.
+int LayoutGrid::baselinePosition(FontBaseline,
+                                 bool,
+                                 LineDirectionMode direction,
+                                 LinePositionMode mode) const {
+  DCHECK_EQ(mode, PositionOnContainingLine);
+  int baseline = firstLineBoxBaseline();
+  // We take content-box's bottom if no valid baseline.
+  if (baseline == -1)
+    baseline = synthesizedBaselineFromContentBox(*this, direction);
+
+  return baseline + beforeMarginInLineDirection(direction);
+}
+
+bool LayoutGrid::isInlineBaselineAlignedChild(const LayoutBox* child) const {
+  return alignSelfForChild(*child).position() == ItemPositionBaseline &&
+         !isOrthogonalChild(*child) && !hasAutoMarginsInColumnAxis(*child);
+}
+
+int LayoutGrid::firstLineBoxBaseline() const {
+  if (isWritingModeRoot() || m_grid.isEmpty())
+    return -1;
+  const LayoutBox* baselineChild = nullptr;
+  const LayoutBox* firstChild = nullptr;
+  bool isBaselineAligned = false;
+  // Finding the first grid item in grid order.
+  for (size_t column = 0; !isBaselineAligned && column < m_grid[0].size();
+       column++) {
+    for (size_t index = 0; index < m_grid[0][column].size(); index++) {
+      const LayoutBox* child = m_grid[0][column][index];
+      DCHECK(!child->isOutOfFlowPositioned());
+      // If an item participates in baseline alignmen, we select such item.
+      if (isInlineBaselineAlignedChild(child)) {
+        // TODO (lajava): self-baseline and content-baseline alignment
+        // still not implemented.
+        baselineChild = child;
+        isBaselineAligned = true;
+        break;
+      }
+      if (!baselineChild) {
+        // Use dom order for items in the same cell.
+        if (!firstChild || (m_gridItemsIndexesMap.get(child) <
+                            m_gridItemsIndexesMap.get(firstChild)))
+          firstChild = child;
+      }
+    }
+    if (!baselineChild && firstChild)
+      baselineChild = firstChild;
+  }
+
+  if (!baselineChild)
+    return -1;
+
+  int baseline = isOrthogonalChild(*baselineChild)
+                     ? -1
+                     : baselineChild->firstLineBoxBaseline();
+  // We take border-box's bottom if no valid baseline.
+  if (baseline == -1) {
+    // TODO (lajava): We should pass |direction| into
+    // firstLineBoxBaseline and stop bailing out if we're a writing
+    // mode root.  This would also fix some cases where the grid is
+    // orthogonal to its container.
+    LineDirectionMode direction =
+        isHorizontalWritingMode() ? HorizontalLine : VerticalLine;
+    return (synthesizedBaselineFromBorderBox(*baselineChild, direction) +
+            baselineChild->logicalTop())
+        .toInt();
+  }
+
+  return (baseline + baselineChild->logicalTop()).toInt();
+}
+
+int LayoutGrid::inlineBlockBaseline(LineDirectionMode direction) const {
+  int baseline = firstLineBoxBaseline();
+  if (baseline != -1)
+    return baseline;
+
+  int marginHeight =
+      (direction == HorizontalLine ? marginTop() : marginRight()).toInt();
+  return synthesizedBaselineFromContentBox(*this, direction) + marginHeight;
+}
+
 GridAxisPosition LayoutGrid::columnAxisPositionForChild(
     const LayoutBox& child) const {
   bool hasSameWritingMode =

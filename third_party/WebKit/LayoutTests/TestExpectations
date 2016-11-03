@@ -1509,3 +1509,6 @@ crbug.com/660308 [ Mac ] fast/css-grid-layout/grid-auto-repeat-intrinsic.html [ 
 
 crbug.com/657968 storage/indexeddb/idbdatabase-createObjectStore-exception-order.html [ Pass Failure ]
 crbug.com/657968 storage/indexeddb/idbdatabase-deleteObjectStore-exception-order.html [ Pass Failure ]
+
+crbug.com/659610 fast/css-grid-layout/grid-baseline.html [ Failure ]
+crbug.com/659610 fast/css-grid-layout/grid-baseline-margins.html [ Failure ]
