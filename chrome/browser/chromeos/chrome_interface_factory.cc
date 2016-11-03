@@ -5,15 +5,18 @@
 #include "chrome/browser/chromeos/chrome_interface_factory.h"
 
 #include <memory>
+#include <utility>
 
 #include "ash/common/mojo_interface_factory.h"
 #include "ash/public/interfaces/new_window.mojom.h"
+#include "ash/public/interfaces/shutdown.mojom.h"
 #include "base/lazy_instance.h"
 #include "base/memory/ptr_util.h"
 #include "base/memory/weak_ptr.h"
 #include "base/threading/thread_checker.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "chrome/browser/chromeos/login/users/wallpaper/wallpaper_manager.h"
+#include "chrome/browser/chromeos/power/shutdown_client_impl.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/profiles/profile_manager.h"
 #include "chrome/browser/ui/ash/app_list/app_list_presenter_service.h"
@@ -123,6 +126,13 @@ class FactoryImpl {
                                            std::move(request));
   }
 
+  void BindRequest(ash::mojom::ShutdownClientRequest request) {
+    if (!shutdown_client_)
+      shutdown_client_ = base::MakeUnique<ShutdownClientImpl>();
+    shutdown_client_bindings_.AddBinding(shutdown_client_.get(),
+                                         std::move(request));
+  }
+
   void BindRequest(ash::mojom::SystemTrayClientRequest request) {
     system_tray_client_bindings_.AddBinding(SystemTrayClient::Get(),
                                             std::move(request));
@@ -152,6 +162,8 @@ class FactoryImpl {
   std::unique_ptr<ChromeLaunchable> launchable_;
   std::unique_ptr<ChromeNewWindowClient> new_window_client_;
   mojo::BindingSet<ash::mojom::NewWindowClient> new_window_client_bindings_;
+  std::unique_ptr<ShutdownClientImpl> shutdown_client_;
+  mojo::BindingSet<ash::mojom::ShutdownClient> shutdown_client_bindings_;
   mojo::BindingSet<ash::mojom::SystemTrayClient> system_tray_client_bindings_;
   std::unique_ptr<VolumeController> volume_controller_;
   std::unique_ptr<AppListPresenterService> app_list_presenter_service_;
@@ -181,6 +193,8 @@ bool ChromeInterfaceFactory::OnConnect(
                                                    main_thread_task_runner_);
   FactoryImpl::AddFactory<ash::mojom::NewWindowClient>(
       registry, main_thread_task_runner_);
+  FactoryImpl::AddFactory<ash::mojom::ShutdownClient>(registry,
+                                                      main_thread_task_runner_);
   FactoryImpl::AddFactory<ash::mojom::SystemTrayClient>(
       registry, main_thread_task_runner_);
   FactoryImpl::AddFactory<ash::mojom::VolumeController>(

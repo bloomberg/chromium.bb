@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/chromeos/power/session_state_controller_delegate_chromeos.h"
+#include "chrome/browser/chromeos/power/shutdown_client_impl.h"
 
 #include "base/logging.h"
 #include "chrome/browser/chromeos/settings/cros_settings.h"
@@ -13,20 +13,15 @@
 
 namespace chromeos {
 
-SessionStateControllerDelegateChromeos::SessionStateControllerDelegateChromeos()
-    : weak_factory_(this) {
-}
+ShutdownClientImpl::ShutdownClientImpl() : weak_factory_(this) {}
 
-SessionStateControllerDelegateChromeos::
-    ~SessionStateControllerDelegateChromeos() {
-}
+ShutdownClientImpl::~ShutdownClientImpl() {}
 
-void SessionStateControllerDelegateChromeos::RequestShutdown() {
+void ShutdownClientImpl::RequestShutdown() {
   CrosSettings* cros_settings = CrosSettings::Get();
   CrosSettingsProvider::TrustedStatus status =
       cros_settings->PrepareTrustedValues(base::Bind(
-          &SessionStateControllerDelegateChromeos::RequestShutdown,
-          weak_factory_.GetWeakPtr()));
+          &ShutdownClientImpl::RequestShutdown, weak_factory_.GetWeakPtr()));
   if (status != CrosSettingsProvider::TRUSTED)
     return;
 

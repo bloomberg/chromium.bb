@@ -20,6 +20,7 @@
           "ash::mojom::LocaleNotificationController",
           "ash::mojom::NewWindowClient",
           "ash::mojom::ShelfController",
+          "ash::mojom::ShutdownClient",
           "ash::mojom::SystemTray",
           "ash::mojom::SystemTrayClient",
           "ash::mojom::WallpaperController",

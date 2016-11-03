@@ -13,10 +13,11 @@
 #include "ash/common/wm_shell.h"
 #include "ash/shell.h"
 #include "ash/test/ash_test_base.h"
-#include "ash/test/test_lock_state_controller_delegate.h"
+#include "ash/test/lock_state_controller_test_api.h"
 #include "ash/test/test_screenshot_delegate.h"
 #include "ash/test/test_session_state_animator.h"
 #include "ash/test/test_shell_delegate.h"
+#include "ash/test/test_shutdown_client.h"
 #include "ash/wm/power_button_controller.h"
 #include "ash/wm/session_state_animator.h"
 #include "base/memory/scoped_vector.h"
@@ -49,7 +50,7 @@ class LockStateControllerTest : public AshTestBase {
   LockStateControllerTest()
       : power_button_controller_(nullptr),
         lock_state_controller_(nullptr),
-        lock_state_controller_delegate_(nullptr),
+        shutdown_client_(nullptr),
         session_manager_client_(nullptr),
         test_animator_(nullptr) {}
   ~LockStateControllerTest() override {}
@@ -60,16 +61,16 @@ class LockStateControllerTest : public AshTestBase {
         base::WrapUnique(session_manager_client_));
     AshTestBase::SetUp();
 
-    std::unique_ptr<LockStateControllerDelegate> lock_state_controller_delegate(
-        lock_state_controller_delegate_ = new TestLockStateControllerDelegate);
+    shutdown_client_ = new TestShutdownClient;
+    std::unique_ptr<TestShutdownClient> shutdown_client(shutdown_client_);
+
     test_animator_ = new TestSessionStateAnimator;
 
     lock_state_controller_ = Shell::GetInstance()->lock_state_controller();
-    lock_state_controller_->SetDelegate(
-        std::move(lock_state_controller_delegate));
     lock_state_controller_->set_animator_for_test(test_animator_);
 
-    test_api_.reset(new LockStateController::TestApi(lock_state_controller_));
+    test_api_.reset(new LockStateControllerTestApi(lock_state_controller_));
+    test_api_->SetShutdownClient(std::move(shutdown_client));
 
     power_button_controller_ = Shell::GetInstance()->power_button_controller();
 
@@ -89,7 +90,7 @@ class LockStateControllerTest : public AshTestBase {
   }
 
   int NumShutdownRequests() {
-    return lock_state_controller_delegate_->num_shutdown_requests() +
+    return shutdown_client_->num_shutdown_requests() +
            shell_delegate_->num_exit_requests();
   }
 
@@ -326,12 +327,11 @@ class LockStateControllerTest : public AshTestBase {
 
   PowerButtonController* power_button_controller_;  // not owned
   LockStateController* lock_state_controller_;      // not owned
-  TestLockStateControllerDelegate*
-      lock_state_controller_delegate_;            // not owned
+  TestShutdownClient* shutdown_client_;             // not owned
   // Ownership is passed on to chromeos::DBusThreadManager.
   chromeos::FakeSessionManagerClient* session_manager_client_;
   TestSessionStateAnimator* test_animator_;       // not owned
-  std::unique_ptr<LockStateController::TestApi> test_api_;
+  std::unique_ptr<LockStateControllerTestApi> test_api_;
   TestShellDelegate* shell_delegate_;  // not owned
 
  private:

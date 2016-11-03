@@ -10,6 +10,7 @@ mojom("interfaces") {
     "locale.mojom",
     "new_window.mojom",
     "shelf.mojom",
+    "shutdown.mojom",
     "system_tray.mojom",
     "volume.mojom",
     "wallpaper.mojom",

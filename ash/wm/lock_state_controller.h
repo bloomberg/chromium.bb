@@ -22,28 +22,25 @@ class Rect;
 class Size;
 }
 
+namespace service_manager {
+class Connector;
+}
+
 namespace ui {
 class Layer;
 }
 
 namespace ash {
 
-namespace test {
-class LockStateControllerTest;
-class PowerButtonControllerTest;
+namespace mojom {
+class ShutdownClient;
 }
 
-// Performs system-related functions on behalf of LockStateController.
-class ASH_EXPORT LockStateControllerDelegate {
- public:
-  LockStateControllerDelegate() {}
-  virtual ~LockStateControllerDelegate() {}
-
-  virtual void RequestShutdown() = 0;
-
- private:
-  DISALLOW_COPY_AND_ASSIGN(LockStateControllerDelegate);
-};
+namespace test {
+class LockStateControllerTest;
+class LockStateControllerTestApi;
+class PowerButtonControllerTest;
+}
 
 // Displays onscreen animations and locks or suspends the system in response to
 // the power button being pressed or released.
@@ -92,57 +89,8 @@ class ASH_EXPORT LockStateController : public aura::WindowTreeHostObserver,
   // the animation time to finish.
   static const int kShutdownRequestDelayMs;
 
-  // Helper class used by tests to access internal state.
-  class ASH_EXPORT TestApi {
-   public:
-    explicit TestApi(LockStateController* controller);
-
-    virtual ~TestApi();
-
-    bool lock_fail_timer_is_running() const {
-      return controller_->lock_fail_timer_.IsRunning();
-    }
-    bool lock_to_shutdown_timer_is_running() const {
-      return controller_->lock_to_shutdown_timer_.IsRunning();
-    }
-    bool shutdown_timer_is_running() const {
-      return controller_->pre_shutdown_timer_.IsRunning();
-    }
-    bool real_shutdown_timer_is_running() const {
-      return controller_->real_shutdown_timer_.IsRunning();
-    }
-    bool is_animating_lock() const { return controller_->animating_lock_; }
-    bool is_lock_cancellable() const {
-      return controller_->CanCancelLockAnimation();
-    }
-
-    void trigger_lock_fail_timeout() {
-      controller_->OnLockFailTimeout();
-      controller_->lock_fail_timer_.Stop();
-    }
-    void trigger_lock_to_shutdown_timeout() {
-      controller_->OnLockToShutdownTimeout();
-      controller_->lock_to_shutdown_timer_.Stop();
-    }
-    void trigger_shutdown_timeout() {
-      controller_->OnPreShutdownAnimationTimeout();
-      controller_->pre_shutdown_timer_.Stop();
-    }
-    void trigger_real_shutdown_timeout() {
-      controller_->OnRealPowerTimeout();
-      controller_->real_shutdown_timer_.Stop();
-    }
-
-   private:
-    LockStateController* controller_;  // not owned
-
-    DISALLOW_COPY_AND_ASSIGN(TestApi);
-  };
-
-  LockStateController();
+  explicit LockStateController(service_manager::Connector* connector);
   ~LockStateController() override;
-
-  void SetDelegate(std::unique_ptr<LockStateControllerDelegate> delegate);
 
   // Starts locking (with slow animation) that can be cancelled.
   // After locking and |kLockToShutdownTimeoutMs| StartShutdownAnimation()
@@ -208,6 +156,7 @@ class ASH_EXPORT LockStateController : public aura::WindowTreeHostObserver,
  private:
   friend class test::PowerButtonControllerTest;
   friend class test::LockStateControllerTest;
+  friend class test::LockStateControllerTestApi;
 
   struct UnlockedStateProperties {
     bool wallpaper_is_hidden;
@@ -274,8 +223,6 @@ class ASH_EXPORT LockStateController : public aura::WindowTreeHostObserver,
 
   std::unique_ptr<SessionStateAnimator> animator_;
 
-  std::unique_ptr<LockStateControllerDelegate> delegate_;
-
   // The current login status, or original login status from before we locked.
   LoginStatus login_status_;
 
@@ -299,6 +246,9 @@ class ASH_EXPORT LockStateController : public aura::WindowTreeHostObserver,
 
   // How long has it been since the request to lock the screen?
   std::unique_ptr<base::ElapsedTimer> lock_duration_timer_;
+
+  // The client that we request to shut down the machine.
+  std::unique_ptr<mojom::ShutdownClient> shutdown_client_;
 
   // Started when we request that the screen be locked.  When it fires, we
   // assume that our request got dropped.

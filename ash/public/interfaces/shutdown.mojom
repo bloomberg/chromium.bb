@@ -1,0 +1,16 @@
+// Copyright 2016 The Chromium Authors. All rights reserved.
+// Use of this source code is governed by a BSD-style license that can be
+// found in the LICENSE file.
+
+module ash.mojom;
+
+// Interface implemented by service:content_browser to activate shutdown.
+//
+// TODO(erg): Eventually, when CrosSettings is moved out of chrome into its
+// own process, this client should go away. The code which actually calls
+// shutdown should be moved into ash/, and ash should subscribe to changes
+// in CrosSettings. crbug.com/628792
+interface ShutdownClient {
+  // Requests that the system shuts down.
+  RequestShutdown();
+};

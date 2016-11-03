@@ -11,7 +11,6 @@
 #include "base/logging.h"
 #include "chrome/browser/chrome_notification_types.h"
 #include "chrome/browser/chromeos/login/lock/screen_locker.h"
-#include "chrome/browser/chromeos/power/session_state_controller_delegate_chromeos.h"
 #include "content/public/browser/notification_service.h"
 
 namespace ash {
@@ -32,10 +31,6 @@ ash::LoginStatus GetCurrentLoginStatus() {
 }  // namespace
 
 LoginLockStateNotifier::LoginLockStateNotifier() {
-  ash::Shell::GetInstance()->lock_state_controller()->SetDelegate(
-      std::unique_ptr<ash::LockStateControllerDelegate>(
-          new SessionStateControllerDelegateChromeos));
-
   registrar_.Add(this, chrome::NOTIFICATION_LOGIN_USER_CHANGED,
                  content::NotificationService::AllSources());
   registrar_.Add(this, chrome::NOTIFICATION_APP_TERMINATING,
