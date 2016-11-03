@@ -97,6 +97,8 @@ class V4L2CaptureDelegate final
   bool is_capturing_;
   int timeout_count_;
 
+  base::TimeTicks first_ref_time_;
+
   // Clockwise rotation in degrees. This value should be 0, 90, 180, or 270.
   int rotation_;
 

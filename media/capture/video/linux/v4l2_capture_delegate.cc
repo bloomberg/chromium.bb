@@ -575,9 +575,16 @@ void V4L2CaptureDelegate::DoCapture() {
     const scoped_refptr<BufferTracker>& buffer_tracker =
         buffer_tracker_pool_[buffer.index];
 
-    base::TimeDelta timestamp =
-        base::TimeDelta::FromSeconds(buffer.timestamp.tv_sec) +
-        base::TimeDelta::FromMicroseconds(buffer.timestamp.tv_usec);
+    // There's a wide-spread issue where the kernel does not report accurate,
+    // monotonically-increasing timestamps in the v4l2_buffer::timestamp
+    // field (goo.gl/Nlfamz).
+    // Until this issue is fixed, just use the reference clock as a source of
+    // media timestamps.
+    const base::TimeTicks now = base::TimeTicks::Now();
+    if (first_ref_time_.is_null())
+      first_ref_time_ = now;
+    const base::TimeDelta timestamp = now - first_ref_time_;
+
 #ifdef V4L2_BUF_FLAG_ERROR
     if (buffer.flags & V4L2_BUF_FLAG_ERROR) {
       LOG(ERROR) << "Dequeued v4l2 buffer contains corrupted data ("
@@ -587,7 +594,7 @@ void V4L2CaptureDelegate::DoCapture() {
 #endif
       client_->OnIncomingCapturedData(
           buffer_tracker->start(), buffer_tracker->payload_size(),
-          capture_format_, rotation_, base::TimeTicks::Now(), timestamp);
+          capture_format_, rotation_, now, timestamp);
 
     while (!take_photo_callbacks_.empty()) {
       VideoCaptureDevice::TakePhotoCallback cb =
