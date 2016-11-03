@@ -39,6 +39,8 @@ class CHROMEOS_EXPORT PrinterDiscoverer {
   // Static factory
   static std::unique_ptr<PrinterDiscoverer> Create();
 
+  virtual ~PrinterDiscoverer() {}
+
   // Begin scanning for printers.  Found printers will be reported to the
   // attached observer.
   virtual bool StartDiscovery() = 0;

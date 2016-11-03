@@ -46,7 +46,9 @@ bool FakePrinterDiscoverer::StopDiscovery() {
 }
 
 void FakePrinterDiscoverer::AddObserver(PrinterDiscoverer::Observer* observer) {
-  observers_.push_back(observer);
+  auto found = std::find(observers_.begin(), observers_.end(), observer);
+  if (found == observers_.end())
+    observers_.push_back(observer);
 }
 
 void FakePrinterDiscoverer::RemoveObserver(

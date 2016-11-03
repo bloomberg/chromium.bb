@@ -17,7 +17,7 @@ namespace chromeos {
 class FakePrinterDiscoverer : public PrinterDiscoverer {
  public:
   FakePrinterDiscoverer();
-  ~FakePrinterDiscoverer();
+  ~FakePrinterDiscoverer() override;
 
   bool StartDiscovery() override;
   bool StopDiscovery() override;
