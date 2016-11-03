@@ -23,9 +23,9 @@ class WebContents;
 namespace content_setting_bubble {
 // For every "show popup" button, remember the index of the popup tab contents
 // it should open when clicked.
-typedef std::map<NSButton*, int> PopupLinks;
+using PopupLinks = std::map<NSButton*, int>;
 
-// For every media menu button, remember the components assosiated with the
+// For every media menu button, remember the components associated with the
 // menu button.
 struct MediaMenuParts {
   MediaMenuParts(content::MediaStreamType type, NSTextField* label);
@@ -45,8 +45,8 @@ struct compare_button {
     return [a tag] < [b tag];
   }
 };
-typedef std::map<NSPopUpButton*, MediaMenuParts*, compare_button>
-  MediaMenuPartsMap;
+using MediaMenuPartsMap =
+    std::map<NSPopUpButton*, std::unique_ptr<MediaMenuParts>, compare_button>;
 }  // namespace content_setting_bubble
 
 // Manages a "content blocked" bubble.

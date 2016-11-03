@@ -9,7 +9,7 @@
 #include "base/command_line.h"
 #include "base/logging.h"
 #include "base/macros.h"
-#include "base/stl_util.h"
+#include "base/memory/ptr_util.h"
 #include "base/strings/sys_string_conversions.h"
 #include "base/strings/utf_string_conversions.h"
 #include "chrome/browser/plugins/plugin_finder.h"
@@ -304,11 +304,6 @@ const ContentTypeToNibPath kNibPaths[] = {
   if (model->AsSubresourceFilterBubbleModel())
     nibPath = @"ContentSubresourceFilter";
   return nibPath;
-}
-
-- (void)dealloc {
-  base::STLDeleteValues(&mediaMenus_);
-  [super dealloc];
 }
 
 - (void)initializeTitle {
@@ -608,7 +603,7 @@ const ContentTypeToNibPath kNibPaths[] = {
     menuParts->model.reset(new ContentSettingMediaMenuModel(
         map_entry.first, contentSettingBubbleModel_.get(),
         ContentSettingMediaMenuModel::MenuLabelChangedCallback()));
-    mediaMenus_[button] = menuParts;
+    mediaMenus_[button] = base::WrapUnique(menuParts);
     CGFloat width = BuildPopUpMenuFromModel(
         button, menuParts->model.get(), map_entry.second.selected_device.name,
         map_entry.second.disabled);
@@ -643,8 +638,7 @@ const ContentTypeToNibPath kNibPaths[] = {
   // Resize and reposition the media menus layout.
   CGFloat topMenuY = NSMinY(radioFrame) - kMediaMenuVerticalPadding;
   maxMenuWidth = std::max(maxMenuWidth, kMinMediaMenuButtonWidth);
-  for (const std::pair<NSPopUpButton*, content_setting_bubble::MediaMenuParts*>&
-           map_entry : mediaMenus_) {
+  for (const auto& map_entry : mediaMenus_) {
     NSRect labelFrame = [map_entry.second->label frame];
     // Align the label text with the button text.
     labelFrame.origin.y =
@@ -869,8 +863,7 @@ const ContentTypeToNibPath kNibPaths[] = {
 
 - (IBAction)mediaMenuChanged:(id)sender {
   NSPopUpButton* button = static_cast<NSPopUpButton*>(sender);
-  content_setting_bubble::MediaMenuPartsMap::const_iterator it(
-      mediaMenus_.find(sender));
+  auto it = mediaMenus_.find(sender);
   DCHECK(it != mediaMenus_.end());
   NSInteger index = [[button selectedItem] tag];
 
