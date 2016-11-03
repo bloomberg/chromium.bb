@@ -44,6 +44,7 @@ struct PortStatus {
   bool peer_closed;
 };
 
+class MessageFilter;
 class NodeDelegate;
 
 class Node {
@@ -107,15 +108,15 @@ class Node {
   // indicate that this port's peer has closed. In such cases GetMessage may
   // be called until it yields a null message, indicating that no more messages
   // may be read from the port.
-  int GetMessage(const PortRef& port_ref, ScopedMessage* message);
-
-  // Like GetMessage, but the caller may optionally supply a selector function
-  // that decides whether or not to return the message. If |selector| is a
-  // nullptr, then GetMessageIf acts just like GetMessage. The |selector| may
-  // not call any Node methods.
-  int GetMessageIf(const PortRef& port_ref,
-                   std::function<bool(const Message&)> selector,
-                   ScopedMessage* message);
+  //
+  // If |filter| is non-null, the next available message is returned only if it
+  // is matched by the filter. If the provided filter does not match the next
+  // available message, GetMessage() behaves as if there is no message
+  // available. Ownership of |filter| is not taken, and it must outlive the
+  // extent of this call.
+  int GetMessage(const PortRef& port_ref,
+                 ScopedMessage* message,
+                 MessageFilter* filter);
 
   // Sends a message from the specified port to its peer. Note that the message
   // notification may arrive synchronously (via PortStatusChanged() on the

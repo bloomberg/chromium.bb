@@ -8,6 +8,7 @@
 
 #include "base/logging.h"
 #include "mojo/edk/system/ports/event.h"
+#include "mojo/edk/system/ports/message_filter.h"
 
 namespace mojo {
 namespace edk {
@@ -44,10 +45,9 @@ bool MessageQueue::HasNextMessage() const {
   return !heap_.empty() && GetSequenceNum(heap_[0]) == next_sequence_num_;
 }
 
-void MessageQueue::GetNextMessageIf(
-    std::function<bool(const Message&)> selector,
-    ScopedMessage* message) {
-  if (!HasNextMessage() || (selector && !selector(*heap_[0].get()))) {
+void MessageQueue::GetNextMessage(ScopedMessage* message,
+                                  MessageFilter* filter) {
+  if (!HasNextMessage() || (filter && !filter->Match(*heap_[0].get()))) {
     message->reset();
     return;
   }

@@ -172,7 +172,7 @@ class TestNode : public NodeDelegate {
   }
 
   bool ReadMessage(const PortRef& port, ScopedMessage* message) {
-    return node_.GetMessage(port, message) == OK && *message;
+    return node_.GetMessage(port, message, nullptr) == OK && *message;
   }
 
   bool GetSavedMessage(ScopedMessage* message) {
@@ -581,14 +581,15 @@ TEST_F(PortsTest, LostConnectionToNode2) {
 
   // a0 should have eventually detected peer closure after node loss.
   ScopedMessage message;
-  EXPECT_EQ(ERROR_PORT_PEER_CLOSED, node0.node().GetMessage(a0, &message));
+  EXPECT_EQ(ERROR_PORT_PEER_CLOSED,
+            node0.node().GetMessage(a0, &message, nullptr));
   EXPECT_FALSE(message);
 
   EXPECT_EQ(OK, node0.node().ClosePort(a0));
 
   EXPECT_EQ(OK, node0.node().ClosePort(x0));
 
-  EXPECT_EQ(OK, node1.node().GetMessage(x1, &message));
+  EXPECT_EQ(OK, node1.node().GetMessage(x1, &message, nullptr));
   EXPECT_TRUE(message);
   node1.ClosePortsInMessage(message.get());
 
@@ -725,14 +726,15 @@ TEST_F(PortsTest, GetMessage1) {
   EXPECT_EQ(OK, node.node().CreatePortPair(&a0, &a1));
 
   ScopedMessage message;
-  EXPECT_EQ(OK, node.node().GetMessage(a0, &message));
+  EXPECT_EQ(OK, node.node().GetMessage(a0, &message, nullptr));
   EXPECT_FALSE(message);
 
   EXPECT_EQ(OK, node.node().ClosePort(a1));
 
   WaitForIdle();
 
-  EXPECT_EQ(ERROR_PORT_PEER_CLOSED, node.node().GetMessage(a0, &message));
+  EXPECT_EQ(ERROR_PORT_PEER_CLOSED,
+            node.node().GetMessage(a0, &message, nullptr));
   EXPECT_FALSE(message);
 
   EXPECT_EQ(OK, node.node().ClosePort(a0));
@@ -752,7 +754,7 @@ TEST_F(PortsTest, GetMessage2) {
   EXPECT_EQ(OK, node.SendStringMessage(a1, "1"));
 
   ScopedMessage message;
-  EXPECT_EQ(OK, node.node().GetMessage(a0, &message));
+  EXPECT_EQ(OK, node.node().GetMessage(a0, &message, nullptr));
 
   ASSERT_TRUE(message);
   EXPECT_TRUE(MessageEquals(message, "1"));
@@ -781,7 +783,7 @@ TEST_F(PortsTest, GetMessage3) {
 
   ScopedMessage message;
   for (size_t i = 0; i < sizeof(kStrings)/sizeof(kStrings[0]); ++i) {
-    EXPECT_EQ(OK, node.node().GetMessage(a0, &message));
+    EXPECT_EQ(OK, node.node().GetMessage(a0, &message, nullptr));
     ASSERT_TRUE(message);
     EXPECT_TRUE(MessageEquals(message, kStrings[i]));
   }

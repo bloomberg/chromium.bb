@@ -527,8 +527,8 @@ void DataPipeConsumerDispatcher::UpdateSignalsStateNoLock() {
   } else if (rv == ports::OK && port_status.has_messages && !in_transit_) {
     ports::ScopedMessage message;
     do {
-      int rv = node_controller_->node()->GetMessageIf(control_port_, nullptr,
-                                                      &message);
+      int rv = node_controller_->node()->GetMessage(
+          control_port_, &message, nullptr);
       if (rv != ports::OK)
         peer_closed_ = true;
       if (message) {

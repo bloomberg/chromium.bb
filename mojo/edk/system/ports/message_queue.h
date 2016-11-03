@@ -22,6 +22,8 @@ namespace ports {
 const uint64_t kInitialSequenceNum = 1;
 const uint64_t kInvalidSequenceNum = std::numeric_limits<uint64_t>::max();
 
+class MessageFilter;
+
 // An incoming message queue for a port. MessageQueue keeps track of the highest
 // known sequence number and can indicate whether the next sequential message is
 // available. Thus the queue enforces message ordering for the consumer without
@@ -38,9 +40,9 @@ class MessageQueue {
 
   bool HasNextMessage() const;
 
-  // Gives ownership of the message. The selector may be null.
-  void GetNextMessageIf(std::function<bool(const Message&)> selector,
-                        ScopedMessage* message);
+  // Gives ownership of the message. If |filter| is non-null, the next message
+  // will only be retrieved if the filter successfully matches it.
+  void GetNextMessage(ScopedMessage* message, MessageFilter* filter);
 
   // Takes ownership of the message. Note: Messages are ordered, so while we
   // have added a message to the queue, we may still be waiting on a message

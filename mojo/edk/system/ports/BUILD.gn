@@ -10,6 +10,7 @@ source_set("ports") {
     "event.h",
     "message.cc",
     "message.h",
+    "message_filter.h",
     "message_queue.cc",
     "message_queue.h",
     "name.cc",
