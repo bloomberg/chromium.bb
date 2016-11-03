@@ -19,11 +19,10 @@ class ImageSkia;
 namespace extensions {
 namespace util {
 
-// Returns the equivalent Playstore app package name that has been installed to
-// the Chrome extension (identified by ||extension_id|). Returns an empty string
-// if there is no such Playstore app.
-std::string GetEquivalentInstalledArcApp(content::BrowserContext* context,
-                                         const std::string& extension_id);
+// Returns true if the equivalent PlayStore app, which is corresponding to the
+// Chrome extension (identified by |extension_id|), has been installed.
+bool HasEquivalentInstalledArcApp(content::BrowserContext* context,
+                                  const std::string& extension_id);
 
 // Returns the equivalent Chrome extensions that have been installed to the
 // Playstore app (identified by |arc_package_name|). Returns an empty vector if

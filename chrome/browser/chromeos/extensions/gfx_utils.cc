@@ -144,21 +144,20 @@ base::LazyInstance<AppDualBadgeMap> g_dual_badge_map =
 
 namespace util {
 
-std::string GetEquivalentInstalledArcApp(content::BrowserContext* context,
-                                         const std::string& extension_id) {
+bool HasEquivalentInstalledArcApp(content::BrowserContext* context,
+                                  const std::string& extension_id) {
   const std::string arc_package_name =
       g_dual_badge_map.Get().GetArcPackageNameFromExtensionId(extension_id);
   if (arc_package_name.empty())
-    return std::string();
+    return false;
 
-  ArcAppListPrefs* prefs = ArcAppListPrefs::Get(context);
-  if (prefs) {
-    std::unique_ptr<ArcAppListPrefs::PackageInfo> arc_info =
-        prefs->GetPackage(arc_package_name);
-    if (arc_info.get() && !arc_info->package_name.empty())
-      return arc_package_name;
-  }
-  return std::string();
+  const ArcAppListPrefs* const prefs = ArcAppListPrefs::Get(context);
+  if (!prefs)
+    return false;
+
+  // TODO(hidehiko): The icon is per launcher, so we should have more precise
+  // check here.
+  return !prefs->GetAppsForPackage(arc_package_name).empty();
 }
 
 const std::vector<std::string> GetEquivalentInstalledExtensions(
@@ -206,9 +205,7 @@ void MaybeApplyChromeBadge(content::BrowserContext* context,
   if (!registry || !registry->GetInstalledExtension(extension_id))
     return;
 
-  std::string arc_package_name =
-      GetEquivalentInstalledArcApp(context, extension_id);
-  if (arc_package_name.empty())
+  if (!HasEquivalentInstalledArcApp(context, extension_id))
     return;
 
   const gfx::ImageSkia* badge_image =

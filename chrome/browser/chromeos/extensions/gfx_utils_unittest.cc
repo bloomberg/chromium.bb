@@ -18,12 +18,14 @@ namespace extensions {
 
 namespace {
 
-const char* kGmailArcPackage = "com.google.android.gm";
-const char* kGmailExtensionId1 = "pjkljhegncpnkpknbcohdijeoejaedia";
-const char* kGmailExtensionId2 = "bjdhhokmhgelphffoafoejjmlfblpdha";
+constexpr char kGmailArcPackage[] = "com.google.android.gm";
+constexpr char kGmailArcActivity[] =
+    "com.google.android.gm.ConversationListActivityGmail";
+constexpr char kGmailExtensionId1[] = "pjkljhegncpnkpknbcohdijeoejaedia";
+constexpr char kGmailExtensionId2[] = "bjdhhokmhgelphffoafoejjmlfblpdha";
 
-const char* kDriveArcPackage = "com.google.android.apps.docs";
-const char* kKeepExtensionId = "hmjkmjkepdijhoojdojkdfohbdgmmhki";
+constexpr char kDriveArcPackage[] = "com.google.android.apps.docs";
+constexpr char kKeepExtensionId[] = "hmjkmjkepdijhoojdojkdfohbdgmmhki";
 
 }  // namespace
 
@@ -63,6 +65,23 @@ class DualBadgeMapTest : public ExtensionServiceTestBase {
     arc_test_.app_instance()->SendPackageUninstalled(package.package_name);
   }
 
+  arc::mojom::AppInfo CreateArcApp(const std::string& name,
+                                   const std::string& package,
+                                   const std::string& activity) {
+    arc::mojom::AppInfo info;
+    info.name = name;
+    info.package_name = package;
+    info.activity = activity;
+    info.sticky = false;
+    info.notifications_enabled = false;
+    info.orientation_lock = arc::mojom::OrientationLock::NONE;
+    return info;
+  }
+
+  void AddArcApp(const arc::mojom::AppInfo& app) {
+    arc_test_.app_instance()->SendAppAdded(app);
+  }
+
   scoped_refptr<Extension> CreateExtension(const std::string& id) {
     return ExtensionBuilder()
         .SetManifest(DictionaryBuilder()
@@ -94,37 +113,44 @@ TEST_F(DualBadgeMapTest, ExtensionToArcAppMapTest) {
   AddExtension(CreateExtension(kGmailExtensionId1).get());
   AddExtension(CreateExtension(kGmailExtensionId2).get());
 
-  EXPECT_EQ("", extensions::util::GetEquivalentInstalledArcApp(
-                    profile(), kGmailExtensionId1));
-  EXPECT_EQ("", extensions::util::GetEquivalentInstalledArcApp(
-                    profile(), kGmailExtensionId2));
+  EXPECT_FALSE(extensions::util::HasEquivalentInstalledArcApp(
+      profile(), kGmailExtensionId1));
+  EXPECT_FALSE(extensions::util::HasEquivalentInstalledArcApp(
+      profile(), kGmailExtensionId2));
 
   // Install Gmail Playstore app.
   const arc::mojom::ArcPackageInfo app_info =
       CreateArcPackage(kGmailArcPackage);
   AddArcPackage(app_info);
-  EXPECT_EQ(kGmailArcPackage, extensions::util::GetEquivalentInstalledArcApp(
-                                  profile(), kGmailExtensionId1));
-  EXPECT_EQ(kGmailArcPackage, extensions::util::GetEquivalentInstalledArcApp(
-                                  profile(), kGmailExtensionId2));
+  EXPECT_FALSE(extensions::util::HasEquivalentInstalledArcApp(
+      profile(), kGmailExtensionId1));
+  EXPECT_FALSE(extensions::util::HasEquivalentInstalledArcApp(
+      profile(), kGmailExtensionId2));
+
+  AddArcApp(CreateArcApp("gmail", kGmailArcPackage, kGmailArcActivity));
+  EXPECT_TRUE(extensions::util::HasEquivalentInstalledArcApp(
+      profile(), kGmailExtensionId1));
+  EXPECT_TRUE(extensions::util::HasEquivalentInstalledArcApp(
+      profile(), kGmailExtensionId2));
 
   RemoveArcPackage(app_info);
-  EXPECT_EQ("", extensions::util::GetEquivalentInstalledArcApp(
-                    profile(), kGmailExtensionId1));
-  EXPECT_EQ("", extensions::util::GetEquivalentInstalledArcApp(
-                    profile(), kGmailExtensionId2));
+  EXPECT_FALSE(extensions::util::HasEquivalentInstalledArcApp(
+      profile(), kGmailExtensionId1));
+  EXPECT_FALSE(extensions::util::HasEquivalentInstalledArcApp(
+      profile(), kGmailExtensionId2));
 
   // Install an unrelated Playstore app.
   AddArcPackage(CreateArcPackage(kDriveArcPackage));
-  EXPECT_EQ("", extensions::util::GetEquivalentInstalledArcApp(
-                    profile(), kGmailExtensionId1));
-  EXPECT_EQ("", extensions::util::GetEquivalentInstalledArcApp(
-                    profile(), kGmailExtensionId2));
+  EXPECT_FALSE(extensions::util::HasEquivalentInstalledArcApp(
+      profile(), kGmailExtensionId1));
+  EXPECT_FALSE(extensions::util::HasEquivalentInstalledArcApp(
+      profile(), kGmailExtensionId2));
 }
 
 TEST_F(DualBadgeMapTest, ArcAppToExtensionMapTest) {
   // Install Gmail Playstore app.
   AddArcPackage(CreateArcPackage(kGmailArcPackage));
+  AddArcApp(CreateArcApp("gmail", kGmailArcPackage, kGmailArcActivity));
 
   std::vector<std::string> extension_ids =
       extensions::util::GetEquivalentInstalledExtensions(profile(),
