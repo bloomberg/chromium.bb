@@ -64,6 +64,10 @@
         display: none;
       }
 
+      .first-row {
+        height: 43px;
+      }
+
       .bottom-row {
         margin-bottom: 6px;
       }
@@ -132,10 +136,6 @@
         direction: rtl;
       }
 
-      #pin-input[is-invisible] {
-        visibility: hidden;
-      }
-
       :host(:not([enable-submit-button])) #pin-input {
         left: 0;
         text-align: center;
@@ -174,7 +174,7 @@
                  placeholder="[[getInputPlaceholder_(enablePassword)]]"
                  value="{{value::input}}"
                  on-keydown="onInputKeyDown_"
-                 is-invisible$=[[hideInput]]>
+                 hidden=[[hideInput]]>
           </input>
         </div>
         <hr>
@@ -243,6 +243,7 @@
                                on-pointerdown="onBackspacePointerDown_"
                                on-pointerout="onBackspacePointerOut_"
                                on-pointerup="onBackspacePointerUp_"
+                               aria-label="$i18n{pinKeyboardDeleteAccessibleName}"
                                noink>
             </paper-icon-button>
             <paper-ripple>

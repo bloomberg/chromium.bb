@@ -516,6 +516,8 @@ void BrowserOptionsHandler::GetLocalizedValues(base::DictionaryValue* values) {
     { "pinKeyboardPlaceholderPin", IDS_PIN_KEYBOARD_HINT_TEXT_PIN },
     { "pinKeyboardPlaceholderPinPassword",
       IDS_PIN_KEYBOARD_HINT_TEXT_PIN_PASSWORD },
+    { "pinKeyboardDeleteAccessibleName",
+      IDS_LOGIN_POD_PASSWORD_FIELD_ACCESSIBLE_NAME },
     { "powerSettingsButton",
       IDS_OPTIONS_DEVICE_GROUP_POWER_SETTINGS_BUTTON },
     { "resolveTimezoneByGeoLocation",

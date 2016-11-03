@@ -379,6 +379,8 @@ void SigninScreenHandler::DeclareLocalizedValues(
                IDS_PIN_KEYBOARD_HINT_TEXT_PIN);
   builder->Add("pinKeyboardPlaceholderPinPassword",
                IDS_PIN_KEYBOARD_HINT_TEXT_PIN_PASSWORD);
+  builder->Add("pinKeyboardDeleteAccessibleName",
+               IDS_PIN_KEYBOARD_DELETE_ACCESSIBLE_NAME);
   builder->Add("signingIn", IDS_LOGIN_POD_SIGNING_IN);
   builder->Add("podMenuButtonAccessibleName",
                IDS_LOGIN_POD_MENU_BUTTON_ACCESSIBLE_NAME);
@@ -386,6 +388,8 @@ void SigninScreenHandler::DeclareLocalizedValues(
                IDS_LOGIN_POD_MENU_REMOVE_ITEM_ACCESSIBLE_NAME);
   builder->Add("passwordFieldAccessibleName",
                IDS_LOGIN_POD_PASSWORD_FIELD_ACCESSIBLE_NAME);
+  builder->Add("submitButtonAccessibleName",
+               IDS_LOGIN_POD_SUBMIT_BUTTON_ACCESSIBLE_NAME);
   builder->Add("signedIn", IDS_SCREEN_LOCK_ACTIVE_USER);
   builder->Add("launchAppButton", IDS_LAUNCH_APP_BUTTON);
   builder->Add("restart", IDS_RESTART_BUTTON);
