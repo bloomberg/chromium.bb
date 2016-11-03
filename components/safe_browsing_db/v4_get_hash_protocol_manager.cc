@@ -576,7 +576,6 @@ void V4GetHashProtocolManager::ParseMetadata(const ThreatMatch& match,
              match.threat_type() == POTENTIALLY_HARMFUL_APPLICATION) {
     for (const ThreatEntryMetadata::MetadataEntry& m :
          match.threat_entry_metadata().entries()) {
-      // TODO: Need to confirm the below key/value pairs with CSD backend.
       if (m.key() == kPhaPatternType || m.key() == kMalwarePatternType) {
         if (m.value() == kLanding) {
           metadata->threat_pattern_type = ThreatPatternType::MALWARE_LANDING;
