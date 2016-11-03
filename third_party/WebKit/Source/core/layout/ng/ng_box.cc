@@ -7,6 +7,7 @@
 #include "core/layout/LayoutBlockFlow.h"
 #include "core/layout/ng/layout_ng_block_flow.h"
 #include "core/layout/ng/ng_block_layout_algorithm.h"
+#include "core/layout/ng/ng_constraint_space_builder.h"
 #include "core/layout/ng/ng_constraint_space.h"
 #include "core/layout/ng/ng_direction.h"
 #include "core/layout/ng/ng_fragment.h"
@@ -27,6 +28,8 @@ NGBox::NGBox(ComputedStyle* style) : layout_box_(nullptr), style_(style) {
 
 bool NGBox::Layout(const NGConstraintSpace* constraint_space,
                    NGFragment** out) {
+  DCHECK(!minmax_algorithm_)
+      << "Can't interleave Layout and ComputeMinAndMaxContentSizes";
   if (layout_box_ && layout_box_->isOutOfFlowPositioned())
     layout_box_->containingBlock()->insertPositionedObject(layout_box_);
   // We can either use the new layout code to do the layout and then copy the
@@ -39,12 +42,12 @@ bool NGBox::Layout(const NGConstraintSpace* constraint_space,
         FromPlatformDirection(Style()->direction()),
         constraint_space->MutablePhysicalSpace());
 
-    if (!algorithm_)
-      algorithm_ = new NGBlockLayoutAlgorithm(Style(), FirstChild(),
-                                              child_constraint_space);
+    if (!layout_algorithm_)
+      layout_algorithm_ = new NGBlockLayoutAlgorithm(Style(), FirstChild(),
+                                                     child_constraint_space);
 
     NGPhysicalFragment* fragment = nullptr;
-    if (!algorithm_->Layout(&fragment))
+    if (!layout_algorithm_->Layout(&fragment))
       return false;
     fragment_ = fragment;
 
@@ -59,7 +62,69 @@ bool NGBox::Layout(const NGConstraintSpace* constraint_space,
                         FromPlatformDirection(Style()->direction()),
                         fragment_.get());
   // Reset algorithm for future use
-  algorithm_ = nullptr;
+  layout_algorithm_ = nullptr;
+  return true;
+}
+
+bool NGBox::ComputeMinAndMaxContentSizes(MinAndMaxContentSizes* sizes) {
+  DCHECK(!layout_algorithm_)
+      << "Can't interleave Layout and ComputeMinAndMaxContentSizes";
+  if (!minmax_algorithm_) {
+    NGConstraintSpaceBuilder builder(
+        FromPlatformWritingMode(Style()->getWritingMode()));
+
+    builder.SetContainerSize(NGLogicalSize(LayoutUnit(), LayoutUnit()));
+    // TODO(layoutng): Use builder.ToConstraintSpace.ToLogicalConstraintSpace
+    // once
+    // that's available.
+    NGConstraintSpace* constraint_space = new NGConstraintSpace(
+        FromPlatformWritingMode(Style()->getWritingMode()),
+        FromPlatformDirection(Style()->direction()),
+        builder.ToConstraintSpace());
+
+    minmax_algorithm_ =
+        new NGBlockLayoutAlgorithm(Style(), FirstChild(), constraint_space);
+  }
+  // TODO(cbiesinger): For orthogonal children, we need to always synthesize.
+  NGLayoutAlgorithm::MinAndMaxState state =
+      minmax_algorithm_->ComputeMinAndMaxContentSizes(sizes);
+  if (state == NGLayoutAlgorithm::Success)
+    return true;
+  if (state == NGLayoutAlgorithm::Pending)
+    return false;
+  DCHECK_EQ(state, NGLayoutAlgorithm::NotImplemented);
+
+  // TODO(cbiesinger): Replace the loops below with a state machine like in
+  // Layout.
+
+  // Have to synthesize this value.
+  NGPhysicalFragment* physical_fragment;
+  while (!minmax_algorithm_->Layout(&physical_fragment))
+    continue;
+  NGFragment* fragment = new NGFragment(
+      FromPlatformWritingMode(Style()->getWritingMode()),
+      FromPlatformDirection(Style()->direction()), physical_fragment);
+
+  sizes->min_content = fragment->InlineOverflow();
+
+  // Now, redo with infinite space for max_content
+  NGConstraintSpaceBuilder builder(
+      FromPlatformWritingMode(Style()->getWritingMode()));
+  builder.SetContainerSize(NGLogicalSize(LayoutUnit::max(), LayoutUnit()));
+  NGConstraintSpace* constraint_space = new NGConstraintSpace(
+      FromPlatformWritingMode(Style()->getWritingMode()),
+      FromPlatformDirection(Style()->direction()), builder.ToConstraintSpace());
+
+  minmax_algorithm_ =
+      new NGBlockLayoutAlgorithm(Style(), FirstChild(), constraint_space);
+  while (!minmax_algorithm_->Layout(&physical_fragment))
+    continue;
+
+  fragment = new NGFragment(FromPlatformWritingMode(Style()->getWritingMode()),
+                            FromPlatformDirection(Style()->direction()),
+                            physical_fragment);
+  sizes->max_content = fragment->InlineOverflow();
+  minmax_algorithm_ = nullptr;
   return true;
 }
 
@@ -95,6 +160,14 @@ void NGBox::SetNextSibling(NGBox* sibling) {
 
 void NGBox::SetFirstChild(NGBox* child) {
   first_child_ = child;
+}
+
+DEFINE_TRACE(NGBox) {
+  visitor->trace(layout_algorithm_);
+  visitor->trace(minmax_algorithm_);
+  visitor->trace(fragment_);
+  visitor->trace(next_sibling_);
+  visitor->trace(first_child_);
 }
 
 void NGBox::PositionUpdated() {

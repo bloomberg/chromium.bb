@@ -1221,6 +1221,7 @@ source_set("unit_tests") {
     "layout/compositing/CompositedLayerMappingTest.cpp",
     "layout/compositing/CompositingReasonFinderTest.cpp",
     "layout/ng/ng_block_layout_algorithm_test.cc",
+    "layout/ng/ng_box_test.cc",
     "layout/ng/ng_constraint_space_test.cc",
     "layout/ng/ng_length_utils_test.cc",
     "layout/ng/ng_units_test.cc",

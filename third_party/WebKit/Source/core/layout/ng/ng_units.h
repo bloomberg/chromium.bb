@@ -17,6 +17,11 @@ class LayoutUnit;
 struct NGPhysicalOffset;
 struct NGPhysicalSize;
 
+struct MinAndMaxContentSizes {
+  LayoutUnit min_content;
+  LayoutUnit max_content;
+};
+
 struct NGLogicalSize {
   NGLogicalSize() {}
   NGLogicalSize(LayoutUnit inline_size, LayoutUnit block_size)
