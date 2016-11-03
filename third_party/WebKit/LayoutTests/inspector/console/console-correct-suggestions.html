@@ -17,7 +17,7 @@ function test()
     {
         var callback;
         var promise = new Promise(fulfill => callback = fulfill);
-        WebInspector.ExecutionContextSelector.completionsForTextInCurrentContext(base, prefix).then(checkExpected);
+        WebInspector.JavaScriptAutocomplete.completionsForTextInCurrentContext(base, prefix).then(checkExpected);
         return promise;
 
         function checkExpected(completions)
