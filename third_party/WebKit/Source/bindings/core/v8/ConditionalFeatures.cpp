@@ -5,10 +5,12 @@
 #include "bindings/core/v8/ConditionalFeatures.h"
 
 #include "bindings/core/v8/ScriptState.h"
+#include "bindings/core/v8/V8Document.h"
 #include "bindings/core/v8/V8HTMLLinkElement.h"
 #include "bindings/core/v8/V8Navigator.h"
 #include "bindings/core/v8/V8Window.h"
 #include "core/dom/ExecutionContext.h"
+#include "core/frame/LocalFrame.h"
 #include "core/origin_trials/OriginTrialContext.h"
 
 namespace blink {
@@ -25,13 +27,35 @@ void installConditionalFeaturesCore(const WrapperTypeInfo* wrapperTypeInfo,
     return;
   OriginTrialContext* originTrialContext = OriginTrialContext::from(
       executionContext, OriginTrialContext::DontCreateIfNotExists);
+  v8::Isolate* isolate = scriptState->isolate();
+  const DOMWrapperWorld& world = scriptState->world();
   if (wrapperTypeInfo == &V8HTMLLinkElement::wrapperTypeInfo) {
     if (RuntimeEnabledFeatures::linkServiceWorkerEnabled() ||
         (originTrialContext &&
          originTrialContext->isTrialEnabled("ForeignFetch"))) {
       V8HTMLLinkElement::installLinkServiceWorker(
-          scriptState->isolate(), scriptState->world(), v8::Local<v8::Object>(),
-          prototypeObject, interfaceObject);
+          isolate, world, v8::Local<v8::Object>(), prototypeObject,
+          interfaceObject);
+    }
+  }
+
+  // Install feature-policy-controlled features
+  LocalFrame* frame = nullptr;
+  if (executionContext->isDocument())
+    frame = toDocument(executionContext)->executingFrame();
+
+  if (wrapperTypeInfo == &V8Document::wrapperTypeInfo) {
+    if (isFeatureEnabledInFrame(blink::kDocumentCookie, frame)) {
+      V8Document::installDocumentCookie(isolate, world, v8::Local<v8::Object>(),
+                                        prototypeObject, interfaceObject);
+    }
+    if (isFeatureEnabledInFrame(blink::kDocumentDomain, frame)) {
+      V8Document::installDocumentDomain(isolate, world, v8::Local<v8::Object>(),
+                                        prototypeObject, interfaceObject);
+    }
+    if (isFeatureEnabledInFrame(blink::kDocumentWrite, frame)) {
+      V8Document::installDocumentWrite(isolate, world, v8::Local<v8::Object>(),
+                                       prototypeObject, interfaceObject);
     }
   }
 }
@@ -56,6 +80,21 @@ void installConditionalFeatures(const WrapperTypeInfo* type,
                                 v8::Local<v8::Function> interfaceObject) {
   (*s_installConditionalFeaturesFunction)(type, scriptState, prototypeObject,
                                           interfaceObject);
+}
+
+bool isFeatureEnabledInFrame(const FeaturePolicy::Feature& feature,
+                             const LocalFrame* frame) {
+  // If there is no frame, or if feature policy is disabled, use defaults.
+  bool enabledByDefault =
+      (feature.defaultPolicy != FeaturePolicy::FeatureDefault::DisableForAll);
+  if (!RuntimeEnabledFeatures::featurePolicyEnabled() || !frame)
+    return enabledByDefault;
+  FeaturePolicy* featurePolicy = frame->getFeaturePolicy();
+  if (!featurePolicy)
+    return enabledByDefault;
+
+  // Otherwise, check policy.
+  return featurePolicy->isFeatureEnabled(feature);
 }
 
 }  // namespace blink

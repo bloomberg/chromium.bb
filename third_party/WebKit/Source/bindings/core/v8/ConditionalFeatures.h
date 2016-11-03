@@ -7,11 +7,13 @@
 
 #include "bindings/core/v8/DOMWrapperWorld.h"
 #include "core/CoreExport.h"
+#include "platform/feature_policy/FeaturePolicy.h"
 #include <v8.h>
 
 namespace blink {
 
 class ScriptState;
+class LocalFrame;
 
 using InstallConditionalFeaturesFunction = void (*)(const WrapperTypeInfo*,
                                                     const ScriptState*,
@@ -33,6 +35,8 @@ CORE_EXPORT void installConditionalFeatures(const WrapperTypeInfo*,
 // function is returned, so that functions can be chained.
 CORE_EXPORT InstallConditionalFeaturesFunction
     setInstallConditionalFeaturesFunction(InstallConditionalFeaturesFunction);
+
+bool isFeatureEnabledInFrame(const FeaturePolicy::Feature&, const LocalFrame*);
 
 }  // namespace blink
 

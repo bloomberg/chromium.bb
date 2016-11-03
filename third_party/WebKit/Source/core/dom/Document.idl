@@ -90,9 +90,9 @@ interface Document : Node {
     // resource metadata management
 
     [PutForwards=href, Unforgeable] readonly attribute Location? location;
-    [RaisesException=Setter] attribute DOMString domain;
+    [RaisesException=Setter, FeaturePolicy=DocumentDomain] attribute DOMString domain;
     readonly attribute DOMString referrer;
-    [RaisesException] attribute DOMString cookie;
+    [RaisesException, FeaturePolicy=DocumentCookie] attribute DOMString cookie;
     readonly attribute DOMString lastModified;
     readonly attribute DocumentReadyState readyState;
 
@@ -114,8 +114,8 @@ interface Document : Node {
     // FIXME: There are two open() methods in the spec.
     [Custom, CEReactions, CustomElementCallbacks, RaisesException, MeasureAs=DocumentOpen] void open();
     [CEReactions, RaisesException] void close();
-    [CallWith=EnteredWindow, CEReactions, CustomElementCallbacks, RaisesException] void write(DOMString... text);
-    [CallWith=EnteredWindow, CEReactions, CustomElementCallbacks, RaisesException] void writeln(DOMString... text);
+    [CallWith=EnteredWindow, CEReactions, CustomElementCallbacks, RaisesException, FeaturePolicy=DocumentWrite] void write(DOMString... text);
+    [CallWith=EnteredWindow, CEReactions, CustomElementCallbacks, RaisesException, FeaturePolicy=DocumentWrite] void writeln(DOMString... text);
 
     // user interaction
     [ImplementedAs=domWindow] readonly attribute Window? defaultView;

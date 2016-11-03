@@ -28,6 +28,7 @@ Content-Type
 ETag
 Expires
 Date
+Feature-Policy
 If-Match
 If-Modified-Since
 If-None-Match

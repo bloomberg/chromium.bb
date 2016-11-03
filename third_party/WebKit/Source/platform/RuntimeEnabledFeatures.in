@@ -82,6 +82,9 @@ DecodeToYUV status=experimental
 DesktopCaptureDisableLocalEchoControl status=experimental
 DeviceLight status=experimental
 DisplayList2dCanvas status=stable
+DocumentCookie
+DocumentDomain
+DocumentWrite
 DocumentWriteEvaluator
 DOMConvenienceAPI status=stable
 DurableStorage status=stable

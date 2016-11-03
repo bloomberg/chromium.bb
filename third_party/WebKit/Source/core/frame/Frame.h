@@ -33,8 +33,11 @@
 #include "core/frame/FrameTypes.h"
 #include "core/loader/FrameLoaderTypes.h"
 #include "core/page/FrameTree.h"
+#include "platform/feature_policy/FeaturePolicy.h"
 #include "platform/heap/Handle.h"
 #include "wtf/Forward.h"
+
+#include <memory>
 
 namespace blink {
 
@@ -111,6 +114,11 @@ class CORE_EXPORT Frame : public GarbageCollectedFinalized<Frame> {
 
   virtual SecurityContext* securityContext() const = 0;
 
+  FeaturePolicy* getFeaturePolicy() const { return m_featurePolicy.get(); }
+  void setFeaturePolicy(std::unique_ptr<FeaturePolicy> newPolicy) {
+    m_featurePolicy = std::move(newPolicy);
+  }
+
   Frame* findFrameForNavigation(const AtomicString& name, Frame& activeFrame);
   Frame* findUnsafeParentScrollPropagationBoundary();
 
@@ -160,6 +168,8 @@ class CORE_EXPORT Frame : public GarbageCollectedFinalized<Frame> {
 
   Member<FrameClient> m_client;
   bool m_isLoading;
+
+  std::unique_ptr<FeaturePolicy> m_featurePolicy;
 };
 
 inline FrameClient* Frame::client() const {

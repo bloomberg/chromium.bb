@@ -34,6 +34,7 @@
 
 #include "net/http/http_response_headers.h"
 #include "net/http/http_util.h"
+#include "platform/json/JSONParser.h"
 #include "platform/network/ResourceResponse.h"
 #include "platform/weborigin/Suborigin.h"
 #include "public/platform/WebString.h"
@@ -894,6 +895,16 @@ bool parseMultipartHeadersFromBody(const char* bytes,
     }
   }
   return true;
+}
+
+// See https://tools.ietf.org/html/draft-ietf-httpbis-jfv-01, Section 4.
+std::unique_ptr<JSONArray> parseJSONHeader(const String& header) {
+  StringBuilder sb;
+  sb.append("[");
+  sb.append(header);
+  sb.append("]");
+  std::unique_ptr<JSONValue> headerValue = parseJSON(sb.toString());
+  return JSONArray::cast(std::move(headerValue));
 }
 
 }  // namespace blink

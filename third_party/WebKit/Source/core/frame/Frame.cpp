@@ -48,6 +48,7 @@
 #include "core/page/Page.h"
 #include "platform/Histogram.h"
 #include "platform/InstanceCounters.h"
+#include "platform/feature_policy/FeaturePolicy.h"
 
 namespace blink {
 

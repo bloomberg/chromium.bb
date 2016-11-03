@@ -88,6 +88,7 @@
 #include "platform/PluginScriptForbiddenScope.h"
 #include "platform/ScriptForbiddenScope.h"
 #include "platform/UserGestureIndicator.h"
+#include "platform/feature_policy/FeaturePolicy.h"
 #include "platform/network/HTTPParsers.h"
 #include "platform/network/ResourceRequest.h"
 #include "platform/scroll/ScrollAnimatorBase.h"
@@ -575,6 +576,25 @@ void FrameLoader::didBeginDocument() {
     OriginTrialContext::addTokensFromHeader(
         m_frame->document(),
         m_documentLoader->response().httpHeaderField(HTTPNames::Origin_Trial));
+    if (RuntimeEnabledFeatures::featurePolicyEnabled()) {
+      std::unique_ptr<FeaturePolicy> featurePolicy(
+          FeaturePolicy::createFromParentPolicy(
+              (isLoadingMainFrame()
+                   ? nullptr
+                   : m_frame->client()->parent()->getFeaturePolicy()),
+              m_frame->securityContext()->getSecurityOrigin()));
+      Vector<String> messages;
+      featurePolicy->setHeaderPolicy(
+          m_documentLoader->response().httpHeaderField(
+              HTTPNames::Feature_Policy),
+          messages);
+      for (auto& message : messages) {
+        m_frame->document()->addConsoleMessage(ConsoleMessage::create(
+            OtherMessageSource, ErrorMessageLevel,
+            "Error with Feature-Policy header: " + message));
+      }
+      m_frame->setFeaturePolicy(std::move(featurePolicy));
+    }
   }
 
   if (m_documentLoader) {
