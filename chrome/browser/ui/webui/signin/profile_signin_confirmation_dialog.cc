@@ -69,7 +69,6 @@ void ProfileSigninConfirmationHandler::RegisterMessages() {
 
 void ProfileSigninConfirmationHandler::OnCancelButtonClicked(
     const base::ListValue* args) {
-  // TODO(dconnelly): redirect back to NTP?
   delegate_->OnCancelSignin();
   dialog_->Close();
 }
