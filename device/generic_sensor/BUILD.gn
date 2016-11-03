@@ -25,6 +25,12 @@ component("generic_sensor") {
     "platform_sensor_provider_base.h",
     "platform_sensor_provider_mac.cc",
     "platform_sensor_provider_mac.h",
+    "platform_sensor_provider_win.cc",
+    "platform_sensor_provider_win.h",
+    "platform_sensor_reader_win.cc",
+    "platform_sensor_reader_win.h",
+    "platform_sensor_win.cc",
+    "platform_sensor_win.h",
     "sensor_impl.cc",
     "sensor_impl.h",
     "sensor_provider_impl.cc",
@@ -56,6 +62,13 @@ component("generic_sensor") {
     deps += [ "//device/sensors/public/cpp" ]
 
     libs = [ "IOKit.framework" ]
+  }
+
+  if (is_win) {
+    libs = [
+      "portabledeviceguids.lib",
+      "sensorsapi.lib",
+    ]
   }
 }
 

@@ -61,6 +61,7 @@ test("device_unittests") {
     "bluetooth/test/test_bluetooth_local_gatt_service_delegate.cc",
     "bluetooth/test/test_bluetooth_local_gatt_service_delegate.h",
     "gamepad/gamepad_provider_unittest.cc",
+    "generic_sensor/platform_sensor_and_provider_unittest_win.cc",
     "generic_sensor/platform_sensor_provider_unittest.cc",
     "test/run_all_unittests.cc",
     "wake_lock/wake_lock_service_context_unittest.cc",
@@ -220,6 +221,9 @@ test("device_unittests") {
       "bluetooth/bluetooth_low_energy_win_fake.cc",
       "bluetooth/bluetooth_low_energy_win_fake.h",
     ]
+
+    # Needed for "generic_sensor/platform_sensor_and_provider_unittest_win.cc"
+    libs = [ "sensorsapi.lib" ]
   }
 
   if (enable_webvr) {
