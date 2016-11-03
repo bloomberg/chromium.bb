@@ -192,6 +192,7 @@ void BluetoothLowEnergyDeviceMac::DidDiscoverPrimaryServices(NSError* error) {
             << ": " << error.code << ")";
     return;
   }
+  VLOG(1) << "DidDiscoverPrimaryServices.";
 
   if (!IsGattConnected()) {
     // Don't create services if the device disconnected.
@@ -230,6 +231,7 @@ void BluetoothLowEnergyDeviceMac::DidDiscoverCharacteristics(
             << ": " << error.code << ")";
     return;
   }
+  VLOG(1) << "DidDiscoverCharacteristics.";
 
   if (!IsGattConnected()) {
     // Don't create characteristics if the device disconnected.
@@ -260,10 +262,12 @@ void BluetoothLowEnergyDeviceMac::DidDiscoverCharacteristics(
 
 void BluetoothLowEnergyDeviceMac::DidModifyServices(
     NSArray* invalidatedServices) {
+  VLOG(1) << "DidModifyServices: ";
   for (CBService* cb_service in invalidatedServices) {
     BluetoothRemoteGattServiceMac* gatt_service =
         GetBluetoothRemoteGattService(cb_service);
     DCHECK(gatt_service);
+    VLOG(1) << gatt_service->GetUUID().canonical_value();
     std::unique_ptr<BluetoothRemoteGattService> scoped_service =
         gatt_services_.take_and_erase(gatt_service->GetIdentifier());
     adapter_->NotifyGattServiceRemoved(scoped_service.get());
@@ -277,6 +281,7 @@ void BluetoothLowEnergyDeviceMac::DidModifyServices(
 void BluetoothLowEnergyDeviceMac::DidUpdateValue(
     CBCharacteristic* characteristic,
     NSError* error) {
+  VLOG(1) << "DidUpdateValue.";
   BluetoothRemoteGattServiceMac* gatt_service =
       GetBluetoothRemoteGattService(characteristic.service);
   DCHECK(gatt_service);
@@ -286,6 +291,7 @@ void BluetoothLowEnergyDeviceMac::DidUpdateValue(
 void BluetoothLowEnergyDeviceMac::DidWriteValue(
     CBCharacteristic* characteristic,
     NSError* error) {
+  VLOG(1) << "DidWriteValue.";
   BluetoothRemoteGattServiceMac* gatt_service =
       GetBluetoothRemoteGattService(characteristic.service);
   DCHECK(gatt_service);
@@ -295,6 +301,7 @@ void BluetoothLowEnergyDeviceMac::DidWriteValue(
 void BluetoothLowEnergyDeviceMac::DidUpdateNotificationState(
     CBCharacteristic* characteristic,
     NSError* error) {
+  VLOG(1) << "DidUpdateNotificationState";
   BluetoothRemoteGattServiceMac* gatt_service =
       GetBluetoothRemoteGattService(characteristic.service);
   DCHECK(gatt_service);
