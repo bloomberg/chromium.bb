@@ -1261,9 +1261,6 @@ bool ComputedStyle::hasWillChangeTransformHint() const {
 bool ComputedStyle::requireTransformOrigin(
     ApplyTransformOrigin applyOrigin,
     ApplyMotionPath applyMotionPath) const {
-  const Vector<RefPtr<TransformOperation>>& transformOperations =
-      transform().operations();
-
   // transform-origin brackets the transform with translate operations.
   // Optimize for the case where the only transform is a translation, since the
   // transform-origin is irrelevant in that case.
@@ -1273,9 +1270,8 @@ bool ComputedStyle::requireTransformOrigin(
   if (applyMotionPath == IncludeMotionPath)
     return true;
 
-  unsigned size = transformOperations.size();
-  for (unsigned i = 0; i < size; ++i) {
-    TransformOperation::OperationType type = transformOperations[i]->type();
+  for (const auto& operation : transform().operations()) {
+    TransformOperation::OperationType type = operation->type();
     if (type != TransformOperation::TranslateX &&
         type != TransformOperation::TranslateY &&
         type != TransformOperation::Translate &&
@@ -1311,20 +1307,20 @@ void ComputedStyle::applyTransform(
   bool applyTransformOrigin =
       requireTransformOrigin(applyOrigin, applyMotionPath);
 
-  float offsetX = transformOriginX().type() == Percent ? boundingBox.x() : 0;
-  float offsetY = transformOriginY().type() == Percent ? boundingBox.y() : 0;
-
   float originX = 0;
   float originY = 0;
   float originZ = 0;
 
+  const FloatSize& boxSize = boundingBox.size();
   if (applyTransformOrigin ||
       // We need to calculate originX and originY for applying motion path.
-      applyMotionPath == ComputedStyle::IncludeMotionPath) {
+      applyMotionPath == IncludeMotionPath) {
+    float offsetX = transformOriginX().type() == Percent ? boundingBox.x() : 0;
     originX =
-        floatValueForLength(transformOriginX(), boundingBox.width()) + offsetX;
+        floatValueForLength(transformOriginX(), boxSize.width()) + offsetX;
+    float offsetY = transformOriginY().type() == Percent ? boundingBox.y() : 0;
     originY =
-        floatValueForLength(transformOriginY(), boundingBox.height()) + offsetY;
+        floatValueForLength(transformOriginY(), boxSize.height()) + offsetY;
     if (applyTransformOrigin) {
       originZ = transformOriginZ();
       result.translate3d(originX, originY, originZ);
@@ -1334,23 +1330,20 @@ void ComputedStyle::applyTransform(
   if (applyIndependentTransformProperties ==
       IncludeIndependentTransformProperties) {
     if (translate())
-      translate()->apply(result, boundingBox.size());
+      translate()->apply(result, boxSize);
 
     if (rotate())
-      rotate()->apply(result, boundingBox.size());
+      rotate()->apply(result, boxSize);
 
     if (scale())
-      scale()->apply(result, boundingBox.size());
+      scale()->apply(result, boxSize);
   }
 
-  if (applyMotionPath == ComputedStyle::IncludeMotionPath)
+  if (applyMotionPath == IncludeMotionPath)
     applyMotionPathTransform(originX, originY, result);
 
-  const Vector<RefPtr<TransformOperation>>& transformOperations =
-      transform().operations();
-  unsigned size = transformOperations.size();
-  for (unsigned i = 0; i < size; ++i)
-    transformOperations[i]->apply(result, boundingBox.size());
+  for (const auto& operation : transform().operations())
+    operation->apply(result, boxSize);
 
   if (applyTransformOrigin) {
     result.translate3d(-originX, -originY, -originZ);
