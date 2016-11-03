@@ -151,6 +151,7 @@ class PipelineIntegrationTestBase : public Pipeline::Client {
   DummyTickClock dummy_clock_;
   PipelineMetadata metadata_;
   scoped_refptr<VideoFrame> last_frame_;
+  base::TimeDelta current_duration_;
 
   PipelineStatus StartInternal(
       std::unique_ptr<DataSource> data_source,
@@ -190,6 +191,11 @@ class PipelineIntegrationTestBase : public Pipeline::Client {
           ScopedVector<AudioDecoder>());
 
   void OnVideoFramePaint(const scoped_refptr<VideoFrame>& frame);
+
+  void CheckDuration();
+
+  // Return the media start time from |demuxer_|.
+  base::TimeDelta GetStartTime();
 
   MOCK_METHOD1(DecryptorAttached, void(bool));
   // Pipeline::Client overrides.

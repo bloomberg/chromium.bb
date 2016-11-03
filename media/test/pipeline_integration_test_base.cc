@@ -50,7 +50,8 @@ PipelineIntegrationTestBase::PipelineIntegrationTestBase()
       ended_(false),
       pipeline_status_(PIPELINE_OK),
       last_video_frame_format_(PIXEL_FORMAT_UNKNOWN),
-      last_video_frame_color_space_(COLOR_SPACE_UNSPECIFIED) {
+      last_video_frame_color_space_(COLOR_SPACE_UNSPECIFIED),
+      current_duration_(kInfiniteDuration) {
   ResetVideoHash();
 }
 
@@ -143,7 +144,13 @@ PipelineStatus PipelineIntegrationTestBase::StartInternal(
       .Times(AnyNumber());
   EXPECT_CALL(*this, OnBufferingStateChange(BUFFERING_HAVE_NOTHING))
       .Times(AnyNumber());
-  EXPECT_CALL(*this, OnDurationChange()).Times(AtMost(1));
+  // Permit at most two calls to OnDurationChange.  CheckDuration will make sure
+  // that no more than one of them is a finite duration.  This allows the
+  // pipeline to call back at the end of the media with the known duration.
+  EXPECT_CALL(*this, OnDurationChange())
+      .Times(AtMost(2))
+      .WillRepeatedly(
+          Invoke(this, &PipelineIntegrationTestBase::CheckDuration));
   EXPECT_CALL(*this, OnVideoNaturalSizeChange(_)).Times(AtMost(1));
   EXPECT_CALL(*this, OnVideoOpacityChange(_)).Times(AtMost(1));
   CreateDemuxer(std::move(data_source));
@@ -390,6 +397,18 @@ void PipelineIntegrationTestBase::OnVideoFramePaint(
   last_frame_ = frame;
   DVLOG(3) << __FUNCTION__ << " pts=" << frame->timestamp().InSecondsF();
   VideoFrame::HashFrameForTesting(&md5_context_, frame);
+}
+
+void PipelineIntegrationTestBase::CheckDuration() {
+  // Allow the pipeline to specify indefinite duration, then reduce it once
+  // it becomes known.
+  ASSERT_EQ(kInfiniteDuration, current_duration_);
+  base::TimeDelta new_duration = pipeline_->GetMediaDuration();
+  current_duration_ = new_duration;
+}
+
+base::TimeDelta PipelineIntegrationTestBase::GetStartTime() {
+  return demuxer_->GetStartTime();
 }
 
 void PipelineIntegrationTestBase::ResetVideoHash() {

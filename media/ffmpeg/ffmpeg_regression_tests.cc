@@ -163,6 +163,10 @@ FFMPEG_TEST_CASE(Cr599625,
                  "security/599625.mp4",
                  PIPELINE_OK,
                  PIPELINE_ERROR_DECODE);
+// TODO(liberato): before crbug.com/658440 was fixed, this would fail if run
+// twice under ASAN.  If run once, then it doesn't.  However, it still catches
+// issues in crbug.com/662118, so it's included anyway.
+FFMPEG_TEST_CASE(Cr658440, "security/658440.flac", PIPELINE_OK, PIPELINE_OK);
 
 // General MP4 test cases.
 FFMPEG_TEST_CASE(MP4_0,
@@ -354,7 +358,7 @@ TEST_P(FFmpegRegressionTest, BasicPlayback) {
       ASSERT_TRUE(ended_);
 
       // Tack a seek on the end to catch any seeking issues.
-      Seek(base::TimeDelta::FromMilliseconds(0));
+      Seek(GetStartTime());
     }
   } else {
     // Don't bother checking the exact status as we only care that the
