@@ -99,9 +99,11 @@ class PInfo(object):
 class Upgrader(object):
   """A class to perform various tasks related to updating Portage packages."""
 
-  PORTAGE_GIT_URL = '%s/chromiumos/overlays/portage.git' % (
+  PORTAGE_GIT_URL = '%s/external/github.com/gentoo/gentoo.git' % (
       site_config.params.EXTERNAL_GOB_URL)
-  ORIGIN_GENTOO = 'origin/gentoo'
+  GIT_REMOTE = 'origin'
+  GIT_BRANCH = 'master'
+  GIT_REMOTE_BRANCH = '%s/%s' % (GIT_REMOTE, GIT_BRANCH)
 
   UPSTREAM_OVERLAY_NAME = 'portage'
   UPSTREAM_TMP_REPO = os.environ.get(constants.SHARED_CACHE_ENVVAR)
@@ -370,6 +372,7 @@ class Upgrader(object):
     # Result is None or (cat, pn, version, rev)
     result = portage.versions.catpkgsplit(cpv)
     if result:
+      # pylint: disable=unpacking-non-sequence
       (cat, pn, _version, _rev) = result
       ebuild = cpv.replace(cat + '/', '') + '.ebuild'
       return os.path.join(cat, pn, ebuild)
@@ -709,7 +712,9 @@ class Upgrader(object):
     """
     oper.Notice('Copying %s from upstream.' % upstream_cpv)
 
+    # pylint: disable=unpacking-non-sequence
     (cat, pkgname, _version, _rev) = portage.versions.catpkgsplit(upstream_cpv)
+    # pylint: enable=unpacking-non-sequence
     ebuild = upstream_cpv.replace(cat + '/', '') + '.ebuild'
     catpkgsubdir = os.path.join(cat, pkgname)
     pkgdir = os.path.join(self._stable_repo, catpkgsubdir)
@@ -1538,10 +1543,14 @@ class Upgrader(object):
 
         oper.Notice('Updating previously created upstream cache at %s.' %
                     self._upstream)
-        self._RunGit(self._upstream, ['remote', 'set-url', 'origin',
+        self._RunGit(self._upstream, ['remote', 'set-url', self.GIT_REMOTE,
                                       self.PORTAGE_GIT_URL])
+        self._RunGit(self._upstream,
+                     ['config', 'remote.%s.fetch' % self.GIT_REMOTE,
+                      '+refs/heads/%s:refs/remotes/%s' %
+                      (self.GIT_BRANCH, self.GIT_REMOTE_BRANCH)])
         self._RunGit(self._upstream, ['remote', 'update'])
-        self._RunGit(self._upstream, ['checkout', '-f', self.ORIGIN_GENTOO],
+        self._RunGit(self._upstream, ['checkout', '-f', self.GIT_REMOTE_BRANCH],
                      redirect_stdout=True, combine_stdout_stderr=True)
     else:
       if self._local_only:
@@ -1551,10 +1560,10 @@ class Upgrader(object):
       root = os.path.dirname(self._upstream)
       osutils.SafeMakedirs(root)
       # Create local copy of upstream gentoo.
-      oper.Notice('Cloning origin/gentoo at %s as upstream reference.' %
-                  self._upstream)
+      oper.Notice('Cloning %s at %s as upstream reference.' %
+                  (self.GIT_REMOTE_BRANCH, self._upstream))
       name = os.path.basename(self._upstream)
-      args = ['clone', '--branch', os.path.basename(self.ORIGIN_GENTOO)]
+      args = ['clone', '--branch', self.GIT_BRANCH]
       args += ['--depth', '1', self.PORTAGE_GIT_URL, name]
       self._RunGit(root, args)
 

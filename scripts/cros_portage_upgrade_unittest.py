@@ -1930,9 +1930,12 @@ class RunBoardTest(CpuTestBase):
         '/tmp/portage', ['remote', 'set-url', 'origin',
                          cpu.Upgrader.PORTAGE_GIT_URL])
     mocked_upgrader._RunGit(
+        '/tmp/portage', ['config', 'remote.origin.fetch',
+                         '+refs/heads/master:refs/remotes/origin/master'])
+    mocked_upgrader._RunGit(
         '/tmp/portage', ['remote', 'update'])
     mocked_upgrader._RunGit(
-        '/tmp/portage', ['checkout', '-f', 'origin/gentoo'],
+        '/tmp/portage', ['checkout', '-f', 'origin/master'],
         combine_stdout_stderr=True, redirect_stdout=True)
     self.mox.ReplayAll()
 
@@ -1956,9 +1959,8 @@ class RunBoardTest(CpuTestBase):
     tempfile.mkdtemp()
     root = os.path.dirname(mocked_upgrader._upstream).AndReturn('root')
     name = os.path.basename(mocked_upgrader._upstream).AndReturn('name')
-    os.path.basename('origin/gentoo').AndReturn('gentoo')
     mocked_upgrader._RunGit(root,
-                            ['clone', '--branch', 'gentoo', '--depth', '1',
+                            ['clone', '--branch', 'master', '--depth', '1',
                              cpu.Upgrader.PORTAGE_GIT_URL, name])
     self.mox.ReplayAll()
 
