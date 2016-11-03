@@ -45,7 +45,9 @@ void DesktopWindowTreeHostMus::Init(aura::Window* content_window,
                                     const Widget::InitParams& params) {}
 
 void DesktopWindowTreeHostMus::OnNativeWidgetCreated(
-    const Widget::InitParams& params) {}
+    const Widget::InitParams& params) {
+  native_widget_delegate_->OnNativeWidgetCreated(true);
+}
 
 std::unique_ptr<corewm::Tooltip> DesktopWindowTreeHostMus::CreateTooltip() {
   return base::MakeUnique<corewm::TooltipAura>();
