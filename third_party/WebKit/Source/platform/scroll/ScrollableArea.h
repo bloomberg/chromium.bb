@@ -109,8 +109,10 @@ class PLATFORM_EXPORT ScrollableArea : public GarbageCollectedMixin {
   void mouseEnteredContentArea() const;
   void mouseExitedContentArea() const;
   void mouseMovedInContentArea() const;
-  void mouseEnteredScrollbar(Scrollbar&) const;
-  void mouseExitedScrollbar(Scrollbar&) const;
+  void mouseEnteredScrollbar(Scrollbar&);
+  void mouseExitedScrollbar(Scrollbar&);
+  void mouseCapturedScrollbar();
+  void mouseReleasedScrollbar();
   void contentAreaDidShow() const;
   void contentAreaDidHide() const;
 
@@ -229,7 +231,6 @@ class PLATFORM_EXPORT ScrollableArea : public GarbageCollectedMixin {
 
   virtual bool shouldSuspendScrollAnimations() const { return true; }
   virtual void scrollbarStyleChanged() {}
-  virtual void scrollbarVisibilityChanged() {}
   virtual bool scrollbarsCanBeActive() const = 0;
 
   // Returns the bounding box of this scrollable area, in the coordinate system
@@ -258,7 +259,6 @@ class PLATFORM_EXPORT ScrollableArea : public GarbageCollectedMixin {
   // Overlay scrollbars can "fade-out" when inactive.
   virtual bool scrollbarsHidden() const;
   virtual void setScrollbarsHidden(bool);
-  virtual void didChangeScrollbarsHidden(){};
 
   // Returns true if the GraphicsLayer tree needs to be rebuilt.
   virtual bool updateAfterCompositingChange() { return false; }
@@ -357,7 +357,7 @@ class PLATFORM_EXPORT ScrollableArea : public GarbageCollectedMixin {
   EAGERLY_FINALIZE();
   DECLARE_VIRTUAL_TRACE();
 
-  virtual void clearScrollAnimators();
+  virtual void clearScrollableArea();
 
   virtual ScrollAnchor* scrollAnchor() { return nullptr; }
 
@@ -389,10 +389,14 @@ class PLATFORM_EXPORT ScrollableArea : public GarbageCollectedMixin {
     m_verticalScrollbarNeedsPaintInvalidation = false;
     m_scrollCornerNeedsPaintInvalidation = false;
   }
+  void showOverlayScrollbars();
+  virtual void scrollbarVisibilityChanged() {}
 
  private:
   void programmaticScrollHelper(const ScrollOffset&, ScrollBehavior);
   void userScrollHelper(const ScrollOffset&, ScrollBehavior);
+
+  void fadeOverlayScrollbarsTimerFired(TimerBase*);
 
   // This function should be overriden by subclasses to perform the actual
   // scroll of the content.
@@ -406,6 +410,8 @@ class PLATFORM_EXPORT ScrollableArea : public GarbageCollectedMixin {
   mutable Member<ScrollAnimatorBase> m_scrollAnimator;
   mutable Member<ProgrammaticScrollAnimator> m_programmaticScrollAnimator;
 
+  std::unique_ptr<Timer<ScrollableArea>> m_fadeOverlayScrollbarsTimer;
+
   unsigned m_scrollbarOverlayColorTheme : 2;
 
   unsigned m_scrollOriginChanged : 1;
@@ -414,6 +420,7 @@ class PLATFORM_EXPORT ScrollableArea : public GarbageCollectedMixin {
   unsigned m_verticalScrollbarNeedsPaintInvalidation : 1;
   unsigned m_scrollCornerNeedsPaintInvalidation : 1;
   unsigned m_scrollbarsHidden : 1;
+  unsigned m_scrollbarCaptured : 1;
 
   // There are 6 possible combinations of writing mode and direction. Scroll
   // origin will be non-zero in the x or y axis if there is any reversed

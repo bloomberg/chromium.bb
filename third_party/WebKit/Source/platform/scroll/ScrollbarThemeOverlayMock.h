@@ -38,9 +38,20 @@ namespace blink {
 class PLATFORM_EXPORT ScrollbarThemeOverlayMock : public ScrollbarThemeOverlay {
  public:
   ScrollbarThemeOverlayMock()
-      : ScrollbarThemeOverlay(3, 4, DisallowHitTest, Color(128, 128, 128)) {}
+      : ScrollbarThemeOverlay(3, 4, DisallowHitTest, Color(128, 128, 128)),
+        m_delayInSeconds(0.0) {}
+
+  double overlayScrollbarFadeOutDelaySeconds() const override {
+    return m_delayInSeconds;
+  }
+  double overlayScrollbarFadeOutDurationSeconds() const override { return 0.0; }
+
+  void setOverlayScrollbarFadeOutDelay(double delayInSeconds) {
+    m_delayInSeconds = delayInSeconds;
+  }
 
  private:
+  double m_delayInSeconds;
   bool isMockTheme() const final { return true; }
 };
 

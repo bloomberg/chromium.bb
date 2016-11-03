@@ -163,9 +163,11 @@ class WebThemeEngine {
     int thumbThickness;
     int scrollbarMargin;
     WebColor color;
+    double fadeOutDelaySeconds;
+    double fadeOutDurationSeconds;
   };
 
-  // Gets the overlay scrollbar style. Used for mobile theme.
+  // Gets the overlay scrollbar style. Not used on Mac.
   virtual void getOverlayScrollbarStyle(ScrollbarStyle*) {}
 
   // Paint the given the given theme part.

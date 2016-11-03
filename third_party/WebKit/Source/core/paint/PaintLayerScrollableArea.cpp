@@ -172,7 +172,7 @@ void PaintLayerScrollableArea::dispose() {
   if (m_resizer)
     m_resizer->destroy();
 
-  clearScrollAnimators();
+  clearScrollableArea();
 
   // Note: it is not safe to call ScrollAnchor::clear if the document is being
   // destroyed, because LayoutObjectChildList::removeChildNode skips the call to
@@ -368,6 +368,7 @@ void PaintLayerScrollableArea::updateScrollOffset(const ScrollOffset& newOffset,
   if (scrollOffset() == newOffset)
     return;
 
+  showOverlayScrollbars();
   ScrollOffset scrollDelta = scrollOffset() - newOffset;
   m_scrollOffset = newOffset;
 
@@ -515,6 +516,10 @@ IntRect PaintLayerScrollableArea::visibleContentRect(
               max(0, layer()->size().height() - horizontalScrollbarHeight)));
 }
 
+void PaintLayerScrollableArea::visibleSizeChanged() {
+  showOverlayScrollbars();
+}
+
 int PaintLayerScrollableArea::visibleHeight() const {
   return layer()->size().height();
 }
@@ -546,6 +551,7 @@ bool PaintLayerScrollableArea::shouldSuspendScrollAnimations() const {
 }
 
 void PaintLayerScrollableArea::scrollbarVisibilityChanged() {
+  updateScrollbarsEnabledState();
   if (LayoutView* view = box().view())
     return view->clearHitTestCache();
 }
@@ -642,6 +648,8 @@ void PaintLayerScrollableArea::updateScrollOrigin() {
 }
 
 void PaintLayerScrollableArea::updateScrollDimensions() {
+  if (m_overflowRect.size() != box().layoutOverflowRect().size())
+    contentsResized();
   m_overflowRect = box().layoutOverflowRect();
   box().flipForWritingMode(m_overflowRect);
   updateScrollOrigin();
@@ -652,10 +660,6 @@ void PaintLayerScrollableArea::setScrollOffsetUnconditionally(
     ScrollType scrollType) {
   cancelScrollAnimation();
   scrollOffsetChanged(offset, scrollType);
-}
-
-void PaintLayerScrollableArea::didChangeScrollbarsHidden() {
-  updateScrollbarsEnabledState();
 }
 
 void PaintLayerScrollableArea::updateScrollbarsEnabledState() {

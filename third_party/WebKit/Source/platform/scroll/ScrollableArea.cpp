@@ -44,19 +44,6 @@ static const float kMinFractionToStepWhenPaging = 0.875f;
 
 namespace blink {
 
-struct SameSizeAsScrollableArea {
-  virtual ~SameSizeAsScrollableArea();
-#if ENABLE(ASSERT)
-  VerifyEagerFinalization verifyEager;
-#endif
-  Member<void*> pointer[2];
-  unsigned bitfields : 17;
-  IntPoint origin;
-};
-
-static_assert(sizeof(ScrollableArea) == sizeof(SameSizeAsScrollableArea),
-              "ScrollableArea should stay small");
-
 int ScrollableArea::pixelsPerLineStep(HostWindow* host) {
   if (!host)
     return kPixelsPerLineStep;
@@ -79,17 +66,20 @@ ScrollableArea::ScrollableArea()
       m_horizontalScrollbarNeedsPaintInvalidation(false),
       m_verticalScrollbarNeedsPaintInvalidation(false),
       m_scrollCornerNeedsPaintInvalidation(false),
-      m_scrollbarsHidden(false) {}
+      m_scrollbarsHidden(false),
+      m_scrollbarCaptured(false) {}
 
 ScrollableArea::~ScrollableArea() {}
 
-void ScrollableArea::clearScrollAnimators() {
+void ScrollableArea::clearScrollableArea() {
 #if OS(MACOSX)
   if (m_scrollAnimator)
     m_scrollAnimator->dispose();
 #endif
   m_scrollAnimator.clear();
   m_programmaticScrollAnimator.clear();
+  if (m_fadeOverlayScrollbarsTimer)
+    m_fadeOverlayScrollbarsTimer->stop();
 }
 
 ScrollAnimatorBase& ScrollableArea::scrollAnimator() const {
@@ -332,12 +322,27 @@ void ScrollableArea::mouseMovedInContentArea() const {
     scrollAnimator->mouseMovedInContentArea();
 }
 
-void ScrollableArea::mouseEnteredScrollbar(Scrollbar& scrollbar) const {
+void ScrollableArea::mouseEnteredScrollbar(Scrollbar& scrollbar) {
   scrollAnimator().mouseEnteredScrollbar(scrollbar);
+  // Restart the fade out timer.
+  showOverlayScrollbars();
 }
 
-void ScrollableArea::mouseExitedScrollbar(Scrollbar& scrollbar) const {
+void ScrollableArea::mouseExitedScrollbar(Scrollbar& scrollbar) {
   scrollAnimator().mouseExitedScrollbar(scrollbar);
+}
+
+void ScrollableArea::mouseCapturedScrollbar() {
+  m_scrollbarCaptured = true;
+  showOverlayScrollbars();
+  if (m_fadeOverlayScrollbarsTimer)
+    m_fadeOverlayScrollbarsTimer->stop();
+}
+
+void ScrollableArea::mouseReleasedScrollbar() {
+  m_scrollbarCaptured = false;
+  // This will kick off the fade out timer.
+  showOverlayScrollbars();
 }
 
 void ScrollableArea::contentAreaDidShow() const {
@@ -378,6 +383,7 @@ void ScrollableArea::willRemoveScrollbar(Scrollbar& scrollbar,
 }
 
 void ScrollableArea::contentsResized() {
+  showOverlayScrollbars();
   if (ScrollAnimatorBase* scrollAnimator = existingScrollAnimator())
     scrollAnimator->contentsResized();
 }
@@ -538,8 +544,40 @@ bool ScrollableArea::scrollbarsHidden() const {
 void ScrollableArea::setScrollbarsHidden(bool hidden) {
   if (m_scrollbarsHidden == static_cast<unsigned>(hidden))
     return;
+
   m_scrollbarsHidden = hidden;
-  didChangeScrollbarsHidden();
+  scrollbarVisibilityChanged();
+}
+
+void ScrollableArea::fadeOverlayScrollbarsTimerFired(TimerBase*) {
+  setScrollbarsHidden(true);
+}
+
+void ScrollableArea::showOverlayScrollbars() {
+  if (!ScrollbarTheme::theme().usesOverlayScrollbars())
+    return;
+
+  setScrollbarsHidden(false);
+
+  const double timeUntilDisable =
+      ScrollbarTheme::theme().overlayScrollbarFadeOutDelaySeconds() +
+      ScrollbarTheme::theme().overlayScrollbarFadeOutDurationSeconds();
+
+  // If the overlay scrollbars don't fade out, don't do anything. This is the
+  // case for the mock overlays used in tests and on Mac, where the fade-out is
+  // animated in ScrollAnimatorMac.
+  if (!timeUntilDisable)
+    return;
+
+  if (!m_fadeOverlayScrollbarsTimer) {
+    m_fadeOverlayScrollbarsTimer.reset(new Timer<ScrollableArea>(
+        this, &ScrollableArea::fadeOverlayScrollbarsTimerFired));
+  }
+
+  if (!m_scrollbarCaptured) {
+    m_fadeOverlayScrollbarsTimer->startOneShot(timeUntilDisable,
+                                               BLINK_FROM_HERE);
+  }
 }
 
 IntRect ScrollableArea::visibleContentRect(

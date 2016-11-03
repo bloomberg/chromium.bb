@@ -952,20 +952,6 @@ void ScrollAnimatorMac::willRemoveHorizontalScrollbar(Scrollbar& scrollbar) {
   [m_scrollbarPainterController.get() setHorizontalScrollerImp:nil];
 }
 
-bool ScrollAnimatorMac::shouldScrollbarParticipateInHitTesting(
-    Scrollbar& scrollbar) {
-  // Non-overlay scrollbars should always participate in hit testing.
-  if (ScrollbarThemeMac::recommendedScrollerStyle() != NSScrollerStyleOverlay)
-    return true;
-
-  // Overlay scrollbars should participate in hit testing whenever they are at
-  // all visible.
-  ScrollbarPainter painter = scrollbarPainterForScrollbar(scrollbar);
-  if (!painter)
-    return false;
-  return [painter knobAlpha] > 0;
-}
-
 void ScrollAnimatorMac::notifyContentAreaScrolled(const ScrollOffset& delta) {
   // This function is called when a page is going into the page cache, but the
   // page

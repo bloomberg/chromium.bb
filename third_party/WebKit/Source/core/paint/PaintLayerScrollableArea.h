@@ -295,6 +295,8 @@ class CORE_EXPORT PaintLayerScrollableArea final
   ScrollBehavior scrollBehaviorStyle() const override;
   CompositorAnimationTimeline* compositorAnimationTimeline() const override;
 
+  void visibleSizeChanged();
+
   // FIXME: We shouldn't allow access to m_overflowRect outside this class.
   LayoutRect overflowRect() const { return m_overflowRect; }
 
@@ -320,8 +322,6 @@ class CORE_EXPORT PaintLayerScrollableArea final
   // layout has finished) but while document layout is still happening.
   void updateAfterLayout();
   void clampScrollOffsetsAfterLayout();
-
-  void didChangeScrollbarsHidden() override;
 
   void updateAfterStyleChange(const ComputedStyle*);
   void updateAfterOverflowRecalc();
