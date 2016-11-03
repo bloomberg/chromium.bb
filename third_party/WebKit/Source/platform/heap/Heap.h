@@ -96,7 +96,7 @@ class ObjectAliveTrait<T, false> {
   STATIC_ONLY(ObjectAliveTrait);
 
  public:
-  static bool isHeapObjectAlive(T* object) {
+  static bool isHeapObjectAlive(const T* object) {
     static_assert(sizeof(T), "T must be fully defined");
     return HeapObjectHeader::fromPayload(object)->isMarked();
   }
@@ -108,7 +108,7 @@ class ObjectAliveTrait<T, true> {
 
  public:
   NO_SANITIZE_ADDRESS
-  static bool isHeapObjectAlive(T* object) {
+  static bool isHeapObjectAlive(const T* object) {
     static_assert(sizeof(T), "T must be fully defined");
     return object->isHeapObjectAlive();
   }
@@ -241,7 +241,7 @@ class PLATFORM_EXPORT ThreadHeap {
 #endif
 
   template <typename T>
-  static inline bool isHeapObjectAlive(T* object) {
+  static inline bool isHeapObjectAlive(const T* object) {
     static_assert(sizeof(T), "T must be fully defined");
     // The strongification of collections relies on the fact that once a
     // collection has been strongified, there is no way that it can contain
@@ -270,10 +270,6 @@ class PLATFORM_EXPORT ThreadHeap {
   template <typename T>
   static inline bool isHeapObjectAlive(const UntracedMember<T>& member) {
     return isHeapObjectAlive(member.get());
-  }
-  template <typename T>
-  static inline bool isHeapObjectAlive(const T*& ptr) {
-    return isHeapObjectAlive(ptr);
   }
 
   StackFrameDepth& stackFrameDepth() { return m_stackFrameDepth; }
