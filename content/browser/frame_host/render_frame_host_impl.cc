@@ -994,17 +994,27 @@ void RenderFrameHostImpl::OnFrameFocused() {
 }
 
 void RenderFrameHostImpl::OnOpenURL(const FrameHostMsg_OpenURL_Params& params) {
+  GURL validated_url(params.url);
+  GetProcess()->FilterURL(false, &validated_url);
+
   if (params.is_history_navigation_in_new_child) {
     DCHECK(SiteIsolationPolicy::UseSubframeNavigationEntries());
 
     // Try to find a FrameNavigationEntry that matches this frame instead, based
     // on the frame's unique name.  If this can't be found, fall back to the
-    // default params using OpenURL below.
-    if (frame_tree_node_->navigator()->NavigateNewChildFrame(this, params.url))
+    // default params using RequestOpenURL below.
+    if (frame_tree_node_->navigator()->NavigateNewChildFrame(this,
+                                                             validated_url))
       return;
   }
 
-  OpenURL(params, GetSiteInstance());
+  TRACE_EVENT1("navigation", "RenderFrameHostImpl::OpenURL", "url",
+               validated_url.possibly_invalid_spec());
+
+  frame_tree_node_->navigator()->RequestOpenURL(
+      this, validated_url, params.uses_post, params.resource_request_body,
+      params.extra_headers, params.referrer, params.disposition,
+      params.should_replace_current_entry, params.user_gesture);
 }
 
 void RenderFrameHostImpl::OnCancelInitialHistoryLoad() {
@@ -2351,20 +2361,6 @@ void RenderFrameHostImpl::NavigateToInterstitialURL(const GURL& data_url) {
   } else {
     Navigate(common_params, StartNavigationParams(), RequestNavigationParams());
   }
-}
-
-void RenderFrameHostImpl::OpenURL(const FrameHostMsg_OpenURL_Params& params,
-                                  SiteInstance* source_site_instance) {
-  GURL validated_url(params.url);
-  GetProcess()->FilterURL(false, &validated_url);
-
-  TRACE_EVENT1("navigation", "RenderFrameHostImpl::OpenURL", "url",
-               validated_url.possibly_invalid_spec());
-  frame_tree_node_->navigator()->RequestOpenURL(
-      this, validated_url, params.uses_post, params.resource_request_body,
-      params.extra_headers, source_site_instance, params.referrer,
-      params.disposition, params.should_replace_current_entry,
-      params.user_gesture);
 }
 
 void RenderFrameHostImpl::Stop() {

@@ -713,7 +713,6 @@ void NavigatorImpl::RequestOpenURL(
     bool uses_post,
     const scoped_refptr<ResourceRequestBodyImpl>& body,
     const std::string& extra_headers,
-    SiteInstance* source_site_instance,
     const Referrer& referrer,
     WindowOpenDisposition disposition,
     bool should_replace_current_entry,
@@ -762,11 +761,16 @@ void NavigatorImpl::RequestOpenURL(
   params.uses_post = uses_post;
   params.post_data = body;
   params.extra_headers = extra_headers;
-  params.source_site_instance = source_site_instance;
   if (redirect_chain.size() > 0)
     params.redirect_chain = redirect_chain;
   params.should_replace_current_entry = should_replace_current_entry;
   params.user_gesture = user_gesture;
+
+  // RequestOpenURL is used only for local frames, so we can get here only if
+  // the navigation is initiated by a frame in the same SiteInstance as this
+  // frame.  Note that navigations on RenderFrameProxies do not use
+  // RequestOpenURL and go through RequestTransferURL instead.
+  params.source_site_instance = current_site_instance;
 
   if (render_frame_host->web_ui()) {
     // Web UI pages sometimes want to override the page transition type for

@@ -68,7 +68,6 @@ class CONTENT_EXPORT NavigatorImpl : public Navigator {
                       bool uses_post,
                       const scoped_refptr<ResourceRequestBodyImpl>& body,
                       const std::string& extra_headers,
-                      SiteInstance* source_site_instance,
                       const Referrer& referrer,
                       WindowOpenDisposition disposition,
                       bool should_replace_current_entry,
