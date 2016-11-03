@@ -267,15 +267,17 @@ rendering only). In case you ever wanted to test embedded content shell on
 tty.
 It has been
 [removed from the tree](https://codereview.chromium.org/2445323002/) and is no
-longer maintained but you can try the
-[latest working revision](https://chromium.googlesource.com/chromium/src/+/0e64be9cf335ee3bea7c989702c5a9a0934af037/ui/ozone/platform/caca/).
-You need additional dependencies (libcaca shared library and development files)
-that are not provided in the sysroot. Here are quick instructions to build and
-run it:
+longer maintained but you can
+[build it as an out-of-tree port](https://github.com/fred-wang/ozone-caca).
+
+Alternatively, you can try the latest revision known to work. First, install
+libcaca shared library and development files. Next, move to the git revision
+`0e64be9cf335ee3bea7c989702c5a9a0934af037`
+(you will probably need to synchronize the build dependencies with
+`gclient sync --with_branch_heads`). Finally, build and run the caca platform
+with the following commands:
 
 ``` shell
-# Do this at revision 0e64be9cf335ee3bea7c989702c5a9a0934af037
-gclient sync --with_branch_heads
 gn args out/OzoneCaca \
         --args="use_ozone=true ozone_platform_caca=true use_sysroot=false ozone_auto_platforms=false toolkit_views=false"
 ninja -C out/OzoneCaca content_shell
