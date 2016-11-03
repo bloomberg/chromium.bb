@@ -22,10 +22,9 @@ class AshDevToolsDOMAgent : public ui::devtools::UiDevToolsBaseAgent<
   std::unique_ptr<ui::devtools::protocol::DOM::Node> BuildInitialTree();
 
   // DOM::Backend
-  void enable(ui::devtools::protocol::ErrorString* error) override {}
-  void disable(ui::devtools::protocol::ErrorString* error) override {}
-  void getDocument(
-      ui::devtools::protocol::ErrorString* error,
+  ui::devtools::protocol::Response enable() override;
+  ui::devtools::protocol::Response disable() override;
+  ui::devtools::protocol::Response getDocument(
       std::unique_ptr<ui::devtools::protocol::DOM::Node>* out_root) override;
 
   ash::WmShell* shell_;

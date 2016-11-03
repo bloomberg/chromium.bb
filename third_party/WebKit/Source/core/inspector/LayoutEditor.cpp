@@ -146,8 +146,7 @@ void LayoutEditor::dispose() {
   if (!m_isDirty)
     return;
 
-  ErrorString errorString;
-  m_domAgent->undo(&errorString);
+  m_domAgent->undo();
 }
 
 DEFINE_TRACE(LayoutEditor) {
@@ -346,8 +345,7 @@ void LayoutEditor::commitChanges() {
     return;
 
   m_isDirty = false;
-  ErrorString errorString;
-  m_domAgent->markUndoableState(&errorString);
+  m_domAgent->markUndoableState();
 }
 
 void LayoutEditor::nextSelector() {

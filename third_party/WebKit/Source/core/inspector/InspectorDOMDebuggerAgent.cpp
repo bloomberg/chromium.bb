@@ -417,9 +417,12 @@ static String domTypeName(int type) {
 void InspectorDOMDebuggerAgent::setDOMBreakpoint(ErrorString* errorString,
                                                  int nodeId,
                                                  const String& typeString) {
-  Node* node = m_domAgent->assertNode(errorString, nodeId);
-  if (!node)
+  Node* node = nullptr;
+  Response response = m_domAgent->assertNode(nodeId, node);
+  if (!response.isSuccess()) {
+    *errorString = response.errorMessage();
     return;
+  }
 
   int type = domTypeForName(errorString, typeString);
   if (type == -1)
@@ -438,9 +441,12 @@ void InspectorDOMDebuggerAgent::setDOMBreakpoint(ErrorString* errorString,
 void InspectorDOMDebuggerAgent::removeDOMBreakpoint(ErrorString* errorString,
                                                     int nodeId,
                                                     const String& typeString) {
-  Node* node = m_domAgent->assertNode(errorString, nodeId);
-  if (!node)
+  Node* node = nullptr;
+  Response response = m_domAgent->assertNode(nodeId, node);
+  if (!response.isSuccess()) {
+    *errorString = response.errorMessage();
     return;
+  }
   int type = domTypeForName(errorString, typeString);
   if (type == -1)
     return;

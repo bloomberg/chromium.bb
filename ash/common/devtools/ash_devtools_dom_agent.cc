@@ -98,10 +98,18 @@ AshDevToolsDOMAgent::BuildInitialTree() {
   return BuildNode("root", nullptr, std::move(children));
 }
 
-void AshDevToolsDOMAgent::getDocument(
-    ui::devtools::protocol::ErrorString* error,
+ui::devtools::protocol::Response AshDevToolsDOMAgent::enable() {
+  return ui::devtools::protocol::Response::OK();
+}
+
+ui::devtools::protocol::Response AshDevToolsDOMAgent::disable() {
+  return ui::devtools::protocol::Response::OK();
+}
+
+ui::devtools::protocol::Response AshDevToolsDOMAgent::getDocument(
     std::unique_ptr<ui::devtools::protocol::DOM::Node>* out_root) {
   *out_root = BuildInitialTree();
+  return ui::devtools::protocol::Response::OK();
 }
 
 }  // namespace devtools

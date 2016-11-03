@@ -446,67 +446,54 @@ bool DOMEditor::setNodeValue(Node* node,
                             exceptionState);
 }
 
-static void populateErrorString(ExceptionState& exceptionState,
-                                ErrorString* errorString) {
-  if (exceptionState.hadException())
-    *errorString = DOMException::getErrorName(exceptionState.code());
+static Response toResponse(ExceptionState& exceptionState) {
+  if (exceptionState.hadException()) {
+    return Response::Error(DOMException::getErrorName(exceptionState.code()) +
+                           " " + exceptionState.message());
+  }
+  return Response::OK();
 }
 
-bool DOMEditor::insertBefore(ContainerNode* parentNode,
-                             Node* node,
-                             Node* anchorNode,
-                             ErrorString* errorString) {
+Response DOMEditor::insertBefore(ContainerNode* parentNode,
+                                 Node* node,
+                                 Node* anchorNode) {
   TrackExceptionState exceptionState;
-  bool result = insertBefore(parentNode, node, anchorNode, exceptionState);
-  populateErrorString(exceptionState, errorString);
-  return result;
+  insertBefore(parentNode, node, anchorNode, exceptionState);
+  return toResponse(exceptionState);
 }
 
-bool DOMEditor::removeChild(ContainerNode* parentNode,
-                            Node* node,
-                            ErrorString* errorString) {
+Response DOMEditor::removeChild(ContainerNode* parentNode, Node* node) {
   TrackExceptionState exceptionState;
-  bool result = removeChild(parentNode, node, exceptionState);
-  populateErrorString(exceptionState, errorString);
-  return result;
+  removeChild(parentNode, node, exceptionState);
+  return toResponse(exceptionState);
 }
 
-bool DOMEditor::setAttribute(Element* element,
-                             const String& name,
-                             const String& value,
-                             ErrorString* errorString) {
+Response DOMEditor::setAttribute(Element* element,
+                                 const String& name,
+                                 const String& value) {
   TrackExceptionState exceptionState;
-  bool result = setAttribute(element, name, value, exceptionState);
-  populateErrorString(exceptionState, errorString);
-  return result;
+  setAttribute(element, name, value, exceptionState);
+  return toResponse(exceptionState);
 }
 
-bool DOMEditor::removeAttribute(Element* element,
-                                const String& name,
-                                ErrorString* errorString) {
+Response DOMEditor::removeAttribute(Element* element, const String& name) {
   TrackExceptionState exceptionState;
-  bool result = removeAttribute(element, name, exceptionState);
-  populateErrorString(exceptionState, errorString);
-  return result;
+  removeAttribute(element, name, exceptionState);
+  return toResponse(exceptionState);
 }
 
-bool DOMEditor::setOuterHTML(Node* node,
-                             const String& html,
-                             Node** newNode,
-                             ErrorString* errorString) {
+Response DOMEditor::setOuterHTML(Node* node,
+                                 const String& html,
+                                 Node** newNode) {
   TrackExceptionState exceptionState;
-  bool result = setOuterHTML(node, html, newNode, exceptionState);
-  populateErrorString(exceptionState, errorString);
-  return result;
+  setOuterHTML(node, html, newNode, exceptionState);
+  return toResponse(exceptionState);
 }
 
-bool DOMEditor::replaceWholeText(Text* textNode,
-                                 const String& text,
-                                 ErrorString* errorString) {
+Response DOMEditor::replaceWholeText(Text* textNode, const String& text) {
   TrackExceptionState exceptionState;
-  bool result = replaceWholeText(textNode, text, exceptionState);
-  populateErrorString(exceptionState, errorString);
-  return result;
+  replaceWholeText(textNode, text, exceptionState);
+  return toResponse(exceptionState);
 }
 
 DEFINE_TRACE(DOMEditor) {

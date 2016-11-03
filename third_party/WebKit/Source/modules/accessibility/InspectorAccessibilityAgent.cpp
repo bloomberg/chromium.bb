@@ -389,9 +389,12 @@ void InspectorAccessibilityAgent::getAXNodeChain(
     *errorString = "DOM agent must be enabled";
     return;
   }
-  Node* domNode = m_domAgent->assertNode(errorString, domNodeId);
-  if (!domNode)
+  Node* domNode = nullptr;
+  Response response = m_domAgent->assertNode(domNodeId, domNode);
+  if (!response.isSuccess()) {
+    *errorString = response.errorMessage();
     return;
+  }
 
   Document& document = domNode->document();
   document.updateStyleAndLayoutIgnorePendingStylesheets();

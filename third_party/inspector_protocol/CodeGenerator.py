@@ -330,7 +330,7 @@ def resolve_type(protocol, prop):
 
 
 def new_style(domain):
-    domains = ["DOMStorage", "Rendering", "Emulation", "Network", "Memory", "Page", "LayerTree", "Database", "IndexedDB", "CacheStorage" ]
+    domains = ["DOMStorage", "Rendering", "Emulation", "Network", "Memory", "Page", "LayerTree", "Database", "IndexedDB", "CacheStorage", "DOM" ]
     return domain["domain"] in domains
 
 

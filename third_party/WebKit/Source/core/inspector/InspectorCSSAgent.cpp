@@ -52,6 +52,7 @@
 #include "core/css/StyleSheetList.h"
 #include "core/css/parser/CSSParser.h"
 #include "core/css/resolver/StyleResolver.h"
+#include "core/dom/DOMException.h"
 #include "core/dom/DOMNodeIds.h"
 #include "core/dom/Node.h"
 #include "core/dom/StyleChangeReason.h"
@@ -295,6 +296,14 @@ std::unique_ptr<protocol::DOM::Rect> buildRectForFloatRect(
       .setWidth(rect.width())
       .setHeight(rect.height())
       .build();
+}
+
+String toErrorString(ExceptionState& exceptionState) {
+  if (exceptionState.hadException()) {
+    return DOMException::getErrorName(exceptionState.code()) + " " +
+           exceptionState.message();
+  }
+  return "";
 }
 
 }  // namespace
@@ -1095,9 +1104,12 @@ void InspectorCSSAgent::getComputedStyleForNode(
     int nodeId,
     std::unique_ptr<protocol::Array<protocol::CSS::CSSComputedStyleProperty>>*
         style) {
-  Node* node = m_domAgent->assertNode(errorString, nodeId);
-  if (!node)
+  Node* node = nullptr;
+  Response response = m_domAgent->assertNode(nodeId, node);
+  if (!response.isSuccess()) {
+    *errorString = response.errorMessage();
     return;
+  }
 
   CSSComputedStyleDeclaration* computedStyleInfo =
       CSSComputedStyleDeclaration::create(node, true);
@@ -1162,9 +1174,12 @@ void InspectorCSSAgent::getPlatformFontsForNode(
     int nodeId,
     std::unique_ptr<protocol::Array<protocol::CSS::PlatformFontUsage>>*
         platformFonts) {
-  Node* node = m_domAgent->assertNode(errorString, nodeId);
-  if (!node)
+  Node* node = nullptr;
+  Response response = m_domAgent->assertNode(nodeId, node);
+  if (!response.isSuccess()) {
+    *errorString = response.errorMessage();
     return;
+  }
 
   HashCountedSet<std::pair<int, String>> fontStats;
   LayoutObject* root = node->layoutObject();
@@ -1233,7 +1248,7 @@ void InspectorCSSAgent::setStyleSheetText(
   TrackExceptionState exceptionState;
   m_domAgent->history()->perform(
       new SetStyleSheetTextAction(inspectorStyleSheet, text), exceptionState);
-  *errorString = InspectorDOMAgent::toErrorString(exceptionState);
+  *errorString = toErrorString(exceptionState);
   if (!inspectorStyleSheet->sourceMapURL().isEmpty())
     *sourceMapURL = inspectorStyleSheet->sourceMapURL();
 }
@@ -1312,7 +1327,7 @@ void InspectorCSSAgent::setRuleSelector(
     }
     *result = inspectorStyleSheet->buildObjectForSelectorList(rule);
   }
-  *errorString = InspectorDOMAgent::toErrorString(exceptionState);
+  *errorString = toErrorString(exceptionState);
 }
 
 void InspectorCSSAgent::setKeyframeKey(
@@ -1354,7 +1369,7 @@ void InspectorCSSAgent::setKeyframeKey(
                       sourceData->ruleHeaderRange))
                   .build();
   }
-  *errorString = InspectorDOMAgent::toErrorString(exceptionState);
+  *errorString = toErrorString(exceptionState);
 }
 
 bool InspectorCSSAgent::multipleStyleTextsActions(
@@ -1423,9 +1438,9 @@ void InspectorCSSAgent::setStyleTexts(
         revert->undo(undoExceptionState);
         ASSERT(!undoExceptionState.hadException());
       }
-      *errorString = String::format(
-          "Failed applying edit #%d: %s", i,
-          InspectorDOMAgent::toErrorString(exceptionState).utf8().data());
+      *errorString =
+          String::format("Failed applying edit #%d: %s", i,
+                         toErrorString(exceptionState).utf8().data());
       return;
     }
     serializedStyles->addItem(action->takeSerializedStyle());
@@ -1465,7 +1480,7 @@ CSSStyleDeclaration* InspectorCSSAgent::setStyleText(
         return toCSSKeyframeRule(rule)->style();
     }
   }
-  *errorString = InspectorDOMAgent::toErrorString(exceptionState);
+  *errorString = toErrorString(exceptionState);
   return nullptr;
 }
 
@@ -1500,7 +1515,7 @@ void InspectorCSSAgent::setMediaText(
     *result = buildMediaObject(rule->media(), MediaListSourceMediaRule,
                                sourceURL, rule->parentStyleSheet());
   }
-  *errorString = InspectorDOMAgent::toErrorString(exceptionState);
+  *errorString = toErrorString(exceptionState);
 }
 
 void InspectorCSSAgent::createStyleSheet(
@@ -1551,7 +1566,7 @@ void InspectorCSSAgent::addRule(
       new AddRuleAction(inspectorStyleSheet, ruleText, ruleLocation);
   bool success = m_domAgent->history()->perform(action, exceptionState);
   if (!success) {
-    *errorString = InspectorDOMAgent::toErrorString(exceptionState);
+    *errorString = toErrorString(exceptionState);
     return;
   }
 
@@ -1563,9 +1578,12 @@ void InspectorCSSAgent::forcePseudoState(
     ErrorString* errorString,
     int nodeId,
     std::unique_ptr<protocol::Array<String>> forcedPseudoClasses) {
-  Element* element = m_domAgent->assertElement(errorString, nodeId);
-  if (!element)
+  Element* element = nullptr;
+  Response response = m_domAgent->assertElement(nodeId, element);
+  if (!response.isSuccess()) {
+    *errorString = response.errorMessage();
     return;
+  }
 
   unsigned forcedPseudoState =
       computePseudoClassMask(std::move(forcedPseudoClasses));
