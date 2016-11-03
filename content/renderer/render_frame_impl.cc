@@ -1083,7 +1083,7 @@ RenderFrameImpl::RenderFrameImpl(const CreateParams& params)
       is_main_frame_(true),
       in_browser_initiated_detach_(false),
       in_frame_tree_(false),
-      render_view_(params.render_view->AsWeakPtr()),
+      render_view_(params.render_view),
       routing_id_(params.routing_id),
       proxy_routing_id_(MSG_ROUTING_NONE),
 #if defined(ENABLE_PLUGINS)
@@ -1735,7 +1735,7 @@ void RenderFrameImpl::OnSwapOut(
   if (is_main_frame_)
     render_view_->SetSwappedOut(true);
 
-  RenderViewImpl* render_view = render_view_.get();
+  RenderViewImpl* render_view = render_view_;
   bool is_main_frame = is_main_frame_;
   int routing_id = GetRoutingID();
 
@@ -2414,7 +2414,7 @@ void RenderFrameImpl::DidCommitAndDrawCompositorFrame() {
 }
 
 RenderView* RenderFrameImpl::GetRenderView() {
-  return render_view_.get();
+  return render_view_;
 }
 
 RenderAccessibility* RenderFrameImpl::GetRenderAccessibility() {
@@ -2988,8 +2988,8 @@ blink::WebLocalFrame* RenderFrameImpl::createChildFrame(
                "child", child_routing_id);
 
   // Create the RenderFrame and WebLocalFrame, linking the two.
-  RenderFrameImpl* child_render_frame = RenderFrameImpl::Create(
-      render_view_.get(), child_routing_id);
+  RenderFrameImpl* child_render_frame =
+      RenderFrameImpl::Create(render_view_, child_routing_id);
   child_render_frame->InitializeBlameContext(this);
   blink::WebLocalFrame* web_frame =
       WebLocalFrame::create(scope, child_render_frame);

@@ -260,7 +260,7 @@ class CONTENT_EXPORT RenderFrameImpl
 
   // TODO(jam): this is a temporary getter until all the code is transitioned
   // to using RenderFrame instead of RenderView.
-  RenderViewImpl* render_view() { return render_view_.get(); }
+  RenderViewImpl* render_view() { return render_view_; }
 
   const blink::WebHistoryItem& current_history_item() {
     return current_history_item_;
@@ -1107,7 +1107,7 @@ class CONTENT_EXPORT RenderFrameImpl
   // Blink Web* layer to check for provisional frames.
   bool in_frame_tree_;
 
-  base::WeakPtr<RenderViewImpl> render_view_;
+  RenderViewImpl* render_view_;
   int routing_id_;
 
   // If this frame was created to replace a proxy, this will store the routing
