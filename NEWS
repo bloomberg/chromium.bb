@@ -1,5 +1,28 @@
 liblouis NEWS -- history of user-visible changes.  	-*- org -*-
 
+* Noteworthy changes in release 3.1.0 (2016-10-??)
+
+** New features
+- Meta data
+** Bug fixes
+- Fixes implicit declaration of 'pattern_check' thanks to  Reiner Dolp
+** Other changes
+- Improvements to the emacs mode for editing liblouis tables thanks to
+  Christian Egli
+- Documenting lou_charSize thanks to Reiner Dolp
+- Support for relative table paths in the tests. This will make sure
+  you always know which table a test actually uses.
+- Infrastructure to build windows binaries in a Docker container,
+  thanks to Bert Frees
+** Braille table improvements
+- UEB improvements, thanks to Mike Gray
+  - Fixed apostrophe and back translation
+  - Added rules for unicode apostrophe handling
+- Complete overhaul of Lithuanian 8-dots table, thanks to Rimas
+  Kudelis
+** Backwards incompatible changes
+None
+
 * Noteworthy changes in release 3.0.0 (2016-07-14)
 This is the biggest release of liblouis in years. The major news are
 that we now have proper support for UEB and secondly that liblouis is
