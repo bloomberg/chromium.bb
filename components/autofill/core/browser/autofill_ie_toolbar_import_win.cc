@@ -246,9 +246,9 @@ bool ImportCurrentUserProfiles(const std::string& app_locale,
 
   // Create a map of possible fields for a quick access.
   RegToFieldMap reg_to_field;
-  for (size_t i = 0; i < arraysize(profile_reg_values); ++i) {
-    reg_to_field[std::wstring(profile_reg_values[i].reg_value_name)] =
-        profile_reg_values[i].field_type;
+  for (const auto& profile_reg_value : profile_reg_values) {
+    reg_to_field[std::wstring(profile_reg_value.reg_value_name)] =
+        profile_reg_value.field_type;
   }
 
   base::win::RegistryKeyIterator iterator_profiles(HKEY_CURRENT_USER,

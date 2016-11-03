@@ -449,16 +449,16 @@ TEST_F(CardUnmaskPromptControllerImplTest, CvcInputValidation) {
 
   ShowPrompt();
 
-  for (size_t i = 0; i < arraysize(cvc_cases); ++i) {
-    EXPECT_EQ(cvc_cases[i].valid,
-              controller_->InputCvcIsValid(ASCIIToUTF16(cvc_cases[i].input)));
-    if (!cvc_cases[i].valid)
+  for (const CvcCase& cvc_case : cvc_cases) {
+    EXPECT_EQ(cvc_case.valid,
+              controller_->InputCvcIsValid(ASCIIToUTF16(cvc_case.input)));
+    if (!cvc_case.valid)
       continue;
 
-    controller_->OnUnmaskResponse(ASCIIToUTF16(cvc_cases[i].input),
+    controller_->OnUnmaskResponse(ASCIIToUTF16(cvc_case.input),
                                   ASCIIToUTF16("1"), ASCIIToUTF16("2050"),
                                   false);
-    EXPECT_EQ(ASCIIToUTF16(cvc_cases[i].canonicalized_input),
+    EXPECT_EQ(ASCIIToUTF16(cvc_case.canonicalized_input),
               delegate_->response().cvc);
   }
 
@@ -473,16 +473,15 @@ TEST_F(CardUnmaskPromptControllerImplTest, CvcInputValidation) {
 
   ShowPromptAmex();
 
-  for (size_t i = 0; i < arraysize(cvc_cases_amex); ++i) {
-    EXPECT_EQ(
-        cvc_cases_amex[i].valid,
-        controller_->InputCvcIsValid(ASCIIToUTF16(cvc_cases_amex[i].input)));
-    if (!cvc_cases_amex[i].valid)
+  for (const CvcCase& cvc_case_amex : cvc_cases_amex) {
+    EXPECT_EQ(cvc_case_amex.valid,
+              controller_->InputCvcIsValid(ASCIIToUTF16(cvc_case_amex.input)));
+    if (!cvc_case_amex.valid)
       continue;
 
-    controller_->OnUnmaskResponse(ASCIIToUTF16(cvc_cases_amex[i].input),
+    controller_->OnUnmaskResponse(ASCIIToUTF16(cvc_case_amex.input),
                                   base::string16(), base::string16(), false);
-    EXPECT_EQ(ASCIIToUTF16(cvc_cases_amex[i].canonicalized_input),
+    EXPECT_EQ(ASCIIToUTF16(cvc_case_amex.canonicalized_input),
               delegate_->response().cvc);
   }
 }
@@ -503,10 +502,10 @@ TEST_F(CardUnmaskPromptControllerImplTest, ExpirationDateValidation) {
 
   ShowPrompt();
 
-  for (size_t i = 0; i < arraysize(exp_cases); ++i) {
-    EXPECT_EQ(exp_cases[i].valid, controller_->InputExpirationIsValid(
-                                      ASCIIToUTF16(exp_cases[i].input_month),
-                                      ASCIIToUTF16(exp_cases[i].input_year)));
+  for (const auto& exp_case : exp_cases) {
+    EXPECT_EQ(exp_case.valid, controller_->InputExpirationIsValid(
+                                  ASCIIToUTF16(exp_case.input_month),
+                                  ASCIIToUTF16(exp_case.input_year)));
   }
 }
 

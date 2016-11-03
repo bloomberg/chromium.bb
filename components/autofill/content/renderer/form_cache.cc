@@ -45,10 +45,10 @@ void LogDeprecationMessages(const WebFormControlElement& element) {
           element.getAttribute("autocomplete")));
 
   static const char* const deprecated[] = { "region", "locality" };
-  for (size_t i = 0; i < arraysize(deprecated); ++i) {
-    if (autocomplete_attribute.find(deprecated[i]) == std::string::npos)
+  for (const char* str : deprecated) {
+    if (autocomplete_attribute.find(str) == std::string::npos)
       continue;
-    std::string msg = std::string("autocomplete='") + deprecated[i] +
+    std::string msg = std::string("autocomplete='") + str +
         "' is deprecated and will soon be ignored. See http://goo.gl/YjeSsW";
     WebConsoleMessage console_message = WebConsoleMessage(
         WebConsoleMessage::LevelWarning,

@@ -182,13 +182,12 @@ TEST(CreditCardTest, SetExpirationYearFromString) {
       {"y2045", 0},
   };
 
-  for (size_t i = 0; i < arraysize(kTestCases); ++i) {
+  for (const auto& test_case : kTestCases) {
     CreditCard card(base::GenerateGUID(), "some origin");
-    card.SetExpirationYearFromString(
-        ASCIIToUTF16(kTestCases[i].expiration_year));
+    card.SetExpirationYearFromString(ASCIIToUTF16(test_case.expiration_year));
 
-    EXPECT_EQ(kTestCases[i].expected_year, card.expiration_year())
-        << kTestCases[i].expiration_year << " " << kTestCases[i].expected_year;
+    EXPECT_EQ(test_case.expected_year, card.expiration_year())
+        << test_case.expiration_year << " " << test_case.expected_year;
   }
 }
 
@@ -228,13 +227,12 @@ TEST(CreditCardTest, SetExpirationDateFromString) {
                     {"05-/2045", 0, 0},
                     {"05_2045", 0, 0}};
 
-  for (size_t i = 0; i < arraysize(kTestCases); ++i) {
+  for (const auto& test_case : kTestCases) {
     CreditCard card(base::GenerateGUID(), "some origin");
-    card.SetExpirationDateFromString(
-        ASCIIToUTF16(kTestCases[i].expiration_date));
+    card.SetExpirationDateFromString(ASCIIToUTF16(test_case.expiration_date));
 
-    EXPECT_EQ(kTestCases[i].expected_month, card.expiration_month());
-    EXPECT_EQ(kTestCases[i].expected_year, card.expiration_year());
+    EXPECT_EQ(test_case.expected_month, card.expiration_month());
+    EXPECT_EQ(test_case.expected_year, card.expiration_year());
   }
 }
 
@@ -293,29 +291,24 @@ TEST(CreditCardTest, IsLocalDuplicateOfServerCard) {
       true },
   };
 
-  for (size_t i = 0; i < arraysize(test_cases); ++i) {
+  for (const auto& test_case : test_cases) {
     CreditCard a(base::GenerateGUID(), std::string());
-    a.set_record_type(test_cases[i].first_card_record_type);
-    test::SetCreditCardInfo(&a,
-                            test_cases[i].first_card_name,
-                            test_cases[i].first_card_number,
-                            test_cases[i].first_card_exp_mo,
-                            test_cases[i].first_card_exp_yr);
+    a.set_record_type(test_case.first_card_record_type);
+    test::SetCreditCardInfo(
+        &a, test_case.first_card_name, test_case.first_card_number,
+        test_case.first_card_exp_mo, test_case.first_card_exp_yr);
 
     CreditCard b(base::GenerateGUID(), std::string());
-    b.set_record_type(test_cases[i].second_card_record_type);
-    test::SetCreditCardInfo(&b,
-                            test_cases[i].second_card_name,
-                            test_cases[i].second_card_number,
-                            test_cases[i].second_card_exp_mo,
-                            test_cases[i].second_card_exp_yr);
+    b.set_record_type(test_case.second_card_record_type);
+    test::SetCreditCardInfo(
+        &b, test_case.second_card_name, test_case.second_card_number,
+        test_case.second_card_exp_mo, test_case.second_card_exp_yr);
 
-    if (test_cases[i].second_card_record_type == CreditCard::MASKED_SERVER_CARD)
-      b.SetTypeForMaskedCard(test_cases[i].second_card_type);
+    if (test_case.second_card_record_type == CreditCard::MASKED_SERVER_CARD)
+      b.SetTypeForMaskedCard(test_case.second_card_type);
 
-    EXPECT_EQ(test_cases[i].is_local_duplicate,
-              a.IsLocalDuplicateOfServerCard(b)) << " when comparing cards "
-                  << a.Label() << " and " << b.Label();
+    EXPECT_EQ(test_case.is_local_duplicate, a.IsLocalDuplicateOfServerCard(b))
+        << " when comparing cards " << a.Label() << " and " << b.Label();
   }
 }
 
@@ -540,14 +533,14 @@ TEST(CreditCardTest, IsValid) {
   card.SetRawInfo(CREDIT_CARD_NUMBER, ASCIIToUTF16("41111"));
   EXPECT_FALSE(card.IsValid());
 
-  for (size_t i = 0; i < arraysize(kValidNumbers); ++i) {
-    SCOPED_TRACE(kValidNumbers[i]);
-    card.SetRawInfo(CREDIT_CARD_NUMBER, ASCIIToUTF16(kValidNumbers[i]));
+  for (const char* valid_number : kValidNumbers) {
+    SCOPED_TRACE(valid_number);
+    card.SetRawInfo(CREDIT_CARD_NUMBER, ASCIIToUTF16(valid_number));
     EXPECT_TRUE(card.IsValid());
   }
-  for (size_t i = 0; i < arraysize(kInvalidNumbers); ++i) {
-    SCOPED_TRACE(kInvalidNumbers[i]);
-    card.SetRawInfo(CREDIT_CARD_NUMBER, ASCIIToUTF16(kInvalidNumbers[i]));
+  for (const char* invalid_number : kInvalidNumbers) {
+    SCOPED_TRACE(invalid_number);
+    card.SetRawInfo(CREDIT_CARD_NUMBER, ASCIIToUTF16(invalid_number));
     EXPECT_FALSE(card.IsValid());
   }
 }
@@ -773,11 +766,11 @@ TEST(CreditCardTest, GetCreditCardType) {
     { "7000700070007000", kGenericCard, true },
   };
 
-  for (size_t i = 0; i < arraysize(test_cases); ++i) {
-    base::string16 card_number = ASCIIToUTF16(test_cases[i].card_number);
+  for (const auto& test_case : test_cases) {
+    base::string16 card_number = ASCIIToUTF16(test_case.card_number);
     SCOPED_TRACE(card_number);
-    EXPECT_EQ(test_cases[i].type, CreditCard::GetCreditCardType(card_number));
-    EXPECT_EQ(test_cases[i].is_valid, IsValidCreditCardNumber(card_number));
+    EXPECT_EQ(test_case.type, CreditCard::GetCreditCardType(card_number));
+    EXPECT_EQ(test_case.is_valid, IsValidCreditCardNumber(card_number));
   }
 }
 
@@ -882,15 +875,15 @@ TEST(CreditCardTest, ShouldUpdateExpiration) {
        CreditCard::EXPIRED},
   };
 
-  for (size_t i = 0; i < arraysize(kTestCases); ++i) {
+  for (const auto& test_case : kTestCases) {
     CreditCard card;
-    card.SetExpirationMonth(kTestCases[i].month);
-    card.SetExpirationYear(kTestCases[i].year);
-    card.set_record_type(kTestCases[i].record_type);
+    card.SetExpirationMonth(test_case.month);
+    card.SetExpirationYear(test_case.year);
+    card.set_record_type(test_case.record_type);
     if (card.record_type() != CreditCard::LOCAL_CARD)
-      card.SetServerStatus(kTestCases[i].server_status);
+      card.SetServerStatus(test_case.server_status);
 
-    EXPECT_EQ(kTestCases[i].should_update_expiration,
+    EXPECT_EQ(test_case.should_update_expiration,
               card.ShouldUpdateExpiration(now));
   }
 }

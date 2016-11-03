@@ -1950,10 +1950,10 @@ TEST_F(AutofillManagerTest, GetProfileSuggestions_ForPhonePrefixOrSuffix) {
                      {"Phone Extension", "ext", 5, "tel-extension"}};
 
   FormFieldData field;
-  for (size_t i = 0; i < arraysize(test_fields); ++i) {
+  for (const auto& test_field : test_fields) {
     test::CreateTestFormField(
-        test_fields[i].label, test_fields[i].name, "", "text", &field);
-    field.max_length = test_fields[i].max_length;
+        test_field.label, test_field.name, "", "text", &field);
+    field.max_length = test_field.max_length;
     field.autocomplete_attribute = std::string();
     form.fields.push_back(field);
   }
@@ -2930,15 +2930,15 @@ TEST_F(AutofillManagerTest, FillPhoneNumber) {
 
   FormFieldData field;
   const size_t default_max_length = field.max_length;
-  for (size_t i = 0; i < arraysize(test_fields); ++i) {
+  for (const auto& test_field : test_fields) {
     test::CreateTestFormField(
-        test_fields[i].label, test_fields[i].name, "", "text", &field);
-    field.max_length = test_fields[i].max_length;
+        test_field.label, test_field.name, "", "text", &field);
+    field.max_length = test_field.max_length;
     field.autocomplete_attribute = std::string();
     form_with_us_number_max_length.fields.push_back(field);
 
     field.max_length = default_max_length;
-    field.autocomplete_attribute = test_fields[i].autocomplete_attribute;
+    field.autocomplete_attribute = test_field.autocomplete_attribute;
     form_with_autocompletetype.fields.push_back(field);
   }
 
@@ -4332,16 +4332,16 @@ TEST_F(AutofillManagerTest, DontSaveCvcInAutocompleteHistory) {
     const char* name;
     const char* value;
     ServerFieldType expected_field_type;
-  } fields[] = {
+  } test_fields[] = {
       {"Card number", "1", "4234-5678-9012-3456", CREDIT_CARD_NUMBER},
       {"Card verification code", "2", "123", CREDIT_CARD_VERIFICATION_CODE},
       {"expiration date", "3", "04/2020", CREDIT_CARD_EXP_4_DIGIT_YEAR},
   };
 
-  for (size_t i = 0; i < arraysize(fields); ++i) {
+  for (const auto& test_field : test_fields) {
     FormFieldData field;
-    test::CreateTestFormField(fields[i].label, fields[i].name, fields[i].value,
-                              "text", &field);
+    test::CreateTestFormField(test_field.label, test_field.name,
+                              test_field.value, "text", &field);
     form.fields.push_back(field);
   }
 
@@ -4350,10 +4350,11 @@ TEST_F(AutofillManagerTest, DontSaveCvcInAutocompleteHistory) {
   FormSubmitted(form);
 
   EXPECT_EQ(form.fields.size(), form_seen_by_ahm.fields.size());
-  ASSERT_EQ(arraysize(fields), form_seen_by_ahm.fields.size());
-  for (size_t i = 0; i < arraysize(fields); ++i) {
-    EXPECT_EQ(form_seen_by_ahm.fields[i].should_autocomplete,
-              fields[i].expected_field_type != CREDIT_CARD_VERIFICATION_CODE);
+  ASSERT_EQ(arraysize(test_fields), form_seen_by_ahm.fields.size());
+  for (size_t i = 0; i < arraysize(test_fields); ++i) {
+    EXPECT_EQ(
+        form_seen_by_ahm.fields[i].should_autocomplete,
+        test_fields[i].expected_field_type != CREDIT_CARD_VERIFICATION_CODE);
   }
 }
 

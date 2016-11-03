@@ -1986,10 +1986,10 @@ TEST_F(AutofillTableTest, GetFormValuesForElementName_SubstringMatchEnabled) {
        {nullptr, nullptr}},
   };
 
-  for (size_t i = 0; i < arraysize(kTestCases); ++i) {
+  for (const auto& test_case : kTestCases) {
     SCOPED_TRACE(testing::Message()
-                 << "suggestion = " << kTestCases[i].field_suggestion[0]
-                 << ", contents = " << kTestCases[i].field_contents);
+                 << "suggestion = " << test_case.field_suggestion[0]
+                 << ", contents = " << test_case.field_contents);
 
     Time t1 = Time::Now();
 
@@ -1998,18 +1998,17 @@ TEST_F(AutofillTableTest, GetFormValuesForElementName_SubstringMatchEnabled) {
     FormFieldData field;
     for (size_t k = 0; k < kMaxCount; ++k) {
       field.name = ASCIIToUTF16("Name");
-      field.value = ASCIIToUTF16(kTestCases[i].field_suggestion[k]);
+      field.value = ASCIIToUTF16(test_case.field_suggestion[k]);
       table_->AddFormFieldValue(field, &changes);
     }
 
     std::vector<base::string16> v;
     table_->GetFormValuesForElementName(
-        ASCIIToUTF16("Name"), ASCIIToUTF16(kTestCases[i].field_contents), &v,
-        6);
+        ASCIIToUTF16("Name"), ASCIIToUTF16(test_case.field_contents), &v, 6);
 
-    EXPECT_EQ(kTestCases[i].expected_suggestion_count, v.size());
-    for (size_t j = 0; j < kTestCases[i].expected_suggestion_count; ++j) {
-      EXPECT_EQ(ASCIIToUTF16(kTestCases[i].expected_suggestion[j]), v[j]);
+    EXPECT_EQ(test_case.expected_suggestion_count, v.size());
+    for (size_t j = 0; j < test_case.expected_suggestion_count; ++j) {
+      EXPECT_EQ(ASCIIToUTF16(test_case.expected_suggestion[j]), v[j]);
     }
 
     changes.clear();
