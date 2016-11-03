@@ -120,10 +120,7 @@ public class ChildProcessConnectionImpl implements ChildProcessConnection {
             return intent;
         }
 
-        public ChildServiceConnection(int bindFlags, boolean needsExtraBindFlags) {
-            if (needsExtraBindFlags && mCreationParams != null) {
-                bindFlags = mCreationParams.addExtraBindFlags(bindFlags);
-            }
+        public ChildServiceConnection(int bindFlags) {
             mBindFlags = bindFlags;
         }
 
@@ -226,16 +223,17 @@ public class ChildProcessConnectionImpl implements ChildProcessConnection {
         mCreationParams = creationParams;
         int initialFlags = Context.BIND_AUTO_CREATE;
         if (mAlwaysInForeground) initialFlags |= Context.BIND_IMPORTANT;
-        // "external service" attribute is approximated by "exported" attribute.
-        // TODO(mnaganov): Update after the release of the next Android SDK.
-        final boolean needsExtraBindFlags = isExportedService(inSandbox, mContext, mServiceName);
-        mInitialBinding = new ChildServiceConnection(initialFlags, needsExtraBindFlags);
+        int extralBindFlags = 0;
+        if (isExportedService(inSandbox, mContext, mServiceName)) {
+            extralBindFlags = Context.BIND_EXTERNAL_SERVICE;
+        }
+        mInitialBinding = new ChildServiceConnection(initialFlags | extralBindFlags);
         mStrongBinding = new ChildServiceConnection(
-                Context.BIND_AUTO_CREATE | Context.BIND_IMPORTANT, needsExtraBindFlags);
+                Context.BIND_AUTO_CREATE | Context.BIND_IMPORTANT | extralBindFlags);
         mWaivedBinding = new ChildServiceConnection(
-                Context.BIND_AUTO_CREATE | Context.BIND_WAIVE_PRIORITY, needsExtraBindFlags);
+                Context.BIND_AUTO_CREATE | Context.BIND_WAIVE_PRIORITY | extralBindFlags);
         mModerateBinding = new ChildServiceConnection(
-                Context.BIND_AUTO_CREATE, needsExtraBindFlags);
+                Context.BIND_AUTO_CREATE | extralBindFlags);
     }
 
     private static boolean isExportedService(boolean inSandbox, Context context,

@@ -680,10 +680,8 @@ public class ChildProcessLauncher {
                 // name. In WebAPK, ChildProcessCreationParams are initialized with WebAPK's
                 // package name. Make a copy of the WebAPK's params, but replace the package with
                 // Chrome's package to use when initializing a non-renderer processes.
-                // TODO(michaelbai | hanxi): crbug.com/620102. Cleans up the setting of
-                // ChildProcessCreationParams after using N sdk.
                 params = new ChildProcessCreationParams(context.getPackageName(),
-                        params.getExtraBindFlags(), params.getLibraryProcessType());
+                        params.getLibraryProcessType());
             }
             if (ContentSwitches.SWITCH_GPU_PROCESS.equals(processType)) {
                 callbackType = CALLBACK_FOR_GPU_PROCESS;
