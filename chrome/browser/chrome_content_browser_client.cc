@@ -182,6 +182,7 @@
 #include "net/cookies/cookie_options.h"
 #include "net/ssl/ssl_cert_request_info.h"
 #include "ppapi/host/ppapi_host.h"
+#include "printing/features/features.h"
 #include "services/service_manager/public/cpp/interface_provider.h"
 #include "services/service_manager/public/cpp/service.h"
 #include "storage/browser/fileapi/external_mount_points.h"
@@ -1026,7 +1027,7 @@ void ChromeContentBrowserClient::RenderProcessWillLaunch(
 #if defined(ENABLE_EXTENSIONS)
   host->AddFilter(new cast::CastTransportHostFilter);
 #endif
-#if defined(ENABLE_PRINTING)
+#if BUILDFLAG(ENABLE_PRINTING)
   host->AddFilter(new printing::PrintingMessageFilter(id, profile));
 #endif
 #if defined(ENABLE_SPELLCHECK)

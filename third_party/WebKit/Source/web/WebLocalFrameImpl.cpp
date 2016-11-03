@@ -1393,16 +1393,12 @@ float WebLocalFrameImpl::getPrintPageShrink(int page) {
 }
 
 float WebLocalFrameImpl::printPage(int page, WebCanvas* canvas) {
-#if ENABLE(PRINTING)
   DCHECK(m_printContext);
   DCHECK_GE(page, 0);
   DCHECK(frame());
   DCHECK(frame()->document());
 
   return m_printContext->spoolSinglePage(canvas, page);
-#else
-  return 0;
-#endif
 }
 
 void WebLocalFrameImpl::printEnd() {

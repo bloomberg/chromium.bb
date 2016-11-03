@@ -34,11 +34,12 @@
 #include "content/public/browser/notification_source.h"
 #include "content/public/browser/render_view_host.h"
 #include "content/public/browser/web_contents.h"
+#include "printing/features/features.h"
 #include "printing/pdf_metafile_skia.h"
 #include "printing/printed_document.h"
 #include "ui/base/l10n/l10n_util.h"
 
-#if defined(ENABLE_PRINT_PREVIEW)
+#if BUILDFLAG(ENABLE_PRINT_PREVIEW)
 #include "chrome/browser/printing/print_error_dialog.h"
 #endif
 
@@ -90,7 +91,7 @@ PrintViewManagerBase::~PrintViewManagerBase() {
   DisconnectFromCurrentPrintJob();
 }
 
-#if defined(ENABLE_BASIC_PRINTING)
+#if BUILDFLAG(ENABLE_BASIC_PRINTING)
 bool PrintViewManagerBase::PrintNow() {
   return PrintNowInternal(new PrintMsg_PrintPages(routing_id()));
 }
@@ -215,7 +216,7 @@ void PrintViewManagerBase::OnDidPrintPage(
 void PrintViewManagerBase::OnPrintingFailed(int cookie) {
   PrintManager::OnPrintingFailed(cookie);
 
-#if defined(ENABLE_PRINT_PREVIEW)
+#if BUILDFLAG(ENABLE_PRINT_PREVIEW)
   chrome::ShowPrintErrorDialog();
 #endif
 

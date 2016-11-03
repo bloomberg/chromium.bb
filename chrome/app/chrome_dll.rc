@@ -33,9 +33,12 @@ LANGUAGE LANG_ENGLISH, SUBLANG_ENGLISH_US
 // pick those up in the WM_APPCOMMAND message.
 IDR_MAINFRAME ACCELERATORS
 BEGIN
-#if defined(ENABLE_BASIC_PRINTING)
+// This really should be using the buildflag but the resource compiler fails on
+// macro functions longer than 31 chars which this command produces. The BUILD
+// sets this regular define for this target only for this line to consume.
+#ifdef ENABLE_BASIC_PRINTING_FOR_RC  // #if BUILDFLAG(ENABLE_BASIC_PRINTING)
     "P",            IDC_BASIC_PRINT,            VIRTKEY, CONTROL, SHIFT
-#endif  // ENABLE_BASIC_PRINTING
+#endif  // ENABLE_BASIC_PRINTING_FOR_RC
     VK_LEFT,        IDC_BACK,                   VIRTKEY, ALT
     VK_BACK,        IDC_BACK,                   VIRTKEY
     "D",            IDC_BOOKMARK_PAGE,          VIRTKEY, CONTROL

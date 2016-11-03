@@ -56,6 +56,7 @@
 #include "extensions/test/extension_test_message_listener.h"
 #include "extensions/test/result_catcher.h"
 #include "net/test/embedded_test_server/embedded_test_server.h"
+#include "printing/features/features.h"
 #include "ui/base/window_open_disposition.h"
 #include "url/gurl.h"
 
@@ -119,7 +120,7 @@ class TabsAddedNotificationObserver
   DISALLOW_COPY_AND_ASSIGN(TabsAddedNotificationObserver);
 };
 
-#if defined(ENABLE_PRINT_PREVIEW)
+#if BUILDFLAG(ENABLE_PRINT_PREVIEW)
 class ScopedPreviewTestingDelegate : PrintPreviewUI::TestingDelegate {
  public:
   explicit ScopedPreviewTestingDelegate(bool auto_cancel)
@@ -1139,7 +1140,7 @@ IN_PROC_BROWSER_TEST_F(PlatformAppBrowserTest, DISABLED_WebContentsHasFocus) {
                   ->HasFocus());
 }
 
-#if defined(ENABLE_PRINT_PREVIEW)
+#if BUILDFLAG(ENABLE_PRINT_PREVIEW)
 
 #if defined(OS_WIN) || defined(OS_LINUX) || defined(OS_MACOSX)
 #define MAYBE_WindowDotPrintShouldBringUpPrintPreview \

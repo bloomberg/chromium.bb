@@ -106,6 +106,7 @@
 #include "extensions/browser/extension_registry.h"
 #include "google_apis/gaia/gaia_auth_util.h"
 #include "google_apis/gaia/google_service_auth_error.h"
+#include "printing/features/features.h"
 #include "third_party/skia/include/core/SkBitmap.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/base/webui/web_ui_util.h"
@@ -572,7 +573,7 @@ void BrowserOptionsHandler::GetLocalizedValues(base::DictionaryValue* values) {
                 IDS_OPTIONS_ENABLE_DO_NOT_TRACK_BUBBLE_TITLE);
   RegisterTitle(values, "spellingConfirmOverlay",
                 IDS_CONTENT_CONTEXT_SPELLING_ASK_GOOGLE);
-#if defined(ENABLE_PRINT_PREVIEW)
+#if BUILDFLAG(ENABLE_PRINT_PREVIEW)
   RegisterCloudPrintValues(values);
 #endif
 
@@ -758,7 +759,7 @@ void BrowserOptionsHandler::GetLocalizedValues(base::DictionaryValue* values) {
 #endif
 }
 
-#if defined(ENABLE_PRINT_PREVIEW)
+#if BUILDFLAG(ENABLE_PRINT_PREVIEW)
 void BrowserOptionsHandler::RegisterCloudPrintValues(
     base::DictionaryValue* values) {
   values->SetString("cloudPrintOptionLabel",
@@ -766,7 +767,7 @@ void BrowserOptionsHandler::RegisterCloudPrintValues(
                         IDS_CLOUD_PRINT_CHROMEOS_OPTION_LABEL,
                         l10n_util::GetStringUTF16(IDS_GOOGLE_CLOUD_PRINT)));
 }
-#endif  // defined(ENABLE_PRINT_PREVIEW)
+#endif  // BUILDFLAG(ENABLE_PRINT_PREVIEW)
 
 void BrowserOptionsHandler::RegisterMessages() {
   web_ui()->RegisterMessageCallback(

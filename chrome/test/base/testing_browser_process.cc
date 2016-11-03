@@ -25,6 +25,7 @@
 #include "components/subresource_filter/core/browser/ruleset_service.h"
 #include "content/public/browser/notification_service.h"
 #include "net/url_request/url_request_context_getter.h"
+#include "printing/features/features.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "ui/message_center/message_center.h"
 
@@ -40,7 +41,7 @@
 #include "components/storage_monitor/test_storage_monitor.h"
 #endif
 
-#if defined(ENABLE_PRINT_PREVIEW)
+#if BUILDFLAG(ENABLE_PRINT_PREVIEW)
 #include "chrome/browser/printing/background_printing_manager.h"
 #include "chrome/browser/printing/print_preview_dialog_controller.h"
 #endif
@@ -254,7 +255,7 @@ bool TestingBrowserProcess::IsShuttingDown() {
 }
 
 printing::PrintJobManager* TestingBrowserProcess::print_job_manager() {
-#if defined(ENABLE_PRINTING)
+#if BUILDFLAG(ENABLE_PRINTING)
   if (!print_job_manager_.get())
     print_job_manager_.reset(new printing::PrintJobManager());
   return print_job_manager_.get();
@@ -266,7 +267,7 @@ printing::PrintJobManager* TestingBrowserProcess::print_job_manager() {
 
 printing::PrintPreviewDialogController*
 TestingBrowserProcess::print_preview_dialog_controller() {
-#if defined(ENABLE_PRINT_PREVIEW)
+#if BUILDFLAG(ENABLE_PRINT_PREVIEW)
   if (!print_preview_dialog_controller_.get())
     print_preview_dialog_controller_ =
         new printing::PrintPreviewDialogController();
@@ -279,7 +280,7 @@ TestingBrowserProcess::print_preview_dialog_controller() {
 
 printing::BackgroundPrintingManager*
 TestingBrowserProcess::background_printing_manager() {
-#if defined(ENABLE_PRINT_PREVIEW)
+#if BUILDFLAG(ENABLE_PRINT_PREVIEW)
   if (!background_printing_manager_.get()) {
     background_printing_manager_.reset(
         new printing::BackgroundPrintingManager());

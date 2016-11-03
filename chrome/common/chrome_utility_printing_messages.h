@@ -13,6 +13,7 @@
 #include "ipc/ipc_message_macros.h"
 #include "ipc/ipc_platform_file.h"
 #include "printing/backend/print_backend.h"
+#include "printing/features/features.h"
 #include "printing/page_range.h"
 #include "printing/pdf_render_settings.h"
 #include "printing/pwg_raster_settings.h"
@@ -24,7 +25,7 @@
 #define IPC_MESSAGE_START ChromeUtilityPrintingMsgStart
 
 // Preview and Cloud Print messages.
-#if defined(ENABLE_PRINT_PREVIEW)
+#if BUILDFLAG(ENABLE_PRINT_PREVIEW)
 IPC_STRUCT_TRAITS_BEGIN(printing::PrinterCapsAndDefaults)
   IPC_STRUCT_TRAITS_MEMBER(printer_capabilities)
   IPC_STRUCT_TRAITS_MEMBER(caps_mime_type)
@@ -94,7 +95,7 @@ IPC_MESSAGE_CONTROL1(ChromeUtilityMsg_GetPrinterSemanticCapsAndDefaults,
 
 // Windows uses messages for printing even without preview. crbug.com/170859
 // Primary user of Windows without preview is CEF. crbug.com/417967
-#if defined(ENABLE_PRINTING) && defined(OS_WIN)
+#if BUILDFLAG(ENABLE_PRINTING) && defined(OS_WIN)
 // Tell the utility process to start rendering the given PDF into a metafile.
 // Utility process would be alive until
 // ChromeUtilityMsg_RenderPDFPagesToMetafiles_Stop message.
@@ -116,7 +117,7 @@ IPC_MESSAGE_CONTROL0(ChromeUtilityMsg_RenderPDFPagesToMetafiles_Stop)
 // Utility process host messages:
 // These are messages from the utility process to the browser.
 
-#if defined(ENABLE_PRINT_PREVIEW)
+#if BUILDFLAG(ENABLE_PRINT_PREVIEW)
 // Reply when the utility process has succeeded in rendering the PDF to PWG.
 IPC_MESSAGE_CONTROL0(ChromeUtilityHostMsg_RenderPDFPagesToPWGRaster_Succeeded)
 
@@ -148,7 +149,7 @@ IPC_MESSAGE_CONTROL1(
   std::string /* printer name */)
 #endif  // ENABLE_PRINT_PREVIEW
 
-#if defined(ENABLE_PRINTING) && defined(OS_WIN)
+#if BUILDFLAG(ENABLE_PRINTING) && defined(OS_WIN)
 // Reply when the utility process loaded PDF. |page_count| is 0, if loading
 // failed.
 IPC_MESSAGE_CONTROL1(ChromeUtilityHostMsg_RenderPDFPagesToMetafiles_PageCount,

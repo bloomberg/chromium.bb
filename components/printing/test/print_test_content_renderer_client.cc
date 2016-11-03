@@ -6,6 +6,7 @@
 
 #include "base/memory/ptr_util.h"
 #include "components/printing/renderer/print_web_view_helper.h"
+#include "printing/features/features.h"
 #include "third_party/WebKit/public/web/WebElement.h"
 
 namespace printing {
@@ -23,7 +24,7 @@ class PrintWebViewHelperDelegate : public PrintWebViewHelper::Delegate {
     return blink::WebElement();
   }
   bool IsPrintPreviewEnabled() override {
-#if defined(ENABLE_PRINT_PREVIEW)
+#if BUILDFLAG(ENABLE_PRINT_PREVIEW)
     return true;
 #else
     return false;

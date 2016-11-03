@@ -7,6 +7,7 @@
 #include "base/bind.h"
 #include "content/public/browser/web_contents.h"
 #include "content/public/common/url_constants.h"
+#include "printing/features/features.h"
 #include "third_party/WebKit/public/web/WebContextMenuData.h"
 
 using blink::WebContextMenuData;
@@ -155,7 +156,7 @@ bool ContextMenuContentType::SupportsGroupInternal(int group) {
       return false;
 
     case ITEM_GROUP_PRINT_PREVIEW:
-#if defined(ENABLE_PRINT_PREVIEW)
+#if BUILDFLAG(ENABLE_PRINT_PREVIEW)
       return true;
 #else
       return false;

@@ -70,6 +70,7 @@
 #include "chrome/browser/undo/bookmark_undo_service_factory.h"
 #include "chrome/browser/web_data_service_factory.h"
 #include "chrome/common/features.h"
+#include "printing/features/features.h"
 
 #if defined(ENABLE_EXTENSIONS)
 #include "apps/browser_context_keyed_service_factories.h"
@@ -203,7 +204,7 @@ EnsureBrowserContextKeyedServiceFactoriesBuilt() {
   chrome::android::DataUseUITabModelFactory::GetInstance();
 #endif
   UINetworkQualityEstimatorServiceFactory::GetInstance();
-#if defined(ENABLE_PRINT_PREVIEW)
+#if BUILDFLAG(ENABLE_PRINT_PREVIEW)
   CloudPrintProxyServiceFactory::GetInstance();
 #endif
   CookieSettingsFactory::GetInstance();

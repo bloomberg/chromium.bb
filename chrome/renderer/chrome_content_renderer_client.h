@@ -19,6 +19,7 @@
 #include "components/rappor/public/interfaces/rappor_recorder.mojom.h"
 #include "content/public/renderer/content_renderer_client.h"
 #include "ipc/ipc_channel_proxy.h"
+#include "printing/features/features.h"
 #include "v8/include/v8.h"
 
 #if defined (OS_CHROMEOS)
@@ -26,7 +27,7 @@
 #endif
 
 class ChromeRenderThreadObserver;
-#if defined(ENABLE_PRINT_PREVIEW)
+#if BUILDFLAG(ENABLE_PRINT_PREVIEW)
 class ChromePDFPrintClient;
 #endif
 class PrescientNetworkingDispatcher;
@@ -243,7 +244,7 @@ class ChromeContentRendererClient : public content::ContentRendererClient {
 #if defined(ENABLE_WEBRTC)
   scoped_refptr<WebRtcLoggingMessageFilter> webrtc_logging_message_filter_;
 #endif
-#if defined(ENABLE_PRINT_PREVIEW)
+#if BUILDFLAG(ENABLE_PRINT_PREVIEW)
   std::unique_ptr<ChromePDFPrintClient> pdf_print_client_;
 #endif
 #if defined(ENABLE_PLUGINS)

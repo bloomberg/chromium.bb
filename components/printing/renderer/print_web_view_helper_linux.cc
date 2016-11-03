@@ -9,6 +9,7 @@
 #include "base/logging.h"
 #include "build/build_config.h"
 #include "components/printing/common/print_messages.h"
+#include "printing/features/features.h"
 #include "printing/metafile_skia_wrapper.h"
 
 #if defined(OS_ANDROID)
@@ -42,7 +43,7 @@ bool SaveToFD(const printing::Metafile& metafile,
 
 namespace printing {
 
-#if defined(ENABLE_BASIC_PRINTING)
+#if BUILDFLAG(ENABLE_BASIC_PRINTING)
 bool PrintWebViewHelper::PrintPagesNative(blink::WebLocalFrame* frame,
                                           int page_count) {
   PdfMetafileSkia metafile(PDF_SKIA_DOCUMENT_TYPE);
@@ -100,6 +101,6 @@ bool PrintWebViewHelper::PrintPagesNative(blink::WebLocalFrame* frame,
   return true;
 #endif  // defined(OS_ANDROID)
 }
-#endif  // defined(ENABLE_BASIC_PRINTING)
+#endif  // BUILDFLAG(ENABLE_BASIC_PRINTING)
 
 }  // namespace printing

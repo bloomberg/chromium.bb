@@ -78,6 +78,7 @@
 #include "net/base/url_util.h"
 #include "printing/backend/print_backend.h"
 #include "printing/backend/print_backend_consts.h"
+#include "printing/features/features.h"
 #include "printing/pdf_render_settings.h"
 #include "printing/print_settings.h"
 #include "printing/printing_context.h"
@@ -970,7 +971,7 @@ void PrintPreviewHandler::HandlePrint(const base::ListValue* args) {
     ReportUserActionHistogram(PRINT_WITH_CLOUD_PRINT);
     SendCloudPrintJob(data.get());
   } else {
-#if defined(ENABLE_BASIC_PRINTING)
+#if BUILDFLAG(ENABLE_BASIC_PRINTING)
     bool system_dialog = false;
     settings->GetBoolean(printing::kSettingShowSystemDialog, &system_dialog);
     if (system_dialog) {
@@ -1023,7 +1024,7 @@ void PrintPreviewHandler::HandlePrint(const base::ListValue* args) {
     }
 #else
     NOTREACHED();
-#endif   // defined(ENABLE_BASIC_PRINTING)
+#endif   // BUILDFLAG(ENABLE_BASIC_PRINTING)
   }
 }
 

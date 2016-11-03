@@ -3,6 +3,7 @@
 // found in the LICENSE file.
 
 #include "base/strings/string16.h"
+#include "printing/features/features.h"
 #include "ui/gfx/geometry/size.h"
 
 #define IPC_MESSAGE_IMPL
@@ -104,7 +105,7 @@ void PrintMsg_PrintPages_Params::Reset() {
   pages = std::vector<int>();
 }
 
-#if defined(ENABLE_PRINT_PREVIEW)
+#if BUILDFLAG(ENABLE_PRINT_PREVIEW)
 PrintHostMsg_RequestPrintPreview_Params::
     PrintHostMsg_RequestPrintPreview_Params()
     : is_modifiable(false),
@@ -126,4 +127,4 @@ PrintHostMsg_SetOptionsFromDocument_Params::
 PrintHostMsg_SetOptionsFromDocument_Params::
     ~PrintHostMsg_SetOptionsFromDocument_Params() {
 }
-#endif  // defined(ENABLE_PRINT_PREVIEW)
+#endif  // BUILDFLAG(ENABLE_PRINT_PREVIEW)

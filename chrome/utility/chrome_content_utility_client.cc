@@ -26,6 +26,7 @@
 #include "courgette/third_party/bsdiff/bsdiff.h"
 #include "ipc/ipc_channel.h"
 #include "mojo/public/cpp/bindings/strong_binding.h"
+#include "printing/features/features.h"
 #include "services/service_manager/public/cpp/interface_registry.h"
 #include "third_party/zlib/google/zip.h"
 #include "ui/gfx/geometry/size.h"
@@ -48,8 +49,8 @@
 #include "chrome/utility/image_writer/image_writer_handler.h"
 #endif
 
-#if defined(ENABLE_PRINT_PREVIEW) || \
-    (defined(ENABLE_BASIC_PRINTING) && defined(OS_WIN))
+#if BUILDFLAG(ENABLE_PRINT_PREVIEW) || \
+    (BUILDFLAG(ENABLE_BASIC_PRINTING) && defined(OS_WIN))
 #include "chrome/utility/printing_handler.h"
 #endif
 
@@ -118,8 +119,8 @@ ChromeContentUtilityClient::ChromeContentUtilityClient()
   handlers_.push_back(new image_writer::ImageWriterHandler());
 #endif
 
-#if defined(ENABLE_PRINT_PREVIEW) || \
-    (defined(ENABLE_BASIC_PRINTING) && defined(OS_WIN))
+#if BUILDFLAG(ENABLE_PRINT_PREVIEW) || \
+    (BUILDFLAG(ENABLE_BASIC_PRINTING) && defined(OS_WIN))
   handlers_.push_back(new printing::PrintingHandler());
 #endif
 

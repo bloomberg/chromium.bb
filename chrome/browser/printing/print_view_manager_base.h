@@ -13,6 +13,7 @@
 #include "components/printing/browser/print_manager.h"
 #include "content/public/browser/notification_observer.h"
 #include "content/public/browser/notification_registrar.h"
+#include "printing/features/features.h"
 #include "printing/printed_pages_source.h"
 
 struct PrintHostMsg_DidPrintPage_Params;
@@ -32,7 +33,7 @@ class PrintViewManagerBase : public content::NotificationObserver,
  public:
   ~PrintViewManagerBase() override;
 
-#if defined(ENABLE_BASIC_PRINTING)
+#if BUILDFLAG(ENABLE_BASIC_PRINTING)
   // Prints the current document immediately. Since the rendering is
   // asynchronous, the actual printing will not be completed on the return of
   // this function. Returns false if printing is impossible at the moment.

@@ -107,6 +107,7 @@
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/render_process_host.h"
 #include "net/http/http_server_properties_manager.h"
+#include "printing/features/features.h"
 
 #if BUILDFLAG(ENABLE_APP_LIST)
 #include "chrome/browser/apps/drive/drive_app_mapping.h"
@@ -537,7 +538,7 @@ void RegisterProfilePrefs(user_prefs::PrefRegistrySyncable* registry) {
   PluginsUI::RegisterProfilePrefs(registry);
 #endif
 
-#if defined(ENABLE_PRINT_PREVIEW)
+#if BUILDFLAG(ENABLE_PRINT_PREVIEW)
   printing::StickySettings::RegisterProfilePrefs(registry);
 #endif
 

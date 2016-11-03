@@ -125,6 +125,7 @@ if (!is_android && !is_mac) {
     public_deps = []
     deps = [
       "//build/config/sanitizers:deps",
+      "//printing/features",
     ]
 
     data = [

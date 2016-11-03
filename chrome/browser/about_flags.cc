@@ -72,6 +72,7 @@
 #include "media/audio/audio_features.h"
 #include "media/base/media_switches.h"
 #include "media/midi/midi_switches.h"
+#include "printing/features/features.h"
 #include "ui/base/ui_base_switches.h"
 #include "ui/compositor/compositor_switches.h"
 #include "ui/display/display_switches.h"
@@ -2074,7 +2075,7 @@ const FeatureEntry kFeatureEntries[] = {
      FEATURE_VALUE_TYPE(
          features::kDisplayPersistenceToggleInPermissionPrompts)},
 #endif
-#if defined(ENABLE_PRINT_PREVIEW)
+#if BUILDFLAG(ENABLE_PRINT_PREVIEW)
     {"print-scaling", IDS_FLAGS_PRINT_SCALING_NAME,
      IDS_FLAGS_PRINT_SCALING_DESCRIPTION, kOsDesktop,
      FEATURE_VALUE_TYPE(features::kPrintScaling)},

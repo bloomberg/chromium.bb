@@ -133,7 +133,7 @@ const base::Feature kPreferHtmlOverPlugins{"PreferHtmlOverPlugins",
 #endif
 
 // Enables the Print Scaling feature in print preview.
-#if defined(ENABLE_PRINT_PREVIEW)
+#if BUILDFLAG(ENABLE_PRINT_PREVIEW)
 const base::Feature kPrintScaling{"PrintScaling",
                                   base::FEATURE_DISABLED_BY_DEFAULT};
 #endif

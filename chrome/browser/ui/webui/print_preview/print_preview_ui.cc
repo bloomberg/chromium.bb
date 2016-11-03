@@ -37,6 +37,7 @@
 #include "content/public/browser/url_data_source.h"
 #include "content/public/browser/web_contents.h"
 #include "content/public/browser/web_ui_data_source.h"
+#include "printing/features/features.h"
 #include "printing/page_size_margins.h"
 #include "printing/print_job_constants.h"
 #include "ui/base/l10n/l10n_util.h"
@@ -532,7 +533,7 @@ void PrintPreviewUI::OnPrintPreviewRequest(int request_id) {
   g_print_preview_request_id_map.Get().Set(id_, request_id);
 }
 
-#if defined(ENABLE_BASIC_PRINTING)
+#if BUILDFLAG(ENABLE_BASIC_PRINTING)
 void PrintPreviewUI::OnShowSystemDialog() {
   web_ui()->CallJavascriptFunctionUnsafe("onSystemDialogLinkClicked");
 }

@@ -36,6 +36,7 @@
 #include "chrome/browser/ui/libgtkui/x11_input_method_context_impl_gtk.h"
 #include "chrome/grit/theme_resources.h"
 #include "components/grit/components_scaled_resources.h"
+#include "printing/features/features.h"
 #include "third_party/skia/include/core/SkBitmap.h"
 #include "third_party/skia/include/core/SkCanvas.h"
 #include "third_party/skia/include/core/SkColor.h"
@@ -58,7 +59,7 @@
 #include "ui/views/linux_ui/window_button_order_observer.h"
 #include "ui/views/resources/grit/views_resources.h"
 
-#if defined(ENABLE_BASIC_PRINTING)
+#if BUILDFLAG(ENABLE_BASIC_PRINTING)
 #include "printing/printing_context_linux.h"
 #endif
 #if defined(USE_GCONF)
@@ -433,7 +434,7 @@ void Gtk2UI::Initialize() {
 
   LoadCursorTheme();
 
-#if defined(ENABLE_BASIC_PRINTING)
+#if BUILDFLAG(ENABLE_BASIC_PRINTING)
   printing::PrintingContextLinux::SetCreatePrintDialogFunction(
       &PrintDialogGtk2::CreatePrintDialog);
   printing::PrintingContextLinux::SetPdfPaperSizeFunction(

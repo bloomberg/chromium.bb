@@ -20,6 +20,7 @@
 #include "components/renderer_context_menu/render_view_context_menu_observer.h"
 #include "components/renderer_context_menu/render_view_context_menu_proxy.h"
 #include "content/public/common/context_menu_params.h"
+#include "printing/features/features.h"
 #include "ui/base/models/simple_menu_model.h"
 #include "ui/base/window_open_disposition.h"
 #include "ui/gfx/geometry/vector2d.h"
@@ -235,7 +236,7 @@ class RenderViewContextMenu : public RenderViewContextMenuBase {
   // An observer that handles "Open with <app>" items.
   std::unique_ptr<RenderViewContextMenuObserver> open_with_menu_observer_;
 
-#if defined(ENABLE_PRINT_PREVIEW)
+#if BUILDFLAG(ENABLE_PRINT_PREVIEW)
   // An observer that disables menu items when print preview is active.
   std::unique_ptr<PrintPreviewContextMenuObserver> print_preview_menu_observer_;
 #endif

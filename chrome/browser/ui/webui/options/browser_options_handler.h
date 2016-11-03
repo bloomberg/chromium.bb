@@ -30,6 +30,7 @@
 #include "content/public/browser/notification_observer.h"
 #include "extensions/browser/extension_registry_observer.h"
 #include "google_apis/gaia/google_service_auth_error.h"
+#include "printing/features/features.h"
 #include "ui/base/models/table_model_observer.h"
 #include "ui/shell_dialogs/select_file_dialog.h"
 
@@ -121,7 +122,7 @@ class BrowserOptionsHandler
                             const base::string16& old_profile_name) override;
   void OnProfileAvatarChanged(const base::FilePath& profile_path) override;
 
-#if defined(ENABLE_PRINT_PREVIEW) && !defined(OS_CHROMEOS)
+#if BUILDFLAG(ENABLE_PRINT_PREVIEW) && !defined(OS_CHROMEOS)
   void OnCloudPrintPrefsChanged();
 #endif
 
@@ -284,7 +285,7 @@ class BrowserOptionsHandler
   void ShowCloudPrintDevicesPage(const base::ListValue* args);
 #endif
 
-#if defined(ENABLE_PRINT_PREVIEW)
+#if BUILDFLAG(ENABLE_PRINT_PREVIEW)
   // Register localized values used by Cloud Print
   void RegisterCloudPrintValues(base::DictionaryValue* values);
 #endif

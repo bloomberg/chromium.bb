@@ -15,6 +15,7 @@
 #include "build/build_config.h"
 #include "components/prefs/pref_member.h"
 #include "content/public/browser/browser_message_filter.h"
+#include "printing/features/features.h"
 
 #if defined(OS_WIN)
 #include "base/memory/shared_memory.h"
@@ -99,7 +100,7 @@ class PrintingMessageFilter : public content::BrowserMessageFilter {
   void OnUpdatePrintSettingsReply(scoped_refptr<PrinterQuery> printer_query,
                                   IPC::Message* reply_msg);
 
-#if defined(ENABLE_PRINT_PREVIEW)
+#if BUILDFLAG(ENABLE_PRINT_PREVIEW)
   // Check to see if print preview has been cancelled.
   void OnCheckForCancel(int32_t preview_ui_id,
                         int preview_request_id,

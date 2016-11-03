@@ -13,12 +13,13 @@
 #include "chrome/common/extensions/api/cloud_print_private.h"
 #include "google_apis/google_api_keys.h"
 #include "net/base/network_interfaces.h"
+#include "printing/features/features.h"
 
 namespace extensions {
 
 namespace {
 
-#if defined(ENABLE_PRINT_PREVIEW)
+#if BUILDFLAG(ENABLE_PRINT_PREVIEW)
 const char kErrorIncognito[] = "Cannot access in incognito mode";
 #endif
 
@@ -47,7 +48,7 @@ CloudPrintPrivateSetupConnectorFunction::
 }
 
 bool CloudPrintPrivateSetupConnectorFunction::RunAsync() {
-#if defined(ENABLE_PRINT_PREVIEW)
+#if BUILDFLAG(ENABLE_PRINT_PREVIEW)
   using api::cloud_print_private::SetupConnector::Params;
   std::unique_ptr<Params> params(Params::Create(*args_));
   if (CloudPrintTestsDelegate::Get()) {
@@ -101,7 +102,7 @@ void CloudPrintPrivateGetPrintersFunction::SendResults(
 }
 
 bool CloudPrintPrivateGetPrintersFunction::RunAsync() {
-#if defined(ENABLE_PRINT_PREVIEW)
+#if BUILDFLAG(ENABLE_PRINT_PREVIEW)
   if (CloudPrintTestsDelegate::Get()) {
     SendResults(CloudPrintTestsDelegate::Get()->GetPrinters());
   } else {

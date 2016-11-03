@@ -40,6 +40,7 @@
 #include "extensions/common/extension_l10n_util.h"
 #include "extensions/common/file_util.h"
 #include "extensions/common/manifest_constants.h"
+#include "printing/features/features.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/base/resource/resource_bundle.h"
 
@@ -487,11 +488,11 @@ void ComponentLoader::AddDefaultComponentExtensions(
     Add(IDR_BOOKMARKS_MANIFEST,
         base::FilePath(FILE_PATH_LITERAL("bookmark_manager")));
   }
-#if defined(ENABLE_PRINTING)
+#if BUILDFLAG(ENABLE_PRINTING)
   // Cloud Print component app. Not required on Chrome OS.
   Add(IDR_CLOUDPRINT_MANIFEST,
       base::FilePath(FILE_PATH_LITERAL("cloud_print")));
-#endif  // defined(ENABLE_PRINTING)
+#endif  // BUILDFLAG(ENABLE_PRINTING)
 #endif  // defined(OS_CHROMEOS)
 
   if (!skip_session_components) {

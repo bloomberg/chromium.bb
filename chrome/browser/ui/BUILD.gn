@@ -9,6 +9,7 @@ import("//build/config/ui.gni")
 import("//build/split_static_library.gni")
 import("//chrome/common/features.gni")
 import("//media/media_options.gni")
+import("//printing/features/features.gni")
 
 config("ui_warnings") {
   if (is_clang) {
@@ -564,6 +565,7 @@ split_static_library("ui") {
     "//device/usb",
     "//media",
     "//net:net_with_v8",
+    "//printing/features",
     "//services/service_manager/runner/common",
     "//skia",
     "//storage/browser",

@@ -34,9 +34,10 @@
 #include "components/signin/core/browser/profile_oauth2_token_service.h"
 #include "content/public/browser/user_metrics.h"
 #include "content/public/browser/web_ui.h"
+#include "printing/features/features.h"
 #include "ui/base/l10n/l10n_util.h"
 
-#if defined(ENABLE_PRINT_PREVIEW) && !defined(OS_CHROMEOS)
+#if BUILDFLAG(ENABLE_PRINT_PREVIEW) && !defined(OS_CHROMEOS)
 #define CLOUD_PRINT_CONNECTOR_UI_AVAILABLE
 #endif
 

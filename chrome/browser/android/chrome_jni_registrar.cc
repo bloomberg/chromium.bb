@@ -173,8 +173,9 @@
 #include "components/url_formatter/android/component_jni_registrar.h"
 #include "components/variations/android/component_jni_registrar.h"
 #include "components/web_contents_delegate_android/component_jni_registrar.h"
+#include "printing/features/features.h"
 
-#if defined(ENABLE_PRINTING) && !defined(ENABLE_PRINT_PREVIEW)
+#if BUILDFLAG(ENABLE_PRINTING) && !BUILDFLAG(ENABLE_PRINT_PREVIEW)
 #include "printing/printing_context_android.h"
 #endif
 
@@ -406,7 +407,7 @@ static base::android::RegistrationMethod kChromeRegisteredMethods[] = {
     {"WebsitePreferenceBridge", RegisterWebsitePreferenceBridge},
     {"WebsiteSettingsPopupAndroid",
      WebsiteSettingsPopupAndroid::RegisterWebsiteSettingsPopupAndroid},
-#if defined(ENABLE_PRINTING) && !defined(ENABLE_PRINT_PREVIEW)
+#if BUILDFLAG(ENABLE_PRINTING) && !BUILDFLAG(ENABLE_PRINT_PREVIEW)
     {"PrintingContext",
      printing::PrintingContextAndroid::RegisterPrintingContext},
 #endif

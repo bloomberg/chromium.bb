@@ -19,6 +19,7 @@
 #include "content/public/browser/render_process_host.h"
 #include "content/public/browser/web_contents.h"
 #include "content/public/common/webplugininfo.h"
+#include "printing/features/features.h"
 
 using content::BrowserThread;
 
@@ -66,7 +67,7 @@ PrintViewManager::~PrintViewManager() {
   DCHECK_EQ(NOT_PREVIEWING, print_preview_state_);
 }
 
-#if defined(ENABLE_BASIC_PRINTING)
+#if BUILDFLAG(ENABLE_BASIC_PRINTING)
 bool PrintViewManager::PrintForSystemDialogNow(
     const base::Closure& dialog_shown_callback) {
   DCHECK(!dialog_shown_callback.is_null());
@@ -94,7 +95,7 @@ bool PrintViewManager::BasicPrint() {
   print_preview_ui->OnShowSystemDialog();
   return true;
 }
-#endif  // defined(ENABLE_BASIC_PRINTING)
+#endif  // BUILDFLAG(ENABLE_BASIC_PRINTING)
 
 bool PrintViewManager::PrintPreviewNow(bool selection_only) {
   // Users can send print commands all they want and it is beyond

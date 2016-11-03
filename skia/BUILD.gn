@@ -4,6 +4,7 @@
 
 import("//build/config/features.gni")
 import("//build/config/ui.gni")
+import("//printing/features/features.gni")
 import("//testing/test.gni")
 import("//third_party/skia/gn/shared_sources.gni")
 

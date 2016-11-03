@@ -4,6 +4,7 @@
 
 import("//build/config/ui.gni")
 import("//chrome/common/features.gni")
+import("//printing/features/features.gni")
 import("//services/service_manager/public/service_manifest.gni")
 import("//tools/grit/grit_rule.gni")
 
@@ -24,6 +25,15 @@ source_set("chrome_dll_resources") {
   ]
   if (is_win) {
     sources += [ "chrome_dll.rc" ]
+    if (enable_basic_printing) {
+      # The resource compiler can only handle macro functions up to 31 chars
+      # which the buildflag system produces for this. Make a define so we can
+      # toggle off of the enable-basic-printing flag in the .rc file.
+      defines = [ "ENABLE_BASIC_PRINTING_FOR_RC" ]
+    }
+    deps = [
+      "//printing/features",
+    ]
   }
 }
 
@@ -307,6 +317,7 @@ static_library("test_support") {
     "//components/startup_metric_utils/browser:lib",
     "//content/public/app:both",
     "//content/public/common",
+    "//printing/features",
     "//ui/base",
   ]
 

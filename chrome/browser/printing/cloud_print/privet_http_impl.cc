@@ -24,9 +24,10 @@
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/cloud_print/cloud_print_constants.h"
 #include "net/base/url_util.h"
+#include "printing/features/features.h"
 #include "url/gurl.h"
 
-#if defined(ENABLE_PRINT_PREVIEW)
+#if BUILDFLAG(ENABLE_PRINT_PREVIEW)
 #include "chrome/browser/printing/pwg_raster_converter.h"
 #include "components/cloud_devices/common/printer_description.h"
 #include "printing/pdf_render_settings.h"
@@ -44,7 +45,7 @@ const char kPrivetRegisterUserArgName[] = "user";
 
 const int kPrivetCancelationTimeoutSeconds = 3;
 
-#if defined(ENABLE_PRINT_PREVIEW)
+#if BUILDFLAG(ENABLE_PRINT_PREVIEW)
 const char kPrivetURLKeyUserName[] = "user_name";
 const char kPrivetURLKeyClientName[] = "client_name";
 const char kPrivetURLKeyJobname[] = "job_name";
@@ -394,7 +395,7 @@ void PrivetJSONOperationImpl::OnNeedPrivetToken(
   privet_client_->RefreshPrivetToken(callback);
 }
 
-#if defined(ENABLE_PRINT_PREVIEW)
+#if BUILDFLAG(ENABLE_PRINT_PREVIEW)
 PrivetLocalPrintOperationImpl::PrivetLocalPrintOperationImpl(
     PrivetHTTPClient* privet_client,
     PrivetLocalPrintOperation::Delegate* delegate)
@@ -797,7 +798,7 @@ PrivetV1HTTPClientImpl::CreateCapabilitiesOperation(
 std::unique_ptr<PrivetLocalPrintOperation>
 PrivetV1HTTPClientImpl::CreateLocalPrintOperation(
     PrivetLocalPrintOperation::Delegate* delegate) {
-#if defined(ENABLE_PRINT_PREVIEW)
+#if BUILDFLAG(ENABLE_PRINT_PREVIEW)
   return std::unique_ptr<PrivetLocalPrintOperation>(
       new PrivetLocalPrintOperationImpl(info_client(), delegate));
 #else

@@ -96,6 +96,7 @@
 #include "net/base/net_errors.h"
 #include "ppapi/c/private/ppb_pdf.h"
 #include "ppapi/shared_impl/ppapi_switches.h"
+#include "printing/features/features.h"
 #include "services/service_manager/public/cpp/interface_provider.h"
 #include "third_party/WebKit/public/platform/URLConversion.h"
 #include "third_party/WebKit/public/platform/WebCachePolicy.h"
@@ -138,14 +139,14 @@
 #include "chrome/renderer/plugins/power_saver_info.h"
 #endif
 
-#if defined(ENABLE_PRINTING)
+#if BUILDFLAG(ENABLE_PRINTING)
 #include "chrome/common/chrome_content_client.h"
 #include "chrome/renderer/printing/chrome_print_web_view_helper_delegate.h"
 #include "components/printing/renderer/print_web_view_helper.h"
 #include "printing/print_settings.h"
 #endif
 
-#if defined(ENABLE_PRINT_PREVIEW)
+#if BUILDFLAG(ENABLE_PRINT_PREVIEW)
 #include "chrome/renderer/pepper/chrome_pdf_print_client.h"
 #endif
 
@@ -306,7 +307,7 @@ ChromeContentRendererClient::ChromeContentRendererClient()
   for (size_t i = 0; i < arraysize(kPredefinedAllowedCompositorOrigins); ++i)
     allowed_compositor_origins_.insert(kPredefinedAllowedCompositorOrigins[i]);
 #endif
-#if defined(ENABLE_PRINTING)
+#if BUILDFLAG(ENABLE_PRINTING)
   printing::SetAgent(GetUserAgent());
 #endif
 }
@@ -410,7 +411,7 @@ void ChromeContentRendererClient::RenderThreadStarted() {
   // care of in extensions::Dispatcher.
   WebSecurityPolicy::registerURLSchemeAsSecure(chrome_search_scheme);
 
-#if defined(ENABLE_PRINT_PREVIEW)
+#if BUILDFLAG(ENABLE_PRINT_PREVIEW)
   pdf_print_client_.reset(new ChromePDFPrintClient());
   pdf::PepperPDFHost::SetPrintClient(pdf_print_client_.get());
 #endif
@@ -519,7 +520,7 @@ void ChromeContentRendererClient::RenderViewCreated(
 #if defined(ENABLE_EXTENSIONS)
   ChromeExtensionsRendererClient::GetInstance()->RenderViewCreated(render_view);
 #endif
-#if defined(ENABLE_PRINTING)
+#if BUILDFLAG(ENABLE_PRINTING)
   new printing::PrintWebViewHelper(
       render_view, std::unique_ptr<printing::PrintWebViewHelper::Delegate>(
                        new ChromePrintWebViewHelperDelegate()));

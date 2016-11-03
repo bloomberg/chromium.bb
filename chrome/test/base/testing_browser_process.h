@@ -20,6 +20,7 @@
 #include "build/build_config.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/browser_process_platform_part.h"
+#include "printing/features/features.h"
 
 class BackgroundModeManager;
 class CRLSetFetcher;
@@ -163,11 +164,11 @@ class TestingBrowserProcess : public BrowserProcess {
   std::unique_ptr<NotificationUIManager> notification_ui_manager_;
   std::unique_ptr<NotificationPlatformBridge> notification_platform_bridge_;
 
-#if defined(ENABLE_PRINTING)
+#if BUILDFLAG(ENABLE_PRINTING)
   std::unique_ptr<printing::PrintJobManager> print_job_manager_;
 #endif
 
-#if defined(ENABLE_PRINT_PREVIEW)
+#if BUILDFLAG(ENABLE_PRINT_PREVIEW)
   std::unique_ptr<printing::BackgroundPrintingManager>
       background_printing_manager_;
   scoped_refptr<printing::PrintPreviewDialogController>

@@ -21,6 +21,7 @@
 #include "content/public/test/browser_test_utils.h"
 #include "content/public/test/test_navigation_observer.h"
 #include "content/public/test/test_utils.h"
+#include "printing/features/features.h"
 #include "url/url_constants.h"
 
 #if defined(OS_WIN)
@@ -56,7 +57,7 @@ IN_PROC_BROWSER_TEST_F(PrintPreviewTest, PrintCommands) {
 
   ASSERT_TRUE(chrome::IsCommandEnabled(browser(), IDC_PRINT));
 
-#if defined(ENABLE_BASIC_PRINTING) && !defined(OS_CHROMEOS)
+#if BUILDFLAG(ENABLE_BASIC_PRINTING) && !defined(OS_CHROMEOS)
   // This is analagous to ENABLE_BASIC_PRINT_DIALOG but helps to verify
   // that it is defined as expected.
   bool is_basic_print_expected = true;

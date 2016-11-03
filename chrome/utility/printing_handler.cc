@@ -15,6 +15,7 @@
 #include "chrome/utility/cloud_print/pwg_encoder.h"
 #include "content/public/utility/utility_thread.h"
 #include "pdf/pdf.h"
+#include "printing/features/features.h"
 #include "printing/page_range.h"
 #include "printing/pdf_render_settings.h"
 
@@ -23,7 +24,7 @@
 #include "ui/gfx/gdi_util.h"
 #endif
 
-#if defined(ENABLE_PRINT_PREVIEW)
+#if BUILDFLAG(ENABLE_PRINT_PREVIEW)
 #include "chrome/common/crash_keys.h"
 #include "printing/backend/print_backend.h"
 #endif
@@ -70,7 +71,7 @@ bool PrintingHandler::OnMessageReceived(const IPC::Message& message) {
     IPC_MESSAGE_HANDLER(ChromeUtilityMsg_RenderPDFPagesToMetafiles_Stop,
                         OnRenderPDFPagesToMetafileStop)
 #endif  // OS_WIN
-#if defined(ENABLE_PRINT_PREVIEW)
+#if BUILDFLAG(ENABLE_PRINT_PREVIEW)
     IPC_MESSAGE_HANDLER(ChromeUtilityMsg_RenderPDFPagesToPWGRaster,
                         OnRenderPDFPagesToPWGRaster)
     IPC_MESSAGE_HANDLER(ChromeUtilityMsg_GetPrinterCapsAndDefaults,
@@ -113,7 +114,7 @@ void PrintingHandler::OnRenderPDFPagesToMetafileStop() {
 
 #endif  // OS_WIN
 
-#if defined(ENABLE_PRINT_PREVIEW)
+#if BUILDFLAG(ENABLE_PRINT_PREVIEW)
 void PrintingHandler::OnRenderPDFPagesToPWGRaster(
     IPC::PlatformFileForTransit pdf_transit,
     const PdfRenderSettings& settings,
@@ -196,7 +197,7 @@ bool PrintingHandler::RenderPdfPageToMetafile(int page_number,
 
 #endif  // OS_WIN
 
-#if defined(ENABLE_PRINT_PREVIEW)
+#if BUILDFLAG(ENABLE_PRINT_PREVIEW)
 bool PrintingHandler::RenderPDFPagesToPWGRaster(
     base::File pdf_file,
     const PdfRenderSettings& settings,

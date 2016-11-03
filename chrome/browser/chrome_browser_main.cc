@@ -167,6 +167,7 @@
 #include "net/http/http_network_layer.h"
 #include "net/http/http_stream_factory.h"
 #include "net/url_request/url_request.h"
+#include "printing/features/features.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/base/layout.h"
 #include "ui/base/material_design/material_design_controller.h"
@@ -244,9 +245,9 @@
 #include "extensions/components/javascript_dialog_extensions_client/javascript_dialog_extension_client_impl.h"
 #endif  // defined(ENABLE_EXTENSIONS)
 
-#if defined(ENABLE_PRINT_PREVIEW) && !defined(OFFICIAL_BUILD)
+#if BUILDFLAG(ENABLE_PRINT_PREVIEW) && !defined(OFFICIAL_BUILD)
 #include "printing/printed_document.h"
-#endif  // defined(ENABLE_PRINT_PREVIEW) && !defined(OFFICIAL_BUILD)
+#endif  // BUILDFLAG(ENABLE_PRINT_PREVIEW) && !defined(OFFICIAL_BUILD)
 
 #if defined(ENABLE_RLZ)
 #include "chrome/browser/rlz/chrome_rlz_tracker_delegate.h"
@@ -1774,13 +1775,13 @@ int ChromeBrowserMainParts::PreMainMessageLoopRunImpl() {
   // needs to read prefs that get set after that runs.
   browser_process_->intranet_redirect_detector();
 
-#if defined(ENABLE_PRINT_PREVIEW) && !defined(OFFICIAL_BUILD)
+#if BUILDFLAG(ENABLE_PRINT_PREVIEW) && !defined(OFFICIAL_BUILD)
   if (parsed_command_line().HasSwitch(switches::kDebugPrint)) {
     base::FilePath path =
         parsed_command_line().GetSwitchValuePath(switches::kDebugPrint);
     printing::PrintedDocument::set_debug_dump_path(path);
   }
-#endif  // defined(ENABLE_PRINT_PREVIEW) && !defined(OFFICIAL_BUILD)
+#endif  // BUILDFLAG(ENABLE_PRINT_PREVIEW) && !defined(OFFICIAL_BUILD)
 
   HandleTestParameters(parsed_command_line());
   browser_process_->metrics_service()->RecordBreakpadHasDebugger(
@@ -1807,7 +1808,7 @@ int ChromeBrowserMainParts::PreMainMessageLoopRunImpl() {
   browser_process_->metrics_service()->LogNeedForCleanShutdown();
 #endif  // !defined(OS_ANDROID)
 
-#if defined(ENABLE_PRINT_PREVIEW)
+#if BUILDFLAG(ENABLE_PRINT_PREVIEW)
   // Create the instance of the cloud print proxy service so that it can launch
   // the service process if needed. This is needed because the service process
   // might have shutdown because an update was available.
@@ -1815,7 +1816,7 @@ int ChromeBrowserMainParts::PreMainMessageLoopRunImpl() {
   // BrowserContextKeyedServiceFactory::ServiceIsCreatedWithBrowserContext()
   // instead?
   CloudPrintProxyServiceFactory::GetForProfile(profile_);
-#endif  // defined(ENABLE_PRINT_PREVIEW)
+#endif  // BUILDFLAG(ENABLE_PRINT_PREVIEW)
 
   // Start watching all browser threads for responsiveness.
   metrics::MetricsService::SetExecutionPhase(

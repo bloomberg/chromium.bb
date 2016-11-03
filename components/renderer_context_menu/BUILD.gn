@@ -22,6 +22,7 @@ static_library("renderer_context_menu") {
     "//components/search_engines",
     "//content/public/browser",
     "//content/public/common",
+    "//printing/features",
     "//third_party/WebKit/public:blink_headers",
     "//ui/base",
   ]

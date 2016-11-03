@@ -15,6 +15,7 @@
 #include "components/guest_view/browser/guest_view_base.h"
 #include "content/public/browser/web_contents.h"
 #include "extensions/browser/view_type_utils.h"
+#include "printing/features/features.h"
 
 #if defined(ENABLE_EXTENSIONS)
 #include "extensions/browser/process_manager.h"
@@ -109,13 +110,13 @@ void WebContentsTags::CreateForTabContents(content::WebContents* web_contents) {
 // static
 void WebContentsTags::CreateForPrintingContents(
     content::WebContents* web_contents) {
-#if defined(ENABLE_TASK_MANAGER) && defined(ENABLE_PRINT_PREVIEW)
+#if defined(ENABLE_TASK_MANAGER) && BUILDFLAG(ENABLE_PRINT_PREVIEW)
   if (!WebContentsTag::FromWebContents(web_contents)) {
     TagWebContents(web_contents,
                    new PrintingTag(web_contents),
                    WebContentsTag::kTagKey);
   }
-#endif  // defined(ENABLE_TASK_MANAGER) && defined(ENABLE_PRINT_PREVIEW)
+#endif  // defined(ENABLE_TASK_MANAGER) && BUILDFLAG(ENABLE_PRINT_PREVIEW)
 }
 
 // static

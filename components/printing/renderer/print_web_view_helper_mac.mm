@@ -10,6 +10,7 @@
 #include "base/mac/scoped_nsautorelease_pool.h"
 #include "base/metrics/histogram.h"
 #include "components/printing/common/print_messages.h"
+#include "printing/features/features.h"
 #include "printing/metafile_skia_wrapper.h"
 #include "printing/page_size_margins.h"
 #include "third_party/WebKit/public/platform/WebCanvas.h"
@@ -18,7 +19,7 @@
 
 namespace printing {
 
-#if defined(ENABLE_BASIC_PRINTING)
+#if BUILDFLAG(ENABLE_BASIC_PRINTING)
 bool PrintWebViewHelper::PrintPagesNative(blink::WebLocalFrame* frame,
                                           int page_count) {
   const PrintMsg_PrintPages_Params& params = *print_pages_params_;
@@ -36,7 +37,7 @@ bool PrintWebViewHelper::PrintPagesNative(blink::WebLocalFrame* frame,
   }
   return true;
 }
-#endif  // defined(ENABLE_BASIC_PRINTING)
+#endif  // BUILDFLAG(ENABLE_BASIC_PRINTING)
 
 void PrintWebViewHelper::PrintPageInternal(
     const PrintMsg_PrintPage_Params& params,
@@ -68,7 +69,7 @@ void PrintWebViewHelper::PrintPageInternal(
   Send(new PrintHostMsg_DidPrintPage(routing_id(), page_params));
 }
 
-#if defined(ENABLE_PRINT_PREVIEW)
+#if BUILDFLAG(ENABLE_PRINT_PREVIEW)
 bool PrintWebViewHelper::RenderPreviewPage(
     int page_number,
     const PrintMsg_Print_Params& print_params) {
@@ -105,7 +106,7 @@ bool PrintWebViewHelper::RenderPreviewPage(
   }
   return PreviewPageRendered(page_number, draft_metafile.get());
 }
-#endif  // defined(ENABLE_PRINT_PREVIEW)
+#endif  // BUILDFLAG(ENABLE_PRINT_PREVIEW)
 
 void PrintWebViewHelper::RenderPage(const PrintMsg_Print_Params& params,
                                     int page_number,
@@ -141,14 +142,14 @@ void PrintWebViewHelper::RenderPage(const PrintMsg_Print_Params& params,
 
     MetafileSkiaWrapper::SetMetafileOnCanvas(*canvas, metafile);
     skia::SetIsPreviewMetafile(*canvas, is_preview);
-#if defined(ENABLE_PRINT_PREVIEW)
+#if BUILDFLAG(ENABLE_PRINT_PREVIEW)
     if (params.display_header_footer) {
       PrintHeaderAndFooter(static_cast<blink::WebCanvas*>(canvas),
                            page_number + 1,
                            print_preview_context_.total_page_count(), *frame,
                            scale_factor, page_layout_in_points, params);
     }
-#endif  // defined(ENABLE_PRINT_PREVIEW)
+#endif  // BUILDFLAG(ENABLE_PRINT_PREVIEW)
     RenderPageContent(frame, page_number, canvas_area, content_area,
                       scale_factor, static_cast<blink::WebCanvas*>(canvas));
   }

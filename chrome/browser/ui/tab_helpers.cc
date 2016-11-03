@@ -59,6 +59,7 @@
 #include "components/subresource_filter/content/browser/content_subresource_filter_driver_factory.h"
 #include "components/tracing/common/tracing_switches.h"
 #include "content/public/browser/web_contents.h"
+#include "printing/features/features.h"
 
 #if BUILDFLAG(ANDROID_JAVA_UI)
 #include "chrome/browser/android/banners/app_banner_manager_android.h"
@@ -101,14 +102,14 @@
 #include "chrome/browser/supervised_user/supervised_user_navigation_observer.h"
 #endif
 
-#if defined(ENABLE_PRINTING)
-#if defined(ENABLE_PRINT_PREVIEW)
+#if BUILDFLAG(ENABLE_PRINTING)
+#if BUILDFLAG(ENABLE_PRINT_PREVIEW)
 #include "chrome/browser/printing/print_preview_message_handler.h"
 #include "chrome/browser/printing/print_view_manager.h"
 #else
 #include "chrome/browser/printing/print_view_manager_basic.h"
-#endif  // defined(ENABLE_PRINT_PREVIEW)
-#endif  // defined(ENABLE_PRINTING)
+#endif  // BUILDFLAG(ENABLE_PRINT_PREVIEW)
+#endif  // BUILDFLAG(ENABLE_PRINTING)
 
 using content::WebContents;
 
@@ -251,14 +252,14 @@ void TabHelpers::AttachTabHelpers(WebContents* web_contents) {
   SupervisedUserNavigationObserver::CreateForWebContents(web_contents);
 #endif
 
-#if defined(ENABLE_PRINTING) && !BUILDFLAG(ANDROID_JAVA_UI)
-#if defined(ENABLE_PRINT_PREVIEW)
+#if BUILDFLAG(ENABLE_PRINTING) && !BUILDFLAG(ANDROID_JAVA_UI)
+#if BUILDFLAG(ENABLE_PRINT_PREVIEW)
   printing::PrintViewManager::CreateForWebContents(web_contents);
   printing::PrintPreviewMessageHandler::CreateForWebContents(web_contents);
 #else
   printing::PrintViewManagerBasic::CreateForWebContents(web_contents);
-#endif  // defined(ENABLE_PRINT_PREVIEW)
-#endif  // defined(ENABLE_PRINTING) && !BUILDFLAG(ANDROID_JAVA_UI)
+#endif  // BUILDFLAG(ENABLE_PRINT_PREVIEW)
+#endif  // BUILDFLAG(ENABLE_PRINTING) && !BUILDFLAG(ANDROID_JAVA_UI)
 
   bool enabled_distiller = base::CommandLine::ForCurrentProcess()->HasSwitch(
       switches::kEnableDomDistiller);

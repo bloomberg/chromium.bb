@@ -5,6 +5,7 @@
 import("//build/config/features.gni")
 import("//build/config/ui.gni")
 import("//media/media_options.gni")
+import("//printing/features/features.gni")
 import("//tools/ipc_fuzzer/ipc_fuzzer.gni")
 
 source_set("browser") {
@@ -92,6 +93,7 @@ source_set("browser") {
     "//net:extras",
     "//net:http_server",
     "//ppapi/features",
+    "//printing/features",
     "//services/device:lib",
     "//services/device/public/cpp",
     "//services/file:lib",

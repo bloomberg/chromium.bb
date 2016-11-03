@@ -7,6 +7,7 @@ import("//build/config/chromecast_build.gni")
 import("//build/config/compiler/compiler.gni")
 import("//build/config/features.gni")
 import("//net/features.gni")
+import("//printing/features/features.gni")
 
 # Please keep features in alphabetical order.
 declare_args() {
@@ -74,12 +75,16 @@ declare_args() {
   use_vulcanize = true
 }
 
+_enable_printing = enable_basic_printing || enable_print_preview
+
 chrome_grit_defines = [
   "enable_app_list=$enable_app_list",
   "enable_background=$enable_background",
   "enable_google_now=$enable_google_now",
   "enable_hangout_services_extension=$enable_hangout_services_extension",
   "enable_hotwording=$enable_hotwording",
+  "enable_print_preview=$enable_print_preview",
+  "enable_printing=$_enable_printing",
   "enable_service_discovery=$enable_service_discovery",
   "enable_vr_shell=$enable_vr_shell",
   "enable_webvr=$enable_webvr",

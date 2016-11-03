@@ -16,6 +16,7 @@
 #include "chrome/common/features.h"
 #include "components/signin/core/browser/gaia_cookie_manager_service.h"
 #include "content/public/browser/web_ui_message_handler.h"
+#include "printing/features/features.h"
 #include "ui/shell_dialogs/select_file_dialog.h"
 
 #if BUILDFLAG(ENABLE_SERVICE_DISCOVERY)
@@ -70,11 +71,11 @@ class PrintPreviewHandler
   // Called when print preview failed.
   void OnPrintPreviewFailed();
 
-#if defined(ENABLE_BASIC_PRINTING)
+#if BUILDFLAG(ENABLE_BASIC_PRINTING)
   // Called when the user press ctrl+shift+p to display the native system
   // dialog.
   void ShowSystemDialog();
-#endif  // defined(ENABLE_BASIC_PRINTING)
+#endif  // BUILDFLAG(ENABLE_BASIC_PRINTING)
 
 #if BUILDFLAG(ENABLE_SERVICE_DISCOVERY)
   // PrivetLocalPrinterLister::Delegate implementation.

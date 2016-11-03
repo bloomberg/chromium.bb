@@ -93,6 +93,7 @@
 #include "ppapi/shared_impl/var.h"
 #include "ppapi/thunk/enter.h"
 #include "ppapi/thunk/ppb_buffer_api.h"
+#include "printing/features/features.h"
 #include "skia/ext/platform_canvas.h"
 #include "third_party/WebKit/public/platform/URLConversion.h"
 #include "third_party/WebKit/public/platform/WebCursorInfo.h"
@@ -127,7 +128,7 @@
 #include "url/origin.h"
 #include "v8/include/v8.h"
 
-#if defined(ENABLE_PRINTING)
+#if BUILDFLAG(ENABLE_PRINTING)
 // nogncheck because dependency on //printing is conditional upon
 // enable_basic_printing or enable_print_preview flags.
 #include "printing/metafile_skia_wrapper.h"  // nogncheck
@@ -1804,7 +1805,7 @@ int PepperPluginInstanceImpl::PrintBegin(const WebPrintParams& print_params) {
 
 void PepperPluginInstanceImpl::PrintPage(int page_number,
                                          blink::WebCanvas* canvas) {
-#if defined(ENABLE_PRINTING)
+#if BUILDFLAG(ENABLE_PRINTING)
   DCHECK(plugin_print_interface_);
   PP_PrintPageNumberRange_Dev page_range;
   page_range.first_page_number = page_range.last_page_number = page_number;
@@ -2018,7 +2019,7 @@ bool PepperPluginInstanceImpl::IsViewAccelerated() {
 
 bool PepperPluginInstanceImpl::PrintPDFOutput(PP_Resource print_output,
                                               blink::WebCanvas* canvas) {
-#if defined(ENABLE_PRINTING)
+#if BUILDFLAG(ENABLE_PRINTING)
   ppapi::thunk::EnterResourceNoLock<PPB_Buffer_API> enter(print_output, true);
   if (enter.failed())
     return false;

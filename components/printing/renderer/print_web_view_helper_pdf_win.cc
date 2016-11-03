@@ -9,11 +9,12 @@
 #include "base/logging.h"
 #include "base/process/process_handle.h"
 #include "components/printing/common/print_messages.h"
+#include "printing/features/features.h"
 #include "printing/metafile_skia_wrapper.h"
 
 namespace printing {
 
-#if defined(ENABLE_BASIC_PRINTING)
+#if BUILDFLAG(ENABLE_BASIC_PRINTING)
 bool PrintWebViewHelper::PrintPagesNative(blink::WebLocalFrame* frame,
                                           int page_count) {
   const PrintMsg_PrintPages_Params& params = *print_pages_params_;
@@ -66,6 +67,6 @@ bool PrintWebViewHelper::PrintPagesNative(blink::WebLocalFrame* frame,
   }
   return true;
 }
-#endif  // defined(ENABLE_BASIC_PRINTING)
+#endif  // BUILDFLAG(ENABLE_BASIC_PRINTING)
 
 }  // namespace printing

@@ -119,6 +119,7 @@ static_library("renderer") {
     "//media/capture",
     "//net",
     "//ppapi/features",
+    "//printing/features",
     "//skia",
     "//storage/common",
     "//third_party/WebKit/public:blink",

@@ -16,8 +16,9 @@
 #include "chrome/browser/printing/cloud_print/privet_http.h"
 #include "components/signin/core/browser/signin_manager.h"
 #include "content/public/browser/web_ui_message_handler.h"
+#include "printing/features/features.h"
 
-#if defined(ENABLE_PRINT_PREVIEW) && !defined(OS_CHROMEOS)
+#if BUILDFLAG(ENABLE_PRINT_PREVIEW) && !defined(OS_CHROMEOS)
 #define CLOUD_PRINT_CONNECTOR_UI_AVAILABLE
 #endif
 

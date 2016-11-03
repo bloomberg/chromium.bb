@@ -12,6 +12,7 @@ import("//components/os_crypt/features.gni")
 import("//media/media_options.gni")
 import("//net/features.gni")
 import("//ppapi/features/features.gni")
+import("//printing/features/features.gni")
 import("//third_party/protobuf/proto_library.gni")
 
 # //build/config/android/rules.gni imports //tools/grit/grit_rule.gni, which
@@ -1440,6 +1441,7 @@ split_static_library("browser") {
     "//mojo/public/js",
     "//net:extras",
     "//net:net_with_v8",
+    "//printing/features",
     "//services/service_manager/public/cpp",
     "//skia",
     "//sql",

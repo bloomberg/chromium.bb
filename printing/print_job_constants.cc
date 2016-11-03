@@ -4,6 +4,8 @@
 
 #include "printing/print_job_constants.h"
 
+#include "printing/features/features.h"
+
 namespace printing {
 
 // True if this is the first preview request.
@@ -179,7 +181,7 @@ const char kSettingShouldPrintBackgrounds[] = "shouldPrintBackgrounds";
 // Whether to print selection only.
 const char kSettingShouldPrintSelectionOnly[] = "shouldPrintSelectionOnly";
 
-#if defined(ENABLE_BASIC_PRINTING)
+#if BUILDFLAG(ENABLE_BASIC_PRINTING)
 // Whether to print using the system dialog.
 const char kSettingShowSystemDialog[] = "showSystemDialog";
 #endif

@@ -77,6 +77,7 @@
 #include "content/public/common/content_switches.h"
 #include "extensions/common/switches.h"
 #include "net/base/port_util.h"
+#include "printing/features/features.h"
 
 #if defined(USE_ASH)
 #include "ash/shell.h"  // nogncheck
@@ -104,7 +105,7 @@
 #include "chrome/browser/metrics/jumplist_metrics_win.h"
 #endif
 
-#if defined(ENABLE_PRINT_PREVIEW)
+#if BUILDFLAG(ENABLE_PRINT_PREVIEW)
 #include "chrome/browser/printing/cloud_print/cloud_print_proxy_service.h"
 #include "chrome/browser/printing/cloud_print/cloud_print_proxy_service_factory.h"
 #include "chrome/browser/printing/print_dialog_cloud.h"
@@ -577,7 +578,7 @@ bool StartupBrowserCreator::ProcessCmdLineImpl(
 
   bool silent_launch = false;
 
-#if defined(ENABLE_PRINT_PREVIEW)
+#if BUILDFLAG(ENABLE_PRINT_PREVIEW)
   // If we are just displaying a print dialog we shouldn't open browser
   // windows.
   if (command_line.HasSwitch(switches::kCloudPrintFile) &&
@@ -585,7 +586,7 @@ bool StartupBrowserCreator::ProcessCmdLineImpl(
                                                            command_line)) {
     silent_launch = true;
   }
-#endif  // defined(ENABLE_PRINT_PREVIEW)
+#endif  // BUILDFLAG(ENABLE_PRINT_PREVIEW)
 
   if (command_line.HasSwitch(switches::kExplicitlyAllowedPorts)) {
     std::string allowed_ports =

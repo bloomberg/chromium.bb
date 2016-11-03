@@ -25,6 +25,7 @@
 #include "chrome/browser/lifetime/keep_alive_state_observer.h"
 #include "chrome/common/features.h"
 #include "components/prefs/pref_change_registrar.h"
+#include "printing/features/features.h"
 
 class ChromeChildProcessWatcher;
 class ChromeDeviceClient;
@@ -232,7 +233,7 @@ class BrowserProcessImpl : public BrowserProcess,
   std::unique_ptr<DevToolsAutoOpener> devtools_auto_opener_;
 #endif
 
-#if defined(ENABLE_PRINT_PREVIEW)
+#if BUILDFLAG(ENABLE_PRINT_PREVIEW)
   scoped_refptr<printing::PrintPreviewDialogController>
       print_preview_dialog_controller_;
 

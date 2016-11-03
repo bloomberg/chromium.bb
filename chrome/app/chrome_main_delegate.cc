@@ -51,6 +51,7 @@
 #include "content/public/common/content_paths.h"
 #include "content/public/common/content_switches.h"
 #include "extensions/common/constants.h"
+#include "printing/features/features.h"
 #include "ui/base/material_design/material_design_controller.h"
 #include "ui/base/resource/resource_bundle.h"
 #include "ui/base/ui_base_switches.h"
@@ -910,7 +911,7 @@ int ChromeMainDelegate::RunProcess(
   // doesn't support empty array. So we comment out the block for Android.
 #if !defined(OS_ANDROID)
   static const MainFunction kMainFunctions[] = {
-#if defined(ENABLE_PRINT_PREVIEW) && !defined(CHROME_MULTIPLE_DLL_CHILD)
+#if BUILDFLAG(ENABLE_PRINT_PREVIEW) && !defined(CHROME_MULTIPLE_DLL_CHILD)
     { switches::kServiceProcess,     ServiceProcessMain },
 #endif
 

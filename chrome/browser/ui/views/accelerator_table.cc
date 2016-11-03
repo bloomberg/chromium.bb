@@ -9,6 +9,7 @@
 #include "base/macros.h"
 #include "build/build_config.h"
 #include "chrome/app/chrome_command_ids.h"
+#include "printing/features/features.h"
 #include "ui/base/accelerators/accelerator.h"
 #include "ui/events/event_constants.h"
 
@@ -61,7 +62,7 @@ const AcceleratorMapping kAcceleratorMap[] = {
     IDC_DEV_TOOLS_INSPECT },
   { ui::VKEY_O, ui::EF_CONTROL_DOWN, IDC_OPEN_FILE },
   { ui::VKEY_P, ui::EF_CONTROL_DOWN, IDC_PRINT},
-#if defined(ENABLE_BASIC_PRINTING)
+#if BUILDFLAG(ENABLE_BASIC_PRINTING)
   { ui::VKEY_P, ui::EF_SHIFT_DOWN | ui::EF_CONTROL_DOWN, IDC_BASIC_PRINT},
 #endif  // ENABLE_BASIC_PRINTING
   { ui::VKEY_R, ui::EF_CONTROL_DOWN, IDC_RELOAD },

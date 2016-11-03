@@ -10,6 +10,7 @@
 #include "build/build_config.h"
 #include "chrome/common/features.h"
 #include "content/public/common/url_constants.h"
+#include "printing/features/features.h"
 #include "url/url_util.h"
 
 namespace chrome {
@@ -264,7 +265,7 @@ const char kChromeUIWelcomeHost[] = "welcome";
 const char kChromeUIWelcomeWin10Host[] = "welcome-win10";
 const char kChromeUIWorkersHost[] = "workers";
 
-#if defined(ENABLE_PRINT_PREVIEW)
+#if BUILDFLAG(ENABLE_PRINT_PREVIEW)
 const char kChromeUIPrintHost[] = "print";
 #endif  // ENABLE_PRINT_PREVIEW
 
@@ -711,7 +712,7 @@ const char* const kChromeHostURLs[] = {
 #if defined(ENABLE_EXTENSIONS)
   kChromeUIExtensionsHost,
 #endif
-#if defined(ENABLE_PRINT_PREVIEW)
+#if BUILDFLAG(ENABLE_PRINT_PREVIEW)
   kChromeUIPrintHost,
 #endif
 #if BUILDFLAG(ENABLE_SERVICE_DISCOVERY)

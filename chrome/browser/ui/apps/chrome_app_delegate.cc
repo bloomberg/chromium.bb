@@ -38,19 +38,20 @@
 #include "content/public/browser/web_contents.h"
 #include "content/public/browser/web_contents_delegate.h"
 #include "extensions/common/constants.h"
+#include "printing/features/features.h"
 
 #if defined(USE_ASH)
 #include "ash/common/shelf/shelf_constants.h"  // nogncheck
 #endif
 
-#if defined(ENABLE_PRINTING)
-#if defined(ENABLE_PRINT_PREVIEW)
+#if BUILDFLAG(ENABLE_PRINTING)
+#if BUILDFLAG(ENABLE_PRINT_PREVIEW)
 #include "chrome/browser/printing/print_preview_message_handler.h"
 #include "chrome/browser/printing/print_view_manager.h"
 #else
 #include "chrome/browser/printing/print_view_manager_basic.h"
-#endif  // defined(ENABLE_PRINT_PREVIEW)
-#endif  // defined(ENABLE_PRINTING)
+#endif  // BUILDFLAG(ENABLE_PRINT_PREVIEW)
+#endif  // BUILDFLAG(ENABLE_PRINTING)
 
 namespace {
 
@@ -185,14 +186,14 @@ void ChromeAppDelegate::InitWebContents(content::WebContents* web_contents) {
       web_contents);
   favicon::CreateContentFaviconDriverForWebContents(web_contents);
 
-#if defined(ENABLE_PRINTING)
-#if defined(ENABLE_PRINT_PREVIEW)
+#if BUILDFLAG(ENABLE_PRINTING)
+#if BUILDFLAG(ENABLE_PRINT_PREVIEW)
   printing::PrintViewManager::CreateForWebContents(web_contents);
   printing::PrintPreviewMessageHandler::CreateForWebContents(web_contents);
 #else
   printing::PrintViewManagerBasic::CreateForWebContents(web_contents);
-#endif  // defined(ENABLE_PRINT_PREVIEW)
-#endif  // defined(ENABLE_PRINTING)
+#endif  // BUILDFLAG(ENABLE_PRINT_PREVIEW)
+#endif  // BUILDFLAG(ENABLE_PRINTING)
   extensions::ChromeExtensionWebContentsObserver::CreateForWebContents(
       web_contents);
 

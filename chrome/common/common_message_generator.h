@@ -15,6 +15,7 @@
 #include "chrome/common/tts_messages.h"
 #include "content/public/common/common_param_traits.h"
 #include "content/public/common/common_param_traits_macros.h"
+#include "printing/features/features.h"
 
 #if defined(ENABLE_EXTENSIONS)
 #include "chrome/common/cast_messages.h"
@@ -22,11 +23,11 @@
 #include "chrome/common/extensions/chrome_utility_extensions_messages.h"
 #endif
 
-#if defined(ENABLE_PRINT_PREVIEW)
+#if BUILDFLAG(ENABLE_PRINT_PREVIEW)
 #include "chrome/common/service_messages.h"
 #endif
 
-#if defined(ENABLE_PRINTING)
+#if BUILDFLAG(ENABLE_PRINTING)
 #include "chrome/common/chrome_utility_printing_messages.h"
 #endif
 

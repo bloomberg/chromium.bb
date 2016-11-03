@@ -27,6 +27,7 @@
 #include "content/public/renderer/render_frame.h"
 #include "content/public/renderer/render_view.h"
 #include "extensions/common/constants.h"
+#include "printing/features/features.h"
 #include "skia/ext/image_operations.h"
 #include "third_party/WebKit/public/platform/WebImage.h"
 #include "third_party/WebKit/public/platform/WebURLRequest.h"
@@ -42,7 +43,7 @@
 #include "ui/gfx/geometry/size_f.h"
 #include "url/gurl.h"
 
-#if defined(ENABLE_PRINTING)
+#if BUILDFLAG(ENABLE_PRINTING)
 #include "components/printing/common/print_messages.h"
 #include "components/printing/renderer/print_web_view_helper.h"
 #endif
@@ -144,7 +145,7 @@ bool ChromeRenderFrameObserver::OnMessageReceived(const IPC::Message& message) {
                         OnRequestThumbnailForContextNode)
     IPC_MESSAGE_HANDLER(ChromeViewMsg_SetClientSidePhishingDetection,
                         OnSetClientSidePhishingDetection)
-#if defined(ENABLE_PRINTING)
+#if BUILDFLAG(ENABLE_PRINTING)
     IPC_MESSAGE_HANDLER(PrintMsg_PrintNodeUnderContextMenu,
                         OnPrintNodeUnderContextMenu)
 #endif
@@ -218,7 +219,7 @@ void ChromeRenderFrameObserver::OnRequestThumbnailForContextNode(
 }
 
 void ChromeRenderFrameObserver::OnPrintNodeUnderContextMenu() {
-#if defined(ENABLE_PRINTING)
+#if BUILDFLAG(ENABLE_PRINTING)
   printing::PrintWebViewHelper* helper =
       printing::PrintWebViewHelper::Get(render_frame()->GetRenderView());
   if (helper)

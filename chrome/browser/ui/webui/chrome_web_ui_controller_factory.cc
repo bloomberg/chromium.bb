@@ -79,6 +79,7 @@
 #include "content/public/browser/web_ui.h"
 #include "content/public/common/content_client.h"
 #include "content/public/common/url_utils.h"
+#include "printing/features/features.h"
 #include "ui/gfx/favicon_size.h"
 #include "ui/web_dialogs/web_dialog_ui.h"
 #include "url/gurl.h"
@@ -91,7 +92,7 @@
 #include "chrome/browser/ui/webui/media/webrtc_logs_ui.h"
 #endif
 
-#if defined(ENABLE_PRINT_PREVIEW)
+#if BUILDFLAG(ENABLE_PRINT_PREVIEW)
 #include "chrome/browser/ui/webui/print_preview/print_preview_ui.h"
 #endif
 
@@ -600,7 +601,7 @@ WebUIFactoryFunction GetWebUIFactoryFunction(WebUI* web_ui,
   if (url.host() == chrome::kChromeUIPluginsHost)
     return &NewWebUI<PluginsUI>;
 #endif
-#if defined(ENABLE_PRINT_PREVIEW)
+#if BUILDFLAG(ENABLE_PRINT_PREVIEW)
   if (url.host() == chrome::kChromeUIPrintHost &&
       !profile->GetPrefs()->GetBoolean(prefs::kPrintPreviewDisabled)) {
     return &NewWebUI<PrintPreviewUI>;

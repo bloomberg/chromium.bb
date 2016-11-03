@@ -222,6 +222,7 @@ static_library("common") {
     "//mojo/public/cpp/bindings",
     "//net",
     "//ppapi/features",
+    "//printing/features",
     "//skia",
     "//third_party/icu",
     "//third_party/kasko:kasko_features",
@@ -570,6 +571,7 @@ static_library("constants") {
   public_deps = [
     ":features",
     "//content/public/common:result_codes",
+    "//printing/features",
   ]
   deps = [
     ":version_header",

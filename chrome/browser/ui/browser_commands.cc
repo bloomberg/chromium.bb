@@ -84,6 +84,7 @@
 #include "content/public/common/url_utils.h"
 #include "content/public/common/user_agent.h"
 #include "net/base/escape.h"
+#include "printing/features/features.h"
 #include "ui/events/keycodes/keyboard_codes.h"
 
 #if defined(ENABLE_EXTENSIONS)
@@ -100,12 +101,12 @@
 #include "extensions/common/extension_set.h"
 #endif
 
-#if defined(ENABLE_PRINTING)
+#if BUILDFLAG(ENABLE_PRINTING)
 #include "chrome/browser/printing/print_view_manager_common.h"
-#if defined(ENABLE_PRINT_PREVIEW)
+#if BUILDFLAG(ENABLE_PRINT_PREVIEW)
 #include "chrome/browser/printing/print_preview_dialog_controller.h"
-#endif  // defined(ENABLE_PRINT_PREVIEW)
-#endif  // defined(ENABLE_PRINTING)
+#endif  // BUILDFLAG(ENABLE_PRINT_PREVIEW)
+#endif  // BUILDFLAG(ENABLE_PRINTING)
 
 #if defined(ENABLE_RLZ)
 #include "components/rlz/rlz_tracker.h"  // nogncheck
@@ -255,7 +256,7 @@ bool IsShowingWebContentsModalDialog(Browser* browser) {
 
 #if BUILDFLAG(ENABLE_BASIC_PRINT_DIALOG)
 bool PrintPreviewShowing(const Browser* browser) {
-#if defined(ENABLE_PRINT_PREVIEW)
+#if BUILDFLAG(ENABLE_PRINT_PREVIEW)
   WebContents* contents = browser->tab_strip_model()->GetActiveWebContents();
   printing::PrintPreviewDialogController* controller =
       printing::PrintPreviewDialogController::GetInstance();
@@ -873,12 +874,12 @@ void ShowWebsiteSettings(
 }
 
 void Print(Browser* browser) {
-#if defined(ENABLE_PRINTING)
+#if BUILDFLAG(ENABLE_PRINTING)
   printing::StartPrint(
       browser->tab_strip_model()->GetActiveWebContents(),
       browser->profile()->GetPrefs()->GetBoolean(prefs::kPrintPreviewDisabled),
       false);
-#endif  // defined(ENABLE_PRINTING)
+#endif  // BUILDFLAG(ENABLE_PRINTING)
 }
 
 bool CanPrint(Browser* browser) {
@@ -896,7 +897,7 @@ bool CanPrint(Browser* browser) {
         GetContentRestrictions(browser) & CONTENT_RESTRICTION_PRINT);
 }
 
-#if defined(ENABLE_BASIC_PRINTING)
+#if BUILDFLAG(ENABLE_BASIC_PRINTING)
 void BasicPrint(Browser* browser) {
   printing::StartBasicPrint(browser->tab_strip_model()->GetActiveWebContents());
 }
@@ -911,7 +912,7 @@ bool CanBasicPrint(Browser* browser) {
   return false;  // The print dialog is disabled.
 #endif  // BUILDFLAG(ENABLE_BASIC_PRINT_DIALOG)
 }
-#endif  // defined(ENABLE_BASIC_PRINTING)
+#endif  // BUILDFLAG(ENABLE_BASIC_PRINTING)
 
 bool CanRouteMedia(Browser* browser) {
   // Do not allow user to open Media Router dialog when there is already an

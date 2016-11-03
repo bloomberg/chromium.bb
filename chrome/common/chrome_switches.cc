@@ -7,6 +7,7 @@
 #include "base/base_switches.h"
 #include "base/command_line.h"
 #include "build/build_config.h"
+#include "printing/features/features.h"
 
 namespace switches {
 
@@ -1258,7 +1259,7 @@ const char kWindows10CustomTitlebar[]       = "windows10-custom-titlebar";
 const char kWindows8Search[]                = "windows8-search";
 #endif  // defined(OS_WIN)
 
-#if defined(ENABLE_PRINT_PREVIEW) && !defined(OFFICIAL_BUILD)
+#if BUILDFLAG(ENABLE_PRINT_PREVIEW) && !defined(OFFICIAL_BUILD)
 // Enables support to debug printing subsystem.
 const char kDebugPrint[] = "debug-print";
 #endif

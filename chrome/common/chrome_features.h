@@ -9,6 +9,7 @@
 #define CHROME_COMMON_CHROME_FEATURES_H_
 
 #include "base/feature_list.h"
+#include "printing/features/features.h"
 
 namespace features {
 
@@ -79,7 +80,7 @@ extern const base::Feature kOverrideYouTubeFlashEmbed;
 extern const base::Feature kPreferHtmlOverPlugins;
 #endif
 
-#if defined(ENABLE_PRINT_PREVIEW)
+#if BUILDFLAG(ENABLE_PRINT_PREVIEW)
 extern const base::Feature kPrintScaling;
 #endif
 

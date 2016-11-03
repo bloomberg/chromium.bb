@@ -20,10 +20,11 @@
 #include "net/test/embedded_test_server/embedded_test_server.h"
 #include "net/url_request/test_url_fetcher_factory.h"
 #include "net/url_request/url_request_test_util.h"
+#include "printing/features/features.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
-#if defined(ENABLE_PRINT_PREVIEW)
+#if BUILDFLAG(ENABLE_PRINT_PREVIEW)
 #include "chrome/browser/printing/pwg_raster_converter.h"
 #include "printing/pwg_raster_settings.h"
 #endif  // ENABLE_PRINT_PREVIEW
@@ -138,7 +139,7 @@ const char kSampleCapabilitiesResponse[] = "{"
     "}"
     "}";
 
-#if defined(ENABLE_PRINT_PREVIEW)
+#if BUILDFLAG(ENABLE_PRINT_PREVIEW)
 const char kSampleInfoResponseWithCreatejob[] = "{"
     "       \"version\": \"1.0\","
     "       \"name\": \"Common printer\","
@@ -733,7 +734,7 @@ TEST_P(PrivetCapabilitiesTest, BadToken) {
                                       kSampleCapabilitiesResponse));
 }
 
-#if defined(ENABLE_PRINT_PREVIEW)
+#if BUILDFLAG(ENABLE_PRINT_PREVIEW)
 // A note on PWG raster conversion: The PWG raster converter used simply
 // converts strings to file paths based on them by appending "test.pdf", since
 // it's easier to test that way. Instead of using a mock, we simply check if the

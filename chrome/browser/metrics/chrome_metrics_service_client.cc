@@ -72,13 +72,14 @@
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/histogram_fetcher.h"
 #include "content/public/browser/notification_service.h"
+#include "printing/features/features.h"
 
 #if BUILDFLAG(ANDROID_JAVA_UI)
 #include "chrome/browser/metrics/android_metrics_provider.h"
 #include "chrome/browser/metrics/page_load_metrics_provider.h"
 #endif
 
-#if defined(ENABLE_PRINT_PREVIEW)
+#if BUILDFLAG(ENABLE_PRINT_PREVIEW)
 #include "chrome/browser/service_process/service_process_control.h"
 #endif
 
@@ -762,7 +763,7 @@ void ChromeMetricsServiceClient::OnMemoryDetailCollectionDone() {
 
   DCHECK_EQ(num_async_histogram_fetches_in_progress_, 0);
 
-#if !defined(ENABLE_PRINT_PREVIEW)
+#if !BUILDFLAG(ENABLE_PRINT_PREVIEW)
   num_async_histogram_fetches_in_progress_ = 2;
 #else   // !ENABLE_PRINT_PREVIEW
   num_async_histogram_fetches_in_progress_ = 3;

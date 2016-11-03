@@ -114,6 +114,7 @@
 #include "content/public/browser/user_metrics.h"
 #include "content/public/common/content_constants.h"
 #include "content/public/common/page_zoom.h"
+#include "printing/features/features.h"
 #include "ui/base/l10n/l10n_util.h"
 
 #if defined(OS_CHROMEOS)
@@ -377,7 +378,7 @@ void ProfileImpl::RegisterProfilePrefs(
   registry->RegisterStringPref(prefs::kHomePage,
                                std::string(),
                                home_page_flags);
-#if defined(ENABLE_PRINTING)
+#if BUILDFLAG(ENABLE_PRINTING)
   registry->RegisterBooleanPref(prefs::kPrintingEnabled, true);
 #endif
   registry->RegisterBooleanPref(prefs::kPrintPreviewDisabled, false);

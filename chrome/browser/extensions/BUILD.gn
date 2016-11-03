@@ -888,6 +888,7 @@ static_library("extensions") {
     "//extensions/common/api",
     "//extensions/strings",
     "//net",
+    "//printing/features",
     "//skia",
     "//sql",
     "//storage/browser",

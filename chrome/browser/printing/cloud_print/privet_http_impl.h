@@ -16,6 +16,7 @@
 #include "base/memory/weak_ptr.h"
 #include "chrome/browser/printing/cloud_print/privet_http.h"
 #include "components/cloud_devices/common/cloud_device_description.h"
+#include "printing/features/features.h"
 #include "ui/gfx/geometry/size.h"
 
 namespace cloud_print {
@@ -148,7 +149,7 @@ class PrivetJSONOperationImpl : public PrivetJSONOperation,
   std::unique_ptr<PrivetURLFetcher> url_fetcher_;
 };
 
-#if defined(ENABLE_PRINT_PREVIEW)
+#if BUILDFLAG(ENABLE_PRINT_PREVIEW)
 class PrivetLocalPrintOperationImpl
     : public PrivetLocalPrintOperation,
       public PrivetURLFetcher::Delegate {

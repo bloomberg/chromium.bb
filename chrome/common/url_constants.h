@@ -15,6 +15,7 @@
 #include "build/build_config.h"
 #include "chrome/common/features.h"
 #include "content/public/common/url_constants.h"
+#include "printing/features/features.h"
 
 namespace chrome {
 
@@ -246,7 +247,7 @@ extern const char kChromeUIWelcomeHost[];
 extern const char kChromeUIWelcomeWin10Host[];
 extern const char kChromeUIWorkersHost[];
 
-#if defined(ENABLE_PRINT_PREVIEW)
+#if BUILDFLAG(ENABLE_PRINT_PREVIEW)
 extern const char kChromeUIPrintHost[];
 #endif  // ENABLE_PRINT_PREVIEW
 

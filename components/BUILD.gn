@@ -4,6 +4,7 @@
 
 import("//build/config/features.gni")
 import("//build/config/ui.gni")
+import("//printing/features/features.gni")
 import("//testing/test.gni")
 import("//tools/grit/repack.gni")
 
@@ -413,6 +414,7 @@ if (!is_ios) {
       "//device/geolocation",
       "//ipc:test_support",
       "//net:test_support",
+      "//printing/features",
       "//services/service_manager/public/cpp",
       "//testing/gmock",
       "//testing/gtest",
