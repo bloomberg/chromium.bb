@@ -9,6 +9,7 @@
 #include <stdint.h>
 
 #include <functional>
+#include <string>
 
 #include "base/format_macros.h"
 #include "base/hash.h"
@@ -20,11 +21,9 @@ namespace cc {
 
 class SurfaceId {
  public:
-  SurfaceId() = default;
+  constexpr SurfaceId() = default;
 
-  SurfaceId(const SurfaceId& other)
-      : frame_sink_id_(other.frame_sink_id_),
-        local_frame_id_(other.local_frame_id_) {}
+  constexpr SurfaceId(const SurfaceId& other) = default;
 
   // A SurfaceId consists of three components: FrameSinkId, local Id, and nonce.
   // A |frame_sink_id| consists of two components; one is allocated by the
@@ -37,8 +36,8 @@ class SurfaceId {
   // impossible for an unprivileged frame source to embed another frame source
   // without being explicitly given the surface ID of that frame source from a
   // privileged process.
-  SurfaceId(const FrameSinkId& frame_sink_id,
-            const LocalFrameId& local_frame_id)
+  constexpr SurfaceId(const FrameSinkId& frame_sink_id,
+                      const LocalFrameId& local_frame_id)
       : frame_sink_id_(frame_sink_id), local_frame_id_(local_frame_id) {}
 
   bool is_null() const {
