@@ -59,9 +59,6 @@ Current patches:
     compile error C4114, since EbmlSyntax struct is already defined with const.
     TODO: push upstream.
 
-    Add call to matroska_read_close() to mitigate memory leak caught by
-    Valgrind.
-
   Changes to libavformat/mp3dec.c
     TODO(chcunningham/dalecurtis): https://crbug.com/504623 - Determine whether
     these changes are still necessary and either remove or document them.

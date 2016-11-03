@@ -2244,8 +2244,6 @@ static int matroska_parse_tracks(AVFormatContext *s)
                 extradata_offset       = 78;
             }
 #else
-            /* Returning without closing would cause leaks with some files */
-            matroska_read_close(s);
             return AVERROR_INVALIDDATA;
 #endif
         } else if (codec_id == AV_CODEC_ID_FLAC && track->codec_priv.size) {
