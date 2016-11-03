@@ -205,6 +205,10 @@ SK_API void SkDebugf_FileLine(const char* file, int line, bool fatal,
 #define SK_SUPPORT_LEGACY_CLIP_REGIONOPS
 #endif
 
+#ifndef    SK_SUPPORT_LEGACY_XFERMODE_PARAM_TYPES
+#   define SK_SUPPORT_LEGACY_XFERMODE_PARAM_TYPES
+#endif
+
 // Workaround for poor anisotropic mipmap quality,
 // pending Skia ripmap support.
 // (https://bugs.chromium.org/p/skia/issues/detail?id=4863)
