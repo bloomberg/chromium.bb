@@ -54,6 +54,16 @@ void PopulateNumericCapabilities(Capabilities* caps,
 
 bool CheckUniqueAndNonNullIds(GLsizei n, const GLuint* client_ids);
 
+void APIENTRY LogGLDebugMessage(GLenum source,
+                                GLenum type,
+                                GLuint id,
+                                GLenum severity,
+                                GLsizei length,
+                                const GLchar* message,
+                                GLvoid* user_param);
+
+void InitializeGLDebugLogging();
+
 } // gles2
 } // gpu
 

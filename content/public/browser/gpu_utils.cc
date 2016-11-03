@@ -79,6 +79,8 @@ const gpu::GpuPreferences GetGpuPreferencesFromCommandLine() {
       command_line->HasSwitch(switches::kEnableGPUDebugging);
   gpu_preferences.enable_gpu_service_logging_gpu =
       command_line->HasSwitch(switches::kEnableGPUServiceLoggingGPU);
+  gpu_preferences.enable_gpu_driver_debug_logging =
+      command_line->HasSwitch(switches::kEnableGPUDriverDebugLogging);
   gpu_preferences.disable_gpu_program_cache =
       command_line->HasSwitch(switches::kDisableGpuProgramCache);
   gpu_preferences.enforce_gl_minimums =

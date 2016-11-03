@@ -319,6 +319,25 @@ GL_FUNCTIONS = [
   'names': ['glCullFace'],
   'arguments': 'GLenum mode', },
 { 'return_type': 'void',
+  'versions': [{ 'name': 'glDebugMessageCallback' },
+               { 'name': 'glDebugMessageCallbackKHR',
+                 'extensions': ['GL_KHR_debug'] }],
+  'arguments': 'GLDEBUGPROC callback, const void* userParam', },
+{ 'return_type': 'void',
+  'versions': [{ 'name': 'glDebugMessageControl' },
+               { 'name': 'glDebugMessageControlKHR',
+                 'extensions': ['GL_KHR_debug'] }],
+  'arguments':
+    'GLenum source, GLenum type, GLenum severity, GLsizei count, '
+    'const GLuint* ids, GLboolean enabled', },
+{ 'return_type': 'void',
+  'versions': [{ 'name': 'glDebugMessageInsert' },
+               { 'name': 'glDebugMessageInsertKHR',
+                 'extensions': ['GL_KHR_debug'] }],
+  'arguments':
+    'GLenum source, GLenum type, GLuint id, GLenum severity, '
+    'GLsizei length, const char* buf', },
+{ 'return_type': 'void',
   'names': ['glDeleteBuffers'],
   'known_as': 'glDeleteBuffersARB',
   'arguments': 'GLsizei n, const GLuint* buffers', },
@@ -620,6 +639,13 @@ GL_FUNCTIONS = [
   'arguments':
       'GLenum target, GLenum pname, GLsizei bufSize, GLsizei* length, '
       'void** params', },
+{ 'return_type': 'void',
+  'versions': [{ 'name': 'glGetDebugMessageLog' },
+               { 'name': 'glGetDebugMessageLogKHR',
+                 'extensions': ['GL_KHR_debug'] }],
+  'arguments':
+    'GLuint count, GLsizei bufSize, GLenum* sources, GLenum* types, '
+    'GLuint* ids, GLenum* severities, GLsizei* lengths, char* messageLog', },
 { 'return_type': 'GLenum',
   'names': ['glGetError'],
   'arguments': 'void',
@@ -737,6 +763,23 @@ GL_FUNCTIONS = [
   'arguments':
       'GLuint program, GLint location, GLsizei bufSize, GLsizei* length, '
       'GLuint* params', },
+{ 'return_type': 'void',
+  'versions': [{ 'name': 'glGetObjectLabel' },
+               { 'name': 'glGetObjectLabelKHR',
+                 'extensions': ['GL_KHR_debug'] }],
+  'arguments':
+    'GLenum identifier, GLuint name, GLsizei bufSize, GLsizei* length, '
+    'char* label', },
+{ 'return_type': 'void',
+  'versions': [{ 'name': 'glGetObjectPtrLabel' },
+               { 'name': 'glGetObjectPtrLabelKHR',
+                 'extensions': ['GL_KHR_debug'] }],
+  'arguments': 'void* ptr, GLsizei bufSize, GLsizei* length, char* label', },
+{ 'return_type': 'void',
+  'versions': [{ 'name': 'glGetPointerv' },
+               { 'name': 'glGetPointervKHR',
+                 'extensions': ['GL_KHR_debug'] }],
+  'arguments': 'GLenum pname, void** params', },
 { 'return_type': 'void',
   'versions': [{'name': 'glGetPointervRobustANGLERobustANGLE',
                 'extensions': ['GL_ANGLE_robust_client_memory']}],
@@ -1166,6 +1209,17 @@ GL_FUNCTIONS = [
                  'extensions': ['GL_EXT_shader_image_load_store'] }],
   'arguments': 'GLbitfield barriers', },
 { 'return_type': 'void',
+  'versions': [{ 'name': 'glObjectLabel' },
+               { 'name': 'glObjectLabelKHR',
+                 'extensions': ['GL_KHR_debug'] }],
+  'arguments':
+    'GLenum identifier, GLuint name, GLsizei length, const char* label', },
+{ 'return_type': 'void',
+  'versions': [{ 'name': 'glObjectPtrLabel' },
+               { 'name': 'glObjectPtrLabelKHR',
+                 'extensions': ['GL_KHR_debug'] }],
+  'arguments': 'void* ptr, GLsizei length, const char* label', },
+{ 'return_type': 'void',
   'names': ['glPathCommandsNV'],
   'arguments': 'GLuint path, GLsizei numCommands, const GLubyte* commands, '
   'GLsizei numCoords, GLenum coordType, const GLvoid* coords' },
@@ -1192,6 +1246,11 @@ GL_FUNCTIONS = [
   'names': ['glPolygonOffset'],
   'arguments': 'GLfloat factor, GLfloat units', },
 { 'return_type': 'void',
+  'versions': [{ 'name': 'glPopDebugGroup' },
+               { 'name': 'glPopDebugGroupKHR',
+                 'extensions': ['GL_KHR_debug'] }],
+  'arguments': '', },
+{ 'return_type': 'void',
   'names': ['glPopGroupMarkerEXT'],
   'arguments': 'void', },
 { 'return_type': 'void',
@@ -1213,6 +1272,12 @@ GL_FUNCTIONS = [
   'arguments': 'GLuint program, GLint location, GLenum genMode, '
   'GLint components, const GLfloat* coeffs',
   'is_optional': True, },
+{ 'return_type': 'void',
+  'versions': [{ 'name': 'glPushDebugGroup' },
+               { 'name': 'glPushDebugGroupKHR',
+                 'extensions': ['GL_KHR_debug'] }],
+  'arguments':
+    'GLenum source, GLuint id, GLsizei length, const char* message', },
 { 'return_type': 'void',
   'names': ['glPushGroupMarkerEXT'],
   'arguments': 'GLsizei length, const char* marker', },
@@ -2214,6 +2279,7 @@ FUNCTION_SETS = [
       'GLES2/gl2ext.h',
       'GLES3/gl3.h',
       'GLES3/gl31.h',
+      'GLES3/gl32.h',
       # Files below are Chromium-specific and shipped with Chromium sources.
       'GL/glextchromium.h',
       'GLES2/gl2chromium.h',
@@ -2818,7 +2884,8 @@ void DriverEGL::InitializeExtensionBindings() {
                         'GLsizei': '0',
                         'GLfloat': '0.0f',
                         'GLdouble': '0.0',
-                        'GLsync': 'NULL'}
+                        'GLsync': 'NULL',
+                        'GLDEBUGPROC': 'NULL'}
       if return_type.endswith('*'):
         file.write('  return NULL;\n')
       elif return_type != 'void':

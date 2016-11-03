@@ -282,6 +282,34 @@ static void GL_BINDING_CALL Mock_glCoverageModulationNV(GLenum components);
 static GLuint GL_BINDING_CALL Mock_glCreateProgram(void);
 static GLuint GL_BINDING_CALL Mock_glCreateShader(GLenum type);
 static void GL_BINDING_CALL Mock_glCullFace(GLenum mode);
+static void GL_BINDING_CALL Mock_glDebugMessageCallback(GLDEBUGPROC callback,
+                                                        const void* userParam);
+static void GL_BINDING_CALL
+Mock_glDebugMessageCallbackKHR(GLDEBUGPROC callback, const void* userParam);
+static void GL_BINDING_CALL Mock_glDebugMessageControl(GLenum source,
+                                                       GLenum type,
+                                                       GLenum severity,
+                                                       GLsizei count,
+                                                       const GLuint* ids,
+                                                       GLboolean enabled);
+static void GL_BINDING_CALL Mock_glDebugMessageControlKHR(GLenum source,
+                                                          GLenum type,
+                                                          GLenum severity,
+                                                          GLsizei count,
+                                                          const GLuint* ids,
+                                                          GLboolean enabled);
+static void GL_BINDING_CALL Mock_glDebugMessageInsert(GLenum source,
+                                                      GLenum type,
+                                                      GLuint id,
+                                                      GLenum severity,
+                                                      GLsizei length,
+                                                      const char* buf);
+static void GL_BINDING_CALL Mock_glDebugMessageInsertKHR(GLenum source,
+                                                         GLenum type,
+                                                         GLuint id,
+                                                         GLenum severity,
+                                                         GLsizei length,
+                                                         const char* buf);
 static void GL_BINDING_CALL Mock_glDeleteBuffers(GLsizei n,
                                                  const GLuint* buffers);
 static void GL_BINDING_CALL Mock_glDeleteFencesAPPLE(GLsizei n,
@@ -535,6 +563,22 @@ static void GL_BINDING_CALL Mock_glGetBufferPointervRobustANGLE(GLenum target,
                                                                 GLsizei bufSize,
                                                                 GLsizei* length,
                                                                 void** params);
+static void GL_BINDING_CALL Mock_glGetDebugMessageLog(GLuint count,
+                                                      GLsizei bufSize,
+                                                      GLenum* sources,
+                                                      GLenum* types,
+                                                      GLuint* ids,
+                                                      GLenum* severities,
+                                                      GLsizei* lengths,
+                                                      char* messageLog);
+static void GL_BINDING_CALL Mock_glGetDebugMessageLogKHR(GLuint count,
+                                                         GLsizei bufSize,
+                                                         GLenum* sources,
+                                                         GLenum* types,
+                                                         GLuint* ids,
+                                                         GLenum* severities,
+                                                         GLsizei* lengths,
+                                                         char* messageLog);
 static GLenum GL_BINDING_CALL Mock_glGetError(void);
 static void GL_BINDING_CALL Mock_glGetFenceivNV(GLuint fence,
                                                 GLenum pname,
@@ -620,6 +664,26 @@ static void GL_BINDING_CALL Mock_glGetMultisamplefvRobustANGLE(GLenum pname,
                                                                GLsizei bufSize,
                                                                GLsizei* length,
                                                                GLfloat* val);
+static void GL_BINDING_CALL Mock_glGetObjectLabel(GLenum identifier,
+                                                  GLuint name,
+                                                  GLsizei bufSize,
+                                                  GLsizei* length,
+                                                  char* label);
+static void GL_BINDING_CALL Mock_glGetObjectLabelKHR(GLenum identifier,
+                                                     GLuint name,
+                                                     GLsizei bufSize,
+                                                     GLsizei* length,
+                                                     char* label);
+static void GL_BINDING_CALL Mock_glGetObjectPtrLabel(void* ptr,
+                                                     GLsizei bufSize,
+                                                     GLsizei* length,
+                                                     char* label);
+static void GL_BINDING_CALL Mock_glGetObjectPtrLabelKHR(void* ptr,
+                                                        GLsizei bufSize,
+                                                        GLsizei* length,
+                                                        char* label);
+static void GL_BINDING_CALL Mock_glGetPointerv(GLenum pname, void** params);
+static void GL_BINDING_CALL Mock_glGetPointervKHR(GLenum pname, void** params);
 static void GL_BINDING_CALL
 Mock_glGetPointervRobustANGLERobustANGLE(GLenum pname,
                                          GLsizei bufSize,
@@ -1025,6 +1089,20 @@ static void GL_BINDING_CALL Mock_glMatrixLoadfEXT(GLenum matrixMode,
                                                   const GLfloat* m);
 static void GL_BINDING_CALL Mock_glMemoryBarrier(GLbitfield barriers);
 static void GL_BINDING_CALL Mock_glMemoryBarrierEXT(GLbitfield barriers);
+static void GL_BINDING_CALL Mock_glObjectLabel(GLenum identifier,
+                                               GLuint name,
+                                               GLsizei length,
+                                               const char* label);
+static void GL_BINDING_CALL Mock_glObjectLabelKHR(GLenum identifier,
+                                                  GLuint name,
+                                                  GLsizei length,
+                                                  const char* label);
+static void GL_BINDING_CALL Mock_glObjectPtrLabel(void* ptr,
+                                                  GLsizei length,
+                                                  const char* label);
+static void GL_BINDING_CALL Mock_glObjectPtrLabelKHR(void* ptr,
+                                                     GLsizei length,
+                                                     const char* label);
 static void GL_BINDING_CALL Mock_glPathCommandsNV(GLuint path,
                                                   GLsizei numCommands,
                                                   const GLubyte* commands,
@@ -1044,6 +1122,8 @@ static void GL_BINDING_CALL Mock_glPauseTransformFeedback(void);
 static void GL_BINDING_CALL Mock_glPixelStorei(GLenum pname, GLint param);
 static void GL_BINDING_CALL Mock_glPointParameteri(GLenum pname, GLint param);
 static void GL_BINDING_CALL Mock_glPolygonOffset(GLfloat factor, GLfloat units);
+static void GL_BINDING_CALL Mock_glPopDebugGroup();
+static void GL_BINDING_CALL Mock_glPopDebugGroupKHR();
 static void GL_BINDING_CALL Mock_glPopGroupMarkerEXT(void);
 static void GL_BINDING_CALL Mock_glPrimitiveRestartIndex(GLuint index);
 static void GL_BINDING_CALL Mock_glProgramBinary(GLuint program,
@@ -1063,6 +1143,14 @@ Mock_glProgramPathFragmentInputGenNV(GLuint program,
                                      GLenum genMode,
                                      GLint components,
                                      const GLfloat* coeffs);
+static void GL_BINDING_CALL Mock_glPushDebugGroup(GLenum source,
+                                                  GLuint id,
+                                                  GLsizei length,
+                                                  const char* message);
+static void GL_BINDING_CALL Mock_glPushDebugGroupKHR(GLenum source,
+                                                     GLuint id,
+                                                     GLsizei length,
+                                                     const char* message);
 static void GL_BINDING_CALL Mock_glPushGroupMarkerEXT(GLsizei length,
                                                       const char* marker);
 static void GL_BINDING_CALL Mock_glQueryCounter(GLuint id, GLenum target);

@@ -111,6 +111,9 @@ void DriverGL::InitializeStaticBindings() {
       reinterpret_cast<glCreateShaderProc>(GetGLProcAddress("glCreateShader"));
   fn.glCullFaceFn =
       reinterpret_cast<glCullFaceProc>(GetGLProcAddress("glCullFace"));
+  fn.glDebugMessageCallbackFn = 0;
+  fn.glDebugMessageControlFn = 0;
+  fn.glDebugMessageInsertFn = 0;
   fn.glDeleteBuffersARBFn = reinterpret_cast<glDeleteBuffersARBProc>(
       GetGLProcAddress("glDeleteBuffers"));
   fn.glDeleteFencesAPPLEFn = 0;
@@ -209,6 +212,7 @@ void DriverGL::InitializeStaticBindings() {
       GetGLProcAddress("glGetBufferParameteriv"));
   fn.glGetBufferParameterivRobustANGLEFn = 0;
   fn.glGetBufferPointervRobustANGLEFn = 0;
+  fn.glGetDebugMessageLogFn = 0;
   fn.glGetErrorFn =
       reinterpret_cast<glGetErrorProc>(GetGLProcAddress("glGetError"));
   fn.glGetFenceivNVFn = 0;
@@ -236,6 +240,9 @@ void DriverGL::InitializeStaticBindings() {
   fn.glGetnUniformfvRobustANGLEFn = 0;
   fn.glGetnUniformivRobustANGLEFn = 0;
   fn.glGetnUniformuivRobustANGLEFn = 0;
+  fn.glGetObjectLabelFn = 0;
+  fn.glGetObjectPtrLabelFn = 0;
+  fn.glGetPointervFn = 0;
   fn.glGetPointervRobustANGLERobustANGLEFn = 0;
   fn.glGetProgramBinaryFn = 0;
   fn.glGetProgramInfoLogFn = reinterpret_cast<glGetProgramInfoLogProc>(
@@ -350,6 +357,8 @@ void DriverGL::InitializeStaticBindings() {
   fn.glMatrixLoadfEXTFn = 0;
   fn.glMatrixLoadIdentityEXTFn = 0;
   fn.glMemoryBarrierEXTFn = 0;
+  fn.glObjectLabelFn = 0;
+  fn.glObjectPtrLabelFn = 0;
   fn.glPathCommandsNVFn = 0;
   fn.glPathParameterfNVFn = 0;
   fn.glPathParameteriNVFn = 0;
@@ -360,11 +369,13 @@ void DriverGL::InitializeStaticBindings() {
   fn.glPointParameteriFn = 0;
   fn.glPolygonOffsetFn = reinterpret_cast<glPolygonOffsetProc>(
       GetGLProcAddress("glPolygonOffset"));
+  fn.glPopDebugGroupFn = 0;
   fn.glPopGroupMarkerEXTFn = 0;
   fn.glPrimitiveRestartIndexFn = 0;
   fn.glProgramBinaryFn = 0;
   fn.glProgramParameteriFn = 0;
   fn.glProgramPathFragmentInputGenNVFn = 0;
+  fn.glPushDebugGroupFn = 0;
   fn.glPushGroupMarkerEXTFn = 0;
   fn.glQueryCounterFn = 0;
   fn.glReadBufferFn = 0;
@@ -645,6 +656,7 @@ void DriverGL::InitializeDynamicBindings(GLContext* context) {
       extensions.find("GL_INTEL_framebuffer_CMAA ") != std::string::npos;
   ext.b_GL_KHR_blend_equation_advanced =
       extensions.find("GL_KHR_blend_equation_advanced ") != std::string::npos;
+  ext.b_GL_KHR_debug = extensions.find("GL_KHR_debug ") != std::string::npos;
   ext.b_GL_KHR_robustness =
       extensions.find("GL_KHR_robustness ") != std::string::npos;
   ext.b_GL_NV_blend_equation_advanced =
@@ -952,6 +964,33 @@ void DriverGL::InitializeDynamicBindings(GLContext* context) {
   if (ext.b_GL_NV_path_rendering) {
     fn.glCoverStrokePathNVFn = reinterpret_cast<glCoverStrokePathNVProc>(
         GetGLProcAddress("glCoverStrokePathNV"));
+  }
+
+  debug_fn.glDebugMessageCallbackFn = 0;
+  if (ver->IsAtLeastGL(4u, 3u) || ver->IsAtLeastGLES(3u, 2u)) {
+    fn.glDebugMessageCallbackFn = reinterpret_cast<glDebugMessageCallbackProc>(
+        GetGLProcAddress("glDebugMessageCallback"));
+  } else if (ext.b_GL_KHR_debug) {
+    fn.glDebugMessageCallbackFn = reinterpret_cast<glDebugMessageCallbackProc>(
+        GetGLProcAddress("glDebugMessageCallbackKHR"));
+  }
+
+  debug_fn.glDebugMessageControlFn = 0;
+  if (ver->IsAtLeastGL(4u, 3u) || ver->IsAtLeastGLES(3u, 2u)) {
+    fn.glDebugMessageControlFn = reinterpret_cast<glDebugMessageControlProc>(
+        GetGLProcAddress("glDebugMessageControl"));
+  } else if (ext.b_GL_KHR_debug) {
+    fn.glDebugMessageControlFn = reinterpret_cast<glDebugMessageControlProc>(
+        GetGLProcAddress("glDebugMessageControlKHR"));
+  }
+
+  debug_fn.glDebugMessageInsertFn = 0;
+  if (ver->IsAtLeastGL(4u, 3u) || ver->IsAtLeastGLES(3u, 2u)) {
+    fn.glDebugMessageInsertFn = reinterpret_cast<glDebugMessageInsertProc>(
+        GetGLProcAddress("glDebugMessageInsert"));
+  } else if (ext.b_GL_KHR_debug) {
+    fn.glDebugMessageInsertFn = reinterpret_cast<glDebugMessageInsertProc>(
+        GetGLProcAddress("glDebugMessageInsertKHR"));
   }
 
   debug_fn.glDeleteFencesAPPLEFn = 0;
@@ -1365,6 +1404,15 @@ void DriverGL::InitializeDynamicBindings(GLContext* context) {
             GetGLProcAddress("glGetBufferPointervRobustANGLE"));
   }
 
+  debug_fn.glGetDebugMessageLogFn = 0;
+  if (ver->IsAtLeastGL(4u, 3u) || ver->IsAtLeastGLES(3u, 2u)) {
+    fn.glGetDebugMessageLogFn = reinterpret_cast<glGetDebugMessageLogProc>(
+        GetGLProcAddress("glGetDebugMessageLog"));
+  } else if (ext.b_GL_KHR_debug) {
+    fn.glGetDebugMessageLogFn = reinterpret_cast<glGetDebugMessageLogProc>(
+        GetGLProcAddress("glGetDebugMessageLogKHR"));
+  }
+
   debug_fn.glGetFenceivNVFn = 0;
   if (ext.b_GL_NV_fence) {
     fn.glGetFenceivNVFn = reinterpret_cast<glGetFenceivNVProc>(
@@ -1419,7 +1467,7 @@ void DriverGL::InitializeDynamicBindings(GLContext* context) {
   }
 
   debug_fn.glGetGraphicsResetStatusARBFn = 0;
-  if (ver->IsAtLeastGL(4u, 5u)) {
+  if (ver->IsAtLeastGL(4u, 5u) || ver->IsAtLeastGLES(3u, 2u)) {
     fn.glGetGraphicsResetStatusARBFn =
         reinterpret_cast<glGetGraphicsResetStatusARBProc>(
             GetGLProcAddress("glGetGraphicsResetStatus"));
@@ -1522,6 +1570,33 @@ void DriverGL::InitializeDynamicBindings(GLContext* context) {
     fn.glGetnUniformuivRobustANGLEFn =
         reinterpret_cast<glGetnUniformuivRobustANGLEProc>(
             GetGLProcAddress("glGetnUniformuivRobustANGLE"));
+  }
+
+  debug_fn.glGetObjectLabelFn = 0;
+  if (ver->IsAtLeastGL(4u, 3u) || ver->IsAtLeastGLES(3u, 2u)) {
+    fn.glGetObjectLabelFn = reinterpret_cast<glGetObjectLabelProc>(
+        GetGLProcAddress("glGetObjectLabel"));
+  } else if (ext.b_GL_KHR_debug) {
+    fn.glGetObjectLabelFn = reinterpret_cast<glGetObjectLabelProc>(
+        GetGLProcAddress("glGetObjectLabelKHR"));
+  }
+
+  debug_fn.glGetObjectPtrLabelFn = 0;
+  if (ver->IsAtLeastGL(4u, 3u) || ver->IsAtLeastGLES(3u, 2u)) {
+    fn.glGetObjectPtrLabelFn = reinterpret_cast<glGetObjectPtrLabelProc>(
+        GetGLProcAddress("glGetObjectPtrLabel"));
+  } else if (ext.b_GL_KHR_debug) {
+    fn.glGetObjectPtrLabelFn = reinterpret_cast<glGetObjectPtrLabelProc>(
+        GetGLProcAddress("glGetObjectPtrLabelKHR"));
+  }
+
+  debug_fn.glGetPointervFn = 0;
+  if (!ver->is_es || ver->IsAtLeastGLES(3u, 2u)) {
+    fn.glGetPointervFn =
+        reinterpret_cast<glGetPointervProc>(GetGLProcAddress("glGetPointerv"));
+  } else if (ext.b_GL_KHR_debug) {
+    fn.glGetPointervFn = reinterpret_cast<glGetPointervProc>(
+        GetGLProcAddress("glGetPointervKHR"));
   }
 
   debug_fn.glGetPointervRobustANGLERobustANGLEFn = 0;
@@ -2052,6 +2127,24 @@ void DriverGL::InitializeDynamicBindings(GLContext* context) {
         GetGLProcAddress("glMemoryBarrierEXT"));
   }
 
+  debug_fn.glObjectLabelFn = 0;
+  if (ver->IsAtLeastGL(4u, 3u) || ver->IsAtLeastGLES(3u, 2u)) {
+    fn.glObjectLabelFn =
+        reinterpret_cast<glObjectLabelProc>(GetGLProcAddress("glObjectLabel"));
+  } else if (ext.b_GL_KHR_debug) {
+    fn.glObjectLabelFn = reinterpret_cast<glObjectLabelProc>(
+        GetGLProcAddress("glObjectLabelKHR"));
+  }
+
+  debug_fn.glObjectPtrLabelFn = 0;
+  if (ver->IsAtLeastGL(4u, 3u) || ver->IsAtLeastGLES(3u, 2u)) {
+    fn.glObjectPtrLabelFn = reinterpret_cast<glObjectPtrLabelProc>(
+        GetGLProcAddress("glObjectPtrLabel"));
+  } else if (ext.b_GL_KHR_debug) {
+    fn.glObjectPtrLabelFn = reinterpret_cast<glObjectPtrLabelProc>(
+        GetGLProcAddress("glObjectPtrLabelKHR"));
+  }
+
   debug_fn.glPathCommandsNVFn = 0;
   if (ext.b_GL_NV_path_rendering) {
     fn.glPathCommandsNVFn = reinterpret_cast<glPathCommandsNVProc>(
@@ -2090,6 +2183,15 @@ void DriverGL::InitializeDynamicBindings(GLContext* context) {
         GetGLProcAddress("glPointParameteri"));
   }
 
+  debug_fn.glPopDebugGroupFn = 0;
+  if (ver->IsAtLeastGL(4u, 3u) || ver->IsAtLeastGLES(3u, 2u)) {
+    fn.glPopDebugGroupFn = reinterpret_cast<glPopDebugGroupProc>(
+        GetGLProcAddress("glPopDebugGroup"));
+  } else if (ext.b_GL_KHR_debug) {
+    fn.glPopDebugGroupFn = reinterpret_cast<glPopDebugGroupProc>(
+        GetGLProcAddress("glPopDebugGroupKHR"));
+  }
+
   debug_fn.glPopGroupMarkerEXTFn = 0;
   if (ext.b_GL_EXT_debug_marker) {
     fn.glPopGroupMarkerEXTFn = reinterpret_cast<glPopGroupMarkerEXTProc>(
@@ -2125,6 +2227,15 @@ void DriverGL::InitializeDynamicBindings(GLContext* context) {
     fn.glProgramPathFragmentInputGenNVFn =
         reinterpret_cast<glProgramPathFragmentInputGenNVProc>(
             GetGLProcAddress("glProgramPathFragmentInputGenNV"));
+  }
+
+  debug_fn.glPushDebugGroupFn = 0;
+  if (ver->IsAtLeastGL(4u, 3u) || ver->IsAtLeastGLES(3u, 2u)) {
+    fn.glPushDebugGroupFn = reinterpret_cast<glPushDebugGroupProc>(
+        GetGLProcAddress("glPushDebugGroup"));
+  } else if (ext.b_GL_KHR_debug) {
+    fn.glPushDebugGroupFn = reinterpret_cast<glPushDebugGroupProc>(
+        GetGLProcAddress("glPushDebugGroupKHR"));
   }
 
   debug_fn.glPushGroupMarkerEXTFn = 0;
@@ -3343,6 +3454,48 @@ static void GL_BINDING_CALL Debug_glCullFace(GLenum mode) {
   g_driver_gl.debug_fn.glCullFaceFn(mode);
 }
 
+static void GL_BINDING_CALL
+Debug_glDebugMessageCallback(GLDEBUGPROC callback, const void* userParam) {
+  GL_SERVICE_LOG("glDebugMessageCallback"
+                 << "(" << callback << ", "
+                 << static_cast<const void*>(userParam) << ")");
+  DCHECK(g_driver_gl.debug_fn.glDebugMessageCallbackFn != nullptr);
+  g_driver_gl.debug_fn.glDebugMessageCallbackFn(callback, userParam);
+}
+
+static void GL_BINDING_CALL Debug_glDebugMessageControl(GLenum source,
+                                                        GLenum type,
+                                                        GLenum severity,
+                                                        GLsizei count,
+                                                        const GLuint* ids,
+                                                        GLboolean enabled) {
+  GL_SERVICE_LOG("glDebugMessageControl"
+                 << "(" << GLEnums::GetStringEnum(source) << ", "
+                 << GLEnums::GetStringEnum(type) << ", "
+                 << GLEnums::GetStringEnum(severity) << ", " << count << ", "
+                 << static_cast<const void*>(ids) << ", "
+                 << GLEnums::GetStringBool(enabled) << ")");
+  DCHECK(g_driver_gl.debug_fn.glDebugMessageControlFn != nullptr);
+  g_driver_gl.debug_fn.glDebugMessageControlFn(source, type, severity, count,
+                                               ids, enabled);
+}
+
+static void GL_BINDING_CALL Debug_glDebugMessageInsert(GLenum source,
+                                                       GLenum type,
+                                                       GLuint id,
+                                                       GLenum severity,
+                                                       GLsizei length,
+                                                       const char* buf) {
+  GL_SERVICE_LOG("glDebugMessageInsert"
+                 << "(" << GLEnums::GetStringEnum(source) << ", "
+                 << GLEnums::GetStringEnum(type) << ", " << id << ", "
+                 << GLEnums::GetStringEnum(severity) << ", " << length << ", "
+                 << buf << ")");
+  DCHECK(g_driver_gl.debug_fn.glDebugMessageInsertFn != nullptr);
+  g_driver_gl.debug_fn.glDebugMessageInsertFn(source, type, id, severity,
+                                              length, buf);
+}
+
 static void GL_BINDING_CALL Debug_glDeleteBuffersARB(GLsizei n,
                                                      const GLuint* buffers) {
   GL_SERVICE_LOG("glDeleteBuffersARB"
@@ -4103,6 +4256,27 @@ Debug_glGetBufferPointervRobustANGLE(GLenum target,
                                                         length, params);
 }
 
+static void GL_BINDING_CALL Debug_glGetDebugMessageLog(GLuint count,
+                                                       GLsizei bufSize,
+                                                       GLenum* sources,
+                                                       GLenum* types,
+                                                       GLuint* ids,
+                                                       GLenum* severities,
+                                                       GLsizei* lengths,
+                                                       char* messageLog) {
+  GL_SERVICE_LOG("glGetDebugMessageLog"
+                 << "(" << count << ", " << bufSize << ", "
+                 << static_cast<const void*>(sources) << ", "
+                 << static_cast<const void*>(types) << ", "
+                 << static_cast<const void*>(ids) << ", "
+                 << static_cast<const void*>(severities) << ", "
+                 << static_cast<const void*>(lengths) << ", "
+                 << static_cast<const void*>(messageLog) << ")");
+  DCHECK(g_driver_gl.debug_fn.glGetDebugMessageLogFn != nullptr);
+  g_driver_gl.debug_fn.glGetDebugMessageLogFn(
+      count, bufSize, sources, types, ids, severities, lengths, messageLog);
+}
+
 static GLenum GL_BINDING_CALL Debug_glGetError(void) {
   GL_SERVICE_LOG("glGetError"
                  << "("
@@ -4405,6 +4579,40 @@ static void GL_BINDING_CALL Debug_glGetnUniformuivRobustANGLE(GLuint program,
   DCHECK(g_driver_gl.debug_fn.glGetnUniformuivRobustANGLEFn != nullptr);
   g_driver_gl.debug_fn.glGetnUniformuivRobustANGLEFn(program, location, bufSize,
                                                      length, params);
+}
+
+static void GL_BINDING_CALL Debug_glGetObjectLabel(GLenum identifier,
+                                                   GLuint name,
+                                                   GLsizei bufSize,
+                                                   GLsizei* length,
+                                                   char* label) {
+  GL_SERVICE_LOG("glGetObjectLabel"
+                 << "(" << GLEnums::GetStringEnum(identifier) << ", " << name
+                 << ", " << bufSize << ", " << static_cast<const void*>(length)
+                 << ", " << static_cast<const void*>(label) << ")");
+  DCHECK(g_driver_gl.debug_fn.glGetObjectLabelFn != nullptr);
+  g_driver_gl.debug_fn.glGetObjectLabelFn(identifier, name, bufSize, length,
+                                          label);
+}
+
+static void GL_BINDING_CALL Debug_glGetObjectPtrLabel(void* ptr,
+                                                      GLsizei bufSize,
+                                                      GLsizei* length,
+                                                      char* label) {
+  GL_SERVICE_LOG("glGetObjectPtrLabel"
+                 << "(" << static_cast<const void*>(ptr) << ", " << bufSize
+                 << ", " << static_cast<const void*>(length) << ", "
+                 << static_cast<const void*>(label) << ")");
+  DCHECK(g_driver_gl.debug_fn.glGetObjectPtrLabelFn != nullptr);
+  g_driver_gl.debug_fn.glGetObjectPtrLabelFn(ptr, bufSize, length, label);
+}
+
+static void GL_BINDING_CALL Debug_glGetPointerv(GLenum pname, void** params) {
+  GL_SERVICE_LOG("glGetPointerv"
+                 << "(" << GLEnums::GetStringEnum(pname) << ", " << params
+                 << ")");
+  DCHECK(g_driver_gl.debug_fn.glGetPointervFn != nullptr);
+  g_driver_gl.debug_fn.glGetPointervFn(pname, params);
 }
 
 static void GL_BINDING_CALL
@@ -5522,6 +5730,27 @@ static void GL_BINDING_CALL Debug_glMemoryBarrierEXT(GLbitfield barriers) {
   g_driver_gl.debug_fn.glMemoryBarrierEXTFn(barriers);
 }
 
+static void GL_BINDING_CALL Debug_glObjectLabel(GLenum identifier,
+                                                GLuint name,
+                                                GLsizei length,
+                                                const char* label) {
+  GL_SERVICE_LOG("glObjectLabel"
+                 << "(" << GLEnums::GetStringEnum(identifier) << ", " << name
+                 << ", " << length << ", " << label << ")");
+  DCHECK(g_driver_gl.debug_fn.glObjectLabelFn != nullptr);
+  g_driver_gl.debug_fn.glObjectLabelFn(identifier, name, length, label);
+}
+
+static void GL_BINDING_CALL Debug_glObjectPtrLabel(void* ptr,
+                                                   GLsizei length,
+                                                   const char* label) {
+  GL_SERVICE_LOG("glObjectPtrLabel"
+                 << "(" << static_cast<const void*>(ptr) << ", " << length
+                 << ", " << label << ")");
+  DCHECK(g_driver_gl.debug_fn.glObjectPtrLabelFn != nullptr);
+  g_driver_gl.debug_fn.glObjectPtrLabelFn(ptr, length, label);
+}
+
 static void GL_BINDING_CALL Debug_glPathCommandsNV(GLuint path,
                                                    GLsizei numCommands,
                                                    const GLubyte* commands,
@@ -5600,6 +5829,14 @@ static void GL_BINDING_CALL Debug_glPolygonOffset(GLfloat factor,
   g_driver_gl.debug_fn.glPolygonOffsetFn(factor, units);
 }
 
+static void GL_BINDING_CALL Debug_glPopDebugGroup() {
+  GL_SERVICE_LOG("glPopDebugGroup"
+                 << "("
+                 << ")");
+  DCHECK(g_driver_gl.debug_fn.glPopDebugGroupFn != nullptr);
+  g_driver_gl.debug_fn.glPopDebugGroupFn();
+}
+
 static void GL_BINDING_CALL Debug_glPopGroupMarkerEXT(void) {
   GL_SERVICE_LOG("glPopGroupMarkerEXT"
                  << "("
@@ -5650,6 +5887,17 @@ Debug_glProgramPathFragmentInputGenNV(GLuint program,
   DCHECK(g_driver_gl.debug_fn.glProgramPathFragmentInputGenNVFn != nullptr);
   g_driver_gl.debug_fn.glProgramPathFragmentInputGenNVFn(
       program, location, genMode, components, coeffs);
+}
+
+static void GL_BINDING_CALL Debug_glPushDebugGroup(GLenum source,
+                                                   GLuint id,
+                                                   GLsizei length,
+                                                   const char* message) {
+  GL_SERVICE_LOG("glPushDebugGroup"
+                 << "(" << GLEnums::GetStringEnum(source) << ", " << id << ", "
+                 << length << ", " << message << ")");
+  DCHECK(g_driver_gl.debug_fn.glPushDebugGroupFn != nullptr);
+  g_driver_gl.debug_fn.glPushDebugGroupFn(source, id, length, message);
 }
 
 static void GL_BINDING_CALL Debug_glPushGroupMarkerEXT(GLsizei length,
@@ -7336,6 +7584,18 @@ void DriverGL::InitializeDebugBindings() {
     debug_fn.glCullFaceFn = fn.glCullFaceFn;
     fn.glCullFaceFn = Debug_glCullFace;
   }
+  if (!debug_fn.glDebugMessageCallbackFn) {
+    debug_fn.glDebugMessageCallbackFn = fn.glDebugMessageCallbackFn;
+    fn.glDebugMessageCallbackFn = Debug_glDebugMessageCallback;
+  }
+  if (!debug_fn.glDebugMessageControlFn) {
+    debug_fn.glDebugMessageControlFn = fn.glDebugMessageControlFn;
+    fn.glDebugMessageControlFn = Debug_glDebugMessageControl;
+  }
+  if (!debug_fn.glDebugMessageInsertFn) {
+    debug_fn.glDebugMessageInsertFn = fn.glDebugMessageInsertFn;
+    fn.glDebugMessageInsertFn = Debug_glDebugMessageInsert;
+  }
   if (!debug_fn.glDeleteBuffersARBFn) {
     debug_fn.glDeleteBuffersARBFn = fn.glDeleteBuffersARBFn;
     fn.glDeleteBuffersARBFn = Debug_glDeleteBuffersARB;
@@ -7645,6 +7905,10 @@ void DriverGL::InitializeDebugBindings() {
         fn.glGetBufferPointervRobustANGLEFn;
     fn.glGetBufferPointervRobustANGLEFn = Debug_glGetBufferPointervRobustANGLE;
   }
+  if (!debug_fn.glGetDebugMessageLogFn) {
+    debug_fn.glGetDebugMessageLogFn = fn.glGetDebugMessageLogFn;
+    fn.glGetDebugMessageLogFn = Debug_glGetDebugMessageLog;
+  }
   if (!debug_fn.glGetErrorFn) {
     debug_fn.glGetErrorFn = fn.glGetErrorFn;
     fn.glGetErrorFn = Debug_glGetError;
@@ -7749,6 +8013,18 @@ void DriverGL::InitializeDebugBindings() {
   if (!debug_fn.glGetnUniformuivRobustANGLEFn) {
     debug_fn.glGetnUniformuivRobustANGLEFn = fn.glGetnUniformuivRobustANGLEFn;
     fn.glGetnUniformuivRobustANGLEFn = Debug_glGetnUniformuivRobustANGLE;
+  }
+  if (!debug_fn.glGetObjectLabelFn) {
+    debug_fn.glGetObjectLabelFn = fn.glGetObjectLabelFn;
+    fn.glGetObjectLabelFn = Debug_glGetObjectLabel;
+  }
+  if (!debug_fn.glGetObjectPtrLabelFn) {
+    debug_fn.glGetObjectPtrLabelFn = fn.glGetObjectPtrLabelFn;
+    fn.glGetObjectPtrLabelFn = Debug_glGetObjectPtrLabel;
+  }
+  if (!debug_fn.glGetPointervFn) {
+    debug_fn.glGetPointervFn = fn.glGetPointervFn;
+    fn.glGetPointervFn = Debug_glGetPointerv;
   }
   if (!debug_fn.glGetPointervRobustANGLERobustANGLEFn) {
     debug_fn.glGetPointervRobustANGLERobustANGLEFn =
@@ -8157,6 +8433,14 @@ void DriverGL::InitializeDebugBindings() {
     debug_fn.glMemoryBarrierEXTFn = fn.glMemoryBarrierEXTFn;
     fn.glMemoryBarrierEXTFn = Debug_glMemoryBarrierEXT;
   }
+  if (!debug_fn.glObjectLabelFn) {
+    debug_fn.glObjectLabelFn = fn.glObjectLabelFn;
+    fn.glObjectLabelFn = Debug_glObjectLabel;
+  }
+  if (!debug_fn.glObjectPtrLabelFn) {
+    debug_fn.glObjectPtrLabelFn = fn.glObjectPtrLabelFn;
+    fn.glObjectPtrLabelFn = Debug_glObjectPtrLabel;
+  }
   if (!debug_fn.glPathCommandsNVFn) {
     debug_fn.glPathCommandsNVFn = fn.glPathCommandsNVFn;
     fn.glPathCommandsNVFn = Debug_glPathCommandsNV;
@@ -8189,6 +8473,10 @@ void DriverGL::InitializeDebugBindings() {
     debug_fn.glPolygonOffsetFn = fn.glPolygonOffsetFn;
     fn.glPolygonOffsetFn = Debug_glPolygonOffset;
   }
+  if (!debug_fn.glPopDebugGroupFn) {
+    debug_fn.glPopDebugGroupFn = fn.glPopDebugGroupFn;
+    fn.glPopDebugGroupFn = Debug_glPopDebugGroup;
+  }
   if (!debug_fn.glPopGroupMarkerEXTFn) {
     debug_fn.glPopGroupMarkerEXTFn = fn.glPopGroupMarkerEXTFn;
     fn.glPopGroupMarkerEXTFn = Debug_glPopGroupMarkerEXT;
@@ -8210,6 +8498,10 @@ void DriverGL::InitializeDebugBindings() {
         fn.glProgramPathFragmentInputGenNVFn;
     fn.glProgramPathFragmentInputGenNVFn =
         Debug_glProgramPathFragmentInputGenNV;
+  }
+  if (!debug_fn.glPushDebugGroupFn) {
+    debug_fn.glPushDebugGroupFn = fn.glPushDebugGroupFn;
+    fn.glPushDebugGroupFn = Debug_glPushDebugGroup;
   }
   if (!debug_fn.glPushGroupMarkerEXTFn) {
     debug_fn.glPushGroupMarkerEXTFn = fn.glPushGroupMarkerEXTFn;
@@ -9138,6 +9430,30 @@ void GLApiBase::glCullFaceFn(GLenum mode) {
   driver_->fn.glCullFaceFn(mode);
 }
 
+void GLApiBase::glDebugMessageCallbackFn(GLDEBUGPROC callback,
+                                         const void* userParam) {
+  driver_->fn.glDebugMessageCallbackFn(callback, userParam);
+}
+
+void GLApiBase::glDebugMessageControlFn(GLenum source,
+                                        GLenum type,
+                                        GLenum severity,
+                                        GLsizei count,
+                                        const GLuint* ids,
+                                        GLboolean enabled) {
+  driver_->fn.glDebugMessageControlFn(source, type, severity, count, ids,
+                                      enabled);
+}
+
+void GLApiBase::glDebugMessageInsertFn(GLenum source,
+                                       GLenum type,
+                                       GLuint id,
+                                       GLenum severity,
+                                       GLsizei length,
+                                       const char* buf) {
+  driver_->fn.glDebugMessageInsertFn(source, type, id, severity, length, buf);
+}
+
 void GLApiBase::glDeleteBuffersARBFn(GLsizei n, const GLuint* buffers) {
   driver_->fn.glDeleteBuffersARBFn(n, buffers);
 }
@@ -9546,6 +9862,18 @@ void GLApiBase::glGetBufferPointervRobustANGLEFn(GLenum target,
                                                params);
 }
 
+void GLApiBase::glGetDebugMessageLogFn(GLuint count,
+                                       GLsizei bufSize,
+                                       GLenum* sources,
+                                       GLenum* types,
+                                       GLuint* ids,
+                                       GLenum* severities,
+                                       GLsizei* lengths,
+                                       char* messageLog) {
+  driver_->fn.glGetDebugMessageLogFn(count, bufSize, sources, types, ids,
+                                     severities, lengths, messageLog);
+}
+
 GLenum GLApiBase::glGetErrorFn(void) {
   return driver_->fn.glGetErrorFn();
 }
@@ -9708,6 +10036,25 @@ void GLApiBase::glGetnUniformuivRobustANGLEFn(GLuint program,
                                               GLuint* params) {
   driver_->fn.glGetnUniformuivRobustANGLEFn(program, location, bufSize, length,
                                             params);
+}
+
+void GLApiBase::glGetObjectLabelFn(GLenum identifier,
+                                   GLuint name,
+                                   GLsizei bufSize,
+                                   GLsizei* length,
+                                   char* label) {
+  driver_->fn.glGetObjectLabelFn(identifier, name, bufSize, length, label);
+}
+
+void GLApiBase::glGetObjectPtrLabelFn(void* ptr,
+                                      GLsizei bufSize,
+                                      GLsizei* length,
+                                      char* label) {
+  driver_->fn.glGetObjectPtrLabelFn(ptr, bufSize, length, label);
+}
+
+void GLApiBase::glGetPointervFn(GLenum pname, void** params) {
+  driver_->fn.glGetPointervFn(pname, params);
 }
 
 void GLApiBase::glGetPointervRobustANGLERobustANGLEFn(GLenum pname,
@@ -10319,6 +10666,19 @@ void GLApiBase::glMemoryBarrierEXTFn(GLbitfield barriers) {
   driver_->fn.glMemoryBarrierEXTFn(barriers);
 }
 
+void GLApiBase::glObjectLabelFn(GLenum identifier,
+                                GLuint name,
+                                GLsizei length,
+                                const char* label) {
+  driver_->fn.glObjectLabelFn(identifier, name, length, label);
+}
+
+void GLApiBase::glObjectPtrLabelFn(void* ptr,
+                                   GLsizei length,
+                                   const char* label) {
+  driver_->fn.glObjectPtrLabelFn(ptr, length, label);
+}
+
 void GLApiBase::glPathCommandsNVFn(GLuint path,
                                    GLsizei numCommands,
                                    const GLubyte* commands,
@@ -10357,6 +10717,10 @@ void GLApiBase::glPolygonOffsetFn(GLfloat factor, GLfloat units) {
   driver_->fn.glPolygonOffsetFn(factor, units);
 }
 
+void GLApiBase::glPopDebugGroupFn() {
+  driver_->fn.glPopDebugGroupFn();
+}
+
 void GLApiBase::glPopGroupMarkerEXTFn(void) {
   driver_->fn.glPopGroupMarkerEXTFn();
 }
@@ -10385,6 +10749,13 @@ void GLApiBase::glProgramPathFragmentInputGenNVFn(GLuint program,
                                                   const GLfloat* coeffs) {
   driver_->fn.glProgramPathFragmentInputGenNVFn(program, location, genMode,
                                                 components, coeffs);
+}
+
+void GLApiBase::glPushDebugGroupFn(GLenum source,
+                                   GLuint id,
+                                   GLsizei length,
+                                   const char* message) {
+  driver_->fn.glPushDebugGroupFn(source, id, length, message);
 }
 
 void GLApiBase::glPushGroupMarkerEXTFn(GLsizei length, const char* marker) {
@@ -11693,6 +12064,32 @@ void TraceGLApi::glCullFaceFn(GLenum mode) {
   gl_api_->glCullFaceFn(mode);
 }
 
+void TraceGLApi::glDebugMessageCallbackFn(GLDEBUGPROC callback,
+                                          const void* userParam) {
+  TRACE_EVENT_BINARY_EFFICIENT0("gpu", "TraceGLAPI::glDebugMessageCallback")
+  gl_api_->glDebugMessageCallbackFn(callback, userParam);
+}
+
+void TraceGLApi::glDebugMessageControlFn(GLenum source,
+                                         GLenum type,
+                                         GLenum severity,
+                                         GLsizei count,
+                                         const GLuint* ids,
+                                         GLboolean enabled) {
+  TRACE_EVENT_BINARY_EFFICIENT0("gpu", "TraceGLAPI::glDebugMessageControl")
+  gl_api_->glDebugMessageControlFn(source, type, severity, count, ids, enabled);
+}
+
+void TraceGLApi::glDebugMessageInsertFn(GLenum source,
+                                        GLenum type,
+                                        GLuint id,
+                                        GLenum severity,
+                                        GLsizei length,
+                                        const char* buf) {
+  TRACE_EVENT_BINARY_EFFICIENT0("gpu", "TraceGLAPI::glDebugMessageInsert")
+  gl_api_->glDebugMessageInsertFn(source, type, id, severity, length, buf);
+}
+
 void TraceGLApi::glDeleteBuffersARBFn(GLsizei n, const GLuint* buffers) {
   TRACE_EVENT_BINARY_EFFICIENT0("gpu", "TraceGLAPI::glDeleteBuffersARB")
   gl_api_->glDeleteBuffersARBFn(n, buffers);
@@ -12186,6 +12583,19 @@ void TraceGLApi::glGetBufferPointervRobustANGLEFn(GLenum target,
                                             params);
 }
 
+void TraceGLApi::glGetDebugMessageLogFn(GLuint count,
+                                        GLsizei bufSize,
+                                        GLenum* sources,
+                                        GLenum* types,
+                                        GLuint* ids,
+                                        GLenum* severities,
+                                        GLsizei* lengths,
+                                        char* messageLog) {
+  TRACE_EVENT_BINARY_EFFICIENT0("gpu", "TraceGLAPI::glGetDebugMessageLog")
+  gl_api_->glGetDebugMessageLogFn(count, bufSize, sources, types, ids,
+                                  severities, lengths, messageLog);
+}
+
 GLenum TraceGLApi::glGetErrorFn(void) {
   TRACE_EVENT_BINARY_EFFICIENT0("gpu", "TraceGLAPI::glGetError")
   return gl_api_->glGetErrorFn();
@@ -12377,6 +12787,28 @@ void TraceGLApi::glGetnUniformuivRobustANGLEFn(GLuint program,
                                 "TraceGLAPI::glGetnUniformuivRobustANGLE")
   gl_api_->glGetnUniformuivRobustANGLEFn(program, location, bufSize, length,
                                          params);
+}
+
+void TraceGLApi::glGetObjectLabelFn(GLenum identifier,
+                                    GLuint name,
+                                    GLsizei bufSize,
+                                    GLsizei* length,
+                                    char* label) {
+  TRACE_EVENT_BINARY_EFFICIENT0("gpu", "TraceGLAPI::glGetObjectLabel")
+  gl_api_->glGetObjectLabelFn(identifier, name, bufSize, length, label);
+}
+
+void TraceGLApi::glGetObjectPtrLabelFn(void* ptr,
+                                       GLsizei bufSize,
+                                       GLsizei* length,
+                                       char* label) {
+  TRACE_EVENT_BINARY_EFFICIENT0("gpu", "TraceGLAPI::glGetObjectPtrLabel")
+  gl_api_->glGetObjectPtrLabelFn(ptr, bufSize, length, label);
+}
+
+void TraceGLApi::glGetPointervFn(GLenum pname, void** params) {
+  TRACE_EVENT_BINARY_EFFICIENT0("gpu", "TraceGLAPI::glGetPointerv")
+  gl_api_->glGetPointervFn(pname, params);
 }
 
 void TraceGLApi::glGetPointervRobustANGLERobustANGLEFn(GLenum pname,
@@ -13099,6 +13531,21 @@ void TraceGLApi::glMemoryBarrierEXTFn(GLbitfield barriers) {
   gl_api_->glMemoryBarrierEXTFn(barriers);
 }
 
+void TraceGLApi::glObjectLabelFn(GLenum identifier,
+                                 GLuint name,
+                                 GLsizei length,
+                                 const char* label) {
+  TRACE_EVENT_BINARY_EFFICIENT0("gpu", "TraceGLAPI::glObjectLabel")
+  gl_api_->glObjectLabelFn(identifier, name, length, label);
+}
+
+void TraceGLApi::glObjectPtrLabelFn(void* ptr,
+                                    GLsizei length,
+                                    const char* label) {
+  TRACE_EVENT_BINARY_EFFICIENT0("gpu", "TraceGLAPI::glObjectPtrLabel")
+  gl_api_->glObjectPtrLabelFn(ptr, length, label);
+}
+
 void TraceGLApi::glPathCommandsNVFn(GLuint path,
                                     GLsizei numCommands,
                                     const GLubyte* commands,
@@ -13147,6 +13594,11 @@ void TraceGLApi::glPolygonOffsetFn(GLfloat factor, GLfloat units) {
   gl_api_->glPolygonOffsetFn(factor, units);
 }
 
+void TraceGLApi::glPopDebugGroupFn() {
+  TRACE_EVENT_BINARY_EFFICIENT0("gpu", "TraceGLAPI::glPopDebugGroup")
+  gl_api_->glPopDebugGroupFn();
+}
+
 void TraceGLApi::glPopGroupMarkerEXTFn(void) {
   TRACE_EVENT_BINARY_EFFICIENT0("gpu", "TraceGLAPI::glPopGroupMarkerEXT")
   gl_api_->glPopGroupMarkerEXTFn();
@@ -13181,6 +13633,14 @@ void TraceGLApi::glProgramPathFragmentInputGenNVFn(GLuint program,
                                 "TraceGLAPI::glProgramPathFragmentInputGenNV")
   gl_api_->glProgramPathFragmentInputGenNVFn(program, location, genMode,
                                              components, coeffs);
+}
+
+void TraceGLApi::glPushDebugGroupFn(GLenum source,
+                                    GLuint id,
+                                    GLsizei length,
+                                    const char* message) {
+  TRACE_EVENT_BINARY_EFFICIENT0("gpu", "TraceGLAPI::glPushDebugGroup")
+  gl_api_->glPushDebugGroupFn(source, id, length, message);
 }
 
 void TraceGLApi::glPushGroupMarkerEXTFn(GLsizei length, const char* marker) {
@@ -14670,6 +15130,38 @@ void NoContextGLApi::glCullFaceFn(GLenum mode) {
   LOG(ERROR) << "Trying to call glCullFace() without current GL context";
 }
 
+void NoContextGLApi::glDebugMessageCallbackFn(GLDEBUGPROC callback,
+                                              const void* userParam) {
+  NOTREACHED()
+      << "Trying to call glDebugMessageCallback() without current GL context";
+  LOG(ERROR)
+      << "Trying to call glDebugMessageCallback() without current GL context";
+}
+
+void NoContextGLApi::glDebugMessageControlFn(GLenum source,
+                                             GLenum type,
+                                             GLenum severity,
+                                             GLsizei count,
+                                             const GLuint* ids,
+                                             GLboolean enabled) {
+  NOTREACHED()
+      << "Trying to call glDebugMessageControl() without current GL context";
+  LOG(ERROR)
+      << "Trying to call glDebugMessageControl() without current GL context";
+}
+
+void NoContextGLApi::glDebugMessageInsertFn(GLenum source,
+                                            GLenum type,
+                                            GLuint id,
+                                            GLenum severity,
+                                            GLsizei length,
+                                            const char* buf) {
+  NOTREACHED()
+      << "Trying to call glDebugMessageInsert() without current GL context";
+  LOG(ERROR)
+      << "Trying to call glDebugMessageInsert() without current GL context";
+}
+
 void NoContextGLApi::glDeleteBuffersARBFn(GLsizei n, const GLuint* buffers) {
   NOTREACHED()
       << "Trying to call glDeleteBuffersARB() without current GL context";
@@ -15229,6 +15721,20 @@ void NoContextGLApi::glGetBufferPointervRobustANGLEFn(GLenum target,
                 "current GL context";
 }
 
+void NoContextGLApi::glGetDebugMessageLogFn(GLuint count,
+                                            GLsizei bufSize,
+                                            GLenum* sources,
+                                            GLenum* types,
+                                            GLuint* ids,
+                                            GLenum* severities,
+                                            GLsizei* lengths,
+                                            char* messageLog) {
+  NOTREACHED()
+      << "Trying to call glGetDebugMessageLog() without current GL context";
+  LOG(ERROR)
+      << "Trying to call glGetDebugMessageLog() without current GL context";
+}
+
 GLenum NoContextGLApi::glGetErrorFn(void) {
   NOTREACHED() << "Trying to call glGetError() without current GL context";
   LOG(ERROR) << "Trying to call glGetError() without current GL context";
@@ -15451,6 +15957,31 @@ void NoContextGLApi::glGetnUniformuivRobustANGLEFn(GLuint program,
                   "current GL context";
   LOG(ERROR) << "Trying to call glGetnUniformuivRobustANGLE() without current "
                 "GL context";
+}
+
+void NoContextGLApi::glGetObjectLabelFn(GLenum identifier,
+                                        GLuint name,
+                                        GLsizei bufSize,
+                                        GLsizei* length,
+                                        char* label) {
+  NOTREACHED()
+      << "Trying to call glGetObjectLabel() without current GL context";
+  LOG(ERROR) << "Trying to call glGetObjectLabel() without current GL context";
+}
+
+void NoContextGLApi::glGetObjectPtrLabelFn(void* ptr,
+                                           GLsizei bufSize,
+                                           GLsizei* length,
+                                           char* label) {
+  NOTREACHED()
+      << "Trying to call glGetObjectPtrLabel() without current GL context";
+  LOG(ERROR)
+      << "Trying to call glGetObjectPtrLabel() without current GL context";
+}
+
+void NoContextGLApi::glGetPointervFn(GLenum pname, void** params) {
+  NOTREACHED() << "Trying to call glGetPointerv() without current GL context";
+  LOG(ERROR) << "Trying to call glGetPointerv() without current GL context";
 }
 
 void NoContextGLApi::glGetPointervRobustANGLERobustANGLEFn(GLenum pname,
@@ -16280,6 +16811,22 @@ void NoContextGLApi::glMemoryBarrierEXTFn(GLbitfield barriers) {
       << "Trying to call glMemoryBarrierEXT() without current GL context";
 }
 
+void NoContextGLApi::glObjectLabelFn(GLenum identifier,
+                                     GLuint name,
+                                     GLsizei length,
+                                     const char* label) {
+  NOTREACHED() << "Trying to call glObjectLabel() without current GL context";
+  LOG(ERROR) << "Trying to call glObjectLabel() without current GL context";
+}
+
+void NoContextGLApi::glObjectPtrLabelFn(void* ptr,
+                                        GLsizei length,
+                                        const char* label) {
+  NOTREACHED()
+      << "Trying to call glObjectPtrLabel() without current GL context";
+  LOG(ERROR) << "Trying to call glObjectPtrLabel() without current GL context";
+}
+
 void NoContextGLApi::glPathCommandsNVFn(GLuint path,
                                         GLsizei numCommands,
                                         const GLubyte* commands,
@@ -16341,6 +16888,11 @@ void NoContextGLApi::glPolygonOffsetFn(GLfloat factor, GLfloat units) {
   LOG(ERROR) << "Trying to call glPolygonOffset() without current GL context";
 }
 
+void NoContextGLApi::glPopDebugGroupFn() {
+  NOTREACHED() << "Trying to call glPopDebugGroup() without current GL context";
+  LOG(ERROR) << "Trying to call glPopDebugGroup() without current GL context";
+}
+
 void NoContextGLApi::glPopGroupMarkerEXTFn(void) {
   NOTREACHED()
       << "Trying to call glPopGroupMarkerEXT() without current GL context";
@@ -16381,6 +16933,15 @@ void NoContextGLApi::glProgramPathFragmentInputGenNVFn(GLuint program,
                   "current GL context";
   LOG(ERROR) << "Trying to call glProgramPathFragmentInputGenNV() without "
                 "current GL context";
+}
+
+void NoContextGLApi::glPushDebugGroupFn(GLenum source,
+                                        GLuint id,
+                                        GLsizei length,
+                                        const char* message) {
+  NOTREACHED()
+      << "Trying to call glPushDebugGroup() without current GL context";
+  LOG(ERROR) << "Trying to call glPushDebugGroup() without current GL context";
 }
 
 void NoContextGLApi::glPushGroupMarkerEXTFn(GLsizei length,

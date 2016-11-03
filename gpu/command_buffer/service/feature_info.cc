@@ -1401,6 +1401,10 @@ void FeatureInfo::InitializeFeatures() {
 
   feature_flags_.angle_robust_client_memory =
       extensions.Contains("GL_ANGLE_robust_client_memory");
+
+  feature_flags_.khr_debug = gl_version_info_->IsAtLeastGL(4, 3) ||
+                             gl_version_info_->IsAtLeastGLES(3, 2) ||
+                             extensions.Contains("GL_KHR_debug");
 }
 
 bool FeatureInfo::IsES3Capable() const {

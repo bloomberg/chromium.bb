@@ -257,6 +257,21 @@ typedef void(GL_BINDING_CALL* glCoverStrokePathNVProc)(GLuint name,
 typedef GLuint(GL_BINDING_CALL* glCreateProgramProc)(void);
 typedef GLuint(GL_BINDING_CALL* glCreateShaderProc)(GLenum type);
 typedef void(GL_BINDING_CALL* glCullFaceProc)(GLenum mode);
+typedef void(GL_BINDING_CALL* glDebugMessageCallbackProc)(
+    GLDEBUGPROC callback,
+    const void* userParam);
+typedef void(GL_BINDING_CALL* glDebugMessageControlProc)(GLenum source,
+                                                         GLenum type,
+                                                         GLenum severity,
+                                                         GLsizei count,
+                                                         const GLuint* ids,
+                                                         GLboolean enabled);
+typedef void(GL_BINDING_CALL* glDebugMessageInsertProc)(GLenum source,
+                                                        GLenum type,
+                                                        GLuint id,
+                                                        GLenum severity,
+                                                        GLsizei length,
+                                                        const char* buf);
 typedef void(GL_BINDING_CALL* glDeleteBuffersARBProc)(GLsizei n,
                                                       const GLuint* buffers);
 typedef void(GL_BINDING_CALL* glDeleteFencesAPPLEProc)(GLsizei n,
@@ -465,6 +480,14 @@ typedef void(GL_BINDING_CALL* glGetBufferPointervRobustANGLEProc)(
     GLsizei bufSize,
     GLsizei* length,
     void** params);
+typedef void(GL_BINDING_CALL* glGetDebugMessageLogProc)(GLuint count,
+                                                        GLsizei bufSize,
+                                                        GLenum* sources,
+                                                        GLenum* types,
+                                                        GLuint* ids,
+                                                        GLenum* severities,
+                                                        GLsizei* lengths,
+                                                        char* messageLog);
 typedef GLenum(GL_BINDING_CALL* glGetErrorProc)(void);
 typedef void(GL_BINDING_CALL* glGetFenceivNVProc)(GLuint fence,
                                                   GLenum pname,
@@ -558,6 +581,16 @@ typedef void(GL_BINDING_CALL* glGetnUniformuivRobustANGLEProc)(GLuint program,
                                                                GLsizei bufSize,
                                                                GLsizei* length,
                                                                GLuint* params);
+typedef void(GL_BINDING_CALL* glGetObjectLabelProc)(GLenum identifier,
+                                                    GLuint name,
+                                                    GLsizei bufSize,
+                                                    GLsizei* length,
+                                                    char* label);
+typedef void(GL_BINDING_CALL* glGetObjectPtrLabelProc)(void* ptr,
+                                                       GLsizei bufSize,
+                                                       GLsizei* length,
+                                                       char* label);
+typedef void(GL_BINDING_CALL* glGetPointervProc)(GLenum pname, void** params);
 typedef void(GL_BINDING_CALL* glGetPointervRobustANGLERobustANGLEProc)(
     GLenum pname,
     GLsizei bufSize,
@@ -905,6 +938,13 @@ typedef void(GL_BINDING_CALL* glMatrixLoadfEXTProc)(GLenum matrixMode,
                                                     const GLfloat* m);
 typedef void(GL_BINDING_CALL* glMatrixLoadIdentityEXTProc)(GLenum matrixMode);
 typedef void(GL_BINDING_CALL* glMemoryBarrierEXTProc)(GLbitfield barriers);
+typedef void(GL_BINDING_CALL* glObjectLabelProc)(GLenum identifier,
+                                                 GLuint name,
+                                                 GLsizei length,
+                                                 const char* label);
+typedef void(GL_BINDING_CALL* glObjectPtrLabelProc)(void* ptr,
+                                                    GLsizei length,
+                                                    const char* label);
 typedef void(GL_BINDING_CALL* glPathCommandsNVProc)(GLuint path,
                                                     GLsizei numCommands,
                                                     const GLubyte* commands,
@@ -925,6 +965,7 @@ typedef void(GL_BINDING_CALL* glPixelStoreiProc)(GLenum pname, GLint param);
 typedef void(GL_BINDING_CALL* glPointParameteriProc)(GLenum pname, GLint param);
 typedef void(GL_BINDING_CALL* glPolygonOffsetProc)(GLfloat factor,
                                                    GLfloat units);
+typedef void(GL_BINDING_CALL* glPopDebugGroupProc)();
 typedef void(GL_BINDING_CALL* glPopGroupMarkerEXTProc)(void);
 typedef void(GL_BINDING_CALL* glPrimitiveRestartIndexProc)(GLuint index);
 typedef void(GL_BINDING_CALL* glProgramBinaryProc)(GLuint program,
@@ -940,6 +981,10 @@ typedef void(GL_BINDING_CALL* glProgramPathFragmentInputGenNVProc)(
     GLenum genMode,
     GLint components,
     const GLfloat* coeffs);
+typedef void(GL_BINDING_CALL* glPushDebugGroupProc)(GLenum source,
+                                                    GLuint id,
+                                                    GLsizei length,
+                                                    const char* message);
 typedef void(GL_BINDING_CALL* glPushGroupMarkerEXTProc)(GLsizei length,
                                                         const char* marker);
 typedef void(GL_BINDING_CALL* glQueryCounterProc)(GLuint id, GLenum target);
@@ -1480,6 +1525,7 @@ struct ExtensionsGL {
   bool b_GL_IMG_multisampled_render_to_texture;
   bool b_GL_INTEL_framebuffer_CMAA;
   bool b_GL_KHR_blend_equation_advanced;
+  bool b_GL_KHR_debug;
   bool b_GL_KHR_robustness;
   bool b_GL_NV_blend_equation_advanced;
   bool b_GL_NV_fence;
@@ -1555,6 +1601,9 @@ struct ProcsGL {
   glCreateProgramProc glCreateProgramFn;
   glCreateShaderProc glCreateShaderFn;
   glCullFaceProc glCullFaceFn;
+  glDebugMessageCallbackProc glDebugMessageCallbackFn;
+  glDebugMessageControlProc glDebugMessageControlFn;
+  glDebugMessageInsertProc glDebugMessageInsertFn;
   glDeleteBuffersARBProc glDeleteBuffersARBFn;
   glDeleteFencesAPPLEProc glDeleteFencesAPPLEFn;
   glDeleteFencesNVProc glDeleteFencesNVFn;
@@ -1633,6 +1682,7 @@ struct ProcsGL {
   glGetBufferParameterivProc glGetBufferParameterivFn;
   glGetBufferParameterivRobustANGLEProc glGetBufferParameterivRobustANGLEFn;
   glGetBufferPointervRobustANGLEProc glGetBufferPointervRobustANGLEFn;
+  glGetDebugMessageLogProc glGetDebugMessageLogFn;
   glGetErrorProc glGetErrorFn;
   glGetFenceivNVProc glGetFenceivNVFn;
   glGetFloatvProc glGetFloatvFn;
@@ -1660,6 +1710,9 @@ struct ProcsGL {
   glGetnUniformfvRobustANGLEProc glGetnUniformfvRobustANGLEFn;
   glGetnUniformivRobustANGLEProc glGetnUniformivRobustANGLEFn;
   glGetnUniformuivRobustANGLEProc glGetnUniformuivRobustANGLEFn;
+  glGetObjectLabelProc glGetObjectLabelFn;
+  glGetObjectPtrLabelProc glGetObjectPtrLabelFn;
+  glGetPointervProc glGetPointervFn;
   glGetPointervRobustANGLERobustANGLEProc glGetPointervRobustANGLERobustANGLEFn;
   glGetProgramBinaryProc glGetProgramBinaryFn;
   glGetProgramInfoLogProc glGetProgramInfoLogFn;
@@ -1754,6 +1807,8 @@ struct ProcsGL {
   glMatrixLoadfEXTProc glMatrixLoadfEXTFn;
   glMatrixLoadIdentityEXTProc glMatrixLoadIdentityEXTFn;
   glMemoryBarrierEXTProc glMemoryBarrierEXTFn;
+  glObjectLabelProc glObjectLabelFn;
+  glObjectPtrLabelProc glObjectPtrLabelFn;
   glPathCommandsNVProc glPathCommandsNVFn;
   glPathParameterfNVProc glPathParameterfNVFn;
   glPathParameteriNVProc glPathParameteriNVFn;
@@ -1762,11 +1817,13 @@ struct ProcsGL {
   glPixelStoreiProc glPixelStoreiFn;
   glPointParameteriProc glPointParameteriFn;
   glPolygonOffsetProc glPolygonOffsetFn;
+  glPopDebugGroupProc glPopDebugGroupFn;
   glPopGroupMarkerEXTProc glPopGroupMarkerEXTFn;
   glPrimitiveRestartIndexProc glPrimitiveRestartIndexFn;
   glProgramBinaryProc glProgramBinaryFn;
   glProgramParameteriProc glProgramParameteriFn;
   glProgramPathFragmentInputGenNVProc glProgramPathFragmentInputGenNVFn;
+  glPushDebugGroupProc glPushDebugGroupFn;
   glPushGroupMarkerEXTProc glPushGroupMarkerEXTFn;
   glQueryCounterProc glQueryCounterFn;
   glReadBufferProc glReadBufferFn;
@@ -2121,6 +2178,20 @@ class GL_EXPORT GLApi {
   virtual GLuint glCreateProgramFn(void) = 0;
   virtual GLuint glCreateShaderFn(GLenum type) = 0;
   virtual void glCullFaceFn(GLenum mode) = 0;
+  virtual void glDebugMessageCallbackFn(GLDEBUGPROC callback,
+                                        const void* userParam) = 0;
+  virtual void glDebugMessageControlFn(GLenum source,
+                                       GLenum type,
+                                       GLenum severity,
+                                       GLsizei count,
+                                       const GLuint* ids,
+                                       GLboolean enabled) = 0;
+  virtual void glDebugMessageInsertFn(GLenum source,
+                                      GLenum type,
+                                      GLuint id,
+                                      GLenum severity,
+                                      GLsizei length,
+                                      const char* buf) = 0;
   virtual void glDeleteBuffersARBFn(GLsizei n, const GLuint* buffers) = 0;
   virtual void glDeleteFencesAPPLEFn(GLsizei n, const GLuint* fences) = 0;
   virtual void glDeleteFencesNVFn(GLsizei n, const GLuint* fences) = 0;
@@ -2292,6 +2363,14 @@ class GL_EXPORT GLApi {
                                                 GLsizei bufSize,
                                                 GLsizei* length,
                                                 void** params) = 0;
+  virtual void glGetDebugMessageLogFn(GLuint count,
+                                      GLsizei bufSize,
+                                      GLenum* sources,
+                                      GLenum* types,
+                                      GLuint* ids,
+                                      GLenum* severities,
+                                      GLsizei* lengths,
+                                      char* messageLog) = 0;
   virtual GLenum glGetErrorFn(void) = 0;
   virtual void glGetFenceivNVFn(GLuint fence, GLenum pname, GLint* params) = 0;
   virtual void glGetFloatvFn(GLenum pname, GLfloat* params) = 0;
@@ -2373,6 +2452,16 @@ class GL_EXPORT GLApi {
                                              GLsizei bufSize,
                                              GLsizei* length,
                                              GLuint* params) = 0;
+  virtual void glGetObjectLabelFn(GLenum identifier,
+                                  GLuint name,
+                                  GLsizei bufSize,
+                                  GLsizei* length,
+                                  char* label) = 0;
+  virtual void glGetObjectPtrLabelFn(void* ptr,
+                                     GLsizei bufSize,
+                                     GLsizei* length,
+                                     char* label) = 0;
+  virtual void glGetPointervFn(GLenum pname, void** params) = 0;
   virtual void glGetPointervRobustANGLERobustANGLEFn(GLenum pname,
                                                      GLsizei bufSize,
                                                      GLsizei* length,
@@ -2675,6 +2764,13 @@ class GL_EXPORT GLApi {
   virtual void glMatrixLoadfEXTFn(GLenum matrixMode, const GLfloat* m) = 0;
   virtual void glMatrixLoadIdentityEXTFn(GLenum matrixMode) = 0;
   virtual void glMemoryBarrierEXTFn(GLbitfield barriers) = 0;
+  virtual void glObjectLabelFn(GLenum identifier,
+                               GLuint name,
+                               GLsizei length,
+                               const char* label) = 0;
+  virtual void glObjectPtrLabelFn(void* ptr,
+                                  GLsizei length,
+                                  const char* label) = 0;
   virtual void glPathCommandsNVFn(GLuint path,
                                   GLsizei numCommands,
                                   const GLubyte* commands,
@@ -2690,6 +2786,7 @@ class GL_EXPORT GLApi {
   virtual void glPixelStoreiFn(GLenum pname, GLint param) = 0;
   virtual void glPointParameteriFn(GLenum pname, GLint param) = 0;
   virtual void glPolygonOffsetFn(GLfloat factor, GLfloat units) = 0;
+  virtual void glPopDebugGroupFn() = 0;
   virtual void glPopGroupMarkerEXTFn(void) = 0;
   virtual void glPrimitiveRestartIndexFn(GLuint index) = 0;
   virtual void glProgramBinaryFn(GLuint program,
@@ -2704,6 +2801,10 @@ class GL_EXPORT GLApi {
                                                  GLenum genMode,
                                                  GLint components,
                                                  const GLfloat* coeffs) = 0;
+  virtual void glPushDebugGroupFn(GLenum source,
+                                  GLuint id,
+                                  GLsizei length,
+                                  const char* message) = 0;
   virtual void glPushGroupMarkerEXTFn(GLsizei length, const char* marker) = 0;
   virtual void glQueryCounterFn(GLuint id, GLenum target) = 0;
   virtual void glReadBufferFn(GLenum src) = 0;
@@ -3229,6 +3330,11 @@ class GL_EXPORT GLApi {
 #define glCreateProgram ::gl::g_current_gl_context->glCreateProgramFn
 #define glCreateShader ::gl::g_current_gl_context->glCreateShaderFn
 #define glCullFace ::gl::g_current_gl_context->glCullFaceFn
+#define glDebugMessageCallback \
+  ::gl::g_current_gl_context->glDebugMessageCallbackFn
+#define glDebugMessageControl \
+  ::gl::g_current_gl_context->glDebugMessageControlFn
+#define glDebugMessageInsert ::gl::g_current_gl_context->glDebugMessageInsertFn
 #define glDeleteBuffersARB ::gl::g_current_gl_context->glDeleteBuffersARBFn
 #define glDeleteFencesAPPLE ::gl::g_current_gl_context->glDeleteFencesAPPLEFn
 #define glDeleteFencesNV ::gl::g_current_gl_context->glDeleteFencesNVFn
@@ -3333,6 +3439,7 @@ class GL_EXPORT GLApi {
   ::gl::g_current_gl_context->glGetBufferParameterivRobustANGLEFn
 #define glGetBufferPointervRobustANGLE \
   ::gl::g_current_gl_context->glGetBufferPointervRobustANGLEFn
+#define glGetDebugMessageLog ::gl::g_current_gl_context->glGetDebugMessageLogFn
 #define glGetError ::gl::g_current_gl_context->glGetErrorFn
 #define glGetFenceivNV ::gl::g_current_gl_context->glGetFenceivNVFn
 #define glGetFloatv ::gl::g_current_gl_context->glGetFloatvFn
@@ -3373,6 +3480,9 @@ class GL_EXPORT GLApi {
   ::gl::g_current_gl_context->glGetnUniformivRobustANGLEFn
 #define glGetnUniformuivRobustANGLE \
   ::gl::g_current_gl_context->glGetnUniformuivRobustANGLEFn
+#define glGetObjectLabel ::gl::g_current_gl_context->glGetObjectLabelFn
+#define glGetObjectPtrLabel ::gl::g_current_gl_context->glGetObjectPtrLabelFn
+#define glGetPointerv ::gl::g_current_gl_context->glGetPointervFn
 #define glGetPointervRobustANGLERobustANGLE \
   ::gl::g_current_gl_context->glGetPointervRobustANGLERobustANGLEFn
 #define glGetProgramBinary ::gl::g_current_gl_context->glGetProgramBinaryFn
@@ -3512,6 +3622,8 @@ class GL_EXPORT GLApi {
 #define glMatrixLoadIdentityEXT \
   ::gl::g_current_gl_context->glMatrixLoadIdentityEXTFn
 #define glMemoryBarrierEXT ::gl::g_current_gl_context->glMemoryBarrierEXTFn
+#define glObjectLabel ::gl::g_current_gl_context->glObjectLabelFn
+#define glObjectPtrLabel ::gl::g_current_gl_context->glObjectPtrLabelFn
 #define glPathCommandsNV ::gl::g_current_gl_context->glPathCommandsNVFn
 #define glPathParameterfNV ::gl::g_current_gl_context->glPathParameterfNVFn
 #define glPathParameteriNV ::gl::g_current_gl_context->glPathParameteriNVFn
@@ -3521,6 +3633,7 @@ class GL_EXPORT GLApi {
 #define glPixelStorei ::gl::g_current_gl_context->glPixelStoreiFn
 #define glPointParameteri ::gl::g_current_gl_context->glPointParameteriFn
 #define glPolygonOffset ::gl::g_current_gl_context->glPolygonOffsetFn
+#define glPopDebugGroup ::gl::g_current_gl_context->glPopDebugGroupFn
 #define glPopGroupMarkerEXT ::gl::g_current_gl_context->glPopGroupMarkerEXTFn
 #define glPrimitiveRestartIndex \
   ::gl::g_current_gl_context->glPrimitiveRestartIndexFn
@@ -3528,6 +3641,7 @@ class GL_EXPORT GLApi {
 #define glProgramParameteri ::gl::g_current_gl_context->glProgramParameteriFn
 #define glProgramPathFragmentInputGenNV \
   ::gl::g_current_gl_context->glProgramPathFragmentInputGenNVFn
+#define glPushDebugGroup ::gl::g_current_gl_context->glPushDebugGroupFn
 #define glPushGroupMarkerEXT ::gl::g_current_gl_context->glPushGroupMarkerEXTFn
 #define glQueryCounter ::gl::g_current_gl_context->glQueryCounterFn
 #define glReadBuffer ::gl::g_current_gl_context->glReadBufferFn

@@ -95,6 +95,9 @@ struct GPU_EXPORT GpuPreferences {
   // Enable GPU service logging.
   bool enable_gpu_service_logging_gpu = false;
 
+  // Enable logging of GPU driver debug messages.
+  bool enable_gpu_driver_debug_logging = false;
+
   // Turn off gpu program caching
   bool disable_gpu_program_cache = false;
 

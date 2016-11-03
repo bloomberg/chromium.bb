@@ -232,6 +232,20 @@ void glCoverStrokePathNVFn(GLuint name, GLenum coverMode) override;
 GLuint glCreateProgramFn(void) override;
 GLuint glCreateShaderFn(GLenum type) override;
 void glCullFaceFn(GLenum mode) override;
+void glDebugMessageCallbackFn(GLDEBUGPROC callback,
+                              const void* userParam) override;
+void glDebugMessageControlFn(GLenum source,
+                             GLenum type,
+                             GLenum severity,
+                             GLsizei count,
+                             const GLuint* ids,
+                             GLboolean enabled) override;
+void glDebugMessageInsertFn(GLenum source,
+                            GLenum type,
+                            GLuint id,
+                            GLenum severity,
+                            GLsizei length,
+                            const char* buf) override;
 void glDeleteBuffersARBFn(GLsizei n, const GLuint* buffers) override;
 void glDeleteFencesAPPLEFn(GLsizei n, const GLuint* fences) override;
 void glDeleteFencesNVFn(GLsizei n, const GLuint* fences) override;
@@ -401,6 +415,14 @@ void glGetBufferPointervRobustANGLEFn(GLenum target,
                                       GLsizei bufSize,
                                       GLsizei* length,
                                       void** params) override;
+void glGetDebugMessageLogFn(GLuint count,
+                            GLsizei bufSize,
+                            GLenum* sources,
+                            GLenum* types,
+                            GLuint* ids,
+                            GLenum* severities,
+                            GLsizei* lengths,
+                            char* messageLog) override;
 GLenum glGetErrorFn(void) override;
 void glGetFenceivNVFn(GLuint fence, GLenum pname, GLint* params) override;
 void glGetFloatvFn(GLenum pname, GLfloat* params) override;
@@ -479,6 +501,16 @@ void glGetnUniformuivRobustANGLEFn(GLuint program,
                                    GLsizei bufSize,
                                    GLsizei* length,
                                    GLuint* params) override;
+void glGetObjectLabelFn(GLenum identifier,
+                        GLuint name,
+                        GLsizei bufSize,
+                        GLsizei* length,
+                        char* label) override;
+void glGetObjectPtrLabelFn(void* ptr,
+                           GLsizei bufSize,
+                           GLsizei* length,
+                           char* label) override;
+void glGetPointervFn(GLenum pname, void** params) override;
 void glGetPointervRobustANGLERobustANGLEFn(GLenum pname,
                                            GLsizei bufSize,
                                            GLsizei* length,
@@ -765,6 +797,11 @@ void* glMapBufferRangeFn(GLenum target,
 void glMatrixLoadfEXTFn(GLenum matrixMode, const GLfloat* m) override;
 void glMatrixLoadIdentityEXTFn(GLenum matrixMode) override;
 void glMemoryBarrierEXTFn(GLbitfield barriers) override;
+void glObjectLabelFn(GLenum identifier,
+                     GLuint name,
+                     GLsizei length,
+                     const char* label) override;
+void glObjectPtrLabelFn(void* ptr, GLsizei length, const char* label) override;
 void glPathCommandsNVFn(GLuint path,
                         GLsizei numCommands,
                         const GLubyte* commands,
@@ -778,6 +815,7 @@ void glPauseTransformFeedbackFn(void) override;
 void glPixelStoreiFn(GLenum pname, GLint param) override;
 void glPointParameteriFn(GLenum pname, GLint param) override;
 void glPolygonOffsetFn(GLfloat factor, GLfloat units) override;
+void glPopDebugGroupFn() override;
 void glPopGroupMarkerEXTFn(void) override;
 void glPrimitiveRestartIndexFn(GLuint index) override;
 void glProgramBinaryFn(GLuint program,
@@ -790,6 +828,10 @@ void glProgramPathFragmentInputGenNVFn(GLuint program,
                                        GLenum genMode,
                                        GLint components,
                                        const GLfloat* coeffs) override;
+void glPushDebugGroupFn(GLenum source,
+                        GLuint id,
+                        GLsizei length,
+                        const char* message) override;
 void glPushGroupMarkerEXTFn(GLsizei length, const char* marker) override;
 void glQueryCounterFn(GLuint id, GLenum target) override;
 void glReadBufferFn(GLenum src) override;

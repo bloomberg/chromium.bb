@@ -178,6 +178,11 @@ bool GLES2DecoderPassthroughImpl::Initialize(
   active_texture_unit_ = 0;
   bound_textures_.resize(num_texture_units, 0);
 
+  if (group_->gpu_preferences().enable_gpu_driver_debug_logging &&
+      feature_info_->feature_flags().khr_debug) {
+    InitializeGLDebugLogging();
+  }
+
   set_initialized();
   return true;
 }

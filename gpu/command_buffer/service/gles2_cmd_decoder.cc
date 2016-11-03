@@ -3494,6 +3494,11 @@ bool GLES2DecoderImpl::Initialize(
       return false;
   }
 
+  if (group_->gpu_preferences().enable_gpu_driver_debug_logging &&
+      feature_info_->feature_flags().khr_debug) {
+    InitializeGLDebugLogging();
+  }
+
   return true;
 }
 
