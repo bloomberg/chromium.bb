@@ -45,6 +45,7 @@ class HEADLESS_EXPORT ErrorReporter {
   inline void SetName(const char* name) {}
   inline void AddError(base::StringPiece description) {}
   inline bool HasErrors() const { return false; }
+  std::vector<std::string> errors() const { return std::vector<std::string>(); }
 #endif  // DCHECK_IS_ON()
 
  private:
