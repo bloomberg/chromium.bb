@@ -52,7 +52,7 @@ InkDropTest::InkDropTest() : ink_drop_(nullptr) {
   zero_duration_mode_.reset(new ui::ScopedAnimationDurationScaleMode(
       ui::ScopedAnimationDurationScaleMode::ZERO_DURATION));
 
-  switch (InkDropType()) {
+  switch (GetInkDropType()) {
     case INK_DROP_STUB:
       ink_drop_.reset(new InkDropStub());
       break;
