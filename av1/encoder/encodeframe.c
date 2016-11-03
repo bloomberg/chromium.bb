@@ -1136,11 +1136,19 @@ static void update_state(const AV1_COMP *const cpi, ThreadData *td,
         (unsigned int *)cpi->mode_chosen_counts;  // Cast const away.
     if (frame_is_intra_only(cm)) {
       static const int kf_mode_index[] = {
-        THR_DC /*DC_PRED*/,          THR_V_PRED /*V_PRED*/,
-        THR_H_PRED /*H_PRED*/,       THR_D45_PRED /*D45_PRED*/,
-        THR_D135_PRED /*D135_PRED*/, THR_D117_PRED /*D117_PRED*/,
-        THR_D153_PRED /*D153_PRED*/, THR_D207_PRED /*D207_PRED*/,
-        THR_D63_PRED /*D63_PRED*/,   THR_TM /*TM_PRED*/,
+        THR_DC /*DC_PRED*/,
+        THR_V_PRED /*V_PRED*/,
+        THR_H_PRED /*H_PRED*/,
+        THR_D45_PRED /*D45_PRED*/,
+        THR_D135_PRED /*D135_PRED*/,
+        THR_D117_PRED /*D117_PRED*/,
+        THR_D153_PRED /*D153_PRED*/,
+        THR_D207_PRED /*D207_PRED*/,
+        THR_D63_PRED /*D63_PRED*/,
+#if CONFIG_ALT_INTRA
+        THR_SMOOTH, /*SMOOTH_PRED*/
+#endif              // CONFIG_ALT_INTRA
+        THR_TM /*TM_PRED*/,
       };
       ++mode_chosen_counts[kf_mode_index[mbmi->mode]];
     } else {

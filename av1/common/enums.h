@@ -290,7 +290,10 @@ typedef enum ATTRIBUTE_PACKED {
   D153_PRED,  // Directional 153 deg = 180 - 27
   D207_PRED,  // Directional 207 deg = 180 + 27
   D63_PRED,   // Directional 63  deg = round(arctan(2/1) * 180/pi)
-  TM_PRED,    // True-motion
+#if CONFIG_ALT_INTRA
+  SMOOTH_PRED,  // Combination of horizontal and vertical interpolation
+#endif          // CONFIG_ALT_INTRA
+  TM_PRED,      // True-motion
   NEARESTMV,
   NEARMV,
   ZEROMV,
@@ -323,6 +326,8 @@ typedef enum {
   MOTION_MODES
 } MOTION_MODE;
 
+// TODO(urvang): Make "CONFIG_ALT_INTRA" work with "CONFIG_EXT_INTER".
+
 #if CONFIG_EXT_INTER
 typedef enum {
   II_DC_PRED = 0,
@@ -344,6 +349,8 @@ typedef enum {
   COMPOUND_TYPES,
 } COMPOUND_TYPE;
 #endif  // CONFIG_EXT_INTER
+
+// TODO(urvang): Make "CONFIG_ALT_INTRA" work with "CONFIG_FILTER_INTRA".
 
 #if CONFIG_FILTER_INTRA
 typedef enum {

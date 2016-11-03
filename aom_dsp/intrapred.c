@@ -9,6 +9,8 @@
  * PATENTS file, you can obtain it at www.aomedia.org/license/patent.
  */
 
+#include <math.h>
+
 #include "./aom_config.h"
 #include "./aom_dsp_rtcd.h"
 
@@ -253,6 +255,99 @@ static INLINE void paeth_predictor(uint8_t *dst, ptrdiff_t stride, int bs,
   for (r = 0; r < bs; r++) {
     for (c = 0; c < bs; c++)
       dst[c] = (uint8_t)paeth_predictor_single(left[r], above[c], ytop_left);
+    dst += stride;
+  }
+}
+
+// Weights are quadratic from 'bs' to '1'.
+// Scale is same as 'bs'.
+// TODO(urvang): Integerize the weights at a suitable precision.
+#if CONFIG_TX64X64
+static const double sm_weights_fwd[6][64] = {
+#else
+static const double sm_weights_fwd[5][32] = {
+#endif  // CONFIG_TX64X64
+  // bs = 2
+  { 2, 1 },
+  // bs = 4
+  { 4, 2.33333, 1.33333, 1 },
+  // bs = 8
+  { 8, 6.14286, 4.57143, 3.28571, 2.28571, 1.57143, 1.14286, 1 },
+  // bs = 16
+  { 16, 14.0667, 12.2667, 10.6, 9.06667, 7.66667, 6.4, 5.26667, 4.26667, 3.4,
+    2.66667, 2.06667, 1.6, 1.26667, 1.06667, 1 },
+  // bs = 32
+  { 32,      30.0323, 28.129,  26.2903, 24.5161, 22.8065, 21.1613, 19.5806,
+    18.0645, 16.6129, 15.2258, 13.9032, 12.6452, 11.4516, 10.3226, 9.25806,
+    8.25806, 7.32258, 6.45161, 5.64516, 4.90323, 4.22581, 3.6129,  3.06452,
+    2.58065, 2.16129, 1.80645, 1.51613, 1.29032, 1.12903, 1.03226, 1 },
+#if CONFIG_TX64X64
+  // bs = 64
+  { 64,      62.0159, 60.0635, 58.1429, 56.254,  54.3968, 52.5714, 50.7778,
+    49.0159, 47.2857, 45.5873, 43.9206, 42.2857, 40.6825, 39.1111, 37.5714,
+    36.0635, 34.5873, 33.1429, 31.7302, 30.3492, 29,      27.6825, 26.3968,
+    25.1429, 23.9206, 22.7302, 21.5714, 20.4444, 19.3492, 18.2857, 17.254,
+    16.254,  15.2857, 14.3492, 13.4444, 12.5714, 11.7302, 10.9206, 10.1429,
+    9.39683, 8.68254, 8,       7.34921, 6.73016, 6.14286, 5.5873,  5.06349,
+    4.57143, 4.11111, 3.68254, 3.28571, 2.92063, 2.5873,  2.28571, 2.01587,
+    1.77778, 1.57143, 1.39683, 1.25397, 1.14286, 1.06349, 1.01587, 1 },
+#endif  // CONFIG_TX64X64
+};
+
+#if CONFIG_TX64X64
+static const double sm_weights_rev[6][64] = {
+#else
+static const double sm_weights_rev[5][32] = {
+#endif  // CONFIG_TX64X64
+  // bs = 2
+  { 0, 1 },
+  // bs = 4
+  { 0, 1.66667, 2.66667, 3 },
+  // bs = 8
+  { 0, 1.85714, 3.42857, 4.71429, 5.71429, 6.42857, 6.85714, 7 },
+  // bs = 16
+  { 0, 1.93333, 3.73333, 5.4, 6.93333, 8.33333, 9.6, 10.7333, 11.7333, 12.6,
+    13.3333, 13.9333, 14.4, 14.7333, 14.9333, 15 },
+  // bs = 32
+  { 0,       1.96774, 3.87097, 5.70968, 7.48387, 9.19355, 10.8387, 12.4194,
+    13.9355, 15.3871, 16.7742, 18.0968, 19.3548, 20.5484, 21.6774, 22.7419,
+    23.7419, 24.6774, 25.5484, 26.3548, 27.0968, 27.7742, 28.3871, 28.9355,
+    29.4194, 29.8387, 30.1935, 30.4839, 30.7097, 30.871,  30.9677, 31 },
+#if CONFIG_TX64X64
+  // bs = 64
+  { 0,       1.98413, 3.93651, 5.85714, 7.74603, 9.60317, 11.4286, 13.2222,
+    14.9841, 16.7143, 18.4127, 20.0794, 21.7143, 23.3175, 24.8889, 26.4286,
+    27.9365, 29.4127, 30.8571, 32.2698, 33.6508, 35,      36.3175, 37.6032,
+    38.8571, 40.0794, 41.2698, 42.4286, 43.5556, 44.6508, 45.7143, 46.746,
+    47.746,  48.7143, 49.6508, 50.5556, 51.4286, 52.2698, 53.0794, 53.8571,
+    54.6032, 55.3175, 56,      56.6508, 57.2698, 57.8571, 58.4127, 58.9365,
+    59.4286, 59.8889, 60.3175, 60.7143, 61.0794, 61.4127, 61.7143, 61.9841,
+    62.2222, 62.4286, 62.6032, 62.746,  62.8571, 62.9365, 62.9841, 63 },
+#endif  // CONFIG_TX64X64
+};
+
+static INLINE void smooth_predictor(uint8_t *dst, ptrdiff_t stride, int bs,
+                                    const uint8_t *above, const uint8_t *left) {
+  const uint8_t below_pred = left[bs - 1];   // estimated by bottom-left pixel
+  const uint8_t right_pred = above[bs - 1];  // estimated by top-right pixel
+  const int arr_index = (int)lround(log2(bs)) - 1;
+  const double *const fwd_weights = sm_weights_fwd[arr_index];
+  const double *const rev_weights = sm_weights_rev[arr_index];
+  const double scale = 2.0 * bs;
+  int r;
+  for (r = 0; r < bs; ++r) {
+    int c;
+    for (c = 0; c < bs; ++c) {
+      const int pixels[] = { above[c], below_pred, left[r], right_pred };
+      const double weights[] = { fwd_weights[r], rev_weights[r], fwd_weights[c],
+                                 rev_weights[c] };
+      double this_pred = 0;
+      int i;
+      for (i = 0; i < 4; ++i) {
+        this_pred += weights[i] * pixels[i];
+      }
+      dst[c] = clip_pixel(lround(this_pred / scale));
+    }
     dst += stride;
   }
 }
@@ -874,6 +969,33 @@ static INLINE void highbd_paeth_predictor(uint16_t *dst, ptrdiff_t stride,
   }
 }
 
+static INLINE void highbd_smooth_predictor(uint16_t *dst, ptrdiff_t stride,
+                                           int bs, const uint16_t *above,
+                                           const uint16_t *left, int bd) {
+  const uint16_t below_pred = left[bs - 1];   // estimated by bottom-left pixel
+  const uint16_t right_pred = above[bs - 1];  // estimated by top-right pixel
+  const int arr_index = (int)lround(log2(bs)) - 1;
+  const double *const fwd_weights = sm_weights_fwd[arr_index];
+  const double *const rev_weights = sm_weights_rev[arr_index];
+  const double scale = 2.0 * bs;
+  int r;
+  for (r = 0; r < bs; ++r) {
+    int c;
+    for (c = 0; c < bs; ++c) {
+      const int pixels[] = { above[c], below_pred, left[r], right_pred };
+      const double weights[] = { fwd_weights[r], rev_weights[r], fwd_weights[c],
+                                 rev_weights[c] };
+      double this_pred = 0;
+      int i;
+      for (i = 0; i < 4; ++i) {
+        this_pred += weights[i] * pixels[i];
+      }
+      dst[c] = clip_pixel_highbd(lround(this_pred / scale), bd);
+    }
+    dst += stride;
+  }
+}
+
 #else
 static INLINE void highbd_tm_predictor(uint16_t *dst, ptrdiff_t stride, int bs,
                                        const uint16_t *above,
@@ -1065,6 +1187,7 @@ intra_pred_allsizes(v)
 intra_pred_allsizes(h)
 #if CONFIG_ALT_INTRA
 intra_pred_allsizes(paeth)
+intra_pred_allsizes(smooth)
 #else
 intra_pred_allsizes(tm)
 #endif  // CONFIG_ALT_INTRA

@@ -21,7 +21,11 @@ extern "C" {
 enum {
   INTRA_ALL = (1 << DC_PRED) | (1 << V_PRED) | (1 << H_PRED) | (1 << D45_PRED) |
               (1 << D135_PRED) | (1 << D117_PRED) | (1 << D153_PRED) |
-              (1 << D207_PRED) | (1 << D63_PRED) | (1 << TM_PRED),
+              (1 << D207_PRED) | (1 << D63_PRED) |
+#if CONFIG_ALT_INTRA
+              (1 << SMOOTH_PRED) |
+#endif  // CONFIG_ALT_INTRA
+              (1 << TM_PRED),
   INTRA_DC = (1 << DC_PRED),
   INTRA_DC_TM = (1 << DC_PRED) | (1 << TM_PRED),
   INTRA_DC_H_V = (1 << DC_PRED) | (1 << V_PRED) | (1 << H_PRED),
