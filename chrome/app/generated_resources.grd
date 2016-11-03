@@ -480,7 +480,7 @@ are declared in build/common.gypi.
         Chrome history
       </message>
       <message name="IDS_MD_HISTORY_NO_SYNCED_RESULTS" desc="Text indicating that there are no synced tabs from other devices.">
-        No synced tabs
+        No tabs from other devices
       </message>
       <message name="IDS_MD_HISTORY_OPEN_TABS_MENU_ITEM" desc="Label displayed in history sidebar button to display synced tabs from other devices.">
         Tabs from other devices
