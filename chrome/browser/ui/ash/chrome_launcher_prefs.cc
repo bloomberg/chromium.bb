@@ -598,8 +598,8 @@ std::vector<AppLauncherId> GetPinnedAppsFromPrefs(
     LauncherControllerHelper* helper) {
   app_list::AppListSyncableService* app_service =
       app_list::AppListSyncableServiceFactory::GetForProfile(helper->profile());
-  // Some unit tests may not have it.
-  if (!app_service)
+  // Some unit tests may not have it or service may not be initialized.
+  if (!app_service || !app_service->IsInitialized())
     return std::vector<AppLauncherId>();
 
   std::vector<PinInfo> pin_infos;
