@@ -93,11 +93,22 @@ suite('CrActionMenu', function() {
     assertFalse(menu.open);
   });
 
-  test('close on Tab', function() {
-    menu.showAt(document.querySelector('#dots'));
-    assertTrue(menu.open);
+  /** @param {string} key The key to use for closing. */
+  function testFocusAfterClosing(key) {
+    return new Promise(function(resolve) {
+      var dots = document.querySelector('#dots');
+      menu.showAt(dots);
+      assertTrue(menu.open);
 
-    MockInteractions.keyDownOn(menu, 'Tab', [], 'Tab');
-    assertFalse(menu.open);
+      // Check that focus returns to the anchor element.
+      dots.addEventListener('focus', resolve);
+      MockInteractions.keyDownOn(menu, key, [], key);
+      assertFalse(menu.open);
+    });
+  }
+
+  test('close on Tab', function() { return testFocusAfterClosing('Tab'); });
+  test('close on Escape', function() {
+    return testFocusAfterClosing('Escape');
   });
 });

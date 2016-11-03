@@ -13,6 +13,13 @@ Polymer({
   options_: null,
 
   /**
+   * The element which the action menu will be anchored to. Also the element
+   * where focus will be returned after the menu is closed.
+   * @private {?Element}
+   */
+  anchorElement_: null,
+
+  /**
    * Reference to the bound window's resize listener, such that it can be
    * removed on detach.
    * @private {?Function}
@@ -59,8 +66,9 @@ Polymer({
    * @private
    */
   onKeyDown_: function(e) {
-    if (e.key == 'Tab') {
+    if (e.key == 'Tab' || e.key == 'Escape') {
       this.close();
+      e.preventDefault();
       return;
     }
 
@@ -106,6 +114,8 @@ Polymer({
     // Removing 'resize' listener when dialog is closed.
     this.removeResizeListener_();
     HTMLDialogElement.prototype.close.call(this);
+    this.anchorElement_.focus();
+    this.anchorElement_ = null;
   },
 
   /**
@@ -113,6 +123,7 @@ Polymer({
    * @param {!Element} anchorElement
    */
   showAt: function(anchorElement) {
+    this.anchorElement_ = anchorElement;
     this.onWindowResize_ = this.onWindowResize_ || function() {
       if (this.open)
         this.close();
@@ -121,8 +132,8 @@ Polymer({
 
     this.showModal();
 
-    var rect = anchorElement.getBoundingClientRect();
-    if (getComputedStyle(anchorElement).direction == 'rtl') {
+    var rect = this.anchorElement_.getBoundingClientRect();
+    if (getComputedStyle(this.anchorElement_).direction == 'rtl') {
       var right = window.innerWidth - rect.left - this.offsetWidth;
       this.style.right = right + 'px';
     } else {
