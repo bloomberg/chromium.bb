@@ -30,6 +30,7 @@ test("ios_chrome_unittests") {
     "//ios/chrome/browser/ui/alert_coordinator:unit_tests",
     "//ios/chrome/browser/ui/commands:unit_tests",
     "//ios/chrome/browser/ui/context_menu:unit_tests",
+    "//ios/chrome/browser/ui/dialogs:unit_tests",
     "//ios/chrome/browser/ui/elements:unit_tests",
     "//ios/chrome/browser/ui/keyboard:unit_tests",
     "//ios/chrome/browser/update_client:unit_tests",
