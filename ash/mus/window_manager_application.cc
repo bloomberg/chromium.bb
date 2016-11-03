@@ -118,8 +118,9 @@ void WindowManagerApplication::ShutdownComponents() {
 
 void WindowManagerApplication::OnStart(
     const service_manager::ServiceInfo& info) {
-  aura_init_.reset(new views::AuraInit(connector(), "ash_mus_resources.pak",
-                                       "ash_mus_resources_200.pak"));
+  aura_init_ = base::MakeUnique<views::AuraInit>(connector(), info.identity,
+                                                 "ash_mus_resources.pak",
+                                                 "ash_mus_resources_200.pak");
   gpu_service_ = ui::GpuService::Create(connector());
   compositor_context_factory_.reset(
       new views::SurfaceContextFactory(gpu_service_.get()));

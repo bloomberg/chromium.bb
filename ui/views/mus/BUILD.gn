@@ -17,6 +17,8 @@ component("mus") {
     "aura_init.h",
     "clipboard_mus.cc",
     "clipboard_mus.h",
+    "desktop_window_tree_host_mus.cc",
+    "desktop_window_tree_host_mus.h",
     "drag_drop_client_mus.cc",
     "drag_drop_client_mus.h",
     "drop_target_mus.cc",
@@ -174,6 +176,115 @@ test("views_mus_unittests") {
     "//services/ui/public/cpp",
     "//services/ui/public/cpp:internal_or_test",
     "//services/ui/public/cpp/tests:unittest_support",
+    "//services/ui/public/interfaces",
+    "//skia",
+    "//testing/gtest",
+    "//third_party/icu",
+    "//ui/accessibility",
+    "//ui/aura",
+    "//ui/aura:test_support",
+    "//ui/base",
+    "//ui/base:test_support",
+    "//ui/base/ime",
+    "//ui/compositor:test_support",
+    "//ui/events:dom_keycode_converter",
+    "//ui/events:events_base",
+    "//ui/events:test_support",
+    "//ui/events/platform",
+    "//ui/gfx:test_support",
+    "//ui/gfx/geometry",
+    "//ui/native_theme",
+    "//ui/strings",
+    "//ui/touch_selection",
+    "//ui/views",
+    "//ui/views:test_support_internal",
+    "//ui/views:views_unittests_sources",
+    "//ui/wm",
+    "//url",
+  ]
+
+  data_deps = [
+    ":unittests_manifest",
+    "//services/ui/ime/test_ime_driver",
+    "//services/ui/test_wm",
+  ]
+
+  if (is_win) {
+    deps += [
+      "//build/win:default_exe_manifest",
+      "//third_party/iaccessible2",
+      "//third_party/wtl",
+    ]
+    libs = [
+      "imm32.lib",
+      "oleacc.lib",
+      "comctl32.lib",
+    ]
+  }
+
+  if (use_x11) {
+    configs += [
+      "//build/config/linux:x11",
+      "//build/config/linux:xext",
+    ]
+    deps += [
+      "//ui/events/devices",
+      "//ui/events/platform/x11",
+      "//ui/gfx/x",
+    ]
+  }
+}
+
+static_library("test_support_aura_mus") {
+  testonly = true
+
+  sources = [
+    "../test/native_widget_factory_aura_mus.cc",
+    "test_utils.h",
+    "views_aura_mus_test_suite.cc",
+    "views_aura_mus_test_suite.h",
+  ]
+
+  deps = [
+    ":mus",
+    "//base",
+    "//base/test:test_support",
+    "//services/service_manager/background:lib",
+    "//services/service_manager/public/cpp:sources",
+    "//services/ui/common:mus_common",
+    "//testing/gtest",
+    "//ui/aura",
+    "//ui/gl:test_support",
+    "//ui/resources",
+    "//ui/resources:ui_test_pak",
+    "//ui/views",
+    "//ui/views:test_support_internal",
+  ]
+
+  data_deps = [
+    "//ui/resources:ui_test_pak_data",
+  ]
+}
+
+test("views_aura_mus_unittests") {
+  testonly = true
+
+  sources = [
+    "run_all_unittests_aura_mus.cc",
+    "screen_mus_unittest.cc",
+  ]
+
+  configs += [ "//build/config:precompiled_headers" ]
+
+  deps = [
+    ":mus",
+    ":test_support_aura_mus",
+    "//base",
+    "//base:i18n",
+    "//base/test:test_support",
+    "//cc",
+    "//net",
+    "//services/service_manager/background:main",  # Provides main().
     "//services/ui/public/interfaces",
     "//skia",
     "//testing/gtest",

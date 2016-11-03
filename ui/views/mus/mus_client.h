@@ -19,7 +19,6 @@ class Env;
 class GpuService;
 class PropertyConverter;
 class Window;
-class WindowPort;
 class WindowTreeClient;
 }
 
@@ -39,7 +38,6 @@ class WMState;
 
 namespace views {
 
-class AuraInit;
 class ScreenMus;
 class SurfaceContextFactory;
 
@@ -47,30 +45,44 @@ namespace internal {
 class NativeWidgetDelegate;
 }
 
+namespace test {
+class MusClientTestApi;
+}
+
 // MusClient establishes a connection to mus and sets up necessary state so that
 // aura and views target mus. This class is useful for typical clients, not the
-// WindowManager.
+// WindowManager. This class is created by AuraInit when
+// AuraInit::Mode::AURA_MUS is passed as the mode.
+// AuraInit::Mode::AURA to AuraInit and MusClient will be created for us.
 class VIEWS_MUS_EXPORT MusClient
     : public aura::WindowTreeClientDelegate,
       public ScreenMusDelegate,
       public ui::OSExchangeDataProviderFactory::Factory {
  public:
-  MusClient(
-      service_manager::Connector* connector,
-      const service_manager::Identity& identity,
-      const std::string& resource_file,
-      const std::string& resource_file_200 = std::string(),
-      scoped_refptr<base::SingleThreadTaskRunner> io_task_runner = nullptr);
   ~MusClient() override;
+
+  static MusClient* Get() { return instance_; }
 
   service_manager::Connector* connector() { return connector_; }
 
- private:
+  aura::WindowTreeClient* window_tree_client() {
+    return window_tree_client_.get();
+  }
+
+  // Creates DesktopNativeWidgetAura with DesktopWindowTreeHostMus. This is
+  // set as the factory function used for creating NativeWidgets when a
+  //  NativeWidget has not been explicitly set.
   NativeWidget* CreateNativeWidget(const Widget::InitParams& init_params,
                                    internal::NativeWidgetDelegate* delegate);
 
-  // Creates aura::WindowPortMus.
-  std::unique_ptr<aura::WindowPort> CreateWindowPort(aura::Window* window);
+ private:
+  friend class AuraInit;
+  friend class test::MusClientTestApi;
+
+  MusClient(
+      service_manager::Connector* connector,
+      const service_manager::Identity& identity,
+      scoped_refptr<base::SingleThreadTaskRunner> io_task_runner = nullptr);
 
   // aura::WindowTreeClientDelegate:
   void OnEmbed(
@@ -91,10 +103,10 @@ class VIEWS_MUS_EXPORT MusClient
   // ui:OSExchangeDataProviderFactory::Factory:
   std::unique_ptr<OSExchangeData::Provider> BuildProvider() override;
 
+  static MusClient* instance_;
+
   service_manager::Connector* connector_;
   service_manager::Identity identity_;
-
-  std::unique_ptr<AuraInit> aura_init_;
 
   std::unique_ptr<wm::WMState> wm_state_;
 

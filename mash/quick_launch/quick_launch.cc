@@ -5,6 +5,7 @@
 #include "mash/quick_launch/quick_launch.h"
 
 #include "base/macros.h"
+#include "base/memory/ptr_util.h"
 #include "base/message_loop/message_loop.h"
 #include "base/strings/string16.h"
 #include "base/strings/string_util.h"
@@ -166,8 +167,8 @@ void QuickLaunch::RemoveWindow(views::Widget* window) {
 void QuickLaunch::OnStart(const service_manager::ServiceInfo& info) {
   tracing_.Initialize(connector(), info.identity.name());
 
-  aura_init_.reset(
-      new views::AuraInit(connector(), "views_mus_resources.pak"));
+  aura_init_ = base::MakeUnique<views::AuraInit>(connector(), info.identity,
+                                                 "views_mus_resources.pak");
   window_manager_connection_ =
       views::WindowManagerConnection::Create(connector(), info.identity);
 

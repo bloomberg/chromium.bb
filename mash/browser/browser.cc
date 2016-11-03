@@ -870,8 +870,8 @@ std::unique_ptr<navigation::View> Browser::CreateView() {
 void Browser::OnStart(const service_manager::ServiceInfo& info) {
   tracing_.Initialize(connector(), info.identity.name());
 
-  aura_init_.reset(
-      new views::AuraInit(connector(), "views_mus_resources.pak"));
+  aura_init_ = base::MakeUnique<views::AuraInit>(connector(), info.identity,
+                                                 "views_mus_resources.pak");
   window_manager_connection_ =
       views::WindowManagerConnection::Create(connector(), info.identity);
 }

@@ -12,6 +12,8 @@
 #include "ui/views/test/views_test_helper.h"
 
 namespace aura {
+class WindowTreeClient;
+
 namespace client {
 class ScreenPositionClient;
 }
@@ -31,6 +33,9 @@ class ViewsTestHelperAura : public ViewsTestHelper {
   ViewsTestHelperAura(base::MessageLoopForUI* message_loop,
                       ui::ContextFactory* context_factory);
   ~ViewsTestHelperAura() override;
+
+  void EnableMusWithWindowTreeClient(
+      aura::WindowTreeClient* window_tree_client);
 
   // Overridden from ViewsTestHelper:
   void SetUp() override;

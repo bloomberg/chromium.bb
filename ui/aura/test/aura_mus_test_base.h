@@ -12,8 +12,8 @@ namespace aura {
 namespace test {
 
 // A base class for aura unit tests that use mus. You can also use AuraTestBase
-// directly and call EnableMus() before SetUp(). Prefer this if you don't need
-// to subclass and want to target mus.
+// directly and call EnableMusWithTestWindowTree() before SetUp(). Prefer this
+// if you don't need to subclass and want to target mus.
 //
 // This test class sets up the connection to mus as the window manager.
 class AuraMusWmTestBase : public AuraTestBase {
@@ -29,8 +29,8 @@ class AuraMusWmTestBase : public AuraTestBase {
 };
 
 // A base class for aura unit tests that use mus. You can also use AuraTestBase
-// directly and call EnableMus() before SetUp(). Prefer this if you don't need
-// to subclass and want to target mus.
+// directly and call EnableMusWithTestWindowTree() before SetUp(). Prefer this
+// if you don't need to subclass and want to target mus.
 //
 // This test class sets up the connection to mus as a normal client (not the
 // window manager).

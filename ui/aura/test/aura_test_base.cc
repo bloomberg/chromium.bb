@@ -110,8 +110,10 @@ void AuraTestBase::SetUp() {
       ui::InitializeContextFactoryForTests(enable_pixel_output);
 
   helper_.reset(new AuraTestHelper(&message_loop_));
-  if (use_mus_)
-    helper_->EnableMus(window_tree_client_delegate_, window_manager_delegate_);
+  if (use_mus_) {
+    helper_->EnableMusWithTestWindowTree(window_tree_client_delegate_,
+                                         window_manager_delegate_);
+  }
   helper_->SetUp(context_factory);
 }
 
@@ -141,14 +143,14 @@ Window* AuraTestBase::CreateNormalWindow(int id, Window* parent,
   return window;
 }
 
-void AuraTestBase::EnableMus() {
+void AuraTestBase::EnableMusWithTestWindowTree() {
   DCHECK(!setup_called_);
   use_mus_ = true;
 }
 
 void AuraTestBase::ConfigureBackend(BackendType type) {
   if (type == BackendType::MUS)
-    EnableMus();
+    EnableMusWithTestWindowTree();
 }
 
 void AuraTestBase::RunAllPendingInMessageLoop() {

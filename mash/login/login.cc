@@ -10,6 +10,7 @@
 #include "ash/public/cpp/shell_window_ids.h"
 #include "base/guid.h"
 #include "base/macros.h"
+#include "base/memory/ptr_util.h"
 #include "base/message_loop/message_loop.h"
 #include "base/strings/utf_string_conversions.h"
 #include "mash/init/public/interfaces/init.mojom.h"
@@ -150,8 +151,8 @@ class Login : public service_manager::Service,
     identity_ = info.identity;
     tracing_.Initialize(connector(), identity_.name());
 
-    aura_init_.reset(
-        new views::AuraInit(connector(), "views_mus_resources.pak"));
+    aura_init_ = base::MakeUnique<views::AuraInit>(connector(), info.identity,
+                                                   "views_mus_resources.pak");
 
     connector()->ConnectToInterface("service:ui", &user_access_manager_);
     user_access_manager_->SetActiveUser(identity_.user_id());

@@ -42,6 +42,7 @@ ScopedViewsTestHelper::ScopedViewsTestHelper(
 
   test_helper_.reset(ViewsTestHelper::Create(base::MessageLoopForUI::current(),
                                              context_factory));
+  platform_test_helper_->OnTestHelperCreated(test_helper_.get());
   test_helper_->SetUp();
 
 #if defined(USE_AURA)

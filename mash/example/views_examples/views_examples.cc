@@ -5,6 +5,7 @@
 #include <memory>
 
 #include "base/macros.h"
+#include "base/memory/ptr_util.h"
 #include "mash/public/interfaces/launchable.mojom.h"
 #include "mojo/public/cpp/bindings/binding_set.h"
 #include "services/service_manager/public/c/main.h"
@@ -35,8 +36,8 @@ class ViewsExamples
   // service_manager::Service:
   void OnStart(const service_manager::ServiceInfo& info) override {
     tracing_.Initialize(connector(), info.identity.name());
-    aura_init_.reset(
-        new views::AuraInit(connector(), "views_mus_resources.pak"));
+    aura_init_ = base::MakeUnique<views::AuraInit>(connector(), info.identity,
+                                                   "views_mus_resources.pak");
     window_manager_connection_ =
         views::WindowManagerConnection::Create(connector(), info.identity);
   }

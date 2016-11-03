@@ -12,7 +12,7 @@ AuraMusWmTestBase::AuraMusWmTestBase() {}
 AuraMusWmTestBase::~AuraMusWmTestBase() {}
 
 void AuraMusWmTestBase::SetUp() {
-  EnableMus();
+  EnableMusWithTestWindowTree();
   AuraTestBase::SetUp();
 }
 
@@ -21,7 +21,7 @@ AuraMusClientTestBase::AuraMusClientTestBase() {}
 AuraMusClientTestBase::~AuraMusClientTestBase() {}
 
 void AuraMusClientTestBase::SetUp() {
-  EnableMus();
+  EnableMusWithTestWindowTree();
   set_window_manager_delegate(nullptr);
   AuraTestBase::SetUp();
 }

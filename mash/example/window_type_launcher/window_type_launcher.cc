@@ -7,6 +7,7 @@
 #include <stdint.h>
 
 #include "base/macros.h"
+#include "base/memory/ptr_util.h"
 #include "base/message_loop/message_loop.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/utf_string_conversions.h"
@@ -470,8 +471,8 @@ void WindowTypeLauncher::RemoveWindow(views::Widget* window) {
 }
 
 void WindowTypeLauncher::OnStart(const service_manager::ServiceInfo& info) {
-  aura_init_.reset(
-      new views::AuraInit(connector(), "views_mus_resources.pak"));
+  aura_init_ = base::MakeUnique<views::AuraInit>(connector(), info.identity,
+                                                 "views_mus_resources.pak");
   window_manager_connection_ =
       views::WindowManagerConnection::Create(connector(), info.identity);
 }

@@ -27,6 +27,11 @@ ViewsTestHelperAura::ViewsTestHelperAura(base::MessageLoopForUI* message_loop,
 ViewsTestHelperAura::~ViewsTestHelperAura() {
 }
 
+void ViewsTestHelperAura::EnableMusWithWindowTreeClient(
+    aura::WindowTreeClient* window_tree_client) {
+  aura_test_helper_->EnableMusWithWindowTreeClient(window_tree_client);
+}
+
 void ViewsTestHelperAura::SetUp() {
   aura_test_helper_->SetUp(context_factory_);
   gfx::NativeWindow root_window = GetContext();

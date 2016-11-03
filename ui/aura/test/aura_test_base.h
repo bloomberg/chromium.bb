@@ -57,8 +57,8 @@ class AuraTestBase : public testing::Test,
     window_tree_client_delegate_ = window_tree_client_delegate;
   }
 
-  // Turns on mus. Must be called before SetUp().
-  void EnableMus();
+  // Turns on mus with a test WindowTree. Must be called before SetUp().
+  void EnableMusWithTestWindowTree();
 
   // Used to configure the backend. This is exposed to make parameterized tests
   // easy to write. This *must* be called from SetUp().

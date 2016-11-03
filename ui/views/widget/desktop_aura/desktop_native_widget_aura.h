@@ -68,6 +68,11 @@ class VIEWS_EXPORT DesktopNativeWidgetAura
   // window.
   static DesktopNativeWidgetAura* ForWindow(aura::Window* window);
 
+  // Used to explicitly set a DesktopWindowTreeHost. Must be called before
+  // InitNativeWidget().
+  void SetDesktopWindowTreeHost(
+      std::unique_ptr<DesktopWindowTreeHost> desktop_window_tree_host);
+
   // Called by our DesktopWindowTreeHost after it has deleted native resources;
   // this is the signal that we should start our shutdown.
   virtual void OnHostClosed();
@@ -289,7 +294,7 @@ class VIEWS_EXPORT DesktopNativeWidgetAura
   // crash.
   static int cursor_reference_count_;
   static wm::CursorManager* cursor_manager_;
-  static views::DesktopNativeCursorManager* native_cursor_manager_;
+  static DesktopNativeCursorManager* native_cursor_manager_;
 
   std::unique_ptr<wm::ShadowController> shadow_controller_;
 

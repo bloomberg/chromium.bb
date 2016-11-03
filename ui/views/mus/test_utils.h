@@ -5,6 +5,8 @@
 #ifndef UI_VIEWS_MUS_TEST_UTILS_H_
 #define UI_VIEWS_MUS_TEST_UTILS_H_
 
+#include "base/memory/ptr_util.h"
+#include "ui/views/mus/mus_client.h"
 #include "ui/views/mus/window_manager_connection.h"
 
 namespace views {
@@ -26,6 +28,18 @@ class WindowManagerConnectionTestApi {
   WindowManagerConnection* connection_;
 
   DISALLOW_COPY_AND_ASSIGN(WindowManagerConnectionTestApi);
+};
+
+class MusClientTestApi {
+ public:
+  static std::unique_ptr<MusClient> Create(
+      service_manager::Connector* connector,
+      const service_manager::Identity& identity) {
+    return base::WrapUnique(new MusClient(connector, identity));
+  }
+
+ private:
+  DISALLOW_IMPLICIT_CONSTRUCTORS(MusClientTestApi);
 };
 
 }  // namespace test

@@ -443,6 +443,10 @@ component("views") {
       "linux_ui/status_icon_linux.cc",
       "linux_ui/status_icon_linux.h",
     ]
+    sources += [
+      "widget/desktop_aura/desktop_cursor_loader_updater_chromeos.cc",
+      "widget/desktop_aura/desktop_window_tree_host_chromeos.cc",
+    ]
   }
 
   if (is_win) {
@@ -532,6 +536,23 @@ component("views") {
       "view_constants_aura.cc",
       "view_constants_aura.h",
       "views_touch_selection_controller_factory_aura.cc",
+      "widget/desktop_aura/desktop_capture_client.cc",
+      "widget/desktop_aura/desktop_capture_client.h",
+      "widget/desktop_aura/desktop_cursor_loader_updater.h",
+      "widget/desktop_aura/desktop_drop_target_win.cc",
+      "widget/desktop_aura/desktop_drop_target_win.h",
+      "widget/desktop_aura/desktop_event_client.cc",
+      "widget/desktop_aura/desktop_event_client.h",
+      "widget/desktop_aura/desktop_focus_rules.cc",
+      "widget/desktop_aura/desktop_focus_rules.h",
+      "widget/desktop_aura/desktop_native_cursor_manager.cc",
+      "widget/desktop_aura/desktop_native_cursor_manager.h",
+      "widget/desktop_aura/desktop_native_widget_aura.cc",
+      "widget/desktop_aura/desktop_native_widget_aura.h",
+      "widget/desktop_aura/desktop_screen.h",
+      "widget/desktop_aura/desktop_screen_position_client.cc",
+      "widget/desktop_aura/desktop_screen_position_client.h",
+      "widget/desktop_aura/desktop_window_tree_host.h",
       "widget/focus_manager_event_handler.cc",
       "widget/focus_manager_event_handler.h",
       "widget/native_widget_aura.cc",
@@ -547,25 +568,6 @@ component("views") {
       "//ui/wm",
     ]
     if (!is_chromeos) {
-      sources += [
-        "widget/desktop_aura/desktop_capture_client.cc",
-        "widget/desktop_aura/desktop_capture_client.h",
-        "widget/desktop_aura/desktop_cursor_loader_updater.h",
-        "widget/desktop_aura/desktop_drop_target_win.cc",
-        "widget/desktop_aura/desktop_drop_target_win.h",
-        "widget/desktop_aura/desktop_event_client.cc",
-        "widget/desktop_aura/desktop_event_client.h",
-        "widget/desktop_aura/desktop_focus_rules.cc",
-        "widget/desktop_aura/desktop_focus_rules.h",
-        "widget/desktop_aura/desktop_native_cursor_manager.cc",
-        "widget/desktop_aura/desktop_native_cursor_manager.h",
-        "widget/desktop_aura/desktop_native_widget_aura.cc",
-        "widget/desktop_aura/desktop_native_widget_aura.h",
-        "widget/desktop_aura/desktop_screen.h",
-        "widget/desktop_aura/desktop_screen_position_client.cc",
-        "widget/desktop_aura/desktop_screen_position_client.h",
-        "widget/desktop_aura/desktop_window_tree_host.h",
-      ]
       if (use_x11) {
         sources += [
           "widget/desktop_aura/desktop_drag_drop_client_aurax11.cc",
