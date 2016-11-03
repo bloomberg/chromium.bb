@@ -616,9 +616,9 @@ NSString* const kXCallbackParametersKey = @"xCallbackParameters";
     return NO;
 
   // A transient entry behaves from a user perspective in most ways like a
-  // committed entry, so allow going back from a transient entry as long as
-  // there is something to go back to.
-  if (_transientEntry && [_entries count] > 0)
+  // committed entry, so allow going back from a transient entry since this
+  // object already has at least one committed entry.
+  if (_transientEntry)
     return YES;
 
   NSInteger lastNonRedirectedIndex = _currentNavigationIndex;

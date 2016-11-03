@@ -641,6 +641,27 @@ TEST_F(CRWSessionControllerTest, CanGoBackWithoutCommitedEntry) {
   EXPECT_FALSE([session_controller_ canGoBack]);
 }
 
+// Tests that |canGoBack| returns NO if there is a transient entry, but no
+// committed entries.
+TEST_F(CRWSessionControllerTest, CanGoBackWithTransientEntry) {
+  [session_controller_ addTransientEntryWithURL:GURL("http://www.url.com")];
+
+  EXPECT_FALSE([session_controller_ canGoBack]);
+}
+
+// Tests that |canGoBack| returns YES if there is a transient entry and at least
+// one committed entry.
+TEST_F(CRWSessionControllerTest, CanGoBackWithTransientEntryAndCommittedEntry) {
+  [session_controller_ addPendingEntry:GURL("http://www.url.com")
+                              referrer:MakeReferrer("http://www.referer.com")
+                            transition:ui::PAGE_TRANSITION_TYPED
+                     rendererInitiated:NO];
+  [session_controller_ commitPendingEntry];
+  [session_controller_ addTransientEntryWithURL:GURL("http://www.url.com")];
+
+  EXPECT_TRUE([session_controller_ canGoBack]);
+}
+
 TEST_F(CRWSessionControllerTest, CanGoBackWithSingleCommitedEntry) {
   [session_controller_
         addPendingEntry:GURL("http://www.url.com")
