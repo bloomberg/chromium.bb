@@ -206,13 +206,20 @@ template <typename CharType>
 static CString encodeComplexWindowsLatin1(const CharType* characters,
                                           size_t length,
                                           UnencodableHandling handling) {
-  Vector<char> result(length);
+  size_t targetLength = length;
+  Vector<char> result(targetLength);
   char* bytes = result.data();
 
   size_t resultLength = 0;
   for (size_t i = 0; i < length;) {
     UChar32 c;
+    // If CharType is LChar the U16_NEXT call reads a byte and increments;
+    // since the convention is that LChar is already latin1 this is safe.
     U16_NEXT(characters, i, length, c);
+    // If input was a surrogate pair (non-BMP character) then we overestimated
+    // the length.
+    if (c > 0xffff)
+      --targetLength;
     unsigned char b = static_cast<unsigned char>(c);
     // Do an efficient check to detect characters other than 00-7F and A0-FF.
     if (b != c || (c & 0xE0) == 0x80) {
@@ -225,8 +232,16 @@ static CString encodeComplexWindowsLatin1(const CharType* characters,
       UnencodableReplacementArray replacement;
       int replacementLength =
           TextCodec::getUnencodableReplacement(c, handling, replacement);
-      result.grow(resultLength + replacementLength + length - i);
-      bytes = result.data();
+      DCHECK_GT(replacementLength, 0);
+      // Only one char was initially reserved per input character, so grow if
+      // necessary. Note that the case of surrogate pairs and
+      // QuestionMarksForUnencodables the result length may be shorter than
+      // the input length.
+      targetLength += replacementLength - 1;
+      if (targetLength > result.size()) {
+        result.grow(targetLength);
+        bytes = result.data();
+      }
       memcpy(bytes + resultLength, replacement, replacementLength);
       resultLength += replacementLength;
       continue;
