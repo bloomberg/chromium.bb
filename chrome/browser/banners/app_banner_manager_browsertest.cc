@@ -236,8 +236,9 @@ IN_PROC_BROWSER_TEST_F(AppBannerManagerBrowserTest,
                 SHOWING_WEB_APP_BANNER, true);
 }
 
+// Flaky http://crbug.com/660798
 IN_PROC_BROWSER_TEST_F(AppBannerManagerBrowserTest,
-                       WebAppBannerCreatedIndirectLargerTotal) {
+                       DISABLED_WebAppBannerCreatedIndirectLargerTotal) {
   AppBannerSettingsHelper::SetTotalEngagementToTrigger(5);
   RunBannerTest("/banners/manifest_test_page.html", ui::PAGE_TRANSITION_LINK, 4,
                 SHOWING_WEB_APP_BANNER, true);
