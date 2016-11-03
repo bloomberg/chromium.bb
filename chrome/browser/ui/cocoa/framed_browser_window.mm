@@ -135,6 +135,10 @@ const CGFloat kWindowGradientHeight = 24.0;
 
     windowButtonsInterButtonSpacing_ =
         NSMinX([miniaturizeButton_ frame]) - NSMaxX([closeButton_ frame]);
+    if (windowButtonsInterButtonSpacing_ < 0)
+      // Sierra RTL
+      windowButtonsInterButtonSpacing_ =
+          NSMinX([miniaturizeButton_ frame]) - NSMaxX([zoomButton_ frame]);
 
     NSNotificationCenter* center = [NSNotificationCenter defaultCenter];
     if (shouldUseFullSizeContentView) {
