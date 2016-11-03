@@ -53,8 +53,6 @@ struct Referrer;
 // Called when the page calls window.close() on itself. Begin the shut-down
 // sequence for this controller.
 - (void)webPageOrderedClose;
-// Navigate forwards or backwards by delta pages.
-- (void)goDelta:(int)delta;
 // Opens a URL with the given parameters.
 - (void)openURLWithParams:(const web::WebState::OpenURLParams&)params;
 // Called when an external app needs to be opened, it also passes |linkClicked|
