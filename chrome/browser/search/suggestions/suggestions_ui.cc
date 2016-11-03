@@ -123,7 +123,7 @@ class SuggestionsSource : public content::URLDataSource {
       const content::ResourceRequestInfo::WebContentsGetter& wc_getter,
       const content::URLDataSource::GotDataCallback& callback) override;
   std::string GetMimeType(const std::string& path) const override;
-  base::MessageLoop* MessageLoopForRequestPath(
+  scoped_refptr<base::SingleThreadTaskRunner> TaskRunnerForRequestPath(
       const std::string& path) const override;
 
  private:
@@ -232,10 +232,10 @@ std::string SuggestionsSource::GetMimeType(const std::string& path) const {
   return "text/html";
 }
 
-base::MessageLoop* SuggestionsSource::MessageLoopForRequestPath(
-    const std::string& path) const {
+scoped_refptr<base::SingleThreadTaskRunner>
+SuggestionsSource::TaskRunnerForRequestPath(const std::string& path) const {
   // This can be accessed from the IO thread.
-  return content::URLDataSource::MessageLoopForRequestPath(path);
+  return content::URLDataSource::TaskRunnerForRequestPath(path);
 }
 
 void SuggestionsSource::OnThumbnailsFetched(RequestContext* context) {

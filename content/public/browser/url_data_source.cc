@@ -16,9 +16,9 @@ void URLDataSource::Add(BrowserContext* browser_context,
   URLDataManager::AddDataSource(browser_context, source);
 }
 
-base::MessageLoop* URLDataSource::MessageLoopForRequestPath(
-    const std::string& path) const {
-  return BrowserThread::UnsafeGetMessageLoopForThread(BrowserThread::UI);
+scoped_refptr<base::SingleThreadTaskRunner>
+URLDataSource::TaskRunnerForRequestPath(const std::string& path) const {
+  return BrowserThread::GetTaskRunnerForThread(BrowserThread::UI);
 }
 
 bool URLDataSource::ShouldReplaceExistingSource() const {

@@ -161,8 +161,8 @@ std::string ThemeSource::GetMimeType(const std::string& path) const {
   return IsNewTabCssPath(parsed_path) ? "text/css" : "image/png";
 }
 
-base::MessageLoop* ThemeSource::MessageLoopForRequestPath(
-    const std::string& path) const {
+scoped_refptr<base::SingleThreadTaskRunner>
+ThemeSource::TaskRunnerForRequestPath(const std::string& path) const {
   std::string parsed_path;
   webui::ParsePathAndScale(GetThemeUrl(path), &parsed_path, nullptr);
 
@@ -174,8 +174,9 @@ base::MessageLoop* ThemeSource::MessageLoopForRequestPath(
 
   // If it's not a themeable image, we don't need to go to the UI thread.
   int resource_id = ResourcesUtil::GetThemeResourceId(parsed_path);
-  return BrowserThemePack::IsPersistentImageID(resource_id) ?
-      content::URLDataSource::MessageLoopForRequestPath(path) : nullptr;
+  return BrowserThemePack::IsPersistentImageID(resource_id)
+             ? content::URLDataSource::TaskRunnerForRequestPath(path)
+             : nullptr;
 }
 
 bool ThemeSource::ShouldServiceRequest(const net::URLRequest* request) const {

@@ -23,8 +23,8 @@ class SharedResourcesDataSource : public URLDataSource {
       const ResourceRequestInfo::WebContentsGetter& wc_getter,
       const URLDataSource::GotDataCallback& callback) override;
   std::string GetMimeType(const std::string& path) const override;
-  base::MessageLoop* MessageLoopForRequestPath(
-        const std::string& path) const override;
+  scoped_refptr<base::SingleThreadTaskRunner> TaskRunnerForRequestPath(
+      const std::string& path) const override;
   std::string GetAccessControlAllowOriginForOrigin(
       const std::string& origin) const override;
 

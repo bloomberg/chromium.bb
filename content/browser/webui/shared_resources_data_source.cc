@@ -145,7 +145,8 @@ std::string SharedResourcesDataSource::GetMimeType(
   return "text/plain";
 }
 
-base::MessageLoop* SharedResourcesDataSource::MessageLoopForRequestPath(
+scoped_refptr<base::SingleThreadTaskRunner>
+SharedResourcesDataSource::TaskRunnerForRequestPath(
     const std::string& path) const {
   return nullptr;
 }

@@ -711,9 +711,9 @@ bool URLDataManagerBackend::StartRequest(const net::URLRequest* request,
   }
 
   // Forward along the request to the data source.
-  base::MessageLoop* target_message_loop =
-      source->source()->MessageLoopForRequestPath(path);
-  if (!target_message_loop) {
+  scoped_refptr<base::SingleThreadTaskRunner> target_runner =
+      source->source()->TaskRunnerForRequestPath(path);
+  if (!target_runner) {
     job->MimeTypeAvailable(source->source()->GetMimeType(path));
     // Eliminate potentially dangling pointer to avoid future use.
     job = nullptr;
@@ -729,13 +729,13 @@ bool URLDataManagerBackend::StartRequest(const net::URLRequest* request,
     // is guaranteed because request for mime type is placed in the
     // message loop before request for data. And correspondingly their
     // replies are put on the IO thread in the same order.
-    target_message_loop->task_runner()->PostTask(
+    target_runner->PostTask(
         FROM_HERE, base::Bind(&GetMimeTypeOnUI, base::RetainedRef(source), path,
                               job->AsWeakPtr()));
 
     // The DataSource wants StartDataRequest to be called on a specific thread,
     // usually the UI thread, for this path.
-    target_message_loop->task_runner()->PostTask(
+    target_runner->PostTask(
         FROM_HERE, base::Bind(&URLDataManagerBackend::CallStartRequest,
                               base::RetainedRef(source), path, child_id,
                               wc_getter, request_id));

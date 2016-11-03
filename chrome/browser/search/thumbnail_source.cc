@@ -79,13 +79,13 @@ std::string ThumbnailSource::GetMimeType(const std::string&) const {
   return "image/png";
 }
 
-base::MessageLoop* ThumbnailSource::MessageLoopForRequestPath(
-    const std::string& path) const {
+scoped_refptr<base::SingleThreadTaskRunner>
+ThumbnailSource::TaskRunnerForRequestPath(const std::string& path) const {
   // TopSites can be accessed from the IO thread. Otherwise, the URLs should be
   // accessed on the UI thread.
   return thumbnail_service_.get()
              ? nullptr
-             : content::URLDataSource::MessageLoopForRequestPath(path);
+             : content::URLDataSource::TaskRunnerForRequestPath(path);
 }
 
 bool ThumbnailSource::ShouldServiceRequest(

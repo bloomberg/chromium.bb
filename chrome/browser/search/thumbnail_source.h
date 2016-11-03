@@ -47,7 +47,7 @@ class ThumbnailSource : public content::URLDataSource {
       const content::ResourceRequestInfo::WebContentsGetter& wc_getter,
       const content::URLDataSource::GotDataCallback& callback) override;
   std::string GetMimeType(const std::string& path) const override;
-  base::MessageLoop* MessageLoopForRequestPath(
+  scoped_refptr<base::SingleThreadTaskRunner> TaskRunnerForRequestPath(
       const std::string& path) const override;
   bool ShouldServiceRequest(const net::URLRequest* request) const override;
 
