@@ -44,4 +44,9 @@ public abstract class MediaSession {
      * Stops the media session.
      */
     public abstract void stop();
+
+    /**
+     * Notify the media session that an action has been performed.
+     */
+    public abstract void didReceiveAction(int action);
 }

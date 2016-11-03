@@ -6,9 +6,11 @@
 
 #include "content/browser/media/session/audio_focus_delegate.h"
 #include "content/browser/media/session/media_session_player_observer.h"
+#include "content/browser/media/session/media_session_service_impl.h"
 #include "content/browser/web_contents/web_contents_impl.h"
+#include "content/public/browser/media_session.h"
+#include "content/public/browser/media_session_observer.h"
 #include "content/public/browser/web_contents.h"
-#include "content/public/browser/web_contents_delegate.h"
 #include "media/base/media_content_type.h"
 
 #if defined(OS_ANDROID)
@@ -81,6 +83,11 @@ void MediaSessionImpl::WebContentsDestroyed() {
   players_.clear();
   pepper_players_.clear();
   AbandonSystemAudioFocusIfNeeded();
+}
+
+void MediaSessionImpl::SetMediaSessionService(
+    MediaSessionServiceImpl* service) {
+  service_ = service;
 }
 
 void MediaSessionImpl::AddObserver(MediaSessionObserver* observer) {
@@ -254,6 +261,24 @@ void MediaSessionImpl::Stop(SuspendType suspend_type) {
   AbandonSystemAudioFocusIfNeeded();
 }
 
+void MediaSessionImpl::DidReceiveAction(
+    blink::mojom::MediaSessionAction action) {
+  if (service_)
+    service_->GetClient()->DidReceiveAction(action);
+}
+
+void MediaSessionImpl::OnMediaSessionEnabledAction(
+    blink::mojom::MediaSessionAction action) {
+  for (auto& observer : observers_)
+    observer.MediaSessionEnabledAction(action);
+}
+
+void MediaSessionImpl::OnMediaSessionDisabledAction(
+    blink::mojom::MediaSessionAction action) {
+  for (auto& observer : observers_)
+    observer.MediaSessionDisabledAction(action);
+}
+
 void MediaSessionImpl::StartDucking() {
   if (is_ducking_)
     return;
@@ -399,7 +424,8 @@ MediaSessionImpl::MediaSessionImpl(WebContents* web_contents)
       audio_focus_state_(State::INACTIVE),
       audio_focus_type_(
           AudioFocusManager::AudioFocusType::GainTransientMayDuck),
-      is_ducking_(false) {
+      is_ducking_(false),
+      service_(nullptr) {
 #if defined(OS_ANDROID)
   session_android_.reset(new MediaSessionAndroid(this));
 #endif  // defined(OS_ANDROID)

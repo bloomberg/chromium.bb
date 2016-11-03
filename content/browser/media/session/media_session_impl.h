@@ -39,6 +39,7 @@ class MediaSessionImplStateObserver;
 class MediaSessionImplVisibilityBrowserTest;
 class MediaSessionObserver;
 class MediaSessionPlayerObserver;
+class MediaSessionServiceImpl;
 
 #if defined(OS_ANDROID)
 class MediaSessionAndroid;
@@ -123,6 +124,17 @@ class MediaSessionImpl : public MediaSession,
   // |type| represents the origin of the request.
   CONTENT_EXPORT void Stop(MediaSession::SuspendType suspend_type) override;
 
+  // Received a media session action and forward to blink::MediaSession.
+  void DidReceiveAction(blink::mojom::MediaSessionAction action) override;
+
+  // Called when an action is enabled in blink::MediaSession. This method will
+  // notify the observers that the action is enabled.
+  void OnMediaSessionEnabledAction(blink::mojom::MediaSessionAction action);
+
+  // Called when an action is disabled in blink::MediaSession. This method will
+  // notify the observers that the action is disabled.
+  void OnMediaSessionDisabledAction(blink::mojom::MediaSessionAction action);
+
   // Let the media session start ducking such that the volume multiplier is
   // reduced.
   CONTENT_EXPORT void StartDucking();
@@ -159,6 +171,11 @@ class MediaSessionImpl : public MediaSession,
 
   // WebContentsObserver implementation
   void WebContentsDestroyed() override;
+
+  // Sets the associated MediaSessionService for communicating with
+  // blink::MediaSession.
+  MediaSessionServiceImpl* GetMediaSessionService() { return service_; }
+  void SetMediaSessionService(MediaSessionServiceImpl* service);
 
  private:
   friend class content::WebContentsUserData<MediaSessionImpl>;
@@ -254,6 +271,10 @@ class MediaSessionImpl : public MediaSession,
 #if defined(OS_ANDROID)
   std::unique_ptr<MediaSessionAndroid> session_android_;
 #endif  // defined(OS_ANDROID)
+
+  // The MediaSessionService this session is associated with (the service of the
+  // top-level frame).
+  MediaSessionServiceImpl* service_;
 
   DISALLOW_COPY_AND_ASSIGN(MediaSessionImpl);
 };
