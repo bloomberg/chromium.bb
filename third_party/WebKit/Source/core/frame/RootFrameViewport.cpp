@@ -116,6 +116,16 @@ FloatQuad RootFrameViewport::localToVisibleContentQuad(
   return viewportQuad;
 }
 
+int RootFrameViewport::horizontalScrollbarHeight(
+    OverlayScrollbarClipBehavior behavior) const {
+  return layoutViewport().horizontalScrollbarHeight(behavior);
+}
+
+int RootFrameViewport::verticalScrollbarWidth(
+    OverlayScrollbarClipBehavior behavior) const {
+  return layoutViewport().verticalScrollbarWidth(behavior);
+}
+
 void RootFrameViewport::updateScrollAnimator() {
   scrollAnimator().setCurrentOffset(
       toFloatSize(scrollOffsetFromScrollAnimators()));

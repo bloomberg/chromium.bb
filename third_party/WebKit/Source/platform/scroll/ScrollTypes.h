@@ -42,6 +42,11 @@ inline ScrollOffset toScrollOffset(const FloatPoint& p) {
   return ScrollOffset(p.x(), p.y());
 }
 
+enum OverlayScrollbarClipBehavior {
+  IgnoreOverlayScrollbarSize,
+  ExcludeOverlayScrollbarSizeForHitTesting
+};
+
 enum ScrollDirection {
   ScrollUpIgnoringWritingMode,
   ScrollDownIgnoringWritingMode,

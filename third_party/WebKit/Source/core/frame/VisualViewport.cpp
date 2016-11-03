@@ -617,6 +617,21 @@ IntSize VisualViewport::contentsSize() const {
   return frame->view()->visibleContentRect(IncludeScrollbars).size();
 }
 
+IntRect VisualViewport::visibleContentRect(
+    IncludeScrollbarsInRect scrollbarInclusion) const {
+  // TODO(ymalik): We're losing precision here and below. visibleRect should
+  // be replaced with visibleContentRect.
+  IntRect rect = IntRect(visibleRect());
+  if (scrollbarInclusion == ExcludeScrollbars) {
+    RootFrameViewport* rootFrameViewport =
+        mainFrame()->view()->getRootFrameViewport();
+    DCHECK(rootFrameViewport);
+    rect.contract(rootFrameViewport->verticalScrollbarWidth() / m_scale,
+                  rootFrameViewport->horizontalScrollbarHeight() / m_scale);
+  }
+  return rect;
+}
+
 void VisualViewport::updateScrollOffset(const ScrollOffset& position,
                                         ScrollType scrollType) {
   if (didSetScaleOrLocation(m_scale, FloatPoint(position)) &&

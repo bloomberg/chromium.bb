@@ -8,7 +8,7 @@
 #include "core/layout/ClipRects.h"
 
 #if DCHECK_IS_ON()
-#include "core/layout/ScrollEnums.h"  // For OverlayScrollbarClipBehavior.
+#include "platform/scroll/ScrollTypes.h"  // For OverlayScrollbarClipBehavior.
 #endif
 
 namespace blink {

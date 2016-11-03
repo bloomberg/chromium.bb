@@ -197,6 +197,8 @@ class CORE_EXPORT VisualViewport final
   GraphicsLayer* layerForVerticalScrollbar() const override;
   Widget* getWidget() override;
   CompositorAnimationTimeline* compositorAnimationTimeline() const override;
+  IntRect visibleContentRect(
+      IncludeScrollbarsInRect = ExcludeScrollbars) const override;
 
   // Visual Viewport API implementation.
   double scrollLeft();

@@ -26,7 +26,6 @@
 #include "core/CoreExport.h"
 #include "core/layout/LayoutBoxModelObject.h"
 #include "core/layout/OverflowModel.h"
-#include "core/layout/ScrollEnums.h"
 #include "platform/scroll/ScrollTypes.h"
 #include "wtf/PtrUtil.h"
 #include <memory>

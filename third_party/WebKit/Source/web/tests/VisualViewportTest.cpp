@@ -221,6 +221,43 @@ TEST_P(VisualViewportTest, TestResize) {
   EXPECT_SIZE_EQ(newViewportSize, visualViewport.size());
 }
 
+// Make sure that the visibleContentRect method acurately reflects the scale and
+// scroll location of the viewport with and without scrollbars.
+TEST_P(VisualViewportTest, TestVisibleContentRect) {
+  RuntimeEnabledFeatures::setOverlayScrollbarsEnabled(false);
+  initializeWithDesktopSettings();
+
+  registerMockedHttpURLLoad("200-by-300.html");
+  navigateTo(m_baseURL + "200-by-300.html");
+
+  IntSize size = IntSize(150, 100);
+  // Vertical scrollbar width and horizontal scrollbar height.
+  IntSize scrollbarSize = IntSize(15, 15);
+
+  webViewImpl()->resize(size);
+
+  // Scroll layout viewport and verify visibleContentRect.
+  webViewImpl()->mainFrame()->setScrollOffset(WebSize(0, 50));
+
+  VisualViewport& visualViewport =
+      frame()->page()->frameHost().visualViewport();
+  EXPECT_EQ(IntRect(IntPoint(0, 0), size - scrollbarSize),
+            visualViewport.visibleContentRect(ExcludeScrollbars));
+  EXPECT_EQ(IntRect(IntPoint(0, 0), size),
+            visualViewport.visibleContentRect(IncludeScrollbars));
+
+  webViewImpl()->setPageScaleFactor(2.0);
+
+  // Scroll visual viewport and verify visibleContentRect.
+  size.scale(0.5);
+  scrollbarSize.scale(0.5);
+  visualViewport.setLocation(FloatPoint(10, 10));
+  EXPECT_EQ(IntRect(IntPoint(10, 10), size - scrollbarSize),
+            visualViewport.visibleContentRect(ExcludeScrollbars));
+  EXPECT_EQ(IntRect(IntPoint(10, 10), size),
+            visualViewport.visibleContentRect(IncludeScrollbars));
+}
+
 // This tests that shrinking the WebView while the page is fully scrolled
 // doesn't move the viewport up/left, it should keep the visible viewport
 // unchanged from the user's perspective (shrinking the FrameView will clamp

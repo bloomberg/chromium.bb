@@ -1785,10 +1785,11 @@ void LayoutBox::excludeScrollbars(
     LayoutRect& rect,
     OverlayScrollbarClipBehavior overlayScrollbarClipBehavior) const {
   if (PaintLayerScrollableArea* scrollableArea = this->getScrollableArea()) {
-    if (shouldPlaceBlockDirectionScrollbarOnLogicalLeft())
+    if (shouldPlaceBlockDirectionScrollbarOnLogicalLeft()) {
       rect.move(
           scrollableArea->verticalScrollbarWidth(overlayScrollbarClipBehavior),
           0);
+    }
     rect.contract(
         scrollableArea->verticalScrollbarWidth(overlayScrollbarClipBehavior),
         scrollableArea->horizontalScrollbarHeight(
