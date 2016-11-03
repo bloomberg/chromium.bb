@@ -1000,12 +1000,13 @@ LayoutPoint LayoutBoxModelObject::adjustedPositionRelativeTo(
 
       // Note that we may fail to find |offsetParent| while walking the
       // container chain, if |offsetParent| is an inline split into
-      // continuations: <body style="display:inline;" id="offsetParent"><div>
-      // </div><span id="this">
+      // continuations: <body style="display:inline;" id="offsetParent">
+      // <div id="this">
       // This is why we have to do a nullptr check here.
       // offset(Left|Top) is generally broken when offsetParent is inline.
       for (const LayoutObject* current = container();
-           current && current != offsetParent; current = current->container()) {
+           current && current->node() != element;
+           current = current->container()) {
         // FIXME: What are we supposed to do inside SVG content?
         referencePoint.move(current->columnOffset(referencePoint));
         if (current->isBox() && !current->isTableRow())
