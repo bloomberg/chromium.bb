@@ -81,13 +81,18 @@ class NodeController : public ports::NodeDelegate,
   // |child_token|.
   void CloseChildPorts(const std::string& child_token);
 
+  // Close a connection to a peer associated with |peer_token|.
+  void ClosePeerConnection(const std::string& peer_token);
+
   // Connects this node to a parent node. The parent node will initiate a
   // handshake.
   void ConnectToParent(ScopedPlatformHandle platform_handle);
 
   // Connects this node to a peer node. On success, |port| will be merged with
   // the corresponding port in the peer node.
-  void ConnectToPeer(ScopedPlatformHandle handle, const ports::PortRef& port);
+  void ConnectToPeer(ScopedPlatformHandle handle,
+                     const ports::PortRef& port,
+                     const std::string& peer_token);
 
   // Sets a port's observer. If |observer| is null the port's current observer
   // is removed.
@@ -143,6 +148,24 @@ class NodeController : public ports::NodeDelegate,
     const std::string child_token;
   };
 
+  struct PeerConnection {
+    PeerConnection();
+    PeerConnection(const PeerConnection& other);
+    PeerConnection(PeerConnection&& other);
+    PeerConnection(const scoped_refptr<NodeChannel>& channel,
+                          const ports::PortRef& local_port,
+                          const std::string& peer_token);
+    ~PeerConnection();
+
+    PeerConnection& operator=(const PeerConnection& other);
+    PeerConnection& operator=(PeerConnection&& other);
+
+
+    scoped_refptr<NodeChannel> channel;
+    ports::PortRef local_port;
+    std::string peer_token;
+  };
+
   void ConnectToChildOnIOThread(
       base::ProcessHandle process_handle,
       ScopedPlatformHandle platform_handle,
@@ -152,7 +175,9 @@ class NodeController : public ports::NodeDelegate,
 
   void ConnectToPeerOnIOThread(ScopedPlatformHandle handle,
                                ports::NodeName token,
-                               ports::PortRef port);
+                               ports::PortRef port,
+                               const std::string& peer_token);
+  void ClosePeerConnectionOnIOThread(const std::string& node_name);
 
   scoped_refptr<NodeChannel> GetPeerChannel(const ports::NodeName& name);
   scoped_refptr<NodeChannel> GetParentChannel();
@@ -323,9 +348,11 @@ class NodeController : public ports::NodeDelegate,
   NodeMap pending_children_;
 
   using PeerNodeMap =
-      std::unordered_map<ports::NodeName,
-                         std::pair<scoped_refptr<NodeChannel>, ports::PortRef>>;
-  PeerNodeMap pending_peers_;
+      std::unordered_map<ports::NodeName, PeerConnection>;
+  PeerNodeMap peer_connections_;
+
+  // Maps from peer token to node name, pending or not.
+  std::unordered_map<std::string, ports::NodeName> peers_by_token_;
 
   // Indicates whether this object should delete itself on IO thread shutdown.
   // Must only be accessed from the IO thread.

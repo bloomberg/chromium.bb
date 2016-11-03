@@ -66,8 +66,9 @@ class MOJO_SYSTEM_IMPL_EXPORT Core {
   // is no common ancestor for the processes involved within this mojo system.
   // Both processes must call this function, each passing one end of a platform
   // channel. This returns one end of a message pipe to each process.
-  ScopedMessagePipeHandle ConnectToPeerProcess(
-      ScopedPlatformHandle pipe_handle);
+  ScopedMessagePipeHandle ConnectToPeerProcess(ScopedPlatformHandle pipe_handle,
+                                               const std::string& peer_token);
+  void ClosePeerConnection(const std::string& peer_token);
 
   // Called in a child process exactly once during early initialization.
   void InitChild(ScopedPlatformHandle platform_handle);

@@ -10,6 +10,7 @@
 
 #include <utility>
 
+#include "base/base_paths.h"
 #include "base/bind.h"
 #include "base/command_line.h"
 #include "base/files/file.h"
@@ -17,13 +18,18 @@
 #include "base/macros.h"
 #include "base/memory/shared_memory.h"
 #include "base/message_loop/message_loop.h"
+#include "base/path_service.h"
 #include "base/process/process_handle.h"
+#include "base/run_loop.h"
 #include "base/synchronization/waitable_event.h"
 #include "base/test/test_timeouts.h"
+#include "mojo/edk/embedder/named_platform_handle.h"
+#include "mojo/edk/embedder/named_platform_handle_utils.h"
 #include "mojo/edk/embedder/platform_channel_pair.h"
 #include "mojo/edk/embedder/test_embedder.h"
 #include "mojo/edk/system/test_utils.h"
 #include "mojo/edk/test/mojo_test_base.h"
+#include "mojo/edk/test/scoped_ipc_support.h"
 #include "mojo/public/c/system/core.h"
 #include "mojo/public/cpp/system/handle.h"
 #include "mojo/public/cpp/system/message_pipe.h"
@@ -554,6 +560,100 @@ DEFINE_TEST_CLIENT_TEST_WITH_PIPE(MultiprocessMixMachAndFdsClient, EmbedderTest,
 
 // TODO(vtl): Test immediate write & close.
 // TODO(vtl): Test broken-connection cases.
+
+#endif  // !defined(OS_IOS)
+
+NamedPlatformHandle GenerateChannelName() {
+#if defined(OS_POSIX)
+  base::FilePath temp_dir;
+  CHECK(base::PathService::Get(base::DIR_TEMP, &temp_dir));
+  return NamedPlatformHandle(
+      temp_dir.AppendASCII(GenerateRandomToken()).value());
+#else
+  return NamedPlatformHandle(GenerateRandomToken());
+#endif
+}
+
+void CreateClientHandleOnIoThread(const NamedPlatformHandle& named_handle,
+                                  ScopedPlatformHandle* output) {
+  *output = CreateClientHandle(named_handle);
+}
+
+TEST_F(EmbedderTest, ClosePendingPeerConnection) {
+  NamedPlatformHandle named_handle = GenerateChannelName();
+  std::string peer_token = GenerateRandomToken();
+  ScopedMessagePipeHandle server_pipe =
+      ConnectToPeerProcess(CreateServerHandle(named_handle), peer_token);
+  ClosePeerConnection(peer_token);
+  EXPECT_EQ(MOJO_RESULT_OK,
+            Wait(server_pipe.get(), MOJO_HANDLE_SIGNAL_PEER_CLOSED,
+                 MOJO_DEADLINE_INDEFINITE, nullptr));
+  base::MessageLoop message_loop;
+  base::RunLoop run_loop;
+  ScopedPlatformHandle client_handle;
+  // Closing the channel involves posting a task to the IO thread to do the
+  // work. By the time the local message pipe has been observerd as closed,
+  // that task will have been posted. Therefore, a task to create the client
+  // connection should be handled after the channel is closed.
+  test::GetIoTaskRunner()->PostTaskAndReply(
+      FROM_HERE,
+      base::Bind(&CreateClientHandleOnIoThread, named_handle, &client_handle),
+      run_loop.QuitClosure());
+  run_loop.Run();
+  EXPECT_FALSE(client_handle.is_valid());
+}
+
+#if !defined(OS_IOS)
+
+TEST_F(EmbedderTest, ClosePipeToConnectedPeer) {
+  set_launch_type(LaunchType::PEER);
+  auto& controller = StartClient("ClosePipeToConnectedPeerClient");
+  MojoHandle server_mp = controller.pipe();
+  // 1. Write a message to |server_mp| (attaching nothing).
+  WriteMessage(server_mp, "hello");
+
+  // 2. Read a message from |server_mp|.
+  EXPECT_EQ("world!", ReadMessage(server_mp));
+
+  controller.ClosePeerConnection();
+
+  EXPECT_EQ(MOJO_RESULT_OK, MojoWait(server_mp, MOJO_HANDLE_SIGNAL_PEER_CLOSED,
+                                     MOJO_DEADLINE_INDEFINITE, nullptr));
+
+  EXPECT_EQ(0, controller.WaitForShutdown());
+}
+
+DEFINE_TEST_CLIENT_TEST_WITH_PIPE(ClosePipeToConnectedPeerClient, EmbedderTest,
+                                  client_mp) {
+  // 1. Read the first message from |client_mp|.
+  EXPECT_EQ("hello", ReadMessage(client_mp));
+
+  // 2. Write a message to |client_mp| (attaching nothing).
+  WriteMessage(client_mp, "world!");
+
+  ASSERT_EQ(MOJO_RESULT_OK,
+            MojoWait(client_mp, MOJO_HANDLE_SIGNAL_PEER_CLOSED,
+                      MOJO_DEADLINE_INDEFINITE, nullptr));
+}
+
+TEST_F(EmbedderTest, ClosePipeToConnectingPeer) {
+  set_launch_type(LaunchType::PEER);
+  auto& controller = StartClient("ClosePipeToConnectingPeerClient");
+  controller.ClosePeerConnection();
+
+  MojoHandle server_mp = controller.pipe();
+
+  EXPECT_EQ(MOJO_RESULT_OK, MojoWait(server_mp, MOJO_HANDLE_SIGNAL_PEER_CLOSED,
+                                     MOJO_DEADLINE_INDEFINITE, nullptr));
+
+  EXPECT_EQ(0, controller.WaitForShutdown());
+}
+
+DEFINE_TEST_CLIENT_TEST_WITH_PIPE(ClosePipeToConnectingPeerClient, EmbedderTest,
+                                  client_mp) {
+  ASSERT_EQ(MOJO_RESULT_OK, MojoWait(client_mp, MOJO_HANDLE_SIGNAL_PEER_CLOSED,
+                                     MOJO_DEADLINE_INDEFINITE, nullptr));
+}
 
 #endif  // !defined(OS_IOS)
 

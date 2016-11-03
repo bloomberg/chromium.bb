@@ -66,6 +66,8 @@ class MultiprocessTestHelper {
     process_error_callback_ = callback;
   }
 
+  void ClosePeerConnection();
+
   // Wait for the child process to terminate.
   // Returns the exit code of the child process. Note that, though it's declared
   // to be an |int|, the exit code is subject to mangling by the OS. E.g., we
@@ -95,6 +97,8 @@ class MultiprocessTestHelper {
   base::Process test_child_;
 
   ProcessErrorCallback process_error_callback_;
+
+  std::string peer_token_;
 
   DISALLOW_COPY_AND_ASSIGN(MultiprocessTestHelper);
 };

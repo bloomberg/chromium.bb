@@ -77,6 +77,18 @@ MOJO_SYSTEM_IMPL_EXPORT void SetParentPipeHandleFromCommandLine();
 MOJO_SYSTEM_IMPL_EXPORT ScopedMessagePipeHandle
 ConnectToPeerProcess(ScopedPlatformHandle pipe);
 
+// Called to connect to a peer process. This should be called only if there
+// is no common ancestor for the processes involved within this mojo system.
+// Both processes must call this function, each passing one end of a platform
+// channel. This returns one end of a message pipe to each process. |peer_token|
+// may be passed to ClosePeerConnection() to close the connection.
+MOJO_SYSTEM_IMPL_EXPORT ScopedMessagePipeHandle
+ConnectToPeerProcess(ScopedPlatformHandle pipe, const std::string& peer_token);
+
+// Closes a connection to a peer process created by ConnectToPeerProcess()
+// where the same |peer_token| was used.
+MOJO_SYSTEM_IMPL_EXPORT void ClosePeerConnection(const std::string& peer_token);
+
 // Must be called first, or just after setting configuration parameters, to
 // initialize the (global, singleton) system.
 MOJO_SYSTEM_IMPL_EXPORT void Init();

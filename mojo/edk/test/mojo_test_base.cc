@@ -76,6 +76,12 @@ MojoTestBase::ClientController::~ClientController() {
       << "Test clients should be waited on explicitly with WaitForShutdown().";
 }
 
+void MojoTestBase::ClientController::ClosePeerConnection() {
+#if !defined(OS_IOS)
+  helper_.ClosePeerConnection();
+#endif
+}
+
 int MojoTestBase::ClientController::WaitForShutdown() {
   was_shutdown_ = true;
 #if !defined(OS_IOS)

@@ -49,7 +49,12 @@ ScopedPlatformHandle CreateClientHandle(
                                  0,  // No sharing.
                                  nullptr, OPEN_EXISTING, kFlags,
                                  nullptr)));  // No template file.
-  PCHECK(handle.is_valid());
+  // The server may have stopped accepting a connection between the
+  // WaitNamedPipe() and CreateFile(). If this occurs, an invalid handle is
+  // returned.
+  DPLOG_IF(ERROR, !handle.is_valid())
+      << "Named pipe " << named_handle.pipe_name()
+      << " could not be opened after WaitNamedPipe succeeded";
   return handle;
 }
 

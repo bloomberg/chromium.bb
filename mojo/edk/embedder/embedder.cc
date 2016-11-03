@@ -77,9 +77,20 @@ void SetParentPipeHandleFromCommandLine() {
 }
 
 ScopedMessagePipeHandle ConnectToPeerProcess(ScopedPlatformHandle pipe) {
+  return ConnectToPeerProcess(std::move(pipe), GenerateRandomToken());
+}
+
+ScopedMessagePipeHandle ConnectToPeerProcess(ScopedPlatformHandle pipe,
+                                             const std::string& peer_token) {
   CHECK(internal::g_process_delegate);
   DCHECK(pipe.is_valid());
-  return internal::g_core->ConnectToPeerProcess(std::move(pipe));
+  DCHECK(!peer_token.empty());
+  return internal::g_core->ConnectToPeerProcess(std::move(pipe), peer_token);
+}
+
+void ClosePeerConnection(const std::string& peer_token) {
+  CHECK(internal::g_process_delegate);
+  return internal::g_core->ClosePeerConnection(peer_token);
 }
 
 void Init() {
