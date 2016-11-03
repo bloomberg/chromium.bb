@@ -924,7 +924,8 @@ class Port(object):
         """Checks whether the given test is skipped for this port.
 
         This should return True if the test is skipped because the port
-        runs smoke tests only, or because the
+        runs smoke tests only, or because the test is skipped in a file like
+        NeverFixTests (but not TestExpectations).
         """
         fs = self.host.filesystem
         if self.default_smoke_test_only():
