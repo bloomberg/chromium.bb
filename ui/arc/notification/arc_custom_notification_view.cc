@@ -310,12 +310,14 @@ void ArcCustomNotificationView::ViewHierarchyChanged(
   if (!details.is_add) {
     // Resets slide helper when this view is removed from its parent.
     slide_helper_.reset();
-  }
 
-  // Bail if native_view() has attached to a different widget.
-  if (widget && native_view() &&
-      views::Widget::GetTopLevelWidgetForNativeView(native_view()) != widget) {
-    return;
+    // Bail if this view is no longer attached to a widget or native_view() has
+    // attached to a different widget.
+    if (!widget || (native_view() &&
+                    views::Widget::GetTopLevelWidgetForNativeView(
+                        native_view()) != widget)) {
+      return;
+    }
   }
 
   views::NativeViewHost::ViewHierarchyChanged(details);
