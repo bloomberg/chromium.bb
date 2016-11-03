@@ -100,7 +100,12 @@ int64_t CloudPolicyRefreshScheduler::GetActualRefreshDelay() const {
 }
 
 void CloudPolicyRefreshScheduler::RefreshSoon() {
-  RefreshNow();
+  // If the client isn't registered, there is nothing to do.
+  if (!client_->is_registered())
+    return;
+
+  is_scheduled_for_soon_ = true;
+  RefreshAfter(0);
 }
 
 void CloudPolicyRefreshScheduler::SetInvalidationServiceAvailability(
@@ -136,7 +141,7 @@ void CloudPolicyRefreshScheduler::OnRegistrationStateChanged(
   error_retry_delay_ms_ = kInitialErrorRetryDelayMs;
 
   // The client might have registered, so trigger an immediate refresh.
-  RefreshNow();
+  RefreshSoon();
 }
 
 void CloudPolicyRefreshScheduler::OnClientError(CloudPolicyClient* client) {
@@ -229,15 +234,16 @@ void CloudPolicyRefreshScheduler::UpdateLastRefreshFromPolicy() {
 #endif
 }
 
-void CloudPolicyRefreshScheduler::RefreshNow() {
-  last_refresh_ = base::Time();
-  ScheduleRefresh();
-}
-
 void CloudPolicyRefreshScheduler::ScheduleRefresh() {
   // If the client isn't registered, there is nothing to do.
   if (!client_->is_registered()) {
-    refresh_callback_.Cancel();
+    CancelRefresh();
+    return;
+  }
+
+  // Ignore the refresh request if there's a request scheduled for soon.
+  if (is_scheduled_for_soon_) {
+    DCHECK(!refresh_callback_.IsCancelled());
     return;
   }
 
@@ -273,7 +279,7 @@ void CloudPolicyRefreshScheduler::ScheduleRefresh() {
     case DM_STATUS_SERVICE_DEPROVISIONED:
     case DM_STATUS_SERVICE_DOMAIN_MISMATCH:
       // Need a re-registration, no use in retrying.
-      refresh_callback_.Cancel();
+      CancelRefresh();
       return;
   }
 
@@ -282,6 +288,8 @@ void CloudPolicyRefreshScheduler::ScheduleRefresh() {
 }
 
 void CloudPolicyRefreshScheduler::PerformRefresh() {
+  CancelRefresh();
+
   if (client_->is_registered()) {
     // Update |last_refresh_| so another fetch isn't triggered inadvertently.
     last_refresh_ = base::Time::NowFromSystemTime();
@@ -299,7 +307,6 @@ void CloudPolicyRefreshScheduler::PerformRefresh() {
 
 void CloudPolicyRefreshScheduler::RefreshAfter(int delta_ms) {
   base::TimeDelta delta(base::TimeDelta::FromMilliseconds(delta_ms));
-  refresh_callback_.Cancel();
 
   // Schedule the callback.
   base::TimeDelta delay =
@@ -309,6 +316,11 @@ void CloudPolicyRefreshScheduler::RefreshAfter(int delta_ms) {
       base::Bind(&CloudPolicyRefreshScheduler::PerformRefresh,
                  base::Unretained(this)));
   task_runner_->PostDelayedTask(FROM_HERE, refresh_callback_.callback(), delay);
+}
+
+void CloudPolicyRefreshScheduler::CancelRefresh() {
+  refresh_callback_.Cancel();
+  is_scheduled_for_soon_ = false;
 }
 
 }  // namespace policy

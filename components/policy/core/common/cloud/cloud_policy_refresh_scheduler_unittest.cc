@@ -211,6 +211,36 @@ TEST_F(CloudPolicyRefreshSchedulerTest, RefreshSoon) {
   Mock::VerifyAndClearExpectations(&client_);
 }
 
+TEST_F(CloudPolicyRefreshSchedulerTest, RefreshSoonOverriding) {
+  std::unique_ptr<CloudPolicyRefreshScheduler> scheduler(
+      CreateRefreshScheduler());
+
+  // The refresh scheduled for soon overrides the previously scheduled refresh.
+  scheduler->RefreshSoon();
+  CheckTiming(0);
+
+  // The refresh scheduled for soon is not overridden by the change of the
+  // desired refresh delay.
+  const int64_t kNewPolicyRefreshRate = 12 * 60 * 60 * 1000;
+  scheduler->SetDesiredRefreshDelay(kNewPolicyRefreshRate);
+  CheckTiming(0);
+
+  // The refresh scheduled for soon is not overridden by the notification on the
+  // already fetched policy.
+  client_.SetPolicy(dm_protocol::kChromeUserPolicyType, std::string(),
+                    em::PolicyFetchResponse());
+  store_.NotifyStoreLoaded();
+  CheckTiming(0);
+
+  EXPECT_CALL(client_, FetchPolicy()).Times(1);
+  task_runner_->RunUntilIdle();
+  Mock::VerifyAndClearExpectations(&client_);
+
+  // The next refresh is scheduled according to the normal rate.
+  client_.NotifyPolicyFetched();
+  CheckTiming(kNewPolicyRefreshRate);
+}
+
 TEST_F(CloudPolicyRefreshSchedulerTest, InvalidationsAvailable) {
   std::unique_ptr<CloudPolicyRefreshScheduler> scheduler(
       new CloudPolicyRefreshScheduler(&client_, &store_, task_runner_));

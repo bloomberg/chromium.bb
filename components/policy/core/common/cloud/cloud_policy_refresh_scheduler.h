@@ -57,7 +57,7 @@ class POLICY_EXPORT CloudPolicyRefreshScheduler
   // invalidations are available or not).
   int64_t GetActualRefreshDelay() const;
 
-  // Requests a policy refresh to be performed soon.
+  // Schedules a refresh to be performed immediately.
   void RefreshSoon();
 
   // The refresh scheduler starts by assuming that invalidations are not
@@ -93,9 +93,6 @@ class POLICY_EXPORT CloudPolicyRefreshScheduler
   // a refresh on every restart.
   void UpdateLastRefreshFromPolicy();
 
-  // Schedules a refresh to be performed immediately.
-  void RefreshNow();
-
   // Evaluates when the next refresh is pending and updates the callback to
   // execute that refresh at the appropriate time.
   void ScheduleRefresh();
@@ -103,9 +100,12 @@ class POLICY_EXPORT CloudPolicyRefreshScheduler
   // Triggers a policy refresh.
   void PerformRefresh();
 
-  // Schedules a policy refresh to happen after |delta_ms| milliseconds,
-  // relative to |last_refresh_|.
+  // Schedules a policy refresh to happen no later than |delta_ms| msecs after
+  // |last_refresh_|.
   void RefreshAfter(int delta_ms);
+
+  // Cancels the scheduled policy refresh.
+  void CancelRefresh();
 
   CloudPolicyClient* client_;
   CloudPolicyStore* store_;
@@ -115,6 +115,10 @@ class POLICY_EXPORT CloudPolicyRefreshScheduler
 
   // The delayed refresh callback.
   base::CancelableClosure refresh_callback_;
+
+  // Whether the refresh is scheduled for soon (using |RefreshSoon| or
+  // |RefreshNow|).
+  bool is_scheduled_for_soon_ = false;
 
   // The last time a refresh callback completed.
   base::Time last_refresh_;
