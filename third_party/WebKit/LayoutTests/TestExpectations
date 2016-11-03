@@ -1537,3 +1537,18 @@ crbug.com/657968 storage/indexeddb/idbdatabase-deleteObjectStore-exception-order
 
 crbug.com/659610 fast/css-grid-layout/grid-baseline.html [ Failure ]
 crbug.com/659610 fast/css-grid-layout/grid-baseline-margins.html [ Failure ]
+
+# TODO(chrishall): this is a temporary mediation step as part of the P0 issue crbug.com/657646
+# this is not meant to be here for more than a few days (from 2016-11-03 SYD)
+crbug.com/657646 [ Win ] fast/text/font-weight.html [ Failure Pass ]
+crbug.com/657646 [ Win ] fast/text/textIteratorNilRenderer.html [ Failure Pass ]
+crbug.com/657646 [ Win ] fast/text/font-stretch.html [ Failure Pass ]
+crbug.com/657646 [ Win ] fast/text/sub-pixel/text-scaling-pixel.html [ Failure Pass ]
+crbug.com/657646 [ Win ] fast/text/international/bidi-listbox-atsui.html [ Failure Pass ]
+crbug.com/657646 [ Win ] fast/text/international/bidi-listbox.html [ Failure Pass ]
+crbug.com/657646 [ Win ] fast/text/international/lang-glyph-cache-separation.html [ Failure Pass ]
+crbug.com/657646 [ Win ] fast/text/font-stretch-variant.html [ Failure Pass ]
+crbug.com/657646 [ Win ] fast/text/drawBidiText.html [ Failure Pass ]
+crbug.com/657646 [ Win ] fast/text/font-features/caps-native-synthesis.html [ Failure Pass ]
+crbug.com/657646 [ Win ] fast/text/international/thai-line-breaks.html [ Failure Pass ]
+
