@@ -18,7 +18,8 @@
         android:label="{{ short_name }}"
         android:allowBackup="false">
         <activity android:name="org.chromium.webapk.shell_apk.MainActivity"
-                  android:theme="@android:style/Theme.Translucent.NoTitleBar">
+                  android:theme="@android:style/Theme.Translucent.NoTitleBar"
+                  android:excludeFromRecents="true">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
                 <category android:name="android.intent.category.LAUNCHER" />
