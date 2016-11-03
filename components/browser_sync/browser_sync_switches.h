@@ -12,6 +12,8 @@ namespace switches {
 extern const char kDisableSync[];
 extern const char kDisableSyncTypes[];
 extern const char kEnableWifiCredentialSync[];
+extern const char kEnableLocalSyncBackend[];
+extern const char kLocalSyncBackendDir[];
 
 }  // namespace switches
 
