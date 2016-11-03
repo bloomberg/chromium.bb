@@ -9,6 +9,7 @@
 
 #include "base/command_line.h"
 #include "base/debug/leak_annotations.h"
+#include "base/lazy_instance.h"
 #include "base/logging.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/synchronization/lock.h"
@@ -40,14 +41,16 @@ static bool use_mock_keychain = false;
 // this and migrate to different encryption without data loss.
 const char kEncryptionVersionPrefix[] = "v10";
 
+// This lock is used to make the GetEncrytionKey method thread-safe.
+base::LazyInstance<base::Lock>::Leaky g_lock = LAZY_INSTANCE_INITIALIZER;
+
 // Generates a newly allocated SymmetricKey object based on the password found
 // in the Keychain.  The generated key is for AES encryption.  Returns NULL key
 // in the case password access is denied or key generation error occurs.
 crypto::SymmetricKey* GetEncryptionKey() {
   static crypto::SymmetricKey* cached_encryption_key = NULL;
   static bool key_is_cached = false;
-  static base::Lock lock;
-  base::AutoLock auto_lock(lock);
+  base::AutoLock auto_lock(g_lock.Get());
 
   if (key_is_cached)
     return cached_encryption_key;
