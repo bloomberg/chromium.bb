@@ -107,8 +107,6 @@ crbug.com/646010 paint/selection/text-selection-newline-rtl-double-linebreak.htm
 crbug.com/646015 paint/invalidation/hover-invalidation-table.html [ Failure ]
 crbug.com/646016 paint/invalidation/selected-replaced.html [ Failure ]
 
-crbug.com/658479 paint/invalidation/background-resize-height.html [ Failure Pass ]
-
 # ====== Paint team owned tests to here ======
 
 

@@ -1,9 +1,19 @@
 <!DOCTYPE html>
 <script src="resources/text-based-repaint.js" type="text/javascript"></script>
 <script>
+window.testIsAsync = true;
+function doTest() {
+    document.getElementById('container').style.height = '550px';
+    finishRepaintTest();
+}
 function repaintTest()
 {
-    document.getElementById('container').style.height = '550px';
+    if (window.testRunner) {
+        // This ensures finish of image decoding before running the test.
+        testRunner.capturePixelsAsyncThen(doTest);
+    } else {
+        doTest();
+    }
 }
 window.onload = runRepaintAndPixelTest;
 </script>
@@ -52,7 +62,7 @@ window.onload = runRepaintAndPixelTest;
     left: 300px;
 }
 .center {
-    background-position: center; 
+    background-position: center;
     left: 350px;
 }
 .no-repeat {
@@ -81,9 +91,8 @@ window.onload = runRepaintAndPixelTest;
     <div class="test image repeat-space"></div>
     <div class="test image repeat-round"></div>
     <div class="test generated"></div>
-    <div class="test generated cover"></div>
-    <div class="test generated contain"></div>
-    <div class="test generated fixed-height"></div>
+    <div class="test generated size-cover"></div>
+    <div class="test generated size-contain"></div>
     <div class="test generated percent-height"></div>
     <div class="test generated top"></div>
     <div class="test generated bottom"></div>
