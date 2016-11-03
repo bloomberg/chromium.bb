@@ -15,7 +15,7 @@ represented in the current code page."
 
 ### Setting up the environment for Visual Studio
 
-You must build with Visual Studio 2015 Update 2; no other version is
+You must build with Visual Studio 2015 Update 3; no other version is
 supported.
 
 You must have Windows 7 x64 or later. x86 OSs are unsupported.
@@ -28,7 +28,7 @@ Follow the appropriate path below:
 
 As of March 11, 2016 Chromium requires Visual Studio 2015 to build.
 
-Install Visual Studio 2015 Update 2 or later - Community Edition
+Install Visual Studio 2015 Update 3 or later - Community Edition
 should work if its license is appropriate for you. Use the Custom Install option
 and select:
 
