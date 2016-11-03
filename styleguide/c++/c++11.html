@@ -456,6 +456,14 @@ template &lt;typename T&gt;<br/>void Function(T&& t) { ... }</code></td>
 </tr>
 
 <tr>
+<td>Random Number Generators</td>
+<td><code>&lt;random&gt;</code></td>
+<td>Random number generation algorithms and utilities</td>
+<td><a href="http://en.cppreference.com/w/cpp/numeric/random">Pseudo-random number generation</a></td>
+<td>Because the standard does not define precisely how the <code><i>xxx</i>_distribution</code> objects generate output, the same object may produce different output for the same seed across platforms, or even across different versions of the STL. Do not use these objects in any scenario where behavioral consistency is required. <a href="https://groups.google.com/a/chromium.org/forum/#!topic/cxx/MLgK9vCE4BA">Discussion thread</a></td>
+</tr>
+
+<tr>
 <td>String Direct Reference Functions</td>
 <td><code>std::string::front()</code>, <code>std::string::back()</code></td>
 <td>Returns a reference to the front or back of a string</td>
@@ -838,14 +846,6 @@ work in all our compilers yet.</p>
 <td>Provides a standard way to access properties of pointers and pointer-like types</td>
 <td><a href="http://en.cppreference.com/w/cpp/memory/pointer_traits">std::pointer_traits</a></td>
 <td>Useful for determining the element type pointed at by a (possibly smart) pointer.</td>
-</tr>
-
-<tr>
-<td>Random Number Generators</td>
-<td>Functions within <code>&lt;random&gt;</code></td>
-<td>Random number generation algorithms and utilities</td>
-<td><a href="http://en.cppreference.com/w/cpp/numeric/random">Pseudo-random number generation</a></td>
-<td></td>
 </tr>
 
 <tr>
