@@ -51,8 +51,8 @@ class CORE_EXPORT PromiseRejectionEvent final : public Event {
   void dispose();
 
   RefPtr<ScriptState> m_scriptState;
-  ScopedPersistent<v8::Value> m_promise;
-  ScopedPersistent<v8::Value> m_reason;
+  TraceWrapperV8Reference<v8::Value> m_promise;
+  TraceWrapperV8Reference<v8::Value> m_reason;
 };
 
 }  // namespace blink

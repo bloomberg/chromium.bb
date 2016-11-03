@@ -5,7 +5,6 @@
 #ifndef ScriptWrappableVisitor_h
 #define ScriptWrappableVisitor_h
 
-#include "bindings/core/v8/ScopedPersistent.h"
 #include "bindings/core/v8/ScriptWrappable.h"
 #include "core/CoreExport.h"
 #include "platform/RuntimeEnabledFeatures.h"
@@ -20,6 +19,8 @@ namespace blink {
 class HeapObjectHeader;
 template <typename T>
 class Member;
+template <typename T>
+class TraceWrapperV8Reference;
 
 class WrapperMarkingData {
  public:
@@ -103,6 +104,9 @@ class CORE_EXPORT ScriptWrappableVisitor : public WrapperVisitor,
 
   static WrapperVisitor* currentVisitor(v8::Isolate*);
 
+  static void writeBarrier(const void*,
+                           const TraceWrapperV8Reference<v8::Value>*);
+
   template <typename T>
   static void writeBarrier(const void* object, const Member<T> value) {
     writeBarrier(object, value.get());
@@ -117,8 +121,8 @@ class CORE_EXPORT ScriptWrappableVisitor : public WrapperVisitor,
       return;
     }
     // We only require a write barrier if |srcObject|  is already marked. Note
-    // that this implicitly disabled the write barrier when  wrapper tracing
-    // is not active as object will not be marked in this case.
+    // that this implicitly disables the write barrier when the GC is not
+    // active as object will not be marked in this case.
     if (!HeapObjectHeader::fromPayload(srcObject)->isWrapperHeaderMarked()) {
       return;
     }
@@ -162,10 +166,8 @@ class CORE_EXPORT ScriptWrappableVisitor : public WrapperVisitor,
     NOTREACHED();
   }
 
-  void traceWrappers(const ScopedPersistent<v8::Value>*) const override;
-  void traceWrappers(const ScopedPersistent<v8::Object>*) const override;
-  void markWrapper(const v8::PersistentBase<v8::Value>* handle) const;
-  void markWrapper(const v8::PersistentBase<v8::Object>* handle) const override;
+  void traceWrappers(const TraceWrapperV8Reference<v8::Value>&) const override;
+  void markWrapper(const v8::PersistentBase<v8::Value>*) const override;
 
   void invalidateDeadObjectsInMarkingDeque();
 

@@ -19,7 +19,7 @@ namespace blink {
 
 VoidCallbackFunction::VoidCallbackFunction(ScriptState* scriptState, v8::Local<v8::Function> callback)
     : m_scriptState(scriptState),
-    m_callback(scriptState->isolate(), callback) {
+    m_callback(scriptState->isolate(), this, callback) {
   DCHECK(!m_callback.isEmpty());
   m_callback.setPhantom();
 }
@@ -27,7 +27,7 @@ VoidCallbackFunction::VoidCallbackFunction(ScriptState* scriptState, v8::Local<v
 DEFINE_TRACE(VoidCallbackFunction) {}
 
 DEFINE_TRACE_WRAPPERS(VoidCallbackFunction) {
-  visitor->traceWrappers(&m_callback.cast<v8::Object>());
+  visitor->traceWrappers(m_callback.cast<v8::Value>());
 }
 
 bool VoidCallbackFunction::call(ScriptWrappable* scriptWrappable) {

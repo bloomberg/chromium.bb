@@ -158,12 +158,7 @@ DEFINE_TRACE_WRAPPERS(EventTarget) {
   while (EventListener* listener = iterator.nextListener()) {
     if (listener->type() != EventListener::JSEventListenerType)
       continue;
-    V8AbstractEventListener* v8listener =
-        static_cast<V8AbstractEventListener*>(listener);
-    if (!v8listener->hasExistingListenerObject())
-      continue;
-
-    visitor->traceWrappers(v8listener);
+    visitor->traceWrappers(static_cast<V8AbstractEventListener*>(listener));
   }
 }
 
@@ -305,10 +300,8 @@ bool EventTarget::addEventListenerInternal(
       eventType, listener, options, &registeredListener);
   if (added) {
     if (listener->type() == EventListener::JSEventListenerType) {
-      V8AbstractEventListener* v8listener =
-          static_cast<V8AbstractEventListener*>(listener);
-      if (v8listener->hasExistingListenerObject())
-        ScriptWrappableVisitor::writeBarrier(this, v8listener);
+      ScriptWrappableVisitor::writeBarrier(
+          this, static_cast<V8AbstractEventListener*>(listener));
     }
     addedEventListener(eventType, registeredListener);
   }

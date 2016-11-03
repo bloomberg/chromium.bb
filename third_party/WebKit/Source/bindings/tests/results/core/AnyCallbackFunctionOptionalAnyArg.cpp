@@ -20,7 +20,7 @@ namespace blink {
 
 AnyCallbackFunctionOptionalAnyArg::AnyCallbackFunctionOptionalAnyArg(ScriptState* scriptState, v8::Local<v8::Function> callback)
     : m_scriptState(scriptState),
-    m_callback(scriptState->isolate(), callback) {
+    m_callback(scriptState->isolate(), this, callback) {
   DCHECK(!m_callback.isEmpty());
   m_callback.setPhantom();
 }
@@ -28,7 +28,7 @@ AnyCallbackFunctionOptionalAnyArg::AnyCallbackFunctionOptionalAnyArg(ScriptState
 DEFINE_TRACE(AnyCallbackFunctionOptionalAnyArg) {}
 
 DEFINE_TRACE_WRAPPERS(AnyCallbackFunctionOptionalAnyArg) {
-  visitor->traceWrappers(&m_callback.cast<v8::Object>());
+  visitor->traceWrappers(m_callback.cast<v8::Value>());
 }
 
 bool AnyCallbackFunctionOptionalAnyArg::call(ScriptWrappable* scriptWrappable, ScriptValue optionalAnyArg, ScriptValue& returnValue) {

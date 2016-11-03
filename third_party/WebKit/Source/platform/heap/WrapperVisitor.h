@@ -23,7 +23,7 @@ template <typename T>
 class Member;
 class ScriptWrappable;
 template <typename T>
-class ScopedPersistent;
+class TraceWrapperV8Reference;
 class TraceWrapperBase;
 template <typename T>
 class TraceWrapperMember;
@@ -94,6 +94,10 @@ class PLATFORM_EXPORT WrapperVisitor {
   template <typename T>
   void traceWrappers(const T* traceable) const {
     static_assert(sizeof(T), "T must be fully defined");
+    // Ideally, we'd assert that we can cast to TraceWrapperBase here.
+    static_assert(
+        IsGarbageCollectedType<T>::value,
+        "Only garbage collected objects can be used in traceWrappers().");
 
     if (!traceable) {
       return;
@@ -136,11 +140,8 @@ class PLATFORM_EXPORT WrapperVisitor {
   }
 
   virtual void traceWrappers(
-      const ScopedPersistent<v8::Value>* persistent) const = 0;
-  virtual void traceWrappers(
-      const ScopedPersistent<v8::Object>* persistent) const = 0;
-  virtual void markWrapper(
-      const v8::PersistentBase<v8::Object>* persistent) const = 0;
+      const TraceWrapperV8Reference<v8::Value>&) const = 0;
+  virtual void markWrapper(const v8::PersistentBase<v8::Value>*) const = 0;
 
   virtual void dispatchTraceWrappers(const TraceWrapperBase*) const = 0;
 #define DECLARE_DISPATCH_TRACE_WRAPPERS(ClassName) \

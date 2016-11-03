@@ -42,7 +42,7 @@ class {{exported}}{{cpp_class}} final : public GarbageCollectedFinalized<{{cpp_c
   {{cpp_class}}(ScriptState*, v8::Local<v8::Function>);
 
   RefPtr<ScriptState> m_scriptState;
-  ScopedPersistent<v8::Function> m_callback;
+  TraceWrapperV8Reference<v8::Function> m_callback;
 };
 
 }  // namespace blink

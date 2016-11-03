@@ -6,6 +6,7 @@
 
 #include "bindings/core/v8/ActiveScriptWrappable.h"
 #include "bindings/core/v8/DOMWrapperWorld.h"
+#include "bindings/core/v8/ScopedPersistent.h"
 #include "bindings/core/v8/ScriptWrappableVisitorVerifier.h"
 #include "bindings/core/v8/V8AbstractEventListener.h"
 #include "bindings/core/v8/WrapperTypeInfo.h"
@@ -211,26 +212,34 @@ void ScriptWrappableVisitor::markWrappersInAllWorlds(
       const_cast<ScriptWrappable*>(scriptWrappable), this, m_reporter);
 }
 
-void ScriptWrappableVisitor::traceWrappers(
-    const ScopedPersistent<v8::Value>* scopedPersistent) const {
-  markWrapper(
-      &(const_cast<ScopedPersistent<v8::Value>*>(scopedPersistent)->get()));
+void ScriptWrappableVisitor::writeBarrier(
+    const void* srcObject,
+    const TraceWrapperV8Reference<v8::Value>* dstObject) {
+  if (!RuntimeEnabledFeatures::traceWrappablesEnabled()) {
+    return;
+  }
+  if (!srcObject || !dstObject || dstObject->isEmpty()) {
+    return;
+  }
+  // We only require a write barrier if |srcObject|  is already marked. Note
+  // that this implicitly disables the write barrier when the GC is not
+  // active as object will not be marked in this case.
+  if (!HeapObjectHeader::fromPayload(srcObject)->isWrapperHeaderMarked()) {
+    return;
+  }
+  currentVisitor(ThreadState::current()->isolate())
+      ->markWrapper(
+          &(const_cast<TraceWrapperV8Reference<v8::Value>*>(dstObject)->get()));
 }
 
 void ScriptWrappableVisitor::traceWrappers(
-    const ScopedPersistent<v8::Object>* scopedPersistent) const {
+    const TraceWrapperV8Reference<v8::Value>& tracedWrapper) const {
   markWrapper(
-      &(const_cast<ScopedPersistent<v8::Object>*>(scopedPersistent)->get()));
+      &(const_cast<TraceWrapperV8Reference<v8::Value>&>(tracedWrapper).get()));
 }
 
 void ScriptWrappableVisitor::markWrapper(
     const v8::PersistentBase<v8::Value>* handle) const {
-  DCHECK(m_reporter);
-  handle->RegisterExternalReference(m_reporter);
-}
-
-void ScriptWrappableVisitor::markWrapper(
-    const v8::PersistentBase<v8::Object>* handle) const {
   DCHECK(m_reporter);
   handle->RegisterExternalReference(m_reporter);
 }

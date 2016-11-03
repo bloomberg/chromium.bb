@@ -41,7 +41,7 @@ v8::Local<v8::Object> ScriptWrappable::associateWithWrapper(
 
 void ScriptWrappable::markWrapper(const WrapperVisitor* visitor) const {
   if (containsWrapper())
-    visitor->markWrapper(&m_mainWorldWrapper);
+    visitor->markWrapper(&m_mainWorldWrapper.As<v8::Value>());
 }
 
 }  // namespace blink

@@ -287,4 +287,102 @@ TEST(ScriptWrappableVisitorTest,
   visitor->getVerifierDeque()->clear();
 }
 
+namespace {
+
+class HandleContainer
+    : public blink::GarbageCollectedFinalized<HandleContainer>,
+      blink::TraceWrapperBase {
+ public:
+  static HandleContainer* create() { return new HandleContainer(); }
+  virtual ~HandleContainer() {}
+
+  DEFINE_INLINE_TRACE() {}
+  DEFINE_INLINE_TRACE_WRAPPERS() {
+    visitor->traceWrappers(m_handle.cast<v8::Value>());
+  }
+
+  void setValue(v8::Isolate* isolate, v8::Local<v8::String> string) {
+    m_handle.set(isolate, string);
+    m_handle.setPhantom();
+  }
+
+ private:
+  HandleContainer() : m_handle(this) {}
+
+  TraceWrapperV8Reference<v8::String> m_handle;
+};
+
+class InterceptingScriptWrappableVisitor
+    : public blink::ScriptWrappableVisitor {
+ public:
+  InterceptingScriptWrappableVisitor(v8::Isolate* isolate)
+      : ScriptWrappableVisitor(isolate), m_markedWrappers(new size_t(0)) {}
+  ~InterceptingScriptWrappableVisitor() { delete m_markedWrappers; }
+
+  virtual void markWrapper(const v8::PersistentBase<v8::Value>* handle) const {
+    *m_markedWrappers += 1;
+    ScriptWrappableVisitor::markWrapper(handle);
+  }
+
+  size_t numberOfMarkedWrappers() const { return *m_markedWrappers; }
+
+ private:
+  size_t* m_markedWrappers;  // Indirection required because of const override.
+};
+
+void swapInNewVisitor(v8::Isolate* isolate,
+                      blink::ScriptWrappableVisitor* newVisitor) {
+  isolate->SetEmbedderHeapTracer(newVisitor);
+  std::unique_ptr<blink::ScriptWrappableVisitor> visitor(newVisitor);
+  V8PerIsolateData::from(isolate)->setScriptWrappableVisitor(
+      std::move(visitor));
+}
+
+}  // namespace
+
+TEST(ScriptWrappableVisitorTest, NoWriteBarrierOnUnmarkedContainer) {
+  if (!RuntimeEnabledFeatures::traceWrappablesEnabled())
+    return;
+  V8TestingScope scope;
+  auto rawVisitor = new InterceptingScriptWrappableVisitor(scope.isolate());
+  swapInNewVisitor(scope.isolate(), rawVisitor);
+  rawVisitor->TracePrologue(new NullReporter());
+  v8::Local<v8::String> str =
+      v8::String::NewFromUtf8(scope.isolate(), "teststring",
+                              v8::NewStringType::kNormal, sizeof("teststring"))
+          .ToLocalChecked();
+  HandleContainer* container = HandleContainer::create();
+  CHECK_EQ(0u, rawVisitor->numberOfMarkedWrappers());
+  container->setValue(scope.isolate(), str);
+  CHECK_EQ(0u, rawVisitor->numberOfMarkedWrappers());
+  // Gracefully terminate tracing.
+  rawVisitor->AdvanceTracing(
+      0, v8::EmbedderHeapTracer::AdvanceTracingActions(
+             v8::EmbedderHeapTracer::ForceCompletionAction::FORCE_COMPLETION));
+  rawVisitor->TraceEpilogue();
+}
+
+TEST(ScriptWrappableVisitorTest, WriteBarrierTriggersOnMarkedContainer) {
+  if (!RuntimeEnabledFeatures::traceWrappablesEnabled())
+    return;
+  V8TestingScope scope;
+  auto rawVisitor = new InterceptingScriptWrappableVisitor(scope.isolate());
+  swapInNewVisitor(scope.isolate(), rawVisitor);
+  rawVisitor->TracePrologue(new NullReporter());
+  v8::Local<v8::String> str =
+      v8::String::NewFromUtf8(scope.isolate(), "teststring",
+                              v8::NewStringType::kNormal, sizeof("teststring"))
+          .ToLocalChecked();
+  HandleContainer* container = HandleContainer::create();
+  HeapObjectHeader::fromPayload(container)->markWrapperHeader();
+  CHECK_EQ(0u, rawVisitor->numberOfMarkedWrappers());
+  container->setValue(scope.isolate(), str);
+  CHECK_EQ(1u, rawVisitor->numberOfMarkedWrappers());
+  // Gracefully terminate tracing.
+  rawVisitor->AdvanceTracing(
+      0, v8::EmbedderHeapTracer::AdvanceTracingActions(
+             v8::EmbedderHeapTracer::ForceCompletionAction::FORCE_COMPLETION));
+  rawVisitor->TraceEpilogue();
+}
+
 }  // namespace blink

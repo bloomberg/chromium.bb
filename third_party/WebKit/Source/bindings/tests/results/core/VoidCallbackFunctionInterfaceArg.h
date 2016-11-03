@@ -46,7 +46,7 @@ class CORE_EXPORT VoidCallbackFunctionInterfaceArg final : public GarbageCollect
   VoidCallbackFunctionInterfaceArg(ScriptState*, v8::Local<v8::Function>);
 
   RefPtr<ScriptState> m_scriptState;
-  ScopedPersistent<v8::Function> m_callback;
+  TraceWrapperV8Reference<v8::Function> m_callback;
 };
 
 }  // namespace blink

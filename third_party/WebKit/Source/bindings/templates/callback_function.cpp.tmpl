@@ -13,7 +13,7 @@ namespace blink {
 
 {{cpp_class}}::{{cpp_class}}(ScriptState* scriptState, v8::Local<v8::Function> callback)
     : m_scriptState(scriptState),
-    m_callback(scriptState->isolate(), callback) {
+    m_callback(scriptState->isolate(), this, callback) {
   DCHECK(!m_callback.isEmpty());
   m_callback.setPhantom();
 }
@@ -21,7 +21,7 @@ namespace blink {
 DEFINE_TRACE({{cpp_class}}) {}
 
 DEFINE_TRACE_WRAPPERS({{cpp_class}}) {
-  visitor->traceWrappers(&m_callback.cast<v8::Object>());
+  visitor->traceWrappers(m_callback.cast<v8::Value>());
 }
 
 bool {{cpp_class}}::call({{argument_declarations | join(', ')}}) {

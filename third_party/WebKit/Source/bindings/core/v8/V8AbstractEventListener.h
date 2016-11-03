@@ -141,7 +141,7 @@ class CORE_EXPORT V8AbstractEventListener : public EventListener,
   static void wrapperCleared(
       const v8::WeakCallbackInfo<V8AbstractEventListener>&);
 
-  ScopedPersistent<v8::Object> m_listener;
+  TraceWrapperV8Reference<v8::Object> m_listener;
 
   // Indicates if this is an HTML type listener.
   bool m_isAttribute;
