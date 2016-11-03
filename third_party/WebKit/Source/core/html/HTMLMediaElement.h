@@ -465,8 +465,12 @@ class CORE_EXPORT HTMLMediaElement : public HTMLElement,
   bool endedPlayback(LoopCondition = LoopCondition::Included) const;
 
   void setShouldDelayLoadEvent(bool);
-  void invalidateCachedTime();
-  void refreshCachedTime() const;
+
+  double earliestPossiblePosition() const;
+  double currentPlaybackPosition() const;
+  double officialPlaybackPosition() const;
+  void setOfficialPlaybackPosition(double) const;
+  void requireOfficialPlaybackPositionUpdate() const;
 
   void ensureMediaControls();
   void configureMediaControls();
@@ -565,7 +569,7 @@ class CORE_EXPORT HTMLMediaElement : public HTMLElement,
   double m_lastTimeUpdateEventWallTime;
 
   // The last time a timeupdate event was sent in movie time.
-  double m_lastTimeUpdateEventMovieTime;
+  double m_lastTimeUpdateEventMediaTime;
 
   // The default playback start position.
   double m_defaultPlaybackStartPosition;
@@ -604,9 +608,11 @@ class CORE_EXPORT HTMLMediaElement : public HTMLElement,
 
   Member<HTMLMediaSource> m_mediaSource;
 
-  // Cached time value. Only valid when ready state is kHaveMetadata or
-  // higher, otherwise the current time is assumed to be zero.
-  mutable double m_cachedTime;
+  // Stores "official playback position", updated periodically from "current
+  // playback position". Official playback position should not change while
+  // scripts are running. See setOfficialPlaybackPosition().
+  mutable double m_officialPlaybackPosition;
+  mutable bool m_officialPlaybackPositionNeedsUpdate;
 
   double m_fragmentEndTime;
 

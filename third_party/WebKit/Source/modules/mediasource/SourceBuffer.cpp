@@ -1157,6 +1157,13 @@ bool SourceBuffer::prepareAppend(size_t newDataSize,
 bool SourceBuffer::evictCodedFrames(size_t newDataSize) {
   DCHECK(m_source);
   DCHECK(m_source->mediaElement());
+
+  // Nothing to do if the mediaElement does not yet have frames to evict.
+  if (m_source->mediaElement()->getReadyState() <
+      HTMLMediaElement::kHaveMetadata) {
+    return true;
+  }
+
   double currentTime = m_source->mediaElement()->currentTime();
   bool result = m_webSourceBuffer->evictCodedFrames(currentTime, newDataSize);
   if (!result) {

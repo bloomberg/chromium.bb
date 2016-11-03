@@ -5,9 +5,14 @@
 <script>
 var video = document.querySelector("video");
 
-testRunner.waitUntilDone();
+if (window.testRunner) {
+  testRunner.waitUntilDone();
+}
+
 video.onended = function() {
+  if (window.testRunner) {
     testRunner.notifyDone();
+  }
 };
 
 video.onseeked = function() {

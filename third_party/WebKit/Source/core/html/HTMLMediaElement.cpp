@@ -28,6 +28,7 @@
 
 #include "bindings/core/v8/ExceptionState.h"
 #include "bindings/core/v8/ExceptionStatePlaceholder.h"
+#include "bindings/core/v8/Microtask.h"
 #include "bindings/core/v8/ScriptController.h"
 #include "bindings/core/v8/ScriptEventListener.h"
 #include "bindings/core/v8/ScriptPromiseResolver.h"
@@ -108,10 +109,10 @@
 #define LOG_MEDIA_EVENTS 0
 #endif
 
-#ifndef LOG_CACHED_TIME_WARNINGS
-// Default to not logging warnings about excessive drift in the cached media
-// time because it adds a fair amount of overhead and logging.
-#define LOG_CACHED_TIME_WARNINGS 0
+#ifndef LOG_OFFICIAL_TIME_STATUS
+// Default to not logging status of official time because it adds a fair amount
+// of overhead and logging.
+#define LOG_OFFICIAL_TIME_STATUS 0
 #endif
 
 namespace blink {
@@ -423,14 +424,15 @@ HTMLMediaElement::HTMLMediaElement(const QualifiedName& tagName,
       m_previousProgressTime(std::numeric_limits<double>::max()),
       m_duration(std::numeric_limits<double>::quiet_NaN()),
       m_lastTimeUpdateEventWallTime(0),
-      m_lastTimeUpdateEventMovieTime(0),
+      m_lastTimeUpdateEventMediaTime(std::numeric_limits<double>::quiet_NaN()),
       m_defaultPlaybackStartPosition(0),
       m_loadState(WaitingForSource),
       m_deferredLoadState(NotDeferred),
       m_deferredLoadTimer(this, &HTMLMediaElement::deferredLoadTimerFired),
       m_webLayer(nullptr),
       m_displayMode(Unknown),
-      m_cachedTime(std::numeric_limits<double>::quiet_NaN()),
+      m_officialPlaybackPosition(0),
+      m_officialPlaybackPositionNeedsUpdate(true),
       m_fragmentEndTime(std::numeric_limits<double>::quiet_NaN()),
       m_pendingActionFlags(0),
       m_lockedPendingUserGesture(false),
@@ -849,12 +851,9 @@ void HTMLMediaElement::invokeLoadAlgorithm() {
     //       Set the official playback position to 0.
     //       If this changed the official playback position, then queue a task
     //       to fire a simple event named timeupdate at the media element.
-    // FIXME: Add support for firing this event.
-
     // 4.9 - Set the initial playback position to 0.
-    // FIXME: Make this less subtle. The position only becomes 0 because the
-    // ready state is HAVE_NOTHING.
-    invalidateCachedTime();
+    setOfficialPlaybackPosition(0);
+    scheduleTimeupdateEvent(false);
 
     // 4.10 - Set the timeline offset to Not-a-Number (NaN).
     // 4.11 - Update the duration attribute to Not-a-Number (NaN).
@@ -1640,12 +1639,21 @@ void HTMLMediaElement::setReadyState(ReadyState state) {
       finishSeek();
   } else {
     if (wasPotentiallyPlaying && m_readyState < kHaveFutureData) {
+      // Force an update to official playback position. Automatic updates from
+      // currentPlaybackPosition() will be blocked while m_readyState remains
+      // < kHaveFutureData. This blocking is desired after 'waiting' has been
+      // fired, but its good to update it one final time to accurately reflect
+      // media time at the moment we ran out of data to play.
+      setOfficialPlaybackPosition(currentPlaybackPosition());
+
       // 4.8.10.8
       scheduleTimeupdateEvent(false);
       scheduleEvent(EventTypeNames::waiting);
     }
   }
 
+  // Once enough of the media data has been fetched to determine the duration of
+  // the media resource, its dimensions, and other metadata...
   if (m_readyState >= kHaveMetadata && oldState < kHaveMetadata) {
     createPlaceholderTracksIfNecessary();
 
@@ -1653,6 +1661,10 @@ void HTMLMediaElement::setReadyState(ReadyState state) {
 
     MediaFragmentURIParser fragmentParser(m_currentSrc);
     m_fragmentEndTime = fragmentParser.endTime();
+
+    // Set the current playback position and the official playback position to
+    // the earliest possible position.
+    setOfficialPlaybackPosition(earliestPossiblePosition());
 
     m_duration = duration();
     scheduleEvent(EventTypeNames::durationchange);
@@ -1689,6 +1701,11 @@ void HTMLMediaElement::setReadyState(ReadyState state) {
 
   if (m_readyState >= kHaveCurrentData && oldState < kHaveCurrentData &&
       !m_haveFiredLoadedData) {
+    // Force an update to official playback position to catch non-zero start
+    // times that were not known at kHaveMetadata, but are known now that the
+    // first packets have been demuxed.
+    setOfficialPlaybackPosition(currentPlaybackPosition());
+
     m_haveFiredLoadedData = true;
     shouldUpdateDisplayState = true;
     scheduleEvent(EventTypeNames::loadeddata);
@@ -1735,7 +1752,6 @@ void HTMLMediaElement::setReadyState(ReadyState state) {
           }
         } else {
           m_paused = false;
-          invalidateCachedTime();
           scheduleEvent(EventTypeNames::play);
           scheduleNotifyPlaying();
           m_autoplaying = false;
@@ -1811,10 +1827,7 @@ void HTMLMediaElement::seek(double time) {
 
   // Get the current time before setting m_seeking, m_lastSeekTime is returned
   // once it is set.
-  refreshCachedTime();
-  // This is needed to avoid getting default playback start position from
-  // currentTime().
-  double now = m_cachedTime;
+  double now = currentTime();
 
   // 3 - If the element's seeking IDL attribute is true, then another instance
   // of this algorithm is already running. Abort that other instance of the
@@ -1832,7 +1845,7 @@ void HTMLMediaElement::seek(double time) {
 
   // 7 - If the new playback position is less than the earliest possible
   // position, let it be that position instead.
-  time = std::max(time, 0.0);
+  time = std::max(time, earliestPossiblePosition());
 
   // Ask the media engine for the time value in the movie's time scale before
   // comparing with current time. This is necessary because if the seek time is
@@ -1882,6 +1895,10 @@ void HTMLMediaElement::finishSeek() {
   // 14 - Set the seeking IDL attribute to false.
   m_seeking = false;
 
+  // Force an update to officialPlaybackPosition. Periodic updates generally
+  // handle this, but may be skipped paused or waiting for data.
+  setOfficialPlaybackPosition(currentPlaybackPosition());
+
   // 16 - Queue a task to fire a simple event named timeupdate at the element.
   scheduleTimeupdateEvent(false);
 
@@ -1907,25 +1924,93 @@ bool HTMLMediaElement::seeking() const {
   return m_seeking;
 }
 
-void HTMLMediaElement::refreshCachedTime() const {
-  if (!webMediaPlayer() || m_readyState < kHaveMetadata)
-    return;
+// https://www.w3.org/TR/html51/semantics-embedded-content.html#earliest-possible-position
+// The earliest possible position is not explicitly exposed in the API; it
+// corresponds to the start time of the first range in the seekable attribute’s
+// TimeRanges object, if any, or the current playback position otherwise.
+double HTMLMediaElement::earliestPossiblePosition() const {
+  TimeRanges* seekableRanges = seekable();
+  if (seekableRanges && seekableRanges->length() > 0)
+    return seekableRanges->start(0, ASSERT_NO_EXCEPTION);
 
-  m_cachedTime = webMediaPlayer()->currentTime();
+  return currentPlaybackPosition();
 }
 
-void HTMLMediaElement::invalidateCachedTime() {
-  BLINK_MEDIA_LOG << "invalidateCachedTime(" << (void*)this << ")";
-  m_cachedTime = std::numeric_limits<double>::quiet_NaN();
+double HTMLMediaElement::currentPlaybackPosition() const {
+  // "Official" playback position won't take updates from "current" playback
+  // position until m_readyState > kHaveMetadata, but other callers (e.g.
+  // pauseInternal) may still request currentPlaybackPosition at any time.
+  // From spec: "Media elements have a current playback position, which must
+  // initially (i.e., in the absence of media data) be zero seconds."
+  if (m_readyState == kHaveNothing)
+    return 0;
+
+  if (webMediaPlayer())
+    return webMediaPlayer()->currentTime();
+
+  if (m_readyState >= kHaveMetadata) {
+    LOG(WARNING) << __func__ << " readyState = " << m_readyState
+                 << " but no webMeidaPlayer to provide currentPlaybackPosition";
+  }
+
+  return 0;
 }
 
-// playback state
+double HTMLMediaElement::officialPlaybackPosition() const {
+  // Hold updates to official playback position while paused or waiting for more
+  // data. The underlying media player may continue to make small advances in
+  // currentTime (e.g. as samples in the last rendered audio buffer are played
+  // played out), but advancing currentTime while paused/waiting sends a mixed
+  // signal about the state of playback.
+  bool waitingForData = m_readyState <= kHaveCurrentData;
+  if (m_officialPlaybackPositionNeedsUpdate && !m_paused && !waitingForData) {
+    // Internal player position may advance slightly beyond duration because
+    // many files use imprecise duration. Clamp official position to duration.
+    double newPosition = std::min(duration(), currentPlaybackPosition());
+    setOfficialPlaybackPosition(newPosition);
+  }
+
+#if LOG_OFFICIAL_TIME_STATUS
+  static const double minCachedDeltaForWarning = 0.01;
+  double delta =
+      std::abs(m_officialPlaybackPosition - currentPlaybackPosition());
+  if (delta > minCachedDeltaForWarning) {
+    BLINK_MEDIA_LOG << "currentTime(" << (void*)this
+                    << ") - WARNING, cached time is " << delta
+                    << "seconds off of media time when paused/waiting";
+  }
+#endif
+
+  return m_officialPlaybackPosition;
+}
+
+void HTMLMediaElement::setOfficialPlaybackPosition(double position) const {
+#if LOG_OFFICIAL_TIME_STATUS
+  BLINK_MEDIA_LOG << "setOfficialPlaybackPosition(" << (void*)this
+                  << ") was:" << m_officialPlaybackPosition
+                  << " now:" << position;
+#endif
+
+  m_officialPlaybackPosition = position;
+
+  // Once set, official playback position should hold steady until the next
+  // stable state. We approximate this by using a microtask to mark the
+  // need for an update after the current (micro)task has completed. When
+  // needed, the update is applied in the next call to
+  // officialPlaybackPosition().
+  m_officialPlaybackPositionNeedsUpdate = false;
+  Microtask::enqueueMicrotask(
+      WTF::bind(&HTMLMediaElement::requireOfficialPlaybackPositionUpdate,
+                wrapWeakPersistent(this)));
+}
+
+void HTMLMediaElement::requireOfficialPlaybackPositionUpdate() const {
+  m_officialPlaybackPositionNeedsUpdate = true;
+}
+
 double HTMLMediaElement::currentTime() const {
   if (m_defaultPlaybackStartPosition)
     return m_defaultPlaybackStartPosition;
-
-  if (m_readyState == kHaveNothing)
-    return 0;
 
   if (m_seeking) {
     BLINK_MEDIA_LOG << "currentTime(" << (void*)this
@@ -1933,21 +2018,7 @@ double HTMLMediaElement::currentTime() const {
     return m_lastSeekTime;
   }
 
-  if (!std::isnan(m_cachedTime) && m_paused) {
-#if LOG_CACHED_TIME_WARNINGS
-    static const double minCachedDeltaForWarning = 0.01;
-    double delta = m_cachedTime - webMediaPlayer()->currentTime();
-    if (delta > minCachedDeltaForWarning)
-      BLINK_MEDIA_LOG << "currentTime(" << (void*)this
-                      << ") - WARNING, cached time is " << delta
-                      << "seconds off of media time when paused";
-#endif
-    return m_cachedTime;
-  }
-
-  refreshCachedTime();
-
-  return m_cachedTime;
+  return officialPlaybackPosition();
 }
 
 void HTMLMediaElement::setCurrentTime(double time) {
@@ -2009,7 +2080,6 @@ void HTMLMediaElement::setPlaybackRate(double rate) {
 
   if (m_playbackRate != rate) {
     m_playbackRate = rate;
-    invalidateCachedTime();
     scheduleEvent(EventTypeNames::ratechange);
   }
 
@@ -2216,7 +2286,6 @@ void HTMLMediaElement::playInternal() {
 
   if (m_paused) {
     m_paused = false;
-    invalidateCachedTime();
     scheduleEvent(EventTypeNames::play);
 
     if (m_readyState <= kHaveCurrentData)
@@ -2259,6 +2328,13 @@ void HTMLMediaElement::pauseInternal() {
     m_paused = true;
     scheduleTimeupdateEvent(false);
     scheduleEvent(EventTypeNames::pause);
+
+    // Force an update to official playback position. Automatic updates from
+    // currentPlaybackPosition() will be blocked while m_paused = true. This
+    // blocking is desired while paused, but its good to update it one final
+    // time to accurately reflect movie time at the moment we paused.
+    setOfficialPlaybackPosition(currentPlaybackPosition());
+
     scheduleRejectPlayPromises(AbortError);
   }
 
@@ -2443,21 +2519,22 @@ void HTMLMediaElement::playbackProgressTimerFired(TimerBase*) {
 }
 
 void HTMLMediaElement::scheduleTimeupdateEvent(bool periodicEvent) {
+  // Per spec, consult current playback position to check for changing time.
+  double mediaTime = currentPlaybackPosition();
   double now = WTF::currentTime();
-  double movieTime = currentTime();
 
   bool haveNotRecentlyFiredTimeupdate =
       (now - m_lastTimeUpdateEventWallTime) >= maxTimeupdateEventFrequency;
-  bool movieTimeHasProgressed = movieTime != m_lastTimeUpdateEventMovieTime;
+  bool mediaTimeHasProgressed = mediaTime != m_lastTimeUpdateEventMediaTime;
 
   // Non-periodic timeupdate events must always fire as mandated by the spec,
   // otherwise we shouldn't fire duplicate periodic timeupdate events when the
   // movie time hasn't changed.
   if (!periodicEvent ||
-      (haveNotRecentlyFiredTimeupdate && movieTimeHasProgressed)) {
+      (haveNotRecentlyFiredTimeupdate && mediaTimeHasProgressed)) {
     scheduleEvent(EventTypeNames::timeupdate);
     m_lastTimeUpdateEventWallTime = now;
-    m_lastTimeUpdateEventMovieTime = movieTime;
+    m_lastTimeUpdateEventMediaTime = mediaTime;
   }
 }
 
@@ -2989,8 +3066,6 @@ void HTMLMediaElement::timeChanged() {
 
   cueTimeline().updateActiveCues(currentTime());
 
-  invalidateCachedTime();
-
   // 4.8.10.9 steps 12-14. Needed if no ReadyState change is associated with the
   // seek.
   if (m_seeking && m_readyState >= kHaveCurrentData &&
@@ -3002,7 +3077,7 @@ void HTMLMediaElement::timeChanged() {
   // already posted one at the current movie time.
   scheduleTimeupdateEvent(false);
 
-  double now = currentTime();
+  double now = currentPlaybackPosition();
   double dur = duration();
 
   // When the current playback position reaches the end of the media resource
@@ -3014,7 +3089,7 @@ void HTMLMediaElement::timeChanged() {
     if (loop()) {
       //  then seek to the earliest possible position of the media resource and
       //  abort these steps.
-      seek(0);
+      seek(earliestPossiblePosition());
     } else {
       // If the media element has still ended playback, and the direction of
       // playback is still forwards, and paused is false,
@@ -3034,11 +3109,10 @@ void HTMLMediaElement::timeChanged() {
 
 void HTMLMediaElement::durationChanged() {
   BLINK_MEDIA_LOG << "durationChanged(" << (void*)this << ")";
-  // FIXME: Change WebMediaPlayer to convey the currentTime
-  // when the duration change occured. The current WebMediaPlayer
-  // implementations always clamp currentTime() to duration()
-  // so the requestSeek condition here is always false.
-  durationChanged(duration(), currentTime() > duration());
+  // If the duration is changed such that the *current playback position* ends
+  // up being greater than the time of the end of the media resource, then the
+  // user agent must also seek to the time of the end of the media resource.
+  durationChanged(duration(), currentPlaybackPosition() > duration());
 }
 
 void HTMLMediaElement::durationChanged(double duration, bool requestSeek) {
@@ -3201,7 +3275,7 @@ bool HTMLMediaElement::endedPlayback(LoopCondition loopCondition) const {
   // and the current playback position is the end of the media resource and the
   // direction of playback is forwards, Either the media element does not have a
   // loop attribute specified,
-  double now = currentTime();
+  double now = currentPlaybackPosition();
   if (getDirectionOfPlayback() == Forward)
     return dur > 0 && now >= dur &&
            (loopCondition == LoopCondition::Ignored || !loop());
@@ -3209,7 +3283,7 @@ bool HTMLMediaElement::endedPlayback(LoopCondition loopCondition) const {
   // or the current playback position is the earliest possible position and the
   // direction of playback is backwards
   DCHECK_EQ(getDirectionOfPlayback(), Backward);
-  return now <= 0;
+  return now <= earliestPossiblePosition();
 }
 
 bool HTMLMediaElement::stoppedDueToErrors() const {
@@ -3232,7 +3306,6 @@ void HTMLMediaElement::updatePlayState() {
 
   if (shouldBePlaying) {
     setDisplayMode(Video);
-    invalidateCachedTime();
 
     if (!isPlaying) {
       // Set rate, muted before calling play in case they were set before the
@@ -3254,8 +3327,6 @@ void HTMLMediaElement::updatePlayState() {
       webMediaPlayer()->pause();
       m_autoplayHelper->playbackStopped();
     }
-
-    refreshCachedTime();
 
     m_playbackProgressTimer.stop();
     m_playing = false;
@@ -3327,7 +3398,8 @@ void HTMLMediaElement::contextDestroyed() {
   setNetworkState(kNetworkEmpty);
   setShouldDelayLoadEvent(false);
   m_currentSourceNode = nullptr;
-  invalidateCachedTime();
+  m_officialPlaybackPosition = 0;
+  m_officialPlaybackPositionNeedsUpdate = true;
   cueTimeline().updateActiveCues(0);
   m_playing = false;
   m_paused = true;
@@ -3974,7 +4046,6 @@ void HTMLMediaElement::onVisibilityChangedForAutoplay(bool isVisible) {
 
   if (shouldAutoplay()) {
     m_paused = false;
-    invalidateCachedTime();
     scheduleEvent(EventTypeNames::play);
     scheduleNotifyPlaying();
     m_autoplaying = false;
