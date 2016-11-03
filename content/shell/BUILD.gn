@@ -398,9 +398,6 @@ group("resources") {
   public_deps = [
     ":copy_shell_resources",
   ]
-  deps = [
-    "//components/test_runner:resources",
-  ]
   data_deps = [
     "//components/test_runner:resources",
   ]
@@ -504,7 +501,6 @@ if (is_android) {
 
     deps = [
       ":content_shell_lib",
-      ":pak",
       "//build/config/sanitizers:deps",
       "//build/win:default_exe_manifest",
     ]
