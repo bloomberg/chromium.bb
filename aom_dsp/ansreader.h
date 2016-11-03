@@ -37,14 +37,19 @@ struct AnsDecoder {
 #endif
 };
 
+static INLINE unsigned refill_state(struct AnsDecoder *const ans,
+                                    unsigned state) {
+  while (state < L_BASE && ans->buf_offset > 0) {
+    state = state * IO_BASE + ans->buf[--ans->buf_offset];
+  }
+  return state;
+}
+
 static INLINE int uabs_read(struct AnsDecoder *ans, AnsP8 p0) {
   AnsP8 p = ANS_P8_PRECISION - p0;
   int s;
   unsigned xp, sp;
-  unsigned state = ans->state;
-  while (state < L_BASE && ans->buf_offset > 0) {
-    state = state * IO_BASE + ans->buf[--ans->buf_offset];
-  }
+  unsigned state = refill_state(ans, ans->state);
   sp = state * p;
   xp = sp / ANS_P8_PRECISION;
   s = (sp & 0xFF) >= p0;
@@ -57,10 +62,7 @@ static INLINE int uabs_read(struct AnsDecoder *ans, AnsP8 p0) {
 
 static INLINE int uabs_read_bit(struct AnsDecoder *ans) {
   int s;
-  unsigned state = ans->state;
-  while (state < L_BASE && ans->buf_offset > 0) {
-    state = state * IO_BASE + ans->buf[--ans->buf_offset];
-  }
+  unsigned state = refill_state(ans, ans->state);
   s = (int)(state & 1);
   ans->state = state >> 1;
   return s;
@@ -90,9 +92,7 @@ static INLINE int rans_read(struct AnsDecoder *ans, const aom_cdf_prob *tab) {
   unsigned rem;
   unsigned quo;
   struct rans_dec_sym sym;
-  while (ans->state < L_BASE && ans->buf_offset > 0) {
-    ans->state = ans->state * IO_BASE + ans->buf[--ans->buf_offset];
-  }
+  ans->state = refill_state(ans, ans->state);
   quo = ans->state / RANS_PRECISION;
   rem = ans->state % RANS_PRECISION;
   fetch_sym(&sym, tab, rem);
