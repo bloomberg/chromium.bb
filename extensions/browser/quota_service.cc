@@ -4,7 +4,6 @@
 
 #include "extensions/browser/quota_service.h"
 
-#include "base/stl_util.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "extensions/browser/extension_function.h"
 #include "extensions/common/error_utils.h"
@@ -60,12 +59,10 @@ std::string QuotaService::Assess(const std::string& extension_id,
     return std::string();  // No heuristic implies no limit.
 
   QuotaLimitHeuristic* failed_heuristic = NULL;
-  for (QuotaLimitHeuristics::iterator heuristic = heuristics.begin();
-       heuristic != heuristics.end();
-       ++heuristic) {
+  for (const auto& heuristic : heuristics) {
     // Apply heuristic to each item (bucket).
-    if (!(*heuristic)->ApplyToArgs(args, event_time)) {
-      failed_heuristic = *heuristic;
+    if (!heuristic->ApplyToArgs(args, event_time)) {
+      failed_heuristic = heuristic.get();
       break;
     }
   }
@@ -88,20 +85,12 @@ QuotaService::ScopedDisablePurgeForTesting::~ScopedDisablePurgeForTesting() {
   g_purge_disabled_for_testing = false;
 }
 
-void QuotaService::PurgeFunctionHeuristicsMap(FunctionHeuristicsMap* map) {
-  FunctionHeuristicsMap::iterator heuristics = map->begin();
-  while (heuristics != map->end()) {
-    base::STLDeleteElements(&heuristics->second);
-    map->erase(heuristics++);
-  }
-}
-
 void QuotaService::Purge() {
   DCHECK(CalledOnValidThread());
-  std::map<std::string, FunctionHeuristicsMap>::iterator it =
-      function_heuristics_.begin();
-  for (; it != function_heuristics_.end(); function_heuristics_.erase(it++))
-    PurgeFunctionHeuristicsMap(&it->second);
+  for (auto it = function_heuristics_.begin(); it != function_heuristics_.end();
+       function_heuristics_.erase(it++)) {
+    it->second.clear();
+  }
 }
 
 void QuotaLimitHeuristic::Bucket::Reset(const Config& config,

@@ -132,10 +132,10 @@ void GetModificationQuotaLimitHeuristics(QuotaLimitHeuristics* heuristics) {
   QuotaLimitHeuristic::Config long_limit_config = {
       api::storage::sync::MAX_WRITE_OPERATIONS_PER_HOUR,
       base::TimeDelta::FromHours(1)};
-  heuristics->push_back(new QuotaService::TimedLimit(
+  heuristics->push_back(base::MakeUnique<QuotaService::TimedLimit>(
       short_limit_config, new QuotaLimitHeuristic::SingletonBucketMapper(),
       "MAX_WRITE_OPERATIONS_PER_MINUTE"));
-  heuristics->push_back(new QuotaService::TimedLimit(
+  heuristics->push_back(base::MakeUnique<QuotaService::TimedLimit>(
       long_limit_config, new QuotaLimitHeuristic::SingletonBucketMapper(),
       "MAX_WRITE_OPERATIONS_PER_HOUR"));
 }

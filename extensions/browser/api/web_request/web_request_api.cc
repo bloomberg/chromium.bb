@@ -16,6 +16,7 @@
 #include "base/json/json_writer.h"
 #include "base/lazy_instance.h"
 #include "base/macros.h"
+#include "base/memory/ptr_util.h"
 #include "base/metrics/histogram.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/string_util.h"
@@ -2298,9 +2299,8 @@ void WebRequestHandlerBehaviorChangedFunction::GetQuotaLimitHeuristics(
       base::TimeDelta::FromMinutes(10)};
   QuotaLimitHeuristic::BucketMapper* bucket_mapper =
       new QuotaLimitHeuristic::SingletonBucketMapper();
-  ClearCacheQuotaHeuristic* heuristic =
-      new ClearCacheQuotaHeuristic(config, bucket_mapper);
-  heuristics->push_back(heuristic);
+  heuristics->push_back(
+      base::MakeUnique<ClearCacheQuotaHeuristic>(config, bucket_mapper));
 }
 
 void WebRequestHandlerBehaviorChangedFunction::OnQuotaExceeded(
