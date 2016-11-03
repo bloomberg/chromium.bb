@@ -116,8 +116,7 @@ class TestHelper {
       const char* extensions,
       const char* gl_renderer,
       const char* gl_version,
-      ContextType context_type,
-      bool enable_es3 = false);
+      ContextType context_type);
   static void SetupTextureManagerInitExpectations(::gl::MockGLInterface* gl,
                                                   bool is_es3_enabled,
                                                   bool is_es3_capable,

@@ -68,12 +68,8 @@ class TextureManagerTest : public GpuServiceTest {
   static const bool kUseDefaultTextures = false;
 
   TextureManagerTest() {
-    // Always run with this command line, but the ES3 features are not
-    // enabled without FeatureInfo::EnableES3Validators().
-    base::CommandLine command_line(0, nullptr);
-    command_line.AppendSwitch(switches::kEnableUnsafeES3APIs);
-    GpuDriverBugWorkarounds gpu_driver_bug_workaround(&command_line);
-    feature_info_ = new FeatureInfo(command_line, gpu_driver_bug_workaround);
+    GpuDriverBugWorkarounds gpu_driver_bug_workaround;
+    feature_info_ = new FeatureInfo(gpu_driver_bug_workaround);
   }
 
   ~TextureManagerTest() override {}
@@ -108,11 +104,13 @@ class TextureManagerTest : public GpuServiceTest {
   void SetupFeatureInfo(const char* gl_extensions,
                         const char* gl_version,
                         bool enable_es3) {
+    ContextType context_type =
+        enable_es3 ? CONTEXT_TYPE_OPENGLES3 : CONTEXT_TYPE_OPENGLES2;
     TestHelper::SetupFeatureInfoInitExpectationsWithGLVersion(
-        gl_.get(), gl_extensions, "", gl_version,
-        feature_info_->context_type(), enable_es3);
-    feature_info_->InitializeForTesting();
-    if (enable_es3) {
+        gl_.get(), gl_extensions, "", gl_version, context_type);
+    feature_info_->InitializeForTesting(context_type);
+    ASSERT_TRUE(feature_info_->context_type() == context_type);
+    if (feature_info_->IsWebGL2OrES3Context()) {
       EXPECT_CALL(*gl_, GetIntegerv(GL_MAX_COLOR_ATTACHMENTS, _))
           .WillOnce(SetArgPointee<1>(8))
           .RetiresOnSaturation();
@@ -2200,11 +2198,13 @@ class SharedTextureTest : public GpuServiceTest {
   void SetupFeatureInfo(const char* gl_extensions,
                         const char* gl_version,
                         bool enable_es3) {
+    ContextType context_type =
+        enable_es3 ? CONTEXT_TYPE_OPENGLES3 : CONTEXT_TYPE_OPENGLES2;
     TestHelper::SetupFeatureInfoInitExpectationsWithGLVersion(
-        gl_.get(), gl_extensions, "", gl_version,
-        feature_info_->context_type(), enable_es3);
-    feature_info_->InitializeForTesting();
-    if (enable_es3) {
+        gl_.get(), gl_extensions, "", gl_version, context_type);
+    feature_info_->InitializeForTesting(context_type);
+    ASSERT_TRUE(feature_info_->context_type() == context_type);
+    if (feature_info_->IsWebGL2OrES3Context()) {
       EXPECT_CALL(*gl_, GetIntegerv(GL_MAX_COLOR_ATTACHMENTS, _))
           .WillOnce(SetArgPointee<1>(8))
           .RetiresOnSaturation();

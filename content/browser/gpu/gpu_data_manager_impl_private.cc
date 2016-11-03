@@ -765,9 +765,8 @@ void GpuDataManagerImplPrivate::AppendGpuCommandLine(
   }
 #endif
 
-  if (IsFeatureBlacklisted(gpu::GPU_FEATURE_TYPE_WEBGL2) &&
-      !command_line->HasSwitch(switches::kDisableES3APIs)) {
-    command_line->AppendSwitch(switches::kDisableES3APIs);
+  if (IsFeatureBlacklisted(gpu::GPU_FEATURE_TYPE_WEBGL2) && gpu_preferences) {
+    gpu_preferences->enable_unsafe_es3_apis = false;
   }
 
   // Pass GPU and driver information to GPU process. We try to avoid full GPU

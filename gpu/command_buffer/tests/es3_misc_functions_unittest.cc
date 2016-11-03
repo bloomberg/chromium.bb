@@ -24,7 +24,6 @@ class OpenGLES3FunctionTest : public testing::Test {
  protected:
   void SetUp() override {
     base::CommandLine command_line(*base::CommandLine::ForCurrentProcess());
-    command_line.AppendSwitch(switches::kEnableUnsafeES3APIs);
     GLManager::Options options;
     options.context_type = gles2::CONTEXT_TYPE_OPENGLES3;
     gl_.InitializeWithCommandLine(options, command_line);

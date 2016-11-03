@@ -332,7 +332,7 @@ bool SizedFormatAvailable(const FeatureInfo* feature_info,
     return true;
   }
 
-  return feature_info->IsES3Enabled();
+  return feature_info->IsWebGL2OrES3Context();
 }
 
 // A 32-bit and 64-bit compatible way of converting a pointer to a GLuint.
@@ -619,7 +619,7 @@ bool Texture::CanRenderWithSampler(const FeatureInfo* feature_info,
          (GLES2Util::kDepth | GLES2Util::kStencil)) != 0) {
       if (sampler_state.compare_mode == GL_NONE) {
         // In ES2 with OES_depth_texture, such limitation isn't specified.
-        if (feature_info->IsES3Enabled()) {
+        if (feature_info->IsWebGL2OrES3Context()) {
           return false;
         }
       }
@@ -635,7 +635,7 @@ bool Texture::CanRenderWithSampler(const FeatureInfo* feature_info,
     }
   }
 
-  if (!feature_info->IsES3Enabled()) {
+  if (!feature_info->IsWebGL2OrES3Context()) {
     bool is_npot_compatible = !needs_mips &&
         sampler_state.wrap_s == GL_CLAMP_TO_EDGE &&
         sampler_state.wrap_t == GL_CLAMP_TO_EDGE;
@@ -1882,7 +1882,7 @@ bool TextureManager::Initialize() {
   default_textures_[kCubeMap] = CreateDefaultAndBlackTextures(
       GL_TEXTURE_CUBE_MAP, &black_texture_ids_[kCubeMap]);
 
-  if (feature_info_->IsES3Enabled()) {
+  if (feature_info_->IsWebGL2OrES3Context()) {
     default_textures_[kTexture3D] = CreateDefaultAndBlackTextures(
         GL_TEXTURE_3D, &black_texture_ids_[kTexture3D]);
     default_textures_[kTexture2DArray] = CreateDefaultAndBlackTextures(
@@ -2313,7 +2313,7 @@ bool TextureManager::ValidateTextureParameters(
                             msg.c_str());
     return false;
   }
-  if (!feature_info_->IsES3Enabled()) {
+  if (!feature_info_->IsWebGL2OrES3Context()) {
     uint32_t channels = GLES2Util::GetChannelsForFormat(format);
     if ((channels & (GLES2Util::kDepth | GLES2Util::kStencil)) != 0 && level) {
       ERRORSTATE_SET_GL_ERROR(
@@ -2411,7 +2411,7 @@ bool TextureManager::ValidateTexImage(
   }
   if ((GLES2Util::GetChannelsForFormat(args.format) &
        (GLES2Util::kDepth | GLES2Util::kStencil)) != 0 && args.pixels
-      && !feature_info_->IsES3Enabled()) {
+      && !feature_info_->IsWebGL2OrES3Context()) {
     ERRORSTATE_SET_GL_ERROR(
         error_state, GL_INVALID_OPERATION,
         function_name, "can not supply data for depth or stencil textures");
@@ -2542,7 +2542,7 @@ void TextureManager::ValidateAndDoTexImage(
   // ValidateTexImage is passed already.
   Texture* texture = texture_ref->texture();
   bool need_cube_map_workaround =
-      !feature_info_->IsES3Enabled() &&
+      !feature_info_->IsWebGL2OrES3Context() &&
       texture->target() == GL_TEXTURE_CUBE_MAP &&
       (texture_state->force_cube_complete ||
        (texture_state->force_cube_map_positive_x_allocation &&
@@ -2694,7 +2694,7 @@ bool TextureManager::ValidateTexSubImage(ContextState* state,
                                  args.type, internal_format, args.level)) {
     return false;
   }
-  if (args.type != current_type && !feature_info_->IsES3Enabled()) {
+  if (args.type != current_type && !feature_info_->IsWebGL2OrES3Context()) {
     // It isn't explicitly required in the ES2 spec, but some drivers generate
     // an error. It is better to be consistent across drivers.
     ERRORSTATE_SET_GL_ERROR(error_state, GL_INVALID_OPERATION, function_name,
@@ -2710,7 +2710,7 @@ bool TextureManager::ValidateTexSubImage(ContextState* state,
   }
   if ((GLES2Util::GetChannelsForFormat(args.format) &
        (GLES2Util::kDepth | GLES2Util::kStencil)) != 0 &&
-      !feature_info_->IsES3Enabled()) {
+      !feature_info_->IsWebGL2OrES3Context()) {
     ERRORSTATE_SET_GL_ERROR(
         error_state, GL_INVALID_OPERATION, function_name,
         "can not supply data for depth or stencil textures");

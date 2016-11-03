@@ -42,13 +42,11 @@ class GLES3DecoderTest3 : public GLES2DecoderTest3 {
   GLES3DecoderTest3() { shader_language_version_ = 300; }
  protected:
   void SetUp() override {
-    base::CommandLine command_line(0, nullptr);
-    command_line.AppendSwitch(switches::kEnableUnsafeES3APIs);
     InitState init;
     init.gl_version = "OpenGL ES 3.0";
     init.bind_generates_resource = true;
     init.context_type = CONTEXT_TYPE_OPENGLES3;
-    InitDecoderWithCommandLine(init, &command_line);
+    InitDecoder(init);
   }
 };
 

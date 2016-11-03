@@ -89,7 +89,7 @@ void GLES2DecoderManualInitTest::EnableDisableTest(GLenum cap,
 
 TEST_P(GLES3DecoderTest, Basic) {
   // Make sure the setup is correct for ES3.
-  EXPECT_TRUE(decoder_->unsafe_es3_apis_enabled());
+  EXPECT_TRUE(feature_info()->IsWebGL2OrES3Context());
   EXPECT_TRUE(feature_info()->validators()->texture_bind_target.IsValid(
       GL_TEXTURE_3D));
 }
@@ -1688,29 +1688,24 @@ TEST_P(GLES2DecoderDescheduleUntilFinishedTest, NotYetSignalled) {
 }
 
 void GLES3DecoderTest::SetUp() {
-  base::CommandLine command_line(0, nullptr);
-  command_line.AppendSwitch(switches::kEnableUnsafeES3APIs);
   InitState init;
   init.gl_version = "OpenGL ES 3.0";
   init.bind_generates_resource = true;
   init.context_type = CONTEXT_TYPE_OPENGLES3;
-  InitDecoderWithCommandLine(init, &command_line);
+  InitDecoder(init);
 }
 
 void GLES3DecoderWithShaderTest::SetUp() {
-  base::CommandLine command_line(0, nullptr);
-  command_line.AppendSwitch(switches::kEnableUnsafeES3APIs);
   InitState init;
   init.gl_version = "OpenGL ES 3.0";
   init.bind_generates_resource = true;
   init.context_type = CONTEXT_TYPE_OPENGLES3;
-  InitDecoderWithCommandLine(init, &command_line);
+  InitDecoder(init);
   SetupDefaultProgram();
 }
 
 void GLES3DecoderRGBBackbufferTest::SetUp() {
   base::CommandLine command_line(0, nullptr);
-  command_line.AppendSwitch(switches::kEnableUnsafeES3APIs);
   command_line.AppendSwitchASCII(
       switches::kGpuDriverBugWorkarounds,
       base::IntToString(gpu::CLEAR_ALPHA_IN_READPIXELS));

@@ -30,7 +30,6 @@ class ES3MapBufferRangeTest : public testing::Test {
     options.context_type = gles2::CONTEXT_TYPE_OPENGLES3;
 
     base::CommandLine cmd_line(base::CommandLine::NO_PROGRAM);
-    cmd_line.AppendSwitch(switches::kEnableUnsafeES3APIs);
     gl_.InitializeWithCommandLine(options, cmd_line);
   }
 

@@ -343,13 +343,13 @@ void TestHelper::SetupContextGroupInitExpectations(
     bool bind_generates_resource) {
   InSequence sequence;
 
+  bool enable_es3 = !(context_type == CONTEXT_TYPE_OPENGLES2 ||
+                      context_type == CONTEXT_TYPE_WEBGL1);
+
   gl::GLVersionInfo gl_info(gl_version, "", extensions);
 
   SetupFeatureInfoInitExpectationsWithGLVersion(gl, extensions, "", gl_version,
-      context_type,
-      context_type == CONTEXT_TYPE_WEBGL2 ||
-      context_type == CONTEXT_TYPE_OPENGLES3);
-
+      context_type);
   EXPECT_CALL(*gl, GetIntegerv(GL_MAX_RENDERBUFFER_SIZE, _))
       .WillOnce(SetArgumentPointee<1>(kMaxRenderbufferSize))
       .RetiresOnSaturation();
@@ -474,7 +474,7 @@ void TestHelper::SetupContextGroupInitExpectations(
 
   bool use_default_textures = bind_generates_resource;
   SetupTextureManagerInitExpectations(
-      gl, false, gl_info.is_es3_capable, gl_info.is_desktop_core_profile,
+      gl, enable_es3, gl_info.is_es3_capable, gl_info.is_desktop_core_profile,
       extensions, use_default_textures);
 }
 
@@ -489,9 +489,11 @@ void TestHelper::SetupFeatureInfoInitExpectationsWithGLVersion(
     const char* extensions,
     const char* gl_renderer,
     const char* gl_version,
-    ContextType context_type,
-    bool enable_es3) {
+    ContextType context_type) {
   InSequence sequence;
+
+  bool enable_es3 = context_type == CONTEXT_TYPE_WEBGL2 ||
+      context_type == CONTEXT_TYPE_OPENGLES3;
 
   EXPECT_CALL(*gl, GetString(GL_VERSION))
       .WillOnce(Return(reinterpret_cast<const uint8_t*>(gl_version)))
@@ -528,9 +530,7 @@ void TestHelper::SetupFeatureInfoInitExpectationsWithGLVersion(
       .WillOnce(Return(reinterpret_cast<const uint8_t*>(gl_renderer)))
       .RetiresOnSaturation();
 
-  if (!(context_type == CONTEXT_TYPE_WEBGL1 ||
-        context_type == CONTEXT_TYPE_OPENGLES2) &&
-      gl_info.is_es3_capable && enable_es3) {
+  if (enable_es3) {
     EXPECT_CALL(*gl, GetIntegerv(GL_PIXEL_UNPACK_BUFFER_BINDING, _))
       .WillOnce(SetArgPointee<1>(0))
       .RetiresOnSaturation();
@@ -587,51 +587,51 @@ void TestHelper::SetupFeatureInfoInitExpectationsWithGLVersion(
       EXPECT_CALL(*gl, CheckFramebufferStatusEXT(GL_FRAMEBUFFER))
           .WillOnce(Return(GL_FRAMEBUFFER_COMPLETE))
           .RetiresOnSaturation();
+    }
 
-      if (enable_es3 && gl_info.is_es3_capable) {
-        EXPECT_CALL(*gl, TexImage2D(GL_TEXTURE_2D, 0, GL_R16F, width, width,
-            0, GL_RED, GL_FLOAT, _))
-            .Times(1)
-            .RetiresOnSaturation();
-        EXPECT_CALL(*gl, CheckFramebufferStatusEXT(GL_FRAMEBUFFER))
-            .Times(1)
-            .RetiresOnSaturation();
-        EXPECT_CALL(*gl, TexImage2D(GL_TEXTURE_2D, 0, GL_RG16F, width, width,
-            0, GL_RG, GL_FLOAT, _))
-            .Times(1)
-            .RetiresOnSaturation();
-        EXPECT_CALL(*gl, CheckFramebufferStatusEXT(GL_FRAMEBUFFER))
-            .Times(1)
-            .RetiresOnSaturation();
-        EXPECT_CALL(*gl, TexImage2D(GL_TEXTURE_2D, 0, GL_RGBA16F, width, width,
-            0, GL_RGBA, GL_FLOAT, _))
-            .Times(1)
-            .RetiresOnSaturation();
-        EXPECT_CALL(*gl, CheckFramebufferStatusEXT(GL_FRAMEBUFFER))
-            .Times(1)
-            .RetiresOnSaturation();
-        EXPECT_CALL(*gl, TexImage2D(GL_TEXTURE_2D, 0, GL_R32F, width, width,
-            0, GL_RED, GL_FLOAT, _))
-            .Times(1)
-            .RetiresOnSaturation();
-        EXPECT_CALL(*gl, CheckFramebufferStatusEXT(GL_FRAMEBUFFER))
-            .Times(1)
-            .RetiresOnSaturation();
-        EXPECT_CALL(*gl, TexImage2D(GL_TEXTURE_2D, 0, GL_RG32F, width, width,
-            0, GL_RG, GL_FLOAT, _))
-            .Times(1)
-            .RetiresOnSaturation();
-        EXPECT_CALL(*gl, CheckFramebufferStatusEXT(GL_FRAMEBUFFER))
-            .Times(1)
-            .RetiresOnSaturation();
-        EXPECT_CALL(*gl, TexImage2D(GL_TEXTURE_2D, 0, GL_R11F_G11F_B10F,
-            width, width, 0, GL_RGB, GL_FLOAT, _))
-            .Times(1)
-            .RetiresOnSaturation();
-        EXPECT_CALL(*gl, CheckFramebufferStatusEXT(GL_FRAMEBUFFER))
-            .Times(1)
-            .RetiresOnSaturation();
-      }
+    if (enable_es3) {
+      EXPECT_CALL(*gl, TexImage2D(GL_TEXTURE_2D, 0, GL_R16F, width, width,
+          0, GL_RED, GL_FLOAT, _))
+          .Times(1)
+          .RetiresOnSaturation();
+      EXPECT_CALL(*gl, CheckFramebufferStatusEXT(GL_FRAMEBUFFER))
+          .Times(1)
+          .RetiresOnSaturation();
+      EXPECT_CALL(*gl, TexImage2D(GL_TEXTURE_2D, 0, GL_RG16F, width, width,
+          0, GL_RG, GL_FLOAT, _))
+          .Times(1)
+          .RetiresOnSaturation();
+      EXPECT_CALL(*gl, CheckFramebufferStatusEXT(GL_FRAMEBUFFER))
+          .Times(1)
+          .RetiresOnSaturation();
+      EXPECT_CALL(*gl, TexImage2D(GL_TEXTURE_2D, 0, GL_RGBA16F, width, width,
+          0, GL_RGBA, GL_FLOAT, _))
+          .Times(1)
+          .RetiresOnSaturation();
+      EXPECT_CALL(*gl, CheckFramebufferStatusEXT(GL_FRAMEBUFFER))
+          .Times(1)
+          .RetiresOnSaturation();
+      EXPECT_CALL(*gl, TexImage2D(GL_TEXTURE_2D, 0, GL_R32F, width, width,
+          0, GL_RED, GL_FLOAT, _))
+          .Times(1)
+          .RetiresOnSaturation();
+      EXPECT_CALL(*gl, CheckFramebufferStatusEXT(GL_FRAMEBUFFER))
+          .Times(1)
+          .RetiresOnSaturation();
+      EXPECT_CALL(*gl, TexImage2D(GL_TEXTURE_2D, 0, GL_RG32F, width, width,
+          0, GL_RG, GL_FLOAT, _))
+          .Times(1)
+          .RetiresOnSaturation();
+      EXPECT_CALL(*gl, CheckFramebufferStatusEXT(GL_FRAMEBUFFER))
+          .Times(1)
+          .RetiresOnSaturation();
+      EXPECT_CALL(*gl, TexImage2D(GL_TEXTURE_2D, 0, GL_R11F_G11F_B10F,
+          width, width, 0, GL_RGB, GL_FLOAT, _))
+          .Times(1)
+          .RetiresOnSaturation();
+      EXPECT_CALL(*gl, CheckFramebufferStatusEXT(GL_FRAMEBUFFER))
+          .Times(1)
+          .RetiresOnSaturation();
     }
 
 

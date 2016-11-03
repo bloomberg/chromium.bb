@@ -478,8 +478,7 @@ uint32_t GLES2Decoder::GetAndClearBackbufferClearBitsForTest() {
 GLES2Decoder::GLES2Decoder()
     : initialized_(false),
       debug_(false),
-      log_commands_(false),
-      unsafe_es3_apis_enabled_(false) {
+      log_commands_(false) {
 }
 
 GLES2Decoder::~GLES2Decoder() {
@@ -3095,7 +3094,6 @@ bool GLES2DecoderImpl::Initialize(
       return false;
     }
     feature_info_->EnableES3Validators();
-    set_unsafe_es3_apis_enabled(true);
 
     frag_depth_explicitly_enabled_ = true;
     draw_buffers_explicitly_enabled_ = true;
@@ -7586,7 +7584,7 @@ void GLES2DecoderImpl::DoFramebufferTexture2DCommon(
     service_id = texture_ref->service_id();
   }
 
-  if ((level > 0 && !feature_info_->IsES3Enabled()) ||
+  if ((level > 0 && !feature_info_->IsWebGL2OrES3Context()) ||
       !texture_manager()->ValidForTarget(textarget, level, 0, 0, 1)) {
     LOCAL_SET_GL_ERROR(
         GL_INVALID_VALUE,
@@ -12182,7 +12180,7 @@ bool GLES2DecoderImpl::ClearLevel(Texture* texture,
   DCHECK(target != GL_TEXTURE_3D && target != GL_TEXTURE_2D_ARRAY);
   uint32_t channels = GLES2Util::GetChannelsForFormat(format);
   if ((feature_info_->feature_flags().angle_depth_texture ||
-       feature_info_->IsES3Enabled())
+       feature_info_->IsWebGL2OrES3Context())
       && (channels & GLES2Util::kDepth) != 0) {
     // It's a depth format and ANGLE doesn't allow texImage2D or texSubImage2D
     // on depth formats.
@@ -12287,7 +12285,7 @@ bool GLES2DecoderImpl::ClearCompressedTextureLevel(Texture* texture,
   // allocated via TexStorage2D. Note that TexStorage2D is exposed
   // internally for ES 2.0 contexts, but compressed texture support is
   // not part of that exposure.
-  DCHECK(feature_info_->IsES3Enabled());
+  DCHECK(feature_info_->IsWebGL2OrES3Context());
 
   GLsizei bytes_required = 0;
   if (!GetCompressedTexSizeInBytes(
@@ -12331,7 +12329,7 @@ bool GLES2DecoderImpl::ClearLevel3D(Texture* texture,
                                     int height,
                                     int depth) {
   DCHECK(target == GL_TEXTURE_3D || target == GL_TEXTURE_2D_ARRAY);
-  DCHECK(feature_info_->IsES3Enabled());
+  DCHECK(feature_info_->IsWebGL2OrES3Context());
   if (width == 0 || height == 0 || depth == 0)
     return true;
 
@@ -13089,7 +13087,7 @@ error::Error GLES2DecoderImpl::HandleCompressedTexImage2D(
 
 error::Error GLES2DecoderImpl::HandleCompressedTexImage3DBucket(
     uint32_t immediate_data_size, const volatile void* cmd_data) {
-  if (!unsafe_es3_apis_enabled())
+  if (!feature_info_->IsWebGL2OrES3Context())
     return error::kUnknownCommand;
   const volatile gles2::cmds::CompressedTexImage3DBucket& c =
       *static_cast<const volatile gles2::cmds::CompressedTexImage3DBucket*>(
@@ -13119,7 +13117,7 @@ error::Error GLES2DecoderImpl::HandleCompressedTexImage3DBucket(
 
 error::Error GLES2DecoderImpl::HandleCompressedTexImage3D(
     uint32_t immediate_data_size, const volatile void* cmd_data) {
-  if (!unsafe_es3_apis_enabled())
+  if (!feature_info_->IsWebGL2OrES3Context())
     return error::kUnknownCommand;
   const volatile gles2::cmds::CompressedTexImage3D& c =
       *static_cast<const volatile gles2::cmds::CompressedTexImage3D*>(cmd_data);
@@ -13154,7 +13152,7 @@ error::Error GLES2DecoderImpl::HandleCompressedTexImage3D(
 
 error::Error GLES2DecoderImpl::HandleCompressedTexSubImage3DBucket(
     uint32_t immediate_data_size, const volatile void* cmd_data) {
-  if (!unsafe_es3_apis_enabled())
+  if (!feature_info_->IsWebGL2OrES3Context())
     return error::kUnknownCommand;
   const volatile gles2::cmds::CompressedTexSubImage3DBucket& c =
       *static_cast<const volatile gles2::cmds::CompressedTexSubImage3DBucket*>(
@@ -13186,7 +13184,7 @@ error::Error GLES2DecoderImpl::HandleCompressedTexSubImage3DBucket(
 
 error::Error GLES2DecoderImpl::HandleCompressedTexSubImage3D(
     uint32_t immediate_data_size, const volatile void* cmd_data) {
-  if (!unsafe_es3_apis_enabled())
+  if (!feature_info_->IsWebGL2OrES3Context())
     return error::kUnknownCommand;
   const volatile gles2::cmds::CompressedTexSubImage3D& c =
       *static_cast<const volatile gles2::cmds::CompressedTexSubImage3D*>(
@@ -13716,7 +13714,7 @@ bool GLES2DecoderImpl::ValidateCopyTexFormat(
         GL_INVALID_OPERATION, func_name, "incompatible format");
     return false;
   }
-  if (feature_info_->IsES3Enabled()) {
+  if (feature_info_->IsWebGL2OrES3Context()) {
     GLint color_encoding = GetColorEncodingFromInternalFormat(read_format);
     if (color_encoding != GetColorEncodingFromInternalFormat(internal_format) ||
         GLES2Util::IsFloatFormat(internal_format) ||
@@ -13735,7 +13733,7 @@ bool GLES2DecoderImpl::ValidateCopyTexFormat(
         func_name, "can not be used with depth or stencil textures");
     return false;
   }
-  if (feature_info_->IsES3Enabled()) {
+  if (feature_info_->IsWebGL2OrES3Context()) {
     if (GLES2Util::IsSizedColorFormat(internal_format)) {
       int sr, sg, sb, sa;
       GLES2Util::GetColorFormatComponentSizes(
@@ -15661,7 +15659,7 @@ error::Error GLES2DecoderImpl::HandleBeginQueryEXT(
       }
       break;
     case GL_TRANSFORM_FEEDBACK_PRIMITIVES_WRITTEN:
-      if (feature_info_->IsES3Enabled()) {
+      if (feature_info_->IsWebGL2OrES3Context()) {
         break;
       }
       // Fall through.

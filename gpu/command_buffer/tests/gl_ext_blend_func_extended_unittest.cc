@@ -254,7 +254,6 @@ class EXTBlendFuncExtendedES3DrawTest : public EXTBlendFuncExtendedDrawTest {
     options.context_type = gles2::CONTEXT_TYPE_OPENGLES3;
     options.force_shader_name_hashing = GetParam();
     base::CommandLine command_line(*base::CommandLine::ForCurrentProcess());
-    command_line.AppendSwitch(switches::kEnableUnsafeES3APIs);
     gl_.InitializeWithCommandLine(options, command_line);
   }
   bool IsApplicable() const {

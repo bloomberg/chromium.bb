@@ -146,10 +146,6 @@ class GPU_EXPORT FeatureInfo : public base::RefCounted<FeatureInfo> {
   bool IsES3Capable() const;
   void EnableES3Validators();
 
-  bool IsES3Enabled() const {
-    return unsafe_es3_apis_enabled_;
-  }
-
   bool disable_shader_translator() const { return disable_shader_translator_; }
 
   bool IsWebGLContext() const;
@@ -194,11 +190,6 @@ class GPU_EXPORT FeatureInfo : public base::RefCounted<FeatureInfo> {
 
   // Flags for Workarounds.
   const GpuDriverBugWorkarounds workarounds_;
-
-  // Whether the command line switch kEnableUnsafeES3APIs is passed in.
-  bool enable_unsafe_es3_apis_switch_;
-
-  bool unsafe_es3_apis_enabled_;
 
   bool ext_color_buffer_float_available_;
   bool oes_texture_float_linear_available_;

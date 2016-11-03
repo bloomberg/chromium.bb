@@ -92,8 +92,6 @@ class CommandBufferSetup {
         command_buffer_id_(CommandBufferId::FromUnsafeValue(1)) {
     logging::SetMinLogLevel(logging::LOG_FATAL);
     base::CommandLine::Init(0, NULL);
-    base::CommandLine::ForCurrentProcess()->AppendSwitch(
-        switches::kEnableUnsafeES3APIs);
     gpu_preferences_.enable_unsafe_es3_apis = true;
 
     gl::GLSurfaceTestSupport::InitializeOneOffWithMockBindings();

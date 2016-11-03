@@ -2086,7 +2086,7 @@ TEST_P(GLES2DecoderWithShaderTest, GetUniformLocationInvalidArgs) {
 
 TEST_P(GLES3DecoderWithShaderTest, Basic) {
   // Make sure the setup is correct for ES3.
-  EXPECT_TRUE(decoder_->unsafe_es3_apis_enabled());
+  EXPECT_TRUE(feature_info()->IsWebGL2OrES3Context());
   EXPECT_TRUE(feature_info()->validators()->texture_bind_target.IsValid(
       GL_TEXTURE_3D));
 }

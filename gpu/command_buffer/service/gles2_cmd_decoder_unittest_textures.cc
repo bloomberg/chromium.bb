@@ -741,8 +741,6 @@ TEST_P(GLES2DecoderTest, CopyTexImage2DGLError) {
 }
 
 TEST_P(GLES2DecoderManualInitTest, CopyTexImage2DUnsizedInternalFormat) {
-  base::CommandLine command_line(0, NULL);
-  command_line.AppendSwitch(switches::kEnableUnsafeES3APIs);
   InitState init;
   init.gl_version = "OpenGL ES 3.0";
   init.extensions = "GL_APPLE_texture_format_BGRA8888 GL_EXT_sRGB";
@@ -750,7 +748,7 @@ TEST_P(GLES2DecoderManualInitTest, CopyTexImage2DUnsizedInternalFormat) {
   init.request_alpha = true;
   init.bind_generates_resource = true;
   init.context_type = CONTEXT_TYPE_OPENGLES2;
-  InitDecoderWithCommandLine(init, &command_line);
+  InitDecoder(init);
 
   GLenum kUnsizedInternalFormats[] = {
     GL_RED,
@@ -832,8 +830,6 @@ TEST_P(GLES2DecoderManualInitTest, CopyTexImage2DUnsizedInternalFormat) {
 }
 
 TEST_P(GLES2DecoderManualInitTest, CopyTexImage2DUnsizedInternalFormatES3) {
-  base::CommandLine command_line(0, NULL);
-  command_line.AppendSwitch(switches::kEnableUnsafeES3APIs);
   InitState init;
   init.gl_version = "OpenGL ES 3.0";
   init.extensions = "GL_APPLE_texture_format_BGRA8888";
@@ -841,7 +837,7 @@ TEST_P(GLES2DecoderManualInitTest, CopyTexImage2DUnsizedInternalFormatES3) {
   init.request_alpha = true;
   init.bind_generates_resource = true;
   init.context_type = CONTEXT_TYPE_OPENGLES3;
-  InitDecoderWithCommandLine(init, &command_line);
+  InitDecoder(init);
 
   struct UnsizedSizedInternalFormat {
     GLenum unsized;

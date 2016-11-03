@@ -83,12 +83,10 @@ class StringSet {
 class ScopedPixelUnpackBufferOverride {
  public:
   explicit ScopedPixelUnpackBufferOverride(
-      bool is_es3_capable,
-      ContextType context_type,
+      bool enable_es3,
       GLuint binding_override)
       : orig_binding_(-1) {
-    if (!(context_type == CONTEXT_TYPE_WEBGL1 ||
-          context_type == CONTEXT_TYPE_OPENGLES2) && is_es3_capable) {
+    if (enable_es3) {
       GLint orig_binding;
       glGetIntegerv(GL_PIXEL_UNPACK_BUFFER_BINDING, &orig_binding);
       if (static_cast<GLuint>(orig_binding) != binding_override) {
@@ -199,10 +197,6 @@ void FeatureInfo::InitializeBasicState(const base::CommandLine* command_line) {
   feature_flags_.is_swiftshader =
       (command_line->GetSwitchValueASCII(switches::kUseGL) == "swiftshader");
 
-  enable_unsafe_es3_apis_switch_ =
-      command_line->HasSwitch(switches::kEnableUnsafeES3APIs) &&
-      !command_line->HasSwitch(switches::kDisableES3APIs);
-
   // The shader translator is needed to translate from WebGL-conformant GLES SL
   // to normal GLES SL, enforce WebGL conformance, translate from GLES SL 1.0 to
   // target context GLSL, implement emulation of OpenGL ES features on OpenGL,
@@ -210,8 +204,6 @@ void FeatureInfo::InitializeBasicState(const base::CommandLine* command_line) {
   // The flag here is for testing only.
   disable_shader_translator_ =
       command_line->HasSwitch(switches::kDisableGLSLTranslator);
-
-  unsafe_es3_apis_enabled_ = false;
 
   // Default context_type_ to a GLES2 Context.
   context_type_ = CONTEXT_TYPE_OPENGLES2;
@@ -350,10 +342,9 @@ void FeatureInfo::InitializeFeatures() {
   gl_version_info_.reset(
       new gl::GLVersionInfo(version_str, renderer_str, extensions.GetImpl()));
 
-  // TODO(kainino): This call to IsES3Capable is sort of a hack to get some
-  // mocked tests working.
-  ScopedPixelUnpackBufferOverride scoped_pbo_override(
-      IsES3Capable(), context_type_, 0);
+  bool enable_es3 = IsWebGL2OrES3Context();
+
+  ScopedPixelUnpackBufferOverride scoped_pbo_override(enable_es3, 0);
 
   AddExtensionString("GL_ANGLE_translated_shader_source");
   AddExtensionString("GL_CHROMIUM_async_pixel_transfers");
@@ -856,7 +847,7 @@ void FeatureInfo::InitializeFeatures() {
 
     // For desktop systems, check to see if we support rendering to the full
     // range of formats supported by EXT_color_buffer_float
-    if (status_rgba == GL_FRAMEBUFFER_COMPLETE && IsES3Capable()) {
+    if (status_rgba == GL_FRAMEBUFFER_COMPLETE && enable_es3) {
       bool full_float_support = true;
 
       glTexImage2D(GL_TEXTURE_2D, 0, GL_R16F, width, width, 0, GL_RED,
@@ -908,7 +899,7 @@ void FeatureInfo::InitializeFeatures() {
   }
 
   // Enable the GL_EXT_color_buffer_float extension for WebGL 2.0
-  if (enable_ext_color_buffer_float && IsES3Capable()) {
+  if (enable_ext_color_buffer_float && enable_es3) {
     ext_color_buffer_float_available_ = true;
     if (!disallowed_features_.ext_color_buffer_float)
       EnableEXTColorBufferFloat();
@@ -1413,8 +1404,6 @@ void FeatureInfo::InitializeFeatures() {
 }
 
 bool FeatureInfo::IsES3Capable() const {
-  if (!enable_unsafe_es3_apis_switch_)
-    return false;
   if (workarounds_.disable_texture_storage)
     return false;
   if (gl_version_info_)
@@ -1493,8 +1482,6 @@ void FeatureInfo::EnableES3Validators() {
     validators_.texture_sized_texture_filterable_internal_format.AddValue(
         GL_BGRA8_EXT);
   }
-
-  unsafe_es3_apis_enabled_ = true;
 }
 
 bool FeatureInfo::IsWebGLContext() const {

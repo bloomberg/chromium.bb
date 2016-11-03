@@ -541,7 +541,7 @@ void GLES2DecoderTestBase::ResetDecoder() {
           .Times(1)
           .RetiresOnSaturation();
     }
-    if (group_->feature_info()->IsES3Enabled()) {
+    if (group_->feature_info()->IsWebGL2OrES3Context()) {
       // fake default transform feedback.
       EXPECT_CALL(*gl_, DeleteTransformFeedbacks(1, _))
           .Times(1)

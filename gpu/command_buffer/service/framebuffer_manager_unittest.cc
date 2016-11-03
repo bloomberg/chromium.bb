@@ -1285,7 +1285,7 @@ TEST_F(FramebufferInfoTest, DrawBufferMasks) {
 class FramebufferInfoFloatTest : public FramebufferInfoTestBase {
  public:
   FramebufferInfoFloatTest()
-      : FramebufferInfoTestBase(CONTEXT_TYPE_OPENGLES2) {}
+      : FramebufferInfoTestBase(CONTEXT_TYPE_OPENGLES3) {}
   ~FramebufferInfoFloatTest() override {}
 
  protected:

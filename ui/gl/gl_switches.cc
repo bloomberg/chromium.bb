@@ -116,8 +116,6 @@ const char* kGLSwitchesCopiedFromGpuProcessHost[] = {
     kDisableD3D11,
     kEnableGPUServiceLogging,
     kEnableGPUServiceTracing,
-    kEnableUnsafeES3APIs,
-    kDisableES3APIs,
     kEnableSgiVideoSync,
     kGpuNoContextLost,
     kDisableGLDrawingForTests,

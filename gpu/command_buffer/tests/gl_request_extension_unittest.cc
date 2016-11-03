@@ -23,7 +23,6 @@ class RequestExtensionCHROMIUMTest
  protected:
   void SetUp() override {
     base::CommandLine command_line(*base::CommandLine::ForCurrentProcess());
-    command_line.AppendSwitch(switches::kEnableUnsafeES3APIs);
     GLManager::Options options;
     options.context_type = GetParam();
     gl_.InitializeWithCommandLine(options, command_line);

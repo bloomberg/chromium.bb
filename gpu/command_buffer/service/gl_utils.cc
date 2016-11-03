@@ -121,7 +121,7 @@ void PopulateNumericCapabilities(Capabilities* caps,
                 &caps->num_compressed_texture_formats);
   glGetIntegerv(GL_NUM_SHADER_BINARY_FORMATS, &caps->num_shader_binary_formats);
 
-  if (feature_info->IsES3Enabled()) {
+  if (feature_info->IsWebGL2OrES3Context()) {
     glGetIntegerv(GL_MAX_3D_TEXTURE_SIZE, &caps->max_3d_texture_size);
     glGetIntegerv(GL_MAX_ARRAY_TEXTURE_LAYERS, &caps->max_array_texture_layers);
     glGetIntegerv(GL_MAX_COLOR_ATTACHMENTS, &caps->max_color_attachments);
@@ -171,7 +171,7 @@ void PopulateNumericCapabilities(Capabilities* caps,
   }
   if (feature_info->feature_flags().multisampled_render_to_texture ||
       feature_info->feature_flags().chromium_framebuffer_multisample ||
-      feature_info->IsES3Enabled()) {
+      feature_info->IsWebGL2OrES3Context()) {
     glGetIntegerv(GL_MAX_SAMPLES, &caps->max_samples);
   }
 }
