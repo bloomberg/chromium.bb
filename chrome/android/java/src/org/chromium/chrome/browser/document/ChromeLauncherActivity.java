@@ -462,7 +462,7 @@ public class ChromeLauncherActivity extends Activity
             MultiWindowUtils.getInstance().makeLegacyMultiInstanceIntent(this, newIntent);
         }
         if (skipFre) {
-            newIntent.putExtra(ChromeTabbedActivity.SKIP_FIRST_RUN_EXPERIENCE, true);
+            newIntent.putExtra(FirstRunFlowSequencer.SKIP_FIRST_RUN_EXPERIENCE, true);
         }
 
         // This system call is often modified by OEMs and not actionable. http://crbug.com/619646.

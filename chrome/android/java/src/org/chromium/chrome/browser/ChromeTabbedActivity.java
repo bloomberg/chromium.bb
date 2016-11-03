@@ -173,12 +173,6 @@ public class ChromeTabbedActivity extends ChromeActivity implements OverviewMode
     public static final String INTENT_EXTRA_TEST_RENDER_PROCESS_LIMIT = "render_process_limit";
 
     /**
-     * Sending an intent with this extra sets the ChromeTabbedActivity to skip the First Run
-     * Experience.
-     */
-    public static final String SKIP_FIRST_RUN_EXPERIENCE = "skip_first_run_experience";
-
-    /**
      * Sending an intent with this action to Chrome will cause it to close all tabs
      * (iff the --enable-test-intents command line flag is set). If a URL is supplied in the
      * intent data, this will be loaded and unaffected by the close all action.
@@ -1055,10 +1049,6 @@ public class ChromeTabbedActivity extends ChromeActivity implements OverviewMode
     private void launchFirstRunExperience() {
         if (mIsOnFirstRun) {
             mTabModelSelectorImpl.clearState();
-            return;
-        }
-
-        if (getIntent() != null && getIntent().getBooleanExtra(SKIP_FIRST_RUN_EXPERIENCE, false)) {
             return;
         }
 

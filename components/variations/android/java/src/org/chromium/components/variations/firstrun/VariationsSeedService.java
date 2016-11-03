@@ -7,6 +7,7 @@ package org.chromium.components.variations.firstrun;
 import android.app.IntentService;
 import android.content.Intent;
 import android.os.SystemClock;
+import android.support.v4.content.LocalBroadcastManager;
 
 import org.chromium.base.Log;
 import org.chromium.base.metrics.CachedMetrics.SparseHistogramSample;
@@ -26,6 +27,9 @@ import java.util.concurrent.TimeUnit;
  */
 public class VariationsSeedService extends IntentService {
     private static final String TAG = "VariationsSeedServ";
+
+    public static final String COMPLETE_BROADCAST = "VariationsseedService.Complete";
+
     private static final String VARIATIONS_SERVER_URL =
             "https://clientservices.googleapis.com/chrome-variations/seed?osname=android";
     private static final int BUFFER_SIZE = 4096;
@@ -53,6 +57,7 @@ public class VariationsSeedService extends IntentService {
         // or seed has been successfully stored on the C++ side.
         if (sFetchInProgress || VariationsSeedBridge.hasJavaPref(getApplicationContext())
                 || VariationsSeedBridge.hasNativePref(getApplicationContext())) {
+            broadcastCompleteIntent();
             return;
         }
         setFetchInProgressFlagValue(true);
@@ -60,7 +65,12 @@ public class VariationsSeedService extends IntentService {
             downloadContent();
         } finally {
             setFetchInProgressFlagValue(false);
+            broadcastCompleteIntent();
         }
+    }
+
+    private void broadcastCompleteIntent() {
+        LocalBroadcastManager.getInstance(this).sendBroadcast(new Intent(COMPLETE_BROADCAST));
     }
 
     // Separate function is needed to avoid FINDBUGS build error (assigning value to static variable
