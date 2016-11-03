@@ -81,7 +81,13 @@ void WebsiteSettingsPopupAndroid::RecordWebsiteSettingsAction(
 void WebsiteSettingsPopupAndroid::SetIdentityInfo(
     const IdentityInfo& identity_info) {
   JNIEnv* env = base::android::AttachCurrentThread();
-  Java_WebsiteSettingsPopup_showDialog(env, popup_jobject_);
+  std::unique_ptr<WebsiteSettingsUI::SecurityDescription> security_description =
+      identity_info.GetSecurityDescription();
+
+  Java_WebsiteSettingsPopup_setSecurityDescription(
+      env, popup_jobject_,
+      ConvertUTF16ToJavaString(env, security_description->summary),
+      ConvertUTF16ToJavaString(env, security_description->details));
 }
 
 void WebsiteSettingsPopupAndroid::SetCookieInfo(
