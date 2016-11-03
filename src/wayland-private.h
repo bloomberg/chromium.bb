@@ -163,6 +163,9 @@ int
 arg_count_for_signature(const char *signature);
 
 int
+wl_message_count_arrays(const struct wl_message *message);
+
+int
 wl_message_get_since(const struct wl_message *message);
 
 void

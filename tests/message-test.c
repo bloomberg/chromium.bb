@@ -51,3 +51,40 @@ TEST(message_version)
 		       messages[i].expected_version);
 	}
 }
+
+TEST(message_count_arrays)
+{
+	unsigned int i;
+	struct wl_message fake_messages[] = {
+		{ "empty", "", NULL },
+		{ "non_present", "iufsonh", NULL },
+		{ "leading", "aiufsonh", NULL},
+		{ "trailing", "iufsonha", NULL },
+		{ "middle", "iufasonh", NULL },
+		{ "multiple", "aaiufaasonhaa", NULL },
+		{ "leading_version", "2aaiufaasonhaa", NULL },
+		{ "among_nullables", "iufsa?oa?nah", NULL },
+		{ "all_mixed", "2aiufas?oa?na", NULL },
+	};
+	const struct {
+		const struct wl_message *message;
+		int expected_array_count;
+	} messages[] = {
+		{ &wl_pointer_interface.events[WL_POINTER_ENTER], 0 },
+		{ &wl_keyboard_interface.events[WL_KEYBOARD_ENTER], 1 },
+		{ &fake_messages[0], 0 },
+		{ &fake_messages[1], 0 },
+		{ &fake_messages[2], 1 },
+		{ &fake_messages[3], 1 },
+		{ &fake_messages[4], 1 },
+		{ &fake_messages[5], 6 },
+		{ &fake_messages[6], 6 },
+		{ &fake_messages[7], 3 },
+		{ &fake_messages[8], 4 }
+	};
+
+	for (i = 0; i < ARRAY_LENGTH(messages); ++i) {
+		assert(wl_message_count_arrays(messages[i].message) ==
+		       messages[i].expected_array_count);
+	}
+}

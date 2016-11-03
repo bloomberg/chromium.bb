@@ -392,7 +392,7 @@ wl_connection_queue(struct wl_connection *connection,
 	return wl_buffer_put(&connection->out, data, count);
 }
 
-static int
+int
 wl_message_count_arrays(const struct wl_message *message)
 {
 	int i, arrays;
