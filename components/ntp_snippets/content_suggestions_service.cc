@@ -196,6 +196,17 @@ void ContentSuggestionsService::RegisterProvider(
   providers_.push_back(std::move(provider));
 }
 
+void ContentSuggestionsService::Fetch(
+    const Category& category,
+    const std::set<std::string>& known_suggestion_ids,
+    const FetchingCallback& callback) {
+  auto providers_it = providers_by_category_.find(category);
+  if (providers_it == providers_by_category_.end())
+    return;
+
+  providers_it->second->Fetch(category, known_suggestion_ids, callback);
+}
+
 ////////////////////////////////////////////////////////////////////////////////
 // Private methods
 

@@ -5,6 +5,7 @@
 #ifndef COMPONENTS_NTP_SNIPPETS_CONTENT_SUGGESTIONS_PROVIDER_H_
 #define COMPONENTS_NTP_SNIPPETS_CONTENT_SUGGESTIONS_PROVIDER_H_
 
+#include <set>
 #include <string>
 #include <vector>
 
@@ -31,6 +32,8 @@ class ContentSuggestionsProvider {
   using ImageFetchedCallback = base::Callback<void(const gfx::Image&)>;
   using DismissedSuggestionsCallback = base::Callback<void(
       std::vector<ContentSuggestion> dismissed_suggestions)>;
+  using FetchingCallback =
+      base::Callback<void(std::vector<ContentSuggestion> suggestions)>;
 
   // The observer of a provider is notified when new data is available.
   class Observer {
@@ -99,6 +102,14 @@ class ContentSuggestionsProvider {
   // synchronously.
   virtual void FetchSuggestionImage(const ContentSuggestion::ID& suggestion_id,
                                     const ImageFetchedCallback& callback) = 0;
+
+  // Fetches more suggestions for the given category. The new suggestions
+  // will not include any suggestion of the |known_suggestion_ids| sets.
+  // The given |callback| is called with these suggestions, along with all
+  // existing suggestions.
+  virtual void Fetch(const Category& category,
+                     const std::set<std::string>& known_suggestion_ids,
+                     FetchingCallback callback) = 0;
 
   // Removes history from the specified time range where the URL matches the
   // |filter|. The data removed depends on the provider. Note that the

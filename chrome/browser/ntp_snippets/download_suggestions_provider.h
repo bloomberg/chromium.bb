@@ -61,6 +61,9 @@ class DownloadSuggestionsProvider
   void FetchSuggestionImage(
       const ntp_snippets::ContentSuggestion::ID& suggestion_id,
       const ImageFetchedCallback& callback) override;
+  void Fetch(const ntp_snippets::Category& category,
+             const std::set<std::string>& known_suggestion_ids,
+             FetchingCallback callback) override;
   void ClearHistory(
       base::Time begin,
       base::Time end,

@@ -5,6 +5,7 @@
 #include "chrome/browser/ntp_snippets/download_suggestions_provider.h"
 
 #include <algorithm>
+#include <utility>
 
 #include "base/bind.h"
 #include "base/feature_list.h"
@@ -160,6 +161,16 @@ void DownloadSuggestionsProvider::FetchSuggestionImage(
   // crbug.com/631447.
   base::ThreadTaskRunnerHandle::Get()->PostTask(
       FROM_HERE, base::Bind(callback, gfx::Image()));
+}
+
+void DownloadSuggestionsProvider::Fetch(
+    const ntp_snippets::Category& category,
+    const std::set<std::string>& known_suggestion_ids,
+    FetchingCallback callback) {
+  NOTREACHED();
+  base::ThreadTaskRunnerHandle::Get()->PostTask(
+      FROM_HERE,
+      base::Bind(callback, base::Passed(std::vector<ContentSuggestion>())));
 }
 
 void DownloadSuggestionsProvider::ClearHistory(

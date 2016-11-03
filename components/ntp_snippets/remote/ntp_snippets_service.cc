@@ -157,6 +157,75 @@ void RemoveNullPointers(NTPSnippet::PtrVector* snippets) {
       snippets->end());
 }
 
+void AssignExpiryAndPublishDates(NTPSnippet::PtrVector* snippets) {
+  for (std::unique_ptr<NTPSnippet>& snippet : *snippets) {
+    if (snippet->publish_date().is_null())
+      snippet->set_publish_date(base::Time::Now());
+    if (snippet->expiry_date().is_null()) {
+      snippet->set_expiry_date(
+          snippet->publish_date() +
+          base::TimeDelta::FromMinutes(kDefaultExpiryTimeMins));
+    }
+  }
+}
+
+void RemoveIncompleteSnippets(NTPSnippet::PtrVector* snippets) {
+  if (base::CommandLine::ForCurrentProcess()->HasSwitch(
+          switches::kAddIncompleteSnippets)) {
+    return;
+  }
+  int num_snippets = snippets->size();
+  // Remove snippets that do not have all the info we need to display it to
+  // the user.
+  snippets->erase(
+      std::remove_if(snippets->begin(), snippets->end(),
+                     [](const std::unique_ptr<NTPSnippet>& snippet) {
+                       return !snippet->is_complete();
+                     }),
+      snippets->end());
+  int num_snippets_removed = num_snippets - snippets->size();
+  UMA_HISTOGRAM_BOOLEAN("NewTabPage.Snippets.IncompleteSnippetsAfterFetch",
+                        num_snippets_removed > 0);
+  if (num_snippets_removed > 0) {
+    UMA_HISTOGRAM_SPARSE_SLOWLY("NewTabPage.Snippets.NumIncompleteSnippets",
+                                num_snippets_removed);
+  }
+}
+
+std::vector<ContentSuggestion> ConvertToContentSuggestions(
+    Category category,
+    const NTPSnippet::PtrVector& snippets) {
+  std::vector<ContentSuggestion> result;
+  for (const std::unique_ptr<NTPSnippet>& snippet : snippets) {
+    // TODO(sfiera): if a snippet is not going to be displayed, move it
+    // directly to content.dismissed on fetch. Otherwise, we might prune
+    // other snippets to get down to kMaxSnippetCount, only to hide one of the
+    // incomplete ones we kept.
+    if (!snippet->is_complete())
+      continue;
+    ContentSuggestion suggestion(category, snippet->id(),
+                                 snippet->best_source().url);
+    suggestion.set_amp_url(snippet->best_source().amp_url);
+    suggestion.set_title(base::UTF8ToUTF16(snippet->title()));
+    suggestion.set_snippet_text(base::UTF8ToUTF16(snippet->snippet()));
+    suggestion.set_publish_date(snippet->publish_date());
+    suggestion.set_publisher_name(
+        base::UTF8ToUTF16(snippet->best_source().publisher_name));
+    suggestion.set_score(snippet->score());
+    result.emplace_back(std::move(suggestion));
+  }
+  return result;
+}
+
+void CallWithEmptyResults(
+    base::Optional<ContentSuggestionsProvider::FetchingCallback> callback) {
+  if (!callback)
+    return;
+  if (callback->is_null())
+    return;
+  callback->Run(std::vector<ContentSuggestion>());
+}
+
 }  // namespace
 
 NTPSnippetsService::NTPSnippetsService(
@@ -243,28 +312,74 @@ void NTPSnippetsService::FetchSnippets(bool interactive_request) {
 void NTPSnippetsService::FetchSnippetsFromHosts(
     const std::set<std::string>& hosts,
     bool interactive_request) {
-  if (!ready())
-    return;
+  FetchSnippetsFromHostsImpl(hosts, interactive_request,
+                             /*fetch_more=*/false, std::set<std::string>(),
+                             base::Optional<Category>(),
+                             base::Optional<FetchingCallback>());
+}
 
-  // Empty categories are marked as loading; others are unchanged.
+void NTPSnippetsService::Fetch(
+    const Category& category,
+    const std::set<std::string>& known_suggestion_ids,
+    FetchingCallback callback) {
+  FetchSnippetsFromHostsImpl(std::set<std::string>(),
+                             /*interactive_request=*/true,
+                             /*fetch_more=*/true, known_suggestion_ids,
+                             base::Optional<Category>(category),
+                             base::Optional<FetchingCallback>(callback));
+}
+
+void NTPSnippetsService::FetchSnippetsFromHostsImpl(
+    const std::set<std::string>& hosts,
+    bool interactive_request,
+    bool fetch_more,
+    const std::set<std::string>& known_suggestion_ids,
+    base::Optional<Category> exclusive_category,
+    base::Optional<FetchingCallback> callback) {
+  if (!ready()) {
+    CallWithEmptyResults(callback);
+    return;
+  }
+
+  MarkEmptyCategoriesAsLoading();
+
+  NTPSnippetsFetcher::Params params;
+  params.language_code = application_language_code_;
+  params.excluded_ids = CollectIdsToExclude(fetch_more, known_suggestion_ids);
+  params.count_to_fetch = kMaxSnippetCount;
+  params.hosts = hosts;
+  params.interactive_request = interactive_request;
+  params.exclusive_category = std::move(exclusive_category);
+
+  snippets_fetcher_->FetchSnippets(
+      params, base::BindOnce(&NTPSnippetsService::OnFetchFinished,
+                             base::Unretained(this), fetch_more, callback));
+}
+
+std::set<std::string> NTPSnippetsService::CollectIdsToExclude(
+    bool fetch_more,
+    const std::set<std::string>& additional_ids) const {
+  std::set<std::string> ids;
+  for (const auto& item : categories_) {
+    const CategoryContent& content = item.second;
+    for (const auto& snippet : content.dismissed)
+      ids.insert(snippet->id());
+    if (!fetch_more)
+      continue;
+    for (const auto& snippet : content.archived)
+      ids.insert(snippet->id());
+  }
+  ids.insert(additional_ids.begin(), additional_ids.end());
+  return ids;
+}
+
+void NTPSnippetsService::MarkEmptyCategoriesAsLoading() {
   for (const auto& item : categories_) {
     Category category = item.first;
     const CategoryContent& content = item.second;
     if (content.snippets.empty())
       UpdateCategoryStatus(category, CategoryStatus::AVAILABLE_LOADING);
   }
-
-  NTPSnippetsFetcher::Params params;
-  params.language_code = application_language_code_;
-  params.count_to_fetch = kMaxSnippetCount;
-  params.hosts = hosts;
-  params.interactive_request = interactive_request;
-  for (const auto& item : categories_) {
-    const CategoryContent& content = item.second;
-    for (const auto& snippet : content.dismissed)
-      params.excluded_ids.insert(snippet->id());
-  }
-  snippets_fetcher_->FetchSnippets(params);
 }
 
 void NTPSnippetsService::RescheduleFetching(bool force) {
@@ -530,10 +645,17 @@ void NTPSnippetsService::OnDatabaseError() {
   UpdateAllCategoryStatus(CategoryStatus::LOADING_ERROR);
 }
 
+// fetching_callback
 void NTPSnippetsService::OnFetchFinished(
+    bool fetched_more,
+    base::Optional<FetchingCallback> fetching_callback,
     NTPSnippetsFetcher::OptionalFetchedCategories fetched_categories) {
   if (!ready())
     return;
+
+  // TODO(fhorschig): Check which of the things here should actually happen for
+  // |fetch_more| requests. Maybe it makes sense to have two separate
+  // "Finished" methods?
 
   // Mark all categories as not provided by the server in the latest fetch. The
   // ones we got will be marked again below.
@@ -575,7 +697,8 @@ void NTPSnippetsService::OnFetchFinished(
             std::min(fetched_category.snippets.size(),
                      static_cast<size_t>(kMaxSnippetCount + 1)));
       }
-      ReplaceSnippets(category, std::move(fetched_category.snippets));
+      IncludeSnippets(category, std::move(fetched_category.snippets),
+                      /*replace_snippets=*/!fetched_more);
     }
   }
 
@@ -587,7 +710,10 @@ void NTPSnippetsService::OnFetchFinished(
     Category category = item.first;
     UpdateCategoryStatus(category, CategoryStatus::AVAILABLE);
     // TODO(sfiera): notify only when a category changed above.
-    NotifyNewSuggestions(category);
+    if (fetched_more)
+      NotifyMoreSuggestions(category, fetching_callback);
+    else
+      NotifyNewSuggestions(category);
   }
 
   // TODO(sfiera): equivalent metrics for non-articles.
@@ -631,44 +757,17 @@ void NTPSnippetsService::ArchiveSnippets(Category category,
   }
 }
 
-void NTPSnippetsService::ReplaceSnippets(Category category,
-                                         NTPSnippet::PtrVector new_snippets) {
+void NTPSnippetsService::IncludeSnippets(const Category& category,
+                                         NTPSnippet::PtrVector new_snippets,
+                                         bool replace_snippets) {
   DCHECK(ready());
   CategoryContent* content = &categories_[category];
 
   // Remove new snippets that have been dismissed.
   EraseMatchingSnippets(&new_snippets, content->dismissed);
 
-  // Fill in default publish/expiry dates where required.
-  for (std::unique_ptr<NTPSnippet>& snippet : new_snippets) {
-    if (snippet->publish_date().is_null())
-      snippet->set_publish_date(base::Time::Now());
-    if (snippet->expiry_date().is_null()) {
-      snippet->set_expiry_date(
-          snippet->publish_date() +
-          base::TimeDelta::FromMinutes(kDefaultExpiryTimeMins));
-    }
-  }
-
-  if (!base::CommandLine::ForCurrentProcess()->HasSwitch(
-          switches::kAddIncompleteSnippets)) {
-    int num_new_snippets = new_snippets.size();
-    // Remove snippets that do not have all the info we need to display it to
-    // the user.
-    new_snippets.erase(
-        std::remove_if(new_snippets.begin(), new_snippets.end(),
-                       [](const std::unique_ptr<NTPSnippet>& snippet) {
-                         return !snippet->is_complete();
-                       }),
-        new_snippets.end());
-    int num_snippets_dismissed = num_new_snippets - new_snippets.size();
-    UMA_HISTOGRAM_BOOLEAN("NewTabPage.Snippets.IncompleteSnippetsAfterFetch",
-                          num_snippets_dismissed > 0);
-    if (num_snippets_dismissed > 0) {
-      UMA_HISTOGRAM_SPARSE_SLOWLY("NewTabPage.Snippets.NumIncompleteSnippets",
-                                  num_snippets_dismissed);
-    }
-  }
+  AssignExpiryAndPublishDates(&new_snippets);
+  RemoveIncompleteSnippets(&new_snippets);
 
   // Do not touch the current set of snippets if the newly fetched one is empty.
   if (new_snippets.empty())
@@ -681,14 +780,18 @@ void NTPSnippetsService::ReplaceSnippets(Category category,
   // appear with the same ID in the new suggestions (it's fine for additional
   // IDs though).
   EraseByPrimaryID(&content->snippets, *GetSnippetIDVector(new_snippets));
-  ArchiveSnippets(category, &content->snippets);
 
-  // Save new articles to the DB.
   database_->SaveSnippets(new_snippets);
 
-  content->snippets = std::move(new_snippets);
+  if (replace_snippets) {
+    ArchiveSnippets(category, &content->snippets);
+    content->snippets = std::move(new_snippets);
+  } else {
+    content->snippets.insert(content->snippets.end(),
+                             std::make_move_iterator(new_snippets.begin()),
+                             std::make_move_iterator(new_snippets.end()));
+  }
 }
-
 void NTPSnippetsService::ClearExpiredDismissedSnippets() {
   std::vector<Category> categories_to_erase;
 
@@ -872,9 +975,6 @@ void NTPSnippetsService::FinishInitialization() {
     nuke_when_initialized_ = false;
   }
 
-  snippets_fetcher_->SetCallback(
-      base::Bind(&NTPSnippetsService::OnFetchFinished, base::Unretained(this)));
-
   // |image_fetcher_| can be null in tests.
   if (image_fetcher_) {
     image_fetcher_->SetImageFetcherDelegate(this);
@@ -979,29 +1079,29 @@ void NTPSnippetsService::NotifyNewSuggestions(Category category) {
   const CategoryContent& content = categories_[category];
   DCHECK(IsCategoryStatusAvailable(content.status));
 
-  std::vector<ContentSuggestion> result;
-  for (const std::unique_ptr<NTPSnippet>& snippet : content.snippets) {
-    // TODO(sfiera): if a snippet is not going to be displayed, move it
-    // directly to content.dismissed on fetch. Otherwise, we might prune
-    // other snippets to get down to kMaxSnippetCount, only to hide one of the
-    // incomplete ones we kept.
-    if (!snippet->is_complete())
-      continue;
-    ContentSuggestion suggestion(category, snippet->id(),
-                                 snippet->best_source().url);
-    suggestion.set_amp_url(snippet->best_source().amp_url);
-    suggestion.set_title(base::UTF8ToUTF16(snippet->title()));
-    suggestion.set_snippet_text(base::UTF8ToUTF16(snippet->snippet()));
-    suggestion.set_publish_date(snippet->publish_date());
-    suggestion.set_publisher_name(
-        base::UTF8ToUTF16(snippet->best_source().publisher_name));
-    suggestion.set_score(snippet->score());
-    result.emplace_back(std::move(suggestion));
-  }
+  std::vector<ContentSuggestion> result =
+      ConvertToContentSuggestions(category, content.snippets);
 
-  DVLOG(1) << "NotifyNewSuggestions(" << category << "): " << result.size()
-           << " items.";
+  DVLOG(1) << "NotifyNewSuggestions(): " << result.size()
+           << " items in category " << category;
   observer()->OnNewSuggestions(this, category, std::move(result));
+}
+
+void NTPSnippetsService::NotifyMoreSuggestions(
+    Category category,
+    base::Optional<FetchingCallback> callback) {
+  DCHECK(base::ContainsKey(categories_, category));
+  const CategoryContent& content = categories_[category];
+  DCHECK(IsCategoryStatusAvailable(content.status));
+
+  std::vector<ContentSuggestion> result =
+      ConvertToContentSuggestions(category, content.snippets);
+
+  DVLOG(1) << "NotifyMoreSuggestions(): " << result.size()
+           << " items in category " << category;
+  DCHECK(callback);
+  DCHECK(!callback->is_null());
+  callback->Run(std::move(result));
 }
 
 void NTPSnippetsService::UpdateCategoryStatus(Category category,

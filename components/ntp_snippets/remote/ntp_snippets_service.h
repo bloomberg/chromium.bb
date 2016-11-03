@@ -117,6 +117,9 @@ class NTPSnippetsService final : public ContentSuggestionsProvider,
   void DismissSuggestion(const ContentSuggestion::ID& suggestion_id) override;
   void FetchSuggestionImage(const ContentSuggestion::ID& suggestion_id,
                             const ImageFetchedCallback& callback) override;
+  void Fetch(const Category& category,
+             const std::set<std::string>& known_suggestion_ids,
+             FetchingCallback callback) override;
   void ClearHistory(
       base::Time begin,
       base::Time end,
@@ -150,6 +153,7 @@ class NTPSnippetsService final : public ContentSuggestionsProvider,
 
  private:
   friend class NTPSnippetsServiceTest;
+
   FRIEND_TEST_ALL_PREFIXES(NTPSnippetsServiceTest,
                            RemoveExpiredDismissedContent);
   FRIEND_TEST_ALL_PREFIXES(NTPSnippetsServiceTest, RescheduleOnStateChange);
@@ -208,7 +212,11 @@ class NTPSnippetsService final : public ContentSuggestionsProvider,
   void OnDatabaseError();
 
   // Callback for the NTPSnippetsFetcher.
+  // |fetching_callback| is ignored if |fetched_more| is false. Otherwise, it's
+  // expected to be non null.
   void OnFetchFinished(
+      bool fetched_more,
+      base::Optional<FetchingCallback> fetching_callback,
       NTPSnippetsFetcher::OptionalFetchedCategories fetched_categories);
 
   // Moves all snippets from |to_archive| into the archive of the |category|.
@@ -216,8 +224,11 @@ class NTPSnippetsService final : public ContentSuggestionsProvider,
   // short.
   void ArchiveSnippets(Category category, NTPSnippet::PtrVector* to_archive);
 
-  // Replace old snippets in |category| by newly available snippets.
-  void ReplaceSnippets(Category category, NTPSnippet::PtrVector new_snippets);
+  // Adds newly available suggestions in |category| to the available ones.
+  // If |replace_snippets| is set, archives existing suggestions.
+  void IncludeSnippets(const Category& category,
+                       NTPSnippet::PtrVector new_snippets,
+                       bool replace_snippets);
 
   // Removes expired dismissed snippets from the service and the database.
   void ClearExpiredDismissedSnippets();
@@ -275,6 +286,12 @@ class NTPSnippetsService final : public ContentSuggestionsProvider,
   // and notifies the observer.
   void NotifyNewSuggestions(Category category);
 
+  // Converts the cached snippets in the given |category| to content suggestions
+  // and passes them to the |callback|.
+  // TODO(tschumann): Make |callback| required.
+  void NotifyMoreSuggestions(Category category,
+                             base::Optional<FetchingCallback> callback);
+
   // Updates the internal status for |category| to |category_status_| and
   // notifies the content suggestions observer if it changed.
   void UpdateCategoryStatus(Category category, CategoryStatus status);
@@ -283,6 +300,26 @@ class NTPSnippetsService final : public ContentSuggestionsProvider,
 
   void RestoreCategoriesFromPrefs();
   void StoreCategoriesToPrefs();
+
+  // Implementation for |FetchSnippets| and |Fetch| that calls the snippet
+  // fetcher and replaces or adds the fetched snippets depending on the
+  // |fetch_more| parameter.
+  void FetchSnippetsFromHostsImpl(
+      const std::set<std::string>& hosts,
+      bool interactive_request,
+      bool fetch_more,
+      const std::set<std::string>& known_suggestion_ids,
+      base::Optional<Category> exclusive_category,
+      base::Optional<FetchingCallback> fetched_more_callback);
+
+  // Returns a set of snippet IDs that should not be fetched. These IDs always
+  // include dismissed snippets. If |fetch_more| is set, they include all known
+  // snippet IDs.
+  std::set<std::string> CollectIdsToExclude(
+      bool fetch_more,
+      const std::set<std::string>& additional_ids) const;
+
+  void MarkEmptyCategoriesAsLoading();
 
   State state_;
 
@@ -324,7 +361,9 @@ class NTPSnippetsService final : public ContentSuggestionsProvider,
     ~CategoryContent();
     CategoryContent& operator=(CategoryContent&&);
   };
-  std::map<Category, CategoryContent, Category::CompareByID> categories_;
+  using CategoryContentMap =
+      std::map<Category, CategoryContent, Category::CompareByID>;
+  CategoryContentMap categories_;
 
   // The ISO 639-1 code of the language used by the application.
   const std::string application_language_code_;

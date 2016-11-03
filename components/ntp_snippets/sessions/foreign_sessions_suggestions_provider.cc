@@ -151,6 +151,13 @@ void ForeignSessionsSuggestionsProvider::FetchSuggestionImage(
       FROM_HERE, base::Bind(callback, gfx::Image()));
 }
 
+void ForeignSessionsSuggestionsProvider::Fetch(
+    const Category& category,
+    const std::set<std::string>& known_suggestion_ids,
+    FetchingCallback callback) {
+  NOTREACHED();
+}
+
 void ForeignSessionsSuggestionsProvider::ClearHistory(
     base::Time begin,
     base::Time end,

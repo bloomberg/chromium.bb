@@ -89,6 +89,10 @@ class MockProvider : public ContentSuggestionsProvider {
                void(base::Time begin,
                     base::Time end,
                     const base::Callback<bool(const GURL& url)>& filter));
+  MOCK_METHOD3(Fetch,
+               void(const Category&,
+                    const std::set<std::string>&,
+                    FetchingCallback));
   MOCK_METHOD1(ClearCachedSuggestions, void(Category category));
   MOCK_METHOD2(GetDismissedSuggestionsForDebugging,
                void(Category category,
@@ -576,6 +580,16 @@ TEST_F(ContentSuggestionsServiceTest, ShouldForwardClearHistory) {
   EXPECT_CALL(*provider, ClearHistory(begin, end, _));
   base::Callback<bool(const GURL& url)> filter;
   service()->ClearHistory(begin, end, filter);
+}
+
+TEST_F(ContentSuggestionsServiceTest, ShouldForwardFetch) {
+  Category category = FromKnownCategory(KnownCategories::ARTICLES);
+  std::set<std::string> known_suggestions;
+  MockProvider* provider = RegisterProvider(category);
+  provider->FireCategoryStatusChangedWithCurrentStatus(category);
+  EXPECT_CALL(*provider, Fetch(category, known_suggestions, _));
+  service()->Fetch(category, known_suggestions,
+                   ContentSuggestionsService::FetchingCallback());
 }
 
 TEST_F(ContentSuggestionsServiceTest, DismissAndRestoreCategory) {

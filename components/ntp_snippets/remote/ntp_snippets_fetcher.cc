@@ -316,12 +316,8 @@ NTPSnippetsFetcher::~NTPSnippetsFetcher() {
     token_service_->RemoveObserver(this);
 }
 
-void NTPSnippetsFetcher::SetCallback(
-    const SnippetsAvailableCallback& callback) {
-  snippets_available_callback_ = callback;
-}
-
-void NTPSnippetsFetcher::FetchSnippets(const Params& params) {
+void NTPSnippetsFetcher::FetchSnippets(const Params& params,
+                                       SnippetsAvailableCallback callback) {
   if (!DemandQuotaForRequest(params.interactive_request)) {
     FetchFinished(OptionalFetchedCategories(),
                   params.interactive_request
@@ -333,6 +329,7 @@ void NTPSnippetsFetcher::FetchSnippets(const Params& params) {
 
   params_ = params;
   fetch_start_time_ = tick_clock_->NowTicks();
+  snippets_available_callback_ = std::move(callback);
 
   bool use_authentication = UsesAuthentication();
   if (use_authentication && signin_manager_->IsAuthenticated()) {
@@ -738,12 +735,38 @@ void NTPSnippetsFetcher::OnJsonError(const std::string& error) {
       /*extra_message=*/base::StringPrintf(" (error %s)", error.c_str()));
 }
 
+// The response from the backend might include suggestions from multiple
+// categories. If only fetches for a single category were requested, this
+// function filters them out.
+void NTPSnippetsFetcher::FilterCategories(FetchedCategoriesVector* categories) {
+  if (!params_.exclusive_category.has_value())
+    return;
+  Category exclusive = params_.exclusive_category.value();
+  auto category_it =
+      std::find_if(categories->begin(), categories->end(),
+                   [&exclusive](const FetchedCategory& c) -> bool {
+                     return c.category == exclusive;
+                   });
+  if (category_it == categories->end()) {
+    categories->clear();
+    return;
+  }
+  categories->erase(categories->begin(), category_it);
+  categories->erase(category_it + 1, categories->end());
+}
+
 void NTPSnippetsFetcher::FetchFinished(
     OptionalFetchedCategories fetched_categories,
     FetchResult result,
     const std::string& extra_message) {
   DCHECK(result == FetchResult::SUCCESS || !fetched_categories);
   last_status_ = FetchResultToString(result) + extra_message;
+
+  // TODO(fhorschig): Filter (un)wanted categories by modifying fetch request.
+  // As soon as backends support the parameter, there is no reason to overfetch
+  // and filter here.
+  if (fetched_categories.has_value())
+    FilterCategories(&fetched_categories.value());
 
   // Don't record FetchTimes if the result indicates that a precondition
   // failed and we never actually sent a network request
@@ -757,7 +780,7 @@ void NTPSnippetsFetcher::FetchFinished(
 
   DVLOG(1) << "Fetch finished: " << last_status_;
   if (!snippets_available_callback_.is_null())
-    snippets_available_callback_.Run(std::move(fetched_categories));
+    std::move(snippets_available_callback_).Run(std::move(fetched_categories));
 }
 
 bool NTPSnippetsFetcher::DemandQuotaForRequest(bool interactive_request) {

@@ -4,6 +4,8 @@
 
 #include "components/ntp_snippets/physical_web_pages/physical_web_page_suggestions_provider.h"
 
+#include <utility>
+
 #include "base/bind.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/string_util.h"
@@ -91,6 +93,16 @@ void PhysicalWebPageSuggestionsProvider::FetchSuggestionImage(
   // TODO(vitaliii): Implement.
   base::ThreadTaskRunnerHandle::Get()->PostTask(
       FROM_HERE, base::Bind(callback, gfx::Image()));
+}
+
+void PhysicalWebPageSuggestionsProvider::Fetch(
+    const Category& category,
+    const std::set<std::string>& known_suggestion_ids,
+    FetchingCallback callback) {
+  NOTREACHED();
+  base::ThreadTaskRunnerHandle::Get()->PostTask(
+      FROM_HERE,
+      base::Bind(callback, base::Passed(std::vector<ContentSuggestion>())));
 }
 
 void PhysicalWebPageSuggestionsProvider::ClearHistory(

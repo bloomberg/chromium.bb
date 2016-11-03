@@ -155,6 +155,16 @@ void BookmarkSuggestionsProvider::FetchSuggestionImage(
       FROM_HERE, base::Bind(callback, gfx::Image()));
 }
 
+void BookmarkSuggestionsProvider::Fetch(
+    const Category& category,
+    const std::set<std::string>& known_suggestion_ids,
+    FetchingCallback callback) {
+  NOTREACHED();
+  base::ThreadTaskRunnerHandle::Get()->PostTask(
+      FROM_HERE,
+      base::Bind(callback, base::Passed(std::vector<ContentSuggestion>())));
+}
+
 void BookmarkSuggestionsProvider::ClearHistory(
     base::Time begin,
     base::Time end,

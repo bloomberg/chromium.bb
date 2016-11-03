@@ -388,7 +388,8 @@ class NTPSnippetsServiceTest : public ::testing::Test {
         test_url_(kTestContentSuggestionsServerWithAPIKey),
         user_classifier_(/*pref_service=*/nullptr),
         image_fetcher_(nullptr),
-        image_decoder_(nullptr) {
+        image_decoder_(nullptr),
+        caller_() {
     NTPSnippetsService::RegisterProfilePrefs(utils_.pref_service()->registry());
     RequestThrottler::RegisterProfilePrefs(utils_.pref_service()->registry());
 
@@ -503,7 +504,24 @@ class NTPSnippetsServiceTest : public ::testing::Test {
     base::RunLoop().RunUntilIdle();
   }
 
+  void LoadMoreFromJSONString(NTPSnippetsService* service,
+                              const Category& category,
+                              const std::string& json,
+                              const std::set<std::string>& known_ids,
+                              NTPSnippetsService::FetchingCallback callback) {
+    SetUpFetchResponse(json);
+    service->Fetch(category, known_ids, callback);
+    base::RunLoop().RunUntilIdle();
+  }
+
  private:
+  class MockCaller {
+   public:
+    void EmptyCallback(std::vector<ContentSuggestion>) {}
+    void CheckCallback(std::vector<ContentSuggestion> v) { MustCallback(); }
+    MOCK_METHOD0(MustCallback, void());
+  };
+
   variations::testing::VariationParamsManager params_manager_;
   test::NTPSnippetsTestUtils utils_;
   base::MessageLoop message_loop_;
@@ -520,6 +538,7 @@ class NTPSnippetsServiceTest : public ::testing::Test {
   FakeImageDecoder* image_decoder_;
 
   base::ScopedTempDir database_dir_;
+  MockCaller caller_;
 
   DISALLOW_COPY_AND_ASSIGN(NTPSnippetsServiceTest);
 };
@@ -830,6 +849,61 @@ TEST_F(NTPSnippetsServiceTest, ReplaceSnippets) {
   // The snippets loaded last replace all that was loaded previously.
   EXPECT_THAT(service->GetSnippetsForTesting(articles_category()),
               ElementsAre(IdEq(second)));
+}
+
+TEST_F(NTPSnippetsServiceTest, LoadsAdditionalSnippets) {
+  auto service = MakeSnippetsService();
+
+  std::string first("http://first");
+  LoadFromJSONString(service.get(), GetTestJson({GetSnippetWithUrl(first)}));
+  EXPECT_THAT(service->GetSnippetsForTesting(articles_category()),
+              ElementsAre(IdEq(first)));
+
+  std::string second("http://second");
+  LoadMoreFromJSONString(service.get(),
+                         articles_category(),
+                         GetTestJson({GetSnippetWithUrl(second)}),
+                         std::set<std::string>(),
+                         base::Bind([](std::vector<ContentSuggestion>) {}));
+  // The snippets loaded last are added to the previously loaded.
+  EXPECT_THAT(service->GetSnippetsForTesting(articles_category()),
+              ElementsAre(IdEq(first), IdEq(second)));
+}
+
+namespace {
+
+// Workaround for gMock's lack of support for movable types.
+void SuggestionsLoaded(
+    MockFunction<void(const std::vector<ContentSuggestion>& v)>* loaded,
+    std::vector<ContentSuggestion> v) {
+  loaded->Call(v);
+}
+
+}  // namespace
+
+TEST_F(NTPSnippetsServiceTest, InvokesOnlyCallbackOnFetchingMore) {
+  auto service = MakeSnippetsService();
+
+  MockFunction<void(const std::vector<ContentSuggestion>&)> loaded;
+  EXPECT_CALL(loaded, Call(SizeIs(1)));
+
+  LoadMoreFromJSONString(service.get(), articles_category(),
+                         GetTestJson({GetSnippetWithUrl("http://some")}),
+                         std::set<std::string>(),
+                         base::Bind(&SuggestionsLoaded, &loaded));
+
+  // The observer shouldn't have been triggered.
+  EXPECT_THAT(observer().SuggestionsForCategory(articles_category()),
+              IsEmpty());
+}
+
+TEST_F(NTPSnippetsServiceTest, ReturnFetchRequestEmptyBeforeInit) {
+  auto service = MakeSnippetsServiceWithoutInitialization();
+  MockFunction<void(const std::vector<ContentSuggestion>&)> loaded;
+  EXPECT_CALL(loaded, Call(SizeIs(0)));
+  service->Fetch(articles_category(), std::set<std::string>(),
+                 base::Bind(&SuggestionsLoaded, &loaded));
+  base::RunLoop().RunUntilIdle();
 }
 
 TEST_F(NTPSnippetsServiceTest, LoadInvalidJson) {

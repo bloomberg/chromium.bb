@@ -34,6 +34,7 @@ class Image;
 namespace ntp_snippets {
 
 class NTPSnippetsService;
+class NTPSnippetsFetcher;
 
 // Retrieves suggestions from a number of ContentSuggestionsProviders and serves
 // them grouped into categories. There can be at most one provider per category.
@@ -41,9 +42,12 @@ class ContentSuggestionsService : public KeyedService,
                                   public ContentSuggestionsProvider::Observer,
                                   public history::HistoryServiceObserver {
  public:
+  // TODO(treib): All these should probably be OnceCallback.
   using ImageFetchedCallback = base::Callback<void(const gfx::Image&)>;
   using DismissedSuggestionsCallback = base::Callback<void(
       std::vector<ContentSuggestion> dismissed_suggestions)>;
+  using FetchingCallback =
+      base::Callback<void(std::vector<ContentSuggestion> suggestions)>;
 
   class Observer {
    public:
@@ -134,6 +138,13 @@ class ContentSuggestionsService : public KeyedService,
 
   // Returns whether |category| is dismissed.
   bool IsCategoryDismissed(Category category) const;
+
+  // Fetches additional contents for the given |category|. If the fetch was
+  // completed, the given |callback| is called with the updated content.
+  // This includes new and old data.
+  void Fetch(const Category& category,
+             const std::set<std::string>& known_suggestion_ids,
+             const FetchingCallback& callback);
 
   // Observer accessors.
   void AddObserver(Observer* observer);
