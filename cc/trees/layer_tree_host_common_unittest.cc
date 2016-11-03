@@ -4213,13 +4213,11 @@ TEST_F(LayerTreeHostCommonTest, BackFaceCullingWithoutPreserves3d) {
   EXPECT_FALSE(front_facing_child_of_back_facing_surface->has_render_surface());
   EXPECT_FALSE(back_facing_child_of_back_facing_surface->has_render_surface());
 
-  EXPECT_EQ(4u, update_layer_list_impl()->size());
+  EXPECT_EQ(3u, update_layer_list_impl()->size());
   EXPECT_TRUE(UpdateLayerListImplContains(front_facing_child->id()));
   EXPECT_TRUE(UpdateLayerListImplContains(front_facing_surface->id()));
   EXPECT_TRUE(UpdateLayerListImplContains(
       front_facing_child_of_front_facing_surface->id()));
-  EXPECT_TRUE(UpdateLayerListImplContains(
-      front_facing_child_of_back_facing_surface->id()));
 }
 
 TEST_F(LayerTreeHostCommonTest, BackFaceCullingWithPreserves3d) {
@@ -6014,38 +6012,36 @@ TEST_F(LayerTreeHostCommonTest, CanRenderToSeparateSurface) {
 TEST_F(LayerTreeHostCommonTest, DoNotIncludeBackfaceInvisibleSurfaces) {
   LayerImpl* root = root_layer_for_testing();
   LayerImpl* back_facing = AddChild<LayerImpl>(root);
+
   LayerImpl* render_surface1 = AddChild<LayerImpl>(back_facing);
-  LayerImpl* render_surface2 = AddChild<LayerImpl>(back_facing);
   LayerImpl* child1 = AddChild<LayerImpl>(render_surface1);
+
+  LayerImpl* flattener = AddChild<LayerImpl>(back_facing);
+  LayerImpl* render_surface2 = AddChild<LayerImpl>(flattener);
   LayerImpl* child2 = AddChild<LayerImpl>(render_surface2);
 
   child1->SetDrawsContent(true);
   child2->SetDrawsContent(true);
 
   root->SetBounds(gfx::Size(50, 50));
-  root->Set3dSortingContextId(1);
-  root->test_properties()->should_flatten_transform = false;
   back_facing->SetBounds(gfx::Size(50, 50));
-  back_facing->Set3dSortingContextId(1);
   back_facing->test_properties()->should_flatten_transform = false;
+
   render_surface1->SetBounds(gfx::Size(30, 30));
-  render_surface1->Set3dSortingContextId(1);
   render_surface1->test_properties()->should_flatten_transform = false;
   render_surface1->test_properties()->force_render_surface = true;
   render_surface1->test_properties()->double_sided = false;
+  child1->SetBounds(gfx::Size(20, 20));
+
+  flattener->SetBounds(gfx::Size(30, 30));
   render_surface2->SetBounds(gfx::Size(30, 30));
-  // Different context from the rest.
-  render_surface2->Set3dSortingContextId(2);
   render_surface2->test_properties()->should_flatten_transform = false;
   render_surface2->test_properties()->force_render_surface = true;
   render_surface2->test_properties()->double_sided = false;
-  child1->SetBounds(gfx::Size(20, 20));
   child2->SetBounds(gfx::Size(20, 20));
 
   ExecuteCalculateDrawProperties(root);
 
-  EXPECT_EQ(render_surface1->sorting_context_id(), root->sorting_context_id());
-  EXPECT_NE(render_surface2->sorting_context_id(), root->sorting_context_id());
   EXPECT_EQ(3u, render_surface_layer_list_impl()->size());
   EXPECT_EQ(2u, render_surface_layer_list_impl()
                     ->at(0)

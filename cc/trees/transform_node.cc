@@ -233,7 +233,7 @@ void TransformNode::AsValueInto(base::trace_event::TracedValue* value) const {
 }
 
 TransformCachedNodeData::TransformCachedNodeData()
-    : target_id(-1), content_target_id(-1) {}
+    : target_id(-1), content_target_id(-1), is_showing_backface(false) {}
 
 TransformCachedNodeData::TransformCachedNodeData(
     const TransformCachedNodeData& other) = default;
@@ -244,7 +244,8 @@ bool TransformCachedNodeData::operator==(
     const TransformCachedNodeData& other) const {
   return from_screen == other.from_screen && to_screen == other.to_screen &&
          target_id == other.target_id &&
-         content_target_id == other.content_target_id;
+         content_target_id == other.content_target_id &&
+         is_showing_backface == other.is_showing_backface;
 }
 
 void TransformCachedNodeData::ToProtobuf(
@@ -253,6 +254,7 @@ void TransformCachedNodeData::ToProtobuf(
   TransformToProto(to_screen, proto->mutable_to_screen());
   proto->set_target_id(target_id);
   proto->set_content_target_id(content_target_id);
+  proto->set_is_showing_backface(is_showing_backface);
 }
 
 void TransformCachedNodeData::FromProtobuf(
@@ -261,6 +263,7 @@ void TransformCachedNodeData::FromProtobuf(
   to_screen = ProtoToTransform(proto.to_screen());
   target_id = proto.target_id();
   content_target_id = proto.content_target_id();
+  is_showing_backface = proto.is_showing_backface();
 }
 
 }  // namespace cc

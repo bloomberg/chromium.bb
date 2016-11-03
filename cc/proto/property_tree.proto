@@ -64,6 +64,7 @@ message TransformCachedNodeData {
   optional Transform to_screen = 4;
   optional int64 target_id = 5;
   optional int64 content_target_id = 6;
+  optional bool is_showing_backface = 7;
 }
 
 // Proto for StickyPositionNodeData

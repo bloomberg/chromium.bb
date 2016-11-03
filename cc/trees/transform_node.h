@@ -158,6 +158,8 @@ struct CC_EXPORT TransformCachedNodeData {
   // with this transform node.
   int content_target_id;
 
+  bool is_showing_backface : 1;
+
   bool operator==(const TransformCachedNodeData& other) const;
 
   void ToProtobuf(proto::TransformCachedNodeData* proto) const;

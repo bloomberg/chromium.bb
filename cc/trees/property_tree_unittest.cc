@@ -366,7 +366,9 @@ class PropertyTreeTest : public testing::Test {
     new_tree.FromProtobuf(proto, &effect_id_to_index_map);
 
     EXPECT_EQ(*effect_tree, new_tree);
+    PropertyTrees* property_trees = effect_tree->property_trees();
     *effect_tree = new_tree;
+    effect_tree->SetPropertyTrees(property_trees);
   }
 
  private:
@@ -884,7 +886,8 @@ class PropertyTreeTestScreenSpaceOpacityUpdateTest : public PropertyTreeTest {
   void StartTest() override {
     // This tests that screen space opacity is updated for the subtree when
     // opacity of a node changes.
-    EffectTree tree;
+    PropertyTrees property_trees;
+    EffectTree& tree = property_trees.effect_tree;
 
     int parent = tree.Insert(EffectNode(), 0);
     int child = tree.Insert(EffectNode(), parent);

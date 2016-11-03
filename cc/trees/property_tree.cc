@@ -744,6 +744,7 @@ const gfx::Transform& TransformTree::ToScreen(int node_id) const {
 void TransformTree::SetToScreen(int node_id, const gfx::Transform& transform) {
   DCHECK(static_cast<int>(cached_data_.size()) > node_id);
   cached_data_[node_id].to_screen = transform;
+  cached_data_[node_id].is_showing_backface = transform.IsBackFaceVisible();
 }
 
 int TransformTree::TargetId(int node_id) const {
@@ -912,40 +913,17 @@ void EffectTree::UpdateEffectChanged(EffectNode* node,
 
 void EffectTree::UpdateBackfaceVisibility(EffectNode* node,
                                           EffectNode* parent_node) {
-  if (!parent_node) {
+  if (parent_node && parent_node->hidden_by_backface_visibility) {
+    node->hidden_by_backface_visibility = true;
+    return;
+  } else if (node->double_sided) {
     node->hidden_by_backface_visibility = false;
     return;
   }
-  if (parent_node->hidden_by_backface_visibility) {
-    node->hidden_by_backface_visibility = true;
-    return;
-  }
-
-  TransformTree& transform_tree = property_trees()->transform_tree;
-  if (node->has_render_surface && !node->double_sided) {
-    TransformNode* transform_node = transform_tree.Node(node->transform_id);
-    if (transform_node->is_invertible &&
-        transform_node->ancestors_are_invertible) {
-      if (transform_node->sorting_context_id) {
-        const TransformNode* parent_transform_node =
-            transform_tree.parent(transform_node);
-        if (parent_transform_node &&
-            parent_transform_node->sorting_context_id ==
-                transform_node->sorting_context_id) {
-          gfx::Transform surface_draw_transform;
-          property_trees()->GetToTarget(transform_node->id, node->target_id,
-                                        &surface_draw_transform);
-          node->hidden_by_backface_visibility =
-              surface_draw_transform.IsBackFaceVisible();
-        } else {
-          node->hidden_by_backface_visibility =
-              transform_node->local.IsBackFaceVisible();
-        }
-        return;
-      }
-    }
-  }
-  node->hidden_by_backface_visibility = false;
+  node->hidden_by_backface_visibility =
+      property_trees()
+          ->transform_tree.cached_data()[node->transform_id]
+          .is_showing_backface;
 }
 
 void EffectTree::UpdateSurfaceContentsScale(EffectNode* effect_node) {
