@@ -256,11 +256,13 @@ const base::FilePath::CharType kAecDumpFileNameAddition[] =
 #endif
 
 void CacheShaderInfo(int32_t id, base::FilePath path) {
-  ShaderCacheFactory::GetInstance()->SetCacheInfo(id, path);
+  if (ShaderCacheFactory::GetInstance())
+    ShaderCacheFactory::GetInstance()->SetCacheInfo(id, path);
 }
 
 void RemoveShaderInfo(int32_t id) {
-  ShaderCacheFactory::GetInstance()->RemoveCacheInfo(id);
+  if (ShaderCacheFactory::GetInstance())
+    ShaderCacheFactory::GetInstance()->RemoveCacheInfo(id);
 }
 
 net::URLRequestContext* GetRequestContext(

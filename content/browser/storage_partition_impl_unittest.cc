@@ -601,6 +601,9 @@ class StoragePartitionShaderClearTest : public testing::Test {
   StoragePartitionShaderClearTest()
       : thread_bundle_(content::TestBrowserThreadBundle::IO_MAINLOOP),
         browser_context_(new TestBrowserContext()) {
+    ShaderCacheFactory::InitInstance(
+        base::ThreadTaskRunnerHandle::Get(),
+        BrowserThread::GetTaskRunnerForThread(BrowserThread::CACHE));
     ShaderCacheFactory::GetInstance()->SetCacheInfo(
         kDefaultClientId,
         BrowserContext::GetDefaultStoragePartition(

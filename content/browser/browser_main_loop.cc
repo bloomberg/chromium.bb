@@ -54,6 +54,7 @@
 #include "content/browser/gpu/gpu_data_manager_impl.h"
 #include "content/browser/gpu/gpu_process_host.h"
 #include "content/browser/gpu/gpu_process_host_ui_shim.h"
+#include "content/browser/gpu/shader_disk_cache.h"
 #include "content/browser/histogram_synchronizer.h"
 #include "content/browser/loader/resource_dispatcher_host_impl.h"
 #include "content/browser/loader_delegate_impl.h"
@@ -1226,6 +1227,13 @@ int BrowserMainLoop::BrowserThreadsStarted() {
     gpu::InitializeVulkan();
   }
 #endif
+
+  // Initialize the GPU shader cache. This needs to be initialized before
+  // BrowserGpuChannelHostFactory below, since that depends on an initialized
+  // ShaderCacheFactory.
+  ShaderCacheFactory::InitInstance(
+      BrowserThread::GetTaskRunnerForThread(BrowserThread::IO),
+      BrowserThread::GetTaskRunnerForThread(BrowserThread::CACHE));
 
   bool always_uses_gpu = true;
   bool established_gpu_channel = false;
