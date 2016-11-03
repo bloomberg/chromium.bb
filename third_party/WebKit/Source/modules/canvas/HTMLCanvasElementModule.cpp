@@ -37,6 +37,13 @@ void HTMLCanvasElementModule::getContext(
 OffscreenCanvas* HTMLCanvasElementModule::transferControlToOffscreen(
     HTMLCanvasElement& canvas,
     ExceptionState& exceptionState) {
+  if (canvas.surfaceLayerBridge()) {
+    exceptionState.throwDOMException(
+        InvalidStateError,
+        "Cannot transfer control from a canvas for more than one time.");
+    return nullptr;
+  }
+
   if (!canvas.createSurfaceLayer()) {
     exceptionState.throwDOMException(
         V8Error,
