@@ -1364,6 +1364,32 @@ crbug.com/490015 virtual/stable/http/tests/navigation/beacon-blob-with-non-simpl
 # This test fails with the stable release mode.
 crbug.com/490015 virtual/stable/http/tests/navigation/same-and-different-back.html [ Skip ]
 
+# These tests have different baselines on Linux Precise than Linux Trusty;
+# Linux Precise is being phased out, so until it's phased out, any tests
+# that have baselines that behave differently can be disabled.
+crbug.com/660580 [ Precise ] compositing/overflow/do-not-repaint-if-scrolling-composited-layers.html [ Skip ]
+crbug.com/660580 [ Precise ] fast/borders/border-antialiasing.html [ Skip ]
+crbug.com/660580 [ Precise ] fast/canvas/canvas-composite-video-shadow.html [ Skip ]
+crbug.com/660580 [ Precise ] fast/text/complex-text-opacity.html [ Skip ]
+crbug.com/660580 [ Precise ] fast/text/font-fallback.html [ Skip ]
+crbug.com/660580 [ Precise ] fast/text/international/complex-character-based-fallback.html [ Skip ]
+crbug.com/660580 [ Precise ] fast/text/international/complex-joining-using-gpos.html [ Skip ]
+crbug.com/660580 [ Precise ] fast/text/international/thai-line-breaks.html [ Skip ]
+crbug.com/660580 [ Precise ] imported/wpt/dom/nodes/Document-getElementsByTagName-xhtml.xhtml [ Skip ]
+crbug.com/660580 [ Precise ] inspector-protocol/layout-fonts/languages-emoji-rare-glyphs.html [ Skip ]
+crbug.com/660580 [ Precise ] svg/custom/control-points-for-S-and-T.svg [ Skip ]
+crbug.com/660580 [ Precise ] svg/W3C-SVG-1.1/paths-data-03-f.svg [ Skip ]
+crbug.com/660580 [ Precise ] svg/W3C-SVG-1.1/text-align-08-b.svg [ Skip ]
+crbug.com/660580 [ Precise ] transforms/2d/hindi-rotated.html [ Skip ]
+crbug.com/660580 [ Precise ] virtual/display_list_2d_canvas/fast/canvas/canvas-pattern-no-repeat-with-transformations.html [ Skip ]
+crbug.com/660580 [ Precise ] virtual/display_list_2d_canvas/fast/canvas/canvas-shadow-source-in.html [ Skip ]
+crbug.com/660580 [ Precise ] virtual/gpu/fast/canvas/canvas-arc-circumference-fill.html [ Skip ]
+crbug.com/660580 [ Precise ] virtual/gpu/fast/canvas/canvas-pattern-no-repeat-with-transformations.html [ Skip ]
+crbug.com/660580 [ Precise ] virtual/scalefactor150/fast/hidpi/static/drag-image.html [ Skip ]
+crbug.com/660580 [ Precise ] virtual/scalefactor200/fast/hidpi/static/drag-image.html [ Skip ]
+crbug.com/660580 [ Precise ] virtual/scalefactor200withzoom/fast/hidpi/static/drag-image.html [ Skip ]
+crbug.com/660580 [ Precise ] virtual/threaded/printing/fixed-positioned-headers-and-footers.html [ Skip ]
+
 # Tests added from W3C auto import bot
 crbug.com/626703 imported/csswg-test/css-display-3/display-contents-before-after-001.html [ Failure ]
 crbug.com/626703 imported/csswg-test/css-display-3/display-contents-before-after-002.html [ Failure ]

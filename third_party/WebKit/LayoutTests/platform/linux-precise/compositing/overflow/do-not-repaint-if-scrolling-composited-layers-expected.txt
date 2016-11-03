@@ -1,7 +1,0 @@
-CONSOLE ERROR: line 56: Discontiguous selection is not supported.
-PASS repainted when expected
-FAIL did not repaint when expected
-PASS repainted when expected
-PASS did not repaint as expected
-FAIL did not repaint when expected
-
