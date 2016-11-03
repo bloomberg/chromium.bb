@@ -73,7 +73,10 @@ class ACCELERATED_WIDGET_MAC_EXPORT CALayerTreeCoordinator {
   // Frame that is currently being displayed on the screen.
   std::unique_ptr<GLRendererLayerTree> current_gl_renderer_layer_tree_;
   std::unique_ptr<CARendererLayerTree> current_ca_renderer_layer_tree_;
-  bool current_fullscreen_low_power_layer_valid_ = false;
+
+  // The number of frames since we used the low power layer. Used to avoid
+  // flashes during transitions between windows.
+  uint64_t frames_since_low_power_layer_was_valid_ = 0;
 
   DISALLOW_COPY_AND_ASSIGN(CALayerTreeCoordinator);
 };

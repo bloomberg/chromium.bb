@@ -4,11 +4,14 @@
 
 #include "chrome/browser/ui/cocoa/fullscreen_low_power_coordinator.h"
 
+#include "ui/base/cocoa/animation_utils.h"
+#include "ui/gfx/mac/scoped_cocoa_disable_screen_updates.h"
+
 namespace {
 
-// The minimum number of frames with valid low power contents that we need to
-// receive in a row before showing the low power window.
-const uint64_t kMinValidFrames = 15;
+// The number of frames we need to be in the WarmUp state before moving to the
+// Enabled state.
+const uint64_t kWarmUpFramesBeforeEnteringLowPowerMode = 30;
 
 }  // namespace
 
@@ -85,6 +88,14 @@ void FullscreenLowPowerCoordinatorCocoa::SetInFullscreenTransition(
     bool in_fullscreen_transition) {
   allowed_by_fullscreen_transition_ = !in_fullscreen_transition;
   EnterOrExitLowPowerModeIfNeeded();
+
+  // Note that we should close the window here so that it does not appear in
+  // the background during the transition back to windowed mode. Closing a
+  // window that is in detached mode results in a janky transition and system
+  // crashes.
+  // TODO(ccameron): Allow closing the window here if we have not been in
+  // detached mode for several frames.
+  // https://crbug.com/644133
 }
 
 void FullscreenLowPowerCoordinatorCocoa::SetLayoutParameters(
@@ -139,11 +150,15 @@ void FullscreenLowPowerCoordinatorCocoa::ChildWindowsChanged() {
 }
 
 void FullscreenLowPowerCoordinatorCocoa::SetLowPowerLayerValid(bool valid) {
-  if (valid)
-    low_power_layer_valid_frame_count_ += 1;
-  else
-    low_power_layer_valid_frame_count_ = 0;
+  State old_state = state_;
+
+  low_power_layer_valid_ = valid;
   EnterOrExitLowPowerModeIfNeeded();
+
+  if (state_ == old_state)
+    frames_in_state_ += 1;
+  else
+    frames_in_state_ = 0;
 }
 
 void FullscreenLowPowerCoordinatorCocoa::WillLoseAcceleratedWidget() {
@@ -153,33 +168,58 @@ void FullscreenLowPowerCoordinatorCocoa::WillLoseAcceleratedWidget() {
   EnterOrExitLowPowerModeIfNeeded();
 }
 
+void FullscreenLowPowerCoordinatorCocoa::TickEnterOrExitForTesting() {
+  frames_in_state_ += 1;
+  EnterOrExitLowPowerModeIfNeeded();
+}
+
 void FullscreenLowPowerCoordinatorCocoa::EnterOrExitLowPowerModeIfNeeded() {
-  bool new_in_low_power_mode =
-      widget_ && low_power_window_ &&
-      low_power_layer_valid_frame_count_ > kMinValidFrames &&
+  bool can_use_low_power_window =
+      widget_ && low_power_window_ && low_power_layer_valid_ &&
       allowed_by_fullscreen_transition_ && allowed_by_nsview_layout_ &&
       allowed_by_child_windows_ && allowed_by_active_sheet_;
 
-  if (new_in_low_power_mode) {
-    // Update whether or not we are in low power mode based on whether or not
-    // the low power window is in front (we do not get notifications of window
-    // order change).
-    in_low_power_mode_ &=
-        [[NSApp orderedWindows] firstObject] == low_power_window_.get();
-
-    if (!in_low_power_mode_) {
-      [low_power_window_ setFrame:[content_window_ frame] display:YES];
-      [low_power_window_
-          setStyleMask:[low_power_window_ styleMask] | NSFullScreenWindowMask];
-      [low_power_window_ orderWindow:NSWindowAbove
-                          relativeTo:[content_window_ windowNumber]];
-      in_low_power_mode_ = true;
-    }
-  } else {
-    if (in_low_power_mode_) {
-      [low_power_window_ orderWindow:NSWindowBelow
-                          relativeTo:[content_window_ windowNumber]];
-      in_low_power_mode_ = false;
-    }
+  switch (state_) {
+    case Disabled:
+      if (can_use_low_power_window) {
+        // Ensure that the window's frame and style are set, and order it behind
+        // the main window, so that it's ready to be moved in front.
+        state_ = WarmingUp;
+        [low_power_window_ setStyleMask:[low_power_window_ styleMask] |
+                                        NSFullScreenWindowMask];
+        [low_power_window_ setFrame:[content_window_ frame]
+                            display:YES
+                            animate:NO];
+        [low_power_window_ orderWindow:NSWindowBelow
+                            relativeTo:[content_window_ windowNumber]];
+      }
+      break;
+    case WarmingUp:
+      if (can_use_low_power_window) {
+        // After a few frames, move in front of the main window.
+        if (frames_in_state_ > kWarmUpFramesBeforeEnteringLowPowerMode) {
+          state_ = Enabled;
+          [low_power_window_ orderWindow:NSWindowAbove
+                              relativeTo:[content_window_ windowNumber]];
+        }
+      } else {
+        state_ = Disabled;
+      }
+      break;
+    case Enabled:
+      if (can_use_low_power_window) {
+        // We do not get notifications of window order change. Check here that
+        // the low power window is in front (and move it there if it isn't).
+        if ([[NSApp orderedWindows] firstObject] != low_power_window_.get()) {
+          [low_power_window_ orderWindow:NSWindowAbove
+                              relativeTo:[content_window_ windowNumber]];
+        }
+      } else {
+        // Move behind the main window.
+        state_ = Disabled;
+        [low_power_window_ orderWindow:NSWindowBelow
+                            relativeTo:[content_window_ windowNumber]];
+      }
+      break;
   }
 }

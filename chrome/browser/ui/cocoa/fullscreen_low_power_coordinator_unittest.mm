@@ -61,6 +61,13 @@ class FullscreenLowPowerTest : public testing::Test,
       widget_->GotCALayerFrame(content_layer_, low_power_valid,
                                low_power_layer_, gfx::Size(1, 1), 1);
   }
+  bool DoesTransitionToLowPowerMode() {
+    if (IsInLowPowerMode())
+      return false;
+    for (int i = 0; i < 20; ++i)
+      coordinator_->TickEnterOrExitForTesting();
+    return IsInLowPowerMode();
+  }
   bool IsInLowPowerMode() {
     // Return true if the fullscreen low power window is in front of the content
     // window.
@@ -111,17 +118,17 @@ TEST_F(FullscreenLowPowerTest, TransitionAndHysteresis) {
   SendFrames(kEnoughFrames, true);
   EXPECT_FALSE(IsInLowPowerMode());
   coordinator_->SetInFullscreenTransition(false);
-  EXPECT_TRUE(IsInLowPowerMode());
+  EXPECT_TRUE(DoesTransitionToLowPowerMode());
   coordinator_->SetInFullscreenTransition(true);
   EXPECT_FALSE(IsInLowPowerMode());
 
   // Verify hysteresis.
   coordinator_->SetInFullscreenTransition(false);
-  EXPECT_TRUE(IsInLowPowerMode());
+  EXPECT_TRUE(DoesTransitionToLowPowerMode());
   SendFrames(1, false);
   EXPECT_FALSE(IsInLowPowerMode());
   SendFrames(kNotEnoughFrames, true);
-  EXPECT_FALSE(IsInLowPowerMode());
+  EXPECT_FALSE(DoesTransitionToLowPowerMode());
   SendFrames(kEnoughFrames, true);
   EXPECT_TRUE(IsInLowPowerMode());
 }
@@ -129,7 +136,7 @@ TEST_F(FullscreenLowPowerTest, TransitionAndHysteresis) {
 TEST_F(FullscreenLowPowerTest, Layout) {
   SendFrames(kEnoughFrames, true);
   coordinator_->SetInFullscreenTransition(false);
-  EXPECT_TRUE(IsInLowPowerMode());
+  EXPECT_TRUE(DoesTransitionToLowPowerMode());
   NSRect screen_frame = [[content_window_ screen] frame];
 
   // Test a valid layout first (and again after each invalid layout).
@@ -151,7 +158,7 @@ TEST_F(FullscreenLowPowerTest, Layout) {
       NSMakeRect(0, 0, 20, 0));
   EXPECT_FALSE(IsInLowPowerMode());
   set_valid_layout();
-  EXPECT_TRUE(IsInLowPowerMode());
+  EXPECT_TRUE(DoesTransitionToLowPowerMode());
 
   // Invalid layout -- infobar visible.
   coordinator_->SetLayoutParameters(
@@ -161,7 +168,7 @@ TEST_F(FullscreenLowPowerTest, Layout) {
       NSMakeRect(0, 0, 20, 0));
   EXPECT_FALSE(IsInLowPowerMode());
   set_valid_layout();
-  EXPECT_TRUE(IsInLowPowerMode());
+  EXPECT_TRUE(DoesTransitionToLowPowerMode());
 
   // Invalid layout -- not fullscreen.
   coordinator_->SetLayoutParameters(
@@ -172,7 +179,7 @@ TEST_F(FullscreenLowPowerTest, Layout) {
       NSMakeRect(0, 0, 20, 0));
   EXPECT_FALSE(IsInLowPowerMode());
   set_valid_layout();
-  EXPECT_TRUE(IsInLowPowerMode());
+  EXPECT_TRUE(DoesTransitionToLowPowerMode());
 
   // Invalid layout -- download shelf visible.
   coordinator_->SetLayoutParameters(
@@ -182,13 +189,13 @@ TEST_F(FullscreenLowPowerTest, Layout) {
       NSMakeRect(0, 0, 20, 20));
   EXPECT_FALSE(IsInLowPowerMode());
   set_valid_layout();
-  EXPECT_TRUE(IsInLowPowerMode());
+  EXPECT_TRUE(DoesTransitionToLowPowerMode());
 }
 
 TEST_F(FullscreenLowPowerTest, OrderFrontAndChildWindows) {
   SendFrames(kEnoughFrames, true);
   coordinator_->SetInFullscreenTransition(false);
-  EXPECT_TRUE(IsInLowPowerMode());
+  EXPECT_TRUE(DoesTransitionToLowPowerMode());
 
   // Create a child window.
   base::scoped_nsobject<NSWindow> child_window([[NSWindow alloc]
@@ -215,7 +222,7 @@ TEST_F(FullscreenLowPowerTest, OrderFrontAndChildWindows) {
   // And remove it, and ensure that we're back in low power mode.
   [content_window_ removeChildWindow:child_window];
   coordinator_->ChildWindowsChanged();
-  EXPECT_TRUE(IsInLowPowerMode());
+  EXPECT_TRUE(DoesTransitionToLowPowerMode());
 
   // Now manually send the content window to the front, and make sure that
   // the next frame restores the low power window.

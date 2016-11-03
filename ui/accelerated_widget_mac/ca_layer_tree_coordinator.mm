@@ -12,6 +12,10 @@
 
 namespace ui {
 
+namespace {
+const uint64_t kFramesBeforeFlushingLowPowerLayer = 15;
+}
+
 CALayerTreeCoordinator::CALayerTreeCoordinator(
     bool allow_remote_layers,
     bool allow_av_sample_buffer_display_layer)
@@ -96,14 +100,15 @@ void CALayerTreeCoordinator::CommitPendingTreesToCA(
     current_ca_renderer_layer_tree_.reset();
   }
 
-  // TODO(ccameron): It may be necessary to leave the last image up for a few
-  // extra frames to allow a smooth switch between the normal and low-power
-  // NSWindows.
-  if (current_fullscreen_low_power_layer_valid_ &&
-      !*fullscreen_low_power_layer_valid) {
+  // It is necessary to leave the last image up for a few extra frames to allow
+  // a smooth switch between the normal and low-power NSWindows.
+  if (*fullscreen_low_power_layer_valid)
+    frames_since_low_power_layer_was_valid_ = 0;
+  else
+    frames_since_low_power_layer_was_valid_ += 1;
+  if (frames_since_low_power_layer_was_valid_ ==
+      kFramesBeforeFlushingLowPowerLayer)
     [fullscreen_low_power_layer_ flushAndRemoveImage];
-  }
-  current_fullscreen_low_power_layer_valid_ = *fullscreen_low_power_layer_valid;
 
   // Reset all state for the next frame.
   pending_ca_renderer_layer_tree_.reset();

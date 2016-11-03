@@ -42,6 +42,9 @@ class FullscreenLowPowerCoordinatorCocoa
   void SetLowPowerLayerValid(bool valid) override;
   void WillLoseAcceleratedWidget() override;
 
+  // Call EnterOrExitLowPowerModeIfNeeded to wind down counters.
+  void TickEnterOrExitForTesting();
+
  private:
   // Determine if we should be fullscreen low power mode, and enter or exit
   // the mode as needed.
@@ -61,11 +64,9 @@ class FullscreenLowPowerCoordinatorCocoa
   // transitioned to low power mode.
   bool allowed_by_fullscreen_transition_ = false;
 
-  // Set by the AcceleratedWidgetHost with each frame. This must be true for
-  // 15 consecutive frames to enter low power mode (this is to ensure that the
-  // low power window has actually updated to the correct content before it
-  // appears).
-  uint64_t low_power_layer_valid_frame_count_ = 0;
+  // Set by the AcceleratedWidgetHost with each frame to indicate if the low
+  // power layer's contents are valid.
+  bool low_power_layer_valid_ = false;
 
   // Set if the NSView hierarchy allows low power mode. Low power mode is only
   // allowed when nothing but the web contents is on-screen.
@@ -80,7 +81,17 @@ class FullscreenLowPowerCoordinatorCocoa
   bool allowed_by_active_sheet_ = false;
 
   // Updated by EnterOrExitLowPowerModeIfNeeded.
-  bool in_low_power_mode_ = false;
+  enum State {
+    // The fullscreen low power window is hidden behind the main window.
+    Disabled,
+    // The fullscreen low power window is still hidden, but is counting up
+    // transition frames before showing itself.
+    WarmingUp,
+    // The fullscreen low power window is in front of the main window.
+    Enabled,
+  };
+  State state_ = Disabled;
+  uint64_t frames_in_state_ = 0;
 };
 
 #endif  // CHROME_BROWSER_UI_COCOA_FULLSCREEN_LOW_POWER_COORDINATOR_H_
