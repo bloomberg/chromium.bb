@@ -46,13 +46,15 @@ extern const size_t kProxySettingsCount;
 bool IsProxyPref(const std::string& path);
 
 // Sets a value in the current proxy configuration on the specified profile.
-void SetProxyPrefValue(const std::string& path,
+void SetProxyPrefValue(const std::string& network_guid,
+                       const std::string& path,
                        const base::Value* in_value,
                        UIProxyConfigService* config_service);
 
 // Gets a value from the current proxy configuration on the specified profile.
-bool GetProxyPrefValue(const UIProxyConfigService& config_service,
+bool GetProxyPrefValue(const std::string& network_guid,
                        const std::string& path,
+                       UIProxyConfigService* config_service,
                        base::Value** out_value);
 
 }  // namespace proxy_cros_settings_parser

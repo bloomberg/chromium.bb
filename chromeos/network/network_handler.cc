@@ -22,6 +22,7 @@
 #include "chromeos/network/network_state_handler.h"
 #include "chromeos/network/network_state_handler_observer.h"
 #include "chromeos/network/prohibited_technologies_handler.h"
+#include "chromeos/network/proxy/ui_proxy_config_service.h"
 
 namespace chromeos {
 
@@ -112,6 +113,17 @@ bool NetworkHandler::IsInitialized() {
   return g_network_handler;
 }
 
+void NetworkHandler::InitializePrefServices(
+    PrefService* logged_in_profile_prefs,
+    PrefService* device_prefs) {
+  ui_proxy_config_service_.reset(
+      new UIProxyConfigService(logged_in_profile_prefs, device_prefs));
+}
+
+void NetworkHandler::ShutdownPrefServices() {
+  ui_proxy_config_service_.reset();
+}
+
 NetworkStateHandler* NetworkHandler::network_state_handler() {
   return network_state_handler_.get();
 }
@@ -152,6 +164,11 @@ GeolocationHandler* NetworkHandler::geolocation_handler() {
 ProhibitedTechnologiesHandler*
 NetworkHandler::prohibited_technologies_handler() {
   return prohibited_technologies_handler_.get();
+}
+
+UIProxyConfigService* NetworkHandler::ui_proxy_config_service() {
+  CHECK(ui_proxy_config_service_.get());
+  return ui_proxy_config_service_.get();
 }
 
 }  // namespace chromeos

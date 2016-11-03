@@ -10,6 +10,7 @@
 #include "base/macros.h"
 #include "chromeos/chromeos_export.h"
 #include "chromeos/network/proxy/ui_proxy_config.h"
+#include "components/prefs/pref_change_registrar.h"
 
 class PrefService;
 
@@ -17,39 +18,37 @@ namespace chromeos {
 
 class NetworkState;
 
-// This class is only accessed from the UI via Profile::GetProxyConfigTracker to
-// allow the user to read and modify the proxy configuration via
-// GetProxyConfig and SetProxyConfig.
-//
-// Before reading/setting a proxy config, a network has to be selected using
-// either SetCurrentNetwork (any remembered network) or
-// MakeActiveNetworkCurrent.
+// This class provides an interface to the UI for getting and setting a proxy
+// configuration. Primarily this class caches the "current" requested config
+// and populates UIProxyConfig for convenient UI consumption.
+// NOTE: This class must be rebuilt when the logged in profile changes.
+// ALSO NOTE: The provided PrefService instances are used both to retreive proxy
+// configurations set by an extension, and for ONC policy information associated
+// with a network. (Per-network proxy configurations are stored in Shill,
+// but ONC policy configuration is stored in PrefService).
 class CHROMEOS_EXPORT UIProxyConfigService {
  public:
-  UIProxyConfigService();
+  // |local_state_prefs| must not be null. |profile_prefs| can be
+  // null if there is no logged in user, in which case only the local state
+  // (device) prefs will be used. See note above.
+  UIProxyConfigService(PrefService* profile_prefs,
+                       PrefService* local_state_prefs);
   ~UIProxyConfigService();
 
-  // After this call, proxy settings are read from |profile_prefs| and
-  // |local_state_prefs|. In case of usage for the sign-in screen,
-  // |profile_prefs| must be NULL because sign-in screen should depend only on
-  // shared settings.
-  void SetPrefs(PrefService* profile_prefs, PrefService* local_state_prefs);
+  // Called when ::proxy_config::prefs change or to force an update.
+  void UpdateFromPrefs(const std::string& guid);
 
-  // Called by UI to set the network with GUID |current_guid| to be
-  // displayed or edited.  Subsequent Set*/Get* methods will use this
-  // network, until this method is called again.
-  void SetCurrentNetworkGuid(const std::string& current_guid);
+  // Called from UI to retrieve the active proxy configuration. This will be,
+  // in highest to lowest priority order:
+  // * A policy enforced proxy associated with |network_guid|.
+  // * A proxy set by an extension in the active PrefService.
+  // * A user specified proxy associated with |network_guid|.
+  void GetProxyConfig(const std::string& network_guid, UIProxyConfig* config);
 
-  void UpdateFromPrefs();
-
-  // Called from UI to retrieve the stored proxy configuration, which is either
-  // the last proxy config of the current network or the one last set by
-  // SetProxyConfig.
-  void GetProxyConfig(UIProxyConfig* config) const;
-
-  // Called from UI to update proxy configuration for different modes. Stores
-  // and persists |config| to shill for the current network.
-  void SetProxyConfig(const UIProxyConfig& config);
+  // Called from the UI to update the user proxy configuration for
+  // |network_guid|. The proxy specified by |config| is stored by Shill.
+  void SetProxyConfig(const std::string& network_guid,
+                      const UIProxyConfig& config);
 
  private:
   // Determines effective proxy config based on prefs from config tracker,
@@ -58,18 +57,19 @@ class CHROMEOS_EXPORT UIProxyConfigService {
   // hence, not picked up by observers.
   void DetermineEffectiveConfig(const NetworkState& network);
 
-  // GUID of network whose proxy configuration is being displayed or
-  // edited via UI.
+  void OnPreferenceChanged(const std::string& pref_name);
+
+  // GUID of network used for current_ui_config_.
   std::string current_ui_network_guid_;
 
-  // Proxy configuration of |current_ui_network_|.
+  // Proxy configuration for |current_ui_network_guid_|.
   UIProxyConfig current_ui_config_;
 
-  // Not owned.
-  PrefService* profile_prefs_;
+  PrefService* profile_prefs_;  // unowned
+  PrefChangeRegistrar profile_registrar_;
 
-  // Not owned.
-  PrefService* local_state_prefs_;
+  PrefService* local_state_prefs_;  // unowned
+  PrefChangeRegistrar local_state_registrar_;
 
   DISALLOW_COPY_AND_ASSIGN(UIProxyConfigService);
 };

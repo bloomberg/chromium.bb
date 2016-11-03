@@ -12,6 +12,8 @@
 #include "base/single_thread_task_runner.h"
 #include "chromeos/chromeos_export.h"
 
+class PrefService;
+
 namespace chromeos {
 
 class AutoConnectHandler;
@@ -29,6 +31,7 @@ class NetworkProfileHandler;
 class NetworkStateHandler;
 class NetworkSmsHandler;
 class ProhibitedTechnologiesHandler;
+class UIProxyConfigService;
 
 // Class for handling initialization and access to chromeos network handlers.
 // This class should NOT be used in unit tests. Instead, construct individual
@@ -47,6 +50,17 @@ class CHROMEOS_EXPORT NetworkHandler {
   // Returns true if the global instance has been initialized.
   static bool IsInitialized();
 
+  // Called whenever the pref services change, e.g. on login. Initializes
+  // services with PrefService dependencies (i.e. ui_proxy_config_service).
+  // |logged_in_profile_prefs| is the PrefService associated with the logged
+  // in user profile. |device_prefs| is the PrefService associated with the
+  // device (e.g. in Chrome, g_browser_process->local_state()).
+  void InitializePrefServices(PrefService* logged_in_profile_prefs,
+                              PrefService* device_prefs);
+
+  // Must be called before pref services are shut down.
+  void ShutdownPrefServices();
+
   // Returns the task runner for posting NetworkHandler calls from other
   // threads.
   base::SingleThreadTaskRunner* task_runner() { return task_runner_.get(); }
@@ -64,6 +78,9 @@ class CHROMEOS_EXPORT NetworkHandler {
   NetworkSmsHandler* network_sms_handler();
   GeolocationHandler* geolocation_handler();
   ProhibitedTechnologiesHandler* prohibited_technologies_handler();
+
+  // Global network configuration services.
+  UIProxyConfigService* ui_proxy_config_service();
 
  private:
   NetworkHandler();
@@ -88,6 +105,7 @@ class CHROMEOS_EXPORT NetworkHandler {
   std::unique_ptr<GeolocationHandler> geolocation_handler_;
   std::unique_ptr<ProhibitedTechnologiesHandler>
       prohibited_technologies_handler_;
+  std::unique_ptr<UIProxyConfigService> ui_proxy_config_service_;
 
   DISALLOW_COPY_AND_ASSIGN(NetworkHandler);
 };

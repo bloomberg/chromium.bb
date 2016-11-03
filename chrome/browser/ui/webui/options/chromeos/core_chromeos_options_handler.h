@@ -6,12 +6,12 @@
 #define CHROME_BROWSER_UI_WEBUI_OPTIONS_CHROMEOS_CORE_CHROMEOS_OPTIONS_HANDLER_H_
 
 #include <map>
+#include <string>
 
-#include "base/compiler_specific.h"
+#include "base/macros.h"
 #include "base/memory/linked_ptr.h"
 #include "chrome/browser/chromeos/settings/cros_settings.h"
 #include "chrome/browser/ui/webui/options/core_options_handler.h"
-#include "chromeos/network/proxy/ui_proxy_config_service.h"
 #include "content/public/browser/notification_observer.h"
 #include "content/public/browser/notification_registrar.h"
 
@@ -68,7 +68,10 @@ class CoreChromeOSOptionsHandler : public ::options::CoreOptionsHandler,
 
   content::NotificationRegistrar notification_registrar_;
 
-  UIProxyConfigService proxy_config_service_;
+  // Currently selected network id.
+  std::string network_guid_;
+
+  DISALLOW_COPY_AND_ASSIGN(CoreChromeOSOptionsHandler);
 };
 
 }  // namespace options

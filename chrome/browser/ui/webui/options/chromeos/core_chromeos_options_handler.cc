@@ -33,6 +33,8 @@
 #include "chrome/browser/ui/webui/options/chromeos/accounts_options_handler.h"
 #include "chrome/common/pref_names.h"
 #include "chrome/grit/generated_resources.h"
+#include "chromeos/network/network_handler.h"
+#include "chromeos/network/proxy/ui_proxy_config_service.h"
 #include "components/onc/onc_pref_names.h"
 #include "components/prefs/pref_change_registrar.h"
 #include "components/proxy_config/proxy_config_pref_names.h"
@@ -119,6 +121,10 @@ bool IsSecondaryUser(Profile* profile) {
 
 const char kSelectNetworkMessage[] = "selectNetwork";
 
+UIProxyConfigService* GetUiProxyConfigService() {
+  return NetworkHandler::Get()->ui_proxy_config_service();
+}
+
 }  // namespace
 
 CoreChromeOSOptionsHandler::CoreChromeOSOptionsHandler() {
@@ -140,23 +146,12 @@ void CoreChromeOSOptionsHandler::RegisterMessages() {
 
 void CoreChromeOSOptionsHandler::InitializeHandler() {
   // This function is both called on the initial page load and on each reload.
-  // For the latter case, forget the last selected network.
-  proxy_config_service_.SetCurrentNetworkGuid("");
-  // And clear the cached configuration.
-  proxy_config_service_.UpdateFromPrefs();
-
   CoreOptionsHandler::InitializeHandler();
 
-  PrefService* profile_prefs = NULL;
-  Profile* profile = Profile::FromWebUI(web_ui());
-  if (!ProfileHelper::IsSigninProfile(profile)) {
-    profile_prefs = profile->GetPrefs();
+  if (!ProfileHelper::IsSigninProfile(Profile::FromWebUI(web_ui())))
     ObservePref(onc::prefs::kOpenNetworkConfiguration);
-  }
   ObservePref(proxy_config::prefs::kProxy);
   ObservePref(onc::prefs::kDeviceOpenNetworkConfiguration);
-  proxy_config_service_.SetPrefs(profile_prefs,
-                                 g_browser_process->local_state());
 }
 
 void CoreChromeOSOptionsHandler::Observe(
@@ -182,7 +177,7 @@ base::Value* CoreChromeOSOptionsHandler::FetchPref(
   if (proxy_cros_settings_parser::IsProxyPref(pref_name)) {
     base::Value* value = nullptr;
     proxy_cros_settings_parser::GetProxyPrefValue(
-        proxy_config_service_, pref_name, &value);
+        network_guid_, pref_name, GetUiProxyConfigService(), &value);
     return value ? value : base::Value::CreateNullValue().release();
   }
 
@@ -258,7 +253,7 @@ void CoreChromeOSOptionsHandler::SetPref(const std::string& pref_name,
                                          const std::string& metric) {
   if (proxy_cros_settings_parser::IsProxyPref(pref_name)) {
     proxy_cros_settings_parser::SetProxyPrefValue(
-        pref_name, value, &proxy_config_service_);
+        network_guid_, pref_name, value, GetUiProxyConfigService());
     base::StringValue proxy_type(pref_name);
     web_ui()->CallJavascriptFunctionUnsafe(
         "options.internet.DetailsInternetPage.updateProxySettings", proxy_type);
@@ -378,12 +373,10 @@ void CoreChromeOSOptionsHandler::GetLocalizedValues(
 
 void CoreChromeOSOptionsHandler::SelectNetworkCallback(
     const base::ListValue* args) {
-  std::string guid;
-  if (args->GetSize() != 1 || !args->GetString(0, &guid)) {
+  if (args->GetSize() != 1 || !args->GetString(0, &network_guid_)) {
     NOTREACHED();
     return;
   }
-  proxy_config_service_.SetCurrentNetworkGuid(guid);
   NotifyProxyPrefsChanged();
 }
 
@@ -418,12 +411,12 @@ void CoreChromeOSOptionsHandler::NotifySettingsChanged(
 }
 
 void CoreChromeOSOptionsHandler::NotifyProxyPrefsChanged() {
-  proxy_config_service_.UpdateFromPrefs();
+  GetUiProxyConfigService()->UpdateFromPrefs(network_guid_);
   for (size_t i = 0; i < proxy_cros_settings_parser::kProxySettingsCount; ++i) {
     base::Value* value = NULL;
     proxy_cros_settings_parser::GetProxyPrefValue(
-        proxy_config_service_, proxy_cros_settings_parser::kProxySettings[i],
-        &value);
+        network_guid_, proxy_cros_settings_parser::kProxySettings[i],
+        GetUiProxyConfigService(), &value);
     DCHECK(value);
     std::unique_ptr<base::Value> ptr(value);
     DispatchPrefChangeNotification(

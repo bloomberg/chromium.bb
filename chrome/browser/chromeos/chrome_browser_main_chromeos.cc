@@ -61,6 +61,7 @@
 #include "chrome/browser/chromeos/login/wizard_controller.h"
 #include "chrome/browser/chromeos/net/network_connect_delegate_chromeos.h"
 #include "chrome/browser/chromeos/net/network_portal_detector_impl.h"
+#include "chrome/browser/chromeos/net/network_pref_state_observer.h"
 #include "chrome/browser/chromeos/net/wake_on_wifi_manager.h"
 #include "chrome/browser/chromeos/options/cert_library.h"
 #include "chrome/browser/chromeos/ownership/owner_settings_service_chromeos_factory.h"
@@ -653,6 +654,9 @@ void ChromeBrowserMainPartsChromeos::PostProfileInit() {
       network_portal_detector::GetInstance()->Enable(true);
   }
 
+  // Initialize an observer to update NetworkHandler's pref based services.
+  network_pref_state_observer_ = base::MakeUnique<NetworkPrefStateObserver>();
+
   // Initialize input methods.
   input_method::InputMethodManager* manager =
       input_method::InputMethodManager::Get();
@@ -796,6 +800,7 @@ void ChromeBrowserMainPartsChromeos::PostMainMessageLoopRun() {
 
   // We should remove observers attached to D-Bus clients before
   // DBusThreadManager is shut down.
+  network_pref_state_observer_.reset();
   extension_volume_observer_.reset();
   peripheral_battery_observer_.reset();
   power_prefs_.reset();

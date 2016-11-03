@@ -108,7 +108,8 @@ bool IsProxyPref(const std::string& path) {
                           base::CompareCase::SENSITIVE);
 }
 
-void SetProxyPrefValue(const std::string& path,
+void SetProxyPrefValue(const std::string& network_guid,
+                       const std::string& path,
                        const base::Value* in_value,
                        UIProxyConfigService* config_service) {
   if (!in_value) {
@@ -118,7 +119,7 @@ void SetProxyPrefValue(const std::string& path,
 
   // Retrieve proxy config.
   UIProxyConfig config;
-  config_service->GetProxyConfig(&config);
+  config_service->GetProxyConfig(network_guid, &config);
 
   if (path == kProxyPacUrl) {
     std::string val;
@@ -275,16 +276,17 @@ void SetProxyPrefValue(const std::string& path,
     return;
   }
 
-  config_service->SetProxyConfig(config);
+  config_service->SetProxyConfig(network_guid, config);
 }
 
-bool GetProxyPrefValue(const UIProxyConfigService& config_service,
+bool GetProxyPrefValue(const std::string& network_guid,
                        const std::string& path,
+                       UIProxyConfigService* config_service,
                        base::Value** out_value) {
   std::string controlled_by;
   base::Value* data = NULL;
   UIProxyConfig config;
-  config_service.GetProxyConfig(&config);
+  config_service->GetProxyConfig(network_guid, &config);
 
   if (path == kProxyPacUrl) {
     // Only show pacurl for pac-script mode.

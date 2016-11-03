@@ -924,7 +924,7 @@ class ProxyPreferencesBrowserTest : public PreferencesBrowserTest {
     onc::ONCSource actual_source;
     std::unique_ptr<ProxyConfigDictionary> proxy_dict =
         chromeos::proxy_config::GetProxyConfigForNetwork(
-            pref_service_, g_browser_process->local_state(), *network,
+            g_browser_process->local_state(), pref_service_, *network,
             &actual_source);
     ASSERT_TRUE(proxy_dict);
     std::string actual_proxy_server;

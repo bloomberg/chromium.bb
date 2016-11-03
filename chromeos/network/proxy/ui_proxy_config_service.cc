@@ -6,6 +6,8 @@
 
 #include <memory>
 
+#include "base/bind.h"
+#include "base/bind_helpers.h"
 #include "base/logging.h"
 #include "base/values.h"
 #include "chromeos/network/network_state.h"
@@ -14,6 +16,7 @@
 #include "chromeos/network/proxy/proxy_config_service_impl.h"
 #include "components/device_event_log/device_event_log.h"
 #include "components/proxy_config/pref_proxy_config_tracker_impl.h"
+#include "components/proxy_config/proxy_config_pref_names.h"
 #include "net/proxy/proxy_config.h"
 
 namespace chromeos {
@@ -62,32 +65,46 @@ bool IsNetworkProxySettingsEditable(const onc::ONCSource onc_source) {
 
 }  // namespace
 
-UIProxyConfigService::UIProxyConfigService()
-    : profile_prefs_(nullptr), local_state_prefs_(nullptr) {}
+UIProxyConfigService::UIProxyConfigService(PrefService* profile_prefs,
+                                           PrefService* local_state_prefs)
+    : profile_prefs_(profile_prefs), local_state_prefs_(local_state_prefs) {
+  if (profile_prefs_) {
+    profile_registrar_.Init(profile_prefs_);
+    profile_registrar_.Add(
+        ::proxy_config::prefs::kProxy,
+        base::Bind(&UIProxyConfigService::OnPreferenceChanged,
+                   base::Unretained(this)));
+    profile_registrar_.Add(
+        ::proxy_config::prefs::kUseSharedProxies,
+        base::Bind(&UIProxyConfigService::OnPreferenceChanged,
+                   base::Unretained(this)));
+  }
+
+  DCHECK(local_state_prefs_);
+  local_state_registrar_.Init(local_state_prefs_);
+  local_state_registrar_.Add(
+      ::proxy_config::prefs::kProxy,
+      base::Bind(&UIProxyConfigService::OnPreferenceChanged,
+                 base::Unretained(this)));
+}
 
 UIProxyConfigService::~UIProxyConfigService() {}
 
-void UIProxyConfigService::SetPrefs(PrefService* profile_prefs,
-                                    PrefService* local_state_prefs) {
-  profile_prefs_ = profile_prefs;
-  local_state_prefs_ = local_state_prefs;
-}
-
-void UIProxyConfigService::SetCurrentNetworkGuid(
-    const std::string& current_guid) {
-  current_ui_network_guid_ = current_guid;
-}
-
-void UIProxyConfigService::UpdateFromPrefs() {
+void UIProxyConfigService::UpdateFromPrefs(const std::string& network_guid) {
+  current_ui_network_guid_ = network_guid;
   const NetworkState* network = nullptr;
-  if (!current_ui_network_guid_.empty()) {
+  if (!network_guid.empty()) {
     network =
         NetworkHandler::Get()->network_state_handler()->GetNetworkStateFromGuid(
-            current_ui_network_guid_);
+            network_guid);
+    if (!network) {
+      NET_LOG(ERROR) << "No NetworkState for guid: " << network_guid;
+    } else if (!network->IsInProfile()) {
+      NET_LOG(ERROR) << "Network not in profile: " << network_guid;
+      network = nullptr;
+    }
   }
-  if (!network || !network->IsInProfile()) {
-    NET_LOG(ERROR) << "No configured NetworkState for guid: "
-                   << current_ui_network_guid_;
+  if (!network) {
     current_ui_network_guid_.clear();
     current_ui_config_ = UIProxyConfig();
     return;
@@ -100,11 +117,16 @@ void UIProxyConfigService::UpdateFromPrefs() {
           << ", modifiable:" << current_ui_config_.user_modifiable;
 }
 
-void UIProxyConfigService::GetProxyConfig(UIProxyConfig* config) const {
+void UIProxyConfigService::GetProxyConfig(const std::string& network_guid,
+                                          UIProxyConfig* config) {
+  if (network_guid != current_ui_network_guid_)
+    UpdateFromPrefs(network_guid);
   *config = current_ui_config_;
 }
 
-void UIProxyConfigService::SetProxyConfig(const UIProxyConfig& config) {
+void UIProxyConfigService::SetProxyConfig(const std::string& network_guid,
+                                          const UIProxyConfig& config) {
+  current_ui_network_guid_ = network_guid;
   current_ui_config_ = config;
   if (current_ui_network_guid_.empty())
     return;
@@ -175,6 +197,11 @@ void UIProxyConfigService::DetermineEffectiveConfig(
     current_ui_config_.user_modifiable = !ProxyConfigServiceImpl::IgnoreProxy(
         profile_prefs_, network.profile_path(), onc_source);
   }
+}
+
+void UIProxyConfigService::OnPreferenceChanged(const std::string& pref_name) {
+  if (!current_ui_network_guid_.empty())
+    UpdateFromPrefs(current_ui_network_guid_);
 }
 
 }  // namespace chromeos
