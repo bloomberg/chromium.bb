@@ -18,7 +18,8 @@ namespace shell {
 void AddChromecastKeySystems(
     std::vector<std::unique_ptr<::media::KeySystemProperties>>*
         key_systems_properties,
-    bool enable_persistent_license_support);
+    bool enable_persistent_license_support,
+    bool force_software_crypto);
 
 }  // namespace shell
 }  // namespace chromecast

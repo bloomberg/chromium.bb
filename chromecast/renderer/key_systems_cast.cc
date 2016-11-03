@@ -86,7 +86,8 @@ class PlayReadyKeySystemProperties : public ::media::KeySystemProperties {
 void AddChromecastKeySystems(
     std::vector<std::unique_ptr<::media::KeySystemProperties>>*
         key_systems_properties,
-    bool enable_persistent_license_support) {
+    bool enable_persistent_license_support,
+    bool force_software_crypto) {
 #if defined(PLAYREADY_CDM_AVAILABLE)
 #if defined(OS_ANDROID)
   CHECK(!enable_persistent_license_support);

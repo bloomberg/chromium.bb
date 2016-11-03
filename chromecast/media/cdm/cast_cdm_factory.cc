@@ -43,16 +43,14 @@ void CastCdmFactory::Create(
   ::media::CdmCreatedCB bound_cdm_created_cb =
       ::media::BindToCurrentLoop(cdm_created_cb);
 
-  DCHECK(!cdm_config.use_hw_secure_codecs)
-      << "Chromecast does not use |use_hw_secure_codecs|";
-
   CastKeySystem cast_key_system(GetKeySystemByName(key_system));
 
   scoped_refptr<chromecast::media::CastCdm> cast_cdm;
   if (cast_key_system == chromecast::media::KEY_SYSTEM_CLEAR_KEY) {
     // TODO(gunsch): handle ClearKey decryption. See crbug.com/441957
   } else {
-    cast_cdm = CreatePlatformBrowserCdm(cast_key_system, security_origin);
+    cast_cdm =
+        CreatePlatformBrowserCdm(cast_key_system, security_origin, cdm_config);
   }
 
   if (!cast_cdm) {
@@ -80,7 +78,8 @@ void CastCdmFactory::Create(
 
 scoped_refptr<CastCdm> CastCdmFactory::CreatePlatformBrowserCdm(
     const CastKeySystem& cast_key_system,
-    const GURL& security_origin) {
+    const GURL& security_origin,
+    const ::media::CdmConfig& cdm_config) {
   return nullptr;
 }
 

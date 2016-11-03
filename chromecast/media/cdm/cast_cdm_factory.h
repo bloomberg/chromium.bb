@@ -15,6 +15,10 @@ namespace base {
 class SingleThreadTaskRunner;
 }  // namespace base
 
+namespace media {
+struct CdmConfig;
+}  // namespace media
+
 namespace chromecast {
 namespace media {
 
@@ -41,7 +45,8 @@ class CastCdmFactory : public ::media::CdmFactory {
   // Provides a platform-specific BrowserCdm instance.
   virtual scoped_refptr<CastCdm> CreatePlatformBrowserCdm(
       const CastKeySystem& cast_key_system,
-      const GURL& security_origin);
+      const GURL& security_origin,
+      const ::media::CdmConfig& cdm_config);
 
  protected:
   MediaResourceTracker* media_resource_tracker_;

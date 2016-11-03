@@ -117,7 +117,9 @@ void CastContentRendererClient::RenderViewCreated(
 void CastContentRendererClient::AddSupportedKeySystems(
     std::vector<std::unique_ptr<::media::KeySystemProperties>>*
         key_systems_properties) {
-  AddChromecastKeySystems(key_systems_properties, false);
+  AddChromecastKeySystems(key_systems_properties,
+                          false /* enable_persistent_license_support */,
+                          false /* force_software_crypto */);
 }
 
 blink::WebPrescientNetworking*
