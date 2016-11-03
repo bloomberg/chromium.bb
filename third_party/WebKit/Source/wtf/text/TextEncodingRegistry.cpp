@@ -113,7 +113,7 @@ ALWAYS_INLINE unsigned atomicDidExtendTextCodecMaps() {
   return acquireLoad(&didExtendTextCodecMaps);
 }
 
-ALWAYS_INLINE void atomicSetDidExtendTextCodemMaps() {
+ALWAYS_INLINE void atomicSetDidExtendTextCodecMaps() {
   releaseStore(&didExtendTextCodecMaps, 1);
 }
 }  // namespace
@@ -261,7 +261,7 @@ const char* atomicCanonicalTextEncodingName(const char* name) {
   if (atomicDidExtendTextCodecMaps())
     return 0;
   extendTextCodecMaps();
-  atomicSetDidExtendTextCodemMaps();
+  atomicSetDidExtendTextCodecMaps();
   return textEncodingNameMap->get(name);
 }
 
