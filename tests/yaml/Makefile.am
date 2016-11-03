@@ -41,6 +41,7 @@ EXTRA_DIST =						\
 	ko-2006-g2_harness.yaml				\
 	ko-g2_harness.yaml				\
 	letterDefTest_harness.yaml			\
+	lt_harness.yaml					\
 	mn-MN_harness.yaml				\
 	nl-BE-g0_harness.yaml				\
 	nl-NL-g0_harness.yaml				\
