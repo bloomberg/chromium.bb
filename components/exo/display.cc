@@ -19,6 +19,7 @@
 #include "components/exo/sub_surface.h"
 #include "components/exo/surface.h"
 #include "ui/views/widget/widget.h"
+#include "ui/wm/core/coordinate_conversion.h"
 
 #if defined(USE_OZONE)
 #include <GLES2/gl2extchromium.h>
@@ -135,13 +136,13 @@ std::unique_ptr<ShellSurface> Display::CreatePopupShellSurface(
   }
 
   // Determine the initial bounds for popup. |position| is relative to the
-  // parent's main surface origin and initial bounds are relative to the
-  // container origin.
-  gfx::Rect initial_bounds(position, gfx::Size(1, 1));
-  aura::Window::ConvertRectToTarget(
+  // parent's main surface origin and initial bounds are in screen coordinates.
+  gfx::Point origin = position;
+  wm::ConvertPointToScreen(
       ShellSurface::GetMainSurface(parent->GetWidget()->GetNativeWindow())
           ->window(),
-      parent->GetWidget()->GetNativeWindow()->parent(), &initial_bounds);
+      &origin);
+  gfx::Rect initial_bounds(origin, gfx::Size(1, 1));
 
   return base::MakeUnique<ShellSurface>(surface, parent, initial_bounds,
                                         false /* activatable */,

@@ -1227,8 +1227,11 @@ gfx::Point ShellSurface::GetSurfaceOrigin() const {
 
   // If initial bounds were specified then surface origin is always relative
   // to those bounds.
-  if (!initial_bounds_.IsEmpty())
-    return initial_bounds_.origin() - window_bounds.OffsetFromOrigin();
+  if (!initial_bounds_.IsEmpty()) {
+    gfx::Point origin = window_bounds.origin();
+    wm::ConvertPointToScreen(widget_->GetNativeWindow()->parent(), &origin);
+    return initial_bounds_.origin() - origin.OffsetFromOrigin();
+  }
 
   gfx::Rect visible_bounds = GetVisibleBounds();
   switch (resize_component_) {
@@ -1283,8 +1286,12 @@ void ShellSurface::UpdateWidgetBounds() {
 
   // Avoid changing widget origin unless initial bounds were specified and
   // widget origin is always relative to it.
-  if (initial_bounds_.IsEmpty())
+  if (initial_bounds_.IsEmpty()) {
     new_widget_bounds.set_origin(widget_->GetWindowBoundsInScreen().origin());
+  } else {
+    new_widget_bounds.set_origin(initial_bounds_.origin() +
+                                 visible_bounds.OffsetFromOrigin());
+  }
 
   // Update widget origin using the surface origin if the current location of
   // surface is being anchored to one side of the widget as a result of a
