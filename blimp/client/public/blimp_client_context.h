@@ -66,6 +66,7 @@ class BlimpClientContext : public KeyedService {
   static void ApplyBlimpSwitches(CommandLinePrefStore* store);
 
   // The delegate provides all the required functionality from the embedder.
+  // The context must be initialized with a |delegate| before it can be used.
   virtual void SetDelegate(BlimpClientContextDelegate* delegate) = 0;
 
   // Creates a new BlimpContents that will be shown in |window|.

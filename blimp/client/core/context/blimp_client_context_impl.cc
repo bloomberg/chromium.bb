@@ -148,7 +148,20 @@ BlimpClientContextImpl::~BlimpClientContextImpl() {
 }
 
 void BlimpClientContextImpl::SetDelegate(BlimpClientContextDelegate* delegate) {
+  DCHECK(!delegate_ || !delegate);
   delegate_ = delegate;
+
+  // TODO(xingliu): Pass the IdentityProvider needed by |assignment_fetcher_|
+  // in the constructor, see crbug/661848.
+  if (delegate_) {
+    assignment_fetcher_ = base::MakeUnique<AssignmentFetcher>(
+        io_thread_task_runner_, file_thread_task_runner_,
+        delegate_->CreateIdentityProvider(), GetAssignerURL(),
+        base::Bind(&BlimpClientContextImpl::OnAssignmentReceived,
+                   weak_factory_.GetWeakPtr()),
+        base::Bind(&BlimpClientContextDelegate::OnAuthenticationError,
+                   base::Unretained(delegate_)));
+  }
 }
 
 std::unique_ptr<BlimpContents> BlimpClientContextImpl::CreateBlimpContents(
@@ -161,15 +174,7 @@ std::unique_ptr<BlimpContents> BlimpClientContextImpl::CreateBlimpContents(
 }
 
 void BlimpClientContextImpl::Connect() {
-  if (!assignment_fetcher_) {
-    assignment_fetcher_ = base::MakeUnique<AssignmentFetcher>(
-        io_thread_task_runner_, file_thread_task_runner_,
-        delegate_->CreateIdentityProvider(), GetAssignerURL(),
-        base::Bind(&BlimpClientContextImpl::OnAssignmentReceived,
-                   weak_factory_.GetWeakPtr()),
-        base::Bind(&BlimpClientContextDelegate::OnAuthenticationError,
-                   base::Unretained(delegate_)));
-  }
+  DCHECK(assignment_fetcher_);
   assignment_fetcher_->Fetch();
 }
 
@@ -187,6 +192,7 @@ BlimpClientContextImpl::CreateFeedbackData() {
 }
 
 IdentitySource* BlimpClientContextImpl::GetIdentitySource() {
+  DCHECK(assignment_fetcher_);
   return assignment_fetcher_->GetIdentitySource();
 }
 
