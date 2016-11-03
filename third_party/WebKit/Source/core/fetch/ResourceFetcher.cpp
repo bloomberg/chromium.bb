@@ -490,10 +490,7 @@ Resource* ResourceFetcher::requestResource(
          factory.type() == Resource::XSLStyleSheet);
 
   context().populateRequestData(request.mutableResourceRequest());
-  if (request.resourceRequest().httpHeaderField("Upgrade-Insecure-Requests") !=
-      AtomicString("1")) {
-    context().modifyRequestForCSP(request.mutableResourceRequest());
-  }
+  context().modifyRequestForCSP(request.mutableResourceRequest());
   context().addClientHintsIfNecessary(request);
   context().addCSPHeaderIfNecessary(factory.type(), request);
 

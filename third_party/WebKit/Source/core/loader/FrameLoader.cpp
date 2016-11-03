@@ -1880,11 +1880,13 @@ void FrameLoader::modifyRequestForCSP(ResourceRequest& resourceRequest,
   // https://w3c.github.io/webappsec/specs/upgrade/#feature-detect
   if (resourceRequest.frameType() != WebURLRequest::FrameTypeNone) {
     // Early return if the request has already been upgraded.
-    if (resourceRequest.httpHeaderField("Upgrade-Insecure-Requests") ==
-        AtomicString("1"))
+    if (!resourceRequest.httpHeaderField(HTTPNames::Upgrade_Insecure_Requests)
+             .isNull()) {
       return;
+    }
 
-    resourceRequest.addHTTPHeaderField("Upgrade-Insecure-Requests", "1");
+    resourceRequest.setHTTPHeaderField(HTTPNames::Upgrade_Insecure_Requests,
+                                       "1");
   }
 
   upgradeInsecureRequest(resourceRequest, document);
