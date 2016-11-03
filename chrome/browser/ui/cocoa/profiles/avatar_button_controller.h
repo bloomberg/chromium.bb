@@ -24,6 +24,13 @@ class Browser;
 // Designated initializer.
 - (id)initWithBrowser:(Browser*)browser;
 
+// Overridden so that we can change the active state of the avatar button.
+- (void)showAvatarBubbleAnchoredAt:(NSView*)anchor
+                          withMode:(BrowserWindow::AvatarBubbleMode)mode
+                   withServiceType:(signin::GAIAServiceType)serviceType
+                   fromAccessPoint:(signin_metrics::AccessPoint)accessPoint;
+- (void)bubbleWillClose:(NSNotification*)notif;
+
 @end
 
 #endif  // CHROME_BROWSER_UI_COCOA_PROFILES_AVATAR_BUTTON_CONTROLLER_H_

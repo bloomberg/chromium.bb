@@ -13,6 +13,8 @@
 
 @implementation AvatarButton
 
+@synthesize isActive = isActive_;
+
 // Overrides -rightMouseDown and implements a custom mouse tracking loop.
 - (void)rightMouseDown:(NSEvent*)event {
   NSEvent* nextEvent = event;
@@ -43,6 +45,12 @@
 
 - (void)setRightAction:(SEL)selector {
   rightAction_ = selector;
+}
+
+- (void)setIsActive:(BOOL)isActive {
+  BOOL activeChanged = isActive_ != isActive;
+  isActive_ = isActive;
+  [self setNeedsDisplay:activeChanged];
 }
 
 @end

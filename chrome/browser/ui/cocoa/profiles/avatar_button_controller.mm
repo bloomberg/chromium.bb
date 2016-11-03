@@ -103,11 +103,11 @@ const CGFloat kTitleKern = 0.25;
 
 - (void)drawBezelWithFrame:(NSRect)frame
                     inView:(NSView*)controlView {
-  HoverState hoverState =
-      [base::mac::ObjCCastStrict<AvatarButton>(controlView) hoverState];
+  AvatarButton* button = base::mac::ObjCCastStrict<AvatarButton>(controlView);
+  HoverState hoverState = [button hoverState];
 
   NSColor* backgroundColor = nil;
-  if (hoverState == kHoverStateMouseDown) {
+  if (hoverState == kHoverStateMouseDown || [button isActive]) {
     backgroundColor = skia::SkColorToSRGBNSColor(kButtonPressedColor);
   } else if (hoverState == kHoverStateMouseOver) {
     backgroundColor = skia::SkColorToSRGBNSColor(kButtonHoverColor);
@@ -292,6 +292,24 @@ const CGFloat kTitleKern = 0.25;
 - (void)setErrorStatus:(BOOL)hasError {
   hasError_ = hasError;
   [self updateAvatarButtonAndLayoutParent:YES];
+}
+
+- (void)showAvatarBubbleAnchoredAt:(NSView*)anchor
+                          withMode:(BrowserWindow::AvatarBubbleMode)mode
+                   withServiceType:(signin::GAIAServiceType)serviceType
+                   fromAccessPoint:(signin_metrics::AccessPoint)accessPoint {
+  AvatarButton* button = base::mac::ObjCCastStrict<AvatarButton>(button_);
+  [button setIsActive:YES];
+  [super showAvatarBubbleAnchoredAt:anchor
+                           withMode:mode
+                    withServiceType:serviceType
+                    fromAccessPoint:accessPoint];
+}
+
+- (void)bubbleWillClose:(NSNotification*)notif {
+  AvatarButton* button = base::mac::ObjCCastStrict<AvatarButton>(button_);
+  [button setIsActive:NO];
+  [super bubbleWillClose:notif];
 }
 
 @end

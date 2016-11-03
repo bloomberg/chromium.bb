@@ -52,6 +52,9 @@ class ProfileUpdateObserver;
                    withServiceType:(signin::GAIAServiceType)serviceType
                    fromAccessPoint:(signin_metrics::AccessPoint)accessPoint;
 
+// Called when the avatar bubble will close.
+- (void)bubbleWillClose:(NSNotification*)notif;
+
 @end
 
 @interface AvatarBaseController (ExposedForTesting)

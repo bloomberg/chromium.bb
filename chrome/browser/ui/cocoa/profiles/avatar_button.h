@@ -9,11 +9,16 @@
 
 #import "ui/base/cocoa/hover_image_button.h"
 
-// A subclass of HoverImageButton that sends a target-action on right click.
+// A subclass of HoverImageButton that sends a target-action on right click and
+// has an active state.
 @interface AvatarButton : HoverImageButton {
  @private
   SEL rightAction_;
 }
+
+// YES if the button is active. The button should only be active when the
+// avatar bubble is shown.
+@property(nonatomic, assign) BOOL isActive;
 
 // Sets the action that will be called when this button is right clicked.
 - (void)setRightAction:(SEL)selector;
