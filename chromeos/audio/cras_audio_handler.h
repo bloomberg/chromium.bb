@@ -273,6 +273,12 @@ class CHROMEOS_EXPORT CrasAudioHandler : public CrasAudioClient::Observer,
                        bool notify,
                        DeviceActivateType activate_by);
 
+  // Sets list of active input or output nodes to |devices|.
+  // If |is_input| is set, active input nodes will be set, otherwise active
+  // output nodes will be set.
+  // For each device in |devices| it is expected device.is_input == is_input.
+  void SetActiveNodes(const AudioDeviceList& devices, bool is_input);
+
   // Saves |device|'s state in pref. If |active| is true, |activate_by|
   // indicates how |device| is activated.
   void SaveDeviceState(const AudioDevice& device,

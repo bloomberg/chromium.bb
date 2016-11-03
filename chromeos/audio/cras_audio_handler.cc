@@ -9,6 +9,7 @@
 
 #include <algorithm>
 #include <cmath>
+#include <set>
 
 #include "base/bind.h"
 #include "base/bind_helpers.h"
@@ -45,11 +46,6 @@ static CrasAudioHandler* g_cras_audio_handler = NULL;
 bool IsSameAudioDevice(const AudioDevice& a, const AudioDevice& b) {
   return a.stable_device_id == b.stable_device_id && a.is_input == b.is_input &&
          a.type == b.type && a.device_name == b.device_name;
-}
-
-bool IsInNodeList(uint64_t node_id,
-                  const CrasAudioHandler::NodeIdList& id_list) {
-  return std::find(id_list.begin(), id_list.end(), node_id) != id_list.end();
 }
 
 bool IsDeviceInList(const AudioDevice& device, const AudioNodeList& node_list) {
@@ -259,70 +255,64 @@ void CrasAudioHandler::AddActiveNode(uint64_t node_id, bool notify) {
 }
 
 void CrasAudioHandler::ChangeActiveNodes(const NodeIdList& new_active_ids) {
-  // Flags for whether there are input or output nodes passed in from
-  // |new_active_ids|. If there are no input nodes passed in, we will not
-  // make any change for input nodes; same for the output nodes.
-  bool request_input_change = false;
-  bool request_output_change = false;
+  chromeos::AudioDeviceList input_devices;
+  chromeos::AudioDeviceList output_devices;
 
-  // Flags for whether we will actually change active status of input
-  // or output nodes.
-  bool make_input_change = false;
-  bool make_output_change = false;
+  for (uint64_t id : new_active_ids) {
+    const chromeos::AudioDevice* device = GetDeviceFromId(id);
+    if (!device)
+      continue;
+    if (device->is_input)
+      input_devices.push_back(*device);
+    else
+      output_devices.push_back(*device);
+  }
+  if (!input_devices.empty())
+    SetActiveNodes(input_devices, true /* is_input */);
+  if (!output_devices.empty())
+    SetActiveNodes(output_devices, false /* is_input */);
+}
 
-  NodeIdList nodes_to_activate;
-  for (size_t i = 0; i < new_active_ids.size(); ++i) {
-    const AudioDevice* device = GetDeviceFromId(new_active_ids[i]);
-    if (device) {
-      if (device->is_input)
-        request_input_change = true;
-      else
-        request_output_change = true;
-
-      // If the new active device is already active, keep it as active.
-      if (device->active)
-        continue;
-
-      nodes_to_activate.push_back(new_active_ids[i]);
-      if (device->is_input)
-        make_input_change = true;
-      else
-        make_output_change = true;
-    }
+void CrasAudioHandler::SetActiveNodes(const AudioDeviceList& devices,
+                                      bool is_input) {
+  std::set<uint64_t> new_active_ids;
+  for (const auto& active_device : devices) {
+    CHECK_EQ(is_input, active_device.is_input);
+    new_active_ids.insert(active_device.id);
   }
 
-  // Remove all existing active devices that are not in the |new_active_ids|
-  // list.
-  for (AudioDeviceMap::const_iterator it = audio_devices_.begin();
-       it != audio_devices_.end(); ++it) {
-    AudioDevice device = it->second;
-    // Remove the existing active input or output nodes that are not in the new
-    // active node list if there are new input or output nodes specified.
-    if (device.active) {
-      if ((device.is_input && request_input_change &&
-           !IsInNodeList(device.id, new_active_ids))) {
-        make_input_change = true;
-        RemoveActiveNodeInternal(device.id, false);  // no notification.
-      } else if (!device.is_input && request_output_change &&
-                 !IsInNodeList(device.id, new_active_ids)) {
-        make_output_change = true;
-        RemoveActiveNodeInternal(device.id, false);  // no notification.
-      }
-    }
+  bool active_devices_changed = false;
+
+  // If  primary active node has to be switched, do that before adding or
+  // removing any other active devices. Switching to a device can change
+  // activity state of other devices - final device activity may end up being
+  // unintended if it is set before active device switches.
+  uint64_t primary_active =
+      is_input ? active_input_node_id_ : active_output_node_id_;
+  if (!new_active_ids.count(primary_active) && !devices.empty()) {
+    active_devices_changed = true;
+    SwitchToDevice(devices[0], false /* notify */, ACTIVATE_BY_USER);
   }
 
-  // Adds the new active devices. Note that this function is used by audio
-  // extension to manage multiple active nodes, in which case the devices
-  // selection preference is controlled by the app, we intentionally exclude
-  // the additional nodes from saving their device states as a result.
-  for (size_t i = 0; i < nodes_to_activate.size(); ++i)
-    AddActiveNode(nodes_to_activate[i], false);  // no notification.
+  AudioDeviceList existing_devices;
+  GetAudioDevices(&existing_devices);
+  for (const auto& existing_device : existing_devices) {
+    if (existing_device.is_input != is_input)
+      continue;
 
-  // Notify the active nodes change now.
-  if (make_input_change)
-    NotifyActiveNodeChanged(true);
-  if (make_output_change)
-    NotifyActiveNodeChanged(false);
+    bool should_be_active = new_active_ids.count(existing_device.id);
+    if (existing_device.active == should_be_active)
+      continue;
+    active_devices_changed = true;
+
+    if (should_be_active)
+      AddActiveNode(existing_device.id, false /* notify */);
+    else
+      RemoveActiveNodeInternal(existing_device.id, false /* notify */);
+  }
+
+  if (active_devices_changed)
+    NotifyActiveNodeChanged(is_input);
 }
 
 void CrasAudioHandler::SwapInternalSpeakerLeftRightChannel(bool swap) {

@@ -2995,6 +2995,64 @@ TEST_F(CrasAudioHandlerTest,
             cras_audio_handler_->GetPrimaryActiveInputNode());
 }
 
+TEST_F(CrasAudioHandlerTest, ChangeActiveNodesDeactivatePrimaryActiveNode) {
+  AudioNodeList audio_nodes;
+  audio_nodes.push_back(kUSBJabraSpeakerInput1);
+  audio_nodes.push_back(kUSBJabraSpeakerInput2);
+  AudioNode usb_camera(kUSBCameraInput);
+  usb_camera.plugged_time = 10000000;
+  audio_nodes.push_back(usb_camera);
+  SetUpCrasAudioHandler(audio_nodes);
+
+  // Verify the audio devices size.
+  AudioDeviceList audio_devices;
+  cras_audio_handler_->GetAudioDevices(&audio_devices);
+  EXPECT_EQ(audio_nodes.size(), audio_devices.size());
+
+  // Verify the camera's input is selected as active input by CrasAudioHandler
+  EXPECT_EQ(1, GetActiveDeviceCount());
+  EXPECT_EQ(kUSBCameraInput.id,
+            cras_audio_handler_->GetPrimaryActiveInputNode());
+
+  // Simulate hotrod app call to set jabra input as active device with only
+  // jabra input node in the active node list, which does not conform to the
+  // new SetActiveDevices protocol, but just show we can still handle it if
+  // this happens.
+  {
+    CrasAudioHandler::NodeIdList active_nodes;
+    active_nodes.push_back(kUSBJabraSpeakerInput1.id);
+    active_nodes.push_back(kUSBCameraInput.id);
+    cras_audio_handler_->ChangeActiveNodes(active_nodes);
+  }
+
+  // Verify the jabra speaker's output is selected as active output, and
+  // jabra's input is selected as active input.
+  EXPECT_EQ(2, GetActiveDeviceCount());
+  EXPECT_EQ(kUSBCameraInput.id,
+            cras_audio_handler_->GetPrimaryActiveInputNode());
+
+  const AudioDevice* additional_speaker =
+      cras_audio_handler_->GetDeviceFromId(kUSBJabraSpeakerInput1.id);
+  ASSERT_TRUE(additional_speaker);
+  EXPECT_TRUE(additional_speaker->active);
+
+  {
+    CrasAudioHandler::NodeIdList active_nodes;
+    active_nodes.push_back(kUSBJabraSpeakerInput1.id);
+    active_nodes.push_back(kUSBJabraSpeakerInput2.id);
+    cras_audio_handler_->ChangeActiveNodes(active_nodes);
+  }
+
+  EXPECT_EQ(2, GetActiveDeviceCount());
+  EXPECT_EQ(kUSBJabraSpeakerInput1.id,
+            cras_audio_handler_->GetPrimaryActiveInputNode());
+
+  additional_speaker =
+      cras_audio_handler_->GetDeviceFromId(kUSBJabraSpeakerInput2.id);
+  ASSERT_TRUE(additional_speaker);
+  EXPECT_TRUE(additional_speaker->active);
+}
+
 TEST_F(CrasAudioHandlerTest,
        ChangeActiveNodesHotrodInitWithSingleJabraCameraPlugInLaterOldCall) {
   AudioNodeList audio_nodes;
