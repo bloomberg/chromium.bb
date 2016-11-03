@@ -36,7 +36,7 @@ interface History {
     [CallWith=ExecutionContext] void back();
     [CallWith=ExecutionContext] void forward();
     // TODO(foolip): The SerializedScriptValue types should be any.
-    // TODO(foolip): The title arguments should simply be 'DOMString title'.
-    [RaisesException] void pushState(SerializedScriptValue data, [TreatUndefinedAs=NullString] DOMString? title, optional DOMString? url = null);
-    [RaisesException] void replaceState(SerializedScriptValue data, [TreatUndefinedAs=NullString] DOMString? title, optional DOMString? url = null);
+    // TODO(foolip): The title arguments should not be nullable.
+    [RaisesException] void pushState(SerializedScriptValue data, DOMString? title, optional DOMString? url = null);
+    [RaisesException] void replaceState(SerializedScriptValue data, DOMString? title, optional DOMString? url = null);
 };

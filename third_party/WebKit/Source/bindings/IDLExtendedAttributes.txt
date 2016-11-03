@@ -98,7 +98,6 @@ SetWrapperReferenceFrom=*
 SetWrapperReferenceTo=*
 SetterCallWith=ExecutionContext|ScriptArguments|CurrentWindow|EnteredWindow
 TreatNullAs=NullString|EmptyString
-TreatUndefinedAs=NullString
 URL
 Unforgeable
 Unscopable

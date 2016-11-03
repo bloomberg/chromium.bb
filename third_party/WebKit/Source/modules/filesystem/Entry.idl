@@ -38,8 +38,8 @@
     [CallWith=ExecutionContext] readonly attribute DOMFileSystem filesystem;
 
     [CallWith=ExecutionContext] void getMetadata(MetadataCallback successCallback, optional ErrorCallback errorCallback);
-    [CallWith=ExecutionContext] void moveTo(DirectoryEntry parent, [TreatUndefinedAs=NullString] optional DOMString? name, optional EntryCallback successCallback, optional ErrorCallback errorCallback);
-    [CallWith=ExecutionContext] void copyTo(DirectoryEntry parent, [TreatUndefinedAs=NullString] optional DOMString? name, optional EntryCallback successCallback, optional ErrorCallback errorCallback);
+    [CallWith=ExecutionContext] void moveTo(DirectoryEntry parent, optional DOMString? name, optional EntryCallback successCallback, optional ErrorCallback errorCallback);
+    [CallWith=ExecutionContext] void copyTo(DirectoryEntry parent, optional DOMString? name, optional EntryCallback successCallback, optional ErrorCallback errorCallback);
     [CallWith=ExecutionContext] DOMString toURL();
     [CallWith=ExecutionContext] void remove(VoidCallback successCallback, optional ErrorCallback errorCallback);
     [CallWith=ExecutionContext] void getParent(optional EntryCallback successCallback, optional ErrorCallback errorCallback);

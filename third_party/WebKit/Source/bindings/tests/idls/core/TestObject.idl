@@ -454,10 +454,9 @@ interface TestObject {
     void voidMethodDefaultUndefinedStringArg([Default=Undefined] optional DOMString defaultUndefinedStringArg);
     // [EnforceRange]
     void voidMethodEnforceRangeLongArg([EnforceRange] long enforceRangeLongArg);
-    // [TreatNullAs], [TreatUndefinedAs]
+    // [TreatNullAs]
     void voidMethodTreatNullAsEmptyStringStringArg([TreatNullAs=EmptyString] DOMString treatNullAsEmptyStringStringArg);
     void voidMethodTreatNullAsNullStringStringArg([TreatNullAs=NullString] DOMString treatNullAsNullStringStringArg);
-    void voidMethodTreatNullAsNullStringTreatUndefinedAsNullStringStringArg([TreatNullAs=NullString, TreatUndefinedAs=NullString] DOMString treatNullAsNullStringStringArg);
 
     // Extended attributes for methods
     [LogActivity, LogAllWorlds] void activityLoggingAccessForAllWorldsMethod();

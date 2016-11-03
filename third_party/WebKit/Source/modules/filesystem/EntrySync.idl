@@ -38,8 +38,8 @@
     readonly attribute DOMFileSystemSync filesystem;
 
     [RaisesException] Metadata getMetadata();
-    [RaisesException] EntrySync moveTo(DirectoryEntrySync parent, [TreatUndefinedAs=NullString] DOMString? name);
-    [RaisesException] EntrySync copyTo(DirectoryEntrySync parent, [TreatUndefinedAs=NullString] DOMString? name);
+    [RaisesException] EntrySync moveTo(DirectoryEntrySync parent, DOMString? name);
+    [RaisesException] EntrySync copyTo(DirectoryEntrySync parent, DOMString? name);
     DOMString toURL();
     [RaisesException] void remove();
     DirectoryEntrySync getParent();

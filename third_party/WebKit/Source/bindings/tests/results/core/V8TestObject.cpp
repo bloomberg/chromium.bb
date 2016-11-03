@@ -9448,26 +9448,6 @@ void voidMethodTreatNullAsNullStringStringArgMethodCallback(const v8::FunctionCa
   TestObjectV8Internal::voidMethodTreatNullAsNullStringStringArgMethod(info);
 }
 
-static void voidMethodTreatNullAsNullStringTreatUndefinedAsNullStringStringArgMethod(const v8::FunctionCallbackInfo<v8::Value>& info) {
-  TestObject* impl = V8TestObject::toImpl(info.Holder());
-
-  if (UNLIKELY(info.Length() < 1)) {
-    V8ThrowException::throwTypeError(info.GetIsolate(), ExceptionMessages::failedToExecute("voidMethodTreatNullAsNullStringTreatUndefinedAsNullStringStringArg", "TestObject", ExceptionMessages::notEnoughArguments(1, info.Length())));
-    return;
-  }
-
-  V8StringResource<TreatNullAndUndefinedAsNullString> treatNullAsNullStringStringArg;
-  treatNullAsNullStringStringArg = info[0];
-  if (!treatNullAsNullStringStringArg.prepare())
-    return;
-
-  impl->voidMethodTreatNullAsNullStringTreatUndefinedAsNullStringStringArg(treatNullAsNullStringStringArg);
-}
-
-void voidMethodTreatNullAsNullStringTreatUndefinedAsNullStringStringArgMethodCallback(const v8::FunctionCallbackInfo<v8::Value>& info) {
-  TestObjectV8Internal::voidMethodTreatNullAsNullStringTreatUndefinedAsNullStringStringArgMethod(info);
-}
-
 static void activityLoggingAccessForAllWorldsMethodMethod(const v8::FunctionCallbackInfo<v8::Value>& info) {
   TestObject* impl = V8TestObject::toImpl(info.Holder());
 
@@ -11884,7 +11864,6 @@ const V8DOMConfiguration::MethodConfiguration V8TestObjectMethods[] = {
     {"voidMethodEnforceRangeLongArg", TestObjectV8Internal::voidMethodEnforceRangeLongArgMethodCallback, 0, 1, v8::None, V8DOMConfiguration::ExposedToAllScripts, V8DOMConfiguration::OnPrototype},
     {"voidMethodTreatNullAsEmptyStringStringArg", TestObjectV8Internal::voidMethodTreatNullAsEmptyStringStringArgMethodCallback, 0, 1, v8::None, V8DOMConfiguration::ExposedToAllScripts, V8DOMConfiguration::OnPrototype},
     {"voidMethodTreatNullAsNullStringStringArg", TestObjectV8Internal::voidMethodTreatNullAsNullStringStringArgMethodCallback, 0, 1, v8::None, V8DOMConfiguration::ExposedToAllScripts, V8DOMConfiguration::OnPrototype},
-    {"voidMethodTreatNullAsNullStringTreatUndefinedAsNullStringStringArg", TestObjectV8Internal::voidMethodTreatNullAsNullStringTreatUndefinedAsNullStringStringArgMethodCallback, 0, 1, v8::None, V8DOMConfiguration::ExposedToAllScripts, V8DOMConfiguration::OnPrototype},
     {"activityLoggingAccessForAllWorldsMethod", TestObjectV8Internal::activityLoggingAccessForAllWorldsMethodMethodCallback, 0, 0, v8::None, V8DOMConfiguration::ExposedToAllScripts, V8DOMConfiguration::OnPrototype},
     {"callWithExecutionContextVoidMethod", TestObjectV8Internal::callWithExecutionContextVoidMethodMethodCallback, 0, 0, v8::None, V8DOMConfiguration::ExposedToAllScripts, V8DOMConfiguration::OnPrototype},
     {"callWithScriptStateVoidMethod", TestObjectV8Internal::callWithScriptStateVoidMethodMethodCallback, 0, 0, v8::None, V8DOMConfiguration::ExposedToAllScripts, V8DOMConfiguration::OnPrototype},

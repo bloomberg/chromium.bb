@@ -55,8 +55,7 @@
 
     [CEReactions, CustomElementCallbacks] attribute DOMString? nodeValue;
 
-    // FIXME: textContent should not have [TreatUndefinedAs=NullString].
-    [TreatUndefinedAs=NullString, CEReactions, CustomElementCallbacks] attribute DOMString? textContent;
+    [CEReactions, CustomElementCallbacks] attribute DOMString? textContent;
     [CEReactions, CustomElementCallbacks] void normalize();
 
     [NewObject, DoNotTestNewObject, CEReactions, CustomElementCallbacks] Node cloneNode(optional boolean deep = false);

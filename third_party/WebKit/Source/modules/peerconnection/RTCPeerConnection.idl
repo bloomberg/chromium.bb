@@ -112,7 +112,7 @@ enum RTCIceConnectionState {
     // https://w3c.github.io/webrtc-pc/#peer-to-peer-data-api
     // TODO(guidou): The label argument should have [TreatNullAs=EmptyString]
     // and be non-nullable.
-    [CallWith=ExecutionContext, RaisesException] RTCDataChannel createDataChannel([TreatUndefinedAs=NullString] DOMString? label, optional Dictionary options);
+    [CallWith=ExecutionContext, RaisesException] RTCDataChannel createDataChannel(DOMString? label, optional Dictionary options);
     attribute EventHandler ondatachannel;
 
     // Certificate management

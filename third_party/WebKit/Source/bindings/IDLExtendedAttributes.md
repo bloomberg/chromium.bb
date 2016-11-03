@@ -439,31 +439,22 @@ Standard: [SecureContext](https://heycam.github.io/webidl/#SecureContext)
 
 Summary: Interfaces and interface members with a `SecureContext` attribute are exposed only inside ["Secure Contexts"](https://w3c.github.io/webappsec-secure-contexts/).
 
-### [TreatNullAs] _(a,p)_, [TreatUndefinedAs] _(a,p)_
+### [TreatNullAs] _(a,p)_
 
-Standard: [TreatNullAs](http://heycam.github.io/webidl/#TreatNullAs)
+Standard: [TreatNullAs](https://heycam.github.io/webidl/#TreatNullAs)
 
-`[TreatUndefinedAs]` has been been removed from the spec.
+Summary: `[TreatNullAs=EmptyString]` indicates that a JavaScript null is converted to `""` instead of `"null"`.
 
-Summary: They control the behavior when a JavaScript null or undefined is passed to a DOMString attribute or parameter.
-
-Implementation: **Non-standard:** Web IDL specifies the EmptyString identifier for both these extended attributes, and `Null` and `Missing` for `TreatUndefinedAs`. Blink uses the `NullString` identifier instead of `EmptyString` which yields a Blink null string, corresponding to JavaScript `null`, for which both `String::IsEmpty()` and `String::IsNull()` return true, instead of the empty string `""`, which is empty but not `null`. This is for performance reasons; see [Strings in Blink](https://docs.google.com/a/google.com/document/d/1kOCUlJdh2WJMJGDf-WoEQhmnjKLaOYRbiHz5TiGJl14/edit) for reference. It also does not implement `TreatUndefinedAs=Null` or `TreatUndefinedAs=Missing`.
-
-Further, both extended attributes are both overloaded for indexed setters and named setters, in which case they take a method name (?), though this usage is rare.
-
-Usage: The possible usage is `[TreatNullAs=NullString]` or `[TreatNullAs=NullString, TreatUndefinedAs=NullString]`. They can be specified on DOMString attributes or DOMString parameters only:
+Usage: Can be specified on DOMString attributes or DOMString parameters only:
 
 ```webidl
-[TreatNullAs=NullString] attribute DOMString str;
-void func([TreatNullAs=NullString, TreatUndefinedAs=NullString] DOMString str);
+[TreatNullAs=EmptyString] attribute DOMString str;
+void func([TreatNullAs=Emptytring] DOMString str);
 ```
 
-`[TreatNullAs=NullString]` indicates that if a JavaScript null is passed to the attribute or parameter, then it is converted to a Blink null string, for which both String::IsEmpty() and String::IsNull() will return true. Without `[TreatNullAs=NullString]`, a JavaScript null is converted to a Blink string "null".
-`[TreatNullAs=NullString]` in Blink corresponds to `[TreatNullAs=EmptyString]` in the Web IDL spec. Unless the spec specifies `[TreatNullAs=EmptyString]`, you should not specify `[TreatNullAs=NullString]` in Blink.
+Implementation: Given `[TreatNullAs=EmptyString]`, a JavaScript null is converted to a Blink empty string, for which `String::IsEmpty()` returns true, but `String::IsNull()` return false.
 
-`[TreatUndefinedAs=NullString]` indicates that if a JavaScript undefined is passed to the attribute or parameter, then it is converted to a Blink null string, for which both String::IsEmpty() and String::IsNull() will return true. Without `[TreatUndefinedAs=NullString]`, a JavaScript undefined is converted to a Blink string "undefined".
-
-`[TreatUndefinedAs=NullString]` in Blink corresponds to `[TreatUndefinedAs=EmptyString]` in the Web IDL spec. Unless the spec specifies `[TreatUndefinedAs=EmptyString]`, you should not specify `[TreatUndefinedAs=NullString]` in Blink.
+**Non-standard:** Blink also supports the `NullString` identifier. Given `[TreatNullAs=NullString]`, a JavaScript null is converted to a Blink null string, for which both `String::IsEmpty()` and `String::IsNull()` return true. This is for performance reasons; see [Strings in Blink](https://docs.google.com/a/google.com/document/d/1kOCUlJdh2WJMJGDf-WoEQhmnjKLaOYRbiHz5TiGJl14/edit) for reference. Unless the spec specifies `[TreatNullAs=EmptyString]`, you should not specify `[TreatNullAs=NullString]` in Blink. Care must be taken to not treat null and empty strings differently, as they would be indistinguishable when using `[TreatNullAs=EmptyString]`.
 
 ### [Unforgeable] _(m,a)_
 

@@ -143,14 +143,12 @@ def cpp_type(idl_type, extended_attributes=None, raw_type=False, used_as_rvalue_
             Containers can be an array, a sequence or a dictionary.
     """
     def string_mode():
+        if idl_type.is_nullable:
+            return 'TreatNullAndUndefinedAsNullString'
         if extended_attributes.get('TreatNullAs') == 'EmptyString':
             return 'TreatNullAsEmptyString'
         if extended_attributes.get('TreatNullAs') == 'NullString':
-            if extended_attributes.get('TreatUndefinedAs') == 'NullString':
-                return 'TreatNullAndUndefinedAsNullString'
             return 'TreatNullAsNullString'
-        if idl_type.is_nullable:
-            return 'TreatNullAndUndefinedAsNullString'
         return ''
 
     extended_attributes = extended_attributes or {}
