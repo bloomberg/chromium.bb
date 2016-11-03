@@ -347,6 +347,13 @@ public class NewTabPage
         public void openSnippet(int windowOpenDisposition, SnippetArticle article) {
             mSnippetsBridge.onSuggestionOpened(article, windowOpenDisposition);
             NewTabPageUma.recordAction(NewTabPageUma.ACTION_OPENED_SNIPPET);
+
+            if (article.mIsDownloadedAsset) {
+                DownloadUtils.openFile(
+                        article.getDownloadAssetFile(), article.getDownloadAssetMimeType(), false);
+                return;
+            }
+
             NewTabPageUma.monitorContentSuggestionVisit(mTab, article.mCategory);
             LoadUrlParams loadUrlParams =
                     new LoadUrlParams(article.mUrl, PageTransition.AUTO_BOOKMARK);

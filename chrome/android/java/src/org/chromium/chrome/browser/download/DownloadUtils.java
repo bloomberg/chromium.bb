@@ -426,6 +426,45 @@ public class DownloadUtils {
         return uri;
     }
 
+    /**
+     * Opens a file in Chrome or in another app if appropriate.
+     * @param file path to the file to open.
+     * @param mimeType mime type of the file.
+     * @param isOffTheRecord whether we are in an off the record context.
+     * @return whether the file could successfully be opened.
+     */
+    public static boolean openFile(File file, String mimeType, boolean isOffTheRecord) {
+        Context context = ContextUtils.getApplicationContext();
+        Intent viewIntent = createViewIntentForDownloadItem(Uri.fromFile(file), mimeType);
+        DownloadManagerService service = DownloadManagerService.getDownloadManagerService(context);
+
+        // Check if Chrome should open the file itself.
+        if (service.isDownloadOpenableInBrowser(isOffTheRecord, mimeType)) {
+            // Share URIs use the content:// scheme when able, which looks bad when displayed
+            // in the URL bar.
+            Uri fileUri = Uri.fromFile(file);
+            Uri shareUri = getUriForItem(file);
+            String normalizedMimeType = Intent.normalizeMimeType(mimeType);
+
+            Intent intent =
+                    getMediaViewerIntentForDownloadItem(fileUri, shareUri, normalizedMimeType);
+            IntentHandler.startActivityForTrustedIntent(intent, context);
+            return true;
+        }
+
+        // Check if any apps can open the file.
+        try {
+            context.startActivity(viewIntent);
+            return true;
+        } catch (ActivityNotFoundException e) {
+            // Can't launch the Intent.
+            Toast.makeText(context, context.getString(R.string.download_cant_open_file),
+                         Toast.LENGTH_SHORT)
+                    .show();
+            return false;
+        }
+    }
+
     private static void recordShareHistograms(int count, int filterType) {
         RecordHistogram.recordEnumeratedHistogram("Android.DownloadManager.Share.FileTypes",
                 filterType, DownloadFilter.FILTER_BOUNDARY);

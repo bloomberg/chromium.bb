@@ -1172,14 +1172,12 @@ public class DownloadManagerService extends BroadcastReceiver implements
 
     /**
      * Checks whether the download can be opened by the browser.
-     * @param downloadGuid GUID of the download.
      * @param isOffTheRecord Whether the download is off the record.
      * @param mimeType MIME type of the file.
      * @return Whether the download is openable by the browser.
      */
     @Override
-    public boolean isDownloadOpenableInBrowser(
-            String downloadGuid, boolean isOffTheRecord, String mimeType) {
+    public boolean isDownloadOpenableInBrowser(boolean isOffTheRecord, String mimeType) {
         // TODO(qinmin): for audio and video, check if the codec is supported by Chrome.
         return isSupportedMimeType(mimeType);
     }

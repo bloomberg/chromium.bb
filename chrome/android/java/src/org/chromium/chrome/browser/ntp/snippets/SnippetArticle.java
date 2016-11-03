@@ -7,6 +7,8 @@ import android.graphics.Bitmap;
 
 import org.chromium.chrome.browser.ntp.snippets.ContentSuggestionsCardLayout.ContentSuggestionsCardLayoutEnum;
 
+import java.io.File;
+
 /**
  * Represents the data for an article card on the NTP.
  */
@@ -41,7 +43,7 @@ public class SnippetArticle {
     /** The position of this article within its section. */
     public final int mPosition;
 
-    /** The position of this article in the complete list. Populated by NewTabPageAdapter.*/
+    /** The position of this article in the complete list. Populated by NewTabPageAdapter. */
     public int mGlobalPosition = -1;
 
     /** The layout that should be used to display the snippet. */
@@ -66,10 +68,13 @@ public class SnippetArticle {
     /** Whether the linked article represents a downloaded asset. */
     public boolean mIsDownloadedAsset;
 
-    /** The path to the downloaded asset (only for download asset articles).*/
+    /** The path to the downloaded asset (only for download asset articles). */
     private String mDownloadAssetPath;
 
-    /** The mime type of the downloaded asset (only for download asset articles).*/
+    /** The downloaded asset (only for download asset articles). */
+    private File mFile;
+
+    /** The mime type of the downloaded asset (only for download asset articles). */
     private String mDownloadAssetMimeType;
 
     /**
@@ -163,14 +168,12 @@ public class SnippetArticle {
     }
 
     /**
-     * Returns the file path of the downloaded asset. May only be called if mIsDownloadedAsset is
-     * true.
+     * @return the downloaded asset. May only be called if mIsDownloadedAsset is {@code true}.
      */
-    // TODO(tschumann): If this always gets converted into an URI, we should drop this field and
-    // simply use mUrl.
-    public String getDownloadAssetPath() {
+    public File getDownloadAssetFile() {
         assert mIsDownloadedAsset;
-        return mDownloadAssetPath;
+        if (mFile == null) mFile = new File(mDownloadAssetPath);
+        return mFile;
     }
 
     /** Returns the mime type of the download asset. May only be called if mIsDownloadAsset is true.

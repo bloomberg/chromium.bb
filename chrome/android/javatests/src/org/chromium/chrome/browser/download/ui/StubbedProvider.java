@@ -81,8 +81,7 @@ public class StubbedProvider implements BackendProvider {
         }
 
         @Override
-        public boolean isDownloadOpenableInBrowser(
-                String guid, boolean isOffTheRecord, String mimeType) {
+        public boolean isDownloadOpenableInBrowser(boolean isOffTheRecord, String mimeType) {
             return false;
         }
     }
