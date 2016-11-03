@@ -1697,11 +1697,7 @@ void FrameLoader::startLoad(FrameLoadRequest& frameLoadRequest,
   m_progressTracker->progressStarted();
   m_provisionalDocumentLoader->appendRedirect(
       m_provisionalDocumentLoader->request().url());
-  double triggeringEventTime =
-      frameLoadRequest.triggeringEvent()
-          ? frameLoadRequest.triggeringEvent()->platformTimeStamp()
-          : 0;
-  client()->dispatchDidStartProvisionalLoad(triggeringEventTime);
+  client()->dispatchDidStartProvisionalLoad();
   DCHECK(m_provisionalDocumentLoader);
   m_provisionalDocumentLoader->startLoadingMainResource();
 

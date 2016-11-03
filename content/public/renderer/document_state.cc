@@ -9,14 +9,11 @@
 namespace content {
 
 DocumentState::DocumentState()
-    : load_histograms_recorded_(false),
-      web_timing_histograms_recorded_(false),
-      was_fetched_via_spdy_(false),
+    : was_fetched_via_spdy_(false),
       was_alpn_negotiated_(false),
       was_alternate_protocol_available_(false),
       connection_info_(net::HttpResponseInfo::CONNECTION_INFO_UNKNOWN),
       was_load_data_with_base_url_request_(false),
-      load_type_(UNDEFINED_LOAD),
       can_load_local_resources_(false) {}
 
 DocumentState::~DocumentState() {}

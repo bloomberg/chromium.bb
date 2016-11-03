@@ -7170,7 +7170,7 @@ class TestHistoryWebFrameClient : public FrameTestHelpers::TestWebFrameClient {
     m_frame = nullptr;
   }
 
-  void didStartProvisionalLoad(WebLocalFrame* frame, double) {
+  void didStartProvisionalLoad(WebLocalFrame* frame) {
     WebDataSource* ds = frame->provisionalDataSource();
     m_replacesCurrentHistoryItem = ds->replacesCurrentHistoryItem();
     m_frame = frame;
@@ -9750,7 +9750,7 @@ class CallbackOrderingWebFrameClient
     EXPECT_EQ(0, m_callbackCount++);
     FrameTestHelpers::TestWebFrameClient::didStartLoading(toDifferentDocument);
   }
-  void didStartProvisionalLoad(WebLocalFrame*, double) override {
+  void didStartProvisionalLoad(WebLocalFrame*) override {
     EXPECT_EQ(1, m_callbackCount++);
   }
   void didCommitProvisionalLoad(WebLocalFrame*,

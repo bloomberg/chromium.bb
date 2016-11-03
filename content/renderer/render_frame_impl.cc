@@ -3301,28 +3301,6 @@ void RenderFrameImpl::didCreateDataSource(blink::WebLocalFrame* frame,
   UpdateNavigationState(document_state, false /* was_within_same_page */,
                         content_initiated);
 
-  if (content_initiated) {
-    const WebURLRequest& request = datasource->request();
-    switch (request.getCachePolicy()) {
-      case WebCachePolicy::UseProtocolCachePolicy:  // normal load.
-        document_state->set_load_type(DocumentState::LINK_LOAD_NORMAL);
-        break;
-      case WebCachePolicy::ValidatingCacheData:  // reload.
-      case WebCachePolicy::BypassingCache:       // end-to-end reload.
-        document_state->set_load_type(DocumentState::LINK_LOAD_RELOAD);
-        break;
-      case WebCachePolicy::ReturnCacheDataElseLoad:  // allow stale data.
-        document_state->set_load_type(DocumentState::LINK_LOAD_CACHE_STALE_OK);
-        break;
-      case WebCachePolicy::ReturnCacheDataDontLoad:  // Don't re-post.
-        document_state->set_load_type(DocumentState::LINK_LOAD_CACHE_ONLY);
-        break;
-      case WebCachePolicy::ReturnCacheDataIfValid:
-        // This policy is currently only used in subresource loading.
-        NOTREACHED();
-    }
-  }
-
   NavigationStateImpl* navigation_state = static_cast<NavigationStateImpl*>(
       document_state->navigation_state());
 
@@ -3368,8 +3346,7 @@ void RenderFrameImpl::didCreateDataSource(blink::WebLocalFrame* frame,
           content_initiated));
 }
 
-void RenderFrameImpl::didStartProvisionalLoad(blink::WebLocalFrame* frame,
-                                              double triggering_event_time) {
+void RenderFrameImpl::didStartProvisionalLoad(blink::WebLocalFrame* frame) {
   DCHECK_EQ(frame_, frame);
   WebDataSource* ds = frame->provisionalDataSource();
 
@@ -3382,16 +3359,6 @@ void RenderFrameImpl::didStartProvisionalLoad(blink::WebLocalFrame* frame,
                "RenderFrameImpl::didStartProvisionalLoad", "id", routing_id_,
                "url", ds->request().url().string().utf8());
   DocumentState* document_state = DocumentState::FromDataSource(ds);
-
-  // Update the request time if WebKit has better knowledge of it.
-  if (document_state->request_time().is_null() &&
-          triggering_event_time != 0.0) {
-    document_state->set_request_time(Time::FromDoubleT(triggering_event_time));
-  }
-
-  // Start time is only set after request time.
-  document_state->set_start_load_time(Time::Now());
-
   NavigationStateImpl* navigation_state = static_cast<NavigationStateImpl*>(
       document_state->navigation_state());
   bool is_top_most = !frame->parent();
@@ -3477,8 +3444,6 @@ void RenderFrameImpl::didFailProvisionalLoad(
     pending_navigation_params_.reset(new NavigationParams(
         navigation_state->common_params(), navigation_state->start_params(),
         navigation_state->request_params()));
-    pending_navigation_params_->request_params.request_time =
-        document_state->request_time();
   }
 
   // Load an error page.
@@ -3615,9 +3580,6 @@ void RenderFrameImpl::didCommitProvisionalLoad(
 
   InternalDocumentStateData* internal_data =
       InternalDocumentStateData::FromDocumentState(document_state);
-
-  if (document_state->commit_load_time().is_null())
-    document_state->set_commit_load_time(Time::Now());
 
   if (internal_data->must_reset_scroll_and_scale_state()) {
     render_view_->webview()->resetScrollAndScaleState();
@@ -3795,9 +3757,6 @@ void RenderFrameImpl::didFinishDocumentLoad(blink::WebLocalFrame* frame) {
   TRACE_EVENT1("navigation,benchmark,rail",
                "RenderFrameImpl::didFinishDocumentLoad", "id", routing_id_);
   DCHECK_EQ(frame_, frame);
-  WebDataSource* ds = frame->dataSource();
-  DocumentState* document_state = DocumentState::FromDataSource(ds);
-  document_state->set_finish_document_load_time(Time::Now());
 
   Send(new FrameHostMsg_DidFinishDocumentLoad(routing_id_));
 
@@ -3910,14 +3869,9 @@ void RenderFrameImpl::didFinishLoad(blink::WebLocalFrame* frame) {
   TRACE_EVENT1("navigation,benchmark,rail",
                "RenderFrameImpl::didFinishLoad", "id", routing_id_);
   DCHECK_EQ(frame_, frame);
-  WebDataSource* ds = frame->dataSource();
-  DocumentState* document_state = DocumentState::FromDataSource(ds);
-  if (document_state->finish_load_time().is_null()) {
-    if (!frame->parent()) {
-      TRACE_EVENT_INSTANT0("WebCore,benchmark,rail", "LoadFinished",
-                           TRACE_EVENT_SCOPE_PROCESS);
-    }
-    document_state->set_finish_load_time(Time::Now());
+  if (!frame->parent()) {
+    TRACE_EVENT_INSTANT0("WebCore,benchmark,rail", "LoadFinished",
+                         TRACE_EVENT_SCOPE_PROCESS);
   }
 
   for (auto& observer : render_view_->observers())
@@ -3925,6 +3879,7 @@ void RenderFrameImpl::didFinishLoad(blink::WebLocalFrame* frame) {
   for (auto& observer : observers_)
     observer.DidFinishLoad();
 
+  WebDataSource* ds = frame->dataSource();
   Send(new FrameHostMsg_DidFinishLoad(routing_id_,
                                       ds->request().url()));
 }
@@ -6266,9 +6221,6 @@ GURL RenderFrameImpl::GetLoadingUrl() const {
 
 void RenderFrameImpl::PopulateDocumentStateFromPending(
     DocumentState* document_state) {
-  document_state->set_request_time(
-      pending_navigation_params_->request_params.request_time);
-
   InternalDocumentStateData* internal_data =
       InternalDocumentStateData::FromDocumentState(document_state);
 
@@ -6289,13 +6241,6 @@ void RenderFrameImpl::PopulateDocumentStateFromPending(
     internal_data->set_cache_policy_override(
         WebCachePolicy::UseProtocolCachePolicy);
   }
-
-  if (IsReload(pending_navigation_params_->common_params.navigation_type))
-    document_state->set_load_type(DocumentState::RELOAD);
-  else if (pending_navigation_params_->request_params.page_state.IsValid())
-    document_state->set_load_type(DocumentState::HISTORY_LOAD);
-  else
-    document_state->set_load_type(DocumentState::NORMAL_LOAD);
 
   internal_data->set_is_overriding_user_agent(
       pending_navigation_params_->request_params.is_overriding_user_agent);

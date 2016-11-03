@@ -397,8 +397,7 @@ void WebFrameTestClient::loadURLExternally(
   }
 }
 
-void WebFrameTestClient::didStartProvisionalLoad(blink::WebLocalFrame* frame,
-                                                 double trigering_event_time) {
+void WebFrameTestClient::didStartProvisionalLoad(blink::WebLocalFrame* frame) {
   test_runner()->tryToSetTopLoadingFrame(frame);
 
   if (test_runner()->shouldDumpFrameLoadCallbacks()) {

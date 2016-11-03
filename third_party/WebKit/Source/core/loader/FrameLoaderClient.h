@@ -100,7 +100,7 @@ class CORE_EXPORT FrameLoaderClient : public FrameClient {
                                              HistoryCommitType,
                                              bool contentInitiated) {}
   virtual void dispatchWillCommitProvisionalLoad() = 0;
-  virtual void dispatchDidStartProvisionalLoad(double triggeringEventTime) = 0;
+  virtual void dispatchDidStartProvisionalLoad() = 0;
   virtual void dispatchDidReceiveTitle(const String&) = 0;
   virtual void dispatchDidChangeIcons(IconType) = 0;
   virtual void dispatchDidCommitLoad(HistoryItem*, HistoryCommitType) = 0;

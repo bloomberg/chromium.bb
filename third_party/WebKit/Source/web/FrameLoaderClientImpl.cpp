@@ -417,11 +417,9 @@ void FrameLoaderClientImpl::dispatchWillCommitProvisionalLoad() {
     m_webFrame->client()->willCommitProvisionalLoad(m_webFrame);
 }
 
-void FrameLoaderClientImpl::dispatchDidStartProvisionalLoad(
-    double triggeringEventTime) {
+void FrameLoaderClientImpl::dispatchDidStartProvisionalLoad() {
   if (m_webFrame->client())
-    m_webFrame->client()->didStartProvisionalLoad(m_webFrame,
-                                                  triggeringEventTime);
+    m_webFrame->client()->didStartProvisionalLoad(m_webFrame);
   if (WebDevToolsAgentImpl* devTools = devToolsAgent())
     devTools->didStartProvisionalLoad(m_webFrame->frame());
 }

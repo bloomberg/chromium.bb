@@ -740,11 +740,11 @@ RequestNavigationParams NavigationEntryImpl::ConstructRequestNavigationParams(
 #endif
   RequestNavigationParams request_params(
       GetIsOverridingUserAgent(), redirects, GetCanLoadLocalResources(),
-      base::Time::Now(), frame_entry.page_state(), GetUniqueID(),
-      is_same_document_history_load, is_history_navigation_in_new_child,
-      subframe_unique_names, has_committed_real_load, intended_as_new_entry,
-      pending_offset_to_send, current_offset_to_send, current_length_to_send,
-      IsViewSourceMode(), should_clear_history_list(), user_gesture);
+      frame_entry.page_state(), GetUniqueID(), is_same_document_history_load,
+      is_history_navigation_in_new_child, subframe_unique_names,
+      has_committed_real_load, intended_as_new_entry, pending_offset_to_send,
+      current_offset_to_send, current_length_to_send, IsViewSourceMode(),
+      should_clear_history_list(), user_gesture);
 #if defined(OS_ANDROID)
   if (GetDataURLAsString() &&
       GetDataURLAsString()->size() <= kMaxLengthOfDataURLString) {

@@ -217,7 +217,6 @@ struct CONTENT_EXPORT RequestNavigationParams {
   RequestNavigationParams(bool is_overriding_user_agent,
                           const std::vector<GURL>& redirects,
                           bool can_load_local_resources,
-                          base::Time request_time,
                           const PageState& page_state,
                           int nav_entry_id,
                           bool is_same_document_history_load,
@@ -247,11 +246,6 @@ struct CONTENT_EXPORT RequestNavigationParams {
   // Whether or not this url should be allowed to access local file://
   // resources.
   bool can_load_local_resources;
-
-  // The time the request was created. This is used by the old performance
-  // infrastructure to set up DocumentState associated with the RenderView.
-  // TODO(ppi): make it go away.
-  base::Time request_time;
 
   // Opaque history state (received by ViewHostMsg_UpdateState).
   PageState page_state;

@@ -527,8 +527,7 @@ class CONTENT_EXPORT RenderFrameImpl
   void willSubmitForm(const blink::WebFormElement& form) override;
   void didCreateDataSource(blink::WebLocalFrame* frame,
                            blink::WebDataSource* datasource) override;
-  void didStartProvisionalLoad(blink::WebLocalFrame* frame,
-                               double triggering_event_time) override;
+  void didStartProvisionalLoad(blink::WebLocalFrame* frame) override;
   void didReceiveServerRedirectForProvisionalLoad(
       blink::WebLocalFrame* frame) override;
   void didFailProvisionalLoad(blink::WebLocalFrame* frame,

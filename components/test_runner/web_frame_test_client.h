@@ -61,8 +61,7 @@ class WebFrameTestClient : public blink::WebFrameClient {
                          blink::WebNavigationPolicy policy,
                          const blink::WebString& suggested_name,
                          bool replaces_current_history_item) override;
-  void didStartProvisionalLoad(blink::WebLocalFrame* frame,
-                               double trigering_event_time) override;
+  void didStartProvisionalLoad(blink::WebLocalFrame* frame) override;
   void didReceiveServerRedirectForProvisionalLoad(
       blink::WebLocalFrame* frame) override;
   void didFailProvisionalLoad(blink::WebLocalFrame* frame,

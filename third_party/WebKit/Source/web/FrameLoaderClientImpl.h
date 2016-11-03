@@ -96,7 +96,7 @@ class FrameLoaderClientImpl final : public FrameLoaderClient {
                                      HistoryCommitType,
                                      bool contentInitiated) override;
   void dispatchWillCommitProvisionalLoad() override;
-  void dispatchDidStartProvisionalLoad(double triggeringEventTime) override;
+  void dispatchDidStartProvisionalLoad() override;
   void dispatchDidReceiveTitle(const String&) override;
   void dispatchDidChangeIcons(IconType) override;
   void dispatchDidCommitLoad(HistoryItem*, HistoryCommitType) override;

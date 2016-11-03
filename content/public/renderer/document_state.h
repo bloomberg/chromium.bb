@@ -26,92 +26,11 @@ class CONTENT_EXPORT DocumentState
     : NON_EXPORTED_BASE(public blink::WebDataSource::ExtraData),
       public base::SupportsUserData {
  public:
-  // The exact values of this enum are used in histograms, so new values must be
-  // added to the end.
-  enum LoadType {
-    UNDEFINED_LOAD,            // Not yet initialized.
-    RELOAD,                    // User pressed reload.
-    HISTORY_LOAD,              // Back or forward.
-    NORMAL_LOAD,               // User entered URL, or omnibox search.
-    LINK_LOAD,                 // (deprecated) Included next 4 categories.
-    LINK_LOAD_NORMAL,          // Commonly following of link.
-    LINK_LOAD_RELOAD,          // JS/link directed reload.
-    LINK_LOAD_CACHE_STALE_OK,  // back/forward or encoding change.
-    LINK_LOAD_CACHE_ONLY,      // Allow stale data (avoid doing a re-post)
-    kLoadTypeMax               // Bounding value for this enum.
-  };
-
   DocumentState();
   ~DocumentState() override;
 
   static DocumentState* FromDataSource(blink::WebDataSource* ds) {
     return static_cast<DocumentState*>(ds->getExtraData());
-  }
-
-  // The time that this navigation was requested.
-  const base::Time& request_time() const {
-    return request_time_;
-  }
-  void set_request_time(const base::Time& value) {
-    DCHECK(start_load_time_.is_null());
-    request_time_ = value;
-  }
-
-  // The time that the document load started.
-  const base::Time& start_load_time() const {
-    return start_load_time_;
-  }
-  void set_start_load_time(const base::Time& value) {
-    // TODO(jar): This should not be set twice.
-    // DCHECK(!start_load_time_.is_null());
-    DCHECK(finish_document_load_time_.is_null());
-    start_load_time_ = value;
-  }
-
-  // The time that the document load was committed.
-  const base::Time& commit_load_time() const {
-    return commit_load_time_;
-  }
-  void set_commit_load_time(const base::Time& value) {
-    commit_load_time_ = value;
-  }
-
-  // The time that the document finished loading.
-  const base::Time& finish_document_load_time() const {
-    return finish_document_load_time_;
-  }
-  void set_finish_document_load_time(const base::Time& value) {
-    // TODO(jar): Some unittests break the following DCHECK, and don't have
-    // DCHECK(!start_load_time_.is_null());
-    DCHECK(!value.is_null());
-    // TODO(jar): Double setting does happen, but probably shouldn't.
-    // DCHECK(finish_document_load_time_.is_null());
-    // TODO(jar): We should guarantee this order :-(.
-    // DCHECK(finish_load_time_.is_null());
-    finish_document_load_time_ = value;
-  }
-
-  // The time that the document and all subresources finished loading.
-  const base::Time& finish_load_time() const { return finish_load_time_; }
-  void set_finish_load_time(const base::Time& value) {
-    DCHECK(!value.is_null());
-    DCHECK(finish_load_time_.is_null());
-    // The following is not already set in all cases :-(
-    // DCHECK(!finish_document_load_time_.is_null());
-    finish_load_time_ = value;
-  }
-
-  // True iff the histograms for the associated frame have been dumped.
-  bool load_histograms_recorded() const { return load_histograms_recorded_; }
-  void set_load_histograms_recorded(bool value) {
-    load_histograms_recorded_ = value;
-  }
-
-  bool web_timing_histograms_recorded() const {
-    return web_timing_histograms_recorded_;
-  }
-  void set_web_timing_histograms_recorded(bool value) {
-    web_timing_histograms_recorded_ = value;
   }
 
   // Indicator if SPDY was used as part of this page load.
@@ -160,10 +79,6 @@ class CONTENT_EXPORT DocumentState
     data_url_ = data_url;
   }
 
-  // Record the nature of this load, for use when histogramming page load times.
-  LoadType load_type() const { return load_type_; }
-  void set_load_type(LoadType load_type) { load_type_ = load_type; }
-
   NavigationState* navigation_state() { return navigation_state_.get(); }
   void set_navigation_state(NavigationState* navigation_state);
 
@@ -173,13 +88,6 @@ class CONTENT_EXPORT DocumentState
   }
 
  private:
-  base::Time request_time_;
-  base::Time start_load_time_;
-  base::Time commit_load_time_;
-  base::Time finish_document_load_time_;
-  base::Time finish_load_time_;
-  bool load_histograms_recorded_;
-  bool web_timing_histograms_recorded_;
   bool was_fetched_via_spdy_;
   bool was_alpn_negotiated_;
   std::string alpn_negotiated_protocol_;
@@ -188,8 +96,6 @@ class CONTENT_EXPORT DocumentState
 
   bool was_load_data_with_base_url_request_;
   GURL data_url_;
-
-  LoadType load_type_;
 
   std::unique_ptr<NavigationState> navigation_state_;
 

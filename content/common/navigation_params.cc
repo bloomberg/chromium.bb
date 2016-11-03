@@ -123,7 +123,6 @@ StartNavigationParams::~StartNavigationParams() {
 RequestNavigationParams::RequestNavigationParams()
     : is_overriding_user_agent(false),
       can_load_local_resources(false),
-      request_time(base::Time::Now()),
       nav_entry_id(0),
       is_same_document_history_load(false),
       is_history_navigation_in_new_child(false),
@@ -142,7 +141,6 @@ RequestNavigationParams::RequestNavigationParams(
     bool is_overriding_user_agent,
     const std::vector<GURL>& redirects,
     bool can_load_local_resources,
-    base::Time request_time,
     const PageState& page_state,
     int nav_entry_id,
     bool is_same_document_history_load,
@@ -159,7 +157,6 @@ RequestNavigationParams::RequestNavigationParams(
     : is_overriding_user_agent(is_overriding_user_agent),
       redirects(redirects),
       can_load_local_resources(can_load_local_resources),
-      request_time(request_time),
       page_state(page_state),
       nav_entry_id(nav_entry_id),
       is_same_document_history_load(is_same_document_history_load),

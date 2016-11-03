@@ -187,7 +187,6 @@ std::unique_ptr<NavigationRequest> NavigationRequest::CreateRendererInitiated(
       false,                   // is_overriding_user_agent
       std::vector<GURL>(),     // redirects
       false,                   // can_load_local_resources
-      base::Time::Now(),       // request_time
       PageState(),             // page_state
       0,                       // nav_entry_id
       false,                   // is_same_document_history_load
