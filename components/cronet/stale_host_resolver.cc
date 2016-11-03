@@ -139,10 +139,10 @@ class StaleHostResolver::RequestImpl {
   void OnHandleDestroyed();
 
   // Fills |*result_addresses_| if rv is OK and returns rv.
-  int HandleResult(int rv, net::AddressList* addresses);
+  int HandleResult(int rv, const net::AddressList& addresses);
   // Fills |*result_addresses_| if rv is OK and calls |result_callback_| with
   // rv.
-  void ReturnResult(int rv, net::AddressList* addresses);
+  void ReturnResult(int rv, const net::AddressList& addresses);
 
   void MaybeDeleteThis();
 
@@ -213,7 +213,7 @@ int StaleHostResolver::RequestImpl::Start(
   // If it's a fresh cache hit (or literal), return it synchronously.
   if (cache_rv != net::ERR_DNS_CACHE_MISS && !stale_info.is_stale()) {
     RecordSynchronousRequest();
-    return HandleResult(cache_rv, &cache_addresses);
+    return HandleResult(cache_rv, cache_addresses);
   }
 
   result_callback_ = result_callback;
@@ -254,7 +254,7 @@ void StaleHostResolver::RequestImpl::OnStaleDelayElapsed() {
   DCHECK(!have_returned());
   DCHECK(have_stale_data());
 
-  ReturnResult(stale_error_, &stale_addresses_);
+  ReturnResult(stale_error_, stale_addresses_);
 
   // The request needs to wait for both the network request to complete (to
   // backfill the cache) and the caller to delete the handle before deleting
@@ -271,7 +271,7 @@ void StaleHostResolver::RequestImpl::OnNetworkRequestComplete(int error) {
   if (!have_returned()) {
     if (have_stale_data())
       stale_timer_.Stop();
-    ReturnResult(error, &network_addresses_);
+    ReturnResult(error, network_addresses_);
   }
 
   if (!have_handle())
@@ -294,20 +294,20 @@ void StaleHostResolver::RequestImpl::OnHandleDestroyed() {
     delete this;
 }
 
-int StaleHostResolver::RequestImpl::HandleResult(int rv,
-                                                 net::AddressList* addresses) {
+int StaleHostResolver::RequestImpl::HandleResult(
+    int rv,
+    const net::AddressList& addresses) {
   DCHECK(result_addresses_);
 
-  if (rv == net::OK) {
-    *result_addresses_ = *addresses;
-    addresses->clear();
-  }
+  if (rv == net::OK)
+    *result_addresses_ = addresses;
   result_addresses_ = nullptr;
   return rv;
 }
 
-void StaleHostResolver::RequestImpl::ReturnResult(int rv,
-                                                  net::AddressList* addresses) {
+void StaleHostResolver::RequestImpl::ReturnResult(
+    int rv,
+    const net::AddressList& addresses) {
   DCHECK(result_callback_);
   returning_result_ = true;
   base::ResetAndReturn(&result_callback_).Run(HandleResult(rv, addresses));
