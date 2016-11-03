@@ -63,4 +63,9 @@ bool DefaultSystemTrayDelegate::GetBluetoothDiscovering() {
   return false;
 }
 
+int DefaultSystemTrayDelegate::GetSystemTrayMenuWidth() {
+  // This is the default width for English languages.
+  return 300;
+}
+
 }  // namespace ash

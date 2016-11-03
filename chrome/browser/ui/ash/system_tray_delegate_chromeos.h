@@ -113,6 +113,7 @@ class SystemTrayDelegateChromeOS
   ash::NetworkingConfigDelegate* GetNetworkingConfigDelegate() const override;
   bool GetSessionStartTime(base::TimeTicks* session_start_time) override;
   bool GetSessionLengthLimit(base::TimeDelta* session_length_limit) override;
+  int GetSystemTrayMenuWidth() override;
   void ActiveUserWasChanged() override;
   bool IsSearchKeyMappedToCapsLock() override;
   void AddCustodianInfoTrayObserver(
