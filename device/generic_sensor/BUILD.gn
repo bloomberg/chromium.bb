@@ -11,18 +11,26 @@ if (is_android) {
 component("generic_sensor") {
   output_name = "generic_sensor"
   sources = [
+    "linux/platform_sensor_utils_linux.cc",
+    "linux/platform_sensor_utils_linux.h",
+    "linux/sensor_data_linux.cc",
+    "linux/sensor_data_linux.h",
     "platform_sensor.cc",
     "platform_sensor.h",
     "platform_sensor_ambient_light_mac.cc",
     "platform_sensor_ambient_light_mac.h",
     "platform_sensor_android.cc",
     "platform_sensor_android.h",
+    "platform_sensor_linux.cc",
+    "platform_sensor_linux.h",
     "platform_sensor_provider.cc",
     "platform_sensor_provider.h",
     "platform_sensor_provider_android.cc",
     "platform_sensor_provider_android.h",
     "platform_sensor_provider_base.cc",
     "platform_sensor_provider_base.h",
+    "platform_sensor_provider_linux.cc",
+    "platform_sensor_provider_linux.h",
     "platform_sensor_provider_mac.cc",
     "platform_sensor_provider_mac.h",
     "platform_sensor_provider_win.cc",
@@ -58,9 +66,11 @@ component("generic_sensor") {
     deps += [ ":jni_headers" ]
   }
 
-  if (is_mac) {
+  if (is_mac || is_linux) {
     deps += [ "//device/sensors/public/cpp" ]
+  }
 
+  if (is_mac) {
     libs = [ "IOKit.framework" ]
   }
 

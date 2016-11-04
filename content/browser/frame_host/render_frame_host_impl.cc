@@ -2222,7 +2222,8 @@ void RenderFrameHostImpl::RegisterMojoInterfaces() {
 #endif
   if (base::FeatureList::IsEnabled(features::kGenericSensor)) {
     GetInterfaceRegistry()->AddInterface(
-        base::Bind(&device::SensorProviderImpl::Create),
+        base::Bind(&device::SensorProviderImpl::Create,
+                   BrowserThread::GetTaskRunnerForThread(BrowserThread::FILE)),
         BrowserThread::GetTaskRunnerForThread(BrowserThread::IO));
   }
 
