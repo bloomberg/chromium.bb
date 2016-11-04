@@ -9,6 +9,8 @@ libraries:
   version: 1.5
 - name: MySQLdb
   version: latest
+- name: ssl
+  version: 2.7
 
 builtins:
 - django_wsgi: on

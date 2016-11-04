@@ -5,7 +5,7 @@
 """Fake out system python modules that are not available on AE.
 
 Chromite imports some standard python modules that are not available on the
-restricted sandbox environment on appengine. Fake out this modules such that
+restricted sandbox environment on appengine. Fake out these modules such that
 imports don't break, but any attempt to use the modules blows up obviously.
 """
 
@@ -52,3 +52,8 @@ def _expanduser(_):
 # Importing this module has the side effect of patching all of the following
 # library modules / classes / functions.
 os.path.expanduser = _expanduser
+
+fake_signal = Fake()
+fake_signal.signal = Fake()
+fake_signal.SIGUSR1 = Fake()
+sys.modules['signal'] = fake_signal
