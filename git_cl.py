@@ -350,7 +350,7 @@ def _get_bucket_map(changelist, options, option_parser):
     change = changelist.GetChange(
         changelist.GetCommonAncestorWithUpstream(), None)
     # Get try masters from PRESUBMIT.py files.
-    return presubmit_support.DoGetTryMasters(
+    masters = presubmit_support.DoGetTryMasters(
         change=change,
         changed_files=change.LocalPaths(),
         repository_root=settings.GetRoot(),
@@ -358,6 +358,9 @@ def _get_bucket_map(changelist, options, option_parser):
         project=None,
         verbose=options.verbose,
         output_stream=sys.stdout)
+    if masters is None:
+      return None
+    return {MASTER_PREFIX + m: b for m, b in masters.iteritems()}
 
   if options.bucket:
     return {options.bucket: {b: [] for b in options.bot}}
