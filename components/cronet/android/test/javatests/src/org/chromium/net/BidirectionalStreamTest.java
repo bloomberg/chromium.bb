@@ -94,6 +94,8 @@ public class BidirectionalStreamTest extends CronetTestBase {
             throws Exception {
         String url = Http2TestServer.getEchoMethodUrl();
         TestBidirectionalStreamCallback callback = new TestBidirectionalStreamCallback();
+        TestRequestFinishedListener requestFinishedListener = new TestRequestFinishedListener();
+        mTestFramework.mCronetEngine.addRequestFinishedListener(requestFinishedListener);
         // Create stream.
         BidirectionalStream stream =
                 mTestFramework.mCronetEngine
@@ -103,6 +105,7 @@ public class BidirectionalStreamTest extends CronetTestBase {
         stream.start();
         callback.blockForDone();
         assertTrue(stream.isDone());
+        requestFinishedListener.blockUntilDone();
         assertEquals(200, callback.mResponseInfo.getHttpStatusCode());
         // Default method is 'GET'.
         assertEquals("GET", callback.mResponseAsString);
@@ -110,6 +113,8 @@ public class BidirectionalStreamTest extends CronetTestBase {
                 new String[] {url}, "", 200, expectedReceivedBytes, ":status", "200");
         assertResponseEquals(urlResponseInfo, callback.mResponseInfo);
         checkResponseInfo(callback.mResponseInfo, Http2TestServer.getEchoMethodUrl(), 200, "");
+        RequestFinishedInfo finishedInfo = requestFinishedListener.getRequestInfo();
+        assertTrue(finishedInfo.getAnnotations().isEmpty());
     }
 
     @SmallTest

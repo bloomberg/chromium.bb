@@ -14,7 +14,6 @@ import org.chromium.net.UrlRequest;
 
 import java.util.ArrayList;
 import java.util.Collection;
-import java.util.Collections;
 import java.util.concurrent.Executor;
 
 /**
@@ -48,7 +47,7 @@ public class UrlRequestBuilderImpl extends ExperimentalUrlRequest.Builder {
     @CronetEngineBase.RequestPriority
     private int mPriority = REQUEST_PRIORITY_MEDIUM;
     // Request reporting annotations. Avoid extra object creation if no annotations added.
-    private Collection<Object> mRequestAnnotations = Collections.emptyList();
+    private Collection<Object> mRequestAnnotations;
     // If request is an upload, this provides the request body data.
     private UploadDataProvider mUploadDataProvider;
     // Executor to call upload data provider back on.
@@ -162,7 +161,7 @@ public class UrlRequestBuilderImpl extends ExperimentalUrlRequest.Builder {
         if (annotation == null) {
             throw new NullPointerException("Invalid metrics annotation.");
         }
-        if (mRequestAnnotations.isEmpty()) {
+        if (mRequestAnnotations == null) {
             mRequestAnnotations = new ArrayList<>();
         }
         mRequestAnnotations.add(annotation);

@@ -10,6 +10,7 @@ import android.support.annotation.Nullable;
 import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
 import java.util.Collection;
+import java.util.Collections;
 import java.util.Date;
 import java.util.concurrent.Executor;
 
@@ -298,6 +299,9 @@ public final class RequestFinishedInfo {
 
     /** Returns the objects that the caller has supplied when initiating the request. */
     public Collection<Object> getAnnotations() {
+        if (mAnnotations == null) {
+            return Collections.emptyList();
+        }
         return mAnnotations;
     }
 

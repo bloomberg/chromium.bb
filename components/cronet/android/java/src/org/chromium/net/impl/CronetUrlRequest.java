@@ -138,9 +138,6 @@ public final class CronetUrlRequest extends UrlRequestBase {
         if (executor == null) {
             throw new NullPointerException("Executor is required");
         }
-        if (requestAnnotations == null) {
-            throw new NullPointerException("requestAnnotations is required");
-        }
 
         mAllowDirectExecutor = allowDirectExecutor;
         mRequestContext = requestContext;
