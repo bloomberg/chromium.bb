@@ -85,9 +85,8 @@ class DOMWrapperMap {
     m_map.Remove(key);
   }
 
-  void markWrapper(v8::EmbedderReachableReferenceReporter* reporter,
-                   KeyType* object) {
-    m_map.RegisterExternallyReferencedObject(reporter, object);
+  void markWrapper(KeyType* object) {
+    m_map.RegisterExternallyReferencedObject(object);
   }
 
  private:

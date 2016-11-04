@@ -76,8 +76,7 @@ class CORE_EXPORT DOMWrapperWorld : public RefCounted<DOMWrapperWorld> {
   static bool isolatedWorldsExist() { return isolatedWorldCount; }
   static void allWorldsInMainThread(Vector<RefPtr<DOMWrapperWorld>>& worlds);
   static void markWrappersInAllWorlds(ScriptWrappable*,
-                                      const ScriptWrappableVisitor*,
-                                      v8::EmbedderReachableReferenceReporter*);
+                                      const ScriptWrappableVisitor*);
   static void setWrapperReferencesInAllWorlds(
       const v8::Persistent<v8::Object>& parent,
       ScriptWrappable*,

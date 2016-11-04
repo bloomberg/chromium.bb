@@ -13,10 +13,6 @@
 
 namespace blink {
 
-class NullReporter : public v8::EmbedderReachableReferenceReporter {
-  void ReportExternalReference(v8::Value* object) override {}
-};
-
 static void preciselyCollectGarbage() {
   ThreadState::current()->collectAllGarbage();
 }
@@ -45,7 +41,7 @@ TEST(ScriptWrappableVisitorTest, ScriptWrappableVisitorTracesWrappers) {
   }
   ScriptWrappableVisitor* visitor =
       V8PerIsolateData::from(scope.isolate())->scriptWrappableVisitor();
-  visitor->TracePrologue(new NullReporter());
+  visitor->TracePrologue();
 
   DeathAwareScriptWrappable* target = DeathAwareScriptWrappable::create();
   DeathAwareScriptWrappable* dependency = DeathAwareScriptWrappable::create();
@@ -346,7 +342,7 @@ TEST(ScriptWrappableVisitorTest, NoWriteBarrierOnUnmarkedContainer) {
   V8TestingScope scope;
   auto rawVisitor = new InterceptingScriptWrappableVisitor(scope.isolate());
   swapInNewVisitor(scope.isolate(), rawVisitor);
-  rawVisitor->TracePrologue(new NullReporter());
+  rawVisitor->TracePrologue();
   v8::Local<v8::String> str =
       v8::String::NewFromUtf8(scope.isolate(), "teststring",
                               v8::NewStringType::kNormal, sizeof("teststring"))
@@ -368,7 +364,7 @@ TEST(ScriptWrappableVisitorTest, WriteBarrierTriggersOnMarkedContainer) {
   V8TestingScope scope;
   auto rawVisitor = new InterceptingScriptWrappableVisitor(scope.isolate());
   swapInNewVisitor(scope.isolate(), rawVisitor);
-  rawVisitor->TracePrologue(new NullReporter());
+  rawVisitor->TracePrologue();
   v8::Local<v8::String> str =
       v8::String::NewFromUtf8(scope.isolate(), "teststring",
                               v8::NewStringType::kNormal, sizeof("teststring"))

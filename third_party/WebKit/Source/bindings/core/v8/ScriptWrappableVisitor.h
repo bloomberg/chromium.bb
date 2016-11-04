@@ -100,7 +100,7 @@ class CORE_EXPORT ScriptWrappableVisitor : public WrapperVisitor,
      */
   static void performCleanup(v8::Isolate*);
 
-  void TracePrologue(v8::EmbedderReachableReferenceReporter*) override;
+  void TracePrologue() override;
 
   static WrapperVisitor* currentVisitor(v8::Isolate*);
 
@@ -268,12 +268,6 @@ class CORE_EXPORT ScriptWrappableVisitor : public WrapperVisitor,
      */
   mutable WTF::Vector<HeapObjectHeader*> m_headersToUnmark;
   v8::Isolate* m_isolate;
-
-  /**
-     * A reporter instance set in TracePrologue and cleared in TraceEpilogue,
-     * which is used to report all reachable references back to v8.
-     */
-  v8::EmbedderReachableReferenceReporter* m_reporter = nullptr;
 };
 
 }  // namespace blink

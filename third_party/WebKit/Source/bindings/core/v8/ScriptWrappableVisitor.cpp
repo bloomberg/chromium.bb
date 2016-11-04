@@ -26,8 +26,7 @@ namespace blink {
 
 ScriptWrappableVisitor::~ScriptWrappableVisitor() {}
 
-void ScriptWrappableVisitor::TracePrologue(
-    v8::EmbedderReachableReferenceReporter* reporter) {
+void ScriptWrappableVisitor::TracePrologue() {
   // This CHECK ensures that wrapper tracing is not started from scopes
   // that forbid GC execution, e.g., constructors.
   CHECK(!ThreadState::current()->isGCForbidden());
@@ -38,10 +37,7 @@ void ScriptWrappableVisitor::TracePrologue(
   DCHECK(m_headersToUnmark.isEmpty());
   DCHECK(m_markingDeque.isEmpty());
   DCHECK(m_verifierDeque.isEmpty());
-  DCHECK(!m_reporter);
-  DCHECK(reporter);
   m_tracingInProgress = true;
-  m_reporter = reporter;
 }
 
 void ScriptWrappableVisitor::EnterFinalPause() {
@@ -85,7 +81,6 @@ void ScriptWrappableVisitor::performCleanup() {
   m_headersToUnmark.clear();
   m_markingDeque.clear();
   m_verifierDeque.clear();
-  m_reporter = nullptr;
   m_shouldCleanup = false;
   m_tracingInProgress = false;
 }
@@ -141,7 +136,6 @@ void ScriptWrappableVisitor::performLazyCleanup(double deadlineSeconds) {
   CHECK(m_headersToUnmark.isEmpty());
   m_markingDeque.clear();
   m_verifierDeque.clear();
-  m_reporter = nullptr;
   m_shouldCleanup = false;
   m_tracingInProgress = false;
 }
@@ -207,9 +201,8 @@ bool ScriptWrappableVisitor::markWrapperHeader(HeapObjectHeader* header) const {
 
 void ScriptWrappableVisitor::markWrappersInAllWorlds(
     const ScriptWrappable* scriptWrappable) const {
-  DCHECK(m_reporter);
   DOMWrapperWorld::markWrappersInAllWorlds(
-      const_cast<ScriptWrappable*>(scriptWrappable), this, m_reporter);
+      const_cast<ScriptWrappable*>(scriptWrappable), this);
 }
 
 void ScriptWrappableVisitor::writeBarrier(
@@ -240,8 +233,7 @@ void ScriptWrappableVisitor::traceWrappers(
 
 void ScriptWrappableVisitor::markWrapper(
     const v8::PersistentBase<v8::Value>* handle) const {
-  DCHECK(m_reporter);
-  handle->RegisterExternalReference(m_reporter);
+  handle->RegisterExternalReference(m_isolate);
 }
 
 void ScriptWrappableVisitor::dispatchTraceWrappers(

@@ -149,8 +149,7 @@ void DOMWrapperWorld::allWorldsInMainThread(
 
 void DOMWrapperWorld::markWrappersInAllWorlds(
     ScriptWrappable* scriptWrappable,
-    const ScriptWrappableVisitor* visitor,
-    v8::EmbedderReachableReferenceReporter* reporter) {
+    const ScriptWrappableVisitor* visitor) {
   // TODO(hlopko): Currently wrapper in one world will keep wrappers in all
   // worlds alive (possibly holding on entire documents). This is neither
   // needed (there is no way to get from one wrapper to another), nor wanted
@@ -165,7 +164,7 @@ void DOMWrapperWorld::markWrappersInAllWorlds(
     DOMDataStore& dataStore = world->domDataStore();
     if (dataStore.containsWrapper(scriptWrappable)) {
       // Marking for the isolated worlds
-      dataStore.markWrapper(reporter, scriptWrappable);
+      dataStore.markWrapper(scriptWrappable);
     }
   }
 }

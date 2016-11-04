@@ -167,9 +167,8 @@ class DOMDataStore {
     return m_wrapperMap->newLocal(isolate, object);
   }
 
-  void markWrapper(v8::EmbedderReachableReferenceReporter* reporter,
-                   ScriptWrappable* scriptWrappable) {
-    m_wrapperMap->markWrapper(reporter, scriptWrappable);
+  void markWrapper(ScriptWrappable* scriptWrappable) {
+    m_wrapperMap->markWrapper(scriptWrappable);
   }
 
   void setReference(const v8::Persistent<v8::Object>& parent,
