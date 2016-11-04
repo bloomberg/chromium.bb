@@ -13,11 +13,11 @@
 #include "ash/common/system/chromeos/ime_menu/ime_list_view.h"
 #include "ash/common/system/tray/fixed_sized_scroll_view.h"
 #include "ash/common/system/tray/hover_highlight_view.h"
+#include "ash/common/system/tray/system_menu_button.h"
 #include "ash/common/system/tray/system_tray_controller.h"
 #include "ash/common/system/tray/system_tray_delegate.h"
 #include "ash/common/system/tray/system_tray_notifier.h"
 #include "ash/common/system/tray/tray_constants.h"
-#include "ash/common/system/tray/tray_popup_header_button.h"
 #include "ash/common/system/tray/tray_popup_item_style.h"
 #include "ash/common/system/tray/tray_utils.h"
 #include "ash/common/wm_lookup.h"
@@ -25,7 +25,6 @@
 #include "ash/common/wm_shell.h"
 #include "ash/common/wm_window.h"
 #include "ash/public/cpp/shell_window_ids.h"
-#include "ash/resources/vector_icons/vector_icons.h"
 #include "base/strings/utf_string_conversions.h"
 #include "grit/ash_resources.h"
 #include "grit/ash_strings.h"
@@ -83,13 +82,13 @@ class ImeMenuLabel : public views::Label {
   DISALLOW_COPY_AND_ASSIGN(ImeMenuLabel);
 };
 
-TrayPopupHeaderButton* CreateImeMenuButton(views::ButtonListener* listener,
-                                           const gfx::ImageSkia& image,
-                                           int accessible_name_id,
-                                           int right_border) {
-  TrayPopupHeaderButton* button =
-      new TrayPopupHeaderButton(listener, image, accessible_name_id);
-  button->SetTooltipText(l10n_util::GetStringUTF16(accessible_name_id));
+SystemMenuButton* CreateImeMenuButton(views::ButtonListener* listener,
+                                      const gfx::VectorIcon& icon,
+                                      int accessible_name_id,
+                                      int right_border) {
+  SystemMenuButton* button =
+      new SystemMenuButton(listener, SystemMenuButton::InkDropStyle::SQUARE,
+                           icon, accessible_name_id);
   if (!MaterialDesignController::IsShelfMaterial()) {
     button->SetBorder(views::Border::CreateSolidSidedBorder(
         0, 0, 0, right_border, kBorderDarkColor));
@@ -232,41 +231,39 @@ class ImeButtonsView : public views::View,
 
     const int right_border = 1;
     if (show_emoji_button) {
-      emoji_button_ = CreateImeMenuButton(
-          this, CreateVectorIcon(kImeMenuEmoticonIcon, kMenuIconColor),
-          IDS_ASH_STATUS_TRAY_IME_EMOJI, right_border);
+      emoji_button_ =
+          CreateImeMenuButton(this, kImeMenuEmoticonIcon,
+                              IDS_ASH_STATUS_TRAY_IME_EMOJI, right_border);
       AddChildView(emoji_button_);
     }
 
     if (show_handwriting_button) {
       handwriting_button_ = CreateImeMenuButton(
-          this, CreateVectorIcon(kImeMenuWriteIcon, kMenuIconColor),
-          IDS_ASH_STATUS_TRAY_IME_HANDWRITING, right_border);
+          this, kImeMenuWriteIcon, IDS_ASH_STATUS_TRAY_IME_HANDWRITING,
+          right_border);
       AddChildView(handwriting_button_);
     }
 
     if (show_voice_button) {
-      voice_button_ = CreateImeMenuButton(
-          this, CreateVectorIcon(kImeMenuMicrophoneIcon, kMenuIconColor),
-          IDS_ASH_STATUS_TRAY_IME_VOICE, right_border);
+      voice_button_ =
+          CreateImeMenuButton(this, kImeMenuMicrophoneIcon,
+                              IDS_ASH_STATUS_TRAY_IME_VOICE, right_border);
       AddChildView(voice_button_);
     }
 
     if (show_settings_button) {
       // TODO(tdanderson): update this settings icon.
       settings_button_ = CreateImeMenuButton(
-          this, CreateVectorIcon(gfx::VectorIconId::SETTINGS, kMenuIconSize,
-                                 kMenuIconColor),
-          IDS_ASH_STATUS_TRAY_IME_SETTINGS, 0);
+          this, kSystemMenuSettingsIcon, IDS_ASH_STATUS_TRAY_IME_SETTINGS, 0);
       AddChildView(settings_button_);
     }
   }
 
   ImeMenuTray* ime_menu_tray_;
-  TrayPopupHeaderButton* emoji_button_;
-  TrayPopupHeaderButton* handwriting_button_;
-  TrayPopupHeaderButton* voice_button_;
-  TrayPopupHeaderButton* settings_button_;
+  SystemMenuButton* emoji_button_;
+  SystemMenuButton* handwriting_button_;
+  SystemMenuButton* voice_button_;
+  SystemMenuButton* settings_button_;
   HoverHighlightView* one_settings_button_view_;
 
   DISALLOW_COPY_AND_ASSIGN(ImeButtonsView);
