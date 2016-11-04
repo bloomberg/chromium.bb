@@ -92,6 +92,8 @@ class ShellExtensionsBrowserClient : public ExtensionsBrowserClient {
   bool IsMinBrowserVersionSupported(const std::string& min_version) override;
   ExtensionWebContentsObserver* GetExtensionWebContentsObserver(
       content::WebContents* web_contents) override;
+  ExtensionNavigationUIData* GetExtensionNavigationUIData(
+      net::URLRequest* request) override;
   KioskDelegate* GetKioskDelegate() override;
 
   // Sets the API client.

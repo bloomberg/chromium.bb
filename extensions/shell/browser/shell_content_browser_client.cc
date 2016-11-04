@@ -21,6 +21,8 @@
 #include "content/shell/browser/shell_browser_context.h"
 #include "content/shell/browser/shell_devtools_manager_delegate.h"
 #include "extensions/browser/extension_message_filter.h"
+#include "extensions/browser/extension_navigation_throttle.h"
+#include "extensions/browser/extension_navigation_ui_data.h"
 #include "extensions/browser/extension_protocols.h"
 #include "extensions/browser/extension_registry.h"
 #include "extensions/browser/guest_view/extensions_guest_view_message_filter.h"
@@ -33,6 +35,7 @@
 #include "extensions/shell/browser/shell_browser_context.h"
 #include "extensions/shell/browser/shell_browser_main_parts.h"
 #include "extensions/shell/browser/shell_extension_system.h"
+#include "extensions/shell/browser/shell_navigation_ui_data.h"
 #include "extensions/shell/browser/shell_speech_recognition_manager_delegate.h"
 #include "url/gurl.h"
 
@@ -226,6 +229,20 @@ void ShellContentBrowserClient::GetAdditionalAllowedSchemesForFileSystem(
 content::DevToolsManagerDelegate*
 ShellContentBrowserClient::GetDevToolsManagerDelegate() {
   return new content::ShellDevToolsManagerDelegate(GetBrowserContext());
+}
+
+ScopedVector<content::NavigationThrottle>
+ShellContentBrowserClient::CreateThrottlesForNavigation(
+    content::NavigationHandle* navigation_handle) {
+  ScopedVector<content::NavigationThrottle> throttles;
+  throttles.push_back(new ExtensionNavigationThrottle(navigation_handle));
+  return throttles;
+}
+
+std::unique_ptr<content::NavigationUIData>
+ShellContentBrowserClient::GetNavigationUIData(
+    content::NavigationHandle* navigation_handle) {
+  return base::MakeUnique<ShellNavigationUIData>(navigation_handle);
 }
 
 ShellBrowserMainParts* ShellContentBrowserClient::CreateShellBrowserMainParts(

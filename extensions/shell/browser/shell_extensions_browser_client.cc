@@ -11,6 +11,7 @@
 #include "content/public/browser/browser_context.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/render_frame_host.h"
+#include "content/public/browser/resource_request_info.h"
 #include "extensions/browser/api/extensions_api_client.h"
 #include "extensions/browser/api/generated_api_registration.h"
 #include "extensions/browser/event_router.h"
@@ -25,6 +26,7 @@
 #include "extensions/shell/browser/shell_extension_system_factory.h"
 #include "extensions/shell/browser/shell_extension_web_contents_observer.h"
 #include "extensions/shell/browser/shell_extensions_api_client.h"
+#include "extensions/shell/browser/shell_navigation_ui_data.h"
 #include "extensions/shell/browser/shell_runtime_api_delegate.h"
 
 #if defined(OS_CHROMEOS)
@@ -243,6 +245,20 @@ ExtensionWebContentsObserver*
 ShellExtensionsBrowserClient::GetExtensionWebContentsObserver(
     content::WebContents* web_contents) {
   return ShellExtensionWebContentsObserver::FromWebContents(web_contents);
+}
+
+ExtensionNavigationUIData*
+ShellExtensionsBrowserClient::GetExtensionNavigationUIData(
+    net::URLRequest* request) {
+  const content::ResourceRequestInfo* info =
+      content::ResourceRequestInfo::ForRequest(request);
+  if (!info)
+    return nullptr;
+  ShellNavigationUIData* navigation_data =
+      static_cast<ShellNavigationUIData*>(info->GetNavigationUIData());
+  if (!navigation_data)
+    return nullptr;
+  return navigation_data->GetExtensionNavigationUIData();
 }
 
 KioskDelegate* ShellExtensionsBrowserClient::GetKioskDelegate() {

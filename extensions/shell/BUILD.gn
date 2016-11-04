@@ -116,6 +116,8 @@ source_set("app_shell_lib") {
     "browser/shell_native_app_window.h",
     "browser/shell_native_app_window_mac.h",
     "browser/shell_native_app_window_mac.mm",
+    "browser/shell_navigation_ui_data.cc",
+    "browser/shell_navigation_ui_data.h",
     "browser/shell_network_controller_chromeos.cc",
     "browser/shell_network_controller_chromeos.h",
     "browser/shell_network_delegate.cc",
