@@ -349,6 +349,8 @@ int GetFourCCFormatFromBufferFormat(gfx::BufferFormat format) {
       return DRM_FORMAT_UYVY;
     case gfx::BufferFormat::YVU_420:
       return DRM_FORMAT_YV12;
+    case gfx::BufferFormat::YUV_420_BIPLANAR:
+      return DRM_FORMAT_NV12;
     default:
       NOTREACHED();
       return 0;

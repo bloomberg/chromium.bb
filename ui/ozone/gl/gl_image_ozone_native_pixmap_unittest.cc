@@ -101,7 +101,10 @@ using GLImageBindTestTypes =
                        gfx::BufferFormat::R_8>,
                    GLImageOzoneNativePixmapTestDelegate<
                        gfx::BufferUsage::GPU_READ_CPU_READ_WRITE,
-                       gfx::BufferFormat::YVU_420>>;
+                       gfx::BufferFormat::YVU_420>,
+                   GLImageOzoneNativePixmapTestDelegate<
+                       gfx::BufferUsage::GPU_READ_CPU_READ_WRITE,
+                       gfx::BufferFormat::YUV_420_BIPLANAR>>;
 
 // These tests are disabled since the trybots are running with Ozone X11
 // implementation that doesn't support creating ClientNativePixmap.

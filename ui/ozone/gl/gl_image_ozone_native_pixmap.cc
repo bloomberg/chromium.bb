@@ -261,13 +261,14 @@ unsigned GLImageOzoneNativePixmap::GetInternalFormatForTesting(
       return GL_BGRA_EXT;
     case gfx::BufferFormat::YVU_420:
       return GL_RGB_YCRCB_420_CHROMIUM;
+    case gfx::BufferFormat::YUV_420_BIPLANAR:
+      return GL_RGB_YCBCR_420V_CHROMIUM;
     case gfx::BufferFormat::ATC:
     case gfx::BufferFormat::ATCIA:
     case gfx::BufferFormat::DXT1:
     case gfx::BufferFormat::DXT5:
     case gfx::BufferFormat::ETC1:
     case gfx::BufferFormat::RGBA_4444:
-    case gfx::BufferFormat::YUV_420_BIPLANAR:
     case gfx::BufferFormat::UYVY_422:
       NOTREACHED();
       return GL_NONE;
