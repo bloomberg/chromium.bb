@@ -37,6 +37,9 @@ import java.util.Locale;
 public class BrowserAccessibilityManager {
     private static final String TAG = "BrowserAccessibilityManager";
 
+    private static final int WINDOW_CONTENT_CHANGED_DELAY_MS = 500;
+    private static final int ACCESSIBILITY_FOCUS_LOCATION_CHANGED_DELAY_MS = 100;
+
     // Constants from AccessibilityNodeInfo defined in the K SDK.
     private static final int ACTION_COLLAPSE = 0x00080000;
     private static final int ACTION_EXPAND = 0x00040000;
@@ -45,7 +48,6 @@ public class BrowserAccessibilityManager {
     private static final int ACTION_SET_TEXT = 0x200000;
     private static final String ACTION_ARGUMENT_SET_TEXT_CHARSEQUENCE =
             "ACTION_ARGUMENT_SET_TEXT_CHARSEQUENCE";
-    private static final int WINDOW_CONTENT_CHANGED_DELAY_MS = 500;
 
     // Constants from AccessibilityNodeInfo defined in the M SDK.
     // Source: https://developer.android.com/reference/android/R.id.html
@@ -75,6 +77,7 @@ public class BrowserAccessibilityManager {
     private int mSelectionEndIndex;
     protected int mAccessibilityFocusId;
     private Runnable mSendWindowContentChangedRunnable;
+    private Runnable mAccessibilityFocusLocationChangedRunnable;
 
     /**
      * Create a BrowserAccessibilityManager object, which is owned by the C++
@@ -237,6 +240,12 @@ public class BrowserAccessibilityManager {
                 if (mAccessibilityFocusId == virtualViewId) {
                     mAccessibilityFocusId = View.NO_ID;
                     mAccessibilityFocusRect = null;
+                    // If we had a pending callback to update the location of the previous object
+                    // with accessibility focus, remove it.
+                    if (mAccessibilityFocusLocationChangedRunnable != null) {
+                        mView.removeCallbacks(mAccessibilityFocusLocationChangedRunnable);
+                        mAccessibilityFocusLocationChangedRunnable = null;
+                    }
                 }
                 return true;
             case AccessibilityNodeInfo.ACTION_CLICK:
@@ -537,6 +546,20 @@ public class BrowserAccessibilityManager {
         mSelectionStartIndex = 0;
         mSelectionEndIndex = 0;
 
+        // If we had a pending callback to update the location of the previous object with
+        // accessibility focus, remove it.
+        if (mAccessibilityFocusLocationChangedRunnable != null) {
+            mView.removeCallbacks(mAccessibilityFocusLocationChangedRunnable);
+            mAccessibilityFocusLocationChangedRunnable = null;
+        }
+
+        // Call nativeSetAccessibilityFocus. For the most part Chrome doesn't have a
+        // concept of accessibility focus, but we do two things: (1) auto-focus certain
+        // roles like links when they get accessibility focus and (2) load inline text boxes
+        // for nodes when they get accessibility focus since inline text boxes are expensive
+        // to load and on Android they're only needed for nodes that have input focus or
+        // accessibility focus.
+        //
         // Calling nativeSetAccessibilityFocus will asynchronously load inline text boxes for
         // this node and its subtree. If accessibility focus is on anything other than
         // the root, do it - otherwise set it to -1 so we don't load inline text boxes
@@ -563,6 +586,47 @@ public class BrowserAccessibilityManager {
         }
 
         moveAccessibilityFocusToId(newAccessibilityFocusId);
+    }
+
+    /**
+     * Work around a bug in the Android framework where if the object with accessibility
+     *  focus moves, the accessibility focus rect is not updated - both the visual highlight,
+     * and the location on the screen that's clicked if you double-tap. To work around this,
+     * when we know the object with accessibility focus moved, move focus away and then
+     * move focus right back to it, which tricks Android into updating its bounds.
+     *
+     * Do this after a short delay because sometimes the change to the object with accessibility
+     * focus happens just before navigating somewhere else.
+     */
+    private void updateAccessibilityFocusLocationAfterDelay() {
+        if (mNativeObj == 0) return;
+
+        if (mAccessibilityFocusLocationChangedRunnable != null) return;
+
+        mAccessibilityFocusLocationChangedRunnable = new Runnable() {
+            @Override
+            public void run() {
+                updateAccessibilityFocusLocation();
+            }
+        };
+
+        mView.postDelayed(mAccessibilityFocusLocationChangedRunnable,
+                ACCESSIBILITY_FOCUS_LOCATION_CHANGED_DELAY_MS);
+    }
+
+    /**
+     * See updateAccessibilityFocusLocationAfterDelay for details.
+     */
+    private void updateAccessibilityFocusLocation() {
+        // This can be called from a timeout, so we need to make sure we're still valid.
+        if (mNativeObj == 0 || mContentViewCore == null || mView == null) return;
+
+        if (mAccessibilityFocusLocationChangedRunnable != null) {
+            mView.removeCallbacks(mAccessibilityFocusLocationChangedRunnable);
+            mAccessibilityFocusLocationChangedRunnable = null;
+        }
+
+        moveAccessibilityFocusToIdAndRefocusIfNeeded(mAccessibilityFocusId);
     }
 
     /**
@@ -1001,17 +1065,14 @@ public class BrowserAccessibilityManager {
 
         node.setBoundsInScreen(rect);
 
-        // Work around a bug in the Android framework where if the object with accessibility
-        // focus moves, the accessibility focus rect is not updated - both the visual highlight,
-        // and the location on the screen that's clicked if you double-tap. To work around this,
-        // when we know the object with accessibility focus moved, move focus away and then
-        // move focus right back to it, which tricks Android into updating its bounds.
+        // If this is the node with accessibility focus, ensure that its location on-screen
+        // is up-to-date.
         if (virtualViewId == mAccessibilityFocusId && virtualViewId != mCurrentRootId) {
             if (mAccessibilityFocusRect == null) {
                 mAccessibilityFocusRect = rect;
             } else if (!mAccessibilityFocusRect.equals(rect)) {
                 mAccessibilityFocusRect = rect;
-                moveAccessibilityFocusToIdAndRefocusIfNeeded(virtualViewId);
+                updateAccessibilityFocusLocationAfterDelay();
             }
         }
     }

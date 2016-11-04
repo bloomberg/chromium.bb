@@ -920,6 +920,11 @@ void BrowserAccessibilityManagerAndroid::SetAccessibilityFocus(
     return;
 
   node->manager()->SetAccessibilityFocus(*node);
+
+  // Auto-focus links, because some websites have skip links that are
+  // only visible when focused.  See http://crbug.com/657157
+  if (node->IsLink())
+    node->manager()->SetFocus(*node);
 }
 
 bool BrowserAccessibilityManagerAndroid::IsSlider(
