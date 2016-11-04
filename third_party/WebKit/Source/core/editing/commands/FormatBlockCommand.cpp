@@ -157,10 +157,6 @@ Element* FormatBlockCommand::elementForFormatBlockCommand(Range* range) {
   return commonAncestor->isElementNode() ? toElement(commonAncestor) : 0;
 }
 
-InputEvent::InputType FormatBlockCommand::inputType() const {
-  return InputEvent::InputType::FormatBlock;
-}
-
 bool isElementForFormatBlock(const QualifiedName& tagName) {
   DEFINE_STATIC_LOCAL(
       HashSet<QualifiedName>, blockTags,

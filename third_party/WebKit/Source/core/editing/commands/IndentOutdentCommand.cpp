@@ -402,8 +402,8 @@ void IndentOutdentCommand::formatRange(const Position& start,
 }
 
 InputEvent::InputType IndentOutdentCommand::inputType() const {
-  return m_typeOfAction == Indent ? InputEvent::InputType::Indent
-                                  : InputEvent::InputType::Outdent;
+  return m_typeOfAction == Indent ? InputEvent::InputType::FormatIndent
+                                  : InputEvent::InputType::FormatOutdent;
 }
 
 }  // namespace blink

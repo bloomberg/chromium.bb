@@ -40,7 +40,6 @@ class UnlinkCommand final : public CompositeEditCommand {
   explicit UnlinkCommand(Document&);
 
   void doApply(EditingState*) override;
-  InputEvent::InputType inputType() const override;
 };
 
 }  // namespace blink

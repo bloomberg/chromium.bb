@@ -78,7 +78,7 @@ void RemoveFormatCommand::doApply(EditingState* editingState) {
 }
 
 InputEvent::InputType RemoveFormatCommand::inputType() const {
-  return InputEvent::InputType::RemoveFormat;
+  return InputEvent::InputType::FormatRemove;
 }
 
 }  // namespace blink

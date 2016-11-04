@@ -165,27 +165,27 @@ InputEvent::InputType InputTypeFromCommandType(
 
     // Command.
     case CommandType::Undo:
-      return InputType::Undo;
+      return InputType::HistoryUndo;
     case CommandType::Redo:
-      return InputType::Redo;
+      return InputType::HistoryRedo;
     // Cut and Paste will be handled in |Editor::dispatchCPPEvent()|.
 
     // Styling.
     case CommandType::Bold:
     case CommandType::ToggleBold:
-      return InputType::Bold;
+      return InputType::FormatBold;
     case CommandType::Italic:
     case CommandType::ToggleItalic:
-      return InputType::Italic;
+      return InputType::FormatItalic;
     case CommandType::Underline:
     case CommandType::ToggleUnderline:
-      return InputType::Underline;
+      return InputType::FormatUnderline;
     case CommandType::Strikethrough:
-      return InputType::StrikeThrough;
+      return InputType::FormatStrikeThrough;
     case CommandType::Superscript:
-      return InputType::Superscript;
+      return InputType::FormatSuperscript;
     case CommandType::Subscript:
-      return InputType::Subscript;
+      return InputType::FormatSubscript;
     default:
       return InputType::None;
   }
@@ -366,8 +366,6 @@ static bool executeApplyParagraphStyle(LocalFrame& frame,
 static bool executeInsertFragment(LocalFrame& frame,
                                   DocumentFragment* fragment) {
   DCHECK(frame.document());
-  // TODO(chongz): |InputType| should be |InsertNonText| or corresponding type
-  // if exists.
   return ReplaceSelectionCommand::create(
              *frame.document(), fragment,
              ReplaceSelectionCommand::PreventNesting,
@@ -510,8 +508,7 @@ static bool executeBackColor(LocalFrame& frame,
                              Event*,
                              EditorCommandSource source,
                              const String& value) {
-  return executeApplyStyle(frame, source,
-                           InputEvent::InputType::SetBackgroundColor,
+  return executeApplyStyle(frame, source, InputEvent::InputType::None,
                            CSSPropertyBackgroundColor, value);
 }
 
@@ -722,7 +719,7 @@ static bool executeFontName(LocalFrame& frame,
                             Event*,
                             EditorCommandSource source,
                             const String& value) {
-  return executeApplyStyle(frame, source, InputEvent::InputType::SetFont,
+  return executeApplyStyle(frame, source, InputEvent::InputType::None,
                            CSSPropertyFontFamily, value);
 }
 
@@ -733,8 +730,7 @@ static bool executeFontSize(LocalFrame& frame,
   CSSValueID size;
   if (!HTMLFontElement::cssValueFromFontSizeNumber(value, size))
     return false;
-  return executeApplyStyle(frame, source,
-                           InputEvent::InputType::ChangeAttributes,
+  return executeApplyStyle(frame, source, InputEvent::InputType::None,
                            CSSPropertyFontSize, size);
 }
 
@@ -742,8 +738,7 @@ static bool executeFontSizeDelta(LocalFrame& frame,
                                  Event*,
                                  EditorCommandSource source,
                                  const String& value) {
-  return executeApplyStyle(frame, source,
-                           InputEvent::InputType::ChangeAttributes,
+  return executeApplyStyle(frame, source, InputEvent::InputType::None,
                            CSSPropertyWebkitFontSizeDelta, value);
 }
 
@@ -751,7 +746,7 @@ static bool executeForeColor(LocalFrame& frame,
                              Event*,
                              EditorCommandSource source,
                              const String& value) {
-  return executeApplyStyle(frame, source, InputEvent::InputType::SetColor,
+  return executeApplyStyle(frame, source, InputEvent::InputType::None,
                            CSSPropertyColor, value);
 }
 
@@ -951,7 +946,7 @@ static bool executeJustifyCenter(LocalFrame& frame,
                                  EditorCommandSource source,
                                  const String&) {
   return executeApplyParagraphStyle(frame, source,
-                                    InputEvent::InputType::JustifyCenter,
+                                    InputEvent::InputType::FormatJustifyCenter,
                                     CSSPropertyTextAlign, "center");
 }
 
@@ -960,7 +955,7 @@ static bool executeJustifyFull(LocalFrame& frame,
                                EditorCommandSource source,
                                const String&) {
   return executeApplyParagraphStyle(frame, source,
-                                    InputEvent::InputType::JustifyFull,
+                                    InputEvent::InputType::FormatJustifyFull,
                                     CSSPropertyTextAlign, "justify");
 }
 
@@ -969,7 +964,7 @@ static bool executeJustifyLeft(LocalFrame& frame,
                                EditorCommandSource source,
                                const String&) {
   return executeApplyParagraphStyle(frame, source,
-                                    InputEvent::InputType::JustifyLeft,
+                                    InputEvent::InputType::FormatJustifyLeft,
                                     CSSPropertyTextAlign, "left");
 }
 
@@ -978,7 +973,7 @@ static bool executeJustifyRight(LocalFrame& frame,
                                 EditorCommandSource source,
                                 const String&) {
   return executeApplyParagraphStyle(frame, source,
-                                    InputEvent::InputType::JustifyRight,
+                                    InputEvent::InputType::FormatJustifyRight,
                                     CSSPropertyTextAlign, "right");
 }
 
@@ -990,7 +985,8 @@ static bool executeMakeTextWritingDirectionLeftToRight(LocalFrame& frame,
       MutableStylePropertySet::create(HTMLQuirksMode);
   style->setProperty(CSSPropertyUnicodeBidi, CSSValueIsolate);
   style->setProperty(CSSPropertyDirection, CSSValueLtr);
-  frame.editor().applyStyle(style, InputEvent::InputType::SetWritingDirection);
+  frame.editor().applyStyle(style,
+                            InputEvent::InputType::FormatSetBlockTextDirection);
   return true;
 }
 
@@ -1001,7 +997,8 @@ static bool executeMakeTextWritingDirectionNatural(LocalFrame& frame,
   MutableStylePropertySet* style =
       MutableStylePropertySet::create(HTMLQuirksMode);
   style->setProperty(CSSPropertyUnicodeBidi, CSSValueNormal);
-  frame.editor().applyStyle(style, InputEvent::InputType::SetWritingDirection);
+  frame.editor().applyStyle(style,
+                            InputEvent::InputType::FormatSetBlockTextDirection);
   return true;
 }
 
@@ -1013,7 +1010,8 @@ static bool executeMakeTextWritingDirectionRightToLeft(LocalFrame& frame,
       MutableStylePropertySet::create(HTMLQuirksMode);
   style->setProperty(CSSPropertyUnicodeBidi, CSSValueIsolate);
   style->setProperty(CSSPropertyDirection, CSSValueRtl);
-  frame.editor().applyStyle(style, InputEvent::InputType::SetWritingDirection);
+  frame.editor().applyStyle(style,
+                            InputEvent::InputType::FormatSetBlockTextDirection);
   return true;
 }
 
@@ -1671,7 +1669,7 @@ static bool executeStrikethrough(LocalFrame& frame,
   CSSIdentifierValue* lineThrough =
       CSSIdentifierValue::create(CSSValueLineThrough);
   return executeToggleStyleInList(
-      frame, source, InputEvent::InputType::StrikeThrough,
+      frame, source, InputEvent::InputType::FormatStrikeThrough,
       CSSPropertyWebkitTextDecorationsInEffect, lineThrough);
 }
 
@@ -1695,7 +1693,8 @@ static bool executeSubscript(LocalFrame& frame,
                              Event*,
                              EditorCommandSource source,
                              const String&) {
-  return executeToggleStyle(frame, source, InputEvent::InputType::Subscript,
+  return executeToggleStyle(frame, source,
+                            InputEvent::InputType::FormatSubscript,
                             CSSPropertyVerticalAlign, "baseline", "sub");
 }
 
@@ -1703,7 +1702,8 @@ static bool executeSuperscript(LocalFrame& frame,
                                Event*,
                                EditorCommandSource source,
                                const String&) {
-  return executeToggleStyle(frame, source, InputEvent::InputType::Superscript,
+  return executeToggleStyle(frame, source,
+                            InputEvent::InputType::FormatSuperscript,
                             CSSPropertyVerticalAlign, "baseline", "super");
 }
 
@@ -1724,7 +1724,7 @@ static bool executeToggleBold(LocalFrame& frame,
                               Event*,
                               EditorCommandSource source,
                               const String&) {
-  return executeToggleStyle(frame, source, InputEvent::InputType::Bold,
+  return executeToggleStyle(frame, source, InputEvent::InputType::FormatBold,
                             CSSPropertyFontWeight, "normal", "bold");
 }
 
@@ -1732,7 +1732,7 @@ static bool executeToggleItalic(LocalFrame& frame,
                                 Event*,
                                 EditorCommandSource source,
                                 const String&) {
-  return executeToggleStyle(frame, source, InputEvent::InputType::Italic,
+  return executeToggleStyle(frame, source, InputEvent::InputType::FormatItalic,
                             CSSPropertyFontStyle, "normal", "italic");
 }
 
@@ -1750,7 +1750,7 @@ static bool executeUnderline(LocalFrame& frame,
                              const String&) {
   CSSIdentifierValue* underline = CSSIdentifierValue::create(CSSValueUnderline);
   return executeToggleStyleInList(
-      frame, source, InputEvent::InputType::Underline,
+      frame, source, InputEvent::InputType::FormatUnderline,
       CSSPropertyWebkitTextDecorationsInEffect, underline);
 }
 
@@ -1774,7 +1774,7 @@ static bool executeUnscript(LocalFrame& frame,
                             Event*,
                             EditorCommandSource source,
                             const String&) {
-  return executeApplyStyle(frame, source, InputEvent::InputType::Unscript,
+  return executeApplyStyle(frame, source, InputEvent::InputType::None,
                            CSSPropertyVerticalAlign, "baseline");
 }
 

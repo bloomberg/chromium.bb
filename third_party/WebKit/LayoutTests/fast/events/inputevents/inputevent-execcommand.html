@@ -49,35 +49,35 @@ test(function() {
     var selection = window.getSelection();
     selection.collapse(txt, 0);
     selection.extend(txt, 1);
-    testExecCommandInputType('bold', null, 'bold');
+    testExecCommandInputType('bold', null, 'formatBold');
     assert_equals(txt.innerHTML, '<b>abc</b>');
-    testExecCommandInputType('italic', null, 'italic');
+    testExecCommandInputType('italic', null, 'formatItalic');
     assert_equals(txt.innerHTML, '<b><i>abc</i></b>');
-    testExecCommandInputType('underline', null, 'underline');
+    testExecCommandInputType('underline', null, 'formatUnderline');
     assert_equals(txt.innerHTML, '<b><i><u>abc</u></i></b>');
-    testExecCommandInputType('strikeThrough', null, 'strikeThrough');
+    testExecCommandInputType('strikeThrough', null, 'formatStrikeThrough');
     assert_equals(txt.innerHTML, '<b><i><u><strike>abc</strike></u></i></b>');
-    testExecCommandInputType('superscript', null, 'superscript');
+    testExecCommandInputType('superscript', null, 'formatSuperscript');
     assert_equals(txt.innerHTML, '<b><i><u><strike><sup>abc</sup></strike></u></i></b>');
-    testExecCommandInputType('subscript', null, 'subscript');
+    testExecCommandInputType('subscript', null, 'formatSubscript');
     assert_equals(txt.innerHTML, '<b><i><u><strike><sub>abc</sub></strike></u></i></b>');
 
     // Formating
     txt.innerHTML = 'abc';
-    testExecCommandInputType('justifyCenter', null, 'justifyCenter');
+    testExecCommandInputType('justifyCenter', null, 'formatJustifyCenter');
     assert_equals(txt.innerHTML, '<div style="text-align: center;">abc</div>');
-    testExecCommandInputType('justifyFull', null, 'justifyFull');
+    testExecCommandInputType('justifyFull', null, 'formatJustifyFull');
     assert_equals(txt.innerHTML, '<div style="text-align: justify;">abc</div>');
-    testExecCommandInputType('justifyRight', null, 'justifyRight');
+    testExecCommandInputType('justifyRight', null, 'formatJustifyRight');
     assert_equals(txt.innerHTML, '<div style="text-align: right;">abc</div>');
-    testExecCommandInputType('justifyLeft', null, 'justifyLeft');
+    testExecCommandInputType('justifyLeft', null, 'formatJustifyLeft');
     assert_equals(txt.innerHTML, '<div style="text-align: left;">abc</div>');
     selection.collapse(txt, 0);
     selection.extend(txt, 1);
-    testExecCommandInputType('removeFormat', null, 'removeFormat');
+    testExecCommandInputType('removeFormat', null, 'formatRemove');
     assert_equals(txt.innerHTML, '<div>abc</div>');
-    testExecCommandInputType('indent', null, 'indent');
-    testExecCommandInputType('outdent', null, 'outdent');
+    testExecCommandInputType('indent', null, 'formatIndent');
+    testExecCommandInputType('outdent', null, 'formatOutdent');
     assert_equals(txt.innerHTML, '<div>abc</div>');
 
     // Copy shouldn't fire 'input'.

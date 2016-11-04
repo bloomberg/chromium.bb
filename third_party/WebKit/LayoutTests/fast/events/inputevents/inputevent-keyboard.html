@@ -76,8 +76,8 @@ test(function() {
     // Keyboard commands
     if (!isMacOS) {
         // MacOS's eventSender does not work on hot keys other than arrows.
-        testKeyDownInputType('z', ['ctrlKey'], 'undo');
-        testKeyDownInputType('z', ['ctrlKey', 'shiftKey'], 'redo');
+        testKeyDownInputType('z', ['ctrlKey'], 'historyUndo');
+        testKeyDownInputType('z', ['ctrlKey', 'shiftKey'], 'historyRedo');
     }
     // Move command should not generate input events.
     testKeyDownInputType('ArrowLeft', [], NO_INPUT_EVENT_FIRED);

@@ -40,7 +40,6 @@ class CreateLinkCommand final : public CompositeEditCommand {
   CreateLinkCommand(Document&, const String& linkURL);
 
   void doApply(EditingState*) override;
-  InputEvent::InputType inputType() const override;
 
   String m_url;
 };

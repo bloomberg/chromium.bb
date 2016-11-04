@@ -861,7 +861,7 @@ void Editor::unappliedEditing(EditCommandComposition* cmd) {
                                        cmd->endingRootEditableElement());
   dispatchInputEventEditableContentChanged(
       cmd->startingRootEditableElement(), cmd->endingRootEditableElement(),
-      InputEvent::InputType::Undo, nullAtom,
+      InputEvent::InputType::HistoryUndo, nullAtom,
       InputEvent::EventIsComposing::NotComposing);
 
   // TODO(editing-dev): The use of updateStyleAndLayoutIgnorePendingStylesheets
@@ -890,7 +890,7 @@ void Editor::reappliedEditing(EditCommandComposition* cmd) {
                                        cmd->endingRootEditableElement());
   dispatchInputEventEditableContentChanged(
       cmd->startingRootEditableElement(), cmd->endingRootEditableElement(),
-      InputEvent::InputType::Redo, nullAtom,
+      InputEvent::InputType::HistoryRedo, nullAtom,
       InputEvent::EventIsComposing::NotComposing);
 
   // TODO(yosin): Since |dispatchEditableContentChangedEvents()| and
@@ -1252,8 +1252,8 @@ void Editor::setBaseWritingDirection(WritingDirection direction) {
           ? "ltr"
           : direction == RightToLeftWritingDirection ? "rtl" : "inherit",
       false);
-  applyParagraphStyleToSelection(style,
-                                 InputEvent::InputType::SetWritingDirection);
+  applyParagraphStyleToSelection(
+      style, InputEvent::InputType::FormatSetBlockTextDirection);
 }
 
 void Editor::revealSelectionAfterEditingOperation(

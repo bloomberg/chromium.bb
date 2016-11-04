@@ -63,8 +63,4 @@ void CreateLinkCommand::doApply(EditingState* editingState) {
   }
 }
 
-InputEvent::InputType CreateLinkCommand::inputType() const {
-  return InputEvent::InputType::CreateLink;
-}
-
 }  // namespace blink

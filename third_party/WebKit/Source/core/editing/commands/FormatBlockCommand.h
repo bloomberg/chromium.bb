@@ -60,7 +60,6 @@ class CORE_EXPORT FormatBlockCommand final : public ApplyBlockElementCommand {
                    const Position& endOfSelection,
                    HTMLElement*&,
                    EditingState*) override;
-  InputEvent::InputType inputType() const;
 
   bool m_didApply;
 };
