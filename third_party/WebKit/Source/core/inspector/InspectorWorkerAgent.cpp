@@ -55,23 +55,23 @@ void InspectorWorkerAgent::restore() {
   connectToAllProxies();
 }
 
-void InspectorWorkerAgent::disable(ErrorString*) {
+Response InspectorWorkerAgent::disable() {
   if (autoAttachEnabled()) {
     disconnectFromAllProxies();
     m_instrumentingAgents->removeInspectorWorkerAgent(this);
   }
   m_state->setBoolean(WorkerAgentState::autoAttach, false);
   m_state->setBoolean(WorkerAgentState::waitForDebuggerOnStart, false);
+  return Response::OK();
 }
 
-void InspectorWorkerAgent::setAutoAttach(ErrorString*,
-                                         bool autoAttach,
-                                         bool waitForDebuggerOnStart) {
+Response InspectorWorkerAgent::setAutoAttach(bool autoAttach,
+                                             bool waitForDebuggerOnStart) {
   m_state->setBoolean(WorkerAgentState::waitForDebuggerOnStart,
                       waitForDebuggerOnStart);
 
   if (autoAttach == autoAttachEnabled())
-    return;
+    return Response::OK();
   m_state->setBoolean(WorkerAgentState::autoAttach, autoAttach);
   if (autoAttach) {
     m_instrumentingAgents->addInspectorWorkerAgent(this);
@@ -80,20 +80,20 @@ void InspectorWorkerAgent::setAutoAttach(ErrorString*,
     disconnectFromAllProxies();
     m_instrumentingAgents->removeInspectorWorkerAgent(this);
   }
+  return Response::OK();
 }
 
 bool InspectorWorkerAgent::autoAttachEnabled() {
   return m_state->booleanProperty(WorkerAgentState::autoAttach, false);
 }
 
-void InspectorWorkerAgent::sendMessageToTarget(ErrorString* error,
-                                               const String& targetId,
-                                               const String& message) {
+Response InspectorWorkerAgent::sendMessageToTarget(const String& targetId,
+                                                   const String& message) {
   WorkerInspectorProxy* proxy = m_connectedProxies.get(targetId);
-  if (proxy)
-    proxy->sendMessageToInspector(message);
-  else
-    *error = "Not attached to a target with given id";
+  if (!proxy)
+    return Response::Error("Not attached to a target with given id");
+  proxy->sendMessageToInspector(message);
+  return Response::OK();
 }
 
 void InspectorWorkerAgent::setTracingSessionId(const String& sessionId) {

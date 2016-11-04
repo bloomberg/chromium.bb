@@ -76,8 +76,7 @@ DEFINE_TRACE(InspectorLogAgent) {
 void InspectorLogAgent::restore() {
   if (!m_state->booleanProperty(LogAgentState::logEnabled, false))
     return;
-  ErrorString ignored;
-  enable(&ignored);
+  enable();
 }
 
 void InspectorLogAgent::consoleMessageAdded(ConsoleMessage* message) {
@@ -109,9 +108,9 @@ void InspectorLogAgent::consoleMessageAdded(ConsoleMessage* message) {
   frontend()->flush();
 }
 
-void InspectorLogAgent::enable(ErrorString*) {
+Response InspectorLogAgent::enable() {
   if (m_enabled)
-    return;
+    return Response::OK();
   m_instrumentingAgents->addInspectorLogAgent(this);
   m_state->setBoolean(LogAgentState::logEnabled, true);
   m_enabled = true;
@@ -130,18 +129,21 @@ void InspectorLogAgent::enable(ErrorString*) {
   }
   for (size_t i = 0; i < m_storage->size(); ++i)
     consoleMessageAdded(m_storage->at(i));
+  return Response::OK();
 }
 
-void InspectorLogAgent::disable(ErrorString*) {
+Response InspectorLogAgent::disable() {
   if (!m_enabled)
-    return;
+    return Response::OK();
   m_state->setBoolean(LogAgentState::logEnabled, false);
   m_enabled = false;
   m_instrumentingAgents->removeInspectorLogAgent(this);
+  return Response::OK();
 }
 
-void InspectorLogAgent::clear(ErrorString*) {
+Response InspectorLogAgent::clear() {
   m_storage->clear();
+  return Response::OK();
 }
 
 }  // namespace blink

@@ -29,9 +29,9 @@ class CORE_EXPORT InspectorLogAgent
   void consoleMessageAdded(ConsoleMessage*);
 
   // Protocol methods.
-  void enable(ErrorString*) override;
-  void disable(ErrorString*) override;
-  void clear(ErrorString*) override;
+  Response enable() override;
+  Response disable() override;
+  Response clear() override;
 
  private:
   bool m_enabled;

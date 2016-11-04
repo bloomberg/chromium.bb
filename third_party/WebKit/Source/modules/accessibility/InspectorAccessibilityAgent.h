@@ -26,8 +26,7 @@ class MODULES_EXPORT InspectorAccessibilityAgent
   DECLARE_VIRTUAL_TRACE();
 
   // Protocol methods.
-  void getAXNodeChain(
-      ErrorString*,
+  Response getAXNodeChain(
       int domNodeId,
       bool fetchAncestors,
       std::unique_ptr<protocol::Array<protocol::Accessibility::AXNode>>*)

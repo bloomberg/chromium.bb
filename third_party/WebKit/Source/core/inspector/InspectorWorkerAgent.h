@@ -52,7 +52,7 @@ class CORE_EXPORT InspectorWorkerAgent final
   ~InspectorWorkerAgent() override;
   DECLARE_VIRTUAL_TRACE();
 
-  void disable(ErrorString*) override;
+  Response disable() override;
   void restore() override;
   void didCommitLoadForLocalFrame(LocalFrame*) override;
 
@@ -62,12 +62,9 @@ class CORE_EXPORT InspectorWorkerAgent final
   void workerTerminated(WorkerInspectorProxy*);
 
   // Called from Dispatcher
-  void setAutoAttach(ErrorString*,
-                     bool autoAttach,
-                     bool waitForDebuggerOnStart) override;
-  void sendMessageToTarget(ErrorString*,
-                           const String& targetId,
-                           const String& message) override;
+  Response setAutoAttach(bool autoAttach, bool waitForDebuggerOnStart) override;
+  Response sendMessageToTarget(const String& targetId,
+                               const String& message) override;
 
   void setTracingSessionId(const String&);
 

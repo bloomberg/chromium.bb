@@ -42,7 +42,6 @@ namespace blink {
 
 class LocalFrame;
 
-using protocol::ErrorString;
 using protocol::Maybe;
 using protocol::Response;
 
@@ -86,8 +85,10 @@ class InspectorBaseAgent : public InspectorAgent,
     }
   }
 
+  Response disable() override { return Response::OK(); }
+
   void dispose() override {
-    DomainMetainfo::BackendClass::disableMe(this);
+    disable();
     m_frontend.reset();
     m_state = nullptr;
     m_instrumentingAgents = nullptr;

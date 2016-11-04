@@ -717,7 +717,6 @@ void InspectorIndexedDBAgent::requestDatabaseNames(
     std::unique_ptr<RequestDatabaseNamesCallback> requestCallback) {
   LocalFrame* frame =
       m_inspectedFrames->frameWithSecurityOrigin(securityOrigin);
-  ErrorString errorString;
   Document* document = frame ? frame->document() : nullptr;
   if (!document) {
     requestCallback->sendFailure(Response::Error(kNoDocumentError));
@@ -758,7 +757,6 @@ void InspectorIndexedDBAgent::requestDatabase(
     std::unique_ptr<RequestDatabaseCallback> requestCallback) {
   LocalFrame* frame =
       m_inspectedFrames->frameWithSecurityOrigin(securityOrigin);
-  ErrorString errorString;
   Document* document = frame ? frame->document() : nullptr;
   if (!document) {
     requestCallback->sendFailure(Response::Error(kNoDocumentError));
@@ -795,7 +793,6 @@ void InspectorIndexedDBAgent::requestData(
     std::unique_ptr<RequestDataCallback> requestCallback) {
   LocalFrame* frame =
       m_inspectedFrames->frameWithSecurityOrigin(securityOrigin);
-  ErrorString errorString;
   Document* document = frame ? frame->document() : nullptr;
   if (!document) {
     requestCallback->sendFailure(Response::Error(kNoDocumentError));
@@ -930,7 +927,6 @@ void InspectorIndexedDBAgent::clearObjectStore(
     std::unique_ptr<ClearObjectStoreCallback> requestCallback) {
   LocalFrame* frame =
       m_inspectedFrames->frameWithSecurityOrigin(securityOrigin);
-  ErrorString errorString;
   Document* document = frame ? frame->document() : nullptr;
   if (!document) {
     requestCallback->sendFailure(Response::Error(kNoDocumentError));

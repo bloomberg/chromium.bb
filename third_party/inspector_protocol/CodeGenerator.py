@@ -330,9 +330,7 @@ def resolve_type(protocol, prop):
 
 
 def new_style(domain):
-    domains = ["DOMStorage", "Rendering", "Emulation", "Network", "Memory", "Page", "LayerTree", "Database", "IndexedDB", "CacheStorage", "DOM", "CSS",
-        "ApplicationCache", "DOMDebugger", "Input", "DeviceOrientation", "Tracing", "Animation" ]
-    return domain["domain"] in domains
+    return True
 
 
 def join_arrays(dict, keys):

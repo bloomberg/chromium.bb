@@ -380,31 +380,24 @@ InspectorAccessibilityAgent::InspectorAccessibilityAgent(
     InspectorDOMAgent* domAgent)
     : m_page(page), m_domAgent(domAgent) {}
 
-void InspectorAccessibilityAgent::getAXNodeChain(
-    ErrorString* errorString,
+Response InspectorAccessibilityAgent::getAXNodeChain(
     int domNodeId,
     bool fetchAncestors,
     std::unique_ptr<protocol::Array<protocol::Accessibility::AXNode>>* nodes) {
-  if (!m_domAgent->enabled()) {
-    *errorString = "DOM agent must be enabled";
-    return;
-  }
+  if (!m_domAgent->enabled())
+    return Response::Error("DOM agent must be enabled");
   Node* domNode = nullptr;
   Response response = m_domAgent->assertNode(domNodeId, domNode);
-  if (!response.isSuccess()) {
-    *errorString = response.errorMessage();
-    return;
-  }
+  if (!response.isSuccess())
+    return response;
 
   Document& document = domNode->document();
   document.updateStyleAndLayoutIgnorePendingStylesheets();
   DocumentLifecycle::DisallowTransitionScope disallowTransition(
       document.lifecycle());
   LocalFrame* localFrame = document.frame();
-  if (!localFrame) {
-    *errorString = "Frame is detached.";
-    return;
-  }
+  if (!localFrame)
+    return Response::Error("Frame is detached.");
   std::unique_ptr<ScopedAXObjectCache> scopedCache =
       ScopedAXObjectCache::create(document);
   AXObjectCacheImpl* cache = toAXObjectCacheImpl(scopedCache->get());
@@ -424,6 +417,7 @@ void InspectorAccessibilityAgent::getAXNodeChain(
       parent = parent->parentObjectUnignored();
     }
   }
+  return Response::OK();
 }
 
 std::unique_ptr<AXNode> InspectorAccessibilityAgent::buildObjectForIgnoredNode(
