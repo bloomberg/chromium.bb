@@ -20,6 +20,7 @@ function clone {
   # Clone the main repository.
   git clone $REMOTE_REPO $TARGET_DIR
   cd $TARGET_DIR && git checkout $WPT_HEAD
+  echo "WPTHead: " `git rev-parse HEAD`
 
   # Starting from the 2nd line of WPTWhiteList, we read and checkout submodules.
   tail -n+2 $DIR/WPTHeads | while read dir submodule commit; do
@@ -27,12 +28,16 @@ function clone {
       git submodule update --init $submodule && \
       cd $TARGET_DIR/$dir/$submodule && \
       git checkout $commit
+    echo "WPTHead: $dir $submodule" `git rev-parse HEAD`
   done
 }
 
 function reduce {
-  # Remove all except white-listed.
   cd $TARGET_DIR
+  # web-platform-tests/html/ contains a filename with ', and it confuses
+  # xargs on macOS.
+  rm -fr html
+  # Remove all except white-listed.
   find . -type f | grep -Fxvf ../WPTWhiteList | xargs -n 1 rm
   find . -empty -type d -delete
 }
