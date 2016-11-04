@@ -518,19 +518,21 @@ class PredictorBrowserTest : public InProcessBrowserTest {
   void SetUpOnMainThread() override {
     DCHECK_CURRENTLY_ON(BrowserThread::UI);
     task_runner_ = base::ThreadTaskRunnerHandle::Get();
-    cross_site_test_server_->ServeFilesFromSourceDirectory("chrome/test/data/");
+    cross_site_test_server()->ServeFilesFromSourceDirectory(
+        "chrome/test/data/");
 
     connection_listener_.reset(new ConnectionListener());
     cross_site_connection_listener_.reset(new ConnectionListener());
     embedded_test_server()->SetConnectionListener(connection_listener_.get());
-    cross_site_test_server_->SetConnectionListener(
+    cross_site_test_server()->SetConnectionListener(
         cross_site_connection_listener_.get());
-    ASSERT_TRUE(embedded_test_server()->Start());
-    ASSERT_TRUE(cross_site_test_server_->Start());
+    ASSERT_TRUE(cross_site_test_server()->Start());
 
     embedded_test_server()->RegisterRequestHandler(
         base::Bind(&RedirectForPathHandler, "/",
                    cross_site_test_server()->GetURL("/title1.html")));
+
+    ASSERT_TRUE(embedded_test_server()->Start());
 
     predictor()->SetPredictorEnabledForTest(true);
     InstallPredictorObserver(embedded_test_server()->base_url(),
@@ -1007,7 +1009,6 @@ IN_PROC_BROWSER_TEST_F(PredictorBrowserTest, PredictBasedOnSubframeRedirect) {
   // might be worthwhile to investigate.
   std::unique_ptr<net::EmbeddedTestServer> redirector =
       base::MakeUnique<net::EmbeddedTestServer>();
-  ASSERT_TRUE(redirector->Start());
 
   NavigateToCrossSiteHtmlUrl(1 /* num_cors */, "" /* file_suffix */);
   EXPECT_EQ(1, observer()->CrossSiteLearned());
@@ -1016,6 +1017,7 @@ IN_PROC_BROWSER_TEST_F(PredictorBrowserTest, PredictBasedOnSubframeRedirect) {
   redirector->RegisterRequestHandler(
       base::Bind(&RedirectForPathHandler, "/",
                  embedded_test_server()->GetURL("/title1.html")));
+  ASSERT_TRUE(redirector->Start());
 
   // Note that the observer will see preconnects to the redirector, and the
   // predictor will learn redirector->embedded_test_server.
