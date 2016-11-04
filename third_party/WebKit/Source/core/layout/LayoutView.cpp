@@ -204,7 +204,9 @@ void LayoutView::checkLayoutState() {
 }
 #endif
 
-void LayoutView::setShouldDoFullPaintInvalidationOnResizeIfNeeded() {
+void LayoutView::setShouldDoFullPaintInvalidationOnResizeIfNeeded(
+    bool widthChanged,
+    bool heightChanged) {
   // When background-attachment is 'fixed', we treat the viewport (instead of
   // the 'root' i.e. html or body) as the background positioning area, and we
   // should fully invalidate on viewport resize if the background image is not
@@ -213,15 +215,10 @@ void LayoutView::setShouldDoFullPaintInvalidationOnResizeIfNeeded() {
   if (style()->hasFixedBackgroundImage() &&
       (!m_compositor ||
        !m_compositor->needsFixedRootBackgroundLayer(layer()))) {
-    IncludeScrollbarsInRect includeScrollbars =
-        RuntimeEnabledFeatures::rootLayerScrollingEnabled() ? IncludeScrollbars
-                                                            : ExcludeScrollbars;
-    if ((offsetWidth() != viewWidth(includeScrollbars) &&
-         mustInvalidateFillLayersPaintOnWidthChange(
-             style()->backgroundLayers())) ||
-        (offsetHeight() != viewHeight(includeScrollbars) &&
-         mustInvalidateFillLayersPaintOnHeightChange(
-             style()->backgroundLayers())))
+    if ((widthChanged && mustInvalidateFillLayersPaintOnWidthChange(
+                             style()->backgroundLayers())) ||
+        (heightChanged && mustInvalidateFillLayersPaintOnHeightChange(
+                              style()->backgroundLayers())))
       setShouldDoFullPaintInvalidation(PaintInvalidationBoundsChange);
   }
 }
@@ -230,7 +227,12 @@ void LayoutView::layout() {
   if (!document().paginated())
     setPageLogicalHeight(LayoutUnit());
 
-  setShouldDoFullPaintInvalidationOnResizeIfNeeded();
+  IncludeScrollbarsInRect includeScrollbars =
+      RuntimeEnabledFeatures::rootLayerScrollingEnabled() ? IncludeScrollbars
+                                                          : ExcludeScrollbars;
+  FloatSize viewSize(frameView()->visibleContentSize(includeScrollbars));
+  setShouldDoFullPaintInvalidationOnResizeIfNeeded(
+      offsetWidth() != viewSize.width(), offsetHeight() != viewSize.height());
 
   if (pageLogicalHeight() && shouldUsePrintingLayout()) {
     m_minPreferredLogicalWidth = m_maxPreferredLogicalWidth = logicalWidth();
@@ -882,10 +884,6 @@ IntRect LayoutView::documentRect() const {
 
 bool LayoutView::rootBackgroundIsEntirelyFixed() const {
   return style()->hasEntirelyFixedBackground();
-}
-
-LayoutRect LayoutView::backgroundRect(LayoutBox* backgroundLayoutObject) const {
-  return LayoutRect(documentRect());
 }
 
 IntSize LayoutView::layoutSize(

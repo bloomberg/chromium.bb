@@ -1514,6 +1514,23 @@ void FrameView::viewportSizeChanged(bool widthChanged, bool heightChanged) {
       lvi.setShouldDoFullPaintInvalidation();
   }
 
+  if (RuntimeEnabledFeatures::inertTopControlsEnabled() && layoutView() &&
+      layoutView()->style()->hasFixedBackgroundImage()) {
+    // In the case where we don't change layout size from top control resizes,
+    // we wont perform a layout. If we have a fixed background image however,
+    // the background layer needs to get resized so we should request a layout
+    // explicitly.
+    PaintLayer* layer = layoutView()->layer();
+    if (layoutView()->compositor()->needsFixedRootBackgroundLayer(layer)) {
+      setNeedsLayout();
+    } else if (!RuntimeEnabledFeatures::rootLayerScrollingEnabled()) {
+      // If root layer scrolls is on, we've already issued a full invalidation
+      // above.
+      layoutView()->setShouldDoFullPaintInvalidationOnResizeIfNeeded(
+          widthChanged, heightChanged);
+    }
+  }
+
   if (!hasViewportConstrainedObjects())
     return;
 

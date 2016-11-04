@@ -176,8 +176,6 @@ class CORE_EXPORT LayoutView final : public LayoutBlockFlow {
   PaintLayerCompositor* compositor();
   bool usesCompositing() const;
 
-  LayoutRect backgroundRect(LayoutBox* backgroundLayoutObject) const;
-
   IntRect documentRect() const;
 
   // LayoutObject that paints the root background has background-images which
@@ -223,6 +221,9 @@ class CORE_EXPORT LayoutView final : public LayoutBlockFlow {
   // It is very likely you do not want to call this method.
   void setShouldDoFullPaintInvalidationForViewAndAllDescendants();
 
+  void setShouldDoFullPaintInvalidationOnResizeIfNeeded(bool widthChanged,
+                                                        bool heightChanged);
+
   // The document scrollbar is always on the right, even in RTL. This is to
   // prevent it from moving around on navigations.
   // TODO(skobes): This is not quite the ideal behavior, see
@@ -266,8 +267,6 @@ class CORE_EXPORT LayoutView final : public LayoutBlockFlow {
 #if ENABLE(ASSERT)
   void checkLayoutState();
 #endif
-
-  void setShouldDoFullPaintInvalidationOnResizeIfNeeded();
 
   void updateFromStyle() override;
   bool allowsOverflowClip() const override;
