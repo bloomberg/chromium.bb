@@ -358,23 +358,29 @@ TEST_P(ParameterizedWebFrameTest, FrameForEnteredContext) {
 class ScriptExecutionCallbackHelper : public WebScriptExecutionCallback {
  public:
   explicit ScriptExecutionCallbackHelper(v8::Local<v8::Context> context)
-      : m_didComplete(false), m_context(context) {}
+      : m_didComplete(false), m_boolValue(false), m_context(context) {}
   ~ScriptExecutionCallbackHelper() {}
 
   bool didComplete() const { return m_didComplete; }
   const String& stringValue() const { return m_stringValue; }
+  bool boolValue() { return m_boolValue; }
 
  private:
   void completed(const WebVector<v8::Local<v8::Value>>& values) override {
     m_didComplete = true;
-    if (!values.isEmpty() && values[0]->IsString()) {
-      m_stringValue =
-          toCoreString(values[0]->ToString(m_context).ToLocalChecked());
+    if (!values.isEmpty()) {
+      if (values[0]->IsString()) {
+        m_stringValue =
+            toCoreString(values[0]->ToString(m_context).ToLocalChecked());
+      } else if (values[0]->IsBoolean()) {
+        m_boolValue = values[0].As<v8::Boolean>()->Value();
+      }
     }
   }
 
   bool m_didComplete;
   String m_stringValue;
+  bool m_boolValue;
   v8::Local<v8::Context> m_context;
 };
 
@@ -425,6 +431,106 @@ TEST_P(ParameterizedWebFrameTest, SuspendedRequestExecuteScript) {
                               m_baseURL + "bar.html");
   EXPECT_TRUE(callbackHelper.didComplete());
   EXPECT_EQ(String(), callbackHelper.stringValue());
+}
+
+TEST_P(ParameterizedWebFrameTest, RequestExecuteV8Function) {
+  registerMockedHttpURLLoad("foo.html");
+
+  FrameTestHelpers::WebViewHelper webViewHelper;
+  webViewHelper.initializeAndLoad(m_baseURL + "foo.html", true);
+
+  auto callback = [](const v8::FunctionCallbackInfo<v8::Value>& info) {
+    info.GetReturnValue().Set(v8String(info.GetIsolate(), "hello"));
+  };
+
+  v8::HandleScope scope(v8::Isolate::GetCurrent());
+  v8::Local<v8::Context> context =
+      webViewHelper.webView()->mainFrame()->mainWorldScriptContext();
+  ScriptExecutionCallbackHelper callbackHelper(context);
+  v8::Local<v8::Function> function =
+      v8::Function::New(context, callback).ToLocalChecked();
+  webViewHelper.webView()
+      ->mainFrame()
+      ->toWebLocalFrame()
+      ->requestExecuteV8Function(context, function,
+                                 v8::Undefined(context->GetIsolate()), 0,
+                                 nullptr, &callbackHelper);
+  runPendingTasks();
+  EXPECT_TRUE(callbackHelper.didComplete());
+  EXPECT_EQ("hello", callbackHelper.stringValue());
+}
+
+TEST_P(ParameterizedWebFrameTest, RequestExecuteV8FunctionWhileSuspended) {
+  registerMockedHttpURLLoad("foo.html");
+
+  FrameTestHelpers::WebViewHelper webViewHelper;
+  webViewHelper.initializeAndLoad(m_baseURL + "foo.html", true);
+
+  auto callback = [](const v8::FunctionCallbackInfo<v8::Value>& info) {
+    info.GetReturnValue().Set(v8String(info.GetIsolate(), "hello"));
+  };
+
+  v8::HandleScope scope(v8::Isolate::GetCurrent());
+  v8::Local<v8::Context> context =
+      webViewHelper.webView()->mainFrame()->mainWorldScriptContext();
+
+  // Suspend scheduled tasks so the script doesn't run.
+  WebLocalFrameImpl* mainFrame = webViewHelper.webView()->mainFrameImpl();
+  mainFrame->frame()->document()->suspendScheduledTasks();
+
+  ScriptExecutionCallbackHelper callbackHelper(context);
+  v8::Local<v8::Function> function =
+      v8::Function::New(context, callback).ToLocalChecked();
+  mainFrame->requestExecuteV8Function(context, function,
+                                      v8::Undefined(context->GetIsolate()), 0,
+                                      nullptr, &callbackHelper);
+  runPendingTasks();
+  EXPECT_FALSE(callbackHelper.didComplete());
+
+  mainFrame->frame()->document()->resumeScheduledTasks();
+  runPendingTasks();
+  EXPECT_TRUE(callbackHelper.didComplete());
+  EXPECT_EQ("hello", callbackHelper.stringValue());
+}
+
+TEST_P(ParameterizedWebFrameTest,
+       RequestExecuteV8FunctionWhileSuspendedWithUserGesture) {
+  registerMockedHttpURLLoad("foo.html");
+
+  FrameTestHelpers::WebViewHelper webViewHelper;
+  webViewHelper.initializeAndLoad(m_baseURL + "foo.html", true);
+
+  auto callback = [](const v8::FunctionCallbackInfo<v8::Value>& info) {
+    info.GetReturnValue().Set(v8::Boolean::New(
+        info.GetIsolate(), UserGestureIndicator::processingUserGesture()));
+  };
+
+  // Suspend scheduled tasks so the script doesn't run.
+  WebLocalFrameImpl* mainFrame = webViewHelper.webView()->mainFrameImpl();
+  Document* document = mainFrame->frame()->document();
+  document->suspendScheduledTasks();
+
+  v8::HandleScope scope(v8::Isolate::GetCurrent());
+  v8::Local<v8::Context> context =
+      webViewHelper.webView()->mainFrame()->mainWorldScriptContext();
+
+  std::unique_ptr<UserGestureIndicator> indicator =
+      wrapUnique(new UserGestureIndicator(DocumentUserGestureToken::create(
+          document, UserGestureToken::NewGesture)));
+  ScriptExecutionCallbackHelper callbackHelper(context);
+  v8::Local<v8::Function> function =
+      v8::Function::New(context, callback).ToLocalChecked();
+  mainFrame->requestExecuteV8Function(
+      mainFrame->mainWorldScriptContext(), function,
+      v8::Undefined(context->GetIsolate()), 0, nullptr, &callbackHelper);
+
+  runPendingTasks();
+  EXPECT_FALSE(callbackHelper.didComplete());
+
+  mainFrame->frame()->document()->resumeScheduledTasks();
+  runPendingTasks();
+  EXPECT_TRUE(callbackHelper.didComplete());
+  EXPECT_EQ(true, callbackHelper.boolValue());
 }
 
 TEST_P(ParameterizedWebFrameTest, IframeScriptRemovesSelf) {

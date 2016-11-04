@@ -15,6 +15,7 @@ namespace blink {
 
 class LocalFrame;
 class ScriptSourceCode;
+class ScriptState;
 class WebScriptExecutionCallback;
 
 class SuspendableScriptExecutor final
@@ -54,6 +55,7 @@ class SuspendableScriptExecutor final
 
  private:
   SuspendableScriptExecutor(LocalFrame*,
+                            ScriptState*,
                             WebScriptExecutionCallback*,
                             Executor*);
 
@@ -63,7 +65,10 @@ class SuspendableScriptExecutor final
   void executeAndDestroySelf();
   void dispose();
 
+  // TODO(devlin): m_frame is likely redundant with context accessor on
+  // SuspendableTimer.
   Member<LocalFrame> m_frame;
+  RefPtr<ScriptState> m_scriptState;
   WebScriptExecutionCallback* m_callback;
 
   SelfKeepAlive<SuspendableScriptExecutor> m_keepAlive;

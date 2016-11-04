@@ -122,6 +122,14 @@ DOMWrapperWorld& DOMWrapperWorld::privateScriptIsolatedWorld() {
   return *cachedPrivateScriptIsolatedWorld;
 }
 
+PassRefPtr<DOMWrapperWorld> DOMWrapperWorld::fromWorldId(v8::Isolate* isolate,
+                                                         int worldId,
+                                                         int extensionGroup) {
+  if (worldId == MainWorldId)
+    return &mainWorld();
+  return ensureIsolatedWorld(isolate, worldId, extensionGroup);
+}
+
 typedef HashMap<int, DOMWrapperWorld*> WorldMap;
 static WorldMap& isolatedWorldMap() {
   ASSERT(isMainThread());
