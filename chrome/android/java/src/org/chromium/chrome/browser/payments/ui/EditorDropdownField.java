@@ -144,8 +144,15 @@ class EditorDropdownField implements EditorFieldView {
 
     @Override
     public void update() {
-        mSelectedIndex =
+        // If the adapter supports a hint and no value was selected, select the hint.
+        if (mFieldModel.getHint() != null && mFieldModel.getValue() == null) {
+            // The hint is hidden right after the last element.
+            mSelectedIndex = mFieldModel.getDropdownKeyValues().size();
+        } else {
+            mSelectedIndex =
                 getDropdownIndex(mFieldModel.getDropdownKeyValues(), mFieldModel.getValue());
+        }
+
         mDropdown.setSelection(mSelectedIndex);
     }
 
