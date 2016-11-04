@@ -55,4 +55,4 @@ def infra_kitchen(c):
 
 @CONFIG_CTX(includes=['infra_buildbot'])
 def infra_swarmbucket(c):
-  c.base_paths['git_cache'] = c.base_paths['root'] + ('git_cache',)
+  c.base_paths['git_cache'] = c.CURRENT_WORKING_DIR + ('git_cache',)
