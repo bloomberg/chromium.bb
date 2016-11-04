@@ -31,7 +31,9 @@ enum ErrorCode {
   // Error when mode is set after browser window is created.
   errSetMode,
   // Error when index of browser window is out of bounds.
-  errWrongIndex
+  errWrongIndex,
+  // Error when JavaScript execution is disabled.
+  errJavaScriptUnsupported
 };
 
 // This function sets an error message to the currently executing command.

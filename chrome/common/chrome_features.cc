@@ -8,6 +8,12 @@ namespace features {
 
 // All features in alphabetical order.
 
+#if defined(OS_MACOSX)
+// Enables Javascript execution via AppleScript.
+const base::Feature kAppleScriptExecuteJavaScript{
+    "AppleScriptExecuteJavaScript", base::FEATURE_ENABLED_BY_DEFAULT};
+#endif  // defined(OS_MACOSX)
+
 #if defined(OS_CHROMEOS)
 // Whether to handle low memory kill of ARC apps by Chrome.
 const base::Feature kArcMemoryManagement{

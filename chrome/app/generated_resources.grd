@@ -12224,6 +12224,9 @@ Tell us what happened exactly before you got the profile error message:
         <message name="IDS_WRONG_INDEX_ERROR_APPLESCRIPT_MAC" desc="Error dialog title to be displayed when ordered index is out of bounds.  Mac-only.">
                 Wrong index.
         </message>
+        <message name="IDS_JAVASCRIPT_UNSUPPORTED_ERROR_APPLESCRIPT_MAC" desc="Error dialog title to be displayed when the user attempts to execute JavaScript via AppleScript. Mac-only.">
+          Executing JavaScript through AppleScript is no longer supported.
+        </message>
       </if> <!-- is_macosx -->
 
 

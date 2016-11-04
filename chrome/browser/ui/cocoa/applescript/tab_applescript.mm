@@ -14,6 +14,7 @@
 #include "chrome/browser/ui/cocoa/applescript/apple_event_util.h"
 #include "chrome/browser/ui/cocoa/applescript/error_applescript.h"
 #include "chrome/browser/ui/cocoa/applescript/metrics_applescript.h"
+#include "chrome/common/chrome_features.h"
 #include "chrome/common/chrome_isolated_world_ids.h"
 #include "chrome/common/url_constants.h"
 #include "components/sessions/core/session_id.h"
@@ -126,6 +127,13 @@ void ResumeAppleEventAndSendReply(NSAppleEventManagerSuspensionID suspension_id,
 }
 
 - (void)setURL:(NSString*)aURL {
+  GURL url(base::SysNSStringToUTF8(aURL));
+  if (!base::FeatureList::IsEnabled(features::kAppleScriptExecuteJavaScript) &&
+      url.SchemeIs(url::kJavaScriptScheme)) {
+    AppleScript::SetError(AppleScript::errJavaScriptUnsupported);
+    return;
+  }
+
   // If a scripter sets a URL before the node is added save it at a temporary
   // location.
   if (!webContents_) {
@@ -133,7 +141,6 @@ void ResumeAppleEventAndSendReply(NSAppleEventManagerSuspensionID suspension_id,
     return;
   }
 
-  GURL url(base::SysNSStringToUTF8(aURL));
   // check for valid url.
   if (!url.is_empty() && !url.is_valid()) {
     AppleScript::SetError(AppleScript::errInvalidURL);
@@ -287,6 +294,11 @@ void ResumeAppleEventAndSendReply(NSAppleEventManagerSuspensionID suspension_id,
 }
 
 - (id)handlesExecuteJavascriptScriptCommand:(NSScriptCommand*)command {
+  if (!base::FeatureList::IsEnabled(features::kAppleScriptExecuteJavaScript)) {
+    AppleScript::SetError(AppleScript::errJavaScriptUnsupported);
+    return nil;
+  }
+
   AppleScript::LogAppleScriptUMA(
       AppleScript::AppleScriptCommand::TAB_EXECUTE_JAVASCRIPT);
   content::RenderFrameHost* frame = webContents_->GetMainFrame();

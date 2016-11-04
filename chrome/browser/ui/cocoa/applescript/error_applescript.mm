@@ -49,6 +49,10 @@ void AppleScript::SetError(AppleScript::ErrorCode errorCode) {
     case errWrongIndex:
       error_string = GetNSString(IDS_WRONG_INDEX_ERROR_APPLESCRIPT_MAC);
       break;
+    case errJavaScriptUnsupported:
+      error_string =
+          GetNSString(IDS_JAVASCRIPT_UNSUPPORTED_ERROR_APPLESCRIPT_MAC);
+      break;
     default:
       NOTREACHED();
   }
