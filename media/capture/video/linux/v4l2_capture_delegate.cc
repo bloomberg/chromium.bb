@@ -23,6 +23,12 @@
 #if LINUX_VERSION_CODE < KERNEL_VERSION(4, 6, 0)
 // 16 bit depth, Realsense F200.
 #define V4L2_PIX_FMT_Z16 v4l2_fourcc('Z', '1', '6', ' ')
+#endif
+
+// TODO(aleksandar.stojiljkovic): Wrap this with kernel version check once the
+// format is introduced to kernel.
+// See https://crbug.com/661877
+#ifndef V4L2_PIX_FMT_INVZ
 // 16 bit depth, Realsense SR300.
 #define V4L2_PIX_FMT_INVZ v4l2_fourcc('I', 'N', 'V', 'Z')
 #endif
