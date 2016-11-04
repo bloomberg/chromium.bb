@@ -81,6 +81,9 @@ void GetSavePasswordDialogTitleTextAndLinkRange(
     PasswordTittleType dialog_type,
     base::string16* title,
     gfx::Range* title_link_range) {
+  // TODO(crbug.com/658902): Remove these CHECKs after investigation.
+  CHECK(title);
+  CHECK(title_link_range);
   DCHECK(!password_manager::IsValidAndroidFacetURI(form_origin_url.spec()));
   std::vector<size_t> offsets;
   std::vector<base::string16> replacements;
@@ -110,12 +113,17 @@ void GetSavePasswordDialogTitleTextAndLinkRange(
         url_formatter::FormatUrlForSecurityDisplay(form_origin_url));
   }
 
+  // TODO(crbug.com/658902): Remove this CHECK after investigation. |title_id|
+  // being 0 would likely mean |dialog_type| out of bounds.
+  CHECK(title_id);
   if (is_smartlock_branding_enabled) {
     // "Google Smart Lock" should be a hyperlink.
     base::string16 title_link =
         l10n_util::GetStringUTF16(IDS_PASSWORD_MANAGER_SMART_LOCK);
     replacements.insert(replacements.begin(), title_link);
     *title = l10n_util::GetStringFUTF16(title_id, replacements, &offsets);
+    // TODO(crbug.com/658902): Remove this CHECK after investigation.
+    CHECK_LE(1u, offsets.size());
     *title_link_range =
         gfx::Range(offsets[0], offsets[0] + title_link.length());
   } else {
