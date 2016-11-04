@@ -150,6 +150,10 @@ NGLayoutOpportunity GetTopSpace(const NGLayoutOpportunity& parent_opportunity,
 void InsertExclusion(NGLayoutOpportunityTreeNode* node,
                      const NGLogicalRect* exclusion,
                      NGLayoutOpportunities& opportunities) {
+  // Base case: size of the exclusion is empty.
+  if (exclusion->size.IsEmpty())
+    return;
+
   // Base case: there is no node.
   if (!node)
     return;
@@ -210,22 +214,64 @@ bool CompareNGLayoutOpportunitesByStartPoint(const NGLayoutOpportunity& lhs,
   return rhs.size.inline_size < lhs.size.inline_size;
 }
 
+void RunPreconditionChecks(
+    const NGConstraintSpace& space,
+    const WTF::Optional<NGLogicalOffset>& opt_origin_point,
+    const WTF::Optional<NGLogicalOffset>& opt_leader_point) {
+  if (opt_origin_point) {
+    NGLogicalOffset origin_point = opt_origin_point.value();
+    DCHECK_GE(origin_point, space.Offset())
+        << "Origin point " << origin_point
+        << " should lay below the constraint space's offset " << space.Offset();
+  }
+
+  if (opt_leader_point) {
+    NGLogicalOffset leader_point = opt_leader_point.value();
+    DCHECK_GE(leader_point, space.Offset())
+        << "Leader point " << leader_point
+        << " should lay below the constraint space's offset " << space.Offset();
+  }
+}
+
+NGLogicalRect ToLeaderExclusion(const NGLogicalOffset& origin_point,
+                                const NGLogicalOffset& leader_point) {
+  LayoutUnit inline_size =
+      leader_point.inline_offset - origin_point.inline_offset;
+  LayoutUnit block_size = leader_point.block_offset - origin_point.block_offset;
+
+  NGLogicalRect leader_exclusion;
+  leader_exclusion.offset = origin_point;
+  leader_exclusion.size = {inline_size, block_size};
+  return leader_exclusion;
+}
+
 }  // namespace
 
 NGLayoutOpportunityIterator::NGLayoutOpportunityIterator(
     NGConstraintSpace* space,
-    const NGLogicalOffset origin_point,
-    const NGLogicalOffset leader_point)
-    : constraint_space_(space), leader_point_(leader_point) {
+    const WTF::Optional<NGLogicalOffset>& opt_origin_point,
+    const WTF::Optional<NGLogicalOffset>& opt_leader_point)
+    : constraint_space_(space) {
+  RunPreconditionChecks(*space, opt_origin_point, opt_leader_point);
+
   // TODO(chrome-layout-team): Combine exclusions that shadow each other.
   auto& exclusions = constraint_space_->PhysicalSpace()->Exclusions();
   DCHECK(std::is_sorted(exclusions.begin(), exclusions.end(),
                         &CompareNGExclusionsByTopAsc))
       << "Exclusions are expected to be sorted by TOP";
 
+  NGLogicalOffset origin_point =
+      opt_origin_point ? opt_origin_point.value() : NGLogicalOffset();
   NGLayoutOpportunity initial_opportunity =
       CreateLayoutOpportunityFromConstraintSpace(*space, origin_point);
   opportunity_tree_root_ = new NGLayoutOpportunityTreeNode(initial_opportunity);
+
+  if (opt_leader_point) {
+    const NGLogicalRect leader_exclusion =
+        ToLeaderExclusion(origin_point, opt_leader_point.value());
+    InsertExclusion(MutableOpportunityTreeRoot(), &leader_exclusion,
+                    opportunities_);
+  }
 
   for (const auto& exclusion : exclusions) {
     InsertExclusion(MutableOpportunityTreeRoot(), exclusion.get(),

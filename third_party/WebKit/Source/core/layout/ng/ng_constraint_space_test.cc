@@ -197,19 +197,19 @@ TEST(NGConstraintSpaceTest, LayoutOpportunitiesTwoInMiddle) {
 }
 
 // This test is the same as LayoutOpportunitiesTwoInMiddle with the only
-// difference that NGLayoutOpportunityIterator takes the additional argument
-// origin_point that changes the iterator to return Layout Opportunities that
+// difference that NGLayoutOpportunityIterator takes 2 additional arguments:
+// - origin_point that changes the iterator to return Layout Opportunities that
 // lay after the origin point.
+// - leader_point that together with origin_point creates a temporary exclusion
 //
 // Expected:
 //   Layout opportunity iterator generates the next opportunities:
-//   - 1st Start Point (0, 200): 150x200
-//   - 2nd Start Point (250, 200): 350x150, 250x200
+//   - 1st Start Point (0, 200): 350x150, 250x200
 //   - 3rd Start Point (550, 200): 50x200
 //   - 4th Start Point (0, 300): 600x50, 500x100
 //   All other opportunities that are located before the origin point should be
 //   filtered out.
-TEST(NGConstraintSpaceTest, LayoutOpportunitiesTwoInMiddleWithOrigin) {
+TEST(NGConstraintSpaceTest, LayoutOpportunitiesTwoInMiddleWithOriginAndLeader) {
   NGPhysicalSize physical_size;
   physical_size.width = LayoutUnit(600);
   physical_size.height = LayoutUnit(400);
@@ -231,19 +231,18 @@ TEST(NGConstraintSpaceTest, LayoutOpportunitiesTwoInMiddleWithOrigin) {
   space->AddExclusion(exclusion2);
 
   const NGLogicalOffset origin_point = {LayoutUnit(0), LayoutUnit(200)};
-  auto* iterator = new NGLayoutOpportunityIterator(space, origin_point);
+  const NGLogicalOffset leader_point = {LayoutUnit(250), LayoutUnit(300)};
+  auto* iterator =
+      new NGLayoutOpportunityIterator(space, origin_point, leader_point);
 
   // 1st Start Point
-  EXPECT_EQ("0,200 150x200", OpportunityToString(iterator->Next()));
-
-  // 2nd Start Point
   EXPECT_EQ("250,200 350x150", OpportunityToString(iterator->Next()));
   EXPECT_EQ("250,200 250x200", OpportunityToString(iterator->Next()));
 
-  // 3rd Start Point
+  // 2nd Start Point
   EXPECT_EQ("550,200 50x200", OpportunityToString(iterator->Next()));
 
-  // 4th Start Point
+  // 3rd Start Point
   EXPECT_EQ("0,300 600x50", OpportunityToString(iterator->Next()));
   EXPECT_EQ("0,300 500x100", OpportunityToString(iterator->Next()));
 

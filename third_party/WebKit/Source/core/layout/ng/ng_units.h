@@ -32,6 +32,10 @@ struct NGLogicalSize {
 
   NGPhysicalSize ConvertToPhysical(NGWritingMode mode) const;
   bool operator==(const NGLogicalSize& other) const;
+
+  bool IsEmpty() const {
+    return inline_size == LayoutUnit() || block_size == LayoutUnit();
+  }
 };
 
 // NGLogicalOffset is the position of a rect (typically a fragment) relative to
@@ -58,7 +62,20 @@ struct NGLogicalOffset {
   NGLogicalOffset operator+(const NGLogicalOffset& other) const;
 
   NGLogicalOffset& operator+=(const NGLogicalOffset& other);
+
+  bool operator>(const NGLogicalOffset& other) const;
+  bool operator>=(const NGLogicalOffset& other) const;
+
+  bool operator<(const NGLogicalOffset& other) const;
+  bool operator<=(const NGLogicalOffset& other) const;
+
+  String ToString() const;
 };
+
+CORE_EXPORT inline std::ostream& operator<<(std::ostream& os,
+                                            const NGLogicalOffset& value) {
+  return os << value.ToString();
+}
 
 // NGPhysicalOffset is the position of a rect (typically a fragment) relative to
 // its parent rect in the physical coordinate system.

@@ -11,6 +11,7 @@
 #include "core/layout/ng/ng_units.h"
 #include "platform/heap/Handle.h"
 #include "wtf/text/WTFString.h"
+#include "wtf/Optional.h"
 #include "wtf/Vector.h"
 
 namespace blink {
@@ -25,16 +26,17 @@ class CORE_EXPORT NGLayoutOpportunityIterator final
   //
   // @param space Constraint space with exclusions for which this iterator needs
   //              to generate layout opportunities.
-  // @param origin_point Optional origin_point parameter that is used as a
+  // @param opt_origin_point Optional origin_point parameter that is used as a
   //                     default start point for layout opportunities.
-  // @param leader_point Optional 'leader' parameter that is used to specify the
+  // @param opt_leader_point Optional 'leader' parameter that is used to specify
+  // the
   //                     ending point of temporary excluded rectangle which
   //                     starts from 'origin'. This rectangle may represent a
   //                     text fragment for example.
   NGLayoutOpportunityIterator(
       NGConstraintSpace* space,
-      const NGLogicalOffset origin_point = NGLogicalOffset(),
-      const NGLogicalOffset leader_point = NGLogicalOffset());
+      const WTF::Optional<NGLogicalOffset>& opt_origin_point = WTF::nullopt,
+      const WTF::Optional<NGLogicalOffset>& opt_leader_point = WTF::nullopt);
 
   // Gets the next Layout Opportunity or nullptr if the search is exhausted.
   // TODO(chrome-layout-team): Refactor with using C++ <iterator> library.
@@ -57,7 +59,6 @@ class CORE_EXPORT NGLayoutOpportunityIterator final
   }
 
   Member<NGConstraintSpace> constraint_space_;
-  const NGLogicalOffset leader_point_;
 
   NGLayoutOpportunities opportunities_;
   NGLayoutOpportunities::const_iterator opportunity_iter_;
