@@ -13,6 +13,7 @@
 #include "components/keyed_service/core/keyed_service.h"
 #include "device/usb/usb_service.h"
 
+class Notification;
 class NotificationUIManager;
 class Profile;
 
@@ -34,8 +35,18 @@ namespace chromeos {
 class PrinterDetector : public KeyedService,
                         public device::UsbService::Observer {
  public:
+  enum class ButtonCommand {
+    SETUP,
+    CANCEL_SETUP,
+    CLOSE,
+    GET_HELP,
+  };
+
   explicit PrinterDetector(Profile* profile);
   ~PrinterDetector() override;
+
+  void ShowUSBPrinterSetupNotification(scoped_refptr<device::UsbDevice> device);
+  void ClickOnNotificationButton(int button_index);
 
  private:
   friend class PrinterDetectorAppSearchEnabledTest;
@@ -50,6 +61,13 @@ class PrinterDetector : public KeyedService,
 
   // Initializes the printer detector.
   void Initialize();
+
+  void OnSetUpUSBPrinterStarted();
+  void OnSetUpUSBPrinterDone();
+  void OnSetUpUSBPrinterError();
+
+  std::unique_ptr<Notification> notification_;
+  ButtonCommand command_ = ButtonCommand::SETUP;
 
   Profile* profile_;
   NotificationUIManager* notification_ui_manager_;

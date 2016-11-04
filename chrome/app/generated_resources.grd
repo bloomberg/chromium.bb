@@ -14823,6 +14823,30 @@ Please check your email at <ph name="ACCOUNT_EMAIL">$2<ex>jane.doe@gmail.com</ex
         <message name="IDS_PRINTER_DETECTED_NOTIFICATION_PRINT_APP_FOUND_BODY" desc="Content for notification shown to the user when a printer gets plugged in to a Chrome OS device if the active user already has a print app that supports the printer installed.">
           Your printer is ready.
         </message>
+        <message name="IDS_PRINTER_DETECTED_NOTIFICATION_SET_UP_TITLE" desc="Title for notification shown to the user when a printer gets plugged in to a Chrome OS device and ready to be set up.">
+          Printer detected
+        </message>
+        <message name="IDS_PRINTER_DETECTED_NOTIFICATION_SET_UP_IN_PROGRESS_TITLE" desc="Title for notification when the USB printer is in the setup process.">
+          Set up printer...
+        </message>
+        <message name="IDS_PRINTER_DETECTED_NOTIFICATION_SET_UP_SUCCESS_TITLE" desc="Title for notification when the USB printer is setup successfully.">
+          Success!
+        </message>
+        <message name="IDS_PRINTER_DETECTED_NOTIFICATION_SET_UP_FAILED_TITLE" desc="Title for the notification when the setup of the USB printer is failed.">
+          Failed to set up printer
+        </message>
+        <message name="IDS_PRINTER_DETECTED_NOTIFICATION_SET_UP_BUTTON" desc="Content for the notification button to guide the user to go throught the printer setup process.">
+          Click to set up
+        </message>
+        <message name="IDS_PRINTER_DETECTED_NOTIFICATION_SET_UP_CANCEL_BUTTON" desc="Content for the notification button to cancel the USB printer setup process.">
+          Cancel printer setup
+        </message>
+        <message name="IDS_PRINTER_DETECTED_NOTIFICATION_SET_UP_CLOSE_BUTTON" desc="Content for the notification button to close the current notification.">
+          Close
+        </message>
+        <message name="IDS_PRINTER_DETECTED_NOTIFICATION_SET_UP_GET_HELP_BUTTON" desc="Content for the notification button to direct the user to the chrome://setting CUPS printers subpage if the setup process is failed.">
+          Get help
+        </message> 
       </if>
 
       <!-- Strings for ARC intent picker -->
