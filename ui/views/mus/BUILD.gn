@@ -313,7 +313,7 @@ test("views_aura_mus_unittests") {
   ]
 
   data_deps = [
-    ":unittests_manifest",
+    ":unittests_aura_manifest",
     "//services/ui/ime/test_ime_driver",
     "//services/ui/test_wm",
   ]
@@ -397,6 +397,12 @@ service_manifest("unittests_manifest") {
   type = "exe"
   name = "views_mus_unittests"
   source = "unittests_manifest.json"
+}
+
+service_manifest("unittests_aura_manifest") {
+  type = "exe"
+  name = "views_aura_mus_unittests"
+  source = "unittests_aura_manifest.json"
 }
 
 service_manifest("interactive_ui_tests_manifest") {
