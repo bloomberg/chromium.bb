@@ -9,61 +9,71 @@
 #include <memory>
 
 #include "base/macros.h"
+#include "base/run_loop.h"
 #include "media/base/decoder_buffer.h"
+#include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace media {
 
 namespace {
 
-scoped_refptr<DecoderBuffer> ConvertDecoderBufferAndBack(
-    scoped_refptr<DecoderBuffer> buffer) {
-  mojo::ScopedDataPipeConsumerHandle consumer_handle;
-  std::unique_ptr<MojoDecoderBufferWriter> writer =
-      MojoDecoderBufferWriter::Create(DemuxerStream::AUDIO, &consumer_handle);
-  MojoDecoderBufferReader reader(std::move(consumer_handle));
+uint32_t kDefaultDataPipeCapacityBytes = 1024;
 
-  // Convert from and back.
-  mojom::DecoderBufferPtr mojo_buffer = writer->WriteDecoderBuffer(buffer);
-  return reader.ReadDecoderBuffer(mojo_buffer);
+MATCHER_P(MatchesDecoderBuffer, buffer, "") {
+  DCHECK(arg);
+  return arg->MatchesForTesting(*buffer);
 }
 
-void CompareDecoderBuffer(scoped_refptr<DecoderBuffer> a,
-                          scoped_refptr<DecoderBuffer> b) {
-  EXPECT_EQ(a->end_of_stream(), b->end_of_stream());
-  // According to DecoderBuffer API, it is illegal to call any method when
-  // end_of_stream() is true.
-  if (a->end_of_stream())
-    return;
+class MockReadCB {
+ public:
+  MOCK_METHOD1(Run, void(scoped_refptr<DecoderBuffer>));
+};
 
-  EXPECT_EQ(a->timestamp(), b->timestamp());
-  EXPECT_EQ(a->duration(), b->duration());
-  EXPECT_EQ(a->is_key_frame(), b->is_key_frame());
-  EXPECT_EQ(a->splice_timestamp(), b->splice_timestamp());
-  EXPECT_EQ(a->discard_padding(), b->discard_padding());
+class MojoDecoderBufferConverter {
+ public:
+  MojoDecoderBufferConverter(
+      uint32_t data_pipe_capacity_bytes = kDefaultDataPipeCapacityBytes) {
+    MojoCreateDataPipeOptions options;
+    options.struct_size = sizeof(MojoCreateDataPipeOptions);
+    options.flags = MOJO_CREATE_DATA_PIPE_OPTIONS_FLAG_NONE;
+    options.element_num_bytes = 1;
+    options.capacity_num_bytes = data_pipe_capacity_bytes;
+    mojo::DataPipe data_pipe(options);
 
-  EXPECT_EQ(a->data_size(), b->data_size());
-  if (a->data_size() > 0)
-    EXPECT_EQ(0, memcmp(a->data(), b->data(), a->data_size()));
+    writer = base::MakeUnique<MojoDecoderBufferWriter>(
+        std::move(data_pipe.producer_handle));
+    reader = base::MakeUnique<MojoDecoderBufferReader>(
+        std::move(data_pipe.consumer_handle));
+  }
 
-  EXPECT_EQ(a->side_data_size(), b->side_data_size());
-  if (a->side_data_size() > 0)
-    EXPECT_EQ(0, memcmp(a->side_data(), b->side_data(), a->side_data_size()));
+  void ConvertAndVerify(const scoped_refptr<DecoderBuffer>& media_buffer) {
+    base::RunLoop run_loop;
+    MockReadCB mock_cb;
+    EXPECT_CALL(mock_cb, Run(MatchesDecoderBuffer(media_buffer)))
+        .WillOnce(testing::InvokeWithoutArgs(&run_loop, &base::RunLoop::Quit));
 
-  EXPECT_EQ(a->decrypt_config() == nullptr, b->decrypt_config() == nullptr);
-  if (a->decrypt_config())
-    EXPECT_TRUE(a->decrypt_config()->Matches(*b->decrypt_config()));
-}
+    mojom::DecoderBufferPtr mojo_buffer =
+        writer->WriteDecoderBuffer(media_buffer);
+    reader->ReadDecoderBuffer(
+        std::move(mojo_buffer),
+        base::BindOnce(&MockReadCB::Run, base::Unretained(&mock_cb)));
+    run_loop.Run();
+  }
+
+  std::unique_ptr<MojoDecoderBufferWriter> writer;
+  std::unique_ptr<MojoDecoderBufferReader> reader;
+};
 
 }  // namespace
 
 TEST(MojoDecoderBufferConverterTest, ConvertDecoderBuffer_Normal) {
+  base::MessageLoop message_loop;
   const uint8_t kData[] = "hello, world";
   const uint8_t kSideData[] = "sideshow bob";
   const size_t kDataSize = arraysize(kData);
   const size_t kSideDataSize = arraysize(kSideData);
 
-  // Original.
   scoped_refptr<DecoderBuffer> buffer(DecoderBuffer::CopyFrom(
       reinterpret_cast<const uint8_t*>(&kData), kDataSize,
       reinterpret_cast<const uint8_t*>(&kSideData), kSideDataSize));
@@ -74,17 +84,20 @@ TEST(MojoDecoderBufferConverterTest, ConvertDecoderBuffer_Normal) {
       DecoderBuffer::DiscardPadding(base::TimeDelta::FromMilliseconds(5),
                                     base::TimeDelta::FromMilliseconds(6)));
 
-  scoped_refptr<DecoderBuffer> result = ConvertDecoderBufferAndBack(buffer);
-  CompareDecoderBuffer(buffer, result);
+  MojoDecoderBufferConverter converter;
+  converter.ConvertAndVerify(buffer);
 }
 
 TEST(MojoDecoderBufferConverterTest, ConvertDecoderBuffer_EOS) {
+  base::MessageLoop message_loop;
   scoped_refptr<DecoderBuffer> buffer(DecoderBuffer::CreateEOSBuffer());
-  scoped_refptr<DecoderBuffer> result = ConvertDecoderBufferAndBack(buffer);
-  CompareDecoderBuffer(buffer, result);
+
+  MojoDecoderBufferConverter converter;
+  converter.ConvertAndVerify(buffer);
 }
 
 TEST(MojoDecoderBufferConverterTest, ConvertDecoderBuffer_KeyFrame) {
+  base::MessageLoop message_loop;
   const uint8_t kData[] = "hello, world";
   const size_t kDataSize = arraysize(kData);
 
@@ -93,11 +106,12 @@ TEST(MojoDecoderBufferConverterTest, ConvertDecoderBuffer_KeyFrame) {
   buffer->set_is_key_frame(true);
   EXPECT_TRUE(buffer->is_key_frame());
 
-  scoped_refptr<DecoderBuffer> result = ConvertDecoderBufferAndBack(buffer);
-  CompareDecoderBuffer(buffer, result);
+  MojoDecoderBufferConverter converter;
+  converter.ConvertAndVerify(buffer);
 }
 
 TEST(MojoDecoderBufferConverterTest, ConvertDecoderBuffer_EncryptedBuffer) {
+  base::MessageLoop message_loop;
   const uint8_t kData[] = "hello, world";
   const size_t kDataSize = arraysize(kData);
   const char kKeyId[] = "00112233445566778899aabbccddeeff";
@@ -112,15 +126,78 @@ TEST(MojoDecoderBufferConverterTest, ConvertDecoderBuffer_EncryptedBuffer) {
       reinterpret_cast<const uint8_t*>(&kData), kDataSize));
   buffer->set_decrypt_config(
       base::MakeUnique<DecryptConfig>(kKeyId, kIv, subsamples));
-
-  scoped_refptr<DecoderBuffer> result = ConvertDecoderBufferAndBack(buffer);
-  CompareDecoderBuffer(buffer, result);
+  {
+    MojoDecoderBufferConverter converter;
+    converter.ConvertAndVerify(buffer);
+  }
 
   // Test empty IV. This is used for clear buffer in an encrypted stream.
   buffer->set_decrypt_config(base::MakeUnique<DecryptConfig>(
       kKeyId, "", std::vector<SubsampleEntry>()));
-  result = ConvertDecoderBufferAndBack(buffer);
-  CompareDecoderBuffer(buffer, result);
+  {
+    MojoDecoderBufferConverter converter;
+    converter.ConvertAndVerify(buffer);
+  }
+}
+
+// This test verifies that a DecoderBuffer larger than data-pipe capacity
+// can be transmitted properly.
+TEST(MojoDecoderBufferConverterTest, Chunked) {
+  base::MessageLoop message_loop;
+  const uint8_t kData[] = "Lorem ipsum dolor sit amet, consectetur cras amet";
+  const size_t kDataSize = arraysize(kData);
+  scoped_refptr<DecoderBuffer> buffer =
+      DecoderBuffer::CopyFrom(kData, kDataSize);
+
+  MojoDecoderBufferConverter converter(kDataSize / 3);
+  converter.ConvertAndVerify(buffer);
+}
+
+// This test verifies that MojoDecoderBufferWriter returns NULL if data pipe
+// is already closed.
+TEST(MojoDecoderBufferConverterTest, ReaderSidePipeError) {
+  base::MessageLoop message_loop;
+  const uint8_t kData[] = "Hello, world";
+  const size_t kDataSize = arraysize(kData);
+  scoped_refptr<DecoderBuffer> media_buffer =
+      DecoderBuffer::CopyFrom(kData, kDataSize);
+
+  MojoDecoderBufferConverter converter;
+  // Before sending the buffer, close the handle on reader side.
+  converter.reader.reset();
+  mojom::DecoderBufferPtr mojo_buffer =
+      converter.writer->WriteDecoderBuffer(media_buffer);
+  EXPECT_TRUE(mojo_buffer.is_null());
+}
+
+// This test verifies that MojoDecoderBufferReader::ReadCB is called with a
+// NULL DecoderBuffer if data pipe is closed during transmission.
+TEST(MojoDecoderBufferConverterTest, WriterSidePipeError) {
+  base::MessageLoop message_loop;
+  const uint8_t kData[] = "Lorem ipsum dolor sit amet, consectetur cras amet";
+  const size_t kDataSize = arraysize(kData);
+  scoped_refptr<DecoderBuffer> media_buffer =
+      DecoderBuffer::CopyFrom(kData, kDataSize);
+
+  // Verify that ReadCB is called with a NULL decoder buffer.
+  base::RunLoop run_loop;
+  MockReadCB mock_cb;
+  EXPECT_CALL(mock_cb, Run(testing::IsNull()))
+      .WillOnce(testing::InvokeWithoutArgs(&run_loop, &base::RunLoop::Quit));
+
+  // Make data pipe with capacity smaller than decoder buffer so that only
+  // partial data is written.
+  MojoDecoderBufferConverter converter(kDataSize / 2);
+  mojom::DecoderBufferPtr mojo_buffer =
+      converter.writer->WriteDecoderBuffer(media_buffer);
+  converter.reader->ReadDecoderBuffer(
+      std::move(mojo_buffer),
+      base::BindOnce(&MockReadCB::Run, base::Unretained(&mock_cb)));
+
+  // Before the entire data is transmitted, close the handle on writer side.
+  // The reader side will get notified and report the error.
+  converter.writer.reset();
+  run_loop.Run();
 }
 
 }  // namespace media

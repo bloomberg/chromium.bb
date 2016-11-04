@@ -78,7 +78,36 @@ scoped_refptr<DecoderBuffer> DecoderBuffer::CreateEOSBuffer() {
   return make_scoped_refptr(new DecoderBuffer(NULL, 0, NULL, 0));
 }
 
-std::string DecoderBuffer::AsHumanReadableString() {
+bool DecoderBuffer::MatchesForTesting(const DecoderBuffer& buffer) const {
+  if (end_of_stream() != buffer.end_of_stream())
+    return false;
+
+  // It is illegal to call any member function if eos is true.
+  if (end_of_stream())
+    return true;
+
+  if (timestamp() != buffer.timestamp() || duration() != buffer.duration() ||
+      is_key_frame() != buffer.is_key_frame() ||
+      splice_timestamp() != buffer.splice_timestamp() ||
+      discard_padding() != buffer.discard_padding() ||
+      data_size() != buffer.data_size() ||
+      side_data_size() != buffer.side_data_size()) {
+    return false;
+  }
+
+  if (memcmp(data(), buffer.data(), data_size()) != 0 ||
+      memcmp(side_data(), buffer.side_data(), side_data_size()) != 0) {
+    return false;
+  }
+
+  if ((decrypt_config() == nullptr) != (buffer.decrypt_config() == nullptr))
+    return false;
+
+  return decrypt_config() ? decrypt_config()->Matches(*buffer.decrypt_config())
+                          : true;
+}
+
+std::string DecoderBuffer::AsHumanReadableString() const {
   if (end_of_stream()) {
     return "end of stream";
   }

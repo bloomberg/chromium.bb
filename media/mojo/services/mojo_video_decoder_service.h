@@ -42,6 +42,8 @@ class MojoVideoDecoderService : public mojom::VideoDecoder {
   // |this| is deleted. It's not safe to run the callbacks after a connection
   // error.
   void OnDecoderInitialized(const InitializeCallback& callback, bool success);
+  void OnDecoderRead(const DecodeCallback& callback,
+                     scoped_refptr<DecoderBuffer> buffer);
   void OnDecoderDecoded(const DecodeCallback& callback, DecodeStatus status);
   void OnDecoderReset(const ResetCallback& callback);
 

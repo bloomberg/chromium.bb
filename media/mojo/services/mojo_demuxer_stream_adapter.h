@@ -61,6 +61,8 @@ class MojoDemuxerStreamAdapter : public DemuxerStream {
                      mojom::AudioDecoderConfigPtr audio_config,
                      mojom::VideoDecoderConfigPtr video_config);
 
+  void OnBufferRead(scoped_refptr<DecoderBuffer> buffer);
+
   void UpdateConfig(mojom::AudioDecoderConfigPtr audio_config,
                     mojom::VideoDecoderConfigPtr video_config);
 

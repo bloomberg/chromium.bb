@@ -180,14 +180,21 @@ void MojoDecryptor::OnBufferDecrypted(const DecryptCB& decrypt_cb,
     return;
   }
 
-  scoped_refptr<DecoderBuffer> media_buffer =
-      mojo_decoder_buffer_reader_->ReadDecoderBuffer(buffer);
-  if (!media_buffer) {
+  mojo_decoder_buffer_reader_->ReadDecoderBuffer(
+      std::move(buffer),
+      base::BindOnce(&MojoDecryptor::OnBufferRead, weak_factory_.GetWeakPtr(),
+                     decrypt_cb, status));
+}
+
+void MojoDecryptor::OnBufferRead(const DecryptCB& decrypt_cb,
+                                 Status status,
+                                 scoped_refptr<DecoderBuffer> buffer) {
+  if (!buffer) {
     decrypt_cb.Run(kError, nullptr);
     return;
   }
 
-  decrypt_cb.Run(status, media_buffer);
+  decrypt_cb.Run(status, buffer);
 }
 
 void MojoDecryptor::OnAudioDecoded(

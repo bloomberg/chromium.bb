@@ -49,6 +49,9 @@ class MEDIA_MOJO_EXPORT MojoAudioDecoderService
                      scoped_refptr<MediaKeys> cdm,
                      bool success);
 
+  void OnReadDone(const DecodeCallback& callback,
+                  scoped_refptr<DecoderBuffer> buffer);
+
   // Called by |decoder_| when DecoderBuffer is accepted or rejected.
   void OnDecodeStatus(const DecodeCallback& callback,
                       media::DecodeStatus status);

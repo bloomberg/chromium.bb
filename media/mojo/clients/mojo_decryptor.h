@@ -52,6 +52,9 @@ class MojoDecryptor : public Decryptor {
   void OnBufferDecrypted(const DecryptCB& decrypt_cb,
                          Status status,
                          mojom::DecoderBufferPtr buffer);
+  void OnBufferRead(const DecryptCB& decrypt_cb,
+                    Status status,
+                    scoped_refptr<DecoderBuffer> buffer);
   void OnAudioDecoded(const AudioDecodeCB& audio_decode_cb,
                       Status status,
                       std::vector<mojom::AudioBufferPtr> audio_buffers);

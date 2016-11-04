@@ -73,18 +73,9 @@ void MojoVideoDecoderService::Decode(mojom::DecoderBufferPtr buffer,
     return;
   }
 
-  // TODO(sandersd): After a decode error, we should enter an error state and
-  // reject all future method calls.
-  scoped_refptr<DecoderBuffer> media_buffer =
-      mojo_decoder_buffer_reader_->ReadDecoderBuffer(buffer);
-  if (!media_buffer) {
-    callback.Run(DecodeStatus::DECODE_ERROR);
-    return;
-  }
-
-  decoder_->Decode(media_buffer,
-                   base::Bind(&MojoVideoDecoderService::OnDecoderDecoded,
-                              weak_this_, callback));
+  mojo_decoder_buffer_reader_->ReadDecoderBuffer(
+      std::move(buffer), base::BindOnce(&MojoVideoDecoderService::OnDecoderRead,
+                                        weak_this_, callback));
 }
 
 void MojoVideoDecoderService::Reset(const ResetCallback& callback) {
@@ -106,6 +97,21 @@ void MojoVideoDecoderService::OnDecoderInitialized(
   DCHECK(decoder_);
   callback.Run(success, decoder_->NeedsBitstreamConversion(),
                decoder_->GetMaxDecodeRequests());
+}
+
+void MojoVideoDecoderService::OnDecoderRead(
+    const DecodeCallback& callback,
+    scoped_refptr<DecoderBuffer> buffer) {
+  // TODO(sandersd): After a decode error, we should enter an error state and
+  // reject all future method calls.
+  if (!buffer) {
+    callback.Run(DecodeStatus::DECODE_ERROR);
+    return;
+  }
+
+  decoder_->Decode(
+      buffer, base::Bind(&MojoVideoDecoderService::OnDecoderDecoded, weak_this_,
+                         callback));
 }
 
 void MojoVideoDecoderService::OnDecoderDecoded(const DecodeCallback& callback,

@@ -66,6 +66,9 @@ class MojoDecryptorService : public mojom::Decryptor {
                            uint64_t buffer_size) final;
 
  private:
+  void OnReadDone(StreamType stream_type,
+                  const DecryptCallback& callback,
+                  scoped_refptr<DecoderBuffer> buffer);
   // Callback executed once Decrypt() is done.
   void OnDecryptDone(const DecryptCallback& callback,
                      Status status,
@@ -76,6 +79,11 @@ class MojoDecryptorService : public mojom::Decryptor {
                                  bool success);
   void OnVideoDecoderInitialized(const InitializeVideoDecoderCallback& callback,
                                  bool success);
+
+  void OnAudioRead(const DecryptAndDecodeAudioCallback& callback,
+                   scoped_refptr<DecoderBuffer> buffer);
+  void OnVideoRead(const DecryptAndDecodeVideoCallback& callback,
+                   scoped_refptr<DecoderBuffer> buffer);
 
   // Callbacks executed when DecryptAndDecode are done.
   void OnAudioDecoded(const DecryptAndDecodeAudioCallback& callback,

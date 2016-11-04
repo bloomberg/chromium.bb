@@ -125,15 +125,19 @@ void MojoDemuxerStreamAdapter::OnBufferReady(
   }
 
   DCHECK_EQ(status, kOk);
+  mojo_decoder_buffer_reader_->ReadDecoderBuffer(
+      std::move(buffer), base::BindOnce(&MojoDemuxerStreamAdapter::OnBufferRead,
+                                        weak_factory_.GetWeakPtr()));
+}
 
-  scoped_refptr<DecoderBuffer> media_buffer =
-      mojo_decoder_buffer_reader_->ReadDecoderBuffer(buffer);
-  if (!media_buffer) {
+void MojoDemuxerStreamAdapter::OnBufferRead(
+    scoped_refptr<DecoderBuffer> buffer) {
+  if (!buffer) {
     base::ResetAndReturn(&read_cb_).Run(kAborted, nullptr);
     return;
   }
 
-  base::ResetAndReturn(&read_cb_).Run(kOk, media_buffer);
+  base::ResetAndReturn(&read_cb_).Run(kOk, buffer);
 }
 
 void MojoDemuxerStreamAdapter::UpdateConfig(
