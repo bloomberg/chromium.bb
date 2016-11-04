@@ -32,6 +32,7 @@ vars = {
   'swiftshader_git': 'https://swiftshader.googlesource.com',
   'pdfium_git': 'https://pdfium.googlesource.com',
   'boringssl_git': 'https://boringssl.googlesource.com',
+  'skia_git': 'https://skia.googlesource.com',
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling sfntly
   # and whatever else without interference from each other.
@@ -105,10 +106,11 @@ vars = {
 # Only these hosts are allowed for dependencies in this DEPS file.
 # If you need to add a new host, contact chrome infrastracture team.
 allowed_hosts = [
-  'chromium.googlesource.com',
-  'boringssl.googlesource.com',
-  'pdfium.googlesource.com',
   'android.googlesource.com',
+  'boringssl.googlesource.com',
+  'chromium.googlesource.com',
+  'pdfium.googlesource.com',
+  'skia.googlesource.com',
   'swiftshader.googlesource.com',
 ]
 
@@ -171,7 +173,7 @@ deps = {
     Var('chromium_git') + '/external/github.com/googlei18n/sfntly.git' + '@' + Var('sfntly_revision'),
 
   'src/third_party/skia':
-    Var('chromium_git') + '/skia.git' + '@' +  Var('skia_revision'),
+    Var('skia_git') + '/skia.git' + '@' +  Var('skia_revision'),
 
   'src/tools/page_cycler/acid3':
     Var('chromium_git') + '/chromium/deps/acid3.git' + '@' + '6be0a66a1ebd7ebc5abc1b2f405a945f6d871521',
