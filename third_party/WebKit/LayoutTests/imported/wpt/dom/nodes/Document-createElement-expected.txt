@@ -1,150 +1,39 @@
 This is a testharness.js-based test.
-PASS createElement(undefined) in HTML document 
-FAIL createElement(undefined) in XML document assert_equals: XML document didn't load expected "Dummy XML document" but got ""
-FAIL createElement(undefined) in XHTML document assert_equals: XHTML document didn't load expected "Dummy XHTML document" but got ""
-PASS createElement(null) in HTML document 
-FAIL createElement(null) in XML document assert_equals: XML document didn't load expected "Dummy XML document" but got ""
-FAIL createElement(null) in XHTML document assert_equals: XHTML document didn't load expected "Dummy XHTML document" but got ""
-PASS createElement("foo") in HTML document 
-FAIL createElement("foo") in XML document assert_equals: XML document didn't load expected "Dummy XML document" but got ""
-FAIL createElement("foo") in XHTML document assert_equals: XHTML document didn't load expected "Dummy XHTML document" but got ""
-PASS createElement("f1oo") in HTML document 
-FAIL createElement("f1oo") in XML document assert_equals: XML document didn't load expected "Dummy XML document" but got ""
-FAIL createElement("f1oo") in XHTML document assert_equals: XHTML document didn't load expected "Dummy XHTML document" but got ""
-PASS createElement("foo1") in HTML document 
-FAIL createElement("foo1") in XML document assert_equals: XML document didn't load expected "Dummy XML document" but got ""
-FAIL createElement("foo1") in XHTML document assert_equals: XHTML document didn't load expected "Dummy XHTML document" but got ""
-PASS createElement("fெ") in HTML document 
-FAIL createElement("fெ") in XML document assert_equals: XML document didn't load expected "Dummy XML document" but got ""
-FAIL createElement("fெ") in XHTML document assert_equals: XHTML document didn't load expected "Dummy XHTML document" but got ""
-PASS createElement("fooெ") in HTML document 
-FAIL createElement("fooெ") in XML document assert_equals: XML document didn't load expected "Dummy XML document" but got ""
-FAIL createElement("fooெ") in XHTML document assert_equals: XHTML document didn't load expected "Dummy XHTML document" but got ""
-PASS createElement(":") in HTML document 
-FAIL createElement(":") in XML document assert_equals: XML document didn't load expected "Dummy XML document" but got ""
-FAIL createElement(":") in XHTML document assert_equals: XHTML document didn't load expected "Dummy XHTML document" but got ""
-PASS createElement(":foo") in HTML document 
-FAIL createElement(":foo") in XML document assert_equals: XML document didn't load expected "Dummy XML document" but got ""
-FAIL createElement(":foo") in XHTML document assert_equals: XHTML document didn't load expected "Dummy XHTML document" but got ""
-PASS createElement("f:oo") in HTML document 
-FAIL createElement("f:oo") in XML document assert_equals: XML document didn't load expected "Dummy XML document" but got ""
-FAIL createElement("f:oo") in XHTML document assert_equals: XHTML document didn't load expected "Dummy XHTML document" but got ""
-PASS createElement("foo:") in HTML document 
-FAIL createElement("foo:") in XML document assert_equals: XML document didn't load expected "Dummy XML document" but got ""
-FAIL createElement("foo:") in XHTML document assert_equals: XHTML document didn't load expected "Dummy XHTML document" but got ""
-PASS createElement("f:o:o") in HTML document 
-FAIL createElement("f:o:o") in XML document assert_equals: XML document didn't load expected "Dummy XML document" but got ""
-FAIL createElement("f:o:o") in XHTML document assert_equals: XHTML document didn't load expected "Dummy XHTML document" but got ""
-PASS createElement("f::oo") in HTML document 
-FAIL createElement("f::oo") in XML document assert_equals: XML document didn't load expected "Dummy XML document" but got ""
-FAIL createElement("f::oo") in XHTML document assert_equals: XHTML document didn't load expected "Dummy XHTML document" but got ""
-PASS createElement("f::oo:") in HTML document 
-FAIL createElement("f::oo:") in XML document assert_equals: XML document didn't load expected "Dummy XML document" but got ""
-FAIL createElement("f::oo:") in XHTML document assert_equals: XHTML document didn't load expected "Dummy XHTML document" but got ""
-PASS createElement("foo:0") in HTML document 
-FAIL createElement("foo:0") in XML document assert_equals: XML document didn't load expected "Dummy XML document" but got ""
-FAIL createElement("foo:0") in XHTML document assert_equals: XHTML document didn't load expected "Dummy XHTML document" but got ""
-PASS createElement("foo:_") in HTML document 
-FAIL createElement("foo:_") in XML document assert_equals: XML document didn't load expected "Dummy XML document" but got ""
-FAIL createElement("foo:_") in XHTML document assert_equals: XHTML document didn't load expected "Dummy XHTML document" but got ""
-PASS createElement("foo:ெ") in HTML document 
-FAIL createElement("foo:ெ") in XML document assert_equals: XML document didn't load expected "Dummy XML document" but got ""
-FAIL createElement("foo:ெ") in XHTML document assert_equals: XHTML document didn't load expected "Dummy XHTML document" but got ""
-PASS createElement("foo:fooெ") in HTML document 
-FAIL createElement("foo:fooெ") in XML document assert_equals: XML document didn't load expected "Dummy XML document" but got ""
-FAIL createElement("foo:fooெ") in XHTML document assert_equals: XHTML document didn't load expected "Dummy XHTML document" but got ""
-PASS createElement("fooெ:foo") in HTML document 
-FAIL createElement("fooெ:foo") in XML document assert_equals: XML document didn't load expected "Dummy XML document" but got ""
-FAIL createElement("fooெ:foo") in XHTML document assert_equals: XHTML document didn't load expected "Dummy XHTML document" but got ""
-PASS createElement("xml") in HTML document 
-FAIL createElement("xml") in XML document assert_equals: XML document didn't load expected "Dummy XML document" but got ""
-FAIL createElement("xml") in XHTML document assert_equals: XHTML document didn't load expected "Dummy XHTML document" but got ""
-PASS createElement("xmlns") in HTML document 
-FAIL createElement("xmlns") in XML document assert_equals: XML document didn't load expected "Dummy XML document" but got ""
-FAIL createElement("xmlns") in XHTML document assert_equals: XHTML document didn't load expected "Dummy XHTML document" but got ""
-PASS createElement("xmlfoo") in HTML document 
-FAIL createElement("xmlfoo") in XML document assert_equals: XML document didn't load expected "Dummy XML document" but got ""
-FAIL createElement("xmlfoo") in XHTML document assert_equals: XHTML document didn't load expected "Dummy XHTML document" but got ""
-PASS createElement("xml:foo") in HTML document 
-FAIL createElement("xml:foo") in XML document assert_equals: XML document didn't load expected "Dummy XML document" but got ""
-FAIL createElement("xml:foo") in XHTML document assert_equals: XHTML document didn't load expected "Dummy XHTML document" but got ""
-PASS createElement("xmlns:foo") in HTML document 
-FAIL createElement("xmlns:foo") in XML document assert_equals: XML document didn't load expected "Dummy XML document" but got ""
-FAIL createElement("xmlns:foo") in XHTML document assert_equals: XHTML document didn't load expected "Dummy XHTML document" but got ""
-PASS createElement("xmlfoo:bar") in HTML document 
-FAIL createElement("xmlfoo:bar") in XML document assert_equals: XML document didn't load expected "Dummy XML document" but got ""
-FAIL createElement("xmlfoo:bar") in XHTML document assert_equals: XHTML document didn't load expected "Dummy XHTML document" but got ""
-PASS createElement("svg") in HTML document 
-FAIL createElement("svg") in XML document assert_equals: XML document didn't load expected "Dummy XML document" but got ""
-FAIL createElement("svg") in XHTML document assert_equals: XHTML document didn't load expected "Dummy XHTML document" but got ""
-PASS createElement("math") in HTML document 
-FAIL createElement("math") in XML document assert_equals: XML document didn't load expected "Dummy XML document" but got ""
-FAIL createElement("math") in XHTML document assert_equals: XHTML document didn't load expected "Dummy XHTML document" but got ""
-PASS createElement("FOO") in HTML document 
-FAIL createElement("FOO") in XML document assert_equals: XML document didn't load expected "Dummy XML document" but got ""
-FAIL createElement("FOO") in XHTML document assert_equals: XHTML document didn't load expected "Dummy XHTML document" but got ""
-FAIL createElement("marK") in HTML document assert_equals: localName expected "marK" but got "mark"
-FAIL createElement("marK") in XML document assert_equals: XML document didn't load expected "Dummy XML document" but got ""
-FAIL createElement("marK") in XHTML document assert_equals: XHTML document didn't load expected "Dummy XHTML document" but got ""
-FAIL createElement("İnput") in HTML document assert_equals: localName expected "İnput" but got "i̇nput"
-FAIL createElement("İnput") in XML document assert_equals: XML document didn't load expected "Dummy XML document" but got ""
-FAIL createElement("İnput") in XHTML document assert_equals: XHTML document didn't load expected "Dummy XHTML document" but got ""
-FAIL createElement("ınput") in HTML document assert_equals: tagName expected "ıNPUT" but got "INPUT"
-FAIL createElement("ınput") in XML document assert_equals: XML document didn't load expected "Dummy XML document" but got ""
-FAIL createElement("ınput") in XHTML document assert_equals: XHTML document didn't load expected "Dummy XHTML document" but got ""
-PASS createElement("") in HTML document 
-FAIL createElement("") in XML document assert_equals: XML document didn't load expected "Dummy XML document" but got ""
-FAIL createElement("") in XHTML document assert_equals: XHTML document didn't load expected "Dummy XHTML document" but got ""
-PASS createElement("1foo") in HTML document 
-FAIL createElement("1foo") in XML document assert_equals: XML document didn't load expected "Dummy XML document" but got ""
-FAIL createElement("1foo") in XHTML document assert_equals: XHTML document didn't load expected "Dummy XHTML document" but got ""
-PASS createElement("1:foo") in HTML document 
-FAIL createElement("1:foo") in XML document assert_equals: XML document didn't load expected "Dummy XML document" but got ""
-FAIL createElement("1:foo") in XHTML document assert_equals: XHTML document didn't load expected "Dummy XHTML document" but got ""
-PASS createElement("fo o") in HTML document 
-FAIL createElement("fo o") in XML document assert_equals: XML document didn't load expected "Dummy XML document" but got ""
-FAIL createElement("fo o") in XHTML document assert_equals: XHTML document didn't load expected "Dummy XHTML document" but got ""
-PASS createElement("ெfoo") in HTML document 
-FAIL createElement("ெfoo") in XML document assert_equals: XML document didn't load expected "Dummy XML document" but got ""
-FAIL createElement("ெfoo") in XHTML document assert_equals: XHTML document didn't load expected "Dummy XHTML document" but got ""
-PASS createElement("}foo") in HTML document 
-FAIL createElement("}foo") in XML document assert_equals: XML document didn't load expected "Dummy XML document" but got ""
-FAIL createElement("}foo") in XHTML document assert_equals: XHTML document didn't load expected "Dummy XHTML document" but got ""
-PASS createElement("f}oo") in HTML document 
-FAIL createElement("f}oo") in XML document assert_equals: XML document didn't load expected "Dummy XML document" but got ""
-FAIL createElement("f}oo") in XHTML document assert_equals: XHTML document didn't load expected "Dummy XHTML document" but got ""
-PASS createElement("foo}") in HTML document 
-FAIL createElement("foo}") in XML document assert_equals: XML document didn't load expected "Dummy XML document" but got ""
-FAIL createElement("foo}") in XHTML document assert_equals: XHTML document didn't load expected "Dummy XHTML document" but got ""
-PASS createElement("\ufffffoo") in HTML document 
-FAIL createElement("\ufffffoo") in XML document assert_equals: XML document didn't load expected "Dummy XML document" but got ""
-FAIL createElement("\ufffffoo") in XHTML document assert_equals: XHTML document didn't load expected "Dummy XHTML document" but got ""
-PASS createElement("f\uffffoo") in HTML document 
-FAIL createElement("f\uffffoo") in XML document assert_equals: XML document didn't load expected "Dummy XML document" but got ""
-FAIL createElement("f\uffffoo") in XHTML document assert_equals: XHTML document didn't load expected "Dummy XHTML document" but got ""
-PASS createElement("foo\uffff") in HTML document 
-FAIL createElement("foo\uffff") in XML document assert_equals: XML document didn't load expected "Dummy XML document" but got ""
-FAIL createElement("foo\uffff") in XHTML document assert_equals: XHTML document didn't load expected "Dummy XHTML document" but got ""
-PASS createElement("<foo") in HTML document 
-FAIL createElement("<foo") in XML document assert_equals: XML document didn't load expected "Dummy XML document" but got ""
-FAIL createElement("<foo") in XHTML document assert_equals: XHTML document didn't load expected "Dummy XHTML document" but got ""
-PASS createElement("foo>") in HTML document 
-FAIL createElement("foo>") in XML document assert_equals: XML document didn't load expected "Dummy XML document" but got ""
-FAIL createElement("foo>") in XHTML document assert_equals: XHTML document didn't load expected "Dummy XHTML document" but got ""
-PASS createElement("<foo>") in HTML document 
-FAIL createElement("<foo>") in XML document assert_equals: XML document didn't load expected "Dummy XML document" but got ""
-FAIL createElement("<foo>") in XHTML document assert_equals: XHTML document didn't load expected "Dummy XHTML document" but got ""
-PASS createElement("f<oo") in HTML document 
-FAIL createElement("f<oo") in XML document assert_equals: XML document didn't load expected "Dummy XML document" but got ""
-FAIL createElement("f<oo") in XHTML document assert_equals: XHTML document didn't load expected "Dummy XHTML document" but got ""
-PASS createElement("-foo") in HTML document 
-FAIL createElement("-foo") in XML document assert_equals: XML document didn't load expected "Dummy XML document" but got ""
-FAIL createElement("-foo") in XHTML document assert_equals: XHTML document didn't load expected "Dummy XHTML document" but got ""
-PASS createElement(".foo") in HTML document 
-FAIL createElement(".foo") in XML document assert_equals: XML document didn't load expected "Dummy XML document" but got ""
-FAIL createElement(".foo") in XHTML document assert_equals: XHTML document didn't load expected "Dummy XHTML document" but got ""
-PASS createElement("ெ") in HTML document 
-FAIL createElement("ெ") in XML document assert_equals: XML document didn't load expected "Dummy XML document" but got ""
-FAIL createElement("ெ") in XHTML document assert_equals: XHTML document didn't load expected "Dummy XHTML document" but got ""
+PASS Document.createElement 
+PASS createElement(undefined) 
+PASS createElement(null) 
+PASS createElement("foo") 
+PASS createElement("f1oo") 
+PASS createElement("foo1") 
+PASS createElement("f̀oo") 
+PASS createElement("foò") 
+PASS createElement(":foo") 
+PASS createElement("f:oo") 
+PASS createElement("foo:") 
+PASS createElement("xml") 
+PASS createElement("xmlns") 
+PASS createElement("xmlfoo") 
+PASS createElement("xml:foo") 
+PASS createElement("xmlns:foo") 
+PASS createElement("xmlfoo:bar") 
+PASS createElement("svg") 
+PASS createElement("math") 
+PASS createElement("FOO") 
+FAIL createElement("marK") assert_equals: expected "marK" but got "mark"
+FAIL createElement("İnput") assert_equals: expected "İnput" but got "i̇nput"
+FAIL createElement("ınput") assert_equals: expected "ıNPUT" but got "INPUT"
+PASS createElement("") 
+PASS createElement("1foo") 
+PASS createElement("̀foo") 
+PASS createElement("}foo") 
+PASS createElement("f}oo") 
+PASS createElement("foo}") 
+PASS createElement("\ufffffoo") 
+PASS createElement("f\uffffoo") 
+PASS createElement("foo\uffff") 
+PASS createElement("<foo") 
+PASS createElement("foo>") 
+PASS createElement("<foo>") 
+PASS createElement("f<oo") 
 Harness: the test ran to completion.
 

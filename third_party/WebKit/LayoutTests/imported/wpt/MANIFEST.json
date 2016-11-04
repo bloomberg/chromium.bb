@@ -2641,18 +2641,6 @@
             "url": "/html/semantics/grouping-content/the-ol-element/reversed-1d.html"
           }
         ],
-        "html/semantics/grouping-content/the-ol-element/reversed-1e.html": [
-          {
-            "path": "html/semantics/grouping-content/the-ol-element/reversed-1e.html",
-            "references": [
-              [
-                "/html/semantics/grouping-content/the-ol-element/reversed-1-ref.html",
-                "=="
-              ]
-            ],
-            "url": "/html/semantics/grouping-content/the-ol-element/reversed-1e.html"
-          }
-        ],
         "html/semantics/grouping-content/the-ol-element/reversed-2.html": [
           {
             "path": "html/semantics/grouping-content/the-ol-element/reversed-2.html",
@@ -3155,6 +3143,54 @@
               ]
             ],
             "url": "/svg/linking/reftests/href-use-element.html"
+          }
+        ],
+        "svg/shapes/rect-01.svg": [
+          {
+            "path": "svg/shapes/rect-01.svg",
+            "references": [
+              [
+                "/svg/shapes/rect-01-ref.html",
+                "=="
+              ]
+            ],
+            "url": "/svg/shapes/rect-01.svg"
+          }
+        ],
+        "svg/shapes/rect-02.svg": [
+          {
+            "path": "svg/shapes/rect-02.svg",
+            "references": [
+              [
+                "/svg/shapes/rect-02-ref.html",
+                "=="
+              ]
+            ],
+            "url": "/svg/shapes/rect-02.svg"
+          }
+        ],
+        "svg/shapes/rect-03.svg": [
+          {
+            "path": "svg/shapes/rect-03.svg",
+            "references": [
+              [
+                "/svg/shapes/rect-03-ref.html",
+                "=="
+              ]
+            ],
+            "url": "/svg/shapes/rect-03.svg"
+          }
+        ],
+        "svg/shapes/rect-04.svg": [
+          {
+            "path": "svg/shapes/rect-04.svg",
+            "references": [
+              [
+                "/svg/shapes/rect-04-ref.html",
+                "=="
+              ]
+            ],
+            "url": "/svg/shapes/rect-04.svg"
           }
         ]
       },
@@ -5339,6 +5375,12 @@
             "url": "/console/console-is-a-namespace.any.worker.html"
           }
         ],
+        "cssom/serialize-values.html": [
+          {
+            "path": "cssom/serialize-values.html",
+            "url": "/cssom/serialize-values.html"
+          }
+        ],
         "custom-elements/CustomElementRegistry.html": [
           {
             "path": "custom-elements/CustomElementRegistry.html",
@@ -5373,12 +5415,6 @@
           {
             "path": "custom-elements/connected-callbacks.html",
             "url": "/custom-elements/connected-callbacks.html"
-          }
-        ],
-        "custom-elements/custom-element-reaction-queue.html": [
-          {
-            "path": "custom-elements/custom-element-reaction-queue.html",
-            "url": "/custom-elements/custom-element-reaction-queue.html"
           }
         ],
         "custom-elements/custom-element-registry/define.html": [
@@ -5495,64 +5531,10 @@
             "url": "/custom-elements/reactions/ElementContentEditable.html"
           }
         ],
-        "custom-elements/reactions/HTMLAnchorElement.html": [
-          {
-            "path": "custom-elements/reactions/HTMLAnchorElement.html",
-            "url": "/custom-elements/reactions/HTMLAnchorElement.html"
-          }
-        ],
         "custom-elements/reactions/HTMLElement.html": [
           {
             "path": "custom-elements/reactions/HTMLElement.html",
             "url": "/custom-elements/reactions/HTMLElement.html"
-          }
-        ],
-        "custom-elements/reactions/HTMLOptionElement.html": [
-          {
-            "path": "custom-elements/reactions/HTMLOptionElement.html",
-            "url": "/custom-elements/reactions/HTMLOptionElement.html"
-          }
-        ],
-        "custom-elements/reactions/HTMLOptionsCollection.html": [
-          {
-            "path": "custom-elements/reactions/HTMLOptionsCollection.html",
-            "url": "/custom-elements/reactions/HTMLOptionsCollection.html"
-          }
-        ],
-        "custom-elements/reactions/HTMLOutputElement.html": [
-          {
-            "path": "custom-elements/reactions/HTMLOutputElement.html",
-            "url": "/custom-elements/reactions/HTMLOutputElement.html"
-          }
-        ],
-        "custom-elements/reactions/HTMLSelectElement.html": [
-          {
-            "path": "custom-elements/reactions/HTMLSelectElement.html",
-            "url": "/custom-elements/reactions/HTMLSelectElement.html"
-          }
-        ],
-        "custom-elements/reactions/HTMLTableElement.html": [
-          {
-            "path": "custom-elements/reactions/HTMLTableElement.html",
-            "url": "/custom-elements/reactions/HTMLTableElement.html"
-          }
-        ],
-        "custom-elements/reactions/HTMLTableRowElement.html": [
-          {
-            "path": "custom-elements/reactions/HTMLTableRowElement.html",
-            "url": "/custom-elements/reactions/HTMLTableRowElement.html"
-          }
-        ],
-        "custom-elements/reactions/HTMLTableSectionElement.html": [
-          {
-            "path": "custom-elements/reactions/HTMLTableSectionElement.html",
-            "url": "/custom-elements/reactions/HTMLTableSectionElement.html"
-          }
-        ],
-        "custom-elements/reactions/HTMLTitleElement.html": [
-          {
-            "path": "custom-elements/reactions/HTMLTitleElement.html",
-            "url": "/custom-elements/reactions/HTMLTitleElement.html"
           }
         ],
         "custom-elements/reactions/NamedNodeMap.html": [
@@ -5585,12 +5567,6 @@
             "url": "/custom-elements/reactions/Selection.html"
           }
         ],
-        "custom-elements/reactions/ShadowRoot.html": [
-          {
-            "path": "custom-elements/reactions/ShadowRoot.html",
-            "url": "/custom-elements/reactions/ShadowRoot.html"
-          }
-        ],
         "custom-elements/upgrading.html": [
           {
             "path": "custom-elements/upgrading.html",
@@ -5601,12 +5577,6 @@
           {
             "path": "custom-elements/upgrading/Node-cloneNode.html",
             "url": "/custom-elements/upgrading/Node-cloneNode.html"
-          }
-        ],
-        "custom-elements/upgrading/upgrading-enqueue-reactions.html": [
-          {
-            "path": "custom-elements/upgrading/upgrading-enqueue-reactions.html",
-            "url": "/custom-elements/upgrading/upgrading-enqueue-reactions.html"
           }
         ],
         "custom-elements/upgrading/upgrading-parser-created-element.html": [
@@ -8147,12 +8117,6 @@
             "url": "/html/browsers/the-window-object/window-named-properties.html"
           }
         ],
-        "html/browsers/the-window-object/window-open-noopener.html": [
-          {
-            "path": "html/browsers/the-window-object/window-open-noopener.html",
-            "url": "/html/browsers/the-window-object/window-open-noopener.html"
-          }
-        ],
         "html/browsers/the-window-object/window-properties.html": [
           {
             "path": "html/browsers/the-window-object/window-properties.html",
@@ -9312,12 +9276,6 @@
           {
             "path": "html/editing/focus/focus-management/focus-events.html",
             "url": "/html/editing/focus/focus-management/focus-events.html"
-          }
-        ],
-        "html/editing/focus/processing-model/focus-fixup-rule-one-no-dialogs.html": [
-          {
-            "path": "html/editing/focus/processing-model/focus-fixup-rule-one-no-dialogs.html",
-            "url": "/html/editing/focus/processing-model/focus-fixup-rule-one-no-dialogs.html"
           }
         ],
         "html/editing/focus/sequential-focus-navigation-and-the-tabindex-attribute/focus-tabindex-default-value.html": [
@@ -11065,12 +11023,6 @@
             "url": "/html/semantics/links/links-created-by-a-and-area-elements/htmlanchorelement_getter.html"
           }
         ],
-        "html/semantics/links/links-created-by-a-and-area-elements/htmlanchorelement_noopener.html": [
-          {
-            "path": "html/semantics/links/links-created-by-a-and-area-elements/htmlanchorelement_noopener.html",
-            "url": "/html/semantics/links/links-created-by-a-and-area-elements/htmlanchorelement_noopener.html"
-          }
-        ],
         "html/semantics/scripting-1/the-script-element/async_001.htm": [
           {
             "path": "html/semantics/scripting-1/the-script-element/async_001.htm",
@@ -12562,48 +12514,6 @@
           {
             "path": "html/webappapis/atob/base64.html",
             "url": "/html/webappapis/atob/base64.html"
-          }
-        ],
-        "html/webappapis/idle-callbacks/callback-exception.html": [
-          {
-            "path": "html/webappapis/idle-callbacks/callback-exception.html",
-            "url": "/html/webappapis/idle-callbacks/callback-exception.html"
-          }
-        ],
-        "html/webappapis/idle-callbacks/callback-iframe.html": [
-          {
-            "path": "html/webappapis/idle-callbacks/callback-iframe.html",
-            "url": "/html/webappapis/idle-callbacks/callback-iframe.html"
-          }
-        ],
-        "html/webappapis/idle-callbacks/callback-invoked.html": [
-          {
-            "path": "html/webappapis/idle-callbacks/callback-invoked.html",
-            "url": "/html/webappapis/idle-callbacks/callback-invoked.html"
-          }
-        ],
-        "html/webappapis/idle-callbacks/callback-multiple-calls.html": [
-          {
-            "path": "html/webappapis/idle-callbacks/callback-multiple-calls.html",
-            "url": "/html/webappapis/idle-callbacks/callback-multiple-calls.html"
-          }
-        ],
-        "html/webappapis/idle-callbacks/callback-timeout.html": [
-          {
-            "path": "html/webappapis/idle-callbacks/callback-timeout.html",
-            "url": "/html/webappapis/idle-callbacks/callback-timeout.html"
-          }
-        ],
-        "html/webappapis/idle-callbacks/cancel-invoked.html": [
-          {
-            "path": "html/webappapis/idle-callbacks/cancel-invoked.html",
-            "url": "/html/webappapis/idle-callbacks/cancel-invoked.html"
-          }
-        ],
-        "html/webappapis/idle-callbacks/idlharness.html": [
-          {
-            "path": "html/webappapis/idle-callbacks/idlharness.html",
-            "url": "/html/webappapis/idle-callbacks/idlharness.html"
           }
         ],
         "html/webappapis/scripting/event-loops/microtask_after_raf.html": [
@@ -18203,18 +18113,6 @@
           "url": "/html/semantics/grouping-content/the-ol-element/reversed-1d.html"
         }
       ],
-      "html/semantics/grouping-content/the-ol-element/reversed-1e.html": [
-        {
-          "path": "html/semantics/grouping-content/the-ol-element/reversed-1e.html",
-          "references": [
-            [
-              "/html/semantics/grouping-content/the-ol-element/reversed-1-ref.html",
-              "=="
-            ]
-          ],
-          "url": "/html/semantics/grouping-content/the-ol-element/reversed-1e.html"
-        }
-      ],
       "html/semantics/grouping-content/the-ol-element/reversed-2.html": [
         {
           "path": "html/semantics/grouping-content/the-ol-element/reversed-2.html",
@@ -18717,6 +18615,54 @@
             ]
           ],
           "url": "/svg/linking/reftests/href-use-element.html"
+        }
+      ],
+      "svg/shapes/rect-01.svg": [
+        {
+          "path": "svg/shapes/rect-01.svg",
+          "references": [
+            [
+              "/svg/shapes/rect-01-ref.html",
+              "=="
+            ]
+          ],
+          "url": "/svg/shapes/rect-01.svg"
+        }
+      ],
+      "svg/shapes/rect-02.svg": [
+        {
+          "path": "svg/shapes/rect-02.svg",
+          "references": [
+            [
+              "/svg/shapes/rect-02-ref.html",
+              "=="
+            ]
+          ],
+          "url": "/svg/shapes/rect-02.svg"
+        }
+      ],
+      "svg/shapes/rect-03.svg": [
+        {
+          "path": "svg/shapes/rect-03.svg",
+          "references": [
+            [
+              "/svg/shapes/rect-03-ref.html",
+              "=="
+            ]
+          ],
+          "url": "/svg/shapes/rect-03.svg"
+        }
+      ],
+      "svg/shapes/rect-04.svg": [
+        {
+          "path": "svg/shapes/rect-04.svg",
+          "references": [
+            [
+              "/svg/shapes/rect-04-ref.html",
+              "=="
+            ]
+          ],
+          "url": "/svg/shapes/rect-04.svg"
         }
       ]
     }

@@ -175,7 +175,7 @@ FAIL svgzoomevents should be an alias for SVGZoomEvent. Failed to execute 'creat
 FAIL createEvent('svgzoomevents') should be initialized correctly. Cannot read property 'type' of undefined
 FAIL SVGZOOMEVENTS should be an alias for SVGZoomEvent. Failed to execute 'createEvent' on 'Document': The provided event type ('SVGZOOMEVENTS') is invalid.
 FAIL createEvent('SVGZOOMEVENTS') should be initialized correctly. Cannot read property 'type' of undefined
-FAIL TextEvent should be an alias for CompositionEvent. assert_equals: expected object "[object CompositionEvent]" but got object "[object TextEvent]"
+FAIL TextEvent should be an alias for CompositionEvent. assert_true: expected true got false
 PASS createEvent('TextEvent') should be initialized correctly. 
 FAIL textevent should be an alias for CompositionEvent. Failed to execute 'createEvent' on 'Document': The provided event type ('textevent') is invalid.
 FAIL createEvent('textevent') should be initialized correctly. Cannot read property 'type' of undefined

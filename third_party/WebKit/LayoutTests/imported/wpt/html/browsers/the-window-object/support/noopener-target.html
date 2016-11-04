@@ -1,8 +1,0 @@
-<!DOCTYPE html>
-<script>
-  var channelName = location.search.substr(1);
-  var channel = new BroadcastChannel(channelName);
-  channel.postMessage({ name: window.name,
-                        haveOpener: window.opener !== null });
-  window.close();
-</script>
