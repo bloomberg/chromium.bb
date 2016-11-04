@@ -409,7 +409,8 @@ TEST(ImageResourceTest, ReloadIfLoFiOrPlaceholderAfterFinished) {
   // Send the image response.
   ResourceResponse resourceResponse(KURL(), "image/jpeg", sizeof(kJpegImage),
                                     nullAtom, String());
-  resourceResponse.addHTTPHeaderField("chrome-proxy", "q=low");
+  resourceResponse.addHTTPHeaderField("chrome-proxy-content-transform",
+                                      "empty-image");
 
   cachedImage->responseReceived(resourceResponse, nullptr);
   cachedImage->appendData(reinterpret_cast<const char*>(kJpegImage),

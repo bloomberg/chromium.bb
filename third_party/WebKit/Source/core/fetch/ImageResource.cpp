@@ -591,7 +591,9 @@ static bool isLoFiImage(const ImageResource& resource) {
   if (resource.resourceRequest().loFiState() != WebURLRequest::LoFiOn)
     return false;
   return !resource.isLoaded() ||
-         resource.response().httpHeaderField("chrome-proxy").contains("q=low");
+         resource.response()
+             .httpHeaderField("chrome-proxy-content-transform")
+             .contains("empty-image");
 }
 
 void ImageResource::reloadIfLoFiOrPlaceholder(
