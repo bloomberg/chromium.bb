@@ -123,4 +123,225 @@ TEST_F(CSPSourceTest, InsecureHostSchemePortMatchesSecurePort) {
   EXPECT_FALSE(source.matches(KURL(base, "https://not-example.com:443/")));
 }
 
+TEST_F(CSPSourceTest, DoesNotSubsume) {
+  struct Source {
+    const char* scheme;
+    const char* host;
+    const char* path;
+    const int port;
+  };
+  struct TestCase {
+    const Source a;
+    const Source b;
+  } cases[] = {
+      {{"http", "example.com", "/", 0}, {"http", "another.com", "/", 0}},
+      {{"wss", "example.com", "/", 0}, {"http", "example.com", "/", 0}},
+      {{"wss", "example.com", "/", 0}, {"about", "example.com", "/", 0}},
+      {{"http", "example.com", "/", 0}, {"about", "example.com", "/", 0}},
+      {{"http", "example.com", "/1.html", 0},
+       {"http", "example.com", "/2.html", 0}},
+      {{"http", "example.com", "/", 443}, {"about", "example.com", "/", 800}},
+  };
+  for (const auto& test : cases) {
+    CSPSource* returned = new CSPSource(
+        csp.get(), test.a.scheme, test.a.host, test.a.port, test.a.path,
+        CSPSource::NoWildcard, CSPSource::NoWildcard);
+
+    CSPSource* required = new CSPSource(
+        csp.get(), test.b.scheme, test.b.host, test.b.port, test.b.path,
+        CSPSource::NoWildcard, CSPSource::NoWildcard);
+
+    EXPECT_FALSE(required->subsumes(returned));
+    // Verify the same test with a and b swapped.
+    EXPECT_FALSE(required->subsumes(returned));
+  }
+}
+
+TEST_F(CSPSourceTest, Subsumes) {
+  struct Source {
+    const char* scheme;
+    const char* path;
+    const int port;
+  };
+  struct TestCase {
+    const Source a;
+    const Source b;
+    bool expected;
+    bool expectedWhenSwapped;
+  } cases[] = {
+      // Equal signals
+      {{"http", "/", 0}, {"http", "/", 0}, true, true},
+      {{"https", "/", 0}, {"https", "/", 0}, true, true},
+      {{"https", "/page1.html", 0}, {"https", "/page1.html", 0}, true, true},
+      {{"http", "/", 70}, {"http", "/", 70}, true, true},
+      {{"https", "/", 70}, {"https", "/", 70}, true, true},
+      {{"https", "/page1.html", 0}, {"https", "/page1.html", 0}, true, true},
+      {{"http", "/page1.html", 70}, {"http", "/page1.html", 70}, true, true},
+      {{"https", "/page1.html", 70}, {"https", "/page1.html", 70}, true, true},
+      // One stronger signal in the first CSPSource
+      {{"https", "/", 0}, {"http", "/", 0}, true, false},
+      {{"http", "/page1.html", 0}, {"http", "/", 0}, true, false},
+      {{"http", "/", 80}, {"http", "/", 0}, true, true},
+      {{"http", "/", 700}, {"http", "/", 0}, false, false},
+      // Two stronger signals in the first CSPSource
+      {{"https", "/page1.html", 0}, {"http", "/", 0}, true, false},
+      {{"https", "/", 80}, {"http", "/", 0}, false, false},
+      {{"http", "/page1.html", 80}, {"http", "/", 0}, true, false},
+      // Three stronger signals in the first CSPSource
+      {{"https", "/page1.html", 70}, {"http", "/", 0}, false, false},
+      // Mixed signals
+      {{"https", "/", 0}, {"http", "/page1.html", 0}, false, false},
+      {{"https", "/", 0}, {"http", "/", 70}, false, false},
+      {{"http", "/page1.html", 0}, {"http", "/", 70}, false, false},
+  };
+
+  for (const auto& test : cases) {
+    CSPSource* returned = new CSPSource(
+        csp.get(), test.a.scheme, "example.com", test.a.port, test.a.path,
+        CSPSource::NoWildcard, CSPSource::NoWildcard);
+
+    CSPSource* required = new CSPSource(
+        csp.get(), test.b.scheme, "example.com", test.b.port, test.b.path,
+        CSPSource::NoWildcard, CSPSource::NoWildcard);
+
+    EXPECT_EQ(required->subsumes(returned), test.expected);
+    // Verify the same test with a and b swapped.
+    EXPECT_EQ(returned->subsumes(required), test.expectedWhenSwapped);
+  }
+
+  // When returned CSP has a wildcard but the required csp doesn't, then it is
+  // not subsumed.
+  for (const auto& test : cases) {
+    CSPSource* returned = new CSPSource(
+        csp.get(), test.a.scheme, "example.com", test.a.port, test.a.path,
+        CSPSource::HasWildcard, CSPSource::NoWildcard);
+    CSPSource* required = new CSPSource(
+        csp.get(), test.b.scheme, "example.com", test.b.port, test.b.path,
+        CSPSource::NoWildcard, CSPSource::NoWildcard);
+
+    EXPECT_FALSE(required->subsumes(returned));
+
+    // If required csp also allows a wildcard in host, then the answer should be
+    // as expected.
+    CSPSource* required2 = new CSPSource(
+        csp.get(), test.b.scheme, "example.com", test.b.port, test.b.path,
+        CSPSource::HasWildcard, CSPSource::NoWildcard);
+    EXPECT_EQ(required2->subsumes(returned), test.expected);
+  }
+}
+
+TEST_F(CSPSourceTest, WildcardsSubsumes) {
+  struct Wildcards {
+    CSPSource::WildcardDisposition hostDispotion;
+    CSPSource::WildcardDisposition portDispotion;
+  };
+  struct TestCase {
+    const Wildcards a;
+    const Wildcards b;
+    bool expected;
+  } cases[] = {
+      // One out of four possible wildcards.
+      {{CSPSource::HasWildcard, CSPSource::NoWildcard},
+       {CSPSource::NoWildcard, CSPSource::NoWildcard},
+       false},
+      {{CSPSource::NoWildcard, CSPSource::HasWildcard},
+       {CSPSource::NoWildcard, CSPSource::NoWildcard},
+       false},
+      {{CSPSource::NoWildcard, CSPSource::NoWildcard},
+       {CSPSource::NoWildcard, CSPSource::HasWildcard},
+       true},
+      {{CSPSource::NoWildcard, CSPSource::NoWildcard},
+       {CSPSource::HasWildcard, CSPSource::NoWildcard},
+       true},
+      // Two out of four possible wildcards.
+      {{CSPSource::HasWildcard, CSPSource::HasWildcard},
+       {CSPSource::NoWildcard, CSPSource::NoWildcard},
+       false},
+      {{CSPSource::HasWildcard, CSPSource::NoWildcard},
+       {CSPSource::HasWildcard, CSPSource::NoWildcard},
+       true},
+      {{CSPSource::HasWildcard, CSPSource::NoWildcard},
+       {CSPSource::NoWildcard, CSPSource::HasWildcard},
+       false},
+      {{CSPSource::NoWildcard, CSPSource::HasWildcard},
+       {CSPSource::HasWildcard, CSPSource::NoWildcard},
+       false},
+      {{CSPSource::NoWildcard, CSPSource::HasWildcard},
+       {CSPSource::NoWildcard, CSPSource::HasWildcard},
+       true},
+      {{CSPSource::NoWildcard, CSPSource::NoWildcard},
+       {CSPSource::HasWildcard, CSPSource::HasWildcard},
+       true},
+      // Three out of four possible wildcards.
+      {{CSPSource::HasWildcard, CSPSource::HasWildcard},
+       {CSPSource::HasWildcard, CSPSource::NoWildcard},
+       false},
+      {{CSPSource::HasWildcard, CSPSource::HasWildcard},
+       {CSPSource::NoWildcard, CSPSource::HasWildcard},
+       false},
+      {{CSPSource::HasWildcard, CSPSource::NoWildcard},
+       {CSPSource::HasWildcard, CSPSource::HasWildcard},
+       true},
+      {{CSPSource::NoWildcard, CSPSource::HasWildcard},
+       {CSPSource::HasWildcard, CSPSource::HasWildcard},
+       true},
+      // Four out of four possible wildcards.
+      {{CSPSource::HasWildcard, CSPSource::HasWildcard},
+       {CSPSource::HasWildcard, CSPSource::HasWildcard},
+       true},
+  };
+
+  // There are different cases for wildcards but now also the second CSPSource
+  // has a more specific path.
+  for (const auto& test : cases) {
+    CSPSource* returned =
+        new CSPSource(csp.get(), "http", "example.com", 0, "/",
+                      test.a.hostDispotion, test.a.portDispotion);
+    CSPSource* required =
+        new CSPSource(csp.get(), "http", "example.com", 0, "/",
+                      test.b.hostDispotion, test.b.portDispotion);
+    EXPECT_EQ(required->subsumes(returned), test.expected);
+
+    // Wildcards should not matter when required csp is stricter than returned
+    // csp.
+    CSPSource* required2 =
+        new CSPSource(csp.get(), "https", "example.com", 0, "/",
+                      test.b.hostDispotion, test.b.portDispotion);
+    EXPECT_FALSE(required2->subsumes(returned));
+  }
+}
+
+TEST_F(CSPSourceTest, SchemesOnlySubsumes) {
+  struct TestCase {
+    String aScheme;
+    String bScheme;
+    bool expected;
+  } cases[] = {
+      // HTTP
+      {"http", "http", true},
+      {"http", "https", false},
+      {"https", "http", true},
+      {"https", "https", true},
+      // WSS
+      {"ws", "ws", true},
+      {"ws", "wss", false},
+      {"wss", "ws", true},
+      {"wss", "wss", true},
+      // Unequal
+      {"ws", "http", false},
+      {"http", "ws", false},
+      {"http", "about", false},
+  };
+
+  for (const auto& test : cases) {
+    CSPSource* returned =
+        new CSPSource(csp.get(), test.aScheme, "example.com", 0, "/",
+                      CSPSource::NoWildcard, CSPSource::NoWildcard);
+    CSPSource* required =
+        new CSPSource(csp.get(), test.bScheme, "example.com", 0, "/",
+                      CSPSource::NoWildcard, CSPSource::NoWildcard);
+    EXPECT_EQ(required->subsumes(returned), test.expected);
+  }
+}
+
 }  // namespace blink

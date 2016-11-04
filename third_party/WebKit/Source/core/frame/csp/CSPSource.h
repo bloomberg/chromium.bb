@@ -32,6 +32,10 @@ class CORE_EXPORT CSPSource : public GarbageCollectedFinalized<CSPSource> {
                ResourceRequest::RedirectStatus =
                    ResourceRequest::RedirectStatus::NoRedirect) const;
 
+  // Returns true if this CSPSource subsumes the other, as defined by the
+  // algorithm at https://w3c.github.io/webappsec-csp/embedded/#subsume-policy
+  bool subsumes(CSPSource*);
+
   DECLARE_TRACE();
 
  private:

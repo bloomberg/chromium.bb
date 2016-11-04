@@ -105,6 +105,25 @@ bool CSPSource::portMatches(int port, const String& protocol) const {
   return false;
 }
 
+bool CSPSource::subsumes(CSPSource* other) {
+  if (!schemeMatches(other->m_scheme))
+    return false;
+
+  if (other->isSchemeOnly() || isSchemeOnly())
+    return isSchemeOnly();
+
+  if ((m_hostWildcard == NoWildcard && other->m_hostWildcard == HasWildcard) ||
+      (m_portWildcard == NoWildcard && other->m_portWildcard == HasWildcard)) {
+    return false;
+  }
+
+  bool hostSubsumes = (m_host == other->m_host || hostMatches(other->m_host));
+  bool portSubsumes = (m_portWildcard == HasWildcard) ||
+                      portMatches(other->m_port, other->m_scheme);
+  bool pathSubsumes = pathMatches(other->m_path);
+  return hostSubsumes && portSubsumes && pathSubsumes;
+}
+
 bool CSPSource::isSchemeOnly() const {
   return m_host.isEmpty();
 }
