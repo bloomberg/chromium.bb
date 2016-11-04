@@ -38,8 +38,7 @@ class DeviceManagementService;
 class PolicyOAuth2TokenFetcher;
 class WildcardLoginChecker;
 
-// UserCloudPolicyManagerChromeOS implements logic for initializing user policy
-// on Chrome OS.
+// Implements logic for initializing user policy on Chrome OS.
 class UserCloudPolicyManagerChromeOS : public CloudPolicyManager,
                                        public CloudPolicyClient::Observer,
                                        public CloudPolicyService::Observer,
@@ -71,12 +70,12 @@ class UserCloudPolicyManagerChromeOS : public CloudPolicyManager,
       scoped_refptr<net::URLRequestContextGetter> system_request_context);
 
   // This class is one of the policy providers, and must be ready for the
-  // creation of the Profile's PrefService; all the other
-  // KeyedServices depend on the PrefService, so this class can't
-  // depend on other BCKS to avoid a circular dependency. So instead of using
-  // the ProfileOAuth2TokenService directly to get the access token, a 3rd
-  // service (UserCloudPolicyTokenForwarder) will fetch it later and pass it
-  // to this method once available.
+  // creation of the Profile's PrefService; all the other KeyedServices depend
+  // on the PrefService, so this class can't depend on other
+  // BrowserContextKeyedServices to avoid a circular dependency. So instead of
+  // using the ProfileOAuth2TokenService directly to get the access token, a 3rd
+  // service (UserCloudPolicyTokenForwarder) will fetch it later and pass it to
+  // this method once available.
   // The |access_token| can then be used to authenticate the registration
   // request to the DMServer.
   void OnAccessTokenAvailable(const std::string& access_token);

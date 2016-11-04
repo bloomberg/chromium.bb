@@ -36,11 +36,11 @@ class UserCloudPolicyManager;
 // infrastructure (mainly UserCloudPolicyManager) to load policy for the signed
 // in user. This is the base class that contains shared behavior.
 //
-// At signin time, this class initializes the UCPM and loads policy before any
-// other signed in services are initialized. After each restart, this class
-// ensures that the CloudPolicyClient is registered (in case the policy server
-// was offline during the initial policy fetch) and if not it initiates a fresh
-// registration process.
+// At signin time, this class initializes the UserCloudPolicyManager and loads
+// policy before any other signed in services are initialized. After each
+// restart, this class ensures that the CloudPolicyClient is registered (in case
+// the policy server was offline during the initial policy fetch) and if not it
+// initiates a fresh registration process.
 //
 // Finally, if the user signs out, this class is responsible for shutting down
 // the policy infrastructure to ensure that any cached policy is cleared.
