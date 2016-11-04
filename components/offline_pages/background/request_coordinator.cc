@@ -523,7 +523,6 @@ bool RequestCoordinator::StartProcessingInternal(
   current_conditions_.reset(new DeviceConditions(device_conditions));
   if (is_starting_ || is_busy_)
     return false;
-  is_starting_ = true;
   processing_state_ = processing_state;
   scheduler_callback_ = callback;
 
@@ -574,6 +573,7 @@ RequestCoordinator::TryImmediateStart() {
 }
 
 void RequestCoordinator::TryNextRequest() {
+  is_starting_ = true;
   base::TimeDelta processing_time_budget;
   if (processing_state_ == ProcessingWindowState::SCHEDULED_WINDOW) {
     processing_time_budget = base::TimeDelta::FromSeconds(
@@ -584,11 +584,13 @@ void RequestCoordinator::TryNextRequest() {
         policy_->GetProcessingTimeBudgetForImmediateLoadInSeconds());
   }
 
-  // If there is no time left in the budget, return to the scheduler.
-  // We do not remove the pending task that was set up earlier in case
-  // we run out of time, so the background scheduler will return to us
-  // at the next opportunity to run background tasks.
-  if ((base::Time::Now() - operation_start_time_) > processing_time_budget) {
+  // If there is no network or no time left in the budget, return to the
+  // scheduler. We do not remove the pending scheduler task that was set
+  // up earlier in case we run out of time, so the background scheduler
+  // will return to us at the next opportunity to run background tasks.
+  if (GetConnectionType() ==
+          net::NetworkChangeNotifier::ConnectionType::CONNECTION_NONE ||
+      (base::Time::Now() - operation_start_time_) > processing_time_budget) {
     is_starting_ = false;
 
     // Let the scheduler know we are done processing.
