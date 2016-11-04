@@ -51,7 +51,7 @@
                     '<\/script>';
 
                 // Verify that this page can create a MediaKeys first.
-                navigator.requestMediaKeySystemAccess('org.w3.clearkey', [{
+                return navigator.requestMediaKeySystemAccess('org.w3.clearkey', [{
                     initDataTypes: [ 'keyids' ],
                     audioCapabilities: [
                         { contentType: 'audio/mp4; codecs="mp4a.40.2"' },
@@ -61,7 +61,7 @@
                     return access.createMediaKeys();
                 }).then(function(mediaKeys) {
                     // Success, so now create the iframe and try there.
-                    return load_iframe(script, 'allow-scripts')
+                    return load_iframe(script, 'allow-scripts');
                 }).then(function(iframe) {
                     iframe.contentWindow.postMessage({}, '*');
                     return wait_for_message();
