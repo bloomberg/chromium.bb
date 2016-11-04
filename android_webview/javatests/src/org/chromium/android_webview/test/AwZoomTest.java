@@ -188,6 +188,7 @@ public class AwZoomTest extends AwTestBase {
 
     @SmallTest
     @Feature({"AndroidWebView"})
+    @RetryOnFailure  // Flaky (times out). See http://crbug.com/661879.
     public void testMagnification() throws Throwable {
         getAwSettingsOnUiThread(mAwContents).setSupportZoom(true);
         runMagnificationTest();
