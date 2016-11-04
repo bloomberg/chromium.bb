@@ -34,6 +34,7 @@ DEFAULT_DELETER(wl_shell_surface, wl_shell_surface_destroy)
 DEFAULT_DELETER(wl_seat, wl_seat_destroy)
 DEFAULT_DELETER(wl_pointer, wl_pointer_destroy)
 DEFAULT_DELETER(wl_touch, wl_touch_destroy)
+DEFAULT_DELETER(wl_callback, wl_callback_destroy)
 
 namespace exo {
 namespace wayland {
@@ -105,6 +106,7 @@ struct MainLoopContext {
   uint32_t color = 0xffffffff;
   bool needs_redraw = true;
   bool shutdown = false;
+  bool throttled = false;
 };
 
 void PointerEnter(void* data,
@@ -194,6 +196,12 @@ void TouchMotion(void* data,
 void TouchFrame(void* data, wl_touch* touch) {}
 
 void TouchCancel(void* data, wl_touch* touch) {}
+
+void FrameCallback(void* data, wl_callback* callback, uint32_t time) {
+  MainLoopContext* context = static_cast<MainLoopContext*>(data);
+
+  context->throttled = false;
+}
 
 }  // namespace
 
@@ -305,11 +313,17 @@ int MotionEventsMain() {
                                       TouchFrame, TouchCancel};
   wl_touch_add_listener(touch.get(), &touch_listener, &context);
 
+  std::unique_ptr<wl_callback> frame_callback;
+  wl_callback_listener frame_listener = {FrameCallback};
+
   do {
     if (context.shutdown)
       break;
 
     if (!context.needs_redraw)
+      continue;
+
+    if (context.throttled)
       continue;
 
     BufferState* buffer =
@@ -330,6 +344,10 @@ int MotionEventsMain() {
 
     wl_surface_attach(surface.get(), buffer->buffer.get(), 0, 0);
     buffer->busy = true;
+
+    frame_callback.reset(wl_surface_frame(surface.get()));
+    wl_callback_add_listener(frame_callback.get(), &frame_listener, &context);
+    context.throttled = true;
 
     wl_surface_commit(surface.get());
     wl_display_flush(display.get());
