@@ -23,6 +23,12 @@ namespace policy {
 
 namespace {
 
+// Validates that a key is numerical. Used for lists below.
+bool IsKeyNumerical(const std::string& key) {
+  int temp = 0;
+  return base::StringToInt(key, &temp);
+}
+
 // Converts a value (as read from the registry) to meet |schema|, converting
 // types as necessary. Unconvertible types will show up as null values in the
 // result.
@@ -99,16 +105,17 @@ std::unique_ptr<base::Value> ConvertValue(const base::Value& value,
       break;
     }
     case base::Value::TYPE_LIST: {
-      // Lists are encoded as subkeys with numbered value in the registry.
+      // Lists are encoded as subkeys with numbered value in the registry
+      // (non-numerical keys are ignored).
       const base::DictionaryValue* dict = nullptr;
       if (value.GetAsDictionary(&dict)) {
         std::unique_ptr<base::ListValue> result(new base::ListValue());
-        for (int i = 1; ; ++i) {
-          const base::Value* entry = nullptr;
-          if (!dict->Get(base::IntToString(i), &entry))
-            break;
+        for (base::DictionaryValue::Iterator it(*dict); !it.IsAtEnd();
+             it.Advance()) {
+          if (!IsKeyNumerical(it.key()))
+            continue;
           std::unique_ptr<base::Value> converted =
-              ConvertValue(*entry, schema.GetItems());
+              ConvertValue(it.value(), schema.GetItems());
           if (converted)
             result->Append(converted.release());
         }
@@ -322,25 +329,23 @@ std::unique_ptr<base::Value> RegistryDict::ConvertToJSON(
     case base::Value::TYPE_LIST: {
       std::unique_ptr<base::ListValue> result(new base::ListValue());
       Schema item_schema = schema.valid() ? schema.GetItems() : Schema();
-      for (int i = 1; ; ++i) {
-        const std::string name(base::IntToString(i));
-        const RegistryDict* key = GetKey(name);
-        if (key) {
-          std::unique_ptr<base::Value> converted =
-              key->ConvertToJSON(item_schema);
-          if (converted)
-            result->Append(converted.release());
+      for (RegistryDict::KeyMap::const_iterator entry(keys_.begin());
+           entry != keys_.end(); ++entry) {
+        if (!IsKeyNumerical(entry->first))
           continue;
-        }
-        const base::Value* value = GetValue(name);
-        if (value) {
-          std::unique_ptr<base::Value> converted =
-              ConvertValue(*value, item_schema);
-          if (converted)
-            result->Append(converted.release());
+        std::unique_ptr<base::Value> converted =
+            entry->second->ConvertToJSON(item_schema);
+        if (converted)
+          result->Append(converted.release());
+      }
+      for (RegistryDict::ValueMap::const_iterator entry(values_.begin());
+           entry != values_.end(); ++entry) {
+        if (!IsKeyNumerical(entry->first))
           continue;
-        }
-        break;
+        std::unique_ptr<base::Value> converted =
+            ConvertValue(*entry->second, item_schema);
+        if (converted)
+          result->Append(converted.release());
       }
       return std::move(result);
     }

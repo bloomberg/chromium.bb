@@ -222,7 +222,8 @@ TEST(RegistryDictTest, ConvertToJSON) {
       "    \"string-to-int\": { \"type\": \"integer\" },"
       "    \"string-to-dict\": { \"type\": \"object\" }"
       "  }"
-      "}", &error);
+      "}",
+      &error);
   ASSERT_TRUE(schema.valid()) << error;
 
   std::unique_ptr<base::Value> actual(test_dict.ConvertToJSON(schema));
@@ -247,6 +248,42 @@ TEST(RegistryDictTest, ConvertToJSON) {
   expected_subdict.reset(new base::DictionaryValue());
   expected_subdict->Set("key", std::move(expected_list));
   expected.Set("string-to-dict", std::move(expected_subdict));
+
+  EXPECT_TRUE(base::Value::Equals(actual.get(), &expected));
+}
+
+TEST(RegistryDictTest, NonSequentialConvertToJSON) {
+  RegistryDict test_dict;
+
+  std::unique_ptr<RegistryDict> list(new RegistryDict());
+  list->SetValue("1", base::StringValue("1").CreateDeepCopy());
+  list->SetValue("2", base::StringValue("2").CreateDeepCopy());
+  list->SetValue("THREE", base::StringValue("3").CreateDeepCopy());
+  list->SetValue("4", base::StringValue("4").CreateDeepCopy());
+  test_dict.SetKey("dict-to-list", std::move(list));
+
+  std::string error;
+  Schema schema = Schema::Parse(
+      "{"
+      "  \"type\": \"object\","
+      "  \"properties\": {"
+      "    \"dict-to-list\": {"
+      "      \"type\": \"array\","
+      "      \"items\": { \"type\": \"string\" }"
+      "    }"
+      "  }"
+      "}",
+      &error);
+  ASSERT_TRUE(schema.valid()) << error;
+
+  std::unique_ptr<base::Value> actual(test_dict.ConvertToJSON(schema));
+
+  base::DictionaryValue expected;
+  std::unique_ptr<base::ListValue> expected_list(new base::ListValue());
+  expected_list->Append(base::StringValue("1").CreateDeepCopy());
+  expected_list->Append(base::StringValue("2").CreateDeepCopy());
+  expected_list->Append(base::StringValue("4").CreateDeepCopy());
+  expected.Set("dict-to-list", std::move(expected_list));
 
   EXPECT_TRUE(base::Value::Equals(actual.get(), &expected));
 }
