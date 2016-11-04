@@ -72,6 +72,8 @@ const int kContextualCardsNoIntegration = 0;
 const int kContextualCardsBarIntegration = 1;
 const int kContextualCardsSingleAction = 2;
 
+const char kContextualCardsVersionOverride[] = "contextual_cards_version";
+
 }  // namespace
 
 // URLFetcher ID, only used for tests: we only have one kind of fetcher.
@@ -233,6 +235,13 @@ std::string ContextualSearchDelegate::BuildRequestUrl(std::string selection) {
   if (base::FeatureList::IsEnabled(
           chrome::android::kContextualSearchSingleActions)) {
     contextual_cards_version = kContextualCardsSingleAction;
+  }
+
+  if (base::CommandLine::ForCurrentProcess()->HasSwitch(
+      kContextualCardsVersionOverride)){
+    contextual_cards_version =
+        std::stoi(base::CommandLine::ForCurrentProcess()->GetSwitchValueASCII(
+            kContextualCardsVersionOverride), nullptr);
   }
 
   TemplateURLRef::SearchTermsArgs::ContextualSearchParams params(
