@@ -12,6 +12,7 @@
 #include "core/dom/DOMArrayBuffer.h"
 #include "core/dom/MessagePort.h"
 #include "core/frame/ImageBitmap.h"
+#include "platform/tracing/TraceEvent.h"
 #include "wtf/ByteOrder.h"
 #include "wtf/text/StringBuffer.h"
 
@@ -25,6 +26,7 @@ PassRefPtr<SerializedScriptValue> SerializedScriptValueFactory::create(
     Transferables* transferables,
     WebBlobInfoArray* blobInfo,
     ExceptionState& exceptionState) {
+  TRACE_EVENT0("blink", "SerializedScriptValueFactory::create");
   if (RuntimeEnabledFeatures::v8BasedStructuredCloneEnabled()) {
     V8ScriptValueSerializer serializer(ScriptState::current(isolate));
     serializer.setBlobInfoArray(blobInfo);
@@ -41,6 +43,7 @@ v8::Local<v8::Value> SerializedScriptValueFactory::deserialize(
     v8::Isolate* isolate,
     MessagePortArray* messagePorts,
     const WebBlobInfoArray* blobInfo) {
+  TRACE_EVENT0("blink", "SerializedScriptValueFactory::deserialize");
   if (RuntimeEnabledFeatures::v8BasedStructuredCloneEnabled()) {
     V8ScriptValueDeserializer deserializer(ScriptState::current(isolate),
                                            value);

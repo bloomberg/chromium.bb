@@ -10,6 +10,7 @@
 #include "bindings/modules/v8/serialization/V8ScriptValueDeserializerForModules.h"
 #include "bindings/modules/v8/serialization/V8ScriptValueSerializerForModules.h"
 #include "core/dom/ExceptionCode.h"
+#include "platform/tracing/TraceEvent.h"
 
 namespace blink {
 
@@ -19,6 +20,7 @@ SerializedScriptValueForModulesFactory::create(v8::Isolate* isolate,
                                                Transferables* transferables,
                                                WebBlobInfoArray* blobInfo,
                                                ExceptionState& exceptionState) {
+  TRACE_EVENT0("blink", "SerializedScriptValueFactory::create");
   if (RuntimeEnabledFeatures::v8BasedStructuredCloneEnabled()) {
     V8ScriptValueSerializerForModules serializer(ScriptState::current(isolate));
     serializer.setBlobInfoArray(blobInfo);
@@ -35,6 +37,7 @@ v8::Local<v8::Value> SerializedScriptValueForModulesFactory::deserialize(
     v8::Isolate* isolate,
     MessagePortArray* messagePorts,
     const WebBlobInfoArray* blobInfo) {
+  TRACE_EVENT0("blink", "SerializedScriptValueFactory::deserialize");
   if (RuntimeEnabledFeatures::v8BasedStructuredCloneEnabled()) {
     V8ScriptValueDeserializerForModules deserializer(
         ScriptState::current(isolate), value);
