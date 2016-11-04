@@ -10,7 +10,7 @@
 namespace blink {
 namespace {
 
-#if ENABLE(ASSERT)
+#if ENABLE(ASSERT) && !defined(UNDEFINED_SANITIZER)
 
 TEST(DisplayItemClientTest, IsAlive) {
   EXPECT_FALSE(reinterpret_cast<DisplayItemClient*>(0x12345678)->isAlive());
