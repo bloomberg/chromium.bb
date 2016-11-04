@@ -12,8 +12,8 @@ android_library("vibration_manager_android") {
   deps = [
     "//base:base_java",
     "//device/vibration:mojo_bindings_java",
-    "//mojo/public/java:bindings",
-    "//mojo/public/java:system",
+    "//mojo/public/java:bindings_java",
+    "//mojo/public/java:system_java",
     "//services/service_manager/public/java:service_manager_java",
   ]
 }

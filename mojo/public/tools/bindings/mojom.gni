@@ -532,8 +532,8 @@ template("mojom") {
       android_library(java_target_name) {
         deps = [
           "//base:base_java",
-          "//mojo/public/java:bindings",
-          "//mojo/public/java:system",
+          "//mojo/public/java:bindings_java",
+          "//mojo/public/java:system_java",
         ]
 
         foreach(d, all_deps) {

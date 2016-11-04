@@ -16,7 +16,7 @@ android_library("java") {
   deps = [
     "//base:base_java",
     "//device/nfc:mojo_bindings_java",
-    "//mojo/public/java:bindings",
-    "//mojo/public/java:system",
+    "//mojo/public/java:bindings_java",
+    "//mojo/public/java:system_java",
   ]
 }
