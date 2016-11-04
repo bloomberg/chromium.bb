@@ -4,6 +4,8 @@
 
 #include "services/service_manager/public/cpp/service_context.h"
 
+#include <utility>
+
 #include "base/bind.h"
 #include "base/logging.h"
 #include "base/message_loop/message_loop.h"
@@ -26,7 +28,8 @@ ServiceContext::ServiceContext(service_manager::Service* service,
     : pending_connector_request_(std::move(connector_request)),
       service_(service),
       binding_(this, std::move(request)),
-      connector_(std::move(connector)) {
+      connector_(std::move(connector)),
+      weak_factory_(this) {
   DCHECK(binding_.is_bound());
   binding_.set_connection_error_handler(
       base::Bind(&ServiceContext::OnConnectionError, base::Unretained(this)));
@@ -76,9 +79,12 @@ void ServiceContext::OnConnect(
   if (!service_->OnConnect(source_info, registry.get()))
     return;
 
-  // TODO(beng): it appears we never prune this list. We should, when the
-  //             registry's remote interface provider pipe breaks.
-  incoming_connections_.push_back(std::move(registry));
+  InterfaceRegistry* raw_registry = registry.get();
+  registry->AddConnectionLostClosure(base::Bind(
+      &ServiceContext::OnRegistryConnectionError, base::Unretained(this),
+      raw_registry));
+  connection_interface_registries_.insert(
+      std::make_pair(raw_registry, std::move(registry)));
 }
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -94,6 +100,23 @@ void ServiceContext::OnConnectionError() {
     connection_lost_closure_.Run();
   // We don't reset the connector as clients may have taken a raw pointer to it.
   // Connect() will return nullptr if they try to connect to anything.
+}
+
+void ServiceContext::OnRegistryConnectionError(InterfaceRegistry* registry) {
+  // NOTE: We destroy the InterfaceRegistry asynchronously since it's calling
+  // into us from its own connection error handler which may continue to access
+  // the InterfaceRegistry's own state after we return.
+  base::ThreadTaskRunnerHandle::Get()->PostTask(
+      FROM_HERE,
+      base::Bind(&ServiceContext::DestroyConnectionInterfaceRegistry,
+                 weak_factory_.GetWeakPtr(), registry));
+}
+
+void ServiceContext::DestroyConnectionInterfaceRegistry(
+    InterfaceRegistry* registry) {
+  auto it = connection_interface_registries_.find(registry);
+  CHECK(it != connection_interface_registries_.end());
+  connection_interface_registries_.erase(it);
 }
 
 }  // namespace service_manager

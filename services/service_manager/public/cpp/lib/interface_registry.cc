@@ -99,6 +99,8 @@ void InterfaceRegistry::Bind(
   remote_interface_provider_spec_ = remote_interface_provider_spec;
   RebuildExposedInterfaces();
   binding_.Bind(std::move(local_interfaces_request));
+  binding_.set_connection_error_handler(base::Bind(
+      &InterfaceRegistry::OnConnectionError, base::Unretained(this)));
 }
 
 void InterfaceRegistry::Serialize(std::stringstream* stream) {
@@ -177,9 +179,9 @@ void InterfaceRegistry::GetInterfaceNames(
     interface_names->insert(entry.first);
 }
 
-void InterfaceRegistry::SetConnectionLostClosure(
+void InterfaceRegistry::AddConnectionLostClosure(
     const base::Closure& connection_lost_closure) {
-  binding_.set_connection_error_handler(connection_lost_closure);
+  connection_lost_closures_.push_back(connection_lost_closure);
 }
 
 // mojom::InterfaceProvider:
@@ -245,6 +247,11 @@ void InterfaceRegistry::RebuildExposedInterfaces() {
                                               local_interface_provider_spec_);
   expose_all_interfaces_ =
       exposed_interfaces_.size() == 1 && exposed_interfaces_.count("*") == 1;
+}
+
+void InterfaceRegistry::OnConnectionError() {
+  for (const auto& closure : connection_lost_closures_)
+    closure.Run();
 }
 
 }  // namespace service_manager

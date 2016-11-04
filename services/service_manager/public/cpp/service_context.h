@@ -5,12 +5,12 @@
 #ifndef SERVICES_SERVICE_MANAGER_PUBLIC_CPP_SERVICE_CONTEXT_H_
 #define SERVICES_SERVICE_MANAGER_PUBLIC_CPP_SERVICE_CONTEXT_H_
 
+#include <map>
 #include <memory>
-#include <utility>
-#include <vector>
 
 #include "base/callback.h"
 #include "base/macros.h"
+#include "base/memory/weak_ptr.h"
 #include "mojo/public/cpp/bindings/binding.h"
 #include "mojo/public/cpp/system/core.h"
 #include "services/service_manager/public/cpp/connector.h"
@@ -65,6 +65,9 @@ class ServiceContext : public mojom::Service {
   void SetConnectionLostClosure(const base::Closure& closure);
 
  private:
+  using InterfaceRegistryMap =
+      std::map<InterfaceRegistry*, std::unique_ptr<InterfaceRegistry>>;
+
   // mojom::Service:
   void OnStart(const ServiceInfo& info,
                const OnStartCallback& callback) override;
@@ -72,13 +75,15 @@ class ServiceContext : public mojom::Service {
                  mojom::InterfaceProviderRequest interfaces) override;
 
   void OnConnectionError();
+  void OnRegistryConnectionError(InterfaceRegistry* registry);
+  void DestroyConnectionInterfaceRegistry(InterfaceRegistry* registry);
 
   // A callback called when OnStart() is run.
   base::Closure initialize_handler_;
 
-  // We track the lifetime of incoming connection registries as it more
-  // convenient for the client.
-  std::vector<std::unique_ptr<InterfaceRegistry>> incoming_connections_;
+  // We track the lifetime of incoming connection registries as a convenience
+  // for the client.
+  InterfaceRegistryMap connection_interface_registries_;
 
   // A pending Connector request which will eventually be passed to the Service
   // Manager.
@@ -91,6 +96,8 @@ class ServiceContext : public mojom::Service {
   bool should_run_connection_lost_closure_ = false;
 
   base::Closure connection_lost_closure_;
+
+  base::WeakPtrFactory<ServiceContext> weak_factory_;
 
   DISALLOW_COPY_AND_ASSIGN(ServiceContext);
 };

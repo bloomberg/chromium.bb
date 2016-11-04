@@ -40,7 +40,7 @@ class ConnectTestClassApp
     registry->AddInterface<test::mojom::ConnectTestService>(this);
     registry->AddInterface<test::mojom::ClassInterface>(this);
     inbound_connections_.insert(registry);
-    registry->SetConnectionLostClosure(
+    registry->AddConnectionLostClosure(
         base::Bind(&ConnectTestClassApp::OnConnectionError,
                    base::Unretained(this), registry));
     return true;

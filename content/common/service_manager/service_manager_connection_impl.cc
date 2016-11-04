@@ -258,7 +258,7 @@ class ServiceManagerConnectionImpl::IOThreadContext
         !has_browser_connection_) {
       has_browser_connection_ = true;
       registry->set_default_binder(default_browser_binder_);
-      registry->SetConnectionLostClosure(
+      registry->AddConnectionLostClosure(
           base::Bind(&IOThreadContext::OnBrowserConnectionLost, this));
       return true;
     }
