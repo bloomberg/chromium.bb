@@ -14,8 +14,8 @@ void increment(int* x) {
   ++*x;
 }
 
-void getIsActive(bool* isActive, RefPtr<TaskHandle>* handle) {
-  *isActive = (*handle)->isActive();
+void getIsActive(bool* isActive, TaskHandle* handle) {
+  *isActive = handle->isActive();
 }
 
 }  // namespace
@@ -25,52 +25,53 @@ TEST(WebTaskRunnerTest, PostCancellableTaskTest) {
 
   // Run without cancellation.
   int count = 0;
-  RefPtr<TaskHandle> handle = taskRunner.postCancellableTask(
+  TaskHandle handle = taskRunner.postCancellableTask(
       BLINK_FROM_HERE, WTF::bind(&increment, WTF::unretained(&count)));
   EXPECT_EQ(0, count);
-  EXPECT_TRUE(handle->isActive());
+  EXPECT_TRUE(handle.isActive());
   taskRunner.runUntilIdle();
   EXPECT_EQ(1, count);
-  EXPECT_FALSE(handle->isActive());
+  EXPECT_FALSE(handle.isActive());
 
   count = 0;
   handle = taskRunner.postDelayedCancellableTask(
       BLINK_FROM_HERE, WTF::bind(&increment, WTF::unretained(&count)), 1);
   EXPECT_EQ(0, count);
-  EXPECT_TRUE(handle->isActive());
+  EXPECT_TRUE(handle.isActive());
   taskRunner.runUntilIdle();
   EXPECT_EQ(1, count);
-  EXPECT_FALSE(handle->isActive());
+  EXPECT_FALSE(handle.isActive());
 
   // Cancel a task.
   count = 0;
   handle = taskRunner.postCancellableTask(
       BLINK_FROM_HERE, WTF::bind(&increment, WTF::unretained(&count)));
-  handle->cancel();
+  handle.cancel();
   EXPECT_EQ(0, count);
-  EXPECT_FALSE(handle->isActive());
+  EXPECT_FALSE(handle.isActive());
   taskRunner.runUntilIdle();
   EXPECT_EQ(0, count);
 
-  // The task should be valid even when the handle is dropped.
-  count = 0;
-  handle = taskRunner.postCancellableTask(
-      BLINK_FROM_HERE, WTF::bind(&increment, WTF::unretained(&count)));
-  EXPECT_TRUE(handle->isActive());
-  handle = nullptr;
+  // The task should be cancelled when the handle is dropped.
+  {
+    count = 0;
+    TaskHandle handle2 = taskRunner.postCancellableTask(
+        BLINK_FROM_HERE, WTF::bind(&increment, WTF::unretained(&count)));
+    EXPECT_TRUE(handle2.isActive());
+  }
   EXPECT_EQ(0, count);
   taskRunner.runUntilIdle();
-  EXPECT_EQ(1, count);
+  EXPECT_EQ(0, count);
 
   // handle->isActive() should switch to false before the task starts running.
   bool isActive = false;
   handle = taskRunner.postCancellableTask(
       BLINK_FROM_HERE, WTF::bind(&getIsActive, WTF::unretained(&isActive),
                                  WTF::unretained(&handle)));
-  EXPECT_TRUE(handle->isActive());
+  EXPECT_TRUE(handle.isActive());
   taskRunner.runUntilIdle();
   EXPECT_FALSE(isActive);
-  EXPECT_FALSE(handle->isActive());
+  EXPECT_FALSE(handle.isActive());
 }
 
 }  // namespace blink

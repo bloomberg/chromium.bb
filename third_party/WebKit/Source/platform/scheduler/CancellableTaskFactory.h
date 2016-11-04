@@ -30,13 +30,9 @@
 //
 //   std::unique_ptr<WTF::Closure> task =
 //       WTF::bind(wrapPersistent(foo), &Foo::bar);
-//   RefPtr<TaskHandle> handle =
+//   TaskHandle handle =
 //       task_runner->postCancellableTask(BLINK_FROM_HERE, std::move(task));
-//   handle->cancel();
-//
-// Note that the task is not automatically cancelled on the scope out of
-// RefPtr<TaskHandle>, since the wrapped task has a reference to the TaskHandle.
-
+//   handle.cancel();
 namespace blink {
 
 class PLATFORM_EXPORT CancellableTaskFactory {

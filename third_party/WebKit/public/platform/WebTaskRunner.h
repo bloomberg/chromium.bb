@@ -27,8 +27,11 @@ using SingleThreadTaskRunner = base::SingleThreadTaskRunner;
 
 #ifdef INSIDE_BLINK
 
-class BLINK_PLATFORM_EXPORT TaskHandle
-    : public WTF::ThreadSafeRefCounted<TaskHandle> {
+// TaskHandle is associated to a task posted by
+// WebTaskRunner::postCancellableTask or
+// WebTaskRunner::postCancellableDelayedTask and cancels the associated task on
+// TaskHandle::cancel() call or on TaskHandle destruction.
+class BLINK_PLATFORM_EXPORT TaskHandle {
  public:
   // Returns true if the task will run later. Returns false if the task is
   // cancelled or the task is run already.
@@ -42,20 +45,18 @@ class BLINK_PLATFORM_EXPORT TaskHandle
   // the task.
   void cancel();
 
+  TaskHandle();
   ~TaskHandle();
 
+  TaskHandle(TaskHandle&&);
+  TaskHandle& operator=(TaskHandle&&);
+
  private:
-  class CancelOnTaskDestruction;
+  class Runner;
   friend class WebTaskRunner;
 
-  explicit TaskHandle(std::unique_ptr<WTF::Closure> task);
-  void run(const CancelOnTaskDestruction&);
-  WTF::WeakPtr<TaskHandle> asWeakPtr();
-
-  std::unique_ptr<WTF::Closure> m_task;
-  WTF::WeakPtrFactory<TaskHandle> m_weakPtrFactory;
-
-  DISALLOW_COPY_AND_ASSIGN(TaskHandle);
+  explicit TaskHandle(RefPtr<Runner>);
+  RefPtr<Runner> m_runner;
 };
 
 #endif
@@ -133,13 +134,12 @@ class BLINK_PLATFORM_EXPORT WebTaskRunner {
 
   // For same-thread cancellable task posting. Returns a TaskHandle object for
   // cancellation.
-  RefPtr<TaskHandle> postCancellableTask(const WebTraceLocation&,
-                                         std::unique_ptr<WTF::Closure>)
+  TaskHandle postCancellableTask(const WebTraceLocation&,
+                                 std::unique_ptr<WTF::Closure>)
       WARN_UNUSED_RETURN;
-  RefPtr<TaskHandle> postDelayedCancellableTask(const WebTraceLocation&,
-                                                std::unique_ptr<WTF::Closure>,
-                                                long long delayMs)
-      WARN_UNUSED_RETURN;
+  TaskHandle postDelayedCancellableTask(const WebTraceLocation&,
+                                        std::unique_ptr<WTF::Closure>,
+                                        long long delayMs) WARN_UNUSED_RETURN;
 #endif
 };
 

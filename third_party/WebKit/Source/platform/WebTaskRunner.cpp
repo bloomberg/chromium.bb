@@ -8,64 +8,73 @@
 
 namespace blink {
 
-// This class holds a reference to a TaskHandle to keep it alive while a task is
-// pending in a task queue, and clears the reference on the task disposal, so
-// that it doesn't leave a circular reference like below:
-//   struct Foo : GarbageCollected<Foo> {
-//     void bar() {}
-//     RefPtr<TaskHandle> m_handle;
-//   };
-//
-//   foo->m_handle = taskRunner->postCancellableTask(
-//       BLINK_FROM_HERE, WTF::bind(&Foo::bar, wrapPersistent(foo)));
-//
-// There is a circular reference in the example above as:
-//   foo -> m_handle -> m_task -> Persistent<Foo> in WTF::bind.
-// CancelOnTaskDestruction is needed to break the circle by clearing |m_task|
-// when the wrapped WTF::Closure is deleted.
-class TaskHandle::CancelOnTaskDestruction {
+class TaskHandle::Runner : public WTF::ThreadSafeRefCounted<Runner> {
  public:
-  explicit CancelOnTaskDestruction(RefPtr<TaskHandle> handle)
-      : m_handle(std::move(handle)) {}
+  explicit Runner(std::unique_ptr<WTF::Closure> task)
+      : m_task(std::move(task)), m_weakPtrFactory(this) {}
 
-  CancelOnTaskDestruction(CancelOnTaskDestruction&&) = default;
+  WTF::WeakPtr<Runner> asWeakPtr() { return m_weakPtrFactory.createWeakPtr(); }
 
-  void cancel() const {
-    if (m_handle)
-      m_handle->cancel();
+  bool isActive() { return static_cast<bool>(m_task); }
+
+  void cancel() {
+    std::unique_ptr<WTF::Closure> task = std::move(m_task);
+    m_weakPtrFactory.revokeAll();
   }
 
-  ~CancelOnTaskDestruction() { cancel(); }
+  ~Runner() { cancel(); }
+
+  // The TaskHandle parameter on run() holds a reference to the Runner to keep
+  // it alive while a task is pending in a task queue, and clears the reference
+  // on the task disposal, so that it doesn't leave a circular reference like
+  // below:
+  //   struct Foo : GarbageCollected<Foo> {
+  //     void bar() {}
+  //     TaskHandle m_handle;
+  //   };
+  //
+  //   foo.m_handle = taskRunner->postCancellableTask(
+  //       BLINK_FROM_HERE, WTF::bind(&Foo::bar, wrapPersistent(foo)));
+  //
+  // There is a circular reference in the example above as:
+  //   foo -> m_handle -> m_runner -> m_task -> Persistent<Foo> in WTF::bind.
+  // The TaskHandle parameter on run() is needed to break the circle by clearing
+  // |m_task| when the wrapped WTF::Closure is deleted.
+  void run(const TaskHandle&) {
+    std::unique_ptr<WTF::Closure> task = std::move(m_task);
+    m_weakPtrFactory.revokeAll();
+    (*task)();
+  }
 
  private:
-  RefPtr<TaskHandle> m_handle;
-  DISALLOW_COPY_AND_ASSIGN(CancelOnTaskDestruction);
+  std::unique_ptr<WTF::Closure> m_task;
+  WTF::WeakPtrFactory<Runner> m_weakPtrFactory;
+
+  DISALLOW_COPY_AND_ASSIGN(Runner);
 };
 
 bool TaskHandle::isActive() const {
-  return static_cast<bool>(m_task);
+  return m_runner && m_runner->isActive();
 }
 
 void TaskHandle::cancel() {
-  std::unique_ptr<WTF::Closure> task = std::move(m_task);
-  m_weakPtrFactory.revokeAll();
+  if (m_runner) {
+    m_runner->cancel();
+    m_runner = nullptr;
+  }
 }
 
-TaskHandle::~TaskHandle() {}
+TaskHandle::TaskHandle() = default;
 
-TaskHandle::TaskHandle(std::unique_ptr<WTF::Closure> task)
-    : m_task(std::move(task)), m_weakPtrFactory(this) {
-  DCHECK(m_task);
-}
-
-void TaskHandle::run(const CancelOnTaskDestruction& scoper) {
-  std::unique_ptr<WTF::Closure> task = std::move(m_task);
+TaskHandle::~TaskHandle() {
   cancel();
-  (*task)();
 }
 
-WTF::WeakPtr<TaskHandle> TaskHandle::asWeakPtr() {
-  return m_weakPtrFactory.createWeakPtr();
+TaskHandle::TaskHandle(TaskHandle&&) = default;
+TaskHandle& TaskHandle::operator=(TaskHandle&&) = default;
+
+TaskHandle::TaskHandle(RefPtr<Runner> runner) : m_runner(std::move(runner)) {
+  DCHECK(m_runner);
 }
 
 void WebTaskRunner::postTask(const WebTraceLocation& location,
@@ -96,27 +105,28 @@ void WebTaskRunner::postDelayedTask(const WebTraceLocation& location,
       base::TimeDelta::FromMilliseconds(delayMs));
 }
 
-RefPtr<TaskHandle> WebTaskRunner::postCancellableTask(
+TaskHandle WebTaskRunner::postCancellableTask(
     const WebTraceLocation& location,
     std::unique_ptr<WTF::Closure> task) {
   DCHECK(runsTasksOnCurrentThread());
-  RefPtr<TaskHandle> handle = adoptRef(new TaskHandle(std::move(task)));
-  postTask(location, WTF::bind(&TaskHandle::run, handle->asWeakPtr(),
-                               TaskHandle::CancelOnTaskDestruction(handle)));
-  return handle;
+  RefPtr<TaskHandle::Runner> runner =
+      adoptRef(new TaskHandle::Runner(std::move(task)));
+  postTask(location, WTF::bind(&TaskHandle::Runner::run, runner->asWeakPtr(),
+                               TaskHandle(runner)));
+  return TaskHandle(runner);
 }
 
-RefPtr<TaskHandle> WebTaskRunner::postDelayedCancellableTask(
+TaskHandle WebTaskRunner::postDelayedCancellableTask(
     const WebTraceLocation& location,
     std::unique_ptr<WTF::Closure> task,
     long long delayMs) {
   DCHECK(runsTasksOnCurrentThread());
-  RefPtr<TaskHandle> handle = adoptRef(new TaskHandle(std::move(task)));
-  postDelayedTask(location,
-                  WTF::bind(&TaskHandle::run, handle->asWeakPtr(),
-                            TaskHandle::CancelOnTaskDestruction(handle)),
+  RefPtr<TaskHandle::Runner> runner =
+      adoptRef(new TaskHandle::Runner(std::move(task)));
+  postDelayedTask(location, WTF::bind(&TaskHandle::Runner::run,
+                                      runner->asWeakPtr(), TaskHandle(runner)),
                   delayMs);
-  return handle;
+  return TaskHandle(runner);
 }
 
 }  // namespace blink
