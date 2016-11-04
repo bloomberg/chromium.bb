@@ -21,27 +21,22 @@ table tbody tr td:first-child {
 <h1>C++11 use in Chromium</h1>
 
 <p><i>This document lives at src/styleguide/c++/c++11.html in a Chromium
-checkout.</i></p>
+checkout and is part of the more general
+<a href="https://chromium.googlesource.com/chromium/src/+/master/styleguide/c++/c++.md">
+Chromium C++ style guide</a>.</i></p>
 
-<p>This document summarizes the features of C++11 (both in the language itself
-and in enhancements to the Standard Library) and describes which features are
-allowed in Chromium and contains pointers to more detailed information. The
-Guide applies to Chromium and its subprojects. Subprojects can choose to be
-more restrictive if they need to compile on more toolchains than Chromium.</p>
+<p>This summarizes the new and updated features in C++11 (for both the language
+itself and the Standard Library) from the perspective of what's allowed in
+Chromium.  When applicable, it contains pointers to more detailed information.
+This Guide applies to Chromium and its subprojects, though subprojects can
+choose to be more restrictive if necessary for toolchain support.</p>
 
-<p>This page comprises part of the more general
-<a href="https://chromium.googlesource.com/chromium/src/+/master/styleguide/c++/c++.md">Chromium C++ style guide</a>.</p>
-
-<p>You can propose to make a feature available or to ban a
-feature by sending an email to <a
-href="https://groups.google.com/a/chromium.org/forum/#!forum/cxx">cxx@chromium.org</a>.
-Ideally include a short blurb on what the feature is, and why you think it
-should or should not be allowed. Ideally, the list will arrive at some
-consensus and you can request review for a change to this file. If
-there's no consensus, <code>src/styleguide/c++/OWNERS</code> get to decide --
-for divisive features, we expect the decision to be to not use the feature yet
-and possibly discuss it again a few months later, when we have more experience
-with the language.</p>
+<p>You can propose changing the status of a feature by sending an email to
+<a href="https://groups.google.com/a/chromium.org/forum/#!forum/cxx">
+cxx@chromium.org</a>. Include a short blurb on what the feature is and why you
+think it should or should not be allowed, along with links to any relevant
+previous discussion. If the list arrives at some consensus, send a codereview to
+change this file accordingly, linking to your discussion thread.</p>
 
 <h2>Table of Contents</h2>
 <ol class="toc">
@@ -615,6 +610,22 @@ std::move(t).f();&nbsp;&nbsp;// second</code></td>
 </tr>
 
 <tr>
+<td>Bind Operations</td>
+<td><code>std::bind(<i>function</i>, <i>args</i>, ...)</code></td>
+<td>Declares a function object bound to certain arguments</td>
+<td><a href="http://en.cppreference.com/w/cpp/utility/functional/bind">std::bind</a></td>
+<td>Use <code>base::Bind</code> instead. Compared to <code>std::bind</code>, <code>base::Bind</code> helps prevent lifetime issues by preventing binding of capturing lambdas and by forcing callers to declare raw pointers as <code>Unretained</code>. <a href="https://groups.google.com/a/chromium.org/forum/#!topic/cxx/SoEj7oIDNuA">Discussion thread</a></td>
+</tr>
+
+<tr>
+<td>C Floating-Point Environment</td>
+<td><code>&lt;cfenv&gt;</code>, <code>&lt;fenv.h&gt;</code></td>
+<td>Provides floating point status flags and control modes for C-compatible code</td>
+<td><a href="http://en.cppreference.com/w/cpp/header/cfenv">Standard library header &lt;cfenv&gt;</a></td>
+<td>Banned by the <a href="https://google.github.io/styleguide/cppguide.html#C++11">Google Style Guide</a> due to concerns about compiler support.</td>
+</tr>
+
+<tr>
 <td>Date and time utilities</td>
 <td><code>&lt;chrono&gt;</code></td>
 <td>A standard date and time library</td>
@@ -628,6 +639,22 @@ std::move(t).f();&nbsp;&nbsp;// second</code></td>
 <td>Enhancements to exception throwing and handling</td>
 <td><a href="http://en.cppreference.com/w/cpp/header/exception">Standard library header &lt;exception&gt;</a></td>
 <td>Exceptions are banned by the <a href="https://google.github.io/styleguide/cppguide.html#Exceptions">Google Style Guide</a> and disabled in Chromium compiles. Note that the <code>noexcept</code> specifier is explicitly allowed above. <a href="https://groups.google.com/a/chromium.org/forum/#!topic/chromium-dev/8i4tMqNpHhg">Discussion thread</a></td>
+</tr>
+
+<tr>
+<td>Function Objects</td>
+<td><code>std::function</code></td>
+<td>Wraps a standard polymorphic function</td>
+<td><a href="http://en.cppreference.com/w/cpp/utility/functional/function">std::function</a></td>
+<td>Use <code>base::Callback</code> instead. Compared to <code>std::function</code>, <code>base::Callback</code> directly supports Chromium's refcounting classes and weak pointers and deals with additional thread safety concerns. <a href="https://groups.google.com/a/chromium.org/forum/#!topic/cxx/SoEj7oIDNuA">Discussion thread</a></td>
+</tr>
+
+<tr>
+<td>Ratio Template Class</td>
+<td><code>std::ratio&lt;<i>numerator</i>, <i>denominator</i>&gt;</code></td>
+<td>Provides compile-time rational numbers</td>
+<td><a href="http://en.cppreference.com/w/cpp/numeric/ratio/ratio">std::ratio</a></td>
+<td>Banned by the <a href="https://google.github.io/styleguide/cppguide.html#C++11">Google Style Guide</a> due to concerns that this is tied to a more template-heavy interface style.</td>
 </tr>
 
 <tr>
@@ -661,10 +688,7 @@ std::move(t).f();&nbsp;&nbsp;// second</code></td>
 
 <h3 id="blacklist_review"><a name="core-review"></a>C++11 Features To Be Discussed</h3>
 
-<p>The following C++ language features are currently disallowed.
-See the top of this page on how to propose moving a feature from this list
-into the allowed or banned sections. Note that not all of these features
-work in all our compilers yet.</p>
+<p>The following C++ language features are currently disallowed. See the top of this page on how to propose moving a feature from this list into the allowed or banned sections.</p>
 
 <table id="blacklist_review_list" class="unlined striped">
 <tbody>
@@ -714,7 +738,7 @@ work in all our compilers yet.</p>
 
 <h3 id="blacklist_stdlib_review"><a name="library-review"></a>C++11 Standard Library Features To Be Discussed</h3>
 
-<p>The following C++ library features are currently disallowed. See the top of this page on how to propose moving a feature from this list into the allowed or banned sections. Note that not all of these features work in all our compilers yet.</p>
+<p>The following C++ library features are currently disallowed. See the top of this page on how to propose moving a feature from this list into the allowed or banned sections.</p>
 
 <table id="banned_stdlib" class="unlined striped">
 
@@ -753,22 +777,6 @@ work in all our compilers yet.</p>
 </tr>
 
 <tr>
-<td>Bind Operations</td>
-<td><code>std::bind(<i>function</i>, <i>args</i>, ...)</code></td>
-<td>Declares a function object bound to certain arguments</td>
-<td><a href="http://en.cppreference.com/w/cpp/utility/functional/bind">std::bind</a></td>
-<td></td>
-</tr>
-
-<tr>
-<td>C Floating-Point Environment</td>
-<td><code>&lt;cfenv&gt;</code>, <code>&lt;fenv.h&gt;</code></td>
-<td>Provides floating point status flags and control modes for C-compatible code</td>
-<td><a href="http://en.cppreference.com/w/cpp/header/cfenv">Standard library header &lt;cfenv&gt;</a></td>
-<td>Banned in <a href="https://google.github.io/styleguide/cppguide.html#C++11">Google Style Guide</a> due to concerns about compiler support.</td>
-</tr>
-
-<tr>
 <td>Complex Inverse Trigonometric and Hyperbolic Functions</td>
 <td>Functions within <code>&lt;complex&gt;</code></td>
 <td>Adds inverse trigonomentric and hyperbolic non-member functions to the <code>&lt;complex&gt;</code> library.</td>
@@ -798,14 +806,6 @@ work in all our compilers yet.</p>
 <td>Extracts the return type from the type signature of a function call invocation at compile-time.</td>
 <td><a href="http://en.cppreference.com/w/cpp/types/result_of">std::result_of</a></td>
 <td><a href="http://stackoverflow.com/questions/15486951/why-does-stdresult-of-take-an-unrelated-function-type-as-a-type-argument">Why does std::result_of take an (unrelated) function type as a type argument?</a></td>
-</tr>
-
-<tr>
-<td>Function Objects</td>
-<td><code>std::function</code></td>
-<td>Wraps a standard polymorphic function</td>
-<td><a href="http://en.cppreference.com/w/cpp/utility/functional/function">std::function</a></td>
-<td><a href="https://groups.google.com/a/chromium.org/forum/#!topic/cxx/SoEj7oIDNuA">Discussion thread</a></td>
 </tr>
 
 <tr>
@@ -846,14 +846,6 @@ work in all our compilers yet.</p>
 <td>Provides a standard way to access properties of pointers and pointer-like types</td>
 <td><a href="http://en.cppreference.com/w/cpp/memory/pointer_traits">std::pointer_traits</a></td>
 <td>Useful for determining the element type pointed at by a (possibly smart) pointer.</td>
-</tr>
-
-<tr>
-<td>Ratio Template Class</td>
-<td><code>std::ratio&lt;<i>numerator</i>, <i>denominator</i>&gt;</code></td>
-<td>Provides compile-time rational numbers</td>
-<td><a href="http://en.cppreference.com/w/cpp/numeric/ratio/ratio">std::ratio</a></td>
-<td>Banned in <a href="https://google.github.io/styleguide/cppguide.html#C++11">Google Style Guide</a> due to concerns that they are tied to a more template-heavy interface style.</td>
 </tr>
 
 <tr>
