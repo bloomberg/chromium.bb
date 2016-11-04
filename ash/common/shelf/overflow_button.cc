@@ -102,7 +102,7 @@ bool OverflowButton::ShouldShowInkDropHighlight() const {
 
 void OverflowButton::NotifyClick(const ui::Event& event) {
   CustomButton::NotifyClick(event);
-  shelf_view_->ButtonPressed(this, event, ink_drop());
+  shelf_view_->ButtonPressed(this, event, GetInkDrop());
 }
 
 void OverflowButton::PaintBackground(gfx::Canvas* canvas,

@@ -373,7 +373,7 @@ void MenuButton::IncrementPressedLocked(bool snap_ink_drop_to_activated) {
   should_disable_after_press_ = state() == STATE_DISABLED;
   if (state() != STATE_PRESSED) {
     if (snap_ink_drop_to_activated)
-      ink_drop()->SnapToActivated();
+      GetInkDrop()->SnapToActivated();
     else
       AnimateInkDrop(InkDropState::ACTIVATED, nullptr /* event */);
   }

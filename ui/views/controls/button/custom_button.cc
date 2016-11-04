@@ -135,7 +135,7 @@ void CustomButton::OnEnabledChanged() {
   if (enabled()) {
     bool should_enter_hover_state = ShouldEnterHoveredState();
     SetState(should_enter_hover_state ? STATE_HOVERED : STATE_NORMAL);
-    ink_drop()->SetHovered(should_enter_hover_state);
+    GetInkDrop()->SetHovered(should_enter_hover_state);
   } else {
     SetState(STATE_DISABLED);
   }
@@ -171,13 +171,14 @@ bool CustomButton::OnMouseDragged(const ui::MouseEvent& event) {
     if (HitTestPoint(event.location())) {
       SetState(should_enter_pushed ? STATE_PRESSED : STATE_HOVERED);
       if (should_show_pending &&
-          ink_drop()->GetTargetInkDropState() == views::InkDropState::HIDDEN) {
+          GetInkDrop()->GetTargetInkDropState() ==
+              views::InkDropState::HIDDEN) {
         AnimateInkDrop(views::InkDropState::ACTION_PENDING, &event);
       }
     } else {
       SetState(STATE_NORMAL);
       if (should_show_pending &&
-          ink_drop()->GetTargetInkDropState() ==
+          GetInkDrop()->GetTargetInkDropState() ==
               views::InkDropState::ACTION_PENDING) {
         AnimateInkDrop(views::InkDropState::HIDDEN, &event);
       }
@@ -238,7 +239,7 @@ bool CustomButton::OnKeyPressed(const ui::KeyEvent& event) {
   // KeyRelease and Enter clicks the button on KeyPressed.
   if (event.key_code() == ui::VKEY_SPACE) {
     SetState(STATE_PRESSED);
-    if (ink_drop()->GetTargetInkDropState() !=
+    if (GetInkDrop()->GetTargetInkDropState() !=
         views::InkDropState::ACTION_PENDING) {
       AnimateInkDrop(views::InkDropState::ACTION_PENDING, nullptr /* event */);
     }
@@ -316,7 +317,7 @@ void CustomButton::ShowContextMenu(const gfx::Point& p,
   if (state_ != STATE_DISABLED)
     SetState(STATE_NORMAL);
   if (hide_ink_drop_when_showing_context_menu_) {
-    ink_drop()->SetHovered(false);
+    GetInkDrop()->SetHovered(false);
     AnimateInkDrop(InkDropState::HIDDEN, nullptr /* event */);
   }
   View::ShowContextMenu(p, source_type);
@@ -385,7 +386,7 @@ void CustomButton::OnBlur() {
   Button::OnBlur();
   if (IsHotTracked() || state_ == STATE_PRESSED) {
     SetState(STATE_NORMAL);
-    if (ink_drop()->GetTargetInkDropState() != views::InkDropState::HIDDEN)
+    if (GetInkDrop()->GetTargetInkDropState() != views::InkDropState::HIDDEN)
       AnimateInkDrop(views::InkDropState::HIDDEN, nullptr /* event */);
     // TODO(bruthig) : Fix CustomButtons to work well when multiple input
     // methods are interacting with a button. e.g. By animating to HIDDEN here
@@ -470,9 +471,9 @@ void CustomButton::NotifyClick(const ui::Event& event) {
 }
 
 void CustomButton::OnClickCanceled(const ui::Event& event) {
-  if (ink_drop()->GetTargetInkDropState() ==
+  if (GetInkDrop()->GetTargetInkDropState() ==
           views::InkDropState::ACTION_PENDING ||
-      ink_drop()->GetTargetInkDropState() ==
+      GetInkDrop()->GetTargetInkDropState() ==
           views::InkDropState::ALTERNATE_ACTION_PENDING) {
     AnimateInkDrop(views::InkDropState::HIDDEN,
                    ui::LocatedEvent::FromIfValid(&event));

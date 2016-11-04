@@ -458,7 +458,7 @@ class ShelfViewTest : public AshTestBase {
                                  ui::EventTimeForNow(), 0, 0);
     test_api_->ButtonPressed(
         button, release_event,
-        views::test::InkDropHostViewTestApi(button).ink_drop());
+        views::test::InkDropHostViewTestApi(button).GetInkDrop());
     shelf_view_->PointerReleasedOnButton(button, ShelfView::MOUSE, false);
   }
 
@@ -471,7 +471,7 @@ class ShelfViewTest : public AshTestBase {
                                  0);
     test_api_->ButtonPressed(
         button, release_event,
-        views::test::InkDropHostViewTestApi(button).ink_drop());
+        views::test::InkDropHostViewTestApi(button).GetInkDrop());
     shelf_view_->PointerReleasedOnButton(button, ShelfView::MOUSE, false);
   }
 

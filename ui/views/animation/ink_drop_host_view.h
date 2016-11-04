@@ -26,6 +26,16 @@ class InkDropHighlight;
 // A view that provides InkDropHost functionality.
 class VIEWS_EXPORT InkDropHostView : public View, public InkDropHost {
  public:
+  // Used in SetInkDropMode() to specify whether the ink drop effect is enabled
+  // or not for the view. In case of having an ink drop, it also specifies
+  // whether the default gesture event handler for the ink drop should be
+  // installed or the subclass will handle gesture events itself.
+  enum class InkDropMode {
+    OFF,
+    ON,
+    ON_NO_GESTURE_HANDLER,
+  };
+
   InkDropHostView();
   ~InkDropHostView() override;
 
@@ -37,17 +47,12 @@ class VIEWS_EXPORT InkDropHostView : public View, public InkDropHost {
 
   void set_ink_drop_size(const gfx::Size& size) { ink_drop_size_ = size; }
 
- protected:
-  // Used in SetInkDropMode() to specify whether the ink drop effect is enabled
-  // or not for the view. In case of having an ink drop, it also specifies
-  // whether the default gesture event handler for the ink drop should be
-  // installed or the subclass will handle gesture events itself.
-  enum class InkDropMode {
-    OFF,
-    ON,
-    ON_NO_GESTURE_HANDLER,
-  };
+  // Toggle to enable/disable an InkDrop on this View.  Descendants can override
+  // CreateInkDropHighlight() and CreateInkDropRipple() to change the look/feel
+  // of the InkDrop.
+  void SetInkDropMode(InkDropMode ink_drop_mode);
 
+ protected:
   static const int kInkDropSmallCornerRadius;
 
   void set_ink_drop_visible_opacity(float visible_opacity) {
@@ -89,12 +94,10 @@ class VIEWS_EXPORT InkDropHostView : public View, public InkDropHost {
   // Should return true if the ink drop is also used to depict focus.
   virtual bool ShouldShowInkDropForFocus() const;
 
-  InkDrop* ink_drop() { return ink_drop_.get(); }
-
-  // Toggle to enable/disable an InkDrop on this View.  Descendants can override
-  // CreateInkDropHighlight() and CreateInkDropRipple() to change the look/feel
-  // of the InkDrop.
-  void SetInkDropMode(InkDropMode ink_drop_mode);
+  // Provides access to |ink_drop_|. Implements lazy initialization of
+  // |ink_drop_| so as to avoid virtual method calls during construction since
+  // subclasses should be able to call SetInkDropMode() during construction.
+  InkDrop* GetInkDrop();
 
  private:
   class InkDropGestureHandler;
@@ -104,6 +107,10 @@ class VIEWS_EXPORT InkDropHostView : public View, public InkDropHost {
   // The last user Event to trigger an ink drop ripple animation.
   std::unique_ptr<ui::LocatedEvent> last_ripple_triggering_event_;
 
+  // Defines what type of |ink_drop_| to create.
+  InkDropMode ink_drop_mode_;
+
+  // Should not be accessed directly. Use GetInkDrop() instead.
   std::unique_ptr<InkDrop> ink_drop_;
 
   // Intentionally declared after |ink_drop_| so that it doesn't access a

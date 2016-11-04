@@ -264,7 +264,7 @@ std::unique_ptr<views::InkDropRipple> AppListButton::CreateInkDropRipple()
 void AppListButton::NotifyClick(const ui::Event& event) {
   ImageButton::NotifyClick(event);
   if (listener_)
-    listener_->ButtonPressed(this, event, ink_drop());
+    listener_->ButtonPressed(this, event, GetInkDrop());
 }
 
 bool AppListButton::ShouldEnterPushedState(const ui::Event& event) {

@@ -24,12 +24,18 @@ class InkDropHostViewTestApi {
   explicit InkDropHostViewTestApi(InkDropHostView* host_view);
   ~InkDropHostViewTestApi();
 
-  void SetInkDropMode(InkDropMode ink_dorp_mode);
+  void SetInkDropMode(InkDropMode ink_drop_mode);
 
   void SetInkDrop(std::unique_ptr<InkDrop> ink_drop,
                   bool handles_gesture_events);
   void SetInkDrop(std::unique_ptr<InkDrop> ink_drop);
-  InkDrop* ink_drop() { return host_view_->ink_drop(); }
+
+  InkDrop* ink_drop() { return host_view_->ink_drop_.get(); }
+
+  // Wrapper for InkDropHostView::GetInkDrop() which lazily creates the ink drop
+  // instance if it doesn't already exist. If you need direct access to
+  // InkDropHostView::ink_drop_ use ink_drop() instead.
+  InkDrop* GetInkDrop();
 
   bool HasGestureHandler() const;
 

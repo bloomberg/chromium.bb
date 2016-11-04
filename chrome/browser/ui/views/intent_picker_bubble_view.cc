@@ -75,7 +75,7 @@ class IntentPickerLabelButton : public views::LabelButton {
   }
 
   views::InkDropState GetTargetInkDropState() {
-    return ink_drop()->GetTargetInkDropState();
+    return GetInkDrop()->GetTargetInkDropState();
   }
 
  private:

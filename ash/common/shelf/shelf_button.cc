@@ -527,7 +527,7 @@ bool ShelfButton::ShouldShowInkDropHighlight() const {
 void ShelfButton::NotifyClick(const ui::Event& event) {
   CustomButton::NotifyClick(event);
   if (listener_)
-    listener_->ButtonPressed(this, event, ink_drop());
+    listener_->ButtonPressed(this, event, GetInkDrop());
 }
 
 void ShelfButton::UpdateState() {

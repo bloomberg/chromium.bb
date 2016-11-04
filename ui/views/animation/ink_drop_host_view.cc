@@ -53,7 +53,7 @@ class InkDropHostView::InkDropGestureHandler : public ui::EventHandler {
   // ui::EventHandler:
   void OnGestureEvent(ui::GestureEvent* event) override {
     InkDropState current_ink_drop_state =
-        host_view_->ink_drop()->GetTargetInkDropState();
+        host_view_->GetInkDrop()->GetTargetInkDropState();
 
     InkDropState ink_drop_state = InkDropState::HIDDEN;
     switch (event->type()) {
@@ -107,7 +107,8 @@ class InkDropHostView::InkDropGestureHandler : public ui::EventHandler {
 };
 
 InkDropHostView::InkDropHostView()
-    : ink_drop_(new InkDropStub()),
+    : ink_drop_mode_(InkDropMode::OFF),
+      ink_drop_(nullptr),
       ink_drop_size_(kInkDropSize, kInkDropSize),
       ink_drop_visible_opacity_(kInkDropVisibleOpacity),
       old_paint_to_layer_(false),
@@ -166,6 +167,16 @@ InkDropHostView::CreateDefaultInkDropHighlight(
   return highlight;
 }
 
+void InkDropHostView::SetInkDropMode(InkDropMode ink_drop_mode) {
+  ink_drop_mode_ = ink_drop_mode;
+  ink_drop_ = nullptr;
+
+  if (ink_drop_mode_ != InkDropMode::ON)
+    gesture_handler_ = nullptr;
+  else if (!gesture_handler_)
+    gesture_handler_ = base::MakeUnique<InkDropGestureHandler>(this);
+}
+
 gfx::Point InkDropHostView::GetInkDropCenterBasedOnLastEvent() const {
   return last_ripple_triggering_event_
              ? last_ripple_triggering_event_->location()
@@ -181,42 +192,42 @@ void InkDropHostView::AnimateInkDrop(InkDropState state,
   // a mouse or keyboard event, then the state should be allowed. Conversely,
   // if the requested state is ACTIVATED, then it should always be allowed.
   if (event && (event->IsTouchEvent() || event->IsGestureEvent()) &&
-      ink_drop_->GetTargetInkDropState() == InkDropState::HIDDEN &&
+      GetInkDrop()->GetTargetInkDropState() == InkDropState::HIDDEN &&
       state != InkDropState::ACTIVATED)
     return;
 #endif
   last_ripple_triggering_event_.reset(
       event ? ui::Event::Clone(*event).release()->AsLocatedEvent() : nullptr);
-  ink_drop_->AnimateToState(state);
+  GetInkDrop()->AnimateToState(state);
 }
 
 void InkDropHostView::VisibilityChanged(View* starting_from, bool is_visible) {
   View::VisibilityChanged(starting_from, is_visible);
   if (GetWidget() && !is_visible) {
-    ink_drop()->AnimateToState(InkDropState::HIDDEN);
-    ink_drop()->SetHovered(false);
+    GetInkDrop()->AnimateToState(InkDropState::HIDDEN);
+    GetInkDrop()->SetHovered(false);
   }
 }
 
 void InkDropHostView::OnFocus() {
   views::View::OnFocus();
   if (ShouldShowInkDropForFocus())
-    ink_drop()->SetFocused(true);
+    GetInkDrop()->SetFocused(true);
 }
 
 void InkDropHostView::OnBlur() {
   views::View::OnBlur();
   if (ShouldShowInkDropForFocus())
-    ink_drop()->SetFocused(false);
+    GetInkDrop()->SetFocused(false);
 }
 
 void InkDropHostView::OnMouseEvent(ui::MouseEvent* event) {
   switch (event->type()) {
     case ui::ET_MOUSE_ENTERED:
-      ink_drop_->SetHovered(true);
+      GetInkDrop()->SetHovered(true);
       break;
     case ui::ET_MOUSE_EXITED:
-      ink_drop_->SetHovered(false);
+      GetInkDrop()->SetHovered(false);
       break;
     default:
       break;
@@ -233,16 +244,14 @@ bool InkDropHostView::ShouldShowInkDropForFocus() const {
   return false;
 }
 
-void InkDropHostView::SetInkDropMode(InkDropMode ink_drop_mode) {
-  if (ink_drop_mode == InkDropMode::OFF)
-    ink_drop_.reset(new InkDropStub());
-  else
-    ink_drop_.reset(new InkDropImpl(this));
-
-  if (ink_drop_mode != InkDropMode::ON)
-    gesture_handler_.reset();
-  else if (!gesture_handler_)
-    gesture_handler_.reset(new InkDropGestureHandler(this));
+InkDrop* InkDropHostView::GetInkDrop() {
+  if (!ink_drop_) {
+    if (ink_drop_mode_ == InkDropMode::OFF)
+      ink_drop_ = base::MakeUnique<InkDropStub>();
+    else
+      ink_drop_ = base::MakeUnique<InkDropImpl>(this);
+  }
+  return ink_drop_.get();
 }
 
 }  // namespace views
