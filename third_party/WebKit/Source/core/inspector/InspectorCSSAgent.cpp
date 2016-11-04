@@ -52,6 +52,7 @@
 #include "core/css/StyleSheetList.h"
 #include "core/css/parser/CSSParser.h"
 #include "core/css/resolver/StyleResolver.h"
+#include "core/css/resolver/StyleRuleUsageTracker.h"
 #include "core/dom/DOMException.h"
 #include "core/dom/DOMNodeIds.h"
 #include "core/dom/Node.h"
@@ -302,6 +303,7 @@ std::unique_ptr<protocol::DOM::Rect> buildRectForFloatRect(
 
 namespace CSSAgentState {
 static const char cssAgentEnabled[] = "cssAgentEnabled";
+static const char ruleRecordingEnabled[] = "ruleRecordingEnabled";
 }
 
 typedef blink::protocol::CSS::Backend::EnableCallback EnableCallback;
@@ -687,6 +689,8 @@ InspectorCSSAgent::~InspectorCSSAgent() {}
 void InspectorCSSAgent::restore() {
   if (m_state->booleanProperty(CSSAgentState::cssAgentEnabled, false))
     wasEnabled();
+  if (m_state->booleanProperty(CSSAgentState::ruleRecordingEnabled, false))
+    setUsageTrackerStatus(true);
 }
 
 void InspectorCSSAgent::flushPendingProtocolNotifications() {
@@ -750,6 +754,8 @@ Response InspectorCSSAgent::disable() {
   m_instrumentingAgents->removeInspectorCSSAgent(this);
   m_state->setBoolean(CSSAgentState::cssAgentEnabled, false);
   m_resourceContentLoader->cancel(m_resourceContentLoaderClientId);
+  m_state->setBoolean(CSSAgentState::ruleRecordingEnabled, false);
+  setUsageTrackerStatus(false);
   return Response::OK();
 }
 
@@ -2001,6 +2007,16 @@ InspectorCSSAgent::buildObjectForAttributesStyle(Element* element) {
   return inspectorStyle->buildObjectForStyle();
 }
 
+void InspectorCSSAgent::didAddDocument(Document* document) {
+  if (!m_tracker)
+    return;
+
+  document->styleEngine().setRuleUsageTracker(m_tracker);
+  document->setNeedsStyleRecalc(
+      SubtreeStyleChange,
+      StyleChangeReasonForTracing::create(StyleChangeReason::Inspector));
+}
+
 void InspectorCSSAgent::didRemoveDocument(Document* document) {}
 
 void InspectorCSSAgent::didRemoveDOMNode(Node* node) {
@@ -2447,6 +2463,81 @@ void InspectorCSSAgent::visitLayoutTreeNodes(
   }
 }
 
+void InspectorCSSAgent::setUsageTrackerStatus(bool enabled) {
+  if (enabled) {
+    if (!m_tracker)
+      m_tracker = new StyleRuleUsageTracker();
+  } else {
+    m_tracker = nullptr;
+  }
+
+  HeapVector<Member<Document>> documents = m_domAgent->documents();
+  for (Document* document : documents) {
+    document->styleEngine().setRuleUsageTracker(m_tracker);
+
+    document->setNeedsStyleRecalc(
+        SubtreeStyleChange,
+        StyleChangeReasonForTracing::create(StyleChangeReason::Inspector));
+  }
+}
+
+Response InspectorCSSAgent::startRuleUsageTracking() {
+  m_state->setBoolean(CSSAgentState::ruleRecordingEnabled, true);
+  setUsageTrackerStatus(true);
+  return Response::OK();
+}
+
+std::unique_ptr<protocol::CSS::RuleUsage>
+InspectorCSSAgent::buildObjectForRuleUsage(CSSStyleRule* rule, bool used) {
+  InspectorStyleSheet* inspectorStyleSheet = inspectorStyleSheetForRule(rule);
+  if (!inspectorStyleSheet)
+    return nullptr;
+
+  std::unique_ptr<protocol::CSS::RuleUsage> result =
+      inspectorStyleSheet->buildObjectForRuleUsage(rule, used);
+
+  return result;
+}
+
+Response InspectorCSSAgent::stopRuleUsageTracking(
+    std::unique_ptr<protocol::Array<protocol::CSS::RuleUsage>>* result) {
+  if (!m_tracker) {
+    return Response::Error("CSS rule usage tracking is not enabled");
+  }
+
+  *result = protocol::Array<protocol::CSS::RuleUsage>::create();
+
+  HeapVector<Member<Document>> documents = m_domAgent->documents();
+  for (Document* document : documents) {
+    HeapHashSet<Member<CSSStyleSheet>>* newSheetsVector =
+        m_documentToCSSStyleSheets.get(document);
+
+    if (!newSheetsVector)
+      continue;
+
+    for (auto sheet : *newSheetsVector) {
+      InspectorStyleSheet* styleSheet =
+          m_cssStyleSheetToInspectorStyleSheet.get(sheet);
+      const CSSRuleVector ruleVector = styleSheet->flatRules();
+      for (auto rule : ruleVector) {
+        if (rule->type() != CSSRule::kStyleRule)
+          continue;
+
+        CSSStyleRule* cssRule = static_cast<CSSStyleRule*>(rule.get());
+
+        StyleRule* styleRule = cssRule->styleRule();
+
+        result->get()->addItem(
+            buildObjectForRuleUsage(cssRule, m_tracker->contains(styleRule)));
+      }
+    }
+  }
+
+  setUsageTrackerStatus(false);
+
+  return Response::OK();
+}
+
 DEFINE_TRACE(InspectorCSSAgent) {
   visitor->trace(m_domAgent);
   visitor->trace(m_inspectedFrames);
@@ -2460,6 +2551,7 @@ DEFINE_TRACE(InspectorCSSAgent) {
   visitor->trace(m_invalidatedDocuments);
   visitor->trace(m_nodeToInspectorStyleSheet);
   visitor->trace(m_inspectorUserAgentStyleSheet);
+  visitor->trace(m_tracker);
   InspectorBaseAgent::trace(visitor);
 }
 

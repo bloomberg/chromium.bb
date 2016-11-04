@@ -1876,6 +1876,10 @@ void InspectorDOMAgent::invalidateFrameOwnerElement(LocalFrame* frame) {
 }
 
 void InspectorDOMAgent::didCommitLoad(LocalFrame*, DocumentLoader* loader) {
+  Document* document = loader->frame()->document();
+  if (m_domListener)
+    m_domListener->didAddDocument(document);
+
   LocalFrame* inspectedFrame = m_inspectedFrames->root();
   if (loader->frame() != inspectedFrame) {
     invalidateFrameOwnerElement(loader->frame());

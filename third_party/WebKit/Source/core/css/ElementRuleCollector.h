@@ -40,6 +40,7 @@ class RuleData;
 class RuleSet;
 class SelectorFilter;
 class StaticCSSRuleList;
+class StyleRuleUsageTracker;
 
 // TODO(kochi): CascadeOrder is used only for Shadow DOM V0 bug-compatible
 // cascading order. Once Shadow DOM V0 implementation is gone, remove this
@@ -142,6 +143,8 @@ class ElementRuleCollector {
   bool isCollectingForPseudoElement() const {
     return m_pseudoStyleRequest.pseudoId != PseudoIdNone;
   }
+
+  void addMatchedRulesToTracker(StyleRuleUsageTracker*) const;
 
  private:
   template <typename RuleDataListType>

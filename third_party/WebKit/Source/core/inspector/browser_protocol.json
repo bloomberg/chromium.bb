@@ -2801,6 +2801,17 @@
                 "description": "CSS rule representation."
             },
             {
+                "id": "RuleUsage",
+                "type": "object",
+                "properties": [
+                    { "name": "styleSheetId", "$ref": "StyleSheetId", "description": "The css style sheet identifier (absent for user agent stylesheet and user-specified stylesheet rules) this rule came from." },
+                    { "name": "range", "$ref": "SourceRange", "description": "Style declaration range in the enclosing stylesheet (if available)." },
+                    { "name": "used", "type": "boolean", "description": "Indicates whether the rule was actually used by some element in the page." }
+                ],
+                "description": "CSS rule usage information.",
+                "experimental": true
+            },
+            {
                 "id": "SourceRange",
                 "type": "object",
                 "properties": [
@@ -3169,6 +3180,19 @@
                     { "name": "computedStyles", "type": "array", "items": { "$ref": "ComputedStyle" } }
                 ],
                 "description": "For the main document and any content documents, return the LayoutTreeNodes and a whitelisted subset of the computed style. It only returns pushed nodes, on way to pull all nodes is to call DOM.getDocument with a depth of -1.",
+                "experimental": true
+	    },
+            {
+                "name": "startRuleUsageTracking",
+                "description": "Enables the selector recording.",
+                "experimental": true
+            },
+            {
+                "name": "stopRuleUsageTracking",
+                "returns": [
+                    { "name": "ruleUsage", "type": "array", "items": { "$ref": "RuleUsage" } }
+                ],
+                "description": "The list of rules with an indication of whether these were used",
                 "experimental": true
             }
         ],

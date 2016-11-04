@@ -58,6 +58,7 @@ class Node;
 class RuleFeatureSet;
 class ShadowTreeStyleSheetCollection;
 class StyleRuleFontFace;
+class StyleRuleUsageTracker;
 class StyleSheet;
 class StyleSheetContents;
 class ViewportStyleResolver;
@@ -171,6 +172,8 @@ class CORE_EXPORT StyleEngine final
   void resetAuthorStyle(TreeScope&);
 
   StyleResolver* resolver() const { return m_resolver; }
+
+  void setRuleUsageTracker(StyleRuleUsageTracker*);
 
   StyleResolver& ensureResolver() {
     if (!m_resolver) {
@@ -318,6 +321,8 @@ class CORE_EXPORT StyleEngine final
 
   TraceWrapperMember<DocumentStyleSheetCollection>
       m_documentStyleSheetCollection;
+
+  Member<StyleRuleUsageTracker> m_tracker;
 
   typedef HeapHashMap<WeakMember<TreeScope>,
                       Member<ShadowTreeStyleSheetCollection>>

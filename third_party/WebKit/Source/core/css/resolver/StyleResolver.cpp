@@ -72,6 +72,7 @@
 #include "core/css/resolver/StyleAdjuster.h"
 #include "core/css/resolver/StyleResolverState.h"
 #include "core/css/resolver/StyleResolverStats.h"
+#include "core/css/resolver/StyleRuleUsageTracker.h"
 #include "core/dom/CSSSelectorWatch.h"
 #include "core/dom/FirstLetterPseudoElement.h"
 #include "core/dom/NodeComputedStyle.h"
@@ -191,6 +192,10 @@ StyleResolver::~StyleResolver() {}
 
 void StyleResolver::dispose() {
   m_matchedPropertiesCache.clear();
+}
+
+void StyleResolver::setRuleUsageTracker(StyleRuleUsageTracker* tracker) {
+  m_tracker = tracker;
 }
 
 void StyleResolver::lazyAppendAuthorStyleSheets(
@@ -757,6 +762,9 @@ PassRefPtr<ComputedStyle> StyleResolver::styleForElement(
       }
     }
 
+    if (m_tracker)
+      addMatchedRulesToTracker(collector);
+
     if (element->computedStyle() &&
         element->computedStyle()->textAutosizingMultiplier() !=
             state.style()->textAutosizingMultiplier()) {
@@ -931,6 +939,9 @@ bool StyleResolver::pseudoStyleForElementInternal(
     matchAuthorRules(*state.element(), collector);
     collector.finishAddingAuthorRulesForTreeScope();
 
+    if (m_tracker)
+      addMatchedRulesToTracker(collector);
+
     if (!collector.matchedResult().hasMatchedProperties())
       return false;
 
@@ -1054,6 +1065,11 @@ void StyleResolver::updateFont(StyleResolverState& state) {
   state.setConversionZoom(state.style()->effectiveZoom());
 }
 
+void StyleResolver::addMatchedRulesToTracker(
+    const ElementRuleCollector& collector) {
+  collector.addMatchedRulesToTracker(m_tracker);
+}
+
 StyleRuleList* StyleResolver::styleRulesForElement(Element* element,
                                                    unsigned rulesToInclude) {
   DCHECK(element);
@@ -1075,6 +1091,9 @@ CSSRuleList* StyleResolver::pseudoCSSRulesForElement(Element* element,
                                  state.style());
   collector.setMode(SelectorChecker::CollectingCSSRules);
   collectPseudoRulesForElement(*element, collector, pseudoId, rulesToInclude);
+
+  if (m_tracker)
+    addMatchedRulesToTracker(collector);
   return collector.matchedCSSRuleList();
 }
 
@@ -1793,6 +1812,9 @@ void StyleResolver::applyCallbackSelectors(StyleResolverState& state) {
   collector.collectMatchingRules(matchRequest);
   collector.sortAndTransferMatchedRules();
 
+  if (m_tracker)
+    addMatchedRulesToTracker(collector);
+
   StyleRuleList* rules = collector.matchedStyleRuleList();
   if (!rules)
     return;
@@ -1860,6 +1882,7 @@ DEFINE_TRACE(StyleResolver) {
   visitor->trace(m_styleSharingLists);
   visitor->trace(m_pendingStyleSheets);
   visitor->trace(m_document);
+  visitor->trace(m_tracker);
 }
 
 }  // namespace blink

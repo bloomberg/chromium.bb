@@ -56,6 +56,7 @@ class MatchResult;
 class MediaQueryEvaluator;
 class StylePropertySet;
 class StyleRule;
+class StyleRuleUsageTracker;
 
 enum StyleSharingBehavior {
   AllowStyleSharing,
@@ -177,6 +178,8 @@ class CORE_EXPORT StyleResolver final
 
   DECLARE_TRACE();
 
+  void setRuleUsageTracker(StyleRuleUsageTracker*);
+
  private:
   explicit StyleResolver(Document&);
 
@@ -184,6 +187,8 @@ class CORE_EXPORT StyleResolver final
 
   // FIXME: This should probably go away, folded into FontBuilder.
   void updateFont(StyleResolverState&);
+
+  void addMatchedRulesToTracker(const ElementRuleCollector&);
 
   void loadPendingResources(StyleResolverState&);
   void adjustComputedStyle(StyleResolverState&, Element*);
@@ -287,6 +292,8 @@ class CORE_EXPORT StyleResolver final
   SelectorFilter m_selectorFilter;
 
   HeapListHashSet<Member<CSSStyleSheet>, 16> m_pendingStyleSheets;
+
+  Member<StyleRuleUsageTracker> m_tracker;
 
   bool m_printMediaType;
 

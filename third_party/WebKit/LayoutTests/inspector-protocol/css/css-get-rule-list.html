@@ -1,0 +1,54 @@
+<html>
+<head>
+<script type="text/javascript" src="../../http/tests/inspector-protocol/inspector-protocol-test.js"></script>
+<script type="text/javascript" src="../../http/tests/inspector-protocol/css-protocol-test.js"></script>
+<script type="text/javascript" src="../../http/tests/inspector-protocol/dom-protocol-test.js"></script>
+<script type="text/javascript">
+function test()
+{
+    InspectorTest.sendCommandOrDie("DOM.enable", {});
+    InspectorTest.sendCommandOrDie("CSS.enable", {}, () => InspectorTest.runTestSuite(testSuite));
+
+    var testSuite = [
+        function testGetRuleListAfterStartingRecording(next)
+        {
+            InspectorTest.sendCommandOrDie("CSS.startRuleUsageTracking", {},  () =>
+                                           { InspectorTest.sendCommandOrDie("CSS.stopRuleUsageTracking", {}, ruleListLoaded); });
+
+            function ruleListLoaded(result)
+            {
+                if(!result) {
+                    next();
+                    return;
+                }
+                var rules = result.ruleUsage;
+                var usedLines = rules.filter(rule => rule.used);
+                var unusedLines = rules.filter(rule => !rule.used);
+
+                usedLines.sort();
+                unusedLines.sort();
+                InspectorTest.log("=== Size of array: " + rules.length);
+                InspectorTest.log("   Number of used Rules: " + usedLines.length);
+                for(var line of usedLines)
+                    InspectorTest.log(line.range.startLine);
+
+                InspectorTest.log("   Number of unused Rules: " + unusedLines.length);
+                for(var line of unusedLines)
+                    InspectorTest.log(line.range.startLine);
+
+                next();
+            }
+        }
+   ];
+}
+
+</script>
+<link rel="stylesheet" href="resources/get-rule-list.css">
+</head>
+<body onload="runTest();">
+<h1 class="class">Class Selector</h1>
+<p id="id">ID Selector</p>
+<div></div>
+
+</body>
+</html>

@@ -38,6 +38,7 @@
 #include "core/css/invalidation/InvalidationSet.h"
 #include "core/css/resolver/ScopedStyleResolver.h"
 #include "core/css/resolver/SharedStyleFinder.h"
+#include "core/css/resolver/StyleRuleUsageTracker.h"
 #include "core/css/resolver/ViewportStyleResolver.h"
 #include "core/dom/DocumentStyleSheetCollector.h"
 #include "core/dom/Element.h"
@@ -424,8 +425,17 @@ void StyleEngine::appendActiveAuthorStyleSheets() {
   }
 }
 
+void StyleEngine::setRuleUsageTracker(StyleRuleUsageTracker* tracker) {
+  m_tracker = tracker;
+
+  if (m_resolver)
+    m_resolver->setRuleUsageTracker(m_tracker);
+}
+
 void StyleEngine::createResolver() {
   m_resolver = StyleResolver::create(*m_document);
+
+  m_resolver->setRuleUsageTracker(m_tracker);
 
   // A scoped style resolver for document will be created during
   // appendActiveAuthorStyleSheets if needed.
@@ -1050,6 +1060,7 @@ DEFINE_TRACE(StyleEngine) {
   visitor->trace(m_fontSelector);
   visitor->trace(m_textToSheetCache);
   visitor->trace(m_sheetToTextCache);
+  visitor->trace(m_tracker);
   CSSFontSelectorClient::trace(visitor);
 }
 

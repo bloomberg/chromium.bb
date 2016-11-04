@@ -1601,6 +1601,24 @@ InspectorStyleSheet::buildObjectForRuleWithoutMedia(CSSStyleRule* rule) {
   return result;
 }
 
+std::unique_ptr<protocol::CSS::RuleUsage>
+InspectorStyleSheet::buildObjectForRuleUsage(CSSRule* rule, bool wasUsed) {
+  CSSStyleSheet* styleSheet = pageStyleSheet();
+  if (!styleSheet)
+    return nullptr;
+
+  CSSRuleSourceData* sourceData = sourceDataForRule(rule);
+
+  std::unique_ptr<protocol::CSS::RuleUsage> result =
+      protocol::CSS::RuleUsage::create()
+          .setStyleSheetId(id())
+          .setRange(buildSourceRangeObject(sourceData->ruleBodyRange))
+          .setUsed(wasUsed)
+          .build();
+
+  return result;
+}
+
 std::unique_ptr<protocol::CSS::CSSKeyframeRule>
 InspectorStyleSheet::buildObjectForKeyframeRule(CSSKeyframeRule* keyframeRule) {
   CSSStyleSheet* styleSheet = pageStyleSheet();

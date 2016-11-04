@@ -57,6 +57,7 @@ class InspectorResourceContentLoader;
 class MediaList;
 class Node;
 class LayoutObject;
+class StyleRuleUsageTracker;
 
 class CORE_EXPORT InspectorCSSAgent final
     : public InspectorBaseAgent<protocol::CSS::Metainfo>,
@@ -124,6 +125,9 @@ class CORE_EXPORT InspectorCSSAgent final
   void activeStyleSheetsUpdated(Document*);
   void documentDetached(Document*);
   void fontsUpdated();
+  void getUnusedRules(
+      std::unique_ptr<protocol::Array<protocol::CSS::RuleUsage>>*);
+  void setUsageTrackerStatus(bool enabled);
 
   void enable(std::unique_ptr<EnableCallback>) override;
   Response disable() override;
@@ -190,6 +194,12 @@ class CORE_EXPORT InspectorCSSAgent final
   Response getBackgroundColors(
       int nodeId,
       Maybe<protocol::Array<String>>* backgroundColors) override;
+
+  Response startRuleUsageTracking() override;
+
+  Response stopRuleUsageTracking(
+      std::unique_ptr<protocol::Array<protocol::CSS::RuleUsage>>* result)
+      override;
 
   void collectMediaQueriesFromRule(CSSRule*,
                                    protocol::Array<protocol::CSS::CSSMedia>*);
@@ -281,12 +291,16 @@ class CORE_EXPORT InspectorCSSAgent final
   String detectOrigin(CSSStyleSheet* pageStyleSheet, Document* ownerDocument);
 
   std::unique_ptr<protocol::CSS::CSSRule> buildObjectForRule(CSSStyleRule*);
+  std::unique_ptr<protocol::CSS::RuleUsage> buildObjectForRuleUsage(
+      CSSStyleRule*,
+      bool);
   std::unique_ptr<protocol::Array<protocol::CSS::RuleMatch>>
   buildArrayForMatchedRuleList(CSSRuleList*, Element*, PseudoId);
   std::unique_ptr<protocol::CSS::CSSStyle> buildObjectForAttributesStyle(
       Element*);
 
   // InspectorDOMAgent::DOMListener implementation
+  void didAddDocument(Document*) override;
   void didRemoveDocument(Document*) override;
   void didRemoveDOMNode(Node*) override;
   void didModifyDOMAttr(Element*) override;
@@ -335,6 +349,8 @@ class CORE_EXPORT InspectorCSSAgent final
 
   NodeToInspectorStyleSheet m_nodeToInspectorStyleSheet;
   NodeIdToForcedPseudoState m_nodeIdToForcedPseudoState;
+
+  Member<StyleRuleUsageTracker> m_tracker;
 
   Member<CSSStyleSheet> m_inspectorUserAgentStyleSheet;
 
