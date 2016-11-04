@@ -1142,6 +1142,7 @@ void NavigatorImpl::RequestNavigation(FrameTreeNode* frame_tree_node,
   // This value must be set here because creating a NavigationRequest might
   // change the renderer live/non-live status and change this result.
   bool should_dispatch_beforeunload =
+      !is_same_document_history_load &&
       frame_tree_node->current_frame_host()->ShouldDispatchBeforeUnload();
   FrameMsg_Navigate_Type::Value navigation_type =
       GetNavigationType(controller_->GetBrowserContext(), entry, reload_type);
