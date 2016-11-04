@@ -30,7 +30,6 @@ class LocalizedError {
                          bool is_post,
                          bool stale_copy_in_cache,
                          bool can_show_network_diagnostics_dialog,
-                         bool has_offline_pages,
                          const std::string& locale,
                          std::unique_ptr<error_page::ErrorPageParams> params,
                          base::DictionaryValue* strings);

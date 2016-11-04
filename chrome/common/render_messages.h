@@ -327,13 +327,6 @@ IPC_MESSAGE_ROUTED0(ChromeViewMsg_SetAsInterstitial)
 IPC_MESSAGE_ROUTED1(ChromeViewMsg_NetErrorInfo,
                     int /* DNS probe status */)
 
-#if defined(OS_ANDROID)
-// Tells the renderer whether or not offline pages exist. This is used to
-// decide if offline related button will be provided on certain error page.
-IPC_MESSAGE_ROUTED1(ChromeViewMsg_SetHasOfflinePages,
-                    bool /* has_offline_pages */)
-#endif  // defined(OS_ANDROID)
-
 // Provides the information needed by the renderer process to contact a
 // navigation correction service.  Handled by the NetErrorHelper.
 IPC_MESSAGE_ROUTED5(ChromeViewMsg_SetNavigationCorrectionInfo,
@@ -344,9 +337,9 @@ IPC_MESSAGE_ROUTED5(ChromeViewMsg_SetNavigationCorrectionInfo,
                     GURL /* Google Search URL to use */)
 
 #if defined(OS_ANDROID)
-// Message sent from the renderer to the browser to show the UI for offline
-// pages.
-IPC_MESSAGE_ROUTED0(ChromeViewHostMsg_ShowOfflinePages)
+// Message sent from the renderer to the browser to schedule to download the
+// page at a later time.
+IPC_MESSAGE_ROUTED1(ChromeViewHostMsg_DownloadPageLater, GURL /* url */)
 #endif  // defined(OS_ANDROID)
 
 //-----------------------------------------------------------------------------

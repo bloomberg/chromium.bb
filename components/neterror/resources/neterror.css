@@ -339,6 +339,38 @@ html[subframe] body {
   float: none;
 }
 
+/* download-button shows both icon and text. */
+#download-button {
+  box-shadow: none;
+  position: relative;
+}
+
+#download-button:before {
+  -webkit-margin-end: 4px;
+  background: -webkit-image-set(
+      url(../../resources/default_100_percent/neterror/download.png) 1x,
+      url(../../resources/default_200_percent/neterror/download.png) 2x)
+    no-repeat;
+  content: '';
+  display: inline-block;
+  width: 24px;
+  height: 24px;
+  vertical-align: middle;
+}
+
+#download-button:disabled:before {
+  background: -webkit-image-set(
+      url(../../resources/default_100_percent/neterror/download_disabled.png) 1x,
+      url(../../resources/default_200_percent/neterror/download_disabled.png) 2x)
+    no-repeat;
+}
+
+#download-button:disabled {
+  background: rgb(177, 177, 177);
+  color: rgb(65, 65, 65);
+  opacity: 0.5;
+}
+
 #buttons::after {
   clear: both;
   content: '';

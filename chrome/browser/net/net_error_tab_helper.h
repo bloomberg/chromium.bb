@@ -78,6 +78,10 @@ class NetErrorTabHelper
     return network_diagnostics_bindings_;
   }
 
+#if BUILDFLAG(ANDROID_JAVA_UI)
+  void DownloadPageLater(const GURL& page_url);
+#endif  // BUILDFLAG(ANDROID_JAVA_UI)
+
  private:
   friend class content::WebContentsUserData<NetErrorTabHelper>;
 
@@ -93,12 +97,9 @@ class NetErrorTabHelper
   // testing.
   virtual void RunNetworkDiagnosticsHelper(const std::string& sanitized_url);
 
-  // Relates to offline pages handling.
 #if BUILDFLAG(ANDROID_JAVA_UI)
-  void UpdateHasOfflinePages(int frame_tree_node_id);
-  void SetHasOfflinePages(int frame_tree_node_id, bool has_offline_pages);
-  void ShowOfflinePages();
-  bool IsFromErrorPage() const;
+  // Virtual for testing.
+  virtual void DownloadPageLaterHelper(const GURL& url);
 #endif  // BUILDFLAG(ANDROID_JAVA_UI)
 
   content::WebContentsFrameBindingSet<chrome::mojom::NetworkDiagnostics>

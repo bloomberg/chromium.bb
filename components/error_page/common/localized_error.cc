@@ -808,7 +808,6 @@ void LocalizedError::GetStrings(
     bool is_post,
     bool stale_copy_in_cache,
     bool can_show_network_diagnostics_dialog,
-    bool has_offline_pages,
     const std::string& locale,
     std::unique_ptr<error_page::ErrorPageParams> params,
     base::DictionaryValue* error_strings) {
@@ -996,6 +995,22 @@ void LocalizedError::GetStrings(
       show_saved_copy_button->SetString("primary", "true");
     error_strings->Set("showSavedCopyButton", show_saved_copy_button);
   }
+
+#if defined(OS_ANDROID)
+  if (!show_saved_copy_visible &&
+      failed_url.SchemeIsHTTPOrHTTPS() &&
+      offline_pages::IsOfflinePagesBackgroundLoadingEnabled()) {
+    std::unique_ptr<base::DictionaryValue> download_button =
+        base::MakeUnique<base::DictionaryValue>();
+    download_button->SetString(
+        "msg",
+        l10n_util::GetStringUTF16(IDS_ERRORPAGES_BUTTON_DOWNLOAD));
+    download_button->SetString(
+        "disabledMsg",
+        l10n_util::GetStringUTF16(IDS_ERRORPAGES_BUTTON_DOWNLOADING));
+    error_strings->Set("downloadButton", std::move(download_button));
+  }
+#endif  // defined(OS_ANDROID)
 }
 
 base::string16 LocalizedError::GetErrorDetails(const std::string& error_domain,

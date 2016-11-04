@@ -54,8 +54,8 @@ class NetErrorPageController : public gin::Wrappable<NetErrorPageController> {
   // Execute a "Show saved copy" button click.
   bool ShowSavedCopyButtonClick();
 
-  // Execute a button click to show the list of all offline pages.
-  bool ShowOfflinePagesButtonClick();
+  // Execute a button click to download page later.
+  bool DownloadButtonClick();
 
   // Execute a "Reload" button click.
   bool ReloadButtonClick();
