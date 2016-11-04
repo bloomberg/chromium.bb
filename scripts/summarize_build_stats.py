@@ -344,8 +344,25 @@ class CLStatsEngine(object):
         long_pole_slave_counts[long_config] = (
             long_pole_slave_counts.get(long_config, 0) + 1)
 
+    # Calc list of slowest slaves and their corresponding build stats
+    total_counts = sum(long_pole_slave_counts.values())
+    slowest_cq_slaves = []
+    for (count, config) in sorted(
+        {v: k for k, v in long_pole_slave_counts.items()}.items(),
+        reverse=True):
+      if count < (total_counts / 20.0):
+        continue
+      build_times = self.GetBuildRunTimes(self.slave_builds_by_config[config])
+      slave = str(config)
+      percentile_50 = numpy.percentile(build_times, 50) / 3600.0
+      percentile_90 = numpy.percentile(build_times, 90) / 3600.0
+      slowest_cq_slaves.append((slave, count, percentile_50, percentile_90))
+
     summary = {
         'total_cl_actions': len(self.claction_history),
+        'total_builds': len(self.builds),
+        'first_build_num': self.builds[0]['build_number'],
+        'last_build_num': self.builds[-1]['build_number'],
         'unique_cls': len(self.claction_history.affected_cls),
         'unique_patches': len(self.claction_history.affected_patches),
         'submitted_patches': len(self.claction_history.submit_actions),
@@ -358,9 +375,25 @@ class CLStatsEngine(object):
         'false_rejection_rate': false_rejection_rate,
         'median_handling_time': numpy.median(patch_handle_times),
         'patch_handling_time': patch_handle_times,
+        'cl_handling_time_50': numpy.percentile(patch_handle_times, 50)/3600.0,
+        'cl_handling_time_90': numpy.percentile(patch_handle_times, 90)/3600.0,
+        'cq_time_50': numpy.percentile(cq_handle_times, 50) / 3600.0,
+        'cq_time_90': numpy.percentile(cq_handle_times, 90) / 3600.0,
+        'wait_time_50': numpy.percentile(cq_wait_times, 50) / 3600.0,
+        'wait_time_90': numpy.percentile(cq_wait_times, 90) / 3600.0,
+        'cq_run_time_50': numpy.percentile(build_times_sec, 50) / 3600.0,
+        'cq_run_time_90': numpy.percentile(build_times_sec, 90) / 3600.0,
         'bad_cl_candidates': bad_cl_candidates,
         'unique_blames_change_count': len(unique_cl_blames),
         'long_pole_slave_counts': long_pole_slave_counts,
+        'slowest_cq_slaves': slowest_cq_slaves,
+        'patch_flake_rejections': len(good_patch_rejections),
+        'bad_cl_precq_rejected': len(bad_cl_candidates['pre-cq']),
+        'false_rejection_total': sum(false_rejection_count.values()),
+        'false_rejection_pre_cq': false_rejection_count[constants.PRE_CQ],
+        'false_rejection_cq': false_rejection_count[constants.CQ],
+        'build_blame_counts': build_blame_counts,
+        'patch_blame_counts': patch_blame_counts,
     }
 
     logging.info('CQ committed %s changes', summary['submitted_patches'])
@@ -368,10 +401,10 @@ class CLStatsEngine(object):
                  summary['unique_blames_change_count'])
     logging.info('pre-CQ and CQ incorrectly rejected %s changes a total of '
                  '%s times (pre-CQ: %s; CQ: %s)',
-                 len(good_patch_rejections),
-                 sum(false_rejection_count.values()),
-                 false_rejection_count[constants.PRE_CQ],
-                 false_rejection_count[constants.CQ])
+                 summary['patch_flake_rejections'],
+                 summary['false_rejection_total'],
+                 summary['false_rejection_pre_cq'],
+                 summary['false_rejection_cq'])
 
     logging.info('      Total CL actions: %d.', summary['total_cl_actions'])
     logging.info('    Unique CLs touched: %d.', summary['unique_cls'])
@@ -380,7 +413,7 @@ class CLStatsEngine(object):
     logging.info('      Total rejections: %d.', summary['rejections'])
     logging.info(' Total submit failures: %d.', summary['submit_fails'])
     logging.info(' Good patches rejected: %d.',
-                 len(good_patch_rejections))
+                 summary['patch_flake_rejections'])
     logging.info('   Mean rejections per')
     logging.info('            good patch: %.2f',
                  summary['mean_good_patch_rejections'])
@@ -472,18 +505,13 @@ class CLStatsEngine(object):
     logging.info('Bugs or CLs responsible for build failures:')
     self._PrintCounts(build_blame_counts, fmt_fai)
 
-    total_counts = sum(long_pole_slave_counts.values())
     logging.info('Slowest CQ slaves out of %s passing runs:', total_counts)
-    for (count, config) in sorted(
-        (v, k) for (k, v) in long_pole_slave_counts.items()):
-      if count < (total_counts / 20.0):
-        continue
-      build_times = self.GetBuildRunTimes(self.slave_builds_by_config[config])
-      logging.info('%s times the slowest slave was %s', count, config)
-      logging.info('  50th percentile: %.2f hours, 90th percentile: %.2f hours',
-                   numpy.percentile(build_times, 50) / 3600.0,
-                   numpy.percentile(build_times, 90) / 3600.0)
 
+    for slave, count, per_50, per_90 in summary['slowest_cq_slaves']:
+      logging.info('%s times the slowest slave was %s', count, slave)
+      logging.info('  50th percentile: %.2f hours, 90th percentile: %.2f hours',
+                   per_50,
+                   per_90)
     return summary
 
   # TODO(akeshet): some of this logic is copied directly from SummarizeCQ.
@@ -526,6 +554,183 @@ class CLStatsEngine(object):
       logging.info('None!')
 
     return {}
+
+ReportHTMLTemplate = """
+<head>
+<style>
+  table {{border-collapse: collapse; width: 50%}}
+  table, td, th {{border: 1px solid black}}
+  th, td {{padding: 5px}}
+  td {{text-align: left}}
+  replace {{background-color: red; font-style: bold}}
+  #note {{background-color: green; font-style: italic}}
+</style>
+<title>Summary of CQ Performance for the past week</title>
+</head>
+
+<body>
+<p id="note">
+Instruction text in italic green. Places to replace are in <replace>bold red</replace>.<br>
+
+<ol id="note">
+  <li>Copy-paste this page into an email</li>
+  <li>Set subject line to "Summary of CQ performance for the past week"</li>
+  <li>Follow instructions in italic green</li>
+  <li>Delete any green text</li>
+  <li>Insure that all <replace>REPLACE</replace> text is replaced</li>
+  <li>Email to <a href="mailto:chromeos-infra-discuss@google.com">chromeos-infra-discuss@google.com</a>
+</ol>
+</p>
+
+<p>
+<b>{total_builds}</b> CQ runs included, from build <b>{first_build_num}</b> to <b>{last_build_num}</b>.
+</p>
+
+<p>
+The CQ <b>committed {submitted_patches} changes</b> this week.<br>
+The CQ <b>correctly rejected {unique_blames_change_count} unique changes</b> this week, which would otherwise have broken the tree and required investigation and revert.<br>
+</p>
+
+<p>
+The pre-CQ <b>rejected {bad_cl_precq_rejected} changes this week</b>, which would otherwise have broken a CQ run and affected other developers.<br>
+</p>
+
+<p>
+The CL handling time was <b>{cl_handling_time_50:.2f} hours</b> 50%ile <b>{cl_handling_time_90:.2f} hours</b> 90%ile.<br>
+Time spent in the CQ was <b>{cq_time_50:.2f} hours</b> 50%ile <b>{cq_time_90:.2f} hours</b> 90%ile.<br>
+Time spent waiting was <b>{wait_time_50:.2f} hours</b> 50%ile <b>{wait_time_90:.2f} hours</b> 90%ile.<br>
+CQ run time was <b>{cq_run_time_50:.2f} hours</b> 50%ile <b>{cq_run_time_90:.2f} hours</b> 90%ile.<br>
+</p>
+
+<h2>Slowest Passing Slaves</h2>
+<table>
+  <tr>
+    <th>Slave</th>
+    <th>Times Slowest Slave</th>
+    <th>Median Time (hours)</th>
+    <th>90th Percentile (hours)</th>
+  </tr>
+  {slow_slaves_html}
+</table>
+</p>
+
+The tree <b>was:</b><br>
+<p id="note">
+Get this value from <a href="https://chromiumos-status.appspot.com/status_viewer?curView=stats&startTime=TODAY&numDays=7">here</a> (subtract 100% - %open - %throttled)
+</p>
+<b>
+<table>
+  <tr>
+    <td>Open</td>
+    <td>_<replace>REPLACE</replace>_</td>
+  </tr>
+  <tr>
+    <td>Throttle</td>
+    <td>_<replace>REPLACE</replace>_</td>
+  </tr>
+  <tr>
+    <td>Close</td>
+    <td>_<replace>REPLACE</replace>_</td>
+  </tr>
+</table>
+</b>
+
+<p>
+The pre-CQ + CQ <b>incorrectly rejected [{patch_flake_rejections}] unique changes a total of [{false_rejection_total}] times</b> this week. (Pre-CQ:[{false_rejection_pre_cq}]; CQ: [{false_rejection_cq}])<br>
+The probability of a good patch being incorrectly rejected by the CQ or Pre-CQ is [{false_rejection_rate[combined]:.2f}]%. (Pre-CQ:[{false_rejection_rate[pre-cq]:.2f}]%; CQ: [{false_rejection_rate[cq]:.2f}])<br>
+</p>
+
+<h2>Top reasons that good changes were rejected</h2>
+<table>
+  <tr>
+    <th><b>Number of rejections</b></th>
+    <th><b>Explanation</b></th>
+  </tr>
+ <tr>
+   <td>[_<replace>X</replace>_]</td>
+   <td>_<replace>REPLACE</replace>_</td>
+ </tr>
+ <tr>
+   <td>[_<replace>X</replace>_]</td>
+   <td>_<replace>REPLACE</replace>_</td>
+ </tr>
+ <tr>
+   <td>[_<replace>X</replace>_]</td>
+   <td><replace>REPLACE</replace></td>
+ </tr>
+ <tr>
+   <td>[_<replace>X</replace>_]</td>
+   <td>_<replace>REPLACE</replace>_</td>
+ </tr>
+</table>
+
+<h2>What issues caused the most CQ flakiness this week?</h2>
+<i>Note: test flake may be caused by flake in the test itself, or flake in the product.</i><br>
+<p id="note">At your discretion, pick the top few which caused the most failures</p>
+<ul>
+{cq_flakes_html}
+</ul>
+
+<h2>What CLs caused issues for other developers?</h2>
+<p id="note">At your discretion, pull the top blamed CLs from the summarize_build_stats output. When appropriate, summarize what action we plan to take to block these changes in the pre-CQ.</p>
+<ul>
+{cl_flakes_html}
+</ul>
+
+<h2>What was the patch turnaround time?</h2>
+<p id="note"> Copy/Paste in the histogram from to top of <a href="http://go/chromiumos-build-annotator">go/chromiumos-build-annotator</a>. Update your visible list to match the build ID's listed at the top of your email first, or the values will be randomized.  </p>
+_<replace>IMAGE_PLACEHOLDER</replace>_<br>
+<br>
+
+<i>Generated on {datetime}</i>
+</body>
+"""
+
+def GenerateReport(file_out, summary):
+  """Write formated summary to file_out"""
+
+  report = summary.copy()
+  report['datetime'] = str(datetime.datetime.now())
+
+  def gen_html_row(l):
+    s = ""
+    for r in l:
+      s += '  <tr>\n'
+      for i in r:
+        s += "    <td>{}</td>".format(i)
+      s += '  </tr>\n'
+    return s
+
+  report['slow_slaves_html'] = gen_html_row(summary['slowest_cq_slaves'])
+
+  def gen_html_list(fmt, items):
+    s = ""
+    for i in items:
+      s += "  <li>{}</li>\n".format(fmt.format(**i))
+    return s
+
+  cq_flakes = []
+  for rejections, b_id in sorted(((v, k) for (k, v) \
+      in summary['patch_blame_counts'].items()), reverse=True):
+    cq_flakes.append({'id': b_id, 'rejections': rejections})
+
+  flake_fmt = '<a href="http://{id}">{id}</a> (<b>[{rejections}] false ' + \
+              'rejections</b>): _<replace>Brief explanation of bug. If ' + \
+              'fixed, or describe workarounds</replace>_'
+
+  report['cq_flakes_html'] = gen_html_list(flake_fmt, cq_flakes)
+
+  cl_fails = []
+  for rejections, b_id in \
+    sorted(((v, k) for (k, v) in summary['build_blame_counts'].items()),
+           reverse=True):
+    cl_fails.append({'id': b_id, 'rejections': rejections})
+
+  cl_flake_fmt = '<a href="http://{id}">{id}</a> (<b>[{rejections}] false ' + \
+                 'rejection of build</b>): _<replace>explanation</replace>_'
+  report['cl_flakes_html'] = gen_html_list(cl_flake_fmt, cl_fails)
+
+  file_out.write(ReportHTMLTemplate.format(**report))
 
 
 def _CheckOptions(options):
@@ -575,6 +780,8 @@ def GetParser():
                       default=False,
                       help='In CQ mode, whether to print bad patch '
                            'candidates.')
+  parser.add_argument('--report-file', action='store',
+                      help='Write HTML formatted report to given file')
   return parser
 
 
@@ -613,5 +820,10 @@ def main(argv):
   cl_stats_engine.Gather(start_date, end_date, master_config,
                          starting_build_number=options.starting_build,
                          ending_build_number=options.ending_build)
-  cl_stats_engine.Summarize(options.build_type,
-                            options.bad_patch_candidates)
+  summary = cl_stats_engine.Summarize(options.build_type,
+                                      options.bad_patch_candidates)
+
+  if options.report_file:
+    with open(options.report_file, "w") as f:
+      logging.info("Writing report to %s", options.report_file)
+      GenerateReport(f, summary)
