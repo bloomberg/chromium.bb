@@ -315,6 +315,9 @@ def parse_args(args):
                 default=1,
                 help="Number of times to run the set of tests (e.g. ABCABCABC)"),
             optparse.make_option(
+                "--layout-tests-directory",
+                help=("Path to a custom layout tests directory")),
+            optparse.make_option(
                 "--max-locked-shards",
                 type="int",
                 default=0,

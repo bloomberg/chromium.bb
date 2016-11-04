@@ -507,7 +507,7 @@ class TestPort(Port):
         return "/usr/sbin/httpd"
 
     def path_to_apache_config_file(self):
-        return self._filesystem.join(self.layout_tests_dir(), 'http', 'conf', 'httpd.conf')
+        return self._filesystem.join(self.apache_config_directory(), 'httpd.conf')
 
     def path_to_generic_test_expectations_file(self):
         return self._generic_expectations_path

@@ -60,8 +60,8 @@ class ApacheHTTP(server_base.ServerBase):
         forms_test_resources_dir = self._filesystem.join(test_dir, "fast", "forms", "resources")
         imported_resources_dir = self._filesystem.join(test_dir, "imported", "wpt", "resources")
         media_resources_dir = self._filesystem.join(test_dir, "media")
-        mime_types_path = self._filesystem.join(test_dir, "http", "conf", "mime.types")
-        cert_file = self._filesystem.join(test_dir, "http", "conf", "webkit-httpd.pem")
+        mime_types_path = self._filesystem.join(self._port_obj.apache_config_directory(), "mime.types")
+        cert_file = self._filesystem.join(self._port_obj.apache_config_directory(), "webkit-httpd.pem")
         inspector_sources_dir = self._port_obj.inspector_build_directory()
         inspector_debug_dir = self._port_obj.inspector_debug_directory()
 

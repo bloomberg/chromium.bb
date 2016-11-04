@@ -361,7 +361,7 @@ class PortTestCase(unittest.TestCase):
         del port.host.environ['WEBKIT_HTTP_SERVER_CONF_PATH']
         self.assertEqual(
             port.path_to_apache_config_file(),
-            port.host.filesystem.join(port.layout_tests_dir(), 'http/conf/httpd.conf'))
+            port.host.filesystem.join(port.apache_config_directory(), 'httpd.conf'))
 
         # Check that even if we mock out _apache_config_file_name, the environment variable takes precedence.
         port.host.environ['WEBKIT_HTTP_SERVER_CONF_PATH'] = '/existing/httpd.conf'

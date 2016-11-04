@@ -957,6 +957,9 @@ class Port(object):
         return self._webkit_finder.path_to_script(script_name)
 
     def layout_tests_dir(self):
+        custom_layout_tests_dir = self.get_option('layout_tests_directory')
+        if custom_layout_tests_dir:
+            return custom_layout_tests_dir
         return self._webkit_finder.layout_tests_dir()
 
     def perf_tests_dir(self):
@@ -1095,6 +1098,9 @@ class Port(object):
 
     def inspector_debug_directory(self):
         return self.path_from_webkit_base('Source', 'devtools', 'front_end')
+
+    def apache_config_directory(self):
+        return self.path_from_webkit_base('Tools', 'Scripts', 'apache_config')
 
     def default_results_directory(self):
         """Absolute path to the default place to store the test results."""
@@ -1517,7 +1523,7 @@ class Port(object):
             return config_file_from_env
 
         config_file_name = self._apache_config_file_name_for_platform()
-        return self._filesystem.join(self.layout_tests_dir(), 'http', 'conf', config_file_name)
+        return self._filesystem.join(self.apache_config_directory(), config_file_name)
 
     #
     # PROTECTED ROUTINES

@@ -85,4 +85,4 @@ class MacPortTest(port_testcase.PortTestCase):
         port._apache_version = lambda: '2.2'  # pylint: disable=protected-access
         self.assertEqual(
             port.path_to_apache_config_file(),
-            '/mock-checkout/third_party/WebKit/LayoutTests/http/conf/apache2-httpd-2.2.conf')
+            '/mock-checkout/third_party/WebKit/Tools/Scripts/apache_config/apache2-httpd-2.2.conf')

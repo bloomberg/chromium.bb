@@ -151,4 +151,4 @@ class WinPortTest(port_testcase.PortTestCase):
     def test_path_to_apache_config_file(self):
         self.assertEqual(
             self.make_port().path_to_apache_config_file(),
-            '/mock-checkout/third_party/WebKit/LayoutTests/http/conf/win-httpd.conf')
+            '/mock-checkout/third_party/WebKit/Tools/Scripts/apache_config/win-httpd.conf')

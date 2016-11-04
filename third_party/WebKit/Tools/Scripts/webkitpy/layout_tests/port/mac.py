@@ -101,7 +101,7 @@ class MacPort(base.Port):
 
     def path_to_apache_config_file(self):
         config_file_name = 'apache2-httpd-' + self._apache_version() + '.conf'
-        return self._filesystem.join(self.layout_tests_dir(), 'http', 'conf', config_file_name)
+        return self._filesystem.join(self.apache_config_directory(), config_file_name)
 
     def _path_to_driver(self, target=None):
         return self._build_path_with_target(target, self.driver_name() + '.app', 'Contents', 'MacOS', self.driver_name())
