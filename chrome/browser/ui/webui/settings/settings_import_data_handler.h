@@ -41,7 +41,7 @@ class ImportDataHandler : public SettingsPageUIHandler,
   void ImportData(const base::ListValue* args);
 
   void InitializeDialog(const base::ListValue* args);
-  void SendBrowserProfileData();
+  void SendBrowserProfileData(const std::string& callback_id);
 
   // importer::ImporterProgressObserver:
   void ImportStarted() override;

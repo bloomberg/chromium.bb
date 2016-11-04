@@ -35,6 +35,12 @@ using content::BrowserThread;
 
 namespace settings {
 
+namespace {
+const char kImportStatusInProgress[] = "inProgress";
+const char kImportStatusSucceeded[] = "succeeded";
+const char kImportStatusFailed[] = "failed";
+}
+
 ImportDataHandler::ImportDataHandler()
     : importer_host_(NULL), import_did_succeed_(false) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
@@ -50,17 +56,6 @@ ImportDataHandler::~ImportDataHandler() {
     select_file_dialog_->ListenerDestroyed();
 }
 
-void ImportDataHandler::InitializeDialog(const base::ListValue* args) {
-  AllowJavascript();
-
-  importer_list_.reset(new ImporterList());
-  importer_list_->DetectSourceProfiles(
-      g_browser_process->GetApplicationLocale(),
-      true,  // include_interactive_profiles?
-      base::Bind(&ImportDataHandler::SendBrowserProfileData,
-                 base::Unretained(this)));
-}
-
 void ImportDataHandler::RegisterMessages() {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
 
@@ -71,7 +66,7 @@ void ImportDataHandler::RegisterMessages() {
       "importData",
       base::Bind(&ImportDataHandler::ImportData, base::Unretained(this)));
   web_ui()->RegisterMessageCallback(
-      "chooseBookmarksFile",
+      "importFromBookmarksFile",
       base::Bind(&ImportDataHandler::HandleChooseBookmarksFile,
                  base::Unretained(this)));
 }
@@ -97,9 +92,9 @@ void ImportDataHandler::StartImport(
   if (importer_host_)
     importer_host_->set_observer(NULL);
 
-  base::FundamentalValue importing(true);
-  web_ui()->CallJavascriptFunctionUnsafe("ImportDataOverlay.setImportingState",
-                                         importing);
+  CallJavascriptFunction("cr.webUIListenerCallback",
+                         base::StringValue("import-data-status-changed"),
+                         base::StringValue(kImportStatusInProgress));
   import_did_succeed_ = false;
 
   importer_host_ = new ExternalProcessImporterHost();
@@ -155,7 +150,22 @@ void ImportDataHandler::ImportData(const base::ListValue* args) {
   }
 }
 
-void ImportDataHandler::SendBrowserProfileData() {
+void ImportDataHandler::InitializeDialog(const base::ListValue* args) {
+  AllowJavascript();
+
+  CHECK_EQ(1U, args->GetSize());
+  std::string callback_id;
+  CHECK(args->GetString(0, &callback_id));
+
+  importer_list_.reset(new ImporterList());
+  importer_list_->DetectSourceProfiles(
+      g_browser_process->GetApplicationLocale(),
+      true,  // include_interactive_profiles
+      base::Bind(&ImportDataHandler::SendBrowserProfileData,
+                 base::Unretained(this), callback_id));
+}
+
+void ImportDataHandler::SendBrowserProfileData(const std::string& callback_id) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
 
   base::ListValue browser_profiles;
@@ -176,14 +186,14 @@ void ImportDataHandler::SendBrowserProfileData() {
         (browser_services & importer::PASSWORDS) != 0);
     browser_profile->SetBoolean("search",
         (browser_services & importer::SEARCH_ENGINES) != 0);
-    browser_profile->SetBoolean("autofill-form-data",
+    browser_profile->SetBoolean(
+        "autofillFormData",
         (browser_services & importer::AUTOFILL_FORM_DATA) != 0);
 
     browser_profiles.Append(std::move(browser_profile));
   }
 
-  web_ui()->CallJavascriptFunctionUnsafe(
-      "ImportDataOverlay.updateSupportedBrowsers", browser_profiles);
+  ResolveJavascriptCallback(base::StringValue(callback_id), browser_profiles);
 }
 
 void ImportDataHandler::ImportStarted() {
@@ -209,14 +219,11 @@ void ImportDataHandler::ImportEnded() {
   importer_host_->set_observer(NULL);
   importer_host_ = NULL;
 
-  if (import_did_succeed_) {
-    web_ui()->CallJavascriptFunctionUnsafe("ImportDataOverlay.confirmSuccess");
-  } else {
-    base::FundamentalValue state(false);
-    web_ui()->CallJavascriptFunctionUnsafe(
-        "ImportDataOverlay.setImportingState", state);
-    web_ui()->CallJavascriptFunctionUnsafe("ImportDataOverlay.dismiss");
-  }
+  CallJavascriptFunction(
+      "cr.webUIListenerCallback",
+      base::StringValue("import-data-status-changed"),
+      base::StringValue(import_did_succeed_ ? kImportStatusSucceeded
+                                            : kImportStatusFailed));
 }
 
 void ImportDataHandler::FileSelected(const base::FilePath& path,
