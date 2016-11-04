@@ -306,6 +306,10 @@ void SetRuntimeFeaturesDefaultsAndUpdateFromArgs(
   if (base::FeatureList::IsEnabled(features::kGamepadExtensions))
     WebRuntimeFeatures::enableGamepadExtensions(true);
 
+  if (!base::FeatureList::IsEnabled(features::kCompositeOpaqueFixedPosition))
+    WebRuntimeFeatures::enableFeatureFromString("CompositeOpaqueFixedPosition",
+        false);
+
   if (!base::FeatureList::IsEnabled(features::kCompositeOpaqueScrollers))
     WebRuntimeFeatures::enableFeatureFromString("CompositeOpaqueScrollers",
         false);
