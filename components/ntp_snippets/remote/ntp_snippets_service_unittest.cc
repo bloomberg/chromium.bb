@@ -68,6 +68,10 @@ MATCHER_P(IdEq, value, "") {
   return arg->id() == value;
 }
 
+MATCHER_P(IdWithinCategoryEq, expected_id, "") {
+  return arg.id().id_within_category() == expected_id;
+}
+
 MATCHER_P(IsCategory, id, "") {
   return arg.id() == static_cast<int>(id);
 }
@@ -388,8 +392,7 @@ class NTPSnippetsServiceTest : public ::testing::Test {
         test_url_(kTestContentSuggestionsServerWithAPIKey),
         user_classifier_(/*pref_service=*/nullptr),
         image_fetcher_(nullptr),
-        image_decoder_(nullptr),
-        caller_() {
+        image_decoder_(nullptr) {
     NTPSnippetsService::RegisterProfilePrefs(utils_.pref_service()->registry());
     RequestThrottler::RegisterProfilePrefs(utils_.pref_service()->registry());
 
@@ -515,13 +518,6 @@ class NTPSnippetsServiceTest : public ::testing::Test {
   }
 
  private:
-  class MockCaller {
-   public:
-    void EmptyCallback(std::vector<ContentSuggestion>) {}
-    void CheckCallback(std::vector<ContentSuggestion> v) { MustCallback(); }
-    MOCK_METHOD0(MustCallback, void());
-  };
-
   variations::testing::VariationParamsManager params_manager_;
   test::NTPSnippetsTestUtils utils_;
   base::MessageLoop message_loop_;
@@ -538,7 +534,6 @@ class NTPSnippetsServiceTest : public ::testing::Test {
   FakeImageDecoder* image_decoder_;
 
   base::ScopedTempDir database_dir_;
-  MockCaller caller_;
 
   DISALLOW_COPY_AND_ASSIGN(NTPSnippetsServiceTest);
 };
@@ -854,21 +849,35 @@ TEST_F(NTPSnippetsServiceTest, ReplaceSnippets) {
 TEST_F(NTPSnippetsServiceTest, LoadsAdditionalSnippets) {
   auto service = MakeSnippetsService();
 
-  std::string first("http://first");
-  LoadFromJSONString(service.get(), GetTestJson({GetSnippetWithUrl(first)}));
+  LoadFromJSONString(service.get(),
+                     GetTestJson({GetSnippetWithUrl("http://first")}));
   EXPECT_THAT(service->GetSnippetsForTesting(articles_category()),
-              ElementsAre(IdEq(first)));
+              ElementsAre(IdEq("http://first")));
 
-  std::string second("http://second");
-  LoadMoreFromJSONString(service.get(),
-                         articles_category(),
-                         GetTestJson({GetSnippetWithUrl(second)}),
-                         std::set<std::string>(),
-                         base::Bind([](std::vector<ContentSuggestion>) {}));
-  // The snippets loaded last are added to the previously loaded.
-  EXPECT_THAT(service->GetSnippetsForTesting(articles_category()),
-              ElementsAre(IdEq(first), IdEq(second)));
+  auto expect_only_second_suggestion_received =
+      base::Bind([](std::vector<ContentSuggestion> suggestions) {
+        EXPECT_THAT(suggestions, SizeIs(1));
+        EXPECT_THAT(suggestions[0].id().id_within_category(),
+                    Eq("http://second"));
+      });
+  LoadMoreFromJSONString(service.get(), articles_category(),
+                         GetTestJson({GetSnippetWithUrl("http://second")}),
+                         /*known_ids=*/std::set<std::string>(),
+                         expect_only_second_suggestion_received);
+
+  // Verify that the observer did not get updated about the additional snippets.
+  // Rationale: It's not clear that snippets fetched in one context (i.e. one
+  // potentially old NTP) should be shown in other NTPs as well.
+  // We can revisit this decision, but for now it's easiest to keep them
+  // independent.
+  EXPECT_THAT(observer().SuggestionsForCategory(articles_category()),
+              ElementsAre(IdWithinCategoryEq("http://first")));
 }
+
+// TODO(tschumann): We don't have test making sure the NTPSnippetsFetcher
+// actually gets the proper parameters. Add tests with an injected
+// NTPSnippetsFetcher to verify the parameters, including proper handling of
+// dismissed and known_ids.
 
 namespace {
 

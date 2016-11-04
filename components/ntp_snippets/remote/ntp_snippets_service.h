@@ -211,12 +211,13 @@ class NTPSnippetsService final : public ContentSuggestionsProvider,
   void OnDatabaseLoaded(NTPSnippet::PtrVector snippets);
   void OnDatabaseError();
 
-  // Callback for the NTPSnippetsFetcher.
-  // |fetching_callback| is ignored if |fetched_more| is false. Otherwise, it's
-  // expected to be non null.
+  // Callback for fetch-more requests with the NTPSnippetsFetcher.
+  void OnFetchMoreFinished(
+    FetchingCallback fetching_callback,
+    NTPSnippetsFetcher::OptionalFetchedCategories fetched_categories);
+
+  // Callback for regular fetch requests with the NTPSnippetsFetcher.
   void OnFetchFinished(
-      bool fetched_more,
-      base::Optional<FetchingCallback> fetching_callback,
       NTPSnippetsFetcher::OptionalFetchedCategories fetched_categories);
 
   // Moves all snippets from |to_archive| into the archive of the |category|.
@@ -224,11 +225,14 @@ class NTPSnippetsService final : public ContentSuggestionsProvider,
   // short.
   void ArchiveSnippets(Category category, NTPSnippet::PtrVector* to_archive);
 
+  // Sanitizes new fetched snippets -- e.g. adding missing dates and filtering
+  // out incomplete results.
+  void SanitizeFetchedCategory(
+      NTPSnippetsFetcher::FetchedCategory* fetched_category);
+
   // Adds newly available suggestions in |category| to the available ones.
-  // If |replace_snippets| is set, archives existing suggestions.
-  void IncludeSnippets(const Category& category,
-                       NTPSnippet::PtrVector new_snippets,
-                       bool replace_snippets);
+  void IntegrateSnippets(const Category& category,
+                         NTPSnippet::PtrVector new_snippets);
 
   // Removes expired dismissed snippets from the service and the database.
   void ClearExpiredDismissedSnippets();
@@ -301,23 +305,8 @@ class NTPSnippetsService final : public ContentSuggestionsProvider,
   void RestoreCategoriesFromPrefs();
   void StoreCategoriesToPrefs();
 
-  // Implementation for |FetchSnippets| and |Fetch| that calls the snippet
-  // fetcher and replaces or adds the fetched snippets depending on the
-  // |fetch_more| parameter.
-  void FetchSnippetsFromHostsImpl(
-      const std::set<std::string>& hosts,
-      bool interactive_request,
-      bool fetch_more,
-      const std::set<std::string>& known_suggestion_ids,
-      base::Optional<Category> exclusive_category,
-      base::Optional<FetchingCallback> fetched_more_callback);
-
-  // Returns a set of snippet IDs that should not be fetched. These IDs always
-  // include dismissed snippets. If |fetch_more| is set, they include all known
-  // snippet IDs.
-  std::set<std::string> CollectIdsToExclude(
-      bool fetch_more,
-      const std::set<std::string>& additional_ids) const;
+  NTPSnippetsFetcher::Params BuildFetchParams(
+      bool exclude_archived_suggestions) const;
 
   void MarkEmptyCategoriesAsLoading();
 

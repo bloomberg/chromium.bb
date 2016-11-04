@@ -219,12 +219,10 @@ std::vector<ContentSuggestion> ConvertToContentSuggestions(
 }
 
 void CallWithEmptyResults(
-    base::Optional<ContentSuggestionsProvider::FetchingCallback> callback) {
-  if (!callback)
+    ContentSuggestionsProvider::FetchingCallback callback) {
+  if (callback.is_null())
     return;
-  if (callback->is_null())
-    return;
-  callback->Run(std::vector<ContentSuggestion>());
+  callback.Run(std::vector<ContentSuggestion>());
 }
 
 }  // namespace
@@ -313,65 +311,64 @@ void NTPSnippetsService::FetchSnippets(bool interactive_request) {
 void NTPSnippetsService::FetchSnippetsFromHosts(
     const std::set<std::string>& hosts,
     bool interactive_request) {
-  FetchSnippetsFromHostsImpl(hosts, interactive_request,
-                             /*fetch_more=*/false, std::set<std::string>(),
-                             base::Optional<Category>(),
-                             base::Optional<FetchingCallback>());
+  // TODO(tschumann): FetchSnippets() and FetchSnippetsFromHost() implement the
+  // fetch logic when called by the background fetcher or interactive "reload"
+  // requests. Fetch() is right now only called for the fetch-more use case.
+  // The names are confusing and we need to clean them up.
+  if (!ready())
+    return;
+  MarkEmptyCategoriesAsLoading();
+
+  NTPSnippetsFetcher::Params params =
+      BuildFetchParams(/*exclude_archived_suggestions=*/true);
+  params.hosts = hosts;
+  params.interactive_request = interactive_request;
+  snippets_fetcher_->FetchSnippets(
+      params, base::BindOnce(&NTPSnippetsService::OnFetchFinished,
+                             base::Unretained(this)));
 }
 
 void NTPSnippetsService::Fetch(
     const Category& category,
     const std::set<std::string>& known_suggestion_ids,
     FetchingCallback callback) {
-  FetchSnippetsFromHostsImpl(std::set<std::string>(),
-                             /*interactive_request=*/true,
-                             /*fetch_more=*/true, known_suggestion_ids,
-                             base::Optional<Category>(category),
-                             base::Optional<FetchingCallback>(callback));
-}
-
-void NTPSnippetsService::FetchSnippetsFromHostsImpl(
-    const std::set<std::string>& hosts,
-    bool interactive_request,
-    bool fetch_more,
-    const std::set<std::string>& known_suggestion_ids,
-    base::Optional<Category> exclusive_category,
-    base::Optional<FetchingCallback> callback) {
   if (!ready()) {
     CallWithEmptyResults(callback);
     return;
   }
+  NTPSnippetsFetcher::Params params =
+      BuildFetchParams(/*exclude_archived_suggestions=*/false);
+  params.excluded_ids.insert(known_suggestion_ids.begin(),
+                             known_suggestion_ids.end());
+  params.interactive_request = true;
+  params.exclusive_category = category;
 
-  MarkEmptyCategoriesAsLoading();
-
-  NTPSnippetsFetcher::Params params;
-  params.language_code = application_language_code_;
-  params.excluded_ids = CollectIdsToExclude(fetch_more, known_suggestion_ids);
-  params.count_to_fetch = kMaxSnippetCount;
-  params.hosts = hosts;
-  params.interactive_request = interactive_request;
-  params.exclusive_category = std::move(exclusive_category);
-
+  // TODO(tschumann): NTPSnippetsFetcher does not support concurrent requests
+  // yet. If a background fetch happens while we fetch-more data, the callback
+  // will never get called.
   snippets_fetcher_->FetchSnippets(
-      params, base::BindOnce(&NTPSnippetsService::OnFetchFinished,
-                             base::Unretained(this), fetch_more, callback));
+      params, base::BindOnce(&NTPSnippetsService::OnFetchMoreFinished,
+                             base::Unretained(this), callback));
 }
 
-std::set<std::string> NTPSnippetsService::CollectIdsToExclude(
-    bool fetch_more,
-    const std::set<std::string>& additional_ids) const {
-  std::set<std::string> ids;
-  for (const auto& item : categories_) {
-    const CategoryContent& content = item.second;
-    for (const auto& snippet : content.dismissed)
-      ids.insert(snippet->id());
-    if (!fetch_more)
-      continue;
-    for (const auto& snippet : content.archived)
-      ids.insert(snippet->id());
+// Builds default fetcher params.
+NTPSnippetsFetcher::Params NTPSnippetsService::BuildFetchParams(
+    bool exclude_archived_suggestions) const {
+  NTPSnippetsFetcher::Params result;
+  result.language_code = application_language_code_;
+  result.count_to_fetch = kMaxSnippetCount;
+  for (const auto& map_entry : categories_) {
+    const CategoryContent& content = map_entry.second;
+    for (const auto& dismissed_snippet : content.dismissed) {
+      result.excluded_ids.insert(dismissed_snippet->id());
+    }
+    if (exclude_archived_suggestions) {
+      for (const auto& archived_snippet : content.archived) {
+        result.excluded_ids.insert(archived_snippet->id());
+      }
+    }
   }
-  ids.insert(additional_ids.begin(), additional_ids.end());
-  return ids;
+  return result;
 }
 
 void NTPSnippetsService::MarkEmptyCategoriesAsLoading() {
@@ -646,17 +643,32 @@ void NTPSnippetsService::OnDatabaseError() {
   UpdateAllCategoryStatus(CategoryStatus::LOADING_ERROR);
 }
 
-// fetching_callback
-void NTPSnippetsService::OnFetchFinished(
-    bool fetched_more,
-    base::Optional<FetchingCallback> fetching_callback,
+void NTPSnippetsService::OnFetchMoreFinished(
+    FetchingCallback fetching_callback,
     NTPSnippetsFetcher::OptionalFetchedCategories fetched_categories) {
-  if (!ready())
+  if (!fetched_categories) {
+    CallWithEmptyResults(fetching_callback);
     return;
+  }
+  if (fetched_categories->size() != 1u) {
+    LOG(DFATAL) << "Requested one exclusive category but received "
+                << fetched_categories->size() << " categories.";
+    CallWithEmptyResults(fetching_callback);
+    return;
+  }
+  auto& fetched_category = (*fetched_categories)[0];
+  SanitizeFetchedCategory(&fetched_category);
+  fetching_callback.Run(ConvertToContentSuggestions(
+      fetched_category.category, fetched_category.snippets));
+}
 
-  // TODO(fhorschig): Check which of the things here should actually happen for
-  // |fetch_more| requests. Maybe it makes sense to have two separate
-  // "Finished" methods?
+void NTPSnippetsService::OnFetchFinished(
+    NTPSnippetsFetcher::OptionalFetchedCategories fetched_categories) {
+  if (!ready()) {
+    // TODO(tschumann): What happens if this was a user-triggered, interactive
+    // request? Is the UI waiting indefinitely now?
+    return;
+  }
 
   // Mark all categories as not provided by the server in the latest fetch. The
   // ones we got will be marked again below.
@@ -698,10 +710,14 @@ void NTPSnippetsService::OnFetchFinished(
             std::min(fetched_category.snippets.size(),
                      static_cast<size_t>(kMaxSnippetCount + 1)));
       }
-      IncludeSnippets(category, std::move(fetched_category.snippets),
-                      /*replace_snippets=*/!fetched_more);
+      SanitizeFetchedCategory(&fetched_category);
+      IntegrateSnippets(category, std::move(fetched_category.snippets));
     }
   }
+
+  // TODO(tschumann): The snippets fetcher needs to signal errors so that we
+  // know why we received no data. If an error occured, none of the following
+  // should take place.
 
   // We might have gotten new categories (or updated the titles of existing
   // ones), so update the pref.
@@ -711,10 +727,7 @@ void NTPSnippetsService::OnFetchFinished(
     Category category = item.first;
     UpdateCategoryStatus(category, CategoryStatus::AVAILABLE);
     // TODO(sfiera): notify only when a category changed above.
-    if (fetched_more)
-      NotifyMoreSuggestions(category, fetching_callback);
-    else
-      NotifyNewSuggestions(category);
+    NotifyNewSuggestions(category);
   }
 
   // TODO(sfiera): equivalent metrics for non-articles.
@@ -758,17 +771,28 @@ void NTPSnippetsService::ArchiveSnippets(Category category,
   }
 }
 
-void NTPSnippetsService::IncludeSnippets(const Category& category,
-                                         NTPSnippet::PtrVector new_snippets,
-                                         bool replace_snippets) {
+void NTPSnippetsService::SanitizeFetchedCategory(
+    NTPSnippetsFetcher::FetchedCategory* fetched_category) {
+  DCHECK(ready());
+  auto category_content_it = categories_.find(fetched_category->category);
+  // When manually fetching articles (e.g. fetch-more), it's possible that
+  // this happens on an old NTP showing categories that are gone in the
+  // meantime. So don't rely on the category to be present.
+  // TODO(tschumann): we need to simplify the category semantics -- way too many
+  // corner cases.
+  if (category_content_it != categories_.end()) {
+    // Remove new snippets that have been dismissed.
+    EraseMatchingSnippets(&fetched_category->snippets,
+                          category_content_it->second.dismissed);
+  }
+  AssignExpiryAndPublishDates(&fetched_category->snippets);
+  RemoveIncompleteSnippets(&fetched_category->snippets);
+}
+
+void NTPSnippetsService::IntegrateSnippets(const Category& category,
+                                           NTPSnippet::PtrVector new_snippets) {
   DCHECK(ready());
   CategoryContent* content = &categories_[category];
-
-  // Remove new snippets that have been dismissed.
-  EraseMatchingSnippets(&new_snippets, content->dismissed);
-
-  AssignExpiryAndPublishDates(&new_snippets);
-  RemoveIncompleteSnippets(&new_snippets);
 
   // Do not touch the current set of snippets if the newly fetched one is empty.
   if (new_snippets.empty())
@@ -784,15 +808,10 @@ void NTPSnippetsService::IncludeSnippets(const Category& category,
 
   database_->SaveSnippets(new_snippets);
 
-  if (replace_snippets) {
-    ArchiveSnippets(category, &content->snippets);
-    content->snippets = std::move(new_snippets);
-  } else {
-    content->snippets.insert(content->snippets.end(),
-                             std::make_move_iterator(new_snippets.begin()),
-                             std::make_move_iterator(new_snippets.end()));
-  }
+  ArchiveSnippets(category, &content->snippets);
+  content->snippets = std::move(new_snippets);
 }
+
 void NTPSnippetsService::ClearExpiredDismissedSnippets() {
   std::vector<Category> categories_to_erase;
 
