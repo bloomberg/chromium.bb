@@ -21,7 +21,8 @@ def native_error(msg, version):
   %s""") % (version, msg)
   sys.exit(1)
 
-def covered_main(includes, require_native=None, required_percentage=100.0):
+def covered_main(includes, require_native=None, required_percentage=100.0,
+                 disable_coverage=True):
   """Equivalent of unittest.main(), except that it gathers coverage data, and
   asserts if the test is not at 100% coverage.
 
@@ -31,7 +32,13 @@ def covered_main(includes, require_native=None, required_percentage=100.0):
     require_native (str) - If non-None, will require that
       at least |require_native| version of coverage is installed on the
       system with CTracer.
+    disable_coverage (bool) - If True, just run unittest.main() without any
+      coverage tracking. Bug: crbug.com/662277
   """
+  if disable_coverage:
+    unittest.main()
+    return
+
   try:
     import coverage
     if require_native is not None:
