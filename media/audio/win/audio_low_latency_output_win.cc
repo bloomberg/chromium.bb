@@ -6,8 +6,6 @@
 
 #include <Functiondiscoverykeys_devpkey.h>
 
-#include <climits>
-
 #include "base/command_line.h"
 #include "base/logging.h"
 #include "base/macros.h"
@@ -20,7 +18,6 @@
 #include "media/audio/win/audio_manager_win.h"
 #include "media/audio/win/avrt_wrapper_win.h"
 #include "media/audio/win/core_audio_util_win.h"
-#include "media/base/audio_sample_types.h"
 #include "media/base/limits.h"
 #include "media/base/media_switches.h"
 
@@ -29,9 +26,6 @@ using base::win::ScopedCOMInitializer;
 using base::win::ScopedCoMem;
 
 namespace media {
-
-// The number of bits in a float sample.
-static const int kBitsPerFloatSample = sizeof(float) * CHAR_BIT;
 
 // static
 AUDCLNT_SHAREMODE WASAPIAudioOutputStream::GetShareMode() {
@@ -78,14 +72,7 @@ WASAPIAudioOutputStream::WASAPIAudioOutputStream(AudioManagerWin* manager,
       share_mode_(GetShareMode()),
       num_written_frames_(0),
       source_(NULL),
-      audio_bus_(AudioBus::Create(AudioParameters(
-          params.format(),
-          params.channel_layout(),
-          params.sample_rate(),
-          // Ignore the given bits per sample because we're outputting
-          // floats.
-          kBitsPerFloatSample,
-          params.frames_per_buffer()))) {
+      audio_bus_(AudioBus::Create(params)) {
   DCHECK(manager_);
 
   // The empty string is used to indicate a default device and the
@@ -111,15 +98,15 @@ WASAPIAudioOutputStream::WASAPIAudioOutputStream(AudioManagerWin* manager,
   format->wFormatTag = WAVE_FORMAT_EXTENSIBLE;
   format->nChannels = params.channels();
   format->nSamplesPerSec = params.sample_rate();
-  format->wBitsPerSample = kBitsPerFloatSample;
+  format->wBitsPerSample = params.bits_per_sample();
   format->nBlockAlign = (format->wBitsPerSample / 8) * format->nChannels;
   format->nAvgBytesPerSec = format->nSamplesPerSec * format->nBlockAlign;
   format->cbSize = sizeof(WAVEFORMATEXTENSIBLE) - sizeof(WAVEFORMATEX);
 
   // Add the parts which are unique to WAVE_FORMAT_EXTENSIBLE.
-  format_.Samples.wValidBitsPerSample = kBitsPerFloatSample;
+  format_.Samples.wValidBitsPerSample = params.bits_per_sample();
   format_.dwChannelMask = CoreAudioUtil::GetChannelConfig(device_id, eRender);
-  format_.SubFormat = KSDATAFORMAT_SUBTYPE_IEEE_FLOAT;
+  format_.SubFormat = KSDATAFORMAT_SUBTYPE_PCM;
 
   // Store size (in different units) of audio packets which we expect to
   // get from the audio endpoint device in each render event.
@@ -557,9 +544,13 @@ bool WASAPIAudioOutputStream::RenderAudioFromSource(UINT64 device_frequency) {
     uint32_t num_filled_bytes = frames_filled * format_.Format.nBlockAlign;
     DCHECK_LE(num_filled_bytes, packet_size_bytes_);
 
+    // Note: If this ever changes to output raw float the data must be
+    // clipped and sanitized since it may come from an untrusted
+    // source such as NaCl.
+    const int bytes_per_sample = format_.Format.wBitsPerSample >> 3;
     audio_bus_->Scale(volume_);
-    audio_bus_->ToInterleaved<Float32SampleTypeTraits>(
-        frames_filled, reinterpret_cast<float*>(audio_data));
+    audio_bus_->ToInterleaved(
+        frames_filled, bytes_per_sample, audio_data);
 
     // Release the buffer space acquired in the GetBuffer() call.
     // Render silence if we were not able to fill up the buffer totally.
