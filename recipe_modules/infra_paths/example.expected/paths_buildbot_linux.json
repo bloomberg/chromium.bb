@@ -3,7 +3,7 @@
     "cmd": [],
     "name": "show cache path",
     "~followup_annotations": [
-      "@@@STEP_TEXT@[CACHE]@@@"
+      "@@@STEP_TEXT@[GIT_CACHE]@@@"
     ]
   },
   {

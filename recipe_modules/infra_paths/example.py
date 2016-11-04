@@ -13,7 +13,7 @@ DEPS = [
 
 def RunSteps(api):
   api.step('show cache path', [])
-  api.step.active_result.presentation.step_text = str(api.path['cache'])
+  api.step.active_result.presentation.step_text = str(api.path['git_cache'])
 
 
 def GenTests(api):
