@@ -31,7 +31,8 @@
 
 namespace blink {
 
-class PLATFORM_EXPORT TranslateTransformOperation : public TransformOperation {
+class PLATFORM_EXPORT TranslateTransformOperation final
+    : public TransformOperation {
  public:
   static PassRefPtr<TranslateTransformOperation> create(const Length& tx,
                                                         const Length& ty,
