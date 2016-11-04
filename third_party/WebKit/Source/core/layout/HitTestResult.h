@@ -32,7 +32,6 @@
 #include "platform/text/TextDirection.h"
 #include "wtf/Forward.h"
 #include "wtf/ListHashSet.h"
-#include "wtf/RefPtr.h"
 #include "wtf/VectorTraits.h"
 
 namespace blink {
