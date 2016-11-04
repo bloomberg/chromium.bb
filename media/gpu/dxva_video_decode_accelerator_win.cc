@@ -1752,7 +1752,10 @@ void DXVAVideoDecodeAccelerator::ProcessPendingSamples() {
 
       pending_sample->picture_buffer_id = index->second->id();
       index->second->set_bound();
-      index->second->set_color_space(pending_sample->color_space);
+      if (share_nv12_textures_ || copy_nv12_textures_) {
+        index->second->set_color_space(pending_sample->color_space);
+      }
+
       if (share_nv12_textures_) {
         main_thread_task_runner_->PostTask(
             FROM_HERE,
@@ -2275,7 +2278,8 @@ void DXVAVideoDecodeAccelerator::CopySurfaceComplete(
   RETURN_AND_NOTIFY_ON_FAILURE(result, "Failed to complete copying surface",
                                PLATFORM_FAILURE, );
 
-  NotifyPictureReady(picture_buffer->id(), input_buffer_id, gfx::ColorSpace());
+  NotifyPictureReady(picture_buffer->id(), input_buffer_id,
+                     picture_buffer->color_space());
 
   {
     base::AutoLock lock(decoder_lock_);
