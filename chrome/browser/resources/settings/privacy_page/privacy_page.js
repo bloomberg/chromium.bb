@@ -129,7 +129,8 @@ Polymer({
   setMetricsReporting_: function(metricsReporting) {
     if (this.metricsReporting_) {
       // TODO(dbeam): hide if changed back to the value Chrome started with.
-      this.showRestart_ = true;
+      var changed = this.metricsReporting_.enabled != metricsReporting.enabled;
+      this.showRestart_ = changed && !this.metricsReporting_.managed;
     }
     this.metricsReporting_ = metricsReporting;
   },

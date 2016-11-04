@@ -46,7 +46,6 @@
 
       #metricsReportingCheckbox {
         display: inline-block;
-        flex: 1;
       }
 
       #metricsReporting paper-tooltip {
@@ -55,6 +54,11 @@
 
       #indicator {
         -webkit-margin-start: var(--checkbox-spacing);
+      }
+
+      #restart {
+        flex: 1;
+        text-align: end;
       }
     </style>
     <template is="dom-if" if="[[showClearBrowsingDataDialog_]]" restamp>
@@ -112,7 +116,11 @@
               </paper-tooltip>
             </template>
             <template is="dom-if" if="[[showRestart_]]" restamp>
-              <paper-button on-tap="onRestartTap_">$i18n{restart}</paper-button>
+              <div id="restart">
+                <paper-button on-tap="onRestartTap_">
+                  $i18n{restart}
+                </paper-button>
+              </div>
             </template>
           </div>
 </if><!-- not chromeos -->
