@@ -1038,18 +1038,10 @@ public class PaymentRequestImpl implements PaymentRequest, PaymentRequestUI.Clie
      * Saves the given instrument in either "autofill" or "non-autofill" list. The separation
      * enables placing autofill instruments on the bottom of the list.
      *
-     * Autofill instruments are also checked for completeness. A complete autofill instrument can be
-     * sent to the merchant as-is, without editing first. Such instruments should be displayed
-     * higher in the list.
-     *
      * @param instrument The instrument to add to either "autofill" or "non-autofill" list.
      */
     private void addPendingInstrument(PaymentInstrument instrument) {
         if (instrument instanceof AutofillPaymentInstrument) {
-            AutofillPaymentInstrument autofillInstrument = (AutofillPaymentInstrument) instrument;
-            if (mCardEditor.isCardComplete(autofillInstrument.getCard())) {
-                autofillInstrument.setIsComplete();
-            }
             mPendingAutofillInstruments.add(instrument);
         } else {
             mPendingInstruments.add(instrument);

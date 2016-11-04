@@ -12,6 +12,7 @@ import android.util.JsonWriter;
 import org.json.JSONObject;
 
 import org.chromium.base.ApiCompatibilityUtils;
+import org.chromium.chrome.R;
 import org.chromium.chrome.browser.autofill.PersonalDataManager;
 import org.chromium.chrome.browser.autofill.PersonalDataManager.AutofillProfile;
 import org.chromium.chrome.browser.autofill.PersonalDataManager.CreditCard;
@@ -34,7 +35,6 @@ public class AutofillPaymentInstrument extends PaymentInstrument
     private final Context mContext;
     private final WebContents mWebContents;
     private CreditCard mCard;
-    private boolean mIsComplete;
     private String mSecurityCode;
     @Nullable private AutofillProfile mBillingAddress;
     @Nullable private InstrumentDetailsCallback mCallback;
@@ -59,8 +59,8 @@ public class AutofillPaymentInstrument extends PaymentInstrument
         mContext = context;
         mWebContents = webContents;
         mCard = card;
-        mIsComplete = false;
         mBillingAddress = billingAddress;
+        checkAndUpateCardCompleteness();
     }
 
     @Override
@@ -205,11 +205,6 @@ public class AutofillPaymentInstrument extends PaymentInstrument
         return mIsComplete;
     }
 
-    /** Marks this card complete and ready to be sent to the merchant without editing first. */
-    public void setIsComplete() {
-        mIsComplete = true;
-    }
-
     /**
      * Updates the instrument and marks it "complete." Called after the user has edited this
      * instrument.
@@ -227,10 +222,61 @@ public class AutofillPaymentInstrument extends PaymentInstrument
 
         mCard = card;
         mBillingAddress = billingAddress;
-        mIsComplete = true;
         updateIdentifierLabelsAndIcon(card.getGUID(), card.getObfuscatedNumber(), card.getName(),
                 null, ApiCompatibilityUtils.getDrawable(
                               mContext.getResources(), card.getIssuerIconDrawableId()));
+        checkAndUpateCardCompleteness();
+        assert mIsComplete;
+    }
+
+    /**
+     * Checks whether card is complete, i.e., can be sent to the merchant as-is without editing
+     * first. And updates edit message, edit title and complete status.
+     *
+     * For both local and server cards, verifies that the billing address is complete. For local
+     * cards also verifies that the card number is valid and the name on card is not empty.
+     *
+     * Does not check the expiration date. If the card is expired, the user has the opportunity
+     * update the expiration date when providing their CVC in the card unmask dialog.
+     *
+     * Does not check that the card type is accepted by the merchant. This is done elsewhere to
+     * filter out such cards from view entirely.
+     */
+    private void checkAndUpateCardCompleteness() {
+        int editMessageResId = 0; // Zero is the invalid resource Id.
+        int editTitleResId = 0;
+        int invalidFieldsCount = 0;
+
+        if (mBillingAddress == null) {
+            editMessageResId = R.string.payments_billing_address_required;
+            editTitleResId = R.string.payments_add_billing_address;
+            invalidFieldsCount++;
+        }
+
+        if (mCard.getIsLocal()) {
+            if (TextUtils.isEmpty(mCard.getName())) {
+                editMessageResId = R.string.payments_name_on_card_required;
+                editTitleResId = R.string.payments_add_name_on_card;
+                invalidFieldsCount++;
+            }
+
+            if (PersonalDataManager.getInstance().getBasicCardPaymentType(
+                        mCard.getNumber().toString(), true)
+                    == null) {
+                editMessageResId = R.string.payments_card_number_invalid;
+                editTitleResId = R.string.payments_add_valid_card_number;
+                invalidFieldsCount++;
+            }
+        }
+
+        if (invalidFieldsCount > 1) {
+            editMessageResId = R.string.payments_more_information_required;
+            editTitleResId = R.string.payments_add_more_information;
+        }
+
+        mEditMessage = editMessageResId == 0 ? null : mContext.getString(editMessageResId);
+        mEditTitle = editTitleResId == 0 ? null : mContext.getString(editTitleResId);
+        mIsComplete = mEditMessage == null;
     }
 
     /** @return The credit card represented by this payment instrument. */

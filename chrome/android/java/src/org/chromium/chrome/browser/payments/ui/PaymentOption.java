@@ -14,6 +14,8 @@ import javax.annotation.Nullable;
  */
 public class PaymentOption implements Completable {
     protected boolean mIsComplete;
+    protected String mEditMessage;
+    protected String mEditTitle;
     private String mId;
     private Drawable mIcon;
     private String[] mLabels = {null, null, null};
@@ -50,6 +52,24 @@ public class PaymentOption implements Completable {
      */
     public String getIdentifier() {
         return mId;
+    }
+
+    /**
+     * The message of required edit of this option. For example, "Billing address required" or
+     * "Phone number required".
+     */
+    @Nullable
+    public String getEditMessage() {
+        return mEditMessage;
+    }
+
+    /**
+     * The title of required edit of this option. For example, "Add billing address" or "Add phone
+     * number".
+     */
+    @Nullable
+    public String getEditTitle() {
+        return mEditTitle;
     }
 
     /**

@@ -210,33 +210,6 @@ public class CardEditor extends EditorBase<AutofillPaymentInstrument>
     }
 
     /**
-     * Returns whether the given credit card is complete, i.e., can be sent to the merchant as-is
-     * without editing first.
-     *
-     * For both local and server cards, verifies that the billing address is complete. For local
-     * cards also verifies that the card number is valid and the name on card is not empty.
-     *
-     * Does not check the expiration date. If the card is expired, the user has the opportunity
-     * update the expiration date when providing their CVC in the card unmask dialog.
-     *
-     * Does not check that the card type is accepted by the merchant. This is done elsewhere to
-     * filter out such cards from view entirely. Cards that are not accepted by the merchant should
-     * not be edited.
-     *
-     * @param card The card to check.
-     * @return Whether the card is complete.
-     */
-    public boolean isCardComplete(CreditCard card) {
-        if (card == null || !mProfilesForBillingAddress.containsKey(card.getBillingAddressId())) {
-            return false;
-        }
-
-        if (!card.getIsLocal()) return true;
-
-        return !TextUtils.isEmpty(card.getName()) && mCardNumberValidator.isValid(card.getNumber());
-    }
-
-    /**
      * Adds accepted payment methods to the editor, if they are recognized credit card types.
      *
      * @param acceptedMethods The accepted method payments.
@@ -282,10 +255,8 @@ public class CardEditor extends EditorBase<AutofillPaymentInstrument>
                 : toEdit;
         final CreditCard card = instrument.getCard();
 
-        // The title of the editor depends on whether we're adding a new card or editing an existing
-        // card.
-        final EditorModel editor = new EditorModel(mContext.getString(
-                isNewCard ? R.string.payments_create_card : R.string.payments_edit_card));
+        final EditorModel editor = new EditorModel(
+                isNewCard ? mContext.getString(R.string.payments_add_card) : toEdit.getEditTitle());
 
         if (card.getIsLocal()) {
             Calendar calendar = null;
@@ -307,7 +278,9 @@ public class CardEditor extends EditorBase<AutofillPaymentInstrument>
         } else {
             // Display some information about the server card.
             editor.addField(EditorFieldModel.createLabel(card.getObfuscatedNumber(), card.getName(),
-                    card.getFormattedExpirationDate(mContext), card.getIssuerIconDrawableId()));
+                    mContext.getString(R.string.payments_credit_card_expiration_date_abbr,
+                            card.getMonth(), card.getYear()),
+                    card.getIssuerIconDrawableId()));
         }
 
         // Always show the billing address dropdown.

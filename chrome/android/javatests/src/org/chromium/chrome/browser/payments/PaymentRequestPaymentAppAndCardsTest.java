@@ -102,7 +102,8 @@ public class PaymentRequestPaymentAppAndCardsTest extends PaymentRequestTestBase
         }
         // \u00A0\u22EF is a non-breaking space followed by a midline ellipsis.
         assertEquals("Visa\u00A0\u22EF1111\nJon Doe", getPaymentInstrumentLabel(i++));
-        assertEquals("MasterCard\u00A0\u22EF5454\nJon Doe", getPaymentInstrumentLabel(i++));
+        assertEquals("MasterCard\u00A0\u22EF5454\nJon Doe\nBilling address required",
+                getPaymentInstrumentLabel(i++));
 
         // Check the output of the selected instrument.
         if (instrumentPresence == HAVE_INSTRUMENTS) {
