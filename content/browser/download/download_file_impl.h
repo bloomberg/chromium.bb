@@ -28,8 +28,6 @@
 namespace content {
 class ByteStreamReader;
 class DownloadDestinationObserver;
-class DownloadManager;
-struct DownloadCreateInfo;
 
 class CONTENT_EXPORT DownloadFileImpl : public DownloadFile {
  public:

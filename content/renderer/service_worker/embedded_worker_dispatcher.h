@@ -16,8 +16,6 @@
 #include "content/public/common/console_message_level.h"
 #include "ipc/ipc_listener.h"
 
-class GURL;
-
 namespace blink {
 
 class WebEmbeddedWorker;

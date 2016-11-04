@@ -21,12 +21,7 @@
 
 namespace base {
 class CommandLine;
-class FilePath;
 class SharedPersistentMemoryAllocator;
-}
-
-namespace service_manager {
-class InterfaceProvider;
 }
 
 namespace content {

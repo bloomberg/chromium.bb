@@ -39,7 +39,6 @@ class ServiceWorkerRegistration;
 class ServiceWorkerRegistrationHandle;
 class ServiceWorkerVersion;
 struct ServiceWorkerObjectInfo;
-struct ServiceWorkerRegistrationInfo;
 struct ServiceWorkerRegistrationObjectInfo;
 struct ServiceWorkerVersionAttributes;
 

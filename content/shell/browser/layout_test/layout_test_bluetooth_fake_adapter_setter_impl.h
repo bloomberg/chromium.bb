@@ -9,7 +9,6 @@
 #include "content/shell/common/layout_test/layout_test_bluetooth_fake_adapter_setter.mojom.h"
 
 namespace content {
-class RenderProcessHost;
 
 class LayoutTestBluetoothFakeAdapterSetterImpl
     : public mojom::LayoutTestBluetoothFakeAdapterSetter {

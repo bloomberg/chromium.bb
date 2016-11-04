@@ -15,7 +15,6 @@
 
 namespace content {
 
-class DevToolsAgentHostImpl;
 class DevToolsHttpHandler;
 
 // This class is a singleton that manage global DevTools state for the whole

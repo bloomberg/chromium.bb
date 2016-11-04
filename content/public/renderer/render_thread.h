@@ -18,7 +18,6 @@
 class GURL;
 
 namespace base {
-class MessageLoop;
 class WaitableEvent;
 }
 

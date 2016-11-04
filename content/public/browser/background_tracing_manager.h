@@ -13,7 +13,6 @@
 
 namespace content {
 class BackgroundTracingConfig;
-struct BackgroundTracingUploadConfig;
 
 // BackgroundTracingManager is used on the browser process to trigger the
 // collection of trace data and upload the results. Only the browser UI thread

@@ -12,18 +12,15 @@
 #include "content/browser/loader/navigation_url_loader_impl.h"
 
 namespace net {
-class URLRequest;
 struct RedirectInfo;
 }
 
 namespace content {
 
-class FrameTreeNode;
 class NavigationResourceHandler;
 class NavigationData;
 class ResourceContext;
 class ResourceHandler;
-class ResourceRequestBody;
 class ServiceWorkerNavigationHandleCore;
 class StreamHandle;
 struct ResourceResponse;

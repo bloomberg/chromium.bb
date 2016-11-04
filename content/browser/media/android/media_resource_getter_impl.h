@@ -22,10 +22,6 @@ namespace storage {
 class FileSystemContext;
 }
 
-namespace net {
-class URLRequestContextGetter;
-}
-
 namespace content {
 
 class BrowserContext;

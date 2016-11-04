@@ -15,14 +15,6 @@
 #include "ui/android/view_android.h"
 #include "ui/gfx/geometry/rect.h"
 
-namespace cc {
-class Layer;
-}
-
-namespace gfx {
-class Rect;
-}
-
 namespace ui {
 class WindowAndroid;
 }

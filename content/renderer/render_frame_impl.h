@@ -70,19 +70,13 @@
 #include "content/renderer/media/android/renderer_media_player_manager.h"
 #endif
 
-class TransportDIB;
 struct FrameMsg_PostMessage_Params;
 struct FrameMsg_SerializeAsMHTML_Params;
 struct FrameMsg_TextTrackSettings_Params;
 
-namespace IPC {
-class SyncMessage;
-}
-
 namespace blink {
 class InterfaceRegistry;
 class WebContentDecryptionModule;
-class WebMouseEvent;
 class WebPresentationClient;
 class WebPushClient;
 class WebSecurityOrigin;
@@ -103,7 +97,6 @@ namespace media {
 class CdmFactory;
 class DecoderFactory;
 class MediaPermission;
-class MediaServiceProvider;
 class RemotingController;
 class RendererWebMediaPlayerDelegate;
 class SurfaceManager;
@@ -135,18 +128,15 @@ class MediaInterfaceProvider;
 class MediaStreamDispatcher;
 class MediaStreamRendererFactory;
 class MediaPermissionDispatcher;
-class MidiDispatcher;
 class NavigationState;
 class PageState;
 class PepperPluginInstanceImpl;
 class PresentationDispatcher;
 class PushMessagingDispatcher;
 class RenderAccessibilityImpl;
-class RendererCdmManager;
 class RendererMediaPlayerManager;
 class RendererMediaSessionManager;
 class RendererPpapiHost;
-class RendererSurfaceViewManager;
 class RenderFrameObserver;
 class RenderViewImpl;
 class RenderWidget;
@@ -154,7 +144,6 @@ class RenderWidgetFullscreenPepper;
 class ResourceRequestBodyImpl;
 class ScreenOrientationDispatcher;
 class UserMediaClientImpl;
-class WakeLockDispatcher;
 struct CommonNavigationParams;
 struct CustomContextMenuContext;
 struct FileChooserFileInfo;

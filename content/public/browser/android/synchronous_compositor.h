@@ -21,7 +21,6 @@ class SkCanvas;
 
 namespace cc {
 class CompositorFrame;
-class CompositorFrameAck;
 }
 
 namespace gfx {

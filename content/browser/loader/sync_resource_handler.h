@@ -23,8 +23,6 @@ class URLRequest;
 }
 
 namespace content {
-class ResourceContext;
-class ResourceMessageFilter;
 
 // Used to complete a synchronous resource request in response to resource load
 // events from the resource dispatcher host.

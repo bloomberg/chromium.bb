@@ -12,11 +12,6 @@
 
 namespace aura {
 class Window;
-class WindowEventDispatcher;
-
-namespace client {
-class ScreenPositionClient;
-}
 }  // namespace aura
 
 namespace content {

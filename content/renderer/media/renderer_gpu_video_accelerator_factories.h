@@ -22,10 +22,6 @@
 #include "media/renderers/gpu_video_accelerator_factories.h"
 #include "ui/gfx/geometry/size.h"
 
-namespace base {
-class WaitableEvent;
-}
-
 namespace gpu {
 class GpuChannelHost;
 class GpuMemoryBufferManager;

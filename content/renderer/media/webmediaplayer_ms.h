@@ -48,7 +48,6 @@ class MediaStreamAudioRenderer;
 class MediaStreamRendererFactory;
 class MediaStreamVideoRenderer;
 class WebMediaPlayerMSCompositor;
-class RenderFrameObserver;
 
 // WebMediaPlayerMS delegates calls from WebCore::MediaPlayerPrivate to
 // Chrome's media player when "src" is from media stream.

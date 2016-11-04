@@ -25,8 +25,6 @@ namespace gpu {
 class GpuChannelHost;
 }
 
-struct GpuStreamTextureMsg_MatrixChanged_Params;
-
 namespace content {
 
 // Class for handling all the IPC messages between the GPU process and

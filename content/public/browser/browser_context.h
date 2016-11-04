@@ -53,7 +53,6 @@ class BlobHandle;
 class BrowserPluginGuestManager;
 class DownloadManager;
 class DownloadManagerDelegate;
-class IndexedDBContext;
 class PermissionManager;
 class PushMessagingService;
 class ResourceContext;

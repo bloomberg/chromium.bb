@@ -27,7 +27,6 @@
 #include "media/capture/video_capture_types.h"
 
 namespace media {
-class AudioParameters;
 struct MediaLogEvent;
 }
 

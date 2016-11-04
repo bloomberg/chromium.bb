@@ -35,10 +35,6 @@ namespace gpu {
 struct SyncToken;
 }
 
-namespace ppapi {
-struct ViewData;
-}
-
 namespace content {
 
 class PepperPluginInstanceImpl;

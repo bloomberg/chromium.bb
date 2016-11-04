@@ -18,13 +18,7 @@
 #endif
 
 namespace gfx {
-class Rect;
 class Size;
-}
-
-namespace ui {
-class GestureEvent;
-class MouseEvent;
 }
 
 namespace content {

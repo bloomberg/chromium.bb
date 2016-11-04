@@ -33,7 +33,6 @@ class SpecialStoragePolicy;
 namespace content {
 
 class DOMStorageContextImpl;
-class LevelDBWrapperImpl;
 
 // This is owned by Storage Partition and encapsulates all its dom storage
 // state.

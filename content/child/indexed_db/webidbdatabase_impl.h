@@ -17,7 +17,6 @@
 namespace blink {
 class WebBlobInfo;
 class WebIDBCallbacks;
-class WebIDBDatabaseCallbacks;
 class WebIDBObserver;
 class WebString;
 }

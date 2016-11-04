@@ -18,13 +18,11 @@ class Window;
 
 namespace ui {
 class Layer;
-class LayerAnimator;
 }
 
 namespace content {
 
 class ShadowLayerDelegate;
-class WebContentsImpl;
 
 // Manages the animation of a window sliding on top or behind another one. The
 // main window, which is the one displayed before the animation starts, is not

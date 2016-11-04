@@ -18,8 +18,6 @@ class GURL;
 
 namespace content {
 
-class DownloadManager;
-
 // These objects live exclusively on the file thread and handle the writing
 // operations for one download. These objects live only for the duration that
 // the download is 'in progress': once the download has been completed or

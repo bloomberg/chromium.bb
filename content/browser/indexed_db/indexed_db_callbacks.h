@@ -28,7 +28,6 @@ class IndexedDBBlobInfo;
 class IndexedDBConnection;
 class IndexedDBCursor;
 class IndexedDBDatabase;
-class IndexedDBDatabaseCallbacks;
 struct IndexedDBDataLossInfo;
 struct IndexedDBDatabaseMetadata;
 struct IndexedDBReturnValue;

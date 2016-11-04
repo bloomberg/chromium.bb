@@ -31,7 +31,6 @@ class Size;
 }
 
 namespace media {
-class SkCanvasVideoRenderer;
 class VideoRendererAlgorithm;
 }
 

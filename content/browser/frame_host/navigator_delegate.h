@@ -17,7 +17,6 @@
 
 class GURL;
 struct FrameHostMsg_DidCommitProvisionalLoad_Params;
-struct FrameHostMsg_DidFailProvisionalLoadWithError_Params;
 
 namespace content {
 

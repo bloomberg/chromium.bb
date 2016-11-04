@@ -20,7 +20,6 @@
 #include "content/public/browser/tracing_controller.h"
 
 namespace base {
-class RefCountedString;
 class Timer;
 }
 

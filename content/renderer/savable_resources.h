@@ -18,7 +18,6 @@ namespace blink {
 class WebElement;
 class WebFrame;
 class WebString;
-class WebView;
 }
 
 // A collection of operations that access the underlying WebKit DOM directly.

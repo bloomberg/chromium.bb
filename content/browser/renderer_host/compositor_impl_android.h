@@ -29,7 +29,6 @@
 #include "ui/android/resources/ui_resource_provider.h"
 #include "ui/android/window_android_compositor.h"
 
-class SkBitmap;
 struct ANativeWindow;
 
 namespace cc {
@@ -37,10 +36,7 @@ class Display;
 class Layer;
 class LayerTreeHost;
 class OutputSurface;
-class SurfaceIdAllocator;
-class SurfaceManager;
 class VulkanContextProvider;
-class VulkanInProcessContextProvider;
 }
 
 namespace content {

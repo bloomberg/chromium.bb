@@ -21,15 +21,12 @@ class SurfaceManager;
 }
 
 namespace gfx {
-class Size;
 enum class SwapResult;
 }
 
 namespace ui {
 class Compositor;
 class ContextFactory;
-class ContextFactoryObserver;
-class Texture;
 }
 
 namespace display_compositor {

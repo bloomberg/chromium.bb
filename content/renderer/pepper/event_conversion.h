@@ -19,7 +19,6 @@ struct InputEventData;
 }
 
 namespace blink {
-class WebGamepads;
 class WebInputEvent;
 }
 

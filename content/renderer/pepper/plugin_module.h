@@ -34,7 +34,6 @@ class FilePath;
 
 namespace ppapi {
 class CallbackTracker;
-class WebKitForwarding;
 }  // namespace ppapi
 
 namespace IPC {

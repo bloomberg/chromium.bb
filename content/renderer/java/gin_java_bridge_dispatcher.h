@@ -16,10 +16,6 @@
 #include "content/common/android/gin_java_bridge_errors.h"
 #include "content/public/renderer/render_frame_observer.h"
 
-namespace blink {
-class WebFrame;
-}
-
 namespace content {
 
 class GinJavaBridgeObject;

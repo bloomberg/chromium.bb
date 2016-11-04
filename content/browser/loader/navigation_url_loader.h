@@ -17,7 +17,6 @@ class NavigationUIData;
 class NavigationURLLoaderDelegate;
 class NavigationURLLoaderFactory;
 class ServiceWorkerNavigationHandle;
-struct CommonNavigationParams;
 struct NavigationRequestInfo;
 
 // PlzNavigate: The navigation logic's UI thread entry point into the resource

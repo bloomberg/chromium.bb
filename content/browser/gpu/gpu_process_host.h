@@ -32,8 +32,6 @@
 #include "ui/gfx/gpu_memory_buffer.h"
 #include "url/gurl.h"
 
-struct GPUCreateCommandBufferConfig;
-
 namespace base {
 class Thread;
 }
@@ -55,7 +53,6 @@ namespace content {
 class BrowserChildProcessHostImpl;
 class GpuMainThread;
 class InProcessChildThreadParams;
-class RenderWidgetHostViewFrameSubscriber;
 class ShaderDiskCache;
 
 typedef base::Thread* (*GpuMainThreadFactoryFunction)(

@@ -41,7 +41,6 @@ class WebMIDIAccessorClient;
 class WebMediaStreamCenter;
 class WebMediaStreamCenterClient;
 class WebPlugin;
-class WebPluginContainer;
 class WebPrescientNetworking;
 class WebRTCPeerConnectionHandler;
 class WebRTCPeerConnectionHandlerClient;
@@ -67,9 +66,7 @@ class ICCProfile;
 }
 
 namespace media {
-class GpuVideoAcceleratorFactories;
 class KeySystemProperties;
-class MediaLog;
 class RendererFactory;
 }
 
@@ -79,12 +76,9 @@ class InterfaceRegistry;
 
 namespace content {
 class BrowserPluginDelegate;
-class DocumentState;
 class MediaStreamRendererFactory;
 class RenderFrame;
 class RenderView;
-class SynchronousCompositor;
-struct WebPluginInfo;
 
 // Embedder API for participating in renderer logic.
 class CONTENT_EXPORT ContentRendererClient {

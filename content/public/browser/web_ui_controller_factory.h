@@ -13,7 +13,6 @@ class GURL;
 namespace content {
 
 class BrowserContext;
-class WebContents;
 class WebUIController;
 
 // Interface for an object which controls which URLs are considered WebUI URLs

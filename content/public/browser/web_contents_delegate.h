@@ -38,9 +38,7 @@ class ListValue;
 }
 
 namespace content {
-class BrowserContext;
 class ColorChooser;
-class DownloadItem;
 class JavaScriptDialogManager;
 class PageState;
 class RenderFrameHost;
@@ -54,7 +52,6 @@ struct FileChooserParams;
 struct NativeWebKeyboardEvent;
 struct Referrer;
 struct SecurityStyleExplanations;
-struct SSLStatus;
 }  // namespace content
 
 namespace gfx {
@@ -65,10 +62,6 @@ class Size;
 
 namespace net {
 class X509Certificate;
-}
-
-namespace url {
-class Origin;
 }
 
 namespace blink {

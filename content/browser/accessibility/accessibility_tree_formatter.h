@@ -19,8 +19,6 @@
 
 namespace content {
 
-class WebContents;
-
 // A utility class for formatting platform-specific accessibility information,
 // for use in testing, debugging, and developer tools.
 // This is extended by a subclass for each platform where accessibility is

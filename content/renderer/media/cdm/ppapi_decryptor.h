@@ -28,7 +28,6 @@ class SingleThreadTaskRunner;
 
 namespace content {
 class ContentDecryptorDelegate;
-class PepperPluginInstanceImpl;
 
 // PpapiDecryptor implements media::MediaKeys and media::Decryptor and forwards
 // all calls to the PluginInstance.

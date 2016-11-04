@@ -37,7 +37,6 @@ struct ServiceWorkerMsg_MessageToDocument_Params;
 namespace content {
 
 class ServiceWorkerHandleReference;
-class ServiceWorkerMessageFilter;
 class ServiceWorkerProviderContext;
 class ServiceWorkerRegistrationHandleReference;
 class ThreadSafeSender;

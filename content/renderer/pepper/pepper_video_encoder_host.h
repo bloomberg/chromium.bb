@@ -25,11 +25,6 @@
 
 namespace gpu {
 class CommandBufferProxyImpl;
-class GpuChannelHost;
-}
-
-namespace media {
-class GpuVideoAcceleratorFactories;
 }
 
 namespace content {

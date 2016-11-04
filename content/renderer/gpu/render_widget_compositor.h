@@ -29,7 +29,6 @@ class CommandLine;
 }
 
 namespace cc {
-class CopyOutputRequest;
 class InputHandler;
 class Layer;
 class LayerTreeHost;

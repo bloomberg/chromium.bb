@@ -33,7 +33,6 @@ class WaitableEvent;
 };
 
 namespace media {
-class DecoderBuffer;
 class GpuVideoAcceleratorFactories;
 }
 

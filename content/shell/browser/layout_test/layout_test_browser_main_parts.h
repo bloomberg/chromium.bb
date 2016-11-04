@@ -11,20 +11,6 @@
 #include "build/build_config.h"
 #include "content/shell/browser/shell_browser_main_parts.h"
 
-#if defined(OS_ANDROID)
-namespace breakpad {
-class CrashDumpManager;
-}
-#endif
-
-namespace base {
-class Thread;
-}
-
-namespace net {
-class NetLog;
-}
-
 namespace content {
 
 class ShellPluginServiceFilter;

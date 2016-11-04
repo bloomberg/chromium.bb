@@ -11,9 +11,6 @@
 
 namespace content {
 
-class DevToolsAgentHost;
-class DevToolsExternalAgentProxyDelegate;
-
 // Describes interface for communication with an external DevTools agent.
 class DevToolsExternalAgentProxy {
  public:

@@ -22,7 +22,6 @@
 #include "v8/include/v8.h"
 
 class SkBitmap;
-class SkCanvas;
 
 namespace base {
 class DictionaryValue;
@@ -32,12 +31,10 @@ namespace blink {
 class WebDeviceMotionData;
 class WebDeviceOrientationData;
 class WebView;
-struct WebRect;
 }
 
 namespace test_runner {
 class AppBannerService;
-class WebViewTestProxyBase;
 }
 
 namespace content {

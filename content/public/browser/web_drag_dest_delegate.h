@@ -7,15 +7,12 @@
 
 #include "base/strings/string16.h"
 
-class GURL;
-
 namespace ui {
 class OSExchangeData;
 }
 
 namespace content {
 class WebContents;
-struct DropData;
 
 // An optional delegate that listens for drags of bookmark data.
 class WebDragDestDelegate {

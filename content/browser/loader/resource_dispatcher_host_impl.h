@@ -48,10 +48,6 @@ namespace base {
 class FilePath;
 }
 
-namespace net {
-class URLRequestJobFactory;
-}
-
 namespace storage {
 class ShareableFileReference;
 }
@@ -70,7 +66,6 @@ class ResourceMessageDelegate;
 class ResourceMessageFilter;
 class ResourceRequestInfoImpl;
 class ServiceWorkerNavigationHandleCore;
-struct CommonNavigationParams;
 struct NavigationRequestInfo;
 struct Referrer;
 struct ResourceRequest;

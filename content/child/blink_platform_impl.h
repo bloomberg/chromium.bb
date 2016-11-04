@@ -33,7 +33,6 @@
 #endif
 
 namespace base {
-class MessageLoop;
 class WaitableEvent;
 }
 
@@ -45,11 +44,9 @@ class WebThreadBase;
 
 namespace content {
 class BackgroundSyncProvider;
-class FlingCurveConfiguration;
 class NotificationDispatcher;
 class PushDispatcher;
 class ThreadSafeSender;
-class TraceLogObserverAdapter;
 class WebCryptoImpl;
 
 class CONTENT_EXPORT BlinkPlatformImpl

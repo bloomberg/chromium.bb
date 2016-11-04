@@ -23,8 +23,6 @@ class BluetoothUUID;
 
 namespace content {
 
-struct BluetoothScanFilter;
-
 // Keeps track of which origins are allowed to access which devices and
 // their services.
 //

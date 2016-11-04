@@ -21,7 +21,6 @@ class GURL;
 namespace blink {
 class WebAssociatedURLLoader;
 class WebFrame;
-class WebURLLoader;
 enum class WebCachePolicy;
 }
 

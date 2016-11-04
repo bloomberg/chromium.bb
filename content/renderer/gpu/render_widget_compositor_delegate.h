@@ -10,12 +10,7 @@
 
 #include "content/common/content_export.h"
 
-namespace blink {
-class WebWidget;
-}
-
 namespace cc {
-class BeginFrameSource;
 class CopyOutputRequest;
 class CompositorFrameSink;
 class SwapPromise;

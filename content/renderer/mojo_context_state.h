@@ -20,7 +20,6 @@ class WebURLResponse;
 }
 
 namespace gin {
-class ContextHolder;
 struct PendingModule;
 }
 

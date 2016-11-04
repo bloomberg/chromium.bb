@@ -54,7 +54,6 @@ class HttpResponseInfo;
 
 namespace content {
 
-class EmbeddedWorkerRegistry;
 class ServiceWorkerContextCore;
 class ServiceWorkerProviderHost;
 class ServiceWorkerRegistration;

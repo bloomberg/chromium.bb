@@ -48,7 +48,6 @@ class SingleThreadTaskRunner;
 
 namespace content {
 class BrowserContext;
-class PluginDirWatcherDelegate;
 class PluginServiceFilter;
 class ResourceContext;
 struct PepperPluginInfo;

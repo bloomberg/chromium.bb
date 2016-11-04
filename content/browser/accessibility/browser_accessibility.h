@@ -48,11 +48,6 @@
 
 namespace content {
 class BrowserAccessibilityManager;
-#if defined(OS_WIN)
-class BrowserAccessibilityWin;
-#elif defined(OS_LINUX) && !defined(OS_CHROMEOS) && defined(USE_X11)
-class BrowserAccessibilityAuraLinux;
-#endif
 
 ////////////////////////////////////////////////////////////////////////////////
 //

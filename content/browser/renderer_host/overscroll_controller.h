@@ -9,10 +9,6 @@
 #include "base/macros.h"
 #include "third_party/WebKit/public/web/WebInputEvent.h"
 
-namespace ui {
-class LatencyInfo;
-}
-
 namespace content {
 
 class RenderWidgetHostViewAuraOverscrollTest;

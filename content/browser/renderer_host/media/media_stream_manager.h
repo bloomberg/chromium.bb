@@ -57,10 +57,7 @@ class Origin;
 namespace content {
 
 class AudioInputDeviceManager;
-class AudioOutputDeviceEnumerator;
-class BrowserContext;
 class FakeMediaStreamUIProxy;
-class MediaStreamDeviceSettings;
 class MediaStreamRequester;
 class MediaStreamUIProxy;
 class VideoCaptureManager;

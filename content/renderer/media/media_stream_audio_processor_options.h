@@ -26,8 +26,6 @@ class TypingDetection;
 
 namespace content {
 
-class RTCMediaConstraints;
-
 using webrtc::AudioProcessing;
 
 // A helper class to parse audio constraints from a blink::WebMediaConstraints

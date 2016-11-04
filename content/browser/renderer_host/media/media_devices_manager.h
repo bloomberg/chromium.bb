@@ -16,10 +16,6 @@
 #include "content/common/media/media_devices.h"
 #include "media/capture/video/video_capture_device_descriptor.h"
 
-namespace base {
-class SingleThreadTaskRunner;
-}
-
 namespace media {
 class AudioManager;
 }

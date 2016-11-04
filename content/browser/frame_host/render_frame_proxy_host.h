@@ -23,7 +23,6 @@ namespace content {
 class CrossProcessFrameConnector;
 class FrameTreeNode;
 class RenderProcessHost;
-class RenderFrameHostImpl;
 class RenderViewHostImpl;
 class RenderWidgetHostView;
 

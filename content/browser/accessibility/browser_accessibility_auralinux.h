@@ -15,7 +15,6 @@
 namespace content {
 
 class BrowserAccessibilityAuraLinux;
-class BrowserAccessibilityManagerAuraLinux;
 
 G_BEGIN_DECLS
 

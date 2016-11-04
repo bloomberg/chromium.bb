@@ -19,17 +19,11 @@
 #include "content/common/content_export.h"
 #include "ui/gfx/geometry/size.h"
 
-namespace base {
-class SharedMemory;
-}
-
 namespace cc {
 struct SurfaceSequence;
 
 class CompositorFrame;
 class Layer;
-class SolidColorLayer;
-class SurfaceLayer;
 }
 
 namespace blink {
@@ -39,17 +33,12 @@ class WebLayer;
 }
 
 namespace gfx {
-class Rect;
 class Size;
 }
-
-struct FrameHostMsg_CompositorFrameSwappedACK_Params;
-struct FrameHostMsg_ReclaimCompositorResources_Params;
 
 namespace content {
 
 class BrowserPlugin;
-class BrowserPluginManager;
 class RenderFrameProxy;
 class ThreadSafeSender;
 

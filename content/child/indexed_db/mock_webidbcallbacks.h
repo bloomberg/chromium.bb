@@ -14,10 +14,6 @@
 #include "third_party/WebKit/public/platform/modules/indexeddb/WebIDBValue.h"
 #include "third_party/WebKit/public/web/WebHeap.h"
 
-namespace blink {
-class WebData;
-}  // namespace blink
-
 namespace content {
 
 class MockWebIDBCallbacks : public blink::WebIDBCallbacks {

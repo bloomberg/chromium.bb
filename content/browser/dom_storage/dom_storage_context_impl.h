@@ -28,7 +28,6 @@
 namespace base {
 class FilePath;
 class NullableString16;
-class Time;
 }
 
 namespace storage {

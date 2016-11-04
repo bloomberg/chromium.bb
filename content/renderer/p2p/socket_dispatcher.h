@@ -51,7 +51,6 @@ namespace content {
 class NetworkListObserver;
 class P2PAsyncAddressResolver;
 class P2PSocketClientImpl;
-class RenderViewImpl;
 
 class CONTENT_EXPORT P2PSocketDispatcher : public IPC::MessageFilter,
                                            public NetworkListManager {

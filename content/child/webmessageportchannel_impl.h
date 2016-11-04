@@ -21,7 +21,6 @@ class SingleThreadTaskRunner;
 }
 
 namespace content {
-class ChildThread;
 
 // This is thread safe.
 class WebMessagePortChannelImpl

@@ -22,8 +22,6 @@ class SyncMessageFilter;
 }
 
 namespace content {
-class IndexedDBCallbacksImpl;
-class IndexedDBDatabaseCallbacksImpl;
 class ThreadSafeSender;
 
 class WebIDBFactoryImpl : public blink::WebIDBFactory {

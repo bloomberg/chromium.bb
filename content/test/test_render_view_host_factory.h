@@ -16,7 +16,6 @@ namespace content {
 class SiteInstance;
 class RenderViewHostDelegate;
 class RenderProcessHostFactory;
-class SessionStorageNamespace;
 
 // Manages creation of the RenderViewHosts using our special subclass. This
 // automatically registers itself when it goes in scope, and unregisters itself

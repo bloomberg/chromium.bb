@@ -11,9 +11,6 @@
 #include "base/memory/ref_counted.h"
 #include "content/child/worker_thread_message_filter.h"
 
-struct IndexedDBDatabaseMetadata;
-struct IndexedDBMsg_CallbacksUpgradeNeeded_Params;
-
 namespace content {
 
 class IndexedDBMessageFilter : public WorkerThreadMessageFilter {

@@ -13,14 +13,8 @@
 #include "ui/gfx/geometry/size.h"
 #include "ui/gfx/native_widget_types.h"
 
-class SkBitmap;
-
 namespace cc {
 class Layer;
-}
-
-namespace gfx {
-class JavaBitmap;
 }
 
 namespace ui {

@@ -17,10 +17,8 @@
 
 namespace content {
 
-class EmbeddedWorkerRegistry;
 class ServiceWorkerProviderHost;
 class ServiceWorkerRegistration;
-class ServiceWorkerStorage;
 
 // This class manages all in-flight registration or unregistration jobs.
 class CONTENT_EXPORT ServiceWorkerJobCoordinator {

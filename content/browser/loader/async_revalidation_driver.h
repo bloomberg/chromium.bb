@@ -19,10 +19,6 @@
 #include "net/base/io_buffer.h"
 #include "net/url_request/url_request.h"
 
-namespace net {
-class HttpCache;
-}
-
 namespace content {
 
 // This class is responsible for driving the URLRequest for an async

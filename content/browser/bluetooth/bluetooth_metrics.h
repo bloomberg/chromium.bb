@@ -19,7 +19,6 @@ class BluetoothUUID;
 }
 
 namespace content {
-struct BluetoothScanFilter;
 
 // General Metrics
 

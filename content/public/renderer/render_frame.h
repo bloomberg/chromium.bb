@@ -18,14 +18,11 @@
 #include "third_party/WebKit/public/platform/WebPageVisibilityState.h"
 #include "third_party/WebKit/public/web/WebNavigationPolicy.h"
 
-class GURL;
-
 namespace blink {
 class WebFrame;
 class WebLocalFrame;
 class WebPlugin;
 class WebURLRequest;
-class WebURLResponse;
 struct WebPluginParams;
 }
 

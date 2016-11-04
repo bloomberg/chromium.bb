@@ -13,8 +13,6 @@
 
 namespace content {
 
-class InputRouterClient;
-
 // The InputRouter allows the embedder to customize how input events are
 // sent to the renderer, and how responses are dispatched to the browser.
 // While the router should respect the relative order in which events are

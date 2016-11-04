@@ -50,30 +50,18 @@ class ScopedTooltipDisabler;
 }
 }
 
-namespace cc {
-class CopyOutputRequest;
-class CopyOutputResult;
-}
-
 namespace gfx {
-class Canvas;
 class Display;
 class Point;
 class Rect;
 }
 
-namespace gpu {
-struct Mailbox;
-}
-
 namespace ui {
-class CompositorLock;
 class InputMethod;
 class LocatedEvent;
 #if defined(OS_WIN)
 class OnScreenKeyboardObserver;
 #endif
-class Texture;
 class TouchSelectionController;
 }
 
@@ -84,7 +72,6 @@ class LegacyRenderWidgetHostHWND;
 
 class OverscrollController;
 class RenderFrameHostImpl;
-class RenderViewHostDelegateView;
 class RenderWidgetHostImpl;
 class RenderWidgetHostView;
 class TouchSelectionControllerClientAura;

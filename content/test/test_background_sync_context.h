@@ -12,8 +12,6 @@
 
 namespace content {
 
-class TestBackgroundSyncManager;
-
 // A BackgroundSyncContext for use in unit tests, primarily to create a test
 // BackgroundSyncManager.
 class TestBackgroundSyncContext : public BackgroundSyncContext {

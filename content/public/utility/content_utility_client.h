@@ -12,8 +12,6 @@
 #include "content/public/common/content_client.h"
 #include "content/public/common/service_info.h"
 
-class GURL;
-
 namespace service_manager {
 class InterfaceRegistry;
 class Service;

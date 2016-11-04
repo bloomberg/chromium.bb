@@ -23,7 +23,6 @@
 
 namespace content {
 class GestureEventQueueTest;
-class InputRouter;
 class MockRenderWidgetHost;
 
 // Interface with which the GestureEventQueue can forward gesture events, and

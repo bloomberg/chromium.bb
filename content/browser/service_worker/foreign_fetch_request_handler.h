@@ -32,11 +32,8 @@ namespace content {
 
 class ResourceContext;
 class ResourceRequestBodyImpl;
-class ServiceWorkerContextCore;
 class ServiceWorkerContextWrapper;
-class ServiceWorkerProviderHost;
 class ServiceWorkerRegistration;
-struct ResourceResponseInfo;
 
 // Class for routing network requests to ServiceWorkers for foreign fetch
 // events. Created one per URLRequest and attached to each request.

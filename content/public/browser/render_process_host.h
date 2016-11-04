@@ -29,7 +29,6 @@ class TimeDelta;
 
 namespace media {
 class AudioOutputController;
-class MediaKeys;
 }
 
 namespace service_manager {
@@ -41,7 +40,6 @@ namespace content {
 class BrowserContext;
 class BrowserMessageFilter;
 class RenderProcessHostObserver;
-class RenderWidgetHost;
 class StoragePartition;
 struct GlobalRequestID;
 

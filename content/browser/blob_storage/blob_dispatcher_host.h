@@ -22,13 +22,8 @@
 
 class GURL;
 
-namespace IPC {
-class Sender;
-}
-
 namespace storage {
 class DataElement;
-class BlobDataBuilder;
 struct BlobItemBytesRequest;
 struct BlobItemBytesResponse;
 class BlobStorageContext;

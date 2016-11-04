@@ -41,7 +41,6 @@ class GrContextForGLES2Interface;
 }
 
 namespace content {
-class WebGraphicsContext3DCommandBufferImpl;
 
 // Implementation of cc::ContextProvider that provides a GL implementation over
 // command buffer to the GPU process.

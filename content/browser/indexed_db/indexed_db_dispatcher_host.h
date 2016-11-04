@@ -39,9 +39,6 @@ struct IndexedDBHostMsg_DatabaseObserve_Params;
 struct IndexedDBHostMsg_DatabaseOpenCursor_Params;
 struct IndexedDBHostMsg_DatabasePut_Params;
 struct IndexedDBHostMsg_DatabaseSetIndexKeys_Params;
-struct IndexedDBHostMsg_FactoryDeleteDatabase_Params;
-struct IndexedDBHostMsg_FactoryGetDatabaseNames_Params;
-struct IndexedDBHostMsg_FactoryOpen_Params;
 struct IndexedDBMsg_Observation;
 struct IndexedDBMsg_ObserverChanges;
 
@@ -57,8 +54,6 @@ class IndexedDBContextImpl;
 class IndexedDBCursor;
 class IndexedDBDatabaseCallbacks;
 class IndexedDBKey;
-class IndexedDBKeyPath;
-class IndexedDBKeyRange;
 class IndexedDBObservation;
 class IndexedDBObserverChanges;
 struct IndexedDBDatabaseMetadata;

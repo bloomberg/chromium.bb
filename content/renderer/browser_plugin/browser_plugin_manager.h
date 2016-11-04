@@ -11,10 +11,6 @@
 #include "content/public/renderer/render_thread_observer.h"
 #include "ipc/ipc_sender.h"
 
-namespace blink {
-class WebFrame;
-}
-
 namespace content {
 
 class BrowserPlugin;

@@ -22,10 +22,6 @@
 #include "ipc/ipc_listener.h"
 #include "ui/gfx/gpu_memory_buffer.h"
 
-namespace base {
-class FilePath;
-}
-
 namespace IPC {
 class MessageFilter;
 }

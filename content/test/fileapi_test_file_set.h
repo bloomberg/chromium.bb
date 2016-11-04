@@ -14,10 +14,6 @@
 
 // Common test data structures and test cases.
 
-namespace storage {
-class FileSystemFileUtil;
-}
-
 namespace content {
 
 struct FileSystemTestCaseRecord {

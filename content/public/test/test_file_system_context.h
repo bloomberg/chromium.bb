@@ -11,7 +11,6 @@
 
 namespace storage {
 class QuotaManagerProxy;
-class SpecialStoragePolicy;
 }
 
 namespace storage {

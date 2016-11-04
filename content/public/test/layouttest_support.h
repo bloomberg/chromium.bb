@@ -21,18 +21,12 @@ namespace blink {
 class WebDeviceMotionData;
 class WebDeviceOrientationData;
 class WebGamepad;
-class WebGamepads;
 class WebInputEvent;
-class WebLayer;
 class WebLocalFrame;
 struct WebSize;
 class WebView;
 class WebWidget;
 class WebURLResponse;
-}
-
-namespace device {
-class BluetoothAdapter;
 }
 
 namespace gfx {

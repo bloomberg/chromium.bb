@@ -20,10 +20,8 @@
 namespace content {
 
 struct HttpResponseInfoIOBuffer;
-class ServiceWorkerCacheWriterCore;
 class ServiceWorkerResponseReader;
 class ServiceWorkerResponseWriter;
-class ServiceWorkerStorage;
 
 // This class is responsible for possibly updating the ServiceWorker script
 // cache for an installed ServiceWorker main script. If there is no existing

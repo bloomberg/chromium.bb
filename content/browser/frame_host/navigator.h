@@ -13,7 +13,6 @@
 #include "ui/base/window_open_disposition.h"
 
 class GURL;
-struct FrameHostMsg_BeginNavigation_Params;
 struct FrameHostMsg_DidCommitProvisionalLoad_Params;
 struct FrameHostMsg_DidFailProvisionalLoadWithError_Params;
 
@@ -25,16 +24,12 @@ namespace content {
 
 class FrameNavigationEntry;
 class FrameTreeNode;
-class NavigationControllerImpl;
-class NavigationEntryImpl;
 class NavigationHandleImpl;
 class NavigationRequest;
 class RenderFrameHostImpl;
 class ResourceRequestBodyImpl;
-class StreamHandle;
 struct BeginNavigationParams;
 struct CommonNavigationParams;
-struct ResourceResponse;
 
 // Implementations of this interface are responsible for performing navigations
 // in a node of the FrameTree. Its lifetime is bound to all FrameTreeNode

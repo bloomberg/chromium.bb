@@ -34,14 +34,12 @@ class Origin;
 
 namespace content {
 
-class IndexedDBBlobInfo;
 class IndexedDBConnection;
 class IndexedDBDatabaseCallbacks;
 class IndexedDBFactory;
 class IndexedDBKey;
 class IndexedDBKeyPath;
 class IndexedDBKeyRange;
-class IndexedDBObservation;
 class IndexedDBObserverChanges;
 class IndexedDBTransaction;
 struct IndexedDBValue;

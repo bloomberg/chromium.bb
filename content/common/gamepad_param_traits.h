@@ -18,8 +18,6 @@ namespace blink { class WebGamepad; }
 
 namespace IPC {
 
-class Message;
-
 template <>
 struct ParamTraits<blink::WebGamepad> {
   typedef blink::WebGamepad param_type;

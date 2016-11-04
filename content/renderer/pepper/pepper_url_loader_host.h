@@ -22,7 +22,6 @@
 namespace blink {
 class WebAssociatedURLLoader;
 class WebLocalFrame;
-class WebURLLoader;
 }  // namespace blink
 
 namespace content {

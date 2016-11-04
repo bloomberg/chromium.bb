@@ -22,7 +22,6 @@
 
 namespace base {
 class RefCountedString;
-class RefCountedMemory;
 }
 
 namespace content {

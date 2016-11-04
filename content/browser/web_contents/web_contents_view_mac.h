@@ -21,7 +21,6 @@
 #include "ui/gfx/geometry/size.h"
 
 @class FocusTracker;
-class SkBitmap;
 @class WebDragDest;
 @class WebDragSource;
 

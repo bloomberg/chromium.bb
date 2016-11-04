@@ -42,7 +42,6 @@
 
 class SkBitmap;
 
-struct AccessibilityHostMsg_EventParams;
 struct ViewHostMsg_SelectionBounds_Params;
 
 namespace media {

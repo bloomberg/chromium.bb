@@ -23,9 +23,7 @@ class WebServiceWorkerRegistrationProxy;
 namespace content {
 
 class ServiceWorkerRegistrationHandleReference;
-class ThreadSafeSender;
 class WebServiceWorkerImpl;
-struct ServiceWorkerObjectInfo;
 
 // Each instance corresponds to one ServiceWorkerRegistration object in JS
 // context, and is held by ServiceWorkerRegistration object in Blink's C++ layer

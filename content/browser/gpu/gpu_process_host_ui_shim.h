@@ -27,14 +27,6 @@
 #include "ipc/ipc_sender.h"
 #include "ipc/message_router.h"
 
-namespace ui {
-class LatencyInfo;
-}
-
-namespace gfx {
-class Size;
-}
-
 namespace IPC {
 class Message;
 }

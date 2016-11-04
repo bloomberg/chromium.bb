@@ -25,14 +25,6 @@ class Message;
 class Sender;
 }
 
-namespace blink {
-class WebInputEvent;
-}
-
-namespace cc {
-struct BeginFrameArgs;
-}
-
 namespace ui {
 class WindowAndroid;
 struct DidOverscrollParams;

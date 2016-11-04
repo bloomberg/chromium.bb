@@ -15,10 +15,6 @@
 #include "content/public/common/sandbox_type.h"
 #include "content/public/common/zygote_handle.h"
 
-namespace base {
-class FilePath;
-}
-
 namespace sandbox {
 class TargetPolicy;
 }

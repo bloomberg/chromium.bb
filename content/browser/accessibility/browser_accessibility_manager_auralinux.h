@@ -8,8 +8,6 @@
 #include "base/macros.h"
 #include "content/browser/accessibility/browser_accessibility_manager.h"
 
-struct ViewHostMsg_AccessibilityNotification_Params;
-
 namespace content {
 class BrowserAccessibilityAuraLinux;
 

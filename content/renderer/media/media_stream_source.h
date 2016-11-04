@@ -14,10 +14,6 @@
 #include "content/common/media/media_stream_options.h"
 #include "third_party/WebKit/public/platform/WebMediaStreamSource.h"
 
-namespace blink {
-class WebMediaStreamTrack;
-}  // namespace blink
-
 namespace content {
 
 class CONTENT_EXPORT MediaStreamSource

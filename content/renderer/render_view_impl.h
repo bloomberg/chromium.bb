@@ -73,36 +73,20 @@
 #pragma warning(disable: 4250)
 #endif
 
-class SkBitmap;
-struct PP_NetAddress_Private;
-struct ViewMsg_StopFinding_Params;
-
-namespace base {
-class CommandLine;
-}
-
 namespace blink {
 class WebApplicationCacheHost;
-class WebApplicationCacheHostClient;
-class WebDOMMessageEvent;
 class WebDataSource;
 class WebDateTimeChooserCompletion;
 class WebDragData;
 class WebGestureEvent;
 class WebIconURL;
 class WebImage;
-class WebPeerConnection00Handler;
-class WebPeerConnection00HandlerClient;
 class WebMouseEvent;
-class WebPeerConnectionHandler;
-class WebPeerConnectionHandlerClient;
 class WebSpeechRecognizer;
 class WebStorageNamespace;
-class WebTouchEvent;
 class WebURLRequest;
 struct WebActiveWheelFlingParameters;
 struct WebDateTimeChooserParams;
-struct WebFileChooserParams;
 struct WebMediaPlayerAction;
 struct WebPluginAction;
 struct WebPoint;
@@ -116,28 +100,18 @@ class WebHitTestResult;
 namespace content {
 
 class HistoryController;
-class HistoryEntry;
-class PageState;
 class RenderViewImplTest;
 class RenderViewObserver;
 class RenderViewTest;
 class RendererDateTimePicker;
-class RendererWebColorChooserImpl;
 class SpeechRecognitionDispatcher;
-class WebPluginDelegateProxy;
 struct FaviconURL;
 struct FileChooserParams;
-struct FileChooserFileInfo;
-struct RenderViewImplParams;
 struct ResizeParams;
 
 namespace mojom {
 class CreateViewParams;
 }
-
-#if defined(OS_ANDROID)
-class WebMediaPlayerProxyAndroid;
-#endif
 
 //
 // RenderView is an object that manages a WebView object, and provides a

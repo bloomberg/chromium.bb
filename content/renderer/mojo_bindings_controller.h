@@ -12,10 +12,6 @@
 #include "content/public/renderer/render_frame_observer_tracker.h"
 #include "mojo/public/cpp/system/core.h"
 
-namespace gin {
-class PerContextData;
-}
-
 namespace content {
 
 class MojoContextState;

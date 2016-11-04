@@ -19,8 +19,6 @@ class GpuMemoryBufferManager;
 
 namespace content {
 
-class InputHandlerManager;
-
 // Use on main thread.
 class CONTENT_EXPORT RenderWidgetMusConnection
     : public RenderWidgetInputHandlerDelegate {

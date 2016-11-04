@@ -29,7 +29,6 @@ class GamepadProvider;
 namespace content {
 
 class GamepadServiceTestConstructor;
-class RenderProcessHost;
 
 // Owns the GamepadProvider (the background polling thread) and keeps track of
 // the number of consumers currently using the data (and pausing the provider

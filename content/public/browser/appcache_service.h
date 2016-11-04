@@ -16,8 +16,6 @@
 
 namespace content {
 
-class AppCacheStorage;
-
 // Refcounted container to avoid copying the collection in callbacks.
 struct CONTENT_EXPORT AppCacheInfoCollection
     : public base::RefCountedThreadSafe<AppCacheInfoCollection> {

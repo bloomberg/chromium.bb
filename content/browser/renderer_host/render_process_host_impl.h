@@ -48,14 +48,6 @@ class MessageLoop;
 class SharedPersistentMemoryAllocator;
 }
 
-namespace gfx {
-class Size;
-}
-
-namespace IPC {
-class ChannelMojoHost;
-}
-
 namespace content {
 class AudioInputRendererHost;
 class AudioRendererHost;
@@ -72,8 +64,6 @@ class RendererMainThread;
 class RenderFrameMessageFilter;
 class RenderWidgetHelper;
 class RenderWidgetHost;
-class RenderWidgetHostImpl;
-class RenderWidgetHostViewFrameSubscriber;
 class ResourceMessageFilter;
 class StoragePartition;
 class StoragePartitionImpl;

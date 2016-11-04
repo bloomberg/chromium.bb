@@ -25,7 +25,6 @@
 namespace content {
 
 class DownloadItem;
-class ResourceDispatcherHost;
 class WebContents;
 
 // Pass an instance of DownloadUrlParameters to DownloadManager::DownloadUrl()

@@ -19,6 +19,7 @@ class CompositorOverlayCandidateValidator;
 
 namespace gpu {
 class CommandBufferProxyImpl;
+struct GpuProcessHostedCALayerTreeParamsMac;
 }
 
 namespace ui {
@@ -26,6 +27,7 @@ class CompositorVSyncManager;
 }
 
 namespace content {
+class ContextProviderCommandBuffer;
 class ReflectorTexture;
 
 // Adapts a WebGraphicsContext3DCommandBufferImpl into a

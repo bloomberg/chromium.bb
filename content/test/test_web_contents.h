@@ -17,7 +17,6 @@
 
 class GURL;
 class Referrer;
-class SiteInstanceImpl;
 
 namespace content {
 

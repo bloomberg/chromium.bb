@@ -11,7 +11,6 @@ namespace content {
 
 class DevToolsAgentHost;
 class DevToolsAgentHostImpl;
-class DevToolsProtocolDelegate;
 
 class DevToolsProtocolHandler {
  public:

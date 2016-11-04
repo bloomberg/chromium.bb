@@ -32,7 +32,6 @@ class BlobStorageContext;
 namespace content {
 
 class ResourceContext;
-class ResourceMessageFilter;
 class ResourceRequestBodyImpl;
 class ServiceWorkerContextCore;
 class ServiceWorkerContextWrapper;

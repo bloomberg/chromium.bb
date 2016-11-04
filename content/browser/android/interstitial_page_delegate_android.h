@@ -17,7 +17,6 @@
 namespace content {
 
 class InterstitialPage;
-class WebContents;
 
 // Native counterpart that allows interstitial pages to be constructed and
 // managed from Java.

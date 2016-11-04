@@ -48,16 +48,11 @@ class ScopedIPCSupport;
 }  // namespace edk
 }  // namespace mojo
 
-namespace blink {
-class WebFrame;
-}  // namespace blink
-
 namespace discardable_memory {
 class ClientDiscardableSharedMemoryManager;
 }  // namespace discardable_memory
 
 namespace content {
-class ChildMessageFilter;
 class ChildHistogramMessageFilter;
 class ChildResourceMessageFilter;
 class ChildSharedBitmapManager;
@@ -70,7 +65,6 @@ class QuotaDispatcher;
 class QuotaMessageFilter;
 class ResourceDispatcher;
 class ThreadSafeSender;
-struct RequestInfo;
 
 // The main thread of a child process derives from this class.
 class CONTENT_EXPORT ChildThreadImpl

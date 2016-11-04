@@ -25,10 +25,6 @@ namespace gfx {
 class Range;
 }
 
-namespace ui {
-struct CompositionUnderline;
-}
-
 namespace content {
 
 class MessageLoopRunner;

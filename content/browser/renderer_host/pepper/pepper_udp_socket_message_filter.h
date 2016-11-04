@@ -51,7 +51,6 @@ struct ReplyMessageContext;
 namespace content {
 
 class BrowserPpapiHostImpl;
-struct SocketPermissionRequest;
 
 class CONTENT_EXPORT PepperUDPSocketMessageFilter
     : public ppapi::host::ResourceMessageFilter {

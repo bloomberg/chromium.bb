@@ -16,7 +16,6 @@
 #include "content/browser/indexed_db/indexed_db_observer.h"
 
 namespace content {
-class IndexedDBDatabaseError;
 
 class CONTENT_EXPORT IndexedDBConnection {
  public:

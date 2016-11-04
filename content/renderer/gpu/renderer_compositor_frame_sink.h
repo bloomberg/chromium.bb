@@ -30,7 +30,6 @@ class Message;
 namespace cc {
 class BeginFrameSource;
 class CompositorFrame;
-class CompositorFrameAck;
 class ContextProvider;
 }
 

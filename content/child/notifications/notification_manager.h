@@ -25,7 +25,6 @@
 namespace content {
 
 struct NotificationResources;
-struct PlatformNotificationData;
 class ThreadSafeSender;
 
 class NotificationManager : public blink::WebNotificationManager,

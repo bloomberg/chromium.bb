@@ -11,8 +11,6 @@
 
 namespace content {
 
-class PepperWebContentsObserver;
-
 class PepperPlayerDelegate : public MediaSessionPlayerObserver {
  public:
   // The Id can only be 0 for PepperPlayerDelegate. Declare the constant here so

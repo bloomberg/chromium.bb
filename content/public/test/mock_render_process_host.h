@@ -25,6 +25,7 @@ class StoragePartition;
 namespace content {
 
 class MockRenderProcessHostFactory;
+class RenderWidgetHost;
 
 // A mock render process host that has no corresponding renderer process.  All
 // IPC messages are sent into the message sink for inspection by tests.

@@ -19,7 +19,6 @@ namespace content {
 
 class NavigationEntry;
 class BrowserContext;
-class ResourceContext;
 class SiteInstance;
 class WebContents;
 

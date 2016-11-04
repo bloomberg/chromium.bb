@@ -16,8 +16,6 @@
 #include "third_party/WebKit/public/web/WebPlugin.h"
 #include "ui/gfx/geometry/rect.h"
 
-struct _NPP;
-
 namespace blink {
 struct WebPluginParams;
 struct WebPrintParams;
@@ -28,7 +26,6 @@ namespace content {
 class PepperPluginInstanceImpl;
 class PluginInstanceThrottlerImpl;
 class PluginModule;
-class PPB_URLLoader_Impl;
 class RenderFrameImpl;
 
 class PepperWebPluginImpl : public blink::WebPlugin {

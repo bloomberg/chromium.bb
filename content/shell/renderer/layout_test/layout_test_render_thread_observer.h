@@ -17,10 +17,6 @@ namespace base {
 class DictionaryValue;
 }
 
-namespace blink {
-class WebFrame;
-}
-
 namespace test_runner {
 class WebTestInterfaces;
 }

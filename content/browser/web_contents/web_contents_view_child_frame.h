@@ -14,7 +14,6 @@ namespace content {
 class WebContents;
 class WebContentsImpl;
 class WebContentsViewDelegate;
-class BrowserPluginGuest;
 
 class WebContentsViewChildFrame : public WebContentsView,
                                   public RenderViewHostDelegateView {

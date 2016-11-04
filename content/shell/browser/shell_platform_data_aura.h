@@ -22,10 +22,6 @@ namespace gfx {
 class Size;
 }
 
-namespace ui {
-class EventHandler;
-}
-
 namespace content {
 
 class ShellPlatformDataAura {

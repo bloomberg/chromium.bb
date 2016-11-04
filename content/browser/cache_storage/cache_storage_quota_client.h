@@ -11,10 +11,6 @@
 #include "storage/browser/quota/quota_client.h"
 #include "storage/common/quota/quota_types.h"
 
-namespace storage {
-class QuotaManagerProxy;
-}
-
 namespace content {
 class CacheStorageManager;
 

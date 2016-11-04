@@ -23,9 +23,7 @@ class TimeDelta;
 
 namespace content {
 
-class BackgroundSyncNetworkObserver;
 struct BackgroundSyncParameters;
-class BackgroundSyncPowerObserver;
 class ServiceWorkerContextWrapper;
 class ServiceWorkerVersion;
 

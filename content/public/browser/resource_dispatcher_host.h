@@ -19,11 +19,8 @@ class URLRequest;
 
 namespace content {
 
-class DownloadItem;
 class ResourceContext;
 class ResourceDispatcherHostDelegate;
-struct DownloadSaveInfo;
-struct Referrer;
 class RenderFrameHost;
 
 // This callback is invoked when the interceptor finishes processing the

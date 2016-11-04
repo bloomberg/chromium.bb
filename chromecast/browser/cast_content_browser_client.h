@@ -29,6 +29,11 @@ namespace metrics {
 class MetricsService;
 }
 
+namespace net {
+class URLRequestContextGetter;
+class X509Certificate;
+}
+
 namespace service_manager {
 class InterfaceRegistry;
 }

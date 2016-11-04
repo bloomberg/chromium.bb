@@ -29,13 +29,11 @@
 #include "third_party/WebKit/public/platform/modules/indexeddb/WebIDBTypes.h"
 #include "url/origin.h"
 
-struct IndexedDBDatabaseMetadata;
 struct IndexedDBMsg_CallbacksSuccessCursorContinue_Params;
 struct IndexedDBMsg_CallbacksSuccessCursorPrefetch_Params;
 struct IndexedDBMsg_CallbacksSuccessIDBCursor_Params;
 struct IndexedDBMsg_CallbacksSuccessArray_Params;
 struct IndexedDBMsg_CallbacksSuccessValue_Params;
-struct IndexedDBMsg_CallbacksUpgradeNeeded_Params;
 struct IndexedDBMsg_Observation;
 struct IndexedDBMsg_ObserverChanges;
 
@@ -46,7 +44,6 @@ struct WebIDBObservation;
 
 namespace content {
 class IndexedDBKey;
-class IndexedDBKeyPath;
 class IndexedDBKeyRange;
 class WebIDBCursorImpl;
 class WebIDBDatabaseImpl;

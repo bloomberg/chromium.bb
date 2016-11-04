@@ -15,11 +15,6 @@
 #include "content/public/renderer/render_frame_observer.h"
 #include "url/origin.h"
 
-namespace blink {
-struct WebPluginParams;
-struct WebRect;
-}
-
 namespace gfx {
 class Size;
 }

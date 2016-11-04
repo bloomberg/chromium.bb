@@ -14,8 +14,6 @@
 #include "third_party/skia/include/core/SkColor.h"
 #include "ui/gfx/native_widget_types.h"
 
-class GURL;
-
 namespace gfx {
 class Point;
 class Rect;

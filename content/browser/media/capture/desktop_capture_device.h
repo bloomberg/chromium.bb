@@ -16,7 +16,6 @@
 #include "ui/gfx/native_widget_types.h"
 
 namespace base {
-class SingleThreadTaskRunner;
 class Thread;
 }  // namespace base
 

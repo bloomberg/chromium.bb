@@ -20,7 +20,6 @@
 
 namespace base {
 class FilePath;
-class SequencedTaskRunner;
 class SingleThreadTaskRunner;
 }
 

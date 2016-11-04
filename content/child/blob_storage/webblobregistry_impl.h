@@ -21,10 +21,6 @@ namespace blink {
 class WebThreadSafeData;
 }  // namespace blink
 
-namespace storage {
-class DataElement;
-}
-
 namespace content {
 class BlobConsolidation;
 class ThreadSafeSender;

@@ -43,17 +43,11 @@
 
 class GURL;
 
-namespace url {
-class Origin;
-}
-
 namespace content {
 
 class BrowserContext;
 class ByteStreamReader;
 class DownloadManagerDelegate;
-class DownloadQuery;
-class DownloadRequestHandle;
 struct DownloadCreateInfo;
 
 // Browser's download manager: manages all downloads and destination view.

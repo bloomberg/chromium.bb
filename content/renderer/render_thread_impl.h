@@ -50,7 +50,6 @@
 #include "third_party/WebKit/public/web/mac/WebScrollbarTheme.h"
 #endif
 
-class GrContext;
 class SkBitmap;
 struct WorkerProcessMsg_CreateWorker_Params;
 
@@ -69,6 +68,7 @@ class Thread;
 }
 
 namespace cc {
+class BeginFrameSource;
 class ContextProvider;
 class ImageSerializationProcessor;
 class CompositorFrameSink;
@@ -118,7 +118,6 @@ class InputHandlerManager;
 class MediaStreamCenter;
 class MemoryObserver;
 class MidiMessageFilter;
-class NetInfoDispatcher;
 class P2PSocketDispatcher;
 class PeerConnectionDependencyFactory;
 class PeerConnectionTracker;

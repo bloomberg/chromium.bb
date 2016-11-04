@@ -24,7 +24,6 @@ class URLRequestContextGetter;
 
 namespace storage {
 class QuotaManagerProxy;
-class SpecialStoragePolicy;
 }
 
 namespace content {

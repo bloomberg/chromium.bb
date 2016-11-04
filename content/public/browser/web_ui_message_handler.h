@@ -13,11 +13,9 @@
 #include "content/common/content_export.h"
 #include "content/public/browser/web_ui.h"
 
-class GURL;
 class WebUIBrowserTest;
 
 namespace base {
-class DictionaryValue;
 class ListValue;
 class Value;
 }

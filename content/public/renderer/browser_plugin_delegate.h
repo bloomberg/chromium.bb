@@ -20,8 +20,6 @@ template<typename T> class Local;
 
 namespace content {
 
-class RenderFrame;
-
 // A delegate for BrowserPlugin which gets notified about the plugin load.
 // Implementations can provide additional steps necessary to change the load
 // behavior of the plugin.

@@ -24,7 +24,6 @@ class WebServiceWorkerProxy;
 namespace content {
 
 class ServiceWorkerHandleReference;
-struct ServiceWorkerObjectInfo;
 class ThreadSafeSender;
 
 // Each instance corresponds to one ServiceWorker object in JS context, and

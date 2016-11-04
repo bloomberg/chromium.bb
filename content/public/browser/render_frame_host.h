@@ -35,7 +35,6 @@ struct AXActionData;
 
 namespace content {
 class AssociatedInterfaceProvider;
-class AssociatedInterfaceRegistry;
 class RenderProcessHost;
 class RenderViewHost;
 class RenderWidgetHostView;

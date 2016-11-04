@@ -17,7 +17,6 @@
 namespace content {
 
 class ServiceWorkerContextCore;
-class ServiceWorkerDispatcherHost;
 class ServiceWorkerVersion;
 
 // Roughly corresponds to one WebServiceWorkerRegistration object in the

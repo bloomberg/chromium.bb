@@ -14,7 +14,6 @@ namespace cc {
 class ContextProvider;
 class CopyOutputRequest;
 class CompositorFrameSink;
-class SharedBitmapManager;
 class SwapPromise;
 }
 

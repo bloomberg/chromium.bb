@@ -18,7 +18,6 @@
 #include "content/common/service_worker/service_worker_types.h"
 
 namespace blink {
-class WebDataSource;
 class WebLocalFrame;
 }  // namespace blink
 

@@ -19,7 +19,6 @@ namespace content {
 
 class RenderWidgetHost;
 class RenderWidgetHostImpl;
-struct NativeWebKeyboardEvent;
 struct TextInputState;
 
 // See comments in render_widget_host_view.h about this class and its members.

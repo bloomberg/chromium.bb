@@ -10,6 +10,10 @@
 #include "content/public/browser/web_contents_delegate.h"
 #include "ui/web_dialogs/web_dialogs_export.h"
 
+namespace content {
+class BrowserContext;
+}
+
 namespace ui {
 
 // This class implements (and mostly ignores) most of

@@ -21,10 +21,6 @@ namespace IPC {
 class Message;
 }
 
-namespace ppapi {
-class ScopedPPVar;
-}
-
 namespace content {
 
 // This class is responsible for converting V8 vars to Pepper resources.

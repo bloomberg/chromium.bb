@@ -17,7 +17,6 @@ class DictionaryValue;
 
 namespace content {
 
-class BrowserContext;
 class RenderFrameHost;
 
 class CONTENT_EXPORT DevToolsManagerDelegate {

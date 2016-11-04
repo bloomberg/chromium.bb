@@ -10,7 +10,6 @@
 namespace content {
 
 class RenderFrameImpl;
-class RenderThreadBlameContext;
 
 // A blame context which represents a single render frame.
 class FrameBlameContext : public base::trace_event::BlameContext {

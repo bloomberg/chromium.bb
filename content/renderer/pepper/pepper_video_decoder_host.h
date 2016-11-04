@@ -29,9 +29,7 @@ class SharedMemory;
 
 namespace content {
 
-class PPB_Graphics3D_Impl;
 class RendererPpapiHost;
-class RenderViewImpl;
 class VideoDecoderShim;
 
 class CONTENT_EXPORT PepperVideoDecoderHost

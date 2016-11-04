@@ -21,7 +21,6 @@
 #include "ui/compositor/compositor.h"
 
 namespace base {
-class SimpleThread;
 class Thread;
 }
 
@@ -33,12 +32,8 @@ class VulkanInProcessContextProvider;
 }
 
 namespace content {
-class BrowserCompositorOutputSurface;
-class CompositorSwapClient;
 class ContextProviderCommandBuffer;
 class OutputDeviceBacking;
-class ReflectorImpl;
-class WebGraphicsContext3DCommandBufferImpl;
 
 class GpuProcessTransportFactory
     : public ui::ContextFactory,

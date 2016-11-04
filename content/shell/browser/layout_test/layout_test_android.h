@@ -7,8 +7,6 @@
 
 #include <string>
 
-class GURL;
-
 namespace content {
 
 // Initialize the nested message loop and FIFOs for Android, and verify that

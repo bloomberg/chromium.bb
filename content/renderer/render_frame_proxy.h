@@ -16,9 +16,6 @@
 #include "third_party/WebKit/public/web/WebRemoteFrameClient.h"
 #include "url/origin.h"
 
-struct FrameMsg_BuffersSwapped_Params;
-struct FrameMsg_CompositorFrameSwapped_Params;
-
 namespace blink {
 class WebInputEvent;
 struct WebRect;

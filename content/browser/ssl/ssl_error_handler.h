@@ -22,8 +22,6 @@ class URLRequest;
 
 namespace content {
 
-class ResourceDispatcherHostImpl;
-class SSLManager;
 class WebContents;
 
 // SSLErrorHandler is the UI-thread class for handling SSL certificate

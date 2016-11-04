@@ -15,10 +15,6 @@
 #include "third_party/WebKit/public/web/WebColorChooserClient.h"
 #include "third_party/skia/include/core/SkColor.h"
 
-namespace blink {
-class WebFrame;
-}
-
 namespace content {
 
 class RendererWebColorChooserImpl : public blink::WebColorChooser,

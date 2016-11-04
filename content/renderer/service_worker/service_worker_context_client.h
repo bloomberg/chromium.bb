@@ -45,7 +45,6 @@ struct WebServiceWorkerClientQueryOptions;
 class WebServiceWorkerContextProxy;
 class WebServiceWorkerProvider;
 class WebServiceWorkerResponse;
-struct WebSyncRegistration;
 }
 
 namespace IPC {
@@ -60,7 +59,6 @@ struct ServiceWorkerClientInfo;
 class ServiceWorkerProviderContext;
 class ServiceWorkerContextClient;
 class ThreadSafeSender;
-class WebServiceWorkerRegistrationImpl;
 class EmbeddedWorkerInstanceClientImpl;
 
 // This class provides access to/from an ServiceWorker's WorkerGlobalScope.

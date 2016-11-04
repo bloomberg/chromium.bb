@@ -10,8 +10,6 @@
 #include "content/public/common/storage_quota_params.h"
 #include "storage/common/quota/quota_types.h"
 
-class GURL;
-
 namespace content {
 
 class QuotaPermissionContext

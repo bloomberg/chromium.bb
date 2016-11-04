@@ -30,7 +30,6 @@ namespace content {
 
 class BrowserContext;
 class DevToolsExternalAgentProxyDelegate;
-class DevToolsManagerDelegate;
 class DevToolsSocketFactory;
 class RenderFrameHost;
 class WebContents;

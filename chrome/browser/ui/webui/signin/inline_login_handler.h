@@ -9,6 +9,10 @@
 #include "base/memory/weak_ptr.h"
 #include "content/public/browser/web_ui_message_handler.h"
 
+namespace base {
+class DictionaryValue;
+}
+
 namespace signin_metrics {
 enum class AccessPoint;
 }

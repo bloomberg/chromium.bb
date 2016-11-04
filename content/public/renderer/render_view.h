@@ -21,17 +21,11 @@ namespace blink {
 class WebElement;
 class WebFrame;
 class WebFrameWidget;
-class WebLocalFrame;
-class WebNode;
-class WebString;
-class WebURLRequest;
 class WebView;
-struct WebContextMenuData;
 struct WebRect;
 }  // namespace blink
 
 namespace gfx {
-class Point;
 class Size;
 }
 

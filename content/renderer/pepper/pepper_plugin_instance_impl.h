@@ -67,17 +67,14 @@
 #include "v8/include/v8.h"
 
 struct PP_Point;
-struct _NPP;
 
 class SkBitmap;
-class TransportDIB;
 
 namespace blink {
 class WebInputEvent;
 class WebLayer;
 class WebMouseEvent;
 class WebPluginContainer;
-class WebURLLoader;
 class WebURLResponse;
 struct WebCompositionUnderline;
 struct WebCursorInfo;
@@ -114,9 +111,7 @@ class PluginModule;
 class PluginObject;
 class PPB_Graphics3D_Impl;
 class PPB_ImageData_Impl;
-class PPB_URLLoader_Impl;
 class RenderFrameImpl;
-class RenderViewImpl;
 
 // Represents one time a plugin appears on one web page.
 //

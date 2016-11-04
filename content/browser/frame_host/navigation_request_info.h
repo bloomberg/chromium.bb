@@ -16,7 +16,6 @@
 #include "url/origin.h"
 
 namespace content {
-class ResourceRequestBody;
 
 // A struct to hold the parameters needed to start a navigation request in
 // ResourceDispatcherHost. It is initialized on the UI thread, and then passed

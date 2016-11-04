@@ -19,9 +19,6 @@
 #include "third_party/WebKit/public/web/WebNode.h"
 #include "third_party/WebKit/public/web/WebWidget.h"
 
-struct BrowserPluginHostMsg_ResizeGuest_Params;
-struct FrameMsg_BuffersSwapped_Params;
-
 namespace cc {
 class SurfaceId;
 struct SurfaceSequence;

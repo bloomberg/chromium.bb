@@ -15,7 +15,6 @@
 
 namespace content {
 class FakePepperPluginInstance;
-class PluginModule;
 
 // A mock RendererPpapiHost for testing resource hosts. Messages sent by
 // resources through this will get added to the test sink.

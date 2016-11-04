@@ -24,10 +24,7 @@ class URLRequest;
 
 namespace content {
 class ResourceBuffer;
-class ResourceContext;
 class ResourceDispatcherHostImpl;
-class ResourceMessageFilter;
-class SharedIOBuffer;
 
 // Used to complete an asynchronous resource request in response to resource
 // load events from the resource dispatcher host.

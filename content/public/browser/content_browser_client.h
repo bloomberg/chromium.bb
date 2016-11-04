@@ -44,7 +44,6 @@ class GURL;
 
 namespace base {
 class CommandLine;
-class DictionaryValue;
 class FilePath;
 }
 
@@ -76,8 +75,6 @@ class SSLCertRequestInfo;
 class SSLInfo;
 class URLRequest;
 class URLRequestContext;
-class URLRequestContextGetter;
-class X509Certificate;
 }
 
 namespace sandbox {
@@ -93,7 +90,6 @@ class Origin;
 }
 
 namespace storage {
-class ExternalMountPoints;
 class FileSystemBackend;
 class QuotaEvictionPolicy;
 }
@@ -101,18 +97,14 @@ class QuotaEvictionPolicy;
 namespace content {
 
 enum class PermissionType;
-class AccessTokenStore;
 class BrowserChildProcessHost;
 class BrowserContext;
 class BrowserMainParts;
-class BrowserPluginGuestDelegate;
 class BrowserPpapiHost;
 class BrowserURLHandler;
 class ClientCertificateDelegate;
 class DevToolsManagerDelegate;
-class ExternalVideoSurfaceContainer;
 class GpuProcessHost;
-class LocationProvider;
 class MediaObserver;
 class MemoryCoordinatorDelegate;
 class NavigationHandle;

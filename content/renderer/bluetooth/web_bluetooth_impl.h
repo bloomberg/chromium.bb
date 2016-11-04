@@ -33,7 +33,6 @@ class InterfaceProvider;
 namespace content {
 
 class BluetoothDispatcher;
-class ThreadSafeSender;
 
 // Implementation of blink::WebBluetooth. Passes calls through to the thread
 // specific BluetoothDispatcher.

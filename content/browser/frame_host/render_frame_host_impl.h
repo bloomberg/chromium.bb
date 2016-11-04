@@ -58,7 +58,6 @@ struct FrameHostMsg_ShowPopup_Params;
 #endif
 
 namespace base {
-class FilePath;
 class ListValue;
 }
 
@@ -96,9 +95,7 @@ struct ContentSecurityPolicyHeader;
 struct ContextMenuParams;
 struct FileChooserParams;
 struct FrameOwnerProperties;
-struct GlobalRequestID;
 struct FileChooserParams;
-struct Referrer;
 struct ResourceResponse;
 
 class CONTENT_EXPORT RenderFrameHostImpl

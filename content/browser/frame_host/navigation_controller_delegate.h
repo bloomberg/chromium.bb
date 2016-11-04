@@ -15,16 +15,12 @@
 namespace content {
 
 struct LoadCommittedDetails;
-struct LoadNotificationDetails;
-struct NativeWebKeyboardEvent;
 class FrameTree;
 class InterstitialPage;
 class InterstitialPageImpl;
 class RenderFrameHost;
 class RenderViewHost;
-class SiteInstance;
 class WebContents;
-class WebContentsDelegate;
 
 // Interface for objects embedding a NavigationController to provide the
 // functionality NavigationController needs.

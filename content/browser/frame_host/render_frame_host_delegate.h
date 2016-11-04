@@ -46,7 +46,6 @@ struct AXEventNotificationDetails;
 struct AXLocationChangeNotificationDetails;
 struct ContextMenuParams;
 struct FileChooserParams;
-struct TransitionLayerData;
 
 // An interface implemented by an object interested in knowing about the state
 // of the RenderFrameHost.

@@ -15,9 +15,7 @@ class PpapiPermissions;
 }
 
 namespace content {
-class PepperInstanceStateAccessor;
 class RendererPpapiHostImpl;
-class RenderViewImpl;
 
 class ContentRendererPepperHostFactory : public ppapi::host::HostFactory {
  public:

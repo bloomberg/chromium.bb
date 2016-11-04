@@ -31,9 +31,7 @@ class TouchSelectionController;
 namespace content {
 class GestureNavSimple;
 class OverscrollNavigationOverlay;
-class RenderWidgetHostImpl;
 class RenderWidgetHostViewAura;
-class ShadowLayerDelegate;
 class TouchSelectionControllerClientAura;
 class WebContentsViewDelegate;
 class WebContentsImpl;

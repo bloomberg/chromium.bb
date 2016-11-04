@@ -20,7 +20,6 @@
 #include "net/base/request_priority.h"
 
 namespace net {
-class HostPortPair;
 class URLRequest;
 }
 

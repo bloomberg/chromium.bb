@@ -30,10 +30,6 @@
 #include "ui/gfx/selection_bound.h"
 #include "url/gurl.h"
 
-namespace cc {
-struct ViewportSelectionBound;
-}
-
 namespace ui {
 class WindowAndroid;
 }

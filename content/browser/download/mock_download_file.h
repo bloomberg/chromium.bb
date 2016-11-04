@@ -19,7 +19,6 @@
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace content {
-struct DownloadCreateInfo;
 
 class MockDownloadFile : public DownloadFile {
  public:

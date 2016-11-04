@@ -16,7 +16,6 @@ namespace content {
 
 class AppWebMessagePortService;
 class WebContents;
-class MessagePortDelegate;
 
 // An interface consisting of methods that can be called to use Message ports.
 class CONTENT_EXPORT MessagePortProvider {

@@ -11,11 +11,9 @@
 #include "content/common/content_export.h"
 
 namespace content {
-class RenderFrameHostDelegate;
 class RenderViewHost;
 class RenderViewHostDelegate;
 class RenderWidgetHostDelegate;
-class SessionStorageNamespace;
 class SiteInstance;
 
 // A factory for creating RenderViewHosts. There is a global factory function

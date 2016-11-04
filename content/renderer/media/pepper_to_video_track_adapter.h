@@ -17,7 +17,6 @@
 
 namespace content {
 
-class PeerConnectionDependencyFactory;
 class MediaStreamRegistryInterface;
 class PPB_ImageData_Impl;
 

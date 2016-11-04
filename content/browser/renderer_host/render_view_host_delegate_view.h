@@ -13,17 +13,10 @@
 #include "content/common/drag_event_source_info.h"
 #include "third_party/WebKit/public/platform/WebDragOperation.h"
 
-class SkBitmap;
-
 namespace gfx {
 class ImageSkia;
 class Rect;
 class Vector2d;
-}
-
-namespace ui {
-class GestureEvent;
-class MouseEvent;
 }
 
 namespace content {

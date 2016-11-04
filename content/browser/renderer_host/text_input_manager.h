@@ -23,7 +23,6 @@ namespace content {
 class RenderWidgetHostImpl;
 class RenderWidgetHostView;
 class RenderWidgetHostViewBase;
-class WebContents;
 
 // A class which receives updates of TextInputState from multiple sources and
 // decides what the new TextInputState is. It also notifies the observers when

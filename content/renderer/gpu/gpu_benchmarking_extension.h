@@ -17,7 +17,6 @@ class Arguments;
 }
 
 namespace v8 {
-class Function;
 class Isolate;
 class Object;
 }

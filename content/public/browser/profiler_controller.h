@@ -11,11 +11,6 @@
 #include "base/tracked_objects.h"
 #include "content/common/content_export.h"
 
-
-namespace base {
-class DictionaryValue;
-}
-
 namespace content {
 
 class ProfilerSubscriber;

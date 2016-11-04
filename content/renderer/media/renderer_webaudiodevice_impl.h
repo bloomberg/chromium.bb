@@ -16,10 +16,6 @@
 #include "third_party/WebKit/public/platform/WebVector.h"
 #include "url/origin.h"
 
-namespace base {
-class SingleThreadTaskRunner;
-}
-
 namespace media {
 class SilentSinkSuspender;
 }

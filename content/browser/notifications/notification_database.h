@@ -22,7 +22,6 @@ namespace leveldb {
 class DB;
 class Env;
 class FilterPolicy;
-class WriteBatch;
 }
 
 namespace content {

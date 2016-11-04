@@ -11,15 +11,7 @@
 #include "content/public/browser/browser_message_filter.h"
 #include "device/gamepad/gamepad_consumer.h"
 
-namespace device {
-
-class GamepadService;
-
-}
-
 namespace content {
-
-class RenderProcessHost;
 
 class GamepadBrowserMessageFilter :
     public BrowserMessageFilter,

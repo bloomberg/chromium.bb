@@ -14,7 +14,6 @@
 
 namespace blink {
 class WebFileWriterClient;
-class WebURL;
 }
 
 namespace content {

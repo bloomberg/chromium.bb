@@ -46,9 +46,7 @@ class ResourceContext;
 class ResourceRequestBodyImpl;
 class ServiceWorkerBlobReader;
 class ServiceWorkerStreamReader;
-class ServiceWorkerContextCore;
 class ServiceWorkerFetchDispatcher;
-class ServiceWorkerProviderHost;
 class ServiceWorkerVersion;
 class Stream;
 

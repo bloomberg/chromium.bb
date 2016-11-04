@@ -12,6 +12,10 @@
 #include "ipc/ipc_message.h"
 #include "v8/include/v8.h"
 
+namespace content {
+class RenderFrame;
+}
+
 namespace guest_view {
 
 class GuestViewRequest;

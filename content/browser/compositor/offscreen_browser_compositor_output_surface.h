@@ -20,7 +20,7 @@ class CompositorVSyncManager;
 }
 
 namespace content {
-class CommandBufferProxyImpl;
+class ContextProviderCommandBuffer;
 class ReflectorTexture;
 
 class OffscreenBrowserCompositorOutputSurface

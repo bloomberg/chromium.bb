@@ -9,8 +9,6 @@
 #include "content/public/renderer/render_view_observer.h"
 #include "third_party/WebKit/public/web/WebDateTimeChooserParams.h"
 
-struct ViewHostMsg_DateTimeDialogValue_Params;
-
 namespace blink {
 class WebDateTimeChooserCompletion;
 }  // namespace blink

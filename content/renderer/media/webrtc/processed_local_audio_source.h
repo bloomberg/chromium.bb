@@ -20,10 +20,6 @@ namespace media {
 class AudioBus;
 }
 
-namespace webrtc {
-class AudioSourceInterface;
-}
-
 namespace content {
 
 class PeerConnectionDependencyFactory;

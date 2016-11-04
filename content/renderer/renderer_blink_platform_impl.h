@@ -25,10 +25,6 @@
 #include "third_party/WebKit/public/platform/modules/indexeddb/WebIDBFactory.h"
 #include "third_party/WebKit/public/platform/modules/screen_orientation/WebScreenOrientationType.h"
 
-namespace cc {
-class ContextProvider;
-}
-
 namespace IPC {
 class SyncMessageFilter;
 }
@@ -36,7 +32,6 @@ class SyncMessageFilter;
 namespace blink {
 namespace scheduler {
 class RendererScheduler;
-class WebThreadImplForRendererScheduler;
 }
 class WebCanvasCaptureHandler;
 class WebDeviceMotionData;
@@ -59,11 +54,9 @@ class LocalStorageCachedAreas;
 class PlatformEventObserverBase;
 class QuotaMessageFilter;
 class RendererClipboardDelegate;
-class RenderView;
 class ThreadSafeSender;
 class WebClipboardImpl;
 class WebDatabaseObserverImpl;
-class WebFileSystemImpl;
 
 class CONTENT_EXPORT RendererBlinkPlatformImpl : public BlinkPlatformImpl {
  public:

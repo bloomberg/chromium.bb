@@ -11,10 +11,6 @@
 #include "content/common/content_export.h"
 #include "third_party/WebKit/public/web/WebInputEvent.h"
 
-namespace ui {
-class MotionEventAndroid;
-}
-
 namespace content {
 
 class WebMouseEventBuilder {

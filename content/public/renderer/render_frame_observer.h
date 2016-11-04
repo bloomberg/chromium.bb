@@ -20,7 +20,6 @@
 
 namespace blink {
 class WebFormElement;
-class WebLocalFrame;
 class WebNode;
 class WebString;
 struct WebURLError;

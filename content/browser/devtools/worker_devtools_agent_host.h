@@ -15,7 +15,6 @@ namespace devtools { namespace schema { class SchemaHandler; }}
 
 class BrowserContext;
 class DevToolsProtocolHandler;
-class SharedWorkerInstance;
 
 class WorkerDevToolsAgentHost : public DevToolsAgentHostImpl,
                                 public IPC::Listener {

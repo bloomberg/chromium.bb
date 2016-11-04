@@ -18,7 +18,6 @@
 namespace content {
 
 class BrowserContext;
-class ServiceWorkerContext;
 struct PushSubscriptionOptions;
 
 // A push service-agnostic interface that the Push API uses for talking to

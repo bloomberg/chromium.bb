@@ -17,11 +17,8 @@
 
 namespace content {
 
-class EmbeddedWorkerRegistry;
 class ServiceWorkerContextCore;
-class ServiceWorkerJobCoordinator;
 class ServiceWorkerRegistration;
-class ServiceWorkerStorage;
 
 // Handles the unregistration of a Service Worker.
 //

@@ -17,7 +17,6 @@
 #include "third_party/webrtc/base/asyncresolverinterface.h"
 
 namespace base {
-class MessageLoop;
 class SingleThreadTaskRunner;
 }  // namespace base
 

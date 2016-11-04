@@ -35,10 +35,6 @@
 
 class SkBitmap;
 
-namespace url {
-class Origin;
-}
-
 namespace content {
 
 class LayoutTestBluetoothChooserFactory;

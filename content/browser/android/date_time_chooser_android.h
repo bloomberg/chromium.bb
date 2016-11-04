@@ -16,7 +16,6 @@
 
 namespace content {
 
-class ContentViewCore;
 class RenderViewHost;
 struct DateTimeSuggestion;
 

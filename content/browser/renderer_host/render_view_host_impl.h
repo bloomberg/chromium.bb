@@ -40,10 +40,7 @@ class SkBitmap;
 namespace content {
 
 class PageState;
-class RenderWidgetHostDelegate;
 class SessionStorageNamespace;
-struct FileChooserFileInfo;
-struct FileChooserParams;
 struct FrameReplicationState;
 
 namespace mojom {

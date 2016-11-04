@@ -46,7 +46,6 @@ namespace content {
 
 class DelegatedFrameHost;
 class RenderWidgetHostViewFrameSubscriber;
-class RenderWidgetHostImpl;
 class ResizeLock;
 
 // The DelegatedFrameHostClient is the interface from the DelegatedFrameHost,

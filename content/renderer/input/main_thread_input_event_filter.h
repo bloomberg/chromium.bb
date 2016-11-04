@@ -14,10 +14,6 @@ namespace base {
 class SingleThreadTaskRunner;
 }
 
-namespace IPC {
-class Listener;
-}
-
 namespace content {
 
 // Used to intercept InputMsg* messages and deliver them to the given listener

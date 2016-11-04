@@ -24,7 +24,6 @@ class WebMediaConstraints;
 class WebRTCAnswerOptions;
 class WebRTCICECandidate;
 class WebRTCOfferOptions;
-class WebString;
 class WebRTCSessionDescription;
 class WebUserMediaRequest;
 }  // namespace blink

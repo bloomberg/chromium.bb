@@ -46,7 +46,6 @@
 
 namespace media {
 class AudioManager;
-class AudioParameters;
 class UserInputMonitor;
 }
 

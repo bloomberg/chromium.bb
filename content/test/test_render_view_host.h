@@ -43,7 +43,6 @@ class SiteInstance;
 class TestRenderFrameHost;
 class TestWebContents;
 struct FrameReplicationState;
-struct TextInputState;
 
 // Utility function to initialize FrameHostMsg_DidCommitProvisionalLoad_Params
 // with given parameters.

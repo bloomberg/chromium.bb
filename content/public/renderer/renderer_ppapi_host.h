@@ -17,10 +17,6 @@
 #include "ppapi/c/pp_instance.h"
 #include "url/gurl.h"
 
-namespace base {
-class FilePath;
-}
-
 namespace gfx {
 class Point;
 }

@@ -10,7 +10,6 @@
 #include "storage/browser/fileapi/file_system_context.h"
 
 namespace storage {
-class ExternalMountPoints;
 class FileSystemContext;
 class FileSystemURL;
 }

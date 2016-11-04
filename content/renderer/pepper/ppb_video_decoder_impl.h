@@ -22,7 +22,6 @@ struct PP_PictureBuffer_Dev;
 struct PP_VideoBitstreamBuffer_Dev;
 
 namespace content {
-class PPB_Graphics3D_Impl;
 
 class PPB_VideoDecoder_Impl : public ppapi::PPB_VideoDecoder_Shared,
                               public media::VideoDecodeAccelerator::Client {

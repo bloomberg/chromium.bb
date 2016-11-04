@@ -9,7 +9,6 @@
 
 namespace content {
 class BrowserContext;
-class ContentBrowserClient;
 class RenderProcessHost;
 class SiteInstance;
 

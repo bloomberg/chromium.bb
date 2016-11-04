@@ -26,7 +26,6 @@ namespace content {
 
 class ServiceWorkerCacheWriter;
 class ServiceWorkerContextCore;
-class ServiceWorkerVersions;
 
 // A URLRequestJob derivative used to cache the main script
 // and its imports during the initial install of a new version.

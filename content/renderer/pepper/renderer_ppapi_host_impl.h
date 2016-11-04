@@ -12,10 +12,6 @@
 #include "content/renderer/pepper/content_renderer_pepper_host_factory.h"
 #include "ppapi/host/ppapi_host.h"
 
-namespace IPC {
-class Sender;
-}
-
 namespace ppapi {
 
 namespace proxy {

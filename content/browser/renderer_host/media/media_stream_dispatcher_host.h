@@ -24,7 +24,6 @@ namespace content {
 
 class MediaStreamManager;
 class MediaStreamUIProxy;
-class ResourceContext;
 
 // MediaStreamDispatcherHost is a delegate for Media Stream API messages used by
 // MediaStreamImpl.  There is one MediaStreamDispatcherHost per

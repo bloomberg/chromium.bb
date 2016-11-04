@@ -24,7 +24,6 @@
 
 namespace net {
 class URLRequestContextGetter;
-class IOBufferWithSize;
 }
 
 namespace storage {

@@ -38,10 +38,6 @@ namespace media {
 class MediaClientAndroid;
 }
 
-namespace sandbox {
-class TargetPolicy;
-}
-
 namespace content {
 
 class ContentBrowserClient;

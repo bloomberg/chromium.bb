@@ -18,7 +18,6 @@
 
 namespace blink {
 class WebInputEvent;
-struct WebRect;
 }
 
 namespace url {

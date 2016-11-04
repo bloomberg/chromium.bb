@@ -17,7 +17,6 @@
 namespace device {
 class BluetoothAdapter;
 class BluetoothDevice;
-class BluetoothDiscoveryFilter;
 class BluetoothDiscoverySession;
 }
 

@@ -29,7 +29,6 @@ class Message;
 
 namespace content {
 class RenderFrameProxyHost;
-class RenderWidgetHostImpl;
 class RenderWidgetHostViewBase;
 class RenderWidgetHostViewChildFrame;
 class WebCursor;

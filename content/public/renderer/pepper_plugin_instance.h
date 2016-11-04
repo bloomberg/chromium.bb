@@ -47,7 +47,6 @@ class Isolate;
 
 namespace content {
 class RenderFrame;
-class RenderView;
 
 class PepperPluginInstance {
  public:

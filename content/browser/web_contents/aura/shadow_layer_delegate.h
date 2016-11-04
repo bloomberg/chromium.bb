@@ -11,10 +11,6 @@
 #include "base/macros.h"
 #include "ui/compositor/layer_delegate.h"
 
-namespace aura {
-class Window;
-}
-
 namespace ui {
 class Layer;
 }

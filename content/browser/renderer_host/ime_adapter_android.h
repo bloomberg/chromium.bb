@@ -18,7 +18,6 @@ class RenderFrameHost;
 class RenderWidgetHostImpl;
 class RenderWidgetHostViewAndroid;
 class WebContents;
-struct NativeWebKeyboardEvent;
 
 // This class is in charge of dispatching key events from the java side
 // and forward to renderer along with input method results via

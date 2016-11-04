@@ -25,7 +25,6 @@
 
 namespace content {
 
-class DownloadManager;
 class WebContents;
 
 // This class implements downloading a file via dragging virtual files out of

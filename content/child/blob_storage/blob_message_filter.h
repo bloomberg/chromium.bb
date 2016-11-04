@@ -29,7 +29,6 @@ class Message;
 
 namespace storage {
 struct BlobItemBytesRequest;
-struct BlobItemBytesResponse;
 }
 
 namespace content {

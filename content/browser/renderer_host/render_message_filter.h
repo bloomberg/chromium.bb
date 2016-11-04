@@ -50,9 +50,7 @@ class GURL;
 struct FontDescriptor;
 
 namespace base {
-class ProcessMetrics;
 class SharedMemory;
-class TaskRunner;
 }
 
 namespace gfx {

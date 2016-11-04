@@ -20,6 +20,10 @@
 
 class GURL;
 
+namespace base {
+class DictionaryValue;
+}
+
 namespace content {
 class BrowserContext;
 class WebContents;

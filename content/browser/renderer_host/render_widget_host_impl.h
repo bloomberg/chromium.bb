@@ -57,15 +57,8 @@ class RefCountedBytes;
 
 namespace blink {
 class WebInputEvent;
-#if defined(OS_ANDROID)
-class WebLayer;
-#endif
 class WebMouseEvent;
 struct WebCompositionUnderline;
-}
-
-namespace cc {
-class CompositorFrameAck;
 }
 
 #if defined(OS_MACOSX)

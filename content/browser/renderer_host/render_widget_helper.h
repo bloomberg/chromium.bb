@@ -26,12 +26,7 @@ namespace IPC {
 class Message;
 }
 
-namespace base {
-class TimeDelta;
-}
-
 namespace content {
-class GpuProcessHost;
 class ResourceDispatcherHostImpl;
 class SessionStorageNamespace;
 

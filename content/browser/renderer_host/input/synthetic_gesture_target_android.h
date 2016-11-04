@@ -14,8 +14,6 @@
 
 namespace content {
 
-class ContentViewCoreImpl;
-
 class SyntheticGestureTargetAndroid : public SyntheticGestureTargetBase {
  public:
   SyntheticGestureTargetAndroid(

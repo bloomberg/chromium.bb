@@ -22,7 +22,6 @@ namespace content {
 struct FrameOwnerProperties;
 class Navigator;
 class RenderFrameHostDelegate;
-class RenderProcessHost;
 class RenderViewHostDelegate;
 class RenderViewHostImpl;
 class RenderFrameHostManager;

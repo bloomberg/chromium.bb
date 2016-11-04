@@ -19,13 +19,6 @@
 #include "ui/base/window_open_disposition.h"
 
 class GURL;
-class SkBitmap;
-struct FrameHostMsg_DidCommitProvisionalLoad_Params;
-
-namespace base {
-class ListValue;
-class TimeTicks;
-}
 
 namespace IPC {
 class Message;
@@ -39,7 +32,6 @@ class Size;
 namespace content {
 
 class BrowserContext;
-class CrossSiteTransferringRequest;
 class FrameTree;
 class PageState;
 class RenderViewHost;
@@ -47,13 +39,7 @@ class RenderViewHostDelegateView;
 class SessionStorageNamespace;
 class SiteInstance;
 class WebContents;
-class WebContentsImpl;
-struct FileChooserParams;
-struct GlobalRequestID;
-struct NativeWebKeyboardEvent;
-struct Referrer;
 struct RendererPreferences;
-struct WebPreferences;
 
 namespace mojom {
 class CreateNewWindowParams;

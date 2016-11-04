@@ -52,7 +52,6 @@ namespace content {
 class EchoInformation;
 class MediaStreamAudioBus;
 class MediaStreamAudioFifo;
-class RTCMediaConstraints;
 
 using webrtc::AudioProcessorInterface;
 

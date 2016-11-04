@@ -13,7 +13,6 @@
 
 namespace blink {
 class WebPlugin;
-struct WebPluginParams;
 }
 
 namespace gfx {

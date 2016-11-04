@@ -16,16 +16,10 @@
 #include "ui/gfx/geometry/scroll_offset.h"
 #include "ui/gfx/geometry/size_f.h"
 
-class SkCanvas;
-
 namespace IPC {
 class Message;
 class Sender;
 }  // namespace IPC
-
-namespace blink {
-class WebInputEvent;
-}  // namespace blink
 
 namespace cc {
 class CompositorFrame;

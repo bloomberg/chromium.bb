@@ -14,7 +14,6 @@ class WebHistoryItem;
 
 namespace content {
 
-class RenderViewImpl;
 struct CommonNavigationParams;
 struct RequestNavigationParams;
 struct StartNavigationParams;

@@ -17,10 +17,6 @@
 #include "gpu/ipc/common/surface_handle.h"
 #include "ui/android/context_provider_factory.h"
 
-namespace cc {
-class VulkanInProcessContextProvider;
-}
-
 namespace gpu {
 class GpuChannelHost;
 class GpuChannelEstablishFactory;

@@ -15,7 +15,6 @@
 #include "third_party/WebKit/public/platform/WebFileSystem.h"
 
 namespace base {
-class WaitableEvent;
 class SingleThreadTaskRunner;
 }
 

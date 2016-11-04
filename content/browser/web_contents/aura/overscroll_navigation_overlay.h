@@ -13,11 +13,8 @@
 #include "content/public/browser/web_contents_observer.h"
 #include "ui/gfx/image/image.h"
 
-struct ViewHostMsg_UpdateRect_Params;
-
 namespace content {
 
-class OverscrollWindowDelegate;
 class OverscrollNavigationOverlayTest;
 
 // When a history navigation is triggered at the end of an overscroll

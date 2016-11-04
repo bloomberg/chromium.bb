@@ -16,10 +16,6 @@ namespace cc {
 class CompositorFrameMetadata;
 }
 
-namespace gfx {
-class Point;
-}
-
 namespace content {
 
 class RenderWidgetHostImpl;

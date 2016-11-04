@@ -14,7 +14,6 @@
 
 namespace webrtc {
 class MediaStreamInterface;
-class MediaStreamTrackInterface;
 }
 
 namespace content {

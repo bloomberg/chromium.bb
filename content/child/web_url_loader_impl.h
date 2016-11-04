@@ -14,12 +14,6 @@
 #include "third_party/WebKit/public/platform/WebURLLoader.h"
 #include "url/gurl.h"
 
-namespace base {
-
-class SingleThreadTaskRunner;
-
-}  // namespace base
-
 namespace content {
 
 class ResourceDispatcher;

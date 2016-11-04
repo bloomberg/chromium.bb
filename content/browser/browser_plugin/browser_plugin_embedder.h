@@ -26,7 +26,6 @@ namespace content {
 
 class BrowserPluginGuest;
 class BrowserPluginGuestManager;
-class RenderWidgetHostImpl;
 struct NativeWebKeyboardEvent;
 
 class CONTENT_EXPORT BrowserPluginEmbedder : public WebContentsObserver {

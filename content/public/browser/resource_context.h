@@ -25,8 +25,6 @@ class URLRequestContext;
 
 namespace content {
 
-class AppCacheService;
-
 // ResourceContext contains the relevant context information required for
 // resource loading. It lives on the IO thread, although it is constructed on
 // the UI thread. It must be destructed on the IO thread.

@@ -18,10 +18,6 @@
 #include "content/common/cursors/webcursor.h"
 #include "third_party/WebKit/public/web/WebInputEvent.h"
 
-namespace net {
-class IPEndPoint;
-}
-
 namespace IPC {
 
 template <>

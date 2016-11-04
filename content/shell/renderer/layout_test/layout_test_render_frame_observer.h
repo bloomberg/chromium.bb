@@ -12,10 +12,6 @@ namespace IPC {
 class Message;
 }  // namespace IPC
 
-namespace base {
-class DictionaryValue;
-}  // namespace
-
 namespace content {
 struct ShellTestConfiguration;
 class RenderFrame;

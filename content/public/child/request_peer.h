@@ -12,8 +12,6 @@
 
 #include "content/common/content_export.h"
 
-class GURL;
-
 namespace base {
 class TimeTicks;
 }

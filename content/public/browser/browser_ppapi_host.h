@@ -14,7 +14,6 @@
 
 namespace IPC {
 class ChannelProxy;
-struct ChannelHandle;
 class Sender;
 }
 

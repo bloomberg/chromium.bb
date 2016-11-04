@@ -19,7 +19,6 @@
 namespace content {
 
 class BackgroundTracingRule;
-class TraceMessageFilter;
 class TracingDelegate;
 
 class BackgroundTracingManagerImpl : public BackgroundTracingManager {

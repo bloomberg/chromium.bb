@@ -28,7 +28,6 @@ namespace content {
 #if !defined(USE_AURA)
 class ContentViewCore;
 #endif
-class ExternalVideoSurfaceContainer;
 class RenderFrameHost;
 class WebContents;
 

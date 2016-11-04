@@ -44,10 +44,6 @@
 #include "third_party/WebKit/public/platform/WebURLRequest.h"
 #include "third_party/WebKit/public/web/WebHistoryItem.h"
 
-namespace blink {
-class WebFrame;
-}
-
 namespace content {
 class RenderFrameImpl;
 class RenderViewImpl;

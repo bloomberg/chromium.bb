@@ -23,12 +23,10 @@ class SingleThreadTaskRunner;
 }
 
 namespace ui {
-class SynchronousInputHandlerProxy;
 struct DidOverscrollParams;
 }
 
 namespace IPC {
-class Listener;
 class Sender;
 }
 

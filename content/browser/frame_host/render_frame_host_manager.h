@@ -27,7 +27,6 @@
 
 namespace content {
 class BrowserContext;
-class CrossProcessFrameConnector;
 class FrameNavigationEntry;
 class FrameTreeNode;
 class InterstitialPageImpl;
@@ -46,7 +45,6 @@ class RenderWidgetHostDelegate;
 class RenderWidgetHostView;
 class TestWebContents;
 class WebUIImpl;
-struct CommonNavigationParams;
 struct ContentSecurityPolicyHeader;
 struct FrameOwnerProperties;
 struct FrameReplicationState;

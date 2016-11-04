@@ -15,8 +15,6 @@
 #include "content/public/browser/devtools_agent_host.h"
 #include "net/http/http_status_code.h"
 
-class GURL;
-
 namespace base {
 class DictionaryValue;
 class Thread;
@@ -31,13 +29,11 @@ class DevToolsSocketFactory;
 namespace net {
 class IPEndPoint;
 class HttpServerRequestInfo;
-class ServerSocket;
 }
 
 namespace content {
 
 class DevToolsAgentHostClientImpl;
-class DevToolsHttpHandlerDelegate;
 class ServerWrapper;
 
 // This class is used for managing DevTools remote debugging server.

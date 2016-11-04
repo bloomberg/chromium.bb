@@ -19,11 +19,6 @@
 #include "third_party/WebKit/public/web/WebPepperSocket.h"
 #include "third_party/WebKit/public/web/WebPepperSocketClient.h"
 
-namespace ppapi {
-class StringVar;
-class Var;
-}  // namespace ppapi
-
 namespace content {
 
 class RendererPpapiHost;

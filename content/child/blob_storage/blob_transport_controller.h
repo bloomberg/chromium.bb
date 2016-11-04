@@ -37,7 +37,6 @@ struct BlobItemBytesResponse;
 }
 
 namespace IPC {
-class Message;
 class Sender;
 }
 

@@ -76,7 +76,6 @@ namespace content {
 class AudioMirroringManager;
 class MediaInternals;
 class MediaStreamManager;
-class ResourceContext;
 
 class CONTENT_EXPORT AudioRendererHost : public BrowserMessageFilter {
  public:

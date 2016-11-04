@@ -30,7 +30,6 @@ class WebMouseEvent;
 namespace content {
 
 class RenderProcessHost;
-class RenderWidgetHostImpl;
 class RenderWidgetHostIterator;
 class RenderWidgetHostView;
 struct ScreenInfo;

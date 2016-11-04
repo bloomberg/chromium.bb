@@ -14,10 +14,6 @@
 #include "content/common/content_export.h"
 #include "url/gurl.h"
 
-namespace crypto {
-class SecureHash;
-}
-
 namespace net {
 class NetLogWithSource;
 }
@@ -27,7 +23,6 @@ namespace content {
 class ByteStreamReader;
 class DownloadDestinationObserver;
 class DownloadFile;
-class DownloadManager;
 struct DownloadSaveInfo;
 
 class CONTENT_EXPORT DownloadFileFactory {

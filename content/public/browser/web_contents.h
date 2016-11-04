@@ -35,7 +35,6 @@
 #endif
 
 namespace base {
-class DictionaryValue;
 class TimeTicks;
 }
 

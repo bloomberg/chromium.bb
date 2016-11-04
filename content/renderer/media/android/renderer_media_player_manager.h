@@ -15,16 +15,6 @@
 #include "media/blink/renderer_media_player_interface.h"
 #include "url/gurl.h"
 
-namespace blink {
-class WebFrame;
-}
-
-namespace gfx {
-class RectF;
-}
-
-struct MediaPlayerHostMsg_Initialize_Params;
-
 namespace content {
 class WebMediaPlayerAndroid;
 

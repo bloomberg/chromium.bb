@@ -15,11 +15,8 @@
 #include "mojo/public/cpp/system/core.h"
 #include "third_party/WebKit/public/platform/WebDragOperation.h"
 
-class GURL;
-
 namespace base {
 class FilePath;
-class Value;
 }
 
 namespace blink {
@@ -34,12 +31,10 @@ class Size;
 
 namespace content {
 
-class ChildProcessSecurityPolicy;
 class RenderFrameHost;
 class RenderProcessHost;
 class RenderViewHostDelegate;
 class RenderWidgetHost;
-class SessionStorageNamespace;
 class SiteInstance;
 struct WebPreferences;
 

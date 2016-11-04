@@ -12,8 +12,6 @@
 
 namespace content {
 
-class BackgroundSyncManager;
-
 struct BackgroundSyncParameters;
 
 // An interface that the Background Sync API uses to access services from the

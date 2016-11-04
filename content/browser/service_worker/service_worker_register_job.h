@@ -19,9 +19,6 @@
 
 namespace content {
 
-class ServiceWorkerJobCoordinator;
-class ServiceWorkerStorage;
-
 // Handles the initial registration of a Service Worker and the
 // subsequent update of existing registrations.
 //

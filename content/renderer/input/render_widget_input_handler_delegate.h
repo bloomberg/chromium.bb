@@ -13,7 +13,6 @@
 namespace blink {
 class WebGestureEvent;
 class WebMouseEvent;
-class WebMouseWheelEvent;
 }
 
 namespace gfx {

@@ -31,7 +31,6 @@ class NavigationData;
 class ResourceContext;
 class ResourceDispatcherHostLoginDelegate;
 class ResourceThrottle;
-struct Referrer;
 struct ResourceResponse;
 struct StreamInfo;
 

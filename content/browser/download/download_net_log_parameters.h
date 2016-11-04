@@ -13,8 +13,6 @@
 #include "content/public/browser/download_item.h"
 #include "net/base/net_errors.h"
 
-class GURL;
-
 namespace base {
 class FilePath;
 class Value;

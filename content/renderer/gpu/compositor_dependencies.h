@@ -16,8 +16,6 @@ class SingleThreadTaskRunner;
 }
 
 namespace cc {
-class BeginFrameSource;
-class ContextProvider;
 class ImageSerializationProcessor;
 class TaskGraphRunner;
 }

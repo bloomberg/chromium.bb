@@ -10,10 +10,6 @@
 #include "content/common/content_export.h"
 #include "content/public/browser/web_contents.h"
 
-namespace base {
-class DictionaryValue;
-}  // namespace base
-
 namespace gfx {
 class Size;
 }  // namespace gfx

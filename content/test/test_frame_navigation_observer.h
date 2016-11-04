@@ -18,9 +18,7 @@ class GURL;
 
 namespace content {
 class FrameTreeNode;
-class RenderFrameHostImpl;
 class WebContents;
-struct LoadCommittedDetails;
 
 // For content_browsertests, which run on the UI thread, run a second
 // MessageLoop and quit when the navigation in a specific frame (and all of its

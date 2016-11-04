@@ -13,7 +13,6 @@
 namespace content {
 
 class SpeechRecognitionEventListener;
-struct SpeechRecognitionResult;
 
 // Allows embedders to display the current state of recognition, for getting the
 // user's permission and for fetching optional request information.

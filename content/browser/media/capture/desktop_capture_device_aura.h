@@ -14,10 +14,6 @@
 #include "media/capture/content/screen_capture_device_core.h"
 #include "media/capture/video/video_capture_device.h"
 
-namespace aura {
-class Window;
-}  // namespace aura
-
 namespace content {
 
 // An implementation of VideoCaptureDevice that mirrors an Aura window.

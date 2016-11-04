@@ -25,14 +25,8 @@ namespace gfx {
 enum class SwapResult;
 }
 
-namespace gpu {
-struct GpuProcessHostedCALayerTreeParamsMac;
-}
-
 namespace content {
-class ContextProviderCommandBuffer;
 class ReflectorImpl;
-class WebGraphicsContext3DCommandBufferImpl;
 
 class CONTENT_EXPORT BrowserCompositorOutputSurface
     : public cc::OutputSurface {

@@ -27,7 +27,6 @@ class SkCanvas;
 
 namespace cc {
 class ContextProvider;
-class CompositorFrameMetadata;
 class Display;
 class SurfaceFactory;
 class SurfaceIdAllocator;
@@ -43,7 +42,6 @@ namespace content {
 
 class FrameSwapMessageQueue;
 class SynchronousCompositorRegistry;
-class WebGraphicsContext3DCommandBufferImpl;
 
 class SynchronousCompositorFrameSinkClient {
  public:

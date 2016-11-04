@@ -12,8 +12,6 @@
 #include "content/browser/host_zoom_map_impl.h"
 #include "content/public/browser/zoom_level_delegate.h"
 
-class PrefService;
-
 namespace content {
 struct HostZoomLevelContextDeleter;
 

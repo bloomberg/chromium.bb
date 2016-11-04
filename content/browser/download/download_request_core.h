@@ -30,7 +30,6 @@ class URLRequestStatus;
 }  // namespace net
 
 namespace content {
-class DownloadManagerImpl;
 class ByteStreamReader;
 class ByteStreamWriter;
 struct DownloadCreateInfo;

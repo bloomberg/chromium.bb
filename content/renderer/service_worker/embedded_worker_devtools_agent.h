@@ -16,7 +16,6 @@ class Message;
 
 namespace blink {
 class WebEmbeddedWorker;
-class WebString;
 }
 
 namespace content {

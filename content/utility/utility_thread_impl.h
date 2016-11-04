@@ -18,10 +18,6 @@
 #include "mojo/public/cpp/bindings/binding_set.h"
 #include "services/service_manager/public/interfaces/service_factory.mojom.h"
 
-namespace base {
-class FilePath;
-}
-
 namespace content {
 class BlinkPlatformImpl;
 class UtilityBlinkPlatformImpl;

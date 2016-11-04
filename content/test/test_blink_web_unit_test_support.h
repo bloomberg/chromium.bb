@@ -19,14 +19,6 @@
 #include "content/test/mock_webclipboard_impl.h"
 #include "third_party/WebKit/public/platform/WebURLLoaderMockFactory.h"
 
-namespace base {
-class StatsTable;
-}
-
-namespace blink {
-class WebLayerTreeView;
-}
-
 namespace blink {
 namespace scheduler {
 class RendererScheduler;

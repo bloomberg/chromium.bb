@@ -12,7 +12,6 @@
 #include "content/common/content_export.h"
 
 class SkFontMgr;
-class SkTypeface;
 
 namespace content {
 

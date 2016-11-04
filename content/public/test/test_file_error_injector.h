@@ -18,7 +18,6 @@
 
 namespace content {
 
-class DownloadId;
 class DownloadFileWithErrorFactory;
 class DownloadManager;
 class DownloadManagerImpl;

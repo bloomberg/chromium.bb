@@ -25,7 +25,6 @@ namespace content {
 
 class IndexedDBBackingStore;
 class IndexedDBConnection;
-class IndexedDBDatabaseCallbacks;
 class IndexedDBFactory;
 class IndexedDBTransaction;
 class LevelDBDatabase;

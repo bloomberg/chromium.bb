@@ -27,7 +27,6 @@ class URLRequest;
 
 namespace content {
 class ResourceDispatcherHostImpl;
-class ResourceRequestInfoImpl;
 struct ResourceResponse;
 
 // Used to complete an asynchronous resource request in response to resource

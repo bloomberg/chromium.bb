@@ -24,11 +24,9 @@ class NavigationControllerImpl;
 class NavigationHandleImpl;
 class NavigationURLLoader;
 class NavigationData;
-class NavigatorDelegate;
 class ResourceRequestBody;
 class SiteInstanceImpl;
 class StreamHandle;
-struct NavigationRequestInfo;
 
 // PlzNavigate
 // A UI thread object that owns a navigation request until it commits. It

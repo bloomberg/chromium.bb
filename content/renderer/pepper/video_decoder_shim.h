@@ -23,16 +23,6 @@ namespace base {
 class SingleThreadTaskRunner;
 }
 
-namespace gpu {
-namespace gles2 {
-class GLES2Interface;
-}
-}
-
-namespace media {
-class DecoderBuffer;
-}
-
 namespace content {
 
 class ContextProviderCommandBuffer;
