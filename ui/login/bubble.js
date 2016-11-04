@@ -147,12 +147,20 @@ cr.define('cr.ui', function() {
         if (typeof pos[k] == 'number')
           this.style[k] = pos[k] + 'px';
       }
-      if (opt_content !== undefined) {
-        this.innerHTML = '';
-        this.appendChild(opt_content);
-      }
+      if (opt_content !== undefined)
+        this.replaceContent(opt_content);
+
       this.hidden = false;
       this.classList.remove('faded');
+    },
+
+    /**
+     * Replaces error message content with the given DOM element.
+     * @param {HTMLElement} content Content to show in bubble.
+     */
+    replaceContent: function(content) {
+      this.innerHTML = '';
+      this.appendChild(content);
     },
 
     /**
@@ -181,9 +189,11 @@ cr.define('cr.ui', function() {
      *     be aligned with the left/top side of the element but not farther than
      *     half of its width/height.
      * @param {number=} opt_padding Optional padding of the bubble.
+     * @param {boolean=} opt_match_width Optional flag to force the bubble have
+     *     the same width as the element it it attached to.
      */
     showContentForElement: function(el, attachment, opt_content,
-                                    opt_offset, opt_padding) {
+                                    opt_offset, opt_padding, opt_match_width) {
       /** @const */ var ARROW_OFFSET = 25;
       /** @const */ var DEFAULT_PADDING = 18;
 
@@ -236,6 +246,20 @@ cr.define('cr.ui', function() {
             pos.right = origin.right + el.offsetWidth + opt_padding;
             break;
         }
+      }
+      this.style.width = '';
+      this.removeAttribute('match-width');
+      if (opt_match_width) {
+        this.setAttribute('match-width', '');
+        var elWidth =
+            window.getComputedStyle(el, null).getPropertyValue('width');
+        var paddingLeft = parseInt(window.getComputedStyle(this, null)
+            .getPropertyValue('padding-left'));
+        var paddingRight = parseInt(window.getComputedStyle(this, null)
+            .getPropertyValue('padding-right'));
+        if (elWidth)
+          this.style.width =
+              (parseInt(elWidth) - paddingLeft - paddingRight) + 'px';
       }
 
       this.anchor_ = el;

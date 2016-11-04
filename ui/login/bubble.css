@@ -14,14 +14,37 @@
   font-size: 12px;
   margin: 2px;
   max-width: 250px;
-  padding: 16px;
+  padding: 8px;
   position: absolute;
 }
 
+.error-message-bubble::before {
+  -webkit-mask-image: url(../../ui/webui/resources/images/warning.svg);
+  -webkit-mask-position: left top;
+  -webkit-mask-repeat: no-repeat;
+  -webkit-mask-size: 20px;
+  background-color: rgb(255,255,255);
+  content: '';
+  display: block;
+  height: 20px;
+  left: 8px;
+  position: absolute;
+  top: 8px;
+  width: 20px;
+}
+
 .error-message-bubble {
-  -webkit-padding-start: 30px;
-  background: url(chrome://theme/IDR_WARNING) left top no-repeat;
-  background-size: 24px;
+  -webkit-padding-start: 20px;
+}
+
+.bubble[match-width] .error-message-bubble {
+  -webkit-padding-start: unset;
+  padding-top: 20px;
+}
+
+.bubble a {
+  color: #7baaf7;
+  text-decoration: none;
 }
 
 .error-message-bubble-padding {

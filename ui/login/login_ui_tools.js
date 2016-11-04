@@ -19,10 +19,25 @@ cr.define('cr.ui.LoginUITools', function() {
           element.getBoundingClientRect().top -
           parseInt(window.getComputedStyle(element).marginTop) -
           parseInt(window.getComputedStyle(element).marginBottom);
-      if (wholeWindow)
+      if (wholeWindow) {
         maxAllowedHeight +=
            parseInt(window.getComputedStyle($('outer-container')).bottom);
+      }
       return maxAllowedHeight;
-    }
+    },
+
+    /**
+     * Computes max-width for an element so that it does fit the
+     * outer-container.
+     * @param {element} DOM element
+     */
+    getMaxWidthToFit : function(element) {
+      var maxAllowedWidth =
+          $('outer-container').offsetWidth -
+          element.getBoundingClientRect().left -
+          parseInt(window.getComputedStyle(element).marginLeft) -
+          parseInt(window.getComputedStyle(element).marginRight);
+      return maxAllowedWidth;
+    },
   }
 });
