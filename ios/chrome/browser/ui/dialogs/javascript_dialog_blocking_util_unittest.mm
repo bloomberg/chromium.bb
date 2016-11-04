@@ -17,6 +17,7 @@ namespace {
 // TestWebState subclass that allows simulating page loads.
 class JavaScriptBlockingTestWebState : public web::TestWebState {
  public:
+  JavaScriptBlockingTestWebState() : web::TestWebState(), observer_(nullptr) {}
   ~JavaScriptBlockingTestWebState() override {
     if (observer_)
       observer_->WebStateDestroyed();
