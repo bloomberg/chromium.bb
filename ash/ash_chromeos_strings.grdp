@@ -84,8 +84,20 @@
   <message name="IDS_ASH_STATUS_TRAY_NETWORK" desc="The label used in the network dialog header.">
     Network
   </message>
+  <message name="IDS_ASH_STATUS_TRAY_NETWORK_CONNECTED" desc="The label used when a network connection is connected.">
+    Connected
+  </message>
+  <message name="IDS_ASH_STATUS_TRAY_NETWORK_CONNECTING" desc="The label used when a network connection is connecting.">
+    Connecting...
+  </message>
+  <message name="IDS_ASH_STATUS_TRAY_CELLULAR_NOT_ACTIVATED" desc="The label used when a cellular connection is not activated.">
+    Not activated
+  </message>
   <message name="IDS_ASH_STATUS_TRAY_VPN" desc="The label used in the VPN detailed view header.">
     Private Network
+  </message>
+  <message name="IDS_ASH_STATUS_TRAY_VPN_MONITORED" desc="The label used when a VPN connection may be monitored.">
+    Connection may be monitored
   </message>
   <message name="IDS_ASH_STATUS_TRAY_WIFI" desc="The wifi network device.">
     Wi-Fi
