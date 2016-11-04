@@ -16,13 +16,6 @@ const char kPasswordManagerSettingMigrationFieldTrialName[] =
 const char kEnabledPasswordManagerSettingsMigrationGroupName[] = "Enable";
 const char kDisablePasswordManagerSettingsMigrationGroupName[] = "Disable";
 
-const char kPasswordManagerSettingsBehaviourChangeFieldTrialName[] =
-    "PasswordManagerSettingsBehaviourChange";
-const char kPasswordManagerSettingsBehaviourChangeEnabledGroupName[] =
-    "PasswordManagerSettingsBehaviourChange.Active";
-const char kPasswordManagerSettingsBehaviourChangeDisabledGroupName[] =
-    "PasswordManagerSettingsBehaviourChange.NotActive";
-
 }  // namespace
 
 namespace password_manager {
@@ -35,12 +28,6 @@ class PasswordManagerSettingsMigrationExperimentTest : public testing::Test {
   void EnforcePasswordManagerSettingMigrationExperimentGroup(const char* name) {
     ASSERT_TRUE(base::FieldTrialList::CreateFieldTrial(
         kPasswordManagerSettingMigrationFieldTrialName, name));
-  }
-
-  void EnforcePasswordManagerSettingsBehaviourChangeExperimentGroup(
-      const char* name) {
-    ASSERT_TRUE(base::FieldTrialList::CreateFieldTrial(
-        kPasswordManagerSettingsBehaviourChangeFieldTrialName, name));
   }
 
  protected:
@@ -56,23 +43,9 @@ TEST_F(PasswordManagerSettingsMigrationExperimentTest, IsSettingsMigrationOn) {
 }
 
 TEST_F(PasswordManagerSettingsMigrationExperimentTest, IsSettingsMigrationOff) {
-  EnforcePasswordManagerSettingsBehaviourChangeExperimentGroup(
+  EnforcePasswordManagerSettingMigrationExperimentGroup(
       kDisablePasswordManagerSettingsMigrationGroupName);
   EXPECT_FALSE(IsSettingsMigrationActive());
-}
-
-TEST_F(PasswordManagerSettingsMigrationExperimentTest,
-       IsBehaviourChangeEnabled) {
-  EnforcePasswordManagerSettingsBehaviourChangeExperimentGroup(
-      kPasswordManagerSettingsBehaviourChangeEnabledGroupName);
-  EXPECT_TRUE(IsSettingsBehaviorChangeActive());
-}
-
-TEST_F(PasswordManagerSettingsMigrationExperimentTest,
-       IsBehaviourChangeDisabled) {
-  EnforcePasswordManagerSettingsBehaviourChangeExperimentGroup(
-      kPasswordManagerSettingsBehaviourChangeDisabledGroupName);
-  EXPECT_FALSE(IsSettingsBehaviorChangeActive());
 }
 
 }  // namespace password_manager

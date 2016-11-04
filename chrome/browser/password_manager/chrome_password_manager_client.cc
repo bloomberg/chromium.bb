@@ -207,9 +207,7 @@ bool ChromePasswordManagerClient::IsSavingAndFillingEnabledForCurrentPage()
 }
 
 bool ChromePasswordManagerClient::IsFillingEnabledForCurrentPage() const {
-  return (!password_manager::IsSettingsBehaviorChangeActive() ||
-          *saving_and_filling_passwords_enabled_) &&
-         !DidLastPageLoadEncounterSSLErrors() &&
+  return !DidLastPageLoadEncounterSSLErrors() &&
          IsPasswordManagementEnabledForCurrentPage();
 }
 

@@ -17,12 +17,4 @@ bool IsSettingsMigrationActive() {
                           base::CompareCase::INSENSITIVE_ASCII);
 }
 
-bool IsSettingsBehaviorChangeActive() {
-  const char kFieldTrialName[] = "PasswordManagerSettingsBehaviourChange";
-  const char kEnabledGroupName[] =
-      "PasswordManagerSettingsBehaviourChange.Active";
-  return base::FieldTrialList::FindFullName(kFieldTrialName) ==
-         kEnabledGroupName;
-}
-
 }  // namespace password_manager

@@ -10,10 +10,6 @@ namespace password_manager {
 // Returns true if settings migration should be active for the user.
 bool IsSettingsMigrationActive();
 
-// Returns true if user participates in the experiment where password manager
-// stops autofilling the credentials when it's off.
-bool IsSettingsBehaviorChangeActive();
-
 }  // namespace password_manager
 
 #endif  // COMPONENTS_PASSWORD_MANAGER_CORE_BROWSER_PASSWORD_MANAGER_SETTINGS_MIGRATOR_EXPERIMENT_H_
