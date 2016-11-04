@@ -175,6 +175,16 @@ class GCMClientImpl
     std::set<std::string> last_checkin_accounts;
   };
 
+  // Reasons for resetting the GCM Store.
+  // Note: this enum is recorded into a histogram. Do not change enum value
+  // or order.
+  enum ResetReason {
+    LOAD_FAILURE,      // GCM store failed to load, but the store exists.
+    CHECKIN_REJECTED,  // Checkin was rejected by server.
+
+    RESET_REASON_COUNT,
+  };
+
   // Collection of pending registration requests. Keys are RegistrationInfo
   // instance, while values are pending registration requests to obtain a
   // registration ID for requesting application.
