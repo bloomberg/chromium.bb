@@ -1250,6 +1250,10 @@ bool ComputedStyle::hasWillChangeTransformHint() const {
     switch (property) {
       case CSSPropertyTransform:
       case CSSPropertyAliasWebkitTransform:
+      case CSSPropertyPerspective:
+      case CSSPropertyTranslate:
+      case CSSPropertyScale:
+      case CSSPropertyRotate:
         return true;
       default:
         break;
