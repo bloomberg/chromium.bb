@@ -21,7 +21,9 @@ BlimpRemoteCompositorBridge::BlimpRemoteCompositorBridge(
   remote_proto_channel_->SetProtoReceiver(this);
 }
 
-BlimpRemoteCompositorBridge::~BlimpRemoteCompositorBridge() = default;
+BlimpRemoteCompositorBridge::~BlimpRemoteCompositorBridge() {
+  remote_proto_channel_->SetProtoReceiver(nullptr);
+}
 
 void BlimpRemoteCompositorBridge::BindToClient(
     cc::RemoteCompositorBridgeClient* client) {
@@ -35,6 +37,10 @@ void BlimpRemoteCompositorBridge::ScheduleMainFrame() {
 
 void BlimpRemoteCompositorBridge::ProcessCompositorStateUpdate(
     std::unique_ptr<cc::CompositorProtoState> compositor_proto_state) {
+  compositor_proto_state->compositor_message->set_client_state_update_ack(
+      client_state_update_ack_pending_);
+  client_state_update_ack_pending_ = false;
+
   remote_proto_channel_->SendCompositorProto(
       *compositor_proto_state->compositor_message);
   scheduler_.DidSendFrameUpdateToClient();
@@ -46,12 +52,39 @@ void BlimpRemoteCompositorBridge::ProcessCompositorStateUpdate(
 
 void BlimpRemoteCompositorBridge::OnProtoReceived(
     std::unique_ptr<cc::proto::CompositorMessage> proto) {
-  DCHECK(proto->frame_ack());
-  scheduler_.DidReceiveFrameUpdateAck();
+  if (proto->frame_ack())
+    scheduler_.DidReceiveFrameUpdateAck();
+
+  if (proto->has_client_state_update()) {
+    DCHECK(!client_state_update_ack_pending_);
+
+    client_->ApplyStateUpdateFromClient(proto->client_state_update());
+
+    // If applying the delta resulted in a frame request, run the main frame
+    // first so the ack sent to the client includes the frame with the deltas
+    // applied.
+    if (scheduler_.needs_frame_update()) {
+      client_state_update_ack_pending_ = true;
+    } else {
+      cc::proto::CompositorMessage message;
+      message.set_client_state_update_ack(true);
+      remote_proto_channel_->SendCompositorProto(message);
+    }
+  }
 }
 
 void BlimpRemoteCompositorBridge::StartFrameUpdate() {
   client_->BeginMainFrame();
+
+  // If the frame resulted in an update to the client, the ack should have gone
+  // with it. If it is still pending, this means the main frame was aborted so
+  // send the ack now.
+  if (client_state_update_ack_pending_) {
+    client_state_update_ack_pending_ = false;
+    cc::proto::CompositorMessage message;
+    message.set_client_state_update_ack(true);
+    remote_proto_channel_->SendCompositorProto(message);
+  }
 }
 
 }  // namespace engine

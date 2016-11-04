@@ -6,6 +6,8 @@ source_set("compositor") {
   testonly = true
 
   sources = [
+    "blimp_compositor_with_fake_host.cc",
+    "blimp_compositor_with_fake_host.h",
     "mock_compositor_dependencies.cc",
     "mock_compositor_dependencies.h",
     "test_blimp_embedder_compositor.cc",
@@ -14,9 +16,11 @@ source_set("compositor") {
 
   deps = [
     "//cc:test_support",
+    "//cc/proto",
   ]
 
   public_deps = [
+    "//blimp/client/core/compositor",
     "//blimp/client/public:public_headers",
     "//blimp/client/support/compositor",
   ]

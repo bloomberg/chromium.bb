@@ -450,7 +450,10 @@ void LayerTreeHostInProcess::FinishCommitOnImplThread(
   if (layer_tree_->needs_full_tree_sync())
     TreeSynchronizer::SynchronizeTrees(layer_tree_->root_layer(), sync_tree);
 
-  layer_tree_->PushPropertiesTo(sync_tree);
+  float page_scale_delta = 1.f;
+  if (reflected_main_frame_state_)
+    page_scale_delta = reflected_main_frame_state_->page_scale_delta;
+  layer_tree_->PushPropertiesTo(sync_tree, page_scale_delta);
 
   sync_tree->PassSwapPromises(swap_promise_manager_.TakeSwapPromises());
 
@@ -471,6 +474,19 @@ void LayerTreeHostInProcess::FinishCommitOnImplThread(
 
     TreeSynchronizer::PushLayerProperties(layer_tree_.get(), sync_tree);
 
+    if (reflected_main_frame_state_) {
+      for (const auto& scroll_update : reflected_main_frame_state_->scrolls) {
+        int layer_id = scroll_update.layer_id;
+        gfx::Vector2dF scroll_delta = scroll_update.scroll_delta;
+
+        PropertyTrees* property_trees = layer_tree_->property_trees();
+        property_trees->scroll_tree.SetScrollOffset(
+            layer_id, gfx::ScrollOffsetWithDelta(
+                          layer_tree_->LayerById(layer_id)->scroll_offset(),
+                          scroll_delta));
+      }
+    }
+
     // This must happen after synchronizing property trees and after pushing
     // properties, which updates the clobber_active_value flag.
     sync_tree->UpdatePropertyTreeScrollOffset(layer_tree_->property_trees());
@@ -489,6 +505,7 @@ void LayerTreeHostInProcess::FinishCommitOnImplThread(
 
   micro_benchmark_controller_.ScheduleImplBenchmarks(host_impl);
   layer_tree_->property_trees()->ResetAllChangeTracking();
+  reflected_main_frame_state_ = nullptr;
 }
 
 void LayerTreeHostInProcess::WillCommit() {
@@ -879,6 +896,14 @@ void LayerTreeHostInProcess::ApplyScrollAndScale(ScrollAndScaleSet* info) {
   // controls from clamping the layout viewport both on the compositor and
   // on the main thread.
   ApplyViewportDeltas(info);
+}
+
+void LayerTreeHostInProcess::SetReflectedMainFrameState(
+    std::unique_ptr<ReflectedMainFrameState> reflected_main_frame_state) {
+  DCHECK(IsThreaded());
+
+  reflected_main_frame_state_ = std::move(reflected_main_frame_state);
+  SetNeedsCommit();
 }
 
 const base::WeakPtr<InputHandler>& LayerTreeHostInProcess::GetInputHandler()

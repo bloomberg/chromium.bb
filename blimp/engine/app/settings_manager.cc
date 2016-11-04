@@ -31,6 +31,7 @@ void SettingsManager::UpdateWebkitPreferences(content::WebPreferences* prefs) {
       settings_.default_maximum_page_scale_factor;
   prefs->shrinks_viewport_contents_to_fit =
       settings_.shrinks_viewport_contents_to_fit;
+  prefs->use_solid_color_scrollbars = true;
 }
 
 const EngineSettings& SettingsManager::GetEngineSettings() const {

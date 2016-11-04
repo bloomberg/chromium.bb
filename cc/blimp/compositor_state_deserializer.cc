@@ -7,7 +7,6 @@
 #include "base/bind.h"
 #include "base/memory/ptr_util.h"
 #include "cc/blimp/client_picture_cache.h"
-#include "cc/blimp/compositor_state_deserializer_client.h"
 #include "cc/blimp/deserialized_content_layer_client.h"
 #include "cc/blimp/layer_factory.h"
 #include "cc/blimp/picture_data_conversions.h"
@@ -16,10 +15,12 @@
 #include "cc/layers/picture_layer.h"
 #include "cc/layers/solid_color_scrollbar_layer.h"
 #include "cc/proto/cc_conversions.h"
+#include "cc/proto/client_state_update.pb.h"
 #include "cc/proto/gfx_conversions.h"
 #include "cc/proto/layer_tree_host.pb.h"
 #include "cc/proto/skia_conversions.h"
-#include "cc/trees/layer_tree_host.h"
+#include "cc/trees/layer_tree_host_common.h"
+#include "cc/trees/layer_tree_host_in_process.h"
 
 namespace cc {
 namespace {
@@ -76,15 +77,14 @@ CompositorStateDeserializer::LayerData& CompositorStateDeserializer::LayerData::
 operator=(LayerData&& other) = default;
 
 CompositorStateDeserializer::CompositorStateDeserializer(
-    LayerTreeHost* layer_tree_host,
+    LayerTreeHostInProcess* layer_tree_host,
     std::unique_ptr<ClientPictureCache> client_picture_cache,
-    const ScrollCallback& scroll_callback,
     CompositorStateDeserializerClient* client)
     : layer_factory_(base::MakeUnique<DefaultLayerFactory>()),
       layer_tree_host_(layer_tree_host),
       client_picture_cache_(std::move(client_picture_cache)),
-      scroll_callback_(scroll_callback),
-      client_(client) {
+      client_(client),
+      weak_factory_(this) {
   DCHECK(layer_tree_host_);
   DCHECK(client_);
 }
@@ -123,6 +123,99 @@ void CompositorStateDeserializer::DeserializeCompositorUpdate(
 void CompositorStateDeserializer::SetLayerFactoryForTesting(
     std::unique_ptr<LayerFactory> layer_factory) {
   layer_factory_ = std::move(layer_factory);
+}
+
+void CompositorStateDeserializer::ApplyViewportDeltas(
+    const gfx::Vector2dF& inner_delta,
+    const gfx::Vector2dF& outer_delta,
+    const gfx::Vector2dF& elastic_overscroll_delta,
+    float page_scale,
+    float top_controls_delta) {
+  DCHECK_EQ(top_controls_delta, 0.0f);
+  DCHECK(elastic_overscroll_delta == gfx::Vector2dF());
+  DCHECK(outer_delta == gfx::Vector2dF());
+
+  // The inner_delta can be ignored here, since we receive that in the scroll
+  // callback on the layer itself.
+  if (page_scale != 1.0f) {
+    LayerTree* layer_tree = layer_tree_host_->GetLayerTree();
+    synced_page_scale_.UpdateDeltaFromImplThread(
+        layer_tree->page_scale_factor());
+    layer_tree->SetPageScaleFactorAndLimits(
+        synced_page_scale_.EngineMain(), layer_tree->min_page_scale_factor(),
+        layer_tree->max_page_scale_factor());
+    client_->DidUpdateLocalState();
+  }
+}
+
+void CompositorStateDeserializer::PullClientStateUpdate(
+    proto::ClientStateUpdate* client_state_update) {
+  for (auto& layer_it : engine_id_to_layer_) {
+    int engine_layer_id = layer_it.first;
+    auto& synced_scroll_offset = layer_it.second.synced_scroll_offset;
+    gfx::ScrollOffset scroll_offset_delta =
+        synced_scroll_offset.PullDeltaForEngineUpdate();
+    gfx::Vector2dF scroll_delta_vector =
+        gfx::ScrollOffsetToVector2dF(scroll_offset_delta);
+
+    if (scroll_delta_vector.IsZero()) {
+      continue;
+    }
+
+    proto::ScrollUpdate* scroll_update =
+        client_state_update->add_scroll_updates();
+    scroll_update->set_layer_id(engine_layer_id);
+    Vector2dFToProto(scroll_delta_vector,
+                     scroll_update->mutable_scroll_delta());
+  }
+
+  float page_scale_delta = synced_page_scale_.PullDeltaForEngineUpdate();
+  if (page_scale_delta != 1.0f) {
+    client_state_update->set_page_scale_delta(page_scale_delta);
+  }
+}
+
+void CompositorStateDeserializer::DidApplyStateUpdatesOnEngine() {
+  for (auto& layer_it : engine_id_to_layer_) {
+    Layer* layer = layer_it.second.layer.get();
+    auto& synced_scroll_offset = layer_it.second.synced_scroll_offset;
+
+    synced_scroll_offset.DidApplySentDeltaOnEngine();
+    layer->SetScrollOffset(synced_scroll_offset.EngineMain());
+  }
+
+  synced_page_scale_.DidApplySentDeltaOnEngine();
+  LayerTree* layer_tree = layer_tree_host_->GetLayerTree();
+  layer_tree->SetPageScaleFactorAndLimits(synced_page_scale_.EngineMain(),
+                                          layer_tree->min_page_scale_factor(),
+                                          layer_tree->max_page_scale_factor());
+}
+
+void CompositorStateDeserializer::SendUnappliedDeltasToLayerTreeHost() {
+  std::unique_ptr<ReflectedMainFrameState> reflected_main_frame_state =
+      base::MakeUnique<ReflectedMainFrameState>();
+
+  for (auto& layer_it : engine_id_to_layer_) {
+    Layer* layer = layer_it.second.layer.get();
+    auto& synced_scroll_offset = layer_it.second.synced_scroll_offset;
+
+    gfx::ScrollOffset scroll_offset_delta =
+        synced_scroll_offset.DeltaNotAppliedOnEngine();
+    gfx::Vector2dF scroll_delta_vector =
+        gfx::ScrollOffsetToVector2dF(scroll_offset_delta);
+    if (scroll_delta_vector.IsZero())
+      continue;
+
+    ReflectedMainFrameState::ScrollUpdate scroll_update;
+    scroll_update.layer_id = layer->id();
+    scroll_update.scroll_delta = scroll_delta_vector;
+    reflected_main_frame_state->scrolls.push_back(scroll_update);
+  }
+
+  reflected_main_frame_state->page_scale_delta =
+      synced_page_scale_.DeltaNotAppliedOnEngine();
+  layer_tree_host_->SetReflectedMainFrameState(
+      std::move(reflected_main_frame_state));
 }
 
 void CompositorStateDeserializer::SychronizeLayerTreeState(
@@ -177,10 +270,10 @@ void CompositorStateDeserializer::SychronizeLayerTreeState(
   float min_page_scale_factor = layer_tree_proto.min_page_scale_factor();
   float max_page_scale_factor = layer_tree_proto.max_page_scale_factor();
   float page_scale_factor = layer_tree_proto.page_scale_factor();
-  if (client_->ShouldRetainClientPageScale(page_scale_factor))
-    page_scale_factor = layer_tree->page_scale_factor();
-  layer_tree->SetPageScaleFactorAndLimits(
-      page_scale_factor, min_page_scale_factor, max_page_scale_factor);
+  synced_page_scale_.PushFromEngineMainThread(page_scale_factor);
+  layer_tree->SetPageScaleFactorAndLimits(synced_page_scale_.EngineMain(),
+                                          min_page_scale_factor,
+                                          max_page_scale_factor);
 
   layer_tree->set_background_color(layer_tree_proto.background_color());
   layer_tree->set_has_transparent_background(
@@ -232,10 +325,12 @@ void CompositorStateDeserializer::SynchronizeLayerState(
   layer->SetUseParentBackfaceVisibility(base.use_parent_backface_visibility());
   layer->SetBackgroundColor(base.background_color());
 
-  gfx::ScrollOffset scroll_offset = ProtoToScrollOffset(base.scroll_offset());
-  if (client_->ShouldRetainClientScroll(engine_layer_id, scroll_offset))
-    scroll_offset = layer->scroll_offset();
-  layer->SetScrollOffset(scroll_offset);
+  gfx::ScrollOffset engine_scroll_offset =
+      ProtoToScrollOffset(base.scroll_offset());
+  SyncedRemoteScrollOffset& synced_scroll_offset =
+      GetLayerData(engine_layer_id)->synced_scroll_offset;
+  synced_scroll_offset.PushFromEngineMainThread(engine_scroll_offset);
+  layer->SetScrollOffset(synced_scroll_offset.EngineMain());
 
   layer->SetScrollClipLayerId(
       GetClientIdFromEngineId(base.scroll_clip_layer_id()));
@@ -338,7 +433,9 @@ void CompositorStateDeserializer::SynchronizeLayerHierarchyRecursive(
   }
 
   // Scroll callback.
-  layer->set_did_scroll_callback(base::Bind(scroll_callback_, layer_node.id()));
+  layer->set_did_scroll_callback(
+      base::Bind(&CompositorStateDeserializer::LayerScrolled,
+                 weak_factory_.GetWeakPtr(), layer_node.id()));
 }
 
 scoped_refptr<Layer> CompositorStateDeserializer::GetLayerAndAddToNewMap(
@@ -420,6 +517,16 @@ scoped_refptr<Layer> CompositorStateDeserializer::GetLayerAndAddToNewMap(
   return layer;
 }
 
+void CompositorStateDeserializer::LayerScrolled(int engine_layer_id) {
+  LayerData* layer_data = GetLayerData(engine_layer_id);
+  Layer* layer = layer_data->layer.get();
+  SyncedRemoteScrollOffset& synced_scroll_offset =
+      layer_data->synced_scroll_offset;
+  synced_scroll_offset.UpdateDeltaFromImplThread(layer->scroll_offset());
+  layer->SetScrollOffset(synced_scroll_offset.EngineMain());
+  client_->DidUpdateLocalState();
+}
+
 int CompositorStateDeserializer::GetClientIdFromEngineId(
     int engine_layer_id) const {
   Layer* layer = GetLayerForEngineId(engine_layer_id);
@@ -441,6 +548,13 @@ CompositorStateDeserializer::GetContentLayerClient(int engine_layer_id) const {
   return layer_it != engine_id_to_layer_.end()
              ? layer_it->second.content_layer_client.get()
              : nullptr;
+}
+
+CompositorStateDeserializer::LayerData*
+CompositorStateDeserializer::GetLayerData(int engine_layer_id) {
+  EngineIdToLayerMap::iterator layer_it =
+      engine_id_to_layer_.find(engine_layer_id);
+  return layer_it != engine_id_to_layer_.end() ? &layer_it->second : nullptr;
 }
 
 }  // namespace cc

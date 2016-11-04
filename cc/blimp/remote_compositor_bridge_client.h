@@ -15,6 +15,9 @@ class ScrollOffset;
 }  // namespace gfx
 
 namespace cc {
+namespace proto {
+class ClientStateUpdate;
+}  // namespace proto
 class CompositorProtoState;
 
 class CC_EXPORT RemoteCompositorBridgeClient {
@@ -29,13 +32,10 @@ class CC_EXPORT RemoteCompositorBridgeClient {
   // is made.
   virtual void BeginMainFrame() = 0;
 
-  // Provides an update from the mutations made on the client. Returns true if
-  // the update could be successfully applied to the engine state. This can
-  // fail, for instance, if the layer present in the update was destroyed on the
-  // engine.
-  virtual bool ApplyScrollAndScaleUpdateFromClient(
-      const ScrollOffsetMap& client_scroll_map,
-      float client_page_scale) = 0;
+  // Applied state updates reported from the client onto the main thread state
+  // on the engine.
+  virtual void ApplyStateUpdateFromClient(
+      const proto::ClientStateUpdate& client_state_update) = 0;
 };
 
 }  // namespace cc

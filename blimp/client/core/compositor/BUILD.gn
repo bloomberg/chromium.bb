@@ -6,6 +6,7 @@ source_set("compositor") {
   visibility = [
     "//blimp/client/app:*",  # TODO(nyquist): Remove this. See crbug/651964.
     "//blimp/client/core/*",
+    "//blimp/client/test/*",
   ]
 
   sources = [

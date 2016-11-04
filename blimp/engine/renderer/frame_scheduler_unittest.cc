@@ -2,7 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include <blimp/engine/renderer/frame_scheduler.h>
+#include "blimp/engine/renderer/frame_scheduler.h"
+
 #include "base/run_loop.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -11,19 +12,11 @@ namespace blimp {
 namespace engine {
 namespace {
 
-class FrameSchedulerForTesting : public FrameScheduler {
- public:
-  explicit FrameSchedulerForTesting(FrameSchedulerClient* client)
-      // Use a zero time delta to let tests run main frames back-to-back.
-      : FrameScheduler(base::TimeDelta::FromSeconds(0),
-                       base::ThreadTaskRunnerHandle::Get(),
-                       client) {}
-  ~FrameSchedulerForTesting() override = default;
-};
-
 class FrameSchedulerTest : public testing::Test, public FrameSchedulerClient {
  public:
-  FrameSchedulerTest() : scheduler_(this) {}
+  FrameSchedulerTest() : scheduler_(base::ThreadTaskRunnerHandle::Get(), this) {
+    scheduler_.set_frame_delay_for_testing(base::TimeDelta::FromSeconds(0));
+  }
   ~FrameSchedulerTest() override {}
 
   // FrameSchedulerClient implementation.
@@ -37,7 +30,7 @@ class FrameSchedulerTest : public testing::Test, public FrameSchedulerClient {
 
  protected:
   base::MessageLoop loop_;
-  FrameSchedulerForTesting scheduler_;
+  FrameScheduler scheduler_;
   int num_frames_ = 0;
 
   bool send_client_update_during_frame_ = false;

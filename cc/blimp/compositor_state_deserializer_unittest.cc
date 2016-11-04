@@ -8,7 +8,6 @@
 #include "cc/animation/animation_host.h"
 #include "cc/blimp/client_picture_cache.h"
 #include "cc/blimp/compositor_proto_state.h"
-#include "cc/blimp/compositor_state_deserializer_client.h"
 #include "cc/blimp/layer_tree_host_remote.h"
 #include "cc/layers/content_layer_client.h"
 #include "cc/layers/picture_layer.h"
@@ -19,6 +18,7 @@
 #include "cc/test/fake_image_serialization_processor.h"
 #include "cc/test/fake_layer_tree_host.h"
 #include "cc/test/fake_layer_tree_host_client.h"
+#include "cc/test/fake_proxy.h"
 #include "cc/test/fake_remote_compositor_bridge.h"
 #include "cc/test/remote_client_layer_factory.h"
 #include "cc/test/skia_common.h"
@@ -35,6 +35,11 @@ namespace {
   EXPECT_EQ(                                                                \
       compositor_state_deserializer_->GetLayerForEngineId(engine_layer_id), \
       client_layer);
+
+class ProxyForCommitRequest : public FakeProxy {
+ public:
+  bool CommitRequested() const override { return true; }
+};
 
 class FakeContentLayerClient : public ContentLayerClient {
  public:
@@ -82,7 +87,8 @@ class RemoteCompositorBridgeForTest : public FakeRemoteCompositorBridge {
 
 class CompositorStateDeserializerTest
     : public testing::Test,
-      public CompositorStateDeserializerClient {
+      public CompositorStateDeserializerClient,
+      public FakeLayerTreeHostClient {
  public:
   void SetUp() override {
     scoped_refptr<base::SingleThreadTaskRunner> main_task_runner =
@@ -108,14 +114,16 @@ class CompositorStateDeserializerTest
 
     // Client side setup.
     layer_tree_host_in_process_ = FakeLayerTreeHost::Create(
-        &layer_tree_host_client_client_, &task_graph_runner_);
+        this, &task_graph_runner_, settings, CompositorMode::THREADED);
+    layer_tree_host_in_process_->InitializeForTesting(
+        TaskRunnerProvider::Create(base::ThreadTaskRunnerHandle::Get(),
+                                   base::ThreadTaskRunnerHandle::Get()),
+        base::MakeUnique<ProxyForCommitRequest>());
     std::unique_ptr<ClientPictureCache> client_picture_cache =
         image_serialization_processor_.CreateClientPictureCache();
     compositor_state_deserializer_ =
         base::MakeUnique<CompositorStateDeserializer>(
             layer_tree_host_in_process_.get(), std::move(client_picture_cache),
-            base::Bind(&CompositorStateDeserializerTest::LayerScrolled,
-                       base::Unretained(this)),
             this);
   }
 
@@ -133,15 +141,17 @@ class CompositorStateDeserializerTest
   }
 
   // CompositorStateDeserializer implementation.
-  bool ShouldRetainClientScroll(int engine_layer_id,
-                                const gfx::ScrollOffset& new_offset) override {
-    return should_retain_client_scroll_;
-  }
-  bool ShouldRetainClientPageScale(float new_page_scale) override {
-    return should_retain_client_scale_;
-  }
+  void DidUpdateLocalState() override { client_state_dirty_ = true; }
 
-  void LayerScrolled(int engine_layer_id) {}
+  void ApplyViewportDeltas(const gfx::Vector2dF& inner_delta,
+                           const gfx::Vector2dF& outer_delta,
+                           const gfx::Vector2dF& elastic_overscroll_delta,
+                           float page_scale,
+                           float top_controls_delta) override {
+    compositor_state_deserializer_->ApplyViewportDeltas(
+        inner_delta, outer_delta, elastic_overscroll_delta, page_scale,
+        top_controls_delta);
+  }
 
   void VerifyTreesAreIdentical() {
     LayerTree* engine_layer_tree = layer_tree_host_remote_->GetLayerTree();
@@ -266,13 +276,11 @@ class CompositorStateDeserializerTest
   // Client setup.
   std::unique_ptr<FakeLayerTreeHost> layer_tree_host_in_process_;
   std::unique_ptr<CompositorStateDeserializer> compositor_state_deserializer_;
-  FakeLayerTreeHostClient layer_tree_host_client_client_;
   TestTaskGraphRunner task_graph_runner_;
 
   FakeImageSerializationProcessor image_serialization_processor_;
 
-  bool should_retain_client_scroll_ = false;
-  bool should_retain_client_scale_ = false;
+  bool client_state_dirty_ = false;
 };
 
 TEST_F(CompositorStateDeserializerTest, BasicSync) {
@@ -375,32 +383,71 @@ TEST_F(CompositorStateDeserializerTest, ReconcileScrollAndScale) {
   // Synchronize State and verify that the engine values are used.
   base::RunLoop().RunUntilIdle();
   VerifyTreesAreIdentical();
-
+  Layer* client_scroll_layer =
+      compositor_state_deserializer_->GetLayerForEngineId(scroll_layer->id());
   EXPECT_EQ(engine_page_scale,
             layer_tree_host_in_process_->GetLayerTree()->page_scale_factor());
-  EXPECT_EQ(engine_offset, compositor_state_deserializer_
-                               ->GetLayerForEngineId(scroll_layer->id())
-                               ->scroll_offset());
+  EXPECT_EQ(engine_offset, client_scroll_layer->scroll_offset());
 
-  // Now reset the scroll offset and page scale and force-retain the client
-  // values.
-  gfx::ScrollOffset new_engine_offset(2, 2);
+  // Now send some updates from the impl thread.
+  ScrollAndScaleSet scroll_and_scale_set;
+
+  gfx::ScrollOffset offset_from_impl_thread(10, 3);
+  gfx::ScrollOffset scroll_delta =
+      offset_from_impl_thread - client_scroll_layer->scroll_offset();
+  LayerTreeHostCommon::ScrollUpdateInfo scroll_update;
+  scroll_update.layer_id = client_scroll_layer->id();
+  scroll_update.scroll_delta = gfx::ScrollOffsetToFlooredVector2d(scroll_delta);
+  scroll_and_scale_set.scrolls.push_back(scroll_update);
+
+  float page_scale_from_impl_side = 3.2f;
+  float page_scale_delta =
+      page_scale_from_impl_side /
+      layer_tree_host_in_process_->GetLayerTree()->page_scale_factor();
+  scroll_and_scale_set.page_scale_delta = page_scale_delta;
+
+  layer_tree_host_in_process_->ApplyScrollAndScale(&scroll_and_scale_set);
+
+  // The values on the client should have been forced to retain the original
+  // engine value.
+  EXPECT_EQ(engine_page_scale,
+            layer_tree_host_in_process_->GetLayerTree()->page_scale_factor());
+  EXPECT_EQ(engine_offset, client_scroll_layer->scroll_offset());
+
+  // Now pull the deltas from the client onto the engine, this should result
+  // in an aborted commit.
+  proto::ClientStateUpdate client_state_update;
+  compositor_state_deserializer_->PullClientStateUpdate(&client_state_update);
+
+  // Send the reflected main frame state to the client layer tree host.
+  compositor_state_deserializer_->SendUnappliedDeltasToLayerTreeHost();
+  const ReflectedMainFrameState* reflected_state =
+      layer_tree_host_in_process_->reflected_main_frame_state_for_testing();
+  EXPECT_EQ(reflected_state->scrolls.size(), 1u);
+  EXPECT_EQ(reflected_state->scrolls[0].layer_id, client_scroll_layer->id());
+  EXPECT_EQ(reflected_state->scrolls[0].scroll_delta,
+            gfx::ScrollOffsetToVector2dF(scroll_delta));
+  EXPECT_EQ(reflected_state->page_scale_delta, page_scale_delta);
+
+  layer_tree_host_remote_->ApplyStateUpdateFromClient(client_state_update);
+
+  // Inform the deserializer that the updates were applied on the engine.
+  // This should pre-emptively apply the deltas on the client.
+  compositor_state_deserializer_->DidApplyStateUpdatesOnEngine();
+  EXPECT_EQ(page_scale_from_impl_side,
+            layer_tree_host_in_process_->GetLayerTree()->page_scale_factor());
+  EXPECT_EQ(offset_from_impl_thread, client_scroll_layer->scroll_offset());
+
+  // Now update the scroll offset on the engine, and ensure that the value is
+  // used on the client.
+  gfx::ScrollOffset new_engine_offset(10, 20);
   scroll_layer->SetScrollOffset(new_engine_offset);
-  float new_engine_page_scale = 0.8f;
-  layer_tree_host_remote_->GetLayerTree()->SetPageScaleFactorAndLimits(
-      new_engine_page_scale, 1.0, 1.0);
-  should_retain_client_scroll_ = true;
-  should_retain_client_scale_ = true;
 
-  // Synchronize State and verify that the client values are retained.
   base::RunLoop().RunUntilIdle();
   VerifyTreesAreIdentical();
-
-  EXPECT_EQ(engine_page_scale,
+  EXPECT_EQ(page_scale_from_impl_side,
             layer_tree_host_in_process_->GetLayerTree()->page_scale_factor());
-  EXPECT_EQ(engine_offset, compositor_state_deserializer_
-                               ->GetLayerForEngineId(scroll_layer->id())
-                               ->scroll_offset());
+  EXPECT_EQ(new_engine_offset, client_scroll_layer->scroll_offset());
 }
 
 TEST_F(CompositorStateDeserializerTest, PropertyTreesAreIdentical) {

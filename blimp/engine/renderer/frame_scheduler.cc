@@ -20,14 +20,8 @@ constexpr base::TimeDelta kDefaultFrameDelay =
 FrameScheduler::FrameScheduler(
     scoped_refptr<base::SingleThreadTaskRunner> task_runner,
     FrameSchedulerClient* client)
-    : FrameScheduler(kDefaultFrameDelay, std::move(task_runner), client) {}
-
-FrameScheduler::FrameScheduler(
-    base::TimeDelta frame_delay,
-    scoped_refptr<base::SingleThreadTaskRunner> task_runner,
-    FrameSchedulerClient* client)
     : next_frame_time_(base::TimeTicks::Now()),
-      frame_delay_(frame_delay),
+      frame_delay_(kDefaultFrameDelay),
       client_(client) {
   DCHECK(client_);
   frame_tick_timer_.SetTaskRunner(std::move(task_runner));

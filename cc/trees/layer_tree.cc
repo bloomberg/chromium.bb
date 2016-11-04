@@ -343,7 +343,8 @@ void LayerTree::SetPropertyTreesNeedRebuild() {
   layer_tree_host_->SetNeedsUpdateLayers();
 }
 
-void LayerTree::PushPropertiesTo(LayerTreeImpl* tree_impl) {
+void LayerTree::PushPropertiesTo(LayerTreeImpl* tree_impl,
+                                 float unapplied_page_scale_delta) {
   tree_impl->set_needs_full_tree_sync(needs_full_tree_sync_);
   needs_full_tree_sync_ = false;
 
@@ -400,9 +401,9 @@ void LayerTree::PushPropertiesTo(LayerTreeImpl* tree_impl) {
   // Setting property trees must happen before pushing the page scale.
   tree_impl->SetPropertyTrees(&property_trees_);
 
-  tree_impl->PushPageScaleFromMainThread(inputs_.page_scale_factor,
-                                         inputs_.min_page_scale_factor,
-                                         inputs_.max_page_scale_factor);
+  tree_impl->PushPageScaleFromMainThread(
+      inputs_.page_scale_factor * unapplied_page_scale_delta,
+      inputs_.min_page_scale_factor, inputs_.max_page_scale_factor);
 
   tree_impl->set_browser_controls_shrink_blink_size(
       inputs_.browser_controls_shrink_blink_size);

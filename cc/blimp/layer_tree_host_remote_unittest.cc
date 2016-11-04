@@ -13,7 +13,9 @@
 #include "cc/animation/animation_host.h"
 #include "cc/layers/layer.h"
 #include "cc/output/begin_frame_args.h"
+#include "cc/proto/client_state_update.pb.h"
 #include "cc/proto/compositor_message.pb.h"
+#include "cc/proto/gfx_conversions.h"
 #include "cc/test/fake_image_serialization_processor.h"
 #include "cc/test/fake_remote_compositor_bridge.h"
 #include "cc/test/stub_layer_tree_host_client.h"
@@ -41,6 +43,20 @@ using testing::StrictMock;
 namespace cc {
 namespace {
 
+gfx::Vector2dF SerializeScrollUpdate(
+    proto::ClientStateUpdate* client_state_update,
+    Layer* layer,
+    const gfx::ScrollOffset& offset_after_update) {
+  proto::ScrollUpdate* scroll_update =
+      client_state_update->add_scroll_updates();
+  scroll_update->set_layer_id(layer->id());
+  gfx::ScrollOffset scroll_delta = offset_after_update - layer->scroll_offset();
+  gfx::Vector2dF scroll_delta_vector =
+      gfx::ScrollOffsetToVector2dF(scroll_delta);
+  Vector2dFToProto(scroll_delta_vector, scroll_update->mutable_scroll_delta());
+  return scroll_delta_vector;
+}
+
 class UpdateTrackingRemoteCompositorBridge : public FakeRemoteCompositorBridge {
  public:
   UpdateTrackingRemoteCompositorBridge(
@@ -55,9 +71,8 @@ class UpdateTrackingRemoteCompositorBridge : public FakeRemoteCompositorBridge {
     compositor_proto_state_ = std::move(compositor_proto_state);
   };
 
-  bool SendUpdates(const std::unordered_map<int, gfx::ScrollOffset>& scroll_map,
-                   float page_scale) {
-    return client_->ApplyScrollAndScaleUpdateFromClient(scroll_map, page_scale);
+  void SendUpdates(const proto::ClientStateUpdate& client_state_update) {
+    client_->ApplyStateUpdateFromClient(client_state_update);
   }
 
   int num_updates_received() const { return num_updates_received_; }
@@ -380,6 +395,7 @@ TEST_F(LayerTreeHostRemoteTest, ScrollAndScaleSync) {
 
   scoped_refptr<Layer> child_layer2 = make_scoped_refptr(new MockLayer(false));
   child_layer1->AddChild(child_layer2);
+  child_layer2->SetScrollOffset(gfx::ScrollOffset(3, 9));
 
   scoped_refptr<Layer> inner_viewport_layer =
       make_scoped_refptr(new MockLayer(false));
@@ -388,45 +404,46 @@ TEST_F(LayerTreeHostRemoteTest, ScrollAndScaleSync) {
   layer_tree_host_->GetLayerTree()->RegisterViewportLayers(
       nullptr, nullptr, inner_viewport_layer, nullptr);
 
-  // Send scroll and scale updates from client.
-  std::unordered_map<int, gfx::ScrollOffset> scroll_updates;
-  gfx::ScrollOffset child1_offset(4, 5);
-  gfx::ScrollOffset child2_offset(3, 10);
-  gfx::Vector2dF inner_viewport_delta(-2, 5);
-  gfx::ScrollOffset inner_viewport_offset = gfx::ScrollOffsetWithDelta(
-      inner_viewport_layer->scroll_offset(), inner_viewport_delta);
-  scroll_updates[child_layer1->id()] = child1_offset;
-  scroll_updates[child_layer2->id()] = child2_offset;
-  scroll_updates[inner_viewport_layer->id()] = inner_viewport_offset;
+  // First test case.
+  gfx::ScrollOffset expected_child1_offset(4, 5);
+  gfx::ScrollOffset expected_child2_offset(3, 10);
+  gfx::ScrollOffset expected_inner_viewport_offset(-2, 5);
+  float expected_page_scale = 2.0f;
 
-  float page_scale_delta = 0.3f;
-  float current_scale_factor = 0.5f;
-  layer_tree_host_->GetLayerTree()->SetPageScaleFactorAndLimits(
-      current_scale_factor, 0.0f, 1.0f);
-  float new_scale_factor = current_scale_factor * page_scale_delta;
+  proto::ClientStateUpdate client_state_update;
+  SerializeScrollUpdate(&client_state_update, child_layer1.get(),
+                        expected_child1_offset);
+  SerializeScrollUpdate(&client_state_update, child_layer2.get(),
+                        expected_child2_offset);
+  gfx::Vector2dF inner_viewport_delta =
+      SerializeScrollUpdate(&client_state_update, inner_viewport_layer.get(),
+                            expected_inner_viewport_offset);
+  float page_scale_delta =
+      expected_page_scale /
+      layer_tree_host_->GetLayerTree()->page_scale_factor();
+  client_state_update.set_page_scale_delta(page_scale_delta);
 
   EXPECT_CALL(mock_layer_tree_host_client_,
               ApplyViewportDeltas(inner_viewport_delta, gfx::Vector2dF(),
-                                  gfx::Vector2dF(), page_scale_delta, 1.0f))
+                                  gfx::Vector2dF(), page_scale_delta, 0.0f))
       .Times(1);
-  bool updates_applied =
-      remote_compositor_bridge_->SendUpdates(scroll_updates, new_scale_factor);
-  EXPECT_TRUE(updates_applied);
-  // The host should have pre-emtively applied the changes.
-  EXPECT_EQ(new_scale_factor,
-            layer_tree_host_->GetLayerTree()->page_scale_factor());
-  EXPECT_EQ(child1_offset, child_layer1->scroll_offset());
-  EXPECT_EQ(child2_offset, child_layer2->scroll_offset());
-  EXPECT_EQ(inner_viewport_offset, inner_viewport_layer->scroll_offset());
 
-  // Destroy a layer and send a scroll update for it. We should be informed that
-  // the update could not be applied successfully.
+  remote_compositor_bridge_->SendUpdates(client_state_update);
+
+  // The host should have pre-emtively applied the changes.
+  EXPECT_EQ(expected_page_scale,
+            layer_tree_host_->GetLayerTree()->page_scale_factor());
+  EXPECT_EQ(expected_child1_offset, child_layer1->scroll_offset());
+  EXPECT_EQ(expected_child2_offset, child_layer2->scroll_offset());
+  EXPECT_EQ(expected_inner_viewport_offset,
+            inner_viewport_layer->scroll_offset());
+
+  // Remove a layer from the tree and send a scroll update for it.
   child_layer1->RemoveAllChildren();
-  scroll_updates.clear();
-  scroll_updates[child_layer2->id()] = gfx::ScrollOffset(3, 2);
-  updates_applied =
-      remote_compositor_bridge_->SendUpdates(scroll_updates, new_scale_factor);
-  EXPECT_FALSE(updates_applied);
+  proto::ClientStateUpdate client_state_update2;
+  SerializeScrollUpdate(&client_state_update2, child_layer2.get(),
+                        gfx::ScrollOffset(9, 10));
+  remote_compositor_bridge_->SendUpdates(client_state_update2);
 }
 
 TEST_F(LayerTreeHostRemoteTest, IdentifiedLayersToSkipUpdates) {

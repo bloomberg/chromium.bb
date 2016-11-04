@@ -54,11 +54,11 @@ class FrameScheduler {
   // Called when an Ack is received for a frame sent to the client.
   void DidReceiveFrameUpdateAck();
 
- protected:
-  // protected for testing.
-  FrameScheduler(base::TimeDelta frame_delay,
-                 scoped_refptr<base::SingleThreadTaskRunner> task_runner,
-                 FrameSchedulerClient* client);
+  bool needs_frame_update() const { return needs_frame_update_; }
+
+  void set_frame_delay_for_testing(base::TimeDelta frame_delay) {
+    frame_delay_ = frame_delay;
+  }
 
  private:
   void ScheduleFrameUpdateIfNecessary();

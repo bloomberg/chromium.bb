@@ -62,9 +62,7 @@ class LayerTreeHostRemoteForTesting::LayerTreeHostInProcessClient
 
   void WillBeginMainFrame() override {}
   void BeginMainFrame(const BeginFrameArgs& args) override {
-    // Send any scroll/scale updates first.
-    layer_tree_host_remote_->ApplyUpdatesFromInProcessHost();
-    layer_tree_host_remote_->BeginMainFrame();
+    layer_tree_host_remote_->BeginRemoteMainFrame();
   }
   void BeginMainFrameNotExpectedSoon() override {}
   void DidBeginMainFrame() override {}
@@ -208,10 +206,7 @@ void LayerTreeHostRemoteForTesting::Initialize(
   compositor_state_deserializer_ =
       base::MakeUnique<CompositorStateDeserializer>(
           layer_tree_host_in_process_.get(),
-          image_serialization_processor_->CreateClientPictureCache(),
-          base::Bind(&LayerTreeHostRemoteForTesting::LayerDidScroll,
-                     base::Unretained(this)),
-          this);
+          image_serialization_processor_->CreateClientPictureCache(), this);
 
   // Override the LayerFactory since a lot of tests rely on the fact that Layers
   // and LayerImpls have matching ids.
@@ -242,43 +237,40 @@ LayerTreeHostRemoteForTesting::CreateLayerTreeHostInProcess(
   return LayerTreeHostInProcess::CreateThreaded(impl_task_runner, &params);
 }
 
+void LayerTreeHostRemoteForTesting::DidUpdateLocalState() {
+  client_state_dirty_ = true;
+}
+
 void LayerTreeHostRemoteForTesting::DispatchDrawAndSubmitCallbacks() {
   // Don't dispatch callbacks right after the commit on the remote host. Since
   // tests rely on CompositorFrames being swapped on the CompositorFrameSink,
   // we wait for these callbacks from the LayerTreeHostInProcess.
 }
 
-bool LayerTreeHostRemoteForTesting::ShouldRetainClientScroll(
-    int engine_layer_id,
-    const gfx::ScrollOffset& new_offset) {
-  return false;
-}
-
-bool LayerTreeHostRemoteForTesting::ShouldRetainClientPageScale(
-    float new_page_scale) {
-  return false;
-}
-
-void LayerTreeHostRemoteForTesting::LayerDidScroll(int engine_layer_id) {
-  layers_scrolled_[engine_layer_id] =
-      compositor_state_deserializer_->GetLayerForEngineId(engine_layer_id)
-          ->scroll_offset();
-}
-
-void LayerTreeHostRemoteForTesting::ApplyUpdatesFromInProcessHost() {
-  ApplyScrollAndScaleUpdateFromClient(
-      layers_scrolled_,
-      layer_tree_host_in_process_->GetLayerTree()->page_scale_factor());
-  layers_scrolled_.clear();
-}
-
 void LayerTreeHostRemoteForTesting::RemoteHostNeedsMainFrame() {
   layer_tree_host_in_process_->SetNeedsAnimate();
+}
+
+void LayerTreeHostRemoteForTesting::BeginRemoteMainFrame() {
+  // Send scroll/scale updates first if modified on the impl thread.
+  if (client_state_dirty_) {
+    client_state_dirty_ = false;
+    proto::ClientStateUpdate client_state_update;
+    compositor_state_deserializer_->PullClientStateUpdate(&client_state_update);
+    ApplyStateUpdateFromClient(client_state_update);
+
+    // Tell the host on the client that the updates were applied to the state
+    // on the remote host, in case the main frame on the remote host is aborted.
+    compositor_state_deserializer_->DidApplyStateUpdatesOnEngine();
+  }
+
+  BeginMainFrame();
 }
 
 void LayerTreeHostRemoteForTesting::ProcessRemoteCompositorUpdate(
     std::unique_ptr<CompositorProtoState> compositor_proto_state) {
   DCHECK(layer_tree_host_in_process_->CommitRequested());
+
   // Deserialize the update from the remote host into client side LTH in
   // process. This bypasses the network layer.
   const proto::LayerTreeHost& layer_tree_host_proto =

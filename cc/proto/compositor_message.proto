@@ -6,6 +6,7 @@ syntax = "proto2";
 
 option optimize_for = LITE_RUNTIME;
 
+import "client_state_update.proto";
 import "compositor_message_to_impl.proto";
 import "compositor_message_to_main.proto";
 import "layer_tree_host.proto";
@@ -25,6 +26,19 @@ message CompositorMessage {
   // Sent from the client to the engine when a frame update was processed
   // on the client.
   optional bool frame_ack = 4;
+
+  // Client -> Engine
+  // Reports any changes made to the main thread state on the compositor thread
+  // on the client.
+  optional ClientStateUpdate client_state_update = 5;
+
+  // Engine -> Client
+  // Acknowledges the application of the client state update to the associated
+  // state on the engine.
+  // If the application of the update resulted in any additional changes to the
+  // state on the engine, the ack will always be bundled with the resulting
+  // frame update.
+  optional bool client_state_update_ack = 6;
 
   // One of these is set based on where the message is going to.
   optional CompositorMessageToMain to_main = 1;

@@ -208,6 +208,10 @@ void LayerTreeHostCommon::ScrollbarsUpdateInfo::FromProtobuf(
   hidden = proto.hidden();
 }
 
+ReflectedMainFrameState::ReflectedMainFrameState() : page_scale_delta(1.0f) {}
+
+ReflectedMainFrameState::~ReflectedMainFrameState() = default;
+
 ScrollAndScaleSet::ScrollAndScaleSet()
     : page_scale_delta(1.f), top_controls_delta(0.f) {
 }

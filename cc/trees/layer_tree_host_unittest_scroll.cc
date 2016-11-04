@@ -22,6 +22,7 @@
 #include "cc/test/geometry_test_utils.h"
 #include "cc/test/layer_tree_test.h"
 #include "cc/test/test_task_graph_runner.h"
+#include "cc/trees/layer_tree_host_common.h"
 #include "cc/trees/layer_tree_impl.h"
 #include "cc/trees/scroll_node.h"
 #include "cc/trees/transform_node.h"
@@ -2041,6 +2042,192 @@ class LayerTreeHostScrollTestPropertyTreeUpdate
 };
 
 SINGLE_AND_MULTI_THREAD_TEST_F(LayerTreeHostScrollTestPropertyTreeUpdate);
+
+class LayerTreeHostScrollTestAppliesReflectedDeltas
+    : public LayerTreeHostScrollTest {
+ public:
+  void BeginTest() override { PostSetNeedsCommitToMainThread(); }
+
+  void SetupTree() override {
+    LayerTreeHostScrollTest::SetupTree();
+
+    gfx::Size scroll_layer_bounds(200, 200);
+    layer_tree()->outer_viewport_scroll_layer()->SetBounds(scroll_layer_bounds);
+    layer_tree()->outer_viewport_scroll_layer()->SetScrollOffset(
+        initial_offset_);
+    layer_tree()->outer_viewport_scroll_layer()->set_did_scroll_callback(
+        base::Bind(&LayerTreeHostScrollTestAppliesReflectedDeltas::
+                       DidScrollOuterViewport,
+                   base::Unretained(this)));
+
+    layer_tree()->SetPageScaleFactorAndLimits(initial_page_scale_, 0.f, 1.f);
+  }
+
+  void DidActivateTreeOnThread(LayerTreeHostImpl* host_impl) override {
+    LayerImpl* outer_viewport_layer = host_impl->OuterViewportScrollLayer();
+
+    switch (host_impl->active_tree()->source_frame_number()) {
+      case 0: {
+        // We have the first tree, so let's scroll the outer viewport layer and
+        // change the page scale.
+        outer_viewport_layer->ScrollBy(outer_viewport_offset_deltas_[0]);
+        last_active_offset_ = outer_viewport_layer->CurrentScrollOffset();
+
+        host_impl->active_tree()->page_scale_factor()->SetCurrent(
+            initial_page_scale_ * page_scale_update_);
+        last_page_scale_ =
+            host_impl->active_tree()->current_page_scale_factor();
+
+        PostSetNeedsCommitToMainThread();
+      } break;
+      case 1:
+        // The scroll offset on the active tree should remain unchanged.
+        EXPECT_EQ(last_active_offset_,
+                  outer_viewport_layer->CurrentScrollOffset());
+        EXPECT_EQ(last_page_scale_,
+                  host_impl->active_tree()->current_page_scale_factor());
+
+        // Scroll again to make sure that only the delta applied in this frame
+        // is reported to the main thread.
+        outer_viewport_layer->ScrollBy(outer_viewport_offset_deltas_[1]);
+        last_active_offset_ = outer_viewport_layer->CurrentScrollOffset();
+
+        PostSetNeedsCommitToMainThread();
+        break;
+      case 2:
+        // The scroll offset on the active tree should remain unchanged.
+        EXPECT_EQ(last_active_offset_,
+                  outer_viewport_layer->CurrentScrollOffset());
+        EXPECT_EQ(last_page_scale_,
+                  host_impl->active_tree()->current_page_scale_factor());
+
+        // One last frame to make sure we reach consistent state.
+        PostSetNeedsCommitToMainThread();
+        break;
+      case 3:
+        // The scroll offset on the active tree should remain unchanged.
+        EXPECT_EQ(last_active_offset_,
+                  outer_viewport_layer->CurrentScrollOffset());
+        EXPECT_EQ(last_page_scale_,
+                  host_impl->active_tree()->current_page_scale_factor());
+
+        EndTest();
+        break;
+    }
+  }
+
+  void WillCommitCompleteOnThread(LayerTreeHostImpl* host_impl) override {
+    LayerTreeImpl* sync_tree = host_impl->sync_tree();
+    LayerImpl* outer_viewport_layer = sync_tree->OuterViewportScrollLayer();
+    TransformNode* node = sync_tree->property_trees()->transform_tree.Node(
+        outer_viewport_layer->transform_tree_index());
+
+    switch (host_impl->sync_tree()->source_frame_number()) {
+      case 1:
+      case 2:
+        // Pushing page scale/scroll offset from the main thread should have
+        // resulted in a request to update draw properties. This is necessary
+        // to ensure that the draw properties are recomputed on the pending
+        // tree post-commit, since the property trees update on the main thread
+        // did not include the additionally reflected delta.
+        EXPECT_TRUE(host_impl->sync_tree()->needs_update_draw_properties());
+        EXPECT_TRUE(node->needs_local_transform_update);
+        break;
+    }
+  }
+
+  void BeginMainFrame(const BeginFrameArgs& args) override {
+    switch (layer_tree_host()->SourceFrameNumber()) {
+      case 1:
+        // Pretend that we could not apply the deltas this frame and send them
+        // back to the impl thread.
+        layer_tree()->outer_viewport_scroll_layer()->SetScrollOffset(
+            initial_offset_);
+        layer_tree()->SetPageScaleFactorAndLimits(initial_page_scale_, 0.f,
+                                                  1.f);
+
+        SendReflectedMainFrameState(0);
+        break;
+      case 2:
+        // Pretend that the previous delta was handled and now reflect back the
+        // new delta.
+        layer_tree()->outer_viewport_scroll_layer()->SetScrollOffset(
+            gfx::ScrollOffsetWithDelta(initial_offset_,
+                                       outer_viewport_offset_deltas_[0]));
+        layer_tree()->SetPageScaleFactorAndLimits(
+            initial_page_scale_ * page_scale_update_, 0.f, 1.f);
+
+        SendReflectedMainFrameState(1);
+        break;
+      case 3:
+        // Reflect all the deltas on the tree during the main frame itself.
+        gfx::ScrollOffset scroll_offset =
+            layer_tree()->outer_viewport_scroll_layer()->scroll_offset();
+        layer_tree()->outer_viewport_scroll_layer()->SetScrollOffset(
+            gfx::ScrollOffsetWithDelta(scroll_offset,
+                                       outer_viewport_offset_deltas_[1]));
+        break;
+    }
+  }
+
+  void DidScrollOuterViewport() {
+    Layer* outer_viewport_layer = layer_tree()->outer_viewport_scroll_layer();
+    gfx::ScrollOffset expected_offset;
+    switch (layer_tree_host()->SourceFrameNumber()) {
+      case 0:
+        NOTREACHED();
+      case 1:
+        expected_offset = gfx::ScrollOffsetWithDelta(
+            initial_offset_, outer_viewport_offset_deltas_[0]);
+        EXPECT_EQ(outer_viewport_layer->scroll_offset(), expected_offset);
+        break;
+      case 2:
+        // Since the first delta was reflected back and not applied on the main
+        // thread, the value here should only include the delta from the second
+        // update.
+        expected_offset = gfx::ScrollOffsetWithDelta(
+            initial_offset_, outer_viewport_offset_deltas_[1]);
+        EXPECT_EQ(outer_viewport_layer->scroll_offset(), expected_offset);
+        break;
+      default:
+        NOTREACHED();
+    }
+  }
+
+  void AfterTest() override {}
+
+ private:
+  void SendReflectedMainFrameState(int delta_to_reflect) {
+    std::unique_ptr<ReflectedMainFrameState> reflected_main_frame_state =
+        base::MakeUnique<ReflectedMainFrameState>();
+
+    ReflectedMainFrameState::ScrollUpdate scroll_update;
+    scroll_update.layer_id = layer_tree()->outer_viewport_scroll_layer()->id();
+    scroll_update.scroll_delta =
+        outer_viewport_offset_deltas_[delta_to_reflect];
+    reflected_main_frame_state->scrolls.push_back(scroll_update);
+
+    if (delta_to_reflect == 0)
+      reflected_main_frame_state->page_scale_delta = page_scale_update_;
+
+    layer_tree_host_in_process()->SetReflectedMainFrameState(
+        std::move(reflected_main_frame_state));
+  }
+
+  // Accessed on the impl thread.
+  gfx::ScrollOffset last_active_offset_;
+  float last_page_scale_ = 0.f;
+
+  const gfx::ScrollOffset initial_offset_ = gfx::ScrollOffset(2, 3);
+  const gfx::Vector2dF outer_viewport_offset_deltas_[2] = {
+      gfx::Vector2dF(10, 3), gfx::Vector2dF(5, 3)};
+
+  const float initial_page_scale_ = 0.5f;
+  const float page_scale_update_ = 0.2f;
+};
+
+// The reflected deltas are supported in threaded mode only.
+MULTI_THREAD_TEST_F(LayerTreeHostScrollTestAppliesReflectedDeltas);
 
 }  // namespace
 }  // namespace cc

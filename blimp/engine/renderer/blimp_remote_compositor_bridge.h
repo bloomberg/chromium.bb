@@ -33,6 +33,8 @@ class BlimpRemoteCompositorBridge
   void ProcessCompositorStateUpdate(std::unique_ptr<cc::CompositorProtoState>
                                         compositor_proto_state) override;
 
+  FrameScheduler* scheduler_for_testing() { return &scheduler_; }
+
  private:
   // cc::RemoteProtoChannel::ProtoReceiver implementation.
   void OnProtoReceived(
@@ -43,6 +45,8 @@ class BlimpRemoteCompositorBridge
 
   cc::RemoteProtoChannel* remote_proto_channel_;
   cc::RemoteCompositorBridgeClient* client_ = nullptr;
+
+  bool client_state_update_ack_pending_ = false;
 
   FrameScheduler scheduler_;
 

@@ -19,7 +19,7 @@ BlimpDocument::BlimpDocument(int document_id,
                              BlimpCompositorDependencies* compositor_deps,
                              BlimpDocumentManager* document_manager)
     : BlimpDocument(document_id,
-                    base::MakeUnique<BlimpCompositor>(
+                    BlimpCompositor::Create(
                         compositor_deps,
                         this,
                         base::CommandLine::ForCurrentProcess()->HasSwitch(
