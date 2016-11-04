@@ -41,9 +41,11 @@ WebWidget* RenderWidgetFullscreen::CreateWebWidget() {
   return RenderWidget::CreateWebWidget(this);
 }
 
-bool RenderWidgetFullscreen::SendIPC(int32_t opener_id, int32_t* routing_id) {
-  return RenderThread::Get()->Send(
-      new ViewHostMsg_CreateFullscreenWidget(opener_id, routing_id));
+bool RenderWidgetFullscreen::CreateFullscreenWidget(int32_t opener_id,
+                                                    int32_t* routing_id) {
+  RenderThreadImpl::current_render_message_filter()->CreateFullscreenWidget(
+      opener_id, routing_id);
+  return true;
 }
 
 bool RenderWidgetFullscreen::Init(int32_t opener_id) {
@@ -51,8 +53,8 @@ bool RenderWidgetFullscreen::Init(int32_t opener_id) {
 
   bool success = RenderWidget::DoInit(
       opener_id, CreateWebWidget(),
-      base::Bind(&RenderWidgetFullscreen::SendIPC, base::Unretained(this),
-           opener_id, &routing_id_));
+      base::Bind(&RenderWidgetFullscreen::CreateFullscreenWidget,
+          base::Unretained(this), opener_id, &routing_id_));
 
   if (success) {
     // TODO(fsamuel): This is a bit ugly. The |create_widget_message| should

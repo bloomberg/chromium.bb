@@ -69,6 +69,12 @@ class MockRenderMessageFilterImpl : public mojom::RenderMessageFilter {
     return true;
   }
 
+  void CreateFullscreenWidget(
+      int opener_id,
+      const CreateFullscreenWidgetCallback& callback) override {
+    NOTREACHED();
+  }
+
  private:
   MockRenderThread* const thread_;
 };

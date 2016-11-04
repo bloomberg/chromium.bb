@@ -169,8 +169,6 @@ RenderMessageFilter::~RenderMessageFilter() {
 bool RenderMessageFilter::OnMessageReceived(const IPC::Message& message) {
   bool handled = true;
   IPC_BEGIN_MESSAGE_MAP(RenderMessageFilter, message)
-    IPC_MESSAGE_HANDLER(ViewHostMsg_CreateFullscreenWidget,
-                        OnCreateFullscreenWidget)
 #if defined(OS_MACOSX)
     // On Mac, the IPCs ViewHostMsg_SwapCompositorFrame, ViewHostMsg_UpdateRect,
     // and GpuCommandBufferMsg_SwapBuffersCompleted need to be handled in a
@@ -241,11 +239,6 @@ void RenderMessageFilter::OverrideThreadForMessage(const IPC::Message& message,
     *thread = BrowserThread::UI;
 }
 
-void RenderMessageFilter::OnCreateFullscreenWidget(int opener_id,
-                                                   int* route_id) {
-  render_widget_helper_->CreateNewFullscreenWidget(opener_id, route_id);
-}
-
 void RenderMessageFilter::GenerateRoutingID(
     const GenerateRoutingIDCallback& callback) {
   callback.Run(render_widget_helper_->GetNextRoutingID());
@@ -302,6 +295,14 @@ void RenderMessageFilter::CreateNewWidget(
     const CreateNewWidgetCallback& callback) {
   int route_id = MSG_ROUTING_NONE;
   render_widget_helper_->CreateNewWidget(opener_id, popup_type, &route_id);
+  callback.Run(route_id);
+}
+
+void RenderMessageFilter::CreateFullscreenWidget(
+    int opener_id,
+    const CreateFullscreenWidgetCallback& callback) {
+  int route_id = 0;
+  render_widget_helper_->CreateNewFullscreenWidget(opener_id, &route_id);
   callback.Run(route_id);
 }
 

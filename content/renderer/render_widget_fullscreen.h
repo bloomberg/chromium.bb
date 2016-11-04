@@ -29,7 +29,7 @@ class RenderWidgetFullscreen : public RenderWidget {
   bool Init(int32_t opener_id);
 
  private:
-  bool SendIPC(int32_t opener_id, int32_t* routing_id);
+  bool CreateFullscreenWidget(int32_t opener_id, int32_t* routing_id);
 };
 
 }  // namespace content

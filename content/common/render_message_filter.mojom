@@ -88,4 +88,8 @@ interface RenderMessageFilter {
   // dropdowns.
   [Sync] CreateNewWidget(int32 opener_id, content.mojom.WebPopupType popup_type)
       => (int32 route_id);
+
+  // Similar to CreateWidget except the widget is a full screen window.
+  [Sync] CreateFullscreenWidget(int32 opener_id)
+      => (int32 route_id);
 };

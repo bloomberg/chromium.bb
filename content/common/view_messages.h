@@ -629,12 +629,6 @@ IPC_MESSAGE_ROUTED1(ViewMsg_HandleCompositorProto,
 IPC_MESSAGE_ROUTED1(ViewHostMsg_SetNeedsBeginFrames,
                     bool /* enabled */)
 
-// Similar to ViewHostMsg_CreateWidget except the widget is a full screen
-// window.
-IPC_SYNC_MESSAGE_CONTROL1_1(ViewHostMsg_CreateFullscreenWidget,
-                            int /* opener_id */,
-                            int /* route_id */)
-
 // These three messages are sent to the parent RenderViewHost to display the
 // page/widget that was created by
 // CreateWindow/CreateWidget/CreateFullscreenWidget. routing_id

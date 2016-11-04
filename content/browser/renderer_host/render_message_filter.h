@@ -118,7 +118,6 @@ class CONTENT_EXPORT RenderMessageFilter
   friend class base::DeleteHelper<RenderMessageFilter>;
 
   void OnGetProcessMemorySizes(size_t* private_bytes, size_t* shared_bytes);
-  void OnCreateFullscreenWidget(int opener_id, int* route_id);
 
 #if defined(OS_MACOSX)
   // Messages for OOP font loading.
@@ -133,6 +132,9 @@ class CONTENT_EXPORT RenderMessageFilter
   void CreateNewWidget(int32_t opener_id,
                        blink::WebPopupType popup_type,
                        const CreateNewWidgetCallback& callback) override;
+  void CreateFullscreenWidget(
+      int opener_id,
+      const CreateFullscreenWidgetCallback& callback) override;
 
   // Message handlers called on the browser IO thread:
   void OnEstablishGpuChannel(IPC::Message* reply);
