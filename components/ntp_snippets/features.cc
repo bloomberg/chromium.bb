@@ -43,7 +43,7 @@ const base::Feature kForeignSessionsSuggestionsFeature{
     "NTPForeignSessionsSuggestions", base::FEATURE_DISABLED_BY_DEFAULT};
 
 const base::Feature kFetchMoreFeature{"NTPSuggestionsFetchMore",
-                                      base::FEATURE_DISABLED_BY_DEFAULT};
+                                      base::FEATURE_ENABLED_BY_DEFAULT};
 
 int GetParamAsInt(const base::Feature& feature,
                   const std::string& param_name,
