@@ -292,11 +292,6 @@ void WmShellMus::SetPinnedWindow(WmWindow* window) {
   NOTIMPLEMENTED();
 }
 
-bool WmShellMus::CanShowWindowForUser(WmWindow* window) {
-  NOTIMPLEMENTED();
-  return true;
-}
-
 void WmShellMus::LockCursor() {
   // TODO: http::/crbug.com/637853
   NOTIMPLEMENTED();

@@ -51,7 +51,6 @@ class ASH_EXPORT WmShellAura : public WmShell,
                                 const gfx::Insets& insets) override;
   bool IsPinned() override;
   void SetPinnedWindow(WmWindow* window) override;
-  bool CanShowWindowForUser(WmWindow* window) override;
   void LockCursor() override;
   void UnlockCursor() override;
   bool IsMouseEventsEnabled() override;

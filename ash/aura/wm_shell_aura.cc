@@ -161,10 +161,6 @@ void WmShellAura::SetPinnedWindow(WmWindow* window) {
       window);
 }
 
-bool WmShellAura::CanShowWindowForUser(WmWindow* window) {
-  return delegate()->CanShowWindowForUser(window);
-}
-
 void WmShellAura::LockCursor() {
   Shell::GetInstance()->cursor_manager()->LockCursor();
 }

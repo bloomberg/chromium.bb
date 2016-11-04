@@ -4,6 +4,7 @@
 
 #include "ash/common/wm/focus_rules.h"
 
+#include "ash/common/shell_delegate.h"
 #include "ash/common/wm/window_state.h"
 #include "ash/common/wm_shell.h"
 #include "ash/common/wm_window.h"
@@ -36,7 +37,7 @@ bool IsWindowConsideredVisibleForActivation(WmWindow* window) {
   DCHECK(window);
   // If the |window| doesn't belong to the current active user and also doesn't
   // show for the current active user, then it should not be activated.
-  if (!WmShell::Get()->CanShowWindowForUser(window))
+  if (!WmShell::Get()->delegate()->CanShowWindowForUser(window))
     return false;
 
   if (window->IsVisible())
