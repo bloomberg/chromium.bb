@@ -78,6 +78,7 @@ class RemoteMediaPlayerManager : public content::BrowserMediaPlayerManager {
   void OnSuspendAndReleaseResources(int player_id) override;
   void OnRequestRemotePlayback(int player_id) override;
   void OnRequestRemotePlaybackControl(int player_id) override;
+  void OnRequestRemotePlaybackStop(int player_id) override;
 
   bool IsPlayingRemotely(int player_id) override;
 

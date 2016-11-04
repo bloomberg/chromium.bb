@@ -212,6 +212,15 @@ public class RemoteMediaPlayerBridge {
         RemoteMediaPlayerController.instance().requestRemotePlaybackControl(mMediaStateListener);
     }
 
+    /**
+     * Called when a lower layer requests to stop casting the video.
+     */
+    @CalledByNative
+    private void requestRemotePlaybackStop() {
+        Log.d(TAG, "requestRemotePlaybackStop");
+        RemoteMediaPlayerController.instance().requestRemotePlaybackStop(mMediaStateListener);
+    }
+
     @CalledByNative
     private void setNativePlayer() {
         Log.d(TAG, "setNativePlayer");

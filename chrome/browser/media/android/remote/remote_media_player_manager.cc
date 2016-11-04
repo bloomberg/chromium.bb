@@ -74,6 +74,12 @@ void RemoteMediaPlayerManager::OnRequestRemotePlaybackControl(int player_id) {
     player->RequestRemotePlaybackControl();
 }
 
+void RemoteMediaPlayerManager::OnRequestRemotePlaybackStop(int player_id) {
+  RemoteMediaPlayerBridge* player = GetRemotePlayer(player_id);
+  if (player)
+    player->RequestRemotePlaybackStop();
+}
+
 bool RemoteMediaPlayerManager::IsPlayingRemotely(int player_id) {
   return players_playing_remotely_.count(player_id) != 0;
 }

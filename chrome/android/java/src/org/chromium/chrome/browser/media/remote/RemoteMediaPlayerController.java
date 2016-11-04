@@ -203,6 +203,17 @@ public class RemoteMediaPlayerController implements MediaRouteController.UiListe
         showMediaRouteControlDialog(player, ApplicationStatus.getLastTrackedFocusedActivity());
     }
 
+    /**
+     * Called when a lower layer requests to stop casting the video.
+     * @param player The player to stop remote playback for.
+     */
+    public void requestRemotePlaybackStop(MediaRouteController.MediaStateListener player) {
+        if (mCurrentRouteController == null) return;
+        if (mCurrentRouteController.getMediaStateListener() != player) return;
+
+        mCurrentRouteController.release();
+    }
+
     private void showMediaRouteDialog(MediaStateListener player, MediaRouteController controller,
             Activity activity) {
 

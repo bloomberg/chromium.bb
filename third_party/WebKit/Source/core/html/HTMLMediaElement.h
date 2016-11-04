@@ -181,6 +181,7 @@ class CORE_EXPORT HTMLMediaElement : public HTMLElement,
   void pause();
   void requestRemotePlayback();
   void requestRemotePlaybackControl();
+  void requestRemotePlaybackStop();
 
   // statistics
   unsigned webkitAudioDecodedByteCount() const;

@@ -335,6 +335,10 @@ void WebMediaPlayerAndroid::requestRemotePlaybackControl() {
   player_manager_->RequestRemotePlaybackControl(player_id_);
 }
 
+void WebMediaPlayerAndroid::requestRemotePlaybackStop() {
+  player_manager_->RequestRemotePlaybackStop(player_id_);
+}
+
 void WebMediaPlayerAndroid::seek(double seconds) {
   DCHECK(main_thread_checker_.CalledOnValidThread());
   DVLOG(1) << __FUNCTION__ << "(" << seconds << ")";

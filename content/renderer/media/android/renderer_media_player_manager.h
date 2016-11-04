@@ -71,6 +71,9 @@ class RendererMediaPlayerManager :
   // Requests control of remote playback
   void RequestRemotePlaybackControl(int player_id) override;
 
+  // Requests stopping remote playback
+  void RequestRemotePlaybackStop(int player_id) override;
+
   // Requests the player to enter fullscreen.
   void EnterFullscreen(int player_id);
 

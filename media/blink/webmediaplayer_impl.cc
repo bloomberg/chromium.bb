@@ -1364,6 +1364,10 @@ void WebMediaPlayerImpl::requestRemotePlaybackControl() {
   cast_impl_.requestRemotePlaybackControl();
 }
 
+void WebMediaPlayerImpl::requestRemotePlaybackStop() {
+  cast_impl_.requestRemotePlaybackStop();
+}
+
 void WebMediaPlayerImpl::OnRemotePlaybackEnded() {
   DVLOG(1) << __func__;
   DCHECK(main_task_runner_->BelongsToCurrentThread());

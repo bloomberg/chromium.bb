@@ -193,6 +193,10 @@ void WebMediaPlayerCast::requestRemotePlaybackControl() {
   player_manager_->RequestRemotePlaybackControl(player_id_);
 }
 
+void WebMediaPlayerCast::requestRemotePlaybackStop() {
+  player_manager_->RequestRemotePlaybackStop(player_id_);
+}
+
 void WebMediaPlayerCast::OnMediaMetadataChanged(base::TimeDelta duration,
                                                 int width,
                                                 int height,

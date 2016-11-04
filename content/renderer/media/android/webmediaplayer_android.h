@@ -111,6 +111,7 @@ class WebMediaPlayerAndroid
                  blink::WebSetSinkIdCallbacks* web_callback) override;
   void requestRemotePlayback() override;
   void requestRemotePlaybackControl() override;
+  void requestRemotePlaybackStop() override;
   blink::WebTimeRanges buffered() const override;
   blink::WebTimeRanges seekable() const override;
 

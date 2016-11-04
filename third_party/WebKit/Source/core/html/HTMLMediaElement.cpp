@@ -2351,6 +2351,11 @@ void HTMLMediaElement::requestRemotePlaybackControl() {
     webMediaPlayer()->requestRemotePlaybackControl();
 }
 
+void HTMLMediaElement::requestRemotePlaybackStop() {
+  if (webMediaPlayer())
+    webMediaPlayer()->requestRemotePlaybackStop();
+}
+
 void HTMLMediaElement::closeMediaSource() {
   if (!m_mediaSource)
     return;

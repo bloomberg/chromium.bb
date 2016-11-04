@@ -121,6 +121,11 @@ void RendererMediaPlayerManager::RequestRemotePlaybackControl(int player_id) {
                                                            player_id));
 }
 
+void RendererMediaPlayerManager::RequestRemotePlaybackStop(int player_id) {
+  Send(new MediaPlayerHostMsg_RequestRemotePlaybackStop(routing_id(),
+                                                        player_id));
+}
+
 void RendererMediaPlayerManager::OnMediaMetadataChanged(
     int player_id,
     base::TimeDelta duration,

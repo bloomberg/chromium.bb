@@ -88,6 +88,7 @@ class RemoteMediaPlayerBridge : public media::MediaPlayerAndroid {
   // Wrappers for calls to Java used by the remote media player manager
   void RequestRemotePlayback();
   void RequestRemotePlaybackControl();
+  void RequestRemotePlaybackStop();
   void SetNativePlayer();
   void OnPlayerCreated();
   void OnPlayerDestroyed();

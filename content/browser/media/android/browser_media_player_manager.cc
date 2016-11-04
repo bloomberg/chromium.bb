@@ -532,6 +532,11 @@ void BrowserMediaPlayerManager::OnRequestRemotePlaybackControl(
   // Does nothing if we don't have a remote player
 }
 
+void BrowserMediaPlayerManager::OnRequestRemotePlaybackStop(
+    int /* player_id */) {
+  // Does nothing if we don't have a remote player
+}
+
 bool BrowserMediaPlayerManager::IsPlayingRemotely(int player_id) {
   return false;
 }

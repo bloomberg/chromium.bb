@@ -112,6 +112,7 @@ class CONTENT_EXPORT BrowserMediaPlayerManager
   virtual void OnDestroyPlayer(int player_id);
   virtual void OnRequestRemotePlayback(int player_id);
   virtual void OnRequestRemotePlaybackControl(int player_id);
+  virtual void OnRequestRemotePlaybackStop(int player_id);
   virtual bool IsPlayingRemotely(int player_id);
   virtual void ReleaseFullscreenPlayer(media::MediaPlayerAndroid* player);
 

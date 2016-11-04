@@ -41,6 +41,7 @@ class WebMediaPlayerCast : public RendererMediaPlayerInterface {
 
   void requestRemotePlayback();
   void requestRemotePlaybackControl();
+  void requestRemotePlaybackStop();
 
   void SetMediaPlayerManager(
       RendererMediaPlayerManagerInterface* media_player_manager);

@@ -269,7 +269,8 @@ void RemotePlayback::remotePlaybackDisabled() {
 
   m_availabilityCallbacks.clear();
 
-  // TODO(avayvod): stop remote playback too. https://crbug.com/657566.
+  if (m_state != WebRemotePlaybackState::Disconnected)
+    m_mediaElement->requestRemotePlaybackStop();
 }
 
 void RemotePlayback::setV8ReferencesForCallbacks(

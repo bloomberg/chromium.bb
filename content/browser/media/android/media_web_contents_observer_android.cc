@@ -151,6 +151,9 @@ bool MediaWebContentsObserverAndroid::OnMediaPlayerMessageReceived(
         MediaPlayerHostMsg_RequestRemotePlaybackControl,
         GetMediaPlayerManager(render_frame_host),
         BrowserMediaPlayerManager::OnRequestRemotePlaybackControl)
+    IPC_MESSAGE_FORWARD(MediaPlayerHostMsg_RequestRemotePlaybackStop,
+                        GetMediaPlayerManager(render_frame_host),
+                        BrowserMediaPlayerManager::OnRequestRemotePlaybackStop)
     IPC_MESSAGE_UNHANDLED(handled = false)
   IPC_END_MESSAGE_MAP()
   return handled;

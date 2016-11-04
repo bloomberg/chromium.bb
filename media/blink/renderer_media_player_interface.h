@@ -109,6 +109,9 @@ class RendererMediaPlayerManagerInterface {
   // Requests control of remote playback
   virtual void RequestRemotePlaybackControl(int player_id) = 0;
 
+  // Requests stopping remote playback
+  virtual void RequestRemotePlaybackStop(int player_id) = 0;
+
   // Registers and unregisters a RendererMediaPlayerInterface object.
   virtual int RegisterMediaPlayer(RendererMediaPlayerInterface* player) = 0;
   virtual void UnregisterMediaPlayer(int player_id) = 0;

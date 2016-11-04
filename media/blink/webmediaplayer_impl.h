@@ -195,6 +195,7 @@ class MEDIA_BLINK_EXPORT WebMediaPlayerImpl
   bool isRemote() const override;
   void requestRemotePlayback() override;
   void requestRemotePlaybackControl() override;
+  void requestRemotePlaybackStop() override;
 
   void SetMediaPlayerManager(
       RendererMediaPlayerManagerInterface* media_player_manager);

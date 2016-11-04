@@ -176,3 +176,7 @@ IPC_MESSAGE_ROUTED1(MediaPlayerHostMsg_RequestRemotePlayback,
 // Control media playing on a remote device.
 IPC_MESSAGE_ROUTED1(MediaPlayerHostMsg_RequestRemotePlaybackControl,
                     int /* player_id */)
+
+// Stop playing media on a remote device.
+IPC_MESSAGE_ROUTED1(MediaPlayerHostMsg_RequestRemotePlaybackStop,
+                    int /* player_id */)
