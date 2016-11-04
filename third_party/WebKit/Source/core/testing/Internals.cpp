@@ -991,6 +991,10 @@ void Internals::addTextMatchMarker(const Range* range, bool isActive) {
   range->ownerDocument().updateStyleAndLayoutIgnorePendingStylesheets();
   range->ownerDocument().markers().addTextMatchMarker(EphemeralRange(range),
                                                       isActive);
+
+  // This simulates what the production code does after
+  // DocumentMarkerController::addTextMatchMarker().
+  range->ownerDocument().view()->invalidatePaintForTickmarks();
 }
 
 static bool parseColor(const String& value,
