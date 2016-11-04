@@ -49,8 +49,6 @@ class PLATFORM_EXPORT ScrollbarThemeOverlay : public ScrollbarTheme {
   int scrollbarThickness(ScrollbarControlSize) override;
   int scrollbarMargin() const override;
   bool usesOverlayScrollbars() const override;
-  double overlayScrollbarFadeOutDelaySeconds() const override;
-  double overlayScrollbarFadeOutDurationSeconds() const override;
 
   int thumbPosition(const ScrollbarThemeClient&, float scrollPosition) override;
   int thumbLength(const ScrollbarThemeClient&) override;

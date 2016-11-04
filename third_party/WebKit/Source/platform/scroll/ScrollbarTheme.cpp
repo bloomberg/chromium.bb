@@ -233,16 +233,6 @@ bool ScrollbarTheme::shouldSnapBackToDragOrigin(
       scrollbar.orientation() == HorizontalScrollbar);
 }
 
-double ScrollbarTheme::overlayScrollbarFadeOutDelaySeconds() const {
-  // On Mac, fading is controlled by the painting code in ScrollAnimatorMac.
-  return 0.0;
-}
-
-double ScrollbarTheme::overlayScrollbarFadeOutDurationSeconds() const {
-  // On Mac, fading is controlled by the painting code in ScrollAnimatorMac.
-  return 0.0;
-}
-
 int ScrollbarTheme::thumbPosition(const ScrollbarThemeClient& scrollbar,
                                   float scrollPosition) {
   if (scrollbar.enabled()) {

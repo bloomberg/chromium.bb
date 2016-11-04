@@ -72,18 +72,6 @@ bool ScrollbarThemeOverlay::usesOverlayScrollbars() const {
   return true;
 }
 
-double ScrollbarThemeOverlay::overlayScrollbarFadeOutDelaySeconds() const {
-  WebThemeEngine::ScrollbarStyle style;
-  Platform::current()->themeEngine()->getOverlayScrollbarStyle(&style);
-  return style.fadeOutDelaySeconds;
-}
-
-double ScrollbarThemeOverlay::overlayScrollbarFadeOutDurationSeconds() const {
-  WebThemeEngine::ScrollbarStyle style;
-  Platform::current()->themeEngine()->getOverlayScrollbarStyle(&style);
-  return style.fadeOutDurationSeconds;
-}
-
 int ScrollbarThemeOverlay::thumbPosition(const ScrollbarThemeClient& scrollbar,
                                          float scrollPosition) {
   if (!scrollbar.totalSize())
@@ -163,10 +151,7 @@ void ScrollbarThemeOverlay::paintThumb(GraphicsContext& context,
   }
 
   WebThemeEngine::State state = WebThemeEngine::StateNormal;
-
-  if (!scrollbar.enabled())
-    state = WebThemeEngine::StateDisabled;
-  else if (scrollbar.pressedPart() == ThumbPart)
+  if (scrollbar.pressedPart() == ThumbPart)
     state = WebThemeEngine::StatePressed;
   else if (scrollbar.hoveredPart() == ThumbPart)
     state = WebThemeEngine::StateHover;
@@ -192,11 +177,7 @@ ScrollbarPart ScrollbarThemeOverlay::hitTest(
   if (m_allowHitTest == DisallowHitTest)
     return NoPart;
 
-  ScrollbarPart part = ScrollbarTheme::hitTest(scrollbar, position);
-  if (part != ThumbPart)
-    return NoPart;
-
-  return ThumbPart;
+  return ScrollbarTheme::hitTest(scrollbar, position);
 }
 
 ScrollbarThemeOverlay& ScrollbarThemeOverlay::mobileTheme() {

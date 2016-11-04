@@ -800,15 +800,12 @@ bool PaintLayer::update3DTransformedDescendantStatus() {
 void PaintLayer::updateLayerPosition() {
   LayoutPoint localPoint;
 
-  bool didResize = false;
   if (layoutObject()->isInline() && layoutObject()->isLayoutInline()) {
     LayoutInline* inlineFlow = toLayoutInline(layoutObject());
     IntRect lineBox = enclosingIntRect(inlineFlow->linesBoundingBox());
     m_size = lineBox.size();
   } else if (LayoutBox* box = layoutBox()) {
-    IntSize newSize = pixelSnappedIntSize(box->size(), box->location());
-    didResize = newSize != m_size;
-    m_size = newSize;
+    m_size = pixelSnappedIntSize(box->size(), box->location());
     localPoint.moveBy(box->topLeftLocation());
   }
 
@@ -865,9 +862,6 @@ void PaintLayer::updateLayerPosition() {
   }
 
   m_location = localPoint;
-
-  if (m_scrollableArea && didResize)
-    m_scrollableArea->visibleSizeChanged();
 
 #if DCHECK_IS_ON()
   m_needsPositionUpdate = false;

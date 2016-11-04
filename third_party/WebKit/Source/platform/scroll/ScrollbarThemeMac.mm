@@ -56,6 +56,7 @@ using namespace blink;
 @interface BlinkScrollbarObserver : NSObject {
   blink::ScrollbarThemeClient* _scrollbar;
   RetainPtr<ScrollbarPainter> _scrollbarPainter;
+  BOOL _visible;
 }
 - (id)initWithScrollbar:(blink::ScrollbarThemeClient*)scrollbar
                 painter:(const RetainPtr<ScrollbarPainter>&)painter;
@@ -91,7 +92,10 @@ using namespace blink;
                        context:(void*)context {
   if ([keyPath isEqualToString:@"knobAlpha"]) {
     BOOL visible = [_scrollbarPainter.get() knobAlpha] > 0;
-    _scrollbar->setScrollbarsHidden(!visible);
+    if (_visible != visible) {
+      _visible = visible;
+      _scrollbar->visibilityChanged();
+    }
   }
 }
 
