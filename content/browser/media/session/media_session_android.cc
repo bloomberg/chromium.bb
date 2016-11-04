@@ -36,10 +36,7 @@ MediaSessionAndroid::MediaSessionAndroid(MediaSessionImpl* session)
     contents_android->SetMediaSession(j_media_session);
 }
 
-MediaSessionAndroid::~MediaSessionAndroid() {
-  // MediaSessionDestroyed() should have already been called.
-  DCHECK(j_media_session_.is_empty());
-}
+MediaSessionAndroid::~MediaSessionAndroid() = default;
 
 // static
 bool MediaSessionAndroid::Register(JNIEnv* env) {
@@ -63,12 +60,8 @@ ScopedJavaLocalRef<jobject> GetMediaSessionFromWebContents(
 
 void MediaSessionAndroid::MediaSessionDestroyed() {
   ScopedJavaLocalRef<jobject> j_local_session = GetJavaObject();
-  if (j_local_session.is_null()) {
-    // If the Java MediaSession is already garbage collected, unset the weak
-    // Java reference.
-    j_media_session_.reset();
+  if (j_local_session.is_null())
     return;
-  }
 
   JNIEnv* env = base::android::AttachCurrentThread();
   // The Java object will tear down after this call.
