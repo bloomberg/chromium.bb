@@ -58,7 +58,6 @@ base::FilePath PlatformCrashpadInitialization(bool initial_client,
                                               bool embedded_handler) {
   base::FilePath database_path;  // Only valid in the browser process.
   base::FilePath metrics_path;  // Only valid in the browser process.
-  bool result = false;
 
   const char kPipeNameVar[] = "CHROME_CRASHPAD_PIPE_NAME";
   const char kServerUrlVar[] = "CHROME_CRASHPAD_SERVER_URL";
@@ -119,9 +118,9 @@ base::FilePath PlatformCrashpadInitialization(bool initial_client,
       exe_file = exe_dir.Append(FILE_PATH_LITERAL("crashpad_handler.exe"));
     }
 
-    result = g_crashpad_client.Get().StartHandler(
+    g_crashpad_client.Get().StartHandler(
         exe_file, database_path, metrics_path, url, process_annotations,
-        arguments, false);
+        arguments, false, false);
 
     // If we're the browser, push the pipe name into the environment so child
     // processes can connect to it. If we inherited another crashpad_handler's
@@ -130,16 +129,12 @@ base::FilePath PlatformCrashpadInitialization(bool initial_client,
                 base::UTF16ToUTF8(g_crashpad_client.Get().GetHandlerIPCPipe()));
   } else {
     std::string pipe_name_utf8;
-    result = env->GetVar(kPipeNameVar, &pipe_name_utf8);
-    if (result) {
-      result = g_crashpad_client.Get().SetHandlerIPCPipe(
+    if (env->GetVar(kPipeNameVar, &pipe_name_utf8)) {
+      g_crashpad_client.Get().SetHandlerIPCPipe(
           base::UTF8ToUTF16(pipe_name_utf8));
     }
   }
 
-  if (result) {
-    result = g_crashpad_client.Get().UseHandler();
-  }
   return database_path;
 }
 

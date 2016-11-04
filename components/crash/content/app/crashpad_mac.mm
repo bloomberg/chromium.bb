@@ -97,15 +97,13 @@ base::FilePath PlatformCrashpadInitialization(bool initial_client,
                                                  url,
                                                  process_annotations,
                                                  arguments,
-                                                 true);
-      if (result) {
-        result = crashpad_client.UseHandler();
-      }
+                                                 true,
+                                                 false);
 
       // If this is an initial client that's not the browser process, it's
       // important to sever the connection to any existing handler. If
-      // StartHandler() or UseHandler() failed, call UseSystemDefaultHandler()
-      // in that case to drop the link to the existing handler.
+      // StartHandler() failed, call UseSystemDefaultHandler() to drop the link
+      // to the existing handler.
       if (!result && !browser_process) {
         crashpad::CrashpadClient::UseSystemDefaultHandler();
       }
