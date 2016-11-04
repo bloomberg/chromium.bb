@@ -124,10 +124,7 @@ public class BluetoothChooserDialog
         int start = title.toString().indexOf(mOrigin);
         TextUtils.copySpansFrom(origin, 0, origin.length(), Object.class, title, start);
 
-        String message = mActivity.getString(R.string.bluetooth_not_found);
-        SpannableString noneFound = SpanApplier.applySpans(
-                message, new SpanInfo("<link>", "</link>",
-                                 new BluetoothClickableSpan(LinkType.RESTART_SEARCH, mActivity)));
+        String noneFound = mActivity.getString(R.string.bluetooth_not_found);
 
         SpannableString searching = SpanApplier.applySpans(
                 mActivity.getString(R.string.bluetooth_searching),
@@ -138,8 +135,10 @@ public class BluetoothChooserDialog
 
         SpannableString statusIdleNoneFound = SpanApplier.applySpans(
                 mActivity.getString(R.string.bluetooth_not_seeing_it_idle_none_found),
-                new SpanInfo("<link>", "</link>",
-                        new BluetoothClickableSpan(LinkType.EXPLAIN_BLUETOOTH, mActivity)));
+                new SpanInfo("<link1>", "</link1>",
+                        new BluetoothClickableSpan(LinkType.EXPLAIN_BLUETOOTH, mActivity)),
+                new SpanInfo("<link2>", "</link2>",
+                        new BluetoothClickableSpan(LinkType.RESTART_SEARCH, mActivity)));
 
         SpannableString statusActive = SpanApplier.applySpans(
                 mActivity.getString(R.string.bluetooth_not_seeing_it),
