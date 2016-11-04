@@ -117,7 +117,6 @@ class CORE_EXPORT ShadowRoot final : public DocumentFragment, public TreeScope {
 
   // For Internals, don't use this.
   unsigned childShadowRootCount() const { return m_childShadowRootCount; }
-  unsigned numberOfStyles() const { return m_numberOfStyles; }
 
   void recalcStyle(StyleRecalcChange);
 
@@ -170,7 +169,6 @@ class CORE_EXPORT ShadowRoot final : public DocumentFragment, public TreeScope {
   Member<ShadowRootRareDataV0> m_shadowRootRareDataV0;
   Member<StyleSheetList> m_styleSheetList;
   Member<SlotAssignment> m_slotAssignment;
-  unsigned m_numberOfStyles : 14;
   unsigned m_childShadowRootCount : 13;
   unsigned m_type : 2;
   unsigned m_registeredWithParentShadowRoot : 1;

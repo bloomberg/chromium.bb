@@ -70,28 +70,17 @@ StyleElement::ProcessingResult StyleElement::processStyleSheet(
   return process(element);
 }
 
-void StyleElement::insertedInto(const Element& element,
-                                ContainerNode* insertionPoint) {
-  if (!insertionPoint->isConnected() || !element.isInShadowTree())
-    return;
-  if (ShadowRoot* scope = element.containingShadowRoot())
-    scope->registerScopedHTMLStyleChild();
-}
-
 void StyleElement::removedFrom(Element& element,
                                ContainerNode* insertionPoint) {
   if (!insertionPoint->isConnected())
     return;
 
-  ShadowRoot* shadowRoot = element.containingShadowRoot();
-  if (!shadowRoot)
-    shadowRoot = insertionPoint->containingShadowRoot();
-
-  if (shadowRoot)
-    shadowRoot->unregisterScopedHTMLStyleChild();
-
   Document& document = element.document();
   if (m_registeredAsCandidate) {
+    ShadowRoot* shadowRoot = element.containingShadowRoot();
+    if (!shadowRoot)
+      shadowRoot = insertionPoint->containingShadowRoot();
+
     document.styleEngine().removeStyleSheetCandidateNode(
         element, shadowRoot ? *toTreeScope(shadowRoot) : toTreeScope(document));
     m_registeredAsCandidate = false;

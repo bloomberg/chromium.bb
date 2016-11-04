@@ -1,0 +1,11 @@
+<!DOCTYPE html>
+<script src="../resources/testharness.js"></script>
+<script src="../resources/testharnessreport.js"></script>
+<div id="host">This text should have a green background.</div>
+<script>
+    test(() => {
+        var root = host.attachShadow({mode:'open'});
+        root.innerHTML = '<link rel="stylesheet" href="data:text/css,:host{background:green}"><slot />';
+        assert_equals(getComputedStyle(host).backgroundColor, "rgb(0, 128, 0)", "Host background should be green.");
+    }, "Check that :host rule from link stylesheet applies to host element.");
+</script>

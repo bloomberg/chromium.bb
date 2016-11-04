@@ -57,7 +57,6 @@ ShadowRoot::ShadowRoot(Document& document, ShadowRootType type)
     : DocumentFragment(0, CreateShadowRoot),
       TreeScope(*this, document),
       m_styleSheetList(nullptr),
-      m_numberOfStyles(0),
       m_childShadowRootCount(0),
       m_type(static_cast<unsigned>(type)),
       m_registeredWithParentShadowRoot(false),
@@ -203,15 +202,6 @@ void ShadowRoot::childrenChanged(const ChildrenChange& change) {
     if (ShadowRoot* root = point->containingShadowRoot())
       root->owner()->setNeedsDistributionRecalc();
   }
-}
-
-void ShadowRoot::registerScopedHTMLStyleChild() {
-  ++m_numberOfStyles;
-}
-
-void ShadowRoot::unregisterScopedHTMLStyleChild() {
-  DCHECK_GT(m_numberOfStyles, 0u);
-  --m_numberOfStyles;
 }
 
 ShadowRootRareDataV0& ShadowRoot::ensureShadowRootRareDataV0() {

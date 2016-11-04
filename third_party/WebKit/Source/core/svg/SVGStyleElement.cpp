@@ -106,7 +106,6 @@ void SVGStyleElement::finishParsingChildren() {
 Node::InsertionNotificationRequest SVGStyleElement::insertedInto(
     ContainerNode* insertionPoint) {
   SVGElement::insertedInto(insertionPoint);
-  StyleElement::insertedInto(*this, insertionPoint);
   return InsertionShouldCallDidNotifySubtreeInsertions;
 }
 

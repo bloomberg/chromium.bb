@@ -82,7 +82,6 @@ void HTMLStyleElement::finishParsingChildren() {
 Node::InsertionNotificationRequest HTMLStyleElement::insertedInto(
     ContainerNode* insertionPoint) {
   HTMLElement::insertedInto(insertionPoint);
-  StyleElement::insertedInto(*this, insertionPoint);
   return InsertionShouldCallDidNotifySubtreeInsertions;
 }
 

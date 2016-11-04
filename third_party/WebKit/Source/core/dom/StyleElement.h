@@ -49,7 +49,6 @@ class CORE_EXPORT StyleElement : public GarbageCollectedMixin {
   bool sheetLoaded(Document&);
   void startLoadingDynamicSheet(Document&);
 
-  void insertedInto(const Element&, ContainerNode* insertionPoint);
   void removedFrom(Element&, ContainerNode* insertionPoint);
   ProcessingResult processStyleSheet(Document&, Element&);
   ProcessingResult childrenChanged(Element&);
