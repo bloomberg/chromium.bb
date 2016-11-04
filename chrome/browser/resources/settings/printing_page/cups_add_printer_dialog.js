@@ -185,12 +185,12 @@ Polymer({
       notify: true,
     },
 
-    /** @type {!Array<string>} */
+    /** @type {?Array<string>} */
     manufacturerList: {
       type: Array,
     },
 
-    /** @type {!Array<string>} */
+    /** @type {?Array<string>} */
     modelList: {
       type: Array,
     },
@@ -207,13 +207,16 @@ Polymer({
 
   /** @override */
   ready: function() {
-    // TODO(xdai): Get available manufacturerList after the API is ready.
+    settings.CupsPrintersBrowserProxyImpl.getInstance().
+        getCupsPrinterManufacturersList().then(
+            this.manufacturerListChanged_.bind(this));
   },
 
   /** @private */
-  selectedManufacturerChanged_: function() {
-    // TODO(xdai): Get available modelList for a selected manufacturer after
-    // the API is ready.
+  selectedManufacturerChanged_: function(manufacturer) {
+    settings.CupsPrintersBrowserProxyImpl.getInstance().
+        getCupsPrinterModelsList(manufacturer).then(
+            this.modelListChanged_.bind(this));
   },
 
   /** @private */
@@ -229,6 +232,24 @@ Polymer({
   printerPPDPathChanged_: function(path) {
     this.newPrinter.printerPPDPath = path;
     this.$$('paper-input').value = this.getBaseName_(path);
+  },
+
+  /**
+   * @param {!ManufacturersInfo} manufacturersInfo
+   * @private
+   */
+  manufacturerListChanged_: function(manufacturersInfo) {
+    if (manufacturersInfo.success)
+      this.manufacturerList = manufacturersInfo.manufacturers;
+  },
+
+  /**
+   * @param {!ModelsInfo} modelsInfo
+   * @private
+   */
+  modelListChanged_: function(modelsInfo) {
+    if (modelsInfo.success)
+      this.modelList = modelsInfo.models;
   },
 
   /** @private */

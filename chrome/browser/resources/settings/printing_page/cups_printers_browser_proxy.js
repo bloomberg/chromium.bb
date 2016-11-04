@@ -30,6 +30,22 @@ var CupsPrinterInfo;
  */
 var CupsPrintersList;
 
+/**
+ * @typedef {{
+ *   success: boolean,
+ *   manufacturers: Array<string>
+ * }}
+ */
+var ManufacturersInfo;
+
+/**
+ * @typedef {{
+ *   success: boolean,
+ *   models: Array<string>
+ * }}
+ */
+var ModelsInfo;
+
 cr.define('settings', function() {
   /** @interface */
   function CupsPrintersBrowserProxy() {}
@@ -66,6 +82,17 @@ cr.define('settings', function() {
     startDiscoveringPrinters: function() {},
 
     stopDiscoveringPrinters: function() {},
+
+    /**
+     * @return {!Promise<!ManufacturersInfo>}
+     */
+    getCupsPrinterManufacturersList: function() {},
+
+    /**
+     * @param {string} manufacturer
+     * @return {!Promise<!ModelsInfo>}
+     */
+    getCupsPrinterModelsList: function(manufacturer) {},
   };
 
   /**
@@ -109,6 +136,16 @@ cr.define('settings', function() {
     /** @override */
     stopDiscoveringPrinters: function() {
       chrome.send('stopDiscoveringPrinters');
+    },
+
+    /** @override */
+    getCupsPrinterManufacturersList: function() {
+      return cr.sendWithPromise('getCupsPrinterManufacturersList');
+    },
+
+    /** @override */
+    getCupsPrinterModelsList: function(manufacturer) {
+      return cr.sendWithPromise('getCupsPrinterModelsList', manufacturer);
     },
   };
 
