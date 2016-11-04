@@ -194,6 +194,9 @@ const base::Feature kTokenBinding{"token-binding",
 const base::Feature kTouchpadAndWheelScrollLatching{
     "TouchpadAndWheelScrollLatching", base::FEATURE_DISABLED_BY_DEFAULT};
 
+// Enables VR UI.
+const base::Feature kVrShell{"VrShell", base::FEATURE_DISABLED_BY_DEFAULT};
+
 // Enable WebAssembly.
 // http://webassembly.org/
 const base::Feature kWebAssembly{"WebAssembly",

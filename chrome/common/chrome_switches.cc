@@ -1032,9 +1032,6 @@ const char kDisableAppLink[] = "disable-app-link";
 // Disables Contextual Search.
 const char kDisableContextualSearch[] = "disable-contextual-search";
 
-// Disable VR UI if supported.
-const char kDisableVrShell[] = "disable-vr-shell";
-
 // Enable the accessibility tab switcher.
 const char kEnableAccessibilityTabSwitcher[] =
     "enable-accessibility-tab-switcher";
@@ -1055,9 +1052,6 @@ const char kEnableHostedMode[] = "enable-hosted-mode";
 // Enables a hung renderer InfoBar allowing the user to close or wait on
 // unresponsive web content.
 const char kEnableHungRendererInfoBar[] = "enable-hung-renderer-infobar";
-
-// Enable VR UI if supported.
-const char kEnableVrShell[] = "enable-vr-shell";
 
 // Enables "Add to Home screen" in the app menu to generate WebAPKs.
 const char kEnableWebApk[] = "enable-webapk";

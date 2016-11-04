@@ -19,6 +19,8 @@ import android.widget.FrameLayout;
 import org.chromium.base.Log;
 import org.chromium.base.annotations.CalledByNative;
 import org.chromium.base.annotations.JNINamespace;
+import org.chromium.base.library_loader.LibraryLoader;
+import org.chromium.chrome.browser.ChromeFeatureList;
 import org.chromium.chrome.browser.ChromeTabbedActivity;
 import org.chromium.chrome.browser.tab.Tab;
 import org.chromium.content_public.common.BrowserControlsState;
@@ -35,7 +37,8 @@ public class VrShellDelegate {
 
     private ChromeTabbedActivity mActivity;
 
-    private boolean mVrEnabled;
+    private boolean mVrAvailable;
+    private Boolean mVrShellEnabled;
 
     private Class<? extends VrShell> mVrShellClass;
     private Class<? extends NonPresentingGvrContext> mNonPresentingGvrContextClass;
@@ -55,13 +58,13 @@ public class VrShellDelegate {
     public VrShellDelegate(ChromeTabbedActivity activity) {
         mActivity = activity;
 
-        mVrEnabled = maybeFindVrClasses();
-        if (mVrEnabled) {
+        mVrAvailable = maybeFindVrClasses();
+        if (mVrAvailable) {
             try {
                 mVrExtra = (String) mVrShellClass.getField("VR_EXTRA").get(null);
             } catch (IllegalAccessException | IllegalArgumentException | NoSuchFieldException e) {
                 Log.e(TAG, "Unable to read VR_EXTRA field", e);
-                mVrEnabled = false;
+                mVrAvailable = false;
             }
             createVrDaydreamApi();
         }
@@ -72,7 +75,7 @@ public class VrShellDelegate {
      * class can be initialized.
      */
     public void onNativeLibraryReady() {
-        if (mVrEnabled) {
+        if (mVrAvailable) {
             mNativeVrShellDelegate = nativeInit();
         }
     }
@@ -106,7 +109,11 @@ public class VrShellDelegate {
      */
     @CalledByNative
     public boolean enterVRIfNecessary(boolean inWebVR) {
-        if (!mVrEnabled || mNativeVrShellDelegate == 0) return false;
+        // If vr isn't in the build, or we haven't initialized yet, or vr shell is not enabled and
+        // this is not a web vr request, then return immediately.
+        if (!mVrAvailable || mNativeVrShellDelegate == 0 || (!isVrShellEnabled() && !inWebVR)) {
+            return false;
+        }
         Tab tab = mActivity.getActivityTab();
         // TODO(mthiesse): When we have VR UI for opening new tabs, etc., allow VR Shell to be
         // entered without any current tabs.
@@ -243,7 +250,7 @@ public class VrShellDelegate {
 
     @CalledByNative
     private long createNonPresentingNativeContext() {
-        if (!mVrEnabled) return 0;
+        if (!mVrAvailable) return 0;
 
         try {
             Constructor<?> nonPresentingGvrContextConstructor =
@@ -285,7 +292,7 @@ public class VrShellDelegate {
     }
 
     private boolean createVrDaydreamApi() {
-        if (!mVrEnabled) return false;
+        if (!mVrAvailable) return false;
 
         try {
             Constructor<?> vrPrivateApiConstructor =
@@ -381,7 +388,20 @@ public class VrShellDelegate {
      * @return Whether or not VR Shell is currently enabled.
      */
     public boolean isVrShellEnabled() {
-        return mVrEnabled;
+        if (mVrShellEnabled == null) {
+            if (!LibraryLoader.isInitialized()) {
+                return false;
+            }
+            mVrShellEnabled = ChromeFeatureList.isEnabled(ChromeFeatureList.VR_SHELL);
+        }
+        return mVrShellEnabled;
+    }
+
+    /**
+     * @return Whether or not VR Shell is currently enabled.
+     */
+    public boolean isVrInitialized() {
+        return mVrDaydreamApi != null;
     }
 
     /**

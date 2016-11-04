@@ -15434,10 +15434,10 @@ read aloud to screenreader users to announce that a completion is available.">
     </if>
     <if expr="is_android">
       <message name="IDS_FLAGS_ENABLE_VR_SHELL_NAME" desc="Name of the flag to enable VR shell">
-        Enable VR shell.
+        Enable Chrome VR.
       </message>
       <message name="IDS_FLAGS_ENABLE_VR_SHELL_DESCRIPTION" desc="Description for the flag to enable VR shell">
-        Enable VR shell if available for this device.
+        Allow browsing with a VR headset if available for this device.
       </message>
       <message name="IDS_VR_SHELL_UI_BACK_BUTTON" desc="Text under the VR scene history back button">
         Back
