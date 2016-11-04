@@ -128,7 +128,7 @@ void LoginUser(const std::string& user_id) {
       user_manager::UserManager::Get()->GetLoggedInUsers();
   for (user_manager::UserList::const_iterator it = logged_users.begin();
        it != logged_users.end(); ++it) {
-    if ((*it)->email() == user_context.GetAccountId().GetUserEmail())
+    if ((*it)->GetAccountId() == user_context.GetAccountId())
       return;
   }
   ADD_FAILURE() << user_id << " was not added via PreLoginUser()";

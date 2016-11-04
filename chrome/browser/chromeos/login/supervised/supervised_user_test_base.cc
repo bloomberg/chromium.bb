@@ -373,9 +373,9 @@ void SupervisedUserTestBase::SigninAsSupervisedUser(
   // Clean first run flag before logging in.
   static_cast<SupervisedUserManagerImpl*>(
       ChromeUserManager::Get()->GetSupervisedUserManager())
-      ->CheckForFirstRun(user->email());
+      ->CheckForFirstRun(user->GetAccountId().GetUserEmail());
 
-  LoginUser(user->email());
+  LoginUser(user->GetAccountId().GetUserEmail());
   if (check_homedir_calls)
     ::testing::Mock::VerifyAndClearExpectations(mock_homedir_methods_);
   Profile* profile = ProfileHelper::Get()->GetProfileByUserUnsafe(user);
@@ -394,7 +394,7 @@ void SupervisedUserTestBase::SigninAsManager(int user_index) {
   // Created supervised user have to be first in a list.
   const user_manager::User* user =
       user_manager::UserManager::Get()->GetUsers().at(user_index);
-  LoginUser(user->email());
+  LoginUser(user->GetAccountId().GetUserEmail());
   Profile* profile = ProfileHelper::Get()->GetProfileByUserUnsafe(user);
   shared_settings_adapter_.reset(
       new SupervisedUsersSharedSettingsSyncTestAdapter(profile));

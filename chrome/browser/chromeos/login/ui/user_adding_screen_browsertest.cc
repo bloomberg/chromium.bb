@@ -134,8 +134,10 @@ IN_PROC_BROWSER_TEST_F(UserAddingScreenTest, CancelAdding) {
 
   EXPECT_TRUE(LoginDisplayHost::default_host() == nullptr);
   EXPECT_EQ(1u, user_manager::UserManager::Get()->GetLoggedInUsers().size());
-  EXPECT_EQ(kTestUsers[0],
-            user_manager::UserManager::Get()->GetActiveUser()->email());
+  EXPECT_EQ(kTestUsers[0], user_manager::UserManager::Get()
+                               ->GetActiveUser()
+                               ->GetAccountId()
+                               .GetUserEmail());
 }
 
 IN_PROC_BROWSER_TEST_F(UserAddingScreenTest, PRE_AddingSeveralUsers) {
@@ -205,12 +207,12 @@ IN_PROC_BROWSER_TEST_F(UserAddingScreenTest, AddingSeveralUsers) {
                     MultiProfileUserController::kBehaviorUnrestricted);
   user_manager::UserList unlock_users = user_manager->GetUnlockUsers();
   ASSERT_EQ(1UL, unlock_users.size());
-  EXPECT_EQ(kTestUsers[0], unlock_users[0]->email());
+  EXPECT_EQ(kTestUsers[0], unlock_users[0]->GetAccountId().GetUserEmail());
 
   prefs1->SetBoolean(prefs::kEnableAutoScreenLock, false);
   unlock_users = user_manager->GetUnlockUsers();
   ASSERT_EQ(1UL, unlock_users.size());
-  EXPECT_EQ(kTestUsers[0], unlock_users[0]->email());
+  EXPECT_EQ(kTestUsers[0], unlock_users[0]->GetAccountId().GetUserEmail());
 
   // If all users have unrestricted policy then anyone can perform unlock.
   prefs1->SetString(prefs::kMultiProfileUserBehavior,
@@ -218,21 +220,21 @@ IN_PROC_BROWSER_TEST_F(UserAddingScreenTest, AddingSeveralUsers) {
   unlock_users = user_manager->GetUnlockUsers();
   ASSERT_EQ(3UL, unlock_users.size());
   for (int i = 0; i < 3; ++i)
-    EXPECT_EQ(kTestUsers[i], unlock_users[i]->email());
+    EXPECT_EQ(kTestUsers[i], unlock_users[i]->GetAccountId().GetUserEmail());
 
   // This preference doesn't affect list of unlock users.
   prefs2->SetBoolean(prefs::kEnableAutoScreenLock, true);
   unlock_users = user_manager->GetUnlockUsers();
   ASSERT_EQ(3UL, unlock_users.size());
   for (int i = 0; i < 3; ++i)
-    EXPECT_EQ(kTestUsers[i], unlock_users[i]->email());
+    EXPECT_EQ(kTestUsers[i], unlock_users[i]->GetAccountId().GetUserEmail());
 
   // Now one of the users is unable to unlock.
   SetUserCanLock(user_manager->GetLoggedInUsers()[2], false);
   unlock_users = user_manager->GetUnlockUsers();
   ASSERT_EQ(2UL, unlock_users.size());
   for (int i = 0; i < 2; ++i)
-    EXPECT_EQ(kTestUsers[i], unlock_users[i]->email());
+    EXPECT_EQ(kTestUsers[i], unlock_users[i]->GetAccountId().GetUserEmail());
   SetUserCanLock(user_manager->GetLoggedInUsers()[2], true);
 
   // Now one of the users has not-allowed policy.
@@ -244,7 +246,7 @@ IN_PROC_BROWSER_TEST_F(UserAddingScreenTest, AddingSeveralUsers) {
   unlock_users = user_manager->GetUnlockUsers();
   ASSERT_EQ(2UL, unlock_users.size());
   for (int i = 0; i < 2; ++i)
-    EXPECT_EQ(kTestUsers[i], unlock_users[i]->email());
+    EXPECT_EQ(kTestUsers[i], unlock_users[i]->GetAccountId().GetUserEmail());
 }
 
 IN_PROC_BROWSER_TEST_F(UserAddingScreenTest, PRE_ScreenVisibility) {

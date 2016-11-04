@@ -416,9 +416,8 @@ void UserCloudPolicyManagerChromeOS::CancelWaitForPolicyFetch(bool success) {
   // initialization will not complete).
   // TODO(atwilson): Add code to retry policy fetching.
   if (!success && !allow_failed_policy_fetches_) {
-    LOG(ERROR) << "Policy fetch failed for "
-               << user_manager::UserManager::Get()->GetActiveUser()->email()
-               << " - aborting profile initialization";
+    LOG(ERROR) << "Policy fetch failed for the user. "
+                  "Aborting profile initialization";
     // Need to exit the current user, because we've already started this user's
     // session.
     chrome::AttemptUserExit();

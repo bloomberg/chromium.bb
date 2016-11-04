@@ -97,7 +97,8 @@ MultiProfileUserController::GetPrimaryUserPolicy() {
     return ALLOWED;
 
   // Don't allow any secondary profiles if the primary profile is tainted.
-  if (policy::PolicyCertServiceFactory::UsedPolicyCertificates(user->email())) {
+  if (policy::PolicyCertServiceFactory::UsedPolicyCertificates(
+          user->GetAccountId().GetUserEmail())) {
     // Check directly in local_state before checking if the primary user has
     // a PolicyCertService. His profile may have been tainted previously though
     // he didn't get a PolicyCertService created for this session.
@@ -134,7 +135,7 @@ bool MultiProfileUserController::IsUserAllowedInSession(
   const user_manager::User* primary_user = user_manager->GetPrimaryUser();
   std::string primary_user_email;
   if (primary_user)
-    primary_user_email = primary_user->email();
+    primary_user_email = primary_user->GetAccountId().GetUserEmail();
 
   // Always allow if there is no primary user or user being checked is the
   // primary user.
@@ -208,8 +209,8 @@ void MultiProfileUserController::CheckSessionUsers() {
   for (user_manager::UserList::const_iterator it = users.begin();
        it != users.end();
        ++it) {
-    if (!IsUserAllowedInSession((*it)->email(), NULL)) {
-      delegate_->OnUserNotAllowed((*it)->email());
+    if (!IsUserAllowedInSession((*it)->GetAccountId().GetUserEmail(), NULL)) {
+      delegate_->OnUserNotAllowed((*it)->GetAccountId().GetUserEmail());
       return;
     }
   }

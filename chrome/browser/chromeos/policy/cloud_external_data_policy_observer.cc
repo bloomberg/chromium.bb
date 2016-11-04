@@ -168,7 +168,7 @@ void CloudExternalDataPolicyObserver::Observe(
     return;
   }
 
-  const std::string& user_id = user->email();
+  const std::string& user_id = user->GetAccountId().GetUserEmail();
   if (base::ContainsKey(logged_in_user_observers_, user_id)) {
     NOTREACHED();
     return;

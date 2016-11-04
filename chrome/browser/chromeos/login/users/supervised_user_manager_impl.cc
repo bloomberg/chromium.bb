@@ -171,7 +171,7 @@ bool SupervisedUserManagerImpl::HasSupervisedUsers(
        it != users.end();
        ++it) {
     if ((*it)->GetType() == user_manager::USER_TYPE_SUPERVISED) {
-      if (manager_id == GetManagerUserId((*it)->email()))
+      if (manager_id == GetManagerUserId((*it)->GetAccountId().GetUserEmail()))
         return true;
     }
   }
@@ -213,8 +213,9 @@ const user_manager::User* SupervisedUserManagerImpl::CreateUserRecord(
 
   sync_id_update->SetWithoutPathExpansion(local_user_id,
       new base::StringValue(sync_user_id));
-  manager_update->SetWithoutPathExpansion(local_user_id,
-      new base::StringValue(manager->email()));
+  manager_update->SetWithoutPathExpansion(
+      local_user_id,
+      new base::StringValue(manager->GetAccountId().GetUserEmail()));
   manager_name_update->SetWithoutPathExpansion(local_user_id,
       new base::StringValue(manager->GetDisplayName()));
   manager_email_update->SetWithoutPathExpansion(local_user_id,
@@ -382,7 +383,7 @@ const user_manager::User* SupervisedUserManagerImpl::FindBySyncId(
        it != users.end();
        ++it) {
     if (((*it)->GetType() == user_manager::USER_TYPE_SUPERVISED) &&
-        (GetUserSyncId((*it)->email()) == sync_id)) {
+        (GetUserSyncId((*it)->GetAccountId().GetUserEmail()) == sync_id)) {
       return *it;
     }
   }

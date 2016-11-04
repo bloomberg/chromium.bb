@@ -108,7 +108,7 @@ KeyedService* PolicyCertServiceFactory::BuildServiceInstanceFor(
   // TODO(joaodasilva): remove this, eventually.
   PrefService* prefs = profile->GetOriginalProfile()->GetPrefs();
   if (prefs->GetBoolean(prefs::kUsedPolicyCertificatesOnce)) {
-    SetUsedPolicyCertificates(user->email());
+    SetUsedPolicyCertificates(user->GetAccountId().GetUserEmail());
     prefs->ClearPref(prefs::kUsedPolicyCertificatesOnce);
 
     if (user_manager->GetLoggedInUsers().size() > 1u) {
@@ -128,7 +128,8 @@ KeyedService* PolicyCertServiceFactory::BuildServiceInstanceFor(
   if (!net_conf_updater)
     return NULL;
 
-  return new PolicyCertService(user->email(), net_conf_updater, user_manager);
+  return new PolicyCertService(user->GetAccountId().GetUserEmail(),
+                               net_conf_updater, user_manager);
 }
 
 content::BrowserContext* PolicyCertServiceFactory::GetBrowserContextToUse(

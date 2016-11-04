@@ -243,7 +243,8 @@ void ExistingUserController::UpdateLoginDisplay(
         user->GetType() != user_manager::USER_TYPE_SUPERVISED ||
         user_manager::UserManager::Get()->AreSupervisedUsersAllowed();
     const bool meets_whitelist_requirements =
-        CrosSettings::IsWhitelisted(user->email(), nullptr) ||
+        CrosSettings::IsWhitelisted(user->GetAccountId().GetUserEmail(),
+                                    nullptr) ||
         !user->HasGaiaAccount();
 
     // Public session accounts are always shown on login screen.

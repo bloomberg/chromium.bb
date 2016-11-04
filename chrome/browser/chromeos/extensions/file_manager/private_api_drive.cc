@@ -1042,9 +1042,10 @@ bool FileManagerPrivateInternalRequestDriveShareFunction::RunAsync() {
       break;
   }
 
-  // Share |drive_path| in |owner_file_system| to |user->email()|.
+  // Share |drive_path| in |owner_file_system| to
+  // |user->GetAccountId().GetUserEmail()|.
   owner_file_system->AddPermission(
-      drive_path, user->email(), role,
+      drive_path, user->GetAccountId().GetUserEmail(), role,
       base::Bind(
           &FileManagerPrivateInternalRequestDriveShareFunction::OnAddPermission,
           this));

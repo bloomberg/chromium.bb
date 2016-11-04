@@ -529,14 +529,15 @@ void UserSessionManager::RestoreAuthenticationSession(Profile* user_profile) {
       ProfileHelper::Get()->GetUserByProfile(user_profile);
   DCHECK(user);
   if (!net::NetworkChangeNotifier::IsOffline()) {
-    pending_signin_restore_sessions_.erase(user->email());
+    pending_signin_restore_sessions_.erase(user->GetAccountId().GetUserEmail());
     RestoreAuthSessionImpl(user_profile, false /* has_auth_cookies */);
   } else {
     // Even if we're online we should wait till initial
     // OnConnectionTypeChanged() call. Otherwise starting fetchers too early may
     // end up canceling all request when initial network connection type is
     // processed. See http://crbug.com/121643.
-    pending_signin_restore_sessions_.insert(user->email());
+    pending_signin_restore_sessions_.insert(
+        user->GetAccountId().GetUserEmail());
   }
 }
 
@@ -834,9 +835,9 @@ void UserSessionManager::OnConnectionTypeChanged(
       continue;
 
     Profile* user_profile = ProfileHelper::Get()->GetProfileByUserUnsafe(*it);
-    bool should_restore_session =
-        pending_signin_restore_sessions_.find((*it)->email()) !=
-        pending_signin_restore_sessions_.end();
+    bool should_restore_session = pending_signin_restore_sessions_.find(
+                                      (*it)->GetAccountId().GetUserEmail()) !=
+                                  pending_signin_restore_sessions_.end();
     OAuth2LoginManager* login_manager =
         OAuth2LoginManagerFactory::GetInstance()->GetForProfile(user_profile);
     if (login_manager->SessionRestoreIsRunning()) {
@@ -844,7 +845,8 @@ void UserSessionManager::OnConnectionTypeChanged(
       // we need to kick off OAuth token verification process again.
       login_manager->ContinueSessionRestore();
     } else if (should_restore_session) {
-      pending_signin_restore_sessions_.erase((*it)->email());
+      pending_signin_restore_sessions_.erase(
+          (*it)->GetAccountId().GetUserEmail());
       RestoreAuthSessionImpl(user_profile, false /* has_auth_cookies */);
     }
   }

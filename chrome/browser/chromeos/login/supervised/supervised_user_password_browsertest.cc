@@ -78,7 +78,7 @@ IN_PROC_BROWSER_TEST_F(SupervisedUserPasswordTest,
       user_manager::UserManager::Get()->GetUsers().at(0);
   std::string sync_id =
       ChromeUserManager::Get()->GetSupervisedUserManager()->GetUserSyncId(
-          user->email());
+          user->GetAccountId().GetUserEmail());
   base::DictionaryValue password;
   password.SetIntegerWithoutPathExpansion(
       kSchemaVersion, SupervisedUserAuthentication::SCHEMA_SALT_HASHED);
@@ -129,7 +129,7 @@ IN_PROC_BROWSER_TEST_F(SupervisedUserPasswordTest,
 
   std::string sync_id =
       ChromeUserManager::Get()->GetSupervisedUserManager()->GetUserSyncId(
-          supervised_user->email());
+          supervised_user->GetAccountId().GetUserEmail());
 
   ::sync_pb::ManagedUserSpecifics managed_user_proto;
 
@@ -191,7 +191,7 @@ IN_PROC_BROWSER_TEST_F(SupervisedUserPasswordTest,
       user_manager::UserManager::Get()->GetUsers().at(0);
   std::string sync_id =
       ChromeUserManager::Get()->GetSupervisedUserManager()->GetUserSyncId(
-          user->email());
+          user->GetAccountId().GetUserEmail());
   base::DictionaryValue password;
   password.SetIntegerWithoutPathExpansion(
       kSchemaVersion, SupervisedUserAuthentication::SCHEMA_SALT_HASHED);
@@ -219,7 +219,7 @@ IN_PROC_BROWSER_TEST_F(SupervisedUserPasswordTest,
 
   std::string sync_id =
       ChromeUserManager::Get()->GetSupervisedUserManager()->GetUserSyncId(
-          supervised_user->email());
+          supervised_user->GetAccountId().GetUserEmail());
 
   ::sync_pb::ManagedUserSpecifics managed_user_proto;
 

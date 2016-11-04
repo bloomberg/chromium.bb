@@ -85,8 +85,8 @@ UsersPrivateGetWhitelistedUsersFunction::Run() {
   user_manager::UserManager* user_manager = user_manager::UserManager::Get();
   const user_manager::UserList& users = user_manager->GetUsers();
   for (const auto* user : users) {
-    email_list->AppendIfNotPresent(
-        base::MakeUnique<base::StringValue>(user->email()));
+    email_list->AppendIfNotPresent(base::MakeUnique<base::StringValue>(
+        user->GetAccountId().GetUserEmail()));
   }
 
   if (chromeos::OwnerSettingsServiceChromeOS* service =

@@ -945,9 +945,10 @@ bool DeviceStatusCollector::GetUsers(em::DeviceStatusReportRequest* status) {
       continue;
 
     em::DeviceUser* device_user = status->add_user();
-    if (chromeos::ChromeUserManager::Get()->ShouldReportUser(user->email())) {
+    if (chromeos::ChromeUserManager::Get()->ShouldReportUser(
+            user->GetAccountId().GetUserEmail())) {
       device_user->set_type(em::DeviceUser::USER_TYPE_MANAGED);
-      device_user->set_email(user->email());
+      device_user->set_email(user->GetAccountId().GetUserEmail());
     } else {
       device_user->set_type(em::DeviceUser::USER_TYPE_UNMANAGED);
       // Do not report the email address of unmanaged users.

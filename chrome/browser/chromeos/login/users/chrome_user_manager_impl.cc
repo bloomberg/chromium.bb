@@ -303,8 +303,8 @@ user_manager::UserList ChromeUserManagerImpl::GetUsersAllowedForMultiProfile()
     if ((*it)->GetType() == user_manager::USER_TYPE_REGULAR &&
         !(*it)->is_logged_in()) {
       MultiProfileUserController::UserAllowedInSessionReason check;
-      multi_profile_user_controller_->IsUserAllowedInSession((*it)->email(),
-                                                             &check);
+      multi_profile_user_controller_->IsUserAllowedInSession(
+          (*it)->GetAccountId().GetUserEmail(), &check);
       if (check ==
           MultiProfileUserController::NOT_ALLOWED_PRIMARY_USER_POLICY_FORBIDS) {
         return user_manager::UserList();
@@ -935,7 +935,8 @@ void ChromeUserManagerImpl::
       local_state->GetString(kDeviceLocalAccountPendingDataRemoval);
   if (device_local_account_pending_data_removal.empty() ||
       (IsUserLoggedIn() &&
-       device_local_account_pending_data_removal == GetActiveUser()->email())) {
+       device_local_account_pending_data_removal ==
+           GetActiveUser()->GetAccountId().GetUserEmail())) {
     return;
   }
 
@@ -950,14 +951,15 @@ void ChromeUserManagerImpl::CleanUpDeviceLocalAccountNonCryptohomeData(
   for (user_manager::UserList::const_iterator it = users_.begin();
        it != users_.end();
        ++it)
-    users.insert((*it)->email());
+    users.insert((*it)->GetAccountId().GetUserEmail());
 
   // If the user is logged into a device local account that has been removed
   // from the user list, mark the account's data as pending removal after
   // logout.
   const user_manager::User* const active_user = GetActiveUser();
   if (active_user && active_user->IsDeviceLocalAccount()) {
-    const std::string active_user_id = active_user->email();
+    const std::string active_user_id =
+        active_user->GetAccountId().GetUserEmail();
     if (users.find(active_user_id) == users.end()) {
       GetLocalState()->SetString(kDeviceLocalAccountPendingDataRemoval,
                                  active_user_id);
@@ -984,7 +986,7 @@ bool ChromeUserManagerImpl::UpdateAndCleanUpDeviceLocalAccounts(
   std::vector<std::string> old_accounts;
   for (auto* user : users_) {
     if (user->IsDeviceLocalAccount())
-      old_accounts.push_back(user->email());
+      old_accounts.push_back(user->GetAccountId().GetUserEmail());
   }
 
   // If the list of device local accounts has not changed, return.

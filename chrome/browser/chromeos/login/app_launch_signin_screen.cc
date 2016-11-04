@@ -54,7 +54,7 @@ void AppLaunchSigninScreen::InitOwnerUserList() {
        it != all_users.end();
        ++it) {
     user_manager::User* user = *it;
-    if (user->email() == owner_email) {
+    if (user->GetAccountId().GetUserEmail() == owner_email) {
       owner_user_list_.push_back(user);
       break;
     }

@@ -144,7 +144,7 @@ void MockUserManager::ClearUserList() {
 
 bool MockUserManager::ShouldReportUser(const std::string& user_id) const {
   for (auto* user : user_list_) {
-    if (user->email() == user_id)
+    if (user->GetAccountId().GetUserEmail() == user_id)
       return user->IsAffiliated();
   }
   NOTREACHED();

@@ -644,7 +644,7 @@ IN_PROC_BROWSER_TEST_F(SamlTest, UseAutenticatedUserEmailAddress) {
   const user_manager::User* user =
       user_manager::UserManager::Get()->GetActiveUser();
   ASSERT_TRUE(user);
-  EXPECT_EQ(kFirstSAMLUserEmail, user->email());
+  EXPECT_EQ(kFirstSAMLUserEmail, user->GetAccountId().GetUserEmail());
 }
 
 // Verifies that if the authenticated user's e-mail address cannot be retrieved,

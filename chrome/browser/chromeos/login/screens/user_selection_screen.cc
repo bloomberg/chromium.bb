@@ -204,7 +204,7 @@ void UserSelectionScreen::FillMultiProfileUserPrefs(
     user_manager::User* user,
     base::DictionaryValue* user_dict,
     bool is_signin_to_add) {
-  const std::string& user_id = user->email();
+  const std::string& user_id = user->GetAccountId().GetUserEmail();
 
   if (is_signin_to_add) {
     MultiProfileUserController* multi_profile_user_controller =
