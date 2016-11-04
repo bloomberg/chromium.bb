@@ -447,10 +447,10 @@ Widget* RootFrameViewport::getWidget() {
   return visualViewport().getWidget();
 }
 
-void RootFrameViewport::clearScrollAnimators() {
-  ScrollableArea::clearScrollAnimators();
-  layoutViewport().clearScrollAnimators();
-  visualViewport().clearScrollAnimators();
+void RootFrameViewport::clearScrollableArea() {
+  ScrollableArea::clearScrollableArea();
+  layoutViewport().clearScrollableArea();
+  visualViewport().clearScrollableArea();
 }
 
 DEFINE_TRACE(RootFrameViewport) {

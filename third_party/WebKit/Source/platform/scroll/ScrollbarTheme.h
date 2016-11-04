@@ -103,6 +103,8 @@ class PLATFORM_EXPORT ScrollbarTheme {
   int thumbPosition(const ScrollbarThemeClient& scrollbar) {
     return thumbPosition(scrollbar, scrollbar.currentPos());
   }
+  virtual double overlayScrollbarFadeOutDelaySeconds() const;
+  virtual double overlayScrollbarFadeOutDurationSeconds() const;
   // The position the thumb would have, relative to the track, at the specified
   // scroll position.
   virtual int thumbPosition(const ScrollbarThemeClient&, float scrollPosition);

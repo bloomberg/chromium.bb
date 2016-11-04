@@ -173,6 +173,12 @@ blink::WebSize WebThemeEngineImpl::getSize(WebThemeEngine::Part part) {
 }
 
 void WebThemeEngineImpl::getOverlayScrollbarStyle(ScrollbarStyle* style) {
+  // TODO(bokan): Android scrollbars on non-composited scrollers don't
+  // currently fade out so the fadeOutDuration and Delay  Now that this has
+  // been added into Blink for other platforms we should plumb that through for
+  // Android as well.
+  style->fadeOutDelaySeconds = 0;
+  style->fadeOutDurationSeconds = 0;
   if (getMajorVersion() >= kVersionLollipop) {
     style->thumbThickness = 4;
     style->scrollbarMargin = 0;

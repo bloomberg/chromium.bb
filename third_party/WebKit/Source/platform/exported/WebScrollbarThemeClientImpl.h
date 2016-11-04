@@ -75,7 +75,7 @@ class PLATFORM_EXPORT WebScrollbarThemeClientImpl
   ScrollbarPart pressedPart() const override;
   ScrollbarPart hoveredPart() const override;
   void styleChanged() override;
-  void visibilityChanged() override;
+  void setScrollbarsHidden(bool) override;
   bool enabled() const override;
   void setEnabled(bool) override;
   bool isOverlayScrollbar() const override;
