@@ -6,7 +6,6 @@
 
 from __future__ import print_function
 
-import __main__
 import collections
 import contextlib
 from datetime import datetime
@@ -2022,7 +2021,7 @@ def MachineDetails():
     A string with content that helps identify this system/process/etc...
   """
   return '\n'.join((
-      'PROG=%s' % __main__.__file__,
+      'PROG=%s' % inspect.stack()[-1][1],
       'USER=%s' % getpass.getuser(),
       'HOSTNAME=%s' % GetHostName(fully_qualified=True),
       'PID=%s' % os.getpid(),
