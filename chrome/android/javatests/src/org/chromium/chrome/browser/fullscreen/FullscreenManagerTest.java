@@ -27,7 +27,6 @@ import org.chromium.base.test.util.UrlUtils;
 import org.chromium.chrome.R;
 import org.chromium.chrome.browser.fullscreen.ChromeFullscreenManager.FullscreenListener;
 import org.chromium.chrome.browser.omnibox.UrlBar;
-import org.chromium.chrome.browser.tab.BrowserControlsVisibilityDelegate;
 import org.chromium.chrome.browser.tab.Tab;
 import org.chromium.chrome.browser.tab.TabWebContentsDelegateAndroid;
 import org.chromium.chrome.test.ChromeTabbedActivityTestBase;
@@ -84,17 +83,6 @@ public class FullscreenManagerTest extends ChromeTabbedActivityTestBase {
             + "<body style='height:10000px;' onclick='toggleFullScreen();'>"
             + "</body>"
             + "</html>");
-
-    @Override
-    protected void setUp() throws Exception {
-        super.setUp();
-        ThreadUtils.runOnUiThreadBlocking(new Runnable() {
-            @Override
-            public void run() {
-                BrowserControlsVisibilityDelegate.disablePageLoadDelayForTests();
-            }
-        });
-    }
 
     @MediumTest
     @Feature({"Fullscreen"})
@@ -323,6 +311,13 @@ public class FullscreenManagerTest extends ChromeTabbedActivityTestBase {
             OmniboxTestUtils.toggleUrlBarFocus(urlBar, false);
             OmniboxTestUtils.waitForFocusAndKeyboardActive(urlBar, false);
 
+            ThreadUtils.runOnUiThreadBlocking(new Runnable() {
+                @Override
+                public void run() {
+                    tab.processEnableFullscreenRunnableForTest();
+                }
+            });
+
             waitForBrowserControlsToBeMoveable(tab);
         } finally {
             testServer.stopAndDestroyServer();
@@ -489,6 +484,18 @@ public class FullscreenManagerTest extends ChromeTabbedActivityTestBase {
             @Override
             public void run() {
                 getActivity().getFullscreenManager().disableBrowserOverrideForTest();
+            }
+        });
+    }
+
+    @Override
+    protected void startMainActivityWithURL(String url) throws InterruptedException {
+        super.startMainActivityWithURL(url);
+        final Tab tab = getActivity().getActivityTab();
+        ThreadUtils.runOnUiThread(new Runnable() {
+            @Override
+            public void run() {
+                tab.processEnableFullscreenRunnableForTest();
             }
         });
     }

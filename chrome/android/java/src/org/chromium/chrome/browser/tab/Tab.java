@@ -15,6 +15,8 @@ import android.graphics.Color;
 import android.graphics.Rect;
 import android.net.Uri;
 import android.os.Bundle;
+import android.os.Handler;
+import android.os.Message;
 import android.provider.Browser;
 import android.support.annotation.Nullable;
 import android.text.TextUtils;
@@ -98,7 +100,6 @@ import org.chromium.content_public.browser.GestureStateListener;
 import org.chromium.content_public.browser.LoadUrlParams;
 import org.chromium.content_public.browser.WebContents;
 import org.chromium.content_public.common.BrowserControlsState;
-import org.chromium.content_public.common.BrowserControlsState.BrowserControlsStateEnum;
 import org.chromium.content_public.common.Referrer;
 import org.chromium.content_public.common.ResourceRequestBody;
 import org.chromium.printing.PrintManagerDelegateImpl;
@@ -135,6 +136,12 @@ public class Tab implements ViewGroup.OnHierarchyChangeListener,
 
     /** Return value from {@link #getBookmarkId()} if this tab is not bookmarked. */
     public static final long INVALID_BOOKMARK_ID = -1;
+
+    /** The maximum amount of time to wait for a page to load before entering fullscreen.  -1 means
+     *  wait until the page finishes loading. */
+    private static final long MAX_FULLSCREEN_LOAD_DELAY_MS = 3000;
+
+    protected static final int MSG_ID_ENABLE_FULLSCREEN_AFTER_LOAD = 1;
 
     private static final long INVALID_TIMESTAMP = -1;
 
@@ -344,6 +351,7 @@ public class Tab implements ViewGroup.OnHierarchyChangeListener,
     private float mPreviousFullscreenBrowserControlsOffsetY = Float.NaN;
     private float mPreviousFullscreenContentOffsetY = Float.NaN;
     private int mFullscreenHungRendererToken = FullscreenManager.INVALID_TOKEN;
+    private boolean mIsFullscreenWaitingForLoad = false;
 
     /**
      * Indicates whether this tab has been detached from its activity and the corresponding
@@ -366,6 +374,8 @@ public class Tab implements ViewGroup.OnHierarchyChangeListener,
     private int mThemeColor;
 
     private ChromeDownloadDelegate mDownloadDelegate;
+
+    protected Handler mHandler;
 
     /** Whether or not the tab closing the tab can send the user back to the app that opened it. */
     private boolean mIsAllowedToReturnToExternalApp;
@@ -529,6 +539,10 @@ public class Tab implements ViewGroup.OnHierarchyChangeListener,
             // Simulate the PAGE_LOAD_STARTED notification that we did not get.
             didStartPageLoad(url, false);
 
+            // As we may have missed the main frame commit notification for the
+            // swapped web contents, schedule the enabling of fullscreen now.
+            scheduleEnableFullscreenLoadDelayIfNecessary();
+
             if (didFinishLoad) {
                 // Simulate the PAGE_LOAD_FINISHED notification that we did not get.
                 didFinishPageLoad();
@@ -601,6 +615,15 @@ public class Tab implements ViewGroup.OnHierarchyChangeListener,
 
         setContentViewClient(new TabContentViewClient());
 
+        mHandler = new Handler() {
+            @Override
+            public void handleMessage(Message msg) {
+                if (msg == null) return;
+                if (msg.what == MSG_ID_ENABLE_FULLSCREEN_AFTER_LOAD) {
+                    enableFullscreenAfterLoad();
+                }
+            }
+        };
         mTabRedirectHandler = new TabRedirectHandler(mThemedApplicationContext);
         addObserver(mTabObserver);
 
@@ -620,6 +643,13 @@ public class Tab implements ViewGroup.OnHierarchyChangeListener,
                         && creationState == TabCreationState.FROZEN_ON_RESTORE;
             }
         }
+    }
+
+    private void enableFullscreenAfterLoad() {
+        if (!mIsFullscreenWaitingForLoad) return;
+
+        mIsFullscreenWaitingForLoad = false;
+        updateFullscreenEnabledState();
     }
 
     /**
@@ -1344,6 +1374,8 @@ public class Tab implements ViewGroup.OnHierarchyChangeListener,
 
             mTabRedirectHandler.clear();
 
+            cancelEnableFullscreenLoadDelay();
+
             // Allow this tab's NativePage to be frozen if it stays hidden for a while.
             NativePageAssassin.getInstance().tabHidden(this);
 
@@ -1655,6 +1687,8 @@ public class Tab implements ViewGroup.OnHierarchyChangeListener,
      * @param showingErrorPage Whether an error page is being shown.
      */
     protected void didStartPageLoad(String validatedUrl, boolean showingErrorPage) {
+        mIsFullscreenWaitingForLoad = !DomDistillerUrlUtils.isDistilledPage(validatedUrl);
+
         updateTitle();
         removeSadTabIfPresent();
 
@@ -1681,6 +1715,25 @@ public class Tab implements ViewGroup.OnHierarchyChangeListener,
         if (mTabUma != null) mTabUma.onPageLoadFinished();
 
         for (TabObserver observer : mObservers) observer.onPageLoadFinished(this);
+
+        // Handle the case where a commit or prerender swap notification failed to arrive and the
+        // enable fullscreen message was never enqueued.
+        scheduleEnableFullscreenLoadDelayIfNecessary();
+    }
+
+    private void scheduleEnableFullscreenLoadDelayIfNecessary() {
+        if (mIsFullscreenWaitingForLoad
+                && !mHandler.hasMessages(MSG_ID_ENABLE_FULLSCREEN_AFTER_LOAD)) {
+            mHandler.sendEmptyMessageDelayed(
+                    MSG_ID_ENABLE_FULLSCREEN_AFTER_LOAD, MAX_FULLSCREEN_LOAD_DELAY_MS);
+        }
+    }
+
+    /**
+     * @return Whether fullscreen state is waiting for the load to finish for an update.
+     */
+    boolean isFullscreenWaitingForLoad() {
+        return mIsFullscreenWaitingForLoad;
     }
 
     /**
@@ -1688,9 +1741,16 @@ public class Tab implements ViewGroup.OnHierarchyChangeListener,
      * @param errorCode The error code causing the page to fail loading.
      */
     protected void didFailPageLoad(int errorCode) {
+        cancelEnableFullscreenLoadDelay();
         mIsBeingRestored = false;
         if (mTabUma != null) mTabUma.onLoadFailed(errorCode);
         for (TabObserver observer : mObservers) observer.onPageLoadFailed(this, errorCode);
+        updateFullscreenEnabledState();
+    }
+
+    private void cancelEnableFullscreenLoadDelay() {
+        mHandler.removeMessages(MSG_ID_ENABLE_FULLSCREEN_AFTER_LOAD);
+        mIsFullscreenWaitingForLoad = false;
     }
 
     /**
@@ -1858,6 +1918,11 @@ public class Tab implements ViewGroup.OnHierarchyChangeListener,
             showRenderedPage();
         }
 
+        mHandler.removeMessages(MSG_ID_ENABLE_FULLSCREEN_AFTER_LOAD);
+        mHandler.sendEmptyMessageDelayed(
+                MSG_ID_ENABLE_FULLSCREEN_AFTER_LOAD, MAX_FULLSCREEN_LOAD_DELAY_MS);
+        updateFullscreenEnabledState();
+
         if (getInterceptNavigationDelegate() != null) {
             getInterceptNavigationDelegate().maybeUpdateNavigationHistory();
         }
@@ -1970,6 +2035,9 @@ public class Tab implements ViewGroup.OnHierarchyChangeListener,
         mPreviousFullscreenContentOffsetY = Float.NaN;
 
         mNeedsReload = false;
+
+        // Remove pending handler actions to prevent memory leaks.
+        mHandler.removeCallbacksAndMessages(null);
     }
 
     /**
@@ -2656,9 +2724,7 @@ public class Tab implements ViewGroup.OnHierarchyChangeListener,
      * @param animate Whether the controls should animate to the specified ending condition or
      *                should jump immediately.
      */
-    protected void updateBrowserControlsState(
-            @BrowserControlsStateEnum int constraints,
-            @BrowserControlsStateEnum int current, boolean animate) {
+    protected void updateBrowserControlsState(int constraints, int current, boolean animate) {
         if (mNativeTabAndroid == 0) return;
         nativeUpdateBrowserControlsState(mNativeTabAndroid, constraints, current, animate);
     }
@@ -2713,7 +2779,6 @@ public class Tab implements ViewGroup.OnHierarchyChangeListener,
      * @return The current visibility constraints for the display of browser controls.
      *         {@link BrowserControlsState} defines the valid return options.
      */
-    @BrowserControlsStateEnum
     public int getBrowserControlsStateConstraints() {
         boolean enableHidingBrowserControls = isHidingBrowserControlsEnabled();
         boolean enableShowingBrowserControls = isShowingBrowserControlsEnabled();
@@ -3085,6 +3150,17 @@ public class Tab implements ViewGroup.OnHierarchyChangeListener,
         intent.putExtra(TabOpenType.BRING_TAB_TO_FRONT.name(), tabId);
         intent.setPackage(packageName);
         return intent;
+    }
+
+    /**
+     * Removes the enable fullscreen runnable from the UI queue and runs it immediately.
+     */
+    @VisibleForTesting
+    public void processEnableFullscreenRunnableForTest() {
+        if (mHandler.hasMessages(MSG_ID_ENABLE_FULLSCREEN_AFTER_LOAD)) {
+            mHandler.removeMessages(MSG_ID_ENABLE_FULLSCREEN_AFTER_LOAD);
+            enableFullscreenAfterLoad();
+        }
     }
 
     /**

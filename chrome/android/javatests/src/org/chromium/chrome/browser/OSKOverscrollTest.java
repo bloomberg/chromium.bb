@@ -130,8 +130,8 @@ public class OSKOverscrollTest extends ChromeActivityTestCaseBase<ChromeActivity
 
         // Get the position of the footer and the viewport height before bringing up the OSK.
         Rect footerPositionBefore = DOMUtils.getNodeBounds(webContentsRef.get(), "footer");
-        final int viewportHeightBeforeCss = getViewportHeight(webContentsRef.get());
-        final float cssToDevicePixFactor = viewCoreRef.get().getPageScaleFactor()
+        int viewportHeightBeforeCss = getViewportHeight(webContentsRef.get());
+        float cssToDevicePixFactor = viewCoreRef.get().getPageScaleFactor()
                 * viewCoreRef.get().getDeviceScaleFactor();
 
         // Click on the unfocused input element for the first time to focus on it. This brings up
@@ -145,22 +145,12 @@ public class OSKOverscrollTest extends ChromeActivityTestCaseBase<ChromeActivity
         Rect footerPositionAfter = DOMUtils.getNodeBounds(webContentsRef.get(), "footer");
         assertEquals(footerPositionBefore, footerPositionAfter);
 
-        CriteriaHelper.pollInstrumentationThread(new Criteria() {
-            @Override
-            public boolean isSatisfied() {
-                // Verify that the size of the viewport before the OSK show is equal to the size of
-                // the viewport after the OSK show plus the size of the keyboard.
-                int viewportHeightAfterCss = getViewportHeight(webContentsRef.get());
-                int keyboardHeight =
-                        viewCoreRef.get().getContentViewClient().getSystemWindowInsetBottom();
-
-                int priorHeight = (int) (viewportHeightBeforeCss * cssToDevicePixFactor);
-                int afterHeightPlusKeyboard =
-                        (int) (viewportHeightAfterCss * cssToDevicePixFactor) + keyboardHeight;
-                updateFailureReason("Values [" + priorHeight + "], [" + afterHeightPlusKeyboard
-                        + "] did not match within allowed error range [" + ERROR_EPS_PIX + "]");
-                return almostEqual(priorHeight, afterHeightPlusKeyboard);
-            }
-        });
+        // Verify that the size of the viewport before the OSK show is equal to the size of the
+        // viewport after the OSK show plus the size of the keyboard.
+        int viewportHeightAfterCss = getViewportHeight(webContentsRef.get());
+        int keyboardHeight = viewCoreRef.get().getContentViewClient().getSystemWindowInsetBottom();
+        assertTrue(almostEqual(
+                (int) (viewportHeightBeforeCss * cssToDevicePixFactor),
+                (int) (viewportHeightAfterCss * cssToDevicePixFactor) + keyboardHeight));
     }
 }
