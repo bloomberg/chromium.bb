@@ -29,7 +29,7 @@ import org.chromium.chrome.browser.ntp.UiConfig;
 import org.chromium.chrome.browser.ntp.cards.NewTabPageAdapter;
 import org.chromium.chrome.browser.ntp.cards.NewTabPageRecyclerView;
 import org.chromium.chrome.browser.ntp.cards.SuggestionsCategoryInfo;
-import org.chromium.chrome.browser.offlinepages.OfflinePageBridge;
+import org.chromium.chrome.browser.offlinepages.downloads.OfflinePageDownloadBridge;
 import org.chromium.chrome.browser.profiles.MostVisitedSites.MostVisitedURLsObserver;
 import org.chromium.chrome.browser.profiles.Profile;
 import org.chromium.chrome.test.ChromeActivityTestCaseBase;
@@ -79,7 +79,7 @@ public class ArticleSnippetsTest extends ChromeActivityTestCaseBase<ChromeActivi
 
                 mRecyclerView.setAboveTheFoldView(aboveTheFold);
                 mAdapter = new NewTabPageAdapter(mNtpManager, aboveTheFold, mUiConfig,
-                        OfflinePageBridge.getForProfile(Profile.getLastUsedProfile()));
+                        new OfflinePageDownloadBridge(Profile.getLastUsedProfile()));
                 mRecyclerView.setAdapter(mAdapter);
             }
         });

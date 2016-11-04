@@ -5,15 +5,14 @@
 package org.chromium.chrome.browser.ntp.cards;
 
 import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.assertTrue;
+import static org.junit.Assert.assertNull;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyInt;
-import static org.mockito.ArgumentMatchers.anySetOf;
 import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.when;
 
 import static org.chromium.chrome.browser.ntp.cards.ContentSuggestionsTestUtils.createDummySuggestions;
 import static org.chromium.chrome.browser.ntp.cards.ContentSuggestionsTestUtils.createSection;
@@ -32,13 +31,11 @@ import org.chromium.base.test.util.Feature;
 import org.chromium.chrome.browser.ntp.NewTabPageView.NewTabPageManager;
 import org.chromium.chrome.browser.ntp.snippets.CategoryStatus;
 import org.chromium.chrome.browser.ntp.snippets.SnippetArticle;
-import org.chromium.chrome.browser.offlinepages.OfflinePageBridge;
-import org.chromium.chrome.browser.offlinepages.OfflinePageBridge.OfflinePageModelObserver;
+import org.chromium.chrome.browser.offlinepages.downloads.OfflinePageDownloadBridge;
+import org.chromium.chrome.browser.offlinepages.downloads.OfflinePageDownloadItem;
 import org.chromium.testing.local.LocalRobolectricTestRunner;
 
 import java.util.Arrays;
-import java.util.Collections;
-import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 
@@ -54,7 +51,7 @@ public class SuggestionsSectionTest {
     private static final int EMPTY_SECTION_COUNT = 4;
 
     @Mock private NodeParent mParent;
-    @Mock private OfflinePageBridge mBridge;
+    @Mock private OfflinePageDownloadBridge mBridge;
     @Mock private NewTabPageManager mManager;
 
     // This is a member so we can initialize it with the annotation and capture the generic type.
@@ -185,60 +182,40 @@ public class SuggestionsSectionTest {
     @Test
     @Feature({"Ntp"})
     public void testOfflineStatus() {
-        final int suggestionCount = 2;
+        final int suggestionCount = 3;
         List<SnippetArticle> snippets = createDummySuggestions(suggestionCount);
+        assertNull(snippets.get(0).getOfflinePageDownloadGuid());
+        assertNull(snippets.get(1).getOfflinePageDownloadGuid());
+        assertNull(snippets.get(2).getOfflinePageDownloadGuid());
 
-        assertFalse(snippets.get(0).isAvailableOffline());
-        assertFalse(snippets.get(0).isAmpAvailableOffline());
-        assertFalse(snippets.get(1).isAvailableOffline());
-        assertFalse(snippets.get(1).isAmpAvailableOffline());
+        OfflinePageDownloadItem item0 = createOfflineItem(snippets.get(0).mUrl, "guid0");
+        OfflinePageDownloadItem item1 = createOfflineItem(snippets.get(1).mAmpUrl, "guid1");
+
+        when(mBridge.getAllItems()).thenReturn(Arrays.asList(item0, item1));
 
         SuggestionsSection section = createSection(true, true, mParent, mManager, mBridge);
         section.addSuggestions(snippets, CategoryStatus.AVAILABLE);
-        verify(mBridge).checkPagesExistOffline(anySetOf(String.class), mCallbacks.capture());
 
-        // The callback is asynchronous.
-        mCallbacks.getValue().onResult(new HashSet<>(Arrays.asList(
-                snippets.get(0).mUrl,
-                snippets.get(1).mAmpUrl)));
+        // Check that we pick up the correct information.
+        assertEquals(snippets.get(0).getOfflinePageDownloadGuid(), "guid0");
+        assertEquals(snippets.get(1).getOfflinePageDownloadGuid(), "guid1");
+        assertNull(snippets.get(2).getOfflinePageDownloadGuid());
 
-        assertTrue(snippets.get(0).isAvailableOffline());
-        assertFalse(snippets.get(0).isAmpAvailableOffline());
-        assertFalse(snippets.get(1).isAvailableOffline());
-        assertTrue(snippets.get(1).isAmpAvailableOffline());
+        OfflinePageDownloadItem item2 = createOfflineItem(snippets.get(2).mUrl, "guid2");
+        when(mBridge.getAllItems()).thenReturn(Arrays.asList(item1, item2));
+
+        ArgumentCaptor<OfflinePageDownloadBridge.Observer> observer =
+                ArgumentCaptor.forClass(OfflinePageDownloadBridge.Observer.class);
+        verify(mBridge).addObserver(observer.capture());
+
+        // Check that a change in OfflinePageDownloadBridge state forces an update.
+        observer.getValue().onItemsLoaded();
+        assertNull(snippets.get(0).getOfflinePageDownloadGuid());
+        assertEquals(snippets.get(1).getOfflinePageDownloadGuid(), "guid1");
+        assertEquals(snippets.get(2).getOfflinePageDownloadGuid(), "guid2");
     }
 
-    @Test
-    @Feature({"Ntp"})
-    public void testOfflineStatusUpdate() {
-        ArgumentCaptor<OfflinePageModelObserver> observer =
-                ArgumentCaptor.forClass(OfflinePageModelObserver.class);
-
-        final int suggestionCount = 1;
-        List<SnippetArticle> snippets = createDummySuggestions(suggestionCount);
-
-        assertFalse(snippets.get(0).isAvailableOffline());
-        assertFalse(snippets.get(0).isAmpAvailableOffline());
-
-        SuggestionsSection section = createSection(true, true, mParent, mManager, mBridge);
-        section.addSuggestions(snippets, CategoryStatus.AVAILABLE);
-
-        // The first callback, triggered when we called addSuggestions.
-        verify(mBridge).checkPagesExistOffline(anySetOf(String.class), mCallbacks.capture());
-        mCallbacks.getAllValues().get(0).onResult(Collections.<String>emptySet());
-
-        verify(mBridge).addObserver(observer.capture());
-        observer.getValue().offlinePageModelChanged();
-
-        // The second callback, triggered by the offlinePageModelChanged notification.
-        verify(mBridge, times(2))
-                .checkPagesExistOffline(anySetOf(String.class), mCallbacks.capture());
-
-        mCallbacks.getAllValues().get(1).onResult(new HashSet<>(Arrays.asList(
-                snippets.get(0).mUrl,
-                snippets.get(0).mAmpUrl)));
-
-        assertTrue(snippets.get(0).isAvailableOffline());
-        assertTrue(snippets.get(0).isAmpAvailableOffline());
+    private OfflinePageDownloadItem createOfflineItem(String url, String guid) {
+        return new OfflinePageDownloadItem(guid, url, "", "", 0, 0);
     }
 }

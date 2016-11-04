@@ -244,7 +244,7 @@ public class SnippetArticleViewHolder
             Runnable offlineChecker = new Runnable() {
                 @Override
                 public void run() {
-                    if (mArticle.isAvailableOffline() || mArticle.isAmpAvailableOffline()) {
+                    if (mArticle.getOfflinePageDownloadGuid() != null) {
                         mOfflineBadge.setVisibility(View.VISIBLE);
                     }
                 }

@@ -4,6 +4,7 @@
 package org.chromium.chrome.browser.ntp.snippets;
 
 import android.graphics.Bitmap;
+import android.text.TextUtils;
 
 import org.chromium.chrome.browser.ntp.snippets.ContentSuggestionsCardLayout.ContentSuggestionsCardLayoutEnum;
 
@@ -56,12 +57,6 @@ public class SnippetArticle {
     /** Stores whether impression of this article has been tracked already. */
     private boolean mImpressionTracked;
 
-    /** Whether the linked article (normal URL) is available offline. */
-    private boolean mAvailableOffline;
-
-    /** Whether the linked AMP article is available offline. */
-    private boolean mAmpAvailableOffline;
-
     /** To be run when the offline status of the article or AMP article changes. */
     private Runnable mOfflineStatusChangeRunnable;
 
@@ -76,6 +71,9 @@ public class SnippetArticle {
 
     /** The mime type of the downloaded asset (only for download asset articles). */
     private String mDownloadAssetMimeType;
+
+    /** The path to the offline page, if any. */
+    private String mOfflinePagePath;
 
     /**
      * Creates a SnippetArticleListItem object that will hold the data.
@@ -129,36 +127,6 @@ public class SnippetArticle {
         return true;
     }
 
-    /** Sets whether the non-AMP URL is available offline. */
-    public void setAvailableOffline(boolean available) {
-        boolean previous = mAvailableOffline;
-        mAvailableOffline = available;
-
-        if (mOfflineStatusChangeRunnable != null && available != previous) {
-            mOfflineStatusChangeRunnable.run();
-        }
-    }
-
-    /** Sets whether the AMP URL is available offline. */
-    public void setAmpAvailableOffline(boolean available) {
-        boolean previous = mAmpAvailableOffline;
-        mAmpAvailableOffline = available;
-
-        if (mOfflineStatusChangeRunnable != null && available != previous) {
-            mOfflineStatusChangeRunnable.run();
-        }
-    }
-
-    /** Whether the non-AMP URL is available offline. */
-    public boolean isAvailableOffline() {
-        return mAvailableOffline;
-    }
-
-    /** Whether the AMP URL is available offline. */
-    public boolean isAmpAvailableOffline() {
-        return mAmpAvailableOffline;
-    }
-
     /**
      * Sets the {@link Runnable} to be run when the article's offline status changes.
      * Pass null to wipe.
@@ -188,6 +156,24 @@ public class SnippetArticle {
         mIsDownloadedAsset = true;
         mDownloadAssetPath = filePath;
         mDownloadAssetMimeType = mimeType;
+    }
+
+    /** Sets OfflinePageDownloads guid for the offline version of the snippet. Null to clear.*/
+    public void setOfflinePageDownloadGuid(String path) {
+        String previous = mOfflinePagePath;
+        mOfflinePagePath = path;
+
+        if (mOfflineStatusChangeRunnable != null && !TextUtils.equals(previous, mOfflinePagePath)) {
+            mOfflineStatusChangeRunnable.run();
+        }
+    }
+
+    /**
+     * Gets the OfflinePageDownloads guid for the offline version of the snippet.
+     * Null if page is not available offline.
+     */
+    public String getOfflinePageDownloadGuid() {
+        return mOfflinePagePath;
     }
 
     @Override

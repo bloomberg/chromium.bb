@@ -53,6 +53,7 @@ import org.chromium.chrome.browser.ntp.snippets.SnippetsBridge;
 import org.chromium.chrome.browser.ntp.snippets.SnippetsConfig;
 import org.chromium.chrome.browser.ntp.snippets.SuggestionsSource;
 import org.chromium.chrome.browser.offlinepages.OfflinePageBridge;
+import org.chromium.chrome.browser.offlinepages.downloads.OfflinePageDownloadBridge;
 import org.chromium.chrome.browser.preferences.PrefServiceBridge;
 import org.chromium.chrome.browser.profiles.MostVisitedSites;
 import org.chromium.chrome.browser.profiles.MostVisitedSites.MostVisitedURLsObserver;
@@ -351,6 +352,11 @@ public class NewTabPage
             if (article.mIsDownloadedAsset) {
                 DownloadUtils.openFile(
                         article.getDownloadAssetFile(), article.getDownloadAssetMimeType(), false);
+                return;
+            }
+
+            if (article.getOfflinePageDownloadGuid() != null) {
+                OfflinePageDownloadBridge.openDownloadedPage(article.getOfflinePageDownloadGuid());
                 return;
             }
 

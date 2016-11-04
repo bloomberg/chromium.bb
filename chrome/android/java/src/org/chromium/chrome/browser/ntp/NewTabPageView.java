@@ -57,7 +57,7 @@ import org.chromium.chrome.browser.ntp.cards.NewTabPageRecyclerView;
 import org.chromium.chrome.browser.ntp.snippets.SnippetArticle;
 import org.chromium.chrome.browser.ntp.snippets.SnippetsConfig;
 import org.chromium.chrome.browser.ntp.snippets.SuggestionsSource;
-import org.chromium.chrome.browser.offlinepages.OfflinePageBridge;
+import org.chromium.chrome.browser.offlinepages.downloads.OfflinePageDownloadBridge;
 import org.chromium.chrome.browser.profiles.MostVisitedSites.MostVisitedURLsObserver;
 import org.chromium.chrome.browser.profiles.Profile;
 import org.chromium.chrome.browser.util.MathUtils;
@@ -392,7 +392,7 @@ public class NewTabPageView extends FrameLayout
         // Set up snippets
         if (mUseCardsUi) {
             mNewTabPageAdapter = new NewTabPageAdapter(mManager, mNewTabPageLayout, mUiConfig,
-                    OfflinePageBridge.getForProfile(Profile.getLastUsedProfile()));
+                    new OfflinePageDownloadBridge(Profile.getLastUsedProfile()));
             mRecyclerView.setAdapter(mNewTabPageAdapter);
 
             int scrollOffset;

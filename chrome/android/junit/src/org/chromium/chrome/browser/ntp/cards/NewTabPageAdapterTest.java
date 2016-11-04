@@ -52,7 +52,7 @@ import org.chromium.chrome.browser.ntp.snippets.ContentSuggestionsCardLayout;
 import org.chromium.chrome.browser.ntp.snippets.FakeSuggestionsSource;
 import org.chromium.chrome.browser.ntp.snippets.KnownCategories;
 import org.chromium.chrome.browser.ntp.snippets.SnippetArticle;
-import org.chromium.chrome.browser.offlinepages.OfflinePageBridge;
+import org.chromium.chrome.browser.offlinepages.downloads.OfflinePageDownloadBridge;
 import org.chromium.chrome.browser.preferences.ChromePreferenceManager;
 import org.chromium.chrome.browser.signin.SigninManager;
 import org.chromium.chrome.browser.signin.SigninManager.SignInAllowedObserver;
@@ -76,7 +76,7 @@ public class NewTabPageAdapterTest {
     private FakeSuggestionsSource mSource;
     private NewTabPageAdapter mAdapter;
     private SigninManager mMockSigninManager;
-    @Mock private OfflinePageBridge mOfflinePageBridge;
+    @Mock private OfflinePageDownloadBridge mOfflinePageBridge;
     @Mock private NewTabPageManager mNewTabPageManager;
 
     /**

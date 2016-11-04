@@ -8,7 +8,7 @@ import org.chromium.chrome.browser.ntp.NewTabPageView.NewTabPageManager;
 import org.chromium.chrome.browser.ntp.snippets.CategoryInt;
 import org.chromium.chrome.browser.ntp.snippets.ContentSuggestionsCardLayout;
 import org.chromium.chrome.browser.ntp.snippets.SnippetArticle;
-import org.chromium.chrome.browser.offlinepages.OfflinePageBridge;
+import org.chromium.chrome.browser.offlinepages.downloads.OfflinePageDownloadBridge;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -40,7 +40,7 @@ public final class ContentSuggestionsTestUtils {
     }
 
     public static SuggestionsSection createSection(boolean moreButton, boolean showIfEmpty,
-            NodeParent parent, NewTabPageManager manager, OfflinePageBridge bridge) {
+            NodeParent parent, NewTabPageManager manager, OfflinePageDownloadBridge bridge) {
         SuggestionsCategoryInfo info = createInfo(42, moreButton, showIfEmpty);
         return new SuggestionsSection(parent, info, manager, bridge);
     }
