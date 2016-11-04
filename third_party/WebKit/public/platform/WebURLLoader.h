@@ -35,6 +35,10 @@
 #include "WebURLRequest.h"
 #include <stdint.h>
 
+namespace base {
+class SingleThreadTaskRunner;
+}  // namespace base
+
 namespace blink {
 
 class WebData;
@@ -80,8 +84,10 @@ class WebURLLoader {
   }
 
   // Sets the task runner for which any loading tasks should be posted on.
-  // Takes ownership of the WebTaskRunner.
-  virtual void setLoadingTaskRunner(WebTaskRunner*) = 0;
+  // Use WebTaskRunner version when it's called from core or module directory,
+  // since we don't directly expose base to them.
+  BLINK_PLATFORM_EXPORT void setLoadingTaskRunner(WebTaskRunner*);
+  virtual void setLoadingTaskRunner(base::SingleThreadTaskRunner*) = 0;
 };
 
 }  // namespace blink

@@ -153,7 +153,8 @@ void WebURLLoaderMock::setDefersLoading(bool deferred) {
   NOTIMPLEMENTED();
 }
 
-void WebURLLoaderMock::setLoadingTaskRunner(WebTaskRunner* runner) {
+void WebURLLoaderMock::setLoadingTaskRunner(
+    base::SingleThreadTaskRunner* runner) {
   // In principle this is NOTIMPLEMENTED(), but if we put that here it floods
   // the console during webkit unit tests, so we leave the function empty.
   DCHECK(runner);

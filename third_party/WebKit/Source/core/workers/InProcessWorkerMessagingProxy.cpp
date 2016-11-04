@@ -43,7 +43,7 @@
 #include "core/workers/WorkerGlobalScope.h"
 #include "core/workers/WorkerInspectorProxy.h"
 #include "core/workers/WorkerThreadStartupData.h"
-#include "public/platform/WebTaskRunner.h"
+#include "platform/WebTaskRunner.h"
 #include "wtf/WTF.h"
 #include <memory>
 

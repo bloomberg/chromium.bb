@@ -6,11 +6,12 @@
 
 #include "base/macros.h"
 #include "base/synchronization/waitable_event.h"
+#include "platform/WebTaskRunner.h"
 #include "platform/scheduler/child/web_scheduler_impl.h"
 #include "platform/scheduler/child/worker_scheduler_impl.h"
+#include "public/platform/WebTraceLocation.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
-#include "public/platform/WebTraceLocation.h"
 
 using testing::_;
 using testing::AnyOf;

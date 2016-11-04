@@ -296,7 +296,6 @@ source_set("blink_headers") {
     "platform/WebStorageQuotaType.h",
     "platform/WebString.h",
     "platform/WebSuspendableTask.h",
-    "platform/WebTaskRunner.h",
     "platform/WebTextInputInfo.h",
     "platform/WebTextInputMode.h",
     "platform/WebTextInputType.h",

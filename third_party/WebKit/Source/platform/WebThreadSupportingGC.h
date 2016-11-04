@@ -5,9 +5,9 @@
 #ifndef WebThreadSupportingGC_h
 #define WebThreadSupportingGC_h
 
+#include "platform/WebTaskRunner.h"
 #include "platform/heap/GCTaskRunner.h"
 #include "public/platform/Platform.h"
-#include "public/platform/WebTaskRunner.h"
 #include "public/platform/WebThread.h"
 #include "wtf/Allocator.h"
 #include "wtf/Noncopyable.h"

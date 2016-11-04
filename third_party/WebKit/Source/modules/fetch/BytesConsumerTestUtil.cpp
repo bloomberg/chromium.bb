@@ -6,8 +6,8 @@
 
 #include "core/dom/ExecutionContext.h"
 #include "core/dom/TaskRunnerHelper.h"
+#include "platform/WebTaskRunner.h"
 #include "platform/testing/UnitTestHelpers.h"
-#include "public/platform/WebTaskRunner.h"
 #include "wtf/Assertions.h"
 #include "wtf/Functional.h"
 

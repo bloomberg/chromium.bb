@@ -7,7 +7,6 @@
 
 #include "WebCommon.h"
 #include "WebString.h"
-#include "public/platform/WebTaskRunner.h"
 #include "public/platform/WebThread.h"
 #include "public/platform/WebTraceLocation.h"
 #include "public/platform/WebViewScheduler.h"
@@ -16,6 +15,7 @@
 
 namespace blink {
 
+class WebTaskRunner;
 class WebView;
 
 // This class is used to submit tasks and pass other information from Blink to

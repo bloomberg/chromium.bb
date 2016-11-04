@@ -23,7 +23,6 @@
 #include "third_party/WebKit/public/platform/WebCompositorSupport.h"
 #include "third_party/WebKit/public/platform/WebGraphicsContext3DProvider.h"
 #include "third_party/WebKit/public/platform/WebInputEvent.h"
-#include "third_party/WebKit/public/platform/WebTaskRunner.h"
 #include "third_party/WebKit/public/platform/WebThread.h"
 #include "third_party/WebKit/public/platform/WebTouchPoint.h"
 #include "third_party/WebKit/public/platform/WebTraceLocation.h"
@@ -104,17 +103,6 @@ blink::WebPluginContainer::TouchEventRequestType ParseTouchEventRequestType(
     return blink::WebPluginContainer::TouchEventRequestTypeSynthesizedMouse;
   return blink::WebPluginContainer::TouchEventRequestTypeNone;
 }
-
-class DeferredDeleteTask : public blink::WebTaskRunner::Task {
- public:
-  DeferredDeleteTask(std::unique_ptr<TestPlugin> plugin)
-      : plugin_(std::move(plugin)) {}
-
-  void run() override {}
-
- private:
-  std::unique_ptr<TestPlugin> plugin_;
-};
 
 }  // namespace
 
@@ -222,9 +210,10 @@ void TestPlugin::destroy() {
   container_ = nullptr;
   frame_ = nullptr;
 
-  blink::Platform::current()->mainThread()->getWebTaskRunner()->postTask(
-      BLINK_FROM_HERE,
-      new DeferredDeleteTask(base::WrapUnique(this)));
+  blink::Platform::current()
+      ->mainThread()
+      ->getSingleThreadTaskRunner()
+      ->DeleteSoon(FROM_HERE, this);
 }
 
 blink::WebPluginContainer* TestPlugin::container() const {

@@ -10,8 +10,8 @@
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
 #include "base/time/time.h"
+#include "platform/WebTaskRunner.h"
 #include "public/platform/WebCommon.h"
-#include "public/platform/WebTaskRunner.h"
 
 namespace blink {
 namespace scheduler {

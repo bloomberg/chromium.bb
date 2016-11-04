@@ -5,6 +5,7 @@
 #include "modules/websockets/WebSocketHandleImpl.h"
 
 #include "modules/websockets/WebSocketHandleClient.h"
+#include "platform/WebTaskRunner.h"
 #include "platform/network/NetworkLog.h"
 #include "platform/network/WebSocketHandshakeRequest.h"
 #include "platform/network/WebSocketHandshakeResponse.h"

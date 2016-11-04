@@ -52,7 +52,6 @@
 #include "third_party/WebKit/public/platform/WebHTTPLoadInfo.h"
 #include "third_party/WebKit/public/platform/WebSecurityOrigin.h"
 #include "third_party/WebKit/public/platform/WebSecurityStyle.h"
-#include "third_party/WebKit/public/platform/WebTaskRunner.h"
 #include "third_party/WebKit/public/platform/WebURL.h"
 #include "third_party/WebKit/public/platform/WebURLError.h"
 #include "third_party/WebKit/public/platform/WebURLLoadTiming.h"
@@ -1242,8 +1241,8 @@ void WebURLLoaderImpl::didChangePriority(WebURLRequest::Priority new_priority,
 }
 
 void WebURLLoaderImpl::setLoadingTaskRunner(
-    blink::WebTaskRunner* loading_task_runner) {
-  context_->SetTaskRunner(loading_task_runner->toSingleThreadTaskRunner());
+    base::SingleThreadTaskRunner* loading_task_runner) {
+  context_->SetTaskRunner(loading_task_runner);
 }
 
 }  // namespace content

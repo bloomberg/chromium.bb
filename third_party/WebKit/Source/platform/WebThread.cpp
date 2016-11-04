@@ -4,6 +4,7 @@
 
 #include "public/platform/WebThread.h"
 
+#include "platform/WebTaskRunner.h"
 #include "wtf/Assertions.h"
 
 #if OS(WIN)
@@ -23,5 +24,9 @@ static_assert(sizeof(blink::PlatformThreadId) >= sizeof(pid_t),
 #else
 #error Unexpected platform
 #endif
+
+base::SingleThreadTaskRunner* WebThread::getSingleThreadTaskRunner() {
+  return getWebTaskRunner()->toSingleThreadTaskRunner();
+}
 
 }  // namespace blink

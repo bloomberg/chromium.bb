@@ -29,6 +29,10 @@
 
 #include <stdint.h>
 
+namespace base {
+class SingleThreadTaskRunner;
+}
+
 namespace blink {
 namespace scheduler {
 class TaskTimeObserver;
@@ -64,6 +68,7 @@ class BLINK_PLATFORM_EXPORT WebThread {
   // Returns a WebTaskRunner bound to the underlying scheduler's default task
   // queue.
   virtual WebTaskRunner* getWebTaskRunner() { return nullptr; }
+  base::SingleThreadTaskRunner* getSingleThreadTaskRunner();
 
   virtual bool isCurrentThread() const = 0;
   virtual PlatformThreadId threadId() const { return 0; }

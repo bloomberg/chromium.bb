@@ -7,8 +7,8 @@
 #include "core/dom/ExecutionContext.h"
 #include "core/dom/TaskRunnerHelper.h"
 #include "modules/fetch/BlobBytesConsumer.h"
+#include "platform/WebTaskRunner.h"
 #include "platform/blob/BlobData.h"
-#include "public/platform/WebTaskRunner.h"
 #include "wtf/Functional.h"
 #include "wtf/RefPtr.h"
 #include <algorithm>

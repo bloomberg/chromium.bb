@@ -12,9 +12,9 @@
 #include "core/inspector/WorkerInspectorController.h"
 #include "core/workers/WorkerGlobalScope.h"
 #include "core/workers/WorkerThread.h"
+#include "platform/WebTaskRunner.h"
 #include "platform/tracing/TraceEvent.h"
 #include "platform/weborigin/KURL.h"
-#include "public/platform/WebTaskRunner.h"
 #include "public/platform/WebTraceLocation.h"
 
 namespace blink {
