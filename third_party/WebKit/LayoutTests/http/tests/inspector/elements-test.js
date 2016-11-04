@@ -38,7 +38,7 @@ InspectorTest.dumpComputedStyle = function(doNotAutoExpand)
             dumpText += title.querySelector(".property-trace-selector").textContent;
             var link = title.querySelector(".trace-link");
             if (link)
-                dumpText += " " + extractText(link);
+                dumpText += " " + extractLinkText(link);
             InspectorTest.addResult("    " + dumpText);
         }
     }
@@ -387,7 +387,7 @@ function printStyleSection(section, omitLonghands, includeSelectorGroupMarks)
     selectorText += selector.nextSibling.textContent;
     var anchor = section._titleElement.querySelector(".styles-section-subtitle");
     if (anchor) {
-        var anchorText = extractText(anchor);
+        var anchorText = extractLinkText(anchor);
         selectorText += String.sprintf(" (%s)", anchorText);
     }
     InspectorTest.addResult(selectorText);
@@ -396,15 +396,12 @@ function printStyleSection(section, omitLonghands, includeSelectorGroupMarks)
     InspectorTest.addResult("");
 }
 
-function extractText(element)
+function extractLinkText(element)
 {
-    var text = element.textContent;
-    if (text)
-        return text;
-    var anchor = element.hasAttribute("data-uncopyable") ? element : element.querySelector("[data-uncopyable]");
+    var anchor = element.nodeName === "A" ? element : element.querySelector("a");
     if (!anchor)
-        return "";
-    var anchorText = anchor.getAttribute("data-uncopyable");
+        return element.textContent;
+    var anchorText = anchor.textContent;
     var uiLocation = anchor[WebInspector.Linkifier._uiLocationSymbol];
     var anchorTarget = uiLocation ? (uiLocation.uiSourceCode.name() + ":" + (uiLocation.lineNumber + 1) + ":" + (uiLocation.columnNumber + 1)) : "";
     return anchorText + " -> " + anchorTarget;
@@ -528,10 +525,6 @@ InspectorTest.dumpStyleTreeItem = function(treeItem, prefix, depth)
         typePrefix += "/-- disabled --/ ";
     var textContent = treeItem.listItemElement.textContent;
 
-    // Add non-selectable url text.
-    var textData = treeItem.listItemElement.querySelector("[data-uncopyable]");
-    if (textData)
-        textContent += textData.getAttribute("data-uncopyable");
     InspectorTest.addResult(prefix + typePrefix + textContent);
     if (--depth) {
         treeItem.expand();
