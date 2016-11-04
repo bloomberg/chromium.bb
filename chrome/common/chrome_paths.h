@@ -105,6 +105,8 @@ enum {
                                       // wallpaper thumbnails reside.
   DIR_CHROMEOS_CUSTOM_WALLPAPERS,     // Directory where custom wallpapers
                                       // reside.
+  DIR_CHROMEOS_PPD_CACHE,             // Directory where printing drivers are
+                                      // cached.
 #endif
   DIR_SUPERVISED_USERS_DEFAULT_APPS,  // Directory where installer places .crx
                                       // files to be installed when managed user
@@ -130,10 +132,10 @@ enum {
 #if defined(OS_LINUX)
   FILE_COMPONENT_FLASH_HINT,    // A file in a known location that points to
                                 // the component updated flash plugin.
-#endif // defined(OS_LINUX)
+#endif  // defined(OS_LINUX)
 #if defined(OS_CHROMEOS)
- FILE_CHROME_OS_COMPONENT_FLASH,  // The location of component updated Flash on
-                                  // Chrome OS.
+  FILE_CHROME_OS_COMPONENT_FLASH,  // The location of component updated Flash on
+                                   // Chrome OS.
 #endif  // defined(OS_CHROMEOS)
   PATH_END
 };
