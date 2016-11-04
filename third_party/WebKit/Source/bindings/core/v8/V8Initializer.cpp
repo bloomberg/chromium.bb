@@ -122,8 +122,8 @@ static String extractMessageForConsole(v8::Isolate* isolate,
   return emptyString();
 }
 
-static void messageHandlerInMainThread(v8::Local<v8::Message> message,
-                                       v8::Local<v8::Value> data) {
+void V8Initializer::messageHandlerInMainThread(v8::Local<v8::Message> message,
+                                               v8::Local<v8::Value> data) {
   ASSERT(isMainThread());
   v8::Isolate* isolate = v8::Isolate::GetCurrent();
 
