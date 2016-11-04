@@ -436,7 +436,7 @@ void RendererBlinkPlatformImpl::cacheMetadataInCacheStorage(
 }
 
 WebString RendererBlinkPlatformImpl::defaultLocale() {
-  return base::ASCIIToUTF16(RenderThread::Get()->GetLocale());
+  return WebString::fromASCII(RenderThread::Get()->GetLocale());
 }
 
 void RendererBlinkPlatformImpl::suddenTerminationChanged(bool enabled) {
@@ -513,7 +513,7 @@ WebString RendererBlinkPlatformImpl::MimeRegistry::mimeTypeForExtension(
           mojo::String::From(base::string16(file_extension)), &mime_type)) {
     return WebString();
   }
-  return base::ASCIIToUTF16(mime_type.get());
+  return WebString::fromASCII(mime_type.get());
 }
 
 //------------------------------------------------------------------------------

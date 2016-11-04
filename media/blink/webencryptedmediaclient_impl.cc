@@ -167,8 +167,8 @@ WebEncryptedMediaClientImpl::Reporter* WebEncryptedMediaClientImpl::GetReporter(
   // Assumes that empty will not be found by GetKeySystemNameForUMA().
   // TODO(sandersd): Avoid doing ASCII conversion more than once.
   std::string key_system_ascii;
-  if (base::IsStringASCII(key_system))
-    key_system_ascii = base::UTF16ToASCII(base::StringPiece16(key_system));
+  if (key_system.containsOnlyASCII())
+    key_system_ascii = key_system.ascii();
 
   // Return a per-frame singleton so that UMA reports will be once-per-frame.
   std::string uma_name = GetKeySystemNameForUMA(key_system_ascii);

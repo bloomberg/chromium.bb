@@ -29,9 +29,10 @@ using base::TimeTicks;
 
 namespace content {
 
-using blink::WebServiceWorkerCacheStorage;
 using blink::WebServiceWorkerCacheError;
+using blink::WebServiceWorkerCacheStorage;
 using blink::WebServiceWorkerRequest;
+using blink::WebString;
 
 static base::LazyInstance<base::ThreadLocalPointer<CacheStorageDispatcher>>::
     Leaky g_cache_storage_dispatcher_tls = LAZY_INSTANCE_INITIALIZER;
@@ -47,8 +48,7 @@ ServiceWorkerFetchRequest FetchRequestFromWebRequest(
   GetServiceWorkerHeaderMapFromWebRequest(web_request, &headers);
 
   return ServiceWorkerFetchRequest(
-      web_request.url(),
-      base::UTF16ToASCII(base::StringPiece16(web_request.method())), headers,
+      web_request.url(), web_request.method().ascii(), headers,
       Referrer(web_request.referrerUrl(), web_request.referrerPolicy()),
       web_request.isReload());
 }
@@ -57,14 +57,14 @@ void PopulateWebRequestFromFetchRequest(
     const ServiceWorkerFetchRequest& request,
     blink::WebServiceWorkerRequest* web_request) {
   web_request->setURL(request.url);
-  web_request->setMethod(base::ASCIIToUTF16(request.method));
+  web_request->setMethod(WebString::fromASCII(request.method));
   for (ServiceWorkerHeaderMap::const_iterator i = request.headers.begin(),
                                               end = request.headers.end();
        i != end; ++i) {
-    web_request->setHeader(base::ASCIIToUTF16(i->first),
-                           base::ASCIIToUTF16(i->second));
+    web_request->setHeader(WebString::fromASCII(i->first),
+                           WebString::fromASCII(i->second));
   }
-  web_request->setReferrer(base::ASCIIToUTF16(request.referrer.url.spec()),
+  web_request->setReferrer(WebString::fromASCII(request.referrer.url.spec()),
                            request.referrer.policy);
   web_request->setIsReload(request.is_reload);
 }
@@ -89,11 +89,9 @@ ServiceWorkerResponse ResponseFromWebResponse(
   DCHECK(web_response.streamURL().isEmpty());
   return ServiceWorkerResponse(
       web_response.url(), web_response.status(),
-      base::UTF16ToASCII(base::StringPiece16(web_response.statusText())),
-      web_response.responseType(), headers,
-      base::UTF16ToASCII(base::StringPiece16(web_response.blobUUID())),
-      web_response.blobSize(), web_response.streamURL(),
-      blink::WebServiceWorkerResponseErrorUnknown,
+      web_response.statusText().ascii(), web_response.responseType(), headers,
+      web_response.blobUUID().ascii(), web_response.blobSize(),
+      web_response.streamURL(), blink::WebServiceWorkerResponseErrorUnknown,
       base::Time::FromInternalValue(web_response.responseTime()),
       !web_response.cacheStorageCacheName().isNull(),
       web_response.cacheStorageCacheName().utf8(), cors_exposed_header_names);
@@ -636,7 +634,7 @@ void CacheStorageDispatcher::PopulateWebResponseFromResponse(
     blink::WebServiceWorkerResponse* web_response) {
   web_response->setURL(response.url);
   web_response->setStatus(response.status_code);
-  web_response->setStatusText(base::ASCIIToUTF16(response.status_text));
+  web_response->setStatusText(WebString::fromASCII(response.status_text));
   web_response->setResponseType(response.response_type);
   web_response->setResponseTime(response.response_time.ToInternalValue());
   web_response->setCacheStorageCacheName(
@@ -652,8 +650,8 @@ void CacheStorageDispatcher::PopulateWebResponseFromResponse(
   web_response->setCorsExposedHeaderNames(headers);
 
   for (const auto& i : response.headers) {
-    web_response->setHeader(base::ASCIIToUTF16(i.first),
-                            base::ASCIIToUTF16(i.second));
+    web_response->setHeader(WebString::fromASCII(i.first),
+                            WebString::fromASCII(i.second));
   }
 
   if (!response.blob_uuid.empty()) {

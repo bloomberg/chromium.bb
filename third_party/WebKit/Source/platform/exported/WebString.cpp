@@ -30,6 +30,8 @@
 
 #include "public/platform/WebString.h"
 
+#include "base/strings/string_util.h"
+#include "wtf/text/ASCIIFastPath.h"
 #include "wtf/text/AtomicString.h"
 #include "wtf/text/CString.h"
 #include "wtf/text/StringUTF8Adaptor.h"
@@ -95,6 +97,30 @@ std::string WebString::latin1() const {
 
 WebString WebString::fromLatin1(const WebLChar* data, size_t length) {
   return String(data, length);
+}
+
+std::string WebString::ascii() const {
+  DCHECK(containsOnlyASCII());
+
+  if (isEmpty())
+    return std::string();
+
+  if (m_private->is8Bit()) {
+    return std::string(reinterpret_cast<const char*>(m_private->characters8()),
+                       m_private->length());
+  }
+
+  return std::string(m_private->characters16(),
+                     m_private->characters16() + m_private->length());
+}
+
+bool WebString::containsOnlyASCII() const {
+  return String(m_private.get()).containsOnlyASCII();
+}
+
+WebString WebString::fromASCII(const std::string& s) {
+  DCHECK(base::IsStringASCII(s));
+  return fromLatin1(s);
 }
 
 bool WebString::equals(const WebString& s) const {

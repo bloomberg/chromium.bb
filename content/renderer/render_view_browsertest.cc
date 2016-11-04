@@ -1791,9 +1791,9 @@ TEST_F(RendererErrorPageTest, MAYBE_Suppresses) {
   main_frame->didFailProvisionalLoad(web_frame, error,
                                      blink::WebStandardCommit);
   const int kMaxOutputCharacters = 22;
-  EXPECT_EQ("", base::UTF16ToASCII(base::StringPiece16(
-                    WebFrameContentDumper::dumpWebViewAsText(
-                        view()->GetWebView(), kMaxOutputCharacters))));
+  EXPECT_EQ("", WebFrameContentDumper::dumpWebViewAsText(view()->GetWebView(),
+                                                         kMaxOutputCharacters)
+                    .ascii());
 }
 
 #if defined(OS_ANDROID)

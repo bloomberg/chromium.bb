@@ -168,11 +168,10 @@ static bool SanitizeSessionId(const blink::WebString& session_id,
   // The user agent should thoroughly validate the sessionId value before
   // passing it to the CDM. At a minimum, this should include checking that
   // the length and value (e.g. alphanumeric) are reasonable.
-  if (!base::IsStringASCII(session_id))
+  if (!session_id.containsOnlyASCII())
     return false;
 
-  sanitized_session_id->assign(
-      base::UTF16ToASCII(base::StringPiece16(session_id)));
+  sanitized_session_id->assign(session_id.ascii());
   if (sanitized_session_id->length() > limits::kMaxSessionIdLength)
     return false;
 

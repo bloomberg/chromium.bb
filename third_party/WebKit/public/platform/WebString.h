@@ -100,6 +100,17 @@ class WebString {
     return fromLatin1(reinterpret_cast<const WebLChar*>(s.data()), s.length());
   }
 
+  // This asserts if the string contains non-ascii characters.
+  // Use this rather than calling base::UTF16ToASCII() which always incurs
+  // (likely unnecessary) string16 conversion.
+  BLINK_COMMON_EXPORT std::string ascii() const;
+
+  // Use this rather than calling base::IsStringASCII().
+  BLINK_COMMON_EXPORT bool containsOnlyASCII() const;
+
+  // Does same as fromLatin1 but asserts if the given string has non-ascii char.
+  BLINK_COMMON_EXPORT static WebString fromASCII(const std::string&);
+
   template <int N>
   WebString(const char (&data)[N]) {
     assign(fromUTF8(data, N - 1));

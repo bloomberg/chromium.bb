@@ -1331,7 +1331,7 @@ void RenderThreadImpl::InitializeWebKit(
 
 void RenderThreadImpl::RegisterSchemes() {
   // chrome:
-  WebString chrome_scheme(base::ASCIIToUTF16(kChromeUIScheme));
+  WebString chrome_scheme(WebString::fromASCII(kChromeUIScheme));
   WebSecurityPolicy::registerURLSchemeAsDisplayIsolated(chrome_scheme);
   WebSecurityPolicy::registerURLSchemeAsNotAllowingJavascriptURLs(
       chrome_scheme);
@@ -1339,11 +1339,11 @@ void RenderThreadImpl::RegisterSchemes() {
   WebSecurityPolicy::registerURLSchemeAsCORSEnabled(chrome_scheme);
 
   // chrome-devtools:
-  WebString devtools_scheme(base::ASCIIToUTF16(kChromeDevToolsScheme));
+  WebString devtools_scheme(WebString::fromASCII(kChromeDevToolsScheme));
   WebSecurityPolicy::registerURLSchemeAsDisplayIsolated(devtools_scheme);
 
   // view-source:
-  WebString view_source_scheme(base::ASCIIToUTF16(kViewSourceScheme));
+  WebString view_source_scheme(WebString::fromASCII(kViewSourceScheme));
   WebSecurityPolicy::registerURLSchemeAsDisplayIsolated(view_source_scheme);
 }
 

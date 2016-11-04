@@ -130,7 +130,7 @@ WebBlobInfo WebClipboardImpl::readImage(Buffer buffer) {
   delegate_->ReadImage(clipboard_type, &blob_uuid, &type, &size);
   if (size < 0)
     return WebBlobInfo();
-  return WebBlobInfo(base::ASCIIToUTF16(blob_uuid), base::UTF8ToUTF16(type),
+  return WebBlobInfo(WebString::fromASCII(blob_uuid), WebString::fromUTF8(type),
                      size);
 }
 
