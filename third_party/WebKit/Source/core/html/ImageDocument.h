@@ -47,6 +47,8 @@ class CORE_EXPORT ImageDocument final : public HTMLDocument {
   void windowSizeChanged();
   void imageUpdated();
   void imageClicked(int x, int y);
+  void imageLoaded();
+  void updateImageStyle();
 
   DECLARE_VIRTUAL_TRACE();
 
@@ -56,6 +58,9 @@ class CORE_EXPORT ImageDocument final : public HTMLDocument {
   DocumentParser* createParser() override;
 
   void createDocumentStructure();
+
+  // Calculates how large the div needs to be to properly center the image.
+  int calculateDivWidth();
 
   // These methods are for m_shrinkToFitMode == Desktop.
   void resizeImageToFit();
@@ -77,6 +82,12 @@ class CORE_EXPORT ImageDocument final : public HTMLDocument {
 
   // Whether the image should be shrunk or not
   bool m_shouldShrinkImage;
+
+  // Whether the image has finished loading or not
+  bool m_imageIsLoaded;
+
+  // Size of the checkerboard background tiles
+  int m_checkerSize;
 
   enum ShrinkToFitMode { Viewport, Desktop };
   ShrinkToFitMode m_shrinkToFitMode;

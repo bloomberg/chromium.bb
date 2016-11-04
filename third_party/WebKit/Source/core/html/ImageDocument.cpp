@@ -54,6 +54,14 @@
 
 using namespace std;
 
+namespace {
+
+// The base square size is set to 10 because it rounds nicely for both the
+// minimum scale (0.1) and maximum scale (5.0).
+const int kBaseCheckerSize = 10;
+
+}  // namespace
+
 namespace blink {
 
 using namespace HTMLNames;
@@ -123,6 +131,13 @@ static String imageTitle(const String& filename, const IntSize& size) {
   return result.toString();
 }
 
+static LayoutSize cachedImageSize(HTMLImageElement* element) {
+  DCHECK(element->cachedImage());
+  return element->cachedImage()->imageSize(
+      LayoutObject::shouldRespectImageOrientation(element->layoutObject()),
+      1.0f);
+}
+
 void ImageDocumentParser::appendBytes(const char* data, size_t length) {
   if (!length)
     return;
@@ -155,10 +170,7 @@ void ImageDocumentParser::finish() {
     // Report the natural image size in the page title, regardless of zoom
     // level.  At a zoom level of 1 the image is guaranteed to have an integer
     // size.
-    IntSize size = flooredIntSize(
-        cachedImage->imageSize(LayoutObject::shouldRespectImageOrientation(
-                                   document()->imageElement()->layoutObject()),
-                               1.0f));
+    IntSize size = flooredIntSize(cachedImageSize(document()->imageElement()));
     if (size.width()) {
       // Compute the title, we use the decoded filename of the resource, falling
       // back on the (decoded) hostname if there is no path.
@@ -172,6 +184,7 @@ void ImageDocumentParser::finish() {
     }
 
     document()->imageUpdated();
+    document()->imageLoaded();
   }
 
   if (!isDetached())
@@ -187,6 +200,8 @@ ImageDocument::ImageDocument(const DocumentInit& initializer)
       m_imageSizeIsKnown(false),
       m_didShrinkImage(false),
       m_shouldShrinkImage(shouldShrinkToFit()),
+      m_imageIsLoaded(false),
+      m_checkerSize(0),
       m_shrinkToFitMode(frame()->settings()->viewportEnabled() ? Viewport
                                                                : Desktop) {
   setCompatibilityMode(QuirksMode);
@@ -218,9 +233,9 @@ void ImageDocument::createDocumentStructure() {
 
   if (shouldShrinkToFit()) {
     // Display the image prominently centered in the frame.
-    body->setAttribute(styleAttr, "margin: 0px;");
+    body->setAttribute(styleAttr, "margin: 0px; background: #0e0e0e;");
 
-    // See w3c example on how to centering an element:
+    // See w3c example on how to center an element:
     // https://www.w3.org/Style/Examples/007/center.en.html
     m_divElement = HTMLDivElement::create(*this);
     m_divElement->setAttribute(styleAttr,
@@ -243,12 +258,8 @@ void ImageDocument::createDocumentStructure() {
 
   willInsertBody();
 
-  StringBuilder imageStyle;
-  imageStyle.append("-webkit-user-select: none;");
-  if (shouldShrinkToFit() && m_shrinkToFitMode == Viewport)
-    imageStyle.append("max-width: 100%");
   m_imageElement = HTMLImageElement::create(*this);
-  m_imageElement->setAttribute(styleAttr, imageStyle.toAtomicString());
+  updateImageStyle();
   m_imageElement->setLoadingImageDocument();
   m_imageElement->setSrc(url().getString());
   body->appendChild(m_imageElement.get());
@@ -260,9 +271,16 @@ void ImageDocument::createDocumentStructure() {
     // Add event listeners
     EventListener* listener = ImageEventListener::create(this);
     if (LocalDOMWindow* domWindow = this->domWindow())
-      domWindow->addEventListener("resize", listener, false);
-    if (m_shrinkToFitMode == Desktop)
-      m_imageElement->addEventListener("click", listener, false);
+      domWindow->addEventListener(EventTypeNames::resize, listener, false);
+
+    if (m_shrinkToFitMode == Desktop) {
+      m_imageElement->addEventListener(EventTypeNames::click, listener, false);
+    } else if (m_shrinkToFitMode == Viewport) {
+      m_imageElement->addEventListener(EventTypeNames::touchend, listener,
+                                       false);
+      m_imageElement->addEventListener(EventTypeNames::touchcancel, listener,
+                                       false);
+    }
   }
 
   rootElement->appendChild(head);
@@ -301,11 +319,7 @@ void ImageDocument::resizeImageToFit() {
   if (!m_imageElement || m_imageElement->document() != this)
     return;
 
-  DCHECK(m_imageElement->cachedImage());
-  LayoutSize imageSize = m_imageElement->cachedImage()->imageSize(
-      LayoutObject::shouldRespectImageOrientation(
-          m_imageElement->layoutObject()),
-      1.f);
+  LayoutSize imageSize = cachedImageSize(m_imageElement);
 
   const float scale = this->scale();
   m_imageElement->setWidth(static_cast<int>(imageSize.width() * scale));
@@ -346,6 +360,77 @@ void ImageDocument::imageClicked(int x, int y) {
   }
 }
 
+void ImageDocument::imageLoaded() {
+  m_imageIsLoaded = true;
+
+  if (shouldShrinkToFit()) {
+    // The checkerboard background needs to be inserted.
+    updateImageStyle();
+  }
+}
+
+void ImageDocument::updateImageStyle() {
+  StringBuilder imageStyle;
+  imageStyle.append("-webkit-user-select: none;");
+
+  if (shouldShrinkToFit()) {
+    if (m_shrinkToFitMode == Viewport)
+      imageStyle.append("max-width: 100%;");
+
+    // Once the image has fully loaded, it is displayed atop a checkerboard to
+    // show transparency more faithfully.  The pattern is generated via CSS.
+    if (m_imageIsLoaded) {
+      int newCheckerSize = kBaseCheckerSize;
+
+      if (m_shrinkToFitMode == Viewport) {
+        double scale;
+
+        if (hasFinishedParsing()) {
+          // To ensure the checker pattern is visible for large images, the
+          // checker size is dynamically adjusted to account for how much the
+          // page is currently being scaled.
+          scale = frame()->host()->visualViewport().scale();
+        } else {
+          // The checker pattern is initialized based on how large the image is
+          // relative to the viewport.
+          int viewportWidth = frame()->host()->visualViewport().size().width();
+          scale = viewportWidth / static_cast<double>(calculateDivWidth());
+        }
+
+        newCheckerSize = round(std::max(1.0, newCheckerSize / scale));
+      }
+
+      // The only thing that can differ between updates is the checker size.
+      if (newCheckerSize == m_checkerSize)
+        return;
+      m_checkerSize = newCheckerSize;
+
+      imageStyle.append("background-position: 0px 0px, ");
+      imageStyle.append(AtomicString::number(m_checkerSize));
+      imageStyle.append("px ");
+      imageStyle.append(AtomicString::number(m_checkerSize));
+      imageStyle.append("px;");
+
+      int tileSize = m_checkerSize * 2;
+      imageStyle.append("background-size: ");
+      imageStyle.append(AtomicString::number(tileSize));
+      imageStyle.append("px ");
+      imageStyle.append(AtomicString::number(tileSize));
+      imageStyle.append("px;");
+
+      imageStyle.append(
+          "background-color: white;"
+          "background-image:"
+          "linear-gradient(45deg, #eee 25%, transparent 25%, transparent 75%, "
+          "#eee 75%, #eee 100%),"
+          "linear-gradient(45deg, #eee 25%, transparent 25%, transparent 75%, "
+          "#eee 75%, #eee 100%);");
+    }
+  }
+
+  m_imageElement->setAttribute(styleAttr, imageStyle.toAtomicString());
+}
+
 void ImageDocument::imageUpdated() {
   DCHECK(m_imageElement);
 
@@ -377,10 +462,7 @@ void ImageDocument::restoreImageSize() {
     return;
 
   DCHECK(m_imageElement->cachedImage());
-  LayoutSize imageSize = m_imageElement->cachedImage()->imageSize(
-      LayoutObject::shouldRespectImageOrientation(
-          m_imageElement->layoutObject()),
-      1.0f);
+  LayoutSize imageSize = cachedImageSize(m_imageElement);
   m_imageElement->setWidth(imageSize.width().toInt());
   m_imageElement->setHeight(imageSize.height().toInt());
 
@@ -397,40 +479,42 @@ bool ImageDocument::imageFitsInWindow() const {
   return this->scale() >= 1;
 }
 
+int ImageDocument::calculateDivWidth() {
+  // Zooming in and out of an image being displayed within a viewport is done
+  // by changing the page scale factor of the page instead of changing the
+  // size of the image.  The size of the image is set so that:
+  // * Images wider than the viewport take the full width of the screen.
+  // * Images taller than the viewport are initially aligned with the top of
+  //   of the frame.
+  // * Images smaller in either dimension are centered along that axis.
+  LayoutSize imageSize = cachedImageSize(m_imageElement);
+  int viewportWidth = frame()->host()->visualViewport().size().width();
+
+  // For huge images, minimum-scale=0.1 is still too big on small screens.
+  // Set the <div> width so that the image will shrink to fit the width of the
+  // screen when the scale is minimum.
+  int maxWidth = std::min(imageSize.width().toInt(), viewportWidth * 10);
+  return std::max(viewportWidth, maxWidth);
+}
+
 void ImageDocument::windowSizeChanged() {
   if (!m_imageElement || !m_imageSizeIsKnown ||
       m_imageElement->document() != this)
     return;
 
   if (m_shrinkToFitMode == Viewport) {
-    // Zooming in and out of an image being displayed within a viewport is done
-    // by changing the page scale factor of the page instead of changing the
-    // size of the image.  The size of the image is set so that:
-    // * Images wider than the viewport take the full width of the screen.
-    // * Images taller than the viewport are initially aligned with the top of
-    //   of the frame.
-    // * Images smaller in either dimension are centered along that axis.
-    LayoutSize imageSize = m_imageElement->cachedImage()->imageSize(
-        LayoutObject::shouldRespectImageOrientation(
-            m_imageElement->layoutObject()),
-        1.f);
-    int viewportWidth = frame()->host()->visualViewport().size().width();
-    int viewportHeight = frame()->host()->visualViewport().size().height();
-    float viewportAspectRatio = (float)viewportWidth / viewportHeight;
-
-    // For huge images, minimum-scale=0.1 is still too big on small screens.
-    // Set the <div> width so that the image will shrink to fit the width of the
-    // screen when the scale is minimum.
-    int maxWidth = std::min(imageSize.width().toInt(), viewportWidth * 10);
-    int divWidth = std::max(viewportWidth, maxWidth);
+    LayoutSize imageSize = cachedImageSize(m_imageElement);
+    int divWidth = calculateDivWidth();
     m_divElement->setInlineStyleProperty(CSSPropertyWidth, divWidth,
                                          CSSPrimitiveValue::UnitType::Pixels);
 
     // Explicitly set the height of the <div> containing the <img> so that it
     // can display the full image without shrinking it, allowing a full-width
     // reading mode for normal-width-huge-height images.
+    float viewportAspectRatio =
+        frame()->host()->visualViewport().size().aspectRatio();
     int divHeight = std::max(imageSize.height().toInt(),
-                             (int)(divWidth / viewportAspectRatio));
+                             static_cast<int>(divWidth / viewportAspectRatio));
     m_divElement->setInlineStyleProperty(CSSPropertyHeight, divHeight,
                                          CSSPrimitiveValue::UnitType::Pixels);
     return;
@@ -495,6 +579,10 @@ void ImageEventListener::handleEvent(ExecutionContext*, Event* event) {
   } else if (event->type() == EventTypeNames::click && event->isMouseEvent()) {
     MouseEvent* mouseEvent = toMouseEvent(event);
     m_doc->imageClicked(mouseEvent->x(), mouseEvent->y());
+  } else if ((event->type() == EventTypeNames::touchend ||
+              event->type() == EventTypeNames::touchcancel) &&
+             event->isTouchEvent()) {
+    m_doc->updateImageStyle();
   }
 }
 
