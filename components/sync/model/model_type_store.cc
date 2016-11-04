@@ -12,13 +12,14 @@
 namespace syncer {
 
 // static
-void ModelTypeStore::CreateInMemoryStoreForTest(const InitCallback& callback) {
-  ModelTypeStoreImpl::CreateInMemoryStoreForTest(callback);
+void ModelTypeStore::CreateInMemoryStoreForTest(ModelType type,
+                                                const InitCallback& callback) {
+  ModelTypeStoreImpl::CreateInMemoryStoreForTest(type, callback);
 }
 
 // static
 void ModelTypeStore::CreateStore(
-    const ModelType type,
+    ModelType type,
     const std::string& path,
     scoped_refptr<base::SequencedTaskRunner> blocking_task_runner,
     const InitCallback& callback) {

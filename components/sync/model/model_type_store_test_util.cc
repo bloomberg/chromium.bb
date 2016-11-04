@@ -8,6 +8,7 @@
 
 #include "base/bind.h"
 #include "base/run_loop.h"
+#include "components/sync/base/model_type.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace syncer {
@@ -30,7 +31,7 @@ std::unique_ptr<ModelTypeStore>
 ModelTypeStoreTestUtil::CreateInMemoryStoreForTest() {
   std::unique_ptr<ModelTypeStore> store;
   ModelTypeStore::CreateInMemoryStoreForTest(
-      base::Bind(&MoveStoreToScopedPtr, &store));
+      UNSPECIFIED, base::Bind(&MoveStoreToScopedPtr, &store));
 
   // Force the initialization to run now, synchronously.
   base::RunLoop().RunUntilIdle();

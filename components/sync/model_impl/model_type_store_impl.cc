@@ -25,23 +25,28 @@ const char kDataPrefix[] = "-dt-";
 const char kMetadataPrefix[] = "-md-";
 
 // Key for global metadata record.
-const char kGlobalMetadataKey[] = "GlobalMetadata";
+const char kGlobalMetadataKey[] = "-GlobalMetadata";
 
 void NoOpForBackendDtor(scoped_refptr<ModelTypeStoreBackend> backend) {
   // This function was intentionally left blank.
 }
 
-}  // namespace
-
-// static
-std::string ModelTypeStoreImpl::FormatDataPrefix(const ModelType type) {
+// Formats key prefix for data records of |type|.
+std::string FormatDataPrefix(ModelType type) {
   return std::string(GetModelTypeRootTag(type)) + kDataPrefix;
 }
 
-// static
-std::string ModelTypeStoreImpl::FormatMetaPrefix(const ModelType type) {
+// Formats key prefix for metadata records of |type|.
+std::string FormatMetaPrefix(ModelType type) {
   return std::string(GetModelTypeRootTag(type)) + kMetadataPrefix;
 }
+
+// Formats key for global metadata record of |type|.
+std::string FormatGlobalMetadataKey(ModelType type) {
+  return std::string(GetModelTypeRootTag(type)) + kGlobalMetadataKey;
+}
+
+}  // namespace
 
 // static
 leveldb::WriteBatch* ModelTypeStoreImpl::GetLeveldbWriteBatch(
@@ -58,13 +63,14 @@ std::string ModelTypeStoreImpl::FormatMetadataKey(const std::string& id) {
 }
 
 ModelTypeStoreImpl::ModelTypeStoreImpl(
-    const ModelType type,
+    ModelType type,
     scoped_refptr<ModelTypeStoreBackend> backend,
     scoped_refptr<base::SequencedTaskRunner> backend_task_runner)
     : backend_(backend),
       backend_task_runner_(backend_task_runner),
       data_prefix_(FormatDataPrefix(type)),
       metadata_prefix_(FormatMetaPrefix(type)),
+      global_metadata_key_(FormatGlobalMetadataKey(type)),
       weak_ptr_factory_(this) {
   DCHECK(backend_);
   DCHECK(backend_task_runner_);
@@ -78,7 +84,7 @@ ModelTypeStoreImpl::~ModelTypeStoreImpl() {
 
 // static
 void ModelTypeStoreImpl::CreateStore(
-    const ModelType type,
+    ModelType type,
     const std::string& path,
     scoped_refptr<base::SequencedTaskRunner> blocking_task_runner,
     const InitCallback& callback) {
@@ -97,6 +103,7 @@ void ModelTypeStoreImpl::CreateStore(
 
 // static
 void ModelTypeStoreImpl::CreateInMemoryStoreForTest(
+    ModelType type,
     const InitCallback& callback) {
   DCHECK(!callback.is_null());
 
@@ -115,7 +122,7 @@ void ModelTypeStoreImpl::CreateInMemoryStoreForTest(
 
   auto task = base::Bind(&ModelTypeStoreBackend::GetOrCreateBackend, path,
                          base::Passed(&env), result.get());
-  auto reply = base::Bind(&ModelTypeStoreImpl::BackendInitDone, UNSPECIFIED,
+  auto reply = base::Bind(&ModelTypeStoreImpl::BackendInitDone, type,
                           base::Passed(&result), task_runner, callback);
 
   base::PostTaskAndReplyWithResult(task_runner.get(), FROM_HERE, task, reply);
@@ -123,7 +130,7 @@ void ModelTypeStoreImpl::CreateInMemoryStoreForTest(
 
 // static
 void ModelTypeStoreImpl::BackendInitDone(
-    const ModelType type,
+    ModelType type,
     std::unique_ptr<Result> result,
     scoped_refptr<base::SequencedTaskRunner> blocking_task_runner,
     const InitCallback& callback,
@@ -225,7 +232,7 @@ void ModelTypeStoreImpl::ReadMetadataRecordsDone(
   }
 
   IdList global_metadata_id;
-  global_metadata_id.push_back(kGlobalMetadataKey);
+  global_metadata_id.push_back(global_metadata_key_);
   std::unique_ptr<RecordList> global_metadata_records(new RecordList());
   std::unique_ptr<IdList> missing_id_list(new IdList());
   auto task = base::Bind(&ModelTypeStoreBackend::ReadRecordsWithPrefix,
@@ -256,13 +263,13 @@ void ModelTypeStoreImpl::ReadAllMetadataDone(
   if (!missing_id_list->empty()) {
     // Missing global metadata record is not an error. We shouild return empty
     // string in this case.
-    DCHECK((*missing_id_list)[0] == kGlobalMetadataKey);
+    DCHECK((*missing_id_list)[0] == global_metadata_key_);
     DCHECK(global_metadata_records->empty());
     callback.Run(Result::SUCCESS, std::move(metadata_records), std::string());
     return;
   }
   DCHECK(!global_metadata_records->empty());
-  DCHECK((*global_metadata_records)[0].id == kGlobalMetadataKey);
+  DCHECK((*global_metadata_records)[0].id == global_metadata_key_);
   callback.Run(Result::SUCCESS, std::move(metadata_records),
                (*global_metadata_records)[0].value);
 }
@@ -313,7 +320,7 @@ void ModelTypeStoreImpl::WriteMetadata(WriteBatch* write_batch,
 void ModelTypeStoreImpl::WriteGlobalMetadata(WriteBatch* write_batch,
                                              const std::string& value) {
   DCHECK(CalledOnValidThread());
-  GetLeveldbWriteBatch(write_batch)->Put(kGlobalMetadataKey, value);
+  GetLeveldbWriteBatch(write_batch)->Put(global_metadata_key_, value);
 }
 
 void ModelTypeStoreImpl::DeleteData(WriteBatch* write_batch,
@@ -330,7 +337,7 @@ void ModelTypeStoreImpl::DeleteMetadata(WriteBatch* write_batch,
 
 void ModelTypeStoreImpl::DeleteGlobalMetadata(WriteBatch* write_batch) {
   DCHECK(CalledOnValidThread());
-  GetLeveldbWriteBatch(write_batch)->Delete(kGlobalMetadataKey);
+  GetLeveldbWriteBatch(write_batch)->Delete(global_metadata_key_);
 }
 
 ModelTypeStoreImpl::WriteBatchImpl::WriteBatchImpl(ModelTypeStore* store)

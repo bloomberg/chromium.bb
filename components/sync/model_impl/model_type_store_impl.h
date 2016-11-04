@@ -31,11 +31,12 @@ class ModelTypeStoreImpl : public ModelTypeStore, public base::NonThreadSafe {
   ~ModelTypeStoreImpl() override;
 
   static void CreateStore(
-      const ModelType type,
+      ModelType type,
       const std::string& path,
       scoped_refptr<base::SequencedTaskRunner> blocking_task_runner,
       const InitCallback& callback);
-  static void CreateInMemoryStoreForTest(const InitCallback& callback);
+  static void CreateInMemoryStoreForTest(ModelType type,
+                                         const InitCallback& callback);
 
   // ModelTypeStore implementation.
   void ReadData(const IdList& id_list,
@@ -71,10 +72,6 @@ class ModelTypeStoreImpl : public ModelTypeStore, public base::NonThreadSafe {
       scoped_refptr<base::SequencedTaskRunner> blocking_task_runner,
       const InitCallback& callback,
       scoped_refptr<ModelTypeStoreBackend> backend);
-
-  // Format prefix key for data/metadata records with |type|.
-  static std::string FormatDataPrefix(const ModelType type);
-  static std::string FormatMetaPrefix(const ModelType type);
 
   static leveldb::WriteBatch* GetLeveldbWriteBatch(WriteBatch* write_batch);
 
@@ -115,6 +112,9 @@ class ModelTypeStoreImpl : public ModelTypeStore, public base::NonThreadSafe {
   // Key prefix for data/metadata records of this model type.
   const std::string data_prefix_;
   const std::string metadata_prefix_;
+
+  // Key for this type's global metadata record.
+  const std::string global_metadata_key_;
 
   base::WeakPtrFactory<ModelTypeStoreImpl> weak_ptr_factory_;
 };

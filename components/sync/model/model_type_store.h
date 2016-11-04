@@ -128,13 +128,14 @@ class ModelTypeStore {
   //
   // In test get task runner from MessageLoop::task_runner().
   static void CreateStore(
-      const ModelType type,
+      ModelType type,
       const std::string& path,
       scoped_refptr<base::SequencedTaskRunner> blocking_task_runner,
       const InitCallback& callback);
   // Creates store object backed by in-memory leveldb database. It is used in
   // tests.
-  static void CreateInMemoryStoreForTest(const InitCallback& callback);
+  static void CreateInMemoryStoreForTest(ModelType type,
+                                         const InitCallback& callback);
 
   virtual ~ModelTypeStore();
 
