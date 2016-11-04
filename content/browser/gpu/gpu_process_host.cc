@@ -108,6 +108,7 @@ namespace {
 
 // Command-line switches to propagate to the GPU process.
 static const char* const kSwitchNames[] = {
+    switches::kCreateDefaultGLContext,
     switches::kDisableAcceleratedVideoDecode,
     switches::kDisableBreakpad,
     switches::kDisableES3GLContext,
@@ -160,8 +161,7 @@ static const char* const kSwitchNames[] = {
     switches::kGpuTestingGLVendor,
     switches::kGpuTestingGLRenderer,
     switches::kGpuTestingGLVersion,
-    switches::kDisableGpuDriverBugWorkarounds
-};
+    switches::kDisableGpuDriverBugWorkarounds};
 
 enum GPUProcessLifetimeEvent {
   LAUNCHED,

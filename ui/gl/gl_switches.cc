@@ -26,6 +26,10 @@ const char kANGLEImplementationNullName[]     = "null";
 
 namespace switches {
 
+// Ask the GLX driver for the default context instead of trying to get the
+// highest version possible.
+const char kCreateDefaultGLContext[] = "create-default-gl-context";
+
 // Disables use of D3D11.
 const char kDisableD3D11[]                  = "disable-d3d11";
 

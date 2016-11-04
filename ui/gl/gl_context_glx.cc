@@ -9,6 +9,7 @@ extern "C" {
 }
 #include <memory>
 
+#include "base/command_line.h"
 #include "base/logging.h"
 #include "base/numerics/safe_conversions.h"
 #include "base/trace_event/trace_event.h"
@@ -168,9 +169,16 @@ bool GLContextGLX::Initialize(
 
   if (GLSurfaceGLX::IsCreateContextSupported()) {
     DVLOG(1) << "GLX_ARB_create_context supported.";
-    context_ = CreateHighestVersionContext(
-        display_, static_cast<GLXFBConfig>(compatible_surface->GetConfig()),
-        share_handle);
+    if (base::CommandLine::ForCurrentProcess()->HasSwitch(
+            switches::kCreateDefaultGLContext)) {
+      context_ = CreateContextAttribs(
+          display_, static_cast<GLXFBConfig>(compatible_surface->GetConfig()),
+          share_handle, GLVersion(0, 0), 0);
+    } else {
+      context_ = CreateHighestVersionContext(
+          display_, static_cast<GLXFBConfig>(compatible_surface->GetConfig()),
+          share_handle);
+    }
     if (!context_) {
       LOG(ERROR) << "Failed to create GL context with "
                  << "glXCreateContextAttribsARB.";
