@@ -72,17 +72,11 @@ Blob* PushMessageData::blob() const {
 
 ScriptValue PushMessageData::json(ScriptState* scriptState,
                                   ExceptionState& exceptionState) const {
-  v8::Isolate* isolate = scriptState->isolate();
-
   ScriptState::Scope scope(scriptState);
-  v8::Local<v8::String> dataString = v8String(isolate, text());
-
-  v8::TryCatch block(isolate);
-  v8::Local<v8::Value> parsed;
-  if (!v8Call(v8::JSON::Parse(isolate, dataString), parsed, block)) {
-    exceptionState.rethrowV8Exception(block.Exception());
+  v8::Local<v8::Value> parsed =
+      fromJSONString(scriptState->isolate(), text(), exceptionState);
+  if (exceptionState.hadException())
     return ScriptValue();
-  }
 
   return ScriptValue(scriptState, parsed);
 }

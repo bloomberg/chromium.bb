@@ -68,8 +68,6 @@ bindings_core_v8_files =
                     "core/v8/IDLDictionaryBase.cpp",
                     "core/v8/IDLDictionaryBase.h",
                     "core/v8/Iterable.h",
-                    "core/v8/JSONValuesForV8.cpp",
-                    "core/v8/JSONValuesForV8.h",
                     "core/v8/Maplike.h",
                     "core/v8/Microtask.cpp",
                     "core/v8/Microtask.h",

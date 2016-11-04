@@ -4,7 +4,6 @@
 
 #include "modules/nfc/NFC.h"
 
-#include "bindings/core/v8/JSONValuesForV8.h"
 #include "bindings/core/v8/ScriptPromiseResolver.h"
 #include "bindings/core/v8/V8ArrayBuffer.h"
 #include "bindings/core/v8/V8StringResource.h"

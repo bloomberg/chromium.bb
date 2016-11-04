@@ -1004,4 +1004,18 @@ v8::Local<v8::Value> freezeV8Object(v8::Local<v8::Value> value,
   return value;
 }
 
+v8::Local<v8::Value> fromJSONString(v8::Isolate* isolate,
+                                    const String& stringifiedJSON,
+                                    ExceptionState& exceptionState) {
+  v8::Local<v8::Value> parsed;
+  v8::TryCatch tryCatch(isolate);
+  if (!v8Call(v8::JSON::Parse(isolate, v8String(isolate, stringifiedJSON)),
+              parsed, tryCatch)) {
+    if (tryCatch.HasCaught())
+      exceptionState.rethrowV8Exception(tryCatch.Exception());
+  }
+
+  return parsed;
+}
+
 }  // namespace blink

@@ -66,6 +66,9 @@ void V8XMLHttpRequest::responseTextAttributeGetterCustom(
 void V8XMLHttpRequest::responseAttributeGetterCustom(
     const v8::FunctionCallbackInfo<v8::Value>& info) {
   XMLHttpRequest* xmlHttpRequest = V8XMLHttpRequest::toImpl(info.Holder());
+  ExceptionState exceptionState(ExceptionState::GetterContext, "response",
+                                "XMLHttpRequest", info.Holder(),
+                                info.GetIsolate());
 
   switch (xmlHttpRequest->getResponseTypeCode()) {
     case XMLHttpRequest::ResponseTypeDefault:
@@ -84,20 +87,18 @@ void V8XMLHttpRequest::responseAttributeGetterCustom(
 
       // Catch syntax error. Swallows an exception (when thrown) as the
       // spec says. https://xhr.spec.whatwg.org/#response-body
-      v8::TryCatch exceptionCatcher(isolate);
-      v8::Local<v8::Value> json;
-      if (v8Call(v8::JSON::Parse(isolate, jsonSource.v8Value()), json,
-                 exceptionCatcher))
-        v8SetReturnValue(info, json);
-      else
+      v8::Local<v8::Value> json = fromJSONString(
+          isolate, toCoreString(jsonSource.v8Value()), exceptionState);
+      if (exceptionState.hadException()) {
+        exceptionState.clearException();
         v8SetReturnValue(info, v8::Null(isolate));
+      } else {
+        v8SetReturnValue(info, json);
+      }
       return;
     }
 
     case XMLHttpRequest::ResponseTypeDocument: {
-      ExceptionState exceptionState(ExceptionState::GetterContext, "response",
-                                    "XMLHttpRequest", info.Holder(),
-                                    info.GetIsolate());
       Document* document = xmlHttpRequest->responseXML(exceptionState);
       v8SetReturnValueFast(info, document, xmlHttpRequest);
       return;

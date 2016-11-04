@@ -4,7 +4,6 @@
 
 #include "modules/payments/PaymentRequest.h"
 
-#include "bindings/core/v8/JSONValuesForV8.h"
 #include "bindings/core/v8/V8BindingForTesting.h"
 #include "core/dom/Document.h"
 #include "core/dom/ExceptionCode.h"
@@ -471,8 +470,8 @@ TEST(PaymentRequestTest, RejectShowPromiseOnInvalidPaymentDetailsUpdate) {
       .then(funcs.expectNoCall(), funcs.expectCall());
 
   request->onUpdatePaymentDetails(ScriptValue::from(
-      scope.getScriptState(),
-      fromJSONString(scope.getScriptState(), "{}", scope.getExceptionState())));
+      scope.getScriptState(), fromJSONString(scope.getScriptState()->isolate(),
+                                             "{}", scope.getExceptionState())));
   EXPECT_FALSE(scope.getExceptionState().hadException());
 }
 
@@ -500,8 +499,8 @@ TEST(PaymentRequestTest,
       "\"5.00\"}, \"selected\": true}]}";
   request->onUpdatePaymentDetails(ScriptValue::from(
       scope.getScriptState(),
-      fromJSONString(scope.getScriptState(), detailWithShippingOptions,
-                     scope.getExceptionState())));
+      fromJSONString(scope.getScriptState()->isolate(),
+                     detailWithShippingOptions, scope.getExceptionState())));
   EXPECT_FALSE(scope.getExceptionState().hadException());
   EXPECT_EQ("standardShippingOption", request->shippingOption());
   String detailWithoutShippingOptions =
@@ -510,8 +509,8 @@ TEST(PaymentRequestTest,
 
   request->onUpdatePaymentDetails(ScriptValue::from(
       scope.getScriptState(),
-      fromJSONString(scope.getScriptState(), detailWithoutShippingOptions,
-                     scope.getExceptionState())));
+      fromJSONString(scope.getScriptState()->isolate(),
+                     detailWithoutShippingOptions, scope.getExceptionState())));
 
   EXPECT_FALSE(scope.getExceptionState().hadException());
   EXPECT_TRUE(request->shippingOption().isNull());
@@ -539,9 +538,10 @@ TEST(
       "{\"id\": \"fast\", \"label\": \"Fast\", \"amount\": {\"currency\": "
       "\"USD\", \"value\": \"50.00\"}}]}";
 
-  request->onUpdatePaymentDetails(ScriptValue::from(
-      scope.getScriptState(), fromJSONString(scope.getScriptState(), detail,
-                                             scope.getExceptionState())));
+  request->onUpdatePaymentDetails(
+      ScriptValue::from(scope.getScriptState(),
+                        fromJSONString(scope.getScriptState()->isolate(),
+                                       detail, scope.getExceptionState())));
   EXPECT_FALSE(scope.getExceptionState().hadException());
 
   EXPECT_TRUE(request->shippingOption().isNull());
@@ -567,9 +567,10 @@ TEST(PaymentRequestTest, UseTheSelectedShippingOptionFromPaymentDetailsUpdate) {
       "{\"id\": \"fast\", \"label\": \"Fast\", \"amount\": {\"currency\": "
       "\"USD\", \"value\": \"50.00\"}, \"selected\": true}]}";
 
-  request->onUpdatePaymentDetails(ScriptValue::from(
-      scope.getScriptState(), fromJSONString(scope.getScriptState(), detail,
-                                             scope.getExceptionState())));
+  request->onUpdatePaymentDetails(
+      ScriptValue::from(scope.getScriptState(),
+                        fromJSONString(scope.getScriptState()->isolate(),
+                                       detail, scope.getExceptionState())));
   EXPECT_FALSE(scope.getExceptionState().hadException());
 
   EXPECT_EQ("fast", request->shippingOption());
@@ -593,7 +594,7 @@ TEST(PaymentRequestTest, NoExceptionWithErrorMessageInUpdate) {
 
   request->onUpdatePaymentDetails(ScriptValue::from(
       scope.getScriptState(),
-      fromJSONString(scope.getScriptState(), detailWithErrorMsg,
+      fromJSONString(scope.getScriptState()->isolate(), detailWithErrorMsg,
                      scope.getExceptionState())));
   EXPECT_FALSE(scope.getExceptionState().hadException());
 }
@@ -632,8 +633,8 @@ TEST(PaymentRequestTest,
 
   request->onUpdatePaymentDetails(ScriptValue::from(
       scope.getScriptState(),
-      fromJSONString(scope.getScriptState(), detailWithShippingOptions,
-                     scope.getExceptionState())));
+      fromJSONString(scope.getScriptState()->isolate(),
+                     detailWithShippingOptions, scope.getExceptionState())));
 
   EXPECT_FALSE(scope.getExceptionState().hadException());
   EXPECT_TRUE(request->shippingOption().isNull());

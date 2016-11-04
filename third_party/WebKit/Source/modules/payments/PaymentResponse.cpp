@@ -5,7 +5,6 @@
 #include "modules/payments/PaymentResponse.h"
 
 #include "bindings/core/v8/ExceptionStatePlaceholder.h"
-#include "bindings/core/v8/JSONValuesForV8.h"
 #include "bindings/core/v8/V8ObjectBuilder.h"
 #include "modules/payments/PaymentAddress.h"
 #include "modules/payments/PaymentCompleter.h"
@@ -63,8 +62,8 @@ ScriptValue PaymentResponse::toJSONForBinding(ScriptState* scriptState) const {
 ScriptValue PaymentResponse::details(ScriptState* scriptState,
                                      ExceptionState& exceptionState) const {
   return ScriptValue(
-      scriptState,
-      fromJSONString(scriptState, m_stringifiedDetails, exceptionState));
+      scriptState, fromJSONString(scriptState->isolate(), m_stringifiedDetails,
+                                  exceptionState));
 }
 
 ScriptPromise PaymentResponse::complete(ScriptState* scriptState,
