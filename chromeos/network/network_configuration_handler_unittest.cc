@@ -200,7 +200,7 @@ class NetworkConfigurationHandlerTest : public testing::Test {
     EXPECT_CALL(*mock_manager_client_, RemovePropertyChangedObserver(_))
         .Times(AnyNumber());
 
-    network_state_handler_.reset(NetworkStateHandler::InitializeForTest());
+    network_state_handler_ = NetworkStateHandler::InitializeForTest();
     network_configuration_handler_.reset(new NetworkConfigurationHandler());
     network_configuration_handler_->Init(network_state_handler_.get(),
                                          NULL /* network_device_handler */);
@@ -495,7 +495,7 @@ class NetworkConfigurationHandlerStubTest : public testing::Test {
   void SetUp() override {
     DBusThreadManager::Initialize();
 
-    network_state_handler_.reset(NetworkStateHandler::InitializeForTest());
+    network_state_handler_ = NetworkStateHandler::InitializeForTest();
     test_observer_.reset(new TestObserver());
     network_state_handler_->AddObserver(test_observer_.get(), FROM_HERE);
 

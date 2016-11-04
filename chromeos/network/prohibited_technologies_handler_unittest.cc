@@ -51,7 +51,7 @@ class ProhibitedTechnologiesHandlerTest : public testing::Test {
         "user_profile_path", kUserHash);
 
     base::RunLoop().RunUntilIdle();
-    network_state_handler_.reset(NetworkStateHandler::InitializeForTest());
+    network_state_handler_ = NetworkStateHandler::InitializeForTest();
     network_config_handler_.reset(
         NetworkConfigurationHandler::InitializeForTest(
             network_state_handler_.get(), NULL /* network_device_handler */));

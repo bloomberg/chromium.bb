@@ -244,7 +244,7 @@ class CHROMEOS_EXPORT NetworkStateHandler
                            const std::string& error);
 
   // Constructs and initializes an instance for testing.
-  static NetworkStateHandler* InitializeForTest();
+  static std::unique_ptr<NetworkStateHandler> InitializeForTest();
 
   // Default set of comma separated interfaces on which to enable
   // portal checking.

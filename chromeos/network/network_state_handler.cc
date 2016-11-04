@@ -85,13 +85,14 @@ void NetworkStateHandler::Shutdown() {
 }
 
 void NetworkStateHandler::InitShillPropertyHandler() {
-  shill_property_handler_.reset(new internal::ShillPropertyHandler(this));
+  shill_property_handler_ =
+      base::MakeUnique<internal::ShillPropertyHandler>(this);
   shill_property_handler_->Init();
 }
 
 // static
-NetworkStateHandler* NetworkStateHandler::InitializeForTest() {
-  NetworkStateHandler* handler = new NetworkStateHandler();
+std::unique_ptr<NetworkStateHandler> NetworkStateHandler::InitializeForTest() {
+  auto handler = base::WrapUnique(new NetworkStateHandler());
   handler->InitShillPropertyHandler();
   return handler;
 }
@@ -260,12 +261,9 @@ const NetworkState* NetworkStateHandler::FirstNetworkByType(
 
 std::string NetworkStateHandler::FormattedHardwareAddressForType(
     const NetworkTypePattern& type) const {
-  const DeviceState* device = nullptr;
   const NetworkState* network = ConnectedNetworkByType(type);
-  if (network)
-    device = GetDeviceState(network->device_path());
-  else
-    device = GetDeviceStateByType(type);
+  const DeviceState* device = network ? GetDeviceState(network->device_path())
+                                      : GetDeviceStateByType(type);
   if (!device)
     return std::string();
   return network_util::FormattedMacAddress(device->mac_address());

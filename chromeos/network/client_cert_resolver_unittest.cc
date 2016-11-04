@@ -135,7 +135,7 @@ class ClientCertResolverTest : public testing::Test,
   }
 
   void SetupNetworkHandlers() {
-    network_state_handler_.reset(NetworkStateHandler::InitializeForTest());
+    network_state_handler_ = NetworkStateHandler::InitializeForTest();
     network_profile_handler_.reset(new NetworkProfileHandler());
     network_config_handler_.reset(new NetworkConfigurationHandler());
     managed_config_handler_.reset(new ManagedNetworkConfigurationHandlerImpl());

@@ -42,7 +42,7 @@ namespace chromeos {
 
 namespace {
 
-const char* kUserHash = "user_hash";
+const char kUserHash[] = "user_hash";
 
 void ConfigureCallback(const dbus::ObjectPath& result) {
 }
@@ -110,7 +110,7 @@ class AutoConnectHandlerTest : public testing::Test {
 
     base::RunLoop().RunUntilIdle();
     LoginState::Initialize();
-    network_state_handler_.reset(NetworkStateHandler::InitializeForTest());
+    network_state_handler_ = NetworkStateHandler::InitializeForTest();
     network_config_handler_.reset(
         NetworkConfigurationHandler::InitializeForTest(
             network_state_handler_.get(), NULL /* network_device_handler */));

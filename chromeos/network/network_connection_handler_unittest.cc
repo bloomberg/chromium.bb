@@ -134,7 +134,7 @@ class NetworkConnectionHandlerTest : public testing::Test {
 
     base::RunLoop().RunUntilIdle();
     LoginState::Initialize();
-    network_state_handler_.reset(NetworkStateHandler::InitializeForTest());
+    network_state_handler_ = NetworkStateHandler::InitializeForTest();
     network_config_handler_.reset(
         NetworkConfigurationHandler::InitializeForTest(
             network_state_handler_.get(),

@@ -50,7 +50,7 @@ class NetworkDeviceHandlerTest : public testing::Test {
     error_callback_ = base::Bind(&NetworkDeviceHandlerTest::ErrorCallback,
                                  base::Unretained(this));
 
-    network_state_handler_.reset(NetworkStateHandler::InitializeForTest());
+    network_state_handler_ = NetworkStateHandler::InitializeForTest();
     NetworkDeviceHandlerImpl* device_handler = new NetworkDeviceHandlerImpl;
     device_handler->Init(network_state_handler_.get());
     network_device_handler_.reset(device_handler);
@@ -183,7 +183,6 @@ TEST_F(NetworkDeviceHandlerTest, SetDeviceProperty) {
       error_callback_);
   base::RunLoop().RunUntilIdle();
   EXPECT_NE(kResultSuccess, result_);
-
 }
 
 TEST_F(NetworkDeviceHandlerTest, CellularAllowRoaming) {

@@ -257,7 +257,7 @@ class ManagedNetworkConfigurationHandlerTest : public testing::Test {
         .WillByDefault(Invoke(&services_stub_,
                               &ShillServiceTestClient::GetProperties));
 
-    network_state_handler_.reset(NetworkStateHandler::InitializeForTest());
+    network_state_handler_ = NetworkStateHandler::InitializeForTest();
     network_profile_handler_.reset(new TestNetworkProfileHandler());
     network_configuration_handler_.reset(
         NetworkConfigurationHandler::InitializeForTest(
