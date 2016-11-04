@@ -89,6 +89,9 @@ class URLLoaderClientImpl final : public mojom::URLLoaderClient {
   }
 
   void OnReceiveResponse(const ResourceResponseHead& response_head) override {
+    has_received_response_ = true;
+    if (body_consumer_)
+      body_consumer_->Start(task_runner_.get());
     resource_dispatcher_->OnMessageReceived(
         ResourceMsg_ReceivedResponse(request_id_, response_head));
   }
@@ -98,6 +101,8 @@ class URLLoaderClientImpl final : public mojom::URLLoaderClient {
     DCHECK(!body_consumer_);
     body_consumer_ = new URLResponseBodyConsumer(
         request_id_, resource_dispatcher_, std::move(body), task_runner_);
+    if (has_received_response_)
+      body_consumer_->Start(task_runner_.get());
   }
 
   void OnComplete(const ResourceRequestCompletionStatus& status) override {
@@ -117,6 +122,7 @@ class URLLoaderClientImpl final : public mojom::URLLoaderClient {
   mojo::Binding<mojom::URLLoaderClient> binding_;
   scoped_refptr<URLResponseBodyConsumer> body_consumer_;
   const int request_id_;
+  bool has_received_response_ = false;
   ResourceDispatcher* const resource_dispatcher_;
   scoped_refptr<base::SingleThreadTaskRunner> task_runner_;
 };
