@@ -963,6 +963,8 @@ crbug.com/630671 imported/wpt/pointerevents/pointerevent_setpointercapture_relat
 crbug.com/629722 imported/wpt/pointerevents/pointerevent_lostpointercapture_is_first-manual.html  [ Skip ]
 crbug.com/629722 imported/wpt/pointerevents/pointerevent_lostpointercapture_for_disconnected_node-manual.html  [ Skip ]
 
+crbug.com/662010 [ Win7 ] csspaint/invalidation-background-image.html [ Skip ]
+
 # These tests are skipped as there is no touch support on Mac.
 crbug.com/613672 [ Mac ] fast/events/pointerevents/pointerevent_touch-action-pinch_zoom_touch.html [ Skip ]
 crbug.com/613672 [ Mac ] imported/wpt/pointerevents/pointerevent_attributes_nohover_pointers-manual.html [ Skip ]
