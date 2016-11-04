@@ -247,7 +247,6 @@ class ArcAuthService : public ArcService,
   base::ObserverList<Observer> observer_list_;
   std::unique_ptr<ArcAppLauncher> playstore_launcher_;
   std::string auth_code_;
-  bool initial_opt_in_ = false;
   UIPage ui_page_ = UIPage::NO_PAGE;
   base::string16 ui_page_status_;
   bool clear_required_ = false;

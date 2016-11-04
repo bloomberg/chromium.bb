@@ -400,9 +400,7 @@ void ArcAuthService::PrepareContextForAuthCodeRequest() {
   // 3. For any other state on Android side that leads device appears in
   // non-signed state.
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
-  DCHECK(IsAuthCodeRequest());
-  DCHECK_EQ(state_, State::ACTIVE);
-  initial_opt_in_ = false;
+  DCHECK(state_ != State::ACTIVE || IsAuthCodeRequest());
   context_->PrepareContext();
 }
 
@@ -633,8 +631,6 @@ void ArcAuthService::ShowUI(UIPage page, const base::string16& status) {
 void ArcAuthService::OnContextReady() {
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
 
-  DCHECK(!initial_opt_in_);
-
   // TODO(hidehiko): The check is not necessary if this is a part of re-auth
   // flow. Remove this.
   android_management_checker_.reset(new ArcAndroidManagementChecker(
@@ -696,7 +692,6 @@ void ArcAuthService::OnOptInPreferenceChanged() {
 
   if (!profile_->GetPrefs()->GetBoolean(prefs::kArcSignedIn)) {
     // Need pre-fetch auth code and show OptIn UI if needed.
-    initial_opt_in_ = true;
     StartUI();
   } else {
     // Ready to start Arc, but check Android management in parallel.
@@ -831,9 +826,9 @@ void ArcAuthService::StartLso() {
     ShutdownBridge();
   }
 
-  // TODO(khmel): Use PrepareContextForAuthCodeRequest for this case.
-  initial_opt_in_ = false;
-  StartUI();
+  DCHECK(arc_bridge_service()->stopped());
+  SetState(State::FETCHING_CODE);
+  PrepareContextForAuthCodeRequest();
 }
 
 void ArcAuthService::CancelAuthCode() {
@@ -912,13 +907,7 @@ void ArcAuthService::StartUI() {
   }
 
   SetState(State::FETCHING_CODE);
-
-  if (initial_opt_in_) {
-    initial_opt_in_ = false;
-    ShowUI(UIPage::TERMS, base::string16());
-  } else {
-    context_->PrepareContext();
-  }
+  ShowUI(UIPage::TERMS, base::string16());
 }
 
 void ArcAuthService::OnPrepareContextFailed() {
