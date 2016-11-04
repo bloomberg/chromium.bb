@@ -261,7 +261,8 @@ void ExtensionInstalledBubbleView::OnSignInLinkClicked() {
   chrome::ShowBrowserSignin(
       browser(),
       signin_metrics::AccessPoint::ACCESS_POINT_EXTENSION_INSTALL_BUBBLE);
-  CloseBubble();
+  // Showing the sign-in UI will cause the bubble to close.
+  CHECK(GetWidget()->IsClosed());
 }
 
 void ExtensionInstalledBubbleView::LinkClicked(views::Link* source,
@@ -273,7 +274,8 @@ void ExtensionInstalledBubbleView::LinkClicked(views::Link* source,
   chrome::NavigateParams params(
       chrome::GetSingletonTabNavigateParams(browser(), GURL(configure_url)));
   chrome::Navigate(&params);
-  CloseBubble();
+  // Navigating will cause the bubble to close.
+  CHECK(GetWidget()->IsClosed());
 }
 
 gfx::Size ExtensionInstalledBubbleView::GetIconSize() const {
