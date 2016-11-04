@@ -245,7 +245,7 @@ Surface::~Surface() {
   for (const auto& frame_callback : active_frame_callbacks_)
     frame_callback.Run(base::TimeTicks());
 
-  if (begin_frame_source_)
+  if (begin_frame_source_ && needs_begin_frame_)
     begin_frame_source_->RemoveObserver(this);
 
   if (!local_frame_id_.is_null())
@@ -622,6 +622,10 @@ void Surface::WillDraw() {
 }
 
 void Surface::SetBeginFrameSource(cc::BeginFrameSource* begin_frame_source) {
+  if (begin_frame_source_ && needs_begin_frame_) {
+    begin_frame_source_->RemoveObserver(this);
+    needs_begin_frame_ = false;
+  }
   begin_frame_source_ = begin_frame_source;
   UpdateNeedsBeginFrame();
 }
@@ -843,10 +847,8 @@ void Surface::UpdateSurface(bool full_damage) {
 }
 
 void Surface::UpdateNeedsBeginFrame() {
-  if (!begin_frame_source_) {
-    needs_begin_frame_ = false;
+  if (!begin_frame_source_)
     return;
-  }
 
   bool needs_begin_frame = !active_frame_callbacks_.empty();
   if (needs_begin_frame == needs_begin_frame_)
