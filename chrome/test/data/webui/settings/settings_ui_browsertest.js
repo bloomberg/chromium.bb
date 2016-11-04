@@ -134,6 +134,27 @@ TEST_F('SettingsUIBrowserTest', 'MAYBE_All', function() {
       searchField.setValue(value);
       assertEquals(value, settings.getQueryParameters().get('search'));
     });
+
+     test('whitespace only search query is ignored', function() {
+      toolbar = /** @type {!CrToolbarElement} */ (ui.$$('cr-toolbar'));
+      var searchField = /** @type {CrToolbarSearchFieldElement} */ (
+          toolbar.getSearchField());
+      searchField.setValue('    ');
+      var urlParams = settings.getQueryParameters();
+      assertFalse(urlParams.has('search'));
+
+      searchField.setValue('   foo');
+      urlParams = settings.getQueryParameters();
+      assertEquals('foo', urlParams.get('search'));
+
+      searchField.setValue('   foo ');
+      urlParams = settings.getQueryParameters();
+      assertEquals('foo ', urlParams.get('search'));
+
+      searchField.setValue('   ');
+      urlParams = settings.getQueryParameters();
+      assertFalse(urlParams.has('search'));
+    });
   });
 
   mocha.run();

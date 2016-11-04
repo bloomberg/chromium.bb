@@ -161,7 +161,14 @@ Polymer({
    * @private
    */
   onSearchChanged_: function(e) {
-    var query = e.detail;
+    // Trim leading whitespace only, to prevent searching for empty string. This
+    // still allows the user to search for 'foo bar', while taking a long pause
+    // after typing 'foo '.
+    var query = e.detail.replace(/^\s+/, '');
+    // Prevent duplicate history entries.
+    if (query == this.lastSearchQuery_)
+      return;
+
     settings.navigateTo(
         settings.Route.BASIC,
         query.length > 0 ?
