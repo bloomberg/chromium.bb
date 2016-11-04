@@ -60,17 +60,14 @@ static INLINE int ans_write_end(struct AnsCoder *const ans) {
   assert(ans->state >= L_BASE);
   assert(ans->state < L_BASE * IO_BASE);
   state = ans->state - L_BASE;
-  if (state < (1 << 6)) {
-    ans->buf[ans->buf_offset] = (0x00 << 6) + state;
-    return ans->buf_offset + 1;
-  } else if (state < (1 << 14)) {
-    mem_put_le16(ans->buf + ans->buf_offset, (0x01 << 14) + state);
+  if (state < (1u << 15)) {
+    mem_put_le16(ans->buf + ans->buf_offset, (0x00u << 15) + state);
     return ans->buf_offset + 2;
-  } else if (state < (1 << 22)) {
-    mem_put_le24(ans->buf + ans->buf_offset, (0x02 << 22) + state);
+  } else if (state < (1u << 22)) {
+    mem_put_le24(ans->buf + ans->buf_offset, (0x02u << 22) + state);
     return ans->buf_offset + 3;
-  } else if (state < (1 << 29)) {
-    mem_put_le32(ans->buf + ans->buf_offset, (0x07 << 29) + state);
+  } else if (state < (1u << 29)) {
+    mem_put_le32(ans->buf + ans->buf_offset, (0x07u << 29) + state);
     return ans->buf_offset + 4;
   } else {
     assert(0 && "State is too large to be serialized");

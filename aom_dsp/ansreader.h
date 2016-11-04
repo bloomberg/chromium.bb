@@ -105,19 +105,16 @@ static INLINE int ans_read_init(struct AnsDecoder *const ans,
   unsigned x;
   if (offset < 1) return 1;
   ans->buf = buf;
-  x = buf[offset - 1] >> 6;
-  if (x == 0) {
-    ans->buf_offset = offset - 1;
-    ans->state = buf[offset - 1] & 0x3F;
-  } else if (x == 1) {
+  x = buf[offset - 1];
+  if ((x & 0x80) == 0) {
     if (offset < 2) return 1;
     ans->buf_offset = offset - 2;
-    ans->state = mem_get_le16(buf + offset - 2) & 0x3FFF;
-  } else if (x == 2) {
+    ans->state = mem_get_le16(buf + offset - 2) & 0x7FFF;
+  } else if ((x & 0xC0) == 0x80) {
     if (offset < 3) return 1;
     ans->buf_offset = offset - 3;
     ans->state = mem_get_le24(buf + offset - 3) & 0x3FFFFF;
-  } else if ((buf[offset - 1] & 0xE0) == 0xE0) {
+  } else if ((x & 0xE0) == 0xE0) {
     if (offset < 4) return 1;
     ans->buf_offset = offset - 4;
     ans->state = mem_get_le32(buf + offset - 4) & 0x1FFFFFFF;
