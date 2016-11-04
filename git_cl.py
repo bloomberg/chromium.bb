@@ -427,7 +427,6 @@ def _trigger_try_jobs(auth_config, changelist, buckets, options,
   # _RietveldChangelistImpl does, then caching values in these two variables
   # won't be necessary.
   owner_email = changelist.GetIssueOwner()
-  project = changelist.GetIssueProject()
 
   buildbucket_put_url = (
       'https://{hostname}/_ah/api/buildbucket/v1/builds/batch'.format(
@@ -437,7 +436,14 @@ def _trigger_try_jobs(auth_config, changelist, buckets, options,
       hostname=codereview_host,
       issue=changelist.GetIssue(),
       patch=patchset)
+
+  shared_parameters_properties = changelist.GetTryjobProperties(patchset)
+  shared_parameters_properties['category'] = category
+  if options.clobber:
+    shared_parameters_properties['clobber'] = True
   extra_properties = _get_properties_from_options(options)
+  if extra_properties:
+    shared_parameters_properties.update(extra_properties)
 
   batch_req_body = {'builds': []}
   print_text = []
@@ -455,23 +461,12 @@ def _trigger_try_jobs(auth_config, changelist, buckets, options,
               'author': {'email': owner_email},
               'revision': options.revision,
           }],
-          'properties': {
-              'category': category,
-              'issue': changelist.GetIssue(),
-              'patch_project': project,
-              'patch_storage': 'rietveld',
-              'patchset': patchset,
-              'rietveld': codereview_url,
-          },
+          'properties': shared_parameters_properties.copy(),
       }
       if 'presubmit' in builder.lower():
         parameters['properties']['dry_run'] = 'true'
       if tests:
         parameters['properties']['testfilter'] = tests
-      if extra_properties:
-        parameters['properties'].update(extra_properties)
-      if options.clobber:
-        parameters['properties']['clobber'] = True
 
       tags = [
           'builder:%s' % builder,
@@ -1691,12 +1686,6 @@ class Changelist(object):
     """Get owner from codereview, which may differ from this checkout."""
     return self._codereview_impl.GetIssueOwner()
 
-  def GetIssueProject(self):
-    """Get project from codereview, which may differ from what this
-    checkout's codereview.settings or gerrit project URL say.
-    """
-    return self._codereview_impl.GetIssueProject()
-
   def GetApprovingReviewers(self):
     return self._codereview_impl.GetApprovingReviewers()
 
@@ -1706,6 +1695,10 @@ class Changelist(object):
   def CannotTriggerTryJobReason(self):
     """Returns reason (str) if unable trigger tryjobs on this CL or None."""
     return self._codereview_impl.CannotTriggerTryJobReason()
+
+  def GetTryjobProperties(self, patchset=None):
+    """Returns dictionary of properties to launch tryjob."""
+    return self._codereview_impl.GetTryjobProperties(patchset=patchset)
 
   def __getattr__(self, attr):
     # This is because lots of untested code accesses Rietveld-specific stuff
@@ -1839,7 +1832,7 @@ class _ChangelistCodereviewBase(object):
   def GetIssueOwner(self):
     raise NotImplementedError()
 
-  def GetIssueProject(self):
+  def GetTryjobProperties(self, patchset=None):
     raise NotImplementedError()
 
 
@@ -1920,14 +1913,22 @@ class _RietveldChangelistImpl(_ChangelistCodereviewBase):
       return 'CL %s is private' % self.GetIssue()
     return None
 
+  def GetTryjobProperties(self, patchset=None):
+    """Returns dictionary of properties to launch tryjob."""
+    project = (self.GetIssueProperties() or {}).get('project')
+    return {
+      'issue': self.GetIssue(),
+      'patch_project': project,
+      'patch_storage': 'rietveld',
+      'patchset': patchset or self.GetPatchset(),
+      'rietveld': self.GetCodereviewServer(),
+    }
+
   def GetApprovingReviewers(self):
     return get_approving_reviewers(self.GetIssueProperties())
 
   def GetIssueOwner(self):
     return (self.GetIssueProperties() or {}).get('owner_email')
-
-  def GetIssueProject(self):
-    return (self.GetIssueProperties() or {}).get('project')
 
   def AddComment(self, message):
     return self.RpcServer().add_comment(self.GetIssue(), message)
@@ -2868,16 +2869,38 @@ class _GerritChangelistImpl(_ChangelistCodereviewBase):
                           labels={'Commit-Queue': vote_map[new_state]})
 
   def CannotTriggerTryJobReason(self):
-    # TODO(tandrii): implement for Gerrit.
-    raise NotImplementedError()
+    try:
+      data = self._GetChangeDetail()
+    except GerritIssueNotExists:
+      return 'Gerrit doesn\'t know about your issue %s' % self.GetIssue()
+
+    if data['status'] in ('ABANDONED', 'MERGED'):
+      return 'CL %s is closed' % self.GetIssue()
+
+  def GetTryjobProperties(self, patchset=None):
+    """Returns dictionary of properties to launch tryjob."""
+    data = self._GetChangeDetail(['ALL_REVISIONS'])
+    patchset = int(patchset or self.GetPatchset())
+    assert patchset
+    revision_data = None  # Pylint wants it to be defined.
+    for revision_data in data['revisions'].itervalues():
+      if int(revision_data['_number']) == patchset:
+        break
+    else:
+      raise Exception('Patchset %d is not known in Gerrit issue %d' %
+                      (patchset, self.GetIssue()))
+    return {
+      'patch_issue': self.GetIssue(),
+      'patch_set': patchset or self.GetPatchset(),
+      'patch_project': data['project'],
+      'patch_storage': 'gerrit',
+      'patch_ref': revision_data['fetch']['http']['ref'],
+      'patch_repository_url': revision_data['fetch']['http']['url'],
+      'patch_gerrit_url': self.GetCodereviewServer(),
+    }
 
   def GetIssueOwner(self):
-    # TODO(tandrii): implement for Gerrit.
-    raise NotImplementedError()
-
-  def GetIssueProject(self):
-    # TODO(tandrii): implement for Gerrit.
-    raise NotImplementedError()
+    return self._GetChangeDetail(['DETAILED_ACCOUNTS'])['owner']['email']
 
 
 _CODEREVIEW_IMPLEMENTATIONS = {
@@ -4827,12 +4850,6 @@ def CMDtry(parser, args):
   cl = Changelist(auth_config=auth_config)
   if not cl.GetIssue():
     parser.error('Need to upload first')
-
-  if cl.IsGerrit():
-    parser.error(
-        'Not yet supported for Gerrit (http://crbug.com/599931).\n'
-        'If your project has Commit Queue, dry run is a workaround:\n'
-        '  git cl set-commit --dry-run')
 
   error_message = cl.CannotTriggerTryJobReason()
   if error_message:

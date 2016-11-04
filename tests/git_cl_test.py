@@ -1912,10 +1912,58 @@ class TestGitCl(TestCase):
         out.getvalue(),
         'scheduled CQ Dry Run on https://codereview.chromium.org/123\n')
 
-  def test_git_cl_try_buildbucket_with_properties(self):
-    self.mock(git_cl.Changelist, 'GetMostRecentPatchset', lambda _: 20001)
-    self.mock(git_cl.Changelist, 'GetIssueOwner', lambda _: 'owner@e.mail')
-    self.mock(git_cl.Changelist, 'GetIssueProject', lambda _: 'depot_tools')
+  def test_git_cl_try_default_cq_dry_run_gerrit(self):
+    self.mock(git_cl.Changelist, 'GetChange',
+              lambda _, *a: (
+                self._mocked_call(['GetChange']+list(a))))
+    self.mock(git_cl.presubmit_support, 'DoGetTryMasters',
+              lambda *_, **__: (
+                self._mocked_call(['DoGetTryMasters'])))
+    self.mock(git_cl._GerritChangelistImpl, 'SetCQState',
+              lambda _, s: self._mocked_call(['SetCQState', s]))
+
+    def _GetChangeDetail(gerrit_change_list_impl, opts=None):
+      # Get realistic expectations.
+      gerrit_change_list_impl._GetGerritHost()
+      return self._mocked_call(['_GetChangeDetail', opts or []])
+    self.mock(git_cl._GerritChangelistImpl, '_GetChangeDetail',
+              _GetChangeDetail)
+
+    self.calls = [
+        ((['git', 'symbolic-ref', 'HEAD'],), 'feature'),
+        ((['git', 'config', 'branch.feature.rietveldissue'],), CERR1),
+        ((['git', 'config', 'branch.feature.gerritissue'],), '123456'),
+        ((['git', 'config', 'branch.feature.gerritserver'],),
+         'https://chromium-review.googlesource.com'),
+        ((['_GetChangeDetail', []],), {'status': 'OPEN'}),
+        ((['git', 'config', 'branch.feature.merge'],), 'feature'),
+        ((['git', 'config', 'branch.feature.remote'],), 'origin'),
+        ((['get_or_create_merge_base', 'feature', 'feature'],),
+         'fake_ancestor_sha'),
+        ((['GetChange', 'fake_ancestor_sha', None], ),
+         git_cl.presubmit_support.GitChange(
+           '', '', '', '', '', '', '', '')),
+        ((['git', 'rev-parse', '--show-cdup'],), '../'),
+        ((['DoGetTryMasters'], ), None),
+        ((['SetCQState', git_cl._CQState.DRY_RUN], ), None),
+    ]
+    out = StringIO.StringIO()
+    self.mock(git_cl.sys, 'stdout', out)
+    self.assertEqual(0, git_cl.main(['try']))
+    self.assertEqual(
+        out.getvalue(),
+        'scheduled CQ Dry Run on '
+        'https://chromium-review.googlesource.com/123456\n')
+
+  def test_git_cl_try_buildbucket_with_properties_rietveld(self):
+    self.mock(git_cl._RietveldChangelistImpl, 'GetIssueProperties',
+              lambda _: {
+                'owner_email': 'owner@e.mail',
+                'private': False,
+                'closed': False,
+                'project': 'depot_tools',
+                'patchsets': [20001],
+              })
     self.mock(git_cl.uuid, 'uuid4', lambda: 'uuid4')
     self.calls = [
         ((['git', 'symbolic-ref', 'HEAD'],), 'feature'),
@@ -1923,8 +1971,8 @@ class TestGitCl(TestCase):
         ((['git', 'config', 'rietveld.autoupdate'],), CERR1),
         ((['git', 'config', 'rietveld.server'],),
          'https://codereview.chromium.org'),
-        ((['git', 'config', 'branch.feature.rietveldserver'],), CERR1),
         ((['git', 'config', 'branch.feature.rietveldpatchset'],), '20001'),
+        ((['git', 'config', 'branch.feature.rietveldserver'],), CERR1),
     ]
 
     def _buildbucket_retry(*_, **kw):
@@ -1968,10 +2016,100 @@ class TestGitCl(TestCase):
         git_cl.sys.stdout.getvalue(),
         'Tried jobs on:\nBucket: master.tryserver.chromium')
 
+  def test_git_cl_try_buildbucket_with_properties_gerrit(self):
+    self.mock(git_cl.Changelist, 'GetMostRecentPatchset', lambda _: 7)
+    self.mock(git_cl.uuid, 'uuid4', lambda: 'uuid4')
+
+    def _GetChangeDetail(gerrit_change_list_impl, opts=None):
+      # Get realistic expectations.
+      gerrit_change_list_impl._GetGerritHost()
+      return self._mocked_call(['_GetChangeDetail', opts or []])
+    self.mock(git_cl._GerritChangelistImpl, '_GetChangeDetail',
+              _GetChangeDetail)
+
+    self.calls = [
+        ((['git', 'symbolic-ref', 'HEAD'],), 'feature'),
+        ((['git', 'config', 'branch.feature.rietveldissue'],), CERR1),
+        ((['git', 'config', 'branch.feature.gerritissue'],), '123456'),
+        ((['git', 'config', 'branch.feature.gerritserver'],),
+         'https://chromium-review.googlesource.com'),
+        ((['_GetChangeDetail', []],), {'status': 'OPEN'}),
+        ((['git', 'config', 'branch.feature.gerritpatchset'],), '7'),
+        ((['_GetChangeDetail', ['DETAILED_ACCOUNTS']],),
+         {'owner': {'email': 'owner@e.mail'}}),
+        ((['_GetChangeDetail', ['ALL_REVISIONS']],), {
+          'project': 'depot_tools',
+          'revisions': {
+            'deadbeaf':  {
+              '_number': 6,
+            },
+            'beeeeeef': {
+              '_number': 7,
+              'fetch': {'http': {
+                'url': 'https://chromium.googlesource.com/depot_tools',
+                'ref': 'refs/changes/56/123456/7'
+              }},
+            },
+          },
+        }),
+    ]
+
+    def _buildbucket_retry(*_, **kw):
+      # self.maxDiff = 10000
+      body = json.loads(kw['body'])
+      self.assertEqual(len(body['builds']), 1)
+      build = body['builds'][0]
+      params = json.loads(build.pop('parameters_json'))
+      self.assertEqual(params, {
+        u'builder_name': u'win',
+        u'changes': [{u'author': {u'email': u'owner@e.mail'},
+                      u'revision': None}],
+        u'properties': {
+          u'category': u'git_cl_try',
+           u'key': u'val',
+           u'json': [{u'a': 1}, None],
+           u'master': u'tryserver.chromium',
+
+           u'patch_gerrit_url':
+             u'https://chromium-review.googlesource.com',
+           u'patch_issue': 123456,
+           u'patch_project': u'depot_tools',
+           u'patch_ref': u'refs/changes/56/123456/7',
+           u'patch_repository_url':
+             u'https://chromium.googlesource.com/depot_tools',
+           u'patch_set': 7,
+           u'patch_storage': u'gerrit',
+        }
+      })
+      self.assertEqual(build, {
+        u'bucket': u'master.tryserver.chromium',
+        u'client_operation_id': u'uuid4',
+        u'tags': [
+          u'builder:win',
+          u'buildset:patch/gerrit/chromium-review.googlesource.com/123456/7',
+          u'user_agent:git_cl_try',
+          u'master:tryserver.chromium'],
+      })
+
+    self.mock(git_cl, '_buildbucket_retry', _buildbucket_retry)
+
+    self.mock(git_cl.sys, 'stdout', StringIO.StringIO())
+    self.assertEqual(0, git_cl.main([
+        'try', '-m', 'tryserver.chromium', '-b', 'win',
+        '-p', 'key=val', '-p', 'json=[{"a":1}, null]']))
+    self.assertRegexpMatches(
+        git_cl.sys.stdout.getvalue(),
+        'Tried jobs on:\nBucket: master.tryserver.chromium')
+
   def test_git_cl_try_buildbucket_bucket_flag(self):
-    self.mock(git_cl.Changelist, 'GetMostRecentPatchset', lambda _: 20001)
-    self.mock(git_cl.Changelist, 'GetIssueOwner', lambda _: 'owner@e.mail')
-    self.mock(git_cl.Changelist, 'GetIssueProject', lambda _: 'depot_tools')
+    self.mock(git_cl._RietveldChangelistImpl, 'GetIssueProperties',
+              lambda _: {
+                'owner_email': 'owner@e.mail',
+                'private': False,
+                'closed': False,
+                'project': 'depot_tools',
+                'patchsets': [20001],
+              })
     self.mock(git_cl.uuid, 'uuid4', lambda: 'uuid4')
     self.calls = [
         ((['git', 'symbolic-ref', 'HEAD'],), 'feature'),
@@ -1979,8 +2117,8 @@ class TestGitCl(TestCase):
         ((['git', 'config', 'rietveld.autoupdate'],), CERR1),
         ((['git', 'config', 'rietveld.server'],),
          'https://codereview.chromium.org'),
-        ((['git', 'config', 'branch.feature.rietveldserver'],), CERR1),
         ((['git', 'config', 'branch.feature.rietveldpatchset'],), '20001'),
+        ((['git', 'config', 'branch.feature.rietveldserver'],), CERR1),
     ]
 
     def _buildbucket_retry(*_, **kw):
@@ -2025,7 +2163,7 @@ class TestGitCl(TestCase):
       ((['git', 'config', 'branch.feature.rietveldissue'],), '123'),
       ((['git', 'config', 'rietveld.autoupdate'],), CERR1),
       ((['git', 'config', 'rietveld.server'],),
-       'https://codereview.chromium.org'),
+        'https://codereview.chromium.org'),
       ((['git', 'config', 'branch.feature.rietveldserver'],), CERR1),
       ((['git', 'config', 'branch.feature.rietveldpatchset'],), '20001'),
     ]
