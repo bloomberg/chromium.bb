@@ -236,7 +236,7 @@ FINAL_STATUS_PASSED = 'passed'
 FINAL_STATUS_FAILED = 'failed'
 
 # Monarch metric names
-MON_CL_ACTION = 'chromeos/cbuildbot/cl_action/%s'
+MON_CL_ACTION = 'chromeos/cbuildbot/cl_action'
 MON_PRECQ_LAUNCH_COUNT = 'chromeos/cbuildbot/pre-cq/launch_count'
 MON_PRECQ_CL_LAUNCH_COUNT = 'chromeos/cbuildbot/pre-cq/cl_launch_count'
 MON_PRECQ_TICK_COUNT = 'chromeos/cbuildbot/pre-cq/tick_count'
