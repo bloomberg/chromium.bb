@@ -41,6 +41,9 @@ void SetCommandLineDefaults(base::CommandLine* command_line) {
   // Disable use-zoom-for-dsf since it ends up overriding the device scale
   // factor reported to the client. See crbug.com/654898.
   command_line->AppendSwitchASCII(::switches::kEnableUseZoomForDSF, "false");
+
+  // Enable the updated compositing path.
+  command_line->AppendSwitch(::switches::kUseLayerTreeHostRemote);
 }
 
 BlimpEngineConfig::~BlimpEngineConfig() {}
