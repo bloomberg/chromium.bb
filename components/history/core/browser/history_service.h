@@ -552,6 +552,7 @@ class HistoryService : public syncer::SyncableService, public KeyedService {
   friend class ::HistoryQuickProviderTest;
   friend class HistoryServiceTest;
   friend class ::HistoryURLProvider;
+  friend class HQPPerfTestOnePopularURL;
   friend class ::InMemoryURLIndexTest;
   friend class ::SyncBookmarkDataTypeControllerTest;
   friend class ::TestingProfile;

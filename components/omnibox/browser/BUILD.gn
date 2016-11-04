@@ -168,8 +168,12 @@ proto_library("in_memory_url_index_cache_proto") {
 static_library("test_support") {
   testonly = true
   sources = [
+    "fake_autocomplete_provider_client.cc",
+    "fake_autocomplete_provider_client.h",
     "history_index_restore_observer.cc",
     "history_index_restore_observer.h",
+    "history_test_util.cc",
+    "history_test_util.h",
     "in_memory_url_index_test_util.cc",
     "in_memory_url_index_test_util.h",
     "mock_autocomplete_provider_client.cc",
@@ -183,12 +187,17 @@ static_library("test_support") {
   deps = [
     ":browser",
     "//base",
+    "//base/test:test_support",
+    "//components/bookmarks/browser",
+    "//components/bookmarks/test",
     "//components/history/core/browser",
+    "//components/history/core/test",
     "//components/metrics/proto",
     "//components/search_engines",
     "//net",
     "//testing/gmock",
     "//testing/gtest",
+    "//ui/base",
   ]
 }
 
@@ -243,7 +252,6 @@ source_set("unit_tests") {
     ":test_support",
     ":unit_tests_bundle_data",
     "//base",
-    "//base/test:test_support",
     "//components/bookmarks/browser",
     "//components/bookmarks/test",
     "//components/history/core/test",
@@ -262,7 +270,7 @@ source_set("unit_tests") {
     "//sql:test_support",
     "//testing/gmock",
     "//testing/gtest",
-    "//ui/base",
+    "//ui/base:base",
     "//url",
   ]
 }

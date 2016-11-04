@@ -168,7 +168,6 @@ class HistoryDatabase : public DownloadDatabase,
   friend class AndroidProviderBackend;
   FRIEND_TEST_ALL_PREFIXES(AndroidURLsMigrationTest, MigrateToVersion22);
 #endif
-  friend class ::HistoryQuickProviderTest;
   friend class ::InMemoryURLIndexTest;
 
   // Overridden from URLDatabase:

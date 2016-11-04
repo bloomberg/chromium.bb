@@ -467,6 +467,7 @@ if (!is_ios) {
 
   test("components_perftests") {
     sources = [
+      "omnibox/browser/history_quick_provider_performance_unittest.cc",
       "test/run_all_perftests.cc",
       "visitedlink/test/visitedlink_perftest.cc",
     ]
@@ -476,6 +477,9 @@ if (!is_ios) {
 
     deps = [
       "//base",
+      "//components/history/core/test",
+      "//components/omnibox/browser",
+      "//components/omnibox/browser:test_support",
       "//components/test:test_support",
       "//components/visitedlink/browser",
       "//testing/perf",

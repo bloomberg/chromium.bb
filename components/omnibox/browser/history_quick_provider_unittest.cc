@@ -13,14 +13,11 @@
 #include <string>
 #include <vector>
 
-#include "base/files/scoped_temp_dir.h"
 #include "base/format_macros.h"
 #include "base/macros.h"
 #include "base/message_loop/message_loop.h"
 #include "base/run_loop.h"
-#include "base/strings/stringprintf.h"
 #include "base/strings/utf_string_conversions.h"
-#include "base/test/sequenced_worker_pool_owner.h"
 #include "components/bookmarks/browser/bookmark_model.h"
 #include "components/bookmarks/test/bookmark_test_helpers.h"
 #include "components/bookmarks/test/test_bookmark_client.h"
@@ -30,80 +27,19 @@
 #include "components/history/core/browser/history_service_observer.h"
 #include "components/history/core/browser/url_database.h"
 #include "components/history/core/test/history_service_test_util.h"
-#include "components/metrics/proto/omnibox_event.pb.h"
 #include "components/omnibox/browser/autocomplete_match.h"
 #include "components/omnibox/browser/autocomplete_result.h"
+#include "components/omnibox/browser/fake_autocomplete_provider_client.h"
+#include "components/omnibox/browser/history_test_util.h"
 #include "components/omnibox/browser/history_url_provider.h"
-#include "components/omnibox/browser/in_memory_url_index.h"
 #include "components/omnibox/browser/in_memory_url_index_test_util.h"
-#include "components/omnibox/browser/mock_autocomplete_provider_client.h"
-#include "components/omnibox/browser/test_scheme_classifier.h"
-#include "components/omnibox/browser/url_index_private_data.h"
 #include "components/prefs/pref_service.h"
 #include "components/search_engines/search_terms_data.h"
-#include "sql/transaction.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 using base::ASCIIToUTF16;
-using base::Time;
-using base::TimeDelta;
 
 namespace {
-
-struct TestURLInfo {
-  std::string url;
-  std::string title;
-  int visit_count;
-  int typed_count;
-  int days_from_now;
-} quick_test_db[] = {
-    {"http://www.google.com/", "Google", 3, 3, 0},
-    {"http://slashdot.org/favorite_page.html", "Favorite page", 200, 100, 0},
-    {"http://kerneltrap.org/not_very_popular.html", "Less popular", 4, 0, 0},
-    {"http://freshmeat.net/unpopular.html", "Unpopular", 1, 1, 0},
-    {"http://news.google.com/?ned=us&topic=n", "Google News - U.S.", 2, 2, 0},
-    {"http://news.google.com/", "Google News", 1, 1, 0},
-    {"http://foo.com/", "Dir", 200, 100, 0},
-    {"http://foo.com/dir/", "Dir", 2, 1, 10},
-    {"http://foo.com/dir/another/", "Dir", 10, 5, 0},
-    {"http://foo.com/dir/another/again/", "Dir", 5, 1, 0},
-    {"http://foo.com/dir/another/again/myfile.html", "File", 3, 1, 0},
-    {"http://visitedest.com/y/a", "VA", 10, 1, 20},
-    {"http://visitedest.com/y/b", "VB", 9, 1, 20},
-    {"http://visitedest.com/x/c", "VC", 8, 1, 20},
-    {"http://visitedest.com/x/d", "VD", 7, 1, 20},
-    {"http://visitedest.com/y/e", "VE", 6, 1, 20},
-    {"http://typeredest.com/y/a", "TA", 5, 5, 0},
-    {"http://typeredest.com/y/b", "TB", 5, 4, 0},
-    {"http://typeredest.com/x/c", "TC", 5, 3, 0},
-    {"http://typeredest.com/x/d", "TD", 5, 2, 0},
-    {"http://typeredest.com/y/e", "TE", 5, 1, 0},
-    {"http://daysagoest.com/y/a", "DA", 1, 1, 0},
-    {"http://daysagoest.com/y/b", "DB", 1, 1, 1},
-    {"http://daysagoest.com/x/c", "DC", 1, 1, 2},
-    {"http://daysagoest.com/x/d", "DD", 1, 1, 3},
-    {"http://daysagoest.com/y/e", "DE", 1, 1, 4},
-    {"http://abcdefghixyzjklmnopqrstuvw.com/a", "", 3, 1, 0},
-    {"http://spaces.com/path%20with%20spaces/foo.html", "Spaces", 2, 2, 0},
-    {"http://abcdefghijklxyzmnopqrstuvw.com/a", "", 3, 1, 0},
-    {"http://abcdefxyzghijklmnopqrstuvw.com/a", "", 3, 1, 0},
-    {"http://abcxyzdefghijklmnopqrstuvw.com/a", "", 3, 1, 0},
-    {"http://xyzabcdefghijklmnopqrstuvw.com/a", "", 3, 1, 0},
-    {"http://cda.com/Dogs%20Cats%20Gorillas%20Sea%20Slugs%20and%20Mice",
-     "Dogs & Cats & Mice & Other Animals", 1, 1, 0},
-    {"https://monkeytrap.org/", "", 3, 1, 0},
-    {"http://popularsitewithpathonly.com/moo",
-     "popularsitewithpathonly.com/moo", 50, 50, 0},
-    {"http://popularsitewithroot.com/", "popularsitewithroot.com", 50, 50, 0},
-    {"http://testsearch.com/?q=thequery", "Test Search Engine", 10, 10, 0},
-    {"http://testsearch.com/", "Test Search Engine", 9, 9, 0},
-    {"http://anotherengine.com/?q=thequery", "Another Search Engine", 8, 8, 0},
-    // The encoded stuff between /wiki/ and the # is 第二次世界大戦
-    {"http://ja.wikipedia.org/wiki/%E7%AC%AC%E4%BA%8C%E6%AC%A1%E4%B8%96%E7%95"
-     "%8C%E5%A4%A7%E6%88%A6#.E3.83.B4.E3.82.A7.E3.83.AB.E3.82.B5.E3.82.A4.E3."
-     "83.A6.E4.BD.93.E5.88.B6",
-     "Title Unimportant", 2, 2, 0},
-    {"https://twitter.com/fungoodtimes", "relatable!", 1, 1, 0}};
 
 // Waits for OnURLsDeletedNotification and when run quits the supplied run loop.
 class WaitForURLsDeletedObserver : public history::HistoryServiceObserver {
@@ -178,64 +114,21 @@ class GetURLTask : public history::HistoryDBTask {
   DISALLOW_COPY_AND_ASSIGN(GetURLTask);
 };
 
-class FakeAutocompleteProviderClient : public MockAutocompleteProviderClient {
- public:
-  FakeAutocompleteProviderClient() : pool_owner_(3, "Background Pool") {
-    bookmark_model_ = bookmarks::TestBookmarkClient::CreateModel();
-    if (history_dir_.CreateUniqueTempDir()) {
-      history_service_ =
-          history::CreateHistoryService(history_dir_.GetPath(), true);
-    }
-
-    in_memory_url_index_.reset(new InMemoryURLIndex(
-        bookmark_model_.get(), history_service_.get(), nullptr,
-        pool_owner_.pool().get(), history_dir_.GetPath(), SchemeSet()));
-    in_memory_url_index_->Init();
-  }
-
-  const AutocompleteSchemeClassifier& GetSchemeClassifier() const override {
-    return scheme_classifier_;
-  }
-
-  const SearchTermsData& GetSearchTermsData() const override {
-    return search_terms_data_;
-  }
-
-  history::HistoryService* GetHistoryService() override {
-    return history_service_.get();
-  }
-
-  bookmarks::BookmarkModel* GetBookmarkModel() override {
-    return bookmark_model_.get();
-  }
-
-  InMemoryURLIndex* GetInMemoryURLIndex() override {
-    return in_memory_url_index_.get();
-  }
-
-  void set_in_memory_url_index(std::unique_ptr<InMemoryURLIndex> index) {
-    in_memory_url_index_ = std::move(index);
-  }
-
- private:
-  base::SequencedWorkerPoolOwner pool_owner_;
-  base::ScopedTempDir history_dir_;
-  std::unique_ptr<bookmarks::BookmarkModel> bookmark_model_;
-  TestSchemeClassifier scheme_classifier_;
-  SearchTermsData search_terms_data_;
-  std::unique_ptr<InMemoryURLIndex> in_memory_url_index_;
-  std::unique_ptr<history::HistoryService> history_service_;
-
-  DISALLOW_COPY_AND_ASSIGN(FakeAutocompleteProviderClient);
-};
-
 }  // namespace
 
 class HistoryQuickProviderTest : public testing::Test {
  public:
-  HistoryQuickProviderTest() {}
+  HistoryQuickProviderTest() = default;
 
  protected:
+  struct TestURLInfo {
+    std::string url;
+    std::string title;
+    int visit_count;
+    int typed_count;
+    int days_from_now;
+  };
+
   class SetShouldContain {
    public:
     explicit SetShouldContain(const ACMatches& matched_urls);
@@ -251,7 +144,7 @@ class HistoryQuickProviderTest : public testing::Test {
   void SetUp() override;
   void TearDown() override;
 
-  virtual void GetTestData(size_t* data_count, TestURLInfo** test_data);
+  virtual std::vector<TestURLInfo> GetTestData();
 
   // Fills test data into the history system.
   void FillData();
@@ -288,20 +181,27 @@ class HistoryQuickProviderTest : public testing::Test {
   // the result.
   bool GetURLProxy(const GURL& url);
 
+  FakeAutocompleteProviderClient& client() { return *client_; }
+  ACMatches& ac_matches() { return ac_matches_; }
+  HistoryQuickProvider& provider() { return *provider_; }
+
+ private:
   base::MessageLoop message_loop_;
   std::unique_ptr<FakeAutocompleteProviderClient> client_;
 
   ACMatches ac_matches_;  // The resulting matches after running RunTest.
 
   scoped_refptr<HistoryQuickProvider> provider_;
+
+  DISALLOW_COPY_AND_ASSIGN(HistoryQuickProviderTest);
 };
 
 void HistoryQuickProviderTest::SetUp() {
   client_.reset(new FakeAutocompleteProviderClient());
   ASSERT_TRUE(client_->GetHistoryService());
-  FillData();
+  ASSERT_NO_FATAL_FAILURE(FillData());
 
-  // |FillData()| must be called before |RebuildFromHistory()|. This will
+  // FillData() must be called before RebuildFromHistory(). This will
   // ensure that the index is properly populated with data from the database.
   InMemoryURLIndex* url_index = client_->GetInMemoryURLIndex();
   url_index->RebuildFromHistory(
@@ -317,7 +217,7 @@ void HistoryQuickProviderTest::SetUp() {
 }
 
 void HistoryQuickProviderTest::TearDown() {
-  provider_ = NULL;
+  provider_ = nullptr;
   // The InMemoryURLIndex must be explicitly shut down or it will DCHECK() in
   // its destructor.
   client_->GetInMemoryURLIndex()->Shutdown();
@@ -328,55 +228,71 @@ void HistoryQuickProviderTest::TearDown() {
   base::RunLoop().RunUntilIdle();
 }
 
-void HistoryQuickProviderTest::GetTestData(size_t* data_count,
-                                           TestURLInfo** test_data) {
-  DCHECK(data_count);
-  DCHECK(test_data);
-  *data_count = arraysize(quick_test_db);
-  *test_data = &quick_test_db[0];
+std::vector<HistoryQuickProviderTest::TestURLInfo>
+HistoryQuickProviderTest::GetTestData() {
+  return {
+      {"http://www.google.com/", "Google", 3, 3, 0},
+      {"http://slashdot.org/favorite_page.html", "Favorite page", 200, 100, 0},
+      {"http://kerneltrap.org/not_very_popular.html", "Less popular", 4, 0, 0},
+      {"http://freshmeat.net/unpopular.html", "Unpopular", 1, 1, 0},
+      {"http://news.google.com/?ned=us&topic=n", "Google News - U.S.", 2, 2, 0},
+      {"http://news.google.com/", "Google News", 1, 1, 0},
+      {"http://foo.com/", "Dir", 200, 100, 0},
+      {"http://foo.com/dir/", "Dir", 2, 1, 10},
+      {"http://foo.com/dir/another/", "Dir", 10, 5, 0},
+      {"http://foo.com/dir/another/again/", "Dir", 5, 1, 0},
+      {"http://foo.com/dir/another/again/myfile.html", "File", 3, 1, 0},
+      {"http://visitedest.com/y/a", "VA", 10, 1, 20},
+      {"http://visitedest.com/y/b", "VB", 9, 1, 20},
+      {"http://visitedest.com/x/c", "VC", 8, 1, 20},
+      {"http://visitedest.com/x/d", "VD", 7, 1, 20},
+      {"http://visitedest.com/y/e", "VE", 6, 1, 20},
+      {"http://typeredest.com/y/a", "TA", 5, 5, 0},
+      {"http://typeredest.com/y/b", "TB", 5, 4, 0},
+      {"http://typeredest.com/x/c", "TC", 5, 3, 0},
+      {"http://typeredest.com/x/d", "TD", 5, 2, 0},
+      {"http://typeredest.com/y/e", "TE", 5, 1, 0},
+      {"http://daysagoest.com/y/a", "DA", 1, 1, 0},
+      {"http://daysagoest.com/y/b", "DB", 1, 1, 1},
+      {"http://daysagoest.com/x/c", "DC", 1, 1, 2},
+      {"http://daysagoest.com/x/d", "DD", 1, 1, 3},
+      {"http://daysagoest.com/y/e", "DE", 1, 1, 4},
+      {"http://abcdefghixyzjklmnopqrstuvw.com/a", "", 3, 1, 0},
+      {"http://spaces.com/path%20with%20spaces/foo.html", "Spaces", 2, 2, 0},
+      {"http://abcdefghijklxyzmnopqrstuvw.com/a", "", 3, 1, 0},
+      {"http://abcdefxyzghijklmnopqrstuvw.com/a", "", 3, 1, 0},
+      {"http://abcxyzdefghijklmnopqrstuvw.com/a", "", 3, 1, 0},
+      {"http://xyzabcdefghijklmnopqrstuvw.com/a", "", 3, 1, 0},
+      {"http://cda.com/Dogs%20Cats%20Gorillas%20Sea%20Slugs%20and%20Mice",
+       "Dogs & Cats & Mice & Other Animals", 1, 1, 0},
+      {"https://monkeytrap.org/", "", 3, 1, 0},
+      {"http://popularsitewithpathonly.com/moo",
+       "popularsitewithpathonly.com/moo", 50, 50, 0},
+      {"http://popularsitewithroot.com/", "popularsitewithroot.com", 50, 50, 0},
+      {"http://testsearch.com/?q=thequery", "Test Search Engine", 10, 10, 0},
+      {"http://testsearch.com/", "Test Search Engine", 9, 9, 0},
+      {"http://anotherengine.com/?q=thequery", "Another Search Engine", 8, 8,
+       0},
+      // The encoded stuff between /wiki/ and the # is 第二次世界大戦
+      {"http://ja.wikipedia.org/wiki/%E7%AC%AC%E4%BA%8C%E6%AC%A1%E4%B8%96%E7%95"
+       "%8C%E5%A4%A7%E6%88%A6#.E3.83.B4.E3.82.A7.E3.83.AB.E3.82.B5.E3.82.A4.E3."
+       "83.A6.E4.BD.93.E5.88.B6",
+       "Title Unimportant", 2, 2, 0},
+      {"https://twitter.com/fungoodtimes", "relatable!", 1, 1, 0},
+  };
 }
 
 void HistoryQuickProviderTest::FillData() {
-  sql::Connection& db(history_backend()->db()->GetDB());
-  ASSERT_TRUE(db.is_open());
+  for (const auto& info : GetTestData()) {
+    history::URLRow row{GURL(info.url)};
+    ASSERT_TRUE(row.url().is_valid());
+    row.set_title(base::UTF8ToUTF16(info.title));
+    row.set_visit_count(info.visit_count);
+    row.set_typed_count(info.typed_count);
+    row.set_last_visit(base::Time::Now() -
+                       base::TimeDelta::FromDays(info.days_from_now));
 
-  size_t data_count = 0;
-  TestURLInfo* test_data = NULL;
-  GetTestData(&data_count, &test_data);
-  size_t visit_id = 1;
-  for (size_t i = 0; i < data_count; ++i) {
-    const TestURLInfo& cur(test_data[i]);
-    Time visit_time = Time::Now() - TimeDelta::FromDays(cur.days_from_now);
-    sql::Transaction transaction(&db);
-
-    // Add URL.
-    transaction.Begin();
-    std::string sql_cmd_line = base::StringPrintf(
-        "INSERT INTO \"urls\" VALUES(%" PRIuS ", \'%s\', \'%s\', %d, %d, %"
-        PRId64 ", 0, 0)",
-        i + 1, cur.url.c_str(), cur.title.c_str(), cur.visit_count,
-        cur.typed_count, visit_time.ToInternalValue());
-    sql::Statement sql_stmt(db.GetUniqueStatement(sql_cmd_line.c_str()));
-    EXPECT_TRUE(sql_stmt.Run());
-    transaction.Commit();
-
-    // Add visits.
-    for (int j = 0; j < cur.visit_count; ++j) {
-      // Assume earlier visits are at one-day intervals.
-      visit_time -= TimeDelta::FromDays(1);
-      transaction.Begin();
-      // Mark the most recent |cur.typed_count| visits as typed.
-      std::string sql_cmd_line = base::StringPrintf(
-          "INSERT INTO \"visits\" VALUES(%" PRIuS ", %" PRIuS ", %" PRId64
-          ", 0, %d, 0, 1)",
-          visit_id++, i + 1, visit_time.ToInternalValue(),
-          (j < cur.typed_count) ? ui::PAGE_TRANSITION_TYPED :
-                                  ui::PAGE_TRANSITION_LINK);
-
-      sql::Statement sql_stmt(db.GetUniqueStatement(sql_cmd_line.c_str()));
-      EXPECT_TRUE(sql_stmt.Run());
-      transaction.Commit();
-    }
+    AddFakeURLToHistoryDB(history_backend()->db(), row);
   }
 }
 
@@ -572,11 +488,11 @@ TEST_F(HistoryQuickProviderTest, ContentsClass) {
                             "93.E5.88.B6"),
           base::string16());
 #ifndef NDEBUG
-  ac_matches_[0].Validate();
+  ac_matches()[0].Validate();
 #endif
   // Verify that contents_class divides the string in the right places.
   // [22, 24) is the "第二".  All the other pairs are the "e3".
-  ACMatchClassifications contents_class(ac_matches_[0].contents_class);
+  ACMatchClassifications contents_class(ac_matches()[0].contents_class);
   size_t expected_offsets[] = { 0, 22, 24, 31, 33, 40, 42, 49, 51, 58, 60, 67,
                                 69, 76, 78 };
   // ScoredHistoryMatch may not highlight all the occurrences of these terms
@@ -637,13 +553,13 @@ TEST_F(HistoryQuickProviderTest, EncodingLimitMatch) {
           ASCIIToUTF16("cda.com/Dogs Cats Gorillas Sea Slugs and Mice"),
           base::string16());
   // Verify that the matches' ACMatchClassifications offsets are in range.
-  ACMatchClassifications content(ac_matches_[0].contents_class);
+  ACMatchClassifications content(ac_matches()[0].contents_class);
   // The max offset accounts for 6 occurrences of '%20' plus the 'http://'.
   const size_t max_offset = url.length() - ((6 * 2) + 7);
   for (ACMatchClassifications::const_iterator citer = content.begin();
        citer != content.end(); ++citer)
     EXPECT_LT(citer->offset, max_offset);
-  ACMatchClassifications description(ac_matches_[0].description_class);
+  ACMatchClassifications description(ac_matches()[0].description_class);
   std::string page_title("Dogs & Cats & Mice & Other Animals");
   for (ACMatchClassifications::const_iterator diter = description.begin();
        diter != description.end(); ++diter)
@@ -709,9 +625,9 @@ TEST_F(HistoryQuickProviderTest, DeleteMatch) {
   RunTest(ASCIIToUTF16("slashdot"), false, expected_urls, true,
           ASCIIToUTF16("slashdot.org/favorite_page.html"),
                   ASCIIToUTF16(".org/favorite_page.html"));
-  EXPECT_EQ(1U, ac_matches_.size());
+  EXPECT_EQ(1U, ac_matches().size());
   EXPECT_TRUE(GetURLProxy(test_url));
-  provider_->DeleteMatch(ac_matches_[0]);
+  provider().DeleteMatch(ac_matches()[0]);
 
   // Check that the underlying URL is deleted from the history DB (this implies
   // that all visits are gone as well). Also verify that a deletion notification
@@ -719,7 +635,7 @@ TEST_F(HistoryQuickProviderTest, DeleteMatch) {
   // InMemoryURLIndex) will drop any data they might have pertaining to the URL.
   // To ensure that the deletion has been propagated everywhere before we start
   // verifying post-deletion states, first wait until we see the notification.
-  WaitForURLsDeletedNotification(client_->GetHistoryService());
+  WaitForURLsDeletedNotification(client().GetHistoryService());
   EXPECT_FALSE(GetURLProxy(test_url));
 
   // Just to be on the safe side, explicitly verify that we have deleted enough
@@ -740,7 +656,7 @@ TEST_F(HistoryQuickProviderTest, PreventBeatingURLWhatYouTypedMatch) {
   // URL-what-you-typed match.
   RunTest(ASCIIToUTF16("popularsitewithroot.com"), false, expected_urls, true,
           ASCIIToUTF16("popularsitewithroot.com"), base::string16());
-  EXPECT_LT(ac_matches_[0].relevance,
+  EXPECT_LT(ac_matches()[0].relevance,
             HistoryURLProvider::kScoreForBestInlineableResult);
 
   // Check that if the user didn't quite enter the full hostname, this
@@ -748,7 +664,7 @@ TEST_F(HistoryQuickProviderTest, PreventBeatingURLWhatYouTypedMatch) {
   RunTest(ASCIIToUTF16("popularsitewithroot.c"), false, expected_urls, true,
           ASCIIToUTF16("popularsitewithroot.com"),
                                ASCIIToUTF16("om"));
-  EXPECT_GE(ac_matches_[0].relevance,
+  EXPECT_GE(ac_matches()[0].relevance,
             HistoryURLProvider::kScoreForWhatYouTypedResult);
 
   expected_urls.clear();
@@ -761,7 +677,7 @@ TEST_F(HistoryQuickProviderTest, PreventBeatingURLWhatYouTypedMatch) {
           true,
           ASCIIToUTF16("popularsitewithpathonly.com/moo"),
                                      ASCIIToUTF16("/moo"));
-  EXPECT_LT(ac_matches_[0].relevance,
+  EXPECT_LT(ac_matches()[0].relevance,
             HistoryURLProvider::kScoreForUnvisitedIntranetResult);
 
   // Verify the same thing happens if the user adds a / to end of the
@@ -769,7 +685,7 @@ TEST_F(HistoryQuickProviderTest, PreventBeatingURLWhatYouTypedMatch) {
   RunTest(ASCIIToUTF16("popularsitewithpathonly.com/"), false, expected_urls,
           true, ASCIIToUTF16("popularsitewithpathonly.com/moo"),
                                             ASCIIToUTF16("moo"));
-  EXPECT_LT(ac_matches_[0].relevance,
+  EXPECT_LT(ac_matches()[0].relevance,
             HistoryURLProvider::kScoreForUnvisitedIntranetResult);
 
   // Check that if the user didn't quite enter the full hostname, this
@@ -777,7 +693,7 @@ TEST_F(HistoryQuickProviderTest, PreventBeatingURLWhatYouTypedMatch) {
   RunTest(ASCIIToUTF16("popularsitewithpathonly.co"), false, expected_urls,
           true, ASCIIToUTF16("popularsitewithpathonly.com/moo"),
                                           ASCIIToUTF16("m/moo"));
-  EXPECT_GE(ac_matches_[0].relevance,
+  EXPECT_GE(ac_matches()[0].relevance,
             HistoryURLProvider::kScoreForWhatYouTypedResult);
 
   // If the user enters a hostname + path that they have not visited
@@ -787,7 +703,7 @@ TEST_F(HistoryQuickProviderTest, PreventBeatingURLWhatYouTypedMatch) {
           true,
           ASCIIToUTF16("popularsitewithpathonly.com/moo"),
                                         ASCIIToUTF16("o"));
-  EXPECT_GE(ac_matches_[0].relevance,
+  EXPECT_GE(ac_matches()[0].relevance,
             HistoryURLProvider::kScoreForWhatYouTypedResult);
 
   // If the user enters a hostname + path that they have visited
@@ -797,7 +713,7 @@ TEST_F(HistoryQuickProviderTest, PreventBeatingURLWhatYouTypedMatch) {
   RunTest(ASCIIToUTF16("popularsitewithpathonly.com/moo"), false,
           expected_urls, true,
           ASCIIToUTF16("popularsitewithpathonly.com/moo"), base::string16());
-  EXPECT_LT(ac_matches_[0].relevance,
+  EXPECT_LT(ac_matches()[0].relevance,
             HistoryURLProvider::kScoreForBestInlineableResult);
 }
 
@@ -833,57 +749,64 @@ TEST_F(HistoryQuickProviderTest, DoesNotProvideMatchesOnFocus) {
                           std::string(), GURL(),
                           metrics::OmniboxEventProto::INVALID_SPEC, false,
                           false, true, true, true, TestSchemeClassifier());
-  provider_->Start(input, false);
-  EXPECT_TRUE(provider_->matches().empty());
+  provider().Start(input, false);
+  EXPECT_TRUE(provider().matches().empty());
 }
 
 // HQPOrderingTest -------------------------------------------------------------
 
-TestURLInfo ordering_test_db[] = {
-  {"http://www.teamliquid.net/tlpd/korean/games/21648_bisu_vs_iris", "", 6, 3,
-      256},
-  {"http://www.amazon.com/", "amazon.com: online shopping for electronics, "
-      "apparel, computers, books, dvds & more", 20, 20, 10},
-  {"http://www.teamliquid.net/forum/viewmessage.php?topic_id=52045&"
-      "currentpage=83", "google images", 6, 6, 0},
-  {"http://www.tempurpedic.com/", "tempur-pedic", 7, 7, 0},
-  {"http://www.teamfortress.com/", "", 5, 5, 6},
-  {"http://www.rottentomatoes.com/", "", 3, 3, 7},
-  {"http://music.google.com/music/listen?u=0#start_pl", "", 3, 3, 9},
-  {"https://www.emigrantdirect.com/", "high interest savings account, high "
-      "yield savings - emigrantdirect", 5, 5, 3},
-  {"http://store.steampowered.com/", "", 6, 6, 1},
-  {"http://techmeme.com/", "techmeme", 111, 110, 4},
-  {"http://www.teamliquid.net/tlpd", "team liquid progaming database", 15, 15,
-      2},
-  {"http://store.steampowered.com/", "the steam summer camp sale", 6, 6, 1},
-  {"http://www.teamliquid.net/tlpd/korean/players", "tlpd - bw korean - player "
-      "index", 25, 7, 219},
-  {"http://slashdot.org/", "slashdot: news for nerds, stuff that matters", 3, 3,
-      6},
-  {"http://translate.google.com/", "google translate", 3, 3, 0},
-  {"http://arstechnica.com/", "ars technica", 3, 3, 3},
-  {"http://www.rottentomatoes.com/", "movies | movie trailers | reviews - "
-      "rotten tomatoes", 3, 3, 7},
-  {"http://www.teamliquid.net/", "team liquid - starcraft 2 and brood war pro "
-      "gaming news", 26, 25, 3},
-  {"http://metaleater.com/", "metaleater", 4, 3, 8},
-  {"http://half.com/", "half.com: textbooks , books , music , movies , games , "
-      "video games", 4, 4, 6},
-  {"http://teamliquid.net/", "team liquid - starcraft 2 and brood war pro "
-      "gaming news", 8, 5, 9},
-};
-
 class HQPOrderingTest : public HistoryQuickProviderTest {
+ public:
+  HQPOrderingTest() = default;
+
  protected:
-  void GetTestData(size_t* data_count, TestURLInfo** test_data) override;
+  std::vector<TestURLInfo> GetTestData() override;
+
+ private:
+  DISALLOW_COPY_AND_ASSIGN(HQPOrderingTest);
 };
 
-void HQPOrderingTest::GetTestData(size_t* data_count, TestURLInfo** test_data) {
-  DCHECK(data_count);
-  DCHECK(test_data);
-  *data_count = arraysize(ordering_test_db);
-  *test_data = &ordering_test_db[0];
+std::vector<HistoryQuickProviderTest::TestURLInfo>
+HQPOrderingTest::GetTestData() {
+  return {
+      {"http://www.teamliquid.net/tlpd/korean/games/21648_bisu_vs_iris", "", 6,
+       3, 256},
+      {"http://www.amazon.com/",
+       "amazon.com: online shopping for electronics, apparel, computers, "
+       "books, dvds & more",
+       20, 20, 10},
+      {"http://www.teamliquid.net/forum/viewmessage.php?topic_id=52045&"
+       "currentpage=83",
+       "google images", 6, 6, 0},
+      {"http://www.tempurpedic.com/", "tempur-pedic", 7, 7, 0},
+      {"http://www.teamfortress.com/", "", 5, 5, 6},
+      {"http://www.rottentomatoes.com/", "", 3, 3, 7},
+      {"http://music.google.com/music/listen?u=0#start_pl", "", 3, 3, 9},
+      {"https://www.emigrantdirect.com/",
+       "high interest savings account, high yield savings - emigrantdirect", 5,
+       5, 3},
+      {"http://store.steampowered.com/", "", 6, 6, 1},
+      {"http://techmeme.com/", "techmeme", 111, 110, 4},
+      {"http://www.teamliquid.net/tlpd", "team liquid progaming database", 15,
+       15, 2},
+      {"http://store.steampowered.com/", "the steam summer camp sale", 6, 6, 1},
+      {"http://www.teamliquid.net/tlpd/korean/players",
+       "tlpd - bw korean - player index", 25, 7, 219},
+      {"http://slashdot.org/", "slashdot: news for nerds, stuff that matters",
+       3, 3, 6},
+      {"http://translate.google.com/", "google translate", 3, 3, 0},
+      {"http://arstechnica.com/", "ars technica", 3, 3, 3},
+      {"http://www.rottentomatoes.com/",
+       "movies | movie trailers | reviews - rotten tomatoes", 3, 3, 7},
+      {"http://www.teamliquid.net/",
+       "team liquid - starcraft 2 and brood war pro gaming news", 26, 25, 3},
+      {"http://metaleater.com/", "metaleater", 4, 3, 8},
+      {"http://half.com/",
+       "half.com: textbooks , books , music , movies , games , video games", 4,
+       4, 6},
+      {"http://teamliquid.net/",
+       "team liquid - starcraft 2 and brood war pro gaming news", 8, 5, 9},
+  };
 }
 
 TEST_F(HQPOrderingTest, TEMatch) {
