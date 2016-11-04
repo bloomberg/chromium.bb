@@ -21,19 +21,6 @@ SUBST_RE = re.compile(r'\$\{(?P<id>[^}]*?)(?P<modifier>:[^}]*)?\}')
 IDENT_RE = re.compile(r'[_/\s]')
 
 
-class ArgumentParser(argparse.ArgumentParser):
-  """Subclass of argparse.ArgumentParser to work with GN response files.
-
-  GN response file writes all the arguments on a single line and assumes
-  that the python script uses shlext.split() to extract them. Since the
-  default ArgumentParser expects a single argument per line, we need to
-  provide a subclass to have the correct support for @{{response_file_name}}.
-  """
-
-  def convert_arg_line_to_args(self, arg_line):
-    return shlex.split(arg_line)
-
-
 def InterpolateList(values, substitutions):
   """Interpolates variable references into |value| using |substitutions|.
 
@@ -182,28 +169,83 @@ def MergePList(plist1, plist2):
   return result
 
 
-def main():
-  parser = ArgumentParser(
-      description='A script to generate iOS application Info.plist.',
-      fromfile_prefix_chars='@')
-  parser.add_argument('-o', '--output', required=True,
-                      help='Path to output plist file.')
-  parser.add_argument('-s', '--subst', action='append', default=[],
-                      help='Substitution rule in the format "key=value".')
-  parser.add_argument('-f', '--format', required=True,
-                      help='Plist format (e.g. binary1, xml1) to output.')
-  parser.add_argument('path', nargs="+", help='Path to input plist files.')
+class Action(object):
+  """Class implementing one action supported by the script."""
+
+  @classmethod
+  def Register(cls, subparsers):
+    parser = subparsers.add_parser(cls.name, help=cls.help)
+    parser.set_defaults(func=cls._Execute)
+    cls._Register(parser)
+
+
+class MergeAction(Action):
+  """Class to merge multiple plist files."""
+
+  name = 'merge'
+  help = 'merge multiple plist files'
+
+  @staticmethod
+  def _Register(parser):
+    parser.add_argument(
+        '-o', '--output', required=True,
+        help='path to the output plist file')
+    parser.add_argument(
+        '-f', '--format', required=True, choices=('xml1', 'binary1', 'json'),
+        help='format of the plist file to generate')
+    parser.add_argument(
+          'path', nargs="+",
+          help='path to plist files to merge')
+
+  @staticmethod
+  def _Execute(args):
+    data = {}
+    for filename in args.path:
+      data = MergePList(data, LoadPList(filename))
+    SavePList(args.output, args.format, data)
+
+
+class SubstituteAction(Action):
+  """Class implementing the variable substitution in a plist file."""
+
+  name = 'substitute'
+  help = 'perform pattern substitution in a plist file'
+
+  @staticmethod
+  def _Register(parser):
+    parser.add_argument(
+        '-o', '--output', required=True,
+        help='path to the output plist file')
+    parser.add_argument(
+        '-t', '--template', required=True,
+        help='path to the template file')
+    parser.add_argument(
+        '-s', '--substitution', action='append', default=[],
+        help='substitution rule in the format key=value')
+    parser.add_argument(
+        '-f', '--format', required=True, choices=('xml1', 'binary1', 'json'),
+        help='format of the plist file to generate')
+
+  @staticmethod
+  def _Execute(args):
+    substitutions = {}
+    for substitution in args.substitution:
+      key, value = substitution.split('=', 1)
+      substitutions[key] = value
+    data = Interpolate(LoadPList(args.template), substitutions)
+    SavePList(args.output, args.format, data)
+
+
+def Main():
+  parser = argparse.ArgumentParser(description='manipulate plist files')
+  subparsers = parser.add_subparsers()
+
+  for action in [MergeAction, SubstituteAction]:
+    action.Register(subparsers)
+
   args = parser.parse_args()
-  substitutions = {}
-  for subst in args.subst:
-    key, value = subst.split('=', 1)
-    substitutions[key] = value
-  data = {}
-  for filename in args.path:
-    data = MergePList(data, LoadPList(filename))
-  data = Interpolate(data, substitutions)
-  SavePList(args.output, args.format, data)
-  return 0
+  args.func(args)
+
 
 if __name__ == '__main__':
-  sys.exit(main())
+  sys.exit(Main())

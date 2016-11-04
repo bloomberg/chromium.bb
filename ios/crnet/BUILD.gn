@@ -42,7 +42,6 @@ source_set("crnet_sources") {
 # Tweak |info_plist| with current version and revision.
 tweak_info_plist("tweak_crnet_plist") {
   info_plist = "Info.plist"
-  args = []
 }
 
 bundle_data("crnet_framework_resources") {

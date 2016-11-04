@@ -67,7 +67,6 @@ source_set("cronet_sources") {
 # Tweak |info_plist| with current version and revision.
 tweak_info_plist("tweak_cronet_plist") {
   info_plist = "Info.plist"
-  args = [ "--platform=ios" ]
 }
 
 bundle_data("cronet_framework_resources") {
