@@ -155,14 +155,14 @@ class CONTENT_EXPORT ShaderCacheFactory
   scoped_refptr<ShaderDiskCache> GetByPath(const base::FilePath& path);
   void CacheCleared(const base::FilePath& path);
 
-  typedef std::map<base::FilePath, ShaderDiskCache*> ShaderCacheMap;
+  using ShaderCacheMap = std::map<base::FilePath, ShaderDiskCache*>;
   ShaderCacheMap shader_cache_map_;
 
-  typedef std::map<int32_t, base::FilePath> ClientIdToPathMap;
+  using ClientIdToPathMap = std::map<int32_t, base::FilePath>;
   ClientIdToPathMap client_id_to_path_map_;
 
-  typedef std::queue<scoped_refptr<ShaderClearHelper> > ShaderClearQueue;
-  typedef std::map<base::FilePath, ShaderClearQueue> ShaderClearMap;
+  using ShaderClearQueue = std::queue<std::unique_ptr<ShaderClearHelper>>;
+  using ShaderClearMap = std::map<base::FilePath, ShaderClearQueue>;
   ShaderClearMap shader_clear_map_;
 
   DISALLOW_COPY_AND_ASSIGN(ShaderCacheFactory);
