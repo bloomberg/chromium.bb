@@ -31,8 +31,9 @@ class OriginTrialsComponentInstallerTraits : public ComponentInstallerTraits {
                           const base::FilePath& install_dir) const override;
   bool SupportsGroupPolicyEnabledComponentUpdates() const override;
   bool RequiresNetworkEncryption() const override;
-  bool OnCustomInstall(const base::DictionaryValue& manifest,
-                       const base::FilePath& install_dir) override;
+  update_client::CrxInstaller::Result OnCustomInstall(
+      const base::DictionaryValue& manifest,
+      const base::FilePath& install_dir) override;
   void ComponentReady(const base::Version& version,
                       const base::FilePath& install_dir,
                       std::unique_ptr<base::DictionaryValue> manifest) override;

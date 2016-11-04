@@ -80,10 +80,11 @@ bool SubresourceFilterComponentInstallerTraits::RequiresNetworkEncryption()
   return false;
 }
 
-bool SubresourceFilterComponentInstallerTraits::OnCustomInstall(
+update_client::CrxInstaller::Result
+SubresourceFilterComponentInstallerTraits::OnCustomInstall(
     const base::DictionaryValue& manifest,
     const base::FilePath& install_dir) {
-  return true;  // Nothing custom here.
+  return update_client::CrxInstaller::Result(0);  // Nothing custom here.
 }
 
 void SubresourceFilterComponentInstallerTraits::ComponentReady(

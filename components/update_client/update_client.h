@@ -15,6 +15,7 @@
 #include "base/callback_forward.h"
 #include "base/memory/ref_counted.h"
 #include "base/version.h"
+#include "components/update_client/update_client_errors.h"
 
 // The UpdateClient class is a facade with a simple interface. The interface
 // exposes a few APIs to install a CRX or update a group of CRXs.
@@ -149,6 +150,16 @@ using Callback = base::Callback<void(Error error)>;
 // Defines an interface for a generic CRX installer.
 class CrxInstaller : public base::RefCountedThreadSafe<CrxInstaller> {
  public:
+  // Contains the result of the Install operation.
+  struct Result {
+    explicit Result(int error, int extended_error = 0)
+        : error(error), extended_error(extended_error) {}
+    explicit Result(InstallError error, int extended_error = 0)
+        : error(static_cast<int>(error)), extended_error(extended_error) {}
+    int error = 0;  // 0 indicates that install has been successful.
+    int extended_error = 0;
+  };
+
   // Called on the main thread when there was a problem unpacking or
   // verifying the CRX. |error| is a non-zero value which is only meaningful
   // to the caller.
@@ -159,8 +170,8 @@ class CrxInstaller : public base::RefCountedThreadSafe<CrxInstaller> {
   // as a json dictionary.|unpack_path| contains the temporary directory
   // with all the unpacked CRX files.
   // This method may be called from a thread other than the main thread.
-  virtual bool Install(const base::DictionaryValue& manifest,
-                       const base::FilePath& unpack_path) = 0;
+  virtual Result Install(const base::DictionaryValue& manifest,
+                         const base::FilePath& unpack_path) = 0;
 
   // Sets |installed_file| to the full path to the installed |file|. |file| is
   // the filename of the file in this CRX. Returns false if this is

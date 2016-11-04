@@ -32,8 +32,9 @@ class EVWhitelistComponentInstallerTraits : public ComponentInstallerTraits {
   // The following methods override ComponentInstallerTraits.
   bool SupportsGroupPolicyEnabledComponentUpdates() const override;
   bool RequiresNetworkEncryption() const override;
-  bool OnCustomInstall(const base::DictionaryValue& manifest,
-                       const base::FilePath& install_dir) override;
+  update_client::CrxInstaller::Result OnCustomInstall(
+      const base::DictionaryValue& manifest,
+      const base::FilePath& install_dir) override;
   bool VerifyInstallation(const base::DictionaryValue& manifest,
                           const base::FilePath& install_dir) const override;
   void ComponentReady(const base::Version& version,

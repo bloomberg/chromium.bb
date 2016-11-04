@@ -68,10 +68,11 @@ bool OriginTrialsComponentInstallerTraits::RequiresNetworkEncryption() const {
   return false;
 }
 
-bool OriginTrialsComponentInstallerTraits::OnCustomInstall(
+update_client::CrxInstaller::Result
+OriginTrialsComponentInstallerTraits::OnCustomInstall(
     const base::DictionaryValue& manifest,
     const base::FilePath& install_dir) {
-  return true;
+  return update_client::CrxInstaller::Result(0);
 }
 
 void OriginTrialsComponentInstallerTraits::ComponentReady(

@@ -58,7 +58,8 @@ class ActionUpdate : public Action, protected ActionImpl {
   virtual void OnInstallStart(CrxUpdateItem* item) = 0;
   virtual void OnInstallSuccess(CrxUpdateItem* item) = 0;
   virtual void OnInstallError(CrxUpdateItem* item,
-                              UnpackerError error,
+                              ErrorCategory error_category,
+                              int error,
                               int extended_error) = 0;
 
   void StartDownload(CrxUpdateItem* item);
@@ -73,7 +74,8 @@ class ActionUpdate : public Action, protected ActionImpl {
 
   void StartInstall(CrxUpdateItem* item, const base::FilePath& crx_path);
   void InstallComplete(const std::string& id,
-                       UnpackerError error,
+                       ErrorCategory error_category,
+                       int error,
                        int extended_error);
 
   void StartUnpackOnBlockingTaskRunner(CrxUpdateItem* item,
@@ -88,14 +90,13 @@ class ActionUpdate : public Action, protected ActionImpl {
                                         const base::FilePath& unpack_path);
   void InstallCompleteOnBlockingTaskRunner(CrxUpdateItem* item,
                                            const base::FilePath& crx_path,
-                                           UnpackerError error,
+                                           ErrorCategory error_category,
+                                           int error,
                                            int extended_error);
 
-  // TODO(sorin): make this function return a result data type to convey
-  // extended error information.
-  UnpackerError DoInstall(CrxUpdateItem* item,
-                          const base::FilePath& crx_path,
-                          const base::FilePath& unpack_path);
+  CrxInstaller::Result DoInstall(CrxUpdateItem* item,
+                                 const base::FilePath& crx_path,
+                                 const base::FilePath& unpack_path);
 
   // Downloads updates for one CRX id only.
   std::unique_ptr<CrxDownloader> crx_downloader_;
@@ -128,7 +129,8 @@ class ActionUpdateDiff : public ActionUpdate {
   void OnInstallStart(CrxUpdateItem* item) override;
   void OnInstallSuccess(CrxUpdateItem* item) override;
   void OnInstallError(CrxUpdateItem* item,
-                      UnpackerError error,
+                      ErrorCategory error_category,
+                      int error,
                       int extended_error) override;
 
   DISALLOW_COPY_AND_ASSIGN(ActionUpdateDiff);
@@ -154,7 +156,8 @@ class ActionUpdateFull : public ActionUpdate {
   void OnInstallStart(CrxUpdateItem* item) override;
   void OnInstallSuccess(CrxUpdateItem* item) override;
   void OnInstallError(CrxUpdateItem* item,
-                      UnpackerError error,
+                      ErrorCategory error_category,
+                      int error,
                       int extended_error) override;
 
   DISALLOW_COPY_AND_ASSIGN(ActionUpdateFull);

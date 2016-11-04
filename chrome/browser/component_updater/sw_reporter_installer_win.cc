@@ -312,10 +312,10 @@ bool SwReporterInstallerTraits::RequiresNetworkEncryption() const {
   return false;
 }
 
-bool SwReporterInstallerTraits::OnCustomInstall(
+update_client::CrxInstaller::Result SwReporterInstallerTraits::OnCustomInstall(
     const base::DictionaryValue& manifest,
     const base::FilePath& install_dir) {
-  return true;
+  return update_client::CrxInstaller::Result(0);
 }
 
 void SwReporterInstallerTraits::ComponentReady(

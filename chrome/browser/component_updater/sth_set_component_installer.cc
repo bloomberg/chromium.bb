@@ -65,10 +65,11 @@ bool STHSetComponentInstallerTraits::RequiresNetworkEncryption() const {
   return false;
 }
 
-bool STHSetComponentInstallerTraits::OnCustomInstall(
+update_client::CrxInstaller::Result
+STHSetComponentInstallerTraits::OnCustomInstall(
     const base::DictionaryValue& manifest,
     const base::FilePath& install_dir) {
-  return true;  // Nothing custom here.
+  return update_client::CrxInstaller::Result(0);  // Nothing custom here.
 }
 
 void STHSetComponentInstallerTraits::ComponentReady(

@@ -1275,8 +1275,8 @@ TEST_F(UpdateClientTest, OneCrxInstallError) {
    public:
     MOCK_METHOD1(OnUpdateError, void(int error));
     MOCK_METHOD2(Install,
-                 bool(const base::DictionaryValue& manifest,
-                      const base::FilePath& unpack_path));
+                 Result(const base::DictionaryValue& manifest,
+                        const base::FilePath& unpack_path));
     MOCK_METHOD2(GetInstalledFile,
                  bool(const std::string& file, base::FilePath* installed_file));
     MOCK_METHOD0(Uninstall, bool());
@@ -1298,7 +1298,9 @@ TEST_F(UpdateClientTest, OneCrxInstallError) {
 
       EXPECT_CALL(*installer, OnUpdateError(_)).Times(0);
       EXPECT_CALL(*installer, Install(_, _))
-          .WillOnce(DoAll(Invoke(MockInstaller::OnInstall), Return(false)));
+          .WillOnce(
+              DoAll(Invoke(MockInstaller::OnInstall),
+                    Return(CrxInstaller::Result(InstallError::GENERIC_ERROR))));
       EXPECT_CALL(*installer, GetInstalledFile(_, _)).Times(0);
       EXPECT_CALL(*installer, Uninstall()).Times(0);
 

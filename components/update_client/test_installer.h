@@ -25,8 +25,8 @@ class TestInstaller : public CrxInstaller {
 
   void OnUpdateError(int error) override;
 
-  bool Install(const base::DictionaryValue& manifest,
-               const base::FilePath& unpack_path) override;
+  Result Install(const base::DictionaryValue& manifest,
+                 const base::FilePath& unpack_path) override;
 
   bool GetInstalledFile(const std::string& file,
                         base::FilePath* installed_file) override;
@@ -65,8 +65,8 @@ class VersionedTestInstaller : public TestInstaller {
  public:
   VersionedTestInstaller();
 
-  bool Install(const base::DictionaryValue& manifest,
-               const base::FilePath& unpack_path) override;
+  Result Install(const base::DictionaryValue& manifest,
+                 const base::FilePath& unpack_path) override;
 
   bool GetInstalledFile(const std::string& file,
                         base::FilePath* installed_file) override;

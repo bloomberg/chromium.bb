@@ -9,6 +9,7 @@
 #include "base/files/file_path.h"
 #include "base/files/file_util.h"
 #include "base/values.h"
+#include "components/update_client/update_client_errors.h"
 
 namespace update_client {
 
@@ -19,10 +20,14 @@ void TestInstaller::OnUpdateError(int error) {
   error_ = error;
 }
 
-bool TestInstaller::Install(const base::DictionaryValue& manifest,
-                            const base::FilePath& unpack_path) {
+CrxInstaller::Result TestInstaller::Install(
+    const base::DictionaryValue& manifest,
+    const base::FilePath& unpack_path) {
   ++install_count_;
-  return base::DeleteFile(unpack_path, true);
+  if (!base::DeleteFile(unpack_path, true))
+    return Result(InstallError::GENERIC_ERROR);
+
+  return Result(InstallError::NONE);
 }
 
 bool TestInstaller::GetInstalledFile(const std::string& file,
@@ -58,8 +63,9 @@ VersionedTestInstaller::~VersionedTestInstaller() {
   base::DeleteFile(install_directory_, true);
 }
 
-bool VersionedTestInstaller::Install(const base::DictionaryValue& manifest,
-                                     const base::FilePath& unpack_path) {
+CrxInstaller::Result VersionedTestInstaller::Install(
+    const base::DictionaryValue& manifest,
+    const base::FilePath& unpack_path) {
   std::string version_string;
   manifest.GetStringASCII("version", &version_string);
   base::Version version(version_string.c_str());
@@ -68,10 +74,10 @@ bool VersionedTestInstaller::Install(const base::DictionaryValue& manifest,
   path = install_directory_.AppendASCII(version.GetString());
   base::CreateDirectory(path.DirName());
   if (!base::Move(unpack_path, path))
-    return false;
+    return Result(InstallError::GENERIC_ERROR);
   current_version_ = version;
   ++install_count_;
-  return true;
+  return Result(InstallError::NONE);
 }
 
 bool VersionedTestInstaller::GetInstalledFile(const std::string& file,
