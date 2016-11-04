@@ -17,13 +17,6 @@ tkent@chromium.org
 
 per-file AssertMatchingEnums.cpp=*
 
-# Bindings owners for WebBindings.cpp
-per-file WebBindings.cpp=adamk@chromium.org
-per-file WebBindings.cpp=dcarney@chromium.org
-per-file WebBindings.cpp=esprehn@chromium.org
-per-file WebBindings.cpp=haraken@chromium.org
-per-file WebBindings.cpp=marja@chromium.org
-
 # Page load metrics
 per-file WebPerformance.cpp=bmcquade@chromium.org
 per-file WebPerformance.cpp=csharrison@chromium.org
