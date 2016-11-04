@@ -24,7 +24,6 @@
 #include "services/service_manager/public/cpp/interface_provider.h"
 #include "third_party/WebKit/public/platform/WebMediaStream.h"
 #include "third_party/WebKit/public/platform/WebMediaStreamSource.h"
-#include "third_party/WebKit/public/platform/WebSourceInfo.h"
 #include "third_party/WebKit/public/platform/WebVector.h"
 #include "third_party/WebKit/public/web/WebMediaDeviceChangeObserver.h"
 #include "third_party/WebKit/public/web/WebMediaDevicesRequest.h"
@@ -67,8 +66,6 @@ class CONTENT_EXPORT UserMediaClientImpl
       const blink::WebUserMediaRequest& user_media_request) override;
   void requestMediaDevices(
       const blink::WebMediaDevicesRequest& media_devices_request) override;
-  void requestSources(
-      const blink::WebMediaStreamTrackSourcesRequest& sources_request) override;
   void setMediaDeviceChangeObserver(
       const blink::WebMediaDeviceChangeObserver& observer) override;
 
@@ -120,9 +117,6 @@ class CONTENT_EXPORT UserMediaClientImpl
   virtual void EnumerateDevicesSucceded(
       blink::WebMediaDevicesRequest* request,
       blink::WebVector<blink::WebMediaDeviceInfo>& devices);
-  virtual void EnumerateSourcesSucceded(
-      blink::WebMediaStreamTrackSourcesRequest* request,
-      blink::WebVector<blink::WebSourceInfo>& sources);
 
   // Creates a MediaStreamAudioSource/MediaStreamVideoSource objects.
   // These are virtual for test purposes.
@@ -234,8 +228,6 @@ class CONTENT_EXPORT UserMediaClientImpl
   using EnumerationResult = std::vector<std::vector<MediaDeviceInfo>>;
   void FinalizeEnumerateDevices(blink::WebMediaDevicesRequest request,
                                 const EnumerationResult& result);
-  void FinalizeGetSources(blink::WebMediaStreamTrackSourcesRequest request,
-                          const EnumerationResult& result);
 
   void DeleteAllUserMediaRequests();
 

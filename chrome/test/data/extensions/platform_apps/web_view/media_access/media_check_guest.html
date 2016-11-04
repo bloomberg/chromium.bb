@@ -6,7 +6,7 @@
 <html>
   <head>
     <script type="text/javascript">
-      // A guest that requests media sources, which in turn checks for media
+      // A guest that requests media devices, which in turn checks for media
       // access permission.
       // Notifies the embedder when done via post message. Note that the
       // embedder has to initiate a postMessage first so that guest has a
@@ -23,7 +23,7 @@
         notifyEmbedder(JSON.stringify(['got-sources']));
       };
       var startTest = function() {
-        MediaStreamTrack.getSources(onSourceInfo);
+        navigator.mediaDevices.enumerateDevices().then(onSourceInfo);
       };
       var onPostMessageReceived = function(e) {
         var data = JSON.parse(e.data);

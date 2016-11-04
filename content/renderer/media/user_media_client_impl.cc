@@ -36,7 +36,6 @@
 #include "third_party/WebKit/public/platform/WebMediaConstraints.h"
 #include "third_party/WebKit/public/platform/WebMediaDeviceInfo.h"
 #include "third_party/WebKit/public/platform/WebMediaStreamTrack.h"
-#include "third_party/WebKit/public/platform/WebMediaStreamTrackSourcesRequest.h"
 #include "third_party/WebKit/public/web/WebDocument.h"
 #include "third_party/WebKit/public/web/WebLocalFrame.h"
 
@@ -145,18 +144,6 @@ blink::WebMediaDeviceInfo::MediaDeviceKind ToMediaDeviceKind(
       NOTREACHED();
       return blink::WebMediaDeviceInfo::MediaDeviceKindAudioInput;
   }
-}
-
-blink::WebSourceInfo::VideoFacingMode ToVideoFacingMode(
-    const std::string& device_label) {
-#if defined(OS_ANDROID)
-  if (device_label.find("front") != std::string::npos) {
-    return blink::WebSourceInfo::VideoFacingModeUser;
-  } else if (device_label.find("back") != std::string::npos) {
-    return blink::WebSourceInfo::VideoFacingModeEnvironment;
-  }
-#endif
-  return blink::WebSourceInfo::VideoFacingModeNone;
 }
 
 static int g_next_request_id = 0;
@@ -296,25 +283,6 @@ void UserMediaClientImpl::requestMediaDevices(
                  weak_factory_.GetWeakPtr(), media_devices_request));
 }
 
-void UserMediaClientImpl::requestSources(
-    const blink::WebMediaStreamTrackSourcesRequest& sources_request) {
-  // We don't call UpdateWebRTCMethodCount() here to track the API count in UMA
-  // stats. This is instead counted in MediaStreamTrack::getSources in blink.
-  DCHECK(CalledOnValidThread());
-
-  // |sources_request| can't be mocked, so in tests it will be empty (the
-  // underlying pointer is null). In order to use this function in a test we
-  // need to check if it isNull.
-  url::Origin security_origin;
-  if (!sources_request.isNull())
-    security_origin = sources_request.origin();
-
-  GetMediaDevicesDispatcher()->EnumerateDevices(
-      true /* audio input */, true /* video input */, false /* audio output */,
-      security_origin, base::Bind(&UserMediaClientImpl::FinalizeGetSources,
-                                  weak_factory_.GetWeakPtr(), sources_request));
-}
-
 void UserMediaClientImpl::setMediaDeviceChangeObserver(
     const blink::WebMediaDeviceChangeObserver& observer) {
   media_device_change_observer_ = observer;
@@ -425,34 +393,6 @@ void UserMediaClientImpl::FinalizeEnumerateDevices(
   }
 
   EnumerateDevicesSucceded(&request, devices);
-}
-
-void UserMediaClientImpl::FinalizeGetSources(
-    blink::WebMediaStreamTrackSourcesRequest request,
-    const EnumerationResult& result) {
-  DCHECK_EQ(static_cast<size_t>(NUM_MEDIA_DEVICE_TYPES), result.size());
-
-  blink::WebVector<blink::WebSourceInfo> sources(
-      result[MEDIA_DEVICE_TYPE_AUDIO_INPUT].size() +
-      result[MEDIA_DEVICE_TYPE_VIDEO_INPUT].size());
-  size_t index = 0;
-  for (const auto& device_info : result[MEDIA_DEVICE_TYPE_AUDIO_INPUT]) {
-    sources[index++].initialize(
-        blink::WebString::fromUTF8(device_info.device_id),
-        blink::WebSourceInfo::SourceKindAudio,
-        blink::WebString::fromUTF8(device_info.label),
-        blink::WebSourceInfo::VideoFacingModeNone);
-  }
-
-  for (const auto& device_info : result[MEDIA_DEVICE_TYPE_VIDEO_INPUT]) {
-    sources[index++].initialize(
-        blink::WebString::fromUTF8(device_info.device_id),
-        blink::WebSourceInfo::SourceKindVideo,
-        blink::WebString::fromUTF8(device_info.label),
-        ToVideoFacingMode(device_info.label));
-  }
-
-  EnumerateSourcesSucceded(&request, sources);
 }
 
 // Callback from MediaStreamDispatcher.
@@ -780,12 +720,6 @@ void UserMediaClientImpl::EnumerateDevicesSucceded(
     blink::WebMediaDevicesRequest* request,
     blink::WebVector<blink::WebMediaDeviceInfo>& devices) {
   request->requestSucceeded(devices);
-}
-
-void UserMediaClientImpl::EnumerateSourcesSucceded(
-    blink::WebMediaStreamTrackSourcesRequest* request,
-    blink::WebVector<blink::WebSourceInfo>& sources) {
-  request->requestSucceeded(sources);
 }
 
 const blink::WebMediaStreamSource* UserMediaClientImpl::FindLocalSource(

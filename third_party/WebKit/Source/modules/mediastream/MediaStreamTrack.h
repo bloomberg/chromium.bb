@@ -30,7 +30,6 @@
 #include "core/dom/ActiveDOMObject.h"
 #include "modules/EventTargetModules.h"
 #include "modules/ModulesExport.h"
-#include "modules/mediastream/SourceInfo.h"
 #include "platform/mediastream/MediaStreamDescriptor.h"
 #include "platform/mediastream/MediaStreamSource.h"
 #include "public/platform/WebMediaConstraints.h"
@@ -69,9 +68,6 @@ class MODULES_EXPORT MediaStreamTrack : public EventTargetWithInlineData,
 
   String readyState() const;
 
-  static void getSources(ExecutionContext*,
-                         MediaStreamTrackSourcesCallback*,
-                         ExceptionState&);
   void stopTrack(ExceptionState&);
   virtual MediaStreamTrack* clone(ExecutionContext*);
 

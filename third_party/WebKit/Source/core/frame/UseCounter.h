@@ -369,7 +369,6 @@ class CORE_EXPORT UseCounter {
     UseAsm = 473,
     DOMWindowOpen = 475,
     DOMWindowOpenFeatures = 476,
-    MediaStreamTrackGetSources = 478,
     AspectRatioFlexItem = 479,
     DetailsElement = 480,
     DialogElement = 481,

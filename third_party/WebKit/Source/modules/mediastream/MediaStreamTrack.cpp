@@ -33,14 +33,11 @@
 #include "core/frame/Deprecation.h"
 #include "modules/mediastream/MediaConstraintsImpl.h"
 #include "modules/mediastream/MediaStream.h"
-#include "modules/mediastream/MediaStreamTrackSourcesCallback.h"
-#include "modules/mediastream/MediaStreamTrackSourcesRequestImpl.h"
 #include "modules/mediastream/MediaTrackSettings.h"
 #include "modules/mediastream/UserMediaController.h"
 #include "platform/mediastream/MediaStreamCenter.h"
 #include "platform/mediastream/MediaStreamComponent.h"
 #include "public/platform/WebMediaStreamTrack.h"
-#include "public/platform/WebSourceInfo.h"
 #include "wtf/Assertions.h"
 #include <memory>
 
@@ -129,24 +126,6 @@ String MediaStreamTrack::readyState() const {
 
   NOTREACHED();
   return String();
-}
-
-void MediaStreamTrack::getSources(ExecutionContext* context,
-                                  MediaStreamTrackSourcesCallback* callback,
-                                  ExceptionState& exceptionState) {
-  LocalFrame* frame = toDocument(context)->frame();
-  UserMediaController* userMedia = UserMediaController::from(frame);
-  if (!userMedia) {
-    exceptionState.throwDOMException(
-        NotSupportedError,
-        "No sources controller available; is this a detached window?");
-    return;
-  }
-  Deprecation::countDeprecation(context,
-                                UseCounter::MediaStreamTrackGetSources);
-  MediaStreamTrackSourcesRequest* request =
-      MediaStreamTrackSourcesRequestImpl::create(*context, callback);
-  userMedia->requestSources(request);
 }
 
 void MediaStreamTrack::stopTrack(ExceptionState& exceptionState) {
