@@ -52,16 +52,23 @@ void PhysicalWebProvider::Start(const AutocompleteInput& input,
   done_ = false;
   matches_.clear();
 
-  // Stop providing suggestions in incognito mode or when the user enters text
-  // into the omnibox.
-  if (client_->IsOffTheRecord() || !input.from_omnibox_focus()) {
+  // Stop providing suggestions when the user enters text into the omnibox.
+  if (!input.from_omnibox_focus()) {
     done_ = true;
+    return;
+  }
+
+  // Don't provide suggestions in incognito mode.
+  if (client_->IsOffTheRecord()) {
+    done_ = true;
+    nearby_url_count_ = 0;
     return;
   }
 
   PhysicalWebDataSource* data_source = client_->GetPhysicalWebDataSource();
   if (!data_source) {
     done_ = true;
+    nearby_url_count_ = 0;
     return;
   }
 
@@ -85,6 +92,19 @@ void PhysicalWebProvider::Stop(bool clear_cached_results,
   done_ = true;
 }
 
+void PhysicalWebProvider::AddProviderInfo(ProvidersInfo* provider_info) const {
+  // AddProviderInfo is called for each autocomplete provider to allow
+  // provider-specific diagnostic info to be added to the omnibox log entry.
+  // In this case we do not append any diagnostic info and are taking advantage
+  // of the fact that this method is only called when the user has accepted an
+  // autocomplete suggestion.
+
+  // When the user accepts an autocomplete suggestion, record the number of
+  // nearby Physical Web URLs at the time the provider last constructed matches.
+  UMA_HISTOGRAM_EXACT_LINEAR("Omnibox.SuggestionUsed.NearbyURLCount",
+                             nearby_url_count_, 50);
+}
+
 PhysicalWebProvider::PhysicalWebProvider(
     AutocompleteProviderClient* client,
     HistoryURLProvider* history_url_provider)
@@ -96,10 +116,10 @@ PhysicalWebProvider::~PhysicalWebProvider() {
 }
 
 void PhysicalWebProvider::ConstructMatches(base::ListValue* metadata_list) {
-  const size_t metadata_count = metadata_list->GetSize();
+  nearby_url_count_ = metadata_list->GetSize();
   size_t used_slots = 0;
 
-  for (size_t i = 0; i < metadata_count; ++i) {
+  for (size_t i = 0; i < nearby_url_count_; ++i) {
     base::DictionaryValue* metadata_item = NULL;
     if (!metadata_list->GetDictionary(i, &metadata_item)) {
       continue;
@@ -121,7 +141,7 @@ void PhysicalWebProvider::ConstructMatches(base::ListValue* metadata_list) {
     // Append an overflow item if creating a match for each metadata item would
     // exceed the match limit.
     const size_t remaining_slots = kPhysicalWebMaxMatches - used_slots;
-    const size_t remaining_metadata = metadata_count - i;
+    const size_t remaining_metadata = nearby_url_count_ - i;
     if ((remaining_slots == 1) && (remaining_metadata > remaining_slots)) {
       AppendOverflowItem(remaining_metadata, relevance, title);
       break;

@@ -36,6 +36,7 @@ class PhysicalWebProvider : public AutocompleteProvider {
   // AutocompleteProvider:
   void Start(const AutocompleteInput& input, bool minimal_changes) override;
   void Stop(bool clear_cached_results, bool due_to_user_inactivity) override;
+  void AddProviderInfo(ProvidersInfo* provider_info) const override;
 
  private:
   PhysicalWebProvider(AutocompleteProviderClient* client,
@@ -62,6 +63,10 @@ class PhysicalWebProvider : public AutocompleteProvider {
 
   // Used for efficiency when creating the verbatim match. Can be null.
   HistoryURLProvider* history_url_provider_;
+
+  // The number of nearby Physical Web URLs when the provider last constructed
+  // matches.
+  size_t nearby_url_count_;
 
   DISALLOW_COPY_AND_ASSIGN(PhysicalWebProvider);
 };
