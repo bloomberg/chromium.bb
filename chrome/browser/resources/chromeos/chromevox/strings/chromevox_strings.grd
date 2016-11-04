@@ -564,6 +564,12 @@
       <message desc="The unchecked state for a checkbox." name="IDS_CHROMEVOX_CHECKBOX_UNCHECKED_STATE">
         not checked
       </message>
+      <message desc="Describes a switch named 'name' in the on/checked state." name="IDS_CHROMEVOX_DESCRIBE_SWITCH_ON">
+        <ph name="name">$1</ph>, switch on
+      </message>
+      <message desc="Describes a switch named 'name' in the off/unchecked state." name="IDS_CHROMEVOX_DESCRIBE_SWITCH_OFF">
+        <ph name="name">$1</ph>, switch off
+      </message>
       <message desc="Describes a HTML radio button named 'name' in the selected state." name="IDS_CHROMEVOX_DESCRIBE_RADIO_SELECTED">
         <ph name="name">$1</ph>, radio button selected
       </message>

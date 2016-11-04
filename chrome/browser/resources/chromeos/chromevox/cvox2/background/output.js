@@ -530,6 +530,11 @@ Output.RULES = {
     staticText: {
       speak: '$name='
     },
+    switch: {
+      speak: '$if($checked, $earcon(CHECK_ON), $earcon(CHECK_OFF)) ' +
+          '$if($checked, @describe_switch_on($name), ' +
+          '@describe_switch_off($name)) $description $state'
+    },
     tab: {
       speak: '@describe_tab($name) $state $description'
     },
