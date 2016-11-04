@@ -212,7 +212,7 @@ automationInternal.onChildTreeID.addListener(function(treeID,
     return;
 
   var subroot = AutomationRootNode.get(childTreeID);
-  if (!subroot) {
+  if (!subroot || subroot.role == schema.EventType.unknown) {
     automationUtil.storeTreeCallback(childTreeID, function(root) {
       // Return early if the root has already been attached.
       if (root.parent)
