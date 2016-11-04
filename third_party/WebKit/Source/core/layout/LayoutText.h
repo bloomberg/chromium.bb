@@ -325,12 +325,13 @@ inline UChar LayoutText::characterAt(unsigned i) const {
 }
 
 inline UChar32 LayoutText::codepointAt(unsigned i) const {
-  UChar32 character = characterAt(i);
-  if (!U16_IS_LEAD(character))
-    return character;
-  UChar trail = characterAt(i + 1);
-  return U16_IS_TRAIL(trail) ? U16_GET_SUPPLEMENTARY(character, trail)
-                             : character;
+  if (i >= textLength())
+    return 0;
+  if (is8Bit())
+    return characters8()[i];
+  UChar32 c;
+  U16_GET(characters16(), 0, i, textLength(), c);
+  return c;
 }
 
 inline float LayoutText::hyphenWidth(const Font& font,

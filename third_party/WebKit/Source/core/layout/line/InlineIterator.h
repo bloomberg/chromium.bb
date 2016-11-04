@@ -120,6 +120,8 @@ class InlineIterator {
   UChar characterAt(unsigned) const;
   UChar current() const;
   UChar previousInSameNode() const;
+  UChar32 codepointAt(unsigned) const;
+  UChar32 currentCodepoint() const;
   ALWAYS_INLINE WTF::Unicode::CharDirection direction() const;
 
  private:
@@ -494,8 +496,18 @@ inline UChar InlineIterator::previousInSameNode() const {
   return characterAt(m_pos - 1);
 }
 
+inline UChar32 InlineIterator::codepointAt(unsigned index) const {
+  if (!m_lineLayoutItem || !m_lineLayoutItem.isText())
+    return 0;
+  return LineLayoutText(m_lineLayoutItem).codepointAt(index);
+}
+
+inline UChar32 InlineIterator::currentCodepoint() const {
+  return codepointAt(m_pos);
+}
+
 ALWAYS_INLINE WTF::Unicode::CharDirection InlineIterator::direction() const {
-  if (UChar c = current())
+  if (UChar32 c = currentCodepoint())
     return WTF::Unicode::direction(c);
 
   if (m_lineLayoutItem && m_lineLayoutItem.isListMarker())
