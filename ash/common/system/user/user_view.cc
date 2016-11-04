@@ -34,9 +34,11 @@
 #include "grit/ash_strings.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/base/resource/resource_bundle.h"
+#include "ui/gfx/canvas.h"
 #include "ui/gfx/paint_vector_icon.h"
 #include "ui/views/controls/button/label_button.h"
 #include "ui/views/controls/label.h"
+#include "ui/views/controls/separator.h"
 #include "ui/views/layout/fill_layout.h"
 #include "ui/views/mouse_watcher_view_host.h"
 #include "ui/views/painter.h"
@@ -194,9 +196,6 @@ void AddUserView::AddContent() {
   set_background(views::Background::CreateSolidBackground(kBackgroundColor));
 
   add_user_ = new views::View;
-  add_user_->SetBorder(
-      views::Border::CreateEmptyBorder(0, kTrayUserTileHoverBorderInset, 0, 0));
-
   add_user_->SetLayoutManager(new views::BoxLayout(
       views::BoxLayout::kHorizontal, 0, 0, kTrayPopupPaddingBetweenItems));
   AddChildViewAt(add_user_, 0);
@@ -206,11 +205,15 @@ void AddUserView::AddContent() {
     views::ImageView* icon = new views::ImageView();
     icon->SetImage(
         gfx::CreateVectorIcon(kSystemMenuNewUserIcon, kMenuIconColor));
-    icon->SetBorder(views::Border::CreateEmptyBorder(
-        gfx::Insets((kTrayItemSize - icon->GetPreferredSize().width()) / 2)));
+    icon->SetBorder(views::Border::CreateEmptyBorder(gfx::Insets(
+        (GetTrayConstant(TRAY_POPUP_ITEM_MAIN_IMAGE_CONTAINER_WIDTH) -
+         icon->GetPreferredSize().width()) /
+        2)));
     anchor_ = icon;
     add_user_->AddChildView(icon);
   } else {
+    add_user_->SetBorder(views::Border::CreateEmptyBorder(
+        0, kTrayUserTileHoverBorderInset, 0, 0));
     RoundedImageView* icon =
         new RoundedImageView(kTrayRoundedBorderRadius, true);
     anchor_ = icon;
@@ -239,12 +242,10 @@ UserView::UserView(SystemTrayItem* owner, LoginStatus login, UserIndex index)
       add_user_enabled_(true),
       focus_manager_(nullptr) {
   CHECK_NE(LoginStatus::NOT_LOGGED_IN, login);
-  if (!index) {
-    // Only the logged in user will have a background. All other users will have
-    // to allow the TrayPopupContainer highlighting the menu line.
+  if (!UseMd() && !index && login == LoginStatus::PUBLIC) {
+    // Public user gets a yellow bg.
     set_background(views::Background::CreateSolidBackground(
-        login == LoginStatus::PUBLIC ? kPublicAccountBackgroundColor
-                                     : kBackgroundColor));
+        kPublicAccountBackgroundColor));
   }
   // The logout button must be added before the user card so that the user card
   // can correctly calculate the remaining available width.
@@ -254,14 +255,12 @@ UserView::UserView(SystemTrayItem* owner, LoginStatus login, UserIndex index)
   AddUserCard(login);
 
   if (UseMd()) {
-    auto layout = new views::BoxLayout(views::BoxLayout::kHorizontal, 0, 0,
-                                       kTrayPopupPaddingBetweenItems);
+    auto layout = new views::BoxLayout(views::BoxLayout::kHorizontal,
+                                       kMenuExtraMarginFromLeftEdge,
+                                       kMenuSeparatorVerticalPadding, 0);
     SetLayoutManager(layout);
-    // Only the active user panel will be forced to a certain height.
-    if (!user_index_) {
-      layout->set_minimum_cross_axis_size(
-          GetTrayConstant(TRAY_POPUP_ITEM_HEIGHT));
-    }
+    layout->set_cross_axis_alignment(
+        views::BoxLayout::CROSS_AXIS_ALIGNMENT_CENTER);
     layout->SetFlexForView(user_card_view_, 1);
   }
 }
@@ -362,6 +361,19 @@ void UserView::Layout() {
   }
 }
 
+void UserView::OnPaintBorder(gfx::Canvas* canvas) {
+  if (!UseMd() || user_index_)
+    return;
+
+  DCHECK(!border());
+  // For the separator below this row, manually paint a border because it should
+  // be drawn *on top* of the vertical padding.
+  gfx::Rect local_bounds = GetLocalBounds();
+  local_bounds.Inset(gfx::Insets(0, 0, kSeparatorWidth, 0));
+  canvas->DrawLine(local_bounds.bottom_left(), local_bounds.bottom_right(),
+                   kHorizontalSeparatorColor);
+}
+
 void UserView::ButtonPressed(views::Button* sender, const ui::Event& event) {
   if (sender == logout_button_) {
     WmShell::Get()->RecordUserMetricsAction(UMA_STATUS_AREA_SIGN_OUT);
@@ -405,8 +417,13 @@ void UserView::AddLogoutButton(LoginStatus login) {
   auto* logout_button = CreateTrayPopupBorderlessButton(this, title);
   logout_button->SetAccessibleName(title);
   logout_button_ = logout_button;
-  // In public account mode, the logout button border has a custom color.
-  if (login == LoginStatus::PUBLIC) {
+  if (UseMd()) {
+    views::View* separator = CreateVerticalSeparator();
+    separator->SetBorder(views::Border::CreateEmptyBorder(
+        gfx::Insets(0, 0, 0, kTrayPopupLabelHorizontalPadding)));
+    AddChildView(separator);
+  } else if (login == LoginStatus::PUBLIC) {
+    // In public account mode, the logout button border has a custom color.
     std::unique_ptr<TrayPopupLabelButtonBorder> border(
         new TrayPopupLabelButtonBorder());
     border->SetPainter(false, views::Button::STATE_NORMAL,
@@ -424,9 +441,11 @@ void UserView::AddLogoutButton(LoginStatus login) {
 }
 
 void UserView::AddUserCard(LoginStatus login) {
+  if (UseMd())
+    return AddUserCardMd(login);
+
   // Add padding around the panel.
-  // TODO(estade): share this constant?
-  const int kSidePadding = UseMd() ? 12 : kTrayPopupPaddingHorizontal;
+  const int kSidePadding = kTrayPopupPaddingHorizontal;
   SetBorder(views::Border::CreateEmptyBorder(
       kTrayPopupUserCardVerticalPadding, kSidePadding,
       kTrayPopupUserCardVerticalPadding, kSidePadding));
@@ -480,6 +499,29 @@ void UserView::AddUserCard(LoginStatus login) {
     bubble_view->SetWidth(GetPreferredSize().width());
 }
 
+void UserView::AddUserCardMd(LoginStatus login) {
+  user_card_view_ = new UserCardView(login, -1, user_index_);
+  // The entry is clickable when no system modal dialog is open and the multi
+  // profile option is active.
+  bool clickable = !WmShell::Get()->IsSystemModalWindowOpen() &&
+                   IsMultiProfileSupportedAndUserActive();
+  if (clickable) {
+    views::View* contents_view = user_card_view_;
+    auto* button =
+        new ButtonFromView(contents_view, this, false, gfx::Insets());
+    user_card_view_ = button;
+    is_user_card_button_ = true;
+  }
+  AddChildViewAt(user_card_view_, 0);
+  // Card for supervised user can consume more space than currently
+  // available. In that case we should increase system bubble's width.
+  // TODO(estade,sgabriel): do we need this?
+  if (login == LoginStatus::PUBLIC) {
+    owner_->system_tray()->GetSystemBubble()->bubble_view()->SetWidth(
+        GetPreferredSize().width());
+  }
+}
+
 void UserView::ToggleAddUserMenuOption() {
   if (add_menu_option_.get()) {
     RemoveAddUserMenuOption();
@@ -516,7 +558,7 @@ void UserView::ToggleAddUserMenuOption() {
       new AddUserView(static_cast<ButtonFromView*>(user_card_view_));
   ButtonFromView* button = new ButtonFromView(
       add_user_view, add_user_enabled_ ? this : nullptr,
-      !UseMd() && add_user_enabled_, gfx::Insets(1, 1, 1, 1));
+      !UseMd() && add_user_enabled_, gfx::Insets(UseMd() ? 0 : 1));
   button->SetAccessibleName(
       l10n_util::GetStringUTF16(IDS_ASH_STATUS_TRAY_SIGN_IN_ANOTHER_ACCOUNT));
   button->ForceBorderVisible(true);
@@ -526,14 +568,24 @@ void UserView::ToggleAddUserMenuOption() {
     // system menu). The top half of the widget will be transparent to allow
     // the active user to show through.
     gfx::Rect bounds = user_card_view_->GetBoundsInScreen();
+    bounds.set_width(bounds.width() + kSeparatorWidth);
     int row_height = bounds.height();
     bounds.set_height(row_height * 2);
     add_menu_option_->SetBounds(bounds);
+
+    // This nested container is necessary to stack borders.
+    views::View* nested_container = new views::View();
+    nested_container->SetBorder(
+        views::Border::CreateEmptyBorder(row_height, 0, 0, 0));
+    nested_container->SetLayoutManager(new views::FillLayout());
+    nested_container->AddChildView(button);
+
     views::View* container = new AddUserWidgetContents(
         base::Bind(&UserView::RemoveAddUserMenuOption, base::Unretained(this)));
-    container->SetBorder(views::Border::CreateEmptyBorder(row_height, 0, 0, 0));
+    container->SetBorder(views::Border::CreateSolidSidedBorder(
+        0, 0, 0, kSeparatorWidth, kBackgroundColor));
     container->SetLayoutManager(new views::FillLayout());
-    container->AddChildView(button);
+    container->AddChildView(nested_container);
     add_menu_option_->SetContentsView(container);
   } else {
     add_menu_option_->SetOpacity(1.f);

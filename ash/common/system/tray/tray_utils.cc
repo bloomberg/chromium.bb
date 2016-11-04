@@ -23,18 +23,53 @@
 
 namespace ash {
 
+namespace {
+
+class BorderlessLabelButton : public views::LabelButton {
+ public:
+  BorderlessLabelButton(views::ButtonListener* listener,
+                        const base::string16& text)
+      : LabelButton(listener, text) {
+    if (MaterialDesignController::IsSystemTrayMenuMaterial()) {
+      SetInkDropMode(views::InkDropHostView::InkDropMode::ON);
+      set_has_ink_drop_action_on_click(true);
+      set_ink_drop_base_color(kTrayPopupInkDropBaseColor);
+      set_ink_drop_visible_opacity(kTrayPopupInkDropRippleOpacity);
+      const int kHorizontalPadding = 20;
+      SetBorder(
+          views::Border::CreateEmptyBorder(gfx::Insets(0, kHorizontalPadding)));
+      // TODO(tdanderson): Update focus rect for material design. See
+      // crbug.com/615892
+    } else {
+      SetBorder(std::unique_ptr<views::Border>(new TrayPopupLabelButtonBorder));
+      SetFocusPainter(views::Painter::CreateSolidFocusPainter(
+          kFocusBorderColor, gfx::Insets(1, 1, 2, 2)));
+      set_animate_on_state_change(false);
+    }
+    SetHorizontalAlignment(gfx::ALIGN_CENTER);
+    SetFocusForPlatform();
+  }
+
+  ~BorderlessLabelButton() override {}
+
+  // views::LabelButton:
+  int GetHeightForWidth(int width) const override {
+    if (MaterialDesignController::IsSystemTrayMenuMaterial())
+      return kMenuButtonSize - 2 * kTrayPopupInkDropInset;
+
+    return LabelButton::GetHeightForWidth(width);
+  }
+
+ private:
+  DISALLOW_COPY_AND_ASSIGN(BorderlessLabelButton);
+};
+
+}  // namespace
+
 views::LabelButton* CreateTrayPopupBorderlessButton(
     views::ButtonListener* listener,
     const base::string16& text) {
-  auto* button = new views::LabelButton(listener, text);
-  button->SetBorder(
-      std::unique_ptr<views::Border>(new TrayPopupLabelButtonBorder));
-  button->SetFocusForPlatform();
-  button->set_animate_on_state_change(false);
-  button->SetHorizontalAlignment(gfx::ALIGN_CENTER);
-  button->SetFocusPainter(views::Painter::CreateSolidFocusPainter(
-      kFocusBorderColor, gfx::Insets(1, 1, 2, 2)));
-  return button;
+  return new BorderlessLabelButton(listener, text);
 }
 
 views::LabelButton* CreateTrayPopupButton(views::ButtonListener* listener,

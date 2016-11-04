@@ -104,6 +104,8 @@ action("aggregate_vector_icons") {
     "system_menu_computer.icon",
     "system_menu_gamepad.1x.icon",
     "system_menu_gamepad.icon",
+    "system_menu_guest.1x.icon",
+    "system_menu_guest.icon",
     "system_menu_hdmi.1x.icon",
     "system_menu_hdmi.icon",
     "system_menu_headset.1x.icon",

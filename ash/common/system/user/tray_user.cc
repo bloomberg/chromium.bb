@@ -58,11 +58,7 @@ TrayUser::TestState TrayUser::GetStateForTest() const {
 }
 
 gfx::Size TrayUser::GetLayoutSizeForTest() const {
-  if (!layout_view_) {
-    return gfx::Size(0, 0);
-  } else {
-    return layout_view_->size();
-  }
+  return layout_view_ ? layout_view_->size() : gfx::Size();
 }
 
 gfx::Rect TrayUser::GetUserPanelBoundsInScreenForTest() const {

@@ -31,9 +31,6 @@ class UserCardView : public views::View {
 
   void AddUserContent(LoginStatus login_status, int user_index);
 
-  // Create a user icon representation.
-  views::View* CreateIcon(LoginStatus login_status, int user_index);
-
   DISALLOW_COPY_AND_ASSIGN(UserCardView);
 };
 

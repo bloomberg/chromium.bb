@@ -15,6 +15,7 @@
 #include "ui/views/background.h"
 #include "ui/views/border.h"
 #include "ui/views/layout/box_layout.h"
+#include "ui/views/layout/fill_layout.h"
 
 namespace ash {
 
@@ -38,8 +39,12 @@ ButtonFromView::ButtonFromView(views::View* content,
       show_border_(false),
       tab_frame_inset_(tab_frame_inset) {
   set_notify_enter_exit_on_child(true);
-  SetLayoutManager(
-      new views::BoxLayout(views::BoxLayout::kHorizontal, 1, 1, 0));
+  if (MaterialDesignController::IsSystemTrayMenuMaterial()) {
+    SetLayoutManager(new views::FillLayout());
+  } else {
+    SetLayoutManager(
+        new views::BoxLayout(views::BoxLayout::kHorizontal, 1, 1, 0));
+  }
   AddChildView(content_);
   ShowActive();
   // Only make it focusable when we are active/interested in clicks.
@@ -96,6 +101,8 @@ void ButtonFromView::GetAccessibleNodeData(ui::AXNodeData* node_data) {
 }
 
 void ButtonFromView::ShowActive() {
+  if (MaterialDesignController::IsSystemTrayMenuMaterial())
+    return;
   bool border_visible =
       (button_hovered_ && highlight_on_hover_) || show_border_;
   SkColor border_color = border_visible ? kBorderColor : SK_ColorTRANSPARENT;

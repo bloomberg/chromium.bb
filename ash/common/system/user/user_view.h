@@ -56,6 +56,7 @@ class UserView : public views::View,
   gfx::Size GetPreferredSize() const override;
   int GetHeightForWidth(int width) const override;
   void Layout() override;
+  void OnPaintBorder(gfx::Canvas* canvas) override;
 
   // Overridden from views::ButtonListener.
   void ButtonPressed(views::Button* sender, const ui::Event& event) override;
@@ -66,6 +67,7 @@ class UserView : public views::View,
 
   void AddLogoutButton(LoginStatus login);
   void AddUserCard(LoginStatus login);
+  void AddUserCardMd(LoginStatus login);
 
   // Create the menu option to add another user. If |disabled| is set the user
   // cannot actively click on the item.

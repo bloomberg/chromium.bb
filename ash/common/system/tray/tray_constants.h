@@ -38,8 +38,8 @@ extern const int kTrayPopupAutoCloseDelayInSeconds;
 extern const int kTrayPopupAutoCloseDelayForTextInSeconds;
 extern const int kTrayPopupPaddingHorizontal;
 extern const int kTrayPopupPaddingBetweenItems;
+// Used for buttons that have borders.
 extern const int kTrayPopupButtonEndMargin;
-extern const int kTrayPopupTextSpacingVertical;
 extern const int kTrayPopupUserCardVerticalPadding;
 // The padding used on the left and right of labels. This applies to all labels
 // in the system menu.
