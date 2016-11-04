@@ -212,6 +212,9 @@ const char kEafePath[] = "eafe-path";
 // EAFE URL to use for Easy bootstrapping.
 const char kEafeUrl[] = "eafe-url";
 
+// Enables AD functionality.
+const char kEnableAd[] = "enable-ad";
+
 // Enables starting the ARC instance upon session start.
 const char kEnableArc[] = "enable-arc";
 

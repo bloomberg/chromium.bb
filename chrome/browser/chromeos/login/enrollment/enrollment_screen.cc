@@ -7,6 +7,7 @@
 #include "base/bind.h"
 #include "base/bind_helpers.h"
 #include "base/callback.h"
+#include "base/command_line.h"
 #include "base/logging.h"
 #include "base/metrics/histogram_macros.h"
 #include "base/timer/elapsed_timer.h"
@@ -20,6 +21,7 @@
 #include "chrome/browser/chromeos/policy/browser_policy_connector_chromeos.h"
 #include "chrome/browser/chromeos/policy/enrollment_status_chromeos.h"
 #include "chrome/browser/chromeos/profiles/profile_helper.h"
+#include "chromeos/chromeos_switches.h"
 #include "chromeos/dbus/cryptohome_client.h"
 #include "chromeos/dbus/dbus_method_call_status.h"
 #include "chromeos/dbus/dbus_thread_manager.h"
@@ -185,14 +187,14 @@ void EnrollmentScreen::OnLoginDone(const std::string& user,
   LOG_IF(ERROR, auth_code.empty()) << "Auth code is empty.";
   elapsed_timer_.reset(new base::ElapsedTimer());
   enrolling_user_domain_ = gaia::ExtractDomainName(user);
-
-  UMA(enrollment_failed_once_ ? policy::kMetricEnrollmentRestarted
-                              : policy::kMetricEnrollmentStarted);
-
-  actor_->ShowEnrollmentSpinnerScreen();
-  CreateEnrollmentHelper();
-  enrollment_helper_->EnrollUsingAuthCode(
-      auth_code, shark_controller_ != nullptr /* fetch_additional_token */);
+  auth_code_ = auth_code;
+  // TODO(rsorokin): Move ShowAdJoin after STEP_REGISTRATION
+  if (base::CommandLine::ForCurrentProcess()->HasSwitch(
+          chromeos::switches::kEnableAd)) {
+    actor_->ShowAdJoin();
+  } else {
+    OnAdJoined("");
+  }
 }
 
 void EnrollmentScreen::OnRetry() {
@@ -219,6 +221,19 @@ void EnrollmentScreen::OnCancel() {
 void EnrollmentScreen::OnConfirmationClosed() {
   ClearAuth(base::Bind(&EnrollmentScreen::Finish, base::Unretained(this),
                        BaseScreenDelegate::ENTERPRISE_ENROLLMENT_COMPLETED));
+}
+
+void EnrollmentScreen::OnAdJoined(const std::string& realm) {
+  if (!realm.empty()) {
+    config_.management_realm = realm;
+  }
+  UMA(enrollment_failed_once_ ? policy::kMetricEnrollmentRestarted
+                              : policy::kMetricEnrollmentStarted);
+
+  actor_->ShowEnrollmentSpinnerScreen();
+  CreateEnrollmentHelper();
+  enrollment_helper_->EnrollUsingAuthCode(
+      auth_code_, shark_controller_ != NULL /* fetch_additional_token */);
 }
 
 void EnrollmentScreen::OnAuthError(const GoogleServiceAuthError& error) {

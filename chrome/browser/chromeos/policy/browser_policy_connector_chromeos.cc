@@ -219,6 +219,10 @@ std::string BrowserPolicyConnectorChromeOS::GetEnterpriseDomain() const {
   return install_attributes_ ? install_attributes_->GetDomain() : std::string();
 }
 
+std::string BrowserPolicyConnectorChromeOS::GetRealm() const {
+  return install_attributes_ ? install_attributes_->GetRealm() : std::string();
+}
+
 std::string BrowserPolicyConnectorChromeOS::GetDeviceAssetID() const {
   if (device_cloud_policy_manager_) {
     const enterprise_management::PolicyData* policy =

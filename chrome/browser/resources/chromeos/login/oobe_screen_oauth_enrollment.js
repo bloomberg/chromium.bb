@@ -11,6 +11,7 @@ login.createScreen('OAuthEnrollmentScreen', 'oauth-enrollment', function() {
                        })();`;
 
   /** @const */ var STEP_SIGNIN = 'signin';
+  /** @const */ var STEP_AD_JOIN = 'ad-join';
   /** @const */ var STEP_WORKING = 'working';
   /** @const */ var STEP_ATTRIBUTE_PROMPT = 'attribute-prompt';
   /** @const */ var STEP_ERROR = 'error';
@@ -29,6 +30,7 @@ login.createScreen('OAuthEnrollmentScreen', 'oauth-enrollment', function() {
       'doReload',
       'showAttributePromptStep',
       'showAttestationBasedEnrollmentSuccess',
+      'invalidateAd',
     ],
 
     /**
@@ -60,6 +62,13 @@ login.createScreen('OAuthEnrollmentScreen', 'oauth-enrollment', function() {
     navigation_: undefined,
 
     /**
+     * An element containing UI to join an AD domain.
+     * @type {OfflineAdLoginElement}
+     * @private
+     */
+    offlineAdUi_: undefined,
+
+    /**
      * Value contained in the last received 'backButton' event.
      * @type {boolean}
      * @private
@@ -69,6 +78,7 @@ login.createScreen('OAuthEnrollmentScreen', 'oauth-enrollment', function() {
     /** @override */
     decorate: function() {
       this.navigation_ = $('oauth-enroll-navigation');
+      this.offlineAdUi_ = $('oauth-enroll-ad-join-ui');
 
       this.authenticator_ =
           new cr.login.Authenticator($('oauth-enroll-auth-view'));
@@ -111,6 +121,12 @@ login.createScreen('OAuthEnrollmentScreen', 'oauth-enrollment', function() {
             chrome.send('oauthEnrollCompleteLogin', [detail.email,
                                                      detail.authCode]);
           }).bind(this));
+
+      this.offlineAdUi_.addEventListener('authCompleted', function(e) {
+        this.offlineAdUi_.disabled = true;
+        chrome.send('oauthEnrollAdCompleteLogin',
+            [e.detail.machinename, e.detail.username, e.detail.password]);
+      }.bind(this));
 
       this.authenticator_.addEventListener('authFlowChange',
           (function(e) {
@@ -177,7 +193,8 @@ login.createScreen('OAuthEnrollmentScreen', 'oauth-enrollment', function() {
 
       this.navigation_.addEventListener('back', function() {
         this.navigation_.backVisible = false;
-        $('oauth-enroll-auth-view').back();
+        if (this.currentStep_ == STEP_SIGNIN)
+          $('oauth-enroll-auth-view').back();
       }.bind(this));
 
       $('oauth-enroll-attribute-prompt-card').addEventListener('submit',
@@ -305,6 +322,9 @@ login.createScreen('OAuthEnrollmentScreen', 'oauth-enrollment', function() {
         $('oauth-enroll-asset-id').focus();
       } else if (step == STEP_ATTRIBUTE_PROMPT_ERROR) {
         $('oauth-enroll-attribute-prompt-error-card').submitButton.focus();
+      } else if (step == STEP_AD_JOIN) {
+        this.offlineAdUi_.disabled = false;
+        this.offlineAdUi_.setUser();
       }
 
       this.currentStep_ = step;
@@ -334,6 +354,11 @@ login.createScreen('OAuthEnrollmentScreen', 'oauth-enrollment', function() {
       this.lastBackMessageValue_ = false;
       this.authenticator_.reload();
       this.updateControlsState();
+    },
+
+    invalidateAd: function(machineName, user) {
+      this.offlineAdUi_.disabled = false;
+      this.offlineAdUi_.setUser(user, machineName);
     },
 
     /**
@@ -382,7 +407,8 @@ login.createScreen('OAuthEnrollmentScreen', 'oauth-enrollment', function() {
       this.navigation_.refreshVisible = this.isAtTheBeginning() &&
                                         !this.isManualEnrollment_;
       this.navigation_.closeVisible = (this.currentStep_ == STEP_SIGNIN ||
-                                       this.currentStep_ == STEP_ERROR) &&
+                                       this.currentStep_ == STEP_ERROR ||
+                                       this.currentStep_ == STEP_AD_JOIN) &&
                                       !this.navigation_.refreshVisible;
       $('login-header-bar').updateUI_();
     }

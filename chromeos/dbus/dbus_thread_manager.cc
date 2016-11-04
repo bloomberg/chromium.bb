@@ -12,6 +12,7 @@
 #include "base/threading/thread.h"
 #include "chromeos/chromeos_switches.h"
 #include "chromeos/dbus/arc_obb_mounter_client.h"
+#include "chromeos/dbus/auth_policy_client.h"
 #include "chromeos/dbus/cras_audio_client.h"
 #include "chromeos/dbus/cros_disks_client.h"
 #include "chromeos/dbus/cryptohome_client.h"
@@ -106,6 +107,11 @@ dbus::Bus* DBusThreadManager::GetSystemBus() {
 
 ArcObbMounterClient* DBusThreadManager::GetArcObbMounterClient() {
   return clients_browser_ ? clients_browser_->arc_obb_mounter_client_.get()
+                          : nullptr;
+}
+
+AuthPolicyClient* DBusThreadManager::GetAuthPolicyClient() {
+  return clients_browser_ ? clients_browser_->auth_policy_client_.get()
                           : nullptr;
 }
 

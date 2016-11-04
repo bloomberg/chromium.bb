@@ -101,6 +101,9 @@ struct EnrollmentConfig {
   // match.
   std::string management_domain;
 
+  // The realm the device is joined to (if managed by AD).
+  std::string management_realm;
+
   // The authentication mechanism to use.
   // TODO(drcrash): Change to best available once ZTE is everywhere.
   AuthMechanism auth_mechanism = AUTH_MECHANISM_INTERACTIVE;

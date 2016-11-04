@@ -2,6 +2,8 @@
      Use of this source code is governed by a BSD-style license that can be
      found in the LICENSE file. -->
 
+<link rel="import" href="chrome://oobe/custom_elements.html">
+
 <div id="oauth-enrollment" class="step no-logo hidden" hidden>
   <div id="oauth-enroll-step-contents">
     <div id="oauth-enroll-step-signin">
@@ -11,6 +13,12 @@
     <div id="oauth-enroll-step-working">
       <throbber-notice class="fit" i18n-values="text:oauthEnrollWorking">
       </throbber-notice>
+    </div>
+    <div id="oauth-enroll-step-ad-join">
+      <offline-ad-login id="oauth-enroll-ad-join-ui" show-machine-input
+          class="fit" i18n-values=
+          "ad-welcome-message:oauthEnrollAdDomainJoinWelcomeMessage">
+      </offline-ad-login>
     </div>
     <div id="oauth-enroll-step-error" role="alert">
       <notification-card id="oauth-enroll-error-card" type="fail"

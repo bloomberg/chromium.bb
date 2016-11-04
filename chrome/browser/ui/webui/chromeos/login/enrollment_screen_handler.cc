@@ -9,6 +9,7 @@
 #include "ash/common/system/chromeos/devicetype_utils.h"
 #include "base/bind.h"
 #include "base/bind_helpers.h"
+#include "base/files/file_util.h"
 #include "base/logging.h"
 #include "base/macros.h"
 #include "base/strings/stringprintf.h"
@@ -24,10 +25,13 @@
 #include "chrome/browser/chromeos/policy/policy_oauth2_token_fetcher.h"
 #include "chrome/browser/ui/webui/chromeos/login/oobe_screen.h"
 #include "chrome/grit/generated_resources.h"
+#include "chromeos/dbus/auth_policy_client.h"
+#include "chromeos/dbus/dbus_thread_manager.h"
 #include "chromeos/network/network_state.h"
 #include "chromeos/network/network_state_handler.h"
 #include "components/login/localized_values_builder.h"
 #include "components/policy/core/browser/cloud/message_util.h"
+#include "content/public/browser/browser_thread.h"
 #include "google_apis/gaia/gaia_auth_util.h"
 #include "google_apis/gaia/gaia_urls.h"
 #include "google_apis/gaia/google_service_auth_error.h"
@@ -40,6 +44,7 @@ const char kJsScreenPath[] = "login.OAuthEnrollmentScreen";
 
 // Enrollment step names.
 const char kEnrollmentStepSignin[] = "signin";
+const char kEnrollmentStepAdJoin[] = "ad-join";
 const char kEnrollmentStepSuccess[] = "success";
 const char kEnrollmentStepWorking[] = "working";
 
@@ -103,6 +108,27 @@ std::string GetEnterpriseDomain() {
   return connector->GetEnterpriseDomain();
 }
 
+// Returns file descriptor of a pipe, open for reading. Pipe keeps user
+// password, which can be read from the returned descriptor.
+base::ScopedFD GetPasswordReadPipe(const std::string& password) {
+  DCHECK(content::BrowserThread::GetBlockingPool()->RunsTasksOnCurrentThread());
+  int pipe_fds[2];
+  if (!base::CreateLocalNonBlockingPipe(pipe_fds)) {
+    LOG(ERROR) << "Failed to create pipe";
+    return base::ScopedFD();
+  }
+  base::ScopedFD pipe_read_end(pipe_fds[0]);
+  base::ScopedFD pipe_write_end(pipe_fds[1]);
+
+  if (!base::WriteFileDescriptor(pipe_write_end.get(),
+                                 password.c_str(),
+                                 password.size())) {
+    LOG(ERROR) << "Failed to write to pipe";
+    return base::ScopedFD();
+  }
+  return pipe_read_end;
+}
+
 }  // namespace
 
 // EnrollmentScreenHandler, public ------------------------------
@@ -139,6 +165,8 @@ void EnrollmentScreenHandler::RegisterMessages() {
               &EnrollmentScreenHandler::HandleClose);
   AddCallback("oauthEnrollCompleteLogin",
               &EnrollmentScreenHandler::HandleCompleteLogin);
+  AddCallback("oauthEnrollAdCompleteLogin",
+              &EnrollmentScreenHandler::HandleAdCompleteLogin);
   AddCallback("oauthEnrollRetry",
               &EnrollmentScreenHandler::HandleRetry);
   AddCallback("frameLoadingCompleted",
@@ -176,6 +204,11 @@ void EnrollmentScreenHandler::Hide() {
 void EnrollmentScreenHandler::ShowSigninScreen() {
   observe_network_failure_ = true;
   ShowStep(kEnrollmentStepSignin);
+}
+
+void EnrollmentScreenHandler::ShowAdJoin() {
+  observe_network_failure_ = false;
+  ShowStep(kEnrollmentStepAdJoin);
 }
 
 void EnrollmentScreenHandler::ShowAttributePromptScreen(
@@ -386,6 +419,12 @@ void EnrollmentScreenHandler::DeclareLocalizedValues(
   builder->Add("oauthEnrollWorking", IDS_ENTERPRISE_ENROLLMENT_WORKING_MESSAGE);
   // Do not use AddF for this string as it will be rendered by the JS code.
   builder->Add("oauthEnrollAbeSuccess", IDS_ENTERPRISE_ENROLLMENT_ABE_SUCCESS);
+  builder->Add("oauthEnrollAdMachineNameInput",
+               IDS_AD_MACHINE_NAME_INPUT_LABEL);
+  builder->Add("oauthEnrollAdDomainJoinWelcomeMessage",
+               IDS_AD_DOMAIN_JOIN_WELCOME_MESSAGE);
+  builder->Add("adLoginUser", IDS_AD_LOGIN_USER);
+  builder->Add("adLoginPassword", IDS_AD_LOGIN_PASSWORD);
 }
 
 bool EnrollmentScreenHandler::IsOnEnrollmentScreen() const {
@@ -513,6 +552,52 @@ void EnrollmentScreenHandler::HandleCompleteLogin(
   observe_network_failure_ = false;
   DCHECK(controller_);
   controller_->OnLoginDone(gaia::SanitizeEmail(user), auth_code);
+}
+
+void EnrollmentScreenHandler::HandleAdCompleteLogin(
+    const std::string& machine_name,
+    const std::string& user_name,
+    const std::string& password) {
+  observe_network_failure_ = false;
+  DCHECK(controller_);
+  base::PostTaskAndReplyWithResult(
+      content::BrowserThread::GetBlockingPool(), FROM_HERE,
+      base::Bind(&GetPasswordReadPipe, password),
+      base::Bind(&EnrollmentScreenHandler::OnPasswordPipeReady,
+                 weak_ptr_factory_.GetWeakPtr(), machine_name, user_name));
+}
+
+void EnrollmentScreenHandler::OnPasswordPipeReady(
+    const std::string& machine_name,
+    const std::string& user_name,
+    base::ScopedFD password_fd) {
+  DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
+  if (!password_fd.is_valid()) {
+    LOG(ERROR) << "Got invalid password_fd";
+    return;
+  }
+  chromeos::AuthPolicyClient* client =
+      chromeos::DBusThreadManager::Get()->GetAuthPolicyClient();
+
+  client->JoinAdDomain(machine_name,
+                       user_name,
+                       password_fd.get(),
+                       base::Bind(&EnrollmentScreenHandler::HandleAdDomainJoin,
+                                  weak_ptr_factory_.GetWeakPtr(),
+                                  machine_name,
+                                  user_name));
+}
+
+void EnrollmentScreenHandler::HandleAdDomainJoin(
+    const std::string& machine_name,
+    const std::string& user_name,
+    int code) {
+  if (code == 0) {
+    controller_->OnAdJoined(gaia::ExtractDomainName(user_name));
+    return;
+  }
+  // TODO(rsorokin): Add passing/displaying error codes. (see crbug.com/659984)
+  CallJS("invalidateAd", machine_name, user_name);
 }
 
 void EnrollmentScreenHandler::HandleRetry() {

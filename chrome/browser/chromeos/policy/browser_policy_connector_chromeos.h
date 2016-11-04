@@ -75,6 +75,8 @@ class BrowserPolicyConnectorChromeOS
   // Returns the enterprise domain if device is managed.
   std::string GetEnterpriseDomain() const;
 
+  std::string GetRealm() const;
+
   // Returns the device asset ID if it is set.
   std::string GetDeviceAssetID() const;
 

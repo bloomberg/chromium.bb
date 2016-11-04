@@ -6,12 +6,14 @@
 
 #include "base/logging.h"
 #include "chromeos/dbus/arc_obb_mounter_client.h"
+#include "chromeos/dbus/auth_policy_client.h"
 #include "chromeos/dbus/cros_disks_client.h"
 #include "chromeos/dbus/dbus_client_implementation_type.h"
 #include "chromeos/dbus/dbus_thread_manager.h"
 #include "chromeos/dbus/debug_daemon_client.h"
 #include "chromeos/dbus/easy_unlock_client.h"
 #include "chromeos/dbus/fake_arc_obb_mounter_client.h"
+#include "chromeos/dbus/fake_auth_policy_client.h"
 #include "chromeos/dbus/fake_debug_daemon_client.h"
 #include "chromeos/dbus/fake_easy_unlock_client.h"
 #include "chromeos/dbus/fake_image_burner_client.h"
@@ -26,6 +28,11 @@ DBusClientsBrowser::DBusClientsBrowser(bool use_real_clients) {
     arc_obb_mounter_client_.reset(ArcObbMounterClient::Create());
   else
     arc_obb_mounter_client_.reset(new FakeArcObbMounterClient);
+
+  if (use_real_clients)
+    auth_policy_client_.reset(AuthPolicyClient::Create());
+  else
+    auth_policy_client_.reset(new FakeAuthPolicyClient);
 
   cros_disks_client_.reset(CrosDisksClient::Create(
       use_real_clients ? REAL_DBUS_CLIENT_IMPLEMENTATION
@@ -58,6 +65,7 @@ void DBusClientsBrowser::Initialize(dbus::Bus* system_bus) {
   DCHECK(DBusThreadManager::IsInitialized());
 
   arc_obb_mounter_client_->Init(system_bus);
+  auth_policy_client_->Init(system_bus);
   cros_disks_client_->Init(system_bus);
   debug_daemon_client_->Init(system_bus);
   easy_unlock_client_->Init(system_bus);

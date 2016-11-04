@@ -6173,6 +6173,21 @@ All users must sign out to continue.
   <message name="IDS_ENTERPRISE_ENROLLMENT_LOCATION_LABEL" desc="Label for location tex box on the device naming screen in the enterprise enrollment dialog.">
     Device Location
   </message>
+  <message name="IDS_AD_MACHINE_NAME_INPUT_LABEL" desc="Label for machine name input field on the AD domain join screen. User should tell us the name of his machine.">
+    Computer name
+  </message>
+  <message name="IDS_AD_DOMAIN_JOIN_WELCOME_MESSAGE" desc="Welcome message on the AD domain join screen.">
+    Join AD domain
+  </message>
+  <message name="IDS_AD_DOMAIN_AUTH_WELCOME_MESSAGE" desc="Welcome message on the AD Authentication user screen. Include the domain (realm) the machine joined to">
+    Login to <ph name="REALM">$1<ex>example.com</ex></ph>
+  </message>
+  <message name="IDS_AD_LOGIN_USER" desc="Label for userPrincipalName input field on both AD domain join and AD Authentication user screens. Looks like user@example.com where example.com is realm">
+    Username (e.g. user@example.com)
+  </message>
+  <message name="IDS_AD_LOGIN_PASSWORD" desc="Label for Password input field on both AD domain join and AD Authorization user screens..">
+    Password
+  </message>
   <message name="IDS_ENTERPRISE_ENROLLMENT_ATTRIBUTE_EXPLANATION" desc="Device attribute message to be shown on attribute update prompt screen.">
     Optional — enter new or update existing information to be associated with this device.
   </message>

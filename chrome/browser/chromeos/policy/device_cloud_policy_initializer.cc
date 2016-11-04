@@ -101,6 +101,10 @@ void DeviceCloudPolicyInitializer::StartEnrollment(
   DCHECK(!enrollment_handler_);
 
   manager_->core()->Disconnect();
+  // TODO(rsorokin): make proper SetDeviceRequisition
+  if (!enrollment_config.management_realm.empty())
+    manager_->SetDeviceRequisition("chrome_ad");
+
   enrollment_handler_.reset(new EnrollmentHandlerChromeOS(
       device_store_, install_attributes_, state_keys_broker_,
       attestation_flow_.get(), CreateClient(device_management_service),

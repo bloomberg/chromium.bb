@@ -7,6 +7,7 @@
 #include <utility>
 
 #include "base/bind.h"
+#include "base/command_line.h"
 #include "base/location.h"
 #include "base/logging.h"
 #include "base/single_thread_task_runner.h"
@@ -23,6 +24,7 @@
 #include "chrome/browser/chromeos/settings/device_oauth2_token_service_factory.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chromeos/attestation/attestation_flow.h"
+#include "chromeos/chromeos_switches.h"
 #include "google_apis/gaia/gaia_auth_util.h"
 #include "google_apis/gaia/gaia_urls.h"
 #include "net/http/http_status_code.h"
@@ -195,9 +197,15 @@ void EnrollmentHandlerChromeOS::OnRegistrationStateChanged(
   DCHECK_EQ(client_.get(), client);
 
   if (enrollment_step_ == STEP_REGISTRATION && client_->is_registered()) {
-    enrollment_step_ = STEP_POLICY_FETCH,
+    enrollment_step_ = STEP_POLICY_FETCH;
     device_mode_ = client_->device_mode();
-    if (device_mode_ != DEVICE_MODE_ENTERPRISE) {
+    // TODO(rsorokin): remove after have proper test server.
+    if (base::CommandLine::ForCurrentProcess()->HasSwitch(
+            chromeos::switches::kEnableAd)) {
+      device_mode_ = DEVICE_MODE_ENTERPRISE_AD;
+    }
+    if (device_mode_ != DEVICE_MODE_ENTERPRISE &&
+        device_mode_ != DEVICE_MODE_ENTERPRISE_AD) {
       LOG(ERROR) << "Bad device mode " << device_mode_;
       ReportResult(EnrollmentStatus::ForStatus(
           EnrollmentStatus::STATUS_REGISTRATION_BAD_MODE));
@@ -318,7 +326,10 @@ void EnrollmentHandlerChromeOS::HandlePolicyValidationResult(
   CHECK_EQ(STEP_VALIDATION, enrollment_step_);
   if (validator->success()) {
     std::string username = validator->policy_data()->username();
-    domain_ = gaia::ExtractDomainName(gaia::CanonicalizeEmail(username));
+    // TODO(rsorokin): remove device_mode_ check when device is locked
+    // with both realm and domain.
+    if (device_mode_ != DEVICE_MODE_ENTERPRISE_AD)
+      domain_ = gaia::ExtractDomainName(gaia::CanonicalizeEmail(username));
     device_id_ = validator->policy_data()->device_id();
     policy_ = std::move(validator->policy());
     enrollment_step_ = STEP_ROBOT_AUTH_FETCH;
@@ -406,7 +417,7 @@ void EnrollmentHandlerChromeOS::StartLockDevice() {
   weak_ptr_factory_.InvalidateWeakPtrs();
 
   install_attributes_->LockDevice(
-      device_mode_, domain_, std::string() /* realm */, device_id_,
+      device_mode_, domain_, enrollment_config_.management_realm, device_id_,
       base::Bind(&EnrollmentHandlerChromeOS::HandleLockDeviceResult,
                  weak_ptr_factory_.GetWeakPtr()));
 }
@@ -483,8 +494,12 @@ void EnrollmentHandlerChromeOS::HandleStoreRobotAuthTokenResult(bool result) {
     return;
   }
 
-  enrollment_step_ = STEP_STORE_POLICY;
-  store_->InstallInitialPolicy(*policy_);
+  if (device_mode_ == policy::DEVICE_MODE_ENTERPRISE_AD) {
+    ReportResult(EnrollmentStatus::ForStatus(EnrollmentStatus::STATUS_SUCCESS));
+  } else {
+    enrollment_step_ = STEP_STORE_POLICY;
+    store_->InstallInitialPolicy(*policy_);
+  }
 }
 
 void EnrollmentHandlerChromeOS::Stop() {

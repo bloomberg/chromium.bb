@@ -35,6 +35,7 @@
 .oauth-enroll-state-attribute-prompt-error
     #oauth-enroll-step-attribute-prompt-error,
 .oauth-enroll-state-signin #oauth-enroll-step-signin,
+.oauth-enroll-state-ad-join #oauth-enroll-step-ad-join,
 .oauth-enroll-state-attribute-prompt
     #oauth-enroll-step-attribute-prompt {
   display: block;
@@ -115,6 +116,7 @@
 }
 
 .oauth-enroll-state-signin #oauth-enroll-navigation,
+.oauth-enroll-state-ad-join #oauth-enroll-navigation,
 .oauth-enroll-state-working #oauth-enroll-navigation {
   color: white;
 }

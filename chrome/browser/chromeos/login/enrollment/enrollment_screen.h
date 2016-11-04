@@ -65,6 +65,7 @@ class EnrollmentScreen
   void OnRetry() override;
   void OnCancel() override;
   void OnConfirmationClosed() override;
+  void OnAdJoined(const std::string& realm) override;
   void OnDeviceAttributeProvided(const std::string& asset_id,
                                  const std::string& location) override;
 
@@ -154,6 +155,7 @@ class EnrollmentScreen
   Auth last_auth_ = AUTH_OAUTH;
   bool enrollment_failed_once_ = false;
   std::string enrolling_user_domain_;
+  std::string auth_code_;
   std::unique_ptr<base::ElapsedTimer> elapsed_timer_;
   std::unique_ptr<EnterpriseEnrollmentHelper> enrollment_helper_;
   base::WeakPtrFactory<EnrollmentScreen> weak_ptr_factory_;
