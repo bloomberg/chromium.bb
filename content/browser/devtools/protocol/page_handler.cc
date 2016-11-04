@@ -409,6 +409,66 @@ Response PageHandler::ProcessNavigation(const std::string& response,
   return Response::InvalidParams("Unrecognized response");
 }
 
+Response PageHandler::AddScriptToEvaluateOnLoad(const std::string& source,
+                                                std::string* identifier) {
+  return Response::FallThrough();
+}
+
+Response PageHandler::RemoveScriptToEvaluateOnLoad(
+    const std::string& identifier) {
+  return Response::FallThrough();
+}
+
+Response PageHandler::SetAutoAttachToCreatedPages(bool auto_attach) {
+  return Response::FallThrough();
+}
+
+Response PageHandler::GetResourceTree(scoped_refptr<FrameResourceTree>* tree) {
+  return Response::FallThrough();
+}
+
+Response PageHandler::GetResourceContent(DevToolsCommandId command_id,
+                                         const std::string& frame_id,
+                                         const std::string& url) {
+  return Response::FallThrough();
+}
+
+Response PageHandler::SearchInResource(DevToolsCommandId command_id,
+                                       const std::string& frame_id,
+                                       const std::string& url,
+                                       const std::string& query,
+                                       bool* case_sensitive,
+                                       bool* is_regex) {
+  return Response::FallThrough();
+}
+
+Response PageHandler::SetDocumentContent(const std::string& frame_id,
+                                         const std::string& html) {
+  return Response::FallThrough();
+}
+
+Response PageHandler::ConfigureOverlay(const bool* is_suspended,
+                                       const std::string* message) {
+  return Response::FallThrough();
+}
+
+Response PageHandler::GetAppManifest(
+    std::string* url,
+    std::vector<scoped_refptr<AppManifestError>>* errors,
+    std::string* data) {
+  return Response::FallThrough();
+}
+
+Response PageHandler::SetBlockedEventsWarningThreshold(double threshold) {
+  return Response::FallThrough();
+}
+
+Response PageHandler::GetLayoutMetrics(
+    scoped_refptr<LayoutViewport>* layout_viewport,
+    scoped_refptr<VisualViewport>* visual_viewport) {
+  return Response::FallThrough();
+}
+
 std::unique_ptr<PageNavigationThrottle>
 PageHandler::CreateThrottleForNavigation(NavigationHandle* navigation_handle) {
   if (!navigation_throttle_enabled_)

@@ -471,6 +471,14 @@ Response InputHandler::SynthesizeTapGesture(
   return Response::OK();
 }
 
+Response InputHandler::DispatchTouchEvent(
+    const std::string& type,
+    const std::vector<std::unique_ptr<base::DictionaryValue>>& touch_points,
+    const int* modifiers,
+    const double* timestamp) {
+  return Response::FallThrough();
+}
+
 void InputHandler::SendSynthesizePinchGestureResponse(
     DevToolsCommandId command_id,
     SyntheticGesture::Result result) {

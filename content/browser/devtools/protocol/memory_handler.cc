@@ -46,6 +46,13 @@ MemoryHandler::Response MemoryHandler::SimulatePressureNotification(
   return Response::OK();
 }
 
+MemoryHandler::Response MemoryHandler::GetDOMCounters(
+    int* documents,
+    int* nodes,
+    int* event_listeners) {
+  return Response::FallThrough();
+}
+
 }  // namespace memory
 }  // namespace devtools
 }  // namespace content

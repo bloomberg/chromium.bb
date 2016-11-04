@@ -8,12 +8,12 @@
             {
                 "name": "enable",
                 "description": "Enables inspector domain notifications.",
-                "handlers": ["browser"]
+                "handlers": []
             },
             {
                 "name": "disable",
                 "description": "Disables inspector domain notifications.",
-                "handlers": ["browser"]
+                "handlers": []
             }
         ],
         "events": [
@@ -23,12 +23,12 @@
                 "parameters": [
                     { "name": "reason", "type": "string", "description": "The reason why connection has been terminated." }
                 ],
-                "handlers": ["browser"]
+                "handlers": []
             },
             {
                 "name": "targetCrashed",
                 "description": "Fired when debugging target has crashed",
-                "handlers": ["browser"]
+                "handlers": []
             }
         ]
     },
@@ -58,7 +58,7 @@
                 "parameters": [
                     { "name": "suppressed", "type": "boolean", "description": "If true, memory pressure notifications will be suppressed."}
                 ],
-                "handlers": ["browser"]
+                "handlers": []
             },
             {
                 "name": "simulatePressureNotification",
@@ -66,7 +66,7 @@
                 "parameters": [
                     { "name": "level", "$ref": "PressureLevel", "description": "Memory pressure level of the notification." }
                 ],
-                "handlers": ["browser"]
+                "handlers": []
             }
         ]
     },
@@ -215,13 +215,11 @@
         "commands": [
             {
                 "name": "enable",
-                "description": "Enables page domain notifications.",
-                "handlers": ["browser", "renderer"]
+                "description": "Enables page domain notifications."
             },
             {
                 "name": "disable",
-                "description": "Disables page domain notifications.",
-                "handlers": ["browser", "renderer"]
+                "description": "Disables page domain notifications."
             },
             {
                 "name": "addScriptToEvaluateOnLoad",
@@ -254,8 +252,7 @@
                     { "name": "ignoreCache", "type": "boolean", "optional": true, "description": "If true, browser cache is ignored (as if the user pressed Shift+refresh)." },
                     { "name": "scriptToEvaluateOnLoad", "type": "string", "optional": true, "description": "If set, the script will be injected into all frames of the inspected page after reload." }
                 ],
-                "description": "Reloads given page optionally ignoring the cache.",
-                "handlers": ["browser", "renderer"]
+                "description": "Reloads given page optionally ignoring the cache."
             },
             {
                 "name": "navigate",
@@ -265,8 +262,7 @@
                 "returns": [
                     { "name": "frameId", "$ref": "FrameId", "experimental": true, "description": "Frame id that will be navigated." }
                 ],
-                "description": "Navigates current page to the given URL.",
-                "handlers": ["browser", "renderer"]
+                "description": "Navigates current page to the given URL."
             },
             {
               "name": "getNavigationHistory",
@@ -276,7 +272,7 @@
               ],
               "description": "Returns navigation history for the current page.",
               "experimental": true,
-              "handlers": ["browser"]
+              "handlers": []
             },
             {
               "name": "navigateToHistoryEntry",
@@ -285,7 +281,7 @@
               ],
               "description": "Navigates current page to the given history entry.",
               "experimental": true,
-              "handlers": ["browser"]
+              "handlers": []
             },
             {
                 "name": "getCookies",
@@ -293,7 +289,7 @@
                     { "name": "cookies", "type": "array", "items": { "$ref": "Network.Cookie" }, "description": "Array of cookie objects." }
                 ],
                 "description": "Returns all browser cookies. Depending on the backend support, will return detailed cookie information in the <code>cookies</code> field.",
-                "handlers": ["browser"],
+                "handlers": [],
                 "async": true,
                 "experimental": true,
                 "redirect": "Network"
@@ -305,7 +301,7 @@
                     { "name": "url", "type": "string", "description": "URL to match cooke domain and path." }
                 ],
                 "description": "Deletes browser cookie with given name, domain and path.",
-                "handlers": ["browser"],
+                "handlers": [],
                 "async": true,
                 "experimental": true,
                 "redirect": "Network"
@@ -375,14 +371,14 @@
                     { "name": "positionY", "type": "integer", "optional": true, "description": "Overriding view Y position on screen in pixels (minimum 0, maximum 10000000). Only used for |mobile==true|." },
                     { "name": "screenOrientation", "$ref": "Emulation.ScreenOrientation", "optional": true, "description": "Screen orientation override." }
                 ],
-                "handlers": ["browser"],
+                "handlers": [],
                 "redirect": "Emulation",
                 "experimental": true
             },
             {
                 "name": "clearDeviceMetricsOverride",
                 "description": "Clears the overriden device metrics.",
-                "handlers": ["browser"],
+                "handlers": [],
                 "redirect": "Emulation",
                 "experimental": true
             },
@@ -395,13 +391,13 @@
                     { "name": "accuracy", "type": "number", "optional": true, "description": "Mock accuracy"}
                 ],
                 "redirect": "Emulation",
-                "handlers": ["browser"]
+                "handlers": []
             },
             {
                 "name": "clearGeolocationOverride",
                 "description": "Clears the overriden Geolocation Position and Error.",
                 "redirect": "Emulation",
-                "handlers": ["browser"]
+                "handlers": []
             },
             {
                 "name": "setDeviceOrientationOverride",
@@ -428,8 +424,7 @@
                 ],
                 "description": "Toggles mouse event-based touch event emulation.",
                 "experimental": true,
-                "redirect": "Emulation",
-                "handlers": ["browser", "renderer"]
+                "redirect": "Emulation"
             },
             {
                 "name": "captureScreenshot",
@@ -439,7 +434,7 @@
                     { "name": "data", "type": "string", "description": "Base64-encoded image data (PNG)." }
                 ],
                 "experimental": true,
-                "handlers": ["browser"]
+                "handlers": []
             },
             {
                 "name": "startScreencast",
@@ -451,14 +446,12 @@
                     { "name": "maxHeight", "type": "integer", "optional": true, "description": "Maximum screenshot height." },
                     { "name": "everyNthFrame", "type": "integer", "optional": true, "description": "Send every n-th frame." }
                 ],
-                "experimental": true,
-                "handlers": ["browser", "renderer"]
+                "experimental": true
             },
             {
                 "name": "stopScreencast",
                 "description": "Stops sending each frame in the <code>screencastFrame</code>.",
-                "experimental": true,
-                "handlers": ["browser", "renderer"]
+                "experimental": true
             },
             {
                 "name": "screencastFrameAck",
@@ -467,7 +460,7 @@
                     { "name": "sessionId", "type": "integer", "description": "Frame number." }
                 ],
                 "experimental": true,
-                "handlers": ["browser"]
+                "handlers": []
             },
             {
                 "name": "handleJavaScriptDialog",
@@ -476,7 +469,7 @@
                     { "name": "accept", "type": "boolean", "description": "Whether to accept or dismiss the dialog." },
                     { "name": "promptText", "type": "string", "optional": true, "description": "The text to enter into the dialog prompt before accepting. Used only if this is a prompt dialog." }
                 ],
-                "handlers": ["browser"]
+                "handlers": []
             },
             {
                 "name": "setColorPickerEnabled",
@@ -485,7 +478,7 @@
                 ],
                 "description": "Shows / hides color picker",
                 "experimental": true,
-                "handlers": ["browser"]
+                "handlers": []
             },
             {
                 "name": "configureOverlay",
@@ -509,7 +502,7 @@
             {
                 "name": "requestAppBanner",
                 "experimental": true,
-                "handlers": ["browser"]
+                "handlers": []
             },
             {
                 "name": "setBlockedEventsWarningThreshold",
@@ -525,7 +518,7 @@
                 ],
                 "description": "Toggles navigation throttling which allows programatic control over navigation and redirect response.",
                 "experimental": true,
-                "handlers": ["browser"]
+                "handlers": []
             },
             {
                 "name": "processNavigation",
@@ -535,7 +528,7 @@
                 ],
                 "description": "Should be sent in response to a navigationRequested or a redirectRequested event, telling the browser how to handle the navigation.",
                 "experimental": true,
-                "handlers": ["browser"]
+                "handlers": []
             },
             {
                 "name": "getLayoutMetrics",
@@ -643,7 +636,7 @@
                     { "name": "sessionId", "type": "integer", "description": "Frame number."}
                 ],
                 "experimental": true,
-                "handlers": ["browser"]
+                "handlers": []
             },
             {
                 "name": "screencastVisibilityChanged",
@@ -652,7 +645,7 @@
                     { "name": "visible", "type": "boolean", "description": "True if the page is visible." }
                 ],
                 "experimental": true,
-                "handlers": ["browser"]
+                "handlers": []
             },
             {
                 "name": "colorPicked",
@@ -661,17 +654,17 @@
                     { "name": "color", "$ref": "DOM.RGBA", "description": "RGBA of the picked color." }
                 ],
                 "experimental": true,
-                "handlers": ["browser"]
+                "handlers": []
             },
             {
                 "name": "interstitialShown",
                 "description": "Fired when interstitial page was shown",
-                "handlers": ["browser"]
+                "handlers": []
             },
             {
                 "name": "interstitialHidden",
                 "description": "Fired when interstitial page was hidden",
-                "handlers": ["browser"]
+                "handlers": []
             },
             {
                 "name": "navigationRequested",
@@ -682,7 +675,7 @@
                     { "name": "navigationId", "type": "integer" },
                     { "name": "url", "type": "string", "description": "URL of requested navigation." }
                 ],
-                "handlers": ["browser"]
+                "handlers": []
             }
         ]
     },
@@ -772,12 +765,12 @@
                     { "name": "positionY", "type": "integer", "optional": true, "experimental": true, "description": "Overriding view Y position on screen in pixels (minimum 0, maximum 10000000). Only used for |mobile==true|." },
                     { "name": "screenOrientation", "$ref": "ScreenOrientation", "optional": true, "description": "Screen orientation override." }
                 ],
-                "handlers": ["browser"]
+                "handlers": []
             },
             {
                 "name": "clearDeviceMetricsOverride",
                 "description": "Clears the overriden device metrics.",
-                "handlers": ["browser"]
+                "handlers": []
             },
             {
                 "name": "forceViewport",
@@ -815,7 +808,7 @@
                     { "name": "width", "type": "integer", "description": "Frame width (DIP)." },
                     { "name": "height", "type": "integer", "description": "Frame height (DIP)." }
                 ],
-                "handlers": ["browser"]
+                "handlers": []
             },
             {
                 "name": "setScriptExecutionDisabled",
@@ -834,13 +827,13 @@
                     { "name": "longitude", "type": "number", "optional": true, "description": "Mock longitude"},
                     { "name": "accuracy", "type": "number", "optional": true, "description": "Mock accuracy"}
                 ],
-                "handlers": ["browser"]
+                "handlers": []
             },
             {
                 "name": "clearGeolocationOverride",
                 "description": "Clears the overriden Geolocation Position and Error.",
                 "experimental": true,
-                "handlers": ["browser"]
+                "handlers": []
             },
             {
                 "name": "setTouchEmulationEnabled",
@@ -848,8 +841,7 @@
                     { "name": "enabled", "type": "boolean", "description": "Whether the touch event emulation should be enabled." },
                     { "name": "configuration", "type": "string", "enum": ["mobile", "desktop"], "optional": true, "description": "Touch/gesture events configuration. Default: current platform." }
                 ],
-                "description": "Toggles mouse event-based touch event emulation.",
-                "handlers": ["browser", "renderer"]
+                "description": "Toggles mouse event-based touch event emulation."
             },
             {
                 "name": "setEmulatedMedia",
@@ -873,7 +865,7 @@
                     { "name": "result", "type": "boolean", "description": "True if emulation is supported." }
                 ],
                 "experimental": true,
-                "handlers": ["browser"]
+                "handlers": []
             },
             {
                 "name": "setVirtualTimePolicy",
@@ -938,17 +930,17 @@
             {
                 "name": "enable",
                 "description": "Enables tracking security state changes.",
-                "handlers": ["browser"]
+                "handlers": []
             },
             {
                 "name": "disable",
                 "description": "Disables tracking security state changes.",
-                "handlers": ["browser"]
+                "handlers": []
             },
             {
                 "name": "showCertificateViewer",
                 "description": "Displays native dialog with the certificate details.",
-                "handlers": ["browser"]
+                "handlers": []
             }
         ],
         "events": [
@@ -961,7 +953,7 @@
                     { "name": "insecureContentStatus", "$ref": "InsecureContentStatus", "description": "Information about insecure content on the page.", "optional": true },
                     { "name": "schemeIsCryptographic", "type": "boolean", "description": "True if the page was loaded over cryptographic transport such as HTTPS.", "optional": true }
                 ],
-                "handlers": ["browser"]
+                "handlers": []
             }
         ]
     },
@@ -1193,13 +1185,11 @@
                 "parameters": [
                     { "name": "maxTotalBufferSize", "type": "integer", "optional": true, "experimental": true, "description": "Buffer size in bytes to use when preserving network payloads (XHRs, etc)." },
                     { "name": "maxResourceBufferSize", "type": "integer", "optional": true, "experimental": true, "description": "Per-resource buffer size in bytes to use when preserving network payloads (XHRs, etc)." }
-                ],
-                "handlers": ["renderer", "browser"]
+                ]
             },
             {
                 "name": "disable",
-                "description": "Disables network tracking, prevents network events from being sent to the client.",
-                "handlers": ["renderer", "browser"]
+                "description": "Disables network tracking, prevents network events from being sent to the client."
             },
             {
                 "name": "setUserAgentOverride",
@@ -1269,7 +1259,7 @@
             {
                 "name": "clearBrowserCache",
                 "description": "Clears browser cache.",
-                "handlers": ["browser"]
+                "handlers": []
             },
             {
                 "name": "canClearBrowserCookies",
@@ -1281,7 +1271,7 @@
             {
                 "name": "clearBrowserCookies",
                 "description": "Clears browser cookies.",
-                "handlers": ["browser"]
+                "handlers": []
             },
             {
                 "name": "getCookies",
@@ -1289,7 +1279,7 @@
                     { "name": "cookies", "type": "array", "items": { "$ref": "Cookie" }, "description": "Array of cookie objects." }
                 ],
                 "description": "Returns all browser cookies. Depending on the backend support, will return detailed cookie information in the <code>cookies</code> field.",
-                "handlers": ["browser"],
+                "handlers": [],
                 "async": true,
                 "experimental": true
             },
@@ -1300,7 +1290,7 @@
                     { "name": "url", "type": "string", "description": "URL to match cooke domain and path." }
                 ],
                 "description": "Deletes browser cookie with given name, domain and path.",
-                "handlers": ["browser"],
+                "handlers": [],
                 "async": true,
                 "experimental": true
             },
@@ -1321,7 +1311,7 @@
                     { "name": "success", "type": "boolean", "description": "True if successfully set cookie." }
                 ],
                 "description": "Sets a cookie with the given cookie data; may overwrite equivalent cookies if they exist.",
-                "handlers": ["browser"],
+                "handlers": [],
                 "async": true,
                 "experimental": true
             },
@@ -1332,7 +1322,7 @@
                   { "name": "result", "type": "boolean", "description": "True if emulation of network conditions is supported." }
                 ],
                 "experimental": true,
-                "handlers": ["browser"]
+                "handlers": []
             },
             {
                 "name": "emulateNetworkConditions",
@@ -1343,8 +1333,7 @@
                     { "name": "downloadThroughput", "type": "number", "description": "Maximal aggregated download throughput." },
                     { "name": "uploadThroughput", "type": "number", "description": "Maximal aggregated upload throughput." },
                     { "name": "connectionType", "$ref": "ConnectionType", "optional": true, "description": "Connection type if known."}
-                ],
-                "handlers": ["browser", "renderer"]
+                ]
             },
             {
                 "name": "setCacheDisabled",
@@ -1379,7 +1368,6 @@
                 "returns": [
                     { "name": "tableNames", "type": "array", "items": { "type": "string" } }
                 ],
-                "handlers": ["renderer"],
                 "experimental": true
             }
         ],
@@ -2526,8 +2514,7 @@
                     { "name": "files", "type": "array", "items": { "type": "string" }, "description": "Array of file paths to set." }
                 ],
                 "description": "Sets files for the given file input element.",
-                "experimental": true,
-                "handlers": ["browser", "renderer"]
+                "experimental": true
             },
             {
                 "name": "getBoxModel",
@@ -3259,7 +3246,7 @@
                     { "name": "data", "type": "string", "description": "Data that were read." },
                     { "name": "eof", "type": "boolean", "description": "Set if the end-of-file condition occured while reading." }
                 ],
-                "handlers": ["browser"]
+                "handlers": []
             },
             {
                 "name": "close",
@@ -3267,7 +3254,7 @@
                 "parameters": [
                     { "name": "handle", "$ref": "StreamHandle", "description": "Handle of the stream to close." }
                 ],
-                "handlers": ["browser"]
+                "handlers": []
             }
         ]
     },
@@ -3415,7 +3402,7 @@
                 "parameters": [
                     { "name": "discover", "type": "boolean", "description": "Whether to discover available targets." }
                 ],
-                "handlers": ["browser"]
+                "handlers": []
             },
             {
                 "name": "setAutoAttach",
@@ -3423,15 +3410,14 @@
                 "parameters": [
                     { "name": "autoAttach", "type": "boolean", "description": "Whether to auto-attach to related targets." },
                     { "name": "waitForDebuggerOnStart", "type": "boolean", "description": "Whether to pause new targets when attaching to them. Use <code>Runtime.runIfWaitingForDebugger</code> to run paused targets." }
-                ],
-                "handlers": ["browser", "renderer"]
+                ]
             },
             {
                 "name": "setAttachToFrames",
                 "parameters": [
                     { "name": "value", "type": "boolean", "description": "Whether to attach to frames." }
                 ],
-                "handlers": ["browser"]
+                "handlers": []
             },
             {
                 "name": "setRemoteLocations",
@@ -3439,7 +3425,7 @@
                 "parameters": [
                     { "name": "locations", "type": "array", "items": { "$ref": "RemoteLocation" }, "description": "List of remote locations." }
                 ],
-                "handlers": ["browser"]
+                "handlers": []
             },
             {
                 "name": "sendMessageToTarget",
@@ -3447,8 +3433,7 @@
                 "parameters": [
                     { "name": "targetId", "type": "string" },
                     { "name": "message", "type": "string" }
-                ],
-                "handlers": ["browser", "renderer"]
+                ]
             },
             {
                 "name": "getTargetInfo",
@@ -3459,7 +3444,7 @@
                 "returns": [
                     { "name": "targetInfo","$ref": "TargetInfo" }
                 ],
-                "handlers": ["browser"]
+                "handlers": []
             },
             {
                 "name": "activateTarget",
@@ -3467,7 +3452,7 @@
                 "parameters": [
                     { "name": "targetId", "$ref": "TargetID" }
                 ],
-                "handlers": ["browser"]
+                "handlers": []
             },
             {
                 "name": "closeTarget",
@@ -3478,7 +3463,7 @@
                 "returns": [
                     { "name": "success", "type": "boolean" }
                 ],
-                "handlers": ["browser"]
+                "handlers": []
             },
             {
                 "name": "attachToTarget",
@@ -3489,7 +3474,7 @@
                 "returns": [
                     { "name": "success", "type": "boolean", "description": "Whether attach succeeded." }
                 ],
-                "handlers": ["browser"]
+                "handlers": []
             },
             {
                 "name": "detachFromTarget",
@@ -3497,7 +3482,7 @@
                 "parameters": [
                     { "name": "targetId", "$ref": "TargetID" }
                 ],
-                "handlers": ["browser"]
+                "handlers": []
             },
             {
                 "name": "createBrowserContext",
@@ -3505,7 +3490,7 @@
                 "returns": [
                     { "name": "browserContextId", "$ref": "BrowserContextID", "description": "The id of the context created." }
                 ],
-                "handlers": ["browser"]
+                "handlers": []
             },
             {
                 "name": "disposeBrowserContext",
@@ -3516,7 +3501,7 @@
                 "returns": [
                     { "name": "success", "type": "boolean" }
                 ],
-                "handlers": ["browser"]
+                "handlers": []
             },
             {
                 "name": "createTarget",
@@ -3530,7 +3515,7 @@
                 "returns": [
                     { "name": "targetId", "$ref": "TargetID", "description": "The id of the page opened." }
                 ],
-                "handlers": ["browser"]
+                "handlers": []
             },
             {
                 "name": "getTargets",
@@ -3538,7 +3523,7 @@
                 "returns": [
                     { "name": "targetInfos", "type": "array", "items": { "$ref": "TargetInfo" }, "description": "The list of targets." }
                 ],
-                "handlers": ["browser"]
+                "handlers": []
             }
         ],
         "events": [
@@ -3548,7 +3533,7 @@
                 "parameters": [
                     { "name": "targetInfo", "$ref": "TargetInfo" }
                 ],
-                "handlers": ["browser"]
+                "handlers": []
             },
             {
                 "name": "targetDestroyed",
@@ -3556,7 +3541,7 @@
                 "parameters": [
                     { "name": "targetId", "$ref": "TargetID" }
                 ],
-                "handlers": ["browser"]
+                "handlers": []
             },
             {
                 "name": "attachedToTarget",
@@ -3564,16 +3549,14 @@
                 "parameters": [
                     { "name": "targetInfo", "$ref": "TargetInfo" },
                     { "name": "waitingForDebugger", "type": "boolean" }
-                ],
-                "handlers": ["browser", "renderer"]
+                ]
             },
             {
                 "name": "detachedFromTarget",
                 "description": "Issued when detached from target for any reason (including <code>detachFromTarget</code> command).",
                 "parameters": [
                     { "name": "targetId", "$ref": "TargetID" }
-                ],
-                "handlers": ["browser", "renderer"]
+                ]
             },
             {
                 "name": "receivedMessageFromTarget",
@@ -3581,8 +3564,7 @@
                 "parameters": [
                     { "name": "targetId", "$ref": "TargetID" },
                     { "name": "message", "type": "string" }
-                ],
-                "handlers": ["browser", "renderer"]
+                ]
             }
         ]
     },
@@ -3643,60 +3625,60 @@
         "commands": [
             {
                 "name": "enable",
-                "handlers": ["browser"]
+                "handlers": []
             },
             {
                 "name": "disable",
-                "handlers": ["browser"]
+                "handlers": []
             },
             {
                 "name": "unregister",
                 "parameters": [
                     { "name": "scopeURL", "type": "string" }
                 ],
-                "handlers": ["browser"]
+                "handlers": []
             },
             {
                 "name": "updateRegistration",
                 "parameters": [
                     { "name": "scopeURL", "type": "string" }
                 ],
-                "handlers": ["browser"]
+                "handlers": []
             },
             {
                 "name": "startWorker",
                 "parameters": [
                     { "name": "scopeURL", "type": "string" }
                 ],
-                "handlers": ["browser"]
+                "handlers": []
             },
             {
                 "name": "skipWaiting",
                 "parameters": [
                     { "name": "scopeURL", "type": "string" }
                 ],
-                "handlers": ["browser"]
+                "handlers": []
             },
             {
                 "name": "stopWorker",
                 "parameters": [
                     { "name": "versionId", "type": "string" }
                 ],
-                "handlers": ["browser"]
+                "handlers": []
             },
             {
                 "name": "inspectWorker",
                 "parameters": [
                     { "name": "versionId", "type": "string" }
                 ],
-                "handlers": ["browser"]
+                "handlers": []
             },
             {
                 "name": "setForceUpdateOnPageLoad",
                 "parameters": [
                     { "name": "forceUpdateOnPageLoad", "type": "boolean" }
                 ],
-                "handlers": ["browser"]
+                "handlers": []
             },
             {
                 "name": "deliverPushMessage",
@@ -3705,7 +3687,7 @@
                     { "name": "registrationId", "type": "string" },
                     { "name": "data", "type": "string" }
                 ],
-                "handlers": ["browser"]
+                "handlers": []
             },
             {
                 "name": "dispatchSyncEvent",
@@ -3715,7 +3697,7 @@
                     { "name": "tag", "type": "string" },
                     { "name": "lastChance", "type": "boolean" }
                 ],
-                "handlers": ["browser"]
+                "handlers": []
             }
         ],
         "events": [
@@ -3724,21 +3706,21 @@
                 "parameters": [
                     { "name": "registrations", "type": "array", "items": { "$ref": "ServiceWorkerRegistration" } }
                 ],
-                "handlers": ["browser"]
+                "handlers": []
             },
             {
                 "name": "workerVersionUpdated",
                 "parameters": [
                     { "name": "versions", "type": "array", "items": { "$ref": "ServiceWorkerVersion" } }
                 ],
-                "handlers": ["browser"]
+                "handlers": []
             },
             {
                 "name": "workerErrorReported",
                 "parameters": [
                     { "name": "errorMessage", "$ref": "ServiceWorkerErrorMessage" }
                 ],
-                "handlers": ["browser"]
+                "handlers": []
             }
         ]
     },
@@ -3786,7 +3768,7 @@
                     { "name": "isSystemKey", "type": "boolean", "optional": true, "description": "Whether the event was a system key event (default: false)." }
                 ],
                 "description": "Dispatches a key event to the page.",
-                "handlers": ["browser"]
+                "handlers": []
             },
             {
                 "name": "dispatchMouseEvent",
@@ -3800,7 +3782,7 @@
                     { "name": "clickCount", "type": "integer", "optional": true, "description": "Number of times the mouse button was clicked (default: 0)." }
                 ],
                 "description": "Dispatches a mouse event to the page.",
-                "handlers": ["browser"]
+                "handlers": []
             },
             {
                 "name": "dispatchTouchEvent",
@@ -3828,7 +3810,7 @@
                     { "name": "clickCount", "type": "integer", "optional": true, "description": "Number of times the mouse button was clicked (default: 0)." }
                 ],
                 "description": "Emulates touch event from the mouse event parameters.",
-                "handlers": ["browser"]
+                "handlers": []
             },
             {
                 "name": "synthesizePinchGesture",
@@ -3842,7 +3824,7 @@
                 ],
                 "description": "Synthesizes a pinch gesture over a time period by issuing appropriate touch events.",
                 "experimental": true,
-                "handlers": ["browser"]
+                "handlers": []
             },
             {
                 "name": "synthesizeScrollGesture",
@@ -3863,7 +3845,7 @@
                 ],
                 "description": "Synthesizes a scroll gesture over a time period by issuing appropriate touch events.",
                 "experimental": true,
-                "handlers": ["browser"]
+                "handlers": []
             },
             {
                 "name": "synthesizeTapGesture",
@@ -3877,7 +3859,7 @@
                 ],
                 "description": "Synthesizes a tap gesture over a time period by issuing appropriate touch events.",
                 "experimental": true,
-                "handlers": ["browser"]
+                "handlers": []
             }
         ],
         "events": []
@@ -4100,14 +4082,12 @@
                     { "name": "bufferUsageReportingInterval", "type": "number", "optional": true, "description": "If set, the agent will issue bufferUsage events at this interval, specified in milliseconds" },
                     { "name": "transferMode", "type": "string", "enum": ["ReportEvents", "ReturnAsStream"], "optional": true, "description": "Whether to report trace events as series of dataCollected events or to save trace to a stream (defaults to <code>ReportEvents</code>)." },
                     { "name": "traceConfig", "$ref": "TraceConfig", "optional": true, "description": "" }
-                ],
-                "handlers": ["browser", "renderer"]
+                ]
             },
             {
                 "name": "end",
                 "async": true,
-                "description": "Stop trace events collection.",
-                "handlers": ["browser", "renderer"]
+                "description": "Stop trace events collection."
             },
             {
                 "name": "getCategories",
@@ -4116,7 +4096,7 @@
                 "returns": [
                     { "name": "categories", "type": "array", "items": { "type": "string" }, "description": "A list of supported tracing categories." }
                 ],
-                "handlers": ["browser"]
+                "handlers": []
             },
             {
                 "name": "requestMemoryDump",
@@ -4126,7 +4106,7 @@
                     { "name": "dumpGuid", "type": "string", "description": "GUID of the resulting global memory dump." },
                     { "name": "success", "type": "boolean", "description": "True iff the global memory dump succeeded." }
                 ],
-                "handlers": ["browser"]
+                "handlers": []
             },
             {
                 "name": "recordClockSyncMarker",
@@ -4134,7 +4114,7 @@
                 "parameters": [
                     { "name": "syncId", "type": "string", "description": "The ID of this clock sync marker" }
                 ],
-                "handlers": ["browser"]
+                "handlers": []
             }
         ],
         "events": [
@@ -4144,7 +4124,7 @@
                     { "name": "value", "type": "array", "items": { "type": "object" } }
                 ],
                 "description": "Contains an bucket of collected trace events. When tracing is stopped collected events will be send as a sequence of dataCollected events followed by tracingComplete event.",
-                "handlers": ["browser"]
+                "handlers": []
             },
             {
                 "name": "tracingComplete",
@@ -4152,7 +4132,7 @@
                 "parameters": [
                     { "name": "stream", "$ref": "IO.StreamHandle", "optional": true, "description": "A handle of the stream that holds resulting trace data." }
                 ],
-                "handlers": ["browser"]
+                "handlers": []
             },
             {
                 "name": "bufferUsage",
@@ -4161,7 +4141,7 @@
                     { "name": "eventCount", "type": "number", "optional": true, "description": "An approximate number of events in the trace log." },
                     { "name": "value", "type": "number", "optional": true, "description": "A number in range [0..1] that indicates the used size of event buffer as a fraction of its total size." }
                 ],
-                "handlers": ["browser"]
+                "handlers": []
             }
         ]
     },
@@ -4487,7 +4467,7 @@
                     { "name": "storageTypes", "type": "string", "description": "Comma separated origin names." }
                 ],
                 "description": "Clears storage for origin.",
-                "handlers": ["browser"]
+                "handlers": []
             }
         ]
     },
@@ -4576,7 +4556,7 @@
                     { "name": "modelName", "type": "string", "description": "A platform-dependent description of the model of the machine. On Mac OS, this is, for example, 'MacBookPro'. Will be the empty string if not supported." },
                     { "name": "modelVersion", "type": "string", "description": "A platform-dependent description of the version of the machine. On Mac OS, this is, for example, '10.1'. Will be the empty string if not supported." }
                 ],
-                "handlers": ["browser"]
+                "handlers": []
             }
         ]
     },
@@ -4592,7 +4572,7 @@
                 "parameters": [
                     { "name": "port", "type": "integer", "description": "Port number to bind." }
                 ],
-                "handlers": ["browser"]
+                "handlers": []
             },
             {
                 "name": "unbind",
@@ -4601,7 +4581,7 @@
                 "parameters": [
                     { "name": "port", "type": "integer", "description": "Port number to unbind." }
                 ],
-                "handlers": ["browser"]
+                "handlers": []
             }
         ],
         "events": [
@@ -4612,7 +4592,7 @@
                     {"name": "port", "type": "integer", "description": "Port number that was successfully bound." },
                     {"name": "connectionId", "type": "string", "description": "Connection id to be used." }
                 ],
-                "handlers": ["browser"]
+                "handlers": []
             }
         ]
     }]

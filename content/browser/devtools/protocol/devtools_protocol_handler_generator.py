@@ -481,6 +481,9 @@ def DeclareStruct(json_properties, mapping):
     del prop_map["declared_name"]
     ResolveType(json_prop, prop_map)
     prop_map["declared_name"] = mapping["declared_name"]
+    if prop_map["pass_type"].find(mapping["declared_name"]) != -1:
+      prop_map["pass_type"] = prop_map["pass_type"].replace(
+          mapping["declared_name"], mapping["declared_name"] + "Builder<0>")
     if json_prop.get("optional"):
       methods.append(tmpl_builder_setter_opt.substitute(prop_map))
     else:
@@ -640,6 +643,21 @@ fields = []
 includes = []
 fields_init = []
 
+browser_domains_list = ["Inspector", "Memory", "Page", "Emulation", "Security",
+    "IO", "Target", "ServiceWorker", "Input", "Tracing", "Storage",
+    "SystemInfo", "Tethering", "Schema"]
+browser_commands_list = [
+    "DOM.setFileInputFiles",
+    "Network.enable",
+    "Network.disable",
+    "Network.clearBrowserCache",
+    "Network.clearBrowserCookies",
+    "Network.getCookies",
+    "Network.deleteCookie",
+    "Network.setCookie",
+    "Network.canEmulateNetworkConditions",
+    "Network.emulateNetworkConditions"]
+
 for json_domain in all_domains:
   domain_map = {}
   domain_map["Domain"] = json_domain["domain"]
@@ -653,8 +671,9 @@ for json_domain in all_domains:
 
   if "commands" in json_domain:
     for json_command in json_domain["commands"]:
-      if (not ("handlers" in json_command) or
-          not ("browser" in json_command["handlers"])):
+      full_command_name = json_domain["domain"] + "." + json_command["name"]
+      if (json_domain["domain"] not in browser_domains_list and
+          full_command_name not in browser_commands_list):
         continue
       domain_empty = False
 
@@ -724,9 +743,13 @@ for json_domain in all_domains:
             param_map = command_map.copy()
             param_map["proto_param"] = json_param["name"]
             param_map["param"] = Uncamelcase(json_param["name"])
-            if json_param.get("optional"):
+            is_string = "type" in json_param and json_param["type"] == "string"
+            if json_param.get("optional") and not is_string:
               # TODO(vkuzkokov) Implement Optional<T> for value types.
-              raise Exception("Optional return values are not implemented")
+              raise Exception(
+                  "Optional return values are not implemented (%s.%s.%s)" %
+                  (param_map["Domain"], param_map["command"],
+                   param_map["proto_param"]))
             ResolveType(json_param, param_map)
             prep.append(tmpl_prep_output.substitute(param_map))
             args.append(param_map["arg_out"])
@@ -744,8 +767,7 @@ for json_domain in all_domains:
 
   if "events" in json_domain:
     for json_event in json_domain["events"]:
-      if (not ("handlers" in json_event) or
-          not ("browser" in json_event["handlers"])):
+      if json_domain["domain"] not in browser_domains_list:
         continue
       domain_empty = False
       domain_needs_client = True

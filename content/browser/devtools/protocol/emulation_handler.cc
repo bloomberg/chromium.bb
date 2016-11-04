@@ -256,6 +256,40 @@ Response EmulationHandler::SetVisibleSize(int width, int height) {
   return Response::OK();
 }
 
+Response EmulationHandler::ForceViewport(double x, double y, double scale) {
+  return Response::FallThrough();
+}
+
+Response EmulationHandler::ResetViewport() {
+  return Response::FallThrough();
+}
+
+Response EmulationHandler::ResetPageScaleFactor() {
+  return Response::FallThrough();
+}
+
+Response EmulationHandler::SetPageScaleFactor(double page_scale_factor) {
+  return Response::FallThrough();
+}
+
+Response EmulationHandler::SetScriptExecutionDisabled(bool disabled) {
+  return Response::FallThrough();
+}
+
+Response EmulationHandler::SetEmulatedMedia(const std::string& media) {
+  return Response::FallThrough();
+}
+
+Response EmulationHandler::SetCPUThrottlingRate(double rate) {
+  return Response::FallThrough();
+}
+
+Response EmulationHandler::SetVirtualTimePolicy(
+    const std::string& policy,
+    const int* budget) {
+  return Response::FallThrough();
+}
+
 WebContentsImpl* EmulationHandler::GetWebContents() {
   return host_ ?
       static_cast<WebContentsImpl*>(WebContents::FromRenderFrameHost(host_)) :

@@ -28,6 +28,7 @@ class EmulationHandler {
   ~EmulationHandler();
 
   void SetRenderFrameHost(RenderFrameHostImpl* host);
+  void SetClient(std::unique_ptr<Client> client) { }
   void Detached();
 
   Response SetGeolocationOverride(double* latitude,
@@ -56,6 +57,15 @@ class EmulationHandler {
   Response ClearDeviceMetricsOverride();
 
   Response SetVisibleSize(int width, int height);
+
+  Response ForceViewport(double x, double y, double scale);
+  Response ResetViewport();
+  Response ResetPageScaleFactor();
+  Response SetPageScaleFactor(double page_scale_factor);
+  Response SetScriptExecutionDisabled(bool disabled);
+  Response SetEmulatedMedia(const std::string& media);
+  Response SetCPUThrottlingRate(double rate);
+  Response SetVirtualTimePolicy(const std::string& policy, const int* budget);
 
  private:
   WebContentsImpl* GetWebContents();

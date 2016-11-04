@@ -82,6 +82,9 @@ $contents
 def Capitalize(s):
   return s[:1].capitalize() + s[1:]
 
+def ToIdentifier(s):
+  return "".join([Capitalize(part) for part in s.split("-")])
+
 references = []
 
 def CreateNamespace(domain_name, data, keys, prefixes, name = None):
@@ -97,7 +100,7 @@ def CreateNamespace(domain_name, data, keys, prefixes, name = None):
           enum_name = Capitalize(parameter_name)
           result[enum_name] = {}
           for enum in parameter["enum"]:
-            result[enum_name]["kEnum" + Capitalize(enum)] = enum
+            result[enum_name]["kEnum" + ToIdentifier(enum)] = enum
         reference = ""
         if "$ref" in parameter:
           reference = parameter["$ref"]
@@ -108,9 +111,6 @@ def CreateNamespace(domain_name, data, keys, prefixes, name = None):
             reference = domain_name + "." + reference
           references.append(reference)
   return result
-
-def IsHandledInBrowser(item):
-  return "handlers" in item and "browser" in item["handlers"]
 
 def FormatContents(tree, indent, format_string):
   outer = dict((key, value) for key, value in tree.iteritems()
@@ -162,17 +162,15 @@ for domain in domains:
   domain_namespace_name = Capitalize(domain["domain"])
   if "commands" in domain:
     for command in domain["commands"]:
-      if (IsHandledInBrowser(command)):
-        domain_value[command["name"]] = CreateNamespace(domain["domain"],
-            command, ["parameters", "returns"], ["kParam", "kResponse"],
-            domain_namespace_name + "." + command["name"])
+      domain_value[command["name"]] = CreateNamespace(domain["domain"],
+          command, ["parameters", "returns"], ["kParam", "kResponse"],
+          domain_namespace_name + "." + command["name"])
 
   if "events" in domain:
     for event in domain["events"]:
-      if IsHandledInBrowser(event):
-        domain_value[event["name"]] = CreateNamespace(domain["domain"],
-            event, ["parameters"], ["kParam"],
-            domain_namespace_name + "." + event["name"])
+      domain_value[event["name"]] = CreateNamespace(domain["domain"],
+          event, ["parameters"], ["kParam"],
+          domain_namespace_name + "." + event["name"])
   if domain_value:
     namespace_tree[domain_namespace_name] = domain_value
 

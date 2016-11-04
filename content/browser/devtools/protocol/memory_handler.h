@@ -20,6 +20,7 @@ class MemoryHandler {
   typedef DevToolsProtocolClient::Response Response;
   Response SetPressureNotificationsSuppressed(bool suppressed);
   Response SimulatePressureNotification(const std::string& level);
+  Response GetDOMCounters(int* documents, int* nodes, int* event_listeners);
 
  private:
   DISALLOW_COPY_AND_ASSIGN(MemoryHandler);

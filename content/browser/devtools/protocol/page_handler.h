@@ -85,6 +85,33 @@ class PageHandler : public NotificationObserver {
   Response SetControlNavigations(bool enabled);
   Response ProcessNavigation(const std::string& response, int navigation_id);
 
+  Response AddScriptToEvaluateOnLoad(const std::string& source,
+                                     std::string* identifier);
+  Response RemoveScriptToEvaluateOnLoad(const std::string& identifier);
+  Response SetAutoAttachToCreatedPages(bool auto_attach);
+  Response GetResourceTree(scoped_refptr<FrameResourceTree>* tree);
+  Response GetResourceContent(DevToolsCommandId command_id,
+                              const std::string& frame_id,
+                              const std::string& url);
+  Response SearchInResource(DevToolsCommandId command_id,
+                            const std::string& frame_id,
+                            const std::string& url,
+                            const std::string& query,
+                            bool* case_sensitive,
+                            bool* is_regex);
+  Response SetDocumentContent(const std::string& frame_id,
+                              const std::string& html);
+  Response ConfigureOverlay(const bool* is_suspended,
+                            const std::string* message);
+  Response GetAppManifest(
+      std::string* url,
+      std::vector<scoped_refptr<AppManifestError>>* errors,
+      std::string* data);
+  Response SetBlockedEventsWarningThreshold(double threshold);
+  Response GetLayoutMetrics(
+      scoped_refptr<LayoutViewport>* layout_viewport,
+      scoped_refptr<VisualViewport>* visual_viewport);
+
   std::unique_ptr<PageNavigationThrottle> CreateThrottleForNavigation(
       NavigationHandle* navigation_handle);
 
