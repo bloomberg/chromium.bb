@@ -42,17 +42,3 @@ class PixelExpectations(GpuTestExpectations):
     self.Fail('Pixel_CanvasDisplayLinearRGBAccelerated2D', bug=657946)
     self.Fail('Pixel_CanvasDisplayLinearRGBUnaccelerated2D', bug=657946)
     self.Fail('Pixel_CanvasDisplayLinearRGBUnaccelerated2DGPUCompositing', bug=657946)
-
-    # TODO(dshwang): remove these after new reference images are generated.
-    self.Fail('Pixel_2DCanvasWebGL', bug=615325)
-    self.Fail('Pixel_2DCanvasWebGLES3', bug=615325)
-    self.Fail('Pixel_OffscreenCanvasWebGLDefault', bug=615325)
-    self.Fail('Pixel_OffscreenCanvasWebGLDefaultWorker', bug=615325)
-    self.Fail('Pixel_WebGLGreenTriangle_AA_Alpha', bug=615325)
-    self.Fail('Pixel_WebGLGreenTriangle_AA_NoAlpha', bug=615325)
-    self.Fail('Pixel_WebGLGreenTriangle_NoAA_Alpha', bug=615325)
-    self.Fail('Pixel_WebGLGreenTriangle_NoAA_NoAlpha', bug=615325)
-    self.Fail('Pixel_WebGLGreenTriangle_AA_AlphaES3', bug=615325)
-    self.Fail('Pixel_WebGLGreenTriangle_AA_NoAlphaES3', bug=615325)
-    self.Fail('Pixel_WebGLGreenTriangle_NoAA_AlphaES3', bug=615325)
-    self.Fail('Pixel_WebGLGreenTriangle_NoAA_NoAlphaES3', bug=615325)

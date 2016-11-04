@@ -424,53 +424,42 @@ class FragmentTexColorMatrixAlphaBinding : public FragmentTexBlendMode {
     int color_offset_location_;
 };
 
-class FragmentTexQuadBase : public FragmentTexBlendMode {
+class FragmentTexOpaqueBinding : public FragmentTexBlendMode {
  public:
-  FragmentTexQuadBase() = default;
-  virtual ~FragmentTexQuadBase() = default;
-
-  int sampler_location() const { return sampler_location_; }
-  virtual int background_color_location() const;
-  virtual int tex_clamp_rect_location() const;
-
- protected:
-  int sampler_location_ = -1;
-
- private:
-  DISALLOW_COPY_AND_ASSIGN(FragmentTexQuadBase);
-};
-
-class FragmentTexClampBinding : public FragmentTexQuadBase {
- public:
-  FragmentTexClampBinding() = default;
+  FragmentTexOpaqueBinding();
 
   void Init(gpu::gles2::GLES2Interface* context,
             unsigned program,
             int* base_uniform_index);
-  int tex_clamp_rect_location() const final;
+  int alpha_location() const { return -1; }
+  int fragment_tex_transform_location() const { return -1; }
+  int background_color_location() const { return -1; }
+  int sampler_location() const { return sampler_location_; }
 
  private:
-  int tex_clamp_rect_location_ = -1;
+  int sampler_location_;
 
-  DISALLOW_COPY_AND_ASSIGN(FragmentTexClampBinding);
+  DISALLOW_COPY_AND_ASSIGN(FragmentTexOpaqueBinding);
 };
 
-class FragmentTexBackgroundBinding : public FragmentTexQuadBase {
+class FragmentTexBackgroundBinding : public FragmentTexBlendMode {
  public:
   FragmentTexBackgroundBinding();
 
   void Init(gpu::gles2::GLES2Interface* context,
             unsigned program,
             int* base_uniform_index);
-  int background_color_location() const final;
+  int background_color_location() const { return background_color_location_; }
+  int sampler_location() const { return sampler_location_; }
 
  private:
   int background_color_location_;
+  int sampler_location_;
 
   DISALLOW_COPY_AND_ASSIGN(FragmentTexBackgroundBinding);
 };
 
-class FragmentShaderRGBATexClampVaryingAlpha : public FragmentTexClampBinding {
+class FragmentShaderRGBATexVaryingAlpha : public FragmentTexOpaqueBinding {
  public:
   std::string GetShaderString(
       TexCoordPrecision precision, SamplerType sampler) const;
@@ -478,16 +467,7 @@ class FragmentShaderRGBATexClampVaryingAlpha : public FragmentTexClampBinding {
   static std::string GetShaderBody();
 };
 
-class FragmentShaderRGBATexClampPremultiplyAlpha
-    : public FragmentTexClampBinding {
- public:
-  std::string GetShaderString(TexCoordPrecision precision,
-                              SamplerType sampler) const;
-  static std::string GetShaderHead();
-  static std::string GetShaderBody();
-};
-
-class FragmentShaderRGBATexClamp : public FragmentTexClampBinding {
+class FragmentShaderRGBATexPremultiplyAlpha : public FragmentTexOpaqueBinding {
  public:
   std::string GetShaderString(
       TexCoordPrecision precision, SamplerType sampler) const;
@@ -532,24 +512,15 @@ class FragmentShaderRGBATexColorMatrixAlpha
   void FillLocations(ShaderLocations* locations) const;
 };
 
-class FragmentTexOpaqueBinding : public FragmentTexBlendMode {
+class FragmentShaderRGBATexOpaque : public FragmentTexOpaqueBinding {
  public:
-  FragmentTexOpaqueBinding();
-
-  void Init(gpu::gles2::GLES2Interface* context,
-            unsigned program,
-            int* base_uniform_index);
-  int alpha_location() const { return -1; }
-  int fragment_tex_transform_location() const { return -1; }
-  int sampler_location() const { return sampler_location_; }
-
- private:
-  int sampler_location_;
-
-  DISALLOW_COPY_AND_ASSIGN(FragmentTexOpaqueBinding);
+  std::string GetShaderString(
+      TexCoordPrecision precision, SamplerType sampler) const;
+  static std::string GetShaderHead();
+  static std::string GetShaderBody();
 };
 
-class FragmentShaderRGBATexOpaque : public FragmentTexOpaqueBinding {
+class FragmentShaderRGBATex : public FragmentTexOpaqueBinding {
  public:
   std::string GetShaderString(
       TexCoordPrecision precision, SamplerType sampler) const;

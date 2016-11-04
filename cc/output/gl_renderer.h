@@ -308,10 +308,9 @@ class CC_EXPORT GLRenderer : public DirectRenderer {
 
   // Texture shaders.
   typedef ProgramBinding<VertexShaderPosTexTransform,
-                         FragmentShaderRGBATexClampVaryingAlpha>
-      TextureProgram;
+                         FragmentShaderRGBATexVaryingAlpha> TextureProgram;
   typedef ProgramBinding<VertexShaderPosTexTransform,
-                         FragmentShaderRGBATexClampPremultiplyAlpha>
+                         FragmentShaderRGBATexPremultiplyAlpha>
       NonPremultipliedTextureProgram;
   typedef ProgramBinding<VertexShaderPosTexTransform,
                          FragmentShaderTexBackgroundVaryingAlpha>
@@ -344,7 +343,7 @@ class CC_EXPORT GLRenderer : public DirectRenderer {
       RenderPassMaskColorMatrixProgram;
 
   // Video shaders.
-  typedef ProgramBinding<VertexShaderVideoTransform, FragmentShaderRGBATexClamp>
+  typedef ProgramBinding<VertexShaderVideoTransform, FragmentShaderRGBATex>
       VideoStreamTextureProgram;
   typedef ProgramBinding<VertexShaderPosTexYUVStretchOffset,
                          FragmentShaderYUVVideo> VideoYUVProgram;
