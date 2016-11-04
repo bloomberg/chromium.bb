@@ -116,6 +116,8 @@ static_library("host") {
     "desktop_capturer_proxy.cc",
     "desktop_capturer_proxy.h",
     "desktop_environment.h",
+    "desktop_environment_options.cc",
+    "desktop_environment_options.h",
     "desktop_process.cc",
     "desktop_process.h",
     "desktop_resizer.h",
