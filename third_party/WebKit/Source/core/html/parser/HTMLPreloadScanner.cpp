@@ -408,6 +408,8 @@ class TokenPreloadScanner::StartTagScanner {
                              const String& attributeValue) {
     if (match(attributeName, posterAttr))
       setUrlToLoad(attributeValue, DisallowURLReplacement);
+    else if (match(attributeName, crossoriginAttr))
+      setCrossOrigin(attributeValue);
   }
 
   template <typename NameType>
