@@ -716,11 +716,6 @@ crbug.com/492664 imported/csswg-test/css-writing-modes-3/table-progression-vrl-0
 crbug.com/492664 imported/csswg-test/css-writing-modes-3/table-progression-vrl-003.html [ Failure ]
 crbug.com/492664 imported/csswg-test/css-writing-modes-3/table-progression-vrl-004.html [ Failure ]
 
-crbug.com/492664 imported/csswg-test/css-writing-modes-3/text-orientation-script-001c.html [ Failure ]
-crbug.com/492664 imported/csswg-test/css-writing-modes-3/text-orientation-script-001d.html [ Failure ]
-crbug.com/492664 imported/csswg-test/css-writing-modes-3/text-orientation-script-001m.html [ Failure ]
-crbug.com/492664 imported/csswg-test/css-writing-modes-3/text-orientation-script-001n.html [ Failure ]
-
 # Test sometimes flakes on most platforms
 crbug.com/571531 imported/csswg-test/css-flexbox-1/css-flexbox-height-animation-stretch.html [ Pass Failure ]
 

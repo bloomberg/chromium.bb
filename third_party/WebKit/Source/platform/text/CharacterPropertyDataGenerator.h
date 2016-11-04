@@ -97,7 +97,7 @@ static const UChar32 isCJKIdeographOrSymbolRanges[] = {
 // Individual codepoints needed for Unicode vertical text layout according to
 // http://www.unicode.org/reports/tr50/
 // Taken from the corresponding data file:
-// http://www.unicode.org/Public/vertical/revision-13/VerticalOrientation-13.txt
+// http://www.unicode.org/Public/vertical/revision-16/VerticalOrientation-16.txt
 static const UChar32 isUprightInMixedVerticalArray[] = {
     0x000A7, 0x000A9, 0x000AE, 0x000B1, 0x000D7, 0x000F7};
 
@@ -120,7 +120,7 @@ static const UChar32 isUprightInMixedVerticalRanges[] = {
     0x02100, 0x02101, 0x02103, 0x02109, 0x0210F, 0x0210F, 0x02113, 0x02114,
     0x02116, 0x02117, 0x0211E, 0x02123, 0x02125, 0x02125, 0x02127, 0x02127,
     0x02129, 0x02129, 0x0212E, 0x0212E, 0x02135, 0x0213F, 0x02145, 0x0214A,
-    0x0214C, 0x0214D, 0x0214F, 0x0218F,
+    0x0214C, 0x0214D, 0x0214F, 0x02189, 0x0218C, 0x0218F,
     // Mathematical Operators (Part of)
     0x0221E, 0x0221E, 0x02234, 0x02235,
     // Miscellaneous Technical (Part of)
@@ -132,7 +132,7 @@ static const UChar32 isUprightInMixedVerticalRanges[] = {
     // Geometric Shapes/Miscellaneous Symbols (Part of)
     0x025A0, 0x02619, 0x02620, 0x02767, 0x02776, 0x02793,
     // Miscellaneous Symbols and Arrows (Part of)
-    0x02B12, 0x02B2F, 0x02B50, 0x02B59, 0x02BB8, 0x02BFF,
+    0x02B12, 0x02B2F, 0x02B50, 0x02B59, 0x02BB8, 0x02BEB, 0x02BF0, 0x02BFF,
     // Common CJK
     0x02E80, 0x0A4CF,
     // Hangul Jamo Extended-A
@@ -157,17 +157,29 @@ static const UChar32 isUprightInMixedVerticalRanges[] = {
     0x11580, 0x115FF,
     // Egyptian Hieroglyphs
     0x13000, 0x1342F,
+    // Anatolian Hieroglyphs
+    0x14400, 0x1467F,
+    // Ideographic Symbols and Punctuation
+    0x16FE0, 0x16FFF,
+    // Tangut
+    0x17000, 0x187FF,
+    // Tangut Components
+    0x18800, 0x18AFF,
     // Kana Supplement
     0x1B000, 0x1B0FF,
     // Byzantine Musical Symbols/Musical Symbols
     0x1D000, 0x1D1FF,
     // Tai Xuan Jing Symbols/Counting Rod Numerals
     0x1D300, 0x1D37F,
+    // Sutton SignWriting
+    0x1D800, 0x1DAAF,
     // Mahjong Tiles/Domino Tiles/Playing Cards/Enclosed Alphanumeric Supplement
     // Enclosed Ideographic Supplement/Enclosed Ideographic Supplement
     // Emoticons/Ornamental Dingbats/Transport and Map Symbols/Alchemical
     // Symbols Alchemical Symbols
     0x1F000, 0x1F7FF,
+    // Supplemental Symbols and Pictographs
+    0x1F900, 0x1F9FF,
     // CJK Unified Ideographs Extension B/C/D
     // CJK Compatibility Ideographs Supplement
     0x20000, 0x2FFFD, 0x30000, 0x3FFFD,
