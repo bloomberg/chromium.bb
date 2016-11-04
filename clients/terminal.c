@@ -1298,6 +1298,8 @@ handle_osc(struct terminal *terminal)
 		break;
 	case 7: /* shell cwd as uri */
 		break;
+	case 777: /* Desktop notifications */
+		break;
 	default:
 		fprintf(stderr, "Unknown OSC escape code %d, text %s\n",
 			code, p);
