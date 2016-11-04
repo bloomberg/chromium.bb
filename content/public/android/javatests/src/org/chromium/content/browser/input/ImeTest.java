@@ -1356,7 +1356,7 @@ public class ImeTest extends ContentShellTestBase {
 
     @MediumTest
     @Feature({"TextInput"})
-    @DisabledTest(message = "crbug.com/628964")
+    @RetryOnFailure
     public void testContentEditableEvents_SetComposingText() throws Throwable {
         focusElementAndWaitForStateUpdate("contenteditable_event");
         waitForEventLogs("selectionchange,selectionchange");
@@ -1377,7 +1377,6 @@ public class ImeTest extends ContentShellTestBase {
     @MediumTest
     @Feature({"TextInput"})
     @RetryOnFailure
-    @DisabledTest(message = "crbug.com/650691")
     public void testInputTextEvents_SetComposingText() throws Throwable {
         beginBatchEdit();
         setComposingText("a", 1);
@@ -1393,7 +1392,7 @@ public class ImeTest extends ContentShellTestBase {
 
     @MediumTest
     @Feature({"TextInput"})
-    @DisabledTest(message = "crbug.com/628964")
+    @RetryOnFailure
     public void testContentEditableEvents_CommitText() throws Throwable {
         focusElementAndWaitForStateUpdate("contenteditable_event");
         waitForEventLogs("selectionchange,selectionchange");
@@ -1417,7 +1416,7 @@ public class ImeTest extends ContentShellTestBase {
 
     @MediumTest
     @Feature({"TextInput"})
-    @DisabledTest(message = "crbug.com/628964")
+    @RetryOnFailure
     public void testContentEditableEvents_DeleteSurroundingText() throws Throwable {
         focusElementAndWaitForStateUpdate("contenteditable_event");
         waitForEventLogs("selectionchange,selectionchange");

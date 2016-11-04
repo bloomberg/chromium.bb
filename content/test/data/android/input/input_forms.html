@@ -25,7 +25,8 @@
     <a id="link" href="about:blank">hello</a>
 
     <script>
-var log = "";
+var selectionChangeEventLog = "";
+var otherEventLog = "";
 var mutationObserver = new MutationObserver(function(mutations) {
   mutations.forEach(function(mutation) {
     addEventLog(mutation.type, mutation.detail);
@@ -34,36 +35,52 @@ var mutationObserver = new MutationObserver(function(mutations) {
 
 var mutationConfig = { attributes: false, childList: false, characterData: true };
 
-function addEventLog(type, detail) {
-  if (log.length > 0) {
-    log += ',';
+function addOtherEventLog(type, detail) {
+  if (otherEventLog.length > 0) {
+    otherEventLog += ',';
   }
   if (detail == null) {
-    log += type;
+    otherEventLog += type;
   } else {
-    log += type + '(' + detail + ')';
+    otherEventLog += type + '(' + detail + ')';
   }
 }
 
+function addSelectionChangeEventLog(type, detail) {
+  if (selectionChangeEventLog.length > 0) {
+    selectionChangeEventLog += ',';
+  }
+  if (detail == null) {
+    selectionChangeEventLog += type;
+  } else {
+    selectionChangeEventLog += type + '(' + detail + ')';
+  }
+}
+
+// selectionchange event is queued, so it races with the other events.
+// crbug.com/628964
 function getEventLogs() {
-  return log;
+  if (otherEventLog.length > 0 && selectionChangeEventLog.length > 0)
+    return otherEventLog + ',' + selectionChangeEventLog;
+  return otherEventLog + selectionChangeEventLog;
 }
 
 function clearEventLogs() {
-  log = '';
+  selectionChangeEventLog = '';
+  otherEventLog = '';
 }
 
 function addEventListener(element, event_name) {
-  element.addEventListener(event_name, function (e) { addEventLog(event_name, e.data); });
+  element.addEventListener(event_name, function (e) { addOtherEventLog(event_name, e.data); });
 }
 
 function addKeyEventListener(element, event_name) {
-  element.addEventListener(event_name, function (e) { addEventLog(event_name, e.keyCode); });
+  element.addEventListener(event_name, function (e) { addOtherEventLog(event_name, e.keyCode); });
 }
 
 function addSelectionEventListener(event_name) {
   // Note that listeners added to the element are not effective for now.
-  document.addEventListener(event_name, function (e) { addEventLog(event_name, e.data); });
+  document.addEventListener(event_name, function (e) { addSelectionChangeEventLog(event_name, e.data); });
 }
 
 function registerListenersAndObserver(element) {
