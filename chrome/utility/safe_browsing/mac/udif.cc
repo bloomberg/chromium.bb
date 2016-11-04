@@ -494,6 +494,12 @@ bool UDIFParser::ParseBlkx() {
   for (CFIndex i = 0; i < CFArrayGetCount(blkx); ++i) {
     auto* block_dictionary =
         base::mac::CFCast<CFDictionaryRef>(CFArrayGetValueAtIndex(blkx, i));
+    if (!block_dictionary) {
+      DLOG(ERROR) << "Skipping block " << i
+                  << " because it is not a CFDictionary";
+      continue;
+    }
+
     auto* data = base::mac::GetValueFromDictionary<CFDataRef>(block_dictionary,
                                                               CFSTR("Data"));
     if (!data) {
