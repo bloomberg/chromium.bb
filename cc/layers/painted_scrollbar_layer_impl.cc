@@ -21,16 +21,24 @@ namespace cc {
 std::unique_ptr<PaintedScrollbarLayerImpl> PaintedScrollbarLayerImpl::Create(
     LayerTreeImpl* tree_impl,
     int id,
-    ScrollbarOrientation orientation) {
-  return base::WrapUnique(
-      new PaintedScrollbarLayerImpl(tree_impl, id, orientation));
+    ScrollbarOrientation orientation,
+    bool is_left_side_vertical_scrollbar,
+    bool is_overlay) {
+  return base::WrapUnique(new PaintedScrollbarLayerImpl(
+      tree_impl, id, orientation, is_left_side_vertical_scrollbar, is_overlay));
 }
 
 PaintedScrollbarLayerImpl::PaintedScrollbarLayerImpl(
     LayerTreeImpl* tree_impl,
     int id,
-    ScrollbarOrientation orientation)
-    : ScrollbarLayerImplBase(tree_impl, id, orientation, false, false),
+    ScrollbarOrientation orientation,
+    bool is_left_side_vertical_scrollbar,
+    bool is_overlay)
+    : ScrollbarLayerImplBase(tree_impl,
+                             id,
+                             orientation,
+                             is_left_side_vertical_scrollbar,
+                             is_overlay),
       track_ui_resource_id_(0),
       thumb_ui_resource_id_(0),
       thumb_opacity_(1.f),
@@ -44,7 +52,9 @@ PaintedScrollbarLayerImpl::~PaintedScrollbarLayerImpl() {}
 
 std::unique_ptr<LayerImpl> PaintedScrollbarLayerImpl::CreateLayerImpl(
     LayerTreeImpl* tree_impl) {
-  return PaintedScrollbarLayerImpl::Create(tree_impl, id(), orientation());
+  return PaintedScrollbarLayerImpl::Create(tree_impl, id(), orientation(),
+                                           is_left_side_vertical_scrollbar(),
+                                           is_overlay_scrollbar());
 }
 
 void PaintedScrollbarLayerImpl::PushPropertiesTo(LayerImpl* layer) {

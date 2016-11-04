@@ -22,6 +22,13 @@ class FakePaintedScrollbarLayer : public PaintedScrollbarLayer {
       bool paint_during_update,
       bool has_thumb,
       int scrolling_layer_id);
+  static scoped_refptr<FakePaintedScrollbarLayer> Create(
+      bool paint_during_update,
+      bool has_thumb,
+      ScrollbarOrientation orientation,
+      bool is_left_side_vertical_scrollbar,
+      bool is_overlay,
+      int scrolling_layer_id);
   int update_count() const { return update_count_; }
   void reset_update_count() { update_count_ = 0; }
 

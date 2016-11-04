@@ -16,6 +16,11 @@ class FakeScrollbar : public Scrollbar {
  public:
   FakeScrollbar();
   FakeScrollbar(bool paint, bool has_thumb, bool is_overlay);
+  FakeScrollbar(bool paint,
+                bool has_thumb,
+                ScrollbarOrientation orientation,
+                bool is_left_side_vertical_scrollbar,
+                bool is_overlay);
   ~FakeScrollbar() override;
 
   // Scrollbar implementation.
@@ -53,6 +58,8 @@ class FakeScrollbar : public Scrollbar {
  private:
   bool paint_;
   bool has_thumb_;
+  ScrollbarOrientation orientation_;
+  bool is_left_side_vertical_scrollbar_;
   bool is_overlay_;
   int thumb_thickness_;
   int thumb_length_;

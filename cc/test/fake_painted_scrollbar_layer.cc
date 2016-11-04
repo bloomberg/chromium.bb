@@ -14,8 +14,20 @@ scoped_refptr<FakePaintedScrollbarLayer> FakePaintedScrollbarLayer::Create(
     bool paint_during_update,
     bool has_thumb,
     int scrolling_layer_id) {
-  FakeScrollbar* fake_scrollbar = new FakeScrollbar(
-      paint_during_update, has_thumb, false);
+  return Create(paint_during_update, has_thumb, HORIZONTAL, false, false,
+                scrolling_layer_id);
+}
+
+scoped_refptr<FakePaintedScrollbarLayer> FakePaintedScrollbarLayer::Create(
+    bool paint_during_update,
+    bool has_thumb,
+    ScrollbarOrientation orientation,
+    bool is_left_side_vertical_scrollbar,
+    bool is_overlay,
+    int scrolling_layer_id) {
+  FakeScrollbar* fake_scrollbar =
+      new FakeScrollbar(paint_during_update, has_thumb, orientation,
+                        is_left_side_vertical_scrollbar, is_overlay);
   return make_scoped_refptr(
       new FakePaintedScrollbarLayer(fake_scrollbar, scrolling_layer_id));
 }

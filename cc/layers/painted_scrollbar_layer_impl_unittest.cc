@@ -41,7 +41,7 @@ TEST(PaintedScrollbarLayerImplTest, Occlusion) {
   ScrollbarOrientation orientation = VERTICAL;
 
   PaintedScrollbarLayerImpl* scrollbar_layer_impl =
-      impl.AddChildToRoot<PaintedScrollbarLayerImpl>(orientation);
+      impl.AddChildToRoot<PaintedScrollbarLayerImpl>(orientation, false, false);
   scrollbar_layer_impl->SetBounds(layer_size);
   scrollbar_layer_impl->SetContentsOpaque(true);
   scrollbar_layer_impl->set_internal_contents_scale_and_bounds(

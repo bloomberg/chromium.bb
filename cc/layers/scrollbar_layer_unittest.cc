@@ -401,6 +401,56 @@ TEST_F(ScrollbarLayerTest, ThumbRect) {
             scrollbar_layer_impl->ComputeThumbQuadRect().ToString());
 }
 
+TEST_F(ScrollbarLayerTest, ThumbRectForOverlayLeftSideVerticalScrollbar) {
+  scoped_refptr<Layer> root_clip_layer = Layer::Create();
+  scoped_refptr<Layer> root_layer = Layer::Create();
+  // Create an overlay left side vertical scrollbar.
+  scoped_refptr<FakePaintedScrollbarLayer> scrollbar_layer =
+      FakePaintedScrollbarLayer::Create(false, true, VERTICAL, true, true,
+                                        root_layer->id());
+  root_layer->SetScrollClipLayerId(root_clip_layer->id());
+  root_clip_layer->SetBounds(gfx::Size(50, 20));
+  root_layer->SetBounds(gfx::Size(50, 100));
+
+  layer_tree_->SetRootLayer(root_clip_layer);
+  root_clip_layer->AddChild(root_layer);
+  root_layer->AddChild(scrollbar_layer);
+
+  root_layer->SetScrollOffset(gfx::ScrollOffset(0, 0));
+  scrollbar_layer->SetBounds(gfx::Size(10, 20));
+  scrollbar_layer->SetScrollLayer(root_layer->id());
+  scrollbar_layer->fake_scrollbar()->set_track_rect(gfx::Rect(0, 0, 10, 20));
+  scrollbar_layer->fake_scrollbar()->set_thumb_thickness(10);
+  scrollbar_layer->fake_scrollbar()->set_thumb_length(4);
+  layer_tree_host_->UpdateLayers();
+  LayerImpl* root_clip_layer_impl = nullptr;
+  PaintedScrollbarLayerImpl* scrollbar_layer_impl = nullptr;
+
+  // Thumb is at the edge of the scrollbar (should be inset to
+  // the start of the track within the scrollbar layer's
+  // position).
+  UPDATE_AND_EXTRACT_LAYER_POINTERS();
+  EXPECT_EQ(gfx::Rect(0, 0, 10, 4).ToString(),
+            scrollbar_layer_impl->ComputeThumbQuadRect().ToString());
+
+  // Change thumb thickness scale factor.
+  scrollbar_layer_impl->SetThumbThicknessScaleFactor(0.5);
+  UPDATE_AND_EXTRACT_LAYER_POINTERS();
+  // For overlay scrollbars thumb_rect.width = thumb_thickness *
+  // thumb_thickness_scale_factor.
+  EXPECT_EQ(gfx::Rect(0, 0, 5, 4).ToString(),
+            scrollbar_layer_impl->ComputeThumbQuadRect().ToString());
+
+  // Change thumb thickness and length.
+  scrollbar_layer->fake_scrollbar()->set_thumb_thickness(4);
+  scrollbar_layer->fake_scrollbar()->set_thumb_length(6);
+  UPDATE_AND_EXTRACT_LAYER_POINTERS();
+  // For left side vertical scrollbars thumb_rect.x = bounds.width() -
+  // thumb_thickness.
+  EXPECT_EQ(gfx::Rect(6, 0, 2, 6).ToString(),
+            scrollbar_layer_impl->ComputeThumbQuadRect().ToString());
+}
+
 TEST_F(ScrollbarLayerTest, SolidColorDrawQuads) {
   const int kThumbThickness = 3;
   const int kTrackStart = 1;
