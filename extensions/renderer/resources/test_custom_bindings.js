@@ -252,8 +252,9 @@ binding.registerCustomHook(function(api) {
       if (func)
         return $Function.apply(func, undefined, args);
     } catch (e) {
-      var msg = "uncaught exception " + e;
-      chromeTest.fail(msg);
+      if (e === failureException)
+        throw e;
+      uncaughtExceptionHandler.handle(e.message, e);
     }
   };
 
