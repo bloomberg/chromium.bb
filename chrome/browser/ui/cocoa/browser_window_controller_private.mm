@@ -447,47 +447,6 @@ willPositionSheet:(NSWindow*)sheet
     manager->UpdateAnchorPosition();
 }
 
-- (void)adjustUIForExitingFullscreenAndStopOmniboxSliding {
-  [fullscreenToolbarController_ exitFullscreenMode];
-  fullscreenToolbarController_.reset();
-
-  // Force the bookmark bar z-order to update.
-  [[bookmarkBarController_ view] removeFromSuperview];
-  [self layoutSubviews];
-}
-
-- (void)adjustUIForSlidingFullscreenStyle:(FullscreenSlidingStyle)style {
-  // The UI should only be adjusted in fullscreen mode.
-  if (![self isInAnyFullscreenMode])
-    return;
-
-  if (!fullscreenToolbarController_) {
-    fullscreenToolbarController_.reset(
-        [self newFullscreenToolbarControllerWithStyle:style]);
-    [fullscreenToolbarController_ enterFullscreenMode];
-  } else {
-    fullscreenToolbarController_.get().slidingStyle = style;
-  }
-
-  if (!floatingBarBackingView_.get() &&
-      ([self hasTabStrip] || [self hasToolbar] || [self hasLocationBar])) {
-    floatingBarBackingView_.reset(
-        [[FloatingBarBackingView alloc] initWithFrame:NSZeroRect]);
-    [floatingBarBackingView_
-        setAutoresizingMask:(NSViewWidthSizable | NSViewMinYMargin)];
-  }
-
-  // Force the bookmark bar z-order to update.
-  [[bookmarkBarController_ view] removeFromSuperview];
-  [self layoutSubviews];
-}
-
-- (FullscreenToolbarController*)newFullscreenToolbarControllerWithStyle:
-    (FullscreenSlidingStyle)style {
-  return [[FullscreenToolbarController alloc] initWithBrowserController:self
-                                                                  style:style];
-}
-
 - (void)enterImmersiveFullscreen {
   RecordFullscreenWindowLocation([self window]);
   RecordFullscreenStyle(IMMERSIVE_FULLSCREEN);
@@ -514,9 +473,7 @@ willPositionSheet:(NSWindow*)sheet
   [self moveViewsForImmersiveFullscreen:YES
                           regularWindow:[self window]
                        fullscreenWindow:fullscreenWindow_.get()];
-
-  FullscreenSlidingStyle style = FullscreenSlidingStyle::OMNIBOX_TABS_HIDDEN;
-  [self adjustUIForSlidingFullscreenStyle:style];
+  [self adjustUIForEnteringFullscreen];
 
   [fullscreenWindow_ display];
 
@@ -787,7 +744,7 @@ willPositionSheet:(NSWindow*)sheet
 - (void)windowDidFailToEnterFullScreen:(NSWindow*)window {
   [self deregisterForContentViewResizeNotifications];
   [self resetCustomAppKitFullscreenVariables];
-  [self adjustUIForExitingFullscreenAndStopOmniboxSliding];
+  [self adjustUIForExitingFullscreen];
   fullscreenLowPowerCoordinator_.reset();
 }
 
@@ -814,17 +771,34 @@ willPositionSheet:(NSWindow*)sheet
 
 - (void)adjustUIForExitingFullscreen {
   exclusiveAccessController_->Destroy();
-  [self adjustUIForExitingFullscreenAndStopOmniboxSliding];
+  [fullscreenToolbarController_ exitFullscreenMode];
+  fullscreenToolbarController_.reset();
+
+  // Force the bookmark bar z-order to update.
+  [[bookmarkBarController_ view] removeFromSuperview];
+  [self layoutSubviews];
 }
 
 - (void)adjustUIForEnteringFullscreen {
-  FullscreenSlidingStyle style = FullscreenSlidingStyle::OMNIBOX_TABS_PRESENT;
-  if ([self isFullscreenForTabContentOrExtension])
-    style = FullscreenSlidingStyle::OMNIBOX_TABS_NONE;
-  else if (!shouldShowFullscreenToolbar_)
-    style = FullscreenSlidingStyle::OMNIBOX_TABS_HIDDEN;
+  DCHECK([self isInAnyFullscreenMode]);
+  if (!fullscreenToolbarController_) {
+    fullscreenToolbarController_.reset(
+        [[FullscreenToolbarController alloc] initWithBrowserController:self]);
+  }
 
-  [self adjustUIForSlidingFullscreenStyle:style];
+  [fullscreenToolbarController_ enterFullscreenMode];
+
+  if (!floatingBarBackingView_.get() &&
+      ([self hasTabStrip] || [self hasToolbar] || [self hasLocationBar])) {
+    floatingBarBackingView_.reset(
+        [[FloatingBarBackingView alloc] initWithFrame:NSZeroRect]);
+    [floatingBarBackingView_
+        setAutoresizingMask:(NSViewWidthSizable | NSViewMinYMargin)];
+  }
+
+  // Force the bookmark bar z-order to update.
+  [[bookmarkBarController_ view] removeFromSuperview];
+  [self layoutSubviews];
 }
 
 - (CGFloat)toolbarDividerOpacity {
@@ -894,7 +868,8 @@ willPositionSheet:(NSWindow*)sheet
   [layout setWindowSize:windowSize];
 
   [layout setInAnyFullscreen:[self isInAnyFullscreenMode]];
-  [layout setSlidingStyle:fullscreenToolbarController_.get().slidingStyle];
+  [layout setFullscreenToolbarStyle:fullscreenToolbarController_.get()
+                                        .toolbarStyle];
   [layout
       setFullscreenMenubarOffset:[fullscreenToolbarController_ menubarOffset]];
   [layout setFullscreenToolbarFraction:[fullscreenToolbarController_
@@ -1193,13 +1168,6 @@ willPositionSheet:(NSWindow*)sheet
   if (WebContents* contents = [self webContents])
     return PermissionRequestManager::FromWebContents(contents);
   return nil;
-}
-
-- (BOOL)isFullscreenForTabContentOrExtension {
-  FullscreenController* controller =
-      browser_->exclusive_access_manager()->fullscreen_controller();
-  return controller->IsWindowFullscreenForTabOrPending() ||
-         controller->IsExtensionFullscreenOrPending();
 }
 
 - (FullscreenToolbarVisibilityLockController*)

@@ -96,21 +96,6 @@ class WebContents;
 // The min Y of the bubble point in the coordinate space of the toolbar.
 - (NSInteger)pageInfoBubblePointY;
 
-// Allows the omnibox to slide. Also prepares UI for several fullscreen modes.
-// This method gets called when entering AppKit fullscren, or when entering
-// Immersive fullscreen. Expects fullscreenStyle_ to be set.
-- (void)adjustUIForSlidingFullscreenStyle:(FullscreenSlidingStyle)style;
-
-// This method gets called when exiting AppKit fullscreen, or when exiting
-// Immersive fullscreen. It performs some common UI changes, and stops the
-// omnibox from sliding.
-- (void)adjustUIForExitingFullscreenAndStopOmniboxSliding;
-
-// Exposed for testing.
-// Creates a FullscreenToolbarController with the given style.
-- (FullscreenToolbarController*)newFullscreenToolbarControllerWithStyle:
-    (FullscreenSlidingStyle)style;
-
 // Toggles the AppKit Fullscreen API. By default, doing so enters Canonical
 // Fullscreen.
 - (void)enterAppKitFullscreen;
@@ -173,9 +158,6 @@ class WebContents;
 // Determines the appropriate sliding fullscreen style and adjusts the UI to
 // it when we are entering fullscreen.
 - (void)adjustUIForEnteringFullscreen;
-
-// Returns YES if the fullscreen is for tab content or an extension.
-- (BOOL)isFullscreenForTabContentOrExtension;
 
 // Accessor for the controller managing the fullscreen toolbar visibility
 // locks.

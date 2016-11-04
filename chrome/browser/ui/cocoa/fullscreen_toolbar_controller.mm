@@ -9,15 +9,16 @@
 #include "base/command_line.h"
 #import "base/mac/mac_util.h"
 #include "base/mac/sdk_forward_declarations.h"
+#include "chrome/browser/profiles/profile.h"
 #import "chrome/browser/ui/cocoa/browser_window_controller.h"
 #import "chrome/browser/ui/cocoa/fullscreen/fullscreen_menubar_tracker.h"
 #import "chrome/browser/ui/cocoa/fullscreen/fullscreen_toolbar_animation_controller.h"
 #import "chrome/browser/ui/cocoa/fullscreen/fullscreen_toolbar_mouse_tracker.h"
 #import "chrome/browser/ui/cocoa/fullscreen/fullscreen_toolbar_visibility_lock_controller.h"
 #include "chrome/common/chrome_switches.h"
+#include "chrome/common/pref_names.h"
 #include "ui/base/cocoa/appkit_utils.h"
 #import "ui/base/cocoa/nsview_additions.h"
-#import "ui/base/cocoa/tracking_area.h"
 
 namespace {
 
@@ -26,7 +27,7 @@ const CGFloat kHideFraction = 0.0;
 const CGFloat kShowFraction = 1.0;
 
 // The amount by which the toolbar is offset downwards (to avoid the menu)
-// when the toolbar style is OMNIBOX_TABS_HIDDEN. (We can't use
+// when the toolbar style is TOOLBAR_HIDDEN. (We can't use
 // |-[NSMenu menuBarHeight]| since it returns 0 when the menu bar is hidden.)
 const CGFloat kToolbarVerticalOffset = 22;
 
@@ -59,14 +60,12 @@ const CGFloat kToolbarVerticalOffset = 22;
 
 @implementation FullscreenToolbarController
 
-@synthesize slidingStyle = slidingStyle_;
+@synthesize toolbarStyle = toolbarStyle_;
 
-- (id)initWithBrowserController:(BrowserWindowController*)controller
-                          style:(FullscreenSlidingStyle)style {
+- (id)initWithBrowserController:(BrowserWindowController*)controller {
   if ((self = [super init])) {
     browserController_ = controller;
     systemFullscreenMode_ = base::mac::kFullScreenModeNormal;
-    slidingStyle_ = style;
     animationController_.reset(new FullscreenToolbarAnimationController(self));
     visibilityLockController_.reset(
         [[FullscreenToolbarVisibilityLockController alloc]
@@ -85,6 +84,8 @@ const CGFloat kToolbarVerticalOffset = 22;
 - (void)enterFullscreenMode {
   DCHECK(!inFullscreenMode_);
   inFullscreenMode_ = YES;
+
+  [self updateToolbarStyle];
 
   menubarTracker_.reset([[FullscreenMenubarTracker alloc]
       initWithFullscreenToolbarController:self]);
@@ -112,7 +113,6 @@ const CGFloat kToolbarVerticalOffset = 22;
 - (void)exitFullscreenMode {
   DCHECK(inFullscreenMode_);
   inFullscreenMode_ = NO;
-
   [self cleanup];
 }
 
@@ -156,6 +156,22 @@ const CGFloat kToolbarVerticalOffset = 22;
   else
     base::mac::SwitchFullScreenModes(systemFullscreenMode_, mode);
   systemFullscreenMode_ = mode;
+}
+
+- (void)updateToolbarStyle {
+  FullscreenToolbarStyle oldStyle = toolbarStyle_;
+
+  if ([browserController_ isFullscreenForTabContentOrExtension]) {
+    toolbarStyle_ = FullscreenToolbarStyle::TOOLBAR_NONE;
+  } else {
+    PrefService* prefs = [browserController_ profile]->GetPrefs();
+    toolbarStyle_ = prefs->GetBoolean(prefs::kShowFullscreenToolbar)
+                        ? FullscreenToolbarStyle::TOOLBAR_PRESENT
+                        : FullscreenToolbarStyle::TOOLBAR_HIDDEN;
+  }
+
+  if (oldStyle != toolbarStyle_)
+    [self updateToolbar];
 }
 
 - (void)updateToolbar {
@@ -202,12 +218,12 @@ const CGFloat kToolbarVerticalOffset = 22;
   if (base::CommandLine::ForCurrentProcess()->HasSwitch(switches::kKioskMode))
     return kHideFraction;
 
-  switch (slidingStyle_) {
-    case FullscreenSlidingStyle::OMNIBOX_TABS_PRESENT:
+  switch (toolbarStyle_) {
+    case FullscreenToolbarStyle::TOOLBAR_PRESENT:
       return kShowFraction;
-    case FullscreenSlidingStyle::OMNIBOX_TABS_NONE:
+    case FullscreenToolbarStyle::TOOLBAR_NONE:
       return kHideFraction;
-    case FullscreenSlidingStyle::OMNIBOX_TABS_HIDDEN:
+    case FullscreenToolbarStyle::TOOLBAR_HIDDEN:
       if ([self mustShowFullscreenToolbar])
         return kShowFraction;
 
@@ -222,10 +238,10 @@ const CGFloat kToolbarVerticalOffset = 22;
   if (!inFullscreenMode_)
     return NO;
 
-  if (slidingStyle_ == FullscreenSlidingStyle::OMNIBOX_TABS_PRESENT)
+  if (toolbarStyle_ == FullscreenToolbarStyle::TOOLBAR_PRESENT)
     return YES;
 
-  if (slidingStyle_ == FullscreenSlidingStyle::OMNIBOX_TABS_NONE)
+  if (toolbarStyle_ == FullscreenToolbarStyle::TOOLBAR_NONE)
     return NO;
 
   FullscreenMenubarState menubarState = [menubarTracker_ state];
@@ -302,11 +318,11 @@ const CGFloat kToolbarVerticalOffset = 22;
   // notifications.
   [self setSystemFullscreenModeTo:base::mac::kFullScreenModeNormal];
 
-  menubarTracker_.reset();
-  mouseTracker_.reset();
-
   // No more calls back up to the BWC.
   browserController_ = nil;
+
+  menubarTracker_.reset();
+  mouseTracker_.reset();
 }
 
 - (BOOL)shouldShowMenubarInImmersiveFullscreen {

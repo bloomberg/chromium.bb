@@ -383,9 +383,6 @@ bool IsTabDetachingInFullscreenEnabled() {
             extensions::ExtensionKeybindingRegistry::ALL_EXTENSIONS,
             windowShim_.get()));
 
-    PrefService* prefs = browser_->profile()->GetPrefs();
-    shouldShowFullscreenToolbar_ =
-        prefs->GetBoolean(prefs::kShowFullscreenToolbar);
     blockLayoutSubviews_ = NO;
 
     // We are done initializing now.
@@ -397,9 +394,8 @@ bool IsTabDetachingInFullscreenEnabled() {
 - (void)dealloc {
   browser_->tab_strip_model()->CloseAllTabs();
 
-  // Explicitly release |fullscreenToolbarController_| here, as it may call back
-  // to this BWC in |-dealloc|.  We are required to call |-exitFullscreenMode|
-  // before releasing the controller.
+  // Explicitly release |fullscreenToolbarController_| here, as it may call
+  // back to this BWC in |-dealloc|.
   [fullscreenToolbarController_ exitFullscreenMode];
   fullscreenToolbarController_.reset();
 
@@ -1828,16 +1824,7 @@ willAnimateFromState:(BookmarkBar::State)oldState
 - (void)updateUIForTabFullscreen:
     (ExclusiveAccessContext::TabFullscreenState)state {
   DCHECK([self isInAnyFullscreenMode]);
-  if (state == ExclusiveAccessContext::STATE_ENTER_TAB_FULLSCREEN) {
-    [self adjustUIForSlidingFullscreenStyle:FullscreenSlidingStyle::
-                                                OMNIBOX_TABS_NONE];
-    return;
-  }
-
-  [self adjustUIForSlidingFullscreenStyle:
-            shouldShowFullscreenToolbar_
-                ? FullscreenSlidingStyle::OMNIBOX_TABS_PRESENT
-                : FullscreenSlidingStyle::OMNIBOX_TABS_HIDDEN];
+  [fullscreenToolbarController_ updateToolbarStyle];
 }
 
 - (void)updateFullscreenExitBubble {
@@ -1852,17 +1839,6 @@ willAnimateFromState:(BookmarkBar::State)oldState
     return YES;
   }
   return NO;
-}
-
-- (void)setFullscreenToolbarVisible:(BOOL)visible {
-  if (shouldShowFullscreenToolbar_ == visible)
-    return;
-
-  shouldShowFullscreenToolbar_ = visible;
-  [self adjustUIForSlidingFullscreenStyle:
-            shouldShowFullscreenToolbar_
-                ? FullscreenSlidingStyle::OMNIBOX_TABS_PRESENT
-                : FullscreenSlidingStyle::OMNIBOX_TABS_HIDDEN];
 }
 
 - (BOOL)isInAnyFullscreenMode {
@@ -1955,6 +1931,13 @@ willAnimateFromState:(BookmarkBar::State)oldState
 - (BOOL)floatingBarHasFocus {
   NSResponder* focused = [[self window] firstResponder];
   return [focused isKindOfClass:[AutocompleteTextFieldEditor class]];
+}
+
+- (BOOL)isFullscreenForTabContentOrExtension {
+  FullscreenController* controller =
+      browser_->exclusive_access_manager()->fullscreen_controller();
+  return controller->IsWindowFullscreenForTabOrPending() ||
+         controller->IsExtensionFullscreenOrPending();
 }
 
 - (ExclusiveAccessController*)exclusiveAccessController {

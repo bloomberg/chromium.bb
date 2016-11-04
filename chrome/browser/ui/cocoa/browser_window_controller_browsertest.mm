@@ -192,18 +192,11 @@ class ViewExposedChecker {
 // True if revealToolbarForTabStripChanges was called.
 @property(nonatomic, assign) BOOL isRevealingToolbarForTabstrip;
 
-// Initializer.
-- (id)initWithBrowserController:(BrowserWindowController*)controller;
-
 // Sets isRevealingToolbarForTabstrip back to false.
 - (void)resetToolbarFlag;
 
 // Overridden to set isRevealingToolbarForTabstrip to true when it's called.
 - (void)revealToolbarForTabStripChanges;
-
-// Overridden so that we don't have to deal with the DCHECKs when the
-// BWC exits fullscreen.
-- (void)exitFullscreenMode;
 
 @end
 
@@ -211,24 +204,12 @@ class ViewExposedChecker {
 
 @synthesize isRevealingToolbarForTabstrip = isRevealingToolbarForTabstrip_;
 
-- (id)initWithBrowserController:(BrowserWindowController*)controller {
-  if ((self = [super initWithBrowserController:controller
-                                         style:FullscreenSlidingStyle::
-                                                   OMNIBOX_TABS_HIDDEN])) {
-  }
-
-  return self;
-}
-
 - (void)resetToolbarFlag {
   isRevealingToolbarForTabstrip_ = NO;
 }
 
 - (void)revealToolbarForTabStripChanges {
   isRevealingToolbarForTabstrip_ = YES;
-}
-
-- (void)exitFullscreenMode {
 }
 
 @end
@@ -371,12 +352,12 @@ class BrowserWindowControllerTest : public InProcessBrowserTest {
     runner->Run();
   }
 
-  void VerifyFullscreenToolbarVisibility(FullscreenSlidingStyle style) {
-    EXPECT_EQ([[controller() fullscreenToolbarController] slidingStyle], style);
+  void VerifyFullscreenToolbarVisibility(FullscreenToolbarStyle style) {
+    EXPECT_EQ([[controller() fullscreenToolbarController] toolbarStyle], style);
 
     NSRect toolbarFrame = [[[controller() toolbarController] view] frame];
     NSRect screenFrame = [[[controller() window] screen] frame];
-    if (style == FullscreenSlidingStyle::OMNIBOX_TABS_PRESENT)
+    if (style == FullscreenToolbarStyle::TOOLBAR_PRESENT)
       EXPECT_LE(NSMaxY(toolbarFrame), NSMaxY(screenFrame));
     else
       EXPECT_GE(NSMinY(toolbarFrame), NSMaxY(screenFrame));
@@ -757,24 +738,21 @@ IN_PROC_BROWSER_TEST_F(BrowserWindowControllerTest,
 
   // Toggle fullscreen and check if the toolbar is shown.
   ToggleFullscreenAndWaitForNotification();
-  VerifyFullscreenToolbarVisibility(
-      FullscreenSlidingStyle::OMNIBOX_TABS_PRESENT);
+  VerifyFullscreenToolbarVisibility(FullscreenToolbarStyle::TOOLBAR_PRESENT);
 
   // Toggle the visibility of the fullscreen toolbar. Verify that the toolbar
   // is hidden and the preference is correctly updated.
   [[controller() fullscreenToolbarController] setMenuBarRevealProgress:0.0];
   chrome::ExecuteCommand(browser(), IDC_TOGGLE_FULLSCREEN_TOOLBAR);
   EXPECT_FALSE(prefs->GetBoolean(prefs::kShowFullscreenToolbar));
-  VerifyFullscreenToolbarVisibility(
-      FullscreenSlidingStyle::OMNIBOX_TABS_HIDDEN);
+  VerifyFullscreenToolbarVisibility(FullscreenToolbarStyle::TOOLBAR_HIDDEN);
 
   // Toggle out and back into fullscreen and verify that the toolbar is still
   // hidden.
   ToggleFullscreenAndWaitForNotification();
   ToggleFullscreenAndWaitForNotification();
   [[controller() fullscreenToolbarController] setMenuBarRevealProgress:0.0];
-  VerifyFullscreenToolbarVisibility(
-      FullscreenSlidingStyle::OMNIBOX_TABS_HIDDEN);
+  VerifyFullscreenToolbarVisibility(FullscreenToolbarStyle::TOOLBAR_HIDDEN);
 
   chrome::ExecuteCommand(browser(), IDC_TOGGLE_FULLSCREEN_TOOLBAR);
   EXPECT_TRUE(prefs->GetBoolean(prefs::kShowFullscreenToolbar));

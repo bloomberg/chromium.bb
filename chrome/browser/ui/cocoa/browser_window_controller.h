@@ -162,9 +162,6 @@ class Command;
   // return nil.
   BOOL isUsingCustomAnimation_;
 
-  // True if the toolbar needs to be shown in fullscreen.
-  BOOL shouldShowFullscreenToolbar_;
-
   // True if a call to exit AppKit fullscreen was made during the transition to
   // fullscreen.
   BOOL shouldExitAfterEnteringFullscreen_;
@@ -447,20 +444,7 @@ class Command;
 // invoked causes all fullscreen modes to exit.
 //
 // ----------------------------------------------------------------------------
-// There are 3 "styles" of omnibox sliding.
-// + OMNIBOX_TABS_PRESENT: Both the omnibox and the tabstrip are present.
-// Moving the cursor to the top causes the menubar to appear, and everything
-// else to slide down.
-// + OMNIBOX_TABS_HIDDEN: Both tabstrip and omnibox are hidden. Moving cursor
-// to top shows tabstrip, omnibox, and menu bar.
-// + OMNIBOX_TABS_NONE: Both tabstrip and omnibox are hidden. Moving cursor
-// to top causes the menubar to appear, but not the tabstrip and omnibox.
 //
-// The omnibox sliding styles are used in conjunction with the fullscreen APIs.
-// There is exactly 1 sliding style active at a time. The sliding is mangaged
-// by the fullscreenToolbarController_.
-//
-// ----------------------------------------------------------------------------
 // There are several "fullscreen modes" bantered around. Technically, any
 // fullscreen API can be combined with any sliding style.
 //
@@ -471,7 +455,7 @@ class Command;
 //
 // + Canonical Fullscreen: When a user clicks on the fullscreen button, they
 // expect a fullscreen behavior similar to other AppKit apps.
-//  - AppKitFullscreen API + OMNIBOX_TABS_PRESENT/OMNIBOX_TABS_HIDDEN.
+//  - AppKitFullscreen API + TOOLBAR_PRESENT/TOOLBAR_HIDDEN.
 //  - The button click directly invokes the AppKitFullscreen API. This class
 //  get a callback, and calls adjustUIForOmniboxFullscreen.
 //  - There is a menu item that is intended to invoke the same behavior. When
@@ -520,9 +504,6 @@ class Command;
 // |bubbleType|.
 - (void)updateFullscreenExitBubble;
 
-// Set the toolbar's visibility in fullscreen mode.
-- (void)setFullscreenToolbarVisible:(BOOL)visible;
-
 // Returns YES if the browser window is in or entering any fullscreen mode.
 - (BOOL)isInAnyFullscreenMode;
 
@@ -565,6 +546,9 @@ class Command;
 
 // Returns YES if any of the views in the floating bar currently has focus.
 - (BOOL)floatingBarHasFocus;
+
+// Returns YES if the fullscreen is for tab content or an extension.
+- (BOOL)isFullscreenForTabContentOrExtension;
 
 // Accessor for the controller managing fullscreen ExclusiveAccessContext.
 - (ExclusiveAccessController*)exclusiveAccessController;

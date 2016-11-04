@@ -45,7 +45,7 @@ class BrowserWindowLayoutTest : public testing::Test {
     // Content view has same size as window in AppKit Fullscreen.
     [layout setContentViewSize:NSMakeSize(600, 622)];
     [layout setInAnyFullscreen:YES];
-    [layout setSlidingStyle:FullscreenSlidingStyle::OMNIBOX_TABS_PRESENT];
+    [layout setFullscreenToolbarStyle:FullscreenToolbarStyle::TOOLBAR_PRESENT];
     [layout setFullscreenMenubarOffset:0];
     [layout setFullscreenToolbarFraction:1];
     [layout setFullscreenButtonFrame:NSZeroRect];
