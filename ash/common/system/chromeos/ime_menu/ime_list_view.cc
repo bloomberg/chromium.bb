@@ -39,7 +39,9 @@ views::Separator* CreateListItemSeparator() {
   separator->SetColor(kBorderLightColor);
   separator->SetPreferredSize(kSeparatorWidth);
   separator->SetBorder(views::Border::CreateEmptyBorder(
-      kMenuSeparatorVerticalPadding, 0, kMenuSeparatorVerticalPadding, 0));
+      kMenuSeparatorVerticalPadding,
+      kMenuExtraMarginFromLeftEdge + kMenuButtonSize,
+      kMenuSeparatorVerticalPadding, 0));
   return separator;
 }
 
@@ -248,8 +250,10 @@ void ImeListView::AppendImeListAndProperties(
         property_map_[property_view] = property_list[i].key;
       }
 
-      // Adds a separator on the bottom of property items.
-      scroll_content()->AddChildView(CreateListItemSeparator());
+      // Adds a separator on the bottom of property items if there are still
+      // other IMEs under the current one.
+      if (i < list.size() - 1)
+        scroll_content()->AddChildView(CreateListItemSeparator());
     }
   }
 }
