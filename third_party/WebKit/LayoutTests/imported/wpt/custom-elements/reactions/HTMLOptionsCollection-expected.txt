@@ -1,0 +1,8 @@
+This is a testharness.js-based test.
+FAIL length on HTMLOptionsCollection must enqueue disconnectedCallback when removing a custom element assert_array_equals: lengths differ, expected 1 got 0
+PASS The indexed setter on HTMLOptionsCollection must enqueue connectedCallback when inserting a custom element 
+PASS The indexed setter on HTMLOptionsCollection must enqueue disconnectedCallback when removing a custom element 
+PASS add on HTMLOptionsCollection must enqueue connectedCallback when inserting a custom element 
+PASS remove on HTMLOptionsCollection must enqueue disconnectedCallback when removing a custom element 
+Harness: the test ran to completion.
+
