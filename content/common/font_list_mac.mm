@@ -16,17 +16,29 @@ std::unique_ptr<base::ListValue> GetFontList_SlowBlocking() {
   base::mac::ScopedNSAutoreleasePool autorelease_pool;
   std::unique_ptr<base::ListValue> font_list(new base::ListValue);
   NSFontManager* fontManager = [[[NSFontManager alloc] init] autorelease];
+  NSMutableDictionary* fonts_dict = [NSMutableDictionary dictionary];
   NSArray* fonts = [fontManager availableFontFamilies];
+
   for (NSString* family_name in fonts) {
     NSString* localized_family_name =
         [fontManager localizedNameForFamily:family_name face:nil];
+    fonts_dict[family_name] = localized_family_name;
+  }
+
+  // Sort family names based on localized names.
+  NSArray* sortedFonts = [fonts_dict
+      keysSortedByValueUsingSelector:@selector(localizedStandardCompare:)];
+
+  for (NSString* family_name in sortedFonts) {
+    NSString* localized_family_name = fonts_dict[family_name];
     base::ListValue* font_item = new base::ListValue();
     base::string16 family = base::SysNSStringToUTF16(family_name);
-    font_item->Append(new base::StringValue(family));
     base::string16 loc_family = base::SysNSStringToUTF16(localized_family_name);
+    font_item->Append(new base::StringValue(family));
     font_item->Append(new base::StringValue(loc_family));
     font_list->Append(font_item);
   }
+
   return font_list;
 }
 
