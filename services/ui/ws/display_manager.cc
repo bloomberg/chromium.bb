@@ -175,7 +175,6 @@ void DisplayManager::OnDisplayAdded(int64_t id,
   PlatformDisplayInitParams params;
   params.display_id = id;
   params.metrics = metrics;
-  params.display_compositor = window_server_->GetDisplayCompositor();
 
   ws::Display* display = new ws::Display(window_server_, params);
   display->Init(nullptr);

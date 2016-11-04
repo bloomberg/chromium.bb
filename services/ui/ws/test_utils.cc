@@ -11,7 +11,6 @@
 #include "gpu/ipc/client/gpu_channel_host.h"
 #include "services/service_manager/public/interfaces/connector.mojom.h"
 #include "services/ui/public/interfaces/cursor.mojom.h"
-#include "services/ui/surfaces/display_compositor.h"
 #include "services/ui/ws/display_binding.h"
 #include "services/ui/ws/display_manager.h"
 #include "services/ui/ws/platform_display_init_params.h"
@@ -490,12 +489,8 @@ WindowServerTestHelper::~WindowServerTestHelper() {
 // WindowEventTargetingHelper ------------------------------------------------
 
 WindowEventTargetingHelper::WindowEventTargetingHelper()
-    : wm_client_(nullptr),
-      display_binding_(nullptr),
-      display_(nullptr),
-      display_compositor_(new DisplayCompositor(nullptr)) {
+    : wm_client_(nullptr), display_binding_(nullptr), display_(nullptr) {
   PlatformDisplayInitParams display_init_params;
-  display_init_params.display_compositor = display_compositor_;
   display_ = new Display(window_server(), display_init_params);
   display_binding_ = new TestDisplayBinding(window_server());
   display_->Init(base::WrapUnique(display_binding_));

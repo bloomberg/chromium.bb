@@ -4,6 +4,8 @@
 
 #include "services/ui/surfaces/display_compositor.h"
 
+#include "cc/surfaces/surface.h"
+
 namespace ui {
 
 DisplayCompositor::DisplayCompositor(
@@ -12,11 +14,23 @@ DisplayCompositor::DisplayCompositor(
   manager_.AddObserver(this);
 }
 
-void DisplayCompositor::ReturnSurfaceReference(
-    const cc::SurfaceSequence& sequence) {
-  std::vector<uint32_t> sequences;
-  sequences.push_back(sequence.sequence);
-  manager_.DidSatisfySequences(sequence.frame_sink_id, &sequences);
+void DisplayCompositor::AddSurfaceReference(
+    const cc::SurfaceId& surface_id,
+    const cc::SurfaceSequence& surface_sequence) {
+  cc::Surface* surface = manager_.GetSurfaceForId(surface_id);
+  if (!surface) {
+    LOG(ERROR) << "Attempting to add dependency to nonexistent surface "
+               << surface_id.ToString();
+    return;
+  }
+  surface->AddDestructionDependency(surface_sequence);
+}
+
+void DisplayCompositor::ReturnSurfaceReferences(
+    const cc::FrameSinkId& frame_sink_id,
+    const std::vector<uint32_t>& sequences) {
+  std::vector<uint32_t> sequences_copy(sequences);
+  manager_.DidSatisfySequences(frame_sink_id, &sequences_copy);
 }
 
 DisplayCompositor::~DisplayCompositor() {

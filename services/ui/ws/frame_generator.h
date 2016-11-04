@@ -51,9 +51,7 @@ class ServerWindowCompositorFrameSink;
 class FrameGenerator : public ServerWindowTracker,
                        public cc::mojom::MojoCompositorFrameSinkClient {
  public:
-  FrameGenerator(FrameGeneratorDelegate* delegate,
-                 ServerWindow* root_window,
-                 scoped_refptr<DisplayCompositor> display_compositor);
+  FrameGenerator(FrameGeneratorDelegate* delegate, ServerWindow* root_window);
   ~FrameGenerator() override;
 
   void OnGpuChannelEstablished(scoped_refptr<gpu::GpuChannelHost> gpu_channel);
@@ -110,11 +108,12 @@ class FrameGenerator : public ServerWindowTracker,
   // management.
   void ReleaseAllSurfaceReferences();
 
+  ui::DisplayCompositor* GetDisplayCompositor();
+
   // ServerWindowObserver implementation.
   void OnWindowDestroying(ServerWindow* window) override;
 
   FrameGeneratorDelegate* delegate_;
-  scoped_refptr<DisplayCompositor> display_compositor_;
   cc::FrameSinkId frame_sink_id_;
   ServerWindow* const root_window_;
   cc::SurfaceSequenceGenerator surface_sequence_generator_;

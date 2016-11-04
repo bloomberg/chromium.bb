@@ -4,7 +4,6 @@
 
 #include "services/ui/ws/window_tree_host_factory.h"
 
-#include "services/ui/surfaces/display_compositor.h"
 #include "services/ui/ws/display.h"
 #include "services/ui/ws/display_binding.h"
 #include "services/ui/ws/window_server.h"
@@ -19,8 +18,6 @@ WindowTreeHostFactory::WindowTreeHostFactory(WindowServer* window_server,
   platform_display_init_params_.metrics.bounds.set_height(768);
   platform_display_init_params_.metrics.pixel_size.SetSize(1024, 768);
   platform_display_init_params_.metrics.device_scale_factor = 1.0f;
-  platform_display_init_params_.display_compositor =
-      window_server_->GetDisplayCompositor();
 }
 
 WindowTreeHostFactory::~WindowTreeHostFactory() {}

@@ -10,26 +10,22 @@
 #include "cc/quads/render_pass_draw_quad.h"
 #include "cc/quads/shared_quad_state.h"
 #include "cc/quads/surface_draw_quad.h"
-#include "cc/surfaces/surface.h"
 #include "cc/surfaces/surface_id.h"
 #include "gpu/ipc/client/gpu_channel_host.h"
 #include "services/ui/surfaces/display_compositor.h"
 #include "services/ui/surfaces/surfaces_context_provider.h"
 #include "services/ui/ws/frame_generator_delegate.h"
 #include "services/ui/ws/server_window.h"
-#include "services/ui/ws/server_window_compositor_frame_sink.h"
 #include "services/ui/ws/server_window_compositor_frame_sink_manager.h"
+#include "services/ui/ws/server_window_delegate.h"
 
 namespace ui {
 
 namespace ws {
 
-FrameGenerator::FrameGenerator(
-    FrameGeneratorDelegate* delegate,
-    ServerWindow* root_window,
-    scoped_refptr<DisplayCompositor> display_compositor)
+FrameGenerator::FrameGenerator(FrameGeneratorDelegate* delegate,
+                               ServerWindow* root_window)
     : delegate_(delegate),
-      display_compositor_(display_compositor),
       frame_sink_id_(
           WindowIdToTransportId(root_window->id()),
           static_cast<uint32_t>(mojom::CompositorFrameSinkType::DEFAULT)),
@@ -247,21 +243,14 @@ void FrameGenerator::AddOrUpdateSurfaceReference(
       window->compositor_frame_sink_manager()->GetLatestSurfaceId(type);
   if (surface_id.is_null())
     return;
-  // TODO(fsamuel): Use mojo interface to give root window a surface reference.
-  cc::SurfaceManager* surface_manager = display_compositor_->manager();
   auto it = dependencies_.find(surface_id.frame_sink_id());
   if (it == dependencies_.end()) {
-    cc::Surface* surface = surface_manager->GetSurfaceForId(surface_id);
-    if (!surface) {
-      LOG(ERROR) << "Attempting to add dependency to nonexistent surface "
-                 << surface_id.ToString();
-      return;
-    }
     SurfaceDependency dependency = {
         surface_id.local_frame_id(),
         surface_sequence_generator_.CreateSurfaceSequence()};
-    surface->AddDestructionDependency(dependency.sequence);
     dependencies_[surface_id.frame_sink_id()] = dependency;
+    GetDisplayCompositor()->AddSurfaceReference(surface_id,
+                                                dependency.sequence);
     // Observe |window_surface|'s window so that we can release references when
     // the window is destroyed.
     Add(window);
@@ -294,18 +283,20 @@ void FrameGenerator::ReleaseFrameSinkReference(
     return;
   std::vector<uint32_t> sequences;
   sequences.push_back(it->second.sequence.sequence);
-  cc::SurfaceManager* surface_manager = display_compositor_->manager();
-  surface_manager->DidSatisfySequences(frame_sink_id_, &sequences);
+  GetDisplayCompositor()->ReturnSurfaceReferences(frame_sink_id, sequences);
   dependencies_.erase(it);
 }
 
 void FrameGenerator::ReleaseAllSurfaceReferences() {
-  cc::SurfaceManager* surface_manager = display_compositor_->manager();
   std::vector<uint32_t> sequences;
   for (auto& dependency : dependencies_)
     sequences.push_back(dependency.second.sequence.sequence);
-  surface_manager->DidSatisfySequences(frame_sink_id_, &sequences);
+  GetDisplayCompositor()->ReturnSurfaceReferences(frame_sink_id_, sequences);
   dependencies_.clear();
+}
+
+ui::DisplayCompositor* FrameGenerator::GetDisplayCompositor() {
+  return root_window_->delegate()->GetDisplayCompositor();
 }
 
 void FrameGenerator::OnWindowDestroying(ServerWindow* window) {

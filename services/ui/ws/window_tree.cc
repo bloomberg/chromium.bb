@@ -1375,7 +1375,9 @@ void WindowTree::OnWindowSurfaceDetached(Id transport_window_id,
       GetWindowByClientId(ClientWindowId(transport_window_id));
   if (!window)
     return;
-  window_server_->GetDisplayCompositor()->ReturnSurfaceReference(sequence);
+  std::vector<uint32_t> sequences({sequence.sequence});
+  window_server_->GetDisplayCompositor()->ReturnSurfaceReferences(
+      sequence.frame_sink_id, std::move(sequences));
 }
 
 void WindowTree::SetWindowTextInputState(Id transport_window_id,

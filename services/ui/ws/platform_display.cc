@@ -57,9 +57,7 @@ DefaultPlatformDisplay::DefaultPlatformDisplay(
 #if !defined(OS_ANDROID)
       cursor_loader_(ui::CursorLoader::Create()),
 #endif
-      frame_generator_(new FrameGenerator(this,
-                                          init_params.root_window,
-                                          init_params.display_compositor)),
+      frame_generator_(new FrameGenerator(this, init_params.root_window)),
       metrics_(init_params.metrics) {
 }
 
