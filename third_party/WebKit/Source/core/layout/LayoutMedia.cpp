@@ -159,6 +159,11 @@ void LayoutMedia::setRequestPositionUpdates(bool want) {
 }
 
 LayoutUnit LayoutMedia::computePanelWidth(const LayoutRect& mediaRect) const {
+  // TODO(mlamouri): we don't know if the main frame has an horizontal scrollbar
+  // if it is out of process. See https://crbug.com/662480
+  if (document().page()->mainFrame()->isRemoteFrame())
+    return mediaRect.width();
+
   FrameHost* frameHost = document().frameHost();
   LocalFrame* mainFrame = document().page()->deprecatedLocalMainFrame();
   FrameView* pageView = mainFrame ? mainFrame->view() : nullptr;
