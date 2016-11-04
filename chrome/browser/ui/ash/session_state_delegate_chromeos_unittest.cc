@@ -91,8 +91,11 @@ class SessionStateDelegateChromeOSTest : public testing::Test {
   }
 
   // Get the active user.
-  const std::string& GetActiveUser() {
-    return user_manager::UserManager::Get()->GetActiveUser()->email();
+  const std::string& GetActiveUserEmail() {
+    return user_manager::UserManager::Get()
+        ->GetActiveUser()
+        ->GetAccountId()
+        .GetUserEmail();
   }
 
   FakeChromeUserManager* user_manager() { return user_manager_; }
@@ -135,13 +138,13 @@ class SessionStateDelegateChromeOSTest : public testing::Test {
 TEST_F(SessionStateDelegateChromeOSTest, CyclingOneUser) {
   UserAddedToSession("firstuser@test.com");
 
-  EXPECT_EQ("firstuser@test.com", GetActiveUser());
+  EXPECT_EQ("firstuser@test.com", GetActiveUserEmail());
   session_state_delegate()->CycleActiveUser(
       ash::SessionStateDelegate::CYCLE_TO_NEXT_USER);
-  EXPECT_EQ("firstuser@test.com", GetActiveUser());
+  EXPECT_EQ("firstuser@test.com", GetActiveUserEmail());
   session_state_delegate()->CycleActiveUser(
       ash::SessionStateDelegate::CYCLE_TO_PREVIOUS_USER);
-  EXPECT_EQ("firstuser@test.com", GetActiveUser());
+  EXPECT_EQ("firstuser@test.com", GetActiveUserEmail());
 }
 
 // Cycle three users forwards and backwards to see that it works.
@@ -153,23 +156,23 @@ TEST_F(SessionStateDelegateChromeOSTest, CyclingThreeUsers) {
       ash::SessionStateDelegate::CYCLE_TO_NEXT_USER;
 
   // Cycle forward.
-  EXPECT_EQ("firstuser@test.com", GetActiveUser());
+  EXPECT_EQ("firstuser@test.com", GetActiveUserEmail());
   session_state_delegate()->CycleActiveUser(forward);
-  EXPECT_EQ("seconduser@test.com", GetActiveUser());
+  EXPECT_EQ("seconduser@test.com", GetActiveUserEmail());
   session_state_delegate()->CycleActiveUser(forward);
-  EXPECT_EQ("thirduser@test.com", GetActiveUser());
+  EXPECT_EQ("thirduser@test.com", GetActiveUserEmail());
   session_state_delegate()->CycleActiveUser(forward);
-  EXPECT_EQ("firstuser@test.com", GetActiveUser());
+  EXPECT_EQ("firstuser@test.com", GetActiveUserEmail());
 
   // Cycle backwards.
   const ash::SessionStateDelegate::CycleUser backward =
       ash::SessionStateDelegate::CYCLE_TO_PREVIOUS_USER;
   session_state_delegate()->CycleActiveUser(backward);
-  EXPECT_EQ("thirduser@test.com", GetActiveUser());
+  EXPECT_EQ("thirduser@test.com", GetActiveUserEmail());
   session_state_delegate()->CycleActiveUser(backward);
-  EXPECT_EQ("seconduser@test.com", GetActiveUser());
+  EXPECT_EQ("seconduser@test.com", GetActiveUserEmail());
   session_state_delegate()->CycleActiveUser(backward);
-  EXPECT_EQ("firstuser@test.com", GetActiveUser());
+  EXPECT_EQ("firstuser@test.com", GetActiveUserEmail());
 }
 
 // Make sure MultiProfile disabled by primary user policy.

@@ -152,16 +152,20 @@ void ChromeLauncherControllerUserSwitchObserver::UserAddedToSession(
       multi_user_util::GetProfileFromAccountId(active_user->GetAccountId());
   // If we do not have a profile yet, we postpone forwarding the notification
   // until it is loaded.
-  if (!profile)
-    added_user_ids_waiting_for_profiles_.insert(active_user->email());
-  else
+  if (!profile) {
+    added_user_ids_waiting_for_profiles_.insert(
+        active_user->GetAccountId().GetUserEmail());
+  } else {
     AddUser(profile);
+  }
 }
 
 void ChromeLauncherControllerUserSwitchObserver::OnUserProfileReadyToSwitch(
     Profile* profile) {
   if (!added_user_ids_waiting_for_profiles_.empty()) {
     // Check if the profile is from a user which was on the waiting list.
+    // TODO(alemate): added_user_ids_waiting_for_profiles_ should be
+    // a set<AccountId>
     std::string user_id =
         multi_user_util::GetAccountIdFromProfile(profile).GetUserEmail();
     std::set<std::string>::iterator it =
