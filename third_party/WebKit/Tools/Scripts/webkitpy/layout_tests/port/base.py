@@ -34,6 +34,7 @@ import collections
 import cgi
 import difflib
 import errno
+import functools
 import itertools
 import json
 import logging
@@ -758,8 +759,8 @@ class Port(object):
         # When collecting test cases, skip these directories
         skipped_directories = set(['.svn', '_svn', 'platform', 'resources', 'support', 'script-tests', 'reference', 'reftest'])
         files = find_files.find(self._filesystem, self.layout_tests_dir(), paths,
-                                skipped_directories, Port.is_test_file, self.test_key)
-        return [self.relative_test_filename(f) for f in files]
+                                skipped_directories, functools.partial(Port.is_test_file, self), self.test_key)
+        return self._convert_wpt_file_paths_to_url_paths([self.relative_test_filename(f) for f in files])
 
     # When collecting test cases, we include any file with these extensions.
     _supported_file_extensions = set(['.html', '.xml', '.xhtml', '.xht', '.pl',
@@ -782,10 +783,55 @@ class Port(object):
         extension = filesystem.splitext(filename)[1]
         return extension in Port._supported_file_extensions
 
-    @staticmethod
-    def is_test_file(filesystem, dirname, filename):
+    def is_test_file(self, filesystem, dirname, filename):
+        match = re.search(r'[/\\]imported[/\\]wpt[/\\](.*)$', dirname)
+        if match:
+            path_in_wpt = match.group(1).replace('\\', '/') + '/' + filename
+            return self._manifest_items_for_path(path_in_wpt) is not None
         return Port._has_supported_extension(
             filesystem, filename) and not Port.is_reference_html_file(filesystem, dirname, filename)
+
+    def _convert_wpt_file_paths_to_url_paths(self, files):
+        tests = []
+        for file_path in files:
+            # Path separators are normalized by relative_test_filename().
+            match = re.search(r'imported/wpt/(.*)$', file_path)
+            if not match:
+                tests.append(file_path)
+                continue
+            path_in_wpt = match.group(1)
+            manifest_items = self._manifest_items_for_path(path_in_wpt)
+            assert manifest_items is not None
+            if len(manifest_items) != 1 or manifest_items[0]['url'][1:] != path_in_wpt:
+                # TODO(tkent): foo.any.js and bar.worker.js should be accessed
+                # as foo.any.html, foo.any.worker, and bar.worker with WPTServe.
+                continue
+            tests.append(file_path)
+        return tests
+
+    @memoized
+    def _wpt_manifest(self):
+        path = self._filesystem.join(self.layout_tests_dir(), 'imported', 'wpt', 'MANIFEST.json')
+        return json.loads(self._filesystem.read_text_file(path))
+
+    def _manifest_items_for_path(self, path_in_wpt):
+        """Returns a list of a dict representing ManifestItem for the specified
+        path, or None if MANIFEST.json has no items for the specified path.
+
+        A ManifestItem has 'path', 'url', and optional 'timeout' fields. Also,
+        it has "references" list for reference tests. It's defined in
+        web-platform-tests/tools/manifest/item.py.
+        """
+        # Because we generate MANIFEST.json before finishing import, all
+        # entries are in 'local_changes'.
+        items = self._wpt_manifest()['local_changes']['items']
+        if path_in_wpt in items['manual']:
+            return items['manual'][path_in_wpt]
+        elif path_in_wpt in items['reftest']:
+            return items['reftest'][path_in_wpt]
+        elif path_in_wpt in items['testharness']:
+            return items['testharness'][path_in_wpt]
+        return None
 
     ALL_TEST_TYPES = ['audio', 'harness', 'pixel', 'ref', 'text', 'unknown']
 

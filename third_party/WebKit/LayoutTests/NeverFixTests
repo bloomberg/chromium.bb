@@ -155,9 +155,6 @@ imported/csswg-test/css21/linebox/line-height-126.xht [ WontFix ]
 [ Mac ] imported/wpt/html/dom/elements/requirements-relating-to-bidirectional-algorithm-formatting-characters/dir-isolation-009b.html [ WontFix ]
 [ Mac ] imported/wpt/html/dom/elements/requirements-relating-to-bidirectional-algorithm-formatting-characters/dir-isolation-009c.html [ WontFix ]
 
-# SVG files in the directory are not tests.
-imported/wpt/images/ [ WontFix ]
-
 # We could fix this test for us and upstream it if the test shell user agent
 # would let us differentiate test_shell and WebKit DumpTreeNode.
 crbug.com/7482 [ Win Mac ] http/tests/misc/timer-vs-loading.html [ WontFix ]

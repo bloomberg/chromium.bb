@@ -26,6 +26,8 @@
 # (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
 # OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
+import functools
+import json
 import optparse
 import tempfile
 import unittest
@@ -41,7 +43,7 @@ from webkitpy.common.system.systemhost_mock import MockSystemHost
 
 from webkitpy.layout_tests.port.base import Port, VirtualTestSuite
 from webkitpy.layout_tests.models.test_expectations import TestExpectations
-from webkitpy.layout_tests.port.test import add_unit_tests_to_mock_filesystem, TestPort
+from webkitpy.layout_tests.port.test import add_unit_tests_to_mock_filesystem, LAYOUT_TEST_DIR, TestPort
 
 
 class PortTest(unittest.TestCase):
@@ -302,24 +304,82 @@ class PortTest(unittest.TestCase):
         tests = port.tests(['userscripts/resources'])
         self.assertEqual(tests, [])
 
+    @staticmethod
+    def _add_manifest_to_mock_file_system(filesystem):
+        filesystem.write_text_file(LAYOUT_TEST_DIR + '/imported/wpt/MANIFEST.json', json.dumps({
+            "local_changes": {
+                "items": {
+                    'testharness': {
+                        'dom/ranges/Range-attributes.html': [{
+                            'path': 'dom/ranges/Range-attributes.html',
+                            'url': '/dom/ranges/Range-attributes.html'
+                        }],
+                        'console/console-is-a-namespace.any.js': [
+                            {
+                                'path': 'console/console-is-a-namespace.any.js',
+                                'url': '/console/console-is-a-namespace.any.html'
+                            },
+                            {
+                                'path': 'console/console-is-a-namespace.any.js',
+                                'url': '/console/console-is-a-namespace.any.worker'
+                            }
+                        ]},
+                    'manual': {},
+                    'reftest': {}
+                }}}))
+        filesystem.write_text_file(LAYOUT_TEST_DIR + '/imported/wpt/dom/ranges/Range-attributes.html', '')
+        filesystem.write_text_file(LAYOUT_TEST_DIR + '/imported/wpt/console/console-is-a-namespace.any.js', '')
+        filesystem.write_text_file(LAYOUT_TEST_DIR + '/imported/wpt/common/blank.html', 'foo')
+
+    def test_find_none_if_not_in_manifest(self):
+        port = self.make_port(with_tests=True)
+        PortTest._add_manifest_to_mock_file_system(port.host.filesystem)
+        self.assertNotIn('imported/wpt/common/blank.html', port.tests([]))
+
+    def test_find_one_if_in_manifest(self):
+        port = self.make_port(with_tests=True)
+        PortTest._add_manifest_to_mock_file_system(port.host.filesystem)
+        self.assertIn('imported/wpt/dom/ranges/Range-attributes.html', port.tests([]))
+        self.assertNotIn('imported/wpt/console/console-is-a-namespace.any.js', port.tests([]))
+        self.assertEqual(port.tests(['imported']), ['imported/wpt/dom/ranges/Range-attributes.html'])
+        self.assertEqual(port.tests(['imported/']), ['imported/wpt/dom/ranges/Range-attributes.html'])
+        self.assertEqual(port.tests(['imported/csswg-test']), [])
+        self.assertEqual(port.tests(['imported/wpt']), ['imported/wpt/dom/ranges/Range-attributes.html'])
+        self.assertEqual(port.tests(['imported/wpt/']), ['imported/wpt/dom/ranges/Range-attributes.html'])
+        self.assertEqual(port.tests(['imported/wpt/dom/ranges/Range-attributes.html']),
+                         ['imported/wpt/dom/ranges/Range-attributes.html'])
+
     def test_is_test_file(self):
-        filesystem = MockFileSystem()
-        self.assertTrue(Port.is_test_file(filesystem, '', 'foo.html'))
-        self.assertTrue(Port.is_test_file(filesystem, '', 'foo.svg'))
-        self.assertTrue(Port.is_test_file(filesystem, '', 'test-ref-test.html'))
-        self.assertFalse(Port.is_test_file(filesystem, '', 'foo.png'))
-        self.assertFalse(Port.is_test_file(filesystem, '', 'foo-expected.html'))
-        self.assertFalse(Port.is_test_file(filesystem, '', 'foo-expected.svg'))
-        self.assertFalse(Port.is_test_file(filesystem, '', 'foo-expected.xht'))
-        self.assertFalse(Port.is_test_file(filesystem, '', 'foo-expected-mismatch.html'))
-        self.assertFalse(Port.is_test_file(filesystem, '', 'foo-expected-mismatch.svg'))
-        self.assertFalse(Port.is_test_file(filesystem, '', 'foo-expected-mismatch.xhtml'))
-        self.assertFalse(Port.is_test_file(filesystem, '', 'foo-ref.html'))
-        self.assertFalse(Port.is_test_file(filesystem, '', 'foo-notref.html'))
-        self.assertFalse(Port.is_test_file(filesystem, '', 'foo-notref.xht'))
-        self.assertFalse(Port.is_test_file(filesystem, '', 'foo-ref.xhtml'))
-        self.assertFalse(Port.is_test_file(filesystem, '', 'ref-foo.html'))
-        self.assertFalse(Port.is_test_file(filesystem, '', 'notref-foo.xhr'))
+        port = self.make_port(with_tests=True)
+        is_test_file = functools.partial(Port.is_test_file, port, port.host.filesystem)
+        self.assertTrue(is_test_file('', 'foo.html'))
+        self.assertTrue(is_test_file('', 'foo.svg'))
+        self.assertTrue(is_test_file('', 'test-ref-test.html'))
+        self.assertFalse(is_test_file('', 'foo.png'))
+        self.assertFalse(is_test_file('', 'foo-expected.html'))
+        self.assertFalse(is_test_file('', 'foo-expected.svg'))
+        self.assertFalse(is_test_file('', 'foo-expected.xht'))
+        self.assertFalse(is_test_file('', 'foo-expected-mismatch.html'))
+        self.assertFalse(is_test_file('', 'foo-expected-mismatch.svg'))
+        self.assertFalse(is_test_file('', 'foo-expected-mismatch.xhtml'))
+        self.assertFalse(is_test_file('', 'foo-ref.html'))
+        self.assertFalse(is_test_file('', 'foo-notref.html'))
+        self.assertFalse(is_test_file('', 'foo-notref.xht'))
+        self.assertFalse(is_test_file('', 'foo-ref.xhtml'))
+        self.assertFalse(is_test_file('', 'ref-foo.html'))
+        self.assertFalse(is_test_file('', 'notref-foo.xhr'))
+
+    def test_is_test_file_in_wpt(self):
+        port = self.make_port(with_tests=True)
+        filesystem = port.host.filesystem
+        PortTest._add_manifest_to_mock_file_system(filesystem)
+
+        # A file not in MANIFEST.json is not a test even if it has .html suffix.
+        self.assertFalse(port.is_test_file(filesystem, LAYOUT_TEST_DIR + '/imported/wpt/common', 'blank.html'))
+
+        # .js is not a test in general, but it is if MANIFEST.json contains an
+        # entry for it.
+        self.assertTrue(port.is_test_file(filesystem, LAYOUT_TEST_DIR + '/imported/wpt/console', 'console-is-a-namespace.any.js'))
 
     def test_parse_reftest_list(self):
         port = self.make_port(with_tests=True)
