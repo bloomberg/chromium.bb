@@ -2251,6 +2251,7 @@ bool V4L2SliceVideoDecodeAccelerator::V4L2H264Accelerator::SubmitFrameMetadata(
 
   struct v4l2_ctrl_h264_scaling_matrix v4l2_scaling_matrix;
   memset(&v4l2_scaling_matrix, 0, sizeof(v4l2_scaling_matrix));
+
   static_assert(arraysize(v4l2_scaling_matrix.scaling_list_4x4) <=
                         arraysize(pps->scaling_list4x4) &&
                     arraysize(v4l2_scaling_matrix.scaling_list_4x4[0]) <=
@@ -2260,18 +2261,36 @@ bool V4L2SliceVideoDecodeAccelerator::V4L2H264Accelerator::SubmitFrameMetadata(
                     arraysize(v4l2_scaling_matrix.scaling_list_8x8[0]) <=
                         arraysize(pps->scaling_list8x8[0]),
                 "scaling_lists must be of correct size");
+  static_assert(arraysize(v4l2_scaling_matrix.scaling_list_4x4) <=
+                        arraysize(sps->scaling_list4x4) &&
+                    arraysize(v4l2_scaling_matrix.scaling_list_4x4[0]) <=
+                        arraysize(sps->scaling_list4x4[0]) &&
+                    arraysize(v4l2_scaling_matrix.scaling_list_8x8) <=
+                        arraysize(sps->scaling_list8x8) &&
+                    arraysize(v4l2_scaling_matrix.scaling_list_8x8[0]) <=
+                        arraysize(sps->scaling_list8x8[0]),
+                "scaling_lists must be of correct size");
+
+  const auto* scaling_list4x4 = &sps->scaling_list4x4[0];
+  const auto* scaling_list8x8 = &sps->scaling_list8x8[0];
+  if (pps->pic_scaling_matrix_present_flag) {
+    scaling_list4x4 = &pps->scaling_list4x4[0];
+    scaling_list8x8 = &pps->scaling_list8x8[0];
+  }
+
   for (size_t i = 0; i < arraysize(v4l2_scaling_matrix.scaling_list_4x4); ++i) {
     for (size_t j = 0; j < arraysize(v4l2_scaling_matrix.scaling_list_4x4[i]);
          ++j) {
-      v4l2_scaling_matrix.scaling_list_4x4[i][j] = pps->scaling_list4x4[i][j];
+      v4l2_scaling_matrix.scaling_list_4x4[i][j] = scaling_list4x4[i][j];
     }
   }
   for (size_t i = 0; i < arraysize(v4l2_scaling_matrix.scaling_list_8x8); ++i) {
     for (size_t j = 0; j < arraysize(v4l2_scaling_matrix.scaling_list_8x8[i]);
          ++j) {
-      v4l2_scaling_matrix.scaling_list_8x8[i][j] = pps->scaling_list8x8[i][j];
+      v4l2_scaling_matrix.scaling_list_8x8[i][j] = scaling_list8x8[i][j];
     }
   }
+
   memset(&ctrl, 0, sizeof(ctrl));
   ctrl.id = V4L2_CID_MPEG_VIDEO_H264_SCALING_MATRIX;
   ctrl.size = sizeof(v4l2_scaling_matrix);
