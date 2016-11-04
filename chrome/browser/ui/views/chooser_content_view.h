@@ -11,7 +11,7 @@
 #include "base/strings/string16.h"
 #include "chrome/browser/chooser_controller/chooser_controller.h"
 #include "ui/base/models/table_model.h"
-#include "ui/views/controls/link_listener.h"
+#include "ui/gfx/range/range.h"
 #include "ui/views/controls/styled_label_listener.h"
 #include "ui/views/view.h"
 
@@ -31,7 +31,6 @@ class Throbber;
 class ChooserContentView : public views::View,
                            public ui::TableModel,
                            public ChooserController::View,
-                           public views::LinkListener,
                            public views::StyledLabelListener {
  public:
   ChooserContentView(views::TableViewObserver* table_view_observer,
@@ -56,9 +55,6 @@ class ChooserContentView : public views::View,
   void OnAdapterEnabledChanged(bool enabled) override;
   void OnRefreshStateChanged(bool refreshing) override;
 
-  // views::LinkListener:
-  void LinkClicked(views::Link* source, int event_flags) override;
-
   // views::StyledLabelListener:
   void StyledLabelLinkClicked(views::StyledLabel* label,
                               const gfx::Range& range,
@@ -68,28 +64,36 @@ class ChooserContentView : public views::View,
   base::string16 GetDialogButtonLabel(ui::DialogButton button) const;
   bool IsDialogButtonEnabled(ui::DialogButton button) const;
   // Ownership of the view is passed to the caller.
-  views::Link* CreateExtraView();
-  // Ownership of the view is passed to the caller.
   views::StyledLabel* CreateFootnoteView();
   void Accept();
   void Cancel();
   void Close();
   void UpdateTableView();
-
-  views::TableView* table_view_for_test() const { return table_view_; }
-  views::Throbber* throbber_for_test() const { return throbber_; }
-  views::StyledLabel* turn_adapter_off_help_for_test() const {
-    return turn_adapter_off_help_;
-  }
+  void SetGetHelpAndReScanLink();
 
  private:
+  friend class ChooserContentViewTest;
+  friend class ChooserDialogViewTest;
+  FRIEND_TEST_ALL_PREFIXES(ChooserContentViewTest, InitialState);
+  FRIEND_TEST_ALL_PREFIXES(ChooserContentViewTest, AdapterOnAndOffAndOn);
+  FRIEND_TEST_ALL_PREFIXES(ChooserContentViewTest,
+                           DiscoveringAndNoOptionAddedAndIdle);
+  FRIEND_TEST_ALL_PREFIXES(ChooserContentViewTest,
+                           DiscoveringAndOneOptionAddedAndSelectedAndIdle);
+  FRIEND_TEST_ALL_PREFIXES(ChooserContentViewTest, ClickRescanLink);
+  FRIEND_TEST_ALL_PREFIXES(ChooserContentViewTest, ClickGetHelpLink);
+
   std::unique_ptr<ChooserController> chooser_controller_;
   views::TableView* table_view_ = nullptr;  // Weak.
   views::View* table_parent_ = nullptr;  // Weak.
   views::StyledLabel* turn_adapter_off_help_ = nullptr;  // Weak.
   views::Throbber* throbber_ = nullptr;  // Weak.
-  views::Link* discovery_state_ = nullptr;  // Weak.
-  views::StyledLabel* help_link_ = nullptr;  // Weak.
+  views::StyledLabel* footnote_link_ = nullptr;  // Weak.
+  base::string16 help_text_;
+  base::string16 help_and_scanning_text_;
+  base::string16 help_and_re_scan_text_;
+  gfx::Range help_text_range_;
+  gfx::Range re_scan_text_range_;
 
   DISALLOW_COPY_AND_ASSIGN(ChooserContentView);
 };

@@ -26,10 +26,10 @@
 namespace {
 
 // Chooser width.
-const CGFloat kChooserWidth = 350.0f;
+const CGFloat kChooserWidth = 390.0f;
 
 // Chooser height.
-const CGFloat kChooserHeight = 300.0f;
+const CGFloat kChooserHeight = 330.0f;
 
 // Row view image size.
 const CGFloat kRowViewImageSize = 20.0f;
@@ -234,13 +234,13 @@ base::scoped_nsobject<NSTextField> CreateLabel(NSString* text) {
 
 class ChooserContentViewController : public ChooserController::View {
  public:
-  ChooserContentViewController(ChooserContentViewCocoa* chooser_content_view,
-                               ChooserController* chooser_controller,
+  ChooserContentViewController(ChooserController* chooser_controller,
                                NSButton* adapter_off_help_button,
                                NSTextField* adapter_off_message,
                                NSTableView* table_view,
                                SpinnerView* spinner,
-                               NSTextField* status,
+                               NSTextField* scanning_message,
+                               NSTextField* word_connector,
                                NSButton* rescan_button);
   ~ChooserContentViewController() override;
 
@@ -255,41 +255,42 @@ class ChooserContentViewController : public ChooserController::View {
   void UpdateTableView();
 
  private:
-  ChooserContentViewCocoa* chooser_content_view_;
   ChooserController* chooser_controller_;
   NSButton* adapter_off_help_button_;
   NSTextField* adapter_off_message_;
   NSTableView* table_view_;
   SpinnerView* spinner_;
-  NSTextField* status_;
+  NSTextField* scanning_message_;
+  NSTextField* word_connector_;
   NSButton* rescan_button_;
 
   DISALLOW_COPY_AND_ASSIGN(ChooserContentViewController);
 };
 
 ChooserContentViewController::ChooserContentViewController(
-    ChooserContentViewCocoa* chooser_content_view,
     ChooserController* chooser_controller,
     NSButton* adapter_off_help_button,
     NSTextField* adapter_off_message,
     NSTableView* table_view,
     SpinnerView* spinner,
-    NSTextField* status,
+    NSTextField* scanning_message,
+    NSTextField* word_connector,
     NSButton* rescan_button)
-    : chooser_content_view_(chooser_content_view),
-      chooser_controller_(chooser_controller),
+    : chooser_controller_(chooser_controller),
       adapter_off_help_button_(adapter_off_help_button),
       adapter_off_message_(adapter_off_message),
       table_view_(table_view),
       spinner_(spinner),
-      status_(status),
+      scanning_message_(scanning_message),
+      word_connector_(word_connector),
       rescan_button_(rescan_button) {
   DCHECK(chooser_controller_);
   DCHECK(adapter_off_help_button_);
   DCHECK(adapter_off_message_);
   DCHECK(table_view_);
   DCHECK(spinner_);
-  DCHECK(status_);
+  DCHECK(scanning_message_);
+  DCHECK(word_connector_);
   DCHECK(rescan_button_);
   chooser_controller_->set_view(this);
 }
@@ -343,11 +344,11 @@ void ChooserContentViewController::OnAdapterEnabledChanged(bool enabled) {
 
   [spinner_ setHidden:YES];
 
-  [status_ setHidden:YES];
-  // When adapter is enabled, show |rescan_button_|; otherwise hide it.
+  [scanning_message_ setHidden:YES];
+  // When adapter is enabled, show |word_connector_| and |rescan_button_|;
+  // otherwise hide them.
+  [word_connector_ setHidden:enabled ? NO : YES];
   [rescan_button_ setHidden:enabled ? NO : YES];
-
-  [chooser_content_view_ updateView];
 }
 
 void ChooserContentViewController::OnRefreshStateChanged(bool refreshing) {
@@ -366,12 +367,13 @@ void ChooserContentViewController::OnRefreshStateChanged(bool refreshing) {
   [table_view_ setHidden:table_view_hidden ? YES : NO];
   [spinner_ setHidden:table_view_hidden ? NO : YES];
 
-  // When refreshing, show |status_| and hide |rescan_button_|.
-  // When complete, show |rescan_button_| and hide |status_|.
-  [status_ setHidden:refreshing ? NO : YES];
+  // When refreshing, show |scanning_message_| and hide |word_connector_| and
+  // |rescan_button_|.
+  // When complete, show |word_connector_| and |rescan_button_| and hide
+  // |scanning_message_|.
+  [scanning_message_ setHidden:refreshing ? NO : YES];
+  [word_connector_ setHidden:refreshing ? YES : NO];
   [rescan_button_ setHidden:refreshing ? YES : NO];
-
-  [chooser_content_view_ updateView];
 }
 
 void ChooserContentViewController::UpdateTableView() {
@@ -408,7 +410,7 @@ void ChooserContentViewController::UpdateTableView() {
   // | -------------------------------- |
   // |           [ Connect ] [ Cancel ] |
   // |----------------------------------|
-  // | Not seeing your device? Get help |
+  // | Get help                         |
   // ------------------------------------
 
   // Determine the dimensions of the chooser.
@@ -422,7 +424,7 @@ void ChooserContentViewController::UpdateTableView() {
     // Create the views.
     // Title.
     titleView_ = [self createChooserTitle:chooserTitle];
-    titleHeight_ = NSHeight([titleView_ frame]);
+    CGFloat titleHeight = NSHeight([titleView_ frame]);
 
     // Adapter turned off help button.
     adapterOffHelpButton_ = [self
@@ -437,53 +439,53 @@ void ChooserContentViewController::UpdateTableView() {
     adapterOffMessage_ = CreateLabel(l10n_util::GetNSStringF(
         IDS_BLUETOOTH_DEVICE_CHOOSER_TURN_ADAPTER_OFF, base::string16()));
 
-    // Status.
-    status_ = CreateLabel(
+    // Connect button.
+    connectButton_ = [self createConnectButton];
+    CGFloat connectButtonWidth = NSWidth([connectButton_ frame]);
+    CGFloat connectButtonHeight = NSHeight([connectButton_ frame]);
+
+    // Cancel button.
+    cancelButton_ = [self createCancelButton];
+    CGFloat cancelButtonWidth = NSWidth([cancelButton_ frame]);
+
+    // Separator.
+    separator_ = [self createSeparator];
+
+    // Help button.
+    helpButton_ =
+        [self createHyperlinkButtonWithText:
+                  l10n_util::GetNSStringF(
+                      IDS_DEVICE_CHOOSER_GET_HELP_LINK_WITH_SCANNING_STATUS,
+                      base::string16())];
+    CGFloat helpButtonWidth = NSWidth([helpButton_ frame]);
+    CGFloat helpButtonHeight = NSHeight([helpButton_ frame]);
+
+    // Scanning message.
+    scanningMessage_ = CreateLabel(
         l10n_util::GetNSString(IDS_BLUETOOTH_DEVICE_CHOOSER_SCANNING));
-    CGFloat statusWidth = kChooserWidth / 2 - kMarginX;
-    // The height is arbitrary as it will be adjusted later.
-    [status_ setFrameSize:NSMakeSize(statusWidth, 0.0f)];
-    [GTMUILocalizerAndLayoutTweaker sizeToFitFixedWidthTextField:status_];
-    statusHeight_ = NSHeight([status_ frame]);
+
+    // Word connector.
+    wordConnector_ = CreateLabel(l10n_util::GetNSStringF(
+        IDS_DEVICE_CHOOSER_GET_HELP_LINK_WITH_RE_SCAN_LINK, base::string16(),
+        base::string16()));
+    CGFloat wordConnectorWidth = NSWidth([wordConnector_ frame]);
 
     // Re-scan button.
     rescanButton_ =
         [self createHyperlinkButtonWithText:
                   l10n_util::GetNSString(IDS_BLUETOOTH_DEVICE_CHOOSER_RE_SCAN)];
-    rescanButtonHeight_ = NSHeight([rescanButton_ frame]);
-
-    // Connect button.
-    connectButton_ = [self createConnectButton];
-    connectButtonWidth_ = NSWidth([connectButton_ frame]);
-    connectButtonHeight_ = NSHeight([connectButton_ frame]);
-
-    // Cancel button.
-    cancelButton_ = [self createCancelButton];
-    cancelButtonWidth_ = NSWidth([cancelButton_ frame]);
-    cancelButtonHeight_ = NSHeight([cancelButton_ frame]);
-
-    CGFloat buttonRowHeight =
-        std::max(connectButtonHeight_, cancelButtonHeight_);
-
-    // Separator.
-    separator_ = [self createSeparator];
-
-    // Message.
-    message_ = CreateLabel(l10n_util::GetNSStringF(
-        IDS_DEVICE_CHOOSER_FOOTNOTE_TEXT, base::string16()));
-    CGFloat messageWidth = NSWidth([message_ frame]);
-    messageHeight_ = NSHeight([message_ frame]);
-
-    // Help button.
-    helpButton_ = [self
-        createHyperlinkButtonWithText:
-            l10n_util::GetNSString(IDS_DEVICE_CHOOSER_GET_HELP_LINK_TEXT)];
 
     // ScollView embedding with TableView.
-    noStatusOrRescanButtonShown_.scroll_view_frame =
-        [self calculateScrollViewFrame:buttonRowHeight];
-    scrollView_.reset([[NSScrollView alloc]
-        initWithFrame:noStatusOrRescanButtonShown_.scroll_view_frame]);
+    CGFloat scrollViewWidth = kChooserWidth - 2 * kMarginX;
+    CGFloat scrollViewHeight = kChooserHeight - 2 * kMarginY -
+                               4 * kVerticalPadding - titleHeight -
+                               connectButtonHeight - helpButtonHeight;
+    CGFloat scrollViewOriginX = kMarginX;
+    CGFloat scrollViewOriginY = kMarginY + helpButtonHeight +
+                                3 * kVerticalPadding + connectButtonHeight;
+    NSRect scrollFrame = NSMakeRect(scrollViewOriginX, scrollViewOriginY,
+                                    scrollViewWidth, scrollViewHeight);
+    scrollView_.reset([[NSScrollView alloc] initWithFrame:scrollFrame]);
     [scrollView_ setBorderType:NSBezelBorder];
     [scrollView_ setHasVerticalScroller:YES];
     [scrollView_ setHasHorizontalScroller:YES];
@@ -493,9 +495,7 @@ void ChooserContentViewController::UpdateTableView() {
     // TableView.
     tableView_.reset([[NSTableView alloc] initWithFrame:NSZeroRect]);
     tableColumn_.reset([[NSTableColumn alloc] initWithIdentifier:@""]);
-    [tableColumn_
-        setWidth:(noStatusOrRescanButtonShown_.scroll_view_frame.size.width -
-                  kMarginX)];
+    [tableColumn_ setWidth:(scrollViewWidth - kMarginX)];
     [tableView_ addTableColumn:tableColumn_];
     // Make the column title invisible.
     [tableView_ setHeaderView:nil];
@@ -503,18 +503,10 @@ void ChooserContentViewController::UpdateTableView() {
 
     // Spinner.
     // Set the spinner in the center of the scroll view.
-    // When |status_| is shown, it may affect the frame origin and size of the
-    // |scrollView_|, and since the |spinner_| is shown with the |status_|,
-    // its frame origin needs to be calculated according to the frame origin
-    // of |scrollView_| with |status_| shown.
-    NSRect scrollViewFrameWithStatusText = [self
-        calculateScrollViewFrame:std::max(statusHeight_, buttonRowHeight)];
     CGFloat spinnerOriginX =
-        scrollViewFrameWithStatusText.origin.x +
-        (scrollViewFrameWithStatusText.size.width - kSpinnerSize) / 2;
+        scrollViewOriginX + (scrollViewWidth - kSpinnerSize) / 2;
     CGFloat spinnerOriginY =
-        scrollViewFrameWithStatusText.origin.y +
-        (scrollViewFrameWithStatusText.size.height - kSpinnerSize) / 2;
+        scrollViewOriginY + (scrollViewHeight - kSpinnerSize) / 2;
     spinner_.reset([[SpinnerView alloc]
         initWithFrame:NSMakeRect(spinnerOriginX, spinnerOriginY, kSpinnerSize,
                                  kSpinnerSize)]);
@@ -522,7 +514,7 @@ void ChooserContentViewController::UpdateTableView() {
     // Lay out the views.
     // Title.
     CGFloat titleOriginX = kMarginX;
-    CGFloat titleOriginY = kChooserHeight - kMarginY - titleHeight_;
+    CGFloat titleOriginY = kChooserHeight - kMarginY - titleHeight;
     [titleView_ setFrameOrigin:NSMakePoint(titleOriginX, titleOriginY)];
     [self addSubview:titleView_];
 
@@ -555,72 +547,72 @@ void ChooserContentViewController::UpdateTableView() {
     [spinner_ setHidden:YES];
     [self addSubview:spinner_];
 
-    // Status text field and Re-scan button. At most one of them is shown.
-    [self addSubview:status_];
-    [status_ setHidden:YES];
-
-    [rescanButton_ setTarget:self];
-    [rescanButton_ setAction:@selector(onRescan:)];
-    [self addSubview:rescanButton_];
-    [rescanButton_ setHidden:YES];
-
     // Connect button.
-    noStatusOrRescanButtonShown_.connect_button_origin =
-        [self calculateConnectButtonOrigin:buttonRowHeight];
+    CGFloat connectButtonOriginX = kChooserWidth - kMarginX -
+                                   kHorizontalPadding - connectButtonWidth -
+                                   cancelButtonWidth;
+    CGFloat connectButtonOriginY =
+        kMarginY + helpButtonHeight + 2 * kVerticalPadding;
     [connectButton_
-        setFrameOrigin:noStatusOrRescanButtonShown_.connect_button_origin];
+        setFrameOrigin:NSMakePoint(connectButtonOriginX, connectButtonOriginY)];
     [connectButton_ setEnabled:NO];
     [self addSubview:connectButton_];
 
     // Cancel button.
-    noStatusOrRescanButtonShown_.cancel_button_origin =
-        [self calculateCancelButtonOrigin:buttonRowHeight];
+    CGFloat cancelButtonOriginX = kChooserWidth - kMarginX - cancelButtonWidth;
+    CGFloat cancelButtonOriginY = connectButtonOriginY;
     [cancelButton_
-        setFrameOrigin:noStatusOrRescanButtonShown_.cancel_button_origin];
+        setFrameOrigin:NSMakePoint(cancelButtonOriginX, cancelButtonOriginY)];
     [self addSubview:cancelButton_];
 
     // Separator.
     CGFloat separatorOriginX = 0.0f;
-    CGFloat separatorOriginY = kMarginY + messageHeight_ + kVerticalPadding;
+    CGFloat separatorOriginY = kMarginY + helpButtonHeight + kVerticalPadding;
     [separator_ setFrameOrigin:NSMakePoint(separatorOriginX, separatorOriginY)];
     [self addSubview:separator_];
 
-    // Message.
-    CGFloat messageOriginX = kMarginX;
-    CGFloat messageOriginY = kMarginY;
-    [message_ setFrameOrigin:NSMakePoint(messageOriginX, messageOriginY)];
-    [self addSubview:message_];
-
     // Help button.
-    CGFloat helpButtonOriginX =
-        kMarginX + messageWidth - kHorizontalPadding / 2;
-    CGFloat helpButtonOriginY = kMarginY;
+    CGFloat helpButtonOriginX = kMarginX;
+    CGFloat helpButtonOriginY = (kVerticalPadding + kMarginY) / 2;
     [helpButton_
         setFrameOrigin:NSMakePoint(helpButtonOriginX, helpButtonOriginY)];
     [helpButton_ setTarget:self];
     [helpButton_ setAction:@selector(onHelpPressed:)];
     [self addSubview:helpButton_];
 
-    // Calculate and cache the frame and origins values.
-    buttonRowHeight = std::max(
-        statusHeight_, std::max(connectButtonHeight_, cancelButtonHeight_));
-    statusShown_ = {[self calculateScrollViewFrame:buttonRowHeight],
-                    [self calculateConnectButtonOrigin:buttonRowHeight],
-                    [self calculateCancelButtonOrigin:buttonRowHeight]};
-    statusOrigin_ = [self calculateStatusOrigin:buttonRowHeight];
+    // Scanning message.
+    CGFloat scanningMessageOriginX =
+        kMarginX + helpButtonWidth - kHorizontalPadding / 2;
+    CGFloat scanningMessageOriginY = helpButtonOriginY;
+    [scanningMessage_ setFrameOrigin:NSMakePoint(scanningMessageOriginX,
+                                                 scanningMessageOriginY)];
+    [self addSubview:scanningMessage_];
+    [scanningMessage_ setHidden:YES];
 
-    buttonRowHeight =
-        std::max(rescanButtonHeight_,
-                 std::max(connectButtonHeight_, cancelButtonHeight_));
-    rescanButtonShown_ = {[self calculateScrollViewFrame:buttonRowHeight],
-                          [self calculateConnectButtonOrigin:buttonRowHeight],
-                          [self calculateCancelButtonOrigin:buttonRowHeight]};
-    rescanButtonOrigin_ = [self calculateRescanButtonOrigin:buttonRowHeight];
+    // Word connector.
+    CGFloat wordConnectorOriginX =
+        kMarginX + helpButtonWidth - kHorizontalPadding / 2;
+    CGFloat wordConnectorOriginY = helpButtonOriginY;
+    [wordConnector_
+        setFrameOrigin:NSMakePoint(wordConnectorOriginX, wordConnectorOriginY)];
+    [self addSubview:wordConnector_];
+    [wordConnector_ setHidden:YES];
+
+    // Re-scan button.
+    CGFloat reScanButtonOriginX =
+        kMarginX + helpButtonWidth + wordConnectorWidth - kHorizontalPadding;
+    CGFloat reScanButtonOriginY = helpButtonOriginY;
+    [rescanButton_
+        setFrameOrigin:NSMakePoint(reScanButtonOriginX, reScanButtonOriginY)];
+    [rescanButton_ setTarget:self];
+    [rescanButton_ setAction:@selector(onRescan:)];
+    [self addSubview:rescanButton_];
+    [rescanButton_ setHidden:YES];
 
     chooserContentViewController_.reset(new ChooserContentViewController(
-        self, chooserController_.get(), adapterOffHelpButton_.get(),
+        chooserController_.get(), adapterOffHelpButton_.get(),
         adapterOffMessage_.get(), tableView_.get(), spinner_.get(),
-        status_.get(), rescanButton_.get()));
+        scanningMessage_.get(), wordConnector_.get(), rescanButton_.get()));
   }
 
   return self;
@@ -736,58 +728,6 @@ void ChooserContentViewController::UpdateTableView() {
   return button;
 }
 
-- (NSRect)calculateScrollViewFrame:(CGFloat)buttonRowHeight {
-  CGFloat originX = kMarginX;
-  CGFloat originY =
-      kMarginY + messageHeight_ + 3 * kVerticalPadding + buttonRowHeight;
-  CGFloat width = kChooserWidth - 2 * kMarginX;
-  CGFloat height = kChooserHeight - 2 * kMarginY - 4 * kVerticalPadding -
-                   titleHeight_ - buttonRowHeight - messageHeight_;
-  return NSMakeRect(originX, originY, width, height);
-}
-
-- (NSPoint)calculateStatusOrigin:(CGFloat)buttonRowHeight {
-  return NSMakePoint(kMarginX, kMarginY + messageHeight_ +
-                                   2 * kVerticalPadding +
-                                   (buttonRowHeight - statusHeight_) / 2);
-}
-
-- (NSPoint)calculateRescanButtonOrigin:(CGFloat)buttonRowHeight {
-  return NSMakePoint(kMarginX, kMarginY + messageHeight_ +
-                                   2 * kVerticalPadding +
-                                   (buttonRowHeight - rescanButtonHeight_) / 2);
-}
-
-- (NSPoint)calculateConnectButtonOrigin:(CGFloat)buttonRowHeight {
-  return NSMakePoint(kChooserWidth - kMarginX - kHorizontalPadding -
-                         connectButtonWidth_ - cancelButtonWidth_,
-                     kMarginY + messageHeight_ + 2 * kVerticalPadding +
-                         (buttonRowHeight - connectButtonHeight_) / 2);
-}
-
-- (NSPoint)calculateCancelButtonOrigin:(CGFloat)buttonRowHeight {
-  return NSMakePoint(kChooserWidth - kMarginX - cancelButtonWidth_,
-                     kMarginY + messageHeight_ + 2 * kVerticalPadding +
-                         (buttonRowHeight - cancelButtonHeight_) / 2);
-}
-
-- (void)updateView {
-  FrameAndOrigin frameAndOrigin;
-  if (![status_ isHidden]) {
-    [status_ setFrameOrigin:statusOrigin_];
-    frameAndOrigin = statusShown_;
-  } else if (![rescanButton_ isHidden]) {
-    [rescanButton_ setFrameOrigin:rescanButtonOrigin_];
-    frameAndOrigin = rescanButtonShown_;
-  } else {
-    frameAndOrigin = noStatusOrRescanButtonShown_;
-  }
-
-  [scrollView_ setFrame:frameAndOrigin.scroll_view_frame];
-  [connectButton_ setFrameOrigin:frameAndOrigin.connect_button_origin];
-  [cancelButton_ setFrameOrigin:frameAndOrigin.cancel_button_origin];
-}
-
 - (NSButton*)adapterOffHelpButton {
   return adapterOffHelpButton_.get();
 }
@@ -800,14 +740,6 @@ void ChooserContentViewController::UpdateTableView() {
   return spinner_.get();
 }
 
-- (NSTextField*)status {
-  return status_.get();
-}
-
-- (NSButton*)rescanButton {
-  return rescanButton_.get();
-}
-
 - (NSButton*)connectButton {
   return connectButton_.get();
 }
@@ -818,6 +750,18 @@ void ChooserContentViewController::UpdateTableView() {
 
 - (NSButton*)helpButton {
   return helpButton_.get();
+}
+
+- (NSTextField*)scanningMessage {
+  return scanningMessage_.get();
+}
+
+- (NSTextField*)wordConnector {
+  return wordConnector_.get();
+}
+
+- (NSButton*)rescanButton {
+  return rescanButton_.get();
 }
 
 - (NSInteger)numberOfOptions {

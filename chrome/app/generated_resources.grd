@@ -15144,13 +15144,13 @@ Please check your email at <ph name="ACCOUNT_EMAIL">$2<ex>jane.doe@gmail.com</ex
         "<ph name="CHROME_EXTENSION_NAME">$1<ex>Chrome extension name</ex></ph>" wants to connect to:
       </message>
       <message name="IDS_DEVICE_CHOOSER_NO_DEVICES_FOUND_PROMPT" desc="The label that is used to inform the user that no devices were found in the chooser popup.">
-        No devices found.
+        No devices found
       </message>
       <message name="IDS_DEVICE_CHOOSER_DEVICE_NAME_WITH_ID" desc="To distinguish devices with the same name, the device chooser shows the device name with id.">
         <ph name="DEVICE_NAME">$1<ex>device name</ex></ph> (<ph name="DEVICE_ID">$2<ex>device id</ex></ph>)
       </message>
       <message name="IDS_BLUETOOTH_DEVICE_CHOOSER_NO_DEVICES_FOUND_PROMPT" desc="The label that is used to inform the user that no Bluetooth devices were found in the chooser popup.">
-        No Bluetooth devices found.
+        No Bluetooth devices found
       </message>
       <message name="IDS_BLUETOOTH_DEVICE_CHOOSER_TURN_ADAPTER_OFF" desc="Text of a link the user can click to get help information when Bluetooth adapter is turned off.">
         <ph name="TURN_ON_BLUETOOTH_LINK">$1<ex>Turn on Bluetooth</ex></ph> to allow pairing
@@ -15159,10 +15159,10 @@ Please check your email at <ph name="ACCOUNT_EMAIL">$2<ex>jane.doe@gmail.com</ex
         Turn on Bluetooth
       </message>
       <message name="IDS_BLUETOOTH_DEVICE_CHOOSER_SCANNING" desc="The label that is used to indicate the chooser is scanning for Bluetooth devices.">
-        Scanning for devices...
+        ''' while scanning for devices...
       </message>
       <message name="IDS_BLUETOOTH_DEVICE_CHOOSER_RE_SCAN" desc="Text of a link the user can click to start a new scan for Bluetooth devices.">
-        Re-scan
+        re-scan
       </message>
       <message name="IDS_BLUETOOTH_DEVICE_CHOOSER_PAIR_BUTTON_TEXT" desc="Label on the button that closes the Bluetooth chooser popup and pairs the selected device.">
         Pair
@@ -15173,11 +15173,11 @@ Please check your email at <ph name="ACCOUNT_EMAIL">$2<ex>jane.doe@gmail.com</ex
       <message name="IDS_DEVICE_CHOOSER_CANCEL_BUTTON_TEXT" desc="Label on the button that closes the chooser popup without selecting an option.">
         Cancel
       </message>
-      <message name="IDS_DEVICE_CHOOSER_FOOTNOTE_TEXT" desc="This text is shown at the bottom of the chooser popup with a link to part of its text.">
-        Not seeing your device? <ph name="GET_HELP_LINK">$1<ex>Get help</ex></ph>
+      <message name="IDS_DEVICE_CHOOSER_GET_HELP_LINK_WITH_SCANNING_STATUS" desc="This text is shown at the bottom of the chooser popup with a link to 'Get help'.">
+        Get help<ph name="SCANNING_STATUS">$1<ex> while scanning for devices...</ex></ph>
       </message>
-      <message name="IDS_DEVICE_CHOOSER_GET_HELP_LINK_TEXT" desc="Text of the 'Get help' link at the bottom of the chooser popup.">
-        Get help
+      <message name="IDS_DEVICE_CHOOSER_GET_HELP_LINK_WITH_RE_SCAN_LINK" desc="This text is shown at the bottom of the chooser popup with links to 'Get help' and 're-scan'.">
+        <ph name="GET_HELP_LINK">$1<ex>Get help</ex></ph> or <ph name="RE_SCAN_LINK">$2<ex>re-scan</ex></ph>
       </message>
       <message name="IDS_DEVICE_CHOOSER_PAIRED_STATUS_TEXT" desc="The label that is used to inform the user that the device is paired.">
         Paired

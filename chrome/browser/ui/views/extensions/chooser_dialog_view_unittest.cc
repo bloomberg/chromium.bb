@@ -4,6 +4,8 @@
 
 #include "chrome/browser/ui/views/extensions/chooser_dialog_view.h"
 
+#include <memory>
+
 #include "base/macros.h"
 #include "base/strings/utf_string_conversions.h"
 #include "chrome/browser/chooser_controller/mock_chooser_controller.h"
@@ -12,6 +14,7 @@
 #include "testing/gmock/include/gmock/gmock.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/views/controls/button/label_button.h"
+#include "ui/views/controls/styled_label.h"
 #include "ui/views/controls/table/table_view.h"
 #include "ui/views/test/views_test_base.h"
 #include "ui/views/widget/widget.h"
@@ -30,9 +33,11 @@ class ChooserDialogViewTest : public views::ViewsTestBase {
     mock_chooser_controller_ = mock_chooser_controller.get();
     std::unique_ptr<ChooserDialogView> chooser_dialog_view(
         new ChooserDialogView(std::move(mock_chooser_controller)));
+    footnote_link_.reset(chooser_dialog_view->chooser_content_view_for_test()
+                             ->CreateFootnoteView());
     chooser_dialog_view_ = chooser_dialog_view.get();
-    table_view_ = chooser_dialog_view_->chooser_content_view_for_test()
-                      ->table_view_for_test();
+    table_view_ =
+        chooser_dialog_view_->chooser_content_view_for_test()->table_view_;
     ASSERT_TRUE(table_view_);
     dialog_ = views::DialogDelegate::CreateDialogWidget(
         chooser_dialog_view.release(), GetContext(), nullptr);
@@ -53,6 +58,7 @@ class ChooserDialogViewTest : public views::ViewsTestBase {
  protected:
   MockChooserController* mock_chooser_controller_;
   ChooserDialogView* chooser_dialog_view_;
+  std::unique_ptr<views::StyledLabel> footnote_link_;
   views::TableView* table_view_;
   views::LabelButton* ok_button_;
   views::LabelButton* cancel_button_;

@@ -29,7 +29,7 @@ ChooserDialogView::ChooserDialogView(
   // | -------------------------------- |
   // |           [ Connect ] [ Cancel ] |
   // |----------------------------------|
-  // | Not seeing your device? Get help |
+  // | Get help                         |
   // ------------------------------------
 
   DCHECK(chooser_controller);
@@ -58,10 +58,6 @@ base::string16 ChooserDialogView::GetDialogButtonLabel(
 
 bool ChooserDialogView::IsDialogButtonEnabled(ui::DialogButton button) const {
   return chooser_content_view_->IsDialogButtonEnabled(button);
-}
-
-views::View* ChooserDialogView::CreateExtraView() {
-  return chooser_content_view_->CreateExtraView();
 }
 
 views::View* ChooserDialogView::CreateFootnoteView() {

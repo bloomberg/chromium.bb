@@ -78,16 +78,18 @@ class ChooserDialogCocoaControllerTest : public CocoaProfileTest {
     ASSERT_TRUE(table_view_);
     spinner_ = [chooser_content_view_ spinner];
     ASSERT_TRUE(spinner_);
-    status_ = [chooser_content_view_ status];
-    ASSERT_TRUE(status_);
-    rescan_button_ = [chooser_content_view_ rescanButton];
-    ASSERT_TRUE(rescan_button_);
     connect_button_ = [chooser_content_view_ connectButton];
     ASSERT_TRUE(connect_button_);
     cancel_button_ = [chooser_content_view_ cancelButton];
     ASSERT_TRUE(cancel_button_);
     help_button_ = [chooser_content_view_ helpButton];
     ASSERT_TRUE(help_button_);
+    scanning_message_ = [chooser_content_view_ scanningMessage];
+    ASSERT_TRUE(scanning_message_);
+    word_connector_ = [chooser_content_view_ wordConnector];
+    ASSERT_TRUE(word_connector_);
+    rescan_button_ = [chooser_content_view_ rescanButton];
+    ASSERT_TRUE(rescan_button_);
   }
 
   void ExpectNoRowImage(int row) {
@@ -161,11 +163,12 @@ class ChooserDialogCocoaControllerTest : public CocoaProfileTest {
   NSButton* adapter_off_help_button_;
   NSTableView* table_view_;
   SpinnerView* spinner_;
-  NSTextField* status_;
-  NSButton* rescan_button_;
   NSButton* connect_button_;
   NSButton* cancel_button_;
   NSButton* help_button_;
+  NSTextField* scanning_message_;
+  NSTextField* word_connector_;
+  NSButton* rescan_button_;
 
  private:
   DISALLOW_COPY_AND_ASSIGN(ChooserDialogCocoaControllerTest);
@@ -191,7 +194,9 @@ TEST_F(ChooserDialogCocoaControllerTest, InitialState) {
   EXPECT_FALSE(connect_button_.enabled);
   EXPECT_TRUE(cancel_button_.enabled);
   EXPECT_TRUE(help_button_.enabled);
-  EXPECT_NSEQ(l10n_util::GetNSString(IDS_DEVICE_CHOOSER_GET_HELP_LINK_TEXT),
+  EXPECT_NSEQ(l10n_util::GetNSStringF(
+                  IDS_DEVICE_CHOOSER_GET_HELP_LINK_WITH_SCANNING_STATUS,
+                  base::string16()),
               help_button_.title);
 }
 
@@ -898,7 +903,8 @@ TEST_F(ChooserDialogCocoaControllerTest, AdapterOnAndOffAndOn) {
       0, l10n_util::GetNSString(IDS_DEVICE_CHOOSER_NO_DEVICES_FOUND_PROMPT));
   EXPECT_FALSE(IsRowPaired(0));
   EXPECT_TRUE(spinner_.hidden);
-  EXPECT_TRUE(status_.hidden);
+  EXPECT_TRUE(scanning_message_.hidden);
+  EXPECT_FALSE(word_connector_.hidden);
   EXPECT_FALSE(rescan_button_.hidden);
   EXPECT_NSEQ(l10n_util::GetNSString(IDS_BLUETOOTH_DEVICE_CHOOSER_RE_SCAN),
               rescan_button_.title);
@@ -934,7 +940,8 @@ TEST_F(ChooserDialogCocoaControllerTest, AdapterOnAndOffAndOn) {
               adapter_off_help_button_.title);
   EXPECT_TRUE(table_view_.hidden);
   EXPECT_TRUE(spinner_.hidden);
-  EXPECT_TRUE(status_.hidden);
+  EXPECT_TRUE(scanning_message_.hidden);
+  EXPECT_TRUE(word_connector_.hidden);
   EXPECT_TRUE(rescan_button_.hidden);
   // Since the adapter is turned off, the previously selected option
   // becomes invalid, the OK button is disabled.
@@ -978,7 +985,8 @@ TEST_F(ChooserDialogCocoaControllerTest, DiscoveringAndNoOptionAddedAndIdle) {
            byExtendingSelection:NO];
   EXPECT_EQ(1, table_view_.selectedRow);
   EXPECT_TRUE(spinner_.hidden);
-  EXPECT_TRUE(status_.hidden);
+  EXPECT_TRUE(scanning_message_.hidden);
+  EXPECT_TRUE(word_connector_.hidden);
   EXPECT_TRUE(rescan_button_.hidden);
   EXPECT_TRUE(connect_button_.enabled);
   EXPECT_TRUE(cancel_button_.enabled);
@@ -987,7 +995,8 @@ TEST_F(ChooserDialogCocoaControllerTest, DiscoveringAndNoOptionAddedAndIdle) {
       content::BluetoothChooser::DiscoveryState::DISCOVERING);
   EXPECT_TRUE(table_view_.hidden);
   EXPECT_FALSE(spinner_.hidden);
-  EXPECT_FALSE(status_.hidden);
+  EXPECT_FALSE(scanning_message_.hidden);
+  EXPECT_TRUE(word_connector_.hidden);
   EXPECT_TRUE(rescan_button_.hidden);
   // OK button is disabled since the chooser is refreshing options.
   EXPECT_FALSE(connect_button_.enabled);
@@ -1008,7 +1017,8 @@ TEST_F(ChooserDialogCocoaControllerTest, DiscoveringAndNoOptionAddedAndIdle) {
       0, l10n_util::GetNSString(IDS_DEVICE_CHOOSER_NO_DEVICES_FOUND_PROMPT));
   EXPECT_FALSE(IsRowPaired(0));
   EXPECT_TRUE(spinner_.hidden);
-  EXPECT_TRUE(status_.hidden);
+  EXPECT_TRUE(scanning_message_.hidden);
+  EXPECT_FALSE(word_connector_.hidden);
   EXPECT_FALSE(rescan_button_.hidden);
   EXPECT_NSEQ(l10n_util::GetNSString(IDS_BLUETOOTH_DEVICE_CHOOSER_RE_SCAN),
               rescan_button_.title);
@@ -1052,7 +1062,8 @@ TEST_F(ChooserDialogCocoaControllerTest,
   ExpectRowTextIs(0, @"d");
   EXPECT_FALSE(IsRowPaired(0));
   EXPECT_TRUE(spinner_.hidden);
-  EXPECT_FALSE(status_.hidden);
+  EXPECT_FALSE(scanning_message_.hidden);
+  EXPECT_TRUE(word_connector_.hidden);
   EXPECT_TRUE(rescan_button_.hidden);
   // OK button is disabled since no option is selected.
   EXPECT_FALSE(connect_button_.enabled);
@@ -1072,7 +1083,8 @@ TEST_F(ChooserDialogCocoaControllerTest,
   ExpectRowTextIs(0, @"d");
   EXPECT_FALSE(IsRowPaired(0));
   EXPECT_TRUE(spinner_.hidden);
-  EXPECT_TRUE(status_.hidden);
+  EXPECT_TRUE(scanning_message_.hidden);
+  EXPECT_FALSE(word_connector_.hidden);
   EXPECT_FALSE(rescan_button_.hidden);
   EXPECT_NSEQ(l10n_util::GetNSString(IDS_BLUETOOTH_DEVICE_CHOOSER_RE_SCAN),
               rescan_button_.title);

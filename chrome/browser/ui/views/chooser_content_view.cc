@@ -15,16 +15,16 @@
 #include "ui/gfx/paint_vector_icon.h"
 #include "ui/gfx/vector_icons_public.h"
 #include "ui/resources/grit/ui_resources.h"
-#include "ui/views/controls/link.h"
 #include "ui/views/controls/styled_label.h"
 #include "ui/views/controls/table/table_view.h"
 #include "ui/views/controls/throbber.h"
+#include "ui/views/widget/widget.h"
 
 namespace {
 
-const int kChooserWidth = 330;
+const int kChooserWidth = 370;
 
-const int kChooserHeight = 220;
+const int kChooserHeight = 260;
 
 const int kThrobberDiameter = 24;
 
@@ -40,7 +40,22 @@ const int kSignalStrengthLevelImageIds[5] = {IDR_SIGNAL_0_BAR, IDR_SIGNAL_1_BAR,
 ChooserContentView::ChooserContentView(
     views::TableViewObserver* table_view_observer,
     std::unique_ptr<ChooserController> chooser_controller)
-    : chooser_controller_(std::move(chooser_controller)) {
+    : chooser_controller_(std::move(chooser_controller)),
+      help_text_(l10n_util::GetStringFUTF16(
+          IDS_DEVICE_CHOOSER_GET_HELP_LINK_WITH_SCANNING_STATUS,
+          base::string16())),
+      help_and_scanning_text_(l10n_util::GetStringFUTF16(
+          IDS_DEVICE_CHOOSER_GET_HELP_LINK_WITH_SCANNING_STATUS,
+          l10n_util::GetStringUTF16(IDS_BLUETOOTH_DEVICE_CHOOSER_SCANNING))) {
+  base::string16 re_scan_text =
+      l10n_util::GetStringUTF16(IDS_BLUETOOTH_DEVICE_CHOOSER_RE_SCAN);
+  std::vector<size_t> offsets;
+  help_and_re_scan_text_ = l10n_util::GetStringFUTF16(
+      IDS_DEVICE_CHOOSER_GET_HELP_LINK_WITH_RE_SCAN_LINK, help_text_,
+      re_scan_text, &offsets);
+  help_text_range_ = gfx::Range(offsets[0], offsets[0] + help_text_.size());
+  re_scan_text_range_ =
+      gfx::Range(offsets[1], offsets[1] + re_scan_text.size());
   chooser_controller_->set_view(this);
   std::vector<ui::TableColumn> table_columns;
   table_columns.push_back(ui::TableColumn());
@@ -77,8 +92,6 @@ ChooserContentView::~ChooserContentView() {
   chooser_controller_->set_view(nullptr);
   table_view_->SetObserver(nullptr);
   table_view_->SetModel(nullptr);
-  if (discovery_state_)
-    discovery_state_->set_listener(nullptr);
 }
 
 gfx::Size ChooserContentView::GetPreferredSize() const {
@@ -189,8 +202,16 @@ void ChooserContentView::OnAdapterEnabledChanged(bool enabled) {
   throbber_->Stop();
   throbber_->SetVisible(false);
 
-  discovery_state_->SetText(chooser_controller_->GetStatus());
-  discovery_state_->SetEnabled(enabled);
+  if (enabled) {
+    SetGetHelpAndReScanLink();
+  } else {
+    footnote_link_->SetText(help_text_);
+    footnote_link_->AddStyleRange(
+        help_text_range_, views::StyledLabel::RangeStyleInfo::CreateForLink());
+  }
+
+  if (GetWidget() && GetWidget()->GetRootView())
+    GetWidget()->GetRootView()->Layout();
 }
 
 void ChooserContentView::OnRefreshStateChanged(bool refreshing) {
@@ -213,28 +234,33 @@ void ChooserContentView::OnRefreshStateChanged(bool refreshing) {
   else
     throbber_->Stop();
 
-  discovery_state_->SetText(chooser_controller_->GetStatus());
-  // When refreshing, disable |discovery_state_| to show it as a text label.
-  // When complete, enable |discovery_state_| to show it as a link.
-  discovery_state_->SetEnabled(!refreshing);
-}
+  if (refreshing) {
+    footnote_link_->SetText(help_and_scanning_text_);
+    footnote_link_->AddStyleRange(
+        help_text_range_, views::StyledLabel::RangeStyleInfo::CreateForLink());
+  } else {
+    SetGetHelpAndReScanLink();
+  }
 
-void ChooserContentView::LinkClicked(views::Link* source, int event_flags) {
-  if (source == discovery_state_)
-    chooser_controller_->RefreshOptions();
-  else
-    NOTREACHED();
+  if (GetWidget() && GetWidget()->GetRootView())
+    GetWidget()->GetRootView()->Layout();
 }
 
 void ChooserContentView::StyledLabelLinkClicked(views::StyledLabel* label,
                                                 const gfx::Range& range,
                                                 int event_flags) {
-  if (label == turn_adapter_off_help_)
+  if (label == turn_adapter_off_help_) {
     chooser_controller_->OpenAdapterOffHelpUrl();
-  else if (label == help_link_)
-    chooser_controller_->OpenHelpCenterUrl();
-  else
+  } else if (label == footnote_link_) {
+    if (range == help_text_range_)
+      chooser_controller_->OpenHelpCenterUrl();
+    else if (range == re_scan_text_range_)
+      chooser_controller_->RefreshOptions();
+    else
+      NOTREACHED();
+  } else {
     NOTREACHED();
+  }
 }
 
 base::string16 ChooserContentView::GetWindowTitle() const {
@@ -253,28 +279,11 @@ bool ChooserContentView::IsDialogButtonEnabled(ui::DialogButton button) const {
          !table_view_->selection_model().empty();
 }
 
-views::Link* ChooserContentView::CreateExtraView() {
-  discovery_state_ = new views::Link(chooser_controller_->GetStatus());
-  discovery_state_->SetHandlesTooltips(false);
-  discovery_state_->SetUnderline(false);
-  discovery_state_->SetMultiLine(true);
-  discovery_state_->SizeToFit(kChooserWidth / 2);
-  discovery_state_->SetHorizontalAlignment(gfx::ALIGN_LEFT);
-  discovery_state_->set_listener(this);
-  return discovery_state_;
-}
-
 views::StyledLabel* ChooserContentView::CreateFootnoteView() {
-  base::string16 link =
-      l10n_util::GetStringUTF16(IDS_DEVICE_CHOOSER_GET_HELP_LINK_TEXT);
-  size_t offset = 0;
-  base::string16 text = l10n_util::GetStringFUTF16(
-      IDS_DEVICE_CHOOSER_FOOTNOTE_TEXT, link, &offset);
-  help_link_ = new views::StyledLabel(text, this);
-  help_link_->AddStyleRange(
-      gfx::Range(offset, offset + link.length()),
-      views::StyledLabel::RangeStyleInfo::CreateForLink());
-  return help_link_;
+  footnote_link_ = new views::StyledLabel(help_text_, this);
+  footnote_link_->AddStyleRange(
+      help_text_range_, views::StyledLabel::RangeStyleInfo::CreateForLink());
+  return footnote_link_;
 }
 
 void ChooserContentView::Accept() {
@@ -296,4 +305,12 @@ void ChooserContentView::UpdateTableView() {
   } else {
     table_view_->SetEnabled(true);
   }
+}
+
+void ChooserContentView::SetGetHelpAndReScanLink() {
+  footnote_link_->SetText(help_and_re_scan_text_);
+  footnote_link_->AddStyleRange(
+      help_text_range_, views::StyledLabel::RangeStyleInfo::CreateForLink());
+  footnote_link_->AddStyleRange(
+      re_scan_text_range_, views::StyledLabel::RangeStyleInfo::CreateForLink());
 }
