@@ -3175,12 +3175,6 @@
         "swarming": {
           "can_use_on_swarming_builders": false
         },
-        "test": "media_blink_unittests"
-      },
-      {
-        "swarming": {
-          "can_use_on_swarming_builders": false
-        },
         "test": "media_unittests"
       },
       {
