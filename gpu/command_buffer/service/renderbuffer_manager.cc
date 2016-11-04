@@ -7,6 +7,7 @@
 #include <stddef.h>
 #include <stdint.h>
 
+#include "base/format_macros.h"
 #include "base/logging.h"
 #include "base/strings/stringprintf.h"
 #include "base/threading/thread_task_runner_handle.h"
@@ -252,10 +253,13 @@ bool RenderbufferManager::OnMemoryDump(
     base::trace_event::ProcessMemoryDump* pmd) {
   using base::trace_event::MemoryAllocatorDump;
   using base::trace_event::MemoryDumpLevelOfDetail;
+  const uint64_t share_group_tracing_guid =
+      memory_tracker_->ShareGroupTracingGUID();
 
   if (args.level_of_detail == MemoryDumpLevelOfDetail::BACKGROUND) {
-    std::string dump_name = base::StringPrintf(
-        "gpu/gl/renderbuffers/client_%d/", memory_tracker_->ClientId());
+    std::string dump_name =
+        base::StringPrintf("gpu/gl/renderbuffers/share_group_%" PRIu64 "/",
+                           share_group_tracing_guid);
     MemoryAllocatorDump* dump = pmd->CreateAllocatorDump(dump_name);
     dump->AddScalar(MemoryAllocatorDump::kNameSize,
                     MemoryAllocatorDump::kUnitsBytes, mem_represented());
@@ -264,21 +268,20 @@ bool RenderbufferManager::OnMemoryDump(
     return true;
   }
 
-  int client_id = memory_tracker_->ClientId();
   for (const auto& renderbuffer_entry : renderbuffers_) {
     const auto& client_renderbuffer_id = renderbuffer_entry.first;
     const auto& renderbuffer = renderbuffer_entry.second;
 
-    std::string dump_name =
-        base::StringPrintf("gpu/gl/renderbuffers/client_%d/renderbuffer_%d",
-                           client_id, client_renderbuffer_id);
+    std::string dump_name = base::StringPrintf(
+        "gpu/gl/renderbuffers/share_group_%" PRIu64 "/renderbuffer_%d",
+        share_group_tracing_guid, client_renderbuffer_id);
     MemoryAllocatorDump* dump = pmd->CreateAllocatorDump(dump_name);
     dump->AddScalar(MemoryAllocatorDump::kNameSize,
                     MemoryAllocatorDump::kUnitsBytes,
                     static_cast<uint64_t>(renderbuffer->EstimatedSize()));
 
-    auto guid = gl::GetGLRenderbufferGUIDForTracing(
-        memory_tracker_->ShareGroupTracingGUID(), client_renderbuffer_id);
+    auto guid = gl::GetGLRenderbufferGUIDForTracing(share_group_tracing_guid,
+                                                    client_renderbuffer_id);
     pmd->CreateSharedGlobalAllocatorDump(guid);
     pmd->AddOwnershipEdge(dump->guid(), guid);
   }
