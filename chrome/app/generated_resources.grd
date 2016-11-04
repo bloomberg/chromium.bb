@@ -2747,8 +2747,20 @@ From <ph name="DOWNLOAD_DOMAIN">$3<ex>example.com</ex></ph>
         <message translateable="false" name="IDS_CERT_OID_BUSINESS_CATEGORY" desc="">
           businessCategory
         </message>
+        <message translateable="false" name="IDS_CERT_OID_EV_INCORPORATION_LOCALITY" desc="">
+          jurisdictionLocalityName
+        </message>
+        <message translateable="false" name="IDS_CERT_OID_EV_INCORPORATION_STATE" desc="">
+          jurisdictionStateOrProvinceName
+        </message>
         <message translateable="false" name="IDS_CERT_OID_EV_INCORPORATION_COUNTRY" desc="">
-          incorporationCountry
+          jurisdictionCountryName
+        </message>
+        <message translateable="false" name="IDS_CERT_OID_AVA_STREET_ADDRESS" desc="">
+          STREET
+        </message>
+        <message translateable="false" name="IDS_CERT_OID_AVA_POSTAL_CODE" desc="">
+          postalCode
         </message>
 
         <message name="IDS_CERT_OID_PKCS1_RSA_ENCRYPTION" desc="description of public key algorithm SEC_OID_PKCS1_RSA_ENCRYPTION">
@@ -2774,6 +2786,30 @@ From <ph name="DOWNLOAD_DOMAIN">$3<ex>example.com</ex></ph>
         </message>
         <message name="IDS_CERT_OID_PKCS1_SHA512_WITH_RSA_ENCRYPTION" desc="description of public key algorithm SEC_OID_PKCS1_SHA512_WITH_RSA_ENCRYPTION">
           PKCS #1 SHA-512 With RSA Encryption
+        </message>
+        <message name="IDS_CERT_OID_ANSIX962_ECDSA_SHA1_SIGNATURE" desc="description of public key algorithm SEC_OID_ANSIX962_ECDSA_SHA1_SIGNATURE">
+          X9.62 ECDSA Signature with SHA-1
+        </message>
+        <message name="IDS_CERT_OID_ANSIX962_ECDSA_SHA256_SIGNATURE" desc="description of public key algorithm SEC_OID_ANSIX962_ECDSA_SHA256_SIGNATURE">
+          X9.62 ECDSA Signature with SHA-256
+        </message>
+        <message name="IDS_CERT_OID_ANSIX962_ECDSA_SHA384_SIGNATURE" desc="description of public key algorithm SEC_OID_ANSIX962_ECDSA_SHA384_SIGNATURE">
+          X9.62 ECDSA Signature with SHA-384
+        </message>
+        <message name="IDS_CERT_OID_ANSIX962_ECDSA_SHA512_SIGNATURE" desc="description of public key algorithm SEC_OID_ANSIX962_ECDSA_SHA512_SIGNATURE">
+          X9.62 ECDSA Signature with SHA-512
+        </message>
+        <message name="IDS_CERT_OID_ANSIX962_EC_PUBLIC_KEY" desc="description of public key algorithm SEC_OID_ANSIX962_EC_PUBLIC_KEY">
+          Elliptic Curve Public Key
+        </message>
+        <message name="IDS_CERT_OID_SECG_EC_SECP256R1" desc="description of public key algorithm SEC_OID_SECG_EC_SECP256R1">
+          SECG elliptic curve secp256r1 (aka ANSI X9.62 prime256v1, NIST P-256)
+        </message>
+        <message name="IDS_CERT_OID_SECG_EC_SECP384R1" desc="description of public key algorithm SEC_OID_SECG_EC_SECP384R1">
+          SECG elliptic curve secp384r1 (aka NIST P-384)
+        </message>
+        <message name="IDS_CERT_OID_SECG_EC_SECP521R1" desc="description of public key algorithm SEC_OID_SECG_EC_SECP521R1">
+          SECG elliptic curve secp521r1 (aka NIST P-521)
         </message>
 
         <message name="IDS_CERT_EXT_NS_CERT_TYPE" desc="description of extension Netscape Certificate Type">
