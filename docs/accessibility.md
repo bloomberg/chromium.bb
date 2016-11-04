@@ -1,55 +1,412 @@
 # Accessibility Overview
 
-This document describes how accessibility is implemented throughout Chromium at
-a high level.
+Accessibility means ensuring that all users, including users with disabilities,
+have equal access to software. One piece of this involves basic design
+principles such as using appropriate font sizes and color contrast,
+avoiding using color to convey important information, and providing keyboard
+alternatives for anything that is normally accomplished with a pointing device.
+However, when you see the word "accessibility" in a directory name in Chromium,
+that code's purpose is to provide full access to Chromium's UI via external
+accessibility APIs that are utilized by assistive technology.
+
+**Assistive technology** here refers to software or hardware which
+makes use of these APIs to create an alternative interface for the user to
+accommodate some specific needs, for example:
+
+Assistive technology includes:
+
+* Screen readers for blind users that describe the screen using
+  synthesized speech or braille
+* Voice control applications that let you speak to the computer,
+* Switch access that lets you control the computer with a small number
+  of physical switches,
+* Magnifiers that magnify a portion of the screen, and often highlight the
+  cursor and caret for easier viewing, and
+* Assistive learning and literacy software that helps users who have a hard
+  time reading print, by highlighting and/or speaking selected text
+
+In addition, because accessibility APIs provide a convenient and universal
+way to explore and control applications, they're often used for automated
+testing scripts, and UI automation software like password managers.
+
+Web browsers play an important role in this ecosystem because they need
+to not only provide access to their own UI, but also provide access to
+all of the content of the web.
+
+Each operating system has its own native accessibility API. While the
+core APIs tend to be well-documented, it's unfortunately common for
+screen readers in particular to depend on additional undocumented or
+vendor-specific APIs in order to fully function, especially with web
+browsers, because the standard APIs are insufficient to handle the
+complexity of the web.
+
+Chromium needs to support all of these operating system and
+vendor-specific accessibility APIs in order to be usable with the full
+ecosystem of assistive technology on all platforms. Just like Chromium
+sometimes mimics the quirks and bugs of older browsers, Chromium often
+needs to mimic the quirks and bugs of other browsers' implementation
+of accessibility APIs, too.
 
 ## Concepts
 
-The three central concepts of accessibility are:
+While each operating system and vendor accessibility API is different,
+there are some concepts all of them share.
 
 1. The *tree*, which models the entire interface as a tree of objects, exposed
-   to screenreaders or other accessibility software;
-2. *Events*, which let accessibility software know that a part of the tree has
+   to assistive technology via accessibility APIs;
+2. *Events*, which let assistive technology know that a part of the tree has
    changed somehow;
-3. *Actions*, which come from accessibility software and ask the interface to
+3. *Actions*, which come from assistive technology and ask the interface to
    change.
 
-Here's an example of an accessibility tree looks like. The following HTML:
+Consider the following small HTML file:
 
 ```
-<select title="Select A">
-  <option value="1">Option 1</option>
-  <option value="2" selected>Option 2</option>
-  <option value="3">Option 3</option>
-</select>
+<html>
+<head>
+  <title>How old are you?</title>
+</head>
+<body>
+  <label for="age">Age</label>
+  <input id="age" type="number" name="age" value="42">
+  <div>
+    <button>Back</button>
+    <button>Next</button>
+  </div>
+</body>
+</html>
 ```
 
-has a generated accessibility tree like this:
+### The Accessibility Tree and Accessibility Attributes
+
+Internally, Chromium represents the accessibility tree for that web page
+using a data structure something like this:
 
 ```
-0: AXMenuList title="Select A"
-1:   AXMenuListOption title="Option 1"
-2:   AXMenuListOption title="Option 2" selected
-3:   AXMenuListOption title="Option 3"
+id=1 role=WebArea name="How old are you?"
+    id=2 role=Label name="Age"
+    id=3 role=TextField labelledByIds=[2] value="42"
+    id=4 role=Group
+        id=5 role=Button name="Back"
+        id=6 role=Button name="Next"
 ```
 
-Given that accessibility tree, an example of the events generated when selecting
-"Option 1" might be:
+Note that the tree structure closely resembles the structure of the
+HTML elements, but slightly simplified. Each node in the accessibility
+tree has an ID and a role. Many have a name. The text field has a value,
+and instead of a name it has labelledByIds, which indicates that its
+accessible name comes from another node in the tree, the label node
+with id=2.
+
+On a particular platform, each node in the accessibility tree is implemented
+by an object that conforms to a particular protocol.
+
+On Windows, the root node implements the IAccessible protocol and
+if you call IAccessible::get_accRole, it returns ROLE_SYSTEM_DOCUMENT,
+and if you call IAccessible::get_accName, it returns "How old are you?".
+Other methods let you walk the tree.
+
+On macOS, the root node implements the NSAccessibility protocol and
+if you call [NSAccessibility accessibilityRole], it returns @"AXWebArea",
+and if you call [NSAccessibility accessibilityLabel], it returns
+"How old are you?".
+
+The Linux accessibility API, ATK, is more similar to the Windows APIs;
+they were developed together. (Chrome's support for desktop Linux
+accessibility is unfinished.)
+
+The Android accessibility API is of course based on Java. The main
+data structure is AccessibilityNodeInfo. It doesn't have a role, but
+if you call AccessibilityNodeInfo.getClassName() on the root node
+it returns "android.webkit.WebView", and if you call
+AccessibilityNodeInfo.getContentDescription() it returns "How old are you?".
+
+On Chrome OS, we use our own accessibility API that closely maps to
+Chrome's internal accessibility API.
+
+So while the details of the interface vary, the underlying concepts are
+similar. Both IAccessible and NSAccessibility have a concept of a role,
+but IAccessible uses a role of "document" for a web page, while NSAccessibility
+uses a role of "web area". Both IAccessible and NSAccessibility have a
+concept of the primary accessible text for a node, but IAccessible calls
+it the "name" while NSAccessibility calls it the "label", and Android
+calls it a "content description".
+
+**Historical note:** The internal names of roles and attributes in
+Chrome often tend to most closely match the macOS accessibility API
+because Chromium was originally based on WebKit, where most of the
+accessibility code was written by Apple. Over time we're slowly
+migrating internal names to match what those roles and attributes are
+called in web accessibility standards, like ARIA.
+
+### Accessibility Events
+
+In Chromium's internal terminology, an Accessibility Event always represents
+communication from the app to the assistive technology, indicating that the
+accessibility tree changed in some way.
+
+As an example, if the user were to press the Tab key and the text
+field from the example above became focused, Chromium would fire a
+"focus" accessibility event that assistive technology could listen
+to. A screen reader might then announce the name and current value of
+the text field. A magnifier might zoom the screen to its bounding
+box. If the user types some text into the text field, Chromium would
+fire a "value changed" accessibility event.
+
+As with nodes in the accessibility tree, each platform has a slightly different
+API for accessibility events. On Windows we'd fire EVENT_OBJECT_FOCUS for
+a focus change, and on Mac we'd fire @"AXFocusedUIElementChanged".
+Those are pretty similar. Sometimes they're quite different - to support
+live regions (notifications that certain key parts of a web page have changed),
+on Mac we simply fire @"AXLiveRegionChanged", but on Windows we need to
+fire IA2_EVENT_TEXT_INSERTED and IA2_EVENT_TEXT_REMOVED events individually
+on each affected node within the changed region, with additional attributes
+like "container-live:polite" to indicate that the affected node was part of
+a live region. This discussion is not meant to explain all of the technical
+details but just to illustrate that the concepts are similar,
+but the details of notifying software on each platform about changes can
+vary quite a bit.
+
+### Accessibility Actions
+
+Each native object that implements a platform's native accessibility API
+supports a number of actions, which are requests from the assistive
+technology to control or change the UI. This is the opposite of events,
+which are messages from Chromium to the assistive technology.
+
+For example, if the user had a voice control application running, such as
+Voice Access on Android, the user could just speak the name of one of the
+buttons on the page, like "Next". Upon recognizing that text and finding
+that it matches one of the UI elements on the page, the voice control
+app executes the action to click the button id=6 in Chromium's accessibility
+tree. Internally we call that action "do default" rather than click, since
+it represents the default action for any type of control.
+
+Other examples of actions include setting focus, changing the value of
+a control, and scrolling the page.
+
+### Parameterized attributes
+
+In addition to accessibility attributes, events, and actions, native
+accessibility APIs often have so-called "parameterized attributes".
+The most common example of this is for text - for example there may be
+a function to retrieve the bounding box for a range of text, or a
+function to retrieve the text properties (font family, font size,
+weight, etc.) at a specific character position.
+
+Parameterized attributes are particularly tricky to implement because
+of Chromium's multi-process architecture. More on this in the next section.
+
+## Chromium's multi-process architecture
+
+Native accessibility APIs tend to have a *functional* interface, where
+Chromium implements an interface for a canonical accessible object that
+includes methods to return various attributes, walk the tree, or perform
+an action like click(), focus(), or setValue(...).
+
+In contrast, the web has a largely *declarative* interface. The shape
+of the accessibility tree is determined by the DOM tree (occasionally
+influenced by CSS), and the accessible semantics of a DOM element can
+be modified by adding ARIA attributes.
+
+One important complication is that all of these native accessibility APIs
+are *synchronous*, while Chromium is multi-process, with the contents of
+each web page living in a different process than the process that
+implements Chromium's UI and the native accessibility APIs. Furthermore,
+the renderer processes are *sandboxed*, so they can't implement
+operating system APIs directly.
+
+If you're unfamiliar with Chrome's multi-process architecture, see
+[this blog post introducing the concept](
+https://blog.chromium.org/2008/09/multi-process-architecture.html) or
+[the design doc on chromium.org](
+https://www.chromium.org/developers/design-documents/multi-process-architecture)
+for an intro.
+
+Chromium's multi-process architecture means that we can't implement
+accessibility APIs the same way that a single-process browser can -
+namely, by calling directly into the DOM to compute the result of each
+API call. For example, on some operating systems there might be an API
+to get the bounding box for a particular range of characters on the
+page.  In other browsers, this might be implemented by creating a DOM
+selection object and asking for its bounding box.
+
+That implementation would be impossible in Chromium because it'd require
+blocking the main thread while waiting for a response from the renderer
+process that implements that web page's DOM. (Not only is blocking the
+main thread strictly disallowed, but the latency of doing this for every
+API call makes it prohibitively slow anyway.) Instead, Chromium takes an
+approach where a representation of the entire accessibility tree is
+cached in the main process. Great care needs to be taken to ensure that
+this representation is as concise as possible.
+
+In Chromium, we build a data structure representing all of the
+information for a web page's accessibility tree, send the data
+structure from the renderer process to the main browser process, cache
+it in the main browser process, and implement native accessibility
+APIs using solely the information in that cache.
+
+As the accessibility tree changes, tree updates and accessibility events
+get sent from the renderer process to the browser process. The browser
+cache is updated atomically in the main thread, so whenever an external
+client (like assistive technology) calls an accessibility API function,
+we're always returning something from a complete and consistent snapshot
+of the accessibility tree. From time to time, the cache may lag what's
+in the renderer process by a fraction of a second.
+
+Here are some of the specific challenges faced by this approach and
+how we've addressed them.
+
+### Sparse data
+
+There are a *lot* of possible accessibility attributes for any given
+node in an accessibility tree. For example, there are more than 150
+unique accessibility API methods that Chrome implements on the Windows
+platform alone. We need to implement all of those APIs, many of which
+request rather rare or obscure attributes, but storing all possible
+attribute values in a single struct would be quite wasteful.
+
+To avoid each accessible node object containing hundreds of fields the
+data for each accessibility node is stored in a relatively compact
+data structure, ui::AXNodeData. Every AXNodeData has an integer ID, a
+role enum, and a couple of other mandatory fields, but everything else
+is stored in attribute arrays, one for each major data type.
 
 ```
-AXMenuListItemUnselected 2
-AXMenuListItemSelected 1
-AXMenuListValueChanged 0
+struct AXNodeData {
+  int32_t id;
+  AXRole role;
+  ...
+  std::vector<std::pair<AXStringAttribute, std::string>> string_attributes;
+  std::vector<std::pair<AXIntAttribute, int32_t>> int_attributes;
+  ...
+}
 ```
 
-An example of a command used to change the selection from "Option 1" to "Option
-3" might be:
+So if a text field has a placeholder attribute, we can store
+that by adding an entry to `string_attributes` with an attribute
+of ui::AX_ATTR_PLACEHOLDER and the placeholder string as the value.
+
+### Incremental tree updates
+
+Web pages change frequently. It'd be terribly inefficient to send a
+new copy of the accessibility tree every time any part of it changes.
+However, the accessibility tree can change shape in complicated ways -
+for example, whole subtrees can be reparented dynamically.
+
+Rather than writing code to deal with every possible way the
+accessibility tree could be modified, Chromium has a general-purpose
+tree serializer class that's designed to send small incremental
+updates of a tree from one process to another. The tree serializer has
+just a few requirements:
+
+* Every node in the tree must have a unique integer ID.
+* The tree must be acyclic.
+* The tree serializer must be notified when a node's data changes.
+* The tree serializer must be notified when the list of child IDs of a
+  node changes.
+
+The tree serializer doesn't know anything about accessibility attributes.
+It keeps track of the previous state of the tree, and every time the tree
+structure changes (based on notifications of a node changing or a node's
+children changing), it walks the tree and builds up an incremental tree
+update that serializes as few nodes as possible.
+
+In the other process, the Unserialization code applies the incremental
+tree update atomically.
+
+### Text bounding boxes
+
+One challenge faced by Chromium is that accessibility clients want to be
+able to query the bounding box of an arbitrary range of text - not necessarily
+just the current cursor position or selection. As discussed above, it's
+not possible to block Chromium's main browser process while waiting for this
+information from Blink, so instead we cache enough information to satisfy these
+queries in the accessibility tree.
+
+To compactly store the bounding box of every character on the page, we
+split the text into *inline text boxes*, sometimes called *text runs*.
+For example, in a typical paragraph, each line of text would be its own
+inline text box. In general, an inline text box or text run contians a
+sequence of text characters that are all oriented in the same direction,
+in a line, with the same font, size, and style.
+
+Each inline text box stores its own bounding box, and then the relative
+x-coordinate of each character in its text (assuming left-to-right).
+From that it's possible to compute the bounding box
+of any individual character.
+
+The inline text boxes are part of Chromium's internal accessibility tree.
+They're used purely internally and aren't ever exposed directly via any
+native accessibility APIs.
+
+For example, suppose that a document contains a text field with the text
+"Hello world", but the field is narrow, so "Hello" is on the first line and
+"World" is on the second line. Internally Chromium's accessibility tree
+might look like this:
 
 ```
-AccessibilityMsg_DoDefaultAction 3
+staticText location=(8, 8) size=(38, 36) name='Hello world'
+    inlineTextBox location=(0, 0) size=(36, 18) name='Hello ' characterOffsets=12,19,23,28,36
+    inlineTextBox location=(0, 18) size=(38, 18) name='world' characterOffsets=12,20,25,29,37
 ```
 
-All three concepts are handled at several layers in Chromium.
+### Scrolling, transformations, and animation
+
+Native accessibility APIs typically want the bounding box of every element in the
+tree, either in window coordinates or global screen coordinates. If we
+stored the global screen coordinates for every node, we'd be constantly
+re-serializing the whole tree every time the user scrolls or drags the
+window.
+
+Instead, we store the bounding box of each node in the accessibility tree
+relative to its *offset container*, which can be any ancestor. If no offset
+container is specified, it's assumed to be the root of the tree.
+
+In addition, any offset container can contain scroll offsets, which can be
+used to scroll the bounding boxes of anything in that subtree.
+
+Finally, any offset container can also include an arbitrary 4x4 transformation
+matrix, which can be used to represent arbitrary 3-D rotations, translations, and
+scaling, and more. The transformation matrix applies to the whole subtree.
+
+Storing coordinates this way means that any time an object scrolls, moves, or
+animates its position and scale, only the root of the scrolling or animation
+needs to post updates to the accessibility tree. Everything in the subtree
+remains valid relative to that offset container.
+
+Computing the global screen coordinates for an object in the accessibility
+tree just means walking up its ancestor chain and applying offsets and
+occasionally multiplying by a 4x4 matrix.
+
+### Site isolation / out-of-process iframes
+
+At one point in time, all of the content of a single Tab or other web view
+was contained in the same Blink process, and it was possible to serialize
+the accessibility tree for a whole frame tree in a single pass.
+
+Today the situation is a bit more complicated, as Chromium supports
+out-of-process iframes. (It also supports "browser plugins" such as
+the `<webview>` tag in Chrome packaged apps, which embeds a whole
+browser inside a browser, but for the purposes of accessibility this
+is handled the same as frames.)
+
+Rather than a mix of in-process and out-of-process frames that are handled
+differently, Chromium builds a separate independent accessibility tree
+for each frame. Each frame gets its own tree ID, and it keeps track of
+the tree ID of its parent frame (if any) and any child frames.
+
+In Chrome's main browser process, the accessibility trees for each frame
+are cached separately, and when an accessibility client (assistive
+technology) walks the accessibility tree, Chromium dynamically composes
+all of the frames into a single virtual accessibility tree on the fly,
+using those aforementioned tree IDs.
+
+The node IDs for accessibility trees only need to be unique within a
+single frame. Where necessary, separate unique IDs are used within
+Chrome's main browser process. In Chromium accessibility, a "node ID"
+always means that ID that's only unique within a frame, and a "unique ID"
+means an ID that's globally unique.
 
 ## Blink
 
@@ -106,7 +463,7 @@ usually forwarded to [BrowserAccessibilityManager] which is responsible for:
 
 On Chrome OS, RenderFrameHostImpl does not route events to
 BrowserAccessibilityManager at all, since there is no platform screenreader
-outside Chrome to integrate with.
+outside Chromium to integrate with.
 
 ## Views
 
