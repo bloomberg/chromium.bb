@@ -11,10 +11,6 @@
 #include "base/memory/ref_counted.h"
 #include "components/sync/engine/model_safe_worker.h"
 
-namespace base {
-class WaitableEvent;
-}
-
 namespace password_manager {
 class PasswordStore;
 }
@@ -41,10 +37,6 @@ class PasswordModelWorker : public syncer::ModelSafeWorker {
 
  private:
   ~PasswordModelWorker() override;
-
-  void CallDoWorkAndSignalTask(const syncer::WorkCallback& work,
-                               base::WaitableEvent* done,
-                               syncer::SyncerError* error);
 
   // Called on password thread to add PasswordModelWorker as destruction
   // observer.

@@ -8,10 +8,20 @@
 #include "base/memory/ref_counted.h"
 #include "base/synchronization/waitable_event.h"
 #include "components/password_manager/core/browser/password_store.h"
-
-using base::WaitableEvent;
+#include "components/sync/base/scoped_event_signal.h"
 
 namespace browser_sync {
+
+namespace {
+
+void CallDoWorkAndSignalEvent(const syncer::WorkCallback& work,
+                              syncer::ScopedEventSignal scoped_event_signal,
+                              syncer::SyncerError* error_info) {
+  *error_info = work.Run();
+  // The event in |scoped_event_signal| is signaled at the end of this scope.
+}
+
+}  // namespace
 
 PasswordModelWorker::PasswordModelWorker(
     const scoped_refptr<password_manager::PasswordStore>& password_store,
@@ -30,19 +40,26 @@ syncer::SyncerError PasswordModelWorker::DoWorkAndWaitUntilDoneImpl(
     const syncer::WorkCallback& work) {
   syncer::SyncerError error = syncer::UNSET;
 
+  // Signaled when the task is deleted, i.e. after it runs or when it is
+  // abandoned.
+  base::WaitableEvent work_done_or_abandoned(
+      base::WaitableEvent::ResetPolicy::AUTOMATIC,
+      base::WaitableEvent::InitialState::NOT_SIGNALED);
+
   bool scheduled = false;
   {
     base::AutoLock lock(password_store_lock_);
     if (!password_store_.get())
       return syncer::CANNOT_DO_WORK;
 
-    scheduled = password_store_->ScheduleTask(
-        base::Bind(&PasswordModelWorker::CallDoWorkAndSignalTask, this, work,
-                   work_done_or_stopped(), &error));
+    scheduled = password_store_->ScheduleTask(base::Bind(
+        &CallDoWorkAndSignalEvent, work,
+        base::Passed(syncer::ScopedEventSignal(&work_done_or_abandoned)),
+        &error));
   }
 
   if (scheduled)
-    work_done_or_stopped()->Wait();
+    work_done_or_abandoned.Wait();
   else
     error = syncer::CANNOT_DO_WORK;
   return error;
@@ -53,14 +70,6 @@ syncer::ModelSafeGroup PasswordModelWorker::GetModelSafeGroup() {
 }
 
 PasswordModelWorker::~PasswordModelWorker() {}
-
-void PasswordModelWorker::CallDoWorkAndSignalTask(
-    const syncer::WorkCallback& work,
-    WaitableEvent* done,
-    syncer::SyncerError* error) {
-  *error = work.Run();
-  done->Signal();
-}
 
 void PasswordModelWorker::RegisterForPasswordLoopDestruction() {
   SetWorkingLoopToCurrent();

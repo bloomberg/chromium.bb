@@ -8,6 +8,7 @@
 #include "base/callback_forward.h"
 #include "base/compiler_specific.h"
 #include "base/macros.h"
+#include "components/sync/base/scoped_event_signal.h"
 #include "components/sync/base/syncer_error.h"
 #include "components/sync/engine/model_safe_worker.h"
 
@@ -38,12 +39,9 @@ class BrowserThreadModelWorker : public ModelSafeWorker {
 
   SyncerError DoWorkAndWaitUntilDoneImpl(const WorkCallback& work) override;
 
-  // Marked pure virtual so subclasses have to override, but there is
-  // an implementation that subclasses should use.  This is so that
-  // (subclass)::CallDoWorkAndSignalTask shows up in callstacks.
-  virtual void CallDoWorkAndSignalTask(const WorkCallback& work,
-                                       base::WaitableEvent* done,
-                                       SyncerError* error);
+  void CallDoWorkAndSignalTask(const WorkCallback& work,
+                               syncer::ScopedEventSignal scoped_event_signal,
+                               SyncerError* error);
 
  private:
   scoped_refptr<base::SingleThreadTaskRunner> runner_;

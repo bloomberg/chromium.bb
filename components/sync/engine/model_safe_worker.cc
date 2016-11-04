@@ -73,8 +73,6 @@ std::string ModelSafeGroupToString(ModelSafeGroup group) {
 
 ModelSafeWorker::ModelSafeWorker(WorkerLoopDestructionObserver* observer)
     : stopped_(false),
-      work_done_or_stopped_(base::WaitableEvent::ResetPolicy::AUTOMATIC,
-                            base::WaitableEvent::InitialState::NOT_SIGNALED),
       observer_(observer) {}
 
 ModelSafeWorker::~ModelSafeWorker() {}
@@ -82,11 +80,9 @@ ModelSafeWorker::~ModelSafeWorker() {}
 void ModelSafeWorker::RequestStop() {
   base::AutoLock al(stopped_lock_);
 
-  // Set stop flag but don't signal work_done_or_stopped_ to unblock sync loop
-  // because the worker may be working and depending on sync command object
-  // living on sync thread. This prevents any *further* tasks from being posted
-  // to worker threads (see DoWorkAndWaitUntilDone below), but note that one
-  // may already be posted.
+  // Set stop flag. This prevents any *further* tasks from being posted to
+  // worker threads (see DoWorkAndWaitUntilDone below), but note that one may
+  // already be posted.
   stopped_ = true;
 }
 
@@ -95,8 +91,6 @@ SyncerError ModelSafeWorker::DoWorkAndWaitUntilDone(const WorkCallback& work) {
     base::AutoLock al(stopped_lock_);
     if (stopped_)
       return CANNOT_DO_WORK;
-
-    CHECK(!work_done_or_stopped_.IsSignaled());
   }
 
   return DoWorkAndWaitUntilDoneImpl(work);
@@ -111,12 +105,6 @@ void ModelSafeWorker::WillDestroyCurrentMessageLoop() {
   {
     base::AutoLock al(stopped_lock_);
     stopped_ = true;
-
-    // Must signal to unblock syncer if it's waiting for a posted task to
-    // finish. At this point, all pending tasks posted to the loop have been
-    // destroyed (see MessageLoop::~MessageLoop). So syncer will be blocked
-    // indefinitely without signaling here.
-    work_done_or_stopped_.Signal();
 
     DVLOG(1) << ModelSafeGroupToString(GetModelSafeGroup())
              << " worker stops on destruction of its working thread.";

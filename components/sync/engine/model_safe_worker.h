@@ -15,7 +15,6 @@
 #include "base/message_loop/message_loop.h"
 #include "base/single_thread_task_runner.h"
 #include "base/synchronization/lock.h"
-#include "base/synchronization/waitable_event.h"
 #include "components/sync/base/model_type.h"
 #include "components/sync/base/syncer_error.h"
 
@@ -100,8 +99,6 @@ class ModelSafeWorker : public base::RefCountedThreadSafe<ModelSafeWorker>,
   // from a model-safe thread.
   virtual SyncerError DoWorkAndWaitUntilDoneImpl(const WorkCallback& work) = 0;
 
-  base::WaitableEvent* work_done_or_stopped() { return &work_done_or_stopped_; }
-
   // Return true if the worker was stopped. Thread safe.
   bool IsStopped();
 
@@ -119,10 +116,6 @@ class ModelSafeWorker : public base::RefCountedThreadSafe<ModelSafeWorker>,
   // when the worker's working thread is to be destroyed.
   base::Lock stopped_lock_;
   bool stopped_;
-
-  // Signal set when work on native thread is finished or when native thread
-  // is to be destroyed so no more work can be done.
-  base::WaitableEvent work_done_or_stopped_;
 
   // Notified when working thread of the worker is to be destroyed.
   WorkerLoopDestructionObserver* observer_;

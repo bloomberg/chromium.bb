@@ -9,23 +9,27 @@
 #include "base/memory/ref_counted.h"
 #include "base/message_loop/message_loop.h"
 #include "base/synchronization/waitable_event.h"
-
-using base::WaitableEvent;
+#include "components/sync/base/scoped_event_signal.h"
 
 namespace browser_sync {
 
 class WorkerTask : public history::HistoryDBTask {
  public:
-  WorkerTask(
-      const syncer::WorkCallback& work,
-      WaitableEvent* done,
-      syncer::SyncerError* error)
-    : work_(work), done_(done), error_(error) {}
+  WorkerTask(const syncer::WorkCallback& work,
+             syncer::ScopedEventSignal scoped_event_signal,
+             syncer::SyncerError* error)
+      : work_(work),
+        scoped_event_signal_(std::move(scoped_event_signal)),
+        error_(error) {}
 
   bool RunOnDBThread(history::HistoryBackend* backend,
                      history::HistoryDatabase* db) override {
+    // Signal the completion event at the end of this scope.
+    auto scoped_event_signal = std::move(scoped_event_signal_);
+
+    // Run the task.
     *error_ = work_.Run();
-    done_->Signal();
+
     return true;
   }
 
@@ -34,10 +38,13 @@ class WorkerTask : public history::HistoryDBTask {
   void DoneRunOnMainThread() override {}
 
  protected:
-  ~WorkerTask() override {}
+  ~WorkerTask() override {
+    // The event in |scoped_event_signal_| is signaled at the end of this
+    // scope if this is destroyed before RunOnDBThread runs.
+  }
 
   syncer::WorkCallback work_;
-  WaitableEvent* done_;
+  syncer::ScopedEventSignal scoped_event_signal_;
   syncer::SyncerError* error_;
 };
 
@@ -67,16 +74,17 @@ namespace {
 void PostWorkerTask(
     const base::WeakPtr<history::HistoryService>& history_service,
     const syncer::WorkCallback& work,
+    syncer::ScopedEventSignal scoped_event_signal,
     base::CancelableTaskTracker* cancelable_tracker,
-    WaitableEvent* done,
     syncer::SyncerError* error) {
   if (history_service.get()) {
     std::unique_ptr<history::HistoryDBTask> task(
-        new WorkerTask(work, done, error));
+        new WorkerTask(work, std::move(scoped_event_signal), error));
     history_service->ScheduleDBTask(std::move(task), cancelable_tracker);
   } else {
     *error = syncer::CANNOT_DO_WORK;
-    done->Signal();
+    // The event in |scoped_event_signal| is signaled at the end of this
+    // scope.
   }
 }
 
@@ -109,11 +117,18 @@ void HistoryModelWorker::RegisterOnDBThread() {
 syncer::SyncerError HistoryModelWorker::DoWorkAndWaitUntilDoneImpl(
     const syncer::WorkCallback& work) {
   syncer::SyncerError error = syncer::UNSET;
+
+  // Signaled after the task runs or when it is abandoned.
+  base::WaitableEvent work_done_or_abandoned(
+      base::WaitableEvent::ResetPolicy::AUTOMATIC,
+      base::WaitableEvent::InitialState::NOT_SIGNALED);
+
   if (ui_thread_->PostTask(FROM_HERE,
                            base::Bind(&PostWorkerTask, history_service_, work,
-                                      cancelable_tracker_.get(),
-                                      work_done_or_stopped(), &error))) {
-    work_done_or_stopped()->Wait();
+                                      base::Passed(syncer::ScopedEventSignal(
+                                          &work_done_or_abandoned)),
+                                      cancelable_tracker_.get(), &error))) {
+    work_done_or_abandoned.Wait();
   } else {
     error = syncer::CANNOT_DO_WORK;
   }

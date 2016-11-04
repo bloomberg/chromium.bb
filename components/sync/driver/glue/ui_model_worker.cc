@@ -10,30 +10,17 @@
 #include "base/synchronization/waitable_event.h"
 #include "base/third_party/dynamic_annotations/dynamic_annotations.h"
 #include "base/threading/thread_restrictions.h"
+#include "components/sync/base/scoped_event_signal.h"
 
 namespace syncer {
 
 namespace {
 
-// A simple callback to signal a waitable event after running a closure.
-void CallDoWorkAndSignalCallback(const WorkCallback& work,
-                                 base::WaitableEvent* work_done,
-                                 SyncerError* error_info) {
-  if (work.is_null()) {
-    // This can happen during tests or cases where there are more than just the
-    // default UIModelWorker in existence and it gets destroyed before
-    // the main UI loop has terminated.  There is no easy way to assert the
-    // loop is running / not running at the moment, so we just provide cancel
-    // semantics here and short-circuit.
-    // TODO(timsteele): Maybe we should have the message loop destruction
-    // observer fire when the loop has ended, just a bit before it
-    // actually gets destroyed.
-    return;
-  }
-
+void CallDoWorkAndSignalEvent(const WorkCallback& work,
+                              syncer::ScopedEventSignal scoped_event_signal,
+                              SyncerError* error_info) {
   *error_info = work.Run();
-
-  work_done->Signal();  // Unblock the syncer thread that scheduled us.
+  // The event in |scoped_event_signal| is signaled at the end of this scope.
 }
 
 }  // namespace
@@ -57,14 +44,22 @@ SyncerError UIModelWorker::DoWorkAndWaitUntilDoneImpl(
     return work.Run();
   }
 
+  // Signaled when the task is deleted, i.e. after it runs or when it is
+  // abandoned.
+  base::WaitableEvent work_done_or_abandoned(
+      base::WaitableEvent::ResetPolicy::AUTOMATIC,
+      base::WaitableEvent::InitialState::NOT_SIGNALED);
+
   if (!ui_thread_->PostTask(FROM_HERE,
-                            base::Bind(&CallDoWorkAndSignalCallback, work,
-                                       work_done_or_stopped(), &error_info))) {
+                            base::Bind(&CallDoWorkAndSignalEvent, work,
+                                       base::Passed(syncer::ScopedEventSignal(
+                                           &work_done_or_abandoned)),
+                                       &error_info))) {
     DLOG(WARNING) << "Could not post work to UI loop.";
     error_info = CANNOT_DO_WORK;
     return error_info;
   }
-  work_done_or_stopped()->Wait();
+  work_done_or_abandoned.Wait();
 
   return error_info;
 }
