@@ -67,7 +67,7 @@ CSSOMSmoothScroll status=experimental
 CSSOffsetPositionAnchor status=experimental
 CSSPaintAPI status=experimental, depends_on=CSSTypedOM, depends_on=Worklet
 CSSSnapSize status=experimental
-CSSStickyPosition status=experimental
+CSSStickyPosition status=stable
 CSSTouchActionPanDirections status=stable
 CSSTouchActionPinchZoom status=stable
 CSSTypedOM status=experimental
