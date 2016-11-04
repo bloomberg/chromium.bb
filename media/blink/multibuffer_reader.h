@@ -96,6 +96,8 @@ class MEDIA_BLINK_EXPORT MultiBufferReader
   int64_t preload_low() const { return preload_low_; }
 
  private:
+  friend class MultibufferDataSourceTest;
+
   // Returns the block for a particular byte position.
   MultiBufferBlockId block(int64_t byte_pos) const {
     return byte_pos >> multibuffer_->block_size_shift();

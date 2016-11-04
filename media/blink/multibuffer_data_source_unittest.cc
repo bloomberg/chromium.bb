@@ -466,6 +466,11 @@ class MultibufferDataSourceTest : public testing::Test {
     return loader()->preload_low();
   }
   int data_source_bitrate() { return data_source_->bitrate_; }
+  int64_t max_buffer_forward() { return loader()->max_buffer_forward_; }
+  int64_t max_buffer_backward() { return loader()->max_buffer_backward_; }
+  int64_t buffer_size() {
+    return loader()->current_buffer_size_ * 32768 /* block size */;
+  }
   double data_source_playback_rate() { return data_source_->playback_rate_; }
   bool is_local_source() { return data_source_->assume_fully_buffered(); }
   scoped_refptr<UrlData> url_data() { return data_source_->url_data_; }
@@ -1538,4 +1543,54 @@ TEST_F(MultibufferDataSourceTest, EtagTest) {
 
   EXPECT_EQ(url_data()->etag(), etag);
 }
+
+TEST_F(MultibufferDataSourceTest, CheckBufferSizes) {
+  InitializeWith206Response();
+
+  data_source_->SetBitrate(1 << 20);  // 1 mbit / s
+  base::RunLoop().RunUntilIdle();
+  EXPECT_EQ(1 << 20, data_source_bitrate());
+  EXPECT_EQ(2 << 20, preload_low());
+  EXPECT_EQ(3 << 20, preload_high());
+  EXPECT_EQ(25 << 20, max_buffer_forward());
+  EXPECT_EQ(2 << 20, max_buffer_backward());
+  EXPECT_EQ(1572864 /* 1.5Mb */, buffer_size());
+
+  data_source_->SetBitrate(8 << 20);  // 8 mbit / s
+  base::RunLoop().RunUntilIdle();
+  EXPECT_EQ(8 << 20, data_source_bitrate());
+  EXPECT_EQ(10 << 20, preload_low());
+  EXPECT_EQ(11 << 20, preload_high());
+  EXPECT_EQ(25 << 20, max_buffer_forward());
+  EXPECT_EQ(2 << 20, max_buffer_backward());
+  EXPECT_EQ(12 << 20, buffer_size());
+
+  data_source_->SetBitrate(16 << 20);  // 16 mbit / s
+  base::RunLoop().RunUntilIdle();
+  EXPECT_EQ(16 << 20, data_source_bitrate());
+  EXPECT_EQ(20 << 20, preload_low());
+  EXPECT_EQ(21 << 20, preload_high());
+  EXPECT_EQ(25 << 20, max_buffer_forward());
+  EXPECT_EQ(4 << 20, max_buffer_backward());
+  EXPECT_EQ(24 << 20, buffer_size());
+
+  data_source_->SetBitrate(32 << 20);  // 32 mbit / s
+  base::RunLoop().RunUntilIdle();
+  EXPECT_EQ(32 << 20, data_source_bitrate());
+  EXPECT_EQ(40 << 20, preload_low());
+  EXPECT_EQ(41 << 20, preload_high());
+  EXPECT_EQ(41 << 20, max_buffer_forward());
+  EXPECT_EQ(8 << 20, max_buffer_backward());
+  EXPECT_EQ(48 << 20, buffer_size());
+
+  data_source_->SetBitrate(80 << 20);  // 80 mbit / s
+  base::RunLoop().RunUntilIdle();
+  EXPECT_EQ(80 << 20, data_source_bitrate());
+  EXPECT_EQ(50 << 20, preload_low());
+  EXPECT_EQ(51 << 20, preload_high());
+  EXPECT_EQ(51 << 20, max_buffer_forward());
+  EXPECT_EQ(20 << 20, max_buffer_backward());
+  EXPECT_EQ(71 << 20, buffer_size());
+}
+
 }  // namespace media
