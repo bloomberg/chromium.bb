@@ -67,11 +67,10 @@ static LayoutRect computeBottomDelta(const LayoutPoint& location,
 bool BoxPaintInvalidator::incrementallyInvalidatePaint() {
   LayoutRect rightDelta;
   LayoutRect bottomDelta;
-  if (m_box.isLayoutView()) {
+  if (m_box.isLayoutView() &&
+      !RuntimeEnabledFeatures::rootLayerScrollingEnabled()) {
     // This corresponds to the special case in computePaintInvalidationReason()
-    // for LayoutView in non-rootLayerScrolling mode. In rootLayerScrolling
-    // mode, we'll do full paint invalidation (see crbug.com/660156).
-    DCHECK(!RuntimeEnabledFeatures::rootLayerScrollingEnabled());
+    // for LayoutView in non-rootLayerScrolling mode.
     DCHECK(m_context.oldVisualRect.location() ==
            m_context.newVisualRect.location());
     rightDelta = computeRightDelta(m_context.newVisualRect.location(),
