@@ -19,7 +19,6 @@
 #include "components/sync/device_info/local_device_info_provider.h"
 #include "components/sync/model/model_type_store.h"
 #include "components/sync/model/model_type_sync_bridge.h"
-#include "components/sync/model/simple_metadata_change_list.h"
 
 namespace sync_pb {
 class DeviceInfoSpecifics;
@@ -115,7 +114,6 @@ class DeviceInfoSyncBridge : public ModelTypeSyncBridge,
   // Persists the changes in the given aggregators and notifies observers if
   // indicated to do as such.
   void CommitAndNotify(std::unique_ptr<ModelTypeStore::WriteBatch> batch,
-                       std::unique_ptr<MetadataChangeList> metadata_change_list,
                        bool should_notify);
 
   // Counts the number of active devices relative to |now|. The activeness of a

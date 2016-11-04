@@ -20,7 +20,6 @@
 #include "components/sync/engine/commit_queue.h"
 #include "components/sync/model/data_type_error_handler_mock.h"
 #include "components/sync/model/fake_model_type_sync_bridge.h"
-#include "components/sync/model/simple_metadata_change_list.h"
 #include "components/sync/test/engine/mock_model_type_worker.h"
 #include "testing/gtest/include/gtest/gtest.h"
 

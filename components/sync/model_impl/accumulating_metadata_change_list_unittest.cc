@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "components/sync/model/simple_metadata_change_list.h"
+#include "components/sync/model_impl/accumulating_metadata_change_list.h"
 
 #include <set>
 
@@ -39,9 +39,9 @@ void RecordGlobalMetadataDelete(bool* was_delete_called, WriteBatch* batch) {
   *was_delete_called = true;
 }
 
-class SimpleMetadataChangeListTest : public testing::Test {
+class AccumulatingMetadataChangeListTest : public testing::Test {
  protected:
-  SimpleMetadataChangeListTest() {}
+  AccumulatingMetadataChangeListTest() {}
 
   MockModelTypeStore* store() { return &store_; }
 
@@ -52,8 +52,8 @@ class SimpleMetadataChangeListTest : public testing::Test {
   MockModelTypeStore store_;
 };
 
-TEST_F(SimpleMetadataChangeListTest, TransferChangesEmptyChangeList) {
-  SimpleMetadataChangeList cl;
+TEST_F(AccumulatingMetadataChangeListTest, TransferChangesEmptyChangeList) {
+  AccumulatingMetadataChangeList cl;
   std::unique_ptr<WriteBatch> batch = store()->CreateWriteBatch();
 
   std::map<std::string, std::string> change_map;
@@ -73,8 +73,8 @@ TEST_F(SimpleMetadataChangeListTest, TransferChangesEmptyChangeList) {
   EXPECT_EQ(global_metadata.size(), 0u);
 }
 
-TEST_F(SimpleMetadataChangeListTest, TransferChangesClearsLocalState) {
-  SimpleMetadataChangeList cl;
+TEST_F(AccumulatingMetadataChangeListTest, TransferChangesClearsLocalState) {
+  AccumulatingMetadataChangeList cl;
   sync_pb::EntityMetadata metadata;
   metadata.set_client_tag_hash("some_hash");
   cl.UpdateMetadata("client_tag", metadata);
@@ -83,18 +83,33 @@ TEST_F(SimpleMetadataChangeListTest, TransferChangesClearsLocalState) {
   state.set_encryption_key_name("ekn");
   cl.UpdateModelTypeState(state);
 
-  EXPECT_NE(cl.GetMetadataChanges().size(), 0u);
-  EXPECT_TRUE(cl.HasModelTypeStateChange());
+  std::map<std::string, std::string> change_map;
+  std::string global_metadata;
+  store()->RegisterWriteMetadataHandler(
+      base::Bind(&RecordMetadataWrite, &change_map));
+  store()->RegisterWriteGlobalMetadataHandler(
+      base::Bind(&RecordGlobalMetadataWrite, &global_metadata));
+
+  EXPECT_EQ(0U, change_map.size());
+  EXPECT_EQ("", global_metadata);
 
   std::unique_ptr<WriteBatch> batch = store()->CreateWriteBatch();
   cl.TransferChanges(store(), batch.get());
 
-  EXPECT_EQ(cl.GetMetadataChanges().size(), 0u);
-  EXPECT_FALSE(cl.HasModelTypeStateChange());
+  EXPECT_EQ(1U, change_map.size());
+  EXPECT_NE("", global_metadata);
+
+  change_map.clear();
+  global_metadata = "";
+  cl.TransferChanges(store(), batch.get());
+
+  EXPECT_EQ(0U, change_map.size());
+  EXPECT_EQ("", global_metadata);
 }
 
-TEST_F(SimpleMetadataChangeListTest, TransferChangesMultipleInvocationsSafe) {
-  SimpleMetadataChangeList cl;
+TEST_F(AccumulatingMetadataChangeListTest,
+       TransferChangesMultipleInvocationsSafe) {
+  AccumulatingMetadataChangeList cl;
   sync_pb::EntityMetadata metadata;
   metadata.set_client_tag_hash("some_hash");
   cl.UpdateMetadata("client_tag", metadata);
@@ -119,8 +134,8 @@ TEST_F(SimpleMetadataChangeListTest, TransferChangesMultipleInvocationsSafe) {
   EXPECT_EQ(metadata.SerializeAsString(), change_map["client_tag"]);
 }
 
-TEST_F(SimpleMetadataChangeListTest, TransferChangesMultipleChanges) {
-  SimpleMetadataChangeList cl;
+TEST_F(AccumulatingMetadataChangeListTest, TransferChangesMultipleChanges) {
+  AccumulatingMetadataChangeList cl;
 
   sync_pb::EntityMetadata metadata;
   metadata.set_client_tag_hash("some_hash");
@@ -153,8 +168,8 @@ TEST_F(SimpleMetadataChangeListTest, TransferChangesMultipleChanges) {
   EXPECT_EQ(state.SerializeAsString(), global_metadata);
 }
 
-TEST_F(SimpleMetadataChangeListTest, TransferChangesDeletesClearedItems) {
-  SimpleMetadataChangeList cl;
+TEST_F(AccumulatingMetadataChangeListTest, TransferChangesDeletesClearedItems) {
+  AccumulatingMetadataChangeList cl;
   sync_pb::EntityMetadata metadata;
   metadata.set_client_tag_hash("some_hash");
   cl.UpdateMetadata("client_tag", metadata);

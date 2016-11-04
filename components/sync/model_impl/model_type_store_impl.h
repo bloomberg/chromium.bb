@@ -60,7 +60,7 @@ class ModelTypeStoreImpl : public ModelTypeStore, public base::NonThreadSafe {
  private:
   class WriteBatchImpl : public WriteBatch {
    public:
-    WriteBatchImpl();
+    explicit WriteBatchImpl(ModelTypeStore* store);
     ~WriteBatchImpl() override;
     std::unique_ptr<leveldb::WriteBatch> leveldb_write_batch_;
   };

@@ -54,7 +54,7 @@ void MockModelTypeStore::ReadAllMetadata(const ReadMetadataCallback& callback) {
 
 std::unique_ptr<MockModelTypeStore::WriteBatch>
 MockModelTypeStore::CreateWriteBatch() {
-  return base::WrapUnique(new MockModelTypeStore::WriteBatch());
+  return base::WrapUnique(new MockModelTypeStore::WriteBatch(this));
 }
 
 void MockModelTypeStore::CommitWriteBatch(

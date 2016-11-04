@@ -12,6 +12,7 @@
 #include "base/callback.h"
 #include "base/macros.h"
 #include "components/sync/base/model_type.h"
+#include "components/sync/model/metadata_change_list.h"
 
 namespace base {
 class SequencedTaskRunner;
@@ -66,11 +67,34 @@ class ModelTypeStore {
   // WriteBatch object is used in all modification operations.
   class WriteBatch {
    public:
+    // Creates a MetadataChangeList that will accumulate metadata changes and
+    // can later pass them to a WriteBatch via TransferChanges. Use this when
+    // you need a MetadataChangeList and do not have a WriteBatch in scope.
+    static std::unique_ptr<MetadataChangeList> CreateMetadataChangeList();
+
     virtual ~WriteBatch();
+
+    // Provides access to a MetadataChangeList that will pass its changes
+    // directly into this WriteBatch. Use this when you need a
+    // MetadataChangeList and already have a WriteBatch in scope.
+    MetadataChangeList* GetMetadataChangeList();
+
+    // Transfers the changes from a MetadataChangeList into this WriteBatch.
+    // |mcl| must have previously been created by CreateMetadataChangeList().
+    void TransferMetadataChanges(std::unique_ptr<MetadataChangeList> mcl);
 
    protected:
     friend class MockModelTypeStore;
-    WriteBatch();
+    explicit WriteBatch(ModelTypeStore* store);
+
+   private:
+    // A pointer to the store that generated this WriteBatch.
+    ModelTypeStore* store_;
+
+    // A MetadataChangeList that is being used to pass changes directly into the
+    // WriteBatch. Only accessible via GetMetadataChangeList(), and not created
+    // unless necessary.
+    std::unique_ptr<MetadataChangeList> metadata_change_list_;
   };
 
   typedef std::vector<Record> RecordList;

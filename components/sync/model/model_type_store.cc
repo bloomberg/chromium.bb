@@ -4,7 +4,10 @@
 
 #include "components/sync/model/model_type_store.h"
 
+#include "base/memory/ptr_util.h"
+#include "components/sync/model_impl/accumulating_metadata_change_list.h"
 #include "components/sync/model_impl/model_type_store_impl.h"
+#include "components/sync/model_impl/passthrough_metadata_change_list.h"
 
 namespace syncer {
 
@@ -24,8 +27,28 @@ void ModelTypeStore::CreateStore(
 
 ModelTypeStore::~ModelTypeStore() {}
 
-ModelTypeStore::WriteBatch::WriteBatch() {}
+// static
+std::unique_ptr<MetadataChangeList>
+ModelTypeStore::WriteBatch::CreateMetadataChangeList() {
+  return base::MakeUnique<AccumulatingMetadataChangeList>();
+}
+
+ModelTypeStore::WriteBatch::WriteBatch(ModelTypeStore* store) : store_(store) {}
 
 ModelTypeStore::WriteBatch::~WriteBatch() {}
+
+MetadataChangeList* ModelTypeStore::WriteBatch::GetMetadataChangeList() {
+  if (!metadata_change_list_) {
+    metadata_change_list_ =
+        base::MakeUnique<PassthroughMetadataChangeList>(store_, this);
+  }
+  return metadata_change_list_.get();
+}
+
+void ModelTypeStore::WriteBatch::TransferMetadataChanges(
+    std::unique_ptr<MetadataChangeList> mcl) {
+  static_cast<AccumulatingMetadataChangeList*>(mcl.get())->TransferChanges(
+      store_, this);
+}
 
 }  // namespace syncer

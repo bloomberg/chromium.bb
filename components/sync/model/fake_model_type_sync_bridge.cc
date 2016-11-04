@@ -9,7 +9,7 @@
 #include "base/bind.h"
 #include "base/memory/ptr_util.h"
 #include "components/sync/model/mutable_data_batch.h"
-#include "components/sync/model/simple_metadata_change_list.h"
+#include "components/sync/model_impl/in_memory_metadata_change_list.h"
 #include "components/sync/syncable/syncable_util.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
@@ -34,6 +34,25 @@ std::unique_ptr<EntityData> CopyEntityData(const EntityData& old_data) {
   new_data->modification_time = old_data.modification_time;
   return new_data;
 }
+
+// A simple InMemoryMetadataChangeList that provides accessors for its data.
+class TestMetadataChangeList : public InMemoryMetadataChangeList {
+ public:
+  TestMetadataChangeList() {}
+  ~TestMetadataChangeList() override {}
+
+  const std::map<std::string, MetadataChange>& GetMetadataChanges() const {
+    return metadata_changes_;
+  }
+
+  bool HasModelTypeStateChange() const {
+    return state_change_.get() != nullptr;
+  }
+
+  const ModelTypeStateChange& GetModelTypeStateChange() const {
+    return *state_change_.get();
+  }
+};
 
 }  // namespace
 
@@ -159,8 +178,7 @@ void FakeModelTypeSyncBridge::WriteItem(
     std::unique_ptr<EntityData> entity_data) {
   db_->PutData(key, *entity_data);
   if (change_processor()) {
-    std::unique_ptr<MetadataChangeList> change_list(
-        new SimpleMetadataChangeList());
+    auto change_list = CreateMetadataChangeList();
     change_processor()->Put(key, std::move(entity_data), change_list.get());
     ApplyMetadataChangeList(std::move(change_list));
   }
@@ -169,8 +187,7 @@ void FakeModelTypeSyncBridge::WriteItem(
 void FakeModelTypeSyncBridge::DeleteItem(const std::string& key) {
   db_->RemoveData(key);
   if (change_processor()) {
-    std::unique_ptr<MetadataChangeList> change_list(
-        new SimpleMetadataChangeList());
+    auto change_list = CreateMetadataChangeList();
     change_processor()->Delete(key, change_list.get());
     ApplyMetadataChangeList(std::move(change_list));
   }
@@ -178,7 +195,7 @@ void FakeModelTypeSyncBridge::DeleteItem(const std::string& key) {
 
 std::unique_ptr<MetadataChangeList>
 FakeModelTypeSyncBridge::CreateMetadataChangeList() {
-  return std::unique_ptr<MetadataChangeList>(new SimpleMetadataChangeList());
+  return base::MakeUnique<TestMetadataChangeList>();
 }
 
 SyncError FakeModelTypeSyncBridge::MergeSyncData(
@@ -233,30 +250,29 @@ SyncError FakeModelTypeSyncBridge::ApplySyncChanges(
 }
 
 void FakeModelTypeSyncBridge::ApplyMetadataChangeList(
-    std::unique_ptr<MetadataChangeList> change_list) {
-  DCHECK(change_list);
-  SimpleMetadataChangeList* changes =
-      static_cast<SimpleMetadataChangeList*>(change_list.get());
-  const auto& metadata_changes = changes->GetMetadataChanges();
+    std::unique_ptr<MetadataChangeList> mcl) {
+  DCHECK(mcl);
+  TestMetadataChangeList* tmcl =
+      static_cast<TestMetadataChangeList*>(mcl.get());
+  const auto& metadata_changes = tmcl->GetMetadataChanges();
   for (const auto& kv : metadata_changes) {
     switch (kv.second.type) {
-      case SimpleMetadataChangeList::UPDATE:
+      case TestMetadataChangeList::UPDATE:
         db_->PutMetadata(kv.first, kv.second.metadata);
         break;
-      case SimpleMetadataChangeList::CLEAR:
+      case TestMetadataChangeList::CLEAR:
         EXPECT_TRUE(db_->HasMetadata(kv.first));
         db_->RemoveMetadata(kv.first);
         break;
     }
   }
-  if (changes->HasModelTypeStateChange()) {
-    const SimpleMetadataChangeList::ModelTypeStateChange& state_change =
-        changes->GetModelTypeStateChange();
+  if (tmcl->HasModelTypeStateChange()) {
+    const auto& state_change = tmcl->GetModelTypeStateChange();
     switch (state_change.type) {
-      case SimpleMetadataChangeList::UPDATE:
+      case TestMetadataChangeList::UPDATE:
         db_->set_model_type_state(state_change.state);
         break;
-      case SimpleMetadataChangeList::CLEAR:
+      case TestMetadataChangeList::CLEAR:
         db_->set_model_type_state(ModelTypeState());
         break;
     }

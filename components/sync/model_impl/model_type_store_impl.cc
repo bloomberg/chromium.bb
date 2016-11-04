@@ -270,7 +270,7 @@ void ModelTypeStoreImpl::ReadAllMetadataDone(
 std::unique_ptr<ModelTypeStore::WriteBatch>
 ModelTypeStoreImpl::CreateWriteBatch() {
   DCHECK(CalledOnValidThread());
-  return base::MakeUnique<WriteBatchImpl>();
+  return base::MakeUnique<WriteBatchImpl>(this);
 }
 
 void ModelTypeStoreImpl::CommitWriteBatch(
@@ -333,7 +333,8 @@ void ModelTypeStoreImpl::DeleteGlobalMetadata(WriteBatch* write_batch) {
   GetLeveldbWriteBatch(write_batch)->Delete(kGlobalMetadataKey);
 }
 
-ModelTypeStoreImpl::WriteBatchImpl::WriteBatchImpl() {
+ModelTypeStoreImpl::WriteBatchImpl::WriteBatchImpl(ModelTypeStore* store)
+    : WriteBatch(store) {
   leveldb_write_batch_ = base::MakeUnique<leveldb::WriteBatch>();
 }
 
