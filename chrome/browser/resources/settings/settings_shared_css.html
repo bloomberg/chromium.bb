@@ -275,14 +275,24 @@
         font-weight: 500;
       }
 
+      /* A row with two lines of text. Often the lower line will be .secondary.
+       */
+      .two-line {
+        min-height: var(--settings-row-two-line-min-height);
+      }
+
       /* A settings-box is a horizontal row of text or controls within a
        * setting section (page or subpage). */
       .settings-box {
         align-items: center;
         border-top: var(--settings-separator-line);
         display: flex;
-        min-height: var(--settings-row-min-height);
+        min-height: var(--settings-box-min-height);
         padding: 0 var(--settings-box-row-padding);
+      }
+
+      .settings-box.two-line {
+        min-height: var(--settings-box-two-line-min-height);
       }
 
       /* We use an explicit tag to remove the top border, rather than a
@@ -295,12 +305,6 @@
 
       .settings-box.block {
         display: block;
-      }
-
-      /* A row with two lines of text. Often the lower line will be .secondary.
-       */
-      .two-line {
-        min-height: var(--settings-row-two-line-min-height);
       }
 
       /* A start-aligned column. */
