@@ -110,6 +110,8 @@ class DOMAIN_RELIABILITY_EXPORT DomainReliabilityContext {
   // when there are too many beacons queued.)
   void RemoveOldestBeacon();
 
+  void RemoveExpiredBeacons();
+
   std::unique_ptr<const DomainReliabilityConfig> config_;
   MockableTime* time_;
   const std::string& upload_reporter_string_;

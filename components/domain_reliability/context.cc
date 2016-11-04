@@ -154,6 +154,10 @@ void DomainReliabilityContext::ScheduleUpload(
 }
 
 void DomainReliabilityContext::StartUpload() {
+  RemoveExpiredBeacons();
+  if (beacons_.empty())
+    return;
+
   MarkUpload();
 
   size_t collector_index = scheduler_.OnUploadStart();
@@ -264,6 +268,13 @@ void DomainReliabilityContext::RemoveOldestBeacon() {
   // that.
   if (uploading_beacons_size_ > 0)
     --uploading_beacons_size_;
+}
+
+void DomainReliabilityContext::RemoveExpiredBeacons() {
+  base::TimeTicks now = time_->NowTicks();
+  const base::TimeDelta kMaxAge = base::TimeDelta::FromHours(1);
+  while (!beacons_.empty() && now - beacons_.front()->start_time >= kMaxAge)
+    beacons_.pop_front();
 }
 
 }  // namespace domain_reliability

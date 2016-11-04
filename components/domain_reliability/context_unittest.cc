@@ -538,6 +538,19 @@ TEST_F(DomainReliabilityContextTest, SampleNoBeacons) {
   EXPECT_EQ(0u, beacons.size());
 }
 
+TEST_F(DomainReliabilityContextTest, ExpiredBeaconDoesNotUpload) {
+  InitContext(MakeTestConfig());
+  std::unique_ptr<DomainReliabilityBeacon> beacon = MakeBeacon(&time_);
+  time_.Advance(base::TimeDelta::FromHours(2));
+  context_->OnBeacon(std::move(beacon));
+
+  time_.Advance(max_delay());
+  EXPECT_FALSE(upload_pending());
+  BeaconVector beacons;
+  context_->GetQueuedBeaconsForTesting(&beacons);
+  EXPECT_TRUE(beacons.empty());
+}
+
 // TODO(juliatuttle): Add beacon_unittest.cc to test serialization.
 
 }  // namespace
