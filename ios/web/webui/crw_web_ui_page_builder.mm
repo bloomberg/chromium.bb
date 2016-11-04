@@ -116,6 +116,7 @@ NSString* const kWebUIJSURL = @"chrome://resources/js/ios/web_ui.js";
            completionHandler:(web::WebUIPageCompletion)completionHandler {
   [self fetchResourceWithURL:webUIURL
            completionHandler:^(NSString* webUIHTML, const GURL& URL) {
+             DCHECK(webUIHTML);
              [self buildWebUIPageForHTML:webUIHTML
                                 webUIURL:URL
                        completionHandler:completionHandler];
@@ -140,6 +141,7 @@ NSString* const kWebUIJSURL = @"chrome://resources/js/ios/web_ui.js";
   __block __weak web::WebUIDelegateCompletion weakSubresourceHandler = nil;
   web::WebUIDelegateCompletion subresourceHandler = [^(
       NSString* subresource, const GURL& subresourceURL) {
+    DCHECK(subresource);
     // Import statements in CSS resources are also loaded.
     if ([self isCSSSubresourceURL:subresourceURL]) {
       NSSet* URLStrings = [weakSelf URLStringsFromCSS:subresource];
@@ -212,6 +214,9 @@ NSString* const kWebUIJSURL = @"chrome://resources/js/ios/web_ui.js";
   DCHECK(prefix);
   DCHECK(suffix);
   NSMutableSet* URLStrings = [NSMutableSet set];
+  if (!resource) {
+    return URLStrings;
+  }
   NSError* error = nil;
   NSString* tagPattern = [NSString
       stringWithFormat:@"%@(.*?)%@",
