@@ -1322,9 +1322,6 @@ drm_assign_planes(struct weston_output *output_base)
 	pixman_region32_fini(&overlap);
 }
 
-static void
-drm_output_fini_pixman(struct drm_output *output);
-
 /**
  * Find the closest-matching mode for a given target
  *
@@ -1363,8 +1360,12 @@ choose_mode (struct drm_output *output, struct weston_mode *target_mode)
 
 static int
 drm_output_init_egl(struct drm_output *output, struct drm_backend *b);
+static void
+drm_output_fini_egl(struct drm_output *output);
 static int
 drm_output_init_pixman(struct drm_output *output, struct drm_backend *b);
+static void
+drm_output_fini_pixman(struct drm_output *output);
 
 static int
 drm_output_switch_mode(struct weston_output *output_base, struct weston_mode *mode)
@@ -1414,9 +1415,7 @@ drm_output_switch_mode(struct weston_output *output_base, struct weston_mode *mo
 			return -1;
 		}
 	} else {
-		gl_renderer->output_destroy(&output->base);
-		gbm_surface_destroy(output->gbm_surface);
-
+		drm_output_fini_egl(output);
 		if (drm_output_init_egl(output, b) < 0) {
 			weston_log("failed to init output egl state with "
 				   "new mode");
@@ -1851,6 +1850,13 @@ drm_output_init_egl(struct drm_output *output, struct drm_backend *b)
 	}
 
 	return 0;
+}
+
+static void
+drm_output_fini_egl(struct drm_output *output)
+{
+	gl_renderer->output_destroy(&output->base);
+	gbm_surface_destroy(output->gbm_surface);
 }
 
 static int
@@ -2423,12 +2429,10 @@ drm_output_deinit(struct weston_output *base)
 	struct drm_output *output = to_drm_output(base);
 	struct drm_backend *b = to_drm_backend(base->compositor);
 
-	if (b->use_pixman) {
+	if (b->use_pixman)
 		drm_output_fini_pixman(output);
-	} else {
-		gl_renderer->output_destroy(&output->base);
-		gbm_surface_destroy(output->gbm_surface);
-	}
+	else
+		drm_output_fini_egl(output);
 
 	weston_plane_release(&output->fb_plane);
 	weston_plane_release(&output->cursor_plane);
