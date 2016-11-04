@@ -231,6 +231,10 @@
                         "ForegroundFileIO": "8;32;0.3;0;30000",
                         "RedirectSequencedWorkerPools": "true"
                     }
+                },
+                {
+                    "name": "DisableViaFlag",
+                    "forcing_flag": "disable-browser-task-scheduler"
                 }
             ]
         }
