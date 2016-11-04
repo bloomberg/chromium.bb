@@ -7,6 +7,6 @@ layer at (0,0) size 800x600
         LayoutBlockFlow {p} at (0,0) size 300x20
           LayoutText {#text} at (0,0) size 127x19
             text run at (0,0) width 127: "This should not crash"
-        LayoutBlockFlow (anonymous) at (0,36) size 300x0
+        LayoutBlockFlow (anonymous) at (0,20) size 300x0
           LayoutInline {g} at (0,0) size 0x0
           LayoutText {#text} at (0,0) size 0x0

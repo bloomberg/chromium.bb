@@ -532,7 +532,8 @@ bool LayoutBlock::createsNewFormattingContext() const {
          style()->specifiesColumns() || isLayoutFlowThread() || isTableCell() ||
          isTableCaption() || isFieldset() || isWritingModeRoot() ||
          isDocumentElement() || isColumnSpanAll() || isGridItem() ||
-         style()->containsPaint() || style()->containsLayout();
+         style()->containsPaint() || style()->containsLayout() ||
+         isSVGForeignObject();
 }
 
 static inline bool changeInAvailableLogicalHeightAffectsChild(

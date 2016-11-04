@@ -2,7 +2,7 @@
     <head>
         <title>foreignObject can be transformed</title>
         <style type="text/css">
-        p, div { color: navy; margin: 10px 0; }
+        p, div { color: navy; margin: 0; }
         .test { fill: lightgray; font-size: 10px; }
         .control { position: relative; left: 10px; top: 10px; width: 390px; height: 110px; background: lightgray; font-size: 100px; }
         .controlText { font-size: 100px; }
