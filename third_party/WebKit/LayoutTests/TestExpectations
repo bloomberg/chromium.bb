@@ -384,8 +384,6 @@ crbug.com/492664 [ Mac ] imported/csswg-test/css-writing-modes-3/bidi-isolate-00
 crbug.com/492664 [ Win ] imported/csswg-test/css-writing-modes-3/bidi-override-005.html [ Failure ]
 crbug.com/492664 [ Win ] imported/csswg-test/css-writing-modes-3/bidi-plaintext-001.html [ Failure ]
 
-crbug.com/488904 svg/text/surrogate-pair-queries.html [ NeedsRebaseline ]
-
 crbug.com/267206 [ Mac ] virtual/rootlayerscrolls/fast/scrolling/scrollbar-tickmarks-hittest.html [ Timeout ]
 
 crbug.com/280342 [ Linux Win ] http/tests/media/progress-events-generated-correctly.html [ Failure ]
