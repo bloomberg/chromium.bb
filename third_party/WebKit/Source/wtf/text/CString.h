@@ -35,27 +35,26 @@
 
 namespace WTF {
 
-// CStringBuffer is an immutable ref-counted storage for the characters in a
+// CStringImpl is an immutable ref-counted storage for the characters in a
 // CString. It's analogous to a StringImpl but may contain any arbitrary
 // sequence of bytes. The data is always allocated 1 longer than length() and is
 // null terminated.
-// TODO(esprehn): Rename to CStringImpl.
-class WTF_EXPORT CStringBuffer : public RefCounted<CStringBuffer> {
-  WTF_MAKE_NONCOPYABLE(CStringBuffer);
+class WTF_EXPORT CStringImpl : public RefCounted<CStringImpl> {
+  WTF_MAKE_NONCOPYABLE(CStringImpl);
 
  public:
-  // CStringBuffers are allocated out of the WTF buffer partition.
+  // CStringImpls are allocated out of the WTF buffer partition.
   void* operator new(size_t, void* ptr) { return ptr; }
   void operator delete(void*);
 
-  static PassRefPtr<CStringBuffer> createUninitialized(size_t length,
-                                                       char*& data);
+  static PassRefPtr<CStringImpl> createUninitialized(size_t length,
+                                                     char*& data);
 
   const char* data() const { return reinterpret_cast<const char*>(this + 1); }
   size_t length() const { return m_length; }
 
  private:
-  explicit CStringBuffer(size_t length) : m_length(length) {}
+  explicit CStringImpl(size_t length) : m_length(length) {}
 
   const unsigned m_length;
 };
@@ -75,12 +74,11 @@ class WTF_EXPORT CString {
   CString(const char*, size_t length);
 
   // Construct a string referencing an existing buffer.
-  CString(CStringBuffer* buffer) : m_buffer(buffer) {}
-  CString(PassRefPtr<CStringBuffer> buffer) : m_buffer(buffer) {}
+  CString(CStringImpl* buffer) : m_buffer(buffer) {}
+  CString(PassRefPtr<CStringImpl> buffer) : m_buffer(buffer) {}
 
-  // TODO(esprehn): Rename to createUninitialized.
-  static CString newUninitialized(size_t length, char*& data) {
-    return CStringBuffer::createUninitialized(length, data);
+  static CString createUninitialized(size_t length, char*& data) {
+    return CStringImpl::createUninitialized(length, data);
   }
 
   // The bytes of the string, always NUL terminated. May be null.
@@ -93,11 +91,10 @@ class WTF_EXPORT CString {
 
   bool isSafeToSendToAnotherThread() const;
 
-  // TODO(esprehn): Rename to impl() when CStringBuffer is renamed.
-  CStringBuffer* buffer() const { return m_buffer.get(); }
+  CStringImpl* impl() const { return m_buffer.get(); }
 
  private:
-  RefPtr<CStringBuffer> m_buffer;
+  RefPtr<CStringImpl> m_buffer;
 };
 
 WTF_EXPORT bool operator==(const CString& a, const CString& b);

@@ -99,7 +99,7 @@ CString TextCodecUserDefined::encodeCommon(const CharType* characters,
                                            size_t length,
                                            UnencodableHandling handling) {
   char* bytes;
-  CString result = CString::newUninitialized(length, bytes);
+  CString result = CString::createUninitialized(length, bytes);
 
   // Convert the string a fast way and simultaneously do an efficient check to
   // see if it's all ASCII.

@@ -87,13 +87,13 @@ TEST(CStringTest, EmptyRegularConstructor) {
 
 TEST(CStringTest, UninitializedConstructor) {
   char* buffer;
-  CString emptyString = CString::newUninitialized(0, buffer);
+  CString emptyString = CString::createUninitialized(0, buffer);
   EXPECT_FALSE(emptyString.isNull());
   EXPECT_EQ(buffer, emptyString.data());
   EXPECT_EQ(0, buffer[0]);
 
   const size_t length = 25;
-  CString uninitializedString = CString::newUninitialized(length, buffer);
+  CString uninitializedString = CString::createUninitialized(length, buffer);
   EXPECT_FALSE(uninitializedString.isNull());
   EXPECT_EQ(buffer, uninitializedString.data());
   EXPECT_EQ(0, uninitializedString.data()[length]);

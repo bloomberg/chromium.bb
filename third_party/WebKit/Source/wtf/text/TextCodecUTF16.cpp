@@ -163,7 +163,7 @@ CString TextCodecUTF16::encode(const UChar* characters,
   ASSERT(length <= numeric_limits<size_t>::max() / 2);
 
   char* bytes;
-  CString result = CString::newUninitialized(length * 2, bytes);
+  CString result = CString::createUninitialized(length * 2, bytes);
 
   // FIXME: CString is not a reasonable data structure for encoded UTF-16, which
   // will have null characters inside it. Perhaps the result of encode should
@@ -192,7 +192,7 @@ CString TextCodecUTF16::encode(const LChar* characters,
   RELEASE_ASSERT(length <= numeric_limits<size_t>::max() / 2);
 
   char* bytes;
-  CString result = CString::newUninitialized(length * 2, bytes);
+  CString result = CString::createUninitialized(length * 2, bytes);
 
   if (m_littleEndian) {
     for (size_t i = 0; i < length; ++i) {

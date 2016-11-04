@@ -535,14 +535,14 @@ CString String::ascii() const {
   unsigned length = this->length();
   if (!length) {
     char* characterBuffer;
-    return CString::newUninitialized(length, characterBuffer);
+    return CString::createUninitialized(length, characterBuffer);
   }
 
   if (this->is8Bit()) {
     const LChar* characters = this->characters8();
 
     char* characterBuffer;
-    CString result = CString::newUninitialized(length, characterBuffer);
+    CString result = CString::createUninitialized(length, characterBuffer);
 
     for (unsigned i = 0; i < length; ++i) {
       LChar ch = characters[i];
@@ -555,7 +555,7 @@ CString String::ascii() const {
   const UChar* characters = this->characters16();
 
   char* characterBuffer;
-  CString result = CString::newUninitialized(length, characterBuffer);
+  CString result = CString::createUninitialized(length, characterBuffer);
 
   for (unsigned i = 0; i < length; ++i) {
     UChar ch = characters[i];
@@ -581,7 +581,7 @@ CString String::latin1() const {
   const UChar* characters = this->characters16();
 
   char* characterBuffer;
-  CString result = CString::newUninitialized(length, characterBuffer);
+  CString result = CString::createUninitialized(length, characterBuffer);
 
   for (unsigned i = 0; i < length; ++i) {
     UChar ch = characters[i];
@@ -609,11 +609,11 @@ CString String::utf8(UTF8ConversionMode mode) const {
   // Allocate a buffer big enough to hold all the characters
   // (an individual UTF-16 UChar can only expand to 3 UTF-8 bytes).
   // Optimization ideas, if we find this function is hot:
-  //  * We could speculatively create a CStringBuffer to contain 'length'
+  //  * We could speculatively create a CStringImpl to contain 'length'
   //    characters, and resize if necessary (i.e. if the buffer contains
   //    non-ascii characters). (Alternatively, scan the buffer first for
   //    ascii characters, so we know this will be sufficient).
-  //  * We could allocate a CStringBuffer with an appropriate size to
+  //  * We could allocate a CStringImpl with an appropriate size to
   //    have a good chance of being able to write the string into the
   //    buffer without reallocing (say, 1.5 x length).
   if (length > std::numeric_limits<unsigned>::max() / 3)

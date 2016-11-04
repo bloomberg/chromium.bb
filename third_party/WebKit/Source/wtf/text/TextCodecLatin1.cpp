@@ -259,7 +259,7 @@ CString TextCodecLatin1::encodeCommon(const CharType* characters,
                                       UnencodableHandling handling) {
   {
     char* bytes;
-    CString string = CString::newUninitialized(length, bytes);
+    CString string = CString::createUninitialized(length, bytes);
 
     // Convert the string a fast way and simultaneously do an efficient check to
     // see if it's all ASCII.

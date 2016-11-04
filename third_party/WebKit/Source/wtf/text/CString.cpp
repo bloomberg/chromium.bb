@@ -35,22 +35,22 @@ using namespace std;
 
 namespace WTF {
 
-PassRefPtr<CStringBuffer> CStringBuffer::createUninitialized(size_t length,
-                                                             char*& data) {
+PassRefPtr<CStringImpl> CStringImpl::createUninitialized(size_t length,
+                                                         char*& data) {
   // TODO(esprehn): This doesn't account for the NUL.
   RELEASE_ASSERT(length <
-                 (numeric_limits<unsigned>::max() - sizeof(CStringBuffer)));
+                 (numeric_limits<unsigned>::max() - sizeof(CStringImpl)));
 
   // The +1 is for the terminating NUL character.
-  size_t size = sizeof(CStringBuffer) + length + 1;
-  CStringBuffer* buffer = static_cast<CStringBuffer*>(Partitions::bufferMalloc(
-      size, WTF_HEAP_PROFILER_TYPE_NAME(CStringBuffer)));
+  size_t size = sizeof(CStringImpl) + length + 1;
+  CStringImpl* buffer = static_cast<CStringImpl*>(
+      Partitions::bufferMalloc(size, WTF_HEAP_PROFILER_TYPE_NAME(CStringImpl)));
   data = reinterpret_cast<char*>(buffer + 1);
   data[length] = '\0';
-  return adoptRef(new (buffer) CStringBuffer(length));
+  return adoptRef(new (buffer) CStringImpl(length));
 }
 
-void CStringBuffer::operator delete(void* ptr) {
+void CStringImpl::operator delete(void* ptr) {
   Partitions::bufferFree(ptr);
 }
 
@@ -60,7 +60,7 @@ CString::CString(const char* chars, size_t length) {
     return;
   }
   char* data;
-  m_buffer = CStringBuffer::createUninitialized(length, data);
+  m_buffer = CStringImpl::createUninitialized(length, data);
   memcpy(data, chars, length);
 }
 

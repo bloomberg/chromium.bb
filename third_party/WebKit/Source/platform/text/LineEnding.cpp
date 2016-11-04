@@ -56,7 +56,7 @@ class CStringBuffer final : public OutputBuffer {
 
   char* allocate(size_t size) override {
     char* ptr;
-    m_buffer = CString::newUninitialized(size, ptr);
+    m_buffer = CString::createUninitialized(size, ptr);
     return ptr;
   }
 
