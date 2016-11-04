@@ -9,8 +9,8 @@
 #include "core/editing/serializers/Serialization.h"
 #include "core/frame/FrameView.h"
 #include "core/frame/LocalFrame.h"
-#include "core/layout/LayoutPart.h"
 #include "core/layout/LayoutTreeAsText.h"
+#include "core/layout/api/LayoutPartItem.h"
 #include "core/layout/api/LayoutViewItem.h"
 #include "public/web/WebDocument.h"
 #include "public/web/WebLocalFrame.h"
@@ -64,15 +64,15 @@ static void frameContentAsPlainText(size_t maxChars,
     LocalFrame* curLocalChild = toLocalFrame(curChild);
     // Ignore the text of non-visible frames.
     LayoutViewItem contentLayoutItem = curLocalChild->contentLayoutItem();
-    LayoutPart* ownerLayoutObject = curLocalChild->ownerLayoutObject();
+    LayoutPartItem ownerLayoutItem = curLocalChild->ownerLayoutItem();
     if (contentLayoutItem.isNull() || !contentLayoutItem.size().width() ||
         !contentLayoutItem.size().height() ||
         (contentLayoutItem.location().x() + contentLayoutItem.size().width() <=
          0) ||
         (contentLayoutItem.location().y() + contentLayoutItem.size().height() <=
          0) ||
-        (ownerLayoutObject && ownerLayoutObject->style() &&
-         ownerLayoutObject->style()->visibility() != EVisibility::Visible)) {
+        (!ownerLayoutItem.isNull() && ownerLayoutItem.style() &&
+         ownerLayoutItem.style()->visibility() != EVisibility::Visible)) {
       continue;
     }
 
