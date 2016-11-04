@@ -419,13 +419,13 @@ class DISPLAY_EXPORT DisplayManager
                           display::Displays* display_list,
                           std::vector<int64_t>* updated_ids);
 
-  Delegate* delegate_;  // not owned.
+  Delegate* delegate_ = nullptr;  // not owned.
 
   std::unique_ptr<Screen> screen_;
 
   std::unique_ptr<DisplayLayoutStore> layout_store_;
 
-  int64_t first_display_id_;
+  int64_t first_display_id_ = Display::kInvalidDisplayID;
 
   // List of current active displays.
   Displays active_display_list_;
@@ -437,11 +437,11 @@ class DISPLAY_EXPORT DisplayManager
   // True if active_display_list is being modified and has displays that are not
   // presently active.
   // See https://crbug.com/632755
-  bool is_updating_display_list_;
+  bool is_updating_display_list_ = false;
 
-  size_t num_connected_displays_;
+  size_t num_connected_displays_ = 0;
 
-  bool force_bounds_changed_;
+  bool force_bounds_changed_ = false;
 
   // The mapping from the display ID to its internal data.
   std::map<int64_t, ManagedDisplayInfo> display_info_;
@@ -454,21 +454,21 @@ class DISPLAY_EXPORT DisplayManager
   // desktop environment (for debugging) so that resizing the host
   // window will update the display properly. This is set to false
   // on device as well as during the unit tests.
-  bool change_display_upon_host_resize_;
+  bool change_display_upon_host_resize_ = false;
 
-  MultiDisplayMode multi_display_mode_;
-  MultiDisplayMode current_default_multi_display_mode_;
+  MultiDisplayMode multi_display_mode_ = EXTENDED;
+  MultiDisplayMode current_default_multi_display_mode_ = EXTENDED;
 
-  int64_t mirroring_display_id_;
+  int64_t mirroring_display_id_ = Display::kInvalidDisplayID;
   Displays software_mirroring_display_list_;
 
   // User preference for rotation lock of the internal display.
-  bool registered_internal_display_rotation_lock_;
+  bool registered_internal_display_rotation_lock_ = false;
 
   // User preference for the rotation of the internal display.
-  Display::Rotation registered_internal_display_rotation_;
+  Display::Rotation registered_internal_display_rotation_ = Display::ROTATE_0;
 
-  bool unified_desktop_enabled_;
+  bool unified_desktop_enabled_ = false;
 
   base::ObserverList<DisplayObserver> observers_;
 

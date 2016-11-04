@@ -76,38 +76,23 @@ void Display::ResetForceDeviceScaleFactorForTesting() {
 constexpr int DEFAULT_BITS_PER_PIXEL = 24;
 constexpr int DEFAULT_BITS_PER_COMPONENT = 8;
 
-Display::Display()
-    : id_(kInvalidDisplayID),
-      device_scale_factor_(GetForcedDeviceScaleFactor()),
-      rotation_(ROTATE_0),
-      touch_support_(TOUCH_SUPPORT_UNKNOWN),
-      color_depth_(DEFAULT_BITS_PER_PIXEL),
-      depth_per_component_(DEFAULT_BITS_PER_COMPONENT),
-      is_monochrome_(false) {}
+Display::Display() : Display(kInvalidDisplayID) {}
 
-Display::Display(const Display& other) = default;
-
-Display::Display(int64_t id)
-    : id_(id),
-      device_scale_factor_(GetForcedDeviceScaleFactor()),
-      rotation_(ROTATE_0),
-      touch_support_(TOUCH_SUPPORT_UNKNOWN),
-      color_depth_(DEFAULT_BITS_PER_PIXEL),
-      depth_per_component_(DEFAULT_BITS_PER_COMPONENT) {}
+Display::Display(int64_t id) : Display(id, gfx::Rect()) {}
 
 Display::Display(int64_t id, const gfx::Rect& bounds)
     : id_(id),
       bounds_(bounds),
       work_area_(bounds),
       device_scale_factor_(GetForcedDeviceScaleFactor()),
-      rotation_(ROTATE_0),
-      touch_support_(TOUCH_SUPPORT_UNKNOWN),
       color_depth_(DEFAULT_BITS_PER_PIXEL),
       depth_per_component_(DEFAULT_BITS_PER_COMPONENT) {
 #if defined(USE_AURA)
   SetScaleAndBounds(device_scale_factor_, bounds);
 #endif
 }
+
+Display::Display(const Display& other) = default;
 
 Display::~Display() {}
 
@@ -190,7 +175,7 @@ gfx::Size Display::GetSizeInPixel() const {
 
 std::string Display::ToString() const {
   return base::StringPrintf(
-      "Display[%lld] bounds=%s, workarea=%s, scale=%f, %s",
+      "Display[%lld] bounds=%s, workarea=%s, scale=%g, %s",
       static_cast<long long int>(id_), bounds_.ToString().c_str(),
       work_area_.ToString().c_str(), device_scale_factor_,
       IsInternal() ? "internal" : "external");

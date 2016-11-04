@@ -196,13 +196,13 @@ class DISPLAY_EXPORT Display final {
   gfx::Rect bounds_;
   gfx::Rect work_area_;
   float device_scale_factor_;
-  Rotation rotation_;
-  TouchSupport touch_support_;
+  Rotation rotation_ = ROTATE_0;
+  TouchSupport touch_support_ = TOUCH_SUPPORT_UNKNOWN;
   gfx::Size maximum_cursor_size_;
   gfx::ICCProfile icc_profile_;
   int color_depth_;
   int depth_per_component_;
-  bool is_monochrome_;
+  bool is_monochrome_ = false;
 
 #if !defined(OS_IOS)
   friend struct mojo::StructTraits<display::mojom::DisplayDataView,

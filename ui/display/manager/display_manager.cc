@@ -133,19 +133,8 @@ using std::vector;
 int64_t DisplayManager::kUnifiedDisplayId = -10;
 
 DisplayManager::DisplayManager(std::unique_ptr<display::Screen> screen)
-    : delegate_(nullptr),
-      screen_(std::move(screen)),
+    : screen_(std::move(screen)),
       layout_store_(new display::DisplayLayoutStore),
-      first_display_id_(display::Display::kInvalidDisplayID),
-      num_connected_displays_(0),
-      force_bounds_changed_(false),
-      change_display_upon_host_resize_(false),
-      multi_display_mode_(EXTENDED),
-      current_default_multi_display_mode_(EXTENDED),
-      mirroring_display_id_(display::Display::kInvalidDisplayID),
-      registered_internal_display_rotation_lock_(false),
-      registered_internal_display_rotation_(display::Display::ROTATE_0),
-      unified_desktop_enabled_(false),
       weak_ptr_factory_(this) {
 #if defined(OS_CHROMEOS)
   change_display_upon_host_resize_ = !base::SysInfo::IsRunningOnChromeOS();
