@@ -22,9 +22,9 @@
 // TODO(ddorwin): Find a better place for ReadManifest.
 #include "components/component_updater/component_updater_service.h"
 #include "components/update_client/component_unpacker.h"
-#include "components/update_client/update_client.h"
-#include "components/update_client/update_client_errors.h"
 #include "components/update_client/utils.h"
+
+using update_client::CrxComponent;
 
 namespace component_updater {
 
@@ -33,9 +33,6 @@ namespace {
 // Version "0" corresponds to no installed version. By the server's conventions,
 // we represent it as a dotted quad.
 const char kNullVersion[] = "0.0.0.0";
-
-using Result = update_client::CrxInstaller::Result;
-using InstallError = update_client::InstallError;
 
 }  // namespace
 
@@ -75,7 +72,7 @@ void DefaultComponentInstaller::OnUpdateError(int error) {
   LOG(ERROR) << "Component update error: " << error;
 }
 
-Result DefaultComponentInstaller::InstallHelper(
+bool DefaultComponentInstaller::InstallHelper(
     const base::DictionaryValue& manifest,
     const base::FilePath& unpack_path,
     const base::FilePath& install_path) {
@@ -84,24 +81,22 @@ Result DefaultComponentInstaller::InstallHelper(
 
   if (!base::Move(unpack_path, install_path)) {
     PLOG(ERROR) << "Move failed.";
-    return Result(InstallError::GENERIC_ERROR);
+    return false;
   }
-  const auto result =
-      installer_traits_->OnCustomInstall(manifest, install_path);
-  if (result.error) {
+  if (!installer_traits_->OnCustomInstall(manifest, install_path)) {
     PLOG(ERROR) << "CustomInstall failed.";
-    return result;
+    return false;
   }
   if (!installer_traits_->VerifyInstallation(manifest, install_path)) {
     PLOG(ERROR) << "VerifyInstallation failed.";
-    return Result(InstallError::GENERIC_ERROR);
+    return false;
   }
 
-  return Result(InstallError::NONE);
+  return true;
 }
 
-Result DefaultComponentInstaller::Install(const base::DictionaryValue& manifest,
-                                          const base::FilePath& unpack_path) {
+bool DefaultComponentInstaller::Install(const base::DictionaryValue& manifest,
+                                        const base::FilePath& unpack_path) {
   std::string manifest_version;
   manifest.GetStringASCII("version", &manifest_version);
   base::Version version(manifest_version);
@@ -110,22 +105,21 @@ Result DefaultComponentInstaller::Install(const base::DictionaryValue& manifest,
           << " current version=" << current_version_.GetString();
 
   if (!version.IsValid())
-    return Result(InstallError::GENERIC_ERROR);
+    return false;
   if (current_version_.CompareTo(version) > 0)
-    return Result(InstallError::GENERIC_ERROR);
+    return false;
   base::FilePath install_path;
   if (!PathService::Get(DIR_COMPONENT_USER, &install_path))
-    return Result(InstallError::GENERIC_ERROR);
+    return false;
   install_path = install_path.Append(installer_traits_->GetRelativeInstallDir())
                      .AppendASCII(version.GetString());
   if (base::PathExists(install_path)) {
     if (!base::DeleteFile(install_path, true))
-      return Result(InstallError::GENERIC_ERROR);
+      return false;
   }
-  const auto result = InstallHelper(manifest, unpack_path, install_path);
-  if (result.error) {
+  if (!InstallHelper(manifest, unpack_path, install_path)) {
     base::DeleteFile(install_path, true);
-    return result;
+    return false;
   }
   current_version_ = version;
   current_install_dir_ = install_path;
@@ -138,7 +132,7 @@ Result DefaultComponentInstaller::Install(const base::DictionaryValue& manifest,
       FROM_HERE,
       base::Bind(&DefaultComponentInstaller::ComponentReady,
                  this, base::Passed(&manifest_copy)));
-  return result;
+  return true;
 }
 
 bool DefaultComponentInstaller::GetInstalledFile(
@@ -331,7 +325,7 @@ void DefaultComponentInstaller::FinishRegistration(
   VLOG(1) << __func__ << " for " << installer_traits_->GetName();
   DCHECK(thread_checker_.CalledOnValidThread());
 
-  update_client::CrxComponent crx;
+  CrxComponent crx;
   installer_traits_->GetHash(&crx.pk_hash);
   crx.installer = this;
   crx.version = current_version_;

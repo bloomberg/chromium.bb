@@ -41,39 +41,29 @@ enum class CrxDownloaderError {
 };
 
 // These errors are returned with the |kUnpackError| error category and
-// indicate unpacker or patcher error.
+// indicate unpacker, patcher, or install errors.
 enum class UnpackerError {
   kNone = 0,
-  kInvalidParams = 1,
-  kInvalidFile = 2,
-  kUnzipPathError = 3,
-  kUnzipFailed = 4,
-  // kNoManifest = 5,         // Deprecated. Never used.
-  kBadManifest = 6,
-  kBadExtension = 7,
-  kInvalidId = 8,
-  // kInstallerError = 9,     // Deprecated. Don't use.
-  kIoError = 10,
-  kDeltaVerificationFailure = 11,
-  kDeltaBadCommands = 12,
-  kDeltaUnsupportedCommand = 13,
-  kDeltaOperationFailure = 14,
-  kDeltaPatchProcessFailure = 15,
-  kDeltaMissingExistingFile = 16,
-  // kFingerprintWriteFailed = 17,    // Deprecated. Don't use.
+  kInvalidParams,
+  kInvalidFile,
+  kUnzipPathError,
+  kUnzipFailed,
+  kNoManifest,
+  kBadManifest,
+  kBadExtension,
+  kInvalidId,
+  kInstallerError,
+  kIoError,
+  kDeltaVerificationFailure,
+  kDeltaBadCommands,
+  kDeltaUnsupportedCommand,
+  kDeltaOperationFailure,
+  kDeltaPatchProcessFailure,
+  kDeltaMissingExistingFile,
+  kFingerprintWriteFailed,
 };
 
 // These errors are returned with the |kServiceError| error category and
-// are returned by the component installers.
-enum class InstallError {
-  NONE = 0,
-  FINGERPRINT_WRITE_FAILED = 2,
-  BAD_MANIFEST = 3,
-  GENERIC_ERROR = 9,        // Matches kInstallerError for compatibility.
-  CUSTOM_ERROR_BASE = 100,  // Specific installer errors go above this value.
-};
-
-// These errors are returned with the |kInstallError| error category and
 // indicate critical or configuration errors in the update service.
 enum class ServiceError {
   NONE = 0,

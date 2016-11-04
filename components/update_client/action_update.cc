@@ -35,6 +35,21 @@ void AppendDownloadMetrics(
   destination->insert(destination->end(), source.begin(), source.end());
 }
 
+ErrorCategory UnpackerErrorToErrorCategory(UnpackerError error) {
+  ErrorCategory error_category = ErrorCategory::kErrorNone;
+  switch (error) {
+    case UnpackerError::kNone:
+      break;
+    case UnpackerError::kInstallerError:
+      error_category = ErrorCategory::kInstallError;
+      break;
+    default:
+      error_category = ErrorCategory::kUnpackError;
+      break;
+  }
+  return error_category;
+}
+
 }  // namespace
 
 ActionUpdate::ActionUpdate() {
@@ -154,8 +169,7 @@ void ActionUpdate::UnpackCompleteOnBlockingTaskRunner(
     update_context_->blocking_task_runner->PostTask(
         FROM_HERE,
         base::Bind(&ActionUpdate::InstallCompleteOnBlockingTaskRunner,
-                   base::Unretained(this), item, crx_path,
-                   ErrorCategory::kUnpackError, static_cast<int>(result.error),
+                   base::Unretained(this), item, crx_path, result.error,
                    result.extended_error));
   }
 }
@@ -167,52 +181,47 @@ void ActionUpdate::StartInstallOnBlockingTaskRunner(
   DCHECK(update_context_->blocking_task_runner->RunsTasksOnCurrentThread());
   DCHECK(!unpack_path.empty());
 
-  const auto result = DoInstall(item, crx_path, unpack_path);
-  const ErrorCategory error_category =
-      result.error ? ErrorCategory::kInstallError : ErrorCategory::kErrorNone;
+  const auto error = DoInstall(item, crx_path, unpack_path);
   update_context_->blocking_task_runner->PostTask(
-      FROM_HERE,
-      base::Bind(&ActionUpdate::InstallCompleteOnBlockingTaskRunner,
-                 base::Unretained(this), item, crx_path, error_category,
-                 result.error, result.extended_error));
+      FROM_HERE, base::Bind(&ActionUpdate::InstallCompleteOnBlockingTaskRunner,
+                            base::Unretained(this), item, crx_path, error, 0));
 }
 
 void ActionUpdate::InstallCompleteOnBlockingTaskRunner(
     CrxUpdateItem* item,
     const base::FilePath& crx_path,
-    ErrorCategory error_category,
-    int error,
+    UnpackerError error,
     int extended_error) {
   update_client::DeleteFileAndEmptyParentDirectory(crx_path);
   update_context_->main_task_runner->PostDelayedTask(
       FROM_HERE,
       base::Bind(&ActionUpdate::InstallComplete, base::Unretained(this),
-                 item->id, error_category, error, extended_error),
+                 item->id, error, extended_error),
       base::TimeDelta::FromMilliseconds(update_context_->config->StepDelay()));
 }
 
-CrxInstaller::Result ActionUpdate::DoInstall(
-    CrxUpdateItem* item,
-    const base::FilePath& crx_path,
-    const base::FilePath& unpack_path) {
+UnpackerError ActionUpdate::DoInstall(CrxUpdateItem* item,
+                                      const base::FilePath& crx_path,
+                                      const base::FilePath& unpack_path) {
   const auto& fingerprint = item->next_fp;
   if (static_cast<int>(fingerprint.size()) !=
       base::WriteFile(
           unpack_path.Append(FILE_PATH_LITERAL("manifest.fingerprint")),
           fingerprint.c_str(), base::checked_cast<int>(fingerprint.size()))) {
-    return CrxInstaller::Result(InstallError::FINGERPRINT_WRITE_FAILED);
+    return UnpackerError::kFingerprintWriteFailed;
   }
 
   std::unique_ptr<base::DictionaryValue> manifest = ReadManifest(unpack_path);
   if (!manifest.get())
-    return CrxInstaller::Result(InstallError::BAD_MANIFEST);
+    return UnpackerError::kBadManifest;
 
-  return item->component.installer->Install(*manifest, unpack_path);
+  return item->component.installer->Install(*manifest, unpack_path)
+             ? UnpackerError::kNone
+             : UnpackerError::kInstallerError;
 }
 
 void ActionUpdate::InstallComplete(const std::string& id,
-                                   ErrorCategory error_category,
-                                   int error,
+                                   UnpackerError error,
                                    int extended_error) {
   DCHECK(thread_checker_.CalledOnValidThread());
   DCHECK(id == update_context_->queue.front());
@@ -220,13 +229,10 @@ void ActionUpdate::InstallComplete(const std::string& id,
   CrxUpdateItem* item = FindUpdateItemById(id);
   DCHECK(item);
 
-  if (error == 0) {
-    DCHECK_EQ(ErrorCategory::kErrorNone, error_category);
-    DCHECK_EQ(0, extended_error);
+  if (error == UnpackerError::kNone)
     OnInstallSuccess(item);
-  } else {
-    OnInstallError(item, error_category, error, extended_error);
-  }
+  else
+    OnInstallError(item, error, extended_error);
 }
 
 ActionUpdateDiff::ActionUpdateDiff() {
@@ -315,13 +321,13 @@ void ActionUpdateDiff::OnInstallSuccess(CrxUpdateItem* item) {
 }
 
 void ActionUpdateDiff::OnInstallError(CrxUpdateItem* item,
-                                      ErrorCategory error_category,
-                                      int error,
+                                      UnpackerError error,
                                       int extended_error) {
   DCHECK(thread_checker_.CalledOnValidThread());
 
-  item->diff_error_category = static_cast<int>(error_category);
-  item->diff_error_code = error;
+  item->diff_error_category =
+      static_cast<int>(UnpackerErrorToErrorCategory(error));
+  item->diff_error_code = static_cast<int>(error);
   item->diff_extra_code1 = extended_error;
   item->diff_update_failed = true;
 
@@ -408,14 +414,13 @@ void ActionUpdateFull::OnInstallSuccess(CrxUpdateItem* item) {
 }
 
 void ActionUpdateFull::OnInstallError(CrxUpdateItem* item,
-                                      ErrorCategory error_category,
-                                      int error,
+                                      UnpackerError error,
                                       int extended_error) {
   DCHECK(thread_checker_.CalledOnValidThread());
   DCHECK(item->state == CrxUpdateItem::State::kUpdating);
 
-  item->error_category = static_cast<int>(error_category);
-  item->error_code = error;
+  item->error_category = static_cast<int>(UnpackerErrorToErrorCategory(error));
+  item->error_code = static_cast<int>(error);
   item->extra_code1 = extended_error;
   ChangeItemState(item, CrxUpdateItem::State::kNoUpdate);
 

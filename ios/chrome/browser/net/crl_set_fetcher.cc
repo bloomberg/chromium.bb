@@ -7,7 +7,6 @@
 #include <stdint.h>
 
 #include "base/bind.h"
-#include "base/bind_helpers.h"
 #include "base/files/file_util.h"
 #include "base/numerics/safe_conversions.h"
 #include "base/rand_util.h"
@@ -16,7 +15,6 @@
 #include "base/trace_event/trace_event.h"
 #include "components/component_updater/component_updater_service.h"
 #include "components/update_client/update_client.h"
-#include "components/update_client/utils.h"
 #include "ios/chrome/browser/chrome_constants.h"
 #include "ios/web/public/web_thread.h"
 #include "net/cert/crl_set.h"
@@ -160,16 +158,8 @@ void CRLSetFetcher::OnUpdateError(int error) {
                << " from component installer";
 }
 
-update_client::CrxInstaller::Result CRLSetFetcher::Install(
-    const base::DictionaryValue& manifest,
-    const base::FilePath& unpack_path) {
-  return update_client::InstallFunctionWrapper(
-      base::Bind(&CRLSetFetcher::DoInstall, base::Unretained(this),
-                 base::ConstRef(manifest), base::ConstRef(unpack_path)));
-}
-
-bool CRLSetFetcher::DoInstall(const base::DictionaryValue& manifest,
-                              const base::FilePath& unpack_path) {
+bool CRLSetFetcher::Install(const base::DictionaryValue& manifest,
+                            const base::FilePath& unpack_path) {
   base::FilePath crl_set_file_path =
       unpack_path.Append(FILE_PATH_LITERAL("crl-set"));
   base::FilePath save_to = GetCRLSetFilePath();

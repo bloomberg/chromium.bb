@@ -40,7 +40,6 @@
 #include "components/prefs/pref_service.h"
 #include "components/prefs/scoped_user_pref_update.h"
 #include "components/safe_json/json_sanitizer.h"
-#include "components/update_client/update_client_errors.h"
 #include "content/public/browser/browser_thread.h"
 
 namespace component_updater {
@@ -253,9 +252,8 @@ class SupervisedUserWhitelistComponentInstallerTraits
                           const base::FilePath& install_dir) const override;
   bool SupportsGroupPolicyEnabledComponentUpdates() const override;
   bool RequiresNetworkEncryption() const override;
-  update_client::CrxInstaller::Result OnCustomInstall(
-      const base::DictionaryValue& manifest,
-      const base::FilePath& install_dir) override;
+  bool OnCustomInstall(const base::DictionaryValue& manifest,
+                       const base::FilePath& install_dir) override;
   void ComponentReady(const base::Version& version,
                       const base::FilePath& install_dir,
                       std::unique_ptr<base::DictionaryValue> manifest) override;
@@ -290,16 +288,11 @@ bool SupervisedUserWhitelistComponentInstallerTraits::
   return true;
 }
 
-update_client::CrxInstaller::Result
-SupervisedUserWhitelistComponentInstallerTraits::OnCustomInstall(
+bool SupervisedUserWhitelistComponentInstallerTraits::OnCustomInstall(
     const base::DictionaryValue& manifest,
     const base::FilePath& install_dir) {
   // Delete the existing sanitized whitelist.
-  const bool success =
-      base::DeleteFile(GetSanitizedWhitelistPath(crx_id_), false);
-  return update_client::CrxInstaller::Result(
-      success ? update_client::InstallError::NONE
-              : update_client::InstallError::GENERIC_ERROR);
+  return base::DeleteFile(GetSanitizedWhitelistPath(crx_id_), false);
 }
 
 void SupervisedUserWhitelistComponentInstallerTraits::ComponentReady(

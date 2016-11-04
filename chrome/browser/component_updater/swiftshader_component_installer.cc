@@ -10,7 +10,6 @@
 
 #include "base/base_paths.h"
 #include "base/bind.h"
-#include "base/bind_helpers.h"
 #include "base/files/file_enumerator.h"
 #include "base/files/file_path.h"
 #include "base/files/file_util.h"
@@ -22,7 +21,6 @@
 #include "components/component_updater/component_updater_paths.h"
 #include "components/component_updater/component_updater_service.h"
 #include "components/update_client/update_client.h"
-#include "components/update_client/utils.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/gpu_data_manager.h"
 #include "content/public/browser/gpu_data_manager_observer.h"
@@ -106,9 +104,8 @@ class SwiftShaderComponentInstaller : public update_client::CrxInstaller {
   // ComponentInstaller implementation:
   void OnUpdateError(int error) override;
 
-  update_client::CrxInstaller::Result Install(
-      const base::DictionaryValue& manifest,
-      const base::FilePath& unpack_path) override;
+  bool Install(const base::DictionaryValue& manifest,
+               const base::FilePath& unpack_path) override;
 
   bool GetInstalledFile(const std::string& file,
                         base::FilePath* installed_file) override;
@@ -117,9 +114,6 @@ class SwiftShaderComponentInstaller : public update_client::CrxInstaller {
 
  private:
   ~SwiftShaderComponentInstaller() override {}
-
-  bool DoInstall(const base::DictionaryValue& manifest,
-                 const base::FilePath& unpack_path);
 
   base::Version current_version_;
 };
@@ -134,15 +128,7 @@ void SwiftShaderComponentInstaller::OnUpdateError(int error) {
   NOTREACHED() << "SwiftShader update error: " << error;
 }
 
-update_client::CrxInstaller::Result SwiftShaderComponentInstaller::Install(
-    const base::DictionaryValue& manifest,
-    const base::FilePath& unpack_path) {
-  return update_client::InstallFunctionWrapper(base::Bind(
-      &SwiftShaderComponentInstaller::DoInstall, base::Unretained(this),
-      base::ConstRef(manifest), base::ConstRef(unpack_path)));
-}
-
-bool SwiftShaderComponentInstaller::DoInstall(
+bool SwiftShaderComponentInstaller::Install(
     const base::DictionaryValue& manifest,
     const base::FilePath& unpack_path) {
   std::string name;

@@ -11,7 +11,6 @@
 #include "base/atomicops.h"
 #include "base/base_paths.h"
 #include "base/bind.h"
-#include "base/bind_helpers.h"
 #include "base/callback.h"
 #include "base/files/file_enumerator.h"
 #include "base/files/file_path.h"
@@ -30,7 +29,6 @@
 #include "components/component_updater/component_updater_service.h"
 #include "components/nacl/common/nacl_switches.h"
 #include "components/update_client/update_query_params.h"
-#include "components/update_client/utils.h"
 #include "content/public/browser/browser_thread.h"
 
 using content::BrowserThread;
@@ -227,16 +225,8 @@ base::FilePath PnaclComponentInstaller::GetPnaclBaseDirectory() {
   return result;
 }
 
-update_client::CrxInstaller::Result PnaclComponentInstaller::Install(
-    const base::DictionaryValue& manifest,
-    const base::FilePath& unpack_path) {
-  return update_client::InstallFunctionWrapper(
-      base::Bind(&PnaclComponentInstaller::DoInstall, base::Unretained(this),
-                 base::ConstRef(manifest), base::ConstRef(unpack_path)));
-}
-
-bool PnaclComponentInstaller::DoInstall(const base::DictionaryValue& manifest,
-                                        const base::FilePath& unpack_path) {
+bool PnaclComponentInstaller::Install(const base::DictionaryValue& manifest,
+                                      const base::FilePath& unpack_path) {
   std::unique_ptr<base::DictionaryValue> pnacl_manifest(
       ReadPnaclManifest(unpack_path));
   if (pnacl_manifest == NULL) {

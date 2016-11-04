@@ -11,7 +11,6 @@
 
 #include "base/base_paths.h"
 #include "base/bind.h"
-#include "base/bind_helpers.h"
 #include "base/command_line.h"
 #include "base/files/file_path.h"
 #include "base/files/file_util.h"
@@ -35,7 +34,6 @@
 #include "components/prefs/pref_registry_simple.h"
 #include "components/prefs/pref_service.h"
 #include "components/update_client/update_client.h"
-#include "components/update_client/utils.h"
 #include "content/public/browser/browser_thread.h"
 
 using content::BrowserThread;
@@ -202,9 +200,8 @@ class RecoveryComponentInstaller : public update_client::CrxInstaller {
   // ComponentInstaller implementation:
   void OnUpdateError(int error) override;
 
-  update_client::CrxInstaller::Result Install(
-      const base::DictionaryValue& manifest,
-      const base::FilePath& unpack_path) override;
+  bool Install(const base::DictionaryValue& manifest,
+               const base::FilePath& unpack_path) override;
 
   bool GetInstalledFile(const std::string& file,
                         base::FilePath* installed_file) override;
@@ -213,9 +210,6 @@ class RecoveryComponentInstaller : public update_client::CrxInstaller {
 
  private:
   ~RecoveryComponentInstaller() override {}
-
-  bool DoInstall(const base::DictionaryValue& manifest,
-                 const base::FilePath& unpack_path);
 
   bool RunInstallCommand(const base::CommandLine& cmdline,
                          const base::FilePath& installer_folder) const;
@@ -353,17 +347,8 @@ bool SetPosixExecutablePermission(const base::FilePath& path) {
 }
 #endif  // defined(OS_POSIX)
 
-update_client::CrxInstaller::Result RecoveryComponentInstaller::Install(
-    const base::DictionaryValue& manifest,
-    const base::FilePath& unpack_path) {
-  return update_client::InstallFunctionWrapper(
-      base::Bind(&RecoveryComponentInstaller::DoInstall, base::Unretained(this),
-                 base::ConstRef(manifest), base::ConstRef(unpack_path)));
-}
-
-bool RecoveryComponentInstaller::DoInstall(
-    const base::DictionaryValue& manifest,
-    const base::FilePath& unpack_path) {
+bool RecoveryComponentInstaller::Install(const base::DictionaryValue& manifest,
+                                         const base::FilePath& unpack_path) {
   std::string name;
   manifest.GetStringASCII("name", &name);
   if (name != kRecoveryManifestName)

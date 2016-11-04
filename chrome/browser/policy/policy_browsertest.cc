@@ -118,7 +118,6 @@
 #include "components/strings/grit/components_strings.h"
 #include "components/translate/core/browser/language_state.h"
 #include "components/translate/core/browser/translate_infobar_delegate.h"
-#include "components/update_client/update_client.h"
 #include "components/update_client/update_client_errors.h"
 #include "components/update_client/url_request_post_interceptor.h"
 #include "components/user_prefs/user_prefs.h"
@@ -3626,9 +3625,8 @@ update_client::CrxComponent ComponentUpdaterPolicyTest::MakeCrxComponent(
 
     MOCK_METHOD1(OnUpdateError, void(int error));
     MOCK_METHOD2(Install,
-                 update_client::CrxInstaller::Result(
-                     const base::DictionaryValue& manifest,
-                     const base::FilePath& unpack_path));
+                 bool(const base::DictionaryValue& manifest,
+                      const base::FilePath& unpack_path));
     MOCK_METHOD2(GetInstalledFile,
                  bool(const std::string& file, base::FilePath* installed_file));
     MOCK_METHOD0(Uninstall, bool());

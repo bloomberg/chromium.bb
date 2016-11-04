@@ -30,7 +30,6 @@
 #include "testing/gtest/include/gtest/gtest.h"
 
 using Configurator = update_client::Configurator;
-using Result = update_client::CrxInstaller::Result;
 using TestConfigurator = update_client::TestConfigurator;
 using UpdateClient = update_client::UpdateClient;
 
@@ -48,8 +47,8 @@ class MockInstaller : public CrxInstaller {
 
   MOCK_METHOD1(OnUpdateError, void(int error));
   MOCK_METHOD2(Install,
-               Result(const base::DictionaryValue& manifest,
-                      const base::FilePath& unpack_path));
+               bool(const base::DictionaryValue& manifest,
+                    const base::FilePath& unpack_path));
   MOCK_METHOD2(GetInstalledFile,
                bool(const std::string& file, base::FilePath* installed_file));
   MOCK_METHOD0(Uninstall, bool());

@@ -66,11 +66,10 @@ bool FileTypePoliciesComponentInstallerTraits::RequiresNetworkEncryption()
   return false;
 }
 
-update_client::CrxInstaller::Result
-FileTypePoliciesComponentInstallerTraits::OnCustomInstall(
+bool FileTypePoliciesComponentInstallerTraits::OnCustomInstall(
     const base::DictionaryValue& manifest,
     const base::FilePath& install_dir) {
-  return update_client::CrxInstaller::Result(0);  // Nothing custom here.
+  return true;  // Nothing custom here.
 }
 
 base::FilePath FileTypePoliciesComponentInstallerTraits::GetInstalledPath(

@@ -12,7 +12,6 @@
 #include <cstring>
 #include <vector>
 
-#include "base/callback.h"
 #include "base/files/file_path.h"
 #include "base/files/file_util.h"
 #include "base/files/memory_mapped_file.h"
@@ -28,7 +27,6 @@
 #include "components/update_client/configurator.h"
 #include "components/update_client/crx_update_item.h"
 #include "components/update_client/update_client.h"
-#include "components/update_client/update_client_errors.h"
 #include "components/update_client/update_query_params.h"
 #include "crypto/secure_hash.h"
 #include "crypto/sha2.h"
@@ -310,11 +308,6 @@ void RemoveUnsecureUrls(std::vector<GURL>* urls) {
                   urls->begin(), urls->end(),
                   [](const GURL& url) { return !url.SchemeIsCryptographic(); }),
               urls->end());
-}
-
-CrxInstaller::Result InstallFunctionWrapper(base::Callback<bool()> callback) {
-  return CrxInstaller::Result(callback.Run() ? InstallError::NONE
-                                             : InstallError::GENERIC_ERROR);
 }
 
 }  // namespace update_client
