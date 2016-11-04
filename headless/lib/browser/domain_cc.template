@@ -18,11 +18,25 @@ ExperimentalDomain* Domain::GetExperimental() {
 
   {% if "events" in domain %}
 void Domain::AddObserver(Observer* observer) {
+  RegisterEventHandlersIfNeeded();
   observers_.AddObserver(observer);
 }
 
 void Domain::RemoveObserver(Observer* observer) {
   observers_.RemoveObserver(observer);
+}
+
+void Domain::RegisterEventHandlersIfNeeded() {
+  if (event_handlers_registered_)
+    return;
+  event_handlers_registered_ = true;
+    {# Register all events in this domain. #}
+    {% for event in domain.events %}
+  dispatcher_->RegisterEventHandler(
+      "{{domain.domain}}.{{event.name}}",
+      base::Bind(&Domain::Dispatch{{event.name | to_title_case}}Event,
+                 base::Unretained(this)));
+    {% endfor %}
 }
   {% endif %}
 
@@ -111,15 +125,6 @@ void Domain::Dispatch{{event.name | to_title_case}}Event(const base::Value& para
 
 Domain::Domain(internal::MessageDispatcher* dispatcher)
     : dispatcher_(dispatcher) {
-  {% if "events" in domain %}
-    {# Register all events in this domain. #}
-    {% for event in domain.events %}
-  dispatcher_->RegisterEventHandler(
-      "{{domain.domain}}.{{event.name}}",
-      base::Bind(&Domain::Dispatch{{event.name | to_title_case}}Event,
-                 base::Unretained(this)));
-    {% endfor %}
-  {% endif %}
 }
 
 Domain::~Domain() {}
@@ -131,6 +136,7 @@ ExperimentalDomain::~ExperimentalDomain() {}
 
   {% if "events" in domain %}
 void ExperimentalDomain::AddObserver(ExperimentalObserver* observer) {
+  RegisterEventHandlersIfNeeded();
   observers_.AddObserver(observer);
 }
 

@@ -120,7 +120,16 @@ class HEADLESS_EXPORT Domain {
   base::ObserverList<ExperimentalObserver> observers_;
   {% endif %}
 
+  {% if "events" in domain %}
+ protected:
+  void RegisterEventHandlersIfNeeded();
+
+  {% endif %}
  private:
+  {% if "events" in domain %}
+  bool event_handlers_registered_ = false;
+
+  {% endif %}
   DISALLOW_COPY_AND_ASSIGN(Domain);
 };
 
