@@ -1967,19 +1967,7 @@ void EventHandler::defaultKeyboardEventHandler(KeyboardEvent* event) {
 
 void EventHandler::dragSourceEndedAt(const PlatformMouseEvent& event,
                                      DragOperation operation) {
-  // Asides from routing the event to the correct frame, the hit test is also an
-  // opportunity for Layer to update the :hover and :active pseudoclasses.
-  HitTestRequest request(HitTestRequest::Release);
-  MouseEventWithHitTestResults mev =
-      EventHandlingUtil::performMouseEventHitTest(m_frame, request, event);
-
-  LocalFrame* targetFrame;
-  if (targetIsFrame(mev.innerNode(), targetFrame)) {
-    if (targetFrame)
-      targetFrame->eventHandler().dragSourceEndedAt(event, operation);
-  } else {
-    m_mouseEventManager->dragSourceEndedAt(event, operation);
-  }
+  m_mouseEventManager->dragSourceEndedAt(event, operation);
 }
 
 void EventHandler::updateDragStateAfterEditDragIfNeeded(

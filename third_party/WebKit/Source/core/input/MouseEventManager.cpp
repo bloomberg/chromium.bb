@@ -907,6 +907,11 @@ void MouseEventManager::clearDragDataTransfer() {
 
 void MouseEventManager::dragSourceEndedAt(const PlatformMouseEvent& event,
                                           DragOperation operation) {
+  // Send a hit test request so that Layer gets a chance to update the :hover
+  // and :active pseudoclasses..
+  HitTestRequest request(HitTestRequest::Release);
+  EventHandlingUtil::performMouseEventHitTest(m_frame, request, event);
+
   if (dragState().m_dragSrc) {
     dragState().m_dragDataTransfer->setDestinationOperation(operation);
     // For now we don't care if event handler cancels default behavior, since
