@@ -120,9 +120,9 @@ class BaseRequestsTest : public testing::Test {
                                     message_loop_.task_runner(),
                                     std::string() /* custom user agent */));
 
-    ASSERT_TRUE(test_server_.Start());
     test_server_.RegisterRequestHandler(
         base::Bind(&BaseRequestsTest::HandleRequest, base::Unretained(this)));
+    ASSERT_TRUE(test_server_.Start());
   }
 
   std::unique_ptr<net::test_server::HttpResponse> HandleRequest(

@@ -47,11 +47,12 @@ class BaseRequestsServerTest : public testing::Test {
         message_loop_.task_runner(),
         kTestUserAgent));
 
-    ASSERT_TRUE(test_server_.Start());
+    ASSERT_TRUE(test_server_.InitializeAndListen());
     test_server_.RegisterRequestHandler(
         base::Bind(&test_util::HandleDownloadFileRequest,
                    test_server_.base_url(),
                    base::Unretained(&http_request_)));
+    test_server_.StartAcceptingConnections();
   }
 
   // Returns a temporary file path suitable for storing the cache file.
