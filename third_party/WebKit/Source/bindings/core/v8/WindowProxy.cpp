@@ -30,6 +30,7 @@
 
 #include "bindings/core/v8/WindowProxy.h"
 
+#include "bindings/core/v8/ConditionalFeatures.h"
 #include "bindings/core/v8/DOMWrapperWorld.h"
 #include "bindings/core/v8/ScriptController.h"
 #include "bindings/core/v8/V8Binding.h"
@@ -266,11 +267,6 @@ bool WindowProxy::initialize() {
     setSecurityToken(origin);
   }
 
-  // All interfaces must be registered to V8PerContextData.
-  // So we explicitly call constructorForType for the global object.
-  V8PerContextData::from(context)->constructorForType(
-      &V8Window::wrapperTypeInfo);
-
   if (m_frame->isLocalFrame()) {
     LocalFrame* frame = toLocalFrame(m_frame);
     MainThreadDebugger::instance()->contextCreated(m_scriptState.get(), frame,
@@ -278,6 +274,12 @@ bool WindowProxy::initialize() {
     frame->loader().client()->didCreateScriptContext(
         context, m_world->extensionGroup(), m_world->worldId());
   }
+  // If conditional features for window have been queued before the V8 context
+  // was ready, then inject them into the context now
+  if (m_world->isMainWorld()) {
+    installPendingConditionalFeaturesOnWindow(m_scriptState.get());
+  }
+
   return true;
 }
 

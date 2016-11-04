@@ -70,11 +70,12 @@ class CORE_EXPORT OriginTrialContext final
   // controls) should be considered enabled for the current execution context.
   bool isTrialEnabled(const String& trialName);
 
-  // Installs JavaScript bindings for any features which should be enabled by
-  // the current set of trial tokens. This method is idempotent; only features
-  // which have been enabled since the last time it was run will be installed.
-  // If the V8 context for the host execution context has not been
-  // initialized, then this method will return without doing anything.
+  // Installs JavaScript bindings on the Window object for any features which
+  // should be enabled by the current set of trial tokens. This method is called
+  // every time a token is added to the document, so that global interfaces will
+  // be properly visible, even if the V8 context is being reused (i.e., after
+  // navigation). If the V8 context is not initialized, this method will return
+  // without doing anything.
   void initializePendingFeatures();
 
   DECLARE_VIRTUAL_TRACE();

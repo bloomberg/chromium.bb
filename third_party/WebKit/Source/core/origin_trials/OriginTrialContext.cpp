@@ -158,6 +158,7 @@ void OriginTrialContext::addToken(const String& token) {
     m_tokens.append(token);
     validateToken(token);
   }
+  initializePendingFeatures();
 }
 
 void OriginTrialContext::addTokens(const Vector<String>& tokens) {
@@ -167,6 +168,22 @@ void OriginTrialContext::addTokens(const Vector<String>& tokens) {
       validateToken(token);
     }
   }
+  initializePendingFeatures();
+}
+
+void OriginTrialContext::initializePendingFeatures() {
+  if (!m_host->isDocument())
+    return;
+  LocalFrame* frame = toDocument(m_host.get())->frame();
+  if (!frame)
+    return;
+  ScriptState* scriptState = ScriptState::forMainWorld(frame);
+  if (!scriptState)
+    return;
+  if (!scriptState->contextIsValid())
+    return;
+  ScriptState::Scope scope(scriptState);
+  installPendingConditionalFeaturesOnWindow(scriptState);
 }
 
 bool OriginTrialContext::isTrialEnabled(const String& trialName) {

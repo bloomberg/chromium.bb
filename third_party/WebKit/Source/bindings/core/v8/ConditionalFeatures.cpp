@@ -82,6 +82,16 @@ void installConditionalFeatures(const WrapperTypeInfo* type,
                                           interfaceObject);
 }
 
+void installPendingConditionalFeaturesOnWindow(const ScriptState* scriptState) {
+  DCHECK(scriptState);
+  DCHECK(scriptState->context() == scriptState->isolate()->GetCurrentContext());
+  DCHECK(scriptState->perContextData());
+  DCHECK(scriptState->world().isMainWorld());
+  (*s_installConditionalFeaturesFunction)(&V8Window::wrapperTypeInfo,
+                                          scriptState, v8::Local<v8::Object>(),
+                                          v8::Local<v8::Function>());
+}
+
 bool isFeatureEnabledInFrame(const FeaturePolicy::Feature& feature,
                              const LocalFrame* frame) {
   // If there is no frame, or if feature policy is disabled, use defaults.
