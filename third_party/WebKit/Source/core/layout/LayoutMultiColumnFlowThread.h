@@ -310,6 +310,7 @@ class CORE_EXPORT LayoutMultiColumnFlowThread : public LayoutFlowThread,
       LayoutBox*,
       StyleDifference,
       const ComputedStyle& oldStyle) override;
+  void toggleSpannersInSubtree(LayoutBox*);
   void computePreferredLogicalWidths() override;
   void computeLogicalHeight(LayoutUnit logicalHeight,
                             LayoutUnit logicalTop,
@@ -327,6 +328,13 @@ class CORE_EXPORT LayoutMultiColumnFlowThread : public LayoutFlowThread,
   // collapsing), and possibly for other reasons.
   LayoutMultiColumnSet* m_lastSetWorkedOn;
 
+#if DCHECK_IS_ON()
+  // Used to check consistency between calls to
+  // flowThreadDescendantStyleWillChange() and
+  // flowThreadDescendantStyleDidChange().
+  static const LayoutBox* s_styleChangedBox;
+#endif
+
   // The used value of column-count
   unsigned m_columnCount;
   // Total height available to columns, or 0 if auto.
@@ -339,9 +347,19 @@ class CORE_EXPORT LayoutMultiColumnFlowThread : public LayoutFlowThread,
 
   // Set when column heights are out of sync with actual layout.
   bool m_columnHeightsChanged;
+
   // Always true for regular multicol. False for paged-y overflow.
   bool m_progressionIsInline;
+
   bool m_isBeingEvacuated;
+
+  // Specifies whether the the descendant whose style is about to change could
+  // contain spanners or not. The flag is set in
+  // flowThreadDescendantStyleWillChange(), and then checked in
+  // flowThreadDescendantStyleDidChange().
+  static bool s_couldContainSpanners;
+
+  static bool s_toggleSpannersIfNeeded;
 };
 
 // Cannot use DEFINE_LAYOUT_OBJECT_TYPE_CASTS here, because

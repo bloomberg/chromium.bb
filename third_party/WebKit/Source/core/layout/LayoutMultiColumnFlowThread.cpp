@@ -33,6 +33,12 @@
 
 namespace blink {
 
+#if DCHECK_IS_ON()
+const LayoutBox* LayoutMultiColumnFlowThread::s_styleChangedBox;
+#endif
+bool LayoutMultiColumnFlowThread::s_couldContainSpanners;
+bool LayoutMultiColumnFlowThread::s_toggleSpannersIfNeeded;
+
 LayoutMultiColumnFlowThread::LayoutMultiColumnFlowThread()
     : m_lastSetWorkedOn(nullptr),
       m_columnCount(1),
@@ -1099,14 +1105,30 @@ void LayoutMultiColumnFlowThread::flowThreadDescendantStyleWillChange(
     LayoutBox* descendant,
     StyleDifference diff,
     const ComputedStyle& newStyle) {
-  if (needsToRemoveFromFlowThread(descendant->styleRef(), newStyle))
+  s_toggleSpannersIfNeeded = false;
+  if (needsToRemoveFromFlowThread(descendant->styleRef(), newStyle)) {
     flowThreadDescendantWillBeRemoved(descendant);
+    return;
+  }
+#if DCHECK_IS_ON()
+  s_styleChangedBox = descendant;
+#endif
+  // Keep track of whether this object was of such a type that it could contain
+  // column-span:all descendants. If the style change in progress changes this
+  // state, we need to look for spanners to add or remove in the subtree of
+  // |descendant|.
+  s_toggleSpannersIfNeeded = true;
+  s_couldContainSpanners =
+      canContainSpannerInParentFragmentationContext(*descendant);
 }
 
 void LayoutMultiColumnFlowThread::flowThreadDescendantStyleDidChange(
     LayoutBox* descendant,
     StyleDifference diff,
     const ComputedStyle& oldStyle) {
+  bool toggleSpannersIfNeeded = s_toggleSpannersIfNeeded;
+  s_toggleSpannersIfNeeded = false;
+
   if (needsToInsertIntoFlowThread(oldStyle, descendant->styleRef())) {
     flowThreadDescendantWasInserted(descendant);
     return;
@@ -1124,6 +1146,57 @@ void LayoutMultiColumnFlowThread::flowThreadDescendantStyleDidChange(
     createAndInsertSpannerPlaceholder(
         descendant,
         nextInPreOrderAfterChildrenSkippingOutOfFlow(this, descendant));
+    return;
+  }
+
+  if (!toggleSpannersIfNeeded)
+    return;
+#if DCHECK_IS_ON()
+  // Make sure that we were preceded by a call to
+  // flowThreadDescendantStyleWillChange() with the same descendant as we have
+  // now.
+  DCHECK(s_styleChangedBox == descendant);
+#endif
+
+  if (s_couldContainSpanners !=
+      canContainSpannerInParentFragmentationContext(*descendant))
+    toggleSpannersInSubtree(descendant);
+}
+
+void LayoutMultiColumnFlowThread::toggleSpannersInSubtree(
+    LayoutBox* descendant) {
+  DCHECK(s_couldContainSpanners !=
+         canContainSpannerInParentFragmentationContext(*descendant));
+
+  // If there are no spanners at all in this multicol container, there's no
+  // need to look for any to remove.
+  if (s_couldContainSpanners && !hasAnyColumnSpanners(*this))
+    return;
+
+  bool walkChildren;
+  for (LayoutObject* object = descendant->nextInPreOrder(descendant); object;
+       object = walkChildren
+                    ? object->nextInPreOrder(descendant)
+                    : object->nextInPreOrderAfterChildren(descendant)) {
+    walkChildren = false;
+    if (!object->isBox())
+      continue;
+    LayoutBox& box = toLayoutBox(*object);
+    if (s_couldContainSpanners) {
+      // Remove all spanners (turn them into regular column content), as we can
+      // no longer contain them.
+      if (box.isColumnSpanAll()) {
+        destroySpannerPlaceholder(box.spannerPlaceholder());
+        continue;
+      }
+    } else if (descendantIsValidColumnSpanner(object)) {
+      // We can now contain spanners, and we found a candidate. Turn it into a
+      // spanner.
+      createAndInsertSpannerPlaceholder(
+          &box, nextInPreOrderAfterChildrenSkippingOutOfFlow(this, &box));
+      continue;
+    }
+    walkChildren = canContainSpannerInParentFragmentationContext(box);
   }
 }
 
