@@ -416,10 +416,12 @@ void HTMLFormElement::scheduleFormSubmission(FormSubmission* submission) {
     return;
   }
 
+  if (!document().contentSecurityPolicy()->allowFormAction(
+          submission->action())) {
+    return;
+  }
+
   if (protocolIsJavaScript(submission->action())) {
-    if (!document().contentSecurityPolicy()->allowFormAction(
-            submission->action()))
-      return;
     document().frame()->script().executeScriptIfJavaScriptURL(
         submission->action(), this);
     return;

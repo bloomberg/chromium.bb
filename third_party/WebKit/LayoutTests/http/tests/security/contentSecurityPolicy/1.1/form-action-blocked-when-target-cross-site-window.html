@@ -6,9 +6,13 @@
     if (window.testRunner) {
         testRunner.dumpAsText();
         testRunner.waitUntilDone();
-        testRunner.clearBackForwardList();
-        testRunner.dumpBackForwardList();
+        testRunner.setCanOpenWindows();
     }
+
+    // Open a new window with the name matching form.target attribute below.
+    window.open(
+        'http://localhost:8080/security/resources/empty.html',
+        'namedCrossSiteWindow')
 
     window.addEventListener('load', function() {
         document.getElementById('theform').addEventListener('submit', function(e) {
@@ -32,7 +36,8 @@
 </script>
 </head>
 <body>
-    <form action='/navigation/resources/form-target.pl' id='theform' method='post'>
+    <form action='/navigation/resources/form-target.pl' id='theform'
+          method='post' target="namedCrossSiteWindow">
         <input type='text' name='fieldname' value='fieldvalue'>
         <input type='submit' id='submit' value='submit'>
     </form>
