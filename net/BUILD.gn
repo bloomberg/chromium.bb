@@ -1501,8 +1501,7 @@ test("net_unittests") {
   }
 
   # Exclude brotli test if the support for brotli is disabled.
-  # Also, exclude the test from iOS for now (needs to read input data files).
-  if (disable_brotli_filter || is_ios) {
+  if (disable_brotli_filter) {
     sources -= [ "filter/brotli_filter_unittest.cc" ]
     sources -= [ "filter/brotli_source_stream_unittest.cc" ]
   }
