@@ -7,6 +7,7 @@
 #include <stddef.h>
 #include <stdint.h>
 
+#include "base/logging.h"
 #include "base/metrics/histogram_macros.h"
 #include "base/strings/sys_string_conversions.h"
 #include "ios/web/interstitials/web_interstitial_impl.h"
@@ -679,6 +680,10 @@ void WebStateImpl::OnProvisionalNavigationStarted(const GURL& url) {
 
 void WebStateImpl::GoToOffset(int offset) {
   [web_controller_ goDelta:offset];
+}
+
+void WebStateImpl::GoToIndex(int index) {
+  [web_controller_ goToItemAtIndex:index];
 }
 
 void WebStateImpl::LoadURLWithParams(

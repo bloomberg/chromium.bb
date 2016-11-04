@@ -114,6 +114,7 @@ class NavigationManagerImpl : public NavigationManager {
   bool CanGoForward() const override;
   void GoBack() override;
   void GoForward() override;
+  void GoToIndex(int index) override;
   void Reload(bool check_for_reposts) override;
 
   // Returns the current list of transient url rewriters, passing ownership to

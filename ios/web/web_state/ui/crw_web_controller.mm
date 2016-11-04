@@ -2311,12 +2311,15 @@ const NSTimeInterval kSnapshotOverlayTransition = 0.5;
   }
 }
 
-- (void)goToEntry:(CRWSessionEntry*)entry {
-  DCHECK(entry);
+- (void)goToItemAtIndex:(int)index {
+  NSArray* entries = self.sessionController.entries;
+  DCHECK_LT(static_cast<NSUInteger>(index), entries.count);
+  DCHECK_GE(index, 0);
 
-  [self recordStateInHistory];
+  if (!_webStateImpl->IsShowingWebInterstitial())
+    [self recordStateInHistory];
   CRWSessionEntry* fromEntry = self.sessionController.currentEntry;
-  [self.sessionController goToEntry:entry];
+  [self.sessionController goToEntry:entries[index]];
   if (fromEntry)
     [self finishHistoryNavigationFromEntry:fromEntry];
 }

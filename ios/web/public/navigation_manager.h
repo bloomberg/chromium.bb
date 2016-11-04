@@ -139,6 +139,9 @@ class NavigationManager {
   virtual void GoBack() = 0;
   virtual void GoForward() = 0;
 
+  // Navigates to the specified absolute index.
+  virtual void GoToIndex(int index) = 0;
+
   // Reloads the current entry. If |check_for_repost| is true and the current
   // entry has POST data the user is prompted to see if they really want to
   // reload the page. In nearly all cases pass in true.  If a transient entry

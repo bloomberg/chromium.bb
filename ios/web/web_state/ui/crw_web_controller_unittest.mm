@@ -764,7 +764,7 @@ TEST_F(CRWWebControllerNavigationTest, GoToEntryWithoutDocumentChange) {
   EXPECT_NSEQ(session_controller.entries.lastObject,
               session_controller.currentEntry);
 
-  [web_controller() goToEntry:session_controller.entries[0]];
+  [web_controller() goToItemAtIndex:0];
   EXPECT_NSEQ(session_controller.entries.firstObject,
               session_controller.currentEntry);
 }

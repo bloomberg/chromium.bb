@@ -296,6 +296,10 @@ void NavigationManagerImpl::GoForward() {
   delegate_->GoToOffset(1);
 }
 
+void NavigationManagerImpl::GoToIndex(int index) {
+  delegate_->GoToIndex(index);
+}
+
 void NavigationManagerImpl::Reload(bool check_for_reposts) {
   // Navigation manager may be empty if the only pending entry failed to load
   // with SSL error and the user has decided not to proceed.

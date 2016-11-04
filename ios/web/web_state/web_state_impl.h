@@ -277,6 +277,7 @@ class WebStateImpl : public WebState, public NavigationManagerDelegate {
 
   // NavigationManagerDelegate:
   void GoToOffset(int offset) override;
+  void GoToIndex(int index) override;
   void LoadURLWithParams(const NavigationManager::WebLoadParams&) override;
   void OnNavigationItemsPruned(size_t pruned_item_count) override;
   void OnNavigationItemChanged() override;
