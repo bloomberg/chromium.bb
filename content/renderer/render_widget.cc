@@ -521,7 +521,6 @@ bool RenderWidget::OnMessageReceived(const IPC::Message& message) {
                         OnRequestTextInputStateUpdate)
     IPC_MESSAGE_HANDLER(InputMsg_ImeBatchEdit,
                         OnImeBatchEdit)
-    IPC_MESSAGE_HANDLER(ViewMsg_ShowImeIfNeeded, OnShowImeIfNeeded)
 #endif
     IPC_MESSAGE_HANDLER(ViewMsg_HandleCompositorProto, OnHandleCompositorProto)
     IPC_MESSAGE_UNHANDLED(handled = false)
@@ -1525,7 +1524,15 @@ void RenderWidget::OnHandleCompositorProto(const std::vector<uint8_t>& proto) {
 }
 
 void RenderWidget::showImeIfNeeded() {
-  OnShowImeIfNeeded();
+#if defined(OS_ANDROID) || defined(USE_AURA)
+  UpdateTextInputState(ShowIme::IF_NEEDED, ChangeSource::FROM_NON_IME);
+#endif
+
+// TODO(rouslan): Fix ChromeOS and Windows 8 behavior of autofill popup with
+// virtual keyboard.
+#if !defined(OS_ANDROID)
+  FocusChangeComplete();
+#endif
 }
 
 ui::TextInputType RenderWidget::GetTextInputType() {
@@ -1585,18 +1592,6 @@ void RenderWidget::convertWindowToViewport(blink::WebFloatRect* rect) {
     rect->width *= GetOriginalDeviceScaleFactor();
     rect->height *= GetOriginalDeviceScaleFactor();
   }
-}
-
-void RenderWidget::OnShowImeIfNeeded() {
-#if defined(OS_ANDROID) || defined(USE_AURA)
-  UpdateTextInputState(ShowIme::IF_NEEDED, ChangeSource::FROM_NON_IME);
-#endif
-
-// TODO(rouslan): Fix ChromeOS and Windows 8 behavior of autofill popup with
-// virtual keyboard.
-#if !defined(OS_ANDROID)
-  FocusChangeComplete();
-#endif
 }
 
 #if defined(OS_ANDROID)

@@ -277,12 +277,6 @@ import java.util.UUID;
                 mNativeWebContentsAndroid, enableHiding, enableShowing, animate);
     }
 
-    @Override
-    public void showImeIfNeeded() {
-        nativeShowImeIfNeeded(mNativeWebContentsAndroid);
-    }
-
-    @Override
     public void scrollFocusedEditableNodeIntoView() {
         // The native side keeps track of whether the zoom and scroll actually occurred. It is
         // more efficient to do it this way and sometimes fire an unnecessary message rather
@@ -511,7 +505,6 @@ import java.util.UUID;
     private native void nativeExitFullscreen(long nativeWebContentsAndroid);
     private native void nativeUpdateBrowserControlsState(long nativeWebContentsAndroid,
             boolean enableHiding, boolean enableShowing, boolean animate);
-    private native void nativeShowImeIfNeeded(long nativeWebContentsAndroid);
     private native void nativeScrollFocusedEditableNodeIntoView(long nativeWebContentsAndroid);
     private native void nativeSelectWordAroundCaret(long nativeWebContentsAndroid);
     private native void nativeAdjustSelectionByCharacterOffset(

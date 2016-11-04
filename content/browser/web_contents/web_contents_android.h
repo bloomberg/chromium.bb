@@ -106,8 +106,6 @@ class CONTENT_EXPORT WebContentsAndroid
       bool enable_hiding,
       bool enable_showing,
       bool animate);
-  void ShowImeIfNeeded(JNIEnv* env,
-                       const base::android::JavaParamRef<jobject>& obj);
   void ScrollFocusedEditableNodeIntoView(
       JNIEnv* env,
       const base::android::JavaParamRef<jobject>& obj);

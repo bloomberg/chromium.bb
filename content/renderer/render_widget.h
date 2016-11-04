@@ -496,7 +496,6 @@ class CONTENT_EXPORT RenderWidget
   void OnUpdateScreenRects(const gfx::Rect& view_screen_rect,
                            const gfx::Rect& window_screen_rect);
   void OnUpdateWindowScreenRect(const gfx::Rect& window_screen_rect);
-  void OnShowImeIfNeeded();
   void OnSetFrameSinkId(const cc::FrameSinkId& frame_sink_id);
   void OnHandleCompositorProto(const std::vector<uint8_t>& proto);
 

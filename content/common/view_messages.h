@@ -584,8 +584,6 @@ IPC_MESSAGE_ROUTED3(ViewMsg_UpdateBrowserControlsState,
                     bool /* enable_showing */,
                     bool /* animate */)
 
-IPC_MESSAGE_ROUTED0(ViewMsg_ShowImeIfNeeded)
-
 // Extracts the data at the given rect, returning it through the
 // ViewHostMsg_SmartClipDataExtracted IPC.
 IPC_MESSAGE_ROUTED1(ViewMsg_ExtractSmartClipData,

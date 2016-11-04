@@ -179,11 +179,6 @@ public interface WebContents extends Parcelable {
     void updateBrowserControlsState(boolean enableHiding, boolean enableShowing, boolean animate);
 
     /**
-     * Shows the IME if the focused widget could accept text input.
-     */
-    void showImeIfNeeded();
-
-    /**
      * Brings the Editable to the visible area while IME is up to make easier for inputing text.
      */
     void scrollFocusedEditableNodeIntoView();
