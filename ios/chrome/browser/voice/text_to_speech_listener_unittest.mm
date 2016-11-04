@@ -90,7 +90,8 @@ TEST_F(TextToSpeechListenerTest, ValidAudioDataTest) {
   GTMStringEncoding* encoder = [GTMStringEncoding rfc4648Base64StringEncoding];
   NSString* html =
       [NSString stringWithFormat:kHTMLFormat, kValidVoiceSearchScript];
-  NSData* expected_audio_data = [encoder decode:@"dGVzdGF1ZG8zMm9pbw=="];
+  NSData* expected_audio_data =
+      [encoder decode:@"dGVzdGF1ZG8zMm9pbw==" error:nullptr];
   TestExtraction(html, expected_audio_data);
 }
 

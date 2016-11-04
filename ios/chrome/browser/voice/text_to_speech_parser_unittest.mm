@@ -24,7 +24,7 @@ TEST(TextToSpeechParser, ExtractAudioDataValid) {
   EXPECT_TRUE(result != nil);
 
   GTMStringEncoding* base64 = [GTMStringEncoding rfc4648Base64StringEncoding];
-  NSData* expectedData = [base64 decode:@"dGVzdGF1ZG8zMm9pbw=="];
+  NSData* expectedData = [base64 decode:@"dGVzdGF1ZG8zMm9pbw==" error:nullptr];
   EXPECT_TRUE([expectedData isEqualToData:result]);
 }
 
