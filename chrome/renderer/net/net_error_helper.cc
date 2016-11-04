@@ -190,7 +190,8 @@ bool NetErrorHelper::ShouldSuppressErrorPage(const GURL& url) {
   return core_->ShouldSuppressErrorPage(GetFrameType(render_frame()), url);
 }
 
-mojom::NetworkDiagnostics* NetErrorHelper::GetRemoteNetworkDiagnostics() {
+chrome::mojom::NetworkDiagnostics*
+NetErrorHelper::GetRemoteNetworkDiagnostics() {
   if (!remote_network_diagnostics_) {
     render_frame()->GetRemoteAssociatedInterfaces()
         ->GetInterface(&remote_network_diagnostics_);
@@ -380,7 +381,7 @@ void NetErrorHelper::OnTrackingRequestComplete(
 }
 
 void NetErrorHelper::OnNetworkDiagnosticsClientRequest(
-    mojom::NetworkDiagnosticsClientAssociatedRequest request) {
+    chrome::mojom::NetworkDiagnosticsClientAssociatedRequest request) {
   DCHECK(!network_diagnostics_client_binding_.is_bound());
   network_diagnostics_client_binding_.Bind(std::move(request));
 }

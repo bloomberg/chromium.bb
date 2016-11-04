@@ -51,7 +51,9 @@ class TestNetErrorTabHelper : public NetErrorTabHelper {
         render_frame_host);
   }
 
-  mojom::NetworkDiagnostics* network_diagnostics_interface() { return this; }
+  chrome::mojom::NetworkDiagnostics* network_diagnostics_interface() {
+    return this;
+  }
 
  private:
   // NetErrorTabHelper implementation:

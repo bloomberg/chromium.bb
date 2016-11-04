@@ -47,7 +47,7 @@ class NetErrorHelper
       public content::RenderThreadObserver,
       public error_page::NetErrorHelperCore::Delegate,
       public NetErrorPageController::Delegate,
-      public mojom::NetworkDiagnosticsClient {
+      public chrome::mojom::NetworkDiagnosticsClient {
  public:
   explicit NetErrorHelper(content::RenderFrame* render_frame);
   ~NetErrorHelper() override;
@@ -85,7 +85,7 @@ class NetErrorHelper
   bool ShouldSuppressErrorPage(const GURL& url);
 
  private:
-  mojom::NetworkDiagnostics* GetRemoteNetworkDiagnostics();
+  chrome::mojom::NetworkDiagnostics* GetRemoteNetworkDiagnostics();
 
   // NetErrorHelperCore::Delegate implementation:
   void GenerateLocalizedErrorPage(
@@ -130,9 +130,9 @@ class NetErrorHelper
                                  const std::string& data);
 
   void OnNetworkDiagnosticsClientRequest(
-      mojom::NetworkDiagnosticsClientAssociatedRequest request);
+      chrome::mojom::NetworkDiagnosticsClientAssociatedRequest request);
 
-  // mojom::NetworkDiagnosticsClient:
+  // chrome::mojom::NetworkDiagnosticsClient:
   void SetCanShowNetworkDiagnosticsDialog(bool can_show) override;
 
 #if defined(OS_ANDROID)
@@ -146,9 +146,9 @@ class NetErrorHelper
 
   std::unique_ptr<error_page::NetErrorHelperCore> core_;
 
-  mojo::AssociatedBinding<mojom::NetworkDiagnosticsClient>
+  mojo::AssociatedBinding<chrome::mojom::NetworkDiagnosticsClient>
       network_diagnostics_client_binding_;
-  mojom::NetworkDiagnosticsAssociatedPtr remote_network_diagnostics_;
+  chrome::mojom::NetworkDiagnosticsAssociatedPtr remote_network_diagnostics_;
 
   // Weak factory for vending a weak pointer to a NetErrorPageController. Weak
   // pointers are invalidated on each commit, to prevent getting messages from

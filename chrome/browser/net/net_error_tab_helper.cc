@@ -93,7 +93,7 @@ void NetErrorTabHelper::RenderFrameCreated(
   if (render_frame_host->GetParent())
     return;
 
-  mojom::NetworkDiagnosticsClientAssociatedPtr client;
+  chrome::mojom::NetworkDiagnosticsClientAssociatedPtr client;
   render_frame_host->GetRemoteAssociatedInterfaces()->GetInterface(&client);
   client->SetCanShowNetworkDiagnosticsDialog(CanShowNetworkDiagnosticsDialog());
 }

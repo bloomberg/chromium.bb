@@ -29,7 +29,7 @@ namespace chrome_browser_net {
 class NetErrorTabHelper
     : public content::WebContentsObserver,
       public content::WebContentsUserData<NetErrorTabHelper>,
-      public mojom::NetworkDiagnostics {
+      public chrome::mojom::NetworkDiagnostics {
  public:
   enum TestingState {
     TESTING_DEFAULT,
@@ -73,7 +73,7 @@ class NetErrorTabHelper
     return dns_probe_status_;
   }
 
-  content::WebContentsFrameBindingSet<mojom::NetworkDiagnostics>&
+  content::WebContentsFrameBindingSet<chrome::mojom::NetworkDiagnostics>&
   network_diagnostics_bindings_for_testing() {
     return network_diagnostics_bindings_;
   }
@@ -86,7 +86,7 @@ class NetErrorTabHelper
   void InitializePref(content::WebContents* contents);
   bool ProbesAllowed() const;
 
-  // mojom::NetworkDiagnostics:
+  // chrome::mojom::NetworkDiagnostics:
   void RunNetworkDiagnostics(const GURL& url) override;
 
   // Shows the diagnostics dialog after its been sanitized, virtual for
@@ -101,7 +101,7 @@ class NetErrorTabHelper
   bool IsFromErrorPage() const;
 #endif  // BUILDFLAG(ANDROID_JAVA_UI)
 
-  content::WebContentsFrameBindingSet<mojom::NetworkDiagnostics>
+  content::WebContentsFrameBindingSet<chrome::mojom::NetworkDiagnostics>
       network_diagnostics_bindings_;
 
   // True if the last provisional load that started was for an error page.
