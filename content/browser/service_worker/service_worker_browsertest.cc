@@ -65,6 +65,7 @@
 #include "content/shell/browser/shell.h"
 #include "content/shell/browser/shell_content_browser_client.h"
 #include "content/test/test_content_browser_client.h"
+#include "net/dns/mock_host_resolver.h"
 #include "net/log/net_log_with_source.h"
 #include "net/test/embedded_test_server/embedded_test_server.h"
 #include "net/test/embedded_test_server/http_request.h"
@@ -1414,6 +1415,11 @@ class ServiceWorkerNavigationPreloadTest : public ServiceWorkerBrowserTest {
 
   ~ServiceWorkerNavigationPreloadTest() override {}
 
+  void SetUpOnMainThread() override {
+    host_resolver()->AddRule("*", "127.0.0.1");
+    ServiceWorkerBrowserTest::SetUpOnMainThread();
+  }
+
   void SetUpCommandLine(base::CommandLine* command_line) override {
     command_line->AppendSwitchASCII(
         switches::kEnableFeatures,
@@ -1440,17 +1446,26 @@ class ServiceWorkerNavigationPreloadTest : public ServiceWorkerBrowserTest {
         base::Bind(&self::MonitorRequestHandler, base::Unretained(this)));
   }
 
-  void RegisterStaticFile(const GURL& url,
+  void RegisterStaticFile(const std::string& relative_url,
                           const std::string& content,
                           const std::string& content_type) {
     embedded_test_server()->RegisterRequestHandler(
-        base::Bind(&self::StaticRequestHandler, base::Unretained(this), url,
-                   content, content_type));
+        base::Bind(&self::StaticRequestHandler, base::Unretained(this),
+                   relative_url, content, content_type));
   }
 
-  void RegisterCustomResponse(const GURL& url, const std::string& response) {
-    embedded_test_server()->RegisterRequestHandler(base::Bind(
-        &self::CustomRequestHandler, base::Unretained(this), url, response));
+  void RegisterCustomResponse(const std::string& relative_url,
+                              const std::string& response) {
+    embedded_test_server()->RegisterRequestHandler(
+        base::Bind(&self::CustomRequestHandler, base::Unretained(this),
+                   relative_url, response));
+  }
+
+  void RegisterKeepSearchRedirect(const std::string& relative_url,
+                                  const std::string& redirect_location) {
+    embedded_test_server()->RegisterRequestHandler(
+        base::Bind(&self::KeepSearchRedirectHandler, base::Unretained(this),
+                   relative_url, redirect_location));
   }
 
   int GetRequestCount(const std::string& relative_url) const {
@@ -1510,15 +1525,13 @@ class ServiceWorkerNavigationPreloadTest : public ServiceWorkerBrowserTest {
   }
 
   std::unique_ptr<net::test_server::HttpResponse> StaticRequestHandler(
-      const GURL& url,
+      const std::string& relative_url,
       const std::string& content,
       const std::string& content_type,
       const net::test_server::HttpRequest& request) const {
-    const GURL absolute_url =
-        embedded_test_server()->GetURL(request.relative_url);
-    if (absolute_url != url)
+    const size_t query_position = request.relative_url.find('?');
+    if (request.relative_url.substr(0, query_position) != relative_url)
       return std::unique_ptr<net::test_server::HttpResponse>();
-
     std::unique_ptr<net::test_server::BasicHttpResponse> http_response(
         base::MakeUnique<net::test_server::BasicHttpResponse>());
     http_response->set_code(net::HTTP_OK);
@@ -1528,15 +1541,31 @@ class ServiceWorkerNavigationPreloadTest : public ServiceWorkerBrowserTest {
   }
 
   std::unique_ptr<net::test_server::HttpResponse> CustomRequestHandler(
-      const GURL& url,
+      const std::string& relative_url,
       const std::string& response,
       const net::test_server::HttpRequest& request) const {
-    const GURL absolute_url =
-        embedded_test_server()->GetURL(request.relative_url);
-    if (absolute_url != url)
+    const size_t query_position = request.relative_url.find('?');
+    if (request.relative_url.substr(0, query_position) != relative_url)
       return std::unique_ptr<net::test_server::HttpResponse>();
-
     return base::MakeUnique<CustomResponse>(response);
+  }
+
+  std::unique_ptr<net::test_server::HttpResponse> KeepSearchRedirectHandler(
+      const std::string& relative_url,
+      const std::string& redirect_location,
+      const net::test_server::HttpRequest& request) const {
+    const size_t query_position = request.relative_url.find('?');
+    if (request.relative_url.substr(0, query_position) != relative_url)
+      return std::unique_ptr<net::test_server::HttpResponse>();
+    std::unique_ptr<net::test_server::BasicHttpResponse> response(
+        new net::test_server::BasicHttpResponse());
+    response->set_code(net::HTTP_PERMANENT_REDIRECT);
+    response->AddCustomHeader(
+        "Location",
+        query_position == std::string::npos
+            ? redirect_location
+            : redirect_location + request.relative_url.substr(query_position));
+    return std::move(response);
   }
 
   void MonitorRequestHandler(const net::test_server::HttpRequest& request) {
@@ -1601,8 +1630,8 @@ IN_PROC_BROWSER_TEST_P(ServiceWorkerNavigationPreloadTest, NetworkFallback) {
       "  });";
   const GURL page_url = embedded_test_server()->GetURL(kPageUrl);
   const GURL worker_url = embedded_test_server()->GetURL(kWorkerUrl);
-  RegisterStaticFile(page_url, kPage, "text/html");
-  RegisterStaticFile(worker_url, kScript, "text/javascript");
+  RegisterStaticFile(kPageUrl, kPage, "text/html");
+  RegisterStaticFile(kWorkerUrl, kScript, "text/javascript");
 
   SetupForNavigationPreloadTest(page_url, worker_url,
                                 true /* enable_navigation_preload */);
@@ -1637,8 +1666,8 @@ IN_PROC_BROWSER_TEST_P(ServiceWorkerNavigationPreloadTest,
       "  });";
   const GURL page_url = embedded_test_server()->GetURL(kPageUrl);
   const GURL worker_url = embedded_test_server()->GetURL(kWorkerUrl);
-  RegisterStaticFile(page_url, kPage, "text/html");
-  RegisterStaticFile(worker_url, kScript, "text/javascript");
+  RegisterStaticFile(kPageUrl, kPage, "text/html");
+  RegisterStaticFile(kWorkerUrl, kScript, "text/javascript");
 
   SetupForNavigationPreloadTest(page_url, worker_url,
                                 true /* enable_navigation_preload */);
@@ -1673,8 +1702,8 @@ IN_PROC_BROWSER_TEST_P(ServiceWorkerNavigationPreloadTest, GetResponseText) {
       "  });";
   const GURL page_url = embedded_test_server()->GetURL(kPageUrl);
   const GURL worker_url = embedded_test_server()->GetURL(kWorkerUrl);
-  RegisterStaticFile(page_url, kPage, "text/html");
-  RegisterStaticFile(worker_url, kScript, "text/javascript");
+  RegisterStaticFile(kPageUrl, kPage, "text/html");
+  RegisterStaticFile(kWorkerUrl, kScript, "text/javascript");
 
   SetupForNavigationPreloadTest(page_url, worker_url,
                                 true /* enable_navigation_preload */);
@@ -1730,8 +1759,8 @@ IN_PROC_BROWSER_TEST_P(ServiceWorkerNavigationPreloadTest,
       "  });";
   const GURL page_url = embedded_test_server()->GetURL(kPageUrl);
   const GURL worker_url = embedded_test_server()->GetURL(kWorkerUrl);
-  RegisterStaticFile(page_url, kPage, "text/html");
-  RegisterStaticFile(worker_url, kScript, "text/javascript");
+  RegisterStaticFile(kPageUrl, kPage, "text/html");
+  RegisterStaticFile(kWorkerUrl, kScript, "text/javascript");
 
   SetupForNavigationPreloadTest(page_url, worker_url,
                                 true /* enable_navigation_preload */);
@@ -1754,7 +1783,7 @@ IN_PROC_BROWSER_TEST_P(ServiceWorkerNavigationPreloadTest, NetworkError) {
   const char kWorkerUrl[] = "/service_worker/navigation_preload.js";
   const GURL page_url = embedded_test_server()->GetURL(kPageUrl);
   const GURL worker_url = embedded_test_server()->GetURL(kWorkerUrl);
-  RegisterStaticFile(worker_url, kPreloadResponseTestScript, "text/javascript");
+  RegisterStaticFile(kWorkerUrl, kPreloadResponseTestScript, "text/javascript");
 
   SetupForNavigationPreloadTest(page_url, worker_url,
                                 true /* enable_navigation_preload */);
@@ -1777,8 +1806,8 @@ IN_PROC_BROWSER_TEST_P(ServiceWorkerNavigationPreloadTest,
   const char kPage[] = "<title>ERROR</title>Hello world.";
   const GURL page_url = embedded_test_server()->GetURL(kPageUrl);
   const GURL worker_url = embedded_test_server()->GetURL(kWorkerUrl);
-  RegisterStaticFile(page_url, kPage, "text/html");
-  RegisterStaticFile(worker_url, kPreloadResponseTestScript, "text/javascript");
+  RegisterStaticFile(kPageUrl, kPage, "text/html");
+  RegisterStaticFile(kWorkerUrl, kPreloadResponseTestScript, "text/javascript");
 
   SetupForNavigationPreloadTest(page_url, worker_url,
                                 true /* enable_navigation_preload */);
@@ -1813,8 +1842,8 @@ IN_PROC_BROWSER_TEST_P(ServiceWorkerNavigationPreloadTest, NotEnabled) {
   const char kPage[] = "<title>ERROR</title>Hello world.";
   const GURL page_url = embedded_test_server()->GetURL(kPageUrl);
   const GURL worker_url = embedded_test_server()->GetURL(kWorkerUrl);
-  RegisterStaticFile(page_url, kPage, "text/html");
-  RegisterStaticFile(worker_url, kPreloadResponseTestScript, "text/javascript");
+  RegisterStaticFile(kPageUrl, kPage, "text/html");
+  RegisterStaticFile(kWorkerUrl, kPreloadResponseTestScript, "text/javascript");
 
   SetupForNavigationPreloadTest(page_url, worker_url,
                                 false /* enable_navigation_preload */);
@@ -1849,8 +1878,8 @@ IN_PROC_BROWSER_TEST_P(ServiceWorkerNavigationPreloadTest,
       "<title>ERROR</title>Hello world.";
   const GURL page_url = embedded_test_server()->GetURL(kPageUrl);
   const GURL worker_url = embedded_test_server()->GetURL(kWorkerUrl);
-  RegisterCustomResponse(page_url, kPageResponse);
-  RegisterStaticFile(worker_url, kPreloadResponseTestScript, "text/javascript");
+  RegisterCustomResponse(kPageUrl, kPageResponse);
+  RegisterStaticFile(kWorkerUrl, kPreloadResponseTestScript, "text/javascript");
 
   SetupForNavigationPreloadTest(page_url, worker_url,
                                 true /* enable_navigation_preload */);
@@ -1897,9 +1926,9 @@ IN_PROC_BROWSER_TEST_P(ServiceWorkerNavigationPreloadTest, RejectRedirects) {
       embedded_test_server()->GetURL(kRedirectedPageUrl);
   const GURL page_url = embedded_test_server()->GetURL(kPageUrl);
   const GURL worker_url = embedded_test_server()->GetURL(kWorkerUrl);
-  RegisterCustomResponse(page_url, kPageResponse);
-  RegisterStaticFile(worker_url, kPreloadResponseTestScript, "text/javascript");
-  RegisterStaticFile(redirecred_page_url, kRedirectedPage, "text/html");
+  RegisterCustomResponse(kPageUrl, kPageResponse);
+  RegisterStaticFile(kWorkerUrl, kPreloadResponseTestScript, "text/javascript");
+  RegisterStaticFile(kRedirectedPageUrl, kRedirectedPage, "text/html");
 
   SetupForNavigationPreloadTest(page_url, worker_url,
                                 true /* enable_navigation_preload */);
@@ -1919,6 +1948,68 @@ IN_PROC_BROWSER_TEST_P(ServiceWorkerNavigationPreloadTest, RejectRedirects) {
   // shold provide more specific error message.
   EXPECT_EQ("NetworkError: Service Worker navigation preload network error.",
             GetTextContent());
+}
+
+// Tests responding with the navigation preload response when the navigation
+// occurred after a redirect.
+IN_PROC_BROWSER_TEST_P(ServiceWorkerNavigationPreloadTest,
+                       RedirectAndRespondWithNavigationPreload) {
+  const std::string kPageUrl = "/service_worker/navigation_preload.html";
+  const char kWorkerUrl[] = "/service_worker/navigation_preload.js";
+  const char kPage[] =
+      "<title></title>\n"
+      "<script>document.title = document.location.search;</script>";
+  const char kScript[] =
+      "self.addEventListener('fetch', event => {\n"
+      "    if (event.request.url.indexOf('navigation_preload.html') == -1)\n"
+      "      return; // For in scope redirection.\n"
+      "    event.respondWith(event.preloadResponse);\n"
+      "  });";
+  const GURL page_url = embedded_test_server()->GetURL(kPageUrl);
+  const GURL worker_url = embedded_test_server()->GetURL(kWorkerUrl);
+  RegisterStaticFile(kPageUrl, kPage, "text/html");
+  RegisterStaticFile(kWorkerUrl, kScript, "text/javascript");
+
+  // Register redirects to the target URL. The service worker responds to the
+  // target URL with the navigation preload response.
+  const char kRedirectPageUrl[] = "/redirect";
+  const char kInScopeRedirectPageUrl[] = "/service_worker/redirect";
+  RegisterKeepSearchRedirect(kRedirectPageUrl, page_url.spec());
+  RegisterKeepSearchRedirect(kInScopeRedirectPageUrl, page_url.spec());
+
+  SetupForNavigationPreloadTest(
+      embedded_test_server()->GetURL("/service_worker/"), worker_url,
+      true /* enable_navigation_preload */);
+
+  const GURL redirect_page_url =
+      embedded_test_server()->GetURL(kRedirectPageUrl).Resolve("?1");
+  const GURL in_scope_redirect_page_url =
+      embedded_test_server()->GetURL(kInScopeRedirectPageUrl).Resolve("?2");
+  const GURL cross_origin_redirect_page_url =
+      embedded_test_server()->GetURL("a.com", kRedirectPageUrl).Resolve("?3");
+
+  // Navigate to a same-origin, out of scope URL that redirects to the target
+  // URL. The navigation preload request should be the single request to the
+  // target URL.
+  TitleWatcher title_watcher1(shell()->web_contents(),
+                              base::ASCIIToUTF16("?1"));
+  NavigateToURL(shell(), redirect_page_url);
+  EXPECT_EQ(1, GetRequestCount(kPageUrl + "?1"));
+
+  // Navigate to a same-origin, in-scope URL that redirects to the target URL.
+  // The navigation preload request should be the single request to the target
+  // URL.
+  TitleWatcher title_watcher2(shell()->web_contents(),
+                              base::ASCIIToUTF16("?2"));
+  NavigateToURL(shell(), in_scope_redirect_page_url);
+  EXPECT_EQ(1, GetRequestCount(kPageUrl + "?2"));
+
+  // Navigate to a cross-origin URL that redirects to the target URL. The
+  // navigation preload request should be the single request to the target URL.
+  TitleWatcher title_watcher3(shell()->web_contents(),
+                              base::ASCIIToUTF16("?3"));
+  NavigateToURL(shell(), cross_origin_redirect_page_url);
+  EXPECT_EQ(1, GetRequestCount(kPageUrl + "?3"));
 }
 
 // Flaky on Win/Mac: http://crbug.com/533631
