@@ -26,6 +26,7 @@ content::BrowserContext* GetActiveBrowserContext() {
 bool CanShowWindowForUser(
     aura::Window* window,
     const GetActiveBrowserContextCallback& get_context_callback) {
+  DCHECK(window);
   ash::SessionStateDelegate* delegate =
       ash::WmShell::Get()->GetSessionStateDelegate();
   if (delegate->NumberOfLoggedInUsers() > 1) {
