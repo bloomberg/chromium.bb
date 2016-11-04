@@ -242,11 +242,9 @@ class ServiceWorkerContextClient::NavigationPreloadRequest final
                            const GURL& url,
                            mojom::FetchEventPreloadHandlePtr preload_handle)
       : fetch_event_id_(fetch_event_id),
+        url_(url),
         url_loader_(std::move(preload_handle->url_loader)),
-        binding_(this, std::move(preload_handle->url_loader_client_request)),
-        response_(base::MakeUnique<blink::WebServiceWorkerResponse>()) {
-    response_->setURL(url);
-  }
+        binding_(this, std::move(preload_handle->url_loader_client_request)) {}
 
   ~NavigationPreloadRequest() override {
     if (result_reported_)
@@ -265,7 +263,9 @@ class ServiceWorkerContextClient::NavigationPreloadRequest final
   }
 
   void OnReceiveResponse(const ResourceResponseHead& response_head) override {
-    DCHECK(response_);
+    DCHECK(!response_);
+    response_ = base::MakeUnique<blink::WebServiceWorkerResponse>();
+    response_->setURL(url_);
     DCHECK(response_head.headers);
     response_->setStatus(response_head.headers->response_code());
     response_->setStatusText(
@@ -280,19 +280,14 @@ class ServiceWorkerContextClient::NavigationPreloadRequest final
                               blink::WebString::fromUTF8(header_value));
     }
     response_->setResponseTime(response_head.response_time.ToInternalValue());
+    MaybeReportToClient();
   }
 
   void OnStartLoadingResponseBody(
       mojo::ScopedDataPipeConsumerHandle body) override {
-    DCHECK(!result_reported_);
-    ServiceWorkerContextClient* client =
-        ServiceWorkerContextClient::ThreadSpecificInstance();
-    if (!client)
-      return;
-    client->OnNavigationPreloadResponse(
-        fetch_event_id_, std::move(response_),
-        base::MakeUnique<WebDataConsumerHandleImpl>(std::move(body)));
-    result_reported_ = true;
+    DCHECK(!body_.is_valid());
+    body_ = std::move(body);
+    MaybeReportToClient();
   }
 
   void OnComplete(const ResourceRequestCompletionStatus& status) override {
@@ -315,10 +310,28 @@ class ServiceWorkerContextClient::NavigationPreloadRequest final
   }
 
  private:
+  void MaybeReportToClient() {
+    DCHECK(!result_reported_);
+    if (!response_ || !body_.is_valid())
+      return;
+    ServiceWorkerContextClient* client =
+        ServiceWorkerContextClient::ThreadSpecificInstance();
+    if (!client)
+      return;
+
+    client->OnNavigationPreloadResponse(
+        fetch_event_id_, std::move(response_),
+        base::MakeUnique<WebDataConsumerHandleImpl>(std::move(body_)));
+    result_reported_ = true;
+  }
+
   const int fetch_event_id_;
+  const GURL url_;
   mojom::URLLoaderPtr url_loader_;
   mojo::Binding<mojom::URLLoaderClient> binding_;
+
   std::unique_ptr<blink::WebServiceWorkerResponse> response_;
+  mojo::ScopedDataPipeConsumerHandle body_;
   bool result_reported_ = false;
 };
 

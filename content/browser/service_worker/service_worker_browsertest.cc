@@ -1991,25 +1991,63 @@ IN_PROC_BROWSER_TEST_P(ServiceWorkerNavigationPreloadTest,
   // Navigate to a same-origin, out of scope URL that redirects to the target
   // URL. The navigation preload request should be the single request to the
   // target URL.
-  TitleWatcher title_watcher1(shell()->web_contents(),
-                              base::ASCIIToUTF16("?1"));
+  const base::string16 title1 = base::ASCIIToUTF16("?1");
+  TitleWatcher title_watcher1(shell()->web_contents(), title1);
   NavigateToURL(shell(), redirect_page_url);
+  EXPECT_EQ(title1, title_watcher1.WaitAndGetTitle());
   EXPECT_EQ(1, GetRequestCount(kPageUrl + "?1"));
 
   // Navigate to a same-origin, in-scope URL that redirects to the target URL.
   // The navigation preload request should be the single request to the target
   // URL.
-  TitleWatcher title_watcher2(shell()->web_contents(),
-                              base::ASCIIToUTF16("?2"));
+  const base::string16 title2 = base::ASCIIToUTF16("?2");
+  TitleWatcher title_watcher2(shell()->web_contents(), title2);
   NavigateToURL(shell(), in_scope_redirect_page_url);
+  EXPECT_EQ(title2, title_watcher2.WaitAndGetTitle());
   EXPECT_EQ(1, GetRequestCount(kPageUrl + "?2"));
 
   // Navigate to a cross-origin URL that redirects to the target URL. The
   // navigation preload request should be the single request to the target URL.
-  TitleWatcher title_watcher3(shell()->web_contents(),
-                              base::ASCIIToUTF16("?3"));
+  const base::string16 title3 = base::ASCIIToUTF16("?3");
+  TitleWatcher title_watcher3(shell()->web_contents(), title3);
   NavigateToURL(shell(), cross_origin_redirect_page_url);
+  EXPECT_EQ(title3, title_watcher3.WaitAndGetTitle());
   EXPECT_EQ(1, GetRequestCount(kPageUrl + "?3"));
+}
+
+// When the content type of the page is not correctly set,
+// OnStartLoadingResponseBody() of mojom::URLLoaderClient is called before
+// OnReceiveResponse(). This behavior is caused by MimeSniffingResourceHandler.
+// This test checks that even if the MimeSniffingResourceHandler is triggered
+// navigation preload must be handled correctly.
+IN_PROC_BROWSER_TEST_P(ServiceWorkerNavigationPreloadTest,
+                       RespondWithNavigationPreloadWithMimeSniffing) {
+  const char kPageUrl[] = "/service_worker/navigation_preload.html";
+  const char kWorkerUrl[] = "/service_worker/navigation_preload.js";
+  const char kPage[] = "<title>PASS</title>Hello world.";
+  const char kScript[] =
+      "self.addEventListener('fetch', event => {\n"
+      "    event.respondWith(event.preloadResponse);\n"
+      "  });";
+  const GURL page_url = embedded_test_server()->GetURL(kPageUrl);
+  const GURL worker_url = embedded_test_server()->GetURL(kWorkerUrl);
+
+  // Setting an empty content type to trigger MimeSniffingResourceHandler.
+  RegisterStaticFile(kPageUrl, kPage, "");
+  RegisterStaticFile(kWorkerUrl, kScript, "text/javascript");
+
+  SetupForNavigationPreloadTest(page_url, worker_url,
+                                true /* enable_navigation_preload */);
+
+  const base::string16 title = base::ASCIIToUTF16("PASS");
+  TitleWatcher title_watcher(shell()->web_contents(), title);
+  NavigateToURL(shell(), page_url);
+  EXPECT_EQ(title, title_watcher.WaitAndGetTitle());
+  EXPECT_EQ("Hello world.", GetTextContent());
+
+  // The page request must be sent only once, since the worker responded with
+  // the navigation preload response
+  EXPECT_EQ(1, GetRequestCount(kPageUrl));
 }
 
 // Flaky on Win/Mac: http://crbug.com/533631
