@@ -2007,24 +2007,30 @@ ArcBluetoothBridge::GetAdapterProperties(
   return properties;
 }
 
-// Android support 5 types of Advertising Data.
-// However Chrome didn't expose AdvertiseFlag and ManufacturerData.
-// So we will only expose local_name, service_uuids and service_data.
-// Note that we need to use UUID 16 bits in service_data section
-// because Android does not support UUID 128 bits there.
-// TODO(crbug.com/618442) Make Chrome expose missing data.
+// Android support 6 types of Advertising Data which are Advertising Data Flags,
+// Local Name, Service UUIDs, Tx Power Level, Service Data, and Manufacturer
+// Data. Note that we need to use 16-bit UUID in Service Data section because
+// Android does not support 128-bit UUID there.
 mojo::Array<mojom::BluetoothAdvertisingDataPtr>
 ArcBluetoothBridge::GetAdvertisingData(const BluetoothDevice* device) const {
   mojo::Array<mojom::BluetoothAdvertisingDataPtr> advertising_data;
 
-  // LocalName
+  // Advertising Data Flags
+  if (device->GetAdvertisingDataFlags().has_value()) {
+    mojom::BluetoothAdvertisingDataPtr flags =
+        mojom::BluetoothAdvertisingData::New();
+    flags->set_flags(device->GetAdvertisingDataFlags().value());
+    advertising_data.push_back(std::move(flags));
+  }
+
+  // Local Name
   mojom::BluetoothAdvertisingDataPtr local_name =
       mojom::BluetoothAdvertisingData::New();
   local_name->set_local_name(device->GetName() ? device->GetName().value()
                                                : nullptr);
   advertising_data.push_back(std::move(local_name));
 
-  // ServiceUuid
+  // Service UUIDs
   const BluetoothDevice::UUIDSet& uuid_set = device->GetUUIDs();
   if (uuid_set.size() > 0) {
     mojom::BluetoothAdvertisingDataPtr service_uuids =
@@ -2034,7 +2040,16 @@ ArcBluetoothBridge::GetAdvertisingData(const BluetoothDevice* device) const {
     advertising_data.push_back(std::move(service_uuids));
   }
 
-  // Service data
+  // Tx Power Level
+  if (device->GetInquiryTxPower().has_value()) {
+    mojom::BluetoothAdvertisingDataPtr tx_power_level_element =
+        mojom::BluetoothAdvertisingData::New();
+    tx_power_level_element->set_tx_power_level(
+        device->GetInquiryTxPower().value());
+    advertising_data.push_back(std::move(tx_power_level_element));
+  }
+
+  // Service Data
   for (const BluetoothUUID& uuid : device->GetServiceDataUUIDs()) {
     mojom::BluetoothAdvertisingDataPtr service_data_element =
         mojom::BluetoothAdvertisingData::New();
@@ -2052,6 +2067,23 @@ ArcBluetoothBridge::GetAdvertisingData(const BluetoothDevice* device) const {
 
     service_data_element->set_service_data(std::move(service_data));
     advertising_data.push_back(std::move(service_data_element));
+  }
+
+  // Manufacturer Data
+  if (!device->GetManufacturerData().empty()) {
+    std::vector<uint8_t> manufacturer_data;
+    for (const auto& pair : device->GetManufacturerData()) {
+      uint16_t id = pair.first;
+      // Use little endian here.
+      manufacturer_data.push_back(id & 0xff);
+      manufacturer_data.push_back(id >> 8);
+      manufacturer_data.insert(manufacturer_data.end(), pair.second.begin(),
+                               pair.second.end());
+    }
+    mojom::BluetoothAdvertisingDataPtr manufacturer_data_element =
+        mojom::BluetoothAdvertisingData::New();
+    manufacturer_data_element->set_manufacturer_data(manufacturer_data);
+    advertising_data.push_back(std::move(manufacturer_data_element));
   }
 
   return advertising_data;
