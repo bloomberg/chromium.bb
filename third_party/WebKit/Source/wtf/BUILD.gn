@@ -340,6 +340,7 @@ test("wtf_unittests") {
     "text/TextCodecReplacementTest.cpp",
     "text/TextCodecTest.cpp",
     "text/TextCodecUTF8Test.cpp",
+    "text/TextCodecUserDefinedTest.cpp",
     "text/WTFStringTest.cpp",
     "typed_arrays/ArrayBufferBuilderTest.cpp",
   ]

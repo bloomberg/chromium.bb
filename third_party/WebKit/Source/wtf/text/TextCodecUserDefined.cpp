@@ -69,13 +69,19 @@ template <typename CharType>
 static CString encodeComplexUserDefined(const CharType* characters,
                                         size_t length,
                                         UnencodableHandling handling) {
-  Vector<char> result(length);
+  size_t targetLength = length;
+  Vector<char> result(targetLength);
   char* bytes = result.data();
 
   size_t resultLength = 0;
   for (size_t i = 0; i < length;) {
     UChar32 c;
+    // TODO(jsbell): Will the input for x-user-defined ever be LChars?
     U16_NEXT(characters, i, length, c);
+    // If the input was a surrogate pair (non-BMP character) then we
+    // overestimated the length.
+    if (c > 0xffff)
+      --targetLength;
     signed char signedByte = static_cast<signed char>(c);
     if ((signedByte & 0xF7FF) == c) {
       bytes[resultLength++] = signedByte;
@@ -84,8 +90,16 @@ static CString encodeComplexUserDefined(const CharType* characters,
       UnencodableReplacementArray replacement;
       int replacementLength =
           TextCodec::getUnencodableReplacement(c, handling, replacement);
-      result.grow(resultLength + replacementLength + length - i);
-      bytes = result.data();
+      DCHECK_GT(replacementLength, 0);
+      // Only one char was initially reserved per input character, so grow if
+      // necessary. Note that in the case of surrogate pairs and
+      // QuestionMarksForUnencodables the result length may be shorter than
+      // the input length.
+      targetLength += replacementLength - 1;
+      if (targetLength > result.size()) {
+        result.grow(targetLength);
+        bytes = result.data();
+      }
       memcpy(bytes + resultLength, replacement, replacementLength);
       resultLength += replacementLength;
     }
