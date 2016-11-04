@@ -339,6 +339,9 @@
   <message name="IDS_SETTINGS_CREDIT_CARD_EXPIRATION_YEAR" desc="Accessibility label on the year drop down to let users know the field corresponds to the expiration year">
     Expiration year
   </message>
+  <message name="IDS_SETTINGS_CREDIT_CARD_EXPIRED" desc="The error message that is shown when user attempts to enter or save an expired credit card.">
+    Your credit card is expired.
+  </message>
   <message name="IDS_SETTINGS_PASSWORDS" desc="Name for the password section and toggle">
     Manage passwords
   </message>

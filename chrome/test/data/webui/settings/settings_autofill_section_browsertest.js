@@ -303,6 +303,33 @@ TEST_F('SettingsAutofillSectionBrowserTest', 'CreditCardTests', function() {
       });
     });
 
+    test('verifySaveExpiredCreditCardEdit', function(done) {
+      var creditCard = FakeDataMaker.emptyCreditCardEntry();
+
+      var now = new Date();
+      creditCard.expirationYear = now.getFullYear() - 2;
+      // works fine for January.
+      creditCard.expirationMonth = now.getMonth() - 1;
+
+      var creditCardDialog = self.createCreditCardDialog_(creditCard);
+
+      return test_util.whenAttributeIs(
+          creditCardDialog.$.dialog, 'open', true).then(function() {
+        creditCardDialog.addEventListener('save-credit-card', function() {
+          // Fail the test because the save event should not be called when
+          // the card is expired.
+          assertTrue(false);
+        });
+        creditCardDialog.addEventListener('tap', function() {
+          // Test is |done| in a timeout in order to ensure that
+          // 'save-credit-card' is NOT fired after this test.
+          assertFalse(creditCardDialog.$.expired.hidden);
+          window.setTimeout(done, 100);
+        });
+        MockInteractions.tap(creditCardDialog.$.saveButton);
+      });
+    });
+
     // Test will timeout if event is not received.
     test('verifySaveCreditCardEdit', function(done) {
       var creditCard = FakeDataMaker.emptyCreditCardEntry();
@@ -310,6 +337,7 @@ TEST_F('SettingsAutofillSectionBrowserTest', 'CreditCardTests', function() {
 
       return test_util.whenAttributeIs(
           creditCardDialog.$.dialog, 'open', true).then(function() {
+        assertTrue(creditCardDialog.$.expired.hidden);
         creditCardDialog.addEventListener('save-credit-card', function(event) {
           assertEquals(creditCard.guid, event.detail.guid);
           done();
@@ -565,7 +593,6 @@ TEST_F('SettingsAutofillSectionBrowserTest', 'AddressTests', function() {
           // Fail the test because the save event should not be called when
           // cancel is clicked.
           assertTrue(false);
-          done();
         });
 
         dialog.addEventListener('close', function() {

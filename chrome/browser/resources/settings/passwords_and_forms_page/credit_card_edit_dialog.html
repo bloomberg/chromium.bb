@@ -16,6 +16,16 @@
       -webkit-margin-start: 16px;
     }
 
+    #expired {
+      align-items: center;
+      background-color: var(--paper-red-50);
+      color: var(--settings-error-color);
+      display: flex;
+      height: 40px;
+      margin-top: 12px;
+      padding: 0 0 0 8px;
+    }
+
     #month {
       width: 70px;
     }
@@ -57,6 +67,9 @@
             </template>
           </select>
           <span class="md-select-underline"></span>
+        </span>
+        <span id="expired" hidden="[[!checkIfCardExpired_(expirationMonth_, expirationYear_)]]">
+          $i18n{creditCardExpired}
         </span>
       </div>
       <div class="button-container">
