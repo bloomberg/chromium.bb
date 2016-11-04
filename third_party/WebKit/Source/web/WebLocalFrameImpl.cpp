@@ -140,7 +140,7 @@
 #include "core/inspector/ConsoleMessage.h"
 #include "core/layout/HitTestResult.h"
 #include "core/layout/LayoutObject.h"
-#include "core/layout/LayoutPart.h"
+#include "core/layout/api/LayoutPartItem.h"
 #include "core/layout/api/LayoutViewItem.h"
 #include "core/loader/DocumentLoader.h"
 #include "core/loader/FrameLoadRequest.h"
@@ -628,9 +628,10 @@ WebSize WebLocalFrameImpl::contentsSize() const {
 }
 
 bool WebLocalFrameImpl::hasVisibleContent() const {
-  if (LayoutPart* layoutObject = frame()->ownerLayoutObject()) {
-    if (layoutObject->style()->visibility() != EVisibility::Visible)
-      return false;
+  LayoutPartItem layoutItem = frame()->ownerLayoutItem();
+  if (!layoutItem.isNull() &&
+      layoutItem.style()->visibility() != EVisibility::Visible) {
+    return false;
   }
 
   if (FrameView* view = frameView())
