@@ -98,7 +98,7 @@ public class ContextMenuHandler implements OnMenuItemClickListener {
         }
 
         if (showItem(ID_SAVE_FOR_OFFLINE)) {
-            addContextMenuItem(menu, ID_SAVE_FOR_OFFLINE, R.string.contextmenu_save_offline);
+            addContextMenuItem(menu, ID_SAVE_FOR_OFFLINE, R.string.contextmenu_save_link);
         }
 
         if (showItem(ID_REMOVE)) {
