@@ -67,6 +67,22 @@ bool NGBox::Layout(const NGConstraintSpace* constraint_space,
 }
 
 bool NGBox::ComputeMinAndMaxContentSizes(MinAndMaxContentSizes* sizes) {
+  if (!CanUseNewLayout()) {
+    DCHECK(layout_box_);
+    // TODO(layout-ng): This could be somewhat optimized by directly calling
+    // computeIntrinsicLogicalWidths, but that function is currently private.
+    // Consider doing that if this becomes a performance issue.
+    LayoutUnit borderAndPadding = layout_box_->borderAndPaddingLogicalWidth();
+    sizes->min_content = layout_box_->computeLogicalWidthUsing(
+                             MainOrPreferredSize, Length(MinContent),
+                             LayoutUnit(), layout_box_->containingBlock()) -
+                         borderAndPadding;
+    sizes->max_content = layout_box_->computeLogicalWidthUsing(
+                             MainOrPreferredSize, Length(MaxContent),
+                             LayoutUnit(), layout_box_->containingBlock()) -
+                         borderAndPadding;
+    return true;
+  }
   DCHECK(!layout_algorithm_)
       << "Can't interleave Layout and ComputeMinAndMaxContentSizes";
   if (!minmax_algorithm_) {
