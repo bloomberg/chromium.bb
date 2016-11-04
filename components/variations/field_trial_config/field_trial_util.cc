@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/common/variations/variations_util.h"
+#include "components/variations/field_trial_config/field_trial_util.h"
 
 #include <stddef.h>
 
@@ -14,11 +14,11 @@
 #include "base/metrics/field_trial.h"
 #include "base/strings/string_split.h"
 #include "base/strings/stringprintf.h"
-#include "chrome/common/variations/fieldtrial_testing_config.h"
+#include "components/variations/field_trial_config/fieldtrial_testing_config.h"
 #include "components/variations/variations_associated_data.h"
 #include "net/base/escape.h"
 
-namespace chrome_variations {
+namespace variations {
 
 namespace {
 
@@ -150,4 +150,4 @@ void AssociateDefaultFieldTrialConfig(base::FeatureList* feature_list) {
   AssociateParamsFromFieldTrialConfig(kFieldTrialConfig, feature_list);
 }
 
-}  // namespace chrome_variations
+}  // namespace variations

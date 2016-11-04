@@ -1409,6 +1409,7 @@ split_static_library("browser") {
     "//components/user_prefs",
     "//components/user_prefs/tracked:user_prefs_tracked",
     "//components/variations",
+    "//components/variations/field_trial_config",
     "//components/variations/net",
     "//components/variations/service",
     "//components/visitedlink/browser",

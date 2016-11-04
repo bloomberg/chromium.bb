@@ -17,7 +17,6 @@
 #include "chrome/browser/prerender/prerender_field_trial.h"
 #include "chrome/common/chrome_paths.h"
 #include "chrome/common/chrome_switches.h"
-#include "chrome/common/variations/variations_util.h"
 #include "components/browser_watcher/features.h"
 #include "components/variations/variations_associated_data.h"
 #include "content/public/common/content_switches.h"

@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/common/variations/variations_util.h"
+#include "components/variations/field_trial_config/field_trial_util.h"
 
 #include <memory>
 #include <utility>
@@ -11,17 +11,19 @@
 #include "base/feature_list.h"
 #include "base/macros.h"
 #include "base/metrics/field_trial.h"
-#include "chrome/common/variations/fieldtrial_testing_config.h"
+#include "components/variations/field_trial_config/fieldtrial_testing_config.h"
 #include "components/variations/variations_associated_data.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
-namespace chrome_variations {
+namespace variations {
 
-class VariationsUtilTest : public ::testing::Test {
+namespace {
+
+class FieldTrialUtilTest : public ::testing::Test {
  public:
-  VariationsUtilTest() : field_trial_list_(nullptr) {}
+  FieldTrialUtilTest() : field_trial_list_(nullptr) {}
 
-  ~VariationsUtilTest() override {
+  ~FieldTrialUtilTest() override {
     // Ensure that the maps are cleared between tests, since they are stored as
     // process singletons.
     variations::testing::ClearAllVariationIDs();
@@ -31,10 +33,12 @@ class VariationsUtilTest : public ::testing::Test {
  private:
   base::FieldTrialList field_trial_list_;
 
-  DISALLOW_COPY_AND_ASSIGN(VariationsUtilTest);
+  DISALLOW_COPY_AND_ASSIGN(FieldTrialUtilTest);
 };
 
-TEST_F(VariationsUtilTest, AssociateParamsFromString) {
+}  // namespace
+
+TEST_F(FieldTrialUtilTest, AssociateParamsFromString) {
   const std::string kTrialName = "AssociateVariationParams";
   const std::string kVariationsString =
       "AssociateVariationParams.A:a/10/b/test,AssociateVariationParams.B:a/%2F";
@@ -51,14 +55,14 @@ TEST_F(VariationsUtilTest, AssociateParamsFromString) {
   EXPECT_EQ("/", params["a"]);
 }
 
-TEST_F(VariationsUtilTest, AssociateParamsFromStringWithSameTrial) {
+TEST_F(FieldTrialUtilTest, AssociateParamsFromStringWithSameTrial) {
   const std::string kTrialName = "AssociateVariationParams";
   const std::string kVariationsString =
       "AssociateVariationParams.A:a/10/b/test,AssociateVariationParams.A:a/x";
   ASSERT_FALSE(AssociateParamsFromString(kVariationsString));
 }
 
-TEST_F(VariationsUtilTest, AssociateParamsFromFieldTrialConfig) {
+TEST_F(FieldTrialUtilTest, AssociateParamsFromFieldTrialConfig) {
   const FieldTrialTestingExperimentParams array_kFieldTrialConfig_params_0[] =
       {{"x", "1"}, {"y", "2"}};
   const FieldTrialTestingExperiment array_kFieldTrialConfig_experiments_0[] = {
@@ -97,7 +101,7 @@ TEST_F(VariationsUtilTest, AssociateParamsFromFieldTrialConfig) {
   EXPECT_EQ("TestGroup2", base::FieldTrialList::FindFullName("TestTrial2"));
 }
 
-TEST_F(VariationsUtilTest, AssociateFeaturesFromFieldTrialConfig) {
+TEST_F(FieldTrialUtilTest, AssociateFeaturesFromFieldTrialConfig) {
   const base::Feature kFeatureA{"A", base::FEATURE_DISABLED_BY_DEFAULT};
   const base::Feature kFeatureB{"B", base::FEATURE_ENABLED_BY_DEFAULT};
   const base::Feature kFeatureC{"C", base::FEATURE_DISABLED_BY_DEFAULT};
@@ -141,7 +145,7 @@ TEST_F(VariationsUtilTest, AssociateFeaturesFromFieldTrialConfig) {
   EXPECT_TRUE(base::FieldTrialList::IsTrialActive("TestTrial2"));
 }
 
-TEST_F(VariationsUtilTest, AssociateForcingFlagsFromFieldTrialConfig) {
+TEST_F(FieldTrialUtilTest, AssociateForcingFlagsFromFieldTrialConfig) {
   const FieldTrialTestingExperiment array_kFieldTrialConfig_experiments_0[] = {
       {"TestGroup1", nullptr, 0, nullptr, 0, nullptr, 0, nullptr}
   };
@@ -174,4 +178,4 @@ TEST_F(VariationsUtilTest, AssociateForcingFlagsFromFieldTrialConfig) {
   EXPECT_EQ("ForcedGroup3", base::FieldTrialList::FindFullName("TestTrial3"));
 }
 
-}  // namespace chrome_variations
+}  // namespace variations

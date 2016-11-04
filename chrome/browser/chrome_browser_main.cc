@@ -116,7 +116,6 @@
 #include "chrome/common/pref_names.h"
 #include "chrome/common/profiling.h"
 #include "chrome/common/stack_sampling_configuration.h"
-#include "chrome/common/variations/variations_util.h"
 #include "chrome/grit/generated_resources.h"
 #include "chrome/installer/util/google_update_settings.h"
 #include "components/component_updater/component_updater_service.h"
@@ -142,6 +141,7 @@
 #include "components/task_scheduler_util/initialization_util.h"
 #include "components/tracing/common/tracing_switches.h"
 #include "components/translate/core/browser/translate_download_manager.h"
+#include "components/variations/field_trial_config/field_trial_util.h"
 #include "components/variations/pref_names.h"
 #include "components/variations/service/variations_service.h"
 #include "components/variations/variations_associated_data.h"
@@ -697,10 +697,12 @@ void ChromeBrowserMainParts::SetupFieldTrials() {
     base::FieldTrial::EnableBenchmarking();
   }
 
-  if (command_line->HasSwitch(switches::kForceFieldTrialParams)) {
-    bool result = chrome_variations::AssociateParamsFromString(
-        command_line->GetSwitchValueASCII(switches::kForceFieldTrialParams));
-    CHECK(result) << "Invalid --" << switches::kForceFieldTrialParams
+  if (command_line->HasSwitch(variations::switches::kForceFieldTrialParams)) {
+    bool result = variations::AssociateParamsFromString(
+        command_line->GetSwitchValueASCII(
+            variations::switches::kForceFieldTrialParams));
+    CHECK(result) << "Invalid --"
+                  << variations::switches::kForceFieldTrialParams
                   << " list specified.";
   }
 
@@ -744,10 +746,11 @@ void ChromeBrowserMainParts::SetupFieldTrials() {
       command_line->GetSwitchValueASCII(switches::kDisableFeatures));
 
 #if defined(FIELDTRIAL_TESTING_ENABLED)
-  if (!command_line->HasSwitch(switches::kDisableFieldTrialTestingConfig) &&
+  if (!command_line->HasSwitch(
+          variations::switches::kDisableFieldTrialTestingConfig) &&
       !command_line->HasSwitch(switches::kForceFieldTrials) &&
       !command_line->HasSwitch(variations::switches::kVariationsServerURL)) {
-    chrome_variations::AssociateDefaultFieldTrialConfig(feature_list.get());
+    variations::AssociateDefaultFieldTrialConfig(feature_list.get());
   }
 #endif  // defined(FIELDTRIAL_TESTING_ENABLED)
 

@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_COMMON_VARIATIONS_VARIATIONS_UTIL_H_
-#define CHROME_COMMON_VARIATIONS_VARIATIONS_UTIL_H_
+#ifndef COMPONENTS_VARIATIONS_FIELD_TRIAL_CONFIG_FIELD_TRIAL_UTIL_H_
+#define COMPONENTS_VARIATIONS_FIELD_TRIAL_CONFIG_FIELD_TRIAL_UTIL_H_
 
 #include <string>
 
@@ -11,14 +11,14 @@ namespace base {
 class FeatureList;
 }
 
-namespace chrome_variations {
+namespace variations {
 
 struct FieldTrialTestingConfig;
 
 // Provides a mechanism to associate multiple set of params to multiple groups
 // with a formatted string specified from commandline. See
-// kForceFieldTrialParams in chrome/common/chrome_switches.cc for more details
-// on the formatting.
+// kForceFieldTrialParams in components/variations/variations_switches.cc for
+// more details on the formatting.
 bool AssociateParamsFromString(const std::string& variations_string);
 
 // Provides a mechanism to associate multiple set of params and features to
@@ -29,10 +29,10 @@ void AssociateParamsFromFieldTrialConfig(const FieldTrialTestingConfig& config,
                                          base::FeatureList* feature_list);
 
 // Associates params and features to FieldTrial groups and forces the selection
-// of groups specified in testing/variations/fieldtrial_testing_config_*.json.
+// of groups specified in testing/variations/fieldtrial_testing_config.json.
 // Registers features associated with default field trials with |feature_list|.
 void AssociateDefaultFieldTrialConfig(base::FeatureList* feature_list);
 
-}  // namespace chrome_variations
+}  // namespace variations
 
-#endif  // CHROME_COMMON_VARIATIONS_VARIATIONS_UTIL_H_
+#endif  // COMPONENTS_VARIATIONS_FIELD_TRIAL_CONFIG_FIELD_TRIAL_UTIL_H_

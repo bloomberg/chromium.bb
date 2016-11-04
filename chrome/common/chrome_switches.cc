@@ -239,9 +239,6 @@ const char kDisableExtensionsFileAccessCheck[] =
 const char kDisableExtensionsHttpThrottling[] =
     "disable-extensions-http-throttling";
 
-// Disable field trial tests configured in fieldtrial_testing_config.json.
-const char kDisableFieldTrialTestingConfig[] = "disable-field-trial-config";
-
 // Disables the HTTP/2 protocol.
 const char kDisableHttp2[] = "disable-http2";
 
@@ -535,16 +532,6 @@ const char kFastStart[]            = "fast-start";
 // Forces application mode. This hides certain system UI elements and forces
 // the app to be installed if it hasn't been already.
 const char kForceAppMode[]                  = "force-app-mode";
-
-// This option can be used to force parameters of field trials when testing
-// changes locally. The argument is a param list of (key, value) pairs prefixed
-// by an associated (trial, group) pair. You specify the param list for multiple
-// (trial, group) pairs with a comma separator.
-// Example:
-//   "Trial1.Group1:k1/v1/k2/v2,Trial2.Group2:k3/v3/k4/v4"
-// Trial names, groups names, parameter names, and value should all be URL
-// escaped for all non-alphanumeric characters.
-const char kForceFieldTrialParams[] = "force-fieldtrial-params";
 
 // Displays the First Run experience when the browser is started, regardless of
 // whether or not it's actually the First Run (this overrides kNoFirstRun).

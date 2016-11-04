@@ -8,8 +8,8 @@
 #include "chrome/browser/permissions/permissions_browsertest.h"
 #include "chrome/browser/ui/website_settings/mock_permission_prompt_factory.h"
 #include "chrome/common/chrome_paths.h"
-#include "chrome/common/chrome_switches.h"
 #include "chrome/test/base/ui_test_utils.h"
+#include "components/variations/variations_switches.h"
 #include "content/public/browser/web_contents.h"
 #include "content/public/common/content_switches.h"
 #include "content/public/test/browser_test_utils.h"
@@ -36,7 +36,7 @@ class FlashPermissionBrowserTest : public PermissionsBrowserTest {
     command_line->AppendSwitchASCII(switches::kForceFieldTrials,
                                     "Study1/Enabled/");
     command_line->AppendSwitchASCII(
-        switches::kForceFieldTrialParams,
+        variations::switches::kForceFieldTrialParams,
         "Study1.Enabled:engagement_threshold_for_flash/100");
   }
 

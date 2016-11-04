@@ -12,7 +12,6 @@
 #include "build/build_config.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/tracing/crash_service_uploader.h"
-#include "chrome/common/variations/variations_util.h"
 #include "components/variations/variations_associated_data.h"
 #include "content/public/browser/background_tracing_config.h"
 #include "content/public/browser/background_tracing_manager.h"

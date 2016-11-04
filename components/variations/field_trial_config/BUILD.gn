@@ -2,8 +2,8 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
-action("fieldtrial_testing_config_action") {
-  visibility = [ ":fieldtrial_testing_config" ]
+action("field_trial_testing_config_action") {
+  visibility = [ ":field_trial_config" ]
   script = "//tools/variations/fieldtrial_to_struct.py"
 
   source = "//testing/variations/fieldtrial_testing_config.json"
@@ -22,17 +22,39 @@ action("fieldtrial_testing_config_action") {
   args = [
     rebase_path(source, root_build_dir),
     "--destbase=" + rebase_path(target_gen_dir, root_build_dir),
-    "--namespace=chrome_variations",
+    "--namespace=variations",
     "--schema=" +
-        rebase_path("fieldtrial_testing_config_schema.json", root_build_dir),
+        rebase_path("field_trial_testing_config_schema.json", root_build_dir),
     "--platform=" + current_os,
     "--output=$out_name",
   ]
 }
 
-source_set("fieldtrial_testing_config") {
-  sources = get_target_outputs(":fieldtrial_testing_config_action")
+static_library("field_trial_config") {
+  sources = [
+    "field_trial_util.cc",
+    "field_trial_util.h",
+  ]
+
+  sources += get_target_outputs(":field_trial_testing_config_action")
+
   deps = [
-    ":fieldtrial_testing_config_action",
+    ":field_trial_testing_config_action",
+    "//base",
+    "//components/variations",
+    "//net",
+  ]
+}
+
+source_set("unit_tests") {
+  testonly = true
+  sources = [
+    "field_trial_util_unittest.cc",
+  ]
+  deps = [
+    ":field_trial_config",
+    "//base",
+    "//components/variations",
+    "//testing/gtest",
   ]
 }
