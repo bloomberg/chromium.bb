@@ -61,13 +61,13 @@ class AppBannerInfoBarDelegateAndroid : public ConfirmInfoBarDelegate {
   void UpdateInstallState(JNIEnv* env,
                           const base::android::JavaParamRef<jobject>& obj);
 
-  // Called when the installation Intent has been handled and focus has been
-  // returned to Chrome.
+  // Called when the native app installation Intent has been handled and focus
+  // has been returned to Chrome.
   void OnInstallIntentReturned(JNIEnv* env,
                                const base::android::JavaParamRef<jobject>& obj,
                                jboolean jis_installing);
 
-  // Called when the InstallerDelegate task has finished.
+  // Called when the native app InstallerDelegate task has finished.
   void OnInstallFinished(JNIEnv* env,
                          const base::android::JavaParamRef<jobject>& obj,
                          jboolean success);
@@ -117,6 +117,9 @@ class AppBannerInfoBarDelegateAndroid : public ConfirmInfoBarDelegate {
   // infobar should be closed as a result of the button press.
   bool AcceptWebApk(content::WebContents* web_contents);
 
+  // Returns false if this delegate is for a WebAPK and was triggered from the
+  // A2HS menu item. Otherwise returns true.
+  bool TriggeredFromBanner() const;
   void SendBannerAccepted();
   void OnWebApkInstallFinished(bool success,
                                const std::string& webapk_package_name);
