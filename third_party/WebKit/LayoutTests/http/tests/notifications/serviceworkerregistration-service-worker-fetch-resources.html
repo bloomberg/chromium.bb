@@ -19,7 +19,7 @@
 
           testRunner.setPermission('notifications', 'granted', location.origin, location.origin);
 
-          getActiveServiceWorkerWithMessagePort(test, script, scope).then(info => {
+          return getActiveServiceWorkerWithMessagePort(test, script, scope).then(info => {
               port = info.port;
               assert_true(!!navigator.serviceWorker.controller, 'The page must be controlled.');
               // (1) Display a persistent notification from a service worker context.
