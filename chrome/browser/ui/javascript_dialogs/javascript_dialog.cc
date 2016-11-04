@@ -4,7 +4,15 @@
 
 #include "chrome/browser/ui/javascript_dialogs/javascript_dialog.h"
 
+#include "chrome/browser/ui/blocked_content/app_modal_dialog_helper.h"
 #include "chrome/browser/ui/javascript_dialogs/javascript_dialog_views.h"
+#include "content/public/browser/web_contents.h"
+#include "content/public/browser/web_contents_delegate.h"
+
+JavaScriptDialog::JavaScriptDialog(content::WebContents* parent_web_contents) {
+  dialog_helper_.reset(new AppModalDialogHelper(parent_web_contents));
+  parent_web_contents->GetDelegate()->ActivateContents(parent_web_contents);
+}
 
 JavaScriptDialog::~JavaScriptDialog() = default;
 

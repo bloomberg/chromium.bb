@@ -5,6 +5,7 @@
 #include "chrome/browser/ui/javascript_dialogs/javascript_dialog_tab_helper.h"
 
 #include "base/bind.h"
+#include "base/callback.h"
 #include "base/feature_list.h"
 #include "base/metrics/histogram_macros.h"
 #include "chrome/browser/engagement/site_engagement_service.h"
@@ -13,18 +14,15 @@
 #include "chrome/browser/ui/browser_list.h"
 #include "chrome/browser/ui/tab_modal_confirm_dialog.h"
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
+#include "chrome/common/chrome_features.h"
 #include "components/app_modal/javascript_dialog_manager.h"
-#include "content/public/browser/web_contents_delegate.h"
 
 DEFINE_WEB_CONTENTS_USER_DATA_KEY(JavaScriptDialogTabHelper);
 
 namespace {
 
-const base::Feature kAutoDismissingDialogsFeature{
-    "AutoDismissingDialogs", base::FEATURE_DISABLED_BY_DEFAULT};
-
 bool IsEnabled() {
-  return base::FeatureList::IsEnabled(kAutoDismissingDialogsFeature);
+  return base::FeatureList::IsEnabled(features::kAutoDismissingDialogs);
 }
 
 app_modal::JavaScriptDialogManager* AppModalDialogManager() {
@@ -45,6 +43,11 @@ JavaScriptDialogTabHelper::JavaScriptDialogTabHelper(
 }
 
 JavaScriptDialogTabHelper::~JavaScriptDialogTabHelper() {
+}
+
+void JavaScriptDialogTabHelper::SetDialogShownCallbackForTesting(
+    base::Closure callback) {
+  dialog_shown_ = callback;
 }
 
 void JavaScriptDialogTabHelper::RunJavaScriptDialog(
@@ -91,21 +94,25 @@ void JavaScriptDialogTabHelper::RunJavaScriptDialog(
       CloseDialog(false, false, base::string16());
     }
 
-    parent_web_contents->GetDelegate()->ActivateContents(parent_web_contents);
-
     base::string16 title =
         AppModalDialogManager()->GetTitle(alerting_web_contents, origin_url);
     dialog_callback_ = callback;
-    BrowserList::AddObserver(this);
     dialog_ = JavaScriptDialog::Create(
         parent_web_contents, alerting_web_contents, title, message_type,
         message_text, default_prompt_text, callback);
+
+    BrowserList::AddObserver(this);
 
     // Message suppression is something that we don't give the user a checkbox
     // for any more. It was useful back in the day when dialogs were app-modal
     // and clicking the checkbox was the only way to escape a loop that the page
     // was doing, but now the user can just close the page.
     *did_suppress_message = false;
+
+    if (!dialog_shown_.is_null()) {
+      dialog_shown_.Run();
+      dialog_shown_.Reset();
+    }
   } else {
     AppModalDialogManager()->RunJavaScriptDialog(
         alerting_web_contents, origin_url, message_type, message_text,

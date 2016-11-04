@@ -5,8 +5,12 @@
 #ifndef CHROME_BROWSER_UI_JAVASCRIPT_DIALOGS_JAVASCRIPT_DIALOG_H_
 #define CHROME_BROWSER_UI_JAVASCRIPT_DIALOGS_JAVASCRIPT_DIALOG_H_
 
+#include <memory>
+
 #include "base/memory/weak_ptr.h"
 #include "content/public/browser/javascript_dialog_manager.h"
+
+class AppModalDialogHelper;
 
 class JavaScriptDialog {
  public:
@@ -27,6 +31,12 @@ class JavaScriptDialog {
   // respond to a call that requires it to make no callback or make a customized
   // one.
   virtual void CloseDialogWithoutCallback() = 0;
+
+ protected:
+  explicit JavaScriptDialog(content::WebContents* parent_web_contents);
+
+ private:
+  std::unique_ptr<AppModalDialogHelper> dialog_helper_;
 };
 
 #endif  // CHROME_BROWSER_UI_JAVASCRIPT_DIALOGS_JAVASCRIPT_DIALOG_H_

@@ -7,6 +7,7 @@
 
 #include <memory>
 
+#include "base/callback_forward.h"
 #include "base/macros.h"
 #include "base/memory/weak_ptr.h"
 #include "chrome/browser/ui/browser_list_observer.h"
@@ -36,6 +37,8 @@ class JavaScriptDialogTabHelper
  public:
   explicit JavaScriptDialogTabHelper(content::WebContents* web_contents);
   ~JavaScriptDialogTabHelper() override;
+
+  void SetDialogShownCallbackForTesting(base::Closure callback);
 
   // JavaScriptDialogManager:
   void RunJavaScriptDialog(content::WebContents* web_contents,
@@ -75,6 +78,8 @@ class JavaScriptDialogTabHelper
   // itself calls it, but in the cases where the dialog is closed not by the
   // user's input but by a call to |CloseDialog|, this class will call it.
   content::JavaScriptDialogManager::DialogClosedCallback dialog_callback_;
+
+  base::Closure dialog_shown_;
 
   DISALLOW_COPY_AND_ASSIGN(JavaScriptDialogTabHelper);
 };

@@ -14,6 +14,12 @@ const base::Feature kArcMemoryManagement{
     "ArcMemoryManagement", base::FEATURE_ENABLED_BY_DEFAULT};
 #endif  // defined(OS_CHROMEOS)
 
+#if !defined(OS_ANDROID) && !defined(OS_IOS)
+// Enables auto-dismissing JavaScript dialogs.
+const base::Feature kAutoDismissingDialogs{"AutoDismissingDialogs",
+                                           base::FEATURE_DISABLED_BY_DEFAULT};
+#endif
+
 #if defined(OS_WIN) || defined(OS_MACOSX)
 // Enables automatic tab discarding, when the system is in low memory state.
 const base::Feature kAutomaticTabDiscarding{"AutomaticTabDiscarding",

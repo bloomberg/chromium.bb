@@ -10,6 +10,7 @@
 #include "base/message_loop/message_loop.h"
 #include "base/run_loop.h"
 #include "base/strings/utf_string_conversions.h"
+#include "base/test/scoped_feature_list.h"
 #include "build/build_config.h"
 #include "chrome/browser/chrome_notification_types.h"
 #include "chrome/browser/content_settings/host_content_settings_map_factory.h"
@@ -21,10 +22,12 @@
 #include "chrome/browser/ui/browser_commands.h"
 #include "chrome/browser/ui/browser_finder.h"
 #include "chrome/browser/ui/browser_window.h"
+#include "chrome/browser/ui/javascript_dialogs/javascript_dialog_tab_helper.h"
 #include "chrome/browser/ui/location_bar/location_bar.h"
 #include "chrome/browser/ui/login/login_handler.h"
 #include "chrome/browser/ui/login/login_handler_test_utils.h"
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
+#include "chrome/common/chrome_features.h"
 #include "chrome/common/chrome_paths.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/url_constants.h"
@@ -50,6 +53,7 @@
 #include "content/public/common/url_constants.h"
 #include "content/public/test/browser_test_utils.h"
 #include "content/public/test/test_navigation_observer.h"
+#include "content/public/test/test_utils.h"
 #include "net/dns/mock_host_resolver.h"
 #include "net/test/embedded_test_server/embedded_test_server.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -514,13 +518,61 @@ IN_PROC_BROWSER_TEST_F(PopupBlockerBrowserTest, ModalPopUnder) {
   tab->GetMainFrame()->ExecuteJavaScriptForTests(base::UTF8ToUTF16("alert()"));
   app_modal::AppModalDialog* dialog = ui_test_utils::WaitForAppModalDialog();
 
-  // Verify that after the dialog was closed, the popup is in front again.
+  // Verify that after the dialog is closed, the popup is in front again.
   ASSERT_TRUE(dialog->IsJavaScriptModalDialog());
   app_modal::JavaScriptAppModalDialog* js_dialog =
       static_cast<app_modal::JavaScriptAppModalDialog*>(dialog);
 
   ui_test_utils::BrowserActivationWaiter waiter(popup_browser);
   js_dialog->native_dialog()->AcceptAppModalDialog();
+  waiter.WaitForActivation();
+  ASSERT_EQ(popup_browser, chrome::FindLastActive());
+}
+
+// Verify that app modal prompts can't be used to create pop unders, while the
+// new auto-dismissing JavaScript dialogs are enabled.
+IN_PROC_BROWSER_TEST_F(PopupBlockerBrowserTest,
+                       ModalPopUnderAutoDismissingDialogs) {
+  base::test::ScopedFeatureList feature_list;
+  feature_list.InitAndEnableFeature(features::kAutoDismissingDialogs);
+
+  // One tab to test in.
+  TabStripModel* tab_strip = browser()->tab_strip_model();
+  WebContents* tab = tab_strip->GetActiveWebContents();
+  EXPECT_EQ(1, tab_strip->count());
+
+  // One blank tab for later.
+  ui_test_utils::NavigateToURLWithDisposition(
+      browser(), GURL(url::kAboutBlankURL),
+      WindowOpenDisposition::NEW_BACKGROUND_TAB,
+      ui_test_utils::BROWSER_TEST_WAIT_FOR_NAVIGATION);
+  EXPECT_EQ(2, tab_strip->count());
+  ASSERT_EQ(0, tab_strip->GetIndexOfWebContents(tab));
+
+  // Show a popup.
+  JavaScriptDialogTabHelper* js_helper =
+      JavaScriptDialogTabHelper::FromWebContents(tab);
+  GURL url(
+      embedded_test_server()->GetURL("/popup_blocker/popup-window-open.html"));
+  HostContentSettingsMapFactory::GetForProfile(browser()->profile())
+      ->SetContentSettingDefaultScope(url, GURL(), CONTENT_SETTINGS_TYPE_POPUPS,
+                                      std::string(), CONTENT_SETTING_ALLOW);
+
+  NavigateAndCheckPopupShown(url, ExpectPopup);
+
+  Browser* popup_browser = chrome::FindLastActive();
+  ASSERT_NE(popup_browser, browser());
+
+  // Showing an alert will raise the tab over the popup.
+  scoped_refptr<content::MessageLoopRunner> runner =
+      new content::MessageLoopRunner;
+  js_helper->SetDialogShownCallbackForTesting(runner->QuitClosure());
+  tab->GetMainFrame()->ExecuteJavaScriptForTests(base::UTF8ToUTF16("alert()"));
+  runner->Run();
+
+  // Verify that after the dialog is closed, the popup is in front again.
+  ui_test_utils::BrowserActivationWaiter waiter(popup_browser);
+  tab_strip->ActivateTabAt(1, true);
   waiter.WaitForActivation();
   ASSERT_EQ(popup_browser, chrome::FindLastActive());
 }

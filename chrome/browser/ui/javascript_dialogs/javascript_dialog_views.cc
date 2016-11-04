@@ -99,7 +99,8 @@ JavaScriptDialogViews::JavaScriptDialogViews(
     const base::string16& default_prompt_text,
     const content::JavaScriptDialogManager::DialogClosedCallback&
         dialog_callback)
-    : title_(title),
+    : JavaScriptDialog(parent_web_contents),
+      title_(title),
       message_type_(message_type),
       message_text_(message_text),
       default_prompt_text_(default_prompt_text),
