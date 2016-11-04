@@ -23,6 +23,9 @@ public interface SuggestionsSource {
         /** Called when a category has a new list of content suggestions. */
         void onNewSuggestions(@CategoryInt int category);
 
+        /** Called when a request for additional suggestions completed. */
+        void onMoreSuggestions(@CategoryInt int category, List<SnippetArticle> suggestions);
+
         /** Called when a category changed its status. */
         void onCategoryStatusChanged(@CategoryInt int category, @CategoryStatusEnum int newStatus);
 
@@ -63,6 +66,13 @@ public interface SuggestionsSource {
      * is available. The callback is never called synchronously.
      */
     void fetchSuggestionImage(SnippetArticle suggestion, Callback<Bitmap> callback);
+
+    /**
+     * Fetches new suggestions.
+     * @param category the category to fetch new suggestions for.
+     * @param displayedSuggestionIds ids of suggestions already known and that we want to keep.
+     */
+    void fetchSuggestions(@CategoryInt int category, String[] displayedSuggestionIds);
 
     /**
      * Tells the source to dismiss the content suggestion.

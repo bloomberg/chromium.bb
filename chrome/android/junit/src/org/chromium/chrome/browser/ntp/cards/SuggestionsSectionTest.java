@@ -82,14 +82,14 @@ public class SuggestionsSectionTest {
         assertEquals(1, section.getDismissSiblingPosDelta(1));
 
         // With snippets.
-        section.setSuggestions(snippets, CategoryStatus.AVAILABLE);
+        section.addSuggestions(snippets, CategoryStatus.AVAILABLE);
         assertEquals(ItemViewType.SNIPPET, section.getItemViewType(1));
         assertEquals(0, section.getDismissSiblingPosDelta(1));
     }
 
     @Test
     @Feature({"Ntp"})
-    public void testSetSuggestionsNotification() {
+    public void testAddSuggestionsNotification() {
         final int suggestionCount = 5;
         List<SnippetArticle> snippets = createDummySuggestions(suggestionCount);
 
@@ -98,7 +98,7 @@ public class SuggestionsSectionTest {
         // null!
         assertEquals(EMPTY_SECTION_COUNT, section.getItemCount());
 
-        section.setSuggestions(snippets, CategoryStatus.AVAILABLE);
+        section.addSuggestions(snippets, CategoryStatus.AVAILABLE);
         verify(mParent).onItemRangeChanged(section, 1, EMPTY_SECTION_COUNT - 1);
         verify(mParent).onItemRangeInserted(
                 section, EMPTY_SECTION_COUNT, suggestionCount - EMPTY_SECTION_COUNT + 1);
@@ -115,7 +115,7 @@ public class SuggestionsSectionTest {
         section.setStatus(CategoryStatus.AVAILABLE);
         verify(mParent).onItemRangeChanged(section, 1, EMPTY_SECTION_COUNT - 1);
 
-        section.setSuggestions(snippets, CategoryStatus.AVAILABLE);
+        section.addSuggestions(snippets, CategoryStatus.AVAILABLE);
 
         // We don't clear suggestions when the status is AVAILABLE.
         section.setStatus(CategoryStatus.AVAILABLE);
@@ -146,7 +146,7 @@ public class SuggestionsSectionTest {
         verify(mParent, never())
                 .onItemRangeRemoved(any(SuggestionsSection.class), anyInt(), anyInt());
 
-        section.setSuggestions(snippets, CategoryStatus.AVAILABLE);
+        section.addSuggestions(snippets, CategoryStatus.AVAILABLE);
 
         section.removeSuggestion(snippets.get(1));
         verify(mParent).onItemRangeRemoved(section, 2, 1);
@@ -172,7 +172,7 @@ public class SuggestionsSectionTest {
         verify(mParent, never())
                 .onItemRangeRemoved(any(SuggestionsSection.class), anyInt(), anyInt());
 
-        section.setSuggestions(snippets, CategoryStatus.AVAILABLE);
+        section.addSuggestions(snippets, CategoryStatus.AVAILABLE);
 
         section.removeSuggestion(snippets.get(0));
         verify(mParent).onItemRangeRemoved(section, 1, 1);
@@ -194,7 +194,7 @@ public class SuggestionsSectionTest {
         assertFalse(snippets.get(1).isAmpAvailableOffline());
 
         SuggestionsSection section = createSection(true, true, mParent, mManager, mBridge);
-        section.setSuggestions(snippets, CategoryStatus.AVAILABLE);
+        section.addSuggestions(snippets, CategoryStatus.AVAILABLE);
         verify(mBridge).checkPagesExistOffline(anySetOf(String.class), mCallbacks.capture());
 
         // The callback is asynchronous.
@@ -221,9 +221,9 @@ public class SuggestionsSectionTest {
         assertFalse(snippets.get(0).isAmpAvailableOffline());
 
         SuggestionsSection section = createSection(true, true, mParent, mManager, mBridge);
-        section.setSuggestions(snippets, CategoryStatus.AVAILABLE);
+        section.addSuggestions(snippets, CategoryStatus.AVAILABLE);
 
-        // The first callback, triggered when we called setSuggestions.
+        // The first callback, triggered when we called addSuggestions.
         verify(mBridge).checkPagesExistOffline(anySetOf(String.class), mCallbacks.capture());
         mCallbacks.getAllValues().get(0).onResult(Collections.<String>emptySet());
 

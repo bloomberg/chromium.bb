@@ -56,8 +56,9 @@ class ActionItem extends OptionalLeaf {
         }
 
         if (mCategoryInfo.hasMoreAction() && mParentSection.hasSuggestions()) {
-            // TODO(dgn): Implement fetch more. https://crbug.com/634892
-            throw new UnsupportedOperationException("Fetch more not implemented yet");
+            manager.getSuggestionsSource().fetchSuggestions(
+                    mCategoryInfo.getCategory(), mParentSection.getDisplayedSuggestionIds());
+            return;
         }
 
         if (mCategoryInfo.hasReloadAction()) {

@@ -33,6 +33,9 @@ extern const base::Feature kSectionDismissalFeature;
 // false, all the per-provider features are ignored.
 extern const base::Feature kContentSuggestionsFeature;
 
+// Feature to enable the Fetch More action
+extern const base::Feature kFetchMoreFeature;
+
 // Returns a feature param as an int instead of a string.
 int GetParamAsInt(const base::Feature& feature,
                   const std::string& param_name,

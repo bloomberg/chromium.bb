@@ -245,21 +245,13 @@ public class NewTabPageAdapter
 
     @Override
     public void onNewSuggestions(@CategoryInt int category) {
-        // We never want to add suggestions from unknown categories.
-        if (!mSections.containsKey(category)) return;
+        @CategoryStatusEnum
+        int status = mNewTabPageManager.getSuggestionsSource().getCategoryStatus(category);
+
+        if (!canLoadSuggestions(category, status)) return;
 
         // We never want to refresh the suggestions if we already have some content.
         if (mSections.get(category).hasSuggestions()) return;
-
-        // The status may have changed while the suggestions were loading, perhaps they should not
-        // be displayed any more.
-        @CategoryStatusEnum
-        int status = mNewTabPageManager.getSuggestionsSource().getCategoryStatus(category);
-        if (!SnippetsBridge.isCategoryEnabled(status)) {
-            Log.w(TAG, "Received suggestions for a disabled category (id=%d, status=%d)", category,
-                    status);
-            return;
-        }
 
         List<SnippetArticle> suggestions =
                 mNewTabPageManager.getSuggestionsSource().getSuggestionsForCategory(category);
@@ -268,6 +260,17 @@ public class NewTabPageAdapter
 
         // At first, there might be no suggestions available, we wait until they have been fetched.
         if (suggestions.isEmpty()) return;
+
+        setSuggestions(category, suggestions, status);
+    }
+
+    @Override
+    public void onMoreSuggestions(@CategoryInt int category, List<SnippetArticle> suggestions) {
+        if (suggestions.isEmpty()) return;
+
+        @CategoryStatusEnum
+        int status = mNewTabPageManager.getSuggestionsSource().getCategoryStatus(category);
+        if (!canLoadSuggestions(category, status)) return;
 
         setSuggestions(category, suggestions, status);
     }
@@ -412,7 +415,7 @@ public class NewTabPageAdapter
             suggestion.mGlobalPosition = globalPositionOffset + suggestion.mPosition;
         }
 
-        mSections.get(category).setSuggestions(suggestions, status);
+        mSections.get(category).addSuggestions(suggestions, status);
     }
 
     private void updateChildren() {
@@ -563,6 +566,21 @@ public class NewTabPageAdapter
 
     private boolean hasAllBeenDismissed() {
         return mSections.isEmpty() && !mSigninPromo.isShown();
+    }
+
+    private boolean canLoadSuggestions(@CategoryInt int category, @CategoryStatusEnum int status) {
+        // We never want to add suggestions from unknown categories.
+        if (!mSections.containsKey(category)) return false;
+
+        // The status may have changed while the suggestions were loading, perhaps they should not
+        // be displayed any more.
+        if (!SnippetsBridge.isCategoryEnabled(status)) {
+            Log.w(TAG, "Received suggestions for a disabled category (id=%d, status=%d)", category,
+                    status);
+            return false;
+        }
+
+        return true;
     }
 
     /**

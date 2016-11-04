@@ -49,7 +49,7 @@ class NTPSnippetsBridge
   base::android::ScopedJavaLocalRef<jobject> GetSuggestionsForCategory(
       JNIEnv* env,
       const base::android::JavaParamRef<jobject>& obj,
-      jint category);
+      jint j_category_id);
 
   void FetchSuggestionImage(
       JNIEnv* env,
@@ -57,6 +57,12 @@ class NTPSnippetsBridge
       jint category,
       const base::android::JavaParamRef<jstring>& id_within_category,
       const base::android::JavaParamRef<jobject>& j_callback);
+
+  void Fetch(
+      JNIEnv* env,
+      const base::android::JavaParamRef<jobject>& obj,
+      jint j_category_id,
+      const base::android::JavaParamRef<jobjectArray>& j_displayed_suggestions);
 
   void DismissSuggestion(
       JNIEnv* env,

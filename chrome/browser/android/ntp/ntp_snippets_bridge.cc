@@ -33,6 +33,7 @@ using base::android::ConvertJavaStringToUTF8;
 using base::android::ConvertUTF8ToJavaString;
 using base::android::ConvertUTF16ToJavaString;
 using base::android::JavaIntArrayToIntVector;
+using base::android::AppendJavaStringArrayToStringVector;
 using base::android::JavaParamRef;
 using base::android::ScopedJavaGlobalRef;
 using base::android::ScopedJavaLocalRef;
@@ -50,6 +51,68 @@ base::Time TimeFromJavaTime(jlong timestamp_ms) {
   return base::Time::UnixEpoch() +
          base::TimeDelta::FromMilliseconds(timestamp_ms);
 }
+
+// Converts a vector of ContentSuggestions to its Java equivalent.
+ScopedJavaLocalRef<jobject> ToJavaSuggestionList(
+    JNIEnv* env,
+    const Category& category,
+    const std::vector<ContentSuggestion>& suggestions) {
+  Profile* profile = ProfileManager::GetLastUsedProfile();
+  ntp_snippets::ContentSuggestionsService* content_suggestions_service =
+      ContentSuggestionsServiceFactory::GetForProfile(profile);
+
+  // Get layout for the category.
+  base::Optional<CategoryInfo> info =
+      content_suggestions_service->GetCategoryInfo(category);
+  DCHECK(info);
+
+  ScopedJavaLocalRef<jobject> result =
+      Java_SnippetsBridge_createSuggestionList(env);
+  for (const ContentSuggestion& suggestion : suggestions) {
+    Java_SnippetsBridge_addSuggestion(
+        env, result, category.id(),
+        ConvertUTF8ToJavaString(env, suggestion.id().id_within_category()),
+        ConvertUTF16ToJavaString(env, suggestion.title()),
+        ConvertUTF16ToJavaString(env, suggestion.publisher_name()),
+        ConvertUTF16ToJavaString(env, suggestion.snippet_text()),
+        ConvertUTF8ToJavaString(env, suggestion.url().spec()),
+        ConvertUTF8ToJavaString(env, suggestion.amp_url().spec()),
+        suggestion.publish_date().ToJavaTime(), suggestion.score(),
+        static_cast<int>(info->card_layout()));
+    if (suggestion.id().category().id() ==
+            static_cast<int>(KnownCategories::DOWNLOADS) &&
+        suggestion.download_suggestion_extra() != nullptr &&
+        suggestion.download_suggestion_extra()->is_download_asset) {
+      Java_SnippetsBridge_setDownloadAssetDataForLastSuggestion(
+          env, result,
+          ConvertUTF8ToJavaString(
+              env,
+              suggestion.download_suggestion_extra()->target_file_path.value()),
+          ConvertUTF8ToJavaString(
+              env, suggestion.download_suggestion_extra()->mime_type));
+    }
+  }
+
+  return result;
+}
+
+class CapturingFetchingCallback {
+ public:
+  CapturingFetchingCallback(const Category category,
+                            const ScopedJavaGlobalRef<jobject>* observer)
+      : category_(category), observer_(observer) {}
+
+  void Run(std::vector<ContentSuggestion> suggestions) {
+    JNIEnv* env = AttachCurrentThread();
+    Java_SnippetsBridge_onMoreSuggestions(
+        env, *observer_, category_.id(),
+        ToJavaSuggestionList(env, category_, suggestions));
+  }
+
+ private:
+  const Category category_;
+  const ScopedJavaGlobalRef<jobject>* observer_;  // Owned by NTPSnippetsBridge.
+};
 
 }  // namespace
 
@@ -182,43 +245,11 @@ base::android::ScopedJavaLocalRef<jobject> NTPSnippetsBridge::GetCategoryInfo(
 ScopedJavaLocalRef<jobject> NTPSnippetsBridge::GetSuggestionsForCategory(
     JNIEnv* env,
     const base::android::JavaParamRef<jobject>& obj,
-    jint category) {
-  // Get layout for the category.
-  base::Optional<CategoryInfo> info =
-      content_suggestions_service_->GetCategoryInfo(
-          CategoryFromIDValue(category));
-  DCHECK(info);
-
-  const std::vector<ContentSuggestion>& suggestions =
-      content_suggestions_service_->GetSuggestionsForCategory(
-          CategoryFromIDValue(category));
-  ScopedJavaLocalRef<jobject> result =
-      Java_SnippetsBridge_createSuggestionList(env);
-  for (const ContentSuggestion& suggestion : suggestions) {
-    Java_SnippetsBridge_addSuggestion(
-        env, result, category,
-        ConvertUTF8ToJavaString(env, suggestion.id().id_within_category()),
-        ConvertUTF16ToJavaString(env, suggestion.title()),
-        ConvertUTF16ToJavaString(env, suggestion.publisher_name()),
-        ConvertUTF16ToJavaString(env, suggestion.snippet_text()),
-        ConvertUTF8ToJavaString(env, suggestion.url().spec()),
-        ConvertUTF8ToJavaString(env, suggestion.amp_url().spec()),
-        suggestion.publish_date().ToJavaTime(), suggestion.score(),
-        static_cast<int>(info->card_layout()));
-    if (suggestion.id().category().id() ==
-            static_cast<int>(KnownCategories::DOWNLOADS) &&
-        suggestion.download_suggestion_extra() != nullptr &&
-        suggestion.download_suggestion_extra()->is_download_asset) {
-      Java_SnippetsBridge_setDownloadAssetDataForLastSuggestion(
-          env, result,
-          ConvertUTF8ToJavaString(
-              env,
-              suggestion.download_suggestion_extra()->target_file_path.value()),
-          ConvertUTF8ToJavaString(
-              env, suggestion.download_suggestion_extra()->mime_type));
-    }
-  }
-  return result;
+    jint j_category_id) {
+  Category category = CategoryFromIDValue(j_category_id);
+  return ToJavaSuggestionList(
+      env, category,
+      content_suggestions_service_->GetSuggestionsForCategory(category));
 }
 
 void NTPSnippetsBridge::FetchSuggestionImage(
@@ -233,6 +264,24 @@ void NTPSnippetsBridge::FetchSuggestionImage(
                             ConvertJavaStringToUTF8(env, id_within_category)),
       base::Bind(&NTPSnippetsBridge::OnImageFetched,
                  weak_ptr_factory_.GetWeakPtr(), callback));
+}
+
+void NTPSnippetsBridge::Fetch(
+    JNIEnv* env,
+    const JavaParamRef<jobject>& obj,
+    jint j_category_id,
+    const JavaParamRef<jobjectArray>& j_displayed_suggestions) {
+  std::vector<std::string> known_suggestion_ids;
+  AppendJavaStringArrayToStringVector(env, j_displayed_suggestions,
+                                      &known_suggestion_ids);
+
+  Category category = CategoryFromIDValue(j_category_id);
+  content_suggestions_service_->Fetch(
+      category, std::set<std::string>(known_suggestion_ids.begin(),
+                                      known_suggestion_ids.end()),
+      base::Bind(
+          &CapturingFetchingCallback::Run,
+          base::MakeUnique<CapturingFetchingCallback>(category, &observer_)));
 }
 
 void NTPSnippetsBridge::DismissSuggestion(

@@ -113,6 +113,11 @@ public class FakeSuggestionsSource implements SuggestionsSource {
     }
 
     @Override
+    public void fetchSuggestions(@CategoryInt int category, String[] displayedSuggestionIds) {
+        throw new UnsupportedOperationException();
+    }
+
+    @Override
     public void setObserver(Observer observer) {
         mObserver = observer;
     }

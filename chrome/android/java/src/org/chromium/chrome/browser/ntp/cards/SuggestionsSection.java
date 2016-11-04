@@ -5,6 +5,7 @@
 package org.chromium.chrome.browser.ntp.cards;
 
 import org.chromium.base.Callback;
+import org.chromium.base.Log;
 import org.chromium.base.Promise;
 import org.chromium.base.VisibleForTesting;
 import org.chromium.chrome.browser.ntp.NewTabPage.DestructionObserver;
@@ -28,6 +29,8 @@ import java.util.Set;
  * responsible for tracking whether its suggestions have been saved offline.
  */
 public class SuggestionsSection extends InnerNode {
+    private static final String TAG = "NtpCards";
+
     private final List<TreeNode> mChildren = new ArrayList<>();
     private final List<SnippetArticle> mSuggestions = new ArrayList<>();
     private final SectionHeader mHeader;
@@ -147,18 +150,35 @@ public class SuggestionsSection extends InnerNode {
         return mSuggestions.size();
     }
 
-    public void setSuggestions(List<SnippetArticle> suggestions, @CategoryStatusEnum int status) {
-        copyThumbnails(suggestions);
+    public String[] getDisplayedSuggestionIds() {
+        String[] suggestionIds = new String[mSuggestions.size()];
+        for (int i = 0; i < mSuggestions.size(); ++i) {
+            suggestionIds[i] = mSuggestions.get(i).mIdWithinCategory;
+        }
+        return suggestionIds;
+    }
 
+    public void addSuggestions(List<SnippetArticle> suggestions, @CategoryStatusEnum int status) {
         int itemCountBefore = getItemCount();
         setStatusInternal(status);
 
-        mSuggestions.clear();
+        Log.d(TAG, "addSuggestions: current number of suggestions: %d", mSuggestions.size());
+
+        int sizeBefore = suggestions.size();
+
+        // TODO(dgn): remove once the backend stops sending duplicates.
+        if (suggestions.removeAll(mSuggestions)) {
+            Log.d(TAG, "addSuggestions: Removed duplicates from incoming suggestions. "
+                            + "Count changed from %d to %d",
+                    sizeBefore, suggestions.size());
+        }
+
         mSuggestions.addAll(suggestions);
 
         markSnippetsAvailableOffline();
 
         resetChildren();
+        // TODO(dgn): change to handle only adding new items, or handling no modifications.
         notifySectionChanged(itemCountBefore);
     }
 
@@ -201,15 +221,6 @@ public class SuggestionsSection extends InnerNode {
     @CategoryInt
     public int getCategory() {
         return mCategoryInfo.getCategory();
-    }
-
-    private void copyThumbnails(List<SnippetArticle> suggestions) {
-        for (SnippetArticle suggestion : suggestions) {
-            int index = mSuggestions.indexOf(suggestion);
-            if (index == -1) continue;
-
-            suggestion.setThumbnailBitmap(mSuggestions.get(index).getThumbnailBitmap());
-        }
     }
 
     @Override
