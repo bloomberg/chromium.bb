@@ -8703,7 +8703,8 @@ bool GLES2DecoderImpl::ValidateAndAdjustDrawBuffers(const char* func_name) {
 
 bool GLES2DecoderImpl::ValidateUniformBlockBackings(const char* func_name) {
   DCHECK(feature_info_->IsWebGL2OrES3Context());
-  DCHECK(state_.current_program.get());
+  if (!state_.current_program.get())
+    return true;
   int32_t max_index = -1;
   for (auto info : state_.current_program->uniform_block_size_info()) {
     int32_t index = static_cast<int32_t>(info.binding);
