@@ -259,6 +259,7 @@ EXPERIMENT_LIST="
     ans
     ec_multisymbol
     daala_ec
+    pvq
     parallel_deblocking
     cb4x4
     palette

@@ -28,6 +28,11 @@
 #include "av1/common/scale.h"
 #include "av1/common/seg_common.h"
 #include "av1/common/tile_common.h"
+#if CONFIG_PVQ
+#include "av1/common/pvq.h"
+#include "av1/common/pvq_state.h"
+#include "av1/decoder/decint.h"
+#endif
 
 #ifdef __cplusplus
 extern "C" {
@@ -86,6 +91,33 @@ typedef enum {
 static INLINE int is_inter_mode(PREDICTION_MODE mode) {
   return mode >= NEARESTMV && mode <= NEWMV;
 }
+
+#if CONFIG_PVQ
+typedef struct PVQ_INFO {
+  int theta[PVQ_MAX_PARTITIONS];
+  int max_theta[PVQ_MAX_PARTITIONS];
+  int qg[PVQ_MAX_PARTITIONS];
+  int k[PVQ_MAX_PARTITIONS];
+  od_coeff y[OD_BSIZE_MAX * OD_BSIZE_MAX];
+  int nb_bands;
+  int off[PVQ_MAX_PARTITIONS];
+  int size[PVQ_MAX_PARTITIONS];
+  int skip_rest;
+  int skip_dir;
+  int bs;           // log of the block size minus two,
+                    // i.e. equivalent to aom's TX_SIZE
+  int ac_dc_coded;  // block skip info, indicating whether DC/AC is coded.
+                    // bit0: DC coded, bit1 : AC coded (1 means coded)
+  tran_low_t dq_dc_residue;
+} PVQ_INFO;
+
+typedef struct PVQ_QUEUE {
+  PVQ_INFO *buf;  // buffer for pvq info, stored in encoding order
+  int curr_pos;   // curr position to write PVQ_INFO
+  int buf_len;    // allocated buffer length
+  int last_pos;   // last written position of PVQ_INFO in a tile
+} PVQ_QUEUE;
+#endif
 
 /* For keyframes, intra block modes are predicted by the (already decoded)
    modes for the Y blocks to the left and above us; for interframes, there
@@ -223,6 +255,12 @@ struct macroblockd_plane {
 #if CONFIG_AOM_QM
   const qm_val_t *seg_qmatrix[MAX_SEGMENTS][2][TX_SIZES];
 #endif
+
+#if CONFIG_PVQ
+  DECLARE_ALIGNED(16, int16_t, pred[MAX_SB_SQUARE]);
+  // PVQ: forward transformed predicted image, a reference for PVQ.
+  tran_low_t *pvq_ref_coeff;
+#endif
 };
 
 #define BLOCK_OFFSET(x, i) ((x) + (i)*16)
@@ -282,6 +320,9 @@ typedef struct macroblockd {
   PARTITION_CONTEXT *above_seg_context;
   PARTITION_CONTEXT left_seg_context[8];
 
+#if CONFIG_PVQ
+  daala_dec_ctx daala_dec;
+#endif
 #if CONFIG_AOM_HIGHBITDEPTH
   /* Bit depth: 8, 10, 12 */
   int bd;

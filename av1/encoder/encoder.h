@@ -265,6 +265,9 @@ typedef struct TileDataEnc {
   TileInfo tile_info;
   int thresh_freq_fact[BLOCK_SIZES][MAX_MODES];
   int mode_map[BLOCK_SIZES][MAX_MODES];
+#if CONFIG_PVQ
+  PVQ_QUEUE pvq_q;
+#endif
 } TileDataEnc;
 
 typedef struct RD_COUNTS {

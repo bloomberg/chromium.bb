@@ -9,9 +9,12 @@
  * PATENTS file, you can obtain it at www.aomedia.org/license/patent.
  */
 
+#if !CONFIG_PVQ
 #include "aom_mem/aom_mem.h"
 #include "aom_ports/mem.h"
+#endif
 
+#if !CONFIG_PVQ
 #include "av1/common/blockd.h"
 #include "av1/common/common.h"
 #include "av1/common/entropy.h"
@@ -319,3 +322,4 @@ int av1_decode_block_tokens(MACROBLOCKD *xd, int plane, const SCAN_ORDER *sc,
   av1_set_contexts(xd, pd, tx_size, eob > 0, x, y);
   return eob;
 }
+#endif

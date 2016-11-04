@@ -23,6 +23,10 @@
 #include "av1/common/frame_buffers.h"
 #include "av1/common/loopfilter.h"
 #include "av1/common/tile_common.h"
+#include "av1/common/odintrin.h"
+#if CONFIG_PVQ
+#include "av1/common/pvq.h"
+#endif
 
 #ifdef __cplusplus
 extern "C" {
@@ -437,11 +441,17 @@ static INLINE int frame_is_intra_only(const AV1_COMMON *const cm) {
 }
 
 static INLINE void av1_init_macroblockd(AV1_COMMON *cm, MACROBLOCKD *xd,
+#if CONFIG_PVQ
+                                        tran_low_t *pvq_ref_coeff,
+#endif
                                         tran_low_t *dqcoeff) {
   int i;
 
   for (i = 0; i < MAX_MB_PLANE; ++i) {
     xd->plane[i].dqcoeff = dqcoeff;
+#if CONFIG_PVQ
+    xd->plane[i].pvq_ref_coeff = pvq_ref_coeff;
+#endif
     xd->above_context[i] =
         cm->above_context +
         i * sizeof(*cm->above_context) * 2 * mi_cols_aligned_to_sb(cm->mi_cols);
