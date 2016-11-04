@@ -50,7 +50,13 @@ function test()
             replacePropertyRecursive(messageObject, "baseURL");
 
             var bodyId = messageObject.result.root.children[0].children[1];
-            InspectorTest.log(JSON.stringify(bodyId, null, "    "));
+            function stabilize(key, value) {
+                var unstableKeys = ["backendNodeId"];
+                if (unstableKeys.indexOf(key) !== -1)
+                    return "<" + typeof(value) + ">";
+                return value;
+            }
+            InspectorTest.log(JSON.stringify(bodyId, stabilize, "    "));
             InspectorTest.completeTest();
         });
     };

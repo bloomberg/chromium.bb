@@ -74,8 +74,13 @@ function test()
             replacePropertyRecursive(messageObject, "frameId");
             replacePropertyRecursive(messageObject, "documentURL");
             replacePropertyRecursive(messageObject, "baseURL");
-
-            InspectorTest.log(JSON.stringify(messageObject, null, "    "));
+            function stabilize(key, value) {
+                var unstableKeys = ["backendNodeId"];
+                if (unstableKeys.indexOf(key) !== -1)
+                    return "<" + typeof(value) + ">";
+                return value;
+            }
+            InspectorTest.log(JSON.stringify(messageObject, stabilize, "    "));
             InspectorTest.completeTest();
         };
     };

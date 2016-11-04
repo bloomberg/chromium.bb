@@ -215,8 +215,9 @@ InspectorTest.log = function(message)
 * Formats and logs object to document.
 * @param {Object} object
 * @param {string=} title
+* @param {Array<string>=} unstableKeys
 */
-InspectorTest.logObject = function(object, title)
+InspectorTest.logObject = function(object, title, unstableKeys)
 {
     var lines = [];
 
@@ -245,7 +246,10 @@ InspectorTest.logObject = function(object, title)
             if (!object.hasOwnProperty(name))
                 continue;
             var prefixWithName = "    " + prefix + name + " : ";
-            dumpValue(object[name], "    " + prefix, prefixWithName);
+            var value = object[name];
+            if (unstableKeys && unstableKeys.indexOf(name) !== -1)
+                value = "<" + typeof(value) + ">";
+            dumpValue(value, "    " + prefix, prefixWithName);
         }
         lines.push(prefix + "}");
     }

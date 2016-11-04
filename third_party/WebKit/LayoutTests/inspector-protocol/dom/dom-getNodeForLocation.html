@@ -18,7 +18,7 @@ function test()
             return;
         }
         var nodeId = message.result.nodeId;
-        InspectorTest.logObject(nodeInfo[nodeId], "Node: ");
+        InspectorTest.logObject(nodeInfo[nodeId], "Node: ", ["backendNodeId"]);
         InspectorTest.completeTest();
     }
 

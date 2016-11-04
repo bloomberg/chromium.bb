@@ -2061,6 +2061,7 @@
                 "type": "object",
                 "properties": [
                     { "name": "nodeId", "$ref": "NodeId", "description": "Node identifier that is passed into the rest of the DOM messages as the <code>nodeId</code>. Backend will only push node with given <code>id</code> once. It is aware of all requested nodes and will only fire DOM events for nodes known to the client." },
+                    { "name": "backendNodeId", "$ref": "BackendNodeId", "description": "The BackendNodeId for this node.", "experimental": true },
                     { "name": "nodeType", "type": "integer", "description": "<code>Node</code>'s nodeType." },
                     { "name": "nodeName", "type": "string", "description": "<code>Node</code>'s nodeName." },
                     { "name": "localName", "type": "string", "description": "<code>Node</code>'s localName." },
