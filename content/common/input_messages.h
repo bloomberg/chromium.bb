@@ -264,9 +264,6 @@ IPC_MESSAGE_ROUTED0(InputMsg_ImeEventAck)
 
 // Request from browser to update text input state.
 IPC_MESSAGE_ROUTED0(InputMsg_RequestTextInputStateUpdate)
-
-IPC_MESSAGE_ROUTED1(InputMsg_ImeBatchEdit,
-                    bool /* begin */)
 #endif
 
 // Request from browser to update the cursor and composition information.

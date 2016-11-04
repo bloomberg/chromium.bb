@@ -20,9 +20,6 @@ import android.view.KeyCharacterMap;
 import android.view.View;
 import android.view.inputmethod.InputMethodManager;
 
-import org.chromium.base.ThreadUtils;
-import org.chromium.base.test.util.Feature;
-import org.chromium.testing.local.LocalRobolectricTestRunner;
 import org.junit.Before;
 import org.junit.Ignore;
 import org.junit.Test;
@@ -32,6 +29,10 @@ import org.mockito.Mock;
 import org.mockito.Mockito;
 import org.mockito.MockitoAnnotations;
 import org.robolectric.annotation.Config;
+
+import org.chromium.base.ThreadUtils;
+import org.chromium.base.test.util.Feature;
+import org.chromium.testing.local.LocalRobolectricTestRunner;
 
 import java.util.concurrent.Callable;
 
@@ -79,12 +80,12 @@ public class ThreadedInputConnectionTest {
         mInOrder.verify(mImeAdapter).sendCompositionToNative("hello", 1, false, 0);
 
         // Renderer updates states asynchronously.
-        mConnection.updateStateOnUiThread("hello", 5, 5, 0, 5, true, true, false);
+        mConnection.updateStateOnUiThread("hello", 5, 5, 0, 5, true, true);
         mInOrder.verify(mImeAdapter).updateSelection(5, 5, 0, 5);
         assertEquals(0, mConnection.getQueueForTest().size());
 
         // Prepare to call requestTextInputStateUpdate.
-        mConnection.updateStateOnUiThread("hello", 5, 5, 0, 5, true, false, false);
+        mConnection.updateStateOnUiThread("hello", 5, 5, 0, 5, true, false);
         assertEquals(1, mConnection.getQueueForTest().size());
         when(mImeAdapter.requestTextInputStateUpdate()).thenReturn(true);
 
@@ -94,11 +95,11 @@ public class ThreadedInputConnectionTest {
         // IME app calls finishComposingText().
         mConnection.finishComposingText();
         mInOrder.verify(mImeAdapter).finishComposingText();
-        mConnection.updateStateOnUiThread("hello", 5, 5, -1, -1, true, true, false);
+        mConnection.updateStateOnUiThread("hello", 5, 5, -1, -1, true, true);
         mInOrder.verify(mImeAdapter).updateSelection(5, 5, -1, -1);
 
         // Prepare to call requestTextInputStateUpdate.
-        mConnection.updateStateOnUiThread("hello", 5, 5, -1, -1, true, false, false);
+        mConnection.updateStateOnUiThread("hello", 5, 5, -1, -1, true, false);
         assertEquals(1, mConnection.getQueueForTest().size());
         when(mImeAdapter.requestTextInputStateUpdate()).thenReturn(true);
 
@@ -123,7 +124,7 @@ public class ThreadedInputConnectionTest {
     @Feature({"TextInput"})
     public void testRenderChangeUpdatesSelection() {
         // User moves the cursor.
-        mConnection.updateStateOnUiThread("hello", 4, 4, -1, -1, true, true, false);
+        mConnection.updateStateOnUiThread("hello", 4, 4, -1, -1, true, true);
         mInOrder.verify(mImeAdapter).updateSelection(4, 4, -1, -1);
         assertEquals(0, mConnection.getQueueForTest().size());
     }
@@ -131,33 +132,16 @@ public class ThreadedInputConnectionTest {
     @Test
     @Feature({"TextInput"})
     public void testBatchEdit() {
-        // Type 'hello'.
-        assertTrue(mConnection.commitText("hello ", 1));
         // IME app calls beginBatchEdit().
         assertTrue(mConnection.beginBatchEdit());
-        // Type 'world'.
-        assertTrue(mConnection.commitText("world", 1));
-        mInOrder.verify(mImeAdapter).sendCompositionToNative("hello ", 1, true, 0);
-        mInOrder.verify(mImeAdapter).beginBatchEdit();
-        mInOrder.verify(mImeAdapter).sendCompositionToNative("world", 1, true, 0);
+        // Type hello real fast.
+        mConnection.commitText("hello", 1);
+        mInOrder.verify(mImeAdapter).sendCompositionToNative("hello", 1, true, 0);
 
         // Renderer updates states asynchronously.
-        mConnection.updateStateOnUiThread(
-                "hello ", 6, 6, -1, -1, true, true, false /* batchEdit */);
-        mConnection.updateStateOnUiThread(
-                "hello world", 11, 11, -1, -1, true, true, true /* batchEdit */);
-        // 'hello ' is called before beginBatchEdit(), so we still need to update it.
-        mInOrder.verify(mImeAdapter).updateSelection(6, 6, -1, -1);
-        mInOrder.verify(mImeAdapter, never()).updateSelection(11, 11, -1, -1);
+        mConnection.updateStateOnUiThread("hello", 5, 5, -1, -1, true, true);
+        mInOrder.verify(mImeAdapter, never()).updateSelection(5, 5, -1, -1);
         assertEquals(0, mConnection.getQueueForTest().size());
-
-        // Prepare to call getTextBeforeCursor().
-        mConnection.updateStateOnUiThread(
-                "hello world", 11, 11, -1, -1, true, false /* isNonImeChange */, true);
-        when(mImeAdapter.requestTextInputStateUpdate()).thenReturn(true);
-
-        assertEquals("hello world", mConnection.getTextBeforeCursor(20, 0));
-        mInOrder.verify(mImeAdapter).requestTextInputStateUpdate();
 
         {
             // Nest another batch edit.
@@ -166,47 +150,18 @@ public class ThreadedInputConnectionTest {
             mConnection.setSelection(4, 4);
             assertTrue(mConnection.endBatchEdit());
         }
-        mInOrder.verify(mImeAdapter).setEditableSelectionOffsets(4, 4);
-
-        // Renderer updates state for setSelection().
-        mConnection.updateStateOnUiThread(
-                "hello world", 4, 4, -1, -1, true, true, true /* batchEdit */);
-
         // We still have one outer batch edit, so should not update selection yet.
         mInOrder.verify(mImeAdapter, never()).updateSelection(4, 4, -1, -1);
+
+        // Prepare to call requestTextInputStateUpdate.
+        mConnection.updateStateOnUiThread("hello", 4, 4, -1, -1, true, false);
+        assertEquals(1, mConnection.getQueueForTest().size());
+        when(mImeAdapter.requestTextInputStateUpdate()).thenReturn(true);
 
         // IME app calls endBatchEdit().
         assertFalse(mConnection.endBatchEdit());
         // Batch edit is finished, now update selection.
-        mConnection.updateStateOnUiThread(
-                "hello world", 4, 4, -1, -1, true, true, false /* batchEdit */);
-
-        mInOrder.verify(mImeAdapter).endBatchEdit();
         mInOrder.verify(mImeAdapter).updateSelection(4, 4, -1, -1);
-        mInOrder.verifyNoMoreInteractions();
-        assertEquals(0, mConnection.getQueueForTest().size());
-    }
-
-    @Test
-    @Feature({"TextInput"})
-    public void testBatchEdit_NoOp() {
-        assertTrue(mConnection.beginBatchEdit());
-        assertFalse(mConnection.endBatchEdit());
-        // This is added just for testing the above.
-        assertTrue(mConnection.commitText("hello", 1));
-
-        // State update for endBatchEdit.
-        mConnection.updateStateOnUiThread(
-                "", 0, 0, -1, -1, true, false /* isNonImeChange */, false /* batchEdit */);
-        // State update for commitText.
-        mConnection.updateStateOnUiThread(
-                "hello", 5, 5, -1, -1, true, true, false /* batchEdit */);
-        mInOrder.verify(mImeAdapter).beginBatchEdit();
-        mInOrder.verify(mImeAdapter).endBatchEdit();
-        mInOrder.verify(mImeAdapter).sendCompositionToNative("hello", 1, true, 0);
-        mInOrder.verify(mImeAdapter).updateSelection(0, 0, -1, -1);
-        mInOrder.verify(mImeAdapter).updateSelection(5, 5, -1, -1);
-        mInOrder.verifyNoMoreInteractions();
         assertEquals(0, mConnection.getQueueForTest().size());
     }
 
@@ -257,7 +212,7 @@ public class ThreadedInputConnectionTest {
                     }
                 }));
         // Or it could be.
-        mConnection.updateStateOnUiThread("hello", 5, 5, -1, -1, true, true, false);
+        mConnection.updateStateOnUiThread("hello", 5, 5, -1, -1, true, true);
         assertEquals("hello",
                 ThreadUtils.runOnUiThreadBlockingNoException(new Callable<CharSequence>() {
                     @Override

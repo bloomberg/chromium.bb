@@ -776,8 +776,7 @@ void RenderWidgetHostViewAndroid::TextInputStateChanged(
       static_cast<int>(params.type), params.flags,
       params.value, params.selection_start, params.selection_end,
       params.composition_start, params.composition_end,
-      params.show_ime_if_needed, params.is_non_ime_change,
-      params.batch_edit);
+      params.show_ime_if_needed, params.is_non_ime_change);
 }
 
 void RenderWidgetHostViewAndroid::UpdateBackgroundColor(SkColor color) {

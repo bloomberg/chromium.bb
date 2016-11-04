@@ -508,10 +508,6 @@ class CONTENT_EXPORT RenderWidget
 
   // Called by the browser process to update text input state.
   void OnRequestTextInputStateUpdate();
-
-  // Called by the browser process to begin (when |begin| is set) or end batch
-  // edit mode. Note that text input state will not be updated in this mode.
-  void OnImeBatchEdit(bool begin);
 #endif
 
   // Called by the browser process to update the cursor and composition
@@ -670,10 +666,6 @@ class CONTENT_EXPORT RenderWidget
   // It is possible that one ImeEventGuard is nested inside another
   // ImeEventGuard. We keep track of the outermost one, and update it as needed.
   ImeEventGuard* ime_event_guard_;
-
-  // Whether IME is in batch edit mode, in which case we do not update text
-  // input state.
-  bool ime_in_batch_edit_;
 
   // True if we have requested this widget be closed.  No more messages will
   // be sent, except for a Close.

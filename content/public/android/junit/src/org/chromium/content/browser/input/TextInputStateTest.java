@@ -6,10 +6,11 @@ package org.chromium.content.browser.input;
 
 import static org.junit.Assert.assertEquals;
 
-import org.chromium.base.test.util.Feature;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.junit.runners.BlockJUnit4ClassRunner;
+
+import org.chromium.base.test.util.Feature;
 
 /**
  * Unit tests for {@TextInputState}.
@@ -20,7 +21,7 @@ public class TextInputStateTest {
     @Feature({"TextInput"})
     public void testEmptySelection() {
         TextInputState state =
-                new TextInputState("hello", new Range(3, 3), new Range(-1, -1), false, true, false);
+                new TextInputState("hello", new Range(3, 3), new Range(-1, -1), false, true);
         assertEquals("lo", state.getTextAfterSelection(3));
         assertEquals("lo", state.getTextAfterSelection(2));
         assertEquals("", state.getTextAfterSelection(0));
@@ -34,7 +35,7 @@ public class TextInputStateTest {
     @Feature({"TextInput"})
     public void testNonEmptySelection() {
         TextInputState state =
-                new TextInputState("hello", new Range(3, 4), new Range(3, 4), false, true, false);
+                new TextInputState("hello", new Range(3, 4), new Range(3, 4), false, true);
         assertEquals("hel", state.getTextBeforeSelection(4));
         assertEquals("hel", state.getTextBeforeSelection(3));
         assertEquals("", state.getTextBeforeSelection(0));

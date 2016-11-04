@@ -298,26 +298,6 @@ bool ImeAdapterAndroid::RequestTextInputStateUpdate(
   return true;
 }
 
-bool ImeAdapterAndroid::BeginBatchEdit(
-    JNIEnv* env,
-    const JavaParamRef<jobject>&) {
-  RenderWidgetHostImpl* rwhi = GetRenderWidgetHostImpl();
-  if (!rwhi)
-    return false;
-  rwhi->Send(new InputMsg_ImeBatchEdit(rwhi->GetRoutingID(), true));
-  return true;
-}
-
-bool ImeAdapterAndroid::EndBatchEdit(
-    JNIEnv* env,
-    const JavaParamRef<jobject>&) {
-  RenderWidgetHostImpl* rwhi = GetRenderWidgetHostImpl();
-  if (!rwhi)
-    return false;
-  rwhi->Send(new InputMsg_ImeBatchEdit(rwhi->GetRoutingID(), false));
-  return true;
-}
-
 void ImeAdapterAndroid::RequestCursorUpdate(
     JNIEnv* env,
     const base::android::JavaParamRef<jobject>& obj,

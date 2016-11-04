@@ -115,8 +115,7 @@ public class ReplicaInputConnection
 
     @Override
     public void updateStateOnUiThread(String text, int selectionStart, int selectionEnd,
-            int compositionStart, int compositionEnd, boolean singleLine, boolean isNonImeChange,
-            boolean inBatchEditMode) {
+            int compositionStart, int compositionEnd, boolean singleLine, boolean isNonImeChange) {
         if (DEBUG_LOGS) {
             Log.w(TAG, "updateState [%s] [%s %s] [%s %s] [%b] [%b]", text, selectionStart,
                     selectionEnd, compositionStart, compositionEnd, singleLine, isNonImeChange);

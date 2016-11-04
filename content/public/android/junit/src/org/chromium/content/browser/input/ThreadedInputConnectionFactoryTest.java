@@ -226,7 +226,6 @@ public class ThreadedInputConnectionFactoryTest {
         mInOrder.verify(mInputMethodManager).isActive(mContainerView);
         mInOrder.verify(mProxyView).onCreateInputConnection(any(EditorInfo.class));
         mInOrder.verify(mContainerView).getContext();  // BaseInputConnection#<init>
-        mInOrder.verify(mImeAdapter).endBatchEdit();
         mInOrder.verifyNoMoreInteractions();
         assertNotNull(mInputConnection);
         assertTrue(ThreadedInputConnection.class.isInstance(mInputConnection));

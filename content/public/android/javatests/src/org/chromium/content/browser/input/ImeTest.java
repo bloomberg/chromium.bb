@@ -1543,31 +1543,29 @@ public class ImeTest extends ContentShellTestBase {
         }));
     }
 
-    // Tests that the method call order is kept and get updates correctly.
-    // crbug.com/601707, crbug.com/643473
+    // Tests that the method call order is kept.
+    // See crbug.com/601707 for details.
     @MediumTest
     @Feature({"TextInput"})
     @RetryOnFailure
-    public void testAsynchronousSequence() throws Exception {
+    public void testSetSelectionCommitTextOrder() throws Exception {
         final ChromiumBaseInputConnection connection = mConnection;
         runBlockingOnImeThread(new Callable<Void>() {
             @Override
             public Void call() {
-                connection.commitText("hi ", 1);
                 connection.beginBatchEdit();
                 connection.commitText("hello world", 1);
-                connection.setSelection(9, 9);
-                connection.deleteSurroundingText(3, 8);
+                connection.setSelection(6, 6);
+                connection.deleteSurroundingText(0, 5);
                 connection.commitText("'", 1);
                 connection.commitText("world", 1);
-                connection.setSelection(10, 10);
+                connection.setSelection(7, 7);
                 connection.setComposingText("", 1);
                 connection.endBatchEdit();
                 return null;
             }
         });
-        waitAndVerifyUpdateSelection(0, 3, 3, -1, -1);
-        waitAndVerifyUpdateSelection(1, 10, 10, -1, -1);
+        waitAndVerifyUpdateSelection(0, 7, 7, -1, -1);
     }
 
     // crbug.com/643477
@@ -1579,11 +1577,10 @@ public class ImeTest extends ContentShellTestBase {
         ThreadUtils.runOnUiThreadBlocking(new Runnable() {
             @Override
             public void run() {
+                // We allow UI thread access for most functions, except for
+                // beginBatchEdit(), endBatchEdit(), and get* methods().
                 assertTrue(connection.commitText("a", 1));
                 assertTrue(connection.setComposingText("b", 1));
-                // Note that the result of this function may not be up-to-date.
-                connection.getTextBeforeCursor(10, 0);
-
                 assertTrue(connection.setComposingText("bc", 1));
                 assertTrue(connection.finishComposingText());
             }

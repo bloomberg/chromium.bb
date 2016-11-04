@@ -1257,8 +1257,7 @@ void ContentViewCoreImpl::UpdateImeAdapter(long native_ime_adapter,
                                            int composition_start,
                                            int composition_end,
                                            bool show_ime_if_needed,
-                                           bool is_non_ime_change,
-                                           bool in_batch_edit_mode) {
+                                           bool is_non_ime_change) {
   JNIEnv* env = AttachCurrentThread();
   ScopedJavaLocalRef<jobject> obj = java_ref_.get(env);
   if (obj.is_null())
@@ -1268,8 +1267,7 @@ void ContentViewCoreImpl::UpdateImeAdapter(long native_ime_adapter,
   Java_ContentViewCore_updateImeAdapter(
       env, obj, native_ime_adapter, text_input_type, text_input_flags,
       jstring_text, selection_start, selection_end, composition_start,
-      composition_end, show_ime_if_needed, is_non_ime_change,
-      in_batch_edit_mode);
+      composition_end, show_ime_if_needed, is_non_ime_change);
 }
 
 void ContentViewCoreImpl::SetAccessibilityEnabled(

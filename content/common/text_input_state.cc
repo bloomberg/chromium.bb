@@ -16,8 +16,7 @@ TextInputState::TextInputState()
       composition_end(-1),
       can_compose_inline(true),
       show_ime_if_needed(false),
-      is_non_ime_change(true),
-      batch_edit(false) {}
+      is_non_ime_change(true) {}
 
 TextInputState::TextInputState(const TextInputState& other) = default;
 

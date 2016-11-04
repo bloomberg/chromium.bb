@@ -306,10 +306,9 @@ public class ImeAdapter {
      * @param compositionEnd The character offset of the composition end, or -1 if there is no
      *                       selection.
      * @param isNonImeChange True when the update was caused by non-IME (e.g. Javascript).
-     * @param inBatchEditMode True when in batch edit mode.
      */
     public void updateState(String text, int selectionStart, int selectionEnd, int compositionStart,
-            int compositionEnd, boolean isNonImeChange, boolean inBatchEditMode) {
+            int compositionEnd, boolean isNonImeChange) {
         if (mCursorAnchorInfoController != null && (!TextUtils.equals(mLastText, text)
                 || mLastSelectionStart != selectionStart || mLastSelectionEnd != selectionEnd
                 || mLastCompositionStart != compositionStart
@@ -326,7 +325,7 @@ public class ImeAdapter {
         boolean singleLine = mTextInputType != TextInputType.TEXT_AREA
                 && mTextInputType != TextInputType.CONTENT_EDITABLE;
         mInputConnection.updateStateOnUiThread(text, selectionStart, selectionEnd, compositionStart,
-                compositionEnd, singleLine, isNonImeChange, inBatchEditMode);
+                compositionEnd, singleLine, isNonImeChange);
     }
 
     /**
@@ -681,25 +680,6 @@ public class ImeAdapter {
     }
 
     /**
-     * Send a request to the native counterpart to begin batch edit.
-     */
-    boolean beginBatchEdit() {
-        if (mNativeImeAdapterAndroid == 0) return false;
-        if (mInputConnection == null) return false;
-        return nativeBeginBatchEdit(mNativeImeAdapterAndroid);
-    }
-
-    /**
-     * Send a request to the native counterpart to end batch edit.
-     */
-    boolean endBatchEdit() {
-        if (mNativeImeAdapterAndroid == 0) return false;
-        // You won't get state update anyways.
-        if (mInputConnection == null) return false;
-        return nativeEndBatchEdit(mNativeImeAdapterAndroid);
-    }
-
-    /**
      * Notified when IME requested Chrome to change the cursor update mode.
      */
     public boolean onRequestCursorUpdates(int cursorUpdateMode) {
@@ -799,10 +779,7 @@ public class ImeAdapter {
     private native void nativeDeleteSurroundingText(long nativeImeAdapterAndroid,
             int before, int after);
     private native void nativeResetImeAdapter(long nativeImeAdapterAndroid);
-    private native boolean nativeRequestTextInputStateUpdate(
-            long nativeImeAdapterAndroid);
-    private native boolean nativeBeginBatchEdit(long nativeImeAdapterAndroid);
-    private native boolean nativeEndBatchEdit(long nativeImeAdapterAndroid);
+    private native boolean nativeRequestTextInputStateUpdate(long nativeImeAdapterAndroid);
     private native void nativeRequestCursorUpdate(long nativeImeAdapterAndroid,
             boolean immediateRequest, boolean monitorRequest);
     private native boolean nativeIsImeThreadEnabled(long nativeImeAdapterAndroid);
