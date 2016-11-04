@@ -46,10 +46,7 @@ def CopyPagesWithNewBrowserArgsAndPrefix(pages, browser_args, prefix):
     p.CopyWithNewBrowserArgsAndPrefix(browser_args, prefix) for p in pages]
 
 
-# Pages that should be run both with and without --enable-unsafe-es3-apis.
-# TODO(kbr): eliminate the "ES3" versions of these tests once WebGL 2.0
-# is enabled by default. crbug.com/295792
-def ES2AndES3Pages(base_name):
+def DefaultPages(base_name):
   return [
     PixelTestPage(
       'pixel_canvas2d.html',

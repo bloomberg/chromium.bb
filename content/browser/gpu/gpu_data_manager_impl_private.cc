@@ -179,7 +179,7 @@ void UpdateStats(const gpu::GPUInfo& gpu_info,
       command_line.HasSwitch(switches::kDisableGpu),
       command_line.HasSwitch(switches::kDisableGpuRasterization),
       command_line.HasSwitch(switches::kDisableExperimentalWebGL),
-      (!command_line.HasSwitch(switches::kEnableUnsafeES3APIs) ||
+      (!command_line.HasSwitch(switches::kEnableES3APIs) ||
        command_line.HasSwitch(switches::kDisableES3APIs))};
 #if defined(OS_WIN)
   const std::string kGpuBlacklistFeatureHistogramNamesWin[] = {
@@ -770,8 +770,14 @@ void GpuDataManagerImplPrivate::AppendGpuCommandLine(
   }
 #endif
 
-  if (IsFeatureBlacklisted(gpu::GPU_FEATURE_TYPE_WEBGL2) && gpu_preferences) {
-    gpu_preferences->enable_unsafe_es3_apis = false;
+  if (gpu_preferences) { // enable_unsafe_es3_apis
+    bool blacklisted = IsFeatureBlacklisted(gpu::GPU_FEATURE_TYPE_WEBGL2);
+    bool enabled = base::CommandLine::ForCurrentProcess()->HasSwitch(
+        switches::kEnableES3APIs);
+    bool disabled = base::CommandLine::ForCurrentProcess()->HasSwitch(
+        switches::kDisableES3APIs);
+    gpu_preferences->enable_unsafe_es3_apis =
+        (enabled || !blacklisted) && !disabled;
   }
 
   // Pass GPU and driver information to GPU process. We try to avoid full GPU

@@ -18,7 +18,7 @@ const char kSoftwareRenderingListJson[] = LONG_STRING_CONST(
 {
   "name": "software rendering list",
   // Please update the version number whenever you change this file.
-  "version": "12.01",
+  "version": "12.02",
   "entries": [
     {
       "id": 1,
@@ -1415,6 +1415,17 @@ LONG_STRING_CONST(
       "vendor_id": "0x1002",
       "features": [
         "gpu_rasterization"
+      ]
+    },
+    {
+      "id": 128,
+      "description": "WebGL 2 is not yet ready on Android",
+      "cr_bugs": [295792, 641635],
+      "os": {
+        "type": "android"
+      },
+      "features": [
+        "webgl2"
       ]
     }
   ]

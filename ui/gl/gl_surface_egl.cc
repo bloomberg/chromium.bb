@@ -231,8 +231,8 @@ EGLConfig ChooseConfig(GLSurface::Format format) {
   // Choose an EGL configuration.
   // On X this is only used for PBuffer surfaces.
   std::vector<EGLint> renderable_types;
-  if (base::CommandLine::ForCurrentProcess()->HasSwitch(
-          switches::kEnableUnsafeES3APIs)) {
+  if (!base::CommandLine::ForCurrentProcess()->HasSwitch(
+          switches::kDisableES3GLContext)) {
     renderable_types.push_back(EGL_OPENGL_ES3_BIT);
   }
   renderable_types.push_back(EGL_OPENGL_ES2_BIT);

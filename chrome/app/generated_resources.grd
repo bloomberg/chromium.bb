@@ -5671,10 +5671,10 @@ Keep your key file in a safe place. You will need it to create new versions of y
         Allow extensions to create panel windows that open outside of the browser frame. Attempts to open a panel will open a popup instead if not enabled. Default behavior is to allow only for whitelisted extensions. Enabled behavior is to allow for all extensions. Disabled behavior is to disallow panels for any extension.
       </message>
       <message name="IDS_FLAGS_WEBGL2_NAME" desc="Name of the 'Enable WebGL 2.0' flag.">
-        WebGL 2.0 Prototype
+        WebGL 2.0
       </message>
       <message name="IDS_FLAGS_WEBGL2_DESCRIPTION" desc="Description for the flag to enable WebGL 2.0.">
-        Enabling this option allows web applications to access the experimental WebGL 2.0 feature. This option should only be used for application development, and should not be used when browsing arbitrary web sites.
+        Allow web applications to access WebGL 2.0.
       </message>
       <message name="IDS_FLAGS_WEBGL_DRAFT_EXTENSIONS_NAME" desc="Name of the 'Enable WebGL Draft Extensions' flag.">
         WebGL Draft Extensions

@@ -260,7 +260,7 @@ class WebGLConformanceIntegrationTest(gpu_integration_test.GpuIntegrationTest):
     ])
     if cls._webgl_version == 2:
       browser_options.AppendExtraBrowserArgs([
-        '--enable-unsafe-es3-apis',
+        '--enable-es3-apis',
       ])
     browser = browser_finder.FindBrowser(browser_options.finder_options)
     if (browser.target_os.startswith('android') and

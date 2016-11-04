@@ -156,7 +156,7 @@ const GpuFeatureInfo GetGpuFeatureInfo(size_t index, bool* eof) {
      true},
     {kWebGL2FeatureName,
      manager->IsFeatureBlacklisted(gpu::GPU_FEATURE_TYPE_WEBGL2),
-     !command_line.HasSwitch(switches::kEnableUnsafeES3APIs) ||
+     !command_line.HasSwitch(switches::kEnableES3APIs) ||
      command_line.HasSwitch(switches::kDisableES3APIs),
      "WebGL2 has been disabled via blacklist or the command line.",
      false},

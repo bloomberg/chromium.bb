@@ -37,7 +37,7 @@ class PixelTestsES3SharedPageState(gpu_test_base.GpuSharedPageState):
     super(PixelTestsES3SharedPageState, self).__init__(
       test, finder_options, story_set)
     finder_options.browser_options.AppendExtraBrowserArgs(
-      ['--enable-unsafe-es3-apis'])
+      ['--enable-es3-apis'])
 
 
 class IOSurface2DCanvasSharedPageState(gpu_test_base.GpuSharedPageState):
@@ -141,7 +141,7 @@ class PixelTestsStorySet(story_set_module.StorySet):
     # happen on Android right now.
     if try_es3 and sys.platform.startswith('darwin'):
       # Add all the tests again, this time with the
-      # --enable-unsafe-es3-apis command line argument. This has the
+      # --enable-es3-apis command line argument. This has the
       # side-effect of enabling the Core Profile rendering path on Mac
       # OS.
       self._AddAllPages(expectations, base_name, True)

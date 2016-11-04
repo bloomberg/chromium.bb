@@ -31,8 +31,8 @@ bool GLContextWGL::Initialize(
       strstr(wglGetExtensionsStringARB(device_context),
              "WGL_ARB_create_context") != nullptr;
   bool create_core_profile = has_wgl_create_context_arb &&
-                             base::CommandLine::ForCurrentProcess()->HasSwitch(
-                                 switches::kEnableUnsafeES3APIs);
+                             !base::CommandLine::ForCurrentProcess()->HasSwitch(
+                                 switches::kDisableES3GLContext);
 
   if (create_core_profile) {
     std::pair<int, int> attempt_versions[] = {

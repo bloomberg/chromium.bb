@@ -24,12 +24,8 @@ class PixelExpectations(GpuTestExpectations):
     self.Fail('Pixel_ScissorTestWithPreserveDrawingBuffer',
         ['android'], bug=521588)
 
-    self.Fail('Pixel_WebGLGreenTriangleES3',
-              ['mac', ('intel', 0x116)], bug=540531)
-
     # TODO(ccameron) fix these on Mac Retina
     self.Fail('Pixel_CSS3DBlueBox', ['mac'], bug=533690)
-    self.Fail('Pixel_CSS3DBlueBoxES3', ['mac'], bug=533690)
 
     # TODO(vmiura) check / generate reference images for Android devices
     self.Fail('Pixel_SolidColorBackground', ['mac', 'android'], bug=624256)
