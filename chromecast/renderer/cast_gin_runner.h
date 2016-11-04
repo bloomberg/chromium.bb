@@ -46,6 +46,7 @@ class CastGinRunner : public gin::Runner,
   void OnDestruct() override;
 
  private:
+  void RemoveUserDataFromMainWorldContext();
   void RemoveUserData(v8::Local<v8::Context> context);
 
   // Frame to execute script in.

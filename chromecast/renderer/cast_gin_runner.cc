@@ -58,14 +58,19 @@ gin::ContextHolder* CastGinRunner::GetContextHolder() {
 
 void CastGinRunner::WillReleaseScriptContext(v8::Local<v8::Context> context,
                                              int world_id) {
-  RemoveUserData(context);
+  RemoveUserDataFromMainWorldContext();
 }
 
 void CastGinRunner::DidClearWindowObject() {
-  RemoveUserData(render_frame()->GetWebFrame()->mainWorldScriptContext());
+  RemoveUserDataFromMainWorldContext();
 }
 
 void CastGinRunner::OnDestruct() {
+  RemoveUserDataFromMainWorldContext();
+}
+
+void CastGinRunner::RemoveUserDataFromMainWorldContext() {
+  v8::HandleScope handle_scope(context_holder_->isolate());
   RemoveUserData(render_frame()->GetWebFrame()->mainWorldScriptContext());
 }
 
