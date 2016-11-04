@@ -93,7 +93,9 @@
       'target_name': 'site_data_details_subpage',
       'dependencies': [
         '<(DEPTH)/ui/webui/resources/js/compiled_resources2.gyp:cr',
-        'cookie_tree_behavior',
+        '<(DEPTH)/ui/webui/resources/js/compiled_resources2.gyp:web_ui_listener_behavior',
+        '../compiled_resources2.gyp:route',
+        'site_settings_prefs_browser_proxy',
       ],
       'includes': ['../../../../../third_party/closure_compiler/compile_js2.gypi'],
     },

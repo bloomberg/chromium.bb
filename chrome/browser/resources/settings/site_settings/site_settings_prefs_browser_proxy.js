@@ -87,23 +87,30 @@ cr.define('settings', function() {
     setDefaultValueForContentType: function(contentType, defaultValue) {},
 
     /**
+     * Gets the cookie details for a particular site.
+     * @param {string} site The name of the site.
+     * @return {!Promise<!CookieDataSummaryItem>}
+     */
+    getCookieDetails: function(site) {},
+
+    /**
      * Gets the default value for a site settings category.
      * @param {string} contentType The name of the category to query.
-     * @return {Promise<string>} The string value of the default setting.
+     * @return {!Promise<string>} The string value of the default setting.
      */
     getDefaultValueForContentType: function(contentType) {},
 
     /**
      * Gets the exceptions (site list) for a particular category.
      * @param {string} contentType The name of the category to query.
-     * @return {Promise<Array<SiteException>>}
+     * @return {!Promise<!Array<!SiteException>>}
      */
     getExceptionList: function(contentType) {},
 
     /**
      * Gets the exception details for a particular site.
      * @param {string} site The name of the site.
-     * @return {Promise<SiteException>}
+     * @return {!Promise<!SiteException>}
      */
     getSiteDetails: function(site) {},
 
@@ -221,7 +228,7 @@ cr.define('settings', function() {
      * origin.
      * @param {string} origin The origin to look up the permission for.
      * @param {string} embeddingOrigin the embedding origin to look up.
-     * @param {UsbDeviceDetails} usbDevice The USB device to revoke permission
+     * @param {!UsbDeviceDetails} usbDevice The USB device to revoke permission
      *     for.
      */
     removeUsbDevice: function(origin, embeddingOrigin, usbDevice) {},
@@ -259,6 +266,11 @@ cr.define('settings', function() {
     /** @override */
     setDefaultValueForContentType: function(contentType, defaultValue) {
       chrome.send('setDefaultValueForContentType', [contentType, defaultValue]);
+    },
+
+    /** @override */
+    getCookieDetails: function(site) {
+      return cr.sendWithPromise('getCookieDetails', site);
     },
 
     /** @override */

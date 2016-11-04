@@ -5,6 +5,7 @@
 /**
  * @typedef {{hasChildren: boolean,
  *            id: string,
+ *            idPath: string,
  *            title: string,
  *            totalUsage: string,
  *            type: string}}

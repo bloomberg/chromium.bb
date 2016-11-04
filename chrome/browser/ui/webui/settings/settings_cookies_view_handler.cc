@@ -58,21 +58,28 @@ void CookiesViewHandler::OnJavascriptDisallowed() {
 }
 
 void CookiesViewHandler::RegisterMessages() {
-  web_ui()->RegisterMessageCallback("updateCookieSearchResults",
-      base::Bind(&CookiesViewHandler::UpdateSearchResults,
+  EnsureCookiesTreeModelCreated();
+
+  web_ui()->RegisterMessageCallback(
+      "getCookieDetails",
+      base::Bind(&CookiesViewHandler::HandleGetCookieDetails,
                  base::Unretained(this)));
-  web_ui()->RegisterMessageCallback("removeAllCookies",
-      base::Bind(&CookiesViewHandler::RemoveAll,
+  web_ui()->RegisterMessageCallback(
+      "updateCookieSearchResults",
+      base::Bind(&CookiesViewHandler::HandleUpdateSearchResults,
                  base::Unretained(this)));
-  web_ui()->RegisterMessageCallback("removeCookie",
-      base::Bind(&CookiesViewHandler::Remove,
-                 base::Unretained(this)));
-  web_ui()->RegisterMessageCallback("loadCookie",
-      base::Bind(&CookiesViewHandler::LoadChildren,
-                 base::Unretained(this)));
-  web_ui()->RegisterMessageCallback("reloadCookies",
-      base::Bind(&CookiesViewHandler::ReloadCookies,
-                 base::Unretained(this)));
+  web_ui()->RegisterMessageCallback(
+      "removeAllCookies",
+      base::Bind(&CookiesViewHandler::HandleRemoveAll, base::Unretained(this)));
+  web_ui()->RegisterMessageCallback(
+      "removeCookie",
+      base::Bind(&CookiesViewHandler::HandleRemove, base::Unretained(this)));
+  web_ui()->RegisterMessageCallback(
+      "loadCookie", base::Bind(&CookiesViewHandler::HandleLoadChildren,
+                               base::Unretained(this)));
+  web_ui()->RegisterMessageCallback(
+      "reloadCookies", base::Bind(&CookiesViewHandler::HandleReloadCookies,
+                                  base::Unretained(this)));
 }
 
 void CookiesViewHandler::TreeNodesAdded(ui::TreeModel* model,
@@ -82,8 +89,6 @@ void CookiesViewHandler::TreeNodesAdded(ui::TreeModel* model,
   // Skip if there is a batch update in progress.
   if (batch_update_)
     return;
-
-  AllowJavascript();
 
   CookiesTreeModel* tree_model = static_cast<CookiesTreeModel*>(model);
   CookieTreeNode* parent_node = tree_model->AsNode(parent);
@@ -115,8 +120,6 @@ void CookiesViewHandler::TreeNodesRemoved(ui::TreeModel* model,
   if (batch_update_)
     return;
 
-  AllowJavascript();
-
   CookiesTreeModel* tree_model = static_cast<CookiesTreeModel*>(model);
 
   base::DictionaryValue args;
@@ -140,7 +143,8 @@ void CookiesViewHandler::TreeModelEndBatch(CookiesTreeModel* model) {
   DCHECK(batch_update_);
   batch_update_ = false;
 
-  SendChildren(model->GetRoot());
+  if (IsJavascriptAllowed())
+    SendChildren(model->GetRoot());
 }
 
 void CookiesViewHandler::EnsureCookiesTreeModelCreated() {
@@ -176,30 +180,53 @@ void CookiesViewHandler::EnsureCookiesTreeModelCreated() {
   }
 }
 
-void CookiesViewHandler::UpdateSearchResults(const base::ListValue* args) {
+void CookiesViewHandler::HandleUpdateSearchResults(
+    const base::ListValue* args) {
   base::string16 query;
-  if (!args->GetString(0, &query))
-    return;
-
-  EnsureCookiesTreeModelCreated();
+  CHECK(args->GetString(0, &query));
 
   cookies_tree_model_->UpdateSearchResults(query);
 }
 
-void CookiesViewHandler::RemoveAll(const base::ListValue* args) {
+void CookiesViewHandler::HandleGetCookieDetails(const base::ListValue* args) {
+  CHECK_EQ(2U, args->GetSize());
+  CHECK(args->GetString(0, &callback_id_));
+  std::string site;
+  CHECK(args->GetString(1, &site));
+
+  AllowJavascript();
+  const CookieTreeNode* node = model_util_->GetTreeNodeFromTitle(
+      cookies_tree_model_->GetRoot(), base::UTF8ToUTF16(site));
+
+  if (!node) {
+    RejectJavascriptCallback(base::StringValue(callback_id_),
+                             *base::Value::CreateNullValue());
+    callback_id_.clear();
+    return;
+  }
+
+  SendCookieDetails(node);
+}
+
+void CookiesViewHandler::HandleReloadCookies(const base::ListValue* args) {
   CHECK_EQ(1U, args->GetSize());
   CHECK(args->GetString(0, &callback_id_));
 
+  AllowJavascript();
+  cookies_tree_model_.reset();
   EnsureCookiesTreeModelCreated();
+}
+
+void CookiesViewHandler::HandleRemoveAll(const base::ListValue* args) {
+  CHECK_EQ(1U, args->GetSize());
+  CHECK(args->GetString(0, &callback_id_));
+
   cookies_tree_model_->DeleteAllStoredObjects();
 }
 
-void CookiesViewHandler::Remove(const base::ListValue* args) {
+void CookiesViewHandler::HandleRemove(const base::ListValue* args) {
   std::string node_path;
-  if (!args->GetString(0, &node_path))
-    return;
-
-  EnsureCookiesTreeModelCreated();
+  CHECK(args->GetString(0, &node_path));
 
   const CookieTreeNode* node = model_util_->GetTreeNodeFromPath(
       cookies_tree_model_->GetRoot(), node_path);
@@ -207,15 +234,12 @@ void CookiesViewHandler::Remove(const base::ListValue* args) {
     cookies_tree_model_->DeleteCookieNode(const_cast<CookieTreeNode*>(node));
 }
 
-void CookiesViewHandler::LoadChildren(const base::ListValue* args) {
-  CHECK_LT(0U, args->GetSize());
+void CookiesViewHandler::HandleLoadChildren(const base::ListValue* args) {
+  CHECK_EQ(2U, args->GetSize());
   CHECK(args->GetString(0, &callback_id_));
 
   std::string node_path;
-  if (!args->GetString(1, &node_path))
-    return;
-
-  EnsureCookiesTreeModelCreated();
+  CHECK(args->GetString(1, &node_path));
 
   const CookieTreeNode* node = model_util_->GetTreeNodeFromPath(
       cookies_tree_model_->GetRoot(), node_path);
@@ -224,8 +248,6 @@ void CookiesViewHandler::LoadChildren(const base::ListValue* args) {
 }
 
 void CookiesViewHandler::SendChildren(const CookieTreeNode* parent) {
-  AllowJavascript();
-
   std::unique_ptr<base::ListValue> children(new base::ListValue);
   // Passing false for |include_quota_nodes| since they don't reflect reality
   // until bug http://crbug.com/642955 is fixed and local/session storage is
@@ -241,16 +263,27 @@ void CookiesViewHandler::SendChildren(const CookieTreeNode* parent) {
   args.Set(kChildren, std::move(children));
 
   ResolveJavascriptCallback(base::StringValue(callback_id_), args);
-  callback_id_ = "";
+  callback_id_.clear();
 }
 
-void CookiesViewHandler::ReloadCookies(const base::ListValue* args) {
-  CHECK_EQ(1U, args->GetSize());
-  CHECK(args->GetString(0, &callback_id_));
+void CookiesViewHandler::SendCookieDetails(const CookieTreeNode* parent) {
+  std::unique_ptr<base::ListValue> children(new base::ListValue);
+  // Passing false for |include_quota_nodes| since they don't reflect reality
+  // until bug http://crbug.com/642955 is fixed and local/session storage is
+  // counted against the total.
+  model_util_->GetChildNodeDetails(parent, /*start=*/0, parent->child_count(),
+                                   /*include_quota_nodes=*/false,
+                                   children.get());
 
-  cookies_tree_model_.reset();
+  base::DictionaryValue args;
+  if (parent == cookies_tree_model_->GetRoot())
+    args.Set(kId, base::Value::CreateNullValue());
+  else
+    args.SetString(kId, model_util_->GetTreeNodeId(parent));
+  args.Set(kChildren, std::move(children));
 
-  EnsureCookiesTreeModelCreated();
+  ResolveJavascriptCallback(base::StringValue(callback_id_), args);
+  callback_id_.clear();
 }
 
 }  // namespace settings

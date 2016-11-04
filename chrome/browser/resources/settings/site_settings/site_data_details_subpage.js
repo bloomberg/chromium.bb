@@ -11,9 +11,15 @@
 Polymer({
   is: 'site-data-details-subpage',
 
-  behaviors: [settings.RouteObserverBehavior, CookieTreeBehavior],
+  behaviors: [settings.RouteObserverBehavior, WebUIListenerBehavior],
 
   properties: {
+    /**
+     * The browser proxy used to retrieve and change cookies.
+     * @type {settings.SiteSettingsPrefsBrowserProxy}
+     */
+    browserProxy: Object,
+
     /**
      * The cookie entries for the given site.
      * @type {!Array<!CookieDataItem>}
@@ -27,15 +33,21 @@ Polymer({
       notify: true,
     },
 
-    /**
-     * The site to show details for.
-     * @type {!settings.CookieTreeNode}
-     * @private
-     */
-    site_: Object,
+    /** @private */
+    site_: String,
+
+    /** @private */
+    siteId_: String,
   },
 
-  listeners: {'cookie-tree-changed': 'onCookiesLoaded_'},
+  /** @override */
+  ready: function() {
+    this.browserProxy =
+        settings.SiteSettingsPrefsBrowserProxyImpl.getInstance();
+
+    this.addWebUIListener('onTreeItemRemoved',
+                          this.getCookieDetails_.bind(this));
+  },
 
   /**
    * settings.RouteObserverBehavior
@@ -45,66 +57,55 @@ Polymer({
   currentRouteChanged: function(route) {
     if (settings.getCurrentRoute() != settings.Route.SITE_SETTINGS_DATA_DETAILS)
       return;
-    this.siteTitle_ = settings.getQueryParameters().get('site');
-    if (!this.siteTitle_)
+    var site = settings.getQueryParameters().get('site');
+    if (!site || site == this.site_)
       return;
-    this.loadCookies().then(this.onCookiesLoaded_.bind(this));
-    this.pageTitle = loadTimeData.getStringF('siteSettingsCookieSubpage',
-        this.siteTitle_);
+    this.site_ = site;
+    this.pageTitle = loadTimeData.getStringF('siteSettingsCookieSubpage', site);
+    this.getCookieDetails_();
+  },
+
+  /** @private */
+  getCookieDetails_: function() {
+    if (!this.site_)
+      return;
+    this.browserProxy.getCookieDetails(this.site_).then(
+        this.onCookiesLoaded_.bind(this),
+        this.onCookiesLoadFailed_.bind(this));
   },
 
   /**
    * @return {!Array<!CookieDataForDisplay>}
    * @private
    */
-  getCookieNodes_: function(cookie) {
-    var node = this.rootCookieNode.fetchNodeById(cookie.id, true);
-    if (!node)
-      return [];
-    return getCookieData(node.data);
+  getCookieNodes_: function(node) {
+    return getCookieData(node);
   },
 
   /**
-   * settings.RouteObserverBehavior
+   * @param {!CookieDataSummaryItem} cookies
    * @private
    */
-  onCookiesLoaded_: function() {
-    var node = this.rootCookieNode.fetchNodeBySite(this.siteTitle_);
-    if (node) {
-      this.site_ = node;
-      this.entries_ = this.site_.getCookieList();
-      // Set up flag for expanding cookie details.
-      this.entries_.map(function(e) { return e.expanded_ = false; });
-    } else {
-      this.entries_ = [];
-    }
+  onCookiesLoaded_: function(cookies) {
+    this.siteId_ = cookies.id;
+    this.entries_ = cookies.children;
+    // Set up flag for expanding cookie details.
+    this.entries_.map(function(e) { return e.expanded_ = false; });
   },
 
   /**
-   * Recursively look up a node path for a leaf node with a given id.
-   * @param {!settings.CookieTreeNode} node The node to start with.
-   * @param {string} currentPath The path constructed so far.
-   * @param {string} targetId The id of the target leaf node to look for.
-   * @return {string} The path of the node returned (or blank if not found).
+   * The site was not found. E.g. The site data may have been deleted or the
+   * site URL parameter may be mistyped.
    * @private
    */
-  nodePath_: function(node, currentPath, targetId) {
-    if (node.data.id == targetId)
-      return currentPath;
-
-    for (var i = 0; i < node.children_.length; ++i) {
-      var child = node.children_[i];
-      var path = this.nodePath_(
-          child, currentPath + ',' + child.data.id, targetId);
-      if (path.length > 0)
-        return path;
-    }
-    return '';
+  onCookiesLoadFailed_: function() {
+    this.siteId_ = '';
+    this.entries_ = [];
   },
 
   /**
    * A handler for when the user opts to remove a single cookie.
-   * @param {!Event} item
+   * @param {!CookieDetails} item
    * @return {string}
    * @private
    */
@@ -112,9 +113,9 @@ Polymer({
     // Frequently there are multiple cookies per site. To avoid showing a list
     // of '1 cookie', '1 cookie', ... etc, it is better to show the title of the
     // cookie to differentiate them.
-    if (item.data.type == 'cookie')
+    if (item.type == 'cookie')
       return item.title;
-    return getCookieDataCategoryText(item.data.type, item.data.totalUsage);
+    return getCookieDataCategoryText(item.type, item.totalUsage);
   },
 
   /**
@@ -123,15 +124,15 @@ Polymer({
    * @private
    */
   onRemove_: function(event) {
-    this.browserProxy.removeCookie(this.nodePath_(
-        this.site_, this.site_.data.id, event.currentTarget.dataset.id));
+    this.browserProxy.removeCookie(
+        /** @type {!CookieDetails} */(event.currentTarget.dataset).idPath);
   },
 
   /**
    * A handler for when the user opts to remove all cookies.
    */
   removeAll: function() {
-    this.browserProxy.removeCookie(this.site_.data.id);
+    this.browserProxy.removeCookie(this.siteId_);
   },
 });
 

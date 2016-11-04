@@ -6,6 +6,7 @@
 #define CHROME_BROWSER_UI_WEBUI_SETTINGS_SETTINGS_COOKIES_VIEW_HANDLER_H_
 
 #include <memory>
+#include <string>
 
 #include "base/compiler_specific.h"
 #include "base/macros.h"
@@ -46,25 +47,31 @@ class CookiesViewHandler : public SettingsPageUIHandler,
   void EnsureCookiesTreeModelCreated();
 
   // Updates search filter for cookies tree model.
-  void UpdateSearchResults(const base::ListValue* args);
+  void HandleUpdateSearchResults(const base::ListValue* args);
+
+  // Retrieve cookie details for a specific site.
+  void HandleGetCookieDetails(const base::ListValue* args);
 
   // Remove all sites data.
-  void RemoveAll(const base::ListValue* args);
+  void HandleRemoveAll(const base::ListValue* args);
 
   // Remove selected sites data.
-  void Remove(const base::ListValue* args);
+  void HandleRemove(const base::ListValue* args);
 
   // Get the tree node using the tree path info in |args| and call
   // SendChildren to pass back children nodes data to WebUI.
-  void LoadChildren(const base::ListValue* args);
+  void HandleLoadChildren(const base::ListValue* args);
 
   // Get children nodes data and pass it to 'CookiesView.loadChildren' to
   // update the WebUI.
   void SendChildren(const CookieTreeNode* parent);
 
+  // Package and send cookie details for a site.
+  void SendCookieDetails(const CookieTreeNode* parent);
+
   // Reloads the CookiesTreeModel and passes the nodes to
   // 'CookiesView.loadChildren' to update the WebUI.
-  void ReloadCookies(const base::ListValue* args);
+  void HandleReloadCookies(const base::ListValue* args);
 
   // The Cookies Tree model
   std::unique_ptr<CookiesTreeModel> cookies_tree_model_;
