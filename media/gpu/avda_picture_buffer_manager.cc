@@ -40,9 +40,6 @@
     }                                                                    \
   } while (0)
 
-// Return nullptr if !|ptr|.
-#define RETURN_NULL_IF_NULL(ptr) RETURN_IF_NULL(ptr, nullptr)
-
 namespace media {
 namespace {
 
@@ -77,79 +74,23 @@ scoped_refptr<gl::SurfaceTexture> CreateAttachedSurfaceTexture(
 
 }  // namespace
 
-// Handle OnFrameAvailable callbacks safely.  Since they occur asynchronously,
-// we take care that the object that wants them still exists.  WeakPtrs cannot
-// be used because OnFrameAvailable callbacks can occur on any thread. We also
-// can't guarantee when the SurfaceTexture will quit sending callbacks to
-// coordinate with the destruction of the AVDA and PictureBufferManager, so we
-// have a separate object that the callback can own.
-class AVDAPictureBufferManager::OnFrameAvailableHandler
-    : public base::RefCountedThreadSafe<OnFrameAvailableHandler> {
- public:
-  // We do not retain ownership of |listener|.  It must remain valid until after
-  // ClearListener() is called.  This will register with |surface_texture| to
-  // receive OnFrameAvailable callbacks.
-  OnFrameAvailableHandler(AVDASharedState* listener,
-                          gl::SurfaceTexture* surface_texture)
-      : listener_(listener) {
-    surface_texture->SetFrameAvailableCallbackOnAnyThread(
-        base::Bind(&OnFrameAvailableHandler::OnFrameAvailable,
-                   scoped_refptr<OnFrameAvailableHandler>(this)));
-  }
-
-  // Forget about |listener_|, which is required before one deletes it.
-  // No further callbacks will happen once this completes.
-  void ClearListener() {
-    base::AutoLock lock(lock_);
-    listener_ = nullptr;
-  }
-
-  // Notify the listener if there is one.
-  void OnFrameAvailable() {
-    base::AutoLock auto_lock(lock_);
-    if (listener_)
-      listener_->SignalFrameAvailable();
-  }
-
- private:
-  friend class base::RefCountedThreadSafe<OnFrameAvailableHandler>;
-
-  ~OnFrameAvailableHandler() { DCHECK(!listener_); }
-
-  // Protects changes to listener_.
-  base::Lock lock_;
-
-  // The AVDASharedState that wants the OnFrameAvailable callback.
-  AVDASharedState* listener_;
-
-  DISALLOW_COPY_AND_ASSIGN(OnFrameAvailableHandler);
-};
-
-AVDAPictureBufferManager::AVDAPictureBufferManager()
-    : state_provider_(nullptr), media_codec_(nullptr) {}
+AVDAPictureBufferManager::AVDAPictureBufferManager(
+    AVDAStateProvider* state_provider)
+    : state_provider_(state_provider), media_codec_(nullptr) {}
 
 AVDAPictureBufferManager::~AVDAPictureBufferManager() {}
 
-gl::ScopedJavaSurface AVDAPictureBufferManager::Initialize(
-    AVDAStateProvider* state_provider,
-    int surface_view_id) {
-  state_provider_ = state_provider;
+gl::ScopedJavaSurface AVDAPictureBufferManager::Initialize(int surface_id) {
   shared_state_ = new AVDASharedState();
 
   // Acquire the SurfaceView surface if given a valid id.
-  if (surface_view_id != VideoDecodeAccelerator::Config::kNoSurfaceID) {
-    return gpu::GpuSurfaceLookup::GetInstance()->AcquireJavaSurface(
-        surface_view_id);
-  }
+  if (surface_id != SurfaceManager::kNoSurfaceID)
+    return gpu::GpuSurfaceLookup::GetInstance()->AcquireJavaSurface(surface_id);
 
   // Otherwise create a SurfaceTexture.
-  GLuint service_id = 0;
+  GLuint service_id;
   surface_texture_ = CreateAttachedSurfaceTexture(
       state_provider_->GetGlDecoder(), &service_id);
-  if (surface_texture_) {
-    on_frame_available_handler_ = new OnFrameAvailableHandler(
-        shared_state_.get(), surface_texture_.get());
-  }
   shared_state_->SetSurfaceTexture(surface_texture_, service_id);
   return gl::ScopedJavaSurface(surface_texture_.get());
 }
@@ -158,11 +99,6 @@ void AVDAPictureBufferManager::Destroy(const PictureBufferMap& buffers) {
   // Do nothing if Initialize() has not been called.
   if (!shared_state_)
     return;
-
-  // If we have an OnFrameAvailable handler, tell it that we no longer want
-  // callbacks.
-  if (on_frame_available_handler_)
-    on_frame_available_handler_->ClearListener();
 
   ReleaseCodecBuffers(buffers);
   CodecChanged(nullptr);
@@ -192,43 +128,29 @@ gfx::Size AVDAPictureBufferManager::GetPictureBufferSize() const {
   return surface_texture_ ? state_provider_->GetSize() : gfx::Size(1, 1);
 }
 
-gpu::gles2::TextureRef* AVDAPictureBufferManager::GetTextureForPicture(
-    const PictureBuffer& picture_buffer) {
+void AVDAPictureBufferManager::SetImageForPicture(
+    const PictureBuffer& picture_buffer,
+    gpu::gles2::GLStreamTextureImage* image) {
   auto gles_decoder = state_provider_->GetGlDecoder();
-  RETURN_NULL_IF_NULL(gles_decoder);
-  RETURN_NULL_IF_NULL(gles_decoder->GetContextGroup());
+  RETURN_IF_NULL(gles_decoder);
+  RETURN_IF_NULL(gles_decoder->GetContextGroup());
 
   gpu::gles2::TextureManager* texture_manager =
       gles_decoder->GetContextGroup()->texture_manager();
-  RETURN_NULL_IF_NULL(texture_manager);
+  RETURN_IF_NULL(texture_manager);
 
   DCHECK_LE(1u, picture_buffer.client_texture_ids().size());
   gpu::gles2::TextureRef* texture_ref =
       texture_manager->GetTexture(picture_buffer.client_texture_ids()[0]);
-  RETURN_NULL_IF_NULL(texture_ref);
-
-  return texture_ref;
-}
-
-void AVDAPictureBufferManager::SetImageForPicture(
-    const PictureBuffer& picture_buffer,
-    const scoped_refptr<gpu::gles2::GLStreamTextureImage>& image) {
-  gpu::gles2::TextureRef* texture_ref = GetTextureForPicture(picture_buffer);
   RETURN_IF_NULL(texture_ref);
-
-  gpu::gles2::TextureManager* texture_manager =
-      state_provider_->GetGlDecoder()->GetContextGroup()->texture_manager();
-  RETURN_IF_NULL(texture_manager);
 
   // Default to zero which will clear the stream texture service id if one was
   // previously set.
   GLuint stream_texture_service_id = 0;
   if (image) {
-    if (shared_state_->surface_texture_service_id() != 0) {
-      // Override the Texture's service id, so that it will use the one that is
-      // attached to the SurfaceTexture.
-      stream_texture_service_id = shared_state_->surface_texture_service_id();
-    }
+    // Override the Texture's service id, so that it will use the one that is
+    // attached to the SurfaceTexture.
+    stream_texture_service_id = shared_state_->surface_texture_service_id();
 
     // Also set the parameters for the level if we're not clearing the image.
     const gfx::Size size = state_provider_->GetSize();
@@ -236,8 +158,7 @@ void AVDAPictureBufferManager::SetImageForPicture(
                                   size.width(), size.height(), 1, 0, GL_RGBA,
                                   GL_UNSIGNED_BYTE, gfx::Rect());
 
-    static_cast<AVDACodecImage*>(image.get())
-        ->set_texture(texture_ref->texture());
+    static_cast<AVDACodecImage*>(image)->set_texture(texture_ref->texture());
   }
 
   // If we're clearing the image, or setting a SurfaceTexture backed image, we
@@ -252,8 +173,14 @@ void AVDAPictureBufferManager::SetImageForPicture(
   if (image && !surface_texture_)
     image_state = gpu::gles2::Texture::BOUND;
   texture_manager->SetLevelStreamTextureImage(texture_ref, GetTextureTarget(),
-                                              0, image.get(), image_state,
+                                              0, image, image_state,
                                               stream_texture_service_id);
+}
+
+AVDACodecImage* AVDAPictureBufferManager::GetImageForPicture(
+    int picture_buffer_id) const {
+  auto it = codec_images_.find(picture_buffer_id);
+  return it == codec_images_.end() ? nullptr : it->second.get();
 }
 
 void AVDAPictureBufferManager::UseCodecBufferForPictureBuffer(
@@ -264,8 +191,7 @@ void AVDAPictureBufferManager::UseCodecBufferForPictureBuffer(
 
   // Notify the AVDACodecImage for picture_buffer that it should use the
   // decoded buffer codec_buf_index to render this frame.
-  AVDACodecImage* avda_image =
-      shared_state_->GetImageForPicture(picture_buffer.id());
+  AVDACodecImage* avda_image = GetImageForPicture(picture_buffer.id());
   RETURN_IF_NULL(avda_image);
 
   // Note that this is not a race, since we do not re-use a PictureBuffer
@@ -281,11 +207,10 @@ void AVDAPictureBufferManager::AssignOnePictureBuffer(
     const PictureBuffer& picture_buffer,
     bool have_context) {
   // Attach a GLImage to each texture that will use the surface texture.
-  // We use a refptr here in case SetImageForPicture fails.
   scoped_refptr<gpu::gles2::GLStreamTextureImage> gl_image =
-      new AVDACodecImage(picture_buffer.id(), shared_state_, media_codec_,
-                         state_provider_->GetGlDecoder());
-  SetImageForPicture(picture_buffer, gl_image);
+      codec_images_[picture_buffer.id()] = new AVDACodecImage(
+          shared_state_, media_codec_, state_provider_->GetGlDecoder());
+  SetImageForPicture(picture_buffer, gl_image.get());
 
   if (!surface_texture_ && have_context) {
     // To make devtools work, we're using a 2D texture.  Make it transparent,
@@ -306,8 +231,7 @@ void AVDAPictureBufferManager::AssignOnePictureBuffer(
 
 void AVDAPictureBufferManager::ReleaseCodecBufferForPicture(
     const PictureBuffer& picture_buffer) {
-  AVDACodecImage* avda_image =
-      shared_state_->GetImageForPicture(picture_buffer.id());
+  AVDACodecImage* avda_image = GetImageForPicture(picture_buffer.id());
   RETURN_IF_NULL(avda_image);
   avda_image->UpdateSurface(AVDACodecImage::UpdateMode::DISCARD_CODEC_BUFFER);
 }
@@ -344,7 +268,7 @@ void AVDAPictureBufferManager::MaybeRenderEarly() {
   AVDACodecImage* first_renderable_image = nullptr;
   for (int i = front_index; i >= 0; --i) {
     const int id = pictures_out_for_display_[i];
-    AVDACodecImage* avda_image = shared_state_->GetImageForPicture(id);
+    AVDACodecImage* avda_image = GetImageForPicture(id);
     if (!avda_image)
       continue;
 
@@ -375,8 +299,8 @@ void AVDAPictureBufferManager::MaybeRenderEarly() {
   // See if the back buffer is free. If so, then render the frame adjacent to
   // the front buffer.  The listing is in render order, so we can just use the
   // first unrendered frame if there is back buffer space.
-  first_renderable_image = shared_state_->GetImageForPicture(
-      pictures_out_for_display_[backbuffer_index]);
+  first_renderable_image =
+      GetImageForPicture(pictures_out_for_display_[backbuffer_index]);
   if (!first_renderable_image ||
       first_renderable_image->was_rendered_to_back_buffer()) {
     return;
@@ -390,7 +314,9 @@ void AVDAPictureBufferManager::MaybeRenderEarly() {
 
 void AVDAPictureBufferManager::CodecChanged(VideoCodecBridge* codec) {
   media_codec_ = codec;
-  shared_state_->CodecChanged(codec);
+  for (auto& image_kv : codec_images_)
+    image_kv.second->CodecChanged(codec);
+  shared_state_->clear_release_time();
 }
 
 bool AVDAPictureBufferManager::ArePicturesOverlayable() {

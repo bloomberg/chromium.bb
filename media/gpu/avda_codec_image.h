@@ -25,8 +25,7 @@ class VideoCodecBridge;
 // needed in order to draw them.
 class AVDACodecImage : public gpu::gles2::GLStreamTextureImage {
  public:
-  AVDACodecImage(int picture_buffer_id,
-                 const scoped_refptr<AVDASharedState>& shared_state,
+  AVDACodecImage(const scoped_refptr<AVDASharedState>& shared_state,
                  VideoCodecBridge* codec,
                  const base::WeakPtr<gpu::gles2::GLES2Decoder>& decoder);
 
@@ -147,9 +146,6 @@ class AVDACodecImage : public gpu::gles2::GLStreamTextureImage {
 
   // The texture that we're attached to.
   gpu::gles2::Texture* texture_;
-
-  // The picture buffer id attached to this image.
-  int picture_buffer_id_;
 
   DISALLOW_COPY_AND_ASSIGN(AVDACodecImage);
 };

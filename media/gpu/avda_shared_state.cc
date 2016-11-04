@@ -13,6 +13,54 @@
 
 namespace media {
 
+// Handle OnFrameAvailable callbacks safely.  Since they occur asynchronously,
+// we take care that the object that wants them still exists.  WeakPtrs cannot
+// be used because OnFrameAvailable callbacks can occur on any thread. We also
+// can't guarantee when the SurfaceTexture will quit sending callbacks to
+// coordinate with the destruction of the AVDA and PictureBufferManager, so we
+// have a separate object that the callback can own.
+class AVDASharedState::OnFrameAvailableHandler
+    : public base::RefCountedThreadSafe<OnFrameAvailableHandler> {
+ public:
+  // We do not retain ownership of |listener|.  It must remain valid until after
+  // ClearListener() is called.  This will register with |surface_texture| to
+  // receive OnFrameAvailable callbacks.
+  OnFrameAvailableHandler(AVDASharedState* listener,
+                          gl::SurfaceTexture* surface_texture)
+      : listener_(listener) {
+    surface_texture->SetFrameAvailableCallbackOnAnyThread(
+        base::Bind(&OnFrameAvailableHandler::OnFrameAvailable,
+                   scoped_refptr<OnFrameAvailableHandler>(this)));
+  }
+
+  // Forget about |listener_|, which is required before one deletes it.
+  // No further callbacks will happen once this completes.
+  void ClearListener() {
+    base::AutoLock lock(lock_);
+    listener_ = nullptr;
+  }
+
+  // Notify the listener if there is one.
+  void OnFrameAvailable() {
+    base::AutoLock auto_lock(lock_);
+    if (listener_)
+      listener_->SignalFrameAvailable();
+  }
+
+ private:
+  friend class base::RefCountedThreadSafe<OnFrameAvailableHandler>;
+
+  ~OnFrameAvailableHandler() { DCHECK(!listener_); }
+
+  // Protects changes to listener_.
+  base::Lock lock_;
+
+  // The AVDASharedState that wants the OnFrameAvailable callback.
+  AVDASharedState* listener_;
+
+  DISALLOW_COPY_AND_ASSIGN(OnFrameAvailableHandler);
+};
+
 AVDASharedState::AVDASharedState()
     : surface_texture_service_id_(0),
       frame_available_event_(base::WaitableEvent::ResetPolicy::AUTOMATIC,
@@ -29,6 +77,7 @@ AVDASharedState::~AVDASharedState() {
   if (!surface_texture_service_id_)
     return;
 
+  on_frame_available_handler_->ClearListener();
   ui::ScopedMakeCurrent scoped_make_current(context_.get(), surface_.get());
   if (scoped_make_current.Succeeded()) {
     glDeleteTextures(1, &surface_texture_service_id_);
@@ -79,30 +128,8 @@ void AVDASharedState::SetSurfaceTexture(
   surface_ = gl::GLSurface::GetCurrent();
   DCHECK(context_);
   DCHECK(surface_);
-}
-
-void AVDASharedState::CodecChanged(MediaCodecBridge* codec) {
-  for (auto& image_kv : codec_images_)
-    image_kv.second->CodecChanged(codec);
-  release_time_ = base::TimeTicks();
-}
-
-void AVDASharedState::SetImageForPicture(int picture_buffer_id,
-                                         AVDACodecImage* image) {
-  if (!image) {
-    DCHECK(codec_images_.find(picture_buffer_id) != codec_images_.end());
-    codec_images_.erase(picture_buffer_id);
-    return;
-  }
-
-  DCHECK(codec_images_.find(picture_buffer_id) == codec_images_.end());
-  codec_images_[picture_buffer_id] = image;
-}
-
-AVDACodecImage* AVDASharedState::GetImageForPicture(
-    int picture_buffer_id) const {
-  auto it = codec_images_.find(picture_buffer_id);
-  return it == codec_images_.end() ? nullptr : it->second;
+  on_frame_available_handler_ =
+      new OnFrameAvailableHandler(this, surface_texture_.get());
 }
 
 void AVDASharedState::RenderCodecBufferToSurfaceTexture(

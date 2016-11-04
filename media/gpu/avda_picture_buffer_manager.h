@@ -24,6 +24,7 @@ class SurfaceTexture;
 }
 
 namespace media {
+class AVDACodecImage;
 class AVDASharedState;
 class VideoCodecBridge;
 
@@ -38,14 +39,13 @@ class MEDIA_GPU_EXPORT AVDAPictureBufferManager {
  public:
   using PictureBufferMap = std::map<int32_t, PictureBuffer>;
 
-  AVDAPictureBufferManager();
+  explicit AVDAPictureBufferManager(AVDAStateProvider* state_provider);
   virtual ~AVDAPictureBufferManager();
 
-  // Must be called before anything else. If |surface_view_id| is |kNoSurfaceID|
+  // Must be called before anything else. If |surface_id| is |kNoSurfaceID|
   // then a new SurfaceTexture will be returned. Otherwise, the corresponding
   // SurfaceView will be returned.
-  gl::ScopedJavaSurface Initialize(AVDAStateProvider* state_provider,
-                                   int surface_view_id);
+  gl::ScopedJavaSurface Initialize(int surface_id);
 
   void Destroy(const PictureBufferMap& buffers);
 
@@ -86,32 +86,30 @@ class MEDIA_GPU_EXPORT AVDAPictureBufferManager {
   // back to the codec.  It is okay if there is no such buffer.
   void ReleaseCodecBufferForPicture(const PictureBuffer& picture_buffer);
 
-  gpu::gles2::TextureRef* GetTextureForPicture(
-      const PictureBuffer& picture_buffer);
-
   // Sets up the texture references (as found by |picture_buffer|), for the
   // specified |image|. If |image| is null, clears any ref on the texture
   // associated with |picture_buffer|.
-  void SetImageForPicture(
-      const PictureBuffer& picture_buffer,
-      const scoped_refptr<gpu::gles2::GLStreamTextureImage>& image);
+  void SetImageForPicture(const PictureBuffer& picture_buffer,
+                          gpu::gles2::GLStreamTextureImage* image);
+
+  AVDACodecImage* GetImageForPicture(int picture_buffer_id) const;
 
   scoped_refptr<AVDASharedState> shared_state_;
 
-  AVDAStateProvider* state_provider_;
+  AVDAStateProvider* const state_provider_;
 
   // The SurfaceTexture to render to. Non-null after Initialize() if
   // we're not rendering to a SurfaceView.
   scoped_refptr<gl::SurfaceTexture> surface_texture_;
-
-  class OnFrameAvailableHandler;
-  scoped_refptr<OnFrameAvailableHandler> on_frame_available_handler_;
 
   VideoCodecBridge* media_codec_;
 
   // Picture buffer IDs that are out for display. Stored in order of frames as
   // they are returned from the decoder.
   std::vector<int32_t> pictures_out_for_display_;
+
+  // Maps a picture buffer id to a AVDACodecImage.
+  std::map<int, scoped_refptr<AVDACodecImage>> codec_images_;
 
   DISALLOW_COPY_AND_ASSIGN(AVDAPictureBufferManager);
 };

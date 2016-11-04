@@ -19,7 +19,6 @@
 namespace media {
 
 AVDACodecImage::AVDACodecImage(
-    int picture_buffer_id,
     const scoped_refptr<AVDASharedState>& shared_state,
     VideoCodecBridge* codec,
     const base::WeakPtr<gpu::gles2::GLES2Decoder>& decoder)
@@ -28,14 +27,9 @@ AVDACodecImage::AVDACodecImage(
       media_codec_(codec),
       decoder_(decoder),
       has_surface_texture_(!!shared_state_->surface_texture_service_id()),
-      texture_(0),
-      picture_buffer_id_(picture_buffer_id) {
-  shared_state_->SetImageForPicture(picture_buffer_id_, this);
-}
+      texture_(0) {}
 
-AVDACodecImage::~AVDACodecImage() {
-  shared_state_->SetImageForPicture(picture_buffer_id_, nullptr);
-}
+AVDACodecImage::~AVDACodecImage() {}
 
 gfx::Size AVDACodecImage::GetSize() {
   return size_;
@@ -52,10 +46,7 @@ bool AVDACodecImage::BindTexImage(unsigned target) {
 void AVDACodecImage::ReleaseTexImage(unsigned target) {}
 
 bool AVDACodecImage::CopyTexImage(unsigned target) {
-  if (!has_surface_texture_)
-    return false;
-
-  if (target != GL_TEXTURE_EXTERNAL_OES)
+  if (!has_surface_texture_ || target != GL_TEXTURE_EXTERNAL_OES)
     return false;
 
   GLint bound_service_id = 0;
@@ -204,15 +195,13 @@ void AVDACodecImage::ReleaseOutputBuffer(UpdateMode update_mode) {
 
 std::unique_ptr<ui::ScopedMakeCurrent> AVDACodecImage::MakeCurrentIfNeeded() {
   DCHECK(shared_state_->context());
-  std::unique_ptr<ui::ScopedMakeCurrent> scoped_make_current;
   // Remember: virtual contexts return true if and only if their shared context
   // is current, regardless of which virtual context it is.
-  if (!shared_state_->context()->IsCurrent(NULL)) {
-    scoped_make_current.reset(new ui::ScopedMakeCurrent(
-        shared_state_->context(), shared_state_->surface()));
-  }
-
-  return scoped_make_current;
+  return std::unique_ptr<ui::ScopedMakeCurrent>(
+      shared_state_->context()->IsCurrent(nullptr)
+          ? nullptr
+          : new ui::ScopedMakeCurrent(shared_state_->context(),
+                                      shared_state_->surface()));
 }
 
 void AVDACodecImage::GetTextureMatrix(float matrix[16]) {

@@ -45,16 +45,6 @@ class AVDASharedState : public base::RefCounted<AVDASharedState> {
 
   gl::GLSurface* surface() const { return surface_.get(); }
 
-  // Iterates over all known codec images and updates the MediaCodec attached to
-  // each one.
-  void CodecChanged(MediaCodecBridge* codec);
-
-  // Methods for finding and updating the AVDACodecImage associated with a given
-  // picture buffer id. GetImageForPicture() will return null for unknown ids.
-  // Calling SetImageForPicture() with a nullptr will erase the entry.
-  void SetImageForPicture(int picture_buffer_id, AVDACodecImage* image);
-  AVDACodecImage* GetImageForPicture(int picture_buffer_id) const;
-
   // Helper method for coordinating the interactions between
   // MediaCodec::ReleaseOutputBuffer() and WaitForFrameAvailable() when
   // rendering to a SurfaceTexture; this method should never be called when
@@ -82,6 +72,10 @@ class AVDASharedState : public base::RefCounted<AVDASharedState> {
   // StreamTextureMatrix contract. See GLStreamTextureImage::YInvertMatrix().
   void GetTransformMatrix(float matrix[16]) const;
 
+  // Resets the last time for RenderCodecBufferToSurfaceTexture(). Should be
+  // called during codec changes.
+  void clear_release_time() { release_time_ = base::TimeTicks(); }
+
  protected:
   virtual ~AVDASharedState();
 
@@ -101,9 +95,6 @@ class AVDASharedState : public base::RefCounted<AVDASharedState> {
   scoped_refptr<gl::GLContext> context_;
   scoped_refptr<gl::GLSurface> surface_;
 
-  // Maps a picture buffer id to a AVDACodecImage.
-  std::map<int, AVDACodecImage*> codec_images_;
-
   // The time of the last call to RenderCodecBufferToSurfaceTexture(), null if
   // if there has been no last call or WaitForFrameAvailable() has been called
   // since the last call.
@@ -111,6 +102,9 @@ class AVDASharedState : public base::RefCounted<AVDASharedState> {
 
   // Texture matrix of the front buffer of the surface texture.
   float gl_matrix_[16];
+
+  class OnFrameAvailableHandler;
+  scoped_refptr<OnFrameAvailableHandler> on_frame_available_handler_;
 
   DISALLOW_COPY_AND_ASSIGN(AVDASharedState);
 };

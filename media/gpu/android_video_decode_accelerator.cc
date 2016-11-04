@@ -309,6 +309,7 @@ AndroidVideoDecodeAccelerator::AndroidVideoDecodeAccelerator(
       get_gles2_decoder_cb_(get_gles2_decoder_cb),
       state_(NO_ERROR),
       picturebuffers_requested_(false),
+      picture_buffer_manager_(this),
       drain_type_(DRAIN_TYPE_NONE),
       media_drm_bridge_cdm_context_(nullptr),
       cdm_registration_id_(0),
@@ -446,7 +447,7 @@ bool AndroidVideoDecodeAccelerator::InitializePictureBufferManager() {
   }
 
   codec_config_->surface_ =
-      picture_buffer_manager_.Initialize(this, config_.surface_id);
+      picture_buffer_manager_.Initialize(config_.surface_id);
   if (codec_config_->surface_.IsEmpty())
     return false;
 
