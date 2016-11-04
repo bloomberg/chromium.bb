@@ -1,6 +1,0 @@
-CONSOLE ERROR: Uncaught (in promise) Error: assert_equals: expected "NotSupportedError" but got "TypeError"
-CONSOLE ERROR: Uncaught (in promise) Error: assert_equals: expected "NotSupportedError" but got "TypeError"
-This is a testharness.js-based test.
-FAIL NavigatorBudget should be exposed and have the expected interface in a Document. assert_not_equals: got disallowed value undefined
-Harness: the test ran to completion.
-

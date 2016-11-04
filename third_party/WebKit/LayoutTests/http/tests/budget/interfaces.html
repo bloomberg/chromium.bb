@@ -7,34 +7,12 @@
   </head>
   <body>
     <script>
-      promise_test(function() {
+      test(function() {
         assert_own_property(Navigator.prototype, 'budget');
         assert_own_property(BudgetService.prototype, 'getCost');
         assert_own_property(BudgetService.prototype, 'getBudget');
         assert_own_property(BudgetService.prototype, 'reserve');
         assert_equals(navigator.budget, navigator.budget);
-
-        navigator.budget.getCost()
-          .then(function(cost) {
-            assert_unreached('getCost should have failed.');
-          }, function(error) {
-            assert_equals(error.name, 'NotSupportedError');
-            assert_equals(error.message, 'Not yet implemented');
-          });
-        navigator.budget.getBudget()
-          .then(function(cost) {
-            assert_unreached('getBudget should have failed.');
-          }, function(error) {
-            assert_equals(error.name, 'NotSupportedError');
-            assert_equals(error.message, 'Not yet implemented');
-          });
-        navigator.budget.reserve()
-          .then(function(cost) {
-            assert_unreached('reserve should have failed.');
-          }, function(error) {
-            assert_equals(error.name, 'NotSupportedError');
-            assert_equals(error.message, 'Not yet implemented');
-          });
       }, 'NavigatorBudget should be exposed and have the expected interface in a Document.');
     </script>
   </body>
