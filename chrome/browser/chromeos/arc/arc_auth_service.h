@@ -133,19 +133,23 @@ class ArcAuthService : public ArcService,
   void OnInstanceReady() override;
 
   // AuthHost:
-  // For security reason this code can be used only once and exists for specific
-  // period of time.
-  void GetAuthCodeDeprecated(
-      const GetAuthCodeDeprecatedCallback& callback) override;
-  void GetAuthCode(const GetAuthCodeCallback& callback) override;
-  void GetAuthCodeAndAccountType(
-      const GetAuthCodeAndAccountTypeCallback& callback) override;
   void OnSignInComplete() override;
   void OnSignInFailed(mojom::ArcSignInFailureReason reason) override;
+  void RequestAccountInfo() override;
+
+  // Deprecated methods:
+  // For security reason this code can be used only once and exists for specific
+  // period of time.
+  void GetAuthCodeDeprecated0(
+      const GetAuthCodeDeprecated0Callback& callback) override;
+  void GetAuthCodeDeprecated(
+      const GetAuthCodeDeprecatedCallback& callback) override;
+  void GetAuthCodeAndAccountTypeDeprecated(
+      const GetAuthCodeAndAccountTypeDeprecatedCallback& callback) override;
   // Callback is called with a bool that indicates the management status of the
   // user.
-  void GetIsAccountManaged(
-      const GetIsAccountManagedCallback& callback) override;
+  void GetIsAccountManagedDeprecated(
+      const GetIsAccountManagedDeprecatedCallback& callback) override;
 
   void OnSignInFailedInternal(ProvisioningResult result);
 
@@ -200,8 +204,11 @@ class ArcAuthService : public ArcService,
   ArcSupportHost* support_host() { return support_host_.get(); }
 
  private:
+  using AccountInfoCallback = base::Callback<void(mojom::AccountInfoPtr)>;
+  class AccountInfoNotifier;
+
   void StartArc();
-  // TODO: move UI methods/fields to ArcSupportHost.
+  // TODO(hidehiko): move UI methods/fields to ArcSupportHost.
   void ShowUI(UIPage page, const base::string16& status);
   void CloseUI();
   void SetUIPage(UIPage page, const base::string16& status);
@@ -218,6 +225,9 @@ class ArcAuthService : public ArcService,
   bool IsAuthCodeRequest() const;
   void FetchAuthCode();
   void PrepareContextForAuthCodeRequest();
+  void RequestAccountInfoInternal(
+      std::unique_ptr<AccountInfoNotifier> account_info_notifier);
+  void OnAccountInfoReady(mojom::AccountInfoPtr account_info);
 
   // Called when the Android management check is done in opt-in flow or
   // re-auth flow.
@@ -240,14 +250,15 @@ class ArcAuthService : public ArcService,
   base::ObserverList<Observer> observer_list_;
   std::unique_ptr<ArcAppLauncher> playstore_launcher_;
   std::string auth_code_;
-  GetAuthCodeCallback auth_callback_;
-  GetAuthCodeAndAccountTypeCallback auth_account_callback_;
   bool initial_opt_in_ = false;
   UIPage ui_page_ = UIPage::NO_PAGE;
   base::string16 ui_page_status_;
   bool clear_required_ = false;
   bool reenable_arc_ = false;
   base::OneShotTimer arc_sign_in_timer_;
+
+  // Notifies the correct callback whenever the auth_code is ready.
+  std::unique_ptr<AccountInfoNotifier> account_info_notifier_;
 
   // Temporarily keeps the ArcSupportHost instance.
   // This should be moved to ArcSessionManager when the refactoring is

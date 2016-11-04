@@ -52,6 +52,8 @@ namespace arc {
 
 namespace {
 
+constexpr size_t kMinVersionForOnAccountInfoReady = 5;
+
 // Weak pointer.  This class is owned by ArcServiceManager.
 ArcAuthService* g_arc_auth_service = nullptr;
 
@@ -112,6 +114,61 @@ ProvisioningResult ConvertArcSignInFailureReasonToProvisioningResult(
 }
 
 }  // namespace
+
+// TODO(lhchavez): Get rid of this class once we can safely remove all the
+// deprecated interfaces and only need to care about one type of callback.
+class ArcAuthService::AccountInfoNotifier {
+ public:
+  explicit AccountInfoNotifier(
+      const GetAuthCodeDeprecatedCallback& auth_callback)
+      : callback_type_(CallbackType::AUTH_CODE),
+        auth_callback_(auth_callback) {}
+
+  explicit AccountInfoNotifier(
+      const GetAuthCodeAndAccountTypeDeprecatedCallback& auth_account_callback)
+      : callback_type_(CallbackType::AUTH_CODE_AND_ACCOUNT),
+        auth_account_callback_(auth_account_callback) {}
+
+  explicit AccountInfoNotifier(const AccountInfoCallback& account_info_callback)
+      : callback_type_(CallbackType::ACCOUNT_INFO),
+        account_info_callback_(account_info_callback) {}
+
+  void Notify(bool is_enforced,
+              const std::string& auth_code,
+              mojom::ChromeAccountType account_type,
+              bool is_managed) {
+    switch (callback_type_) {
+      case CallbackType::AUTH_CODE:
+        DCHECK(!auth_callback_.is_null());
+        auth_callback_.Run(auth_code, is_enforced);
+        break;
+      case CallbackType::AUTH_CODE_AND_ACCOUNT:
+        DCHECK(!auth_account_callback_.is_null());
+        auth_account_callback_.Run(auth_code, is_enforced, account_type);
+        break;
+      case CallbackType::ACCOUNT_INFO:
+        DCHECK(!account_info_callback_.is_null());
+        mojom::AccountInfoPtr account_info = mojom::AccountInfo::New();
+        if (!is_enforced) {
+          account_info->auth_code = nullptr;
+        } else {
+          account_info->auth_code = auth_code;
+        }
+        account_info->account_type = account_type;
+        account_info->is_managed = is_managed;
+        account_info_callback_.Run(std::move(account_info));
+        break;
+    }
+  }
+
+ private:
+  enum class CallbackType { AUTH_CODE, AUTH_CODE_AND_ACCOUNT, ACCOUNT_INFO };
+
+  const CallbackType callback_type_;
+  const GetAuthCodeDeprecatedCallback auth_callback_;
+  const GetAuthCodeAndAccountTypeDeprecatedCallback auth_account_callback_;
+  const AccountInfoCallback account_info_callback_;
+};
 
 ArcAuthService::ArcAuthService(ArcBridgeService* bridge_service)
     : ArcService(bridge_service), binding_(this), weak_ptr_factory_(this) {
@@ -278,49 +335,62 @@ std::string ArcAuthService::GetAndResetAuthCode() {
   return auth_code;
 }
 
-void ArcAuthService::GetAuthCodeDeprecated(
-    const GetAuthCodeDeprecatedCallback& callback) {
+void ArcAuthService::GetAuthCodeDeprecated0(
+    const GetAuthCodeDeprecated0Callback& callback) {
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
   DCHECK(!IsOptInVerificationDisabled());
   callback.Run(GetAndResetAuthCode());
 }
 
-void ArcAuthService::GetAuthCode(const GetAuthCodeCallback& callback) {
-  DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
-  // GetAuthCodeAndAccountType operation must not be in progress.
-  DCHECK(auth_account_callback_.is_null());
-
-  const std::string auth_code = GetAndResetAuthCode();
-  const bool verification_disabled = IsOptInVerificationDisabled();
-  if (!auth_code.empty() || verification_disabled) {
-    callback.Run(auth_code, !verification_disabled);
-    return;
-  }
-
-  auth_callback_ = callback;
-  PrepareContextForAuthCodeRequest();
+void ArcAuthService::GetAuthCodeDeprecated(
+    const GetAuthCodeDeprecatedCallback& callback) {
+  RequestAccountInfoInternal(
+      base::MakeUnique<ArcAuthService::AccountInfoNotifier>(callback));
 }
 
-void ArcAuthService::GetAuthCodeAndAccountType(
-    const GetAuthCodeAndAccountTypeCallback& callback) {
+void ArcAuthService::GetAuthCodeAndAccountTypeDeprecated(
+    const GetAuthCodeAndAccountTypeDeprecatedCallback& callback) {
+  RequestAccountInfoInternal(
+      base::MakeUnique<ArcAuthService::AccountInfoNotifier>(callback));
+}
+
+void ArcAuthService::RequestAccountInfo() {
+  RequestAccountInfoInternal(
+      base::MakeUnique<ArcAuthService::AccountInfoNotifier>(
+          base::Bind(&ArcAuthService::OnAccountInfoReady,
+                     weak_ptr_factory_.GetWeakPtr())));
+}
+
+void ArcAuthService::OnAccountInfoReady(mojom::AccountInfoPtr account_info) {
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
-  // GetAuthCode operation must not be in progress.
-  DCHECK(auth_callback_.is_null());
+  auto* instance = arc_bridge_service()->auth()->GetInstanceForMethod(
+      "OnAccountInfoReady", kMinVersionForOnAccountInfoReady);
+  DCHECK(instance);
+  instance->OnAccountInfoReady(std::move(account_info));
+}
+
+void ArcAuthService::RequestAccountInfoInternal(
+    std::unique_ptr<ArcAuthService::AccountInfoNotifier>
+        account_info_notifier) {
+  DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
+  // No other auth code-related operation may be in progress.
+  DCHECK(!account_info_notifier_);
 
   const std::string auth_code = GetAndResetAuthCode();
-  const bool verification_disabled = IsOptInVerificationDisabled();
-  if (!auth_code.empty() || verification_disabled) {
-    callback.Run(auth_code, !verification_disabled,
-                 mojom::ChromeAccountType::USER_ACCOUNT);
+  const bool is_enforced = !IsOptInVerificationDisabled();
+  if (!auth_code.empty() || !is_enforced) {
+    account_info_notifier->Notify(is_enforced, auth_code,
+                                  mojom::ChromeAccountType::USER_ACCOUNT,
+                                  policy_util::IsAccountManaged(profile_));
     return;
   }
 
-  auth_account_callback_ = callback;
+  account_info_notifier_ = std::move(account_info_notifier);
   PrepareContextForAuthCodeRequest();
 }
 
 bool ArcAuthService::IsAuthCodeRequest() const {
-  return !auth_callback_.is_null() || !auth_account_callback_.is_null();
+  return account_info_notifier_ != nullptr;
 }
 
 void ArcAuthService::PrepareContextForAuthCodeRequest() {
@@ -339,22 +409,25 @@ void ArcAuthService::PrepareContextForAuthCodeRequest() {
 void ArcAuthService::OnSignInComplete() {
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
   DCHECK_EQ(state_, State::ACTIVE);
-  DCHECK(!sign_in_time_.is_null());
 
-  arc_sign_in_timer_.Stop();
+  if (!sign_in_time_.is_null()) {
+    arc_sign_in_timer_.Stop();
+    UpdateProvisioningTiming(base::Time::Now() - sign_in_time_, true,
+                             policy_util::IsAccountManaged(profile_));
+    UpdateProvisioningResultUMA(ProvisioningResult::SUCCESS,
+                                policy_util::IsAccountManaged(profile_));
+  }
 
-  if (!IsOptInVerificationDisabled() &&
-      !profile_->GetPrefs()->GetBoolean(prefs::kArcSignedIn)) {
+  CloseUI();
+
+  if (profile_->GetPrefs()->GetBoolean(prefs::kArcSignedIn))
+    return;
+
+  profile_->GetPrefs()->SetBoolean(prefs::kArcSignedIn, true);
+  if (!IsOptInVerificationDisabled()) {
     playstore_launcher_.reset(
         new ArcAppLauncher(profile_, kPlayStoreAppId, true));
   }
-
-  profile_->GetPrefs()->SetBoolean(prefs::kArcSignedIn, true);
-  CloseUI();
-  UpdateProvisioningTiming(base::Time::Now() - sign_in_time_, true,
-                           policy_util::IsAccountManaged(profile_));
-  UpdateProvisioningResultUMA(ProvisioningResult::SUCCESS,
-                              policy_util::IsAccountManaged(profile_));
 
   for (auto& observer : observer_list_)
     observer.OnInitialStart();
@@ -368,14 +441,16 @@ void ArcAuthService::OnSignInFailed(mojom::ArcSignInFailureReason reason) {
 void ArcAuthService::OnSignInFailedInternal(ProvisioningResult result) {
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
   DCHECK_EQ(state_, State::ACTIVE);
-  DCHECK(!sign_in_time_.is_null());
 
-  arc_sign_in_timer_.Stop();
+  if (!sign_in_time_.is_null()) {
+    arc_sign_in_timer_.Stop();
 
-  UpdateProvisioningTiming(base::Time::Now() - sign_in_time_, false,
-                           policy_util::IsAccountManaged(profile_));
-  UpdateOptInCancelUMA(OptInCancelReason::CLOUD_PROVISION_FLOW_FAIL);
-  UpdateProvisioningResultUMA(result, policy_util::IsAccountManaged(profile_));
+    UpdateProvisioningTiming(base::Time::Now() - sign_in_time_, false,
+                             policy_util::IsAccountManaged(profile_));
+    UpdateOptInCancelUMA(OptInCancelReason::CLOUD_PROVISION_FLOW_FAIL);
+    UpdateProvisioningResultUMA(result,
+                                policy_util::IsAccountManaged(profile_));
+  }
 
   int error_message_id;
   switch (result) {
@@ -431,8 +506,8 @@ void ArcAuthService::OnSignInFailedInternal(ProvisioningResult result) {
          l10n_util::GetStringUTF16(error_message_id));
 }
 
-void ArcAuthService::GetIsAccountManaged(
-    const GetIsAccountManagedCallback& callback) {
+void ArcAuthService::GetIsAccountManagedDeprecated(
+    const GetIsAccountManagedDeprecatedCallback& callback) {
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
 
   callback.Run(policy_util::IsAccountManaged(profile_));
@@ -652,8 +727,7 @@ void ArcAuthService::OnOptInPreferenceChanged() {
 void ArcAuthService::ShutdownBridge() {
   arc_sign_in_timer_.Stop();
   playstore_launcher_.reset();
-  auth_callback_.Reset();
-  auth_account_callback_.Reset();
+  account_info_notifier_.reset();
   android_management_checker_.reset();
   auth_code_fetcher_.reset();
   arc_bridge_service()->RequestStop();
@@ -722,16 +796,11 @@ void ArcAuthService::SetAuthCodeAndStartArc(const std::string& auth_code) {
   if (IsAuthCodeRequest()) {
     DCHECK_EQ(state_, State::FETCHING_CODE);
     SetState(State::ACTIVE);
-    if (!auth_callback_.is_null()) {
-      auth_callback_.Run(auth_code, !IsOptInVerificationDisabled());
-      auth_callback_.Reset();
-      return;
-    } else {
-      auth_account_callback_.Run(auth_code, !IsOptInVerificationDisabled(),
-                                 mojom::ChromeAccountType::USER_ACCOUNT);
-      auth_account_callback_.Reset();
-      return;
-    }
+    account_info_notifier_->Notify(!IsOptInVerificationDisabled(), auth_code,
+                                   mojom::ChromeAccountType::USER_ACCOUNT,
+                                   policy_util::IsAccountManaged(profile_));
+    account_info_notifier_.reset();
+    return;
   }
 
   if (state_ != State::FETCHING_CODE) {
