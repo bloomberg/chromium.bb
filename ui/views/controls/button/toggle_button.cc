@@ -6,6 +6,7 @@
 
 #include "third_party/skia/include/core/SkDrawLooper.h"
 #include "third_party/skia/include/core/SkPaint.h"
+#include "ui/accessibility/ax_node_data.h"
 #include "ui/gfx/canvas.h"
 #include "ui/gfx/color_palette.h"
 #include "ui/gfx/color_utils.h"
@@ -199,6 +200,14 @@ void ToggleButton::OnBoundsChanged(const gfx::Rect& previous_bounds) {
 
 void ToggleButton::OnNativeThemeChanged(const ui::NativeTheme* theme) {
   SchedulePaint();
+}
+
+void ToggleButton::GetAccessibleNodeData(ui::AXNodeData* node_data) {
+  CustomButton::GetAccessibleNodeData(node_data);
+
+  node_data->role = ui::AX_ROLE_SWITCH;
+  if (is_on_)
+    node_data->AddStateFlag(ui::AX_STATE_CHECKED);
 }
 
 void ToggleButton::AddInkDropLayer(ui::Layer* ink_drop_layer) {

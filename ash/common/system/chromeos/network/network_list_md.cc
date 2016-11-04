@@ -163,6 +163,8 @@ class NetworkListViewMd::WifiHeaderRowView : public views::View {
     container->AddChildView(join_);
 
     toggle_ = new views::ToggleButton(listener_);
+    toggle_->SetAccessibleName(
+        l10n_util::GetStringUTF16(IDS_ASH_STATUS_TRAY_ENABLE_WIFI));
     // TODO(varkha): Implement focus painter.
     toggle_->SetFocusForPlatform();
     container->AddChildView(toggle_);
