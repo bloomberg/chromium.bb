@@ -19,6 +19,7 @@
 #include "base/strings/stringprintf.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/time/default_tick_clock.h"
+#include "base/time/time.h"
 #include "base/values.h"
 #include "components/data_use_measurement/core/data_use_user_data.h"
 #include "components/ntp_snippets/category_factory.h"
@@ -76,6 +77,8 @@ const char kSendUserClassName[] = "send_user_class";
 
 const char kBooleanParameterEnabled[] = "true";
 const char kBooleanParameterDisabled[] = "false";
+
+const int kFetchTimeHistogramResolution = 5;
 
 std::string FetchResultToString(NTPSnippetsFetcher::FetchResult result) {
   switch (result) {
@@ -243,6 +246,17 @@ std::string GetUserClassString(UserClassifier::UserClass user_class) {
   return std::string();
 }
 
+int GetMinuteOfTheDay(bool local_time, bool reduced_resolution) {
+  base::Time now(base::Time::Now());
+  base::Time::Exploded now_exploded{};
+  local_time ? now.LocalExplode(&now_exploded) : now.UTCExplode(&now_exploded);
+  int now_minute = reduced_resolution
+                       ? now_exploded.minute / kFetchTimeHistogramResolution *
+                             kFetchTimeHistogramResolution
+                       : now_exploded.minute;
+  return now_exploded.hour * 60 + now_minute;
+}
+
 }  // namespace
 
 NTPSnippetsFetcher::FetchedCategory::FetchedCategory(Category c)
@@ -325,6 +339,15 @@ void NTPSnippetsFetcher::FetchSnippets(const Params& params,
                       : FetchResult::NON_INTERACTIVE_QUOTA_ERROR,
                   /*extra_message=*/std::string());
     return;
+  }
+
+  if (!params.interactive_request) {
+    UMA_HISTOGRAM_SPARSE_SLOWLY("NewTabPage.Snippets.FetchTimeLocal",
+                                GetMinuteOfTheDay(/*local_time=*/true,
+                                                  /*reduced_resolution=*/true));
+    UMA_HISTOGRAM_SPARSE_SLOWLY("NewTabPage.Snippets.FetchTimeUTC",
+                                GetMinuteOfTheDay(/*local_time=*/false,
+                                                  /*reduced_resolution=*/true));
   }
 
   params_ = params;
