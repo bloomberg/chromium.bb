@@ -547,6 +547,10 @@ void WebMediaPlayerImpl::setVolume(double volume) {
   pipeline_.SetVolume(volume_ * volume_multiplier_);
   if (watch_time_reporter_)
     watch_time_reporter_->OnVolumeChange(volume);
+
+  // The play state is updated because the player might have left the autoplay
+  // muted state.
+  UpdatePlayState();
 }
 
 void WebMediaPlayerImpl::setSinkId(
@@ -1654,8 +1658,15 @@ void WebMediaPlayerImpl::UpdatePlayState() {
 }
 
 void WebMediaPlayerImpl::SetDelegateState(DelegateState new_state) {
-  if (!delegate_ || delegate_state_ == new_state)
+  if (!delegate_)
     return;
+
+  if (delegate_state_ == new_state) {
+    if (delegate_state_ != DelegateState::PLAYING ||
+        autoplay_muted_ == client_->isAutoplayingMuted()) {
+      return;
+    }
+  }
 
   delegate_state_ = new_state;
 
@@ -1663,11 +1674,14 @@ void WebMediaPlayerImpl::SetDelegateState(DelegateState new_state) {
     case DelegateState::GONE:
       delegate_->PlayerGone(delegate_id_);
       break;
-    case DelegateState::PLAYING:
+    case DelegateState::PLAYING: {
+      autoplay_muted_ = client_->isAutoplayingMuted();
+      bool has_audio = autoplay_muted_ ? false : hasAudio();
       delegate_->DidPlay(
-          delegate_id_, hasVideo(), hasAudio(), false,
+          delegate_id_, hasVideo(), has_audio, false,
           media::DurationToMediaContentType(pipeline_.GetMediaDuration()));
       break;
+    }
     case DelegateState::PAUSED:
       delegate_->DidPause(delegate_id_, false);
       break;

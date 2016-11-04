@@ -70,12 +70,17 @@
         });
     }, "Test that autoplay on a muted audio without gesture has no effect.");
 
-    promise_test(function(t) {
-        var e = createMutedVideoElement();
-        return e.play().then(t.step_func_done(function() {
-            e.muted = false;
+    async_test(t => {
+      var e = createMutedVideoElement();
+      e.play().then(t.step_func(() => {
+        e.muted = false;
+
+        var expectedEvents = [ 'volumechange', 'pause' ];
+          new EventWatcher(t, e, expectedEvents).wait_for(expectedEvents).then(
+          t.step_func_done(() => {
             assert_true(e.paused, "The video should be paused.");
-        }));
+          }));
+      }));
     }, "Test that unmuting an autoplayed video without gesture pauses.");
 
     async_test(function(t) {

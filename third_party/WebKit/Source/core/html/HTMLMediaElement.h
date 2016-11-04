@@ -390,6 +390,7 @@ class CORE_EXPORT HTMLMediaElement : public HTMLElement,
   void connectedToRemoteDevice() final;
   void disconnectedFromRemoteDevice() final;
   void cancelledRemotePlaybackRequest() final;
+  bool isAutoplayingMuted() final;
   void requestReload(const WebURL&) final;
 
   void loadTimerFired(TimerBase*);

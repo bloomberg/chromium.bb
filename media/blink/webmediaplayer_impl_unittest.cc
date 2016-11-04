@@ -84,9 +84,14 @@ class DummyWebMediaPlayerClient : public blink::WebMediaPlayerClient {
   void connectedToRemoteDevice() override {}
   void disconnectedFromRemoteDevice() override {}
   void cancelledRemotePlaybackRequest() override {}
+  bool isAutoplayingMuted() override { return is_autoplaying_muted_; }
   void requestReload(const blink::WebURL& newUrl) override {}
 
+  void set_is_autoplaying_muted(bool value) { is_autoplaying_muted_ = value; }
+
  private:
+  bool is_autoplaying_muted_ = false;
+
   DISALLOW_COPY_AND_ASSIGN(DummyWebMediaPlayerClient);
 };
 
@@ -213,6 +218,10 @@ class WebMediaPlayerImplTest : public testing::Test {
     wmpi_->is_idle_ = false;
     wmpi_->must_suspend_ = true;
     return wmpi_->UpdatePlayState_ComputePlayState(false, false, false);
+  }
+
+  void SetDelegateState(WebMediaPlayerImpl::DelegateState state) {
+    wmpi_->SetDelegateState(state);
   }
 
   bool IsSuspended() { return wmpi_->pipeline_controller_.IsSuspended(); }
@@ -651,6 +660,36 @@ TEST_F(WebMediaPlayerImplTest, ComputePlayState_BackgroundedVideoPaused) {
   EXPECT_EQ(WebMediaPlayerImpl::DelegateState::PAUSED, state.delegate_state);
   EXPECT_FALSE(state.is_memory_reporting_enabled);
   EXPECT_TRUE(state.is_suspended);
+}
+
+TEST_F(WebMediaPlayerImplTest, AutoplayMuted_StartsAndStops) {
+  InitializeDefaultWebMediaPlayerImpl();
+  SetMetadata(true, true);
+  SetReadyState(blink::WebMediaPlayer::ReadyStateHaveFutureData);
+  SetPaused(false);
+
+  EXPECT_CALL(delegate_, DidPlay(_, true, false, false, _));
+  client_.set_is_autoplaying_muted(true);
+  SetDelegateState(WebMediaPlayerImpl::DelegateState::PLAYING);
+
+  EXPECT_CALL(delegate_, DidPlay(_, true, true, false, _));
+  client_.set_is_autoplaying_muted(false);
+  SetDelegateState(WebMediaPlayerImpl::DelegateState::PLAYING);
+}
+
+TEST_F(WebMediaPlayerImplTest, AutoplayMuted_SetVolume) {
+  InitializeDefaultWebMediaPlayerImpl();
+  SetMetadata(true, true);
+  SetReadyState(blink::WebMediaPlayer::ReadyStateHaveFutureData);
+  SetPaused(false);
+
+  EXPECT_CALL(delegate_, DidPlay(_, true, false, false, _));
+  client_.set_is_autoplaying_muted(true);
+  SetDelegateState(WebMediaPlayerImpl::DelegateState::PLAYING);
+
+  EXPECT_CALL(delegate_, DidPlay(_, true, true, false, _));
+  client_.set_is_autoplaying_muted(false);
+  wmpi_->setVolume(1.0);
 }
 
 }  // namespace media

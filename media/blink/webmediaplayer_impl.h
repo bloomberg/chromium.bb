@@ -566,6 +566,9 @@ class MEDIA_BLINK_EXPORT WebMediaPlayerImpl
   // Monitors the player events.
   base::WeakPtr<MediaObserver> observer_;
 
+  // Whether the player is currently in autoplay muted state.
+  bool autoplay_muted_ = false;
+
   DISALLOW_COPY_AND_ASSIGN(WebMediaPlayerImpl);
 };
 

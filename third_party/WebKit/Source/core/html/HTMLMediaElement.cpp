@@ -2429,8 +2429,7 @@ void HTMLMediaElement::setMuted(bool muted) {
   if (m_muted == muted)
     return;
 
-  bool wasAutoplayingMuted =
-      !paused() && m_muted && isLockedPendingUserGesture();
+  bool wasAutoplayingMuted = isAutoplayingMuted();
   bool wasPendingAutoplayMuted = m_autoplayVisibilityObserver && paused() &&
                                  m_muted && isLockedPendingUserGesture();
 
@@ -2439,8 +2438,6 @@ void HTMLMediaElement::setMuted(bool muted) {
 
   m_muted = muted;
   m_autoplayHelper->mutedChanged();
-
-  updateVolume();
 
   scheduleEvent(EventTypeNames::volumechange);
 
@@ -2456,6 +2453,10 @@ void HTMLMediaElement::setMuted(bool muted) {
           AutoplayUnmuteActionStatus::Success);
     }
   }
+
+  // This is called after the volumechange event to make sure isAutoplayingMuted
+  // returns the right value when webMediaPlayer receives the volume update.
+  updateVolume();
 
   // If an element was a candidate for autoplay muted but not visible, it will
   // have a visibility observer ready to start its playback.
@@ -3181,6 +3182,15 @@ void HTMLMediaElement::disconnectedFromRemoteDevice() {
 void HTMLMediaElement::cancelledRemotePlaybackRequest() {
   if (remotePlaybackClient())
     remotePlaybackClient()->promptCancelled();
+}
+
+bool HTMLMediaElement::isAutoplayingMuted() {
+  if (!isHTMLVideoElement() ||
+      !RuntimeEnabledFeatures::autoplayMutedVideosEnabled()) {
+    return false;
+  }
+
+  return !paused() && muted() && isLockedPendingUserGesture();
 }
 
 void HTMLMediaElement::requestReload(const WebURL& newUrl) {
