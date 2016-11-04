@@ -38,6 +38,8 @@ class MediaCapabilities {
   static void ScreenInfoChanged(int hdcp_version,
                                 int supported_eotfs,
                                 int dolby_vision_flags,
+                                int screen_width_mm,
+                                int screen_height_mm,
                                 bool cur_mode_supports_hdr,
                                 bool cur_mode_supports_dv);
   // HDCP version multiplied by 10, e.g. 22 means HDCP 2.2.

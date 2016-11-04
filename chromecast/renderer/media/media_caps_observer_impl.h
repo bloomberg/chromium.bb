@@ -25,6 +25,8 @@ class MediaCapsObserverImpl : public mojom::MediaCapsObserver {
   void ScreenInfoChanged(int32_t hdcp_version,
                          int32_t supported_eotfs,
                          int32_t dolby_vision_flags,
+                         int32_t screen_width_mm,
+                         int32_t screen_height_mm,
                          bool current_mode_supports_hdr,
                          bool current_mode_supports_dolby_vision) override;
 

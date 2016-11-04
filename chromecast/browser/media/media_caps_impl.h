@@ -26,6 +26,8 @@ class MediaCapsImpl : public mojom::MediaCaps {
   void ScreenInfoChanged(int hdcp_version,
                          int supported_eotfs,
                          int dolby_vision_flags,
+                         int screen_width_mm,
+                         int screen_height_mm,
                          bool current_mode_supports_hdr,
                          bool current_mode_supports_dv);
 
@@ -37,6 +39,8 @@ class MediaCapsImpl : public mojom::MediaCaps {
   int hdcp_version_;
   int supported_eotfs_;
   int dolby_vision_flags_;
+  int screen_width_mm_;
+  int screen_height_mm_;
   bool current_mode_supports_hdr_;
   bool current_mode_supports_dv_;
   gfx::Size screen_resolution_;

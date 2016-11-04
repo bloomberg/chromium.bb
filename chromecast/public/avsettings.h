@@ -90,8 +90,8 @@ class AvSettings {
     // (or HDMI sinks connected to the device) are changed including screen
     // resolution, HDCP version and supported EOTFs.
     // On this event, GetScreenResolution(), GetHDCPVersion() and
-    // GetSupportedEotfs() will be called on the thread where Initialize()
-    // was called.
+    // GetSupportedEotfs(), GetScreenWidthMm(), GetScreenHeightMm() will be
+    // called on the thread where Initialize() was called.
     SCREEN_INFO_CHANGED = 3,
 
     // This event should be fired whenever the active output restrictions on the
@@ -261,6 +261,10 @@ class AvSettings {
   // Returns a set of flags, defined in the DolbyVisionCapFlags enum above,
   // indicating support for DolbyVision and various DV-related features.
   virtual int GetDolbyVisionFlags() = 0;
+
+  // Returns physical screen size in millimeters.
+  virtual int GetScreenWidthMm() = 0;
+  virtual int GetScreenHeightMm() = 0;
 
   // If supported, retrieves the restrictions active on the device outputs (as
   // specified by the PlayReady CDM; see output_restrictions.h). If reporting

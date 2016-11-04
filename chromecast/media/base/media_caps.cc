@@ -49,11 +49,14 @@ void MediaCapabilities::ScreenResolutionChanged(const gfx::Size& res) {
 void MediaCapabilities::ScreenInfoChanged(int hdcp_version,
                                           int supported_eotfs,
                                           int dolby_vision_flags,
+                                          int screen_width_mm,
+                                          int screen_height_mm,
                                           bool cur_mode_supports_hdr,
                                           bool cur_mode_supports_dv) {
   VLOG(1) << __FUNCTION__ << " HDCP version=" << hdcp_version
           << " Supported EOTFs=" << supported_eotfs
           << " DolbyVision flags=" << dolby_vision_flags
+          << " Screen size(mm): " << screen_width_mm << "x" << screen_height_mm
           << " cur mode HDR=" << cur_mode_supports_hdr
           << " cur mode DV=" << cur_mode_supports_dv;
   g_hdcp_version = hdcp_version;
