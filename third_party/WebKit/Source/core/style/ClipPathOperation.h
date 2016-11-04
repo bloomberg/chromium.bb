@@ -48,15 +48,13 @@ class ClipPathOperation : public RefCounted<ClipPathOperation> {
   virtual bool operator==(const ClipPathOperation&) const = 0;
   bool operator!=(const ClipPathOperation& o) const { return !(*this == o); }
 
-  OperationType type() const { return m_type; }
+  virtual OperationType type() const = 0;
   bool isSameType(const ClipPathOperation& o) const {
-    return o.type() == m_type;
+    return o.type() == type();
   }
 
  protected:
-  ClipPathOperation(OperationType type) : m_type(type) {}
-
-  OperationType m_type;
+  ClipPathOperation() {}
 };
 
 class ReferenceClipPathOperation final : public ClipPathOperation {
@@ -75,9 +73,10 @@ class ReferenceClipPathOperation final : public ClipPathOperation {
     return isSameType(o) &&
            m_url == static_cast<const ReferenceClipPathOperation&>(o).m_url;
   }
+  OperationType type() const override { return REFERENCE; }
 
   ReferenceClipPathOperation(const String& url, const AtomicString& fragment)
-      : ClipPathOperation(REFERENCE), m_url(url), m_fragment(fragment) {}
+      : m_url(url), m_fragment(fragment) {}
 
   String m_url;
   AtomicString m_fragment;
@@ -109,9 +108,9 @@ class ShapeClipPathOperation final : public ClipPathOperation {
 
  private:
   bool operator==(const ClipPathOperation&) const override;
+  OperationType type() const override { return SHAPE; }
 
-  ShapeClipPathOperation(PassRefPtr<BasicShape> shape)
-      : ClipPathOperation(SHAPE), m_shape(shape) {}
+  ShapeClipPathOperation(PassRefPtr<BasicShape> shape) : m_shape(shape) {}
 
   RefPtr<BasicShape> m_shape;
   std::unique_ptr<Path> m_path;
