@@ -1024,8 +1024,16 @@ IN_PROC_BROWSER_TEST_F(ChromeSecurityStateModelClientTestWithPasswordCcSwitch,
 // on an HTTP page load, and when the command-line flag is set, the
 // security level is downgraded to HTTP_SHOW_WARNING, even if the iframe
 // itself was loaded over HTTPS.
+#if defined(OS_LINUX)
+// Flaky on Linux. See https://crbug.com/662485.
+#define MAYBE_PasswordSecurityLevelDowngradedFromHttpsIframe \
+  DISABLED_PasswordSecurityLevelDowngradedFromHttpsIframe
+#else
+#define MAYBE_PasswordSecurityLevelDowngradedFromHttpsIframe \
+  PasswordSecurityLevelDowngradedFromHttpsIframe
+#endif
 IN_PROC_BROWSER_TEST_F(ChromeSecurityStateModelClientTestWithPasswordCcSwitch,
-                       PasswordSecurityLevelDowngradedFromHttpsIframe) {
+                       MAYBE_PasswordSecurityLevelDowngradedFromHttpsIframe) {
   content::WebContents* contents =
       browser()->tab_strip_model()->GetActiveWebContents();
   ASSERT_TRUE(contents);
