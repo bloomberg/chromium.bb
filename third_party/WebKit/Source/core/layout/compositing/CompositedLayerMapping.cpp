@@ -2610,6 +2610,8 @@ const GraphicsLayerPaintInfo* CompositedLayerMapping::containingSquashedLayer(
     const LayoutObject* layoutObject,
     const Vector<GraphicsLayerPaintInfo>& layers,
     unsigned maxSquashedLayerIndex) {
+  if (!layoutObject)
+    return nullptr;
   for (size_t i = 0; i < layers.size() && i < maxSquashedLayerIndex; ++i) {
     if (layoutObject->isDescendantOf(layers[i].paintLayer->layoutObject()))
       return &layers[i];
