@@ -46,7 +46,10 @@ function test()
         () => testCompletions('document.body.', "inner", ["innerText", "innerHTML"]),
         () => testCompletions('document["body"][window.', "do", ["document"]),
         () => testCompletions('document["body"][window["document"].body.childNodes[0].', "text", ["textContent"]),
-        () => testCompletions("templateString`asdf`", "should", ["shouldNotFindThis"])
+        () => testCompletions("templateString`asdf`", "should", ["shouldNotFindThis"]),
+        () => testCompletions("window.document.", "BODY", ["body"]),
+        () => testCompletions("window.", "dOcUmE", ["document"]),
+        () => testCompletions("window.", "node", ["NodeList", "AudioNode", "GainNode"])
     ]).then(InspectorTest.completeTest);
 
 }

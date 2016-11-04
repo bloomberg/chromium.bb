@@ -30,6 +30,11 @@ function test()
             testAgainstGolden(namePrompt, "w", false, ["width"], [], next);
         },
 
+        function testSubstringName(next)
+        {
+            testAgainstGolden(namePrompt, "size", false, ["font-size", "background-size", "resize"], ["font-align"], next);
+        },
+
         function testEmptyValue(next)
         {
             testAgainstGolden(valuePrompt, "", false, ["aliceblue", "red", "inherit"], [], next);
@@ -57,12 +62,17 @@ function test()
 
         function testValuePrefixed(next)
         {
-            testAgainstGolden(valuePromptFor("-webkit-transform"), "t", false, ["translate", "translateY", "translate3d"], ["initial", "inherit"], next);
+            testAgainstGolden(valuePromptFor("-webkit-transform"), "tr", false, ["translate", "translateY", "translate3d"], ["initial", "inherit"], next);
         },
 
         function testValueUnprefixed(next)
         {
-            testAgainstGolden(valuePromptFor("transform"), "t", false, ["translate", "translateY", "translate3d"], ["initial", "inherit"], next);
+            testAgainstGolden(valuePromptFor("transform"), "tr", false, ["translate", "translateY", "translate3d"], ["initial", "inherit"], next);
+        },
+
+        function testValueSubstring(next)
+        {
+            testAgainstGolden(valuePromptFor("color"), "blue", false, ["blue", "darkblue", "lightblue"], ["darkred", "yellow", "initial", "inherit"], next);
         }
    ]);
 
