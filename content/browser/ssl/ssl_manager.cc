@@ -184,14 +184,14 @@ void SSLManager::DidCommitProvisionalLoad(const LoadCommittedDetails& details) {
       content_status_flags = previous_entry->GetSSL().content_status;
     }
   }
-  UpdateEntry(entry, content_status_flags);
+  UpdateEntry(entry, content_status_flags, 0);
   // Always notify the WebContents that the SSL state changed when a
   // load is committed, in case the active navigation entry has changed.
   NotifyDidChangeVisibleSSLState();
 }
 
 void SSLManager::DidDisplayMixedContent() {
-  UpdateLastCommittedEntry(SSLStatus::DISPLAYED_INSECURE_CONTENT);
+  UpdateLastCommittedEntry(SSLStatus::DISPLAYED_INSECURE_CONTENT, 0);
 }
 
 void SSLManager::DidDisplayContentWithCertErrors() {
@@ -201,16 +201,20 @@ void SSLManager::DidDisplayContentWithCertErrors() {
   // Only record information about subresources with cert errors if the
   // main page is HTTPS with a certificate.
   if (entry->GetURL().SchemeIsCryptographic() && entry->GetSSL().certificate) {
-    UpdateLastCommittedEntry(SSLStatus::DISPLAYED_CONTENT_WITH_CERT_ERRORS);
+    UpdateLastCommittedEntry(SSLStatus::DISPLAYED_CONTENT_WITH_CERT_ERRORS, 0);
   }
 }
 
 void SSLManager::DidShowPasswordInputOnHttp() {
-  UpdateLastCommittedEntry(SSLStatus::DISPLAYED_PASSWORD_FIELD_ON_HTTP);
+  UpdateLastCommittedEntry(SSLStatus::DISPLAYED_PASSWORD_FIELD_ON_HTTP, 0);
+}
+
+void SSLManager::DidHideAllPasswordInputsOnHttp() {
+  UpdateLastCommittedEntry(0, SSLStatus::DISPLAYED_PASSWORD_FIELD_ON_HTTP);
 }
 
 void SSLManager::DidShowCreditCardInputOnHttp() {
-  UpdateLastCommittedEntry(SSLStatus::DISPLAYED_CREDIT_CARD_FIELD_ON_HTTP);
+  UpdateLastCommittedEntry(SSLStatus::DISPLAYED_CREDIT_CARD_FIELD_ON_HTTP, 0);
 }
 
 void SSLManager::DidRunMixedContent(const GURL& security_origin) {
@@ -227,7 +231,7 @@ void SSLManager::DidRunMixedContent(const GURL& security_origin) {
         security_origin.host(), site_instance->GetProcess()->GetID(),
         SSLHostStateDelegate::MIXED_CONTENT);
   }
-  UpdateEntry(entry, 0);
+  UpdateEntry(entry, 0, 0);
   NotifySSLInternalStateChanged(controller_->GetBrowserContext());
 }
 
@@ -245,7 +249,7 @@ void SSLManager::DidRunContentWithCertErrors(const GURL& security_origin) {
         security_origin.host(), site_instance->GetProcess()->GetID(),
         SSLHostStateDelegate::CERT_ERRORS_CONTENT);
   }
-  UpdateEntry(entry, 0);
+  UpdateEntry(entry, 0, 0);
   NotifySSLInternalStateChanged(controller_->GetBrowserContext());
 }
 
@@ -358,7 +362,8 @@ void SSLManager::OnCertErrorInternal(std::unique_ptr<SSLErrorHandler> handler,
 }
 
 void SSLManager::UpdateEntry(NavigationEntryImpl* entry,
-                             int additional_content_status_flags) {
+                             int add_content_status_flags,
+                             int remove_content_status_flags) {
   // We don't always have a navigation entry to update, for example in the
   // case of the Web Inspector.
   if (!entry)
@@ -366,7 +371,8 @@ void SSLManager::UpdateEntry(NavigationEntryImpl* entry,
 
   SSLStatus original_ssl_status = entry->GetSSL();  // Copy!
   entry->GetSSL().initialized = true;
-  entry->GetSSL().content_status |= additional_content_status_flags;
+  entry->GetSSL().content_status |= add_content_status_flags;
+  entry->GetSSL().content_status &= ~remove_content_status_flags;
 
   SiteInstance* site_instance = entry->site_instance();
   // Note that |site_instance| can be NULL here because NavigationEntries don't
@@ -394,11 +400,12 @@ void SSLManager::UpdateEntry(NavigationEntryImpl* entry,
     NotifyDidChangeVisibleSSLState();
 }
 
-void SSLManager::UpdateLastCommittedEntry(int additional_content_status_flags) {
+void SSLManager::UpdateLastCommittedEntry(int add_content_status_flags,
+                                          int remove_content_status_flags) {
   NavigationEntryImpl* entry = controller_->GetLastCommittedEntry();
   if (!entry)
     return;
-  UpdateEntry(entry, additional_content_status_flags);
+  UpdateEntry(entry, add_content_status_flags, remove_content_status_flags);
 }
 
 void SSLManager::NotifyDidChangeVisibleSSLState() {
@@ -414,7 +421,7 @@ void SSLManager::NotifySSLInternalStateChanged(BrowserContext* context) {
 
   for (std::set<SSLManager*>::iterator i = managers->get().begin();
        i != managers->get().end(); ++i) {
-    (*i)->UpdateEntry((*i)->controller()->GetLastCommittedEntry(), 0);
+    (*i)->UpdateEntry((*i)->controller()->GetLastCommittedEntry(), 0, 0);
   }
 }
 

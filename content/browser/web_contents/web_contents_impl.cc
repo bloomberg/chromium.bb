@@ -3807,6 +3807,10 @@ void WebContentsImpl::OnPasswordInputShownOnHttp() {
   controller_.ssl_manager()->DidShowPasswordInputOnHttp();
 }
 
+void WebContentsImpl::OnAllPasswordInputsHiddenOnHttp() {
+  controller_.ssl_manager()->DidHideAllPasswordInputsOnHttp();
+}
+
 void WebContentsImpl::OnCreditCardInputShownOnHttp() {
   controller_.ssl_manager()->DidShowCreditCardInputOnHttp();
 }

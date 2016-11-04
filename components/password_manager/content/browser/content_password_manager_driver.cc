@@ -4,11 +4,14 @@
 
 #include "components/password_manager/content/browser/content_password_manager_driver.h"
 
+#include <set>
+
 #include "components/autofill/content/browser/content_autofill_driver.h"
 #include "components/autofill/core/common/form_data.h"
 #include "components/autofill/core/common/password_form.h"
 #include "components/password_manager/content/browser/bad_message.h"
 #include "components/password_manager/content/browser/content_password_manager_driver_factory.h"
+#include "components/password_manager/content/browser/visible_password_observer.h"
 #include "components/password_manager/core/browser/log_manager.h"
 #include "components/password_manager/core/browser/password_manager.h"
 #include "components/password_manager/core/browser/password_manager_client.h"
@@ -16,29 +19,17 @@
 #include "content/public/browser/child_process_security_policy.h"
 #include "content/public/browser/navigation_details.h"
 #include "content/public/browser/navigation_entry.h"
+#include "content/public/browser/navigation_handle.h"
 #include "content/public/browser/render_frame_host.h"
 #include "content/public/browser/render_process_host.h"
 #include "content/public/browser/render_view_host.h"
 #include "content/public/browser/site_instance.h"
 #include "content/public/browser/ssl_status.h"
 #include "content/public/browser/web_contents.h"
-#include "content/public/common/origin_util.h"
 #include "net/cert/cert_status_flags.h"
 #include "services/service_manager/public/cpp/interface_provider.h"
 
 namespace password_manager {
-
-namespace {
-
-void MaybeNotifyPasswordInputShownOnHttp(content::RenderFrameHost* rfh) {
-  content::WebContents* web_contents =
-      content::WebContents::FromRenderFrameHost(rfh);
-  if (!content::IsOriginSecure(web_contents->GetVisibleURL())) {
-    web_contents->OnPasswordInputShownOnHttp();
-  }
-}
-
-}  // namespace
 
 ContentPasswordManagerDriver::ContentPasswordManagerDriver(
     content::RenderFrameHost* render_frame_host,
@@ -50,7 +41,12 @@ ContentPasswordManagerDriver::ContentPasswordManagerDriver(
       password_autofill_manager_(this, autofill_client),
       next_free_key_(0),
       password_manager_binding_(this),
-      weak_factory_(this) {}
+      weak_factory_(this) {
+  // Does nothing if a VisiblePasswordObserver has already been created
+  // for this WebContents.
+  VisiblePasswordObserver::CreateForWebContents(
+      content::WebContents::FromRenderFrameHost(render_frame_host_));
+}
 
 ContentPasswordManagerDriver::~ContentPasswordManagerDriver() {
 }
@@ -208,14 +204,16 @@ void ContentPasswordManagerDriver::OnFocusedPasswordFormFound(
 }
 
 void ContentPasswordManagerDriver::PasswordFieldVisibleInInsecureContext() {
-  MaybeNotifyPasswordInputShownOnHttp(render_frame_host_);
+  VisiblePasswordObserver* observer = VisiblePasswordObserver::FromWebContents(
+      content::WebContents::FromRenderFrameHost(render_frame_host_));
+  observer->RenderFrameHasVisiblePasswordField(render_frame_host_);
 }
 
 void ContentPasswordManagerDriver::
     AllPasswordFieldsInInsecureContextInvisible() {
-  // TODO(estark): if all frames in the frame tree have their password
-  // fields hidden, then notify the WebContents that there are no
-  // visible password fields left. https://crbug.com/658764
+  VisiblePasswordObserver* observer = VisiblePasswordObserver::FromWebContents(
+      content::WebContents::FromRenderFrameHost(render_frame_host_));
+  observer->RenderFrameHasNoVisiblePasswordFields(render_frame_host_);
 }
 
 void ContentPasswordManagerDriver::DidNavigateFrame(

@@ -84,6 +84,7 @@ class CONTENT_EXPORT SSLManager {
   void DidDisplayMixedContent();
   void DidDisplayContentWithCertErrors();
   void DidShowPasswordInputOnHttp();
+  void DidHideAllPasswordInputsOnHttp();
   void DidShowCreditCardInputOnHttp();
   void DidRunMixedContent(const GURL& security_origin);
   void DidRunContentWithCertErrors(const GURL& security_origin);
@@ -112,16 +113,19 @@ class CONTENT_EXPORT SSLManager {
                            int options_mask);
 
   // Updates the NavigationEntry's |content_status| flags according to
-  // state in |ssl_host_state_delegate| and
-  // |additional_content_status_flags|, a bitmask of
-  // SSLStatus::ContentStatusFlags. (Pass 0 to set no additional content
-  // status flags.) This will notify the WebContents of an SSL state
+  // state in |ssl_host_state_delegate|. |add_content_status_flags| and
+  // |remove_content_status_flags| are bitmasks of
+  // SSLStatus::ContentStatusFlags that will be added or removed from
+  // the |content_status| field. (Pass 0 to add/remove no content status
+  // flags.) This method will notify the WebContents of an SSL state
   // change if a change was actually made.
   void UpdateEntry(NavigationEntryImpl* entry,
-                   int additional_content_status_flags);
+                   int add_content_status_flags,
+                   int remove_content_status_flags);
 
   // Helper function for UpdateEntry().
-  void UpdateLastCommittedEntry(int additional_content_status_flags);
+  void UpdateLastCommittedEntry(int add_content_status_flags,
+                                int remove_content_status_flags);
 
   // Notifies the WebContents that the SSL state changed.
   void NotifyDidChangeVisibleSSLState();

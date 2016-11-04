@@ -196,6 +196,135 @@ TEST_P(ContentPasswordManagerDriverTest, PasswordVisibility) {
   EXPECT_EQ(url, entry->GetURL());
   EXPECT_TRUE(!!(entry->GetSSL().content_status &
                  content::SSLStatus::DISPLAYED_PASSWORD_FIELD_ON_HTTP));
+
+  // If the password field becomes hidden, then the flag should be unset
+  // on the SSLStatus.
+  driver->AllPasswordFieldsInInsecureContextInvisible();
+  EXPECT_FALSE(!!(entry->GetSSL().content_status &
+                  content::SSLStatus::DISPLAYED_PASSWORD_FIELD_ON_HTTP));
+}
+
+// Tests that password visibility notifications from subframes are
+// recorded correctly.
+TEST_P(ContentPasswordManagerDriverTest, PasswordVisibilityWithSubframe) {
+  // Do a mock navigation so that there is a navigation entry on which
+  // password visibility gets recorded.
+  GURL url("http://example.test");
+  NavigateAndCommit(url);
+
+  // Create a subframe with a password field and check that
+  // notifications for it are handled properly.
+  content::RenderFrameHost* subframe =
+      content::RenderFrameHostTester::For(main_rfh())->AppendChild("child");
+  auto subframe_driver = base::MakeUnique<ContentPasswordManagerDriver>(
+      subframe, &password_manager_client_, &autofill_client_);
+  content::RenderFrameHostTester* subframe_tester =
+      content::RenderFrameHostTester::For(subframe);
+  subframe_tester->SimulateNavigationStart(GURL("http://example2.test"));
+  subframe_tester->SimulateNavigationCommit(GURL("http://example2.test"));
+  subframe_driver->PasswordFieldVisibleInInsecureContext();
+
+  content::NavigationEntry* entry =
+      web_contents()->GetController().GetVisibleEntry();
+  ASSERT_TRUE(entry);
+  EXPECT_EQ(url, entry->GetURL());
+  EXPECT_TRUE(!!(entry->GetSSL().content_status &
+                 content::SSLStatus::DISPLAYED_PASSWORD_FIELD_ON_HTTP));
+
+  subframe_driver->AllPasswordFieldsInInsecureContextInvisible();
+  EXPECT_FALSE(!!(entry->GetSSL().content_status &
+                  content::SSLStatus::DISPLAYED_PASSWORD_FIELD_ON_HTTP));
+}
+
+// Tests that password visibility notifications are recorded correctly
+// when there is a password field in both the main frame and a subframe.
+TEST_P(ContentPasswordManagerDriverTest,
+       PasswordVisibilityWithMainFrameAndSubframe) {
+  std::unique_ptr<ContentPasswordManagerDriver> driver(
+      new ContentPasswordManagerDriver(main_rfh(), &password_manager_client_,
+                                       &autofill_client_));
+  // Do a mock navigation so that there is a navigation entry on which
+  // password visibility gets recorded.
+  GURL url("http://example.test");
+  NavigateAndCommit(url);
+
+  driver->PasswordFieldVisibleInInsecureContext();
+  content::NavigationEntry* entry =
+      web_contents()->GetController().GetVisibleEntry();
+  ASSERT_TRUE(entry);
+  EXPECT_EQ(url, entry->GetURL());
+  EXPECT_TRUE(!!(entry->GetSSL().content_status &
+                 content::SSLStatus::DISPLAYED_PASSWORD_FIELD_ON_HTTP));
+
+  // Create a subframe with a password field and check that
+  // notifications for it are handled properly.
+  content::RenderFrameHost* subframe =
+      content::RenderFrameHostTester::For(main_rfh())->AppendChild("child");
+  auto subframe_driver = base::MakeUnique<ContentPasswordManagerDriver>(
+      subframe, &password_manager_client_, &autofill_client_);
+  content::RenderFrameHostTester* subframe_tester =
+      content::RenderFrameHostTester::For(subframe);
+  subframe_tester->SimulateNavigationStart(GURL("http://example2.test"));
+  subframe_tester->SimulateNavigationCommit(GURL("http://example2.test"));
+  subframe_driver->PasswordFieldVisibleInInsecureContext();
+
+  entry = web_contents()->GetController().GetVisibleEntry();
+  ASSERT_TRUE(entry);
+  EXPECT_EQ(url, entry->GetURL());
+  EXPECT_TRUE(!!(entry->GetSSL().content_status &
+                 content::SSLStatus::DISPLAYED_PASSWORD_FIELD_ON_HTTP));
+
+  subframe_driver->AllPasswordFieldsInInsecureContextInvisible();
+  EXPECT_TRUE(!!(entry->GetSSL().content_status &
+                 content::SSLStatus::DISPLAYED_PASSWORD_FIELD_ON_HTTP));
+
+  driver->AllPasswordFieldsInInsecureContextInvisible();
+  EXPECT_FALSE(!!(entry->GetSSL().content_status &
+                  content::SSLStatus::DISPLAYED_PASSWORD_FIELD_ON_HTTP));
+}
+
+// Tests that when a frame is deleted, its password visibility flag gets
+// unset.
+TEST_P(ContentPasswordManagerDriverTest,
+       PasswordVisibilityWithSubframeDeleted) {
+  // Do a mock navigation so that there is a navigation entry on which
+  // password visibility gets recorded.
+  GURL url("http://example.test");
+  NavigateAndCommit(url);
+
+  // Create a subframe with a password field.
+  content::RenderFrameHost* subframe =
+      content::RenderFrameHostTester::For(main_rfh())->AppendChild("child");
+  auto subframe_driver = base::MakeUnique<ContentPasswordManagerDriver>(
+      subframe, &password_manager_client_, &autofill_client_);
+  content::RenderFrameHostTester* subframe_tester =
+      content::RenderFrameHostTester::For(subframe);
+  subframe_tester->SimulateNavigationStart(GURL("http://example2.test"));
+  subframe_tester->SimulateNavigationCommit(GURL("http://example2.test"));
+  subframe_driver->PasswordFieldVisibleInInsecureContext();
+
+  content::NavigationEntry* entry =
+      web_contents()->GetController().GetVisibleEntry();
+  ASSERT_TRUE(entry);
+  EXPECT_EQ(url, entry->GetURL());
+  EXPECT_TRUE(!!(entry->GetSSL().content_status &
+                 content::SSLStatus::DISPLAYED_PASSWORD_FIELD_ON_HTTP));
+
+  subframe_tester->Detach();
+  EXPECT_FALSE(!!(entry->GetSSL().content_status &
+                  content::SSLStatus::DISPLAYED_PASSWORD_FIELD_ON_HTTP));
+
+  // Check that the subframe's flag isn't hanging around preventing the
+  // warning from being removed.
+  std::unique_ptr<ContentPasswordManagerDriver> driver(
+      new ContentPasswordManagerDriver(main_rfh(), &password_manager_client_,
+                                       &autofill_client_));
+  driver->PasswordFieldVisibleInInsecureContext();
+  EXPECT_TRUE(!!(entry->GetSSL().content_status &
+                 content::SSLStatus::DISPLAYED_PASSWORD_FIELD_ON_HTTP));
+  driver->AllPasswordFieldsInInsecureContextInvisible();
+  EXPECT_FALSE(!!(entry->GetSSL().content_status &
+                  content::SSLStatus::DISPLAYED_PASSWORD_FIELD_ON_HTTP));
 }
 
 INSTANTIATE_TEST_CASE_P(,
