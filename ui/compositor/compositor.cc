@@ -404,7 +404,6 @@ void Compositor::SetWindow(ui::Window* window) {
 }
 
 ui::Window* Compositor::window() const {
-  DCHECK(window_);
   return window_;
 }
 #endif
