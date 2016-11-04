@@ -155,6 +155,12 @@ public class MediaNotificationManager {
                                     MediaNotificationListener.ACTION_SOURCE_MEDIA_SESSION);
                         }
                         break;
+                    case KeyEvent.KEYCODE_MEDIA_PREVIOUS:
+                        manager.onMediaSessionAction(MediaSessionAction.PREVIOUS_TRACK);
+                        break;
+                    case KeyEvent.KEYCODE_MEDIA_NEXT:
+                        manager.onMediaSessionAction(MediaSessionAction.NEXT_TRACK);
+                        break;
                     default:
                         break;
                 }
@@ -488,6 +494,18 @@ public class MediaNotificationManager {
                     MediaNotificationManager.this.onPause(
                             MediaNotificationListener.ACTION_SOURCE_MEDIA_SESSION);
                 }
+
+                @Override
+                public void onSkipToPrevious() {
+                    MediaNotificationManager.this.onMediaSessionAction(
+                            MediaSessionAction.PREVIOUS_TRACK);
+                }
+
+                @Override
+                public void onSkipToNext() {
+                    MediaNotificationManager.this.onMediaSessionAction(
+                            MediaSessionAction.NEXT_TRACK);
+                }
             };
 
     private MediaNotificationManager(Context context, int notificationId) {
@@ -667,8 +685,7 @@ public class MediaNotificationManager {
         mMediaSession.setMetadata(createMetadata());
 
         PlaybackStateCompat.Builder playbackStateBuilder =
-                new PlaybackStateCompat.Builder().setActions(
-                        PlaybackStateCompat.ACTION_PLAY | PlaybackStateCompat.ACTION_PAUSE);
+                new PlaybackStateCompat.Builder().setActions(computeMediaSessionActions());
         if (mMediaNotificationInfo.isPaused) {
             playbackStateBuilder.setState(PlaybackStateCompat.STATE_PAUSED,
                     PlaybackStateCompat.PLAYBACK_POSITION_UNKNOWN, 1.0f);
@@ -678,6 +695,20 @@ public class MediaNotificationManager {
                     PlaybackStateCompat.PLAYBACK_POSITION_UNKNOWN, 1.0f);
         }
         mMediaSession.setPlaybackState(playbackStateBuilder.build());
+    }
+
+    private long computeMediaSessionActions() {
+        assert mMediaNotificationInfo != null;
+
+        long actions = PlaybackStateCompat.ACTION_PLAY | PlaybackStateCompat.ACTION_PAUSE;
+        if (mMediaNotificationInfo.mediaSessionActions.contains(
+                    MediaSessionAction.PREVIOUS_TRACK)) {
+            actions |= PlaybackStateCompat.ACTION_SKIP_TO_PREVIOUS;
+        }
+        if (mMediaNotificationInfo.mediaSessionActions.contains(MediaSessionAction.NEXT_TRACK)) {
+            actions |= PlaybackStateCompat.ACTION_SKIP_TO_NEXT;
+        }
+        return actions;
     }
 
     private MediaSessionCompat createMediaSession() {
