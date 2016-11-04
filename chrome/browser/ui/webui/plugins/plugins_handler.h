@@ -29,10 +29,9 @@ class PluginsPageHandler : public MojoWebUIHandler,
   void GetPluginsData(const GetPluginsDataCallback& callback) override;
   void GetShowDetails(const GetShowDetailsCallback& callback) override;
   void SaveShowDetailsToPrefs(bool details_mode) override;
-  void SetPluginAlwaysAllowed(const mojo::String& plugin,
-                              bool allowed) override;
-  void SetPluginEnabled(const mojo::String& plugin_path, bool enable) override;
-  void SetPluginGroupEnabled(const mojo::String& group_name,
+  void SetPluginAlwaysAllowed(const std::string& plugin, bool allowed) override;
+  void SetPluginEnabled(const std::string& plugin_path, bool enable) override;
+  void SetPluginGroupEnabled(const std::string& group_name,
                              bool enable) override;
   void SetClientPage(mojom::PluginsPagePtr page) override;
 
@@ -42,7 +41,7 @@ class PluginsPageHandler : public MojoWebUIHandler,
                const content::NotificationDetails& details) override;
 
  private:
-  mojo::Array<mojom::PluginDataPtr> GeneratePluginsData(
+  std::vector<mojom::PluginDataPtr> GeneratePluginsData(
       const std::vector<content::WebPluginInfo>& plugins);
 
   mojom::PluginFilePtr GeneratePluginFile(const content::WebPluginInfo& plugin,
@@ -62,7 +61,7 @@ class PluginsPageHandler : public MojoWebUIHandler,
   // Detect a plugin group's enabled mode (one of enabledByUser, disabledByUser,
   // enabledByPolicy, disabledByPolicy, managedByPolicy).
   std::string GetPluginGroupEnabledMode(
-      const mojo::Array<mojom::PluginFilePtr>& plugin_files,
+      const std::vector<mojom::PluginFilePtr>& plugin_files,
       bool group_enabled) const;
 
   // Called on the UI thread when the plugin info requested fom GetPluginsData

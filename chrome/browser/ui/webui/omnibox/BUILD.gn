@@ -8,6 +8,4 @@ mojom("mojo_bindings") {
   sources = [
     "omnibox.mojom",
   ]
-
-  use_new_wrapper_types = false
 }

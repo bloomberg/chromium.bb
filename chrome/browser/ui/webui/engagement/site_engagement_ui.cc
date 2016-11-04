@@ -6,6 +6,7 @@
 
 #include <cmath>
 #include <utility>
+#include <vector>
 
 #include "base/macros.h"
 #include "chrome/browser/engagement/site_engagement_service.h"
@@ -37,11 +38,12 @@ class SiteEngagementUIHandlerImpl : public mojom::SiteEngagementUIHandler {
   // mojom::SiteEngagementUIHandler overrides:
   void GetSiteEngagementInfo(
       const GetSiteEngagementInfoCallback& callback) override {
-    mojo::Array<mojom::SiteEngagementInfoPtr> engagement_info;
-
     SiteEngagementService* service = SiteEngagementService::Get(profile_);
+    std::map<GURL, double> score_map = service->GetScoreMap();
 
-    for (const std::pair<GURL, double>& info : service->GetScoreMap()) {
+    std::vector<mojom::SiteEngagementInfoPtr> engagement_info;
+    engagement_info.reserve(score_map.size());
+    for (const auto& info : score_map) {
       mojom::SiteEngagementInfoPtr origin_info(
           mojom::SiteEngagementInfo::New());
       origin_info->origin = info.first;
