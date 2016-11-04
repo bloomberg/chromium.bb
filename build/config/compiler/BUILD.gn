@@ -1246,15 +1246,23 @@ if (is_win) {
     common_optimize_on_ldflags += [ "/OPT:REF" ]  # Remove unreferenced data.
     if (!use_lld) {
       common_optimize_on_ldflags += [
-        "/LTCG",  # Link-time code generation.
-
         # Set the number of LTCG code-gen threads to eight. The default is four.
         # This gives a 5-10% link speedup.
         "/cgthreads:8",
       ]
+      if (use_incremental_wpo) {
+        # Incremental Link-time code generation.
+        common_optimize_on_ldflags += [ "/LTCG:INCREMENTAL" ]
+      } else {
+        common_optimize_on_ldflags += [ "/LTCG" ]  # Link-time code generation.
+      }
     }
     if (full_wpo_on_official) {
-      arflags = [ "/LTCG" ]
+      if (use_incremental_wpo) {
+        arflags = [ "/LTCG:INCREMENTAL" ]
+      } else {
+        arflags = [ "/LTCG" ]
+      }
     }
   }
 } else {
