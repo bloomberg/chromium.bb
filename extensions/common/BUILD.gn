@@ -23,8 +23,6 @@ if (enable_extensions) {
     if (proprietary_codecs && enable_wifi_display) {
       sources += [ "mojo/wifi_display_session_service.mojom" ]
     }
-
-    use_new_wrapper_types = false
   }
 
   # This must be a static library because extensions common depends on

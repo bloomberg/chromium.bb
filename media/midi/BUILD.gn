@@ -173,7 +173,6 @@ mojom("mojo") {
   sources = [
     "midi_service.mojom",
   ]
-  use_new_wrapper_types = true
 }
 
 test("midi_unittests") {

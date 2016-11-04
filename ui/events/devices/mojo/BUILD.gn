@@ -12,8 +12,6 @@ mojom("mojo") {
   public_deps = [
     "//ui/gfx/geometry/mojo",
   ]
-
-  use_new_wrapper_types = false
 }
 
 mojom("test_interfaces") {
@@ -24,6 +22,4 @@ mojom("test_interfaces") {
   public_deps = [
     ":mojo",
   ]
-
-  use_new_wrapper_types = false
 }

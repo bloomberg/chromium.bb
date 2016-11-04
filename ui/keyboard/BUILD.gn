@@ -138,8 +138,6 @@ mojom("mojom") {
   deps = [
     "//ui/gfx/geometry/mojo",
   ]
-
-  use_new_wrapper_types = false
 }
 
 test("keyboard_unittests") {

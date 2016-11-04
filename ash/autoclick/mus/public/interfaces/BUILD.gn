@@ -8,6 +8,4 @@ mojom("interfaces") {
   sources = [
     "autoclick.mojom",
   ]
-
-  use_new_wrapper_types = true
 }

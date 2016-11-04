@@ -33,8 +33,6 @@ mojom("test_service_interfaces") {
   sources = [
     "test.mojom",
   ]
-
-  use_new_wrapper_types = false
 }
 
 service("background_service_manager_test_service") {

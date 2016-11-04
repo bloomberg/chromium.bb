@@ -8,8 +8,6 @@ mojom("interfaces") {
   sources = [
     "uuid.mojom",
   ]
-
-  use_new_wrapper_types = false
 }
 
 mojom("experimental_interfaces") {

@@ -8,6 +8,4 @@ mojom("interfaces") {
   sources = [
     "launchable.mojom",
   ]
-
-  use_new_wrapper_types = false
 }

@@ -10,6 +10,4 @@ mojom("mojo_bindings") {
     "distiller_javascript_service.mojom",
     "distiller_page_notifier_service.mojom",
   ]
-
-  use_new_wrapper_types = false
 }

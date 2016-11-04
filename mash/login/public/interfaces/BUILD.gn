@@ -8,6 +8,4 @@ mojom("interfaces") {
   sources = [
     "login.mojom",
   ]
-
-  use_new_wrapper_types = false
 }
