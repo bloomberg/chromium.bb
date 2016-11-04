@@ -161,7 +161,7 @@ void IDBOpenDBRequest::onSuccess(int64_t oldVersion) {
 }
 
 bool IDBOpenDBRequest::shouldEnqueueEvent() const {
-  if (m_contextStopped || !getExecutionContext())
+  if (!getExecutionContext())
     return false;
   DCHECK(m_readyState == PENDING || m_readyState == DONE);
   if (m_requestAborted)

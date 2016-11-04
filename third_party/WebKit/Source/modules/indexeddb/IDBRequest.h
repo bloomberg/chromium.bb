@@ -151,7 +151,6 @@ class MODULES_EXPORT IDBRequest : public EventTargetWithInlineData,
   // EventTarget
   DispatchEventResult dispatchEventInternal(Event*) override;
 
-  bool m_contextStopped = false;
   Member<IDBTransaction> m_transaction;
   ReadyState m_readyState = PENDING;
   bool m_requestAborted = false;  // May be aborted by transaction then receive

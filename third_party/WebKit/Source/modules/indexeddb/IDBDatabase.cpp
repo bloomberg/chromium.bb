@@ -397,7 +397,7 @@ void IDBDatabase::closeConnection() {
   if (m_databaseCallbacks)
     m_databaseCallbacks->detachWebCallbacks();
 
-  if (m_contextStopped || !getExecutionContext())
+  if (!getExecutionContext())
     return;
 
   EventQueue* eventQueue = getExecutionContext()->getEventQueue();
@@ -413,7 +413,7 @@ void IDBDatabase::closeConnection() {
 
 void IDBDatabase::onVersionChange(int64_t oldVersion, int64_t newVersion) {
   IDB_TRACE("IDBDatabase::onVersionChange");
-  if (m_contextStopped || !getExecutionContext())
+  if (!getExecutionContext())
     return;
 
   if (m_closePending) {
@@ -433,7 +433,6 @@ void IDBDatabase::onVersionChange(int64_t oldVersion, int64_t newVersion) {
 }
 
 void IDBDatabase::enqueueEvent(Event* event) {
-  DCHECK(!m_contextStopped);
   DCHECK(getExecutionContext());
   EventQueue* eventQueue = getExecutionContext()->getEventQueue();
   event->setTarget(this);
@@ -443,7 +442,7 @@ void IDBDatabase::enqueueEvent(Event* event) {
 
 DispatchEventResult IDBDatabase::dispatchEventInternal(Event* event) {
   IDB_TRACE("IDBDatabase::dispatchEvent");
-  if (m_contextStopped || !getExecutionContext())
+  if (!getExecutionContext())
     return DispatchEventResult::CanceledBeforeDispatch;
   DCHECK(event->type() == EventTypeNames::versionchange ||
          event->type() == EventTypeNames::close);
@@ -516,12 +515,10 @@ bool IDBDatabase::hasPendingActivity() const {
   // The script wrapper must not be collected before the object is closed or
   // we can't fire a "versionchange" event to let script manually close the
   // connection.
-  return !m_closePending && hasEventListeners() && !m_contextStopped;
+  return !m_closePending && hasEventListeners() && getExecutionContext();
 }
 
 void IDBDatabase::contextDestroyed() {
-  m_contextStopped = true;
-
   // Immediately close the connection to the back end. Don't attempt a
   // normal close() since that may wait on transactions which require a
   // round trip to the back-end to abort.

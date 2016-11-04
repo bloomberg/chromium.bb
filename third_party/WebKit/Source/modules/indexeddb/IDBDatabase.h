@@ -175,7 +175,6 @@ class MODULES_EXPORT IDBDatabase final : public EventTargetWithInlineData,
   HeapHashMap<int64_t, Member<IDBTransaction>> m_transactions;
 
   bool m_closePending = false;
-  bool m_contextStopped = false;
 
   // Keep track of the versionchange events waiting to be fired on this
   // database so that we can cancel them if the database closes.

@@ -143,8 +143,8 @@ IDBTransaction::IDBTransaction(ExecutionContext* executionContext,
 }
 
 IDBTransaction::~IDBTransaction() {
-  DCHECK(m_state == Finished || m_contextStopped);
-  DCHECK(m_requestList.isEmpty() || m_contextStopped);
+  DCHECK(m_state == Finished || !getExecutionContext());
+  DCHECK(m_requestList.isEmpty() || !getExecutionContext());
 }
 
 DEFINE_TRACE(IDBTransaction) {
@@ -337,7 +337,7 @@ void IDBTransaction::abort(ExceptionState& exceptionState) {
 
   m_state = Finishing;
 
-  if (m_contextStopped)
+  if (!getExecutionContext())
     return;
 
   abortOutstandingRequests();
@@ -361,7 +361,7 @@ void IDBTransaction::unregisterRequest(IDBRequest* request) {
 
 void IDBTransaction::onAbort(DOMException* error) {
   IDB_TRACE("IDBTransaction::onAbort");
-  if (m_contextStopped) {
+  if (!getExecutionContext()) {
     finished();
     return;
   }
@@ -389,7 +389,7 @@ void IDBTransaction::onAbort(DOMException* error) {
 
 void IDBTransaction::onComplete() {
   IDB_TRACE("IDBTransaction::onComplete");
-  if (m_contextStopped) {
+  if (!getExecutionContext()) {
     finished();
     return;
   }
@@ -408,7 +408,7 @@ bool IDBTransaction::hasPendingActivity() const {
   // can get a handle to us or any child request object and any of those have
   // event listeners. This is  in order to handle user generated events
   // properly.
-  return m_hasPendingActivity && !m_contextStopped;
+  return m_hasPendingActivity && getExecutionContext();
 }
 
 WebIDBTransactionMode IDBTransaction::stringToMode(const String& modeString) {
@@ -464,7 +464,7 @@ ExecutionContext* IDBTransaction::getExecutionContext() const {
 
 DispatchEventResult IDBTransaction::dispatchEventInternal(Event* event) {
   IDB_TRACE("IDBTransaction::dispatchEvent");
-  if (m_contextStopped || !getExecutionContext()) {
+  if (!getExecutionContext()) {
     m_state = Finished;
     return DispatchEventResult::CanceledBeforeDispatch;
   }
@@ -494,20 +494,11 @@ DispatchEventResult IDBTransaction::dispatchEventInternal(Event* event) {
   return dispatchResult;
 }
 
-void IDBTransaction::contextDestroyed() {
-  if (m_contextStopped)
-    return;
-
-  m_contextStopped = true;
-
-  abort(IGNORE_EXCEPTION);
-}
-
 void IDBTransaction::enqueueEvent(Event* event) {
   DCHECK_NE(m_state, Finished)
       << "A finished transaction tried to enqueue an event of type "
       << event->type() << ".";
-  if (m_contextStopped || !getExecutionContext())
+  if (!getExecutionContext())
     return;
 
   EventQueue* eventQueue = getExecutionContext()->getEventQueue();

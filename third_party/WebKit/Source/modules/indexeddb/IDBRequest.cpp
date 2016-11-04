@@ -98,7 +98,7 @@ ScriptValue IDBRequest::result(ScriptState* scriptState,
         InvalidStateError, IDBDatabase::requestNotFinishedErrorMessage);
     return ScriptValue();
   }
-  if (m_contextStopped || !getExecutionContext()) {
+  if (!getExecutionContext()) {
     exceptionState.throwDOMException(InvalidStateError,
                                      IDBDatabase::databaseClosedErrorMessage);
     return ScriptValue();
@@ -118,7 +118,7 @@ DOMException* IDBRequest::error(ExceptionState& exceptionState) const {
 }
 
 ScriptValue IDBRequest::source(ScriptState* scriptState) const {
-  if (m_contextStopped || !getExecutionContext())
+  if (!getExecutionContext())
     return ScriptValue();
 
   return ScriptValue::from(scriptState, m_source);
@@ -148,7 +148,7 @@ void IDBRequest::webCallbacksDestroyed() {
 
 void IDBRequest::abort() {
   DCHECK(!m_requestAborted);
-  if (m_contextStopped || !getExecutionContext())
+  if (!getExecutionContext())
     return;
   DCHECK(m_readyState == PENDING || m_readyState == DONE);
   if (m_readyState == DONE)
@@ -229,7 +229,7 @@ void IDBRequest::ackReceivedBlobs(const Vector<RefPtr<IDBValue>>& values) {
 }
 
 bool IDBRequest::shouldEnqueueEvent() const {
-  if (m_contextStopped || !getExecutionContext())
+  if (!getExecutionContext())
     return false;
   DCHECK(m_readyState == PENDING || m_readyState == DONE);
   if (m_requestAborted)
@@ -359,7 +359,7 @@ void IDBRequest::onSuccess() {
 }
 
 void IDBRequest::onSuccessInternal(IDBAny* result) {
-  DCHECK(!m_contextStopped);
+  DCHECK(getExecutionContext());
   DCHECK(!m_pendingCursor);
   setResult(result);
   enqueueEvent(Event::create(EventTypeNames::success));
@@ -385,15 +385,10 @@ bool IDBRequest::hasPendingActivity() const {
   // FIXME: In an ideal world, we should return true as long as anyone has a or
   //        can get a handle to us and we have event listeners. This is order to
   //        handle user generated events properly.
-  return m_hasPendingActivity && !m_contextStopped;
+  return m_hasPendingActivity && getExecutionContext();
 }
 
 void IDBRequest::contextDestroyed() {
-  if (m_contextStopped)
-    return;
-
-  m_contextStopped = true;
-
   if (m_readyState == PENDING) {
     m_readyState = EarlyDeath;
     if (m_transaction) {
@@ -425,7 +420,7 @@ ExecutionContext* IDBRequest::getExecutionContext() const {
 
 DispatchEventResult IDBRequest::dispatchEventInternal(Event* event) {
   IDB_TRACE("IDBRequest::dispatchEvent");
-  if (m_contextStopped || !getExecutionContext())
+  if (!getExecutionContext())
     return DispatchEventResult::CanceledBeforeDispatch;
   DCHECK_EQ(m_readyState, PENDING);
   DCHECK(m_hasPendingActivity);
@@ -529,7 +524,7 @@ void IDBRequest::transactionDidFinishAndDispatch() {
   DCHECK(getExecutionContext());
   m_transaction.clear();
 
-  if (m_contextStopped)
+  if (!getExecutionContext())
     return;
 
   m_readyState = PENDING;
@@ -538,7 +533,7 @@ void IDBRequest::transactionDidFinishAndDispatch() {
 void IDBRequest::enqueueEvent(Event* event) {
   DCHECK(m_readyState == PENDING || m_readyState == DONE);
 
-  if (m_contextStopped || !getExecutionContext())
+  if (!getExecutionContext())
     return;
 
   DCHECK(m_readyState == PENDING || m_didFireUpgradeNeededEvent)
