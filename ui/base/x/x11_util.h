@@ -243,7 +243,10 @@ UI_BASE_X_EXPORT bool CopyAreaToCanvas(XID drawable,
                                        gfx::Canvas* canvas);
 
 enum WindowManagerName {
-  WM_UNKNOWN,
+  WM_OTHER,    // We were able to obtain the WM's name, but there is
+               // no corresponding entry in this enum.
+  WM_UNNAMED,  // Either there is no WM or there is no way to obtain
+               // the WM name.
 
   WM_AWESOME,
   WM_BLACKBOX,
@@ -265,9 +268,10 @@ enum WindowManagerName {
   WM_STUMPWM,
   WM_WMII,
   WM_XFWM4,
+  WM_XMONAD,
 };
-// Attempts to guess the window maager. Returns WM_UNKNOWN if we can't
-// determine it for one reason or another.
+// Attempts to guess the window maager. Returns WM_OTHER or WM_UNNAMED
+// if we can't determine it for one reason or another.
 UI_BASE_X_EXPORT WindowManagerName GuessWindowManager();
 
 // The same as GuessWindowManager(), but returns the raw string.  If we

@@ -1169,52 +1169,54 @@ bool CopyAreaToCanvas(XID drawable,
 
 WindowManagerName GuessWindowManager() {
   std::string name;
-  if (GetWindowManagerName(&name)) {
-    // These names are taken from the WMs' source code.
-    if (name == "awesome")
-      return WM_AWESOME;
-    if (name == "Blackbox")
-      return WM_BLACKBOX;
-    if (name == "Compiz" || name == "compiz")
-      return WM_COMPIZ;
-    if (name == "e16" || name == "Enlightenment")
-      return WM_ENLIGHTENMENT;
-    if (name == "Fluxbox")
-      return WM_FLUXBOX;
-    if (name == "i3")
-      return WM_I3;
-    if (base::StartsWith(name, "IceWM", base::CompareCase::SENSITIVE))
-      return WM_ICE_WM;
-    if (name == "ion3")
-      return WM_ION3;
-    if (name == "KWin")
-      return WM_KWIN;
-    if (name == "matchbox")
-      return WM_MATCHBOX;
-    if (name == "Metacity")
-      return WM_METACITY;
-    if (name == "Mutter (Muffin)")
-      return WM_MUFFIN;
-    if (name == "GNOME Shell")
-      return WM_MUTTER;  // GNOME Shell uses Mutter
-    if (name == "Mutter")
-      return WM_MUTTER;
-    if (name == "notion")
-      return WM_NOTION;
-    if (name == "Openbox")
-      return WM_OPENBOX;
-    if (name == "qtile")
-      return WM_QTILE;
-    if (name == "ratpoison")
-      return WM_RATPOISON;
-    if (name == "stumpwm")
-      return WM_STUMPWM;
-    if (name == "wmii")
-      return WM_WMII;
-    if (name == "Xfwm4")
-      return WM_XFWM4;
-  }
-  return WM_UNKNOWN;
+  if (!GetWindowManagerName(&name))
+    return WM_UNNAMED;
+  // These names are taken from the WMs' source code.
+  if (name == "awesome")
+    return WM_AWESOME;
+  if (name == "Blackbox")
+    return WM_BLACKBOX;
+  if (name == "Compiz" || name == "compiz")
+    return WM_COMPIZ;
+  if (name == "e16" || name == "Enlightenment")
+    return WM_ENLIGHTENMENT;
+  if (name == "Fluxbox")
+    return WM_FLUXBOX;
+  if (name == "i3")
+    return WM_I3;
+  if (base::StartsWith(name, "IceWM", base::CompareCase::SENSITIVE))
+    return WM_ICE_WM;
+  if (name == "ion3")
+    return WM_ION3;
+  if (name == "KWin")
+    return WM_KWIN;
+  if (name == "matchbox")
+    return WM_MATCHBOX;
+  if (name == "Metacity")
+    return WM_METACITY;
+  if (name == "Mutter (Muffin)")
+    return WM_MUFFIN;
+  if (name == "GNOME Shell")
+    return WM_MUTTER;  // GNOME Shell uses Mutter
+  if (name == "Mutter")
+    return WM_MUTTER;
+  if (name == "notion")
+    return WM_NOTION;
+  if (name == "Openbox")
+    return WM_OPENBOX;
+  if (name == "qtile")
+    return WM_QTILE;
+  if (name == "ratpoison")
+    return WM_RATPOISON;
+  if (name == "stumpwm")
+    return WM_STUMPWM;
+  if (name == "wmii")
+    return WM_WMII;
+  if (name == "Xfwm4")
+    return WM_XFWM4;
+  if (name == "xmonad")
+    return WM_XMONAD;
+  return WM_OTHER;
 }
 
 std::string GuessWindowManagerName() {
