@@ -74,7 +74,13 @@ public class AutofillLocalCardEditor extends AutofillCreditCardEditor {
     }
 
     @Override
-    public void onItemSelected(AdapterView<?> parent, View view, int position, long id) {}
+    public void onItemSelected(AdapterView<?> parent, View view, int position, long id) {
+        if ((parent == mExpirationYear && position != mInitialExpirationYearPos)
+                || (parent == mExpirationMonth && position != mInitialExpirationMonthPos)
+                || (parent == mBillingAddress && position != mInitialBillingAddressPos)) {
+            updateSaveButtonEnabled();
+        }
+    }
 
     @Override
     public void afterTextChanged(Editable s) {
@@ -187,9 +193,11 @@ public class AutofillLocalCardEditor extends AutofillCreditCardEditor {
     protected void initializeButtons(View v) {
         super.initializeButtons(v);
 
-        // Listen for change to credit card number input. Enable the save button after user enters a
-        // number.
+        // Listen for change to inputs. Enable the save button after something has changed.
+        mNameText.addTextChangedListener(this);
         mNumberText.addTextChangedListener(this);
+        mExpirationMonth.setOnItemSelectedListener(this);
+        mExpirationYear.setOnItemSelectedListener(this);
 
         // Listen for touch events for drop down menus. We clear the keyboard when user touches
         // any of these fields.
