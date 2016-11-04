@@ -122,27 +122,6 @@ cr.define('print_preview', function() {
     this.addChild(this.copiesSettings_);
 
     /**
-     * Component that renders the media size settings.
-     * @type {!print_preview.MediaSizeSettings}
-     * @private
-     */
-    this.mediaSizeSettings_ =
-        new print_preview.MediaSizeSettings(this.printTicketStore_.mediaSize);
-    this.addChild(this.mediaSizeSettings_);
-
-    if (this.scalingEnabled_) {
-      /**
-       * Component that renders the scaling settings.
-       * @type {!print_preview.ScalingSettings}
-       * @private
-       */
-      this.scalingSettings_ =
-          new print_preview.ScalingSettings(this.printTicketStore_.scaling,
-                                            this.printTicketStore_.fitToPage);
-      this.addChild(this.scalingSettings_);
-    }
-
-    /**
      * Component that renders the layout settings.
      * @type {!print_preview.LayoutSettings}
      * @private
@@ -159,6 +138,15 @@ cr.define('print_preview', function() {
     this.colorSettings_ =
         new print_preview.ColorSettings(this.printTicketStore_.color);
     this.addChild(this.colorSettings_);
+
+     /**
+     * Component that renders the media size settings.
+     * @type {!print_preview.MediaSizeSettings}
+     * @private
+     */
+    this.mediaSizeSettings_ =
+        new print_preview.MediaSizeSettings(this.printTicketStore_.mediaSize);
+    this.addChild(this.mediaSizeSettings_);
 
     /**
      * Component that renders a select box for choosing margin settings.
@@ -177,6 +165,18 @@ cr.define('print_preview', function() {
     this.dpiSettings_ =
         new print_preview.DpiSettings(this.printTicketStore_.dpi);
     this.addChild(this.dpiSettings_);
+
+    if (this.scalingEnabled_) {
+      /**
+       * Component that renders the scaling settings.
+       * @type {!print_preview.ScalingSettings}
+       * @private
+       */
+      this.scalingSettings_ =
+          new print_preview.ScalingSettings(this.printTicketStore_.scaling,
+                                            this.printTicketStore_.fitToPage);
+      this.addChild(this.scalingSettings_);
+    }
 
     /**
      * Component that renders miscellaneous print options.
@@ -221,7 +221,7 @@ cr.define('print_preview', function() {
         this.otherOptionsSettings_,
         this.advancedOptionsSettings_];
     if (this.scalingEnabled_) {
-      settingsSections.splice(4, 0, this.scalingSettings_);
+      settingsSections.splice(8, 0, this.scalingSettings_);
     }
 
     /**
@@ -497,13 +497,13 @@ cr.define('print_preview', function() {
       this.destinationSettings_.decorate($('destination-settings'));
       this.pageSettings_.decorate($('page-settings'));
       this.copiesSettings_.decorate($('copies-settings'));
-      this.mediaSizeSettings_.decorate($('media-size-settings'));
-      if (this.scalingEnabled_)
-        this.scalingSettings_.decorate($('scaling-settings'));
       this.layoutSettings_.decorate($('layout-settings'));
       this.colorSettings_.decorate($('color-settings'));
+      this.mediaSizeSettings_.decorate($('media-size-settings'));
       this.marginSettings_.decorate($('margin-settings'));
       this.dpiSettings_.decorate($('dpi-settings'));
+      if (this.scalingEnabled_)
+        this.scalingSettings_.decorate($('scaling-settings'));
       this.otherOptionsSettings_.decorate($('other-options-settings'));
       this.advancedOptionsSettings_.decorate($('advanced-options-settings'));
       this.advancedSettings_.decorate($('advanced-settings'));
@@ -526,13 +526,13 @@ cr.define('print_preview', function() {
       this.destinationSettings_.isEnabled = isEnabled;
       this.pageSettings_.isEnabled = isEnabled;
       this.copiesSettings_.isEnabled = isEnabled;
-      this.mediaSizeSettings_.isEnabled = isEnabled;
-      if (this.scalingEnabled_)
-          this.scalingSettings_.isEnabled = isEnabled;
       this.layoutSettings_.isEnabled = isEnabled;
       this.colorSettings_.isEnabled = isEnabled;
+      this.mediaSizeSettings_.isEnabled = isEnabled;
       this.marginSettings_.isEnabled = isEnabled;
       this.dpiSettings_.isEnabled = isEnabled;
+      if (this.scalingEnabled_)
+         this.scalingSettings_.isEnabled = isEnabled;
       this.otherOptionsSettings_.isEnabled = isEnabled;
       this.advancedOptionsSettings_.isEnabled = isEnabled;
     },
@@ -1334,15 +1334,15 @@ cr.define('print_preview', function() {
 
 <include src="settings/settings_section.js">
 <include src="settings/settings_section_select.js">
+<include src="settings/destination_settings.js">
 <include src="settings/page_settings.js">
 <include src="settings/copies_settings.js">
-<include src="settings/dpi_settings.js">
-<include src="settings/media_size_settings.js">
-<include src="settings/scaling_settings.js">
 <include src="settings/layout_settings.js">
 <include src="settings/color_settings.js">
+<include src="settings/media_size_settings.js">
 <include src="settings/margin_settings.js">
-<include src="settings/destination_settings.js">
+<include src="settings/dpi_settings.js">
+<include src="settings/scaling_settings.js">
 <include src="settings/other_options_settings.js">
 <include src="settings/advanced_options_settings.js">
 <include src="settings/advanced_settings/advanced_settings.js">
