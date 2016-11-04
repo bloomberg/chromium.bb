@@ -129,7 +129,9 @@ const char kChromeUISlowURL[] = "chrome://slow/";
 const char kChromeUISystemInfoURL[] = "chrome://system/";
 const char kChromeUITermsOemURL[] = "chrome://terms/oem";
 const char kChromeUIUserImageURL[] = "chrome://userimage/";
-const char kChromeUIMdCupsSettingsURL[] = "chrome://settings/cupsPrinters";
+// TODO(xdai): Change it to chrome://settings/cupsPrinters after M56 since MD
+// settings is going to launch in Chrome OS in M57.
+const char kChromeUIMdCupsSettingsURL[] = "chrome://md-settings/cupsPrinters";
 #endif  // defined(OS_CHROMEOS)
 
 #if defined(OS_WIN)

@@ -445,6 +445,8 @@ void BrowserOptionsHandler::GetLocalizedValues(base::DictionaryValue* values) {
       IDS_OPTIONS_SETTINGS_ACCESSIBILITY_VIRTUAL_KEYBOARD_DESCRIPTION },
     { "accessibilityMonoAudio",
       IDS_OPTIONS_SETTINGS_ACCESSIBILITY_MONO_AUDIO_DESCRIPTION},
+    { "advancedSectionTitleCupsPrint",
+      IDS_OPTIONS_ADVANCED_SECTION_TITLE_CUPS_PRINT },
     { "androidAppsTitle", IDS_OPTIONS_ARC_TITLE },
     { "androidAppsEnabled", IDS_OPTIONS_ARC_ENABLE },
     { "androidAppsSettingsLabel", IDS_OPTIONS_ARC_MANAGE_APPS },
@@ -466,6 +468,9 @@ void BrowserOptionsHandler::GetLocalizedValues(base::DictionaryValue* values) {
       IDS_OPTIONS_SETTINGS_ACCESSIBILITY_AUTOCLICK_DELAY_VERY_SHORT },
     { "changePicture", IDS_OPTIONS_CHANGE_PICTURE },
     { "changePictureCaption", IDS_OPTIONS_CHANGE_PICTURE_CAPTION },
+    { "cupsPrintOptionLabel", IDS_OPTIONS_ADVANCED_SECTION_CUPS_PRINT_LABEL },
+    { "cupsPrintersManageButton",
+      IDS_OPTIONS_ADVANCED_SECTION_CUPS_PRINT_MANAGE_BUTTON },
     { "datetimeTitle", IDS_OPTIONS_SETTINGS_SECTION_TITLE_DATETIME },
     { "deviceGroupDescription", IDS_OPTIONS_DEVICE_GROUP_DESCRIPTION },
     { "deviceGroupPointer", IDS_OPTIONS_DEVICE_GROUP_POINTER_SECTION },
@@ -684,6 +689,14 @@ void BrowserOptionsHandler::GetLocalizedValues(base::DictionaryValue* values) {
       g_browser_process->gpu_mode_manager()->initial_gpu_mode_pref());
 #endif
 
+#if defined(OS_CHROMEOS)
+  values->SetBoolean("cupsPrintEnabled",
+                     base::CommandLine::ForCurrentProcess()->HasSwitch(
+                         ::switches::kEnableNativeCups));
+  values->SetString("cupsPrintLearnMoreURL",
+                    chrome::kChromeUIMdCupsSettingsURL);
+#endif  // defined(OS_CHROMEOS)
+
 #if BUILDFLAG(ENABLE_SERVICE_DISCOVERY)
   values->SetBoolean("cloudPrintHideNotificationsCheckbox",
                      !cloud_print::PrivetNotificationService::IsEnabled());
@@ -838,6 +851,10 @@ void BrowserOptionsHandler::RegisterMessages() {
   web_ui()->RegisterMessageCallback(
       "showAccessibilityTalkBackSettings",
       base::Bind(&BrowserOptionsHandler::ShowAccessibilityTalkBackSettings,
+                 base::Unretained(this)));
+  web_ui()->RegisterMessageCallback(
+      "showCupsPrintDevicesPage",
+      base::Bind(&BrowserOptionsHandler::ShowCupsPrintDevicesPage,
                  base::Unretained(this)));
 #else
   web_ui()->RegisterMessageCallback(
@@ -1711,6 +1728,17 @@ void BrowserOptionsHandler::ShowManageSSLCertificates(
   settings_utils::ShowManageSSLCertificates(web_ui()->GetWebContents());
 }
 #endif
+
+#if defined(OS_CHROMEOS)
+void BrowserOptionsHandler::ShowCupsPrintDevicesPage(
+    const base::ListValue* args) {
+  // Navigate in current tab to CUPS printers management page.
+  OpenURLParams params(GURL(chrome::kChromeUIMdCupsSettingsURL), Referrer(),
+                       WindowOpenDisposition::NEW_FOREGROUND_TAB,
+                       ui::PAGE_TRANSITION_LINK, false);
+  web_ui()->GetWebContents()->OpenURL(params);
+}
+#endif  // defined(OS_CHROMEOS)
 
 #if BUILDFLAG(ENABLE_SERVICE_DISCOVERY)
 void BrowserOptionsHandler::ShowCloudPrintDevicesPage(

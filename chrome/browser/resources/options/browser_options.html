@@ -762,6 +762,21 @@
 </if>
       </div>
   </section>
+<if expr="chromeos">
+  <section id="cups-printers-section" hidden>
+    <h3 i18n-content="advancedSectionTitleCupsPrint"></h3>
+    <div class="settings-row">
+      <span i18n-content="cupsPrintOptionLabel"></span>
+      <a target="_blank" i18n-content="learnMore"
+          i18n-values="href:cupsPrintLearnMoreURL">
+      </a>
+    </div>
+    <div class="settings-row">
+      <button id="cupsPrintersManageButton"
+          i18n-content="cupsPrintersManageButton"></button>
+    </div>
+  </section>
+</if>
 <if expr="enable_service_discovery">
     <section id="cloudprint-options-mdns">
       <h3 i18n-content="advancedSectionTitleCloudPrint"></h3>

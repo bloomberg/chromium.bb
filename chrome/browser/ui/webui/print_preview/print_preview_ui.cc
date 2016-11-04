@@ -409,8 +409,7 @@ content::WebUIDataSource* CreatePrintPreviewUISource() {
 #if defined(OS_CHROMEOS)
   bool cups_and_md_settings_enabled =
       base::CommandLine::ForCurrentProcess()->HasSwitch(
-          ::switches::kEnableNativeCups) &&
-      base::FeatureList::IsEnabled(features::kMaterialDesignSettings);
+          ::switches::kEnableNativeCups);
   source->AddBoolean("showLocalManageButton", cups_and_md_settings_enabled);
 #else
   source->AddBoolean("showLocalManageButton", true);

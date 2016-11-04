@@ -281,6 +281,10 @@ class BrowserOptionsHandler
   void ShowManageSSLCertificates(const base::ListValue* args);
 #endif
 
+#if defined(OS_CHROMEOS)
+  void ShowCupsPrintDevicesPage(const base::ListValue* args);
+#endif  // defined(OS_CHROMEOS)
+
 #if BUILDFLAG(ENABLE_SERVICE_DISCOVERY)
   void ShowCloudPrintDevicesPage(const base::ListValue* args);
 #endif

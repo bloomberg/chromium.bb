@@ -716,6 +716,16 @@ cr.define('options', function() {
         };
       }
 
+      // CUPS Print section (CrOS only).
+      if (cr.isChromeOS) {
+        if (loadTimeData.getBoolean('cupsPrintEnabled')) {
+          $('cups-printers-section').hidden = false;
+          $('cupsPrintersManageButton').onclick = function() {
+            chrome.send('showCupsPrintDevicesPage');
+          };
+        }
+      }
+
       if (loadTimeData.getBoolean('cloudPrintShowMDnsOptions')) {
         $('cloudprint-options-mdns').hidden = false;
         $('cloudPrintDevicesPageButton').onclick = function() {

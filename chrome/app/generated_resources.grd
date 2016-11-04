@@ -9919,6 +9919,18 @@ I don't think this site should be blocked!
         <message name="IDS_OPTIONS_EXTENSION_PROXIES_LABEL" desc="The info label for the 'Proxy settings' button when managed by an extension.">
           Your network proxy settings are being managed by an extension.
         </message>
+        
+        <if expr="chromeos">
+          <message name="IDS_OPTIONS_ADVANCED_SECTION_TITLE_CUPS_PRINT" desc="The title for the section of CUPS Print in Chrome OS advanced settings.">
+            Printers
+          </message>
+          <message name="IDS_OPTIONS_ADVANCED_SECTION_CUPS_PRINT_LABEL" desc="Label for the CUPS Print section in Chrome OS advanced settings.">
+            Set up or manage local printers. 
+          </message>
+          <message name="IDS_OPTIONS_ADVANCED_SECTION_CUPS_PRINT_MANAGE_BUTTON" desc="Text on the button to take the user to Chrome settings page of CUPS printers.">
+            Manage
+          </message>
+        </if>
 
         <message name="IDS_GOOGLE_CLOUD_PRINT" desc="The name of the Google Cloud Print product.">
           Google Cloud Print
