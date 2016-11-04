@@ -247,6 +247,7 @@ ChromiumWritableFile::ChromiumWritableFile(const std::string& fname,
       file_(std::move(f)),
       uma_logger_(uma_logger),
       file_type_(kOther) {
+  DCHECK(uma_logger);
   FilePath path = FilePath::FromUTF8Unsafe(fname);
   if (path.BaseName().AsUTF8Unsafe().find("MANIFEST") == 0)
     file_type_ = kManifest;
@@ -274,6 +275,8 @@ Status ChromiumWritableFile::SyncParent() {
 }
 
 Status ChromiumWritableFile::Append(const Slice& data) {
+  DCHECK(file_.IsValid());
+  DCHECK(uma_logger_);
   int bytes_written = file_.WriteAtCurrentPos(data.data(), data.size());
   if (bytes_written != data.size()) {
     base::File::Error error = LastFileError();
