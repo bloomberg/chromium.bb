@@ -8,6 +8,12 @@
 #include "base/macros.h"
 #include "content/common/content_export.h"
 
+namespace blink {
+namespace mojom {
+enum class MediaSessionAction;
+}  // namespace mojom
+}  // namespace blink
+
 namespace content {
 
 class WebContents;
@@ -45,6 +51,9 @@ class MediaSession {
   // Resume the media session.
   // |type| represents the origin of the request.
   virtual void Stop(SuspendType suspend_type) = 0;
+
+  // Tell the media session a user action has performed.
+  virtual void DidReceiveAction(blink::mojom::MediaSessionAction action) = 0;
 
  protected:
   MediaSession() = default;

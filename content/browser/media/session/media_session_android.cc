@@ -103,6 +103,28 @@ void MediaSessionAndroid::MediaSessionMetadataChanged(
                                                     j_metadata);
 }
 
+void MediaSessionAndroid::MediaSessionEnabledAction(
+    blink::mojom::MediaSessionAction action) {
+  ScopedJavaLocalRef<jobject> j_local_session = GetJavaObject();
+  if (j_local_session.is_null())
+    return;
+
+  JNIEnv* env = base::android::AttachCurrentThread();
+  Java_MediaSessionImpl_mediaSessionEnabledAction(env, j_local_session,
+                                                  static_cast<int>(action));
+}
+
+void MediaSessionAndroid::MediaSessionDisabledAction(
+    blink::mojom::MediaSessionAction action) {
+  ScopedJavaLocalRef<jobject> j_local_session = GetJavaObject();
+  if (j_local_session.is_null())
+    return;
+
+  JNIEnv* env = base::android::AttachCurrentThread();
+  Java_MediaSessionImpl_mediaSessionDisabledAction(env, j_local_session,
+                                                   static_cast<int>(action));
+}
+
 void MediaSessionAndroid::Resume(
     JNIEnv* env,
     const base::android::JavaParamRef<jobject>& j_obj) {
@@ -122,6 +144,13 @@ void MediaSessionAndroid::Stop(
     const base::android::JavaParamRef<jobject>& j_obj) {
   DCHECK(media_session());
   media_session()->Stop(MediaSession::SuspendType::UI);
+}
+
+void MediaSessionAndroid::DidReceiveAction(JNIEnv* env,
+                                           const JavaParamRef<jobject>& obj,
+                                           int action) {
+  media_session()->DidReceiveAction(
+      static_cast<blink::mojom::MediaSessionAction>(action));
 }
 
 WebContentsAndroid* MediaSessionAndroid::GetWebContentsAndroid() {

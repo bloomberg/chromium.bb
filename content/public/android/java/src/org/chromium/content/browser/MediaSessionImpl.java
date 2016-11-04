@@ -56,6 +56,11 @@ public class MediaSessionImpl extends MediaSession {
         nativeStop(mNativeMediaSessionAndroid);
     }
 
+    @Override
+    public void didReceiveAction(int action) {
+        nativeDidReceiveAction(mNativeMediaSessionAndroid, action);
+    }
+
     @CalledByNative
     private boolean hasObservers() {
         return !mObservers.isEmpty();
@@ -88,6 +93,20 @@ public class MediaSessionImpl extends MediaSession {
     }
 
     @CalledByNative
+    private void mediaSessionEnabledAction(int action) {
+        for (mObserversIterator.rewind(); mObserversIterator.hasNext();) {
+            mObserversIterator.next().mediaSessionEnabledAction(action);
+        }
+    }
+
+    @CalledByNative
+    private void mediaSessionDisabledAction(int action) {
+        for (mObserversIterator.rewind(); mObserversIterator.hasNext();) {
+            mObserversIterator.next().mediaSessionDisabledAction(action);
+        }
+    }
+
+    @CalledByNative
     private static MediaSessionImpl create(long nativeMediaSession) {
         return new MediaSessionImpl(nativeMediaSession);
     }
@@ -101,6 +120,7 @@ public class MediaSessionImpl extends MediaSession {
     private native void nativeResume(long nativeMediaSessionAndroid);
     private native void nativeSuspend(long nativeMediaSessionAndroid);
     private native void nativeStop(long nativeMediaSessionAndroid);
+    private native void nativeDidReceiveAction(long nativeMediaSessionAndroid, int action);
     private static native MediaSessionImpl nativeGetMediaSessionFromWebContents(
             WebContents contents);
 }
