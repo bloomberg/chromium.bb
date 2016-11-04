@@ -1020,6 +1020,8 @@ public class LocationBarLayout extends FrameLayout implements OnClickListener,
         }
 
         changeLocationBarIcon();
+        updateVerboseStatusVisibility();
+        updateLocationBarIconContainerVisibility();
         mUrlBar.setCursorVisible(hasFocus);
 
         if (!mUrlFocusedWithoutAnimations) handleUrlFocusAnimation(hasFocus);
