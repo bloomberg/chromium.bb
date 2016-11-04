@@ -47,10 +47,10 @@ KeyedService* ManagerPasswordServiceFactory::BuildServiceInstanceFor(
   const user_manager::User* user =
       ProfileHelper::Get()->GetUserByProfile(profile);
   if (ChromeUserManager::Get()->GetSupervisedUserManager()->HasSupervisedUsers(
-          user->email())) {
+          user->GetAccountId().GetUserEmail())) {
     ManagerPasswordService* result = new ManagerPasswordService();
     result->Init(
-        user->email(),
+        user->GetAccountId().GetUserEmail(),
         SupervisedUserSyncServiceFactory::GetForProfile(profile),
         SupervisedUserSharedSettingsServiceFactory::GetForBrowserContext(
             profile));

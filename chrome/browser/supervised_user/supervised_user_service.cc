@@ -306,9 +306,11 @@ std::string SupervisedUserService::GetCustodianEmailAddress() const {
   // |GetActiveUser()| can return null in unit tests.
   if (email.empty() && !!user_manager::UserManager::Get()->GetActiveUser()) {
     email = chromeos::ChromeUserManager::Get()
-        ->GetSupervisedUserManager()
-        ->GetManagerDisplayEmail(
-            user_manager::UserManager::Get()->GetActiveUser()->email());
+                ->GetSupervisedUserManager()
+                ->GetManagerDisplayEmail(user_manager::UserManager::Get()
+                                             ->GetActiveUser()
+                                             ->GetAccountId()
+                                             .GetUserEmail());
   }
 #endif
   return email;
@@ -320,10 +322,13 @@ std::string SupervisedUserService::GetCustodianName() const {
 #if defined(OS_CHROMEOS)
   // |GetActiveUser()| can return null in unit tests.
   if (name.empty() && !!user_manager::UserManager::Get()->GetActiveUser()) {
-    name = base::UTF16ToUTF8(chromeos::ChromeUserManager::Get()
-        ->GetSupervisedUserManager()
-        ->GetManagerDisplayName(
-            user_manager::UserManager::Get()->GetActiveUser()->email()));
+    name = base::UTF16ToUTF8(
+        chromeos::ChromeUserManager::Get()
+            ->GetSupervisedUserManager()
+            ->GetManagerDisplayName(user_manager::UserManager::Get()
+                                        ->GetActiveUser()
+                                        ->GetAccountId()
+                                        .GetUserEmail()));
   }
 #endif
   return name.empty() ? GetCustodianEmailAddress() : name;

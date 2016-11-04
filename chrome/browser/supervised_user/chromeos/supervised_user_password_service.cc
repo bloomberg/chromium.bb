@@ -49,8 +49,8 @@ void SupervisedUserPasswordService::OnSharedSettingsChange(
     LOG(WARNING) << "Got notification for user not on device.";
     return;
   }
-  DCHECK(user_id_ == user->email());
-  if (user_id_ != user->email())
+  DCHECK(user_id_ == user->GetAccountId().GetUserEmail());
+  if (user_id_ != user->GetAccountId().GetUserEmail())
     return;
   const base::Value* value = settings_service_->GetValue(su_id, key);
   if (value == NULL) {

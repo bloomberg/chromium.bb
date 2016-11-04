@@ -46,11 +46,13 @@ void ManagerPasswordService::Init(
            user_manager::UserManager::Get()->GetUsers()) {
     if (user->GetType() != user_manager::USER_TYPE_SUPERVISED)
       continue;
-    if (user_id != supervised_user_manager->GetManagerUserId(user->email()))
+    if (user_id !=
+        supervised_user_manager->GetManagerUserId(
+            user->GetAccountId().GetUserEmail()))
       continue;
-    OnSharedSettingsChange(
-        supervised_user_manager->GetUserSyncId(user->email()),
-        supervised_users::kChromeOSPasswordData);
+    OnSharedSettingsChange(supervised_user_manager->GetUserSyncId(
+                               user->GetAccountId().GetUserEmail()),
+                           supervised_users::kChromeOSPasswordData);
   }
 }
 
@@ -82,17 +84,15 @@ void ManagerPasswordService::OnSharedSettingsChange(
   SupervisedUserAuthentication* auth =
       supervised_user_manager->GetAuthentication();
 
-  if (!auth->NeedPasswordChange(user->email(), dict) &&
-      !auth->HasIncompleteKey(user->email())) {
+  if (!auth->NeedPasswordChange(user->GetAccountId().GetUserEmail(), dict) &&
+      !auth->HasIncompleteKey(user->GetAccountId().GetUserEmail())) {
     return;
   }
   std::unique_ptr<base::DictionaryValue> wrapper(dict->DeepCopy());
   user_service_->GetSupervisedUsersAsync(
       base::Bind(&ManagerPasswordService::GetSupervisedUsersCallback,
-                 weak_ptr_factory_.GetWeakPtr(),
-                 su_id,
-                 user->email(),
-                 Passed(&wrapper)));
+                 weak_ptr_factory_.GetWeakPtr(), su_id,
+                 user->GetAccountId().GetUserEmail(), Passed(&wrapper)));
 }
 
 void ManagerPasswordService::GetSupervisedUsersCallback(

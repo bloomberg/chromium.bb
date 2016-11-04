@@ -47,10 +47,9 @@ KeyedService* SupervisedUserPasswordServiceFactory::BuildServiceInstanceFor(
   if (user->GetType() != user_manager::USER_TYPE_SUPERVISED)
     return NULL;
   SupervisedUserPasswordService* result = new SupervisedUserPasswordService();
-  result->Init(
-      user->email(),
-      SupervisedUserSharedSettingsServiceFactory::GetForBrowserContext(
-          profile));
+  result->Init(user->GetAccountId().GetUserEmail(),
+               SupervisedUserSharedSettingsServiceFactory::GetForBrowserContext(
+                   profile));
   return result;
 }
 
