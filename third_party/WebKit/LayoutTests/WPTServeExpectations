@@ -42,6 +42,8 @@ crbug.com/508728 imported/wpt/html/webappapis/scripting/processing-model-2/runti
 crbug.com/508728 imported/wpt/html/webappapis/scripting/processing-model-2/runtime-error-in-setInterval.html [ Failure ]
 crbug.com/508728 imported/wpt/html/webappapis/scripting/processing-model-2/runtime-error-in-setTimeout.html [ Failure ]
 crbug.com/508728 imported/wpt/webstorage/document-domain.html [ Failure Timeout ]
+# This test needs to be updated: fails because it expects showModalDialog and some other APIs.
+crbug.com/508728 imported/wpt/html/browsers/the-window-object/security-window/window-security.html [ Failure ]
 
 # Pass when run with --enable-wptserve: (crbug.com/508725)
 # Expectation is [ Failure ] since there is an -expected.txt which doesn't match all-PASS output.
@@ -52,6 +54,8 @@ crbug.com/508725 imported/wpt/html/dom/elements/global-attributes/the-lang-attri
 crbug.com/508725 imported/wpt/html/semantics/document-metadata/the-link-element/document-without-browsing-context.html [ Failure ]
 crbug.com/508725 imported/wpt/html/semantics/forms/historical.html [ Failure ]
 crbug.com/508725 imported/wpt/html/webappapis/system-state-and-capabilities/the-navigator-object/protocol.html [ Failure ]
+crbug.com/508725 imported/wpt/html/browsers/history/the-location-interface/security_location_0.htm [ Failure ]
+crbug.com/508725 imported/wpt/html/semantics/document-metadata/the-base-element/base_href_specified.html [ Failure ]
 
 # Pass when run with --enable-wptserve: (crbug.com/508725)
 # Expectation is [ Pass ] since for these there is no -expected.txt,
@@ -63,7 +67,7 @@ crbug.com/508725 imported/wpt/pointerevents/pointerevent_constructor.html [ Pass
 crbug.com/619746 imported/wpt/dom/nodes/Document-contentType/contentType/contenttype_datauri_01.html [ Failure ]
 crbug.com/619746 imported/wpt/dom/nodes/Document-contentType/contentType/contenttype_datauri_02.html [ Failure ]
 
-# Pointer events tests time out with --enable-wptserve.
+# wpt_automation doesn't work with --enable-wptserve.
 crbug.com/627008 imported/wpt/pointerevents/pointerevent_attributes_hoverable_pointers-manual.html [ Timeout ]
 crbug.com/627008 imported/wpt/pointerevents/pointerevent_attributes_nohover_pointers-manual.html [ Timeout ]
 crbug.com/627008 imported/wpt/pointerevents/pointerevent_capture_mouse-manual.html [ Timeout ]
@@ -118,6 +122,24 @@ crbug.com/627008 imported/wpt/pointerevents/pointerevent_touch-action-svg-test_t
 crbug.com/627008 imported/wpt/pointerevents/pointerevent_touch-action-table-test_touch-manual.html [ Timeout ]
 crbug.com/627008 imported/wpt/uievents/order-of-events/mouse-events/mouseover-out-manual.html [ Timeout ]
 crbug.com/627008 imported/wpt/uievents/order-of-events/focus-events/focus-manual.html [ Timeout ]
+crbug.com/627008 imported/wpt/fullscreen/api/document-exit-fullscreen-manual.html [ Timeout ]
+crbug.com/627008 imported/wpt/fullscreen/api/document-fullscreen-element-manual.html [ Timeout ]
+crbug.com/627008 imported/wpt/fullscreen/api/document-onfullscreenchange-manual.html [ Timeout ]
+crbug.com/627008 imported/wpt/fullscreen/api/element-ready-check-enabled-flag-not-set-manual.html [ Timeout ]
+crbug.com/627008 imported/wpt/fullscreen/api/element-ready-check-fullscreen-element-sibling-manual.html [ Timeout ]
+crbug.com/627008 imported/wpt/fullscreen/api/element-ready-check-fullscreen-iframe-child-manual.html [ Timeout ]
+crbug.com/627008 imported/wpt/fullscreen/api/element-ready-check-iframe-child-manual.html [ Timeout ]
+crbug.com/627008 imported/wpt/fullscreen/api/element-ready-check-not-in-document-manual.html [ Timeout ]
+crbug.com/627008 imported/wpt/fullscreen/api/element-request-fullscreen-manual.html [ Timeout ]
+crbug.com/627008 imported/wpt/fullscreen/api/element-request-fullscreen-non-top-manual.html [ Timeout ]
+crbug.com/627008 imported/wpt/fullscreen/api/element-request-fullscreen-svg-rect-manual.html [ Timeout ]
+crbug.com/627008 imported/wpt/fullscreen/api/element-request-fullscreen-svg-svg-manual.html [ Timeout ]
+crbug.com/627008 imported/wpt/fullscreen/api/element-request-fullscreen-top-manual.html [ Timeout ]
+crbug.com/627008 imported/wpt/fullscreen/model/remove-child-manual.html [ Timeout ]
+crbug.com/627008 imported/wpt/fullscreen/model/remove-first-manual.html [ Timeout ]
+crbug.com/627008 imported/wpt/fullscreen/model/remove-last-manual.html [ Timeout ]
+crbug.com/627008 imported/wpt/fullscreen/model/remove-parent-manual.html [ Timeout ]
+crbug.com/627008 imported/wpt/fullscreen/model/remove-single-manual.html [ Timeout ]
 
 # Tests for the service workers, which are set as Failure by default in TestExpectations
 crbug.com/602693 imported/wpt/service-workers [ Pass ]
