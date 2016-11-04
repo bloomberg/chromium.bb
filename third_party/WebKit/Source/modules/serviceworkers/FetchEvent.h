@@ -52,7 +52,7 @@ class MODULES_EXPORT FetchEvent final : public ExtendableEvent {
   bool isReload() const;
 
   void respondWith(ScriptState*, ScriptPromise, ExceptionState&);
-  ScriptPromise navigationPreload(ScriptState*);
+  ScriptPromise preloadResponse(ScriptState*);
 
   void onNavigationPreloadResponse(std::unique_ptr<WebServiceWorkerResponse>,
                                    std::unique_ptr<WebDataConsumerHandle>);
@@ -74,7 +74,7 @@ class MODULES_EXPORT FetchEvent final : public ExtendableEvent {
   RefPtr<ScriptState> m_scriptState;
   Member<RespondWithObserver> m_observer;
   Member<Request> m_request;
-  Member<PreloadResponseProperty> m_navigationPreloadProperty;
+  Member<PreloadResponseProperty> m_preloadResponseProperty;
   String m_clientId;
   bool m_isReload;
 };

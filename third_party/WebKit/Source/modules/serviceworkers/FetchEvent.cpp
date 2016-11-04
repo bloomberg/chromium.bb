@@ -56,8 +56,8 @@ void FetchEvent::respondWith(ScriptState* scriptState,
     m_observer->respondWith(scriptState, scriptPromise, exceptionState);
 }
 
-ScriptPromise FetchEvent::navigationPreload(ScriptState* scriptState) {
-  return m_navigationPreloadProperty->promise(scriptState->world());
+ScriptPromise FetchEvent::preloadResponse(ScriptState* scriptState) {
+  return m_preloadResponseProperty->promise(scriptState->world());
 }
 
 const AtomicString& FetchEvent::interfaceName() const {
@@ -73,14 +73,14 @@ FetchEvent::FetchEvent(ScriptState* scriptState,
     : ExtendableEvent(type, initializer, waitUntilObserver),
       m_scriptState(scriptState),
       m_observer(respondWithObserver),
-      m_navigationPreloadProperty(new PreloadResponseProperty(
+      m_preloadResponseProperty(new PreloadResponseProperty(
           scriptState->getExecutionContext(),
           this,
           PreloadResponseProperty::PreloadResponse)) {
   if (!navigationPreloadSent) {
     // TODO(horo): This behavior is still under the spec discussion.
     // https://github.com/w3c/ServiceWorker/issues/920#issuecomment-255874864
-    m_navigationPreloadProperty->resolve(nullptr);
+    m_preloadResponseProperty->resolve(nullptr);
   }
 
   m_clientId = initializer.clientId();
@@ -114,7 +114,7 @@ void FetchEvent::onNavigationPreloadResponse(
     std::unique_ptr<WebDataConsumerHandle> dataConsumeHandle) {
   if (!m_scriptState->contextIsValid())
     return;
-  DCHECK(m_navigationPreloadProperty);
+  DCHECK(m_preloadResponseProperty);
   ScriptState::Scope scope(m_scriptState.get());
   FetchResponseData* responseData =
       FetchResponseData::createWithBuffer(new BodyStreamBuffer(
@@ -129,7 +129,7 @@ void FetchEvent::onNavigationPreloadResponse(
     responseData->headerList()->append(header.key, header.value);
   FetchResponseData* taintedResponse =
       responseData->createBasicFilteredResponse();
-  m_navigationPreloadProperty->resolve(
+  m_preloadResponseProperty->resolve(
       Response::create(m_scriptState->getExecutionContext(), taintedResponse));
 }
 
@@ -137,15 +137,15 @@ void FetchEvent::onNavigationPreloadError(
     std::unique_ptr<WebServiceWorkerError> error) {
   if (!m_scriptState->contextIsValid())
     return;
-  DCHECK(m_navigationPreloadProperty);
-  m_navigationPreloadProperty->reject(
+  DCHECK(m_preloadResponseProperty);
+  m_preloadResponseProperty->reject(
       ServiceWorkerError::take(nullptr, *error.get()));
 }
 
 DEFINE_TRACE(FetchEvent) {
   visitor->trace(m_observer);
   visitor->trace(m_request);
-  visitor->trace(m_navigationPreloadProperty);
+  visitor->trace(m_preloadResponseProperty);
   ExtendableEvent::trace(visitor);
 }
 

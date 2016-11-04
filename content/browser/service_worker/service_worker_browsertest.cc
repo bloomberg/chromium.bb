@@ -1550,7 +1550,7 @@ const char ServiceWorkerNavigationPreloadTest::kPreloadResponseTestScript[] =
     "var preload_resolve;\n"
     "var preload_promise = new Promise(r => { preload_resolve = r; });\n"
     "self.addEventListener('fetch', event => {\n"
-    "    event.waitUntil(event.navigationPreload.then(\n"
+    "    event.waitUntil(event.preloadResponse.then(\n"
     "        r => {\n"
     "          if (!r) {\n"
     "            preload_resolve(\n"
@@ -1627,13 +1627,13 @@ IN_PROC_BROWSER_TEST_P(ServiceWorkerNavigationPreloadTest,
   const char kPage[] = "<title>PASS</title>Hello world.";
   const char kScript[] =
       "self.addEventListener('fetch', event => {\n"
-      "    if (!event.navigationPreload) {\n"
+      "    if (!event.preloadResponse) {\n"
       "      event.respondWith(\n"
       "          new Response('<title>ERROR</title>',"
       "                       {headers: [['content-type', 'text/html']]}));\n"
       "      return;\n"
       "    }\n"
-      "    event.respondWith(event.navigationPreload);\n"
+      "    event.respondWith(event.preloadResponse);\n"
       "  });";
   const GURL page_url = embedded_test_server()->GetURL(kPageUrl);
   const GURL worker_url = embedded_test_server()->GetURL(kWorkerUrl);
@@ -1664,7 +1664,7 @@ IN_PROC_BROWSER_TEST_P(ServiceWorkerNavigationPreloadTest, GetResponseText) {
   const char kScript[] =
       "self.addEventListener('fetch', event => {\n"
       "    event.respondWith(\n"
-      "        event.navigationPreload\n"
+      "        event.preloadResponse\n"
       "          .then(response => response.text())\n"
       "          .then(text =>\n"
       "                  new Response(\n"
@@ -1695,14 +1695,14 @@ IN_PROC_BROWSER_TEST_P(ServiceWorkerNavigationPreloadTest,
   const char kPageUrl[] = "/service_worker/navigation_preload.html";
   const char kWorkerUrl[] = "/service_worker/navigation_preload.js";
   const char kPage[] = "<title>ERROR</title>Hello world.";
-  // In this script, event.navigationPreload is not guarded by event.waitUntil.
+  // In this script, event.preloadResponse is not guarded by event.waitUntil.
   // So the preload request should be canceled, when the fetch event handler
   // has been executed.
   const char kScript[] =
       "var preload_resolve;\n"
       "var preload_promise = new Promise(r => { preload_resolve = r; });\n"
       "self.addEventListener('fetch', event => {\n"
-      "    event.navigationPreload.then(\n"
+      "    event.preloadResponse.then(\n"
       "        _ => { preload_resolve({result: 'RESOLVED',\n"
       "                                info: 'Preload resolved.'}); },\n"
       "        e => { preload_resolve({result: 'REJECTED',\n"
