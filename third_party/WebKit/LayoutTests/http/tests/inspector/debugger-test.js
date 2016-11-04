@@ -593,7 +593,7 @@ InspectorTest.waitForExecutionContextInTarget = function(target, callback)
 InspectorTest.selectThread = function(target)
 {
     var threadsPane = self.runtime.sharedInstance(WebInspector.ThreadsSidebarPane);
-    var listItem = threadsPane._debuggerModelToListItems.get(WebInspector.DebuggerModel.fromTarget(target));
+    var listItem = threadsPane._listItemForTarget(target);
     threadsPane._onListItemClick(listItem);
 }
 
