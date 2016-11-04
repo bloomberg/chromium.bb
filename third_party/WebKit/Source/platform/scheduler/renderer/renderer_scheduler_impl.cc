@@ -1369,6 +1369,8 @@ RendererSchedulerImpl::AsValueLocked(base::TimeTicks optional_now) const {
                    MainThreadOnly()
                        .timer_task_cost_estimator.expected_task_duration()
                        .InMillisecondsF());
+  state->SetBoolean("is_audio_playing", MainThreadOnly().is_audio_playing);
+
   // TODO(skyostil): Can we somehow trace how accurate these estimates were?
   state->SetDouble(
       "longest_jank_free_task_duration",
