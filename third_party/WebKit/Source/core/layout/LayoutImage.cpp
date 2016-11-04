@@ -213,16 +213,6 @@ void LayoutImage::areaElementFocusChanged(HTMLAreaElement* areaElement) {
   invalidatePaintAndMarkForLayoutIfNeeded();
 }
 
-bool LayoutImage::boxShadowShouldBeAppliedToBackground(
-    BackgroundBleedAvoidance bleedAvoidance,
-    const InlineFlowBox*) const {
-  if (!LayoutBoxModelObject::boxShadowShouldBeAppliedToBackground(
-          bleedAvoidance))
-    return false;
-
-  return !const_cast<LayoutImage*>(this)->backgroundIsKnownToBeObscured();
-}
-
 bool LayoutImage::foregroundIsKnownToBeOpaqueInRect(const LayoutRect& localRect,
                                                     unsigned) const {
   if (!m_imageResource->hasImage() || m_imageResource->errorOccurred())

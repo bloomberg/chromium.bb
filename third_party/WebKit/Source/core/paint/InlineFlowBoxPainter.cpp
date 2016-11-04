@@ -276,9 +276,7 @@ void InlineFlowBoxPainter::paintBoxDecorationBackground(
       getBorderPaintType(adjustedFrameRect, adjustedClipRect);
 
   // Shadow comes first and is behind the background and border.
-  if (!m_inlineFlowBox.boxModelObject().boxShadowShouldBeAppliedToBackground(
-          BackgroundBleedNone, &m_inlineFlowBox))
-    paintBoxShadow(paintInfo, *styleToUse, Normal, adjustedFrameRect);
+  paintBoxShadow(paintInfo, *styleToUse, Normal, adjustedFrameRect);
 
   Color backgroundColor = inlineFlowBoxLayoutObject->resolveColor(
       *styleToUse, CSSPropertyBackgroundColor);

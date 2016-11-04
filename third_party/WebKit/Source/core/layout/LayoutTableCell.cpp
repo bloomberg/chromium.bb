@@ -1356,12 +1356,6 @@ void LayoutTableCell::paintMask(const PaintInfo& paintInfo,
   TableCellPainter(*this).paintMask(paintInfo, paintOffset);
 }
 
-bool LayoutTableCell::boxShadowShouldBeAppliedToBackground(
-    BackgroundBleedAvoidance,
-    const InlineFlowBox*) const {
-  return false;
-}
-
 void LayoutTableCell::scrollbarsChanged(bool horizontalScrollbarChanged,
                                         bool verticalScrollbarChanged) {
   LayoutBlock::scrollbarsChanged(horizontalScrollbarChanged,

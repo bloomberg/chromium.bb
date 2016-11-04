@@ -1081,63 +1081,6 @@ LayoutUnit LayoutBoxModelObject::computedCSSPadding(
   return minimumValueForLength(padding, w);
 }
 
-bool LayoutBoxModelObject::boxShadowShouldBeAppliedToBackground(
-    BackgroundBleedAvoidance bleedAvoidance,
-    const InlineFlowBox* inlineFlowBox) const {
-  if (bleedAvoidance != BackgroundBleedNone)
-    return false;
-
-  if (style()->hasAppearance())
-    return false;
-
-  const ShadowList* shadowList = style()->boxShadow();
-  if (!shadowList)
-    return false;
-
-  bool hasOneNormalBoxShadow = false;
-  size_t shadowCount = shadowList->shadows().size();
-  for (size_t i = 0; i < shadowCount; ++i) {
-    const ShadowData& currentShadow = shadowList->shadows()[i];
-    if (currentShadow.style() != Normal)
-      continue;
-
-    if (hasOneNormalBoxShadow)
-      return false;
-    hasOneNormalBoxShadow = true;
-
-    if (currentShadow.spread())
-      return false;
-  }
-
-  if (!hasOneNormalBoxShadow)
-    return false;
-
-  Color backgroundColor = resolveColor(CSSPropertyBackgroundColor);
-  if (backgroundColor.hasAlpha())
-    return false;
-
-  const FillLayer* lastBackgroundLayer = &style()->backgroundLayers();
-  for (const FillLayer* next = lastBackgroundLayer->next(); next;
-       next = lastBackgroundLayer->next())
-    lastBackgroundLayer = next;
-
-  if (lastBackgroundLayer->clip() != BorderFillBox)
-    return false;
-
-  if (lastBackgroundLayer->image() && style()->hasBorderRadius())
-    return false;
-
-  if (inlineFlowBox &&
-      !inlineFlowBox->boxShadowCanBeAppliedToBackground(*lastBackgroundLayer))
-    return false;
-
-  if (hasOverflowClip() &&
-      lastBackgroundLayer->attachment() == LocalBackgroundAttachment)
-    return false;
-
-  return true;
-}
-
 LayoutUnit LayoutBoxModelObject::containingBlockLogicalWidthForContent() const {
   return containingBlock()->availableLogicalWidth();
 }

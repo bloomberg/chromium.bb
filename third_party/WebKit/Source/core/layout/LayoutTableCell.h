@@ -351,10 +351,6 @@ class CORE_EXPORT LayoutTableCell final : public LayoutBlockFlow {
                                     const LayoutPoint&) const override;
   void paintMask(const PaintInfo&, const LayoutPoint&) const override;
 
-  bool boxShadowShouldBeAppliedToBackground(
-      BackgroundBleedAvoidance,
-      const InlineFlowBox*) const override;
-
   LayoutSize offsetFromContainer(const LayoutObject*) const override;
   LayoutRect localVisualRect() const override;
 

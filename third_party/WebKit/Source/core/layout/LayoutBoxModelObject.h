@@ -369,10 +369,6 @@ class CORE_EXPORT LayoutBoxModelObject : public LayoutObject {
 
   virtual void childBecameNonInline(LayoutObject* /*child*/) {}
 
-  virtual bool boxShadowShouldBeAppliedToBackground(
-      BackgroundBleedAvoidance,
-      const InlineFlowBox* = nullptr) const;
-
   // Overridden by subclasses to determine line height and baseline position.
   virtual LayoutUnit lineHeight(
       bool firstLine,

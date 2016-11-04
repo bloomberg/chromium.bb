@@ -123,9 +123,6 @@ class CORE_EXPORT LayoutImage : public LayoutReplaced {
                    const LayoutPoint& accumulatedOffset,
                    HitTestAction) final;
 
-  bool boxShadowShouldBeAppliedToBackground(BackgroundBleedAvoidance,
-                                            const InlineFlowBox*) const final;
-
   void invalidatePaintAndMarkForLayoutIfNeeded();
   void updateIntrinsicSizeIfNeeded(const LayoutSize&);
 

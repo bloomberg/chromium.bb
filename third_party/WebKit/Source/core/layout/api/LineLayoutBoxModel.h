@@ -115,13 +115,6 @@ class LineLayoutBoxModel : public LineLayoutItem {
     return toBoxModel()->borderAndPaddingLogicalHeight();
   }
 
-  bool boxShadowShouldBeAppliedToBackground(
-      BackgroundBleedAvoidance bleedAvoidance,
-      const InlineFlowBox* inlineFlowBox = nullptr) const {
-    return toBoxModel()->boxShadowShouldBeAppliedToBackground(bleedAvoidance,
-                                                              inlineFlowBox);
-  }
-
   LayoutSize offsetForInFlowPosition() const {
     return toBoxModel()->offsetForInFlowPosition();
   }
