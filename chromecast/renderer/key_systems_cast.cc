@@ -107,9 +107,11 @@ void AddChromecastKeySystems(
 #if defined(OS_ANDROID)
       codecs,  // Hardware-secure codecs.
 #endif
-      Robustness::HW_SECURE_ALL,             // Max audio robustness.
-      Robustness::HW_SECURE_ALL,             // Max video robustness.
-      EmeSessionTypeSupport::NOT_SUPPORTED,  // persistent-license.
+      Robustness::HW_SECURE_ALL,  // Max audio robustness.
+      Robustness::HW_SECURE_ALL,  // Max video robustness.
+      enable_persistent_license_support
+          ? EmeSessionTypeSupport::SUPPORTED
+          : EmeSessionTypeSupport::NOT_SUPPORTED,  // persistent-license.
       EmeSessionTypeSupport::NOT_SUPPORTED,  // persistent-release-message.
       // Note: On Chromecast, all CDMs may have persistent state.
       EmeFeatureSupport::ALWAYS_ENABLED,    // Persistent state.
