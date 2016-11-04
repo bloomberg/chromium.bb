@@ -72,6 +72,8 @@ blink_core_sources("frame") {
     "PageScaleConstraints.h",
     "PageScaleConstraintsSet.cpp",
     "PageScaleConstraintsSet.h",
+    "PerformanceMonitor.cpp",
+    "PerformanceMonitor.h",
     "PlatformEventController.cpp",
     "PlatformEventController.h",
     "PlatformEventDispatcher.cpp",

@@ -59,7 +59,6 @@ class FrameConsole;
 class FrameSelection;
 class FrameView;
 class InputMethodController;
-class InspectorWebPerfAgent;
 class InstrumentingAgents;
 class InterfaceProvider;
 class InterfaceRegistry;
@@ -72,6 +71,7 @@ class NavigationScheduler;
 class Node;
 class NodeTraversal;
 class Performance;
+class PerformanceMonitor;
 template <typename Strategy>
 class PositionWithAffinityTemplate;
 class PluginData;
@@ -165,9 +165,6 @@ class CORE_EXPORT LocalFrame final : public Frame,
     return m_instrumentingAgents.get();
   }
 
-  void enableInspectorWebPerfAgent(Performance*);
-  void disableInspectorWebPerfAgent(Performance*);
-
   // =========================================================================
   // All public functions below this point are candidates to move out of
   // LocalFrame into another class.
@@ -226,6 +223,8 @@ class CORE_EXPORT LocalFrame final : public Frame,
 
   PluginData* pluginData() const;
 
+  PerformanceMonitor* performanceMonitor() { return m_performanceMonitor; }
+
  private:
   friend class FrameNavigationDisabler;
 
@@ -271,7 +270,7 @@ class CORE_EXPORT LocalFrame final : public Frame,
   bool m_inViewSourceMode;
 
   Member<InstrumentingAgents> m_instrumentingAgents;
-  Member<InspectorWebPerfAgent> m_inspectorWebPerfAgent;
+  Member<PerformanceMonitor> m_performanceMonitor;
 
   InterfaceProvider* const m_interfaceProvider;
   InterfaceRegistry* const m_interfaceRegistry;

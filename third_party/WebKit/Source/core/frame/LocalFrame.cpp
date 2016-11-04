@@ -48,13 +48,13 @@
 #include "core/frame/FrameHost.h"
 #include "core/frame/FrameView.h"
 #include "core/frame/LocalDOMWindow.h"
+#include "core/frame/PerformanceMonitor.h"
 #include "core/frame/Settings.h"
 #include "core/frame/VisualViewport.h"
 #include "core/html/HTMLFrameElementBase.h"
 #include "core/html/HTMLPlugInElement.h"
 #include "core/input/EventHandler.h"
 #include "core/inspector/InspectorInstrumentation.h"
-#include "core/inspector/InspectorWebPerfAgent.h"
 #include "core/layout/HitTestResult.h"
 #include "core/layout/LayoutView.h"
 #include "core/layout/api/LayoutPartItem.h"
@@ -331,7 +331,7 @@ LocalFrame::~LocalFrame() {
 
 DEFINE_TRACE(LocalFrame) {
   visitor->trace(m_instrumentingAgents);
-  visitor->trace(m_inspectorWebPerfAgent);
+  visitor->trace(m_performanceMonitor);
   visitor->trace(m_loader);
   visitor->trace(m_navigationScheduler);
   visitor->trace(m_view);
@@ -557,23 +557,6 @@ bool LocalFrame::isCrossOriginSubframe() const {
   return top &&
          !securityOrigin->canAccess(
              top->securityContext()->getSecurityOrigin());
-}
-
-void LocalFrame::enableInspectorWebPerfAgent(Performance* performance) {
-  if (!m_inspectorWebPerfAgent) {
-    m_inspectorWebPerfAgent = new InspectorWebPerfAgent(this);
-    m_inspectorWebPerfAgent->enable();
-  }
-  m_inspectorWebPerfAgent->addWebPerformanceObserver(performance);
-}
-
-void LocalFrame::disableInspectorWebPerfAgent(Performance* performance) {
-  DCHECK(m_inspectorWebPerfAgent->isEnabled());
-  m_inspectorWebPerfAgent->removeWebPerformanceObserver(performance);
-  if (!m_inspectorWebPerfAgent->hasWebPerformanceObservers()) {
-    m_inspectorWebPerfAgent->disable();
-    m_inspectorWebPerfAgent = nullptr;
-  }
 }
 
 void LocalFrame::setPrinting(bool printing,
@@ -891,10 +874,13 @@ inline LocalFrame::LocalFrame(FrameLoaderClient* client,
       m_inViewSourceMode(false),
       m_interfaceProvider(interfaceProvider),
       m_interfaceRegistry(interfaceRegistry) {
-  if (isLocalRoot())
+  if (isLocalRoot()) {
     m_instrumentingAgents = new InstrumentingAgents();
-  else
+    m_performanceMonitor = new PerformanceMonitor(this);
+  } else {
     m_instrumentingAgents = localFrameRoot()->m_instrumentingAgents;
+    m_performanceMonitor = localFrameRoot()->m_performanceMonitor;
+  }
 }
 
 WebFrameScheduler* LocalFrame::frameScheduler() {

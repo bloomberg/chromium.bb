@@ -35,7 +35,7 @@
 #include "bindings/core/v8/V8ObjectBuilder.h"
 #include "core/dom/Document.h"
 #include "core/frame/LocalFrame.h"
-#include "core/inspector/InspectorWebPerfAgent.h"
+#include "core/frame/PerformanceMonitor.h"
 #include "core/loader/DocumentLoader.h"
 #include "core/origin_trials/OriginTrials.h"
 #include "core/timing/PerformanceTiming.h"
@@ -58,19 +58,10 @@ static double toTimeOrigin(LocalFrame* frame) {
 }
 
 Performance::Performance(LocalFrame* frame)
-    : PerformanceBase(toTimeOrigin(frame)),
-      DOMWindowProperty(frame),
-      m_observingLongTasks(false) {}
+    : PerformanceBase(toTimeOrigin(frame)), DOMWindowProperty(frame) {}
 
 Performance::~Performance() {
-  if (!frame()) {
-    return;
-  }
-  LocalFrame* localRoot = frame()->localFrameRoot();
-  if (m_observingLongTasks && localRoot) {
-    m_observingLongTasks = false;
-    localRoot->disableInspectorWebPerfAgent(this);
-  }
+  PerformanceMonitor::performanceObserverRemoved(this);
 }
 
 ExecutionContext* Performance::getExecutionContext() const {
@@ -105,14 +96,10 @@ void Performance::updateLongTaskInstrumentation() {
   LocalFrame* localRoot = frame()->localFrameRoot();
   DCHECK(localRoot);
 
-  if (!m_observingLongTasks && hasObserverFor(PerformanceEntry::LongTask)) {
-    m_observingLongTasks = true;
-    localRoot->enableInspectorWebPerfAgent(this);
-  } else if (m_observingLongTasks &&
-             !hasObserverFor(PerformanceEntry::LongTask)) {
-    m_observingLongTasks = false;
-    localRoot->disableInspectorWebPerfAgent(this);
-  }
+  if (hasObserverFor(PerformanceEntry::LongTask))
+    PerformanceMonitor::performanceObserverAdded(this);
+  else
+    PerformanceMonitor::performanceObserverRemoved(this);
 }
 
 ScriptValue Performance::toJSONForBinding(ScriptState* scriptState) const {
@@ -120,10 +107,6 @@ ScriptValue Performance::toJSONForBinding(ScriptState* scriptState) const {
   result.add("timing", timing()->toJSONForBinding(scriptState));
   result.add("navigation", navigation()->toJSONForBinding(scriptState));
   return result.scriptValue();
-}
-
-bool Performance::observingLongTasks() {
-  return m_observingLongTasks;
 }
 
 DEFINE_TRACE(Performance) {

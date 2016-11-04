@@ -313,12 +313,6 @@ class XMLHttpRequest;
 
     [Page]
     void didRunJavaScriptDialog(LocalFrame* frame, bool result);
-
-    [WebPerf]
-    void willExecuteScript([Keep] ExecutionContext*);
-
-    [WebPerf]
-    void didExecuteScript(ExecutionContext*);
 }
 
 interface InspectorOverrides {

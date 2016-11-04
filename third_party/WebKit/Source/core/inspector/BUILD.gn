@@ -71,8 +71,6 @@ blink_core_sources("inspector") {
     "InspectorTraceEvents.h",
     "InspectorTracingAgent.cpp",
     "InspectorTracingAgent.h",
-    "InspectorWebPerfAgent.cpp",
-    "InspectorWebPerfAgent.h",
     "InspectorWorkerAgent.cpp",
     "InspectorWorkerAgent.h",
     "LayoutEditor.cpp",

@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "core/inspector/InspectorWebPerfAgent.h"
+#include "core/frame/PerformanceMonitor.h"
 
 #include "core/InstrumentingAgents.h"
 #include "core/dom/Document.h"
@@ -36,53 +36,71 @@ bool canAccessOrigin(Frame* frame1, Frame* frame2) {
 
 }  // namespace
 
-InspectorWebPerfAgent::InspectorWebPerfAgent(LocalFrame* localRoot)
-    : m_localRoot(localRoot) {}
-
-InspectorWebPerfAgent::~InspectorWebPerfAgent() {
-  DCHECK(!m_enabled);
-  DCHECK(!m_webPerformanceObservers.size());
+// static
+void PerformanceMonitor::performanceObserverAdded(Performance* performance) {
+  LocalFrame* frame = performance->frame();
+  PerformanceMonitor* monitor = frame->performanceMonitor();
+  monitor->m_webPerformanceObservers.add(performance);
+  monitor->enable();
 }
 
-void InspectorWebPerfAgent::enable() {
-  // Update usage count.
+// static
+void PerformanceMonitor::performanceObserverRemoved(Performance* performance) {
+  LocalFrame* frame = performance->frame();
+  if (!frame) {
+    // TODO: instrument local frame removal in order to clean up.
+    return;
+  }
+  PerformanceMonitor* monitor = frame->performanceMonitor();
+  monitor->m_webPerformanceObservers.remove(performance);
+  if (!monitor->m_webPerformanceObservers.size())
+    monitor->disable();
+}
+
+// static
+PerformanceMonitor* PerformanceMonitor::instrumentingMonitor(
+    ExecutionContext* context) {
+  if (!context->isDocument())
+    return nullptr;
+  LocalFrame* frame = toDocument(context)->frame();
+  if (!frame)
+    return nullptr;
+  PerformanceMonitor* monitor = frame->performanceMonitor();
+  return monitor->m_enabled ? monitor : nullptr;
+}
+
+// static
+void PerformanceMonitor::willExecuteScript(ExecutionContext* context) {
+  PerformanceMonitor* performanceMonitor =
+      PerformanceMonitor::instrumentingMonitor(context);
+  if (performanceMonitor)
+    performanceMonitor->innerWillExecuteScript(context);
+}
+
+PerformanceMonitor::PerformanceMonitor(LocalFrame* localRoot)
+    : m_localRoot(localRoot) {}
+
+PerformanceMonitor::~PerformanceMonitor() {}
+
+void PerformanceMonitor::enable() {
+  if (m_enabled)
+    return;
+  m_enabled = true;
   UseCounter::count(m_localRoot, UseCounter::LongTaskObserver);
   Platform::current()->currentThread()->addTaskTimeObserver(this);
   Platform::current()->currentThread()->addTaskObserver(this);
-  m_localRoot->instrumentingAgents()->addInspectorWebPerfAgent(this);
-  m_enabled = true;
 }
 
-void InspectorWebPerfAgent::disable() {
+void PerformanceMonitor::disable() {
+  if (!m_enabled)
+    return;
+  m_enabled = false;
+  DCHECK(!m_webPerformanceObservers.size());
   Platform::current()->currentThread()->removeTaskTimeObserver(this);
   Platform::current()->currentThread()->removeTaskObserver(this);
-  m_localRoot->instrumentingAgents()->removeInspectorWebPerfAgent(this);
-  m_enabled = false;
 }
 
-bool InspectorWebPerfAgent::isEnabled() {
-  return m_enabled;
-}
-
-void InspectorWebPerfAgent::addWebPerformanceObserver(
-    Performance* performance) {
-  DCHECK(m_webPerformanceObservers.find(performance) ==
-         m_webPerformanceObservers.end());
-  m_webPerformanceObservers.add(performance);
-}
-
-void InspectorWebPerfAgent::removeWebPerformanceObserver(
-    Performance* performance) {
-  DCHECK(m_webPerformanceObservers.find(performance) !=
-         m_webPerformanceObservers.end());
-  m_webPerformanceObservers.remove(performance);
-}
-
-bool InspectorWebPerfAgent::hasWebPerformanceObservers() {
-  return m_webPerformanceObservers.size() > 0;
-}
-
-void InspectorWebPerfAgent::willExecuteScript(ExecutionContext* context) {
+void PerformanceMonitor::innerWillExecuteScript(ExecutionContext* context) {
   // Heuristic for minimal frame context attribution: note the frame context
   // for each script execution. When a long task is encountered,
   // if there is only one frame context involved, then report it.
@@ -95,26 +113,23 @@ void InspectorWebPerfAgent::willExecuteScript(ExecutionContext* context) {
   }
 }
 
-void InspectorWebPerfAgent::didExecuteScript() {}
-
-void InspectorWebPerfAgent::willProcessTask() {
+void PerformanceMonitor::willProcessTask() {
   // Reset m_frameContexts. We don't clear this in didProcessTask
   // as it is needed in ReportTaskTime which occurs after didProcessTask.
   m_frameContexts.clear();
 }
 
-void InspectorWebPerfAgent::didProcessTask() {}
+void PerformanceMonitor::didProcessTask() {}
 
-void InspectorWebPerfAgent::ReportTaskTime(scheduler::TaskQueue*,
-                                           double startTime,
-                                           double endTime) {
+void PerformanceMonitor::ReportTaskTime(scheduler::TaskQueue*,
+                                        double startTime,
+                                        double endTime) {
   if (((endTime - startTime) * 1000) <= kLongTaskThresholdMillis)
     return;
 
   for (Performance* performance : m_webPerformanceObservers) {
     if (!performance->frame())
       continue;
-    DCHECK(performance->observingLongTasks());
     std::pair<String, DOMWindow*> attribution =
         sanitizedAttribution(m_frameContexts, performance->frame());
     performance->addLongTaskTiming(startTime, endTime, attribution.first,
@@ -126,7 +141,7 @@ void InspectorWebPerfAgent::ReportTaskTime(scheduler::TaskQueue*,
  * Report sanitized name based on cross-origin policy.
  * See detailed Security doc here: http://bit.ly/2duD3F7
  */
-std::pair<String, DOMWindow*> InspectorWebPerfAgent::sanitizedAttribution(
+std::pair<String, DOMWindow*> PerformanceMonitor::sanitizedAttribution(
     const HeapHashSet<Member<Frame>>& frames,
     Frame* observerFrame) {
   if (frames.size() == 0) {
@@ -169,7 +184,7 @@ std::pair<String, DOMWindow*> InspectorWebPerfAgent::sanitizedAttribution(
   return std::make_pair(kCrossOriginAttribution, nullptr);
 }
 
-DEFINE_TRACE(InspectorWebPerfAgent) {
+DEFINE_TRACE(PerformanceMonitor) {
   visitor->trace(m_localRoot);
   visitor->trace(m_frameContexts);
   visitor->trace(m_webPerformanceObservers);

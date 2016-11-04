@@ -7,9 +7,9 @@
 #include "core/editing/FrameSelection.h"
 #include "core/frame/FrameHost.h"
 #include "core/frame/FrameView.h"
+#include "core/frame/PerformanceMonitor.h"
 #include "core/frame/VisualViewport.h"
 #include "core/html/HTMLElement.h"
-#include "core/inspector/InspectorWebPerfAgent.h"
 #include "core/layout/LayoutObject.h"
 #include "core/testing/DummyPageHolder.h"
 #include "core/timing/Performance.h"
@@ -35,11 +35,6 @@ class LocalFrameTest : public ::testing::Test {
 
   void updateAllLifecyclePhases() {
     document().view()->updateAllLifecyclePhases();
-  }
-
-  bool hasWebPerformanceAgent() { return frame().m_inspectorWebPerfAgent; }
-  bool hasWebPerformanceAgentObservers() {
-    return frame().m_inspectorWebPerfAgent->hasWebPerformanceObservers();
   }
 
  private:
@@ -146,16 +141,6 @@ TEST_F(LocalFrameTest, dragImageForSelectionUsesPageScaleFactor) {
   EXPECT_GT(image1->size().height(), 0);
   EXPECT_EQ(image1->size().width() * 2, image2->size().width());
   EXPECT_EQ(image1->size().height() * 2, image2->size().height());
-}
-
-TEST_F(LocalFrameTest, LongTaskObserverInstrumentation) {
-  EXPECT_FALSE(hasWebPerformanceAgent());
-  frame().enableInspectorWebPerfAgent(performance());
-  EXPECT_TRUE(hasWebPerformanceAgent());
-  EXPECT_TRUE(hasWebPerformanceAgentObservers());
-
-  frame().disableInspectorWebPerfAgent(performance());
-  EXPECT_FALSE(hasWebPerformanceAgent());
 }
 
 }  // namespace blink

@@ -35,7 +35,7 @@
 #include "core/fetch/CachedMetadata.h"
 #include "core/fetch/ScriptResource.h"
 #include "core/frame/LocalFrame.h"
-#include "core/inspector/InspectorInstrumentation.h"
+#include "core/frame/PerformanceMonitor.h"
 #include "core/inspector/InspectorTraceEvents.h"
 #include "core/inspector/ThreadDebugger.h"
 #include "platform/Histogram.h"
@@ -519,12 +519,11 @@ v8::MaybeLocal<v8::Value> V8ScriptRunner::runCompiledScript(
     }
     v8::MicrotasksScope microtasksScope(isolate,
                                         v8::MicrotasksScope::kRunMicrotasks);
-    InspectorInstrumentation::willExecuteScript(context);
+    PerformanceMonitor::willExecuteScript(context);
     ThreadDebugger::willExecuteScript(isolate,
                                       script->GetUnboundScript()->GetId());
     result = script->Run(isolate->GetCurrentContext());
     ThreadDebugger::didExecuteScript(isolate);
-    InspectorInstrumentation::didExecuteScript(context);
   }
 
   crashIfIsolateIsDead(isolate);
@@ -632,13 +631,12 @@ v8::MaybeLocal<v8::Value> V8ScriptRunner::callFunction(
 
   v8::MicrotasksScope microtasksScope(isolate,
                                       v8::MicrotasksScope::kRunMicrotasks);
-  InspectorInstrumentation::willExecuteScript(context);
+  PerformanceMonitor::willExecuteScript(context);
   ThreadDebugger::willExecuteScript(isolate, function->ScriptId());
   v8::MaybeLocal<v8::Value> result =
       function->Call(isolate->GetCurrentContext(), receiver, argc, args);
   crashIfIsolateIsDead(isolate);
   ThreadDebugger::didExecuteScript(isolate);
-  InspectorInstrumentation::didExecuteScript(context);
   if (!depth)
     TRACE_EVENT_END0("devtools.timeline", "FunctionCall");
   return result;

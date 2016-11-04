@@ -63,7 +63,6 @@ class CORE_EXPORT Performance final : public PerformanceBase,
   PerformanceTiming* timing() const override;
 
   void updateLongTaskInstrumentation() override;
-  bool observingLongTasks();
 
   ScriptValue toJSONForBinding(ScriptState*) const;
 
@@ -74,8 +73,6 @@ class CORE_EXPORT Performance final : public PerformanceBase,
 
   mutable Member<PerformanceNavigation> m_navigation;
   mutable Member<PerformanceTiming> m_timing;
-
-  bool m_observingLongTasks;
 };
 
 }  // namespace blink

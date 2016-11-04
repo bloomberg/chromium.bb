@@ -4,6 +4,7 @@
 
 #include "core/timing/Performance.h"
 
+#include "core/frame/PerformanceMonitor.h"
 #include "core/testing/DummyPageHolder.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
@@ -17,7 +18,10 @@ class PerformanceTest : public ::testing::Test {
     m_performance = Performance::create(&m_pageHolder->frame());
   }
 
-  bool observingLongTasks() { return m_performance->observingLongTasks(); }
+  bool observingLongTasks() {
+    return PerformanceMonitor::instrumentingMonitor(
+        m_performance->getExecutionContext());
+  }
 
   void addLongTaskObserver() {
     // simulate with filter options.
