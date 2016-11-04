@@ -101,9 +101,10 @@ public class DownloadManagerDelegate {
             } catch (IllegalAccessException e) {
                 Log.e(TAG, "Error accessing the needed method.");
             }
+        } else {
+            downloadId = manager.addCompletedDownload(fileName, description, true, mimeType, path,
+                    length, useSystemNotification);
         }
-        downloadId = manager.addCompletedDownload(fileName, description, true, mimeType, path,
-                length, useSystemNotification);
         addDownloadIdMapping(downloadId, downloadGuid);
         return downloadId;
     }
