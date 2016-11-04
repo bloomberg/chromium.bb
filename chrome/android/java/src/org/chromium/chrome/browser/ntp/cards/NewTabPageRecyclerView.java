@@ -12,6 +12,7 @@ import android.content.Context;
 import android.content.res.Resources;
 import android.graphics.Region;
 import android.support.v4.view.animation.FastOutLinearInInterpolator;
+import android.support.v4.view.animation.LinearOutSlowInInterpolator;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
 import android.util.AttributeSet;
@@ -28,6 +29,7 @@ import org.chromium.chrome.browser.ntp.ContextMenuHandler.TouchDisableableView;
 import org.chromium.chrome.browser.ntp.NewTabPageLayout;
 import org.chromium.chrome.browser.ntp.snippets.SectionHeaderViewHolder;
 import org.chromium.chrome.browser.ntp.snippets.SnippetArticle;
+import org.chromium.chrome.browser.ntp.snippets.SnippetsConfig;
 import org.chromium.chrome.browser.util.ViewUtils;
 
 import java.util.HashMap;
@@ -41,11 +43,17 @@ public class NewTabPageRecyclerView extends RecyclerView implements TouchDisable
     private static final String TAG = "NtpCards";
     private static final Interpolator DISMISS_INTERPOLATOR = new FastOutLinearInInterpolator();
     private static final int DISMISS_ANIMATION_TIME_MS = 300;
+    private static final Interpolator PEEKING_CARD_INTERPOLATOR = new LinearOutSlowInInterpolator();
+    private static final int PEEKING_CARD_ANIMATION_TIME_MS = 1000;
 
     private final GestureDetector mGestureDetector;
     private final LinearLayoutManager mLayoutManager;
     private final int mToolbarHeight;
     private final int mMaxHeaderHeight;
+    /** How much of the first card is visible above the fold with the increased visibility UI. */
+    private final int mPeekingCardBounceDistance;
+    /** The peeking card animates in the first time it is made visible. */
+    private boolean mFirstCardAnimationRun;
 
     /**
      * Total height of the items being dismissed.  Tracked to allow the bottom space to compensate
@@ -91,6 +99,8 @@ public class NewTabPageRecyclerView extends RecyclerView implements TouchDisable
         mToolbarHeight = res.getDimensionPixelSize(R.dimen.toolbar_height_no_shadow)
                 + res.getDimensionPixelSize(R.dimen.toolbar_progress_bar_height);
         mMaxHeaderHeight = res.getDimensionPixelSize(R.dimen.snippets_article_header_height);
+        mPeekingCardBounceDistance =
+                res.getDimensionPixelSize(R.dimen.snippets_peeking_card_bounce_distance);
 
         setHasFixedSize(true);
     }
@@ -260,8 +270,9 @@ public class NewTabPageRecyclerView extends RecyclerView implements TouchDisable
             return;
         }
 
-        // If we have the card offset field trial enabled, don't peek at all.
-        if (CardsVariationParameters.getFirstCardOffsetDp() != 0) {
+        // Peeking is disabled in the card offset field trial and the increased visibility feature.
+        if (CardsVariationParameters.getFirstCardOffsetDp() != 0
+                || SnippetsConfig.isIncreasedCardVisibilityEnabled()) {
             peekingCard.updatePeek(0, /* shouldAnimate */ false);
             return;
         }
@@ -434,7 +445,7 @@ public class NewTabPageRecyclerView extends RecyclerView implements TouchDisable
             View peekingCardView = peekingCardViewHolder.itemView;
             View headerView = firstHeaderViewHolder.itemView;
             final int peekingHeight = getResources().getDimensionPixelSize(
-                    R.dimen.snippets_padding_and_peeking_card_height);
+                    R.dimen.snippets_padding);
 
             // |A + B - C| gives the offset of the peeking card relative to the Recycler View,
             // so scrolling to this point would put the peeking card at the top of the
@@ -529,5 +540,25 @@ public class NewTabPageRecyclerView extends RecyclerView implements TouchDisable
         float input = Math.abs(dX) / viewHolder.itemView.getMeasuredWidth();
         float alpha = 1 - DISMISS_INTERPOLATOR.getInterpolation(input);
         viewHolder.itemView.setAlpha(alpha);
+    }
+
+    /**
+     * To be triggered when the first card is bound to a view holder. This allows us to hook actions
+     * to be performed when the first card appears.
+     */
+    public void onFirstCardShown(View cardView) {
+        if (!SnippetsConfig.isIncreasedCardVisibilityEnabled() || mFirstCardAnimationRun) return;
+        mFirstCardAnimationRun = true;
+
+        // We only want an animation to run if it is visible from the non-scrolled position.
+        if (computeVerticalScrollOffset() != 0) return;
+
+        // The peeking card bounces up from it's position.
+        ObjectAnimator animator = ObjectAnimator.ofFloat(cardView, View.TRANSLATION_Y,
+                0f, -mPeekingCardBounceDistance, 0f);
+        animator.setDuration(PEEKING_CARD_ANIMATION_TIME_MS);
+        animator.setInterpolator(PEEKING_CARD_INTERPOLATOR);
+        animator.start();
+
     }
 }

@@ -12,7 +12,6 @@ import org.chromium.chrome.browser.ChromeFeatureList;
 public final class SnippetsConfig {
     private SnippetsConfig() {}
 
-
     public static boolean isEnabled() {
         return ChromeFeatureList.isEnabled(ChromeFeatureList.NTP_SNIPPETS);
     }
@@ -27,5 +26,10 @@ public final class SnippetsConfig {
 
     public static boolean isSectionDismissalEnabled() {
         return ChromeFeatureList.isEnabled(ChromeFeatureList.NTP_SUGGESTIONS_SECTION_DISMISSAL);
+    }
+
+    /** https://crbug.com/660837 */
+    public static boolean isIncreasedCardVisibilityEnabled() {
+        return ChromeFeatureList.isEnabled(ChromeFeatureList.NTP_SNIPPETS_INCREASED_VISIBILITY);
     }
 }

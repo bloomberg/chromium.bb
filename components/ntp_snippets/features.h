@@ -33,6 +33,9 @@ extern const base::Feature kSectionDismissalFeature;
 // false, all the per-provider features are ignored.
 extern const base::Feature kContentSuggestionsFeature;
 
+// Feature to allow UI as specified here: https://crbug.com/660837.
+extern const base::Feature kIncreasedVisibility;
+
 // Feature to enable the Fetch More action
 extern const base::Feature kFetchMoreFeature;
 

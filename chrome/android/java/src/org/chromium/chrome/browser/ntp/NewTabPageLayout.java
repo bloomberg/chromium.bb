@@ -15,6 +15,7 @@ import org.chromium.chrome.R;
 import org.chromium.chrome.browser.ntp.NewTabPageUma.NTPLayoutResult;
 import org.chromium.chrome.browser.ntp.cards.CardsVariationParameters;
 import org.chromium.chrome.browser.ntp.cards.NewTabPageRecyclerView;
+import org.chromium.chrome.browser.ntp.snippets.SnippetsConfig;
 
 /**
  * Layout for the new tab page. This positions the page elements in the correct vertical positions.
@@ -72,8 +73,9 @@ public class NewTabPageLayout extends LinearLayout {
         mBottomSpacerIdealHeight = Math.round(density * BOTTOM_SPACER_HEIGHT_DP);
         mTotalSpacerIdealHeight = Math.round(density * TOTAL_SPACER_HEIGHT_DP);
         mMostVisitedLayoutBleed = res.getDimensionPixelSize(R.dimen.most_visited_layout_bleed);
-        mPeekingCardHeight =
-                res.getDimensionPixelSize(R.dimen.snippets_padding_and_peeking_card_height);
+        mPeekingCardHeight = SnippetsConfig.isIncreasedCardVisibilityEnabled()
+                ? res.getDimensionPixelSize(R.dimen.snippets_peeking_card_peek_amount)
+                : res.getDimensionPixelSize(R.dimen.snippets_padding);
         mTabStripHeight = res.getDimensionPixelSize(R.dimen.tab_strip_height);
         mFieldTrialLayoutAdjustment = (int) TypedValue.applyDimension(TypedValue.COMPLEX_UNIT_DIP,
                 CardsVariationParameters.getFirstCardOffsetDp(), res.getDisplayMetrics());

@@ -78,7 +78,7 @@ public class CardViewHolder extends NewTabPageViewHolder {
                 R.dimen.snippets_card_9_patch_adjustment);
 
         mMaxPeekPadding = recyclerView.getResources().getDimensionPixelSize(
-                R.dimen.snippets_padding_and_peeking_card_height);
+                R.dimen.snippets_padding);
 
         mRecyclerView = recyclerView;
 

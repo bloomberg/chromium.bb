@@ -15293,6 +15293,12 @@ Please check your email at <ph name="ACCOUNT_EMAIL">$2<ex>jane.doe@gmail.com</ex
       <message name="IDS_FLAGS_ENABLE_NTP_SNIPPETS_DESCRIPTION" desc="Description for the flag to enable snippets on the New Tab page." translateable="false">
         If enabled, the New Tab page will show a list of content snippets
       </message>
+      <message name="IDS_FLAGS_ENABLE_NTP_SNIPPETS_VISIBILITY_NAME" desc="Name for the flag to enable increased visibilty for snippets on the New Tab Page." translateable="false">
+        Make New Tab Page Snippets more visible.
+      </message>
+      <message name="IDS_FLAGS_ENABLE_NTP_SNIPPETS_VISIBILITY_DESCRIPTION" desc="Description for the flag to enable increased visibility for recently viewed tabs on the New Tab page." translateable="false">
+        If enabled, the NTP snippets will become more discoverable with a larger portion of the first card above the fold.
+      </message>
       <message name="IDS_FLAGS_ENABLE_NTP_RECENT_OFFLINE_TAB_SUGGESTIONS_NAME" desc="Name for the flag to enable suggestions for recently viewed tabs, which were captured offline, on the New Tab page." translateable="false">
         Show recent offline tabs on the New Tab page
       </message>
