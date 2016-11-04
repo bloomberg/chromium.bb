@@ -332,8 +332,8 @@ void SyncSetupHandler::RegisterMessages() {
                  base::Unretained(this)));
 #if defined(OS_CHROMEOS)
   web_ui()->RegisterMessageCallback(
-      "SyncSetupDoSignOutOnAuthError",
-      base::Bind(&SyncSetupHandler::HandleDoSignOutOnAuthError,
+      "AttemptUserExit",
+      base::Bind(&SyncSetupHandler::HandleAttemptUserExit,
                  base::Unretained(this)));
 #else
   web_ui()->RegisterMessageCallback("SyncSetupStopSyncing",
@@ -640,8 +640,7 @@ void SyncSetupHandler::HandleShowSetupUI(const base::ListValue* args) {
 #if defined(OS_CHROMEOS)
 // On ChromeOS, we need to sign out the user session to fix an auth error, so
 // the user goes through the real signin flow to generate a new auth token.
-void SyncSetupHandler::HandleDoSignOutOnAuthError(const base::ListValue* args) {
-  DVLOG(1) << "Signing out the user to fix a sync error.";
+void SyncSetupHandler::HandleAttemptUserExit(const base::ListValue* args) {
   chrome::AttemptUserExit();
 }
 #endif

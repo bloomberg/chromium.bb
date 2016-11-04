@@ -97,30 +97,88 @@ base::string16 GetSyncedStateStatusLabel(ProfileSyncService* service,
   }
 }
 
-void GetStatusForActionableError(
-    const syncer::SyncProtocolError& error,
-    base::string16* status_label) {
+void GetStatusForActionableError(const syncer::SyncProtocolError& error,
+                                 base::string16* status_label,
+                                 ActionType* action_type) {
   DCHECK(status_label);
   switch (error.action) {
-    case syncer::STOP_AND_RESTART_SYNC:
-       status_label->assign(
-           l10n_util::GetStringUTF16(IDS_SYNC_STOP_AND_RESTART_SYNC));
-      break;
     case syncer::UPGRADE_CLIENT:
-       status_label->assign(
-           l10n_util::GetStringFUTF16(IDS_SYNC_UPGRADE_CLIENT,
-               l10n_util::GetStringUTF16(IDS_PRODUCT_NAME)));
+      status_label->assign(l10n_util::GetStringUTF16(IDS_SYNC_UPGRADE_CLIENT));
+      *action_type = UPGRADE_CLIENT;
       break;
     case syncer::ENABLE_SYNC_ON_ACCOUNT:
-       status_label->assign(
-           l10n_util::GetStringUTF16(IDS_SYNC_ENABLE_SYNC_ON_ACCOUNT));
-    break;
-    case syncer::CLEAR_USER_DATA_AND_RESYNC:
-       status_label->assign(
-           l10n_util::GetStringUTF16(IDS_SYNC_CLEAR_USER_DATA));
+      status_label->assign(
+          l10n_util::GetStringUTF16(IDS_SYNC_STATUS_ENABLE_SYNC_ON_ACCOUNT));
       break;
     default:
-      NOTREACHED();
+      status_label->clear();
+      break;
+  }
+}
+
+void GetStatusForUnrecoverableError(Profile* profile,
+                                    ProfileSyncService* service,
+                                    base::string16* status_label,
+                                    ActionType* action_type) {
+  // Unrecoverable error is sometimes accompanied by actionable error.
+  // If status message is set display that message, otherwise show generic
+  // unrecoverable error message.
+  ProfileSyncService::Status status;
+  service->QueryDetailedSyncStatus(&status);
+  GetStatusForActionableError(status.sync_protocol_error, status_label,
+                              action_type);
+  if (status_label->empty()) {
+    *action_type = REAUTHENTICATE;
+
+#if !defined(OS_CHROMEOS)
+    status_label->assign(l10n_util::GetStringUTF16(
+        IDS_SYNC_STATUS_UNRECOVERABLE_ERROR));
+    // The message for managed accounts is the same as that of the cros.
+    if (SigninManagerFactory::GetForProfile(profile)->IsSignoutProhibited()) {
+      status_label->assign(l10n_util::GetStringUTF16(
+          IDS_SYNC_STATUS_UNRECOVERABLE_ERROR_NEEDS_SIGNOUT));
+    }
+#else
+    status_label->assign(l10n_util::GetStringUTF16(
+        IDS_SYNC_STATUS_UNRECOVERABLE_ERROR_NEEDS_SIGNOUT));
+#endif
+  }
+}
+
+// Depending on the authentication state, returns labels to be used to display
+// information about the sync status.
+void GetStatusForAuthError(Profile* profile,
+                           const SigninManagerBase& signin_manager,
+                           base::string16* status_label,
+                           base::string16* link_label,
+                           ActionType* action_type) {
+  DCHECK(status_label);
+  DCHECK(link_label);
+  const GoogleServiceAuthError::State state =
+      SigninErrorControllerFactory::GetForProfile(profile)->
+          auth_error().state();
+  switch (state) {
+    case GoogleServiceAuthError::SERVICE_UNAVAILABLE:
+      status_label->assign(
+          l10n_util::GetStringUTF16(IDS_SYNC_SERVICE_UNAVAILABLE));
+      break;
+    case GoogleServiceAuthError::CONNECTION_FAILED:
+      status_label->assign(
+          l10n_util::GetStringUTF16(IDS_SYNC_SERVER_IS_UNREACHABLE));
+      // Note that there is little the user can do if the server is not
+      // reachable. Since attempting to re-connect is done automatically by
+      // the Syncer, we do not show the (re)login link.
+      break;
+    case GoogleServiceAuthError::INVALID_GAIA_CREDENTIALS:
+    case GoogleServiceAuthError::SERVICE_ERROR:
+    case GoogleServiceAuthError::ACCOUNT_DELETED:
+    case GoogleServiceAuthError::ACCOUNT_DISABLED:
+    default:
+      status_label->assign(l10n_util::GetStringUTF16(IDS_SYNC_RELOGIN_ERROR));
+      link_label->assign(
+          l10n_util::GetStringUTF16(IDS_SYNC_RELOGIN_LINK_LABEL));
+      *action_type = REAUTHENTICATE;
+      break;
   }
 }
 
@@ -132,7 +190,8 @@ MessageType GetStatusInfo(Profile* profile,
                           const SigninManagerBase& signin,
                           StatusLabelStyle style,
                           base::string16* status_label,
-                          base::string16* link_label) {
+                          base::string16* link_label,
+                          ActionType* action_type) {
   DCHECK_EQ(status_label == nullptr, link_label == nullptr);
 
   MessageType result_type(SYNCED);
@@ -147,19 +206,8 @@ MessageType GetStatusInfo(Profile* profile,
 
     if (service && service->HasUnrecoverableError()) {
       if (status_label) {
-        // Unrecoverable error is sometimes accompanied by actionable error.
-        // If actionable error is set then display corresponding message,
-        // otherwise show generic unrecoverable error message.
-        ProfileSyncService::Status status;
-        service->QueryDetailedSyncStatus(&status);
-        if (browser_sync::ShouldShowActionOnUI(status.sync_protocol_error)) {
-          GetStatusForActionableError(status.sync_protocol_error, status_label);
-        } else {
-          status_label->assign(l10n_util::GetStringFUTF16(
-              IDS_SYNC_STATUS_UNRECOVERABLE_ERROR,
-              l10n_util::GetStringUTF16(
-                  IDS_SYNC_UNRECOVERABLE_ERROR_HELP_URL)));
-        }
+        GetStatusForUnrecoverableError(profile, service, status_label,
+                                       action_type);
       }
       return SYNC_ERROR;
     }
@@ -179,39 +227,35 @@ MessageType GetStatusInfo(Profile* profile,
       AuthError auth_error =
           SigninErrorControllerFactory::GetForProfile(profile)->auth_error();
       if (auth_error.state() != AuthError::NONE) {
-        if (status_label && link_label)
-          signin_ui_util::GetStatusLabelsForAuthError(profile, signin,
-                                                      status_label, link_label);
+        if (status_label && link_label) {
+          GetStatusForAuthError(profile, signin, status_label, link_label,
+                                action_type);
+        }
         return SYNC_ERROR;
       }
 
       // We don't have an auth error. Check for an actionable error.
       ProfileSyncService::Status status;
       service->QueryDetailedSyncStatus(&status);
-      if (browser_sync::ShouldShowActionOnUI(status.sync_protocol_error)) {
-        if (status_label) {
-          GetStatusForActionableError(status.sync_protocol_error,
-                                      status_label);
-        }
-        return SYNC_ERROR;
+      if (status_label) {
+        GetStatusForActionableError(status.sync_protocol_error, status_label,
+                                    action_type);
+        if (!status_label->empty())
+          return SYNC_ERROR;
       }
 
       // Check for a passphrase error.
-      if (service->IsPassphraseRequired()) {
-        if (service->IsPassphraseRequiredForDecryption()) {
-          // TODO(lipalani) : Ask tim if this is still needed.
-          // NOT first machine.
-          // Show a link ("needs attention"), but still indicate the
-          // current synced status.  Return SYNC_PROMO so that
-          // the configure link will still be shown.
-          if (status_label && link_label) {
-            status_label->assign(GetSyncedStateStatusLabel(
-                service, signin, style));
-            link_label->assign(
-                l10n_util::GetStringUTF16(IDS_SYNC_PASSWORD_SYNC_ATTENTION));
-          }
-          return SYNC_PROMO;
+      if (service->IsPassphraseRequired() &&
+          service->IsPassphraseRequiredForDecryption()) {
+        if (status_label && link_label) {
+          status_label->assign(
+              l10n_util::GetStringUTF16(IDS_SYNC_STATUS_NEEDS_PASSWORD));
+          link_label->assign(
+              l10n_util::GetStringUTF16(
+                  IDS_SYNC_STATUS_NEEDS_PASSWORD_LINK_LABEL));
+          *action_type = ENTER_PASSPHRASE;
         }
+        return SYNC_ERROR;
       }
 
       // Check to see if sync has been disabled via the dasboard and needs to be
@@ -252,31 +296,23 @@ MessageType GetStatusInfo(Profile* profile,
       } else if (auth_error.state() != AuthError::NONE &&
                  auth_error.state() != AuthError::TWO_FACTOR) {
         if (status_label && link_label) {
-          status_label->clear();
-          signin_ui_util::GetStatusLabelsForAuthError(profile, signin,
-                                                      status_label, link_label);
+          GetStatusForAuthError(profile, signin, status_label, link_label,
+                                action_type);
         }
         result_type = SYNC_ERROR;
       }
     } else if (service->HasUnrecoverableError()) {
       result_type = SYNC_ERROR;
-      ProfileSyncService::Status status;
-      service->QueryDetailedSyncStatus(&status);
-      if (browser_sync::ShouldShowActionOnUI(status.sync_protocol_error)) {
-        if (status_label) {
-          GetStatusForActionableError(status.sync_protocol_error,
-              status_label);
-        }
-      } else if (status_label) {
-        status_label->assign(l10n_util::GetStringUTF16(IDS_SYNC_SETUP_ERROR));
+      if (status_label) {
+        GetStatusForUnrecoverableError(profile, service, status_label,
+                                       action_type);
       }
     } else if (signin.IsAuthenticated()) {
       // The user is signed in, but sync has been stopped.
+      result_type = PRE_SYNCED;
       if (status_label) {
-        base::string16 label = l10n_util::GetStringUTF16(
-            IDS_SIGNED_IN_WITH_SYNC_SUPPRESSED);
-        status_label->assign(label);
-        result_type = PRE_SYNCED;
+        status_label->assign(
+            l10n_util::GetStringUTF16(IDS_SIGNED_IN_WITH_SYNC_SUPPRESSED));
       }
     }
   }
@@ -318,8 +354,9 @@ MessageType GetStatusInfoForNewTabPage(Profile* profile,
   }
 
   // Fallback to default.
+  ActionType action_type = NO_ACTION;
   return GetStatusInfo(profile, service, signin, WITH_HTML, status_label,
-                       link_label);
+                       link_label, &action_type);
 }
 
 }  // namespace
@@ -329,11 +366,12 @@ MessageType GetStatusLabels(Profile* profile,
                             const SigninManagerBase& signin,
                             StatusLabelStyle style,
                             base::string16* status_label,
-                            base::string16* link_label) {
+                            base::string16* link_label,
+                            ActionType* action_type) {
   DCHECK(status_label);
   DCHECK(link_label);
   return sync_ui_util::GetStatusInfo(profile, service, signin, style,
-                                     status_label, link_label);
+                                     status_label, link_label, action_type);
 }
 
 MessageType GetStatusLabelsForNewTabPage(Profile* profile,
@@ -455,8 +493,9 @@ AvatarSyncErrorType GetMessagesForAvatarSyncError(Profile* profile,
 MessageType GetStatus(Profile* profile,
                       ProfileSyncService* service,
                       const SigninManagerBase& signin) {
+  ActionType action_type = NO_ACTION;
   return sync_ui_util::GetStatusInfo(profile, service, signin, WITH_HTML,
-                                     nullptr, nullptr);
+                                     nullptr, nullptr, &action_type);
 }
 
 base::string16 ConstructTime(int64_t time_in_int) {

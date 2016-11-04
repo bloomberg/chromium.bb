@@ -53,67 +53,6 @@ base::string16 GetAuthenticatedUsername(const SigninManagerBase* signin) {
   return base::UTF8ToUTF16(user_display_name);
 }
 
-// Given an authentication state this helper function returns various labels
-// that can be used to display information about the state.
-void GetStatusLabelsForAuthError(Profile* profile,
-                                 const SigninManagerBase& signin_manager,
-                                 base::string16* status_label,
-                                 base::string16* link_label) {
-  base::string16 product_name = l10n_util::GetStringUTF16(IDS_PRODUCT_NAME);
-  if (link_label)
-    link_label->assign(l10n_util::GetStringUTF16(IDS_SYNC_RELOGIN_LINK_LABEL));
-
-  const GoogleServiceAuthError::State state =
-      SigninErrorControllerFactory::GetForProfile(profile)->
-          auth_error().state();
-  switch (state) {
-    case GoogleServiceAuthError::INVALID_GAIA_CREDENTIALS:
-    case GoogleServiceAuthError::SERVICE_ERROR:
-    case GoogleServiceAuthError::ACCOUNT_DELETED:
-    case GoogleServiceAuthError::ACCOUNT_DISABLED:
-      // If the user name is empty then the first login failed, otherwise the
-      // credentials are out-of-date.
-      if (!signin_manager.IsAuthenticated()) {
-        if (status_label) {
-          status_label->assign(
-              l10n_util::GetStringUTF16(IDS_SYNC_INVALID_USER_CREDENTIALS));
-        }
-      } else {
-        if (status_label) {
-          status_label->assign(
-              l10n_util::GetStringUTF16(IDS_SYNC_LOGIN_INFO_OUT_OF_DATE));
-        }
-      }
-      break;
-    case GoogleServiceAuthError::SERVICE_UNAVAILABLE:
-      if (status_label) {
-        status_label->assign(
-            l10n_util::GetStringUTF16(IDS_SYNC_SERVICE_UNAVAILABLE));
-      }
-      if (link_label)
-        link_label->clear();
-      break;
-    case GoogleServiceAuthError::CONNECTION_FAILED:
-      if (status_label) {
-        status_label->assign(
-            l10n_util::GetStringFUTF16(IDS_SYNC_SERVER_IS_UNREACHABLE,
-                                       product_name));
-      }
-      // Note that there is little the user can do if the server is not
-      // reachable. Since attempting to re-connect is done automatically by
-      // the Syncer, we do not show the (re)login link.
-      if (link_label)
-        link_label->clear();
-      break;
-    default:
-      if (status_label) {
-        status_label->assign(l10n_util::GetStringUTF16(
-            IDS_SYNC_ERROR_SIGNING_IN));
-      }
-      break;
-  }
-}
-
 void InitializePrefsForProfile(Profile* profile) {
   if (profile->IsNewProfile()) {
     // Suppresses the upgrade tutorial for a new profile.

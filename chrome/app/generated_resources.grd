@@ -11750,9 +11750,6 @@ Tell us what happened exactly before you got the profile error message:
         <message name="IDS_SYNC_SETUP_BUTTON_LABEL" desc="The label that appears on the sync setup button in the options dialog when sync has been disabled by the user.">
           Set up sync...
         </message>
-        <message name="IDS_SYNC_SETUP_ERROR" desc="The message displayed when an unspecified but unrecoverable error occurs during sync setup.">
-          An error occurred while trying to set up sync.
-        </message>
         <message name="IDS_SYNC_SETUP_ABORTED_BY_PENDING_CLEAR" desc="The error message displayed to the user when setup was aborted because the server reported that a pending clear private data operation is in progress">
           The sync server is busy, please try again later.
         </message>
@@ -11771,9 +11768,6 @@ Tell us what happened exactly before you got the profile error message:
         <message name="IDS_SYNC_AUTHENTICATING_LABEL" desc="Label to display while the user is being authenticated to use sync.">
           Authenticating...
         </message>
-        <message name="IDS_SYNC_INVALID_USER_CREDENTIALS" desc="Error message to display when the user name or password entered by the user are invalid.">
-          Invalid user name or password.
-        </message>
         <message name="IDS_SYNC_ERROR_SIGNING_IN" desc="An error was encountered while signing the user in.">
           Error signing in.
         </message>
@@ -11781,22 +11775,19 @@ Tell us what happened exactly before you got the profile error message:
           Oops, Sync has stopped working.
         </message>
         <message name="IDS_SYNC_STATUS_UNRECOVERABLE_ERROR" desc="Message shown on the personal options page when there is an unrecoverable error.">
-          Oops, Sync has stopped working. <ph name="BEGIN_LINK">&lt;a href="$1" target="_blank"&gt;<ex>&lt;a href="$1" target="_blank"&gt;</ex></ph>Learn More<ph name="END_LINK">&lt;/a&gt;<ex>&lt;/a&gt;</ex></ph>
+          Sync isn’t working. Try signing in again.
         </message>
-        <message name="IDS_SYNC_PASSWORD_SYNC_ATTENTION" desc="Message indicating password sync needs attention.">
-          Please update your sync passphrase.
+        <message name="IDS_SYNC_STATUS_UNRECOVERABLE_ERROR_NEEDS_SIGNOUT" desc="Message shown on the personal options page when there is an unrecoverable error in Chrome OS as well as for managed accounts.">
+          Sync isn’t working. Try signing out and back in again.
         </message>
-        <message name="IDS_SYNC_UPGRADE_CLIENT" desc="Message indicating client needs to be upgraded to the latest version.">
-          Sync Error:  <ph name="PRODUCT_NAME">$1<ex>Chrome</ex></ph> is out of date and needs to be updated.
+        <message name="IDS_SYNC_STATUS_NEEDS_PASSWORD" desc="Message indicating user must re-enter their sync password.">
+          Enter your passphrase to start sync
         </message>
-        <message name="IDS_SYNC_CLEAR_USER_DATA" desc="Message indicating user needs to clear user data and setup sync.">
-          Sync Error: Please reset Sync via the Google Dashboard.
+        <message name="IDS_SYNC_STATUS_NEEDS_PASSWORD_LINK_LABEL" desc="Hyperlink text indicating user must re-enter their sync password.">
+          Enter passphrase
         </message>
-        <message name="IDS_SYNC_STOP_AND_RESTART_SYNC" desc="Message indicating user needs to stop and restart sync.">
-          Sync Error: Please stop and restart Sync.
-        </message>
-        <message name="IDS_SYNC_ENABLE_SYNC_ON_ACCOUNT" desc="Message indicating user needs to ask the administrator to enable sync.">
-          Sync Error: Please contact administrator to enable sync.
+        <message name="IDS_SYNC_STATUS_ENABLE_SYNC_ON_ACCOUNT" desc="Message indicating user needs to ask the administrator to enable sync.">
+          Sync is disabled by your administrator
         </message>
 
         <message name="IDS_SYNC_PASSPHRASE_MSG_EXPLICIT_PREFIX" desc="Message when explicit passphrase is selected.">
@@ -11805,17 +11796,27 @@ Tell us what happened exactly before you got the profile error message:
         <message name="IDS_SYNC_PASSPHRASE_MSG_EXPLICIT_POSTFIX" desc="Postfix of the message show when explicit passphrase is selected.">
           reset sync
         </message>
-        <message name="IDS_SYNC_SERVER_IS_UNREACHABLE" desc="The message to display in the New Tab Page sync section when the server is unreachable.">
-          <ph name="PRODUCT_NAME">$1<ex>Google Chrome</ex></ph> could not sync your data because it could not connect to the sync server. Retrying...
+        <message name="IDS_SYNC_SERVER_IS_UNREACHABLE" desc="The message to display in the New Tab Page and Settings Page sync section when the server is unreachable.">
+          Couldn't connect to the sync server. Retrying...
         </message>
         <if expr="not chromeos">
+          <message name="IDS_SYNC_RELOGIN_ERROR" desc="The text to display on in the hyperlink when the user needs to sign in again to use sync.">
+            Sign in again to start sync
+          </message>
+        </if>
+        <if expr="chromeos">
+          <message name="IDS_SYNC_RELOGIN_ERROR" desc="The text to display on in the hyperlink when the user needs to sign out and sign in again to use sync on Chrome OS.">
+            Sign out then sign in again to start sync
+          </message>
+        </if>
+        <if expr="not chromeos">
           <message name="IDS_SYNC_RELOGIN_LINK_LABEL" desc="The text to display on in the hyperlink when the user needs to sign in again to use sync.">
-            Sign in again
+            Sign in
           </message>
         </if>
         <if expr="chromeos">
           <message name="IDS_SYNC_RELOGIN_LINK_LABEL" desc="The text to display on in the hyperlink when the user needs to sign out and sign in again to use sync on Chrome OS.">
-            Sign out then sign in again
+            Sign out
           </message>
         </if>
         <message name="IDS_OPTIONS_CUSTOMIZE_SYNC_BUTTON_LABEL" desc="The text to display on the button to customize which data types the user is syncing.">

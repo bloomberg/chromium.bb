@@ -170,13 +170,6 @@ void DeleteSyncDataFolder(const base::FilePath& directory_path) {
 
 }  // namespace
 
-bool ShouldShowActionOnUI(const syncer::SyncProtocolError& error) {
-  return (error.action != syncer::UNKNOWN_ACTION &&
-          error.action != syncer::DISABLE_SYNC_ON_CLIENT &&
-          error.action != syncer::STOP_SYNC_FOR_DISABLED_ACCOUNT &&
-          error.action != syncer::RESET_LOCAL_SYNC_DATA);
-}
-
 ProfileSyncService::InitParams::InitParams() = default;
 ProfileSyncService::InitParams::~InitParams() = default;
 ProfileSyncService::InitParams::InitParams(InitParams&& other)  // NOLINT

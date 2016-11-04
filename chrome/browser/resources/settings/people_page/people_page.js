@@ -257,10 +257,33 @@ Polymer({
     assert(this.syncStatus.signedIn);
     assert(this.syncStatus.syncSystemEnabled);
 
-    if (this.syncStatus.managed)
+    if (!this.isSyncStatusActionable_(this.syncStatus))
       return;
 
-    settings.navigateTo(settings.Route.SYNC);
+    switch (this.syncStatus.statusAction) {
+      case settings.StatusAction.REAUTHENTICATE:
+<if expr="chromeos">
+        this.syncBrowserProxy_.attemptUserExit();
+</if>
+<if expr="not chromeos">
+        if (this.syncStatus.domain)
+          settings.navigateTo(settings.Route.SIGN_OUT);
+        else {
+          // Silently sign the user out without deleting their profile and
+          // prompt them to sign back in.
+          this.syncBrowserProxy_.signOut(false);
+          this.syncBrowserProxy_.startSignIn();
+        }
+</if>
+        break;
+      case settings.StatusAction.UPGRADE_CLIENT:
+        settings.navigateTo(settings.Route.ABOUT);
+        break;
+      case settings.StatusAction.ENTER_PASSPHRASE:
+      case settings.StatusAction.NO_ACTION:
+      default:
+        settings.navigateTo(settings.Route.SYNC);
+    }
   },
 
 <if expr="chromeos">
@@ -337,17 +360,43 @@ Polymer({
   /**
    * @private
    * @param {?settings.SyncStatus} syncStatus
+   * @return {boolean} Whether an action can be taken with the sync status. sync
+   *     status is actionable if sync is not managed and if there is a sync
+   *     error, there is an action associated with it.
+   */
+  isSyncStatusActionable_: function(syncStatus) {
+    return !!syncStatus && !syncStatus.managed && (!syncStatus.hasError ||
+        syncStatus.statusAction != settings.StatusAction.NO_ACTION);
+  },
+
+  /**
+   * @private
+   * @param {?settings.SyncStatus} syncStatus
    * @return {string}
    */
   getSyncIcon_: function(syncStatus) {
     if (!syncStatus)
       return '';
-    if (syncStatus.hasError)
-      return 'settings:sync-problem';
-    if (syncStatus.managed)
-      return 'settings:sync-disabled';
 
-    return 'settings:sync';
+    var syncIcon = 'settings:sync';
+
+    if (syncStatus.hasError)
+      syncIcon = 'settings:sync-problem';
+
+    // Override the icon to the disabled icon if sync is managed.
+    if (syncStatus.managed)
+      syncIcon = 'settings:sync-disabled';
+
+    return syncIcon;
+  },
+
+  /**
+   * @private
+   * @param {?settings.SyncStatus} syncStatus
+   * @return {string} The class name for the sync status text.
+   */
+  getSyncStatusTextClass_: function(syncStatus) {
+    return (!!syncStatus && syncStatus.hasError) ? 'sync-error' : '';
   },
 
   /**

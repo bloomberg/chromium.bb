@@ -274,7 +274,7 @@ void GetDistinctCase(ProfileSyncServiceMock* service,
       EXPECT_CALL(*service, IsPassphraseRequired())
           .WillRepeatedly(Return(false));
       syncer::SyncProtocolError protocolError;
-      protocolError.action = syncer::STOP_AND_RESTART_SYNC;
+      protocolError.action = syncer::UPGRADE_CLIENT;
       syncer::SyncBackendHost::Status status;
       status.sync_protocol_error = protocolError;
       EXPECT_CALL(*service, QueryDetailedSyncStatus(_))
@@ -332,6 +332,32 @@ void GetDistinctCase(ProfileSyncServiceMock* service,
   }
 }
 
+// Returns the expected value for the output argument |action_type| for each
+// of the distinct cases.
+sync_ui_util::ActionType GetActionTypeforDistinctCase(int case_number) {
+  switch (case_number) {
+    case STATUS_CASE_SETUP_IN_PROGRESS:
+      return sync_ui_util::NO_ACTION;
+    case STATUS_CASE_SETUP_ERROR:
+      return sync_ui_util::REAUTHENTICATE;
+    case STATUS_CASE_AUTHENTICATING:
+      return sync_ui_util::NO_ACTION;
+    case STATUS_CASE_AUTH_ERROR:
+      return sync_ui_util::NO_ACTION;
+    case STATUS_CASE_PROTOCOL_ERROR:
+      return sync_ui_util::UPGRADE_CLIENT;
+    case STATUS_CASE_PASSPHRASE_ERROR:
+      return sync_ui_util::ENTER_PASSPHRASE;
+    case STATUS_CASE_SYNCED:
+      return sync_ui_util::NO_ACTION;
+    case STATUS_CASE_SYNC_DISABLED_BY_POLICY:
+      return sync_ui_util::NO_ACTION;
+    default:
+      NOTREACHED();
+      return sync_ui_util::NO_ACTION;
+  }
+}
+
 // This test ensures that a each distinctive ProfileSyncService statuses
 // will return a unique combination of status and link messages from
 // GetStatusLabels().
@@ -351,9 +377,12 @@ TEST_F(SyncUIUtilTest, DistinctCasesReportUniqueMessageSets) {
     GetDistinctCase(&service, &signin, provider.get(), idx);
     base::string16 status_label;
     base::string16 link_label;
+    sync_ui_util::ActionType action_type = sync_ui_util::NO_ACTION;
     sync_ui_util::GetStatusLabels(profile.get(), &service, signin,
                                   sync_ui_util::WITH_HTML, &status_label,
-                                  &link_label);
+                                  &link_label, &action_type);
+
+    EXPECT_EQ(GetActionTypeforDistinctCase(idx), action_type);
     // If the status and link message combination is already present in the set
     // of messages already seen, this is a duplicate rather than a unique
     // message, and the test has failed.
@@ -389,10 +418,12 @@ TEST_F(SyncUIUtilTest, HtmlNotIncludedInStatusIfNotRequested) {
     GetDistinctCase(&service, &signin, provider.get(), idx);
     base::string16 status_label;
     base::string16 link_label;
+    sync_ui_util::ActionType action_type = sync_ui_util::NO_ACTION;
     sync_ui_util::GetStatusLabels(profile.get(), &service, signin,
                                   sync_ui_util::PLAIN_TEXT, &status_label,
-                                  &link_label);
+                                  &link_label, &action_type);
 
+    EXPECT_EQ(GetActionTypeforDistinctCase(idx), action_type);
     // Ensures a search for string 'href' (found in links, not a string to be
     // found in an English language message) fails when links are excluded from
     // the status label.
@@ -424,9 +455,14 @@ TEST_F(SyncUIUtilTest, UnrecoverableErrorWithActionableError) {
 
   base::string16 link_label;
   base::string16 unrecoverable_error_status_label;
+  sync_ui_util::ActionType action_type = sync_ui_util::NO_ACTION;
   sync_ui_util::GetStatusLabels(profile.get(), &service, *signin,
                                 sync_ui_util::PLAIN_TEXT,
-                                &unrecoverable_error_status_label, &link_label);
+                                &unrecoverable_error_status_label, &link_label,
+                                &action_type);
+
+  // Expect the generic unrecoverable error action which is to reauthenticate.
+  EXPECT_EQ(sync_ui_util::REAUTHENTICATE, action_type);
 
   // This time set action to UPGRADE_CLIENT. Ensure that status label differs
   // from previous one.
@@ -436,6 +472,54 @@ TEST_F(SyncUIUtilTest, UnrecoverableErrorWithActionableError) {
   base::string16 upgrade_client_status_label;
   sync_ui_util::GetStatusLabels(profile.get(), &service, *signin,
                                 sync_ui_util::PLAIN_TEXT,
-                                &upgrade_client_status_label, &link_label);
+                                &upgrade_client_status_label, &link_label,
+                                &action_type);
+  // Expect an explicit 'client upgrade' action.
+  EXPECT_EQ(sync_ui_util::UPGRADE_CLIENT, action_type);
+
   EXPECT_NE(unrecoverable_error_status_label, upgrade_client_status_label);
+}
+
+TEST_F(SyncUIUtilTest, ActionableErrorWithPassiveMessage) {
+  std::unique_ptr<Profile> profile(MakeSignedInTestingProfile());
+  SigninManagerBase* signin =
+      SigninManagerFactory::GetForProfile(profile.get());
+
+  ProfileSyncServiceMock service(
+      CreateProfileSyncServiceParamsForTest(profile.get()));
+  EXPECT_CALL(service, IsFirstSetupComplete()).WillRepeatedly(Return(true));
+  EXPECT_CALL(service, HasUnrecoverableError()).WillRepeatedly(Return(true));
+
+  // Set action to UPGRADE_CLIENT.
+  syncer::SyncStatus status;
+  status.sync_protocol_error.action = syncer::UPGRADE_CLIENT;
+  EXPECT_CALL(service, QueryDetailedSyncStatus(_))
+      .WillOnce(DoAll(SetArgPointee<0>(status), Return(true)));
+
+  base::string16 first_actionable_error_status_label;
+  base::string16 link_label;
+  sync_ui_util::ActionType action_type = sync_ui_util::NO_ACTION;
+  sync_ui_util::GetStatusLabels(profile.get(), &service, *signin,
+                                sync_ui_util::PLAIN_TEXT,
+                                &first_actionable_error_status_label,
+                                &link_label, &action_type);
+  // Expect a 'client upgrade' call to action.
+  EXPECT_EQ(sync_ui_util::UPGRADE_CLIENT, action_type);
+
+  // This time set action to ENABLE_SYNC_ON_ACCOUNT.
+  status.sync_protocol_error.action = syncer::ENABLE_SYNC_ON_ACCOUNT;
+  EXPECT_CALL(service, QueryDetailedSyncStatus(_))
+      .WillOnce(DoAll(SetArgPointee<0>(status), Return(true)));
+
+  base::string16 second_actionable_error_status_label;
+  action_type = sync_ui_util::NO_ACTION;
+  sync_ui_util::GetStatusLabels(profile.get(), &service, *signin,
+                                sync_ui_util::PLAIN_TEXT,
+                                &second_actionable_error_status_label,
+                                &link_label, &action_type);
+  // Expect a passive message instead of a call to action.
+  EXPECT_EQ(sync_ui_util::NO_ACTION, action_type);
+
+  EXPECT_NE(first_actionable_error_status_label,
+            second_actionable_error_status_label);
 }

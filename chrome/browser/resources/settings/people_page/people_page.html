@@ -55,11 +55,15 @@
        --iron-icon-fill-color: var(--google-green-700);
       }
 
-      iron-icon[icon='settings:sync-problem'] {
+      #sync-status[actionable] iron-icon[icon='settings:sync-problem'] {
        --iron-icon-fill-color: var(--settings-error-color);
       }
 
-      .settings-box .sync-error {
+      #sync-status:not([actionable]) .subpage-arrow {
+        display: none;
+      }
+
+      .settings-box[actionable] .sync-error {
         color: var(--settings-error-color);
       }
 
@@ -150,18 +154,15 @@
         <template is="dom-if"
             if="[[isAdvancedSyncSettingsVisible_(syncStatus)]]">
           <div class="settings-box two-line" on-tap="onSyncTap_"
-              id="customize-sync" actionable$="[[!syncStatus.managed]]">
+              id="sync-status" actionable$="[[isSyncStatusActionable_(
+              syncStatus)]]">
             <div class="icon-container">
               <iron-icon id="sync-icon" icon$="[[getSyncIcon_(syncStatus)]]">
               </iron-icon>
             </div>
             <div class="middle">
               <div>$i18n{sync}</div>
-              <div class="secondary" hidden="[[syncStatus.hasError]]">
-                [[syncStatus.statusText]]
-              </div>
-              <div class="secondary sync-error"
-                  hidden="[[!syncStatus.hasError]]">
+              <div class$="secondary [[getSyncStatusTextClass_(syncStatus)]]">
                 [[syncStatus.statusText]]
               </div>
             </div>
@@ -273,7 +274,7 @@
       <template is="dom-if" route-path="/syncSetup"
           no-search$="[[!isAdvancedSyncSettingsVisible_(syncStatus)]]">
         <settings-subpage
-            associated-control="[[$$('#customize-sync')]]"
+            associated-control="[[$$('#sync-status')]]"
             page-title="$i18n{syncPageTitle}"
             no-search$="[[!isAdvancedSyncSettingsVisible_(syncStatus)]]">
           <settings-sync-page></settings-sync-page>
