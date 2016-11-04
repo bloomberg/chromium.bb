@@ -313,27 +313,6 @@ class ProjectCheckout(dict):
     # Old heuristic.
     return cros_build_lib.BooleanShellValue(self.get('pin'), True)
 
-  def IsPatchable(self):
-    """Returns whether this project is patchable.
-
-    For projects that get checked out at multiple paths and/or branches,
-    this method can be used to determine which project path a patch
-    should be applied to.
-
-    Returns:
-      True if the project corresponding to the checkout is patchable.
-    """
-    # There are 2 ways we determine if a project is patchable.
-    # - For an unversioned manifest, if the 'revision' is a raw SHA1 hash
-    #   and not a named branch, assume it is a pinned project path and can not
-    #   be patched.
-    # - For a versioned manifest (generated via repo -r), repo will set
-    #   revision to the actual git sha1 ref, and add an 'upstream'
-    #   field corresponding to branch name in the original manifest. For
-    #   a project with a SHA1 'revision' but no named branch in the
-    #   'upstream' field, assume it can not be patched.
-    return not IsSHA1(self.get('upstream', self['revision']))
-
   def GetPath(self, absolute=False):
     """Get the path to the checkout.
 
@@ -627,13 +606,12 @@ class ManifestCheckout(Manifest):
 
     return True
 
-  def FindCheckouts(self, project, branch=None, only_patchable=False):
+  def FindCheckouts(self, project, branch=None):
     """Returns the list of checkouts for a given |project|/|branch|.
 
     Args:
       project: Project name to search for.
       branch: Branch to use.
-      only_patchable: Restrict search to patchable project paths.
 
     Returns:
       A list of ProjectCheckout objects.
@@ -641,8 +619,6 @@ class ManifestCheckout(Manifest):
     checkouts = []
     for checkout in self.checkouts_by_name.get(project, []):
       if project == checkout['name']:
-        if only_patchable and not checkout.IsPatchable():
-          continue
         tracking_branch = checkout['tracking_branch']
         if branch is None or StripRefs(branch) == StripRefs(tracking_branch):
           checkouts.append(checkout)

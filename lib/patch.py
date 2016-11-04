@@ -1273,8 +1273,7 @@ class GitRepoPatch(PatchQuery):
       ChangeMatchesMultipleCheckouts if there are multiple checkouts that
       match this change.
     """
-    checkouts = manifest.FindCheckouts(self.project, self.tracking_branch,
-                                       only_patchable=True)
+    checkouts = manifest.FindCheckouts(self.project, self.tracking_branch)
     if len(checkouts) != 1:
       if len(checkouts) > 1:
         raise ChangeMatchesMultipleCheckouts(self)
@@ -1997,7 +1996,7 @@ def PrepareLocalPatches(manifest, patches):
   for patch in patches:
     project, branch = patch.split(':')
     project_patch_info = []
-    for checkout in manifest.FindCheckouts(project, only_patchable=True):
+    for checkout in manifest.FindCheckouts(project):
       tracking_branch = checkout['tracking_branch']
       project_dir = checkout.GetPath(absolute=True)
       remote = checkout['remote']

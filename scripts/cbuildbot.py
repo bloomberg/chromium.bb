@@ -272,7 +272,7 @@ def _CheckLocalPatches(sourceroot, local_patches):
   for patch in local_patches:
     project, _, branch = patch.partition(':')
 
-    checkouts = manifest.FindCheckouts(project, only_patchable=True)
+    checkouts = manifest.FindCheckouts(project)
     if not checkouts:
       cros_build_lib.Die('Project %s does not exist.' % (project,))
     if len(checkouts) > 1:

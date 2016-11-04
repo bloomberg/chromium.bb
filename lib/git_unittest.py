@@ -214,12 +214,6 @@ class ProjectCheckoutTest(cros_test_lib.TestCase):
              revision='1deadbeeaf1deadbeeaf1deadbeeaf1deadbeeaf',
              upstream='1deadbeeaf1deadbeeaf1deadbeeaf1deadbeeaf'))
 
-  def testIsPatchable(self):
-    self.assertTrue(self.fake_unversioned_patchable.IsPatchable())
-    self.assertFalse(self.fake_unversioned_unpatchable.IsPatchable())
-    self.assertTrue(self.fake_versioned_patchable.IsPatchable())
-    self.assertFalse(self.fake_versioned_unpatchable.IsPatchable())
-
 
 class RawDiffTest(cros_test_lib.MockTestCase):
   """Tests for git.RawDiff function."""
