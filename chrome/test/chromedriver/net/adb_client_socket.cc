@@ -333,7 +333,7 @@ void AdbClientSocket::TransportQuery(int port,
     net::AddressList address_list = net::AddressList::CreateFromIPAddress(
         net::IPAddress::IPv4Localhost(), tcp_port);
     net::TCPClientSocket* socket = new net::TCPClientSocket(
-        address_list, NULL, net::NetLogSource());
+        address_list, nullptr, nullptr, net::NetLogSource());
     socket->Connect(base::Bind(&UseTransportQueryForDesktop, callback, socket));
     return;
   }
