@@ -1,4 +1,4 @@
-// Copyright 2015 The Chromium Authors. All rights reserved.
+// Copyright 2016 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -24,14 +24,17 @@ import org.chromium.components.offlinepages.BackgroundSavePageResult;
 
 import java.io.BufferedReader;
 import java.io.File;
+import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.FileReader;
 import java.io.FileWriter;
 import java.io.IOException;
+import java.io.InputStream;
 import java.io.OutputStreamWriter;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Properties;
 import java.util.concurrent.Semaphore;
 import java.util.concurrent.TimeUnit;
 
@@ -72,15 +75,13 @@ public class OfflinePageSavePageLaterEvaluationTest
     private static final String TAG = "OPSPLEvaluation";
     private static final String NAMESPACE = "async_loading";
     private static final String NEW_LINE = System.getProperty("line.separator");
-    private static final String INPUT_FILE_PATH = "paquete/offline_eval_urls.txt";
-    private static final String RESULT_OUTPUT_FILE_PATH = "paquete/offline_eval_results.txt";
-    private static final String LOG_OUTPUT_FILE_PATH = "paquete/offline_eval_logs.txt";
-    private static final int PAGE_MODEL_LOAD_TIMEOUT_MS = 5000;
-    private static final int GET_PAGES_TIMEOUT_MS = 5000;
-    private static final int TIMEOUT_PER_URL_USUAL_CASE = 180;
-    private static final int TIMEOUT_PER_URL_AUTO_SCHEDULE = 24 * 60 * 60;
     private static final String DELIMITER = ";";
-    private static final long DEFAULT_TIMEOUT_PER_URL_IN_SECONDS = 180L;
+    private static final String CONFIG_FILE_PATH = "paquete/test_config";
+    private static final String INPUT_FILE_PATH = "paquete/offline_eval_urls.txt";
+    private static final String LOG_OUTPUT_FILE_PATH = "paquete/offline_eval_logs.txt";
+    private static final String RESULT_OUTPUT_FILE_PATH = "paquete/offline_eval_results.txt";
+    private static final int GET_PAGES_TIMEOUT_MS = 5000;
+    private static final int PAGE_MODEL_LOAD_TIMEOUT_MS = 5000;
 
     private OfflinePageEvaluationBridge mBridge;
     private OfflinePageEvaluationObserver mObserver;
@@ -92,10 +93,8 @@ public class OfflinePageSavePageLaterEvaluationTest
     private boolean mUseTestScheduler;
 
     private LongSparseArray<RequestMetadata> mRequestMetadata;
+    // TODO(romax): Use actual policy to determine the timeout.
     private Long mTimeoutPerUrlInSeconds = 0L;
-    private String mInputFilePath = INPUT_FILE_PATH;
-    private String mResultOutputFilePath = RESULT_OUTPUT_FILE_PATH;
-    private String mLogOutputFilePath = LOG_OUTPUT_FILE_PATH;
     private OutputStreamWriter mLogOutput;
 
     public OfflinePageSavePageLaterEvaluationTest() {
@@ -148,10 +147,27 @@ public class OfflinePageSavePageLaterEvaluationTest
         Log.e(TAG, error);
         if (mLogOutput != null) {
             try {
-                mLogOutput.write(error);
+                mLogOutput.write(error + NEW_LINE);
             } catch (Exception e) {
                 Log.e(TAG, e.getMessage(), e);
             }
+        }
+    }
+
+    /**
+     * Assert the condition is true, otherwise abort the test and log.
+     */
+    private void checkTrue(boolean condition, String message) {
+        if (!condition) {
+            logError(message);
+            if (mLogOutput != null) {
+                try {
+                    mLogOutput.close();
+                } catch (IOException e) {
+                    Log.e(TAG, e.getMessage(), e);
+                }
+            }
+            fail();
         }
     }
 
@@ -185,7 +201,8 @@ public class OfflinePageSavePageLaterEvaluationTest
                 });
             }
         });
-        assertTrue(semaphore.tryAcquire(PAGE_MODEL_LOAD_TIMEOUT_MS, TimeUnit.MILLISECONDS));
+        checkTrue(semaphore.tryAcquire(PAGE_MODEL_LOAD_TIMEOUT_MS, TimeUnit.MILLISECONDS),
+                "Timed out when loading OfflinePageModel!");
     }
 
     /**
@@ -194,21 +211,20 @@ public class OfflinePageSavePageLaterEvaluationTest
      *                           will be used. False otherwise.
      */
     protected void setUpIOAndBridge(final boolean useCustomScheduler) throws InterruptedException {
-        // TODO(romax): Get the file urls from command line/user input.
         try {
-            mLogOutput = getOutputStream(mLogOutputFilePath);
+            mLogOutput = getOutputStream(LOG_OUTPUT_FILE_PATH);
         } catch (IOException e) {
             Log.wtf(TAG, "Cannot set output file!");
             Log.wtf(TAG, e.getMessage(), e);
         }
         try {
-            getUrlListFromInputFile(mInputFilePath);
+            getUrlListFromInputFile(INPUT_FILE_PATH);
         } catch (IOException e) {
             Log.wtf(TAG, "Cannot read input file!");
             Log.wtf(TAG, e.getMessage(), e);
         }
-        assertTrue("URLs weren't loaded.", mUrls != null);
-        assertFalse("No valid URLs in the input file.", mUrls.size() == 0);
+        checkTrue(mUrls != null, "URLs weren't loaded.");
+        checkTrue(mUrls.size() > 0, "No valid URLs in the input file.");
 
         initializeBridgeForProfile(useCustomScheduler);
         mObserver = new OfflinePageEvaluationObserver() {
@@ -260,11 +276,6 @@ public class OfflinePageSavePageLaterEvaluationTest
             return;
         }
         mDoneSemaphore = new Semaphore(0);
-        // If no timeout value is given, set 180 seconds for each url as default.
-        // TODO(romax): Find a way to get network condition and apply different default values.
-        if (mTimeoutPerUrlInSeconds == 0) {
-            mTimeoutPerUrlInSeconds = DEFAULT_TIMEOUT_PER_URL_IN_SECONDS;
-        }
         for (String url : mUrls) {
             savePageLater(url, NAMESPACE);
         }
@@ -346,7 +357,8 @@ public class OfflinePageSavePageLaterEvaluationTest
                 });
             }
         });
-        assertTrue(semaphore.tryAcquire(GET_PAGES_TIMEOUT_MS, TimeUnit.MILLISECONDS));
+        checkTrue(semaphore.tryAcquire(GET_PAGES_TIMEOUT_MS, TimeUnit.MILLISECONDS),
+                "Timed out when getting all offline pages");
     }
 
     /**
@@ -362,19 +374,20 @@ public class OfflinePageSavePageLaterEvaluationTest
      */
     private void writeResults(boolean completed) throws IOException, InterruptedException {
         loadSavedPages();
-        OutputStreamWriter output = getOutputStream(mResultOutputFilePath);
+        OutputStreamWriter output = getOutputStream(RESULT_OUTPUT_FILE_PATH);
         try {
             int failedCount = 0;
             if (!completed) {
-                logError("Test terminated before all requests completed." + NEW_LINE);
+                logError("Test terminated before all requests completed.");
             }
             for (int i = 0; i < mRequestMetadata.size(); i++) {
                 RequestMetadata metadata = mRequestMetadata.valueAt(i);
                 long requestId = metadata.mId;
                 int status = metadata.mStatus;
+                String url = metadata.mUrl;
                 OfflinePageItem page = metadata.mPage;
                 if (page == null) {
-                    output.write(metadata.mUrl + DELIMITER + statusToString(status) + NEW_LINE);
+                    output.write(url + DELIMITER + statusToString(status) + NEW_LINE);
                     if (status != -1) {
                         failedCount++;
                     }
@@ -394,44 +407,44 @@ public class OfflinePageSavePageLaterEvaluationTest
             if (output != null) {
                 output.close();
             }
+            if (mLogOutput != null) {
+                mLogOutput.close();
+            }
         }
     }
 
     /**
-     * The tests would terminate after #urls * mTimeoutPerUrlInSeconds even if some urls are still
-     * being processed.
+     * Method to parse config files for test parameters.
+     */
+    public void parseConfigFile() throws IOException {
+        Properties properties = new Properties();
+        InputStream inputStream = null;
+        try {
+            File configFile = new File(Environment.getExternalStorageDirectory(), CONFIG_FILE_PATH);
+            inputStream = new FileInputStream(configFile);
+            properties.load(inputStream);
+            mIsUserRequested = Boolean.parseBoolean(properties.getProperty("IsUserRequested"));
+            mTimeoutPerUrlInSeconds =
+                    Long.parseLong(properties.getProperty("TimeoutPerUrlInSeconds"));
+            mUseTestScheduler = Boolean.parseBoolean(properties.getProperty("UseTestScheduler"));
+        } catch (FileNotFoundException e) {
+            Log.e(TAG, e.getMessage(), e);
+            fail(String.format(
+                    "Config file %s is not found, aborting the test.", CONFIG_FILE_PATH));
+        } finally {
+            if (inputStream != null) {
+                inputStream.close();
+            }
+        }
+    }
+
+    /**
+     * The test is the entry point for all kinds of testing of SavePageLater.
+     * It is encouraged to use run_offline_page_evaluation_test.py to run this test.
      */
     @Manual
-    public void testFailureRateWithTimeoutPerUrl() throws IOException, InterruptedException {
-        // TODO(romax) All manual setting of private attributes should be considered moving to a
-        // config file or from command-line by user. Also find a better place for default values.
-        mTimeoutPerUrlInSeconds = (long) (TIMEOUT_PER_URL_USUAL_CASE);
-        mIsUserRequested = true;
-        mResultOutputFilePath = RESULT_OUTPUT_FILE_PATH;
-        mUseTestScheduler = true;
-        // Use testing scheduler.
-        setUpIOAndBridge(mUseTestScheduler);
-        processUrls(mUrls);
-    }
-
-    @Manual
-    public void testFailureRate() throws IOException, InterruptedException {
-        mTimeoutPerUrlInSeconds = (long) (TIMEOUT_PER_URL_AUTO_SCHEDULE);
-        mResultOutputFilePath = RESULT_OUTPUT_FILE_PATH;
-        mIsUserRequested = false;
-        mUseTestScheduler = true;
-        // Use testing scheduler.
-        setUpIOAndBridge(mUseTestScheduler);
-        processUrls(mUrls);
-    }
-
-    @Manual
-    public void testFailureRateWithGCMScheduler() throws IOException, InterruptedException {
-        mTimeoutPerUrlInSeconds = (long) (TIMEOUT_PER_URL_AUTO_SCHEDULE);
-        mResultOutputFilePath = RESULT_OUTPUT_FILE_PATH;
-        mIsUserRequested = false;
-        mUseTestScheduler = false;
-        // Use default scheduler with GCMNetworkManager.
+    public void testFailureRateWithTimeout() throws IOException, InterruptedException {
+        parseConfigFile();
         setUpIOAndBridge(mUseTestScheduler);
         processUrls(mUrls);
     }
