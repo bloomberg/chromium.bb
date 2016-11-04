@@ -82,10 +82,6 @@ StyleEngine::StyleEngine(Document& document)
 
 StyleEngine::~StyleEngine() {}
 
-static bool isStyleElement(Node& node) {
-  return isHTMLStyleElement(node) || isSVGStyleElement(node);
-}
-
 inline Document* StyleEngine::master() {
   if (isMaster())
     return m_document;
@@ -160,11 +156,8 @@ void StyleEngine::addPendingSheet(StyleEngineContext& context) {
 // This method is called whenever a top-level stylesheet has finished loading.
 void StyleEngine::removePendingSheet(Node& styleSheetCandidateNode,
                                      const StyleEngineContext& context) {
-  TreeScope* treeScope = isStyleElement(styleSheetCandidateNode)
-                             ? &styleSheetCandidateNode.treeScope()
-                             : m_document.get();
   if (styleSheetCandidateNode.isConnected())
-    markTreeScopeDirty(*treeScope);
+    markTreeScopeDirty(styleSheetCandidateNode.treeScope());
 
   if (context.addedPendingSheetBeforeBody()) {
     DCHECK_GT(m_pendingRenderBlockingStylesheets, 0);
@@ -194,12 +187,8 @@ void StyleEngine::setNeedsActiveStyleUpdate(
 
   if (sheet && document().isActive()) {
     Node* node = sheet->ownerNode();
-    if (node && node->isConnected()) {
-      TreeScope& treeScope =
-          isStyleElement(*node) ? node->treeScope() : *m_document;
-      DCHECK(isStyleElement(*node) || node->treeScope() == m_document);
-      markTreeScopeDirty(treeScope);
-    }
+    if (node && node->isConnected())
+      markTreeScopeDirty(node->treeScope());
   }
 
   resolverChanged(updateMode);
@@ -227,7 +216,6 @@ void StyleEngine::removeStyleSheetCandidateNode(Node& node) {
 
 void StyleEngine::removeStyleSheetCandidateNode(Node& node,
                                                 TreeScope& treeScope) {
-  DCHECK(isStyleElement(node) || treeScope == m_document);
   DCHECK(!isXSLStyleSheet(node));
 
   TreeScopeStyleSheetCollection* collection =
@@ -245,9 +233,7 @@ void StyleEngine::modifiedStyleSheetCandidateNode(Node& node) {
   if (!node.isConnected())
     return;
 
-  TreeScope& treeScope = isStyleElement(node) ? node.treeScope() : *m_document;
-  DCHECK(isStyleElement(node) || treeScope == m_document);
-  markTreeScopeDirty(treeScope);
+  markTreeScopeDirty(node.treeScope());
   resolverChanged(AnalyzedStyleUpdate);
 }
 
