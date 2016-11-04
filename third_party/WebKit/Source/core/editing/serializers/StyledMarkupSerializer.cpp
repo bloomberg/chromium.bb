@@ -386,7 +386,7 @@ Node* StyledMarkupTraverser<Strategy>::traverse(Node* startNode,
       // node.
       appendEndMarkup(*ancestor);
       lastClosed = ancestor;
-      ancestorsToClose.removeLast();
+      ancestorsToClose.pop_back();
     }
 
     // Surround the currently accumulated markup with markup for ancestors we

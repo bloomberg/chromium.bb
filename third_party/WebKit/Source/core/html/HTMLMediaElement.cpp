@@ -2201,7 +2201,7 @@ ScriptPromise HTMLMediaElement::playForBindings(ScriptState* scriptState) {
   Nullable<ExceptionCode> code = play();
   if (!code.isNull()) {
     DCHECK(!m_playPromiseResolvers.isEmpty());
-    m_playPromiseResolvers.removeLast();
+    m_playPromiseResolvers.pop_back();
 
     String message;
     switch (code.get()) {

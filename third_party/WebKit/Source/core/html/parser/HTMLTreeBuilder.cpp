@@ -870,7 +870,7 @@ bool HTMLTreeBuilder::processTemplateEndTag(AtomicHTMLToken* token) {
     parseError(token);
   m_tree.openElements()->popUntilPopped(templateTag);
   m_tree.activeFormattingElements()->clearToLastMarker();
-  m_templateInsertionModes.removeLast();
+  m_templateInsertionModes.pop_back();
   resetInsertionModeAppropriately();
   return true;
 }

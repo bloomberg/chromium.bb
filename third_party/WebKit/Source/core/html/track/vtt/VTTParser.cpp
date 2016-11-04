@@ -555,7 +555,7 @@ void VTTTreeBuilder::constructTreeFromToken(Document& document) {
         }
       }
       if (nodeType == VTTNodeTypeLanguage)
-        m_languageStack.removeLast();
+        m_languageStack.pop_back();
       if (m_currentNode->parentNode())
         m_currentNode = m_currentNode->parentNode();
       break;

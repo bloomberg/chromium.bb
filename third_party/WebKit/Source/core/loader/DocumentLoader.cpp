@@ -401,7 +401,7 @@ void DocumentLoader::cancelLoadAfterXFrameOptionsOrCSPDenied(
   KURL blockedURL = SecurityOrigin::urlWithUniqueSecurityOrigin();
   m_originalRequest.setURL(blockedURL);
   m_request.setURL(blockedURL);
-  m_redirectChain.removeLast();
+  m_redirectChain.pop_back();
   appendRedirect(blockedURL);
   m_response = ResourceResponse(blockedURL, "text/html", 0, nullAtom, String());
   finishedLoading(monotonicallyIncreasingTime());

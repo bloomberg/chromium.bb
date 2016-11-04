@@ -48,7 +48,7 @@ bool SizesCalcParser::handleOperator(Vector<CSSParserToken>& stack,
       return false;
     if (!incomingOperatorPriority || stackOperatorPriority) {
       appendOperator(stack.last());
-      stack.removeLast();
+      stack.pop_back();
     }
   }
   stack.append(token);
@@ -116,7 +116,7 @@ bool SizesCalcParser::calcToReversePolishNotation(CSSParserTokenRange range) {
                stack.last().type() != LeftParenthesisToken &&
                stack.last().type() != FunctionToken) {
           appendOperator(stack.last());
-          stack.removeLast();
+          stack.pop_back();
         }
         // If the stack runs out without finding a left parenthesis, then there
         // are mismatched parentheses.
@@ -124,7 +124,7 @@ bool SizesCalcParser::calcToReversePolishNotation(CSSParserTokenRange range) {
           return false;
         // Pop the left parenthesis from the stack, but not onto the output
         // queue.
-        stack.removeLast();
+        stack.pop_back();
         break;
       case WhitespaceToken:
       case EOFToken:
@@ -169,7 +169,7 @@ bool SizesCalcParser::calcToReversePolishNotation(CSSParserTokenRange range) {
       return false;
     // Pop the operator onto the output queue.
     appendOperator(stack.last());
-    stack.removeLast();
+    stack.pop_back();
   }
   return true;
 }
@@ -178,9 +178,9 @@ static bool operateOnStack(Vector<SizesCalcValue>& stack, UChar operation) {
   if (stack.size() < 2)
     return false;
   SizesCalcValue rightOperand = stack.last();
-  stack.removeLast();
+  stack.pop_back();
   SizesCalcValue leftOperand = stack.last();
-  stack.removeLast();
+  stack.pop_back();
   bool isLength;
   switch (operation) {
     case '+':

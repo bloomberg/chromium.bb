@@ -132,7 +132,7 @@ void* ContiguousContainerBase::allocate(size_t objectSize,
 
 void ContiguousContainerBase::removeLast() {
   void* object = m_elements.last();
-  m_elements.removeLast();
+  m_elements.pop_back();
 
   Buffer* endBuffer = m_buffers[m_endIndex].get();
   endBuffer->deallocateLastObject(object);
@@ -141,7 +141,7 @@ void ContiguousContainerBase::removeLast() {
     if (m_endIndex > 0)
       m_endIndex--;
     if (m_endIndex + 2 < m_buffers.size())
-      m_buffers.removeLast();
+      m_buffers.pop_back();
   }
 }
 
@@ -161,7 +161,7 @@ void ContiguousContainerBase::swap(ContiguousContainerBase& other) {
 void ContiguousContainerBase::shrinkToFit() {
   while (m_endIndex < m_buffers.size() - 1) {
     DCHECK(m_buffers.last()->isEmpty());
-    m_buffers.removeLast();
+    m_buffers.pop_back();
   }
 }
 

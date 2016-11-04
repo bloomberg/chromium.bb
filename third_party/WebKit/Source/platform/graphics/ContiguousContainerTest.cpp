@@ -286,7 +286,7 @@ TEST(ContiguousContainerTest, IterationAfterRemoveLast) {
     pointers.append(&list.allocateAndConstruct<SmallStruct>());
   };
   auto pop = [&list, &pointers]() {
-    pointers.removeLast();
+    pointers.pop_back();
     list.removeLast();
   };
   auto check_equal = [&list, &pointers]() {

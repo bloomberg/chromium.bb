@@ -79,8 +79,8 @@ bool PaintChunker::decrementDisplayItemIndex() {
     return false;
   }
 
-  m_chunks.removeLast();
-  m_chunkBehavior.removeLast();
+  m_chunks.pop_back();
+  m_chunkBehavior.pop_back();
   return true;
 }
 

@@ -88,7 +88,7 @@ String DOMFilePath::removeExtraParentReferences(const String& path) {
       continue;
     if (components[i] == "..") {
       if (canonicalized.size() > 0)
-        canonicalized.removeLast();
+        canonicalized.pop_back();
       continue;
     }
     canonicalized.append(components[i]);

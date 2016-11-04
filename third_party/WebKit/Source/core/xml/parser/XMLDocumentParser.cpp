@@ -309,7 +309,7 @@ void XMLDocumentParser::popCurrentNode() {
     return;
   DCHECK(m_currentNodeStack.size());
   m_currentNode = m_currentNodeStack.last();
-  m_currentNodeStack.removeLast();
+  m_currentNodeStack.pop_back();
 }
 
 void XMLDocumentParser::clearCurrentNodeStack() {
@@ -817,7 +817,7 @@ XMLDocumentParser::XMLDocumentParser(DocumentFragment* fragment,
   if (elemStack.isEmpty())
     return;
 
-  for (; !elemStack.isEmpty(); elemStack.removeLast()) {
+  for (; !elemStack.isEmpty(); elemStack.pop_back()) {
     Element* element = elemStack.last();
     AttributeCollection attributes = element->attributes();
     for (auto& attribute : attributes) {

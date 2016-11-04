@@ -124,7 +124,7 @@ CSSParserToken CSSTokenizer::blockStart(CSSParserTokenType blockType,
 CSSParserToken CSSTokenizer::blockEnd(CSSParserTokenType type,
                                       CSSParserTokenType startType) {
   if (!m_blockStack.isEmpty() && m_blockStack.last() == startType) {
-    m_blockStack.removeLast();
+    m_blockStack.pop_back();
     return CSSParserToken(type, CSSParserToken::BlockEnd);
   }
   return CSSParserToken(type);

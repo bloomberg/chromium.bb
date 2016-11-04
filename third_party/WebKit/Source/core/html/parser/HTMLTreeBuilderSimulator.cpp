@@ -130,7 +130,7 @@ HTMLTreeBuilderSimulator::SimulatedToken HTMLTreeBuilderSimulator::simulate(
     if (threadSafeMatch(tagName, MathMLNames::mathTag))
       m_namespaceStack.append(MathML);
     if (inForeignContent() && tokenExitsForeignContent(token))
-      m_namespaceStack.removeLast();
+      m_namespaceStack.pop_back();
     if ((m_namespaceStack.last() == SVG && tokenExitsSVG(token)) ||
         (m_namespaceStack.last() == MathML && tokenExitsMath(token)))
       m_namespaceStack.append(HTML);
@@ -168,7 +168,7 @@ HTMLTreeBuilderSimulator::SimulatedToken HTMLTreeBuilderSimulator::simulate(
          tokenExitsSVG(token)) ||
         (m_namespaceStack.contains(MathML) && m_namespaceStack.last() == HTML &&
          tokenExitsMath(token)))
-      m_namespaceStack.removeLast();
+      m_namespaceStack.pop_back();
     if (threadSafeMatch(tagName, scriptTag)) {
       if (!inForeignContent())
         tokenizer->setState(HTMLTokenizer::DataState);

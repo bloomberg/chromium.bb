@@ -640,7 +640,7 @@ int PropertyTreeManager::switchToEffectNode(
   const EffectPaintPropertyNode* ancestor =
       lowestCommonAncestor(currentEffectNode(), &nextEffect);
   while (currentEffectNode() != ancestor)
-    m_effectStack.removeLast();
+    m_effectStack.pop_back();
 
 #if DCHECK_IS_ON()
   DCHECK(m_isFirstEffectEver || currentEffectNode())

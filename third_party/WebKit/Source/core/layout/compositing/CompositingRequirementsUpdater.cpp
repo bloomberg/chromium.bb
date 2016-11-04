@@ -133,7 +133,7 @@ class CompositingRequirementsUpdater::OverlapMap {
         m_overlapStack.last().clipped);
     m_overlapStack[m_overlapStack.size() - 2].unclipped.unite(
         m_overlapStack.last().unclipped);
-    m_overlapStack.removeLast();
+    m_overlapStack.pop_back();
   }
 
  private:

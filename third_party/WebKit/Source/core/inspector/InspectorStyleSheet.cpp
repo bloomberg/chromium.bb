@@ -190,7 +190,7 @@ void StyleSheetHandler::startRuleHeader(StyleRule::RuleType type,
                                         unsigned offset) {
   // Pop off data for a previous invalid rule.
   if (m_currentRuleData)
-    m_currentRuleDataStack.removeLast();
+    m_currentRuleDataStack.pop_back();
 
   RefPtr<CSSRuleSourceData> data = CSSRuleSourceData::create(type);
   data->ruleHeaderRange.start = offset;
@@ -258,7 +258,7 @@ PassRefPtr<CSSRuleSourceData> StyleSheetHandler::popRuleData() {
   ASSERT(!m_currentRuleDataStack.isEmpty());
   m_currentRuleData = nullptr;
   RefPtr<CSSRuleSourceData> data = m_currentRuleDataStack.last().get();
-  m_currentRuleDataStack.removeLast();
+  m_currentRuleDataStack.pop_back();
   return data.release();
 }
 

@@ -352,7 +352,7 @@ void WebView::willEnterModalLoop() {
 
 void WebView::didExitModalLoop() {
   DCHECK(pageLoadDeferrerStack().size());
-  pageLoadDeferrerStack().removeLast();
+  pageLoadDeferrerStack().pop_back();
 }
 
 void WebViewImpl::setMainFrame(WebFrame* frame) {

@@ -145,7 +145,7 @@ void PaintController::removeLastDisplayItem() {
     Vector<size_t>& indices = it->value;
     if (!indices.isEmpty() &&
         indices.last() == (m_newDisplayItemList.size() - 1))
-      indices.removeLast();
+      indices.pop_back();
   }
 #endif
 
@@ -193,7 +193,7 @@ void PaintController::processNewItem(DisplayItem& displayItem) {
       m_currentSubsequenceClients.append(&displayItem.client());
     } else if (displayItem.getType() == DisplayItem::kEndSubsequence) {
       CHECK(m_currentSubsequenceClients.last() == &displayItem.client());
-      m_currentSubsequenceClients.removeLast();
+      m_currentSubsequenceClients.pop_back();
     }
   }
 #endif

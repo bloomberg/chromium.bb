@@ -297,7 +297,7 @@ RefPtr<Canvas2DLayerBridge::ImageInfo>
 Canvas2DLayerBridge::createIOSurfaceBackedTexture() {
   if (!m_imageInfoCache.isEmpty()) {
     RefPtr<Canvas2DLayerBridge::ImageInfo> info = m_imageInfoCache.last();
-    m_imageInfoCache.removeLast();
+    m_imageInfoCache.pop_back();
     return info;
   }
 

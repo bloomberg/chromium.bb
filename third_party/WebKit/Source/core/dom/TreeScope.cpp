@@ -484,8 +484,8 @@ const TreeScope* TreeScope::commonAncestorTreeScope(
   while (!thisChain.isEmpty() && !otherChain.isEmpty() &&
          thisChain.last() == otherChain.last()) {
     lastAncestor = thisChain.last();
-    thisChain.removeLast();
-    otherChain.removeLast();
+    thisChain.pop_back();
+    otherChain.pop_back();
   }
   return lastAncestor;
 }

@@ -240,7 +240,7 @@ static IDBKey* createIDBKeyFromValue(v8::Isolate* isolate,
         subkeys.append(subkey);
     }
 
-    stack.removeLast();
+    stack.pop_back();
     return IDBKey::createArray(subkeys);
   }
   return nullptr;

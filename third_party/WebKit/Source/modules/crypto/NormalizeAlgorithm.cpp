@@ -219,7 +219,7 @@ class ErrorContext {
  public:
   void add(const char* message) { m_messages.append(message); }
 
-  void removeLast() { m_messages.removeLast(); }
+  void removeLast() { m_messages.pop_back(); }
 
   // Join all of the string literals into a single String.
   String toString() const {

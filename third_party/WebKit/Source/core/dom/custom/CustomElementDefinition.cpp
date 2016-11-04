@@ -135,7 +135,7 @@ CustomElementDefinition::ConstructionStackScope::~ConstructionStackScope() {
   DCHECK(!m_constructionStack.last() ||
          m_constructionStack.last() == m_element);
   DCHECK_EQ(m_constructionStack.size(), m_depth);  // It's a *stack*.
-  m_constructionStack.removeLast();
+  m_constructionStack.pop_back();
 }
 
 // https://html.spec.whatwg.org/multipage/scripting.html#concept-upgrade-an-element

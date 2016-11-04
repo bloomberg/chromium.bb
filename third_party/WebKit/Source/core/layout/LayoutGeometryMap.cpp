@@ -313,7 +313,7 @@ void LayoutGeometryMap::popMappingsToAncestor(
     mightBeSaturated =
         mightBeSaturated || m_accumulatedOffset.height().mightBeSaturated();
     stepRemoved(m_mapping.last());
-    m_mapping.removeLast();
+    m_mapping.pop_back();
   }
   if (UNLIKELY(mightBeSaturated)) {
     m_accumulatedOffset = LayoutSize();

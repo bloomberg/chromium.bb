@@ -230,7 +230,7 @@ std::unique_ptr<cc::SharedBitmap> DrawingBuffer::createOrRecycleBitmap() {
 
   if (!m_recycledBitmaps.isEmpty()) {
     RecycledBitmap recycled = std::move(m_recycledBitmaps.last());
-    m_recycledBitmaps.removeLast();
+    m_recycledBitmaps.pop_back();
     DCHECK(recycled.size == m_size);
     return std::move(recycled.bitmap);
   }

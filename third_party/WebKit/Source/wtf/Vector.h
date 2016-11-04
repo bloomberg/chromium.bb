@@ -969,7 +969,7 @@ class Vector
   void remove(size_t position);
   void remove(size_t position, size_t length);
 
-  void removeLast() {
+  void pop_back() {
     ASSERT(!isEmpty());
     shrink(size() - 1);
   }

@@ -4987,7 +4987,7 @@ void Document::pushCurrentScript(Element* newCurrentScript) {
 
 void Document::popCurrentScript() {
   DCHECK(!m_currentScriptStack.isEmpty());
-  m_currentScriptStack.removeLast();
+  m_currentScriptStack.pop_back();
 }
 
 void Document::setTransformSource(std::unique_ptr<TransformSource> source) {

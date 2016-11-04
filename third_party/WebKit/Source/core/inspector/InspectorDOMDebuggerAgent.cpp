@@ -370,7 +370,7 @@ void InspectorDOMDebuggerAgent::didRemoveDOMNode(Node* node) {
     HeapVector<Member<Node>> stack(1, InspectorDOMAgent::innerFirstChild(node));
     do {
       Node* node = stack.last();
-      stack.removeLast();
+      stack.pop_back();
       if (!node)
         continue;
       m_domBreakpoints.remove(node);

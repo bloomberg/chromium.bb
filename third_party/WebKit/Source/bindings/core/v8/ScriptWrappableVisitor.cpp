@@ -121,7 +121,7 @@ void ScriptWrappableVisitor::performLazyCleanup(double deadlineSeconds) {
       header->unmarkWrapperHeader();
 
     ++it;
-    m_headersToUnmark.removeLast();
+    m_headersToUnmark.pop_back();
 
     processedWrapperCount++;
     if (processedWrapperCount % kDeadlineCheckInterval == 0) {

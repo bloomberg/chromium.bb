@@ -724,7 +724,7 @@ bool EventTarget::fireEventListeners(Event* event,
 
     CHECK_LE(i, size);
   }
-  d->firingEventIterators->removeLast();
+  d->firingEventIterators->pop_back();
   return firedListener;
 }
 

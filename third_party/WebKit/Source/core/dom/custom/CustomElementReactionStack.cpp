@@ -42,7 +42,7 @@ void CustomElementReactionStack::popInvokingReactions() {
   ElementQueue* queue = m_stack.last();
   if (queue)
     invokeReactions(*queue);
-  m_stack.removeLast();
+  m_stack.pop_back();
 }
 
 void CustomElementReactionStack::invokeReactions(ElementQueue& queue) {

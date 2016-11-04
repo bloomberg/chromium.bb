@@ -228,7 +228,7 @@ bool StyleInvalidator::SiblingData::matchCurrentInvalidationSets(
       // m_invalidationEntries[index] only applies to earlier siblings. Remove
       // it.
       m_invalidationEntries[index] = m_invalidationEntries.last();
-      m_invalidationEntries.removeLast();
+      m_invalidationEntries.pop_back();
       continue;
     }
 

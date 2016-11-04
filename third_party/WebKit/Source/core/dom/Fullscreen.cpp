@@ -761,7 +761,7 @@ void Fullscreen::popFullscreenElementStack() {
   if (m_fullscreenElementStack.isEmpty())
     return;
 
-  m_fullscreenElementStack.removeLast();
+  m_fullscreenElementStack.pop_back();
 }
 
 void Fullscreen::pushFullscreenElementStack(Element& element,

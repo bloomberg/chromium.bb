@@ -52,7 +52,7 @@ blink::VibrationController::VibrationPattern sanitizeVibrationPatternInternal(
 
   // If the last item in the pattern is a pause then discard it.
   if (length && !(length % 2))
-    sanitized.removeLast();
+    sanitized.pop_back();
 
   return sanitized;
 }
