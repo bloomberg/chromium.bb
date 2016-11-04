@@ -77,9 +77,6 @@ class ArcAuthService : public ArcService,
    public:
     virtual ~Observer() = default;
 
-    // Called whenever Opt-In state of the ARC has been changed.
-    virtual void OnOptInChanged(State state) {}
-
     // Called to notify that ARC bridge is shut down.
     virtual void OnShutdownBridge() {}
 

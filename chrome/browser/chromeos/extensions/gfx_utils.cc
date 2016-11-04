@@ -5,8 +5,6 @@
 #include "chrome/browser/chromeos/extensions/gfx_utils.h"
 
 #include "base/lazy_instance.h"
-#include "chrome/browser/chromeos/arc/arc_auth_service.h"
-#include "chrome/browser/chromeos/arc/arc_support_host.h"
 #include "chrome/browser/chromeos/profiles/profile_helper.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/app_list/arc/arc_app_list_prefs.h"
@@ -191,13 +189,6 @@ void MaybeApplyChromeBadge(content::BrowserContext* context,
   // Only apply Chrome badge for the primary profile.
   if (!chromeos::ProfileHelper::IsPrimaryProfile(profile) ||
       !multi_user_util::IsProfileFromActiveUser(profile)) {
-    return;
-  }
-
-  arc::ArcAuthService* arc_auth_service = arc::ArcAuthService::Get();
-  // Only apply Chrome badge when ARC service is enabled.
-  if (!arc_auth_service ||
-      arc_auth_service->state() != arc::ArcAuthService::State::ACTIVE) {
     return;
   }
 

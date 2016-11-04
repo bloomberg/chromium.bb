@@ -514,12 +514,7 @@ void ArcAuthService::GetIsAccountManagedDeprecated(
 }
 
 void ArcAuthService::SetState(State state) {
-  if (state_ == state)
-    return;
-
   state_ = state;
-  for (auto& observer : observer_list_)
-    observer.OnOptInChanged(state_);
 }
 
 bool ArcAuthService::IsAllowed() const {

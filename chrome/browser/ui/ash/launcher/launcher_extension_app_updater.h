@@ -6,7 +6,6 @@
 #define CHROME_BROWSER_UI_ASH_LAUNCHER_LAUNCHER_EXTENSION_APP_UPDATER_H_
 
 #include "base/macros.h"
-#include "chrome/browser/chromeos/arc/arc_auth_service.h"
 #include "chrome/browser/ui/app_list/arc/arc_app_list_prefs.h"
 #include "chrome/browser/ui/ash/launcher/launcher_app_updater.h"
 #include "extensions/browser/extension_registry_observer.h"
@@ -18,7 +17,6 @@ class ExtensionSet;
 class LauncherExtensionAppUpdater
     : public LauncherAppUpdater,
       public extensions::ExtensionRegistryObserver,
-      public arc::ArcAuthService::Observer,
       public ArcAppListPrefs::Observer {
  public:
   LauncherExtensionAppUpdater(Delegate* delegate,
@@ -36,9 +34,6 @@ class LauncherExtensionAppUpdater
                               const extensions::Extension* extension,
                               extensions::UninstallReason reason) override;
   void OnShutdown(extensions::ExtensionRegistry* registry) override;
-
-  // arc::ArcAuthService::Observer:
-  void OnOptInChanged(arc::ArcAuthService::State state) override;
 
   // ArcAppListPrefs::Observer
   void OnPackageInstalled(

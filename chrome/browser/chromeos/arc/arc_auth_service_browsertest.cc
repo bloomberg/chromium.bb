@@ -55,11 +55,12 @@ const char kFakeUserName[] = "test@example.com";
 
 namespace arc {
 
-// Base ArcAuthService observer.
-class ArcAuthServiceObserver : public ArcAuthService::Observer {
+// Observer of ARC bridge shutdown.
+class ArcAuthServiceShutdownObserver : public ArcAuthService::Observer {
  public:
-  // ArcAuthService::Observer:
-  ~ArcAuthServiceObserver() override {
+  ArcAuthServiceShutdownObserver() { ArcAuthService::Get()->AddObserver(this); }
+
+  ~ArcAuthServiceShutdownObserver() override {
     ArcAuthService::Get()->RemoveObserver(this);
   }
 
@@ -69,36 +70,6 @@ class ArcAuthServiceObserver : public ArcAuthService::Observer {
     run_loop_.reset();
   }
 
- protected:
-  ArcAuthServiceObserver() { ArcAuthService::Get()->AddObserver(this); }
-
-  std::unique_ptr<base::RunLoop> run_loop_;
-
- private:
-  DISALLOW_COPY_AND_ASSIGN(ArcAuthServiceObserver);
-};
-
-// Observer of ArcAuthService state change.
-class ArcAuthServiceStateObserver : public ArcAuthServiceObserver {
- public:
-  ArcAuthServiceStateObserver() : ArcAuthServiceObserver() {}
-
-  // ArcAuthService::Observer:
-  void OnOptInChanged(ArcAuthService::State state) override {
-    if (!run_loop_)
-      return;
-    run_loop_->Quit();
-  }
-
- private:
-  DISALLOW_COPY_AND_ASSIGN(ArcAuthServiceStateObserver);
-};
-
-// Observer of ARC bridge shutdown.
-class ArcAuthServiceShutdownObserver : public ArcAuthServiceObserver {
- public:
-  ArcAuthServiceShutdownObserver() : ArcAuthServiceObserver() {}
-
   // ArcAuthService::Observer:
   void OnShutdownBridge() override {
     if (!run_loop_)
@@ -107,6 +78,8 @@ class ArcAuthServiceShutdownObserver : public ArcAuthServiceObserver {
   }
 
  private:
+  std::unique_ptr<base::RunLoop> run_loop_;
+
   DISALLOW_COPY_AND_ASSIGN(ArcAuthServiceShutdownObserver);
 };
 

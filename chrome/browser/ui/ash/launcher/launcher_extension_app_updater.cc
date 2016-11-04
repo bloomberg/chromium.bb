@@ -16,11 +16,6 @@ LauncherExtensionAppUpdater::LauncherExtensionAppUpdater(
     : LauncherAppUpdater(delegate, browser_context) {
   StartObservingExtensionRegistry();
 
-  arc::ArcAuthService* arc_auth_service = arc::ArcAuthService::Get();
-  // ArcAuthService may not be available for some unit tests.
-  if (arc_auth_service)
-    arc_auth_service->AddObserver(this);
-
   ArcAppListPrefs* prefs = ArcAppListPrefs::Get(browser_context);
   if (prefs)
     prefs->AddObserver(this);
@@ -28,10 +23,6 @@ LauncherExtensionAppUpdater::LauncherExtensionAppUpdater(
 
 LauncherExtensionAppUpdater::~LauncherExtensionAppUpdater() {
   StopObservingExtensionRegistry();
-
-  arc::ArcAuthService* arc_auth_service = arc::ArcAuthService::Get();
-  if (arc_auth_service)
-    arc_auth_service->RemoveObserver(this);
 
   ArcAppListPrefs* prefs = ArcAppListPrefs::Get(browser_context());
   if (prefs)
@@ -65,15 +56,6 @@ void LauncherExtensionAppUpdater::OnShutdown(
     extensions::ExtensionRegistry* registry) {
   DCHECK_EQ(extension_registry_, registry);
   StopObservingExtensionRegistry();
-}
-
-void LauncherExtensionAppUpdater::OnOptInChanged(
-    arc::ArcAuthService::State state) {
-  if (!chromeos::ProfileHelper::IsPrimaryProfile(
-          Profile::FromBrowserContext(browser_context()))) {
-    return;
-  }
-  UpdateHostedApps();
 }
 
 void LauncherExtensionAppUpdater::OnPackageInstalled(
