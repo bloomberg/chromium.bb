@@ -6,8 +6,15 @@
 #define COMPONENTS_OFFLINE_PAGES_BACKGROUND_OFFLINER_POLICY_H_
 
 namespace {
+// The max number of started tries is to guard against pages that make the
+// prerenderer crash.  It should be greater than or equal to the max number of
+// completed tries.
 const int kMaxStartedTries = 4;
-const int kMaxCompletedTries = 1;
+// The number of max completed tries is based on Gin2G-poor testing showing that
+// we often need about 4 tries with a 2 minute window, or 3 retries with a 3
+// minute window.
+const int kMaxCompletedTries = 3;
+// By the time we get to a week, the user has forgotten asking for a page.
 const int kRequestExpirationTimeInSeconds = 60 * 60 * 24 * 7;
 
 // Scheduled background processing time limits.
@@ -34,9 +41,9 @@ namespace offline_pages {
 class OfflinerPolicy {
  public:
   OfflinerPolicy()
-      : prefer_untried_requests_(false),
+      : prefer_untried_requests_(true),
         prefer_earlier_requests_(true),
-        retry_count_is_more_important_than_recency_(false),
+        retry_count_is_more_important_than_recency_(true),
         max_started_tries_(kMaxStartedTries),
         max_completed_tries_(kMaxCompletedTries),
         background_scheduled_processing_time_budget_(

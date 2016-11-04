@@ -42,6 +42,7 @@ const int kRequestId1(1);
 const int kRequestId2(2);
 const long kTestTimeBudgetSeconds = 200;
 const int kBatteryPercentageHigh = 75;
+const int kMaxCompletedTries = 3;
 const bool kPowerRequired = true;
 const bool kUserRequested = true;
 const int kAttemptCount = 1;
@@ -641,6 +642,7 @@ TEST_F(RequestCoordinatorTest, OfflinerDoneRequestFailed) {
   // Add a request to the queue, wait for callbacks to finish.
   offline_pages::SavePageRequest request(
       kRequestId1, kUrl1, kClientId1, base::Time::Now(), kUserRequested);
+  request.set_completed_attempt_count(kMaxCompletedTries - 1);
   SetupForOfflinerDoneCallbackTest(&request);
 
   // Add second request to the queue to check handling when first fails.
@@ -672,7 +674,7 @@ TEST_F(RequestCoordinatorTest, OfflinerDoneRequestFailed) {
   PumpLoop();
 
   // Now just one request in the queue since failed request removed
-  // (for single attempt policy).
+  // (max number of attempts exceeded).
   EXPECT_EQ(1UL, last_requests().size());
   // Check that the observer got the notification that we failed (and the
   // subsequent notification that the request was removed).
