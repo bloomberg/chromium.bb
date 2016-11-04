@@ -93,6 +93,8 @@ CSSValue* consumeImageOrNone(CSSParserTokenRange&, const CSSParserContext&);
 
 bool isCSSWideKeyword(StringView);
 
+CSSIdentifierValue* consumeShapeBox(CSSParserTokenRange&);
+
 // Template implementations are at the bottom of the file for readability.
 
 template <typename... emptyBaseCase>

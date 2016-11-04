@@ -1228,6 +1228,12 @@ bool isCSSWideKeyword(StringView keyword) {
          equalIgnoringASCIICase(keyword, "default");
 }
 
+// https://drafts.csswg.org/css-shapes-1/#typedef-shape-box
+CSSIdentifierValue* consumeShapeBox(CSSParserTokenRange& range) {
+  return consumeIdent<CSSValueContentBox, CSSValuePaddingBox, CSSValueBorderBox,
+                      CSSValueMarginBox>(range);
+}
+
 }  // namespace CSSPropertyParserHelpers
 
 }  // namespace blink

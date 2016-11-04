@@ -2487,16 +2487,12 @@ static CSSValue* consumeShapeOutside(CSSParserTokenRange& range,
   if (CSSValue* imageValue = consumeImageOrNone(range, context))
     return imageValue;
   CSSValueList* list = CSSValueList::createSpaceSeparated();
-  if (CSSValue* boxValue =
-          consumeIdent<CSSValueContentBox, CSSValuePaddingBox,
-                       CSSValueBorderBox, CSSValueMarginBox>(range))
+  if (CSSValue* boxValue = consumeShapeBox(range))
     list->append(*boxValue);
   if (CSSValue* shapeValue = consumeBasicShape(range, context)) {
     list->append(*shapeValue);
     if (list->length() < 2) {
-      if (CSSValue* boxValue =
-              consumeIdent<CSSValueContentBox, CSSValuePaddingBox,
-                           CSSValueBorderBox, CSSValueMarginBox>(range))
+      if (CSSValue* boxValue = consumeShapeBox(range))
         list->append(*boxValue);
     }
   }
