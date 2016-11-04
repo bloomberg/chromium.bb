@@ -4,8 +4,6 @@
 
 #include "components/password_manager/content/browser/content_password_manager_driver.h"
 
-#include <set>
-
 #include "components/autofill/content/browser/content_autofill_driver.h"
 #include "components/autofill/core/common/form_data.h"
 #include "components/autofill/core/common/password_form.h"
@@ -19,7 +17,6 @@
 #include "content/public/browser/child_process_security_policy.h"
 #include "content/public/browser/navigation_details.h"
 #include "content/public/browser/navigation_entry.h"
-#include "content/public/browser/navigation_handle.h"
 #include "content/public/browser/render_frame_host.h"
 #include "content/public/browser/render_process_host.h"
 #include "content/public/browser/render_view_host.h"
