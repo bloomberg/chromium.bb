@@ -172,7 +172,7 @@ void GetExceptionsFromHostContentSettingsMap(const HostContentSettingsMap* map,
     // Off-the-record HostContentSettingsMap contains incognito content settings
     // as well as normal content settings. Here, we use the incongnito settings
     // only.
-    if (map->is_off_the_record() && !i->incognito)
+    if (map->is_incognito() && !i->incognito)
       continue;
 
     if (filter && i->primary_pattern.ToString() != *filter)

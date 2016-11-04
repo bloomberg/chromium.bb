@@ -274,7 +274,7 @@ void ContentSettingsPref::ReadContentSettingsFromPref() {
   if (!is_incognito_) {
     mutable_settings = update.Get();
   } else {
-    // Create copy as we do not want to persist anything in OTR prefs.
+    // Create copy as we do not want to persist anything in incognito prefs.
     mutable_settings = all_settings_dictionary->DeepCopy();
     mutable_settings_scope.reset(mutable_settings);
   }

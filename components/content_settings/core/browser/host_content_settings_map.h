@@ -237,8 +237,8 @@ class HostContentSettingsMap : public content_settings::Observer,
   // to convert backwards.
   static ProviderType GetProviderTypeFromSource(const std::string& source);
 
-  bool is_off_the_record() const {
-    return is_off_the_record_;
+  bool is_incognito() const {
+    return is_incognito_;
   }
 
   // Returns a single |ContentSetting| which applies to the given URLs, just as
@@ -394,8 +394,8 @@ class HostContentSettingsMap : public content_settings::Observer,
   // Weak; owned by the Profile.
   PrefService* prefs_;
 
-  // Whether this settings map is for an OTR session.
-  bool is_off_the_record_;
+  // Whether this settings map is for an incognito session.
+  bool is_incognito_;
 
   // Content setting providers. This is only modified at construction
   // time and by RegisterExtensionService, both of which should happen

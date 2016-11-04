@@ -163,7 +163,7 @@ HostContentSettingsMap::HostContentSettingsMap(PrefService* prefs,
       used_from_thread_id_(base::PlatformThread::CurrentId()),
 #endif
       prefs_(prefs),
-      is_off_the_record_(is_incognito_profile || is_guest_profile),
+      is_incognito_(is_incognito_profile || is_guest_profile),
       weak_ptr_factory_(this) {
   DCHECK(!(is_incognito_profile && is_guest_profile));
 
@@ -174,7 +174,7 @@ HostContentSettingsMap::HostContentSettingsMap(PrefService* prefs,
   policy_provider->AddObserver(this);
 
   pref_provider_ =
-      new content_settings::PrefProvider(prefs_, is_off_the_record_);
+      new content_settings::PrefProvider(prefs_, is_incognito_);
   content_settings_providers_[PREF_PROVIDER] = base::WrapUnique(pref_provider_);
   pref_provider_->AddObserver(this);
 
@@ -185,7 +185,7 @@ HostContentSettingsMap::HostContentSettingsMap(PrefService* prefs,
     pref_provider_->ClearPrefs();
 
   auto default_provider = base::MakeUnique<content_settings::DefaultProvider>(
-      prefs_, is_off_the_record_);
+      prefs_, is_incognito_);
   default_provider->AddObserver(this);
   content_settings_providers_[DEFAULT_PROVIDER] = std::move(default_provider);
 
@@ -260,7 +260,7 @@ ContentSetting HostContentSettingsMap::GetDefaultContentSettingInternal(
       continue;
     ContentSetting default_setting = GetDefaultContentSettingFromProvider(
         content_type, provider_pair.second.get());
-    if (is_off_the_record_) {
+    if (is_incognito_) {
       default_setting = content_settings::ValueToContentSetting(
           ProcessIncognitoInheritanceBehavior(
               content_type,
@@ -312,7 +312,7 @@ void HostContentSettingsMap::GetSettingsForOneType(
   for (const auto& provider_pair : content_settings_providers_) {
     // For each provider, iterate first the incognito-specific rules, then the
     // normal rules.
-    if (is_off_the_record_) {
+    if (is_incognito_) {
       AddSettingsForOneType(provider_pair.second.get(), provider_pair.first,
                             content_type, resource_identifier, settings, true);
     }
@@ -919,7 +919,7 @@ std::unique_ptr<base::Value> HostContentSettingsMap::GetWebsiteSettingInternal(
   for (const auto& provider_pair : content_settings_providers_) {
     std::unique_ptr<base::Value> value = GetContentSettingValueAndPatterns(
         provider_pair.second.get(), primary_url, secondary_url, content_type,
-        resource_identifier, is_off_the_record_, primary_pattern,
+        resource_identifier, is_incognito_, primary_pattern,
         secondary_pattern);
     if (value) {
       if (info)
