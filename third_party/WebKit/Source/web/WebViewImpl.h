@@ -226,6 +226,7 @@ class WEB_EXPORT WebViewImpl final
   void performMediaPlayerAction(const WebMediaPlayerAction& action,
                                 const WebPoint& location) override;
   void performPluginAction(const WebPluginAction&, const WebPoint&) override;
+  void audioStateChanged(bool isAudioPlaying) override;
   WebHitTestResult hitTestResultAt(const WebPoint&) override;
   WebHitTestResult hitTestResultForTap(const WebPoint&,
                                        const WebSize&) override;

@@ -358,6 +358,9 @@ class WebView : protected WebWidget {
   virtual void performPluginAction(const WebPluginAction&,
                                    const WebPoint& location) = 0;
 
+  // Notifies WebView when audio is started or stopped.
+  virtual void audioStateChanged(bool isAudioPlaying) = 0;
+
   // Data exchange -------------------------------------------------------
 
   // Do a hit test at given point and return the HitTestResult.

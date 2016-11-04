@@ -178,9 +178,13 @@ class BLINK_PLATFORM_EXPORT TaskQueueThrottler : public TimeDomain::Observer {
   // Returns true if the |task_queue| is throttled.
   bool IsThrottled(TaskQueue* task_queue) const;
 
-  // Tells the TaskQueueThrottler we're using virtual time, which disables all
-  // throttling.
-  void EnableVirtualTime();
+  // Disable throttling for all queues, this setting takes precedence over
+  // all other throttling settings. Designed to be used when a global event
+  // disabling throttling happens (e.g. audio is playing).
+  void DisableThrottling();
+
+  // Enable back global throttling.
+  void EnableThrottling();
 
   const ThrottledTimeDomain* time_domain() const { return time_domain_.get(); }
 
@@ -259,7 +263,7 @@ class BLINK_PLATFORM_EXPORT TaskQueueThrottler : public TimeDomain::Observer {
 
   CancelableClosureHolder pump_throttled_tasks_closure_;
   base::Optional<base::TimeTicks> pending_pump_throttled_tasks_runtime_;
-  bool virtual_time_;
+  bool allow_throttling_;
 
   std::unordered_map<TimeBudgetPool*, std::unique_ptr<TimeBudgetPool>>
       time_budget_pools_;

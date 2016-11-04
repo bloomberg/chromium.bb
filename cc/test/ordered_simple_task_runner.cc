@@ -247,9 +247,11 @@ bool OrderedSimpleTaskRunner::RunUntilTime(base::TimeTicks time) {
   // Run tasks
   bool result = RunTasksWhile(NowBefore(time));
 
+  bool has_reached_task_limit = HasPendingTasks() && NextTaskTime() <= time;
+
   // If the next task is after the stopping time and auto-advancing now, then
   // force time to be the stopping time.
-  if (!result && advance_now_ && now_src_->NowTicks() < time) {
+  if (!has_reached_task_limit && advance_now_ && now_src_->NowTicks() < time) {
     now_src_->Advance(time - now_src_->NowTicks());
   }
 

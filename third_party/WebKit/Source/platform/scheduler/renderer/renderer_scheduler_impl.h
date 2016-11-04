@@ -159,6 +159,10 @@ class BLINK_PLATFORM_EXPORT RendererSchedulerImpl
   // Snapshots this RendererScheduler for tracing.
   void CreateTraceEventObjectSnapshot() const;
 
+  // Called when one of associated WebView schedulers has changed audio
+  // state.
+  void OnAudioStateChanged();
+
   // Test helpers.
   SchedulerHelper* GetSchedulerHelperForTesting();
   TaskCostEstimator* GetLoadingTaskCostEstimatorForTesting();
@@ -177,6 +181,8 @@ class BLINK_PLATFORM_EXPORT RendererSchedulerImpl
   }
 
   AutoAdvancingVirtualTimeDomain* GetVirtualTimeDomain();
+
+  TimeDomain* GetActiveTimeDomain();
 
   TaskQueueThrottler* task_queue_throttler() const {
     return task_queue_throttler_.get();
@@ -217,13 +223,15 @@ class BLINK_PLATFORM_EXPORT RendererSchedulerImpl
     TaskQueuePolicy timer_queue_policy;
     TaskQueuePolicy default_queue_policy;
     v8::RAILMode rail_mode = v8::PERFORMANCE_ANIMATION;
+    bool should_disable_throttling = false;
 
     bool operator==(const Policy& other) const {
       return compositor_queue_policy == other.compositor_queue_policy &&
              loading_queue_policy == other.loading_queue_policy &&
              timer_queue_policy == other.timer_queue_policy &&
              default_queue_policy == other.default_queue_policy &&
-             rail_mode == other.rail_mode;
+             rail_mode == other.rail_mode &&
+             should_disable_throttling == other.should_disable_throttling;
     }
   };
 
@@ -347,6 +355,8 @@ class BLINK_PLATFORM_EXPORT RendererSchedulerImpl
   static const char* ExpensiveTaskPolicyToString(
       ExpensiveTaskPolicy expensive_task_policy);
 
+  bool ShouldDisableThrottlingBecauseOfAudio(base::TimeTicks now);
+
   SchedulerHelper helper_;
   IdleHelper idle_helper_;
   std::unique_ptr<TaskQueueThrottler> task_queue_throttler_;
@@ -390,6 +400,7 @@ class BLINK_PLATFORM_EXPORT RendererSchedulerImpl
     base::TimeTicks estimated_next_frame_begin;
     base::TimeDelta compositor_frame_interval;
     base::TimeDelta longest_jank_free_task_duration;
+    base::Optional<base::TimeTicks> last_audio_state_change;
     int timer_queue_suspend_count;  // TIMER_TASK_QUEUE suspended if non-zero.
     int navigation_task_expected_count;
     ExpensiveTaskPolicy expensive_task_policy;
@@ -409,6 +420,7 @@ class BLINK_PLATFORM_EXPORT RendererSchedulerImpl
     bool begin_frame_not_expected_soon;
     bool in_idle_period_for_testing;
     bool use_virtual_time;
+    bool is_audio_playing;
     std::set<WebViewSchedulerImpl*> web_view_schedulers;  // Not owned.
     RAILModeObserver* rail_mode_observer;                 // Not owned.
   };

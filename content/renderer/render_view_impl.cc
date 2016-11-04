@@ -1363,6 +1363,7 @@ bool RenderViewImpl::OnMessageReceived(const IPC::Message& message) {
     IPC_MESSAGE_HANDLER(PageMsg_WasShown, OnPageWasShown)
     IPC_MESSAGE_HANDLER(PageMsg_SetHistoryOffsetAndLength,
                         OnSetHistoryOffsetAndLength)
+    IPC_MESSAGE_HANDLER(PageMsg_AudioStateChanged, OnAudioStateChanged)
 
 #if defined(OS_ANDROID)
     IPC_MESSAGE_HANDLER(ViewMsg_UpdateBrowserControlsState,
@@ -1452,6 +1453,10 @@ void RenderViewImpl::OnSetInitialFocus(bool reverse) {
 
 void RenderViewImpl::OnUpdateWindowScreenRect(gfx::Rect window_screen_rect) {
   RenderWidget::OnUpdateWindowScreenRect(window_screen_rect);
+}
+
+void RenderViewImpl::OnAudioStateChanged(bool is_audio_playing) {
+  webview()->audioStateChanged(is_audio_playing);
 }
 
 ///////////////////////////////////////////////////////////////////////////////

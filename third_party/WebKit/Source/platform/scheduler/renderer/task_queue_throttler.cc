@@ -13,7 +13,6 @@
 #include "base/strings/stringprintf.h"
 #include "platform/scheduler/base/real_time_domain.h"
 #include "platform/scheduler/child/scheduler_tqm_delegate.h"
-#include "platform/scheduler/renderer/auto_advancing_virtual_time_domain.h"
 #include "platform/scheduler/renderer/renderer_scheduler_impl.h"
 #include "platform/scheduler/renderer/throttled_time_domain.h"
 #include "platform/scheduler/renderer/web_frame_scheduler_impl.h"
@@ -150,6 +149,9 @@ void TaskQueueThrottler::TimeBudgetPool::DisableThrottling(LazyNow* lazy_now) {
     task_queue_throttler_->MaybeSchedulePumpQueue(FROM_HERE, lazy_now->Now(),
                                                   queue, base::nullopt);
   }
+
+  // TODO(altimin): We need to disable TimeBudgetQueues here or they will
+  // regenerate extra time budget when they are disabled.
 }
 
 bool TaskQueueThrottler::TimeBudgetPool::IsThrottlingEnabled() const {
@@ -261,7 +263,7 @@ TaskQueueThrottler::TaskQueueThrottler(
       time_domain_(new ThrottledTimeDomain(this, tracing_category)),
       max_budget_level_(kMaxBudgetLevel),
       max_throttling_duration_(kMaxThrottlingDuration),
-      virtual_time_(false),
+      allow_throttling_(true),
       weak_factory_(this) {
   pump_throttled_tasks_closure_.Reset(base::Bind(
       &TaskQueueThrottler::PumpThrottledTasks, weak_factory_.GetWeakPtr()));
@@ -314,9 +316,6 @@ void TaskQueueThrottler::SetQueueEnabled(TaskQueue* task_queue, bool enabled) {
 void TaskQueueThrottler::IncreaseThrottleRefCount(TaskQueue* task_queue) {
   DCHECK_NE(task_queue, task_runner_.get());
 
-  if (virtual_time_)
-    return;
-
   std::pair<TaskQueueMap::iterator, bool> insert_result =
       queue_details_.insert(std::make_pair(task_queue, Metadata()));
 
@@ -324,15 +323,17 @@ void TaskQueueThrottler::IncreaseThrottleRefCount(TaskQueue* task_queue) {
     // The insert was successful so we need to throttle the queue.
     insert_result.first->second.enabled = task_queue->IsQueueEnabled();
 
-    task_queue->SetTimeDomain(time_domain_.get());
-    task_queue->RemoveFence();
-    task_queue->SetQueueEnabled(false);
+    if (allow_throttling_) {
+      task_queue->SetTimeDomain(time_domain_.get());
+      task_queue->RemoveFence();
+      task_queue->SetQueueEnabled(false);
 
-    if (!task_queue->IsEmpty()) {
-      if (task_queue->HasPendingImmediateWork()) {
-        OnTimeDomainHasImmediateWork(task_queue);
-      } else {
-        OnTimeDomainHasDelayedWork(task_queue);
+      if (!task_queue->IsEmpty()) {
+        if (task_queue->HasPendingImmediateWork()) {
+          OnTimeDomainHasImmediateWork(task_queue);
+        } else {
+          OnTimeDomainHasDelayedWork(task_queue);
+        }
       }
     }
 
@@ -344,9 +345,6 @@ void TaskQueueThrottler::IncreaseThrottleRefCount(TaskQueue* task_queue) {
 }
 
 void TaskQueueThrottler::DecreaseThrottleRefCount(TaskQueue* task_queue) {
-  if (virtual_time_)
-    return;
-
   TaskQueueMap::iterator iter = queue_details_.find(task_queue);
 
   if (iter != queue_details_.end() &&
@@ -355,9 +353,11 @@ void TaskQueueThrottler::DecreaseThrottleRefCount(TaskQueue* task_queue) {
 
     MaybeDeleteQueueMetadata(iter);
 
-    task_queue->SetTimeDomain(renderer_scheduler_->real_time_domain());
-    task_queue->RemoveFence();
-    task_queue->SetQueueEnabled(enabled);
+    if (allow_throttling_) {
+      task_queue->SetTimeDomain(renderer_scheduler_->real_time_domain());
+      task_queue->RemoveFence();
+      task_queue->SetQueueEnabled(enabled);
+    }
 
     TRACE_EVENT1(tracing_category_, "TaskQueueThrottler_TaskQueueUntrottled",
                  "task_queue", task_queue);
@@ -478,7 +478,7 @@ void TaskQueueThrottler::MaybeSchedulePumpThrottledTasks(
     const tracked_objects::Location& from_here,
     base::TimeTicks now,
     base::TimeTicks unaligned_runtime) {
-  if (virtual_time_)
+  if (!allow_throttling_)
     return;
 
   base::TimeTicks runtime =
@@ -501,30 +501,6 @@ void TaskQueueThrottler::MaybeSchedulePumpThrottledTasks(
                "delay_till_next_pump_ms", delay.InMilliseconds());
   task_runner_->PostDelayedTask(
       from_here, pump_throttled_tasks_closure_.callback(), delay);
-}
-
-void TaskQueueThrottler::EnableVirtualTime() {
-  virtual_time_ = true;
-
-  pump_throttled_tasks_closure_.Cancel();
-
-  for (auto it = queue_details_.begin(); it != queue_details_.end();) {
-    TaskQueue* task_queue = it->first;
-    bool enabled = it->second.enabled;
-
-    if (!it->second.time_budget_pool) {
-      it = queue_details_.erase(it);
-    } else {
-      // Fall back to default values.
-      it->second.throttling_ref_count = 0;
-      it->second.enabled = false;
-      it++;
-    }
-
-    task_queue->SetTimeDomain(renderer_scheduler_->GetVirtualTimeDomain());
-    task_queue->RemoveFence();
-    task_queue->SetQueueEnabled(enabled);
-  }
 }
 
 TaskQueueThrottler::TimeBudgetPool* TaskQueueThrottler::CreateTimeBudgetPool(
@@ -602,6 +578,46 @@ base::TimeTicks TaskQueueThrottler::GetNextAllowedRunTime(base::TimeTicks now,
 void TaskQueueThrottler::MaybeDeleteQueueMetadata(TaskQueueMap::iterator it) {
   if (!it->second.IsThrottled() && !it->second.time_budget_pool)
     queue_details_.erase(it);
+}
+
+void TaskQueueThrottler::DisableThrottling() {
+  if (!allow_throttling_)
+    return;
+
+  allow_throttling_ = false;
+
+  for (const auto& map_entry : queue_details_) {
+    if (!map_entry.second.IsThrottled())
+      continue;
+
+    TaskQueue* queue = map_entry.first;
+
+    queue->SetTimeDomain(renderer_scheduler_->GetActiveTimeDomain());
+
+    queue->RemoveFence();
+    queue->SetQueueEnabled(map_entry.second.enabled);
+  }
+}
+
+void TaskQueueThrottler::EnableThrottling() {
+  if (allow_throttling_)
+    return;
+
+  allow_throttling_ = true;
+
+  LazyNow lazy_now(tick_clock_);
+
+  for (const auto& map_entry : queue_details_) {
+    if (!map_entry.second.IsThrottled())
+      continue;
+
+    TaskQueue* queue = map_entry.first;
+
+    queue->SetQueueEnabled(false);
+    queue->SetTimeDomain(time_domain_.get());
+    MaybeSchedulePumpQueue(FROM_HERE, lazy_now.Now(), queue,
+                           GetNextAllowedRunTime(lazy_now.Now(), queue));
+  }
 }
 
 }  // namespace scheduler

@@ -586,6 +586,7 @@ class CONTENT_EXPORT RenderViewImpl
   void OnZoom(PageZoom zoom);
   void OnForceRedraw(const ui::LatencyInfo& latency_info);
   void OnSelectWordAroundCaret();
+  void OnAudioStateChanged(bool is_audio_playing);
 #if defined(OS_ANDROID)
   void OnUndoScrollFocusedEditableNodeIntoRect();
   void OnUpdateBrowserControlsState(bool enable_hiding,

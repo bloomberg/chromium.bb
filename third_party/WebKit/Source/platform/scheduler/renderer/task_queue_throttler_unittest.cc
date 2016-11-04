@@ -833,5 +833,44 @@ TEST_F(TaskQueueThrottlerTest, MaxThrottlingDuration) {
                   base::TimeTicks() + base::TimeDelta::FromSeconds(245)));
 }
 
+TEST_F(TaskQueueThrottlerTest, EnableAndDisableThrottling) {
+  std::vector<base::TimeTicks> run_times;
+
+  task_queue_throttler_->IncreaseThrottleRefCount(timer_queue_.get());
+
+  timer_queue_->PostDelayedTask(FROM_HERE,
+                                base::Bind(&TestTask, &run_times, clock_.get()),
+                                base::TimeDelta::FromMilliseconds(200));
+
+  mock_task_runner_->RunUntilTime(base::TimeTicks() +
+                                  base::TimeDelta::FromMilliseconds(300));
+
+  // Disable throttling - task should run immediately.
+  task_queue_throttler_->DisableThrottling();
+
+  mock_task_runner_->RunUntilTime(base::TimeTicks() +
+                                  base::TimeDelta::FromMilliseconds(500));
+
+  EXPECT_THAT(run_times, ElementsAre(base::TimeTicks() +
+                                     base::TimeDelta::FromMilliseconds(300)));
+  run_times.clear();
+
+  // Schedule a task at 900ms.
+  timer_queue_->PostDelayedTask(FROM_HERE,
+                                base::Bind(&TestTask, &run_times, clock_.get()),
+                                base::TimeDelta::FromMilliseconds(400));
+
+  mock_task_runner_->RunUntilTime(base::TimeTicks() +
+                                  base::TimeDelta::FromMilliseconds(700));
+
+  // Throttling is enabled and new task should be aligned.
+  task_queue_throttler_->EnableThrottling();
+
+  mock_task_runner_->RunUntilIdle();
+
+  EXPECT_THAT(run_times, ElementsAre(base::TimeTicks() +
+                                     base::TimeDelta::FromMilliseconds(1000)));
+}
+
 }  // namespace scheduler
 }  // namespace blink

@@ -176,6 +176,11 @@ void WebViewSchedulerImpl::setVirtualTimePolicy(VirtualTimePolicy policy) {
   }
 }
 
+void WebViewSchedulerImpl::audioStateChanged(bool is_audio_playing) {
+  is_audio_playing_ = is_audio_playing;
+  renderer_scheduler_->OnAudioStateChanged();
+}
+
 void WebViewSchedulerImpl::ApplyVirtualTimePolicy() {
   if (virtual_time_policy_ != VirtualTimePolicy::DETERMINISTIC_LOADING) {
     return;
@@ -187,6 +192,10 @@ void WebViewSchedulerImpl::ApplyVirtualTimePolicy() {
   setAllowVirtualTimeToAdvance(pending_loads_.size() == 0 &&
                                background_parser_count_ == 0 &&
                                have_seen_loading_task_);
+}
+
+bool WebViewSchedulerImpl::IsAudioPlaying() const {
+  return is_audio_playing_;
 }
 
 }  // namespace scheduler

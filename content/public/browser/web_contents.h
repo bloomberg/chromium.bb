@@ -398,6 +398,9 @@ class WebContents : public PageNavigator,
   // change.
   virtual void NotifyNavigationStateChanged(InvalidateTypes changed_flags) = 0;
 
+  // Notifies the WebContents that audio started or stopped being audible.
+  virtual void OnAudioStateChanged(bool is_audio_playing) = 0;
+
   // Get/Set the last time that the WebContents was made active (either when it
   // was created or shown with WasShown()).
   virtual base::TimeTicks GetLastActiveTime() const = 0;
