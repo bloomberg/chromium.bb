@@ -104,6 +104,25 @@ TEST(ExtensionUserScriptTest, ExcludeUrlPattern) {
   EXPECT_TRUE(script.MatchesURL(GURL("http://business.nytimes.com")));
 }
 
+TEST(ExtensionUserScriptTest, ExcludeUrlPatternWithTrailingDot) {
+  UserScript script;
+
+  URLPattern pattern(kAllSchemes);
+  ASSERT_EQ(URLPattern::PARSE_SUCCESS, pattern.Parse("*://*/*"));
+  script.add_url_pattern(pattern);
+
+  URLPattern exclude(kAllSchemes);
+  ASSERT_EQ(URLPattern::PARSE_SUCCESS, exclude.Parse("*://mail.nytimes.com/*"));
+  script.add_exclude_url_pattern(exclude);
+
+  EXPECT_TRUE(script.MatchesURL(GURL("http://www.nytimes.com/health")));
+  EXPECT_TRUE(script.MatchesURL(GURL("http://business.nytimes.com")));
+  EXPECT_FALSE(script.MatchesURL(GURL("http://mail.nytimes.com")));
+  EXPECT_FALSE(script.MatchesURL(GURL("http://mail.nytimes.com.")));
+  EXPECT_FALSE(script.MatchesURL(GURL("http://mail.nytimes.com/login")));
+  EXPECT_FALSE(script.MatchesURL(GURL("http://mail.nytimes.com./login")));
+}
+
 TEST(ExtensionUserScriptTest, UrlPatternAndIncludeGlobs) {
   UserScript script;
 

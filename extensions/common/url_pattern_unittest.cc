@@ -849,4 +849,33 @@ TEST(ExtensionURLPatternTest, MatchesSingleOrigin) {
           .MatchesSingleOrigin());
 }
 
+TEST(ExtensionURLPatternTest, TrailingDotDomain) {
+  const GURL normal_domain("http://example.com/");
+  const GURL trailing_dot_domain("http://example.com./");
+
+  // Both patterns should match trailing dot and non trailing dot domains. More
+  // information about this not obvious behaviour can be found in [1].
+  //
+  // RFC 1738 [2] specifies clearly that the <host> part of a URL is supposed to
+  // contain a fully qualified domain name:
+  //
+  // 3.1. Common Internet Scheme Syntax
+  //      //<user>:<password>@<host>:<port>/<url-path>
+  //
+  //  host
+  //      The fully qualified domain name of a network host
+  //
+  // [1] http://www.dns-sd.org./TrailingDotsInDomainNames.html
+  // [2] http://www.ietf.org/rfc/rfc1738.txt
+
+  const URLPattern pattern(URLPattern::SCHEME_HTTP, "*://example.com/*");
+  EXPECT_TRUE(pattern.MatchesURL(normal_domain));
+  EXPECT_TRUE(pattern.MatchesURL(trailing_dot_domain));
+
+  const URLPattern trailing_pattern(URLPattern::SCHEME_HTTP,
+                                    "*://example.com./*");
+  EXPECT_TRUE(trailing_pattern.MatchesURL(normal_domain));
+  EXPECT_TRUE(trailing_pattern.MatchesURL(trailing_dot_domain));
+}
+
 }  // namespace

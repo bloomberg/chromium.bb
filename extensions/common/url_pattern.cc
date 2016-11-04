@@ -113,6 +113,13 @@ std::string StripTrailingWildcard(const std::string& path) {
   return wildcard_index == path_last ? path.substr(0, path_last) : path;
 }
 
+// Removes trailing dot from |host_piece| if any.
+base::StringPiece CanonicalizeHostForMatching(base::StringPiece host_piece) {
+  if (host_piece.ends_with("."))
+    host_piece.remove_suffix(1);
+  return host_piece;
+}
+
 }  // namespace
 
 // static
@@ -404,14 +411,18 @@ bool URLPattern::MatchesHost(const std::string& host) const {
 }
 
 bool URLPattern::MatchesHost(const GURL& test) const {
+  const base::StringPiece test_host(
+      CanonicalizeHostForMatching(test.host_piece()));
+  const base::StringPiece pattern_host(CanonicalizeHostForMatching(host_));
+
   // If the hosts are exactly equal, we have a match.
-  if (test.host() == host_)
+  if (test_host == pattern_host)
     return true;
 
   // If we're matching subdomains, and we have no host in the match pattern,
   // that means that we're matching all hosts, which means we have a match no
   // matter what the test host is.
-  if (match_subdomains_ && host_.empty())
+  if (match_subdomains_ && pattern_host.empty())
     return true;
 
   // Otherwise, we can only match if our match pattern matches subdomains.
@@ -424,14 +435,13 @@ bool URLPattern::MatchesHost(const GURL& test) const {
     return false;
 
   // Check if the test host is a subdomain of our host.
-  if (test.host().length() <= (host_.length() + 1))
+  if (test_host.length() <= (pattern_host.length() + 1))
     return false;
 
-  if (test.host().compare(test.host().length() - host_.length(),
-                          host_.length(), host_) != 0)
+  if (!test_host.ends_with(pattern_host))
     return false;
 
-  return test.host()[test.host().length() - host_.length() - 1] == '.';
+  return test_host[test_host.length() - pattern_host.length() - 1] == '.';
 }
 
 bool URLPattern::ImpliesAllHosts() const {
