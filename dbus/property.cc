@@ -662,7 +662,7 @@ void Property<std::vector<std::pair<std::vector<uint8_t>, uint16_t>>>::
 }
 
 //
-// Property<std::map<std::string, std::vector<uint8_t>>>
+// Property<std::unordered_map<std::string, std::vector<uint8_t>>>
 // specialization.
 //
 
@@ -725,6 +725,70 @@ void Property<std::unordered_map<std::string, std::vector<uint8_t>>>::
   writer->CloseContainer(&variant_writer);
 }
 
+//
+// Property<std::unordered_map<uint16_t, std::vector<uint8_t>>>
+// specialization.
+//
+
+template <>
+bool Property<std::unordered_map<uint16_t, std::vector<uint8_t>>>::
+    PopValueFromReader(MessageReader* reader) {
+  MessageReader variant_reader(nullptr);
+  MessageReader dict_reader(nullptr);
+  if (!reader->PopVariant(&variant_reader) ||
+      !variant_reader.PopArray(&dict_reader))
+    return false;
+
+  value_.clear();
+  while (dict_reader.HasMoreData()) {
+    MessageReader entry_reader(nullptr);
+    if (!dict_reader.PopDictEntry(&entry_reader))
+      return false;
+
+    uint16_t key;
+    MessageReader value_varient_reader(nullptr);
+    if (!entry_reader.PopUint16(&key) ||
+        !entry_reader.PopVariant(&value_varient_reader))
+      return false;
+
+    const uint8_t* bytes = nullptr;
+    size_t length = 0;
+    if (!value_varient_reader.PopArrayOfBytes(&bytes, &length))
+      return false;
+
+    value_[key].assign(bytes, bytes + length);
+  }
+  return true;
+}
+
+template <>
+void Property<std::unordered_map<uint16_t, std::vector<uint8_t>>>::
+    AppendSetValueToWriter(MessageWriter* writer) {
+  MessageWriter variant_writer(nullptr);
+  MessageWriter dict_writer(nullptr);
+
+  writer->OpenVariant("a{qv}", &variant_writer);
+  variant_writer.OpenArray("{qv}", &dict_writer);
+
+  for (const auto& pair : set_value_) {
+    MessageWriter entry_writer(nullptr);
+    dict_writer.OpenDictEntry(&entry_writer);
+
+    entry_writer.AppendUint16(pair.first);
+
+    MessageWriter value_varient_writer(nullptr);
+    entry_writer.OpenVariant("ay", &value_varient_writer);
+    value_varient_writer.AppendArrayOfBytes(pair.second.data(),
+                                            pair.second.size());
+    entry_writer.CloseContainer(&value_varient_writer);
+
+    dict_writer.CloseContainer(&entry_writer);
+  }
+
+  variant_writer.CloseContainer(&dict_writer);
+  writer->CloseContainer(&variant_writer);
+}
+
 template class Property<uint8_t>;
 template class Property<bool>;
 template class Property<int16_t>;
@@ -742,5 +806,6 @@ template class Property<std::vector<uint8_t>>;
 template class Property<std::map<std::string, std::string>>;
 template class Property<std::vector<std::pair<std::vector<uint8_t>, uint16_t>>>;
 template class Property<std::unordered_map<std::string, std::vector<uint8_t>>>;
+template class Property<std::unordered_map<uint16_t, std::vector<uint8_t>>>;
 
 }  // namespace dbus

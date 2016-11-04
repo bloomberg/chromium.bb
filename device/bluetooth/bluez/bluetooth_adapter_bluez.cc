@@ -592,6 +592,10 @@ void BluetoothAdapterBlueZ::DevicePropertyChanged(
 
   if (property_name == properties->service_data.name())
     device_bluez->UpdateServiceData();
+  else if (property_name == properties->manufacturer_data.name())
+    device_bluez->UpdateManufacturerData();
+  else if (property_name == properties->advertising_data_flags.name())
+    device_bluez->UpdateAdvertisingDataFlags();
 
   if (property_name == properties->bluetooth_class.name() ||
       property_name == properties->appearance.name() ||
@@ -603,7 +607,9 @@ void BluetoothAdapterBlueZ::DevicePropertyChanged(
       property_name == properties->uuids.name() ||
       property_name == properties->rssi.name() ||
       property_name == properties->tx_power.name() ||
-      property_name == properties->service_data.name()) {
+      property_name == properties->service_data.name() ||
+      property_name == properties->manufacturer_data.name() ||
+      property_name == properties->advertising_data_flags.name()) {
     NotifyDeviceChanged(device_bluez);
   }
 

@@ -4550,4 +4550,102 @@ TEST_F(BluetoothBlueZTest, ServiceDataChanged) {
   EXPECT_EQ(nullptr, device->GetServiceDataForUUID(BluetoothUUID(kGattUuid)));
 }
 
+TEST_F(BluetoothBlueZTest, ManufacturerDataChanged) {
+  const BluetoothDevice::ManufacturerId kManufacturerId1 = 0x1234;
+  const BluetoothDevice::ManufacturerId kManufacturerId2 = 0x2345;
+  const BluetoothDevice::ManufacturerId kManufacturerId3 = 0x3456;
+
+  // Simulate a change of manufacturer data of a device.
+  GetAdapter();
+
+  BluetoothDevice* device = adapter_->GetDevice(
+      bluez::FakeBluetoothDeviceClient::kPairedDeviceAddress);
+
+  // Install an observer; expect the DeviceChanged method to be called
+  // when we change the service data.
+  TestBluetoothAdapterObserver observer(adapter_);
+
+  bluez::FakeBluetoothDeviceClient::Properties* properties =
+      fake_bluetooth_device_client_->GetProperties(dbus::ObjectPath(
+          bluez::FakeBluetoothDeviceClient::kPairedDevicePath));
+
+  properties->manufacturer_data.set_valid(true);
+
+  // Check that ManufacturerDataChanged is correctly invoke.
+  properties->manufacturer_data.ReplaceValue({{kManufacturerId1, {1, 2, 3}}});
+  EXPECT_EQ(1, observer.device_changed_count());
+  EXPECT_EQ(device, observer.last_device());
+  EXPECT_EQ(
+      BluetoothDevice::ManufacturerDataMap({{kManufacturerId1, {1, 2, 3}}}),
+      device->GetManufacturerData());
+  EXPECT_EQ(BluetoothDevice::ManufacturerIDSet({kManufacturerId1}),
+            device->GetManufacturerDataIDs());
+  EXPECT_EQ(std::vector<uint8_t>({1, 2, 3}),
+            *(device->GetManufacturerDataForID(kManufacturerId1)));
+
+  // Check that we can update service data with same uuid / add more uuid.
+  properties->manufacturer_data.ReplaceValue(
+      {{kManufacturerId1, {3, 2, 1}}, {kManufacturerId2, {1}}});
+  EXPECT_EQ(2, observer.device_changed_count());
+  EXPECT_EQ(device, observer.last_device());
+
+  EXPECT_EQ(BluetoothDevice::ManufacturerDataMap(
+                {{kManufacturerId1, {3, 2, 1}}, {kManufacturerId2, {1}}}),
+            device->GetManufacturerData());
+  EXPECT_EQ(
+      BluetoothDevice::ManufacturerIDSet({kManufacturerId1, kManufacturerId2}),
+      device->GetManufacturerDataIDs());
+  EXPECT_EQ(std::vector<uint8_t>({3, 2, 1}),
+            *(device->GetManufacturerDataForID(kManufacturerId1)));
+  EXPECT_EQ(std::vector<uint8_t>({1}),
+            *(device->GetManufacturerDataForID(kManufacturerId2)));
+
+  // Check that we can remove uuid / change uuid with same data.
+  properties->manufacturer_data.ReplaceValue({{kManufacturerId3, {3, 2, 1}}});
+  EXPECT_EQ(3, observer.device_changed_count());
+  EXPECT_EQ(device, observer.last_device());
+
+  EXPECT_EQ(
+      BluetoothDevice::ManufacturerDataMap({{kManufacturerId3, {3, 2, 1}}}),
+      device->GetManufacturerData());
+  EXPECT_EQ(BluetoothDevice::ManufacturerIDSet({kManufacturerId3}),
+            device->GetManufacturerDataIDs());
+  EXPECT_EQ(std::vector<uint8_t>({3, 2, 1}),
+            *(device->GetManufacturerDataForID(kManufacturerId3)));
+  EXPECT_EQ(nullptr, device->GetManufacturerDataForID(kManufacturerId1));
+  EXPECT_EQ(nullptr, device->GetManufacturerDataForID(kManufacturerId2));
+}
+
+TEST_F(BluetoothBlueZTest, AdvertisingDataFlagsChanged) {
+  // Simulate a change of advertising data flags of a device.
+  GetAdapter();
+
+  BluetoothDevice* device = adapter_->GetDevice(
+      bluez::FakeBluetoothDeviceClient::kPairedDeviceAddress);
+
+  // Install an observer; expect the DeviceChanged method to be called
+  // when we change the service data.
+  TestBluetoothAdapterObserver observer(adapter_);
+
+  bluez::FakeBluetoothDeviceClient::Properties* properties =
+      fake_bluetooth_device_client_->GetProperties(dbus::ObjectPath(
+          bluez::FakeBluetoothDeviceClient::kPairedDevicePath));
+
+  properties->advertising_data_flags.set_valid(true);
+
+  // Check that AdvertisingDataFlagsChanged is correctly invoke.
+  properties->advertising_data_flags.ReplaceValue(std::vector<uint8_t>({0x12}));
+  EXPECT_EQ(1, observer.device_changed_count());
+  EXPECT_EQ(device, observer.last_device());
+  EXPECT_TRUE(device->GetAdvertisingDataFlags().has_value());
+  EXPECT_EQ(0x12u, device->GetAdvertisingDataFlags().value());
+
+  // Check that we can update advertising data flags.
+  properties->advertising_data_flags.ReplaceValue(std::vector<uint8_t>({0x23}));
+  EXPECT_EQ(2, observer.device_changed_count());
+  EXPECT_EQ(device, observer.last_device());
+  EXPECT_TRUE(device->GetAdvertisingDataFlags().has_value());
+  EXPECT_EQ(0x23u, device->GetAdvertisingDataFlags().value());
+}
+
 }  // namespace bluez

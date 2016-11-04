@@ -11,6 +11,7 @@
 #include <memory>
 #include <set>
 #include <string>
+#include <unordered_map>
 #include <unordered_set>
 #include <vector>
 
@@ -102,6 +103,10 @@ class DEVICE_BLUETOOTH_EXPORT BluetoothDevice {
                              std::vector<uint8_t>,
                              BluetoothUUIDHash>
       ServiceDataMap;
+  typedef uint16_t ManufacturerId;
+  typedef std::unordered_map<ManufacturerId, std::vector<uint8_t>>
+      ManufacturerDataMap;
+  typedef std::unordered_set<ManufacturerId> ManufacturerIDSet;
 
   // Mapping from the platform-specific GATT service identifiers to
   // BluetoothRemoteGattService objects.
@@ -319,6 +324,31 @@ class DEVICE_BLUETOOTH_EXPORT BluetoothDevice {
   const std::vector<uint8_t>* GetServiceDataForUUID(
       const BluetoothUUID& uuid) const;
 
+  // Returns advertised Manufacturer Data. Keys are 16 bits Manufacturer IDs
+  // followed by its byte array value. Returns an empty map if the device
+  // does not advertise any Manufacturer Data.
+  // Returns cached value if the adapter is not discovering.
+  //
+  // Note: On ChromeOS and Linux, BlueZ persists all manufacturer data meaning
+  // if a device stops advertising manufacturer data for a Manufacturer Id, this
+  // function will still return the cached value for that Id.
+  //
+  // TODO(crbug.com/661814) Support this on platforms that don't use BlueZ.
+  // Only BlueZ supports this now. This method returns an empty map on platforms
+  // that don't use BlueZ.
+  const ManufacturerDataMap& GetManufacturerData() const;
+
+  // Returns the Manufacturer Data IDs of Manufacturers for which the device
+  // advertises Manufacturer Data.
+  // Returns cached value if the adapter is not discovering.
+  ManufacturerIDSet GetManufacturerDataIDs() const;
+
+  // Returns a pointer to the Manufacturer Data for Manufacturer with
+  // |manufacturerID|. Returns nullptr if |manufacturerID| has no Manufacturer
+  // Data. Returns cached value if the adapter is not discovering.
+  const std::vector<uint8_t>* GetManufacturerDataForID(
+      const ManufacturerId manufacturerID) const;
+
   // The received signal strength, in dBm. This field is avaliable and valid
   // only during discovery.
   // TODO(http://crbug.com/580406): Devirtualize once BlueZ sets inquiry_rssi_.
@@ -330,6 +360,15 @@ class DEVICE_BLUETOOTH_EXPORT BluetoothDevice {
   // TODO(http://crbug.com/580406): Devirtualize once BlueZ sets
   // inquiry_tx_power_.
   virtual base::Optional<int8_t> GetInquiryTxPower() const;
+
+  // Returns Advertising Data Flags.
+  // Returns cached value if the adapter is not discovering.
+  //
+  // TODO(crbug.com/661814) Support this on platforms that don't use BlueZ.
+  // Only Chrome OS supports this now. Upstream BlueZ has this feature
+  // as experimental. This method returns base::nullopt on platforms that don't
+  // support this feature.
+  base::Optional<uint8_t> GetAdvertisingDataFlags() const;
 
   // The ErrorCallback is used for methods that can fail in which case it
   // is called, in the success case the callback is simply not called.
@@ -619,11 +658,17 @@ class DEVICE_BLUETOOTH_EXPORT BluetoothDevice {
   // Tx Power advertised by the device.
   base::Optional<int8_t> inquiry_tx_power_;
 
+  // Advertising Data flags of the device.
+  base::Optional<uint8_t> advertising_data_flags_;
+
   // Class that holds the union of Advertised UUIDs and Service UUIDs.
   DeviceUUIDs device_uuids_;
 
   // Map of BluetoothUUIDs to their advertised Service Data.
   ServiceDataMap service_data_;
+
+  // Map of Manufacturer IDs to their advertised Manufacturer Data.
+  ManufacturerDataMap manufacturer_data_;
 
   // Timestamp for when an advertisement was last seen.
   base::Time last_update_time_;

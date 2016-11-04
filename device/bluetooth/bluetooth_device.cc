@@ -312,12 +312,39 @@ const std::vector<uint8_t>* BluetoothDevice::GetServiceDataForUUID(
   return nullptr;
 }
 
+const BluetoothDevice::ManufacturerDataMap&
+BluetoothDevice::GetManufacturerData() const {
+  return manufacturer_data_;
+}
+
+BluetoothDevice::ManufacturerIDSet BluetoothDevice::GetManufacturerDataIDs()
+    const {
+  ManufacturerIDSet manufacturer_data_ids;
+  for (const auto& manufacturer_data_pair : manufacturer_data_) {
+    manufacturer_data_ids.insert(manufacturer_data_pair.first);
+  }
+  return manufacturer_data_ids;
+}
+
+const std::vector<uint8_t>* BluetoothDevice::GetManufacturerDataForID(
+    const ManufacturerId manufacturerID) const {
+  auto it = manufacturer_data_.find(manufacturerID);
+  if (it != manufacturer_data_.end()) {
+    return &it->second;
+  }
+  return nullptr;
+}
+
 base::Optional<int8_t> BluetoothDevice::GetInquiryRSSI() const {
   return inquiry_rssi_;
 }
 
 base::Optional<int8_t> BluetoothDevice::GetInquiryTxPower() const {
   return inquiry_tx_power_;
+}
+
+base::Optional<uint8_t> BluetoothDevice::GetAdvertisingDataFlags() const {
+  return advertising_data_flags_;
 }
 
 void BluetoothDevice::CreateGattConnection(

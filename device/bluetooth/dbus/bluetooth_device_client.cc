@@ -202,9 +202,13 @@ BluetoothDeviceClient::Properties::Properties(
   RegisterProperty(bluetooth_device::kModaliasProperty, &modalias);
   RegisterProperty(bluetooth_device::kRSSIProperty, &rssi);
   RegisterProperty(bluetooth_device::kTxPowerProperty, &tx_power);
+  RegisterProperty(bluetooth_device::kManufacturerDataProperty,
+                   &manufacturer_data);
   RegisterProperty(bluetooth_device::kServiceDataProperty, &service_data);
   RegisterProperty(bluetooth_device::kServicesResolvedProperty,
                    &services_resolved);
+  RegisterProperty(bluetooth_device::kAdvertisingDataFlagsProperty,
+                   &advertising_data_flags);
 }
 
 BluetoothDeviceClient::Properties::~Properties() {}

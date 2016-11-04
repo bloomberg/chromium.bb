@@ -9,6 +9,7 @@
 
 #include <memory>
 #include <string>
+#include <unordered_map>
 #include <unordered_set>
 #include <vector>
 
@@ -118,6 +119,18 @@ class DEVICE_BLUETOOTH_EXPORT BluetoothDeviceBlueZ
   //    This means BlueZ won't remove service data even when a device stops
   //    advertising service data for a UUID.
   void UpdateServiceData();
+
+  // Called by BluetoothAdapterBlueZ to update manufacturer_data_ defined in
+  // BluetoothDevice when receive DevicePropertyChanged event for the
+  // manufacturer data property. Note that same BlueZ implementation detail from
+  // UpdateServiceData() also applies here.
+  void UpdateManufacturerData();
+
+  // Called by BluetoothAdapterBlueZ to update advertising_data_flags_ defined
+  // in BluetoothDevice when receive DevicePropertyChanged event for the
+  // advertising data flags property. Note that same BlueZ implementation detail
+  // from UpdateServiceData() also applies here.
+  void UpdateAdvertisingDataFlags();
 
   // Creates a pairing object with the given delegate |pairing_delegate| and
   // establishes it as the pairing context for this device. All pairing-related

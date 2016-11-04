@@ -607,6 +607,34 @@ void BluetoothDeviceBlueZ::UpdateServiceData() {
     service_data_[BluetoothUUID(pair.first)] = pair.second;
 }
 
+void BluetoothDeviceBlueZ::UpdateManufacturerData() {
+  bluez::BluetoothDeviceClient::Properties* properties =
+      bluez::BluezDBusManager::Get()->GetBluetoothDeviceClient()->GetProperties(
+          object_path_);
+  DCHECK(properties);
+  manufacturer_data_.clear();
+
+  if (properties->manufacturer_data.is_valid()) {
+    for (const auto& pair : properties->manufacturer_data.value())
+      manufacturer_data_[pair.first] = pair.second;
+  }
+}
+
+void BluetoothDeviceBlueZ::UpdateAdvertisingDataFlags() {
+  bluez::BluetoothDeviceClient::Properties* properties =
+      bluez::BluezDBusManager::Get()->GetBluetoothDeviceClient()->GetProperties(
+          object_path_);
+  DCHECK(properties);
+  advertising_data_flags_ = base::nullopt;
+
+  // The advertising data flags property is a vector<uint8> because the
+  // Supplement to Bluetooth Core Specification Version 6 page 13 said that
+  // "The Flags field may be zero or more octets long." However, only the first
+  // byte of that is needed because there is only 5 bits of data defined there.
+  if (properties->advertising_data_flags.is_valid())
+    advertising_data_flags_ = properties->advertising_data_flags.value()[0];
+}
+
 BluetoothPairingBlueZ* BluetoothDeviceBlueZ::BeginPairing(
     BluetoothDevice::PairingDelegate* pairing_delegate) {
   pairing_.reset(new BluetoothPairingBlueZ(this, pairing_delegate));

@@ -487,4 +487,59 @@ TEST(PropertyTestStatic, SerializeStringToByteVectorMap) {
   EXPECT_EQ(test_map, test_property.value());
 }
 
+TEST(PropertyTestStatic, ReadWriteUInt16ToByteVectorMap) {
+  std::unique_ptr<Response> message(Response::CreateEmpty());
+  MessageWriter writer(message.get());
+  MessageWriter variant_writer(nullptr);
+  MessageWriter dict_writer(nullptr);
+
+  writer.OpenVariant("a{qv}", &variant_writer);
+  variant_writer.OpenArray("{qv}", &dict_writer);
+
+  const uint16_t keys[] = {11, 12, 13, 14};
+  const std::vector<uint8_t> values[] = {{1}, {1, 2}, {1, 2, 3}, {1, 2, 3, 4}};
+  for (unsigned i = 0; i < arraysize(keys); ++i) {
+    MessageWriter entry_writer(nullptr);
+    dict_writer.OpenDictEntry(&entry_writer);
+
+    entry_writer.AppendUint16(keys[i]);
+
+    MessageWriter value_varient_writer(nullptr);
+    entry_writer.OpenVariant("ay", &value_varient_writer);
+    value_varient_writer.AppendArrayOfBytes(values[i].data(), values[i].size());
+    entry_writer.CloseContainer(&value_varient_writer);
+
+    dict_writer.CloseContainer(&entry_writer);
+  }
+
+  variant_writer.CloseContainer(&dict_writer);
+  writer.CloseContainer(&variant_writer);
+
+  MessageReader reader(message.get());
+  Property<std::unordered_map<uint16_t, std::vector<uint8_t>>> test_property;
+  EXPECT_TRUE(test_property.PopValueFromReader(&reader));
+
+  ASSERT_EQ(arraysize(keys), test_property.value().size());
+  for (unsigned i = 0; i < arraysize(keys); ++i)
+    EXPECT_EQ(values[i], test_property.value().at(keys[i]));
+}
+
+TEST(PropertyTestStatic, SerializeUInt16ToByteVectorMap) {
+  std::unordered_map<uint16_t, std::vector<uint8_t>> test_map;
+  test_map[11] = {1, 2, 3};
+  test_map[12] = {0xab, 0xcd};
+  test_map[13] = {0x0};
+
+  std::unique_ptr<Response> message(Response::CreateEmpty());
+  MessageWriter writer(message.get());
+
+  Property<std::unordered_map<uint16_t, std::vector<uint8_t>>> test_property;
+  test_property.ReplaceSetValueForTesting(test_map);
+  test_property.AppendSetValueToWriter(&writer);
+
+  MessageReader reader(message.get());
+  EXPECT_TRUE(test_property.PopValueFromReader(&reader));
+  EXPECT_EQ(test_map, test_property.value());
+}
+
 }  // namespace dbus

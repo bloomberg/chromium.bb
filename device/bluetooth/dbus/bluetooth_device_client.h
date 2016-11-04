@@ -109,6 +109,11 @@ class DEVICE_BLUETOOTH_EXPORT BluetoothDeviceClient : public BluezDBusClient {
     // discovered during inquiry. Read-only.
     dbus::Property<int16_t> rssi;
 
+    // Manufacturer specific advertisement data. Keys are 16 bits Manufacturer
+    // ID followed by its byte array value. Read-only.
+    dbus::Property<std::unordered_map<uint16_t, std::vector<uint8_t>>>
+        manufacturer_data;
+
     // Service advertisement data. Keys are the UUIDs in string format followed
     // by its byte array value. Read-only.
     dbus::Property<std::unordered_map<std::string, std::vector<uint8_t>>>
@@ -116,6 +121,9 @@ class DEVICE_BLUETOOTH_EXPORT BluetoothDeviceClient : public BluezDBusClient {
 
     // Indicate whether or not service discovery has been resolved. Read-only.
     dbus::Property<bool> services_resolved;
+
+    // The Advertising Data Flags of the remote device. Read-only.
+    dbus::Property<std::vector<uint8_t>> advertising_data_flags;
 
     Properties(dbus::ObjectProxy* object_proxy,
                const std::string& interface_name,

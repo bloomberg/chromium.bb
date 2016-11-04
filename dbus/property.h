@@ -622,6 +622,17 @@ Property<std::unordered_map<std::string, std::vector<uint8_t>>>::
 extern template class CHROME_DBUS_EXPORT
     Property<std::unordered_map<std::string, std::vector<uint8_t>>>;
 
+template <>
+CHROME_DBUS_EXPORT bool
+Property<std::unordered_map<uint16_t, std::vector<uint8_t>>>::
+    PopValueFromReader(MessageReader* reader);
+template <>
+CHROME_DBUS_EXPORT void
+Property<std::unordered_map<uint16_t, std::vector<uint8_t>>>::
+    AppendSetValueToWriter(MessageWriter* writer);
+extern template class CHROME_DBUS_EXPORT
+    Property<std::unordered_map<uint16_t, std::vector<uint8_t>>>;
+
 #pragma GCC diagnostic pop
 
 }  // namespace dbus
