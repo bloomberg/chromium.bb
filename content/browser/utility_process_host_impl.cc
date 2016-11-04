@@ -263,8 +263,7 @@ bool UtilityProcessHostImpl::StartProcess() {
     // support single process mode this way.
     in_process_thread_.reset(
         g_utility_main_thread_factory(InProcessChildThreadParams(
-            BrowserThread::UnsafeGetMessageLoopForThread(BrowserThread::IO)
-                ->task_runner(),
+            BrowserThread::GetTaskRunnerForThread(BrowserThread::IO),
             process_->child_connection()->service_token())));
     in_process_thread_->Start();
   } else {

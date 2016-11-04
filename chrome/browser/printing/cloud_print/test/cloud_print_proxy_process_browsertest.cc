@@ -520,8 +520,7 @@ base::CommandLine CloudPrintProxyPolicyStartupTest::MakeCmdLine(
 TEST_F(CloudPrintProxyPolicyStartupTest, StartAndShutdown) {
   mojo::edk::Init();
   mojo::edk::ScopedIPCSupport ipc_support(
-      BrowserThread::UnsafeGetMessageLoopForThread(BrowserThread::IO)
-          ->task_runner());
+      BrowserThread::GetTaskRunnerForThread(BrowserThread::IO));
 
   TestingBrowserProcess* browser_process =
       TestingBrowserProcess::GetGlobal();

@@ -222,16 +222,6 @@ class CONTENT_EXPORT BrowserThread {
   static scoped_refptr<base::SingleThreadTaskRunner> GetTaskRunnerForThread(
       ID identifier);
 
-  // Returns a pointer to the thread's message loop, which will become
-  // invalid during shutdown, so you probably shouldn't hold onto it.
-  //
-  // This must not be called before the thread is started, or after
-  // the thread is stopped, or it will DCHECK.
-  //
-  // Ownership remains with the BrowserThread implementation, so you
-  // must not delete the pointer.
-  static base::MessageLoop* UnsafeGetMessageLoopForThread(ID identifier);
-
   // Sets the delegate for the specified BrowserThread.
   //
   // Only one delegate may be registered at a time.  Delegates may be

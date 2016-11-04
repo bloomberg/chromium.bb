@@ -464,13 +464,13 @@ bool URLDataManagerIOSBackend::StartRequest(const net::URLRequest* request,
   // is guaranteed because request for mime type is placed in the
   // message loop before request for data. And correspondingly their
   // replies are put on the IO thread in the same order.
-  base::MessageLoop* target_message_loop =
-      web::WebThread::UnsafeGetMessageLoopForThread(web::WebThread::UI);
-  target_message_loop->task_runner()->PostTask(
+  scoped_refptr<base::SingleThreadTaskRunner> target_runner =
+      web::WebThread::GetTaskRunnerForThread(web::WebThread::UI);
+  target_runner->PostTask(
       FROM_HERE, base::Bind(&GetMimeTypeOnUI, base::RetainedRef(source), path,
                             job->weak_factory_.GetWeakPtr()));
 
-  target_message_loop->task_runner()->PostTask(
+  target_runner->PostTask(
       FROM_HERE, base::Bind(&URLDataManagerIOSBackend::CallStartRequest,
                             make_scoped_refptr(source), path, request_id));
   return true;

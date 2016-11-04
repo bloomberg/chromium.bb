@@ -1497,8 +1497,7 @@ void BrowserMainLoop::InitializeMojo() {
   }
 
   mojo_ipc_support_.reset(new mojo::edk::ScopedIPCSupport(
-      BrowserThread::UnsafeGetMessageLoopForThread(BrowserThread::IO)
-          ->task_runner()));
+      BrowserThread::GetTaskRunnerForThread(BrowserThread::IO)));
 
   service_manager_context_.reset(new ServiceManagerContext);
 #if defined(OS_MACOSX)

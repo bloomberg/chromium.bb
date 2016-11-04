@@ -571,20 +571,6 @@ BrowserThread::GetTaskRunnerForThread(ID identifier) {
   return g_task_runners.Get().proxies[identifier];
 }
 
-// static
-base::MessageLoop* BrowserThread::UnsafeGetMessageLoopForThread(ID identifier) {
-  if (g_globals == nullptr)
-    return nullptr;
-
-  BrowserThreadGlobals& globals = g_globals.Get();
-  base::AutoLock lock(globals.lock);
-  base::Thread* thread = globals.threads[identifier];
-  DCHECK(thread);
-  base::MessageLoop* loop = thread->message_loop();
-  return loop;
-}
-
-// static
 void BrowserThread::SetDelegate(ID identifier,
                                 BrowserThreadDelegate* delegate) {
   using base::subtle::AtomicWord;

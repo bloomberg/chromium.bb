@@ -481,19 +481,6 @@ scoped_refptr<base::SingleThreadTaskRunner> WebThread::GetTaskRunnerForThread(
 }
 
 // static
-base::MessageLoop* WebThread::UnsafeGetMessageLoopForThread(ID identifier) {
-  if (g_globals == nullptr)
-    return nullptr;
-
-  WebThreadGlobals& globals = g_globals.Get();
-  base::AutoLock lock(globals.lock);
-  base::Thread* thread = globals.threads[identifier];
-  DCHECK(thread);
-  base::MessageLoop* loop = thread->message_loop();
-  return loop;
-}
-
-// static
 void WebThread::SetDelegate(ID identifier, WebThreadDelegate* delegate) {
   using base::subtle::AtomicWord;
   WebThreadGlobals& globals = g_globals.Get();
