@@ -17,7 +17,7 @@
 #include "base/profiler/scoped_tracker.h"
 #include "base/strings/string_split.h"
 #include "base/strings/utf_string_conversions.h"
-#include "ui/accessibility/ax_view_state.h"
+#include "ui/accessibility/ax_node_data.h"
 #include "ui/base/default_style.h"
 #include "ui/base/material_design/material_design_controller.h"
 #include "ui/base/resource/resource_bundle.h"
@@ -316,11 +316,11 @@ bool Label::CanProcessEventsWithinSubtree() const {
   return false;
 }
 
-void Label::GetAccessibleState(ui::AXViewState* state) {
-  state->role = ui::AX_ROLE_STATIC_TEXT;
-  state->AddStateFlag(ui::AX_STATE_READ_ONLY);
+void Label::GetAccessibleNodeData(ui::AXNodeData* node_data) {
+  node_data->role = ui::AX_ROLE_STATIC_TEXT;
+  node_data->AddStateFlag(ui::AX_STATE_READ_ONLY);
   // Note that |render_text_| is never elided (see the comment in Init() too).
-  state->name = render_text_->GetDisplayText();
+  node_data->SetName(render_text_->GetDisplayText());
 }
 
 bool Label::GetTooltipText(const gfx::Point& p, base::string16* tooltip) const {

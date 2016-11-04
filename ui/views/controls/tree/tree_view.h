@@ -129,7 +129,7 @@ class VIEWS_EXPORT TreeView : public View,
   void OnGestureEvent(ui::GestureEvent* event) override;
   void ShowContextMenu(const gfx::Point& p,
                        ui::MenuSourceType source_type) override;
-  void GetAccessibleState(ui::AXViewState* state) override;
+  void GetAccessibleNodeData(ui::AXNodeData* node_data) override;
   const char* GetClassName() const override;
 
   // TreeModelObserver overrides:

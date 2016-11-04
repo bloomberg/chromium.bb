@@ -62,7 +62,7 @@ class VIEWS_EXPORT Button : public InkDropHostView {
   // Overridden from View:
   bool GetTooltipText(const gfx::Point& p,
                       base::string16* tooltip) const override;
-  void GetAccessibleState(ui::AXViewState* state) override;
+  void GetAccessibleNodeData(ui::AXNodeData* node_data) override;
 
  protected:
   // Construct the Button with a Listener. The listener can be NULL. This can be

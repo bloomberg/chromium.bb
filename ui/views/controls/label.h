@@ -136,7 +136,7 @@ class VIEWS_EXPORT Label : public View {
   const char* GetClassName() const override;
   View* GetTooltipHandlerForPoint(const gfx::Point& point) override;
   bool CanProcessEventsWithinSubtree() const override;
-  void GetAccessibleState(ui::AXViewState* state) override;
+  void GetAccessibleNodeData(ui::AXNodeData* node_data) override;
   bool GetTooltipText(const gfx::Point& p,
                       base::string16* tooltip) const override;
   void OnEnabledChanged() override;

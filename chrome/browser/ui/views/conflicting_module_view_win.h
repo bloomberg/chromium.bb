@@ -38,7 +38,7 @@ class ConflictingModuleView : public views::BubbleDialogDelegateView,
   void Init() override;
 
   // views::View implementation.
-  void GetAccessibleState(ui::AXViewState* state) override;
+  void GetAccessibleNodeData(ui::AXNodeData* node_data) override;
 
   // EnumerateModulesModel::Observer:
   void OnConflictsAcknowledged() override;

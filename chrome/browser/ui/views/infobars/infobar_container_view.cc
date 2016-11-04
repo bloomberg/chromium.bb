@@ -8,7 +8,7 @@
 #include "chrome/browser/ui/view_ids.h"
 #include "chrome/browser/ui/views/infobars/infobar_view.h"
 #include "chrome/grit/generated_resources.h"
-#include "ui/accessibility/ax_view_state.h"
+#include "ui/accessibility/ax_node_data.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/gfx/canvas.h"
 #include "ui/gfx/skia_util.h"
@@ -115,9 +115,9 @@ void InfoBarContainerView::Layout() {
   content_shadow_->SetBounds(0, top, width(), kLargeShadowHeight);
 }
 
-void InfoBarContainerView::GetAccessibleState(ui::AXViewState* state) {
-  state->role = ui::AX_ROLE_GROUP;
-  state->name = l10n_util::GetStringUTF16(IDS_ACCNAME_INFOBAR_CONTAINER);
+void InfoBarContainerView::GetAccessibleNodeData(ui::AXNodeData* node_data) {
+  node_data->role = ui::AX_ROLE_GROUP;
+  node_data->SetName(l10n_util::GetStringUTF8(IDS_ACCNAME_INFOBAR_CONTAINER));
 }
 
 void InfoBarContainerView::PlatformSpecificAddInfoBar(

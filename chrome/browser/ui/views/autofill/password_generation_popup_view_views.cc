@@ -8,7 +8,7 @@
 #include "base/strings/string16.h"
 #include "chrome/browser/ui/autofill/password_generation_popup_controller.h"
 #include "chrome/browser/ui/autofill/popup_constants.h"
-#include "ui/accessibility/ax_view_state.h"
+#include "ui/accessibility/ax_node_data.h"
 #include "ui/base/resource/resource_bundle.h"
 #include "ui/gfx/canvas.h"
 #include "ui/gfx/color_palette.h"
@@ -279,10 +279,10 @@ PasswordGenerationPopupView* PasswordGenerationPopupView::Create(
   return new PasswordGenerationPopupViewViews(controller, observing_widget);
 }
 
-void PasswordGenerationPopupViewViews::GetAccessibleState(
-    ui::AXViewState* state) {
-  state->name = controller_->SuggestedText();
-  state->role = ui::AX_ROLE_MENU_ITEM;
+void PasswordGenerationPopupViewViews::GetAccessibleNodeData(
+    ui::AXNodeData* node_data) {
+  node_data->SetName(controller_->SuggestedText());
+  node_data->role = ui::AX_ROLE_MENU_ITEM;
 }
 
 }  // namespace autofill

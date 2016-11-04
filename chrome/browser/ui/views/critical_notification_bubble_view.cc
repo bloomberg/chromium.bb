@@ -15,7 +15,7 @@
 #include "chrome/grit/theme_resources.h"
 #include "components/prefs/pref_service.h"
 #include "content/public/browser/user_metrics.h"
-#include "ui/accessibility/ax_view_state.h"
+#include "ui/accessibility/ax_node_data.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/base/resource/resource_bundle.h"
 #include "ui/views/bubble/bubble_frame_view.h"
@@ -147,9 +147,9 @@ void CriticalNotificationBubbleView::Init() {
   content::RecordAction(UserMetricsAction("CriticalNotificationShown"));
 }
 
-void CriticalNotificationBubbleView::GetAccessibleState(
-    ui::AXViewState* state) {
-  state->role = ui::AX_ROLE_ALERT;
+void CriticalNotificationBubbleView::GetAccessibleNodeData(
+    ui::AXNodeData* node_data) {
+  node_data->role = ui::AX_ROLE_ALERT;
 }
 
 void CriticalNotificationBubbleView::ViewHierarchyChanged(

@@ -16,7 +16,7 @@
 #include "ash/resources/vector_icons/vector_icons.h"
 #include "grit/ash_resources.h"
 #include "grit/ash_strings.h"
-#include "ui/accessibility/ax_view_state.h"
+#include "ui/accessibility/ax_node_data.h"
 #include "ui/base/resource/resource_bundle.h"
 #include "ui/gfx/canvas.h"
 #include "ui/gfx/image/image_skia_operations.h"
@@ -115,12 +115,13 @@ class VolumeButton : public views::ToggleImageButton {
     return size;
   }
 
-  void GetAccessibleState(ui::AXViewState* state) override {
+  void GetAccessibleNodeData(ui::AXNodeData* node_data) override {
     ui::ResourceBundle& bundle = ui::ResourceBundle::GetSharedInstance();
-    state->name = bundle.GetLocalizedString(IDS_ASH_STATUS_TRAY_VOLUME_MUTE);
-    state->role = ui::AX_ROLE_TOGGLE_BUTTON;
+    node_data->SetName(
+        bundle.GetLocalizedString(IDS_ASH_STATUS_TRAY_VOLUME_MUTE));
+    node_data->role = ui::AX_ROLE_TOGGLE_BUTTON;
     if (audio_delegate_->IsOutputAudioMuted())
-      state->AddStateFlag(ui::AX_STATE_PRESSED);
+      node_data->AddStateFlag(ui::AX_STATE_PRESSED);
   }
 
   // views::CustomButton:
@@ -345,7 +346,7 @@ void VolumeView::OnBoundsChanged(const gfx::Rect& previous_bounds) {
   separator_->SetSize(gfx::Size(kSeparatorSize, bounds().height()));
 }
 
-void VolumeView::GetAccessibleState(ui::AXViewState* state) {
+void VolumeView::GetAccessibleNodeData(ui::AXNodeData* node_data) {
   // Intentionally overrides ActionableView, leaving |state| unset. A slider
   // childview exposes accessibility data.
 }

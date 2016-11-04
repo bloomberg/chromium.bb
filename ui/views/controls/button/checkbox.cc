@@ -8,7 +8,7 @@
 
 #include <utility>
 
-#include "ui/accessibility/ax_view_state.h"
+#include "ui/accessibility/ax_node_data.h"
 #include "ui/base/material_design/material_design_controller.h"
 #include "ui/base/resource/resource_bundle.h"
 #include "ui/gfx/canvas.h"
@@ -122,11 +122,11 @@ const char* Checkbox::GetClassName() const {
   return kViewClassName;
 }
 
-void Checkbox::GetAccessibleState(ui::AXViewState* state) {
-  LabelButton::GetAccessibleState(state);
-  state->role = ui::AX_ROLE_CHECK_BOX;
+void Checkbox::GetAccessibleNodeData(ui::AXNodeData* node_data) {
+  LabelButton::GetAccessibleNodeData(node_data);
+  node_data->role = ui::AX_ROLE_CHECK_BOX;
   if (checked())
-    state->AddStateFlag(ui::AX_STATE_CHECKED);
+    node_data->AddStateFlag(ui::AX_STATE_CHECKED);
 }
 
 void Checkbox::OnPaint(gfx::Canvas* canvas) {

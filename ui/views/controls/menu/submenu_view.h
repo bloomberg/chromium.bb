@@ -66,7 +66,7 @@ class VIEWS_EXPORT SubmenuView : public View,
   gfx::Size GetPreferredSize() const override;
 
   // Override from View.
-  void GetAccessibleState(ui::AXViewState* state) override;
+  void GetAccessibleNodeData(ui::AXNodeData* node_data) override;
 
   // Painting.
   void PaintChildren(const ui::PaintContext& context) override;

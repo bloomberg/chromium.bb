@@ -59,7 +59,7 @@ class BrowserNonClientFrameViewAsh : public BrowserNonClientFrameView,
   void OnPaint(gfx::Canvas* canvas) override;
   void Layout() override;
   const char* GetClassName() const override;
-  void GetAccessibleState(ui::AXViewState* state) override;
+  void GetAccessibleNodeData(ui::AXNodeData* node_data) override;
   gfx::Size GetMinimumSize() const override;
   void ChildPreferredSizeChanged(views::View* child) override;
 

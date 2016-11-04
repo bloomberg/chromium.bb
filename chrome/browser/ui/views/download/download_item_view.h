@@ -99,7 +99,7 @@ class DownloadItemView : public views::InkDropHostView,
   bool OnKeyPressed(const ui::KeyEvent& event) override;
   bool GetTooltipText(const gfx::Point& p,
                       base::string16* tooltip) const override;
-  void GetAccessibleState(ui::AXViewState* state) override;
+  void GetAccessibleNodeData(ui::AXNodeData* node_data) override;
   void OnThemeChanged() override;
 
   // Overridden from view::InkDropHostView:

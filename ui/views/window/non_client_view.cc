@@ -4,7 +4,7 @@
 
 #include "ui/views/window/non_client_view.h"
 
-#include "ui/accessibility/ax_view_state.h"
+#include "ui/accessibility/ax_node_data.h"
 #include "ui/base/hit_test.h"
 #include "ui/gfx/geometry/rect_conversions.h"
 #include "ui/views/rect_based_targeting_utils.h"
@@ -200,9 +200,9 @@ void NonClientView::ViewHierarchyChanged(
   }
 }
 
-void NonClientView::GetAccessibleState(ui::AXViewState* state) {
-  state->role = ui::AX_ROLE_CLIENT;
-  state->name = accessible_name_;
+void NonClientView::GetAccessibleNodeData(ui::AXNodeData* node_data) {
+  node_data->role = ui::AX_ROLE_CLIENT;
+  node_data->SetName(accessible_name_);
 }
 
 const char* NonClientView::GetClassName() const {
@@ -318,8 +318,8 @@ int NonClientFrameView::GetHTComponentForFrame(const gfx::Point& point,
 void NonClientFrameView::ActivationChanged(bool active) {
 }
 
-void NonClientFrameView::GetAccessibleState(ui::AXViewState* state) {
-  state->role = ui::AX_ROLE_CLIENT;
+void NonClientFrameView::GetAccessibleNodeData(ui::AXNodeData* node_data) {
+  node_data->role = ui::AX_ROLE_CLIENT;
 }
 
 const char* NonClientFrameView::GetClassName() const {

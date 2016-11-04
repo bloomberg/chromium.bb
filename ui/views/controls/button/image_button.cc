@@ -7,7 +7,7 @@
 #include <utility>
 
 #include "base/strings/utf_string_conversions.h"
-#include "ui/accessibility/ax_view_state.h"
+#include "ui/accessibility/ax_node_data.h"
 #include "ui/gfx/animation/throb_animation.h"
 #include "ui/gfx/canvas.h"
 #include "ui/gfx/image/image_skia_operations.h"
@@ -269,17 +269,19 @@ bool ToggleImageButton::GetTooltipText(const gfx::Point& p,
   return true;
 }
 
-void ToggleImageButton::GetAccessibleState(ui::AXViewState* state) {
-  ImageButton::GetAccessibleState(state);
-  GetTooltipText(gfx::Point(), &state->name);
+void ToggleImageButton::GetAccessibleNodeData(ui::AXNodeData* node_data) {
+  ImageButton::GetAccessibleNodeData(node_data);
+  base::string16 name;
+  GetTooltipText(gfx::Point(), &name);
+  node_data->SetName(name);
 
   // Use the visual pressed image as a cue for making this control into an
   // accessible toggle button.
   if ((toggled_ && !images_[ButtonState::STATE_NORMAL].isNull()) ||
       (!toggled_ && !alternate_images_[ButtonState::STATE_NORMAL].isNull())) {
-    state->role = ui::AX_ROLE_TOGGLE_BUTTON;
+    node_data->role = ui::AX_ROLE_TOGGLE_BUTTON;
     if (toggled_)
-      state->AddStateFlag(ui::AX_STATE_PRESSED);
+      node_data->AddStateFlag(ui::AX_STATE_PRESSED);
   }
 }
 

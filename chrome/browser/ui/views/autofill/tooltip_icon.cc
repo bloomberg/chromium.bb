@@ -7,7 +7,7 @@
 #include "base/macros.h"
 #include "base/timer/timer.h"
 #include "chrome/browser/ui/views/autofill/info_bubble.h"
-#include "ui/accessibility/ax_view_state.h"
+#include "ui/accessibility/ax_node_data.h"
 #include "ui/gfx/paint_vector_icon.h"
 #include "ui/gfx/vector_icons_public.h"
 #include "ui/views/bubble/bubble_frame_view.h"
@@ -87,8 +87,8 @@ void TooltipIcon::OnGestureEvent(ui::GestureEvent* event) {
   }
 }
 
-void TooltipIcon::GetAccessibleState(ui::AXViewState* state) {
-  state->name = tooltip_;
+void TooltipIcon::GetAccessibleNodeData(ui::AXNodeData* node_data) {
+  node_data->SetName(tooltip_);
 }
 
 void TooltipIcon::MouseMovedOutOfHost() {

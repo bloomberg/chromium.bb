@@ -18,7 +18,7 @@ class Point;
 class Size;
 }
 namespace ui {
-struct AXViewState;
+struct AXNodeData;
 class ListSelectionModel;
 class LocatedEvent;
 class MouseEvent;
@@ -127,7 +127,7 @@ class TabController {
 
   // Adds private information to the tab's accessibility state.
   virtual void UpdateTabAccessibilityState(const Tab* tab,
-                                           ui::AXViewState* state) = 0;
+                                           ui::AXNodeData* node_data) = 0;
 
  protected:
   virtual ~TabController() {}

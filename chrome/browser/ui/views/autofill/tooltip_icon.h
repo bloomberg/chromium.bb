@@ -36,7 +36,7 @@ class TooltipIcon : public views::ImageView,
   void OnMouseEntered(const ui::MouseEvent& event) override;
   void OnMouseExited(const ui::MouseEvent& event) override;
   void OnGestureEvent(ui::GestureEvent* event) override;
-  void GetAccessibleState(ui::AXViewState* state) override;
+  void GetAccessibleNodeData(ui::AXNodeData* node_data) override;
 
   // views::MouseWatcherListener:
   void MouseMovedOutOfHost() override;
@@ -49,7 +49,7 @@ class TooltipIcon : public views::ImageView,
   }
 
  private:
-  // Changes the color to reflect the hover state.
+  // Changes the color to reflect the hover node_data.
   void SetDrawAsHovered(bool hovered);
 
   // Creates and shows |bubble_|. If |bubble_| already exists, just cancels a

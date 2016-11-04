@@ -88,7 +88,7 @@ class BookmarkBubbleView : public LocationBarBubbleDelegateView,
   base::string16 GetTitle();
 
   // Overridden from views::View:
-  void GetAccessibleState(ui::AXViewState* state) override;
+  void GetAccessibleNodeData(ui::AXNodeData* node_data) override;
 
   // Overridden from views::ButtonListener:
   // Closes the bubble or opens the edit dialog.

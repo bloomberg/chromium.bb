@@ -239,7 +239,6 @@ TEST_F(BrowserAccessibilityTest, TestChildrenChange) {
   text2.id = 2;
   text2.role = ui::AX_ROLE_STATIC_TEXT;
   text2.SetName("new text");
-  text2.SetName("old text");
   AXEventNotificationDetails param;
   param.event_type = ui::AX_EVENT_CHILDREN_CHANGED;
   param.update.nodes.push_back(text2);

@@ -26,7 +26,7 @@
 #include "grit/ash_resources.h"
 #include "grit/ash_strings.h"
 #include "third_party/cros_system_api/dbus/service_constants.h"
-#include "ui/accessibility/ax_view_state.h"
+#include "ui/accessibility/ax_node_data.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/base/resource/resource_bundle.h"
 #include "ui/views/controls/image_view.h"
@@ -84,9 +84,9 @@ class NetworkTrayView : public TrayItemView,
   }
 
   // views::View:
-  void GetAccessibleState(ui::AXViewState* state) override {
-    state->name = connection_status_string_;
-    state->role = ui::AX_ROLE_BUTTON;
+  void GetAccessibleNodeData(ui::AXNodeData* node_data) override {
+    node_data->SetName(connection_status_string_);
+    node_data->role = ui::AX_ROLE_BUTTON;
   }
 
   // network_icon::AnimationObserver:

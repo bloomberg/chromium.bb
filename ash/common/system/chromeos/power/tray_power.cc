@@ -23,7 +23,7 @@
 #include "base/time/time.h"
 #include "grit/ash_resources.h"
 #include "grit/ash_strings.h"
-#include "ui/accessibility/ax_view_state.h"
+#include "ui/accessibility/ax_node_data.h"
 #include "ui/base/resource/resource_bundle.h"
 #include "ui/message_center/message_center.h"
 #include "ui/message_center/notification.h"
@@ -101,9 +101,9 @@ class PowerTrayView : public TrayItemView {
   ~PowerTrayView() override {}
 
   // Overriden from views::View.
-  void GetAccessibleState(ui::AXViewState* state) override {
-    state->name = accessible_name_;
-    state->role = ui::AX_ROLE_BUTTON;
+  void GetAccessibleNodeData(ui::AXNodeData* node_data) override {
+    node_data->SetName(accessible_name_);
+    node_data->role = ui::AX_ROLE_BUTTON;
   }
 
   void UpdateStatus(bool battery_alert) {

@@ -239,6 +239,10 @@
     // HOVER event on it in response.
     hit_test,
 
+    // Delete any selected text in the control's text value and
+    // insert |AXActionData::value| in its place, like when typing or pasting.
+    replace_selected_text,
+
     // Scroll any scrollable containers to make the target object visible
     // on the screen.  Optionally pass a subfocus rect in
     // AXActionData.target_rect.
@@ -258,7 +262,10 @@
     // following this one, for example.
     set_sequential_focus_navigation_starting_point,
 
+    // Replace the value of the control with AXActionData::value and
+    // reset the selection, if applicable.
     set_value,
+
     show_context_menu
   };
 

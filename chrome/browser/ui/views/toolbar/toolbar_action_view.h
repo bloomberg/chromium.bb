@@ -69,7 +69,7 @@ class ToolbarActionView : public views::MenuButton,
   ~ToolbarActionView() override;
 
   // views::MenuButton:
-  void GetAccessibleState(ui::AXViewState* state) override;
+  void GetAccessibleNodeData(ui::AXNodeData* node_data) override;
   std::unique_ptr<views::LabelButtonBorder> CreateDefaultBorder()
       const override;
   bool IsTriggerableEvent(const ui::Event& event) override;

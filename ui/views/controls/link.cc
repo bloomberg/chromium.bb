@@ -8,7 +8,7 @@
 
 #include "base/logging.h"
 #include "base/strings/utf_string_conversions.h"
-#include "ui/accessibility/ax_view_state.h"
+#include "ui/accessibility/ax_node_data.h"
 #include "ui/base/cursor/cursor.h"
 #include "ui/base/material_design/material_design_controller.h"
 #include "ui/events/event.h"
@@ -128,9 +128,9 @@ bool Link::SkipDefaultKeyEventProcessing(const ui::KeyEvent& event) {
       (event.key_code() == ui::VKEY_RETURN);
 }
 
-void Link::GetAccessibleState(ui::AXViewState* state) {
-  Label::GetAccessibleState(state);
-  state->role = ui::AX_ROLE_LINK;
+void Link::GetAccessibleNodeData(ui::AXNodeData* node_data) {
+  Label::GetAccessibleNodeData(node_data);
+  node_data->role = ui::AX_ROLE_LINK;
 }
 
 void Link::OnEnabledChanged() {

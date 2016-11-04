@@ -43,7 +43,7 @@
 #include "components/safe_browsing_db/safe_browsing_prefs.h"
 #include "content/public/browser/download_danger_type.h"
 #include "third_party/icu/source/common/unicode/uchar.h"
-#include "ui/accessibility/ax_view_state.h"
+#include "ui/accessibility/ax_node_data.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/base/resource/resource_bundle.h"
 #include "ui/base/theme_provider.h"
@@ -470,13 +470,13 @@ bool DownloadItemView::GetTooltipText(const gfx::Point& p,
   return true;
 }
 
-void DownloadItemView::GetAccessibleState(ui::AXViewState* state) {
-  state->name = accessible_name_;
-  state->role = ui::AX_ROLE_BUTTON;
+void DownloadItemView::GetAccessibleNodeData(ui::AXNodeData* node_data) {
+  node_data->SetName(accessible_name_);
+  node_data->role = ui::AX_ROLE_BUTTON;
   if (model_.IsDangerous())
-    state->AddStateFlag(ui::AX_STATE_DISABLED);
+    node_data->AddStateFlag(ui::AX_STATE_DISABLED);
   else
-    state->AddStateFlag(ui::AX_STATE_HASPOPUP);
+    node_data->AddStateFlag(ui::AX_STATE_HASPOPUP);
 }
 
 void DownloadItemView::OnThemeChanged() {

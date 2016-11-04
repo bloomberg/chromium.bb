@@ -13,7 +13,7 @@
 #include "ash/resources/vector_icons/vector_icons.h"
 #include "base/memory/ptr_util.h"
 #include "grit/ash_resources.h"
-#include "ui/accessibility/ax_view_state.h"
+#include "ui/accessibility/ax_node_data.h"
 #include "ui/base/resource/resource_bundle.h"
 #include "ui/gfx/image/image.h"
 #include "ui/gfx/paint_vector_icon.h"
@@ -99,10 +99,10 @@ bool TrayItemMore::PerformAction(const ui::Event& event) {
   return true;
 }
 
-void TrayItemMore::GetAccessibleState(ui::AXViewState* state) {
-  ActionableView::GetAccessibleState(state);
+void TrayItemMore::GetAccessibleNodeData(ui::AXNodeData* node_data) {
+  ActionableView::GetAccessibleNodeData(node_data);
   if (!accessible_name_.empty())
-    state->name = accessible_name_;
+    node_data->SetName(accessible_name_);
 }
 
 void TrayItemMore::OnNativeThemeChanged(const ui::NativeTheme* theme) {

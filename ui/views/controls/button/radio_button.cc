@@ -5,7 +5,7 @@
 #include "ui/views/controls/button/radio_button.h"
 
 #include "base/logging.h"
-#include "ui/accessibility/ax_view_state.h"
+#include "ui/accessibility/ax_node_data.h"
 #include "ui/base/resource/resource_bundle.h"
 #include "ui/events/event_utils.h"
 #include "ui/gfx/canvas.h"
@@ -71,9 +71,9 @@ const char* RadioButton::GetClassName() const {
   return kViewClassName;
 }
 
-void RadioButton::GetAccessibleState(ui::AXViewState* state) {
-  Checkbox::GetAccessibleState(state);
-  state->role = ui::AX_ROLE_RADIO_BUTTON;
+void RadioButton::GetAccessibleNodeData(ui::AXNodeData* node_data) {
+  Checkbox::GetAccessibleNodeData(node_data);
+  node_data->role = ui::AX_ROLE_RADIO_BUTTON;
 }
 
 View* RadioButton::GetSelectedViewForGroup(int group) {

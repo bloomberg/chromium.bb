@@ -26,7 +26,7 @@
 #include "chromeos/network/network_state_handler.h"
 #include "components/device_event_log/device_event_log.h"
 #include "components/user_manager/user.h"
-#include "ui/accessibility/ax_view_state.h"
+#include "ui/accessibility/ax_node_data.h"
 #include "ui/aura/window_event_dispatcher.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/gfx/color_palette.h"
@@ -208,10 +208,10 @@ ui::ModalType NetworkConfigView::GetModalType() const {
   return ui::MODAL_TYPE_SYSTEM;
 }
 
-void NetworkConfigView::GetAccessibleState(ui::AXViewState* state) {
-  views::DialogDelegateView::GetAccessibleState(state);
-  state->name =
-      l10n_util::GetStringUTF16(IDS_OPTIONS_SETTINGS_OTHER_WIFI_NETWORKS);
+void NetworkConfigView::GetAccessibleNodeData(ui::AXNodeData* node_data) {
+  views::DialogDelegateView::GetAccessibleNodeData(node_data);
+  node_data->SetName(
+      l10n_util::GetStringUTF8(IDS_OPTIONS_SETTINGS_OTHER_WIFI_NETWORKS));
 }
 
 void NetworkConfigView::ButtonPressed(views::Button* sender,

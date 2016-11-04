@@ -40,7 +40,7 @@
 #include "third_party/skia/include/effects/SkBlurMaskFilter.h"
 #include "third_party/skia/include/effects/SkLayerDrawLooper.h"
 #include "third_party/skia/include/pathops/SkPathOps.h"
-#include "ui/accessibility/ax_view_state.h"
+#include "ui/accessibility/ax_node_data.h"
 #include "ui/base/default_theme_provider.h"
 #include "ui/base/dragdrop/drag_drop_types.h"
 #include "ui/base/l10n/l10n_util.h"
@@ -1350,9 +1350,9 @@ int TabStrip::GetBackgroundResourceId(bool* custom_image) const {
 }
 
 void TabStrip::UpdateTabAccessibilityState(const Tab* tab,
-                                           ui::AXViewState* state) {
-  state->count = tab_count();
-  state->index = GetModelIndexOfTab(tab);
+                                           ui::AXNodeData* node_data) {
+  node_data->AddIntAttribute(ui::AX_ATTR_SET_SIZE, tab_count());
+  node_data->AddIntAttribute(ui::AX_ATTR_POS_IN_SET, GetModelIndexOfTab(tab));
 }
 
 void TabStrip::MouseMovedOutOfHost() {
@@ -1578,8 +1578,8 @@ int TabStrip::OnPerformDrop(const DropTargetEvent& event) {
   return GetDropEffect(event);
 }
 
-void TabStrip::GetAccessibleState(ui::AXViewState* state) {
-  state->role = ui::AX_ROLE_TAB_LIST;
+void TabStrip::GetAccessibleNodeData(ui::AXNodeData* node_data) {
+  node_data->role = ui::AX_ROLE_TAB_LIST;
 }
 
 views::View* TabStrip::GetTooltipHandlerForPoint(const gfx::Point& point) {

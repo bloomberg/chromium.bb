@@ -15,7 +15,7 @@
 #include "chrome/browser/ui/toolbar/toolbar_actions_bar.h"
 #include "chrome/browser/ui/view_ids.h"
 #include "content/public/browser/notification_source.h"
-#include "ui/accessibility/ax_view_state.h"
+#include "ui/accessibility/ax_node_data.h"
 #include "ui/base/resource/resource_bundle.h"
 #include "ui/base/theme_provider.h"
 #include "ui/compositor/paint_recorder.h"
@@ -75,9 +75,9 @@ ToolbarActionView::~ToolbarActionView() {
   view_controller_->SetDelegate(nullptr);
 }
 
-void ToolbarActionView::GetAccessibleState(ui::AXViewState* state) {
-  views::MenuButton::GetAccessibleState(state);
-  state->role = ui::AX_ROLE_BUTTON;
+void ToolbarActionView::GetAccessibleNodeData(ui::AXNodeData* node_data) {
+  views::MenuButton::GetAccessibleNodeData(node_data);
+  node_data->role = ui::AX_ROLE_BUTTON;
 }
 
 std::unique_ptr<LabelButtonBorder> ToolbarActionView::CreateDefaultBorder()

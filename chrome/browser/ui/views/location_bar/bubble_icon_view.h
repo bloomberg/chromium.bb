@@ -57,7 +57,7 @@ class BubbleIconView : public views::InkDropHostView,
   virtual void OnPressed(bool activated) {}
 
   // views::View:
-  void GetAccessibleState(ui::AXViewState* state) override;
+  void GetAccessibleNodeData(ui::AXNodeData* node_data) override;
   bool GetTooltipText(const gfx::Point& p,
                       base::string16* tooltip) const override;
   gfx::Size GetPreferredSize() const override;
@@ -113,7 +113,7 @@ class BubbleIconView : public views::InkDropHostView,
   // The command ID executed when the user clicks this icon.
   const int command_id_;
 
-  // The active state. The precise definition of "active" is unique to each
+  // The active node_data. The precise definition of "active" is unique to each
   // subclass, but generally indicates that the associated feature is acting on
   // the web page.
   bool active_;

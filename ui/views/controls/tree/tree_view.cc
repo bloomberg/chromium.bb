@@ -9,7 +9,7 @@
 #include "base/i18n/rtl.h"
 #include "base/memory/ptr_util.h"
 #include "base/message_loop/message_loop.h"
-#include "ui/accessibility/ax_view_state.h"
+#include "ui/accessibility/ax_node_data.h"
 #include "ui/base/ime/input_method.h"
 #include "ui/base/material_design/material_design_controller.h"
 #include "ui/base/resource/resource_bundle.h"
@@ -408,15 +408,15 @@ void TreeView::ShowContextMenu(const gfx::Point& p,
   View::ShowContextMenu(p, source_type);
 }
 
-void TreeView::GetAccessibleState(ui::AXViewState* state) {
-  state->role = ui::AX_ROLE_TREE;
-  state->AddStateFlag(ui::AX_STATE_READ_ONLY);
+void TreeView::GetAccessibleNodeData(ui::AXNodeData* node_data) {
+  node_data->role = ui::AX_ROLE_TREE;
+  node_data->AddStateFlag(ui::AX_STATE_READ_ONLY);
   if (!selected_node_)
     return;
 
   // Get selected item info.
-  state->role = ui::AX_ROLE_TREE_ITEM;
-  state->name = selected_node_->model_node()->GetTitle();
+  node_data->role = ui::AX_ROLE_TREE_ITEM;
+  node_data->SetName(selected_node_->model_node()->GetTitle());
 }
 
 const char* TreeView::GetClassName() const {

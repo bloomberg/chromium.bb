@@ -50,7 +50,7 @@
 #include "grit/ash_resources.h"
 #include "grit/ash_strings.h"
 #include "third_party/cros_system_api/dbus/service_constants.h"
-#include "ui/accessibility/ax_view_state.h"
+#include "ui/accessibility/ax_node_data.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/base/resource/resource_bundle.h"
 #include "ui/compositor/layer.h"
@@ -187,9 +187,9 @@ class ScanningThrobber : public ThrobberView {
     layer()->SetOpacity(visible ? 1.0 : 0.0);
   }
 
-  void GetAccessibleState(ui::AXViewState* state) override {
-    state->name = accessible_name_;
-    state->role = ui::AX_ROLE_BUSY_INDICATOR;
+  void GetAccessibleNodeData(ui::AXNodeData* node_data) override {
+    node_data->SetName(accessible_name_);
+    node_data->role = ui::AX_ROLE_BUSY_INDICATOR;
   }
 
  private:

@@ -28,7 +28,7 @@
 #include "components/grit/components_scaled_resources.h"
 #include "components/omnibox/browser/omnibox_popup_model.h"
 #include "third_party/skia/include/core/SkColor.h"
-#include "ui/accessibility/ax_view_state.h"
+#include "ui/accessibility/ax_node_data.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/base/resource/resource_bundle.h"
 #include "ui/base/theme_provider.h"
@@ -269,7 +269,7 @@ void OmniboxResultView::OnSelected() {
 
   // Notify assistive technology when results with answers attached are
   // selected. The non-answer text is already accessible as a consequence of
-  // updating the text in the omnibox but this alert and GetAccessibleState
+  // updating the text in the omnibox but this alert and GetAccessibleNodeData
   // below make the answer contents accessible.
   if (match_.answer)
     NotifyAccessibilityEvent(ui::AX_EVENT_ALERT, true);
@@ -293,12 +293,12 @@ gfx::Size OmniboxResultView::GetPreferredSize() const {
              GetAnswerLineHeight() * description_rendertext_->GetNumLines());
 }
 
-void OmniboxResultView::GetAccessibleState(ui::AXViewState* state) {
-  state->name = match_.answer
-                    ? l10n_util::GetStringFUTF16(
-                          IDS_OMNIBOX_ACCESSIBLE_ANSWER, match_.contents,
-                          match_.answer->second_line().AccessibleText())
-                    : match_.contents;
+void OmniboxResultView::GetAccessibleNodeData(ui::AXNodeData* node_data) {
+  node_data->SetName(match_.answer
+                         ? l10n_util::GetStringFUTF16(
+                               IDS_OMNIBOX_ACCESSIBLE_ANSWER, match_.contents,
+                               match_.answer->second_line().AccessibleText())
+                         : match_.contents);
 }
 
 ////////////////////////////////////////////////////////////////////////////////

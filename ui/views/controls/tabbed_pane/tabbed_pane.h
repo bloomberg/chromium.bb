@@ -84,7 +84,7 @@ class VIEWS_EXPORT TabbedPane : public View {
   void ViewHierarchyChanged(
       const ViewHierarchyChangedDetails& details) override;
   bool AcceleratorPressed(const ui::Accelerator& accelerator) override;
-  void GetAccessibleState(ui::AXViewState* state) override;
+  void GetAccessibleNodeData(ui::AXNodeData* node_data) override;
 
   // A listener notified when tab selection changes. Weak, not owned.
   TabbedPaneListener* listener_;

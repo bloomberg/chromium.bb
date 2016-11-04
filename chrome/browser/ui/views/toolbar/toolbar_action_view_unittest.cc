@@ -13,7 +13,7 @@
 #include "chrome/test/base/testing_profile.h"
 #include "content/public/test/test_browser_thread.h"
 #include "content/public/test/test_web_contents_factory.h"
-#include "ui/accessibility/ax_view_state.h"
+#include "ui/accessibility/ax_node_data.h"
 #include "ui/events/test/event_generator.h"
 #include "ui/views/test/views_test_base.h"
 
@@ -218,9 +218,9 @@ TEST_F(ToolbarActionViewUnitTest, BasicToolbarActionViewTest) {
   base::string16 tooltip_test;
   EXPECT_TRUE(view.GetTooltipText(gfx::Point(), &tooltip_test));
   EXPECT_EQ(tooltip, tooltip_test);
-  ui::AXViewState ax_state;
-  view.GetAccessibleState(&ax_state);
-  EXPECT_EQ(name, ax_state.name);
+  ui::AXNodeData ax_node_data;
+  view.GetAccessibleNodeData(&ax_node_data);
+  EXPECT_EQ(name, ax_node_data.GetString16Attribute(ui::AX_ATTR_NAME));
 
   // The button should start in normal state, with no actions executed.
   EXPECT_EQ(views::Button::STATE_NORMAL, view.state());

@@ -7,7 +7,7 @@
 #include "chrome/browser/media/webrtc/desktop_media_list.h"
 #include "chrome/browser/ui/views/desktop_capture/desktop_media_list_view.h"
 #include "chrome/browser/ui/views/desktop_capture/desktop_media_picker_views.h"
-#include "ui/accessibility/ax_view_state.h"
+#include "ui/accessibility/ax_node_data.h"
 #include "ui/gfx/canvas.h"
 #include "ui/native_theme/native_theme.h"
 #include "ui/views/border.h"
@@ -199,7 +199,7 @@ void DesktopMediaSourceView::OnGestureEvent(ui::GestureEvent* event) {
   }
 }
 
-void DesktopMediaSourceView::GetAccessibleState(ui::AXViewState* state) {
-  state->role = ui::AX_ROLE_BUTTON;
-  state->name = label_->text();
+void DesktopMediaSourceView::GetAccessibleNodeData(ui::AXNodeData* node_data) {
+  node_data->role = ui::AX_ROLE_BUTTON;
+  node_data->SetName(label_->text());
 }

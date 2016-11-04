@@ -47,7 +47,7 @@ class VIEWS_EXPORT Checkbox : public LabelButton {
   // Overridden from LabelButton:
   void Layout() override;
   const char* GetClassName() const override;
-  void GetAccessibleState(ui::AXViewState* state) override;
+  void GetAccessibleNodeData(ui::AXNodeData* node_data) override;
   void OnPaint(gfx::Canvas* canvas) override;
   void OnFocus() override;
   void OnBlur() override;
@@ -81,7 +81,7 @@ class VIEWS_EXPORT Checkbox : public LabelButton {
   // True if the checkbox is checked.
   bool checked_;
 
-  // The images for each button state.
+  // The images for each button node_data.
   gfx::ImageSkia images_[2][2][STATE_COUNT];
 
   DISALLOW_COPY_AND_ASSIGN(Checkbox);

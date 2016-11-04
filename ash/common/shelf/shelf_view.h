@@ -277,7 +277,7 @@ class ASH_EXPORT ShelfView : public views::View,
   gfx::Size GetPreferredSize() const override;
   void OnBoundsChanged(const gfx::Rect& previous_bounds) override;
   FocusTraversable* GetPaneFocusTraversable() override;
-  void GetAccessibleState(ui::AXViewState* state) override;
+  void GetAccessibleNodeData(ui::AXNodeData* node_data) override;
   void ViewHierarchyChanged(
       const ViewHierarchyChangedDetails& details) override;
 

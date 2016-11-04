@@ -25,7 +25,7 @@
 #include "components/user_manager/user_info.h"
 #include "grit/ash_resources.h"
 #include "grit/ash_strings.h"
-#include "ui/accessibility/ax_view_state.h"
+#include "ui/accessibility/ax_node_data.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/base/resource/resource_bundle.h"
 #include "ui/gfx/geometry/insets.h"
@@ -339,12 +339,12 @@ UserCardView::UserCardView(LoginStatus login_status,
 
 UserCardView::~UserCardView() {}
 
-void UserCardView::GetAccessibleState(ui::AXViewState* state) {
-  state->role = ui::AX_ROLE_STATIC_TEXT;
+void UserCardView::GetAccessibleNodeData(ui::AXNodeData* node_data) {
+  node_data->role = ui::AX_ROLE_STATIC_TEXT;
   std::vector<base::string16> labels;
   for (int i = 0; i < child_count(); ++i)
     GetAccessibleLabelFromDescendantViews(child_at(i), labels);
-  state->name = base::JoinString(labels, base::ASCIIToUTF16(" "));
+  node_data->SetName(base::JoinString(labels, base::ASCIIToUTF16(" ")));
 }
 
 void UserCardView::AddPublicModeUserContent(int max_width) {

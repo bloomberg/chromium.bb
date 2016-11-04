@@ -10,7 +10,7 @@
 #include "base/strings/utf_string_conversions.h"
 #include "build/build_config.h"
 #include "testing/gtest/include/gtest/gtest.h"
-#include "ui/accessibility/ax_view_state.h"
+#include "ui/accessibility/ax_node_data.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/compositor/canvas_painter.h"
 #include "ui/gfx/canvas.h"
@@ -339,11 +339,11 @@ TEST_F(LabelTest, Accessibility) {
   Label label;
   label.SetText(ASCIIToUTF16("My special text."));
 
-  ui::AXViewState state;
-  label.GetAccessibleState(&state);
-  EXPECT_EQ(ui::AX_ROLE_STATIC_TEXT, state.role);
-  EXPECT_EQ(label.text(), state.name);
-  EXPECT_TRUE(state.HasStateFlag(ui::AX_STATE_READ_ONLY));
+  ui::AXNodeData node_data;
+  label.GetAccessibleNodeData(&node_data);
+  EXPECT_EQ(ui::AX_ROLE_STATIC_TEXT, node_data.role);
+  EXPECT_EQ(label.text(), node_data.GetString16Attribute(ui::AX_ATTR_NAME));
+  EXPECT_TRUE(node_data.HasStateFlag(ui::AX_STATE_READ_ONLY));
 }
 
 TEST_F(LabelTest, TextChangeWithoutLayout) {

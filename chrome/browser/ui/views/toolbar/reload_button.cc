@@ -116,11 +116,11 @@ const char* ReloadButton::GetClassName() const {
   return kViewClassName;
 }
 
-void ReloadButton::GetAccessibleState(ui::AXViewState* state) {
+void ReloadButton::GetAccessibleNodeData(ui::AXNodeData* node_data) {
   if (menu_enabled_)
-    ToolbarButton::GetAccessibleState(state);
+    ToolbarButton::GetAccessibleNodeData(node_data);
   else
-    CustomButton::GetAccessibleState(state);
+    CustomButton::GetAccessibleNodeData(node_data);
 }
 
 bool ReloadButton::ShouldShowMenu() {

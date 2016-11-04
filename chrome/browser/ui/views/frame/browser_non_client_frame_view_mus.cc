@@ -23,7 +23,7 @@
 #include "chrome/grit/theme_resources.h"
 #include "content/public/browser/web_contents.h"
 #include "services/ui/public/cpp/window.h"
-#include "ui/accessibility/ax_view_state.h"
+#include "ui/accessibility/ax_node_data.h"
 #include "ui/aura/client/aura_constants.h"
 #include "ui/aura/window.h"
 #include "ui/base/hit_test.h"
@@ -288,8 +288,9 @@ const char* BrowserNonClientFrameViewMus::GetClassName() const {
   return kViewClassName;
 }
 
-void BrowserNonClientFrameViewMus::GetAccessibleState(ui::AXViewState* state) {
-  state->role = ui::AX_ROLE_TITLE_BAR;
+void BrowserNonClientFrameViewMus::GetAccessibleNodeData(
+    ui::AXNodeData* node_data) {
+  node_data->role = ui::AX_ROLE_TITLE_BAR;
 }
 
 gfx::Size BrowserNonClientFrameViewMus::GetMinimumSize() const {

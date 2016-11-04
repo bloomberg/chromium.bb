@@ -14,7 +14,7 @@
 #include "base/i18n/rtl.h"
 #include "base/strings/string_util.h"
 #include "base/strings/utf_string_conversions.h"
-#include "ui/accessibility/ax_view_state.h"
+#include "ui/accessibility/ax_node_data.h"
 #include "ui/events/event.h"
 #include "ui/gfx/canvas.h"
 #include "ui/gfx/geometry/rect_conversions.h"
@@ -443,18 +443,19 @@ bool TableView::GetTooltipTextOrigin(const gfx::Point& p,
   return GetTooltipImpl(p, NULL, loc);
 }
 
-void TableView::GetAccessibleState(ui::AXViewState* state) {
-  state->role = ui::AX_ROLE_TABLE;
-  state->AddStateFlag(ui::AX_STATE_READ_ONLY);
-  state->count = RowCount();
+void TableView::GetAccessibleNodeData(ui::AXNodeData* node_data) {
+  node_data->role = ui::AX_ROLE_TABLE;
+  node_data->AddStateFlag(ui::AX_STATE_READ_ONLY);
+  node_data->AddIntAttribute(ui::AX_ATTR_SET_SIZE, RowCount());
 
   if (selection_model_.active() != ui::ListSelectionModel::kUnselectedIndex) {
     // Get information about the active item, this is not the same as the set
     // of selected items (of which there could be more than one).
-    state->role = ui::AX_ROLE_ROW;
-    state->index = selection_model_.active();
+    node_data->role = ui::AX_ROLE_ROW;
+    node_data->AddIntAttribute(ui::AX_ATTR_POS_IN_SET,
+                               selection_model_.active());
     if (selection_model_.IsSelected(selection_model_.active())) {
-      state->AddStateFlag(ui::AX_STATE_SELECTED);
+      node_data->AddStateFlag(ui::AX_STATE_SELECTED);
     }
 
     std::vector<base::string16> name_parts;
@@ -466,7 +467,7 @@ void TableView::GetAccessibleState(ui::AXViewState* state) {
         name_parts.push_back(value);
       }
     }
-    state->name = base::JoinString(name_parts, base::ASCIIToUTF16(", "));
+    node_data->SetName(base::JoinString(name_parts, base::ASCIIToUTF16(", ")));
   }
 }
 

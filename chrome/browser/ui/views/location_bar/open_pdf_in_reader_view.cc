@@ -8,7 +8,7 @@
 #include "chrome/grit/generated_resources.h"
 #include "components/pdf/browser/open_pdf_in_reader_prompt_client.h"
 #include "components/pdf/browser/pdf_web_contents_helper.h"
-#include "ui/accessibility/ax_view_state.h"
+#include "ui/accessibility/ax_node_data.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/gfx/color_utils.h"
 #include "ui/gfx/paint_vector_icon.h"
@@ -52,10 +52,10 @@ void OpenPDFInReaderView::ShowBubble() {
   bubble_->GetWidget()->Show();
 }
 
-void OpenPDFInReaderView::GetAccessibleState(ui::AXViewState* state) {
-  ImageView::GetAccessibleState(state);
-  state->name = l10n_util::GetStringUTF16(IDS_ACCNAME_OPEN_PDF_IN_READER);
-  state->role = ui::AX_ROLE_BUTTON;
+void OpenPDFInReaderView::GetAccessibleNodeData(ui::AXNodeData* node_data) {
+  ImageView::GetAccessibleNodeData(node_data);
+  node_data->SetName(l10n_util::GetStringUTF8(IDS_ACCNAME_OPEN_PDF_IN_READER));
+  node_data->role = ui::AX_ROLE_BUTTON;
 }
 
 bool OpenPDFInReaderView::OnMousePressed(const ui::MouseEvent& event) {

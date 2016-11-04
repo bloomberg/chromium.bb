@@ -13,7 +13,7 @@
 #include "third_party/skia/include/core/SkCanvas.h"
 #include "third_party/skia/include/core/SkColor.h"
 #include "third_party/skia/include/core/SkPaint.h"
-#include "ui/accessibility/ax_view_state.h"
+#include "ui/accessibility/ax_node_data.h"
 #include "ui/base/resource/resource_bundle.h"
 #include "ui/events/event.h"
 #include "ui/gfx/animation/slide_animation.h"
@@ -229,11 +229,11 @@ bool Slider::OnKeyPressed(const ui::KeyEvent& event) {
   return true;
 }
 
-void Slider::GetAccessibleState(ui::AXViewState* state) {
-  state->role = ui::AX_ROLE_SLIDER;
-  state->name = accessible_name_;
-  state->value = base::UTF8ToUTF16(
-      base::StringPrintf("%d%%", static_cast<int>(value_ * 100 + 0.5)));
+void Slider::GetAccessibleNodeData(ui::AXNodeData* node_data) {
+  node_data->role = ui::AX_ROLE_SLIDER;
+  node_data->SetName(accessible_name_);
+  node_data->SetValue(base::UTF8ToUTF16(
+      base::StringPrintf("%d%%", static_cast<int>(value_ * 100 + 0.5))));
 }
 
 void Slider::OnFocus() {

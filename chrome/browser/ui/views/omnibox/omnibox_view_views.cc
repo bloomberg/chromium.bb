@@ -34,7 +34,8 @@
 #include "extensions/common/constants.h"
 #include "net/base/escape.h"
 #include "third_party/skia/include/core/SkColor.h"
-#include "ui/accessibility/ax_view_state.h"
+#include "ui/accessibility/ax_action_data.h"
+#include "ui/accessibility/ax_node_data.h"
 #include "ui/base/clipboard/scoped_clipboard_writer.h"
 #include "ui/base/dragdrop/drag_drop_types.h"
 #include "ui/base/dragdrop/os_exchange_data.h"
@@ -123,8 +124,7 @@ OmniboxViewViews::OmniboxViewViews(OmniboxEditController* controller,
       location_bar_view_(location_bar),
       ime_candidate_window_open_(false),
       select_all_on_mouse_release_(false),
-      select_all_on_gesture_tap_(false),
-      weak_ptr_factory_(this) {
+      select_all_on_gesture_tap_(false) {
   set_id(VIEW_ID_OMNIBOX);
   SetFontList(font_list);
 }
@@ -406,23 +406,6 @@ bool OmniboxViewViews::HandleEarlyTabActions(const ui::KeyEvent& event) {
     model()->OnUpOrDownKeyPressed(event.IsShiftDown() ? -1 : 1);
 
   return true;
-}
-
-void OmniboxViewViews::AccessibilitySetValue(const base::string16& new_value,
-                                             bool clear_first) {
-  if (read_only())
-    return;
-  if (clear_first) {
-    SetUserText(new_value, true);
-  } else {
-    model()->SetInputInProgress(true);
-    if (saved_selection_for_focus_change_.IsValid()) {
-      SelectRange(saved_selection_for_focus_change_);
-      saved_selection_for_focus_change_ = gfx::Range::InvalidRange();
-    }
-    InsertOrReplaceText(new_value);
-    TextChanged();
-  }
 }
 
 void OmniboxViewViews::UpdateSecurityLevel() {
@@ -739,10 +722,10 @@ bool OmniboxViewViews::SkipDefaultKeyEventProcessing(
   return Textfield::SkipDefaultKeyEventProcessing(event);
 }
 
-void OmniboxViewViews::GetAccessibleState(ui::AXViewState* state) {
-  state->role = ui::AX_ROLE_TEXT_FIELD;
-  state->name = l10n_util::GetStringUTF16(IDS_ACCNAME_LOCATION);
-  state->value = GetText();
+void OmniboxViewViews::GetAccessibleNodeData(ui::AXNodeData* node_data) {
+  node_data->role = ui::AX_ROLE_TEXT_FIELD;
+  node_data->SetName(l10n_util::GetStringUTF8(IDS_ACCNAME_LOCATION));
+  node_data->SetValue(GetText());
 
   base::string16::size_type entry_start;
   base::string16::size_type entry_end;
@@ -754,17 +737,36 @@ void OmniboxViewViews::GetAccessibleState(ui::AXViewState* state) {
   } else {
     GetSelectionBounds(&entry_start, &entry_end);
   }
-  state->selection_start = entry_start;
-  state->selection_end = entry_end;
+  node_data->AddIntAttribute(ui::AX_ATTR_TEXT_SEL_START, entry_start);
+  node_data->AddIntAttribute(ui::AX_ATTR_TEXT_SEL_END, entry_end);
 
   if (popup_window_mode_) {
-    state->AddStateFlag(ui::AX_STATE_READ_ONLY);
+    node_data->AddStateFlag(ui::AX_STATE_READ_ONLY);
   } else {
-    state->AddStateFlag(ui::AX_STATE_EDITABLE);
-    state->set_value_callback =
-        base::Bind(&OmniboxViewViews::AccessibilitySetValue,
-                   weak_ptr_factory_.GetWeakPtr());
+    node_data->AddStateFlag(ui::AX_STATE_EDITABLE);
   }
+}
+
+bool OmniboxViewViews::HandleAccessibleAction(
+    const ui::AXActionData& action_data) {
+  if (read_only())
+    return Textfield::HandleAccessibleAction(action_data);
+
+  if (action_data.action == ui::AX_ACTION_SET_VALUE) {
+    SetUserText(action_data.value, true);
+    return true;
+  } else if (action_data.action == ui::AX_ACTION_REPLACE_SELECTED_TEXT) {
+    model()->SetInputInProgress(true);
+    if (saved_selection_for_focus_change_.IsValid()) {
+      SelectRange(saved_selection_for_focus_change_);
+      saved_selection_for_focus_change_ = gfx::Range::InvalidRange();
+    }
+    InsertOrReplaceText(action_data.value);
+    TextChanged();
+    return true;
+  }
+
+  return Textfield::HandleAccessibleAction(action_data);
 }
 
 void OmniboxViewViews::OnFocus() {

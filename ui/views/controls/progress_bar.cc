@@ -14,7 +14,7 @@
 #include "third_party/skia/include/core/SkPath.h"
 #include "third_party/skia/include/core/SkXfermode.h"
 #include "third_party/skia/include/effects/SkGradientShader.h"
-#include "ui/accessibility/ax_view_state.h"
+#include "ui/accessibility/ax_node_data.h"
 #include "ui/gfx/animation/linear_animation.h"
 #include "ui/gfx/canvas.h"
 #include "ui/gfx/color_utils.h"
@@ -49,9 +49,9 @@ ProgressBar::ProgressBar(int preferred_height)
 ProgressBar::~ProgressBar() {
 }
 
-void ProgressBar::GetAccessibleState(ui::AXViewState* state) {
-  state->role = ui::AX_ROLE_PROGRESS_INDICATOR;
-  state->AddStateFlag(ui::AX_STATE_READ_ONLY);
+void ProgressBar::GetAccessibleNodeData(ui::AXNodeData* node_data) {
+  node_data->role = ui::AX_ROLE_PROGRESS_INDICATOR;
+  node_data->AddStateFlag(ui::AX_STATE_READ_ONLY);
 }
 
 gfx::Size ProgressBar::GetPreferredSize() const {

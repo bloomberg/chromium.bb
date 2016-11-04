@@ -494,6 +494,7 @@ void RenderAccessibilityImpl::OnPerformAction(
     case ui::AX_ACTION_SHOW_CONTEXT_MENU:
       target.showContextMenu();
       break;
+    case ui::AX_ACTION_REPLACE_SELECTED_TEXT:
     case ui::AX_ACTION_NONE:
       NOTREACHED();
       break;

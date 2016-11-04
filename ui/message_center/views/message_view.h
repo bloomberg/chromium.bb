@@ -63,7 +63,7 @@ class MESSAGE_CENTER_EXPORT MessageView : public views::SlideOutView,
   bool IsPinned();
 
   // Overridden from views::View:
-  void GetAccessibleState(ui::AXViewState* state) override;
+  void GetAccessibleNodeData(ui::AXNodeData* node_data) override;
   bool OnMousePressed(const ui::MouseEvent& event) override;
   bool OnKeyPressed(const ui::KeyEvent& event) override;
   bool OnKeyReleased(const ui::KeyEvent& event) override;

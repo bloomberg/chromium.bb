@@ -45,7 +45,7 @@
 #include "extensions/common/feature_switch.h"
 #include "third_party/skia/include/core/SkCanvas.h"
 #include "third_party/skia/include/core/SkPaint.h"
-#include "ui/accessibility/ax_view_state.h"
+#include "ui/accessibility/ax_node_data.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/base/layout.h"
 #include "ui/base/resource/resource_bundle.h"
@@ -124,9 +124,9 @@ class FullscreenButton : public ImageButton {
     return pref;
   }
 
-  void GetAccessibleState(ui::AXViewState* state) override {
-    ImageButton::GetAccessibleState(state);
-    state->role = ui::AX_ROLE_MENU_ITEM;
+  void GetAccessibleNodeData(ui::AXNodeData* node_data) override {
+    ImageButton::GetAccessibleNodeData(node_data);
+    node_data->role = ui::AX_ROLE_MENU_ITEM;
   }
 
  private:
@@ -268,9 +268,9 @@ class InMenuButton : public LabelButton {
     SetFontList(MenuConfig::instance().font_list);
   }
 
-  void GetAccessibleState(ui::AXViewState* state) override {
-    LabelButton::GetAccessibleState(state);
-    state->role = ui::AX_ROLE_MENU_ITEM;
+  void GetAccessibleNodeData(ui::AXNodeData* node_data) override {
+    LabelButton::GetAccessibleNodeData(node_data);
+    node_data->role = ui::AX_ROLE_MENU_ITEM;
   }
 
   // views::LabelButton

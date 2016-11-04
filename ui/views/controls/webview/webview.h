@@ -113,7 +113,7 @@ class WEBVIEW_EXPORT WebView : public View,
   bool OnMousePressed(const ui::MouseEvent& event) override;
   void OnFocus() override;
   void AboutToRequestFocusFromTabTraversal(bool reverse) override;
-  void GetAccessibleState(ui::AXViewState* state) override;
+  void GetAccessibleNodeData(ui::AXNodeData* node_data) override;
   gfx::NativeViewAccessible GetNativeViewAccessible() override;
   gfx::Size GetPreferredSize() const override;
 

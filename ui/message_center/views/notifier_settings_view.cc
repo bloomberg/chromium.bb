@@ -122,7 +122,7 @@ class EntryView : public views::View {
   // views::View:
   void Layout() override;
   gfx::Size GetPreferredSize() const override;
-  void GetAccessibleState(ui::AXViewState* state) override;
+  void GetAccessibleNodeData(ui::AXNodeData* node_data) override;
   void OnFocus() override;
   bool OnKeyPressed(const ui::KeyEvent& event) override;
   bool OnKeyReleased(const ui::KeyEvent& event) override;
@@ -158,9 +158,9 @@ gfx::Size EntryView::GetPreferredSize() const {
   return size;
 }
 
-void EntryView::GetAccessibleState(ui::AXViewState* state) {
+void EntryView::GetAccessibleNodeData(ui::AXNodeData* node_data) {
   DCHECK_EQ(1, child_count());
-  child_at(0)->GetAccessibleState(state);
+  child_at(0)->GetAccessibleNodeData(node_data);
 }
 
 void EntryView::OnFocus() {
@@ -346,9 +346,9 @@ void NotifierSettingsView::NotifierButton::ButtonPressed(
   }
 }
 
-void NotifierSettingsView::NotifierButton::GetAccessibleState(
-    ui::AXViewState* state) {
-  static_cast<views::View*>(checkbox_)->GetAccessibleState(state);
+void NotifierSettingsView::NotifierButton::GetAccessibleNodeData(
+    ui::AXNodeData* node_data) {
+  static_cast<views::View*>(checkbox_)->GetAccessibleNodeData(node_data);
 }
 
 bool NotifierSettingsView::NotifierButton::ShouldHaveLearnMoreButton() const {

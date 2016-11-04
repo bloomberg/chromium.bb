@@ -10,7 +10,6 @@
 #include "base/macros.h"
 #include "base/strings/sys_string_conversions.h"
 #include "ui/accessibility/ax_node_data.h"
-#include "ui/accessibility/ax_view_state.h"
 #include "ui/accessibility/platform/ax_platform_node_delegate.h"
 #import "ui/gfx/mac/coordinate_conversion.h"
 
@@ -383,8 +382,8 @@ void NotifyMacEvent(AXPlatformNodeCocoa* target, ui::AXEvent event_type) {
     return node_->GetDelegate()->CanSetStringValue();
 
   if ([attributeName isEqualToString:NSAccessibilityFocusedAttribute]) {
-    if (ui::AXViewState::IsFlagSet(node_->GetData().state,
-                                   ui::AX_STATE_FOCUSABLE))
+    if (ui::AXNodeData::IsFlagSet(node_->GetData().state,
+                                  ui::AX_STATE_FOCUSABLE))
       return NO;
   }
 
@@ -446,8 +445,8 @@ void NotifyMacEvent(AXPlatformNodeCocoa* target, ui::AXEvent event_type) {
   ui::AXRole role = node_->GetData().role;
   switch (role) {
     case ui::AX_ROLE_TEXT_FIELD:
-      if (ui::AXViewState::IsFlagSet(node_->GetData().state,
-                                     ui::AX_STATE_PROTECTED))
+      if (ui::AXNodeData::IsFlagSet(node_->GetData().state,
+                                    ui::AX_STATE_PROTECTED))
         return NSAccessibilitySecureTextFieldSubrole;
       break;
     default:
@@ -474,13 +473,13 @@ void NotifyMacEvent(AXPlatformNodeCocoa* target, ui::AXEvent event_type) {
 
 - (NSValue*)AXEnabled {
   return [NSNumber
-      numberWithBool:!ui::AXViewState::IsFlagSet(node_->GetData().state,
-                                                 ui::AX_STATE_DISABLED)];
+      numberWithBool:!ui::AXNodeData::IsFlagSet(node_->GetData().state,
+                                                ui::AX_STATE_DISABLED)];
 }
 
 - (NSValue*)AXFocused {
-  if (ui::AXViewState::IsFlagSet(node_->GetData().state,
-                                 ui::AX_STATE_FOCUSABLE))
+  if (ui::AXNodeData::IsFlagSet(node_->GetData().state,
+                                ui::AX_STATE_FOCUSABLE))
     return [NSNumber numberWithBool:(node_->GetDelegate()->GetFocus() ==
                                      node_->GetNativeViewAccessible())];
   return [NSNumber numberWithBool:NO];

@@ -119,7 +119,7 @@ class VIEWS_EXPORT Slider : public View, public gfx::AnimationDelegate {
   bool OnMouseDragged(const ui::MouseEvent& event) override;
   void OnMouseReleased(const ui::MouseEvent& event) override;
   bool OnKeyPressed(const ui::KeyEvent& event) override;
-  void GetAccessibleState(ui::AXViewState* state) override;
+  void GetAccessibleNodeData(ui::AXNodeData* node_data) override;
   void OnFocus() override;
   void OnBlur() override;
 

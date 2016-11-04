@@ -84,7 +84,7 @@ class VIEWS_EXPORT ImageView : public View {
   void OnFocus() override;
   void OnBlur() override;
   void OnPaint(gfx::Canvas* canvas) override;
-  void GetAccessibleState(ui::AXViewState* state) override;
+  void GetAccessibleNodeData(ui::AXNodeData* node_data) override;
   const char* GetClassName() const override;
   bool GetTooltipText(const gfx::Point& p,
                       base::string16* tooltip) const override;

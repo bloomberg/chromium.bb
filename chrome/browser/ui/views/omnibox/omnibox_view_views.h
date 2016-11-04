@@ -13,7 +13,6 @@
 
 #include "base/gtest_prod_util.h"
 #include "base/macros.h"
-#include "base/memory/weak_ptr.h"
 #include "build/build_config.h"
 #include "components/omnibox/browser/omnibox_view.h"
 #include "components/security_state/security_state_model.h"
@@ -125,14 +124,6 @@ class OmniboxViewViews
   // Handle keyword hint tab-to-search and tabbing through dropdown results.
   bool HandleEarlyTabActions(const ui::KeyEvent& event);
 
-  // Handles a request to change the value of this text field from software
-  // using an accessibility API (typically automation software, screen readers
-  // don't normally use this). If |clear_first| is true, this replaces all text
-  // with the |new_value|. Otherwise this inserts |new_value| at the cursor
-  // position, replacing any selected text. The cursor is placed at the end of
-  // |new_value|.
-  void AccessibilitySetValue(const base::string16& new_value, bool clear_first);
-
   // Updates |security_level_| based on the toolbar model's current value.
   void UpdateSecurityLevel();
 
@@ -175,7 +166,8 @@ class OmniboxViewViews
   void OnGestureEvent(ui::GestureEvent* event) override;
   void AboutToRequestFocusFromTabTraversal(bool reverse) override;
   bool SkipDefaultKeyEventProcessing(const ui::KeyEvent& event) override;
-  void GetAccessibleState(ui::AXViewState* state) override;
+  void GetAccessibleNodeData(ui::AXNodeData* node_data) override;
+  bool HandleAccessibleAction(const ui::AXActionData& action_data) override;
   void OnFocus() override;
   void OnBlur() override;
   bool IsCommandIdEnabled(int command_id) const override;
@@ -254,9 +246,6 @@ class OmniboxViewViews
   // The time of the first character insert operation that has not yet been
   // painted. Used to measure omnibox responsiveness with a histogram.
   base::TimeTicks insert_char_time_;
-
-  // Used to bind callback functions to this object.
-  base::WeakPtrFactory<OmniboxViewViews> weak_ptr_factory_;
 
   DISALLOW_COPY_AND_ASSIGN(OmniboxViewViews);
 };

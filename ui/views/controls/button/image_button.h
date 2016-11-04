@@ -147,7 +147,7 @@ class VIEWS_EXPORT ToggleImageButton : public ImageButton {
   // Overridden from View:
   bool GetTooltipText(const gfx::Point& p,
                       base::string16* tooltip) const override;
-  void GetAccessibleState(ui::AXViewState* state) override;
+  void GetAccessibleNodeData(ui::AXNodeData* node_data) override;
 
  private:
   // The parent class's images_ member is used for the current images,

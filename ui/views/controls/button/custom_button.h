@@ -107,7 +107,7 @@ class VIEWS_EXPORT CustomButton : public Button, public gfx::AnimationDelegate {
   void ShowContextMenu(const gfx::Point& p,
                        ui::MenuSourceType source_type) override;
   void OnDragDone() override;
-  void GetAccessibleState(ui::AXViewState* state) override;
+  void GetAccessibleNodeData(ui::AXNodeData* node_data) override;
   void VisibilityChanged(View* starting_from, bool is_visible) override;
   std::unique_ptr<InkDropHighlight> CreateInkDropHighlight() const override;
   SkColor GetInkDropBaseColor() const override;
@@ -126,7 +126,7 @@ class VIEWS_EXPORT CustomButton : public Button, public gfx::AnimationDelegate {
   explicit CustomButton(ButtonListener* listener);
 
   // Invoked from SetState() when SetState() is passed a value that differs from
-  // the current state. CustomButton's implementation of StateChanged() does
+  // the current node_data. CustomButton's implementation of StateChanged() does
   // nothing; this method is provided for subclasses that wish to do something
   // on state changes.
   virtual void StateChanged();
@@ -150,7 +150,7 @@ class VIEWS_EXPORT CustomButton : public Button, public gfx::AnimationDelegate {
   // Returns true if the button should enter hovered state; that is, if the
   // mouse is over the button, and no other window has capture (which would
   // prevent the button from receiving MouseExited events and updating its
-  // state). This does not take into account enabled state.
+  // node_data). This does not take into account enabled node_data.
   bool ShouldEnterHoveredState();
 
   // Overridden from Button:

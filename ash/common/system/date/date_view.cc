@@ -18,7 +18,7 @@
 #include "third_party/icu/source/i18n/unicode/datefmt.h"
 #include "third_party/icu/source/i18n/unicode/dtptngen.h"
 #include "third_party/icu/source/i18n/unicode/smpdtfmt.h"
-#include "ui/accessibility/ax_view_state.h"
+#include "ui/accessibility/ax_node_data.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/views/background.h"
 #include "ui/views/border.h"
@@ -106,9 +106,9 @@ void BaseDateTimeView::UpdateText() {
   SetTimer(now);
 }
 
-void BaseDateTimeView::GetAccessibleState(ui::AXViewState* state) {
-  ActionableView::GetAccessibleState(state);
-  state->role = ui::AX_ROLE_TIME;
+void BaseDateTimeView::GetAccessibleNodeData(ui::AXNodeData* node_data) {
+  ActionableView::GetAccessibleNodeData(node_data);
+  node_data->role = ui::AX_ROLE_TIME;
 }
 
 BaseDateTimeView::BaseDateTimeView(SystemTrayItem* owner)

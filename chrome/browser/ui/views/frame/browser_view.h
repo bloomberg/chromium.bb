@@ -436,7 +436,7 @@ class BrowserView : public BrowserWindow,
   void ViewHierarchyChanged(
       const ViewHierarchyChangedDetails& details) override;
   void ChildPreferredSizeChanged(View* child) override;
-  void GetAccessibleState(ui::AXViewState* state) override;
+  void GetAccessibleNodeData(ui::AXNodeData* node_data) override;
   void OnThemeChanged() override;
   void OnNativeThemeChanged(const ui::NativeTheme* theme) override;
 
@@ -531,8 +531,9 @@ class BrowserView : public BrowserWindow,
 
   // Invoked to update the necessary things when our fullscreen state changes
   // to |fullscreen|. On Windows this is invoked immediately when we toggle the
-  // full screen state. On Linux changing the fullscreen state is async, so we
-  // ask the window to change its fullscreen state, then when we get
+  // full screen node_data. On Linux changing the fullscreen node_data is async,
+  // so we
+  // ask the window to change its fullscreen node_data, then when we get
   // notification that it succeeded this method is invoked.
   // If |url| is not empty, it is the URL of the page that requested fullscreen
   // (via the fullscreen JS API).

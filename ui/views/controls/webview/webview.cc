@@ -16,7 +16,7 @@
 #include "content/public/browser/web_contents.h"
 #include "ipc/ipc_message.h"
 #include "ui/accessibility/ax_enums.h"
-#include "ui/accessibility/ax_view_state.h"
+#include "ui/accessibility/ax_node_data.h"
 #include "ui/events/event.h"
 #include "ui/views/controls/native/native_view_host.h"
 #include "ui/views/focus/focus_manager.h"
@@ -214,8 +214,8 @@ void WebView::AboutToRequestFocusFromTabTraversal(bool reverse) {
     web_contents()->FocusThroughTabTraversal(reverse);
 }
 
-void WebView::GetAccessibleState(ui::AXViewState* state) {
-  state->role = ui::AX_ROLE_WEB_VIEW;
+void WebView::GetAccessibleNodeData(ui::AXNodeData* node_data) {
+  node_data->role = ui::AX_ROLE_WEB_VIEW;
 }
 
 gfx::NativeViewAccessible WebView::GetNativeViewAccessible() {

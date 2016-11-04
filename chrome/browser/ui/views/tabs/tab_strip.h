@@ -241,7 +241,7 @@ class TabStrip : public views::View,
   SkColor GetToolbarTopSeparatorColor() const override;
   int GetBackgroundResourceId(bool* custom_image) const override;
   void UpdateTabAccessibilityState(const Tab* tab,
-                                   ui::AXViewState* state) override;
+                                   ui::AXNodeData* node_data) override;
 
   // MouseWatcherListener overrides:
   void MouseMovedOutOfHost() override;
@@ -257,7 +257,7 @@ class TabStrip : public views::View,
   int OnDragUpdated(const ui::DropTargetEvent& event) override;
   void OnDragExited() override;
   int OnPerformDrop(const ui::DropTargetEvent& event) override;
-  void GetAccessibleState(ui::AXViewState* state) override;
+  void GetAccessibleNodeData(ui::AXNodeData* node_data) override;
   views::View* GetTooltipHandlerForPoint(const gfx::Point& point) override;
 
   // Returns preferred height in immersive style.
@@ -379,7 +379,7 @@ class TabStrip : public views::View,
   int GetPinnedTabCount() const;
 
   // Returns the last tab in the strip that's actually visible.  This will be
-  // the actual last tab unless the strip is in the overflow state.
+  // the actual last tab unless the strip is in the overflow node_data.
   const Tab* GetLastVisibleTab() const;
 
   // Adds the tab at |index| to |tabs_closing_map_| and removes the tab from

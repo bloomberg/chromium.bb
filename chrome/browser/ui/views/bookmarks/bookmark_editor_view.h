@@ -91,7 +91,7 @@ class BookmarkEditorView : public BookmarkEditor,
 
   // views::View:
   gfx::Size GetPreferredSize() const override;
-  void GetAccessibleState(ui::AXViewState* state) override;
+  void GetAccessibleNodeData(ui::AXNodeData* node_data) override;
 
   // views::TreeViewController:
   void OnTreeViewSelectionChanged(views::TreeView* tree_view) override;

@@ -17,7 +17,7 @@
 #include "components/infobars/core/infobar_delegate.h"
 #include "components/strings/grit/components_strings.h"
 #include "third_party/skia/include/effects/SkGradientShader.h"
-#include "ui/accessibility/ax_view_state.h"
+#include "ui/accessibility/ax_node_data.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/gfx/canvas.h"
 #include "ui/gfx/color_palette.h"
@@ -278,13 +278,13 @@ void InfoBarView::PlatformSpecificOnHeightsRecalculated() {
   InvalidateLayout();
 }
 
-void InfoBarView::GetAccessibleState(ui::AXViewState* state) {
-  state->name = l10n_util::GetStringUTF16(
-      (delegate()->GetInfoBarType() ==
-       infobars::InfoBarDelegate::WARNING_TYPE) ?
-          IDS_ACCNAME_INFOBAR_WARNING : IDS_ACCNAME_INFOBAR_PAGE_ACTION);
-  state->role = ui::AX_ROLE_ALERT;
-  state->keyboard_shortcut = base::ASCIIToUTF16("Alt+Shift+A");
+void InfoBarView::GetAccessibleNodeData(ui::AXNodeData* node_data) {
+  node_data->SetName(l10n_util::GetStringUTF8(
+      (delegate()->GetInfoBarType() == infobars::InfoBarDelegate::WARNING_TYPE)
+          ? IDS_ACCNAME_INFOBAR_WARNING
+          : IDS_ACCNAME_INFOBAR_PAGE_ACTION));
+  node_data->role = ui::AX_ROLE_ALERT;
+  node_data->AddStringAttribute(ui::AX_ATTR_SHORTCUT, "Alt+Shift+A");
 }
 
 gfx::Size InfoBarView::GetPreferredSize() const {

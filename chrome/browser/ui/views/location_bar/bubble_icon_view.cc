@@ -6,7 +6,7 @@
 
 #include "chrome/browser/command_updater.h"
 #include "chrome/browser/ui/views/location_bar/location_bar_view.h"
-#include "ui/accessibility/ax_view_state.h"
+#include "ui/accessibility/ax_node_data.h"
 #include "ui/events/event.h"
 #include "ui/gfx/color_utils.h"
 #include "ui/gfx/paint_vector_icon.h"
@@ -47,9 +47,9 @@ void BubbleIconView::SetTooltipText(const base::string16& tooltip) {
   image_->SetTooltipText(tooltip);
 }
 
-void BubbleIconView::GetAccessibleState(ui::AXViewState* state) {
-  image_->GetAccessibleState(state);
-  state->role = ui::AX_ROLE_BUTTON;
+void BubbleIconView::GetAccessibleNodeData(ui::AXNodeData* node_data) {
+  image_->GetAccessibleNodeData(node_data);
+  node_data->role = ui::AX_ROLE_BUTTON;
 }
 
 bool BubbleIconView::GetTooltipText(const gfx::Point& p,

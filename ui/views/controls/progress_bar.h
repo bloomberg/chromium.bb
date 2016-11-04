@@ -25,7 +25,7 @@ class VIEWS_EXPORT ProgressBar : public View, public gfx::AnimationDelegate {
   ~ProgressBar() override;
 
   // Overridden from View:
-  void GetAccessibleState(ui::AXViewState* state) override;
+  void GetAccessibleNodeData(ui::AXNodeData* node_data) override;
   gfx::Size GetPreferredSize() const override;
   const char* GetClassName() const override;
   void OnPaint(gfx::Canvas* canvas) override;

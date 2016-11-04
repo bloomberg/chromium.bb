@@ -109,7 +109,7 @@ class HoverHighlightView : public ActionableView {
 
  protected:
   // Overridden from views::View.
-  void GetAccessibleState(ui::AXViewState* state) override;
+  void GetAccessibleNodeData(ui::AXNodeData* node_data) override;
 
   // Sets the highlighted color on a text label if |hover| is set.
   void SetHoverHighlight(bool hover);

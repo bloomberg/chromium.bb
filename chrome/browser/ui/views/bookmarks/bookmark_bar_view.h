@@ -180,7 +180,7 @@ class BookmarkBarView : public views::AccessiblePaneView,
   void VisibilityChanged(View* starting_from, bool is_visible) override;
 
   // AccessiblePaneView:
-  void GetAccessibleState(ui::AXViewState* state) override;
+  void GetAccessibleNodeData(ui::AXNodeData* node_data) override;
 
   // gfx::AnimationDelegate:
   void AnimationProgressed(const gfx::Animation* animation) override;
@@ -284,7 +284,7 @@ class BookmarkBarView : public views::AccessiblePaneView,
   views::LabelButton* GetBookmarkButton(int index);
 
   // Returns BOOKMARK_LAUNCH_LOCATION_DETACHED_BAR or
-  // BOOKMARK_LAUNCH_LOCATION_ATTACHED_BAR based on detached state.
+  // BOOKMARK_LAUNCH_LOCATION_ATTACHED_BAR based on detached node_data.
   BookmarkLaunchLocation GetBookmarkLaunchLocation() const;
 
   // Returns the index of the first hidden bookmark button. If all buttons are

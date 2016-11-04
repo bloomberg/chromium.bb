@@ -28,7 +28,7 @@
 #include "grit/ash_resources.h"
 #include "grit/ash_strings.h"
 #include "ui/accessibility/ax_enums.h"
-#include "ui/accessibility/ax_view_state.h"
+#include "ui/accessibility/ax_node_data.h"
 #include "ui/base/resource/resource_bundle.h"
 #include "ui/gfx/font.h"
 #include "ui/gfx/image/image.h"
@@ -57,11 +57,11 @@ class SelectableHoverHighlightView : public HoverHighlightView {
 
  protected:
   // Overridden from views::View.
-  void GetAccessibleState(ui::AXViewState* state) override {
-    HoverHighlightView::GetAccessibleState(state);
-    state->role = ui::AX_ROLE_CHECK_BOX;
+  void GetAccessibleNodeData(ui::AXNodeData* node_data) override {
+    HoverHighlightView::GetAccessibleNodeData(node_data);
+    node_data->role = ui::AX_ROLE_CHECK_BOX;
     if (selected_)
-      state->AddStateFlag(ui::AX_STATE_CHECKED);
+      node_data->AddStateFlag(ui::AX_STATE_CHECKED);
   }
 
  private:

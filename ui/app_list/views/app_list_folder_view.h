@@ -84,7 +84,7 @@ class AppListFolderView : public views::View,
       bool has_native_drag);
 
   // Overridden from views::View:
-  void GetAccessibleState(ui::AXViewState* state) override;
+  void GetAccessibleNodeData(ui::AXNodeData* node_data) override;
 
   // Overridden from FolderHeaderViewDelegate:
   void NavigateBack(AppListFolderItem* item,

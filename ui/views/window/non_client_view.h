@@ -94,7 +94,7 @@ class VIEWS_EXPORT NonClientFrameView : public View,
   virtual void ActivationChanged(bool active);
 
   // View:
-  void GetAccessibleState(ui::AXViewState* state) override;
+  void GetAccessibleNodeData(ui::AXNodeData* node_data) override;
   const char* GetClassName() const override;
 
  protected:
@@ -235,7 +235,7 @@ class VIEWS_EXPORT NonClientView : public View, public ViewTargeterDelegate {
   gfx::Size GetMinimumSize() const override;
   gfx::Size GetMaximumSize() const override;
   void Layout() override;
-  void GetAccessibleState(ui::AXViewState* state) override;
+  void GetAccessibleNodeData(ui::AXNodeData* node_data) override;
   const char* GetClassName() const override;
 
   views::View* GetTooltipHandlerForPoint(const gfx::Point& point) override;

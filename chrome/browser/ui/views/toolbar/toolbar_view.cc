@@ -59,7 +59,7 @@
 #include "content/public/browser/render_view_host.h"
 #include "content/public/browser/user_metrics.h"
 #include "content/public/browser/web_contents.h"
-#include "ui/accessibility/ax_view_state.h"
+#include "ui/accessibility/ax_node_data.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/base/material_design/material_design_controller.h"
 #include "ui/base/theme_provider.h"
@@ -374,9 +374,9 @@ bool ToolbarView::SetPaneFocus(views::View* initial_focus) {
   return true;
 }
 
-void ToolbarView::GetAccessibleState(ui::AXViewState* state) {
-  state->role = ui::AX_ROLE_TOOLBAR;
-  state->name = l10n_util::GetStringUTF16(IDS_ACCNAME_TOOLBAR);
+void ToolbarView::GetAccessibleNodeData(ui::AXNodeData* node_data) {
+  node_data->role = ui::AX_ROLE_TOOLBAR;
+  node_data->SetName(l10n_util::GetStringUTF8(IDS_ACCNAME_TOOLBAR));
 }
 
 ////////////////////////////////////////////////////////////////////////////////

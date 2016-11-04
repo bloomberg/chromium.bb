@@ -32,7 +32,7 @@
 #include "content/public/common/url_constants.h"
 #include "third_party/skia/include/effects/SkGradientShader.h"
 #include "third_party/skia/include/pathops/SkPathOps.h"
-#include "ui/accessibility/ax_view_state.h"
+#include "ui/accessibility/ax_node_data.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/base/models/list_selection_model.h"
 #include "ui/base/resource/resource_bundle.h"
@@ -1098,14 +1098,14 @@ void Tab::OnGestureEvent(ui::GestureEvent* event) {
   event->SetHandled();
 }
 
-void Tab::GetAccessibleState(ui::AXViewState* state) {
-  state->role = ui::AX_ROLE_TAB;
-  state->name = data_.title;
-  state->AddStateFlag(ui::AX_STATE_MULTISELECTABLE);
-  state->AddStateFlag(ui::AX_STATE_SELECTABLE);
-  controller_->UpdateTabAccessibilityState(this, state);
+void Tab::GetAccessibleNodeData(ui::AXNodeData* node_data) {
+  node_data->role = ui::AX_ROLE_TAB;
+  node_data->SetName(data_.title);
+  node_data->AddStateFlag(ui::AX_STATE_MULTISELECTABLE);
+  node_data->AddStateFlag(ui::AX_STATE_SELECTABLE);
+  controller_->UpdateTabAccessibilityState(this, node_data);
   if (IsSelected())
-    state->AddStateFlag(ui::AX_STATE_SELECTED);
+    node_data->AddStateFlag(ui::AX_STATE_SELECTED);
 }
 
 ////////////////////////////////////////////////////////////////////////////////

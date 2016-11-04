@@ -23,7 +23,7 @@ class CriticalNotificationBubbleView : public views::BubbleDialogDelegateView {
   bool Accept() override;
   void Init() override;
   base::string16 GetDialogButtonLabel(ui::DialogButton button) const override;
-  void GetAccessibleState(ui::AXViewState* state) override;
+  void GetAccessibleNodeData(ui::AXNodeData* node_data) override;
   void ViewHierarchyChanged(
       const ViewHierarchyChangedDetails& details) override;
 

@@ -9,7 +9,7 @@
 #include "base/logging.h"
 #include "base/macros.h"
 #include "base/message_loop/message_loop.h"
-#include "ui/accessibility/ax_view_state.h"
+#include "ui/accessibility/ax_node_data.h"
 #include "ui/base/cursor/cursor.h"
 #include "ui/base/dragdrop/drag_drop_types.h"
 #include "ui/base/ui_base_switches_util.h"
@@ -600,9 +600,9 @@ void RootView::SetMouseHandler(View* new_mh) {
   drag_info_.Reset();
 }
 
-void RootView::GetAccessibleState(ui::AXViewState* state) {
-  state->name = widget_->widget_delegate()->GetAccessibleWindowTitle();
-  state->role = widget_->widget_delegate()->GetAccessibleWindowRole();
+void RootView::GetAccessibleNodeData(ui::AXNodeData* node_data) {
+  node_data->SetName(widget_->widget_delegate()->GetAccessibleWindowTitle());
+  node_data->role = widget_->widget_delegate()->GetAccessibleWindowRole();
 }
 
 void RootView::UpdateParentLayer() {

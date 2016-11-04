@@ -10,7 +10,7 @@
 #include "base/strings/utf_string_conversions.h"
 #import "testing/gtest_mac.h"
 #include "ui/accessibility/ax_enums.h"
-#include "ui/accessibility/ax_view_state.h"
+#include "ui/accessibility/ax_node_data.h"
 #import "ui/accessibility/platform/ax_platform_node_mac.h"
 #include "ui/base/ime/text_input_type.h"
 #import "ui/gfx/mac/coordinate_conversion.h"
@@ -45,9 +45,9 @@ class FlexibleRoleTestView : public View {
   }
 
   // View:
-  void GetAccessibleState(ui::AXViewState* state) override {
-    View::GetAccessibleState(state);
-    state->role = role_;
+  void GetAccessibleNodeData(ui::AXNodeData* node_data) override {
+    View::GetAccessibleNodeData(node_data);
+    node_data->role = role_;
   }
 
  private:
@@ -173,7 +173,7 @@ TEST_F(NativeWidgetMacAccessibilityTest, PositionAttribute) {
 TEST_F(NativeWidgetMacAccessibilityTest, HelpAttribute) {
   Label* label = new Label(base::SysNSStringToUTF16(kTestPlaceholderText));
   label->SetSize(GetWidgetBounds().size());
-  EXPECT_NSEQ(nil, AttributeValueAtMidpoint(NSAccessibilityHelpAttribute));
+  EXPECT_NSEQ(@"", AttributeValueAtMidpoint(NSAccessibilityHelpAttribute));
   label->SetTooltipText(base::SysNSStringToUTF16(kTestPlaceholderText));
   widget()->GetContentsView()->AddChildView(label);
   EXPECT_NSEQ(kTestPlaceholderText,

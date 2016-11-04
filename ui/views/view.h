@@ -53,7 +53,8 @@ class Transform;
 }
 
 namespace ui {
-struct AXViewState;
+struct AXActionData;
+struct AXNodeData;
 class Compositor;
 class InputMethod;
 class Layer;
@@ -945,8 +946,15 @@ class VIEWS_EXPORT View : public ui::LayerDelegate,
 
   // Accessibility -------------------------------------------------------------
 
-  // Modifies |state| to reflect the current accessible state of this view.
-  virtual void GetAccessibleState(ui::AXViewState* state) { }
+  // Modifies |node_data| to reflect the current accessible state of this view.
+  virtual void GetAccessibleNodeData(ui::AXNodeData* node_data) {}
+
+  // Handle a request from assistive technology to perform an action on this
+  // view. Returns true on success, but note that the success/failure is
+  // not propagated to the client that requested the action, since the
+  // request is sometimes asynchronous. The right way to send a response is
+  // via NotifyAccessibilityEvent(), below.
+  virtual bool HandleAccessibleAction(const ui::AXActionData& action_data);
 
   // Returns an instance of the native accessibility interface for this view.
   virtual gfx::NativeViewAccessible GetNativeViewAccessible();

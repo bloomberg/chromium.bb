@@ -23,7 +23,7 @@ class UserCardView : public views::View {
   ~UserCardView() override;
 
   // views::View overrides.
-  void GetAccessibleState(ui::AXViewState* state) override;
+  void GetAccessibleNodeData(ui::AXNodeData* node_data) override;
 
  private:
   // Creates the content for the public mode.

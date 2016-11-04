@@ -28,7 +28,7 @@
 #include "chrome/grit/theme_resources.h"
 #include "extensions/common/feature_switch.h"
 #include "third_party/skia/include/core/SkColor.h"
-#include "ui/accessibility/ax_view_state.h"
+#include "ui/accessibility/ax_node_data.h"
 #include "ui/base/dragdrop/drag_utils.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/base/nine_image_painter_factory.h"
@@ -502,10 +502,9 @@ int BrowserActionsContainer::OnPerformDrop(
   return ui::DragDropTypes::DRAG_MOVE;
 }
 
-void BrowserActionsContainer::GetAccessibleState(
-    ui::AXViewState* state) {
-  state->role = ui::AX_ROLE_GROUP;
-  state->name = l10n_util::GetStringUTF16(IDS_ACCNAME_EXTENSIONS);
+void BrowserActionsContainer::GetAccessibleNodeData(ui::AXNodeData* node_data) {
+  node_data->role = ui::AX_ROLE_GROUP;
+  node_data->SetName(l10n_util::GetStringUTF8(IDS_ACCNAME_EXTENSIONS));
 }
 
 void BrowserActionsContainer::WriteDragDataForView(View* sender,

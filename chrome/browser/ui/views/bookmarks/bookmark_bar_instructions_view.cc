@@ -11,7 +11,7 @@
 #include "chrome/browser/themes/theme_properties.h"
 #include "chrome/browser/ui/bookmarks/bookmark_bar_instructions_delegate.h"
 #include "chrome/grit/generated_resources.h"
-#include "ui/accessibility/ax_view_state.h"
+#include "ui/accessibility/ax_node_data.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/base/theme_provider.h"
 #include "ui/native_theme/native_theme.h"
@@ -94,9 +94,9 @@ void BookmarkBarInstructionsView::ViewHierarchyChanged(
     UpdateColors();
 }
 
-void BookmarkBarInstructionsView::GetAccessibleState(
-    ui::AXViewState* state) {
-  instructions_->GetAccessibleState(state);
+void BookmarkBarInstructionsView::GetAccessibleNodeData(
+    ui::AXNodeData* node_data) {
+  instructions_->GetAccessibleNodeData(node_data);
 }
 
 void BookmarkBarInstructionsView::LinkClicked(views::Link* source,

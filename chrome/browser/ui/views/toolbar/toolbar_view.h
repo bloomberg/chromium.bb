@@ -115,7 +115,7 @@ class ToolbarView : public views::AccessiblePaneView,
 
   // AccessiblePaneView:
   bool SetPaneFocus(View* initial_focus) override;
-  void GetAccessibleState(ui::AXViewState* state) override;
+  void GetAccessibleNodeData(ui::AXNodeData* node_data) override;
 
   // views::MenuButtonListener:
   void OnMenuButtonClicked(views::MenuButton* source,

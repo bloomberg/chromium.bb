@@ -59,7 +59,7 @@ class OpaqueBrowserFrameView : public BrowserNonClientFrameView,
   void SizeConstraintsChanged() override;
 
   // views::View:
-  void GetAccessibleState(ui::AXViewState* state) override;
+  void GetAccessibleNodeData(ui::AXNodeData* node_data) override;
 
   // views::ButtonListener:
   void ButtonPressed(views::Button* sender, const ui::Event& event) override;
@@ -115,7 +115,8 @@ class OpaqueBrowserFrameView : public BrowserNonClientFrameView,
 
   // Returns the thickness of the border that makes up the window frame edges.
   // This does not include any client edge.  If |restored| is true, this is
-  // calculated as if the window was restored, regardless of its current state.
+  // calculated as if the window was restored, regardless of its current
+  // node_data.
   int FrameBorderThickness(bool restored) const;
 
   // Returns true if the specified point is within the avatar menu buttons.

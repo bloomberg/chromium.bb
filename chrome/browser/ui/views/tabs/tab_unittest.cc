@@ -80,7 +80,7 @@ class FakeTabController : public TabController {
     return IDR_THEME_TAB_BACKGROUND;
   }
   void UpdateTabAccessibilityState(const Tab* tab,
-                                   ui::AXViewState* state) override{};
+                                   ui::AXNodeData* node_data) override{};
 
  private:
   ui::ListSelectionModel selection_model_;

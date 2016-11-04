@@ -7,7 +7,7 @@
 #include <algorithm>
 
 #include "base/compiler_specific.h"
-#include "ui/accessibility/ax_view_state.h"
+#include "ui/accessibility/ax_node_data.h"
 #include "ui/base/ime/input_method.h"
 #include "ui/compositor/paint_recorder.h"
 #include "ui/events/event.h"
@@ -181,14 +181,14 @@ gfx::Size SubmenuView::GetPreferredSize() const {
   return gfx::Size(width, height + insets.height());
 }
 
-void SubmenuView::GetAccessibleState(ui::AXViewState* state) {
+void SubmenuView::GetAccessibleNodeData(ui::AXNodeData* node_data) {
   // Inherit most of the state from the parent menu item, except the role and
   // the orientation.
   if (GetMenuItem())
-    GetMenuItem()->GetAccessibleState(state);
-  state->role = ui::AX_ROLE_MENU_LIST_POPUP;
+    GetMenuItem()->GetAccessibleNodeData(node_data);
+  node_data->role = ui::AX_ROLE_MENU_LIST_POPUP;
   // Menus in Chrome are always traversed in a vertical direction.
-  state->AddStateFlag(ui::AX_STATE_VERTICAL);
+  node_data->AddStateFlag(ui::AX_STATE_VERTICAL);
 }
 
 void SubmenuView::PaintChildren(const ui::PaintContext& context) {

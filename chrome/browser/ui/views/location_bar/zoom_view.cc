@@ -10,7 +10,7 @@
 #include "chrome/grit/generated_resources.h"
 #include "components/toolbar/toolbar_model.h"
 #include "components/zoom/zoom_controller.h"
-#include "ui/accessibility/ax_view_state.h"
+#include "ui/accessibility/ax_node_data.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/events/event.h"
 #include "ui/gfx/geometry/size.h"
@@ -54,9 +54,9 @@ void ZoomView::OnExecuting(BubbleIconView::ExecuteSource source) {
                              ZoomBubbleView::USER_GESTURE);
 }
 
-void ZoomView::GetAccessibleState(ui::AXViewState* state) {
-  BubbleIconView::GetAccessibleState(state);
-  state->name = l10n_util::GetStringUTF16(IDS_ACCNAME_ZOOM);
+void ZoomView::GetAccessibleNodeData(ui::AXNodeData* node_data) {
+  BubbleIconView::GetAccessibleNodeData(node_data);
+  node_data->SetName(l10n_util::GetStringUTF8(IDS_ACCNAME_ZOOM));
 }
 
 views::BubbleDialogDelegateView* ZoomView::GetBubble() const {

@@ -5,7 +5,7 @@
 #include "ui/views/bubble/bubble_dialog_delegate.h"
 
 #include "build/build_config.h"
-#include "ui/accessibility/ax_view_state.h"
+#include "ui/accessibility/ax_node_data.h"
 #include "ui/base/material_design/material_design_controller.h"
 #include "ui/base/resource/resource_bundle.h"
 #include "ui/gfx/color_utils.h"
@@ -312,9 +312,9 @@ void BubbleDialogDelegateView::HandleVisibilityChanged(Widget* widget,
   // than just its title and initially focused view.  See
   // http://crbug.com/474622 for details.
   if (widget == GetWidget() && visible) {
-    ui::AXViewState state;
-    GetAccessibleState(&state);
-    if (state.role == ui::AX_ROLE_ALERT_DIALOG)
+    ui::AXNodeData node_data;
+    GetAccessibleNodeData(&node_data);
+    if (node_data.role == ui::AX_ROLE_ALERT_DIALOG)
       NotifyAccessibilityEvent(ui::AX_EVENT_ALERT, true);
   }
 }

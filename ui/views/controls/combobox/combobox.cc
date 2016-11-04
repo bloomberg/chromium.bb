@@ -11,7 +11,7 @@
 #include "base/logging.h"
 #include "base/macros.h"
 #include "build/build_config.h"
-#include "ui/accessibility/ax_view_state.h"
+#include "ui/accessibility/ax_node_data.h"
 #include "ui/base/default_style.h"
 #include "ui/base/ime/input_method.h"
 #include "ui/base/material_design/material_design_controller.h"
@@ -733,12 +733,12 @@ void Combobox::OnBlur() {
     FocusRing::Uninstall(this);
 }
 
-void Combobox::GetAccessibleState(ui::AXViewState* state) {
-  state->role = ui::AX_ROLE_COMBO_BOX;
-  state->name = accessible_name_;
-  state->value = model_->GetItemAt(selected_index_);
-  state->index = selected_index_;
-  state->count = model_->GetItemCount();
+void Combobox::GetAccessibleNodeData(ui::AXNodeData* node_data) {
+  node_data->role = ui::AX_ROLE_COMBO_BOX;
+  node_data->SetName(accessible_name_);
+  node_data->SetValue(model_->GetItemAt(selected_index_));
+  node_data->AddIntAttribute(ui::AX_ATTR_POS_IN_SET, selected_index_);
+  node_data->AddIntAttribute(ui::AX_ATTR_SET_SIZE, model_->GetItemCount());
 }
 
 void Combobox::ButtonPressed(Button* sender, const ui::Event& event) {

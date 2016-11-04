@@ -720,7 +720,7 @@ class DownloadTest : public InProcessBrowserTest {
     //    indicates how many members it has.
     //  - Add a member function to |DownloadShelf| to get the status text
     //    of a given member (for example, via the name in |DownloadItemView|'s
-    //    GetAccessibleState() member function), by index.
+    //    GetAccessibleNodeData() member function), by index.
     //  - Iterate over browser->window()->GetDownloadShelf()'s members
     //    to see if any match the status text we want.  Start with the last one.
 

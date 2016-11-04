@@ -115,6 +115,7 @@ void AutomationManagerAura::PerformAction(
       // Sent by ChromeVox but doesn't need to be handled by aura.
       break;
     case ui::AX_ACTION_HIT_TEST:
+    case ui::AX_ACTION_REPLACE_SELECTED_TEXT:
     case ui::AX_ACTION_SCROLL_TO_POINT:
     case ui::AX_ACTION_SET_SCROLL_OFFSET:
     case ui::AX_ACTION_SET_VALUE:

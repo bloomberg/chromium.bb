@@ -19,7 +19,7 @@
 #include "chrome/grit/theme_resources.h"
 #include "content/public/browser/browser_thread.h"
 #include "extensions/grit/extensions_browser_resources.h"
-#include "ui/accessibility/ax_view_state.h"
+#include "ui/accessibility/ax_node_data.h"
 #include "ui/aura/window.h"
 #include "ui/base/resource/resource_bundle.h"
 #include "ui/views/focus/focus_manager.h"
@@ -276,7 +276,7 @@ DesktopMediaSourceView* DesktopMediaListView::GetChild(int index) {
   return static_cast<DesktopMediaSourceView*>(child_at(index));
 }
 
-void DesktopMediaListView::GetAccessibleState(ui::AXViewState* state) {
-  state->role = ui::AX_ROLE_GROUP;
-  state->name = accessible_name_;
+void DesktopMediaListView::GetAccessibleNodeData(ui::AXNodeData* node_data) {
+  node_data->role = ui::AX_ROLE_GROUP;
+  node_data->SetName(accessible_name_);
 }

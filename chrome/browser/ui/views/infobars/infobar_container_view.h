@@ -25,7 +25,7 @@ class InfoBarContainerView : public views::AccessiblePaneView,
   gfx::Size GetPreferredSize() const override;
   const char* GetClassName() const override;
   void Layout() override;
-  void GetAccessibleState(ui::AXViewState* state) override;
+  void GetAccessibleNodeData(ui::AXNodeData* node_data) override;
 
   // InfobarContainer:
   void PlatformSpecificAddInfoBar(infobars::InfoBar* infobar,

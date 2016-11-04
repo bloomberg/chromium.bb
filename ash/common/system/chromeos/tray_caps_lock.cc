@@ -15,7 +15,7 @@
 #include "base/sys_info.h"
 #include "grit/ash_resources.h"
 #include "grit/ash_strings.h"
-#include "ui/accessibility/ax_view_state.h"
+#include "ui/accessibility/ax_node_data.h"
 #include "ui/base/ime/chromeos/ime_keyboard.h"
 #include "ui/base/ime/chromeos/input_method_manager.h"
 #include "ui/base/resource/resource_bundle.h"
@@ -114,9 +114,9 @@ class CapsLockDefaultView : public ActionableView {
         gfx::Size(text_size.width() + new_x - old_x, text_size.height()));
   }
 
-  void GetAccessibleState(ui::AXViewState* state) override {
-    state->role = ui::AX_ROLE_BUTTON;
-    state->name = text_label_->text();
+  void GetAccessibleNodeData(ui::AXNodeData* node_data) override {
+    node_data->role = ui::AX_ROLE_BUTTON;
+    node_data->SetName(text_label_->text());
   }
 
   // Overridden from ActionableView:

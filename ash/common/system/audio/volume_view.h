@@ -60,7 +60,7 @@ class VolumeView : public ActionableView,
 
   // views::View:
   void OnBoundsChanged(const gfx::Rect& previous_bounds) override;
-  void GetAccessibleState(ui::AXViewState* state) override;
+  void GetAccessibleNodeData(ui::AXNodeData* node_data) override;
 
   system::TrayAudioDelegate* audio_delegate_;
   views::View* more_region_;

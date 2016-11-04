@@ -14,7 +14,7 @@
 #include "base/i18n/time_formatting.h"
 #include "base/strings/utf_string_conversions.h"
 #include "grit/ash_strings.h"
-#include "ui/accessibility/ax_view_state.h"
+#include "ui/accessibility/ax_node_data.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/native_theme/native_theme.h"
 #include "ui/views/controls/image_view.h"
@@ -180,12 +180,12 @@ void PowerStatusView::OnNativeThemeChanged(const ui::NativeTheme* theme) {
   UpdateStyle();
 }
 
-void PowerStatusView::GetAccessibleState(ui::AXViewState* state) {
+void PowerStatusView::GetAccessibleNodeData(ui::AXNodeData* node_data) {
   if (!MaterialDesignController::IsSystemTrayMenuMaterial())
     return;
 
-  state->role = ui::AX_ROLE_LABEL_TEXT;
-  state->name = accessible_name_;
+  node_data->role = ui::AX_ROLE_LABEL_TEXT;
+  node_data->SetName(accessible_name_);
 }
 
 }  // namespace ash

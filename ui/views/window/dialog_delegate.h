@@ -141,7 +141,7 @@ class VIEWS_EXPORT DialogDelegateView : public DialogDelegate,
   View* GetContentsView() override;
 
   // Overridden from View:
-  void GetAccessibleState(ui::AXViewState* state) override;
+  void GetAccessibleNodeData(ui::AXNodeData* node_data) override;
   void ViewHierarchyChanged(
       const ViewHierarchyChangedDetails& details) override;
 

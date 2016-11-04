@@ -65,7 +65,7 @@ class VIEWS_EXPORT ClientView : public View {
 
  protected:
   // Overridden from View:
-  void GetAccessibleState(ui::AXViewState* state) override;
+  void GetAccessibleNodeData(ui::AXNodeData* node_data) override;
   void OnBoundsChanged(const gfx::Rect& previous_bounds) override;
   void ViewHierarchyChanged(
       const ViewHierarchyChangedDetails& details) override;

@@ -84,7 +84,7 @@ class VIEWS_EXPORT MenuButton : public LabelButton {
   void OnGestureEvent(ui::GestureEvent* event) override;
   bool OnKeyPressed(const ui::KeyEvent& event) override;
   bool OnKeyReleased(const ui::KeyEvent& event) override;
-  void GetAccessibleState(ui::AXViewState* state) override;
+  void GetAccessibleNodeData(ui::AXNodeData* node_data) override;
 
  protected:
   // Paint the menu marker image.
@@ -108,7 +108,7 @@ class VIEWS_EXPORT MenuButton : public LabelButton {
   // Increment/decrement the number of "pressed" locks this button has, and
   // set the state accordingly. The ink drop is snapped to the final ACTIVATED
   // state if |snap_ink_drop_to_activated| is true, otherwise the ink drop will
-  // be animated to the ACTIVATED state.
+  // be animated to the ACTIVATED node_data.
   void IncrementPressedLocked(bool snap_ink_drop_to_activated);
   void DecrementPressedLocked();
 

@@ -37,7 +37,7 @@ class ButtonFromView : public views::CustomButton {
   void OnPaint(gfx::Canvas* canvas) override;
   void OnFocus() override;
   void OnBlur() override;
-  void GetAccessibleState(ui::AXViewState* state) override;
+  void GetAccessibleNodeData(ui::AXNodeData* node_data) override;
 
   // Check if the item is hovered.
   bool is_hovered_for_test() { return button_hovered_; }

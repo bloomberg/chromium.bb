@@ -29,7 +29,7 @@ class ASH_EXPORT PowerStatusView : public views::View,
   int GetHeightForWidth(int width) const override;
   void Layout() override;
   void OnNativeThemeChanged(const ui::NativeTheme* theme) override;
-  void GetAccessibleState(ui::AXViewState* state) override;
+  void GetAccessibleNodeData(ui::AXNodeData* node_data) override;
 
   // PowerStatus::Observer:
   void OnPowerStatusChanged() override;

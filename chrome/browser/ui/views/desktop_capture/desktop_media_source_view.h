@@ -83,7 +83,7 @@ class DesktopMediaSourceView : public views::View {
   void OnBlur() override;
   bool OnMousePressed(const ui::MouseEvent& event) override;
   void OnGestureEvent(ui::GestureEvent* event) override;
-  void GetAccessibleState(ui::AXViewState* state) override;
+  void GetAccessibleNodeData(ui::AXNodeData* node_data) override;
   static const char* kDesktopMediaSourceViewClassName;
 
  private:

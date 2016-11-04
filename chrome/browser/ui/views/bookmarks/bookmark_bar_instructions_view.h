@@ -38,7 +38,7 @@ class BookmarkBarInstructionsView : public views::View,
   void OnThemeChanged() override;
   void ViewHierarchyChanged(
       const ViewHierarchyChangedDetails& details) override;
-  void GetAccessibleState(ui::AXViewState* state) override;
+  void GetAccessibleNodeData(ui::AXNodeData* node_data) override;
 
   // views::LinkListener:
   void LinkClicked(views::Link* source, int event_flags) override;

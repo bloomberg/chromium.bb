@@ -10,7 +10,7 @@
 #include "ash/common/system/tray/tray_utils.h"
 #include "base/strings/string_util.h"
 #include "base/strings/utf_string_conversions.h"
-#include "ui/accessibility/ax_view_state.h"
+#include "ui/accessibility/ax_node_data.h"
 #include "ui/gfx/canvas.h"
 #include "ui/views/background.h"
 #include "ui/views/border.h"
@@ -87,12 +87,12 @@ void ButtonFromView::OnBlur() {
   SchedulePaint();
 }
 
-void ButtonFromView::GetAccessibleState(ui::AXViewState* state) {
-  state->role = ui::AX_ROLE_BUTTON;
+void ButtonFromView::GetAccessibleNodeData(ui::AXNodeData* node_data) {
+  node_data->role = ui::AX_ROLE_BUTTON;
   std::vector<base::string16> labels;
   for (int i = 0; i < child_count(); ++i)
     GetAccessibleLabelFromDescendantViews(child_at(i), labels);
-  state->name = base::JoinString(labels, base::ASCIIToUTF16(" "));
+  node_data->SetName(base::JoinString(labels, base::ASCIIToUTF16(" ")));
 }
 
 void ButtonFromView::ShowActive() {

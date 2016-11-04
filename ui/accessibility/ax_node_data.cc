@@ -287,11 +287,46 @@ void AXNodeData::AddIntListAttribute(AXIntListAttribute attribute,
 }
 
 void AXNodeData::SetName(const std::string& name) {
+  for (size_t i = 0; i < string_attributes.size(); ++i) {
+    if (string_attributes[i].first == AX_ATTR_NAME) {
+      string_attributes[i].second = name;
+      return;
+    }
+  }
+
   string_attributes.push_back(std::make_pair(AX_ATTR_NAME, name));
 }
 
+void AXNodeData::SetName(const base::string16& name) {
+  SetName(base::UTF16ToUTF8(name));
+}
+
 void AXNodeData::SetValue(const std::string& value) {
+  for (size_t i = 0; i < string_attributes.size(); ++i) {
+    if (string_attributes[i].first == AX_ATTR_VALUE) {
+      string_attributes[i].second = value;
+      return;
+    }
+  }
+
   string_attributes.push_back(std::make_pair(AX_ATTR_VALUE, value));
+}
+
+void AXNodeData::SetValue(const base::string16& value) {
+  SetValue(base::UTF16ToUTF8(value));
+}
+
+// static
+bool AXNodeData::IsFlagSet(uint32_t state, ui::AXState state_flag) {
+  return 0 != (state & (1 << state_flag));
+}
+
+void AXNodeData::AddStateFlag(ui::AXState state_flag) {
+  state |= (1 << state_flag);
+}
+
+bool AXNodeData::HasStateFlag(ui::AXState state_flag) const {
+  return IsFlagSet(state, state_flag);
 }
 
 std::string AXNodeData::ToString() const {

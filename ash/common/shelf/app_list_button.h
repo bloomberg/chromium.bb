@@ -37,7 +37,7 @@ class ASH_EXPORT AppListButton : public views::ImageButton {
   void OnMouseCaptureLost() override;
   bool OnMouseDragged(const ui::MouseEvent& event) override;
   void OnPaint(gfx::Canvas* canvas) override;
-  void GetAccessibleState(ui::AXViewState* state) override;
+  void GetAccessibleNodeData(ui::AXNodeData* node_data) override;
   std::unique_ptr<views::InkDropRipple> CreateInkDropRipple() const override;
   void NotifyClick(const ui::Event& event) override;
   bool ShouldEnterPushedState(const ui::Event& event) override;

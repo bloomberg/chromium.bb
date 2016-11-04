@@ -71,7 +71,7 @@ class ASH_EXPORT ShelfButton : public views::CustomButton {
   bool OnMousePressed(const ui::MouseEvent& event) override;
   void OnMouseReleased(const ui::MouseEvent& event) override;
   bool OnMouseDragged(const ui::MouseEvent& event) override;
-  void GetAccessibleState(ui::AXViewState* state) override;
+  void GetAccessibleNodeData(ui::AXNodeData* node_data) override;
   void Layout() override;
   void ChildPreferredSizeChanged(views::View* child) override;
   void OnFocus() override;

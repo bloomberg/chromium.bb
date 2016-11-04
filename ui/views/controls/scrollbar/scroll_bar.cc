@@ -4,15 +4,15 @@
 
 #include "ui/views/controls/scrollbar/scroll_bar.h"
 
-#include "ui/accessibility/ax_view_state.h"
+#include "ui/accessibility/ax_node_data.h"
 
 namespace views {
 
 ScrollBar::~ScrollBar() {
 }
 
-void ScrollBar::GetAccessibleState(ui::AXViewState* state) {
-  state->role = ui::AX_ROLE_SCROLL_BAR;
+void ScrollBar::GetAccessibleNodeData(ui::AXNodeData* node_data) {
+  node_data->role = ui::AX_ROLE_SCROLL_BAR;
 }
 
 bool ScrollBar::IsHorizontal() const {

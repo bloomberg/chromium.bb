@@ -1323,6 +1323,10 @@ bool View::ExceededDragThreshold(const gfx::Vector2d& delta) {
 
 // Accessibility----------------------------------------------------------------
 
+bool View::HandleAccessibleAction(const ui::AXActionData& action_data) {
+  return false;
+}
+
 gfx::NativeViewAccessible View::GetNativeViewAccessible() {
   if (!native_view_accessibility_)
     native_view_accessibility_ = NativeViewAccessibility::Create(this);

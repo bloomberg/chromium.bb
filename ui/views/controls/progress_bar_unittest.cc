@@ -6,7 +6,7 @@
 
 #include "base/strings/utf_string_conversions.h"
 #include "testing/gtest/include/gtest/gtest.h"
-#include "ui/accessibility/ax_view_state.h"
+#include "ui/accessibility/ax_node_data.h"
 
 namespace views {
 
@@ -14,11 +14,11 @@ TEST(ProgressBarTest, Accessibility) {
   ProgressBar bar;
   bar.SetValue(0.62);
 
-  ui::AXViewState state;
-  bar.GetAccessibleState(&state);
-  EXPECT_EQ(ui::AX_ROLE_PROGRESS_INDICATOR, state.role);
-  EXPECT_EQ(base::string16(), state.name);
-  EXPECT_TRUE(state.HasStateFlag(ui::AX_STATE_READ_ONLY));
+  ui::AXNodeData node_data;
+  bar.GetAccessibleNodeData(&node_data);
+  EXPECT_EQ(ui::AX_ROLE_PROGRESS_INDICATOR, node_data.role);
+  EXPECT_EQ(base::string16(), node_data.GetString16Attribute(ui::AX_ATTR_NAME));
+  EXPECT_TRUE(node_data.HasStateFlag(ui::AX_STATE_READ_ONLY));
 }
 
 }  // namespace views

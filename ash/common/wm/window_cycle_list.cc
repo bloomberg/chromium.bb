@@ -14,7 +14,7 @@
 #include "ash/common/wm_window.h"
 #include "ash/public/cpp/shell_window_ids.h"
 #include "base/command_line.h"
-#include "ui/accessibility/ax_view_state.h"
+#include "ui/accessibility/ax_node_data.h"
 #include "ui/compositor/scoped_layer_animation_settings.h"
 #include "ui/display/display.h"
 #include "ui/display/screen.h"
@@ -167,9 +167,9 @@ class WindowPreviewView : public views::View, public WmWindowObserver {
     mirror_view_->SetPosition(preview_area_bounds.origin());
   }
 
-  void GetAccessibleState(ui::AXViewState* state) override {
-    state->role = ui::AX_ROLE_WINDOW;
-    state->name = window_title_->text();
+  void GetAccessibleNodeData(ui::AXNodeData* node_data) override {
+    node_data->role = ui::AX_ROLE_WINDOW;
+    node_data->SetName(window_title_->text());
   }
 
   // WmWindowObserver:

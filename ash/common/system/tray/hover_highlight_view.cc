@@ -7,7 +7,7 @@
 #include "ash/common/system/tray/fixed_sized_image_view.h"
 #include "ash/common/system/tray/tray_constants.h"
 #include "ash/common/system/tray/view_click_listener.h"
-#include "ui/accessibility/ax_view_state.h"
+#include "ui/accessibility/ax_node_data.h"
 #include "ui/base/resource/resource_bundle.h"
 #include "ui/gfx/canvas.h"
 #include "ui/gfx/font_list.h"
@@ -221,16 +221,16 @@ bool HoverHighlightView::PerformAction(const ui::Event& event) {
   return true;
 }
 
-void HoverHighlightView::GetAccessibleState(ui::AXViewState* state) {
-  ActionableView::GetAccessibleState(state);
+void HoverHighlightView::GetAccessibleNodeData(ui::AXNodeData* node_data) {
+  ActionableView::GetAccessibleNodeData(node_data);
 
   if (accessibility_state_ == AccessibilityState::CHECKED_CHECKBOX ||
       accessibility_state_ == AccessibilityState::UNCHECKED_CHECKBOX) {
-    state->role = ui::AX_ROLE_CHECK_BOX;
+    node_data->role = ui::AX_ROLE_CHECK_BOX;
   }
 
   if (accessibility_state_ == AccessibilityState::CHECKED_CHECKBOX)
-    state->AddStateFlag(ui::AX_STATE_CHECKED);
+    node_data->AddStateFlag(ui::AX_STATE_CHECKED);
 }
 
 gfx::Size HoverHighlightView::GetPreferredSize() const {

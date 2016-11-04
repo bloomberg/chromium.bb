@@ -66,7 +66,7 @@
 #include "extensions/browser/extension_registry.h"
 #include "extensions/common/extension.h"
 #include "extensions/common/extension_set.h"
-#include "ui/accessibility/ax_view_state.h"
+#include "ui/accessibility/ax_node_data.h"
 #include "ui/base/dragdrop/drag_utils.h"
 #include "ui/base/dragdrop/os_exchange_data.h"
 #include "ui/base/l10n/l10n_util.h"
@@ -514,9 +514,9 @@ class BookmarkBarView::ButtonSeparatorView : public views::View {
     return gfx::Size(kSeparatorWidth, 1);
   }
 
-  void GetAccessibleState(ui::AXViewState* state) override {
-    state->name = l10n_util::GetStringUTF16(IDS_ACCNAME_SEPARATOR);
-    state->role = ui::AX_ROLE_SPLITTER;
+  void GetAccessibleNodeData(ui::AXNodeData* node_data) override {
+    node_data->SetName(l10n_util::GetStringUTF8(IDS_ACCNAME_SEPARATOR));
+    node_data->role = ui::AX_ROLE_SPLITTER;
   }
 
  private:
@@ -1196,9 +1196,9 @@ void BookmarkBarView::VisibilityChanged(View* starting_from, bool is_visible) {
   }
 }
 
-void BookmarkBarView::GetAccessibleState(ui::AXViewState* state) {
-  state->role = ui::AX_ROLE_TOOLBAR;
-  state->name = l10n_util::GetStringUTF16(IDS_ACCNAME_BOOKMARKS);
+void BookmarkBarView::GetAccessibleNodeData(ui::AXNodeData* node_data) {
+  node_data->role = ui::AX_ROLE_TOOLBAR;
+  node_data->SetName(l10n_util::GetStringUTF8(IDS_ACCNAME_BOOKMARKS));
 }
 
 void BookmarkBarView::AnimationProgressed(const gfx::Animation* animation) {

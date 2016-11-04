@@ -11,7 +11,7 @@
 #include "base/memory/weak_ptr.h"
 #include "base/time/time.h"
 #include "build/build_config.h"
-#include "ui/accessibility/ax_view_state.h"
+#include "ui/accessibility/ax_node_data.h"
 #include "ui/display/display.h"
 #include "ui/display/screen.h"
 #include "ui/gfx/animation/animation_delegate.h"
@@ -309,10 +309,10 @@ void ToastContentsView::UpdatePreferredSize() {
   SetBoundsWithAnimation(bounds());
 }
 
-void ToastContentsView::GetAccessibleState(ui::AXViewState* state) {
+void ToastContentsView::GetAccessibleNodeData(ui::AXNodeData* node_data) {
   if (child_count() > 0)
-    child_at(0)->GetAccessibleState(state);
-  state->role = ui::AX_ROLE_WINDOW;
+    child_at(0)->GetAccessibleNodeData(node_data);
+  node_data->role = ui::AX_ROLE_WINDOW;
 }
 
 void ToastContentsView::ClickOnNotification(

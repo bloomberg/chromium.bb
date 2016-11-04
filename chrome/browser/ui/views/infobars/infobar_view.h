@@ -106,7 +106,7 @@ class InfoBarView : public infobars::InfoBar,
   void PlatformSpecificOnHeightsRecalculated() override;
 
   // views::View:
-  void GetAccessibleState(ui::AXViewState* state) override;
+  void GetAccessibleNodeData(ui::AXNodeData* node_data) override;
   gfx::Size GetPreferredSize() const override;
 
   // views::ExternalFocusTracker:

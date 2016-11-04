@@ -36,7 +36,7 @@ class ASH_EXPORT BaseDateTimeView : public ActionableView {
   void UpdateText();
 
   // views::View:
-  void GetAccessibleState(ui::AXViewState* state) override;
+  void GetAccessibleNodeData(ui::AXNodeData* node_data) override;
 
  protected:
   explicit BaseDateTimeView(SystemTrayItem* owner);

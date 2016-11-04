@@ -6,7 +6,7 @@
 
 #include <algorithm>
 
-#include "ui/accessibility/ax_view_state.h"
+#include "ui/accessibility/ax_node_data.h"
 #include "ui/app_list/app_list_constants.h"
 #include "ui/app_list/app_list_folder_item.h"
 #include "ui/app_list/app_list_model.h"
@@ -330,9 +330,9 @@ void AppListFolderView::SetRootLevelDragViewVisible(bool visible) {
   container_view_->apps_grid_view()->SetDragViewVisible(visible);
 }
 
-void AppListFolderView::GetAccessibleState(ui::AXViewState* state) {
-  state->role = ui::AX_ROLE_BUTTON;
-  state->name = accessible_name_;
+void AppListFolderView::GetAccessibleNodeData(ui::AXNodeData* node_data) {
+  node_data->role = ui::AX_ROLE_BUTTON;
+  node_data->SetName(accessible_name_);
 }
 
 void AppListFolderView::NavigateBack(AppListFolderItem* item,

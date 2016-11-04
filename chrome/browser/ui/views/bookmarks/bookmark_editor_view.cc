@@ -24,7 +24,7 @@
 #include "components/strings/grit/components_strings.h"
 #include "components/url_formatter/url_fixer.h"
 #include "components/user_prefs/user_prefs.h"
-#include "ui/accessibility/ax_view_state.h"
+#include "ui/accessibility/ax_node_data.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/base/material_design/material_design_controller.h"
 #include "ui/events/event.h"
@@ -161,10 +161,9 @@ bool BookmarkEditorView::HandleKeyEvent(views::Textfield* sender,
     return false;
 }
 
-void BookmarkEditorView::GetAccessibleState(ui::AXViewState* state) {
-  views::DialogDelegateView::GetAccessibleState(state);
-  state->name =
-      l10n_util::GetStringUTF16(IDS_BOOKMARK_EDITOR_TITLE);
+void BookmarkEditorView::GetAccessibleNodeData(ui::AXNodeData* node_data) {
+  views::DialogDelegateView::GetAccessibleNodeData(node_data);
+  node_data->SetName(l10n_util::GetStringUTF8(IDS_BOOKMARK_EDITOR_TITLE));
 }
 
 void BookmarkEditorView::ButtonPressed(views::Button* sender,

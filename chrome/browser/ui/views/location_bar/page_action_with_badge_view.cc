@@ -6,7 +6,7 @@
 
 #include "chrome/browser/extensions/extension_action.h"
 #include "chrome/browser/ui/views/location_bar/page_action_image_view.h"
-#include "ui/accessibility/ax_view_state.h"
+#include "ui/accessibility/ax_node_data.h"
 #include "ui/views/layout/fill_layout.h"
 
 PageActionWithBadgeView::PageActionWithBadgeView(
@@ -15,9 +15,8 @@ PageActionWithBadgeView::PageActionWithBadgeView(
   SetLayoutManager(new views::FillLayout());
 }
 
-void PageActionWithBadgeView::GetAccessibleState(
-    ui::AXViewState* state) {
-  state->role = ui::AX_ROLE_GROUP;
+void PageActionWithBadgeView::GetAccessibleNodeData(ui::AXNodeData* node_data) {
+  node_data->role = ui::AX_ROLE_GROUP;
 }
 
 gfx::Size PageActionWithBadgeView::GetPreferredSize() const {

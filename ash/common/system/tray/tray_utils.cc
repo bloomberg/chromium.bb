@@ -12,7 +12,7 @@
 #include "ash/common/system/tray/tray_item_view.h"
 #include "ash/common/system/tray/tray_popup_label_button_border.h"
 #include "ash/common/wm_shell.h"
-#include "ui/accessibility/ax_view_state.h"
+#include "ui/accessibility/ax_node_data.h"
 #include "ui/gfx/font_list.h"
 #include "ui/gfx/geometry/vector2d.h"
 #include "ui/views/border.h"
@@ -106,14 +106,14 @@ void SetTrayLabelItemBorder(TrayItemView* tray_view, ShelfAlignment alignment) {
 void GetAccessibleLabelFromDescendantViews(
     views::View* view,
     std::vector<base::string16>& out_labels) {
-  ui::AXViewState temp_state;
-  view->GetAccessibleState(&temp_state);
-  if (!temp_state.name.empty())
-    out_labels.push_back(temp_state.name);
+  ui::AXNodeData temp_node_data;
+  view->GetAccessibleNodeData(&temp_node_data);
+  if (!temp_node_data.GetStringAttribute(ui::AX_ATTR_NAME).empty())
+    out_labels.push_back(temp_node_data.GetString16Attribute(ui::AX_ATTR_NAME));
 
   // Do not descend into static text labels which may compute their own labels
   // recursively.
-  if (temp_state.role == ui::AX_ROLE_STATIC_TEXT)
+  if (temp_node_data.role == ui::AX_ROLE_STATIC_TEXT)
     return;
 
   for (int i = 0; i < view->child_count(); ++i)

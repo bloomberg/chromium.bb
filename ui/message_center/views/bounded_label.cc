@@ -333,8 +333,8 @@ bool BoundedLabel::CanProcessEventsWithinSubtree() const {
   return label_->CanProcessEventsWithinSubtree();
 }
 
-void BoundedLabel::GetAccessibleState(ui::AXViewState* state) {
-  label_->GetAccessibleState(state);
+void BoundedLabel::GetAccessibleNodeData(ui::AXNodeData* node_data) {
+  label_->GetAccessibleNodeData(node_data);
 }
 
 void BoundedLabel::OnBoundsChanged(const gfx::Rect& previous_bounds) {

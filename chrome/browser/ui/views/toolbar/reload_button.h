@@ -50,7 +50,7 @@ class ReloadButton : public ToolbarButton,
   bool GetTooltipText(const gfx::Point& p,
                       base::string16* tooltip) const override;
   const char* GetClassName() const override;
-  void GetAccessibleState(ui::AXViewState* state) override;
+  void GetAccessibleNodeData(ui::AXNodeData* node_data) override;
   bool ShouldShowMenu() override;
   void ShowDropDownMenu(ui::MenuSourceType source_type) override;
 

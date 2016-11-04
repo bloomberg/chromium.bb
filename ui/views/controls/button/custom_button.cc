@@ -4,7 +4,7 @@
 
 #include "ui/views/controls/button/custom_button.h"
 
-#include "ui/accessibility/ax_view_state.h"
+#include "ui/accessibility/ax_node_data.h"
 #include "ui/events/event.h"
 #include "ui/events/event_utils.h"
 #include "ui/events/keycodes/keyboard_codes.h"
@@ -330,21 +330,21 @@ void CustomButton::OnDragDone() {
   AnimateInkDrop(InkDropState::HIDDEN, nullptr /* event */);
 }
 
-void CustomButton::GetAccessibleState(ui::AXViewState* state) {
-  Button::GetAccessibleState(state);
+void CustomButton::GetAccessibleNodeData(ui::AXNodeData* node_data) {
+  Button::GetAccessibleNodeData(node_data);
   switch (state_) {
     case STATE_HOVERED:
-      state->AddStateFlag(ui::AX_STATE_HOVERED);
+      node_data->AddStateFlag(ui::AX_STATE_HOVERED);
       break;
     case STATE_PRESSED:
-      state->AddStateFlag(ui::AX_STATE_PRESSED);
+      node_data->AddStateFlag(ui::AX_STATE_PRESSED);
       break;
     case STATE_DISABLED:
-      state->AddStateFlag(ui::AX_STATE_DISABLED);
+      node_data->AddStateFlag(ui::AX_STATE_DISABLED);
       break;
     case STATE_NORMAL:
     case STATE_COUNT:
-      // No additional accessibility state set for this button state.
+      // No additional accessibility node_data set for this button node_data.
       break;
   }
 }

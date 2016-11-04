@@ -54,7 +54,7 @@ class TrayItemMore : public ActionableView {
   bool PerformAction(const ui::Event& event) override;
 
   // Overridden from views::View.
-  void GetAccessibleState(ui::AXViewState* state) override;
+  void GetAccessibleNodeData(ui::AXNodeData* node_data) override;
   void OnNativeThemeChanged(const ui::NativeTheme* theme) override;
 
   // True if |more_| should be shown.

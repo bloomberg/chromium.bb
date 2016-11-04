@@ -8,7 +8,7 @@
 #include "ash/common/system/tray/system_tray.h"
 #include "ash/common/system/tray/system_tray_item.h"
 #include "ash/common/system/tray/tray_constants.h"
-#include "ui/accessibility/ax_view_state.h"
+#include "ui/accessibility/ax_node_data.h"
 #include "ui/gfx/canvas.h"
 #include "ui/gfx/geometry/rect_f.h"
 #include "ui/views/animation/flood_fill_ink_drop_ripple.h"
@@ -57,9 +57,9 @@ void ActionableView::SetAccessibleName(const base::string16& name) {
   accessible_name_ = name;
 }
 
-void ActionableView::GetAccessibleState(ui::AXViewState* state) {
-  state->role = ui::AX_ROLE_BUTTON;
-  state->name = accessible_name_;
+void ActionableView::GetAccessibleNodeData(ui::AXNodeData* node_data) {
+  node_data->role = ui::AX_ROLE_BUTTON;
+  node_data->SetName(accessible_name_);
 }
 
 void ActionableView::OnPaint(gfx::Canvas* canvas) {

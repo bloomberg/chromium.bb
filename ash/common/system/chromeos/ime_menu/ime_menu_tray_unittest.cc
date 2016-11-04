@@ -15,7 +15,7 @@
 #include "ash/test/ash_test_base.h"
 #include "ash/test/status_area_widget_test_helper.h"
 #include "base/strings/utf_string_conversions.h"
-#include "ui/accessibility/ax_view_state.h"
+#include "ui/accessibility/ax_node_data.h"
 #include "ui/events/event.h"
 #include "ui/views/controls/label.h"
 
@@ -67,9 +67,10 @@ class ImeMenuTrayTest : public test::AshTestBase {
       }
 
       // Tests that the checked IME is the current IME.
-      ui::AXViewState state;
-      ime.first->GetAccessibleState(&state);
-      if (state.HasStateFlag(ui::AX_STATE_CHECKED)) {
+      ui::AXNodeData node_data;
+      node_data.state = 0;
+      ime.first->GetAccessibleNodeData(&node_data);
+      if (node_data.HasStateFlag(ui::AX_STATE_CHECKED)) {
         if (ime.second != expected_current_ime.id)
           return false;
       }

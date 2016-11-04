@@ -16,7 +16,7 @@
 #include "base/timer/timer.h"
 #include "chrome/grit/generated_resources.h"
 #include "extensions/common/extension.h"
-#include "ui/accessibility/ax_view_state.h"
+#include "ui/accessibility/ax_node_data.h"
 #include "ui/aura/window.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/base/resource/resource_bundle.h"
@@ -173,9 +173,9 @@ class IdleAppNameNotificationDelegateView
     views::WidgetDelegateView::OnPaint(canvas);
   }
 
-  void GetAccessibleState(ui::AXViewState* state) override {
-    state->name = spoken_text_;
-    state->role = ui::AX_ROLE_ALERT;
+  void GetAccessibleNodeData(ui::AXNodeData* node_data) override {
+    node_data->SetName(spoken_text_);
+    node_data->role = ui::AX_ROLE_ALERT;
   }
 
   // ImplicitAnimationObserver overrides
@@ -237,10 +237,10 @@ bool IdleAppNameNotificationView::IsVisible() {
 }
 
 base::string16 IdleAppNameNotificationView::GetShownTextForTest() {
-  ui::AXViewState state;
+  ui::AXNodeData node_data;
   DCHECK(view_);
-  view_->GetAccessibleState(&state);
-  return state.name;
+  view_->GetAccessibleNodeData(&node_data);
+  return node_data.GetString16Attribute(ui::AX_ATTR_NAME);
 }
 
 void IdleAppNameNotificationView::ShowMessage(

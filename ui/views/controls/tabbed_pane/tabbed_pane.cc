@@ -8,7 +8,7 @@
 #include "base/macros.h"
 #include "third_party/skia/include/core/SkPaint.h"
 #include "third_party/skia/include/core/SkPath.h"
-#include "ui/accessibility/ax_view_state.h"
+#include "ui/accessibility/ax_node_data.h"
 #include "ui/base/default_style.h"
 #include "ui/base/material_design/material_design_controller.h"
 #include "ui/base/resource/resource_bundle.h"
@@ -623,8 +623,8 @@ View* TabbedPane::GetSelectedTabContentView() {
   return GetSelectedTab() ? GetSelectedTab()->contents() : nullptr;
 }
 
-void TabbedPane::GetAccessibleState(ui::AXViewState* state) {
-  state->role = ui::AX_ROLE_TAB_LIST;
+void TabbedPane::GetAccessibleNodeData(ui::AXNodeData* node_data) {
+  node_data->role = ui::AX_ROLE_TAB_LIST;
 }
 
 }  // namespace views

@@ -13,7 +13,7 @@
 #include "base/time/time.h"
 #include "base/timer/timer.h"
 #include "grit/ash_strings.h"
-#include "ui/accessibility/ax_view_state.h"
+#include "ui/accessibility/ax_node_data.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/base/resource/resource_bundle.h"
 #include "ui/gfx/canvas.h"
@@ -80,9 +80,9 @@ class ExitWarningWidgetDelegateView : public views::WidgetDelegateView {
     views::WidgetDelegateView::OnPaint(canvas);
   }
 
-  void GetAccessibleState(ui::AXViewState* state) override {
-    state->name = accessible_name_;
-    state->role = ui::AX_ROLE_ALERT;
+  void GetAccessibleNodeData(ui::AXNodeData* node_data) override {
+    node_data->SetName(accessible_name_);
+    node_data->role = ui::AX_ROLE_ALERT;
   }
 
  private:

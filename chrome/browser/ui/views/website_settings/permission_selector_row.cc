@@ -11,7 +11,7 @@
 #include "chrome/browser/ui/website_settings/permission_menu_model.h"
 #include "chrome/browser/ui/website_settings/website_settings_ui.h"
 #include "chrome/grit/generated_resources.h"
-#include "ui/accessibility/ax_view_state.h"
+#include "ui/accessibility/ax_node_data.h"
 #include "ui/base/material_design/material_design_controller.h"
 #include "ui/base/models/combobox_model.h"
 #include "ui/gfx/image/image.h"
@@ -48,7 +48,7 @@ class PermissionMenuButton : public views::MenuButton,
   ~PermissionMenuButton() override;
 
   // Overridden from views::View.
-  void GetAccessibleState(ui::AXViewState* state) override;
+  void GetAccessibleNodeData(ui::AXNodeData* node_data) override;
   void OnNativeThemeChanged(const ui::NativeTheme* theme) override;
 
  private:
@@ -88,9 +88,9 @@ PermissionMenuButton::PermissionMenuButton(const base::string16& text,
 PermissionMenuButton::~PermissionMenuButton() {
 }
 
-void PermissionMenuButton::GetAccessibleState(ui::AXViewState* state) {
-  MenuButton::GetAccessibleState(state);
-  state->value = GetText();
+void PermissionMenuButton::GetAccessibleNodeData(ui::AXNodeData* node_data) {
+  MenuButton::GetAccessibleNodeData(node_data);
+  node_data->SetValue(GetText());
 }
 
 void PermissionMenuButton::OnNativeThemeChanged(const ui::NativeTheme* theme) {
