@@ -20,6 +20,7 @@
 #include "cc/resources/release_callback_impl.h"
 #include "cc/resources/resource_format.h"
 #include "cc/resources/texture_mailbox.h"
+#include "media/base/video_types.h"
 #include "ui/gfx/geometry/size.h"
 
 namespace media {
@@ -102,6 +103,9 @@ class CC_EXPORT VideoResourceUpdater
 
   static std::unique_ptr<HalfFloatMaker> NewHalfFloatMaker(
       int bits_per_channel);
+
+  ResourceFormat YuvResourceFormat(int bits,
+                                   media::VideoPixelFormat format) const;
 
  private:
   class PlaneResource {

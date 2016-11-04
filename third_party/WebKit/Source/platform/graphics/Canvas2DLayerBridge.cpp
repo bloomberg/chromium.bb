@@ -432,7 +432,10 @@ bool Canvas2DLayerBridge::prepareMailboxFromImage(
     gl->GenSyncTokenCHROMIUM(fenceSync, syncToken.GetData());
   }
   mailboxInfo.m_mailbox = mailbox;
-  *outMailbox = cc::TextureMailbox(mailbox, syncToken, GL_TEXTURE_2D);
+  bool isOverlayCandidate = false;
+  bool secureOutputOnly = false;
+  *outMailbox = cc::TextureMailbox(mailbox, syncToken, GL_TEXTURE_2D, m_size,
+                                   isOverlayCandidate, secureOutputOnly);
 
   gl->BindTexture(GL_TEXTURE_2D, 0);
   // Because we are changing the texture binding without going through skia,
