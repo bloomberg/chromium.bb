@@ -169,7 +169,7 @@ class HungRendererWebContentsObserverBridge
   if (hungContents_ && hungContents_->GetRenderViewHost())
     hungContents_->GetRenderViewHost()
         ->GetWidget()
-        ->RestartHangMonitorTimeout();
+        ->RestartHangMonitorTimeoutIfNecessary();
   // Cannot call performClose:, because the close button is disabled.
   [self close];
 }

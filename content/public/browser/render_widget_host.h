@@ -206,12 +206,13 @@ class CONTENT_EXPORT RenderWidgetHost : public IPC::Sender {
   // Returns true if the renderer is loading, false if not.
   virtual bool IsLoading() const = 0;
 
-  // Restart the active hang monitor timeout. Clears all existing timeouts and
-  // starts with a new one.  This can be because the renderer has become
+  // Restart the active hang monitor timeout if the renderer is actively
+  // waiting on a response. Clears all existing timeouts and starts with
+  // a new one.  This can be because the renderer has become
   // active, the tab is being hidden, or the user has chosen to wait some more
   // to give the tab a chance to become active and we don't want to display a
   // warning too soon.
-  virtual void RestartHangMonitorTimeout() = 0;
+  virtual void RestartHangMonitorTimeoutIfNecessary() = 0;
 
   // Stops and disables hang monitor. This avoids flakiness in tests that need
   // to observe things like beforeunload dialogs, which could fail if the

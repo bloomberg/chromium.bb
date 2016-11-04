@@ -352,7 +352,7 @@ bool HungRendererDialogView::Cancel() {
       hung_pages_table_model_->GetRenderViewHost()) {
     hung_pages_table_model_->GetRenderViewHost()
         ->GetWidget()
-        ->RestartHangMonitorTimeout();
+        ->RestartHangMonitorTimeoutIfNecessary();
   }
   return true;
 }

@@ -158,7 +158,7 @@ class CONTENT_EXPORT RenderWidgetHostImpl : public RenderWidgetHost,
   int GetRoutingID() const override;
   RenderWidgetHostViewBase* GetView() const override;
   bool IsLoading() const override;
-  void RestartHangMonitorTimeout() override;
+  void RestartHangMonitorTimeoutIfNecessary() override;
   void DisableHangMonitorForTesting() override;
   void SetIgnoreInputEvents(bool ignore_input_events) override;
   void WasResized() override;

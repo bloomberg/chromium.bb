@@ -556,14 +556,7 @@ void RenderWidgetHostImpl::WasShown(const ui::LatencyInfo& latency_info) {
   is_hidden_ = false;
 
   SendScreenRects();
-
-  // When hidden, timeout monitoring for input events is disabled. Restore it
-  // now to ensure consistent hang detection.
-  if (in_flight_event_count_) {
-    RestartHangMonitorTimeout();
-    hang_monitor_reason_ =
-        RendererUnresponsiveType::RENDERER_UNRESPONSIVE_IN_FLIGHT_EVENTS;
-  }
+  RestartHangMonitorTimeoutIfNecessary();
 
   // Always repaint on restore.
   bool needs_repainting = true;
@@ -916,9 +909,17 @@ void RenderWidgetHostImpl::StartHangMonitorTimeout(
   hang_monitor_reason_ = hang_monitor_reason;
 }
 
-void RenderWidgetHostImpl::RestartHangMonitorTimeout() {
-  if (hang_monitor_timeout_)
+void RenderWidgetHostImpl::RestartHangMonitorTimeoutIfNecessary() {
+  if (!hang_monitor_timeout_)
+    return;
+  if (in_flight_event_count_ > 0 && !is_hidden_) {
+    if (hang_monitor_reason_ ==
+        RendererUnresponsiveType::RENDERER_UNRESPONSIVE_UNKNOWN) {
+      hang_monitor_reason_ =
+          RendererUnresponsiveType::RENDERER_UNRESPONSIVE_IN_FLIGHT_EVENTS;
+    }
     hang_monitor_timeout_->Restart(hung_renderer_delay_);
+  }
 }
 
 void RenderWidgetHostImpl::DisableHangMonitorForTesting() {
@@ -1910,13 +1911,7 @@ void RenderWidgetHostImpl::DecrementInFlightEventCount() {
     // Cancel pending hung renderer checks since the renderer is responsive.
     StopHangMonitorTimeout();
   } else {
-    // The renderer is responsive, but there are in-flight events to wait for.
-    if (!is_hidden_) {
-      RestartHangMonitorTimeout();
-      hang_monitor_event_type_ = blink::WebInputEvent::Undefined;
-      hang_monitor_reason_ =
-          RendererUnresponsiveType::RENDERER_UNRESPONSIVE_IN_FLIGHT_EVENTS;
-    }
+    RestartHangMonitorTimeoutIfNecessary();
   }
 }
 
