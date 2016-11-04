@@ -99,7 +99,7 @@ int av1_optimize_b(const AV1_COMMON *cm, MACROBLOCK *mb, int plane, int block,
   int seg_id = xd->mi[0]->mbmi.segment_id;
   const qm_val_t *iqmatrix = pd->seg_iqmatrix[seg_id][!ref][tx_size];
 #endif
-  const int shift = get_tx_scale(xd, tx_type, tx_size);
+  const int shift = get_tx_scale(tx_size);
 #if CONFIG_NEW_QUANT
   int dq = get_dq_profile_from_ctx(mb->qindex, ctx, ref, plane_type);
   const dequant_val_type_nuq *dequant_val = pd->dequant_val_nuq[dq];
@@ -471,7 +471,7 @@ void av1_xform_quant(const AV1_COMMON *cm, MACROBLOCK *x, int plane, int block,
   const int16_t *src_diff;
 
   src_diff = &p->src_diff[4 * (blk_row * diff_stride + blk_col)];
-  qparam.log_scale = get_tx_scale(xd, tx_type, tx_size);
+  qparam.log_scale = get_tx_scale(tx_size);
 #else
   MB_MODE_INFO *mbmi = &xd->mi[0]->mbmi;
   tran_low_t *ref_coeff = BLOCK_OFFSET(pd->pvq_ref_coeff, block);
@@ -578,6 +578,7 @@ void av1_xform_quant(const AV1_COMMON *cm, MACROBLOCK *x, int plane, int block,
 }
 
 #if CONFIG_NEW_QUANT
+// TODO(debargha, sarah): Unify these functions with the ones above
 void av1_xform_quant_nuq(const AV1_COMMON *cm, MACROBLOCK *x, int plane,
                          int block, int blk_row, int blk_col,
                          BLOCK_SIZE plane_bsize, TX_SIZE tx_size, int ctx) {
@@ -615,36 +616,60 @@ void av1_xform_quant_nuq(const AV1_COMMON *cm, MACROBLOCK *x, int plane,
   fwd_txfm_param.bd = xd->bd;
   if (xd->cur_buf->flags & YV12_FLAG_HIGHBITDEPTH) {
     highbd_fwd_txfm(src_diff, coeff, diff_stride, &fwd_txfm_param);
-    if (tx_size == TX_32X32) {
-      highbd_quantize_32x32_nuq(
-          coeff, tx_size_2d[tx_size], x->skip_block, p->quant, p->quant_shift,
-          pd->dequant, (const cuml_bins_type_nuq *)p->cuml_bins_nuq[dq],
-          (const dequant_val_type_nuq *)pd->dequant_val_nuq[dq], qcoeff,
-          dqcoeff, eob, scan_order->scan, band);
-    } else {
-      highbd_quantize_nuq(coeff, tx_size_2d[tx_size], x->skip_block, p->quant,
-                          p->quant_shift, pd->dequant,
-                          (const cuml_bins_type_nuq *)p->cuml_bins_nuq[dq],
-                          (const dequant_val_type_nuq *)pd->dequant_val_nuq[dq],
-                          qcoeff, dqcoeff, eob, scan_order->scan, band);
+    switch (get_tx_scale(tx_size)) {
+#if CONFIG_TX64X64
+      case 2:
+        highbd_quantize_64x64_nuq(
+            coeff, tx_size_2d[tx_size], x->skip_block, p->quant, p->quant_shift,
+            pd->dequant, (const cuml_bins_type_nuq *)p->cuml_bins_nuq[dq],
+            (const dequant_val_type_nuq *)pd->dequant_val_nuq[dq], qcoeff,
+            dqcoeff, eob, scan_order->scan, band);
+        break;
+#endif  // CONFIG_TX64X64
+      case 1:
+        highbd_quantize_32x32_nuq(
+            coeff, tx_size_2d[tx_size], x->skip_block, p->quant, p->quant_shift,
+            pd->dequant, (const cuml_bins_type_nuq *)p->cuml_bins_nuq[dq],
+            (const dequant_val_type_nuq *)pd->dequant_val_nuq[dq], qcoeff,
+            dqcoeff, eob, scan_order->scan, band);
+        break;
+      default:
+        highbd_quantize_nuq(
+            coeff, tx_size_2d[tx_size], x->skip_block, p->quant, p->quant_shift,
+            pd->dequant, (const cuml_bins_type_nuq *)p->cuml_bins_nuq[dq],
+            (const dequant_val_type_nuq *)pd->dequant_val_nuq[dq], qcoeff,
+            dqcoeff, eob, scan_order->scan, band);
+        break;
     }
     return;
   }
 #endif  // CONFIG_AOM_HIGHBITDEPTH
 
   fwd_txfm(src_diff, coeff, diff_stride, &fwd_txfm_param);
-  if (tx_size == TX_32X32) {
-    quantize_32x32_nuq(coeff, 1024, x->skip_block, p->quant, p->quant_shift,
-                       pd->dequant,
-                       (const cuml_bins_type_nuq *)p->cuml_bins_nuq[dq],
-                       (const dequant_val_type_nuq *)pd->dequant_val_nuq[dq],
-                       qcoeff, dqcoeff, eob, scan_order->scan, band);
-  } else {
-    quantize_nuq(coeff, tx_size_2d[tx_size], x->skip_block, p->quant,
-                 p->quant_shift, pd->dequant,
-                 (const cuml_bins_type_nuq *)p->cuml_bins_nuq[dq],
-                 (const dequant_val_type_nuq *)pd->dequant_val_nuq[dq], qcoeff,
-                 dqcoeff, eob, scan_order->scan, band);
+  switch (get_tx_scale(tx_size)) {
+#if CONFIG_TX64X64
+    case 2:
+      quantize_64x64_nuq(coeff, tx_size_2d[tx_size], x->skip_block,
+                         p->quant, p->quant_shift, pd->dequant,
+                         (const cuml_bins_type_nuq *)p->cuml_bins_nuq[dq],
+                         (const dequant_val_type_nuq *)pd->dequant_val_nuq[dq],
+                         qcoeff, dqcoeff, eob, scan_order->scan, band);
+      break;
+#endif  // CONFIG_TX64X64
+    case 1:
+      quantize_32x32_nuq(coeff, tx_size_2d[tx_size], x->skip_block,
+                         p->quant, p->quant_shift, pd->dequant,
+                         (const cuml_bins_type_nuq *)p->cuml_bins_nuq[dq],
+                         (const dequant_val_type_nuq *)pd->dequant_val_nuq[dq],
+                         qcoeff, dqcoeff, eob, scan_order->scan, band);
+      break;
+    default:
+      quantize_nuq(coeff, tx_size_2d[tx_size], x->skip_block, p->quant,
+                   p->quant_shift, pd->dequant,
+                   (const cuml_bins_type_nuq *)p->cuml_bins_nuq[dq],
+                   (const dequant_val_type_nuq *)pd->dequant_val_nuq[dq],
+                   qcoeff, dqcoeff, eob, scan_order->scan, band);
+      break;
   }
 }
 
@@ -685,36 +710,59 @@ void av1_xform_quant_fp_nuq(const AV1_COMMON *cm, MACROBLOCK *x, int plane,
   fwd_txfm_param.bd = xd->bd;
   if (xd->cur_buf->flags & YV12_FLAG_HIGHBITDEPTH) {
     highbd_fwd_txfm(src_diff, coeff, diff_stride, &fwd_txfm_param);
-    if (tx_size == TX_32X32) {
-      highbd_quantize_32x32_fp_nuq(
-          coeff, tx_size_2d[tx_size], x->skip_block, p->quant_fp, pd->dequant,
-          (const cuml_bins_type_nuq *)p->cuml_bins_nuq[dq],
-          (const dequant_val_type_nuq *)pd->dequant_val_nuq[dq], qcoeff,
-          dqcoeff, eob, scan_order->scan, band);
-    } else {
-      highbd_quantize_fp_nuq(
-          coeff, tx_size_2d[tx_size], x->skip_block, p->quant_fp, pd->dequant,
-          (const cuml_bins_type_nuq *)p->cuml_bins_nuq[dq],
-          (const dequant_val_type_nuq *)pd->dequant_val_nuq[dq], qcoeff,
-          dqcoeff, eob, scan_order->scan, band);
+    switch (get_tx_scale(tx_size)) {
+#if CONFIG_TX64X64
+      case 2:
+        highbd_quantize_64x64_fp_nuq(
+            coeff, tx_size_2d[tx_size], x->skip_block, p->quant_fp, pd->dequant,
+            (const cuml_bins_type_nuq *)p->cuml_bins_nuq[dq],
+            (const dequant_val_type_nuq *)pd->dequant_val_nuq[dq], qcoeff,
+            dqcoeff, eob, scan_order->scan, band);
+        break;
+#endif  // CONFIG_TX64X64
+      case 1:
+        highbd_quantize_32x32_fp_nuq(
+            coeff, tx_size_2d[tx_size], x->skip_block, p->quant_fp, pd->dequant,
+            (const cuml_bins_type_nuq *)p->cuml_bins_nuq[dq],
+            (const dequant_val_type_nuq *)pd->dequant_val_nuq[dq], qcoeff,
+            dqcoeff, eob, scan_order->scan, band);
+        break;
+      default:
+        highbd_quantize_fp_nuq(
+            coeff, tx_size_2d[tx_size], x->skip_block, p->quant_fp, pd->dequant,
+            (const cuml_bins_type_nuq *)p->cuml_bins_nuq[dq],
+            (const dequant_val_type_nuq *)pd->dequant_val_nuq[dq], qcoeff,
+            dqcoeff, eob, scan_order->scan, band);
     }
     return;
   }
 #endif  // CONFIG_AOM_HIGHBITDEPTH
 
   fwd_txfm(src_diff, coeff, diff_stride, &fwd_txfm_param);
-  if (tx_size == TX_32X32) {
-    quantize_32x32_fp_nuq(coeff, tx_size_2d[tx_size], x->skip_block,
-                          p->quant_fp, pd->dequant,
-                          (const cuml_bins_type_nuq *)p->cuml_bins_nuq[dq],
-                          (const dequant_val_type_nuq *)pd->dequant_val_nuq[dq],
-                          qcoeff, dqcoeff, eob, scan_order->scan, band);
-  } else {
-    quantize_fp_nuq(coeff, tx_size_2d[tx_size], x->skip_block, p->quant_fp,
-                    pd->dequant,
-                    (const cuml_bins_type_nuq *)p->cuml_bins_nuq[dq],
-                    (const dequant_val_type_nuq *)pd->dequant_val_nuq[dq],
-                    qcoeff, dqcoeff, eob, scan_order->scan, band);
+  switch (get_tx_scale(tx_size)) {
+#if CONFIG_TX64X64
+    case 2:
+      quantize_64x64_fp_nuq(
+          coeff, tx_size_2d[tx_size], x->skip_block, p->quant_fp, pd->dequant,
+          (const cuml_bins_type_nuq *)p->cuml_bins_nuq[dq],
+          (const dequant_val_type_nuq *)pd->dequant_val_nuq[dq], qcoeff,
+          dqcoeff, eob, scan_order->scan, band);
+      break;
+#endif  // CONFIG_TX64X64
+    case 1:
+      quantize_32x32_fp_nuq(
+          coeff, tx_size_2d[tx_size], x->skip_block, p->quant_fp, pd->dequant,
+          (const cuml_bins_type_nuq *)p->cuml_bins_nuq[dq],
+          (const dequant_val_type_nuq *)pd->dequant_val_nuq[dq], qcoeff,
+          dqcoeff, eob, scan_order->scan, band);
+      break;
+    default:
+      quantize_fp_nuq(coeff, tx_size_2d[tx_size], x->skip_block, p->quant_fp,
+                      pd->dequant,
+                      (const cuml_bins_type_nuq *)p->cuml_bins_nuq[dq],
+                      (const dequant_val_type_nuq *)pd->dequant_val_nuq[dq],
+                      qcoeff, dqcoeff, eob, scan_order->scan, band);
+      break;
   }
 }
 
@@ -753,31 +801,54 @@ void av1_xform_quant_dc_nuq(MACROBLOCK *x, int plane, int block, int blk_row,
   fwd_txfm_param.bd = xd->bd;
   if (xd->cur_buf->flags & YV12_FLAG_HIGHBITDEPTH) {
     highbd_fwd_txfm(src_diff, coeff, diff_stride, &fwd_txfm_param);
-    if (tx_size == TX_32X32) {
-      highbd_quantize_dc_32x32_nuq(
-          coeff, tx_size_2d[tx_size], x->skip_block, p->quant[0],
-          p->quant_shift[0], pd->dequant[0], p->cuml_bins_nuq[dq][0],
-          pd->dequant_val_nuq[dq][0], qcoeff, dqcoeff, eob);
-    } else {
-      highbd_quantize_dc_nuq(coeff, tx_size_2d[tx_size], x->skip_block,
-                             p->quant[0], p->quant_shift[0], pd->dequant[0],
-                             p->cuml_bins_nuq[dq][0],
-                             pd->dequant_val_nuq[dq][0], qcoeff, dqcoeff, eob);
+    switch (get_tx_scale(tx_size)) {
+#if CONFIG_TX64X64
+      case 2:
+        highbd_quantize_dc_64x64_nuq(
+            coeff, tx_size_2d[tx_size], x->skip_block, p->quant[0],
+            p->quant_shift[0], pd->dequant[0], p->cuml_bins_nuq[dq][0],
+            pd->dequant_val_nuq[dq][0], qcoeff, dqcoeff, eob);
+        break;
+#endif  // CONFIG_TX64X64
+      case 1:
+        highbd_quantize_dc_32x32_nuq(
+            coeff, tx_size_2d[tx_size], x->skip_block, p->quant[0],
+            p->quant_shift[0], pd->dequant[0], p->cuml_bins_nuq[dq][0],
+            pd->dequant_val_nuq[dq][0], qcoeff, dqcoeff, eob);
+        break;
+      default:
+        highbd_quantize_dc_nuq(
+            coeff, tx_size_2d[tx_size], x->skip_block, p->quant[0],
+            p->quant_shift[0], pd->dequant[0], p->cuml_bins_nuq[dq][0],
+            pd->dequant_val_nuq[dq][0], qcoeff, dqcoeff, eob);
+        break;
     }
     return;
   }
 #endif  // CONFIG_AOM_HIGHBITDEPTH
 
   fwd_txfm(src_diff, coeff, diff_stride, &fwd_txfm_param);
-  if (tx_size == TX_32X32) {
-    quantize_dc_32x32_nuq(coeff, tx_size_2d[tx_size], x->skip_block,
-                          p->quant[0], p->quant_shift[0], pd->dequant[0],
-                          p->cuml_bins_nuq[dq][0], pd->dequant_val_nuq[dq][0],
-                          qcoeff, dqcoeff, eob);
-  } else {
-    quantize_dc_nuq(coeff, tx_size_2d[tx_size], x->skip_block, p->quant[0],
-                    p->quant_shift[0], pd->dequant[0], p->cuml_bins_nuq[dq][0],
-                    pd->dequant_val_nuq[dq][0], qcoeff, dqcoeff, eob);
+  switch (get_tx_scale(tx_size)) {
+#if CONFIG_TX64X64
+    case 2:
+      quantize_dc_64x64_nuq(coeff, tx_size_2d[tx_size], x->skip_block,
+                            p->quant[0], p->quant_shift[0], pd->dequant[0],
+                            p->cuml_bins_nuq[dq][0], pd->dequant_val_nuq[dq][0],
+                            qcoeff, dqcoeff, eob);
+      break;
+#endif  // CONFIG_TX64X64
+    case 1:
+      quantize_dc_32x32_nuq(coeff, tx_size_2d[tx_size], x->skip_block,
+                            p->quant[0], p->quant_shift[0], pd->dequant[0],
+                            p->cuml_bins_nuq[dq][0], pd->dequant_val_nuq[dq][0],
+                            qcoeff, dqcoeff, eob);
+      break;
+    default:
+      quantize_dc_nuq(coeff, tx_size_2d[tx_size], x->skip_block, p->quant[0],
+                      p->quant_shift[0], pd->dequant[0],
+                      p->cuml_bins_nuq[dq][0], pd->dequant_val_nuq[dq][0],
+                      qcoeff, dqcoeff, eob);
+      break;
   }
 }
 
@@ -816,31 +887,54 @@ void av1_xform_quant_dc_fp_nuq(MACROBLOCK *x, int plane, int block, int blk_row,
   fwd_txfm_param.bd = xd->bd;
   if (xd->cur_buf->flags & YV12_FLAG_HIGHBITDEPTH) {
     highbd_fwd_txfm(src_diff, coeff, diff_stride, &fwd_txfm_param);
-    if (tx_size == TX_32X32) {
-      highbd_quantize_dc_32x32_fp_nuq(
-          coeff, tx_size_2d[tx_size], x->skip_block, p->quant_fp[0],
-          pd->dequant[0], p->cuml_bins_nuq[dq][0], pd->dequant_val_nuq[dq][0],
-          qcoeff, dqcoeff, eob);
-    } else {
-      highbd_quantize_dc_fp_nuq(
-          coeff, tx_size_2d[tx_size], x->skip_block, p->quant_fp[0],
-          pd->dequant[0], p->cuml_bins_nuq[dq][0], pd->dequant_val_nuq[dq][0],
-          qcoeff, dqcoeff, eob);
+    switch (get_tx_scale(tx_size)) {
+#if CONFIG_TX64X64
+      case 2:
+        highbd_quantize_dc_64x64_fp_nuq(
+            coeff, tx_size_2d[tx_size], x->skip_block, p->quant_fp[0],
+            pd->dequant[0], p->cuml_bins_nuq[dq][0], pd->dequant_val_nuq[dq][0],
+            qcoeff, dqcoeff, eob);
+        break;
+#endif  // CONFIG_TX64X64
+      case 1:
+        highbd_quantize_dc_32x32_fp_nuq(
+            coeff, tx_size_2d[tx_size], x->skip_block, p->quant_fp[0],
+            pd->dequant[0], p->cuml_bins_nuq[dq][0], pd->dequant_val_nuq[dq][0],
+            qcoeff, dqcoeff, eob);
+        break;
+      default:
+        highbd_quantize_dc_fp_nuq(
+            coeff, tx_size_2d[tx_size], x->skip_block, p->quant_fp[0],
+            pd->dequant[0], p->cuml_bins_nuq[dq][0], pd->dequant_val_nuq[dq][0],
+            qcoeff, dqcoeff, eob);
+        break;
     }
     return;
   }
 #endif  // CONFIG_AOM_HIGHBITDEPTH
 
   fwd_txfm(src_diff, coeff, diff_stride, &fwd_txfm_param);
-  if (tx_size == TX_32X32) {
-    quantize_dc_32x32_fp_nuq(coeff, tx_size_2d[tx_size], x->skip_block,
-                             p->quant_fp[0], pd->dequant[0],
-                             p->cuml_bins_nuq[dq][0],
-                             pd->dequant_val_nuq[dq][0], qcoeff, dqcoeff, eob);
-  } else {
-    quantize_dc_fp_nuq(coeff, tx_size_2d[tx_size], x->skip_block,
-                       p->quant_fp[0], pd->dequant[0], p->cuml_bins_nuq[dq][0],
-                       pd->dequant_val_nuq[dq][0], qcoeff, dqcoeff, eob);
+  switch (get_tx_scale(tx_size)) {
+#if CONFIG_TX64X64
+    case 2:
+      quantize_dc_64x64_fp_nuq(
+          coeff, tx_size_2d[tx_size], x->skip_block, p->quant_fp[0],
+          pd->dequant[0], p->cuml_bins_nuq[dq][0], pd->dequant_val_nuq[dq][0],
+          qcoeff, dqcoeff, eob);
+      break;
+#endif  // CONFIG_TX64X64
+    case 1:
+      quantize_dc_32x32_fp_nuq(
+          coeff, tx_size_2d[tx_size], x->skip_block, p->quant_fp[0],
+          pd->dequant[0], p->cuml_bins_nuq[dq][0], pd->dequant_val_nuq[dq][0],
+          qcoeff, dqcoeff, eob);
+      break;
+    default:
+      quantize_dc_fp_nuq(coeff, tx_size_2d[tx_size], x->skip_block,
+                         p->quant_fp[0], pd->dequant[0],
+                         p->cuml_bins_nuq[dq][0], pd->dequant_val_nuq[dq][0],
+                         qcoeff, dqcoeff, eob);
+      break;
   }
 }
 #endif  // CONFIG_NEW_QUANT

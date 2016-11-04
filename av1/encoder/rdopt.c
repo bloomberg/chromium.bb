@@ -1022,8 +1022,7 @@ static void dist_block(const AV1_COMP *cpi, MACROBLOCK *x, int plane, int block,
     // not involve an inverse transform, but it is less accurate.
     const int buffer_length = tx_size_2d[tx_size];
     int64_t this_sse;
-    int tx_type = get_tx_type(pd->plane_type, xd, block, tx_size);
-    int shift = (MAX_TX_SCALE - get_tx_scale(xd, tx_type, tx_size)) * 2;
+    int shift = (MAX_TX_SCALE - get_tx_scale(tx_size)) * 2;
     tran_low_t *const coeff = BLOCK_OFFSET(p->coeff, block);
     tran_low_t *const dqcoeff = BLOCK_OFFSET(pd->dqcoeff, block);
 #if CONFIG_PVQ
@@ -7854,8 +7853,8 @@ static int64_t handle_inter_mode(
 #if CONFIG_MOTION_VAR || CONFIG_WARPED_MOTION
         continue;
 #else
-        restore_dst_buf(xd, orig_dst, orig_dst_stride);
-        return INT64_MAX;
+      restore_dst_buf(xd, orig_dst, orig_dst_stride);
+      return INT64_MAX;
 #endif  // CONFIG_MOTION_VAR || CONFIG_WARPED_MOTION
       }
       /* clang-format on */

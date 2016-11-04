@@ -98,6 +98,7 @@ static int decode_coefs(MACROBLOCKD *xd, PLANE_TYPE type, tran_low_t *dqcoeff,
   const uint8_t *cat4_prob;
   const uint8_t *cat5_prob;
   const uint8_t *cat6_prob;
+  (void)tx_type;
 
   if (counts) {
     coef_counts = counts->coef[tx_size_ctx][type][ref];
@@ -138,7 +139,7 @@ static int decode_coefs(MACROBLOCKD *xd, PLANE_TYPE type, tran_low_t *dqcoeff,
   cat6_prob = av1_cat6_prob;
 #endif
 
-  dq_shift = get_tx_scale(xd, tx_type, tx_size);
+  dq_shift = get_tx_scale(tx_size);
 
   while (c < max_eob) {
     int val = -1;

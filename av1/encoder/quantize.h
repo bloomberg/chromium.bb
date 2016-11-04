@@ -127,6 +127,15 @@ void quantize_dc_32x32_nuq(const tran_low_t *coeff_ptr, intptr_t n_coeffs,
                            const tran_low_t *dequant_val,
                            tran_low_t *qcoeff_ptr, tran_low_t *dqcoeff_ptr,
                            uint16_t *eob_ptr);
+#if CONFIG_TX64X64
+void quantize_dc_64x64_nuq(const tran_low_t *coeff_ptr, intptr_t n_coeffs,
+                           int skip_block, const int16_t quant,
+                           const int16_t quant_shift, const int16_t dequant,
+                           const tran_low_t *cuml_bins_ptr,
+                           const tran_low_t *dequant_val,
+                           tran_low_t *qcoeff_ptr, tran_low_t *dqcoeff_ptr,
+                           uint16_t *eob_ptr);
+#endif  // CONFIG_TX64X64
 void quantize_dc_fp_nuq(const tran_low_t *coeff_ptr, intptr_t n_coeffs,
                         int skip_block, const int16_t quant,
                         const int16_t dequant, const tran_low_t *cuml_bins_ptr,
@@ -139,6 +148,15 @@ void quantize_dc_32x32_fp_nuq(const tran_low_t *coeff_ptr, intptr_t n_coeffs,
                               const tran_low_t *dequant_val,
                               tran_low_t *qcoeff_ptr, tran_low_t *dqcoeff_ptr,
                               uint16_t *eob_ptr);
+#if CONFIG_TX64X64
+void quantize_dc_64x64_fp_nuq(const tran_low_t *coeff_ptr, intptr_t n_coeffs,
+                              int skip_block, const int16_t quant,
+                              const int16_t dequant,
+                              const tran_low_t *cuml_bins_ptr,
+                              const tran_low_t *dequant_val,
+                              tran_low_t *qcoeff_ptr, tran_low_t *dqcoeff_ptr,
+                              uint16_t *eob_ptr);
+#endif  // CONFIG_TX64X64
 #endif  // CONFIG_NEW_QUANT
 
 #if CONFIG_AOM_HIGHBITDEPTH
@@ -197,6 +215,13 @@ void highbd_quantize_dc_32x32_nuq(
     const int16_t quant, const int16_t quant_shift, const int16_t dequant,
     const tran_low_t *cuml_bins_ptr, const tran_low_t *dequant_val,
     tran_low_t *qcoeff_ptr, tran_low_t *dqcoeff_ptr, uint16_t *eob_ptr);
+#if CONFIG_TX64X64
+void highbd_quantize_dc_64x64_nuq(
+    const tran_low_t *coeff_ptr, intptr_t n_coeffs, int skip_block,
+    const int16_t quant, const int16_t quant_shift, const int16_t dequant,
+    const tran_low_t *cuml_bins_ptr, const tran_low_t *dequant_val,
+    tran_low_t *qcoeff_ptr, tran_low_t *dqcoeff_ptr, uint16_t *eob_ptr);
+#endif  // CONFIG_TX64X64
 void highbd_quantize_dc_fp_nuq(const tran_low_t *coeff_ptr, intptr_t n_coeffs,
                                int skip_block, const int16_t quant,
                                const int16_t dequant,
@@ -209,7 +234,13 @@ void highbd_quantize_dc_32x32_fp_nuq(
     const int16_t quant, const int16_t dequant, const tran_low_t *cuml_bins_ptr,
     const tran_low_t *dequant_val, tran_low_t *qcoeff_ptr,
     tran_low_t *dqcoeff_ptr, uint16_t *eob_ptr);
-
+#if CONFIG_TX64X64
+void highbd_quantize_dc_64x64_fp_nuq(
+    const tran_low_t *coeff_ptr, intptr_t n_coeffs, int skip_block,
+    const int16_t quant, const int16_t dequant, const tran_low_t *cuml_bins_ptr,
+    const tran_low_t *dequant_val, tran_low_t *qcoeff_ptr,
+    tran_low_t *dqcoeff_ptr, uint16_t *eob_ptr);
+#endif  // CONFIG_TX64X64
 #endif  // CONFIG_NEW_QUANT
 #endif  // CONFIG_AOM_HIGHBITDEPTH
 

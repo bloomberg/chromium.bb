@@ -441,7 +441,7 @@ static void highbd_fwd_txfm_64x64(const int16_t *src_diff, tran_low_t *coeff,
   (void)bd;
   switch (tx_type) {
     case DCT_DCT:
-      av1_highbd_fht64x64_c(src_diff, coeff, diff_stride, tx_type);
+      av1_highbd_fht64x64(src_diff, coeff, diff_stride, tx_type);
       break;
 #if CONFIG_EXT_TX
     case ADST_DCT:
@@ -458,7 +458,7 @@ static void highbd_fwd_txfm_64x64(const int16_t *src_diff, tran_low_t *coeff,
     case H_ADST:
     case V_FLIPADST:
     case H_FLIPADST:
-      av1_highbd_fht64x64_c(src_diff, coeff, diff_stride, tx_type);
+      av1_highbd_fht64x64(src_diff, coeff, diff_stride, tx_type);
       break;
     case IDTX: av1_fwd_idtx_c(src_diff, coeff, diff_stride, 64, tx_type); break;
 #endif  // CONFIG_EXT_TX

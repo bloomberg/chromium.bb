@@ -51,8 +51,7 @@ typedef struct {
 #endif  // CONFIG_AOM_HIGHBITDEPTH
 
 #define MAX_TX_SCALE 1
-int get_tx_scale(const MACROBLOCKD *const xd, const TX_TYPE tx_type,
-                 const TX_SIZE tx_size);
+int get_tx_scale(const TX_SIZE tx_size);
 
 void av1_iwht4x4_add(const tran_low_t *input, uint8_t *dest, int stride,
                      int eob);

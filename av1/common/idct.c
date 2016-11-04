@@ -20,10 +20,7 @@
 #include "av1/common/enums.h"
 #include "av1/common/idct.h"
 
-int get_tx_scale(const MACROBLOCKD *const xd, const TX_TYPE tx_type,
-                 const TX_SIZE tx_size) {
-  (void)tx_type;
-  (void)xd;
+int get_tx_scale(const TX_SIZE tx_size) {
   if (txsize_sqr_up_map[tx_size] == TX_32X32) return 1;
 #if CONFIG_TX64X64
   else if (txsize_sqr_up_map[tx_size] == TX_64X64)

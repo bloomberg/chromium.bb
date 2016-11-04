@@ -2000,6 +2000,7 @@ void av1_fwd_idtx_c(const int16_t *src_diff, tran_low_t *coeff, int stride,
     }
   }
 }
+#endif  // CONFIG_EXT_TX
 
 #if CONFIG_AOM_HIGHBITDEPTH
 void av1_highbd_fht32x32_c(const int16_t *input, tran_low_t *output, int stride,
@@ -2014,4 +2015,3 @@ void av1_highbd_fht64x64_c(const int16_t *input, tran_low_t *output, int stride,
 }
 #endif  // CONFIG_TX64X64
 #endif  // CONFIG_AOM_HIGHBITDEPTH
-#endif  // CONFIG_EXT_TX
