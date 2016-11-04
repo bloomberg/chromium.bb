@@ -144,8 +144,6 @@ imported/csswg-test/css21/linebox/line-height-126.xht [ WontFix ]
 [ Linux ] imported/csswg-test/css21/linebox/vertical-align-sub-001.xht [ WontFix ]
 [ Linux ] imported/csswg-test/css21/linebox/vertical-align-super-001.xht [ WontFix ]
 
-# The test is too slow to apply [ Slow ].
-
 # Ref tests that pass but causes 1px diff on images at direction boundaries.
 [ Win ] imported/wpt/html/dom/elements/requirements-relating-to-bidirectional-algorithm-formatting-characters/dir-isolation-002c.html [ WontFix ]
 [ Mac ] imported/wpt/html/dom/elements/requirements-relating-to-bidirectional-algorithm-formatting-characters/dir-isolation-006a.html [ WontFix ]

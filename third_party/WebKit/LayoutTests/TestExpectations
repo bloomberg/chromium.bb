@@ -1447,7 +1447,6 @@ crbug.com/626703 imported/wpt/html/semantics/forms/the-form-element/form-action-
 crbug.com/626703 imported/wpt/html/browsers/sandboxing/sandbox-allow-same-origin.html [ Timeout ]
 crbug.com/626703 imported/wpt/html/browsers/sandboxing/sandbox-allow-scripts.html [ Timeout ]
 crbug.com/626703 imported/wpt/html/browsers/sandboxing/sandbox-disallow-same-origin.html [ Timeout ]
-crbug.com/626703 imported/wpt/dom/ranges/Range-mutations-dataChange.html [ Timeout Pass ]
 
 crbug.com/645640 inspector/extensions/extensions-eval.html [ NeedsManualRebaseline ]
 

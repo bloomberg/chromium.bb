@@ -551,6 +551,10 @@ imported/wpt/dom/nodes/Element-nextElementSibling-svg.svg [ Skip ]
 imported/wpt/dom/nodes/Element-previousElementSibling-svg.svg [ Skip ]
 imported/wpt/dom/nodes/Element-siblingElement-null-svg.svg [ Skip ]
 imported/wpt/html/editing/the-hidden-attribute/hidden-2.svg [ Skip ]
+imported/wpt/svg/shapes/rect-01.svg [ Skip ]
+imported/wpt/svg/shapes/rect-02.svg [ Skip ]
+imported/wpt/svg/shapes/rect-03.svg [ Skip ]
+imported/wpt/svg/shapes/rect-04.svg [ Skip ]
 
 # https://github.com/w3c/web-platform-tests/issues/1861: A function can be
 # called before it's defined.
@@ -657,12 +661,6 @@ imported/wpt/pointerevents/pointerevent_pointermove-on-chorded-mouse-button.html
 
 # Uses TAB character for indentation
 imported/wpt/touch-events/multi-touch-interactions.js [ Skip ]
-
-# This directory contains SVG reference tests, which we don't support yet.
-third_party/WebKit/LayoutTests/imported/wpt/svg/shapes/rect-01.svg [ Skip ]
-third_party/WebKit/LayoutTests/imported/wpt/svg/shapes/rect-02.svg [ Skip ]
-third_party/WebKit/LayoutTests/imported/wpt/svg/shapes/rect-03.svg [ Skip ]
-third_party/WebKit/LayoutTests/imported/wpt/svg/shapes/rect-04.svg [ Skip ]
 
 # CSS Writing Modes Level 3: Following tests require writing-mode: sideways-*, which we do not plan to support today.
 imported/csswg-test/css-writing-modes-3/block-flow-direction-slr-043.xht [ Skip ]
