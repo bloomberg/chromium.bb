@@ -389,14 +389,4 @@ public class PaymentRequestNoShippingTest extends PaymentRequestTestBase {
                             "PaymentRequest.RequestedInformation", i));
         }
     }
-
-    /** Verifies the format of the billing address suggestions when adding a new credit card. */
-    @MediumTest
-    @Feature({"Payments"})
-    public void testNewCardBillingAddressFormat()
-            throws InterruptedException, ExecutionException, TimeoutException {
-        fillNewCardForm("5454-5454-5454-5454", "Bob", DECEMBER, NEXT_YEAR, FIRST_BILLING_ADDRESS);
-        assertTrue(getSpinnerSelectionTextInCardEditor(2).equals(
-                "Jon Doe, Google, 340 Main St, Los Angeles, CA 90291, United States"));
-    }
 }

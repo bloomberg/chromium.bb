@@ -406,6 +406,18 @@ abstract class PaymentRequestTestBase extends ChromeActivityTestCaseBase<ChromeT
         });
     }
 
+    /** Returns the number of items offered by the spinner in the editor UI for credit cards. */
+    protected int getSpinnerItemCountInCardEditor(final int dropdownIndex)
+            throws ExecutionException {
+        return ThreadUtils.runOnUiThreadBlocking(new Callable<Integer>() {
+            @Override
+            public Integer call() {
+                return mUI.getCardEditorView().getDropdownFieldsForTest().get(dropdownIndex)
+                        .getCount();
+            }
+        });
+    }
+
     /** Selects the spinner value in the editor UI for credit cards. */
     protected void setSpinnerSelectionsInCardEditorAndWait(final int[] selections,
             CallbackHelper helper) throws InterruptedException, TimeoutException {
