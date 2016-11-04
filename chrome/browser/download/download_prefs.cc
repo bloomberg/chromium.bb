@@ -145,7 +145,7 @@ DownloadPrefs::DownloadPrefs(Profile* profile) : profile_(profile) {
 
   // If the download path is dangerous we forcefully reset it. But if we do
   // so we set a flag to make sure we only do it once, to avoid fighting
-  // the user if he really wants it on an unsafe place such as the desktop.
+  // the user if they really want it on an unsafe place such as the desktop.
   if (!prefs->GetBoolean(prefs::kDownloadDirUpgraded)) {
     base::FilePath current_download_dir = prefs->GetFilePath(
         prefs::kDownloadDefaultDirectory);

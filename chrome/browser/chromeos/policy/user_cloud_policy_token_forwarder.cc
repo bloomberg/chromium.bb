@@ -58,7 +58,7 @@ void UserCloudPolicyTokenForwarder::OnGetTokenFailure(
     const GoogleServiceAuthError& error) {
   // This should seldom happen: if the user is signing in for the first time
   // then this was an online signin and network errors are unlikely; if the
-  // user had already signed in before then he should have policy cached, and
+  // user had already signed in before then they should have policy cached, and
   // RequestAccessToken() wouldn't have been invoked.
   // Still, something just went wrong (server 500, or something). Currently
   // we don't recover in this case, and we'll just try to register for policy

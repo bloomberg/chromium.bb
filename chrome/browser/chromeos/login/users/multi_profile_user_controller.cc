@@ -100,8 +100,8 @@ MultiProfileUserController::GetPrimaryUserPolicy() {
   if (policy::PolicyCertServiceFactory::UsedPolicyCertificates(
           user->GetAccountId().GetUserEmail())) {
     // Check directly in local_state before checking if the primary user has
-    // a PolicyCertService. His profile may have been tainted previously though
-    // he didn't get a PolicyCertService created for this session.
+    // a PolicyCertService. Their profile may have been tainted previously
+    // though they didn't get a PolicyCertService created for this session.
     return NOT_ALLOWED_PRIMARY_POLICY_CERT_TAINTED;
   }
 

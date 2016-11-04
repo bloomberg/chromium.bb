@@ -52,7 +52,7 @@ class SavePasswordInfoBarDelegate : public PasswordManagerInfoBarDelegate {
 
  private:
   // The PasswordFormManager managing the form we're asking the user about,
-  // and should update as per her decision.
+  // and should update as per their decision.
   std::unique_ptr<password_manager::PasswordFormManager> form_to_save_;
 
   // Used to track the results we get from the info bar.

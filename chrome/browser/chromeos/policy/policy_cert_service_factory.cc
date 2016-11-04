@@ -115,7 +115,7 @@ KeyedService* PolicyCertServiceFactory::BuildServiceInstanceFor(
       // This login should not have been allowed. After rebooting, local_state
       // will contain the updated list of users that used policy-pushed
       // certificates and this won't happen again.
-      // Note that a user becomes logged in before his profile is created.
+      // Note that a user becomes logged in before their profile is created.
       LOG(ERROR) << "Shutdown session because a tainted profile was added.";
       g_browser_process->local_state()->CommitPendingWrite();
       prefs->CommitPendingWrite();

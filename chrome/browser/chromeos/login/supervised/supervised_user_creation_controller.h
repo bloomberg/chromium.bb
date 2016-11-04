@@ -23,8 +23,8 @@ namespace chromeos {
 class SupervisedUserCreationController {
  public:
   // This constant is used to indicate that user does not have one of default
-  // avatars: either he has no chromeos avatar at all, or has an external
-  // image as an avatar.
+  // avatars: either they have no chromeos avatar at all, or they have an
+  // external image as an avatar.
   static const int kDummyAvatarIndex;
 
   enum ErrorCode {
