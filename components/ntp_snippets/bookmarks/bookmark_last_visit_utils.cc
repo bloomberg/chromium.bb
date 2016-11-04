@@ -32,7 +32,8 @@ const char* kBookmarksURLBlacklist[] = {"chrome://newtab/",
                                         "chrome-native://newtab/",
                                         "chrome://bookmarks/"};
 
-const char kBookmarkLastVisitDateKey[] = "last_visited";
+const char kBookmarkLastVisitDateOnMobileKey[] = "last_visited";
+const char kBookmarkLastVisitDateOnDesktopKey[] = "last_visited_desktop";
 const char kBookmarkDismissedFromNTP[] = "dismissed_from_ntp";
 
 base::Time ParseLastVisitDate(const std::string& date_string) {
@@ -78,7 +79,8 @@ void UpdateBookmarkOnURLVisitedInMainFrame(BookmarkModel* bookmark_model,
   // If there are bookmarks for |url|, set their last visit date to now.
   std::string now = FormatLastVisitDate(base::Time::Now());
   for (const BookmarkNode* node : bookmarks_for_url) {
-    bookmark_model->SetNodeMetaInfo(node, kBookmarkLastVisitDateKey, now);
+    bookmark_model->SetNodeMetaInfo(node, kBookmarkLastVisitDateOnMobileKey,
+                                    now);
     // If the bookmark has been dismissed from NTP before, a new visit overrides
     // such a dismissal.
     bookmark_model->DeleteNodeMetaInfo(node, kBookmarkDismissedFromNTP);
@@ -91,7 +93,8 @@ base::Time GetLastVisitDateForBookmark(const BookmarkNode* node,
     return base::Time::UnixEpoch();
 
   std::string last_visit_date_string;
-  if (!node->GetMetaInfo(kBookmarkLastVisitDateKey, &last_visit_date_string) &&
+  if (!node->GetMetaInfo(kBookmarkLastVisitDateOnMobileKey,
+                         &last_visit_date_string) &&
       creation_date_fallback) {
     return node->date_added();
   }
@@ -265,7 +268,10 @@ void RemoveAllLastVisitDates(bookmarks::BookmarkModel* bookmark_model) {
     bookmark_model->GetNodesByURL(url_and_title.url, &bookmarks_for_url);
 
     for (const BookmarkNode* bookmark : bookmarks_for_url) {
-      bookmark_model->DeleteNodeMetaInfo(bookmark, kBookmarkLastVisitDateKey);
+      bookmark_model->DeleteNodeMetaInfo(bookmark,
+                                         kBookmarkLastVisitDateOnMobileKey);
+      bookmark_model->DeleteNodeMetaInfo(bookmark,
+                                         kBookmarkLastVisitDateOnDesktopKey);
     }
   }
 }
