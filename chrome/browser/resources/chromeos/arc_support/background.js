@@ -336,7 +336,14 @@ class TermsOfServicePage {
       // If there already is inflight loading task, do nothing.
       return;
     }
-    this.termsView_.src = 'https://play.google.com/about/play-terms.html';
+
+    if (this.termsView_.src) {
+      // This is reloading the page, typically clicked RETRY on error page.
+      this.termsView_.reload();
+    } else {
+      // This is first loading case so set the URL explicitly.
+      this.termsView_.src = 'https://play.google.com/about/play-terms.html';
+    }
   }
 
   /** Called when the terms-view starts to be loaded. */
