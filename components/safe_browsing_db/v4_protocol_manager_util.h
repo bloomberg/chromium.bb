@@ -144,7 +144,6 @@ typedef base::hash_map<ListIdentifier, std::string> StoreStateMap;
 // Sever response, parsed in vector form.
 typedef std::vector<std::unique_ptr<ListUpdateResponse>> ParsedServerResponse;
 
-// TODO(vakh): Consider using a std::pair for this.
 // Holds the hash prefix and the store that it matched in.
 struct StoreAndHashPrefix {
  public:

@@ -102,9 +102,6 @@ class V4LocalDatabaseManager : public SafeBrowsingDatabaseManager {
 
   // The information we need to process a URL safety reputation request and
   // respond to the SafeBrowsing client that asked for it.
-  // TODO(vakh): In its current form, it only includes information for
-  // |CheckBrowseUrl| and |CheckDownloadUrl| methods. Extend it to serve other
-  // methods on |client|.
   struct PendingCheck {
     PendingCheck(Client* client,
                  ClientCallbackType client_callback_type,
