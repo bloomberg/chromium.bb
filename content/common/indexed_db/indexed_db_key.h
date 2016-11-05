@@ -77,6 +77,9 @@ class CONTENT_EXPORT IndexedDBKey {
   size_t size_estimate_;
 };
 
+// An index id, and corresponding set of keys to insert.
+using IndexedDBIndexKeys = std::pair<int64_t, std::vector<IndexedDBKey>>;
+
 }  // namespace content
 
 #endif  // CONTENT_COMMON_INDEXED_DB_INDEXED_DB_KEY_H_

@@ -21,32 +21,50 @@ class ThreadSafeSender;
 // the thread which owns the blink::WebIDBCallbacks.
 class IndexedDBCallbacksImpl : public indexed_db::mojom::Callbacks {
  public:
+  enum : int64_t { kNoTransaction = -1 };
+
+  // This class holds the parts of the internal state of IndexedDBCallbacksImpl
+  // that must live on whatever renderer or worker thread the API is used from.
   class InternalState {
    public:
     InternalState(std::unique_ptr<blink::WebIDBCallbacks> callbacks,
+                  int64_t transaction_id,
+                  scoped_refptr<base::SingleThreadTaskRunner> io_runner,
                   scoped_refptr<ThreadSafeSender> thread_safe_sender);
     ~InternalState();
 
     void Error(int32_t code, const base::string16& message);
     void SuccessStringList(const std::vector<base::string16>& value);
     void Blocked(int64_t existing_version);
-    void UpgradeNeeded(int32_t database_id,
+    void UpgradeNeeded(indexed_db::mojom::DatabaseAssociatedPtrInfo database,
                        int64_t old_version,
                        blink::WebIDBDataLoss data_loss,
                        const std::string& data_loss_message,
                        const content::IndexedDBDatabaseMetadata& metadata);
-    void SuccessDatabase(int32_t database_id,
+    void SuccessDatabase(indexed_db::mojom::DatabaseAssociatedPtrInfo database,
                          const content::IndexedDBDatabaseMetadata& metadata);
+    void SuccessCursor(int32_t cursor_id,
+                       const IndexedDBKey& key,
+                       const IndexedDBKey& primary_key,
+                       indexed_db::mojom::ValuePtr value);
+    void SuccessValue(indexed_db::mojom::ReturnValuePtr value);
+    void SuccessArray(std::vector<indexed_db::mojom::ReturnValuePtr> values);
+    void SuccessKey(const IndexedDBKey& key);
     void SuccessInteger(int64_t value);
+    void Success();
 
    private:
     std::unique_ptr<blink::WebIDBCallbacks> callbacks_;
+    int64_t transaction_id_;
+    scoped_refptr<base::SingleThreadTaskRunner> io_runner_;
     scoped_refptr<ThreadSafeSender> thread_safe_sender_;
 
     DISALLOW_COPY_AND_ASSIGN(InternalState);
   };
 
   IndexedDBCallbacksImpl(std::unique_ptr<blink::WebIDBCallbacks> callbacks,
+                         int64_t transaction_id,
+                         scoped_refptr<base::SingleThreadTaskRunner> io_runner,
                          scoped_refptr<ThreadSafeSender> thread_safe_sender);
   ~IndexedDBCallbacksImpl() override;
 
@@ -55,15 +73,24 @@ class IndexedDBCallbacksImpl : public indexed_db::mojom::Callbacks {
   void SuccessStringList(const std::vector<base::string16>& value) override;
   void Blocked(int64_t existing_version) override;
   void UpgradeNeeded(
-      int32_t database_id,
+      indexed_db::mojom::DatabaseAssociatedPtrInfo database_info,
       int64_t old_version,
       blink::WebIDBDataLoss data_loss,
       const std::string& data_loss_message,
       const content::IndexedDBDatabaseMetadata& metadata) override;
   void SuccessDatabase(
-      int32_t database_id,
+      indexed_db::mojom::DatabaseAssociatedPtrInfo database_info,
       const content::IndexedDBDatabaseMetadata& metadata) override;
+  void SuccessCursor(int32_t cursor_id,
+                     const IndexedDBKey& key,
+                     const IndexedDBKey& primary_key,
+                     indexed_db::mojom::ValuePtr value) override;
+  void SuccessValue(indexed_db::mojom::ReturnValuePtr value) override;
+  void SuccessArray(
+      std::vector<indexed_db::mojom::ReturnValuePtr> values) override;
+  void SuccessKey(const IndexedDBKey& key) override;
   void SuccessInteger(int64_t value) override;
+  void Success() override;
 
  private:
   // |internal_state_| is owned by the thread on which |callback_runner_|

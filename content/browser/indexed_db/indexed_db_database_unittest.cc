@@ -511,7 +511,7 @@ TEST_F(IndexedDBDatabaseOperationTest, CreatePutDelete) {
   IndexedDBValue value("value1", std::vector<IndexedDBBlobInfo>());
   std::vector<std::unique_ptr<storage::BlobDataHandle>> handles;
   std::unique_ptr<IndexedDBKey> key(base::MakeUnique<IndexedDBKey>("key"));
-  std::vector<IndexedDBDatabase::IndexKeys> index_keys;
+  std::vector<IndexedDBIndexKeys> index_keys;
   scoped_refptr<MockIndexedDBCallbacks> request(
       new MockIndexedDBCallbacks(false));
   db_->Put(transaction_->id(), store_id, &value, &handles, std::move(key),

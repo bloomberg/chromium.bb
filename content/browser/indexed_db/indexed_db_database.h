@@ -47,9 +47,6 @@ struct IndexedDBValue;
 class CONTENT_EXPORT IndexedDBDatabase
     : NON_EXPORTED_BASE(public base::RefCounted<IndexedDBDatabase>) {
  public:
-  // An index and corresponding set of keys
-  using IndexKeys = std::pair<int64_t, std::vector<IndexedDBKey>>;
-
   // Identifier is pair of (origin, database name).
   using Identifier = std::pair<url::Origin, base::string16>;
 
@@ -175,11 +172,11 @@ class CONTENT_EXPORT IndexedDBDatabase
            std::unique_ptr<IndexedDBKey> key,
            blink::WebIDBPutMode mode,
            scoped_refptr<IndexedDBCallbacks> callbacks,
-           const std::vector<IndexKeys>& index_keys);
+           const std::vector<IndexedDBIndexKeys>& index_keys);
   void SetIndexKeys(int64_t transaction_id,
                     int64_t object_store_id,
                     std::unique_ptr<IndexedDBKey> primary_key,
-                    const std::vector<IndexKeys>& index_keys);
+                    const std::vector<IndexedDBIndexKeys>& index_keys);
   void SetIndexesReady(int64_t transaction_id,
                        int64_t object_store_id,
                        const std::vector<int64_t>& index_ids);

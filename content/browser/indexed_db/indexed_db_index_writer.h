@@ -27,7 +27,7 @@ class IndexWriter {
   explicit IndexWriter(const IndexedDBIndexMetadata& index_metadata);
 
   IndexWriter(const IndexedDBIndexMetadata& index_metadata,
-              const IndexedDBDatabase::IndexKeys& index_keys);
+              const IndexedDBIndexKeys& index_keys);
 
   bool VerifyIndexKeys(IndexedDBBackingStore* store,
                        IndexedDBBackingStore::Transaction* transaction,
@@ -57,22 +57,21 @@ class IndexWriter {
                         bool* allowed) const WARN_UNUSED_RESULT;
 
   const IndexedDBIndexMetadata index_metadata_;
-  IndexedDBDatabase::IndexKeys index_keys_;
+  IndexedDBIndexKeys index_keys_;
 
   DISALLOW_COPY_AND_ASSIGN(IndexWriter);
 };
 
-bool MakeIndexWriters(
-    IndexedDBTransaction* transaction,
-    IndexedDBBackingStore* store,
-    int64_t database_id,
-    const IndexedDBObjectStoreMetadata& metadata,
-    const IndexedDBKey& primary_key,
-    bool key_was_generated,
-    const std::vector<IndexedDBDatabase::IndexKeys>& index_keys,
-    std::vector<std::unique_ptr<IndexWriter>>* index_writers,
-    base::string16* error_message,
-    bool* completed) WARN_UNUSED_RESULT;
+bool MakeIndexWriters(IndexedDBTransaction* transaction,
+                      IndexedDBBackingStore* store,
+                      int64_t database_id,
+                      const IndexedDBObjectStoreMetadata& metadata,
+                      const IndexedDBKey& primary_key,
+                      bool key_was_generated,
+                      const std::vector<IndexedDBIndexKeys>& index_keys,
+                      std::vector<std::unique_ptr<IndexWriter>>* index_writers,
+                      base::string16* error_message,
+                      bool* completed) WARN_UNUSED_RESULT;
 
 }  // namespace content
 

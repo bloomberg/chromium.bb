@@ -30,8 +30,10 @@ struct Serializer<AssociatedInterfacePtrInfoDataView<Base>,
                         AssociatedInterface_Data* output,
                         SerializationContext* context) {
     DCHECK(!input.handle().is_valid() || !input.handle().is_local());
-    DCHECK_EQ(input.handle().group_controller(),
-              context->group_controller.get());
+    if (input.handle().is_valid()) {
+      DCHECK_EQ(input.handle().group_controller(),
+                context->group_controller.get());
+    }
     output->version = input.version();
     output->interface_id = input.PassHandle().release();
   }
@@ -55,8 +57,10 @@ struct Serializer<AssociatedInterfaceRequestDataView<Base>,
                         AssociatedInterfaceRequest_Data* output,
                         SerializationContext* context) {
     DCHECK(!input.handle().is_valid() || !input.handle().is_local());
-    DCHECK_EQ(input.handle().group_controller(),
-              context->group_controller.get());
+    if (input.handle().is_valid()) {
+      DCHECK_EQ(input.handle().group_controller(),
+                context->group_controller.get());
+    }
     output->interface_id = input.PassHandle().release();
   }
 

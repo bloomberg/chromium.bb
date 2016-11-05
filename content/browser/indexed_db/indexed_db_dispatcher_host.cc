@@ -15,7 +15,6 @@
 #include "base/stl_util.h"
 #include "base/strings/utf_string_conversions.h"
 #include "content/browser/bad_message.h"
-#include "content/browser/child_process_security_policy_impl.h"
 #include "content/browser/indexed_db/indexed_db_callbacks.h"
 #include "content/browser/indexed_db/indexed_db_connection.h"
 #include "content/browser/indexed_db/indexed_db_context_impl.h"
@@ -35,7 +34,6 @@
 #include "storage/browser/blob/blob_data_builder.h"
 #include "storage/browser/blob/blob_storage_context.h"
 #include "storage/browser/database/database_util.h"
-#include "storage/browser/quota/quota_manager_proxy.h"
 #include "storage/common/database/database_identifier.h"
 #include "third_party/WebKit/public/platform/modules/indexeddb/WebIDBDatabaseException.h"
 #include "url/origin.h"
@@ -65,13 +63,16 @@ IndexedDBDispatcherHost::IndexedDBDispatcherHost(
       request_context_getter_(request_context_getter),
       indexed_db_context_(indexed_db_context),
       blob_storage_context_(blob_storage_context),
-      database_dispatcher_host_(base::MakeUnique<DatabaseDispatcherHost>(this)),
       cursor_dispatcher_host_(base::MakeUnique<CursorDispatcherHost>(this)),
       ipc_process_id_(ipc_process_id) {
   DCHECK(indexed_db_context_.get());
 }
 
-IndexedDBDispatcherHost::~IndexedDBDispatcherHost() {}
+IndexedDBDispatcherHost::~IndexedDBDispatcherHost() {
+  // TODO(alecflett): uncomment these when we find the source of these leaks.
+  // DCHECK(transaction_size_map_.empty());
+  // DCHECK(transaction_origin_map_.empty());
+}
 
 void IndexedDBDispatcherHost::OnChannelClosing() {
   bool success = indexed_db_context_->TaskRunner()->PostTask(
@@ -101,11 +102,6 @@ void IndexedDBDispatcherHost::ResetDispatcherHosts() {
   // Prevent any pending connections from being processed.
   is_open_ = false;
 
-  // Note that we explicitly separate CloseAll() from destruction of the
-  // DatabaseDispatcherHost, since CloseAll() can invoke callbacks which need to
-  // be dispatched through database_dispatcher_host_.
-  database_dispatcher_host_->CloseAll();
-  database_dispatcher_host_.reset();
   cursor_dispatcher_host_.reset();
 }
 
@@ -115,7 +111,6 @@ base::TaskRunner* IndexedDBDispatcherHost::OverrideTaskRunnerForMessage(
     return NULL;
 
   switch (message.type()) {
-    case IndexedDBHostMsg_DatabasePut::ID:
     case IndexedDBHostMsg_AckReceivedBlobs::ID:
       return NULL;
     default:
@@ -128,11 +123,9 @@ bool IndexedDBDispatcherHost::OnMessageReceived(const IPC::Message& message) {
     return false;
 
   DCHECK(indexed_db_context_->TaskRunner()->RunsTasksOnCurrentThread() ||
-         (message.type() == IndexedDBHostMsg_DatabasePut::ID ||
-          message.type() == IndexedDBHostMsg_AckReceivedBlobs::ID));
+         message.type() == IndexedDBHostMsg_AckReceivedBlobs::ID);
 
-  bool handled = database_dispatcher_host_->OnMessageReceived(message) ||
-                 cursor_dispatcher_host_->OnMessageReceived(message);
+  bool handled = cursor_dispatcher_host_->OnMessageReceived(message);
 
   if (!handled) {
     handled = true;
@@ -151,26 +144,27 @@ int32_t IndexedDBDispatcherHost::Add(IndexedDBCursor* cursor) {
   return cursor_dispatcher_host_->map_.Add(cursor);
 }
 
-int32_t IndexedDBDispatcherHost::Add(IndexedDBConnection* connection,
-                                     const url::Origin& origin) {
-  if (!database_dispatcher_host_) {
-    connection->Close();
-    delete connection;
-    return -1;
-  }
-  int32_t ipc_database_id = database_dispatcher_host_->map_.Add(connection);
-  context()->ConnectionOpened(origin, connection);
-  database_dispatcher_host_->database_origin_map_[ipc_database_id] = origin;
-  return ipc_database_id;
+bool IndexedDBDispatcherHost::RegisterTransactionId(int64_t host_transaction_id,
+                                                    const url::Origin& origin) {
+  if (base::ContainsKey(transaction_size_map_, host_transaction_id))
+    return false;
+  transaction_size_map_[host_transaction_id] = 0;
+  transaction_origin_map_[host_transaction_id] = origin;
+  return true;
 }
 
-void IndexedDBDispatcherHost::RegisterTransactionId(int64_t host_transaction_id,
-                                                    const url::Origin& origin) {
-  if (!database_dispatcher_host_)
-    return;
-  database_dispatcher_host_->transaction_size_map_[host_transaction_id] = 0;
-  database_dispatcher_host_->transaction_origin_map_[host_transaction_id] =
-      origin;
+bool IndexedDBDispatcherHost::GetTransactionSize(int64_t host_transaction_id,
+                                                 int64_t* transaction_size) {
+  const auto it = transaction_size_map_.find(host_transaction_id);
+  if (it == transaction_size_map_.end())
+    return false;
+  *transaction_size = it->second;
+  return true;
+}
+
+void IndexedDBDispatcherHost::AddToTransaction(int64_t host_transaction_id,
+                                               int64_t value_length) {
+  transaction_size_map_[host_transaction_id] += value_length;
 }
 
 int64_t IndexedDBDispatcherHost::HostTransactionId(int64_t transaction_id) {
@@ -391,14 +385,6 @@ void IndexedDBDispatcherHost::DeleteDatabaseOnIDBThread(
       name, request_context_getter_, callbacks, origin, indexed_db_path);
 }
 
-// OnPutHelper exists only to allow us to hop threads while holding a reference
-// to the IndexedDBDispatcherHost.
-void IndexedDBDispatcherHost::OnPutHelper(
-    const IndexedDBHostMsg_DatabasePut_Params& params,
-    std::vector<std::unique_ptr<storage::BlobDataHandle>> handles) {
-  database_dispatcher_host_->OnPut(params, std::move(handles));
-}
-
 void IndexedDBDispatcherHost::OnAckReceivedBlobs(
     const std::vector<std::string>& uuids) {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
@@ -409,38 +395,17 @@ void IndexedDBDispatcherHost::OnAckReceivedBlobs(
 void IndexedDBDispatcherHost::FinishTransaction(int64_t host_transaction_id,
                                                 bool committed) {
   DCHECK(indexed_db_context_->TaskRunner()->RunsTasksOnCurrentThread());
-  if (!database_dispatcher_host_)
-    return;
-  TransactionIDToOriginMap& transaction_origin_map =
-      database_dispatcher_host_->transaction_origin_map_;
-  TransactionIDToSizeMap& transaction_size_map =
-      database_dispatcher_host_->transaction_size_map_;
-  TransactionIDToDatabaseIDMap& transaction_database_map =
-      database_dispatcher_host_->transaction_database_map_;
-  if (committed)
-    context()->TransactionComplete(transaction_origin_map[host_transaction_id]);
-  transaction_origin_map.erase(host_transaction_id);
-  transaction_size_map.erase(host_transaction_id);
-  transaction_database_map.erase(host_transaction_id);
+  if (committed) {
+    context()->TransactionComplete(
+        transaction_origin_map_[host_transaction_id]);
+  }
+  transaction_origin_map_.erase(host_transaction_id);
+  transaction_size_map_.erase(host_transaction_id);
 }
 
 //////////////////////////////////////////////////////////////////////
 // Helper templates.
 //
-
-template <typename ObjectType>
-ObjectType* IndexedDBDispatcherHost::GetOrTerminateProcess(
-    IDMap<ObjectType, IDMapOwnPointer>* map,
-    int32_t ipc_return_object_id) {
-  DCHECK(indexed_db_context_->TaskRunner()->RunsTasksOnCurrentThread());
-  ObjectType* return_object = map->Lookup(ipc_return_object_id);
-  if (!return_object) {
-    NOTREACHED() << "Uh oh, couldn't find object with id "
-                 << ipc_return_object_id;
-    bad_message::ReceivedBadMessage(this, bad_message::IDBDH_GET_OR_TERMINATE);
-  }
-  return return_object;
-}
 
 template <typename ObjectType>
 ObjectType* IndexedDBDispatcherHost::GetOrTerminateProcess(
@@ -464,556 +429,12 @@ void IndexedDBDispatcherHost::DestroyObject(MapType* map,
 }
 
 //////////////////////////////////////////////////////////////////////
-// IndexedDBDispatcherHost::DatabaseDispatcherHost
-//
-
-IndexedDBDispatcherHost::DatabaseDispatcherHost::DatabaseDispatcherHost(
-    IndexedDBDispatcherHost* parent)
-    : parent_(parent), weak_factory_(this) {
-  map_.set_check_on_null_data(true);
-}
-
-IndexedDBDispatcherHost::DatabaseDispatcherHost::~DatabaseDispatcherHost() {
-  // TODO(alecflett): uncomment these when we find the source of these leaks.
-  // DCHECK(transaction_size_map_.empty());
-  // DCHECK(transaction_origin_map_.empty());
-}
-
-void IndexedDBDispatcherHost::DatabaseDispatcherHost::CloseAll() {
-  DCHECK(parent_->context()->TaskRunner()->RunsTasksOnCurrentThread());
-  // Abort outstanding transactions started by connections in the associated
-  // front-end to unblock later transactions. This should only occur on unclean
-  // (crash) or abrupt (process-kill) shutdowns.
-  for (TransactionIDToDatabaseIDMap::iterator iter =
-           transaction_database_map_.begin();
-       iter != transaction_database_map_.end();) {
-    int64_t transaction_id = iter->first;
-    int32_t ipc_database_id = iter->second;
-    ++iter;
-    IndexedDBConnection* connection = map_.Lookup(ipc_database_id);
-    if (connection && connection->IsConnected()) {
-      connection->database()->Abort(
-          transaction_id,
-          IndexedDBDatabaseError(blink::WebIDBDatabaseExceptionUnknownError));
-    }
-  }
-  DCHECK(transaction_database_map_.empty());
-
-  for (const auto& iter : database_origin_map_) {
-    IndexedDBConnection* connection = map_.Lookup(iter.first);
-    if (connection && connection->IsConnected()) {
-      connection->Close();
-      parent_->context()->ConnectionClosed(iter.second, connection);
-    }
-  }
-}
-
-bool IndexedDBDispatcherHost::DatabaseDispatcherHost::OnMessageReceived(
-    const IPC::Message& message) {
-  DCHECK((message.type() == IndexedDBHostMsg_DatabasePut::ID ||
-          message.type() == IndexedDBHostMsg_AckReceivedBlobs::ID) ||
-         parent_->context()->TaskRunner()->RunsTasksOnCurrentThread());
-
-  bool handled = true;
-  IPC_BEGIN_MESSAGE_MAP(
-      IndexedDBDispatcherHost::DatabaseDispatcherHost, message)
-    IPC_MESSAGE_HANDLER(IndexedDBHostMsg_DatabaseCreateObjectStore,
-                        OnCreateObjectStore)
-    IPC_MESSAGE_HANDLER(IndexedDBHostMsg_DatabaseDeleteObjectStore,
-                        OnDeleteObjectStore)
-    IPC_MESSAGE_HANDLER(IndexedDBHostMsg_DatabaseRenameObjectStore,
-                        OnRenameObjectStore)
-    IPC_MESSAGE_HANDLER(IndexedDBHostMsg_DatabaseCreateTransaction,
-                        OnCreateTransaction)
-    IPC_MESSAGE_HANDLER(IndexedDBHostMsg_DatabaseClose, OnClose)
-    IPC_MESSAGE_HANDLER(IndexedDBHostMsg_DatabaseVersionChangeIgnored,
-                        OnVersionChangeIgnored)
-    IPC_MESSAGE_HANDLER(IndexedDBHostMsg_DatabaseDestroyed, OnDestroyed)
-    IPC_MESSAGE_HANDLER(IndexedDBHostMsg_DatabaseObserve, OnObserve)
-    IPC_MESSAGE_HANDLER(IndexedDBHostMsg_DatabaseUnobserve, OnUnobserve)
-    IPC_MESSAGE_HANDLER(IndexedDBHostMsg_DatabaseGet, OnGet)
-    IPC_MESSAGE_HANDLER(IndexedDBHostMsg_DatabaseGetAll, OnGetAll)
-    IPC_MESSAGE_HANDLER(IndexedDBHostMsg_DatabasePut, OnPutWrapper)
-    IPC_MESSAGE_HANDLER(IndexedDBHostMsg_DatabaseSetIndexKeys, OnSetIndexKeys)
-    IPC_MESSAGE_HANDLER(IndexedDBHostMsg_DatabaseSetIndexesReady,
-                        OnSetIndexesReady)
-    IPC_MESSAGE_HANDLER(IndexedDBHostMsg_DatabaseOpenCursor, OnOpenCursor)
-    IPC_MESSAGE_HANDLER(IndexedDBHostMsg_DatabaseCount, OnCount)
-    IPC_MESSAGE_HANDLER(IndexedDBHostMsg_DatabaseDeleteRange, OnDeleteRange)
-    IPC_MESSAGE_HANDLER(IndexedDBHostMsg_DatabaseClear, OnClear)
-    IPC_MESSAGE_HANDLER(IndexedDBHostMsg_DatabaseCreateIndex, OnCreateIndex)
-    IPC_MESSAGE_HANDLER(IndexedDBHostMsg_DatabaseDeleteIndex, OnDeleteIndex)
-    IPC_MESSAGE_HANDLER(IndexedDBHostMsg_DatabaseRenameIndex, OnRenameIndex)
-    IPC_MESSAGE_HANDLER(IndexedDBHostMsg_DatabaseAbort, OnAbort)
-    IPC_MESSAGE_HANDLER(IndexedDBHostMsg_DatabaseCommit, OnCommit)
-    IPC_MESSAGE_UNHANDLED(handled = false)
-  IPC_END_MESSAGE_MAP()
-
-  return handled;
-}
-
-void IndexedDBDispatcherHost::DatabaseDispatcherHost::OnCreateObjectStore(
-    const IndexedDBHostMsg_DatabaseCreateObjectStore_Params& params) {
-  DCHECK(parent_->context()->TaskRunner()->RunsTasksOnCurrentThread());
-  IndexedDBConnection* connection =
-      parent_->GetOrTerminateProcess(&map_, params.ipc_database_id);
-  if (!connection || !connection->IsConnected())
-    return;
-
-  int64_t host_transaction_id =
-      parent_->HostTransactionId(params.transaction_id);
-  connection->database()->CreateObjectStore(host_transaction_id,
-                                            params.object_store_id,
-                                            params.name,
-                                            params.key_path,
-                                            params.auto_increment);
-}
-
-void IndexedDBDispatcherHost::DatabaseDispatcherHost::OnDeleteObjectStore(
-    int32_t ipc_database_id,
-    int64_t transaction_id,
-    int64_t object_store_id) {
-  DCHECK(parent_->context()->TaskRunner()->RunsTasksOnCurrentThread());
-  IndexedDBConnection* connection =
-      parent_->GetOrTerminateProcess(&map_, ipc_database_id);
-  if (!connection || !connection->IsConnected())
-    return;
-
-  connection->database()->DeleteObjectStore(
-      parent_->HostTransactionId(transaction_id), object_store_id);
-}
-
-void IndexedDBDispatcherHost::DatabaseDispatcherHost::OnRenameObjectStore(
-    int32_t ipc_database_id,
-    int64_t transaction_id,
-    int64_t object_store_id,
-    const base::string16& new_name) {
-  DCHECK(parent_->context()->TaskRunner()->RunsTasksOnCurrentThread());
-  IndexedDBConnection* connection =
-      parent_->GetOrTerminateProcess(&map_, ipc_database_id);
-  if (!connection || !connection->IsConnected())
-    return;
-
-  connection->database()->RenameObjectStore(
-      parent_->HostTransactionId(transaction_id), object_store_id, new_name);
-}
-
-void IndexedDBDispatcherHost::DatabaseDispatcherHost::OnCreateTransaction(
-    const IndexedDBHostMsg_DatabaseCreateTransaction_Params& params) {
-  DCHECK(parent_->context()->TaskRunner()->RunsTasksOnCurrentThread());
-  IndexedDBConnection* connection =
-      parent_->GetOrTerminateProcess(&map_, params.ipc_database_id);
-  if (!connection || !connection->IsConnected())
-    return;
-
-  int64_t host_transaction_id =
-      parent_->HostTransactionId(params.transaction_id);
-
-  if (base::ContainsKey(transaction_database_map_, host_transaction_id)) {
-    DLOG(ERROR) << "Duplicate host_transaction_id.";
-    return;
-  }
-
-  connection->database()->CreateTransaction(
-      host_transaction_id, connection, params.object_store_ids, params.mode);
-  transaction_database_map_[host_transaction_id] = params.ipc_database_id;
-  parent_->RegisterTransactionId(host_transaction_id,
-                                 database_origin_map_[params.ipc_database_id]);
-}
-
-void IndexedDBDispatcherHost::DatabaseDispatcherHost::OnClose(
-    int32_t ipc_database_id) {
-  DCHECK(parent_->context()->TaskRunner()->RunsTasksOnCurrentThread());
-  IndexedDBConnection* connection =
-      parent_->GetOrTerminateProcess(&map_, ipc_database_id);
-  if (!connection || !connection->IsConnected())
-    return;
-  connection->Close();
-}
-
-void IndexedDBDispatcherHost::DatabaseDispatcherHost::OnVersionChangeIgnored(
-    int32_t ipc_database_id) {
-  DCHECK(parent_->context()->TaskRunner()->RunsTasksOnCurrentThread());
-  IndexedDBConnection* connection =
-      parent_->GetOrTerminateProcess(&map_, ipc_database_id);
-  if (!connection || !connection->IsConnected())
-    return;
-  connection->VersionChangeIgnored();
-}
-
-void IndexedDBDispatcherHost::DatabaseDispatcherHost::OnDestroyed(
-    int32_t ipc_object_id) {
-  DCHECK(parent_->context()->TaskRunner()->RunsTasksOnCurrentThread());
-  IndexedDBConnection* connection =
-      parent_->GetOrTerminateProcess(&map_, ipc_object_id);
-  if (!connection)
-    return;
-  if (connection->IsConnected())
-    connection->Close();
-  parent_->context()->ConnectionClosed(database_origin_map_[ipc_object_id],
-                                       connection);
-  database_origin_map_.erase(ipc_object_id);
-  parent_->DestroyObject(&map_, ipc_object_id);
-}
-
-void IndexedDBDispatcherHost::DatabaseDispatcherHost::OnObserve(
-    const IndexedDBHostMsg_DatabaseObserve_Params& params) {
-  DCHECK(parent_->context()->TaskRunner()->RunsTasksOnCurrentThread());
-  IndexedDBConnection* connection =
-      parent_->GetOrTerminateProcess(&map_, params.ipc_database_id);
-  if (!connection || !connection->IsConnected())
-    return;
-  IndexedDBObserver::Options options(params.include_transaction,
-                                     params.no_records, params.values,
-                                     params.operation_types);
-  connection->database()->AddPendingObserver(
-      parent_->HostTransactionId(params.transaction_id), params.observer_id,
-      options);
-}
-
-void IndexedDBDispatcherHost::DatabaseDispatcherHost::OnUnobserve(
-    int32_t ipc_database_id,
-    const std::vector<int32_t>& observer_ids_to_remove) {
-  DCHECK(parent_->context()->TaskRunner()->RunsTasksOnCurrentThread());
-  DCHECK(!observer_ids_to_remove.empty());
-  IndexedDBConnection* connection =
-      parent_->GetOrTerminateProcess(&map_, ipc_database_id);
-  if (!connection || !connection->IsConnected())
-    return;
-  connection->RemoveObservers(observer_ids_to_remove);
-}
-
-void IndexedDBDispatcherHost::DatabaseDispatcherHost::OnGet(
-    const IndexedDBHostMsg_DatabaseGet_Params& params) {
-  DCHECK(parent_->context()->TaskRunner()->RunsTasksOnCurrentThread());
-  IndexedDBConnection* connection =
-      parent_->GetOrTerminateProcess(&map_, params.ipc_database_id);
-  if (!connection || !connection->IsConnected())
-    return;
-
-  scoped_refptr<IndexedDBCallbacks> callbacks(new IndexedDBCallbacks(
-      parent_, params.ipc_thread_id, params.ipc_callbacks_id));
-  connection->database()->Get(
-      parent_->HostTransactionId(params.transaction_id), params.object_store_id,
-      params.index_id, base::MakeUnique<IndexedDBKeyRange>(params.key_range),
-      params.key_only, callbacks);
-}
-
-void IndexedDBDispatcherHost::DatabaseDispatcherHost::OnGetAll(
-    const IndexedDBHostMsg_DatabaseGetAll_Params& params) {
-  DCHECK(parent_->context()->TaskRunner()->RunsTasksOnCurrentThread());
-  IndexedDBConnection* connection =
-      parent_->GetOrTerminateProcess(&map_, params.ipc_database_id);
-  if (!connection || !connection->IsConnected())
-    return;
-
-  scoped_refptr<IndexedDBCallbacks> callbacks(new IndexedDBCallbacks(
-      parent_, params.ipc_thread_id, params.ipc_callbacks_id));
-  connection->database()->GetAll(
-      parent_->HostTransactionId(params.transaction_id), params.object_store_id,
-      params.index_id, base::MakeUnique<IndexedDBKeyRange>(params.key_range),
-      params.key_only, params.max_count, callbacks);
-}
-
-void IndexedDBDispatcherHost::DatabaseDispatcherHost::OnPutWrapper(
-    const IndexedDBHostMsg_DatabasePut_Params& params) {
-  std::vector<std::unique_ptr<storage::BlobDataHandle>> handles;
-  for (const auto& info : params.value.blob_or_file_info) {
-    handles.push_back(
-        parent_->blob_storage_context_->context()->GetBlobDataFromUUID(
-            info.uuid));
-  }
-  parent_->context()->TaskRunner()->PostTask(
-      FROM_HERE, base::Bind(&IndexedDBDispatcherHost::OnPutHelper, parent_,
-                            params, base::Passed(&handles)));
-}
-
-void IndexedDBDispatcherHost::DatabaseDispatcherHost::OnPut(
-    const IndexedDBHostMsg_DatabasePut_Params& params,
-    std::vector<std::unique_ptr<storage::BlobDataHandle>> handles) {
-  DCHECK(parent_->context()->TaskRunner()->RunsTasksOnCurrentThread());
-
-  std::vector<std::unique_ptr<storage::BlobDataHandle>> scoped_handles;
-  scoped_handles.swap(handles);
-
-  IndexedDBConnection* connection =
-      parent_->GetOrTerminateProcess(&map_, params.ipc_database_id);
-  if (!connection || !connection->IsConnected())
-    return;
-  scoped_refptr<IndexedDBCallbacks> callbacks(new IndexedDBCallbacks(
-      parent_, params.ipc_thread_id, params.ipc_callbacks_id));
-
-  int64_t host_transaction_id =
-      parent_->HostTransactionId(params.transaction_id);
-
-  std::vector<IndexedDBBlobInfo> blob_info(
-      params.value.blob_or_file_info.size());
-
-  ChildProcessSecurityPolicyImpl* policy =
-      ChildProcessSecurityPolicyImpl::GetInstance();
-
-  size_t i = 0;
-  for (const auto& info : params.value.blob_or_file_info) {
-    if (info.is_file) {
-      base::FilePath path;
-      if (!info.file_path.empty()) {
-        path = base::FilePath::FromUTF16Unsafe(info.file_path);
-        if (!policy->CanReadFile(parent_->ipc_process_id_, path)) {
-          bad_message::ReceivedBadMessage(parent_,
-                                          bad_message::IDBDH_CAN_READ_FILE);
-          return;
-        }
-      }
-      blob_info[i] =
-          IndexedDBBlobInfo(info.uuid, path, info.file_name, info.mime_type);
-      if (info.size != static_cast<uint64_t>(-1)) {
-        blob_info[i].set_last_modified(
-            base::Time::FromDoubleT(info.last_modified));
-        blob_info[i].set_size(info.size);
-      }
-    } else {
-      blob_info[i] = IndexedDBBlobInfo(info.uuid, info.mime_type, info.size);
-    }
-    ++i;
-  }
-
-  // TODO(alecflett): Avoid a copy here.
-  IndexedDBValue value;
-  value.bits = params.value.bits;
-  value.blob_info.swap(blob_info);
-  connection->database()->Put(host_transaction_id, params.object_store_id,
-                              &value, &scoped_handles,
-                              base::MakeUnique<IndexedDBKey>(params.key),
-                              params.put_mode, callbacks, params.index_keys);
-  // Size can't be big enough to overflow because it represents the
-  // actual bytes passed through IPC.
-  transaction_size_map_[host_transaction_id] += params.value.bits.size();
-}
-
-void IndexedDBDispatcherHost::DatabaseDispatcherHost::OnSetIndexKeys(
-    const IndexedDBHostMsg_DatabaseSetIndexKeys_Params& params) {
-  DCHECK(parent_->context()->TaskRunner()->RunsTasksOnCurrentThread());
-  IndexedDBConnection* connection =
-      parent_->GetOrTerminateProcess(&map_, params.ipc_database_id);
-  if (!connection || !connection->IsConnected())
-    return;
-
-  int64_t host_transaction_id =
-      parent_->HostTransactionId(params.transaction_id);
-  connection->database()->SetIndexKeys(
-      host_transaction_id, params.object_store_id,
-      base::MakeUnique<IndexedDBKey>(params.primary_key), params.index_keys);
-}
-
-void IndexedDBDispatcherHost::DatabaseDispatcherHost::OnSetIndexesReady(
-    int32_t ipc_database_id,
-    int64_t transaction_id,
-    int64_t object_store_id,
-    const std::vector<int64_t>& index_ids) {
-  DCHECK(parent_->context()->TaskRunner()->RunsTasksOnCurrentThread());
-  IndexedDBConnection* connection =
-      parent_->GetOrTerminateProcess(&map_, ipc_database_id);
-  if (!connection || !connection->IsConnected())
-    return;
-
-  connection->database()->SetIndexesReady(
-      parent_->HostTransactionId(transaction_id), object_store_id, index_ids);
-}
-
-void IndexedDBDispatcherHost::DatabaseDispatcherHost::OnOpenCursor(
-    const IndexedDBHostMsg_DatabaseOpenCursor_Params& params) {
-  DCHECK(parent_->context()->TaskRunner()->RunsTasksOnCurrentThread());
-  IndexedDBConnection* connection =
-      parent_->GetOrTerminateProcess(&map_, params.ipc_database_id);
-  if (!connection || !connection->IsConnected())
-    return;
-
-  scoped_refptr<IndexedDBCallbacks> callbacks(new IndexedDBCallbacks(
-      parent_, params.ipc_thread_id, params.ipc_callbacks_id, -1));
-  connection->database()->OpenCursor(
-      parent_->HostTransactionId(params.transaction_id), params.object_store_id,
-      params.index_id, base::MakeUnique<IndexedDBKeyRange>(params.key_range),
-      params.direction, params.key_only, params.task_type, callbacks);
-}
-
-void IndexedDBDispatcherHost::DatabaseDispatcherHost::OnCount(
-    const IndexedDBHostMsg_DatabaseCount_Params& params) {
-  DCHECK(parent_->context()->TaskRunner()->RunsTasksOnCurrentThread());
-  IndexedDBConnection* connection =
-      parent_->GetOrTerminateProcess(&map_, params.ipc_database_id);
-  if (!connection || !connection->IsConnected())
-    return;
-
-  scoped_refptr<IndexedDBCallbacks> callbacks(new IndexedDBCallbacks(
-      parent_, params.ipc_thread_id, params.ipc_callbacks_id));
-  connection->database()->Count(
-      parent_->HostTransactionId(params.transaction_id), params.object_store_id,
-      params.index_id, base::MakeUnique<IndexedDBKeyRange>(params.key_range),
-      callbacks);
-}
-
-void IndexedDBDispatcherHost::DatabaseDispatcherHost::OnDeleteRange(
-    const IndexedDBHostMsg_DatabaseDeleteRange_Params& params) {
-  DCHECK(parent_->context()->TaskRunner()->RunsTasksOnCurrentThread());
-  IndexedDBConnection* connection =
-      parent_->GetOrTerminateProcess(&map_, params.ipc_database_id);
-  if (!connection || !connection->IsConnected())
-    return;
-
-  scoped_refptr<IndexedDBCallbacks> callbacks(new IndexedDBCallbacks(
-      parent_, params.ipc_thread_id, params.ipc_callbacks_id));
-  connection->database()->DeleteRange(
-      parent_->HostTransactionId(params.transaction_id), params.object_store_id,
-      base::MakeUnique<IndexedDBKeyRange>(params.key_range), callbacks);
-}
-
-void IndexedDBDispatcherHost::DatabaseDispatcherHost::OnClear(
-    int32_t ipc_thread_id,
-    int32_t ipc_callbacks_id,
-    int32_t ipc_database_id,
-    int64_t transaction_id,
-    int64_t object_store_id) {
-  DCHECK(parent_->context()->TaskRunner()->RunsTasksOnCurrentThread());
-  IndexedDBConnection* connection =
-      parent_->GetOrTerminateProcess(&map_, ipc_database_id);
-  if (!connection || !connection->IsConnected())
-    return;
-
-  scoped_refptr<IndexedDBCallbacks> callbacks(
-      new IndexedDBCallbacks(parent_, ipc_thread_id, ipc_callbacks_id));
-
-  connection->database()->Clear(
-      parent_->HostTransactionId(transaction_id), object_store_id, callbacks);
-}
-
-void IndexedDBDispatcherHost::DatabaseDispatcherHost::OnAbort(
-    int32_t ipc_database_id,
-    int64_t transaction_id) {
-  DCHECK(parent_->context()->TaskRunner()->RunsTasksOnCurrentThread());
-  IndexedDBConnection* connection =
-      parent_->GetOrTerminateProcess(&map_, ipc_database_id);
-  if (!connection || !connection->IsConnected())
-    return;
-
-  connection->database()->Abort(parent_->HostTransactionId(transaction_id));
-}
-
-void IndexedDBDispatcherHost::DatabaseDispatcherHost::OnCommit(
-    int32_t ipc_database_id,
-    int64_t transaction_id) {
-  DCHECK(parent_->context()->TaskRunner()->RunsTasksOnCurrentThread());
-  IndexedDBConnection* connection =
-      parent_->GetOrTerminateProcess(&map_, ipc_database_id);
-  if (!connection || !connection->IsConnected())
-    return;
-
-  int64_t host_transaction_id = parent_->HostTransactionId(transaction_id);
-  // May have been aborted by back end before front-end could request commit.
-  if (!base::ContainsKey(transaction_size_map_, host_transaction_id))
-    return;
-  int64_t transaction_size = transaction_size_map_[host_transaction_id];
-
-  // Always allow empty or delete-only transactions.
-  if (!transaction_size) {
-    connection->database()->Commit(host_transaction_id);
-    return;
-  }
-
-  parent_->context()->quota_manager_proxy()->GetUsageAndQuota(
-      parent_->context()->TaskRunner(),
-      GURL(transaction_origin_map_[host_transaction_id].Serialize()),
-      storage::kStorageTypeTemporary,
-      base::Bind(&IndexedDBDispatcherHost::DatabaseDispatcherHost::
-                     OnGotUsageAndQuotaForCommit,
-                 weak_factory_.GetWeakPtr(), ipc_database_id, transaction_id));
-}
-
-void IndexedDBDispatcherHost::DatabaseDispatcherHost::
-    OnGotUsageAndQuotaForCommit(int32_t ipc_database_id,
-                                int64_t transaction_id,
-                                storage::QuotaStatusCode status,
-                                int64_t usage,
-                                int64_t quota) {
-  DCHECK(parent_->context()->TaskRunner()->RunsTasksOnCurrentThread());
-  IndexedDBConnection* connection = map_.Lookup(ipc_database_id);
-  // May have disconnected while quota check was pending.
-  if (!connection || !connection->IsConnected())
-    return;
-  int64_t host_transaction_id = parent_->HostTransactionId(transaction_id);
-  // May have aborted while quota check was pending.
-  if (!base::ContainsKey(transaction_size_map_, host_transaction_id))
-    return;
-  int64_t transaction_size = transaction_size_map_[host_transaction_id];
-
-  if (status == storage::kQuotaStatusOk &&
-      usage + transaction_size <= quota) {
-    connection->database()->Commit(host_transaction_id);
-  } else {
-    connection->database()->Abort(
-        host_transaction_id,
-        IndexedDBDatabaseError(blink::WebIDBDatabaseExceptionQuotaError));
-  }
-}
-
-void IndexedDBDispatcherHost::DatabaseDispatcherHost::OnCreateIndex(
-    const IndexedDBHostMsg_DatabaseCreateIndex_Params& params) {
-  DCHECK(parent_->context()->TaskRunner()->RunsTasksOnCurrentThread());
-  IndexedDBConnection* connection =
-      parent_->GetOrTerminateProcess(&map_, params.ipc_database_id);
-  if (!connection || !connection->IsConnected())
-    return;
-
-  int64_t host_transaction_id =
-      parent_->HostTransactionId(params.transaction_id);
-  connection->database()->CreateIndex(host_transaction_id,
-                                      params.object_store_id,
-                                      params.index_id,
-                                      params.name,
-                                      params.key_path,
-                                      params.unique,
-                                      params.multi_entry);
-}
-
-void IndexedDBDispatcherHost::DatabaseDispatcherHost::OnDeleteIndex(
-    int32_t ipc_database_id,
-    int64_t transaction_id,
-    int64_t object_store_id,
-    int64_t index_id) {
-  DCHECK(parent_->context()->TaskRunner()->RunsTasksOnCurrentThread());
-  IndexedDBConnection* connection =
-      parent_->GetOrTerminateProcess(&map_, ipc_database_id);
-  if (!connection || !connection->IsConnected())
-    return;
-
-  connection->database()->DeleteIndex(
-      parent_->HostTransactionId(transaction_id), object_store_id, index_id);
-}
-
-void IndexedDBDispatcherHost::DatabaseDispatcherHost::OnRenameIndex(
-    int32_t ipc_database_id,
-    int64_t transaction_id,
-    int64_t object_store_id,
-    int64_t index_id,
-    const base::string16& new_name) {
-  DCHECK(parent_->context()->TaskRunner()->RunsTasksOnCurrentThread());
-  IndexedDBConnection* connection =
-      parent_->GetOrTerminateProcess(&map_, ipc_database_id);
-  if (!connection || !connection->IsConnected())
-    return;
-
-  connection->database()->RenameIndex(
-      parent_->HostTransactionId(transaction_id), object_store_id, index_id,
-      new_name);
-}
-
-//////////////////////////////////////////////////////////////////////
 // IndexedDBDispatcherHost::CursorDispatcherHost
 //
 
 IndexedDBDispatcherHost::CursorDispatcherHost::CursorDispatcherHost(
     IndexedDBDispatcherHost* parent)
     : parent_(parent) {
-  map_.set_check_on_null_data(true);
 }
 
 IndexedDBDispatcherHost::CursorDispatcherHost::~CursorDispatcherHost() {}

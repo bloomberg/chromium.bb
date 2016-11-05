@@ -24,9 +24,8 @@ IndexWriter::IndexWriter(
     const IndexedDBIndexMetadata& index_metadata)
     : index_metadata_(index_metadata) {}
 
-IndexWriter::IndexWriter(
-    const IndexedDBIndexMetadata& index_metadata,
-    const IndexedDBDatabase::IndexKeys& index_keys)
+IndexWriter::IndexWriter(const IndexedDBIndexMetadata& index_metadata,
+                         const IndexedDBIndexKeys& index_keys)
     : index_metadata_(index_metadata), index_keys_(index_keys) {}
 
 IndexWriter::~IndexWriter() {}
@@ -112,17 +111,16 @@ bool IndexWriter::AddingKeyAllowed(
   return true;
 }
 
-bool MakeIndexWriters(
-    IndexedDBTransaction* transaction,
-    IndexedDBBackingStore* backing_store,
-    int64_t database_id,
-    const IndexedDBObjectStoreMetadata& object_store,
-    const IndexedDBKey& primary_key,  // makes a copy
-    bool key_was_generated,
-    const std::vector<IndexedDBDatabase::IndexKeys>& index_keys,
-    std::vector<std::unique_ptr<IndexWriter>>* index_writers,
-    base::string16* error_message,
-    bool* completed) {
+bool MakeIndexWriters(IndexedDBTransaction* transaction,
+                      IndexedDBBackingStore* backing_store,
+                      int64_t database_id,
+                      const IndexedDBObjectStoreMetadata& object_store,
+                      const IndexedDBKey& primary_key,  // makes a copy
+                      bool key_was_generated,
+                      const std::vector<IndexedDBIndexKeys>& index_keys,
+                      std::vector<std::unique_ptr<IndexWriter>>* index_writers,
+                      base::string16* error_message,
+                      bool* completed) {
   *completed = false;
 
   for (const auto& it : index_keys) {
@@ -130,7 +128,7 @@ bool MakeIndexWriters(
     if (found == object_store.indexes.end())
       continue;
     const IndexedDBIndexMetadata& index = found->second;
-    IndexedDBDatabase::IndexKeys keys = it;
+    IndexedDBIndexKeys keys = it;
 
     // If the object_store is using auto_increment, then any indexes with an
     // identical key_path need to also use the primary (generated) key as a key.

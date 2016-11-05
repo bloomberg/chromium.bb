@@ -92,8 +92,7 @@ class CONTENT_EXPORT IndexedDBCallbacks
   virtual void OnSuccess(IndexedDBReturnValue* value);
 
   // IndexedDBDatabase::GetAll
-  virtual void OnSuccessArray(std::vector<IndexedDBReturnValue>* values,
-                              const IndexedDBKeyPath& key_path);
+  virtual void OnSuccessArray(std::vector<IndexedDBReturnValue>* values);
 
   // IndexedDBDatabase::Put / IndexedDBCursor::Update
   virtual void OnSuccess(const IndexedDBKey& key);
@@ -138,7 +137,7 @@ class CONTENT_EXPORT IndexedDBCallbacks
   // IndexedDBDatabase callbacks ------------------------
   int64_t host_transaction_id_;
   url::Origin origin_;
-  int32_t ipc_database_id_;
+  bool database_sent_ = false;
 
   // Used to assert that OnSuccess is only called if there was no data loss.
   blink::WebIDBDataLoss data_loss_;

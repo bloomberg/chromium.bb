@@ -11,6 +11,20 @@
 namespace mojo {
 
 template <>
+struct StructTraits<indexed_db::mojom::IndexKeysDataView,
+                    content::IndexedDBIndexKeys> {
+  static int64_t index_id(const content::IndexedDBIndexKeys& index_keys) {
+    return index_keys.first;
+  }
+  static const std::vector<content::IndexedDBKey>& index_keys(
+      const content::IndexedDBIndexKeys& index_keys) {
+    return index_keys.second;
+  }
+  static bool Read(indexed_db::mojom::IndexKeysDataView data,
+                   content::IndexedDBIndexKeys* out);
+};
+
+template <>
 struct StructTraits<indexed_db::mojom::IndexMetadataDataView,
                     content::IndexedDBIndexMetadata> {
   static int64_t id(const content::IndexedDBIndexMetadata& metadata) {
