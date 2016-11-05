@@ -46,5 +46,9 @@ test("ocmock_support_unittest") {
     "//third_party/ocmock",
   ]
 
+  sources = [
+    "ocmock_complex_type_helper_unittest.mm",
+  ]
+
   assert_no_deps = ios_assert_no_deps
 }
