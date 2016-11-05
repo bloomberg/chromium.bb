@@ -211,9 +211,13 @@ void ChannelProxy::Context::OnChannelClosed() {
   if (!channel_)
     return;
 
-  for (size_t i = 0; i < filters_.size(); ++i) {
-    filters_[i]->OnChannelClosing();
-    filters_[i]->OnFilterRemoved();
+  for (auto& filter : pending_filters_) {
+    filter->OnChannelClosing();
+    filter->OnFilterRemoved();
+  }
+  for (auto& filter : filters_) {
+    filter->OnChannelClosing();
+    filter->OnFilterRemoved();
   }
 
   // We don't need the filters anymore.

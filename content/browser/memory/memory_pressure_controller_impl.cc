@@ -39,7 +39,8 @@ void MemoryPressureControllerImpl::OnMemoryMessageFilterRemoved(
   // Remove the message filter from the set of all memory message filters,
   // ensuring that it was there beforehand.
   auto it = memory_message_filters_.find(filter->process_host());
-  DCHECK(it != memory_message_filters_.end());
+  if (it == memory_message_filters_.end())
+    return;
   DCHECK_EQ(filter, it->second);
   memory_message_filters_.erase(it);
 }
