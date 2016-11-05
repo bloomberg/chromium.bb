@@ -145,6 +145,11 @@ base::TimeDelta GetCurrentTimeInternal(WebMediaPlayerImpl* p_this) {
   return base::TimeDelta::FromSecondsD(p_this->currentTime());
 }
 
+// How much time must have elapsed since loading last progressed before the
+// player is eligible for idle suspension.
+constexpr base::TimeDelta kLoadingToIdleTimeout =
+    base::TimeDelta::FromSeconds(3);
+
 }  // namespace
 
 class BufferedDataSourceHostImpl;
@@ -235,6 +240,8 @@ WebMediaPlayerImpl::WebMediaPlayerImpl(
   DCHECK(!adjust_allocated_memory_cb_.is_null());
   DCHECK(renderer_factory_);
   DCHECK(client_);
+
+  tick_clock_.reset(new base::DefaultTickClock());
 
   force_video_overlays_ = base::CommandLine::ForCurrentProcess()->HasSwitch(
       switches::kForceVideoOverlays);
@@ -786,6 +793,9 @@ bool WebMediaPlayerImpl::didLoadingProgress() {
     UpdatePlayState();
   }
 
+  if (did_loading_progress)
+    last_time_loading_progressed_ = tick_clock_->NowTicks();
+
   return did_loading_progress;
 }
 
@@ -1312,15 +1322,37 @@ void WebMediaPlayerImpl::OnShown() {
   UpdatePlayState();
 }
 
-void WebMediaPlayerImpl::OnSuspendRequested(bool must_suspend) {
+bool WebMediaPlayerImpl::OnSuspendRequested(bool must_suspend) {
   DCHECK(main_task_runner_->BelongsToCurrentThread());
 
-  if (must_suspend)
+  if (must_suspend) {
     must_suspend_ = true;
-  else
-    is_idle_ = true;
+    UpdatePlayState();
+    return true;
+  }
 
-  UpdatePlayState();
+  // If we're beyond HaveFutureData, we can safely suspend at any time.
+  if (highest_ready_state_ >= WebMediaPlayer::ReadyStateHaveFutureData) {
+    is_idle_ = true;
+    UpdatePlayState();
+    return true;
+  }
+
+  // Before HaveFutureData blink will not call play(), so we must be careful to
+  // only suspend if we'll eventually receive an event that will trigger a
+  // resume. If the last time loading progressed was a while ago, and we still
+  // haven't reached HaveFutureData, we assume that we're waiting on more data
+  // to continue pre-rolling. When that data is loaded the pipeline will be
+  // resumed by didLoadingProgress().
+  if (last_time_loading_progressed_.is_null() ||
+      (tick_clock_->NowTicks() - last_time_loading_progressed_) >
+          kLoadingToIdleTimeout) {
+    is_idle_ = true;
+    UpdatePlayState();
+    return true;
+  }
+
+  return false;
 }
 
 void WebMediaPlayerImpl::OnPlay() {

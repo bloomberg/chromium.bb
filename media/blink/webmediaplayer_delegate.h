@@ -31,7 +31,10 @@ class WebMediaPlayerDelegate {
     // it may do some or all of the same actions as when |must_suspend| is true.
     // To be clear, the player is not required to call PlayerGone() when
     // |must_suspend| is false.
-    virtual void OnSuspendRequested(bool must_suspend) = 0;
+    // Return false to reject the request and indicate that further calls to
+    // OnSuspendRequested() are required. Otherwise the Observer is removed
+    // from the idle list.
+    virtual bool OnSuspendRequested(bool must_suspend) = 0;
 
     virtual void OnPlay() = 0;
     virtual void OnPause() = 0;

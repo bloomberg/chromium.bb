@@ -18,6 +18,7 @@
 #include "base/memory/ref_counted.h"
 #include "base/memory/weak_ptr.h"
 #include "base/threading/thread.h"
+#include "base/time/default_tick_clock.h"
 #include "base/timer/elapsed_timer.h"
 #include "base/timer/timer.h"
 #include "build/build_config.h"
@@ -186,7 +187,7 @@ class MEDIA_BLINK_EXPORT WebMediaPlayerImpl
   // WebMediaPlayerDelegate::Observer implementation.
   void OnHidden() override;
   void OnShown() override;
-  void OnSuspendRequested(bool must_suspend) override;
+  bool OnSuspendRequested(bool must_suspend) override;
   void OnPlay() override;
   void OnPause() override;
   void OnVolumeMultiplierUpdate(double multiplier) override;
@@ -563,6 +564,11 @@ class MEDIA_BLINK_EXPORT WebMediaPlayerImpl
   // Number of times we've reached BUFFERING_HAVE_NOTHING during playback.
   int underflow_count_;
   std::unique_ptr<base::ElapsedTimer> underflow_timer_;
+
+  // The last time didLoadingProgress() returned true.
+  base::TimeTicks last_time_loading_progressed_;
+
+  std::unique_ptr<base::TickClock> tick_clock_;
 
   // Monitors the player events.
   base::WeakPtr<MediaObserver> observer_;

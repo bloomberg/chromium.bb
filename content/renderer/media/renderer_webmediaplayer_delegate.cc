@@ -234,11 +234,12 @@ void RendererWebMediaPlayerDelegate::CleanupIdleDelegates(
   const base::TimeTicks now = tick_clock_->NowTicks();
   for (auto& idle_delegate_entry : idle_delegate_map_) {
     if (now - idle_delegate_entry.second > timeout) {
-      id_map_.Lookup(idle_delegate_entry.first)->OnSuspendRequested(false);
-
-      // Whether or not the player accepted the suspension, mark it for removal
-      // from future polls to avoid running the timer forever.
-      idle_delegate_entry.second = base::TimeTicks();
+      if (id_map_.Lookup(idle_delegate_entry.first)
+              ->OnSuspendRequested(false)) {
+        // If the player accepted the suspension, mark it for removal
+        // from future polls to avoid running the timer forever.
+        idle_delegate_entry.second = base::TimeTicks();
+      }
     }
   }
 

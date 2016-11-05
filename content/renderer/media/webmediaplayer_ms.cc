@@ -421,10 +421,10 @@ void WebMediaPlayerMS::OnShown() {
 #endif  // defined(OS_ANDROID)
 }
 
-void WebMediaPlayerMS::OnSuspendRequested(bool must_suspend) {
+bool WebMediaPlayerMS::OnSuspendRequested(bool must_suspend) {
 #if defined(OS_ANDROID)
   if (!must_suspend)
-    return;
+    return false;
 
   if (!paused_) {
     pause();
@@ -436,6 +436,7 @@ void WebMediaPlayerMS::OnSuspendRequested(bool must_suspend) {
 
   render_frame_suspended_ = true;
 #endif
+  return true;
 }
 
 void WebMediaPlayerMS::OnPlay() {
