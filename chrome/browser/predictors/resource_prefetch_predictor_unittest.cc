@@ -188,6 +188,47 @@ class ResourcePrefetchPredictorTest : public testing::Test {
     profile_->BlockUntilHistoryProcessesPendingRequests();
   }
 
+  NavigationID CreateNavigationID(int process_id,
+                                  int render_frame_id,
+                                  const std::string& main_frame_url) {
+    NavigationID navigation_id(process_id, render_frame_id,
+                               GURL(main_frame_url));
+    navigation_id.creation_time = base::TimeTicks::Now();
+    return navigation_id;
+  }
+
+  PageRequestSummary CreatePageRequestSummary(
+      const std::string& main_frame_url,
+      const std::string& initial_url,
+      const std::vector<URLRequestSummary>& subresource_requests) {
+    GURL main_frame_gurl(main_frame_url);
+    PageRequestSummary summary(main_frame_gurl);
+    summary.initial_url = GURL(initial_url);
+    summary.subresource_requests = subresource_requests;
+    return summary;
+  }
+
+  URLRequestSummary CreateURLRequestSummary(
+      int process_id,
+      int render_frame_id,
+      const std::string& main_frame_url,
+      const std::string& resource_url = std::string(),
+      content::ResourceType resource_type = content::RESOURCE_TYPE_MAIN_FRAME,
+      net::RequestPriority priority = net::MEDIUM,
+      const std::string& mime_type = std::string(),
+      bool was_cached = false) {
+    URLRequestSummary summary;
+    summary.navigation_id = CreateNavigationID(process_id, render_frame_id,
+                                               main_frame_url);
+    summary.resource_url =
+        resource_url.empty() ? GURL(main_frame_url) : GURL(resource_url);
+    summary.resource_type = resource_type;
+    summary.priority = priority;
+    summary.mime_type = mime_type;
+    summary.was_cached = was_cached;
+    return summary;
+  }
+
   URLRequestSummary CreateRedirectRequestSummary(
       int process_id,
       int render_frame_id,
