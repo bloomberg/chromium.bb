@@ -88,6 +88,7 @@ executable("wayland_motion_events") {
 
   deps = [
     "//base",
+    "//skia",
     "//third_party/wayland:wayland_client",
   ]
 }

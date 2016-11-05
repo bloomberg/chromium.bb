@@ -11,6 +11,9 @@
 
 #include "base/logging.h"
 #include "base/memory/shared_memory.h"
+#include "third_party/skia/include/core/SkCanvas.h"
+#include "third_party/skia/include/core/SkRefCnt.h"
+#include "third_party/skia/include/core/SkSurface.h"
 
 // Convenient macro that is used to define default deleters for wayland object
 // types allowing them to be used with std::unique_ptr.
@@ -46,11 +49,15 @@ const size_t kWidth = 256;
 const size_t kHeight = 256;
 
 // Buffer format.
-const int32_t kFormat = WL_SHM_FORMAT_ABGR8888;
+const int32_t kFormat = WL_SHM_FORMAT_ARGB8888;
+const SkColorType kColorType = kBGRA_8888_SkColorType;
 const size_t kBytesPerPixel = 4;
 
 // Number of buffers.
 const size_t kBuffers = 2;
+
+// Rotation speed (degrees/second).
+const double kRotationSpeed = 360.0;
 
 // Helper constants.
 const size_t kStride = kWidth * kBytesPerPixel;
@@ -92,7 +99,7 @@ void RegistryRemover(void* data, wl_registry* registry, uint32_t id) {
 
 struct BufferState {
   std::unique_ptr<wl_buffer> buffer;
-  uint8_t* data = nullptr;
+  sk_sp<SkSurface> sk_surface;
   bool busy = false;
 };
 
@@ -103,10 +110,10 @@ void BufferRelease(void* data, wl_buffer* buffer) {
 }
 
 struct MainLoopContext {
-  uint32_t color = 0xffffffff;
-  bool needs_redraw = true;
   bool shutdown = false;
-  bool throttled = false;
+  uint32_t last_event_time = 0;
+  bool frame_callback_pending = false;
+  double rotation = 0.0;
 };
 
 void PointerEnter(void* data,
@@ -128,7 +135,7 @@ void PointerMotion(void* data,
                    wl_fixed_t y) {
   MainLoopContext* context = static_cast<MainLoopContext*>(data);
 
-  context->color = 0xff000000 | time;
+  context->last_event_time = time;
 }
 
 void PointerButton(void* data,
@@ -160,11 +167,7 @@ void PointerDiscrete(void* data,
                      uint32_t axis,
                      int32_t discrete) {}
 
-void PointerFrame(void* data, wl_pointer* pointer) {
-  MainLoopContext* context = static_cast<MainLoopContext*>(data);
-
-  context->needs_redraw = true;
-}
+void PointerFrame(void* data, wl_pointer* pointer) {}
 
 void TouchDown(void* data,
                wl_touch* touch,
@@ -189,8 +192,7 @@ void TouchMotion(void* data,
                  wl_fixed_t y) {
   MainLoopContext* context = static_cast<MainLoopContext*>(data);
 
-  context->color = 0xff000000 | time;
-  context->needs_redraw = true;
+  context->last_event_time = time;
 }
 
 void TouchFrame(void* data, wl_touch* touch) {}
@@ -200,7 +202,9 @@ void TouchCancel(void* data, wl_touch* touch) {}
 void FrameCallback(void* data, wl_callback* callback, uint32_t time) {
   MainLoopContext* context = static_cast<MainLoopContext*>(data);
 
-  context->throttled = false;
+  static uint32_t initial_time = time;
+  context->rotation = ((time - initial_time) / 1000.0) * kRotationSpeed;
+  context->frame_callback_pending = false;
 }
 
 }  // namespace
@@ -253,8 +257,14 @@ int MotionEventsMain() {
       LOG(ERROR) << "Can't create buffer";
       return 1;
     }
-    buffers[i].data =
-        static_cast<uint8_t*>(shared_memory.memory()) + kBufferSize * i;
+    buffers[i].sk_surface = SkSurface::MakeRasterDirect(
+        SkImageInfo::Make(kWidth, kHeight, kColorType, kUnpremul_SkAlphaType),
+        static_cast<uint8_t*>(shared_memory.memory()) + kBufferSize * i,
+        kStride);
+    if (!buffers[i].sk_surface) {
+      LOG(ERROR) << "Can't create SkSurface";
+      return 1;
+    }
     wl_buffer_add_listener(buffers[i].buffer.get(), &buffer_listener,
                            &buffers[i]);
   }
@@ -320,10 +330,7 @@ int MotionEventsMain() {
     if (context.shutdown)
       break;
 
-    if (!context.needs_redraw)
-      continue;
-
-    if (context.throttled)
+    if (context.frame_callback_pending)
       continue;
 
     BufferState* buffer =
@@ -332,22 +339,26 @@ int MotionEventsMain() {
     if (buffer == std::end(buffers))
       continue;
 
-    context.needs_redraw = false;
-
-    static_assert(sizeof(uint32_t) == kBytesPerPixel,
-                  "uint32_t must be same size as kBytesPerPixel");
-    for (size_t y = 0; y < kHeight; y++) {
-      uint32_t* pixel = reinterpret_cast<uint32_t*>(buffer->data + y * kStride);
-      for (size_t x = 0; x < kWidth; x++)
-        *pixel++ = context.color;
-    }
+    SkCanvas* canvas = buffer->sk_surface->getCanvas();
+    canvas->save();
+    canvas->clear(SkColorSetRGB((context.last_event_time & 0x0000ff) >> 0,
+                                (context.last_event_time & 0x00ff00) >> 8,
+                                (context.last_event_time & 0xff0000) >> 16));
+    canvas->translate(SkIntToScalar(kWidth / 2), SkIntToScalar(kHeight / 2));
+    canvas->rotate(SkDoubleToScalar(context.rotation));
+    SkRect rect = SkRect::MakeXYWH(-(kWidth / 4.0f), -(kHeight / 4.0f),
+                                   kWidth / 2.0f, kHeight / 2.0f);
+    SkPaint paint;
+    paint.setColor(SK_ColorBLUE);
+    canvas->drawRect(rect, paint);
+    canvas->restore();
 
     wl_surface_attach(surface.get(), buffer->buffer.get(), 0, 0);
     buffer->busy = true;
 
     frame_callback.reset(wl_surface_frame(surface.get()));
     wl_callback_add_listener(frame_callback.get(), &frame_listener, &context);
-    context.throttled = true;
+    context.frame_callback_pending = true;
 
     wl_surface_commit(surface.get());
     wl_display_flush(display.get());
