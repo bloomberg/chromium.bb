@@ -41,6 +41,7 @@
 #include "content/public/browser/resource_dispatcher_host.h"
 #include "content/public/browser/resource_throttle.h"
 #include "content/public/browser/web_contents.h"
+#include "content/public/common/browser_side_navigation_policy.h"
 #include "content/public/common/context_menu_params.h"
 #include "content/public/common/resource_type.h"
 #include "content/public/common/url_constants.h"
@@ -692,6 +693,11 @@ IN_PROC_BROWSER_TEST_F(WebNavigationApiTest, CrossProcess) {
 // resumes all URL requests. Instead, the test explicitly delays each URL
 // and resumes manually at the required time.
 IN_PROC_BROWSER_TEST_F(WebNavigationApiTest, CrossProcessAbort) {
+  // This test does not make sense in PlzNavigate mode, as simultanious
+  // navigations that make network requests are not supported.
+  if (content::IsBrowserSideNavigationEnabled())
+    return;
+
   ASSERT_TRUE(StartEmbeddedTestServer());
 
   // Add the cross-site URL delay early on, as loading the extension will

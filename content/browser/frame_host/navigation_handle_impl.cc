@@ -11,6 +11,7 @@
 #include "content/browser/browsing_data/clear_site_data_throttle.h"
 #include "content/browser/child_process_security_policy_impl.h"
 #include "content/browser/devtools/render_frame_devtools_agent_host.h"
+#include "content/browser/frame_host/debug_urls.h"
 #include "content/browser/frame_host/frame_tree_node.h"
 #include "content/browser/frame_host/navigator.h"
 #include "content/browser/frame_host/navigator_delegate.h"
@@ -95,7 +96,8 @@ NavigationHandleImpl::NavigationHandleImpl(
   starting_site_instance_ =
       frame_tree_node_->current_frame_host()->GetSiteInstance();
 
-  GetDelegate()->DidStartNavigation(this);
+  if (!IsRendererDebugURL(url_))
+    GetDelegate()->DidStartNavigation(this);
 
   if (IsInMainFrame()) {
     TRACE_EVENT_ASYNC_BEGIN_WITH_TIMESTAMP1(
@@ -105,7 +107,8 @@ NavigationHandleImpl::NavigationHandleImpl(
 }
 
 NavigationHandleImpl::~NavigationHandleImpl() {
-  GetDelegate()->DidFinishNavigation(this);
+  if (!IsRendererDebugURL(url_))
+    GetDelegate()->DidFinishNavigation(this);
 
   // Cancel the navigation on the IO thread if the NavigationHandle is being
   // destroyed in the middle of the NavigationThrottles checks.
@@ -496,7 +499,8 @@ void NavigationHandleImpl::ReadyToCommitNavigation(
   render_frame_host_ = render_frame_host;
   state_ = READY_TO_COMMIT;
 
-  GetDelegate()->ReadyToCommitNavigation(this);
+  if (!IsRendererDebugURL(url_))
+    GetDelegate()->ReadyToCommitNavigation(this);
 }
 
 void NavigationHandleImpl::DidCommitNavigation(
