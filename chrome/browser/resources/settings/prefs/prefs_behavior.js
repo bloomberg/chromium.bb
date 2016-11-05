@@ -8,6 +8,14 @@
 
 /** @polymerBehavior */
 var PrefsBehavior = {
+  properties: {
+    /** Preferences state. */
+    prefs: {
+      type: Object,
+      notify: true,
+    },
+  },
+
   /**
    * Gets the pref at the given prefPath. Throws if the pref is not found.
    * @param {string} prefPath

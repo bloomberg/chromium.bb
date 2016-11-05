@@ -57,14 +57,6 @@ Polymer({
     },
 
     /**
-     * Object containing all preferences.
-     */
-    prefs: {
-      type: Object,
-      notify: true,
-    },
-
-    /**
      * This element, as a LanguageHelper instance for API usage.
      * @type {!LanguageHelper}
      */

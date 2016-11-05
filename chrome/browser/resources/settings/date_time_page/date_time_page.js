@@ -26,12 +26,6 @@ Polymer({
   behaviors: [PrefsBehavior, WebUIListenerBehavior],
 
   properties: {
-    /** Preferences state. */
-    prefs: {
-      type: Object,
-      notify: true,
-    },
-
     /**
      * The time zone auto-detect policy.
      * @private {settings.TimeZoneAutoDetectPolicy}

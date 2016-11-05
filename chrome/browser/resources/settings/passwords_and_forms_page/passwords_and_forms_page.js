@@ -302,17 +302,9 @@ AutofillManagerImpl.prototype = {
 Polymer({
   is: 'settings-passwords-and-forms-page',
 
-  behaviors: [
-    PrefsBehavior,
-  ],
+  behaviors: [PrefsBehavior],
 
   properties: {
-    /** Preferences state. */
-    prefs: {
-      type: Object,
-      notify: true,
-    },
-
     /**
      * An array of passwords to display.
      * @type {!Array<!PasswordManager.PasswordUiEntry>}
@@ -328,7 +320,7 @@ Polymer({
     /** @private Filter applied to passwords and password exceptions. */
     passwordFilter_: String,
 
-     /**
+    /**
      * An array of saved addresses.
      * @type {!Array<!AutofillManager.AddressEntry>}
      */
@@ -339,7 +331,7 @@ Polymer({
      * @type {!Array<!AutofillManager.CreditCardEntry>}
      */
     creditCards: Array,
- },
+  },
 
   listeners: {
     'clear-credit-card': 'clearCreditCard_',
