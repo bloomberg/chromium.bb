@@ -87,6 +87,9 @@ const base::Feature kGamepadExtensions{"GamepadExtensions",
 const base::Feature kGenericSensor{"GenericSensor",
                                    base::FEATURE_DISABLED_BY_DEFAULT};
 
+// Enables lazily parsing css properties for performance.
+const base::Feature kLazyParseCSS{"LazyParseCSS",
+                                  base::FEATURE_DISABLED_BY_DEFAULT};
 
 // FeatureList definition for trials to enable the download button on
 // MediaDocument.

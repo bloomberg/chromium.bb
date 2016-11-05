@@ -142,6 +142,10 @@ void WebRuntimeFeatures::enableInputMultipleFieldsUI(bool enable) {
   RuntimeEnabledFeatures::setInputMultipleFieldsUIEnabled(enable);
 }
 
+void WebRuntimeFeatures::enableLazyParseCSS(bool enable) {
+  RuntimeEnabledFeatures::setLazyParseCSSEnabled(enable);
+}
+
 void WebRuntimeFeatures::enableMediaCapture(bool enable) {
   RuntimeEnabledFeatures::setMediaCaptureEnabled(enable);
 }
