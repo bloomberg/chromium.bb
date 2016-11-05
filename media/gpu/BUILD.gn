@@ -368,6 +368,7 @@ component("gpu") {
   }
 }
 
+# TODO(watk): Run this on bots. http://crbug.com/461437
 if (is_win || is_android || is_chromeos) {
   test("video_decode_accelerator_unittest") {
     sources = [
@@ -378,7 +379,6 @@ if (is_win || is_android || is_chromeos) {
       ":gpu",
       "//base",
       "//media",
-      "//media/gpu",
       "//testing/gtest",
       "//ui/base",
       "//ui/gfx",
@@ -397,19 +397,7 @@ if (is_win || is_android || is_chromeos) {
       configs += [ "//third_party/libva:libva_config" ]
     }
 
-    if (is_android) {
-      sources += [
-        "android_video_decode_accelerator_unittest.cc",
-        "avda_codec_allocator_unittest.cc",
-      ]
-      deps += [
-        "//gpu:test_support",
-        "//media/base/android",
-        "//media/base/android:media_java",
-        "//testing/gmock",
-        "//ui/android:ui_java",
-      ]
-    } else {
+    if (is_win || is_chromeos) {
       sources += [
         "rendering_helper.cc",
         "rendering_helper.h",
@@ -420,9 +408,15 @@ if (is_win || is_android || is_chromeos) {
         "//ui/display/types",
         "//ui/platform_window",
       ]
-      if (use_ozone) {
-        deps += [ "//ui/ozone" ]
-      }
+    }
+
+    if (is_android) {
+      deps += [
+        ":android_video_decode_accelerator_unittests",
+        "//media/base/android:media_java",
+        "//media/test:run_all_unittests",
+        "//ui/android:ui_java",
+      ]
     }
 
     if (is_win) {
@@ -438,6 +432,27 @@ if (is_win || is_android || is_chromeos) {
       configs += [ "//build/config/linux:x11" ]
       deps += [ "//ui/gfx/x" ]
     }
+
+    if (use_ozone) {
+      deps += [ "//ui/ozone" ]
+    }
+  }
+}
+
+source_set("android_video_decode_accelerator_unittests") {
+  if (is_android) {
+    testonly = true
+    sources = [
+      "android_video_decode_accelerator_unittest.cc",
+      "avda_codec_allocator_unittest.cc",
+    ]
+    deps = [
+      ":gpu",
+      "//gpu:test_support",
+      "//media/base/android",
+      "//testing/gmock",
+      "//testing/gtest",
+    ]
   }
 }
 

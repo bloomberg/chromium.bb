@@ -107,12 +107,8 @@ TEST_F(AndroidVideoDecodeAcceleratorTest, ConfigureUnsupportedCodec) {
 TEST_F(AndroidVideoDecodeAcceleratorTest, ConfigureSupportedCodec) {
   if (!MediaCodecUtil::IsMediaCodecAvailable())
     return;
-  ASSERT_TRUE(Initialize(VP8PROFILE_ANY));
+  // H264 is always supported by AVDA.
+  ASSERT_TRUE(Initialize(H264PROFILE_BASELINE));
 }
 
 }  // namespace media
-
-int main(int argc, char** argv) {
-  testing::InitGoogleTest(&argc, argv);
-  return RUN_ALL_TESTS();
-}
