@@ -1859,10 +1859,7 @@ void WebGLRenderingContextBase::bufferData(GLenum target,
                                            GLenum usage) {
   if (isContextLost())
     return;
-  if (!data) {
-    synthesizeGLError(GL_INVALID_VALUE, "bufferData", "no data");
-    return;
-  }
+  DCHECK(data);
   bufferDataImpl(target, data->byteLength(), data->baseAddress(), usage);
 }
 
@@ -1890,10 +1887,7 @@ void WebGLRenderingContextBase::bufferSubData(GLenum target,
                                               DOMArrayBuffer* data) {
   if (isContextLost())
     return;
-  if (!data) {
-    synthesizeGLError(GL_INVALID_VALUE, "bufferSubData", "no data");
-    return;
-  }
+  DCHECK(data);
   bufferSubDataImpl(target, offset, data->byteLength(), data->data());
 }
 
@@ -1903,10 +1897,7 @@ void WebGLRenderingContextBase::bufferSubData(
     const FlexibleArrayBufferView& data) {
   if (isContextLost())
     return;
-  if (!data) {
-    synthesizeGLError(GL_INVALID_VALUE, "bufferSubData", "no data");
-    return;
-  }
+  DCHECK(data);
   bufferSubDataImpl(target, offset, data.byteLength(),
                     data.baseAddressMaybeOnStack());
 }
@@ -2397,7 +2388,8 @@ bool WebGLRenderingContextBase::validateRenderingState(
 
 bool WebGLRenderingContextBase::validateWebGLObject(const char* functionName,
                                                     WebGLObject* object) {
-  if (!object || !object->hasObject()) {
+  DCHECK(object);
+  if (!object->hasObject()) {
     synthesizeGLError(GL_INVALID_VALUE, functionName,
                       "no object or object deleted");
     return false;
@@ -3421,7 +3413,8 @@ ScriptValue WebGLRenderingContextBase::getUniform(
     const WebGLUniformLocation* uniformLocation) {
   if (isContextLost() || !validateWebGLObject("getUniform", program))
     return ScriptValue::createNull(scriptState);
-  if (!uniformLocation || uniformLocation->program() != program) {
+  DCHECK(uniformLocation);
+  if (uniformLocation->program() != program) {
     synthesizeGLError(GL_INVALID_OPERATION, "getUniform",
                       "no uniformlocation or not valid for this program");
     return ScriptValue::createNull(scriptState);
@@ -4692,10 +4685,7 @@ void WebGLRenderingContextBase::texImageHelperImageData(
   const char* funcName = getTexImageFunctionName(functionID);
   if (isContextLost())
     return;
-  if (!pixels) {
-    synthesizeGLError(GL_INVALID_VALUE, funcName, "no image data");
-    return;
-  }
+  DCHECK(pixels);
   if (pixels->data()->bufferBase()->isNeutered()) {
     synthesizeGLError(GL_INVALID_VALUE, funcName,
                       "The source data has been neutered.");

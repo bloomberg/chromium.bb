@@ -2815,12 +2815,7 @@ GLboolean WebGL2RenderingContextBase::isQuery(WebGLQuery* query) {
 
 void WebGL2RenderingContextBase::beginQuery(GLenum target, WebGLQuery* query) {
   bool deleted;
-  if (!query) {
-    synthesizeGLError(GL_INVALID_OPERATION, "beginQuery",
-                      "query object is null");
-    return;
-  }
-
+  DCHECK(query);
   if (!checkObjectToBeBound("beginQuery", query, deleted))
     return;
   if (deleted) {
@@ -2980,12 +2975,8 @@ ScriptValue WebGL2RenderingContextBase::getQueryParameter(
     ScriptState* scriptState,
     WebGLQuery* query,
     GLenum pname) {
+  DCHECK(query);
   bool deleted;
-  if (!query) {
-    synthesizeGLError(GL_INVALID_OPERATION, "getQueryParameter",
-                      "query object is null");
-    return ScriptValue::createNull(scriptState);
-  }
   if (!checkObjectToBeBound("getQueryParameter", query, deleted))
     return ScriptValue::createNull(scriptState);
   if (deleted) {

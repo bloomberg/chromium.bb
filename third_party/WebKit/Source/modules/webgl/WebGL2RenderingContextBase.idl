@@ -349,7 +349,7 @@ typedef unsigned long long GLuint64;
     void compressedTexSubImage3D(GLenum target, GLint level, GLint xoffset, GLint yoffset, GLint zoffset, GLsizei width, GLsizei height, GLsizei depth, GLenum format, ArrayBufferView data, optional GLuint srcOffset = 0, optional GLuint srcLengthOverride = 0);
 
     /* Programs and shaders */
-    GLint getFragDataLocation(WebGLProgram? program, DOMString name);
+    GLint getFragDataLocation(WebGLProgram program, DOMString name);
 
     /* Uniforms and attributes */
     void uniform1ui(WebGLUniformLocation? location, GLuint v0);
@@ -405,28 +405,28 @@ typedef unsigned long long GLuint64;
     WebGLQuery createQuery();
     void deleteQuery(WebGLQuery? query);
     GLboolean isQuery(WebGLQuery? query);
-    void beginQuery(GLenum target, WebGLQuery? query);
+    void beginQuery(GLenum target, WebGLQuery query);
     void endQuery(GLenum target);
     [CallWith=ScriptState] any getQuery(GLenum target, GLenum pname);
-    [CallWith=ScriptState] any getQueryParameter(WebGLQuery? query, GLenum pname);
+    [CallWith=ScriptState] any getQueryParameter(WebGLQuery query, GLenum pname);
 
     /* Sampler Objects */
     WebGLSampler createSampler();
     void deleteSampler(WebGLSampler? sampler);
     GLboolean isSampler(WebGLSampler? sampler);
     void bindSampler(GLuint unit, WebGLSampler? sampler);
-    void samplerParameteri(WebGLSampler? sampler, GLenum pname, GLint param);
-    void samplerParameterf(WebGLSampler? sampler, GLenum pname, GLfloat param);
-    [CallWith=ScriptState] any getSamplerParameter(WebGLSampler? sampler, GLenum pname);
+    void samplerParameteri(WebGLSampler sampler, GLenum pname, GLint param);
+    void samplerParameterf(WebGLSampler sampler, GLenum pname, GLfloat param);
+    [CallWith=ScriptState] any getSamplerParameter(WebGLSampler sampler, GLenum pname);
 
     /* Sync objects */
     WebGLSync fenceSync(GLenum condition, GLbitfield flags);
     GLboolean isSync(WebGLSync? sync);
     void deleteSync(WebGLSync? sync);
-    GLenum clientWaitSync(WebGLSync? sync, GLbitfield flags, GLuint64 timeout);
-    void waitSync(WebGLSync? sync, GLbitfield flags, GLint64 timeout);
+    GLenum clientWaitSync(WebGLSync sync, GLbitfield flags, GLuint64 timeout);
+    void waitSync(WebGLSync sync, GLbitfield flags, GLint64 timeout);
 
-    [CallWith=ScriptState] any getSyncParameter(WebGLSync? sync, GLenum pname);
+    [CallWith=ScriptState] any getSyncParameter(WebGLSync sync, GLenum pname);
 
     /* Transform Feedback */
     WebGLTransformFeedback createTransformFeedback();
@@ -435,8 +435,8 @@ typedef unsigned long long GLuint64;
     void bindTransformFeedback(GLenum target, WebGLTransformFeedback? feedback);
     void beginTransformFeedback(GLenum primitiveMode);
     void endTransformFeedback();
-    void transformFeedbackVaryings(WebGLProgram? program, sequence<DOMString> varyings, GLenum bufferMode);
-    WebGLActiveInfo getTransformFeedbackVarying(WebGLProgram? program, GLuint index);
+    void transformFeedbackVaryings(WebGLProgram program, sequence<DOMString> varyings, GLenum bufferMode);
+    WebGLActiveInfo getTransformFeedbackVarying(WebGLProgram program, GLuint index);
     void pauseTransformFeedback();
     void resumeTransformFeedback();
 
@@ -444,12 +444,12 @@ typedef unsigned long long GLuint64;
     void bindBufferBase(GLenum target, GLuint index, WebGLBuffer? buffer);
     void bindBufferRange(GLenum target, GLuint index, WebGLBuffer? buffer, GLintptr offset, GLsizeiptr size);
     [CallWith=ScriptState] any getIndexedParameter(GLenum target, GLuint index);
-    sequence<GLuint>? getUniformIndices(WebGLProgram? program, sequence<DOMString> uniformNames);
-    [CallWith=ScriptState] any getActiveUniforms(WebGLProgram? program, sequence<GLuint> uniformIndices, GLenum pname);
-    GLuint getUniformBlockIndex(WebGLProgram? program, DOMString uniformBlockName);
-    [CallWith=ScriptState] any getActiveUniformBlockParameter(WebGLProgram? program, GLuint uniformBlockIndex, GLenum pname);
-    DOMString? getActiveUniformBlockName(WebGLProgram? program, GLuint uniformBlockIndex);
-    void uniformBlockBinding(WebGLProgram? program, GLuint uniformBlockIndex, GLuint uniformBlockBinding);
+    sequence<GLuint>? getUniformIndices(WebGLProgram program, sequence<DOMString> uniformNames);
+    [CallWith=ScriptState] any getActiveUniforms(WebGLProgram program, sequence<GLuint> uniformIndices, GLenum pname);
+    GLuint getUniformBlockIndex(WebGLProgram program, DOMString uniformBlockName);
+    [CallWith=ScriptState] any getActiveUniformBlockParameter(WebGLProgram program, GLuint uniformBlockIndex, GLenum pname);
+    DOMString? getActiveUniformBlockName(WebGLProgram program, GLuint uniformBlockIndex);
+    void uniformBlockBinding(WebGLProgram program, GLuint uniformBlockIndex, GLuint uniformBlockBinding);
 
     /* Vertex Array Objects */
     WebGLVertexArrayObject createVertexArray();
