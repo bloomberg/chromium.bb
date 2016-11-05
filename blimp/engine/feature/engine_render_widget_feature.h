@@ -182,6 +182,8 @@ class EngineRenderWidgetFeature : public BlimpMessageProcessor,
   std::unique_ptr<BlimpMessageProcessor> input_message_sender_;
   std::unique_ptr<BlimpMessageProcessor> ime_message_sender_;
 
+  base::WeakPtrFactory<EngineRenderWidgetFeature> weak_factory_;
+
   DISALLOW_COPY_AND_ASSIGN(EngineRenderWidgetFeature);
 };
 

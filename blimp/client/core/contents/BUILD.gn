@@ -164,6 +164,7 @@ if (is_android) {
       "android/java/src/org/chromium/blimp/core/contents/BlimpView.java",
       "android/java/src/org/chromium/blimp/core/contents/input/ImeEditText.java",
       "android/java/src/org/chromium/blimp/core/contents/input/ImeHelperDialog.java",
+      "android/java/src/org/chromium/blimp/core/contents/input/WebInputConfirmationPanel.java",
     ]
 
     deps = [

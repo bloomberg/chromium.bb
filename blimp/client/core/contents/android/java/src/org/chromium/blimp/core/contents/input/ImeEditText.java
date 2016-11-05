@@ -4,8 +4,8 @@
 
 package org.chromium.blimp.core.contents.input;
 
+import android.app.Dialog;
 import android.content.Context;
-import android.support.v7.app.AlertDialog;
 import android.util.AttributeSet;
 import android.view.KeyEvent;
 import android.widget.EditText;
@@ -16,7 +16,7 @@ import android.widget.EditText;
  */
 public class ImeEditText extends EditText {
     // The alert dialog that contains this text box.
-    private AlertDialog mParentDialog;
+    private Dialog mParentDialog;
 
     public ImeEditText(Context context, AttributeSet attrs) {
         super(context, attrs);
@@ -26,7 +26,7 @@ public class ImeEditText extends EditText {
      * Sets the parent view for this view.
      * @param dialog The dialog containing this view.
      */
-    public void initialize(AlertDialog dialog) {
+    public void initialize(Dialog dialog) {
         mParentDialog = dialog;
     }
 

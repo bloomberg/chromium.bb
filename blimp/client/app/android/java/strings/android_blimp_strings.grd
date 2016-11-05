@@ -217,7 +217,7 @@
       <message name="IDS_BLIMP_RESTART_NOW" desc="Restart now message">
         Restart Now
       </message>
-      <message name="IDS_BLIMP_IME_DIALOG_TITLE" desc="Label for the title text for IME dialog.">
+      <message name="IDS_BLIMP_WEB_INPUT_DEFAULT_LABEL" desc="Label for the title text for IME dialog.">
         Enter Text
       </message>
       <message name="IDS_BLIMP_FORM_INPUT_OK" desc="Label for a confirm button. Used in multiple contexts. [CHAR-LIMIT=20]">

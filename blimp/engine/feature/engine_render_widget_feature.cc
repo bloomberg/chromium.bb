@@ -23,7 +23,7 @@ namespace blimp {
 namespace engine {
 
 EngineRenderWidgetFeature::EngineRenderWidgetFeature(SettingsManager* settings)
-    : settings_manager_(settings) {
+    : settings_manager_(settings), weak_factory_(this) {
   DCHECK(settings_manager_);
   settings_manager_->AddObserver(this);
 }
@@ -233,6 +233,15 @@ void EngineRenderWidgetFeature::ProcessMessage(
       if (render_widget_host && render_widget_host->GetView()) {
         SetTextFromIME(render_widget_host, message->ime().ime_text(),
                        message->ime().auto_submit());
+
+        // TODO(shaktisahu): Remove this fake HIDE_IME request once the blimp
+        // IME design is completed (crbug/661328).
+        base::ThreadTaskRunnerHandle::Get()->PostDelayedTask(
+            FROM_HERE,
+            base::Bind(&EngineRenderWidgetFeature::SendHideImeRequest,
+                       weak_factory_.GetWeakPtr(), target_tab_id,
+                       render_widget_host),
+            base::TimeDelta::FromMilliseconds(1500));
       }
       break;
     default:

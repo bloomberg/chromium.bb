@@ -7,4 +7,6 @@
     <!-- Common colors -->
     <color name="default_dark_text_color">#333</color>
     <color name="default_white_background">#FAFAFA</color>
+    <color name="disabled_text_color">#808080</color>
+    <color name="btn_text_color">#4285F4</color>
 </resources>
