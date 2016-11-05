@@ -39,4 +39,12 @@ Found: NodeList
 Found: AudioNode
 Found: GainNode
 
+Checking '32'
+Not Found: Float32Array
+Not Found: Int32Array
+
+Checking 'window.32'
+Found: Float32Array
+Found: Int32Array
+
 

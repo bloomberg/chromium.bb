@@ -49,7 +49,9 @@ function test()
         () => testCompletions("templateString`asdf`", "should", ["shouldNotFindThis"]),
         () => testCompletions("window.document.", "BODY", ["body"]),
         () => testCompletions("window.", "dOcUmE", ["document"]),
-        () => testCompletions("window.", "node", ["NodeList", "AudioNode", "GainNode"])
+        () => testCompletions("window.", "node", ["NodeList", "AudioNode", "GainNode"]),
+        () => testCompletions("", "32", ["Float32Array", "Int32Array"]),
+        () => testCompletions("window.", "32", ["Float32Array", "Int32Array"])
     ]).then(InspectorTest.completeTest);
 
 }
