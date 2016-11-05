@@ -9,7 +9,10 @@
 #include <wayland-client-core.h>
 #include <wayland-client-protocol.h>
 
+#include <vector>
+
 #include "base/logging.h"
+#include "base/macros.h"
 #include "base/memory/shared_memory.h"
 #include "third_party/skia/include/core/SkCanvas.h"
 #include "third_party/skia/include/core/SkRefCnt.h"
@@ -97,24 +100,19 @@ void RegistryRemover(void* data, wl_registry* registry, uint32_t id) {
   LOG(WARNING) << "Got a registry losing event for " << id;
 }
 
-struct BufferState {
+struct Buffer {
   std::unique_ptr<wl_buffer> buffer;
   sk_sp<SkSurface> sk_surface;
   bool busy = false;
 };
 
-void BufferRelease(void* data, wl_buffer* buffer) {
-  BufferState* state = static_cast<BufferState*>(data);
+void BufferRelease(void* data, wl_buffer* /* buffer */) {
+  Buffer* buffer = static_cast<Buffer*>(data);
 
-  state->busy = false;
+  buffer->busy = false;
 }
 
-struct MainLoopContext {
-  bool shutdown = false;
-  uint32_t last_event_time = 0;
-  bool frame_callback_pending = false;
-  double rotation = 0.0;
-};
+using EventTimeStack = std::vector<uint32_t>;
 
 void PointerEnter(void* data,
                   wl_pointer* pointer,
@@ -133,9 +131,9 @@ void PointerMotion(void* data,
                    uint32_t time,
                    wl_fixed_t x,
                    wl_fixed_t y) {
-  MainLoopContext* context = static_cast<MainLoopContext*>(data);
+  EventTimeStack* stack = static_cast<EventTimeStack*>(data);
 
-  context->last_event_time = time;
+  stack->push_back(time);
 }
 
 void PointerButton(void* data,
@@ -143,11 +141,7 @@ void PointerButton(void* data,
                    uint32_t serial,
                    uint32_t time,
                    uint32_t button,
-                   uint32_t state) {
-  MainLoopContext* context = static_cast<MainLoopContext*>(data);
-
-  context->shutdown = true;
-}
+                   uint32_t state) {}
 
 void PointerAxis(void* data,
                  wl_pointer* pointer,
@@ -190,26 +184,42 @@ void TouchMotion(void* data,
                  int32_t id,
                  wl_fixed_t x,
                  wl_fixed_t y) {
-  MainLoopContext* context = static_cast<MainLoopContext*>(data);
+  EventTimeStack* stack = static_cast<EventTimeStack*>(data);
 
-  context->last_event_time = time;
+  stack->push_back(time);
 }
 
 void TouchFrame(void* data, wl_touch* touch) {}
 
 void TouchCancel(void* data, wl_touch* touch) {}
 
+struct Frame {
+  uint32_t time = 0;
+  bool callback_pending = false;
+};
+
 void FrameCallback(void* data, wl_callback* callback, uint32_t time) {
-  MainLoopContext* context = static_cast<MainLoopContext*>(data);
+  Frame* frame = static_cast<Frame*>(data);
 
   static uint32_t initial_time = time;
-  context->rotation = ((time - initial_time) / 1000.0) * kRotationSpeed;
-  context->frame_callback_pending = false;
+  frame->time = time - initial_time;
+  frame->callback_pending = false;
 }
 
 }  // namespace
 
-int MotionEventsMain() {
+class MotionEvents {
+ public:
+  MotionEvents() {}
+
+  // Initialize and run client main loop.
+  int Run();
+
+ private:
+  DISALLOW_COPY_AND_ASSIGN(MotionEvents);
+};
+
+int MotionEvents::Run() {
   std::unique_ptr<wl_display> display(wl_display_connect(nullptr));
   if (!display) {
     LOG(ERROR) << "wl_display_connect failed";
@@ -244,7 +254,7 @@ int MotionEventsMain() {
 
   wl_buffer_listener buffer_listener = {BufferRelease};
 
-  BufferState buffers[kBuffers];
+  Buffer buffers[kBuffers];
   base::SharedMemory shared_memory;
   shared_memory.CreateAndMapAnonymous(kMemorySize);
   std::unique_ptr<wl_shm_pool> shm_pool(
@@ -297,7 +307,7 @@ int MotionEventsMain() {
   wl_shell_surface_set_title(shell_surface.get(), "Test Client");
   wl_shell_surface_set_toplevel(shell_surface.get());
 
-  MainLoopContext context;
+  EventTimeStack event_times;
 
   std::unique_ptr<wl_pointer> pointer(
       static_cast<wl_pointer*>(wl_seat_get_pointer(globals.seat.get())));
@@ -310,7 +320,7 @@ int MotionEventsMain() {
       PointerEnter,      PointerLeave,    PointerMotion,
       PointerButton,     PointerAxis,     PointerFrame,
       PointerAxisSource, PointerAxisStop, PointerDiscrete};
-  wl_pointer_add_listener(pointer.get(), &pointer_listener, &context);
+  wl_pointer_add_listener(pointer.get(), &pointer_listener, &event_times);
 
   std::unique_ptr<wl_touch> touch(
       static_cast<wl_touch*>(wl_seat_get_touch(globals.seat.get())));
@@ -321,44 +331,62 @@ int MotionEventsMain() {
 
   wl_touch_listener touch_listener = {TouchDown, TouchUp, TouchMotion,
                                       TouchFrame, TouchCancel};
-  wl_touch_add_listener(touch.get(), &touch_listener, &context);
+  wl_touch_add_listener(touch.get(), &touch_listener, &event_times);
 
+  Frame frame;
   std::unique_ptr<wl_callback> frame_callback;
   wl_callback_listener frame_listener = {FrameCallback};
 
   do {
-    if (context.shutdown)
-      break;
-
-    if (context.frame_callback_pending)
+    if (frame.callback_pending)
       continue;
 
-    BufferState* buffer =
+    Buffer* buffer =
         std::find_if(std::begin(buffers), std::end(buffers),
-                     [](const BufferState& buffer) { return !buffer.busy; });
+                     [](const Buffer& buffer) { return !buffer.busy; });
     if (buffer == std::end(buffers))
       continue;
 
     SkCanvas* canvas = buffer->sk_surface->getCanvas();
     canvas->save();
-    canvas->clear(SkColorSetRGB((context.last_event_time & 0x0000ff) >> 0,
-                                (context.last_event_time & 0x00ff00) >> 8,
-                                (context.last_event_time & 0xff0000) >> 16));
+
+    // Clear background to black.
+    canvas->clear(SK_ColorBLACK);
+
+    // Split buffer into one horizontal rectangle for each event received since
+    // last frame. Latest event at the top.
+    if (!event_times.empty()) {
+      double y = 0;
+      double height = static_cast<double>(kHeight) / event_times.size();
+      while (!event_times.empty()) {
+        SkRect rect = SkRect::MakeXYWH(0, y, kWidth, height);
+        SkPaint paint;
+        paint.setColor(SkColorSetRGB((event_times.back() & 0x0000ff) >> 0,
+                                     (event_times.back() & 0x00ff00) >> 8,
+                                     (event_times.back() & 0xff0000) >> 16));
+        canvas->drawRect(rect, paint);
+        event_times.pop_back();
+        y += height;
+      }
+    }
+
+    // Draw a blue rotating rectangle on top.
     canvas->translate(SkIntToScalar(kWidth / 2), SkIntToScalar(kHeight / 2));
-    canvas->rotate(SkDoubleToScalar(context.rotation));
+    canvas->rotate(SkDoubleToScalar((frame.time / 1000.0f) * kRotationSpeed));
     SkRect rect = SkRect::MakeXYWH(-(kWidth / 4.0f), -(kHeight / 4.0f),
                                    kWidth / 2.0f, kHeight / 2.0f);
     SkPaint paint;
     paint.setColor(SK_ColorBLUE);
     canvas->drawRect(rect, paint);
+
     canvas->restore();
 
     wl_surface_attach(surface.get(), buffer->buffer.get(), 0, 0);
     buffer->busy = true;
 
     frame_callback.reset(wl_surface_frame(surface.get()));
-    wl_callback_add_listener(frame_callback.get(), &frame_listener, &context);
-    context.frame_callback_pending = true;
+    wl_callback_add_listener(frame_callback.get(), &frame_listener, &frame);
+    frame.callback_pending = true;
 
     wl_surface_commit(surface.get());
     wl_display_flush(display.get());
@@ -372,5 +400,5 @@ int MotionEventsMain() {
 }  // namespace exo
 
 int main() {
-  return exo::wayland::clients::MotionEventsMain();
+  return exo::wayland::clients::MotionEvents().Run();
 }
