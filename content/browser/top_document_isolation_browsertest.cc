@@ -278,9 +278,8 @@ IN_PROC_BROWSER_TEST_F(TopDocumentIsolationTest,
       DepictFrameTree(root()));
 }
 
-// Flaky. See http://crbug.com/611300.
 IN_PROC_BROWSER_TEST_F(TopDocumentIsolationTest,
-                       DISABLED_NavigateToSubframeSiteWithPopup2) {
+                       NavigateToSubframeSiteWithPopup2) {
   if (content::AreAllSitesIsolatedForTesting())
     return;  // Top Document Isolation is disabled in this mode.
 
@@ -365,7 +364,9 @@ IN_PROC_BROWSER_TEST_F(TopDocumentIsolationTest,
   // If we navigate the popup to a new site, it ought to transfer processes.
   GURL d_url(embedded_test_server()->GetURL(
       "d.com", "/cross_site_iframe_factory.html?d"));
+  RenderFrameDeletedObserver deleted_observer(popup_root->current_frame_host());
   NavigateToURL(popup, d_url);
+  deleted_observer.WaitUntilDeleted();
   EXPECT_EQ(
       " Site D ------------ proxies for B\n"
       "Where B = default subframe process\n"
@@ -382,15 +383,7 @@ IN_PROC_BROWSER_TEST_F(TopDocumentIsolationTest,
       DepictFrameTree(root()));
 }
 
-// Flaky on Mac. See https://crbug.com/611344.
-#if defined(OS_MACOSX)
-#define MAYBE_FramesForSitesInHistory DISABLED_FramesForSitesInHistory
-#else
-#define MAYBE_FramesForSitesInHistory FramesForSitesInHistory
-#endif
-
-IN_PROC_BROWSER_TEST_F(TopDocumentIsolationTest,
-                       MAYBE_FramesForSitesInHistory) {
+IN_PROC_BROWSER_TEST_F(TopDocumentIsolationTest, FramesForSitesInHistory) {
   if (content::AreAllSitesIsolatedForTesting())
     return;  // Top Document Isolation is disabled in this mode.
 
@@ -410,7 +403,14 @@ IN_PROC_BROWSER_TEST_F(TopDocumentIsolationTest,
       DepictFrameTree(root()));
 
   // Browser-initiated navigation to b.com.
-  NavigateToURL(shell(), b_url);
+  {
+    // For any cross-process navigations, we must wait for the old RenderFrame
+    // to be deleted before calling DepictFrameTree, or else there's a chance
+    // the old SiteInstance could be listed while pending deletion.
+    RenderFrameDeletedObserver deleted_observer(root()->current_frame_host());
+    NavigateToURL(shell(), b_url);
+    deleted_observer.WaitUntilDeleted();
+  }
   EXPECT_EQ(
       " Site B\n"
       "Where B = http://b.com/",
@@ -424,16 +424,24 @@ IN_PROC_BROWSER_TEST_F(TopDocumentIsolationTest,
       DepictFrameTree(root()));
 
   // Browser-initiated navigation to c.com.
-  NavigateToURL(shell(), c_url);
+  {
+    RenderFrameDeletedObserver deleted_observer(root()->current_frame_host());
+    NavigateToURL(shell(), c_url);
+    deleted_observer.WaitUntilDeleted();
+  }
   EXPECT_EQ(
       " Site C\n"
       "Where C = http://c.com/",
       DepictFrameTree(root()));
 
   // Now, navigate to a fourth site with iframes to the sites in the history.
-  NavigateToURL(shell(),
-                embedded_test_server()->GetURL(
-                    "d.com", "/cross_site_iframe_factory.html?d(a,b,c)"));
+  {
+    RenderFrameDeletedObserver deleted_observer(root()->current_frame_host());
+    NavigateToURL(shell(),
+                  embedded_test_server()->GetURL(
+                      "d.com", "/cross_site_iframe_factory.html?d(a,b,c)"));
+    deleted_observer.WaitUntilDeleted();
+  }
 
   EXPECT_EQ(
       " Site D ------------ proxies for E\n"
@@ -445,12 +453,20 @@ IN_PROC_BROWSER_TEST_F(TopDocumentIsolationTest,
       DepictFrameTree(root()));
 
   // Now try going back.
-  GoBack();
+  {
+    RenderFrameDeletedObserver deleted_observer(root()->current_frame_host());
+    GoBack();
+    deleted_observer.WaitUntilDeleted();
+  }
   EXPECT_EQ(
       " Site C\n"
       "Where C = http://c.com/",
       DepictFrameTree(root()));
-  GoBack();
+  {
+    RenderFrameDeletedObserver deleted_observer(root()->current_frame_host());
+    GoBack();
+    deleted_observer.WaitUntilDeleted();
+  }
   EXPECT_EQ(
       " Site B\n"
       "Where B = http://b.com/",
@@ -460,7 +476,11 @@ IN_PROC_BROWSER_TEST_F(TopDocumentIsolationTest,
       " Site B\n"
       "Where B = http://b.com/",
       DepictFrameTree(root()));
-  GoBack();
+  {
+    RenderFrameDeletedObserver deleted_observer(root()->current_frame_host());
+    GoBack();
+    deleted_observer.WaitUntilDeleted();
+  }
   EXPECT_EQ(
       " Site A\n"
       "Where A = http://a.com/",
