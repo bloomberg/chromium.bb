@@ -1,8 +1,8 @@
-// Copyright 2015 The Chromium Authors. All rights reserved.
+// Copyright 2016 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-package org.chromium.chrome.browser.crash;
+package org.chromium.components.minidump_uploader;
 
 import android.support.annotation.Nullable;
 
@@ -32,12 +32,14 @@ import java.util.regex.Pattern;
 public class CrashFileManager {
     private static final String TAG = "CrashFileManager";
 
-    @VisibleForTesting
-    static final String CRASH_DUMP_DIR = "Crash Reports";
+    /**
+     * The name of the crash directory.
+     */
+    public static final String CRASH_DUMP_DIR = "Crash Reports";
 
     // This should mirror the C++ CrashUploadList::kReporterLogFilename variable.
     @VisibleForTesting
-    static final String CRASH_DUMP_LOGFILE = "uploads.log";
+    public static final String CRASH_DUMP_LOGFILE = "uploads.log";
 
     private static final Pattern MINIDUMP_FIRST_TRY_PATTERN =
             Pattern.compile("\\.dmp([0-9]*)$\\z");
@@ -94,8 +96,10 @@ public class CrashFileManager {
         }
     };
 
-    @VisibleForTesting
-    static boolean deleteFile(File fileToDelete) {
+    /**
+     * Delete the file {@param fileToDelete}.
+     */
+    public static boolean deleteFile(File fileToDelete) {
         boolean isSuccess = fileToDelete.delete();
         if (!isSuccess) {
             Log.w(TAG, "Unable to delete " + fileToDelete.getAbsolutePath());
@@ -332,7 +336,7 @@ public class CrashFileManager {
     }
 
     @VisibleForTesting
-    File getCrashDirectory() {
+    public File getCrashDirectory() {
         return new File(mCacheDir, CRASH_DUMP_DIR);
     }
 
@@ -349,7 +353,10 @@ public class CrashFileManager {
         return f;
     }
 
-    File getCrashFile(String filename) {
+    /**
+     * @return the crash file named {@param filename}.
+     */
+    public File getCrashFile(String filename) {
         return new File(getCrashDirectory(), filename);
     }
 
@@ -361,7 +368,7 @@ public class CrashFileManager {
      * @param localId The local ID of the crash report.
      * @return The matching File, or null if no matching file is found.
      */
-    File getCrashFileWithLocalId(String localId) {
+    public File getCrashFileWithLocalId(String localId) {
         for (File f : listCrashFiles(null)) {
             // Only match non-uploaded or previously skipped files. In particular, do not match
             // successfully uploaded files; nor files which are not minidump files, such as logcat
@@ -380,7 +387,10 @@ public class CrashFileManager {
         return null;
     }
 
-    File getCrashUploadLogFile() {
+    /**
+     * @return the file used for logging crash upload events.
+     */
+    public File getCrashUploadLogFile() {
         return new File(getCrashDirectory(), CRASH_DUMP_LOGFILE);
     }
 

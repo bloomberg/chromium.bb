@@ -387,6 +387,7 @@ android_library("chrome_test_java") {
     "//components/invalidation/impl:javatests",
     "//components/location/android:location_java",
     "//components/minidump_uploader:minidump_uploader_java",
+    "//components/minidump_uploader:minidump_uploader_javatests",
     "//components/navigation_interception/android:navigation_interception_java",
     "//components/payments:payment_request_java",
     "//components/policy/android:policy_java",

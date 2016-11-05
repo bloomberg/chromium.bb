@@ -10,6 +10,8 @@ import android.content.Intent;
 import android.test.suitebuilder.annotation.MediumTest;
 
 import org.chromium.base.test.util.AdvancedMockContext;
+import org.chromium.components.minidump_uploader.CrashFileManager;
+import org.chromium.components.minidump_uploader.CrashTestCase;
 
 import java.io.BufferedReader;
 import java.io.File;
