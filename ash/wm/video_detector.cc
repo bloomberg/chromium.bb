@@ -119,7 +119,7 @@ void VideoDetector::OnDelegatedFrameDamage(
     const gfx::Rect& damage_rect_in_dip) {
   if (is_shutting_down_)
     return;
-  linked_ptr<WindowInfo>& info = window_infos_[window];
+  std::unique_ptr<WindowInfo>& info = window_infos_[window];
   if (!info.get())
     info.reset(new WindowInfo);
 
