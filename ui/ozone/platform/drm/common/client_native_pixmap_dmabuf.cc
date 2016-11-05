@@ -13,7 +13,7 @@
 #include "base/process/memory.h"
 #include "base/trace_event/trace_event.h"
 
-#if defined(OS_CHROMEOS)
+#if defined(USE_OZONE)
 // TODO(vignatti): replace the local definitions below with #include
 // <linux/dma-buf.h> once kernel version 4.6 becomes widely used.
 #include <linux/types.h>
