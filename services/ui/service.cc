@@ -18,6 +18,8 @@
 #include "services/service_manager/public/c/main.h"
 #include "services/service_manager/public/cpp/connection.h"
 #include "services/service_manager/public/cpp/connector.h"
+#include "services/service_manager/public/cpp/interface_registry.h"
+#include "services/service_manager/public/cpp/service_context.h"
 #include "services/tracing/public/cpp/provider.h"
 #include "services/ui/clipboard/clipboard_impl.h"
 #include "services/ui/common/switches.h"
@@ -135,9 +137,9 @@ void Service::AddUserIfNecessary(
   window_server_->user_id_tracker()->AddUserId(remote_identity.user_id());
 }
 
-void Service::OnStart(const service_manager::ServiceInfo& info) {
+void Service::OnStart(service_manager::ServiceContext* context) {
   base::PlatformThread::SetName("mus");
-  tracing_.Initialize(connector(), info.identity.name());
+  tracing_.Initialize(context->connector(), context->identity().name());
   TRACE_EVENT0("mus", "Service::Initialize started");
 
   test_config_ = base::CommandLine::ForCurrentProcess()->HasSwitch(
@@ -148,7 +150,7 @@ void Service::OnStart(const service_manager::ServiceInfo& info) {
     ui::test::SetUseOverrideRedirectWindowByDefault(true);
 #endif
 
-  InitializeResources(connector());
+  InitializeResources(context->connector());
 
 #if defined(USE_OZONE)
   // The ozone platform can provide its own event source. So initialize the
@@ -156,7 +158,7 @@ void Service::OnStart(const service_manager::ServiceInfo& info) {
   // Because GL libraries need to be initialized before entering the sandbox,
   // in MUS, |InitializeForUI| will load the GL libraries.
   ui::OzonePlatform::InitParams params;
-  params.connector = connector();
+  params.connector = context->connector();
   params.single_process = false;
   ui::OzonePlatform::InitializeForUI(params);
 
@@ -191,7 +193,7 @@ void Service::OnStart(const service_manager::ServiceInfo& info) {
     touch_controller_.reset(
         new ws::TouchController(window_server_->display_manager()));
 
-  ime_server_.Init(connector());
+  ime_server_.Init(context->connector());
 }
 
 bool Service::OnConnect(const service_manager::ServiceInfo& remote_info,

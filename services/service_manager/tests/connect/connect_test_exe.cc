@@ -5,12 +5,14 @@
 #include "base/at_exit.h"
 #include "base/command_line.h"
 #include "base/macros.h"
+#include "base/memory/ptr_util.h"
 #include "mojo/public/cpp/bindings/binding_set.h"
 #include "services/service_manager/public/cpp/connection.h"
 #include "services/service_manager/public/cpp/connector.h"
 #include "services/service_manager/public/cpp/interface_factory.h"
 #include "services/service_manager/public/cpp/interface_registry.h"
 #include "services/service_manager/public/cpp/service.h"
+#include "services/service_manager/public/cpp/service_context.h"
 #include "services/service_manager/runner/child/test_native_main.h"
 #include "services/service_manager/runner/init.h"
 #include "services/service_manager/tests/connect/connect_test.mojom.h"
@@ -29,9 +31,10 @@ class Target : public service_manager::Service,
 
  private:
   // service_manager::Service:
-  void OnStart(const service_manager::ServiceInfo& info) override {
-    identity_ = info.identity;
+  void OnStart(service_manager::ServiceContext* context) override {
+    identity_ = context->identity();
   }
+
   bool OnConnect(const service_manager::ServiceInfo& remote_info,
                  service_manager::InterfaceRegistry* registry) override {
     registry->AddInterface<ConnectTestService>(this);
@@ -65,7 +68,5 @@ int main(int argc, char** argv) {
   base::CommandLine::Init(argc, argv);
 
   service_manager::InitializeLogging();
-
-  Target target;
-  return service_manager::TestNativeMain(&target);
+  return service_manager::TestNativeMain(base::MakeUnique<Target>());
 }

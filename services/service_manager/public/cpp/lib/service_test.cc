@@ -9,21 +9,31 @@
 #include "base/run_loop.h"
 #include "services/service_manager/background/background_service_manager.h"
 #include "services/service_manager/public/cpp/service.h"
+#include "services/service_manager/public/cpp/service_context.h"
 
 namespace service_manager {
 namespace test {
 
 ServiceTestClient::ServiceTestClient(ServiceTest* test) : test_(test) {}
+
 ServiceTestClient::~ServiceTestClient() {}
 
-void ServiceTestClient::OnStart(const ServiceInfo& info) {
-  test_->OnStartCalled(connector(), info.identity.name(),
-                       info.identity.user_id());
+void ServiceTestClient::OnStart(ServiceContext* context) {
+  test_->OnStartCalled(context->connector(), context->identity().name(),
+                       context->identity().user_id());
 }
 
+bool ServiceTestClient::OnConnect(const ServiceInfo& remote_info,
+                                  InterfaceRegistry* registry) {
+  return false;
+}
+
+
 ServiceTest::ServiceTest() {}
+
 ServiceTest::ServiceTest(const std::string& test_name)
     : test_name_(test_name) {}
+
 ServiceTest::~ServiceTest() {}
 
 void ServiceTest::InitTestName(const std::string& test_name) {
@@ -32,11 +42,11 @@ void ServiceTest::InitTestName(const std::string& test_name) {
 }
 
 std::unique_ptr<Service> ServiceTest::CreateService() {
-  return base::WrapUnique(new ServiceTestClient(this));
+  return base::MakeUnique<ServiceTestClient>(this);
 }
 
 std::unique_ptr<base::MessageLoop> ServiceTest::CreateMessageLoop() {
-  return base::WrapUnique(new base::MessageLoop);
+  return base::MakeUnique<base::MessageLoop>();
 }
 
 void ServiceTest::OnStartCalled(Connector* connector,
@@ -49,7 +59,6 @@ void ServiceTest::OnStartCalled(Connector* connector,
 }
 
 void ServiceTest::SetUp() {
-  service_ = CreateService();
   message_loop_ = CreateMessageLoop();
   background_service_manager_.reset(
       new service_manager::BackgroundServiceManager);
@@ -62,10 +71,10 @@ void ServiceTest::SetUp() {
       base::MessageLoop::current());
   initialize_called_ = run_loop.QuitClosure();
 
-  service_->set_context(base::MakeUnique<ServiceContext>(
-      service_.get(),
+  context_.reset(new ServiceContext(
+      CreateService(),
       background_service_manager_->CreateServiceRequest(test_name_)));
-  connector_ = service_->connector();
+  connector_ = context_->connector();
 
   run_loop.Run();
 }
@@ -73,7 +82,7 @@ void ServiceTest::SetUp() {
 void ServiceTest::TearDown() {
   background_service_manager_.reset();
   message_loop_.reset();
-  service_.reset();
+  context_.reset();
 }
 
 }  // namespace test

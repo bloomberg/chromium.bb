@@ -10,6 +10,7 @@
 #include "mojo/public/cpp/bindings/strong_binding.h"
 #include "services/navigation/view_impl.h"
 #include "services/service_manager/public/cpp/connector.h"
+#include "services/service_manager/public/cpp/interface_registry.h"
 
 namespace navigation {
 

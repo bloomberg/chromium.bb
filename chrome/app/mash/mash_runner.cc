@@ -132,15 +132,14 @@ void MashRunner::RunMain() {
       init_params(new service_manager::BackgroundServiceManager::InitParams);
   init_params->native_runner_delegate = &native_runner_delegate;
   background_service_manager.Init(std::move(init_params));
-  service_.reset(new mash::MashPackagedService);
-  service_->set_context(base::MakeUnique<service_manager::ServiceContext>(
-      service_.get(),
+  context_.reset(new service_manager::ServiceContext(
+      base::MakeUnique<mash::MashPackagedService>(),
       background_service_manager.CreateServiceRequest(kChromeMashServiceName)));
 
   // We need to send a sync messages to the Catalog, so we wait for a completed
   // connection first.
   std::unique_ptr<service_manager::Connection> catalog_connection =
-      service_->connector()->Connect("service:catalog");
+      context_->connector()->Connect("service:catalog");
   {
     base::RunLoop run_loop;
     catalog_connection->AddConnectionCompletedClosure(run_loop.QuitClosure());
@@ -164,7 +163,7 @@ void MashRunner::RunMain() {
       GetPackageManifestPath(kChromeContentUtilityPackageName)));
 
   // Ping mash_session to ensure an instance is brought up
-  service_->connector()->Connect("service:mash_session");
+  context_->connector()->Connect("service:mash_session");
   base::RunLoop().Run();
 }
 
@@ -182,9 +181,9 @@ void MashRunner::StartChildApp(
   // going to be mojo:ui at this point. So always create a TYPE_UI message loop
   // for now.
   base::MessageLoop message_loop(base::MessageLoop::TYPE_UI);
-  service_.reset(new mash::MashPackagedService);
-  service_->set_context(base::MakeUnique<service_manager::ServiceContext>(
-      service_.get(), std::move(service_request)));
+  context_.reset(new service_manager::ServiceContext(
+      base::MakeUnique<mash::MashPackagedService>(),
+      std::move(service_request)));
   base::RunLoop().Run();
 }
 

@@ -16,34 +16,26 @@
 #include "services/service_manager/public/interfaces/service.mojom.h"
 #include "services/service_manager/tests/lifecycle/lifecycle_unittest.mojom.h"
 
-using LifecycleControl = service_manager::test::mojom::LifecycleControl;
-using LifecycleControlRequest =
-    service_manager::test::mojom::LifecycleControlRequest;
-
 namespace service_manager {
-class ServiceContext;
-
 namespace test {
 
 class AppClient : public Service,
-                  public InterfaceFactory<LifecycleControl>,
-                  public LifecycleControl {
+                  public InterfaceFactory<mojom::LifecycleControl>,
+                  public mojom::LifecycleControl {
  public:
   AppClient();
-  explicit AppClient(service_manager::mojom::ServiceRequest request);
   ~AppClient() override;
 
-  void set_runner(ServiceRunner* runner) {
-    runner_ = runner;
-  }
+  void set_runner(ServiceRunner* runner) { runner_ = runner; }
 
-  // Service:
+  // Serivce:
+  void OnStart(ServiceContext* context) override;
   bool OnConnect(const ServiceInfo& remote_info,
                  InterfaceRegistry* registry) override;
 
   // InterfaceFactory<LifecycleControl>:
   void Create(const Identity& remote_identity,
-              LifecycleControlRequest request) override;
+              mojom::LifecycleControlRequest request) override;
 
   // LifecycleControl:
   void Ping(const PingCallback& callback) override;
@@ -52,11 +44,13 @@ class AppClient : public Service,
   void CloseServiceManagerConnection() override;
 
  private:
+  class ServiceImpl;
+
   void BindingLost();
 
+  ServiceContext* context_;
   ServiceRunner* runner_ = nullptr;
-  mojo::BindingSet<LifecycleControl> bindings_;
-  std::unique_ptr<ServiceContext> context_;
+  mojo::BindingSet<mojom::LifecycleControl> bindings_;
 
   DISALLOW_COPY_AND_ASSIGN(AppClient);
 };

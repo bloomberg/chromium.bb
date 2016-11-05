@@ -4,6 +4,7 @@
 
 #include "services/service_manager/tests/lifecycle/app_client.h"
 
+#include "base/macros.h"
 #include "services/service_manager/public/cpp/interface_registry.h"
 #include "services/service_manager/public/cpp/service_context.h"
 
@@ -11,18 +12,21 @@ namespace service_manager {
 namespace test {
 
 AppClient::AppClient() {}
-AppClient::AppClient(service_manager::mojom::ServiceRequest request)
-    : context_(new ServiceContext(this, std::move(request))) {}
+
 AppClient::~AppClient() {}
+
+void AppClient::OnStart(ServiceContext* context) {
+  context_ = context;
+}
 
 bool AppClient::OnConnect(const ServiceInfo& remote_info,
                           InterfaceRegistry* registry) {
-  registry->AddInterface<LifecycleControl>(this);
+  registry->AddInterface<mojom::LifecycleControl>(this);
   return true;
 }
 
 void AppClient::Create(const Identity& remote_identity,
-                       LifecycleControlRequest request) {
+                       mojom::LifecycleControlRequest request) {
   bindings_.AddBinding(this, std::move(request));
 }
 
@@ -42,9 +46,7 @@ void AppClient::Crash() {
 }
 
 void AppClient::CloseServiceManagerConnection() {
-  DCHECK(runner_);
-  runner_->DestroyServiceContext();
-  // Quit the app once the caller goes away.
+  context_->DisconnectFromServiceManager();
   bindings_.set_connection_error_handler(
       base::Bind(&AppClient::BindingLost, base::Unretained(this)));
 }

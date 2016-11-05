@@ -250,7 +250,8 @@ void InterfaceRegistry::RebuildExposedInterfaces() {
 }
 
 void InterfaceRegistry::OnConnectionError() {
-  for (const auto& closure : connection_lost_closures_)
+  std::list<base::Closure> closures = connection_lost_closures_;
+  for (const auto& closure : closures)
     closure.Run();
 }
 

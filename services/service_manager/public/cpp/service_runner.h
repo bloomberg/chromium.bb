@@ -48,18 +48,13 @@ class ServiceRunner {
   // Calls Run above with |init_base| set to |true|.
   MojoResult Run(MojoHandle service_manager_handle);
 
-  // Allows the caller to shut down the connection with the Service Manager.
-  // After the Service Manager notices the pipe has closed, it will no longer
-  // track an instance of this service, though this service may continue to run
-  // and handle requests from others.
-  void DestroyServiceContext();
-
   // Allows the caller to explicitly quit the service. Must be called from
   // the thread which created the ServiceRunner.
   void Quit();
 
  private:
   std::unique_ptr<Service> service_;
+  std::unique_ptr<ServiceContext> context_;
 
   // MessageLoop type. Default is TYPE_DEFAULT.
   base::MessageLoop::Type message_loop_type_;

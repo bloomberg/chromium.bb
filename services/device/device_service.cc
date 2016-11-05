@@ -23,7 +23,7 @@ DeviceService::DeviceService(
 
 DeviceService::~DeviceService() {}
 
-void DeviceService::OnStart(const service_manager::ServiceInfo& info) {}
+void DeviceService::OnStart(service_manager::ServiceContext* context) {}
 
 bool DeviceService::OnConnect(const service_manager::ServiceInfo& remote_info,
                               service_manager::InterfaceRegistry* registry) {

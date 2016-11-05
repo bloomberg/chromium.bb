@@ -184,6 +184,7 @@
 #include "ppapi/host/ppapi_host.h"
 #include "printing/features/features.h"
 #include "services/service_manager/public/cpp/interface_provider.h"
+#include "services/service_manager/public/cpp/interface_registry.h"
 #include "services/service_manager/public/cpp/service.h"
 #include "storage/browser/fileapi/external_mount_points.h"
 #include "third_party/WebKit/public/platform/modules/webshare/webshare.mojom.h"

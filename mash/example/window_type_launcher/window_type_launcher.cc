@@ -16,7 +16,9 @@
 #include "services/service_manager/public/c/main.h"
 #include "services/service_manager/public/cpp/connection.h"
 #include "services/service_manager/public/cpp/connector.h"
+#include "services/service_manager/public/cpp/interface_registry.h"
 #include "services/service_manager/public/cpp/service.h"
+#include "services/service_manager/public/cpp/service_context.h"
 #include "services/service_manager/public/cpp/service_runner.h"
 #include "services/ui/public/cpp/property_type_converters.h"
 #include "ui/aura/window.h"
@@ -470,11 +472,12 @@ void WindowTypeLauncher::RemoveWindow(views::Widget* window) {
     base::MessageLoop::current()->QuitWhenIdle();
 }
 
-void WindowTypeLauncher::OnStart(const service_manager::ServiceInfo& info) {
-  aura_init_ = base::MakeUnique<views::AuraInit>(connector(), info.identity,
-                                                 "views_mus_resources.pak");
-  window_manager_connection_ =
-      views::WindowManagerConnection::Create(connector(), info.identity);
+void WindowTypeLauncher::OnStart(service_manager::ServiceContext* context) {
+  context_ = context;
+  aura_init_ = base::MakeUnique<views::AuraInit>(
+      context->connector(), context->identity(), "views_mus_resources.pak");
+  window_manager_connection_ = views::WindowManagerConnection::Create(
+      context->connector(), context->identity());
 }
 
 bool WindowTypeLauncher::OnConnect(
@@ -493,7 +496,7 @@ void WindowTypeLauncher::Launch(uint32_t what, mash::mojom::LaunchMode how) {
   }
   views::Widget* window = new views::Widget;
   views::Widget::InitParams params(views::Widget::InitParams::TYPE_WINDOW);
-  params.delegate = new WindowTypeLauncherView(this, connector());
+  params.delegate = new WindowTypeLauncherView(this, context_->connector());
   window->Init(params);
   window->Show();
   windows_.push_back(window);

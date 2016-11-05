@@ -5,64 +5,57 @@
 #ifndef SERVICES_SERVICE_MANAGER_PUBLIC_CPP_SERVICE_H_
 #define SERVICES_SERVICE_MANAGER_PUBLIC_CPP_SERVICE_H_
 
-#include <stdint.h>
-#include <string>
-
-#include "base/macros.h"
-#include "services/service_manager/public/cpp/interface_registry.h"
-
 namespace service_manager {
 
-class Connector;
-class Identity;
 class InterfaceRegistry;
 class ServiceContext;
 struct ServiceInfo;
 
 // The primary contract between a Service and the Service Manager, receiving
-// lifecycle notifications and connection requests.
+// lifecycle notifications and connection requests. Every Service must minimally
+// implement OnConnect().
 class Service {
  public:
-  Service();
   virtual ~Service();
 
   // Called once a bidirectional connection with the Service Manager has been
   // established.
-  // |info| contains information about this instance from the Service Manager
-  // and the service manifest.
+  //
+  // |context| is the ServiceContext for this instance of the service. It's
+  // guaranteed to outlive the Service instance and therefore may be retained by
+  // it.
+  //
+  // Use the context to retrieve information about the service instance, make
+  // outgoing service connections, and issue other requests to the Service
+  // Manager on behalf of this instance.
+  //
   // Called exactly once before any calls to OnConnect().
-  virtual void OnStart(const ServiceInfo& info);
+  virtual void OnStart(ServiceContext* context);
 
-  // Called when a connection to this service is brokered by the Service
-  // Manager. Implement to expose interfaces to the remote service. Return true
-  // if the connection should succeed. Return false if the connection should
-  // be rejected and the underlying pipe closed. The default implementation
-  // returns false.
+  // Called each time a connection to this service is brokered by the Service
+  // Manager. Implement this to expose interfaces to other services.
+  //
+  // Return true if the connection should succeed or false if the connection
+  // should be rejected.
   virtual bool OnConnect(const ServiceInfo& remote_info,
-                         InterfaceRegistry* registry);
+                         InterfaceRegistry* registry) = 0;
 
   // Called when the Service Manager has stopped tracking this instance. The
-  // service should use this as a signal to exit, and in fact its process may
-  // be reaped shortly afterward.
-  // Return true from this method to tell the ServiceContext to run its
-  // connection lost closure if it has one, false to prevent it from being run.
+  // service should use this as a signal to shut down, and in fact its process
+  // may be reaped shortly afterward if applicable.
+  //
+  // Return true from this method to tell the ServiceContext to signal its
+  // shutdown extenrally (i.e. to invoke it's "connection lost" closure if set),
+  // or return false to defer the signal. If deferred, the Service should
+  // explicitly call QuitNow() on the ServiceContext when it's ready to be
+  // torn down.
+  //
   // The default implementation returns true.
-  // When used in conjunction with ApplicationRunner, returning true here quits
-  // the message loop created by ApplicationRunner, which results in the service
-  // quitting.
-  // No calls to either OnStart() nor OnConnect() may be received after this is
-  // called. It is however possible for this to be called without OnStart() ever
-  // having been called.
+  //
+  // While it's possible for this to be invoked before either OnStart() or
+  // OnConnect() is invoked, neither will be invoked at any point after this
+  // OnStop().
   virtual bool OnStop();
-
-  Connector* connector();
-  ServiceContext* context();
-  void set_context(std::unique_ptr<ServiceContext> context);
-
- private:
-  std::unique_ptr<ServiceContext> context_;
-
-  DISALLOW_COPY_AND_ASSIGN(Service);
 };
 
 }  // namespace service_manager

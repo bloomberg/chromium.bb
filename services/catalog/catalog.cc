@@ -7,6 +7,7 @@
 #include "base/bind.h"
 #include "base/files/file_path.h"
 #include "base/files/scoped_temp_dir.h"
+#include "base/macros.h"
 #include "base/memory/ptr_util.h"
 #include "base/path_service.h"
 #include "base/strings/string_split.h"
@@ -19,6 +20,7 @@
 #include "services/catalog/instance.h"
 #include "services/catalog/reader.h"
 #include "services/service_manager/public/cpp/connection.h"
+#include "services/service_manager/public/cpp/interface_registry.h"
 #include "services/service_manager/public/cpp/names.h"
 #include "services/service_manager/public/cpp/service_context.h"
 
@@ -72,6 +74,27 @@ base::FilePath GetPathForApplicationName(const std::string& application_name) {
 
 }  // namespace
 
+class Catalog::ServiceImpl : public service_manager::Service {
+ public:
+  explicit ServiceImpl(Catalog* catalog) : catalog_(catalog) {}
+  ~ServiceImpl() override {}
+
+  // service_manager::Service:
+  bool OnConnect(const service_manager::ServiceInfo& remote_info,
+                 service_manager::InterfaceRegistry* registry) override {
+    registry->AddInterface<mojom::Catalog>(catalog_);
+    registry->AddInterface<mojom::CatalogControl>(catalog_);
+    registry->AddInterface<filesystem::mojom::Directory>(catalog_);
+    registry->AddInterface<service_manager::mojom::Resolver>(catalog_);
+    return true;
+  }
+
+ private:
+  Catalog* const catalog_;
+
+  DISALLOW_COPY_AND_ASSIGN(ServiceImpl);
+};
+
 Catalog::Catalog(base::SequencedWorkerPool* worker_pool,
                  std::unique_ptr<Store> store,
                  ManifestProvider* manifest_provider)
@@ -102,8 +125,8 @@ service_manager::mojom::ServicePtr Catalog::TakeService() {
 Catalog::Catalog(std::unique_ptr<Store> store)
     : store_(std::move(store)), weak_factory_(this) {
   service_manager::mojom::ServiceRequest request = GetProxy(&service_);
-  service_manager_connection_.reset(
-      new service_manager::ServiceContext(this, std::move(request)));
+  service_context_.reset(new service_manager::ServiceContext(
+      base::MakeUnique<ServiceImpl>(this), std::move(request)));
 }
 
 void Catalog::ScanSystemPackageDir() {
@@ -113,15 +136,6 @@ void Catalog::ScanSystemPackageDir() {
   system_reader_->Read(system_package_dir, &system_cache_,
                        base::Bind(&Catalog::SystemPackageDirScanned,
                                   weak_factory_.GetWeakPtr()));
-}
-
-bool Catalog::OnConnect(const service_manager::ServiceInfo& remote_info,
-                        service_manager::InterfaceRegistry* registry) {
-  registry->AddInterface<mojom::Catalog>(this);
-  registry->AddInterface<mojom::CatalogControl>(this);
-  registry->AddInterface<filesystem::mojom::Directory>(this);
-  registry->AddInterface<service_manager::mojom::Resolver>(this);
-  return true;
 }
 
 void Catalog::Create(const service_manager::Identity& remote_identity,

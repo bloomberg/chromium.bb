@@ -24,7 +24,7 @@ class LevelDBApp
 
  private:
   // |Service| override:
-  void OnStart(const service_manager::ServiceInfo& info) override;
+  void OnStart(service_manager::ServiceContext* context) override;
   bool OnConnect(const service_manager::ServiceInfo& remote_info,
                  service_manager::InterfaceRegistry* registry) override;
 

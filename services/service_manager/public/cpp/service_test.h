@@ -10,7 +10,6 @@
 #include "base/macros.h"
 #include "services/service_manager/public/cpp/connector.h"
 #include "services/service_manager/public/cpp/service.h"
-#include "services/service_manager/public/cpp/service_context.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace base {
@@ -20,6 +19,7 @@ class MessageLoop;
 namespace service_manager {
 
 class BackgroundServiceManager;
+class ServiceContext;
 
 namespace test {
 
@@ -35,7 +35,9 @@ class ServiceTestClient : public Service {
   ~ServiceTestClient() override;
 
  protected:
-  void OnStart(const ServiceInfo& info) override;
+  void OnStart(ServiceContext* context) override;
+  bool OnConnect(const ServiceInfo& remote_info,
+                 InterfaceRegistry* registry) override;
 
  private:
   ServiceTest* test_;
@@ -84,11 +86,9 @@ class ServiceTest : public testing::Test {
  private:
   friend ServiceTestClient;
 
-  std::unique_ptr<Service> service_;
-
+  std::unique_ptr<ServiceContext> context_;
   std::unique_ptr<base::MessageLoop> message_loop_;
   std::unique_ptr<BackgroundServiceManager> background_service_manager_;
-  std::unique_ptr<ServiceContext> service_context_;
 
   // See constructor.
   std::string test_name_;

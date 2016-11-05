@@ -5,11 +5,13 @@
 #ifndef SERVICES_SERVICE_MANAGER_RUNNER_CHILD_TEST_NATIVE_MAIN_H_
 #define SERVICES_SERVICE_MANAGER_RUNNER_CHILD_TEST_NATIVE_MAIN_H_
 
+#include <memory>
+
 namespace service_manager {
 
 class Service;
 
-int TestNativeMain(Service* service);
+int TestNativeMain(std::unique_ptr<Service> service);
 
 }  // namespace service_manager
 

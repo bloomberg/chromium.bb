@@ -44,14 +44,14 @@ void MashPackagedService::Create(
 void MashPackagedService::CreateService(
     service_manager::mojom::ServiceRequest request,
     const std::string& mojo_name) {
-  if (service_) {
+  if (context_) {
     LOG(ERROR) << "request to create additional service " << mojo_name;
     return;
   }
-  service_ = CreateService(mojo_name);
-  if (service_) {
-    service_->set_context(base::MakeUnique<service_manager::ServiceContext>(
-        service_.get(), std::move(request)));
+  std::unique_ptr<service_manager::Service> service = CreateService(mojo_name);
+  if (service) {
+    context_.reset(new service_manager::ServiceContext(
+        std::move(service), std::move(request)));
     return;
   }
   LOG(ERROR) << "unknown name " << mojo_name;

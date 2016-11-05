@@ -17,7 +17,10 @@
 #include "mash/login/public/interfaces/login.mojom.h"
 #include "mojo/public/cpp/bindings/binding_set.h"
 #include "services/service_manager/public/cpp/connector.h"
+#include "services/service_manager/public/cpp/interface_factory.h"
+#include "services/service_manager/public/cpp/interface_registry.h"
 #include "services/service_manager/public/cpp/service.h"
+#include "services/service_manager/public/cpp/service_context.h"
 #include "services/tracing/public/cpp/provider.h"
 #include "services/ui/public/cpp/property_type_converters.h"
 #include "services/ui/public/interfaces/user_access_manager.mojom.h"
@@ -141,22 +144,24 @@ class Login : public service_manager::Service,
   void LoginAs(const std::string& user_id) {
     user_access_manager_->SetActiveUser(user_id);
     mash::init::mojom::InitPtr init;
-    connector()->ConnectToInterface("service:mash_init", &init);
+    context_->connector()->ConnectToInterface("service:mash_init", &init);
     init->StartService("service:mash_session", user_id);
   }
 
  private:
   // service_manager::Service:
-  void OnStart(const service_manager::ServiceInfo& info) override {
-    identity_ = info.identity;
-    tracing_.Initialize(connector(), identity_.name());
+  void OnStart(service_manager::ServiceContext* context) override {
+    context_ = context;
+    tracing_.Initialize(context->connector(), context->identity().name());
 
-    aura_init_ = base::MakeUnique<views::AuraInit>(connector(), info.identity,
-                                                   "views_mus_resources.pak");
+    aura_init_ = base::MakeUnique<views::AuraInit>(
+        context->connector(), context->identity(), "views_mus_resources.pak");
 
-    connector()->ConnectToInterface("service:ui", &user_access_manager_);
-    user_access_manager_->SetActiveUser(identity_.user_id());
+    context->connector()->ConnectToInterface(
+        "service:ui", &user_access_manager_);
+    user_access_manager_->SetActiveUser(context->identity().user_id());
   }
+
   bool OnConnect(const service_manager::ServiceInfo& remote_info,
                  service_manager::InterfaceRegistry* registry) override {
     registry->AddInterface<mojom::Login>(this);
@@ -171,15 +176,16 @@ class Login : public service_manager::Service,
 
   // mojom::Login:
   void ShowLoginUI() override {
-    UI::Show(connector(), identity_, this);
+    UI::Show(context_->connector(), context_->identity(), this);
   }
   void SwitchUser() override {
-    UI::Show(connector(), identity_, this);
+    UI::Show(context_->connector(), context_->identity(), this);
   }
 
   void StartWindowManager();
 
-  service_manager::Identity identity_;
+  service_manager::ServiceContext* context_ = nullptr;
+
   tracing::Provider tracing_;
   std::unique_ptr<views::AuraInit> aura_init_;
   mojo::BindingSet<mojom::Login> bindings_;

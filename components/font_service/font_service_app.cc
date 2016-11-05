@@ -10,6 +10,8 @@
 #include "base/files/file_path.h"
 #include "mojo/public/cpp/system/platform_handle.h"
 #include "services/service_manager/public/cpp/connection.h"
+#include "services/service_manager/public/cpp/interface_registry.h"
+#include "services/service_manager/public/cpp/service_context.h"
 
 static_assert(
     static_cast<uint32_t>(SkFontStyle::kUpright_Slant) ==
@@ -48,8 +50,8 @@ FontServiceApp::FontServiceApp() {}
 
 FontServiceApp::~FontServiceApp() {}
 
-void FontServiceApp::OnStart(const service_manager::ServiceInfo& info) {
-  tracing_.Initialize(connector(), info.identity.name());
+void FontServiceApp::OnStart(service_manager::ServiceContext* context) {
+  tracing_.Initialize(context->connector(), context->identity().name());
 }
 
 bool FontServiceApp::OnConnect(const service_manager::ServiceInfo& remote_info,

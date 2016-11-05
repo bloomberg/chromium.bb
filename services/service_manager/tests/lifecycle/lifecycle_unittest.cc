@@ -10,6 +10,7 @@
 #include "base/memory/ptr_util.h"
 #include "base/process/process.h"
 #include "base/run_loop.h"
+#include "mojo/public/cpp/bindings/binding.h"
 #include "services/service_manager/public/cpp/identity.h"
 #include "services/service_manager/public/cpp/service_test.h"
 #include "services/service_manager/public/interfaces/service_manager.mojom.h"

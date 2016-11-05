@@ -17,7 +17,9 @@
 #include "services/service_manager/public/c/main.h"
 #include "services/service_manager/public/cpp/connector.h"
 #include "services/service_manager/public/cpp/interface_factory.h"
+#include "services/service_manager/public/cpp/interface_registry.h"
 #include "services/service_manager/public/cpp/service.h"
+#include "services/service_manager/public/cpp/service_context.h"
 #include "services/service_manager/public/cpp/service_runner.h"
 #include "services/service_manager/public/interfaces/service_factory.mojom.h"
 #include "services/service_manager/tests/connect/connect_test.mojom.h"
@@ -48,8 +50,7 @@ class ProvidedService
       public test::mojom::UserIdTest,
       public base::SimpleThread {
  public:
-  ProvidedService(const std::string& title,
-                      mojom::ServiceRequest request)
+  ProvidedService(const std::string& title, mojom::ServiceRequest request)
       : base::SimpleThread(title),
         title_(title),
         request_(std::move(request)) {
@@ -61,12 +62,13 @@ class ProvidedService
 
  private:
   // service_manager::Service:
-  void OnStart(const ServiceInfo& info) override {
-    identity_ = info.identity;
+  void OnStart(ServiceContext* context) override {
+    context_ = context;
     bindings_.set_connection_error_handler(
         base::Bind(&ProvidedService::OnConnectionError,
                    base::Unretained(this)));
   }
+
   bool OnConnect(const ServiceInfo& remote_info,
                  InterfaceRegistry* registry) override {
     registry->AddInterface<test::mojom::ConnectTestService>(this);
@@ -76,10 +78,10 @@ class ProvidedService
     test::mojom::ConnectionStatePtr state(test::mojom::ConnectionState::New());
     state->connection_remote_name = remote_info.identity.name();
     state->connection_remote_userid = remote_info.identity.user_id();
-    state->initialize_local_name = identity_.name();
-    state->initialize_userid = identity_.user_id();
+    state->initialize_local_name = context_->identity().name();
+    state->initialize_userid = context_->identity().user_id();
 
-    connector()->ConnectToInterface(remote_info.identity, &caller_);
+    context_->connector()->ConnectToInterface(remote_info.identity, &caller_);
     caller_->ConnectionAccepted(std::move(state));
 
     return true;
@@ -108,7 +110,7 @@ class ProvidedService
     callback.Run(title_);
   }
   void GetInstance(const GetInstanceCallback& callback) override {
-    callback.Run(identity_.instance());
+    callback.Run(context_->identity().instance());
   }
 
   // test::mojom::BlockedInterface:
@@ -122,7 +124,7 @@ class ProvidedService
       const ConnectToClassAppAsDifferentUserCallback& callback) override {
     Connector::ConnectParams params(target);
     std::unique_ptr<Connection> connection =
-        connector()->Connect(&params);
+        context_->connector()->Connect(&params);
     {
       base::RunLoop loop;
       connection->AddConnectionCompletedClosure(base::Bind(&QuitLoop, &loop));
@@ -146,7 +148,7 @@ class ProvidedService
       base::MessageLoop::current()->QuitWhenIdle();
   }
 
-  Identity identity_;
+  ServiceContext* context_ = nullptr;
   const std::string title_;
   mojom::ServiceRequest request_;
   test::mojom::ExposedInterfacePtr caller_;
@@ -169,8 +171,8 @@ class ConnectTestService
 
  private:
   // service_manager::Service:
-  void OnStart(const ServiceInfo& info) override {
-    identity_ = info.identity;
+  void OnStart(ServiceContext* context) override {
+    identity_ = context->identity();
     bindings_.set_connection_error_handler(
         base::Bind(&ConnectTestService::OnConnectionError,
                    base::Unretained(this)));

@@ -7,11 +7,15 @@
 #include "base/at_exit.h"
 #include "base/command_line.h"
 #include "base/macros.h"
+#include "base/memory/ptr_util.h"
 #include "base/process/process.h"
 #include "mojo/public/cpp/bindings/binding_set.h"
 #include "services/service_manager/public/cpp/connection.h"
 #include "services/service_manager/public/cpp/connector.h"
+#include "services/service_manager/public/cpp/interface_factory.h"
+#include "services/service_manager/public/cpp/interface_registry.h"
 #include "services/service_manager/public/cpp/service.h"
+#include "services/service_manager/public/cpp/service_context.h"
 #include "services/service_manager/runner/child/test_native_main.h"
 #include "services/service_manager/runner/init.h"
 #include "services/service_manager/tests/connect/connect_test.mojom.h"
@@ -31,11 +35,16 @@ class Driver : public service_manager::Service,
 
  private:
   // service_manager::Service:
+  void OnStart(service_manager::ServiceContext* context) override {
+    context_ = context;
+  }
+
   bool OnConnect(const service_manager::ServiceInfo& remote_info,
                  service_manager::InterfaceRegistry* registry) override {
     registry->AddInterface<ClientProcessTest>(this);
     return true;
   }
+
   bool OnStop() override {
     // TODO(rockot): http://crbug.com/596621. Should be able to remove this
     // override entirely.
@@ -61,11 +70,12 @@ class Driver : public service_manager::Service,
 #endif
             service_manager::Identity("exe:connect_test_exe",
                                       service_manager::mojom::kInheritUserID),
-            connector(), &process);
+            context_->connector(), &process);
     callback.Run(static_cast<int32_t>(connection->GetResult()),
                  connection->GetRemoteIdentity());
   }
 
+  service_manager::ServiceContext* context_ = nullptr;
   mojo::BindingSet<ClientProcessTest> bindings_;
 
   DISALLOW_COPY_AND_ASSIGN(Driver);
@@ -78,7 +88,5 @@ int main(int argc, char** argv) {
   base::CommandLine::Init(argc, argv);
 
   service_manager::InitializeLogging();
-
-  Driver driver;
-  return service_manager::TestNativeMain(&driver);
+  return service_manager::TestNativeMain(base::MakeUnique<Driver>());
 }

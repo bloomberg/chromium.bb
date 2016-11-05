@@ -5,9 +5,11 @@
 #include "base/at_exit.h"
 #include "base/command_line.h"
 #include "base/macros.h"
+#include "base/memory/ptr_util.h"
 #include "services/service_manager/public/cpp/connection.h"
 #include "services/service_manager/public/cpp/connector.h"
 #include "services/service_manager/public/cpp/service.h"
+#include "services/service_manager/public/cpp/service_context.h"
 #include "services/service_manager/runner/child/test_native_main.h"
 #include "services/service_manager/runner/init.h"
 #include "services/service_manager/tests/service_manager/service_manager_unittest.mojom.h"
@@ -23,11 +25,16 @@ class Target : public service_manager::Service {
 
  private:
   // service_manager::Service:
-  void OnStart(const service_manager::ServiceInfo& info) override {
+  void OnStart(service_manager::ServiceContext* context) override {
     CreateInstanceTestPtr service;
-    connector()->ConnectToInterface("service:service_manager_unittest",
-                                    &service);
-    service->SetTargetIdentity(info.identity);
+    context->connector()->ConnectToInterface(
+        "service:service_manager_unittest", &service);
+    service->SetTargetIdentity(context->identity());
+  }
+
+  bool OnConnect(const service_manager::ServiceInfo& remote_info,
+                 service_manager::InterfaceRegistry* registry) override {
+    return false;
   }
 
   DISALLOW_COPY_AND_ASSIGN(Target);
@@ -40,7 +47,5 @@ int main(int argc, char** argv) {
   base::CommandLine::Init(argc, argv);
 
   service_manager::InitializeLogging();
-
-  Target target;
-  return service_manager::TestNativeMain(&target);
+  return service_manager::TestNativeMain(base::MakeUnique<Target>());
 }

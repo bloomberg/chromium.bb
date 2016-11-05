@@ -82,33 +82,35 @@ class MashTestLauncherDelegate : public ChromeTestLauncherDelegate {
     test_suite_.reset();
     return result;
   }
+
   std::unique_ptr<content::TestState> PreRunTest(
       base::CommandLine* command_line,
       base::TestLauncher::LaunchOptions* test_launch_options) override {
     if (!mojo_test_connector_) {
       mojo_test_connector_ = base::MakeUnique<MojoTestConnector>();
-      service_ = base::MakeUnique<mash::MashPackagedService>();
-      service_->set_context(base::MakeUnique<service_manager::ServiceContext>(
-          service_.get(), mojo_test_connector_->Init()));
+      context_.reset(new service_manager::ServiceContext(
+          base::MakeUnique<mash::MashPackagedService>(),
+          mojo_test_connector_->Init()));
     }
     std::unique_ptr<content::TestState> test_state =
         mojo_test_connector_->PrepareForTest(command_line, test_launch_options);
     // Start default apps after chrome, as they may try to connect to chrome on
     // startup. Attempt to connect once per test in case a previous test crashed
     // mash_session.
-    ConnectToDefaultApps(service_->connector());
+    ConnectToDefaultApps(context_->connector());
     return test_state;
   }
+
   void OnDoneRunningTests() override {
     // We have to shutdown this state here, while an AtExitManager is still
     // valid.
-    service_.reset();
+    context_.reset();
     mojo_test_connector_.reset();
   }
 
   std::unique_ptr<MashTestSuite> test_suite_;
   std::unique_ptr<MojoTestConnector> mojo_test_connector_;
-  std::unique_ptr<mash::MashPackagedService> service_;
+  std::unique_ptr<service_manager::ServiceContext> context_;
 
   DISALLOW_COPY_AND_ASSIGN(MashTestLauncherDelegate);
 };
@@ -127,12 +129,10 @@ std::unique_ptr<content::ServiceManagerConnection>
 void StartChildApp(service_manager::mojom::ServiceRequest service_request) {
   base::MessageLoop message_loop(base::MessageLoop::TYPE_DEFAULT);
   base::RunLoop run_loop;
-  mash::MashPackagedService service;
-  std::unique_ptr<service_manager::ServiceContext> context =
-      base::MakeUnique<service_manager::ServiceContext>(
-          &service, std::move(service_request));
-  context->SetConnectionLostClosure(run_loop.QuitClosure());
-  service.set_context(std::move(context));
+  service_manager::ServiceContext context(
+      base::MakeUnique<mash::MashPackagedService>(),
+      std::move(service_request));
+  context.SetConnectionLostClosure(run_loop.QuitClosure());
   run_loop.Run();
 }
 

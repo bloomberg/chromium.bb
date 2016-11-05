@@ -18,7 +18,6 @@
 #include "services/service_manager/public/cpp/identity.h"
 #include "services/service_manager/public/cpp/interface_factory.h"
 #include "services/service_manager/public/cpp/interface_provider_spec.h"
-#include "services/service_manager/public/cpp/service.h"
 #include "services/service_manager/public/interfaces/connector.mojom.h"
 #include "services/service_manager/public/interfaces/interface_provider.mojom.h"
 #include "services/service_manager/public/interfaces/resolver.mojom.h"
@@ -28,13 +27,14 @@
 #include "services/service_manager/service_overrides.h"
 
 namespace service_manager {
+
 class ServiceContext;
 
 // Creates an identity for the Service Manager, used when the Service Manager
 // connects to services.
 Identity CreateServiceManagerIdentity();
 
-class ServiceManager : public Service {
+class ServiceManager {
  public:
   // API for testing.
   class TestAPI {
@@ -57,7 +57,7 @@ class ServiceManager : public Service {
   // operations on.
   ServiceManager(std::unique_ptr<NativeRunnerFactory> native_runner_factory,
                  mojom::ServicePtr catalog);
-  ~ServiceManager() override;
+  ~ServiceManager();
 
   // Sets overrides for service executable and package resolution. Must be
   // called before any services are launched.
@@ -80,10 +80,7 @@ class ServiceManager : public Service {
 
  private:
   class Instance;
-
-  // Service:
-  bool OnConnect(const ServiceInfo& remote_info,
-                 InterfaceRegistry* registry) override;
+  class ServiceImpl;
 
   void InitCatalog(mojom::ServicePtr catalog);
 

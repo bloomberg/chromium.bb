@@ -15,7 +15,9 @@
 #include "services/navigation/public/interfaces/view.mojom.h"
 #include "services/service_manager/public/c/main.h"
 #include "services/service_manager/public/cpp/connector.h"
+#include "services/service_manager/public/cpp/interface_registry.h"
 #include "services/service_manager/public/cpp/service.h"
+#include "services/service_manager/public/cpp/service_context.h"
 #include "services/service_manager/public/cpp/service_runner.h"
 #include "services/tracing/public/cpp/provider.h"
 #include "services/ui/public/cpp/window.h"
@@ -156,13 +158,14 @@ void Webtest::RemoveWindow(views::Widget* window) {
     base::MessageLoop::current()->QuitWhenIdle();
 }
 
-void Webtest::OnStart(const service_manager::ServiceInfo& info) {
-  tracing_.Initialize(connector(), info.identity.name());
+void Webtest::OnStart(service_manager::ServiceContext* context) {
+  context_ = context;
 
-  aura_init_ = base::MakeUnique<views::AuraInit>(connector(), info.identity,
-                                                 "views_mus_resources.pak");
-  window_manager_connection_ =
-      views::WindowManagerConnection::Create(connector(), info.identity);
+  tracing_.Initialize(context->connector(), context->identity().name());
+  aura_init_ = base::MakeUnique<views::AuraInit>(
+      context->connector(), context->identity(), "views_mus_resources.pak");
+  window_manager_connection_ = views::WindowManagerConnection::Create(
+      context->connector(), context->identity());
 }
 
 bool Webtest::OnConnect(const service_manager::ServiceInfo& remote_info,
@@ -180,7 +183,7 @@ void Webtest::Launch(uint32_t what, mojom::LaunchMode how) {
   }
 
   navigation::mojom::ViewFactoryPtr view_factory;
-  connector()->ConnectToInterface("exe:navigation", &view_factory);
+  context_->connector()->ConnectToInterface("exe:navigation", &view_factory);
   navigation::mojom::ViewPtr view;
   navigation::mojom::ViewClientPtr view_client;
   navigation::mojom::ViewClientRequest view_client_request =

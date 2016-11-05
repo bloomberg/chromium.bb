@@ -9,6 +9,7 @@
 #include "services/service_manager/public/c/main.h"
 #include "services/service_manager/public/cpp/connector.h"
 #include "services/service_manager/public/cpp/service.h"
+#include "services/service_manager/public/cpp/service_context.h"
 #include "services/service_manager/public/cpp/service_runner.h"
 #include "services/ui/public/cpp/window.h"
 #include "services/ui/public/cpp/window_manager_delegate.h"
@@ -28,9 +29,14 @@ class TestWM : public service_manager::Service,
 
  private:
   // service_manager::Service:
-  void OnStart(const service_manager::ServiceInfo& info) override {
+  void OnStart(service_manager::ServiceContext* context) override {
     window_tree_client_.reset(new ui::WindowTreeClient(this, this));
-    window_tree_client_->ConnectAsWindowManager(connector());
+    window_tree_client_->ConnectAsWindowManager(context->connector());
+  }
+
+  bool OnConnect(const service_manager::ServiceInfo& remote_info,
+                 service_manager::InterfaceRegistry* registry) override {
+    return false;
   }
 
   // ui::WindowTreeClientDelegate:

@@ -18,6 +18,8 @@
 #include "services/catalog/public/interfaces/catalog.mojom.h"
 #include "services/service_manager/public/cpp/connection.h"
 #include "services/service_manager/public/cpp/connector.h"
+#include "services/service_manager/public/cpp/interface_registry.h"
+#include "services/service_manager/public/cpp/service_context.h"
 #include "services/service_manager/public/interfaces/service_manager.mojom.h"
 #include "ui/base/models/table_model.h"
 #include "ui/base/resource/resource_bundle.h"
@@ -287,13 +289,15 @@ void TaskViewer::RemoveWindow(views::Widget* widget) {
     base::MessageLoop::current()->QuitWhenIdle();
 }
 
-void TaskViewer::OnStart(const service_manager::ServiceInfo& info) {
-  tracing_.Initialize(connector(), info.identity.name());
+void TaskViewer::OnStart(service_manager::ServiceContext* context) {
+  context_ = context;
 
-  aura_init_ = base::MakeUnique<views::AuraInit>(connector(), info.identity,
-                                                 "views_mus_resources.pak");
-  window_manager_connection_ =
-      views::WindowManagerConnection::Create(connector(), info.identity);
+  tracing_.Initialize(context->connector(), context->identity().name());
+
+  aura_init_ = base::MakeUnique<views::AuraInit>(
+      context->connector(), context->identity(), "views_mus_resources.pak");
+  window_manager_connection_ = views::WindowManagerConnection::Create(
+      context->connector(), context->identity());
 }
 
 bool TaskViewer::OnConnect(const service_manager::ServiceInfo& remote_info,
@@ -311,7 +315,8 @@ void TaskViewer::Launch(uint32_t what, mojom::LaunchMode how) {
   }
 
   service_manager::mojom::ServiceManagerPtr service_manager;
-  connector()->ConnectToInterface("service:service_manager", &service_manager);
+  context_->connector()->ConnectToInterface(
+      "service:service_manager", &service_manager);
 
   service_manager::mojom::ServiceManagerListenerPtr listener;
   service_manager::mojom::ServiceManagerListenerRequest request =
@@ -319,7 +324,7 @@ void TaskViewer::Launch(uint32_t what, mojom::LaunchMode how) {
   service_manager->AddListener(std::move(listener));
 
   catalog::mojom::CatalogPtr catalog;
-  connector()->ConnectToInterface("service:catalog", &catalog);
+  context_->connector()->ConnectToInterface("service:catalog", &catalog);
 
   TaskViewerContents* task_viewer = new TaskViewerContents(
       this, std::move(request), std::move(catalog));

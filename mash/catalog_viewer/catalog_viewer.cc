@@ -16,6 +16,8 @@
 #include "services/catalog/public/interfaces/catalog.mojom.h"
 #include "services/service_manager/public/cpp/connection.h"
 #include "services/service_manager/public/cpp/connector.h"
+#include "services/service_manager/public/cpp/interface_registry.h"
+#include "services/service_manager/public/cpp/service_context.h"
 #include "ui/base/models/table_model.h"
 #include "ui/base/resource/resource_bundle.h"
 #include "ui/resources/grit/ui_resources.h"
@@ -165,13 +167,14 @@ void CatalogViewer::RemoveWindow(views::Widget* window) {
     base::MessageLoop::current()->QuitWhenIdle();
 }
 
-void CatalogViewer::OnStart(const service_manager::ServiceInfo& info) {
-  tracing_.Initialize(connector(), info.identity.name());
+void CatalogViewer::OnStart(service_manager::ServiceContext* context) {
+  context_ = context;
+  tracing_.Initialize(context->connector(), context->identity().name());
 
-  aura_init_ = base::MakeUnique<views::AuraInit>(connector(), info.identity,
-                                                 "views_mus_resources.pak");
-  window_manager_connection_ =
-      views::WindowManagerConnection::Create(connector(), info.identity);
+  aura_init_ = base::MakeUnique<views::AuraInit>(
+      context->connector(), context->identity(), "views_mus_resources.pak");
+  window_manager_connection_ = views::WindowManagerConnection::Create(
+      context->connector(), context->identity());
 }
 
 bool CatalogViewer::OnConnect(const service_manager::ServiceInfo& remote_info,
@@ -188,7 +191,7 @@ void CatalogViewer::Launch(uint32_t what, mojom::LaunchMode how) {
     return;
   }
   catalog::mojom::CatalogPtr catalog;
-  connector()->ConnectToInterface("service:catalog", &catalog);
+  context_->connector()->ConnectToInterface("service:catalog", &catalog);
 
   views::Widget* window = views::Widget::CreateWindowWithContextAndBounds(
       new CatalogViewerContents(this, std::move(catalog)), nullptr,

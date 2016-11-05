@@ -7,6 +7,7 @@
 #include "base/threading/thread_task_runner_handle.h"
 #include "components/leveldb/leveldb_service_impl.h"
 #include "services/service_manager/public/cpp/interface_registry.h"
+#include "services/service_manager/public/cpp/service_context.h"
 
 namespace leveldb {
 
@@ -14,8 +15,8 @@ LevelDBApp::LevelDBApp() {}
 
 LevelDBApp::~LevelDBApp() {}
 
-void LevelDBApp::OnStart(const service_manager::ServiceInfo& info) {
-  tracing_.Initialize(connector(), info.identity.name());
+void LevelDBApp::OnStart(service_manager::ServiceContext* context) {
+  tracing_.Initialize(context->connector(), context->identity().name());
 }
 
 bool LevelDBApp::OnConnect(const service_manager::ServiceInfo& remote_info,

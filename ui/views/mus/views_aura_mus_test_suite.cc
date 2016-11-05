@@ -39,6 +39,12 @@ class DefaultService : public service_manager::Service {
   DefaultService() {}
   ~DefaultService() override {}
 
+  // service_manager::Service:
+  bool OnConnect(const service_manager::ServiceInfo& remote_info,
+                 service_manager::InterfaceRegistry* registry) override {
+    return false;
+  }
+
  private:
   DISALLOW_COPY_AND_ASSIGN(DefaultService);
 };
@@ -120,8 +126,7 @@ class ServiceManagerConnection {
   }
 
   void CloneConnector(base::WaitableEvent* wait) {
-    service_manager_connector_ =
-        service_manager_connection_->connector()->Clone();
+    service_manager_connector_ = context_->connector()->Clone();
     wait->Signal();
   }
 
@@ -129,23 +134,21 @@ class ServiceManagerConnection {
     background_service_manager_ =
         base::MakeUnique<service_manager::BackgroundServiceManager>();
     background_service_manager_->Init(nullptr);
-    service_ = base::MakeUnique<DefaultService>();
-    service_manager_connection_ =
+    context_ =
         base::MakeUnique<service_manager::ServiceContext>(
-            service_.get(),
+            base::MakeUnique<DefaultService>(),
             background_service_manager_->CreateServiceRequest(GetTestName()));
 
     // ui/views/mus requires a WindowManager running, so launch test_wm.
-    service_manager::Connector* connector =
-        service_manager_connection_->connector();
+    service_manager::Connector* connector = context_->connector();
     connector->Connect("service:test_wm");
     service_manager_connector_ = connector->Clone();
-    service_manager_identity_ = service_manager_connection_->identity();
+    service_manager_identity_ = context_->identity();
     wait->Signal();
   }
 
   void TearDownConnections(base::WaitableEvent* wait) {
-    service_manager_connection_.reset();
+    context_.reset();
     wait->Signal();
   }
 
@@ -161,8 +164,7 @@ class ServiceManagerConnection {
   base::Thread thread_;
   std::unique_ptr<service_manager::BackgroundServiceManager>
       background_service_manager_;
-  std::unique_ptr<service_manager::ServiceContext> service_manager_connection_;
-  std::unique_ptr<DefaultService> service_;
+  std::unique_ptr<service_manager::ServiceContext> context_;
   std::unique_ptr<service_manager::Connector> service_manager_connector_;
   service_manager::Identity service_manager_identity_;
 

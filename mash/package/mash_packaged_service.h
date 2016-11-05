@@ -12,6 +12,10 @@
 #include "services/service_manager/public/cpp/service.h"
 #include "services/service_manager/public/interfaces/service_factory.mojom.h"
 
+namespace service_manager {
+class ServiceContext;
+}
+
 namespace mash {
 
 // MashPackagedService is a Service implementation that starts all the mash
@@ -52,8 +56,8 @@ class MashPackagedService : public service_manager::Service,
   std::unique_ptr<service_manager::Service> CreateService(
       const std::string& name);
 
+  std::unique_ptr<service_manager::ServiceContext> context_;
   mojo::BindingSet<ServiceFactory> service_factory_bindings_;
-  std::unique_ptr<service_manager::Service> service_;
 
   DISALLOW_COPY_AND_ASSIGN(MashPackagedService);
 };

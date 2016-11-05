@@ -5,6 +5,7 @@
 #ifndef SERVICES_UI_IME_TEST_IME_DRIVER_TEST_IME_APPLICATION_H_
 #define SERVICES_UI_IME_TEST_IME_DRIVER_TEST_IME_APPLICATION_H_
 
+#include "base/macros.h"
 #include "services/service_manager/public/cpp/service.h"
 
 namespace ui {
@@ -17,9 +18,9 @@ class TestIMEApplication : public service_manager::Service {
 
  private:
   // service_manager::Service:
+  void OnStart(service_manager::ServiceContext* context) override;
   bool OnConnect(const service_manager::ServiceInfo& remote_info,
                  service_manager::InterfaceRegistry* registry) override;
-  void OnStart(const service_manager::ServiceInfo& info) override;
 
   DISALLOW_COPY_AND_ASSIGN(TestIMEApplication);
 };

@@ -7,6 +7,7 @@
 #include <utility>
 
 #include "base/bind.h"
+#include "base/callback_helpers.h"
 #include "base/logging.h"
 #include "base/message_loop/message_loop.h"
 #include "mojo/public/cpp/bindings/interface_ptr.h"
@@ -21,12 +22,13 @@ namespace service_manager {
 ////////////////////////////////////////////////////////////////////////////////
 // ServiceContext, public:
 
-ServiceContext::ServiceContext(service_manager::Service* service,
-                               mojom::ServiceRequest request,
-                               std::unique_ptr<Connector> connector,
-                               mojom::ConnectorRequest connector_request)
+ServiceContext::ServiceContext(
+    std::unique_ptr<service_manager::Service> service,
+    mojom::ServiceRequest request,
+    std::unique_ptr<Connector> connector,
+    mojom::ConnectorRequest connector_request)
     : pending_connector_request_(std::move(connector_request)),
-      service_(service),
+      service_(std::move(service)),
       binding_(this, std::move(request)),
       connector_(std::move(connector)),
       weak_factory_(this) {
@@ -44,9 +46,30 @@ ServiceContext::~ServiceContext() {}
 
 void ServiceContext::SetConnectionLostClosure(const base::Closure& closure) {
   connection_lost_closure_ = closure;
-  if (should_run_connection_lost_closure_ &&
-      !connection_lost_closure_.is_null())
-    connection_lost_closure_.Run();
+  if (service_quit_)
+    QuitNow();
+}
+
+void ServiceContext::RequestQuit() {
+  // TODO(rockot): Implement this.
+}
+
+void ServiceContext::DisconnectFromServiceManager() {
+  if (binding_.is_bound())
+    binding_.Close();
+  connector_.reset();
+}
+
+void ServiceContext::QuitNow() {
+  if (binding_.is_bound())
+    binding_.Close();
+  if (!connection_lost_closure_.is_null())
+    base::ResetAndReturn(&connection_lost_closure_).Run();
+}
+
+void ServiceContext::DestroyService() {
+  QuitNow();
+  service_.reset();
 }
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -55,12 +78,8 @@ void ServiceContext::SetConnectionLostClosure(const base::Closure& closure) {
 void ServiceContext::OnStart(const ServiceInfo& info,
                              const OnStartCallback& callback) {
   local_info_ = info;
-  if (!initialize_handler_.is_null())
-    initialize_handler_.Run();
-
   callback.Run(std::move(pending_connector_request_));
-
-  service_->OnStart(info);
+  service_->OnStart(this);
 }
 
 void ServiceContext::OnConnect(
@@ -94,10 +113,14 @@ void ServiceContext::OnConnectionError() {
   // Note that the Service doesn't technically have to quit now, it may live
   // on to service existing connections. All existing Connectors however are
   // invalid.
-  should_run_connection_lost_closure_ = service_->OnStop();
-  if (should_run_connection_lost_closure_ &&
-      !connection_lost_closure_.is_null())
-    connection_lost_closure_.Run();
+  service_quit_ = service_->OnStop();
+  if (service_quit_) {
+    QuitNow();
+    // NOTE: This call may delete |this|, so don't access any ServiceContext
+    // state beyond this point.
+    return;
+  }
+
   // We don't reset the connector as clients may have taken a raw pointer to it.
   // Connect() will return nullptr if they try to connect to anything.
 }

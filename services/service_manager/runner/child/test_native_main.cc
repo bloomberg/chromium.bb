@@ -36,7 +36,7 @@ class ProcessDelegate : public mojo::edk::ProcessDelegate {
 
 }  // namespace
 
-int TestNativeMain(service_manager::Service* service) {
+int TestNativeMain(std::unique_ptr<service_manager::Service> service) {
   service_manager::WaitForDebuggerIfNecessary();
 
 #if !defined(OFFICIAL_BUILD)
@@ -58,13 +58,11 @@ int TestNativeMain(service_manager::Service* service) {
     mojo::edk::SetParentPipeHandleFromCommandLine();
 
     base::MessageLoop loop;
-    service->set_context(base::MakeUnique<service_manager::ServiceContext>(
-        service, service_manager::GetServiceRequestFromCommandLine()));
+    service_manager::ServiceContext context(
+        std::move(service),
+        service_manager::GetServiceRequestFromCommandLine());
     base::RunLoop().Run();
-
     mojo::edk::ShutdownIPCSupport();
-
-    service->set_context(std::unique_ptr<ServiceContext>());
   }
 
   return 0;

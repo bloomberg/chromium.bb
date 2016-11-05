@@ -23,7 +23,9 @@
 #include "mojo/public/cpp/bindings/binding_set.h"
 #include "services/service_manager/connect_util.h"
 #include "services/service_manager/public/cpp/connector.h"
+#include "services/service_manager/public/cpp/interface_registry.h"
 #include "services/service_manager/public/cpp/names.h"
+#include "services/service_manager/public/cpp/service.h"
 #include "services/service_manager/public/cpp/service_context.h"
 #include "services/service_manager/public/interfaces/connector.mojom.h"
 #include "services/service_manager/public/interfaces/service.mojom.h"
@@ -452,6 +454,37 @@ class ServiceManager::Instance
   DISALLOW_COPY_AND_ASSIGN(Instance);
 };
 
+class ServiceManager::ServiceImpl : public Service {
+ public:
+  explicit ServiceImpl(ServiceManager* service_manager)
+      : service_manager_(service_manager) {}
+  ~ServiceImpl() override {}
+
+  // Service:
+  bool OnConnect(const ServiceInfo& remote_info,
+                 InterfaceRegistry* registry) override {
+    // The only interface ServiceManager exposes is mojom::ServiceManager, and
+    // access to this interface is brokered by a policy specific to each caller,
+    // managed by the caller's instance. Here we look to see who's calling,
+    // and forward to the caller's instance to continue.
+    Instance* instance = nullptr;
+    for (const auto& entry : service_manager_->identity_to_instance_) {
+      if (entry.first == remote_info.identity) {
+        instance = entry.second;
+        break;
+      }
+    }
+
+    DCHECK(instance);
+    return instance->OnConnect(remote_info, registry);
+  }
+
+ private:
+  ServiceManager* const service_manager_;
+
+  DISALLOW_COPY_AND_ASSIGN(ServiceImpl);
+};
+
 // static
 ServiceManager::TestAPI::TestAPI(ServiceManager* service_manager)
     : service_manager_(service_manager) {}
@@ -490,7 +523,8 @@ ServiceManager::ServiceManager(
       CreateInstance(Identity(), CreateServiceManagerIdentity(), specs);
   service_manager_instance_->StartWithService(std::move(service));
   singletons_.insert(kServiceManagerName);
-  service_context_.reset(new ServiceContext(this, std::move(request)));
+  service_context_.reset(new ServiceContext(
+      base::MakeUnique<ServiceImpl>(this), std::move(request)));
 
   if (catalog)
     InitCatalog(std::move(catalog));
@@ -535,26 +569,6 @@ mojom::ServiceRequest ServiceManager::StartEmbedderService(
   Connect(std::move(params), std::move(service), nullptr);
 
   return request;
-}
-
-////////////////////////////////////////////////////////////////////////////////
-// ServiceManager, Service implementation:
-
-bool ServiceManager::OnConnect(const ServiceInfo& remote_info,
-                               InterfaceRegistry* registry) {
-  // The only interface we expose is mojom::ServiceManager, and access to this
-  // interface is brokered by a policy specific to each caller, managed by the
-  // caller's instance. Here we look to see who's calling, and forward to the
-  // caller's instance to continue.
-  Instance* instance = nullptr;
-  for (const auto& entry : identity_to_instance_) {
-    if (entry.first == remote_info.identity) {
-      instance = entry.second;
-      break;
-    }
-  }
-  DCHECK(instance);
-  return instance->OnConnect(remote_info, registry);
 }
 
 ////////////////////////////////////////////////////////////////////////////////

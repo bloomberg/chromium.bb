@@ -6,6 +6,7 @@
 
 #include "media/capture/video/fake_video_capture_device.h"
 #include "media/capture/video/video_capture_jpeg_decoder.h"
+#include "services/service_manager/public/cpp/interface_registry.h"
 #include "services/video_capture/video_capture_device_factory_impl.h"
 
 namespace {

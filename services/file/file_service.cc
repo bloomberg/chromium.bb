@@ -12,6 +12,8 @@
 #include "services/file/file_system.h"
 #include "services/file/user_id_map.h"
 #include "services/service_manager/public/cpp/connection.h"
+#include "services/service_manager/public/cpp/interface_registry.h"
+#include "services/service_manager/public/cpp/service_context.h"
 
 namespace file {
 
@@ -88,9 +90,9 @@ FileService::~FileService() {
   leveldb_service_runner_->DeleteSoon(FROM_HERE, leveldb_objects_.release());
 }
 
-void FileService::OnStart(const service_manager::ServiceInfo& info) {
+void FileService::OnStart(service_manager::ServiceContext* context) {
   file_system_objects_.reset(new FileService::FileSystemObjects(
-      GetUserDirForUserId(info.identity.user_id())));
+      GetUserDirForUserId(context->identity().user_id())));
   leveldb_objects_.reset(
       new FileService::LevelDBServiceObjects(leveldb_service_runner_));
 }

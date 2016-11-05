@@ -13,6 +13,7 @@
 #include "base/bind.h"
 #include "base/command_line.h"
 #include "base/macros.h"
+#include "base/memory/ptr_util.h"
 #include "base/memory/weak_ptr.h"
 #include "base/message_loop/message_loop.h"
 #include "base/path_service.h"
@@ -25,7 +26,9 @@
 #include "services/service_manager/public/cpp/connection.h"
 #include "services/service_manager/public/cpp/connector.h"
 #include "services/service_manager/public/cpp/interface_factory.h"
+#include "services/service_manager/public/cpp/interface_registry.h"
 #include "services/service_manager/public/cpp/service.h"
+#include "services/service_manager/public/cpp/service_context.h"
 #include "services/service_manager/public/interfaces/connector.mojom.h"
 #include "services/service_manager/public/interfaces/service_manager.mojom.h"
 #include "services/service_manager/runner/child/test_native_main.h"
@@ -46,7 +49,7 @@ class Driver : public service_manager::Service,
 
  private:
   // service_manager::Service:
-  void OnStart(const service_manager::ServiceInfo& info) override {
+  void OnStart(service_manager::ServiceContext* context) override {
     base::FilePath target_path;
     CHECK(base::PathService::Get(base::DIR_EXE, &target_path));
 #if defined(OS_WIN)
@@ -84,7 +87,7 @@ class Driver : public service_manager::Service,
     params.set_client_process_connection(std::move(client),
                                          GetProxy(&receiver));
     std::unique_ptr<service_manager::Connection> connection =
-        connector()->Connect(&params);
+        context->connector()->Connect(&params);
     connection->AddConnectionCompletedClosure(
         base::Bind(&Driver::OnConnectionCompleted, base::Unretained(this)));
 
@@ -136,7 +139,5 @@ int main(int argc, char** argv) {
   base::CommandLine::Init(argc, argv);
 
   service_manager::InitializeLogging();
-
-  Driver driver;
-  return service_manager::TestNativeMain(&driver);
+  return service_manager::TestNativeMain(base::MakeUnique<Driver>());
 }

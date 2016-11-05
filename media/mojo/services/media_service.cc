@@ -12,6 +12,7 @@
 #include "mojo/public/cpp/bindings/strong_binding.h"
 #include "services/service_manager/public/cpp/connection.h"
 #include "services/service_manager/public/cpp/connector.h"
+#include "services/service_manager/public/cpp/interface_registry.h"
 
 namespace media {
 
@@ -26,7 +27,7 @@ MediaService::MediaService(std::unique_ptr<MojoMediaClient> mojo_media_client,
 
 MediaService::~MediaService() {}
 
-void MediaService::OnStart(const service_manager::ServiceInfo& info) {
+void MediaService::OnStart(service_manager::ServiceContext* context) {
   mojo_media_client_->Initialize();
 }
 

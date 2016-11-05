@@ -19,6 +19,7 @@
 #include "content/public/common/connection_filter.h"
 #include "mojo/public/cpp/bindings/binding_set.h"
 #include "mojo/public/cpp/system/message_pipe.h"
+#include "services/service_manager/public/cpp/interface_registry.h"
 #include "services/service_manager/public/cpp/service.h"
 #include "services/service_manager/public/cpp/service_context.h"
 #include "services/service_manager/public/interfaces/service_factory.mojom.h"
@@ -126,6 +127,34 @@ class ServiceManagerConnectionImpl::IOThreadContext
  private:
   friend class base::RefCountedThreadSafe<IOThreadContext>;
 
+  // A forwarding service_manager::Service implementation to account for the
+  // fact that IOThreadContext is a Service which owns its ServiceContext, but
+  // ServiceContext should own its Service.
+  //
+  // TODO(rockot): Clean this up.
+  class ForwardingServiceImpl : public service_manager::Service {
+   public:
+    explicit ForwardingServiceImpl(service_manager::Service* service)
+        : service_(service) {}
+    ~ForwardingServiceImpl() override {}
+
+    // service_manager::Service:
+    void OnStart(service_manager::ServiceContext* context) override {
+      service_->OnStart(context);
+    }
+
+    bool OnConnect(const service_manager::ServiceInfo& remote_info,
+                   service_manager::InterfaceRegistry* registry) override {
+      return service_->OnConnect(remote_info, registry);
+    }
+
+    bool OnStop() override { return service_->OnStop(); }
+
+   private:
+    service_manager::Service* const service_;
+    DISALLOW_COPY_AND_ASSIGN(ForwardingServiceImpl);
+  };
+
   class MessageLoopObserver : public base::MessageLoop::DestructionObserver {
    public:
     explicit MessageLoopObserver(base::WeakPtr<IOThreadContext> context)
@@ -168,7 +197,8 @@ class ServiceManagerConnectionImpl::IOThreadContext
     // Should bind |io_thread_checker_| to the context's thread.
     DCHECK(io_thread_checker_.CalledOnValidThread());
     service_context_.reset(new service_manager::ServiceContext(
-        this, std::move(pending_service_request_),
+        base::MakeUnique<ForwardingServiceImpl>(this),
+        std::move(pending_service_request_),
         std::move(io_thread_connector_),
         std::move(pending_connector_request_)));
 
@@ -221,10 +251,10 @@ class ServiceManagerConnectionImpl::IOThreadContext
   /////////////////////////////////////////////////////////////////////////////
   // service_manager::Service implementation
 
-  void OnStart(const service_manager::ServiceInfo& info) override {
+  void OnStart(service_manager::ServiceContext* context) override {
     DCHECK(io_thread_checker_.CalledOnValidThread());
     DCHECK(!initialize_handler_.is_null());
-    local_info_ = info;
+    local_info_ = context->local_info();
 
     InitializeCallback handler = base::ResetAndReturn(&initialize_handler_);
     callback_task_runner_->PostTask(FROM_HERE,

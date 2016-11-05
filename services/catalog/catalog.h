@@ -16,6 +16,7 @@
 #include "mojo/public/cpp/bindings/binding_set.h"
 #include "services/catalog/public/interfaces/catalog.mojom.h"
 #include "services/catalog/types.h"
+#include "services/service_manager/public/cpp/interface_factory.h"
 #include "services/service_manager/public/cpp/service.h"
 #include "services/service_manager/public/interfaces/resolver.mojom.h"
 #include "services/service_manager/public/interfaces/service.mojom.h"
@@ -43,8 +44,7 @@ class Store;
 // Creates and owns an instance of the catalog. Exposes a ServicePtr that
 // can be passed to the service manager, potentially in a different process.
 class Catalog
-    : public service_manager::Service,
-      public service_manager::InterfaceFactory<mojom::Catalog>,
+    : public service_manager::InterfaceFactory<mojom::Catalog>,
       public service_manager::InterfaceFactory<filesystem::mojom::Directory>,
       public service_manager::InterfaceFactory<
           service_manager::mojom::Resolver>,
@@ -69,14 +69,12 @@ class Catalog
   service_manager::mojom::ServicePtr TakeService();
 
  private:
+  class ServiceImpl;
+
   explicit Catalog(std::unique_ptr<Store> store);
 
   // Starts a scane for system packages.
   void ScanSystemPackageDir();
-
-  // service_manager::Service:
-  bool OnConnect(const service_manager::ServiceInfo& remote_info,
-                 service_manager::InterfaceRegistry* registry) override;
 
   // service_manager::InterfaceFactory<service_manager::mojom::Resolver>:
   void Create(const service_manager::Identity& remote_identity,
@@ -107,7 +105,7 @@ class Catalog
   std::unique_ptr<Store> store_;
 
   service_manager::mojom::ServicePtr service_;
-  std::unique_ptr<service_manager::ServiceContext> service_manager_connection_;
+  std::unique_ptr<service_manager::ServiceContext> service_context_;
 
   std::map<std::string, std::unique_ptr<Instance>> instances_;
 

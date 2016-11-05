@@ -10,6 +10,7 @@
 #include "base/message_loop/message_loop.h"
 #include "services/service_manager/public/cpp/connection.h"
 #include "services/service_manager/public/cpp/connector.h"
+#include "services/service_manager/public/cpp/interface_registry.h"
 
 namespace content {
 

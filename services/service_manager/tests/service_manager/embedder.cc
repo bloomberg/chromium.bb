@@ -7,9 +7,11 @@
 #include "base/at_exit.h"
 #include "base/command_line.h"
 #include "base/macros.h"
+#include "base/memory/ptr_util.h"
 #include "base/message_loop/message_loop.h"
 #include "mojo/public/cpp/bindings/binding_set.h"
 #include "services/service_manager/public/cpp/interface_factory.h"
+#include "services/service_manager/public/cpp/interface_registry.h"
 #include "services/service_manager/public/cpp/service.h"
 #include "services/service_manager/public/cpp/service_context.h"
 #include "services/service_manager/public/interfaces/service_factory.mojom.h"
@@ -21,15 +23,15 @@ namespace {
 
 class Singleton : public service_manager::Service {
  public:
-  explicit Singleton(service_manager::mojom::ServiceRequest request) {
-    set_context(base::MakeUnique<service_manager::ServiceContext>(
-        this, std::move(request)));
-  }
+  explicit Singleton() {}
   ~Singleton() override {}
 
  private:
   // service_manager::Service:
-  void OnStart(const service_manager::ServiceInfo& info) override {}
+  bool OnConnect(const service_manager::ServiceInfo& remote_info,
+                 service_manager::InterfaceRegistry* registry) override {
+    return false;
+  }
 
   DISALLOW_COPY_AND_ASSIGN(Singleton);
 };
@@ -44,8 +46,6 @@ class Embedder : public service_manager::Service,
 
  private:
   // service_manager::Service:
-  void OnStart(const service_manager::ServiceInfo& info) override {}
-
   bool OnConnect(const service_manager::ServiceInfo& remote_info,
                  service_manager::InterfaceRegistry* registry) override {
     registry->AddInterface<service_manager::mojom::ServiceFactory>(this);
@@ -66,10 +66,13 @@ class Embedder : public service_manager::Service,
   // mojom::ServiceFactory:
   void CreateService(service_manager::mojom::ServiceRequest request,
                      const std::string& name) override {
-    if (name == "service:service_manager_unittest_singleton")
-      new Singleton(std::move(request));
+    if (name == "service:service_manager_unittest_singleton") {
+      context_.reset(new service_manager::ServiceContext(
+          base::MakeUnique<Singleton>(), std::move(request)));
+    }
   }
 
+  std::unique_ptr<service_manager::ServiceContext> context_;
   mojo::BindingSet<service_manager::mojom::ServiceFactory>
       service_factory_bindings_;
 
@@ -83,7 +86,5 @@ int main(int argc, char** argv) {
   base::CommandLine::Init(argc, argv);
 
   service_manager::InitializeLogging();
-
-  Embedder embedder;
-  return service_manager::TestNativeMain(&embedder);
+  return service_manager::TestNativeMain(base::MakeUnique<Embedder>());
 }

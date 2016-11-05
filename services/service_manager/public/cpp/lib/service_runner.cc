@@ -37,7 +37,7 @@ void ServiceRunner::set_message_loop_type(base::MessageLoop::Type type) {
 }
 
 MojoResult ServiceRunner::Run(MojoHandle service_request_handle,
-                                  bool init_base) {
+                              bool init_base) {
   DCHECK(!has_run_);
   has_run_ = true;
 
@@ -51,13 +51,12 @@ MojoResult ServiceRunner::Run(MojoHandle service_request_handle,
     std::unique_ptr<base::MessageLoop> loop;
     loop.reset(new base::MessageLoop(message_loop_type_));
 
-    std::unique_ptr<ServiceContext> context(new ServiceContext(
-        service_.get(),
+    context_.reset(new ServiceContext(
+        std::move(service_),
         mojo::MakeRequest<mojom::Service>(mojo::MakeScopedHandle(
             mojo::MessagePipeHandle(service_request_handle)))));
     base::RunLoop run_loop;
-    context->SetConnectionLostClosure(run_loop.QuitClosure());
-    service_->set_context(std::move(context));
+    context_->SetConnectionLostClosure(run_loop.QuitClosure());
     run_loop.Run();
     // It's very common for the service to cache the app and terminate on
     // errors. If we don't delete the service before the app we run the risk of
@@ -66,7 +65,7 @@ MojoResult ServiceRunner::Run(MojoHandle service_request_handle,
     // connection error handlers and they might access objects created by the
     // service.
     loop.reset();
-    service_.reset();
+    context_.reset();
   }
   return MOJO_RESULT_OK;
 }
@@ -78,10 +77,6 @@ MojoResult ServiceRunner::Run(MojoHandle service_request_handle) {
         !base::CommandLine::ForCurrentProcess()->HasSwitch("single-process");
   }
   return Run(service_request_handle, init_base);
-}
-
-void ServiceRunner::DestroyServiceContext() {
-  service_->set_context(std::unique_ptr<ServiceContext>());
 }
 
 void ServiceRunner::Quit() {

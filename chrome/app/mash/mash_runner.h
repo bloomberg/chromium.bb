@@ -11,7 +11,7 @@
 #include "services/service_manager/public/interfaces/service.mojom.h"
 
 namespace service_manager {
-class Service;
+class ServiceContext;
 }
 
 // Responsible for running mash, both child and main processes.
@@ -28,7 +28,7 @@ class MashRunner {
 
   void StartChildApp(service_manager::mojom::ServiceRequest service_request);
 
-  std::unique_ptr<service_manager::Service> service_;
+  std::unique_ptr<service_manager::ServiceContext> context_;
 
   DISALLOW_COPY_AND_ASSIGN(MashRunner);
 };

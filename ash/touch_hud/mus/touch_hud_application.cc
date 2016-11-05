@@ -10,6 +10,8 @@
 #include "base/memory/ptr_util.h"
 #include "base/strings/utf_string_conversions.h"
 #include "services/service_manager/public/cpp/connector.h"
+#include "services/service_manager/public/cpp/interface_registry.h"
+#include "services/service_manager/public/cpp/service_context.h"
 #include "services/ui/public/cpp/property_type_converters.h"
 #include "services/ui/public/interfaces/window_manager_constants.mojom.h"
 #include "ui/views/mus/aura_init.h"
@@ -65,11 +67,11 @@ class TouchHudUI : public views::WidgetDelegateView,
 TouchHudApplication::TouchHudApplication() : binding_(this) {}
 TouchHudApplication::~TouchHudApplication() {}
 
-void TouchHudApplication::OnStart(const service_manager::ServiceInfo& info) {
-  aura_init_ = base::MakeUnique<views::AuraInit>(connector(), info.identity,
-                                                 "views_mus_resources.pak");
-  window_manager_connection_ =
-      views::WindowManagerConnection::Create(connector(), info.identity);
+void TouchHudApplication::OnStart(service_manager::ServiceContext* context) {
+  aura_init_ = base::MakeUnique<views::AuraInit>(
+      context->connector(), context->identity(), "views_mus_resources.pak");
+  window_manager_connection_ = views::WindowManagerConnection::Create(
+      context->connector(), context->identity());
 }
 
 bool TouchHudApplication::OnConnect(
