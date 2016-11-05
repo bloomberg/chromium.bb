@@ -202,11 +202,6 @@ class PLATFORM_EXPORT KURL {
   template <typename CHAR>
   void replaceComponents(const url::Replacements<CHAR>&);
 
-  template <typename CHAR>
-  void init(const KURL& base,
-            const CHAR* relative,
-            int relativeLength,
-            const WTF::TextEncoding* queryEncoding);
   void initInnerURL();
   void initProtocolIsInHTTPFamily();
 

@@ -29,6 +29,7 @@
 
 #include "platform/weborigin/KnownPorts.h"
 #include "url/url_util.h"
+#include "wtf/MathExtras.h"
 #include "wtf/PtrUtil.h"
 #include "wtf/StdLibExtras.h"
 #include "wtf/text/CString.h"
@@ -717,26 +718,13 @@ bool protocolIs(const String& url, const char* protocol) {
 void KURL::init(const KURL& base,
                 const String& relative,
                 const WTF::TextEncoding* queryEncoding) {
-  if (!relative.isNull() && relative.is8Bit()) {
-    StringUTF8Adaptor relativeUTF8(relative);
-    init(base, relativeUTF8.data(), relativeUTF8.length(), queryEncoding);
-  } else
-    init(base, relative.characters16(), relative.length(), queryEncoding);
-  initProtocolIsInHTTPFamily();
-  initInnerURL();
-  DCHECK_EQ(protocol(), protocol().lower());
-}
-
-template <typename CHAR>
-void KURL::init(const KURL& base,
-                const CHAR* relative,
-                int relativeLength,
-                const WTF::TextEncoding* queryEncoding) {
   // As a performance optimization, we do not use the charset converter
   // if encoding is UTF-8 or other Unicode encodings. Note that this is
   // per HTML5 2.5.3 (resolving URL). The URL canonicalizer will be more
   // efficient with no charset converter object because it can do UTF-8
   // internally with no extra copies.
+
+  StringUTF8Adaptor baseUTF8(base.getString());
 
   // We feel free to make the charset converter object every time since it's
   // just a wrapper around a reference.
@@ -746,16 +734,42 @@ void KURL::init(const KURL& base,
           ? 0
           : &charsetConverterObject;
 
-  StringUTF8Adaptor baseUTF8(base.getString());
-
+  // Clamp to int max to avoid overflow.
   url::RawCanonOutputT<char> output;
-  m_isValid = url::ResolveRelative(baseUTF8.data(), baseUTF8.length(),
-                                   base.m_parsed, relative, relativeLength,
-                                   charsetConverter, &output, &m_parsed);
+  if (!relative.isNull() && relative.is8Bit()) {
+    StringUTF8Adaptor relativeUTF8(relative);
+    m_isValid = url::ResolveRelative(baseUTF8.data(), baseUTF8.length(),
+                                     base.m_parsed, relativeUTF8.data(),
+                                     clampTo<int>(relativeUTF8.length()),
+                                     charsetConverter, &output, &m_parsed);
+  } else {
+    m_isValid = url::ResolveRelative(baseUTF8.data(), baseUTF8.length(),
+                                     base.m_parsed, relative.characters16(),
+                                     clampTo<int>(relative.length()),
+                                     charsetConverter, &output, &m_parsed);
+  }
 
-  // See FIXME in KURLPrivate in the header. If canonicalization has not
-  // changed the string, we can avoid an extra allocation by using assignment.
-  m_string = AtomicString::fromUTF8(output.data(), output.length());
+  // AtomicString::fromUTF8 will re-hash the raw output and check the
+  // AtomicStringTable (addWithTranslator) for the string. This can be very
+  // expensive for large URLs. However, since many URLs are generated from
+  // existing AtomicStrings (which already have their hashes computed), this
+  // fast path is used if the input string is already canonicalized.
+  //
+  // Because this optimization does not apply to non-AtomicStrings, explicitly
+  // check that the input is Atomic before moving forward with it. If we mark
+  // non-Atomic input as Atomic here, we will render the (const) input string
+  // thread unsafe.
+  if (!relative.isNull() && relative.impl()->isAtomic() &&
+      StringView(output.data(), static_cast<unsigned>(output.length())) ==
+          relative) {
+    m_string = relative;
+  } else {
+    m_string = AtomicString::fromUTF8(output.data(), output.length());
+  }
+
+  initProtocolIsInHTTPFamily();
+  initInnerURL();
+  DCHECK_EQ(protocol(), protocol().lower());
 }
 
 void KURL::initInnerURL() {
