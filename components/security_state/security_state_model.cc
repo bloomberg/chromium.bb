@@ -43,7 +43,9 @@ bool GetSecurityLevelAndHistogramValueForNonSecureFieldTrial(
   }
 
   if (switch_or_field_trial_group ==
-      switches::kMarkHttpWithPasswordsOrCcWithChip) {
+          switches::kMarkHttpWithPasswordsOrCcWithChip ||
+      switch_or_field_trial_group ==
+          switches::kMarkHttpWithPasswordsOrCcWithChipAndFormWarning) {
     if (displayed_sensitive_input_on_http) {
       *level = SecurityStateModel::HTTP_SHOW_WARNING;
     } else {

@@ -5365,6 +5365,9 @@ Keep your key file in a safe place. You will need it to create new versions of y
       <message name="IDS_MARK_HTTP_WITH_PASSWORDS_OR_CC_WITH_CHIP">
         Display a verbose state when password or credit card fields are detected on an HTTP page
       </message>
+      <message name="IDS_MARK_HTTP_WITH_PASSWORDS_OR_CC_WITH_CHIP_AND_FORM_WARNING">
+        Display a verbose state and form warning when password or credit card fields are detected on an HTTP page
+      </message>
       <message name="IDS_FLAGS_SAVE_PAGE_AS_MHTML_NAME" desc="Name of the 'Save Page as MHTML' lab.">
         Save Page as MHTML
       </message>

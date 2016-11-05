@@ -12,7 +12,7 @@ extern const char kMarkHttpAs[];
 extern const char kMarkHttpAsNeutral[];
 extern const char kMarkHttpAsDangerous[];
 extern const char kMarkHttpWithPasswordsOrCcWithChip[];
-
+extern const char kMarkHttpWithPasswordsOrCcWithChipAndFormWarning[];
 }
 }  // namespace security_state
 
