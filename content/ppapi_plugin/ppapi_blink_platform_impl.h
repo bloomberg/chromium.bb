@@ -26,7 +26,6 @@ class PpapiBlinkPlatformImpl : public BlinkPlatformImpl {
   // BlinkPlatformImpl methods:
   blink::WebThread* currentThread() override;
   blink::WebClipboard* clipboard() override;
-  blink::WebMimeRegistry* mimeRegistry() override;
   blink::WebFileUtilities* fileUtilities() override;
   blink::WebSandboxSupport* sandboxSupport() override;
   virtual bool sandboxEnabled();

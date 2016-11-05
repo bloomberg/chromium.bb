@@ -98,7 +98,6 @@ class WebMediaStreamCenter;
 class WebMediaStreamCenterClient;
 class WebMediaStreamTrack;
 class WebMessagePortChannel;
-class WebMimeRegistry;
 class WebNotificationManager;
 class WebPluginListBuilder;
 class WebPrescientNetworking;
@@ -153,9 +152,6 @@ class BLINK_PLATFORM_EXPORT Platform {
 
   // Must return non-null.
   virtual WebFileUtilities* fileUtilities() { return nullptr; }
-
-  // Must return non-null.
-  virtual WebMimeRegistry* mimeRegistry() { return nullptr; }
 
   // May return null if sandbox support is not necessary
   virtual WebSandboxSupport* sandboxSupport() { return nullptr; }

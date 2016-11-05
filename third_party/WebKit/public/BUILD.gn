@@ -227,7 +227,6 @@ source_set("blink_headers") {
     "platform/WebMemoryState.h",
     "platform/WebMessagePortChannel.h",
     "platform/WebMessagePortChannelClient.h",
-    "platform/WebMimeRegistry.h",
     "platform/WebMixedContent.h",
     "platform/WebMockClipboard.h",
     "platform/WebNativeScrollBehavior.h",

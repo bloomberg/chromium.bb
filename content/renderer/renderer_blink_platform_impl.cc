@@ -31,7 +31,6 @@
 #include "content/child/indexed_db/webidbfactory_impl.h"
 #include "content/child/quota_dispatcher.h"
 #include "content/child/quota_message_filter.h"
-#include "content/child/simple_webmimeregistry_impl.h"
 #include "content/child/storage_util.h"
 #include "content/child/thread_safe_sender.h"
 #include "content/child/web_database_observer_impl.h"
@@ -77,7 +76,6 @@
 #include "gpu/ipc/common/gpu_stream_constants.h"
 #include "ipc/ipc_sync_message_filter.h"
 #include "media/audio/audio_output_device.h"
-#include "media/base/mime_util.h"
 #include "media/blink/webcontentdecryptionmodule_impl.h"
 #include "media/filters/stream_parser_factory.h"
 #include "mojo/common/common_type_converters.h"
@@ -98,7 +96,6 @@
 #include "third_party/WebKit/public/platform/WebSecurityOrigin.h"
 #include "third_party/WebKit/public/platform/WebURL.h"
 #include "third_party/WebKit/public/platform/WebVector.h"
-#include "third_party/WebKit/public/platform/mime_registry.mojom.h"
 #include "third_party/WebKit/public/platform/modules/device_orientation/WebDeviceMotionListener.h"
 #include "third_party/WebKit/public/platform/modules/device_orientation/WebDeviceOrientationListener.h"
 #include "third_party/WebKit/public/platform/scheduler/renderer/renderer_scheduler.h"
@@ -160,7 +157,6 @@ using blink::WebMediaStream;
 using blink::WebMediaStreamCenter;
 using blink::WebMediaStreamCenterClient;
 using blink::WebMediaStreamTrack;
-using blink::WebMimeRegistry;
 using blink::WebRTCPeerConnectionHandler;
 using blink::WebRTCPeerConnectionHandlerClient;
 using blink::WebStorageNamespace;
@@ -193,16 +189,6 @@ media::AudioParameters GetAudioHardwareParams() {
 }  // namespace
 
 //------------------------------------------------------------------------------
-
-class RendererBlinkPlatformImpl::MimeRegistry
-    : public SimpleWebMimeRegistryImpl {
- public:
-  blink::WebString mimeTypeForExtension(
-      const blink::WebString& file_extension) override;
-
- private:
-  blink::mojom::MimeRegistryPtr mime_registry_;
-};
 
 class RendererBlinkPlatformImpl::FileUtilities : public WebFileUtilitiesImpl {
  public:
@@ -253,7 +239,6 @@ RendererBlinkPlatformImpl::RendererBlinkPlatformImpl(
       main_thread_(renderer_scheduler->CreateMainThread()),
       clipboard_delegate_(new RendererClipboardDelegate),
       clipboard_(new WebClipboardImpl(clipboard_delegate_.get())),
-      mime_registry_(new RendererBlinkPlatformImpl::MimeRegistry),
       sudden_termination_disables_(0),
       plugin_refresh_allowed_(true),
       default_task_runner_(renderer_scheduler->DefaultTaskRunner()),
@@ -335,10 +320,6 @@ blink::WebClipboard* RendererBlinkPlatformImpl::clipboard() {
   if (clipboard)
     return clipboard;
   return clipboard_.get();
-}
-
-blink::WebMimeRegistry* RendererBlinkPlatformImpl::mimeRegistry() {
-  return mime_registry_.get();
 }
 
 blink::WebFileUtilities* RendererBlinkPlatformImpl::fileUtilities() {
@@ -497,23 +478,6 @@ WebString RendererBlinkPlatformImpl::fileSystemCreateOriginIdentifier(
     const blink::WebSecurityOrigin& origin) {
   return WebString::fromUTF8(storage::GetIdentifierFromOrigin(
       WebSecurityOriginToGURL(origin)));
-}
-
-//------------------------------------------------------------------------------
-
-WebString RendererBlinkPlatformImpl::MimeRegistry::mimeTypeForExtension(
-    const WebString& file_extension) {
-  // The sandbox restricts our access to the registry, so we need to proxy
-  // these calls over to the browser process.
-  if (!mime_registry_)
-    RenderThread::Get()->GetRemoteInterfaces()->GetInterface(&mime_registry_);
-
-  mojo::String mime_type;
-  if (!mime_registry_->GetMimeTypeFromExtension(
-          mojo::String::From(base::string16(file_extension)), &mime_type)) {
-    return WebString();
-  }
-  return WebString::fromASCII(mime_type.get());
 }
 
 //------------------------------------------------------------------------------

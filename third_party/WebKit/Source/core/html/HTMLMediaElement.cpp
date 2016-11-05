@@ -77,7 +77,6 @@
 #include "platform/Histogram.h"
 #include "platform/LayoutTestSupport.h"
 #include "platform/MIMETypeFromURL.h"
-#include "platform/MIMETypeRegistry.h"
 #include "platform/RuntimeEnabledFeatures.h"
 #include "platform/UserGestureIndicator.h"
 #include "platform/audio/AudioBus.h"
@@ -263,10 +262,8 @@ bool canLoadURL(const KURL& url, const ContentType& contentType) {
   // knows it cannot render.
   if (contentMIMEType != "application/octet-stream" ||
       contentTypeCodecs.isEmpty()) {
-    WebMimeRegistry::SupportsType supported =
-        Platform::current()->mimeRegistry()->supportsMediaMIMEType(
-            contentMIMEType, contentTypeCodecs);
-    return supported > WebMimeRegistry::IsNotSupported;
+    return MIMETypeRegistry::supportsMediaMIMEType(contentMIMEType,
+                                                   contentTypeCodecs);
   }
 
   return false;
@@ -358,7 +355,7 @@ void HTMLMediaElement::recordAutoplayMetric(AutoplayMetrics metric) {
   autoplayHistogram.count(metric);
 }
 
-WebMimeRegistry::SupportsType HTMLMediaElement::supportsType(
+MIMETypeRegistry::SupportsType HTMLMediaElement::supportsType(
     const ContentType& contentType) {
   DEFINE_STATIC_LOCAL(const String, codecs, ("codecs"));
 
@@ -368,16 +365,15 @@ WebMimeRegistry::SupportsType HTMLMediaElement::supportsType(
   String typeCodecs = contentType.parameter(codecs);
 
   if (type.isEmpty())
-    return WebMimeRegistry::IsNotSupported;
+    return MIMETypeRegistry::IsNotSupported;
 
   // 4.8.10.3 MIME types - The canPlayType(type) method must return the empty
   // string if type is a type that the user agent knows it cannot render or is
   // the type "application/octet-stream"
   if (type == "application/octet-stream")
-    return WebMimeRegistry::IsNotSupported;
+    return MIMETypeRegistry::IsNotSupported;
 
-  return Platform::current()->mimeRegistry()->supportsMediaMIMEType(type,
-                                                                    typeCodecs);
+  return MIMETypeRegistry::supportsMediaMIMEType(type, typeCodecs);
 }
 
 URLRegistry* HTMLMediaElement::s_mediaStreamRegistry = 0;
@@ -721,18 +717,18 @@ HTMLMediaElement::NetworkState HTMLMediaElement::getNetworkState() const {
 }
 
 String HTMLMediaElement::canPlayType(const String& mimeType) const {
-  WebMimeRegistry::SupportsType support = supportsType(ContentType(mimeType));
+  MIMETypeRegistry::SupportsType support = supportsType(ContentType(mimeType));
   String canPlay;
 
   // 4.8.10.3
   switch (support) {
-    case WebMimeRegistry::IsNotSupported:
+    case MIMETypeRegistry::IsNotSupported:
       canPlay = emptyString();
       break;
-    case WebMimeRegistry::MayBeSupported:
+    case MIMETypeRegistry::MayBeSupported:
       canPlay = "maybe";
       break;
-    case WebMimeRegistry::IsSupported:
+    case MIMETypeRegistry::IsSupported:
       canPlay = "probably";
       break;
   }

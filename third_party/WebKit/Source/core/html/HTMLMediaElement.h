@@ -37,11 +37,11 @@
 #include "core/html/AutoplayExperimentHelper.h"
 #include "core/html/HTMLElement.h"
 #include "core/html/track/TextTrack.h"
+#include "platform/MIMETypeRegistry.h"
 #include "platform/Supplementable.h"
 #include "platform/audio/AudioSourceProvider.h"
 #include "public/platform/WebAudioSourceProviderClient.h"
 #include "public/platform/WebMediaPlayerClient.h"
-#include "public/platform/WebMimeRegistry.h"
 #include <memory>
 
 namespace blink {
@@ -85,7 +85,7 @@ class CORE_EXPORT HTMLMediaElement : public HTMLElement,
   USING_PRE_FINALIZER(HTMLMediaElement, dispose);
 
  public:
-  static WebMimeRegistry::SupportsType supportsType(const ContentType&);
+  static MIMETypeRegistry::SupportsType supportsType(const ContentType&);
 
   enum class RecordMetricsBehavior { DoNotRecord, DoRecord };
 

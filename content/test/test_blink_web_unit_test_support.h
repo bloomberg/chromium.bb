@@ -13,7 +13,6 @@
 #include "build/build_config.h"
 #include "cc/blink/web_compositor_support_impl.h"
 #include "content/child/blink_platform_impl.h"
-#include "content/child/simple_webmimeregistry_impl.h"
 #include "content/child/webfileutilities_impl.h"
 #include "content/test/mock_webblob_registry_impl.h"
 #include "content/test/mock_webclipboard_impl.h"
@@ -41,7 +40,6 @@ class TestBlinkWebUnitTestSupport : public BlinkPlatformImpl {
   blink::WebClipboard* clipboard() override;
   blink::WebFileUtilities* fileUtilities() override;
   blink::WebIDBFactory* idbFactory() override;
-  blink::WebMimeRegistry* mimeRegistry() override;
 
   blink::WebURLLoader* createURLLoader() override;
   blink::WebString userAgent() override;
@@ -82,7 +80,6 @@ class TestBlinkWebUnitTestSupport : public BlinkPlatformImpl {
 
  private:
   MockWebBlobRegistryImpl blob_registry_;
-  SimpleWebMimeRegistryImpl mime_registry_;
   std::unique_ptr<MockWebClipboardImpl> mock_clipboard_;
   WebFileUtilitiesImpl file_utilities_;
   base::ScopedTempDir file_system_root_;

@@ -270,7 +270,6 @@ component("platform") {
     "LinkHash.h",
     "MIMETypeFromURL.cpp",
     "MIMETypeFromURL.h",
-    "MIMETypeRegistry.cpp",
     "MIMETypeRegistry.h",
     "MemoryCoordinator.cpp",
     "MemoryCoordinator.h",
@@ -1114,6 +1113,7 @@ component("platform") {
     "network/WebSocketHandshakeRequest.h",
     "network/WebSocketHandshakeResponse.cpp",
     "network/WebSocketHandshakeResponse.h",
+    "network/mime/MIMETypeRegistry.cpp",
     "peerconnection/RTCAnswerOptionsPlatform.h",
     "peerconnection/RTCOfferOptionsPlatform.h",
     "peerconnection/RTCSessionDescriptionRequest.h",
@@ -1390,6 +1390,7 @@ component("platform") {
     "//gpu/command_buffer/client:gles2_c_lib",
     "//gpu/command_buffer/client:gles2_interface",
     "//gpu/command_buffer/common:common",
+    "//media",
     "//net",
     "//skia",
     "//third_party:jpeg",
@@ -1410,6 +1411,7 @@ component("platform") {
     "//mojo/public/cpp/bindings",
     "//mojo/public/cpp/bindings:wtf_support",
     "//third_party/WebKit/Source/platform/heap",
+    "//third_party/WebKit/public:mojo_bindings_blink",
     "//third_party/WebKit/public:offscreen_canvas_mojo_bindings_blink",
     "//third_party/ced",
     "//third_party/harfbuzz-ng",
@@ -1528,6 +1530,7 @@ static_library("test_support") {
   testonly = true
 
   sources = [
+    "network/mime/MockMimeRegistry.h",
     "scheduler/base/task_queue_manager_delegate_for_test.cc",
     "scheduler/base/test_time_source.cc",
     "scheduler/child/scheduler_tqm_delegate_for_test.cc",
@@ -1708,6 +1711,7 @@ test("blink_platform_unittests") {
     "network/NetworkUtilsTest.cpp",
     "network/ResourceRequestTest.cpp",
     "network/ResourceResponseTest.cpp",
+    "network/mime/MIMETypeRegistryTest.cpp",
     "scheduler/CancellableTaskFactoryTest.cpp",
     "scheduler/base/intrusive_heap_unittest.cc",
     "scheduler/base/queueing_time_estimator_unittest.cc",

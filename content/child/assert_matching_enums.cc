@@ -9,7 +9,6 @@
 #include "content/common/input/touch_action.h"
 #include "content/public/common/screen_orientation_values.h"
 #include "media/base/mime_util.h"
-#include "third_party/WebKit/public/platform/WebMimeRegistry.h"
 #include "third_party/WebKit/public/platform/WebTextInputMode.h"
 #include "third_party/WebKit/public/platform/WebTextInputType.h"
 #include "third_party/WebKit/public/platform/modules/screen_orientation/WebScreenOrientationLockType.h"
@@ -43,13 +42,6 @@ STATIC_ASSERT_ENUM(blink::WebScreenOrientationLockPortrait,
                    SCREEN_ORIENTATION_VALUES_PORTRAIT);
 STATIC_ASSERT_ENUM(blink::WebScreenOrientationLockNatural,
                    SCREEN_ORIENTATION_VALUES_NATURAL);
-
-// SupportsType
-STATIC_ASSERT_ENUM(blink::WebMimeRegistry::IsNotSupported,
-                   media::IsNotSupported);
-STATIC_ASSERT_ENUM(blink::WebMimeRegistry::IsSupported, media::IsSupported);
-STATIC_ASSERT_ENUM(blink::WebMimeRegistry::MayBeSupported,
-                   media::MayBeSupported);
 
 // WebTextInputMode
 STATIC_ASSERT_ENUM(blink::kWebTextInputModeDefault,

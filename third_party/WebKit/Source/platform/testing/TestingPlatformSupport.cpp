@@ -38,13 +38,16 @@
 #include "base/test/test_discardable_memory_allocator.h"
 #include "cc/blink/web_compositor_support_impl.h"
 #include "cc/test/ordered_simple_task_runner.h"
+#include "mojo/public/cpp/bindings/strong_binding.h"
 #include "platform/HTTPNames.h"
 #include "platform/heap/Heap.h"
+#include "platform/network/mime/MockMimeRegistry.h"
 #include "platform/scheduler/base/real_time_domain.h"
 #include "platform/scheduler/base/task_queue_manager.h"
 #include "platform/scheduler/base/test_time_source.h"
 #include "platform/scheduler/child/scheduler_tqm_delegate_for_test.h"
 #include "platform/scheduler/renderer/renderer_scheduler_impl.h"
+#include "public/platform/InterfaceProvider.h"
 #include "public/platform/WebContentLayer.h"
 #include "public/platform/WebExternalTextureLayer.h"
 #include "public/platform/WebImageLayer.h"
@@ -57,6 +60,23 @@
 #include <memory>
 
 namespace blink {
+
+class TestingPlatformSupport::TestingInterfaceProvider
+    : public blink::InterfaceProvider {
+ public:
+  TestingInterfaceProvider() = default;
+  virtual ~TestingInterfaceProvider() = default;
+
+  void getInterface(const char* name,
+                    mojo::ScopedMessagePipeHandle handle) override {
+    if (std::string(name) == mojom::blink::MimeRegistry::Name_) {
+      mojo::MakeStrongBinding(
+          wrapUnique(new MockMimeRegistry()),
+          mojo::MakeRequest<mojom::blink::MimeRegistry>(std::move(handle)));
+      return;
+    }
+  }
+};
 
 namespace {
 
@@ -115,7 +135,9 @@ TestingPlatformSupport::TestingPlatformSupport()
     : TestingPlatformSupport(TestingPlatformSupport::Config()) {}
 
 TestingPlatformSupport::TestingPlatformSupport(const Config& config)
-    : m_config(config), m_oldPlatform(Platform::current()) {
+    : m_config(config),
+      m_oldPlatform(Platform::current()),
+      m_interfaceProvider(new TestingInterfaceProvider) {
   ASSERT(m_oldPlatform);
   Platform::setCurrentPlatformForTesting(this);
 }
@@ -155,10 +177,6 @@ WebIDBFactory* TestingPlatformSupport::idbFactory() {
   return m_oldPlatform ? m_oldPlatform->idbFactory() : nullptr;
 }
 
-WebMimeRegistry* TestingPlatformSupport::mimeRegistry() {
-  return m_oldPlatform ? m_oldPlatform->mimeRegistry() : nullptr;
-}
-
 WebURLLoaderMockFactory* TestingPlatformSupport::getURLLoaderMockFactory() {
   return m_oldPlatform ? m_oldPlatform->getURLLoaderMockFactory() : nullptr;
 }
@@ -173,6 +191,10 @@ WebData TestingPlatformSupport::loadResource(const char* name) {
 
 WebURLError TestingPlatformSupport::cancelledError(const WebURL& url) const {
   return m_oldPlatform ? m_oldPlatform->cancelledError(url) : WebURLError();
+}
+
+InterfaceProvider* TestingPlatformSupport::interfaceProvider() {
+  return m_interfaceProvider.get();
 }
 
 // TestingPlatformSupportWithMockScheduler definition:

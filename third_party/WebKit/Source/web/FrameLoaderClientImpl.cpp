@@ -74,7 +74,6 @@
 #include "public/platform/Platform.h"
 #include "public/platform/WebApplicationCacheHost.h"
 #include "public/platform/WebMediaPlayerSource.h"
-#include "public/platform/WebMimeRegistry.h"
 #include "public/platform/WebRTCPeerConnectionHandler.h"
 #include "public/platform/WebSecurityOrigin.h"
 #include "public/platform/WebURL.h"

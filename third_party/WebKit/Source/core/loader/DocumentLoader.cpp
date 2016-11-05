@@ -61,6 +61,7 @@
 #include "core/page/FrameTree.h"
 #include "core/page/Page.h"
 #include "platform/HTTPNames.h"
+#include "platform/MIMETypeRegistry.h"
 #include "platform/UserGestureIndicator.h"
 #include "platform/mhtml/ArchiveResource.h"
 #include "platform/network/ContentSecurityPolicyResponseHeaders.h"
@@ -70,7 +71,6 @@
 #include "platform/weborigin/SecurityPolicy.h"
 #include "public/platform/Platform.h"
 #include "public/platform/WebDocumentSubresourceFilter.h"
-#include "public/platform/WebMimeRegistry.h"
 #include "wtf/Assertions.h"
 #include "wtf/AutoReset.h"
 #include "wtf/text/WTFString.h"
@@ -354,8 +354,7 @@ bool DocumentLoader::redirectReceived(
 }
 
 static bool canShowMIMEType(const String& mimeType, LocalFrame* frame) {
-  if (Platform::current()->mimeRegistry()->supportsMIMEType(mimeType) ==
-      WebMimeRegistry::IsSupported)
+  if (MIMETypeRegistry::isSupportedMIMEType(mimeType))
     return true;
   PluginData* pluginData = frame->pluginData();
   return !mimeType.isEmpty() && pluginData &&

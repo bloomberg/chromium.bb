@@ -136,16 +136,18 @@ class TestingPlatformSupport : public Platform {
   WebClipboard* clipboard() override;
   WebFileUtilities* fileUtilities() override;
   WebIDBFactory* idbFactory() override;
-  WebMimeRegistry* mimeRegistry() override;
   WebURLLoaderMockFactory* getURLLoaderMockFactory() override;
   blink::WebURLLoader* createURLLoader() override;
-
   WebData loadResource(const char* name) override;
   WebURLError cancelledError(const WebURL&) const override;
+  InterfaceProvider* interfaceProvider() override;
 
  protected:
+  class TestingInterfaceProvider;
+
   const Config m_config;
   Platform* const m_oldPlatform;
+  std::unique_ptr<TestingInterfaceProvider> m_interfaceProvider;
 };
 
 class TestingPlatformSupportWithMockScheduler : public TestingPlatformSupport {

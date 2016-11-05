@@ -190,10 +190,6 @@ blink::WebIDBFactory* TestBlinkWebUnitTestSupport::idbFactory() {
   return NULL;
 }
 
-blink::WebMimeRegistry* TestBlinkWebUnitTestSupport::mimeRegistry() {
-  return &mime_registry_;
-}
-
 blink::WebURLLoader* TestBlinkWebUnitTestSupport::createURLLoader() {
   // This loader should be used only for process-local resources such as
   // data URLs.

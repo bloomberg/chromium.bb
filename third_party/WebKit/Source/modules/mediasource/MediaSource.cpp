@@ -295,7 +295,7 @@ bool MediaSource::isTypeSupported(const String& type) {
   // does not make sense for a MediaSource to support a type the
   // HTMLMediaElement knows it cannot play.
   if (HTMLMediaElement::supportsType(contentType) ==
-      WebMimeRegistry::IsNotSupported) {
+      MIMETypeRegistry::IsNotSupported) {
     BLINK_MSLOG << __func__ << "(" << type
                 << ") -> false (not supported by HTMLMediaElement)";
     return false;

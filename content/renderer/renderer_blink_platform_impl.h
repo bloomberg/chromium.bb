@@ -73,7 +73,6 @@ class CONTENT_EXPORT RendererBlinkPlatformImpl : public BlinkPlatformImpl {
   }
   // Platform methods:
   blink::WebClipboard* clipboard() override;
-  blink::WebMimeRegistry* mimeRegistry() override;
   blink::WebFileUtilities* fileUtilities() override;
   blink::WebSandboxSupport* sandboxSupport() override;
   blink::WebCookieJar* cookieJar() override;
@@ -256,9 +255,6 @@ class CONTENT_EXPORT RendererBlinkPlatformImpl : public BlinkPlatformImpl {
 
   class FileUtilities;
   std::unique_ptr<FileUtilities> file_utilities_;
-
-  class MimeRegistry;
-  std::unique_ptr<MimeRegistry> mime_registry_;
 
 #if !defined(OS_ANDROID) && !defined(OS_WIN)
   class SandboxSupport;

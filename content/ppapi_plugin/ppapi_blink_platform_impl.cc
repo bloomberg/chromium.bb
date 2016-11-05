@@ -143,11 +143,6 @@ blink::WebClipboard* PpapiBlinkPlatformImpl::clipboard() {
   return NULL;
 }
 
-blink::WebMimeRegistry* PpapiBlinkPlatformImpl::mimeRegistry() {
-  NOTREACHED();
-  return NULL;
-}
-
 blink::WebFileUtilities* PpapiBlinkPlatformImpl::fileUtilities() {
   NOTREACHED();
   return NULL;

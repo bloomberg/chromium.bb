@@ -175,8 +175,6 @@ target(link_target_type, "child") {
     "shared_memory_received_data_factory.h",
     "shared_worker_devtools_agent.cc",
     "shared_worker_devtools_agent.h",
-    "simple_webmimeregistry_impl.cc",
-    "simple_webmimeregistry_impl.h",
     "site_isolation_stats_gatherer.cc",
     "site_isolation_stats_gatherer.h",
     "storage_util.cc",
