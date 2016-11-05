@@ -151,9 +151,14 @@ LayoutRect PaintInvalidator::computeVisualRectInBacking(
   return mapLocalRectToPaintInvalidationBacking(object, localRect, context);
 }
 
-LayoutPoint PaintInvalidator::computeLocationFromPaintInvalidationBacking(
+LayoutPoint PaintInvalidator::computeLocationInBacking(
     const LayoutObject& object,
     const PaintInvalidatorContext& context) {
+  // Use visual rect location for LayoutTexts because it suffices to check
+  // visual rect change for layout caused invalidation.
+  if (object.isText())
+    return context.newVisualRect.location();
+
   FloatPoint point;
   if (object != context.paintInvalidationContainer) {
     point.moveBy(FloatPoint(context.treeBuilderContext.current.paintOffset));
@@ -322,11 +327,11 @@ void PaintInvalidator::updateContext(const LayoutObject& object,
     context.forcedSubtreeInvalidationFlags |=
         PaintInvalidatorContext::ForcedSubtreeSlowPathRect;
 
+  ObjectPaintInvalidator objectPaintInvalidator(object);
   context.oldVisualRect = object.previousVisualRect();
-  context.oldLocation = object.previousPositionFromPaintInvalidationBacking();
+  context.oldLocation = objectPaintInvalidator.previousLocationInBacking();
   context.newVisualRect = computeVisualRectInBacking(object, context);
-  context.newLocation =
-      computeLocationFromPaintInvalidationBacking(object, context);
+  context.newLocation = computeLocationInBacking(object, context);
 
   IntSize adjustment = object.scrollAdjustmentForPaintInvalidation(
       *context.paintInvalidationContainer);
@@ -334,8 +339,7 @@ void PaintInvalidator::updateContext(const LayoutObject& object,
   context.newVisualRect.move(adjustment);
 
   object.getMutableForPainting().setPreviousVisualRect(context.newVisualRect);
-  object.getMutableForPainting()
-      .setPreviousPositionFromPaintInvalidationBacking(context.newLocation);
+  objectPaintInvalidator.setPreviousLocationInBacking(context.newLocation);
 }
 
 void PaintInvalidator::invalidatePaintIfNeeded(

@@ -15,6 +15,7 @@ namespace blink {
 class DisplayItemClient;
 class LayoutBoxModelObject;
 class LayoutObject;
+class LayoutPoint;
 class LayoutRect;
 struct PaintInvalidatorContext;
 
@@ -72,6 +73,9 @@ class CORE_EXPORT ObjectPaintInvalidator {
   void invalidatePaintIncludingNonCompositingDescendants();
   void invalidatePaintIncludingNonSelfPaintingLayerDescendants(
       const LayoutBoxModelObject& paintInvalidationContainer);
+
+  LayoutPoint previousLocationInBacking() const;
+  void setPreviousLocationInBacking(const LayoutPoint&);
 
  private:
   void invalidatePaintIncludingNonSelfPaintingLayerDescendantsInternal(

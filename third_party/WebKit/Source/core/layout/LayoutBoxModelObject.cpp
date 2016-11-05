@@ -498,24 +498,27 @@ void LayoutBoxModelObject::invalidateTreeIfNeeded(
     newPaintInvalidationState
         .setForceSubtreeInvalidationCheckingWithinContainer();
 
+  ObjectPaintInvalidator paintInvalidator(*this);
   LayoutRect previousVisualRect = this->previousVisualRect();
-  LayoutPoint previousPosition = previousPositionFromPaintInvalidationBacking();
+  LayoutPoint previousLocation = paintInvalidator.previousLocationInBacking();
   PaintInvalidationReason reason =
       invalidatePaintIfNeeded(newPaintInvalidationState);
   clearPaintInvalidationFlags();
 
-  if (previousPosition != previousPositionFromPaintInvalidationBacking())
+  if (previousLocation != paintInvalidator.previousLocationInBacking()) {
     newPaintInvalidationState
         .setForceSubtreeInvalidationCheckingWithinContainer();
+  }
 
   // TODO(wangxianzhu): Combine this function into LayoutObject::
   // invalidateTreeIfNeeded() when removing the following workarounds.
 
   // TODO(wangxianzhu): This is a workaround for crbug.com/533277. Will remove
   // when we enable paint offset caching.
-  if (reason != PaintInvalidationNone && hasPercentageTransform(styleRef()))
+  if (reason != PaintInvalidationNone && hasPercentageTransform(styleRef())) {
     newPaintInvalidationState
         .setForceSubtreeInvalidationCheckingWithinContainer();
+  }
 
   // TODO(wangxianzhu): This is a workaround for crbug.com/490725. We don't have
   // enough saved information to do accurate check of clipping change. Will
@@ -525,9 +528,10 @@ void LayoutBoxModelObject::invalidateTreeIfNeeded(
       !usesCompositedScrolling()
       // Note that isLayoutView() below becomes unnecessary after the launch of
       // root layer scrolling.
-      && (hasOverflowClip() || isLayoutView()))
+      && (hasOverflowClip() || isLayoutView())) {
     newPaintInvalidationState
         .setForceSubtreeInvalidationRectUpdateWithinContainer();
+  }
 
   newPaintInvalidationState.updateForChildren(reason);
   invalidatePaintOfSubtreesIfNeeded(newPaintInvalidationState);

@@ -89,9 +89,10 @@ class CORE_EXPORT PaintInvalidationState {
     return *m_paintInvalidationContainer;
   }
 
-  // Computes the position of the current object ((0,0) in the space of the
+  // Computes the location of the current object ((0,0) in the space of the
   // object) in the space of paint invalidation backing.
-  LayoutPoint computePositionFromPaintInvalidationBacking() const;
+  LayoutPoint computeLocationInBacking(
+      const LayoutPoint& visualRectLocation) const;
 
   // Returns the rect bounds needed to invalidate paint of this object,
   // in the space of paint invalidation backing.

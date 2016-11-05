@@ -127,7 +127,6 @@ struct SameSizeAsLayoutObject : DisplayItemClient {
   unsigned m_bitfields;
   unsigned m_bitfields2;
   LayoutRect m_previousVisualRect;
-  LayoutPoint m_previousPosition;
 };
 
 static_assert(sizeof(LayoutObject) == sizeof(SameSizeAsLayoutObject),
@@ -1204,11 +1203,12 @@ PaintInvalidationReason LayoutObject::invalidatePaintIfNeeded(
       paintInvalidationState.paintInvalidationContainer();
   DCHECK(paintInvalidationContainer == containerForPaintInvalidation());
 
+  ObjectPaintInvalidator paintInvalidator(*this);
   context.oldVisualRect = previousVisualRect();
-  context.oldLocation = previousPositionFromPaintInvalidationBacking();
+  context.oldLocation = paintInvalidator.previousLocationInBacking();
   context.newVisualRect = paintInvalidationState.computeVisualRectInBacking();
-  context.newLocation =
-      paintInvalidationState.computePositionFromPaintInvalidationBacking();
+  context.newLocation = paintInvalidationState.computeLocationInBacking(
+      context.newVisualRect.location());
 
   IntSize adjustment =
       scrollAdjustmentForPaintInvalidation(paintInvalidationContainer);
@@ -1218,7 +1218,7 @@ PaintInvalidationReason LayoutObject::invalidatePaintIfNeeded(
   adjustVisualRectForRasterEffects(context.newVisualRect);
 
   setPreviousVisualRect(context.newVisualRect);
-  setPreviousPositionFromPaintInvalidationBacking(context.newLocation);
+  paintInvalidator.setPreviousLocationInBacking(context.newLocation);
 
   if (!shouldCheckForPaintInvalidationRegardlessOfPaintInvalidationState() &&
       paintInvalidationState

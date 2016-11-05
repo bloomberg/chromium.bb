@@ -1589,17 +1589,6 @@ class CORE_EXPORT LayoutObject : public ImageResourceObserver,
   void adjustPreviousPaintInvalidationForScrollIfNeeded(
       const DoubleSize& scrollDelta);
 
-  // The previous position of the top-left corner of the object in its previous
-  // paint backing.
-  const LayoutPoint& previousPositionFromPaintInvalidationBacking() const {
-    return m_previousPositionFromPaintInvalidationBacking;
-  }
-  void setPreviousPositionFromPaintInvalidationBacking(
-      const LayoutPoint& positionFromPaintInvalidationBacking) {
-    m_previousPositionFromPaintInvalidationBacking =
-        positionFromPaintInvalidationBacking;
-  }
-
   PaintInvalidationReason fullPaintInvalidationReason() const {
     return m_bitfields.fullPaintInvalidationReason();
   }
@@ -1690,8 +1679,8 @@ class CORE_EXPORT LayoutObject : public ImageResourceObserver,
     void setPreviousVisualRect(const LayoutRect& r) {
       m_layoutObject.setPreviousVisualRect(r);
     }
-    void setPreviousPositionFromPaintInvalidationBacking(const LayoutPoint& p) {
-      m_layoutObject.setPreviousPositionFromPaintInvalidationBacking(p);
+    void setHasPreviousLocationInBacking(bool b) {
+      m_layoutObject.m_bitfields.setHasPreviousLocationInBacking(b);
     }
     void setPreviousBackgroundObscured(bool b) {
       m_layoutObject.setPreviousBackgroundObscured(b);
@@ -1699,7 +1688,6 @@ class CORE_EXPORT LayoutObject : public ImageResourceObserver,
     void clearPreviousVisualRects() {
       m_layoutObject.clearPreviousVisualRects();
     }
-
    protected:
     friend class PaintPropertyTreeBuilder;
     // The following two functions can be called from PaintPropertyTreeBuilder
@@ -1752,6 +1740,13 @@ class CORE_EXPORT LayoutObject : public ImageResourceObserver,
 
   bool isBackgroundAttachmentFixedObject() const {
     return m_bitfields.isBackgroundAttachmentFixedObject();
+  }
+
+  // ObjectPaintInvalidator will access the internal global map storing
+  // previousLocationInBacking only when the flag is set, to avoid unnecessary
+  // map lookups.
+  bool hasPreviousLocationInBacking() const {
+    return m_bitfields.hasPreviousLocationInBacking();
   }
 
  protected:
@@ -1932,10 +1927,9 @@ class CORE_EXPORT LayoutObject : public ImageResourceObserver,
   }
 
  private:
-  // Adjusts a visual rect in the space of |m_previousVisualRect| and
-  // |m_previousPositionFromPaintInvalidationBacking| to be in the space of the
-  // |paintInvalidationContainer|, if needed. They can be different only if
-  // |paintInvalidationContainer| is a composited scroller.
+  // Adjusts a visual rect in the space of |m_previousVisualRect| to be in the
+  // space of the |paintInvalidationContainer|, if needed. They can be different
+  // only if |paintInvalidationContainer| is a composited scroller.
   void adjustVisualRectForCompositedScrolling(
       LayoutRect&,
       const LayoutBoxModelObject& paintInvalidationContainer) const;
@@ -2094,12 +2088,13 @@ class CORE_EXPORT LayoutObject : public ImageResourceObserver,
           m_isScrollAnchorObject(false),
           m_scrollAnchorDisablingStyleChanged(false),
           m_hasBoxDecorationBackground(false),
+          m_hasPreviousLocationInBacking(false),
           m_positionedState(IsStaticallyPositioned),
           m_selectionState(SelectionNone),
           m_backgroundObscurationState(BackgroundObscurationStatusInvalid),
           m_fullPaintInvalidationReason(PaintInvalidationNone) {}
 
-    // 32 bits have been used in the first word, and 19 in the second.
+    // 32 bits have been used in the first word, and 20 in the second.
 
     // Self needs layout means that this layout object is marked for a full
     // layout. This is the default layout but it is expensive as it recomputes
@@ -2258,6 +2253,9 @@ class CORE_EXPORT LayoutObject : public ImageResourceObserver,
     ADD_BOOLEAN_BITFIELD(hasBoxDecorationBackground,
                          HasBoxDecorationBackground);
 
+    ADD_BOOLEAN_BITFIELD(hasPreviousLocationInBacking,
+                         HasPreviousLocationInBacking);
+
    private:
     // This is the cached 'position' value of this object
     // (see ComputedStyle::position).
@@ -2349,12 +2347,6 @@ class CORE_EXPORT LayoutObject : public ImageResourceObserver,
   // account for composited scrolling. See
   // adjustVisualRectForCompositedScrolling().
   LayoutRect m_previousVisualRect;
-
-  // This stores the position in the paint invalidation backing's coordinate.
-  // It is used to detect layoutObject shifts that forces a full invalidation.
-  // This point does *not* account for composited scrolling. See
-  // adjustInvalidationRectForCompositedScrolling().
-  LayoutPoint m_previousPositionFromPaintInvalidationBacking;
 };
 
 // FIXME: remove this once the layout object lifecycle ASSERTS are no longer
