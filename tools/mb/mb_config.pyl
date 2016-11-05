@@ -285,7 +285,7 @@
       'ios-device': 'ios',
       'ios-simulator': 'ios',
       'ios-simulator-cronet': 'ios',
-      'ios-simulator-swarming': 'ios',
+      'ios-simulator-xcode-clang': 'ios',
     },
 
     'chromium.memory': {
@@ -578,7 +578,7 @@
       'ios-device': 'ios',
       'ios-simulator': 'ios',
       'ios-simulator-cronet': 'ios',
-      'ios-simulator-swarming': 'ios',
+      'ios-simulator-xcode-clang': 'ios',
       'mac_chromium_10.10_rel_ng': 'gpu_tests_release_trybot',
       'mac_chromium_10.10_macviews': 'mac_views_browser_release_trybot',
       'mac_chromium_archive_rel_ng': 'release_bot_mac_strip',

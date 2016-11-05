@@ -1,6 +1,6 @@
 {
   "owners": [
-    "dpranke",
+    "sdefresne",
     "smut"
   ],
   "comments": [
@@ -25,11 +25,11 @@
     "use_goma=true",
     "goma_dir=\"$(goma_dir)\"",
     "target_cpu=\"x64\"",
-    "additional_target_cpus=[\"x86\"]"
+    "additional_target_cpus=[\"x86\"]",
+    "use_xcode_clang=true"
   ],
   "mb_type": "gn",
   "compiler": "ninja",
-  "additional_compile_targets": ["gn_all"],
   "configuration": "Debug",
   "sdk": "iphonesimulator10.0",
   "tests": [
