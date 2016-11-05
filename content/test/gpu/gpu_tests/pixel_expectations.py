@@ -37,6 +37,11 @@ class PixelExpectations(GpuTestExpectations):
     # TODO(kbr): flakily timing out on this configuration.
     self.Flaky('*', ['linux', 'intel', 'debug'], bug=648369)
 
+    # Flaky for unknown reasons only on macOS. Not planning to investigate
+    # further.
+    self.Flaky('Pixel_ScissorTestWithPreserveDrawingBuffer', ['mac'],
+               bug=660461)
+
     # TODO(zakerinasab): Check / generate reference images. Remove the Fail
     # lines after fixing 657946 and comment out the Skip line.
     self.Fail('Pixel_CanvasDisplayLinearRGBAccelerated2D', bug=657946)
