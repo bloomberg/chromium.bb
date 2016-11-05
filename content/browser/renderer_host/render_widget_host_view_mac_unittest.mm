@@ -317,6 +317,29 @@ TEST_F(RenderWidgetHostViewMacTest, AcceptsFirstResponder) {
   EXPECT_TRUE([rwhv_cocoa_.get() acceptsFirstResponder]);
 }
 
+// This test verifies that RenderWidgetHostViewCocoa's implementation of
+// NSTextInputClientConformance conforms to requirements.
+TEST_F(RenderWidgetHostViewMacTest, NSTextInputClientConformance) {
+  NSRange selectedRange = [rwhv_cocoa_ selectedRange];
+  EXPECT_EQ(NSNotFound, selectedRange.location);
+  EXPECT_EQ(0u, selectedRange.length);
+
+  NSRange actualRange = NSMakeRange(1u, 2u);
+  NSAttributedString* actualString = [rwhv_cocoa_
+      attributedSubstringForProposedRange:NSMakeRange(NSNotFound, 0u)
+                              actualRange:&actualRange];
+  EXPECT_EQ(nil, actualString);
+  EXPECT_EQ(NSNotFound, actualRange.location);
+  EXPECT_EQ(0u, actualRange.length);
+
+  actualString = [rwhv_cocoa_
+      attributedSubstringForProposedRange:NSMakeRange(NSNotFound, 15u)
+                              actualRange:&actualRange];
+  EXPECT_EQ(nil, actualString);
+  EXPECT_EQ(NSNotFound, actualRange.location);
+  EXPECT_EQ(0u, actualRange.length);
+}
+
 TEST_F(RenderWidgetHostViewMacTest, Fullscreen) {
   rwhv_mac_->InitAsFullscreen(NULL);
   EXPECT_TRUE(rwhv_mac_->pepper_fullscreen_window());
