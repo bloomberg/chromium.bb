@@ -17,11 +17,6 @@
           "reason": "bounds change"
         },
         {
-          "object": "LayoutBlockFlow HTML",
-          "rect": [0, 0, 800, 52],
-          "reason": "forced by layout"
-        },
-        {
           "object": "LayoutBlockFlow (relative positioned) DIV class='imageWrapper'",
           "rect": [704, 0, 700, 236],
           "reason": "bounds change"
@@ -83,10 +78,6 @@
     {
       "object": "LayoutView #document",
       "reason": "incremental"
-    },
-    {
-      "object": "LayoutBlockFlow HTML",
-      "reason": "forced by layout"
     },
     {
       "object": "LayoutBlockFlow (positioned) DIV id='shiftMe'",

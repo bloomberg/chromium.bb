@@ -17,11 +17,6 @@
           "reason": "incremental"
         },
         {
-          "object": "LayoutBlockFlow HTML",
-          "rect": [0, 0, 600, 8],
-          "reason": "forced by layout"
-        },
-        {
           "object": "LayoutBlockFlow DIV class='parent'",
           "rect": [0, 0, 6, 500],
           "reason": "forced by layout"
@@ -43,10 +38,6 @@
     {
       "object": "LayoutView #document",
       "reason": "incremental"
-    },
-    {
-      "object": "LayoutBlockFlow HTML",
-      "reason": "forced by layout"
     },
     {
       "object": "LayoutBlockFlow (positioned) DIV class='container'",
@@ -80,11 +71,6 @@
           "reason": "forced by layout"
         },
         {
-          "object": "LayoutBlockFlow HTML",
-          "rect": [0, 0, 600, 8],
-          "reason": "forced by layout"
-        },
-        {
           "object": "LayoutView #document",
           "rect": [400, 0, 200, 250],
           "reason": "incremental"
@@ -106,10 +92,6 @@
     {
       "object": "LayoutView #document",
       "reason": "incremental"
-    },
-    {
-      "object": "LayoutBlockFlow HTML",
-      "reason": "forced by layout"
     },
     {
       "object": "LayoutBlockFlow (positioned) DIV class='container'",
@@ -148,11 +130,6 @@
           "reason": "incremental"
         },
         {
-          "object": "LayoutBlockFlow HTML",
-          "rect": [0, 0, 400, 8],
-          "reason": "forced by layout"
-        },
-        {
           "object": "LayoutBlockFlow DIV class='parent'",
           "rect": [0, 0, 6, 600],
           "reason": "forced by layout"
@@ -174,10 +151,6 @@
     {
       "object": "LayoutView #document",
       "reason": "incremental"
-    },
-    {
-      "object": "LayoutBlockFlow HTML",
-      "reason": "forced by layout"
     },
     {
       "object": "LayoutBlockFlow (positioned) DIV class='container'",
@@ -211,11 +184,6 @@
           "reason": "full"
         },
         {
-          "object": "LayoutBlockFlow HTML",
-          "rect": [0, 0, 800, 8],
-          "reason": "forced by layout"
-        },
-        {
           "object": "LayoutView #document",
           "rect": [400, 0, 400, 600],
           "reason": "incremental"
@@ -237,10 +205,6 @@
     {
       "object": "LayoutView #document",
       "reason": "incremental"
-    },
-    {
-      "object": "LayoutBlockFlow HTML",
-      "reason": "forced by layout"
     },
     {
       "object": "LayoutBlockFlow (positioned) DIV class='container'",

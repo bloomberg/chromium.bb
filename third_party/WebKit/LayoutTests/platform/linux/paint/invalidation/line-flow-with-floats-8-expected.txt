@@ -7,11 +7,6 @@
       "drawsContent": true,
       "paintInvalidations": [
         {
-          "object": "LayoutBlockFlow HTML",
-          "rect": [0, 0, 485, 600],
-          "reason": "forced by layout"
-        },
-        {
           "object": "LayoutBlockFlow P",
           "rect": [8, 74, 418, 526],
           "reason": "forced by layout"
@@ -117,10 +112,6 @@
     {
       "object": "VerticalScrollbar",
       "reason": "scroll"
-    },
-    {
-      "object": "LayoutBlockFlow HTML",
-      "reason": "forced by layout"
     },
     {
       "object": "LayoutBlockFlow P",

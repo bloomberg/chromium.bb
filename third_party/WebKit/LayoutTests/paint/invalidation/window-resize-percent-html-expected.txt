@@ -12,11 +12,6 @@
           "reason": "incremental"
         },
         {
-          "object": "LayoutBlockFlow HTML",
-          "rect": [0, 0, 600, 250],
-          "reason": "forced by layout"
-        },
-        {
           "object": "LayoutBlockFlow DIV",
           "rect": [0, 62, 300, 63],
           "reason": "incremental"
@@ -28,10 +23,6 @@
     {
       "object": "LayoutView #document",
       "reason": "incremental"
-    },
-    {
-      "object": "LayoutBlockFlow HTML",
-      "reason": "forced by layout"
     },
     {
       "object": "LayoutBlockFlow DIV",
@@ -47,11 +38,6 @@
       "contentsOpaque": true,
       "drawsContent": true,
       "paintInvalidations": [
-        {
-          "object": "LayoutBlockFlow HTML",
-          "rect": [0, 0, 600, 125],
-          "reason": "forced by layout"
-        },
         {
           "object": "LayoutView #document",
           "rect": [400, 0, 200, 250],
@@ -69,10 +55,6 @@
     {
       "object": "LayoutView #document",
       "reason": "incremental"
-    },
-    {
-      "object": "LayoutBlockFlow HTML",
-      "reason": "forced by layout"
     },
     {
       "object": "LayoutBlockFlow DIV",
@@ -94,11 +76,6 @@
           "reason": "incremental"
         },
         {
-          "object": "LayoutBlockFlow HTML",
-          "rect": [0, 0, 400, 300],
-          "reason": "forced by layout"
-        },
-        {
           "object": "LayoutBlockFlow DIV",
           "rect": [0, 62, 200, 88],
           "reason": "incremental"
@@ -110,10 +87,6 @@
     {
       "object": "LayoutView #document",
       "reason": "incremental"
-    },
-    {
-      "object": "LayoutBlockFlow HTML",
-      "reason": "forced by layout"
     },
     {
       "object": "LayoutBlockFlow DIV",
@@ -129,11 +102,6 @@
       "contentsOpaque": true,
       "drawsContent": true,
       "paintInvalidations": [
-        {
-          "object": "LayoutBlockFlow HTML",
-          "rect": [0, 0, 800, 300],
-          "reason": "forced by layout"
-        },
         {
           "object": "LayoutView #document",
           "rect": [400, 0, 400, 600],
@@ -151,10 +119,6 @@
     {
       "object": "LayoutView #document",
       "reason": "incremental"
-    },
-    {
-      "object": "LayoutBlockFlow HTML",
-      "reason": "forced by layout"
     },
     {
       "object": "LayoutBlockFlow DIV",

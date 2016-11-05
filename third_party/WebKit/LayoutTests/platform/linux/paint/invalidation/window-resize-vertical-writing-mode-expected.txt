@@ -7,11 +7,6 @@
       "drawsContent": true,
       "paintInvalidations": [
         {
-          "object": "LayoutBlockFlow HTML",
-          "rect": [0, 0, 939, 235],
-          "reason": "forced by layout"
-        },
-        {
           "object": "LayoutView #document",
           "rect": [0, 0, 939, 235],
           "reason": "bounds change"
@@ -42,11 +37,6 @@
           "reason": "scroll"
         },
         {
-          "object": "LayoutBlockFlow HTML",
-          "rect": [497, 0, 442, 500],
-          "reason": "forced by layout"
-        },
-        {
           "object": "LayoutBlockFlow BODY",
           "rect": [505, 8, 426, 484],
           "reason": "forced by layout"
@@ -67,10 +57,6 @@
     {
       "object": "LayoutView #document",
       "reason": "bounds change"
-    },
-    {
-      "object": "LayoutBlockFlow HTML",
-      "reason": "forced by layout"
     },
     {
       "object": "LayoutBlockFlow BODY",
@@ -283,11 +269,6 @@
           "reason": "full"
         },
         {
-          "object": "LayoutBlockFlow HTML",
-          "rect": [-539, 0, 939, 235],
-          "reason": "forced by layout"
-        },
-        {
           "object": "LayoutView #document",
           "rect": [-539, 0, 939, 235],
           "reason": "bounds change"
@@ -313,11 +294,6 @@
           "reason": "scroll"
         },
         {
-          "object": "LayoutBlockFlow HTML",
-          "rect": [29, 0, 371, 600],
-          "reason": "forced by layout"
-        },
-        {
           "object": "LayoutBlockFlow BODY",
           "rect": [37, 8, 355, 584],
           "reason": "forced by layout"
@@ -338,10 +314,6 @@
     {
       "object": "LayoutView #document",
       "reason": "bounds change"
-    },
-    {
-      "object": "LayoutBlockFlow HTML",
-      "reason": "forced by layout"
     },
     {
       "object": "LayoutBlockFlow BODY",
@@ -391,16 +363,6 @@
           "reason": "incremental"
         },
         {
-          "object": "LayoutBlockFlow HTML",
-          "rect": [429, 0, 371, 600],
-          "reason": "forced by layout"
-        },
-        {
-          "object": "LayoutBlockFlow HTML",
-          "rect": [29, 0, 371, 600],
-          "reason": "forced by layout"
-        },
-        {
           "object": "LayoutBlockFlow BODY",
           "rect": [437, 8, 355, 584],
           "reason": "forced by layout"
@@ -427,10 +389,6 @@
     {
       "object": "LayoutView #document",
       "reason": "incremental"
-    },
-    {
-      "object": "LayoutBlockFlow HTML",
-      "reason": "forced by layout"
     },
     {
       "object": "LayoutBlockFlow BODY",

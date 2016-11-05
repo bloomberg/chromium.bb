@@ -7,11 +7,6 @@
       "drawsContent": true,
       "paintInvalidations": [
         {
-          "object": "LayoutBlockFlow HTML",
-          "rect": [0, 0, 785, 833],
-          "reason": "forced by layout"
-        },
-        {
           "object": "LayoutView #document",
           "rect": [0, 735, 785, 98],
           "reason": "incremental"
@@ -65,10 +60,6 @@
     {
       "object": "LayoutView #document",
       "reason": "incremental"
-    },
-    {
-      "object": "LayoutBlockFlow HTML",
-      "reason": "forced by layout"
     },
     {
       "object": "LayoutBlockFlow (relative positioned) DIV class='relative paddingTop'",
