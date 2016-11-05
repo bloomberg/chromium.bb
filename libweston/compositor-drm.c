@@ -2807,38 +2807,6 @@ drm_destroy(struct weston_compositor *ec)
 }
 
 static void
-drm_backend_set_modes(struct drm_backend *backend)
-{
-	struct drm_output *output;
-	struct drm_mode *drm_mode;
-	int ret;
-
-	wl_list_for_each(output, &backend->compositor->output_list, base.link) {
-		if (!output->current) {
-			/* If something that would cause the output to
-			 * switch mode happened while in another vt, we
-			 * might not have a current drm_fb. In that case,
-			 * schedule a repaint and let drm_output_repaint
-			 * handle setting the mode. */
-			weston_output_schedule_repaint(&output->base);
-			continue;
-		}
-
-		drm_mode = (struct drm_mode *) output->base.current_mode;
-		ret = drmModeSetCrtc(backend->drm.fd, output->crtc_id,
-				     output->current->fb_id, 0, 0,
-				     &output->connector_id, 1,
-				     &drm_mode->mode_info);
-		if (ret < 0) {
-			weston_log(
-				"failed to set mode %dx%d for output at %d,%d: %m\n",
-				drm_mode->base.width, drm_mode->base.height,
-				output->base.x, output->base.y);
-		}
-	}
-}
-
-static void
 session_notify(struct wl_listener *listener, void *data)
 {
 	struct weston_compositor *compositor = data;
@@ -2849,7 +2817,6 @@ session_notify(struct wl_listener *listener, void *data)
 	if (compositor->session_active) {
 		weston_log("activating session\n");
 		compositor->state = b->prev_state;
-		drm_backend_set_modes(b);
 		weston_compositor_damage_all(compositor);
 		udev_input_enable(&b->input);
 	} else {
