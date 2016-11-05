@@ -114,8 +114,6 @@ struct drm_backend {
 
 	int use_pixman;
 
-	uint32_t prev_state;
-
 	struct udev_input input;
 
 	int32_t cursor_width;
@@ -2816,14 +2814,13 @@ session_notify(struct wl_listener *listener, void *data)
 
 	if (compositor->session_active) {
 		weston_log("activating session\n");
-		compositor->state = b->prev_state;
+		weston_compositor_wake(compositor);
 		weston_compositor_damage_all(compositor);
 		udev_input_enable(&b->input);
 	} else {
 		weston_log("deactivating session\n");
 		udev_input_disable(&b->input);
 
-		b->prev_state = compositor->state;
 		weston_compositor_offscreen(compositor);
 
 		/* If we have a repaint scheduled (either from a
@@ -3179,8 +3176,6 @@ drm_backend_create(struct weston_compositor *compositor,
 
 	b->base.destroy = drm_destroy;
 	b->base.restore = drm_restore;
-
-	b->prev_state = WESTON_COMPOSITOR_ACTIVE;
 
 	weston_setup_vt_switch_bindings(compositor);
 
