@@ -146,6 +146,8 @@ TEST_F(AshDevToolsTest, GetDocumentWithWindowWidgetView) {
   ASSERT_TRUE(widget_children->get(0)->getChildren(default_children));
   Compare(child_view,
           widget_children->get(0)->getChildren(default_children)->get(1));
+  // TODO(mhashmi): Remove this call and mock FrontendChannel
+  dom_agent()->disable();
 }
 
 }  // namespace ash

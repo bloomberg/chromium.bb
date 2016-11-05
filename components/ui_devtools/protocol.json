@@ -22,6 +22,46 @@
                     ]
                 }
             ],
+            "events": [
+                {
+                    "name": "childNodeInserted",
+                    "parameters": [
+                        {
+                            "description": "Id of the node that has changed.",
+                            "name": "parentNodeId",
+                            "$ref": "NodeId"
+                        },
+                        {
+
+                            "description": "Id of the previous sibling (0 if this is at the beginning of the list).",
+                            "name": "previousNodeId",
+                            "$ref": "NodeId"
+                        },
+                        {
+                            "description": "Inserted node data.",
+                            "name": "node",
+                            "$ref": "Node"
+                        }
+                    ],
+                    "description": "Mirrors <code>DOMNodeInserted</code> event."
+                },
+                {
+                    "name": "childNodeRemoved",
+                    "parameters": [
+                        {
+                            "description": "Parent id.",
+                            "name": "parentNodeId",
+                            "$ref": "NodeId"
+                        },
+                        {
+                            "description": "Id of the node that has been removed.",
+                            "name": "nodeId",
+                            "$ref": "NodeId"
+                        }
+                    ],
+                    "description": "Mirrors <code>DOMNodeRemoved</code> event."
+                }
+            ],
             "domain": "DOM",
             "types": [
                 {
