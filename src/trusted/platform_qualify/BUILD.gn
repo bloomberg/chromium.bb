@@ -56,7 +56,7 @@ static_library("platform_qual_lib") {
   ]
 }
 
-if (current_cpu != "arm") {
+if (current_cpu != "arm" && current_cpu != "mipsel") {
   static_library("vcpuid") {
     cflags_c = []
     sources = [
