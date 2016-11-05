@@ -6,6 +6,7 @@
 #define UI_VIEWS_WIDGET_DESKTOP_AURA_DESKTOP_WINDOW_TREE_HOST_MUS_H_
 
 #include <memory>
+#include <set>
 
 #include "base/macros.h"
 #include "ui/aura/mus/window_tree_host_mus.h"
@@ -94,6 +95,11 @@ class VIEWS_MUS_EXPORT DesktopWindowTreeHostMus
   // State to restore window to when exiting fullscreen. Only valid if
   // fullscreen.
   ui::WindowShowState fullscreen_restore_state_;
+
+  // We can optionally have a parent which can order us to close, or own
+  // children who we're responsible for closing when we CloseNow().
+  DesktopWindowTreeHostMus* parent_ = nullptr;
+  std::set<DesktopWindowTreeHostMus*> children_;
 
   // Used so that Close() isn't immediate.
   base::WeakPtrFactory<DesktopWindowTreeHostMus> close_widget_factory_;

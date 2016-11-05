@@ -46,6 +46,10 @@ void DesktopWindowTreeHostMus::Init(aura::Window* content_window,
 
 void DesktopWindowTreeHostMus::OnNativeWidgetCreated(
     const Widget::InitParams& params) {
+  if (params.parent && params.parent->GetHost()) {
+    parent_ = static_cast<DesktopWindowTreeHostMus*>(params.parent->GetHost());
+    parent_->children_.insert(this);
+  }
   native_widget_delegate_->OnNativeWidgetCreated(true);
 }
 
@@ -73,6 +77,19 @@ void DesktopWindowTreeHostMus::Close() {
 
 void DesktopWindowTreeHostMus::CloseNow() {
   native_widget_delegate_->OnNativeWidgetDestroying();
+
+  // If we have children, close them. Use a copy for iteration because they'll
+  // remove themselves from |children_|.
+  std::set<DesktopWindowTreeHostMus*> children_copy = children_;
+  for (DesktopWindowTreeHostMus* child : children_copy)
+    child->CloseNow();
+  DCHECK(children_.empty());
+
+  if (parent_) {
+    parent_->children_.erase(this);
+    parent_ = nullptr;
+  }
+
   DestroyCompositor();
   desktop_native_widget_aura_->OnHostClosed();
 }
