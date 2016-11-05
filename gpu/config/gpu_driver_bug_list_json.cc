@@ -19,7 +19,7 @@ const char kGpuDriverBugListJson[] = LONG_STRING_CONST(
 {
   "name": "gpu driver bug list",
   // Please update the version number whenever you change this file.
-  "version": "9.14",
+  "version": "9.15",
   "entries": [
     {
       "id": 1,
@@ -2180,42 +2180,6 @@ LONG_STRING_CONST(
       "vendor_id": "0x1002",
       "features": [
         "dont_remove_invariant_for_fragment_input"
-      ]
-    },
-    {
-      "id": 202,
-      "cr_bugs": [659030],
-      "description": "Don't create highest GL context possible on old Mesa / HW combos (intel part)",
-      "os": {
-        "type": "linux"
-      },
-      "driver_vendor": "Mesa",
-      "driver_version": {
-        "op": "<",
-        "value": "11"
-      },
-      "vendor_id": "0x8086",
-      "device_id": ["0x0102", "0x0116", "0x0126", "0x0166"],
-      "features": [
-        "create_default_gl_context"
-      ]
-    },
-    {
-      "id": 203,
-      "cr_bugs": [659030],
-      "description": "Don't create highest GL context possible on old Mesa / HW combos (AMD part)",
-      "os": {
-        "type": "linux"
-      },
-      "driver_vendor": "Mesa",
-      "driver_version": {
-        "op": "<",
-        "value": "11"
-      },
-      "vendor_id": "0x1002",
-      "device_id": ["0x9832"],
-      "features": [
-        "create_default_gl_context"
       ]
     }
   ]
