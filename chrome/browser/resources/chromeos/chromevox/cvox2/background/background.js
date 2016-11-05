@@ -12,6 +12,7 @@ goog.provide('Background');
 goog.require('AutomationPredicate');
 goog.require('AutomationUtil');
 goog.require('BackgroundKeyboardHandler');
+goog.require('BrailleCommandHandler');
 goog.require('ChromeVoxState');
 goog.require('CommandHandler');
 goog.require('FindHandler');
@@ -546,6 +547,12 @@ Background.prototype = {
             content.text,
             // Cast ok since displayPosition is always defined in this case.
             /** @type {number} */ (evt.displayPosition));
+        break;
+      case cvox.BrailleKeyCommand.CHORD:
+        if (!evt.brailleDots)
+          return false;
+
+        BrailleCommandHandler.onBrailleCommand(evt.brailleDots);
         break;
       default:
         return false;

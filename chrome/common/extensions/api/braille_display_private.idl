@@ -15,6 +15,7 @@ namespace brailleDisplayPrivate {
     routing,
     secondary_routing,
     dots,
+    chord,
     standard_key
   };
 

@@ -30,6 +30,7 @@ cvox.BrailleKeyCommand = {
   ROUTING: 'routing',
   SECONDARY_ROUTING: 'secondary_routing',
   DOTS: 'dots',
+  CHORD: 'chord',
   STANDARD_KEY: 'standard_key'
 };
 

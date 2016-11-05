@@ -142,8 +142,14 @@ void MapCommand(brlapi_keyCode_t code, KeyEvent* event) {
           event->display_position.reset(new int(argument));
           break;
         case BRLAPI_KEY_CMD_PASSDOTS:
-          event->command = KEY_COMMAND_DOTS;
-          event->braille_dots.reset(new int(argument & kAllDots));
+          unsigned int dots = argument & kAllDots;
+          event->braille_dots.reset(new int(dots));
+
+          // BRLAPI_DOTC represents when the braille space key is pressed.
+          if (dots && (argument & BRLAPI_DOTC))
+            event->command = KEY_COMMAND_CHORD;
+          else
+            event->command = KEY_COMMAND_DOTS;
           MapModifierFlags(code, event);
           break;
       }
