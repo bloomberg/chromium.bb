@@ -120,8 +120,6 @@ class AppViewTest : public AppShellTest,
   void RunTest(const std::string& test_name,
                const std::string& app_location,
                const std::string& app_to_embed) {
-    extension_system_->Init();
-
     const Extension* app_embedder = LoadApp(app_location);
     ASSERT_TRUE(app_embedder);
     const Extension* app_embedded = LoadApp(app_to_embed);

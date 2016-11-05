@@ -56,6 +56,7 @@ void AppShellTest::SetUpOnMainThread() {
 
   extension_system_ = static_cast<ShellExtensionSystem*>(
       ExtensionSystem::Get(browser_context_));
+  extension_system_->Init();
 }
 
 void AppShellTest::RunTestOnMainThreadLoop() {
