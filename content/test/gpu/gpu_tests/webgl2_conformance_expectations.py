@@ -61,9 +61,7 @@ class WebGL2ConformanceExpectations(WebGLConformanceExpectations):
     self.Flaky('conformance2/query/occlusion-query.html', bug=603168)
 
     # Windows only.
-    # We are not awesome yet
-    self.Fail('conformance2/misc/views-with-offsets.html',
-        ['win'], bug=1609) # ANGLE bug id.
+    # We are awesome!
 
     # Win / NVidia
     self.Flaky('deqp/functional/gles3/fbomultisample*',
