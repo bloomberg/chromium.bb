@@ -41,10 +41,8 @@ class CONTENT_EXPORT BrowserSurfaceViewManager
   // Synchronously notify the decoder that the surface is being destroyed so it
   // can stop rendering to it. This sends a message to the GPU process. Without
   // this, the MediaCodec decoder will start throwing IllegalStateException, and
-  // crash on some devices (http://crbug.com/598408). There is no way for us to
-  // make sure the surface outlives the decoder because Android initiates the
-  // destruction in some cases.
-  void SendDestroyingVideoSurfaceIfRequired(int surface_id);
+  // crash on some devices (http://crbug.com/598408, http://crbug.com/600454).
+  void SendDestroyingVideoSurface(int surface_id);
 
   RenderFrameHost* const render_frame_host_;
 

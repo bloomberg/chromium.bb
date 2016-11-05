@@ -42,10 +42,10 @@ void BrowserSurfaceViewManager::SetVideoSurface(gl::ScopedJavaSurface surface) {
     DCHECK_NE(surface_id_, media::SurfaceManager::kNoSurfaceID);
     gpu::GpuSurfaceTracker::Get()->RemoveSurface(surface_id_);
     gpu::GpuSurfaceTracker::Get()->UnregisterViewSurface(surface_id_);
-    SendDestroyingVideoSurfaceIfRequired(surface_id_);
+    SendDestroyingVideoSurface(surface_id_);
     surface_id_ = media::SurfaceManager::kNoSurfaceID;
   } else {
-    // We mainly use the surface tracker to allocate a surface id for us. The
+    // We just use the surface tracker to allocate a surface id for us. The
     // lookup will go through the Android specific path and get the java
     // surface directly, so there's no need to add a valid native widget here.
     surface_id_ = gpu::GpuSurfaceTracker::Get()->AddSurfaceForNativeWidget(
@@ -57,7 +57,7 @@ void BrowserSurfaceViewManager::SetVideoSurface(gl::ScopedJavaSurface surface) {
 }
 
 void BrowserSurfaceViewManager::DidExitFullscreen(bool release_media_player) {
-  DVLOG(3) << __FUNCTION__;
+  DVLOG(3) << __func__;
   content_video_view_.reset();
 }
 
@@ -104,13 +104,7 @@ bool BrowserSurfaceViewManager::SendSurfaceID(int surface_id) {
           render_frame_host_->GetRoutingID(), surface_id));
 }
 
-void BrowserSurfaceViewManager::SendDestroyingVideoSurfaceIfRequired(
-    int surface_id) {
-  // Only send the surface destruction message on JB, where not doing it can
-  // cause a crash.
-  if (base::android::BuildInfo::GetInstance()->sdk_int() >= 18)
-    return;
-
+void BrowserSurfaceViewManager::SendDestroyingVideoSurface(int surface_id) {
   base::WaitableEvent waiter(base::WaitableEvent::ResetPolicy::AUTOMATIC,
                              base::WaitableEvent::InitialState::NOT_SIGNALED);
   // Unretained is okay because we're waiting on the callback.
