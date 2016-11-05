@@ -3,6 +3,7 @@
 // found in the LICENSE file.
 #include "base/debug/gdi_debug_util_win.h"
 
+#include <algorithm>
 #include <cmath>
 
 #include <psapi.h>
@@ -20,6 +21,15 @@ void CollectChildGDIUsageAndDie(DWORD parent_pid) {
   HANDLE snapshot = CreateToolhelp32Snapshot(TH32CS_SNAPPROCESS, 0);
   CHECK_NE(INVALID_HANDLE_VALUE, snapshot);
 
+  int total_process_count = 0;
+  base::debug::Alias(&total_process_count);
+  int total_peak_gdi_count = 0;
+  base::debug::Alias(&total_peak_gdi_count);
+  int total_gdi_count = 0;
+  base::debug::Alias(&total_gdi_count);
+  int total_user_count = 0;
+  base::debug::Alias(&total_user_count);
+
   int child_count = 0;
   base::debug::Alias(&child_count);
   int peak_gdi_count = 0;
@@ -34,9 +44,6 @@ void CollectChildGDIUsageAndDie(DWORD parent_pid) {
   CHECK(Process32First(snapshot, &proc_entry));
 
   do {
-    if (parent_pid != proc_entry.th32ParentProcessID)
-      continue;
-    // Got a child process. Compute GDI usage.
     base::win::ScopedHandle process(
         OpenProcess(PROCESS_QUERY_INFORMATION,
                     FALSE,
@@ -47,12 +54,20 @@ void CollectChildGDIUsageAndDie(DWORD parent_pid) {
     int num_gdi_handles = GetGuiResources(process.Get(), GR_GDIOBJECTS);
     int num_user_handles = GetGuiResources(process.Get(), GR_USEROBJECTS);
 
-    // Compute sum and peak counts.
+    // Compute sum and peak counts for all processes.
+    ++total_process_count;
+    total_user_count += num_user_handles;
+    total_gdi_count += num_gdi_handles;
+    total_peak_gdi_count = std::max(total_peak_gdi_count, num_gdi_handles);
+
+    if (parent_pid != proc_entry.th32ParentProcessID)
+      continue;
+
+    // Compute sum and peak counts for child processes.
     ++child_count;
     sum_user_count += num_user_handles;
     sum_gdi_count += num_gdi_handles;
-    if (peak_gdi_count < num_gdi_handles)
-      peak_gdi_count = num_gdi_handles;
+    peak_gdi_count = std::max(peak_gdi_count, num_gdi_handles);
 
   } while (Process32Next(snapshot, &proc_entry));
 
