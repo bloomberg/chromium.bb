@@ -4,6 +4,8 @@
 
 #include "components/variations/variations_url_constants.h"
 
+#include "build/build_config.h"
+
 namespace variations {
 
 // Default server of Variations seed info.
