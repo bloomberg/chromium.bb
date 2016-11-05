@@ -52,7 +52,13 @@ class DataReductionProxyMetricsObserver
   ~DataReductionProxyMetricsObserver() override;
 
   // page_load_metrics::PageLoadMetricsObserver:
+  ObservePolicy OnStart(content::NavigationHandle* navigation_handle,
+                        const GURL& currently_committed_url,
+                        bool started_in_foreground) override;
   ObservePolicy OnCommit(content::NavigationHandle* navigation_handle) override;
+  ObservePolicy OnHidden(
+      const page_load_metrics::PageLoadTiming& timing,
+      const page_load_metrics::PageLoadExtraInfo& info) override;
   void OnComplete(const page_load_metrics::PageLoadTiming& timing,
                   const page_load_metrics::PageLoadExtraInfo& info) override;
   void OnDomContentLoadedEventStart(
@@ -83,6 +89,10 @@ class DataReductionProxyMetricsObserver
                    const page_load_metrics::PageLoadExtraInfo& info) override;
 
  private:
+  // Sends the page load information to the pingback client.
+  void SendPingback(const page_load_metrics::PageLoadTiming& timing,
+                    const page_load_metrics::PageLoadExtraInfo& info);
+
   // Gets the default DataReductionProxyPingbackClient. Overridden in testing.
   virtual DataReductionProxyPingbackClient* GetPingbackClient() const;
 

@@ -413,8 +413,8 @@ void PageLoadTracker::WebContentsHidden() {
     NotifyAbort(ABORT_BACKGROUND, abort_is_user_initiated, background_time_,
                 true);
   }
-
-  INVOKE_AND_PRUNE_OBSERVERS(observers_, OnHidden);
+  const PageLoadExtraInfo info = ComputePageLoadExtraInfo();
+  INVOKE_AND_PRUNE_OBSERVERS(observers_, OnHidden, timing_, info);
 }
 
 void PageLoadTracker::WebContentsShown() {

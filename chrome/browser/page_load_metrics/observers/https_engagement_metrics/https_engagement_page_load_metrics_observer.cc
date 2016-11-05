@@ -31,7 +31,9 @@ HttpsEngagementPageLoadMetricsObserver::OnStart(
 }
 
 page_load_metrics::PageLoadMetricsObserver::ObservePolicy
-HttpsEngagementPageLoadMetricsObserver::OnHidden() {
+HttpsEngagementPageLoadMetricsObserver::OnHidden(
+    const page_load_metrics::PageLoadTiming& timing,
+    const page_load_metrics::PageLoadExtraInfo& extra_info) {
   if (currently_in_foreground_) {
     foreground_time_ += base::TimeTicks::Now() - last_time_shown_;
     currently_in_foreground_ = false;
@@ -59,7 +61,7 @@ void HttpsEngagementPageLoadMetricsObserver::OnComplete(
     return;
 
   if (currently_in_foreground_)
-    OnHidden();
+    OnHidden(timing, extra_info);
 
   if (extra_info.committed_url.SchemeIs(url::kHttpsScheme)) {
     if (engagement_service_)

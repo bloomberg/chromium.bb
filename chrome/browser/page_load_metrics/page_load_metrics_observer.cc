@@ -59,7 +59,9 @@ PageLoadMetricsObserver::ObservePolicy PageLoadMetricsObserver::OnCommit(
   return CONTINUE_OBSERVING;
 }
 
-PageLoadMetricsObserver::ObservePolicy PageLoadMetricsObserver::OnHidden() {
+PageLoadMetricsObserver::ObservePolicy PageLoadMetricsObserver::OnHidden(
+    const PageLoadTiming& timing,
+    const PageLoadExtraInfo& extra_info) {
   return CONTINUE_OBSERVING;
 }
 

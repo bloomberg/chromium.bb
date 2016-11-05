@@ -30,7 +30,9 @@ class HttpsEngagementPageLoadMetricsObserver
   ObservePolicy OnStart(content::NavigationHandle* navigation_handle,
                         const GURL& currently_committed_url,
                         bool started_in_foreground) override;
-  ObservePolicy OnHidden() override;
+  ObservePolicy OnHidden(
+      const page_load_metrics::PageLoadTiming& timing,
+      const page_load_metrics::PageLoadExtraInfo& extra_info) override;
   ObservePolicy OnShown() override;
   void OnComplete(
       const page_load_metrics::PageLoadTiming& timing,
