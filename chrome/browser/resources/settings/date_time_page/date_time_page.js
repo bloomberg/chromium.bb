@@ -83,6 +83,16 @@ Polymer({
         }];
       },
     },
+
+    /**
+     * Whether date and time are settable. Normally the date and time are forced
+     * by network time, so default to false to initially hide the button.
+     * @private
+     */
+    canSetDateTime_: {
+      type: Boolean,
+      value: false,
+    },
   },
 
   observers: [
@@ -94,8 +104,10 @@ Polymer({
     this.addWebUIListener(
         'time-zone-auto-detect-policy',
         this.onTimeZoneAutoDetectPolicyChanged_.bind(this));
-    chrome.send('dateTimePageReady');
+    this.addWebUIListener(
+        'can-set-date-time-changed', this.onCanSetDateTimeChanged_.bind(this));
 
+    chrome.send('dateTimePageReady');
     this.maybeGetTimeZoneList_();
   },
 
@@ -128,12 +140,25 @@ Polymer({
   },
 
   /**
+   * @param {boolean} canSetDateTime Whether date and time are settable.
+   * @private
+   */
+  onCanSetDateTimeChanged_: function(canSetDateTime) {
+    this.canSetDateTime_ = canSetDateTime;
+  },
+
+  /**
    * @param {!Event} e
    * @private
    */
   onTimeZoneAutoDetectCheckboxChange_: function(e) {
     this.setPrefValue(
         'settings.resolve_timezone_by_geolocation', e.target.checked);
+  },
+
+  /** @private */
+  onSetDateTimeTap_: function() {
+    chrome.send('showSetDateTimeUI');
   },
 
   /**

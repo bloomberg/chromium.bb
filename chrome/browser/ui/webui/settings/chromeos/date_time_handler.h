@@ -9,6 +9,7 @@
 #include "base/memory/weak_ptr.h"
 #include "chrome/browser/chromeos/settings/cros_settings.h"
 #include "chrome/browser/ui/webui/settings/settings_page_ui_handler.h"
+#include "chromeos/dbus/system_clock_client.h"
 #include "components/prefs/pref_change_registrar.h"
 
 namespace base {
@@ -23,7 +24,8 @@ namespace chromeos {
 namespace settings {
 
 // Chrome OS date and time settings page UI handler.
-class DateTimeHandler : public ::settings::SettingsPageUIHandler {
+class DateTimeHandler : public ::settings::SettingsPageUIHandler,
+                        public SystemClockClient::Observer {
  public:
   ~DateTimeHandler() override;
 
@@ -38,11 +40,17 @@ class DateTimeHandler : public ::settings::SettingsPageUIHandler {
  private:
   DateTimeHandler();
 
+  // SystemClockClient::Observer implementation.
+  void SystemClockCanSetTimeChanged(bool can_set_time) override;
+
   // Called when the page is ready.
   void HandleDateTimePageReady(const base::ListValue* args);
 
   // Handler to fetch the list of time zones.
   void HandleGetTimeZones(const base::ListValue* args);
+
+  // Called to show the Set Time UI.
+  void HandleShowSetDateTimeUI(const base::ListValue* args);
 
   // Updates the UI, enabling or disabling the time zone automatic detection
   // setting according to policy.

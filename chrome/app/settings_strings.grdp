@@ -937,6 +937,9 @@
     <message name="IDS_SETTINGS_USE_24_HOUR_CLOCK" desc="Label for the checkbox which enables a 24-hour clock (as opposed to a 12-hour clock).">
       Use 24-hour clock
     </message>
+    <message name="IDS_SETTINGS_SET_DATE_TIME" desc="Label for the button that shows the dialog for setting the system date and time.">
+      Set date and time
+    </message>
 
     <!-- Easy Unlock Page -->
     <message name="IDS_SETTINGS_EASY_UNLOCK_SECTION_TITLE" desc="The title of the Easy Unlock section on the settings page.">

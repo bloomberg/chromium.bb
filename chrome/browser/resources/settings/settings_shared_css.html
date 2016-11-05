@@ -5,6 +5,12 @@
 <dom-module id="settings-shared">
   <template>
     <style include="cr-shared-style">
+      /* Included here so we don't have to include "iron-positioning" in every
+       * stylesheet. See crbug.com/498405. */
+      [hidden] {
+        display: none !important;
+      }
+
       button[is='paper-icon-button-light'] {
         -webkit-margin-end: -8px;  /* Allow ripple to overlap the end. */
         -webkit-margin-start: 16px;

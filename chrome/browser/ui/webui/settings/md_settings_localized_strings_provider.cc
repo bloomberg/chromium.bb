@@ -681,6 +681,7 @@ void AddDateTimeStrings(content::WebUIDataSource* html_source) {
       {"timeZone", IDS_SETTINGS_TIME_ZONE},
       {"timeZoneGeolocation", IDS_SETTINGS_TIME_ZONE_GEOLOCATION},
       {"use24HourClock", IDS_SETTINGS_USE_24_HOUR_CLOCK},
+      {"setDateTime", IDS_SETTINGS_SET_DATE_TIME},
   };
   AddLocalizedStringsBulk(html_source, localized_strings,
                           arraysize(localized_strings));

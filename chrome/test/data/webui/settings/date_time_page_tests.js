@@ -235,5 +235,30 @@
         done();
       });
     });
+
+    test('set date and time button', function() {
+      dateTime = initializeDateTime(getFakePrefs(), false);
+
+      var showSetDateTimeUICalled = false;
+      registerMessageCallback('showSetDateTimeUI', null, function() {
+        assertFalse(showSetDateTimeUICalled);
+        showSetDateTimeUICalled = true;
+      });
+
+      var setDateTimeButton = dateTime.$.setDateTime;
+      assertEquals(0, setDateTimeButton.offsetHeight);
+
+      // Make the date and time editable.
+      cr.webUIListenerCallback('can-set-date-time-changed', true);
+      assertGT(setDateTimeButton.offsetHeight, 0);
+
+      assertFalse(showSetDateTimeUICalled);
+      MockInteractions.tap(setDateTimeButton);
+      assertTrue(showSetDateTimeUICalled);
+
+      // Make the date and time not editable.
+      cr.webUIListenerCallback('can-set-date-time-changed', false);
+      assertEquals(setDateTimeButton.offsetHeight, 0);
+    });
   });
 })();
