@@ -2596,6 +2596,8 @@ void PDFiumEngine::ContinueLoadingDocument(const std::string& password) {
 }
 
 void PDFiumEngine::LoadPageInfo(bool reload) {
+  if (!doc_loader_)
+    return;
   pending_pages_.clear();
   pp::Size old_document_size = document_size_;
   document_size_ = pp::Size();
