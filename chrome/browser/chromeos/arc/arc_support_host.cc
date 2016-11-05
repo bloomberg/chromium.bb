@@ -29,15 +29,23 @@ constexpr char kAction[] = "action";
 constexpr char kArcManaged[] = "arcManaged";
 constexpr char kData[] = "data";
 constexpr char kDeviceId[] = "deviceId";
-constexpr char kPage[] = "page";
-constexpr char kStatus[] = "status";
 constexpr char kActionInitialize[] = "initialize";
 constexpr char kActionSetMetricsMode[] = "setMetricsMode";
 constexpr char kActionBackupAndRestoreMode[] = "setBackupAndRestoreMode";
 constexpr char kActionLocationServiceMode[] = "setLocationServiceMode";
 constexpr char kActionSetWindowBounds[] = "setWindowBounds";
 constexpr char kActionCloseWindow[] = "closeWindow";
+
+// Action to show a page. The message should have "page" field, which is one of
+// IDs for section div elements.
 constexpr char kActionShowPage[] = "showPage";
+constexpr char kPage[] = "page";
+
+// Action to show the error page. The message should have "errorMessage",
+// which is a localized error text, and "shouldShowSendFeedback" boolean value.
+constexpr char kActionShowErrorPage[] = "showErrorPage";
+constexpr char kErrorMessage[] = "errorMessage";
+constexpr char kShouldShowSendFeedback[] = "shouldShowSendFeedback";
 
 // The preference update should have those two fields.
 constexpr char kEnabled[] = "enabled";
@@ -118,9 +126,35 @@ void ArcSupportHost::ShowPage(arc::ArcAuthService::UIPage page,
   }
 
   base::DictionaryValue message;
-  message.SetString(kAction, kActionShowPage);
-  message.SetInteger(kPage, static_cast<int>(page));
-  message.SetString(kStatus, status);
+  if (page == arc::ArcAuthService::UIPage::ERROR ||
+      page == arc::ArcAuthService::UIPage::ERROR_WITH_FEEDBACK) {
+    message.SetString(kAction, kActionShowErrorPage);
+    message.SetString(kErrorMessage, status);
+    message.SetBoolean(
+        kShouldShowSendFeedback,
+        page == arc::ArcAuthService::UIPage::ERROR_WITH_FEEDBACK);
+  } else {
+    message.SetString(kAction, kActionShowPage);
+    switch (page) {
+      case arc::ArcAuthService::UIPage::NO_PAGE:
+        message.SetString(kPage, "none");
+        break;
+      case arc::ArcAuthService::UIPage::TERMS:
+        message.SetString(kPage, "terms");
+        break;
+      case arc::ArcAuthService::UIPage::LSO_PROGRESS:
+        message.SetString(kPage, "lso-loading");
+        break;
+      // Skip LSO. LSO and LSO_LOADING should be merged well.
+      // TODO(hidehiko): Do it.
+      case arc::ArcAuthService::UIPage::START_PROGRESS:
+        message.SetString(kPage, "arc-loading");
+        break;
+      default:
+        NOTREACHED();
+        return;
+    }
+  }
   message_host_->SendMessage(message);
 }
 
