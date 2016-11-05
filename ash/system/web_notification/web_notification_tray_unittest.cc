@@ -140,7 +140,7 @@ class WebNotificationTrayTest : public test::AshMDTestBase {
   }
 
   int GetPopupWorkAreaBottomForTray(WebNotificationTray* tray) {
-    return tray->popup_alignment_delegate_->GetWorkAreaBottom();
+    return tray->popup_alignment_delegate_->GetWorkArea().bottom();
   }
 
   bool IsPopupVisible() { return GetTray()->IsPopupVisible(); }

@@ -90,8 +90,11 @@ int AshPopupAlignmentDelegate::GetBaseLine() const {
          tray_bubble_height_;
 }
 
-int AshPopupAlignmentDelegate::GetWorkAreaBottom() const {
-  return work_area_.bottom() - tray_bubble_height_;
+gfx::Rect AshPopupAlignmentDelegate::GetWorkArea() const {
+  gfx::Rect work_area_without_tray_bubble = work_area_;
+  work_area_without_tray_bubble.set_height(
+      work_area_without_tray_bubble.height() - tray_bubble_height_);
+  return work_area_without_tray_bubble;
 }
 
 bool AshPopupAlignmentDelegate::IsTopDown() const {

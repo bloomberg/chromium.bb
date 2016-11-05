@@ -174,7 +174,8 @@ void MessagePopupCollection::UpdateWidgets() {
     view->set_context_menu_controller(context_menu_controller_.get());
     int view_height = ToastContentsView::GetToastSizeForView(view).height();
     int height_available =
-        top_down ? alignment_delegate_->GetWorkAreaBottom() - base : base;
+        top_down ? alignment_delegate_->GetWorkArea().bottom() - base
+                 : base - alignment_delegate_->GetWorkArea().y();
 
     if (height_available - view_height - kToastMarginY < 0) {
       delete view;
@@ -295,8 +296,9 @@ void MessagePopupCollection::RepositionWidgets() {
     // load and such notifications should disappear. Do not call
     // CloseWithAnimation, we don't want to show the closing animation, and we
     // don't want to mark such notifications as shown. See crbug.com/233424
-    if ((top_down ? alignment_delegate_->GetWorkAreaBottom() - bounds.bottom()
-                  : bounds.y()) >= 0)
+    if ((top_down
+             ? alignment_delegate_->GetWorkArea().bottom() - bounds.bottom()
+             : bounds.y() - alignment_delegate_->GetWorkArea().y()) >= 0)
       (*curr)->SetBoundsWithAnimation(bounds);
     else
       RemoveToast(*curr, /*mark_as_shown=*/false);

@@ -36,8 +36,8 @@ class MESSAGE_CENTER_EXPORT PopupAlignmentDelegate {
   // point if there are no other toasts.
   virtual int GetBaseLine() const = 0;
 
-  // Returns the height of the bottom of the current work area.
-  virtual int GetWorkAreaBottom() const  = 0;
+  // Returns the rect of the current work area.
+  virtual gfx::Rect GetWorkArea() const = 0;
 
   // Returns true if the toast should be aligned top down.
   virtual bool IsTopDown() const = 0;

@@ -46,8 +46,8 @@ int DesktopPopupAlignmentDelegate::GetBaseLine() const {
       : work_area_.bottom() - kMarginBetweenItems;
 }
 
-int DesktopPopupAlignmentDelegate::GetWorkAreaBottom() const {
-  return work_area_.bottom();
+gfx::Rect DesktopPopupAlignmentDelegate::GetWorkArea() const {
+  return work_area_;
 }
 
 bool DesktopPopupAlignmentDelegate::IsTopDown() const {
