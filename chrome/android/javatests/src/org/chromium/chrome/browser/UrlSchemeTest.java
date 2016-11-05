@@ -16,19 +16,38 @@ import org.chromium.base.test.util.TestFileUtil;
 import org.chromium.base.test.util.UrlUtils;
 import org.chromium.chrome.test.ChromeActivityTestCaseBase;
 import org.chromium.chrome.test.TestContentProvider;
+import org.chromium.content.browser.test.util.Criteria;
+import org.chromium.content.browser.test.util.CriteriaHelper;
+import org.chromium.net.test.EmbeddedTestServer;
 
 import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
 import java.util.concurrent.Callable;
 
-
 /** Test suite for different Android URL schemes. */
 @RetryOnFailure
 public class UrlSchemeTest extends ChromeActivityTestCaseBase<ChromeActivity> {
+    private static final String SIMPLE_SRC = "simple.html";
+    private static final String SIMPLE_IMAGE = "google.png";
+
+    private EmbeddedTestServer mTestServer;
 
     public UrlSchemeTest() {
         super(ChromeActivity.class);
+    }
+
+    @Override
+    public void setUp() throws Exception {
+        super.setUp();
+        TestContentProvider.resetResourceRequestCounts(getInstrumentation().getTargetContext());
+        mTestServer = EmbeddedTestServer.createAndStartServer(getInstrumentation().getContext());
+    }
+
+    @Override
+    protected void tearDown() throws Exception {
+        mTestServer.stopAndDestroyServer();
+        super.tearDown();
     }
 
     /**
@@ -39,8 +58,7 @@ public class UrlSchemeTest extends ChromeActivityTestCaseBase<ChromeActivity> {
     @MediumTest
     @Feature({"Navigation"})
     public void testContentProviderResourceRequestCount() throws IOException {
-        String resource = "test_reset";
-        resetResourceRequestCountInContentProvider(resource);
+        String resource = SIMPLE_SRC;
         ensureResourceRequestCountInContentProvider(resource, 0);
         // Make a request to the content provider.
         Uri uri = Uri.parse(createContentUrl(resource));
@@ -53,8 +71,6 @@ public class UrlSchemeTest extends ChromeActivityTestCaseBase<ChromeActivity> {
             if (inputStream != null) inputStream.close();
         }
         ensureResourceRequestCountInContentProvider(resource, 1);
-        resetResourceRequestCountInContentProvider(resource);
-        ensureResourceRequestCountInContentProvider(resource, 0);
     }
 
     /**
@@ -63,19 +79,89 @@ public class UrlSchemeTest extends ChromeActivityTestCaseBase<ChromeActivity> {
     @MediumTest
     @Feature({"Navigation"})
     public void testContentUrlAccess() throws InterruptedException {
-        String resource = "content_disabled_by_default";
-        resetResourceRequestCountInContentProvider(resource);
+        String resource = SIMPLE_SRC;
         loadUrl(createContentUrl(resource));
         ensureResourceRequestCountInContentProviderNotLessThan(resource, 1);
     }
 
-    private String getTitleOnUiThread() {
-        return ThreadUtils.runOnUiThreadBlockingNoException(new Callable<String>() {
+    /**
+     * Make sure a Content url *CANNOT* access the contents of an iframe that is loaded as a
+     * content URL.
+     */
+    @MediumTest
+    @Feature({"Navigation"})
+    public void testContentUrlIframeAccessFromContentUrl() throws Throwable {
+        final String resource = "page_with_iframe_as_content_url.html";
+        final String iframe = "simple_iframe.html";
+        final String iframeId = "iframe_test_id";
+
+        final String script = "var ifrm = document.getElementById('" + iframeId + "');"
+                + "try {"
+                + "  var a = ifrm.contentWindow.document.body.textContent;"
+                + "} catch (e) {"
+                + "  document.title = 'fail';"
+                + "}";
+
+        loadUrl(createContentUrl(resource));
+
+        // Make sure iframe is really loaded by verifying the title
+        CriteriaHelper.pollUiThread(new Criteria() {
             @Override
-            public String call() throws Exception {
-                return getActivity().getActivityTab().getTitle();
+            public boolean isSatisfied() {
+                return getActivity().getActivityTab().getTitle().equals("iframe loaded");
             }
         });
+        // Make sure that content provider was asked to provide the content.
+        ensureResourceRequestCountInContentProviderNotLessThan(iframe, 1);
+        runJavaScriptCodeInCurrentTab(script);
+
+        // Make sure content access failed by verifying that title is set to fail.
+        CriteriaHelper.pollUiThread(new Criteria() {
+            @Override
+            public boolean isSatisfied() {
+                return getActivity().getActivityTab().getTitle().equals("fail");
+            }
+        });
+    }
+
+    /**
+     * Test that a content URL is *ALLOWED* to access an image provided by a content URL.
+     */
+    @MediumTest
+    @Feature({"Navigation"})
+    public void testContentUrlImageFromContentUrl() throws Throwable {
+        verifyImageLoadRules(createContentUrl(SIMPLE_SRC), "success", 1);
+    }
+
+    /**
+     * Test that a HTTP URL is *NOT ALLOWED* to access an image provided by a content URL.
+     */
+    @MediumTest
+    @Feature({"Navigation"})
+    public void testContentUrlImageFromHttpUrl() throws Throwable {
+        final String main = mTestServer.getURL("/chrome/test/data/android/" + SIMPLE_SRC);
+        verifyImageLoadRules(main, "error", 0);
+    }
+
+    private void verifyImageLoadRules(String url, final String expectedTitle, int expectedLoadCount)
+            throws Throwable {
+        final String resource = SIMPLE_IMAGE;
+        final String script = "var img = new Image();"
+                + "  img.onerror = function() { document.title = 'error' };"
+                + "  img.onabort = function() { document.title = 'error' };"
+                + "  img.onload = function() { document.title = 'success' };"
+                + "  img.src = '" + createContentUrl(resource) + "';"
+                + "  document.body.appendChild(img);";
+        loadUrl(url);
+        runJavaScriptCodeInCurrentTab(script);
+
+        CriteriaHelper.pollUiThread(new Criteria() {
+            @Override
+            public boolean isSatisfied() {
+                return getActivity().getActivityTab().getTitle().equals(expectedTitle);
+            }
+        });
+        ensureResourceRequestCountInContentProviderNotLessThan(resource, expectedLoadCount);
     }
 
     /**
@@ -84,8 +170,7 @@ public class UrlSchemeTest extends ChromeActivityTestCaseBase<ChromeActivity> {
     @MediumTest
     @Feature({"Navigation"})
     public void testContentUrlFromData() throws InterruptedException {
-        final String target = "content_from_data";
-        resetResourceRequestCountInContentProvider(target);
+        final String target = SIMPLE_IMAGE;
         loadUrl(UrlUtils.encodeHtmlDataUri(
                 "<img src=\"" + createContentUrl(target) + "\">"));
         ensureResourceRequestCountInContentProvider(target, 0);
@@ -97,17 +182,25 @@ public class UrlSchemeTest extends ChromeActivityTestCaseBase<ChromeActivity> {
     @MediumTest
     @Feature({"Navigation"})
     public void testContentUrlFromFile() throws InterruptedException, IOException {
-        final String target = "content_from_file";
+        final String target = SIMPLE_IMAGE;
         final File file = new File(Environment.getExternalStorageDirectory(), target + ".html");
         try {
             TestFileUtil.createNewHtmlFile(
                     file, target, "<img src=\"" + createContentUrl(target) + "\">");
-            resetResourceRequestCountInContentProvider(target);
             loadUrl("file:///" + file.getAbsolutePath());
             ensureResourceRequestCountInContentProvider(target, 0);
         } finally {
             TestFileUtil.deleteFile(file);
         }
+    }
+
+    private String getTitleOnUiThread() {
+        return ThreadUtils.runOnUiThreadBlockingNoException(new Callable<String>() {
+            @Override
+            public String call() throws Exception {
+                return getActivity().getActivityTab().getTitle();
+            }
+        });
     }
 
     /**
@@ -150,11 +243,6 @@ public class UrlSchemeTest extends ChromeActivityTestCaseBase<ChromeActivity> {
         int actualCount = TestContentProvider.getResourceRequestCount(context, resource);
         assertTrue("Minimal expected: " + expectedMinimalCount + ", actual: " + actualCount,
                 actualCount >= expectedMinimalCount);
-    }
-
-    private void resetResourceRequestCountInContentProvider(String resource) {
-        Context context = getInstrumentation().getTargetContext();
-        TestContentProvider.resetResourceRequestCount(context, resource);
     }
 
     private String createContentUrl(final String target) {
