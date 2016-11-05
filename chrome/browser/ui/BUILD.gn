@@ -2100,6 +2100,8 @@ split_static_library("ui") {
       "webui/print_preview/print_preview_ui.cc",
       "webui/print_preview/print_preview_ui.h",
       "webui/print_preview/printer_backend_proxy.h",
+      "webui/print_preview/printer_capabilities.cc",
+      "webui/print_preview/printer_capabilities.h",
       "webui/print_preview/printer_handler.cc",
       "webui/print_preview/printer_handler.h",
       "webui/print_preview/sticky_settings.cc",

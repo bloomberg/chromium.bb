@@ -50,6 +50,7 @@
 #include "chrome/browser/ui/scoped_tabbed_browser_displayer.h"
 #include "chrome/browser/ui/webui/print_preview/print_preview_ui.h"
 #include "chrome/browser/ui/webui/print_preview/printer_backend_proxy.h"
+#include "chrome/browser/ui/webui/print_preview/printer_capabilities.h"
 #include "chrome/browser/ui/webui/print_preview/printer_handler.h"
 #include "chrome/browser/ui/webui/print_preview/sticky_settings.h"
 #include "chrome/common/chrome_switches.h"
@@ -87,9 +88,12 @@
 #include "third_party/icu/source/i18n/unicode/ulocdata.h"
 
 #if defined(OS_CHROMEOS)
+#include "chrome/browser/chromeos/printing/printer_pref_manager.h"
+#include "chrome/browser/chromeos/printing/printer_pref_manager_factory.h"
 #include "chrome/browser/chromeos/settings/device_oauth2_token_service.h"
 #include "chrome/browser/chromeos/settings/device_oauth2_token_service_factory.h"
 #include "chrome/common/url_constants.h"
+#include "chromeos/printing/printer_configuration.h"
 #endif
 
 #if BUILDFLAG(ENABLE_SERVICE_DISCOVERY)
@@ -174,10 +178,6 @@ const char kDefaultDestinationSelectionRules[] =
 
 // Id of the predefined PDF printer.
 const char kLocalPdfPrinterId[] = "Save as PDF";
-
-// Additional printer capability setting keys.
-const char kPrinterId[] = "printerId";
-const char kPrinterCapabilities[] = "capabilities";
 
 // Get the print job settings dictionary from |args|. The caller takes
 // ownership of the returned DictionaryValue. Returns NULL on failure.
@@ -373,95 +373,32 @@ std::unique_ptr<base::DictionaryValue> GetPdfCapabilities(
   return std::unique_ptr<base::DictionaryValue>(description.root().DeepCopy());
 }
 
-std::pair<std::string, std::string> GetPrinterNameAndDescription(
-    const printing::PrinterBasicInfo& printer) {
-#if defined(OS_MACOSX) || defined(OS_CHROMEOS)
-  // On Mac, |printer.printer_description| specifies the printer name and
-  // |printer.printer_name| specifies the device name / printer queue name.
-  // Chrome OS emulates the Mac behavior.
-  const std::string& real_name = printer.printer_description;
-  std::string real_description;
-  const auto it = printer.options.find(kDriverNameTagName);
-  if (it != printer.options.end())
-    real_description = it->second;
-  return std::make_pair(real_name, real_description);
-#else
-  return std::make_pair(printer.printer_name, printer.printer_description);
-#endif
-}
-
 void PrintersToValues(const printing::PrinterList& printer_list,
                       base::ListValue* printers) {
   for (const printing::PrinterBasicInfo& printer : printer_list) {
-    std::unique_ptr<base::DictionaryValue> printer_info(
-        new base::DictionaryValue);
-    const auto printer_name_description = GetPrinterNameAndDescription(printer);
+    std::unique_ptr<base::DictionaryValue> printer_info =
+        base::MakeUnique<base::DictionaryValue>();
+    printer_info->SetString(printing::kSettingDeviceName, printer.printer_name);
+
+    const auto printer_name_description =
+        printing::GetPrinterNameAndDescription(printer);
     const std::string& printer_name = printer_name_description.first;
     const std::string& printer_description = printer_name_description.second;
-    printer_info->SetString(printing::kSettingDeviceName, printer.printer_name);
     printer_info->SetString(printing::kSettingPrinterName, printer_name);
     printer_info->SetString(printing::kSettingPrinterDescription,
                             printer_description);
 
-    base::DictionaryValue* options = new base::DictionaryValue;
-    printer_info->Set(printing::kSettingPrinterOptions, options);
+    auto options = base::MakeUnique<base::DictionaryValue>();
     for (const auto opt_it : printer.options)
       options->SetString(opt_it.first, opt_it.second);
+
+    printer_info->Set(printing::kSettingPrinterOptions, std::move(options));
 
     printers->Append(std::move(printer_info));
 
     VLOG(1) << "Found printer " << printer_name << " with device name "
             << printer.printer_name;
   }
-}
-
-std::unique_ptr<base::DictionaryValue>
-GetPrinterCapabilitiesOnBlockingPoolThread(const std::string& device_name) {
-  DCHECK(BrowserThread::GetBlockingPool()->RunsTasksOnCurrentThread());
-  DCHECK(!device_name.empty());
-
-  scoped_refptr<printing::PrintBackend> print_backend(
-      printing::PrintBackend::CreateInstance(nullptr));
-
-  VLOG(1) << "Get printer capabilities start for " << device_name;
-  crash_keys::ScopedPrinterInfo crash_key(
-      print_backend->GetPrinterDriverInfo(device_name));
-
-  std::unique_ptr<base::DictionaryValue> printer_info;
-  if (!print_backend->IsValidPrinter(device_name)) {
-    LOG(WARNING) << "Invalid printer " << device_name;
-    return printer_info;
-  }
-
-  printing::PrinterSemanticCapsAndDefaults info;
-  if (!print_backend->GetPrinterSemanticCapsAndDefaults(device_name, &info)) {
-    LOG(WARNING) << "Failed to get capabilities for " << device_name;
-    return printer_info;
-  }
-
-  std::unique_ptr<base::DictionaryValue> printer_capabilities =
-      cloud_print::PrinterSemanticCapsAndDefaultsToCdd(info);
-  if (!printer_capabilities) {
-    LOG(WARNING) << "Failed to convert capabilities for " << device_name;
-    return printer_info;
-  }
-
-  printing::PrinterBasicInfo basic_info;
-  if (!print_backend->GetPrinterBasicInfo(device_name, &basic_info))
-    return printer_info;
-
-  const auto printer_name_description =
-      GetPrinterNameAndDescription(basic_info);
-  const std::string& printer_name = printer_name_description.first;
-  const std::string& printer_description = printer_name_description.second;
-
-  printer_info.reset(new base::DictionaryValue);
-  printer_info->SetString(kPrinterId, device_name);
-  printer_info->SetString(printing::kSettingPrinterName, printer_name);
-  printer_info->SetString(printing::kSettingPrinterDescription,
-                          printer_description);
-  printer_info->Set(kPrinterCapabilities, printer_capabilities.release());
-  return printer_info;
 }
 
 base::LazyInstance<printing::StickySettings> g_sticky_settings =
@@ -597,7 +534,8 @@ void PrintPreviewHandler::RegisterMessages() {
   web_ui()->RegisterMessageCallback("print",
       base::Bind(&PrintPreviewHandler::HandlePrint,
                  base::Unretained(this)));
-  web_ui()->RegisterMessageCallback("getPrinterCapabilities",
+  web_ui()->RegisterMessageCallback(
+      "getPrinterCapabilities",
       base::Bind(&PrintPreviewHandler::HandleGetPrinterCapabilities,
                  base::Unretained(this)));
 #if BUILDFLAG(ENABLE_BASIC_PRINT_DIALOG)
@@ -1067,19 +1005,20 @@ void PrintPreviewHandler::HandleGetPrinterCapabilities(
   if (printer_name == kLocalPdfPrinterId) {
     std::unique_ptr<base::DictionaryValue> printer_info(
         new base::DictionaryValue);
-    printer_info->SetString(kPrinterId, printer_name);
+    printer_info->SetString(printing::kPrinterId, printer_name);
     printer_info->Set(
-        kPrinterCapabilities,
+        printing::kPrinterCapabilities,
         GetPdfCapabilities(g_browser_process->GetApplicationLocale()));
     SendPrinterCapabilities(printer_name, std::move(printer_info));
     return;
   }
 
-  base::PostTaskAndReplyWithResult(
-      BrowserThread::GetBlockingPool(), FROM_HERE,
-      base::Bind(&GetPrinterCapabilitiesOnBlockingPoolThread, printer_name),
+  printing::PrinterSetupCallback cb =
       base::Bind(&PrintPreviewHandler::SendPrinterCapabilities,
-                 weak_factory_.GetWeakPtr(), printer_name));
+                 weak_factory_.GetWeakPtr(), printer_name);
+
+  printing::ConfigurePrinterAndFetchCapabilities(Profile::FromWebUI(web_ui()),
+                                                 printer_name, cb);
 }
 
 void PrintPreviewHandler::OnSigninComplete() {

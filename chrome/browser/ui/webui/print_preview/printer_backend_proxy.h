@@ -18,12 +18,22 @@ namespace printing {
 
 using EnumeratePrintersCallback = base::Callback<void(const PrinterList&)>;
 
+using PrinterSetupCallback =
+    base::Callback<void(std::unique_ptr<base::DictionaryValue>)>;
+
 // Returns the name of the default printer.
 std::string GetDefaultPrinterOnBlockingPoolThread();
 
 // Retrieves printers for display in the print dialog and calls |cb| with the
 // list.  This method expects to be called on the UI thread.
 void EnumeratePrinters(Profile* profile, const EnumeratePrintersCallback& cb);
+
+// Verifies printer setup if needed then retrieves printer capabilities for
+// |printer_name|.  |cb| is called with the capabilities dictionary or nullptr
+// if one of the steps failed.
+void ConfigurePrinterAndFetchCapabilities(Profile* profile,
+                                          const std::string& printer_name,
+                                          const PrinterSetupCallback& cb);
 
 }  // namespace printing
 

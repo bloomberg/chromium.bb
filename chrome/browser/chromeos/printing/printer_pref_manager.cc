@@ -31,7 +31,7 @@ const base::ListValue* GetPrinterList(Profile* profile) {
 
 // Returns the printer with the matching |id| from the list |values|.  The
 // returned value is mutable and |values| could be modified.
-base::DictionaryValue* FindPrinterPref(base::ListValue* values,
+base::DictionaryValue* FindPrinterPref(const base::ListValue* values,
                                        const std::string& id) {
   for (const auto& value : *values) {
     base::DictionaryValue* printer_dictionary;
@@ -96,12 +96,20 @@ std::vector<std::unique_ptr<Printer>> PrinterPrefManager::GetPrinters() const {
   return printers;
 }
 
+std::unique_ptr<Printer> PrinterPrefManager::GetPrinter(
+    const std::string& printer_id) const {
+  const base::ListValue* values = GetPrinterList(profile_);
+  const base::DictionaryValue* printer = FindPrinterPref(values, printer_id);
+
+  return printer ? printing::PrefToPrinter(*printer) : nullptr;
+}
+
 void PrinterPrefManager::RegisterPrinter(std::unique_ptr<Printer> printer) {
   if (printer->id().empty())
     printer->set_id(base::GenerateGUID());
 
   std::unique_ptr<base::DictionaryValue> updated_printer =
-      printing::PrinterToPref(*(printer.get()));
+      printing::PrinterToPref(*printer);
   UpdatePrinterPref(profile_, printer->id(), std::move(updated_printer));
 }
 

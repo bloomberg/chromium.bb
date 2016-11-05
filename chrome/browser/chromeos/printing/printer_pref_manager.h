@@ -31,6 +31,9 @@ class PrinterPrefManager : public KeyedService {
   // Returns the printers that are saved in preferences.
   std::vector<std::unique_ptr<Printer>> GetPrinters() const;
 
+  // Returns the printer with id |printer_id|.
+  std::unique_ptr<Printer> GetPrinter(const std::string& printer_id) const;
+
   // Adds or updates a printer. Printers are identified by the id field.  Use an
   // empty id to add a new printer.
   void RegisterPrinter(std::unique_ptr<Printer> printer);
