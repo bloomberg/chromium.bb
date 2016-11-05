@@ -10,6 +10,11 @@
 ./tools/localpaths.py
 ./tools/serve/__init__.py
 ./tools/serve/serve.py
+./tools/six/CHANGES
+./tools/six/CONTRIBUTORS
+./tools/six/LICENSE
+./tools/six/README
+./tools/six/six.py
 ./tools/sslutils/__init__.py
 ./tools/sslutils/base.py
 ./tools/sslutils/openssl.py

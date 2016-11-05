@@ -71,7 +71,7 @@ Local Modifications: None
 Name: web-platform-tests - Test Suites for Web Platform specifications
 Short Name: wpt
 URL: https://github.com/w3c/web-platform-tests/
-Version: 8ef8dfe89f5c09b7367cef28cbd55709c141b592 (Also check wpt/WPTHeads)
+Version: a014b88ca26296bc09e362795ad9c52463f69b91 (Also check wpt/WPTHeads)
 License: LICENSES FOR W3C TEST SUITES (http://www.w3.org/Consortium/Legal/2008/04-testsuite-copyright.html)
 License File: wpt/wpt/LICENSE
 Security Critical: no
@@ -83,7 +83,7 @@ Local Modifications: Removed all files except for those listed in wpt/WPTWhiteLi
 Name: wpt-tools - Tools for Web Platform Tests
 Short Name: wpt-tools
 URL: https://github.com/w3c/wpt-tools
-Version: 9dc91ab4e181595e074a1dbb1408c84f80367896 (Also check wpt/WPTHeads)
+Version: 00a578d288b03fd2f0a44c452be9b5e1f695b601 (Also check wpt/WPTHeads)
 License: W3C 3-clause BSD License (http://www.w3.org/Consortium/Legal/2008/03-bsd-license.html)
 License File: wpt/wpt/tools/LICENSE
 Security Critical: no
@@ -91,10 +91,23 @@ Description: Used to run all supported web-platform-tests as part of blink layou
              Also see wpt/README.chormium for more details on maintenance.
 Local Modifications: Removed all files except for those listed in wpt/WPTWhiteList.
 
+Name: six - Python 2 and 3 compatibility library
+Short Name: six
+URL: https://bitbucket.org/gutworth/six
+   However, this is cloned from https://github.com/jgraham/six as a sub module of
+   web-platform-tests.
+Version: 3b6173c833d217ab0186c355804f5925cbcfca47 (Also check wpt/WPTHeads)
+License: MIT
+License File: wpt/wpt/tools/six/LICENSE
+Security Critical: no
+Description: Dependency from wptserve below.
+             Also see wpt/README.chormium for more details on maintenance.
+Local Modifications: Removed all files except for those listed in wpt/WPTWhiteList.
+
 Name: wptserve - Web server designed for use with web-platform-tests
 Short Name: wptserve
 URL: https://github.com/w3c/wptserve
-Version: 69298c6f089633b5bc10b16196ef42fa339f6a2f (Also check wpt/WPTHeads)
+Version: 6059a5e2703b914192cc3cd76e707363187d85fa (Also check wpt/WPTHeads)
 License: W3C 3-clause BSD License (http://www.w3.org/Consortium/Legal/2008/03-bsd-license.html)
 License File: wpt/wpt/tools/wptserve/LICENSE
 Security Critical: no
