@@ -16,8 +16,24 @@ from build_annotations import build_row_controller
 from build_annotations import models as ba_models
 from build_annotations import forms as ba_forms
 
+import urllib
 
 _DEFAULT_USERNAME = "SomeoneGotHereWithoutLoggingIn"
+
+def _BuildUrl(url_name, url_kwargs=None, get_kwargs=None):
+  """Build a url via urlresolver, and attach GET arguments
+
+  Args:
+    url_name: Canonical name of the url.
+    url_kwargs: Arugment accepted by the url builder for the view.
+    get_kwargs: Url arguments for GET query. Accepts a dict or django's
+        QueryDict object.
+  """
+  url = urlresolvers.reverse(url_name, kwargs=url_kwargs)
+  if get_kwargs is not None:
+    url += '?' + urllib.urlencode(get_kwargs, doseq=True)
+  return url
+
 
 class ListBuildsView(generic.list.ListView):
   """The landing page view of the app. Lists requested builds."""
@@ -30,24 +46,24 @@ class ListBuildsView(generic.list.ListView):
     self._build_config = None
     self._search_form = None
     self._controller = None
-    self._session = None
     self._builds_list = None
+    self._latest_build_id = None
+    self._num_builds = None
     self._hist = None
 
   def get_queryset(self):
-    self._EnsureSessionInitialized()
     self._controller = build_row_controller.BuildRowController()
     build_config_q = None
     if self._build_config is not None:
       build_config_q = self._controller.GetQRestrictToBuildConfig(
           self._build_config)
     self._builds_list = self._controller.GetStructuredBuilds(
-        latest_build_id=self._session['latest_build_id'],
-        num_builds=self._session['num_builds'],
+        latest_build_id=self._latest_build_id,
+        num_builds=self._num_builds,
         extra_filter_q=build_config_q)
     self._hist = self._controller.GetHandlingTimeHistogram(
-        latest_build_id=self._session['latest_build_id'],
-        num_builds=self._session['num_builds'],
+        latest_build_id=self._latest_build_id,
+        num_builds=self._num_builds,
         extra_filter_q=build_config_q)
     return self._builds_list
 
@@ -58,7 +74,6 @@ class ListBuildsView(generic.list.ListView):
     context = super(ListBuildsView, self).get_context_data(**kwargs)
     context['username'] = self._username
     context['search_form'] = self._GetSearchForm()
-    context['latest_build_id_cached'] = self._GetLatestBuildId()
     context['build_config'] = self._build_config
     context['histogram_data'] = self._hist
     return context
@@ -68,18 +83,30 @@ class ListBuildsView(generic.list.ListView):
     # We're assured that a username exists in prod because our app sits behind
     # appengine login. Not so when running from dev_appserver.
     self._username = users.get_current_user()
-    self._session = request.session
     self._build_config = build_config
+
+    self._PopulateUrlArgs(request.GET.get('latest_build_id'),
+                          request.GET.get('num_builds'))
     return super(ListBuildsView, self).get(request)
 
   def post(self, request, build_config):
-    self._session = request.session
+    self._username = users.get_current_user()
+    self._build_config = build_config
+    self._latest_build_id = request.GET.get('latest_build_id')
+    self._num_builds = request.GET.get('num_builds')
+
     form = ba_forms.SearchForm(request.POST)
     self._search_form = form
-    if form.is_valid():
-      self._session['latest_build_id'] = form.cleaned_data['latest_build_id']
-      self._session['num_builds'] = form.cleaned_data['num_builds']
-    return self.get(request, build_config)
+    if not form.is_valid():
+      return super(ListBuildsView, self).get(request)
+
+    self._latest_build_id = form.cleaned_data['latest_build_id']
+    self._num_builds = form.cleaned_data['num_builds']
+    return http.HttpResponseRedirect(_BuildUrl(
+        'build_annotations:builds_list',
+        url_kwargs={'build_config': build_config},
+        get_kwargs={'latest_build_id': self._latest_build_id,
+                    'num_builds': self._num_builds}))
 
   def put(self, *args, **kwargs):
     return self.post(*args, **kwargs)
@@ -88,18 +115,21 @@ class ListBuildsView(generic.list.ListView):
     if self._search_form is not None:
       return self._search_form
     return ba_forms.SearchForm(
-        {'latest_build_id': self._session['latest_build_id'],
-         'num_builds': self._session['num_builds']})
+        {'latest_build_id': self._latest_build_id,
+         'num_builds': self._num_builds})
 
-  def _EnsureSessionInitialized(self):
-    latest_build_id = self._session.get('latest_build_id', None)
-    num_results = self._session.get('num_builds', None)
-    if latest_build_id is None or num_results is None:
-      # We don't have a valid search history in this session, obtain defaults.
+  def _PopulateUrlArgs(self, latest_build_id, num_builds):
+    self._latest_build_id = latest_build_id
+    self._num_builds = num_builds
+
+    if self._latest_build_id is None or self._num_builds is None:
       controller = build_row_controller.BuildRowController()
       controller.GetStructuredBuilds(num_builds=1)
-      self._session['latest_build_id'] = controller.latest_build_id
-      self._session['num_builds'] = controller.DEFAULT_NUM_BUILDS
+
+    if self._latest_build_id is None:
+      self._latest_build_id = controller.latest_build_id
+    if self._num_builds is None:
+      self._num_builds = controller.DEFAULT_NUM_BUILDS
 
   def _GetLatestBuildId(self):
     controller = build_row_controller.BuildRowController()
@@ -116,8 +146,6 @@ class EditAnnotationsView(generic.base.View):
     self._username = _DEFAULT_USERNAME
     self._formset = None
     self._context = {}
-    self._request = None
-    self._session = None
     self._build_config = None
     self._build_id = None
     super(EditAnnotationsView, self).__init__(*args, **kwargs)
@@ -126,10 +154,8 @@ class EditAnnotationsView(generic.base.View):
     # We're assured that a username exists in prod because our app sits behind
     # appengine login. Not so when running from dev_appserver.
     self._username = users.get_current_user()
-    self._request = request
     self._build_config = build_config
     self._build_id = build_id
-    self._session = request.session
     self._PopulateContext()
     return shortcuts.render(request, self.template_name, self._context)
 
@@ -137,16 +163,17 @@ class EditAnnotationsView(generic.base.View):
     # We're assured that a username exists in prod because our app sits behind
     # appengine login. Not so when running from dev_appserver.
     self._username = users.get_current_user()
-    self._request = request
     self._build_config = build_config
     self._build_id = build_id
-    self._session = request.session
+
     self._formset = ba_forms.AnnotationsFormSet(request.POST)
     if self._formset.is_valid():
       self._SaveAnnotations()
-      return http.HttpResponseRedirect(
-          urlresolvers.reverse('build_annotations:edit_annotations',
-                               args=[self._build_config, self._build_id]))
+      return http.HttpResponseRedirect(_BuildUrl(
+          'build_annotations:edit_annotations',
+          url_kwargs={'build_config': build_config,
+                      'build_id': build_id},
+          get_kwargs=request.GET))
     else:
       self._PopulateContext()
       return shortcuts.render(request, self.template_name, self._context)

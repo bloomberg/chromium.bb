@@ -8,7 +8,7 @@
 <h1>Annotate {{ build_config|title }} Build {{ build_row.id }}</h1>
 <ul class="navbar">
   <li class="navbar">
-    <a class="navbar" href="{% url 'build_annotations:builds_list' build_config %}">Builds List</a>
+    <a class="navbar" href="{% url 'build_annotations:builds_list' build_config %}?{{ request.GET.urlencode }}">Builds List</a>
   </li>
 </ul>
 
@@ -62,7 +62,7 @@
     <td class="build_details">{{ build_row.kicked_out_count }}</td>
   </tr>
 </table>
-<form action="{% url 'build_annotations:edit_annotations' build_config build_row.id %}"
+<form action="{% url 'build_annotations:edit_annotations' build_config build_row.id %}?{{ request.GET.urlencode }}"
       method="post">
   {% csrf_token %}
   {{ annotations_formset.management_form }}

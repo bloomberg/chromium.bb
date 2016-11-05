@@ -51,16 +51,12 @@
     <a class="navbar" href="{% url 'build_annotations:builds_list' 'master-chromium-pfq' %}">Chromium-PFQ</a>
   </li>
 </ul>
-<form action="{% url 'build_annotations:builds_list' build_config %}" method="post">
+<form action="{% url 'build_annotations:builds_list' build_config %}?{{ request.GET.urlencode }}" method="post">
   {% csrf_token %}
   <table>
     <tr>
       <th><label>{{ search_form.latest_build_id.label }}</label></th>
       <td>{{ search_form.latest_build_id }}</td>
-      <td>
-        <button type="button" onclick="populateLatest()">Get latest</button>
-        <input type="hidden" id="latest_build_id_cached" value="{{ latest_build_id_cached }}"/>
-      </td>
       <td class="error_message">{{ search_form.latest_build_id.errors }}</td>
     </tr>
     <tr>
@@ -92,7 +88,7 @@
   </tr>
 {% for build_row in builds_list %}
   <tr class="build_item_{{ build_row.status }}">
-    <td class="build_list"><a href="{% url 'build_annotations:edit_annotations' build_config build_row.id %}">{{ build_row.id }}</a></td>
+    <td class="build_list"><a href="{% url 'build_annotations:edit_annotations' build_config build_row.id %}?{{ request.GET.urlencode }}">{{ build_row.id }}</a></td>
     <td class="build_list">{{ build_row.build_number }}</td>
     <td class="build_list">{{ build_row.status|truncatechars:20 }}</td>
     <td class="build_list">{{ build_row.summary|truncatechars:50|cut:'\n\r' }}</td>

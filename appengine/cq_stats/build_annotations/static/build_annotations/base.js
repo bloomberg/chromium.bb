@@ -13,12 +13,6 @@ function editAnnotation(base_id_str) {
   return false;
 }
 
-function populateLatest() {
-  var latest_build_id = document.getElementById("latest_build_id_cached").value;
-  document.getElementById("id_latest_build_id").value = latest_build_id;
-  return false;
-}
-
 // Copied/forked from
 // https://chromium.googlesource.com/infra/infra.git/+/master/appengine/chromium_status/static/js/main/main.js
 function localize_times() {
