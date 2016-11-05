@@ -627,18 +627,25 @@ void ChromeClientImpl::showMouseOverURL(const HitTestResult& result) {
     return;
 
   WebURL url;
-  // Find out if the mouse is over a link, and if so, let our UI know...
-  if (result.isLiveLink() && !result.absoluteLinkURL().getString().isEmpty()) {
-    url = result.absoluteLinkURL();
-  } else if (result.innerNode() && (isHTMLObjectElement(*result.innerNode()) ||
-                                    isHTMLEmbedElement(*result.innerNode()))) {
-    LayoutObject* object = result.innerNode()->layoutObject();
-    if (object && object->isLayoutPart()) {
-      Widget* widget = toLayoutPart(object)->widget();
-      if (widget && widget->isPluginContainer()) {
-        WebPluginContainerImpl* plugin = toWebPluginContainerImpl(widget);
-        url = plugin->plugin()->linkAtPosition(
-            result.roundedPointInInnerNodeFrame());
+
+  // Ignore URL if hitTest include scrollbar since we might have both a
+  // scrollbar and an element in the case of overlay scrollbars.
+  if (!result.scrollbar()) {
+    // Find out if the mouse is over a link, and if so, let our UI know...
+    if (result.isLiveLink() &&
+        !result.absoluteLinkURL().getString().isEmpty()) {
+      url = result.absoluteLinkURL();
+    } else if (result.innerNode() &&
+               (isHTMLObjectElement(*result.innerNode()) ||
+                isHTMLEmbedElement(*result.innerNode()))) {
+      LayoutObject* object = result.innerNode()->layoutObject();
+      if (object && object->isLayoutPart()) {
+        Widget* widget = toLayoutPart(object)->widget();
+        if (widget && widget->isPluginContainer()) {
+          WebPluginContainerImpl* plugin = toWebPluginContainerImpl(widget);
+          url = plugin->plugin()->linkAtPosition(
+              result.roundedPointInInnerNodeFrame());
+        }
       }
     }
   }

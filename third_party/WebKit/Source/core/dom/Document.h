@@ -724,7 +724,9 @@ class CORE_EXPORT Document : public ContainerNode,
   void hoveredNodeDetached(Element&);
   void activeChainNodeDetached(Element&);
 
-  void updateHoverActiveState(const HitTestRequest&, Element*);
+  void updateHoverActiveState(const HitTestRequest&,
+                              Element*,
+                              bool hitScrollbar);
 
   // Updates for :target (CSS3 selector).
   void setCSSTarget(Element*);

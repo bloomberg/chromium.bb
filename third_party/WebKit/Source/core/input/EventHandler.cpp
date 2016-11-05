@@ -278,8 +278,10 @@ HitTestResult EventHandler::hitTestResultAtPoint(
     return result;
 
   m_frame->contentLayoutItem().hitTest(result);
-  if (!request.readOnly())
-    m_frame->document()->updateHoverActiveState(request, result.innerElement());
+  if (!request.readOnly()) {
+    m_frame->document()->updateHoverActiveState(request, result.innerElement(),
+                                                result.scrollbar());
+  }
 
   return result;
 }
@@ -529,6 +531,10 @@ OptionalCursor EventHandler::selectCursor(const HitTestResult& result) {
 OptionalCursor EventHandler::selectAutoCursor(const HitTestResult& result,
                                               Node* node,
                                               const Cursor& iBeam) {
+  if (result.scrollbar()) {
+    return pointerCursor();
+  }
+
   bool editable = (node && hasEditableStyle(*node));
 
   const bool isOverLink =
@@ -811,7 +817,7 @@ WebInputEventResult EventHandler::handleMouseMoveOrLeaveEvent(
   // So we must force the hit-test to fail, while still clearing hover/active
   // state.
   if (forceLeave) {
-    m_frame->document()->updateHoverActiveState(request, 0);
+    m_frame->document()->updateHoverActiveState(request, nullptr, false);
   } else {
     mev = EventHandlingUtil::performMouseEventHitTest(m_frame, request,
                                                       mouseEvent);
@@ -1525,13 +1531,13 @@ void EventHandler::updateGestureHoverActiveState(const HitTestRequest& request,
       // If the old hovered frame is different from the new hovered frame.
       // we should clear the old hovered node from the old hovered frame.
       if (newHoverFrame != oldHoverFrame)
-        doc->updateHoverActiveState(request, nullptr);
+        doc->updateHoverActiveState(request, nullptr, false);
     }
   }
 
   // Recursively set the new active/hover states on every frame in the chain of
   // innerElement.
-  m_frame->document()->updateHoverActiveState(request, innerElement);
+  m_frame->document()->updateHoverActiveState(request, innerElement, false);
 }
 
 // Update the mouseover/mouseenter/mouseout/mouseleave events across all frames
@@ -1857,7 +1863,8 @@ WebInputEventResult EventHandler::sendContextMenuEventForKey(
   HitTestRequest request(HitTestRequest::Active);
   HitTestResult result(request, locationInRootFrame);
   result.setInnerNode(targetNode);
-  doc->updateHoverActiveState(request, result.innerElement());
+  doc->updateHoverActiveState(request, result.innerElement(),
+                              result.scrollbar());
 
   // The contextmenu event is a mouse event even when invoked using the
   // keyboard.  This is required for web compatibility.
@@ -1923,8 +1930,8 @@ void EventHandler::hoverTimerFired(TimerBase*) {
                            view->rootFrameToContents(
                                m_mouseEventManager->lastKnownMousePosition()));
       layoutItem.hitTest(result);
-      m_frame->document()->updateHoverActiveState(request,
-                                                  result.innerElement());
+      m_frame->document()->updateHoverActiveState(
+          request, result.innerElement(), result.scrollbar());
     }
   }
 }
@@ -1938,8 +1945,8 @@ void EventHandler::activeIntervalTimerFired(TimerBase*) {
     // m_lastDeferredTapElement.get() == m_frame->document()->activeElement()
     HitTestRequest request(HitTestRequest::TouchEvent |
                            HitTestRequest::Release);
-    m_frame->document()->updateHoverActiveState(request,
-                                                m_lastDeferredTapElement.get());
+    m_frame->document()->updateHoverActiveState(
+        request, m_lastDeferredTapElement.get(), false);
   }
   m_lastDeferredTapElement = nullptr;
 }
