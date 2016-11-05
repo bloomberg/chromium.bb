@@ -166,6 +166,10 @@ class ArcAuthService : public ArcService,
   void EnableArc();
   void DisableArc();
 
+  // Called from the Chrome OS metrics provider to record Arc.State
+  // periodically.
+  void RecordArcState();
+
   // sync_preferences::PrefServiceSyncableObserver
   void OnIsSyncingChanged() override;
 

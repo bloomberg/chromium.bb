@@ -568,7 +568,6 @@ void ArcAuthService::OnPrimaryUserProfilePrepared(Profile* profile) {
     OnOptInPreferenceChanged();
   } else {
     RemoveArcData();
-    UpdateEnabledStateUMA(false);
     PrefServiceSyncableFromProfile(profile_)->AddObserver(this);
     OnIsSyncingChanged();
   }
@@ -662,7 +661,6 @@ void ArcAuthService::OnSyncedPrefChanged(const std::string& path,
 
 void ArcAuthService::StopArc() {
   if (state_ != State::STOPPED) {
-    UpdateEnabledStateUMA(false);
     profile_->GetPrefs()->SetBoolean(prefs::kArcSignedIn, false);
   }
   ShutdownBridgeAndCloseUI();
@@ -710,8 +708,6 @@ void ArcAuthService::OnOptInPreferenceChanged() {
                      weak_ptr_factory_.GetWeakPtr()));
     }
   }
-
-  UpdateEnabledStateUMA(true);
 }
 
 void ArcAuthService::ShutdownBridge() {
@@ -893,6 +889,13 @@ void ArcAuthService::DisableArc() {
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
   DCHECK(profile_);
   profile_->GetPrefs()->SetBoolean(prefs::kArcEnabled, false);
+}
+
+void ArcAuthService::RecordArcState() {
+  // Only record Enabled state if ARC is allowed in the first place, so we do
+  // not split the ARC population by devices that cannot run ARC.
+  if (IsAllowed())
+    UpdateEnabledStateUMA(IsArcEnabled());
 }
 
 void ArcAuthService::StartUI() {

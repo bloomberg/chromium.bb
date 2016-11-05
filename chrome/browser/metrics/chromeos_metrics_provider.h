@@ -87,6 +87,9 @@ class ChromeOSMetricsProvider : public metrics::MetricsProvider {
   // Record the device enrollment status.
   void RecordEnrollmentStatus();
 
+  // Record whether ARC is enabled or not for ARC capable devices.
+  void RecordArcState();
+
   // For collecting systemwide perf data.
   metrics::PerfProvider perf_provider_;
 
