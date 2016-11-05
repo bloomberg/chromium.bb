@@ -21,3 +21,5 @@ Local Modifications:
 - composite-hid-close.patch has been applied.
 - assign-endpoints-checks.patch has been applied.
 - open-fd.patch has been applied.
+- Added libusb_get_raw_config_descriptor and libusb_get_active_config_value
+  methods to avoid using the built-in parser.

@@ -558,6 +558,42 @@ int API_EXPORTED libusb_get_device_descriptor(libusb_device *dev,
 }
 
 /** \ingroup desc
+ * Get the configuration value for the currently active configuration.
+ * This is a non-blocking function which does not involve any requests being
+ * sent to the device.
+ *
+ * \param dev a device
+ * \param config output location for the configuration value. Only
+ * valid if 0 was returned.
+ * \returns 0 on success
+ * \returns LIBUSB_ERROR_NOT_FOUND if the device is in unconfigured state
+ * \returns another LIBUSB_ERROR code on error
+ * \see libusb_get_active_config_descriptor
+ */
+int API_EXPORTED libusb_get_active_config_value(libusb_device *dev,
+	uint8_t *config)
+{
+	struct libusb_config_descriptor _config;
+	unsigned char tmp[LIBUSB_DT_CONFIG_SIZE];
+	int host_endian = 0;
+	int r;
+
+	r = usbi_backend->get_active_config_descriptor(dev, tmp,
+		LIBUSB_DT_CONFIG_SIZE, &host_endian);
+	if (r < 0)
+		return r;
+	if (r < LIBUSB_DT_CONFIG_SIZE) {
+		usbi_err(dev->ctx, "short config descriptor read %d/%d",
+			 r, LIBUSB_DT_CONFIG_SIZE);
+		return LIBUSB_ERROR_IO;
+	}
+
+	usbi_parse_descriptor(tmp, "bbwbb", &_config, host_endian);
+        *config = _config.bConfigurationValue;
+	return 0;
+}
+
+/** \ingroup desc
  * Get the USB configuration descriptor for the currently active configuration.
  * This is a non-blocking function which does not involve any requests being
  * sent to the device.
@@ -656,6 +692,61 @@ int API_EXPORTED libusb_get_config_descriptor(libusb_device *dev,
 	free(buf);
 	return r;
 }
+
+/** \ingroup desc
+ * Get the raw bytes of a USB configuration descriptor based on its index.
+ * This is a non-blocking function which does not involve any requests being
+ * sent to the device.
+ *
+ * \param dev a device
+ * \param config_index the index of the configuration you wish to retrieve
+ * \param buffer output location for the buffer pointer. Only valid if 0 was
+ * returned. Must be freed by the caller.
+ * \param len output location for the buffer length.
+ * after use.
+ * \returns the buffer length on success
+ * \returns LIBUSB_ERROR_NOT_FOUND if the configuration does not exist
+ * \returns another LIBUSB_ERROR code on error
+ * \see libusb_get_config_descriptor()
+ */
+int API_EXPORTED libusb_get_raw_config_descriptor(libusb_device *dev,
+	uint8_t config_index, unsigned char **buffer)
+{
+	struct libusb_config_descriptor _config;
+	unsigned char tmp[LIBUSB_DT_CONFIG_SIZE];
+	unsigned char *buf = NULL;
+	int host_endian = 0;
+	int r;
+
+	usbi_dbg("index %d", config_index);
+	if (config_index >= dev->num_configurations)
+		return LIBUSB_ERROR_NOT_FOUND;
+
+	r = usbi_backend->get_config_descriptor(dev, config_index, tmp,
+		LIBUSB_DT_CONFIG_SIZE, &host_endian);
+	if (r < 0)
+		return r;
+	if (r < LIBUSB_DT_CONFIG_SIZE) {
+		usbi_err(dev->ctx, "short config descriptor read %d/%d",
+			 r, LIBUSB_DT_CONFIG_SIZE);
+		return LIBUSB_ERROR_IO;
+	}
+
+	usbi_parse_descriptor(tmp, "bbw", &_config, host_endian);
+	buf = malloc(_config.wTotalLength);
+	if (!buf)
+		return LIBUSB_ERROR_NO_MEM;
+
+	r = usbi_backend->get_config_descriptor(dev, config_index, buf,
+		_config.wTotalLength, &host_endian);
+	if (r >= 0)
+		*buffer = buf;
+	else
+		free(buf);
+
+	return r;
+}
+
 
 /* iterate through all configurations, returning the index of the configuration
  * matching a specific bConfigurationValue in the idx output parameter, or -1

@@ -1323,10 +1323,14 @@ int LIBUSB_CALL libusb_get_configuration(libusb_device_handle *dev,
 	int *config);
 int LIBUSB_CALL libusb_get_device_descriptor(libusb_device *dev,
 	struct libusb_device_descriptor *desc);
+int LIBUSB_CALL libusb_get_active_config_value(libusb_device *dev,
+	uint8_t *config);
 int LIBUSB_CALL libusb_get_active_config_descriptor(libusb_device *dev,
 	struct libusb_config_descriptor **config);
 int LIBUSB_CALL libusb_get_config_descriptor(libusb_device *dev,
 	uint8_t config_index, struct libusb_config_descriptor **config);
+int LIBUSB_CALL libusb_get_raw_config_descriptor(libusb_device *dev,
+	uint8_t config_index, unsigned char **buffer);
 int LIBUSB_CALL libusb_get_config_descriptor_by_value(libusb_device *dev,
 	uint8_t bConfigurationValue, struct libusb_config_descriptor **config);
 void LIBUSB_CALL libusb_free_config_descriptor(
