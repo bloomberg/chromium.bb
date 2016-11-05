@@ -25,6 +25,7 @@ import android.os.HandlerThread;
 import android.util.DisplayMetrics;
 import android.view.Display;
 import android.view.Surface;
+import android.view.WindowManager;
 
 import org.chromium.base.ApplicationStatus;
 import org.chromium.base.Log;
@@ -41,7 +42,7 @@ import java.nio.ByteBuffer;
 @JNINamespace("media")
 @TargetApi(Build.VERSION_CODES.LOLLIPOP)
 public class ScreenCapture extends Fragment {
-    private static final String TAG = "ScreenCaptureMachine";
+    private static final String TAG = "cr_ScreenCapture";
 
     private static final int REQUEST_MEDIA_PROJECTION = 1;
 
@@ -50,6 +51,7 @@ public class ScreenCapture extends Fragment {
     private final Context mContext;
 
     private static enum CaptureState { ATTACHED, ALLOWED, STARTED, STOPPING, STOPPED }
+    private static enum DeviceOrientation { PORTRAIT, LANDSCAPE }
     private final Object mCaptureStateLock = new Object();
     private CaptureState mCaptureState = CaptureState.STOPPED;
 
@@ -60,38 +62,19 @@ public class ScreenCapture extends Fragment {
     private ImageReader mImageReader = null;
     private HandlerThread mThread;
     private Handler mBackgroundHandler;
+    private Display mDisplay;
+    private DeviceOrientation mCurrentOrientation;
+    private Intent mResultData;
 
     private int mScreenDensity;
     private int mWidth;
     private int mHeight;
     private int mFormat;
     private int mResultCode;
-    private Intent mResultData;
 
     ScreenCapture(Context context, long nativeScreenCaptureMachineAndroid) {
         mContext = context;
         mNativeScreenCaptureMachineAndroid = nativeScreenCaptureMachineAndroid;
-
-        Activity activity = ApplicationStatus.getLastTrackedFocusedActivity();
-        if (activity == null) {
-            Log.e(TAG, "activity is null");
-            return;
-        }
-
-        FragmentManager fragmentManager = activity.getFragmentManager();
-        FragmentTransaction fragmentTransaction = fragmentManager.beginTransaction();
-        fragmentTransaction.add(this, "screencapture");
-
-        try {
-            fragmentTransaction.commit();
-        } catch (RuntimeException e) {
-            Log.e(TAG, "ScreenCaptureExcaption " + e);
-        }
-
-        DisplayMetrics metrics = new DisplayMetrics();
-        Display display = activity.getWindowManager().getDefaultDisplay();
-        display.getMetrics(metrics);
-        mScreenDensity = metrics.densityDpi;
     }
 
     // Factory method.
@@ -106,8 +89,6 @@ public class ScreenCapture extends Fragment {
 
     // Internal class implementing the ImageReader listener. Gets pinged when a
     // new frame is been captured and downloaded to memory-backed buffers.
-    // TODO(braveyao): This is very similar as the one in VideoCaptureCamera2. Try to see
-    // if we can extend from it, https://crbug.com/487935.
     private class CrImageReaderListener implements ImageReader.OnImageAvailableListener {
         @Override
         public void onImageAvailable(ImageReader reader) {
@@ -116,6 +97,14 @@ public class ScreenCapture extends Fragment {
                     Log.e(TAG, "Get captured frame in unexpected state.");
                     return;
                 }
+            }
+
+            // If device is rotated, inform native, then re-create ImageReader and VirtualDisplay
+            // with the new orientation, and drop the current frame.
+            if (maybeDoRotation()) {
+                createImageReaderWithFormat();
+                createVirtualDisplay();
+                return;
             }
 
             try (Image image = reader.acquireLatestImage()) {
@@ -170,11 +159,8 @@ public class ScreenCapture extends Fragment {
                 Log.i(TAG, "acquireLatestImage():" + ex);
                 // YUV_420_888 is the preference, but not all devices support it,
                 // fall-back to RGBA_8888 then.
-                mImageReader.close();
-                mVirtualDisplay.release();
-
                 mFormat = PixelFormat.RGBA_8888;
-                createImageReaderWithFormat(mFormat);
+                createImageReaderWithFormat();
                 createVirtualDisplay();
             }
         }
@@ -217,18 +203,7 @@ public class ScreenCapture extends Fragment {
     }
 
     @CalledByNative
-    public boolean startPrompt(int width, int height) {
-        Log.d(TAG, "startPrompt");
-        synchronized (mCaptureStateLock) {
-            while (mCaptureState != CaptureState.ATTACHED) {
-                try {
-                    mCaptureStateLock.wait();
-                } catch (InterruptedException ex) {
-                    Log.e(TAG, "ScreenCaptureException: " + ex);
-                }
-            }
-        }
-
+    public boolean allocate(int width, int height) {
         mWidth = width;
         mHeight = height;
 
@@ -237,6 +212,45 @@ public class ScreenCapture extends Fragment {
         if (mMediaProjectionManager == null) {
             Log.e(TAG, "mMediaProjectionManager is null");
             return false;
+        }
+
+        WindowManager windowManager =
+                (WindowManager) mContext.getSystemService(Context.WINDOW_SERVICE);
+        mDisplay = windowManager.getDefaultDisplay();
+
+        DisplayMetrics metrics = new DisplayMetrics();
+        mDisplay.getMetrics(metrics);
+        mScreenDensity = metrics.densityDpi;
+
+        return true;
+    }
+
+    @CalledByNative
+    public boolean startPrompt() {
+        Log.d(TAG, "startPrompt");
+        Activity activity = ApplicationStatus.getLastTrackedFocusedActivity();
+        if (activity == null) {
+            Log.e(TAG, "activity is null");
+            return false;
+        }
+        FragmentManager fragmentManager = activity.getFragmentManager();
+        FragmentTransaction fragmentTransaction = fragmentManager.beginTransaction();
+        fragmentTransaction.add(this, "screencapture");
+        try {
+            fragmentTransaction.commit();
+        } catch (RuntimeException e) {
+            Log.e(TAG, "ScreenCaptureExcaption " + e);
+            return false;
+        }
+
+        synchronized (mCaptureStateLock) {
+            while (mCaptureState != CaptureState.ATTACHED) {
+                try {
+                    mCaptureStateLock.wait();
+                } catch (InterruptedException ex) {
+                    Log.e(TAG, "ScreenCaptureException: " + ex);
+                }
+            }
         }
 
         try {
@@ -289,7 +303,8 @@ public class ScreenCapture extends Fragment {
         } else {
             mFormat = ImageFormat.YUV_420_888;
         }
-        createImageReaderWithFormat(mFormat);
+        maybeDoRotation();
+        createImageReaderWithFormat();
         createVirtualDisplay();
 
         changeCaptureStateAndNotify(CaptureState.STARTED);
@@ -314,15 +329,23 @@ public class ScreenCapture extends Fragment {
         }
     }
 
-    private void createImageReaderWithFormat(int format) {
+    private void createImageReaderWithFormat() {
+        if (mImageReader != null) {
+            mImageReader.close();
+        }
+
         final int maxImages = 2;
-        mImageReader = ImageReader.newInstance(mWidth, mHeight, format, maxImages);
+        mImageReader = ImageReader.newInstance(mWidth, mHeight, mFormat, maxImages);
         mSurface = mImageReader.getSurface();
         final CrImageReaderListener imageReaderListener = new CrImageReaderListener();
         mImageReader.setOnImageAvailableListener(imageReaderListener, mBackgroundHandler);
     }
 
     private void createVirtualDisplay() {
+        if (mVirtualDisplay != null) {
+            mVirtualDisplay.release();
+        }
+
         mVirtualDisplay = mMediaProjection.createVirtualDisplay("ScreenCapture", mWidth, mHeight,
                 mScreenDensity, DisplayManager.VIRTUAL_DISPLAY_FLAG_AUTO_MIRROR, mSurface, null,
                 null);
@@ -335,16 +358,73 @@ public class ScreenCapture extends Fragment {
         }
     }
 
+    private int getDeviceRotation() {
+        switch (mDisplay.getRotation()) {
+            case Surface.ROTATION_0:
+                return 0;
+            case Surface.ROTATION_90:
+                return 90;
+            case Surface.ROTATION_180:
+                return 180;
+            case Surface.ROTATION_270:
+                return 270;
+            default:
+                // This should not happen.
+                assert false;
+                return 0;
+        }
+    }
+
+    private DeviceOrientation getDeviceOrientation(int rotation) {
+        switch (rotation) {
+            case 0:
+            case 180:
+                return DeviceOrientation.PORTRAIT;
+            case 90:
+            case 270:
+                return DeviceOrientation.LANDSCAPE;
+            default:
+                // This should not happen;
+                assert false;
+                return DeviceOrientation.LANDSCAPE;
+        }
+    }
+
+    private boolean maybeDoRotation() {
+        final int rotation = getDeviceRotation();
+        final DeviceOrientation orientation = getDeviceOrientation(rotation);
+        if (orientation == mCurrentOrientation) {
+            return false;
+        }
+
+        mCurrentOrientation = orientation;
+        rotateCaptureOrientation(orientation);
+        nativeOnOrientationChange(mNativeScreenCaptureMachineAndroid, rotation);
+        return true;
+    }
+
+    private void rotateCaptureOrientation(DeviceOrientation orientation) {
+        if ((orientation == DeviceOrientation.LANDSCAPE && mWidth < mHeight)
+                || (orientation == DeviceOrientation.PORTRAIT && mHeight < mWidth)) {
+            mWidth += mHeight - (mHeight = mWidth);
+        }
+    }
+
     // Method for ScreenCapture implementations to call back native code.
     private native void nativeOnRGBAFrameAvailable(long nativeScreenCaptureMachineAndroid,
             ByteBuffer buf, int left, int top, int width, int height, int rowStride,
             long timestamp);
-    // Method for ScreenCapture implementations to call back native code.
+
     private native void nativeOnI420FrameAvailable(long nativeScreenCaptureMachineAndroid,
             ByteBuffer yBuffer, int yStride, ByteBuffer uBuffer, ByteBuffer vBuffer,
             int uvRowStride, int uvPixelStride, int left, int top, int width, int height,
             long timestamp);
-    // Method for ScreenCapture implementations to call back native code.
+
+    // Method for ScreenCapture implementations to notify activity result.
     private native void nativeOnActivityResult(
             long nativeScreenCaptureMachineAndroid, boolean result);
+
+    // Method for ScreenCapture implementations to notify orientation change.
+    private native void nativeOnOrientationChange(
+            long nativeScreenCaptureMachineAndroid, int rotation);
 }

@@ -7,6 +7,7 @@
 
 #include <memory>
 
+#include "content/common/content_export.h"
 #include "media/capture/content/screen_capture_device_core.h"
 #include "media/capture/video/video_capture_device.h"
 
@@ -15,7 +16,8 @@ namespace content {
 // ScreenCaptureDeviceAndroid is a forwarder to media::ScreenCaptureDeviceCore
 // while keeping the Power Saving from kicking in between AllocateAndStart() and
 // StopAndDeAllocate().
-class ScreenCaptureDeviceAndroid : public media::VideoCaptureDevice {
+class CONTENT_EXPORT ScreenCaptureDeviceAndroid
+    : public media::VideoCaptureDevice {
  public:
   ScreenCaptureDeviceAndroid();
   ~ScreenCaptureDeviceAndroid() override;

@@ -1601,6 +1601,7 @@ test("content_unittests") {
       "../browser/android/java/jni_helper_unittest.cc",
       "../browser/android/scoped_surface_request_manager_unittest.cc",
       "../browser/android/url_request_content_job_unittest.cc",
+      "../browser/media/capture/screen_capture_device_android_unittest.cc",
       "../renderer/java/gin_java_bridge_value_converter_unittest.cc",
       "../renderer/media/android/stream_texture_wrapper_impl_unittest.cc",
     ]
@@ -1615,6 +1616,8 @@ test("content_unittests") {
       "//base:base_java_unittest_support",
       "//content/public/android:content_java",
       "//device/geolocation:geolocation_java",
+      "//media/capture/content/android",
+      "//media/capture/content/android:screen_capture_java",
       "//v8:v8_external_startup_data_assets",
     ]
 

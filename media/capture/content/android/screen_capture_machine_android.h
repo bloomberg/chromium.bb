@@ -9,12 +9,13 @@
 #include <memory>
 
 #include "base/android/scoped_java_ref.h"
+#include "media/capture/capture_export.h"
 #include "media/capture/content/screen_capture_device_core.h"
 
 namespace media {
 
 // ScreenCaptureMachineAndroid captures 32bit RGB or YUV420 triplanar.
-class ScreenCaptureMachineAndroid : public media::VideoCaptureMachine {
+class CAPTURE_EXPORT ScreenCaptureMachineAndroid : public VideoCaptureMachine {
  public:
   ScreenCaptureMachineAndroid();
   ~ScreenCaptureMachineAndroid() override;
@@ -51,6 +52,9 @@ class ScreenCaptureMachineAndroid : public media::VideoCaptureMachine {
   // Implement org.chromium.media.ScreenCapture.nativeOnActivityResult.
   void OnActivityResult(JNIEnv* env, jobject obj, jboolean result);
 
+  // Implement org.chromium.media.ScreenCaptuer.nativeOnOrientationChange.
+  void OnOrientationChange(JNIEnv* env, jobject obj, jint rotation);
+
   // VideoCaptureMachine overrides.
   void Start(const scoped_refptr<media::ThreadSafeCaptureOracle>& oracle_proxy,
              const media::VideoCaptureParams& params,
@@ -59,6 +63,9 @@ class ScreenCaptureMachineAndroid : public media::VideoCaptureMachine {
   void MaybeCaptureForRefresh() override;
 
  private:
+  // Indicates the orientation of the device.
+  enum DeviceOrientation { kLandscape, kPortrait, kDefault };
+
   // Makes all the decisions about which frames to copy, and how.
   scoped_refptr<media::ThreadSafeCaptureOracle> oracle_proxy_;
 

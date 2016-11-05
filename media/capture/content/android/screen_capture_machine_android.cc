@@ -199,6 +199,34 @@ void ScreenCaptureMachineAndroid::OnActivityResult(JNIEnv* env,
   Java_ScreenCapture_startCapture(env, obj);
 }
 
+void ScreenCaptureMachineAndroid::OnOrientationChange(JNIEnv* env,
+                                                      jobject obj,
+                                                      jint rotation) {
+  DeviceOrientation orientation = kDefault;
+  switch (rotation) {
+    case 0:
+    case 180:
+      orientation = kPortrait;
+      break;
+    case 90:
+    case 270:
+      orientation = kLandscape;
+      break;
+    default:
+      break;
+  }
+
+  gfx::Size capture_size = oracle_proxy_->GetCaptureSize();
+  const int width = capture_size.width();
+  const int height = capture_size.height();
+
+  if ((orientation == kLandscape && width < height) ||
+      (orientation == kPortrait && height < width)) {
+    capture_size.SetSize(height, width);
+    oracle_proxy_->UpdateCaptureSize(capture_size);
+  }
+}
+
 void ScreenCaptureMachineAndroid::Start(
     const scoped_refptr<ThreadSafeCaptureOracle>& oracle_proxy,
     const VideoCaptureParams& params,
@@ -219,16 +247,25 @@ void ScreenCaptureMachineAndroid::Start(
   DCHECK(!(params.requested_format.frame_size.width() % 2));
   DCHECK(!(params.requested_format.frame_size.height() % 2));
 
-  const jboolean ret = Java_ScreenCapture_startPrompt(
-      AttachCurrentThread(), j_capture_,
-      params.requested_format.frame_size.width(),
-      params.requested_format.frame_size.height());
+  jboolean ret =
+      Java_ScreenCapture_allocate(AttachCurrentThread(), j_capture_,
+                                  params.requested_format.frame_size.width(),
+                                  params.requested_format.frame_size.height());
+  if (!ret) {
+    DLOG(ERROR) << "Failed to init ScreenCaptureAndroid";
+    callback.Run(ret);
+    return;
+  }
+
+  ret = Java_ScreenCapture_startPrompt(AttachCurrentThread(), j_capture_);
 
   callback.Run(ret);
 }
 
 void ScreenCaptureMachineAndroid::Stop(const base::Closure& callback) {
-  Java_ScreenCapture_stopCapture(AttachCurrentThread(), j_capture_);
+  if (j_capture_.obj() != nullptr) {
+    Java_ScreenCapture_stopCapture(AttachCurrentThread(), j_capture_);
+  }
 
   callback.Run();
 }
