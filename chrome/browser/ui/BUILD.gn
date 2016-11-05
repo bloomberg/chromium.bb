@@ -2099,11 +2099,18 @@ split_static_library("ui") {
       "webui/print_preview/print_preview_handler.h",
       "webui/print_preview/print_preview_ui.cc",
       "webui/print_preview/print_preview_ui.h",
+      "webui/print_preview/printer_backend_proxy.h",
       "webui/print_preview/printer_handler.cc",
       "webui/print_preview/printer_handler.h",
       "webui/print_preview/sticky_settings.cc",
       "webui/print_preview/sticky_settings.h",
     ]
+
+    if (is_chromeos) {
+      sources += [ "webui/print_preview/printer_backend_proxy_chromeos.cc" ]
+    } else {
+      sources += [ "webui/print_preview/printer_backend_proxy.cc" ]
+    }
   }
 
   if (is_android) {

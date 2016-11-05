@@ -22,7 +22,8 @@ class DictionaryValue;
 namespace printing {
 
 // Note: There are raw values. The |printer_name| and |printer_description|
-// require further interpretation on Mac. See existing callers for examples.
+// require further interpretation on Mac and Chrome OS. See existing callers for
+// examples.
 struct PRINTING_EXPORT PrinterBasicInfo {
   PrinterBasicInfo();
   PrinterBasicInfo(const PrinterBasicInfo& other);
