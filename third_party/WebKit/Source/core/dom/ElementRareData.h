@@ -37,14 +37,13 @@
 #include "core/dom/custom/V0CustomElementDefinition.h"
 #include "core/dom/shadow/ElementShadow.h"
 #include "core/html/ClassList.h"
-#include "core/layout/LayoutObject.h"
-#include "core/style/StyleInheritedData.h"
 #include "platform/heap/Handle.h"
 #include "wtf/HashSet.h"
 #include <memory>
 
 namespace blink {
 
+class LayoutObject;
 class CompositorProxiedPropertySet;
 class ResizeObservation;
 class ResizeObserver;

@@ -56,7 +56,6 @@
 #include "core/html/HTMLTableCellElement.h"
 #include "core/html/HTMLUListElement.h"
 #include "core/layout/LayoutObject.h"
-#include "core/layout/LayoutTableCell.h"
 #include "wtf/Assertions.h"
 #include "wtf/StdLibExtras.h"
 #include "wtf/text/StringBuilder.h"
@@ -1501,8 +1500,7 @@ bool isEmptyTableCell(const Node* node) {
 
   // Check that the table cell contains no child layoutObjects except for
   // perhaps a single <br>.
-  LayoutObject* childLayoutObject =
-      toLayoutTableCell(layoutObject)->firstChild();
+  LayoutObject* childLayoutObject = layoutObject->slowFirstChild();
   if (!childLayoutObject)
     return true;
   if (!childLayoutObject->isBR())

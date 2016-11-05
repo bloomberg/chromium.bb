@@ -6,7 +6,6 @@
 #include "core/dom/Element.h"
 #include "core/dom/StyleEngine.h"
 #include "core/frame/FrameView.h"
-#include "core/layout/LayoutObject.h"
 #include "core/testing/DummyPageHolder.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include <memory>

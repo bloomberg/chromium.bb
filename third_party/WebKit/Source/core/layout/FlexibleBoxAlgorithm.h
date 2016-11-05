@@ -32,11 +32,15 @@
 #define FlexibleBoxAlgorithm_h
 
 #include "core/CoreExport.h"
-#include "core/layout/LayoutBox.h"
 #include "core/layout/OrderIterator.h"
+#include "core/style/ComputedStyle.h"
+#include "platform/LayoutUnit.h"
 #include "wtf/Noncopyable.h"
+#include "wtf/Vector.h"
 
 namespace blink {
+
+class LayoutBox;
 
 class FlexItem {
  public:

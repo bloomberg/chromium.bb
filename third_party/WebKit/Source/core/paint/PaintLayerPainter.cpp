@@ -5,7 +5,6 @@
 #include "core/paint/PaintLayerPainter.h"
 
 #include "core/frame/LocalFrame.h"
-#include "core/layout/LayoutInline.h"
 #include "core/layout/LayoutView.h"
 #include "core/paint/ClipPathClipper.h"
 #include "core/paint/FilterPainter.h"

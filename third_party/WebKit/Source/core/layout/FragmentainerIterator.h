@@ -5,10 +5,12 @@
 #ifndef FragmentainerIterator_h
 #define FragmentainerIterator_h
 
-#include "core/layout/LayoutFlowThread.h"
+#include "platform/geometry/LayoutRect.h"
 
 namespace blink {
 
+class LayoutFlowThread;
+class LayoutMultiColumnSet;
 class MultiColumnFragmentainerGroup;
 
 // Used to find the fragmentainers that intersect with a given portion of the

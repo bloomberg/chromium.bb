@@ -7,8 +7,7 @@
 #include "core/dom/Document.h"
 #include "core/dom/Element.h"
 #include "core/frame/FrameView.h"
-#include "core/layout/LayoutBox.h"
-#include "core/layout/LayoutObject.h"
+#include "core/layout/LayoutBoxModelObject.h"
 #include "core/paint/PaintLayerScrollableArea.h"
 
 namespace blink {
@@ -31,7 +30,7 @@ ScrollableArea* scrollableAreaFor(const Element& element) {
     return nullptr;
 
   return static_cast<PaintInvalidationCapableScrollableArea*>(
-      toLayoutBox(element.layoutObject())->getScrollableArea());
+      toLayoutBoxModelObject(element.layoutObject())->getScrollableArea());
 }
 
 }  // namespace RootScrollerUtil

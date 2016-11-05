@@ -32,7 +32,6 @@
 #include "core/editing/EditingUtilities.h"
 #include "core/editing/SelectionAdjuster.h"
 #include "core/editing/iterators/CharacterIterator.h"
-#include "core/layout/LayoutObject.h"
 #include "platform/geometry/LayoutPoint.h"
 #include "wtf/Assertions.h"
 #include "wtf/text/CString.h"

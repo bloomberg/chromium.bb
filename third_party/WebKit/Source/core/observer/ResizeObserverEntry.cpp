@@ -6,7 +6,6 @@
 
 #include "core/dom/ClientRect.h"
 #include "core/dom/Element.h"
-#include "core/layout/LayoutBox.h"
 #include "core/observer/ResizeObservation.h"
 
 namespace blink {

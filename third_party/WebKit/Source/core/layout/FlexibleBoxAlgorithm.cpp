@@ -30,6 +30,8 @@
 
 #include "core/layout/FlexibleBoxAlgorithm.h"
 
+#include "core/layout/LayoutBox.h"
+
 namespace blink {
 
 FlexItem::FlexItem(LayoutBox* box,

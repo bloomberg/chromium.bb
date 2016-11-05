@@ -30,7 +30,6 @@
 #include "core/html/HTMLContentElement.h"
 #include "core/html/HTMLDivElement.h"
 #include "core/html/parser/HTMLParserIdioms.h"
-#include "core/layout/LayoutObject.h"
 #include "core/style/ComputedStyle.h"
 
 namespace blink {
@@ -62,7 +61,7 @@ LayoutObject* HTMLMeterElement::createLayoutObject(const ComputedStyle& style) {
     default:
       break;
   }
-  return LayoutObject::createObject(this, style);
+  return LabelableElement::createLayoutObject(style);
 }
 
 void HTMLMeterElement::parseAttribute(const QualifiedName& name,

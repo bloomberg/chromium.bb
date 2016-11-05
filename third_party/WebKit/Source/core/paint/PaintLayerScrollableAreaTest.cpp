@@ -5,7 +5,7 @@
 #include "core/paint/PaintLayerScrollableArea.h"
 
 #include "core/frame/FrameView.h"
-#include "core/layout/LayoutBlock.h"
+#include "core/layout/LayoutBoxModelObject.h"
 #include "core/layout/LayoutTestHelper.h"
 #include "core/paint/PaintLayer.h"
 #include "platform/graphics/GraphicsLayer.h"
@@ -21,7 +21,7 @@ class PaintLayerScrollableAreaTest : public RenderingTest {
 
   bool canPaintBackgroundOntoScrollingContentsLayer(const char* elementId) {
     PaintLayer* paintLayer =
-        toLayoutBlock(getLayoutObjectByElementId(elementId))->layer();
+        toLayoutBoxModelObject(getLayoutObjectByElementId(elementId))->layer();
     return paintLayer->canPaintBackgroundOntoScrollingContentsLayer();
   }
 
