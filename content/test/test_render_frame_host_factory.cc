@@ -29,7 +29,8 @@ TestRenderFrameHostFactory::CreateRenderFrameHost(
     FrameTreeNode* frame_tree_node,
     int32_t routing_id,
     int32_t widget_routing_id,
-    bool hidden) {
+    bool hidden,
+    bool renderer_initiated_creation) {
   return base::MakeUnique<TestRenderFrameHost>(
       site_instance, render_view_host, delegate, rwh_delegate, frame_tree,
       frame_tree_node, routing_id, widget_routing_id, hidden);

@@ -36,7 +36,8 @@ class TestRenderFrameHostFactory : public RenderFrameHostFactory {
       FrameTreeNode* frame_tree_node,
       int32_t routing_id,
       int32_t widget_routing_id,
-      bool hidden) override;
+      bool hidden,
+      bool renderer_initiated_creation) override;
 
  private:
   DISALLOW_COPY_AND_ASSIGN(TestRenderFrameHostFactory);

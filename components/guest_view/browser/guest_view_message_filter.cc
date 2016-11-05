@@ -133,12 +133,6 @@ void GuestViewMessageFilter::OnAttachToEmbedderFrame(
   auto* embedder_frame = RenderFrameHost::FromID(
       render_process_id_, embedder_local_render_frame_id);
 
-  // Attach this inner WebContents |guest_web_contents| to the outer
-  // WebContents |owner_web_contents|. The outer WebContents's
-  // frame |embedder_frame| hosts the inner WebContents.
-  guest_web_contents->AttachToOuterWebContentsFrame(owner_web_contents,
-                                                    embedder_frame);
-
   // Update the guest manager about the attachment.
   // This sets up the embedder and guest pairing information inside
   // the manager.
@@ -151,6 +145,14 @@ void GuestViewMessageFilter::OnAttachToEmbedderFrame(
   guest->WillAttach(
       owner_web_contents, element_instance_id, false,
       base::Bind(&GuestViewMessageFilter::WillAttachCallback, this, guest));
+
+  // Attach this inner WebContents |guest_web_contents| to the outer
+  // WebContents |owner_web_contents|. The outer WebContents's
+  // frame |embedder_frame| hosts the inner WebContents.
+  // NOTE: this must be called last, because it could unblock pending requests
+  // which depend on the WebViewGuest being initialized which happens above.
+  guest_web_contents->AttachToOuterWebContentsFrame(owner_web_contents,
+                                                    embedder_frame);
 }
 
 void GuestViewMessageFilter::WillAttachCallback(GuestViewBase* guest) {

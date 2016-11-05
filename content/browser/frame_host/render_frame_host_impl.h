@@ -590,7 +590,8 @@ class CONTENT_EXPORT RenderFrameHostImpl
                       FrameTreeNode* frame_tree_node,
                       int32_t routing_id,
                       int32_t widget_routing_id,
-                      bool hidden);
+                      bool hidden,
+                      bool renderer_initiated_creation);
 
  private:
   friend class TestRenderFrameHost;
@@ -1036,6 +1037,15 @@ class CONTENT_EXPORT RenderFrameHostImpl
 
   mojo::Binding<mojom::FrameHost> frame_host_binding_;
   mojom::FramePtr frame_;
+
+  // If this is true then this object was created in response to a renderer
+  // initiated request. Init() will be called, and until then navigation
+  // requests should be queued.
+  bool waiting_for_init_;
+
+  typedef std::pair<CommonNavigationParams, BeginNavigationParams>
+      PendingNavigation;
+  std::unique_ptr<PendingNavigation> pendinging_navigate_;
 
   // Callback for responding when
   // |FrameHostMsg_TextSurroundingSelectionResponse| message comes.

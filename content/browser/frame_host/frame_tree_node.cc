@@ -161,7 +161,7 @@ FrameTreeNode* FrameTreeNode::AddChild(std::unique_ptr<FrameTreeNode> child,
   child->render_manager()->Init(
       render_manager_.current_host()->GetSiteInstance(),
       render_manager_.current_host()->GetRoutingID(), frame_routing_id,
-      MSG_ROUTING_NONE);
+      MSG_ROUTING_NONE, false);
 
   // Other renderer processes in this BrowsingInstance may need to find out
   // about the new frame.  Create a proxy for the child frame in all

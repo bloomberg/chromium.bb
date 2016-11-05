@@ -1565,7 +1565,8 @@ void WebContentsImpl::Init(const WebContents::CreateParams& params) {
 
   GetRenderManager()->Init(site_instance.get(), view_routing_id,
                            params.main_frame_routing_id,
-                           main_frame_widget_routing_id);
+                           main_frame_widget_routing_id,
+                           params.renderer_initiated_creation);
 
   // blink::FrameTree::setName always keeps |unique_name| empty in case of a
   // main frame - let's do the same thing here.
@@ -2066,10 +2067,15 @@ void WebContentsImpl::CreateNewWindow(
       // delete the RenderView that had already been created.
       Send(new ViewMsg_Close(route_id));
     }
+    // Note: even though we're not creating a WebContents here, it could have
+    // been created by the embedder so ensure that the RenderFrameHost is
+    // properly initialized.
     // It's safe to only target the frame because the render process will not
     // have a chance to create more frames at this point.
-    ResourceDispatcherHostImpl::ResumeBlockedRequestsForRouteFromUI(
-        GlobalFrameRoutingId(render_process_id, main_frame_route_id));
+    RenderFrameHostImpl* rfh =
+        RenderFrameHostImpl::FromID(render_process_id, main_frame_route_id);
+    if (rfh)
+      rfh->Init();
     return;
   }
 

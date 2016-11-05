@@ -270,7 +270,8 @@ RenderFrameHostImpl::RenderFrameHostImpl(SiteInstance* site_instance,
                                          FrameTreeNode* frame_tree_node,
                                          int32_t routing_id,
                                          int32_t widget_routing_id,
-                                         bool hidden)
+                                         bool hidden,
+                                         bool renderer_initiated_creation)
     : render_view_host_(render_view_host),
       delegate_(delegate),
       site_instance_(static_cast<SiteInstanceImpl*>(site_instance)),
@@ -299,6 +300,7 @@ RenderFrameHostImpl::RenderFrameHostImpl(SiteInstance* site_instance,
       should_reuse_web_ui_(false),
       last_navigation_lofi_state_(LOFI_UNSPECIFIED),
       frame_host_binding_(this),
+      waiting_for_init_(renderer_initiated_creation),
       weak_ptr_factory_(this) {
   frame_tree_->AddRenderViewHostRef(render_view_host_);
   GetProcess()->AddRoute(routing_id_, this);
@@ -935,6 +937,16 @@ void RenderFrameHostImpl::SetRenderFrameCreated(bool created) {
 
 void RenderFrameHostImpl::Init() {
   ResourceDispatcherHost::ResumeBlockedRequestsForFrameFromUI(this);
+  if (!waiting_for_init_)
+    return;
+
+  waiting_for_init_ = false;
+  if (pendinging_navigate_) {
+    frame_tree_node()->navigator()->OnBeginNavigation(
+        frame_tree_node(), pendinging_navigate_->first,
+        pendinging_navigate_->second);
+    pendinging_navigate_.reset();
+  }
 }
 
 void RenderFrameHostImpl::OnAddMessageToConsole(
@@ -1811,6 +1823,13 @@ void RenderFrameHostImpl::OnBeginNavigation(
     return;
   CommonNavigationParams validated_params = common_params;
   GetProcess()->FilterURL(false, &validated_params.url);
+
+  if (waiting_for_init_) {
+    pendinging_navigate_ =
+        base::MakeUnique<PendingNavigation>(validated_params, begin_params);
+    return;
+  }
+
   frame_tree_node()->navigator()->OnBeginNavigation(
       frame_tree_node(), validated_params, begin_params);
 }
