@@ -118,7 +118,7 @@ ContextGroup::ContextGroup(
 bool ContextGroup::Initialize(GLES2Decoder* decoder,
                               ContextType context_type,
                               const DisallowedFeatures& disallowed_features) {
-  if (!gpu_preferences_.enable_unsafe_es3_apis &&
+  if (!gpu_preferences_.enable_es3_apis &&
       (context_type == CONTEXT_TYPE_OPENGLES3 ||
        context_type == CONTEXT_TYPE_WEBGL2)) {
     DLOG(ERROR) << "ContextGroup::Initialize failed because ES3 APIs are "
