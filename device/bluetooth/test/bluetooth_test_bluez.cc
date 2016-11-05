@@ -94,7 +94,7 @@ BluetoothDevice* BluetoothTestBlueZ::SimulateLowEnergyDevice(
   if (device_ordinal > 6 || device_ordinal < 1)
     return nullptr;
 
-  std::string device_name = kTestDeviceName;
+  base::Optional<std::string> device_name = kTestDeviceName;
   std::string device_address = kTestDeviceAddress1;
   std::vector<std::string> service_uuids;
   BluetoothTransport device_type = BLUETOOTH_TRANSPORT_LE;
@@ -116,9 +116,7 @@ BluetoothDevice* BluetoothTestBlueZ::SimulateLowEnergyDevice(
       device_address = kTestDeviceAddress2;
       break;
     case 5:
-      // TODO: implement. See crbug.com/622432
-      NOTIMPLEMENTED();
-      return nullptr;
+      device_name = base::nullopt;
     case 6:
       device_address = kTestDeviceAddress2;
       device_type = BLUETOOTH_TRANSPORT_DUAL;
@@ -128,7 +126,8 @@ BluetoothDevice* BluetoothTestBlueZ::SimulateLowEnergyDevice(
   if (!adapter_->GetDevice(device_address)) {
     fake_bluetooth_device_client_->CreateTestDevice(
         dbus::ObjectPath(bluez::FakeBluetoothAdapterClient::kAdapterPath),
-        device_name /* name */, device_name /* alias */, device_address,
+        /* name */ device_name,
+        /* alias */ device_name.value_or("") + "(alias)", device_address,
         service_uuids, device_type);
   }
   BluetoothDevice* device = adapter_->GetDevice(device_address);

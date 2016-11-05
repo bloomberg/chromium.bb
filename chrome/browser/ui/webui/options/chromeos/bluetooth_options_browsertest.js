@@ -24,7 +24,7 @@ BluetoothWebUITestAsync.prototype = {
     address: '00:11:22:33:44:55',
     connectable: true,
     connected: false,
-    name: 'Fake Device (alias)',
+    name: 'Fake Device (name)',
     paired: true
   },
 
@@ -32,7 +32,7 @@ BluetoothWebUITestAsync.prototype = {
     address: '20:7D:74:00:00:04',
     connectable: false,
     connected: false,
-    name: 'Paired Unconnectable Device (alias)',
+    name: 'Paired Unconnectable Device (name)',
     paired: true
   },
 
