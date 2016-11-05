@@ -12,6 +12,10 @@
 
 class SkCanvas;
 
+namespace base {
+class WaitableEvent;
+}
+
 namespace cc {
 
 class RecordingSource;

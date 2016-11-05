@@ -20,9 +20,6 @@
 #include "base/threading/thread_checker_impl.h"
 
 namespace base {
-
-class WaitableEvent;
-
 namespace internal {
 namespace test {
 

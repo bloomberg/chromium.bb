@@ -30,7 +30,6 @@ class SchedulerWorkerPoolParams;
 namespace internal {
 
 class DelayedTaskManager;
-class SchedulerServiceThread;
 class TaskTracker;
 
 // Default TaskScheduler implementation. This class is thread-safe.
