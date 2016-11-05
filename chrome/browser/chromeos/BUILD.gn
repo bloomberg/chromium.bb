@@ -201,8 +201,6 @@ source_set("chromeos") {
     "arc/arc_auth_context.cc",
     "arc/arc_auth_context.h",
     "arc/arc_auth_context_delegate.h",
-    "arc/arc_auth_notification.cc",
-    "arc/arc_auth_notification.h",
     "arc/arc_auth_service.cc",
     "arc/arc_auth_service.h",
     "arc/arc_optin_uma.cc",

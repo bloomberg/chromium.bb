@@ -15,7 +15,6 @@
 #include "base/time/time.h"
 #include "chrome/browser/chromeos/arc/arc_auth_code_fetcher.h"
 #include "chrome/browser/chromeos/arc/arc_auth_context.h"
-#include "chrome/browser/chromeos/arc/arc_auth_notification.h"
 #include "chrome/browser/chromeos/arc/arc_optin_uma.h"
 #include "chrome/browser/chromeos/arc/arc_support_host.h"
 #include "chrome/browser/chromeos/arc/policy/arc_android_management_checker.h"
@@ -205,6 +204,7 @@ void ArcAuthService::RegisterProfilePrefs(
   // only.
   registry->RegisterBooleanPref(prefs::kArcEnabled, false);
   registry->RegisterBooleanPref(prefs::kArcSignedIn, false);
+  registry->RegisterBooleanPref(prefs::kArcTermsAccepted, false);
   registry->RegisterBooleanPref(prefs::kArcBackupRestoreEnabled, true);
   registry->RegisterBooleanPref(prefs::kArcLocationServiceEnabled, true);
 }
@@ -583,11 +583,6 @@ void ArcAuthService::OnIsSyncingChanged() {
 
   if (IsArcEnabled())
     OnOptInPreferenceChanged();
-
-  if (!g_disable_ui_for_testing && profile_->IsNewProfile() &&
-      !profile_->GetPrefs()->HasPrefPath(prefs::kArcEnabled)) {
-    ArcAuthNotification::Show(profile_);
-  }
 }
 
 void ArcAuthService::Shutdown() {
@@ -631,7 +626,8 @@ void ArcAuthService::OnContextReady() {
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
 
   // TODO(hidehiko): The check is not necessary if this is a part of re-auth
-  // flow. Remove this.
+  // flow and OOBE OptIn where Android Management check must be a part of
+  // checking if Arc OptIn should be skip. Remove this.
   android_management_checker_.reset(new ArcAndroidManagementChecker(
       profile_, context_->token_service(), context_->account_id(),
       false /* retry_on_error */));
@@ -662,6 +658,7 @@ void ArcAuthService::OnSyncedPrefChanged(const std::string& path,
 void ArcAuthService::StopArc() {
   if (state_ != State::STOPPED) {
     profile_->GetPrefs()->SetBoolean(prefs::kArcSignedIn, false);
+    profile_->GetPrefs()->SetBoolean(prefs::kArcTermsAccepted, false);
   }
   ShutdownBridgeAndCloseUI();
 }
@@ -689,8 +686,14 @@ void ArcAuthService::OnOptInPreferenceChanged() {
   auth_code_.clear();
 
   if (!profile_->GetPrefs()->GetBoolean(prefs::kArcSignedIn)) {
-    // Need pre-fetch auth code and show OptIn UI if needed.
-    StartUI();
+    if (profile_->GetPrefs()->GetBoolean(prefs::kArcTermsAccepted)) {
+      // Need pre-fetch auth code and start Arc.
+      SetState(State::FETCHING_CODE);
+      PrepareContextForAuthCodeRequest();
+    } else {
+      // Need pre-fetch auth code and show OptIn UI if needed.
+      StartUI();
+    }
   } else {
     // Ready to start Arc, but check Android management in parallel.
     StartArc();
@@ -747,10 +750,9 @@ void ArcAuthService::RemoveObserver(Observer* observer) {
 void ArcAuthService::CloseUI() {
   ui_page_ = UIPage::NO_PAGE;
   ui_page_status_.clear();
+
   if (support_host_)
     support_host_->Close();
-  if (!g_disable_ui_for_testing)
-    ArcAuthNotification::Hide();
 }
 
 void ArcAuthService::SetUIPage(UIPage page, const base::string16& status) {
@@ -813,6 +815,9 @@ void ArcAuthService::OnArcSignInTimeout() {
 
 void ArcAuthService::StartLso() {
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
+
+  // Terms were accepted
+  profile_->GetPrefs()->SetBoolean(prefs::kArcTermsAccepted, true);
 
   // Update UMA only if error (with or without feedback) is currently shown.
   if (ui_page_ == UIPage::ERROR) {
