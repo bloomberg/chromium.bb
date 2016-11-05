@@ -15,6 +15,7 @@
 namespace ui {
 
 namespace test {
+class CountCheckingLayerAnimationObserver;
 class LayerAnimationObserverTestApi;
 }  // namespace test
 
@@ -81,6 +82,7 @@ class COMPOSITOR_EXPORT LayerAnimationObserver  {
 
  private:
   friend class LayerAnimationSequence;
+  friend class test::CountCheckingLayerAnimationObserver;
   friend class test::LayerAnimationObserverTestApi;
 
   // Called when |this| is added to |sequence|'s observer list.

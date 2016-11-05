@@ -846,16 +846,18 @@ bool LayerAnimator::StartSequenceImmediately(LayerAnimationSequence* sequence) {
 
   if (!sequence->animation_group_id())
     sequence->set_animation_group_id(cc::AnimationIdProvider::NextGroupId());
-  if (!sequence->waiting_for_group_start() ||
-      sequence->IsFirstElementThreaded()) {
-    sequence->set_start_time(start_time);
-    sequence->Start(delegate());
-  }
+
   running_animations_.push_back(
       RunningAnimation(sequence->AsWeakPtr()));
 
   // Need to keep a reference to the animation.
   AddToQueueIfNotPresent(sequence);
+
+  if (!sequence->waiting_for_group_start() ||
+      sequence->IsFirstElementThreaded()) {
+    sequence->set_start_time(start_time);
+    sequence->Start(delegate());
+  }
 
   // Ensure that animations get stepped at their start time.
   Step(start_time);
