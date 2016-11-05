@@ -1752,6 +1752,15 @@ void DXVAVideoDecodeAccelerator::ProcessPendingSamples() {
 
       pending_sample->picture_buffer_id = index->second->id();
       index->second->set_bound();
+
+      // We only propagate the input color space if we can give the raw YUV data
+      // back to the browser process. When we cannot return the YUV data, we
+      // have to do a copy to an RGBA texture, which makes proper color
+      // management difficult as some fidelity is lost. Also, we currently let
+      // the drivers decide how to actually do the YUV to RGB conversion, which
+      // means that even if we wanted to try to color-adjust the RGB output, we
+      // don't actually know exactly what color space it is in anymore.
+      // TODO(hubbe): Figure out a way to always return the raw YUV data.
       if (share_nv12_textures_ || copy_nv12_textures_) {
         index->second->set_color_space(pending_sample->color_space);
       }
