@@ -963,15 +963,12 @@ bool ComputedStyle::diffNeedsPaintInvalidationSubtree(
 
 bool ComputedStyle::diffNeedsPaintInvalidationObject(
     const ComputedStyle& other) const {
-  if (!m_background->outline().visuallyEqual(other.m_background->outline()))
-    return true;
-
   if (visibility() != other.visibility() ||
       m_inheritedData.m_printColorAdjust !=
           other.m_inheritedData.m_printColorAdjust ||
       m_inheritedData.m_insideLink != other.m_inheritedData.m_insideLink ||
       !m_surround->border.visuallyEqual(other.m_surround->border) ||
-      !m_background->visuallyEqual(*other.m_background))
+      *m_background != *other.m_background)
     return true;
 
   if (m_rareInheritedData.get() != other.m_rareInheritedData.get()) {
@@ -997,6 +994,8 @@ bool ComputedStyle::diffNeedsPaintInvalidationObject(
             *other.m_rareNonInheritedData.get()) ||
         !m_rareNonInheritedData->clipPathDataEquivalent(
             *other.m_rareNonInheritedData.get()) ||
+        !m_rareNonInheritedData->m_outline.visuallyEqual(
+            other.m_rareNonInheritedData->m_outline) ||
         (visitedLinkBorderLeftColor() != other.visitedLinkBorderLeftColor() &&
          borderLeftWidth()) ||
         (visitedLinkBorderRightColor() != other.visitedLinkBorderRightColor() &&
@@ -1087,10 +1086,13 @@ void ComputedStyle::updatePropertySpecificDifferences(
     if (!m_rareNonInheritedData->reflectionDataEquivalent(
             *other.m_rareNonInheritedData.get()))
       diff.setFilterChanged();
+
+    if (!m_rareNonInheritedData->m_outline.visuallyEqual(
+            other.m_rareNonInheritedData->m_outline))
+      diff.setNeedsRecomputeOverflow();
   }
 
-  if (!m_background->outline().visuallyEqual(other.m_background->outline()) ||
-      !m_surround->border.visualOverflowEqual(other.m_surround->border))
+  if (!m_surround->border.visualOverflowEqual(other.m_surround->border))
     diff.setNeedsRecomputeOverflow();
 
   if (!diff.needsPaintInvalidation()) {

@@ -25,8 +25,8 @@
 #ifndef StyleBackgroundData_h
 #define StyleBackgroundData_h
 
+#include "core/css/StyleColor.h"
 #include "core/style/FillLayer.h"
-#include "core/style/OutlineValue.h"
 #include "platform/graphics/Color.h"
 #include "wtf/PassRefPtr.h"
 #include "wtf/RefCounted.h"
@@ -49,11 +49,8 @@ class CORE_EXPORT StyleBackgroundData : public RefCounted<StyleBackgroundData> {
   bool operator==(const StyleBackgroundData&) const;
   bool operator!=(const StyleBackgroundData& o) const { return !(*this == o); }
 
-  bool visuallyEqual(const StyleBackgroundData&) const;
-
   const FillLayer& background() const { return m_background; }
   const StyleColor& color() const { return m_color; }
-  const OutlineValue& outline() const { return m_outline; }
 
  private:
   friend class ComputedStyle;
@@ -63,7 +60,6 @@ class CORE_EXPORT StyleBackgroundData : public RefCounted<StyleBackgroundData> {
 
   FillLayer m_background;
   StyleColor m_color;
-  OutlineValue m_outline;
 };
 
 }  // namespace blink

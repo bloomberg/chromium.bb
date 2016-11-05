@@ -35,6 +35,7 @@
 #include "core/style/FillLayer.h"
 #include "core/style/LineClampValue.h"
 #include "core/style/NinePieceImage.h"
+#include "core/style/OutlineValue.h"
 #include "core/style/ShapeValue.h"
 #include "core/style/StyleContentAlignmentData.h"
 #include "core/style/StyleScrollSnapData.h"
@@ -153,6 +154,8 @@ class CORE_EXPORT StyleRareNonInheritedData
 
   FloatSize m_pageSize;
   Length m_shapeMargin;
+
+  OutlineValue m_outline;
 
   StyleColor m_textDecorationColor;
   StyleColor m_visitedLinkTextDecorationColor;

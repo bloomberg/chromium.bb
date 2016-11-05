@@ -48,9 +48,6 @@ class StyleDifference {
   bool needsPaintInvalidation() const {
     return m_paintInvalidationType != NoPaintInvalidation;
   }
-  void clearNeedsPaintInvalidation() {
-    m_paintInvalidationType = NoPaintInvalidation;
-  }
 
   // The object just needs to issue paint invalidations.
   bool needsPaintInvalidationObject() const {

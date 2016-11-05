@@ -54,6 +54,7 @@ class SameSizeStyleRareNonInheritedData
   NinePieceImage ninePieces;
   FloatSize floatSize;
   Length lengths;
+  OutlineValue outline;
 
   StyleColor styleColors[8];
 
@@ -169,6 +170,7 @@ StyleRareNonInheritedData::StyleRareNonInheritedData(
       m_maskBoxImage(o.m_maskBoxImage),
       m_pageSize(o.m_pageSize),
       m_shapeMargin(o.m_shapeMargin),
+      m_outline(o.m_outline),
       m_textDecorationColor(o.m_textDecorationColor),
       m_visitedLinkTextDecorationColor(o.m_visitedLinkTextDecorationColor),
       m_visitedLinkBackgroundColor(o.m_visitedLinkBackgroundColor),
@@ -242,7 +244,7 @@ bool StyleRareNonInheritedData::operator==(
          transitionDataEquivalent(o) && shapeOutsideDataEquivalent(o) &&
          m_mask == o.m_mask && m_maskBoxImage == o.m_maskBoxImage &&
          m_pageSize == o.m_pageSize && m_shapeMargin == o.m_shapeMargin &&
-         clipPathDataEquivalent(o) &&
+         m_outline == o.m_outline && clipPathDataEquivalent(o) &&
          m_textDecorationColor == o.m_textDecorationColor &&
          m_visitedLinkTextDecorationColor ==
              o.m_visitedLinkTextDecorationColor &&
