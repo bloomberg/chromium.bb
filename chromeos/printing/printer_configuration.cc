@@ -6,11 +6,18 @@
 
 #include <string>
 
+#include "base/guid.h"
+
 namespace chromeos {
 
-Printer::Printer() {}
+Printer::Printer() {
+  id_ = base::GenerateGUID();
+}
 
-Printer::Printer(const std::string& id) : id_(id) {}
+Printer::Printer(const std::string& id) : id_(id) {
+  if (id_.empty())
+    id_ = base::GenerateGUID();
+}
 
 Printer::Printer(const Printer& other) = default;
 

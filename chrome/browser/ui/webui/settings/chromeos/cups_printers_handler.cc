@@ -204,20 +204,28 @@ void CupsPrintersHandler::HandleAddCupsPrinter(const base::ListValue* args) {
   std::string printer_uri =
       printer_protocol + "://" + printer_address + "/" + printer_queue;
 
-  std::unique_ptr<Printer> printer = base::MakeUnique<Printer>();
-  printer->set_id(printer_id);
+  std::unique_ptr<Printer> printer = base::MakeUnique<Printer>(printer_id);
+  printer_id = printer->id();
   printer->set_display_name(printer_name);
   printer->set_description(printer_description);
   printer->set_manufacturer(printer_manufacturer);
   printer->set_model(printer_model);
   printer->set_uri(printer_uri);
+  if (!printer_ppd_path.empty()) {
+    printer->mutable_ppd_reference()->user_supplied_ppd_url = printer_ppd_path;
+  } else if (!printer_manufacturer.empty() && !printer_model.empty()) {
+    Printer::PpdReference* ppd = printer->mutable_ppd_reference();
+    ppd->effective_manufacturer = printer_manufacturer;
+    ppd->effective_model = printer_model;
+  }
 
   chromeos::DebugDaemonClient* client =
       chromeos::DBusThreadManager::Get()->GetDebugDaemonClient();
   client->CupsAddPrinter(
-      printer_name, printer_uri,
-      printer_ppd_path,
-      printer_ppd_path.empty() ? true : false,       // ipp everywhere
+      printer_id,                               // record id
+      printer_uri,                              // uri
+      printer_ppd_path,                         // ppd location
+      printer_ppd_path.empty() ? true : false,  // ipp everywhere
       base::Bind(&CupsPrintersHandler::OnAddedPrinter,
                  weak_factory_.GetWeakPtr(), base::Passed(std::move(printer))),
       base::Bind(&CupsPrintersHandler::OnAddPrinterError,
