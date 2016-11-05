@@ -50,13 +50,13 @@ enum ParseResultType {
 
 // Record parsing errors of an update result.
 void RecordParseUpdateResult(ParseResultType result_type) {
-  UMA_HISTOGRAM_ENUMERATION("SafeBrowsing.ParseV4UpdateResult", result_type,
+  UMA_HISTOGRAM_ENUMERATION("SafeBrowsing.V4Update.Parse.Result", result_type,
                             PARSE_RESULT_TYPE_MAX);
 }
 
 void RecordUpdateResult(safe_browsing::V4OperationResult result) {
   UMA_HISTOGRAM_ENUMERATION(
-      "SafeBrowsing.V4UpdateResult", result,
+      "SafeBrowsing.V4Update.Result", result,
       safe_browsing::V4OperationResult::OPERATION_RESULT_MAX);
 }
 
@@ -308,7 +308,7 @@ void V4UpdateProtocolManager::OnURLFetchComplete(
   int response_code = source->GetResponseCode();
   net::URLRequestStatus status = source->GetStatus();
   V4ProtocolManagerUtil::RecordHttpResponseOrErrorCode(
-      "SafeBrowsing.V4UpdateHttpResponseOrErrorCode", status, response_code);
+      "SafeBrowsing.V4Update.Network.Result", status, response_code);
 
   last_response_time_ = Time::Now();
 
@@ -325,7 +325,7 @@ void V4UpdateProtocolManager::OnURLFetchComplete(
     }
     request_.reset();
 
-    UMA_HISTOGRAM_COUNTS("SafeBrowsing.V4UpdateResponseSizeKB",
+    UMA_HISTOGRAM_COUNTS("SafeBrowsing.V4Update.ResponseSizeKB",
                          data.size() / 1024);
 
     // The caller should update its state now, based on parsed_server_response.
