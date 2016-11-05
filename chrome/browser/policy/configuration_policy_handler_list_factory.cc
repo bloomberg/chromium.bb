@@ -605,6 +605,10 @@ const PolicyToPreferenceMapEntry kSimplePolicyMap[] = {
     base::Value::TYPE_BOOLEAN },
 
 #if defined(OS_CHROMEOS)
+  { key::kNetworkThrottlingEnabled,
+    prefs::kNetworkThrottlingEnabled,
+    base::Value::TYPE_DICTIONARY },
+
   { key::kAllowScreenLock, prefs::kAllowScreenLock, base::Value::TYPE_BOOLEAN },
 #endif
 };
