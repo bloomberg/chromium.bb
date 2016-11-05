@@ -86,7 +86,8 @@ class EVENTS_EXPORT GestureRecognizerImpl : public GestureRecognizer,
   // Convenience method to find the GestureEventHelper that can dispatch events
   // to a specific |consumer|.
   GestureEventHelper* FindDispatchHelperForConsumer(GestureConsumer* consumer);
-  std::map<GestureConsumer*, GestureProviderAura*> consumer_gesture_provider_;
+  std::map<GestureConsumer*, std::unique_ptr<GestureProviderAura>>
+      consumer_gesture_provider_;
 
   // |touch_id_target_| maps a touch-id to its target window.
   // touch-ids are removed from |touch_id_target_| on

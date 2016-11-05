@@ -4,8 +4,8 @@
 
 #include "ui/events/ozone/evdev/touch_noise/touch_noise_finder.h"
 
+#include "base/memory/ptr_util.h"
 #include "base/metrics/histogram_macros.h"
-#include "base/stl_util.h"
 #include "ui/events/event_utils.h"
 #include "ui/events/ozone/evdev/touch_noise/far_apart_taps_touch_noise_filter.h"
 #include "ui/events/ozone/evdev/touch_noise/horizontally_aligned_touch_noise_filter.h"
@@ -15,13 +15,12 @@
 namespace ui {
 
 TouchNoiseFinder::TouchNoiseFinder() : last_noise_time_(ui::EventTimeForNow()) {
-  filters_.push_back(new FarApartTapsTouchNoiseFilter);
-  filters_.push_back(new HorizontallyAlignedTouchNoiseFilter);
-  filters_.push_back(new SinglePositionTouchNoiseFilter);
+  filters_.push_back(base::MakeUnique<FarApartTapsTouchNoiseFilter>());
+  filters_.push_back(base::MakeUnique<HorizontallyAlignedTouchNoiseFilter>());
+  filters_.push_back(base::MakeUnique<SinglePositionTouchNoiseFilter>());
 }
 
 TouchNoiseFinder::~TouchNoiseFinder() {
-  base::STLDeleteElements(&filters_);
 }
 
 void TouchNoiseFinder::HandleTouches(
@@ -34,7 +33,7 @@ void TouchNoiseFinder::HandleTouches(
 
   bool had_noise = slots_with_noise_.any();
 
-  for (TouchNoiseFilter* filter : filters_)
+  for (const auto& filter : filters_)
     filter->Filter(touches, time, &slots_with_noise_);
 
   RecordUMA(had_noise, time);

@@ -11,7 +11,6 @@
 #include <utility>
 
 #include "base/memory/ptr_util.h"
-#include "base/stl_util.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "base/threading/worker_pool.h"
 #include "base/time/time.h"
@@ -161,7 +160,6 @@ InputDeviceFactoryEvdev::InputDeviceFactoryEvdev(
 }
 
 InputDeviceFactoryEvdev::~InputDeviceFactoryEvdev() {
-  base::STLDeleteValues(&converters_);
 }
 
 void InputDeviceFactoryEvdev::AddInputDevice(int id,
@@ -216,9 +214,9 @@ void InputDeviceFactoryEvdev::AttachInputDevice(
     }
 
     // Add initialized device to map.
-    converters_[path] = converter.release();
+    converters_[path] = std::move(converter);
     converters_[path]->Start();
-    UpdateDirtyFlags(converters_[path]);
+    UpdateDirtyFlags(converters_[path].get());
 
     // Sync settings to new device.
     ApplyInputDeviceSettings();
@@ -234,7 +232,7 @@ void InputDeviceFactoryEvdev::DetachInputDevice(const base::FilePath& path) {
   DCHECK(task_runner_->RunsTasksOnCurrentThread());
 
   // Remove device from map.
-  std::unique_ptr<EventConverterEvdev> converter(converters_[path]);
+  std::unique_ptr<EventConverterEvdev> converter = std::move(converters_[path]);
   converters_.erase(path);
 
   if (converter) {
@@ -313,7 +311,7 @@ void InputDeviceFactoryEvdev::ApplyInputDeviceSettings() {
                             input_device_settings_.tap_to_click_paused);
 
   for (const auto& it : converters_) {
-    EventConverterEvdev* converter = it.second;
+    EventConverterEvdev* converter = it.second.get();
     converter->SetEnabled(IsDeviceEnabled(converter));
 
     if (converter->type() == InputDeviceType::INPUT_DEVICE_INTERNAL &&
@@ -330,7 +328,7 @@ void InputDeviceFactoryEvdev::ApplyInputDeviceSettings() {
 
 void InputDeviceFactoryEvdev::ApplyCapsLockLed() {
   for (const auto& it : converters_) {
-    EventConverterEvdev* converter = it.second;
+    EventConverterEvdev* converter = it.second.get();
     converter->SetCapsLockLed(caps_lock_led_enabled_);
   }
 }
@@ -475,7 +473,7 @@ void InputDeviceFactoryEvdev::EnablePalmSuppression(bool enabled) {
   palm_suppression_enabled_ = enabled;
 
   for (const auto& it : converters_) {
-    it.second->SetEnabled(IsDeviceEnabled(it.second));
+    it.second->SetEnabled(IsDeviceEnabled(it.second.get()));
   }
 }
 

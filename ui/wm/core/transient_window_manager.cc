@@ -8,7 +8,6 @@
 #include <functional>
 
 #include "base/auto_reset.h"
-#include "base/stl_util.h"
 #include "ui/aura/client/transient_window_client_observer.h"
 #include "ui/aura/window.h"
 #include "ui/aura/window_property.h"
@@ -231,7 +230,8 @@ void TransientWindowManager::OnWindowDestroying(Window* window) {
   // parent, as destroying an active transient child may otherwise attempt to
   // refocus us.
   Windows transient_children(transient_children_);
-  base::STLDeleteElements(&transient_children);
+  for (auto* child : transient_children)
+    delete child;
   DCHECK(transient_children_.empty());
 }
 

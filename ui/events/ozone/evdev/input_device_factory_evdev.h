@@ -100,7 +100,7 @@ class EVENTS_OZONE_EVDEV_EXPORT InputDeviceFactoryEvdev {
                                  bool value);
 
   // Owned per-device event converters (by path).
-  std::map<base::FilePath, EventConverterEvdev*> converters_;
+  std::map<base::FilePath, std::unique_ptr<EventConverterEvdev>> converters_;
 
   // Task runner for our thread.
   scoped_refptr<base::TaskRunner> task_runner_;

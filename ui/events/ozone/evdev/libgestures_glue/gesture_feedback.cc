@@ -169,7 +169,8 @@ void DumpTouchDeviceStatus(GesturePropertyProvider* provider,
 
 // Dump touch event logs.
 void DumpTouchEventLog(
-    std::map<base::FilePath, EventConverterEvdev*>& converters,
+    const std::map<base::FilePath, std::unique_ptr<EventConverterEvdev>>&
+        converters,
     GesturePropertyProvider* provider,
     const base::FilePath& out_dir,
     std::unique_ptr<std::vector<base::FilePath>> log_paths,
@@ -219,8 +220,8 @@ void DumpTouchEventLog(
     log_paths->push_back(base::FilePath(evdev_log_filename));
   }
 
-  for (auto it = converters.begin(); it != converters.end(); ++it) {
-    EventConverterEvdev* converter = it->second;
+  for (const auto& converter_pair : converters) {
+    EventConverterEvdev* converter = converter_pair.second.get();
     if (converter->HasTouchscreen()) {
       converter->DumpTouchEventLog(kInputEventsLogFile);
       std::string touch_evdev_log_filename = GenerateEventLogName(

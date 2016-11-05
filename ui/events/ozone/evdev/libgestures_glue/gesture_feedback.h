@@ -35,7 +35,8 @@ void DumpTouchDeviceStatus(GesturePropertyProvider* provider,
                            std::string* status);
 
 void DumpTouchEventLog(
-    std::map<base::FilePath, EventConverterEvdev*>& converter,
+    const std::map<base::FilePath, std::unique_ptr<EventConverterEvdev>>&
+        converter,
     GesturePropertyProvider* provider,
     const base::FilePath& out_dir,
     std::unique_ptr<std::vector<base::FilePath>> log_paths,

@@ -8,6 +8,7 @@
 #include <stddef.h>
 
 #include <bitset>
+#include <memory>
 #include <vector>
 
 #include "base/macros.h"
@@ -42,10 +43,10 @@ class EVENTS_OZONE_EVDEV_EXPORT TouchNoiseFinder {
   // The slots which are noise.
   std::bitset<kNumTouchEvdevSlots> slots_with_noise_;
 
-  // The time of the previous noise occurence in any of the slots.
+  // The time of the previous noise occurrence in any of the slots.
   base::TimeTicks last_noise_time_;
 
-  std::vector<TouchNoiseFilter*> filters_;
+  std::vector<std::unique_ptr<TouchNoiseFilter>> filters_;
 
   DISALLOW_COPY_AND_ASSIGN(TouchNoiseFinder);
 };

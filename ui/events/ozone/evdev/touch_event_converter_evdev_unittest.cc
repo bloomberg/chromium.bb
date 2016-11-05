@@ -886,13 +886,13 @@ class TouchEventConverterEvdevTouchNoiseTest
   void SetTouchNoiseFilter(std::unique_ptr<TouchNoiseFilter> filter) {
     TouchNoiseFinder* finder = device()->touch_noise_finder();
     finder->filters_.clear();
-    finder->filters_.push_back(filter.release());
+    finder->filters_.push_back(std::move(filter));
   }
 
   // Returns the first of TouchNoiseFinder's filters.
   ui::TouchNoiseFilter* first_filter() {
     TouchNoiseFinder* finder = device()->touch_noise_finder();
-    return finder->filters_.empty() ? nullptr : *finder->filters_.begin();
+    return finder->filters_.empty() ? nullptr : finder->filters_.begin()->get();
   }
 
   // TouchEventConverterEvdevTest:

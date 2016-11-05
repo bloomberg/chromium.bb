@@ -5,6 +5,8 @@
 #ifndef UI_CHROMEOS_IME_CANDIDATE_WINDOW_VIEW_H_
 #define UI_CHROMEOS_IME_CANDIDATE_WINDOW_VIEW_H_
 
+#include <memory>
+
 #include "base/macros.h"
 #include "ui/base/ime/candidate_window.h"
 #include "ui/chromeos/ui_chromeos_export.h"
@@ -105,7 +107,7 @@ class UI_CHROMEOS_EXPORT CandidateWindowView
   views::View* candidate_area_;
 
   // The candidate views are used for rendering candidates.
-  std::vector<CandidateView*> candidate_views_;
+  std::vector<std::unique_ptr<CandidateView>> candidate_views_;
 
   // Current columns size in |candidate_area_|.
   gfx::Size previous_shortcut_column_size_;
@@ -115,14 +117,14 @@ class UI_CHROMEOS_EXPORT CandidateWindowView
   // The last cursor bounds.
   gfx::Rect cursor_bounds_;
 
-  // The last compostion head bounds.
+  // The last composition head bounds.
   gfx::Rect composition_head_bounds_;
 
   // True if the candidate window should be shown with aligning with composition
   // text as opposed to the cursor.
   bool should_show_at_composition_head_;
 
-  // True if the candidate window should be shonw on the upper side of
+  // True if the candidate window should be shown on the upper side of
   // composition text.
   bool should_show_upper_side_;
 

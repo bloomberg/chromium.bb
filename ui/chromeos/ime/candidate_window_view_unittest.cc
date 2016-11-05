@@ -95,7 +95,7 @@ class CandidateWindowViewTest : public views::ViewsTestBase {
   }
 
   CandidateView* GetCandidateAt(size_t i) {
-    return candidate_window_view_->candidate_views_[i];
+    return candidate_window_view_->candidate_views_[i].get();
   }
 
   void SelectCandidateAt(int index_in_page) {
