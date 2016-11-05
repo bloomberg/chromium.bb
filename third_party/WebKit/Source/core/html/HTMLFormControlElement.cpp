@@ -390,7 +390,7 @@ void HTMLFormControlElement::willCallDefaultEventHandler(const Event& event) {
                                              FocusControlState);
 }
 
-short HTMLFormControlElement::tabIndex() const {
+int HTMLFormControlElement::tabIndex() const {
   // Skip the supportsFocus check in HTMLElement.
   return Element::tabIndex();
 }

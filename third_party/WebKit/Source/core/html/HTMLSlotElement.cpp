@@ -355,7 +355,7 @@ bool HTMLSlotElement::findHostChildWithSameSlotName() const {
   return assignment.findHostChildBySlotName(name());
 }
 
-short HTMLSlotElement::tabIndex() const {
+int HTMLSlotElement::tabIndex() const {
   return Element::tabIndex();
 }
 

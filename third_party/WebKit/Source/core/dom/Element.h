@@ -685,7 +685,7 @@ class CORE_EXPORT Element : public ContainerNode {
   void clearMutableInlineStyleIfEmpty();
 
   void setTabIndex(int);
-  short tabIndex() const override;
+  int tabIndex() const override;
 
   // A compositor proxy is a very limited wrapper around an element. It
   // exposes only those properties that are requested at the time the proxy is
@@ -765,7 +765,7 @@ class CORE_EXPORT Element : public ContainerNode {
   bool supportsSpatialNavigationFocus() const;
 
   void clearTabIndexExplicitlyIfNeeded();
-  void setTabIndexExplicitly(short);
+  void setTabIndexExplicitly();
   // Subclasses may override this method to affect focusability. This method
   // must be called on an up-to-date ComputedStyle, so it may use existence of
   // layoutObject and the LayoutObject::style() to reason about focusability.

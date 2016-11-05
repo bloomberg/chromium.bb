@@ -5,14 +5,7 @@ PASS html.dir: 151 tests
 PASS html.className (<html class>): 77 tests
 PASS html.hidden: 79 tests
 PASS html.accessKey: 77 tests
-PASS html.tabIndex: 10 tests
-FAIL html.tabIndex: setAttribute() to 2147483647 followed by IDL get assert_equals: expected 2147483647 but got 32767
-PASS html.tabIndex: setAttribute() to -2147483648 followed by getAttribute() 
-FAIL html.tabIndex: setAttribute() to -2147483648 followed by IDL get assert_equals: expected -2147483648 but got -32768
-PASS html.tabIndex: 36 tests
-FAIL html.tabIndex: IDL set to 2147483647 followed by IDL get assert_equals: expected 2147483647 but got 32767
-PASS html.tabIndex: 2 tests
-FAIL html.tabIndex: IDL set to -2147483648 followed by IDL get assert_equals: expected -2147483648 but got -32768
+PASS html.tabIndex: 53 tests
 PASS html.version: 77 tests
 PASS script.title: 77 tests
 PASS script.lang: 77 tests
@@ -20,14 +13,7 @@ PASS script.dir: 151 tests
 PASS script.className (<script class>): 77 tests
 PASS script.hidden: 79 tests
 PASS script.accessKey: 77 tests
-PASS script.tabIndex: 10 tests
-FAIL script.tabIndex: setAttribute() to 2147483647 followed by IDL get assert_equals: expected 2147483647 but got 32767
-PASS script.tabIndex: setAttribute() to -2147483648 followed by getAttribute() 
-FAIL script.tabIndex: setAttribute() to -2147483648 followed by IDL get assert_equals: expected -2147483648 but got -32768
-PASS script.tabIndex: 36 tests
-FAIL script.tabIndex: IDL set to 2147483647 followed by IDL get assert_equals: expected 2147483647 but got 32767
-PASS script.tabIndex: 2 tests
-FAIL script.tabIndex: IDL set to -2147483648 followed by IDL get assert_equals: expected -2147483648 but got -32768
+PASS script.tabIndex: 53 tests
 PASS script.src: 92 tests
 PASS script.type: 77 tests
 PASS script.charset: 77 tests
@@ -39,28 +25,14 @@ PASS noscript.dir: 151 tests
 PASS noscript.className (<noscript class>): 77 tests
 PASS noscript.hidden: 79 tests
 PASS noscript.accessKey: 77 tests
-PASS noscript.tabIndex: 10 tests
-FAIL noscript.tabIndex: setAttribute() to 2147483647 followed by IDL get assert_equals: expected 2147483647 but got 32767
-PASS noscript.tabIndex: setAttribute() to -2147483648 followed by getAttribute() 
-FAIL noscript.tabIndex: setAttribute() to -2147483648 followed by IDL get assert_equals: expected -2147483648 but got -32768
-PASS noscript.tabIndex: 36 tests
-FAIL noscript.tabIndex: IDL set to 2147483647 followed by IDL get assert_equals: expected 2147483647 but got 32767
-PASS noscript.tabIndex: 2 tests
-FAIL noscript.tabIndex: IDL set to -2147483648 followed by IDL get assert_equals: expected -2147483648 but got -32768
+PASS noscript.tabIndex: 53 tests
 PASS ins.title: 77 tests
 PASS ins.lang: 77 tests
 PASS ins.dir: 151 tests
 PASS ins.className (<ins class>): 77 tests
 PASS ins.hidden: 79 tests
 PASS ins.accessKey: 77 tests
-PASS ins.tabIndex: 10 tests
-FAIL ins.tabIndex: setAttribute() to 2147483647 followed by IDL get assert_equals: expected 2147483647 but got 32767
-PASS ins.tabIndex: setAttribute() to -2147483648 followed by getAttribute() 
-FAIL ins.tabIndex: setAttribute() to -2147483648 followed by IDL get assert_equals: expected -2147483648 but got -32768
-PASS ins.tabIndex: 36 tests
-FAIL ins.tabIndex: IDL set to 2147483647 followed by IDL get assert_equals: expected 2147483647 but got 32767
-PASS ins.tabIndex: 2 tests
-FAIL ins.tabIndex: IDL set to -2147483648 followed by IDL get assert_equals: expected -2147483648 but got -32768
+PASS ins.tabIndex: 53 tests
 PASS ins.cite: 92 tests
 PASS ins.dateTime: 77 tests
 PASS del.title: 77 tests
@@ -69,14 +41,7 @@ PASS del.dir: 151 tests
 PASS del.className (<del class>): 77 tests
 PASS del.hidden: 79 tests
 PASS del.accessKey: 77 tests
-PASS del.tabIndex: 10 tests
-FAIL del.tabIndex: setAttribute() to 2147483647 followed by IDL get assert_equals: expected 2147483647 but got 32767
-PASS del.tabIndex: setAttribute() to -2147483648 followed by getAttribute() 
-FAIL del.tabIndex: setAttribute() to -2147483648 followed by IDL get assert_equals: expected -2147483648 but got -32768
-PASS del.tabIndex: 36 tests
-FAIL del.tabIndex: IDL set to 2147483647 followed by IDL get assert_equals: expected 2147483647 but got 32767
-PASS del.tabIndex: 2 tests
-FAIL del.tabIndex: IDL set to -2147483648 followed by IDL get assert_equals: expected -2147483648 but got -32768
+PASS del.tabIndex: 53 tests
 PASS del.cite: 92 tests
 PASS del.dateTime: 77 tests
 PASS details.title: 77 tests
@@ -85,14 +50,7 @@ PASS details.dir: 151 tests
 PASS details.className (<details class>): 77 tests
 PASS details.hidden: 79 tests
 PASS details.accessKey: 77 tests
-PASS details.tabIndex: 10 tests
-FAIL details.tabIndex: setAttribute() to 2147483647 followed by IDL get assert_equals: expected 2147483647 but got 32767
-PASS details.tabIndex: setAttribute() to -2147483648 followed by getAttribute() 
-FAIL details.tabIndex: setAttribute() to -2147483648 followed by IDL get assert_equals: expected -2147483648 but got -32768
-PASS details.tabIndex: 36 tests
-FAIL details.tabIndex: IDL set to 2147483647 followed by IDL get assert_equals: expected 2147483647 but got 32767
-PASS details.tabIndex: 2 tests
-FAIL details.tabIndex: IDL set to -2147483648 followed by IDL get assert_equals: expected -2147483648 but got -32768
+PASS details.tabIndex: 53 tests
 PASS details.open: 79 tests
 PASS summary.title: 77 tests
 PASS summary.lang: 77 tests
@@ -146,14 +104,7 @@ PASS menu.dir: 151 tests
 PASS menu.className (<menu class>): 77 tests
 PASS menu.hidden: 79 tests
 PASS menu.accessKey: 77 tests
-PASS menu.tabIndex: 10 tests
-FAIL menu.tabIndex: setAttribute() to 2147483647 followed by IDL get assert_equals: expected 2147483647 but got 32767
-PASS menu.tabIndex: setAttribute() to -2147483648 followed by getAttribute() 
-FAIL menu.tabIndex: setAttribute() to -2147483648 followed by IDL get assert_equals: expected -2147483648 but got -32768
-PASS menu.tabIndex: 36 tests
-FAIL menu.tabIndex: IDL set to 2147483647 followed by IDL get assert_equals: expected 2147483647 but got 32767
-PASS menu.tabIndex: 2 tests
-FAIL menu.tabIndex: IDL set to -2147483648 followed by IDL get assert_equals: expected -2147483648 but got -32768
+PASS menu.tabIndex: 53 tests
 PASS menu.type: typeof IDL attribute 
 FAIL menu.type: IDL get with DOM attribute unset assert_equals: expected "toolbar" but got ""
 PASS menu.type: setAttribute() to "" followed by getAttribute() 
@@ -256,14 +207,7 @@ PASS menuitem.dir: 151 tests
 PASS menuitem.className (<menuitem class>): 77 tests
 PASS menuitem.hidden: 79 tests
 PASS menuitem.accessKey: 77 tests
-PASS menuitem.tabIndex: 10 tests
-FAIL menuitem.tabIndex: setAttribute() to 2147483647 followed by IDL get assert_equals: expected 2147483647 but got 32767
-PASS menuitem.tabIndex: setAttribute() to -2147483648 followed by getAttribute() 
-FAIL menuitem.tabIndex: setAttribute() to -2147483648 followed by IDL get assert_equals: expected -2147483648 but got -32768
-PASS menuitem.tabIndex: 36 tests
-FAIL menuitem.tabIndex: IDL set to 2147483647 followed by IDL get assert_equals: expected 2147483647 but got 32767
-PASS menuitem.tabIndex: 2 tests
-FAIL menuitem.tabIndex: IDL set to -2147483648 followed by IDL get assert_equals: expected -2147483648 but got -32768
+PASS menuitem.tabIndex: 53 tests
 PASS menuitem.type: typeof IDL attribute 
 FAIL menuitem.type: IDL get with DOM attribute unset assert_equals: expected "command" but got ""
 PASS menuitem.type: setAttribute() to "" followed by getAttribute() 
@@ -386,14 +330,7 @@ PASS dialog.dir: 151 tests
 PASS dialog.className (<dialog class>): 77 tests
 PASS dialog.hidden: 79 tests
 PASS dialog.accessKey: 77 tests
-PASS dialog.tabIndex: 10 tests
-FAIL dialog.tabIndex: setAttribute() to 2147483647 followed by IDL get assert_equals: expected 2147483647 but got 32767
-PASS dialog.tabIndex: setAttribute() to -2147483648 followed by getAttribute() 
-FAIL dialog.tabIndex: setAttribute() to -2147483648 followed by IDL get assert_equals: expected -2147483648 but got -32768
-PASS dialog.tabIndex: 36 tests
-FAIL dialog.tabIndex: IDL set to 2147483647 followed by IDL get assert_equals: expected 2147483647 but got 32767
-PASS dialog.tabIndex: 2 tests
-FAIL dialog.tabIndex: IDL set to -2147483648 followed by IDL get assert_equals: expected -2147483648 but got -32768
+PASS dialog.tabIndex: 53 tests
 PASS dialog.open: 79 tests
 PASS undefinedelement.title: 77 tests
 PASS undefinedelement.lang: 77 tests
@@ -401,13 +338,6 @@ PASS undefinedelement.dir: 151 tests
 PASS undefinedelement.className (<undefinedelement class>): 77 tests
 PASS undefinedelement.hidden: 79 tests
 PASS undefinedelement.accessKey: 77 tests
-PASS undefinedelement.tabIndex: 10 tests
-FAIL undefinedelement.tabIndex: setAttribute() to 2147483647 followed by IDL get assert_equals: expected 2147483647 but got 32767
-PASS undefinedelement.tabIndex: setAttribute() to -2147483648 followed by getAttribute() 
-FAIL undefinedelement.tabIndex: setAttribute() to -2147483648 followed by IDL get assert_equals: expected -2147483648 but got -32768
-PASS undefinedelement.tabIndex: 36 tests
-FAIL undefinedelement.tabIndex: IDL set to 2147483647 followed by IDL get assert_equals: expected 2147483647 but got 32767
-PASS undefinedelement.tabIndex: 2 tests
-FAIL undefinedelement.tabIndex: IDL set to -2147483648 followed by IDL get assert_equals: expected -2147483648 but got -32768
+PASS undefinedelement.tabIndex: 53 tests
 Harness: the test ran to completion.
 

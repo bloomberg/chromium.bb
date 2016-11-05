@@ -688,7 +688,7 @@ String HTMLElement::title() const {
   return fastGetAttribute(titleAttr);
 }
 
-short HTMLElement::tabIndex() const {
+int HTMLElement::tabIndex() const {
   if (supportsFocus())
     return Element::tabIndex();
   return -1;

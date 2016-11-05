@@ -88,7 +88,7 @@ void SVGElement::attachLayoutTree(const AttachContext& context) {
     element->mapInstanceToElement(this);
 }
 
-short SVGElement::tabIndex() const {
+int SVGElement::tabIndex() const {
   if (supportsFocus())
     return Element::tabIndex();
   return -1;

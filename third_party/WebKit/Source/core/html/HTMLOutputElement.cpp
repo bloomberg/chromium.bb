@@ -130,7 +130,7 @@ void HTMLOutputElement::setDefaultValue(const String& value) {
     setTextContent(value);
 }
 
-short HTMLOutputElement::tabIndex() const {
+int HTMLOutputElement::tabIndex() const {
   return HTMLElement::tabIndex();
 }
 

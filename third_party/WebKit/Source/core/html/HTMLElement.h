@@ -51,7 +51,7 @@ class CORE_EXPORT HTMLElement : public Element {
   }
 
   String title() const final;
-  short tabIndex() const override;
+  int tabIndex() const override;
 
   void setInnerText(const String&, ExceptionState&);
   void setOuterText(const String&, ExceptionState&);

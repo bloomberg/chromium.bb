@@ -64,7 +64,7 @@ class CORE_EXPORT SVGAElement final : public SVGGraphicsElement,
   bool isKeyboardFocusable() const override;
   bool isURLAttribute(const Attribute&) const override;
   bool canStartSelection() const override;
-  short tabIndex() const override;
+  int tabIndex() const override;
 
   bool willRespondToMouseClickEvents() override;
 

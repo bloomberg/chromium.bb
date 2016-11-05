@@ -82,7 +82,7 @@ class CORE_EXPORT HTMLSlotElement final : public HTMLElement {
                         const AtomicString& newValue,
                         AttributeModificationReason = ModifiedDirectly) final;
 
-  short tabIndex() const override;
+  int tabIndex() const override;
   AtomicString name() const;
 
   // This method can be slow because this has to traverse the children of a

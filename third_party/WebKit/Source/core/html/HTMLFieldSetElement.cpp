@@ -143,7 +143,7 @@ const FormAssociatedElement::List& HTMLFieldSetElement::associatedElements()
   return m_associatedElements;
 }
 
-short HTMLFieldSetElement::tabIndex() const {
+int HTMLFieldSetElement::tabIndex() const {
   return HTMLElement::tabIndex();
 }
 

@@ -494,7 +494,7 @@ class CORE_EXPORT Node : public EventTarget {
   virtual void setDragged(bool flag);
   virtual void setHovered(bool flag = true);
 
-  virtual short tabIndex() const;
+  virtual int tabIndex() const;
 
   virtual Node* focusDelegate();
   // This is called only when the node is focused.

@@ -58,7 +58,7 @@ class CORE_EXPORT SVGElement : public Element {
   void attachLayoutTree(const AttachContext&) override;
   void detachLayoutTree(const AttachContext&) override;
 
-  short tabIndex() const override;
+  int tabIndex() const override;
   bool supportsFocus() const override { return false; }
 
   bool isOutermostSVGSVGElement() const;

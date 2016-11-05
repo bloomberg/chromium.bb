@@ -5,14 +5,7 @@ PASS applet.dir: 151 tests
 PASS applet.className (<applet class>): 77 tests
 PASS applet.hidden: 79 tests
 PASS applet.accessKey: 77 tests
-PASS applet.tabIndex: 10 tests
-FAIL applet.tabIndex: setAttribute() to 2147483647 followed by IDL get assert_equals: expected 2147483647 but got 32767
-PASS applet.tabIndex: setAttribute() to -2147483648 followed by getAttribute() 
-FAIL applet.tabIndex: setAttribute() to -2147483648 followed by IDL get assert_equals: expected -2147483648 but got -32768
-PASS applet.tabIndex: 36 tests
-FAIL applet.tabIndex: IDL set to 2147483647 followed by IDL get assert_equals: expected 2147483647 but got 32767
-PASS applet.tabIndex: 2 tests
-FAIL applet.tabIndex: IDL set to -2147483648 followed by IDL get assert_equals: expected -2147483648 but got -32768
+PASS applet.tabIndex: 53 tests
 FAIL applet.align: typeof IDL attribute assert_equals: expected "string" but got "undefined"
 FAIL applet.align: IDL get with DOM attribute unset assert_equals: expected (string) "" but got (undefined) undefined
 PASS applet.align: setAttribute() to "" followed by getAttribute() 
@@ -960,14 +953,7 @@ PASS marquee.dir: 151 tests
 PASS marquee.className (<marquee class>): 77 tests
 PASS marquee.hidden: 79 tests
 PASS marquee.accessKey: 77 tests
-PASS marquee.tabIndex: 10 tests
-FAIL marquee.tabIndex: setAttribute() to 2147483647 followed by IDL get assert_equals: expected 2147483647 but got 32767
-PASS marquee.tabIndex: setAttribute() to -2147483648 followed by getAttribute() 
-FAIL marquee.tabIndex: setAttribute() to -2147483648 followed by IDL get assert_equals: expected -2147483648 but got -32768
-PASS marquee.tabIndex: 36 tests
-FAIL marquee.tabIndex: IDL set to 2147483647 followed by IDL get assert_equals: expected 2147483647 but got 32767
-PASS marquee.tabIndex: 2 tests
-FAIL marquee.tabIndex: IDL set to -2147483648 followed by IDL get assert_equals: expected -2147483648 but got -32768
+PASS marquee.tabIndex: 53 tests
 PASS marquee.behavior: 77 tests
 PASS marquee.bgColor: 77 tests
 PASS marquee.direction: 77 tests
@@ -1181,14 +1167,7 @@ PASS frameset.dir: 151 tests
 PASS frameset.className (<frameset class>): 77 tests
 PASS frameset.hidden: 79 tests
 PASS frameset.accessKey: 77 tests
-PASS frameset.tabIndex: 10 tests
-FAIL frameset.tabIndex: setAttribute() to 2147483647 followed by IDL get assert_equals: expected 2147483647 but got 32767
-PASS frameset.tabIndex: setAttribute() to -2147483648 followed by getAttribute() 
-FAIL frameset.tabIndex: setAttribute() to -2147483648 followed by IDL get assert_equals: expected -2147483648 but got -32768
-PASS frameset.tabIndex: 36 tests
-FAIL frameset.tabIndex: IDL set to 2147483647 followed by IDL get assert_equals: expected 2147483647 but got 32767
-PASS frameset.tabIndex: 2 tests
-FAIL frameset.tabIndex: IDL set to -2147483648 followed by IDL get assert_equals: expected -2147483648 but got -32768
+PASS frameset.tabIndex: 53 tests
 PASS frameset.cols: 77 tests
 PASS frameset.rows: 77 tests
 PASS frame.title: 77 tests
@@ -1197,14 +1176,7 @@ PASS frame.dir: 151 tests
 PASS frame.className (<frame class>): 77 tests
 PASS frame.hidden: 79 tests
 PASS frame.accessKey: 77 tests
-PASS frame.tabIndex: 10 tests
-FAIL frame.tabIndex: setAttribute() to 2147483647 followed by IDL get assert_equals: expected 2147483647 but got 32767
-PASS frame.tabIndex: setAttribute() to -2147483648 followed by getAttribute() 
-FAIL frame.tabIndex: setAttribute() to -2147483648 followed by IDL get assert_equals: expected -2147483648 but got -32768
-PASS frame.tabIndex: 36 tests
-FAIL frame.tabIndex: IDL set to 2147483647 followed by IDL get assert_equals: expected 2147483647 but got 32767
-PASS frame.tabIndex: 2 tests
-FAIL frame.tabIndex: IDL set to -2147483648 followed by IDL get assert_equals: expected -2147483648 but got -32768
+PASS frame.tabIndex: 53 tests
 PASS frame.name: 77 tests
 PASS frame.scrolling: 77 tests
 PASS frame.src: 92 tests
@@ -1219,14 +1191,7 @@ PASS dir.dir: 151 tests
 PASS dir.className (<dir class>): 77 tests
 PASS dir.hidden: 79 tests
 PASS dir.accessKey: 77 tests
-PASS dir.tabIndex: 10 tests
-FAIL dir.tabIndex: setAttribute() to 2147483647 followed by IDL get assert_equals: expected 2147483647 but got 32767
-PASS dir.tabIndex: setAttribute() to -2147483648 followed by getAttribute() 
-FAIL dir.tabIndex: setAttribute() to -2147483648 followed by IDL get assert_equals: expected -2147483648 but got -32768
-PASS dir.tabIndex: 36 tests
-FAIL dir.tabIndex: IDL set to 2147483647 followed by IDL get assert_equals: expected 2147483647 but got 32767
-PASS dir.tabIndex: 2 tests
-FAIL dir.tabIndex: IDL set to -2147483648 followed by IDL get assert_equals: expected -2147483648 but got -32768
+PASS dir.tabIndex: 53 tests
 PASS dir.compact: 79 tests
 PASS font.title: 77 tests
 PASS font.lang: 77 tests
@@ -1234,14 +1199,7 @@ PASS font.dir: 151 tests
 PASS font.className (<font class>): 77 tests
 PASS font.hidden: 79 tests
 PASS font.accessKey: 77 tests
-PASS font.tabIndex: 10 tests
-FAIL font.tabIndex: setAttribute() to 2147483647 followed by IDL get assert_equals: expected 2147483647 but got 32767
-PASS font.tabIndex: setAttribute() to -2147483648 followed by getAttribute() 
-FAIL font.tabIndex: setAttribute() to -2147483648 followed by IDL get assert_equals: expected -2147483648 but got -32768
-PASS font.tabIndex: 36 tests
-FAIL font.tabIndex: IDL set to 2147483647 followed by IDL get assert_equals: expected 2147483647 but got 32767
-PASS font.tabIndex: 2 tests
-FAIL font.tabIndex: IDL set to -2147483648 followed by IDL get assert_equals: expected -2147483648 but got -32768
+PASS font.tabIndex: 53 tests
 PASS font.color: 77 tests
 PASS font.face: 77 tests
 PASS font.size: 77 tests

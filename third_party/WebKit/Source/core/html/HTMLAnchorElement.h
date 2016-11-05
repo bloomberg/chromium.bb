@@ -117,7 +117,7 @@ class CORE_EXPORT HTMLAnchorElement : public HTMLElement, public DOMURLUtils {
   bool isURLAttribute(const Attribute&) const final;
   bool hasLegalLinkAttribute(const QualifiedName&) const final;
   bool canStartSelection() const final;
-  short tabIndex() const final;
+  int tabIndex() const final;
   bool draggable() const final;
   bool isInteractiveContent() const final;
   InsertionNotificationRequest insertedInto(ContainerNode*) override;

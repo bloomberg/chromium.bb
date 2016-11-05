@@ -54,7 +54,7 @@ class CORE_EXPORT HTMLFieldSetElement final : public HTMLFormControlElement {
   LayoutObject* createLayoutObject(const ComputedStyle&) override;
   const AtomicString& formControlType() const override;
   bool recalcWillValidate() const override { return false; }
-  short tabIndex() const final;
+  int tabIndex() const final;
   bool matchesValidityPseudoClasses() const final;
   bool isValidElement() final;
   void childrenChanged(const ChildrenChange&) override;

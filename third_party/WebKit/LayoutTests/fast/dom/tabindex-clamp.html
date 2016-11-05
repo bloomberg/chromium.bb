@@ -1,5 +1,8 @@
 <html>
 <head>
+    <style>
+        input { display: none; }
+    </style>
     <script>
         function log(msg) {
             document.getElementById('log').appendChild(document.createTextNode(msg + '\n'));
@@ -21,7 +24,7 @@
                 logTabIndex(inputs[i]);
             }
 
-            var indices = [40000, 32768, 32767, 32766, 0, -1, -32767, -32768, -40000];
+            var indices = [3147483648, 2147483648, 2147483647, 2147483646, 0, -1, -2147483647, -2147483648, -3147483648, "", "foo"];
 
             log('Testing setAttribute on an anchor element made with document.createElement');
 
@@ -42,20 +45,20 @@
     </script>
 </head>
 <body onload="test()">
-    <p>This page tests that the <tt>tabindex</tt> attribute is clamped to
-    values between -32768 and 32767. Values outside of this range should be
-    clamped to the range limits.</p>
+    <p>This page tests that the <tt>tabindex</tt> attribute is accepted for
+    values between -2147483648 and 2147483647. Values outside of this range will
+    make the tabIndex reflected value zero.</p>
 
-    <input tabindex="40000">
-    <input tabindex="32768">
-    <input tabindex="32767">
-    <input tabindex="32766">
+    <input tabindex="3147483648">
+    <input tabindex="2147483648">
+    <input tabindex="2147483647">
+    <input tabindex="2147483646">
     <input tabindex="0">
     <input tabindex="-1">
-    <input tabindex="-32767">
-    <input tabindex="-32768">
-    <input tabindex="-32769">
-    <input tabindex="-40000">
+    <input tabindex="-2147483647">
+    <input tabindex="-2147483648">
+    <input tabindex="-2147483649">
+    <input tabindex="-3147483648">
 
     <pre id="log"></pre>
 </body>

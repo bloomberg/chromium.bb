@@ -5,14 +5,7 @@ PASS table.dir: 151 tests
 PASS table.className (<table class>): 77 tests
 PASS table.hidden: 79 tests
 PASS table.accessKey: 77 tests
-PASS table.tabIndex: 10 tests
-FAIL table.tabIndex: setAttribute() to 2147483647 followed by IDL get assert_equals: expected 2147483647 but got 32767
-PASS table.tabIndex: setAttribute() to -2147483648 followed by getAttribute() 
-FAIL table.tabIndex: setAttribute() to -2147483648 followed by IDL get assert_equals: expected -2147483648 but got -32768
-PASS table.tabIndex: 36 tests
-FAIL table.tabIndex: IDL set to 2147483647 followed by IDL get assert_equals: expected 2147483647 but got 32767
-PASS table.tabIndex: 2 tests
-FAIL table.tabIndex: IDL set to -2147483648 followed by IDL get assert_equals: expected -2147483648 but got -32768
+PASS table.tabIndex: 53 tests
 PASS table.align: 77 tests
 PASS table.border: 77 tests
 PASS table.frame: 77 tests
@@ -28,14 +21,7 @@ PASS caption.dir: 151 tests
 PASS caption.className (<caption class>): 77 tests
 PASS caption.hidden: 79 tests
 PASS caption.accessKey: 77 tests
-PASS caption.tabIndex: 10 tests
-FAIL caption.tabIndex: setAttribute() to 2147483647 followed by IDL get assert_equals: expected 2147483647 but got 32767
-PASS caption.tabIndex: setAttribute() to -2147483648 followed by getAttribute() 
-FAIL caption.tabIndex: setAttribute() to -2147483648 followed by IDL get assert_equals: expected -2147483648 but got -32768
-PASS caption.tabIndex: 36 tests
-FAIL caption.tabIndex: IDL set to 2147483647 followed by IDL get assert_equals: expected 2147483647 but got 32767
-PASS caption.tabIndex: 2 tests
-FAIL caption.tabIndex: IDL set to -2147483648 followed by IDL get assert_equals: expected -2147483648 but got -32768
+PASS caption.tabIndex: 53 tests
 PASS caption.align: 77 tests
 PASS colgroup.title: 77 tests
 PASS colgroup.lang: 77 tests
@@ -43,14 +29,7 @@ PASS colgroup.dir: 151 tests
 PASS colgroup.className (<colgroup class>): 77 tests
 PASS colgroup.hidden: 79 tests
 PASS colgroup.accessKey: 77 tests
-PASS colgroup.tabIndex: 10 tests
-FAIL colgroup.tabIndex: setAttribute() to 2147483647 followed by IDL get assert_equals: expected 2147483647 but got 32767
-PASS colgroup.tabIndex: setAttribute() to -2147483648 followed by getAttribute() 
-FAIL colgroup.tabIndex: setAttribute() to -2147483648 followed by IDL get assert_equals: expected -2147483648 but got -32768
-PASS colgroup.tabIndex: 36 tests
-FAIL colgroup.tabIndex: IDL set to 2147483647 followed by IDL get assert_equals: expected 2147483647 but got 32767
-PASS colgroup.tabIndex: 2 tests
-FAIL colgroup.tabIndex: IDL set to -2147483648 followed by IDL get assert_equals: expected -2147483648 but got -32768
+PASS colgroup.tabIndex: 53 tests
 PASS colgroup.span: 17 tests
 FAIL colgroup.span: setAttribute() to 2147483648 followed by IDL get assert_equals: expected 1 but got 2147483648
 PASS colgroup.span: setAttribute() to 4294967295 followed by getAttribute() 
@@ -71,14 +50,7 @@ PASS col.dir: 151 tests
 PASS col.className (<col class>): 77 tests
 PASS col.hidden: 79 tests
 PASS col.accessKey: 77 tests
-PASS col.tabIndex: 10 tests
-FAIL col.tabIndex: setAttribute() to 2147483647 followed by IDL get assert_equals: expected 2147483647 but got 32767
-PASS col.tabIndex: setAttribute() to -2147483648 followed by getAttribute() 
-FAIL col.tabIndex: setAttribute() to -2147483648 followed by IDL get assert_equals: expected -2147483648 but got -32768
-PASS col.tabIndex: 36 tests
-FAIL col.tabIndex: IDL set to 2147483647 followed by IDL get assert_equals: expected 2147483647 but got 32767
-PASS col.tabIndex: 2 tests
-FAIL col.tabIndex: IDL set to -2147483648 followed by IDL get assert_equals: expected -2147483648 but got -32768
+PASS col.tabIndex: 53 tests
 PASS col.span: 17 tests
 FAIL col.span: setAttribute() to 2147483648 followed by IDL get assert_equals: expected 1 but got 2147483648
 PASS col.span: setAttribute() to 4294967295 followed by getAttribute() 
@@ -99,14 +71,7 @@ PASS tbody.dir: 151 tests
 PASS tbody.className (<tbody class>): 77 tests
 PASS tbody.hidden: 79 tests
 PASS tbody.accessKey: 77 tests
-PASS tbody.tabIndex: 10 tests
-FAIL tbody.tabIndex: setAttribute() to 2147483647 followed by IDL get assert_equals: expected 2147483647 but got 32767
-PASS tbody.tabIndex: setAttribute() to -2147483648 followed by getAttribute() 
-FAIL tbody.tabIndex: setAttribute() to -2147483648 followed by IDL get assert_equals: expected -2147483648 but got -32768
-PASS tbody.tabIndex: 36 tests
-FAIL tbody.tabIndex: IDL set to 2147483647 followed by IDL get assert_equals: expected 2147483647 but got 32767
-PASS tbody.tabIndex: 2 tests
-FAIL tbody.tabIndex: IDL set to -2147483648 followed by IDL get assert_equals: expected -2147483648 but got -32768
+PASS tbody.tabIndex: 53 tests
 PASS tbody.align: 77 tests
 PASS tbody.ch (<tbody char>): 77 tests
 PASS tbody.chOff (<tbody charoff>): 77 tests
@@ -117,14 +82,7 @@ PASS thead.dir: 151 tests
 PASS thead.className (<thead class>): 77 tests
 PASS thead.hidden: 79 tests
 PASS thead.accessKey: 77 tests
-PASS thead.tabIndex: 10 tests
-FAIL thead.tabIndex: setAttribute() to 2147483647 followed by IDL get assert_equals: expected 2147483647 but got 32767
-PASS thead.tabIndex: setAttribute() to -2147483648 followed by getAttribute() 
-FAIL thead.tabIndex: setAttribute() to -2147483648 followed by IDL get assert_equals: expected -2147483648 but got -32768
-PASS thead.tabIndex: 36 tests
-FAIL thead.tabIndex: IDL set to 2147483647 followed by IDL get assert_equals: expected 2147483647 but got 32767
-PASS thead.tabIndex: 2 tests
-FAIL thead.tabIndex: IDL set to -2147483648 followed by IDL get assert_equals: expected -2147483648 but got -32768
+PASS thead.tabIndex: 53 tests
 PASS thead.align: 77 tests
 PASS thead.ch (<thead char>): 77 tests
 PASS thead.chOff (<thead charoff>): 77 tests
@@ -135,14 +93,7 @@ PASS tfoot.dir: 151 tests
 PASS tfoot.className (<tfoot class>): 77 tests
 PASS tfoot.hidden: 79 tests
 PASS tfoot.accessKey: 77 tests
-PASS tfoot.tabIndex: 10 tests
-FAIL tfoot.tabIndex: setAttribute() to 2147483647 followed by IDL get assert_equals: expected 2147483647 but got 32767
-PASS tfoot.tabIndex: setAttribute() to -2147483648 followed by getAttribute() 
-FAIL tfoot.tabIndex: setAttribute() to -2147483648 followed by IDL get assert_equals: expected -2147483648 but got -32768
-PASS tfoot.tabIndex: 36 tests
-FAIL tfoot.tabIndex: IDL set to 2147483647 followed by IDL get assert_equals: expected 2147483647 but got 32767
-PASS tfoot.tabIndex: 2 tests
-FAIL tfoot.tabIndex: IDL set to -2147483648 followed by IDL get assert_equals: expected -2147483648 but got -32768
+PASS tfoot.tabIndex: 53 tests
 PASS tfoot.align: 77 tests
 PASS tfoot.ch (<tfoot char>): 77 tests
 PASS tfoot.chOff (<tfoot charoff>): 77 tests
@@ -153,14 +104,7 @@ PASS tr.dir: 151 tests
 PASS tr.className (<tr class>): 77 tests
 PASS tr.hidden: 79 tests
 PASS tr.accessKey: 77 tests
-PASS tr.tabIndex: 10 tests
-FAIL tr.tabIndex: setAttribute() to 2147483647 followed by IDL get assert_equals: expected 2147483647 but got 32767
-PASS tr.tabIndex: setAttribute() to -2147483648 followed by getAttribute() 
-FAIL tr.tabIndex: setAttribute() to -2147483648 followed by IDL get assert_equals: expected -2147483648 but got -32768
-PASS tr.tabIndex: 36 tests
-FAIL tr.tabIndex: IDL set to 2147483647 followed by IDL get assert_equals: expected 2147483647 but got 32767
-PASS tr.tabIndex: 2 tests
-FAIL tr.tabIndex: IDL set to -2147483648 followed by IDL get assert_equals: expected -2147483648 but got -32768
+PASS tr.tabIndex: 53 tests
 PASS tr.align: 77 tests
 PASS tr.ch (<tr char>): 77 tests
 PASS tr.chOff (<tr charoff>): 77 tests
@@ -172,14 +116,7 @@ PASS td.dir: 151 tests
 PASS td.className (<td class>): 77 tests
 PASS td.hidden: 79 tests
 PASS td.accessKey: 77 tests
-PASS td.tabIndex: 10 tests
-FAIL td.tabIndex: setAttribute() to 2147483647 followed by IDL get assert_equals: expected 2147483647 but got 32767
-PASS td.tabIndex: setAttribute() to -2147483648 followed by getAttribute() 
-FAIL td.tabIndex: setAttribute() to -2147483648 followed by IDL get assert_equals: expected -2147483648 but got -32768
-PASS td.tabIndex: 36 tests
-FAIL td.tabIndex: IDL set to 2147483647 followed by IDL get assert_equals: expected 2147483647 but got 32767
-PASS td.tabIndex: 2 tests
-FAIL td.tabIndex: IDL set to -2147483648 followed by IDL get assert_equals: expected -2147483648 but got -32768
+PASS td.tabIndex: 53 tests
 PASS td.colSpan: 11 tests
 FAIL td.colSpan: setAttribute() to 0 followed by IDL get assert_equals: expected 0 but got 1
 PASS td.colSpan: 5 tests
@@ -243,14 +180,7 @@ PASS th.dir: 151 tests
 PASS th.className (<th class>): 77 tests
 PASS th.hidden: 79 tests
 PASS th.accessKey: 77 tests
-PASS th.tabIndex: 10 tests
-FAIL th.tabIndex: setAttribute() to 2147483647 followed by IDL get assert_equals: expected 2147483647 but got 32767
-PASS th.tabIndex: setAttribute() to -2147483648 followed by getAttribute() 
-FAIL th.tabIndex: setAttribute() to -2147483648 followed by IDL get assert_equals: expected -2147483648 but got -32768
-PASS th.tabIndex: 36 tests
-FAIL th.tabIndex: IDL set to 2147483647 followed by IDL get assert_equals: expected 2147483647 but got 32767
-PASS th.tabIndex: 2 tests
-FAIL th.tabIndex: IDL set to -2147483648 followed by IDL get assert_equals: expected -2147483648 but got -32768
+PASS th.tabIndex: 53 tests
 PASS th.colSpan: 11 tests
 FAIL th.colSpan: setAttribute() to 0 followed by IDL get assert_equals: expected 0 but got 1
 PASS th.colSpan: 5 tests

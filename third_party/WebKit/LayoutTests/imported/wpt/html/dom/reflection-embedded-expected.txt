@@ -13,14 +13,7 @@ PASS img.dir: 151 tests
 PASS img.className (<img class>): 77 tests
 PASS img.hidden: 79 tests
 PASS img.accessKey: 77 tests
-PASS img.tabIndex: 10 tests
-FAIL img.tabIndex: setAttribute() to 2147483647 followed by IDL get assert_equals: expected 2147483647 but got 32767
-PASS img.tabIndex: setAttribute() to -2147483648 followed by getAttribute() 
-FAIL img.tabIndex: setAttribute() to -2147483648 followed by IDL get assert_equals: expected -2147483648 but got -32768
-PASS img.tabIndex: 36 tests
-FAIL img.tabIndex: IDL set to 2147483647 followed by IDL get assert_equals: expected 2147483647 but got 32767
-PASS img.tabIndex: 2 tests
-FAIL img.tabIndex: IDL set to -2147483648 followed by IDL get assert_equals: expected -2147483648 but got -32768
+PASS img.tabIndex: 53 tests
 PASS img.alt: 77 tests
 PASS img.src: 92 tests
 PASS img.srcset: 77 tests
@@ -112,14 +105,7 @@ PASS iframe.dir: 151 tests
 PASS iframe.className (<iframe class>): 77 tests
 PASS iframe.hidden: 79 tests
 PASS iframe.accessKey: 77 tests
-PASS iframe.tabIndex: 10 tests
-FAIL iframe.tabIndex: setAttribute() to 2147483647 followed by IDL get assert_equals: expected 2147483647 but got 32767
-PASS iframe.tabIndex: setAttribute() to -2147483648 followed by getAttribute() 
-FAIL iframe.tabIndex: setAttribute() to -2147483648 followed by IDL get assert_equals: expected -2147483648 but got -32768
-PASS iframe.tabIndex: 36 tests
-FAIL iframe.tabIndex: IDL set to 2147483647 followed by IDL get assert_equals: expected 2147483647 but got 32767
-PASS iframe.tabIndex: 2 tests
-FAIL iframe.tabIndex: IDL set to -2147483648 followed by IDL get assert_equals: expected -2147483648 but got -32768
+PASS iframe.tabIndex: 53 tests
 PASS iframe.src: 92 tests
 PASS iframe.srcdoc: 77 tests
 PASS iframe.name: 77 tests
@@ -138,14 +124,7 @@ PASS embed.dir: 151 tests
 PASS embed.className (<embed class>): 77 tests
 PASS embed.hidden: 79 tests
 PASS embed.accessKey: 77 tests
-PASS embed.tabIndex: 10 tests
-FAIL embed.tabIndex: setAttribute() to 2147483647 followed by IDL get assert_equals: expected 2147483647 but got 32767
-PASS embed.tabIndex: setAttribute() to -2147483648 followed by getAttribute() 
-FAIL embed.tabIndex: setAttribute() to -2147483648 followed by IDL get assert_equals: expected -2147483648 but got -32768
-PASS embed.tabIndex: 36 tests
-FAIL embed.tabIndex: IDL set to 2147483647 followed by IDL get assert_equals: expected 2147483647 but got 32767
-PASS embed.tabIndex: 2 tests
-FAIL embed.tabIndex: IDL set to -2147483648 followed by IDL get assert_equals: expected -2147483648 but got -32768
+PASS embed.tabIndex: 53 tests
 PASS embed.src: 92 tests
 PASS embed.type: 77 tests
 PASS embed.width: 77 tests
@@ -158,14 +137,7 @@ PASS object.dir: 151 tests
 PASS object.className (<object class>): 77 tests
 PASS object.hidden: 79 tests
 PASS object.accessKey: 77 tests
-PASS object.tabIndex: 10 tests
-FAIL object.tabIndex: setAttribute() to 2147483647 followed by IDL get assert_equals: expected 2147483647 but got 32767
-PASS object.tabIndex: setAttribute() to -2147483648 followed by getAttribute() 
-FAIL object.tabIndex: setAttribute() to -2147483648 followed by IDL get assert_equals: expected -2147483648 but got -32768
-PASS object.tabIndex: 36 tests
-FAIL object.tabIndex: IDL set to 2147483647 followed by IDL get assert_equals: expected 2147483647 but got 32767
-PASS object.tabIndex: 2 tests
-FAIL object.tabIndex: IDL set to -2147483648 followed by IDL get assert_equals: expected -2147483648 but got -32768
+PASS object.tabIndex: 53 tests
 PASS object.data: 92 tests
 PASS object.type: 77 tests
 FAIL object.typeMustMatch: typeof IDL attribute assert_equals: expected "boolean" but got "undefined"
@@ -314,14 +286,7 @@ PASS param.dir: 151 tests
 PASS param.className (<param class>): 77 tests
 PASS param.hidden: 79 tests
 PASS param.accessKey: 77 tests
-PASS param.tabIndex: 10 tests
-FAIL param.tabIndex: setAttribute() to 2147483647 followed by IDL get assert_equals: expected 2147483647 but got 32767
-PASS param.tabIndex: setAttribute() to -2147483648 followed by getAttribute() 
-FAIL param.tabIndex: setAttribute() to -2147483648 followed by IDL get assert_equals: expected -2147483648 but got -32768
-PASS param.tabIndex: 36 tests
-FAIL param.tabIndex: IDL set to 2147483647 followed by IDL get assert_equals: expected 2147483647 but got 32767
-PASS param.tabIndex: 2 tests
-FAIL param.tabIndex: IDL set to -2147483648 followed by IDL get assert_equals: expected -2147483648 but got -32768
+PASS param.tabIndex: 53 tests
 PASS param.name: 77 tests
 PASS param.value: 77 tests
 PASS param.type: 77 tests
@@ -332,14 +297,7 @@ PASS video.dir: 151 tests
 PASS video.className (<video class>): 77 tests
 PASS video.hidden: 79 tests
 PASS video.accessKey: 77 tests
-PASS video.tabIndex: 10 tests
-FAIL video.tabIndex: setAttribute() to 2147483647 followed by IDL get assert_equals: expected 2147483647 but got 32767
-PASS video.tabIndex: setAttribute() to -2147483648 followed by getAttribute() 
-FAIL video.tabIndex: setAttribute() to -2147483648 followed by IDL get assert_equals: expected -2147483648 but got -32768
-PASS video.tabIndex: 36 tests
-FAIL video.tabIndex: IDL set to 2147483647 followed by IDL get assert_equals: expected 2147483647 but got 32767
-PASS video.tabIndex: 2 tests
-FAIL video.tabIndex: IDL set to -2147483648 followed by IDL get assert_equals: expected -2147483648 but got -32768
+PASS video.tabIndex: 53 tests
 PASS video.src: 92 tests
 PASS video.crossOrigin: 127 tests
 PASS video.preload: 78 tests
@@ -489,14 +447,7 @@ PASS audio.dir: 151 tests
 PASS audio.className (<audio class>): 77 tests
 PASS audio.hidden: 79 tests
 PASS audio.accessKey: 77 tests
-PASS audio.tabIndex: 10 tests
-FAIL audio.tabIndex: setAttribute() to 2147483647 followed by IDL get assert_equals: expected 2147483647 but got 32767
-PASS audio.tabIndex: setAttribute() to -2147483648 followed by getAttribute() 
-FAIL audio.tabIndex: setAttribute() to -2147483648 followed by IDL get assert_equals: expected -2147483648 but got -32768
-PASS audio.tabIndex: 36 tests
-FAIL audio.tabIndex: IDL set to 2147483647 followed by IDL get assert_equals: expected 2147483647 but got 32767
-PASS audio.tabIndex: 2 tests
-FAIL audio.tabIndex: IDL set to -2147483648 followed by IDL get assert_equals: expected -2147483648 but got -32768
+PASS audio.tabIndex: 53 tests
 PASS audio.src: 92 tests
 PASS audio.crossOrigin: 127 tests
 PASS audio.preload: 78 tests
@@ -583,14 +534,7 @@ PASS source.dir: 151 tests
 PASS source.className (<source class>): 77 tests
 PASS source.hidden: 79 tests
 PASS source.accessKey: 77 tests
-PASS source.tabIndex: 10 tests
-FAIL source.tabIndex: setAttribute() to 2147483647 followed by IDL get assert_equals: expected 2147483647 but got 32767
-PASS source.tabIndex: setAttribute() to -2147483648 followed by getAttribute() 
-FAIL source.tabIndex: setAttribute() to -2147483648 followed by IDL get assert_equals: expected -2147483648 but got -32768
-PASS source.tabIndex: 36 tests
-FAIL source.tabIndex: IDL set to 2147483647 followed by IDL get assert_equals: expected 2147483647 but got 32767
-PASS source.tabIndex: 2 tests
-FAIL source.tabIndex: IDL set to -2147483648 followed by IDL get assert_equals: expected -2147483648 but got -32768
+PASS source.tabIndex: 53 tests
 PASS source.src: 92 tests
 PASS source.type: 77 tests
 PASS source.media: 77 tests
@@ -600,14 +544,7 @@ PASS track.dir: 151 tests
 PASS track.className (<track class>): 77 tests
 PASS track.hidden: 79 tests
 PASS track.accessKey: 77 tests
-PASS track.tabIndex: 10 tests
-FAIL track.tabIndex: setAttribute() to 2147483647 followed by IDL get assert_equals: expected 2147483647 but got 32767
-PASS track.tabIndex: setAttribute() to -2147483648 followed by getAttribute() 
-FAIL track.tabIndex: setAttribute() to -2147483648 followed by IDL get assert_equals: expected -2147483648 but got -32768
-PASS track.tabIndex: 36 tests
-FAIL track.tabIndex: IDL set to 2147483647 followed by IDL get assert_equals: expected 2147483647 but got 32767
-PASS track.tabIndex: 2 tests
-FAIL track.tabIndex: IDL set to -2147483648 followed by IDL get assert_equals: expected -2147483648 but got -32768
+PASS track.tabIndex: 53 tests
 PASS track.kind: 201 tests
 PASS track.src: 92 tests
 PASS track.srclang: 77 tests
@@ -619,14 +556,7 @@ PASS canvas.dir: 151 tests
 PASS canvas.className (<canvas class>): 77 tests
 PASS canvas.hidden: 79 tests
 PASS canvas.accessKey: 77 tests
-PASS canvas.tabIndex: 10 tests
-FAIL canvas.tabIndex: setAttribute() to 2147483647 followed by IDL get assert_equals: expected 2147483647 but got 32767
-PASS canvas.tabIndex: setAttribute() to -2147483648 followed by getAttribute() 
-FAIL canvas.tabIndex: setAttribute() to -2147483648 followed by IDL get assert_equals: expected -2147483648 but got -32768
-PASS canvas.tabIndex: 36 tests
-FAIL canvas.tabIndex: IDL set to 2147483647 followed by IDL get assert_equals: expected 2147483647 but got 32767
-PASS canvas.tabIndex: 2 tests
-FAIL canvas.tabIndex: IDL set to -2147483648 followed by IDL get assert_equals: expected -2147483648 but got -32768
+PASS canvas.tabIndex: 53 tests
 PASS canvas.width: 35 tests
 FAIL canvas.width: setAttribute() to "\v7" followed by IDL get assert_equals: expected 300 but got 7
 PASS canvas.width: 13 tests
@@ -703,14 +633,7 @@ PASS map.dir: 151 tests
 PASS map.className (<map class>): 77 tests
 PASS map.hidden: 79 tests
 PASS map.accessKey: 77 tests
-PASS map.tabIndex: 10 tests
-FAIL map.tabIndex: setAttribute() to 2147483647 followed by IDL get assert_equals: expected 2147483647 but got 32767
-PASS map.tabIndex: setAttribute() to -2147483648 followed by getAttribute() 
-FAIL map.tabIndex: setAttribute() to -2147483648 followed by IDL get assert_equals: expected -2147483648 but got -32768
-PASS map.tabIndex: 36 tests
-FAIL map.tabIndex: IDL set to 2147483647 followed by IDL get assert_equals: expected 2147483647 but got 32767
-PASS map.tabIndex: 2 tests
-FAIL map.tabIndex: IDL set to -2147483648 followed by IDL get assert_equals: expected -2147483648 but got -32768
+PASS map.tabIndex: 53 tests
 PASS map.name: 77 tests
 PASS area.title: 77 tests
 PASS area.lang: 77 tests
@@ -718,14 +641,7 @@ PASS area.dir: 151 tests
 PASS area.className (<area class>): 77 tests
 PASS area.hidden: 79 tests
 PASS area.accessKey: 77 tests
-PASS area.tabIndex: 10 tests
-FAIL area.tabIndex: setAttribute() to 2147483647 followed by IDL get assert_equals: expected 2147483647 but got 32767
-PASS area.tabIndex: setAttribute() to -2147483648 followed by getAttribute() 
-FAIL area.tabIndex: setAttribute() to -2147483648 followed by IDL get assert_equals: expected -2147483648 but got -32768
-PASS area.tabIndex: 36 tests
-FAIL area.tabIndex: IDL set to 2147483647 followed by IDL get assert_equals: expected 2147483647 but got 32767
-PASS area.tabIndex: 2 tests
-FAIL area.tabIndex: IDL set to -2147483648 followed by IDL get assert_equals: expected -2147483648 but got -32768
+PASS area.tabIndex: 53 tests
 PASS area.alt: 77 tests
 PASS area.coords: 77 tests
 PASS area.shape: 77 tests

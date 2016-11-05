@@ -60,15 +60,11 @@ class ElementRareData : public NodeRareData {
   void setPseudoElement(PseudoId, PseudoElement*);
   PseudoElement* pseudoElement(PseudoId) const;
 
-  short tabIndex() const { return m_tabindex; }
-
-  void setTabIndexExplicitly(short index) {
-    m_tabindex = index;
+  void setTabIndexExplicitly() {
     setElementFlag(TabIndexWasSetExplicitly, true);
   }
 
   void clearTabIndexExplicitly() {
-    m_tabindex = 0;
     clearElementFlag(TabIndexWasSetExplicitly);
   }
 
@@ -192,8 +188,6 @@ class ElementRareData : public NodeRareData {
   CompositorProxiedPropertySet& ensureCompositorProxiedPropertySet();
   void clearCompositorProxiedPropertySet() { m_proxiedProperties = nullptr; }
 
-  short m_tabindex;
-
   LayoutSize m_minimumSizeForResizing;
   ScrollOffset m_savedLayerScrollOffset;
 
@@ -226,7 +220,6 @@ inline LayoutSize defaultMinimumSizeForResizing() {
 
 inline ElementRareData::ElementRareData(LayoutObject* layoutObject)
     : NodeRareData(layoutObject),
-      m_tabindex(0),
       m_minimumSizeForResizing(defaultMinimumSizeForResizing()),
       m_classList(nullptr) {
   m_isElementRareData = true;

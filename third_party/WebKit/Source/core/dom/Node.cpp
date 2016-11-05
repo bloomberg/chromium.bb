@@ -304,7 +304,7 @@ Node* Node::toNode() {
   return this;
 }
 
-short Node::tabIndex() const {
+int Node::tabIndex() const {
   return 0;
 }
 

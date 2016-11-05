@@ -72,7 +72,7 @@ class CORE_EXPORT HTMLOutputElement final : public HTMLFormControlElement,
   bool supportsFocus() const override;
   void childrenChanged(const ChildrenChange&) override;
   void resetImpl() override;
-  short tabIndex() const override;
+  int tabIndex() const override;
 
   void valueWasSet() final;
 
