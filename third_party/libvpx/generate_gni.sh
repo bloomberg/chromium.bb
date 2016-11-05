@@ -124,7 +124,7 @@ function convert_srcs_to_project_files {
     # Select all arm neon files ending in _neon.c and all asm files.
     # The asm files need to be included in the intrinsics target because
     # they need the -mfpu=neon flag.
-    # the pattern may need to be updated if vpx_scale gets intrinics
+    # the pattern may need to be updated if vpx_scale gets intrinsics
     local intrinsic_list=$(echo "$source_list" | \
       egrep 'neon.*(\.c|\.asm)$')
   fi
@@ -267,7 +267,7 @@ function gen_config_files {
   ./configure $2 > /dev/null
 
   # Disable HAVE_UNISTD_H as it causes vp8 to try to detect how many cpus
-  # available, which doesn't work from iniside a sandbox on linux.
+  # available, which doesn't work from inside a sandbox on linux.
   ( echo '/HAVE_UNISTD_H/s/[01]/0/' ; echo 'w' ; echo 'q' ) | ed -s vpx_config.h
 
   # Generate vpx_config.asm. Do not create one for mips.
@@ -452,5 +452,3 @@ cd $BASE_DIR/$LIBVPX_SRC_DIR
 update_readme
 
 cd $BASE_DIR
-
-# TODO(fgalligan): Can we turn on "--enable-realtime-only" for mipsel?
