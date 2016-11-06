@@ -159,5 +159,15 @@ void FakeDesktopCapturer::CaptureFrame() {
       std::move(frame));
 }
 
+bool FakeDesktopCapturer::GetSourceList(SourceList* sources) {
+  NOTIMPLEMENTED();
+  return false;
+}
+
+bool FakeDesktopCapturer::SelectSource(SourceId id) {
+  NOTIMPLEMENTED();
+  return false;
+}
+
 }  // namespace protocol
 }  // namespace remoting

@@ -20,11 +20,9 @@
 namespace remoting {
 
 AuraDesktopCapturer::AuraDesktopCapturer()
-    : callback_(nullptr), desktop_window_(nullptr), weak_factory_(this) {
-}
+    : callback_(nullptr), desktop_window_(nullptr), weak_factory_(this) {}
 
-AuraDesktopCapturer::~AuraDesktopCapturer() {
-}
+AuraDesktopCapturer::~AuraDesktopCapturer() {}
 
 void AuraDesktopCapturer::Start(webrtc::DesktopCapturer::Callback* callback) {
 #if defined(USE_ASH)
@@ -77,6 +75,17 @@ void AuraDesktopCapturer::OnFrameCaptured(
 
   callback_->OnCaptureResult(DesktopCapturer::Result::SUCCESS,
                              std::move(frame));
+}
+
+bool AuraDesktopCapturer::GetSourceList(SourceList* sources) {
+  // TODO(zijiehe): Implement screen enumeration.
+  sources->push_back({0});
+  return true;
+}
+
+bool AuraDesktopCapturer::SelectSource(SourceId id) {
+  // TODO(zijiehe): Implement screen selection.
+  return true;
 }
 
 }  // namespace remoting

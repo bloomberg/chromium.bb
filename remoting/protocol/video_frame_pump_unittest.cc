@@ -121,6 +121,16 @@ class ThreadCheckDesktopCapturer : public webrtc::DesktopCapturer {
                                std::move(frame));
   }
 
+  bool GetSourceList(SourceList* sources) override {
+    EXPECT_TRUE(task_runner_->BelongsToCurrentThread());
+    return false;
+  }
+
+  bool SelectSource(SourceId id) override {
+    EXPECT_TRUE(task_runner_->BelongsToCurrentThread());
+    return true;
+  }
+
  private:
   scoped_refptr<base::SingleThreadTaskRunner> task_runner_;
   webrtc::DesktopCapturer::Callback* callback_;

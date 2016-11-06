@@ -94,6 +94,14 @@ class TestScreenCapturer : public webrtc::DesktopCapturer {
                                std::move(frame));
   }
 
+  bool GetSourceList(SourceList* sources) override {
+    return true;
+  }
+
+  bool SelectSource(SourceId id) override {
+    return true;
+  }
+
  private:
   Callback* callback_ = nullptr;
   bool first_frame_sent_ = false;

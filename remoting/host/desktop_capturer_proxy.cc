@@ -10,6 +10,7 @@
 
 #include "base/bind.h"
 #include "base/location.h"
+#include "base/logging.h"
 #include "base/macros.h"
 #include "base/memory/ptr_util.h"
 #include "base/single_thread_task_runner.h"
@@ -164,6 +165,16 @@ void DesktopCapturerProxy::CaptureFrame() {
   capture_task_runner_->PostTask(
       FROM_HERE,
       base::Bind(&Core::CaptureFrame, base::Unretained(core_.get())));
+}
+
+bool DesktopCapturerProxy::GetSourceList(SourceList* sources) {
+  NOTIMPLEMENTED();
+  return false;
+}
+
+bool DesktopCapturerProxy::SelectSource(SourceId id) {
+  NOTIMPLEMENTED();
+  return false;
 }
 
 void DesktopCapturerProxy::OnFrameCaptured(

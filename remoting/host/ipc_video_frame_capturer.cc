@@ -4,6 +4,7 @@
 
 #include "remoting/host/ipc_video_frame_capturer.h"
 
+#include "base/logging.h"
 #include "remoting/host/desktop_session_proxy.h"
 #include "third_party/webrtc/modules/desktop_capture/desktop_frame.h"
 
@@ -39,6 +40,16 @@ void IpcVideoFrameCapturer::OnCaptureResult(
   DCHECK(capture_pending_);
   capture_pending_ = false;
   callback_->OnCaptureResult(result, std::move(frame));
+}
+
+bool IpcVideoFrameCapturer::GetSourceList(SourceList* sources) {
+  NOTIMPLEMENTED();
+  return false;
+}
+
+bool IpcVideoFrameCapturer::SelectSource(SourceId id) {
+  NOTIMPLEMENTED();
+  return false;
 }
 
 }  // namespace remoting

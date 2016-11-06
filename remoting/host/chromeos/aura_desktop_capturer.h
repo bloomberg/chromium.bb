@@ -33,6 +33,8 @@ class AuraDesktopCapturer : public webrtc::DesktopCapturer {
   // webrtc::DesktopCapturer implementation.
   void Start(webrtc::DesktopCapturer::Callback* callback) override;
   void CaptureFrame() override;
+  bool GetSourceList(SourceList* sources) override;
+  bool SelectSource(SourceId id) override;
 
  private:
   friend class AuraDesktopCapturerTest;

@@ -18,6 +18,8 @@ class DesktopSessionProxy;
 
 // Routes webrtc::DesktopCapturer calls though the IPC channel to the desktop
 // session agent running in the desktop integration process.
+// GetSourceList() and SelectSource() functions are not implemented, they always
+// return false.
 class IpcVideoFrameCapturer : public webrtc::DesktopCapturer {
  public:
   explicit IpcVideoFrameCapturer(
@@ -27,6 +29,8 @@ class IpcVideoFrameCapturer : public webrtc::DesktopCapturer {
   // webrtc::DesktopCapturer interface.
   void Start(Callback* callback) override;
   void CaptureFrame() override;
+  bool GetSourceList(SourceList* sources) override;
+  bool SelectSource(SourceId id) override;
 
   // Called when a video |frame| has been captured.
   void OnCaptureResult(webrtc::DesktopCapturer::Result result,
