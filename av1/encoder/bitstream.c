@@ -847,7 +847,13 @@ static void pack_txb_tokens(aom_writer *w, const TOKENEXTRA **tp,
             : mbmi->inter_tx_size[tx_row][tx_col];
 
   if (tx_size == plane_tx_size) {
-    pack_mb_tokens(w, tp, tok_end, bit_depth, tx_size, token_stats);
+    TOKEN_STATS tmp_token_stats;
+    init_token_stats(&tmp_token_stats);
+    pack_mb_tokens(w, tp, tok_end, bit_depth, tx_size, &tmp_token_stats);
+#if CONFIG_RD_DEBUG
+    token_stats->txb_coeff_cost_map[blk_row][blk_col] = tmp_token_stats.cost;
+    token_stats->cost += tmp_token_stats.cost;
+#endif
   } else {
     const int bsl = block_size_wide[bsize] >> (tx_size_wide_log2[0] + 1);
     int i;
@@ -1728,6 +1734,33 @@ static void dump_mode_info(MODE_INFO *mi) {
     printf("&& mi->bmi[0].as_mode == %d\n", mi->bmi[0].as_mode);
   }
 }
+static int rd_token_stats_mismatch(RD_STATS *rd_stats, TOKEN_STATS *token_stats,
+                                   int plane) {
+  if (rd_stats->txb_coeff_cost[plane] != token_stats->cost) {
+    int r, c;
+    printf("\nplane %d rd_stats->txb_coeff_cost %d token_stats->cost %d\n",
+           plane, rd_stats->txb_coeff_cost[plane], token_stats->cost);
+#if CONFIG_VAR_TX
+    printf("rd txb_coeff_cost_map\n");
+    for (r = 0; r < TXB_COEFF_COST_MAP_SIZE; ++r) {
+      for (c = 0; c < TXB_COEFF_COST_MAP_SIZE; ++c) {
+        printf("%d ", rd_stats->txb_coeff_cost_map[plane][r][c]);
+      }
+      printf("\n");
+    }
+
+    printf("pack txb_coeff_cost_map\n");
+    for (r = 0; r < TXB_COEFF_COST_MAP_SIZE; ++r) {
+      for (c = 0; c < TXB_COEFF_COST_MAP_SIZE; ++c) {
+        printf("%d ", token_stats->txb_coeff_cost_map[r][c]);
+      }
+      printf("\n");
+    }
+#endif
+    return 1;
+  }
+  return 0;
+}
 #endif
 
 #if CONFIG_PVQ
@@ -1756,9 +1789,6 @@ static void write_modes_b(AV1_COMP *cpi, const TileInfo *const tile,
   MODE_INFO *m;
   int plane;
   int bh, bw;
-#if CONFIG_RD_DEBUG
-  int64_t txb_coeff_cost[MAX_MB_PLANE] = { 0 };
-#endif
 #if CONFIG_RANS
   (void)tok;
   (void)tok_end;
@@ -1873,7 +1903,7 @@ static void write_modes_b(AV1_COMP *cpi, const TileInfo *const tile,
 #endif
 
       TOKEN_STATS token_stats;
-      token_stats.cost = 0;
+      init_token_stats(&token_stats);
 
 #if CONFIG_EXT_TX && CONFIG_RECT_TX
 
@@ -1896,6 +1926,12 @@ static void write_modes_b(AV1_COMP *cpi, const TileInfo *const tile,
             block += step;
           }
         }
+#if CONFIG_RD_DEBUG
+        if (rd_token_stats_mismatch(&m->mbmi.rd_stats, &token_stats, plane)) {
+          dump_mode_info(m);
+          assert(0);
+        }
+#endif
       } else {
         TX_SIZE tx = plane ? get_uv_tx_size(&m->mbmi, &xd->plane[plane])
                            : m->mbmi.tx_size;
@@ -1914,25 +1950,10 @@ static void write_modes_b(AV1_COMP *cpi, const TileInfo *const tile,
       pack_mb_tokens(w, tok, tok_end, cm->bit_depth, tx, &token_stats);
 #endif  // CONFIG_VAR_TX
 
-#if CONFIG_RD_DEBUG
-      txb_coeff_cost[plane] += token_stats.cost;
-#else
-      (void)token_stats;
-#endif
-
       assert(*tok < tok_end && (*tok)->token == EOSB_TOKEN);
       (*tok)++;
     }
   }
-
-#if CONFIG_RD_DEBUG
-  for (plane = 0; plane < MAX_MB_PLANE; ++plane) {
-    if (m->mbmi.rd_stats.txb_coeff_cost[plane] != txb_coeff_cost[plane]) {
-      dump_mode_info(m);
-      assert(0);
-    }
-  }
-#endif  // CONFIG_RD_DEBUG
 #else
   // PVQ writes its tokens (i.e. symbols) here.
   if (!m->mbmi.skip) {

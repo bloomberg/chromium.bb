@@ -28,6 +28,7 @@
 #include "aom_dsp/prob.h"
 
 #if CONFIG_RD_DEBUG
+#include "av1/common/blockd.h"
 #include "av1/encoder/cost.h"
 #endif
 
@@ -43,7 +44,28 @@ typedef struct daala_writer aom_writer;
 typedef struct aom_dk_writer aom_writer;
 #endif
 
-typedef struct TOKEN_STATS { int64_t cost; } TOKEN_STATS;
+typedef struct TOKEN_STATS {
+  int cost;
+#if CONFIG_VAR_TX
+#if CONFIG_RD_DEBUG
+  int txb_coeff_cost_map[TXB_COEFF_COST_MAP_SIZE][TXB_COEFF_COST_MAP_SIZE];
+#endif
+#endif
+} TOKEN_STATS;
+
+static INLINE void init_token_stats(TOKEN_STATS *token_stats) {
+#if CONFIG_VAR_TX
+#if CONFIG_RD_DEBUG
+  int r, c;
+  for (r = 0; r < TXB_COEFF_COST_MAP_SIZE; ++r) {
+    for (c = 0; c < TXB_COEFF_COST_MAP_SIZE; ++c) {
+      token_stats->txb_coeff_cost_map[r][c] = 0;
+    }
+  }
+#endif
+#endif
+  token_stats->cost = 0;
+}
 
 static INLINE void aom_start_encode(aom_writer *bc, uint8_t *buffer) {
 #if CONFIG_ANS
