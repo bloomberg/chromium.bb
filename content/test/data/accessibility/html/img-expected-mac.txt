@@ -1,3 +1,5 @@
 AXWebArea
 ++AXGroup
 ++++AXImage AXRoleDescription='image' AXDescription='pipe'
+++++AXImage AXRoleDescription='image' AXDescription='/pipe.jpg'
+++++AXImage AXRoleDescription='image' AXDescription='  '

@@ -446,6 +446,10 @@ Output.RULES = {
           '$nameOrDescendants= ' +
           '$if($hierarchicalLevel, @tag_h+$hierarchicalLevel, $role) $state'
     },
+    image: {
+      speak: '$if($name, $name, $urlFilename) ' +
+          '$value $state $role $description',
+    },
     inlineTextBox: {
       speak: '$name='
     },
@@ -1073,6 +1077,19 @@ Output.prototype = {
           if (earcon)
             options.annotation.push(earcon);
           this.append_(buff, node.name, options);
+        } else if (token == 'urlFilename') {
+          options.annotation.push('name');
+          var url = node.url;
+          var filename = '';
+          if (url.substring(0, 4) != 'data') {
+            filename =
+                url.substring(url.lastIndexOf('/') + 1, url.lastIndexOf('.'));
+
+            // Hack to not speak the filename if it's ridiculously long.
+            if (filename.length >= 30)
+            filename = filename.substring(0, 16) + '...';
+          }
+          this.append_(buff, filename, options);
         } else if (token == 'nameFromNode') {
           if (chrome.automation.NameFromType[node.nameFrom] ==
               'contents')

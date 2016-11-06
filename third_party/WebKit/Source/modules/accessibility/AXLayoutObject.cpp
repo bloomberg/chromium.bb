@@ -697,52 +697,8 @@ bool AXLayoutObject::computeAccessibilityIsIgnored(
     return true;
   }
 
-  // ignore images seemingly used as spacers
-  if (isImage()) {
-    // If the image can take focus, it should not be ignored, lest the user not
-    // be able to interact with something important.
-    if (canSetFocusAttribute())
-      return false;
-
-    if (node && node->isElementNode()) {
-      Element* elt = toElement(node);
-      const AtomicString& alt = elt->getAttribute(altAttr);
-      // don't ignore an image that has an alt tag
-      if (!alt.getString().containsOnlyWhitespace())
-        return false;
-      // informal standard is to ignore images with zero-length alt strings
-      if (!alt.isNull()) {
-        if (ignoredReasons)
-          ignoredReasons->append(IgnoredReason(AXEmptyAlt));
-        return true;
-      }
-    }
-
-    if (isNativeImage() && m_layoutObject->isImage()) {
-      // check for one-dimensional image
-      LayoutImage* image = toLayoutImage(m_layoutObject);
-      if (image->size().height() <= 1 || image->size().width() <= 1) {
-        if (ignoredReasons)
-          ignoredReasons->append(IgnoredReason(AXProbablyPresentational));
-        return true;
-      }
-
-      // Check whether laid out image was stretched from one-dimensional file
-      // image.
-      if (image->cachedImage()) {
-        LayoutSize imageSize = image->cachedImage()->imageSize(
-            LayoutObject::shouldRespectImageOrientation(m_layoutObject),
-            image->view()->zoomFactor());
-        if (imageSize.height() <= 1 || imageSize.width() <= 1) {
-          if (ignoredReasons)
-            ignoredReasons->append(IgnoredReason(AXProbablyPresentational));
-          return true;
-        }
-        return false;
-      }
-    }
+  if (isImage())
     return false;
-  }
 
   if (isCanvas()) {
     if (canvasHasFallbackContent())

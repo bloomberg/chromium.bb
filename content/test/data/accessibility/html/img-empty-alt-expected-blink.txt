@@ -4,5 +4,6 @@ rootWebArea
 ++++++staticText name='unread '
 ++++++++inlineTextBox name='unread '
 ++++link name='read'
+++++++image
 ++++++staticText name='read'
 ++++++++inlineTextBox name='read'

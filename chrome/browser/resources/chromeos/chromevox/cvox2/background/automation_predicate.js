@@ -124,6 +124,14 @@ AutomationPredicate.control = AutomationPredicate.match({
   ]
 });
 
+/**
+ * @param {!AutomationNode} node
+ * @return {boolean}
+ */
+AutomationPredicate.image = function(node) {
+  return node.role == Role.image && !!(node.name || node.url);
+};
+
 /** @type {AutomationPredicate.Unary} */
 AutomationPredicate.linkOrControl = AutomationPredicate.match({
   anyPredicate: [

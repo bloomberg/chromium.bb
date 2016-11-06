@@ -276,6 +276,16 @@ CommandHandler.onCommand = function(command) {
       pred = AutomationPredicate.formField;
       predErrorMsg = 'no_previous_form_field';
       break;
+    case 'previousGraphic':
+      dir = Dir.BACKWARD;
+      pred = AutomationPredicate.image;
+      predErrorMsg = 'no_previous_graphic';
+      break;
+    case 'nextGraphic':
+      dir = Dir.FORWARD;
+      pred = AutomationPredicate.image;
+      predErrorMsg = 'no_next_graphic';
+      break;
     case 'nextHeading':
       dir = Dir.FORWARD;
       pred = AutomationPredicate.heading;

@@ -247,20 +247,43 @@ Content within label refers to label container
     "nodes": [
       {
         "nodeId": "<string>",
-        "ignored": true,
-        "ignoredReasons": [
-          {
-            "name": "emptyAlt",
-            "value": {
-              "type": "boolean",
-              "value": true
-            }
-          }
-        ],
+        "ignored": false,
         "role": {
           "type": "role",
           "value": "img"
-        }
+        },
+        "name": {
+          "type": "computedString",
+          "value": "",
+          "sources": [
+            {
+              "type": "relatedElement",
+              "attribute": "aria-labelledby"
+            },
+            {
+              "type": "attribute",
+              "attribute": "aria-label"
+            },
+            {
+              "type": "attribute",
+              "value": {
+                "type": "computedString",
+                "value": ""
+              },
+              "attribute": "alt",
+              "attributeValue": {
+                "type": "string",
+                "value": ""
+              }
+            },
+            {
+              "type": "attribute",
+              "attribute": "title",
+              "superseded": true
+            }
+          ]
+        },
+        "properties": []
       }
     ]
   }

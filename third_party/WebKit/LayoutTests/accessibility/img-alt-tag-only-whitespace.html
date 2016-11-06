@@ -16,14 +16,14 @@
 
 <script>
 
-    description("This tests that images with alt tags that only have white space are ignored.");
+    description("This tests that images with alt tags that only have white space are not ignored.");
 
     if (window.accessibilityController) {
 
         document.getElementById("images").focus();
         var imagesGroup = accessibilityController.focusedElement;
-        shouldBe("imagesGroup.childrenCount", "4");
-        console.log("Image description: " + imagesGroup.childAtIndex(2).name);
+        shouldBe("imagesGroup.childrenCount", "6");
+        console.log("Image description: " + imagesGroup.childAtIndex(4).name);
     }
 
 </script>

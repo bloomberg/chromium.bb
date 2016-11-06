@@ -5,7 +5,6 @@
 </head>
 <body id="body">
 
-    <img id="img-ignored" alt="" height="100" width="100">
     <img id="img1" title="test1" height="100" width="100">
     <img id="img2" alt="alt" title="test2" height="100" width="100">
     <div id="img3" role="img" title="test3" width="100" height="100">test</div>
@@ -41,9 +40,6 @@
         var image4 = accessibilityController.accessibleElementById("img4");
         debug("Image4 name: " + image4.name);
         debug("Image4 description: " + image4.description + "<br>");
-
-        // Verify that the first image (with an empty alt tag) is ignored
-        shouldBe("accessibilityController.accessibleElementById('img-ignored')", "undefined");
     }
 
 </script>

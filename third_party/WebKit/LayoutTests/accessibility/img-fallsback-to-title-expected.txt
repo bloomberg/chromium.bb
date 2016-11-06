@@ -1,4 +1,4 @@
-    
+  
 test
 test
 This tests that images will fallback to using the title attribute if no other descriptive text is present.
@@ -18,7 +18,6 @@ Image3 description:
 Image4 name: test4
 Image4 description: 
 
-PASS accessibilityController.accessibleElementById('img-ignored') is undefined
 PASS successfullyParsed is true
 
 TEST COMPLETE
