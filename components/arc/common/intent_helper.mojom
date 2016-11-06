@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 //
-// Next MinVersion: 15
+// Next MinVersion: 16
 
 module arc.mojom;
 
@@ -108,13 +108,16 @@ interface IntentHelperHost {
 };
 
 // Sends intents to ARC on behalf of Chrome.
-// Next method ID: 11
+// Next method ID: 13
 interface IntentHelperInstance {
   // Sets the given package as a preferred package. The next time an ACTION_VIEW
   // intent is sent with a URL that requires disambiguation, instead of opening
   // the ResolverActivity, this package will be picked if it is on the list.
   // When multiple packages are set as preferred, the most recent setting wins.
   [MinVersion=7] AddPreferredPackage@8(string package_name);
+
+  // Asks the ContentResolver for the size of the file specified by the URL.
+  [MinVersion=15] GetFileSize@11(string url) => (int64 size);
 
   // Passes an intent to an activity.
   [MinVersion=12] HandleIntent@10(IntentInfo intent, ActivityName activity);
@@ -130,6 +133,10 @@ interface IntentHelperInstance {
 
   // Establishes full-duplex communication with the host.
   Init@0(IntentHelperHost host_ptr);
+
+  // Asks the ContentResolver to get an FD to read the file specified by the
+  // URL.
+  [MinVersion=15] OpenFileToRead@12(string url) => (handle fd);
 
   // Requests 48dp * 48dp icons of the |activities| suitable for the
   // |scale_factor|. An array of icon data will be returned.

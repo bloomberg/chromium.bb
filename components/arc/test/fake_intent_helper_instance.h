@@ -44,6 +44,9 @@ class FakeIntentHelperInstance : public mojom::IntentHelperInstance {
 
   void AddPreferredPackage(const mojo::String& package_name) override;
 
+  void GetFileSize(const mojo::String& url,
+                   const GetFileSizeCallback& callback) override;
+
   void HandleIntent(mojom::IntentInfoPtr intent,
                     mojom::ActivityNamePtr activity) override;
 
@@ -55,6 +58,9 @@ class FakeIntentHelperInstance : public mojom::IntentHelperInstance {
                      mojom::ActionType action) override;
 
   void Init(mojom::IntentHelperHostPtr host_ptr) override;
+
+  void OpenFileToRead(const mojo::String& url,
+                      const OpenFileToReadCallback& callback) override;
 
   void RequestActivityIcons(
       mojo::Array<mojom::ActivityNamePtr> activities,

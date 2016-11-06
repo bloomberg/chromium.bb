@@ -27,6 +27,10 @@ FakeIntentHelperInstance::~FakeIntentHelperInstance() {}
 void FakeIntentHelperInstance::AddPreferredPackage(
     const mojo::String& package_name) {}
 
+void FakeIntentHelperInstance::GetFileSize(
+    const mojo::String& url,
+    const GetFileSizeCallback& callback) {}
+
 void FakeIntentHelperInstance::HandleIntent(mojom::IntentInfoPtr intent,
                                             mojom::ActivityNamePtr activity) {}
 
@@ -39,6 +43,10 @@ void FakeIntentHelperInstance::HandleUrlList(
     mojom::ActionType action) {}
 
 void FakeIntentHelperInstance::Init(mojom::IntentHelperHostPtr host_ptr) {}
+
+void FakeIntentHelperInstance::OpenFileToRead(
+    const mojo::String& url,
+    const OpenFileToReadCallback& callback) {}
 
 void FakeIntentHelperInstance::RequestActivityIcons(
     mojo::Array<mojom::ActivityNamePtr> activities,
