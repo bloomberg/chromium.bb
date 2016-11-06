@@ -321,7 +321,7 @@ class WorkonHelper(object):
 
     return ebuilds
 
-  def _GetCanonicalAtom(self, package):
+  def _GetCanonicalAtom(self, package, find_stale=False):
     """Transform a package name or name fragment to the canonical atom.
 
     If there a multiple atoms that a package name fragment could map to,
@@ -329,6 +329,7 @@ class WorkonHelper(object):
 
     Args:
       package: string package name or fragment of a name.
+      find_stale: if True, allow stale (missing) worked on package.
 
     Returns:
       string canonical atom name (e.g. 'sys-apps/dbus')
@@ -342,14 +343,25 @@ class WorkonHelper(object):
 
     # If portage didn't know about that package, try and autocomplete it.
     if ebuild_path is None:
-      possible_ebuilds = []
-      for ebuild in self._GetWorkonEbuilds(filter_on_arch=False):
+      possible_ebuilds = set()
+      for ebuild in (portage_util.EbuildToCP(ebuild) for ebuild in
+                     self._GetWorkonEbuilds(filter_on_arch=False)):
         if package in ebuild:
-          possible_ebuilds.append(ebuild)
+          possible_ebuilds.add(ebuild)
+
+      # Also autocomplete from the worked-on list, in case the ebuild was
+      # deleted.
+      if find_stale:
+        for ebuild in self._GetWorkedOnAtoms():
+          if package in ebuild:
+            possible_ebuilds.add(ebuild)
 
       if not possible_ebuilds:
         logging.warning('Could not find canonical package for "%s"', package)
         return None
+
+      # We want some consistent order for making our selection below.
+      possible_ebuilds = sorted(possible_ebuilds)
 
       if len(possible_ebuilds) > 1:
         logging.warning('Multiple autocompletes found:')
@@ -373,11 +385,12 @@ class WorkonHelper(object):
 
     return portage_util.EbuildToCP(ebuild_path)
 
-  def _GetCanonicalAtoms(self, packages):
+  def _GetCanonicalAtoms(self, packages, find_stale=False):
     """Transforms a list of package name fragments into a list of CP atoms.
 
     Args:
       packages: list of package name fragments.
+      find_stale: if True, allow stale (missing) worked on package.
 
     Returns:
       list of canonical portage atoms corresponding to the given fragments.
@@ -390,7 +403,7 @@ class WorkonHelper(object):
 
     atoms = []
     for package_fragment in packages:
-      atom = self._GetCanonicalAtom(package_fragment)
+      atom = self._GetCanonicalAtom(package_fragment, find_stale=find_stale)
       if atom is None:
         raise WorkonError('Error parsing package list')
       atoms.append(atom)
@@ -584,7 +597,7 @@ class WorkonHelper(object):
     if use_all or use_workon_only:
       atoms = self._GetLiveAtoms(filter_workon=use_workon_only)
     else:
-      atoms = self._GetCanonicalAtoms(packages)
+      atoms = self._GetCanonicalAtoms(packages, find_stale=True)
 
     current_atoms = self._GetWorkedOnAtoms()
     stopped_atoms = []
