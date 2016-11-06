@@ -480,6 +480,17 @@ crbug.com/248938 [ Mac ] virtual/threaded/transitions/interrupted-all-transition
 
 crbug.com/659123 [ Mac ] fast/css/text-overflow-ellipsis-button.html [ Pass Failure ]
 
+crbug.com/662722 [ Win ] css1/color_and_background/background_attachment.html [ NeedsManualRebaseline ]
+crbug.com/662722 [ Win ] css1/box_properties/height.html [ NeedsManualRebaseline ]
+crbug.com/662722 [ Win ] css1/box_properties/padding_top_inline.html [ NeedsManualRebaseline ]
+crbug.com/662722 [ Win ] css1/box_properties/margin_top_inline.html [ NeedsManualRebaseline ]
+crbug.com/662722 [ Win ] css1/box_properties/border_color.html [ NeedsManualRebaseline ]
+crbug.com/662722 [ Mac ] css1/formatting_model/height_of_lines.html [ NeedsManualRebaseline ]
+crbug.com/662722 [ Mac ] css1/classification/list_style_type.html [ NeedsManualRebaseline ]
+crbug.com/662722 [ Mac ] fast/forms/datalist/input-appearance-range-with-datalist-zoomed.html [ NeedsManualRebaseline ]
+crbug.com/662722 virtual/scalefactor200withzoom/fast/hidpi/static/calendar-picker-appearance.html [ NeedsManualRebaseline ]
+crbug.com/662722 virtual/scalefactor200withzoom/fast/hidpi/static/data-suggestion-picker-appearance.html [ NeedsManualRebaseline ]
+
 # TODO(oshima): Mac Android are currently not supported.
 crbug.com/567837 [ Mac Android ] virtual/scalefactor200withzoom/fast/hidpi/static [ Skip ]
 
