@@ -43,6 +43,15 @@ class ArcNavigationThrottle : public content::NavigationThrottle {
     INVALID = SIZE,
   };
 
+  // As for CloseReason, these define the buckets for an UMA histogram, so this
+  // must be treated in an append-only fashion. This helps especify where a
+  // navigation will continue.
+  enum class Platform : int {
+    ARC = 0,
+    CHROME = 1,
+    SIZE,
+  };
+
   // Restricts the amount of apps displayed to the user without the need of a
   // ScrollView.
   enum { kMaxAppResults = 3 };
@@ -71,6 +80,16 @@ class ArcNavigationThrottle : public content::NavigationThrottle {
   static size_t GetAppIndex(
       const mojo::Array<mojom::IntentHandlerInfoPtr>& handlers,
       const std::string& selected_app_package);
+  // Determines the destination of the current navigation. We know that if the
+  // |close_reason| is either ERROR or DIALOG_DEACTIVATED the navigation MUST
+  // stay in Chrome, otherwise we can assume the navigation goes to ARC with the
+  // exception of the |selected_app_package| being Chrome.
+  static Platform GetDestinationPlatform(
+      const std::string& selected_app_package,
+      CloseReason close_reason);
+  // Records intent picker usage statistics as well as whether navigations are
+  // continued or redirected to Chrome or ARC respectively, via UMA histograms.
+  static void RecordUma(CloseReason close_reason, Platform platform);
 
   static bool IsAppAvailableForTesting(
       const mojo::Array<mojom::IntentHandlerInfoPtr>& handlers);

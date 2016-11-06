@@ -10,7 +10,6 @@
 
 #include "base/bind.h"
 #include "base/memory/ref_counted.h"
-#include "base/metrics/histogram_macros.h"
 #include "chrome/browser/chromeos/arc/intent_helper/arc_navigation_throttle.h"
 #include "chrome/browser/chromeos/external_protocol_dialog.h"
 #include "chrome/browser/tab_contents/tab_util.h"
@@ -39,12 +38,6 @@ namespace {
 constexpr uint32_t kMinVersionForHandleUrl = 2;
 constexpr uint32_t kMinVersionForRequestUrlHandlerList = 2;
 constexpr uint32_t kMinVersionForAddPreferredPackage = 7;
-
-void RecordUma(ArcNavigationThrottle::CloseReason close_reason) {
-  UMA_HISTOGRAM_ENUMERATION(
-      "Arc.IntentHandlerAction", static_cast<int>(close_reason),
-      static_cast<int>(ArcNavigationThrottle::CloseReason::SIZE));
-}
 
 // Shows the Chrome OS' original external protocol dialog as a fallback.
 void ShowFallbackExternalProtocolDialog(int render_process_host_id,
@@ -271,7 +264,11 @@ void OnIntentPickerClosed(int render_process_host_id,
       break;
     }
   }
-  RecordUma(close_reason);
+
+  ArcNavigationThrottle::Platform platform =
+      ArcNavigationThrottle::GetDestinationPlatform(selected_app_package,
+                                                    close_reason);
+  ArcNavigationThrottle::RecordUma(close_reason, platform);
 }
 
 // Called when ARC returned activity icons for the |handlers|.
@@ -324,8 +321,11 @@ void OnUrlHandlerList(int render_process_host_id,
   GetActionResult result;
   if (HandleUrl(render_process_host_id, routing_id, url, handlers,
                 handlers.size(), &result)) {
-    if (result == GetActionResult::HANDLE_URL_IN_ARC)
-      RecordUma(ArcNavigationThrottle::CloseReason::PREFERRED_ACTIVITY_FOUND);
+    if (result == GetActionResult::HANDLE_URL_IN_ARC) {
+      ArcNavigationThrottle::RecordUma(
+          ArcNavigationThrottle::CloseReason::PREFERRED_ACTIVITY_FOUND,
+          ArcNavigationThrottle::Platform::ARC);
+    }
     return;  // the |url| has been handled.
   }
 

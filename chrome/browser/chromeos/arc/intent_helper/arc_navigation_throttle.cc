@@ -370,9 +370,9 @@ void ArcNavigationThrottle::OnIntentPickerClosed(
     }
   }
 
-  UMA_HISTOGRAM_ENUMERATION("Arc.IntentHandlerAction",
-                            static_cast<int>(close_reason),
-                            static_cast<int>(CloseReason::SIZE));
+  Platform platform =
+      GetDestinationPlatform(selected_app_package, close_reason);
+  RecordUma(close_reason, platform);
 }
 
 // static
@@ -384,6 +384,29 @@ size_t ArcNavigationThrottle::GetAppIndex(
       return i;
   }
   return handlers.size();
+}
+
+// static
+ArcNavigationThrottle::Platform ArcNavigationThrottle::GetDestinationPlatform(
+    const std::string& selected_app_package,
+    CloseReason close_reason) {
+  return (close_reason != CloseReason::ERROR &&
+          close_reason != CloseReason::DIALOG_DEACTIVATED &&
+          !ArcIntentHelperBridge::IsIntentHelperPackage(selected_app_package))
+             ? Platform::ARC
+             : Platform::CHROME;
+}
+
+// static
+void ArcNavigationThrottle::RecordUma(CloseReason close_reason,
+                                      Platform platform) {
+  UMA_HISTOGRAM_ENUMERATION("Arc.IntentHandlerAction",
+                            static_cast<int>(close_reason),
+                            static_cast<int>(CloseReason::SIZE));
+
+  UMA_HISTOGRAM_ENUMERATION("Arc.IntentHandlerDestinationPlatform",
+                            static_cast<int>(platform),
+                            static_cast<int>(Platform::SIZE));
 }
 
 // static

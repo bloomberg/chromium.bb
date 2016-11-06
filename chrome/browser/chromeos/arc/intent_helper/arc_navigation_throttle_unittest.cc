@@ -143,6 +143,58 @@ TEST(ArcNavigationThrottleTest, TestGetAppIndex) {
       2u, ArcNavigationThrottle::GetAppIndex(CreateArray(3, 2), package_name));
 }
 
+TEST(ArcNavigationThrottleTest, TestGetDestinationPlatform) {
+  const std::string chrome_app =
+      ArcIntentHelperBridge::kArcIntentHelperPackageName;
+  const std::string non_chrome_app = "fake_package";
+
+  // When the CloseReason is either ERROR or DIALOG_DEACTIVATED we MUST stay in
+  // Chrome not taking into account the selected_app_package.
+  EXPECT_EQ(ArcNavigationThrottle::Platform::CHROME,
+            ArcNavigationThrottle::GetDestinationPlatform(
+                chrome_app, ArcNavigationThrottle::CloseReason::ERROR));
+  EXPECT_EQ(ArcNavigationThrottle::Platform::CHROME,
+            ArcNavigationThrottle::GetDestinationPlatform(
+                non_chrome_app, ArcNavigationThrottle::CloseReason::ERROR));
+  EXPECT_EQ(
+      ArcNavigationThrottle::Platform::CHROME,
+      ArcNavigationThrottle::GetDestinationPlatform(
+          chrome_app, ArcNavigationThrottle::CloseReason::DIALOG_DEACTIVATED));
+  EXPECT_EQ(ArcNavigationThrottle::Platform::CHROME,
+            ArcNavigationThrottle::GetDestinationPlatform(
+                non_chrome_app,
+                ArcNavigationThrottle::CloseReason::DIALOG_DEACTIVATED));
+
+  // Under any other CloseReason, stay in Chrome only if the package is Chrome.
+  // Otherwise redirect to ARC.
+  EXPECT_EQ(
+      ArcNavigationThrottle::Platform::CHROME,
+      ArcNavigationThrottle::GetDestinationPlatform(
+          chrome_app, ArcNavigationThrottle::CloseReason::ALWAYS_PRESSED));
+  EXPECT_EQ(
+      ArcNavigationThrottle::Platform::CHROME,
+      ArcNavigationThrottle::GetDestinationPlatform(
+          chrome_app, ArcNavigationThrottle::CloseReason::JUST_ONCE_PRESSED));
+  EXPECT_EQ(ArcNavigationThrottle::Platform::CHROME,
+            ArcNavigationThrottle::GetDestinationPlatform(
+                chrome_app,
+                ArcNavigationThrottle::CloseReason::PREFERRED_ACTIVITY_FOUND));
+
+  // Go to ARC on any other case.
+  EXPECT_EQ(
+      ArcNavigationThrottle::Platform::ARC,
+      ArcNavigationThrottle::GetDestinationPlatform(
+          non_chrome_app, ArcNavigationThrottle::CloseReason::ALWAYS_PRESSED));
+  EXPECT_EQ(ArcNavigationThrottle::Platform::ARC,
+            ArcNavigationThrottle::GetDestinationPlatform(
+                non_chrome_app,
+                ArcNavigationThrottle::CloseReason::JUST_ONCE_PRESSED));
+  EXPECT_EQ(ArcNavigationThrottle::Platform::ARC,
+            ArcNavigationThrottle::GetDestinationPlatform(
+                non_chrome_app,
+                ArcNavigationThrottle::CloseReason::PREFERRED_ACTIVITY_FOUND));
+}
+
 TEST(ArcNavigationThrottleTest, TestIsSwapElementsNeeded) {
   std::pair<size_t, size_t> indices;
   for (size_t i = 1; i <= ArcNavigationThrottle::kMaxAppResults; ++i) {
