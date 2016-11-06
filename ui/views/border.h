@@ -73,6 +73,20 @@ class VIEWS_EXPORT Border {
                                                         int right,
                                                         SkColor color);
 
+  // Creates a new border that draws |border| and adds additional padding. This
+  // is equivalent to changing the insets of |border| without changing how or
+  // what it paints. Example:
+  //
+  // view->SetBorder(Border::CreatePaddedBorder(
+  //                     Border::CreateSolidBorder(1, SK_ColorRED),
+  //                     gfx::Insets(2, 0, 0, 0)));
+  //
+  // yields a single dip red border and an additional 2dip of unpainted padding
+  // above the view content (below the border).
+  static std::unique_ptr<Border> CreatePaddedBorder(
+      std::unique_ptr<Border> border,
+      const gfx::Insets& insets);
+
   // Creates a Border from the specified Painter.
   // |insets| define size of an area allocated for a Border.
   static std::unique_ptr<Border> CreateBorderPainter(

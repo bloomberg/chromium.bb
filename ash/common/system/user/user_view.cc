@@ -256,12 +256,17 @@ UserView::UserView(SystemTrayItem* owner, LoginStatus login, UserIndex index)
 
   if (UseMd()) {
     auto layout = new views::BoxLayout(views::BoxLayout::kHorizontal,
-                                       kMenuExtraMarginFromLeftEdge,
-                                       kMenuSeparatorVerticalPadding, 0);
+                                       kMenuExtraMarginFromLeftEdge, 0, 0);
     SetLayoutManager(layout);
     layout->set_cross_axis_alignment(
         views::BoxLayout::CROSS_AXIS_ALIGNMENT_CENTER);
     layout->SetFlexForView(user_card_view_, 1);
+    int separator_width = user_index_ == 0 ? kSeparatorWidth : 0;
+    SetBorder(views::Border::CreatePaddedBorder(
+        views::Border::CreateSolidSidedBorder(0, 0, separator_width, 0,
+                                              kSeparatorColor),
+        gfx::Insets(kMenuSeparatorVerticalPadding, 0,
+                    kMenuSeparatorVerticalPadding - separator_width, 0)));
   }
 }
 
@@ -359,19 +364,6 @@ void UserView::Layout() {
   } else {
     user_card_view_->SetBoundsRect(contents_area);
   }
-}
-
-void UserView::OnPaintBorder(gfx::Canvas* canvas) {
-  if (!UseMd() || user_index_)
-    return;
-
-  DCHECK(!border());
-  // For the separator below this row, manually paint a border because it should
-  // be drawn *on top* of the vertical padding.
-  gfx::Rect local_bounds = GetLocalBounds();
-  local_bounds.Inset(gfx::Insets(0, 0, kSeparatorWidth, 0));
-  canvas->DrawLine(local_bounds.bottom_left(), local_bounds.bottom_right(),
-                   kHorizontalSeparatorColor);
 }
 
 void UserView::ButtonPressed(views::Button* sender, const ui::Event& event) {
@@ -573,19 +565,14 @@ void UserView::ToggleAddUserMenuOption() {
     bounds.set_height(row_height * 2);
     add_menu_option_->SetBounds(bounds);
 
-    // This nested container is necessary to stack borders.
-    views::View* nested_container = new views::View();
-    nested_container->SetBorder(
-        views::Border::CreateEmptyBorder(row_height, 0, 0, 0));
-    nested_container->SetLayoutManager(new views::FillLayout());
-    nested_container->AddChildView(button);
-
     views::View* container = new AddUserWidgetContents(
         base::Bind(&UserView::RemoveAddUserMenuOption, base::Unretained(this)));
-    container->SetBorder(views::Border::CreateSolidSidedBorder(
-        0, 0, 0, kSeparatorWidth, kBackgroundColor));
+    container->SetBorder(views::Border::CreatePaddedBorder(
+        views::Border::CreateSolidSidedBorder(0, 0, 0, kSeparatorWidth,
+                                              kBackgroundColor),
+        gfx::Insets(row_height, 0, 0, 0)));
     container->SetLayoutManager(new views::FillLayout());
-    container->AddChildView(nested_container);
+    container->AddChildView(button);
     add_menu_option_->SetContentsView(container);
   } else {
     add_menu_option_->SetOpacity(1.f);

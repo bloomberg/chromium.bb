@@ -137,6 +137,40 @@ gfx::Size EmptyBorder::GetMinimumSize() const {
   return gfx::Size();
 }
 
+class ExtraInsetsBorder : public Border {
+ public:
+  ExtraInsetsBorder(std::unique_ptr<Border> border, const gfx::Insets& insets);
+
+  // Overridden from Border:
+  void Paint(const View& view, gfx::Canvas* canvas) override;
+  gfx::Insets GetInsets() const override;
+  gfx::Size GetMinimumSize() const override;
+
+ private:
+  std::unique_ptr<Border> border_;
+  const gfx::Insets extra_insets_;
+
+  DISALLOW_COPY_AND_ASSIGN(ExtraInsetsBorder);
+};
+
+ExtraInsetsBorder::ExtraInsetsBorder(std::unique_ptr<Border> border,
+                                     const gfx::Insets& insets)
+    : border_(std::move(border)), extra_insets_(insets) {}
+
+void ExtraInsetsBorder::Paint(const View& view, gfx::Canvas* canvas) {
+  border_->Paint(view, canvas);
+}
+
+gfx::Insets ExtraInsetsBorder::GetInsets() const {
+  return border_->GetInsets() + extra_insets_;
+}
+
+gfx::Size ExtraInsetsBorder::GetMinimumSize() const {
+  gfx::Size size = border_->GetMinimumSize();
+  size.Enlarge(extra_insets_.width(), extra_insets_.height());
+  return size;
+}
+
 class BorderPainter : public Border {
  public:
   BorderPainter(std::unique_ptr<Painter> painter, const gfx::Insets& insets);
@@ -218,6 +252,13 @@ std::unique_ptr<Border> Border::CreateSolidSidedBorder(int top,
                                                        SkColor color) {
   return base::MakeUnique<SolidSidedBorder>(
       gfx::Insets(top, left, bottom, right), color);
+}
+
+// static
+std::unique_ptr<Border> Border::CreatePaddedBorder(
+    std::unique_ptr<Border> border,
+    const gfx::Insets& insets) {
+  return base::MakeUnique<ExtraInsetsBorder>(std::move(border), insets);
 }
 
 // static

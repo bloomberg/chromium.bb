@@ -56,7 +56,6 @@ class UserView : public views::View,
   gfx::Size GetPreferredSize() const override;
   int GetHeightForWidth(int width) const override;
   void Layout() override;
-  void OnPaintBorder(gfx::Canvas* canvas) override;
 
   // Overridden from views::ButtonListener.
   void ButtonPressed(views::Button* sender, const ui::Event& event) override;
