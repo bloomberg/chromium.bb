@@ -26,7 +26,7 @@ const base::FilePath::CharType kTestDataDir[] =
 const char kIconUrl[] = "/android/google.png";
 
 // Murmur2 hash for |kIconUrl|.
-const char kIconMurmur2Hash[] = "13321047016824288610";
+const char kIconMurmur2Hash[] = "2081059568551351877";
 
 // Runs WebApkIconHasher and blocks till the murmur2 hash is computed.
 class WebApkIconHasherRunner {

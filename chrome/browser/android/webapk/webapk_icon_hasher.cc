@@ -47,7 +47,7 @@ void WebApkIconHasher::OnURLFetchComplete(const net::URLFetcher* source) {
   // browser process is a security bug.
   std::string raw_image_data;
   source->GetResponseAsString(&raw_image_data);
-  uint64_t hash = MurmurHash64B(&raw_image_data.front(), raw_image_data.size(),
+  uint64_t hash = MurmurHash64A(&raw_image_data.front(), raw_image_data.size(),
                                 kMurmur2HashSeed);
   callback_.Run(base::Uint64ToString(hash));
 }

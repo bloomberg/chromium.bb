@@ -32,7 +32,7 @@ public class ManifestUpgradeDetectorTest extends ChromeTabbedActivityTestBase {
     private static final String WEBAPK_NAME = "Manifest test app";
     private static final String WEBAPK_SHORT_NAME = "Manifest test app";
     private static final String WEBAPK_ICON_URL = "/chrome/test/data/banners/image-512px.png";
-    private static final String WEBAPK_ICON_MURMUR2_HASH = "6537363487080720023";
+    private static final String WEBAPK_ICON_MURMUR2_HASH = "7742433188808797392";
     private static final int WEBAPK_DISPLAY_MODE = WebDisplayMode.Standalone;
     private static final int WEBAPK_ORIENTATION = ScreenOrientationValues.LANDSCAPE;
     private static final long WEBAPK_THEME_COLOR = 2147483648L;
