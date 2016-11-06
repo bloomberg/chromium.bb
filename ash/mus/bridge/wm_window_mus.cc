@@ -9,6 +9,7 @@
 #include "ash/common/wm/window_positioning_utils.h"
 #include "ash/common/wm/window_state.h"
 #include "ash/common/wm_layout_manager.h"
+#include "ash/common/wm_lookup.h"
 #include "ash/common/wm_transient_window_observer.h"
 #include "ash/common/wm_window_observer.h"
 #include "ash/common/wm_window_property.h"
@@ -376,6 +377,10 @@ bool WmWindowMus::GetBoolProperty(WmWindowProperty key) {
     case WmWindowProperty::ALWAYS_ON_TOP:
       return IsAlwaysOnTop();
 
+    case WmWindowProperty::DRAW_ATTENTION:
+      NOTIMPLEMENTED();
+      return false;
+
     case WmWindowProperty::EXCLUDE_FROM_MRU:
       return GetExcludeFromMru(window_);
 
@@ -491,6 +496,26 @@ void WmWindowMus::SetIntProperty(WmWindowProperty key, int value) {
   NOTREACHED();
 }
 
+std::string WmWindowMus::GetStringProperty(WmWindowProperty key) {
+  NOTIMPLEMENTED();
+  return std::string();
+}
+
+void WmWindowMus::SetStringProperty(WmWindowProperty key,
+                                    const std::string& value) {
+  NOTIMPLEMENTED();
+}
+
+gfx::ImageSkia WmWindowMus::GetWindowIcon() {
+  NOTIMPLEMENTED();
+  return gfx::ImageSkia();
+}
+
+gfx::ImageSkia WmWindowMus::GetAppIcon() {
+  NOTIMPLEMENTED();
+  return gfx::ImageSkia();
+}
+
 const wm::WindowState* WmWindowMus::GetWindowState() const {
   return window_state_.get();
 }
@@ -528,6 +553,20 @@ const WmWindow* WmWindowMus::GetTransientParent() const {
 
 std::vector<WmWindow*> WmWindowMus::GetTransientChildren() {
   return FromMusWindows(window_->transient_children());
+}
+
+bool WmWindowMus::MoveToEventRoot(const ui::Event& event) {
+  views::View* target = static_cast<views::View*>(event.target());
+  if (!target)
+    return false;
+  WmWindow* target_root =
+      WmLookup::Get()->GetWindowForWidget(target->GetWidget())->GetRootWindow();
+  if (!target_root || target_root == GetRootWindow())
+    return false;
+  WmWindow* window_container =
+      target_root->GetChildByShellWindowId(GetParent()->GetShellWindowId());
+  window_container->AddChild(this);
+  return true;
 }
 
 void WmWindowMus::SetLayoutManager(

@@ -75,7 +75,7 @@ class LauncherContextMenuTest : public ash::test::AshTestBase {
     widget->Show();
     widget->Activate();
     exo::ShellSurface::SetApplicationId(widget->GetNativeWindow(),
-                                        &window_app_id);
+                                        window_app_id);
     return widget;
   }
 

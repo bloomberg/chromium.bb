@@ -152,6 +152,11 @@ class WmWindowMus : public WmWindow, public ui::WindowObserver {
   void SetColorProperty(WmWindowProperty key, SkColor value) override;
   int GetIntProperty(WmWindowProperty key) override;
   void SetIntProperty(WmWindowProperty key, int value) override;
+  std::string GetStringProperty(WmWindowProperty key) override;
+  void SetStringProperty(WmWindowProperty key,
+                         const std::string& value) override;
+  gfx::ImageSkia GetWindowIcon() override;
+  gfx::ImageSkia GetAppIcon() override;
   const wm::WindowState* GetWindowState() const override;
   WmWindow* GetToplevelWindow() override;
   WmWindow* GetToplevelWindowForFocus() override;
@@ -162,6 +167,7 @@ class WmWindowMus : public WmWindow, public ui::WindowObserver {
   const WmWindow* GetParent() const override;
   const WmWindow* GetTransientParent() const override;
   std::vector<WmWindow*> GetTransientChildren() override;
+  bool MoveToEventRoot(const ui::Event& event) override;
   void SetLayoutManager(
       std::unique_ptr<WmLayoutManager> layout_manager) override;
   WmLayoutManager* GetLayoutManager() override;

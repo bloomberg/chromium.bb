@@ -14,6 +14,7 @@
 #include "ui/views/corewm/tooltip_aura.h"
 #include "ui/views/mus/mus_client.h"
 #include "ui/views/widget/desktop_aura/desktop_native_widget_aura.h"
+#include "ui/views/widget/native_widget_aura.h"
 #include "ui/views/widget/widget_delegate.h"
 #include "ui/wm/core/window_util.h"
 #include "ui/wm/public/activation_client.h"
@@ -321,14 +322,7 @@ void DesktopWindowTreeHostMus::SetOpacity(float opacity) {
 
 void DesktopWindowTreeHostMus::SetWindowIcons(const gfx::ImageSkia& window_icon,
                                               const gfx::ImageSkia& app_icon) {
-  if (window_icon.isNull() && app_icon.isNull()) {
-    window()->ClearProperty(aura::client::kWindowIconKey);
-    return;
-  }
-
-  window()->SetProperty(
-      aura::client::kWindowIconKey,
-      new gfx::ImageSkia(!window_icon.isNull() ? window_icon : app_icon));
+  NativeWidgetAura::AssignIconToAuraWindow(window(), window_icon, app_icon);
 }
 
 void DesktopWindowTreeHostMus::InitModalType(ui::ModalType modal_type) {

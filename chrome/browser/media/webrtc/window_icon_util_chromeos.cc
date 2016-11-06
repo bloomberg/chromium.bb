@@ -14,8 +14,8 @@ gfx::ImageSkia GetWindowIcon(content::DesktopMediaID id) {
   if (!window)
     return gfx::ImageSkia();
 
-  const gfx::ImageSkia* icon_image_ptr =
-      window->GetProperty(aura::client::kWindowIconKey);
-
-  return icon_image_ptr ? *icon_image_ptr : gfx::ImageSkia();
+  gfx::ImageSkia* image = window->GetProperty(aura::client::kWindowIconKey);
+  if (!image)
+    image = window->GetProperty(aura::client::kAppIconKey);
+  return image ? *image : gfx::ImageSkia();
 }
