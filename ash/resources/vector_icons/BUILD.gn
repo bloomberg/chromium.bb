@@ -12,6 +12,8 @@ action("aggregate_vector_icons") {
     "ime_menu_emoticon.icon",
     "ime_menu_microphone.1x.icon",
     "ime_menu_microphone.icon",
+    "ime_menu_on_screen_keyboard.1x.icon",
+    "ime_menu_on_screen_keyboard.icon",
     "ime_menu_write.1x.icon",
     "ime_menu_write.icon",
     "network_badge_add_other.1x.icon",

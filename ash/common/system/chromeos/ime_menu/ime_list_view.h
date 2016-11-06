@@ -7,8 +7,11 @@
 
 #include "ash/common/system/tray/ime_info.h"
 #include "ash/common/system/tray/tray_details_view.h"
+#include "ui/views/controls/button/button.h"
 
 namespace ash {
+class MaterialKeyboardStatusRowView;
+
 // The detailed view for showing IME list.
 class ImeListView : public TrayDetailsView {
  public:
@@ -34,9 +37,15 @@ class ImeListView : public TrayDetailsView {
   // TrayDetailsView:
   void HandleViewClicked(views::View* view) override;
 
+  // views::ButtonListener:
+  void ButtonPressed(views::Button* sender, const ui::Event& event) override;
+
  private:
   // To allow the test class to access |ime_map_|.
   friend class ImeMenuTrayTest;
+
+  // Removes (and destroys) all child views.
+  void ResetImeListView();
 
   // Appends the IMEs to the scrollable area of the detailed view.
   void AppendIMEList(const IMEInfoList& list);
@@ -53,9 +62,16 @@ class ImeListView : public TrayDetailsView {
   // view.
   void AppendKeyboardStatus();
 
+  // Appends the material on-screen keyboard status to the top area of the
+  // detailed view.
+  void AppendMaterialKeyboardStatus();
+
   std::map<views::View*, std::string> ime_map_;
   std::map<views::View*, std::string> property_map_;
+  // On-screen keyboard view which is not used in material design.
   views::View* keyboard_status_;
+  // On-screen keyboard view which is only used in material design.
+  MaterialKeyboardStatusRowView* material_keyboard_statuts_view_;
 
   DISALLOW_COPY_AND_ASSIGN(ImeListView);
 };

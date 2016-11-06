@@ -133,6 +133,9 @@ void TrayIMETest::TearDown() {
 // Tests that if the keyboard is not suppressed the default view is hidden
 // if less than 2 IMEs are present.
 TEST_F(TrayIMETest, HiddenWithNoIMEs) {
+  if (MaterialDesignController::IsSystemTrayMenuMaterial())
+    return;
+
   SetIMELength(0);
   EXPECT_FALSE(default_view()->visible());
   SetIMELength(1);
@@ -144,6 +147,9 @@ TEST_F(TrayIMETest, HiddenWithNoIMEs) {
 // Tests that if no IMEs are present the default view is hidden when a11y is
 // enabled.
 TEST_F(TrayIMETest, HidesOnA11yEnabled) {
+  if (MaterialDesignController::IsSystemTrayMenuMaterial())
+    return;
+
   SetIMELength(0);
   SuppressKeyboard();
   EXPECT_TRUE(default_view()->visible());
@@ -158,6 +164,9 @@ TEST_F(TrayIMETest, HidesOnA11yEnabled) {
 // Tests that clicking on the keyboard toggle causes the virtual keyboard
 // to toggle between enabled and disabled.
 TEST_F(TrayIMETest, PerformActionOnDetailedView) {
+  if (MaterialDesignController::IsSystemTrayMenuMaterial())
+    return;
+
   SetIMELength(0);
   SuppressKeyboard();
   EXPECT_FALSE(keyboard::IsKeyboardEnabled());
