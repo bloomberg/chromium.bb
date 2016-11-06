@@ -291,7 +291,7 @@ class WorkonHelper(object):
         osutils.SafeMakedirs(os.path.dirname(symlink), sudo=True)
         osutils.SafeSymlink(target, symlink, sudo=True)
       else:
-        logging.debug("Symlink %s already exists. Don't recreated it."
+        logging.debug("Symlink %s already exists. Don't recreate it."
                       % symlink)
 
   def _AtomsToEbuilds(self, atoms):
