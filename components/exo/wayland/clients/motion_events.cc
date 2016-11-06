@@ -9,11 +9,15 @@
 #include <wayland-client-core.h>
 #include <wayland-client-protocol.h>
 
+#include <iostream>
 #include <vector>
 
+#include "base/command_line.h"
 #include "base/logging.h"
 #include "base/macros.h"
 #include "base/memory/shared_memory.h"
+#include "base/strings/string_number_conversions.h"
+#include "base/time/time.h"
 #include "third_party/skia/include/core/SkCanvas.h"
 #include "third_party/skia/include/core/SkRefCnt.h"
 #include "third_party/skia/include/core/SkSurface.h"
@@ -47,10 +51,6 @@ namespace wayland {
 namespace clients {
 namespace {
 
-// Window size.
-const size_t kWidth = 256;
-const size_t kHeight = 256;
-
 // Buffer format.
 const int32_t kFormat = WL_SHM_FORMAT_ARGB8888;
 const SkColorType kColorType = kBGRA_8888_SkColorType;
@@ -62,10 +62,8 @@ const size_t kBuffers = 2;
 // Rotation speed (degrees/second).
 const double kRotationSpeed = 360.0;
 
-// Helper constants.
-const size_t kStride = kWidth * kBytesPerPixel;
-const size_t kBufferSize = kHeight * kStride;
-const size_t kMemorySize = kBufferSize * kBuffers;
+// Benchmark interval in seconds.
+const int kBenchmarkInterval = 5;
 
 struct Globals {
   std::unique_ptr<wl_compositor> compositor;
@@ -210,12 +208,30 @@ void FrameCallback(void* data, wl_callback* callback, uint32_t time) {
 
 class MotionEvents {
  public:
-  MotionEvents() {}
+  MotionEvents(size_t width,
+               size_t height,
+               int scale,
+               size_t num_rects,
+               bool fullscreen)
+      : width_(width),
+        height_(height),
+        scale_(scale),
+        num_rects_(num_rects),
+        fullscreen_(fullscreen) {}
 
   // Initialize and run client main loop.
   int Run();
 
  private:
+  size_t stride() const { return width_ * kBytesPerPixel; }
+  size_t buffer_size() const { return stride() * height_; }
+
+  const size_t width_;
+  const size_t height_;
+  const int scale_;
+  const size_t num_rects_;
+  const bool fullscreen_;
+
   DISALLOW_COPY_AND_ASSIGN(MotionEvents);
 };
 
@@ -232,7 +248,6 @@ int MotionEvents::Run() {
   wl_registry* registry = wl_display_get_registry(display.get());
   wl_registry_add_listener(registry, &registry_listener, &globals);
 
-  wl_display_dispatch(display.get());
   wl_display_roundtrip(display.get());
 
   if (!globals.compositor) {
@@ -256,21 +271,22 @@ int MotionEvents::Run() {
 
   Buffer buffers[kBuffers];
   base::SharedMemory shared_memory;
-  shared_memory.CreateAndMapAnonymous(kMemorySize);
+  shared_memory.CreateAndMapAnonymous(buffer_size() * kBuffers);
   std::unique_ptr<wl_shm_pool> shm_pool(
       wl_shm_create_pool(globals.shm.get(), shared_memory.handle().fd,
                          shared_memory.requested_size()));
   for (size_t i = 0; i < kBuffers; ++i) {
-    buffers[i].buffer.reset(static_cast<wl_buffer*>(wl_shm_pool_create_buffer(
-        shm_pool.get(), i * kBufferSize, kWidth, kHeight, kStride, kFormat)));
+    buffers[i].buffer.reset(static_cast<wl_buffer*>(
+        wl_shm_pool_create_buffer(shm_pool.get(), i * buffer_size(), width_,
+                                  height_, stride(), kFormat)));
     if (!buffers[i].buffer) {
       LOG(ERROR) << "Can't create buffer";
       return 1;
     }
     buffers[i].sk_surface = SkSurface::MakeRasterDirect(
-        SkImageInfo::Make(kWidth, kHeight, kColorType, kUnpremul_SkAlphaType),
-        static_cast<uint8_t*>(shared_memory.memory()) + kBufferSize * i,
-        kStride);
+        SkImageInfo::Make(width_, height_, kColorType, kOpaque_SkAlphaType),
+        static_cast<uint8_t*>(shared_memory.memory()) + buffer_size() * i,
+        stride());
     if (!buffers[i].sk_surface) {
       LOG(ERROR) << "Can't create SkSurface";
       return 1;
@@ -293,7 +309,7 @@ int MotionEvents::Run() {
     return 1;
   }
 
-  wl_region_add(opaque_region.get(), 0, 0, kWidth, kHeight);
+  wl_region_add(opaque_region.get(), 0, 0, width_, height_);
   wl_surface_set_opaque_region(surface.get(), opaque_region.get());
 
   std::unique_ptr<wl_shell_surface> shell_surface(
@@ -305,7 +321,13 @@ int MotionEvents::Run() {
   }
 
   wl_shell_surface_set_title(shell_surface.get(), "Test Client");
-  wl_shell_surface_set_toplevel(shell_surface.get());
+  if (fullscreen_) {
+    wl_shell_surface_set_fullscreen(shell_surface.get(),
+                                    WL_SHELL_SURFACE_FULLSCREEN_METHOD_DEFAULT,
+                                    0, nullptr);
+  } else {
+    wl_shell_surface_set_toplevel(shell_surface.get());
+  }
 
   EventTimeStack event_times;
 
@@ -337,6 +359,11 @@ int MotionEvents::Run() {
   std::unique_ptr<wl_callback> frame_callback;
   wl_callback_listener frame_listener = {FrameCallback};
 
+  uint32_t frames = 0;
+  base::TimeTicks benchmark_time = base::TimeTicks::Now();
+  base::TimeDelta benchmark_interval =
+      base::TimeDelta::FromSeconds(kBenchmarkInterval);
+
   do {
     if (frame.callback_pending)
       continue;
@@ -347,40 +374,59 @@ int MotionEvents::Run() {
     if (buffer == std::end(buffers))
       continue;
 
+    base::TimeTicks current_time = base::TimeTicks::Now();
+    if ((current_time - benchmark_time) > benchmark_interval) {
+      std::cout << frames << " frames in " << benchmark_interval.InSeconds()
+                << " seconds: "
+                << static_cast<double>(frames) / benchmark_interval.InSeconds()
+                << " fps" << std::endl;
+      benchmark_time = current_time;
+      frames = 0;
+    }
+
     SkCanvas* canvas = buffer->sk_surface->getCanvas();
     canvas->save();
 
-    // Clear background to black.
-    canvas->clear(SK_ColorBLACK);
-
-    // Split buffer into one horizontal rectangle for each event received since
-    // last frame. Latest event at the top.
-    if (!event_times.empty()) {
-      double y = 0;
-      double height = static_cast<double>(kHeight) / event_times.size();
+    if (event_times.empty()) {
+      canvas->clear(SK_ColorBLACK);
+    } else {
+      // Split buffer into one horizontal rectangle for each event received
+      // since last frame. Latest event at the top.
+      int y = 0;
+      // Note: Rounding up to ensure we cover the whole canvas.
+      int h = (height_ + (event_times.size() / 2)) / event_times.size();
       while (!event_times.empty()) {
-        SkRect rect = SkRect::MakeXYWH(0, y, kWidth, height);
+        SkIRect rect = SkIRect::MakeXYWH(0, y, width_, h);
         SkPaint paint;
         paint.setColor(SkColorSetRGB((event_times.back() & 0x0000ff) >> 0,
                                      (event_times.back() & 0x00ff00) >> 8,
                                      (event_times.back() & 0xff0000) >> 16));
-        canvas->drawRect(rect, paint);
+        canvas->drawIRect(rect, paint);
         event_times.pop_back();
-        y += height;
+        y += h;
       }
     }
 
-    // Draw a blue rotating rectangle on top.
-    canvas->translate(SkIntToScalar(kWidth / 2), SkIntToScalar(kHeight / 2));
-    canvas->rotate(SkDoubleToScalar((frame.time / 1000.0f) * kRotationSpeed));
-    SkRect rect = SkRect::MakeXYWH(-(kWidth / 4.0f), -(kHeight / 4.0f),
-                                   kWidth / 2.0f, kHeight / 2.0f);
+    // Draw rotating rects.
+    SkScalar half_width = SkScalarHalf(width_);
+    SkScalar half_height = SkScalarHalf(height_);
+    SkIRect rect =
+        SkIRect::MakeXYWH(-SkScalarHalf(half_width), -SkScalarHalf(half_height),
+                          half_width, half_height);
+    SkScalar rotation = SkScalarMulDiv(frame.time, kRotationSpeed, 1000);
     SkPaint paint;
-    paint.setColor(SK_ColorBLUE);
-    canvas->drawRect(rect, paint);
-
+    canvas->translate(half_width, half_height);
+    for (size_t i = 0; i < num_rects_; ++i) {
+      const SkColor kColors[] = {SK_ColorBLUE, SK_ColorGREEN,
+                                 SK_ColorRED,  SK_ColorYELLOW,
+                                 SK_ColorCYAN, SK_ColorMAGENTA};
+      paint.setColor(SkColorSetA(kColors[i % arraysize(kColors)], 0xA0));
+      canvas->rotate(rotation / num_rects_);
+      canvas->drawIRect(rect, paint);
+    }
     canvas->restore();
 
+    wl_surface_set_buffer_scale(surface.get(), scale_);
     wl_surface_attach(surface.get(), buffer->buffer.get(), 0, 0);
     buffer->busy = true;
 
@@ -388,8 +434,9 @@ int MotionEvents::Run() {
     wl_callback_add_listener(frame_callback.get(), &frame_listener, &frame);
     frame.callback_pending = true;
 
+    ++frames;
+
     wl_surface_commit(surface.get());
-    wl_display_flush(display.get());
   } while (wl_display_dispatch(display.get()) != -1);
 
   return 0;
@@ -399,6 +446,54 @@ int MotionEvents::Run() {
 }  // namespace wayland
 }  // namespace exo
 
-int main() {
-  return exo::wayland::clients::MotionEvents().Run();
+namespace switches {
+
+// Specifies the client buffer size.
+const char kSize[] = "size";
+
+// Specifies the client scale factor (ie. number of physical pixels per DIP).
+const char kScale[] = "scale";
+
+// Specifies the number of rotating rects to draw.
+const char kNumRects[] = "num-rects";
+
+// Specifies if client should be fullscreen.
+const char kFullscreen[] = "fullscreen";
+
+}  // namespace switches
+
+int main(int argc, char* argv[]) {
+  base::CommandLine command_line(argc, argv);
+
+  int width = 256;
+  int height = 256;
+  if (command_line.HasSwitch(switches::kSize)) {
+    std::string size_str = command_line.GetSwitchValueASCII(switches::kSize);
+    if (sscanf(size_str.c_str(), "%dx%d", &width, &height) != 2) {
+      LOG(ERROR) << "Invalid value for " << switches::kSize;
+      return 1;
+    }
+  }
+
+  int scale = 1;
+  if (command_line.HasSwitch(switches::kScale) &&
+      !base::StringToInt(command_line.GetSwitchValueASCII(switches::kScale),
+                         &scale)) {
+    LOG(ERROR) << "Invalid value for " << switches::kScale;
+    return 1;
+  }
+
+  size_t num_rects = 1;
+  if (command_line.HasSwitch(switches::kNumRects) &&
+      !base::StringToSizeT(
+          command_line.GetSwitchValueASCII(switches::kNumRects), &num_rects)) {
+    LOG(ERROR) << "Invalid value for " << switches::kNumRects;
+    return 1;
+  }
+
+  bool fullscreen = command_line.HasSwitch(switches::kFullscreen);
+
+  exo::wayland::clients::MotionEvents client(width, height, scale, num_rects,
+                                             fullscreen);
+  return client.Run();
 }
