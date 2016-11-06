@@ -30,7 +30,7 @@
     object created.
   </para>
   <para>
-    Though some conveinence functions are provided, libwayland-client
+    Though some convenience functions are provided, libwayland-client
     is designed to allow the calling code to wait for events, so that
     different polling mechanisms can be used. A file descriptor is
     provided, when it becomes ready for reading the calling code can
