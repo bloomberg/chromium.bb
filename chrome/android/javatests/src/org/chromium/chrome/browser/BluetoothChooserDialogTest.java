@@ -64,17 +64,27 @@ public class BluetoothChooserDialogTest extends ChromeActivityTestCaseBase<Chrom
 
         @Override
         void nativeRestartSearch(long nativeBluetoothChooserAndroid) {
+            assertTrue(mNativeBluetoothChooserDialogPtr != 0);
             mRestartSearchCount++;
         }
 
         @Override
-        void nativeShowBluetoothOverviewLink(long nativeBluetoothChooserAndroid) {}
+        void nativeShowBluetoothOverviewLink(long nativeBluetoothChooserAndroid) {
+            // We shouldn't be running native functions if the native class has been destroyed.
+            assertTrue(mNativeBluetoothChooserDialogPtr != 0);
+        }
 
         @Override
-        void nativeShowBluetoothAdapterOffLink(long nativeBluetoothChooserAndroid) {}
+        void nativeShowBluetoothAdapterOffLink(long nativeBluetoothChooserAndroid) {
+            // We shouldn't be running native functions if the native class has been destroyed.
+            assertTrue(mNativeBluetoothChooserDialogPtr != 0);
+        }
 
         @Override
-        void nativeShowNeedLocationPermissionLink(long nativeBluetoothChooserAndroid) {}
+        void nativeShowNeedLocationPermissionLink(long nativeBluetoothChooserAndroid) {
+            // We shouldn't be running native functions if the native class has been destroyed.
+            assertTrue(mNativeBluetoothChooserDialogPtr != 0);
+        }
     }
 
     private ActivityWindowAndroid mWindowAndroid;
@@ -253,7 +263,7 @@ public class BluetoothChooserDialogTest extends ChromeActivityTestCaseBase<Chrom
         final View progress = dialog.findViewById(R.id.progress);
 
         final TestAndroidPermissionDelegate permissionDelegate =
-                new TestAndroidPermissionDelegate();
+                new TestAndroidPermissionDelegate(dialog);
         mWindowAndroid.setAndroidPermissionDelegate(permissionDelegate);
 
         ThreadUtils.runOnUiThreadBlocking(new Runnable() {
@@ -296,11 +306,16 @@ public class BluetoothChooserDialogTest extends ChromeActivityTestCaseBase<Chrom
             }
         });
 
-        assertEquals(1, mChooserDialog.mRestartSearchCount);
-        assertEquals(removeLinkTags(getActivity().getString(R.string.bluetooth_searching)),
-                statusView.getText().toString());
+        // TODO(661862): Remove once the dialog no longer closes when the window loses
+        // focus.
+        assertTrue(mChooserDialog.mFinishedEventType != -1);
 
-        mChooserDialog.closeDialog();
+        // TODO(661862): Uncomment once the dialog no longer closes when the window
+        // loses focus.
+        // assertEquals(1, mChooserDialog.mRestartSearchCount);
+        // assertEquals(removeLinkTags(getActivity().getString(R.string.bluetooth_searching)),
+        //     statusView.getText().toString());
+        // mChooserDialog.closeDialog();
     }
 
     @LargeTest
@@ -318,7 +333,7 @@ public class BluetoothChooserDialogTest extends ChromeActivityTestCaseBase<Chrom
         final View progress = dialog.findViewById(R.id.progress);
 
         final TestAndroidPermissionDelegate permissionDelegate =
-                new TestAndroidPermissionDelegate();
+                new TestAndroidPermissionDelegate(dialog);
         mWindowAndroid.setAndroidPermissionDelegate(permissionDelegate);
 
         // Grant permissions, and turn off location services.
@@ -364,8 +379,13 @@ public class BluetoothChooserDialogTest extends ChromeActivityTestCaseBase<Chrom
     // TODO(jyasskin): Test when the user denies Chrome the ability to ask for permission.
 
     private static class TestAndroidPermissionDelegate implements AndroidPermissionDelegate {
+        Dialog mDialog = null;
         PermissionCallback mCallback = null;
         String[] mPermissionsRequested = null;
+
+        public TestAndroidPermissionDelegate(Dialog dialog) {
+            mDialog = dialog;
+        }
 
         @Override
         public boolean hasPermission(String permission) {
@@ -376,12 +396,16 @@ public class BluetoothChooserDialogTest extends ChromeActivityTestCaseBase<Chrom
         public boolean canRequestPermission(String permission) {
             return true;
         }
+
         @Override
         public boolean isPermissionRevokedByPolicy(String permission) {
             return false;
         }
+
         @Override
         public void requestPermissions(String[] permissions, PermissionCallback callback) {
+            // Requesting for permission takes away focus from the window.
+            mDialog.onWindowFocusChanged(false /* hasFocus */);
             mPermissionsRequested = permissions;
             if (permissions.length == 1
                     && permissions[0].equals(Manifest.permission.ACCESS_COARSE_LOCATION)) {

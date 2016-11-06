@@ -185,6 +185,11 @@ public class BluetoothChooserDialog
 
     @Override
     public void onRequestPermissionsResult(String[] permissions, int[] grantResults) {
+        // The chooser might have been closed during the request.
+        if (mNativeBluetoothChooserDialogPtr == 0) {
+            return;
+        }
+
         for (int i = 0; i < permissions.length; i++) {
             if (permissions[i].equals(Manifest.permission.ACCESS_COARSE_LOCATION)) {
                 if (checkLocationServicesAndPermission()) {
