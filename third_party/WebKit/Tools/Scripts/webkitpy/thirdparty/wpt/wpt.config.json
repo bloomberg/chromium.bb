@@ -17,5 +17,11 @@
       "host_key_path": "../certs/127.0.0.1.key",
       "host_cert_path": "../certs/127.0.0.1.pem"
     }
-  }
+  },
+  "aliases": [
+    {
+      "url-path": "/wpt_automation/",
+      "local-dir": "../../../../../../LayoutTests/imported/wpt_automation"
+    }
+  ]
 }
