@@ -62,9 +62,6 @@ class StreamsPrivateAPI : public BrowserContextKeyedAPI,
 
  private:
   friend class BrowserContextKeyedAPIFactory<StreamsPrivateAPI>;
-  typedef std::map<std::string,
-                   std::map<GURL,
-                            linked_ptr<content::StreamHandle> > > StreamMap;
 
   // ExtensionRegistryObserver implementation.
   void OnExtensionUnloaded(content::BrowserContext* browser_context,
@@ -79,6 +76,9 @@ class StreamsPrivateAPI : public BrowserContextKeyedAPI,
   static const bool kServiceRedirectedInIncognito = true;
 
   content::BrowserContext* const browser_context_;
+  using StreamMap =
+      std::map<std::string,
+               std::map<GURL, std::unique_ptr<content::StreamHandle>>>;
   StreamMap streams_;
 
   // Listen to extension unloaded notifications.

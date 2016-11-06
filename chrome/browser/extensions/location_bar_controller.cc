@@ -56,13 +56,14 @@ std::vector<ExtensionAction*> LocationBarController::GetCurrentActions() {
       if (existing != active_script_actions_.end()) {
         action = existing->second.get();
       } else {
-        linked_ptr<ExtensionAction> active_script_action(
-            ExtensionActionManager::Get(browser_context_)->
-                GetBestFitAction(*extension, ActionInfo::TYPE_PAGE).release());
+        std::unique_ptr<ExtensionAction> active_script_action =
+            ExtensionActionManager::Get(browser_context_)
+                ->GetBestFitAction(*extension, ActionInfo::TYPE_PAGE);
         active_script_action->SetIsVisible(
             ExtensionAction::kDefaultTabId, true);
-        active_script_actions_[extension->id()] = active_script_action;
         action = active_script_action.get();
+        active_script_actions_[extension->id()] =
+            std::move(active_script_action);
       }
     }
 

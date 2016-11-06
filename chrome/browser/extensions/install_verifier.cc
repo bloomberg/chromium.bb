@@ -300,11 +300,11 @@ void InstallVerifier::AddMany(const ExtensionIdSet& ids, OperationType type) {
     }
   }
 
-  InstallVerifier::PendingOperation* operation =
-      new InstallVerifier::PendingOperation(type);
+  std::unique_ptr<InstallVerifier::PendingOperation> operation(
+      new InstallVerifier::PendingOperation(type));
   operation->ids.insert(ids.begin(), ids.end());
 
-  operation_queue_.push(linked_ptr<PendingOperation>(operation));
+  operation_queue_.push(std::move(operation));
 
   // If there are no ongoing pending requests, we need to kick one off.
   if (operation_queue_.size() == 1)
@@ -337,11 +337,11 @@ void InstallVerifier::RemoveMany(const ExtensionIdSet& ids) {
   if (!found_any)
     return;
 
-  InstallVerifier::PendingOperation* operation =
-      new InstallVerifier::PendingOperation(InstallVerifier::REMOVE);
+  std::unique_ptr<InstallVerifier::PendingOperation> operation(
+      new InstallVerifier::PendingOperation(InstallVerifier::REMOVE));
   operation->ids = ids;
 
-  operation_queue_.push(linked_ptr<PendingOperation>(operation));
+  operation_queue_.push(std::move(operation));
   if (operation_queue_.size() == 1)
     BeginFetch();
 }
@@ -628,7 +628,8 @@ void GetSignatureResultHistogram(CallbackResult result) {
 
 void InstallVerifier::SignatureCallback(
     std::unique_ptr<InstallSignature> signature) {
-  linked_ptr<PendingOperation> operation = operation_queue_.front();
+  std::unique_ptr<PendingOperation> operation =
+      std::move(operation_queue_.front());
   operation_queue_.pop();
 
   bool success = false;

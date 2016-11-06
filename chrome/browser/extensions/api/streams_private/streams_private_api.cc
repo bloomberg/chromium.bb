@@ -135,7 +135,7 @@ void StreamsPrivateAPI::ExecuteMimeTypeHandler(
       ->DispatchEventToExtension(extension_id, std::move(event));
 
   GURL url = stream->handle->GetURL();
-  streams_[extension_id][url] = make_linked_ptr(stream->handle.release());
+  streams_[extension_id][url] = std::move(stream->handle);
 }
 
 void StreamsPrivateAPI::AbortStream(const std::string& extension_id,

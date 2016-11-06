@@ -184,6 +184,8 @@ class ActiveScriptTester {
 
   testing::AssertionResult Verify();
 
+  std::string name() const;
+
  private:
   // Returns the ExtensionActionRunner, or null if one does not exist.
   ExtensionActionRunner* GetExtensionActionRunner();
@@ -205,13 +207,10 @@ class ActiveScriptTester {
   // asking the user.
   RequiresConsent requires_consent_;
 
-  // The type of injection this tester uses.
-  InjectionType type_;
-
   // All of these extensions should inject a script (either through content
   // scripts or through chrome.tabs.executeScript()) that sends a message with
   // the |kInjectSucceeded| message.
-  linked_ptr<ExtensionTestMessageListener> inject_success_listener_;
+  std::unique_ptr<ExtensionTestMessageListener> inject_success_listener_;
 };
 
 ActiveScriptTester::ActiveScriptTester(const std::string& name,
@@ -223,7 +222,6 @@ ActiveScriptTester::ActiveScriptTester(const std::string& name,
       extension_(extension),
       browser_(browser),
       requires_consent_(requires_consent),
-      type_(type),
       inject_success_listener_(
           new ExtensionTestMessageListener(kInjectSucceeded,
                                            false /* won't reply */)) {
@@ -231,6 +229,10 @@ ActiveScriptTester::ActiveScriptTester(const std::string& name,
 }
 
 ActiveScriptTester::~ActiveScriptTester() {}
+
+std::string ActiveScriptTester::name() const {
+  return name_;
+}
 
 testing::AssertionResult ActiveScriptTester::Verify() {
   if (!extension_)
@@ -308,13 +310,6 @@ bool ActiveScriptTester::WantsToRun() {
 
 IN_PROC_BROWSER_TEST_F(ExtensionActionRunnerBrowserTest,
                        ActiveScriptsAreDisplayedAndDelayExecution) {
-  base::FilePath active_script_path =
-      test_data_dir_.AppendASCII("active_script");
-
-  const char* const kExtensionNames[] = {
-      "inject_scripts_all_hosts", "inject_scripts_explicit_hosts",
-      "content_scripts_all_hosts", "content_scripts_explicit_hosts"};
-
   // First, we load up three extensions:
   // - An extension that injects scripts into all hosts,
   // - An extension that injects scripts into explicit hosts,
@@ -322,20 +317,21 @@ IN_PROC_BROWSER_TEST_F(ExtensionActionRunnerBrowserTest,
   // - An extension with a content script that runs on explicit hosts.
   // The extensions that operate on explicit hosts have permission; the ones
   // that request all hosts require user consent.
-  ActiveScriptTester testers[] = {
-      ActiveScriptTester(kExtensionNames[0],
-                         CreateExtension(ALL_HOSTS, EXECUTE_SCRIPT), browser(),
-                         REQUIRES_CONSENT, EXECUTE_SCRIPT),
-      ActiveScriptTester(kExtensionNames[1],
-                         CreateExtension(EXPLICIT_HOSTS, EXECUTE_SCRIPT),
-                         browser(), DOES_NOT_REQUIRE_CONSENT, EXECUTE_SCRIPT),
-      ActiveScriptTester(kExtensionNames[2],
-                         CreateExtension(ALL_HOSTS, CONTENT_SCRIPT), browser(),
-                         REQUIRES_CONSENT, CONTENT_SCRIPT),
-      ActiveScriptTester(kExtensionNames[3],
-                         CreateExtension(EXPLICIT_HOSTS, CONTENT_SCRIPT),
-                         browser(), DOES_NOT_REQUIRE_CONSENT, CONTENT_SCRIPT),
-  };
+  std::vector<std::unique_ptr<ActiveScriptTester>> testers;
+  testers.push_back(base::MakeUnique<ActiveScriptTester>(
+      "inject_scripts_all_hosts", CreateExtension(ALL_HOSTS, EXECUTE_SCRIPT),
+      browser(), REQUIRES_CONSENT, EXECUTE_SCRIPT));
+  testers.push_back(base::MakeUnique<ActiveScriptTester>(
+      "inject_scripts_explicit_hosts",
+      CreateExtension(EXPLICIT_HOSTS, EXECUTE_SCRIPT), browser(),
+      DOES_NOT_REQUIRE_CONSENT, EXECUTE_SCRIPT));
+  testers.push_back(base::MakeUnique<ActiveScriptTester>(
+      "content_scripts_all_hosts", CreateExtension(ALL_HOSTS, CONTENT_SCRIPT),
+      browser(), REQUIRES_CONSENT, CONTENT_SCRIPT));
+  testers.push_back(base::MakeUnique<ActiveScriptTester>(
+      "content_scripts_explicit_hosts",
+      CreateExtension(EXPLICIT_HOSTS, CONTENT_SCRIPT), browser(),
+      DOES_NOT_REQUIRE_CONSENT, CONTENT_SCRIPT));
 
   // Navigate to an URL (which matches the explicit host specified in the
   // extension content_scripts_explicit_hosts). All four extensions should
@@ -344,8 +340,8 @@ IN_PROC_BROWSER_TEST_F(ExtensionActionRunnerBrowserTest,
   ui_test_utils::NavigateToURL(
       browser(), embedded_test_server()->GetURL("/extensions/test_file.html"));
 
-  for (size_t i = 0u; i < arraysize(testers); ++i)
-    EXPECT_TRUE(testers[i].Verify()) << kExtensionNames[i];
+  for (const auto& tester : testers)
+    EXPECT_TRUE(tester->Verify()) << tester->name();
 }
 
 // Test that removing an extension with pending injections a) removes the
@@ -548,24 +544,20 @@ class FlagOffExtensionActionRunnerBrowserTest
 
 IN_PROC_BROWSER_TEST_F(FlagOffExtensionActionRunnerBrowserTest,
                        ScriptsExecuteWhenFlagAbsent) {
-  const char* const kExtensionNames[] = {
-      "content_scripts_all_hosts", "inject_scripts_all_hosts",
-  };
-  ActiveScriptTester testers[] = {
-      ActiveScriptTester(kExtensionNames[0],
-                         CreateExtension(ALL_HOSTS, CONTENT_SCRIPT), browser(),
-                         DOES_NOT_REQUIRE_CONSENT, CONTENT_SCRIPT),
-      ActiveScriptTester(kExtensionNames[1],
-                         CreateExtension(ALL_HOSTS, EXECUTE_SCRIPT), browser(),
-                         DOES_NOT_REQUIRE_CONSENT, EXECUTE_SCRIPT),
-  };
+  std::vector<std::unique_ptr<ActiveScriptTester>> testers;
+  testers.push_back(base::MakeUnique<ActiveScriptTester>(
+      "content_scripts_all_hosts", CreateExtension(ALL_HOSTS, CONTENT_SCRIPT),
+      browser(), DOES_NOT_REQUIRE_CONSENT, CONTENT_SCRIPT));
+  testers.push_back(base::MakeUnique<ActiveScriptTester>(
+      "inject_scripts_all_hosts", CreateExtension(ALL_HOSTS, EXECUTE_SCRIPT),
+      browser(), DOES_NOT_REQUIRE_CONSENT, EXECUTE_SCRIPT));
 
   ASSERT_TRUE(embedded_test_server()->Start());
   ui_test_utils::NavigateToURL(
       browser(), embedded_test_server()->GetURL("/extensions/test_file.html"));
 
-  for (size_t i = 0u; i < arraysize(testers); ++i)
-    EXPECT_TRUE(testers[i].Verify()) << kExtensionNames[i];
+  for (const auto& tester : testers)
+    EXPECT_TRUE(tester->Verify()) << tester->name();
 }
 
 }  // namespace extensions

@@ -13,7 +13,6 @@
 #include "base/compiler_specific.h"
 #include "base/files/file_path.h"
 #include "base/macros.h"
-#include "base/memory/linked_ptr.h"
 #include "base/memory/ref_counted.h"
 #include "components/sync/model/syncable_service.h"
 #include "extensions/browser/api/storage/settings_observer.h"
@@ -87,8 +86,8 @@ class SyncStorageBackend : public syncer::SyncableService {
 
   // A cache of ValueStore objects that have already been created.
   // Ensure that there is only ever one created per extension.
-  typedef std::map<std::string, linked_ptr<SyncableSettingsStorage> >
-      StorageObjMap;
+  using StorageObjMap =
+      std::map<std::string, std::unique_ptr<SyncableSettingsStorage>>;
   mutable StorageObjMap storage_objs_;
 
   // Current sync model type. Either EXTENSION_SETTINGS or APP_SETTINGS.

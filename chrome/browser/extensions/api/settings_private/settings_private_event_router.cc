@@ -94,15 +94,13 @@ void SettingsPrivateEventRouter::StartOrStopListeningForPrefsChanges() {
       std::string pref_name = it.first;
       if (prefs_util_->IsCrosSetting(pref_name)) {
 #if defined(OS_CHROMEOS)
-        std::unique_ptr<chromeos::CrosSettings::ObserverSubscription> observer =
-            chromeos::CrosSettings::Get()->AddSettingsObserver(
+        std::unique_ptr<chromeos::CrosSettings::ObserverSubscription>
+            subscription = chromeos::CrosSettings::Get()->AddSettingsObserver(
                 pref_name.c_str(),
                 base::Bind(&SettingsPrivateEventRouter::OnPreferenceChanged,
                            base::Unretained(this), pref_name));
-        linked_ptr<chromeos::CrosSettings::ObserverSubscription> subscription(
-            observer.release());
         cros_settings_subscription_map_.insert(
-            make_pair(pref_name, subscription));
+            make_pair(pref_name, std::move(subscription)));
 #endif
       } else {
         FindRegistrarForPref(it.first)

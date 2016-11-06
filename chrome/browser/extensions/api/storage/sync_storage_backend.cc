@@ -81,7 +81,7 @@ SyncableSettingsStorage* SyncStorageBackend::GetOrCreateStorageWithSyncData(
     return maybe_storage->second.get();
   }
 
-  std::unique_ptr<SettingsStorageQuotaEnforcer> storage(
+  std::unique_ptr<SettingsStorageQuotaEnforcer> settings_storage(
       new SettingsStorageQuotaEnforcer(
           quota_, storage_factory_->CreateSettingsStore(
                       settings_namespace::SYNC, ToFactoryModelType(sync_type_),
@@ -89,18 +89,20 @@ SyncableSettingsStorage* SyncStorageBackend::GetOrCreateStorageWithSyncData(
 
   // It's fine to create the quota enforcer underneath the sync layer, since
   // sync will only go ahead if each underlying storage operation succeeds.
-  linked_ptr<SyncableSettingsStorage> syncable_storage(
-      new SyncableSettingsStorage(
-          observers_, extension_id, storage.release(), sync_type_, flare_));
-  storage_objs_[extension_id] = syncable_storage;
+  std::unique_ptr<SyncableSettingsStorage> syncable_storage(
+      new SyncableSettingsStorage(observers_, extension_id,
+                                  settings_storage.release(), sync_type_,
+                                  flare_));
+  SyncableSettingsStorage* raw_syncable_storage = syncable_storage.get();
+  storage_objs_[extension_id] = std::move(syncable_storage);
 
   if (sync_processor_.get()) {
-    syncer::SyncError error = syncable_storage->StartSyncing(
+    syncer::SyncError error = raw_syncable_storage->StartSyncing(
         std::move(sync_data), CreateSettingsSyncProcessor(extension_id));
     if (error.IsSet())
-      syncable_storage->StopSyncing();
+      raw_syncable_storage->StopSyncing();
   }
-  return syncable_storage.get();
+  return raw_syncable_storage;
 }
 
 void SyncStorageBackend::DeleteStorage(const std::string& extension_id) {

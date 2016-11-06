@@ -6,10 +6,10 @@
 #define CHROME_BROWSER_EXTENSIONS_LOCATION_BAR_CONTROLLER_H_
 
 #include <map>
+#include <memory>
 #include <vector>
 
 #include "base/macros.h"
-#include "base/memory/linked_ptr.h"
 #include "base/scoped_observer.h"
 #include "extensions/browser/extension_registry_observer.h"
 
@@ -58,8 +58,8 @@ class LocationBarController : public ExtensionRegistryObserver {
 
   // Manufactured page actions that have been generated for extensions that want
   // to run a script, but were blocked.
-  typedef std::map<std::string, linked_ptr<ExtensionAction> >
-      ExtensionActionMap;
+  using ExtensionActionMap =
+      std::map<std::string, std::unique_ptr<ExtensionAction>>;
   ExtensionActionMap active_script_actions_;
 
   ScopedObserver<ExtensionRegistry, ExtensionRegistryObserver>

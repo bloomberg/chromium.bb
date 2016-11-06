@@ -5,10 +5,10 @@
 #include "chrome/browser/extensions/api/platform_keys/verify_trust_api.h"
 
 #include <algorithm>
+#include <memory>
 
 #include "base/lazy_instance.h"
 #include "base/macros.h"
-#include "base/memory/linked_ptr.h"
 #include "base/memory/ref_counted.h"
 #include "chrome/browser/extensions/api/platform_keys/platform_keys_api.h"
 #include "chrome/common/extensions/api/platform_keys_internal.h"
@@ -71,7 +71,8 @@ class VerifyTrustAPI::IOPart {
   // One CertVerifier per extension to verify trust. Each verifier is created on
   // first usage and deleted when this IOPart is destructed or the respective
   // extension is unloaded.
-  std::map<std::string, linked_ptr<net::CertVerifier>> extension_to_verifier_;
+  std::map<std::string, std::unique_ptr<net::CertVerifier>>
+      extension_to_verifier_;
 };
 
 // static
@@ -177,8 +178,7 @@ void VerifyTrustAPI::IOPart::Verify(std::unique_ptr<Params> params,
   }
 
   if (!base::ContainsKey(extension_to_verifier_, extension_id)) {
-    extension_to_verifier_[extension_id] =
-        make_linked_ptr(net::CertVerifier::CreateDefault().release());
+    extension_to_verifier_[extension_id] = net::CertVerifier::CreateDefault();
   }
   net::CertVerifier* verifier = extension_to_verifier_[extension_id].get();
 

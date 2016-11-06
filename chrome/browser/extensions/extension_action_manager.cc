@@ -85,33 +85,33 @@ void ExtensionActionManager::OnExtensionUnloaded(
 namespace {
 
 // Returns map[extension_id] if that entry exists. Otherwise, if
-// action_info!=NULL, creates an ExtensionAction from it, fills in the map, and
-// returns that.  Otherwise (action_info==NULL), returns NULL.
+// action_info!=nullptr, creates an ExtensionAction from it, fills in the map,
+// and returns that.  Otherwise (action_info==nullptr), returns nullptr.
 ExtensionAction* GetOrCreateOrNull(
-    std::map<std::string, linked_ptr<ExtensionAction> >* map,
+    std::map<std::string, std::unique_ptr<ExtensionAction>>* map,
     const Extension& extension,
     ActionInfo::Type action_type,
     const ActionInfo* action_info,
     Profile* profile) {
-  std::map<std::string, linked_ptr<ExtensionAction> >::const_iterator it =
-      map->find(extension.id());
+  auto it = map->find(extension.id());
   if (it != map->end())
     return it->second.get();
   if (!action_info)
-    return NULL;
+    return nullptr;
 
   // Only create action info for enabled extensions.
   // This avoids bugs where actions are recreated just after being removed
   // in response to OnExtensionUnloaded().
   if (!ExtensionRegistry::Get(profile)
       ->enabled_extensions().Contains(extension.id())) {
-    return NULL;
+    return nullptr;
   }
 
-  linked_ptr<ExtensionAction> action(new ExtensionAction(
-      extension, action_type, *action_info));
-  (*map)[extension.id()] = action;
-  return action.get();
+  std::unique_ptr<ExtensionAction> action(
+      new ExtensionAction(extension, action_type, *action_info));
+  ExtensionAction* raw_action = action.get();
+  (*map)[extension.id()] = std::move(action);
+  return raw_action;
 }
 
 }  // namespace
@@ -143,9 +143,8 @@ std::unique_ptr<ExtensionAction> ExtensionActionManager::GetBestFitAction(
   // If no ActionInfo exists for |extension|, create and return a new action
   // with a blank ActionInfo.
   // Populate any missing values from |extension|'s manifest.
-  std::unique_ptr<ExtensionAction> new_action(
-      new ExtensionAction(extension, type, info ? *info : ActionInfo()));
-  return new_action;
+  return base::MakeUnique<ExtensionAction>(extension, type,
+                                           info ? *info : ActionInfo());
 }
 
 ExtensionAction* ExtensionActionManager::GetSystemIndicator(
@@ -155,7 +154,7 @@ ExtensionAction* ExtensionActionManager::GetSystemIndicator(
   // unavailable on the current system.  If so, return NULL to signal that
   // the system indicator area is unusable.
   if (!SystemIndicatorManagerFactory::GetForProfile(profile_))
-    return NULL;
+    return nullptr;
 
   return GetOrCreateOrNull(&system_indicators_, extension,
                            ActionInfo::TYPE_SYSTEM_INDICATOR,

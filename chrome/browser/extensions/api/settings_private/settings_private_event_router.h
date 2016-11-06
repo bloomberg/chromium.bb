@@ -5,6 +5,8 @@
 #ifndef CHROME_BROWSER_EXTENSIONS_API_SETTINGS_PRIVATE_SETTINGS_PRIVATE_EVENT_ROUTER_H_
 #define CHROME_BROWSER_EXTENSIONS_API_SETTINGS_PRIVATE_SETTINGS_PRIVATE_EVENT_ROUTER_H_
 
+#include <memory>
+
 #include "base/macros.h"
 #include "chrome/browser/chromeos/settings/cros_settings.h"
 #include "chrome/browser/extensions/api/settings_private/prefs_util.h"
@@ -57,9 +59,9 @@ class SettingsPrivateEventRouter : public KeyedService,
 
   PrefChangeRegistrar* FindRegistrarForPref(const std::string& pref_name);
 
-  typedef std::map<std::string,
-                   linked_ptr<chromeos::CrosSettings::ObserverSubscription>>
-      SubscriptionMap;
+  using SubscriptionMap =
+      std::map<std::string,
+               std::unique_ptr<chromeos::CrosSettings::ObserverSubscription>>;
   SubscriptionMap cros_settings_subscription_map_;
 
   content::BrowserContext* context_;

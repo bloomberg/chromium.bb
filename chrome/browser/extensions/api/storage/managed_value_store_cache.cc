@@ -350,19 +350,20 @@ PolicyValueStore* ManagedValueStoreCache::GetStoreFor(
     const std::string& extension_id) {
   DCHECK_CURRENTLY_ON(BrowserThread::FILE);
 
-  PolicyValueStoreMap::iterator it = store_map_.find(extension_id);
+  auto it = store_map_.find(extension_id);
   if (it != store_map_.end())
     return it->second.get();
 
   // Create the store now, and serve the cached policy until the PolicyService
   // sends updated values.
-  PolicyValueStore* store = new PolicyValueStore(
+  std::unique_ptr<PolicyValueStore> store(new PolicyValueStore(
       extension_id, observers_,
       storage_factory_->CreateSettingsStore(settings_namespace::MANAGED,
-                                            kManagedModelType, extension_id));
-  store_map_[extension_id] = make_linked_ptr(store);
+                                            kManagedModelType, extension_id)));
+  PolicyValueStore* raw_store = store.get();
+  store_map_[extension_id] = std::move(store);
 
-  return store;
+  return raw_store;
 }
 
 bool ManagedValueStoreCache::HasStore(const std::string& extension_id) const {
