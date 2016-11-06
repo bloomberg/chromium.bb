@@ -757,7 +757,7 @@ group("gn_only") {
       "//ui/views/mus:views_mus_unittests",
     ]
 
-    if (use_ozone) {
+    if (use_ozone && is_chromeos) {
       deps += [ "//services/ui/display:display_service_unittests" ]
     }
   }

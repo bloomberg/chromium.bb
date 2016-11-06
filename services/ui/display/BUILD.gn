@@ -40,7 +40,7 @@ source_set("display") {
   }
 }
 
-if (use_ozone) {
+if (use_ozone && is_chromeos) {
   test("display_service_unittests") {
     sources = [
       "platform_screen_ozone_unittests.cc",
