@@ -30,14 +30,6 @@
 
 namespace service_manager {
 
-namespace {
-
-void QuitLoop(base::RunLoop* loop) {
-  loop->Quit();
-}
-
-}  // namespace
-
 using GetTitleCallback = test::mojom::ConnectTestService::GetTitleCallback;
 
 class ProvidedService
@@ -56,11 +48,36 @@ class ProvidedService
         request_(std::move(request)) {
     Start();
   }
+
   ~ProvidedService() override {
     Join();
   }
 
  private:
+  class ForwardingServiceImpl : public Service {
+   public:
+    explicit ForwardingServiceImpl(Service* service)
+        : service_(service) {}
+    ~ForwardingServiceImpl() override {}
+
+    // Service:
+    void OnStart(ServiceContext* context) override {
+      service_->OnStart(context);
+    }
+
+    bool OnConnect(const ServiceInfo& remote_info,
+                   InterfaceRegistry* registry) override {
+      return service_->OnConnect(remote_info, registry);
+    }
+
+    bool OnStop() override { return service_->OnStop(); }
+
+   private:
+    Service* const service_;
+
+    DISALLOW_COPY_AND_ASSIGN(ForwardingServiceImpl);
+  };
+
   // service_manager::Service:
   void OnStart(ServiceContext* context) override {
     context_ = context;
@@ -109,6 +126,7 @@ class ProvidedService
   void GetTitle(const GetTitleCallback& callback) override {
     callback.Run(title_);
   }
+
   void GetInstance(const GetInstanceCallback& callback) override {
     callback.Run(context_->identity().instance());
   }
@@ -127,7 +145,7 @@ class ProvidedService
         context_->connector()->Connect(&params);
     {
       base::RunLoop loop;
-      connection->AddConnectionCompletedClosure(base::Bind(&QuitLoop, &loop));
+      connection->AddConnectionCompletedClosure(loop.QuitClosure());
       base::MessageLoop::ScopedNestableTaskAllower allow(
           base::MessageLoop::current());
       loop.Run();
@@ -138,9 +156,12 @@ class ProvidedService
 
   // base::SimpleThread:
   void Run() override {
-    ServiceRunner(this).Run(request_.PassMessagePipe().release().value(),
-                            false);
-    delete this;
+    ServiceRunner(new ForwardingServiceImpl(this)).Run(
+        request_.PassMessagePipe().release().value(), false);
+    caller_.reset();
+    bindings_.CloseAllBindings();
+    blocked_bindings_.CloseAllBindings();
+    user_id_test_bindings_.CloseAllBindings();
   }
 
   void OnConnectionError() {
@@ -172,15 +193,24 @@ class ConnectTestService
  private:
   // service_manager::Service:
   void OnStart(ServiceContext* context) override {
-    identity_ = context->identity();
-    bindings_.set_connection_error_handler(
+    context_ = context;
+
+    base::Closure error_handler =
         base::Bind(&ConnectTestService::OnConnectionError,
-                   base::Unretained(this)));
+                   base::Unretained(this));
+    bindings_.set_connection_error_handler(error_handler);
+    service_factory_bindings_.set_connection_error_handler(error_handler);
   }
+
   bool OnConnect(const ServiceInfo& remote_info,
                  InterfaceRegistry* registry) override {
     registry->AddInterface<ServiceFactory>(this);
     registry->AddInterface<test::mojom::ConnectTestService>(this);
+    return true;
+  }
+
+  bool OnStop() override {
+    provided_services_.clear();
     return true;
   }
 
@@ -198,30 +228,35 @@ class ConnectTestService
 
   // mojom::ServiceFactory:
   void CreateService(mojom::ServiceRequest request,
-                         const std::string& name) override {
-    if (name == "service:connect_test_a")
-      new ProvidedService("A", std::move(request));
-    else if (name == "service:connect_test_b")
-      new ProvidedService("B", std::move(request));
+                     const std::string& name) override {
+    if (name == "service:connect_test_a") {
+      provided_services_.emplace_back(
+          base::MakeUnique<ProvidedService>("A", std::move(request)));
+    } else if (name == "service:connect_test_b") {
+      provided_services_.emplace_back(
+          base::MakeUnique<ProvidedService>("B", std::move(request)));
+    }
   }
 
   // test::mojom::ConnectTestService:
   void GetTitle(const GetTitleCallback& callback) override {
     callback.Run("ROOT");
   }
+
   void GetInstance(const GetInstanceCallback& callback) override {
-    callback.Run(identity_.instance());
+    callback.Run(context_->identity().instance());
   }
 
   void OnConnectionError() {
-    if (bindings_.empty())
-      base::MessageLoop::current()->QuitWhenIdle();
+    if (bindings_.empty() && service_factory_bindings_.empty())
+      context_->RequestQuit();
   }
 
-  Identity identity_;
+  ServiceContext* context_ = nullptr;
   std::vector<std::unique_ptr<Service>> delegates_;
   mojo::BindingSet<mojom::ServiceFactory> service_factory_bindings_;
   mojo::BindingSet<test::mojom::ConnectTestService> bindings_;
+  std::list<std::unique_ptr<ProvidedService>> provided_services_;
 
   DISALLOW_COPY_AND_ASSIGN(ConnectTestService);
 };

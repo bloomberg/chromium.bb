@@ -51,7 +51,8 @@ void ServiceContext::SetConnectionLostClosure(const base::Closure& closure) {
 }
 
 void ServiceContext::RequestQuit() {
-  // TODO(rockot): Implement this.
+  DCHECK(service_control_.is_bound());
+  service_control_->RequestQuit();
 }
 
 void ServiceContext::DisconnectFromServiceManager() {
@@ -78,13 +79,15 @@ void ServiceContext::DestroyService() {
 void ServiceContext::OnStart(const ServiceInfo& info,
                              const OnStartCallback& callback) {
   local_info_ = info;
-  callback.Run(std::move(pending_connector_request_));
+  callback.Run(std::move(pending_connector_request_),
+               mojo::GetProxy(&service_control_, binding_.associated_group()));
   service_->OnStart(this);
 }
 
 void ServiceContext::OnConnect(
     const ServiceInfo& source_info,
-    mojom::InterfaceProviderRequest interfaces) {
+    mojom::InterfaceProviderRequest interfaces,
+    const OnConnectCallback& callback) {
   InterfaceProviderSpec source_spec, target_spec;
   GetInterfaceProviderSpec(mojom::kServiceManager_ConnectorSpec,
                            local_info_.interface_provider_specs, &target_spec);
@@ -94,6 +97,9 @@ void ServiceContext::OnConnect(
       base::MakeUnique<InterfaceRegistry>(mojom::kServiceManager_ConnectorSpec);
   registry->Bind(std::move(interfaces), local_info_.identity, target_spec,
                  source_info.identity, source_spec);
+
+  // Acknowledge the request regardless of whether it's accepted.
+  callback.Run();
 
   if (!service_->OnConnect(source_info, registry.get()))
     return;

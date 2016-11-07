@@ -17,6 +17,7 @@
 #include "services/service_manager/public/cpp/service.h"
 #include "services/service_manager/public/interfaces/connector.mojom.h"
 #include "services/service_manager/public/interfaces/service.mojom.h"
+#include "services/service_manager/public/interfaces/service_control.mojom.h"
 
 namespace service_manager {
 
@@ -109,7 +110,8 @@ class ServiceContext : public mojom::Service {
   void OnStart(const ServiceInfo& info,
                const OnStartCallback& callback) override;
   void OnConnect(const ServiceInfo& source_info,
-                 mojom::InterfaceProviderRequest interfaces) override;
+                 mojom::InterfaceProviderRequest interfaces,
+                 const OnConnectCallback& callback) override;
 
   void OnConnectionError();
   void OnRegistryConnectionError(InterfaceRegistry* registry);
@@ -127,6 +129,10 @@ class ServiceContext : public mojom::Service {
   mojo::Binding<mojom::Service> binding_;
   std::unique_ptr<Connector> connector_;
   service_manager::ServiceInfo local_info_;
+
+  // This instance's control interface to the service manager. Note that this
+  // is unbound and therefore invalid until OnStart() is called.
+  mojom::ServiceControlAssociatedPtr service_control_;
 
   bool service_quit_ = false;
 
