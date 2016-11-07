@@ -14,6 +14,7 @@
 #import "ios/chrome/browser/voice/speech_input_locale_match_config.h"
 #include "ios/public/provider/chrome/browser/chrome_browser_provider.h"
 #include "ios/public/provider/chrome/browser/voice/voice_search_language.h"
+#include "ios/public/provider/chrome/browser/voice/voice_search_provider.h"
 
 namespace {
 
@@ -144,8 +145,9 @@ std::string SpeechInputLocaleConfigImpl::GetDefaultLocaleCode() const {
 }
 
 void SpeechInputLocaleConfigImpl::InitializeAvailableLocales() {
-  NSArray* languages =
-      ios::GetChromeBrowserProvider()->GetAvailableVoiceSearchLanguages();
+  NSArray* languages = ios::GetChromeBrowserProvider()
+                           ->GetVoiceSearchProvider()
+                           ->GetAvailableLanguages();
   for (VoiceSearchLanguage* language in languages) {
     // Store the InputLocale in |available_locales_|.
     std::string locale_code = GetCanonicalLocaleForLocale(language.identifier);
