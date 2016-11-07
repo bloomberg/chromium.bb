@@ -287,13 +287,26 @@ void UserMediaClientImpl::setMediaDeviceChangeObserver(
     const blink::WebMediaDeviceChangeObserver& observer) {
   media_device_change_observer_ = observer;
 
+  // Do nothing if setting a valid observer while already subscribed or setting
+  // no observer while unsubscribed.
+  if (media_device_change_observer_.isNull() ==
+      device_change_subscription_ids_.empty())
+    return;
+
+  base::WeakPtr<MediaDevicesEventDispatcher> event_dispatcher =
+      MediaDevicesEventDispatcher::GetForRenderFrame(render_frame());
   if (media_device_change_observer_.isNull()) {
-    media_stream_dispatcher_->CancelDeviceChangeNotifications(
-        weak_factory_.GetWeakPtr());
+    event_dispatcher->UnsubscribeDeviceChangeNotifications(
+        device_change_subscription_ids_);
+    device_change_subscription_ids_.clear();
   } else {
-    url::Origin origin = observer.getSecurityOrigin();
-    media_stream_dispatcher_->SubscribeToDeviceChangeNotifications(
-        weak_factory_.GetWeakPtr(), origin);
+    DCHECK(device_change_subscription_ids_.empty());
+    url::Origin security_origin =
+        media_device_change_observer_.getSecurityOrigin();
+    device_change_subscription_ids_ =
+        event_dispatcher->SubscribeDeviceChangeNotifications(
+            security_origin, base::Bind(&UserMediaClientImpl::DevicesChanged,
+                                        weak_factory_.GetWeakPtr()));
   }
 }
 
@@ -599,6 +612,8 @@ void UserMediaClientImpl::OnCreateNativeTracksCompleted(
   DeleteUserMediaRequestInfo(request);
 }
 
+// TODO(guidou): Remove once this method is removed from the
+// MediaStreamDispatcherEventHandler interface. http://648183.
 void UserMediaClientImpl::OnDevicesEnumerated(
     int request_id,
     const StreamDeviceInfoArray& device_array) {
@@ -620,8 +635,15 @@ void UserMediaClientImpl::OnDeviceOpenFailed(int request_id) {
   NOTIMPLEMENTED();
 }
 
+// TODO(guidou): Remove once this method is removed from the
+// MediaStreamDispatcherEventHandler interface. http://648183.
 void UserMediaClientImpl::OnDevicesChanged() {
-  DVLOG(1) << "UserMediaClientImpl::OnDevicesChanged()";
+  NOTREACHED();
+}
+
+void UserMediaClientImpl::DevicesChanged(
+    MediaDeviceType type,
+    const MediaDeviceInfoArray& device_infos) {
   if (!media_device_change_observer_.isNull())
     media_device_change_observer_.didChangeMediaDevices();
 }
