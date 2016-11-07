@@ -264,7 +264,8 @@ void InputEventFilter::DidForwardToHandlerAndOverscroll(
   if (!send_ack)
     return;
 
-  InputEventAck ack(type, ack_state, latency_info, std::move(overscroll_params),
+  InputEventAck ack(InputEventAckSource::COMPOSITOR_THREAD, type, ack_state,
+                    latency_info, std::move(overscroll_params),
                     unique_touch_event_id);
   SendMessage(std::unique_ptr<IPC::Message>(
       new InputHostMsg_HandleInputEvent_ACK(routing_id, ack)));
@@ -302,7 +303,9 @@ void InputEventFilter::SendInputEventAck(int routing_id,
                                          blink::WebInputEvent::Type type,
                                          InputEventAckState ack_result,
                                          uint32_t touch_event_id) {
-  InputEventAck ack(type, ack_result, touch_event_id);
+  DCHECK(main_task_runner_->BelongsToCurrentThread());
+  InputEventAck ack(InputEventAckSource::MAIN_THREAD, type, ack_result,
+                    touch_event_id);
   SendMessage(std::unique_ptr<IPC::Message>(
       new InputHostMsg_HandleInputEvent_ACK(routing_id, ack)));
 }

@@ -1906,12 +1906,16 @@ void RenderWidgetHostImpl::IncrementInFlightEventCount(
   }
 }
 
-void RenderWidgetHostImpl::DecrementInFlightEventCount() {
+void RenderWidgetHostImpl::DecrementInFlightEventCount(
+    InputEventAckSource ack_source) {
   if (decrement_in_flight_event_count() <= 0) {
     // Cancel pending hung renderer checks since the renderer is responsive.
     StopHangMonitorTimeout();
   } else {
-    RestartHangMonitorTimeoutIfNecessary();
+    // Only restart the hang monitor timer if we got a response from the
+    // main thread.
+    if (ack_source == InputEventAckSource::MAIN_THREAD)
+      RestartHangMonitorTimeoutIfNecessary();
   }
 }
 

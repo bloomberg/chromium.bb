@@ -405,8 +405,8 @@ void RenderWidgetInputHandler::HandleInputEvent(
   if ((dispatch_type == DISPATCH_TYPE_BLOCKING ||
        dispatch_type == DISPATCH_TYPE_BLOCKING_NOTIFY_MAIN)) {
     std::unique_ptr<InputEventAck> response(new InputEventAck(
-        input_event.type, ack_result, swap_latency_info,
-        std::move(event_overscroll),
+        InputEventAckSource::MAIN_THREAD, input_event.type, ack_result,
+        swap_latency_info, std::move(event_overscroll),
         ui::WebInputEventTraits::GetUniqueTouchEventId(input_event)));
     delegate_->OnInputEventAck(std::move(response));
   } else {

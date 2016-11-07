@@ -31,6 +31,8 @@
 
 using ui::mojom::EventResult;
 
+namespace content {
+
 namespace {
 
 // Wrapper for the callback provided to
@@ -61,35 +63,35 @@ class TestCallback : public base::RefCounted<TestCallback> {
 
 // Allows for overriding the behaviour of HandleInputEvent, to simulate input
 // handlers which consume events before they are sent to the renderer.
-class TestInputHandlerManager : public content::InputHandlerManager {
+class TestInputHandlerManager : public InputHandlerManager {
  public:
   TestInputHandlerManager(
       const scoped_refptr<base::SingleThreadTaskRunner>& task_runner,
-      content::InputHandlerManagerClient* client,
+      InputHandlerManagerClient* client,
       blink::scheduler::RendererScheduler* renderer_scheduler)
       : InputHandlerManager(task_runner, client, nullptr, renderer_scheduler),
         override_result_(false),
-        result_(content::InputEventAckState::INPUT_EVENT_ACK_STATE_UNKNOWN) {}
+        result_(InputEventAckState::INPUT_EVENT_ACK_STATE_UNKNOWN) {}
   ~TestInputHandlerManager() override {}
 
   // Stops overriding the behaviour of HandleInputEvent
   void ClearHandleInputEventOverride();
 
   // Overrides the behaviour of HandleInputEvent, returing |result|.
-  void SetHandleInputEventResult(content::InputEventAckState result);
+  void SetHandleInputEventResult(InputEventAckState result);
 
-  // content::InputHandlerManager:
+  // InputHandlerManager:
   void HandleInputEvent(int routing_id,
                         ui::ScopedWebInputEvent input_event,
                         const ui::LatencyInfo& latency_info,
                         const InputEventAckStateCallback& callback) override;
 
  private:
-  // If true content::InputHandlerManager::HandleInputEvent is not called.
+  // If true InputHandlerManager::HandleInputEvent is not called.
   bool override_result_;
 
   // The result to return in HandleInputEvent if |override_result_|.
-  content::InputEventAckState result_;
+  InputEventAckState result_;
 
   DISALLOW_COPY_AND_ASSIGN(TestInputHandlerManager);
 };
@@ -99,7 +101,7 @@ void TestInputHandlerManager::ClearHandleInputEventOverride() {
 }
 
 void TestInputHandlerManager::SetHandleInputEventResult(
-    content::InputEventAckState result) {
+    InputEventAckState result) {
   override_result_ = true;
   result_ = result;
 }
@@ -113,20 +115,19 @@ void TestInputHandlerManager::HandleInputEvent(
     callback.Run(result_, std::move(input_event), latency_info, nullptr);
     return;
   }
-  content::InputHandlerManager::HandleInputEvent(
-      routing_id, std::move(input_event), latency_info, callback);
+  InputHandlerManager::HandleInputEvent(routing_id, std::move(input_event),
+                                        latency_info, callback);
 }
 
 // Empty implementation of InputHandlerManagerClient.
-class TestInputHandlerManagerClient
-    : public content::InputHandlerManagerClient {
+class TestInputHandlerManagerClient : public InputHandlerManagerClient {
  public:
   TestInputHandlerManagerClient() {}
   ~TestInputHandlerManagerClient() override{};
 
-  // content::InputHandlerManagerClient:
+  // InputHandlerManagerClient:
   void SetInputHandlerManager(
-      content::InputHandlerManager* input_handler_manager) override {}
+      InputHandlerManager* input_handler_manager) override {}
   void RegisterRoutingID(int routing_id) override {}
   void UnregisterRoutingID(int routing_id) override {}
   void DidOverscroll(int routing_id,
@@ -138,10 +139,9 @@ class TestInputHandlerManagerClient
       ui::ScopedWebInputEvent event,
       const ui::LatencyInfo& latency_info) override {}
 
-  void NotifyInputEventHandled(
-      int routing_id,
-      blink::WebInputEvent::Type type,
-      content::InputEventAckState ack_result) override {}
+  void NotifyInputEventHandled(int routing_id,
+                               blink::WebInputEvent::Type type,
+                               InputEventAckState ack_result) override {}
   void ProcessRafAlignedInput(int routing_id) override {}
 
  private:
@@ -149,15 +149,15 @@ class TestInputHandlerManagerClient
 };
 
 // Implementation of RenderWidget for testing, performs no initialization.
-class TestRenderWidget : public content::RenderWidget {
+class TestRenderWidget : public RenderWidget {
  public:
-  explicit TestRenderWidget(content::CompositorDependencies* compositor_deps)
-      : content::RenderWidget(compositor_deps,
-                              blink::WebPopupTypeNone,
-                              content::ScreenInfo(),
-                              true,
-                              false,
-                              false) {}
+  explicit TestRenderWidget(CompositorDependencies* compositor_deps)
+      : RenderWidget(compositor_deps,
+                     blink::WebPopupTypeNone,
+                     ScreenInfo(),
+                     true,
+                     false,
+                     false) {}
 
  protected:
   ~TestRenderWidget() override {}
@@ -170,51 +170,49 @@ class TestRenderWidget : public content::RenderWidget {
 // HandleInputEvent. This will perform no actions on input until a
 // RenderWidgetInputHandlerDelegate is set. Once set this will always ack
 // received events.
-class TestRenderWidgetInputHandler : public content::RenderWidgetInputHandler {
+class TestRenderWidgetInputHandler : public RenderWidgetInputHandler {
  public:
-  TestRenderWidgetInputHandler(content::RenderWidget* render_widget);
+  TestRenderWidgetInputHandler(RenderWidget* render_widget);
   ~TestRenderWidgetInputHandler() override {}
 
-  void set_delegate(content::RenderWidgetInputHandlerDelegate* delegate) {
+  void set_delegate(RenderWidgetInputHandlerDelegate* delegate) {
     delegate_ = delegate;
   }
-  void set_state(content::InputEventAckState state) { state_ = state; }
+  void set_state(InputEventAckState state) { state_ = state; }
 
-  // content::RenderWidgetInputHandler:
+  // RenderWidgetInputHandler:
   void HandleInputEvent(const blink::WebInputEvent& input_event,
                         const ui::LatencyInfo& latency_info,
-                        content::InputEventDispatchType dispatch_type) override;
+                        InputEventDispatchType dispatch_type) override;
 
  private:
   // The input delegate which receives event acks.
-  content::RenderWidgetInputHandlerDelegate* delegate_;
+  RenderWidgetInputHandlerDelegate* delegate_;
 
   // The result of input handling to send to |delegate_| during the ack.
-  content::InputEventAckState state_;
+  InputEventAckState state_;
 
   DISALLOW_COPY_AND_ASSIGN(TestRenderWidgetInputHandler);
 };
 
 TestRenderWidgetInputHandler::TestRenderWidgetInputHandler(
-    content::RenderWidget* render_widget)
-    : content::RenderWidgetInputHandler(render_widget, render_widget),
+    RenderWidget* render_widget)
+    : RenderWidgetInputHandler(render_widget, render_widget),
       delegate_(nullptr),
-      state_(content::InputEventAckState::INPUT_EVENT_ACK_STATE_UNKNOWN) {}
+      state_(InputEventAckState::INPUT_EVENT_ACK_STATE_UNKNOWN) {}
 
 void TestRenderWidgetInputHandler::HandleInputEvent(
     const blink::WebInputEvent& input_event,
     const ui::LatencyInfo& latency_info,
-    content::InputEventDispatchType dispatch_type) {
+    InputEventDispatchType dispatch_type) {
   if (delegate_) {
-    std::unique_ptr<content::InputEventAck> ack(
-        new content::InputEventAck(input_event.type, state_));
+    std::unique_ptr<InputEventAck> ack(new InputEventAck(
+        InputEventAckSource::COMPOSITOR_THREAD, input_event.type, state_));
     delegate_->OnInputEventAck(std::move(ack));
   }
 }
 
 }  // namespace
-
-namespace content {
 
 // Test suite for CompositorMusConnection, this does not setup a full renderer
 // environment. This does not establish a connection to a mus server, nor does
@@ -351,7 +349,7 @@ TEST_F(CompositorMusConnectionTest, NotConsumed) {
   scoped_refptr<TestCallback> test_callback(new TestCallback);
   std::unique_ptr<base::Callback<void(EventResult)>> ack_callback(
       new base::Callback<void(EventResult)>(
-          base::Bind(&::TestCallback::ResultCallback, test_callback)));
+          base::Bind(&TestCallback::ResultCallback, test_callback)));
 
   OnWindowInputEvent(&test_window, *event.get(), &ack_callback);
   // OnWindowInputEvent is expected to clear the callback if it plans on
@@ -378,7 +376,7 @@ TEST_F(CompositorMusConnectionTest, Consumed) {
   scoped_refptr<TestCallback> test_callback(new TestCallback);
   std::unique_ptr<base::Callback<void(EventResult)>> ack_callback(
       new base::Callback<void(EventResult)>(
-          base::Bind(&::TestCallback::ResultCallback, test_callback)));
+          base::Bind(&TestCallback::ResultCallback, test_callback)));
 
   OnWindowInputEvent(&test_window, *event.get(), &ack_callback);
   // OnWindowInputEvent is expected to clear the callback if it plans on
@@ -400,7 +398,7 @@ TEST_F(CompositorMusConnectionTest, LostAck) {
   scoped_refptr<TestCallback> test_callback1(new TestCallback);
   std::unique_ptr<base::Callback<void(EventResult)>> ack_callback1(
       new base::Callback<void(EventResult)>(
-          base::Bind(&::TestCallback::ResultCallback, test_callback1)));
+          base::Bind(&TestCallback::ResultCallback, test_callback1)));
 
   OnWindowInputEvent(&test_window, *event1.get(), &ack_callback1);
   EXPECT_FALSE(ack_callback1.get());
@@ -417,7 +415,7 @@ TEST_F(CompositorMusConnectionTest, LostAck) {
   scoped_refptr<TestCallback> test_callback2(new TestCallback);
   std::unique_ptr<base::Callback<void(EventResult)>> ack_callback2(
       new base::Callback<void(EventResult)>(
-          base::Bind(&::TestCallback::ResultCallback, test_callback2)));
+          base::Bind(&TestCallback::ResultCallback, test_callback2)));
   OnWindowInputEvent(&test_window, *event2.get(), &ack_callback2);
   EXPECT_FALSE(ack_callback2.get());
 
@@ -439,7 +437,7 @@ TEST_F(CompositorMusConnectionTest, InputHandlerConsumes) {
   scoped_refptr<TestCallback> test_callback(new TestCallback);
   std::unique_ptr<base::Callback<void(EventResult)>> ack_callback(
       new base::Callback<void(EventResult)>(
-          base::Bind(&::TestCallback::ResultCallback, test_callback)));
+          base::Bind(&TestCallback::ResultCallback, test_callback)));
 
   OnWindowInputEvent(&test_window, *event.get(), &ack_callback);
 
@@ -461,7 +459,7 @@ TEST_F(CompositorMusConnectionTest, RendererWillNotSendAck) {
   scoped_refptr<TestCallback> test_callback(new TestCallback);
   std::unique_ptr<base::Callback<void(EventResult)>> ack_callback(
       new base::Callback<void(EventResult)>(
-          base::Bind(&::TestCallback::ResultCallback, test_callback)));
+          base::Bind(&TestCallback::ResultCallback, test_callback)));
 
   OnWindowInputEvent(&test_window, event, &ack_callback);
   EXPECT_FALSE(ack_callback.get());
@@ -487,7 +485,7 @@ TEST_F(CompositorMusConnectionTest, TouchEventConsumed) {
   scoped_refptr<TestCallback> test_callback(new TestCallback);
   std::unique_ptr<base::Callback<void(EventResult)>> ack_callback(
       new base::Callback<void(EventResult)>(
-          base::Bind(&::TestCallback::ResultCallback, test_callback)));
+          base::Bind(&TestCallback::ResultCallback, test_callback)));
 
   OnWindowInputEvent(&test_window, event, &ack_callback);
   // OnWindowInputEvent is expected to clear the callback if it plans on

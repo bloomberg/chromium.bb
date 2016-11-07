@@ -621,7 +621,7 @@ class CONTENT_EXPORT RenderWidgetHostImpl : public RenderWidgetHost,
       const ui::LatencyInfo& latency_info) override;
   void IncrementInFlightEventCount(
       blink::WebInputEvent::Type event_type) override;
-  void DecrementInFlightEventCount() override;
+  void DecrementInFlightEventCount(InputEventAckSource ack_source) override;
   void OnHasTouchEventHandlers(bool has_handlers) override;
   void DidFlush() override;
   void DidOverscroll(const ui::DidOverscrollParams& params) override;

@@ -42,7 +42,8 @@ void MockInputRouterClient::IncrementInFlightEventCount(
   ++in_flight_event_count_;
 }
 
-void MockInputRouterClient::DecrementInFlightEventCount() {
+void MockInputRouterClient::DecrementInFlightEventCount(
+    InputEventAckSource ack_source) {
   --in_flight_event_count_;
 }
 

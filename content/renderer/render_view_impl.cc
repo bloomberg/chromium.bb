@@ -2997,7 +2997,8 @@ void RenderViewImpl::OnDiscardInputEvent(
   }
 
   std::unique_ptr<InputEventAck> ack(
-      new InputEventAck(input_event->type, INPUT_EVENT_ACK_STATE_NOT_CONSUMED));
+      new InputEventAck(InputEventAckSource::MAIN_THREAD, input_event->type,
+                        INPUT_EVENT_ACK_STATE_NOT_CONSUMED));
   OnInputEventAck(std::move(ack));
 }
 

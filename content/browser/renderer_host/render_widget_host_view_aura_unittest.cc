@@ -583,7 +583,7 @@ class RenderWidgetHostViewAuraTest : public testing::Test {
   void SendInputEventACK(WebInputEvent::Type type,
       InputEventAckState ack_result) {
     DCHECK(!WebInputEvent::isTouchEventType(type));
-    InputEventAck ack(type, ack_result);
+    InputEventAck ack(InputEventAckSource::COMPOSITOR_THREAD, type, ack_result);
     InputHostMsg_HandleInputEvent_ACK response(0, ack);
     widget_host_->OnMessageReceived(response);
   }
@@ -592,7 +592,8 @@ class RenderWidgetHostViewAuraTest : public testing::Test {
                          InputEventAckState ack_result,
                          uint32_t event_id) {
     DCHECK(WebInputEvent::isTouchEventType(type));
-    InputEventAck ack(type, ack_result, event_id);
+    InputEventAck ack(InputEventAckSource::COMPOSITOR_THREAD, type, ack_result,
+                      event_id);
     InputHostMsg_HandleInputEvent_ACK response(0, ack);
     widget_host_->OnMessageReceived(response);
   }
@@ -1342,9 +1343,9 @@ TEST_F(RenderWidgetHostViewAuraTest, TouchEventState) {
   widget_host_->OnMessageReceived(ViewHostMsg_HasTouchEventHandlers(0, false));
 
   // Ack'ing the outstanding event should flush the pending touch queue.
-  InputEventAck ack(blink::WebInputEvent::TouchStart,
-                    INPUT_EVENT_ACK_STATE_NO_CONSUMER_EXISTS,
-                    press.unique_event_id());
+  InputEventAck ack(
+      InputEventAckSource::COMPOSITOR_THREAD, blink::WebInputEvent::TouchStart,
+      INPUT_EVENT_ACK_STATE_NO_CONSUMER_EXISTS, press.unique_event_id());
   widget_host_->OnMessageReceived(InputHostMsg_HandleInputEvent_ACK(0, ack));
   EXPECT_EQ(0U, GetSentMessageCountAndResetSink());
 

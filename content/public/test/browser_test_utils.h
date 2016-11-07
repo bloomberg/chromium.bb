@@ -552,16 +552,21 @@ class InputMsgWatcher : public BrowserMessageFilter {
   // the message.
   uint32_t WaitForAck();
 
+  uint32_t last_event_ack_source() const { return ack_source_; }
+
  private:
   ~InputMsgWatcher() override;
 
   // Overridden BrowserMessageFilter methods.
   bool OnMessageReceived(const IPC::Message& message) override;
 
-  void ReceivedAck(blink::WebInputEvent::Type ack_type, uint32_t ack_state);
+  void ReceivedAck(blink::WebInputEvent::Type ack_type,
+                   uint32_t ack_state,
+                   uint32_t ack_source);
 
   blink::WebInputEvent::Type wait_for_type_;
   uint32_t ack_result_;
+  uint32_t ack_source_;
   base::Closure quit_;
 
   DISALLOW_COPY_AND_ASSIGN(InputMsgWatcher);

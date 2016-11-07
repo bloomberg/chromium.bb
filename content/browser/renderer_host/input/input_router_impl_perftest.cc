@@ -85,7 +85,7 @@ class NullInputRouterClient : public InputRouterClient {
   }
   void IncrementInFlightEventCount(
       blink::WebInputEvent::Type event_type) override {}
-  void DecrementInFlightEventCount() override {}
+  void DecrementInFlightEventCount(InputEventAckSource ack_source) override {}
   void OnHasTouchEventHandlers(bool has_handlers) override {}
   void DidFlush() override {}
   void DidOverscroll(const ui::DidOverscrollParams& params) override {}
@@ -247,7 +247,8 @@ class InputRouterImplPerfTest : public testing::Test {
                                InputEventAckState ack_result) {
     if (!ui::WebInputEventTraits::ShouldBlockEventStream(event))
       return;
-    InputEventAck ack(event.type, ack_result);
+    InputEventAck ack(InputEventAckSource::COMPOSITOR_THREAD, event.type,
+                      ack_result);
     InputHostMsg_HandleInputEvent_ACK response(0, ack);
     input_router_->OnMessageReceived(response);
   }

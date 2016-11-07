@@ -438,7 +438,7 @@ bool InputRouterImpl::OfferToRenderer(const WebInputEvent& input_event,
 }
 
 void InputRouterImpl::OnInputEventAck(const InputEventAck& ack) {
-  client_->DecrementInFlightEventCount();
+  client_->DecrementInFlightEventCount(ack.source);
 
   if (ack.overscroll) {
     DCHECK(ack.type == WebInputEvent::MouseWheel ||

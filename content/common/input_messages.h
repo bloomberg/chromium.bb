@@ -13,6 +13,7 @@
 #include "content/common/edit_command.h"
 #include "content/common/input/input_event.h"
 #include "content/common/input/input_event_ack.h"
+#include "content/common/input/input_event_ack_source.h"
 #include "content/common/input/input_event_ack_state.h"
 #include "content/common/input/input_event_dispatch_type.h"
 #include "content/common/input/input_param_traits.h"
@@ -44,6 +45,8 @@
 
 #define IPC_MESSAGE_START InputMsgStart
 
+IPC_ENUM_TRAITS_MAX_VALUE(content::InputEventAckSource,
+                          content::InputEventAckSource::MAX)
 IPC_ENUM_TRAITS_MAX_VALUE(
     content::SyntheticGestureParams::GestureSourceType,
     content::SyntheticGestureParams::GESTURE_SOURCE_TYPE_MAX)
@@ -115,6 +118,7 @@ IPC_STRUCT_TRAITS_BEGIN(content::SyntheticPointerActionParams)
 IPC_STRUCT_TRAITS_END()
 
 IPC_STRUCT_TRAITS_BEGIN(content::InputEventAck)
+  IPC_STRUCT_TRAITS_MEMBER(source)
   IPC_STRUCT_TRAITS_MEMBER(type)
   IPC_STRUCT_TRAITS_MEMBER(state)
   IPC_STRUCT_TRAITS_MEMBER(latency)

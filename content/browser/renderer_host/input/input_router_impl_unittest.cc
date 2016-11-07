@@ -286,7 +286,7 @@ class InputRouterImplTest : public testing::Test {
   void SendInputEventACK(blink::WebInputEvent::Type type,
                          InputEventAckState ack_result) {
     DCHECK(!WebInputEvent::isTouchEventType(type));
-    InputEventAck ack(type, ack_result);
+    InputEventAck ack(InputEventAckSource::COMPOSITOR_THREAD, type, ack_result);
     input_router_->OnMessageReceived(InputHostMsg_HandleInputEvent_ACK(0, ack));
   }
 
@@ -294,7 +294,8 @@ class InputRouterImplTest : public testing::Test {
                          InputEventAckState ack_result,
                          uint32_t touch_event_id) {
     DCHECK(WebInputEvent::isTouchEventType(type));
-    InputEventAck ack(type, ack_result, touch_event_id);
+    InputEventAck ack(InputEventAckSource::COMPOSITOR_THREAD, type, ack_result,
+                      touch_event_id);
     input_router_->OnMessageReceived(InputHostMsg_HandleInputEvent_ACK(0, ack));
   }
 
@@ -1815,7 +1816,8 @@ TEST_F(InputRouterImplTest, OverscrollDispatch) {
   wheel_overscroll.current_fling_velocity = gfx::Vector2dF(1, 0);
 
   SimulateWheelEvent(0, 0, 3, 0, 0, false);
-  InputEventAck ack(WebInputEvent::MouseWheel,
+  InputEventAck ack(InputEventAckSource::COMPOSITOR_THREAD,
+                    WebInputEvent::MouseWheel,
                     INPUT_EVENT_ACK_STATE_NOT_CONSUMED);
   ack.overscroll.reset(new DidOverscrollParams(wheel_overscroll));
   input_router_->OnMessageReceived(InputHostMsg_HandleInputEvent_ACK(0, ack));
