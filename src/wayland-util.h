@@ -142,12 +142,64 @@ struct wl_message {
 	const struct wl_interface **types;
 };
 
+/**
+ * Protocol object interface
+ *
+ * A wl_interface describes the API of a protocol object defined in the Wayland
+ * protocol specification. The protocol implementation uses a wl_interface
+ * within its marshalling machinery for encoding client requests.
+ *
+ * The `name` of a wl_interface is the name of the corresponding protocol
+ * interface, and `version` represents the version of the interface. The members
+ * `method_count` and `event_count` represent the number of `methods` (requests)
+ * and `events` in the respective wl_message members.
+ *
+ * For example, consider a protocol interface `foo`, marked as version `1`, with
+ * two requests and one event.
+ *
+ * \code
+ * <interface name="foo" version="1">
+ *   <request name="a"></request>
+ *   <request name="b"></request>
+ *   <event name="c"></event>
+ * </interface>
+ * \endcode
+ *
+ * Given two wl_message arrays `foo_requests` and `foo_events`, a wl_interface
+ * for `foo` might be:
+ *
+ * \code
+ * struct wl_interface foo_interface = {
+ *         "foo", 1,
+ *         2, foo_requests,
+ *         1, foo_events
+ * };
+ * \endcode
+ *
+ * \note The server side of the protocol may define interface <em>implementation
+ *       types</em> that incorporate the term `interface` in their name. Take
+ *       care to not confuse these server-side `struct`s with a wl_interface
+ *       variable whose name also ends in `interface`. For example, while the
+ *       server may define a type `struct wl_foo_interface`, the client may
+ *       define a `struct wl_interface wl_foo_interface`.
+ *
+ * \sa wl_message
+ * \sa wl_proxy
+ * \sa <a href="https://wayland.freedesktop.org/docs/html/ch04.html#sect-Protocol-Interfaces">Interfaces</a>
+ * \sa <a href="https://wayland.freedesktop.org/docs/html/ch04.html#sect-Protocol-Versioning">Versioning</a>
+ */
 struct wl_interface {
+	/** Interface name */
 	const char *name;
+	/** Interface version */
 	int version;
+	/** Number of methods (requests) */
 	int method_count;
+	/** Method (request) signatures */
 	const struct wl_message *methods;
+	/** Number of events */
 	int event_count;
+	/** Event signatures */
 	const struct wl_message *events;
 };
 
