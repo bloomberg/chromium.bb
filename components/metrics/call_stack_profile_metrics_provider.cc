@@ -89,7 +89,6 @@ class PendingProfiles {
  public:
   static PendingProfiles* GetInstance();
 
-  void Clear();
   void Swap(std::vector<ProfilesState>* profiles);
 
   // Enables the collection of profiles by CollectProfilesIfCollectionEnabled if
@@ -134,11 +133,6 @@ PendingProfiles* PendingProfiles::GetInstance() {
   // Leaky for performance rather than correctness reasons.
   return base::Singleton<PendingProfiles,
                          base::LeakySingletonTraits<PendingProfiles>>::get();
-}
-
-void PendingProfiles::Clear() {
-  base::AutoLock scoped_lock(lock_);
-  profiles_.clear();
 }
 
 void PendingProfiles::Swap(std::vector<ProfilesState>* profiles) {
