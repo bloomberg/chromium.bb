@@ -107,7 +107,6 @@ class PageHandler : public NotificationObserver {
       std::string* url,
       std::vector<scoped_refptr<AppManifestError>>* errors,
       std::string* data);
-  Response SetBlockedEventsWarningThreshold(double threshold);
   Response GetLayoutMetrics(
       scoped_refptr<LayoutViewport>* layout_viewport,
       scoped_refptr<VisualViewport>* visual_viewport);

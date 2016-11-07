@@ -459,10 +459,6 @@ Response PageHandler::GetAppManifest(
   return Response::FallThrough();
 }
 
-Response PageHandler::SetBlockedEventsWarningThreshold(double threshold) {
-  return Response::FallThrough();
-}
-
 Response PageHandler::GetLayoutMetrics(
     scoped_refptr<LayoutViewport>* layout_viewport,
     scoped_refptr<VisualViewport>* visual_viewport) {

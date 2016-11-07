@@ -147,6 +147,7 @@
 #include "core/frame/HostsUsingFeatures.h"
 #include "core/frame/LocalDOMWindow.h"
 #include "core/frame/LocalFrame.h"
+#include "core/frame/PerformanceMonitor.h"
 #include "core/frame/Settings.h"
 #include "core/frame/csp/ContentSecurityPolicy.h"
 #include "core/html/DocumentNameCollection.h"
@@ -1871,6 +1872,7 @@ void Document::updateStyleAndLayoutTree() {
   unsigned startElementCount = styleEngine().styleForElementCount();
 
   InspectorInstrumentation::willRecalculateStyle(this);
+  PerformanceMonitor::willRecalculateStyle(this);
 
   DocumentAnimations::updateAnimationTimingIfNeeded(*this);
   evaluateMediaQueryListIfNeeded();
@@ -1915,6 +1917,7 @@ void Document::updateStyleAndLayoutTree() {
   assertLayoutTreeUpdated(*this);
 #endif
   InspectorInstrumentation::didRecalculateStyle(this);
+  PerformanceMonitor::didRecalculateStyle(this);
 }
 
 void Document::updateStyle() {

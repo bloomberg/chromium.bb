@@ -81,8 +81,6 @@ static const char pageAgentScriptsToEvaluateOnLoad[] =
     "pageAgentScriptsToEvaluateOnLoad";
 static const char screencastEnabled[] = "screencastEnabled";
 static const char autoAttachToCreatedPages[] = "autoAttachToCreatedPages";
-static const char blockedEventsWarningThreshold[] =
-    "blockedEventsWarningThreshold";
 static const char overlaySuspended[] = "overlaySuspended";
 static const char overlayMessage[] = "overlayMessage";
 }
@@ -371,8 +369,6 @@ InspectorPageAgent::InspectorPageAgent(
 void InspectorPageAgent::restore() {
   if (m_state->booleanProperty(PageAgentState::pageAgentEnabled, false))
     enable();
-  setBlockedEventsWarningThreshold(m_state->doubleProperty(
-      PageAgentState::blockedEventsWarningThreshold, 0.0));
   if (m_client) {
     String overlayMessage;
     m_state->getString(PageAgentState::overlayMessage, &overlayMessage);
@@ -842,16 +838,6 @@ Response InspectorPageAgent::configureOverlay(Maybe<bool> suspended,
   if (m_client)
     m_client->configureOverlay(suspended.fromMaybe(false),
                                message.fromMaybe(String()));
-  return Response::OK();
-}
-
-Response InspectorPageAgent::setBlockedEventsWarningThreshold(
-    double threshold) {
-  m_state->setDouble(PageAgentState::blockedEventsWarningThreshold, threshold);
-  FrameHost* host = m_inspectedFrames->root()->host();
-  if (!host)
-    return Response::Error("Host not found");
-  host->settings().setBlockedMainThreadEventsWarningThreshold(threshold);
   return Response::OK();
 }
 

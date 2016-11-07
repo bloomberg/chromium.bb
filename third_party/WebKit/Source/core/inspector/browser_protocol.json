@@ -480,13 +480,6 @@
                 "experimental": true
             },
             {
-                "name": "setBlockedEventsWarningThreshold",
-                "experimental": true,
-                "parameters": [
-                    { "name": "threshold", "type": "number", "description": "If set to a positive number, specifies threshold in seconds for input event latency that will cause a console warning about blocked event to be issued. If zero or less, the warning is disabled." }
-                ]
-            },
-            {
                 "name": "setControlNavigations",
                 "parameters": [
                     { "name": "enabled", "type": "boolean" }
@@ -4369,7 +4362,7 @@
                 "type": "object",
                 "description": "Log entry.",
                 "properties": [
-                    { "name": "source", "type": "string", "enum": ["xml", "javascript", "network", "storage", "appcache", "rendering", "security", "deprecation", "worker", "other"], "description": "Log entry source." },
+                    { "name": "source", "type": "string", "enum": ["xml", "javascript", "network", "storage", "appcache", "rendering", "security", "deprecation", "worker", "violation", "other"], "description": "Log entry source." },
                     { "name": "level", "type": "string", "enum": ["log", "warning", "error", "debug", "info"], "description": "Log entry severity." },
                     { "name": "text", "type": "string", "description": "Logged text." },
                     { "name": "timestamp", "$ref": "Runtime.Timestamp", "description": "Timestamp when this entry was added." },
@@ -4393,6 +4386,13 @@
             {
                 "name": "clear",
                 "description": "Clears the log."
+            },
+            {
+                "name": "setReportViolationsEnabled",
+                "parameters": [
+                    { "name": "enabled", "type": "boolean", "description": "Pass true to enable." }
+                ],
+                "description": "Reports runtime audit violations as log entries."
             }
         ],
         "events": [

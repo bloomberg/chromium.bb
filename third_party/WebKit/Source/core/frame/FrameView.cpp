@@ -50,6 +50,7 @@
 #include "core/frame/LocalFrame.h"
 #include "core/frame/Location.h"
 #include "core/frame/PageScaleConstraintsSet.h"
+#include "core/frame/PerformanceMonitor.h"
 #include "core/frame/Settings.h"
 #include "core/frame/VisualViewport.h"
 #include "core/html/HTMLFrameElement.h"
@@ -1089,12 +1090,12 @@ void FrameView::layout() {
   DocumentLifecycle::Scope lifecycleScope(lifecycle(),
                                           DocumentLifecycle::LayoutClean);
 
+  Document* document = m_frame->document();
   TRACE_EVENT_BEGIN1("devtools.timeline", "Layout", "beginData",
                      InspectorLayoutEvent::beginData(this));
+  PerformanceMonitor::willUpdateLayout(document);
 
   performPreLayoutTasks();
-
-  Document* document = m_frame->document();
 
   // TODO(crbug.com/460956): The notion of a single root for layout is no longer
   // applicable. Remove or update this code.
@@ -1236,6 +1237,7 @@ void FrameView::layout() {
   TRACE_EVENT_END1("devtools.timeline", "Layout", "endData",
                    InspectorLayoutEvent::endData(rootForThisLayout));
   InspectorInstrumentation::didUpdateLayout(m_frame.get());
+  PerformanceMonitor::didUpdateLayout(document);
 
   m_nestedLayoutCount--;
   if (m_nestedLayoutCount)

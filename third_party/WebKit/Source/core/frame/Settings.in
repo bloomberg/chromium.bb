@@ -391,11 +391,6 @@ autoplayExperimentMode type=String, initial="off"
 # on frame resize assuming device rotation.
 mainFrameResizesAreOrientationChanges initial=false
 
-# If set to a positive value, emit a console warning once for each non-passive
-# event listener that caused an event to be dispatched to main thread and
-# delayed by more than the specified time (in seconds).
-blockedMainThreadEventsWarningThreshold type=double, initial=0
-
 # Ability to override the default 'passive' value in AddEventListenerOptions. This
 # is useful to demonstrate the power of passive event listeners. This can be removed
 # when there is greater adoption, interventions to force it on and associated devtools

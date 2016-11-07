@@ -524,6 +524,7 @@ v8::MaybeLocal<v8::Value> V8ScriptRunner::runCompiledScript(
                                       script->GetUnboundScript()->GetId());
     result = script->Run(isolate->GetCurrentContext());
     ThreadDebugger::didExecuteScript(isolate);
+    PerformanceMonitor::didExecuteScript(context);
   }
 
   crashIfIsolateIsDead(isolate);
@@ -637,6 +638,7 @@ v8::MaybeLocal<v8::Value> V8ScriptRunner::callFunction(
       function->Call(isolate->GetCurrentContext(), receiver, argc, args);
   crashIfIsolateIsDead(isolate);
   ThreadDebugger::didExecuteScript(isolate);
+  PerformanceMonitor::didExecuteScript(context);
   if (!depth)
     TRACE_EVENT_END0("devtools.timeline", "FunctionCall");
   return result;

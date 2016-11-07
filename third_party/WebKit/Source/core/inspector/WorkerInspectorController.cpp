@@ -69,7 +69,8 @@ void WorkerInspectorController::connectFrontend() {
   m_session = new InspectorSession(this, m_instrumentingAgents.get(), 0,
                                    m_debugger->v8Inspector(),
                                    m_debugger->contextGroupId(), nullptr);
-  m_session->append(new InspectorLogAgent(m_thread->consoleMessageStorage()));
+  m_session->append(
+      new InspectorLogAgent(m_thread->consoleMessageStorage(), nullptr));
   m_thread->workerBackingThread().backingThread().addTaskObserver(this);
 }
 

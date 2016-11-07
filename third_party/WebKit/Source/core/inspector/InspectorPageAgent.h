@@ -133,7 +133,6 @@ class CORE_EXPORT InspectorPageAgent final
   Response stopScreencast() override;
   Response configureOverlay(Maybe<bool> suspended,
                             Maybe<String> message) override;
-  Response setBlockedEventsWarningThreshold(double) override;
   Response getLayoutMetrics(
       std::unique_ptr<protocol::Page::LayoutViewport>*,
       std::unique_ptr<protocol::Page::VisualViewport>*) override;

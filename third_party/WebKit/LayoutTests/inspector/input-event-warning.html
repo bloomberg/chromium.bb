@@ -42,7 +42,7 @@ function dispatchEvents()
        target.addEventListener(type, eventListener1);
        target.addEventListener(type, eventListener2);
     }
-    var deadline = performance.now() + 100;
+    var deadline = performance.now() + 110;
     while (performance.now() < deadline) {};
     if (window.testRunner)
         window.testRunner.setDumpConsoleMessages(false);
@@ -67,13 +67,13 @@ function test()
 
     function step1()
     {
-        InspectorTest.mainTarget.pageAgent().setBlockedEventsWarningThreshold(30);
+        InspectorTest.mainTarget.logAgent().setReportViolationsEnabled(false);
         InspectorTest.evaluateInPage("dispatchEvents()", step2);
     }
 
     function step2()
     {
-        InspectorTest.mainTarget.pageAgent().setBlockedEventsWarningThreshold(0.000001);
+        InspectorTest.mainTarget.logAgent().setReportViolationsEnabled(true);
         InspectorTest.addResult("There should be no warnings above this line");
         InspectorTest.evaluateInPage("dispatchEvents()", () => InspectorTest.completeTest());
     }

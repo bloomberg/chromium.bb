@@ -4,21 +4,30 @@
 
 #include "core/frame/PerformanceMonitor.h"
 
+#include "bindings/core/v8/SourceLocation.h"
 #include "core/InstrumentingAgents.h"
 #include "core/dom/Document.h"
 #include "core/dom/ExecutionContext.h"
 #include "core/frame/DOMWindow.h"
 #include "core/frame/Frame.h"
+#include "core/frame/FrameConsole.h"
 #include "core/frame/LocalFrame.h"
 #include "core/frame/UseCounter.h"
+#include "core/inspector/ConsoleMessage.h"
 #include "core/timing/DOMWindowPerformance.h"
 #include "core/timing/Performance.h"
 #include "public/platform/Platform.h"
+#include "wtf/CurrentTime.h"
 
 namespace blink {
 
 namespace {
 static const double kLongTaskThresholdMillis = 50.0;
+static const double kLongTaskWarningThresholdMillis = 150.0;
+
+static const double kSyncLayoutThresholdMillis = 30.0;
+static const double kSyncLayoutWarningThresholdMillis = 60.0;
+
 static const char kUnknownAttribution[] = "unknown";
 static const char kAmbugiousAttribution[] = "multiple-contexts";
 static const char kSameOriginAttribution[] = "same-origin";
@@ -41,7 +50,7 @@ void PerformanceMonitor::performanceObserverAdded(Performance* performance) {
   LocalFrame* frame = performance->frame();
   PerformanceMonitor* monitor = frame->performanceMonitor();
   monitor->m_webPerformanceObservers.add(performance);
-  monitor->enable();
+  monitor->updateInstrumentation();
 }
 
 // static
@@ -53,8 +62,82 @@ void PerformanceMonitor::performanceObserverRemoved(Performance* performance) {
   }
   PerformanceMonitor* monitor = frame->performanceMonitor();
   monitor->m_webPerformanceObservers.remove(performance);
-  if (!monitor->m_webPerformanceObservers.size())
-    monitor->disable();
+  monitor->updateInstrumentation();
+}
+
+// static
+void PerformanceMonitor::willExecuteScript(ExecutionContext* context) {
+  PerformanceMonitor* performanceMonitor =
+      PerformanceMonitor::instrumentingMonitor(context);
+  if (performanceMonitor)
+    performanceMonitor->innerWillExecuteScript(context);
+}
+
+// static
+void PerformanceMonitor::didExecuteScript(ExecutionContext* context) {
+  PerformanceMonitor* performanceMonitor =
+      PerformanceMonitor::instrumentingMonitor(context);
+  if (performanceMonitor)
+    performanceMonitor->didExecuteScript();
+}
+
+// static
+void PerformanceMonitor::willUpdateLayout(Document* document) {
+  PerformanceMonitor* performanceMonitor =
+      PerformanceMonitor::instrumentingMonitor(document);
+  if (performanceMonitor)
+    performanceMonitor->willUpdateLayout();
+}
+
+// static
+void PerformanceMonitor::didUpdateLayout(Document* document) {
+  PerformanceMonitor* performanceMonitor =
+      PerformanceMonitor::instrumentingMonitor(document);
+  if (performanceMonitor)
+    performanceMonitor->didUpdateLayout();
+}
+
+// static
+void PerformanceMonitor::willRecalculateStyle(Document* document) {
+  PerformanceMonitor* performanceMonitor =
+      PerformanceMonitor::instrumentingMonitor(document);
+  if (performanceMonitor)
+    performanceMonitor->willRecalculateStyle();
+}
+
+// static
+void PerformanceMonitor::didRecalculateStyle(Document* document) {
+  PerformanceMonitor* performanceMonitor =
+      PerformanceMonitor::instrumentingMonitor(document);
+  if (performanceMonitor)
+    performanceMonitor->didRecalculateStyle();
+}
+
+// static
+bool PerformanceMonitor::enabled(ExecutionContext* context) {
+  return PerformanceMonitor::instrumentingMonitor(context);
+}
+
+// static
+void PerformanceMonitor::logViolation(MessageLevel level,
+                                      ExecutionContext* context,
+                                      const String& messageText) {
+  PerformanceMonitor* performanceMonitor =
+      PerformanceMonitor::instrumentingMonitor(context);
+  if (performanceMonitor)
+    performanceMonitor->logViolation(level, messageText);
+}
+
+// static
+void PerformanceMonitor::logViolation(
+    MessageLevel level,
+    ExecutionContext* context,
+    const String& messageText,
+    std::unique_ptr<SourceLocation> location) {
+  PerformanceMonitor* performanceMonitor =
+      PerformanceMonitor::instrumentingMonitor(context);
+  if (performanceMonitor)
+    performanceMonitor->logViolation(level, messageText, std::move(location));
 }
 
 // static
@@ -69,38 +152,33 @@ PerformanceMonitor* PerformanceMonitor::instrumentingMonitor(
   return monitor->m_enabled ? monitor : nullptr;
 }
 
-// static
-void PerformanceMonitor::willExecuteScript(ExecutionContext* context) {
-  PerformanceMonitor* performanceMonitor =
-      PerformanceMonitor::instrumentingMonitor(context);
-  if (performanceMonitor)
-    performanceMonitor->innerWillExecuteScript(context);
-}
-
 PerformanceMonitor::PerformanceMonitor(LocalFrame* localRoot)
     : m_localRoot(localRoot) {}
 
 PerformanceMonitor::~PerformanceMonitor() {}
 
-void PerformanceMonitor::enable() {
-  if (m_enabled)
-    return;
-  m_enabled = true;
-  UseCounter::count(m_localRoot, UseCounter::LongTaskObserver);
-  Platform::current()->currentThread()->addTaskTimeObserver(this);
-  Platform::current()->currentThread()->addTaskObserver(this);
+void PerformanceMonitor::setLoggingEnabled(bool enabled) {
+  m_loggingEnabled = enabled;
+  updateInstrumentation();
 }
 
-void PerformanceMonitor::disable() {
-  if (!m_enabled)
+void PerformanceMonitor::updateInstrumentation() {
+  bool shouldEnable = m_loggingEnabled || m_webPerformanceObservers.size();
+  if (shouldEnable == m_enabled)
     return;
-  m_enabled = false;
-  DCHECK(!m_webPerformanceObservers.size());
-  Platform::current()->currentThread()->removeTaskTimeObserver(this);
-  Platform::current()->currentThread()->removeTaskObserver(this);
+  if (shouldEnable) {
+    UseCounter::count(m_localRoot, UseCounter::LongTaskObserver);
+    Platform::current()->currentThread()->addTaskTimeObserver(this);
+    Platform::current()->currentThread()->addTaskObserver(this);
+  } else {
+    Platform::current()->currentThread()->removeTaskTimeObserver(this);
+    Platform::current()->currentThread()->removeTaskObserver(this);
+  }
+  m_enabled = shouldEnable;
 }
 
 void PerformanceMonitor::innerWillExecuteScript(ExecutionContext* context) {
+  m_isExecutingScript = true;
   // Heuristic for minimal frame context attribution: note the frame context
   // for each script execution. When a long task is encountered,
   // if there is only one frame context involved, then report it.
@@ -108,23 +186,64 @@ void PerformanceMonitor::innerWillExecuteScript(ExecutionContext* context) {
   // NOTE: This heuristic is imperfect and will be improved in V2 API.
   // In V2, timing of script execution along with style & layout updates will be
   // accounted for detailed and more accurate attribution.
-  if (context->isDocument() && toDocument(context)->frame()) {
+  if (context->isDocument() && toDocument(context)->frame())
     m_frameContexts.add(toDocument(context)->frame());
+}
+
+void PerformanceMonitor::didExecuteScript() {
+  m_isExecutingScript = false;
+}
+
+void PerformanceMonitor::willUpdateLayout() {
+  if (m_isExecutingScript)
+    m_layoutStartTime = WTF::monotonicallyIncreasingTime();
+}
+
+void PerformanceMonitor::didUpdateLayout() {
+  if (m_isExecutingScript) {
+    m_perTaskStyleAndLayoutTime +=
+        WTF::monotonicallyIncreasingTime() - m_layoutStartTime;
+  }
+}
+
+void PerformanceMonitor::willRecalculateStyle() {
+  if (m_isExecutingScript)
+    m_styleStartTime = WTF::monotonicallyIncreasingTime();
+}
+
+void PerformanceMonitor::didRecalculateStyle() {
+  if (m_isExecutingScript) {
+    m_perTaskStyleAndLayoutTime +=
+        WTF::monotonicallyIncreasingTime() - m_styleStartTime;
   }
 }
 
 void PerformanceMonitor::willProcessTask() {
+  m_perTaskStyleAndLayoutTime = 0;
   // Reset m_frameContexts. We don't clear this in didProcessTask
   // as it is needed in ReportTaskTime which occurs after didProcessTask.
   m_frameContexts.clear();
 }
 
-void PerformanceMonitor::didProcessTask() {}
+void PerformanceMonitor::didProcessTask() {
+  if (m_perTaskStyleAndLayoutTime * 1000 < kSyncLayoutThresholdMillis)
+    return;
+
+  if (m_loggingEnabled) {
+    logViolation(
+        m_perTaskStyleAndLayoutTime * 1000 < kSyncLayoutWarningThresholdMillis
+            ? InfoMessageLevel
+            : WarningMessageLevel,
+        String::format("Forced reflow while executing JavaScript took %ldms.",
+                       lround(m_perTaskStyleAndLayoutTime * 1000)));
+  }
+}
 
 void PerformanceMonitor::ReportTaskTime(scheduler::TaskQueue*,
                                         double startTime,
                                         double endTime) {
-  if (((endTime - startTime) * 1000) <= kLongTaskThresholdMillis)
+  double taskTimeMs = (endTime - startTime) * 1000;
+  if (taskTimeMs < kLongTaskThresholdMillis)
     return;
 
   for (Performance* performance : m_webPerformanceObservers) {
@@ -135,6 +254,29 @@ void PerformanceMonitor::ReportTaskTime(scheduler::TaskQueue*,
     performance->addLongTaskTiming(startTime, endTime, attribution.first,
                                    attribution.second);
   }
+  if (m_loggingEnabled) {
+    logViolation(taskTimeMs < kLongTaskWarningThresholdMillis
+                     ? InfoMessageLevel
+                     : WarningMessageLevel,
+                 String::format("Long running JavaScript task took %ldms.",
+                                lround(taskTimeMs)));
+  }
+}
+
+void PerformanceMonitor::logViolation(MessageLevel level,
+                                      const String& messageText) {
+  ConsoleMessage* message =
+      ConsoleMessage::create(ViolationMessageSource, level, messageText);
+  m_localRoot->console().addMessage(message);
+}
+
+void PerformanceMonitor::logViolation(
+    MessageLevel level,
+    const String& messageText,
+    std::unique_ptr<SourceLocation> location) {
+  ConsoleMessage* message = ConsoleMessage::create(
+      ViolationMessageSource, level, messageText, std::move(location));
+  m_localRoot->console().addMessage(message);
 }
 
 /**
