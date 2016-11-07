@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "content/browser/power_usage_monitor_impl.h"
+#include "chrome/browser/power_usage_monitor/power_usage_monitor.h"
 
 #include <stddef.h>
 #include <utility>
@@ -18,10 +18,7 @@
 #include "content/public/browser/notification_service.h"
 #include "content/public/browser/notification_source.h"
 #include "content/public/browser/notification_types.h"
-#include "content/public/browser/power_usage_monitor.h"
 #include "content/public/browser/render_process_host.h"
-
-namespace content {
 
 namespace {
 
@@ -35,19 +32,15 @@ class PowerUsageMonitorSystemInterface
     : public PowerUsageMonitor::SystemInterface {
  public:
   explicit PowerUsageMonitorSystemInterface(PowerUsageMonitor* owner)
-      : power_usage_monitor_(owner),
-        weak_ptr_factory_(this) {}
+      : power_usage_monitor_(owner), weak_ptr_factory_(this) {}
   ~PowerUsageMonitorSystemInterface() override {}
 
   void ScheduleHistogramReport(base::TimeDelta delay) override {
-    BrowserThread::PostDelayedTask(
-        BrowserThread::UI,
-        FROM_HERE,
+    content::BrowserThread::PostDelayedTask(
+        content::BrowserThread::UI, FROM_HERE,
         base::Bind(
             &PowerUsageMonitorSystemInterface::ReportBatteryLevelHistogram,
-            weak_ptr_factory_.GetWeakPtr(),
-            Now(),
-            delay),
+            weak_ptr_factory_.GetWeakPtr(), Now(), delay),
         delay);
   }
 
@@ -75,8 +68,8 @@ class PowerUsageMonitorSystemInterface
     // at the next wakeup and not as late as it can.
     // A threshold of 2 minutes is used, since that should be large enough to
     // take the slop factor due to coalescing into account.
-    base::TimeDelta threshold = discharge_time +
-        base::TimeDelta::FromMinutes(2);
+    base::TimeDelta threshold =
+        discharge_time + base::TimeDelta::FromMinutes(2);
     if ((Now() - start_time) > threshold) {
       return;
     }
@@ -84,10 +77,7 @@ class PowerUsageMonitorSystemInterface
     const std::string histogram_name = base::StringPrintf(
         "Power.BatteryDischarge_%d", discharge_time.InMinutes());
     base::HistogramBase* histogram =
-        base::Histogram::FactoryGet(histogram_name,
-                                    1,
-                                    100,
-                                    101,
+        base::Histogram::FactoryGet(histogram_name, 1, 100, 101,
                                     base::Histogram::kUmaTargetedHistogramFlag);
     double discharge_amount = power_usage_monitor_->discharge_amount();
     histogram->Add(discharge_amount * 100);
@@ -102,22 +92,15 @@ class PowerUsageMonitorSystemInterface
 
 }  // namespace
 
-void StartPowerUsageMonitor() {
-  static base::LazyInstance<PowerUsageMonitor>::Leaky monitor =
-     LAZY_INSTANCE_INITIALIZER;
-  monitor.Get().Start();
-}
-
 PowerUsageMonitor::PowerUsageMonitor()
     : callback_(base::Bind(&PowerUsageMonitor::OnBatteryStatusUpdate,
-          base::Unretained(this))),
+                           base::Unretained(this))),
       system_interface_(new PowerUsageMonitorSystemInterface(this)),
       started_(false),
       tracking_discharge_(false),
       on_battery_power_(false),
       initial_battery_level_(0),
-      current_battery_level_(0) {
-}
+      current_battery_level_(0) {}
 
 PowerUsageMonitor::~PowerUsageMonitor() {
   if (started_)
@@ -128,12 +111,10 @@ void PowerUsageMonitor::Start() {
   // Power monitoring may be delayed based on uptime, but renderer process
   // lifetime tracking needs to start immediately so processes created before
   // then are accounted for.
-  registrar_.Add(this,
-                 NOTIFICATION_RENDERER_PROCESS_CREATED,
-                 NotificationService::AllBrowserContextsAndSources());
-  registrar_.Add(this,
-                 NOTIFICATION_RENDERER_PROCESS_CLOSED,
-                 NotificationService::AllBrowserContextsAndSources());
+  registrar_.Add(this, content::NOTIFICATION_RENDERER_PROCESS_CREATED,
+                 content::NotificationService::AllBrowserContextsAndSources());
+  registrar_.Add(this, content::NOTIFICATION_RENDERER_PROCESS_CLOSED,
+                 content::NotificationService::AllBrowserContextsAndSources());
   subscription_ =
       device::BatteryStatusService::GetInstance()->AddCallback(callback_);
 
@@ -143,9 +124,8 @@ void PowerUsageMonitor::Start() {
   base::TimeDelta min_uptime = base::TimeDelta::FromMinutes(kMinUptimeMinutes);
   if (uptime < min_uptime) {
     base::TimeDelta delay = min_uptime - uptime;
-    BrowserThread::PostDelayedTask(
-        BrowserThread::UI,
-        FROM_HERE,
+    content::BrowserThread::PostDelayedTask(
+        content::BrowserThread::UI, FROM_HERE,
         base::Bind(&PowerUsageMonitor::StartInternal, base::Unretained(this)),
         delay);
   } else {
@@ -232,12 +212,12 @@ void PowerUsageMonitor::OnBatteryStatusUpdate(
 void PowerUsageMonitor::OnRenderProcessNotification(int type, int rph_id) {
   size_t previous_num_live_renderers = live_renderer_ids_.size();
 
-  if (type == NOTIFICATION_RENDERER_PROCESS_CREATED) {
+  if (type == content::NOTIFICATION_RENDERER_PROCESS_CREATED) {
     live_renderer_ids_.insert(rph_id);
-  } else if (type == NOTIFICATION_RENDERER_PROCESS_CLOSED) {
+  } else if (type == content::NOTIFICATION_RENDERER_PROCESS_CLOSED) {
     live_renderer_ids_.erase(rph_id);
   } else {
-    NOTREACHED()  << "Unexpected notification type: " << type;
+    NOTREACHED() << "Unexpected notification type: " << type;
   }
 
   if (live_renderer_ids_.empty() && previous_num_live_renderers != 0) {
@@ -245,7 +225,6 @@ void PowerUsageMonitor::OnRenderProcessNotification(int type, int rph_id) {
     CancelPendingHistogramReporting();
     tracking_discharge_ = false;
   }
-
 }
 
 void PowerUsageMonitor::SetSystemInterfaceForTest(
@@ -253,20 +232,19 @@ void PowerUsageMonitor::SetSystemInterfaceForTest(
   system_interface_ = std::move(interface);
 }
 
-void PowerUsageMonitor::OnPowerStateChange(bool on_battery_power) {
-}
+void PowerUsageMonitor::OnPowerStateChange(bool on_battery_power) {}
 
-void PowerUsageMonitor::OnResume() {
-}
+void PowerUsageMonitor::OnResume() {}
 
 void PowerUsageMonitor::OnSuspend() {
   CancelPendingHistogramReporting();
 }
 
 void PowerUsageMonitor::Observe(int type,
-                                const NotificationSource& source,
-                                const NotificationDetails& details) {
-  RenderProcessHost* rph = Source<RenderProcessHost>(source).ptr();
+                                const content::NotificationSource& source,
+                                const content::NotificationDetails& details) {
+  content::RenderProcessHost* rph =
+      content::Source<content::RenderProcessHost>(source).ptr();
   OnRenderProcessNotification(type, rph->GetID());
 }
 
@@ -274,5 +252,3 @@ void PowerUsageMonitor::CancelPendingHistogramReporting() {
   // Cancel any in-progress histogram reports and reporting of discharge UMA.
   system_interface_->CancelPendingHistogramReports();
 }
-
-}  // namespace content

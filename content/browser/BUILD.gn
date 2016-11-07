@@ -935,8 +935,6 @@ source_set("browser") {
     "permissions/permission_service_impl.h",
     "power_monitor_message_broadcaster.cc",
     "power_monitor_message_broadcaster.h",
-    "power_usage_monitor_impl.cc",
-    "power_usage_monitor_impl.h",
     "presentation/presentation_service_impl.cc",
     "presentation/presentation_service_impl.h",
     "presentation/presentation_type_converters.cc",
@@ -1732,8 +1730,6 @@ source_set("browser") {
       "media/session/audio_focus_delegate_default.cc",
       "media/session/audio_focus_manager.cc",
       "media/session/audio_focus_manager.h",
-      "power_usage_monitor_impl.cc",
-      "power_usage_monitor_impl.h",
       "tracing/tracing_ui.cc",
       "tracing/tracing_ui.h",
 

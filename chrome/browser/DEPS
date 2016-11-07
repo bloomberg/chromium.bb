@@ -14,6 +14,7 @@ include_rules = [
   "+content/public/browser",
   "+courgette",
   "+device/base",
+  "+device/battery",
   "+device/bluetooth",
   "+device/geolocation",
   "+device/hid",

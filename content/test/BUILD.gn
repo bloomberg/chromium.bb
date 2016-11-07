@@ -1135,7 +1135,6 @@ test("content_unittests") {
     "../browser/notifications/platform_notification_context_unittest.cc",
     "../browser/notifications/type_converters_unittest.cc",
     "../browser/power_monitor_message_broadcaster_unittest.cc",
-    "../browser/power_usage_monitor_impl_unittest.cc",
     "../browser/presentation/presentation_service_impl_unittest.cc",
     "../browser/presentation/presentation_type_converters_unittest.cc",
     "../browser/quota/mock_quota_manager.cc",
@@ -1607,7 +1606,6 @@ test("content_unittests") {
     ]
     sources -= [
       "../browser/media/session/audio_focus_manager_unittest.cc",
-      "../browser/power_usage_monitor_impl_unittest.cc",
       "../browser/webui/url_data_manager_backend_unittest.cc",
     ]
     deps -= [ "//device/battery" ]

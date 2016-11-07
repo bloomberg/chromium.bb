@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CONTENT_BROWSER_POWER_USAGE_MONITOR_IMPL_H_
-#define CONTENT_BROWSER_POWER_USAGE_MONITOR_IMPL_H_
+#ifndef CHROME_BROWSER_POWER_USAGE_MONITOR_POWER_USAGE_MONITOR_H_
+#define CHROME_BROWSER_POWER_USAGE_MONITOR_POWER_USAGE_MONITOR_H_
 
 #include "base/containers/hash_tables.h"
 #include "base/gtest_prod_util.h"
@@ -11,13 +11,10 @@
 #include "base/memory/singleton.h"
 #include "base/power_monitor/power_monitor.h"
 #include "base/time/time.h"
-#include "content/common/content_export.h"
 #include "content/public/browser/browser_message_filter.h"
 #include "content/public/browser/notification_observer.h"
 #include "content/public/browser/notification_registrar.h"
 #include "device/battery/battery_status_service.h"
-
-namespace content {
 
 // Record statistics on power usage.
 //
@@ -32,8 +29,9 @@ namespace content {
 // * Data collection starts after system uptime exceeds 30 minutes.
 // * If the machine goes to sleep or all renderers are closed then the current
 //   measurement is cancelled.
-class CONTENT_EXPORT PowerUsageMonitor : public base::PowerObserver,
-                                         public NotificationObserver {
+
+class PowerUsageMonitor : public base::PowerObserver,
+                          public content::NotificationObserver {
  public:
   class SystemInterface {
    public:
@@ -72,8 +70,8 @@ class CONTENT_EXPORT PowerUsageMonitor : public base::PowerObserver,
 
   // Overridden from NotificationObserver:
   void Observe(int type,
-               const NotificationSource& source,
-               const NotificationDetails& details) override;
+               const content::NotificationSource& source,
+               const content::NotificationDetails& details) override;
 
  private:
   friend class PowerUsageMonitorTest;
@@ -96,7 +94,7 @@ class CONTENT_EXPORT PowerUsageMonitor : public base::PowerObserver,
   std::unique_ptr<device::BatteryStatusService::BatteryUpdateSubscription>
       subscription_;
 
-  NotificationRegistrar registrar_;
+  content::NotificationRegistrar registrar_;
 
   std::unique_ptr<SystemInterface> system_interface_;
 
@@ -128,6 +126,4 @@ class CONTENT_EXPORT PowerUsageMonitor : public base::PowerObserver,
   DISALLOW_COPY_AND_ASSIGN(PowerUsageMonitor);
 };
 
-}  // namespace content
-
-#endif  // CONTENT_BROWSER_POWER_USAGE_MONITOR_IMPL_H_
+#endif  // CHROME_BROWSER_POWER_USAGE_MONITOR_POWER_USAGE_MONITOR_H_

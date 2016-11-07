@@ -3544,6 +3544,7 @@ test("unit_tests") {
       "../browser/permissions/permission_request_manager_unittest.cc",
       "../browser/platform_util_unittest.cc",
       "../browser/power/process_power_collector_unittest.cc",
+      "../browser/power_usage_monitor/power_usage_monitor_unittest.cc",
       "../browser/process_singleton_posix_unittest.cc",
       "../browser/profile_resetter/profile_resetter_unittest.cc",
       "../browser/profile_resetter/triggered_profile_resetter_win_unittest.cc",
@@ -3655,6 +3656,7 @@ test("unit_tests") {
     ]
     sources -=
         [ "../browser/download/download_request_infobar_delegate_unittest.cc" ]
+    deps += [ "//device/battery:mojo_bindings" ]
   }
 
   if (!is_ios && !is_android) {

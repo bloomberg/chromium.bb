@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "content/browser/power_usage_monitor_impl.h"
+#include "chrome/browser/power_usage_monitor/power_usage_monitor.h"
 
 #include <utility>
 
@@ -10,8 +10,6 @@
 #include "content/public/test/test_browser_thread_bundle.h"
 #include "device/battery/battery_monitor.mojom.h"
 #include "testing/gtest/include/gtest/gtest.h"
-
-namespace content {
 
 // Dummy ID to identify a phantom RenderProcessHost in tests.
 const int kDummyRenderProcessHostID = 1;
@@ -28,9 +26,7 @@ class SystemInterfaceForTest : public PowerUsageMonitor::SystemInterface {
     return num_pending_histogram_reports_;
   }
 
-  int discharge_percent_per_hour() const {
-    return discharge_percent_per_hour_;
-  }
+  int discharge_percent_per_hour() const { return discharge_percent_per_hour_; }
 
   void AdvanceClockSeconds(int seconds) {
     now_ += base::TimeDelta::FromSeconds(seconds);
@@ -71,8 +67,9 @@ class PowerUsageMonitorTest : public testing::Test {
     monitor_->SetSystemInterfaceForTest(std::move(test_interface));
 
     // Without live renderers, the monitor won't do anything.
-    monitor_->OnRenderProcessNotification(NOTIFICATION_RENDERER_PROCESS_CREATED,
-                                          kDummyRenderProcessHostID);
+    monitor_->OnRenderProcessNotification(
+        content::NOTIFICATION_RENDERER_PROCESS_CREATED,
+        kDummyRenderProcessHostID);
   }
 
   void UpdateBatteryStatus(bool charging, double battery_level) {
@@ -84,12 +81,13 @@ class PowerUsageMonitorTest : public testing::Test {
 
   void KillTestRenderer() {
     monitor_->OnRenderProcessNotification(
-        NOTIFICATION_RENDERER_PROCESS_CLOSED, kDummyRenderProcessHostID);
+        content::NOTIFICATION_RENDERER_PROCESS_CLOSED,
+        kDummyRenderProcessHostID);
   }
 
   std::unique_ptr<PowerUsageMonitor> monitor_;
   SystemInterfaceForTest* system_interface_;
-  TestBrowserThreadBundle thread_bundle_;
+  content::TestBrowserThreadBundle thread_bundle_;
 };
 
 TEST_F(PowerUsageMonitorTest, StartStopQuickly) {
@@ -165,5 +163,3 @@ TEST_F(PowerUsageMonitorTest, NoRenderersCancelsInProgressMonitoring) {
   ASSERT_EQ(0, system_interface_->num_pending_histogram_reports());
   ASSERT_EQ(0, system_interface_->discharge_percent_per_hour());
 }
-
-}  // namespace content

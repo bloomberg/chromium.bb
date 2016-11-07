@@ -2796,6 +2796,8 @@ split_static_library("browser") {
       "pdf/pdf_extension_util.h",
       "power/process_power_collector.cc",
       "power/process_power_collector.h",
+      "power_usage_monitor/power_usage_monitor.cc",
+      "power_usage_monitor/power_usage_monitor.h",
       "process_singleton_modal_dialog_lock.cc",
       "process_singleton_modal_dialog_lock.h",
       "process_singleton_posix.cc",
@@ -2869,6 +2871,7 @@ split_static_library("browser") {
       "//chrome/browser/profile_resetter:profile_reset_report_proto",
       "//components/feedback",
       "//components/web_modal",
+      "//device/battery",
       "//net:net_browser_services",
     ]
   }
