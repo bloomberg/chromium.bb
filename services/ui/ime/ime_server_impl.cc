@@ -14,9 +14,11 @@ IMEServerImpl::IMEServerImpl() : current_id_(0) {}
 IMEServerImpl::~IMEServerImpl() {}
 
 void IMEServerImpl::Init(service_manager::Connector* connector) {
-  // TODO(moshayedi): crbug.com/641041. Look up the driver from the mojo:catalog
-  // service.
-  connector->Connect("service:test_ime_driver");
+  connector_ = connector;
+  connector_->ConnectToInterface("service:catalog", &catalog_);
+  catalog_->GetEntriesProvidingCapability(
+      "ime:ime_driver",
+      base::Bind(&IMEServerImpl::OnGotCatalogEntries, base::Unretained(this)));
 }
 
 void IMEServerImpl::AddBinding(mojom::IMEServerRequest request) {
@@ -48,6 +50,15 @@ void IMEServerImpl::StartSession(
     pending_requests_.push(
         std::make_pair(std::move(client), std::move(input_method_request)));
   }
+}
+
+void IMEServerImpl::OnGotCatalogEntries(
+    std::vector<catalog::mojom::EntryPtr> entries) {
+  // TODO(moshayedi): crbug.com/662157. Decide what to do when number of
+  // available IME drivers isn't exactly one.
+  if (entries.size() == 0)
+    return;
+  connector_->Connect((*entries.begin())->name);
 }
 
 }  // namespace ui

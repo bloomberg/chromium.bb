@@ -44,6 +44,7 @@
       },
       "requires": {
         "*": [ "app" ],
+        "service:catalog": [ "catalog:catalog" ],
         "service:service_manager": [ "service_manager:all_users" ],
         "service:ui": [ "ozone" ]
       }

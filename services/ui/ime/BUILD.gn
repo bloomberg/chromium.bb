@@ -18,6 +18,7 @@ source_set("lib") {
     "//base",
     "//mojo/common",
     "//mojo/public/cpp/bindings",
+    "//services/catalog/public/interfaces",
     "//services/service_manager/public/cpp",
     "//services/tracing/public/cpp",
     "//services/ui/public/interfaces",
