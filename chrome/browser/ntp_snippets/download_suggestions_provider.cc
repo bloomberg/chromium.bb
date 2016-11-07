@@ -398,8 +398,6 @@ void DownloadSuggestionsProvider::SubmitContentSuggestions() {
 
 ContentSuggestion DownloadSuggestionsProvider::ConvertOfflinePage(
     const OfflinePageItem& offline_page) const {
-  // TODO(vitaliii): Make sure the URL is actually opened as an offline URL even
-  // when the user is online. See crbug.com/641568.
   ContentSuggestion suggestion(
       ContentSuggestion::ID(provided_category_, GetOfflinePagePerCategoryID(
                                                     offline_page.offline_id)),
