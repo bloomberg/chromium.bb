@@ -456,6 +456,7 @@ const float kRightEdgeOffset = 25;
   }
 
   [findText_ resetFieldEditorFrameIfNeeded];
+  [findText_ setNeedsDisplay:YES];
 
   // If we found any results, reset the focus tracker, so we always
   // restore focus to the tab contents.
