@@ -4,6 +4,7 @@
 
 import("//build/config/linux/pkg_config.gni")
 import("//build/config/ui.gni")
+import("//ui/ozone/ozone.gni")
 
 if (use_xkbcommon) {
   pkg_config("xkbcommon") {
@@ -90,5 +91,18 @@ executable("wayland_motion_events") {
     "//base",
     "//skia",
     "//third_party/wayland:wayland_client",
+    "//third_party/wayland-protocols:linux_dmabuf_protocol",
+    "//ui/gfx/geometry",
+    "//ui/gl",
+    "//ui/gl/init",
   ]
+
+  if (ozone_platform_gbm) {
+    configs += [
+      ":libdrm",
+      "//ui/gl:gl_config",
+    ]
+    defines = [ "OZONE_PLATFORM_GBM" ]
+    deps += [ "//third_party/minigbm" ]
+  }
 }
