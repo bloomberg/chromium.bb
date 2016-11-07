@@ -855,6 +855,7 @@ group("gn_only") {
     deps += [
       "//build/android/gyp/test:hello_world",
       "//build/android/incremental_install:bootstrap_java",
+      "//build/android/java_assertion_enabler",
     ]
   }
 
