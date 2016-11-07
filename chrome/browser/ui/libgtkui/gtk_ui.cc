@@ -7,6 +7,8 @@
 #include <math.h>
 #include <pango/pango.h>
 #include <X11/Xcursor/Xcursor.h>
+
+#include <cmath>
 #include <set>
 #include <utility>
 
@@ -84,6 +86,8 @@
 namespace libgtkui {
 
 namespace {
+
+const double kDefaultDPI = 96;
 
 class GtkButtonImageSource : public gfx::ImageSkiaSource {
  public:
@@ -351,44 +355,42 @@ gfx::FontRenderParams GetGtkFontRenderParams() {
   return params;
 }
 
-double GetDPI() {
-  // Linux chrome currently does not support dynamic DPI changes.
-  // Keep using the first value detected.
-  static double dpi = -1.f;
-  if (dpi < 0) {
-    const double kDefaultDPI = 96;
+double GetDpi() {
+  if (display::Display::HasForceDeviceScaleFactor())
+    return display::Display::GetForcedDeviceScaleFactor() * kDefaultDPI;
 
-    if (display::Display::HasForceDeviceScaleFactor()) {
-      dpi = display::Display::GetForcedDeviceScaleFactor() * kDefaultDPI;
-      return dpi;
-    }
+  GtkSettings* gtk_settings = gtk_settings_get_default();
+  CHECK(gtk_settings);
+  gint gtk_dpi = -1;
+  g_object_get(gtk_settings, "gtk-xft-dpi", &gtk_dpi, NULL);
 
-    GtkSettings* gtk_settings = gtk_settings_get_default();
-    CHECK(gtk_settings);
-    gint gtk_dpi = -1;
-    g_object_get(gtk_settings, "gtk-xft-dpi", &gtk_dpi, NULL);
-
-    // GTK multiplies the DPI by 1024 before storing it.
-    dpi = (gtk_dpi > 0) ? gtk_dpi / 1024.0 : kDefaultDPI;
-
-    // DSF is always >=1.0 on win/cros and lower DSF has never been considered
-    // nor tested.
-    dpi = std::max(kDefaultDPI, dpi);
-  }
-  return dpi;
+  // GTK multiplies the DPI by 1024 before storing it.
+  return (gtk_dpi > 0) ? gtk_dpi / 1024.0 : kDefaultDPI;
 }
 
-// Queries GTK for its font DPI setting and returns the number of pixels in a
-// point.
-double GetPixelsInPoint(float device_scale_factor) {
-  double dpi = GetDPI();
+float GetRawDeviceScaleFactor() {
+  if (display::Display::HasForceDeviceScaleFactor())
+    return display::Display::GetForcedDeviceScaleFactor();
+  return GetDpi() / kDefaultDPI;
+}
+
+// Returns the font size for the *raw* device scale factor in points.
+// The |ui_device_scale_factor| is used to cancel the scale to be applied by UI
+// and to compensate the scale when the device_scale_factor is floored.
+double GetFontSizePixelsInPoint(float ui_device_scale_factor) {
+  // There are 72 points in an inch.
+  double point = GetDpi() / 72.0;
 
   // Take device_scale_factor into account — if Chrome already scales the
   // entire UI up by 2x, we should not also scale up.
-  dpi /= device_scale_factor;
+  point /= ui_device_scale_factor;
 
-  // There are 72 points in an inch.
-  return dpi / 72.0;
+  // Allow the scale lower than 1.0 only for fonts. Don't always use
+  // the raw value however, because the 1.0~1.3 is rounded to 1.0.
+  float raw_scale = GetRawDeviceScaleFactor();
+  if (raw_scale < 1.0f)
+    return point * raw_scale / ui_device_scale_factor;
+  return point;
 }
 
 views::LinuxUI::NonClientMiddleClickAction GetDefaultMiddleClickAction() {
@@ -408,12 +410,7 @@ views::LinuxUI::NonClientMiddleClickAction GetDefaultMiddleClickAction() {
 
 }  // namespace
 
-Gtk2UI::Gtk2UI()
-    : default_font_size_pixels_(0),
-      default_font_style_(gfx::Font::NORMAL),
-      default_font_weight_(gfx::Font::Weight::NORMAL),
-      middle_click_action_(GetDefaultMiddleClickAction()),
-      device_scale_factor_(1.0) {
+Gtk2UI::Gtk2UI() : middle_click_action_(GetDefaultMiddleClickAction()) {
   GtkInitFromCommandLine(*base::CommandLine::ForCurrentProcess());
 }
 
@@ -811,7 +808,7 @@ void Gtk2UI::LoadGtkValues() {
   colors_[ThemeProperties::COLOR_BACKGROUND_TAB_TEXT] =
       color_utils::BlendTowardOppositeLuma(label_color, 50);
 
-  UpdateDefaultFont();
+  UpdateDeviceScaleFactor();
 
   // Build the various icon tints.
   GetNormalButtonTintHSL(&button_tint_);
@@ -1031,8 +1028,8 @@ void Gtk2UI::UpdateDefaultFont() {
     const double size_points = pango_font_description_get_size(desc) /
                                static_cast<double>(PANGO_SCALE);
     default_font_size_pixels_ = static_cast<int>(
-        GetPixelsInPoint(device_scale_factor_) * size_points + 0.5);
-    query.point_size = static_cast<int>(size_points);
+        GetFontSizePixelsInPoint(GetDeviceScaleFactor()) * size_points);
+   query.point_size = static_cast<int>(size_points);
   }
 
   query.style = gfx::Font::NORMAL;
@@ -1052,20 +1049,20 @@ void Gtk2UI::ResetStyle() {
   NativeThemeGtk2::instance()->NotifyObservers();
 }
 
-void Gtk2UI::UpdateDeviceScaleFactor(float device_scale_factor) {
-  device_scale_factor_ = device_scale_factor;
+void Gtk2UI::UpdateDeviceScaleFactor() {
+  // Note: Linux chrome currently does not support dynamic DPI
+  // changes.  This is to allow flags to override the DPI settings
+  // during startup.
+  float scale = GetRawDeviceScaleFactor();
+
+  // Blacklist scaling factors <130% (crbug.com/484400) and round
+  // to 1 decimal to prevent rendering problems (crbug.com/485183).
+  device_scale_factor_ = scale < 1.3f ? 1.0f : roundf(scale * 10) / 10;
   UpdateDefaultFont();
 }
 
 float Gtk2UI::GetDeviceScaleFactor() const {
-  if (display::Display::HasForceDeviceScaleFactor())
-    return display::Display::GetForcedDeviceScaleFactor();
-  const int kCSSDefaultDPI = 96;
-  const float scale = GetDPI() / kCSSDefaultDPI;
-
-  // Blacklist scaling factors <130% (crbug.com/484400) and round
-  // to 1 decimal to prevent rendering problems (crbug.com/485183).
-  return scale < 1.3f ? 1.0f : roundf(scale * 10) / 10;
+  return device_scale_factor_;
 }
 
 }  // namespace libgtkui

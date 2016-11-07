@@ -84,10 +84,10 @@ void ChromeBrowserMainExtraPartsViewsLinux::ToolkitInitialized() {
 }
 
 void ChromeBrowserMainExtraPartsViewsLinux::PreCreateThreads() {
+  // Update the device scale factor before initializing views
+  // because its display::Screen instance depends on it.
+  views::LinuxUI::instance()->UpdateDeviceScaleFactor();
   ChromeBrowserMainExtraPartsViews::PreCreateThreads();
-  views::LinuxUI::instance()->UpdateDeviceScaleFactor(
-      display::Screen::GetScreen()->GetPrimaryDisplay().device_scale_factor());
-
   views::X11DesktopHandler::get()->AddObserver(this);
 }
 

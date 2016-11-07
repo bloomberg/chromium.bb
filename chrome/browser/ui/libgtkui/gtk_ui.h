@@ -105,7 +105,7 @@ class Gtk2UI : public views::LinuxUI {
                   std::vector<ui::TextEditCommandAuraLinux>* commands) override;
 
   // ui::Views::LinuxUI:
-  void UpdateDeviceScaleFactor(float device_scale_factor) override;
+  void UpdateDeviceScaleFactor() override;
   float GetDeviceScaleFactor() const override;
 
  private:
@@ -170,9 +170,10 @@ class Gtk2UI : public views::LinuxUI {
 
   // Details about the default UI font.
   std::string default_font_family_;
-  int default_font_size_pixels_;
-  int default_font_style_;  // Bitfield of gfx::Font::Style values.
-  gfx::Font::Weight default_font_weight_;
+  int default_font_size_pixels_ = 0;
+  // Bitfield of gfx::Font::Style values.
+  int default_font_style_ = gfx::Font::NORMAL;
+  gfx::Font::Weight default_font_weight_ = gfx::Font::Weight::NORMAL;
   gfx::FontRenderParams default_font_render_params_;
 
 #if defined(USE_GCONF)
@@ -200,7 +201,7 @@ class Gtk2UI : public views::LinuxUI {
   // instance.
   NativeThemeGetter native_theme_overrider_;
 
-  float device_scale_factor_;
+  float device_scale_factor_ = 1.0f;
 
   DISALLOW_COPY_AND_ASSIGN(Gtk2UI);
 };
