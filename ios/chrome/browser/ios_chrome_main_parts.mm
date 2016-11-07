@@ -28,8 +28,10 @@
 #include "components/rappor/rappor_service.h"
 #include "components/task_scheduler_util/initialization_util.h"
 #include "components/translate/core/browser/translate_download_manager.h"
+#include "components/variations/field_trial_config/field_trial_util.h"
 #include "components/variations/service/variations_service.h"
 #include "components/variations/variations_http_header_provider.h"
+#include "components/variations/variations_switches.h"
 #include "ios/chrome/browser/about_flags.h"
 #include "ios/chrome/browser/application_context_impl.h"
 #include "ios/chrome/browser/browser_state/chrome_browser_state.h"
@@ -301,6 +303,15 @@ void IOSChromeMainParts::SetupFieldTrials() {
   feature_list->InitializeFromCommandLine(
       command_line->GetSwitchValueASCII(switches::kEnableIOSFeatures),
       command_line->GetSwitchValueASCII(switches::kDisableIOSFeatures));
+
+#if defined(FIELDTRIAL_TESTING_ENABLED)
+  if (!command_line->HasSwitch(
+          variations::switches::kDisableFieldTrialTestingConfig) &&
+      !command_line->HasSwitch(switches::kForceFieldTrials) &&
+      !command_line->HasSwitch(variations::switches::kVariationsServerURL)) {
+    variations::AssociateDefaultFieldTrialConfig(feature_list.get());
+  }
+#endif  // defined(FIELDTRIAL_TESTING_ENABLED)
 
   variations::VariationsService* variations_service =
       application_context_->GetVariationsService();
