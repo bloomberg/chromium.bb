@@ -128,23 +128,12 @@ PlatformDisplay* TestPlatformDisplayFactory::CreatePlatformDisplay() {
 
 // TestFrameGeneratorDelegate -------------------------------------------------
 
-TestFrameGeneratorDelegate::TestFrameGeneratorDelegate(
-    std::unique_ptr<ServerWindow> root)
-    : root_(std::move(root)) {}
+TestFrameGeneratorDelegate::TestFrameGeneratorDelegate() {}
 
 TestFrameGeneratorDelegate::~TestFrameGeneratorDelegate() {}
 
-ServerWindow* TestFrameGeneratorDelegate::GetRootWindow() {
-  return root_.get();
-}
-
 bool TestFrameGeneratorDelegate::IsInHighContrastMode() {
   return false;
-}
-
-const display::ViewportMetrics& TestFrameGeneratorDelegate::GetViewportMetrics()
-    const {
-  return metrics_;
 }
 
 // WindowTreeTestApi  ---------------------------------------------------------

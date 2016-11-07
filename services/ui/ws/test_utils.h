@@ -279,18 +279,13 @@ class TestPlatformDisplayFactory : public PlatformDisplayFactory {
 // A stub implementation of FrameGeneratorDelegate.
 class TestFrameGeneratorDelegate : public FrameGeneratorDelegate {
  public:
-  explicit TestFrameGeneratorDelegate(std::unique_ptr<ServerWindow> root);
+  TestFrameGeneratorDelegate();
   ~TestFrameGeneratorDelegate() override;
 
   // FrameGeneratorDelegate:
-  ServerWindow* GetRootWindow() override;
   bool IsInHighContrastMode() override;
-  const display::ViewportMetrics& GetViewportMetrics() const override;
 
  private:
-  std::unique_ptr<ServerWindow> root_;
-  display::ViewportMetrics metrics_;
-
   DISALLOW_COPY_AND_ASSIGN(TestFrameGeneratorDelegate);
 };
 

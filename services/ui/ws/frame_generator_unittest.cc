@@ -52,9 +52,7 @@ class FrameGeneratorTest : public testing::Test {
   // Calls DrawWindowTree() on |frame_generator_|
   void DrawWindowTree(cc::RenderPass* pass);
 
-  ServerWindow* root_window() {
-    return frame_generator_delegate_->GetRootWindow();
-  }
+  ServerWindow* root_window() { return root_window_.get(); }
 
   TestServerWindowDelegate* test_window_delegate() { return &window_delegate_; }
 
@@ -75,14 +73,13 @@ class FrameGeneratorTest : public testing::Test {
 };
 
 void FrameGeneratorTest::DrawWindowTree(cc::RenderPass* pass) {
-  frame_generator_->DrawWindowTree(
-      pass, frame_generator_delegate_->GetRootWindow(), gfx::Vector2d(), 1.0f);
+  frame_generator_->DrawWindowTree(pass, root_window_.get(), gfx::Vector2d(),
+                                   1.0f);
 }
 
 void FrameGeneratorTest::SetUp() {
   testing::Test::SetUp();
-  frame_generator_delegate_ = base::MakeUnique<TestFrameGeneratorDelegate>(
-      base::MakeUnique<ServerWindow>(&window_delegate_, WindowId()));
+  frame_generator_delegate_ = base::MakeUnique<TestFrameGeneratorDelegate>();
   PlatformDisplayInitParams init_params;
   frame_generator_ = base::MakeUnique<FrameGenerator>(
       frame_generator_delegate_.get(), root_window_.get());

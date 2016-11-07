@@ -281,10 +281,6 @@ void DefaultPlatformDisplay::OnAcceleratedWidgetDestroyed() {
 
 void DefaultPlatformDisplay::OnActivationChanged(bool active) {}
 
-ServerWindow* DefaultPlatformDisplay::GetRootWindow() {
-  return delegate_->GetRootWindow();
-}
-
 bool DefaultPlatformDisplay::IsInHighContrastMode() {
   return delegate_ ? delegate_->IsInHighContrastMode() : false;
 }

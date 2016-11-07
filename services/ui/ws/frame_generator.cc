@@ -105,13 +105,12 @@ void FrameGenerator::WantToDraw() {
 }
 
 void FrameGenerator::Draw() {
-  if (!delegate_->GetRootWindow()->visible())
+  if (!root_window_->visible())
     return;
 
-  const gfx::Rect output_rect(delegate_->GetViewportMetrics().pixel_size);
-  dirty_rect_.Intersect(output_rect);
+  dirty_rect_.Intersect(root_window_->bounds());
   // TODO(fsamuel): We should add a trace for generating a top level frame.
-  cc::CompositorFrame frame(GenerateCompositorFrame(output_rect));
+  cc::CompositorFrame frame(GenerateCompositorFrame(root_window_->bounds()));
   if (compositor_frame_sink_) {
     frame_pending_ = true;
     compositor_frame_sink_->SubmitCompositorFrame(std::move(frame));
@@ -126,8 +125,7 @@ cc::CompositorFrame FrameGenerator::GenerateCompositorFrame(
   render_pass->SetNew(render_pass_id, output_rect, dirty_rect_,
                       gfx::Transform());
 
-  DrawWindowTree(render_pass.get(), delegate_->GetRootWindow(), gfx::Vector2d(),
-                 1.0f);
+  DrawWindowTree(render_pass.get(), root_window_, gfx::Vector2d(), 1.0f);
 
   cc::CompositorFrame frame;
   frame.render_pass_list.push_back(std::move(render_pass));

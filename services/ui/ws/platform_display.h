@@ -15,6 +15,7 @@
 #include "base/memory/weak_ptr.h"
 #include "base/strings/string16.h"
 #include "build/build_config.h"
+#include "services/ui/display/viewport_metrics.h"
 #include "services/ui/public/interfaces/cursor.mojom.h"
 #include "services/ui/public/interfaces/window_manager.mojom.h"
 #include "services/ui/public/interfaces/window_manager_constants.mojom.h"
@@ -162,7 +163,6 @@ class DefaultPlatformDisplay : public PlatformDisplay,
   void OnActivationChanged(bool active) override;
 
   // FrameGeneratorDelegate:
-  ServerWindow* GetRootWindow() override;
   bool IsInHighContrastMode() override;
 
   int64_t id_;
