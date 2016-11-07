@@ -1,6 +1,8 @@
 # Overriden expectations for imported tests when run with --enable-wptserve
 
 # Fail when run with --enable-wptserve due to data: URLs treated as cross-origin: (crbug.com/508730)
+crbug.com/508730 imported/wpt/dom/nodes/Document-contentType/contentType/contenttype_datauri_01.html [ Failure ]
+crbug.com/508730 imported/wpt/dom/nodes/Document-contentType/contentType/contenttype_datauri_02.html [ Failure ]
 crbug.com/508730 crbug.com/472300 imported/wpt/html/semantics/embedded-content/media-elements/interfaces/TextTrack/addCue.html [ Failure ]
 crbug.com/508730 crbug.com/472300 imported/wpt/html/semantics/embedded-content/media-elements/interfaces/TextTrackCue/endTime.html [ Failure ]
 crbug.com/508730 crbug.com/472300 imported/wpt/html/semantics/embedded-content/media-elements/interfaces/TextTrackCue/id.html [ Failure ]
@@ -8,23 +10,21 @@ crbug.com/508730 crbug.com/472300 imported/wpt/html/semantics/embedded-content/m
 crbug.com/508730 crbug.com/472300 imported/wpt/html/semantics/embedded-content/media-elements/interfaces/TextTrackCue/startTime.html [ Failure ]
 crbug.com/508730 crbug.com/472300 imported/wpt/html/semantics/embedded-content/media-elements/interfaces/TextTrackCue/track.html [ Failure ]
 crbug.com/508730 crbug.com/472300 imported/wpt/html/semantics/embedded-content/media-elements/interfaces/TextTrack/removeCue.html [ Failure ]
+crbug.com/508730 imported/wpt/html/semantics/embedded-content/media-elements/track/track-element/cloneNode.html [ Failure ]
 crbug.com/508730 imported/wpt/html/browsers/browsing-the-web/read-media/pageload-image.html [ Failure ]
 crbug.com/508730 imported/wpt/html/browsers/browsing-the-web/read-media/pageload-video.html [ Failure ]
 crbug.com/508730 imported/wpt/html/webappapis/scripting/processing-model-2/compile-error-data-url.html [ Failure ]
+crbug.com/508730 imported/wpt/workers/data-url.html [ Failure ]
 
 # Fail when run with --enable-wptserve: (crbug.com/508734)
-crbug.com/508734 imported/wpt/html/browsers/history/the-location-interface/security_location_0.sub.htm [ Failure ]
 crbug.com/508734 imported/wpt/html/semantics/document-metadata/the-link-element/link-style-error-01.html [ Failure ]
-crbug.com/508734 imported/wpt/html/semantics/embedded-content/media-elements/track/track-element/cloneNode.html [ Failure ]
 crbug.com/508734 imported/wpt/html/semantics/scripting-1/the-script-element/data-url.html [ Failure ]
-crbug.com/508734 imported/wpt/html/semantics/scripting-1/the-script-element/script-onerror-insertion-point-2.html [ Failure ]
 crbug.com/508734 imported/wpt/html/webappapis/system-state-and-capabilities/the-navigator-object/protocol/004.xhtml [ Failure ]
-crbug.com/508734 imported/wpt/webrtc/simplecall.html [ Failure ]
-crbug.com/508734 imported/wpt/workers/data-url.html [ Failure ]
 crbug.com/508734 imported/wpt/workers/semantics/xhr/003.html [ Failure ]
-crbug.com/508734 imported/wpt/workers/Worker_cross_origin_security_err.htm [ Timeout ]
 
 # Fail differently when run with --enable-wptserve: (crbug.com/508728)
+crbug.com/508728 imported/wpt/dom/nodes/Document-createElement.html [ Failure ]
+crbug.com/508728 imported/wpt/dom/nodes/Document-createElementNS.html [ Failure ]
 crbug.com/508728 imported/wpt/html/browsers/offline/application-cache-api/api_update.html [ Failure ]
 crbug.com/508728 imported/wpt/FileAPI/url/url_xmlhttprequest.html [ Failure ]
 crbug.com/508728 imported/wpt/html/dom/reflection-obsolete.html [ Failure ]
@@ -34,6 +34,7 @@ crbug.com/508728 imported/wpt/html/semantics/embedded-content/media-elements/loa
 crbug.com/508728 imported/wpt/html/semantics/embedded-content/media-elements/loading-the-media-resource/resource-selection-pointer-insert-text.html [ Failure ]
 crbug.com/508728 imported/wpt/html/semantics/embedded-content/media-elements/loading-the-media-resource/resource-selection-pointer-remove-source.html [ Failure ]
 crbug.com/508728 imported/wpt/html/semantics/embedded-content/media-elements/loading-the-media-resource/resource-selection-pointer-remove-text.html [ Failure ]
+crbug.com/508734 imported/wpt/html/semantics/scripting-1/the-script-element/script-onerror-insertion-point-2.html [ Failure ]
 crbug.com/508728 imported/wpt/html/webappapis/scripting/processing-model-2/compile-error-cross-origin.html [ Failure ]
 crbug.com/508728 imported/wpt/html/webappapis/scripting/processing-model-2/compile-error-in-setInterval.html [ Failure ]
 crbug.com/508728 imported/wpt/html/webappapis/scripting/processing-model-2/compile-error-in-setTimeout.html [ Failure ]
@@ -41,7 +42,9 @@ crbug.com/508728 imported/wpt/html/webappapis/scripting/processing-model-2/runti
 crbug.com/508728 imported/wpt/html/webappapis/scripting/processing-model-2/runtime-error-data-url.html [ Failure ]
 crbug.com/508728 imported/wpt/html/webappapis/scripting/processing-model-2/runtime-error-in-setInterval.html [ Failure ]
 crbug.com/508728 imported/wpt/html/webappapis/scripting/processing-model-2/runtime-error-in-setTimeout.html [ Failure ]
+crbug.com/508728 imported/wpt/webrtc/simplecall.html [ Failure ]
 crbug.com/508728 imported/wpt/webstorage/document-domain.html [ Failure Timeout ]
+crbug.com/508728 imported/wpt/workers/Worker_cross_origin_security_err.htm [ Timeout ]
 # This test needs to be updated: fails because it expects showModalDialog and some other APIs.
 crbug.com/508728 imported/wpt/html/browsers/the-window-object/security-window/window-security.html [ Failure ]
 
@@ -62,10 +65,6 @@ crbug.com/508725 imported/wpt/html/semantics/document-metadata/the-base-element/
 # but instead there is a [ Failure ] expectation in TestExpectations.
 crbug.com/508725 imported/wpt/html/semantics/embedded-content/the-iframe-element/iframe_sandbox_allow_script.html [ Pass ]
 crbug.com/508725 imported/wpt/pointerevents/pointerevent_constructor.html [ Pass ]
-
-# These tests fail with --enable-wptserve due to blocked cross-origin frame (crbug.com/619746)
-crbug.com/619746 imported/wpt/dom/nodes/Document-contentType/contentType/contenttype_datauri_01.html [ Failure ]
-crbug.com/619746 imported/wpt/dom/nodes/Document-contentType/contentType/contenttype_datauri_02.html [ Failure ]
 
 # Tests for the service workers, which are set as Failure by default in TestExpectations
 crbug.com/602693 imported/wpt/service-workers [ Pass ]
