@@ -490,6 +490,20 @@ crbug.com/662722 [ Mac ] css1/classification/list_style_type.html [ NeedsManualR
 crbug.com/662722 [ Mac ] fast/forms/datalist/input-appearance-range-with-datalist-zoomed.html [ NeedsManualRebaseline ]
 crbug.com/662722 virtual/scalefactor200withzoom/fast/hidpi/static/calendar-picker-appearance.html [ NeedsManualRebaseline ]
 crbug.com/662722 virtual/scalefactor200withzoom/fast/hidpi/static/data-suggestion-picker-appearance.html [ NeedsManualRebaseline ]
+# Win10 Specific. Failed from r430189.
+crbug.com/662722 [ Win ] fast/forms/select/menulist-appearance-rtl.html [ NeedsManualRebaseline ]
+crbug.com/662722 [ Win ] svg/wicd/test-scalable-background-image2.xhtml [ NeedsManualRebaseline ]
+# Win10 Specific. Failed from autorebaseline in r430194.
+crbug.com/662722 [ Win ] virtual/threaded/printing/absolute-position-headers-and-footers.html [ NeedsManualRebaseline ]
+crbug.com/662722 [ Win ] virtual/threaded/printing/fixed-positioned-but-static-headers-and-footers.html [ NeedsManualRebaseline ]
+crbug.com/662722 [ Win ] virtual/threaded/printing/fixed-positioned-headers-and-footers-absolute-covering-some-pages.html [ NeedsManualRebaseline ]
+crbug.com/662722 [ Win ] virtual/threaded/printing/fixed-positioned-headers-and-footers-clipped.html [ NeedsManualRebaseline ]
+crbug.com/662722 [ Win ] virtual/threaded/printing/fixed-positioned-headers-and-footers-inside-transform.html [ NeedsManualRebaseline ]
+crbug.com/662722 [ Win ] virtual/threaded/printing/fixed-positioned-headers-and-footers-larger-than-page.html [ NeedsManualRebaseline ]
+crbug.com/662722 [ Win ] virtual/threaded/printing/fixed-positioned-headers-and-footers.html [ NeedsManualRebaseline ]
+crbug.com/662722 [ Win ] virtual/threaded/printing/iframe-print.html [ NeedsManualRebaseline ]
+crbug.com/662722 [ Win ] virtual/threaded/printing/list-item-with-empty-first-line.html [ NeedsManualRebaseline ]
+crbug.com/662722 [ Win ] virtual/threaded/printing/subframes-percentage-height.html [ NeedsManualRebaseline ]
 
 # TODO(oshima): Mac Android are currently not supported.
 crbug.com/567837 [ Mac Android ] virtual/scalefactor200withzoom/fast/hidpi/static [ Skip ]
