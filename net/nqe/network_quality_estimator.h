@@ -305,25 +305,6 @@ class NET_EXPORT NetworkQualityEstimator
                                   int32_t downstream_throughput_kbps,
                                   int32_t upstream_throughput_kbps) override;
 
-  // Returns true if the RTT is available and sets |rtt| to the RTT estimated at
-  // the HTTP layer. Virtualized for testing. |rtt| should not be null. The RTT
-  // at the HTTP layer measures the time from when the request was sent (this
-  // happens after the connection is established) to the time when the response
-  // headers were received.
-  // TODO(tbansal): Change it to return HTTP RTT as base::TimeDelta.
-  virtual bool GetHttpRTT(base::TimeDelta* rtt) const WARN_UNUSED_RESULT;
-
-  // Returns true if the RTT is available and sets |rtt| to the RTT estimated at
-  // the transport layer. |rtt| should not be null. Virtualized for testing.
-  // TODO(tbansal): Change it to return transport RTT as base::TimeDelta.
-  virtual bool GetTransportRTT(base::TimeDelta* rtt) const WARN_UNUSED_RESULT;
-
-  // Returns true if downlink throughput is available and sets |kbps| to
-  // estimated downlink throughput (in kilobits per second).
-  // Virtualized for testing. |kbps| should not be null.
-  // TODO(tbansal): Change it to return throughput as int32.
-  virtual bool GetDownlinkThroughputKbps(int32_t* kbps) const;
-
   // Returns true if median RTT at the HTTP layer is available and sets |rtt|
   // to the median of RTT observations since |start_time|.
   // Virtualized for testing. |rtt| should not be null. The RTT at the HTTP
@@ -681,11 +662,8 @@ class NET_EXPORT NetworkQualityEstimator
   size_t rtt_observations_size_at_last_ect_computation_;
   size_t throughput_observations_size_at_last_ect_computation_;
 
-  // Current estimates of the HTTP RTT, transport RTT and downstream throughput
-  // (in kilobits per second).
-  base::TimeDelta http_rtt_;
-  base::TimeDelta transport_rtt_;
-  int32_t downstream_throughput_kbps_;
+  // Current estimate of the network quality.
+  nqe::internal::NetworkQuality network_quality_;
 
   // Current effective connection type. It is updated on connection change
   // events. It is also updated every time there is network traffic (provided
