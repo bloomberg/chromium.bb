@@ -43,16 +43,15 @@ void toCompositorTransformOperations(
     CompositorTransformOperations* outTransformOperations) {
   // We need to do a deep copy the transformOperations may contain ref pointers
   // to TransformOperation objects.
-  for (size_t j = 0; j < transformOperations.size(); ++j) {
-    switch (transformOperations.operations()[j]->type()) {
+  for (const auto& operation : transformOperations.operations()) {
+    switch (operation->type()) {
       case TransformOperation::ScaleX:
       case TransformOperation::ScaleY:
       case TransformOperation::ScaleZ:
       case TransformOperation::Scale3D:
       case TransformOperation::Scale: {
-        ScaleTransformOperation* transform =
-            static_cast<ScaleTransformOperation*>(
-                transformOperations.operations()[j].get());
+        auto transform =
+            static_cast<const ScaleTransformOperation*>(operation.get());
         outTransformOperations->appendScale(transform->x(), transform->y(),
                                             transform->z());
         break;
@@ -62,10 +61,9 @@ void toCompositorTransformOperations(
       case TransformOperation::TranslateZ:
       case TransformOperation::Translate3D:
       case TransformOperation::Translate: {
-        TranslateTransformOperation* transform =
-            static_cast<TranslateTransformOperation*>(
-                transformOperations.operations()[j].get());
-        ASSERT(transform->x().isFixed() && transform->y().isFixed());
+        auto transform =
+            static_cast<const TranslateTransformOperation*>(operation.get());
+        DCHECK(transform->x().isFixed() && transform->y().isFixed());
         outTransformOperations->appendTranslate(
             transform->x().value(), transform->y().value(), transform->z());
         break;
@@ -74,9 +72,8 @@ void toCompositorTransformOperations(
       case TransformOperation::RotateY:
       case TransformOperation::Rotate3D:
       case TransformOperation::Rotate: {
-        RotateTransformOperation* transform =
-            static_cast<RotateTransformOperation*>(
-                transformOperations.operations()[j].get());
+        auto transform =
+            static_cast<const RotateTransformOperation*>(operation.get());
         outTransformOperations->appendRotate(
             transform->x(), transform->y(), transform->z(), transform->angle());
         break;
@@ -84,41 +81,37 @@ void toCompositorTransformOperations(
       case TransformOperation::SkewX:
       case TransformOperation::SkewY:
       case TransformOperation::Skew: {
-        SkewTransformOperation* transform =
-            static_cast<SkewTransformOperation*>(
-                transformOperations.operations()[j].get());
+        auto transform =
+            static_cast<const SkewTransformOperation*>(operation.get());
         outTransformOperations->appendSkew(transform->angleX(),
                                            transform->angleY());
         break;
       }
       case TransformOperation::Matrix: {
-        MatrixTransformOperation* transform =
-            static_cast<MatrixTransformOperation*>(
-                transformOperations.operations()[j].get());
+        auto transform =
+            static_cast<const MatrixTransformOperation*>(operation.get());
         TransformationMatrix m = transform->matrix();
         outTransformOperations->appendMatrix(
             TransformationMatrix::toSkMatrix44(m));
         break;
       }
       case TransformOperation::Matrix3D: {
-        Matrix3DTransformOperation* transform =
-            static_cast<Matrix3DTransformOperation*>(
-                transformOperations.operations()[j].get());
+        auto transform =
+            static_cast<const Matrix3DTransformOperation*>(operation.get());
         TransformationMatrix m = transform->matrix();
         outTransformOperations->appendMatrix(
             TransformationMatrix::toSkMatrix44(m));
         break;
       }
       case TransformOperation::Perspective: {
-        PerspectiveTransformOperation* transform =
-            static_cast<PerspectiveTransformOperation*>(
-                transformOperations.operations()[j].get());
+        auto transform =
+            static_cast<const PerspectiveTransformOperation*>(operation.get());
         outTransformOperations->appendPerspective(transform->perspective());
         break;
       }
       case TransformOperation::Interpolated: {
         TransformationMatrix m;
-        transformOperations.operations()[j]->apply(m, FloatSize());
+        operation->apply(m, FloatSize());
         outTransformOperations->appendMatrix(
             TransformationMatrix::toSkMatrix44(m));
         break;
