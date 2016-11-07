@@ -277,7 +277,7 @@ TEST_F(ScrollViewTest, ViewportSizedToFit) {
 TEST_F(ScrollViewTest, BoundedViewportSizedToFit) {
   View* contents = InstallContents();
   scroll_view_.ClipHeightTo(100, 200);
-  scroll_view_.SetBorder(Border::CreateSolidBorder(2, 0));
+  scroll_view_.SetBorder(CreateSolidBorder(2, 0));
   scroll_view_.Layout();
   EXPECT_EQ("2,2 96x96", contents->parent()->bounds().ToString());
 
@@ -328,8 +328,8 @@ TEST_F(ScrollViewTest, ScrollBars) {
   const int kLeftPadding = 2;
   const int kBottomPadding = 3;
   const int kRightPadding = 4;
-  scroll_view_.SetBorder(Border::CreateEmptyBorder(
-      kTopPadding, kLeftPadding, kBottomPadding, kRightPadding));
+  scroll_view_.SetBorder(CreateEmptyBorder(kTopPadding, kLeftPadding,
+                                           kBottomPadding, kRightPadding));
   contents->SetBounds(0, 0, 50, 400);
   scroll_view_.Layout();
   EXPECT_EQ(

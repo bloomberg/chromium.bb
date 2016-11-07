@@ -63,11 +63,9 @@ IdleActionWarningDialogView::IdleActionWarningDialogView(
     : idle_action_time_(idle_action_time),
       label_(NULL) {
   label_ = new FixedWidthLabel(kIdleActionWarningContentWidth);
-  label_->SetBorder(
-      views::Border::CreateEmptyBorder(views::kPanelVertMargin,
-                                       views::kButtonHEdgeMarginNew,
-                                       views::kPanelVertMargin,
-                                       views::kButtonHEdgeMarginNew));
+  label_->SetBorder(views::CreateEmptyBorder(
+      views::kPanelVertMargin, views::kButtonHEdgeMarginNew,
+      views::kPanelVertMargin, views::kButtonHEdgeMarginNew));
   AddChildView(label_);
   SetLayoutManager(new views::FillLayout());
 

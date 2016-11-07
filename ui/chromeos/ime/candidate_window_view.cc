@@ -101,7 +101,7 @@ class InformationTextArea : public views::View {
       : min_width_(min_width) {
     label_ = new views::Label;
     label_->SetHorizontalAlignment(align);
-    label_->SetBorder(views::Border::CreateEmptyBorder(2, 2, 2, 4));
+    label_->SetBorder(views::CreateEmptyBorder(2, 2, 2, 4));
 
     SetLayoutManager(new views::FillLayout());
     AddChildView(label_);
@@ -124,11 +124,8 @@ class InformationTextArea : public views::View {
 
   // Sets the border thickness for top/bottom.
   void SetBorderFromPosition(BorderPosition position) {
-    SetBorder(views::Border::CreateSolidSidedBorder(
-        (position == TOP) ? 1 : 0,
-        0,
-        (position == BOTTOM) ? 1 : 0,
-        0,
+    SetBorder(views::CreateSolidSidedBorder(
+        (position == TOP) ? 1 : 0, 0, (position == BOTTOM) ? 1 : 0, 0,
         GetNativeTheme()->GetSystemColor(
             ui::NativeTheme::kColorId_MenuBorderColor)));
   }
@@ -161,7 +158,7 @@ CandidateWindowView::CandidateWindowView(gfx::NativeView parent)
   set_background(
       views::Background::CreateSolidBackground(theme->GetSystemColor(
           ui::NativeTheme::kColorId_WindowBackground)));
-  SetBorder(views::Border::CreateSolidBorder(
+  SetBorder(views::CreateSolidBorder(
       1, theme->GetSystemColor(ui::NativeTheme::kColorId_MenuBorderColor)));
 
   SetLayoutManager(new views::BoxLayout(views::BoxLayout::kVertical, 0, 0, 0));

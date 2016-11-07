@@ -73,9 +73,8 @@ class TooltipAura::TooltipView : public views::View {
     const int kHorizontalPadding = 8;
     const int kVerticalPaddingTop = 4;
     const int kVerticalPaddingBottom = 5;
-    SetBorder(Border::CreateEmptyBorder(kVerticalPaddingTop, kHorizontalPadding,
-                                        kVerticalPaddingBottom,
-                                        kHorizontalPadding));
+    SetBorder(CreateEmptyBorder(kVerticalPaddingTop, kHorizontalPadding,
+                                kVerticalPaddingBottom, kHorizontalPadding));
 
     set_owned_by_client();
     render_text_->SetWordWrapBehavior(gfx::WRAP_LONG_WORDS);

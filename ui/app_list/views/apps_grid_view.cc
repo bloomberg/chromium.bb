@@ -262,8 +262,7 @@ void AppsGridView::SetLayout(int cols, int rows_per_page) {
   cols_ = cols;
   rows_per_page_ = rows_per_page;
 
-  SetBorder(views::Border::CreateEmptyBorder(0, kAppsGridPadding, 0,
-                                             kAppsGridPadding));
+  SetBorder(views::CreateEmptyBorder(0, kAppsGridPadding, 0, kAppsGridPadding));
 }
 
 // static

@@ -163,11 +163,11 @@ FindBarView::FindBarView(FindBarHost* host)
       base::MakeUnique<views::ViewTargeter>(this));
   AddChildViewAt(match_count_text_, 1);
 
-  separator_->SetBorder(views::Border::CreateEmptyBorder(
-      0, kSeparatorLeftSpacing, 0, kSeparatorRightSpacing));
+  separator_->SetBorder(views::CreateEmptyBorder(0, kSeparatorLeftSpacing, 0,
+                                                 kSeparatorRightSpacing));
   AddChildViewAt(separator_, 2);
 
-  find_text_->SetBorder(views::Border::NullBorder());
+  find_text_->SetBorder(views::NullBorder());
 
   views::BoxLayout* manager =
       new views::BoxLayout(views::BoxLayout::kHorizontal, kInteriorPadding,

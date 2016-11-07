@@ -401,7 +401,7 @@ void BubbleFrameView::SetFootnoteView(View* view) {
   footnote_container_->set_background(
       Background::CreateSolidBackground(kFootnoteBackgroundColor));
   footnote_container_->SetBorder(
-      Border::CreateSolidSidedBorder(1, 0, 0, 0, kFootnoteBorderColor));
+      CreateSolidSidedBorder(1, 0, 0, 0, kFootnoteBorderColor));
   footnote_container_->AddChildView(view);
   AddChildView(footnote_container_);
 }

@@ -120,7 +120,7 @@ LogoutButtonTray::LogoutButtonTray(WmShelf* wm_shelf)
   }
   tray_container()->AddChildView(button_);
   if (!MaterialDesignController::IsShelfMaterial())
-    tray_container()->SetBorder(views::Border::NullBorder());
+    tray_container()->SetBorder(views::NullBorder());
   WmShell::Get()->system_tray_notifier()->AddLogoutButtonObserver(this);
 }
 
@@ -134,7 +134,7 @@ void LogoutButtonTray::SetShelfAlignment(ShelfAlignment alignment) {
   UpdateButtonTextAndImage(login_status_, alignment);
   TrayBackgroundView::SetShelfAlignment(alignment);
   if (!MaterialDesignController::IsShelfMaterial())
-    tray_container()->SetBorder(views::Border::NullBorder());
+    tray_container()->SetBorder(views::NullBorder());
 }
 
 base::string16 LogoutButtonTray::GetAccessibleNameForTray() {

@@ -38,7 +38,7 @@ class TabKeyBubbleView : public views::Label {
 
 TabKeyBubbleView::TabKeyBubbleView(const gfx::FontList& font_list)
     : views::Label(l10n_util::GetStringUTF16(IDS_APP_TAB_KEY), font_list) {
-  SetBorder(views::Border::CreateEmptyBorder(
+  SetBorder(views::CreateEmptyBorder(
       gfx::Insets(GetLayoutConstant(LOCATION_BAR_BUBBLE_VERTICAL_PADDING), 0)));
 }
 

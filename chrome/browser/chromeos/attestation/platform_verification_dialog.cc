@@ -73,8 +73,8 @@ PlatformVerificationDialog::PlatformVerificationDialog(
       domain_(domain),
       callback_(callback) {
   SetLayoutManager(new views::FillLayout());
-  SetBorder(views::Border::CreateEmptyBorder(
-      0, views::kButtonHEdgeMarginNew, 0, views::kButtonHEdgeMarginNew));
+  SetBorder(views::CreateEmptyBorder(0, views::kButtonHEdgeMarginNew, 0,
+                                     views::kButtonHEdgeMarginNew));
   const base::string16 learn_more = l10n_util::GetStringUTF16(IDS_LEARN_MORE);
   std::vector<size_t> offsets;
   base::string16 headline = l10n_util::GetStringFUTF16(

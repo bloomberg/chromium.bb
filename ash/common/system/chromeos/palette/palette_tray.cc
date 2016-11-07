@@ -238,7 +238,7 @@ bool PaletteTray::ShowPalette() {
 
   // Add title.
   auto* title_view = new TitleView(this);
-  title_view->SetBorder(views::Border::CreateEmptyBorder(
+  title_view->SetBorder(views::CreateEmptyBorder(
       gfx::Insets(0, kPaddingBetweenTitleAndLeftEdge, 0, 0)));
   bubble_view->AddChildView(title_view);
 
@@ -246,7 +246,7 @@ bool PaletteTray::ShowPalette() {
   views::Separator* separator =
       new views::Separator(views::Separator::HORIZONTAL);
   separator->SetColor(kPaletteSeparatorColor);
-  separator->SetBorder(views::Border::CreateEmptyBorder(gfx::Insets(
+  separator->SetBorder(views::CreateEmptyBorder(gfx::Insets(
       kPaddingBetweenTitleAndSeparator, 0, kMenuSeparatorVerticalPadding, 0)));
   bubble_view->AddChildView(separator);
 
@@ -412,10 +412,10 @@ void PaletteTray::SetIconBorderForShelfAlignment() {
   // TODO(tdanderson): Ensure PaletteTray follows material design specs. See
   // crbug.com/630464.
   if (IsHorizontalAlignment(shelf_alignment())) {
-    icon_->SetBorder(views::Border::CreateEmptyBorder(gfx::Insets(
+    icon_->SetBorder(views::CreateEmptyBorder(gfx::Insets(
         kHorizontalShelfVerticalPadding, kHorizontalShelfHorizontalPadding)));
   } else {
-    icon_->SetBorder(views::Border::CreateEmptyBorder(gfx::Insets(
+    icon_->SetBorder(views::CreateEmptyBorder(gfx::Insets(
         kVerticalShelfVerticalPadding, kVerticalShelfHorizontalPadding)));
   }
 }

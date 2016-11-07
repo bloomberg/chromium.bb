@@ -733,7 +733,7 @@ void LocationBarView::Layout() {
   }
 
   omnibox_view_->SetBorder(
-      views::Border::CreateEmptyBorder(0, 0, 0, omnibox_view_margin));
+      views::CreateEmptyBorder(0, 0, 0, omnibox_view_margin));
 
   // Layout |ime_inline_autocomplete_view_| next to the user input.
   if (ime_inline_autocomplete_view_->visible()) {

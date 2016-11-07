@@ -158,18 +158,18 @@ VolumeView::VolumeView(SystemTrayItem* owner,
   SetLayoutManager(box_layout);
 
   icon_ = new VolumeButton(this, audio_delegate_);
-  icon_->SetBorder(views::Border::CreateEmptyBorder(
-      0, kTrayPopupPaddingHorizontal, 0, kExtraPaddingBetweenIconAndSlider));
+  icon_->SetBorder(views::CreateEmptyBorder(0, kTrayPopupPaddingHorizontal, 0,
+                                            kExtraPaddingBetweenIconAndSlider));
   AddChildView(icon_);
   slider_ = views::Slider::CreateSlider(
       ash::MaterialDesignController::IsSystemTrayMenuMaterial(), this);
 
   if (ash::MaterialDesignController::IsSystemTrayMenuMaterial()) {
-    slider_->SetBorder(views::Border::CreateEmptyBorder(
+    slider_->SetBorder(views::CreateEmptyBorder(
         gfx::Insets(0, kTrayPopupSliderPaddingMD) + slider_->GetInsets()));
   } else {
-    slider_->SetBorder(views::Border::CreateEmptyBorder(
-        0, 0, 0, kTrayPopupPaddingBetweenItems));
+    slider_->SetBorder(
+        views::CreateEmptyBorder(0, 0, 0, kTrayPopupPaddingBetweenItems));
   }
 
   slider_->set_focus_border_color(kFocusBorderColor);
@@ -184,12 +184,12 @@ VolumeView::VolumeView(SystemTrayItem* owner,
   separator_ = new views::Separator(views::Separator::VERTICAL);
   separator_->SetColor(kButtonStrokeColor);
   separator_->SetPreferredSize(kSeparatorSize);
-  separator_->SetBorder(views::Border::CreateEmptyBorder(
+  separator_->SetBorder(views::CreateEmptyBorder(
       kSeparatorVerticalInset, 0, kSeparatorVerticalInset, kBoxLayoutPadding));
 
   more_region_ = new TrayPopupItemContainer(separator_, true);
   more_region_->SetBorder(
-      views::Border::CreateEmptyBorder(0, 0, 0, kTrayPopupPaddingBetweenItems));
+      views::CreateEmptyBorder(0, 0, 0, kTrayPopupPaddingBetweenItems));
   AddChildView(more_region_);
 
   device_type_ = new views::ImageView;
@@ -242,7 +242,7 @@ void VolumeView::UpdateDeviceTypeAndMore() {
   bool show_more = is_default_view_ && TrayAudio::ShowAudioDeviceMenu() &&
                    audio_delegate_->HasAlternativeSources();
   if (!ash::MaterialDesignController::IsSystemTrayMenuMaterial()) {
-    slider_->SetBorder(views::Border::CreateEmptyBorder(
+    slider_->SetBorder(views::CreateEmptyBorder(
         0, 0, 0, show_more ? kTrayPopupPaddingBetweenItems
                            : kSliderRightPaddingToVolumeViewEdge));
   }

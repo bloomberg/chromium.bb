@@ -203,7 +203,7 @@ void CardUnmaskPromptViews::ShowNewCardLink() {
 
   new_card_link_ = new views::Link(
       l10n_util::GetStringUTF16(IDS_AUTOFILL_CARD_UNMASK_NEW_CARD_LINK));
-  new_card_link_->SetBorder(views::Border::CreateEmptyBorder(0, 7, 0, 0));
+  new_card_link_->SetBorder(views::CreateEmptyBorder(0, 7, 0, 0));
   new_card_link_->SetUnderline(false);
   new_card_link_->set_listener(this);
   input_row_->AddChildView(new_card_link_);
@@ -224,7 +224,7 @@ views::View* CardUnmaskPromptViews::CreateFootnoteView() {
       views::BoxLayout::kHorizontal, kEdgePadding, kEdgePadding, 0);
   storage_row_->SetLayoutManager(storage_row_layout);
   storage_row_->SetBorder(
-      views::Border::CreateSolidSidedBorder(1, 0, 0, 0, kSubtleBorderColor));
+      views::CreateSolidSidedBorder(1, 0, 0, 0, kSubtleBorderColor));
   storage_row_->set_background(
       views::Background::CreateSolidBackground(kLightShadingColor));
 
@@ -390,7 +390,7 @@ void CardUnmaskPromptViews::InitIfNecessary() {
   permanent_error_label_->set_background(
       views::Background::CreateSolidBackground(kWarningColor));
   permanent_error_label_->SetBorder(
-      views::Border::CreateEmptyBorder(12, kEdgePadding, 12, kEdgePadding));
+      views::CreateEmptyBorder(12, kEdgePadding, 12, kEdgePadding));
   permanent_error_label_->SetEnabledColor(SK_ColorWHITE);
   permanent_error_label_->SetAutoColorReadabilityEnabled(false);
   permanent_error_label_->SetVisible(false);
@@ -407,7 +407,7 @@ void CardUnmaskPromptViews::InitIfNecessary() {
   instructions_->SetEnabledColor(kGreyTextColor);
   instructions_->SetMultiLine(true);
   instructions_->SetHorizontalAlignment(gfx::ALIGN_LEFT);
-  instructions_->SetBorder(views::Border::CreateEmptyBorder(0, 0, 16, 0));
+  instructions_->SetBorder(views::CreateEmptyBorder(0, 0, 16, 0));
   controls_container->AddChildView(instructions_);
 
   input_row_ = new views::View();
@@ -449,7 +449,7 @@ void CardUnmaskPromptViews::InitIfNecessary() {
   temporary_error->SetLayoutManager(temporary_error_layout);
   temporary_error_layout->set_cross_axis_alignment(
       views::BoxLayout::CROSS_AXIS_ALIGNMENT_START);
-  temporary_error->SetBorder(views::Border::CreateEmptyBorder(8, 0, 0, 0));
+  temporary_error->SetBorder(views::CreateEmptyBorder(8, 0, 0, 0));
   controls_container->AddChildView(temporary_error);
 
   error_icon_ = new views::ImageView();

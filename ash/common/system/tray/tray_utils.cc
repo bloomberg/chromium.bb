@@ -36,8 +36,7 @@ class BorderlessLabelButton : public views::LabelButton {
       set_ink_drop_base_color(kTrayPopupInkDropBaseColor);
       set_ink_drop_visible_opacity(kTrayPopupInkDropRippleOpacity);
       const int kHorizontalPadding = 20;
-      SetBorder(
-          views::Border::CreateEmptyBorder(gfx::Insets(0, kHorizontalPadding)));
+      SetBorder(views::CreateEmptyBorder(gfx::Insets(0, kHorizontalPadding)));
       // TODO(tdanderson): Update focus rect for material design. See
       // crbug.com/615892
     } else {
@@ -107,10 +106,10 @@ void SetTrayImageItemBorder(views::View* tray_view, ShelfAlignment alignment) {
 
   const int tray_image_item_padding = GetTrayConstant(TRAY_IMAGE_ITEM_PADDING);
   if (IsHorizontalAlignment(alignment)) {
-    tray_view->SetBorder(views::Border::CreateEmptyBorder(
-        0, tray_image_item_padding, 0, tray_image_item_padding));
+    tray_view->SetBorder(views::CreateEmptyBorder(0, tray_image_item_padding, 0,
+                                                  tray_image_item_padding));
   } else {
-    tray_view->SetBorder(views::Border::CreateEmptyBorder(
+    tray_view->SetBorder(views::CreateEmptyBorder(
         tray_image_item_padding,
         kTrayImageItemHorizontalPaddingVerticalAlignment,
         tray_image_item_padding,
@@ -123,7 +122,7 @@ void SetTrayLabelItemBorder(TrayItemView* tray_view, ShelfAlignment alignment) {
     return;
 
   if (IsHorizontalAlignment(alignment)) {
-    tray_view->SetBorder(views::Border::CreateEmptyBorder(
+    tray_view->SetBorder(views::CreateEmptyBorder(
         0, kTrayLabelItemHorizontalPaddingBottomAlignment, 0,
         kTrayLabelItemHorizontalPaddingBottomAlignment));
   } else {
@@ -132,7 +131,7 @@ void SetTrayLabelItemBorder(TrayItemView* tray_view, ShelfAlignment alignment) {
         std::max(0, (tray_view->GetPreferredSize().width() -
                      tray_view->label()->GetPreferredSize().width()) /
                         2);
-    tray_view->SetBorder(views::Border::CreateEmptyBorder(
+    tray_view->SetBorder(views::CreateEmptyBorder(
         kTrayLabelItemVerticalPaddingVerticalAlignment, horizontal_padding,
         kTrayLabelItemVerticalPaddingVerticalAlignment, horizontal_padding));
   }

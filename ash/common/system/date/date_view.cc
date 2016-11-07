@@ -372,11 +372,11 @@ void TimeView::SetBorderFromLayout(ClockLayout clock_layout) {
     return;
 
   if (clock_layout == ClockLayout::HORIZONTAL_CLOCK) {
-    SetBorder(views::Border::CreateEmptyBorder(
+    SetBorder(views::CreateEmptyBorder(
         0, kTrayLabelItemHorizontalPaddingBottomAlignment, 0,
         kTrayLabelItemHorizontalPaddingBottomAlignment));
   } else {
-    SetBorder(views::Border::NullBorder());
+    SetBorder(views::NullBorder());
   }
 }
 
@@ -390,11 +390,11 @@ void TimeView::SetupLabels() {
   // TODO(estade): this should use the NativeTheme's secondary text color.
   vertical_label_minutes_->SetEnabledColor(kVerticalClockMinuteColor);
   // Pull the minutes up closer to the hours by using a negative top border.
-  vertical_label_minutes_->SetBorder(views::Border::CreateEmptyBorder(
-      MaterialDesignController::IsShelfMaterial()
-          ? kVerticalClockMinutesTopOffsetMD
-          : kVerticalClockMinutesTopOffset,
-      0, 0, 0));
+  vertical_label_minutes_->SetBorder(
+      views::CreateEmptyBorder(MaterialDesignController::IsShelfMaterial()
+                                   ? kVerticalClockMinutesTopOffsetMD
+                                   : kVerticalClockMinutesTopOffset,
+                               0, 0, 0));
 }
 
 void TimeView::SetupLabel(views::Label* label) {

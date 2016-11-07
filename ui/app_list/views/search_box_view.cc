@@ -143,7 +143,7 @@ SearchBoxView::SearchBoxView(SearchBoxViewDelegate* delegate,
       views::BoxLayout::CROSS_AXIS_ALIGNMENT_CENTER);
   layout->set_minimum_cross_axis_size(kPreferredHeight);
 
-  search_box_->SetBorder(views::Border::NullBorder());
+  search_box_->SetBorder(views::NullBorder());
   search_box_->SetTextColor(kSearchTextColor);
   search_box_->SetBackgroundColor(kSearchBoxBackground);
   search_box_->set_placeholder_text_color(kHintTextColor);

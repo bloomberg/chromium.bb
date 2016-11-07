@@ -30,9 +30,8 @@ SystemMenuButton::SystemMenuButton(views::ButtonListener* listener,
 
   const int horizontal_padding = (kMenuButtonSize - image.width()) / 2;
   const int vertical_padding = (kMenuButtonSize - image.height()) / 2;
-  SetBorder(
-      views::Border::CreateEmptyBorder(vertical_padding, horizontal_padding,
-                                       vertical_padding, horizontal_padding));
+  SetBorder(views::CreateEmptyBorder(vertical_padding, horizontal_padding,
+                                     vertical_padding, horizontal_padding));
 
   SetTooltipText(l10n_util::GetStringUTF16(accessible_name_id));
 

@@ -848,7 +848,7 @@ views::View* NetworkStateListDetailedView::CreateNetworkInfoView() {
   views::View* container = new views::View;
   container->SetLayoutManager(
       new views::BoxLayout(views::BoxLayout::kVertical, 0, 0, 1));
-  container->SetBorder(views::Border::CreateEmptyBorder(0, 5, 0, 5));
+  container->SetBorder(views::CreateEmptyBorder(0, 5, 0, 5));
 
   std::string ethernet_address, wifi_address, vpn_address;
   if (list_type_ != LIST_TYPE_VPN) {
@@ -952,7 +952,7 @@ views::View* NetworkStateListDetailedView::CreateViewForNetwork(
   HoverHighlightView* view = new HoverHighlightView(this);
   view->AddIconAndLabel(info.image, info.label, info.highlight);
   view->SetBorder(
-      views::Border::CreateEmptyBorder(0, kTrayPopupPaddingHorizontal, 0, 0));
+      views::CreateEmptyBorder(0, kTrayPopupPaddingHorizontal, 0, 0));
   views::View* controlled_icon = CreateControlledByExtensionView(info);
   view->set_tooltip(info.tooltip);
   if (controlled_icon)
@@ -982,9 +982,9 @@ void NetworkStateListDetailedView::UpdateViewForNetwork(
 
 views::Label* NetworkStateListDetailedView::CreateInfoLabel() {
   views::Label* label = new views::Label();
-  label->SetBorder(views::Border::CreateEmptyBorder(
-      kTrayPopupPaddingBetweenItems, kTrayPopupPaddingHorizontal,
-      kTrayPopupPaddingBetweenItems, 0));
+  label->SetBorder(views::CreateEmptyBorder(kTrayPopupPaddingBetweenItems,
+                                            kTrayPopupPaddingHorizontal,
+                                            kTrayPopupPaddingBetweenItems, 0));
   label->SetHorizontalAlignment(gfx::ALIGN_LEFT);
   label->SetEnabledColor(SkColorSetARGB(192, 0, 0, 0));
   return label;

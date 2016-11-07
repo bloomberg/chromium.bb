@@ -90,8 +90,8 @@ SystemMenuButton* CreateImeMenuButton(views::ButtonListener* listener,
       new SystemMenuButton(listener, SystemMenuButton::InkDropStyle::SQUARE,
                            icon, accessible_name_id);
   if (!MaterialDesignController::IsShelfMaterial()) {
-    button->SetBorder(views::Border::CreateSolidSidedBorder(
-        0, 0, 0, right_border, kBorderDarkColor));
+    button->SetBorder(
+        views::CreateSolidSidedBorder(0, 0, 0, right_border, kBorderDarkColor));
   }
   return button;
 }
@@ -108,8 +108,7 @@ class ImeTitleView : public views::View {
         new views::Label(l10n_util::GetStringUTF16(IDS_ASH_STATUS_TRAY_IME));
     const int title_padding =
         kMenuSeparatorVerticalPadding + (kMenuButtonSize - kMenuIconSize) / 2;
-    title_label->SetBorder(
-        views::Border::CreateEmptyBorder(0, title_padding, 0, 0));
+    title_label->SetBorder(views::CreateEmptyBorder(0, title_padding, 0, 0));
     title_label->SetHorizontalAlignment(gfx::ALIGN_LEFT);
     TrayPopupItemStyle style(GetNativeTheme(),
                              TrayPopupItemStyle::FontStyle::TITLE);
@@ -146,8 +145,7 @@ class ImeButtonsView : public views::View,
       : ime_menu_tray_(ime_menu_tray) {
     DCHECK(ime_menu_tray_);
 
-    SetBorder(
-        views::Border::CreateSolidSidedBorder(1, 0, 0, 0, kBorderDarkColor));
+    SetBorder(views::CreateSolidSidedBorder(1, 0, 0, 0, kBorderDarkColor));
 
     // If there's only one settings button, the bottom should be a label with
     // normal background. Otherwise, show button icons with header background.
@@ -312,8 +310,8 @@ void ImeMenuTray::ShowImeMenuBubble() {
         new views::Separator(views::Separator::HORIZONTAL);
     separator->SetColor(kBorderLightColor);
     separator->SetPreferredSize(kSeparatorWidth);
-    separator->SetBorder(views::Border::CreateEmptyBorder(
-        0, 0, kMenuSeparatorVerticalPadding, 0));
+    separator->SetBorder(
+        views::CreateEmptyBorder(0, 0, kMenuSeparatorVerticalPadding, 0));
     bubble_view->AddChildView(separator);
   }
 
@@ -406,7 +404,7 @@ bool ImeMenuTray::ShouldBlockShelfAutoHide() const {
 void ImeMenuTray::SetShelfAlignment(ShelfAlignment alignment) {
   TrayBackgroundView::SetShelfAlignment(alignment);
   if (!MaterialDesignController::IsShelfMaterial())
-    tray_container()->SetBorder(views::Border::NullBorder());
+    tray_container()->SetBorder(views::NullBorder());
 }
 
 base::string16 ImeMenuTray::GetAccessibleNameForTray() {

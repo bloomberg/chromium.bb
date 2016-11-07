@@ -49,7 +49,7 @@ DateDefaultView::DateDefaultView(SystemTrayItem* owner, LoginStatus login)
   SetLayoutManager(new views::FillLayout);
 
   date_view_ = new tray::DateView(owner);
-  date_view_->SetBorder(views::Border::CreateEmptyBorder(
+  date_view_->SetBorder(views::CreateEmptyBorder(
       kPaddingVertical, ash::kTrayPopupPaddingHorizontal, 0, 0));
   SpecialPopupRow* view = new SpecialPopupRow();
   view->SetContent(date_view_);

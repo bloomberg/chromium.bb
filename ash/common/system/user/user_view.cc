@@ -205,15 +205,15 @@ void AddUserView::AddContent() {
     views::ImageView* icon = new views::ImageView();
     icon->SetImage(
         gfx::CreateVectorIcon(kSystemMenuNewUserIcon, kMenuIconColor));
-    icon->SetBorder(views::Border::CreateEmptyBorder(gfx::Insets(
+    icon->SetBorder(views::CreateEmptyBorder(gfx::Insets(
         (GetTrayConstant(TRAY_POPUP_ITEM_MAIN_IMAGE_CONTAINER_WIDTH) -
          icon->GetPreferredSize().width()) /
         2)));
     anchor_ = icon;
     add_user_->AddChildView(icon);
   } else {
-    add_user_->SetBorder(views::Border::CreateEmptyBorder(
-        0, kTrayUserTileHoverBorderInset, 0, 0));
+    add_user_->SetBorder(
+        views::CreateEmptyBorder(0, kTrayUserTileHoverBorderInset, 0, 0));
     RoundedImageView* icon =
         new RoundedImageView(kTrayRoundedBorderRadius, true);
     anchor_ = icon;
@@ -262,9 +262,9 @@ UserView::UserView(SystemTrayItem* owner, LoginStatus login, UserIndex index)
         views::BoxLayout::CROSS_AXIS_ALIGNMENT_CENTER);
     layout->SetFlexForView(user_card_view_, 1);
     int separator_width = user_index_ == 0 ? kSeparatorWidth : 0;
-    SetBorder(views::Border::CreatePaddedBorder(
-        views::Border::CreateSolidSidedBorder(0, 0, separator_width, 0,
-                                              kSeparatorColor),
+    SetBorder(views::CreatePaddedBorder(
+        views::CreateSolidSidedBorder(0, 0, separator_width, 0,
+                                      kSeparatorColor),
         gfx::Insets(kMenuSeparatorVerticalPadding, 0,
                     kMenuSeparatorVerticalPadding - separator_width, 0)));
   }
@@ -411,7 +411,7 @@ void UserView::AddLogoutButton(LoginStatus login) {
   logout_button_ = logout_button;
   if (UseMd()) {
     views::View* separator = CreateVerticalSeparator();
-    separator->SetBorder(views::Border::CreateEmptyBorder(
+    separator->SetBorder(views::CreateEmptyBorder(
         gfx::Insets(0, 0, 0, kTrayPopupLabelHorizontalPadding)));
     AddChildView(separator);
   } else if (login == LoginStatus::PUBLIC) {
@@ -438,7 +438,7 @@ void UserView::AddUserCard(LoginStatus login) {
 
   // Add padding around the panel.
   const int kSidePadding = kTrayPopupPaddingHorizontal;
-  SetBorder(views::Border::CreateEmptyBorder(
+  SetBorder(views::CreateEmptyBorder(
       kTrayPopupUserCardVerticalPadding, kSidePadding,
       kTrayPopupUserCardVerticalPadding, kSidePadding));
 
@@ -457,12 +457,12 @@ void UserView::AddUserCard(LoginStatus login) {
     // To allow the border to start before the icon, reduce the size before and
     // add an inset to the icon to get the spacing.
     if (!user_index_) {
-      SetBorder(views::Border::CreateEmptyBorder(
+      SetBorder(views::CreateEmptyBorder(
           kTrayPopupUserCardVerticalPadding,
           kSidePadding - kTrayUserTileHoverBorderInset,
           kTrayPopupUserCardVerticalPadding, kSidePadding));
-      user_card_view_->SetBorder(views::Border::CreateEmptyBorder(
-          0, kTrayUserTileHoverBorderInset, 0, 0));
+      user_card_view_->SetBorder(
+          views::CreateEmptyBorder(0, kTrayUserTileHoverBorderInset, 0, 0));
     }
     gfx::Insets insets = gfx::Insets(1, 1, 1, 1);
     views::View* contents_view = user_card_view_;
@@ -471,7 +471,7 @@ void UserView::AddUserCard(LoginStatus login) {
       // have to put the tile into another view which fills the menu panel,
       // but keeping the offsets of the content.
       contents_view = new views::View();
-      contents_view->SetBorder(views::Border::CreateEmptyBorder(
+      contents_view->SetBorder(views::CreateEmptyBorder(
           kTrayPopupUserCardVerticalPadding, kSidePadding,
           kTrayPopupUserCardVerticalPadding, kSidePadding));
       contents_view->SetLayoutManager(new views::FillLayout());
@@ -567,9 +567,9 @@ void UserView::ToggleAddUserMenuOption() {
 
     views::View* container = new AddUserWidgetContents(
         base::Bind(&UserView::RemoveAddUserMenuOption, base::Unretained(this)));
-    container->SetBorder(views::Border::CreatePaddedBorder(
-        views::Border::CreateSolidSidedBorder(0, 0, 0, kSeparatorWidth,
-                                              kBackgroundColor),
+    container->SetBorder(views::CreatePaddedBorder(
+        views::CreateSolidSidedBorder(0, 0, 0, kSeparatorWidth,
+                                      kBackgroundColor),
         gfx::Insets(row_height, 0, 0, 0)));
     container->SetLayoutManager(new views::FillLayout());
     container->AddChildView(button);

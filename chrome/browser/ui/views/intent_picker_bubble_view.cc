@@ -59,7 +59,7 @@ class IntentPickerLabelButton : public views::LabelButton {
     SetInkDropMode(InkDropMode::ON);
     if (!icon->IsEmpty())
       SetImage(views::ImageButton::STATE_NORMAL, *icon->ToImageSkia());
-    SetBorder(views::Border::CreateEmptyBorder(10, 16, 10, 0));
+    SetBorder(views::CreateEmptyBorder(10, 16, 10, 0));
   }
 
   SkColor GetInkDropBaseColor() const override { return SK_ColorBLACK; }

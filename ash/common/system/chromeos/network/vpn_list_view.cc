@@ -123,8 +123,7 @@ class VPNListNetworkEntry : public VPNListEntryBase,
 
 VPNListEntryBase::VPNListEntryBase(VPNListView* parent)
     : HoverHighlightView(parent) {
-  SetBorder(
-      views::Border::CreateEmptyBorder(0, kTrayPopupPaddingHorizontal, 0, 0));
+  SetBorder(views::CreateEmptyBorder(0, kTrayPopupPaddingHorizontal, 0, 0));
 }
 
 VPNListProviderEntry::VPNListProviderEntry(VPNListView* parent,
@@ -132,7 +131,7 @@ VPNListProviderEntry::VPNListProviderEntry(VPNListView* parent,
     : VPNListEntryBase(parent) {
   views::Label* const label =
       AddLabel(base::UTF8ToUTF16(name), gfx::ALIGN_LEFT, false /* highlight */);
-  label->SetBorder(views::Border::CreateEmptyBorder(5, 0, 5, 0));
+  label->SetBorder(views::CreateEmptyBorder(5, 0, 5, 0));
 }
 
 VPNListNetworkEntry::VPNListNetworkEntry(VPNListView* parent,
@@ -226,12 +225,11 @@ void VPNListNetworkEntry::UpdateFromNetworkState(
       disconnect_button_ = new DisconnectButton(this);
     }
     AddChildView(disconnect_button_);
-    SetBorder(views::Border::CreateEmptyBorder(
-        0, kTrayPopupPaddingHorizontal, 0,
-        UseMd() ? kTrayPopupButtonEndMargin : 3));
-  } else {
     SetBorder(
-        views::Border::CreateEmptyBorder(0, kTrayPopupPaddingHorizontal, 0, 0));
+        views::CreateEmptyBorder(0, kTrayPopupPaddingHorizontal, 0,
+                                 UseMd() ? kTrayPopupButtonEndMargin : 3));
+  } else {
+    SetBorder(views::CreateEmptyBorder(0, kTrayPopupPaddingHorizontal, 0, 0));
   }
 
   // The icon and the disconnect button are always set to their preferred size.

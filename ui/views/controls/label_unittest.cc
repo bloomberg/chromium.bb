@@ -384,8 +384,8 @@ TEST_F(LabelTest, SingleLineSizing) {
   EXPECT_EQ(size, label.GetPreferredSize());
 
   const gfx::Insets border(10, 20, 30, 40);
-  label.SetBorder(Border::CreateEmptyBorder(
-      border.top(), border.left(), border.bottom(), border.right()));
+  label.SetBorder(CreateEmptyBorder(border.top(), border.left(),
+                                    border.bottom(), border.right()));
   const gfx::Size size_with_border = label.GetPreferredSize();
   EXPECT_EQ(size_with_border.height(), size.height() + border.height());
   EXPECT_EQ(size_with_border.width(), size.width() + border.width());
@@ -465,8 +465,8 @@ TEST_F(LabelTest, MultiLineSizing) {
 
   // Test everything with borders.
   gfx::Insets border(10, 20, 30, 40);
-  label.SetBorder(Border::CreateEmptyBorder(
-      border.top(), border.left(), border.bottom(), border.right()));
+  label.SetBorder(CreateEmptyBorder(border.top(), border.left(),
+                                    border.bottom(), border.right()));
 
   // SizeToFit and borders.
   label.SizeToFit(0);

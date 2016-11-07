@@ -119,8 +119,8 @@ class WindowPreviewView : public views::View, public WmWindowObserver {
         window_title_->font_list().DeriveWithSizeDelta(kLabelSizeDelta));
     const int kAboveLabelPadding = 5;
     const int kBelowLabelPadding = 10;
-    window_title_->SetBorder(views::Border::CreateEmptyBorder(
-        kAboveLabelPadding, 0, kBelowLabelPadding, 0));
+    window_title_->SetBorder(
+        views::CreateEmptyBorder(kAboveLabelPadding, 0, kBelowLabelPadding, 0));
     AddChildView(window_title_);
 
     // Preview padding is black at 50% opacity.

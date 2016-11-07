@@ -274,11 +274,9 @@ NotifierSettingsView::NotifierButton::NotifierButton(
         (kLearnMoreTargetHeight - kLearnMoreSize) / 2;
     // The image itself is quite small, this large invisible border creates a
     // much bigger click target.
-    learn_more_->SetBorder(
-        views::Border::CreateEmptyBorder(learn_more_border_height,
-                                         learn_more_border_width,
-                                         learn_more_border_height,
-                                         learn_more_border_width));
+    learn_more_->SetBorder(views::CreateEmptyBorder(
+        learn_more_border_height, learn_more_border_width,
+        learn_more_border_height, learn_more_border_width));
     learn_more_->SetImageAlignment(views::ImageButton::ALIGN_CENTER,
                                    views::ImageButton::ALIGN_MIDDLE);
   }
@@ -437,10 +435,8 @@ NotifierSettingsView::NotifierSettingsView(NotifierSettingsProvider* provider)
   title_label_->SetHorizontalAlignment(gfx::ALIGN_LEFT);
   title_label_->SetMultiLine(true);
   title_label_->SetBorder(
-      views::Border::CreateEmptyBorder(kComputedTitleTopMargin,
-                                       kTitleMargin,
-                                       kComputedTitleBottomMargin,
-                                       kTitleMargin));
+      views::CreateEmptyBorder(kComputedTitleTopMargin, kTitleMargin,
+                               kComputedTitleBottomMargin, kTitleMargin));
 
   AddChildView(title_label_);
 
@@ -508,7 +504,7 @@ void NotifierSettingsView::UpdateContentsView(
 
   views::Label* top_label =
       new views::Label(l10n_util::GetStringUTF16(top_label_resource_id));
-  top_label->SetBorder(views::Border::CreateEmptyBorder(
+  top_label->SetBorder(views::CreateEmptyBorder(
       gfx::Insets(0, kTitleMargin - settings::kHorizontalMargin)));
   top_label->SetHorizontalAlignment(gfx::ALIGN_LEFT);
   top_label->SetMultiLine(true);
@@ -530,8 +526,7 @@ void NotifierSettingsView::UpdateContentsView(
                       views::LabelButton::STYLE_TEXTBUTTON)
                       .left() -
                   notifier_group_combobox_->border()->GetInsets().left();
-    combobox_spacer->SetBorder(
-        views::Border::CreateEmptyBorder(0, padding, 0, 0));
+    combobox_spacer->SetBorder(views::CreateEmptyBorder(0, padding, 0, 0));
     combobox_spacer->AddChildView(notifier_group_combobox_);
 
     contents_title_view->AddChildView(combobox_spacer);
@@ -548,15 +543,12 @@ void NotifierSettingsView::UpdateContentsView(
     // border on the last notifier, as the spec leaves a space for it.
     std::unique_ptr<views::Border> entry_border;
     if (i == notifier_count - 1) {
-      entry_border = views::Border::CreateEmptyBorder(
-          0, 0, settings::kEntrySeparatorHeight, 0);
+      entry_border =
+          views::CreateEmptyBorder(0, 0, settings::kEntrySeparatorHeight, 0);
     } else {
       entry_border =
-          views::Border::CreateSolidSidedBorder(0,
-                                                0,
-                                                settings::kEntrySeparatorHeight,
-                                                0,
-                                                settings::kEntrySeparatorColor);
+          views::CreateSolidSidedBorder(0, 0, settings::kEntrySeparatorHeight,
+                                        0, settings::kEntrySeparatorColor);
     }
     entry->SetBorder(std::move(entry_border));
     entry->SetFocusBehavior(FocusBehavior::ALWAYS);

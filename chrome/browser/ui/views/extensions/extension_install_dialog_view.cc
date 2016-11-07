@@ -236,7 +236,7 @@ void ExtensionInstallDialogView::InitView() {
     views::Label* rating_count =
         new views::Label(prompt_->GetRatingCount(), small_font_list);
     // Add some space between the stars and the rating count.
-    rating_count->SetBorder(views::Border::CreateEmptyBorder(0, 2, 0, 0));
+    rating_count->SetBorder(views::CreateEmptyBorder(0, 2, 0, 0));
     rating->AddChildView(rating_count);
 
     layout->StartRow(0, column_set_id);

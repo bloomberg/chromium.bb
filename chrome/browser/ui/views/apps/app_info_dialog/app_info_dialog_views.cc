@@ -122,11 +122,11 @@ AppInfoDialog::AppInfoDialog(gfx::NativeWindow parent_window,
 
   const int kHorizontalSeparatorHeight = 1;
   dialog_header_ = new AppInfoHeaderPanel(profile, app);
-  dialog_header_->SetBorder(views::Border::CreateSolidSidedBorder(
+  dialog_header_->SetBorder(views::CreateSolidSidedBorder(
       0, 0, kHorizontalSeparatorHeight, 0, kDialogSeparatorColor));
 
   dialog_footer_ = new AppInfoFooterPanel(parent_window, profile, app);
-  dialog_footer_->SetBorder(views::Border::CreateSolidSidedBorder(
+  dialog_footer_->SetBorder(views::CreateSolidSidedBorder(
       kHorizontalSeparatorHeight, 0, 0, 0, kDialogSeparatorColor));
   if (!dialog_footer_->has_children()) {
     // If there are no controls in the footer, don't add it to the dialog.

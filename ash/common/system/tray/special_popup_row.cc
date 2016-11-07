@@ -54,7 +54,7 @@ views::View* CreateViewContainer() {
   } else {
     view->SetLayoutManager(
         new views::BoxLayout(views::BoxLayout::kHorizontal, 0, 0, 0));
-    view->SetBorder(views::Border::CreateEmptyBorder(4, 0, 4, 5));
+    view->SetBorder(views::CreateEmptyBorder(4, 0, 4, 5));
   }
 
   return view;
@@ -68,13 +68,13 @@ SpecialPopupRow::SpecialPopupRow()
       views_after_content_container_(nullptr),
       label_(nullptr) {
   if (MaterialDesignController::IsSystemTrayMenuMaterial()) {
-    SetBorder(views::Border::CreateSolidSidedBorder(0, 0, kBorderHeight, 0,
-                                                    kBorderColor));
+    SetBorder(
+        views::CreateSolidSidedBorder(0, 0, kBorderHeight, 0, kBorderColor));
   } else {
     set_background(
         views::Background::CreateSolidBackground(kHeaderBackgroundColor));
-    SetBorder(views::Border::CreateSolidSidedBorder(kBorderHeight, 0, 0, 0,
-                                                    kBorderColor));
+    SetBorder(
+        views::CreateSolidSidedBorder(kBorderHeight, 0, 0, 0, kBorderColor));
   }
 }
 
@@ -241,8 +241,8 @@ void SpecialPopupRow::AddViewAfterContent(views::View* view,
     views::Separator* separator =
         new views::Separator(views::Separator::VERTICAL);
     separator->SetColor(ash::kBorderDarkColor);
-    separator->SetBorder(views::Border::CreateEmptyBorder(kSeparatorInset, 0,
-                                                          kSeparatorInset, 0));
+    separator->SetBorder(
+        views::CreateEmptyBorder(kSeparatorInset, 0, kSeparatorInset, 0));
     views_after_content_container_->AddChildView(separator);
   }
 
@@ -286,7 +286,7 @@ void SpecialPopupRow::SetTextLabelNonMd(int string_id,
       rb.GetLocalizedString(string_id), true /* highlight */);
 
   container->SetBorder(
-      views::Border::CreateEmptyBorder(0, kTrayPopupPaddingHorizontal, 0, 0));
+      views::CreateEmptyBorder(0, kTrayPopupPaddingHorizontal, 0, 0));
 
   container->SetAccessibleName(
       rb.GetLocalizedString(IDS_ASH_STATUS_TRAY_PREVIOUS_MENU));

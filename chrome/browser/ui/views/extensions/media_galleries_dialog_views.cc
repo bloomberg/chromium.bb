@@ -127,10 +127,8 @@ void MediaGalleriesDialogViews::InitChildViews() {
       views::BoxLayout::kVertical, 0, 0,
       views::kRelatedControlSmallVerticalSpacing));
   scroll_container->SetBorder(
-      views::Border::CreateEmptyBorder(views::kRelatedControlVerticalSpacing,
-                                       0,
-                                       views::kRelatedControlVerticalSpacing,
-                                       0));
+      views::CreateEmptyBorder(views::kRelatedControlVerticalSpacing, 0,
+                               views::kRelatedControlVerticalSpacing, 0));
 
   std::vector<base::string16> section_headers =
       controller_->GetSectionHeaders();
@@ -147,11 +145,9 @@ void MediaGalleriesDialogViews::InitChildViews() {
       views::Label* header = new views::Label(section_headers[i]);
       header->SetMultiLine(true);
       header->SetHorizontalAlignment(gfx::ALIGN_LEFT);
-      header->SetBorder(views::Border::CreateEmptyBorder(
-          views::kRelatedControlVerticalSpacing,
-          views::kPanelHorizMargin,
-          views::kRelatedControlVerticalSpacing,
-          0));
+      header->SetBorder(views::CreateEmptyBorder(
+          views::kRelatedControlVerticalSpacing, views::kPanelHorizMargin,
+          views::kRelatedControlVerticalSpacing, 0));
       scroll_container->AddChildView(header);
     }
 

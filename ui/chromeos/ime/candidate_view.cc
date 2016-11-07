@@ -74,7 +74,7 @@ views::Label* CreateShortcutLabel(
       (orientation == ui::CandidateWindow::VERTICAL ?
        kVerticalShortcutLabelInsets :
        kHorizontalShortcutLabelInsets);
-  shortcut_label->SetBorder(views::Border::CreateEmptyBorder(
+  shortcut_label->SetBorder(views::CreateEmptyBorder(
       insets.top(), insets.left(), insets.bottom(), insets.right()));
 
   // Add decoration based on the orientation.
@@ -150,7 +150,7 @@ CandidateView::CandidateView(
       shortcut_width_(0),
       candidate_width_(0),
       highlighted_(false) {
-  SetBorder(views::Border::CreateEmptyBorder(1, 1, 1, 1));
+  SetBorder(views::CreateEmptyBorder(1, 1, 1, 1));
 
   const ui::NativeTheme& theme = *GetNativeTheme();
   shortcut_label_ = CreateShortcutLabel(orientation, theme);
@@ -207,7 +207,7 @@ void CandidateView::SetHighlighted(bool highlighted) {
     set_background(
         views::Background::CreateSolidBackground(theme->GetSystemColor(
             ui::NativeTheme::kColorId_TextfieldSelectionBackgroundFocused)));
-    SetBorder(views::Border::CreateSolidBorder(
+    SetBorder(views::CreateSolidBorder(
         1,
         theme->GetSystemColor(ui::NativeTheme::kColorId_FocusedBorderColor)));
 
@@ -220,7 +220,7 @@ void CandidateView::SetHighlighted(bool highlighted) {
     }
   } else {
     set_background(NULL);
-    SetBorder(views::Border::CreateEmptyBorder(1, 1, 1, 1));
+    SetBorder(views::CreateEmptyBorder(1, 1, 1, 1));
   }
   SchedulePaint();
 }

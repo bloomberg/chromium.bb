@@ -50,10 +50,10 @@ views::Separator* CreateListItemSeparator() {
       new views::Separator(views::Separator::HORIZONTAL);
   separator->SetColor(kBorderLightColor);
   separator->SetPreferredSize(kSeparatorWidth);
-  separator->SetBorder(views::Border::CreateEmptyBorder(
-      kMenuSeparatorVerticalPadding,
-      kMenuExtraMarginFromLeftEdge + kMenuButtonSize,
-      kMenuSeparatorVerticalPadding, 0));
+  separator->SetBorder(
+      views::CreateEmptyBorder(kMenuSeparatorVerticalPadding,
+                               kMenuExtraMarginFromLeftEdge + kMenuButtonSize,
+                               kMenuSeparatorVerticalPadding, 0));
   return separator;
 }
 
@@ -201,8 +201,8 @@ class MaterialKeyboardStatusRowView : public views::View {
 
  private:
   void Init() {
-    SetBorder(views::Border::CreateSolidSidedBorder(
-        kKeyboardRowSeparatorThickness, 0, 0, 0, kKeyboardRowSeparatorColor));
+    SetBorder(views::CreateSolidSidedBorder(kKeyboardRowSeparatorThickness, 0,
+                                            0, 0, kKeyboardRowSeparatorColor));
     TriView* tri_view = TrayPopupUtils::CreateDefaultRowView();
     AddChildView(tri_view);
     SetLayoutManager(new views::FillLayout);
@@ -324,7 +324,7 @@ void ImeListView::AppendIMEProperties(
         this, property_list[i].name, property_list[i].selected);
     if (i == 0)
       container->SetBorder(
-          views::Border::CreateSolidSidedBorder(1, 0, 0, 0, kBorderLightColor));
+          views::CreateSolidSidedBorder(1, 0, 0, 0, kBorderLightColor));
     scroll_content()->AddChildView(container);
     property_map_[container] = property_list[i].key;
   }

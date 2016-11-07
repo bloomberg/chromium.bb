@@ -81,7 +81,7 @@ void ScreenStatusView::CreateItems() {
   layout->set_cross_axis_alignment(
       views::BoxLayout::CROSS_AXIS_ALIGNMENT_CENTER);
   SetLayoutManager(layout);
-  SetBorder(views::Border::CreateEmptyBorder(
+  SetBorder(views::CreateEmptyBorder(
       0, kTrayPopupPaddingHorizontal, 0,
       use_md ? kTrayPopupButtonEndMargin : kStopButtonRightPadding));
 
@@ -101,8 +101,8 @@ void ScreenStatusView::CreateItems() {
   label_->SetMultiLine(true);
   label_->SetText(label_text_);
   if (!use_md) {
-    label_->SetBorder(views::Border::CreateEmptyBorder(
-        0, kTrayPopupPaddingBetweenItems, 0, 0));
+    label_->SetBorder(
+        views::CreateEmptyBorder(0, kTrayPopupPaddingBetweenItems, 0, 0));
   }
   AddChildView(label_);
   layout->SetFlexForView(label_, 1);

@@ -246,8 +246,8 @@ void StatusAreaWidgetDelegate::SetBorderOnChild(views::View* child,
       right_edge = shelf_size - kShelfItemInset - item_height;
     }
   }
-  child->SetBorder(views::Border::CreateEmptyBorder(top_edge, left_edge,
-                                                    bottom_edge, right_edge));
+  child->SetBorder(
+      views::CreateEmptyBorder(top_edge, left_edge, bottom_edge, right_edge));
   // Layout on |child| needs to be updated based on new border value before
   // displaying; otherwise |child| will be showing with old border size.
   // Fix for crbug.com/623438.

@@ -144,12 +144,12 @@ PasswordGenerationPopupViewViews::PasswordGenerationPopupViewViews(
   help_label_->set_background(
       views::Background::CreateSolidBackground(
           kExplanatoryTextBackgroundColor));
-  help_label_->SetBorder(views::Border::CreateEmptyBorder(
+  help_label_->SetBorder(views::CreateEmptyBorder(
       PasswordGenerationPopupController::kHelpVerticalPadding -
-      kHelpVerticalOffset,
+          kHelpVerticalOffset,
       PasswordGenerationPopupController::kHorizontalPadding,
       PasswordGenerationPopupController::kHelpVerticalPadding -
-      kHelpVerticalOffset,
+          kHelpVerticalOffset,
       PasswordGenerationPopupController::kHorizontalPadding));
   AddChildView(help_label_);
 

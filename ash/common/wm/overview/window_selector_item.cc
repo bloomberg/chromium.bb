@@ -632,7 +632,7 @@ void WindowSelectorItem::CreateWindowLabel(const base::string16& title) {
   window_label_->set_focus_on_creation(false);
   window_label_->Init(params_label);
   window_label_button_view_ = new OverviewLabelButton(this, title);
-  window_label_button_view_->SetBorder(views::Border::NullBorder());
+  window_label_button_view_->SetBorder(views::NullBorder());
   window_label_button_view_->SetEnabledTextColors(kLabelColor);
   window_label_button_view_->set_animate_on_state_change(false);
   WmWindow* label_window =

@@ -148,7 +148,7 @@ Combobox* TextExample::AddCombobox(GridLayout* layout,
 
 void TextExample::CreateExampleView(View* container) {
   text_view_ = new TextExampleView;
-  text_view_->SetBorder(Border::CreateSolidBorder(1, SK_ColorGRAY));
+  text_view_->SetBorder(CreateSolidBorder(1, SK_ColorGRAY));
   GridLayout* layout = new GridLayout(container);
   container->SetLayoutManager(layout);
   layout->AddPaddingRow(0, 8);

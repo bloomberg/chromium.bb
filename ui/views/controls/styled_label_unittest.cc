@@ -115,7 +115,7 @@ TEST_F(StyledLabelTest, BasicWrapping) {
             StyledLabelContentHeightForWidth(label_preferred_size.width()));
 
   // Also respect the border.
-  styled()->SetBorder(Border::CreateEmptyBorder(3, 3, 3, 3));
+  styled()->SetBorder(CreateEmptyBorder(3, 3, 3, 3));
   styled()->SetBounds(
       0,
       0,

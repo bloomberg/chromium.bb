@@ -146,7 +146,7 @@ Tab::Tab(TabbedPane* tabbed_pane, const base::string16& title, View* contents)
   const int kTabVerticalPadding = 5;
   const int kTabHorizontalPadding = 10;
 
-  SetBorder(Border::CreateEmptyBorder(
+  SetBorder(CreateEmptyBorder(
       gfx::Insets(kTabVerticalPadding, kTabHorizontalPadding)));
   SetLayoutManager(new FillLayout);
 
@@ -266,7 +266,7 @@ MdTab::MdTab(TabbedPane* tabbed_pane,
              View* contents)
     : Tab(tabbed_pane, title, contents) {
   const int kBorderThickness = 2;
-  SetBorder(Border::CreateEmptyBorder(gfx::Insets(kBorderThickness)));
+  SetBorder(CreateEmptyBorder(gfx::Insets(kBorderThickness)));
   OnStateChanged();
 }
 
@@ -296,7 +296,7 @@ gfx::Size MdTab::GetPreferredSize() const {
 }
 
 void MdTab::OnFocus() {
-  SetBorder(Border::CreateSolidBorder(
+  SetBorder(CreateSolidBorder(
       GetInsets().top(),
       SkColorSetA(GetNativeTheme()->GetSystemColor(
                       ui::NativeTheme::kColorId_FocusedBorderColor),
@@ -305,7 +305,7 @@ void MdTab::OnFocus() {
 }
 
 void MdTab::OnBlur() {
-  SetBorder(Border::CreateEmptyBorder(GetInsets()));
+  SetBorder(CreateEmptyBorder(GetInsets()));
   SchedulePaint();
 }
 

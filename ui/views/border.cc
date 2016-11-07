@@ -207,64 +207,53 @@ gfx::Size BorderPainter::GetMinimumSize() const {
 
 }  // namespace
 
-Border::Border() {
-}
+Border::Border() {}
 
-Border::~Border() {
-}
+Border::~Border() {}
 
-// static
-std::unique_ptr<Border> Border::NullBorder() {
+std::unique_ptr<Border> NullBorder() {
   return nullptr;
 }
 
-// static
-std::unique_ptr<Border> Border::CreateSolidBorder(int thickness,
-                                                  SkColor color) {
+std::unique_ptr<Border> CreateSolidBorder(int thickness, SkColor color) {
   return base::MakeUnique<SolidSidedBorder>(gfx::Insets(thickness), color);
 }
 
-// static
-std::unique_ptr<Border> Border::CreateEmptyBorder(const gfx::Insets& insets) {
+std::unique_ptr<Border> CreateEmptyBorder(const gfx::Insets& insets) {
   return base::MakeUnique<EmptyBorder>(insets);
 }
 
-// static
-std::unique_ptr<Border> Border::CreateRoundedRectBorder(int thickness,
-                                                        int corner_radius,
-                                                        SkColor color) {
+std::unique_ptr<Border> CreateRoundedRectBorder(int thickness,
+                                                int corner_radius,
+                                                SkColor color) {
   return base::MakeUnique<RoundedRectBorder>(thickness, corner_radius, color);
 }
 
-// static
-std::unique_ptr<Border> Border::CreateEmptyBorder(int top,
-                                                  int left,
-                                                  int bottom,
-                                                  int right) {
+std::unique_ptr<Border> CreateEmptyBorder(int top,
+                                          int left,
+                                          int bottom,
+                                          int right) {
   return CreateEmptyBorder(gfx::Insets(top, left, bottom, right));
 }
 
-// static
-std::unique_ptr<Border> Border::CreateSolidSidedBorder(int top,
-                                                       int left,
-                                                       int bottom,
-                                                       int right,
-                                                       SkColor color) {
+std::unique_ptr<Border> CreateSolidSidedBorder(int top,
+                                               int left,
+                                               int bottom,
+                                               int right,
+                                               SkColor color) {
   return base::MakeUnique<SolidSidedBorder>(
       gfx::Insets(top, left, bottom, right), color);
 }
 
 // static
-std::unique_ptr<Border> Border::CreatePaddedBorder(
-    std::unique_ptr<Border> border,
-    const gfx::Insets& insets) {
+std::unique_ptr<Border> CreatePaddedBorder(std::unique_ptr<Border> border,
+                                           const gfx::Insets& insets) {
   return base::MakeUnique<ExtraInsetsBorder>(std::move(border), insets);
 }
 
 // static
-std::unique_ptr<Border> Border::CreateBorderPainter(
-    std::unique_ptr<Painter> painter,
-    const gfx::Insets& insets) {
+std::unique_ptr<Border> CreateBorderPainter(std::unique_ptr<Painter> painter,
+                                            const gfx::Insets& insets) {
   return base::WrapUnique(new BorderPainter(std::move(painter), insets));
 }
 

@@ -81,7 +81,7 @@ views::ScrollView* CreateCredentialsView(
         button_listener, titles.first, titles.second, kButtonHoverColor,
         form.get(), request_context);
     credential_view->SetLowerLabelColor(kAutoSigninTextColor);
-    credential_view->SetBorder(views::Border::CreateEmptyBorder(
+    credential_view->SetBorder(views::CreateEmptyBorder(
         kVerticalAvatarMargin, views::kButtonHEdgeMarginNew,
         kVerticalAvatarMargin, views::kButtonHEdgeMarginNew));
     item_height = std::max(item_height, credential_view->GetPreferredHeight());

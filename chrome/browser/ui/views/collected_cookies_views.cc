@@ -80,7 +80,7 @@ class InfobarView : public views::View {
     content_ = new views::View;
     SkColor border_color = SK_ColorGRAY;
     content_->SetBorder(
-        views::Border::CreateSolidBorder(kInfobarBorderSize, border_color));
+        views::CreateSolidBorder(kInfobarBorderSize, border_color));
 
     ui::ResourceBundle& rb = ui::ResourceBundle::GetSharedInstance();
     info_image_ = new views::ImageView();
@@ -464,8 +464,7 @@ views::View* CollectedCookiesViews::CreateBlockedPane() {
 views::View* CollectedCookiesViews::CreateScrollView(views::TreeView* pane) {
   views::ScrollView* scroll_view = new views::ScrollView();
   scroll_view->SetContents(pane);
-  scroll_view->SetBorder(
-      views::Border::CreateSolidBorder(1, kCookiesBorderColor));
+  scroll_view->SetBorder(views::CreateSolidBorder(1, kCookiesBorderColor));
   return scroll_view;
 }
 

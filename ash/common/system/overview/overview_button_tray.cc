@@ -128,7 +128,7 @@ void OverviewButtonTray::SetIconBorderForShelfAlignment() {
                  : gfx::Insets(kVerticalShelfVerticalPadding,
                                kVerticalShelfHorizontalPadding);
   }
-  icon_->SetBorder(views::Border::CreateEmptyBorder(insets));
+  icon_->SetBorder(views::CreateEmptyBorder(insets));
 }
 
 void OverviewButtonTray::UpdateIconVisibility() {

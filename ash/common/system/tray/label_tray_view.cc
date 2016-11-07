@@ -81,8 +81,8 @@ views::View* LabelTrayView::CreateChildView(
                                     kMenuIconColor)
             : *rb.GetImageSkiaNamed(icon_resource_id_);
     child->AddIconAndLabel(icon, message, false /* highlight */);
-    child->SetBorder(views::Border::CreateEmptyBorder(
-        0, kTrayPopupPaddingHorizontal, 0, kTrayPopupPaddingHorizontal));
+    child->SetBorder(views::CreateEmptyBorder(0, kTrayPopupPaddingHorizontal, 0,
+                                              kTrayPopupPaddingHorizontal));
     child->text_label()->SetMultiLine(true);
     child->text_label()->SizeToFit(kTrayNotificationContentsWidth);
   } else {

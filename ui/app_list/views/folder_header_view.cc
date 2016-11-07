@@ -36,7 +36,7 @@ const int kMaxFolderNameWidth = 300;
 class FolderHeaderView::FolderNameView : public views::Textfield {
  public:
   FolderNameView() {
-    SetBorder(views::Border::CreateEmptyBorder(1, 1, 1, 1));
+    SetBorder(views::CreateEmptyBorder(1, 1, 1, 1));
     SetTextColor(kFolderTitleColor);
   }
 
@@ -59,7 +59,7 @@ FolderHeaderView::FolderHeaderView(FolderHeaderViewDelegate* delegate)
       rb.GetFontList(ui::ResourceBundle::MediumFont));
   folder_name_view_->set_placeholder_text_color(kFolderTitleHintTextColor);
   folder_name_view_->set_placeholder_text(folder_name_placeholder_text_);
-  folder_name_view_->SetBorder(views::Border::NullBorder());
+  folder_name_view_->SetBorder(views::NullBorder());
   folder_name_view_->SetBackgroundColor(kContentsBackgroundColor);
   folder_name_view_->set_controller(this);
   AddChildView(folder_name_view_);

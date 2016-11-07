@@ -236,7 +236,7 @@ void TrayBackgroundView::TrayContainer::UpdateLayout() {
   const gfx::Insets margin(
       is_horizontal ? gfx::Insets(cross_axis_margin_, main_axis_margin_)
                     : gfx::Insets(main_axis_margin_, cross_axis_margin_));
-  SetBorder(views::Border::CreateEmptyBorder(insets + margin));
+  SetBorder(views::CreateEmptyBorder(insets + margin));
 
   views::BoxLayout* layout = new views::BoxLayout(orientation, 0, 0, 0);
   if (!ash::MaterialDesignController::IsShelfMaterial())

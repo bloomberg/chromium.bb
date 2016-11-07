@@ -110,10 +110,10 @@ class ScrollContentsView : public views::View,
         return;
       sticky_ = sticky;
       if (sticky) {
-        view_->SetBorder(views::Border::CreateSolidSidedBorder(
+        view_->SetBorder(views::CreateSolidSidedBorder(
             0, 0, kHeaderRowSeparatorThickness, 0, kHeaderRowSeparatorColor));
       } else {
-        view_->SetBorder(views::Border::CreateSolidSidedBorder(
+        view_->SetBorder(views::CreateSolidSidedBorder(
             kHeaderRowSeparatorThickness, 0, 0, 0, kHeaderRowSeparatorColor));
       }
     }
@@ -301,8 +301,8 @@ void TrayDetailsView::CreateTitleRow(int string_id) {
   title_row_ = new SpecialPopupRow();
   title_row_->SetTextLabel(string_id, this);
   if (MaterialDesignController::IsSystemTrayMenuMaterial()) {
-    title_row_->SetBorder(views::Border::CreateEmptyBorder(
-        kTitleRowPaddingTop, 0, kTitleRowPaddingBottom, 0));
+    title_row_->SetBorder(views::CreateEmptyBorder(kTitleRowPaddingTop, 0,
+                                                   kTitleRowPaddingBottom, 0));
     AddChildViewAt(title_row_, 0);
     // In material design, we use a customized bottom border which is nomally a
     // simple separator (views::Separator) but can be combined with an
@@ -313,7 +313,7 @@ void TrayDetailsView::CreateTitleRow(int string_id) {
         new views::Separator(views::Separator::HORIZONTAL);
     separator->SetColor(kTitleRowSeparatorBorderColor);
     separator->SetPreferredSize(kTitleRowSeparatorBorderHeight);
-    separator->SetBorder(views::Border::CreateEmptyBorder(
+    separator->SetBorder(views::CreateEmptyBorder(
         kTitleRowSeparatorHeight - kTitleRowSeparatorBorderHeight, 0, 0, 0));
     title_row_separator_->AddChildView(separator);
     AddChildViewAt(title_row_separator_, 1);

@@ -192,7 +192,7 @@ std::unique_ptr<views::View> SaveCardBubbleViews::CreateMainContentView() {
           .AsImageSkia());
   card_type_icon->SetTooltipText(card.TypeForDisplay());
   card_type_icon->SetBorder(
-      views::Border::CreateSolidBorder(1, SkColorSetA(SK_ColorBLACK, 10)));
+      views::CreateSolidBorder(1, SkColorSetA(SK_ColorBLACK, 10)));
   description_view->AddChildView(card_type_icon);
 
   description_view->AddChildView(new views::Label(

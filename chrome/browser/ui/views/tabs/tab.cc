@@ -557,7 +557,7 @@ Tab::Tab(TabController* controller, gfx::AnimationContainer* container)
 
   set_id(VIEW_ID_TAB);
 
-  SetBorder(views::Border::CreateEmptyBorder(GetLayoutInsets(TAB)));
+  SetBorder(views::CreateEmptyBorder(GetLayoutInsets(TAB)));
 
   title_->SetHorizontalAlignment(gfx::ALIGN_TO_HEAD);
   title_->SetElideBehavior(gfx::FADE_TAIL);
@@ -886,7 +886,7 @@ void Tab::Layout() {
     // for touch events.
     // TODO(pkasting): The padding should maybe be removed, see comments in
     // TabCloseButton::TargetForRect().
-    close_button_->SetBorder(views::Border::NullBorder());
+    close_button_->SetBorder(views::NullBorder());
     const gfx::Size close_button_size(close_button_->GetPreferredSize());
     const int top = lb.y() + (lb.height() - close_button_size.height() + 1) / 2;
     const int left = kAfterTitleSpacing;
@@ -896,7 +896,7 @@ void Tab::Layout() {
     const int bottom = height() - close_button_size.height() - top;
     const int right = width() - close_button_end;
     close_button_->SetBorder(
-        views::Border::CreateEmptyBorder(top, left, bottom, right));
+        views::CreateEmptyBorder(top, left, bottom, right));
     close_button_->SizeToPreferredSize();
   }
   close_button_->SetVisible(showing_close_button_);

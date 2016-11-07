@@ -60,8 +60,7 @@ void AutofillPopupBaseView::DoShow() {
     show_time_ = base::Time::Now();
   }
 
-  SetBorder(views::Border::CreateSolidBorder(kPopupBorderThickness,
-                                             kBorderColor));
+  SetBorder(views::CreateSolidBorder(kPopupBorderThickness, kBorderColor));
 
   DoUpdateBoundsAndRedrawPopup();
   GetWidget()->Show();

@@ -107,7 +107,7 @@ ToggleButton::ToggleButton(ButtonListener* listener)
       thumb_view_(new ThumbView()) {
   slide_animation_.SetSlideDuration(80 /* ms */);
   slide_animation_.SetTweenType(gfx::Tween::LINEAR);
-  SetBorder(Border::CreateEmptyBorder(
+  SetBorder(CreateEmptyBorder(
       gfx::Insets(kTrackVerticalMargin, kTrackHorizontalMargin)));
   AddChildView(thumb_view_);
   SetInkDropMode(InkDropMode::ON);

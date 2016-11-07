@@ -330,9 +330,9 @@ void TaskManagerView::Init() {
   AddChildView(tab_table_parent_);
 
   SetLayoutManager(new views::FillLayout());
-  SetBorder(views::Border::CreateEmptyBorder(views::kPanelVertMargin,
-                                             views::kButtonHEdgeMarginNew, 0,
-                                             views::kButtonHEdgeMarginNew));
+  SetBorder(views::CreateEmptyBorder(views::kPanelVertMargin,
+                                     views::kButtonHEdgeMarginNew, 0,
+                                     views::kButtonHEdgeMarginNew));
 
   table_model_->RetrieveSavedColumnsSettingsAndUpdateTable();
 

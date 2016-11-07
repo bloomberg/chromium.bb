@@ -79,7 +79,7 @@ void AudioDetailedView::AddScrollListInfoItem(const base::string16& text) {
   else
     left_margin = margin;
 
-  label->SetBorder(views::Border::CreateEmptyBorder(
+  label->SetBorder(views::CreateEmptyBorder(
       ash::kTrayPopupPaddingBetweenItems, left_margin,
       ash::kTrayPopupPaddingBetweenItems, right_margin));
   label->SetHorizontalAlignment(gfx::ALIGN_LEFT);

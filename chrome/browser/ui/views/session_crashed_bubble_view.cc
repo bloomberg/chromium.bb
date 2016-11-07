@@ -282,7 +282,7 @@ views::View* SessionCrashedBubbleView::CreateFootnoteView() {
   if (!after_link_range.is_empty())
     uma_label->AddStyleRange(after_link_range, uma_style);
   // Shift the text down by 1px to align with the checkbox.
-  uma_label->SetBorder(views::Border::CreateEmptyBorder(1, 0, 0, 0));
+  uma_label->SetBorder(views::CreateEmptyBorder(1, 0, 0, 0));
 
   // Create a view to hold the checkbox and the text.
   views::View* uma_view = new views::View();

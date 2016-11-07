@@ -54,8 +54,7 @@ class VectorIconGallery : public View,
     image_layout->set_main_axis_alignment(
         BoxLayout::MAIN_AXIS_ALIGNMENT_CENTER);
     image_view_container_->SetLayoutManager(image_layout);
-    image_view_->SetBorder(
-        Border::CreateSolidSidedBorder(1, 1, 1, 1, SK_ColorBLACK));
+    image_view_->SetBorder(CreateSolidSidedBorder(1, 1, 1, 1, SK_ColorBLACK));
     AddChildView(image_view_container_);
 
     BoxLayout* box = new BoxLayout(BoxLayout::kVertical, 10, 10, 10);

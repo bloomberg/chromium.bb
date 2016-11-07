@@ -150,12 +150,12 @@ class BorderTest : public ViewsTestBase {
 };
 
 TEST_F(BorderTest, NullBorder) {
-  std::unique_ptr<Border> border(Border::NullBorder());
+  std::unique_ptr<Border> border(NullBorder());
   EXPECT_FALSE(border);
 }
 
 TEST_F(BorderTest, SolidBorder) {
-  std::unique_ptr<Border> border(Border::CreateSolidBorder(3, SK_ColorBLUE));
+  std::unique_ptr<Border> border(CreateSolidBorder(3, SK_ColorBLUE));
   EXPECT_EQ(gfx::Size(6, 6), border->GetMinimumSize());
   EXPECT_EQ(gfx::Insets(3, 3, 3, 3), border->GetInsets());
   border->Paint(*view_, canvas_.get());
@@ -176,8 +176,7 @@ TEST_F(BorderTest, SolidBorder) {
 }
 
 TEST_F(BorderTest, RoundedRectBorder) {
-  std::unique_ptr<Border> border(
-      Border::CreateRoundedRectBorder(3, 4, SK_ColorBLUE));
+  std::unique_ptr<Border> border(CreateRoundedRectBorder(3, 4, SK_ColorBLUE));
   EXPECT_EQ(gfx::Size(6, 6), border->GetMinimumSize());
   EXPECT_EQ(gfx::Insets(3, 3, 3, 3), border->GetInsets());
   border->Paint(*view_, canvas_.get());
@@ -198,7 +197,7 @@ TEST_F(BorderTest, RoundedRectBorder) {
 TEST_F(BorderTest, EmptyBorder) {
   const gfx::Insets kInsets(1, 2, 3, 4);
 
-  std::unique_ptr<Border> border(Border::CreateEmptyBorder(
+  std::unique_ptr<Border> border(CreateEmptyBorder(
       kInsets.top(), kInsets.left(), kInsets.bottom(), kInsets.right()));
   // The EmptyBorder has no minimum size despite nonzero insets.
   EXPECT_EQ(gfx::Size(), border->GetMinimumSize());
@@ -206,16 +205,16 @@ TEST_F(BorderTest, EmptyBorder) {
   // Should have no effect.
   border->Paint(*view_, canvas_.get());
 
-  std::unique_ptr<Border> border2(Border::CreateEmptyBorder(kInsets));
+  std::unique_ptr<Border> border2(CreateEmptyBorder(kInsets));
   EXPECT_EQ(kInsets, border2->GetInsets());
 }
 
 TEST_F(BorderTest, SolidSidedBorder) {
   const gfx::Insets kInsets(1, 2, 3, 4);
 
-  std::unique_ptr<Border> border(Border::CreateSolidSidedBorder(
-      kInsets.top(), kInsets.left(), kInsets.bottom(), kInsets.right(),
-      SK_ColorBLUE));
+  std::unique_ptr<Border> border(
+      CreateSolidSidedBorder(kInsets.top(), kInsets.left(), kInsets.bottom(),
+                             kInsets.right(), SK_ColorBLUE));
   EXPECT_EQ(gfx::Size(6, 4), border->GetMinimumSize());
   EXPECT_EQ(kInsets, border->GetInsets());
   border->Paint(*view_, canvas_.get());
@@ -241,7 +240,7 @@ TEST_F(BorderTest, BorderPainter) {
   std::unique_ptr<MockPainter> painter(new MockPainter());
   MockPainter* painter_ptr = painter.get();
   std::unique_ptr<Border> border(
-      Border::CreateBorderPainter(std::move(painter), kInsets));
+      CreateBorderPainter(std::move(painter), kInsets));
   EXPECT_EQ(gfx::Size(60, 40), border->GetMinimumSize());
   EXPECT_EQ(kInsets, border->GetInsets());
 

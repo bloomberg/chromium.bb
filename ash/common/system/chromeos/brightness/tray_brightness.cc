@@ -117,7 +117,7 @@ BrightnessView::BrightnessView(bool default_view, double initial_percent)
   slider_ = views::Slider::CreateSlider(
       ash::MaterialDesignController::IsSystemTrayMenuMaterial(), this);
   if (ash::MaterialDesignController::IsSystemTrayMenuMaterial()) {
-    slider_->SetBorder(views::Border::CreateEmptyBorder(
+    slider_->SetBorder(views::CreateEmptyBorder(
         gfx::Insets(0, kTrayPopupSliderPaddingMD) + slider_->GetInsets()));
   }
   slider_->set_focus_border_color(kFocusBorderColor);

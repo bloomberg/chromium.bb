@@ -1060,7 +1060,7 @@ void ShelfView::AnimateToIdealBounds() {
     // Now that the item animation starts, we have to make sure that the
     // padding of the first gets properly transferred to the new first item.
     if (i && view->border())
-      view->SetBorder(views::Border::NullBorder());
+      view->SetBorder(views::NullBorder());
   }
   overflow_button_->SetBoundsRect(ideal_bounds.overflow_bounds);
 }

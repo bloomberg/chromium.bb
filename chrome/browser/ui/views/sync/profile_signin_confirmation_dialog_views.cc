@@ -163,7 +163,7 @@ void ProfileSigninConfirmationDialogViews::ViewHierarchyChanged(
 
   // Create the prompt bar.
   views::View* prompt_bar = new views::View;
-  prompt_bar->SetBorder(views::Border::CreateSolidSidedBorder(
+  prompt_bar->SetBorder(views::CreateSolidSidedBorder(
       1, 0, 1, 0,
       ui::GetSigninConfirmationPromptBarColor(
           GetNativeTheme(), ui::kSigninConfirmationPromptBarBorderAlpha)));

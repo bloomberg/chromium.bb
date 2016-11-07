@@ -124,8 +124,8 @@ class NetworkListViewMd::WifiHeaderRowView : public views::View {
     set_background(views::Background::CreateSolidBackground(kBackgroundColor));
     // TODO(tdanderson): Need to unify this with the generic menu row class.
     views::View* container = new views::View;
-    container->SetBorder(views::Border::CreateEmptyBorder(
-        0, kWifiRowLeftInset, 0, kWifiRowRightInset));
+    container->SetBorder(
+        views::CreateEmptyBorder(0, kWifiRowLeftInset, 0, kWifiRowRightInset));
     views::FillLayout* layout = new views::FillLayout;
     SetLayoutManager(layout);
     AddChildView(container);
@@ -157,7 +157,7 @@ class NetworkListViewMd::WifiHeaderRowView : public views::View {
         theme->GetSystemColor(ui::NativeTheme::kColorId_FocusedBorderColor);
     const int horizontal_padding = (kWiFiButtonSize - join_image_.width()) / 2;
     const int vertical_padding = (kWiFiButtonSize - join_image_.height()) / 2;
-    join_->SetBorder(views::Border::CreateEmptyBorder(
+    join_->SetBorder(views::CreateEmptyBorder(
         gfx::Insets(vertical_padding, horizontal_padding)));
     join_->SetFocusForPlatform();
     join_->SetFocusPainter(views::Painter::CreateSolidFocusPainter(

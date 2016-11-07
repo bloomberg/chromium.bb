@@ -57,7 +57,7 @@ std::unique_ptr<views::Border> MakeEmptyBorder(int top,
                                                int left,
                                                int bottom,
                                                int right) {
-  return views::Border::CreateEmptyBorder(top, left, bottom, right);
+  return views::CreateEmptyBorder(top, left, bottom, right);
 }
 
 // static
@@ -83,7 +83,7 @@ std::unique_ptr<views::Border> MakeProgressBarBorder(int top, int bottom) {
 std::unique_ptr<views::Border> MakeSeparatorBorder(int top,
                                                    int left,
                                                    SkColor color) {
-  return views::Border::CreateSolidSidedBorder(top, left, 0, 0, color);
+  return views::CreateSolidSidedBorder(top, left, 0, 0, color);
 }
 
 // ItemView ////////////////////////////////////////////////////////////////////
@@ -577,7 +577,7 @@ void NotificationView::CreateOrUpdateImageView(
   gfx::Size scaled_size = message_center::GetImageSizeForContainerSize(
       ideal_size, notification.image().Size());
   image_view_->SetBorder(ideal_size != scaled_size
-                             ? views::Border::CreateSolidBorder(
+                             ? views::CreateSolidBorder(
                                    message_center::kNotificationImageBorderSize,
                                    SK_ColorTRANSPARENT)
                              : NULL);

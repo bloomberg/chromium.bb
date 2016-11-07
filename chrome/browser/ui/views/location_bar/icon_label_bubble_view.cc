@@ -40,7 +40,7 @@ IconLabelBubbleView::IconLabelBubbleView(const gfx::FontList& font_list,
   // child views in the location bar have the same height. The visible height of
   // the bubble should be smaller, so use an empty border to shrink down the
   // content bounds so the background gets painted correctly.
-  SetBorder(views::Border::CreateEmptyBorder(
+  SetBorder(views::CreateEmptyBorder(
       gfx::Insets(GetLayoutConstant(LOCATION_BAR_BUBBLE_VERTICAL_PADDING), 0)));
 
   // Flip the canvas in RTL so the separator is drawn on the correct side.

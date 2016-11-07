@@ -194,7 +194,7 @@ DownloadItemView::DownloadItemView(DownloadItem* download_item,
   set_context_menu_controller(this);
 
   dropdown_button_->SetBorder(
-      views::Border::CreateEmptyBorder(gfx::Insets(kDropdownBorderWidth)));
+      views::CreateEmptyBorder(gfx::Insets(kDropdownBorderWidth)));
   dropdown_button_->set_ink_drop_size(gfx::Size(32, 32));
   AddChildView(dropdown_button_);
 

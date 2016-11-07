@@ -223,7 +223,7 @@ PopupHeaderView::PopupHeaderView(
   const gfx::FontList& font_list = rb.GetFontListWithDelta(1);
   summary_label_ = new views::Label(base::string16(), font_list);
   summary_label_->SetMultiLine(true);
-  summary_label_->SetBorder(views::Border::CreateEmptyBorder(
+  summary_label_->SetBorder(views::CreateEmptyBorder(
       kHeaderPaddingTop - kHeaderPaddingForCloseButton, 0, 0, 0));
   layout->AddView(summary_label_, 1, 1, views::GridLayout::LEADING,
                   views::GridLayout::TRAILING);
@@ -330,7 +330,7 @@ void PopupHeaderView::AddResetDecisionsLabel() {
 
   // Now that it contains a label, the container needs padding at the top.
   reset_decisions_label_container_->SetBorder(
-      views::Border::CreateEmptyBorder(8, 0, 0, 0));
+      views::CreateEmptyBorder(8, 0, 0, 0));
 
   InvalidateLayout();
 }

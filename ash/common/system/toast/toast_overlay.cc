@@ -86,9 +86,8 @@ ToastOverlayLabel::ToastOverlayLabel(const base::string16& label) {
 
   int verticalSpacing =
       kToastVerticalSpacing - (GetPreferredSize().height() - GetBaseline());
-  SetBorder(views::Border::CreateEmptyBorder(
-      verticalSpacing, kToastHorizontalSpacing, verticalSpacing,
-      kToastHorizontalSpacing));
+  SetBorder(views::CreateEmptyBorder(verticalSpacing, kToastHorizontalSpacing,
+                                     verticalSpacing, kToastHorizontalSpacing));
 }
 
 ToastOverlayLabel::~ToastOverlayLabel() {}
@@ -122,9 +121,8 @@ ToastOverlayButton::ToastOverlayButton(views::ButtonListener* listener,
   // Treat the space below the baseline as a margin.
   int verticalSpacing = kToastVerticalSpacing -
                         (GetPreferredSize().height() - label()->GetBaseline());
-  SetBorder(views::Border::CreateEmptyBorder(
-      verticalSpacing, kToastHorizontalSpacing, verticalSpacing,
-      kToastHorizontalSpacing));
+  SetBorder(views::CreateEmptyBorder(verticalSpacing, kToastHorizontalSpacing,
+                                     verticalSpacing, kToastHorizontalSpacing));
 }
 
 ///////////////////////////////////////////////////////////////////////////////

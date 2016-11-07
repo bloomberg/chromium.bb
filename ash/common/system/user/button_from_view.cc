@@ -106,7 +106,7 @@ void ButtonFromView::ShowActive() {
   bool border_visible =
       (button_hovered_ && highlight_on_hover_) || show_border_;
   SkColor border_color = border_visible ? kBorderColor : SK_ColorTRANSPARENT;
-  SetBorder(views::Border::CreateSolidBorder(1, border_color));
+  SetBorder(views::CreateSolidBorder(1, border_color));
   if (highlight_on_hover_) {
     SkColor background_color =
         button_hovered_ ? kHoverBackgroundColor : kBackgroundColor;

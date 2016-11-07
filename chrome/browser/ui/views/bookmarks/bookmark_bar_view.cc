@@ -1595,8 +1595,8 @@ void BookmarkBarView::Init() {
   UpdateBookmarksSeparatorVisibility();
 
   instructions_ = new BookmarkBarInstructionsView(this);
-  instructions_->SetBorder(views::Border::CreateEmptyBorder(
-      kButtonPaddingVertical, 0, kButtonPaddingVertical, 0));
+  instructions_->SetBorder(views::CreateEmptyBorder(kButtonPaddingVertical, 0,
+                                                    kButtonPaddingVertical, 0));
   AddChildView(instructions_);
 
   set_context_menu_controller(this);

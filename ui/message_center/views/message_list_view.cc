@@ -46,7 +46,7 @@ MessageListView::MessageListView(MessageCenterView* message_center_view,
   gfx::Insets shadow_insets = MessageView::GetShadowInsets();
   set_background(
       views::Background::CreateSolidBackground(kMessageCenterBackgroundColor));
-  SetBorder(views::Border::CreateEmptyBorder(
+  SetBorder(views::CreateEmptyBorder(
       top_down ? 0 : kMarginBetweenItems - shadow_insets.top(),    /* top */
       kMarginBetweenItems - shadow_insets.left(),                  /* left */
       top_down ? kMarginBetweenItems - shadow_insets.bottom() : 0, /* bottom */

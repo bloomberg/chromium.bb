@@ -122,8 +122,7 @@ void ToolbarActionsBarBubbleViews::Init() {
   base::string16 item_list = delegate_->GetItemListText();
   if (!item_list.empty()) {
     item_list_ = new views::Label(item_list);
-    item_list_->SetBorder(
-        views::Border::CreateEmptyBorder(0, kListPadding, 0, 0));
+    item_list_->SetBorder(views::CreateEmptyBorder(0, kListPadding, 0, 0));
     item_list_->SetMultiLine(true);
     item_list_->SizeToFit(width);
     item_list_->SetHorizontalAlignment(gfx::ALIGN_LEFT);

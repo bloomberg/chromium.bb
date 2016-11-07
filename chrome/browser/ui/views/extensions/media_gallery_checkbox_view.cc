@@ -30,9 +30,9 @@ MediaGalleryCheckboxView::MediaGalleryCheckboxView(
   DCHECK(button_listener != NULL);
   SetLayoutManager(
       new views::BoxLayout(views::BoxLayout::kHorizontal, 0, 0, 0));
-  SetBorder(views::Border::CreateEmptyBorder(
-      0, views::kPanelHorizMargin, trailing_vertical_space,
-      views::kPanelHorizMargin));
+  SetBorder(views::CreateEmptyBorder(0, views::kPanelHorizMargin,
+                                     trailing_vertical_space,
+                                     views::kPanelHorizMargin));
   if (menu_controller)
     set_context_menu_controller(menu_controller);
 
@@ -52,7 +52,7 @@ MediaGalleryCheckboxView::MediaGalleryCheckboxView(
   secondary_text_->SetEnabledColor(kDeemphasizedTextColor);
   secondary_text_->SetElideBehavior(gfx::ELIDE_HEAD);
   secondary_text_->SetTooltipText(tooltip_text);
-  secondary_text_->SetBorder(views::Border::CreateEmptyBorder(
+  secondary_text_->SetBorder(views::CreateEmptyBorder(
       0, views::kRelatedControlSmallHorizontalSpacing, 0, 0));
 
   AddChildView(checkbox_);

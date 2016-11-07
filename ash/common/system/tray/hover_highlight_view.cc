@@ -127,7 +127,7 @@ views::Label* HoverHighlightView::AddLabel(const base::string16& text,
       left_margin += kTrayPopupDetailsLabelExtraLeftMargin;
   }
   text_label_->SetBorder(
-      views::Border::CreateEmptyBorder(5, left_margin, 5, right_margin));
+      views::CreateEmptyBorder(5, left_margin, 5, right_margin));
   text_label_->SetHorizontalAlignment(alignment);
   text_label_->SetFontList(GetFontList(highlight));
   // Do not set alpha value in disable color. It will have issue with elide

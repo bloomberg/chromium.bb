@@ -310,7 +310,7 @@ void FocusTraversalTest::InitContentView() {
   cb->set_id(TOP_CHECKBOX_ID);
 
   left_container_ = new PaneView();
-  left_container_->SetBorder(Border::CreateSolidBorder(1, SK_ColorBLACK));
+  left_container_->SetBorder(CreateSolidBorder(1, SK_ColorBLACK));
   left_container_->set_background(
       Background::CreateSolidBackground(240, 240, 240));
   left_container_->set_id(LEFT_CONTAINER_ID);
@@ -394,7 +394,7 @@ void FocusTraversalTest::InitContentView() {
   left_container_->AddChildView(combobox);
 
   right_container_ = new PaneView();
-  right_container_->SetBorder(Border::CreateSolidBorder(1, SK_ColorBLACK));
+  right_container_->SetBorder(CreateSolidBorder(1, SK_ColorBLACK));
   right_container_->set_background(
       Background::CreateSolidBackground(240, 240, 240));
   right_container_->set_id(RIGHT_CONTAINER_ID);
@@ -425,7 +425,7 @@ void FocusTraversalTest::InitContentView() {
   y += radio_button_height + gap_between_radio_buttons;
 
   View* inner_container = new View();
-  inner_container->SetBorder(Border::CreateSolidBorder(1, SK_ColorBLACK));
+  inner_container->SetBorder(CreateSolidBorder(1, SK_ColorBLACK));
   inner_container->set_background(
       Background::CreateSolidBackground(230, 230, 230));
   inner_container->set_id(INNER_CONTAINER_ID);

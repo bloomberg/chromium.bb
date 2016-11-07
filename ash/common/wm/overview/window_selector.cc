@@ -203,7 +203,7 @@ views::Widget* CreateTextFilter(views::TextfieldController* controller,
 
   views::Textfield* textfield = new views::Textfield;
   textfield->set_controller(controller);
-  textfield->SetBorder(views::Border::NullBorder());
+  textfield->SetBorder(views::NullBorder());
   textfield->SetBackgroundColor(kTextFilterBackgroundColor);
   textfield->SetTextColor(kTextFilterTextColor);
   views::ImageView* image_view = new views::ImageView;

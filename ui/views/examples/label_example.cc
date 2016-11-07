@@ -35,7 +35,7 @@ const char* kAlignments[] = { "Left", "Center", "Right", "Head" };
 class PreferredSizeLabel : public Label {
  public:
   PreferredSizeLabel() : Label() {
-    SetBorder(Border::CreateSolidBorder(1, SK_ColorGRAY));
+    SetBorder(CreateSolidBorder(1, SK_ColorGRAY));
   }
   ~PreferredSizeLabel() override {}
 
@@ -112,7 +112,7 @@ void LabelExample::CreateExampleView(View* container) {
   container->AddChildView(label);
 
   label = new Label(ASCIIToUTF16("Label with thick border"));
-  label->SetBorder(Border::CreateSolidBorder(20, SK_ColorRED));
+  label->SetBorder(CreateSolidBorder(20, SK_ColorRED));
   container->AddChildView(label);
 
   AddCustomLabel(container);
@@ -151,7 +151,7 @@ void LabelExample::ContentsChanged(Textfield* sender,
 
 void LabelExample::AddCustomLabel(View* container) {
   View* control_container = new View();
-  control_container->SetBorder(Border::CreateSolidBorder(2, SK_ColorGRAY));
+  control_container->SetBorder(CreateSolidBorder(2, SK_ColorGRAY));
   control_container->set_background(
       Background::CreateSolidBackground(SK_ColorLTGRAY));
   GridLayout* layout = GridLayout::CreatePanel(control_container);

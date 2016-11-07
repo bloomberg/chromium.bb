@@ -214,7 +214,7 @@ MdTextButton::MdTextButton(ButtonListener* listener)
 void MdTextButton::UpdatePadding() {
   // Don't use font-based padding when there's no text visible.
   if (GetText().empty()) {
-    SetBorder(Border::NullBorder());
+    SetBorder(NullBorder());
     return;
   }
 
@@ -243,8 +243,8 @@ void MdTextButton::UpdatePadding() {
   // TODO(estade): can we get rid of the platform style border hoopla if
   // we apply the MD treatment to all buttons, even GTK buttons?
   const int kHorizontalPadding = 16;
-  SetBorder(Border::CreateEmptyBorder(top_padding, kHorizontalPadding,
-                                      bottom_padding, kHorizontalPadding));
+  SetBorder(CreateEmptyBorder(top_padding, kHorizontalPadding, bottom_padding,
+                              kHorizontalPadding));
 }
 
 void MdTextButton::UpdateColors() {

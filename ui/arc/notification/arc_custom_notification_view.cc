@@ -187,9 +187,9 @@ void ArcCustomNotificationView::CreateFloatingCloseButton() {
   constexpr int kImageSize = 16;
   constexpr int kTouchExtendedPadding =
       message_center::kControlButtonSize - kImageSize - kPaddingFromBorder;
-  floating_close_button_->SetBorder(views::Border::CreateEmptyBorder(
-      kPaddingFromBorder, kTouchExtendedPadding, kTouchExtendedPadding,
-      kPaddingFromBorder));
+  floating_close_button_->SetBorder(
+      views::CreateEmptyBorder(kPaddingFromBorder, kTouchExtendedPadding,
+                               kTouchExtendedPadding, kPaddingFromBorder));
 
   ui::ResourceBundle& rb = ui::ResourceBundle::GetSharedInstance();
   floating_close_button_->SetImage(

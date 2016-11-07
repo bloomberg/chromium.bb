@@ -43,8 +43,8 @@ SearchResultTileItemListView::SearchResultTileItemListView(
     SearchResultTileItemView* tile_item =
         new SearchResultTileItemView(this, view_delegate);
     tile_item->SetParentBackgroundColor(kCardBackgroundColor);
-    tile_item->SetBorder(views::Border::CreateEmptyBorder(
-        kTopBottomPadding, 0, kTopBottomPadding, 0));
+    tile_item->SetBorder(
+        views::CreateEmptyBorder(kTopBottomPadding, 0, kTopBottomPadding, 0));
     tile_views_.push_back(tile_item);
     layout->AddView(tile_item);
   }

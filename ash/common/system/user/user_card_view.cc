@@ -82,7 +82,7 @@ views::View* CreateUserAvatarView(LoginStatus login_status, int user_index) {
   }
 
   if (UseMd()) {
-    image_view->SetBorder(views::Border::CreateEmptyBorder(gfx::Insets(
+    image_view->SetBorder(views::CreateEmptyBorder(gfx::Insets(
         (GetTrayConstant(TRAY_POPUP_ITEM_MAIN_IMAGE_CONTAINER_WIDTH) -
          image_view->GetPreferredSize().width()) /
         2)));
@@ -186,7 +186,7 @@ PublicAccountUserDetails::PublicAccountUserDetails(int max_width)
   const int inner_padding =
       kTrayPopupPaddingHorizontal - kTrayPopupPaddingBetweenItems;
   const bool rtl = base::i18n::IsRTL();
-  SetBorder(views::Border::CreateEmptyBorder(
+  SetBorder(views::CreateEmptyBorder(
       kUserDetailsVerticalPadding, rtl ? 0 : inner_padding,
       kUserDetailsVerticalPadding, rtl ? inner_padding : 0));
 

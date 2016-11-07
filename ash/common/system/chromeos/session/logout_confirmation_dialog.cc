@@ -39,8 +39,8 @@ LogoutConfirmationDialog::LogoutConfirmationDialog(
   SetLayoutManager(new views::FillLayout());
 
   label_ = new views::Label;
-  label_->SetBorder(views::Border::CreateEmptyBorder(
-      0, kTrayPopupPaddingHorizontal, 0, kTrayPopupPaddingHorizontal));
+  label_->SetBorder(views::CreateEmptyBorder(0, kTrayPopupPaddingHorizontal, 0,
+                                             kTrayPopupPaddingHorizontal));
   label_->SetHorizontalAlignment(gfx::ALIGN_LEFT);
   label_->SetMultiLine(true);
   AddChildView(label_);

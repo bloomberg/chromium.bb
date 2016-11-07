@@ -104,9 +104,9 @@ gfx::Size MultiprofilesIntroView::GetPreferredSize() const {
 }
 
 void MultiprofilesIntroView::InitDialog() {
-  SetBorder(views::Border::CreateEmptyBorder(views::kPanelVertMargin,
-                                             views::kButtonHEdgeMarginNew, 0,
-                                             views::kButtonHEdgeMarginNew));
+  SetBorder(views::CreateEmptyBorder(views::kPanelVertMargin,
+                                     views::kButtonHEdgeMarginNew, 0,
+                                     views::kButtonHEdgeMarginNew));
   SetLayoutManager(new views::FillLayout());
 
   // Explanation string

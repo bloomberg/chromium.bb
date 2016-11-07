@@ -289,13 +289,13 @@ void MenuScrollViewContainer::CreateDefaultBorder() {
                         ? GetNativeTheme()->GetSystemColor(
                               ui::NativeTheme::kColorId_MenuBorderColor)
                         : gfx::kPlaceholderColor;
-    SetBorder(views::Border::CreateBorderPainter(
+    SetBorder(views::CreateBorderPainter(
         base::MakeUnique<views::RoundRectPainter>(color,
                                                   menu_config.corner_radius),
         gfx::Insets(vertical_inset, horizontal_inset)));
   } else {
-    SetBorder(Border::CreateEmptyBorder(vertical_inset, horizontal_inset,
-                                        vertical_inset, horizontal_inset));
+    SetBorder(CreateEmptyBorder(vertical_inset, horizontal_inset,
+                                vertical_inset, horizontal_inset));
   }
 }
 

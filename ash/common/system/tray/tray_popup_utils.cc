@@ -77,9 +77,9 @@ std::unique_ptr<views::LayoutManager> TrayPopupUtils::CreateLayoutManager(
 views::Label* TrayPopupUtils::CreateDefaultLabel() {
   views::Label* label = new views::Label();
   label->SetHorizontalAlignment(gfx::ALIGN_LEFT);
-  label->SetBorder(
-      views::Border::CreateEmptyBorder(0, kTrayPopupLabelHorizontalPadding, 0,
-                                       kTrayPopupLabelHorizontalPadding));
+  label->SetBorder(views::CreateEmptyBorder(0, kTrayPopupLabelHorizontalPadding,
+                                            0,
+                                            kTrayPopupLabelHorizontalPadding));
 
   // TODO(bruthig): Fix this so that |label| uses the kBackgroundColor to
   // perform subpixel rendering instead of disabling subpixel rendering.

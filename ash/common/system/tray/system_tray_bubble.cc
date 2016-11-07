@@ -350,8 +350,8 @@ void SystemTrayBubble::CreateItemViews(LoginStatus login_status) {
       const int last_item_with_border =
           static_cast<int>(item_containers.size()) - 2;
       for (int i = 0; i < last_item_with_border; ++i) {
-        item_containers.at(i)->SetBorder(views::Border::CreateSolidSidedBorder(
-            0, 0, 1, 0, kBorderLightColor));
+        item_containers.at(i)->SetBorder(
+            views::CreateSolidSidedBorder(0, 0, 1, 0, kBorderLightColor));
       }
     }
   }

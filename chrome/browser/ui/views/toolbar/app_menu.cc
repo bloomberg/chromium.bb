@@ -263,8 +263,8 @@ class InMenuButton : public LabelButton {
 
     in_menu_background_ = new InMenuButtonBackground(type);
     set_background(in_menu_background_);
-    SetBorder(views::Border::CreateEmptyBorder(0, kHorizontalPadding, 0,
-                                               kHorizontalPadding));
+    SetBorder(
+        views::CreateEmptyBorder(0, kHorizontalPadding, 0, kHorizontalPadding));
     SetFontList(MenuConfig::instance().font_list);
   }
 
@@ -584,7 +584,7 @@ class AppMenu::ZoomView : public AppMenuView {
   void OnNativeThemeChanged(const ui::NativeTheme* theme) override {
     AppMenuView::OnNativeThemeChanged(theme);
 
-    zoom_label_->SetBorder(views::Border::CreateEmptyBorder(
+    zoom_label_->SetBorder(views::CreateEmptyBorder(
         0, kZoomLabelHorizontalPadding, 0, kZoomLabelHorizontalPadding));
     zoom_label_->SetFontList(MenuConfig::instance().font_list);
     zoom_label_max_width_valid_ = false;

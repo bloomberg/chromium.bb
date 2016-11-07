@@ -38,9 +38,9 @@ void VectorIconButton::SetIcon(gfx::VectorIconId id) {
   id_ = id;
 
   if (!border()) {
-    SetBorder(views::Border::CreateEmptyBorder(
-        kButtonExtraTouchSize, kButtonExtraTouchSize, kButtonExtraTouchSize,
-        kButtonExtraTouchSize));
+    SetBorder(
+        views::CreateEmptyBorder(kButtonExtraTouchSize, kButtonExtraTouchSize,
+                                 kButtonExtraTouchSize, kButtonExtraTouchSize));
   }
 }
 
