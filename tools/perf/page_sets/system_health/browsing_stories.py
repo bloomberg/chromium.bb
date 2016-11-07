@@ -191,6 +191,7 @@ class TwitterMobileStory(_NewsBrowsingStory):
   SUPPORTED_PLATFORMS = platforms.MOBILE_ONLY
 
 
+@decorators.Disabled('win')  # crbug.com/662971
 class TwitterDesktopStory(_NewsBrowsingStory):
   NAME = 'browse:social:twitter'
   URL = 'https://www.twitter.com/nasa'
