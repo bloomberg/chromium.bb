@@ -15,11 +15,12 @@ import org.chromium.android_webview.AwContents;
 import org.chromium.android_webview.test.util.AwTestTouchUtils;
 import org.chromium.android_webview.test.util.CommonResources;
 import org.chromium.base.ThreadUtils;
-import org.chromium.base.test.util.DisabledTest;
 import org.chromium.base.test.util.Feature;
+import org.chromium.content.browser.test.util.TestCallbackHelperContainer.OnPageCommitVisibleHelper;
 import org.chromium.net.test.util.TestWebServer;
 
 import java.util.concurrent.Callable;
+import java.util.concurrent.TimeUnit;
 
 /**
  * Test for getHitTestResult, requestFocusNodeHref, and requestImageRef methods
@@ -32,6 +33,7 @@ public class WebKitHitTestTest extends AwTestBase {
 
     private static final String HREF = "http://foo/";
     private static final String ANCHOR_TEXT = "anchor text";
+    private int mServerResponseCount;
 
     @Override
     public void setUp() throws Exception {
@@ -53,11 +55,15 @@ public class WebKitHitTestTest extends AwTestBase {
         super.tearDown();
     }
 
-    private void setServerResponseAndLoad(String response) throws Throwable {
-        String url = mWebServer.setResponse("/hittest.html", response, null);
-        loadUrlSync(mAwContents,
-                    mContentsClient.getOnPageFinishedHelper(),
-                    url);
+    private String setServerResponseAndLoad(String response) throws Throwable {
+        // Use a different path each time to avoid flakes due to caching.
+        String path = "/hittest" + (mServerResponseCount++) + ".html";
+        String url = mWebServer.setResponse(path, response, null);
+        OnPageCommitVisibleHelper commitHelper = mContentsClient.getOnPageCommitVisibleHelper();
+        int currentCallCount = commitHelper.getCallCount();
+        loadUrlSync(mAwContents, mContentsClient.getOnPageFinishedHelper(), url);
+        commitHelper.waitForCallback(currentCallCount, 1, WAIT_TIMEOUT_MS, TimeUnit.MILLISECONDS);
+        return url;
     }
 
     private static String fullPageLink(String href, String anchorText) {
@@ -154,9 +160,8 @@ public class WebKitHitTestTest extends AwTestBase {
     }
 
     private void blankHrefTestBody(boolean byTouch) throws Throwable {
-        String fullPath = mWebServer.getResponseUrl("/hittest.html");
         String page = fullPageLink("", ANCHOR_TEXT);
-        setServerResponseAndLoad(page);
+        String fullPath = setServerResponseAndLoad(page);
         simulateInput(byTouch);
         pollForHitTestDataOnUiThread(HitTestResult.SRC_ANCHOR_TYPE, fullPath);
         pollForHrefAndImageSrcOnUiThread(fullPath, ANCHOR_TEXT, null);
@@ -370,7 +375,6 @@ public class WebKitHitTestTest extends AwTestBase {
 
     @SmallTest
     @Feature({"AndroidWebView", "WebKitHitTest"})
-    @DisabledTest(message = "crbug.com/662078")  // Times out.
     public void testUnknownTypeUnrecognizedNode() throws Throwable {
         // Since UNKNOWN_TYPE is the default, hit test another type first for
         // this test to be valid.
@@ -382,14 +386,6 @@ public class WebKitHitTestTest extends AwTestBase {
                 "<title>" + title + "</title>",
                 "<div class=\"full_view\">div text</div>");
         setServerResponseAndLoad(page);
-
-        // Wait for the new page to be loaded before trying hit test.
-        pollUiThread(new Callable<Boolean>() {
-            @Override
-            public Boolean call() {
-                return mAwContents.getTitle().equals(title);
-            }
-        });
         AwTestTouchUtils.simulateTouchCenterOfView(mTestView);
         pollForHitTestDataOnUiThread(HitTestResult.UNKNOWN_TYPE, null);
     }
