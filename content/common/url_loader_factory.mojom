@@ -14,11 +14,11 @@ interface URLLoaderFactory {
   // method will be called when certain events related to that loading
   // (e.g., response arrival) happen. |request_id| is for compatibility with
   // the existing Chrome IPC.
-  CreateLoaderAndStart(URLLoader& loader,
+  CreateLoaderAndStart(associated URLLoader& loader,
                        int32 routing_id,
                        int32 request_id,
                        URLRequest request,
-                       URLLoaderClient client);
+                       associated URLLoaderClient client);
 
   // Loads the resource for the given |request| synchronously.
   // |request_id| is for compatibility with the existing Chrome IPC.

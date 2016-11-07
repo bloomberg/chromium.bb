@@ -193,7 +193,8 @@ blink::WebIDBFactory* TestBlinkWebUnitTestSupport::idbFactory() {
 blink::WebURLLoader* TestBlinkWebUnitTestSupport::createURLLoader() {
   // This loader should be used only for process-local resources such as
   // data URLs.
-  blink::WebURLLoader* default_loader = new WebURLLoaderImpl(nullptr, nullptr);
+  blink::WebURLLoader* default_loader =
+      new WebURLLoaderImpl(nullptr, nullptr, nullptr);
   return url_loader_factory_->createURLLoader(default_loader);
 }
 

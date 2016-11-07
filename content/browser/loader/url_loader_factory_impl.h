@@ -9,7 +9,6 @@
 #include "base/memory/ref_counted.h"
 #include "content/common/content_export.h"
 #include "content/common/url_loader_factory.mojom.h"
-#include "mojo/public/cpp/bindings/interface_request.h"
 
 namespace content {
 
@@ -21,22 +20,24 @@ class URLLoaderFactoryImpl final : public mojom::URLLoaderFactory {
  public:
   ~URLLoaderFactoryImpl() override;
 
-  void CreateLoaderAndStart(mojom::URLLoaderRequest request,
-                            int32_t routing_id,
-                            int32_t request_id,
-                            const ResourceRequest& url_request,
-                            mojom::URLLoaderClientPtr client) override;
+  void CreateLoaderAndStart(
+      mojom::URLLoaderAssociatedRequest request,
+      int32_t routing_id,
+      int32_t request_id,
+      const ResourceRequest& url_request,
+      mojom::URLLoaderClientAssociatedPtrInfo client_ptr_info) override;
   void SyncLoad(int32_t routing_id,
                 int32_t request_id,
                 const ResourceRequest& request,
                 const SyncLoadCallback& callback) override;
 
-  static void CreateLoaderAndStart(mojom::URLLoaderRequest request,
-                                   int32_t routing_id,
-                                   int32_t request_id,
-                                   const ResourceRequest& url_request,
-                                   mojom::URLLoaderClientPtr client,
-                                   ResourceMessageFilter* filter);
+  static void CreateLoaderAndStart(
+      mojom::URLLoaderAssociatedRequest request,
+      int32_t routing_id,
+      int32_t request_id,
+      const ResourceRequest& url_request,
+      mojom::URLLoaderClientAssociatedPtrInfo client_ptr_info,
+      ResourceMessageFilter* filter);
   static void SyncLoad(int32_t routing_id,
                        int32_t request_id,
                        const ResourceRequest& request,

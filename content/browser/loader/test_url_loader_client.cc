@@ -4,9 +4,72 @@
 
 #include "content/browser/loader/test_url_loader_client.h"
 
+#include "base/memory/ref_counted.h"
 #include "base/run_loop.h"
+#include "mojo/public/cpp/bindings/strong_binding.h"
 
 namespace content {
+
+namespace {
+
+class TestURLLoaderFactory final : public mojom::URLLoaderFactory {
+ public:
+  class Waiter final : public base::RefCounted<Waiter> {
+   public:
+    Waiter() = default;
+    void Signal(mojom::URLLoaderClientAssociatedPtrInfo client_ptr) {
+      client_ptr_ = std::move(client_ptr);
+      run_loop_.Quit();
+    }
+    mojom::URLLoaderClientAssociatedPtrInfo Wait() {
+      run_loop_.Run();
+      return std::move(client_ptr_);
+    }
+
+   private:
+    friend class base::RefCounted<Waiter>;
+    ~Waiter() {}
+
+    base::RunLoop run_loop_;
+    mojom::URLLoaderClientAssociatedPtrInfo client_ptr_;
+
+    DISALLOW_COPY_AND_ASSIGN(Waiter);
+  };
+
+  explicit TestURLLoaderFactory(scoped_refptr<Waiter> waiter)
+      : waiter_(waiter) {}
+  ~TestURLLoaderFactory() override {}
+
+  void CreateLoaderAndStart(
+      mojom::URLLoaderAssociatedRequest request,
+      int32_t routing_id,
+      int32_t request_id,
+      const ResourceRequest& url_request,
+      mojom::URLLoaderClientAssociatedPtrInfo client_ptr_info) override {
+    waiter_->Signal(std::move(client_ptr_info));
+  }
+
+  void SyncLoad(int32_t routing_id,
+                int32_t request_id,
+                const ResourceRequest& url_request,
+                const SyncLoadCallback& callback) override {
+    NOTREACHED();
+  }
+
+ private:
+  scoped_refptr<Waiter> waiter_;
+
+  DISALLOW_COPY_AND_ASSIGN(TestURLLoaderFactory);
+};
+
+void CreateURLLoaderFactory(scoped_refptr<TestURLLoaderFactory::Waiter> waiter,
+                            mojom::URLLoaderFactoryRequest request) {
+  mojo::MakeStrongBinding(
+      base::MakeUnique<TestURLLoaderFactory>(std::move(waiter)),
+      std::move(request));
+}
+
+}  // namespace
 
 TestURLLoaderClient::TestURLLoaderClient() : binding_(this) {}
 TestURLLoaderClient::~TestURLLoaderClient() {}
@@ -34,8 +97,29 @@ void TestURLLoaderClient::OnComplete(
     quit_closure_for_on_complete_.Run();
 }
 
-mojom::URLLoaderClientPtr TestURLLoaderClient::CreateInterfacePtrAndBind() {
-  return binding_.CreateInterfacePtrAndBind();
+mojom::URLLoaderClientAssociatedPtrInfo
+TestURLLoaderClient::CreateLocalAssociatedPtrInfo() {
+  scoped_refptr<TestURLLoaderFactory::Waiter> waiter(
+      new TestURLLoaderFactory::Waiter());
+  CreateURLLoaderFactory(waiter, mojo::GetProxy(&url_loader_factory_));
+  ResourceRequest request;
+  mojom::URLLoaderAssociatedPtr loader_proxy;
+
+  mojom::URLLoaderClientAssociatedPtrInfo info;
+  binding_.Bind(&info, url_loader_factory_.associated_group());
+  url_loader_factory_->CreateLoaderAndStart(
+      mojo::GetProxy(&loader_proxy, url_loader_factory_.associated_group()), 0,
+      0, request, std::move(info));
+
+  return waiter->Wait();
+}
+
+mojom::URLLoaderClientAssociatedPtrInfo
+TestURLLoaderClient::CreateRemoteAssociatedPtrInfo(
+    mojo::AssociatedGroup* associated_group) {
+  mojom::URLLoaderClientAssociatedPtrInfo client_ptr_info;
+  binding_.Bind(&client_ptr_info, associated_group);
+  return client_ptr_info;
 }
 
 void TestURLLoaderClient::Unbind() {

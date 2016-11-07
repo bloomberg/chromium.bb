@@ -66,14 +66,14 @@ base::WeakPtr<ResourceMessageFilter> ResourceMessageFilter::GetWeakPtr() {
 }
 
 void ResourceMessageFilter::CreateLoaderAndStart(
-    mojom::URLLoaderRequest request,
+    mojom::URLLoaderAssociatedRequest request,
     int32_t routing_id,
     int32_t request_id,
     const ResourceRequest& url_request,
-    mojom::URLLoaderClientPtr client) {
+    mojom::URLLoaderClientAssociatedPtrInfo client_ptr_info) {
   URLLoaderFactoryImpl::CreateLoaderAndStart(std::move(request), routing_id,
                                              request_id, url_request,
-                                             std::move(client), this);
+                                             std::move(client_ptr_info), this);
 }
 
 void ResourceMessageFilter::SyncLoad(int32_t routing_id,

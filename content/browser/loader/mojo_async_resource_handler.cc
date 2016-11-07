@@ -103,8 +103,8 @@ class MojoAsyncResourceHandler::WriterIOBuffer final
 MojoAsyncResourceHandler::MojoAsyncResourceHandler(
     net::URLRequest* request,
     ResourceDispatcherHostImpl* rdh,
-    mojo::InterfaceRequest<mojom::URLLoader> mojo_request,
-    mojom::URLLoaderClientPtr url_loader_client)
+    mojom::URLLoaderAssociatedRequest mojo_request,
+    mojom::URLLoaderClientAssociatedPtr url_loader_client)
     : ResourceHandler(request),
       rdh_(rdh),
       binding_(this, std::move(mojo_request)),

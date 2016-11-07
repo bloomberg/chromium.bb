@@ -299,8 +299,8 @@ class CONTENT_EXPORT ResourceDispatcherHostImpl
       int routing_id,
       int request_id,
       const ResourceRequest& request,
-      mojo::InterfaceRequest<mojom::URLLoader> mojo_request,
-      mojom::URLLoaderClientPtr url_loader_client,
+      mojom::URLLoaderAssociatedRequest mojo_request,
+      mojom::URLLoaderClientAssociatedPtr url_loader_client,
       ResourceMessageFilter* filter);
 
   void OnSyncLoadWithMojo(int routing_id,
@@ -527,8 +527,8 @@ class CONTENT_EXPORT ResourceDispatcherHostImpl
       int routing_id,
       int request_id,
       const ResourceRequest& request_data,
-      mojo::InterfaceRequest<mojom::URLLoader> mojo_request,
-      mojom::URLLoaderClientPtr url_loader_client);
+      mojom::URLLoaderAssociatedRequest mojo_request,
+      mojom::URLLoaderClientAssociatedPtr url_loader_client);
 
   void OnSyncLoad(int request_id,
                   const ResourceRequest& request_data,
@@ -553,10 +553,10 @@ class CONTENT_EXPORT ResourceDispatcherHostImpl
   void BeginRequest(
       int request_id,
       const ResourceRequest& request_data,
-      const SyncLoadResultCallback& sync_result_handler, // only valid for sync
+      const SyncLoadResultCallback& sync_result_handler,  // only valid for sync
       int route_id,
-      mojo::InterfaceRequest<mojom::URLLoader> mojo_request,
-      mojom::URLLoaderClientPtr url_loader_client);
+      mojom::URLLoaderAssociatedRequest mojo_request,
+      mojom::URLLoaderClientAssociatedPtr url_loader_client);
 
   // There are requests which need decisions to be made like the following:
   // Whether the presence of certain HTTP headers like the Origin header are
@@ -570,11 +570,11 @@ class CONTENT_EXPORT ResourceDispatcherHostImpl
   void ContinuePendingBeginRequest(
       int request_id,
       const ResourceRequest& request_data,
-      const SyncLoadResultCallback& sync_result_handler, // only valid for sync
+      const SyncLoadResultCallback& sync_result_handler,  // only valid for sync
       int route_id,
       const net::HttpRequestHeaders& headers,
-      mojo::InterfaceRequest<mojom::URLLoader> mojo_request,
-      mojom::URLLoaderClientPtr url_loader_client,
+      mojom::URLLoaderAssociatedRequest mojo_request,
+      mojom::URLLoaderClientAssociatedPtr url_loader_client,
       bool continue_request,
       int error_code);
 
@@ -588,8 +588,8 @@ class CONTENT_EXPORT ResourceDispatcherHostImpl
       int process_type,
       int child_id,
       ResourceContext* resource_context,
-      mojo::InterfaceRequest<mojom::URLLoader> mojo_request,
-      mojom::URLLoaderClientPtr url_loader_client);
+      mojom::URLLoaderAssociatedRequest mojo_request,
+      mojom::URLLoaderClientAssociatedPtr url_loader_client);
 
   // Wraps |handler| in the standard resource handlers for normal resource
   // loading and navigation requests. This adds MimeTypeResourceHandler and

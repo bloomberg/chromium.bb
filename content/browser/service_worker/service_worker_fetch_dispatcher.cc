@@ -9,6 +9,7 @@
 
 #include "base/bind.h"
 #include "base/feature_list.h"
+#include "base/memory/ptr_util.h"
 #include "base/time/time.h"
 #include "base/trace_event/trace_event.h"
 #include "content/browser/loader/resource_dispatcher_host_impl.h"
@@ -22,10 +23,10 @@
 #include "content/common/service_worker/service_worker_status_code.h"
 #include "content/common/service_worker/service_worker_types.h"
 #include "content/common/service_worker/service_worker_utils.h"
-#include "content/common/url_loader.mojom.h"
-#include "content/common/url_loader_factory.mojom.h"
 #include "content/public/common/browser_side_navigation_policy.h"
 #include "content/public/common/content_features.h"
+#include "mojo/public/cpp/bindings/associated_binding.h"
+#include "mojo/public/cpp/bindings/binding.h"
 #include "net/log/net_log.h"
 #include "net/log/net_log_capture_mode.h"
 #include "net/log/net_log_event_type.h"
@@ -34,6 +35,61 @@
 namespace content {
 
 namespace {
+
+// This class wraps a mojo::AssociatedInterfacePtr<URLLoader>. It also is a
+// URLLoader implementation and delegates URLLoader calls to the wrapped loader.
+class DelegatingURLLoader final : public mojom::URLLoader {
+ public:
+  explicit DelegatingURLLoader(mojom::URLLoaderAssociatedPtr loader)
+      : binding_(this), loader_(std::move(loader)) {}
+  ~DelegatingURLLoader() override {}
+
+  void FollowRedirect() override { loader_->FollowRedirect(); }
+  void Cancel() override { loader_->Cancel(); }
+
+  mojom::URLLoaderPtr CreateInterfacePtrAndBind() {
+    return binding_.CreateInterfacePtrAndBind();
+  }
+
+ private:
+  mojo::Binding<mojom::URLLoader> binding_;
+  mojom::URLLoaderAssociatedPtr loader_;
+
+  DISALLOW_COPY_AND_ASSIGN(DelegatingURLLoader);
+};
+
+// This class wraps a mojo::InterfacePtr<URLLoaderClient>. It also is a
+// URLLoaderClient implementation and delegates URLLoaderClient calls to the
+// wrapped client.
+class DelegatingURLLoaderClient final : public mojom::URLLoaderClient {
+ public:
+  explicit DelegatingURLLoaderClient(mojom::URLLoaderClientPtr client)
+      : binding_(this), client_(std::move(client)) {}
+  ~DelegatingURLLoaderClient() override {}
+
+  void OnReceiveResponse(const ResourceResponseHead& head) override {
+    client_->OnReceiveResponse(head);
+  }
+  void OnStartLoadingResponseBody(
+      mojo::ScopedDataPipeConsumerHandle body) override {
+    client_->OnStartLoadingResponseBody(std::move(body));
+  }
+  void OnComplete(
+      const ResourceRequestCompletionStatus& completion_status) override {
+    client_->OnComplete(completion_status);
+  }
+
+  void Bind(mojom::URLLoaderClientAssociatedPtrInfo* ptr_info,
+            mojo::AssociatedGroup* associated_group) {
+    binding_.Bind(ptr_info, associated_group);
+  }
+
+ private:
+  mojo::AssociatedBinding<mojom::URLLoaderClient> binding_;
+  mojom::URLLoaderClientPtr client_;
+
+  DISALLOW_COPY_AND_ASSIGN(DelegatingURLLoaderClient);
+};
 
 using EventType = ServiceWorkerMetrics::EventType;
 EventType ResourceTypeToEventType(ResourceType resource_type) {
@@ -86,10 +142,14 @@ ServiceWorkerMetrics::EventType FetchTypeToWaitUntilEventType(
   return ServiceWorkerMetrics::EventType::FETCH_WAITUNTIL;
 }
 
-void OnFetchEventFinished(ServiceWorkerVersion* version,
-                          int event_finish_id,
-                          ServiceWorkerStatusCode status,
-                          base::Time dispatch_event_time) {
+void OnFetchEventFinished(
+    ServiceWorkerVersion* version,
+    int event_finish_id,
+    mojom::URLLoaderFactoryPtr url_loader_factory,
+    std::unique_ptr<mojom::URLLoader> url_loader,
+    std::unique_ptr<mojom::URLLoaderClient> url_loader_client,
+    ServiceWorkerStatusCode status,
+    base::Time dispatch_event_time) {
   version->FinishRequest(event_finish_id, status != SERVICE_WORKER_ERROR_ABORT,
                          dispatch_event_time);
 }
@@ -237,10 +297,15 @@ void ServiceWorkerFetchDispatcher::DispatchFetchEvent() {
           event_finish_id);
   // |dispatcher| is owned by |version_|. So it is safe to pass the unretained
   // raw pointer of |version_| to OnFetchEventFinished callback.
+  // Pass |url_loader_factory_|, |url_Loader_| and |url_loader_client_| to the
+  // callback to keep them alive while the FetchEvent is onging in the service
+  // worker.
   dispatcher->DispatchFetchEvent(
       fetch_event_id, *request_, std::move(preload_handle_),
       base::Bind(&OnFetchEventFinished, base::Unretained(version_.get()),
-                 event_finish_id));
+                 event_finish_id, base::Passed(std::move(url_loader_factory_)),
+                 base::Passed(std::move(url_loader_)),
+                 base::Passed(std::move(url_loader_client_))));
 }
 
 void ServiceWorkerFetchDispatcher::DidFailToDispatch(
@@ -303,18 +368,16 @@ void ServiceWorkerFetchDispatcher::MaybeStartNavigationPreload(
     return;
   }
 
+  DCHECK(!url_loader_factory_);
   const ResourceRequestInfoImpl* original_info =
       ResourceRequestInfoImpl::ForRequest(original_request);
   if (!original_info->filter())
     return;
   mojom::URLLoaderFactoryPtr factory;
   URLLoaderFactoryImpl::Create(original_info->filter(),
-                               mojo::GetProxy(&factory));
+                               mojo::GetProxy(&url_loader_factory_));
 
   preload_handle_ = mojom::FetchEventPreloadHandle::New();
-
-  mojom::URLLoaderClientPtr url_loader_client;
-  preload_handle_->url_loader_client_request = GetProxy(&url_loader_client);
 
   ResourceRequest request;
   request.method = original_request->method();
@@ -334,11 +397,31 @@ void ServiceWorkerFetchDispatcher::MaybeStartNavigationPreload(
   request.parent_is_main_frame = original_info->ParentIsMainFrame();
   const int request_id = ResourceDispatcherHostImpl::Get()->MakeRequestID();
   DCHECK_LT(request_id, -1);
+
+  preload_handle_ = mojom::FetchEventPreloadHandle::New();
+  mojom::URLLoaderClientPtr url_loader_client_ptr;
+  preload_handle_->url_loader_client_request =
+      mojo::GetProxy(&url_loader_client_ptr);
+  auto url_loader_client = base::MakeUnique<DelegatingURLLoaderClient>(
+      std::move(url_loader_client_ptr));
+  mojom::URLLoaderClientAssociatedPtrInfo url_loader_client_associated_ptr_info;
+  url_loader_client->Bind(&url_loader_client_associated_ptr_info,
+                          url_loader_factory_.associated_group());
+  mojom::URLLoaderAssociatedPtr url_loader_associated_ptr;
+
   // TODO(horo): Add "Service-Worker-Navigation-Preload" header.
   // See: https://github.com/w3c/ServiceWorker/issues/920#issuecomment-251150270
-  factory->CreateLoaderAndStart(GetProxy(&preload_handle_->url_loader),
-                                original_info->GetRouteID(), request_id,
-                                request, std::move(url_loader_client));
+  url_loader_factory_->CreateLoaderAndStart(
+      mojo::GetProxy(&url_loader_associated_ptr,
+                     url_loader_factory_.associated_group()),
+      original_info->GetRouteID(), request_id, request,
+      std::move(url_loader_client_associated_ptr_info));
+
+  std::unique_ptr<DelegatingURLLoader> url_loader(
+      new DelegatingURLLoader(std::move(url_loader_associated_ptr)));
+  preload_handle_->url_loader = url_loader->CreateInterfacePtrAndBind();
+  url_loader_ = std::move(url_loader);
+  url_loader_client_ = std::move(url_loader_client);
 }
 
 ServiceWorkerMetrics::EventType ServiceWorkerFetchDispatcher::GetEventType()

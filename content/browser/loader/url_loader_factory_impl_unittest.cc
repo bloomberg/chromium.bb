@@ -135,7 +135,7 @@ TEST_P(URLLoaderFactoryImplTest, GetResponse) {
   constexpr int32_t kRoutingId = 81;
   constexpr int32_t kRequestId = 28;
   NavigationResourceThrottle::set_ui_checks_always_succeed_for_testing(true);
-  mojom::URLLoaderPtr loader;
+  mojom::URLLoaderAssociatedPtr loader;
   base::FilePath root;
   PathService::Get(DIR_TEST_DATA, &root);
   net::URLRequestMockHTTPJob::AddUrlHandlers(root,
@@ -146,9 +146,10 @@ TEST_P(URLLoaderFactoryImplTest, GetResponse) {
   request.url = net::URLRequestMockHTTPJob::GetMockUrl("hello.html");
   request.method = "GET";
   request.is_main_frame = true;
-  factory_->CreateLoaderAndStart(mojo::GetProxy(&loader), kRoutingId,
-                                 kRequestId, request,
-                                 client.CreateInterfacePtrAndBind());
+  factory_->CreateLoaderAndStart(
+      mojo::GetProxy(&loader, factory_.associated_group()), kRoutingId,
+      kRequestId, request,
+      client.CreateRemoteAssociatedPtrInfo(factory_.associated_group()));
 
   ASSERT_FALSE(client.has_received_response());
   ASSERT_FALSE(client.response_body().is_valid());
@@ -203,15 +204,16 @@ TEST_P(URLLoaderFactoryImplTest, GetResponse) {
 
 TEST_P(URLLoaderFactoryImplTest, GetFailedResponse) {
   NavigationResourceThrottle::set_ui_checks_always_succeed_for_testing(true);
-  mojom::URLLoaderPtr loader;
+  mojom::URLLoaderAssociatedPtr loader;
   ResourceRequest request;
   TestURLLoaderClient client;
   net::URLRequestFailedJob::AddUrlHandler();
   request.url = net::URLRequestFailedJob::GetMockHttpUrlWithFailurePhase(
       net::URLRequestFailedJob::START, net::ERR_TIMED_OUT);
   request.method = "GET";
-  factory_->CreateLoaderAndStart(mojo::GetProxy(&loader), 2, 1, request,
-                                 client.CreateInterfacePtrAndBind());
+  factory_->CreateLoaderAndStart(
+      mojo::GetProxy(&loader, factory_.associated_group()), 2, 1, request,
+      client.CreateRemoteAssociatedPtrInfo(factory_.associated_group()));
 
   client.RunUntilComplete();
   ASSERT_FALSE(client.has_received_response());
@@ -222,14 +224,15 @@ TEST_P(URLLoaderFactoryImplTest, GetFailedResponse) {
 
 // This test tests a case where resource loading is cancelled before started.
 TEST_P(URLLoaderFactoryImplTest, InvalidURL) {
-  mojom::URLLoaderPtr loader;
+  mojom::URLLoaderAssociatedPtr loader;
   ResourceRequest request;
   TestURLLoaderClient client;
   request.url = GURL();
   request.method = "GET";
   ASSERT_FALSE(request.url.is_valid());
-  factory_->CreateLoaderAndStart(mojo::GetProxy(&loader), 2, 1, request,
-                                 client.CreateInterfacePtrAndBind());
+  factory_->CreateLoaderAndStart(
+      mojo::GetProxy(&loader, factory_.associated_group()), 2, 1, request,
+      client.CreateRemoteAssociatedPtrInfo(factory_.associated_group()));
 
   client.RunUntilComplete();
   ASSERT_FALSE(client.has_received_response());
@@ -240,15 +243,16 @@ TEST_P(URLLoaderFactoryImplTest, InvalidURL) {
 
 // This test tests a case where resource loading is cancelled before started.
 TEST_P(URLLoaderFactoryImplTest, ShouldNotRequestURL) {
-  mojom::URLLoaderPtr loader;
+  mojom::URLLoaderAssociatedPtr loader;
   RejectingResourceDispatcherHostDelegate rdh_delegate;
   rdh_.SetDelegate(&rdh_delegate);
   ResourceRequest request;
   TestURLLoaderClient client;
   request.url = GURL("http://localhost/");
   request.method = "GET";
-  factory_->CreateLoaderAndStart(mojo::GetProxy(&loader), 2, 1, request,
-                                 client.CreateInterfacePtrAndBind());
+  factory_->CreateLoaderAndStart(
+      mojo::GetProxy(&loader, factory_.associated_group()), 2, 1, request,
+      client.CreateRemoteAssociatedPtrInfo(factory_.associated_group()));
 
   client.RunUntilComplete();
   rdh_.SetDelegate(nullptr);

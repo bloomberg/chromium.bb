@@ -30,6 +30,10 @@
 #include "third_party/WebKit/public/platform/WebURLRequest.h"
 #include "url/gurl.h"
 
+namespace mojo {
+class AssociatedGroup;
+}  // namespace mojo
+
 namespace net {
 struct RedirectInfo;
 }
@@ -98,7 +102,8 @@ class CONTENT_EXPORT ResourceDispatcher : public IPC::Listener {
       const GURL& frame_origin,
       std::unique_ptr<RequestPeer> peer,
       blink::WebURLRequest::LoadingIPCType ipc_type,
-      mojom::URLLoaderFactory* url_loader_factory);
+      mojom::URLLoaderFactory* url_loader_factory,
+      mojo::AssociatedGroup* associated_group);
 
   // Removes a request from the |pending_requests_| list, returning true if the
   // request was found and removed.
@@ -181,7 +186,7 @@ class CONTENT_EXPORT ResourceDispatcher : public IPC::Listener {
     int buffer_size;
 
     // For mojo loading.
-    mojom::URLLoaderPtr url_loader;
+    mojom::URLLoaderAssociatedPtr url_loader;
     std::unique_ptr<mojom::URLLoaderClient> url_loader_client;
   };
   using PendingRequestMap = std::map<int, std::unique_ptr<PendingRequestInfo>>;
