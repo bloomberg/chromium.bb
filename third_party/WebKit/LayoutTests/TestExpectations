@@ -113,8 +113,6 @@ crbug.com/646016 paint/invalidation/selected-replaced.html [ Failure ]
 # ====== LayoutNG-only failures from here ======
 # LayoutNG - is a new layout system for Blink.
 
-crbug.com/657839 [ Android ] fast/images/png-suite/test.html [ Pass Failure ]
-
 #### fast/block/basic
 #### Passed: 12
 #### Skipped: 20
