@@ -16,16 +16,13 @@ mojom("interfaces") {
     "media_service.mojom",
     "media_types.mojom",
     "output_protection.mojom",
+    "provision_fetcher.mojom",
     "renderer.mojom",
     "video_decoder.mojom",
   ]
 
   if (is_chromeos) {
     sources += [ "platform_verification.mojom" ]
-  }
-
-  if (is_android) {
-    sources += [ "provision_fetcher.mojom" ]
   }
 
   public_deps = [

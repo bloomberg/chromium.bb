@@ -75,6 +75,8 @@ component("services") {
     "mojo_demuxer_stream_adapter.h",
     "mojo_media_client.cc",
     "mojo_media_client.h",
+    "mojo_provision_fetcher.cc",
+    "mojo_provision_fetcher.h",
     "mojo_renderer_service.cc",
     "mojo_renderer_service.h",
     "mojo_video_decoder_service.cc",
@@ -111,8 +113,6 @@ component("services") {
     sources += [
       "android_mojo_media_client.cc",
       "android_mojo_media_client.h",
-      "mojo_provision_fetcher.cc",
-      "mojo_provision_fetcher.h",
     ]
   }
 }

@@ -2,26 +2,30 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CONTENT_BROWSER_MEDIA_ANDROID_PROVISION_FETCHER_IMPL_H_
-#define CONTENT_BROWSER_MEDIA_ANDROID_PROVISION_FETCHER_IMPL_H_
+#ifndef CONTENT_PUBLIC_BROWSER_PROVISION_FETCHER_IMPL_H_
+#define CONTENT_PUBLIC_BROWSER_PROVISION_FETCHER_IMPL_H_
 
 #include <memory>
 
+#include "base/compiler_specific.h"
 #include "base/macros.h"
 #include "base/memory/weak_ptr.h"
-#include "content/public/browser/android/provision_fetcher_factory.h"
-#include "media/base/android/provision_fetcher.h"
+#include "content/public/browser/provision_fetcher_factory.h"
+#include "media/base/provision_fetcher.h"
 #include "media/mojo/interfaces/provision_fetcher.mojom.h"
+
+namespace net {
+class URLRequestContextGetter;
+}
 
 namespace content {
 
-class RenderFrameHost;
-
 // A media::mojom::ProvisionFetcher implementation based on
 // media::ProvisionFetcher.
-class ProvisionFetcherImpl : public media::mojom::ProvisionFetcher {
+class CONTENT_EXPORT ProvisionFetcherImpl
+    : NON_EXPORTED_BASE(public media::mojom::ProvisionFetcher) {
  public:
-  static void Create(RenderFrameHost* render_frame_host,
+  static void Create(net::URLRequestContextGetter* context_getter,
                      media::mojom::ProvisionFetcherRequest request);
 
   explicit ProvisionFetcherImpl(
@@ -48,4 +52,4 @@ class ProvisionFetcherImpl : public media::mojom::ProvisionFetcher {
 
 }  // namespace content
 
-#endif  // CONTENT_BROWSER_MEDIA_ANDROID_PROVISION_FETCHER_IMPL_H_
+#endif  // CONTENT_PUBLIC_BROWSER_PROVISION_FETCHER_IMPL_H_

@@ -808,10 +808,6 @@ source_set("browser") {
     "media/android/media_throttler.h",
     "media/android/media_web_contents_observer_android.cc",
     "media/android/media_web_contents_observer_android.h",
-    "media/android/provision_fetcher_impl.cc",
-    "media/android/provision_fetcher_impl.h",
-    "media/android/url_provision_fetcher.cc",
-    "media/android/url_provision_fetcher.h",
     "media/audible_metrics.cc",
     "media/audible_metrics.h",
     "media/audio_stream_monitor.cc",
@@ -878,6 +874,8 @@ source_set("browser") {
     "media/session/media_session_service_impl.h",
     "media/session/media_session_uma_helper.cc",
     "media/session/media_session_uma_helper.h",
+    "media/url_provision_fetcher.cc",
+    "media/url_provision_fetcher.h",
     "memory/memory_coordinator.cc",
     "memory/memory_coordinator.h",
     "memory/memory_coordinator_impl.cc",
@@ -1757,7 +1755,6 @@ source_set("browser") {
       "//media",
       "//media/capture/content/android",
       "//media/capture/video/android",
-      "//media/mojo/interfaces",
       "//mojo/android:libsystem_java",
       "//ui/android",
     ]
@@ -1787,6 +1784,10 @@ source_set("browser") {
       "//chromeos",
       "//chromeos:power_manager_proto",
     ]
+  }
+
+  if (enable_mojo_media) {
+    deps += [ "//media/mojo/interfaces" ]
   }
 
   if (use_aura) {

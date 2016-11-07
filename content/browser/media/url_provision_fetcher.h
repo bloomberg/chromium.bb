@@ -2,11 +2,11 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CONTENT_BROWSER_MEDIA_ANDROID_URL_PROVISION_FETCHER_H_
-#define CONTENT_BROWSER_MEDIA_ANDROID_URL_PROVISION_FETCHER_H_
+#ifndef CONTENT_BROWSER_MEDIA_URL_PROVISION_FETCHER_H_
+#define CONTENT_BROWSER_MEDIA_URL_PROVISION_FETCHER_H_
 
 #include "base/macros.h"
-#include "media/base/android/provision_fetcher.h"
+#include "media/base/provision_fetcher.h"
 #include "net/url_request/url_fetcher.h"
 #include "net/url_request/url_fetcher_delegate.h"
 
@@ -38,4 +38,4 @@ class URLProvisionFetcher : public media::ProvisionFetcher,
 
 }  // namespace content
 
-#endif  // CHROME_BROWSER_MEDIA_ANDROID_URL_PROVISION_FETCHER_H_
+#endif  // CONTENT_BROWSER_MEDIA_URL_PROVISION_FETCHER_H_

@@ -2,10 +2,10 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "content/browser/media/android/url_provision_fetcher.h"
+#include "content/browser/media/url_provision_fetcher.h"
 
 #include "base/memory/ptr_util.h"
-#include "content/public/browser/android/provision_fetcher_factory.h"
+#include "content/public/browser/provision_fetcher_factory.h"
 #include "media/base/bind_to_current_loop.h"
 #include "net/url_request/url_fetcher.h"
 
@@ -61,7 +61,6 @@ void URLProvisionFetcher::OnURLFetchComplete(const net::URLFetcher* source) {
   }
 
   request_.reset();
-
   // URLFetcher implementation calls OnURLFetchComplete() on the same thread
   // that called Start() and it does this asynchronously.
   response_cb_.Run(success, response);

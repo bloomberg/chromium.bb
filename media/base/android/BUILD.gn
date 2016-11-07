@@ -77,7 +77,6 @@ if (is_android) {
       "media_resource_getter.cc",
       "media_resource_getter.h",
       "media_url_interceptor.h",
-      "provision_fetcher.h",
       "sdk_media_codec_bridge.cc",
       "sdk_media_codec_bridge.h",
       "stream_texture_wrapper.h",

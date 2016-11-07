@@ -6,9 +6,9 @@
 #define MEDIA_BASE_ANDROID_ANDROID_CDM_FACTORY_H_
 
 #include "base/macros.h"
-#include "media/base/android/provision_fetcher.h"
 #include "media/base/cdm_factory.h"
 #include "media/base/media_export.h"
+#include "media/base/provision_fetcher.h"
 
 namespace media {
 

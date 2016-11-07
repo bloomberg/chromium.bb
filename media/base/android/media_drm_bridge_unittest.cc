@@ -10,7 +10,7 @@
 #include "base/memory/ptr_util.h"
 #include "base/message_loop/message_loop.h"
 #include "media/base/android/media_drm_bridge.h"
-#include "media/base/android/provision_fetcher.h"
+#include "media/base/provision_fetcher.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 #include "widevine_cdm_version.h"  // In SHARED_INTERMEDIATE_DIR.

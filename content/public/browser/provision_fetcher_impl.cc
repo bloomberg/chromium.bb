@@ -2,13 +2,9 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "content/browser/media/android/provision_fetcher_impl.h"
+#include "content/public/browser/provision_fetcher_impl.h"
 
-#include "content/public/browser/android/provision_fetcher_factory.h"
-#include "content/public/browser/browser_context.h"
-#include "content/public/browser/render_frame_host.h"
-#include "content/public/browser/render_process_host.h"
-#include "content/public/browser/storage_partition.h"
+#include "content/public/browser/provision_fetcher_factory.h"
 #include "mojo/public/cpp/bindings/strong_binding.h"
 #include "net/url_request/url_request_context_getter.h"
 
@@ -16,12 +12,8 @@ namespace content {
 
 // static
 void ProvisionFetcherImpl::Create(
-    RenderFrameHost* render_frame_host,
+    net::URLRequestContextGetter* context_getter,
     media::mojom::ProvisionFetcherRequest request) {
-  net::URLRequestContextGetter* context_getter =
-      BrowserContext::GetDefaultStoragePartition(
-          render_frame_host->GetProcess()->GetBrowserContext())->
-              GetURLRequestContext();
   DCHECK(context_getter);
   mojo::MakeStrongBinding(base::MakeUnique<ProvisionFetcherImpl>(
                               CreateProvisionFetcher(context_getter)),

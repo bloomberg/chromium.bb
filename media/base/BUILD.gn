@@ -189,6 +189,7 @@ target(link_target_type, "base") {
     "pipeline_status.h",
     "player_tracker.cc",
     "player_tracker.h",
+    "provision_fetcher.h",
     "ranges.cc",
     "ranges.h",
     "renderer.cc",

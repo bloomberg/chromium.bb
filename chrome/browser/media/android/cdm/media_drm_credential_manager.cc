@@ -12,10 +12,10 @@
 #include "base/single_thread_task_runner.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "chrome/browser/browser_process.h"
-#include "content/public/browser/android/provision_fetcher_factory.h"
+#include "content/public/browser/provision_fetcher_factory.h"
 #include "jni/MediaDrmCredentialManager_jni.h"
 #include "media/base/android/media_drm_bridge.h"
-#include "media/base/android/provision_fetcher.h"
+#include "media/base/provision_fetcher.h"
 #include "url/gurl.h"
 
 #include "widevine_cdm_version.h"  // In SHARED_INTERMEDIATE_DIR.

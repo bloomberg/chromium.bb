@@ -5,15 +5,18 @@
 #ifndef MEDIA_MOJO_SERVICES_MOJO_PROVISION_FETCHER_H_
 #define MEDIA_MOJO_SERVICES_MOJO_PROVISION_FETCHER_H_
 
+#include "base/compiler_specific.h"
 #include "base/macros.h"
 #include "base/memory/weak_ptr.h"
-#include "media/base/android/provision_fetcher.h"
+#include "media/base/provision_fetcher.h"
 #include "media/mojo/interfaces/provision_fetcher.mojom.h"
+#include "media/mojo/services/media_mojo_export.h"
 
 namespace media {
 
 // A ProvisionFetcher that proxies to a mojom::ProvisionFetcherPtr.
-class MojoProvisionFetcher : public ProvisionFetcher {
+class MEDIA_MOJO_EXPORT MojoProvisionFetcher
+    : NON_EXPORTED_BASE(public ProvisionFetcher) {
  public:
   explicit MojoProvisionFetcher(
       mojom::ProvisionFetcherPtr provision_fetcher_ptr);

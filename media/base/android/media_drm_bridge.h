@@ -18,12 +18,12 @@
 #include "base/memory/ref_counted.h"
 #include "base/memory/weak_ptr.h"
 #include "media/base/android/media_drm_bridge_cdm_context.h"
-#include "media/base/android/provision_fetcher.h"
 #include "media/base/cdm_promise.h"
 #include "media/base/cdm_promise_adapter.h"
 #include "media/base/media_export.h"
 #include "media/base/media_keys.h"
 #include "media/base/player_tracker.h"
+#include "media/base/provision_fetcher.h"
 #include "media/cdm/player_tracker_impl.h"
 #include "url/gurl.h"
 

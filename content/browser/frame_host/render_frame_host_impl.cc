@@ -110,9 +110,6 @@
 #if defined(OS_ANDROID)
 #include "content/browser/android/app_web_message_port_message_filter.h"
 #include "content/public/browser/android/java_interfaces.h"
-#if defined(ENABLE_MOJO_CDM)
-#include "content/browser/media/android/provision_fetcher_impl.h"
-#endif
 #include "content/browser/media/android/media_player_renderer.h"
 #include "media/base/audio_renderer_sink.h"
 #include "media/base/video_renderer_sink.h"
@@ -121,6 +118,10 @@
 
 #if defined(OS_MACOSX)
 #include "content/browser/frame_host/popup_menu_helper_mac.h"
+#endif
+
+#if defined(ENABLE_MOJO_CDM)
+#include "content/public/browser/provision_fetcher_impl.h"
 #endif
 
 #if defined(ENABLE_WEBVR)
@@ -816,10 +817,14 @@ void RenderFrameHostImpl::Create(
     media::mojom::InterfaceFactoryRequest request) {
   auto registry = base::MakeUnique<service_manager::InterfaceRegistry>(
       std::string());
-#if defined(OS_ANDROID) && defined(ENABLE_MOJO_CDM)
+#if defined(ENABLE_MOJO_CDM)
+  net::URLRequestContextGetter* context_getter =
+      BrowserContext::GetDefaultStoragePartition(
+          GetProcess()->GetBrowserContext())
+          ->GetURLRequestContext();
   registry->AddInterface(
-      base::Bind(&ProvisionFetcherImpl::Create, this));
-#endif
+      base::Bind(&ProvisionFetcherImpl::Create, context_getter));
+#endif  // defined(ENABLE_MOJO_CDM)
   GetContentClient()->browser()->ExposeInterfacesToMediaService(registry.get(),
                                                                 this);
   service_manager::mojom::InterfaceProviderPtr interfaces;

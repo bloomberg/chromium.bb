@@ -28,8 +28,8 @@
 #include "media/base/android/media_client_android.h"
 #include "media/base/android/media_codec_util.h"
 #include "media/base/android/media_drm_bridge_delegate.h"
-#include "media/base/android/provision_fetcher.h"
 #include "media/base/cdm_key_information.h"
+#include "media/base/provision_fetcher.h"
 #include "widevine_cdm_version.h"  // In SHARED_INTERMEDIATE_DIR.
 
 using base::android::AttachCurrentThread;
