@@ -10,17 +10,7 @@
 -TabManagerTest.TabManagerBasics
 -TemplateURLScraperTest.ScrapeWithOnSubmit
 -ThreatDOMDetailsTest.Everything
--WebNavigationApiTest.Crash
--WebNavigationApiTest.CrossProcess
--WebNavigationApiTest.CrossProcessAbort
--WebNavigationApiTest.CrossProcessFragment
--WebNavigationApiTest.CrossProcessHistory
--WebNavigationApiTest.CrossProcessIframe
--WebNavigationApiTest.Failures
--WebNavigationApiTest.IFrame
--WebNavigationApiTest.OpenTab
 -WebNavigationApiTest.RequestOpenTab
--WebNavigationApiTest.SrcDoc
 -WebNavigationApiTest.UserAction
 
 # Errors related to forms submission.
