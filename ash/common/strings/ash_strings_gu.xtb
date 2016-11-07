@@ -89,6 +89,7 @@
 <translation id="3294437725009624529">અતિથિ</translation>
 <translation id="3335772982573114336">નવી નોંધ</translation>
 <translation id="3364721542077212959">કલમના સાધનો</translation>
+<translation id="3368922792935385530">કનેક્ટેડ</translation>
 <translation id="3371140690572404006">USB-C ઉપકરણ (જમણી બાજુનું આગળનું પોર્ટ)</translation>
 <translation id="3445925074670675829">USB-C ઉપકરણ</translation>
 <translation id="3473479545200714844">સ્ક્રીન બૃહદદર્શક</translation>
@@ -125,6 +126,7 @@
 <translation id="4250680216510889253">નહીં</translation>
 <translation id="4279490309300973883">પ્રતિબિંબત થઈ રહ્યું છે</translation>
 <translation id="4321179778687042513">ctrl</translation>
+<translation id="4378551569595875038">કનેક્ટિંગ...</translation>
 <translation id="4421231901400348175">દૂરસ્થ સહાય વડે <ph name="HELPER_NAME" /> સાથે તમારી સ્ક્રીનનું નિયંત્રણ શેર કરવું.</translation>
 <translation id="4430019312045809116">વૉલ્યૂમ</translation>
 <translation id="4448844063988177157"> Wi-Fi નેટવર્ક્સ માટે શોધી રહ્યું છે... </translation>
@@ -279,4 +281,5 @@
 <translation id="923686485342484400">સાઇન આઉટ કરવા માટે બે વાર Control Shift Q દબાવો.</translation>
 <translation id="938582441709398163">કીબોર્ડ ઓવરલે</translation>
 <translation id="939252827960237676">સ્ક્રીનશૉટ સાચવવામાં નિષ્ફળ રહ્યું</translation>
+<translation id="952992212772159698">સક્રિય કરેલું નથી</translation>
 </translationbundle>

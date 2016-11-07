@@ -89,6 +89,7 @@
 <translation id="3294437725009624529">אורח</translation>
 <translation id="3335772982573114336">הערה חדשה</translation>
 <translation id="3364721542077212959">כלי סטיילוס</translation>
+<translation id="3368922792935385530">מחובר</translation>
 <translation id="3371140690572404006">‏מכשיר עם יציאת USB-C (יציאה ימנית-קדמית)</translation>
 <translation id="3445925074670675829">‏מכשיר עם יציאת USB-C</translation>
 <translation id="3473479545200714844">מגדיל התצוגה</translation>
@@ -125,6 +126,7 @@
 <translation id="4250680216510889253">לא</translation>
 <translation id="4279490309300973883">שיקוף</translation>
 <translation id="4321179778687042513">ctrl</translation>
+<translation id="4378551569595875038">מתחבר...</translation>
 <translation id="4421231901400348175">שיתוף השליטה במסך עם <ph name="HELPER_NAME" /> דרך סיוע מרחוק.</translation>
 <translation id="4430019312045809116">עוצמת קול</translation>
 <translation id="4448844063988177157">‏מחפש רשתות Wi-Fi...</translation>
@@ -279,4 +281,5 @@
 <translation id="923686485342484400">‏הקש פעמיים על Control Shift Q כדי לצאת.</translation>
 <translation id="938582441709398163">שכבת-על של מקלדת</translation>
 <translation id="939252827960237676">שמירת צילום המסך נכשלה</translation>
+<translation id="952992212772159698">לא פעיל</translation>
 </translationbundle>

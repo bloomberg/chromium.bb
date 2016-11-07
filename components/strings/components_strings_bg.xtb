@@ -387,6 +387,7 @@
 <translation id="5171045022955879922">Търсете или въведете URL адрес</translation>
 <translation id="5172758083709347301">Машината</translation>
 <translation id="5179510805599951267">Не е на <ph name="ORIGINAL_LANGUAGE" />? Подайте сигнал за тази грешка</translation>
+<translation id="5181140330217080051">Изтегля се</translation>
 <translation id="5190835502935405962">Лента на отметките</translation>
 <translation id="5199729219167945352">Експерименти</translation>
 <translation id="5199841536747119669">Предложенията за вас ще се показват тук</translation>
@@ -665,7 +666,6 @@
 <translation id="8498891568109133222"><ph name="HOST_NAME" /> не отговаря твърде дълго време.</translation>
 <translation id="852346902619691059">Сървърът не можа да докаже, че е <ph name="DOMAIN" />. Сертификатът му за сигурност не се счита за надежден от операционната система на устройството ви. Това може да се дължи на неправилно конфигуриране или на прехващане на връзката ви от извършител на атака. <ph name="BEGIN_LEARN_MORE_LINK" />Научете повече<ph name="END_LEARN_MORE_LINK" />.</translation>
 <translation id="8530504477309582336">Този тип карта не се поддържа от Google Payments. Моля, изберете друга.</translation>
-<translation id="8550022383519221471">Услугата за синхронизиране не е налице за вашия домейн.</translation>
 <translation id="8553075262323480129">Преводът не бе успешен, защото езикът на страницата не можа да бъде определен.</translation>
 <translation id="8559762987265718583">Не може да се установи частна връзка с/ъс <ph name="BEGIN_BOLD" /><ph name="DOMAIN" /><ph name="END_BOLD" />, тъй като датата и часът на устройството ви (<ph name="DATE_AND_TIME" />) са неправилни.</translation>
 <translation id="856992080682148">Валидността на сертификата за този сайт изтича през 2017 г. или по-късно, а съответната верига съдържа сертификат, подписан с SHA-1.</translation>
@@ -673,7 +673,6 @@
 <translation id="8591846766485502580">Виждате това съобщение, защото ваш родител е блокирал сайта.</translation>
 <translation id="859285277496340001">Сертификатът не посочва механизъм за проверка дали е бил анулиран.</translation>
 <translation id="8647750283161643317">Възстановяване на всичко към стандартното състояние</translation>
-<translation id="8680787084697685621">Данните за вход в профила ви не са актуални.</translation>
 <translation id="8703575177326907206">Връзката ви с <ph name="DOMAIN" /> не е шифрована.</translation>
 <translation id="8725066075913043281">Опитайте отново</translation>
 <translation id="8728672262656704056">Преминахте в режим „инкогнито“</translation>
@@ -703,7 +702,6 @@
 <translation id="8987927404178983737">Месец</translation>
 <translation id="8989148748219918422"><ph name="ORGANIZATION" /> [<ph name="COUNTRY" />]</translation>
 <translation id="9001074447101275817">Изискват се потребителско име и парола за прокси сървъра <ph name="DOMAIN" />.</translation>
-<translation id="9008201768610948239">Пренебрегване</translation>
 <translation id="901974403500617787">Флаговете, които се прилагат за цялата система, могат да бъдат зададени само от собственика: <ph name="OWNER_EMAIL" />.</translation>
 <translation id="9020542370529661692">Тази страница е преведена на <ph name="TARGET_LANGUAGE" /></translation>
 <translation id="9038649477754266430">Използване на услуга за предвиждане с цел по-бързо зареждане на страниците</translation>

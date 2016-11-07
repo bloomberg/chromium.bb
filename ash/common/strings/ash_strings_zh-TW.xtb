@@ -89,6 +89,7 @@
 <translation id="3294437725009624529">訪客</translation>
 <translation id="3335772982573114336">新增記事</translation>
 <translation id="3364721542077212959">觸控筆工具</translation>
+<translation id="3368922792935385530">已連線</translation>
 <translation id="3371140690572404006">USB-C 裝置 (右前方連接埠)</translation>
 <translation id="3445925074670675829">USB-C 裝置</translation>
 <translation id="3473479545200714844">畫面放大鏡</translation>
@@ -125,6 +126,7 @@
 <translation id="4250680216510889253">否</translation>
 <translation id="4279490309300973883">鏡像</translation>
 <translation id="4321179778687042513">Ctrl</translation>
+<translation id="4378551569595875038">連線中…</translation>
 <translation id="4421231901400348175">透過遠端協助與<ph name="HELPER_NAME" />分享螢幕控制功能。</translation>
 <translation id="4430019312045809116">音量</translation>
 <translation id="4448844063988177157">正在搜尋 Wi-Fi 網路...</translation>
@@ -280,4 +282,5 @@
 <translation id="923686485342484400">按兩下 Ctrl+Shift+Q 鍵即可登出。</translation>
 <translation id="938582441709398163">鍵盤自訂快速鍵</translation>
 <translation id="939252827960237676">無法儲存螢幕擷取畫面</translation>
+<translation id="952992212772159698">未啟用</translation>
 </translationbundle>

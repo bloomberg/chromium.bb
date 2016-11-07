@@ -88,6 +88,7 @@ Pressione Shift + Alt para alternar.</translation>
 <translation id="3294437725009624529">Visitante</translation>
 <translation id="3335772982573114336">Nova nota</translation>
 <translation id="3364721542077212959">Ferramentas da stylus</translation>
+<translation id="3368922792935385530">Conectado</translation>
 <translation id="3371140690572404006">Dispositivo USB-C (porta frontal da direita)</translation>
 <translation id="3445925074670675829">Dispositivo USB-C</translation>
 <translation id="3473479545200714844">Lupa</translation>
@@ -124,6 +125,7 @@ Pressione Shift + Alt para alternar.</translation>
 <translation id="4250680216510889253">Não</translation>
 <translation id="4279490309300973883">Espelhamento</translation>
 <translation id="4321179778687042513">ctrl</translation>
+<translation id="4378551569595875038">Conectando...</translation>
 <translation id="4421231901400348175">Compartilhando o controle da sua tela com <ph name="HELPER_NAME" /> via Assistência remota.</translation>
 <translation id="4430019312045809116">Volume</translation>
 <translation id="4448844063988177157">Procurando redes Wi-Fi...</translation>
@@ -279,4 +281,5 @@ Pressione Ctrl+Alt+Z para desativar.</translation>
 <translation id="923686485342484400">Pressione Control+Shift+Q duas vezes para sair.</translation>
 <translation id="938582441709398163">Sobreposição do teclado</translation>
 <translation id="939252827960237676">Falha ao salvar a captura de tela</translation>
+<translation id="952992212772159698">Desativado</translation>
 </translationbundle>

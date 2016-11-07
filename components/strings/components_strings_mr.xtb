@@ -50,6 +50,7 @@
 <translation id="1491663344921578213">वेबसाइट प्रमाणपत्र पिनिंग वापरत असल्यामुळे आपण <ph name="SITE" /> ला आत्ता भेट देऊ शकत नाही. नेटवर्क त्रुटी आणि आक्रमणकर्ते सामान्यतः तात्पुरते असतात, यामुळे हे पृष्ठ कदाचित नंतर कार्य करेल. <ph name="BEGIN_LEARN_MORE_LINK" />अधिक जाणून घ्या<ph name="END_LEARN_MORE_LINK" />.</translation>
 <translation id="1506687042165942984">या पृष्ठाची जतन केलेली (उदा. कालबाह्य होणारे ज्ञात) प्रत दर्शवा.</translation>
 <translation id="1519264250979466059">बिल्ड तारीख</translation>
+<translation id="153384715582417236">सध्या इतकेच</translation>
 <translation id="1549470594296187301">हे वैशिष्‍ट्य वापरण्‍यासाठी JavaScript सक्षम करणे आवश्‍यक आहे.</translation>
 <translation id="1559528461873125649">अशी कोणतीही फाइल किंवा निर्देशिका नाही</translation>
 <translation id="1559572115229829303">&lt;p&gt;आपल्या डिव्हाइसची तारीख आणि वेळ (<ph name="DATE_AND_TIME" />) चुकीची असल्यामुळे <ph name="BEGIN_BOLD" /><ph name="DOMAIN" /><ph name="END_BOLD" /> सह खाजगी कनेक्शन स्थापित केले जाऊ शकत नाही.&lt;/p&gt;
@@ -386,8 +387,10 @@
 <translation id="5171045022955879922">URL शोधा किंवा टाइप करा</translation>
 <translation id="5172758083709347301">मशीन</translation>
 <translation id="5179510805599951267"><ph name="ORIGINAL_LANGUAGE" /> मध्ये नाही? या त्रुटीचा अहवाल नोंदवा</translation>
+<translation id="5181140330217080051">डाउनलोड करीत आहे</translation>
 <translation id="5190835502935405962">बुकमार्क बार</translation>
 <translation id="5199729219167945352">प्रयोग</translation>
+<translation id="5199841536747119669">आपल्या सूचना येथे दिसतील</translation>
 <translation id="5251803541071282808">मेघ</translation>
 <translation id="5277279256032773186">कार्यस्थानी Chrome वापरत आहात? व्यवसाय त्यांच्या कर्मचार्‍यांंसाठी Chrome सेटिंग्ज व्यवस्थापित करू शकतात. अधिक जाणनू घ्या</translation>
 <translation id="5299298092464848405">धोरण विश्लेषित करताना त्रुटी</translation>
@@ -468,6 +471,7 @@
 <translation id="6263376278284652872"><ph name="DOMAIN" /> बुकमार्क</translation>
 <translation id="6264485186158353794">सुरक्षिततेकडे परत</translation>
 <translation id="6282194474023008486">पोस्टल कोड</translation>
+<translation id="6290238015253830360">आपण सूचविलेले लेख येथे दिसतील</translation>
 <translation id="6305205051461490394"><ph name="URL" /> आवाक्याबाहेर आहे.</translation>
 <translation id="6321917430147971392">आपल्या DNS सेटिंग्ज तपासा</translation>
 <translation id="6328639280570009161">नेटवर्क पूर्वानुमान अक्षम करून पहा</translation>
@@ -651,6 +655,7 @@
 <translation id="8363502534493474904">विमान मोड बंद करा</translation>
 <translation id="8364627913115013041">सेट केलेले नाही.</translation>
 <translation id="8380941800586852976">धोकादायक</translation>
+<translation id="8382348898565613901">आपण अलिकडेच भेट दिलेले बुकमार्क्स येथे दिसतील</translation>
 <translation id="8412145213513410671">क्रॅश (<ph name="CRASH_COUNT" />)</translation>
 <translation id="8412392972487953978">आपण समान सांकेतिक वाक्यांश दोनदा प्रविष्ट करणे आवश्यक आहे.</translation>
 <translation id="8428213095426709021">सेटिंग्ज</translation>
@@ -662,7 +667,6 @@
 <translation id="8498891568109133222"><ph name="HOST_NAME" /> नी प्रतिसाद देण्यात बराच वेळ घेतला.</translation>
 <translation id="852346902619691059">हा सर्व्हर <ph name="DOMAIN" /> हे असल्याचे सिद्ध करू शकला नाही; याचे सुरक्षा प्रमाणपत्र आपल्या डिव्हाइसच्या ऑपरेटिंग प्रणालीद्वारे विश्वसनीय नाही; हे कदाचित एका चुकीच्या कॉन्फिगरेशनमुळे किंवा आक्रमणकर्त्याने आपले कनेक्शन आंतरखंडित केल्यामुळे झाले असू शकते. <ph name="BEGIN_LEARN_MORE_LINK" />अधिक जाणून घ्या<ph name="END_LEARN_MORE_LINK" />.</translation>
 <translation id="8530504477309582336">या प्रकारचे कार्ड Google Payments द्वारे समर्थित नाही. कृपया एक भिन्न कार्ड निवडा.</translation>
-<translation id="8550022383519221471">संंकालित सेवा आपल्या डोमेनसाठी उपलब्ध नाही.</translation>
 <translation id="8553075262323480129">भाषांतर करण्यात अयशस्वी कारण पृष्ठाची भाषा निर्धारित करणे शक्य नाही.</translation>
 <translation id="8559762987265718583">आपल्या डिव्हाइसची तारीख आणि वेळ (<ph name="DATE_AND_TIME" />) चुकीची असल्याने <ph name="BEGIN_BOLD" /><ph name="DOMAIN" /><ph name="END_BOLD" /> सह खाजगी कनेक्शन स्थापित केले जाऊ शकले नाही.</translation>
 <translation id="856992080682148">या साइटसाठी असलेले प्रमाणपत्र 2017 किंवा त्यानंतर कालबाह्य होते आणि प्रमाणपत्र श्रृंखलेमध्‍ये SHA-1 वापरून स्वाक्षरी केलेले प्रमाणपत्र असते.</translation>
@@ -670,7 +674,6 @@
 <translation id="8591846766485502580">आपल्याला हा संदेश दिसत आहे कारण आपल्या पालकांपैकी एकाने ही साइट अवरोधित केली आहे.</translation>
 <translation id="859285277496340001">प्रमाणपत्र निरस्त झाले आहे किंवा नाही हे तपासण्यासाठी प्रणाली निर्दिष्ट करत नाही.</translation>
 <translation id="8647750283161643317">सर्व डीफॉल्टमध्ये रीसेट करा</translation>
-<translation id="8680787084697685621">खाते साइन-इन तपशील कालबाह्य झाला.</translation>
 <translation id="8703575177326907206"><ph name="DOMAIN" /> चे आपले कनेक्शन कूटबद्ध केलेले नाही.</translation>
 <translation id="8725066075913043281">पुन्हा प्रयत्न करा</translation>
 <translation id="8728672262656704056">आपण गुप्त झाला आहात</translation>
@@ -700,7 +703,6 @@
 <translation id="8987927404178983737">महिना</translation>
 <translation id="8989148748219918422"><ph name="ORGANIZATION" /> [<ph name="COUNTRY" />]</translation>
 <translation id="9001074447101275817">प्रॉक्सी <ph name="DOMAIN" /> ला वापरकर्तानाव आणि संकेतशब्द आवश्यक आहेत.</translation>
-<translation id="9008201768610948239">दुर्लक्ष करा</translation>
 <translation id="901974403500617787">सिस्टीम-व्याप्त लागू होणारी ध्वजांकने केवळ मालकाद्वारे सेट केली जाऊ शकतात: <ph name="OWNER_EMAIL" />.</translation>
 <translation id="9020542370529661692">हे पृष्ठ <ph name="TARGET_LANGUAGE" /> मध्ये भाषांतरित केले गेले आहे.</translation>
 <translation id="9038649477754266430">पृष्ठे अधिक द्रुतपणे लोड करण्यासाठी पूर्वानुमान सेवेचा वापर करा</translation>

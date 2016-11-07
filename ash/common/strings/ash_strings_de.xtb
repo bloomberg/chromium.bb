@@ -89,6 +89,7 @@ Drücken Sie die Such-Taste oder Shift, um die Aktivierung aufzuheben.</translat
 <translation id="3294437725009624529">Gast</translation>
 <translation id="3335772982573114336">Neue Notiz</translation>
 <translation id="3364721542077212959">Eingabestift-Tools</translation>
+<translation id="3368922792935385530">Verbunden</translation>
 <translation id="3371140690572404006">USB-C-Gerät (Port vorne rechts)</translation>
 <translation id="3445925074670675829">USB-C-Gerät</translation>
 <translation id="3473479545200714844">Lupe</translation>
@@ -125,6 +126,7 @@ Drücken Sie die Such-Taste oder Shift, um die Aktivierung aufzuheben.</translat
 <translation id="4250680216510889253">Nein</translation>
 <translation id="4279490309300973883">Spiegelung</translation>
 <translation id="4321179778687042513">Strg</translation>
+<translation id="4378551569595875038">Verbindung wird hergestellt...</translation>
 <translation id="4421231901400348175">Sie teilen sich die Bildschirmsteuerung mit <ph name="HELPER_NAME" /> per Remote-Unterstützung.</translation>
 <translation id="4430019312045809116">Lautstärke</translation>
 <translation id="4448844063988177157">Suche nach WLAN-Netzwerken läuft...</translation>
@@ -280,4 +282,5 @@ Drücken Sie Alt+Suchen oder Shift, um die Aktivierung aufzuheben.</translation>
 <translation id="923686485342484400">Drücken Sie zum Abmelden zweimal Steuerung - Shift - Q.</translation>
 <translation id="938582441709398163">Tastatur-Overlay</translation>
 <translation id="939252827960237676">Screenshot konnte nicht gespeichert werden.</translation>
+<translation id="952992212772159698">Nicht aktiviert</translation>
 </translationbundle>

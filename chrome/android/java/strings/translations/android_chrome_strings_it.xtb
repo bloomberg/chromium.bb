@@ -51,7 +51,6 @@ Per poter utilizzare il Physical Web, devi attivare il Bluetooth e la geolocaliz
 <translation id="1506061864768559482">Motore di ricerca</translation>
 <translation id="1513352483775369820">Preferiti e cronologia web</translation>
 <translation id="1513858653616922153">Elimina la password</translation>
-<translation id="1546112724822176246">Non trovi il tuo dispositivo? <ph name="BEGIN_LINK" />Richiedi assistenza<ph name="END_LINK" />.</translation>
 <translation id="1549000191223877751">Passa a un'altra finestra</translation>
 <translation id="1553358976309200471">Aggiorna Chrome</translation>
 <translation id="1571304935088121812">Copia nome utente</translation>
@@ -72,7 +71,6 @@ Per poter utilizzare il Physical Web, devi attivare il Bluetooth e la geolocaliz
 <translation id="1749561566933687563">Sincronizza i tuoi preferiti</translation>
 <translation id="17513872634828108">Schede aperte</translation>
 <translation id="1756600373018374892">Tocca questo pulsante per accedere velocemente alle tue schede.</translation>
-<translation id="1774241295142531736">Il tuo dispositivo non è elencato? <ph name="BEGIN_LINK1" />Richiedi assistenza<ph name="END_LINK1" /> o <ph name="BEGIN_LINK2" />esegui di nuovo la scansione<ph name="END_LINK2" />.</translation>
 <translation id="1807246157184219062">Chiaro</translation>
 <translation id="1825719650605518411">Esperienza prima esecuzione</translation>
 <translation id="1826516787628120939">Verifica in corso...</translation>
@@ -156,7 +154,6 @@ Puoi gestire il Physical Web nelle impostazioni di Chrome.
 <translation id="2707726405694321444">Aggiorna la pagina</translation>
 <translation id="2709516037105925701">Compilazione automatica</translation>
 <translation id="271033894570825754">Nuovo</translation>
-<translation id="2748463065602559597">È visualizzata una pagina sicura di Google Chrome.</translation>
 <translation id="2762000892062317888">in questo istante</translation>
 <translation id="2777555524387840389"><ph name="SECONDS" /> sec rimanenti</translation>
 <translation id="2781151931089541271">1 sec rimanente</translation>
@@ -233,7 +230,6 @@ Per modificare il termine di ricerca, premi a lungo per selezionarlo. Per perfez
 <translation id="3656115297268584622">Attiva la geolocalizzazione nelle <ph name="BEGIN_LINK" />Impostazioni Android<ph name="END_LINK" />.</translation>
 <translation id="3661699943263275414">I siti web di terze parti possono salvare e leggere i dati dei cookie</translation>
 <translation id="3672452749423051839">Suggerimenti per gli errori di navigazione</translation>
-<translation id="3690847815241521170">Scansione di dispositivi… <ph name="BEGIN_LINK" />Richiedi assistenza<ph name="END_LINK" /></translation>
 <translation id="3706658020782046159">Seleziona un indirizzo di spedizione per verificare i metodi di spedizione e i requisiti.</translation>
 <translation id="3716158070938632480">Pagine web nelle vicinanze</translation>
 <translation id="3738139272394829648">Tocca per cercare</translation>
@@ -322,7 +318,6 @@ Per modificare il termine di ricerca, premi a lungo per selezionarlo. Per perfez
 <translation id="4807098396393229769">Nome sulla carta di credito</translation>
 <translation id="4816465935029283692">Tipi di dati</translation>
 <translation id="4827948050554950725">Aggiungi carta di credito</translation>
-<translation id="4836364883164334657">La tua connessione a questo sito non è privata. I malintenzionati potrebbero provare a impossessarsi dei tuoi dati da <ph name="DOMAIN_NAME" /> (ad esempio, foto, password, messaggi e carte di credito).</translation>
 <translation id="4850886885716139402">Visualizza</translation>
 <translation id="4881695831933465202">Apri</translation>
 <translation id="4885273946141277891">Numero di istanze di Chrome non supportato.</translation>
@@ -355,6 +350,7 @@ Per modificare il termine di ricerca, premi a lungo per selezionarlo. Per perfez
 <translation id="5171045022955879922">Cerca o digita un URL</translation>
 <translation id="5184329579814168207">Apri in Chrome</translation>
 <translation id="5199929503336119739">Profilo di lavoro</translation>
+<translation id="5209320130288484488">Nessun dispositivo trovato</translation>
 <translation id="5210365745912300556">Chiudi scheda</translation>
 <translation id="5222676887888702881">Esci</translation>
 <translation id="5233638681132016545">Nuova scheda</translation>
@@ -389,7 +385,6 @@ Per modificare il termine di ricerca, premi a lungo per selezionarlo. Per perfez
 <translation id="5556459405103347317">Ricarica</translation>
 <translation id="5565871407246142825">Carte di credito</translation>
 <translation id="5578795271662203820">Cerca questa immagine su <ph name="SEARCH_ENGINE" /></translation>
-<translation id="5579997910517802656">Nessun dispositivo trovato.</translation>
 <translation id="5595485650161345191">Modifica indirizzo</translation>
 <translation id="5596627076506792578">Altre opzioni</translation>
 <translation id="5626134646977739690">Nome:</translation>
@@ -418,7 +413,6 @@ Tuttavia, le tue attività non sono invisibili. L'attivazione della modalità di
 <translation id="583281660410589416">Sconosciuto</translation>
 <translation id="5832934273103296195">Visualizzazione espansa. Fai clic per comprimere</translation>
 <translation id="583891442612896534">Chrome non riesce a contattare i server di Google per la compressione dei dati. I salvataggi di dati potrebbero essere limitati.</translation>
-<translation id="5843873952582375185">Nessun dispositivo Bluetooth trovato. <ph name="BEGIN_LINK" />Esegui di nuovo la scansione<ph name="END_LINK" /></translation>
 <translation id="585027516397408832">Funzione Risparmio dati attivata</translation>
 <translation id="5860033963881614850">Off</translation>
 <translation id="5867027562311576691">A breve verranno visualizzati altri articoli. Buona giornata.</translation>
@@ -568,9 +562,9 @@ Il tuo account Google potrebbe avere altre forme di cronologia di navigazione, a
 <translation id="7596558890252710462">Sistema operativo</translation>
 <translation id="7605594153474022051">La sincronizzazione non funziona</translation>
 <translation id="7612619742409846846">Accesso effettuato a Google come</translation>
+<translation id="7613889955535752492">Scadenza: <ph name="EXPIRATION_MONTH" />/<ph name="EXPIRATION_YEAR" /></translation>
 <translation id="7619072057915878432">Download di <ph name="FILE_NAME" /> non riuscito a causa di errori di rete.</translation>
 <translation id="7626032353295482388">Benvenuto in Chrome</translation>
-<translation id="7634554953375732414">La tua connessione a questo sito non è privata.</translation>
 <translation id="7638584964844754484">Passphrase sbagliata</translation>
 <translation id="7648422057306047504">Cripta le password con le credenziali Google</translation>
 <translation id="7649070708921625228">Guida</translation>
@@ -638,13 +632,11 @@ Il tuo account Google potrebbe avere altre forme di cronologia di navigazione, a
 <translation id="8428213095426709021">Impostazioni</translation>
 <translation id="8433057134996913067">In questo modo uscirai dalla maggior parte dei siti web.</translation>
 <translation id="8447861592752582886">Revoca autorizzazione dispositivo</translation>
-<translation id="8481940801237642152">La tua connessione a questo sito è privata, ma qualcuno in rete potrebbe riuscire a cambiare l'aspetto della pagina.</translation>
 <translation id="8487700953926739672">Disponibile offline</translation>
 <translation id="8493948351860045254">Libera spazio</translation>
 <translation id="8497726226069778601">Qui non c'è ancora niente</translation>
 <translation id="8503813439785031346">Nome utente</translation>
 <translation id="8514577642972634246">Accedi alla modalità di navigazione in incognito</translation>
-<translation id="8518901949365209398">Questo sito utilizza una configurazione di sicurezza poco efficace (firme basate sull'algoritmo SHA-1), pertanto la tua connessione potrebbe non risultare privata.</translation>
 <translation id="8523928698583292556">Elimina la password memorizzata</translation>
 <translation id="854522910157234410">Apri questa pagina</translation>
 <translation id="8562452229998620586">Le password salvate verranno visualizzate qui.</translation>
@@ -677,7 +669,6 @@ Per ottenere nuove licenze, connettiti a Internet e riproduci i contenuti scaric
 <translation id="8912362522468806198">Google Account</translation>
 <translation id="8920114477895755567">In attesa dei dettagli sui genitori.</translation>
 <translation id="8931159598799892500">Chrome + Physical Web</translation>
-<translation id="8941248009481596111">La tua connessione a questo sito è privata.</translation>
 <translation id="8941729603749328384">www.example.com</translation>
 <translation id="8942627711005830162">Apri nell'altra finestra</translation>
 <translation id="8959122750345127698">Navigazione inaccessibile: <ph name="URL" /></translation>

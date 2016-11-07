@@ -388,6 +388,7 @@
 <translation id="5171045022955879922">Ieškokite ar įveskite URL</translation>
 <translation id="5172758083709347301">Įrenginys</translation>
 <translation id="5179510805599951267">Ne <ph name="ORIGINAL_LANGUAGE" /> k.? Pranešti apie šią klaidą</translation>
+<translation id="5181140330217080051">Atsisiunčiama</translation>
 <translation id="5190835502935405962">Žymių juosta</translation>
 <translation id="5199729219167945352">Bandymai</translation>
 <translation id="5199841536747119669">Jūsų pasiūlymai rodomi čia</translation>
@@ -666,7 +667,6 @@ Ei! Kitą kartą gali būti naudinga naudoti inkognito režimą (<ph name="SHORT
 <translation id="8498891568109133222">Per ilgai laukta <ph name="HOST_NAME" /> atsako.</translation>
 <translation id="852346902619691059">Šiam serveriui nepavyko patvirtinti, kad tai yra <ph name="DOMAIN" />; įrenginio operacinė sistema negali pasitikėti jo saugos sertifikatu. Taip galėjo būti dėl netinkamos konfigūracijos ar dėl ryšį pertraukusio užpuoliko. <ph name="BEGIN_LEARN_MORE_LINK" />Sužinokite daugiau<ph name="END_LEARN_MORE_LINK" />.</translation>
 <translation id="8530504477309582336">„Google Payments“ nepalaiko šio tipo kortelės. Pasirinkite kitą kortelę.</translation>
-<translation id="8550022383519221471">Sinchronizavimo paslauga negalima jūsų domenui.</translation>
 <translation id="8553075262323480129">Išversti negalima, nes nepavyko nustatyti puslapio kalbos.</translation>
 <translation id="8559762987265718583">Nepavyksta užmegzti privataus ryšio su <ph name="BEGIN_BOLD" /><ph name="DOMAIN" /><ph name="END_BOLD" />, nes įrenginio data ir laikas (<ph name="DATE_AND_TIME" />) yra netinkami.</translation>
 <translation id="856992080682148">Šios svetainės sertifikato galiojimo laikas baigiasi 2017 m. ar vėliau, o sertifikatų grandinėje yra sertifikatas, pasirašytas naudojant SHA-1.</translation>
@@ -674,7 +674,6 @@ Ei! Kitą kartą gali būti naudinga naudoti inkognito režimą (<ph name="SHORT
 <translation id="8591846766485502580">Matote šį pranešimą, nes vienas iš tėvų užblokavo šią svetainę.</translation>
 <translation id="859285277496340001">Sertifikatas nenurodo mechanizmo, skirto patikrinti, ar jis buvo panaikintas.</translation>
 <translation id="8647750283161643317">Viską nustatyti į numatytuosius nustatymus</translation>
-<translation id="8680787084697685621">Išsami prisijungimo prie paskyros informacija pasenusi.</translation>
 <translation id="8703575177326907206">Jūsų ryšys su <ph name="DOMAIN" /> nekoduotas.</translation>
 <translation id="8725066075913043281">Bandyti dar kartą</translation>
 <translation id="8728672262656704056">Veikia inkognito režimas</translation>
@@ -704,7 +703,6 @@ Ei! Kitą kartą gali būti naudinga naudoti inkognito režimą (<ph name="SHORT
 <translation id="8987927404178983737">Mėnuo</translation>
 <translation id="8989148748219918422"><ph name="ORGANIZATION" /> [<ph name="COUNTRY" />]</translation>
 <translation id="9001074447101275817">Tarpiniame serveryje <ph name="DOMAIN" /> būtina įvesti naudotojo vardą ir slaptažodį.</translation>
-<translation id="9008201768610948239">Nepaisyti</translation>
 <translation id="901974403500617787">Visoje sistemoje taikomas žymas gali nustatyti tik savininkas: <ph name="OWNER_EMAIL" />.</translation>
 <translation id="9020542370529661692">Šis puslapis išverstas į <ph name="TARGET_LANGUAGE" /></translation>
 <translation id="9038649477754266430">Naudokite numatymo paslaugą, kad puslapiai būtų įkeliami greičiau</translation>

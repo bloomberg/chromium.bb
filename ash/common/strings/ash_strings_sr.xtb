@@ -89,6 +89,7 @@
 <translation id="3294437725009624529">Гост</translation>
 <translation id="3335772982573114336">Нова белешка</translation>
 <translation id="3364721542077212959">Алатке за писаљку</translation>
+<translation id="3368922792935385530">Повезан</translation>
 <translation id="3371140690572404006">Уређај са USB прикључком типа C (десни предњи порт)</translation>
 <translation id="3445925074670675829">Уређај са USB прикључком типа C</translation>
 <translation id="3473479545200714844">Лупа екрана</translation>
@@ -125,6 +126,7 @@
 <translation id="4250680216510889253">Не</translation>
 <translation id="4279490309300973883">Пресликавање</translation>
 <translation id="4321179778687042513">ctrl</translation>
+<translation id="4378551569595875038">Повезује се...</translation>
 <translation id="4421231901400348175">Делите контролу над екраном са особом <ph name="HELPER_NAME" /> преко Даљинске помоћи.</translation>
 <translation id="4430019312045809116">Јачина звука</translation>
 <translation id="4448844063988177157">Тражење Wi-Fi мрежа...</translation>
@@ -279,4 +281,5 @@
 <translation id="923686485342484400">Двапут притисните Control Shift Q да бисте се одјавили.</translation>
 <translation id="938582441709398163">Постављени елемент тастатуре</translation>
 <translation id="939252827960237676">Чување снимка екрана није успело</translation>
+<translation id="952992212772159698">Није активирано</translation>
 </translationbundle>

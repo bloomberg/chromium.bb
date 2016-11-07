@@ -51,7 +51,6 @@
 <translation id="1506061864768559482">Mecanismo de pesquisa</translation>
 <translation id="1513352483775369820">Favoritos e histórico da Web</translation>
 <translation id="1513858653616922153">Excluir senha</translation>
-<translation id="1546112724822176246">Não está vendo seu dispositivo? <ph name="BEGIN_LINK" />Receba ajuda<ph name="END_LINK" />.</translation>
 <translation id="1549000191223877751">Mover para outra janela</translation>
 <translation id="1553358976309200471">Atualizar o Google Chrome</translation>
 <translation id="1571304935088121812">Copiar nome de usuário</translation>
@@ -72,7 +71,6 @@
 <translation id="1749561566933687563">Sincronize seus favoritos</translation>
 <translation id="17513872634828108">Guias abertas</translation>
 <translation id="1756600373018374892">Toque neste botão para acessar rapidamente suas guias.</translation>
-<translation id="1774241295142531736">Não está vendo seu dispositivo? <ph name="BEGIN_LINK1" />Receba ajuda<ph name="END_LINK1" /> ou <ph name="BEGIN_LINK2" />verifique novamente<ph name="END_LINK2" />.</translation>
 <translation id="1807246157184219062">Claro</translation>
 <translation id="1825719650605518411">Tela de apresentação</translation>
 <translation id="1826516787628120939">Em verificação</translation>
@@ -156,7 +154,6 @@
 <translation id="2707726405694321444">Atualizar página</translation>
 <translation id="2709516037105925701">Preenchimento automático</translation>
 <translation id="271033894570825754">Novo</translation>
-<translation id="2748463065602559597">Você está em uma página segura do Google Chrome.</translation>
 <translation id="2762000892062317888">agora mesmo</translation>
 <translation id="2777555524387840389"><ph name="SECONDS" /> segundos restantes</translation>
 <translation id="2781151931089541271">Um segundo restante</translation>
@@ -232,7 +229,6 @@ Para selecionar o termo que quer pesquisar, toque no termo e mantenha-o pression
 <translation id="3656115297268584622">Ative o local nas <ph name="BEGIN_LINK" />Configurações do Android<ph name="END_LINK" />.</translation>
 <translation id="3661699943263275414">Websites de terceiros podem ler e armazenar os arquivos "cookies".</translation>
 <translation id="3672452749423051839">Sugerir opções quando houver erro de navegação</translation>
-<translation id="3690847815241521170">Procurando dispositivos… <ph name="BEGIN_LINK" />Receber ajuda<ph name="END_LINK" /></translation>
 <translation id="3706658020782046159">Selecione um endereço de envio para verificar os métodos e requisitos de entrega.</translation>
 <translation id="3716158070938632480">Há páginas da Web nas proximidades</translation>
 <translation id="3738139272394829648">Tocar para pesquisar</translation>
@@ -321,7 +317,6 @@ Para selecionar o termo que quer pesquisar, toque no termo e mantenha-o pression
 <translation id="4807098396393229769">Nome no cartão de crédito</translation>
 <translation id="4816465935029283692">Tipos de dados</translation>
 <translation id="4827948050554950725">Adicionar cartão de crédito</translation>
-<translation id="4836364883164334657">Sua conexão com este site não é particular. Invasores podem tentar roubar suas informações, como fotos, senhas, mensagens e cartões de crédito de <ph name="DOMAIN_NAME" />.</translation>
 <translation id="4850886885716139402">Visualizar</translation>
 <translation id="4881695831933465202">Abrir</translation>
 <translation id="4885273946141277891">Número de instâncias do Google Chrome não suportado.</translation>
@@ -354,6 +349,7 @@ Para selecionar o termo que quer pesquisar, toque no termo e mantenha-o pression
 <translation id="5171045022955879922">Pesquisar ou digitar URL</translation>
 <translation id="5184329579814168207">Abrir no Google Chrome</translation>
 <translation id="5199929503336119739">Perfil de trabalho</translation>
+<translation id="5209320130288484488">Nenhum dispositivo foi encontrado</translation>
 <translation id="5210365745912300556">Fechar guia</translation>
 <translation id="5222676887888702881">Sair</translation>
 <translation id="5233638681132016545">Nova guia</translation>
@@ -388,7 +384,6 @@ Para selecionar o termo que quer pesquisar, toque no termo e mantenha-o pression
 <translation id="5556459405103347317">Recarregar</translation>
 <translation id="5565871407246142825">Cartões de crédito</translation>
 <translation id="5578795271662203820">Pesquisar imagem no <ph name="SEARCH_ENGINE" /></translation>
-<translation id="5579997910517802656">Nenhum dispositivo foi encontrado.</translation>
 <translation id="5595485650161345191">Editar endereço</translation>
 <translation id="5596627076506792578">Mais opções</translation>
 <translation id="5626134646977739690">Nome:</translation>
@@ -416,7 +411,6 @@ Para selecionar o termo que quer pesquisar, toque no termo e mantenha-o pression
 <translation id="583281660410589416">Desconhecido</translation>
 <translation id="5832934273103296195">Visualização expandida: clique para recolher</translation>
 <translation id="583891442612896534">Não foi possível acessar os servidores do Google para realizar a compactação de dados a partir do Google Chrome. Seu espaço para salvar dados pode estar limitado.</translation>
-<translation id="5843873952582375185">Nenhum dispositivo Bluetooth encontrado. <ph name="BEGIN_LINK" />Verificar novamente<ph name="END_LINK" />.</translation>
 <translation id="585027516397408832">Economia de dados ativada</translation>
 <translation id="5860033963881614850">Desativado</translation>
 <translation id="5867027562311576691">Mais artigos serão exibidos em breve. Aproveite a manhã.</translation>
@@ -566,9 +560,9 @@ Por exemplo, alguns websites podem reagir a esse pedido mostrando anúncios que 
 <translation id="7596558890252710462">Sistema operacional</translation>
 <translation id="7605594153474022051">A sincronização não está funcionando</translation>
 <translation id="7612619742409846846">Conectado ao Google como</translation>
+<translation id="7613889955535752492">Data de expiração: <ph name="EXPIRATION_MONTH" />/<ph name="EXPIRATION_YEAR" /></translation>
 <translation id="7619072057915878432">Falha no download do arquivo <ph name="FILE_NAME" /> devido a falhas na rede.</translation>
 <translation id="7626032353295482388">Bem-vindo ao Google Chrome</translation>
-<translation id="7634554953375732414">Sua conexão a este site não é particular.</translation>
 <translation id="7638584964844754484">Senha incorreta</translation>
 <translation id="7648422057306047504">Usar as credenciais do Google para criptografar e proteger minhas senhas</translation>
 <translation id="7649070708921625228">Ajuda</translation>
@@ -636,13 +630,11 @@ Por exemplo, alguns websites podem reagir a esse pedido mostrando anúncios que 
 <translation id="8428213095426709021">Configurações</translation>
 <translation id="8433057134996913067">Essa opção desconecta você da maioria dos websites.</translation>
 <translation id="8447861592752582886">Revogar permissão do dispositivo</translation>
-<translation id="8481940801237642152">Sua conexão a este site é particular, mas alguém na rede pode conseguir alterar a aparência da página.</translation>
 <translation id="8487700953926739672">Disponível off-line</translation>
 <translation id="8493948351860045254">Liberar espaço</translation>
 <translation id="8497726226069778601">Não há nada para ver aqui... ainda</translation>
 <translation id="8503813439785031346">Nome de usuário</translation>
 <translation id="8514577642972634246">Entrar no modo de navegação anônima</translation>
-<translation id="8518901949365209398">Este site usa uma configuração de segurança fraca (assinaturas SHA-1). Portanto sua conexão pode não ser particular.</translation>
 <translation id="8523928698583292556">Excluir senha armazenada</translation>
 <translation id="854522910157234410">Abrir esta página</translation>
 <translation id="8562452229998620586">As senhas salvas aparecerão aqui.</translation>
@@ -674,7 +666,6 @@ Para receber novas licenças, conecte-se à Internet e use seu conteúdo baixado
 <translation id="8912362522468806198">Conta do Google</translation>
 <translation id="8920114477895755567">Aguardando detalhes dos pais.</translation>
 <translation id="8931159598799892500">Chrome + Web física</translation>
-<translation id="8941248009481596111">Sua conexão a este site é particular.</translation>
 <translation id="8941729603749328384">www.example.com</translation>
 <translation id="8942627711005830162">Abrir em outra janela</translation>
 <translation id="8959122750345127698">A Navegação GPS está inacessível: <ph name="URL" /></translation>

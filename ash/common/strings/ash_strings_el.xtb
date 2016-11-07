@@ -89,6 +89,7 @@
 <translation id="3294437725009624529">Επισκέπτης</translation>
 <translation id="3335772982573114336">Νέα σημείωση</translation>
 <translation id="3364721542077212959">Εργαλεία γραφίδας</translation>
+<translation id="3368922792935385530">Σε σύνδεση</translation>
 <translation id="3371140690572404006">Συσκευή USB-C (δεξιά μπροστινή θύρα)</translation>
 <translation id="3445925074670675829">Συσκευή USB-C</translation>
 <translation id="3473479545200714844">Μεγεθυντής οθόνης</translation>
@@ -125,6 +126,7 @@
 <translation id="4250680216510889253">Όχι</translation>
 <translation id="4279490309300973883">Κατοπτρισμός</translation>
 <translation id="4321179778687042513">ctrl</translation>
+<translation id="4378551569595875038">Σύνδεση…</translation>
 <translation id="4421231901400348175">Κοινόχρηστος έλεγχος της οθόνης σας με το χρήστη <ph name="HELPER_NAME" /> μέσω της απομακρυσμένης βοήθειας.</translation>
 <translation id="4430019312045809116">Ένταση</translation>
 <translation id="4448844063988177157">Αναζήτηση για δίκτυα Wi-Fi...</translation>
@@ -280,4 +282,5 @@
 <translation id="923686485342484400">Πατήστε Ctrl + Shift + Q δύο φορές για να αποσυνδεθείτε.</translation>
 <translation id="938582441709398163">Επικάλυψη πληκτρολογίου</translation>
 <translation id="939252827960237676">Αποτυχία αποθήκευσης στιγμιότυπου οθόνης</translation>
+<translation id="952992212772159698">Μη ενεργοποιημένο</translation>
 </translationbundle>

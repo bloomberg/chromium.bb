@@ -89,6 +89,7 @@
 <translation id="3294437725009624529">እንግዳ</translation>
 <translation id="3335772982573114336">አዲስ ማስታወሻ</translation>
 <translation id="3364721542077212959">የስቲለስ መሣሪያዎች</translation>
+<translation id="3368922792935385530">ተያይዟል</translation>
 <translation id="3371140690572404006">የUSB-C መሣሪያ (የቀኝ ጎን የፊት ወደብ)</translation>
 <translation id="3445925074670675829">USB-C መሣሪያ</translation>
 <translation id="3473479545200714844">የማያ ገጽ ማጉያ</translation>
@@ -125,6 +126,7 @@
 <translation id="4250680216510889253">አይ</translation>
 <translation id="4279490309300973883">በማንጸባረቅ ላይ</translation>
 <translation id="4321179778687042513">ctrl</translation>
+<translation id="4378551569595875038">በመገናኘት ላይ...</translation>
 <translation id="4421231901400348175">የማያ ገጽዎን ቁጥጥር በርቀት እርዳታ በኩል ለ<ph name="HELPER_NAME" /> በማጋራት ላይ።</translation>
 <translation id="4430019312045809116">ድምፅ</translation>
 <translation id="4448844063988177157">የWi-Fi አውታረ መረቦችን በመፈለግ ላይ…</translation>
@@ -280,4 +282,5 @@
 <translation id="923686485342484400">ዘግተው ለመውጣት Ctrl Shift Qን ሁለቴ ይጫኑ።</translation>
 <translation id="938582441709398163">የቁልፍ ሰሌዳ ተደራቢ</translation>
 <translation id="939252827960237676">ቅጽበታዊ ገጽ እይታን ማስቀመጥ አልተቻለም</translation>
+<translation id="952992212772159698">አልገበረም</translation>
 </translationbundle>

@@ -387,6 +387,7 @@
 <translation id="5171045022955879922">Search or type URL</translation>
 <translation id="5172758083709347301">Machine</translation>
 <translation id="5179510805599951267">Not in <ph name="ORIGINAL_LANGUAGE" />? Report this error</translation>
+<translation id="5181140330217080051">Downloading</translation>
 <translation id="5190835502935405962">Bookmarks Bar</translation>
 <translation id="5199729219167945352">Experiments</translation>
 <translation id="5199841536747119669">Your suggestions appear here</translation>
@@ -665,7 +666,6 @@ Psst! Incognito mode <ph name="SHORTCUT_KEY" /> may come in handy next time.</tr
 <translation id="8498891568109133222"><ph name="HOST_NAME" /> took too long to respond.</translation>
 <translation id="852346902619691059">This server could not prove that it is <ph name="DOMAIN" />; its security certificate is not trusted by your device's operating system. This may be caused by a misconfiguration or an attacker intercepting your connection. <ph name="BEGIN_LEARN_MORE_LINK" />Find out more<ph name="END_LEARN_MORE_LINK" />.</translation>
 <translation id="8530504477309582336">This type of card is not supported by Google Payments. Please select a different card.</translation>
-<translation id="8550022383519221471">Sync service is not available for your domain.</translation>
 <translation id="8553075262323480129">The translation failed because the page's language could not be determined.</translation>
 <translation id="8559762987265718583">A private connection to <ph name="BEGIN_BOLD" /><ph name="DOMAIN" /><ph name="END_BOLD" /> can't be established because your device's date and time (<ph name="DATE_AND_TIME" />) are incorrect.</translation>
 <translation id="856992080682148">The certificate for this site expires in 2017 or later, and the certificate chain contains a certificate signed using SHA-1.</translation>
@@ -673,7 +673,6 @@ Psst! Incognito mode <ph name="SHORTCUT_KEY" /> may come in handy next time.</tr
 <translation id="8591846766485502580">You're seeing this message because one of your parents blocked this site.</translation>
 <translation id="859285277496340001">The certificate does not specify a mechanism to check whether it has been revoked.</translation>
 <translation id="8647750283161643317">Reset all to default</translation>
-<translation id="8680787084697685621">Account sign-in details are out of date.</translation>
 <translation id="8703575177326907206">Your connection to <ph name="DOMAIN" /> is not encrypted.</translation>
 <translation id="8725066075913043281">Try again</translation>
 <translation id="8728672262656704056">You’ve gone incognito</translation>
@@ -703,7 +702,6 @@ Psst! Incognito mode <ph name="SHORTCUT_KEY" /> may come in handy next time.</tr
 <translation id="8987927404178983737">Month</translation>
 <translation id="8989148748219918422"><ph name="ORGANIZATION" /> [<ph name="COUNTRY" />]</translation>
 <translation id="9001074447101275817">The proxy <ph name="DOMAIN" /> requires a username and password.</translation>
-<translation id="9008201768610948239">Ignore</translation>
 <translation id="901974403500617787">Flags that apply system-wide can only be set by the owner: <ph name="OWNER_EMAIL" />.</translation>
 <translation id="9020542370529661692">This page has been translated to <ph name="TARGET_LANGUAGE" /></translation>
 <translation id="9038649477754266430">Use a prediction service to load pages more quickly</translation>

@@ -87,6 +87,7 @@
 <translation id="3294437725009624529">Host</translation>
 <translation id="3335772982573114336">Nová poznámka</translation>
 <translation id="3364721542077212959">Nástroje pro dotykové pero</translation>
+<translation id="3368922792935385530">Připojeno</translation>
 <translation id="3371140690572404006">Zařízení USB Type-C (pravý přední port)</translation>
 <translation id="3445925074670675829">Zařízení USB Type-C</translation>
 <translation id="3473479545200714844">Lupa obrazovky</translation>
@@ -123,6 +124,7 @@
 <translation id="4250680216510889253">Ne</translation>
 <translation id="4279490309300973883">Zrcadlení</translation>
 <translation id="4321179778687042513">ctrl</translation>
+<translation id="4378551569595875038">Připojování...</translation>
 <translation id="4421231901400348175">Ovládání obrazovky je prostřednictvím Vzdálené pomoci sdíleno s uživatelem <ph name="HELPER_NAME" />.</translation>
 <translation id="4430019312045809116">Hlasitost</translation>
 <translation id="4448844063988177157">Vyhledávání sítí Wi-Fi...</translation>
@@ -277,4 +279,5 @@ Vypnete jej stisknutím kombinace kláves Alt + Vyhledávání nebo Shift.</tran
 <translation id="923686485342484400">Odhlásíte se dvojitým stisknutím kombinace kláves Control Shift Q.</translation>
 <translation id="938582441709398163">Překryvná klávesnice</translation>
 <translation id="939252827960237676">Uložení snímku obrazovky se nezdařilo</translation>
+<translation id="952992212772159698">Není aktivováno</translation>
 </translationbundle>

@@ -89,6 +89,7 @@
 <translation id="3294437725009624529">अतिथि</translation>
 <translation id="3335772982573114336">नया नोट</translation>
 <translation id="3364721542077212959">स्टाइलस टूल</translation>
+<translation id="3368922792935385530">कनेक्टेड</translation>
 <translation id="3371140690572404006">USB-C डिवाइस (दायां सामने वाला पोर्ट)</translation>
 <translation id="3445925074670675829">USB-C डिवाइस</translation>
 <translation id="3473479545200714844">स्क्रीन आवर्द्धक</translation>
@@ -125,6 +126,7 @@
 <translation id="4250680216510889253">नहीं</translation>
 <translation id="4279490309300973883">मिरर करना</translation>
 <translation id="4321179778687042513">ctrl</translation>
+<translation id="4378551569595875038">कनेक्ट हो रहा है...</translation>
 <translation id="4421231901400348175">आपकी स्‍क्रीन का नियंत्रण दूरस्‍थ सहायक के द्वारा <ph name="HELPER_NAME" /> से साझा किया जा रहा है.</translation>
 <translation id="4430019312045809116">मात्रा</translation>
 <translation id="4448844063988177157">वाई-फ़ाई  नेटवर्क खोज रहा है...</translation>
@@ -279,4 +281,5 @@
 <translation id="923686485342484400">प्रस्थान करने के लिए दो बार Control Shift Q दबाएं.</translation>
 <translation id="938582441709398163">कीबोर्ड ओवरले</translation>
 <translation id="939252827960237676">स्क्रीनशॉट सहेजने में विफल</translation>
+<translation id="952992212772159698">सक्रिय नहीं किया गया</translation>
 </translationbundle>

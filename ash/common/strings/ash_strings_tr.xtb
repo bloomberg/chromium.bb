@@ -89,6 +89,7 @@ Geçiş yapmak için ÜstKrktr + Alt tuşlarına basın.</translation>
 <translation id="3294437725009624529">Misafir</translation>
 <translation id="3335772982573114336">Yeni not</translation>
 <translation id="3364721542077212959">Ekran kalemi araçları</translation>
+<translation id="3368922792935385530">Bağlı</translation>
 <translation id="3371140690572404006">USB-C cihaz (sağ ön bağlantı noktası)</translation>
 <translation id="3445925074670675829">USB-C cihaz</translation>
 <translation id="3473479545200714844">Ekran büyüteci</translation>
@@ -125,6 +126,7 @@ Geçiş yapmak için ÜstKrktr + Alt tuşlarına basın.</translation>
 <translation id="4250680216510889253">Hayır</translation>
 <translation id="4279490309300973883">Yansıtılıyor</translation>
 <translation id="4321179778687042513">ctrl</translation>
+<translation id="4378551569595875038">Bağlanıyor...</translation>
 <translation id="4421231901400348175">Ekranınızın kontrolü, Uzaktan Yardım kullanılarak <ph name="HELPER_NAME" /> ile paylaşılıyor.</translation>
 <translation id="4430019312045809116">Ses</translation>
 <translation id="4448844063988177157">Kablosuz ağlar aranıyor...</translation>
@@ -281,4 +283,5 @@ Devre dışı bırakmak için Ctrl+Alt+Z tuşlarına basın.</translation>
 <translation id="923686485342484400">Oturumu kapatmak için Control ÜstKrktr Q tuşlarına iki defa basın.</translation>
 <translation id="938582441709398163">Klavye Yer Paylaşımı</translation>
 <translation id="939252827960237676">Ekran görüntüsü kaydedilemedi</translation>
+<translation id="952992212772159698">Etkin değil</translation>
 </translationbundle>

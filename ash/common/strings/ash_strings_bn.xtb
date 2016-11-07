@@ -81,7 +81,7 @@
 <translation id="3050422059534974565">CAPS LOCK চালু আছে৷
 Search অথবা বাতিল করতে Shift টিপুন৷</translation>
 <translation id="3077734595579995578">shift</translation>
-<translation id="3087734570205094154">নীচে</translation>
+<translation id="3087734570205094154">নিচে</translation>
 <translation id="3105990244222795498"><ph name="DEVICE_NAME" /> (ব্লুটুথ)</translation>
 <translation id="3126069444801937830">আপডেট করার জন্য পুনরারম্ভ করুন</translation>
 <translation id="3147142846278915599">লঞ্চার (অ্যাপ সিঙ্ক করা হচ্ছে...)</translation>
@@ -89,6 +89,7 @@ Search অথবা বাতিল করতে Shift টিপুন৷</trans
 <translation id="3294437725009624529">অতিথি</translation>
 <translation id="3335772982573114336">নতুন টীকা</translation>
 <translation id="3364721542077212959">লেখনী সরঞ্জামগুলি</translation>
+<translation id="3368922792935385530">সংযুক্ত</translation>
 <translation id="3371140690572404006">USB-C ডিভাইস (ডান দিকের সামনের পোর্ট)</translation>
 <translation id="3445925074670675829">USB-C ডিভাইস</translation>
 <translation id="3473479545200714844">স্ক্রীন ম্যাগনিফায়ার</translation>
@@ -125,6 +126,7 @@ Search অথবা বাতিল করতে Shift টিপুন৷</trans
 <translation id="4250680216510889253">না</translation>
 <translation id="4279490309300973883">অনুকরণ করা হচ্ছে</translation>
 <translation id="4321179778687042513">ctrl</translation>
+<translation id="4378551569595875038">সংযুক্ত হচ্ছে...</translation>
 <translation id="4421231901400348175">রিমোট সহায়কের মাধ্যমে <ph name="HELPER_NAME" />-এর সাথে আপনার স্ক্রীন নিয়ন্ত্রন ভাগ করুন৷</translation>
 <translation id="4430019312045809116">ভলিউম</translation>
 <translation id="4448844063988177157">ওয়াই-ফাই নেটওয়ার্কগুলির জন্য অনুসন্ধান করুন...</translation>
@@ -279,4 +281,5 @@ Alt+Search অথবা বাতিল করতে Shift টিপুন৷</t
 <translation id="923686485342484400">প্রস্থান করুন করার জন্য দুবার Control Shift Q টিপুন৷</translation>
 <translation id="938582441709398163">কীবোর্ড ওভারলে</translation>
 <translation id="939252827960237676">স্ক্রীনশট সংরক্ষণ করতে ব্যর্থ হয়েছে</translation>
+<translation id="952992212772159698">সক্রিয় নেই</translation>
 </translationbundle>

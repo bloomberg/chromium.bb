@@ -387,6 +387,7 @@
 <translation id="5171045022955879922">검색 또는 URL 입력</translation>
 <translation id="5172758083709347301">컴퓨터</translation>
 <translation id="5179510805599951267"><ph name="ORIGINAL_LANGUAGE" />가 아닙니까? 오류 신고</translation>
+<translation id="5181140330217080051">다운로드 중</translation>
 <translation id="5190835502935405962">북마크바</translation>
 <translation id="5199729219167945352">실험실 기능</translation>
 <translation id="5199841536747119669">추천 항목이 여기에 표시됩니다.</translation>
@@ -665,7 +666,6 @@
 <translation id="8498891568109133222"><ph name="HOST_NAME" />에서 응답하는 데 시간이 너무 오래 걸립니다.</translation>
 <translation id="852346902619691059">기기의 운영체제에서 보안 인증서를 신뢰하지 않아서 서버 도메인이 <ph name="DOMAIN" />임을 증명할 수 없습니다. 설정이 잘못되었거나 해커가 연결을 가로채고 있기 때문일 수 있습니다. <ph name="BEGIN_LEARN_MORE_LINK" />자세히 알아보기<ph name="END_LEARN_MORE_LINK" /></translation>
 <translation id="8530504477309582336">Google Payments에서 지원하지 않는 카드 유형입니다. 다른 카드를 선택해 주세요.</translation>
-<translation id="8550022383519221471">도메인에 대해 동기화 서비스를 사용할 수 없습니다.</translation>
 <translation id="8553075262323480129">페이지의 언어를 결정할 수 없으므로 번역하지 못했습니다.</translation>
 <translation id="8559762987265718583">기기의 날짜와 시간(<ph name="DATE_AND_TIME" />)이 잘못되어 <ph name="BEGIN_BOLD" /><ph name="DOMAIN" /><ph name="END_BOLD" />에 대한 비공개 연결을 설정할 수 없습니다.</translation>
 <translation id="856992080682148">이 사이트의 인증서는 2017년 또는 그 이후에 만료되며 인증서 체인에 SHA-1을 사용하여 서명된 인증서가 포함되어 있습니다.</translation>
@@ -673,7 +673,6 @@
 <translation id="8591846766485502580">부모님 중 한 명이 이 사이트를 차단해 이 알림이 표시되었습니다.</translation>
 <translation id="859285277496340001">인증서는 취소 여부를 확인하는 매커니즘을 지정하지 않습니다.</translation>
 <translation id="8647750283161643317">기본값으로 재설정</translation>
-<translation id="8680787084697685621">계정 로그인 세부정보의 유효기간이 만료되었습니다.</translation>
 <translation id="8703575177326907206"><ph name="DOMAIN" />로의 연결은 암호화되지 않습니다.</translation>
 <translation id="8725066075913043281">다시 시도하세요</translation>
 <translation id="8728672262656704056">시크릿 모드로 전환됨</translation>
@@ -703,7 +702,6 @@
 <translation id="8987927404178983737">월</translation>
 <translation id="8989148748219918422"><ph name="ORGANIZATION" /> [<ph name="COUNTRY" />]</translation>
 <translation id="9001074447101275817">프록시 <ph name="DOMAIN" />에 사용자 이름 및 비밀번호를 입력해야 합니다.</translation>
-<translation id="9008201768610948239">무시</translation>
 <translation id="901974403500617787">시스템 전체에 적용되는 플래그는 소유자(<ph name="OWNER_EMAIL" />)만 설정할 수 있습니다.</translation>
 <translation id="9020542370529661692">이 페이지는 <ph name="TARGET_LANGUAGE" />로 번역되었습니다.</translation>
 <translation id="9038649477754266430">빠른 페이지 로드를 위해 예상 검색어 서비스 사용</translation>

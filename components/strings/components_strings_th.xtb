@@ -387,6 +387,7 @@
 <translation id="5171045022955879922">ค้นหาหรือพิมพ์ URL</translation>
 <translation id="5172758083709347301">ผู้ใช้คอมพิวเตอร์นี้</translation>
 <translation id="5179510805599951267">หากไม่มีในภาษา <ph name="ORIGINAL_LANGUAGE" /> ให้รายงานข้อผิดพลาดนี้</translation>
+<translation id="5181140330217080051">กำลังดาวน์โหลด</translation>
 <translation id="5190835502935405962">แถบบุ๊กมาร์ก</translation>
 <translation id="5199729219167945352">การทดลอง</translation>
 <translation id="5199841536747119669">คำแนะนำจะปรากฏที่นี่</translation>
@@ -665,7 +666,6 @@
 <translation id="8498891568109133222"><ph name="HOST_NAME" /> ใช้เวลาตอบกลับนานเกินไป</translation>
 <translation id="852346902619691059">เซิร์ฟเวอร์นี้พิสูจน์ไม่ได้ว่าเป็น <ph name="DOMAIN" /> เพราะระบบปฏิบัติการของอุปกรณ์ไม่เชื่อถือใบรับรองความปลอดภัยของเซิร์ฟเวอร์นี้ สาเหตุอาจเกิดจากการกำหนดค่าผิดหรือผู้โจมตีขัดขวางการเชื่อมต่อของคุณ <ph name="BEGIN_LEARN_MORE_LINK" />เรียนรู้เพิ่มเติม<ph name="END_LEARN_MORE_LINK" /></translation>
 <translation id="8530504477309582336">Google Payments ไม่สนับสนุนบัตรประเภทนี้ โปรดเลือกบัตรอื่น</translation>
-<translation id="8550022383519221471">บริการซิงค์ไม่มีให้บริการสำหรับโดเมนของคุณ</translation>
 <translation id="8553075262323480129">การแปลล้มเหลวเนื่องจากไม่สามารถระบุภาษาของหน้าเว็บนี้ได้</translation>
 <translation id="8559762987265718583">ไม่สามารถเริ่มการเชื่อมต่อส่วนตัวกับ <ph name="BEGIN_BOLD" /><ph name="DOMAIN" /><ph name="END_BOLD" /> ได้เนื่องจากวันที่และเวลาของอุปกรณ์ (<ph name="DATE_AND_TIME" />) ไม่ถูกต้อง</translation>
 <translation id="856992080682148">ใบรับรองสำหรับเว็บไซต์นี้จะหมดอายุในปี 2017 หรือหลังจากนั้น กลุ่มใบรับรองนี้ประกอบด้วยใบรับรอบที่ลงนามโดยใช้ SHA-1</translation>
@@ -673,7 +673,6 @@
 <translation id="8591846766485502580">คุณเห็นข้อความนี้เนื่องจากผู้ปกครองคนใดคนหนึ่งบล็อกเว็บไซต์นี้</translation>
 <translation id="859285277496340001">ใบรับรองไม่ระบุวิธีการตรวจสอบว่ามีการเพิกถอนไปแล้วหรือไม่</translation>
 <translation id="8647750283161643317">รีเซ็ตทั้งหมดเป็นค่าเริ่มต้น</translation>
-<translation id="8680787084697685621">รายละเอียดการลงชื่อเข้าใช้บัญชีเก่าเกินไป</translation>
 <translation id="8703575177326907206">การเชื่อมต่อของคุณไปยัง <ph name="DOMAIN" /> ไม่ได้รับการเข้ารหัส</translation>
 <translation id="8725066075913043281">ลองอีกครั้ง</translation>
 <translation id="8728672262656704056">คุณได้เข้าสู่โหมดไม่ระบุตัวตนแล้ว</translation>
@@ -703,7 +702,6 @@
 <translation id="8987927404178983737">เดือน</translation>
 <translation id="8989148748219918422"><ph name="ORGANIZATION" /> [<ph name="COUNTRY" />]</translation>
 <translation id="9001074447101275817"><ph name="DOMAIN" /> ของพร็อกซีต้องใช้ชื่อผู้ใช้และรหัสผ่าน</translation>
-<translation id="9008201768610948239">ไม่สนใจ</translation>
 <translation id="901974403500617787">การตั้งค่าสถานะที่ใช้ทั้งระบบสามารถตั้งค่าได้โดยเจ้าของเท่านั้น: <ph name="OWNER_EMAIL" /></translation>
 <translation id="9020542370529661692">หน้านี้ได้รับการแปลเป็น <ph name="TARGET_LANGUAGE" /> แล้ว</translation>
 <translation id="9038649477754266430">ใช้บริการการคาดคะเนเพื่อโหลดหน้าได้เร็วขึ้น</translation>

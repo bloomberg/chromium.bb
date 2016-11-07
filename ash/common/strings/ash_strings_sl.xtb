@@ -89,6 +89,7 @@ Pritisnite tipko za iskanje ali Shift, da jo prekličete.</translation>
 <translation id="3294437725009624529">Gost</translation>
 <translation id="3335772982573114336">Nov zapisek</translation>
 <translation id="3364721542077212959">Orodja pisala</translation>
+<translation id="3368922792935385530">Povezano</translation>
 <translation id="3371140690572404006">Naprava USB-C (vrata desno spredaj)</translation>
 <translation id="3445925074670675829">Naprava USB-C</translation>
 <translation id="3473479545200714844">Lupa</translation>
@@ -125,6 +126,7 @@ Pritisnite tipko za iskanje ali Shift, da jo prekličete.</translation>
 <translation id="4250680216510889253">Ne</translation>
 <translation id="4279490309300973883">Zrcaljenje</translation>
 <translation id="4321179778687042513">ctrl</translation>
+<translation id="4378551569595875038">Povezovanje ...</translation>
 <translation id="4421231901400348175">Deljenje nadzora nad zaslonom z osebo <ph name="HELPER_NAME" /> prek pomoči na daljavo.</translation>
 <translation id="4430019312045809116">Glasnost</translation>
 <translation id="4448844063988177157">Iskanje omrežij Wi-Fi</translation>
@@ -280,4 +282,5 @@ Pritisnite Alt in tipko za iskanje ali Shift, da jo prekličete.</translation>
 <translation id="923686485342484400">Dvakrat pritisnite Control Shift Q, če se želite odjaviti.</translation>
 <translation id="938582441709398163">Prekrivna tipkovnica</translation>
 <translation id="939252827960237676">Posnetka zaslona ni bilo mogoče shraniti</translation>
+<translation id="952992212772159698">Ni aktivirano</translation>
 </translationbundle>

@@ -89,6 +89,7 @@ Tekan Telusuri atau Shift untuk membatalkan.</translation>
 <translation id="3294437725009624529">Tamu</translation>
 <translation id="3335772982573114336">Catatan baru</translation>
 <translation id="3364721542077212959">Alat stilus</translation>
+<translation id="3368922792935385530">Tersambung</translation>
 <translation id="3371140690572404006">Perangkat USB-C (port depan sebelah kanan)</translation>
 <translation id="3445925074670675829">Perangkat USB-C</translation>
 <translation id="3473479545200714844">Kaca pembesar layar</translation>
@@ -125,6 +126,7 @@ Tekan Telusuri atau Shift untuk membatalkan.</translation>
 <translation id="4250680216510889253">Tidak</translation>
 <translation id="4279490309300973883">Mencerminkan</translation>
 <translation id="4321179778687042513">ctrl</translation>
+<translation id="4378551569595875038">Menyambung...</translation>
 <translation id="4421231901400348175">Berbagi kontrol layar dengan <ph name="HELPER_NAME" /> via Remote Assistance.</translation>
 <translation id="4430019312045809116">Volume</translation>
 <translation id="4448844063988177157">Menelusuri jaringan Wi-Fi...</translation>
@@ -280,4 +282,5 @@ Tekan Alt+Telusuri atau Shift untuk membatalkan.</translation>
 <translation id="923686485342484400">Tekan Control Shift Q dua kali untuk keluar.</translation>
 <translation id="938582441709398163">Hamparan Keyboard</translation>
 <translation id="939252827960237676">Gagal menyimpan tangkapan layar</translation>
+<translation id="952992212772159698">Tidak diaktifkan</translation>
 </translationbundle>

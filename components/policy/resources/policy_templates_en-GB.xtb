@@ -40,6 +40,7 @@
           If this setting is disabled or not configured, the remote assistance host will run in the user's context and remote users cannot interact with elevated windows on the desktop.</translation>
 <translation id="1096105751829466145">Default search provider</translation>
 <translation id="1103860406762205913">Enables the old web-based signin</translation>
+<translation id="1117535567637097036">The protocol handlers set via this policy are not used when handling Android intents.</translation>
 <translation id="1128903365609589950">Configures the directory that <ph name="PRODUCT_NAME" /> will use for storing cached files on the disk.
 
       If you set this policy, <ph name="PRODUCT_NAME" /> will use the provided directory regardless of whether the user has specified the '--disk-cache-dir' flag or not. To avoid data loss or other unexpected errors this policy should not be set to a volume's root directory or to a directory used for other purposes, because <ph name="PRODUCT_NAME" /> manages its contents.
@@ -172,6 +173,7 @@
 <translation id="166427968280387991">Proxy server</translation>
 <translation id="1675002386741412210">Supported on:</translation>
 <translation id="1679420586049708690">Public session for auto-login</translation>
+<translation id="1680029600835707254">This policy controls who may start a <ph name="PRODUCT_OS_NAME" /> session. It does not prevent users from signing in to additional Google accounts within Android. If you want to prevent this, configure the Android-specific <ph name="CLOUDDPC_ACCOUNT_MANAGEMENT_POLICY" /> policy as part of <ph name="ARC_POLICY" />.</translation>
 <translation id="1689963000958717134">Allows pushing network configuration to be applied for all users of a <ph name="PRODUCT_OS_NAME" /> device. The network configuration is a JSON-formatted string as defined by the Open Network Configuration format described at <ph name="ONC_SPEC_URL" /></translation>
 <translation id="1708496595873025510">Set the restriction on the fetching of the Variations seed</translation>
 <translation id="172374442286684480">Allow all sites to set local data.</translation>
@@ -195,6 +197,7 @@
       These policies are ignored unless the
       Chrome Remote Desktop host is installed.</translation>
 <translation id="1757688868319862958">Allows <ph name="PRODUCT_NAME" /> to run plug-ins that require authorisation. If you enable this setting, plug-ins that are not outdated always run. If this setting is disabled or not set, users will be asked for permission to run plug-ins that require authorisation. These are plug-ins that can compromise security.</translation>
+<translation id="1781356041596378058">This policy also controls access to Android Developer Options. If you set this policy to true, users cannot access Developer Options. If you set this policy to false or leave it unset, users can access Developer Options by tapping seven times on the build number in the Android settings app.</translation>
 <translation id="1803646570632580723">List of pinned apps to show in the launcher</translation>
 <translation id="1808715480127969042">Block cookies on these sites</translation>
 <translation id="1827523283178827583">Use fixed proxy servers</translation>
@@ -250,6 +253,7 @@
 
       If this policy is unset, defaults are used for all settings.</translation>
 <translation id="1964634611280150550">Incognito mode disabled.</translation>
+<translation id="1964802606569741174">This policy has no effect on the Android YouTube app. If Safety Mode on YouTube should be enforced, installation of the Android YouTube app should be disallowed.</translation>
 <translation id="1969212217917526199">Overrides policies on Debug builds of the remote access host.
 
           The value is parsed as a JSON dictionary of policy name to policy value mappings.</translation>
@@ -267,6 +271,7 @@
       Note that if the platform supports policy notifications, the refresh delay will be set to 24 hours (ignoring all defaults and the value of this policy) because it is expected that policy notifications will force a refresh automatically whenever policy changes, making more frequent refreshes unnecessary.</translation>
 <translation id="2024476116966025075">Configure the required domain name for remote access clients</translation>
 <translation id="2030905906517501646">Default search provider keyword</translation>
+<translation id="203096360153626918">This policy has no effect on the Android apps. They will be able to enter full screen mode even if this policy is set to <ph name="FALSE" />.</translation>
 <translation id="206623763829450685">Specifies which HTTP authentication schemes are supported by <ph name="PRODUCT_NAME" />.
 
           Possible values are 'basic', 'digest', 'ntlm' and 'negotiate'. Separate multiple values with commas.
@@ -341,6 +346,7 @@
       Spell checking can still be performed using a downloaded dictionary; this policy only controls the usage of the online service.
 
       If this setting is not configured then users can choose whether the spell checking service should be used or not.</translation>
+<translation id="2294382669900758280">Video playing in Android apps is not taken into consideration, even if this policy is set to <ph name="TRUE" />.</translation>
 <translation id="2299220924812062390">Specify a list of enabled plug-ins</translation>
 <translation id="2309390639296060546">Default geolocation setting</translation>
 <translation id="2312134445771258233">Allows you to configure the pages that are loaded on start-up.
@@ -627,6 +633,7 @@ The contents of the list 'URLs to open at start-up' are ignored unless you selec
 <translation id="2877225735001246144">Disable CNAME lookup when negotiating Kerberos authentication</translation>
 <translation id="2884728160143956392">Allow session only cookies on these sites</translation>
 <translation id="2893546967669465276">Send system logs to the management server</translation>
+<translation id="2899002520262095963">Android apps can use the network configurations and CA certificates set via this policy, but do not have access to some configuration options.</translation>
 <translation id="2906874737073861391">List of AppPack extensions</translation>
 <translation id="2908277604670530363">Maximum number of concurrent connections to the proxy server</translation>
 <translation id="2948087343485265211">Specifies whether audio activity affects power management.
@@ -694,6 +701,7 @@ The contents of the list 'URLs to open at start-up' are ignored unless you selec
           If this policy is left unset, the user can install any extension in <ph name="PRODUCT_NAME" />.</translation>
 <translation id="316778957754360075">This setting has been retired as of <ph name="PRODUCT_NAME" /> version 29. The recommended way to set up organisation-hosted extension/app collections is to include the site hosting the CRX packages in ExtensionInstallSources and put direct download links to the packages on a web page. A launcher for that web page can be created using the ExtensionInstallForcelist policy.</translation>
 <translation id="3185009703220253572">since version <ph name="SINCE_VERSION" /></translation>
+<translation id="3187220842205194486">Android apps cannot get access to corporate keys. This policy has no effect on them.</translation>
 <translation id="318812033927804102">Configures extension management settings for <ph name="PRODUCT_NAME" />.
 
           This policy controls multiple settings, including settings controlled by any existing extension-related policies. This policy will override any legacy policies if both are set.
@@ -759,6 +767,7 @@ The contents of the list 'URLs to open at start-up' are ignored unless you selec
 
       If it is not set, the user may be asked whether to import or importing may happen automatically.</translation>
 <translation id="3219421230122020860">Incognito mode available.</translation>
+<translation id="3220624000494482595">If the kiosk app is an Android app, it will have no control over the <ph name="PRODUCT_OS_NAME" /> version, even if this policy is set to <ph name="TRUE" />.</translation>
 <translation id="3236046242843493070">URL patterns to allow extension, app, and user script installs from</translation>
 <translation id="3243309373265599239">Specifies the length of time without user input after which the screen is dimmed when running on AC power.
 
@@ -990,6 +999,7 @@ If this setting is not set, <ph name="PRODUCT_NAME" /> will allow the user to co
 <translation id="3964909636571393861">Allows access to a list of URLs</translation>
 <translation id="3965339130942650562">Timeout until idle user log-out is executed</translation>
 <translation id="3967075520570946456">Enable showing the welcome page on the first browser launch following OS upgrade.</translation>
+<translation id="3968660816994975381">This policy controls whether new users can be added to <ph name="PRODUCT_OS_NAME" />. It does not prevent users from signing in to additional Google accounts within Android. If you want to prevent this, configure the Android-specific <ph name="CLOUDDPC_ACCOUNT_MANAGEMENT_POLICY" /> policy as part of <ph name="ARC_POLICY" />.</translation>
 <translation id="3973371701361892765">Never auto-hide the shelf</translation>
 <translation id="3984028218719007910">Determines whether <ph name="PRODUCT_OS_NAME" /> keeps local account data after logout. If set to true, no persistent accounts are kept by <ph name="PRODUCT_OS_NAME" /> and all data from the user session will be discarded after logout. If this policy is set to false or not configured, the device may keep (encrypted) local user data.</translation>
 <translation id="3994569321696536679">Enables <ph name="PRODUCT_NAME" />'s
@@ -1019,6 +1029,7 @@ If this setting is not set, <ph name="PRODUCT_NAME" /> will allow the user to co
 
       If this policy is set to false, user will not be able to redeem offers.</translation>
 <translation id="4010738624545340900">Allow invocation of file selection dialogues</translation>
+<translation id="4020682745012723568">Cookies transferred to the user's profile are not accessible to Android apps.</translation>
 <translation id="4025586928523884733">Blocks third party cookies.
 
       Enabling this setting prevents cookies from being set by web page elements that are not from the domain that is in the browser's address bar.
@@ -1089,6 +1100,7 @@ If this setting is not set, <ph name="PRODUCT_NAME" /> will allow the user to co
 <translation id="423797045246308574">Allows you to set a list of URL patterns that specify sites which are not allowed to use key generation. If a URL pattern is in 'KeygenAllowedForUrls', this policy overrides these exceptions.
 
           If this policy is left not set the global default value will be used for all sites either from the 'DefaultKeygenSetting' policy if it is set or the user's personal configuration otherwise.</translation>
+<translation id="4239720644496144453">The cache is not used for Android apps. If multiple users install the same Android app, it will be downloaded anew for each user.</translation>
 <translation id="4250680216510889253">No</translation>
 <translation id="4272136423200695428">Enables force sign in for <ph name="PRODUCT_NAME" />.</translation>
 <translation id="427632463972968153">Specifies the parameters used when doing image search with POST. It consists of comma-separated name/value pairs. If a value is a template parameter, like {imageThumbnail} in above example, it will be replaced with real image thumbnail data.
@@ -1126,6 +1138,7 @@ If this setting is not set, <ph name="PRODUCT_NAME" /> will allow the user to co
 <translation id="4449545651113180484">Rotate screen clockwise by 270 degrees</translation>
 <translation id="4467952432486360968">Block third-party cookies</translation>
 <translation id="4474167089968829729">Enable saving passwords to the password manager</translation>
+<translation id="4476769083125004742">If this policy is set to <ph name="BLOCK_GEOLOCATION_SETTING" />, Android apps cannot access location information. If you set this policy to any other value or leave it unset, the user is asked to consent when an Android app wants to access location information.</translation>
 <translation id="447686899376429408">If this is set to true or is not set, users will be able to cast tabs, sites or the desktop from the browser. If set to false, this option will be disabled.</translation>
 <translation id="4480694116501920047">Force SafeSearch</translation>
 <translation id="4482640907922304445">Shows the Home button on <ph name="PRODUCT_NAME" />'s toolbar.
@@ -1158,6 +1171,7 @@ If this setting is not set, <ph name="PRODUCT_NAME" /> will allow the user to co
 <translation id="4525521128313814366">Allows you to set a list of url patterns that specify sites which are not allowed to display images.
 
           If this policy is left unset, the global default value will be used for all sites either from the 'DefaultImagesSetting' policy, if it is set, or the user's personal configuration otherwise.</translation>
+<translation id="4531706050939927436">Android apps can be force-installed from the Google Admin console using Google Play. They do not use this policy.</translation>
 <translation id="4534500438517478692">Android restriction name:</translation>
 <translation id="4541530620466526913">Device-local accounts</translation>
 <translation id="4555850956567117258">Enable remote attestation for the user</translation>
@@ -1321,6 +1335,7 @@ If this setting is not set, <ph name="PRODUCT_NAME" /> will allow the user to co
 <translation id="5208240613060747912">Allows you to set a list of url patterns that specify sites which are not allowed to display notifications.
 
           If this policy is left unset the global default value will be used for all sites either from the 'DefaultNotificationsSetting' policy, if it is set, or the user's personal configuration otherwise.</translation>
+<translation id="5219844027738217407">For Android apps, this policy affects the microphone only. When this policy is set to true, the microphone is muted for all Android apps, with no exceptions.</translation>
 <translation id="5226033722357981948"> finder should be disabled</translation>
 <translation id="523505283826916779">Accessibility settings</translation>
 <translation id="5255162913209987122">Can be Recommended</translation>
@@ -1423,6 +1438,7 @@ If this setting is not set, <ph name="PRODUCT_NAME" /> will allow the user to co
       frequency is 30 seconds and the maximum frequency is 24 hours – values
       outside of this range will be clamped to this range.</translation>
 <translation id="5535973522252703021">Kerberos delegation server whitelist</translation>
+<translation id="5559079916187891399">This policy has no effect on Android apps.</translation>
 <translation id="5560039246134246593">Add a parameter to the fetching of the Variations seed in <ph name="PRODUCT_NAME" />.
 
       If specified, will add a query parameter called 'restrict' to the URL used to fetch the Variations seed. The value of the parameter will be the value specified in this policy.
@@ -1544,6 +1560,7 @@ If this setting is not set, <ph name="PRODUCT_NAME" /> will allow the user to co
 <translation id="5893553533827140852">If this setting is enabled, then gnubby authentication requests will be proxied across a remote host connection.
 
           If this setting is disabled or not configured, gnubby authentication requests will not be proxied.</translation>
+<translation id="5898486742390981550">When multiple users are logged in, only the primary user can use Android apps.</translation>
 <translation id="5921713479449475707">Allow autoupdate downloads via HTTP</translation>
 <translation id="5921888683953999946">Set the default state of the large cursor accessibility feature on the login screen.
 
@@ -1559,6 +1576,7 @@ If this setting is not set, <ph name="PRODUCT_NAME" /> will allow the user to co
       If you enable this setting, SafeSearch in Google Search is always active.
 
       If you disable this setting or do not set a value, SafeSearch in Google Search is not enforced.</translation>
+<translation id="5937539742111853215">This policy controls <ph name="PRODUCT_OS_NAME" /> developer mode only. If you want to prevent access to Android Developer Options, you need to set the <ph name="DEVELOPER_TOOLS_POLICY" /> policy.</translation>
 <translation id="5946082169633555022">Beta channel</translation>
 <translation id="5950205771952201658">In light of the fact that soft-fail, online revocation checks provide no effective security benefit, they are disabled by default in <ph name="PRODUCT_NAME" /> version 19 and later. By setting this policy to true, the previous behaviour is restored and online OCSP/CRL checks will be performed.
 
@@ -1623,6 +1641,7 @@ If this setting is not set, <ph name="PRODUCT_NAME" /> will allow the user to co
 <translation id="6145799962557135888">Allows you to set a list of url patterns that specify sites which are allowed to run JavaScript.
 
           If this policy is left not set the global default value will be used for all sites either from the 'DefaultJavaScriptSetting' policy, if it is set, or the user's personal configuration otherwise.</translation>
+<translation id="614662973812186053">This policy also controls Android usage and diagnostic data collection.</translation>
 <translation id="6151775819333710697">
           If this setting is enabled, users can get<ph name="PRODUCT_NAME" /> to memorise passwords
           and provide them automatically the next time they log in to a site.
@@ -1730,6 +1749,7 @@ If this setting is not set, <ph name="PRODUCT_NAME" /> will allow the user to co
 
           The policy value should be specified in milliseconds. Values are clamped to be less than the idle delay.</translation>
 <translation id="6536600139108165863">Automatic reboot on device shutdown</translation>
+<translation id="6539246272469751178">This policy has no effect on Android apps. Android apps always use the default downloads directory and cannot access any files downloaded by <ph name="PRODUCT_OS_NAME" /> into a non-default downloads directory.</translation>
 <translation id="6544897973797372144">If this policy is set to True and the ChromeOsReleaseChannel policy is not specified then users of the enrolling domain will be allowed to change the release channel of the device. If this policy is set to false the device will be locked in whatever channel it was last set.
 
       The user selected channel will be overridden by the ChromeOsReleaseChannel policy, but if the policy channel is more stable than the one that was installed on the device, then the channel will only switch after the version of the more stable channel reaches a higher version number than the one installed on the device.</translation>
@@ -2077,6 +2097,7 @@ If this setting is not set, <ph name="PRODUCT_NAME" /> will allow the user to co
 
           If this policy is left unset the global default value will be used for all sites either from the 'DefaultPop-upsSetting' policy, if it is set, or the user's personal configuration otherwise.</translation>
 <translation id="7529144158022474049">Auto update scatter factor</translation>
+<translation id="7534199150025803530">This policy has no effect on the Android Google Drive app. If you want to prevent use of Google Drive over mobile connections, you should disallow installation of the Android Google Drive app.</translation>
 <translation id="7553535237300701827">When this policy is set, the login authentication flow will happen in one of the following ways depending on the value of the setting:
 
       If set to GAIA, login will be done via the normal GAIA authentication flow.
@@ -2227,6 +2248,7 @@ If this setting is not set, <ph name="PRODUCT_NAME" /> will allow the user to co
 <translation id="7882585827992171421">This policy is active in retail mode only.
 
       Determines the id of the extension to be used as a screen saver on the sign-in screen. The extension must be part of the AppPack that is configured for this domain through the DeviceAppPack policy.</translation>
+<translation id="7882857838942884046">Disabling Google Sync will cause Android Backup and Restore to not function properly.</translation>
 <translation id="7882890448959833986">Suppress the unsupported OS warning</translation>
 <translation id="7912255076272890813">Configure allowed app/extension types</translation>
 <translation id="7915236031252389808">You can specify a URL to a proxy .pac file here.
@@ -2267,6 +2289,7 @@ If this setting is not set, <ph name="PRODUCT_NAME" /> will allow the user to co
           If this setting is enabled, then this machine can discover and connect to remote host machines even if they are separated by a firewall.
 
           If this setting is disabled and outgoing UDP connections are filtered by the firewall, then this machine can only connect to host machines within the local network.</translation>
+<translation id="7986374692540430898">You cannot force Android apps to use a proxy. A subset of proxy settings is made available to Android apps, which they may voluntarily choose to honour. See the <ph name="PROXY_MODE_POLICY" /> policy for more details.</translation>
 <translation id="802147957407376460">Rotate screen by 0 degrees</translation>
 <translation id="8044493735196713914">Report device boot mode</translation>
 <translation id="8059164285174960932">URL where remote access clients should obtain their authentication token</translation>
@@ -2303,6 +2326,7 @@ If this setting is not set, <ph name="PRODUCT_NAME" /> will allow the user to co
 <translation id="8140204717286305802">Report list of network interfaces with their types and hardware addresses to the server.
 
       If the policy is set to false, the interface list will not be reported.</translation>
+<translation id="8141795997560411818">This policy does not prevent the user from using the Android Google Drive app. If you want to prevent access to Google Drive, you should disallow installation of the Android Google Drive app as well.</translation>
 <translation id="8146727383888924340">Allow users to redeem offers through Chrome OS Registration</translation>
 <translation id="8148785525797916822">Suppresses the warning that appears when <ph name="PRODUCT_NAME" /> is running on a computer or operating system that is no longer supported.</translation>
 <translation id="8148901634826284024">Enable the high contrast mode accessibility feature.
@@ -2464,6 +2488,7 @@ If this setting is not set, <ph name="PRODUCT_NAME" /> will allow the user to co
 <translation id="8587229956764455752">Allow creation of new user accounts</translation>
 <translation id="8614804915612153606">Disables Auto Update</translation>
 <translation id="8631434304112909927">until version <ph name="UNTIL_VERSION" /></translation>
+<translation id="863319402127182273">For Android apps, this policy affects the built-in camera only. When this policy is set to true, the camera is disabled for all Android apps, with no exceptions.</translation>
 <translation id="8649763579836720255">Chrome OS devices can use remote attestation (Verified Access) to get a certificate issued by the Chrome OS CA that asserts that the device is eligible to play protected content. This process involves sending hardware endorsement information to the Chrome OS CA which uniquely identifies the device.
 
           If this setting is false, the device will not use remote attestation for content protection and the device may be unable to play protected content.
@@ -2540,6 +2565,15 @@ If this setting is not set, <ph name="PRODUCT_NAME" /> will allow the user to co
 <translation id="8833109046074170275">Authentication via the default GAIA flow</translation>
 <translation id="8838303810937202360"><ph name="PRODUCT_OS_NAME" /> caches Apps and Extensions for installation by multiple users of a single device to avoid re-downloading them for each user.
       If this policy is not configured or the value is lower than 1 MB, <ph name="PRODUCT_OS_NAME" /> will use the default cache size.</translation>
+<translation id="8858120573534680488">You cannot force Android apps to use a proxy. A subset of proxy settings is made available to Android apps, which they may voluntarily choose to honour:
+
+          If you choose "never use a proxy server", Android apps are informed that no proxy is configured.
+
+          If you choose "use system proxy settings" or "fixed server proxy", Android apps are provided with the http proxy server address and port.
+
+          If you choose "auto detect proxy server", the script URL "http://wpad/wpad.dat" is provided to Android apps. No other part of the proxy auto-detection protocol is used.
+
+          If you choose ".pac proxy script", the script URL is provided to Android apps.</translation>
 <translation id="8858642179038618439">Force YouTube Safety Mode</translation>
 <translation id="8864975621965365890">Suppresses the turn-down prompt that appears when a site is rendered by <ph name="PRODUCT_FRAME_NAME" />.</translation>
 <translation id="8870318296973696995">Homepage</translation>
@@ -2601,6 +2635,7 @@ If this setting is not set, <ph name="PRODUCT_NAME" /> will allow the user to co
 <translation id="9088444059179765143">Configure the automatic timezone detection method</translation>
 <translation id="9096086085182305205">Authentication server whitelist</translation>
 <translation id="9098553063150791878">Policies for HTTP authentication</translation>
+<translation id="9105265795073104888">Only a subset of proxy configuration options are made available to Android apps. Android apps may voluntarily choose to use the proxy. You cannot force them to use a proxy.</translation>
 <translation id="9112897538922695510">Allows you to register a list of protocol handlers. This can only be a recommended policy. The property |protocol| should be set to the scheme such as 'mailto' and the property |url| should be set to the URL pattern of the application that handles the scheme. The pattern can include a '%s', which if present will be replaced by the handled URL.
 
           The protocol handlers registered by policy are merged with the ones registered by the user and both are available for use. The user can override the protocol handlers installed by policy by installing a new default handler, but cannot remove a protocol handler registered by policy.</translation>

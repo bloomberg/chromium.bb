@@ -51,7 +51,6 @@ You must have Bluetooth and Location turned on in order to use the Physical Web.
 <translation id="1506061864768559482">Search engine</translation>
 <translation id="1513352483775369820">Bookmarks and web history</translation>
 <translation id="1513858653616922153">Delete password</translation>
-<translation id="1546112724822176246">Not seeing your device? <ph name="BEGIN_LINK" />Get help<ph name="END_LINK" />.</translation>
 <translation id="1549000191223877751">Move to other window</translation>
 <translation id="1553358976309200471">Update Chrome</translation>
 <translation id="1571304935088121812">Copy username</translation>
@@ -72,7 +71,6 @@ You must have Bluetooth and Location turned on in order to use the Physical Web.
 <translation id="1749561566933687563">Sync your bookmarks</translation>
 <translation id="17513872634828108">Open tabs</translation>
 <translation id="1756600373018374892">Tap this button for quick access to your tabs.</translation>
-<translation id="1774241295142531736">Not seeing your device? <ph name="BEGIN_LINK1" />Get help<ph name="END_LINK1" /> or <ph name="BEGIN_LINK2" />re-scan<ph name="END_LINK2" />.</translation>
 <translation id="1807246157184219062">Light</translation>
 <translation id="1825719650605518411">First Run Experience</translation>
 <translation id="1826516787628120939">Checking</translation>
@@ -156,7 +154,6 @@ You can control the Physical Web in Chrome Settings.
 <translation id="2707726405694321444">Refresh page</translation>
 <translation id="2709516037105925701">Auto-fill</translation>
 <translation id="271033894570825754">New</translation>
-<translation id="2748463065602559597">You are viewing a secure Google Chrome page.</translation>
 <translation id="2762000892062317888">just now</translation>
 <translation id="2777555524387840389"><ph name="SECONDS" /> secs left</translation>
 <translation id="2781151931089541271">1 sec left</translation>
@@ -233,7 +230,6 @@ To adjust your search term, long press to select. To refine your search, slide t
 <translation id="3656115297268584622">Turn on location in <ph name="BEGIN_LINK" />Android Settings<ph name="END_LINK" />.</translation>
 <translation id="3661699943263275414">Third-party websites can save and read cookie data</translation>
 <translation id="3672452749423051839">Navigation error suggestions</translation>
-<translation id="3690847815241521170">Scanning for devices… <ph name="BEGIN_LINK" />Get help<ph name="END_LINK" /></translation>
 <translation id="3706658020782046159">Select a delivery address to check delivery methods and requirements.</translation>
 <translation id="3716158070938632480">Web pages are nearby</translation>
 <translation id="3738139272394829648">Touch to Search</translation>
@@ -322,7 +318,6 @@ To adjust your search term, long press to select. To refine your search, slide t
 <translation id="4807098396393229769">Name on card</translation>
 <translation id="4816465935029283692">Data types</translation>
 <translation id="4827948050554950725">Add credit card</translation>
-<translation id="4836364883164334657">Your connection to this site is not private. Attackers might be trying to steal your information (for example, photos, passwords, messages and credit cards) from <ph name="DOMAIN_NAME" />.</translation>
 <translation id="4850886885716139402">View</translation>
 <translation id="4881695831933465202">Open</translation>
 <translation id="4885273946141277891">Unsupported number of Chrome instances.</translation>
@@ -355,6 +350,7 @@ To adjust your search term, long press to select. To refine your search, slide t
 <translation id="5171045022955879922">Search or type URL</translation>
 <translation id="5184329579814168207">Open in Chrome</translation>
 <translation id="5199929503336119739">Work profile</translation>
+<translation id="5209320130288484488">No devices found</translation>
 <translation id="5210365745912300556">Close tab</translation>
 <translation id="5222676887888702881">Sign out</translation>
 <translation id="5233638681132016545">New tab</translation>
@@ -389,7 +385,6 @@ To adjust your search term, long press to select. To refine your search, slide t
 <translation id="5556459405103347317">Reload</translation>
 <translation id="5565871407246142825">Credit cards</translation>
 <translation id="5578795271662203820">Search <ph name="SEARCH_ENGINE" /> for this image</translation>
-<translation id="5579997910517802656">No devices found.</translation>
 <translation id="5595485650161345191">Edit address</translation>
 <translation id="5596627076506792578">More options</translation>
 <translation id="5626134646977739690">Name:</translation>
@@ -418,7 +413,6 @@ However, you aren't invisible. Going incognito doesn't hide your browsing from y
 <translation id="583281660410589416">Unknown</translation>
 <translation id="5832934273103296195">Expanded – Click to collapse</translation>
 <translation id="583891442612896534">Chrome is unable to reach Google servers for data compression. Your data savings may be limited.</translation>
-<translation id="5843873952582375185">No Bluetooth devices found. <ph name="BEGIN_LINK" />Re-scan<ph name="END_LINK" /></translation>
 <translation id="585027516397408832">Data Saver enabled</translation>
 <translation id="5860033963881614850">Off</translation>
 <translation id="5867027562311576691">More articles will appear soon. Enjoy your morning.</translation>
@@ -568,9 +562,9 @@ Your Google account may have other forms of browsing history like searches and a
 <translation id="7596558890252710462">Operating system</translation>
 <translation id="7605594153474022051">Sync isn't working</translation>
 <translation id="7612619742409846846">Signed in to Google as</translation>
+<translation id="7613889955535752492">Exp: <ph name="EXPIRATION_MONTH" />/<ph name="EXPIRATION_YEAR" /></translation>
 <translation id="7619072057915878432"><ph name="FILE_NAME" /> download failed due to network failures.</translation>
 <translation id="7626032353295482388">Welcome to Chrome</translation>
-<translation id="7634554953375732414">Your connection to this site is not private.</translation>
 <translation id="7638584964844754484">Incorrect passphrase</translation>
 <translation id="7648422057306047504">Encrypt passwords with Google credentials</translation>
 <translation id="7649070708921625228">Help</translation>
@@ -638,13 +632,11 @@ Your Google account may have other forms of browsing history like searches and a
 <translation id="8428213095426709021">Settings</translation>
 <translation id="8433057134996913067">This will sign you out of most websites.</translation>
 <translation id="8447861592752582886">Revoke device permission</translation>
-<translation id="8481940801237642152">Your connection to this site is private, but someone on the network might be able to change the look of the page.</translation>
 <translation id="8487700953926739672">Available offline</translation>
 <translation id="8493948351860045254">Free up space</translation>
 <translation id="8497726226069778601">Nothing to see here… yet</translation>
 <translation id="8503813439785031346">Username</translation>
 <translation id="8514577642972634246">Enter incognito mode</translation>
-<translation id="8518901949365209398">This site uses a weak security configuration (SHA-1 signatures), so your connection may not be private.</translation>
 <translation id="8523928698583292556">Delete stored password</translation>
 <translation id="854522910157234410">Open this page:</translation>
 <translation id="8562452229998620586">Your saved passwords will appear here.</translation>
@@ -675,7 +667,6 @@ Your Google account may have other forms of browsing history like searches and a
 <translation id="8912362522468806198">Google Account</translation>
 <translation id="8920114477895755567">Waiting for details of parents.</translation>
 <translation id="8931159598799892500">Chrome + Physical Web</translation>
-<translation id="8941248009481596111">Your connection to this site is private.</translation>
 <translation id="8941729603749328384">www.example.com</translation>
 <translation id="8942627711005830162">Open in other window</translation>
 <translation id="8959122750345127698">Navigation is unreachable: <ph name="URL" /></translation>

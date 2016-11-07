@@ -89,6 +89,7 @@
 <translation id="3294437725009624529">ಅತಿಥಿ</translation>
 <translation id="3335772982573114336">ಹೊಸ ಟಿಪ್ಪಣಿ</translation>
 <translation id="3364721542077212959">ಸ್ಟೈಲಸ್ ಪರಿಕರಗಳು</translation>
+<translation id="3368922792935385530">ಸಂಪರ್ಕಿಸಲಾಗಿದೆ</translation>
 <translation id="3371140690572404006">USB-C ಸಾಧನ (ಬಲ ಭಾಗದ ಮುಂದಿನ ಪೋರ್ಟ್‌)</translation>
 <translation id="3445925074670675829">USB-C ಸಾಧನ</translation>
 <translation id="3473479545200714844">ಪರದೆ ವರ್ಧಕ</translation>
@@ -125,6 +126,7 @@
 <translation id="4250680216510889253">ಇಲ್ಲ</translation>
 <translation id="4279490309300973883">ಪ್ರತಿಬಿಂಬಿಸುವಿಕೆ</translation>
 <translation id="4321179778687042513">ctrl</translation>
+<translation id="4378551569595875038">ಸಂಪರ್ಕಿಸಲಾಗುತ್ತಿದೆ...</translation>
 <translation id="4421231901400348175">ರಿಮೋಟ್ ಸಹಾಯದ ಮೂಲಕ <ph name="HELPER_NAME" /> ಜೊತೆಗೆ ನಿಮ್ಮ ಪರದೆಯ ನಿಯಂತ್ರಣವನ್ನು ಹಂಚಲಾಗುತ್ತಿದೆ.</translation>
 <translation id="4430019312045809116">ವಾಲ್ಯೂಮ್</translation>
 <translation id="4448844063988177157">ವೈ-ಫೈ ನೆಟ್‌ವರ್ಕ್‌ಗಳಿಗಾಗಿ ಹುಡುಕಲಾಗುತ್ತಿದೆ...</translation>
@@ -279,4 +281,5 @@
 <translation id="923686485342484400">ಸೈನ್ ಔಟ್ ಮಾಡಲು Control Shift Q ಅನ್ನು ಎರಡುಬಾರಿ ಒತ್ತಿರಿ.</translation>
 <translation id="938582441709398163">ಕೀಬೋರ್ಡ್ ಒವರ್‌ಲೇ</translation>
 <translation id="939252827960237676">ಸ್ಕ್ರೀನ್‌ಶಾಟ್ ಉಳಿಸುವಲ್ಲಿ ವಿಫಲವಾಗಿದೆ</translation>
+<translation id="952992212772159698">ಸಕ್ರಿಯಗೊಳಿಸಲಾಗಿಲ್ಲ</translation>
 </translationbundle>

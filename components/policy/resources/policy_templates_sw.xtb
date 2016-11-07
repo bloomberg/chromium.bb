@@ -19,6 +19,9 @@
       Sera hii ikiwekwa kuwa sivyo au isipowekwa, vidakuzi vilivyowekwa na IdP huhamishiwa kwenye wasifu wa mtumiaji anapoingia katika kifaa kwa mara ya kwanza pekee.
 
       Sera hii inaathiri watumiaji ambao vikoa vyao vinalingana na kikoa cha usajili wa kifaa pekee. Kwa watumiaji wengine wote, vidakuzi vinavyowekwa na IdP huhamishiwa kwenye wasifu wa mtumiaji anapoingia kwa mara ya kwanza kwenye kifaa chake pekee.</translation>
+<translation id="1029536946382325801">Ikiwa ndivyo, mtumiaji anaweza kutumia maunzi kwenye vifaa vya Chrome ili kudhibiti kwa umbali na kuthibitisha utambulisho wake katika CA ya faragha kupitia Enterprise Platform Keys API chrome.enterprise.platformKeysPrivate.challengeUserKey().
+
+          Ikiwa imewekwa kuwa sivyo, au haijawekwa, simu katika API zitashindwa kwa msimbo wa hitilafu.</translation>
 <translation id="1040446814317236570">Washa kipengee cha kuondoa URL ya PAC (kwa https://)</translation>
 <translation id="1044878202534415707">Ripoti takwimu za maunzi kama vile matumizi ya CPU/RAM.
 
@@ -970,6 +973,9 @@ Sera hii inatumika tu kama sera ya 'DefaultSearchProviderEnabled' imewashwa.</tr
 
       Sera hii ikiwekwa kuwa ndivyo, ufuatiliaji wa vifurushi vya mtandao (maarufu kama <ph name="HEARTBEATS_TERM" />) utatumwa.
       Ikiwekwa kuwa sivyo au isipowekwa, hakuna vifurushi vitakavyotumwa.</translation>
+<translation id="3963602271515417124">Ikiwa ndivyo, ushuhuda wa mbali huruhusiwa kwa ajili ya kifaa na cheti kitazalishwa kiotomatiki na kupakiwa kwenye Seva ya Udhibiti wa Kifaa.
+           
+            Ikiwa imewekwa kuwa sivyo, au haijawekwa, hakuna cheti kitakachozalishwa na simu kwa API ya kiendelezi cha enterprise.platformKeys zitashindwa.</translation>
 <translation id="3964909636571393861">Inaruhusu kufikia orodha ya URL</translation>
 <translation id="3965339130942650562">Muda umekwisha mpaka uondokaji wa kuingia kusikotumika kutekelezwe</translation>
 <translation id="3967075520570946456">Washa kipengee cha kuonyesha ukurasa wa kukaribisha unapofungua kivinjari kwa mara ya kwanza baada ya kupata toleo jipya la Mfumo wa Uendeshaji.</translation>
@@ -2214,6 +2220,9 @@ Kama sera haitawekwa, kikuza skrini kitazimwa wakati skrini ya kuingia katika ak
           kwenye kikoa cha Saraka Inayotumika.</translation>
 <translation id="7937766917976512374">Ruhusu au ukatae kurekodi video</translation>
 <translation id="7941975817681987555">Usibashiri vitendo vya mtandao kwenye muunganisho wa mtandao wowote</translation>
+<translation id="7942429005743031780">Sera hii hubainisha viendelezi vilivyoruhusiwa ili kutumia Enterprise Platform Keys API chrome.enterprise.platformKeysPrivate.challengeUserKey() kwa uthibitishaji wa mbali. Lazima viendelezi viongezwe kwenye orodha hii ili kutumia API.
+
+          Ikiwa kiendelezi hakipo kwenye orodha, au orodha haijawekwa, upigaji simu kwa API utashindwa kwa msimbo wa hitilafu.</translation>
 <translation id="7953256619080733119">Wapangishi wasiofuata kanuni za mwongozo wa mtumiaji uliodhibitiwa</translation>
 <translation id="7971839631300653352">SSL 3.0</translation>
 <translation id="7974114691960514888">Sera hii haihimiliwi tena.

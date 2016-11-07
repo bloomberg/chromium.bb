@@ -50,6 +50,7 @@
 <translation id="1491663344921578213">Huwezi kutembelea <ph name="SITE" /> sasa hivi kwa sababu tovuti hutumia ubandikaji vyeti. Hitilafu na uvamizi wa mtandao kwa kawaida huwa wa muda, kwa hivyo ukurasa huu huenda utafanya kazi baadaye.<ph name="BEGIN_LEARN_MORE_LINK" />Pata maelezo zaidi<ph name="END_LEARN_MORE_LINK" />.</translation>
 <translation id="1506687042165942984">Onyesha nakala iliyohifadhiwa (yaani inayojulikana kwisha muda) ya ukurasa huu.</translation>
 <translation id="1519264250979466059">Unda Tarehe</translation>
+<translation id="153384715582417236">Hayo yanatosha kwa sasa</translation>
 <translation id="1549470594296187301">Lazima JavaScript iwashwe ili utumie kipengele hiki.</translation>
 <translation id="1559528461873125649">Hakuna faili au saraka kama hiyo</translation>
 <translation id="1559572115229829303">&lt;p&gt;Muunganisho wa faragha kwenye <ph name="BEGIN_BOLD" /><ph name="DOMAIN" /><ph name="END_BOLD" /> hauwezi kutambuliwa kwa sababu tarehe na wakati wa kifaa chako <ph name="DATE_AND_TIME" /> si sahihi.&lt;/p&gt;
@@ -386,8 +387,10 @@
 <translation id="5171045022955879922">Tafuta au charaza URL</translation>
 <translation id="5172758083709347301">Mashine</translation>
 <translation id="5179510805599951267">Haiko katika <ph name="ORIGINAL_LANGUAGE" />? Ripoti hitilafu hii</translation>
+<translation id="5181140330217080051">Inapakua</translation>
 <translation id="5190835502935405962">Sehemu ya Alamisho</translation>
 <translation id="5199729219167945352">Majaribio</translation>
+<translation id="5199841536747119669">Mapendekezo yako yataonekana hapa</translation>
 <translation id="5251803541071282808">Wingu</translation>
 <translation id="5277279256032773186">Je, unatumia Chrome kazini? Kampuni zinaweza kudhibiti mipangilio ya Chrome ya wafanyikazi wao. Pata maelezo zaidi</translation>
 <translation id="5299298092464848405">Hitilafu wakati wa kuchanganua sera</translation>
@@ -467,6 +470,7 @@
 <translation id="6263376278284652872">Alamisho za <ph name="DOMAIN" /></translation>
 <translation id="6264485186158353794">Rejea kwenye usalama</translation>
 <translation id="6282194474023008486">Msimbo wa posta</translation>
+<translation id="6290238015253830360">Makala uliyopendekeza yataonekana hapa</translation>
 <translation id="6305205051461490394"><ph name="URL" /> haiwezi kufikiwa.</translation>
 <translation id="6321917430147971392">Angalia mipangilio yako ya DNS</translation>
 <translation id="6328639280570009161">Jaribu kuzima utabiri wa mtandao</translation>
@@ -650,6 +654,7 @@ Hebu! Huenda hali fiche <ph name="SHORTCUT_KEY" /> ikakufaa wakati ujao.</transl
 <translation id="8363502534493474904">Kuzima hali ya ndegeni</translation>
 <translation id="8364627913115013041">Haijawekwa.</translation>
 <translation id="8380941800586852976">Hatari</translation>
+<translation id="8382348898565613901">Alamisho ulizotembelea hivi majuzi zitaonekana hapa</translation>
 <translation id="8412145213513410671">Mivurugo ( <ph name="CRASH_COUNT" /> )</translation>
 <translation id="8412392972487953978">Lazima uingize kaulisiri ile ile mara mbili.</translation>
 <translation id="8428213095426709021">Mipangilio</translation>
@@ -661,7 +666,6 @@ Hebu! Huenda hali fiche <ph name="SHORTCUT_KEY" /> ikakufaa wakati ujao.</transl
 <translation id="8498891568109133222"><ph name="HOST_NAME" /> imechukua muda mrefu kupakia.</translation>
 <translation id="852346902619691059">Seva hii haikuweza kuthibitisha kwamba ni <ph name="DOMAIN" />; cheti chake cha usalama hakiaminiwi na mfumo wa uendeshaji wa kifaa chako. Hii inatokana na uwekaji mipangilio usiofaa au mvamizi kuingilia muunganisho wako. <ph name="BEGIN_LEARN_MORE_LINK" />Pata maelezo zaidi<ph name="END_LEARN_MORE_LINK" />.</translation>
 <translation id="8530504477309582336">Aina hii ya kadi haiwezi kutumiwa na Google Payments. Tafadhali teua kadi tofauti.</translation>
-<translation id="8550022383519221471">Huduma ya ulinganishaji haipatikani kwa kikoa chako.</translation>
 <translation id="8553075262323480129">Tafsiri imeshindwa kwa sababu lugha ya ukurasa isingeweza kuthibitishwa.</translation>
 <translation id="8559762987265718583">Muunganisho wa faragha kwenye <ph name="BEGIN_BOLD" /><ph name="DOMAIN" /><ph name="END_BOLD" /> hauwezi kupatikana kwa sababu tarehe na wakati wa kifaa chako (<ph name="DATE_AND_TIME" />) si sahihi.</translation>
 <translation id="856992080682148">Cheti cha tovuuti hii kitakwisha muda mwaka wa 2017 au baadaye, na msururu wa cheti una cheti kilichotiwa sahihi kwa kutumia SHA-1.</translation>
@@ -669,7 +673,6 @@ Hebu! Huenda hali fiche <ph name="SHORTCUT_KEY" /> ikakufaa wakati ujao.</transl
 <translation id="8591846766485502580">Unaona ujumbe huu kwa sababu mmoja wa wazazi wako amezuia tovuti hii.</translation>
 <translation id="859285277496340001">Cheti hakibainishi utaratibu wa kuangalia iwapo kimekataliwa.</translation>
 <translation id="8647750283161643317">Weka upya zote kwa chaguo-msingi</translation>
-<translation id="8680787084697685621">Maelezo ya kuingia kwenye akaunti yamechina.</translation>
 <translation id="8703575177326907206">Muunganisho wako kwa <ph name="DOMAIN" /> haujasimbwa.</translation>
 <translation id="8725066075913043281">Jaribu tena</translation>
 <translation id="8728672262656704056">Unavinjari katika hali fiche.</translation>
@@ -699,7 +702,6 @@ Hebu! Huenda hali fiche <ph name="SHORTCUT_KEY" /> ikakufaa wakati ujao.</transl
 <translation id="8987927404178983737">Mwezi</translation>
 <translation id="8989148748219918422"><ph name="ORGANIZATION" /> [<ph name="COUNTRY" />]</translation>
 <translation id="9001074447101275817">Seva mbadala ya <ph name="DOMAIN" /> inahitaji jina la mtumiaji na nenosiri.</translation>
-<translation id="9008201768610948239">Puuza</translation>
 <translation id="901974403500617787">Alama zinazotumika katika mfumo mzima zinaweza kuwekwa na mmiliki pekee: <ph name="OWNER_EMAIL" />.</translation>
 <translation id="9020542370529661692">Ukurasa huu umetafsiriwa kwenda <ph name="TARGET_LANGUAGE" /></translation>
 <translation id="9038649477754266430">Tumia huduma ya kutabiri ili upakie kurasa kwa haraka zaidi</translation>

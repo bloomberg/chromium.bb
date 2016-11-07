@@ -391,6 +391,7 @@ Del</translation>
 <translation id="5171045022955879922">חפש או הקלד כתובת אתר</translation>
 <translation id="5172758083709347301">מכונה</translation>
 <translation id="5179510805599951267">לא ב<ph name="ORIGINAL_LANGUAGE" />? דווח על שגיאה זו</translation>
+<translation id="5181140330217080051">מוריד</translation>
 <translation id="5190835502935405962">סרגל הסימניות</translation>
 <translation id="5199729219167945352">ניסויים</translation>
 <translation id="5199841536747119669">הצעות עבורך מופיעות כאן</translation>
@@ -670,7 +671,6 @@ Del</translation>
 <translation id="8498891568109133222">ל-<ph name="HOST_NAME" /> נדרש זמן רב מדי להגיב.</translation>
 <translation id="852346902619691059">השרת הזה לא הצליח להוכיח שהוא <ph name="DOMAIN" />; מערכת ההפעלה של המכשיר לא סומכת על אישור האבטחה שלו. ייתכן שהסיבה לכך היא הגדרה שגויה או שתוקף מיירט את החיבור שלך. <ph name="BEGIN_LEARN_MORE_LINK" />למידע נוסף<ph name="END_LEARN_MORE_LINK" />.</translation>
 <translation id="8530504477309582336">‏סוג הכרטיס הזה אינו נתמך על ידי Google Payments. בחר כרטיס אחר.</translation>
-<translation id="8550022383519221471">שירות הסינכרון אינו זמין לדומיין שלך.</translation>
 <translation id="8553075262323480129">התרגום נכשל כיוון שלא הייתה אפשרות לקבוע את שפת הדף.</translation>
 <translation id="8559762987265718583">לא ניתן ליצור חיבור פרטי אל <ph name="BEGIN_BOLD" /><ph name="DOMAIN" /><ph name="END_BOLD" /> מפני שהתאריך והשעה (<ph name="DATE_AND_TIME" />) במכשיר שלך שגויים.</translation>
 <translation id="856992080682148">‏תוקף האישור של האתר הזה יפוג ב-2017 או מאוחר יותר ושרשרת האישורים מכילה אישור שנחתם באמצעות SHA-1.</translation>
@@ -678,7 +678,6 @@ Del</translation>
 <translation id="8591846766485502580">אתה רואה את ההודעה הזו מפני שאחד מההורים שלך חסם את האתר הזה.</translation>
 <translation id="859285277496340001">האישור אינו מציין מנגנון הבודק אם הוא נשלל.</translation>
 <translation id="8647750283161643317">אפס הכל לברירת המחדל</translation>
-<translation id="8680787084697685621">פרטי הכניסה לחשבון אינם מעודכנים.</translation>
 <translation id="8703575177326907206">ההתחברות שלך אל <ph name="DOMAIN" /> אינה מוצפנת.</translation>
 <translation id="8725066075913043281">נסה שוב</translation>
 <translation id="8728672262656704056">עברת למצב גלישה בסתר</translation>
@@ -708,7 +707,6 @@ Del</translation>
 <translation id="8987927404178983737">חודש</translation>
 <translation id="8989148748219918422"><ph name="ORGANIZATION" /> [<ph name="COUNTRY" />]</translation>
 <translation id="9001074447101275817">‏שרת ה-proxy ‏<ph name="DOMAIN" /> מצריך שם משתמש וסיסמה.</translation>
-<translation id="9008201768610948239">התעלם</translation>
 <translation id="901974403500617787">רק הבעלים יכול להגדיר סימונים החלים על כל המערכת: <ph name="OWNER_EMAIL" />.</translation>
 <translation id="9020542370529661692">הדף הזה תורגם ל<ph name="TARGET_LANGUAGE" /></translation>
 <translation id="9038649477754266430">השתמש בשירות חיזוי כדי לטעון דפים מהר יותר</translation>

@@ -51,7 +51,6 @@
 <translation id="1506061864768559482">محرك البحث</translation>
 <translation id="1513352483775369820">الإشارات المرجعية وسجل بحث الويب</translation>
 <translation id="1513858653616922153">حذف كلمة المرور</translation>
-<translation id="1546112724822176246">ألا ترى جهازك؟ <ph name="BEGIN_LINK" />احصل على المساعدة<ph name="END_LINK" />.</translation>
 <translation id="1549000191223877751">الانتقال إلى نافذة أخرى</translation>
 <translation id="1553358976309200471">‏تحديث Chrome‏</translation>
 <translation id="1571304935088121812">نسخ اسم المستخدم</translation>
@@ -72,7 +71,6 @@
 <translation id="1749561566933687563">مزامنة الإشارات المرجعية</translation>
 <translation id="17513872634828108">علامات التبويب المفتوحة</translation>
 <translation id="1756600373018374892">انقر على هذا الزر للوصول السريع إلى علامات التبويب.</translation>
-<translation id="1774241295142531736">ألا ترى جهازك؟ يمكنك <ph name="BEGIN_LINK1" />الحصول على المساعدة<ph name="END_LINK1" /> أو <ph name="BEGIN_LINK2" />إعادة البحث<ph name="END_LINK2" />.</translation>
 <translation id="1807246157184219062">فاتح</translation>
 <translation id="1825719650605518411">تجربة التشغيل لأول مرة</translation>
 <translation id="1826516787628120939">حساب شيكات</translation>
@@ -156,7 +154,6 @@
 <translation id="2707726405694321444">تحديث الصفحة</translation>
 <translation id="2709516037105925701">الملء التلقائي</translation>
 <translation id="271033894570825754">جديدة</translation>
-<translation id="2748463065602559597">‏أنت تعرض صفحة Google Chrome آمنة.</translation>
 <translation id="2762000892062317888">الآن</translation>
 <translation id="2777555524387840389">عدد الثواني المتبقية: <ph name="SECONDS" /></translation>
 <translation id="2781151931089541271">يتبقى ثانية واحدة</translation>
@@ -233,7 +230,6 @@
 <translation id="3656115297268584622">‏تشغيل الموقع في <ph name="BEGIN_LINK" />إعدادات Android<ph name="END_LINK" />.</translation>
 <translation id="3661699943263275414">يمكن لمواقع الويب التابعة لجهات خارجية حفظ بيانات ملفات تعريف الارتباط وقراءتها</translation>
 <translation id="3672452749423051839">اقتراحات أخطاء التنقل</translation>
-<translation id="3690847815241521170">جارٍ البحث عن الأجهزة... <ph name="BEGIN_LINK" />الحصول على مساعدة<ph name="END_LINK" /></translation>
 <translation id="3706658020782046159">اختر عنوان شحن للتحقّق من متطلبات وطرق الشحن.</translation>
 <translation id="3716158070938632480">صفحات الويب المجاورة</translation>
 <translation id="3738139272394829648">المس للبحث</translation>
@@ -323,7 +319,6 @@
 <translation id="4807098396393229769">الاسم كما على البطاقة</translation>
 <translation id="4816465935029283692">أنواع البيانات</translation>
 <translation id="4827948050554950725">إضافة بطاقة ائتمان</translation>
-<translation id="4836364883164334657">اتصالك بهذا الموقع ليس له خصوصية. قد يحاول المهاجمون سرقة معلوماتك (على سبيل المثال، الصور، وكلمات المرور، والرسائل وبطاقات الائتمان) من <ph name="DOMAIN_NAME" />.</translation>
 <translation id="4850886885716139402">عرض</translation>
 <translation id="4881695831933465202">فتح</translation>
 <translation id="4885273946141277891">‏عدد نسخ Chrome غير متوافق.</translation>
@@ -356,6 +351,7 @@
 <translation id="5171045022955879922">‏البحث أو إدخال عنوان URL</translation>
 <translation id="5184329579814168207">‏فتح في Chrome</translation>
 <translation id="5199929503336119739">الملف الشخصي للعمل</translation>
+<translation id="5209320130288484488">لم يتم العثور على أية أجهزة</translation>
 <translation id="5210365745912300556">إغلاق علامة التبويب</translation>
 <translation id="5222676887888702881">الخروج</translation>
 <translation id="5233638681132016545">علامة تبويب جديدة</translation>
@@ -390,7 +386,6 @@
 <translation id="5556459405103347317">إعادة تحميل</translation>
 <translation id="5565871407246142825">بطاقات ائتمان</translation>
 <translation id="5578795271662203820">البحث في <ph name="SEARCH_ENGINE" /> عن هذه الصورة</translation>
-<translation id="5579997910517802656">لم يتم العثور على أية أجهزة.</translation>
 <translation id="5595485650161345191">تعديل العنوان</translation>
 <translation id="5596627076506792578">خيارات إضافية</translation>
 <translation id="5626134646977739690">الاسم:</translation>
@@ -419,7 +414,6 @@
 <translation id="583281660410589416">غير معروف</translation>
 <translation id="5832934273103296195">تم التوسيع - انقر للتصغير</translation>
 <translation id="583891442612896534">‏لا يمكن لمتصفح Chrome الوصول إلى خوادم Google لضغط البيانات. قد تكون خيارات توفير البيانات محدودة.</translation>
-<translation id="5843873952582375185">لم يتم العثور على أجهزة بلوتوث. <ph name="BEGIN_LINK" />إعادة البحث<ph name="END_LINK" /></translation>
 <translation id="585027516397408832">تمكين توفير البيانات</translation>
 <translation id="5860033963881614850">إيقاف</translation>
 <translation id="5867027562311576691">ستظهر المزيد من المقالات قريبًا. استمتع بصباحك.</translation>
@@ -569,9 +563,9 @@
 <translation id="7596558890252710462">نظام التشغيل</translation>
 <translation id="7605594153474022051">المزامنة لا تعمل</translation>
 <translation id="7612619742409846846">‏تسجيل الدخول إلى Google باسم</translation>
+<translation id="7613889955535752492">تاريخ انتهاء الصلاحية: <ph name="EXPIRATION_MONTH" /> / <ph name="EXPIRATION_YEAR" /></translation>
 <translation id="7619072057915878432">أخفق تنزيل الملف <ph name="FILE_NAME" /> بسبب إخفاقات الشبكة.</translation>
 <translation id="7626032353295482388">‏مرحبًا بك في Chrome‏</translation>
-<translation id="7634554953375732414">إن اتصالك بهذا الموقع ليس له خصوصية.</translation>
 <translation id="7638584964844754484">عبارة مرور غير صحيحة</translation>
 <translation id="7648422057306047504">‏تشفير كلمات المرور باستخدام بيانات اعتماد Google</translation>
 <translation id="7649070708921625228">مساعدة</translation>
@@ -639,13 +633,11 @@
 <translation id="8428213095426709021">إعدادات</translation>
 <translation id="8433057134996913067">سيؤدي هذا إلى خروجك من معظم مواقع الويب.</translation>
 <translation id="8447861592752582886">إبطال إذن الجهاز</translation>
-<translation id="8481940801237642152">إن اتصالك بهذا الموقع له خصوصية، لكن قد يتمكن أحد الأشخاص على هذه الشبكة من تغيير مظهر الصفحة.</translation>
 <translation id="8487700953926739672">التوفر في وضع عدم الاتصال</translation>
 <translation id="8493948351860045254">تفريغ بعض المساحة</translation>
 <translation id="8497726226069778601">لا يوجد شيء هنا... حتى الآن</translation>
 <translation id="8503813439785031346">اسم المستخدم</translation>
 <translation id="8514577642972634246">الدخول إلى وضع التصفح المتخفي</translation>
-<translation id="8518901949365209398">‏يستخدم هذا الموقع تهيئة أمان ضعيفة (توقيعات SHA-1)، لذا قد لا يتم اتصالك بشكل خاص.</translation>
 <translation id="8523928698583292556">حذف كلمة المرور المخزنة</translation>
 <translation id="854522910157234410">فتح هذه الصفحة</translation>
 <translation id="8562452229998620586">ستظهر هنا كلمات المرور المحفوظة.</translation>
@@ -678,7 +670,6 @@
 <translation id="8912362522468806198">‏حساب Google‏</translation>
 <translation id="8920114477895755567">الانتظار للحصول على تفاصيل الآباء</translation>
 <translation id="8931159598799892500">‏Chrome + الشبكة المادية</translation>
-<translation id="8941248009481596111">إن اتصالك بهذا الموقع له خصوصية.</translation>
 <translation id="8941729603749328384">www.example.com</translation>
 <translation id="8942627711005830162">فتح في نافذة أخرى</translation>
 <translation id="8959122750345127698">التنقل غير قابل للوصول: <ph name="URL" /></translation>

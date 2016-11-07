@@ -387,6 +387,7 @@
 <translation id="5171045022955879922">Søg, eller indtast webadresse</translation>
 <translation id="5172758083709347301">Maskine</translation>
 <translation id="5179510805599951267">Ikke på <ph name="ORIGINAL_LANGUAGE" />? Rapporter denne fejl</translation>
+<translation id="5181140330217080051">Downloader</translation>
 <translation id="5190835502935405962">Bogmærkelinje</translation>
 <translation id="5199729219167945352">Eksperimenter</translation>
 <translation id="5199841536747119669">Forslag til dig vises her</translation>
@@ -665,7 +666,6 @@ Psst! Prøv at bruge Inkognitotilstand <ph name="SHORTCUT_KEY" /> næste gang.</
 <translation id="8498891568109133222"><ph name="HOST_NAME" /> var for lang tid om at svare.</translation>
 <translation id="852346902619691059">Denne server kunne ikke bevise, at den tilhører <ph name="DOMAIN" />, da din enheds operativsystem ikke har tillid til sikkerhedscertifikatet. Dette kan skyldes en fejlkonfiguration, eller at en hacker har opfanget din forbindelse. <ph name="BEGIN_LEARN_MORE_LINK" />Få flere oplysninger<ph name="END_LEARN_MORE_LINK" />.</translation>
 <translation id="8530504477309582336">Denne korttype understøttes ikke af Google Payments. Vælg et andet kort.</translation>
-<translation id="8550022383519221471">Synkroniseringstjenesten er ikke tilgængelig for dit domæne.</translation>
 <translation id="8553075262323480129">Oversættelsen mislykkedes, fordi sidens sprog ikke kunne fastslås.</translation>
 <translation id="8559762987265718583">Der kan ikke oprettes en privat forbindelse til <ph name="BEGIN_BOLD" /><ph name="DOMAIN" /><ph name="END_BOLD" />, da tid og dato (<ph name="DATE_AND_TIME" />) på din enhed er forkerte.</translation>
 <translation id="856992080682148">Certifikatet for dette website udløber i 2017 eller senere, og certifikatkæden indeholder et certifikat, der er signeret med SHA-1.</translation>
@@ -673,7 +673,6 @@ Psst! Prøv at bruge Inkognitotilstand <ph name="SHORTCUT_KEY" /> næste gang.</
 <translation id="8591846766485502580">Denne meddelelse vises, fordi en af dine forældre har blokeret dette website.</translation>
 <translation id="859285277496340001">Certifikatet angiver ikke en mekanisme, der kontrollerer, om den har været tilbagekaldt.</translation>
 <translation id="8647750283161643317">Nulstil alle til standard</translation>
-<translation id="8680787084697685621">Oplysningerne om kontologin er forældede.</translation>
 <translation id="8703575177326907206">Din forbindelse til <ph name="DOMAIN" /> er ikke krypteret.</translation>
 <translation id="8725066075913043281">Forsøg igen</translation>
 <translation id="8728672262656704056">Du er nu i inkognitotilstand</translation>
@@ -703,7 +702,6 @@ Psst! Prøv at bruge Inkognitotilstand <ph name="SHORTCUT_KEY" /> næste gang.</
 <translation id="8987927404178983737">Måned</translation>
 <translation id="8989148748219918422"><ph name="ORGANIZATION" /> [<ph name="COUNTRY" />]</translation>
 <translation id="9001074447101275817">Proxyserveren <ph name="DOMAIN" /> kræver et brugernavn og en adgangskode.</translation>
-<translation id="9008201768610948239">Ignorer</translation>
 <translation id="901974403500617787">Markeringer, der gælder for hele systemet, kan kun indstilles af ejeren: <ph name="OWNER_EMAIL" />.</translation>
 <translation id="9020542370529661692">Denne side er oversat til <ph name="TARGET_LANGUAGE" /></translation>
 <translation id="9038649477754266430">Brug en forudsigelsestjeneste til hurtigere sideindlæsning</translation>

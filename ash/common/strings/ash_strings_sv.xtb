@@ -88,6 +88,7 @@
 <translation id="3294437725009624529">Gäst</translation>
 <translation id="3335772982573114336">Ny anteckning</translation>
 <translation id="3364721542077212959">Verktyg för e-penna</translation>
+<translation id="3368922792935385530">Ansluten</translation>
 <translation id="3371140690572404006">USB-C-enhet (främre porten på högra sidan)</translation>
 <translation id="3445925074670675829">USB-C-enhet</translation>
 <translation id="3473479545200714844">Skärmförstorare</translation>
@@ -124,6 +125,7 @@
 <translation id="4250680216510889253">Nej</translation>
 <translation id="4279490309300973883">Spegling</translation>
 <translation id="4321179778687042513">ctrl</translation>
+<translation id="4378551569595875038">Ansluter ...</translation>
 <translation id="4421231901400348175">Dela kontroll över skärmen med <ph name="HELPER_NAME" /> via Fjärrhjälp.</translation>
 <translation id="4430019312045809116">Volym</translation>
 <translation id="4448844063988177157">Söker efter Wi-Fi-nätverk...</translation>
@@ -278,4 +280,5 @@ Inaktivera funktionen genom att trycka på Ctrl+Alt+Z.</translation>
 <translation id="923686485342484400">Tryck på Control + skift + Q två gånger om du vill logga ut.</translation>
 <translation id="938582441709398163">Tangentbordsöverlägg</translation>
 <translation id="939252827960237676">Det gick inte att spara skärmdumpen</translation>
+<translation id="952992212772159698">Inte aktiverat</translation>
 </translationbundle>

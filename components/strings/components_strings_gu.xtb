@@ -387,6 +387,7 @@
 <translation id="5171045022955879922">URL શોધો અથવા લખો</translation>
 <translation id="5172758083709347301">મશીન</translation>
 <translation id="5179510805599951267"><ph name="ORIGINAL_LANGUAGE" /> માં નથી? આ ભૂલની જાણ કરો </translation>
+<translation id="5181140330217080051">ડાઉનલોડ કરી રહ્યું છે</translation>
 <translation id="5190835502935405962">બુકમાર્ક્સ બાર</translation>
 <translation id="5199729219167945352">પ્રયોગો</translation>
 <translation id="5199841536747119669">તમારા સૂચનો અહીં દેખાય છે</translation>
@@ -665,7 +666,6 @@
 <translation id="8498891568109133222"><ph name="HOST_NAME" /> એ પ્રતિસાદ આપવા માટે ઘણો સમય લીધો.</translation>
 <translation id="852346902619691059">આ સર્વર એ સાબિત કરી શક્યું નથી કે તે <ph name="DOMAIN" /> છે; તેનું સુરક્ષા પ્રમાણપત્ર તમારા ઉપકરણની ઓપરેટિંગ સિસ્ટમ દ્વારા વિશ્વસનીય નથી. આ કોઈ ખોટી ગોઠવણીને કારણે થયું હશે અથવા કોઈ હુમલાખોર તમારા કનેક્શનને અટકાવી રહ્યો છે. <ph name="BEGIN_LEARN_MORE_LINK" />વધુ જાણો<ph name="END_LEARN_MORE_LINK" />.</translation>
 <translation id="8530504477309582336">Google Payments દ્વારા આ પ્રકારના કાર્ડને સમર્થન નથી. કૃપા કરીને બીજું કાર્ડ પસંદ કરો.</translation>
-<translation id="8550022383519221471">સમન્વયન સેવા તમારા ડોમેન માટે ઉપલબ્ધ નથી.</translation>
 <translation id="8553075262323480129">ભાષાંતર નિષ્ફળ રહ્યું કારણ કે પૃષ્ઠની ભાષા નિર્ધારિત થઈ શકી નથી.</translation>
 <translation id="8559762987265718583"><ph name="BEGIN_BOLD" /><ph name="DOMAIN" /><ph name="END_BOLD" /> પર ખાનગી કનેક્શન સ્થાપિત કરી શકાતું નથી કારણ કે તમારા ઉપકરણની તારીખ અને સમય (<ph name="DATE_AND_TIME" />) અયોગ્ય છે.</translation>
 <translation id="856992080682148">આ સાઇટ માટેનું પ્રમાણપત્ર 2017 માં સમાપ્ત થાય છે અને પ્રમાણપત્ર શ્રૃંખલા SHA-1 નો ઉપયોગ કરીને સહી કરેલ પ્રમાણપત્ર ધરાવે છે.</translation>
@@ -673,7 +673,6 @@
 <translation id="8591846766485502580">તમે આ સંદેશ જોઇ રહ્યાં છો કારણ કે તમારા માતાપિતામાંથી કોઇ એક એ આ સાઇટ અવરોધિત કરી છે.</translation>
 <translation id="859285277496340001">પ્રમાણપત્રને રદ કરવામાં આવ્યું છે કે નહિ તે તપાસવા માટે કોઈપણ મેકેનિઝમ નિર્દિષ્ટ કરતું નથી.</translation>
 <translation id="8647750283161643317">બધાને ડિફોલ્ટ પર ફરીથી સેટ કરો</translation>
-<translation id="8680787084697685621">એકાઉન્ટ સાઇન-ઇન વિગતો જૂની થઈ ગઈ છે.</translation>
 <translation id="8703575177326907206"><ph name="DOMAIN" /> સાથેનું તમારું કનેક્શન એન્ક્રિપ્ટેડ નથી.</translation>
 <translation id="8725066075913043281">ફરી પ્રયાસ કરો</translation>
 <translation id="8728672262656704056">તમે છુપા મોડમાં ગયા છો</translation>
@@ -703,7 +702,6 @@
 <translation id="8987927404178983737">મહિનો</translation>
 <translation id="8989148748219918422"><ph name="ORGANIZATION" /> [<ph name="COUNTRY" />]</translation>
 <translation id="9001074447101275817">પ્રોક્સી <ph name="DOMAIN" /> ને વપરાશકર્તાનામ અને પાસવર્ડની જરૂર છે.</translation>
-<translation id="9008201768610948239">અવગણો</translation>
 <translation id="901974403500617787">ધ્વજો કે જે સિસ્ટમ-વ્યાપી લાગુ છે તે ફક્ત માલિક દ્વારા જ સેટ કરી શકાય છે: <ph name="OWNER_EMAIL" />.</translation>
 <translation id="9020542370529661692">આ પૃષ્ઠનો <ph name="TARGET_LANGUAGE" /> માં અનુવાદ કરવામાં આવ્યો છે</translation>
 <translation id="9038649477754266430">પૃષ્ઠોને વધુ ઝડપથી લોડ કરવા માટે પૂર્વાનુમાન સેવાનો ઉપયોગ કરો</translation>

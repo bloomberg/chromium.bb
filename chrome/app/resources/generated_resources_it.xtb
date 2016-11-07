@@ -477,7 +477,6 @@ Tieni presente che il Bluetooth verrà attivato per tutti i dispositivi compatib
 <translation id="1598233202702788831">Gli aggiornamenti sono stati disattivati dall'amministratore.</translation>
 <translation id="1598604884989842103">Attiva interfaccia utente di espansione TouchView per eseguire i test</translation>
 <translation id="1600857548979126453">Accesso al backend del debugger delle pagine</translation>
-<translation id="1601247446845604757">Prototipo di WebGL 2.0</translation>
 <translation id="1601560923496285236">Applica</translation>
 <translation id="1603914832182249871">(In incognito)</translation>
 <translation id="1607220950420093847">Il tuo account potrebbe essere stato eliminato o disattivato. Esci.</translation>
@@ -569,7 +568,6 @@ Tieni presente che il Bluetooth verrà attivato per tutti i dispositivi compatib
 <translation id="1708713382908678956"><ph name="NAME_PH" /> (ID: <ph name="ID_PH" />)</translation>
 <translation id="1709106626015023981"><ph name="WIDTH" /> x <ph name="HEIGHT" /> (formato nativo)</translation>
 <translation id="1711973684025117106">Compressione non riuscita. Errore imprevisto: $1</translation>
-<translation id="1715941336038158809">Password o nome utente non valido.</translation>
 <translation id="1717733954209022288">Casella di controllo per salvare carte Google Payments</translation>
 <translation id="1720318856472900922">Autenticazione TLS server WWW</translation>
 <translation id="1720372306711178108">Desktop esteso</translation>
@@ -616,7 +614,6 @@ Tieni presente che il Bluetooth verrà attivato per tutti i dispositivi compatib
 <translation id="1781502536226964113">Apri la pagina Nuova scheda</translation>
 <translation id="1782196717298160133">Ricerca del tuo telefono</translation>
 <translation id="1782924894173027610">Il server di sincronizzazione è occupato, riprova più tardi.</translation>
-<translation id="1783075131180517613">Aggiorna la tua passphrase di sincronizzazione.</translation>
 <translation id="1784849162047402014">Spazio insufficiente sul disco del dispositivo</translation>
 <translation id="1788636309517085411">Usa posizione predefinita</translation>
 <translation id="1789575671122666129">Popup</translation>
@@ -769,7 +766,6 @@ Tieni presente che il Bluetooth verrà attivato per tutti i dispositivi compatib
 <translation id="2025632980034333559">Arresto anomalo di <ph name="APP_NAME" />. Fai clic su questo fumetto per riavviare l'estensione.</translation>
 <translation id="2028531481946156667">Impossibile avviare la procedura di formattazione.</translation>
 <translation id="2028997212275086731">Archivio RAR</translation>
-<translation id="203168018648013061">Errore di sincronizzazione. Reimposta la sincronizzazione tramite Google Dashboard.</translation>
 <translation id="2031695690821674406">Consente di attivare l'inserimento delle password quando l'utente seleziona esplicitamente un account anziché utilizzare la compilazione automatica delle credenziali al caricamento della pagina.</translation>
 <translation id="2034346955588403444">Aggiungi un'altra rete Wi-Fi</translation>
 <translation id="2040460856718599782">Spiacenti. Si è verificato un problema durante il tentativo di autenticazione. Controlla attentamente le tue credenziali di accesso e riprova.</translation>
@@ -948,7 +944,6 @@ Dopo avere creato un nuovo utente supervisionato, puoi gestirne le impostazioni 
 <translation id="225240747099314620">Consenti identificatori per contenuti protetti (potrebbe essere necessario riavviare il computer)</translation>
 <translation id="2254681226363050822">Accetto</translation>
 <translation id="2255317897038918278">Timestamp Microsoft</translation>
-<translation id="225680501294068881">Ricerca dispositivi in corso...</translation>
 <translation id="225692081236532131">Stato attivazione</translation>
 <translation id="2258195278080713720">Ultime funzioni JavaScript stabili</translation>
 <translation id="2260567344816042527">Google Chrome utilizzerà la rete dati quando non sarai connesso a un'altra rete.</translation>
@@ -1832,6 +1827,7 @@ Se non modifichi le impostazioni predefinite, <ph name="USER_DISPLAY_NAME" /> pu
 <translation id="335985608243443814">Sfoglia...</translation>
 <translation id="3360297538363969800">Errore di stampa. Controlla la stampante e riprova.</translation>
 <translation id="336497260564123876">Password salvata. Accedi a Chrome per trovare le tue password su tutti i dispositivi.</translation>
+<translation id="3367813778245106622">Accedi nuovamente per avviare la sincronizzazione</translation>
 <translation id="3368922792935385530">Connessa</translation>
 <translation id="3369624026883419694">Risoluzione host in corso...</translation>
 <translation id="3372695143165820507">Esperimenti di scorrimento verso l'alto nel Centro messaggi per la rimozione di notifiche</translation>
@@ -1939,7 +1935,6 @@ Se non modifichi le impostazioni predefinite, <ph name="USER_DISPLAY_NAME" /> pu
 <translation id="3508920295779105875">Scegli un'altra cartella...</translation>
 <translation id="3509527969829946096">Questa opzione consente di attivare il supporto in Cast Streaming della codifica di video stream utilizzando l'hardware della piattaforma.</translation>
 <translation id="3510797500218907545">WiMAX</translation>
-<translation id="3511200754045804813">Ripeti scansione</translation>
 <translation id="3511307672085573050">Copia indir&amp;izzo link</translation>
 <translation id="3511399794969432965">Hai problemi di collegamento?</translation>
 <translation id="351152300840026870">Carattere a larghezza fissa</translation>
@@ -2020,7 +2015,6 @@ Se non modifichi le impostazioni predefinite, <ph name="USER_DISPLAY_NAME" /> pu
 <translation id="3603622770190368340">Ottieni certificato di rete</translation>
 <translation id="3605780360466892872">Ventiquattrore</translation>
 <translation id="3606220979431771195">Turco F</translation>
-<translation id="3607430430882821408">Nessun dispositivo Bluetooth trovato.</translation>
 <translation id="3608454375274108141">F10</translation>
 <translation id="3608576286259426129">Anteprima immagine utente</translation>
 <translation id="3609785682760573515">Sincronizzazione in corso...</translation>
@@ -2063,7 +2057,6 @@ Se non modifichi le impostazioni predefinite, <ph name="USER_DISPLAY_NAME" /> pu
 <translation id="3653069516296104653">Consente di disattivare l'acquisizione implicita di eventi touch del puntatore.</translation>
 <translation id="3653999333232393305">Continua a consentire l'accesso di <ph name="HOST" /> al microfono</translation>
 <translation id="3654045516529121250">Lettura delle impostazioni di accessibilità</translation>
-<translation id="3654092442379740616">Errore di sincronizzazione. <ph name="PRODUCT_NAME" /> è obsoleto e deve essere aggiornato.</translation>
 <translation id="3655712721956801464">{NUM_FILES,plural, =1{Ha accesso permanente a un file.}other{Ha accesso permanente a # file.}}</translation>
 <translation id="365793796291733849"><ph name="BEGIN_PARAGRAPH1" />Se attivi il backup automatico, i dati delle app e del dispositivo vengono salvati periodicamente in una cartella privata in Google Drive. Per dati delle app si intende qualsiasi dato salvato in un'app (in base alle impostazioni sviluppatore), inclusi i dati potenzialmente sensibili, come contatti, messaggi e foto.<ph name="END_PARAGRAPH1" />
     <ph name="BEGIN_PARAGRAPH2" />I dati di backup non incidono sulla quota di spazio di archiviazione di Google Drive. Non verrà effettuato il backup dei file di grandi dimensioni o dei file che gli sviluppatori hanno deciso di escludere dal servizio.<ph name="END_PARAGRAPH2" /></translation>
@@ -2134,7 +2127,6 @@ Se non modifichi le impostazioni predefinite, <ph name="USER_DISPLAY_NAME" /> pu
 <translation id="3752582316358263300">OK...</translation>
 <translation id="3752673729237782832">I miei dispositivi</translation>
 <translation id="3753641128651686748">"<ph name="BUNDLE_NAME" />" aggiunge le seguenti app per <ph name="USER_NAME" />:</translation>
-<translation id="3755237144397196888">Se attivi questa opzione consenti alle applicazioni web di accedere alla funzione sperimentale WebGL 2.0. Questa opzione deve essere utilizzata solo per lo sviluppo di applicazioni e non per navigare in siti web arbitrari.</translation>
 <translation id="3755411799582650620">Ora con il tuo <ph name="PHONE_NAME" /> puoi sbloccare anche questo dispositivo <ph name="DEVICE_TYPE" />.</translation>
 <translation id="3758201569871381925">Assicurati che il dispositivo Hotrod sia acceso e collegato a una TV.</translation>
 <translation id="375841316537350618">Download script proxy...</translation>
@@ -2371,7 +2363,6 @@ Se non modifichi le impostazioni predefinite, <ph name="USER_DISPLAY_NAME" /> pu
 <translation id="4075084141581903552">È disponibile l'accesso automatico (<ph name="EMAIL_ADDRESS" />)</translation>
 <translation id="4078738236287221428">Forzata</translation>
 <translation id="408098233265424160">Rilevamento prossimità Smart Lock</translation>
-<translation id="4081683084140995376">Attiva shell per la realtà virtuale.</translation>
 <translation id="4081979157059999345">Link per la gestione delle password da remoto</translation>
 <translation id="4084682180776658562">Aggiungi ai Preferiti</translation>
 <translation id="4084835346725913160">Chiudi <ph name="TAB_NAME" /></translation>
@@ -2508,7 +2499,6 @@ Per continuare, devono disconnettersi tutti gli utenti.</translation>
 <translation id="4268574628540273656">URL:</translation>
 <translation id="4270393598798225102">Versione <ph name="NUMBER" /></translation>
 <translation id="4271396100647220620">Nessuna corrispondenza</translation>
-<translation id="4274187853770964845">Errore di sincronizzazione. Interrompi e riavvia la sincronizzazione.</translation>
 <translation id="4275830172053184480">Riavvia il dispositivo</translation>
 <translation id="4276796043975446927">Benvenuto in Chromebox per videoconferenze</translation>
 <translation id="4278390842282768270">Consentiti</translation>
@@ -2621,7 +2611,6 @@ Premi un tasto qualsiasi per continuare a esplorare.</translation>
 <translation id="4443536555189480885">&amp;Guida</translation>
 <translation id="4444304522807523469">Accesso a scanner di documenti aggiunti tramite USB o sulla rete locale</translation>
 <translation id="4444512841222467874">Se non viene liberato dello spazio, utenti e dati potrebbero essere rimossi automaticamente.</translation>
-<translation id="4445559854264555037">Non trovi il tuo dispositivo? <ph name="GET_HELP_LINK" /></translation>
 <translation id="4446933390699670756">Speculare</translation>
 <translation id="4447465454292850432">Batteria:</translation>
 <translation id="4449935293120761385">Informazioni su Compilazione automatica</translation>
@@ -2754,7 +2743,6 @@ Premi un tasto qualsiasi per continuare a esplorare.</translation>
 <translation id="4654488276758583406">Molto piccole</translation>
 <translation id="465499440663162826">Impossibile collegarsi al Chrome Web Store.</translation>
 <translation id="4656293982926141856">Questo computer</translation>
-<translation id="4656631038341342120">Attiva shell per la realtà virtuale se disponibile per questo dispositivo.</translation>
 <translation id="4657031070957997341">Consenti sempre i plug-in su <ph name="HOST" /></translation>
 <translation id="466008749075469935">Consente l'intervento per limitare all'1% l'utilizzo di CPU da parte dei timer in background.</translation>
 <translation id="4663254525753315077">Quando è possibile, posiziona i contenuti scorrevoli di un elemento di overflow in un livello composito per velocizzare lo scorrimento.</translation>
@@ -3470,7 +3458,6 @@ Premi un tasto qualsiasi per continuare a esplorare.</translation>
 <translation id="5569544776448152862">Registrazione in <ph name="BEGIN_BOLD" /><ph name="DOMAIN_NAME" /><ph name="END_BOLD" />...</translation>
 <translation id="5575473780076478375">Estensione in incognito: <ph name="EXTENSION_NAME" /></translation>
 <translation id="557722062034137776">Il ripristino del dispositivo non influirà sui tuoi account Google o sui dati sincronizzati con tali account. Tuttavia, tutti i file salvati localmente sul dispositivo verranno eliminati.</translation>
-<translation id="5579997910517802656">Nessun dispositivo trovato.</translation>
 <translation id="5581211282705227543">Nessun plug-in installato</translation>
 <translation id="5581700288664681403">Caricamento di <ph name="CLOUD_PRINT_NAME" /></translation>
 <translation id="558170650521898289">Verifica driver hardware Microsoft Windows</translation>
@@ -4254,7 +4241,6 @@ Utilizza questa funzione solo con gli account che consideri attendibili.</transl
 <translation id="6659213950629089752">Questa pagina è stata ingrandita con l'estensione "<ph name="NAME" />"</translation>
 <translation id="6659594942844771486">TAB</translation>
 <translation id="6660768694571958712">Consente il supporto sperimentale dell'API Pointer Events. È pensato unicamente per essere testato dagli sviluppatori e alcuni siti web potrebbero essere danneggiati lievemente.</translation>
-<translation id="6662016084451426657">Errore di sincronizzazione. Contatta l'amministratore per richiedere l'attivazione della sincronizzazione.</translation>
 <translation id="6663792236418322902">La password scelta sarà necessaria per recuperare il file in un secondo momento. Registrala in una posizione sicura.</translation>
 <translation id="6664237456442406323">Purtroppo il tuo computer è configurato con un ID hardware non valido. Ciò impedisce a Chrome OS di aggiornarsi con le ultime correzioni relative alla sicurezza e il tuo computer <ph name="BEGIN_BOLD" />potrebbe essere vulnerabile ad attacchi dannosi<ph name="END_BOLD" />.</translation>
 <translation id="6664774537677393800">Si è verificato un problema durante l'apertura del profilo. Esci e accedi di nuovo.</translation>
@@ -4473,7 +4459,6 @@ Utilizza questa funzione solo con gli account che consideri attendibili.</transl
 <translation id="6985235333261347343">Agente di recupero chiavi Microsoft</translation>
 <translation id="6985276906761169321">ID:</translation>
 <translation id="6985607387932385770">Stampanti</translation>
-<translation id="6986605181115043220">Spiacenti, la sincronizzazione non funziona più. <ph name="BEGIN_LINK" />Ulteriori informazioni<ph name="END_LINK" /></translation>
 <translation id="6990081529015358884">Spazio disponibile esaurito</translation>
 <translation id="6990778048354947307">Tema scuro</translation>
 <translation id="6991128190741664836">Più tardi</translation>
@@ -5086,7 +5071,6 @@ Utilizza questa funzione solo con gli account che consideri attendibili.</transl
 <translation id="7839963980801867006">Seleziona quali IME di estensioni saranno disponibili nel menu della lingua.</translation>
 <translation id="7842346819602959665">L'ultima versione dell'estensione "<ph name="EXTENSION_NAME" />" richiede maggiori autorizzazioni, pertanto è stata disattivata.</translation>
 <translation id="7844992432319478437">Aggiornamento differenze in corso...</translation>
-<translation id="7845920762538502375">La sincronizzazione dei tuoi dati effettuata da <ph name="PRODUCT_NAME" /> non è riuscita perché è impossibile collegarsi al server di sincronizzazione. Nuovo tentativo in corso...</translation>
 <translation id="7846076177841592234">Annulla selezione</translation>
 <translation id="7846634333498149051">Tastiera</translation>
 <translation id="7847212883280406910">Premi Ctrl+Alt+S per passare a <ph name="IDS_SHORT_PRODUCT_OS_NAME" /></translation>
@@ -5370,7 +5354,6 @@ Conserva il file di chiave in un luogo sicuro. Ti servirà per creare nuove vers
 <translation id="8213577208796878755">Un altro dispositivo disponibile.</translation>
 <translation id="8214489666383623925">Apri file...</translation>
 <translation id="8214962590150211830">Rimuovi questa persona</translation>
-<translation id="8216278935161109887">Esci e accedi di nuovo</translation>
 <translation id="8217399928341212914">Continua a bloccare download automatici di più file</translation>
 <translation id="8221831106892617387">2G lenta attivata</translation>
 <translation id="8222121761382682759">Disinstalla...</translation>
@@ -5517,7 +5500,6 @@ Conserva il file di chiave in un luogo sicuro. Ti servirà per creare nuove vers
 <translation id="8418113698656761985">Tastiera rumena</translation>
 <translation id="8418445294933751433">&amp;Mostra come scheda</translation>
 <translation id="8420060421540670057">Visualizza file Google Documenti</translation>
-<translation id="8420139899406509438">Attivata (Flash viene disattivato quando si perde il focus audio, sperimentale)</translation>
 <translation id="842274098655511832">Estensioni bozza WebGL</translation>
 <translation id="8424039430705546751">giù</translation>
 <translation id="8425213833346101688">Cambia</translation>
@@ -6011,7 +5993,6 @@ Le finestre, le notifiche e le finestre di dialogo successive potrebbero essere 
 <translation id="9052208328806230490">Hai registrato le stampanti con <ph name="CLOUD_PRINT_NAME" /> utilizzando l'account <ph name="EMAIL" /></translation>
 <translation id="9052234664411715138">Compilazione assistita della carta di credito</translation>
 <translation id="9053860306922028466">Seleziona innanzitutto che cosa condividere</translation>
-<translation id="9053965862400494292">Si è verificato un errore durante il tentativo di configurazione della sincronizzazione.</translation>
 <translation id="9056034633062863292">Aggiornamento del Chromebox</translation>
 <translation id="9056810968620647706">Nessuna corrispondenza trovata.</translation>
 <translation id="9057119625587205566">Nessuna stampante nelle vicinanze</translation>
@@ -6164,6 +6145,7 @@ Le finestre, le notifiche e le finestre di dialogo successive potrebbero essere 
 <translation id="971058943242239041">Consente di attivare l'utilizzo di elementi HTML "window-controls" nelle app in pacchetto.</translation>
 <translation id="971774202801778802">Aggiungi l'URL ai segnalibri</translation>
 <translation id="973473557718930265">Esci</translation>
+<translation id="974555521953189084">Inserisci la passphrase per avviare la sincronizzazione</translation>
 <translation id="97534916655989966">Consenti la riproduzione automatica di video con audio disattivato.</translation>
 <translation id="981121421437150478">Offline</translation>
 <translation id="984870422930397199">Consente il badging delle pagine offline nella pagina Nuova scheda. È pertinente soltanto se le pagine offline sono attive.</translation>

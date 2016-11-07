@@ -50,6 +50,7 @@
 <translation id="1491663344921578213">Trenutačno ne možete otvoriti <ph name="SITE" /> jer web-lokacija upotrebljava prikvačivanje certifikata. Mrežne pogreške i napadi uglavnom su privremeni, tako da će ta stranica vjerojatno kasnije funkcionirati. <ph name="BEGIN_LEARN_MORE_LINK" />Saznajte više<ph name="END_LEARN_MORE_LINK" />.</translation>
 <translation id="1506687042165942984">Prikaži spremljenu kopiju te stranice (tj., onu za koju se zna da je zastarjela).</translation>
 <translation id="1519264250979466059">Datum međuverzije</translation>
+<translation id="153384715582417236">To je zasad sve</translation>
 <translation id="1549470594296187301">Za upotrebu te značajke mora biti omogućen JavaScript.</translation>
 <translation id="1559528461873125649">Nema takve datoteke ili direktorija</translation>
 <translation id="1559572115229829303">&lt;p&gt;Sigurna veza s domenom <ph name="BEGIN_BOLD" /><ph name="DOMAIN" /><ph name="END_BOLD" /> ne može se uspostaviti jer datum i vrijeme na uređaju (<ph name="DATE_AND_TIME" />) nisu točni.&lt;/p&gt;
@@ -385,8 +386,10 @@
 <translation id="5171045022955879922">Pretražite ili upišite URL</translation>
 <translation id="5172758083709347301">Strojno</translation>
 <translation id="5179510805599951267">Nije <ph name="ORIGINAL_LANGUAGE" /> jezik? Prijavite tu pogrešku</translation>
+<translation id="5181140330217080051">Preuzimanje</translation>
 <translation id="5190835502935405962">Traka oznaka</translation>
 <translation id="5199729219167945352">Eksperimenti</translation>
+<translation id="5199841536747119669">Ovdje će se prikazivati prijedlozi za vas</translation>
 <translation id="5251803541071282808">Oblak</translation>
 <translation id="5277279256032773186">Upotrebljavate li Chrome na poslu? Tvrtke mogu upravljati Chromeovim postavkama za svoje zaposlenike. Saznajte više</translation>
 <translation id="5299298092464848405">Pogreška u pravilu analize</translation>
@@ -466,6 +469,7 @@
 <translation id="6263376278284652872">Oznake domene <ph name="DOMAIN" /></translation>
 <translation id="6264485186158353794">Natrag u sigurnost</translation>
 <translation id="6282194474023008486">Poštanski broj</translation>
+<translation id="6290238015253830360">Ovdje će se prikazivati predloženi članci</translation>
 <translation id="6305205051461490394">Web-lokacija <ph name="URL" /> nije dostupna.</translation>
 <translation id="6321917430147971392">Provjerite postavke DNS-a</translation>
 <translation id="6328639280570009161">Pokušajte onemogućiti predviđanja mreže</translation>
@@ -649,6 +653,7 @@ Psst! Sljedeći bi vam put mogao koristiti anonimni način <ph name="SHORTCUT_KE
 <translation id="8363502534493474904">isključite način rada u zrakoplovu</translation>
 <translation id="8364627913115013041">Nije postavljeno.</translation>
 <translation id="8380941800586852976">Opasno</translation>
+<translation id="8382348898565613901">Ovdje će se prikazivati oznake koje ste nedavno posjetili</translation>
 <translation id="8412145213513410671">Padovi (<ph name="CRASH_COUNT" />)</translation>
 <translation id="8412392972487953978">Morate dvaput unijeti istu zaporku.</translation>
 <translation id="8428213095426709021">Postavke</translation>
@@ -660,7 +665,6 @@ Psst! Sljedeći bi vam put mogao koristiti anonimni način <ph name="SHORTCUT_KE
 <translation id="8498891568109133222">Hostu <ph name="HOST_NAME" /> bilo je potrebno previše vremena za odgovor.</translation>
 <translation id="852346902619691059">Poslužitelj nije mogao dokazati da je to <ph name="DOMAIN" /> jer operativni sustav uređaja sigurnosni certifikat ne smatra pouzdanim. Razlog može biti pogrešna konfiguracija ili napad na vašu vezu. <ph name="BEGIN_LEARN_MORE_LINK" />Saznajte više<ph name="END_LEARN_MORE_LINK" />.</translation>
 <translation id="8530504477309582336">Google Payments ne podržava tu vrstu kartice. Odaberite neku drugu karticu.</translation>
-<translation id="8550022383519221471">Usluga sinkroniziranja nije dostupna za vašu domenu.</translation>
 <translation id="8553075262323480129">Prijevod nije uspio jer nije bilo moguće odrediti jezik stranice.</translation>
 <translation id="8559762987265718583">Sigurnu vezu s domenom <ph name="BEGIN_BOLD" /><ph name="DOMAIN" /><ph name="END_BOLD" /> nije moguće uspostaviti jer datum i vrijeme (<ph name="DATE_AND_TIME" />) na vašem uređaju nisu točni.</translation>
 <translation id="856992080682148">Certifikat za ovu web-lokaciju istječe 2017. ili kasnije, a lanac certifikata sadrži certifikat s SHA-1 potpisom.</translation>
@@ -668,7 +672,6 @@ Psst! Sljedeći bi vam put mogao koristiti anonimni način <ph name="SHORTCUT_KE
 <translation id="8591846766485502580">Ova ti se poruka prikazuje zato što je jedan od tvojih roditelja blokirao ovu web-lokaciju.</translation>
 <translation id="859285277496340001">Certifikat ne navodi mehanizam za provjeru svojeg opoziva.</translation>
 <translation id="8647750283161643317">Vrati sve na zadano</translation>
-<translation id="8680787084697685621">Pojedinosti prijave na račun su zastarjele.</translation>
 <translation id="8703575177326907206">Vaša veza s <ph name="DOMAIN" /> nije šifrirana.</translation>
 <translation id="8725066075913043281">Pokušajte ponovo</translation>
 <translation id="8728672262656704056">Radite u anonimnom načinu</translation>
@@ -698,7 +701,6 @@ Psst! Sljedeći bi vam put mogao koristiti anonimni način <ph name="SHORTCUT_KE
 <translation id="8987927404178983737">Mjesec</translation>
 <translation id="8989148748219918422"><ph name="ORGANIZATION" /> [<ph name="COUNTRY" />]</translation>
 <translation id="9001074447101275817">Proxy <ph name="DOMAIN" /> zahtijeva korisničko ime i zaporku.</translation>
-<translation id="9008201768610948239">Zanemari</translation>
 <translation id="901974403500617787">Oznake koje se primjenjuju na razini sustava može postaviti samo vlasnik: <ph name="OWNER_EMAIL" />.</translation>
 <translation id="9020542370529661692">Ova je stranica prevedena na <ph name="TARGET_LANGUAGE" /></translation>
 <translation id="9038649477754266430">Upotreba usluge predviđanja za brže učitavanje stranica</translation>

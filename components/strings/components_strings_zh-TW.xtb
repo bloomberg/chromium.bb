@@ -387,6 +387,7 @@
 <translation id="5171045022955879922">搜尋或輸入網址</translation>
 <translation id="5172758083709347301">本機</translation>
 <translation id="5179510805599951267">網頁內容不是<ph name="ORIGINAL_LANGUAGE" />嗎？請回報此錯誤</translation>
+<translation id="5181140330217080051">下載中</translation>
 <translation id="5190835502935405962">書籤列</translation>
 <translation id="5199729219167945352">實驗性功能</translation>
 <translation id="5199841536747119669">系統建議你瀏覽的內容會顯示在這裡</translation>
@@ -665,7 +666,6 @@
 <translation id="8498891568109133222"><ph name="HOST_NAME" /> 的回應時間過長。</translation>
 <translation id="852346902619691059">這個伺服器無法證明所在網域是 <ph name="DOMAIN" />；裝置的作業系統不信任伺服器的安全性憑證。這可能是因為設定錯誤，或是有攻擊者攔截你的連線。<ph name="BEGIN_LEARN_MORE_LINK" />瞭解詳情<ph name="END_LEARN_MORE_LINK" /></translation>
 <translation id="8530504477309582336">Google Payments 不支援此類型卡片，請選取其他卡片。</translation>
-<translation id="8550022383519221471">您的網域無法使用同步處理服務</translation>
 <translation id="8553075262323480129">無法判定網頁的語言，翻譯作業失敗。</translation>
 <translation id="8559762987265718583">您裝置的日期和時間 (<ph name="DATE_AND_TIME" />) 不正確，因此無法與 <ph name="BEGIN_BOLD" /><ph name="DOMAIN" /><ph name="END_BOLD" /> 建立私人連線。</translation>
 <translation id="856992080682148">這個網站的憑證將於 2017 年 (或之後) 到期，且憑證鏈結包含使用 SHA-1 進行簽署的憑證。</translation>
@@ -673,7 +673,6 @@
 <translation id="8591846766485502580">Chrome 顯示這則訊息是因為您的其中一位家長已封鎖這個網站。</translation>
 <translation id="859285277496340001">憑證未指定負責檢查其本身是否已遭到撤銷的機制。</translation>
 <translation id="8647750283161643317">全部重設為預設值</translation>
-<translation id="8680787084697685621">帳戶登入詳細資料已過期。</translation>
 <translation id="8703575177326907206">您到 <ph name="DOMAIN" /> 的連線未加密。</translation>
 <translation id="8725066075913043281">再試一次</translation>
 <translation id="8728672262656704056">您已啟用無痕模式。</translation>
@@ -703,7 +702,6 @@
 <translation id="8987927404178983737">月</translation>
 <translation id="8989148748219918422"><ph name="ORGANIZATION" /> [<ph name="COUNTRY" />]</translation>
 <translation id="9001074447101275817"><ph name="DOMAIN" /> Proxy 要求提供使用者名稱和密碼。</translation>
-<translation id="9008201768610948239">略過</translation>
 <translation id="901974403500617787">這些設定會套用至整個系統，只有以下使用者可設定：<ph name="OWNER_EMAIL" />。</translation>
 <translation id="9020542370529661692">此網頁內容已翻譯成<ph name="TARGET_LANGUAGE" /></translation>
 <translation id="9038649477754266430">使用預測查詢字串服務，讓系統更快載入網頁</translation>

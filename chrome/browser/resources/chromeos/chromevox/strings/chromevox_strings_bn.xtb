@@ -38,7 +38,7 @@
 <translation id="1346748346194534595">ডানে</translation>
 <translation id="136718599399906424">পরবর্তী সারণী সারি</translation>
 <translation id="1383876407941801731">অনুসন্ধান</translation>
-<translation id="1385214448885562192">স্বীকার করতে এন্টার বা বাতিল করতে এসকেপ, পরবর্তীর জন্য নীচে এবং পূর্ববর্তীর জন্য উপরে টিপুন৷</translation>
+<translation id="1385214448885562192">স্বীকার করতে এন্টার বা বাতিল করতে এসকেপ, পরবর্তীর জন্য নিচে এবং পূর্ববর্তীর জন্য উপরে টিপুন৷</translation>
 <translation id="1396114365388024581">tablst</translation>
 <translation id="1439316808600711881">rgn</translation>
 <translation id="1452236308086741652"><ph name="VALUE" />, পাসওয়ার্ড পাঠ্য বাক্স</translation>
@@ -323,7 +323,7 @@
 <translation id="4081085052247739398">{COUNT,plural, =1{টিলড চিহ্ন}one{#টি টিলড চিহ্ন}other{#টি টিলড চিহ্ন}}</translation>
 <translation id="409334809956508737">পূর্ববর্তী বস্তু</translation>
 <translation id="4099274309791143834">উপমেনুর সাথে</translation>
-<translation id="4107807507418787238">নীচে কোনো কক্ষ নেই৷</translation>
+<translation id="4107807507418787238">নিচে কোনো কক্ষ নেই৷</translation>
 <translation id="4116415223832267137">সতর্কতা</translation>
 <translation id="4147126331795725888">এরপরে কোনো নিয়ন্ত্রণ নেই৷</translation>
 <translation id="4148180433151187540">{COUNT,plural, =1{ডান দ্বিতীয় বন্ধনী}one{#টি ডান দ্বিতীয় বন্ধনী}other{#টি ডান দ্বিতীয় বন্ধনী}}</translation>
@@ -381,7 +381,7 @@
 <translation id="4740661827607246557">সহায়তা আদেশগুলি</translation>
 <translation id="4755857887974653209">ChromeVox অক্ষম করুন</translation>
 <translation id="4759716709594980008">ChromeOS কীবোর্ড এক্সপ্লোরার</translation>
-<translation id="4763296182459741068">নীচে সম্পৃক্ত রয়েছে</translation>
+<translation id="4763296182459741068">নিচে সম্পৃক্ত রয়েছে</translation>
 <translation id="4763480195061959176">ভিডিও</translation>
 <translation id="479989351350248267">search</translation>
 <translation id="481165870889056555">বর্তমান পৃষ্ঠার শিরোনাম ঘোষণা করুন</translation>
@@ -542,7 +542,7 @@ Chrome ব্রাউজার মেনু খুলতে, Alt+F টিপু
 <translation id="6129953537138746214">ব্যবধান</translation>
 <translation id="6142308968191113180">শিরোলেখ ৪</translation>
 <translation id="6169420925157477918">দীর্ঘ বিবরণ সহ চিত্র</translation>
-<translation id="6186305613600865047">পৃষ্ঠাটির একেবারে নীচে চলে যান</translation>
+<translation id="6186305613600865047">পৃষ্ঠাটির একেবারে নিচে চলে যান</translation>
 <translation id="6193330012414963395">AM PM</translation>
 <translation id="622484624075952240">নিচের</translation>
 <translation id="6236061028292614533">পরবর্তী শিরোনাম</translation>
@@ -620,7 +620,7 @@ Chrome ব্রাউজার মেনু খুলতে, Alt+F টিপু
 <translation id="7161771961008409533">পপ-আপ বোতাম</translation>
 <translation id="7167657087543110">অক্ষর ইকো</translation>
 <translation id="7170733337935166589">একটানা পড়ার সময় ছেড়ে আগে যান</translation>
-<translation id="7181697990050180700">ঘন ঘন ব্যবহৃত কমান্ডগুলির জন্য নীচে যথাযঠ ফিল্ডগুলির মধ্যে সেগুলিকে টাইপ করার মাধ্যেমে কীবোর্ড শর্টকাটগুলি কাস্টমাইজ করুন৷</translation>
+<translation id="7181697990050180700">ঘন ঘন ব্যবহৃত কমান্ডগুলির জন্য নিচে যথাযঠ ফিল্ডগুলির মধ্যে সেগুলিকে টাইপ করার মাধ্যেমে কীবোর্ড শর্টকাটগুলি কাস্টমাইজ করুন৷</translation>
 <translation id="7203150201908454328">প্রসারিত</translation>
 <translation id="7210211103303402262">মিনিট</translation>
 <translation id="7217912842225915592">+<ph name="NUM" /></translation>

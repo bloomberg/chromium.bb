@@ -88,6 +88,7 @@ Vaihda syöttötapaa painamalla Shift + Alt.</translation>
 <translation id="3294437725009624529">Vieras</translation>
 <translation id="3335772982573114336">Uusi muistiinpano</translation>
 <translation id="3364721542077212959">Näyttökynätyökalut</translation>
+<translation id="3368922792935385530">Yhdistetty</translation>
 <translation id="3371140690572404006">C-tyypin USB-laite (oikean sivun etummainen portti)</translation>
 <translation id="3445925074670675829">C-tyypin USB-laite</translation>
 <translation id="3473479545200714844">Ruudun suurentaminen</translation>
@@ -124,6 +125,7 @@ Vaihda syöttötapaa painamalla Shift + Alt.</translation>
 <translation id="4250680216510889253">Ei</translation>
 <translation id="4279490309300973883">Peilaus päällä</translation>
 <translation id="4321179778687042513">ctrl</translation>
+<translation id="4378551569595875038">Yhdistetään…</translation>
 <translation id="4421231901400348175">Näyttösi hallinta jaetaan käyttäjän <ph name="HELPER_NAME" /> kanssa Etätuen kautta.</translation>
 <translation id="4430019312045809116">Äänenvoimakkuus</translation>
 <translation id="4448844063988177157">Haetaan Wi-Fi-verkkoja...</translation>
@@ -277,4 +279,5 @@ Vaihda syöttötapaa painamalla Shift + Alt.</translation>
 <translation id="923686485342484400">Kirjaudu ulos painamalla Control Shift Q kahdesti.</translation>
 <translation id="938582441709398163">Näppäimistön peitto</translation>
 <translation id="939252827960237676">Kuvakaappauksen tallentaminen epäonnistui</translation>
+<translation id="952992212772159698">Ei aktivoitu</translation>
 </translationbundle>

@@ -51,7 +51,6 @@
 <translation id="1506061864768559482">Iskalnik</translation>
 <translation id="1513352483775369820">Zaznamki in spletna zgodovina</translation>
 <translation id="1513858653616922153">Izbris gesla</translation>
-<translation id="1546112724822176246">Vaša naprava ni prikazana? <ph name="BEGIN_LINK" />Poiščite pomoč<ph name="END_LINK" />.</translation>
 <translation id="1549000191223877751">Premik v drugo okno</translation>
 <translation id="1553358976309200471">Posodobi Chrome</translation>
 <translation id="1571304935088121812">Kopiranje uporabniškega imena</translation>
@@ -72,7 +71,6 @@
 <translation id="1749561566933687563">Sinhroniziranje zaznamkov</translation>
 <translation id="17513872634828108">Odpri zavihke</translation>
 <translation id="1756600373018374892">Dotaknite se tega gumba, če želite hitro dostopati do svojih zavihkov.</translation>
-<translation id="1774241295142531736">Vaša naprava ni prikazana? <ph name="BEGIN_LINK1" />Poiščite pomoč<ph name="END_LINK1" /> ali <ph name="BEGIN_LINK2" />iščite znova<ph name="END_LINK2" />.</translation>
 <translation id="1807246157184219062">Svetlo</translation>
 <translation id="1825719650605518411">Izkušnje ob prvem izvajanju</translation>
 <translation id="1826516787628120939">Preverjanje</translation>
@@ -156,7 +154,6 @@ Fizični splet lahko nadzirate v Chromovih nastavitvah.
 <translation id="2707726405694321444">Osveži stran</translation>
 <translation id="2709516037105925701">Samodejno izpolnjevanje</translation>
 <translation id="271033894570825754">Novo</translation>
-<translation id="2748463065602559597">Ogledujete si varno stran Google Chrome.</translation>
 <translation id="2762000892062317888">pravkar</translation>
 <translation id="2777555524387840389">Še <ph name="SECONDS" /> s</translation>
 <translation id="2781151931089541271">Še 1 s</translation>
@@ -233,7 +230,6 @@ Fizični splet lahko nadzirate v Chromovih nastavitvah.
 <translation id="3656115297268584622">Lokacijsko storitev vklopite v <ph name="BEGIN_LINK" />nastavitvah sistema Android<ph name="END_LINK" />.</translation>
 <translation id="3661699943263275414">Druga spletna mesta lahko shranjujejo in berejo podatke piškotkov</translation>
 <translation id="3672452749423051839">Predlogi za napake pri krmarjenju</translation>
-<translation id="3690847815241521170">Iskanje naprav … <ph name="BEGIN_LINK" />Poiščite pomoč<ph name="END_LINK" /></translation>
 <translation id="3706658020782046159">Izberite naslov za pošiljanje, če želite preveriti načine pošiljanja in zahteve za pošiljanje.</translation>
 <translation id="3716158070938632480">Spletne strani so v bližini</translation>
 <translation id="3738139272394829648">Dotaknite se za iskanje</translation>
@@ -322,7 +318,6 @@ Fizični splet lahko nadzirate v Chromovih nastavitvah.
 <translation id="4807098396393229769">Ime na kartici</translation>
 <translation id="4816465935029283692">Vrste podatkov</translation>
 <translation id="4827948050554950725">Dodaj kreditno kartico</translation>
-<translation id="4836364883164334657">Vaša povezava s tem spletnim mestom ni zasebna. Napadalci morda poskušajo ukrasti vaše podatke (na primer fotografije, gesla, sporočila in podatke o kreditnih karticah) iz domene <ph name="DOMAIN_NAME" />.</translation>
 <translation id="4850886885716139402">Pogled</translation>
 <translation id="4881695831933465202">Odpri</translation>
 <translation id="4885273946141277891">To število primerkov Chroma ni podprto.</translation>
@@ -355,6 +350,7 @@ Fizični splet lahko nadzirate v Chromovih nastavitvah.
 <translation id="5171045022955879922">Poiščite ali vnesite URL</translation>
 <translation id="5184329579814168207">Odpri v Chromu</translation>
 <translation id="5199929503336119739">Delovni profil</translation>
+<translation id="5209320130288484488">Najti ni mogoče nobene naprave</translation>
 <translation id="5210365745912300556">Zapri zavihek</translation>
 <translation id="5222676887888702881">Odjava</translation>
 <translation id="5233638681132016545">Nov zavihek</translation>
@@ -389,7 +385,6 @@ Fizični splet lahko nadzirate v Chromovih nastavitvah.
 <translation id="5556459405103347317">Ponovno naloži</translation>
 <translation id="5565871407246142825">Kreditne kartice</translation>
 <translation id="5578795271662203820">Za iskanje te slike uporabi <ph name="SEARCH_ENGINE" /></translation>
-<translation id="5579997910517802656">Naprav ni bilo mogoče najti.</translation>
 <translation id="5595485650161345191">Uredi naslov</translation>
 <translation id="5596627076506792578">Več možnosti</translation>
 <translation id="5626134646977739690">Ime:</translation>
@@ -418,7 +413,6 @@ Kljub temu niste nevidni. Če uporabljate način brez beleženja zgodovine, ne s
 <translation id="583281660410589416">Neznano</translation>
 <translation id="5832934273103296195">Razširjeno – kliknite, če želite strniti</translation>
 <translation id="583891442612896534">Chrome ne more dostopati do Googlovih strežnikov za stiskanje podatkov. Prihranek podatkov bo morda omejen.</translation>
-<translation id="5843873952582375185">Najdena ni bila nobena naprava Bluetooth. <ph name="BEGIN_LINK" />Iščite znova<ph name="END_LINK" /></translation>
 <translation id="585027516397408832">Varčevanje s podatki je omogočeno</translation>
 <translation id="5860033963881614850">Izklopljeno</translation>
 <translation id="5867027562311576691">Kmalu bo prikazanih več člankov. Prijetno jutro.</translation>
@@ -568,9 +562,9 @@ V Google Računu so morda druge vrste zgodovine brskanja, kot so iskanja in deja
 <translation id="7596558890252710462">Operacijski sistem</translation>
 <translation id="7605594153474022051">Sync isn't working</translation>
 <translation id="7612619742409846846">Signed in to Google as</translation>
+<translation id="7613889955535752492">Veljavnost do: <ph name="EXPIRATION_MONTH" />/<ph name="EXPIRATION_YEAR" /></translation>
 <translation id="7619072057915878432">Prenos datoteke <ph name="FILE_NAME" /> ni uspel zaradi napak v omrežju.</translation>
 <translation id="7626032353295482388">Dobrodošli v brskalniku Chrome</translation>
-<translation id="7634554953375732414">Povezava s tem mestom ni zasebna.</translation>
 <translation id="7638584964844754484">Napačno geslo</translation>
 <translation id="7648422057306047504">Šifriranje gesel s poverilnicami za Google</translation>
 <translation id="7649070708921625228">Pomoč</translation>
@@ -638,13 +632,11 @@ V Google Računu so morda druge vrste zgodovine brskanja, kot so iskanja in deja
 <translation id="8428213095426709021">Nastavitve</translation>
 <translation id="8433057134996913067">S tem boste odjavljeni z večine spletnih mest.</translation>
 <translation id="8447861592752582886">Umik dovoljenja za dostop do naprave</translation>
-<translation id="8481940801237642152">Povezava s tem mestom je zasebna, vendar lahko nekdo v omrežju spremeni videz strani.</translation>
 <translation id="8487700953926739672">Na voljo brez povezave</translation>
 <translation id="8493948351860045254">Sprosti prostor</translation>
 <translation id="8497726226069778601">Nimate česa videti ... Za zdaj.</translation>
 <translation id="8503813439785031346">Uporabniško ime</translation>
 <translation id="8514577642972634246">Vklop načina brez beleženja zgodovine</translation>
-<translation id="8518901949365209398">To spletno mesto uporablja šibko varnostno konfiguracijo (podpise SHA-1), zato vaša povezava morda ni zasebna.</translation>
 <translation id="8523928698583292556">Izbris shranjenega gesla</translation>
 <translation id="854522910157234410">Odpri to stran</translation>
 <translation id="8562452229998620586">Shranjena gesla bodo prikazana tukaj.</translation>
@@ -677,7 +669,6 @@ Nove licence dobite tako, da se povežete v internet in predvajate preneseno vse
 <translation id="8912362522468806198">Google Račun</translation>
 <translation id="8920114477895755567">Čakanje na podrobnosti o staršu.</translation>
 <translation id="8931159598799892500">Chrome in Fizični splet</translation>
-<translation id="8941248009481596111">Povezava s tem mestom je zasebna.</translation>
 <translation id="8941729603749328384">www.example.com</translation>
 <translation id="8942627711005830162">Odpri v drugem oknu</translation>
 <translation id="8959122750345127698">Krmarjenje ni dosegljivo: <ph name="URL" /></translation>

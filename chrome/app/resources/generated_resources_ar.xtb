@@ -478,7 +478,6 @@
 <translation id="1598233202702788831">عطّل المشرف التحديثات.</translation>
 <translation id="1598604884989842103">‏تمكين واجهة مستخدم الحد الأقصى في TouchView للاختبار</translation>
 <translation id="1600857548979126453">الدخول إلى الواجهة الخلفية لبرنامج تصحيح خلل الصفحة</translation>
-<translation id="1601247446845604757">‏النموذج الأولي لـ WebGL 2.0</translation>
 <translation id="1601560923496285236">تطبيق</translation>
 <translation id="1603914832182249871">(التصفح المتخفي)</translation>
 <translation id="1607220950420093847">تم حذف حسابك أو تعطيله. الرجاء الخروج.</translation>
@@ -570,7 +569,6 @@
 <translation id="1708713382908678956"><ph name="NAME_PH" /> (رقم التعريف: <ph name="ID_PH" />)</translation>
 <translation id="1709106626015023981">‏<ph name="WIDTH" /> x <ph name="HEIGHT" /> (الأصلي)</translation>
 <translation id="1711973684025117106">أخفق الضغط، خطأ غير متوقع: $1</translation>
-<translation id="1715941336038158809">اسم المستخدم أو كلمة المرور غير صالحة.</translation>
 <translation id="1717733954209022288">‏مربع اختيار حفظ Google Payments</translation>
 <translation id="1720318856472900922">‏مصادقة TLS (بروتوكول أمان طبقة النقل) للخادم WWW</translation>
 <translation id="1720372306711178108">سطح المكتب الموسّع</translation>
@@ -617,7 +615,6 @@
 <translation id="1781502536226964113">فتح صفحة علامة التبويب الجديدة</translation>
 <translation id="1782196717298160133">العثور على هاتفك</translation>
 <translation id="1782924894173027610">خادم المزامنة مشغول، الرجاء إعادة المحاولة لاحقًا.</translation>
-<translation id="1783075131180517613">الرجاء تحديث عبارة مرور المزامنة.</translation>
 <translation id="1784849162047402014">مساحة القرص الموجودة على الجهاز منخفضة.</translation>
 <translation id="1788636309517085411">استخدام الموقع الافتراضي</translation>
 <translation id="1789575671122666129">النوافذ المنبثقة</translation>
@@ -770,7 +767,6 @@
 <translation id="2025632980034333559">لقد تعطل <ph name="APP_NAME" />. انقر على هذا البالون لإعادة تحميل الإضافة.</translation>
 <translation id="2028531481946156667">يتعذر بدء عملية التنسيق.</translation>
 <translation id="2028997212275086731">‏أرشيف RAR</translation>
-<translation id="203168018648013061">‏خطأ في المزامنة: الرجاء إعادة ضبط المزامنة عبر لوحة تحكم Google.</translation>
 <translation id="2031695690821674406">ملء كلمات المرور عند تحديد الحساب صراحةً من قبل المستخدم بدلاً من الملء التلقائي لبيانات الاعتماد عند تحميل الصفحة.</translation>
 <translation id="2034346955588403444">‏إضافة شبكة WiFi أخرى</translation>
 <translation id="2040460856718599782">عفوًا، حدث خطأ ما أثناء محاولة مصادقتك. الرجاء التحقق جيدًا من بيانات اعتماد تسجيل الدخول وإعادة المحاولة.</translation>
@@ -949,7 +945,6 @@
 <translation id="225240747099314620">السماح بالمعرّفات للمحتوى المحمي (قد تكون هناك حاجة إلى إعادة تشغيل الكمبيوتر)</translation>
 <translation id="2254681226363050822">موافقة</translation>
 <translation id="2255317897038918278">‏الطابع الزمني لـ Microsoft</translation>
-<translation id="225680501294068881">جارٍ البحث عن أجهزة...</translation>
 <translation id="225692081236532131">حالة التنشيط</translation>
 <translation id="2258195278080713720">أحدث ميزات جافا سكريبت الثابتة</translation>
 <translation id="2260567344816042527">‏سوف يستخدم Google Chrome بيانات شبكة الجوَال إذا كنت غير متصل بشبكة أخرى.</translation>
@@ -1833,6 +1828,7 @@
 <translation id="335985608243443814">تصفَّح...</translation>
 <translation id="3360297538363969800">أخفقت الطباعة. يُرجى التحقق من الطابعة وإعادة المحاولة.</translation>
 <translation id="336497260564123876">‏تم حفظ كلمة المرور. للحصول على كلمات المرور على جميع أجهزتك، سجِّل الدخول إلى Chrome.</translation>
+<translation id="3367813778245106622">تسجيل الدخول مرة أخرى لبدء المزامنة</translation>
 <translation id="3368922792935385530">متصل</translation>
 <translation id="3369624026883419694">إثبات هوية المضيف...</translation>
 <translation id="3372695143165820507">التجارب التي دائمًا ما يمررها مركز الرسائل لأعلى بعد إزالة الإشعار</translation>
@@ -1940,7 +1936,6 @@
 <translation id="3508920295779105875">اختيار مجلد آخر ...</translation>
 <translation id="3509527969829946096">‏يُمكن هذا الخيار الدعم في Cast Streaming لتشفير مقاطع الفيديو المضمنة التي تستخدم أجهزة النظام الأساسي.</translation>
 <translation id="3510797500218907545">WiMAX</translation>
-<translation id="3511200754045804813">إعادة الفحص</translation>
 <translation id="3511307672085573050">نسخ &amp;عنوان الرابط</translation>
 <translation id="3511399794969432965">هل تعاني مشكلة في الاتصال؟</translation>
 <translation id="351152300840026870">خط ثابت العرض</translation>
@@ -2021,7 +2016,6 @@
 <translation id="3603622770190368340">الحصول على شهادة الشبكة</translation>
 <translation id="3605780360466892872">الزر لأسفل</translation>
 <translation id="3606220979431771195">Turkish-F</translation>
-<translation id="3607430430882821408">لم يتم العثور على أي أجهزة بلوتوث.</translation>
 <translation id="3608454375274108141">F10</translation>
 <translation id="3608576286259426129">معاينة صورة المستخدم</translation>
 <translation id="3609785682760573515">جارٍ المزامنة...</translation>
@@ -2064,7 +2058,6 @@
 <translation id="3653069516296104653">تعطيل الالتقاط الضمني لأحداث مؤشر اللمس.</translation>
 <translation id="3653999333232393305">مواصلة السماح لـ <ph name="HOST" /> بالدخول إلى الميكروفون</translation>
 <translation id="3654045516529121250">الاطلاع على إعدادات إمكانية الوصول</translation>
-<translation id="3654092442379740616">خطأ في المزامنة: <ph name="PRODUCT_NAME" /> قديم ويجب تحديثه.</translation>
 <translation id="3655712721956801464">{NUM_FILES,plural, =1{لديه حق الوصول الدائم إلى ملف واحد.}zero{لديه حق الوصول الدائم إلى # من الملفات.}two{لديه حق الوصول الدائم إلى ملفين (#).}few{ لديه حق الوصول الدائم إلى # ملفات.}many{لديه حق الوصول الدائم إلى # ملفًا.}other{لديه حق الوصول الدائم إلى # من الملفات.}}</translation>
 <translation id="365793796291733849">‏<ph name="BEGIN_PARAGRAPH1" />عند تشغيل خدمة النسْخ الاحتياطي التلقائي، يتم حفظ بيانات الجهاز والتطبيق بشكل دوري في مجلد خاص في Google Drive. ويمكن أن تكون بيانات التطبيق هي أي بيانات حفظها هذا التطبيق (استنادًا إلى إعدادات مطوّر البرامج)، بما في ذلك البيانات التي يمكن أن تكون حساسة مثل جهات الاتصال والرسائل والصور.<ph name="END_PARAGRAPH1" />
     <ph name="BEGIN_PARAGRAPH2" />لن تحتسب بيانات النسْخ الاحتياطي ضمن حصتك في تخزين Drive. ولن يتم الاحتفاظ بنُسخ احتياطية من الملفات كبيرة الحجم أو الملفات التي اختار مطوّرو البرامج استبعادها من الخدمة.<ph name="END_PARAGRAPH2" /></translation>
@@ -2135,7 +2128,6 @@
 <translation id="3752582316358263300">موافق...</translation>
 <translation id="3752673729237782832">أجهزتي</translation>
 <translation id="3753641128651686748">تضيف حزمة <ph name="BUNDLE_NAME" /> هذه التطبيقات لـ <ph name="USER_NAME" />:</translation>
-<translation id="3755237144397196888">‏يتيح تمكين هذا الاختيار لتطبيقات الويب الدخول إلى ميزة WebGL 2.0 التجريبية. لا يجب استخدام هذا الاختيار إلا في تطوير التطبيقات ولا يجب استخدامه عند تصفح مواقع الويب العشوائية.</translation>
 <translation id="3755411799582650620">بإمكان هاتفك <ph name="PHONE_NAME" /> أن يلغي قفل جهاز<ph name="DEVICE_TYPE" /> أيضًا.</translation>
 <translation id="3758201569871381925">‏يُرجى التأكد من أن جهاز Hotrod يعمل ومتصل بجهاز تلفزيون.</translation>
 <translation id="375841316537350618">جارٍ تنزيل النص البرمجي للخادم الوكيل...</translation>
@@ -2369,7 +2361,6 @@
 <translation id="4075084141581903552">تسجيل الدخول التلقائي متاح <ph name="EMAIL_ADDRESS" /></translation>
 <translation id="4078738236287221428">حادّ</translation>
 <translation id="408098233265424160">‏اكتشاف التقارب في Smart Lock</translation>
-<translation id="4081683084140995376">‏تمكين VR shell.</translation>
 <translation id="4081979157059999345">رابط إدارة كلمة المرور عن بعد</translation>
 <translation id="4084682180776658562">إشارة</translation>
 <translation id="4084835346725913160">غلق <ph name="TAB_NAME" /></translation>
@@ -2506,7 +2497,6 @@
 <translation id="4268574628540273656">‏عنوان URL:</translation>
 <translation id="4270393598798225102">الإصدار <ph name="NUMBER" /></translation>
 <translation id="4271396100647220620">لا توجد أي مطابقات</translation>
-<translation id="4274187853770964845">خطأ في المزامنة. الرجاء إيقاف المزامنة وإعادة تشغيلها.</translation>
 <translation id="4275830172053184480">إعادة تشغيل جهازك</translation>
 <translation id="4276796043975446927">‏مرحبًا في Chromebox للاجتماعات</translation>
 <translation id="4278390842282768270">مسموح بها</translation>
@@ -2619,7 +2609,6 @@
 <translation id="4443536555189480885">&amp;تعليمات</translation>
 <translation id="4444304522807523469">‏الدخول إلى الماسحات الضوئية للمستند الملحق عبر جهاز USB أو على الشبكة المحلية</translation>
 <translation id="4444512841222467874">إذا لم تتوفر مساحة، فقد تتم إزالة المستخدمين والبيانات تلقائيًا.</translation>
-<translation id="4445559854264555037">ألا ترى جهازك؟ <ph name="GET_HELP_LINK" /></translation>
 <translation id="4446933390699670756">معكوس</translation>
 <translation id="4447465454292850432">البطارية:</translation>
 <translation id="4449935293120761385">حول الملء التلقائي</translation>
@@ -2752,7 +2741,6 @@
 <translation id="4654488276758583406">صغير جدًا</translation>
 <translation id="465499440663162826">‏تعذر الاتصال بسوق Chrome الإلكتروني.</translation>
 <translation id="4656293982926141856">هذا الكمبيوتر</translation>
-<translation id="4656631038341342120">‏تمكين VR shell إذا كان متوفرًا لهذا الجهاز.</translation>
 <translation id="4657031070957997341">السماح باستخدام المكونات الإضافية على <ph name="HOST" /> دومًا</translation>
 <translation id="466008749075469935">‏تمكين التدخل لتقييد استخدام وحدة المعالجة المركزية (CPU) لمؤقتات الخلفية إلى 1%.</translation>
 <translation id="4663254525753315077">إن أمكن، تعمل هذه الميزة الاختبارية على وضع محتويات التمرير لعنصر تمرير  في نص متجاوز لسعة الشاشة على طبقة مركّبة للتمرير الأسرع.</translation>
@@ -3471,7 +3459,6 @@
 <translation id="5569544776448152862">التسجيل في <ph name="BEGIN_BOLD" /><ph name="DOMAIN_NAME" /><ph name="END_BOLD" />...</translation>
 <translation id="5575473780076478375">إضافة وضع التصفح المتخفي: <ph name="EXTENSION_NAME" /></translation>
 <translation id="557722062034137776">‏لن يؤثر إعادة تعيين الجهاز على حسابات Google أو أي من البيانات التي تمت مزامنتها مع هذه الحسابات. ومع ذلك، سيتم حذف جميع الملفات التي تم حفظها محليًا على جهازك.</translation>
-<translation id="5579997910517802656">لم يتم العثور على أية أجهزة.</translation>
 <translation id="5581211282705227543">لم يتم تثبيت أي مكوّن إضافي.</translation>
 <translation id="5581700288664681403">جارٍ تحميل <ph name="CLOUD_PRINT_NAME" /></translation>
 <translation id="558170650521898289">‏التحقق من برنامج تشغيل الأجهزة لـ Microsoft Windows</translation>
@@ -4256,7 +4243,6 @@
 <translation id="6659213950629089752">تم تكبير/تصغير هذه الصفحة عبر إضافة "<ph name="NAME" />"</translation>
 <translation id="6659594942844771486">علامة تبويب</translation>
 <translation id="6660768694571958712">تُمكّن الدعم التجريبي لواجهة برمجة تطبيقات أحداث المؤشر. والهدف من ذلك هو الاختبار من جانب مطوري برامج الويب فقط، وقد يؤدي هذا إلى حدوث عطل طفيف في بعض مواقع الويب.</translation>
-<translation id="6662016084451426657">خطأ في المزامنة: الرجاء الاتصال بالمشرف لتمكين المزامنة.</translation>
 <translation id="6663792236418322902">ستكون كلمة المرور التي تختارها مطلوبة لاستعادة هذا الملف لاحقًا.  الرجاء تسجيلها في مكان آمن.</translation>
 <translation id="6664237456442406323">‏للأسف، تمت تهيئة جهاز الكمبيوتر باستخدام معرف جهاز غير صحيح. وهذا يمنع تحديث نظام التشغيل Chrome بأحدث إصلاحات الأمان، وقد يكون جهاز الكمبيوتر <ph name="BEGIN_BOLD" />عرضة للهجمات الضارة<ph name="END_BOLD" />.</translation>
 <translation id="6664774537677393800">حدث خطأ ما أثناء فتح ملفك الشخصي. يُرجى الخروج ثم إعادة تسجيل الدخول.</translation>
@@ -4475,7 +4461,6 @@
 <translation id="6985235333261347343">‏عامل استرداد مفتاح Microsoft</translation>
 <translation id="6985276906761169321">المعرِّف:</translation>
 <translation id="6985607387932385770">الطابعات</translation>
-<translation id="6986605181115043220">عذرًا، لقد توقفت المزامنة عن العمل. <ph name="BEGIN_LINK" />مزيد من المعلومات<ph name="END_LINK" /></translation>
 <translation id="6990081529015358884">لقد نفدت المساحة</translation>
 <translation id="6990778048354947307">مظهر معتم</translation>
 <translation id="6991128190741664836">لاحقًا</translation>
@@ -5097,7 +5082,6 @@
 <translation id="7839963980801867006">حدد أدوات أسلوب تحرير الإضافات التي ستتوفر في قائمة اللغة..</translation>
 <translation id="7842346819602959665">يتطلب أحدث إصدار من الإضافة "<ph name="EXTENSION_NAME" />" مزيدًا من الأذونات، لذا فقد تم تعطيله.</translation>
 <translation id="7844992432319478437">تحديث الاختلافات</translation>
-<translation id="7845920762538502375">تعذر على <ph name="PRODUCT_NAME" /> مزامنة البيانات نظرًا لأنه لم يتمكن من الاتصال بخادم المزامنة. جارٍ إعادة المحاولة...</translation>
 <translation id="7846076177841592234">إلغاء التحديد</translation>
 <translation id="7846634333498149051">لوحة المفاتيح</translation>
 <translation id="7847212883280406910">‏اضغط على Ctrl + Alt + S للتبديل إلى <ph name="IDS_SHORT_PRODUCT_OS_NAME" /></translation>
@@ -5382,7 +5366,6 @@
 <translation id="8213577208796878755">جهاز واحد آخر متاح.</translation>
 <translation id="8214489666383623925">فتح ملف...</translation>
 <translation id="8214962590150211830">إزالة هذا الشخص</translation>
-<translation id="8216278935161109887">يجب الخروج ثم إعادة تسجيل الدخول</translation>
 <translation id="8217399928341212914">متابعة حظر التنزيلات التلقائية لعدة ملفات</translation>
 <translation id="8221831106892617387">تم التمكين: اتصال الجيل الثاني بطيء</translation>
 <translation id="8222121761382682759">إلغاء التثبيت...</translation>
@@ -5529,7 +5512,6 @@
 <translation id="8418113698656761985">لوحة المفاتيح الرومانية</translation>
 <translation id="8418445294933751433">&amp;العرض في علامة تبويب</translation>
 <translation id="8420060421540670057">‏عرض ملفات مستندات Google</translation>
-<translation id="8420139899406509438">مُمكَّن (يختفي الفلاش عند فقد تركيز الصوت، تجريبي)</translation>
 <translation id="842274098655511832">‏إضافات مسودة WebGL</translation>
 <translation id="8424039430705546751">لأسفل</translation>
 <translation id="8425213833346101688">تغيير</translation>
@@ -6023,7 +6005,6 @@
 <translation id="9052208328806230490">لقد سجّلت طابعاتك في <ph name="CLOUD_PRINT_NAME" /> باستخدام الحساب <ph name="EMAIL" /></translation>
 <translation id="9052234664411715138">الملء المساعد لبطاقة الائتمان</translation>
 <translation id="9053860306922028466">يُرجى تحديد ما ترغب بمشاركته أولاً.</translation>
-<translation id="9053965862400494292">حدث خطأ أثناء محاولة إعداد المزامنة.</translation>
 <translation id="9056034633062863292">‏جارٍ تحديث جهاز Chromebox...</translation>
 <translation id="9056810968620647706">لم يتم العثور على نتائج مطابقة.</translation>
 <translation id="9057119625587205566">لم يتم العثور على طابعات مجاورة</translation>
@@ -6177,6 +6158,7 @@
 <translation id="971058943242239041">‏لتمكين استخدام عناصر "window-controls" لـ HTML في التطبيقات المجمّعة.</translation>
 <translation id="971774202801778802">‏عنوان URL للإشارة</translation>
 <translation id="973473557718930265">إنهاء</translation>
+<translation id="974555521953189084">إدخال عبارة المرور لبدء المزامنة</translation>
 <translation id="97534916655989966">السماح بالتشغيل التلقائي لمقاطع الفيديو المكتومة الصوت.</translation>
 <translation id="981121421437150478">بلا اتصال</translation>
 <translation id="984870422930397199">يُمكن من وضع شارات للصفحات في وضع عدم الاتصال على صفحة علامة التبويب الجديدة. ولا تكون مناسبة إلا عندما يتم تمكين الصفحات في وضع عدم الاتصال.</translation>

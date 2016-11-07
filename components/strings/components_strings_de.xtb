@@ -386,6 +386,7 @@
 <translation id="5171045022955879922">Suchen oder URL eingeben</translation>
 <translation id="5172758083709347301">Computer</translation>
 <translation id="5179510805599951267">Nicht auf <ph name="ORIGINAL_LANGUAGE" />? Diesen Fehler melden</translation>
+<translation id="5181140330217080051">Download wird ausgeführt...</translation>
 <translation id="5190835502935405962">Lesezeichenleiste</translation>
 <translation id="5199729219167945352">Experimente</translation>
 <translation id="5199841536747119669">Hier werden Ihre Vorschläge angezeigt</translation>
@@ -664,7 +665,6 @@ Geheimtipp: Verwenden Sie nächstes Mal den Inkognitomodus (<ph name="SHORTCUT_K
 <translation id="8498891568109133222">Die Antwort von <ph name="HOST_NAME" /> hat zu lange gedauert.</translation>
 <translation id="852346902619691059">Dieser Server konnte nicht beweisen, dass er <ph name="DOMAIN" /> ist. Sein Sicherheitszertifikat wird vom Betriebssystem Ihres Geräts nicht als vertrauenswürdig eingestuft. Mögliche Gründe sind eine fehlerhafte Konfiguration oder ein Angreifer, der Ihre Verbindung abfängt. <ph name="BEGIN_LEARN_MORE_LINK" />Weitere Informationen<ph name="END_LEARN_MORE_LINK" /></translation>
 <translation id="8530504477309582336">Dieser Kartentyp wird von Google Payments nicht unterstützt. Bitte verwenden Sie eine andere Karte.</translation>
-<translation id="8550022383519221471">Der Synchronisierungsdienst ist nicht für diese Domain verfügbar.</translation>
 <translation id="8553075262323480129">Die Übersetzung ist fehlgeschlagen, weil die Sprache der Seite nicht ermittelt werden konnte.</translation>
 <translation id="8559762987265718583">Es kann keine private Verbindung zu <ph name="BEGIN_BOLD" /><ph name="DOMAIN" /><ph name="END_BOLD" /> hergestellt werden, weil Datum und Uhrzeit Ihres Geräts falsch sind (<ph name="DATE_AND_TIME" />).</translation>
 <translation id="856992080682148">Das Zertifikat für diese Website läuft 2017 oder später ab und die Zertifikatskette enthält ein Zertifikat mit SHA-1-Signatur.</translation>
@@ -672,7 +672,6 @@ Geheimtipp: Verwenden Sie nächstes Mal den Inkognitomodus (<ph name="SHORTCUT_K
 <translation id="8591846766485502580">Diese Nachricht wird dir angezeigt, weil deine Eltern diese Website blockiert haben.</translation>
 <translation id="859285277496340001">In dem Zertifikat ist kein Mechanismus angegeben, mit dem geprüft werden kann, ob es zurückgerufen wurde.</translation>
 <translation id="8647750283161643317">Alle auf Standardeinstellung zurücksetzen</translation>
-<translation id="8680787084697685621">Die Anmeldeinformationen für dieses Konto sind veraltet.</translation>
 <translation id="8703575177326907206">Die Verbindung zu <ph name="DOMAIN" /> ist nicht verschlüsselt.</translation>
 <translation id="8725066075913043281">Erneut versuchen</translation>
 <translation id="8728672262656704056">Sie haben den Inkognitomodus aktiviert</translation>
@@ -702,7 +701,6 @@ Geheimtipp: Verwenden Sie nächstes Mal den Inkognitomodus (<ph name="SHORTCUT_K
 <translation id="8987927404178983737">Monat</translation>
 <translation id="8989148748219918422"><ph name="ORGANIZATION" /> [<ph name="COUNTRY" />]</translation>
 <translation id="9001074447101275817">Für den Proxy <ph name="DOMAIN" /> sind ein Nutzername und ein Passwort erforderlich.</translation>
-<translation id="9008201768610948239">Ignorieren</translation>
 <translation id="901974403500617787">Parameter, die systemweit gelten, können nur vom Eigentümer festgelegt werden: <ph name="OWNER_EMAIL" />.</translation>
 <translation id="9020542370529661692">Die Seite wurde übersetzt und liegt nun auf <ph name="TARGET_LANGUAGE" /> vor.</translation>
 <translation id="9038649477754266430">Vorhersagedienst zum schnelleren Laden von Seiten verwenden</translation>

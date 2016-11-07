@@ -387,6 +387,7 @@
 <translation id="5171045022955879922">Hanapin o i-type ang URL</translation>
 <translation id="5172758083709347301">Computer</translation>
 <translation id="5179510805599951267">Wala sa <ph name="ORIGINAL_LANGUAGE" />? Iulat ang error na ito</translation>
+<translation id="5181140330217080051">Nagda-download</translation>
 <translation id="5190835502935405962">Bar ng Mga Bookmark</translation>
 <translation id="5199729219167945352">Mga Eksperimento</translation>
 <translation id="5199841536747119669">Lalabas dito ang lahat ng iyong suhestyon</translation>
@@ -665,7 +666,6 @@ Psst! Maaaring maging kapaki-pakinabang ang mode na incognito <ph name="SHORTCUT
 <translation id="8498891568109133222">Masyadong matagal bago nakatugon ang <ph name="HOST_NAME" />.</translation>
 <translation id="852346902619691059">Hindi mapatunayan ng server na ito na ito ang <ph name="DOMAIN" />; ang certificate na panseguridad nito ay hindi pinagkakatiwalaan ng operating system ng iyong device. Maaaring sanhi ito ng maling pag-configure o ng isang nang-aatake na humahadlang sa iyong koneksyon. <ph name="BEGIN_LEARN_MORE_LINK" />Matuto nang higit pa<ph name="END_LEARN_MORE_LINK" />.</translation>
 <translation id="8530504477309582336">Ang ganitong uri ng card ay hindi sinusuportahan ng Google Payments. Mangyaring pumili ng ibang card.</translation>
-<translation id="8550022383519221471">Hindi available ang serbisyo ng pag-sync para sa iyong domain.</translation>
 <translation id="8553075262323480129">Nabigo ang pag-translate dahil hindi matukoy ang wika ng pahina.</translation>
 <translation id="8559762987265718583">Hindi makapagtatag ng pribadong koneksyon sa <ph name="BEGIN_BOLD" /><ph name="DOMAIN" /><ph name="END_BOLD" /> dahil mali ang petsa at oras ng iyong device (<ph name="DATE_AND_TIME" />).</translation>
 <translation id="856992080682148">Mag-e-expire ang certificate para sa site na ito sa 2017 o pagkatapos pa nito, at naglalaman ang chain ng certificate ng isang certificate na naka-sign gamit ang SHA-1.</translation>
@@ -673,7 +673,6 @@ Psst! Maaaring maging kapaki-pakinabang ang mode na incognito <ph name="SHORTCUT
 <translation id="8591846766485502580">Nakikita mo ang mensaheng ito dahil na-block ng isa sa iyong mga magulang ang site na ito.</translation>
 <translation id="859285277496340001">Hindi tumutukoy ang certificate na ito ng mekanismo upang masuri kung nabawi ito.</translation>
 <translation id="8647750283161643317">I-reset ang lahat sa default</translation>
-<translation id="8680787084697685621">Wala sa panahon ang mga detalye sa pag-sign-in sa account.</translation>
 <translation id="8703575177326907206">Ang iyong koneksyon sa <ph name="DOMAIN" /> ay hindi naka-encrypt.</translation>
 <translation id="8725066075913043281">Muling subukan</translation>
 <translation id="8728672262656704056">Naging incognito ka</translation>
@@ -703,7 +702,6 @@ Psst! Maaaring maging kapaki-pakinabang ang mode na incognito <ph name="SHORTCUT
 <translation id="8987927404178983737">Buwan</translation>
 <translation id="8989148748219918422"><ph name="ORGANIZATION" /> [<ph name="COUNTRY" />]</translation>
 <translation id="9001074447101275817">Nangangailangan ang proxy na <ph name="DOMAIN" /> ng username at password.</translation>
-<translation id="9008201768610948239">Balewalain</translation>
 <translation id="901974403500617787">Ang may-ari lang ang maaaring magtakda ng mga flag na nalalapat sa buong system: <ph name="OWNER_EMAIL" />.</translation>
 <translation id="9020542370529661692">Na-translate sa <ph name="TARGET_LANGUAGE" /> ang pahinang ito</translation>
 <translation id="9038649477754266430">Gumamit ng serbisyo sa paghula upang ma-load ang mga page nang mas mabilis</translation>

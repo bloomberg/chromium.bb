@@ -387,6 +387,7 @@
 <translation id="5171045022955879922">Arayın veya URL'yi yazın</translation>
 <translation id="5172758083709347301">Makine</translation>
 <translation id="5179510805599951267"><ph name="ORIGINAL_LANGUAGE" /> dilinde değil mi? Bu hatayı bildirin</translation>
+<translation id="5181140330217080051">İndiriliyor</translation>
 <translation id="5190835502935405962">Yer İşareti Çubuğu</translation>
 <translation id="5199729219167945352">Deneyler</translation>
 <translation id="5199841536747119669">Önerileriniz burada görünür</translation>
@@ -665,7 +666,6 @@ Hatırlatma! Bir dahaki sefere Gizli mod <ph name="SHORTCUT_KEY" /> kullanışl�
 <translation id="8498891568109133222"><ph name="HOST_NAME" /> ana makinesinin yanıt vermesi çok uzun sürdü.</translation>
 <translation id="852346902619691059">Bu sunucu <ph name="DOMAIN" /> olduğunu kanıtlayamadı. Cihazınızın işletim sistemi, sunucunun güvenlik sertifikasına güvenmiyor. Bu durum, yanlış yapılandırmadan veya bağlantınıza müdahale eden bir saldırgandan kaynaklanıyor olabilir. <ph name="BEGIN_LEARN_MORE_LINK" />Daha fazla bilgi edinin<ph name="END_LEARN_MORE_LINK" />.</translation>
 <translation id="8530504477309582336">Google Payments, bu kart türünü desteklememektedir. Lütfen farklı bir kart seçin.</translation>
-<translation id="8550022383519221471">Senkronizasyon hizmeti alan adınızda kullanılamıyor.</translation>
 <translation id="8553075262323480129">Sayfanın dili belirlenemediğinden çeviri başarısız oldu.</translation>
 <translation id="8559762987265718583">Cihazınızın tarih ve saati (<ph name="DATE_AND_TIME" />) yanlış olduğundan <ph name="BEGIN_BOLD" /><ph name="DOMAIN" /><ph name="END_BOLD" /> alan adına gizli bir bağlantı kurulamıyor.</translation>
 <translation id="856992080682148">Bu siteye ilişkin sertifikanın süresi 2017'de veya daha sonra doluyor ve sertifika zinciri, SHA-1 kullanılarak imzalanmış bir sertifika içeriyor.</translation>
@@ -673,7 +673,6 @@ Hatırlatma! Bir dahaki sefere Gizli mod <ph name="SHORTCUT_KEY" /> kullanışl�
 <translation id="8591846766485502580">Bir ebeveyniniz bu siteyi engellediği için bu iletiyi görüyorsunuz.</translation>
 <translation id="859285277496340001">Sertifika, iptal edilip edilmediğinin denetlenebileceği bir mekanizma belirtmiyor.</translation>
 <translation id="8647750283161643317">Tümünü varsayılan değerlere sıfırla</translation>
-<translation id="8680787084697685621">Hesap oturum açma ayrıntıları eski.</translation>
 <translation id="8703575177326907206"><ph name="DOMAIN" /> bağlantınız şifrelenmedi.</translation>
 <translation id="8725066075913043281">Yeniden dene</translation>
 <translation id="8728672262656704056">Gizli moda geçtiniz</translation>
@@ -703,7 +702,6 @@ Hatırlatma! Bir dahaki sefere Gizli mod <ph name="SHORTCUT_KEY" /> kullanışl�
 <translation id="8987927404178983737">Ay</translation>
 <translation id="8989148748219918422"><ph name="ORGANIZATION" /> [<ph name="COUNTRY" />]</translation>
 <translation id="9001074447101275817"><ph name="DOMAIN" /> proxy'si için kullanıcı adı ve şifre gerekiyor.</translation>
-<translation id="9008201768610948239">Yoksay</translation>
 <translation id="901974403500617787">Tüm sistem için geçerli olan işaretler sadece sahibi <ph name="OWNER_EMAIL" /> tarafından ayarlanabilir.</translation>
 <translation id="9020542370529661692">Bu sayfa <ph name="TARGET_LANGUAGE" /> diline çevrildi</translation>
 <translation id="9038649477754266430">Sayfaları daha hızlı yüklemek için bir tahmin hizmeti kullan</translation>

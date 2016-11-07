@@ -387,6 +387,7 @@
 <translation id="5171045022955879922">‏جستجو یا تایپ URL</translation>
 <translation id="5172758083709347301">دستگاه</translation>
 <translation id="5179510805599951267">به زبان <ph name="ORIGINAL_LANGUAGE" /> نیست؟ گزارش این خطا</translation>
+<translation id="5181140330217080051">در حال بارگیری</translation>
 <translation id="5190835502935405962">نوار نشانک‌ها</translation>
 <translation id="5199729219167945352">آزمایشات</translation>
 <translation id="5199841536747119669">پیشنهادات در اینجا نشان داده می‌شوند</translation>
@@ -665,7 +666,6 @@
 <translation id="8498891568109133222">پاسخ <ph name="HOST_NAME" /> بیش از حد طول کشیده است.</translation>
 <translation id="852346902619691059">این سرور نتوانست ثابت کند <ph name="DOMAIN" /> است؛ گواهینامه امنیتی آن مورداعتماد سیستم‌عامل دستگاه شما نیست. ممکن است پیکربندی اشتباهی علت آن باشد یا مهاجمی اتصالتان را قطع کرده باشد. <ph name="BEGIN_LEARN_MORE_LINK" />بیشتر بدانید<ph name="END_LEARN_MORE_LINK" />.</translation>
 <translation id="8530504477309582336">‏Google Payments این نوع کارت را پشتیبانی نمی‌کند. لطفاً کارت دیگری انتخاب کنید.</translation>
-<translation id="8550022383519221471">خدمات همگام‌سازی برای دامنهٔ شما موجود نیست.</translation>
 <translation id="8553075262323480129">ترجمه انجام نشد زیرا زبان صفحه تعیین نشد.</translation>
 <translation id="8559762987265718583">اتصال خصوصی به <ph name="BEGIN_BOLD" /><ph name="DOMAIN" /><ph name="END_BOLD" /> انجام نمی‌شود، زیرا تاریخ و زمان دستگاه شما (<ph name="DATE_AND_TIME" />) نادرست است.</translation>
 <translation id="856992080682148">‏گواهی این سایت در سال ۲۰۱۷ یا بعد از آن منقضی می‌شود و زنجیره گواهی حاوی یک گواهی با امضای SHA-1 است.</translation>
@@ -673,7 +673,6 @@
 <translation id="8591846766485502580">این پیام را به این دلیل می‌بینید که یکی از والدینتان این سایت را مسدود کرده است.</translation>
 <translation id="859285277496340001">این مجوز هیچ مکانیزمی را برای بررسی اینکه آیا باطل شده یا نه مشخص نمی‌کند.</translation>
 <translation id="8647750283161643317">بازنشانی همه به موارد پیش‌فرض</translation>
-<translation id="8680787084697685621">جزئیات ورود به سیستم حساب قدیمی است.</translation>
 <translation id="8703575177326907206">اتصال شما به <ph name="DOMAIN" /> رمزگذاری نشده است.</translation>
 <translation id="8725066075913043281">سعی مجدد</translation>
 <translation id="8728672262656704056">به صورت ناشناس وارد شدید</translation>
@@ -703,7 +702,6 @@
 <translation id="8987927404178983737">ماه</translation>
 <translation id="8989148748219918422"><ph name="ORGANIZATION" /> [<ph name="COUNTRY" />]</translation>
 <translation id="9001074447101275817">پروکسی <ph name="DOMAIN" /> به نام کاربری و گذرواژه نیاز دارد.</translation>
-<translation id="9008201768610948239">نادیده گرفتن</translation>
 <translation id="901974403500617787">پرچم‌هایی که در تمام سیستم اعمال می‌شوند فقط توسط مالک قابل تنظیم هستند: <ph name="OWNER_EMAIL" />.</translation>
 <translation id="9020542370529661692">این صفحه به <ph name="TARGET_LANGUAGE" /> ترجمه شده است</translation>
 <translation id="9038649477754266430">استفاده از یک سرویس پیش‌بینی برای بار کردن سریع‌تر صفحه‌ها</translation>

@@ -89,6 +89,7 @@ Prima Pesquisar ou Shift para cancelar.</translation>
 <translation id="3294437725009624529">Convidado</translation>
 <translation id="3335772982573114336">Nova nota</translation>
 <translation id="3364721542077212959">Ferramentas da caneta stylus</translation>
+<translation id="3368922792935385530">Ligado</translation>
 <translation id="3371140690572404006">Dispositivo USB-C (porta frontal do lado direito)</translation>
 <translation id="3445925074670675829">Dispositivo USB-C</translation>
 <translation id="3473479545200714844">Lupa</translation>
@@ -125,6 +126,7 @@ Prima Pesquisar ou Shift para cancelar.</translation>
 <translation id="4250680216510889253">Não</translation>
 <translation id="4279490309300973883">Espelhamento</translation>
 <translation id="4321179778687042513">ctrl</translation>
+<translation id="4378551569595875038">A ligar...</translation>
 <translation id="4421231901400348175">A partilhar o controlo do seu ecrã com <ph name="HELPER_NAME" /> através da Assistência remota.</translation>
 <translation id="4430019312045809116">Volume</translation>
 <translation id="4448844063988177157">A procurar redes Wi-Fi...</translation>
@@ -280,4 +282,5 @@ Prima Alt + Pesquisar ou Shift para cancelar.</translation>
 <translation id="923686485342484400">Prima Control Shift Q duas vezes para terminar sessão.</translation>
 <translation id="938582441709398163">Sobreposição do teclado</translation>
 <translation id="939252827960237676">Não foi possível guardar a captura de ecrã</translation>
+<translation id="952992212772159698">Não activado</translation>
 </translationbundle>

@@ -89,6 +89,7 @@
 <translation id="3294437725009624529">ผู้มาเยือน</translation>
 <translation id="3335772982573114336">โน้ตใหม่</translation>
 <translation id="3364721542077212959">เครื่องมือสไตลัส</translation>
+<translation id="3368922792935385530">เชื่อมต่อแล้ว</translation>
 <translation id="3371140690572404006">อุปกรณ์ USB-C (พอร์ตด้านหน้าขวา)</translation>
 <translation id="3445925074670675829">อุปกรณ์ USB-C</translation>
 <translation id="3473479545200714844">แว่นขยายหน้าจอ</translation>
@@ -125,6 +126,7 @@
 <translation id="4250680216510889253">ไม่มี</translation>
 <translation id="4279490309300973883">กำลังแสดงผล</translation>
 <translation id="4321179778687042513">ctrl</translation>
+<translation id="4378551569595875038">กำลังเชื่อมต่อ...</translation>
 <translation id="4421231901400348175">กำลังแชร์การควบคุมหน้าจอกับ <ph name="HELPER_NAME" /> ผ่านความช่วยเหลือระยะไกล</translation>
 <translation id="4430019312045809116">ระดับเสียง</translation>
 <translation id="4448844063988177157">กำลังค้นหาเครือข่าย Wi-Fi...</translation>
@@ -280,4 +282,5 @@
 <translation id="923686485342484400">กด Control Shift Q 2 ครั้งเพื่อออกจากระบบ</translation>
 <translation id="938582441709398163">การวางซ้อนแป้นพิมพ์</translation>
 <translation id="939252827960237676">ไม่สามารถบันทึกภาพหน้าจอ</translation>
+<translation id="952992212772159698">ไม่ได้เปิดการใช้งาน</translation>
 </translationbundle>

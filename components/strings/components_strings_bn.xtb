@@ -388,6 +388,7 @@
 <translation id="5171045022955879922">অনুসন্ধান করুন বা URL লিখুন</translation>
 <translation id="5172758083709347301">যন্ত্র</translation>
 <translation id="5179510805599951267"><ph name="ORIGINAL_LANGUAGE" />-এ নেই? এই ত্রুটি রিপোর্ট করুন</translation>
+<translation id="5181140330217080051">ডাউনলোড হচ্ছে</translation>
 <translation id="5190835502935405962">বুকমার্ক দণ্ড</translation>
 <translation id="5199729219167945352">পরীক্ষাদি</translation>
 <translation id="5199841536747119669">আপনার প্রস্তাবনাগুলি এখানে দেখা যাবে</translation>
@@ -589,7 +590,7 @@
 <translation id="7600965453749440009"><ph name="LANGUAGE" /> কখনও অনুবাদ করবেন না</translation>
 <translation id="7610193165460212391">সীমার বাইরে মান <ph name="VALUE" />৷</translation>
 <translation id="7613889955535752492">মেয়াদোত্তীর্ণ: <ph name="EXPIRATION_MONTH" />/<ph name="EXPIRATION_YEAR" /></translation>
-<translation id="7615602087246926389">আপনার কাছে ইতিমধ্যেই এমন ডেটা আছে যা Google অ্যাকাউন্টের পাসওয়ার্ডের কোনো ভিন্ন সংস্করণ ব্যবহারের দ্বারা এনক্রিপ্ট করা হয়৷ দয়া করে এটিকে নীচে লিখুন৷</translation>
+<translation id="7615602087246926389">আপনার কাছে ইতিমধ্যেই এমন ডেটা আছে যা Google অ্যাকাউন্টের পাসওয়ার্ডের কোনো ভিন্ন সংস্করণ ব্যবহারের দ্বারা এনক্রিপ্ট করা হয়৷ দয়া করে এটিকে নিচে লিখুন৷</translation>
 <translation id="7634554953375732414">এই সাইটে আপনার সংযোগ ব্যক্তিগত নয়।</translation>
 <translation id="7637571805876720304">Chromium থেকে ক্রেডিট কার্ড সরাবেন?</translation>
 <translation id="765676359832457558">উন্নত সেটিংস লুকান...</translation>
@@ -665,7 +666,6 @@
 <translation id="8498891568109133222"><ph name="HOST_NAME" /> সাড়া দিতে খুবে বেশি সময় নিয়েছে।</translation>
 <translation id="852346902619691059">এই সার্ভার প্রমাণ করতে পারেনি যে এটা <ph name="DOMAIN" />; আপনার ডিভাইসের অপারেটিং সিস্টেম এর নিরাপত্তা শংসাপত্রটিকে বিশ্বাস করে না। কোনো ভুল কনফিগারেশনের কারণে অথবা কোনো আক্রমণকারী আপনার সংযোগ মাঝপথে আটকে দিচ্ছে বলে এমনটা হতে পারে। <ph name="BEGIN_LEARN_MORE_LINK" />আরো জানুন<ph name="END_LEARN_MORE_LINK" />।</translation>
 <translation id="8530504477309582336">এই ধরনের কার্ড Google Payments দ্বারা সমর্থিত নয়৷ দয়া করে একটি আলাদা কার্ড নির্বাচন করুন৷</translation>
-<translation id="8550022383519221471">আপনার ডোমেনের জন্য সিঙ্ক পরিষেবা উপলব্ধ নেই৷</translation>
 <translation id="8553075262323480129">পৃষ্ঠার ভাষা নির্ধারণ না করতে পারার কারণে অনুবাদ ব্যর্থ হয়েছে৷</translation>
 <translation id="8559762987265718583"><ph name="BEGIN_BOLD" /><ph name="DOMAIN" /><ph name="END_BOLD" /> এ একটি ব্যক্তিগত সংযোগ স্থাপন করা যায়নি কারণ আপনার ডিভাইসের তারিখ এবং সময় (<ph name="DATE_AND_TIME" />) সঠিক নয়৷</translation>
 <translation id="856992080682148">এই সাইটের শংসাপত্র ২০১৭ সালে বা তার পরে মেয়াদোত্তীর্ণ হবে, এবং শংসাপত্র শৃঙ্খলে SHA-1 ব্যবহার করে স্বাক্ষর করা একটি শংসাপত্র রয়েছে।</translation>
@@ -673,7 +673,6 @@
 <translation id="8591846766485502580">আপনার পিতামাতার কেউ একজন এই সাইটটি অবরুদ্ধ করার কারণে আপনি এই বার্তাটি দেখতে পাচ্ছেন।</translation>
 <translation id="859285277496340001">শংসাপত্রটি প্রত্যাহার করা হয়েছে কিনা তা যাচাই করতে শংসাপত্রটি কোনও কারিগরীকে নির্দিষ্ট করে না৷</translation>
 <translation id="8647750283161643317">সবগুলিকে ডিফল্টে পুনরায় সেট করুন</translation>
-<translation id="8680787084697685621">অ্যাকাউন্ট সাইন-ইন বিশদ তারিখ সীমার বাইরে৷</translation>
 <translation id="8703575177326907206"><ph name="DOMAIN" />-এ আপনার কানেকশন এনক্রিপ্ট হয় নি৷</translation>
 <translation id="8725066075913043281">আবার চেষ্টা করুন</translation>
 <translation id="8728672262656704056">আপনি ছদ্মবেশে রয়েছেন৷</translation>
@@ -703,7 +702,6 @@
 <translation id="8987927404178983737">মাস</translation>
 <translation id="8989148748219918422"><ph name="ORGANIZATION" /> [<ph name="COUNTRY" />]</translation>
 <translation id="9001074447101275817"><ph name="DOMAIN" /> প্রক্সীটির একটি ব্যবহারকারী নাম এবং পাসওয়ার্ড প্রয়োজন।</translation>
-<translation id="9008201768610948239">উপেক্ষা করুন</translation>
 <translation id="901974403500617787">যে ফ্ল্যাগগুলি সমস্ত সিস্টেম জুড়ে প্রয়োগ করা হয় সেগুলি শুধুমাত্র মালিকের দ্বারা সেট করা যেতে পারে: <ph name="OWNER_EMAIL" />৷</translation>
 <translation id="9020542370529661692">এই পৃষ্ঠাটি <ph name="TARGET_LANGUAGE" /> এ অনুবাদ করা হয়েছে</translation>
 <translation id="9038649477754266430">পৃষ্ঠা আরো দ্রুত লোড করার জন্য কোনো পূর্বাভাষ পরিষেবা ব্যবহার করুন</translation>

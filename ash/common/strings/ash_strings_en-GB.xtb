@@ -89,6 +89,7 @@ Press Search or Shift to cancel.</translation>
 <translation id="3294437725009624529">Guest</translation>
 <translation id="3335772982573114336">New note</translation>
 <translation id="3364721542077212959">Stylus tools</translation>
+<translation id="3368922792935385530">Connected</translation>
 <translation id="3371140690572404006">USB-C device (right-hand-side front port)</translation>
 <translation id="3445925074670675829">USB-C device</translation>
 <translation id="3473479545200714844">Screen magnifier</translation>
@@ -125,6 +126,7 @@ Press Search or Shift to cancel.</translation>
 <translation id="4250680216510889253">No</translation>
 <translation id="4279490309300973883">Mirroring</translation>
 <translation id="4321179778687042513">ctrl</translation>
+<translation id="4378551569595875038">Connecting...</translation>
 <translation id="4421231901400348175">Sharing control of your screen with <ph name="HELPER_NAME" /> via Remote Assistance.</translation>
 <translation id="4430019312045809116">volume</translation>
 <translation id="4448844063988177157">Searching for Wi-Fi networks...</translation>
@@ -280,4 +282,5 @@ Press Alt+Search or Shift to cancel.</translation>
 <translation id="923686485342484400">Press Control Shift Q twice to sign out.</translation>
 <translation id="938582441709398163">Keyboard Overlay</translation>
 <translation id="939252827960237676">Failed to save screenshot</translation>
+<translation id="952992212772159698">Not activated</translation>
 </translationbundle>

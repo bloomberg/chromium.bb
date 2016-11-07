@@ -384,6 +384,7 @@
 <translation id="5171045022955879922">Cerca o digita un URL</translation>
 <translation id="5172758083709347301">Computer</translation>
 <translation id="5179510805599951267">Non in <ph name="ORIGINAL_LANGUAGE" />? Segnala questo errore</translation>
+<translation id="5181140330217080051">Download in corso</translation>
 <translation id="5190835502935405962">Barra dei Preferiti</translation>
 <translation id="5199729219167945352">Esperimenti</translation>
 <translation id="5199841536747119669">I suggerimenti vengono visualizzati qui</translation>
@@ -661,7 +662,6 @@ Psst! La prossima volta potrebbe esserti utile la modalità di navigazione in in
 <translation id="8498891568109133222"><ph name="HOST_NAME" /> ha impiegato troppo tempo a rispondere.</translation>
 <translation id="852346902619691059">Questo server non è riuscito a verificare che si tratti di <ph name="DOMAIN" />; il relativo certificato di sicurezza non è considerato attendibile dal sistema operativo del dispositivo. Il problema potrebbe essere dovuto a un'errata configurazione o a un malintenzionato che intercetta la connessione. <ph name="BEGIN_LEARN_MORE_LINK" />Ulteriori informazioni<ph name="END_LEARN_MORE_LINK" />.</translation>
 <translation id="8530504477309582336">Questo tipo di carta non è supportato in Google Payments. Seleziona un'altra carta.</translation>
-<translation id="8550022383519221471">Il servizio di sincronizzazione non è disponibile per il tuo dominio.</translation>
 <translation id="8553075262323480129">La traduzione non è riuscita perché non è stato possibile determinare la lingua della pagina.</translation>
 <translation id="8559762987265718583">Impossibile stabilire una connessione privata con il sito <ph name="BEGIN_BOLD" /><ph name="DOMAIN" /><ph name="END_BOLD" /> perché data e ora del dispositivo (<ph name="DATE_AND_TIME" />) sono sbagliate.</translation>
 <translation id="856992080682148">Il certificato di questo sito scade nel 2017 o oltre e la catena di certificati contiene un certificato che è stato firmato utilizzando SHA-1.</translation>
@@ -669,7 +669,6 @@ Psst! La prossima volta potrebbe esserti utile la modalità di navigazione in in
 <translation id="8591846766485502580">Visualizzi questo messaggio perché uno dei tuoi genitori ha bloccato questo sito.</translation>
 <translation id="859285277496340001">Il certificato non specifica un meccanismo per il controllo della sua revoca.</translation>
 <translation id="8647750283161643317">Ripristina i valori predefiniti per tutto</translation>
-<translation id="8680787084697685621">I dati di accesso dell'account sono obsoleti.</translation>
 <translation id="8703575177326907206">La connessione a <ph name="DOMAIN" /> non è crittografata.</translation>
 <translation id="8725066075913043281">Riprova</translation>
 <translation id="8728672262656704056">Sei passato alla navigazione in incognito</translation>
@@ -699,7 +698,6 @@ Psst! La prossima volta potrebbe esserti utile la modalità di navigazione in in
 <translation id="8987927404178983737">Mese</translation>
 <translation id="8989148748219918422"><ph name="ORGANIZATION" /> [<ph name="COUNTRY" />]</translation>
 <translation id="9001074447101275817">Il proxy <ph name="DOMAIN" /> richiede un nome utente e una password.</translation>
-<translation id="9008201768610948239">Ignora</translation>
 <translation id="901974403500617787">I contrassegni che si applicano a livello di sistema possono essere impostati solo dal proprietario: <ph name="OWNER_EMAIL" />.</translation>
 <translation id="9020542370529661692">Questa pagina è stata tradotta in <ph name="TARGET_LANGUAGE" /></translation>
 <translation id="9038649477754266430">Utilizza un servizio di previsione per velocizzare il caricamento delle pagine</translation>

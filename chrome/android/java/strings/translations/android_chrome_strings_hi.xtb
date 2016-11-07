@@ -51,7 +51,6 @@
 <translation id="1506061864768559482">खोज इंजन</translation>
 <translation id="1513352483775369820">बुकमार्क और वेब इतिहास</translation>
 <translation id="1513858653616922153">पासवर्ड हटाएं</translation>
-<translation id="1546112724822176246">आपका डिवाइस नहीं दिखाई दे रहा है? <ph name="BEGIN_LINK" />सहायता प्राप्त करें<ph name="END_LINK" />.</translation>
 <translation id="1549000191223877751">अन्य विंडो में ले जाएं</translation>
 <translation id="1553358976309200471">Chrome अपडेट करें</translation>
 <translation id="1571304935088121812">उपयोगकर्ता नाम की कॉपी करें</translation>
@@ -72,7 +71,6 @@
 <translation id="1749561566933687563">अपने बुकमार्क समन्‍वयित करें</translation>
 <translation id="17513872634828108">टैब खोलें</translation>
 <translation id="1756600373018374892">अपने टैब पर तुरंत एक्सेस के लिए यह बटन टैप करें.</translation>
-<translation id="1774241295142531736">आपका डिवाइस नहीं दिखाई दे रहा है? <ph name="BEGIN_LINK1" />सहायता पाएं<ph name="END_LINK1" /> या <ph name="BEGIN_LINK2" />फिर से स्कैन करें<ph name="END_LINK2" />.</translation>
 <translation id="1807246157184219062">हल्का</translation>
 <translation id="1825719650605518411">पहली बार चलाने का अनुभव</translation>
 <translation id="1826516787628120939">जांच की जा रही है</translation>
@@ -156,7 +154,6 @@
 <translation id="2707726405694321444">पृष्ठ रीफ्रेश करें</translation>
 <translation id="2709516037105925701">ऑटोमैटिक भरना</translation>
 <translation id="271033894570825754">नया</translation>
-<translation id="2748463065602559597">आप एक सुरक्षि‍त Google Chrome पृष्‍ठ देख रहे हैं.</translation>
 <translation id="2762000892062317888">अभी-अभी</translation>
 <translation id="2777555524387840389"><ph name="SECONDS" /> सेकंड शेष</translation>
 <translation id="2781151931089541271">1 सेकंड शेष</translation>
@@ -233,7 +230,6 @@
 <translation id="3656115297268584622"><ph name="BEGIN_LINK" />Android सेटिंग<ph name="END_LINK" /> में स्‍थान चालू करें.</translation>
 <translation id="3661699943263275414">तृतीय-पक्ष वेबसाइटें कुकी डेटा को सहेज सकती हैं और पढ़ सकती हैं</translation>
 <translation id="3672452749423051839">मार्गदर्शक त्रुटि सुझाव</translation>
-<translation id="3690847815241521170">डिवाइस खोजे जा रहे हैं… <ph name="BEGIN_LINK" />सहायता पाएं<ph name="END_LINK" /></translation>
 <translation id="3706658020782046159">शिपिंग की विधियां और आवश्यकताएं देखने के लिए शिपिंग पता चुनें.</translation>
 <translation id="3716158070938632480">वेबपृष्ठ आस-पास उपलब्ध हैं</translation>
 <translation id="3738139272394829648">खोजने के लिए स्पर्श करें</translation>
@@ -322,7 +318,6 @@
 <translation id="4807098396393229769">कार्ड पर नाम</translation>
 <translation id="4816465935029283692">डेटा प्रकार</translation>
 <translation id="4827948050554950725">क्रेडिट कार्ड जोड़ें</translation>
-<translation id="4836364883164334657">इस साइट से आपका कनेक्‍शन निजी नहीं है. हो सकता है कि हमलावर <ph name="DOMAIN_NAME" /> से आपकी जानकारी (उदाहरण के लिए, फ़ोटो, पासवर्ड, संदेश और क्रेडिट कार्ड) चुराने का प्रयास कर रहे हों.</translation>
 <translation id="4850886885716139402">देखें</translation>
 <translation id="4881695831933465202">खोलें</translation>
 <translation id="4885273946141277891">Chrome इंस्टेंस की असमर्थित संख्या.</translation>
@@ -339,6 +334,7 @@
 <translation id="5016205925109358554">Serif</translation>
 <translation id="5039804452771397117">अनुमति दें</translation>
 <translation id="5040262127954254034">निजता</translation>
+<translation id="5053110706349648690">युग्‍मन की अनुमति देने के लिए <ph name="BEGIN_LINK" />डिवाइस सेटिंग<ph name="END_LINK" /> में ब्‍लूटूथ चालू करें</translation>
 <translation id="5063480226653192405">उपयोग</translation>
 <translation id="5087580092889165836">कार्ड जोड़ें</translation>
 <translation id="5100237604440890931">संक्षिप्त - विस्तृत करने के लिए क्लिक करें.</translation>
@@ -354,6 +350,7 @@
 <translation id="5171045022955879922">URL खोजें या लिखें</translation>
 <translation id="5184329579814168207">Chrome में खोलें</translation>
 <translation id="5199929503336119739">कार्य प्रोफ़ाइल</translation>
+<translation id="5209320130288484488">कोई डिवाइस नहीं मि‍ला</translation>
 <translation id="5210365745912300556">टैब बंद करें</translation>
 <translation id="5222676887888702881">प्रस्थान करें</translation>
 <translation id="5233638681132016545">नया टैब</translation>
@@ -388,7 +385,6 @@
 <translation id="5556459405103347317">पुन: लोड करें</translation>
 <translation id="5565871407246142825">क्रेडिट कार्ड</translation>
 <translation id="5578795271662203820">इस चित्र के लिए <ph name="SEARCH_ENGINE" /> खोजें</translation>
-<translation id="5579997910517802656">कोई डिवाइस नहीं मिले.</translation>
 <translation id="5595485650161345191">पता संपादित करें</translation>
 <translation id="5596627076506792578">अधिक विकल्प</translation>
 <translation id="5626134646977739690">नाम:</translation>
@@ -566,9 +562,9 @@
 <translation id="7596558890252710462">ऑपरेटिंग सिस्टम</translation>
 <translation id="7605594153474022051">समन्वयन काम नहीं कर रहा है</translation>
 <translation id="7612619742409846846">Google में इस रूप में प्रवेश किया हुआ है</translation>
+<translation id="7613889955535752492">समय-सीमा समाप्त: <ph name="EXPIRATION_MONTH" />/<ph name="EXPIRATION_YEAR" /></translation>
 <translation id="7619072057915878432">नेटवर्क विफलताओं के कारण <ph name="FILE_NAME" /> डाउनलोड विफल रहा.</translation>
 <translation id="7626032353295482388">Chrome में आपका स्वागत है</translation>
-<translation id="7634554953375732414">इस साइट से आपका कनेक्‍शन निजी नहीं है.</translation>
 <translation id="7638584964844754484">गलत पासफ़्रेज़</translation>
 <translation id="7648422057306047504">Google प्रमाणिकता के साथ पासवर्ड एन्क्रिप्ट करें</translation>
 <translation id="7649070708921625228">सहायता</translation>
@@ -636,13 +632,11 @@
 <translation id="8428213095426709021">सेटिंग्स</translation>
 <translation id="8433057134996913067">इससे आप अधिकांश वेबसाइट से प्रस्थान कर जाएंगे.</translation>
 <translation id="8447861592752582886">डिवाइस अनुमति निरस्त करें</translation>
-<translation id="8481940801237642152">इस साइट से आपका कनेक्‍शन निजी है, लेकिन नेटवर्क पर मौजूद कोई व्‍यक्‍ति पृष्‍ठ का रूप बदल सकता है.</translation>
 <translation id="8487700953926739672">ऑफ़लाइन उपलब्ध है</translation>
 <translation id="8493948351860045254">स्‍थान खाली करें</translation>
 <translation id="8497726226069778601">यहां देखने के लिए…अभी तक कुछ भी नहीं है</translation>
 <translation id="8503813439785031346">उपयोगकर्ता नाम</translation>
 <translation id="8514577642972634246">गुप्त मोड में प्रवेश करें</translation>
-<translation id="8518901949365209398">यह साइट कमज़ोर सुरक्षा कॉन्‍फ़िगरेशन (SHA-1 हस्‍ताक्षर) का उपयोग करती है, इसलिए हो सकता है कि आपका कनेक्‍शन निजी ना रहे.</translation>
 <translation id="8523928698583292556">संग्रहीत पासवर्ड हटाएं</translation>
 <translation id="854522910157234410">यह पृष्ठ खोलें</translation>
 <translation id="8562452229998620586">सहेजे गए पासवर्ड यहां दिखाई देंगे.</translation>
@@ -675,7 +669,6 @@
 <translation id="8912362522468806198">Google खाता</translation>
 <translation id="8920114477895755567">अभिभावकों के विवरण की प्रतीक्षा कर रहे हैं.</translation>
 <translation id="8931159598799892500">Chrome + जीता-जागता वेब</translation>
-<translation id="8941248009481596111">इस साइट से आपका कनेक्‍शन निजी है.</translation>
 <translation id="8941729603749328384">www.example.com</translation>
 <translation id="8942627711005830162">अन्य विंडो में खोलें</translation>
 <translation id="8959122750345127698">मार्गदर्शक तक नहीं पहुंचा जा सकता: <ph name="URL" /></translation>

@@ -387,6 +387,7 @@
 <translation id="5171045022955879922">Otsige või sisestage URL</translation>
 <translation id="5172758083709347301">Masin</translation>
 <translation id="5179510805599951267">Tegu ei ole <ph name="ORIGINAL_LANGUAGE" /> keelega? Andke veast teada</translation>
+<translation id="5181140330217080051">Allalaadimine</translation>
 <translation id="5190835502935405962">Järjehoidjariba</translation>
 <translation id="5199729219167945352">Katsed</translation>
 <translation id="5199841536747119669">Teie soovitused kuvatakse siin</translation>
@@ -665,7 +666,6 @@ Inkognito režiim <ph name="SHORTCUT_KEY" /> võib järgmisel korral kasulikuks 
 <translation id="8498891568109133222">Hostil <ph name="HOST_NAME" /> kulus vastamiseks liiga kaua aega.</translation>
 <translation id="852346902619691059">Server ei suutnud tõestada, et tegemist on domeeniga <ph name="DOMAIN" />. Teie seadme operatsioonisüsteem ei usalda selle turvasertifikaati. Selle põhjuseks võib olla vale seadistus või teie ühendust segav ründaja. <ph name="BEGIN_LEARN_MORE_LINK" />Vaadake lisateavet<ph name="END_LEARN_MORE_LINK" />.</translation>
 <translation id="8530504477309582336">Google Payments ei toeta seda tüüpi kaarti. Valige teine kaart.</translation>
-<translation id="8550022383519221471">Sünkroonimisteenus ei ole domeeni jaoks saadaval.</translation>
 <translation id="8553075262323480129">Tõlkimine nurjus, kuna lehe keelt ei õnnestunud määrata.</translation>
 <translation id="8559762987265718583">Privaatset ühendust ei saa domeeniga <ph name="BEGIN_BOLD" /><ph name="DOMAIN" /><ph name="END_BOLD" /> luua, kuna seadme kuupäev ja kellaaeg (<ph name="DATE_AND_TIME" />) on valed.</translation>
 <translation id="856992080682148">Selle saidi sertifikaat aegub 2017. aastal või hiljem ja sertifikaadiahel sisaldab sertifikaati, mis on allkirjastatud SHA-1-ga.</translation>
@@ -673,7 +673,6 @@ Inkognito režiim <ph name="SHORTCUT_KEY" /> võib järgmisel korral kasulikuks 
 <translation id="8591846766485502580">Näete seda sõnumit, kuna üks teie vanematest blokeeris selle saidi.</translation>
 <translation id="859285277496340001">Sertifikaat ei määratle mehhanismi enda võimaliku tühistamise kontrollimiseks.</translation>
 <translation id="8647750283161643317">Lähtesta kõik vaikeolekusse</translation>
-<translation id="8680787084697685621">Konto sisselogimisüksikasjad on aegunud.</translation>
 <translation id="8703575177326907206">Teie ühendus <ph name="DOMAIN" />'ga pole krüptitud.</translation>
 <translation id="8725066075913043281">Proovi uuesti</translation>
 <translation id="8728672262656704056">Olete inkognito režiimis</translation>
@@ -703,7 +702,6 @@ Inkognito režiim <ph name="SHORTCUT_KEY" /> võib järgmisel korral kasulikuks 
 <translation id="8987927404178983737">kuu</translation>
 <translation id="8989148748219918422"><ph name="ORGANIZATION" /> [<ph name="COUNTRY" />]</translation>
 <translation id="9001074447101275817">Puhverserver <ph name="DOMAIN" /> nõuab kasutajanime ja parooli.</translation>
-<translation id="9008201768610948239">Eira</translation>
 <translation id="901974403500617787">Kogu süsteemis kehtivaid märgiseid saab määrata ainult omanik: <ph name="OWNER_EMAIL" />.</translation>
 <translation id="9020542370529661692">See leht on tõlgitud <ph name="TARGET_LANGUAGE" /> keelde</translation>
 <translation id="9038649477754266430">Kasuta lehtede kiiremaks laadimiseks ennustusteenust</translation>

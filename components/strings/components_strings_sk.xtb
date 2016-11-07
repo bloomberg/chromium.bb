@@ -383,6 +383,7 @@
 <translation id="5171045022955879922">Vyhľadajte alebo zadajte webovú adresu</translation>
 <translation id="5172758083709347301">Počítač</translation>
 <translation id="5179510805599951267">Text sa nezobrazil v jazyku <ph name="ORIGINAL_LANGUAGE" />? Nahláste túto chybu</translation>
+<translation id="5181140330217080051">Sťahovanie</translation>
 <translation id="5190835502935405962">Panel so záložkami</translation>
 <translation id="5199729219167945352">Experimenty</translation>
 <translation id="5199841536747119669">Tu sa zobrazia vaše návrhy</translation>
@@ -660,7 +661,6 @@ Nabudúce by sa vám mohol hodiť režim inkognito (<ph name="SHORTCUT_KEY" />).
 <translation id="8498891568109133222">Web <ph name="HOST_NAME" /> príliš dlho neodpovedal.</translation>
 <translation id="852346902619691059">Tomuto serveru sa nepodarilo dokázať, že ide o doménu <ph name="DOMAIN" />; operačný systém vášho zariadenia nedôveruje jej bezpečnostnému certifikátu. Môže to byť následok nesprávnej konfigurácie alebo napadnutia vášho pripojenia útočníkom. <ph name="BEGIN_LEARN_MORE_LINK" />Ďalšie informácie<ph name="END_LEARN_MORE_LINK" /></translation>
 <translation id="8530504477309582336">Služba Google Payments nepodporuje tento typ karty. Vyberte inú kartu.</translation>
-<translation id="8550022383519221471">Služba synchronizácie nie je pre vašu doménu k dispozícii.</translation>
 <translation id="8553075262323480129">Prekladanie zlyhalo, pretože sa nepodarilo určiť jazyk stránky.</translation>
 <translation id="8559762987265718583">Súkromné pripojenie k doméne <ph name="BEGIN_BOLD" /><ph name="DOMAIN" /><ph name="END_BOLD" /> sa nedá nadviazať, pretože dátum a čas (<ph name="DATE_AND_TIME" />) vášho zariadenia sú nesprávne.</translation>
 <translation id="856992080682148">Platnosť certifikátu pre tieto stránky vyprší v roku 2017 alebo neskôr a reťazec certifikátu obsahuje certifikát podpísaný pomocou funkcie SHA-1.</translation>
@@ -668,7 +668,6 @@ Nabudúce by sa vám mohol hodiť režim inkognito (<ph name="SHORTCUT_KEY" />).
 <translation id="8591846766485502580">Táto správa sa vám zobrazila, pretože jeden z vašich rodičov zablokoval tento web.</translation>
 <translation id="859285277496340001">V certifikáte nie je uvedené, akým spôsobom sa má skontrolovať, či certifikát nebol odmietnutý.</translation>
 <translation id="8647750283161643317">Obnoviť predvolené nastavenia všetkých experimentov</translation>
-<translation id="8680787084697685621">Informácie o prihlásení do účtu sú neaktuálne.</translation>
 <translation id="8703575177326907206">Vaše pripojenie k doméne <ph name="DOMAIN" /> sa nešifruje.</translation>
 <translation id="8725066075913043281">Skúsiť znova</translation>
 <translation id="8728672262656704056">Ste v režime inkognito</translation>
@@ -698,7 +697,6 @@ Nabudúce by sa vám mohol hodiť režim inkognito (<ph name="SHORTCUT_KEY" />).
 <translation id="8987927404178983737">Mesiac</translation>
 <translation id="8989148748219918422"><ph name="ORGANIZATION" /> [<ph name="COUNTRY" />]</translation>
 <translation id="9001074447101275817">Proxy server <ph name="DOMAIN" /> vyžaduje používateľské meno a heslo.</translation>
-<translation id="9008201768610948239">Ignorovať</translation>
 <translation id="901974403500617787">Príznaky, ktoré platia v celom systéme, môže nastaviť iba vlastník: <ph name="OWNER_EMAIL" />.</translation>
 <translation id="9020542370529661692">Táto stránka bola preložená do jazyka <ph name="TARGET_LANGUAGE" /></translation>
 <translation id="9038649477754266430">Používať službu predpovedí na rýchlejšie načítanie stránok</translation>

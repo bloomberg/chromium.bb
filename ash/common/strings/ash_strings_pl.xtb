@@ -89,6 +89,7 @@ Naciśnij Szukaj lub Shift, by anulować.</translation>
 <translation id="3294437725009624529">Gość</translation>
 <translation id="3335772982573114336">Nowa notatka</translation>
 <translation id="3364721542077212959">Narzędzia rysika</translation>
+<translation id="3368922792935385530">Połączone</translation>
 <translation id="3371140690572404006">Urządzenie USB-C (przedni port na prawym boku)</translation>
 <translation id="3445925074670675829">Urządzenie USB-C</translation>
 <translation id="3473479545200714844">Lupa</translation>
@@ -125,6 +126,7 @@ Naciśnij Szukaj lub Shift, by anulować.</translation>
 <translation id="4250680216510889253">Nie</translation>
 <translation id="4279490309300973883">Odbicie lustrzane</translation>
 <translation id="4321179778687042513">ctrl</translation>
+<translation id="4378551569595875038">Łączę...</translation>
 <translation id="4421231901400348175">Udostępnianie sterowania ekranem użytkownikowi <ph name="HELPER_NAME" /> przy użyciu pomocy zdalnej.</translation>
 <translation id="4430019312045809116">Głośność</translation>
 <translation id="4448844063988177157">Trwa wyszukiwanie sieci Wi-Fi...</translation>
@@ -280,4 +282,5 @@ Naciśnij Alt+Szukaj lub Shift, by anulować.</translation>
 <translation id="923686485342484400">Naciśnij dwukrotnie Control Shift Q, by się wylogować.</translation>
 <translation id="938582441709398163">Nakładka klawiatury</translation>
 <translation id="939252827960237676">Nie można zapisać zrzutu ekranu</translation>
+<translation id="952992212772159698">Nie aktywowano</translation>
 </translationbundle>

@@ -387,6 +387,7 @@
 <translation id="5171045022955879922">Tìm kiếm hoặc nhập URL</translation>
 <translation id="5172758083709347301">Máy</translation>
 <translation id="5179510805599951267">Không ở <ph name="ORIGINAL_LANGUAGE" />? Báo cáo lỗi này</translation>
+<translation id="5181140330217080051">Đang tải xuống</translation>
 <translation id="5190835502935405962">Thanh Dấu trang</translation>
 <translation id="5199729219167945352">Thử nghiệm</translation>
 <translation id="5199841536747119669">Đề xuất của bạn sẽ xuất hiện ở đây</translation>
@@ -665,7 +666,6 @@ Lưu ý! Chế độ ẩn danh <ph name="SHORTCUT_KEY" /> có thể hữu ích v
 <translation id="8498891568109133222"><ph name="HOST_NAME" /> mất quá nhiều thời gian để phản hồi.</translation>
 <translation id="852346902619691059">Máy chủ này không chứng minh được rằng đó là <ph name="DOMAIN" />; chứng chỉ bảo mật của máy chủ này không được hệ điều hành của thiết bị tin tưởng. Điều này có thể do cấu hình sai hoặc có kẻ tấn công chặn kết nối của bạn. <ph name="BEGIN_LEARN_MORE_LINK" />Tìm hiểu thêm<ph name="END_LEARN_MORE_LINK" />.</translation>
 <translation id="8530504477309582336">Google Payments không hỗ trợ loại thẻ này. Vui lòng chọn thẻ khác.</translation>
-<translation id="8550022383519221471">Dịch vụ đồng bộ hóa không khả dụng cho tên miền của bạn.</translation>
 <translation id="8553075262323480129">Dịch thất bại do ngôn ngữ của trang không được xác định.</translation>
 <translation id="8559762987265718583">Không thể thiết lập kết nối riêng tư với <ph name="BEGIN_BOLD" /><ph name="DOMAIN" /><ph name="END_BOLD" /> vì ngày và giờ (<ph name="DATE_AND_TIME" />) trên thiết bị của bạn không đúng.</translation>
 <translation id="856992080682148">Chứng chỉ cho trang web này sẽ hết hạn vào năm 2017 hoặc muộn hơn, đồng thời, chuỗi chứng chỉ này chứa một chứng chỉ được ký bằng SHA-1.</translation>
@@ -673,7 +673,6 @@ Lưu ý! Chế độ ẩn danh <ph name="SHORTCUT_KEY" /> có thể hữu ích v
 <translation id="8591846766485502580">Bạn thấy thông báo này vì cha hoặc mẹ của bạn đã chặn trang web này.</translation>
 <translation id="859285277496340001">Chứng chỉ không ghi rõ cơ chế kiểm tra xem chứng chỉ đã bị thu hồi hay chưa.</translation>
 <translation id="8647750283161643317">Đặt lại tất cả về mặc định</translation>
-<translation id="8680787084697685621">Chi tiết đăng nhập tài khoản đã lỗi thời.</translation>
 <translation id="8703575177326907206">Kết nối của bạn đến <ph name="DOMAIN" /> không được mã hóa.</translation>
 <translation id="8725066075913043281">Thử lại</translation>
 <translation id="8728672262656704056">Bạn đã truy cập ẩn danh</translation>
@@ -703,7 +702,6 @@ Lưu ý! Chế độ ẩn danh <ph name="SHORTCUT_KEY" /> có thể hữu ích v
 <translation id="8987927404178983737">Tháng</translation>
 <translation id="8989148748219918422"><ph name="ORGANIZATION" /> [<ph name="COUNTRY" />]</translation>
 <translation id="9001074447101275817">Proxy <ph name="DOMAIN" /> yêu cầu tên người dùng và mật khẩu.</translation>
-<translation id="9008201768610948239">Bỏ qua</translation>
 <translation id="901974403500617787">Chỉ chủ sở hữu mới có thể đặt cờ áp dụng cho toàn hệ thống: <ph name="OWNER_EMAIL" />.</translation>
 <translation id="9020542370529661692">Trang này đã được dịch sang <ph name="TARGET_LANGUAGE" /></translation>
 <translation id="9038649477754266430">Sử dụng dịch vụ gợi ý để tải trang nhanh hơn</translation>

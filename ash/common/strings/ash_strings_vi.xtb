@@ -89,6 +89,7 @@ Nhấn Search hoặc Shift để hủy.</translation>
 <translation id="3294437725009624529">Khách</translation>
 <translation id="3335772982573114336">Ghi chú mới</translation>
 <translation id="3364721542077212959">Công cụ bút cảm ứng</translation>
+<translation id="3368922792935385530">Đã kết nối</translation>
 <translation id="3371140690572404006">Thiết bị USB-C (cổng phía trước, bên phải)</translation>
 <translation id="3445925074670675829">Thiết bị USB-C</translation>
 <translation id="3473479545200714844">Phóng to màn hình</translation>
@@ -125,6 +126,7 @@ Nhấn Search hoặc Shift để hủy.</translation>
 <translation id="4250680216510889253">Không</translation>
 <translation id="4279490309300973883">Đang phản chiếu</translation>
 <translation id="4321179778687042513">ctrl</translation>
+<translation id="4378551569595875038">Đang kết nối…</translation>
 <translation id="4421231901400348175">Chia sẻ quyền kiểm soát màn hình của bạn với <ph name="HELPER_NAME" /> qua Trợ giúp từ xa.</translation>
 <translation id="4430019312045809116">Âm lượng</translation>
 <translation id="4448844063988177157">Đang tìm kiếm mạng Wi-Fi...</translation>
@@ -280,4 +282,5 @@ Nhấn Alt+Search hoặc Shift để hủy.</translation>
 <translation id="923686485342484400">Nhấn Control Shift Q hai lần để đăng xuất.</translation>
 <translation id="938582441709398163">Lớp phủ bàn phím</translation>
 <translation id="939252827960237676">Không lưu được ảnh chụp màn hình</translation>
+<translation id="952992212772159698">Chưa được kích hoạt</translation>
 </translationbundle>

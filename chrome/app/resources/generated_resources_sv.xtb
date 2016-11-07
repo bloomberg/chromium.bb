@@ -477,7 +477,6 @@
 <translation id="1598233202702788831">Uppdateringar har inaktiverats av administratören.</translation>
 <translation id="1598604884989842103">Aktivera gränssnittet för maximering av TouchView i testsyfte</translation>
 <translation id="1600857548979126453">Få åtkomst till serverdelen för felsökning av sida</translation>
-<translation id="1601247446845604757">Prototyp för WebGL 2.0</translation>
 <translation id="1601560923496285236">Verkställ</translation>
 <translation id="1603914832182249871">(Inkognito)</translation>
 <translation id="1607220950420093847">Ditt konto kan ha tagits bort eller inaktiverats. Logga ut.</translation>
@@ -568,7 +567,6 @@
 <translation id="1708713382908678956"><ph name="NAME_PH" /> (id: <ph name="ID_PH" />)</translation>
 <translation id="1709106626015023981"><ph name="WIDTH" /> x <ph name="HEIGHT" /> (standard)</translation>
 <translation id="1711973684025117106">Komprimeringen misslyckades. Oväntat fel: $1</translation>
-<translation id="1715941336038158809">Ogiltigt användarnamn eller lösenord.</translation>
 <translation id="1717733954209022288">Kryssruta för att spara kort i Google Payments</translation>
 <translation id="1720318856472900922">TLS WWW-serverautentisering</translation>
 <translation id="1720372306711178108">Utökat skrivbord</translation>
@@ -615,7 +613,6 @@
 <translation id="1781502536226964113">Öppna sidan Ny flik</translation>
 <translation id="1782196717298160133">Sök efter din mobil</translation>
 <translation id="1782924894173027610">Synkroniseringsservern är upptagen. Försök igen senare.</translation>
-<translation id="1783075131180517613">Uppdatera lösenfrasen för synkroniseringen.</translation>
 <translation id="1784849162047402014">Enheten har ont om diskutrymme</translation>
 <translation id="1788636309517085411">Använd standardinställning</translation>
 <translation id="1789575671122666129">Popup-fönster</translation>
@@ -768,7 +765,6 @@
 <translation id="2025632980034333559"><ph name="APP_NAME" /> har kraschat. Klicka på ballongen för att ladda om tillägget.</translation>
 <translation id="2028531481946156667">Det gick inte att starta formateringen.</translation>
 <translation id="2028997212275086731">RAR-arkiv</translation>
-<translation id="203168018648013061">Synkroniseringsfel. Återställ synkroniseringen via Google Översikt.</translation>
 <translation id="2031695690821674406">Fyller i lösenord när ett konto har valts av användaren i stället för att användaruppgifterna fylls i automatiskt vid inläsning av sidan.</translation>
 <translation id="2034346955588403444">Lägg till ett annat Wi-Fi-nätverk</translation>
 <translation id="2040460856718599782">Hoppsan! Något gick fel när du försökte verifiera dig. Dubbelkolla dina inloggningsuppgifter och försök igen.</translation>
@@ -948,7 +944,6 @@ När du har skapat en ny kontrollerad användare kan du hantera inställningarna
 <translation id="225240747099314620">Tillåt identifierare för skyddat innehåll (datorn kan behöva startas om)</translation>
 <translation id="2254681226363050822">Godkänn</translation>
 <translation id="2255317897038918278">Microsofts tidsstämpling</translation>
-<translation id="225680501294068881">Söker efter enheter ...</translation>
 <translation id="225692081236532131">Aktiveringsstatus</translation>
 <translation id="2258195278080713720">Senaste stabila JavaScript-funktionerna</translation>
 <translation id="2260567344816042527">Mobildata kommer att användas med Google Chrome om du inte är ansluten till något annat nätverk.</translation>
@@ -1835,6 +1830,7 @@ Från <ph name="DOWNLOAD_DOMAIN" /></translation>
 <translation id="335985608243443814">Bläddra...</translation>
 <translation id="3360297538363969800">Utskriften misslyckades. Kontrollera skrivaren och försök igen.</translation>
 <translation id="336497260564123876">Lösenordet har sparats. Logga in i Chrome om du vill spara dina lösenord på alla enheter.</translation>
+<translation id="3367813778245106622">Logga in igen om du vill påbörja synkroniseringen</translation>
 <translation id="3368922792935385530">Ansluten</translation>
 <translation id="3369624026883419694">Tolkar värden...</translation>
 <translation id="3372695143165820507">Experiment som gör att Meddelandecenter alltid rullas upp när en avisering tas bort</translation>
@@ -1942,7 +1938,6 @@ Från <ph name="DOWNLOAD_DOMAIN" /></translation>
 <translation id="3508920295779105875">Välj en annan mapp...</translation>
 <translation id="3509527969829946096">Med det här alternativet aktiveras stödet för att koda videoströmmar med plattformens maskinvara i Cast Streaming.</translation>
 <translation id="3510797500218907545">WiMAX</translation>
-<translation id="3511200754045804813">Sök igen</translation>
 <translation id="3511307672085573050">Kopiera länk&amp;adress</translation>
 <translation id="3511399794969432965">Anslutningsproblem?</translation>
 <translation id="351152300840026870">Teckensnitt med fast bredd</translation>
@@ -2023,7 +2018,6 @@ Från <ph name="DOWNLOAD_DOMAIN" /></translation>
 <translation id="3603622770190368340">Skaffa nätverkscertifikat</translation>
 <translation id="3605780360466892872">Proper</translation>
 <translation id="3606220979431771195">Turkiska F</translation>
-<translation id="3607430430882821408">Inga Bluetooth-enheter hittades.</translation>
 <translation id="3608454375274108141">F10</translation>
 <translation id="3608576286259426129">Förhandsgranskning av användarens bild</translation>
 <translation id="3609785682760573515">Synkroniserar ...</translation>
@@ -2066,7 +2060,6 @@ Från <ph name="DOWNLOAD_DOMAIN" /></translation>
 <translation id="3653069516296104653">Inaktiverar indirekt registrering av kontaktpunktshändelser.</translation>
 <translation id="3653999333232393305">Fortsätt tillåta <ph name="HOST" /> att använda din mikrofon</translation>
 <translation id="3654045516529121250">Läsa tillgänglighetsinställningarna</translation>
-<translation id="3654092442379740616">Synkroniseringsfel. <ph name="PRODUCT_NAME" /> är inaktuellt och behöver uppdateras.</translation>
 <translation id="3655712721956801464">{NUM_FILES,plural, =1{Den har permanent åtkomst till en fil.}other{Den har permanent åtkomst till # filer.}}</translation>
 <translation id="365793796291733849"><ph name="BEGIN_PARAGRAPH1" />När du aktiverar automatisk säkerhetskopiering sparas enhets- och appdata regelbundet i en privat mapp på Google Drive. Appdata är all data som sparas i en app (utifrån utvecklarens inställningar), bland annat potentiellt känslig data som kontakter, meddelanden och foton.<ph name="END_PARAGRAPH1" />
     <ph name="BEGIN_PARAGRAPH2" />Säkerhetskopierad data tar inte upp något av lagringsutrymmet som tilldelats dig på Drive. Stora filer eller filer som utvecklare har valt att utesluta från tjänsten säkerhetskopieras inte.<ph name="END_PARAGRAPH2" /></translation>
@@ -2137,7 +2130,6 @@ Från <ph name="DOWNLOAD_DOMAIN" /></translation>
 <translation id="3752582316358263300">OK ...</translation>
 <translation id="3752673729237782832">Mina enheter</translation>
 <translation id="3753641128651686748"><ph name="BUNDLE_NAME" /> lägger till dessa appar för <ph name="USER_NAME" />:</translation>
-<translation id="3755237144397196888">Om du aktiverar det här alternativet kan webbappar komma åt den experimentella funktionen WebGL 2.0. Alternativet bör bara användas för utveckling av appar och ska inte användas när du öppnar godtyckliga webbplatser.</translation>
 <translation id="3755411799582650620"><ph name="PHONE_NAME" /> kan nu även låsa upp <ph name="DEVICE_TYPE" />.</translation>
 <translation id="3758201569871381925">Kontrollera att din Hotrod-enhet är aktiverad och ansluten till en tv.</translation>
 <translation id="375841316537350618">Laddar ned proxyskript ...</translation>
@@ -2374,7 +2366,6 @@ Från <ph name="DOWNLOAD_DOMAIN" /></translation>
 <translation id="4075084141581903552">Automatisk inloggning är tillgängligt <ph name="EMAIL_ADDRESS" /></translation>
 <translation id="4078738236287221428">Alltid</translation>
 <translation id="408098233265424160">Närhetsidentifiering i Smart Lock</translation>
-<translation id="4081683084140995376">Aktivera VR-skal.</translation>
 <translation id="4081979157059999345">Länk för fjärrhantering av lösenord</translation>
 <translation id="4084682180776658562">Infoga bokmärke</translation>
 <translation id="4084835346725913160">Stäng <ph name="TAB_NAME" /></translation>
@@ -2511,7 +2502,6 @@ Alla användare måste logga ut för att fortsätta.</translation>
 <translation id="4268574628540273656">Webbadress:</translation>
 <translation id="4270393598798225102">Version <ph name="NUMBER" /></translation>
 <translation id="4271396100647220620">Inga träffar</translation>
-<translation id="4274187853770964845">Synkroniseringsfel. Avbryt och starta om synkroniseringen.</translation>
 <translation id="4275830172053184480">Starta om enheten</translation>
 <translation id="4276796043975446927">Välkommen till Chromebox för möten</translation>
 <translation id="4278390842282768270">Tillåtet</translation>
@@ -2624,7 +2614,6 @@ Tryck på någon tangent om du vill fortsätta utforska.</translation>
 <translation id="4443536555189480885">&amp;Hjälp</translation>
 <translation id="4444304522807523469">Åtkomst till dokumentskannrar som är anslutna via USB eller i det lokala nätverket</translation>
 <translation id="4444512841222467874">Om du inte frigör utrymme kan användare och data tas bort automatiskt.</translation>
-<translation id="4445559854264555037">Kan du inte hitta enheten? <ph name="GET_HELP_LINK" /></translation>
 <translation id="4446933390699670756">Speglat</translation>
 <translation id="4447465454292850432">Batteri:</translation>
 <translation id="4449935293120761385">Om Autofyll</translation>
@@ -2757,7 +2746,6 @@ Tryck på någon tangent om du vill fortsätta utforska.</translation>
 <translation id="4654488276758583406">Mycket liten</translation>
 <translation id="465499440663162826">Det gick inte att ansluta till Chrome Web Store.</translation>
 <translation id="4656293982926141856">Den här datorn</translation>
-<translation id="4656631038341342120">Aktivera VR-skal om det är tillgängligt för den här enheten.</translation>
 <translation id="4657031070957997341">Tillåt alltid pluginprogram på <ph name="HOST" /></translation>
 <translation id="466008749075469935">Aktiverar begränsning av CPU-användningen för timer som körs i bakgrunden till 1 %.</translation>
 <translation id="4663254525753315077">Placerar innehållet i ett överflödande rullningselement i ett sammansatt lager för snabbare rullning, om det är möjligt.</translation>
@@ -3477,7 +3465,6 @@ Tryck på någon tangent om du vill fortsätta utforska.</translation>
 <translation id="5569544776448152862">Registrerar i <ph name="BEGIN_BOLD" /><ph name="DOMAIN_NAME" /><ph name="END_BOLD" /> ...</translation>
 <translation id="5575473780076478375">Inkognitotilläggsprogram: <ph name="EXTENSION_NAME" /></translation>
 <translation id="557722062034137776">Dina Google-konton eller data som synkroniserats med dessa konton påverkas inte när du återställer enheten. Alla filer som sparas lokalt på enheten kommer dock att tas bort.</translation>
-<translation id="5579997910517802656">Inga enheter hittades.</translation>
 <translation id="5581211282705227543">Det finns inga installerade plugin-program</translation>
 <translation id="5581700288664681403">Läser in <ph name="CLOUD_PRINT_NAME" /></translation>
 <translation id="558170650521898289">Microsofts Verifiera Windows-maskinvarudrivrutin</translation>
@@ -4261,7 +4248,6 @@ Använd bara den här funktionen med konton som du litar på.</translation>
 <translation id="6659213950629089752">Den här sidan har zoomats in med tillägget <ph name="NAME" /></translation>
 <translation id="6659594942844771486">Flik</translation>
 <translation id="6660768694571958712">Aktiverar ett experimentellt stöd för API:et för pekarhändelser. Detta är endast avsett för webbutvecklares tester. Vissa webbplatser kommer inte att fungera helt korrekt.</translation>
-<translation id="6662016084451426657">Synkroniseringsfel. Kontakta administratören om du vill aktivera synkronisering.</translation>
 <translation id="6663792236418322902">Lösenordet du väljer behövs om du vill återställa filen vid ett senare tillfälle.  Spara det på ett säkert ställe.</translation>
 <translation id="6664237456442406323">Tyvärr är din dator konfigurerad med ett felaktigt maskinvaru-ID. Detta förhindrar att Chrome OS uppdateras med de senaste säkerhetskorrigeringarna och datorn <ph name="BEGIN_BOLD" />kan vara utsatt för skadlig programvara<ph name="END_BOLD" />.</translation>
 <translation id="6664774537677393800">Något gick snett när profilen skulle öppnas. Logga ut och sedan in igen.</translation>
@@ -4479,7 +4465,6 @@ Använd bara den här funktionen med konton som du litar på.</translation>
 <translation id="6985235333261347343">Microsofts nyckelåterställningsagent</translation>
 <translation id="6985276906761169321">ID:</translation>
 <translation id="6985607387932385770">Skrivare</translation>
-<translation id="6986605181115043220">Hoppsan, synkroniseringen har slutat fungera. <ph name="BEGIN_LINK" />Läs mer<ph name="END_LINK" /></translation>
 <translation id="6990081529015358884">Du har slut på utrymme</translation>
 <translation id="6990778048354947307">Mörkt tema</translation>
 <translation id="6991128190741664836">Senare</translation>
@@ -5100,7 +5085,6 @@ Använd bara den här funktionen med konton som du litar på.</translation>
 <translation id="7839963980801867006">Välj vilket tilläggs-IME som ska visas på språkmenyn.</translation>
 <translation id="7842346819602959665">Den senaste versionen av "<ph name="EXTENSION_NAME" />" kräver mer behörighet och har därför inaktiverats.</translation>
 <translation id="7844992432319478437">Uppdaterar skillnaden</translation>
-<translation id="7845920762538502375"><ph name="PRODUCT_NAME" /> kunde inte synkronisera dina data eftersom det inte gick att ansluta till synkroniseringsservern. Försöker igen...</translation>
 <translation id="7846076177841592234">Rensa val</translation>
 <translation id="7846634333498149051">Tangentbord</translation>
 <translation id="7847212883280406910">Tryck på Ctrl+Alt+ S om du vill byta till <ph name="IDS_SHORT_PRODUCT_OS_NAME" /></translation>
@@ -5384,7 +5368,6 @@ Spara nyckelfilen på ett säkert ställe. Den behövs om du ska skapa nya versi
 <translation id="8213577208796878755">En till tillgänglig enhet.</translation>
 <translation id="8214489666383623925">Öppna fil...</translation>
 <translation id="8214962590150211830">Ta bort personen</translation>
-<translation id="8216278935161109887">Logga ut och sedan in igen</translation>
 <translation id="8217399928341212914">Fortsätt att blockera automatiska nedladdningar av flera filer</translation>
 <translation id="8221831106892617387">Aktiverat: långsamt 2G</translation>
 <translation id="8222121761382682759">Avinstallera …</translation>
@@ -5531,7 +5514,6 @@ Spara nyckelfilen på ett säkert ställe. Den behövs om du ska skapa nya versi
 <translation id="8418113698656761985">Rumänskt tangentbord</translation>
 <translation id="8418445294933751433">&amp;Visa som flik</translation>
 <translation id="8420060421540670057">Visa Google Dokument-filer</translation>
-<translation id="8420139899406509438">Aktiverat (Flash inaktiveras tillfälligt när ljudfokusering förloras – experimentell funktion)</translation>
 <translation id="842274098655511832">Utkasttillägg till WebGL</translation>
 <translation id="8424039430705546751">ned</translation>
 <translation id="8425213833346101688">Ändra</translation>
@@ -6025,7 +6007,6 @@ Efterföljande meddelanden, fönster och dialogrutor kan delas upp mellan skrivb
 <translation id="9052208328806230490">Du har registrerat dina skrivare med <ph name="CLOUD_PRINT_NAME" /> och du använde kontot <ph name="EMAIL" /></translation>
 <translation id="9052234664411715138">Fyll i kreditkortsuppgifter automatiskt</translation>
 <translation id="9053860306922028466">Välj vad du vill dela först.</translation>
-<translation id="9053965862400494292">Ett fel uppstod när synkronisering skulle ställas in.</translation>
 <translation id="9056034633062863292">Uppdaterar Chromebox</translation>
 <translation id="9056810968620647706">Inga träffar hittades.</translation>
 <translation id="9057119625587205566">Det finns inga skrivare i närheten</translation>
@@ -6179,6 +6160,7 @@ Efterföljande meddelanden, fönster och dialogrutor kan delas upp mellan skrivb
 <translation id="971058943242239041">Aktiverar användning av HTML-elementen window-controls i paketerade appar.</translation>
 <translation id="971774202801778802">Bokmärkets webbadress</translation>
 <translation id="973473557718930265">Avsluta</translation>
+<translation id="974555521953189084">Ange lösenfrasen för att starta synkroniseringen</translation>
 <translation id="97534916655989966">Tillåt att videor utan ljud spelas upp automatiskt.</translation>
 <translation id="981121421437150478">Offline</translation>
 <translation id="984870422930397199">Aktivera märkning av offline-sidor på sidan Ny flik. Bara relevant om du har aktiverat offline-sidor.</translation>

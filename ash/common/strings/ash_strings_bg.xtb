@@ -89,6 +89,7 @@
 <translation id="3294437725009624529">Гост</translation>
 <translation id="3335772982573114336">Нова бележка</translation>
 <translation id="3364721542077212959">Инструменти за писане</translation>
+<translation id="3368922792935385530">Установена е връзка</translation>
 <translation id="3371140690572404006">устройство с USB-C (предният десен порт)</translation>
 <translation id="3445925074670675829">USB-C устройство</translation>
 <translation id="3473479545200714844">Екранна лупа</translation>
@@ -125,6 +126,7 @@
 <translation id="4250680216510889253">Не</translation>
 <translation id="4279490309300973883">Дублиране</translation>
 <translation id="4321179778687042513">ctrl</translation>
+<translation id="4378551569595875038">Установява се връзка...</translation>
 <translation id="4421231901400348175">Споделяте с/ъс <ph name="HELPER_NAME" /> контрола върху екрана си чрез отдалечено съдействие.</translation>
 <translation id="4430019312045809116">Звук</translation>
 <translation id="4448844063988177157">Търсят се Wi-Fi мрежи...</translation>
@@ -280,4 +282,5 @@
 <translation id="923686485342484400">Натиснете два пъти „Control+Shift+Q“ за изход.</translation>
 <translation id="938582441709398163">Наслагване върху клавиатурата</translation>
 <translation id="939252827960237676">Запазването на екранната снимка не бе успешно</translation>
+<translation id="952992212772159698">Не е активиран</translation>
 </translationbundle>

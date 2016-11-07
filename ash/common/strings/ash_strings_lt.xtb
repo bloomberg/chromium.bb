@@ -89,6 +89,7 @@ Jei norite atšaukti, paspauskite paieškos arba antrojo lygio klavišą.</trans
 <translation id="3294437725009624529">Svečias</translation>
 <translation id="3335772982573114336">Naujas užrašas</translation>
 <translation id="3364721542077212959">Rašiklio įrankiai</translation>
+<translation id="3368922792935385530">Prijungta</translation>
 <translation id="3371140690572404006">USB-C įrenginys (prievadas dešinėje, priekinėje dalyje)</translation>
 <translation id="3445925074670675829">USB-C įrenginys</translation>
 <translation id="3473479545200714844">Ekrano didintuvas</translation>
@@ -125,6 +126,7 @@ Jei norite atšaukti, paspauskite paieškos arba antrojo lygio klavišą.</trans
 <translation id="4250680216510889253">Ne</translation>
 <translation id="4279490309300973883">Dubliuojama</translation>
 <translation id="4321179778687042513">ctrl</translation>
+<translation id="4378551569595875038">Jungiamasi...</translation>
 <translation id="4421231901400348175"><ph name="HELPER_NAME" /> gali valdyti jūsų ekraną naudodamas (-a) Nuotolinę pagalbą.</translation>
 <translation id="4430019312045809116">Apimtis</translation>
 <translation id="4448844063988177157">Ieškoma „Wi-Fi“ tinklų...</translation>
@@ -280,4 +282,5 @@ Jei norite atšaukti, paspauskite „Alt“ + paieškos klavišas arba „Alt“
 <translation id="923686485342484400">Jei norite atsijungti, du kartus paspauskite „Control“ + „Shift“ + Q.</translation>
 <translation id="938582441709398163">Klaviatūros perdanga</translation>
 <translation id="939252827960237676">Išsaugant ekrano kopiją įvyko klaida</translation>
+<translation id="952992212772159698">Nesuaktyvinta</translation>
 </translationbundle>

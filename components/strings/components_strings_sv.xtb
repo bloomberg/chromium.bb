@@ -387,6 +387,7 @@
 <translation id="5171045022955879922">Ange eller sök efter webbadress</translation>
 <translation id="5172758083709347301">Dator</translation>
 <translation id="5179510805599951267">Inte på <ph name="ORIGINAL_LANGUAGE" />? Rapportera felet</translation>
+<translation id="5181140330217080051">Nedladdning</translation>
 <translation id="5190835502935405962">Bokmärkesfältet</translation>
 <translation id="5199729219167945352">Experiment</translation>
 <translation id="5199841536747119669">Förslag till dig visas här</translation>
@@ -665,7 +666,6 @@ Psst! Nästa gång kanske inkognitoläget <ph name="SHORTCUT_KEY" /> kan vara n�
 <translation id="8498891568109133222"><ph name="HOST_NAME" /> tog för lång tid på sig att svara.</translation>
 <translation id="852346902619691059">Det gick inte att bevisa att serverns identitet är <ph name="DOMAIN" /> eftersom datorns operativsystem inte litar på dess säkerhetscertifikat. Det kan bero på att servern är felkonfigurerad eller att anslutningen har blivit kapad. <ph name="BEGIN_LEARN_MORE_LINK" />Läs mer<ph name="END_LEARN_MORE_LINK" />.</translation>
 <translation id="8530504477309582336">Den här korttypen stöds inte i Google Payments. Välj ett annat kort.</translation>
-<translation id="8550022383519221471">Synkroniseringstjänsten är inte tillgänglig för din domän.</translation>
 <translation id="8553075262323480129">Det gick inte att översätta eftersom det inte gick att avgöra vilket språk som användes på sidan.</translation>
 <translation id="8559762987265718583">Det gick inte att upprätta en privat anslutning till <ph name="BEGIN_BOLD" /><ph name="DOMAIN" /><ph name="END_BOLD" /> eftersom enhetens datum och tid (<ph name="DATE_AND_TIME" />) inte stämmer.</translation>
 <translation id="856992080682148">Certifikatet för den här webbplatsen upphör 2017 eller senare. Certifikatkedjan innehåller ett certifikat som signerades med SHA-1.</translation>
@@ -673,7 +673,6 @@ Psst! Nästa gång kanske inkognitoläget <ph name="SHORTCUT_KEY" /> kan vara n�
 <translation id="8591846766485502580">Det här meddelandet visas eftersom någon av dina föräldrar har blockerat den här webbplatsen.</translation>
 <translation id="859285277496340001">Certifikatet har inte någon specificerad mekanism för att kontrollera om det har återkallats.</translation>
 <translation id="8647750283161643317">Återställ alla till standardvärden</translation>
-<translation id="8680787084697685621">Inloggningsuppgifterna för kontot är inte aktuella.</translation>
 <translation id="8703575177326907206">Din anslutning till <ph name="DOMAIN" /> är inte krypterad.</translation>
 <translation id="8725066075913043281">Försök igen</translation>
 <translation id="8728672262656704056">Du surfar inkognito.</translation>
@@ -703,7 +702,6 @@ Psst! Nästa gång kanske inkognitoläget <ph name="SHORTCUT_KEY" /> kan vara n�
 <translation id="8987927404178983737">Månad</translation>
 <translation id="8989148748219918422"><ph name="ORGANIZATION" /> [<ph name="COUNTRY" />]</translation>
 <translation id="9001074447101275817">Proxyservern <ph name="DOMAIN" /> kräver användarnamn och lösenord.</translation>
-<translation id="9008201768610948239">Ignorera</translation>
 <translation id="901974403500617787">Flaggor som gäller hela systemet kan endast ställas in av ägaren: <ph name="OWNER_EMAIL" />.</translation>
 <translation id="9020542370529661692">Den här sidan har översatts till <ph name="TARGET_LANGUAGE" /></translation>
 <translation id="9038649477754266430">Använd en förslagstjänst om du vill läsa in sidor snabbare</translation>

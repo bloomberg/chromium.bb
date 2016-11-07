@@ -51,7 +51,6 @@ Du må ha slått på Bluetooth og Posisjon for å bruke det fysiske nettet.</tra
 <translation id="1506061864768559482">Søkemotor</translation>
 <translation id="1513352483775369820">Bokmerker og nettlogg</translation>
 <translation id="1513858653616922153">Slett passordet</translation>
-<translation id="1546112724822176246">Ser du ikke enheten din? <ph name="BEGIN_LINK" />Få hjelp<ph name="END_LINK" />.</translation>
 <translation id="1549000191223877751">Flytt til det andre vinduet</translation>
 <translation id="1553358976309200471">Oppdater Chrome</translation>
 <translation id="1571304935088121812">Kopiér brukernavnet</translation>
@@ -72,7 +71,6 @@ Du må ha slått på Bluetooth og Posisjon for å bruke det fysiske nettet.</tra
 <translation id="1749561566933687563">Synkroniser bokmerkene dine</translation>
 <translation id="17513872634828108">Åpne faner</translation>
 <translation id="1756600373018374892">Trykk på denne knappen for å få rask tilgang til fanene dine.</translation>
-<translation id="1774241295142531736">Finner du ikke enheten din? <ph name="BEGIN_LINK1" />Få hjelp<ph name="END_LINK1" /> eller <ph name="BEGIN_LINK2" />skann på nytt<ph name="END_LINK2" />.</translation>
 <translation id="1807246157184219062">Lys</translation>
 <translation id="1825719650605518411">Førsteinntrykk</translation>
 <translation id="1826516787628120939">Kontrollerer</translation>
@@ -156,7 +154,6 @@ Du kan kontrollere det fysiske nettet i Chrome-innstillingene.
 <translation id="2707726405694321444">Last inn siden på nytt</translation>
 <translation id="2709516037105925701">Autofyll</translation>
 <translation id="271033894570825754">Ny</translation>
-<translation id="2748463065602559597">Du ser på en sikker Google Chrome-side.</translation>
 <translation id="2762000892062317888">akkurat nå</translation>
 <translation id="2777555524387840389"><ph name="SECONDS" /> sekunder igjen</translation>
 <translation id="2781151931089541271">1 sekund igjen</translation>
@@ -233,7 +230,6 @@ Hvis du vil endre søkeordet, kan du trykke på det og holde for å merke det. H
 <translation id="3656115297268584622">Slå på posisjonstjenesten i <ph name="BEGIN_LINK" />Android-innstillingene<ph name="END_LINK" />.</translation>
 <translation id="3661699943263275414">Tredjepartsnettsteder kan lagre og lese data i informasjonskapsler.</translation>
 <translation id="3672452749423051839">Forslag ved navigasjonsfeil</translation>
-<translation id="3690847815241521170">Skanner etter enheter … <ph name="BEGIN_LINK" />Få hjelp<ph name="END_LINK" /></translation>
 <translation id="3706658020782046159">Velg en leveringsadresse for å se leveringsmåter og krav.</translation>
 <translation id="3716158070938632480">Det finnes nettsider i nærheten</translation>
 <translation id="3738139272394829648">Trykk for å søke</translation>
@@ -322,7 +318,6 @@ Hvis du vil endre søkeordet, kan du trykke på det og holde for å merke det. H
 <translation id="4807098396393229769">Navn som er oppført på kortet</translation>
 <translation id="4816465935029283692">Datatyper</translation>
 <translation id="4827948050554950725">Legg til et kredittkort</translation>
-<translation id="4836364883164334657">Tilkoblingen din til dette nettstedet er ikke privat. Hackere kan prøve å stjele informasjonen din (for eksempel bilder, passord, meldinger og kredittkortinformasjon) fra <ph name="DOMAIN_NAME" />.</translation>
 <translation id="4850886885716139402">Visning</translation>
 <translation id="4881695831933465202">Åpne</translation>
 <translation id="4885273946141277891">For mange Chrome-forekomster.</translation>
@@ -355,6 +350,7 @@ Hvis du vil endre søkeordet, kan du trykke på det og holde for å merke det. H
 <translation id="5171045022955879922">Søk, eller skriv inn en nettadresse</translation>
 <translation id="5184329579814168207">Åpne i Chrome</translation>
 <translation id="5199929503336119739">Jobbprofil</translation>
+<translation id="5209320130288484488">Finner ingen enheter</translation>
 <translation id="5210365745912300556">Lukk fanen</translation>
 <translation id="5222676887888702881">Logg av</translation>
 <translation id="5233638681132016545">Ny fane</translation>
@@ -389,7 +385,6 @@ Hvis du vil endre søkeordet, kan du trykke på det og holde for å merke det. H
 <translation id="5556459405103347317">Last inn på nytt</translation>
 <translation id="5565871407246142825">Kredittkort</translation>
 <translation id="5578795271662203820">Søk etter dette bildet i <ph name="SEARCH_ENGINE" /></translation>
-<translation id="5579997910517802656">Finner ingen enheter.</translation>
 <translation id="5595485650161345191">Rediger adresse</translation>
 <translation id="5596627076506792578">Flere alternativer</translation>
 <translation id="5626134646977739690">Navn:</translation>
@@ -418,7 +413,6 @@ Du er imidlertid ikke usynlig. Inkognito-modusen skjuler ikke surfingen din for 
 <translation id="583281660410589416">Ukjent</translation>
 <translation id="5832934273103296195">Utvidet – klikk for å skjule</translation>
 <translation id="583891442612896534">Chrome kunne ikke kontakte Google-tjenerne for datakomprimering. Det kan hende at du bare oppnår begrenset datasparing.</translation>
-<translation id="5843873952582375185">Finner ingen Bluetooth-enheter. <ph name="BEGIN_LINK" />Skann på nytt<ph name="END_LINK" /></translation>
 <translation id="585027516397408832">Datasparing er slått på</translation>
 <translation id="5860033963881614850">Av</translation>
 <translation id="5867027562311576691">Flere artikler kommer snart. Ha en fin morgen.</translation>
@@ -568,9 +562,9 @@ Det kan hende Google-kontoen din har andre typer nettlesingslogger, for eksempel
 <translation id="7596558890252710462">Operativsystem</translation>
 <translation id="7605594153474022051">Synkronisering fungerer ikke</translation>
 <translation id="7612619742409846846">Logget på Google som</translation>
+<translation id="7613889955535752492">Utløpsdato: <ph name="EXPIRATION_MONTH" />/<ph name="EXPIRATION_YEAR" /></translation>
 <translation id="7619072057915878432">Nedlastingen av <ph name="FILE_NAME" /> ble avbrutt på grunn av nettverksproblemer.</translation>
 <translation id="7626032353295482388">Velkommen til Chrome</translation>
-<translation id="7634554953375732414">Tilkoblingen til dette nettstedet er ikke privat.</translation>
 <translation id="7638584964844754484">Feil passordfrase</translation>
 <translation id="7648422057306047504">Kryptér passord med Google-legitimasjonen din</translation>
 <translation id="7649070708921625228">Hjelp</translation>
@@ -638,13 +632,11 @@ Det kan hende Google-kontoen din har andre typer nettlesingslogger, for eksempel
 <translation id="8428213095426709021">Innstillinger</translation>
 <translation id="8433057134996913067">Dette logger deg av de fleste nettsteder.</translation>
 <translation id="8447861592752582886">Opphev tillatelsen til enhetstilgang</translation>
-<translation id="8481940801237642152">Tilkoblingen til dette området er privat, men det kan hende at noen på nettverket kan endre utseendet på siden.</translation>
 <translation id="8487700953926739672">Tilgjengelig utenfor nettet</translation>
 <translation id="8493948351860045254">Frigjør plass</translation>
 <translation id="8497726226069778601">Det er ikke noe her foreløpig</translation>
 <translation id="8503813439785031346">Brukernavn</translation>
 <translation id="8514577642972634246">Slå på inkognitomodus</translation>
-<translation id="8518901949365209398">Dette nettstedet bruker en svak sikkerhetskonfigurasjon (SHA-1-signaturer). Det kan derfor hende at tilkoblingen mellom deg og nettstedet ikke er privat.</translation>
 <translation id="8523928698583292556">Slett lagrede passord</translation>
 <translation id="854522910157234410">Åpne denne siden</translation>
 <translation id="8562452229998620586">Lagrede passord listes opp her.</translation>
@@ -677,7 +669,6 @@ For å få nye lisenser må du koble deg til Internett og spille av innholdet du
 <translation id="8912362522468806198">Google-konto</translation>
 <translation id="8920114477895755567">Venter på informasjon om foreldre.</translation>
 <translation id="8931159598799892500">Chrome + det fysiske nettet</translation>
-<translation id="8941248009481596111">Tilkoblingen til dette nettstedet er privat.</translation>
 <translation id="8941729603749328384">www.example.com</translation>
 <translation id="8942627711005830162">Åpne i et annet vindu</translation>
 <translation id="8959122750345127698">Nettadressen er utilgjengelig: <ph name="URL" /></translation>

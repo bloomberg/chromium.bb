@@ -89,6 +89,7 @@ Tühistamiseks vajutage otsinguklahvi või tõstuklahvi</translation>
 <translation id="3294437725009624529">Külaline</translation>
 <translation id="3335772982573114336">Uus märge</translation>
 <translation id="3364721542077212959">Elektronpliiatsi tööriistad</translation>
+<translation id="3368922792935385530">Ühendatud</translation>
 <translation id="3371140690572404006">C-tüüpi USB-seade (eesmine parempoolne port)</translation>
 <translation id="3445925074670675829">C-tüüpi USB-seade</translation>
 <translation id="3473479545200714844">Ekraanisuurendi</translation>
@@ -125,6 +126,7 @@ Tühistamiseks vajutage otsinguklahvi või tõstuklahvi</translation>
 <translation id="4250680216510889253">Ei</translation>
 <translation id="4279490309300973883">Peegeldamine</translation>
 <translation id="4321179778687042513">ctrl</translation>
+<translation id="4378551569595875038">Ühendamine ...</translation>
 <translation id="4421231901400348175">Ekraani juhtimise jagamine isikuga <ph name="HELPER_NAME" /> kaugabi kaudu.</translation>
 <translation id="4430019312045809116">Helitugevus</translation>
 <translation id="4448844063988177157">WiFi võrkude otsimine ...</translation>
@@ -280,4 +282,5 @@ Tühistamiseks vajutage klahvikombinatsiooni Alt + otsinguklahv või tõstuklahv
 <translation id="923686485342484400">Väljalogimiseks vajutage kaks korda klahvikombinatsiooni Ctrl + tõstuklahv + Q.</translation>
 <translation id="938582441709398163">Klaviatuuri ülekate</translation>
 <translation id="939252827960237676">Ekraanipilti ei õnnestunud salvestada</translation>
+<translation id="952992212772159698">Aktiveerimata</translation>
 </translationbundle>

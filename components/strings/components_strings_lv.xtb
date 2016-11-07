@@ -386,6 +386,7 @@
 <translation id="5171045022955879922">Meklējiet vai ievadiet URL.</translation>
 <translation id="5172758083709347301">Ierīce</translation>
 <translation id="5179510805599951267">Vai nav valodā: <ph name="ORIGINAL_LANGUAGE" />? Ziņot par šo kļūdu</translation>
+<translation id="5181140330217080051">Notiek lejupielāde</translation>
 <translation id="5190835502935405962">Grāmatzīmju josla</translation>
 <translation id="5199729219167945352">Eksperimenti</translation>
 <translation id="5199841536747119669">Ieteikumi tiek parādīti šeit</translation>
@@ -664,7 +665,6 @@ Nākamreiz jums varētu noderēt inkognito režīms (<ph name="SHORTCUT_KEY" />)
 <translation id="8498891568109133222">Vietne <ph name="HOST_NAME" /> pārāk ilgi nereaģēja.</translation>
 <translation id="852346902619691059">Šis serveris nevarēja pierādīt, ka tas ir domēns <ph name="DOMAIN" />; tā drošības sertifikāts nav uzticams jūsu ierīces operētājsistēmā. Šī problēma var rasties nepareizas konfigurācijas dēļ vai tādēļ, ka kāds uzbrucējs ir pārtvēris jūsu savienojumu. <ph name="BEGIN_LEARN_MORE_LINK" />Uzziniet vairāk<ph name="END_LEARN_MORE_LINK" />.</translation>
 <translation id="8530504477309582336">Šis kartes veids netiek atbalstīts pakalpojumā Google Payments. Lūdzu, atlasiet citu karti.</translation>
-<translation id="8550022383519221471">Sinhronizācijas ierīce jūsu domēnam nav pieejama.</translation>
 <translation id="8553075262323480129">Tulkošana neizdevās, jo lapas valoda nav nosakāma.</translation>
 <translation id="8559762987265718583">Nevar izveidot privātu savienojumu ar <ph name="BEGIN_BOLD" /><ph name="DOMAIN" /><ph name="END_BOLD" />, jo jūsu ierīces datums un laiks (<ph name="DATE_AND_TIME" />) nav pareizs.</translation>
 <translation id="856992080682148">Šīs vietnes sertifikāta derīgums beidzas 2017. gadā vai vēlāk, un sertifikātu ķēdē ir iekļauts sertifikāts, kas ir parakstīts, izmantojot SHA-1.</translation>
@@ -672,7 +672,6 @@ Nākamreiz jums varētu noderēt inkognito režīms (<ph name="SHORTCUT_KEY" />)
 <translation id="8591846766485502580">Šis ziņojums tiek rādīts, jo viens no vecākiem bloķēja šo vietni.</translation>
 <translation id="859285277496340001">Sertifikāts nenorāda mehānismu, ar kuru pārbaudīt, vai tas nav atsaukts.</translation>
 <translation id="8647750283161643317">Atiestatīt visiem to noklusējuma iestatījumus</translation>
-<translation id="8680787084697685621">Konta pierakstīšanās informācija ir novecojusi.</translation>
 <translation id="8703575177326907206">Jūsu savienojums ar <ph name="DOMAIN" /> nav kodēts.</translation>
 <translation id="8725066075913043281">Mēģināt vēlreiz</translation>
 <translation id="8728672262656704056">Jūs esat atvēris inkognito režīmu</translation>
@@ -702,7 +701,6 @@ Nākamreiz jums varētu noderēt inkognito režīms (<ph name="SHORTCUT_KEY" />)
 <translation id="8987927404178983737">Mēnesis</translation>
 <translation id="8989148748219918422"><ph name="ORGANIZATION" /> [<ph name="COUNTRY" />]</translation>
 <translation id="9001074447101275817">Starpniekserveris <ph name="DOMAIN" /> pieprasa lietotājvārdu un paroli.</translation>
-<translation id="9008201768610948239">Ignorēt</translation>
 <translation id="901974403500617787">Atzīmes, kas attiecas uz visu sistēmu, var iestatīt tikai īpašnieks: <ph name="OWNER_EMAIL" />.</translation>
 <translation id="9020542370529661692">Šī lapa ir tulkota <ph name="TARGET_LANGUAGE" /> valodā.</translation>
 <translation id="9038649477754266430">Ieteikumu pakalpojuma izmantošana ātrākai lapu ielādei</translation>

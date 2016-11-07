@@ -89,6 +89,7 @@
 <translation id="3294437725009624529">अतिथी</translation>
 <translation id="3335772982573114336">नवीन टीप</translation>
 <translation id="3364721542077212959">लेखणी साधने</translation>
+<translation id="3368922792935385530">कनेक्ट केले</translation>
 <translation id="3371140690572404006">USB-C डिव्‍हाइस (उजव्‍या बाजूचे पुढील पोर्ट)</translation>
 <translation id="3445925074670675829">USB-C डिव्‍हाइस</translation>
 <translation id="3473479545200714844">स्क्रीन भिंग</translation>
@@ -125,6 +126,7 @@
 <translation id="4250680216510889253">नाही</translation>
 <translation id="4279490309300973883">मिररिंग</translation>
 <translation id="4321179778687042513">ctrl</translation>
+<translation id="4378551569595875038">कनेक्ट करीत आहे...</translation>
 <translation id="4421231901400348175">दूरस्त सहाय्याद्वारे <ph name="HELPER_NAME" /> सह आपल्या स्क्रीनचे नियंत्रण सामायिक करत आहे.</translation>
 <translation id="4430019312045809116">व्हॉल्यूम</translation>
 <translation id="4448844063988177157">Wi-Fi नेटवर्कचा शोधत आहे...</translation>
@@ -279,4 +281,5 @@
 <translation id="923686485342484400">दोनदा साइन आउट करण्यासाठी Control Shift Q दोनदा दाबा.</translation>
 <translation id="938582441709398163">कीबोर्ड आच्छादन</translation>
 <translation id="939252827960237676">स्क्रीनशॉट जतन करण्यात अयशस्वी</translation>
+<translation id="952992212772159698">सक्रिय नाही</translation>
 </translationbundle>

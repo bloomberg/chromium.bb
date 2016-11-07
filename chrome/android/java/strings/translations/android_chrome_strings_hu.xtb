@@ -51,7 +51,6 @@ A Fizikai web használatához be kell kapcsolnia a Bluetooth funkciót és a hel
 <translation id="1506061864768559482">Keresőmotor</translation>
 <translation id="1513352483775369820">Könyvjelzők és webes előzmények</translation>
 <translation id="1513858653616922153">Jelszó törlése</translation>
-<translation id="1546112724822176246">Nem látja eszközét? <ph name="BEGIN_LINK" />Kérjen segítséget<ph name="END_LINK" />.</translation>
 <translation id="1549000191223877751">Áthelyezés másik ablakba</translation>
 <translation id="1553358976309200471">A Chrome böngésző frissítése</translation>
 <translation id="1571304935088121812">Felhasználónév másolása</translation>
@@ -72,7 +71,6 @@ A Fizikai web használatához be kell kapcsolnia a Bluetooth funkciót és a hel
 <translation id="1749561566933687563">Könyvjelzők szinkronizálása</translation>
 <translation id="17513872634828108">Megnyitott lapok</translation>
 <translation id="1756600373018374892">Koppintson erre a gombra lapjai gyors eléréséhez.</translation>
-<translation id="1774241295142531736">Nem látja az eszközét? <ph name="BEGIN_LINK1" />Kérjen segítséget<ph name="END_LINK1" />, vagy <ph name="BEGIN_LINK2" />keressen rá újra<ph name="END_LINK2" />.</translation>
 <translation id="1807246157184219062">Világos</translation>
 <translation id="1825719650605518411">Első indítás tapasztalata</translation>
 <translation id="1826516787628120939">Ellenőrzés</translation>
@@ -156,7 +154,6 @@ A Fizikai webet a Chrome-beállításokban szabályozhatja.
 <translation id="2707726405694321444">Oldal frissítése</translation>
 <translation id="2709516037105925701">Automatikus kitöltés</translation>
 <translation id="271033894570825754">Új</translation>
-<translation id="2748463065602559597">Ön egy biztonságos Google Chrome-oldalt lát.</translation>
 <translation id="2762000892062317888">éppen most</translation>
 <translation id="2777555524387840389"><ph name="SECONDS" /> másodperc van hátra</translation>
 <translation id="2781151931089541271">1 másodperc van hátra</translation>
@@ -233,7 +230,6 @@ A keresési kifejezés módosításához hosszú nyomva tartással hajthat végr
 <translation id="3656115297268584622">Kapcsolja be a helyszolgáltatást az <ph name="BEGIN_LINK" />Android-beállításokban<ph name="END_LINK" />.</translation>
 <translation id="3661699943263275414">A hamardik felek webhelyei menthetik és olvashatják a cookie-adatokat</translation>
 <translation id="3672452749423051839">Navigálási hibákkal kapcsolatos javaslatok</translation>
-<translation id="3690847815241521170">Eszközök keresése… <ph name="BEGIN_LINK" />Kérjen segítséget<ph name="END_LINK" /></translation>
 <translation id="3706658020782046159">Válassza ki a szállítási címet a szállítási módok és követelmények megtekintéséhez.</translation>
 <translation id="3716158070938632480">Weboldalak találhatók a közelben</translation>
 <translation id="3738139272394829648">Érintéssel keresés</translation>
@@ -322,7 +318,6 @@ A keresési kifejezés módosításához hosszú nyomva tartással hajthat végr
 <translation id="4807098396393229769">A kártyán feltüntetett név</translation>
 <translation id="4816465935029283692">Adattípusok</translation>
 <translation id="4827948050554950725">Hitelkártya hozzáadása</translation>
-<translation id="4836364883164334657">Kapcsolódása ehhez a webhelyhez nem privát. Előfordulhat, hogy támadók megpróbálják ellopni az Ön adatait (például fotóit, jelszavait, üzeneteit és bankkártyaadatait) a(z) <ph name="DOMAIN_NAME" /> webhelyről.</translation>
 <translation id="4850886885716139402">Nézet</translation>
 <translation id="4881695831933465202">Megnyitás</translation>
 <translation id="4885273946141277891">Ilyen sok Chrome-példány nem futhat egyszerre.</translation>
@@ -355,6 +350,7 @@ A keresési kifejezés módosításához hosszú nyomva tartással hajthat végr
 <translation id="5171045022955879922">Keressen vagy írjon be egy URL-t</translation>
 <translation id="5184329579814168207">Megnyitás Chrome-ban</translation>
 <translation id="5199929503336119739">Munkaprofil</translation>
+<translation id="5209320130288484488">Nem találhatók eszközök</translation>
 <translation id="5210365745912300556">Lap bezárása</translation>
 <translation id="5222676887888702881">Kijelentkezés</translation>
 <translation id="5233638681132016545">Új lap</translation>
@@ -389,7 +385,6 @@ A keresési kifejezés módosításához hosszú nyomva tartással hajthat végr
 <translation id="5556459405103347317">Újratöltés</translation>
 <translation id="5565871407246142825">Hitelkártyák</translation>
 <translation id="5578795271662203820">A kép keresése a(z) <ph name="SEARCH_ENGINE" /> keresővel</translation>
-<translation id="5579997910517802656">Nem találhatók eszközök.</translation>
 <translation id="5595485650161345191">Cím szerkesztése</translation>
 <translation id="5596627076506792578">További lehetőségek</translation>
 <translation id="5626134646977739690">Név:</translation>
@@ -418,7 +413,6 @@ Mindazonáltal Ön nem lesz láthatatlan. Az inkognitómód használatával nem 
 <translation id="583281660410589416">Ismeretlen</translation>
 <translation id="5832934273103296195">Kibontva – Kattintson az összecsukáshoz</translation>
 <translation id="583891442612896534">A Chrome nem tudja elérni a Google szervereit az adatok tömörítése céljából. Az adatforgalmi megtakarítás korlátozva lehet.</translation>
-<translation id="5843873952582375185">Nem található Bluetooth-eszköz. <ph name="BEGIN_LINK" />Újbóli keresés<ph name="END_LINK" />.</translation>
 <translation id="585027516397408832">Az Adatforgalom-csökkentő aktiválva van</translation>
 <translation id="5860033963881614850">Kikapcsolva</translation>
 <translation id="5867027562311576691">Hamarosan további cikkek jelennek meg. Kellemes délelőttöt kívánunk.</translation>
@@ -568,9 +562,9 @@ Előfordulhat, hogy Google-fiókjában (a <ph name="BEGIN_LINK" />history.google
 <translation id="7596558890252710462">Operációs rendszer</translation>
 <translation id="7605594153474022051">A szinkronizálás nem működik.</translation>
 <translation id="7612619742409846846">Bejelentkezve a Google rendszerébe mint</translation>
+<translation id="7613889955535752492">Lejárat: <ph name="EXPIRATION_MONTH" />/<ph name="EXPIRATION_YEAR" /></translation>
 <translation id="7619072057915878432">A következő fájl letöltése hálózati hibák miatt nem sikerült: <ph name="FILE_NAME" />.</translation>
 <translation id="7626032353295482388">A Chrome üdvözli Önt!</translation>
-<translation id="7634554953375732414">A webhellyel való kapcsolata nem privát.</translation>
 <translation id="7638584964844754484">Hibás összetett jelszó</translation>
 <translation id="7648422057306047504">A jelszavak titkosítása a Google hitelesítési adataival</translation>
 <translation id="7649070708921625228">Súgó</translation>
@@ -638,13 +632,11 @@ Előfordulhat, hogy Google-fiókjában (a <ph name="BEGIN_LINK" />history.google
 <translation id="8428213095426709021">Beállítások</translation>
 <translation id="8433057134996913067">Ezzel kijelentkezik a legtöbb webhelyről.</translation>
 <translation id="8447861592752582886">Eszközengedély visszavonása</translation>
-<translation id="8481940801237642152">A webhellyel való kapcsolata privát, ám valaki a hálózaton módosíthatja az oldal megjelenését.</translation>
 <translation id="8487700953926739672">Offline elérhető</translation>
 <translation id="8493948351860045254">Terület felszabadítása</translation>
 <translation id="8497726226069778601">Nincs itt semmi látnivaló… még</translation>
 <translation id="8503813439785031346">Felhasználónév</translation>
 <translation id="8514577642972634246">Belépés inkognitómódba</translation>
-<translation id="8518901949365209398">Ez a webhely gyenge biztonsági beállításokat (SHA-1 aláírásokat) használ , ezért előfordulhat, hogy a kapcsolat nem titkos.</translation>
 <translation id="8523928698583292556">Tárolt jelszó törlése</translation>
 <translation id="854522910157234410">Az oldal megnyitása</translation>
 <translation id="8562452229998620586">A mentett jelszavak itt jelennek meg.</translation>
@@ -677,7 +669,6 @@ Az új engedélyek beszerzéséhez kapcsolódjon az internethez, és játssza le
 <translation id="8912362522468806198">Google Fiókjába</translation>
 <translation id="8920114477895755567">Várakozás a szülői adatokra.</translation>
 <translation id="8931159598799892500">Chrome + Fizikai web</translation>
-<translation id="8941248009481596111">A webhellyel való kapcsolata privát.</translation>
 <translation id="8941729603749328384">www.example.com</translation>
 <translation id="8942627711005830162">Megnyitás másik ablakban</translation>
 <translation id="8959122750345127698">Nem érhető el az ide vezető navigáció: <ph name="URL" /></translation>

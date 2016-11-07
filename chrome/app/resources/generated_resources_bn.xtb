@@ -478,7 +478,6 @@
 <translation id="1598233202702788831">আপনার প্রশাসক দ্বারা আপডেট অক্ষম করা হয়েছে।</translation>
 <translation id="1598604884989842103">পরীক্ষার জন্য টাচভিউ পূর্ণবিস্তার UI সক্ষম করুন</translation>
 <translation id="1600857548979126453">পৃষ্ঠা ডিবাগার ব্যাকএন্ড অ্যাক্সেস করুন</translation>
-<translation id="1601247446845604757">WebGL 2.0 প্রোটোটাইপ</translation>
 <translation id="1601560923496285236">প্রয়োগ করুন</translation>
 <translation id="1603914832182249871">(ছদ্মবেশী)</translation>
 <translation id="1607220950420093847">আপনার অ্যাকাউন্ট মোছা বা অক্ষম করা হয়ে থাকতে পারে৷ দয়া করে প্রস্থান করুন করুন৷</translation>
@@ -569,7 +568,6 @@
 <translation id="1708713382908678956"><ph name="NAME_PH" /> (আইডি: <ph name="ID_PH" />)</translation>
 <translation id="1709106626015023981"><ph name="WIDTH" /> x <ph name="HEIGHT" /> (নির্ধারিত)</translation>
 <translation id="1711973684025117106">জিপ করা ব্যর্থ হয়েছে, অপ্রত্যাশিত ত্রুটি: $1</translation>
-<translation id="1715941336038158809">অবৈধ ব্যবহারকারী নাম বা পাসওয়ার্ড৷</translation>
 <translation id="1717733954209022288">Google Payments কার্ড সংরক্ষণের চেকবাক্স</translation>
 <translation id="1720318856472900922">TLS WWW সার্ভার   প্রমাণীকরণ</translation>
 <translation id="1720372306711178108">সম্প্রসারিত ডেস্কটপ</translation>
@@ -616,7 +614,6 @@
 <translation id="1781502536226964113">নতুন ট্যাব পৃষ্ঠাটি খুলুন</translation>
 <translation id="1782196717298160133">আপনার ফোন খোঁজা হচ্ছে</translation>
 <translation id="1782924894173027610">সিঙ্ক সার্ভার ব্যস্ত আছে, দয়া করে পরে আবার চেষ্টা করুন৷</translation>
-<translation id="1783075131180517613">দয়া করে আপনার সিঙ্ক পাসফ্রেজ আপডেট করুন৷</translation>
 <translation id="1784849162047402014">ডিভাইসে ডিস্কের জায়গা কম আছে</translation>
 <translation id="1788636309517085411">ডিফল্ট ব্যবহার করুন</translation>
 <translation id="1789575671122666129">পপআপ</translation>
@@ -769,7 +766,6 @@
 <translation id="2025632980034333559"><ph name="APP_NAME" /> ক্র্যাশ করেছে৷ এক্সটেনশন পুনঃসূচনা করতে এই বেলুনটি ক্লিক করুন৷</translation>
 <translation id="2028531481946156667">বিন্যাসনের প্রক্রিয়াটি শুরু করতে পারেনা৷</translation>
 <translation id="2028997212275086731">RAR আর্কাইভ</translation>
-<translation id="203168018648013061">সিঙ্ক ত্রুটি: দয়া করে Google ড্যাশবোর্ডের মাধ্যমে সিঙ্ক পুনরায় সেট করুন৷</translation>
 <translation id="2031695690821674406">যখন ব্যবহারকারীর দ্বারা কোনো অ্যাকাউন্ট সুস্পষ্টরূপে নির্বাচন করা হয়, তখন পৃষ্ঠা লোড করার সময় প্রমাণপত্রাদি স্বতঃপূর্ণ করার বদলে পাসওয়ার্ডগুলির পূরণ করা৷</translation>
 <translation id="2034346955588403444">অন্য WiFi নেটওয়ার্ক যোগ করুন</translation>
 <translation id="2040460856718599782">ওহো! আপনাকে প্রমাণীকরণ করতে চেষ্টা করার সময় কিছু ত্রুটি হয়েছিল৷  দয়া করে আপনার লগ-ইন শংসাপত্রাদি আবার পরীক্ষা করে আবার চেষ্টা করুন৷</translation>
@@ -948,7 +944,6 @@
 <translation id="225240747099314620">সুরক্ষিত সামগ্রীর জন্য সনাক্তকারীগুলিকে অনুমতি দিন (কম্পিউটার পুনঃসূচনা করতে হতে পারে)</translation>
 <translation id="2254681226363050822">সম্মত</translation>
 <translation id="2255317897038918278">Microsoft Time Stamping</translation>
-<translation id="225680501294068881">ডিভাইসগুলির জন্য স্ক্যান করা হচ্ছে...</translation>
 <translation id="225692081236532131">সক্রিয়করণ স্থিতি</translation>
 <translation id="2258195278080713720">সর্বশেষ স্থিতিশীল JavaScript বৈশিষ্ট্যাবলী</translation>
 <translation id="2260567344816042527">আপনি অন্য নেটওয়ার্কের সাথে সংযুক্ত না থাকলে Google Chrome সেলুলার ডেটা ব্যবহার করবে।</translation>
@@ -1413,7 +1408,7 @@
 <translation id="2833791489321462313">নিদ্রাবস্থা থেকে জাগতে পাসওয়ার্ড প্রয়োজন৷</translation>
 <translation id="2836269494620652131">ক্র্যাশ</translation>
 <translation id="2836635946302913370">আপনার প্রশাসক এই ব্যবহারকারী নাম দিয়ে প্রবেশ করুন করা অক্ষম করেছে৷</translation>
-<translation id="283669119850230892"><ph name="NETWORK_ID" /> নেটওয়ার্কটি ব্যবহার করতে, প্রথমে নীচে ইন্টারনেট থেকে আপনার সংযোগ সম্পূর্ণ করুন৷</translation>
+<translation id="283669119850230892"><ph name="NETWORK_ID" /> নেটওয়ার্কটি ব্যবহার করতে, প্রথমে নিচে ইন্টারনেট থেকে আপনার সংযোগ সম্পূর্ণ করুন৷</translation>
 <translation id="2838379631617906747">ইনস্টল হচ্ছে</translation>
 <translation id="2841837950101800123">সরবরাহকারী</translation>
 <translation id="2843055980807544929">অক্ষম করা হলে, WM_KEY* এবং WM_CHAR কে Chrome ভিন্নভাবে পরিচালনা করবে।</translation>
@@ -1831,6 +1826,7 @@
 <translation id="335985608243443814">ব্রাউজ করুন...</translation>
 <translation id="3360297538363969800">প্রিন্ট করা গেল না৷ দয়া করে আপনার মুদ্রকটি পরীক্ষা করে আবার চেষ্টা করুন৷</translation>
 <translation id="336497260564123876">পাসওয়ার্ড সংরক্ষিত হয়েছে। আপনার সমস্ত ডিভাইসে আপনার পাসওয়ার্ডগুলি পেতে, Chrome এ সাইন ইন করুন।</translation>
+<translation id="3367813778245106622">সিঙ্ক করা শুরু করতে আবার সাইন ইন করুন</translation>
 <translation id="3368922792935385530">সংযুক্ত</translation>
 <translation id="3369624026883419694">হোস্ট স্থির করা হচ্ছে...</translation>
 <translation id="3372695143165820507">বিজ্ঞপ্তি সরানোর সাথে সাথে বার্তা কেন্দ্র যে পরীক্ষানিরীক্ষাগুলি সর্বদা উপরের দিকে স্ক্রোল করে</translation>
@@ -1938,7 +1934,6 @@
 <translation id="3508920295779105875">অন্য ফোল্ডার বেছে নিন...</translation>
 <translation id="3509527969829946096">এই বিকল্পটি কাস্ট স্ট্রীমিং এর মধ্যে প্ল্যাটফর্ম হার্ডওয়্যার ব্যবহার করে ভিডিও স্ট্রীম এনকোডিং এর জন্য সমর্থন সক্ষম করে৷</translation>
 <translation id="3510797500218907545">WiMAX</translation>
-<translation id="3511200754045804813">পুনরায় স্ক্যান করুন</translation>
 <translation id="3511307672085573050">লিঙ্ক ঠি&amp;কানা কপি করুন</translation>
 <translation id="3511399794969432965">সংযোগ করতে সমস্যা হচ্ছে?</translation>
 <translation id="351152300840026870">নির্দিষ্ট-চওড়া হরফ</translation>
@@ -2019,7 +2014,6 @@
 <translation id="3603622770190368340">নেটওয়ার্ক শংসাপত্র প্রাপ্ত করুন</translation>
 <translation id="3605780360466892872">বটনডাউন</translation>
 <translation id="3606220979431771195">তুর্কি-এফ</translation>
-<translation id="3607430430882821408">কোনো Bluetooth ডিভাইস পাওয়া যায়নি।</translation>
 <translation id="3608454375274108141">F10</translation>
 <translation id="3608576286259426129">ব্যবহারকারীর ছবির পূর্বদৃশ্য</translation>
 <translation id="3609785682760573515">সিঙ্ক হচ্ছে...</translation>
@@ -2062,7 +2056,6 @@
 <translation id="3653069516296104653">টাচপয়েন্টার ইভেন্টের অন্তর্নিহিত ক্যাপচারিং অক্ষম করে।</translation>
 <translation id="3653999333232393305"><ph name="HOST" /> কে আপনার মাইক্রোফোন অ্যাক্সেস করার মঞ্জুরি অবিরত রাখুন</translation>
 <translation id="3654045516529121250">আপনার অ্যাক্সেসযোগ্যতার সেটিংস পড়ুন</translation>
-<translation id="3654092442379740616">সিঙ্ক ত্রুটি: <ph name="PRODUCT_NAME" /> তারিখ সীমার বাইরে এবং আপডেট করা প্রয়োজন৷</translation>
 <translation id="3655712721956801464">{NUM_FILES,plural, =1{একটি ফাইলে এটার স্থায়ী অ্যাক্সেস আছে৷}one{#টি ফাইলে এটার স্থায়ী অ্যাক্সেস আছে৷}other{#টি ফাইলে এটার স্থায়ী অ্যাক্সেস আছে৷}}</translation>
 <translation id="365793796291733849"><ph name="BEGIN_PARAGRAPH1" />আপনি যখন স্বয়ংক্রিয় ব্যাক আপ চালু করেন, তখন Google ড্রাইভের মধ্যে একটি ব্যক্তিগত ফোল্ডারে ডিভাইস এবং অ্যাপ্লিকেশান ডেটা পর্যায়ক্রমে সংরক্ষিত হয়। অ্যাপ্লিকেশান ডেটা যেকোনো ডেটা হতে পারে যা কোনো অ্যাপ্লিকেশান সংরক্ষণ করে (বিকাশকারীর সেটিংসের উপর ভিত্তি করে), এর সঙ্গে পরিচিতি, বার্তা এবং ফটোগুলির মত সম্ভাব্য সংবেদনশীল ডেটাও হতে পারে।<ph name="END_PARAGRAPH1" />
     <ph name="BEGIN_PARAGRAPH2" />ব্যাক আপ নেওয়া ডেটা আপনার Drive storage কোটা ব্যবহার করবে না। বড় ফাইলগুলি বা বিকাশকারীরা যেগুলি পরিষেবা থেকে বাদ দেওয়ার জন্য বেছেছেন সেসব ফাইলগুলির ব্যাক আপ নেওয়া হবে না।<ph name="END_PARAGRAPH2" /></translation>
@@ -2133,7 +2126,6 @@
 <translation id="3752582316358263300">ঠিক আছে...</translation>
 <translation id="3752673729237782832">আমার ডিভাইসগুলি</translation>
 <translation id="3753641128651686748">"<ph name="BUNDLE_NAME" />" <ph name="USER_NAME" /> এর জন্য এই অ্যাপ্লিকেশানগুলি যোগ করে:</translation>
-<translation id="3755237144397196888">এই বিকল্পটিকে সক্ষম করলে ওয়েব অ্যাপ্লিকেশানগুলি পরীক্ষামূলক WebGL 2.0 এ অ্যাক্সেস করার অনুমতি পায়। এই বিকল্পটি কেবলমাত্র অ্যাপ্লিকেশান উন্নয়নের জন্য ব্যবহার করা উচিত, এবং নির্বিচারে ওয়েব সাইট ব্রাউজ করার সময় ব্যবহার করা উচিত নয়।</translation>
 <translation id="3755411799582650620">এছাড়াও আপনার <ph name="PHONE_NAME" /> এখন এই <ph name="DEVICE_TYPE" /> আনলক করতে পারে৷</translation>
 <translation id="3758201569871381925">দয়া করে নিশ্চিত করুন যে আপনার Hotrod ডিভাইস চালু রয়েছে এবং একটি TV তে সংযুক্ত রয়েছে৷</translation>
 <translation id="375841316537350618">প্রক্সী স্ক্রিপ্ট ডাউনলোড হচ্ছে...</translation>
@@ -2369,7 +2361,6 @@
 <translation id="4075084141581903552">স্বয়ংক্রিয় সাইন-ইন উপলব্ধ <ph name="EMAIL_ADDRESS" /></translation>
 <translation id="4078738236287221428">আক্রমণাত্মক</translation>
 <translation id="408098233265424160">Smart Lock নৈকট্য সনাক্তকরণ</translation>
-<translation id="4081683084140995376">VR শেল সক্ষম করুন।</translation>
 <translation id="4081979157059999345">দূরবর্তী পাসওয়ার্ড ব্যবস্থাপনা লিঙ্ক</translation>
 <translation id="4084682180776658562">বুকমার্ক</translation>
 <translation id="4084835346725913160"><ph name="TAB_NAME" /> বন্ধ করুন</translation>
@@ -2506,7 +2497,6 @@
 <translation id="4268574628540273656">URL:</translation>
 <translation id="4270393598798225102">সংস্করণ <ph name="NUMBER" /></translation>
 <translation id="4271396100647220620">কোনো মিল নেই</translation>
-<translation id="4274187853770964845">সিঙ্ক ত্রুটি: দয়া করে বন্ধ করে সিঙ্কটি পুনঃসূচনা করুন</translation>
 <translation id="4275830172053184480">আপনার ডিভাইস বন্ধ করে চালু করুন</translation>
 <translation id="4276796043975446927">মিটিংয়ের জন্য Chromebox এ স্বাগতম</translation>
 <translation id="4278390842282768270">মঞ্জুরিপ্রাপ্ত</translation>
@@ -2618,7 +2608,6 @@
 <translation id="4443536555189480885">&amp;Help</translation>
 <translation id="4444304522807523469">USB বা স্থানীয় নেটওয়ার্কের মাধ্যমে সংযুক্ত দস্তাবেজ স্ক্যানার অ্যাক্সেস করে</translation>
 <translation id="4444512841222467874">যদি জায়গা প্রস্তুত করা না হয়, তাহলে ব্যবহারকারী এবং ডেটাকে স্বয়ংক্রিয়ভাবে সরানো হতে পারে।</translation>
-<translation id="4445559854264555037">আপনার ডিভাইসটি দেখতে পাচ্ছেন না? <ph name="GET_HELP_LINK" /></translation>
 <translation id="4446933390699670756">মিরর করা হয়েছে</translation>
 <translation id="4447465454292850432">ব্যাটারি:</translation>
 <translation id="4449935293120761385">স্বতঃপূরণ সম্পর্কে</translation>
@@ -2740,7 +2729,7 @@
 <translation id="4635114802498986446">একটি Smart Lock সেটিংস সক্ষম করে যা Chrome ডিভাইসের খুব কাছে (প্রায় একহাত দূরে) আপনার ফোন থাকলে শুধুমাত্র তখনই আনলক করতে দেয়৷</translation>
 <translation id="4636315944522859212">প্রিন্টার পাওয়া গেছে</translation>
 <translation id="4640525840053037973">আপনার Google অ্যাকাউন্ট দিয়ে প্রবেশ করুন</translation>
-<translation id="4641539339823703554">Chrome সিস্টেমের সময় সেট করতে পারেনি। দয়া করে নীচে সময় চেক করুন এবং প্রয়োজনে এটি সংশোধন করুন।</translation>
+<translation id="4641539339823703554">Chrome সিস্টেমের সময় সেট করতে পারেনি। দয়া করে নিচে সময় চেক করুন এবং প্রয়োজনে এটি সংশোধন করুন।</translation>
 <translation id="4643612240819915418">নতুন ট্যাবে ভিডিও &amp;খুলুন</translation>
 <translation id="4645676300727003670">&amp;রাখুন</translation>
 <translation id="4647090755847581616">&amp;Close Tab</translation>
@@ -2751,7 +2740,6 @@
 <translation id="4654488276758583406">অতি ক্ষুদ্র</translation>
 <translation id="465499440663162826">Chrome ওয়েব দোকানে সংযোগ করতে পারেনি।</translation>
 <translation id="4656293982926141856">এই কম্পিউটার</translation>
-<translation id="4656631038341342120">এই ডিভাইসের জন্য VR শেল উপলব্ধ থাকলে তা সক্ষম করে।</translation>
 <translation id="4657031070957997341">সর্বদা <ph name="HOST" />-এ প্ল্যাগ ইনগুলি মঞ্জুর করুন</translation>
 <translation id="466008749075469935">পটভূমি টাইমারগুলির দ্বারা CPU এর ব্যবহার হওয়া ১% এ সীমিত করতে হস্তক্ষেপ সক্ষম করে।</translation>
 <translation id="4663254525753315077">যখন সম্ভব, দ্রুততর স্ক্রোলিংয়ের জন্য একটি যৌগিক স্তরের সম্মুখে একটি ওভারফ্লো স্ক্রোলিং উপাদানের স্ক্রোলিং সামগ্রীগুলি রাখে৷</translation>
@@ -2872,7 +2860,7 @@
 <translation id="4816492930507672669">পৃষ্ঠাতে মানানসই</translation>
 <translation id="4816617200045929931">আপনি প্রোফাইল ত্রুটি বার্তাটি পাওয়ার ঠিক আগে কি ঘটেছিল তা আমাদের বলুন:
 
-****এই রেখার নীচে পরিবর্তন করবেন না****</translation>
+****এই রেখার নিচে পরিবর্তন করবেন না****</translation>
 <translation id="4820334425169212497">না, আমি এটা দেখিনি</translation>
 <translation id="4821086771593057290">আপনার পাসওয়ার্ডটি পরিবর্তিত হয়েছে৷ আপনার নতুন পাসওয়ার্ডটি দিয়ে দয়া করে আবার চেষ্টা করুন৷</translation>
 <translation id="4821935166599369261">&amp;প্রোফাইলিং সক্ষমিত</translation>
@@ -3468,7 +3456,6 @@
 <translation id="5569544776448152862"><ph name="BEGIN_BOLD" /><ph name="DOMAIN_NAME" /><ph name="END_BOLD" /> এ নথিভুক্ত করা হচ্ছে...</translation>
 <translation id="5575473780076478375">ছদ্মবেশী এক্সটেনশান: <ph name="EXTENSION_NAME" /></translation>
 <translation id="557722062034137776">আপনার ডিভাইসকে পুনরায় রিসেট করলে তা আপনার Google অ্যাকাউন্টগুলি বা এই অ্যাকাউন্টগুলিতে সিঙ্ক হওয়া যেকোনো ডেটাতে প্রভাব ফেলবে না৷ যদিও, স্থানীয়ভাবে সংরক্ষিত সমস্ত ফাইল মুছে ফেলা হবে৷</translation>
-<translation id="5579997910517802656">কোনো যন্ত্র খুঁজে পাওয়া যায়নি৷</translation>
 <translation id="5581211282705227543">কোনও প্ল্যাগইন ইনস্টল নেই</translation>
 <translation id="5581700288664681403">লোড হচ্ছে<ph name="CLOUD_PRINT_NAME" /></translation>
 <translation id="558170650521898289">Microsoft Windows Hardware Driver Verification </translation>
@@ -4253,7 +4240,6 @@
 <translation id="6659213950629089752">"<ph name="NAME" />" এক্সটেনশান দ্বারা এই পৃষ্ঠাটি জুম করা হয়েছে</translation>
 <translation id="6659594942844771486">ট্যাব</translation>
 <translation id="6660768694571958712">পয়েন্টার ইভেন্টগুলির API এর জন্য পরীক্ষামূলক সমর্থন সক্ষম করে। এটা শুধুমাত্র ওয়েব বিকাশকারীদের দ্বারা পরীক্ষার উদ্দেশ্যে রাখা হয়েছে, এর কারণে কিছু কিছু ওয়েবসাইটের ভেতরে অকেজো লিঙ্ক থাকতে পারে।</translation>
-<translation id="6662016084451426657">সমন্বয় ত্রুটি: সিঙ্কটি সক্ষম করতে দয়া করে প্রশাসকের সাথে যোগাযোগ করুন৷</translation>
 <translation id="6663792236418322902">আপনার চয়ন করা পাসওয়ার্ডটি এই ফাইলটিকে পরে পুনরুদ্ধার করার জন্য রক্ষণের কাজে লাগবে৷  দয়া করে এটিকে একটি সুরক্ষিত স্থানে রেকর্ড করুন৷</translation>
 <translation id="6664237456442406323">দুর্ভাগ্যবশত, আপনার কম্পিউটার একটি ত্রুটিপূর্ণ হার্ডওয়্যার ID এর মাধ্যমে কনফিগার করা হয়েছে৷ এটি Chrome OS কে সাম্প্রতিক সুরক্ষা সমাধানে আপডেট করা থেকে বিরত করেছে এবং আপনার কম্পিউটার <ph name="BEGIN_BOLD" />অনিষ্টকারী আক্রমণগুলির ফলে অরক্ষিত হতে পারে<ph name="END_BOLD" />৷</translation>
 <translation id="6664774537677393800">আপনার প্রোফাইল খোলার সময় কোনো সমস্যা হয়েছে। দয়া সাইন আউট করে আবার সাইন ইন করুন।</translation>
@@ -4313,7 +4299,7 @@
 <translation id="6739254200873843030">কার্ডের মেয়াদ শেষ হয়েছে৷ দয়া করে তারিখটি পরীক্ষা করুন এবং একটি নতুন কার্ড লিখুন৷</translation>
 <translation id="6740234557573873150"><ph name="FILE_NAME" /> বিরাম দেওয়া হয়েছে</translation>
 <translation id="6745592621698551453">এখনই আপডেট করুন</translation>
-<translation id="6746124502594467657">নীচে যান</translation>
+<translation id="6746124502594467657">নিচে যান</translation>
 <translation id="674632704103926902">আলতো চেপে টেনে আনা সক্ষম করুন</translation>
 <translation id="6746392203843147041">আওয়াজ বাড়ান</translation>
 <translation id="6748140994595080445"><ph name="APP_NAME" /> কীভাবে ভাষা পরিচালনা ও প্রদর্শন করে তা পরিবর্তন করুন৷</translation>
@@ -4473,7 +4459,6 @@
 <translation id="6985235333261347343">Microsoft Key Recovery Agent</translation>
 <translation id="6985276906761169321">ID:</translation>
 <translation id="6985607387932385770">প্রিন্টারগুলি</translation>
-<translation id="6986605181115043220">ওহো, সিঙ্ক কাজ করা বন্ধ করেছে৷ <ph name="BEGIN_LINK" />আরো জানুন<ph name="END_LINK" /></translation>
 <translation id="6990081529015358884">আপনি জায়গা সমাপ্ত করে ফেলেছেন৷</translation>
 <translation id="6990778048354947307">ডার্ক থিম</translation>
 <translation id="6991128190741664836">পরে</translation>
@@ -5094,7 +5079,6 @@
 <translation id="7839963980801867006">ভাষা মেনুতে কোনো এক্সটেনশান IME উপলব্ধ হবে তা নির্বাচন করুন৷</translation>
 <translation id="7842346819602959665">এক্সটেনশন "<ph name="EXTENSION_NAME" />"-এর সবচেয়ে নতুন সংস্করণটির আরো অনুমতির প্রয়োজন, সেই কারণে এটি অক্ষম করা হয়েছে৷</translation>
 <translation id="7844992432319478437">ভিন্ন আপডেট হচ্ছে</translation>
-<translation id="7845920762538502375"><ph name="PRODUCT_NAME" /> আপনার ডেটা সিঙ্ক করতে পারে না কারণ এটি সিঙ্ক সার্ভারের সাথে সংযুক্ত হতে পারেনি৷ পুনঃচেষ্টা করা হচ্ছে...</translation>
 <translation id="7846076177841592234">নির্বাচন বাতিল করুন</translation>
 <translation id="7846634333498149051">কীবোর্ড</translation>
 <translation id="7847212883280406910"><ph name="IDS_SHORT_PRODUCT_OS_NAME" /> এ স্যুইচ করার জন্য Ctrl + Alt + S টিপুন</translation>
@@ -5379,14 +5363,13 @@
 <translation id="8213577208796878755">অন্য একটি উপলব্ধ ডিভাইস৷</translation>
 <translation id="8214489666383623925">ফাইল খুলুন...</translation>
 <translation id="8214962590150211830">এই ব্যক্তিকে সরান</translation>
-<translation id="8216278935161109887">প্রস্থান করুন করে আবার প্রবেশ করুন</translation>
 <translation id="8217399928341212914">একাধিক ফাইলের স্বয়ংক্রিয় ডাউনলোডগুলির অবরুদ্ধ করা অবিরত রাখুন</translation>
 <translation id="8221831106892617387">সক্ষম করা হয়েছে: ধীরগতির 2G</translation>
 <translation id="8222121761382682759">আনইনস্টল করুন...</translation>
 <translation id="8223479393428528563">অফলাইনে ব্যবহারের জন্য এই ফাইলগুলি সংরক্ষণ করতে, অনলাইনে ফিরে আসুন, ফাইলগুলিতে ডান-ক্লিক করুন এবং <ph name="OFFLINE_CHECKBOX_NAME" /> বিকল্পটি নির্বাচন করুন৷</translation>
 <translation id="8226222018808695353">নিষিদ্ধ</translation>
 <translation id="8226619461731305576">অপেক্ষমাণ</translation>
-<translation id="8226742006292257240">আপনার কম্পিউটারে অ্যাসাইন করা হয়েছে এমন এলোমেলোভাবে জেনারেট হওয়া TPM পাসওয়ার্ডটি নীচে:</translation>
+<translation id="8226742006292257240">আপনার কম্পিউটারে অ্যাসাইন করা হয়েছে এমন এলোমেলোভাবে জেনারেট হওয়া TPM পাসওয়ার্ডটি নিচে:</translation>
 <translation id="8227119283605456246">ফাইল সংযুক্ত করুন</translation>
 <translation id="8230421197304563332">বর্তমানে <ph name="BEGIN_BOLD" /><ph name="SITE" /><ph name="END_BOLD" /> এর আক্রমণকারীরা আপনার কম্পিউটারে ক্ষতিকারক প্রোগ্রাম ইনস্টল করতে পারে যা আপনার তথ্য (উদাহরণস্বরুপ, ফটো, পাসওয়ার্ড, বার্তা এবং ক্রেডিট কার্ড) চুরি করতে বা মুছে দিতে পারে।</translation>
 <translation id="8233254008506535819">ব্রাউজিং ডেটা সাফ করার ডায়ালগে গুরুত্বপূর্ণ সাইটগুলিকে পরিচ্ছন্ন তালিকায় অন্তর্ভুক্ত করার বিকল্প অন্তর্ভুক্ত করে।</translation>
@@ -5527,9 +5510,8 @@
 <translation id="8418113698656761985">রোমানিয় কীবোর্ড</translation>
 <translation id="8418445294933751433">ট্যাব রূপে &amp;দেখান</translation>
 <translation id="8420060421540670057">Google দস্তাবেজ ফাইলগুলি দেখান</translation>
-<translation id="8420139899406509438">(অডিও ফোকাস হারাতে থাকলে Flash অডিও ভলিউম কমায়, পরীক্ষামূলক) সক্ষম করা হয়েছে</translation>
 <translation id="842274098655511832">WebGL খসড়া এক্সটেনশানগুলি</translation>
-<translation id="8424039430705546751">নীচে</translation>
+<translation id="8424039430705546751">নিচে</translation>
 <translation id="8425213833346101688">পরিবর্তন</translation>
 <translation id="8425492902634685834">কার্যদন্ডে পিন করুন</translation>
 <translation id="8425755597197517046">আট&amp;কান এবং অনুসন্ধান করুন</translation>
@@ -6021,7 +6003,6 @@
 <translation id="9052208328806230490">আপনি আপনার মুদ্রকগুলি <ph name="EMAIL" /> অ্যাকাউন্টটি ব্যবহার করে <ph name="CLOUD_PRINT_NAME" />তে নিবন্ধীকৃত করেছেন</translation>
 <translation id="9052234664411715138">ক্রেডিট কার্ডে সহায়তাযুক্ত পূরণ</translation>
 <translation id="9053860306922028466">কি ভাগ করবেন দয়া করে তা প্রথমে নির্বাচন করুন।</translation>
-<translation id="9053965862400494292">সিঙ্ক সেট আপের চেষ্টা করার  সময় একটি ত্রুটি ঘটেছে৷</translation>
 <translation id="9056034633062863292">Chromebox আপডেট করা হচ্ছে</translation>
 <translation id="9056810968620647706">কোন মিল খুঁজে পাওয়া যায় নি৷</translation>
 <translation id="9057119625587205566">আশেপাশে কোনো প্রিন্টার নেই</translation>
@@ -6175,6 +6156,7 @@
 <translation id="971058943242239041">প্যাকেজ অ্যাপ্লিকেশানগুলিতে 'উইন্ডো-নিয়ন্ত্রণ' HTML উপাদানগুলি ব্যবহার করে সক্ষম করে৷</translation>
 <translation id="971774202801778802">বুকমার্ক URL</translation>
 <translation id="973473557718930265">প্রস্থান করুন</translation>
+<translation id="974555521953189084">সিঙ্ক শুরু করার জন্য আপনার পাসফ্রেজ লিখুন</translation>
 <translation id="97534916655989966">নিঃশব্দ করে রাখা ভিডিওগুলিকে আপনাআপনি বাজানোর অনুমতি দেয়।</translation>
 <translation id="981121421437150478">অফলাইন</translation>
 <translation id="984870422930397199">নতুন ট্যাব পৃষ্ঠায় অফলাইন পৃষ্ঠাগুলিতে ব্যাজ দেওয়া সক্ষম করে। অফলাইন পৃষ্ঠাগুলি সক্ষম থাকলেই কেবলমাত্র এটি প্রযোজ্য হবে।</translation>

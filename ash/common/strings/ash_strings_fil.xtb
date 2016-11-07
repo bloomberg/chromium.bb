@@ -89,6 +89,7 @@ Pindutin ang Search o Shift upang kanselahin.</translation>
 <translation id="3294437725009624529">Bisita</translation>
 <translation id="3335772982573114336">Bagong tala</translation>
 <translation id="3364721542077212959">Mga stylus tool</translation>
+<translation id="3368922792935385530">Nakakonekta</translation>
 <translation id="3371140690572404006">USB-C device (port sa kanang bahagi sa harap)</translation>
 <translation id="3445925074670675829">USB-C device</translation>
 <translation id="3473479545200714844">Screen magnifier</translation>
@@ -125,6 +126,7 @@ Pindutin ang Search o Shift upang kanselahin.</translation>
 <translation id="4250680216510889253">Hindi</translation>
 <translation id="4279490309300973883">Nagmi-mirror</translation>
 <translation id="4321179778687042513">ctrl</translation>
+<translation id="4378551569595875038">Kumokonekta...</translation>
 <translation id="4421231901400348175">Pagbabahagi ng kontrol sa iyong screen gamit ang <ph name="HELPER_NAME" /> sa pamamagitan ng Remote Assistance.</translation>
 <translation id="4430019312045809116">Volume</translation>
 <translation id="4448844063988177157">Naghahanap ng mga network na Wi-Fi...</translation>
@@ -280,4 +282,5 @@ Pindutin ang Alt+Search o Shift upang kanselahin.</translation>
 <translation id="923686485342484400">Pindutin ang Control Shift Q nang dalawang beses upang mag-sign out.</translation>
 <translation id="938582441709398163">Overlay ng Keyboard</translation>
 <translation id="939252827960237676">Nabigong i-save ang screenshot</translation>
+<translation id="952992212772159698">Hindi na-activate</translation>
 </translationbundle>

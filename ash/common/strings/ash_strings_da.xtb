@@ -89,6 +89,7 @@ Tryk på Søg eller Shift for at annullere.</translation>
 <translation id="3294437725009624529">Gæst</translation>
 <translation id="3335772982573114336">Ny note</translation>
 <translation id="3364721542077212959">Penneværktøjer</translation>
+<translation id="3368922792935385530">Tilsluttet</translation>
 <translation id="3371140690572404006">USB-C-enhed (porten foran i højre side)</translation>
 <translation id="3445925074670675829">USB-C-enhed</translation>
 <translation id="3473479545200714844">Skærmforstørrer</translation>
@@ -125,6 +126,7 @@ Tryk på Søg eller Shift for at annullere.</translation>
 <translation id="4250680216510889253">Nej</translation>
 <translation id="4279490309300973883">Spejling</translation>
 <translation id="4321179778687042513">ctrl</translation>
+<translation id="4378551569595875038">Opretter forbindelse...</translation>
 <translation id="4421231901400348175">Skærmdeling med <ph name="HELPER_NAME" /> via Fjernsupport.</translation>
 <translation id="4430019312045809116">Lydstyrke</translation>
 <translation id="4448844063988177157">Søger efter Wi-Fi-netværk...</translation>
@@ -280,4 +282,5 @@ Tryk på Alt+Søg eller Shift for at annullere.</translation>
 <translation id="923686485342484400">Tryk på Control+Shift+Q to gange for at logge ud.</translation>
 <translation id="938582441709398163">Tastaturoverlejring</translation>
 <translation id="939252827960237676">Skærmbilledet kunne ikke gemmes</translation>
+<translation id="952992212772159698">Ikke aktiveret</translation>
 </translationbundle>

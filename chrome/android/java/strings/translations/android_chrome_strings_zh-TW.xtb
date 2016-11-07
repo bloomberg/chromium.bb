@@ -51,7 +51,6 @@
 <translation id="1506061864768559482">搜尋引擎</translation>
 <translation id="1513352483775369820">書籤與網頁紀錄</translation>
 <translation id="1513858653616922153">刪除密碼</translation>
-<translation id="1546112724822176246">找不到您的裝置嗎？建議您<ph name="BEGIN_LINK" />尋求協助<ph name="END_LINK" />。</translation>
 <translation id="1549000191223877751">移至其他視窗</translation>
 <translation id="1553358976309200471">更新 Chrome</translation>
 <translation id="1571304935088121812">複製使用者名稱</translation>
@@ -72,7 +71,6 @@
 <translation id="1749561566933687563">同步處理您的書籤</translation>
 <translation id="17513872634828108">開啟分頁</translation>
 <translation id="1756600373018374892">輕觸這個按鈕即可快速存取分頁。</translation>
-<translation id="1774241295142531736">找不到你的裝置嗎？請<ph name="BEGIN_LINK1" />查看說明<ph name="END_LINK1" />或<ph name="BEGIN_LINK2" />重新掃描<ph name="END_LINK2" />。</translation>
 <translation id="1807246157184219062">淺色</translation>
 <translation id="1825719650605518411">初次使用體驗</translation>
 <translation id="1826516787628120939">檢查中</translation>
@@ -156,7 +154,6 @@
 <translation id="2707726405694321444">重新整理頁面</translation>
 <translation id="2709516037105925701">自動填入</translation>
 <translation id="271033894570825754">新</translation>
-<translation id="2748463065602559597">您正在瀏覽安全型 Google Chrome 網頁。</translation>
 <translation id="2762000892062317888">剛剛</translation>
 <translation id="2777555524387840389">還剩 <ph name="SECONDS" /> 秒</translation>
 <translation id="2781151931089541271">還剩 1 秒</translation>
@@ -233,7 +230,6 @@
 <translation id="3656115297268584622">前往 <ph name="BEGIN_LINK" />Android 設定<ph name="END_LINK" />開啟位置資訊設定。</translation>
 <translation id="3661699943263275414">第三方網站可以儲存及讀取 Cookie 資料</translation>
 <translation id="3672452749423051839">瀏覽錯誤建議</translation>
-<translation id="3690847815241521170">正在掃描裝置… <ph name="BEGIN_LINK" />查看說明<ph name="END_LINK" /></translation>
 <translation id="3706658020782046159">選取運送地址即可查看運送方式和需求條件。</translation>
 <translation id="3716158070938632480">附近有裝置在播送網頁</translation>
 <translation id="3738139272394829648">輕觸搜尋</translation>
@@ -322,7 +318,6 @@
 <translation id="4807098396393229769">持卡人姓名</translation>
 <translation id="4816465935029283692">資料類型</translation>
 <translation id="4827948050554950725">新增信用卡</translation>
-<translation id="4836364883164334657">您與這個網站之間的連線不是私人連線。攻擊者可能會嘗試從 <ph name="DOMAIN_NAME" /> 竊取您的資訊 (例如相片、密碼、郵件和信用卡資訊)。</translation>
 <translation id="4850886885716139402">檢視</translation>
 <translation id="4881695831933465202">開啟</translation>
 <translation id="4885273946141277891">Chrome 實例的數量已超出上限。</translation>
@@ -355,6 +350,7 @@
 <translation id="5171045022955879922">搜尋或輸入網址</translation>
 <translation id="5184329579814168207">在 Chrome 中開啟</translation>
 <translation id="5199929503336119739">Work 設定檔</translation>
+<translation id="5209320130288484488">找不到裝置</translation>
 <translation id="5210365745912300556">關閉分頁</translation>
 <translation id="5222676887888702881">登出</translation>
 <translation id="5233638681132016545">新增分頁</translation>
@@ -389,7 +385,6 @@
 <translation id="5556459405103347317">重新載入</translation>
 <translation id="5565871407246142825">信用卡</translation>
 <translation id="5578795271662203820">透過 <ph name="SEARCH_ENGINE" /> 搜尋這張圖片</translation>
-<translation id="5579997910517802656">找不到裝置。</translation>
 <translation id="5595485650161345191">編輯地址</translation>
 <translation id="5596627076506792578">更多選項</translation>
 <translation id="5626134646977739690">名稱：</translation>
@@ -418,7 +413,6 @@
 <translation id="583281660410589416">未知</translation>
 <translation id="5832934273103296195">已展開 - 按一下即可收合</translation>
 <translation id="583891442612896534">Chrome 無法連上 Google 的伺服器進行資料壓縮，這可能會導致您無法節省某些數據流量。</translation>
-<translation id="5843873952582375185">找不到藍牙裝置。<ph name="BEGIN_LINK" />重新掃描<ph name="END_LINK" /></translation>
 <translation id="585027516397408832">已啟用 Data Saver</translation>
 <translation id="5860033963881614850">關閉</translation>
 <translation id="5867027562311576691">系統即將顯示更多文章供您閱覽，伴你度過美好的早晨。</translation>
@@ -568,9 +562,9 @@
 <translation id="7596558890252710462">作業系統</translation>
 <translation id="7605594153474022051">同步處理功能無法正常運作</translation>
 <translation id="7612619742409846846">已使用下列帳戶登入 Google：</translation>
+<translation id="7613889955535752492">有效期限：<ph name="EXPIRATION_MONTH" />/<ph name="EXPIRATION_YEAR" /></translation>
 <translation id="7619072057915878432">無法連上網路，因此無法下載 <ph name="FILE_NAME" />。</translation>
 <translation id="7626032353295482388">歡迎使用 Chrome</translation>
-<translation id="7634554953375732414">您與這個網站建立了非私人連線。</translation>
 <translation id="7638584964844754484">通關密語不正確</translation>
 <translation id="7648422057306047504">使用 Google 憑證為密碼加密</translation>
 <translation id="7649070708921625228">說明</translation>
@@ -638,13 +632,11 @@
 <translation id="8428213095426709021">設定</translation>
 <translation id="8433057134996913067">您會因此登出大多數網站。</translation>
 <translation id="8447861592752582886">撤銷裝置權限</translation>
-<translation id="8481940801237642152">您與這個網站建立了私人連線，但網路上的其他人可能可以變更網頁的外觀。</translation>
 <translation id="8487700953926739672">可離線使用</translation>
 <translation id="8493948351860045254">釋出空間</translation>
 <translation id="8497726226069778601">目前還沒有任何常用網頁…</translation>
 <translation id="8503813439785031346">使用者名稱</translation>
 <translation id="8514577642972634246">進入無痕模式</translation>
-<translation id="8518901949365209398">這個網站使用的安全性設定強度不足 (SHA-1 簽名)，因此您的連線可能不是私人連線。</translation>
 <translation id="8523928698583292556">刪除已儲存的密碼</translation>
 <translation id="854522910157234410">開啟以下網頁</translation>
 <translation id="8562452229998620586">已儲存的密碼會顯示在這裡。</translation>
@@ -677,7 +669,6 @@
 <translation id="8912362522468806198">Google 帳戶</translation>
 <translation id="8920114477895755567">尚未取得家長詳細資料。</translation>
 <translation id="8931159598799892500">Chrome 和實體化網路</translation>
-<translation id="8941248009481596111">您與這個網站建立了私人連線。</translation>
 <translation id="8941729603749328384">www.example.com</translation>
 <translation id="8942627711005830162">在其他視窗中開啟</translation>
 <translation id="8959122750345127698">瀏覽的網址無法存取：<ph name="URL" /></translation>

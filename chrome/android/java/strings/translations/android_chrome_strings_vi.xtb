@@ -51,7 +51,6 @@ Bạn phải bật Bluetooth và Vị trí để sử dụng Web trong cuộc s�
 <translation id="1506061864768559482">Công cụ tìm kiếm</translation>
 <translation id="1513352483775369820">Dấu trang và lịch sử web</translation>
 <translation id="1513858653616922153">Xóa mật khẩu</translation>
-<translation id="1546112724822176246">Không thấy thiết bị của bạn? <ph name="BEGIN_LINK" />Nhận trợ giúp<ph name="END_LINK" />.</translation>
 <translation id="1549000191223877751">Di chuyển đến cửa sổ khác</translation>
 <translation id="1553358976309200471">Cập nhật Chrome</translation>
 <translation id="1571304935088121812">Sao chép tên người dùng</translation>
@@ -72,7 +71,6 @@ Bạn phải bật Bluetooth và Vị trí để sử dụng Web trong cuộc s�
 <translation id="1749561566933687563">Đồng bộ hóa dấu trang của bạn</translation>
 <translation id="17513872634828108">Tab đang mở</translation>
 <translation id="1756600373018374892">Nhấn nút này để truy cập nhanh vào các tab của bạn.</translation>
-<translation id="1774241295142531736">Không nhìn thấy thiết bị của bạn? <ph name="BEGIN_LINK1" />Nhận trợ giúp<ph name="END_LINK1" /> hoặc <ph name="BEGIN_LINK2" />quét lại<ph name="END_LINK2" />.</translation>
 <translation id="1807246157184219062">Sáng</translation>
 <translation id="1825719650605518411">Trải nghiệm lần chạy đầu tiên</translation>
 <translation id="1826516787628120939">Đang kiểm tra</translation>
@@ -156,7 +154,6 @@ Bạn có thể kiểm soát cài đặt Web trong cuộc sống trên Chrome.
 <translation id="2707726405694321444">Làm mới trang</translation>
 <translation id="2709516037105925701">Tự động điền</translation>
 <translation id="271033894570825754">Mới</translation>
-<translation id="2748463065602559597">Bạn đang xem trang Google Chrome an toàn.</translation>
 <translation id="2762000892062317888">vừa xong</translation>
 <translation id="2777555524387840389">Còn <ph name="SECONDS" /> giây</translation>
 <translation id="2781151931089541271">Còn 1 giây</translation>
@@ -233,7 +230,6 @@ Bạn có thể kiểm soát cài đặt Web trong cuộc sống trên Chrome.
 <translation id="3656115297268584622">Bật vị trí trong <ph name="BEGIN_LINK" />Cài đặt Android<ph name="END_LINK" />.</translation>
 <translation id="3661699943263275414">Các trang web của bên thứ ba có thể lưu và đọc dữ liệu cookie</translation>
 <translation id="3672452749423051839">Đề xuất lỗi điều hướng</translation>
-<translation id="3690847815241521170">Đang quét tìm thiết bị… <ph name="BEGIN_LINK" />Nhận trợ giúp<ph name="END_LINK" /></translation>
 <translation id="3706658020782046159">Chọn địa chỉ giao hàng để kiểm tra các yêu cầu và phương thức giao hàng.</translation>
 <translation id="3716158070938632480">Các trang web lân cận</translation>
 <translation id="3738139272394829648">Chạm để tìm kiếm</translation>
@@ -322,7 +318,6 @@ Bạn có thể kiểm soát cài đặt Web trong cuộc sống trên Chrome.
 <translation id="4807098396393229769">Tên trên thẻ</translation>
 <translation id="4816465935029283692">Loại dữ liệu</translation>
 <translation id="4827948050554950725">Thêm thẻ tín dụng</translation>
-<translation id="4836364883164334657">Kết nối của bạn tới trang web này không ở chế độ riêng tư. Những kẻ tấn công có thể tìm cách lấy cắp thông tin của bạn (ví dụ: ảnh, mật khẩu, tin nhắn và thẻ tín dụng) từ <ph name="DOMAIN_NAME" />.</translation>
 <translation id="4850886885716139402">Xem</translation>
 <translation id="4881695831933465202">Mở</translation>
 <translation id="4885273946141277891">Số phiên bản Chrome không được hỗ trợ.</translation>
@@ -355,6 +350,7 @@ Bạn có thể kiểm soát cài đặt Web trong cuộc sống trên Chrome.
 <translation id="5171045022955879922">Tìm kiếm hoặc nhập URL</translation>
 <translation id="5184329579814168207">Mở trong Chrome</translation>
 <translation id="5199929503336119739">Hồ sơ công việc</translation>
+<translation id="5209320130288484488">Không tìm thấy thiết bị nào</translation>
 <translation id="5210365745912300556">Đóng tab</translation>
 <translation id="5222676887888702881">Đăng xuất</translation>
 <translation id="5233638681132016545">Tab mới</translation>
@@ -389,7 +385,6 @@ Bạn có thể kiểm soát cài đặt Web trong cuộc sống trên Chrome.
 <translation id="5556459405103347317">Tải lại</translation>
 <translation id="5565871407246142825">Thẻ tín dụng</translation>
 <translation id="5578795271662203820">Tìm ảnh này trên <ph name="SEARCH_ENGINE" /></translation>
-<translation id="5579997910517802656">Không tìm thấy thiết bị nào.</translation>
 <translation id="5595485650161345191">Chỉnh sửa địa chỉ</translation>
 <translation id="5596627076506792578">Tùy chọn khác</translation>
 <translation id="5626134646977739690">Tên:</translation>
@@ -418,7 +413,6 @@ Tuy nhiên, bạn vẫn hiển thị. Truy cập ẩn danh sẽ không ẩn 
 <translation id="583281660410589416">Không xác định</translation>
 <translation id="5832934273103296195">Đã mở rộng - Nhấp để thu gọn</translation>
 <translation id="583891442612896534">Chrome không thể kết nối với máy chủ của Google để nén dữ liệu. Các khoản tiết kiệm đối với dữ liệu của bạn có thể bị giới hạn.</translation>
-<translation id="5843873952582375185">Không tìm thấy thiết bị Bluetooth nào. <ph name="BEGIN_LINK" />Quét lại<ph name="END_LINK" /></translation>
 <translation id="585027516397408832">Đã bật Trình tiết kiệm dữ liệu</translation>
 <translation id="5860033963881614850">Tắt</translation>
 <translation id="5867027562311576691">Các bài viết khác sẽ sớm xuất hiện. Chúc bạn buổi sáng vui vẻ.</translation>
@@ -568,9 +562,9 @@ Tài khoản Google của bạn có thể có các dạng lịch sử duyệt we
 <translation id="7596558890252710462">Hệ điều hành</translation>
 <translation id="7605594153474022051">Đồng bộ hóa không hoạt động</translation>
 <translation id="7612619742409846846">Đã đăng nhập vào Google bằng</translation>
+<translation id="7613889955535752492">Hết hạn: <ph name="EXPIRATION_MONTH" />/<ph name="EXPIRATION_YEAR" /></translation>
 <translation id="7619072057915878432">Tải xuống không thành công <ph name="FILE_NAME" /> do lỗi mạng.</translation>
 <translation id="7626032353295482388">Chào mừng bạn đến với Chrome</translation>
-<translation id="7634554953375732414">Kết nối của bạn tới trang web này không ở chế độ riêng tư.</translation>
 <translation id="7638584964844754484">Cụm mật khẩu không chính xác</translation>
 <translation id="7648422057306047504">Mã hóa mật khẩu bằng thông tin đăng nhập Google</translation>
 <translation id="7649070708921625228">Trợ giúp</translation>
@@ -638,13 +632,11 @@ Tài khoản Google của bạn có thể có các dạng lịch sử duyệt we
 <translation id="8428213095426709021">Cài đặt</translation>
 <translation id="8433057134996913067">Thao tác này sẽ đăng xuất bạn khỏi hầu hết các trang web.</translation>
 <translation id="8447861592752582886">Thu hồi quyền truy cập thiết bị</translation>
-<translation id="8481940801237642152">Kết nối của bạn tới trang web này ở chế độ riêng tư nhưng ai đó trên mạng có thể thay đổi giao diện của trang.</translation>
 <translation id="8487700953926739672">Khả dụng ngoại tuyến</translation>
 <translation id="8493948351860045254">Giải phóng dung lượng</translation>
 <translation id="8497726226069778601">Chưa có gì để xem ở đây...</translation>
 <translation id="8503813439785031346">Tên người dùng</translation>
 <translation id="8514577642972634246">Vào chế độ ẩn danh</translation>
-<translation id="8518901949365209398">Trang web này sử dụng cấu hình bảo mật yếu (chữ ký SHA-1), vì vậy kết nối của bạn có thể không được đảm bảo là riêng tư.</translation>
 <translation id="8523928698583292556">Xóa mật khẩu đã lưu trữ</translation>
 <translation id="854522910157234410">Mở trang này</translation>
 <translation id="8562452229998620586">Mật khẩu đã lưu của bạn sẽ xuất hiện tại đây.</translation>
@@ -677,7 +669,6 @@ Tài khoản Google của bạn có thể có các dạng lịch sử duyệt we
 <translation id="8912362522468806198">Tài khoản Google</translation>
 <translation id="8920114477895755567">Đang đợi thông tin chi tiết của phụ huynh.</translation>
 <translation id="8931159598799892500">Chrome + Web trong cuộc sống</translation>
-<translation id="8941248009481596111">Kết nối của bạn tới trang web này ở chế độ riêng tư.</translation>
 <translation id="8941729603749328384">www.example.com</translation>
 <translation id="8942627711005830162">Mở trong cửa sổ khác</translation>
 <translation id="8959122750345127698">Không thể tiếp cận điều hướng: <ph name="URL" /></translation>

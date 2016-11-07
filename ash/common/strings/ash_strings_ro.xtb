@@ -89,6 +89,7 @@ Apăsați Căutare sau Shift pentru a anula.</translation>
 <translation id="3294437725009624529">Invitat</translation>
 <translation id="3335772982573114336">Notă nouă</translation>
 <translation id="3364721542077212959">Instrumente pentru creion</translation>
+<translation id="3368922792935385530">Conectată</translation>
 <translation id="3371140690572404006">Dispozitiv USB-C (portul din dreapta față)</translation>
 <translation id="3445925074670675829">Dispozitiv USB-C</translation>
 <translation id="3473479545200714844">Lupă de ecran</translation>
@@ -125,6 +126,7 @@ Apăsați Căutare sau Shift pentru a anula.</translation>
 <translation id="4250680216510889253">Nu</translation>
 <translation id="4279490309300973883">Oglindire</translation>
 <translation id="4321179778687042513">ctrl</translation>
+<translation id="4378551569595875038">Se stabilește conexiunea...</translation>
 <translation id="4421231901400348175">În prezent, <ph name="HELPER_NAME" /> îți poate controla ecranul prin Asistență la distanță.</translation>
 <translation id="4430019312045809116">Volum</translation>
 <translation id="4448844063988177157">Se caută rețele Wi-Fi...</translation>
@@ -280,4 +282,5 @@ Apăsați Alt+Căutare sau Shift pentru a anula.</translation>
 <translation id="923686485342484400">Apăsați de două ori Control Shift Q pentru a vă deconecta.</translation>
 <translation id="938582441709398163">Suprapunere a tastaturii</translation>
 <translation id="939252827960237676">Captura de ecran nu a putut fi salvată.</translation>
+<translation id="952992212772159698">Neactivat</translation>
 </translationbundle>

@@ -51,7 +51,6 @@ Ak chcete používať Fyzický web, musíte mať zapnuté rozhranie Bluetooth a�
 <translation id="1506061864768559482">Vyhľadávač</translation>
 <translation id="1513352483775369820">Záložky a webová história</translation>
 <translation id="1513858653616922153">Odstrániť heslo</translation>
-<translation id="1546112724822176246">Nezobrazuje sa vaše zariadenie? <ph name="BEGIN_LINK" />Získať pomoc<ph name="END_LINK" /></translation>
 <translation id="1549000191223877751">Prejsť do druhého okna</translation>
 <translation id="1553358976309200471">Aktualizovať Chrome</translation>
 <translation id="1571304935088121812">Kopírovať používateľské meno</translation>
@@ -72,7 +71,6 @@ Ak chcete používať Fyzický web, musíte mať zapnuté rozhranie Bluetooth a�
 <translation id="1749561566933687563">Synchronizujte svoje záložky</translation>
 <translation id="17513872634828108">Otvorené karty</translation>
 <translation id="1756600373018374892">Klepnutím na toto tlačidlo rýchlo pristúpite k svojim kartám.</translation>
-<translation id="1774241295142531736">Nezobrazuje sa vaše zariadenie? <ph name="BEGIN_LINK1" />Získajte pomoc<ph name="END_LINK1" /> alebo <ph name="BEGIN_LINK2" />znova spustite vyhľadávanie<ph name="END_LINK2" />.</translation>
 <translation id="1807246157184219062">Svetlý režim</translation>
 <translation id="1825719650605518411">Skúsenosť pri prvom spustení</translation>
 <translation id="1826516787628120939">Kontroluje sa</translation>
@@ -156,7 +154,6 @@ Predvoľby Fyzického webu môžete ovládať v Nastaveniach Chromu.
 <translation id="2707726405694321444">Obnoviť stránku</translation>
 <translation id="2709516037105925701">Automatické dopĺňanie</translation>
 <translation id="271033894570825754">Nové</translation>
-<translation id="2748463065602559597">Práve si prezeráte zabezpečenú stránku prehliadača Google Chrome.</translation>
 <translation id="2762000892062317888">práve teraz</translation>
 <translation id="2777555524387840389">Zostáva: <ph name="SECONDS" /> s</translation>
 <translation id="2781151931089541271">Zostáva: 1 s</translation>
@@ -233,7 +230,6 @@ Ak chcete upraviť hľadaný výraz, vyberte ho dlhým stlačením. Ak chcete vy
 <translation id="3656115297268584622">Zapnúť polohu v <ph name="BEGIN_LINK" />nastaveniach systému Android<ph name="END_LINK" />.</translation>
 <translation id="3661699943263275414">Webové stránky tretej strany môžu ukladať a čítať údaje súborov cookie</translation>
 <translation id="3672452749423051839">Návrhy v prípade chýb navigácie</translation>
-<translation id="3690847815241521170">Hľadajú sa zariadenia… <ph name="BEGIN_LINK" />Získať pomoc<ph name="END_LINK" /></translation>
 <translation id="3706658020782046159">Vyberte dodaciu adresu a prezrite si spôsoby dodania a požiadavky.</translation>
 <translation id="3716158070938632480">V okolí sú webové stránky</translation>
 <translation id="3738139272394829648">Vyhľadávanie klepnutím</translation>
@@ -322,7 +318,6 @@ Ak chcete upraviť hľadaný výraz, vyberte ho dlhým stlačením. Ak chcete vy
 <translation id="4807098396393229769">Meno na karte</translation>
 <translation id="4816465935029283692">Typy údajov</translation>
 <translation id="4827948050554950725">Pridať kreditnú kartu</translation>
-<translation id="4836364883164334657">Vaše pripojenie k týmto webovým stránkam nie je súkromné. Útočníci sa môžu pokúsiť ukradnúť vaše informácie (ako sú napríklad fotky, heslá, správy alebo čísla kreditných kariet) z domény <ph name="DOMAIN_NAME" />.</translation>
 <translation id="4850886885716139402">Zobraziť</translation>
 <translation id="4881695831933465202">Otvoriť</translation>
 <translation id="4885273946141277891">Nepodporovaný počet inštancií prehliadača Chrome.</translation>
@@ -355,6 +350,7 @@ Ak chcete upraviť hľadaný výraz, vyberte ho dlhým stlačením. Ak chcete vy
 <translation id="5171045022955879922">Vyhľadajte alebo zadajte webovú adresu</translation>
 <translation id="5184329579814168207">Otvoriť v prehliadači Chrome</translation>
 <translation id="5199929503336119739">Pracovný profil</translation>
+<translation id="5209320130288484488">Nenašli sa žiadne zariadenia</translation>
 <translation id="5210365745912300556">Zatvoriť kartu</translation>
 <translation id="5222676887888702881">Odhlásiť sa</translation>
 <translation id="5233638681132016545">Nová karta</translation>
@@ -389,7 +385,6 @@ Ak chcete upraviť hľadaný výraz, vyberte ho dlhým stlačením. Ak chcete vy
 <translation id="5556459405103347317">Obnoviť</translation>
 <translation id="5565871407246142825">Kreditné karty</translation>
 <translation id="5578795271662203820">Hľadať obrázok v službe <ph name="SEARCH_ENGINE" /></translation>
-<translation id="5579997910517802656">Nenašli sa žiadne zariadenia.</translation>
 <translation id="5595485650161345191">Upraviť adresu</translation>
 <translation id="5596627076506792578">Ďalšie možnosti</translation>
 <translation id="5626134646977739690">Názov:</translation>
@@ -418,7 +413,6 @@ Nie ste však neviditeľný/-á. Používanie režimu inkognito neukryje vaše p
 <translation id="583281660410589416">Neznáme</translation>
 <translation id="5832934273103296195">Rozbalené – kliknutím zbaliť</translation>
 <translation id="583891442612896534">Prehliadaču Chrome sa nepodarilo nadviazať spojenie so servermi Google s cieľom vykonať kompresiu údajov. Ukladanie vašich údajov môže byť obmedzené.</translation>
-<translation id="5843873952582375185">Nenašli sa žiadne zariadenia Bluetooth. <ph name="BEGIN_LINK" />Znova spustiť vyhľadávanie<ph name="END_LINK" /></translation>
 <translation id="585027516397408832">Šetrič dát je zapnutý</translation>
 <translation id="5860033963881614850">Vypnuté</translation>
 <translation id="5867027562311576691">Čoskoro sa zobrazia ďalšie články. Dobré ráno!</translation>
@@ -568,9 +562,9 @@ Váš účet Google môže mať na adrese <ph name="BEGIN_LINK" />history.google
 <translation id="7596558890252710462">Operačný systém</translation>
 <translation id="7605594153474022051">Synchronizácia nefunguje</translation>
 <translation id="7612619742409846846">Prihlásený/-á do Googlu ako</translation>
+<translation id="7613889955535752492">Dátum vypršania platnosti: <ph name="EXPIRATION_MONTH" />/<ph name="EXPIRATION_YEAR" /></translation>
 <translation id="7619072057915878432">Súbor <ph name="FILE_NAME" /> sa nepodarilo stiahnuť z dôvodu problémov so sieťou.</translation>
 <translation id="7626032353295482388">Víta vás prehliadač Chrome</translation>
-<translation id="7634554953375732414">Vaše pripojenie k týmto stránkam nie je súkromné.</translation>
 <translation id="7638584964844754484">Nesprávna prístupová fráza</translation>
 <translation id="7648422057306047504">Šifrovať heslá pomocou poverení Google</translation>
 <translation id="7649070708921625228">Pomocník</translation>
@@ -638,13 +632,11 @@ Váš účet Google môže mať na adrese <ph name="BEGIN_LINK" />history.google
 <translation id="8428213095426709021">Nastavenia</translation>
 <translation id="8433057134996913067">Táto možnosť vás odhlási z väčšiny webov.</translation>
 <translation id="8447861592752582886">Odvolať povolenie pre zariadenie</translation>
-<translation id="8481940801237642152">Vaše pripojenie k týmto stránkam je súkromné, ale niekto v sieti možno dokáže zmeniť vzhľad danej stránky.</translation>
 <translation id="8487700953926739672">K dispozícii offline</translation>
 <translation id="8493948351860045254">Uvoľniť miesto</translation>
 <translation id="8497726226069778601">Zatiaľ tu nič nie je…</translation>
 <translation id="8503813439785031346">Meno používateľa</translation>
 <translation id="8514577642972634246">Spustiť režim inkognito</translation>
-<translation id="8518901949365209398">Tento web používa slabú konfiguráciu zabezpečenia (podpisy SHA-1). Pripojenie preto nemusí byť súkromné.</translation>
 <translation id="8523928698583292556">Odstrániť uložené heslo</translation>
 <translation id="854522910157234410">Otvoriť túto stránku</translation>
 <translation id="8562452229998620586">Tu sa zobrazia uložené heslá.</translation>
@@ -675,7 +667,6 @@ Váš účet Google môže mať na adrese <ph name="BEGIN_LINK" />history.google
 <translation id="8912362522468806198">účtu Google</translation>
 <translation id="8920114477895755567">Čaká sa na podrobnosti o rodičoch.</translation>
 <translation id="8931159598799892500">Chrome + Fyzický web</translation>
-<translation id="8941248009481596111">Vaše pripojenie k týmto stránkam je súkromné.</translation>
 <translation id="8941729603749328384">www.example.com</translation>
 <translation id="8942627711005830162">Otvoriť v ďalšom okne</translation>
 <translation id="8959122750345127698">Navigácia je nedostupná: <ph name="URL" /></translation>

@@ -89,6 +89,7 @@ Premi il tasto per la ricerca o Maiusc per annullare.</translation>
 <translation id="3294437725009624529">Ospite</translation>
 <translation id="3335772982573114336">Nuova nota</translation>
 <translation id="3364721542077212959">Strumenti per stilo</translation>
+<translation id="3368922792935385530">Connessa</translation>
 <translation id="3371140690572404006">Dispositivo USB-C (porta anteriore destra)</translation>
 <translation id="3445925074670675829">Dispositivo USB-C</translation>
 <translation id="3473479545200714844">Ingrandimento dello schermo</translation>
@@ -125,6 +126,7 @@ Premi il tasto per la ricerca o Maiusc per annullare.</translation>
 <translation id="4250680216510889253">No</translation>
 <translation id="4279490309300973883">Mirroring</translation>
 <translation id="4321179778687042513">ctrl</translation>
+<translation id="4378551569595875038">Connessione...</translation>
 <translation id="4421231901400348175">Condividi il controllo dello schermo con <ph name="HELPER_NAME" /> tramite Assistenza remota.</translation>
 <translation id="4430019312045809116">Volume</translation>
 <translation id="4448844063988177157">Ricerca di reti Wi-Fi in corso...</translation>
@@ -280,4 +282,5 @@ Premi Alt+tasto per la ricerca o Maiusc per annullare.</translation>
 <translation id="923686485342484400">Premi due volte Control Maiusc Q per uscire.</translation>
 <translation id="938582441709398163">Overlay tastiera</translation>
 <translation id="939252827960237676">Salvataggio dello screenshot non riuscito</translation>
+<translation id="952992212772159698">Non attivo</translation>
 </translationbundle>

@@ -89,6 +89,7 @@
 <translation id="3294437725009624529">ゲスト</translation>
 <translation id="3335772982573114336">新しいメモ</translation>
 <translation id="3364721542077212959">タッチペン ツール</translation>
+<translation id="3368922792935385530">接続済み</translation>
 <translation id="3371140690572404006">USB-C デバイス（右手前のポート）</translation>
 <translation id="3445925074670675829">USB-C デバイス</translation>
 <translation id="3473479545200714844">画面拡大鏡</translation>
@@ -125,6 +126,7 @@
 <translation id="4250680216510889253">いいえ</translation>
 <translation id="4279490309300973883">ミラーリングしています</translation>
 <translation id="4321179778687042513">ctrl</translation>
+<translation id="4378551569595875038">接続中...</translation>
 <translation id="4421231901400348175">リモート サポート経由で <ph name="HELPER_NAME" /> と画面の制御を共有しています。</translation>
 <translation id="4430019312045809116">音量</translation>
 <translation id="4448844063988177157">Wi-Fi ネットワークを検出しています...</translation>
@@ -280,4 +282,5 @@ Alt+ 検索/Shift キーを押すと解除されます。</translation>
 <translation id="923686485342484400">ログアウトするには、Ctrl Shift Q を 2 回押します。</translation>
 <translation id="938582441709398163">キーボード オーバーレイ</translation>
 <translation id="939252827960237676">スクリーンショットを保存できませんでした</translation>
+<translation id="952992212772159698">無効</translation>
 </translationbundle>

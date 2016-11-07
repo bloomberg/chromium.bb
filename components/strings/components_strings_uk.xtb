@@ -387,6 +387,7 @@
 <translation id="5171045022955879922">Знайдіть або введіть URL-адресу</translation>
 <translation id="5172758083709347301">Комп’ютер</translation>
 <translation id="5179510805599951267">Це не <ph name="ORIGINAL_LANGUAGE" />? Повідомте про помилку</translation>
+<translation id="5181140330217080051">Завантаження</translation>
 <translation id="5190835502935405962">Панель закладок</translation>
 <translation id="5199729219167945352">Експерименти</translation>
 <translation id="5199841536747119669">Тут відображатимуться пропозиції</translation>
@@ -665,7 +666,6 @@
 <translation id="8498891568109133222">Хост <ph name="HOST_NAME" /> довго не відповідає.</translation>
 <translation id="852346902619691059">Не вдалося підтвердити, що це сервер <ph name="DOMAIN" />. Операційна система вашого пристрою вважає його сертифікат безпеки ненадійним. Імовірні причини: сервер налаштовано неправильно або хтось намагається перехопити ваше з’єднання. <ph name="BEGIN_LEARN_MORE_LINK" />Докладніше<ph name="END_LEARN_MORE_LINK" />.</translation>
 <translation id="8530504477309582336">Цей тип картки не підтримується в Google Payments. Виберіть іншу картку.</translation>
-<translation id="8550022383519221471">Послуга синхронізації недоступна для вашого домену.</translation>
 <translation id="8553075262323480129">Помилка перекладу. Неможливо визначити мову сторінки.</translation>
 <translation id="8559762987265718583">Не вдається встановити конфіденційне з’єднання з <ph name="BEGIN_BOLD" /><ph name="DOMAIN" /><ph name="END_BOLD" />, оскільки на пристрої встановлено неправильні дату й час (<ph name="DATE_AND_TIME" />).</translation>
 <translation id="856992080682148">Термін дії сертифіката для цього сайту закінчується 2017 року. Ланцюжок сертифіката містить сертифікат, підписаний за допомогою SHA-1.</translation>
@@ -673,7 +673,6 @@
 <translation id="8591846766485502580">Ви бачите це повідомлення, оскільки один із ваших батьків заблокував цей сайт.</translation>
 <translation id="859285277496340001">Сертифікат не вказує на механізм перевірки його відкликання.</translation>
 <translation id="8647750283161643317">Скинути все до налаштувань за умовчанням</translation>
-<translation id="8680787084697685621">Дані для входу в обліковий запис застаріли.</translation>
 <translation id="8703575177326907206">Ваше з’єднання з <ph name="DOMAIN" /> не зашифровано.</translation>
 <translation id="8725066075913043281">Повторити спробу</translation>
 <translation id="8728672262656704056">Ви перейшли в режим анонімного перегляду</translation>
@@ -703,7 +702,6 @@
 <translation id="8987927404178983737">Місяць</translation>
 <translation id="8989148748219918422"><ph name="ORGANIZATION" /> [<ph name="COUNTRY" />]</translation>
 <translation id="9001074447101275817">Для проксі <ph name="DOMAIN" /> потрібно ввести ім’я користувача та пароль.</translation>
-<translation id="9008201768610948239">Ігнорувати</translation>
 <translation id="901974403500617787">Позначки, які застосовуються до всієї системи, може встановлювати лише власник: <ph name="OWNER_EMAIL" />.</translation>
 <translation id="9020542370529661692">Цю сторінку перекладено такою мовою: <ph name="TARGET_LANGUAGE" /></translation>
 <translation id="9038649477754266430">Користуйтеся службою передбачення, щоб сторінки завантажувалися швидше</translation>

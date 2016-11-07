@@ -51,7 +51,6 @@
 <translation id="1506061864768559482">Μηχανή αναζήτησης</translation>
 <translation id="1513352483775369820">Σελιδοδείκτες και ιστορικό ιστού</translation>
 <translation id="1513858653616922153">Διαγραφή κωδικού πρόσβασης</translation>
-<translation id="1546112724822176246">Δεν βλέπετε τη συσκευή σας; <ph name="BEGIN_LINK" />Λάβετε βοήθεια<ph name="END_LINK" />.</translation>
 <translation id="1549000191223877751">Μεταβείτε σε άλλο παράθυρο</translation>
 <translation id="1553358976309200471">Ενημερώστε το Chrome</translation>
 <translation id="1571304935088121812">Αντιγραφή ονόματος χρήστη</translation>
@@ -72,7 +71,6 @@
 <translation id="1749561566933687563">Συγχρονίστε τους σελιδοδείκτες σας</translation>
 <translation id="17513872634828108">Ανοικτές καρτέλες</translation>
 <translation id="1756600373018374892">Πατήστε αυτό το κουμπί για γρήγορη πρόσβαση στις καρτέλες σας.</translation>
-<translation id="1774241295142531736">Δεν βλέπετε τη συσκευή σας; <ph name="BEGIN_LINK1" />Λάβετε βοήθεια<ph name="END_LINK1" /> ή <ph name="BEGIN_LINK2" />επαναλάβετε τη σάρωση<ph name="END_LINK2" />.</translation>
 <translation id="1807246157184219062">Ανοιχτόχρωμο</translation>
 <translation id="1825719650605518411">Εμπειρία πρώτης εκτέλεσης</translation>
 <translation id="1826516787628120939">Έλεγχος</translation>
@@ -156,7 +154,6 @@
 <translation id="2707726405694321444">Ανανέωση σελίδας</translation>
 <translation id="2709516037105925701">Αυτόματη συμπλήρωση</translation>
 <translation id="271033894570825754">Νέο</translation>
-<translation id="2748463065602559597">Βλέπετε μια ασφαλή σελίδα του Google Chrome.</translation>
 <translation id="2762000892062317888">μόλις τώρα</translation>
 <translation id="2777555524387840389">Απομένουν <ph name="SECONDS" /> δευτερόλεπτα</translation>
 <translation id="2781151931089541271">Απομένει 1 δευτερόλεπτο</translation>
@@ -233,7 +230,6 @@
 <translation id="3656115297268584622">Ενεργοποίηση της τοποθεσίας στις <ph name="BEGIN_LINK" />Ρυθμίσεις Android<ph name="END_LINK" />.</translation>
 <translation id="3661699943263275414">Οι ιστότοποι τρίτου μέρους μπορούν να αποθηκεύουν και να διαβάζουν δεδομένα cookie</translation>
 <translation id="3672452749423051839">Προτάσεις σφάλματος πλοήγησης</translation>
-<translation id="3690847815241521170">Αναζήτηση συσκευών… <ph name="BEGIN_LINK" />Λάβετε βοήθεια<ph name="END_LINK" /></translation>
 <translation id="3706658020782046159">Επιλέξτε μια διεύθυνση αποστολής, για να ελέγξετε τους τρόπους και τις απαιτήσεις αποστολής.</translation>
 <translation id="3716158070938632480">Υπάρχουν κοντινές ιστοσελίδες</translation>
 <translation id="3738139272394829648">Αγγίξτε για αναζήτηση</translation>
@@ -322,7 +318,6 @@
 <translation id="4807098396393229769">Όνομα στην κάρτα</translation>
 <translation id="4816465935029283692">Τύποι δεδομένων</translation>
 <translation id="4827948050554950725">Προσθήκη πιστωτικής κάρτας</translation>
-<translation id="4836364883164334657">Η σύνδεσή σας με αυτόν τον ιστότοπο δεν είναι ιδιωτική. Ο τομέας <ph name="DOMAIN_NAME" /> ενδέχεται να δέχεται επίθεση από εισβολείς που προσπαθούν να υποκλέψουν τις πληροφορίες σας (για παράδειγμα, φωτογραφίες, κωδικούς πρόσβασης, μηνύματα και πιστωτικές κάρτες).</translation>
 <translation id="4850886885716139402">Προβολή</translation>
 <translation id="4881695831933465202">Άνοιγμα</translation>
 <translation id="4885273946141277891">Μη υποστηριζόμενος αριθμός παρουσιών Chrome.</translation>
@@ -355,6 +350,7 @@
 <translation id="5171045022955879922">Αναζήτηση ή πληκτρολόγηση διεύθυνσης URL</translation>
 <translation id="5184329579814168207">Άνοιγμα στο Chrome</translation>
 <translation id="5199929503336119739">Προφίλ εργασίας</translation>
+<translation id="5209320130288484488">Δεν βρέθηκαν συσκευές</translation>
 <translation id="5210365745912300556">Κλείσιμο καρτέλας</translation>
 <translation id="5222676887888702881">Έξοδος</translation>
 <translation id="5233638681132016545">Νέα καρτέλα</translation>
@@ -389,7 +385,6 @@
 <translation id="5556459405103347317">Επαναφόρτωση</translation>
 <translation id="5565871407246142825">Πιστωτικές κάρτες</translation>
 <translation id="5578795271662203820">Αναζήτηση <ph name="SEARCH_ENGINE" /> για την εικόνα</translation>
-<translation id="5579997910517802656">Δεν βρέθηκαν συσκευές.</translation>
 <translation id="5595485650161345191">Επεξεργασία διεύθυνσης</translation>
 <translation id="5596627076506792578">Περισσότερες επιλογές</translation>
 <translation id="5626134646977739690">Όνομα:</translation>
@@ -418,7 +413,6 @@
 <translation id="583281660410589416">Άγνωστο</translation>
 <translation id="5832934273103296195">Αναπτυγμένη - Κάντε κλικ για σύμπτυξη</translation>
 <translation id="583891442612896534">Το Chrome δεν είναι δυνατό να επικοινωνήσει με τους διακομιστές της Google για συμπίεση δεδομένων. Η εξοικονόμηση δεδομένων πιθανώς να είναι περιορισμένη.</translation>
-<translation id="5843873952582375185">Δεν βρέθηκαν συσκευές Bluetooth. <ph name="BEGIN_LINK" />Επανάληψη σάρωσης<ph name="END_LINK" />.</translation>
 <translation id="585027516397408832">Η Εξοικονόμηση δεδομένων είναι ενεργοποιημένη</translation>
 <translation id="5860033963881614850">Απενεργοποιημένη</translation>
 <translation id="5867027562311576691">Περισσότερα άρθρα θα εμφανιστούν συντομα. Απολαύστε το πρωινό σας.</translation>
@@ -568,9 +562,9 @@
 <translation id="7596558890252710462">Λειτουργικό σύστημα</translation>
 <translation id="7605594153474022051">Ο συγχρονισμός δεν λειτουργεί</translation>
 <translation id="7612619742409846846">Έχετε συνδεθεί στο Google ως</translation>
+<translation id="7613889955535752492">Λήξη: <ph name="EXPIRATION_MONTH" />/<ph name="EXPIRATION_YEAR" /></translation>
 <translation id="7619072057915878432">Η λήψη του αρχείου <ph name="FILE_NAME" /> απέτυχε λόγω προβλημάτων στο δίκτυο.</translation>
 <translation id="7626032353295482388">Καλώς ήρθατε στο Chrome</translation>
-<translation id="7634554953375732414">Η σύνδεσή σας σε αυτόν τον ιστότοπο δεν είναι ιδιωτική.</translation>
 <translation id="7638584964844754484">Εσφαλμένη φράση πρόσβασης</translation>
 <translation id="7648422057306047504">Κρυπτογράφηση κωδικών πρόσβασης με τα διαπιστευτήριά σας Google.</translation>
 <translation id="7649070708921625228">Βοήθεια</translation>
@@ -638,13 +632,11 @@
 <translation id="8428213095426709021">Ρυθμίσεις</translation>
 <translation id="8433057134996913067">Αυτή η ενέργεια θα σας αποσυνδέσει από τους περισσότερους ιστότοπους.</translation>
 <translation id="8447861592752582886">Ανάκληση άδειας συσκευής</translation>
-<translation id="8481940801237642152">Η σύνδεσή σας σε αυτόν τον ιστότοπο είναι ιδιωτική, αλλά κάποιος χρήστης του δικτύου ενδέχεται να έχει τη δυνατότητα να αλλάξει την εμφάνιση της σελίδας.</translation>
 <translation id="8487700953926739672">Διαθέσιμο εκτός σύνδεσης</translation>
 <translation id="8493948351860045254">Ελευθερώστε χώρο</translation>
 <translation id="8497726226069778601">Δεν υπάρχει τίποτα να δείτε εδώ…ακόμη</translation>
 <translation id="8503813439785031346">Όνομα χρήστη</translation>
 <translation id="8514577642972634246">Είσοδος στην κατάσταση ανώνυμης περιήγησης</translation>
-<translation id="8518901949365209398">Αυτός ο ιστότοπος δεν χρησιμοποιεί ισχυρή ρύθμιση παραμέτρων ασφαλείας (υπογραφές SHA-1), επομένως η σύνδεσή σας ενδέχεται να μην είναι απόρρητη.</translation>
 <translation id="8523928698583292556">Διαγραφή αποθηκευμένου κωδικού πρόσβασης</translation>
 <translation id="854522910157234410">Άνοιγμα αυτής της σελίδας</translation>
 <translation id="8562452229998620586">Οι αποθηκευμένοι κωδικοί πρόσβασής σας θα εμφανιστούν εδώ.</translation>
@@ -677,7 +669,6 @@
 <translation id="8912362522468806198">Λογαριασμός Google</translation>
 <translation id="8920114477895755567">Αναμονή για λεπτομέρειες γονέων.</translation>
 <translation id="8931159598799892500">Chrome + Φυσικό δίκτυο</translation>
-<translation id="8941248009481596111">Η σύνδεσή σας σε αυτόν τον ιστότοπο είναι ιδιωτική.</translation>
 <translation id="8941729603749328384">www.example.com</translation>
 <translation id="8942627711005830162">Άνοιγμα σε άλλο παράθυρο</translation>
 <translation id="8959122750345127698">Δεν είναι δυνατή η μετάβαση στη διεύθυνση: <ph name="URL" /></translation>

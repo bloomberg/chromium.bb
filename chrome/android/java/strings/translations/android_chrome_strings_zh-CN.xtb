@@ -51,7 +51,6 @@
 <translation id="1506061864768559482">搜索引擎</translation>
 <translation id="1513352483775369820">书签和网络历史记录</translation>
 <translation id="1513858653616922153">删除密码</translation>
-<translation id="1546112724822176246">没看到您的设备？<ph name="BEGIN_LINK" />寻求帮助<ph name="END_LINK" />。</translation>
 <translation id="1549000191223877751">移至其他窗口</translation>
 <translation id="1553358976309200471">更新 Chrome</translation>
 <translation id="1571304935088121812">复制用户名</translation>
@@ -72,7 +71,6 @@
 <translation id="1749561566933687563">同步您的书签</translation>
 <translation id="17513872634828108">目前打开的标签页</translation>
 <translation id="1756600373018374892">点按此按钮即可快速访问您的标签页。</translation>
-<translation id="1774241295142531736">未看到您的设备？<ph name="BEGIN_LINK1" />获取帮助<ph name="END_LINK1" />或<ph name="BEGIN_LINK2" />重新搜索<ph name="END_LINK2" />。</translation>
 <translation id="1807246157184219062">浅色调</translation>
 <translation id="1825719650605518411">首次运行体验</translation>
 <translation id="1826516787628120939">正在检查</translation>
@@ -156,7 +154,6 @@
 <translation id="2707726405694321444">刷新网页</translation>
 <translation id="2709516037105925701">自动填充</translation>
 <translation id="271033894570825754">新建</translation>
-<translation id="2748463065602559597">您正在查看的是安全的 Google Chrome 浏览器网页。</translation>
 <translation id="2762000892062317888">刚刚</translation>
 <translation id="2777555524387840389">还剩 <ph name="SECONDS" /> 秒</translation>
 <translation id="2781151931089541271">还剩 1 秒</translation>
@@ -233,7 +230,6 @@
 <translation id="3656115297268584622">在 <ph name="BEGIN_LINK" />Android 设置<ph name="END_LINK" />部分开启位置信息服务。</translation>
 <translation id="3661699943263275414">第三方网站可以保存和读取 Cookie 数据</translation>
 <translation id="3672452749423051839">导航错误建议</translation>
-<translation id="3690847815241521170">正在搜索设备…<ph name="BEGIN_LINK" />获取帮助<ph name="END_LINK" /></translation>
 <translation id="3706658020782046159">选择送货地址后才能查看送货方式和要求。</translation>
 <translation id="3716158070938632480">附近有设备在播报网页</translation>
 <translation id="3738139272394829648">触摸搜索</translation>
@@ -322,7 +318,6 @@
 <translation id="4807098396393229769">持卡人姓名</translation>
 <translation id="4816465935029283692">数据类型</translation>
 <translation id="4827948050554950725">添加信用卡</translation>
-<translation id="4836364883164334657">您与此网站之间的连接不是私密连接。攻击者可能会试图从 <ph name="DOMAIN_NAME" /> 窃取您的信息（例如照片、密码、电子邮件和信用卡信息）。</translation>
 <translation id="4850886885716139402">视图</translation>
 <translation id="4881695831933465202">打开</translation>
 <translation id="4885273946141277891">Chrome 实例数量已超出上限。</translation>
@@ -355,6 +350,7 @@
 <translation id="5171045022955879922">搜索或输入网址</translation>
 <translation id="5184329579814168207">在 Chrome 中打开</translation>
 <translation id="5199929503336119739">工作资料</translation>
+<translation id="5209320130288484488">未找到任何设备</translation>
 <translation id="5210365745912300556">关闭标签页</translation>
 <translation id="5222676887888702881">退出</translation>
 <translation id="5233638681132016545">打开新的标签页</translation>
@@ -389,7 +385,6 @@
 <translation id="5556459405103347317">重新加载</translation>
 <translation id="5565871407246142825">信用卡</translation>
 <translation id="5578795271662203820">在<ph name="SEARCH_ENGINE" />中搜索此图片</translation>
-<translation id="5579997910517802656">找不到设备。</translation>
 <translation id="5595485650161345191">修改地址</translation>
 <translation id="5596627076506792578">更多选项</translation>
 <translation id="5626134646977739690">名字：</translation>
@@ -418,7 +413,6 @@
 <translation id="583281660410589416">未知</translation>
 <translation id="5832934273103296195">已展开 - 点击即可折叠</translation>
 <translation id="583891442612896534">Chrome 无法连接到 Google 服务器来进行数据压缩，因此您节省的数据流量可能有限。</translation>
-<translation id="5843873952582375185">未找到任何蓝牙设备。<ph name="BEGIN_LINK" />重新搜索<ph name="END_LINK" /></translation>
 <translation id="585027516397408832">流量节省程序已启用</translation>
 <translation id="5860033963881614850">关闭</translation>
 <translation id="5867027562311576691">更多报道即将奉上。伴您度过美好的晨间时光。</translation>
@@ -568,9 +562,9 @@
 <translation id="7596558890252710462">操作系统</translation>
 <translation id="7605594153474022051">同步功能无法正常运行</translation>
 <translation id="7612619742409846846">已使用以下帐户登录 Google：</translation>
+<translation id="7613889955535752492">过期时间：<ph name="EXPIRATION_YEAR" /> 年 <ph name="EXPIRATION_MONTH" /> 月</translation>
 <translation id="7619072057915878432">未能成功下载 <ph name="FILE_NAME" />，因为出现了网络故障。</translation>
 <translation id="7626032353295482388">欢迎使用 Chrome</translation>
-<translation id="7634554953375732414">您与此网站建立的不是私密连接。</translation>
 <translation id="7638584964844754484">密码不正确</translation>
 <translation id="7648422057306047504">使用 Google 凭据加密密码</translation>
 <translation id="7649070708921625228">帮助</translation>
@@ -638,13 +632,11 @@
 <translation id="8428213095426709021">设置</translation>
 <translation id="8433057134996913067">这将使您退出大多数网站。</translation>
 <translation id="8447861592752582886">撤消设备权限</translation>
-<translation id="8481940801237642152">您与此网站建立的是私密连接，但网络上的某些用户也许能更改此网页的外观。</translation>
 <translation id="8487700953926739672">可离线查看</translation>
 <translation id="8493948351860045254">释放空间</translation>
 <translation id="8497726226069778601">目前还未列出任何网页…</translation>
 <translation id="8503813439785031346">用户名</translation>
 <translation id="8514577642972634246">进入隐身模式</translation>
-<translation id="8518901949365209398">此网站使用了安全系数较低的安全配置（SHA-1 签名），因此您的连接可能不具有私密性。</translation>
 <translation id="8523928698583292556">删除存储的密码</translation>
 <translation id="854522910157234410">打开此网页</translation>
 <translation id="8562452229998620586">已保存的密码将显示在这里。</translation>
@@ -677,7 +669,6 @@
 <translation id="8912362522468806198">Google 帐户</translation>
 <translation id="8920114477895755567">正在等待获取家长的详细信息。</translation>
 <translation id="8931159598799892500">Chrome + 实物网</translation>
-<translation id="8941248009481596111">您与此网站建立的是私密连接。</translation>
 <translation id="8941729603749328384">www.example.com</translation>
 <translation id="8942627711005830162">在其他窗口中打开</translation>
 <translation id="8959122750345127698">无法访问 <ph name="URL" /></translation>

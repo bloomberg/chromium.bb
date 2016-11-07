@@ -89,6 +89,7 @@ Druk op Zoeken of Shift om te annuleren.</translation>
 <translation id="3294437725009624529">Gast</translation>
 <translation id="3335772982573114336">Nieuwe notitie</translation>
 <translation id="3364721542077212959">Stylustools</translation>
+<translation id="3368922792935385530">Verbonden</translation>
 <translation id="3371140690572404006">USB-C-apparaat (poort rechts aan de voorkant)</translation>
 <translation id="3445925074670675829">USB-C-apparaat</translation>
 <translation id="3473479545200714844">Vergrootglas</translation>
@@ -125,6 +126,7 @@ Druk op Zoeken of Shift om te annuleren.</translation>
 <translation id="4250680216510889253">Nee</translation>
 <translation id="4279490309300973883">Mirroring</translation>
 <translation id="4321179778687042513">ctrl</translation>
+<translation id="4378551569595875038">Verbinden...</translation>
 <translation id="4421231901400348175">De controle over je scherm wordt gedeeld met <ph name="HELPER_NAME" /> via externe ondersteuning.</translation>
 <translation id="4430019312045809116">Volume</translation>
 <translation id="4448844063988177157">Zoeken naar wifi-netwerken...</translation>
@@ -280,4 +282,5 @@ Druk op Alt+Zoeken of Shift om te annuleren.</translation>
 <translation id="923686485342484400">Druk twee keer op Control+Shift+Q om uit te loggen.</translation>
 <translation id="938582441709398163">Overlay voor toetsenbord</translation>
 <translation id="939252827960237676">Kan screenshot niet opslaan</translation>
+<translation id="952992212772159698">Niet geactiveerd</translation>
 </translationbundle>

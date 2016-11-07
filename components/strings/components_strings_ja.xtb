@@ -387,6 +387,7 @@
 <translation id="5171045022955879922">検索または URL を入力</translation>
 <translation id="5172758083709347301">マシン</translation>
 <translation id="5179510805599951267"><ph name="ORIGINAL_LANGUAGE" />でない場合はこのエラーを報告する</translation>
+<translation id="5181140330217080051">ダウンロードしています</translation>
 <translation id="5190835502935405962">ブックマーク バー</translation>
 <translation id="5199729219167945352">試験運用機能</translation>
 <translation id="5199841536747119669">おすすめのコンテンツがここに表示されます</translation>
@@ -665,7 +666,6 @@
 <translation id="8498891568109133222"><ph name="HOST_NAME" /> からの応答時間が長すぎます。</translation>
 <translation id="852346902619691059">このサーバーが <ph name="DOMAIN" /> であることを確認できませんでした。このサーバーのセキュリティ証明書は、ご使用のデバイスのオペレーティング システムによって信頼されているものではありません。原因として、設定が不適切であるか、悪意のあるユーザーが接続を妨害していることが考えられます。<ph name="BEGIN_LEARN_MORE_LINK" />詳細<ph name="END_LEARN_MORE_LINK" /></translation>
 <translation id="8530504477309582336">この種類のカードは Google ペイメントでご利用いただけません。別のカードを選択してください。</translation>
-<translation id="8550022383519221471">お客様のドメインでは同期サービスをご利用いただけません。</translation>
 <translation id="8553075262323480129">ページの言語を検出できないため翻訳できません。</translation>
 <translation id="8559762987265718583">デバイスの日時（<ph name="DATE_AND_TIME" />）が正しくないため、<ph name="BEGIN_BOLD" /><ph name="DOMAIN" /><ph name="END_BOLD" /> へのプライベート接続を確立できません。</translation>
 <translation id="856992080682148">このサイトの証明書は 2017 年またはそれ以降まで有効で、証明書チェーンには SHA-1 を使って署名された証明書が含まれています。</translation>
@@ -673,7 +673,6 @@
 <translation id="8591846766485502580">このサイトは保護者によってブロックされています。</translation>
 <translation id="859285277496340001">この証明書には、取り消されたかどうかを確認する方法が指定されていません。</translation>
 <translation id="8647750283161643317">すべてデフォルトに戻す</translation>
-<translation id="8680787084697685621">アカウントのログイン情報が古くなっています。</translation>
 <translation id="8703575177326907206"><ph name="DOMAIN" /> への接続は暗号化されていません。</translation>
 <translation id="8725066075913043281">やり直し</translation>
 <translation id="8728672262656704056">シークレット モードです</translation>
@@ -703,7 +702,6 @@
 <translation id="8987927404178983737">月</translation>
 <translation id="8989148748219918422"><ph name="ORGANIZATION" /> [<ph name="COUNTRY" />]</translation>
 <translation id="9001074447101275817">プロキシ <ph name="DOMAIN" /> にはユーザー名とパスワードを指定する必要があります。</translation>
-<translation id="9008201768610948239">無視する</translation>
 <translation id="901974403500617787">システム全体に適用されるフラグは所有者（<ph name="OWNER_EMAIL" />）のみが設定できます。</translation>
 <translation id="9020542370529661692">このページは<ph name="TARGET_LANGUAGE" />に翻訳されています</translation>
 <translation id="9038649477754266430">予測サービスを使用してページをより迅速に読み込む</translation>

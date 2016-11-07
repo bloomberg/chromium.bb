@@ -50,6 +50,7 @@
 <translation id="1491663344921578213">आप इस समय <ph name="SITE" /> पर विज़िट नहीं कर सकते क्योंकि वेबसाइट प्रमाणपत्र पिनिंग का उपयोग करती है. नेटवर्क की गड़बड़ियां और हमले आमतौर पर अस्थायी होते हैं, इसलिए संभवत: यह पृष्ठ बाद में काम करेगा. <ph name="BEGIN_LEARN_MORE_LINK" />अधिक जानें<ph name="END_LEARN_MORE_LINK" />.</translation>
 <translation id="1506687042165942984">इस पृष्‍ठ की सहेजी गई (अर्थात जिसे पुराना माना जाता है) कॉपी दिखाएं.</translation>
 <translation id="1519264250979466059">बिल्ड दिनांक</translation>
+<translation id="153384715582417236">अभी के लिए हो गया</translation>
 <translation id="1549470594296187301">इस सुविधा का उपयोग करने के लिए JavaScript को सक्षम किया जाना चाहिए.</translation>
 <translation id="1559528461873125649">कोई ऐसी फ़ाइल या निर्देशिका नहीं है</translation>
 <translation id="1559572115229829303">&lt;p&gt;<ph name="BEGIN_BOLD" /><ph name="DOMAIN" /><ph name="END_BOLD" /> से निजी कनेक्‍शन स्‍थापित नहीं किया जा सकता क्‍योंकि आपके डिवाइस का दिनांक और समय (<ph name="DATE_AND_TIME" />) गलत है.&lt;/p&gt;
@@ -386,8 +387,10 @@
 <translation id="5171045022955879922">URL खोजें या लिखें</translation>
 <translation id="5172758083709347301">मशीन</translation>
 <translation id="5179510805599951267"><ph name="ORIGINAL_LANGUAGE" /> में नहीं है? इस त्रुटि की रिपोर्ट करें</translation>
+<translation id="5181140330217080051">डाउनलोड हो रहा है</translation>
 <translation id="5190835502935405962">बुकमार्क बार</translation>
 <translation id="5199729219167945352">प्रयोग</translation>
+<translation id="5199841536747119669">आपके सुझाव यहां दिखाई देते हैं</translation>
 <translation id="5251803541071282808">क्लाउड</translation>
 <translation id="5277279256032773186">कार्यस्थल पर Chrome का उपयोग कर रहे हैं? कंपनियां अपने कर्मचारियों के लिए Chrome सेटिंग प्रबंधित कर सकती हैं. और जानें</translation>
 <translation id="5299298092464848405">नीति पार्स करने में त्रुटि</translation>
@@ -467,6 +470,7 @@
 <translation id="6263376278284652872"><ph name="DOMAIN" /> बुकमार्क</translation>
 <translation id="6264485186158353794">सुरक्षा पर वापस</translation>
 <translation id="6282194474023008486">डाक कोड</translation>
+<translation id="6290238015253830360">आपके सुझाए गए लेख यहां दिखाई देते हैं</translation>
 <translation id="6305205051461490394"><ph name="URL" /> तक नहीं पहुंचा जा सकता.</translation>
 <translation id="6321917430147971392">अपनी DNS सेटिंग जांचें</translation>
 <translation id="6328639280570009161">नेटवर्क पूर्वानुमान को अक्षम करके देखें</translation>
@@ -648,6 +652,7 @@
 <translation id="8363502534493474904">हवाई जहाज़ मोड बंद करें</translation>
 <translation id="8364627913115013041">सेट नहीं है.</translation>
 <translation id="8380941800586852976">खतरनाक</translation>
+<translation id="8382348898565613901">हाल ही में विज़िट किए गए आपके बुकमार्क यहां दिखाई देते हैं</translation>
 <translation id="8412145213513410671">क्रैश (<ph name="CRASH_COUNT" />)</translation>
 <translation id="8412392972487953978">आपको वही पासफ़्रेज़ दोबारा दर्ज करना होगा.</translation>
 <translation id="8428213095426709021">सेटिंग्स</translation>
@@ -659,7 +664,6 @@
 <translation id="8498891568109133222"><ph name="HOST_NAME" /> ने प्रतिसाद देने में अत्यधिक समय लिया.</translation>
 <translation id="852346902619691059">यह सर्वर प्रमाणित नहीं कर सका कि यह <ph name="DOMAIN" /> है; इसका सुरक्षा प्रमाणपत्र आपके कंप्यूटर के ऑपरेटिंग सिस्टम द्वारा विश्वसनीय नहीं है. ऐसा गलत कॉन्फ़िगरेशन के कारण या किसी हमलावर द्वारा आपके कनेक्शन में बाधा डालने के कारण हो सकता है. <ph name="BEGIN_LEARN_MORE_LINK" />अधिक जानें<ph name="END_LEARN_MORE_LINK" />.</translation>
 <translation id="8530504477309582336">कार्ड का यह प्रकार Google पेमेंट्स द्वारा समर्थित नहीं है. कृपया कोई भिन्न कार्ड चुनें.</translation>
-<translation id="8550022383519221471">आपके डोमेन के लिए समन्‍वयन सेवा उपलब्‍ध नहीं है.</translation>
 <translation id="8553075262323480129">अनुवाद विफल हो गया क्योंकि पृष्ठ की भाषा निर्धारित नहीं की जा सकी.</translation>
 <translation id="8559762987265718583"><ph name="BEGIN_BOLD" /><ph name="DOMAIN" /><ph name="END_BOLD" /> से एक निजी कनेक्‍शन स्‍थापित नहीं किया जा सकता क्‍योंकि आपके डिवाइस का दिनांक और समय (<ph name="DATE_AND_TIME" />) गलत है.</translation>
 <translation id="856992080682148">इस साइट के लिए प्रमाणपत्र की समय-सीमा 2017 या उसके बाद समाप्त होगी और प्रमाणपत्र की श्रृंखला में, SHA-1 का उपयोग करके हस्ताक्षर किया गया प्रमाणपत्र शामिल है.</translation>
@@ -667,7 +671,6 @@
 <translation id="8591846766485502580">आपको यह संदेश इसलिए दिखाई दे रहा है क्योंकि आपके किसी अभिभावक ने यह साइट अवरुद्ध कर दी है.</translation>
 <translation id="859285277496340001">प्रमाणपत्र यह जांचने के लिए कोई तंत्र निर्दिष्‍ट नहीं करता कि इसे रद्द कर दिया गया है या नहीं.</translation>
 <translation id="8647750283161643317">सभी को डिफ़ॉल्ट पर रीसेट करें</translation>
-<translation id="8680787084697685621">खाता साइन-इन विवरण पुराने हैं.</translation>
 <translation id="8703575177326907206"><ph name="DOMAIN" /> से आपके कनेक्शन को एन्क्रिप्ट नहीं किया गया है.</translation>
 <translation id="8725066075913043281">पुन: प्रयास करें</translation>
 <translation id="8728672262656704056">आप गुप्त मोड में चले गए हैं</translation>
@@ -697,7 +700,6 @@
 <translation id="8987927404178983737">माह</translation>
 <translation id="8989148748219918422"><ph name="ORGANIZATION" /> [<ph name="COUNTRY" />]</translation>
 <translation id="9001074447101275817">प्रॉक्‍सी <ph name="DOMAIN" /> के लिए उपयोगकर्ता नाम और पासवर्ड की आवश्यकता है.</translation>
-<translation id="9008201768610948239">ध्यान न दें</translation>
 <translation id="901974403500617787">सिस्टम-व्यापी रूप से लागू होने वाले फ़्लैग केवल मालिक द्वारा ही सेट किए जा सकते हैं: <ph name="OWNER_EMAIL" />.</translation>
 <translation id="9020542370529661692">इस पृष्ठ का <ph name="TARGET_LANGUAGE" /> में अनुवाद कर दिया गया है</translation>
 <translation id="9038649477754266430">अधिक तेज़ी से पृष्ठ लोड करने के लिए किसी पूर्वानुमान सेवा का उपयोग करें</translation>

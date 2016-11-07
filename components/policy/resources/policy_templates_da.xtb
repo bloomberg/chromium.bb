@@ -741,7 +741,7 @@ Hvis kompatabilitet med en fejlbehæftet server skal opretholdes, kan denne poli
       Hvis du aktiverer eller deaktiverer denne indstilling, kan brugerne ikke ændre eller tilsidesætte denne indstilling i <ph name="PRODUCT_NAME" />.
 
       Hvis denne politik ikke angives, aktiveres dette, men brugerne vil kunne ændre det.</translation>
-<translation id="3292147213643666827">Aktiverer <ph name="PRODUCT_NAME" /> til at fungere som proxy mellem <ph name="CLOUD_PRINT_NAME" /> og printere, der er sluttet til maskinen.
+<translation id="3292147213643666827">Aktiverer <ph name="PRODUCT_NAME" /> til at fungere som proxy mellem <ph name="CLOUD_PRINT_NAME" /> og forældede printere, der er sluttet til maskinen.
 
       Hvis indstillingen er aktiveret eller ikke konfigureret, kan brugerne aktivere proxyen til Cloudprinter ved at godkende med deres Google-konto.
 

@@ -89,6 +89,7 @@ Pritisnite tipke Pretraživanje ili Shift da biste ju isključili.</translation>
 <translation id="3294437725009624529">Gost</translation>
 <translation id="3335772982573114336">Nova bilješka</translation>
 <translation id="3364721542077212959">Alati pisaljke</translation>
+<translation id="3368922792935385530">Spojeno</translation>
 <translation id="3371140690572404006">USB-C uređaj (prednji desni priključak)</translation>
 <translation id="3445925074670675829">USB-C uređaj</translation>
 <translation id="3473479545200714844">Povećalo</translation>
@@ -125,6 +126,7 @@ Pritisnite tipke Pretraživanje ili Shift da biste ju isključili.</translation>
 <translation id="4250680216510889253">Ne</translation>
 <translation id="4279490309300973883">Zrcaljenje</translation>
 <translation id="4321179778687042513">ctrl</translation>
+<translation id="4378551569595875038">Povezivanje...</translation>
 <translation id="4421231901400348175"><ph name="HELPER_NAME" /> i vi dijelite kontrolu nad zaslonom putem Daljinske pomoći.</translation>
 <translation id="4430019312045809116">Glasnoća</translation>
 <translation id="4448844063988177157">Traženje Wi-Fi mreža...</translation>
@@ -280,4 +282,5 @@ Pritisnite tipke Alt + Pretraživanje ili Shift da biste ju isključili.</transl
 <translation id="923686485342484400">Pritisnite Ctrl, Shift i Q dvaput da biste se odjavili.</translation>
 <translation id="938582441709398163">Preklapanje tipkovnice</translation>
 <translation id="939252827960237676">Snimka zaslona nije spremljena</translation>
+<translation id="952992212772159698">Nije aktivirano</translation>
 </translationbundle>

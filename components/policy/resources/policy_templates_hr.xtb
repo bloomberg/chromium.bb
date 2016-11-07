@@ -19,6 +19,9 @@
       Kada se pravilo postavi na "false" ili se ne postavi, kolačići koje postavi IdP prenose se na profil korisnika samo prilikom prve prijave na uređaj.
 
       To pravilo utječe samo na korisnike čija se domena podudara s domenom upisa uređaja. Za sve ostale korisnike kolačići koje postavi IdP prenose se na profil korisnika samo prilikom prve prijave na uređaj.</translation>
+<translation id="1029536946382325801">Ako je postavljeno na točno, korisnik može upotrebljavati hardver na Chrome uređajima za daljinsko atestiranje identiteta pri agenciji za certifikat privatnosti putem API-ja Enterprise Platform Keys chrome.enterprise.platformKeys.challengeUserKey().
+
+          Ako je postavljeno na netočno ili ako nije postavljeno, pozivi API-ju vraćat će kôd pogreške.</translation>
 <translation id="1040446814317236570">Omogući uklanjanje dijelova URL-a za PAC (za https://)</translation>
 <translation id="1044878202534415707">Izvješćivanje o statističkim podacima o hardveru, primjerice, o upotrebi procesora/RAM-a.
 
@@ -928,6 +931,9 @@
 
       Ako se to pravilo postavi na True, slat će se mrežni paketi za praćenje (takozvani <ph name="HEARTBEATS_TERM" />).
       Ako se postavi na False ili se ne postavi, paketi se neće slati.</translation>
+<translation id="3963602271515417124">Ako je točno, daljinsko atestiranje dopušteno je za uređaj i certifikat će se automatski generirati i prenijeti na poslužitelj za upravljanje uređajem.
+
+          Ako se postavi na netočno ili se ne postavi, certifikat se neće generirati i pozivi API-ju proširenja enterprise.platformKeys neće uspjeti.</translation>
 <translation id="3964909636571393861">Omogućuje pristup popisu URL-ova</translation>
 <translation id="3965339130942650562">Privremeni prekid do izvršavanja odjave korisnika u stanju mirovanja</translation>
 <translation id="3967075520570946456">Omogućivanje prikazivanja stranice dobrodošlice prilikom prvog pokretanja preglednika nakon nadogradnje OS-a.</translation>
@@ -2099,6 +2105,9 @@ Ako omogućite tu postavku, <ph name="PRODUCT_NAME" /> zanemarivat će sve opcij
           domeni Active Directoryja.</translation>
 <translation id="7937766917976512374">Omogući ili onemogući snimanje videozapisa</translation>
 <translation id="7941975817681987555">Ne predviđaj mrežne radnje ni na jednoj mrežnoj vezi</translation>
+<translation id="7942429005743031780">To pravilo određuje dopuštena proširenja za upotrebu API-ja Enterprise Platform Keys API chrome.enterprise.platformKeys.challengeUserKey() za daljinsko atestiranje. Proširenja se moraju dodati na taj popis da bi upotrebljavala taj API.
+
+          Ako proširenje nije na popisu ili ako popis nije postavljen, poziv API-ju vratit će kôd pogreške.</translation>
 <translation id="7953256619080733119">Hostovi ručnih iznimaka upravljanih korisnika</translation>
 <translation id="7971839631300653352">SSL 3.0</translation>
 <translation id="7974114691960514888">Ovo pravilo više se ne podržava. Omogućuje upotrebu STUN i relejnih poslužitelja prilikom povezivanja s udaljenim klijentom. Ako je ova postavka omogućena, onda ovo računalo može otkriti udaljena računala hostove i povezati se s njima, čak i ako su odvojena vatrozidom. Ako je ova postavka onemogućena, a izlazne UDP veze filtrirane su vatrozidom, onda se ovo računalo može jedino povezati s računalima hostovima unutar lokalne mreže.</translation>

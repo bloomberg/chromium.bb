@@ -387,6 +387,7 @@
 <translation id="5171045022955879922">Pesquisar ou digitar URL</translation>
 <translation id="5172758083709347301">Máquina</translation>
 <translation id="5179510805599951267">Não está em <ph name="ORIGINAL_LANGUAGE" />? Informe este erro</translation>
+<translation id="5181140330217080051">Fazendo download</translation>
 <translation id="5190835502935405962">Barra de favoritos</translation>
 <translation id="5199729219167945352">Experimentos</translation>
 <translation id="5199841536747119669">Suas sugestões aparecerão aqui</translation>
@@ -665,7 +666,6 @@ Dica: o modo de navegação anônimo <ph name="SHORTCUT_KEY" /> pode ser útil d
 <translation id="8498891568109133222"><ph name="HOST_NAME" /> demorou muito para responder.</translation>
 <translation id="852346902619691059">Este servidor não conseguiu provar que é <ph name="DOMAIN" />. O certificado de segurança dele não é confiável para o sistema operacional do seu dispositivo. Isso pode ser causado por uma configuração incorreta ou por um invasor que interceptou sua conexão. <ph name="BEGIN_LEARN_MORE_LINK" />Saiba mais<ph name="END_LEARN_MORE_LINK" />.</translation>
 <translation id="8530504477309582336">Este tipo de cartão não é aceito pelo Google Payments. Selecione outro cartão.</translation>
-<translation id="8550022383519221471">O serviço de sincronização não está disponível para seu domínio.</translation>
 <translation id="8553075262323480129">A tradução falhou porque não foi possível determinar o idioma da página.</translation>
 <translation id="8559762987265718583">Não é possível estabelecer uma conexão privada com <ph name="BEGIN_BOLD" /><ph name="DOMAIN" /><ph name="END_BOLD" />, porque a data e a hora do seu dispositivo (<ph name="DATE_AND_TIME" />) estão incorretas.</translation>
 <translation id="856992080682148">O certificado deste site expira em 2017 ou posteriormente. A cadeia de certificados contém um certificado assinado com SHA-1.</translation>
@@ -673,7 +673,6 @@ Dica: o modo de navegação anônimo <ph name="SHORTCUT_KEY" /> pode ser útil d
 <translation id="8591846766485502580">Esta mensagem está sendo exibida porque seu pai ou sua mãe bloqueou este site.</translation>
 <translation id="859285277496340001">O certificado não especifica um mecanismo para verificar se ele foi revogado.</translation>
 <translation id="8647750283161643317">Redefinir tudo para o padrão</translation>
-<translation id="8680787084697685621">Os detalhes de login da conta estão desatualizados.</translation>
 <translation id="8703575177326907206">Sua conexão com <ph name="DOMAIN" /> não está criptografada.</translation>
 <translation id="8725066075913043281">Tentar novamente</translation>
 <translation id="8728672262656704056">Você entrou no modo de navegação anônima</translation>
@@ -703,7 +702,6 @@ Dica: o modo de navegação anônimo <ph name="SHORTCUT_KEY" /> pode ser útil d
 <translation id="8987927404178983737">Mês</translation>
 <translation id="8989148748219918422"><ph name="ORGANIZATION" /> [<ph name="COUNTRY" />]</translation>
 <translation id="9001074447101275817">O proxy <ph name="DOMAIN" /> exige um nome de usuário e uma senha.</translation>
-<translation id="9008201768610948239">Ignorar</translation>
 <translation id="901974403500617787">Sinalizações aplicáveis a todo o sistema podem ser definidas apenas pelo proprietário: <ph name="OWNER_EMAIL" />.</translation>
 <translation id="9020542370529661692">Esta página foi traduzida para <ph name="TARGET_LANGUAGE" /></translation>
 <translation id="9038649477754266430">Usar um serviço de previsão para carregar páginas mais rapidamente</translation>

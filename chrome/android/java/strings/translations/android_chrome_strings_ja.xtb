@@ -51,7 +51,6 @@
 <translation id="1506061864768559482">検索エンジン</translation>
 <translation id="1513352483775369820">ブックマークとウェブ履歴</translation>
 <translation id="1513858653616922153">パスワードを削除</translation>
-<translation id="1546112724822176246">お使いの端末が表示されない場合は、<ph name="BEGIN_LINK" />ヘルプ<ph name="END_LINK" />をご覧ください。</translation>
 <translation id="1549000191223877751">他のウィンドウに移動</translation>
 <translation id="1553358976309200471">Chrome を更新</translation>
 <translation id="1571304935088121812">ユーザー名をコピー</translation>
@@ -72,7 +71,6 @@
 <translation id="1749561566933687563">ブックマークの同期</translation>
 <translation id="17513872634828108">開いているタブ</translation>
 <translation id="1756600373018374892">このボタンをタップして簡単にタブに移動できます。</translation>
-<translation id="1774241295142531736">ご使用のデバイスが見つからない場合は、<ph name="BEGIN_LINK1" />ヘルプを確認<ph name="END_LINK1" />するか、<ph name="BEGIN_LINK2" />再スキャン<ph name="END_LINK2" />してください。</translation>
 <translation id="1807246157184219062">明</translation>
 <translation id="1825719650605518411">初回実行時のエクスペリエンス</translation>
 <translation id="1826516787628120939">確認中</translation>
@@ -156,7 +154,6 @@
 <translation id="2707726405694321444">ページを更新</translation>
 <translation id="2709516037105925701">自動入力</translation>
 <translation id="271033894570825754">新しいファイル</translation>
-<translation id="2748463065602559597">Google Chrome の安全なページを表示しています。</translation>
 <translation id="2762000892062317888">たった今</translation>
 <translation id="2777555524387840389">残り <ph name="SECONDS" /> 秒</translation>
 <translation id="2781151931089541271">残り 1 秒</translation>
@@ -233,7 +230,6 @@
 <translation id="3656115297268584622"><ph name="BEGIN_LINK" />Android 設定<ph name="END_LINK" />で位置情報サービスを有効にしてください。</translation>
 <translation id="3661699943263275414">サードパーティのウェブサイトに Cookie データの保存と読み取りを許可する</translation>
 <translation id="3672452749423051839">アクセスエラー時の候補表示</translation>
-<translation id="3690847815241521170">デバイスをスキャンしています… <ph name="BEGIN_LINK" />ヘルプ<ph name="END_LINK" /></translation>
 <translation id="3706658020782046159">配送方法や要件を確認するには、配送先住所を選択します。</translation>
 <translation id="3716158070938632480">ウェブページが近くにあります</translation>
 <translation id="3738139272394829648">タップして検索</translation>
@@ -322,7 +318,6 @@
 <translation id="4807098396393229769">名義人名</translation>
 <translation id="4816465935029283692">データタイプ</translation>
 <translation id="4827948050554950725">クレジット カードを追加</translation>
-<translation id="4836364883164334657">このサイトへの接続はプライベート接続ではありません。悪意のあるユーザーが、<ph name="DOMAIN_NAME" /> 上のあなたの情報（写真、パスワード、メッセージ、クレジット カード番号など）を不正に取得しようとしている可能性があります。</translation>
 <translation id="4850886885716139402">表示</translation>
 <translation id="4881695831933465202">開く</translation>
 <translation id="4885273946141277891">Chrome のインスタンス数の上限を超えています。</translation>
@@ -355,6 +350,7 @@
 <translation id="5171045022955879922">検索または URL を入力</translation>
 <translation id="5184329579814168207">Chromeで開く</translation>
 <translation id="5199929503336119739">仕事用プロファイル</translation>
+<translation id="5209320130288484488">デバイスが見つかりませんでした</translation>
 <translation id="5210365745912300556">タブを閉じる</translation>
 <translation id="5222676887888702881">ログアウト</translation>
 <translation id="5233638681132016545">新しいタブ</translation>
@@ -389,7 +385,6 @@
 <translation id="5556459405103347317">再読み込み</translation>
 <translation id="5565871407246142825">クレジットカード</translation>
 <translation id="5578795271662203820">この画像を <ph name="SEARCH_ENGINE" /> で検索</translation>
-<translation id="5579997910517802656">デバイスが見つかりませんでした。</translation>
 <translation id="5595485650161345191">住所の編集</translation>
 <translation id="5596627076506792578">その他のオプション</translation>
 <translation id="5626134646977739690">名前:</translation>
@@ -418,7 +413,6 @@
 <translation id="583281660410589416">不明</translation>
 <translation id="5832934273103296195">展開状態 - クリックして折りたたみ</translation>
 <translation id="583891442612896534">データ圧縮のために Chrome から Google サーバーにアクセスすることができません。データ使用量をあまり削減できない可能性があります。</translation>
-<translation id="5843873952582375185">Bluetooth デバイスが見つかりませんでした。<ph name="BEGIN_LINK" />再スキャン<ph name="END_LINK" /></translation>
 <translation id="585027516397408832">データセーバーが有効です</translation>
 <translation id="5860033963881614850">オフ</translation>
 <translation id="5867027562311576691">まもなく朝の記事が追加されます。</translation>
@@ -568,9 +562,9 @@
 <translation id="7596558890252710462">オペレーティング システム</translation>
 <translation id="7605594153474022051">同期が機能していません</translation>
 <translation id="7612619742409846846">次のユーザーとして Google にログインしています:</translation>
+<translation id="7613889955535752492">有効期限: <ph name="EXPIRATION_MONTH" /> / <ph name="EXPIRATION_YEAR" /></translation>
 <translation id="7619072057915878432">ネットワーク障害が発生したため、<ph name="FILE_NAME" /> をダウンロードできませんでした。</translation>
 <translation id="7626032353295482388">Chrome にようこそ</translation>
-<translation id="7634554953375732414">このサイトへの接続はプライベート接続ではありません。</translation>
 <translation id="7638584964844754484">パスフレーズが正しくありません</translation>
 <translation id="7648422057306047504">Google の認証情報でパスワードを暗号化する</translation>
 <translation id="7649070708921625228">ヘルプ</translation>
@@ -638,13 +632,11 @@
 <translation id="8428213095426709021">設定</translation>
 <translation id="8433057134996913067">ほとんどのウェブサイトからログアウトします。</translation>
 <translation id="8447861592752582886">端末の許可を取り消します</translation>
-<translation id="8481940801237642152">このサイトへの接続はプライベート接続です。ただし、ネットワーク上のユーザーがこのページのデザインを変更できる可能性はあります。</translation>
 <translation id="8487700953926739672">オフラインでの利用</translation>
 <translation id="8493948351860045254">容量を空ける</translation>
 <translation id="8497726226069778601">表示するものがまだありません</translation>
 <translation id="8503813439785031346">ユーザー名</translation>
 <translation id="8514577642972634246">シークレット モードを開始</translation>
-<translation id="8518901949365209398">このサイトのセキュリティは弱いため（SHA-1 署名）、接続時にプライバシーが保護されない可能性があります。</translation>
 <translation id="8523928698583292556">保存したパスワードを削除</translation>
 <translation id="854522910157234410">このページを開く</translation>
 <translation id="8562452229998620586">保存したパスワードはこちらに表示されます。</translation>
@@ -677,7 +669,6 @@
 <translation id="8912362522468806198">Google アカウントを使用</translation>
 <translation id="8920114477895755567">保護者の情報を待っています。</translation>
 <translation id="8931159598799892500">Chrome + フィジカル ウェブ</translation>
-<translation id="8941248009481596111">このサイトへの接続はプライベート接続です。</translation>
 <translation id="8941729603749328384">www.example.com</translation>
 <translation id="8942627711005830162">別のウィンドウで開く</translation>
 <translation id="8959122750345127698"><ph name="URL" /> にアクセスできません</translation>

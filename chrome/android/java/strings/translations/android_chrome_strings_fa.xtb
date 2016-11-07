@@ -51,7 +51,6 @@
 <translation id="1506061864768559482">موتور جستجو</translation>
 <translation id="1513352483775369820">نشانک‌ها و سابقه وب</translation>
 <translation id="1513858653616922153">حذف گذرواژه</translation>
-<translation id="1546112724822176246">دستگاهتان را نمی‌بینید؟ <ph name="BEGIN_LINK" />راهنمایی دریافت کنید<ph name="END_LINK" />.</translation>
 <translation id="1549000191223877751">انتقال به پنجره دیگر</translation>
 <translation id="1553358976309200471">‏به‌روزرسانی Chrome</translation>
 <translation id="1571304935088121812">کپی کردن نام کاربری</translation>
@@ -72,7 +71,6 @@
 <translation id="1749561566933687563">همگام‌سازی نشانک‌ها</translation>
 <translation id="17513872634828108">بازکردن برگه‌ها</translation>
 <translation id="1756600373018374892">برای دسترسی سریع به برگه‌هایتان، روی این دکمه ضربه بزنید.</translation>
-<translation id="1774241295142531736">دستگاهتان را نمی‌بینید؟ <ph name="BEGIN_LINK1" />دریافت راهنمایی<ph name="END_LINK1" /> یا <ph name="BEGIN_LINK2" />اسکن مجدد<ph name="END_LINK2" />.</translation>
 <translation id="1807246157184219062">روشن</translation>
 <translation id="1825719650605518411">اولین تجربه اجرا</translation>
 <translation id="1826516787628120939">در حال بررسی</translation>
@@ -156,7 +154,6 @@
 <translation id="2707726405694321444">بازخوانی صفحه</translation>
 <translation id="2709516037105925701">تکمیل خودکار</translation>
 <translation id="271033894570825754">جدید</translation>
-<translation id="2748463065602559597">‏شما در حال مشاهده یک صفحه امن Google Chrome هستید.</translation>
 <translation id="2762000892062317888">هم‌اکنون</translation>
 <translation id="2777555524387840389"><ph name="SECONDS" /> ثانیه باقی‌مانده است</translation>
 <translation id="2781151931089541271">۱ ثانیه باقی‌مانده است</translation>
@@ -233,7 +230,6 @@
 <translation id="3656115297268584622">‏مکان را در <ph name="BEGIN_LINK" />تنظیمات Android<ph name="END_LINK" /> روشن کنید.</translation>
 <translation id="3661699943263275414">وب‌سایت‌های طرف ثالث می‌توانند داده‌های کوکی را ذخیره کنند و بخوانند</translation>
 <translation id="3672452749423051839">پیشنهادات خطای پیمایش</translation>
-<translation id="3690847815241521170">درحال اسکن دستگاه‌ها… <ph name="BEGIN_LINK" />دریافت راهنمایی<ph name="END_LINK" /></translation>
 <translation id="3706658020782046159">برای بررسی شرایط لازم و روش‌های تحویل کالا، آدرس تحویل کالا را انتخاب کنید.</translation>
 <translation id="3716158070938632480">صفحات وب در نزدیکی هستند</translation>
 <translation id="3738139272394829648">لمس کردن برای جستجو</translation>
@@ -322,7 +318,6 @@
 <translation id="4807098396393229769">نام روی کارت</translation>
 <translation id="4816465935029283692">انواع داده</translation>
 <translation id="4827948050554950725">افزودن کارت اعتباری</translation>
-<translation id="4836364883164334657">اتصال شما به این سایت خصوصی نیست. مهاجمین ممکن است برای سرقت اطلاعاتتان (به‌عنوان مثال، عکس‌ها، گذرواژه‌ها، پیام‌ها و کارت‌های اعتباری) از <ph name="DOMAIN_NAME" /> تلاش کنند.</translation>
 <translation id="4850886885716139402">نما</translation>
 <translation id="4881695831933465202">باز کردن</translation>
 <translation id="4885273946141277891">‏این تعداد از نسخه‌های Chrome پشتیبانی نمی‌شود.</translation>
@@ -355,6 +350,7 @@
 <translation id="5171045022955879922">‏جستجو یا تایپ URL</translation>
 <translation id="5184329579814168207">‏باز کردن در Chrome</translation>
 <translation id="5199929503336119739">نمایه کاری</translation>
+<translation id="5209320130288484488">دستگاهی یافت نشد</translation>
 <translation id="5210365745912300556">بستن برگه</translation>
 <translation id="5222676887888702881">خروج از سیستم</translation>
 <translation id="5233638681132016545">برگه جدید</translation>
@@ -389,7 +385,6 @@
 <translation id="5556459405103347317">تازه‌سازی</translation>
 <translation id="5565871407246142825">کارت‌های اعتباری</translation>
 <translation id="5578795271662203820">جستجوی <ph name="SEARCH_ENGINE" /> برای این تصویر</translation>
-<translation id="5579997910517802656">دستگاهی یافت نشد</translation>
 <translation id="5595485650161345191">ویرایش آدرس</translation>
 <translation id="5596627076506792578">گزینه‌های بیشتر</translation>
 <translation id="5626134646977739690">نام:</translation>
@@ -417,7 +412,6 @@
 <translation id="583281660410589416">ناشناس</translation>
 <translation id="5832934273103296195">بزرگ‌شده - برای کوچک کردن کلیک کنید</translation>
 <translation id="583891442612896534">‏Chrome نمی‌تواند برای فشرده کردن داده‌ها به سرورهای Google دسترسی پیدا کند. شاید ذخیره داده‌هایتان محدود باشد.</translation>
-<translation id="5843873952582375185">دستگاه بلوتوثی پیدا نشد. <ph name="BEGIN_LINK" />اسکن مجدد<ph name="END_LINK" /></translation>
 <translation id="585027516397408832">صرفه‌جویی داده فعال است</translation>
 <translation id="5860033963881614850">خاموش</translation>
 <translation id="5867027562311576691">مقاله‌های بیشتر به‌زودی نشان داده می‌شوند. از صبحتان لذت ببرید.</translation>
@@ -567,9 +561,9 @@
 <translation id="7596558890252710462">سیستم عامل</translation>
 <translation id="7605594153474022051">همگام‌سازی کار نمی‌کند</translation>
 <translation id="7612619742409846846">‏ثبت ورودشده در Google به‌عنوان</translation>
+<translation id="7613889955535752492">انقضا: <ph name="EXPIRATION_MONTH" />/<ph name="EXPIRATION_YEAR" /></translation>
 <translation id="7619072057915878432">به‌دلیل نقص‌هایی در شبکه، بارگیری <ph name="FILE_NAME" /> انجام نشد.</translation>
 <translation id="7626032353295482388">‏به Chrome خوش آمدید</translation>
-<translation id="7634554953375732414">اتصال شما به این سایت خصوصی نیست.</translation>
 <translation id="7638584964844754484">عبارت عبور نادرست است</translation>
 <translation id="7648422057306047504">‏رمزگذاری گذرواژه‌ها با اعتبارنامه‌های Google</translation>
 <translation id="7649070708921625228">راهنما</translation>
@@ -637,13 +631,11 @@
 <translation id="8428213095426709021">تنظیمات</translation>
 <translation id="8433057134996913067">با این کار از سیستم بیشتر وب‌سایت‌ها خارج می‌شوید.</translation>
 <translation id="8447861592752582886">لغو مجوز دستگاه</translation>
-<translation id="8481940801237642152">اتصال شما به این سایت خصوصی است، اما ممکن است شخصی در شبکه بتواند ظاهر این صفحه را تغییر دهد.</translation>
 <translation id="8487700953926739672">امکان دسترسی به صورت آفلاین</translation>
 <translation id="8493948351860045254">آزاد کردن فضا</translation>
 <translation id="8497726226069778601">هنوز… چیزی برای دیدن وجود ندارد</translation>
 <translation id="8503813439785031346">نام کاربری</translation>
 <translation id="8514577642972634246">ورود به حالت ناشناس</translation>
-<translation id="8518901949365209398">‏این سایت از یک پیکربندی امنیتی ضعیف (امضاهای SHA-1) استفاده می‌کند، بنابراین ممکن است اتصال شما خصوصی نباشد.</translation>
 <translation id="8523928698583292556">حذف گذرواژه ذخیره‌شده</translation>
 <translation id="854522910157234410">باز کردن این صفحه</translation>
 <translation id="8562452229998620586">گذرواژه‌های ذخیره شده در اینجا ظاهر می‌شود.</translation>
@@ -676,7 +668,6 @@
 <translation id="8912362522468806198">‏حساب Google</translation>
 <translation id="8920114477895755567">در انتظار اطلاعات والدین.</translation>
 <translation id="8931159598799892500">‏Chrome + وب فیزیکی</translation>
-<translation id="8941248009481596111">اتصال شما به این سایت خصوصی است.</translation>
 <translation id="8941729603749328384">www.example.com</translation>
 <translation id="8942627711005830162">باز کردن در پنجره دیگر</translation>
 <translation id="8959122750345127698">پیمایش غیرقابل دسترسی است: <ph name="URL" /></translation>

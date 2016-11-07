@@ -477,7 +477,6 @@
 <translation id="1598233202702788831">Pembaruan dinonaktifkan oleh administrator.</translation>
 <translation id="1598604884989842103">Aktifkan UI pemaksimalan TouchView untuk uji coba</translation>
 <translation id="1600857548979126453">Mengakses backend debugger laman</translation>
-<translation id="1601247446845604757">Prototipe WebGL 2.0</translation>
 <translation id="1601560923496285236">Terapkan</translation>
 <translation id="1603914832182249871">(Penyamaran)</translation>
 <translation id="1607220950420093847">Akun Anda mungkin telah dihapus atau dinonaktifkan. Harap keluar.</translation>
@@ -569,7 +568,6 @@
 <translation id="1708713382908678956"><ph name="NAME_PH" /> (ID: <ph name="ID_PH" />)</translation>
 <translation id="1709106626015023981"><ph name="WIDTH" /> x <ph name="HEIGHT" /> (Bawaan)</translation>
 <translation id="1711973684025117106">Gagal membuat file zip, kesalahan tidak terduga: $1</translation>
-<translation id="1715941336038158809">Nama pengguna atau sandi tidak valid.</translation>
 <translation id="1717733954209022288">Kotak centang penyimpanan kartu Google Payments</translation>
 <translation id="1720318856472900922">Autentikasi Server TLS WWW</translation>
 <translation id="1720372306711178108">Desktop yang Diperluas</translation>
@@ -616,7 +614,6 @@
 <translation id="1781502536226964113">Buka laman Tab Baru</translation>
 <translation id="1782196717298160133">Menemukan ponsel Anda</translation>
 <translation id="1782924894173027610">Server sinkronisasi sibuk. Coba lagi nanti.</translation>
-<translation id="1783075131180517613">Perbarui frasa sandi sinkronisasi Anda.</translation>
 <translation id="1784849162047402014">Perangkat hampir kehabisan ruang disk</translation>
 <translation id="1788636309517085411">Gunakan default</translation>
 <translation id="1789575671122666129">Munculan</translation>
@@ -769,7 +766,6 @@
 <translation id="2025632980034333559"><ph name="APP_NAME" /> ngadat. Klik balon ini untuk memuat ulang ekstensi.</translation>
 <translation id="2028531481946156667">Tidak dapat memulai proses pemformatan.</translation>
 <translation id="2028997212275086731">Arsip RAR</translation>
-<translation id="203168018648013061">Kesalahan Sinkronisasi: Setel ulang Sinkronisasi melalui Google Dasbor.</translation>
 <translation id="2031695690821674406">Mengisi sandi saat akun dipilih secara eksplisit oleh pengguna, alih-alih mengisi kredensial saat laman dimuat secara otomatis.</translation>
 <translation id="2034346955588403444">Tambahkan jaringan Wi-Fi lainnya</translation>
 <translation id="2040460856718599782">Ups!  Terjadi masalah saat mencoba mengautentikasi Anda.  Periksa lagi kredensial masuk Anda dan coba lagi.</translation>
@@ -948,7 +944,6 @@ Setelah membuat pengguna yang dilindungi, Anda dapat mengelola setelannya kapan 
 <translation id="225240747099314620">Izinkan pengenal untuk konten yang dilindungi (mungkin harus memulai ulang komputer)</translation>
 <translation id="2254681226363050822">Setuju</translation>
 <translation id="2255317897038918278">Microsoft Time Stamping</translation>
-<translation id="225680501294068881">Memindai perangkat...</translation>
 <translation id="225692081236532131">Status aktivasi</translation>
 <translation id="2258195278080713720">Fitur JavaScript stabil terbaru</translation>
 <translation id="2260567344816042527">Google Chrome akan menggunakan data seluler jika Anda tidak tersambung ke jaringan lain.</translation>
@@ -1835,6 +1830,7 @@ Dari <ph name="DOWNLOAD_DOMAIN" /></translation>
 <translation id="335985608243443814">Jelajah...</translation>
 <translation id="3360297538363969800">Gagal mencetak. Periksa printer Anda dan coba lagi.</translation>
 <translation id="336497260564123876">Sandi disimpan. Agar sandi ada di semua perangkat, masuk ke Chrome.</translation>
+<translation id="3367813778245106622">Masuk lagi untuk memulai sinkronisasi</translation>
 <translation id="3368922792935385530">Tersambung</translation>
 <translation id="3369624026883419694">Mengontak host...</translation>
 <translation id="3372695143165820507">Eksperimen ketika pusat pesan selalu digulir ke atas setelah penghapusan notifikasi</translation>
@@ -1942,7 +1938,6 @@ Dari <ph name="DOWNLOAD_DOMAIN" /></translation>
 <translation id="3508920295779105875">Pilih Folder Lain...</translation>
 <translation id="3509527969829946096">Opsi ini mengaktifkan dukungan di Cast Streaming untuk mengenkode aliran video menggunakan perangkat keras platform.</translation>
 <translation id="3510797500218907545">WiMAX</translation>
-<translation id="3511200754045804813">Pindai ulang</translation>
 <translation id="3511307672085573050">Salin Ala&amp;mat Tautan</translation>
 <translation id="3511399794969432965">Masalah sambungan?</translation>
 <translation id="351152300840026870">Font dengan lebar tetap</translation>
@@ -2023,7 +2018,6 @@ Dari <ph name="DOWNLOAD_DOMAIN" /></translation>
 <translation id="3603622770190368340">Mendapatkan sertifikat jaringan</translation>
 <translation id="3605780360466892872">Pria Berdasi</translation>
 <translation id="3606220979431771195">Turki-F</translation>
-<translation id="3607430430882821408">Perangkat Bluetooth tidak ditemukan.</translation>
 <translation id="3608454375274108141">F10</translation>
 <translation id="3608576286259426129">Pratinjau gambar pengguna</translation>
 <translation id="3609785682760573515">Menyinkronkan...</translation>
@@ -2066,7 +2060,6 @@ Dari <ph name="DOWNLOAD_DOMAIN" /></translation>
 <translation id="3653069516296104653">Menonaktifkan penangkapan implisit kejadian penunjuk sentuh.</translation>
 <translation id="3653999333232393305">Terus izinkan <ph name="HOST" /> mengakses mikrofon Anda</translation>
 <translation id="3654045516529121250">Baca setelan aksesibilitas Anda</translation>
-<translation id="3654092442379740616">Kesalahan Sinkronisasi: <ph name="PRODUCT_NAME" /> sudah usang dan perlu diperbarui.</translation>
 <translation id="3655712721956801464">{NUM_FILES,plural, =1{Memiliki akses permanen ke satu file.}other{Memiliki akses permanen ke # file.}}</translation>
 <translation id="365793796291733849"><ph name="BEGIN_PARAGRAPH1" />Jika Anda mengaktifkan pencadangan otomatis, data perangkat dan aplikasi disimpan secara berkala ke folder pribadi di Google Drive. Data aplikasi dapat berupa data apa saja yang disimpan oleh aplikasi (menurut setelan pengembang), termasuk data yang berpotensi sensitif seperti kontak, pesan, dan foto.<ph name="END_PARAGRAPH1" />
     <ph name="BEGIN_PARAGRAPH2" />Data cadangan tidak dihitung dalam kuota penyimpanan Drive. File besar, atau file yang dipilih oleh pengembang untuk tidak disertakan dalam layanan tidak akan dicadangkan.<ph name="END_PARAGRAPH2" /></translation>
@@ -2137,7 +2130,6 @@ Dari <ph name="DOWNLOAD_DOMAIN" /></translation>
 <translation id="3752582316358263300">Oke...</translation>
 <translation id="3752673729237782832">Perangkat saya</translation>
 <translation id="3753641128651686748">"<ph name="BUNDLE_NAME" />" menambahkan aplikasi ini untuk <ph name="USER_NAME" />:</translation>
-<translation id="3755237144397196888">Mengaktifkan opsi ini memungkinkan aplikasi web mengakses fitur WebGL 2.0 eksperimental. Opsi ini seharusnya hanya digunakan untuk pengembangan aplikasi, tidak digunakan saat menjelajahi sembarang situs web.</translation>
 <translation id="3755411799582650620"><ph name="PHONE_NAME" /> Anda sekarang dapat membuka kunci <ph name="DEVICE_TYPE" /> ini juga.</translation>
 <translation id="3758201569871381925">Pastikan bahwa perangkat Hotrod aktif dan tersambung ke TV.</translation>
 <translation id="375841316537350618">Mengunduh skrip proxy...</translation>
@@ -2374,7 +2366,6 @@ Dari <ph name="DOWNLOAD_DOMAIN" /></translation>
 <translation id="4075084141581903552">Proses masuk otomatis tersedia <ph name="EMAIL_ADDRESS" /></translation>
 <translation id="4078738236287221428">Agresif</translation>
 <translation id="408098233265424160">Deteksi kedekatan Smart Lock</translation>
-<translation id="4081683084140995376">Aktifkan VR shell.</translation>
 <translation id="4081979157059999345">Tautan pengelolan sandi jarak jauh</translation>
 <translation id="4084682180776658562">Bookmark</translation>
 <translation id="4084835346725913160">Tutup <ph name="TAB_NAME" /></translation>
@@ -2511,7 +2502,6 @@ Semua pengguna harus keluar untuk melanjutkan.</translation>
 <translation id="4268574628540273656">URL:</translation>
 <translation id="4270393598798225102">Versi <ph name="NUMBER" /></translation>
 <translation id="4271396100647220620">Tidak ada yang cocok</translation>
-<translation id="4274187853770964845">Kesalahan Sinkronisasi: Hentikan dan mulai ulang Sinkronisasi.</translation>
 <translation id="4275830172053184480">Mulai ulang perangkat Anda</translation>
 <translation id="4276796043975446927">Selamat datang di Chromebox untuk rapat</translation>
 <translation id="4278390842282768270">Diizinkan</translation>
@@ -2624,7 +2614,6 @@ Tekan sembarang tombol untuk melanjutkan penjelajahan.</translation>
 <translation id="4443536555189480885">&amp;Bantuan</translation>
 <translation id="4444304522807523469">Mengakses pemindai dokumen yang terpasang melalui USB atau pada jaringan lokal</translation>
 <translation id="4444512841222467874">Jika ruang penyimpanan tidak tersedia, pengguna dan data mungkin otomatis dihapus.</translation>
-<translation id="4445559854264555037">Tidak melihat perangkat? <ph name="GET_HELP_LINK" /></translation>
 <translation id="4446933390699670756">Dicerminkan</translation>
 <translation id="4447465454292850432">Baterai:</translation>
 <translation id="4449935293120761385">Tentang IsiOtomatis</translation>
@@ -2757,7 +2746,6 @@ Tekan sembarang tombol untuk melanjutkan penjelajahan.</translation>
 <translation id="4654488276758583406">Sangat Kecil</translation>
 <translation id="465499440663162826">Tidak dapat tersambung ke Toko Web Chrome.</translation>
 <translation id="4656293982926141856">Komputer ini</translation>
-<translation id="4656631038341342120">Aktifkan VR shell jika tersedia untuk perangkat ini.</translation>
 <translation id="4657031070957997341">Selalu izinkan plugin di <ph name="HOST" /></translation>
 <translation id="466008749075469935">Mengaktifkan intervensi untuk membatasi penggunaan CPU pengatur waktu latar belakang menjadi 1%.</translation>
 <translation id="4663254525753315077">Jika mungkin, letakkan konten gulir dari elemen gulir luapan ke dalam lapisan gabungan agar bergulir lebih cepat.</translation>
@@ -3477,7 +3465,6 @@ Tekan sembarang tombol untuk melanjutkan penjelajahan.</translation>
 <translation id="5569544776448152862">Mendaftarkan di <ph name="BEGIN_BOLD" /><ph name="DOMAIN_NAME" /><ph name="END_BOLD" />...</translation>
 <translation id="5575473780076478375">Ekstensi Penyamaran: <ph name="EXTENSION_NAME" /></translation>
 <translation id="557722062034137776">Penyetelan ulang perangkat Anda tidak akan memengaruhi akun Google Anda atau data yang disinkronkan ke akun ini. Namun, semua file yang disimpan secara lokal pada perangkat Anda akan terhapus.</translation>
-<translation id="5579997910517802656">Tidak ada perangkat yang ditemukan.</translation>
 <translation id="5581211282705227543">Tidak ada plugin yang dipasang</translation>
 <translation id="5581700288664681403">Memuat <ph name="CLOUD_PRINT_NAME" /></translation>
 <translation id="558170650521898289">Microsoft Windows Hardware Driver Verification</translation>
@@ -4261,7 +4248,6 @@ Hanya gunakan fitur ini dengan akun yang Anda percayai.</translation>
 <translation id="6659213950629089752">Laman ini diperbesar/diperkecil oleh ekstensi "<ph name="NAME" />"</translation>
 <translation id="6659594942844771486">Tab</translation>
 <translation id="6660768694571958712">Mengaktifkan dukungan eksperimental untuk API Kejadian Penunjuk.  Fitur ini hanya ditujukan untuk pengujian oleh pengembang web, yang dapat menyebabkan beberapa situs web rusak secara tersembunyi.</translation>
-<translation id="6662016084451426657">Kesalahan Sinkronisasi: Hubungi administrator untuk mengaktifkan sinkronisasi.</translation>
 <translation id="6663792236418322902">Sandi yang Anda pilih akan dibutuhkan untuk mengembalikan file ini nanti.  Harap catat sandi di lokasi yang aman.</translation>
 <translation id="6664237456442406323">Sayangnya, komputer Anda dikonfigurasi dengan ID perangkat keras yang rusak. Hal ini mencegah Chrome OS memperbarui dengan perbaikan keamanan terbaru dan komputer Anda <ph name="BEGIN_BOLD" />mungkin rentan terhadap serangan berbahaya<ph name="END_BOLD" />.</translation>
 <translation id="6664774537677393800">Terjadi kesalahan saat membuka profil Anda. Harap keluar, lalu masuk lagi.</translation>
@@ -4479,7 +4465,6 @@ Hanya gunakan fitur ini dengan akun yang Anda percayai.</translation>
 <translation id="6985235333261347343">Microsoft Key Recovery Agent</translation>
 <translation id="6985276906761169321">ID:</translation>
 <translation id="6985607387932385770">Printer</translation>
-<translation id="6986605181115043220">Ups, Sinkronisasi berhenti bekerja. <ph name="BEGIN_LINK" />Pelajari Lebih Lanjut<ph name="END_LINK" /></translation>
 <translation id="6990081529015358884">Anda telah kehabisan ruang</translation>
 <translation id="6990778048354947307">Tema Gelap</translation>
 <translation id="6991128190741664836">Nanti</translation>
@@ -5101,7 +5086,6 @@ Hanya gunakan fitur ini dengan akun yang Anda percayai.</translation>
 <translation id="7839963980801867006">Pilih IME ekstensi mana yang akan tersedia di menu bahasa.</translation>
 <translation id="7842346819602959665">Versi ekstensi "<ph name="EXTENSION_NAME" />" teranyar memerlukan izin lebih lanjut, jadi ekstensi belum diaktifkan.</translation>
 <translation id="7844992432319478437">Memperbarui diff</translation>
-<translation id="7845920762538502375"><ph name="PRODUCT_NAME" /> tidak dapat menyinkronkan data karena tidak dapat menyambung ke server sinkronisasi. Mencoba lagi...</translation>
 <translation id="7846076177841592234">Batalkan pilihan</translation>
 <translation id="7846634333498149051">Keyboard</translation>
 <translation id="7847212883280406910">Tekan Ctrl + Alt + S untuk beralih ke <ph name="IDS_SHORT_PRODUCT_OS_NAME" /></translation>
@@ -5385,7 +5369,6 @@ Simpan file kunci Anda di tempat yang aman. Anda akan membutuhkannya untuk membu
 <translation id="8213577208796878755">Satu perangkat lain tersedia.</translation>
 <translation id="8214489666383623925">Buka File...</translation>
 <translation id="8214962590150211830">Hapus Orang ini</translation>
-<translation id="8216278935161109887">Keluar kemudian masuk lagi</translation>
 <translation id="8217399928341212914">Lanjutkan memblokir unduhan otomatis beberapa file</translation>
 <translation id="8221831106892617387">Aktif: 2G lambat</translation>
 <translation id="8222121761382682759">Copot pemasangan...</translation>
@@ -5532,7 +5515,6 @@ Simpan file kunci Anda di tempat yang aman. Anda akan membutuhkannya untuk membu
 <translation id="8418113698656761985">Keyboard untuk bahasa Rumania</translation>
 <translation id="8418445294933751433">Tampilkan &amp;sebagai tab</translation>
 <translation id="8420060421540670057">Tampilkan file Google Dokumen</translation>
-<translation id="8420139899406509438">Aktif (Flash akan melakukan 'ducking' saat kehilangan fokus audio, eksperimental)</translation>
 <translation id="842274098655511832">Ekstensi Draf WebGL</translation>
 <translation id="8424039430705546751">ke bawah</translation>
 <translation id="8425213833346101688">Ubah</translation>
@@ -6026,7 +6008,6 @@ Notifikasi, jendela, dan dialog berikutnya dapat dipisah antar-desktop.</transla
 <translation id="9052208328806230490">Anda telah mendaftarkan printer dengan <ph name="CLOUD_PRINT_NAME" /> menggunakan akun <ph name="EMAIL" /></translation>
 <translation id="9052234664411715138">Bantuan Pengisian Kartu Kredit</translation>
 <translation id="9053860306922028466">Pilih yang ingin dibagikan terlebih dahulu.</translation>
-<translation id="9053965862400494292">Kesalahan terjadi saat mencoba menyiapkan sinkronisasi.</translation>
 <translation id="9056034633062863292">Memperbarui Chromebox</translation>
 <translation id="9056810968620647706">Tidak ditemukan kecocokan.</translation>
 <translation id="9057119625587205566">Tidak ada printer di sekitar</translation>
@@ -6179,6 +6160,7 @@ Notifikasi, jendela, dan dialog berikutnya dapat dipisah antar-desktop.</transla
 <translation id="971058943242239041">Mengaktifkan penggunaan elemen HTML 'window-controls' dalam aplikasi terpaket.</translation>
 <translation id="971774202801778802">URL bookmark</translation>
 <translation id="973473557718930265">Keluar</translation>
+<translation id="974555521953189084">Masukkan frasa sandi Anda untuk memulai sinkronisasi</translation>
 <translation id="97534916655989966">Memungkinkan video yang dibisukan diputar otomatis.</translation>
 <translation id="981121421437150478">Offline</translation>
 <translation id="984870422930397199">Memungkinkan pemberian lencana untuk laman offline di laman Tab Baru. Hanya relevan jika laman offline diaktifkan.</translation>

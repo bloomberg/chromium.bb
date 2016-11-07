@@ -387,6 +387,7 @@
 <translation id="5171045022955879922">Caută sau introdu adresa URL</translation>
 <translation id="5172758083709347301">Computer</translation>
 <translation id="5179510805599951267">Nu este în <ph name="ORIGINAL_LANGUAGE" />? Semnalează această eroare.</translation>
+<translation id="5181140330217080051">Se descarcă</translation>
 <translation id="5190835502935405962">Bară de marcaje</translation>
 <translation id="5199729219167945352">Experimente</translation>
 <translation id="5199841536747119669">Sugestiile apar aici</translation>
@@ -665,7 +666,6 @@ Data viitoare ați putea utiliza combinația <ph name="SHORTCUT_KEY" /> pentru a
 <translation id="8498891568109133222"><ph name="HOST_NAME" /> a răspuns prea târziu.</translation>
 <translation id="852346902619691059">Acest server nu a putut dovedi că este <ph name="DOMAIN" />. Sistemul de operare al dispozitivului nu consideră că certificatul său de securitate este de încredere. Cauza poate fi o eroare de configurare sau interceptarea conexiunii de către un atacator. <ph name="BEGIN_LEARN_MORE_LINK" />Află mai multe<ph name="END_LEARN_MORE_LINK" />.</translation>
 <translation id="8530504477309582336">Acest tip de card nu este acceptat de Google Payments. Selectează alt card.</translation>
-<translation id="8550022383519221471">Serviciul de sincronizare nu este disponibil pentru domeniul tău.</translation>
 <translation id="8553075262323480129">Traducerea nu a reușit, deoarece nu a putut fi stabilită limba paginii.</translation>
 <translation id="8559762987265718583">O conexiune privată la <ph name="BEGIN_BOLD" /><ph name="DOMAIN" /><ph name="END_BOLD" /> nu poate fi stabilită, deoarece data și ora dispozitivului (<ph name="DATE_AND_TIME" />) sunt incorecte.</translation>
 <translation id="856992080682148">Certificatul pentru acest site expiră în 2017 sau mai târziu, iar lanțul de certificate conține un certificat semnat cu SHA-1.</translation>
@@ -673,7 +673,6 @@ Data viitoare ați putea utiliza combinația <ph name="SHORTCUT_KEY" /> pentru a
 <translation id="8591846766485502580">Ai primit acest mesaj deoarece unul dintre părinții tăi a blocat acest site.</translation>
 <translation id="859285277496340001">Certificatul nu specifică un mecanism pentru a verifica dacă acesta a fost revocat.</translation>
 <translation id="8647750283161643317">Resetați-le pe toate la valorile prestabilite</translation>
-<translation id="8680787084697685621">Datele de conectare la cont au expirat.</translation>
 <translation id="8703575177326907206">Conexiunea la <ph name="DOMAIN" /> nu este criptată.</translation>
 <translation id="8725066075913043281">Încearcă din nou</translation>
 <translation id="8728672262656704056">Ați trecut în modul incognito</translation>
@@ -703,7 +702,6 @@ Data viitoare ați putea utiliza combinația <ph name="SHORTCUT_KEY" /> pentru a
 <translation id="8987927404178983737">Lună</translation>
 <translation id="8989148748219918422"><ph name="ORGANIZATION" /> [<ph name="COUNTRY" />]</translation>
 <translation id="9001074447101275817">Pentru a accesa proxy-ul <ph name="DOMAIN" />, trebuie să introduci un nume de utilizator și o parolă.</translation>
-<translation id="9008201768610948239">Ignorați</translation>
 <translation id="901974403500617787">Marcajele care se aplică la nivel de sistem pot fi create numai de proprietar: <ph name="OWNER_EMAIL" />.</translation>
 <translation id="9020542370529661692">Această pagină a fost tradusă în <ph name="TARGET_LANGUAGE" /></translation>
 <translation id="9038649477754266430">Folosește un serviciu de predicții pentru a încărca paginile mai rapid</translation>

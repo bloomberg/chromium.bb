@@ -475,7 +475,6 @@
 <translation id="1598233202702788831">سرپرست سیستم شما به‌روزرسانی‌ها را غیرفعال کرده است.</translation>
 <translation id="1598604884989842103">‏فعال کردن واسط کاربر بزرگ کردن TouchView برای آزمایش</translation>
 <translation id="1600857548979126453">دسترسی به مرحله پایانی اشکال‌زدای صفحه</translation>
-<translation id="1601247446845604757">‏نمونه اولیه WebGL 2.0</translation>
 <translation id="1601560923496285236">اعمال</translation>
 <translation id="1603914832182249871">(ناشناس)</translation>
 <translation id="1607220950420093847">حساب شما ممکن است حذف یا غیر فعال شده باشد. لطفاً از سیستم خارج شوید.</translation>
@@ -567,7 +566,6 @@
 <translation id="1708713382908678956"><ph name="NAME_PH" /> (شناسه: <ph name="ID_PH" />)</translation>
 <translation id="1709106626015023981"><ph name="WIDTH" /> × <ph name="HEIGHT" /> (اصلی)</translation>
 <translation id="1711973684025117106">فشرده‌سازی انجام نشد، خطای غیرمنتظره: $1</translation>
-<translation id="1715941336038158809">نام کاربری یا گذرواژه نامعتبر است.</translation>
 <translation id="1717733954209022288">‏کادر تأیید ذخیره کارت Google Payments</translation>
 <translation id="1720318856472900922">‏راستی‌آزمایی سرور TLS WWW</translation>
 <translation id="1720372306711178108">میزکار گسترده</translation>
@@ -614,7 +612,6 @@
 <translation id="1781502536226964113">باز کردن صفحه «برگه جدید»</translation>
 <translation id="1782196717298160133">در حال پیدا کردن تلفن خودتان</translation>
 <translation id="1782924894173027610">سرور سیستم مشغول است، لطفاً بعداً دوباره امتحان کنید.</translation>
-<translation id="1783075131180517613">لطفاً «رمز عبارتی همگام‌سازی» خود را به‌روزرسانی کنید.</translation>
 <translation id="1784849162047402014">فضای ذخیره‌سازی دستگاه رو به اتمام است</translation>
 <translation id="1788636309517085411">استفاده از پیش‌فرض</translation>
 <translation id="1789575671122666129">پنجره‌های بازشو</translation>
@@ -767,7 +764,6 @@
 <translation id="2025632980034333559"><ph name="APP_NAME" /> خراب شده است. برای تازه‌سازی پسوند بر روی این بالون کلیک کنید.</translation>
 <translation id="2028531481946156667">فرآیند قالب‌بندی شروع نمی‌شود.</translation>
 <translation id="2028997212275086731">‏بایگانی RAR</translation>
-<translation id="203168018648013061">‏خطای همگام‌سازی: لطفاً همگام‌سازی را ازطریق «داشبورد Google» بازنشانی کنید.</translation>
 <translation id="2031695690821674406">پرکردن گذرواژه‌ها، وقتی یک حساب مشخصاً توسط کاربر انتخاب شده، به جای پر کردن خودکار اعتبارنامه‌ها هنگام بارگیری صفحه.</translation>
 <translation id="2034346955588403444">‏افزودن شبکه WiFi دیگر</translation>
 <translation id="2040460856718599782">وای! هنگام احراز هویت شما مشکلی پیش آمد. لطفاً اطلاعات کاربری ورود به سیستمتان را دوباره بررسی کرده و دوباره امتحان نمایید.</translation>
@@ -946,7 +942,6 @@
 <translation id="225240747099314620">به شناسه‌ها برای محتوای محافظت‌شده اجازه داده شود (ممکن است راه‌اندازی مجدد رایانه نیاز باشد)</translation>
 <translation id="2254681226363050822">موافق</translation>
 <translation id="2255317897038918278">‏مهر زمان Microsoft</translation>
-<translation id="225680501294068881">درحال جستجو برای دستگاه‌ها...</translation>
 <translation id="225692081236532131">وضعیت فعال‌سازی</translation>
 <translation id="2258195278080713720">آخرین قابلیت‌های پایدار جاوا اسکریپت</translation>
 <translation id="2260567344816042527">‏اگر به شبکه دیگری متصل نباشید، Google Chrome از داده‌های شبکه تلفن همراه استفاده می‌کند.</translation>
@@ -1832,6 +1827,7 @@
 <translation id="335985608243443814">مرور...</translation>
 <translation id="3360297538363969800">چاپ ناموفق بود. لطفاً چاپگرتان را بررسی کنید و دوباره امتحان کنید.</translation>
 <translation id="336497260564123876">‏گذرواژه ذخیره شد. برای اینکه گذرواژه‌هایتان را در همه دستگاه‌هایتان دریافت کنید، در Chrome وارد سیستم شوید.</translation>
+<translation id="3367813778245106622">دوباره به سیستم وارد شوید یا همگام‌سازی را شروع کنید</translation>
 <translation id="3368922792935385530">متصل</translation>
 <translation id="3369624026883419694">در حال تحلیل میزبان...</translation>
 <translation id="3372695143165820507">آزمایش‌هایی که در آن‌ها مرکز پیام همواره با حذف اعلان به بالا پیمایش می‌کند</translation>
@@ -1939,7 +1935,6 @@
 <translation id="3508920295779105875">انتخاب یک پوشه دیگر...</translation>
 <translation id="3509527969829946096">‏این گزینه پشتیبانی Cast Streaming برای کدبندی جریان ویدئویی را با استفاده از سخت‌افزار پلتفورم فعال می‌کند.</translation>
 <translation id="3510797500218907545">WiMAX</translation>
-<translation id="3511200754045804813">جستجوی دوباره</translation>
 <translation id="3511307672085573050">کپی آدر&amp;س پیوند</translation>
 <translation id="3511399794969432965">در برقراری ارتباط مشکل دارید؟</translation>
 <translation id="351152300840026870">قلم با عرض ثابت</translation>
@@ -2020,7 +2015,6 @@
 <translation id="3603622770190368340">دریافت گواهی‌نامه شبکه</translation>
 <translation id="3605780360466892872">تاجر</translation>
 <translation id="3606220979431771195">‏ترکی F</translation>
-<translation id="3607430430882821408">هیچ دستگاه بلوتوثی یافت نشد.</translation>
 <translation id="3608454375274108141">F10</translation>
 <translation id="3608576286259426129">پیش‌نمایش تصویر کاربر</translation>
 <translation id="3609785682760573515">در حال همگام‌سازی...</translation>
@@ -2063,7 +2057,6 @@
 <translation id="3653069516296104653">ضبط ضمنی رویدادهای لمسی نشان‌گر را غیرفعال می‌کند.</translation>
 <translation id="3653999333232393305">ادامه اجازه به <ph name="HOST" /> برای دسترسی به میکروفون</translation>
 <translation id="3654045516529121250">خواندن تنظیمات دسترس‌پذیری خودتان</translation>
-<translation id="3654092442379740616">خطای همگام‌سازی: <ph name="PRODUCT_NAME" /> به‌روز نیست و باید به‌روز شود.</translation>
 <translation id="3655712721956801464">{NUM_FILES,plural, =1{به یک فایل دسترسی دائم دارد.}one{به # فایل دسترسی دائم دارد.}other{به # فایل دسترسی دائم دارد.}}</translation>
 <translation id="365793796291733849">‏<ph name="BEGIN_PARAGRAPH1" />وقتی پشتیبان‌گیری خودکار را روشن می‌کنید، داده‌های دستگاه و برنامه به‌صورت دوره‌ای در پوشه‌ای خصوصی در Google Drive ذخیره می‌شود. داده‌های برنامه می‌تواند هر نوع داده‌ای باشد که برنامه (براساس تنظیمات برنامه‌نویس) ذخیره کرده است، از جمله داده‌های به‌طور بالقوه حساس (مثل مخاطبین، پیام‌ها و عکس‌ها) <ph name="END_PARAGRAPH1" />
     <ph name="BEGIN_PARAGRAPH2" />داده‌های پشتیبان‌گیری‌شده موجود در سهمیه فضای ذخیره‌سازی Drive شما، به حساب نمی‌‌آیند. فایل‌های بزرگ یا فایل‌هایی که به‌انتخاب برنامه‌نویسان از سرویس خارج می‌شوند، پشتیبان‌گیری نخواهند شد.<ph name="END_PARAGRAPH2" /></translation>
@@ -2134,7 +2127,6 @@
 <translation id="3752582316358263300">تأیید...</translation>
 <translation id="3752673729237782832">دستگاه‌های من</translation>
 <translation id="3753641128651686748">«<ph name="BUNDLE_NAME" />» این برنامه‌ها را برای <ph name="USER_NAME" /> اضافه می‌کند.</translation>
-<translation id="3755237144397196888">‏فعال کردن این گزینه به برنامه‌های وب اجازه می‌دهد به قابلیت‌های آزمایشی WebGL 2.0 دسترسی داشته باشند. این گزینه فقط باید برای تولید برنامه استفاده شود و نباید هنگام مرور سایت‌های وب اختیاری مورد استفاده قرار گیرد.</translation>
 <translation id="3755411799582650620"><ph name="PHONE_NAME" /> شما اکنون می‌تواند قفل این <ph name="DEVICE_TYPE" /> را نیز باز کند.</translation>
 <translation id="3758201569871381925">‏لطفاً مطمئن شوید که دستگاه Hotrod شما روشن و به تلویزیون متصل است.</translation>
 <translation id="375841316537350618">در حال بارگیری اسکریپت پروکسی ...</translation>
@@ -2371,7 +2363,6 @@
 <translation id="4075084141581903552">ورود خودکار امکان‌پذیر است <ph name="EMAIL_ADDRESS" /></translation>
 <translation id="4078738236287221428">قوی</translation>
 <translation id="408098233265424160">‏تشخیص مجاورت Smart Lock</translation>
-<translation id="4081683084140995376">‏فعال کردن VR shell.</translation>
 <translation id="4081979157059999345">پیوند مدیر گذرواژه از راه دور</translation>
 <translation id="4084682180776658562">نشانک</translation>
 <translation id="4084835346725913160">بستن <ph name="TAB_NAME" /></translation>
@@ -2508,7 +2499,6 @@
 <translation id="4268574628540273656">نشانی وب:</translation>
 <translation id="4270393598798225102">نسخه <ph name="NUMBER" /></translation>
 <translation id="4271396100647220620">مورد منطبقی وجود ندارد</translation>
-<translation id="4274187853770964845">‏خطای همگام‌سازی: لطفاً Sync را متوقف کرده و دوباره راه‌اندازی کنید.</translation>
 <translation id="4275830172053184480">راه‌اندازی دستگاه خود</translation>
 <translation id="4276796043975446927">‏به «Chromebox برای جلسات» خوش آمدید</translation>
 <translation id="4278390842282768270">مجاز است</translation>
@@ -2621,7 +2611,6 @@
 <translation id="4443536555189480885">&amp;راهنما</translation>
 <translation id="4444304522807523469">‏دسترسی به اسکنرهای سند متصل شده از طریق USB یا در شبکه محلی</translation>
 <translation id="4444512841222467874">اگر فضای کافی در دسترس قرار نگیرد، ممکن است کاربران و داده‌ها به‌طور خودکار حذف شوند.</translation>
-<translation id="4445559854264555037">دستگاهتان را نمی‌بینید؟ <ph name="GET_HELP_LINK" /></translation>
 <translation id="4446933390699670756">صفحه نمایش روی دستگاه دیگر نمایش داده شد</translation>
 <translation id="4447465454292850432">باتری:</translation>
 <translation id="4449935293120761385">درباره تکمیل خودکار</translation>
@@ -2754,7 +2743,6 @@
 <translation id="4654488276758583406">خیلی کوچک</translation>
 <translation id="465499440663162826">‏اتصال به فروشگاه وب Chrome انجام نشد.</translation>
 <translation id="4656293982926141856">این رایانه</translation>
-<translation id="4656631038341342120">‏اگر VR shell برای این دستگاه دردسترس باشد آن را فعال می‌کند.</translation>
 <translation id="4657031070957997341">افزایه‌ها در <ph name="HOST" /> همیشه مجازند</translation>
 <translation id="466008749075469935">‏مداخله را به‌منظور محدود کردن میزان استفاده CPU تایمرهای پس‌زمینه تا میزان ۱٪، فعال می‌کند.</translation>
 <translation id="4663254525753315077">برای پیمایش سریع، هر وقت ممکن باشد، محتواهای پیمایشی مورد پیمایشی ادامه موارد را در لایه ترکیبی قرار می‌دهد.</translation>
@@ -3473,7 +3461,6 @@
 <translation id="5569544776448152862">در حال ثبت‌نام در <ph name="BEGIN_BOLD" /><ph name="DOMAIN_NAME" /><ph name="END_BOLD" />...</translation>
 <translation id="5575473780076478375">افزونه ناشناس: <ph name="EXTENSION_NAME" /></translation>
 <translation id="557722062034137776">‏بازنشانی دستگاهتان بر حساب‌های Google شما یا هر گونه داده همگام‌سازی شده با این حساب‌ها تأثیری نمی‌گذارد. اگرچه، همه فایل‌هایی که به‌صورت محلی در دستگاهتان ذخیره شده‌اند، حذف خواهند شد.</translation>
-<translation id="5579997910517802656">دستگاهی یافت نشد</translation>
 <translation id="5581211282705227543">افزایه‌ای نصب نشده است</translation>
 <translation id="5581700288664681403">بارگیری <ph name="CLOUD_PRINT_NAME" /></translation>
 <translation id="558170650521898289">‏تأیید درایور سخت‌افزار Microsoft Windows</translation>
@@ -4257,7 +4244,6 @@
 <translation id="6659213950629089752">برنامه افزودنی «<ph name="NAME" />» این صفحه را بزرگ‌نمایی کرده است</translation>
 <translation id="6659594942844771486">Tab</translation>
 <translation id="6660768694571958712">‏پشتیبانی آزمایشی را برای Pointer Events API فعال می‌کند. این قابلیت فقط برای آزمایش توسط تولیدکنندگان وب در نظر گرفته شده است و ممکن است خرابی‌های ماهرانه‌ای در برخی وب‌سایت‌ها ایجاد کند.</translation>
-<translation id="6662016084451426657">خطای همگام‌سازی: برای فعال کردن همگام‌سازی با سرپرست خود تماس بگیرید.</translation>
 <translation id="6663792236418322902">برای بازیابی این فایل در فرصتی دیگر به گذرواژه انتخابی شما لازم است. لطفاً آن را در مکانی امن نگهداری کنید.</translation>
 <translation id="6664237456442406323">‏متأسفانه، رایانه شما با یک شناسه سخت‌افزار ناقص پیکربندی شده است. این موضوح سیستم عامل Chrome را از به‌روزرسانی با جدیدترین اصلاحات امنیتی باز می‌دارد که <ph name="BEGIN_BOLD" />می‌تواند رایانه شما را در برابر حملات مخرب آسیب‌پذیر نماید<ph name="END_BOLD" />.</translation>
 <translation id="6664774537677393800">هنگام باز کردن نمایه‌تان مشکلی پیش آمد. لطفاً از سیستم خارج شوید و دوباره به آن وارد شوید.</translation>
@@ -4475,7 +4461,6 @@
 <translation id="6985235333261347343">‏نماینده بازیابی کلید Microsoft</translation>
 <translation id="6985276906761169321">شناسه:</translation>
 <translation id="6985607387932385770">چاپگرها</translation>
-<translation id="6986605181115043220">‏متأسفم، Sync کار خود را متوقف کرد. <ph name="BEGIN_LINK" />بیشتر بیاموزید<ph name="END_LINK" /></translation>
 <translation id="6990081529015358884">فضای شما تمام شده است</translation>
 <translation id="6990778048354947307">زمینه تیره</translation>
 <translation id="6991128190741664836">بعداً</translation>
@@ -5098,7 +5083,6 @@
 <translation id="7839963980801867006">‏انتخاب کنید کدام IME برنامه افزودنی در منوی زبان فعال شود.</translation>
 <translation id="7842346819602959665">جدیدترین نسخه برنامهٔ افزودنی "<ph name="EXTENSION_NAME" />" به مجوزهای بیشتری نیاز دارد، بنابراین غیر فعال شده است.</translation>
 <translation id="7844992432319478437">به‌روزرسانی تفاوت</translation>
-<translation id="7845920762538502375">به دلیل عدم اتصال به سرور همگام‌سازی، <ph name="PRODUCT_NAME" /> نتوانست داده‌های شما را همگام‌سازی کند. در حال سعی مجدد...</translation>
 <translation id="7846076177841592234">لغو انتخاب</translation>
 <translation id="7846634333498149051">صفحه‌کلید</translation>
 <translation id="7847212883280406910">‏برای رفتن به <ph name="IDS_SHORT_PRODUCT_OS_NAME" /> کلیدهای Ctrl + Alt + S را فشار دهید.</translation>
@@ -5382,7 +5366,6 @@
 <translation id="8213577208796878755">یک دستگاه دیگر در دسترس است.</translation>
 <translation id="8214489666383623925">باز کردن فایل...</translation>
 <translation id="8214962590150211830">حذف این شخص</translation>
-<translation id="8216278935161109887">خارج شده و دوباره وارد سیستم شوید</translation>
 <translation id="8217399928341212914">ادامه مسدود کردن بارگیری خودکار چندین فایل</translation>
 <translation id="8221831106892617387">‏فعال شد: 2G کند</translation>
 <translation id="8222121761382682759">حذف نصب...</translation>
@@ -5529,7 +5512,6 @@
 <translation id="8418113698656761985">صفحه‌کلید رومانیایی</translation>
 <translation id="8418445294933751433">&amp;نمایش به‌صورت برگه</translation>
 <translation id="8420060421540670057">‏نمایش فایل‌های سندنگار Google</translation>
-<translation id="8420139899406509438">‏فعال (غیرفعال شدن Flash هنگام از دست دادن کانون صوتی، آزمایشی)</translation>
 <translation id="842274098655511832">‏افزونه‌های پیش‌نویس WebGL</translation>
 <translation id="8424039430705546751">پایین</translation>
 <translation id="8425213833346101688">تغییر</translation>
@@ -6023,7 +6005,6 @@
 <translation id="9052208328806230490">شما ثبت چاپگرهای خود را با <ph name="CLOUD_PRINT_NAME" /> از طریق حساب <ph name="EMAIL" /> انجام داده‌اید</translation>
 <translation id="9052234664411715138">تکمیل کارت اعتباری با کمک</translation>
 <translation id="9053860306922028466">لطفاً ابتدا چیزی را که می‌خواهید به‌اشتراک بگذارید انتخاب کنید.</translation>
-<translation id="9053965862400494292">هنگام تلاش برای همگامسازی خطایی رخ داد.</translation>
 <translation id="9056034633062863292">‏در حال به‌روزرسانی Chromebox</translation>
 <translation id="9056810968620647706">مورد منطبقی یافت نشد.</translation>
 <translation id="9057119625587205566">هیچ چاپگری در این نزدیکی نیست</translation>
@@ -6177,6 +6158,7 @@
 <translation id="971058943242239041">‏استفاده از عناصر «window-controls» در HTML را در برنامه‌های بسته‌بندی شده فعال می‌کند.</translation>
 <translation id="971774202801778802">نشانی وب نشانک</translation>
 <translation id="973473557718930265">خروج</translation>
+<translation id="974555521953189084">برای شروع همگام‌سازی، عبارت عبورتان را وارد کنید</translation>
 <translation id="97534916655989966">به ویدیوهای بی‌صداشده اجازه پخش خودکار می‌دهد.</translation>
 <translation id="981121421437150478">آفلاین</translation>
 <translation id="984870422930397199">نشان‌گذاری صفحه‌های آفلاین را در صفحه «برگه جدید» فعال می‌کند. تنها در صورتی که صفحه‌های آفلاین فعال باشند، امکان‌پذیر است.</translation>

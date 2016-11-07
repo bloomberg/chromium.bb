@@ -386,6 +386,7 @@
 <translation id="5171045022955879922">ይፈልጉ ወይም ዩአርኤል ይጻፉ</translation>
 <translation id="5172758083709347301">ማሽን</translation>
 <translation id="5179510805599951267">በ<ph name="ORIGINAL_LANGUAGE" /> አይደለም? ይህን ስህተት ሪፖርት ያድርጉ</translation>
+<translation id="5181140330217080051">በማውረድ ላይ</translation>
 <translation id="5190835502935405962">የዕልባቶች አሞሌ</translation>
 <translation id="5199729219167945352">ሙከራዎች</translation>
 <translation id="5199841536747119669">የእርስዎ የአስተያየት ጥቆማዎች እዚህ ይመጣሉ</translation>
@@ -666,7 +667,6 @@ nil</translation>
 <translation id="8498891568109133222"><ph name="HOST_NAME" /> ምላሽ ለመስጠት ከልክ በላይ ረዥም ጊዜ ወስዷል።</translation>
 <translation id="852346902619691059">ይህ አገልጋይ <ph name="DOMAIN" /> መሆኑን ማረጋገጥ አልቻለም፤ የዕውቅና ማረጋገጫው በእርስዎ መሣሪያ ሥርዓተ ክወና የታመነ አይደለም። ይህ በተሳሳተ ውቅረት ወይም የእርስዎን ግንኙነት በሚጠልፍ አጥቂ ምክንያት የተፈጠረ ሊሆን ይችላል። <ph name="BEGIN_LEARN_MORE_LINK" />የበለጠ ለመረዳት<ph name="END_LEARN_MORE_LINK" />።</translation>
 <translation id="8530504477309582336">ይህ የካርድ አይነት በGoogle ክፍያዎች አይደገፍም። እባክዎ የተለየ ካርድ ይምረጡ።</translation>
-<translation id="8550022383519221471">የማመሳሰል አገልግሎት ለጎራዎ አይገኝም።</translation>
 <translation id="8553075262323480129">የገጹ ቋንቋ ሊታወቅ ስላልቻለ ትርጉሙ አልተሳካም።</translation>
 <translation id="8559762987265718583">የእርስዎ መሣሪያ ቀን (<ph name="DATE_AND_TIME" />) ልክ ስላልሆነ ወደ <ph name="BEGIN_BOLD" /><ph name="DOMAIN" /><ph name="END_BOLD" /> የግል ግንኙነት መመስረት አይቻልም።</translation>
 <translation id="856992080682148">የዚህ ጣቢያ የዕውቅና ማረጋገጫ አገልግሎት 2017 ላይ ያበቃል፣ እና የዕውቅና ማረጋገጫ ሰንሰለቱ SHA-1 በመጠቀም የተፈረመ የዕውቅና ማረጋገጫን ያካትታል።</translation>
@@ -674,7 +674,6 @@ nil</translation>
 <translation id="8591846766485502580">ከእርስዎ ወላጆች አንዳቸው ይህን ጣቢያ ሳላገዱት ይህን መልእክት እየተመለከቱ ነው።</translation>
 <translation id="859285277496340001">የእውቅና ማረጋገጫው ተሽሮ እንደሆነ የሚታይበት ምንም ስልት አይገልጽም።</translation>
 <translation id="8647750283161643317">ሁሉንም ወደ ነባሪ ዳግም አስጀምር</translation>
-<translation id="8680787084697685621">የመለያ መግቢያ ዝርዝሮች ጊዜ ያለፈባቸው ናቸው።</translation>
 <translation id="8703575177326907206">ከ<ph name="DOMAIN" /> ጋር ያለዎት ግንኙነት አልተመሰጠረም</translation>
 <translation id="8725066075913043281">እንደገና ይሞክሩ</translation>
 <translation id="8728672262656704056">ማንነት የማያሳውቅ ሁነታ ውስጥ ገብተዋል</translation>
@@ -704,7 +703,6 @@ nil</translation>
 <translation id="8987927404178983737">ወር</translation>
 <translation id="8989148748219918422"><ph name="ORGANIZATION" /> [<ph name="COUNTRY" />]</translation>
 <translation id="9001074447101275817">ተኪ <ph name="DOMAIN" /> የተጠቃሚ ስም እና የይለፍ ቃል ያስፈልገዋል።</translation>
-<translation id="9008201768610948239">ችላ በል</translation>
 <translation id="901974403500617787">በመላው ስርዓት ላይ የሚተገበሩ ጥቆማዎች በባለቤቱ ብቻ ነው ሊዋቀሩ የሚችሉት፦ <ph name="OWNER_EMAIL" />።</translation>
 <translation id="9020542370529661692">ይህ ገጽ ወደ <ph name="TARGET_LANGUAGE" /> ተተርጉሟል</translation>
 <translation id="9038649477754266430">ገጾችን ይበልጥ በፍጥነት ለመጫን የግመታ አገልግሎትን ይጠቀሙ</translation>

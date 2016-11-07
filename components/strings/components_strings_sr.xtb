@@ -387,6 +387,7 @@
 <translation id="5171045022955879922">Претражите или унесите URL адресу</translation>
 <translation id="5172758083709347301">Рачунар</translation>
 <translation id="5179510805599951267">Није <ph name="ORIGINAL_LANGUAGE" />? Пријавите ову грешку</translation>
+<translation id="5181140330217080051">Преузимање</translation>
 <translation id="5190835502935405962">Трака са обележивачима</translation>
 <translation id="5199729219167945352">Експерименти</translation>
 <translation id="5199841536747119669">Предлози ће се приказивати овде</translation>
@@ -664,7 +665,6 @@
 <translation id="8498891568109133222">Одговор хоста <ph name="HOST_NAME" /> је трајао предуго.</translation>
 <translation id="852346902619691059">Овај сервер не може да докаже да је <ph name="DOMAIN" />; оперативни систем вашег уређаја нема поверења у његов безбедносни сертификат. Узрок томе је можда погрешна конфигурација или нападач који је прекинуо везу. <ph name="BEGIN_LEARN_MORE_LINK" />Сазнајте више<ph name="END_LEARN_MORE_LINK" />.</translation>
 <translation id="8530504477309582336">Google Payments не подржава овај тип картице. Изаберите неку другу картицу.</translation>
-<translation id="8550022383519221471">Услуга синхронизације није доступна за ваш домен.</translation>
 <translation id="8553075262323480129">Превод није успео јер језик странице није могао да буде утврђен.</translation>
 <translation id="8559762987265718583">Није могуће успоставити приватну везу са доменом <ph name="BEGIN_BOLD" /><ph name="DOMAIN" /><ph name="END_BOLD" /> јер датум и време на уређају (<ph name="DATE_AND_TIME" />) нису тачни.</translation>
 <translation id="856992080682148">Сертификат за овај сајт истиче 2017, а ланац сертификата садржи сертификат потписан помоћу алгоритма SHA-1.</translation>
@@ -672,7 +672,6 @@
 <translation id="8591846766485502580">Ову поруку видите јер је један од ваших родитеља блокирао овај сајт.</translation>
 <translation id="859285277496340001">Сертификат не наводи механизам којим се проверава да ли је опозван.</translation>
 <translation id="8647750283161643317">Врати све на подразумевано</translation>
-<translation id="8680787084697685621">Детаљи за пријављивање на налог су застарели.</translation>
 <translation id="8703575177326907206">Ваша веза са доменом <ph name="DOMAIN" /> није шифрована.</translation>
 <translation id="8725066075913043281">Пробајте поново</translation>
 <translation id="8728672262656704056">Прешли сте у режим Без архивирања</translation>
@@ -702,7 +701,6 @@
 <translation id="8987927404178983737">Месец</translation>
 <translation id="8989148748219918422"><ph name="ORGANIZATION" /> [<ph name="COUNTRY" />]</translation>
 <translation id="9001074447101275817">Прокси <ph name="DOMAIN" /> захтева корисничко име и лозинку.</translation>
-<translation id="9008201768610948239">Игнориши</translation>
 <translation id="901974403500617787">Ознаке које се примењују у целом систему може да подеси само власник: <ph name="OWNER_EMAIL" />.</translation>
 <translation id="9020542370529661692">Ова страница је преведена на <ph name="TARGET_LANGUAGE" /></translation>
 <translation id="9038649477754266430">Користите услугу предвиђања да бисте брже учитавали странице</translation>

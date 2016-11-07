@@ -387,6 +387,7 @@
 <translation id="5171045022955879922">Wyszukaj lub wpisz URL</translation>
 <translation id="5172758083709347301">Komputer</translation>
 <translation id="5179510805599951267">Jeśli to nie jest język <ph name="ORIGINAL_LANGUAGE" />, zgłoś błąd</translation>
+<translation id="5181140330217080051">Pobieranie</translation>
 <translation id="5190835502935405962">Pasek zakładek</translation>
 <translation id="5199729219167945352">Eksperymenty</translation>
 <translation id="5199841536747119669">Tutaj wyświetlają się sugestie</translation>
@@ -665,7 +666,6 @@ Psst! Następnym razem możesz użyć trybu incognito <ph name="SHORTCUT_KEY" />
 <translation id="8498891568109133222">Serwer <ph name="HOST_NAME" /> potrzebował zbyt wiele czasu na odpowiedź.</translation>
 <translation id="852346902619691059">Ten serwer nie mógł udowodnić, że należy do <ph name="DOMAIN" />. Jego certyfikat nie jest zaufany w systemie operacyjnym Twojego urządzenia. Może to być spowodowane błędną konfiguracją lub przechwyceniem połączenia przez atakującego. <ph name="BEGIN_LEARN_MORE_LINK" />Dowiedz się więcej<ph name="END_LEARN_MORE_LINK" />.</translation>
 <translation id="8530504477309582336">Karty tego typu nie są obsługiwane w Google Payments. Wybierz inną.</translation>
-<translation id="8550022383519221471">Usługa synchronizacji nie jest dostępna w Twojej domenie.</translation>
 <translation id="8553075262323480129">Tłumaczenie nie powiodło się, ponieważ nie można określić języka strony.</translation>
 <translation id="8559762987265718583">Nie można nawiązać prywatnego połączenia z <ph name="BEGIN_BOLD" /><ph name="DOMAIN" /><ph name="END_BOLD" />, ponieważ data i godzina (<ph name="DATE_AND_TIME" />) ustawione na urządzeniu są nieprawidłowe.</translation>
 <translation id="856992080682148">Certyfikat tej witryny wygasa w 2017 roku lub później, a łańcuch certyfikatów zawiera certyfikat podpisany algorytmem SHA-1.</translation>
@@ -673,7 +673,6 @@ Psst! Następnym razem możesz użyć trybu incognito <ph name="SHORTCUT_KEY" />
 <translation id="8591846766485502580">Ten komunikat pojawia się, ponieważ Twój rodzic zablokował tę stronę.</translation>
 <translation id="859285277496340001">Certyfikat nie określa mechanizmu do sprawdzania, czy został on unieważniony.</translation>
 <translation id="8647750283161643317">Przywróć wszystkie ustawienia domyślne</translation>
-<translation id="8680787084697685621">Dane logowania na konto są nieaktualne.</translation>
 <translation id="8703575177326907206">Połączenie z witryną <ph name="DOMAIN" /> nie jest szyfrowane.</translation>
 <translation id="8725066075913043281">Spróbuj ponownie</translation>
 <translation id="8728672262656704056">Jesteś w trybie incognito</translation>
@@ -703,7 +702,6 @@ Psst! Następnym razem możesz użyć trybu incognito <ph name="SHORTCUT_KEY" />
 <translation id="8987927404178983737">Miesiąc</translation>
 <translation id="8989148748219918422"><ph name="ORGANIZATION" /> [<ph name="COUNTRY" />]</translation>
 <translation id="9001074447101275817">Serwer proxy <ph name="DOMAIN" /> wymaga nazwy użytkownika i hasła.</translation>
-<translation id="9008201768610948239">Ignoruj</translation>
 <translation id="901974403500617787">Flagi stosowane w całym systemie może ustawić tylko właściciel: <ph name="OWNER_EMAIL" />.</translation>
 <translation id="9020542370529661692">Ta strona została przetłumaczona na <ph name="TARGET_LANGUAGE" />.</translation>
 <translation id="9038649477754266430">Użyj usługi podpowiedzi, by strony ładowały się szybciej</translation>

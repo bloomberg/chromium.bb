@@ -387,6 +387,7 @@
 <translation id="5171045022955879922">Poiščite ali vnesite URL</translation>
 <translation id="5172758083709347301">Računalnik</translation>
 <translation id="5179510805599951267">Ni v <ph name="ORIGINAL_LANGUAGE" />? Obvestite nas o tej napaki</translation>
+<translation id="5181140330217080051">Prenos</translation>
 <translation id="5190835502935405962">Vrstica z zaznamki</translation>
 <translation id="5199729219167945352">Poskusi</translation>
 <translation id="5199841536747119669">Tu so prikazani predlogi</translation>
@@ -665,7 +666,6 @@ Pst! Naslednjič vam lahko pride prav bližnjica <ph name="SHORTCUT_KEY" /> za n
 <translation id="8498891568109133222">Spletno mesto <ph name="HOST_NAME" /> se ni odzvalo v ustreznem času.</translation>
 <translation id="852346902619691059">Temu strežniku ni uspelo dokazati, da je domena <ph name="DOMAIN" />; operacijski sistem vaše naprave ne zaupa njegovemu varnostnemu potrdilu. Razlog za to je lahko napačna konfiguracija ali napadalčevo prestrezanje povezave. <ph name="BEGIN_LEARN_MORE_LINK" />Več o tem<ph name="END_LEARN_MORE_LINK" />.</translation>
 <translation id="8530504477309582336">Ta vrsta kartice ni podprta v storitvi Google Payments. Izberite drugo kartico.</translation>
-<translation id="8550022383519221471">Sinhronizacija ni na voljo za vašo domeno.</translation>
 <translation id="8553075262323480129">Prevod ni uspel, ker ni mogoče določiti jezika strani.</translation>
 <translation id="8559762987265718583">Zasebne povezave z domeno <ph name="BEGIN_BOLD" /><ph name="DOMAIN" /><ph name="END_BOLD" /> ni mogoče vzpostaviti, ker sta datum in ura (<ph name="DATE_AND_TIME" />) v napravi nepravilna.</translation>
 <translation id="856992080682148">Potrdilo za to spletno mesto poteče leta 2017 ali pozneje in veriga potrdil vsebuje potrdilo, podpisano z algoritmom SHA-1.</translation>
@@ -673,7 +673,6 @@ Pst! Naslednjič vam lahko pride prav bližnjica <ph name="SHORTCUT_KEY" /> za n
 <translation id="8591846766485502580">To sporočilo je prikazano, ker je eden od staršev blokiral to spletno mesto.</translation>
 <translation id="859285277496340001">Potrdilo ne navaja mehanizma za preverjanje tega, ali je bilo preklicano.</translation>
 <translation id="8647750283161643317">Ponastavi vse na privzete</translation>
-<translation id="8680787084697685621">Podrobnosti prijave v račun so zastarele.</translation>
 <translation id="8703575177326907206">Vaša povezava z <ph name="DOMAIN" /> ni kodirana.</translation>
 <translation id="8725066075913043281">Poskusite znova</translation>
 <translation id="8728672262656704056">Uporabljate način brez beleženja zgodovine</translation>
@@ -703,7 +702,6 @@ Pst! Naslednjič vam lahko pride prav bližnjica <ph name="SHORTCUT_KEY" /> za n
 <translation id="8987927404178983737">Mesec</translation>
 <translation id="8989148748219918422"><ph name="ORGANIZATION" /> [<ph name="COUNTRY" />]</translation>
 <translation id="9001074447101275817">Strežnik proxy <ph name="DOMAIN" /> zahteva uporabniško ime in geslo.</translation>
-<translation id="9008201768610948239">Prezri</translation>
 <translation id="901974403500617787">Zastavice, ki se uporabijo v celotnem sistemu, lahko nastavi samo lastnik: <ph name="OWNER_EMAIL" />.</translation>
 <translation id="9020542370529661692">Ta stran je prevedena v jezik <ph name="TARGET_LANGUAGE" /></translation>
 <translation id="9038649477754266430">Uporaba storitve predvidevanja za hitrejše nalaganje strani</translation>

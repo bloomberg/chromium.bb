@@ -388,6 +388,7 @@
 <translation id="5171045022955879922">Kirjoita hakusanoja tai URL-osoite</translation>
 <translation id="5172758083709347301">Kaikki tietokoneen käyttäjät</translation>
 <translation id="5179510805599951267">Eikö kieli ole <ph name="ORIGINAL_LANGUAGE" />? Ilmoita virheestä</translation>
+<translation id="5181140330217080051">Ladataan</translation>
 <translation id="5190835502935405962">Kirjanmerkkipalkki</translation>
 <translation id="5199729219167945352">Kokeilut</translation>
 <translation id="5199841536747119669">Ehdotuksesi näkyvät tässä.</translation>
@@ -666,7 +667,6 @@ Psst! Suosittelemme käyttämään ensi kerralla incognito-tilaa <ph name="SHORT
 <translation id="8498891568109133222"><ph name="HOST_NAME" /> ei vastannut riittävän nopeasti.</translation>
 <translation id="852346902619691059">Palvelin ei voinut todistaa olevansa <ph name="DOMAIN" />, sillä laitteesi käyttöjärjestelmä ei luota sen suojausvarmenteeseen. Tämä voi johtua määritysvirheestä tai hyökkäyksestä, jonka tavoitteena on verkkoyhteytesi sieppaaminen. <ph name="BEGIN_LEARN_MORE_LINK" />Lisätietoja<ph name="END_LEARN_MORE_LINK" /></translation>
 <translation id="8530504477309582336">Google Payments ei tue tämän tyyppistä korttia. Valitse eri kortti.</translation>
-<translation id="8550022383519221471">Synkronointipalvelu ei ole käytettävissä verkkotunnuksessasi.</translation>
 <translation id="8553075262323480129">Käännös epäonnistui, sillä sivun kieltä ei voitu määrittää.</translation>
 <translation id="8559762987265718583">Verkkotunnukseen <ph name="BEGIN_BOLD" /><ph name="DOMAIN" /><ph name="END_BOLD" /> ei voi muodostaa salattua yhteyttä, koska laitteesi aika ja päivämäärä (<ph name="DATE_AND_TIME" />) ovat virheelliset.</translation>
 <translation id="856992080682148">Tämän sivuston varmenne vanhenee vuonna 2017 tai myöhemmin, ja varmenneketju sisältää varmenteen, joka on allekirjoitettu SHA-1:llä.</translation>
@@ -674,7 +674,6 @@ Psst! Suosittelemme käyttämään ensi kerralla incognito-tilaa <ph name="SHORT
 <translation id="8591846766485502580">Tämä viesti näytetään, koska toinen vanhemmistasi esti tämän sivuston.</translation>
 <translation id="859285277496340001">Varmenne ei määritä mekanismia, jonka avulla voitaisiin tarkistaa, onko varmenne kumottu.</translation>
 <translation id="8647750283161643317">Palauta kaikki oletusarvoon</translation>
-<translation id="8680787084697685621">Tilin kirjautumistiedot ovat vanhentuneet.</translation>
 <translation id="8703575177326907206">Yhteyttäsi verkkotunnukseen <ph name="DOMAIN" /> ei ole salattu.</translation>
 <translation id="8725066075913043281">Yritä uudelleen</translation>
 <translation id="8728672262656704056">Olet muuttunut näkymättömäksi</translation>
@@ -704,7 +703,6 @@ Psst! Suosittelemme käyttämään ensi kerralla incognito-tilaa <ph name="SHORT
 <translation id="8987927404178983737">Kuukausi</translation>
 <translation id="8989148748219918422"><ph name="ORGANIZATION" /> [<ph name="COUNTRY" />]</translation>
 <translation id="9001074447101275817">Välityspalvelin <ph name="DOMAIN" /> vaatii käyttäjänimen ja salasanan.</translation>
-<translation id="9008201768610948239">Ohita</translation>
 <translation id="901974403500617787">Koko järjestelmään vaikuttavat merkinnät voi tehdä vain omistaja: <ph name="OWNER_EMAIL" />.</translation>
 <translation id="9020542370529661692">Sivu on käännetty kielelle <ph name="TARGET_LANGUAGE" /></translation>
 <translation id="9038649477754266430">Ennakointipalvelun avulla voit ladata sivuja nopeammin</translation>

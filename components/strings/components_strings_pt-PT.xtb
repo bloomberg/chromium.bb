@@ -387,6 +387,7 @@
 <translation id="5171045022955879922">Pesquisar ou escrever URL</translation>
 <translation id="5172758083709347301">Equipamento</translation>
 <translation id="5179510805599951267">Não está em <ph name="ORIGINAL_LANGUAGE" />? Comunicar este erro</translation>
+<translation id="5181140330217080051">A transferir</translation>
 <translation id="5190835502935405962">Barra de marcadores</translation>
 <translation id="5199729219167945352">Experiências</translation>
 <translation id="5199841536747119669">As suas sugestões são apresentadas aqui</translation>
@@ -665,7 +666,6 @@ O modo de navegação anónima <ph name="SHORTCUT_KEY" /> pode ser útil da pró
 <translation id="8498891568109133222"><ph name="HOST_NAME" /> demorou demasiado tempo a responder.</translation>
 <translation id="852346902619691059">Este servidor não conseguiu provar que é <ph name="DOMAIN" />; o sistema operativo do seu dispositivo não confia no respetivo certificado de segurança. Isto pode ser o resultado de uma configuração incorreta ou de um utilizador mal-intencionado que intercetou a sua ligação. <ph name="BEGIN_LEARN_MORE_LINK" />Saiba mais<ph name="END_LEARN_MORE_LINK" />.</translation>
 <translation id="8530504477309582336">O Google Payments não é compatível com este tipo de cartão. Selecione outro cartão.</translation>
-<translation id="8550022383519221471">O serviço de sincronização não está disponível para o seu domínio.</translation>
 <translation id="8553075262323480129">A tradução falhou porque não foi possível determinar o idioma da página.</translation>
 <translation id="8559762987265718583">Não é possível estabelecer uma ligação privada a <ph name="BEGIN_BOLD" /><ph name="DOMAIN" /><ph name="END_BOLD" />, porque a data e a hora do seu dispositivo (<ph name="DATE_AND_TIME" />) estão incorretas.</translation>
 <translation id="856992080682148">O certificado deste site expira em 2017 ou depois e a cadeia de certificados inclui um certificado assinado através de SHA-1.</translation>
@@ -673,7 +673,6 @@ O modo de navegação anónima <ph name="SHORTCUT_KEY" /> pode ser útil da pró
 <translation id="8591846766485502580">Estás a ver esta mensagem porque um dos teus pais bloqueou este site.</translation>
 <translation id="859285277496340001">O certificado não indica um mecanismo para verificar se foi ou não revogado.</translation>
 <translation id="8647750283161643317">Repor todas as predefinições</translation>
-<translation id="8680787084697685621">Os detalhes de início de sessão na conta estão desactualizados.</translation>
 <translation id="8703575177326907206">A sua ligação a <ph name="DOMAIN" /> não está encriptada.</translation>
 <translation id="8725066075913043281">Tentar novamente</translation>
 <translation id="8728672262656704056">Está anónimo</translation>
@@ -703,7 +702,6 @@ O modo de navegação anónima <ph name="SHORTCUT_KEY" /> pode ser útil da pró
 <translation id="8987927404178983737">Mês</translation>
 <translation id="8989148748219918422"><ph name="ORGANIZATION" /> [<ph name="COUNTRY" />]</translation>
 <translation id="9001074447101275817">O proxy <ph name="DOMAIN" /> necessita de um nome de utilizador e de uma palavra-passe.</translation>
-<translation id="9008201768610948239">Ignorar</translation>
 <translation id="901974403500617787">Os sinalizadores que se aplicam a todo o sistema apenas podem ser definidos pelo proprietário: <ph name="OWNER_EMAIL" />.</translation>
 <translation id="9020542370529661692">Esta página foi traduzida para <ph name="TARGET_LANGUAGE" /></translation>
 <translation id="9038649477754266430">Utilizar um serviço de previsão para carregar páginas mais rapidamente</translation>

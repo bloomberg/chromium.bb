@@ -89,6 +89,7 @@
 <translation id="3294437725009624529">Гість</translation>
 <translation id="3335772982573114336">Нова нотатка</translation>
 <translation id="3364721542077212959">Інструменти стилуса</translation>
+<translation id="3368922792935385530">Підключено</translation>
 <translation id="3371140690572404006">пристрій, під’єднаний до порту USB-C (праворуч на передній панелі)</translation>
 <translation id="3445925074670675829">Пристрій із портом USB типу C</translation>
 <translation id="3473479545200714844">Лупа</translation>
@@ -125,6 +126,7 @@
 <translation id="4250680216510889253">ні</translation>
 <translation id="4279490309300973883">Дзеркальне відображення</translation>
 <translation id="4321179778687042513">ctrl</translation>
+<translation id="4378551569595875038">Підключення…</translation>
 <translation id="4421231901400348175">Спільний доступ до екрана для користувача <ph name="HELPER_NAME" /> через віддалену допомогу.</translation>
 <translation id="4430019312045809116">Гучність</translation>
 <translation id="4448844063988177157">Пошук Wi-Fi мереж...</translation>
@@ -280,4 +282,5 @@
 <translation id="923686485342484400">Щоб вийти, двічі натисніть Control Shift Q.</translation>
 <translation id="938582441709398163">Розкладка клавіатури</translation>
 <translation id="939252827960237676">Не вдалося зберегти знімок екрана</translation>
+<translation id="952992212772159698">Не активовано</translation>
 </translationbundle>

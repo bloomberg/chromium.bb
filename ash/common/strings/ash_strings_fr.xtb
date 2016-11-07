@@ -89,6 +89,7 @@ Appuyez sur Search ou Maj pour le désactiver.</translation>
 <translation id="3294437725009624529">Invité</translation>
 <translation id="3335772982573114336">Nouvelle note</translation>
 <translation id="3364721542077212959">Outils de stylet</translation>
+<translation id="3368922792935385530">Connecté</translation>
 <translation id="3371140690572404006">Appareil USB de type C (port situé sur la droite de l'appareil, à l'avant)</translation>
 <translation id="3445925074670675829">Appareil USB de type C</translation>
 <translation id="3473479545200714844">Loupe</translation>
@@ -125,6 +126,7 @@ Appuyez sur Search ou Maj pour le désactiver.</translation>
 <translation id="4250680216510889253">Non</translation>
 <translation id="4279490309300973883">Mise en miroir</translation>
 <translation id="4321179778687042513">ctrl</translation>
+<translation id="4378551569595875038">Connexion</translation>
 <translation id="4421231901400348175">Partager le contrôle de votre écran avec <ph name="HELPER_NAME" /> via l'assistance à distance</translation>
 <translation id="4430019312045809116">Volume</translation>
 <translation id="4448844063988177157">Recherche de réseaux Wi-Fi...</translation>
@@ -280,4 +282,5 @@ Appuyez sur Alt + Recherche ou Maj pour le désactiver.</translation>
 <translation id="923686485342484400">Appuyez deux fois sur Contrôle + Maj + Q pour vous déconnecter.</translation>
 <translation id="938582441709398163">Clavier en superposition</translation>
 <translation id="939252827960237676">Échec d'enregistrement de la capture d'écran.</translation>
+<translation id="952992212772159698">Désactivé</translation>
 </translationbundle>

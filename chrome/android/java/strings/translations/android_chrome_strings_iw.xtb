@@ -51,7 +51,6 @@
 <translation id="1506061864768559482">מנוע חיפוש</translation>
 <translation id="1513352483775369820">סימניות והיסטוריית אתרים</translation>
 <translation id="1513858653616922153">מחק סיסמה</translation>
-<translation id="1546112724822176246">אינך רואה את המכשיר? <ph name="BEGIN_LINK" />קבל עזרה<ph name="END_LINK" />.</translation>
 <translation id="1549000191223877751">העבר לחלון האחר</translation>
 <translation id="1553358976309200471">‏עדכן את Chrome</translation>
 <translation id="1571304935088121812">העתק שם משתמש</translation>
@@ -72,7 +71,6 @@
 <translation id="1749561566933687563">סנכרון הסימניות שלך</translation>
 <translation id="17513872634828108">כרטיסיות פתוחות</translation>
 <translation id="1756600373018374892">לחץ על לחצן זה כדי לקבל גישה מהירה לכרטיסיות שלך.</translation>
-<translation id="1774241295142531736">לא רואה את המכשיר שלך? <ph name="BEGIN_LINK1" />קבל עזרה<ph name="END_LINK1" /> או <ph name="BEGIN_LINK2" />סרוק מחדש<ph name="END_LINK2" />.</translation>
 <translation id="1807246157184219062">בהיר</translation>
 <translation id="1825719650605518411">חוויית הפעלה ראשונה</translation>
 <translation id="1826516787628120939">מתבצעת בדיקה</translation>
@@ -156,7 +154,6 @@
 <translation id="2707726405694321444">רענן את הדף</translation>
 <translation id="2709516037105925701">מילוי אוטומטי</translation>
 <translation id="271033894570825754">חדש</translation>
-<translation id="2748463065602559597">‏אתה מציג דף Google Chrome מאובטח.</translation>
 <translation id="2762000892062317888">ברגע זה</translation>
 <translation id="2777555524387840389">נותרו <ph name="SECONDS" /> שניות</translation>
 <translation id="2781151931089541271">נותרה שניה אחת</translation>
@@ -233,7 +230,6 @@
 <translation id="3656115297268584622">‏הפעל מיקום ב<ph name="BEGIN_LINK" />הגדרות Android<ph name="END_LINK" />.</translation>
 <translation id="3661699943263275414">‏אתרים של צד שלישי יוכלו לשמור ולקרוא נתונים של קובצי Cookie</translation>
 <translation id="3672452749423051839">הצעות לשגיאת ניווט</translation>
-<translation id="3690847815241521170">מחפש מכשירים... <ph name="BEGIN_LINK" />קבל עזרה<ph name="END_LINK" /></translation>
 <translation id="3706658020782046159">בחר כתובת למשלוח כדי לבדוק את אמצעי המשלוח ואת הדרישות למשלוח.</translation>
 <translation id="3716158070938632480">יש דפי אינטרנט בסביבה הקרובה</translation>
 <translation id="3738139272394829648">גע כדי לחפש</translation>
@@ -322,7 +318,6 @@
 <translation id="4807098396393229769">שם על הכרטיס</translation>
 <translation id="4816465935029283692">סוגי נתונים</translation>
 <translation id="4827948050554950725">הוסף כרטיס אשראי</translation>
-<translation id="4836364883164334657">החיבור אל האתר הזה אינו פרטי. ייתכן שתוקפים מנסים לגנוב את המידע שלך (לדוגמה: תמונות, סיסמאות, הודעות וכרטיסי אשראי) מ-<ph name="DOMAIN_NAME" />.</translation>
 <translation id="4850886885716139402">הצג</translation>
 <translation id="4881695831933465202">פתח</translation>
 <translation id="4885273946141277891">‏מספר בלתי נתמך של מופעי Chrome.</translation>
@@ -355,6 +350,7 @@
 <translation id="5171045022955879922">חפש או הקלד כתובת אתר</translation>
 <translation id="5184329579814168207">‏פתח ב-Chrome</translation>
 <translation id="5199929503336119739">פרופיל עבודה</translation>
+<translation id="5209320130288484488">לא נמצאו מכשירים</translation>
 <translation id="5210365745912300556">סגור כרטיסייה</translation>
 <translation id="5222676887888702881">יציאה</translation>
 <translation id="5233638681132016545">כרטיסייה חדשה</translation>
@@ -389,7 +385,6 @@
 <translation id="5556459405103347317">טען שוב</translation>
 <translation id="5565871407246142825">כרטיסי אשראי</translation>
 <translation id="5578795271662203820">חפש את התמונה הזו ב-<ph name="SEARCH_ENGINE" /></translation>
-<translation id="5579997910517802656">לא נמצאו מכשירים.</translation>
 <translation id="5595485650161345191">ערוך כתובת</translation>
 <translation id="5596627076506792578">אפשרויות נוספות</translation>
 <translation id="5626134646977739690">שם:</translation>
@@ -418,7 +413,6 @@
 <translation id="583281660410589416">לא ידוע</translation>
 <translation id="5832934273103296195">מורחב - הקש כדי לכווץ</translation>
 <translation id="583891442612896534">‏ל-Chrome אין אפשרות לגשת אל שרתי Google לדחיסת נתונים. ייתכן שהחיסכון בנתונים יהיה מוגבל.</translation>
-<translation id="5843873952582375185">‏לא נמצאו מכשירי Bluetooth.‏ <ph name="BEGIN_LINK" />סרוק שוב<ph name="END_LINK" /></translation>
 <translation id="585027516397408832">‏חוסך הנתונים (Data Saver) מופעל</translation>
 <translation id="5860033963881614850">כבוי</translation>
 <translation id="5867027562311576691">בקרוב יופיעו מאמרים נוספים. שיהיה לך יום נפלא.</translation>
@@ -568,9 +562,9 @@
 <translation id="7596558890252710462">מערכת הפעלה</translation>
 <translation id="7605594153474022051">הסנכרון לא עובד</translation>
 <translation id="7612619742409846846">‏מחובר ל-Google בשם</translation>
+<translation id="7613889955535752492">תפוגה: <ph name="EXPIRATION_MONTH" />/<ph name="EXPIRATION_YEAR" /></translation>
 <translation id="7619072057915878432">הורדת <ph name="FILE_NAME" /> נכשלה עקב כשלים ברשת.</translation>
 <translation id="7626032353295482388">‏ברוכים הבאים ל-Chrome</translation>
-<translation id="7634554953375732414">החיבור שלך לאתר זה אינו פרטי.</translation>
 <translation id="7638584964844754484">ביטוי סיסמה שגוי</translation>
 <translation id="7648422057306047504">‏הצפן סיסמאות באמצעות פרטי הכניסה שלך ל-Google</translation>
 <translation id="7649070708921625228">עזרה</translation>
@@ -638,13 +632,11 @@
 <translation id="8428213095426709021">הגדרות</translation>
 <translation id="8433057134996913067">פעולה זו תוציא אותך מהחשבון ברוב האתרים.</translation>
 <translation id="8447861592752582886">שלול הרשאות מכשיר</translation>
-<translation id="8481940801237642152">החיבור שלך לאתר הזה הוא פרטי, אך ייתכן שמישהו ברשת יכול לשנות את המראה של הדף.</translation>
 <translation id="8487700953926739672">זמין במצב לא מקוון</translation>
 <translation id="8493948351860045254">פנה שטח אחסון</translation>
 <translation id="8497726226069778601">אין מה לראות כאן… בינתיים</translation>
 <translation id="8503813439785031346">שם משתמש</translation>
 <translation id="8514577642972634246">עבור למצב גלישה בסתר</translation>
-<translation id="8518901949365209398">‏באתר הזה נעשה שימוש בתצורת אבטחה חלשה (חתימות SHA-1), כך שייתכן שהחיבור שלך לא יהיה פרטי.</translation>
 <translation id="8523928698583292556">מחק את הסיסמה השמורה</translation>
 <translation id="854522910157234410">פתח דף זה</translation>
 <translation id="8562452229998620586">הסיסמאות השמורות יופיעו כאן.</translation>
@@ -675,7 +667,6 @@
 <translation id="8912362522468806198">‏חשבון Google</translation>
 <translation id="8920114477895755567">ממתין לפרטי ההורים.</translation>
 <translation id="8931159598799892500">‏Chrome + האינטרנט הווירטופיזי</translation>
-<translation id="8941248009481596111">החיבור שלך לאתר זה הוא פרטי.</translation>
 <translation id="8941729603749328384">www.example.com</translation>
 <translation id="8942627711005830162">פתח בחלון האחר</translation>
 <translation id="8959122750345127698">הניווט לא אפשרי: <ph name="URL" /></translation>

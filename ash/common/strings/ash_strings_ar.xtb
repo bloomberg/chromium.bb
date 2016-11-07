@@ -88,6 +88,7 @@
 <translation id="3294437725009624529">ضيف</translation>
 <translation id="3335772982573114336">ملاحظة جديدة</translation>
 <translation id="3364721542077212959">أدوات قلم الشاشة</translation>
+<translation id="3368922792935385530">متصل</translation>
 <translation id="3371140690572404006">‏جهاز USB-C (المنفذ الأمامي الأيمن)</translation>
 <translation id="3445925074670675829">‏جهاز USB-C</translation>
 <translation id="3473479545200714844">مكبّر الشاشة</translation>
@@ -124,6 +125,7 @@
 <translation id="4250680216510889253">لا</translation>
 <translation id="4279490309300973883">النسخ المطابق</translation>
 <translation id="4321179778687042513">ctrl</translation>
+<translation id="4378551569595875038">جارٍ الاتصال...</translation>
 <translation id="4421231901400348175">مشاركة التحكم في شاشتك مع <ph name="HELPER_NAME" /> عن طريق المساعدة عن بُعد.</translation>
 <translation id="4430019312045809116">مستوى الصوت</translation>
 <translation id="4448844063988177157">‏جارِ البحث عن شبكات Wi-Fi...</translation>
@@ -277,4 +279,5 @@
 <translation id="923686485342484400">‏للخروج اضغط على Ctrl Shift Q مرتين.</translation>
 <translation id="938582441709398163">تراكب لوحة المفاتيح</translation>
 <translation id="939252827960237676">أخفق حفظ لقطة الشاشة</translation>
+<translation id="952992212772159698">غير نشطة</translation>
 </translationbundle>

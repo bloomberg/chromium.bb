@@ -387,6 +387,7 @@
 <translation id="5171045022955879922">Rechercher ou saisir une URL</translation>
 <translation id="5172758083709347301">Ordinateur</translation>
 <translation id="5179510805599951267">Cette page n'est pas rédigée en <ph name="ORIGINAL_LANGUAGE" /> ? Signaler l'erreur</translation>
+<translation id="5181140330217080051">Téléchargement</translation>
 <translation id="5190835502935405962">Barre de favoris</translation>
 <translation id="5199729219167945352">Prototypes</translation>
 <translation id="5199841536747119669">Vos suggestions s'affichent ici</translation>
@@ -665,7 +666,6 @@ Conseil : Le mode navigation privée (<ph name="SHORTCUT_KEY" />) pourra vous �
 <translation id="8498891568109133222"><ph name="HOST_NAME" /> a mis trop de temps à répondre.</translation>
 <translation id="852346902619691059">Impossible de vérifier que ce serveur est bien <ph name="DOMAIN" />, car son certificat de sécurité n'est pas considéré comme fiable par le système d'exploitation de votre appareil. Cela peut être dû à une mauvaise configuration ou bien à l'interception de votre connexion par un pirate informatique. <ph name="BEGIN_LEARN_MORE_LINK" />En savoir plus<ph name="END_LEARN_MORE_LINK" /></translation>
 <translation id="8530504477309582336">Ce type de carte n'est pas compatible avec Google Payments. Veuillez sélectionner une autre carte.</translation>
-<translation id="8550022383519221471">Le service de synchronisation n'est pas disponible pour votre domaine.</translation>
 <translation id="8553075262323480129">La traduction a échoué, car nous n'avons pas pu déterminer la langue de la page.</translation>
 <translation id="8559762987265718583">Impossible d'établir une connexion privée à <ph name="BEGIN_BOLD" /><ph name="DOMAIN" /><ph name="END_BOLD" /> : la date et l'heure de votre appareil (<ph name="DATE_AND_TIME" />) sont incorrectes.</translation>
 <translation id="856992080682148">Le certificat de ce site arrive à expiration en 2017 ou à une date ultérieure, et la chaîne de certificats contient un certificat signé avec SHA-1.</translation>
@@ -673,7 +673,6 @@ Conseil : Le mode navigation privée (<ph name="SHORTCUT_KEY" />) pourra vous �
 <translation id="8591846766485502580">Ce message s'affiche, car l'un de tes parents a bloqué ce site.</translation>
 <translation id="859285277496340001">Le certificat n'indique aucun mécanisme permettant de vérifier s'il a été révoqué.</translation>
 <translation id="8647750283161643317">Rétablir tous les tests par défaut</translation>
-<translation id="8680787084697685621">Les informations de connexion au compte sont obsolètes.</translation>
 <translation id="8703575177326907206">Votre connexion à <ph name="DOMAIN" /> n'est pas chiffrée.</translation>
 <translation id="8725066075913043281">Réessayer</translation>
 <translation id="8728672262656704056">Vous êtes passé en mode navigation privée</translation>
@@ -703,7 +702,6 @@ Conseil : Le mode navigation privée (<ph name="SHORTCUT_KEY" />) pourra vous �
 <translation id="8987927404178983737">Mois</translation>
 <translation id="8989148748219918422"><ph name="ORGANIZATION" /> [<ph name="COUNTRY" />]</translation>
 <translation id="9001074447101275817">Le proxy <ph name="DOMAIN" /> nécessite un nom d'utilisateur et un mot de passe.</translation>
-<translation id="9008201768610948239">Ignorer</translation>
 <translation id="901974403500617787">Seul le propriétaire suivant peut définir les options qui s'appliquent à tout le système : <ph name="OWNER_EMAIL" />.</translation>
 <translation id="9020542370529661692">Cette page a été traduite en <ph name="TARGET_LANGUAGE" />.</translation>
 <translation id="9038649477754266430">Utiliser un service de prédiction pour charger les pages plus rapidement</translation>

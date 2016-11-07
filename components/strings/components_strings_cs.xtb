@@ -383,6 +383,7 @@
 <translation id="5171045022955879922">Vyhledávejte či zadejte URL</translation>
 <translation id="5172758083709347301">Počítač</translation>
 <translation id="5179510805599951267">Nejedná se o jazyk <ph name="ORIGINAL_LANGUAGE" />? Nahlaste tuto chybu.</translation>
+<translation id="5181140330217080051">Stahování</translation>
 <translation id="5190835502935405962">Lišta záložek</translation>
 <translation id="5199729219167945352">Experimenty</translation>
 <translation id="5199841536747119669">Zde se zobrazují vaše návrhy</translation>
@@ -660,7 +661,6 @@ Pssst! Příště by se vám mohl hodit anonymní režim (<ph name="SHORTCUT_KEY
 <translation id="8498891568109133222">Odpověď webu <ph name="HOST_NAME" /> trvala příliš dlouho.</translation>
 <translation id="852346902619691059">Server nedokázal prokázat, že patří doméně <ph name="DOMAIN" />. Operační systém vašeho zařízení jeho bezpečnostnímu certifikátu nedůvěřuje. Může to být způsobeno nesprávnou konfigurací nebo tím, že vaše připojení zachytává útočník. <ph name="BEGIN_LEARN_MORE_LINK" />Další informace<ph name="END_LEARN_MORE_LINK" /></translation>
 <translation id="8530504477309582336">Služba Google Payments tento typ karty nepodporuje. Vyberte prosím jinou kartu.</translation>
-<translation id="8550022383519221471">Služba synchronizace není pro vaši doménu k dispozici.</translation>
 <translation id="8553075262323480129">Překlad se nezdařil. Nepodařilo se rozpoznat jazyk stránky.</translation>
 <translation id="8559762987265718583">Soukromé připojení k doméně <ph name="BEGIN_BOLD" /><ph name="DOMAIN" /><ph name="END_BOLD" /> nelze navázat, protože máte v zařízení nastaveno chybné datum a čas (<ph name="DATE_AND_TIME" />).</translation>
 <translation id="856992080682148">Certifikát těchto webových stránek vyprší v roce 2017 nebo později a řetězec certifikátů obsahuje certifikát podepsaný pomocí technologie SHA-1.</translation>
@@ -668,7 +668,6 @@ Pssst! Příště by se vám mohl hodit anonymní režim (<ph name="SHORTCUT_KEY
 <translation id="8591846766485502580">Tato zpráva se zobrazila, protože jeden z vašich rodičů k tomuto webu zablokoval přístup.</translation>
 <translation id="859285277496340001">V certifikátu není uvedeno, jakým způsobem lze zkontrolovat, zda nebyl zrušen.</translation>
 <translation id="8647750283161643317">Obnovit u všech experimentů výchozí nastavení</translation>
-<translation id="8680787084697685621">Přihlašovací údaje k účtu jsou zastaralé.</translation>
 <translation id="8703575177326907206">Vaše spojení se serverem <ph name="DOMAIN" /> není šifrované.</translation>
 <translation id="8725066075913043281">Zkusit znovu</translation>
 <translation id="8728672262656704056">Jste v anonymním režimu</translation>
@@ -698,7 +697,6 @@ Pssst! Příště by se vám mohl hodit anonymní režim (<ph name="SHORTCUT_KEY
 <translation id="8987927404178983737">Měsíc</translation>
 <translation id="8989148748219918422"><ph name="ORGANIZATION" /> [<ph name="COUNTRY" />]</translation>
 <translation id="9001074447101275817">Proxy <ph name="DOMAIN" /> vyžaduje uživatelské jméno a heslo.</translation>
-<translation id="9008201768610948239">Ignorovat</translation>
 <translation id="901974403500617787">Příznaky, které platí v celém systému, může nastavit pouze vlastník: <ph name="OWNER_EMAIL" />.</translation>
 <translation id="9020542370529661692">Stránka byla přeložena do jazyka <ph name="TARGET_LANGUAGE" /></translation>
 <translation id="9038649477754266430">Používat službu předpovídání k rychlejšímu načítání stránek</translation>

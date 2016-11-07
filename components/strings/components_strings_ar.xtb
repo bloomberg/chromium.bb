@@ -387,6 +387,7 @@
 <translation id="5171045022955879922">‏البحث أو إدخال عنوان URL</translation>
 <translation id="5172758083709347301">الجهاز</translation>
 <translation id="5179510805599951267">هل الصفحة ليست باللغة <ph name="ORIGINAL_LANGUAGE" />؟ الإبلاغ عن هذا الخطأ</translation>
+<translation id="5181140330217080051">تنزيل</translation>
 <translation id="5190835502935405962">شريط الإشارات</translation>
 <translation id="5199729219167945352">التجارب</translation>
 <translation id="5199841536747119669">تظهر اقتراحاتك هنا</translation>
@@ -665,7 +666,6 @@
 <translation id="8498891568109133222">استغرق <ph name="HOST_NAME" /> وقتًا أطول مما يجب للاستجابة.</translation>
 <translation id="852346902619691059">هذا الخادم لم يتمكن من إثبات أن ذلك <ph name="DOMAIN" />؛ بل إن شهادة أمانه غير موثوقة من قِبل نظام تشغيل جهازك. وربما يكون السبب في ذلك خطأً في التهيئة أو مهاجمًا يعترض اتصالك. <ph name="BEGIN_LEARN_MORE_LINK" />مزيد من المعلومات<ph name="END_LEARN_MORE_LINK" />.</translation>
 <translation id="8530504477309582336">‏هذا النوع من البطاقات غير متوافق مع Google Payments. يُرجى تحديد بطاقة مختلفة.</translation>
-<translation id="8550022383519221471">خدمة المزامنة غير متاحة لنطاقك.</translation>
 <translation id="8553075262323480129">أخفقت الترجمة لتعذر تحديد لغة الصفحة.</translation>
 <translation id="8559762987265718583">تعذر إنشاء اتصال خاص بـ <ph name="BEGIN_BOLD" /><ph name="DOMAIN" /><ph name="END_BOLD" /> نظرًا لأن التاريخ والوقت للجهاز (<ph name="DATE_AND_TIME" />) غير صحيحين.</translation>
 <translation id="856992080682148">‏تنتهي صلاحية شهادة هذا الموقع في 2017 أو بعد ذلك، وتتضمن سلسلة الشهادات شهادة موقعة باستخدام SHA-1.</translation>
@@ -673,7 +673,6 @@
 <translation id="8591846766485502580">ظهرت هذه الرسالة نظرًا لأن أحد والديك حظر هذا الموقع.</translation>
 <translation id="859285277496340001">لا تحدد الشهادة آلية للتحقق مما إذا كانت الشهادة قد تم إبطالها.</translation>
 <translation id="8647750283161643317">إعادة التعيين على الإعدادات الافتراضية</translation>
-<translation id="8680787084697685621">تفاصيل تسجيل الدخول إلى الحساب قديمة.</translation>
 <translation id="8703575177326907206">الاتصال بالموقع <ph name="DOMAIN" /> غير محميّ بنظام تشفير.</translation>
 <translation id="8725066075913043281">أعد المحاولة</translation>
 <translation id="8728672262656704056">لقد انتقلت إلى وضع التصفح المتخفي</translation>
@@ -703,7 +702,6 @@
 <translation id="8987927404178983737">شهر</translation>
 <translation id="8989148748219918422"><ph name="ORGANIZATION" />‏ [<ph name="COUNTRY" />]</translation>
 <translation id="9001074447101275817">يتطلب الخادم الوكيل <ph name="DOMAIN" /> اسم مستخدم وكلمة مرور.</translation>
-<translation id="9008201768610948239">تجاهل</translation>
 <translation id="901974403500617787">لا يمكن تعيين العلامات التي تسري عبر النظام إلا من قِبل المالك: <ph name="OWNER_EMAIL" />.</translation>
 <translation id="9020542370529661692">تمت ترجمة هذه الصفحة إلى <ph name="TARGET_LANGUAGE" /></translation>
 <translation id="9038649477754266430">استخدام إحدى خدمات التوقع لتحميل الصفحات بسرعة أكبر</translation>

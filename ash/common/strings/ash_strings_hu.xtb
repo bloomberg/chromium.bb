@@ -89,6 +89,7 @@ Kikapcsolásához nyomja meg a Keresés vagy a Shift billentyűt.</translation>
 <translation id="3294437725009624529">Vendég</translation>
 <translation id="3335772982573114336">Új jegyzet</translation>
 <translation id="3364721542077212959">Érintőceruza eszközök</translation>
+<translation id="3368922792935385530">Kapcsolódva</translation>
 <translation id="3371140690572404006">C típusú USB-vel kompatibilis eszköz (jobb első port)</translation>
 <translation id="3445925074670675829">C típusú USB-vel kompatibilis eszköz</translation>
 <translation id="3473479545200714844">Képernyőnagyító</translation>
@@ -125,6 +126,7 @@ Kikapcsolásához nyomja meg a Keresés vagy a Shift billentyűt.</translation>
 <translation id="4250680216510889253">Nem</translation>
 <translation id="4279490309300973883">Tükrözés</translation>
 <translation id="4321179778687042513">ctrl</translation>
+<translation id="4378551569595875038">Kapcsolódás folyamatban…</translation>
 <translation id="4421231901400348175">A képernyő irányításának megosztása <ph name="HELPER_NAME" /> segítővel a Távsegítség szolgáltatás keretein belül.</translation>
 <translation id="4430019312045809116">Hangerő</translation>
 <translation id="4448844063988177157">Wi-Fi hálózatok keresése...</translation>
@@ -280,4 +282,5 @@ Kikapcsolásához nyomja meg az Alt + Keresés vagy a Shift billentyűt.</transl
 <translation id="923686485342484400">Nyomja meg a Ctrl Shift Q billentyűkombinációt kétszer a kijelentkezéshez.</translation>
 <translation id="938582441709398163">Billentyűzetkiosztás</translation>
 <translation id="939252827960237676">Nem sikerült menteni a képernyőképet.</translation>
+<translation id="952992212772159698">Nincs aktiválva</translation>
 </translationbundle>

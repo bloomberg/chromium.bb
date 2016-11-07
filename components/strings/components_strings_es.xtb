@@ -387,6 +387,7 @@
 <translation id="5171045022955879922">Busca o escribe una URL</translation>
 <translation id="5172758083709347301">Equipo</translation>
 <translation id="5179510805599951267">¿Esta página no está escrita en <ph name="ORIGINAL_LANGUAGE" />? Informa de este error.</translation>
+<translation id="5181140330217080051">Descargando</translation>
 <translation id="5190835502935405962">Barra de marcadores</translation>
 <translation id="5199729219167945352">Experimentos</translation>
 <translation id="5199841536747119669">Las sugerencias aparecen aquí</translation>
@@ -665,7 +666,6 @@
 <translation id="8498891568109133222"><ph name="HOST_NAME" /> ha tardado demasiado tiempo en responder.</translation>
 <translation id="852346902619691059">Este servidor no ha podido demostrar que es <ph name="DOMAIN" />; el sistema operativo de tu dispositivo no confía en su certificado de seguridad. Este problema puede deberse a una configuración incorrecta o a que un atacante ha interceptado la conexión. <ph name="BEGIN_LEARN_MORE_LINK" />Más información<ph name="END_LEARN_MORE_LINK" /></translation>
 <translation id="8530504477309582336">Google Payments no admite este tipo de tarjeta. Selecciona otra.</translation>
-<translation id="8550022383519221471">El servicio de sincronización no está disponible en tu dominio.</translation>
 <translation id="8553075262323480129">La traducción no se ha realizado correctamente porque no se ha podido determinar el idioma de la página.</translation>
 <translation id="8559762987265718583">No se puede establecer una conexión privada con <ph name="BEGIN_BOLD" /><ph name="DOMAIN" /><ph name="END_BOLD" /> porque la fecha y la hora de tu dispositivo (<ph name="DATE_AND_TIME" />) no son correctas.</translation>
 <translation id="856992080682148">El certificado de este sitio web vence en 2017 o más adelante, y la cadena de certificados incluye un certificado firmado con SHA-1.</translation>
@@ -673,7 +673,6 @@
 <translation id="8591846766485502580">Este mensaje aparece porque uno de tus padres ha bloqueado este sitio web.</translation>
 <translation id="859285277496340001">El certificado no especifica ningún mecanismo para comprobar si se ha revocado.</translation>
 <translation id="8647750283161643317">Restablecer todo a su estado predeterminado</translation>
-<translation id="8680787084697685621">La información de inicio de sesión no está actualizada.</translation>
 <translation id="8703575177326907206">Tu conexión a <ph name="DOMAIN" /> no está cifrada.</translation>
 <translation id="8725066075913043281">Volver a intentarlo</translation>
 <translation id="8728672262656704056">Has iniciado una sesión de incógnito</translation>
@@ -703,7 +702,6 @@
 <translation id="8987927404178983737">Mes</translation>
 <translation id="8989148748219918422"><ph name="ORGANIZATION" /> [<ph name="COUNTRY" />]</translation>
 <translation id="9001074447101275817">El proxy <ph name="DOMAIN" /> requiere un nombre de usuario y una contraseña.</translation>
-<translation id="9008201768610948239">Ignorar</translation>
 <translation id="901974403500617787">Las opciones que se aplican a todo el sistema solo las puede establecer el propietario: <ph name="OWNER_EMAIL" />.</translation>
 <translation id="9020542370529661692">Esta página se ha traducido al <ph name="TARGET_LANGUAGE" /></translation>
 <translation id="9038649477754266430">Utilizar un servicio de predicciones para que las páginas se carguen más rápido</translation>

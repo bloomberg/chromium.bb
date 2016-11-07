@@ -89,6 +89,7 @@ Pulsa Mayús o la tecla de búsqueda para cancelar la operación.</translation>
 <translation id="3294437725009624529">Invitado</translation>
 <translation id="3335772982573114336">Nueva nota</translation>
 <translation id="3364721542077212959">Herramientas del lápiz óptico</translation>
+<translation id="3368922792935385530">Con conexión</translation>
 <translation id="3371140690572404006">Dispositivo USB tipo C (puerto frontal derecho)</translation>
 <translation id="3445925074670675829">Dispositivo USB-C</translation>
 <translation id="3473479545200714844">Lupa</translation>
@@ -125,6 +126,7 @@ Pulsa Mayús o la tecla de búsqueda para cancelar la operación.</translation>
 <translation id="4250680216510889253">No</translation>
 <translation id="4279490309300973883">Duplicando</translation>
 <translation id="4321179778687042513">ctrl</translation>
+<translation id="4378551569595875038">Conectando...</translation>
 <translation id="4421231901400348175">Compartiendo control de la pantalla con <ph name="HELPER_NAME" /> a través de Asistencia remota.</translation>
 <translation id="4430019312045809116">Volumen</translation>
 <translation id="4448844063988177157">Buscando redes Wi-Fi...</translation>
@@ -280,4 +282,5 @@ Pulsa Alt y la tecla de búsqueda o Mayús para cancelar la operación.</transla
 <translation id="923686485342484400">Pulsa Control Mayús Q dos veces para cerrar sesión.</translation>
 <translation id="938582441709398163">Superposición de teclado</translation>
 <translation id="939252827960237676">Error al guardar captura de pantalla</translation>
+<translation id="952992212772159698">Sin activar</translation>
 </translationbundle>

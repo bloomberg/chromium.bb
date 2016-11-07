@@ -51,7 +51,6 @@
 <translation id="1506061864768559482">Търсеща машина</translation>
 <translation id="1513352483775369820">Отметки и посетени сайтове</translation>
 <translation id="1513858653616922153">Изтриване на паролата</translation>
-<translation id="1546112724822176246">Не виждате устройството си? <ph name="BEGIN_LINK" />Получете помощ<ph name="END_LINK" />.</translation>
 <translation id="1549000191223877751">Преместв. в другия прозорец</translation>
 <translation id="1553358976309200471">Актуализиране на Chrome</translation>
 <translation id="1571304935088121812">Копиране на потребителското име</translation>
@@ -72,7 +71,6 @@
 <translation id="1749561566933687563">Синхронизирайте отметките си</translation>
 <translation id="17513872634828108">Отворени раздели</translation>
 <translation id="1756600373018374892">Докоснете този бутон, за да стигнете бързо до разделите си.</translation>
-<translation id="1774241295142531736">Не виждате устройството си? <ph name="BEGIN_LINK1" />Получете помощ<ph name="END_LINK1" /> или <ph name="BEGIN_LINK2" />сканирайте отново<ph name="END_LINK2" />.</translation>
 <translation id="1807246157184219062">Светло</translation>
 <translation id="1825719650605518411">Представяне при първо изпълнение</translation>
 <translation id="1826516787628120939">Извършва се проверка</translation>
@@ -156,7 +154,6 @@
 <translation id="2707726405694321444">Опресняване на страницата</translation>
 <translation id="2709516037105925701">Автоматично попълване</translation>
 <translation id="271033894570825754">Създаване</translation>
-<translation id="2748463065602559597">Преглеждате защитена страница в Google Chrome.</translation>
 <translation id="2762000892062317888">току-що</translation>
 <translation id="2777555524387840389">Остават <ph name="SECONDS" /> сек</translation>
 <translation id="2781151931089541271">Остава 1 сек</translation>
@@ -233,7 +230,6 @@
 <translation id="3656115297268584622">Включете местоположението от <ph name="BEGIN_LINK" />настройките на Android<ph name="END_LINK" />.</translation>
 <translation id="3661699943263275414">Уебсайтовете на трети страни могат да запазват „бисквитки“ и да четат данни от такива</translation>
 <translation id="3672452749423051839">Предложения в случай на грешки при сърфиране</translation>
-<translation id="3690847815241521170">Търсят се устройства… <ph name="BEGIN_LINK" />Получете помощ<ph name="END_LINK" /></translation>
 <translation id="3706658020782046159">Изберете адрес за доставка, за да проверите начините и изискванията за доставяне.</translation>
 <translation id="3716158070938632480">В близост има уеб страници</translation>
 <translation id="3738139272394829648">Търсене чрез докосване</translation>
@@ -322,7 +318,6 @@
 <translation id="4807098396393229769">Име върху картата</translation>
 <translation id="4816465935029283692">Типове данни</translation>
 <translation id="4827948050554950725">Добавяне на кредитна карта</translation>
-<translation id="4836364883164334657">Връзката ви с този сайт не е частна. Извършители на атаки може да опитат да откраднат информацията ви (например снимки, пароли, съобщения и номера на кредитни карти) от <ph name="DOMAIN_NAME" />.</translation>
 <translation id="4850886885716139402">Изглед</translation>
 <translation id="4881695831933465202">Отваряне</translation>
 <translation id="4885273946141277891">Неподдържан брой екземпляри на Chrome.</translation>
@@ -355,6 +350,7 @@
 <translation id="5171045022955879922">Търсете или въведете URL адрес</translation>
 <translation id="5184329579814168207">Отваряне в Chrome</translation>
 <translation id="5199929503336119739">Служебен потребителски профил</translation>
+<translation id="5209320130288484488">Няма намерени устройства</translation>
 <translation id="5210365745912300556">Затваряне на раздела</translation>
 <translation id="5222676887888702881">Изход</translation>
 <translation id="5233638681132016545">Нов раздел</translation>
@@ -389,7 +385,6 @@
 <translation id="5556459405103347317">Повторно зареждане</translation>
 <translation id="5565871407246142825">Кредитни карти</translation>
 <translation id="5578795271662203820">Търсене на изображението със: <ph name="SEARCH_ENGINE" /></translation>
-<translation id="5579997910517802656">Няма намерени устройства.</translation>
 <translation id="5595485650161345191">Редактиране на адреса</translation>
 <translation id="5596627076506792578">Още опции</translation>
 <translation id="5626134646977739690">Име:</translation>
@@ -418,7 +413,6 @@
 <translation id="583281660410589416">Неизвестно</translation>
 <translation id="5832934273103296195">Разгънато – Кликнете за свиване</translation>
 <translation id="583891442612896534">Chrome не може да установи връзка с компресиращите сървъри на Google. Икономията на данни може да е ограничена.</translation>
-<translation id="5843873952582375185">Няма намерени устройства с Bluetooth. <ph name="BEGIN_LINK" />Повторно сканиране<ph name="END_LINK" /></translation>
 <translation id="585027516397408832">Активирахте Икономия на данни</translation>
 <translation id="5860033963881614850">Изключено</translation>
 <translation id="5867027562311576691">Скоро ще се покажат още статии. Насладете се на сутринта.</translation>
@@ -568,9 +562,9 @@
 <translation id="7596558890252710462">Операционна система</translation>
 <translation id="7605594153474022051">Синхронизирането не работи</translation>
 <translation id="7612619742409846846">Влезли сте в Google като</translation>
+<translation id="7613889955535752492">Валидна до: <ph name="EXPIRATION_MONTH" />/<ph name="EXPIRATION_YEAR" /></translation>
 <translation id="7619072057915878432">Изтеглянето на „<ph name="FILE_NAME" />“ не бе успешно поради грешки в мрежата.</translation>
 <translation id="7626032353295482388">Добре дошли в Chrome</translation>
-<translation id="7634554953375732414">Връзката ви с този сайт не е поверителна.</translation>
 <translation id="7638584964844754484">Неправилен пропуск</translation>
 <translation id="7648422057306047504">Шифроване на паролите с идентификационните данни за Google</translation>
 <translation id="7649070708921625228">Помощ</translation>
@@ -638,13 +632,11 @@
 <translation id="8428213095426709021">Настройки</translation>
 <translation id="8433057134996913067">Ще излезете от повечето уебсайтове.</translation>
 <translation id="8447861592752582886">Отмяна на разрешението за достъп до устройството</translation>
-<translation id="8481940801237642152">Връзката ви с този сайт е частна, но някой в мрежата може да промени облика на страницата.</translation>
 <translation id="8487700953926739672">Налице офлайн</translation>
 <translation id="8493948351860045254">Освобождаване на място</translation>
 <translation id="8497726226069778601">Тук няма нищо… засега</translation>
 <translation id="8503813439785031346">Потребителско име</translation>
 <translation id="8514577642972634246">Влизане в режим „инкогнито“</translation>
-<translation id="8518901949365209398">Този сайт използва слаба защитна конфигурация (подписи, шифровани чрез SHA-1), поради което връзката ви може да не е частна.</translation>
 <translation id="8523928698583292556">Изтриване на съхранената парола</translation>
 <translation id="854522910157234410">Отваряне на тази страница</translation>
 <translation id="8562452229998620586">Запазените пароли ще се покажат тук.</translation>
@@ -677,7 +669,6 @@
 <translation id="8912362522468806198">Профил в Google</translation>
 <translation id="8920114477895755567">Изчакват се подробности за родителите.</translation>
 <translation id="8931159598799892500">Chrome + Физическа мрежа</translation>
-<translation id="8941248009481596111">Връзката ви с този сайт е частна.</translation>
 <translation id="8941729603749328384">www.example.com</translation>
 <translation id="8942627711005830162">Отваряне в другия прозорец</translation>
 <translation id="8959122750345127698">Навигирането не е възможно: <ph name="URL" /></translation>

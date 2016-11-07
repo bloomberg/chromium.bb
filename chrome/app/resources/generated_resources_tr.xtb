@@ -477,7 +477,6 @@
 <translation id="1598233202702788831">Güncellemeler yöneticiniz tarafından devre dışı bırakıldı.</translation>
 <translation id="1598604884989842103">Test için TouchView'un ekranı kaplamasını sağlayan kullanıcı arayüzünü etkinleştir</translation>
 <translation id="1600857548979126453">Sayfa hata ayıklayıcı arka ucuna erişme</translation>
-<translation id="1601247446845604757">WebGL 2.0 Prototip</translation>
 <translation id="1601560923496285236">Uygula</translation>
 <translation id="1603914832182249871">(Gizli mod)</translation>
 <translation id="1607220950420093847">Hesabınız silinmiş veya devre dışı bırakılmış olabilir. Lütfen çıkış yapın.</translation>
@@ -569,7 +568,6 @@
 <translation id="1708713382908678956"><ph name="NAME_PH" /> (Kimlik: <ph name="ID_PH" />)</translation>
 <translation id="1709106626015023981"><ph name="WIDTH" /> x <ph name="HEIGHT" /> (Yerel)</translation>
 <translation id="1711973684025117106">Sıkıştırma başarısız oldu, beklenmedik hata: $1</translation>
-<translation id="1715941336038158809">Geçersiz kullanıcı adı veya şifre.</translation>
 <translation id="1717733954209022288">Google Payments kartını kaydetme onay kutusu</translation>
 <translation id="1720318856472900922">TLS WWW Sunucu Kimlik Doğrulaması</translation>
 <translation id="1720372306711178108">Genişletilmiş Masaüstü</translation>
@@ -616,7 +614,6 @@
 <translation id="1781502536226964113">Yeni Sekme sayfasını aç</translation>
 <translation id="1782196717298160133">Telefonunuz bulunuyor</translation>
 <translation id="1782924894173027610">Senkronizasyon sunucusu meşgul, lütfen daha sonra tekrar deneyin.</translation>
-<translation id="1783075131180517613">Lütfen senkronizasyon parolanızı güncelleyin.</translation>
 <translation id="1784849162047402014">Cihazda disk alanı az</translation>
 <translation id="1788636309517085411">Varsayılanı kullan</translation>
 <translation id="1789575671122666129">Pop-up'lar</translation>
@@ -769,7 +766,6 @@
 <translation id="2025632980034333559"><ph name="APP_NAME" /> kilitlendi. Uzantıyı yeniden yüklemek için bu balonu tıklayın.</translation>
 <translation id="2028531481946156667">Biçimlendirme işlemi başlatılamadı.</translation>
 <translation id="2028997212275086731">RAR arşivi</translation>
-<translation id="203168018648013061">Senkronizasyon Hatası: Lütfen senkronizasyonu Google Hesap Özeti üzerinden sıfırlayın.</translation>
 <translation id="2031695690821674406">Bir hesap kullanıcı tarafından açık bir şekilde seçildiyse sayfa yüklendiğinde kimlik bilgilerini otomatik olarak doldurmak yerine şifrelerin doldurulması.</translation>
 <translation id="2034346955588403444">Başka kablosuz ağ ekle</translation>
 <translation id="2040460856718599782">Hata! Kimliğiniz doğrulanmaya çalışılırken bir şeyler ters gitti. Lütfen oturum açma kimlik bilgilerinizi tekrar kontrol edin ve yeniden deneyin.</translation>
@@ -949,7 +945,6 @@ Yeni bir denetlenen kullanıcı oluşturduktan sonra, istediğiniz zaman herhang
 <translation id="225240747099314620">Korumalı içerik için tanımlayıcılara izin ver (bilgisayarı yeniden başlatmak gerekebilir)</translation>
 <translation id="2254681226363050822">Kabul et</translation>
 <translation id="2255317897038918278">Microsoft Zaman Damgası</translation>
-<translation id="225680501294068881">Cihazlar taranıyor...</translation>
 <translation id="225692081236532131">Etkinleştirme durumu</translation>
 <translation id="2258195278080713720">JavaScript'in son mevcut ürün sürümü özellikleri</translation>
 <translation id="2260567344816042527">Başka bir ağa bağlı değilseniz Google Chrome hücresel veriyi kullanır.</translation>
@@ -1836,6 +1831,7 @@ Bunlar ve diğer talimatlar için lütfen <ph name="ACCOUNT_EMAIL" /> e-postanı
 <translation id="335985608243443814">Göz at...</translation>
 <translation id="3360297538363969800">Yazdırma işlemi başarısız oldu. Lütfen yazıcınızı kontrol edin ve tekrar deneyin.</translation>
 <translation id="336497260564123876">Şifre kaydedildi. Şifrelerinize tüm cihazlarınızda ulaşmak için Chrome'da oturum açın.</translation>
+<translation id="3367813778245106622">Senkronizasyonu başlatmak için tekrar oturum açın</translation>
 <translation id="3368922792935385530">Bağlı</translation>
 <translation id="3369624026883419694">Ana bilgisayar çözümleniyor...</translation>
 <translation id="3372695143165820507">Bildirim kaldırıldığında ileti merkezinin diğer bildirimleri her zaman yukarı kaydırdığı denemeler</translation>
@@ -1943,7 +1939,6 @@ Bunlar ve diğer talimatlar için lütfen <ph name="ACCOUNT_EMAIL" /> e-postanı
 <translation id="3508920295779105875">Başka Bir Klasör Seçin...</translation>
 <translation id="3509527969829946096">Bu seçenek Cast Streaming'de platform donanımını kullanarak video akışlarını şifreleme desteğini etkinleştirir.</translation>
 <translation id="3510797500218907545">WiMAX</translation>
-<translation id="3511200754045804813">Yeniden tara</translation>
 <translation id="3511307672085573050">Bağlantı Adr&amp;esini Kopyala</translation>
 <translation id="3511399794969432965">Bağlantı sorunu mu yaşıyorsunuz?</translation>
 <translation id="351152300840026870">Sabit genişlikte yazı tipi</translation>
@@ -2024,7 +2019,6 @@ Bunlar ve diğer talimatlar için lütfen <ph name="ACCOUNT_EMAIL" /> e-postanı
 <translation id="3603622770190368340">Ağ sertifikası edinme</translation>
 <translation id="3605780360466892872">İş adamı</translation>
 <translation id="3606220979431771195">Türkçe-F</translation>
-<translation id="3607430430882821408">Bluetooth cihazı bulunamadı.</translation>
 <translation id="3608454375274108141">F10</translation>
 <translation id="3608576286259426129">Kullanıcı resmi önizlemesi</translation>
 <translation id="3609785682760573515">Senkronize ediliyor...</translation>
@@ -2067,7 +2061,6 @@ Bunlar ve diğer talimatlar için lütfen <ph name="ACCOUNT_EMAIL" /> e-postanı
 <translation id="3653069516296104653">Dokunmatik işaretçi etkinliklerinin örtülü bir şekilde yakalanmasını devre dışı bırakır.</translation>
 <translation id="3653999333232393305">Mikrofonuma <ph name="HOST" /> tarafından erişilmesine izin vermeye devam et</translation>
 <translation id="3654045516529121250">Erişilebilirlik ayarlarınızı okuma</translation>
-<translation id="3654092442379740616">Senkronizasyon Hatası: <ph name="PRODUCT_NAME" /> eski ve güncellenmesi gerekiyor.</translation>
 <translation id="3655712721956801464">{NUM_FILES,plural, =1{Bir dosyaya kalıcı erişimi vardır.}other{# dosyaya kalıcı erişimi vardır.}}</translation>
 <translation id="365793796291733849"><ph name="BEGIN_PARAGRAPH1" />Otomatik yedekleme özelliğini açtığınızda, cihaz ve uygulama verileri düzenli olarak Google Drive'daki gizli bir klasöre kaydedilir. Uygulama verileri, bir uygulamanın kaydettiği her tür veri olabilir (geliştirici ayarlarına bağlıdır) ve bu veriler arasında kişiler, iletiler ve fotoğraflar gibi hassas olabilecek veriler de bulunabilir.<ph name="END_PARAGRAPH1" />
 <ph name="BEGIN_PARAGRAPH2" />Yedeklenen veriler, Drive Depolama Alanı kotanızdan düşülmez. Büyük dosyalar veya geliştiricilerin yedekleme haricinde tutmayı seçtiği dosyalar yedeklenmez.<ph name="END_PARAGRAPH2" /></translation>
@@ -2138,7 +2131,6 @@ Bunlar ve diğer talimatlar için lütfen <ph name="ACCOUNT_EMAIL" /> e-postanı
 <translation id="3752582316358263300">Tamam...</translation>
 <translation id="3752673729237782832">Cihazlarım</translation>
 <translation id="3753641128651686748">"<ph name="BUNDLE_NAME" />", <ph name="USER_NAME" /> için şu uygulamaları ekler:</translation>
-<translation id="3755237144397196888">Bu seçeneği etkinleştirmek web uygulamalarının deneysel WebGL 2.0 özelliğine erişmelerine olanak verir. Bu seçenek sadece uygulama geliştirme amacıyla kullanılmalı, herhangi bir web sitesine göz atmak için kullanılmamalıdır.</translation>
 <translation id="3755411799582650620"><ph name="PHONE_NAME" /> cihazınız bu <ph name="DEVICE_TYPE" /> cihazın kilidini de açabilir.</translation>
 <translation id="3758201569871381925">Lütfen Hotrod cihazınızın açık ve bir TV'ye bağlı olduğundan emin olun.</translation>
 <translation id="375841316537350618">Proxy komut dosyası indiriliyor...</translation>
@@ -2375,7 +2367,6 @@ Bunlar ve diğer talimatlar için lütfen <ph name="ACCOUNT_EMAIL" /> e-postanı
 <translation id="4075084141581903552"><ph name="EMAIL_ADDRESS" /> için otomatik oturum açma kullanılabilir</translation>
 <translation id="4078738236287221428">Yoğun</translation>
 <translation id="408098233265424160">Smart Lock yakınlık algılama</translation>
-<translation id="4081683084140995376">Sanal Gerçeklik kabuğunu etkinleştir.</translation>
 <translation id="4081979157059999345">Uzaktan şifre yönetimi bağlantısı</translation>
 <translation id="4084682180776658562">Yer İşareti</translation>
 <translation id="4084835346725913160"><ph name="TAB_NAME" /> sekmesini kapat</translation>
@@ -2512,7 +2503,6 @@ Tüm kullanıcılar devam etmek için çıkış yapmalıdır.</translation>
 <translation id="4268574628540273656">URL:</translation>
 <translation id="4270393598798225102">Sürüm <ph name="NUMBER" /></translation>
 <translation id="4271396100647220620">Eşleşme yok</translation>
-<translation id="4274187853770964845">Senkronizasyon hatası: Lütfen Senkronizasyonu durdurup yeniden başlatın.</translation>
 <translation id="4275830172053184480">Cihazınızı yeniden başlatın</translation>
 <translation id="4276796043975446927">Chromebox video konferansa hoş geldiniz.</translation>
 <translation id="4278390842282768270">İzin verildi</translation>
@@ -2625,7 +2615,6 @@ Keşfetmeye devam etmek için herhangi bir tuşa basın.</translation>
 <translation id="4443536555189480885">&amp;Yardım</translation>
 <translation id="4444304522807523469">USB üzerinden bağlı veya yerel ağda bulunan doküman tarayıcılara erişme</translation>
 <translation id="4444512841222467874">Yer açılmazsa kullanıcılar ve veriler otomatik olarak kaldırılabilir.</translation>
-<translation id="4445559854264555037">Cihazınızı görmüyor musunuz? <ph name="GET_HELP_LINK" /></translation>
 <translation id="4446933390699670756">Yansıtılmış</translation>
 <translation id="4447465454292850432">Pil:</translation>
 <translation id="4449935293120761385">Otomatik Doldurma hakkında</translation>
@@ -2758,7 +2747,6 @@ Keşfetmeye devam etmek için herhangi bir tuşa basın.</translation>
 <translation id="4654488276758583406">Çok Küçük</translation>
 <translation id="465499440663162826">Chrome Web Mağazası'na bağlanamadı.</translation>
 <translation id="4656293982926141856">Bu bilgisayar</translation>
-<translation id="4656631038341342120">Bu cihaz için kullanılabiliyorsa Sanal Gerçeklik kabuğunu etkinleştirin.</translation>
 <translation id="4657031070957997341"><ph name="HOST" /> sitesindeki eklentilere her zaman izin ver</translation>
 <translation id="466008749075469935">Arka plan zamanlayıcılarının CPU kullanımını %1 olarak sınırlamak için müdahaleyi etkinleştirir.</translation>
 <translation id="4663254525753315077">Mümkün olduğunda daha hızlı kaydırma için, bir taşma kaydırma öğesinin kaydırma içeriğini birleştirilmiş katman üzerine koyar.</translation>
@@ -3478,7 +3466,6 @@ Keşfetmeye devam etmek için herhangi bir tuşa basın.</translation>
 <translation id="5569544776448152862">Şuraya kaydediliyor: <ph name="BEGIN_BOLD" /><ph name="DOMAIN_NAME" /><ph name="END_BOLD" />...</translation>
 <translation id="5575473780076478375">Gizli Mod Uzantısı: <ph name="EXTENSION_NAME" /></translation>
 <translation id="557722062034137776">Cihazınızı sıfırlamak Google hesaplarınızı veya o hesaplarla senkronize edilmiş verileri etkilemez. Ancak yerel olarak cihazınıza kaydedilmiş tüm dosyalar silinir.</translation>
-<translation id="5579997910517802656">Cihaz bulunamadı.</translation>
 <translation id="5581211282705227543">Hiçbir eklenti yüklenmedi</translation>
 <translation id="5581700288664681403"><ph name="CLOUD_PRINT_NAME" /> yükleniyor</translation>
 <translation id="558170650521898289">Microsoft Windows Donanım Sürücüsü Doğrulaması</translation>
@@ -4263,7 +4250,6 @@ Bu özelliği sadece güvendiğiniz hesaplarda kullanın.</translation>
 <translation id="6659213950629089752">Bu sayfaya, "<ph name="NAME" />" uzantısıyla yakınlaştırma yapıldı</translation>
 <translation id="6659594942844771486">Sekme</translation>
 <translation id="6660768694571958712">İşaretçi Etkinlikleri API'si için deneysel desteği etkinleştirir. Bu seçenek yalnızca web geliştiricilerinin test yapması için tasarlanmıştır, bazı web sitelerinin, sorunun kolayca anlaşılamayacağı şekilde bozulmasına neden olabilir.</translation>
-<translation id="6662016084451426657">Senkronizasyon Hatası: Lütfen senkronizasyonu etkinleştirmek için yönetici ile bağlantı kurun.</translation>
 <translation id="6663792236418322902">Seçtiğiniz şifre, daha sonra bu dosyayı geri yüklemek için gerekli olacaktır. Lütfen şifrenizi güvenli bir yere kaydedin.</translation>
 <translation id="6664237456442406323">Maalesef bilgisayarınız, hatalı oluşturulmuş bir donanım kimliğiyle yapılandırılmış. Bu durum Chrome OS'nin en son güvenlik düzeltmeleriyle güncellenmesini engeller ve bilgisayarınız <ph name="BEGIN_BOLD" />kötü niyetli saldırılara<ph name="END_BOLD" /> açık duruma gelebilir.</translation>
 <translation id="6664774537677393800">Profiliniz açılırken bir sorun oluştu. Lütfen oturumu kapatıp sonra tekrar oturum açın.</translation>
@@ -4481,7 +4467,6 @@ Bu özelliği sadece güvendiğiniz hesaplarda kullanın.</translation>
 <translation id="6985235333261347343">Microsoft Anahtar Kurtarma Aracısı</translation>
 <translation id="6985276906761169321">Kimlik:</translation>
 <translation id="6985607387932385770">Yazıcılar</translation>
-<translation id="6986605181115043220">Maalesef, Sync çalışmayı durdurdu. <ph name="BEGIN_LINK" />Daha Fazla Bilgi Edinin<ph name="END_LINK" /></translation>
 <translation id="6990081529015358884">Boş yeriniz kalmadı</translation>
 <translation id="6990778048354947307">Koyu Renkli Tema</translation>
 <translation id="6991128190741664836">Daha sonra</translation>
@@ -5103,7 +5088,6 @@ Bu özelliği sadece güvendiğiniz hesaplarda kullanın.</translation>
 <translation id="7839963980801867006">Dil menüsünde hangi uzantı IME'lerinin kullanılabileceğini seçin.</translation>
 <translation id="7842346819602959665">"<ph name="EXTENSION_NAME" />" uzantısının en yeni sürümü daha fazla izin gerektirir. Bu nedenle devre dışı bırakılmış.</translation>
 <translation id="7844992432319478437">Fark güncelleniyor</translation>
-<translation id="7845920762538502375"><ph name="PRODUCT_NAME" />, senkronizasyon sunucusuna bağlanamadığından verilerinizi senkronize edemedi. Tekrar deniyor...</translation>
 <translation id="7846076177841592234">Seçimi iptal et</translation>
 <translation id="7846634333498149051">Klavye</translation>
 <translation id="7847212883280406910"><ph name="IDS_SHORT_PRODUCT_OS_NAME" /> ürününe geçmek için Ctrl + Alt + S tuşlarına basın.</translation>
@@ -5388,7 +5372,6 @@ Kalan süre hesaplanıyor</translation>
 <translation id="8213577208796878755">Kullanılabilir bir cihaz daha var.</translation>
 <translation id="8214489666383623925">Dosya Aç...</translation>
 <translation id="8214962590150211830">Bu kişiyi kaldır</translation>
-<translation id="8216278935161109887">Oturumu kapatıp tekrar aç</translation>
 <translation id="8217399928341212914">Otomatik olarak birden fazla dosya indirilmesini engellemeye devam et</translation>
 <translation id="8221831106892617387">Etkin: Yavaş 2G</translation>
 <translation id="8222121761382682759">Yüklemesini kaldır...</translation>
@@ -5536,7 +5519,6 @@ Dolana kadar geçecek süre hesaplanıyor</translation>
 <translation id="8418113698656761985">Romence klavye</translation>
 <translation id="8418445294933751433">&amp;Farklı göster sekmesi</translation>
 <translation id="8420060421540670057">Google Dokümanlar dosyalarını göster</translation>
-<translation id="8420139899406509438">Etkinleştirildi (Ses odağı kaybedilirken Flash etkisiz olur, deneysel)</translation>
 <translation id="842274098655511832">WebGL Taslak Uzantıları</translation>
 <translation id="8424039430705546751">aşağı</translation>
 <translation id="8425213833346101688">Değiştir</translation>
@@ -6030,7 +6012,6 @@ Pencereler taşındıktan sonra gelen bildirimler, pencereler ve iletişim kutul
 <translation id="9052208328806230490">Yazıcılarınızı, <ph name="EMAIL" /> hesabını kullanarak <ph name="CLOUD_PRINT_NAME" /> hizmetine kaydettirdiniz.</translation>
 <translation id="9052234664411715138">Kredi Kartı Bilgilerini Doldurma Yardımı</translation>
 <translation id="9053860306922028466">Lütfen önce neyin paylaşılacağını seçin.</translation>
-<translation id="9053965862400494292">Senkronizasyonu ayarlamaya çalışırken bir hata oluştu.</translation>
 <translation id="9056034633062863292">Chromebox'u güncelleme</translation>
 <translation id="9056810968620647706">Eşleştirme bulunamadı.</translation>
 <translation id="9057119625587205566">Yakın çevrenizde hiç yazıcı yok</translation>
@@ -6184,6 +6165,7 @@ Pencereler taşındıktan sonra gelen bildirimler, pencereler ve iletişim kutul
 <translation id="971058943242239041">Paketli uygulamalarda "window-controls" HTML öğelerini kullanarak etkinleştirir.</translation>
 <translation id="971774202801778802">Yer işareti URL'si</translation>
 <translation id="973473557718930265">Çık</translation>
+<translation id="974555521953189084">Senkronizasyonu başlatmak için parolanızı girin</translation>
 <translation id="97534916655989966">Sesi kapalı videoların otomatik olarak oynatılmasına izin verin.</translation>
 <translation id="981121421437150478">Çevrimdışı</translation>
 <translation id="984870422930397199">Yeni Sekme sayfasında çevrimdışı sayfalara rozet eklemeyi etkinleştirir. Sadece çevrimdışı sayfalar etkinleştirildiğinde uygundur.</translation>

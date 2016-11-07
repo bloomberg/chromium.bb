@@ -51,7 +51,6 @@ Bluetooth och Plats måste vara aktiverade om du vill använda Physical Web-tjä
 <translation id="1506061864768559482">Sökmotor</translation>
 <translation id="1513352483775369820">Bokmärken och webbhistorik</translation>
 <translation id="1513858653616922153">Radera lösenord</translation>
-<translation id="1546112724822176246">Visas inte enheten? <ph name="BEGIN_LINK" />Få hjälp<ph name="END_LINK" />.</translation>
 <translation id="1549000191223877751">Flytta till annat fönster</translation>
 <translation id="1553358976309200471">Uppdatera Chrome</translation>
 <translation id="1571304935088121812">Kopiera användarnamn</translation>
@@ -72,7 +71,6 @@ Bluetooth och Plats måste vara aktiverade om du vill använda Physical Web-tjä
 <translation id="1749561566933687563">Synkronisera bokmärken</translation>
 <translation id="17513872634828108">Öppna flikar</translation>
 <translation id="1756600373018374892">Den här knappen ger snabb tillgång till flikarna.</translation>
-<translation id="1774241295142531736">Visas inte enheten? <ph name="BEGIN_LINK1" />Få hjälp<ph name="END_LINK1" /> eller <ph name="BEGIN_LINK2" />sök igen<ph name="END_LINK2" />.</translation>
 <translation id="1807246157184219062">Ljus</translation>
 <translation id="1825719650605518411">Första körningen</translation>
 <translation id="1826516787628120939">Kontrollerar</translation>
@@ -156,7 +154,6 @@ Du kan styra Physical Web i inställningarna för Chrome
 <translation id="2707726405694321444">Uppdatera sidan</translation>
 <translation id="2709516037105925701">Autofyll</translation>
 <translation id="271033894570825754">Ny</translation>
-<translation id="2748463065602559597">Du tittar på en säker Google Chrome-sida.</translation>
 <translation id="2762000892062317888">nyss</translation>
 <translation id="2777555524387840389"><ph name="SECONDS" /> sekunder kvar</translation>
 <translation id="2781151931089541271">1 sekund kvar</translation>
@@ -233,7 +230,6 @@ Om du vill ändra söktermen trycker du länge för att välja. Om du vill förf
 <translation id="3656115297268584622">Aktivera plats i <ph name="BEGIN_LINK" />Android-inställningarna<ph name="END_LINK" />.</translation>
 <translation id="3661699943263275414">Webbplatser från tredje part kan spara och läsa cookiedata</translation>
 <translation id="3672452749423051839">Förslag vid navigeringsfel</translation>
-<translation id="3690847815241521170">Söker efter enheter … <ph name="BEGIN_LINK" />Få hjälp<ph name="END_LINK" /></translation>
 <translation id="3706658020782046159">Välj en leveransadress om du vill visa leveranssätt och krav.</translation>
 <translation id="3716158070938632480">Det finns webbsidor i närheten</translation>
 <translation id="3738139272394829648">Tryck för att söka</translation>
@@ -322,7 +318,6 @@ Om du vill ändra söktermen trycker du länge för att välja. Om du vill förf
 <translation id="4807098396393229769">Namn på kort</translation>
 <translation id="4816465935029283692">Datatyper</translation>
 <translation id="4827948050554950725">Lägg till ett kreditkort</translation>
-<translation id="4836364883164334657">Anslutningen till den här webbplatsen är inte privat. Hackare kan försöka stjäla information (till exempel bilder, lösenord, meddelanden och kreditkortsuppgifter) från <ph name="DOMAIN_NAME" />.</translation>
 <translation id="4850886885716139402">Visa</translation>
 <translation id="4881695831933465202">Öppna</translation>
 <translation id="4885273946141277891">Fler Chrome-förekomster än det finns stöd för.</translation>
@@ -355,6 +350,7 @@ Om du vill ändra söktermen trycker du länge för att välja. Om du vill förf
 <translation id="5171045022955879922">Ange eller sök efter webbadress</translation>
 <translation id="5184329579814168207">Öppna i Chrome</translation>
 <translation id="5199929503336119739">Jobbprofil</translation>
+<translation id="5209320130288484488">Det gick inte att hitta några enheter</translation>
 <translation id="5210365745912300556">Stäng flik</translation>
 <translation id="5222676887888702881">Logga ut</translation>
 <translation id="5233638681132016545">Ny flik</translation>
@@ -389,7 +385,6 @@ Om du vill ändra söktermen trycker du länge för att välja. Om du vill förf
 <translation id="5556459405103347317">Hämta igen</translation>
 <translation id="5565871407246142825">Kreditkort</translation>
 <translation id="5578795271662203820">Sök på <ph name="SEARCH_ENGINE" /> efter denna bild</translation>
-<translation id="5579997910517802656">Inga enheter hittades.</translation>
 <translation id="5595485650161345191">Redigera adress</translation>
 <translation id="5596627076506792578">Fler alternativ</translation>
 <translation id="5626134646977739690">Namn:</translation>
@@ -418,7 +413,6 @@ Du är dock inte osynlig. Trots inkognitoläget kan din arbetsgivare, din intern
 <translation id="583281660410589416">Okänd</translation>
 <translation id="5832934273103296195">Gruppvyn har expanderats. Komprimera vyn genom att klicka.</translation>
 <translation id="583891442612896534">Chrome kan inte nå Googles servrar för datakomprimeringen. Du kanske inte sparar data i någon större utsträckning.</translation>
-<translation id="5843873952582375185">Inga Bluetooth-enheter hittades. <ph name="BEGIN_LINK" />Sök igen<ph name="END_LINK" /></translation>
 <translation id="585027516397408832">Databesparing har aktiverats</translation>
 <translation id="5860033963881614850">Av</translation>
 <translation id="5867027562311576691">Fler artiklar visas snart. Ha en bra förmiddag!</translation>
@@ -568,9 +562,9 @@ Det kan finnas andra former av webbhistorik i Google-kontot på <ph name="BEGIN_
 <translation id="7596558890252710462">Operativsystem</translation>
 <translation id="7605594153474022051">Det går inte att synkronisera</translation>
 <translation id="7612619742409846846">Inloggad i Google som</translation>
+<translation id="7613889955535752492">Upphör: <ph name="EXPIRATION_MONTH" />/<ph name="EXPIRATION_YEAR" /></translation>
 <translation id="7619072057915878432">Det gick inte att ladda ned <ph name="FILE_NAME" /> på grund av nätverksfel.</translation>
 <translation id="7626032353295482388">Välkommen till Chrome</translation>
-<translation id="7634554953375732414">Din anslutning till webbplatsen är inte privat.</translation>
 <translation id="7638584964844754484">Felaktig lösenfras</translation>
 <translation id="7648422057306047504">Kryptera lösenord med användaruppgifter för Google</translation>
 <translation id="7649070708921625228">Hjälp</translation>
@@ -638,13 +632,11 @@ Det kan finnas andra former av webbhistorik i Google-kontot på <ph name="BEGIN_
 <translation id="8428213095426709021">Inställningar</translation>
 <translation id="8433057134996913067">Alternativet innebär att du loggas ut från de flesta webbplatser.</translation>
 <translation id="8447861592752582886">Återkalla enhetsbehörighet</translation>
-<translation id="8481940801237642152">Din anslutning till webbplatsen är privat, men någon i nätverket kanske kan ändra utseendet på sidan.</translation>
 <translation id="8487700953926739672">Tillgänglig offline</translation>
 <translation id="8493948351860045254">Frigör lagringsutrymme</translation>
 <translation id="8497726226069778601">Det finns inget att se här … än</translation>
 <translation id="8503813439785031346">Användarnamn</translation>
 <translation id="8514577642972634246">Starta inkognitoläget</translation>
-<translation id="8518901949365209398">Den här webbplatsen använder en svag säkerhetskonfiguration (signaturer med SHA-1), så anslutningen kanske inte är privat.</translation>
 <translation id="8523928698583292556">Radera sparat lösenord</translation>
 <translation id="854522910157234410">Öppna sidan</translation>
 <translation id="8562452229998620586">Sparade lösenord visas här.</translation>
@@ -677,7 +669,6 @@ Du hämtar nya licenser genom att ansluta till internet och spela upp det nedlad
 <translation id="8912362522468806198">Google-konto</translation>
 <translation id="8920114477895755567">Väntar på föräldrauppgifter.</translation>
 <translation id="8931159598799892500">Chrome + Physical Web</translation>
-<translation id="8941248009481596111">Din anslutning till webbplatsen är privat.</translation>
 <translation id="8941729603749328384">www.example.com</translation>
 <translation id="8942627711005830162">Öppna i ett annat fönster</translation>
 <translation id="8959122750345127698">Det går inte att nå webbadressen: <ph name="URL" /></translation>

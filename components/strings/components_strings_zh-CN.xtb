@@ -50,7 +50,7 @@
 <translation id="1491663344921578213">您目前无法访问 <ph name="SITE" />，因为此网站使用了证书锁定功能。网络错误和攻击行为通常是暂时的，因此，此网页稍后可能就会恢复正常。<ph name="BEGIN_LEARN_MORE_LINK" />了解详情<ph name="END_LEARN_MORE_LINK" />。</translation>
 <translation id="1506687042165942984">显示为此页面保存的已知过时副本。</translation>
 <translation id="1519264250979466059">构建日期</translation>
-<translation id="153384715582417236">这就是目前所有的推荐内容</translation>
+<translation id="153384715582417236">这就是目前的所有内容</translation>
 <translation id="1549470594296187301">必须启用 JavaScript 才能使用此功能。</translation>
 <translation id="1559528461873125649">不存在此类文件或目录</translation>
 <translation id="1559572115229829303">&lt;p&gt;您设备的日期和时间（<ph name="DATE_AND_TIME" />）不正确，因此无法与 <ph name="BEGIN_BOLD" /><ph name="DOMAIN" /><ph name="END_BOLD" /> 建立私密连接。&lt;/p&gt;
@@ -384,6 +384,7 @@
 <translation id="5171045022955879922">搜索或输入网址</translation>
 <translation id="5172758083709347301">本机</translation>
 <translation id="5179510805599951267">不是<ph name="ORIGINAL_LANGUAGE" />？报告此错误</translation>
+<translation id="5181140330217080051">正在下载</translation>
 <translation id="5190835502935405962">书签栏</translation>
 <translation id="5199729219167945352">实验</translation>
 <translation id="5199841536747119669">为您推荐的内容会显示在此处</translation>
@@ -661,7 +662,6 @@
 <translation id="8498891568109133222"><ph name="HOST_NAME" /> 的响应时间过长。</translation>
 <translation id="852346902619691059">此服务器无法证明其所在网域是 <ph name="DOMAIN" />；您设备的操作系统不信任服务器的安全证书。出现此问题的原因可能是配置有误，或是有攻击者拦截您的连接。<ph name="BEGIN_LEARN_MORE_LINK" />了解详情<ph name="END_LEARN_MORE_LINK" />。</translation>
 <translation id="8530504477309582336">Google Payments 不支持这种类型的信用卡，请选择其他卡。</translation>
-<translation id="8550022383519221471">您的域不支持同步服务。</translation>
 <translation id="8553075262323480129">系统无法确定该网页的语言，因此无法进行翻译。</translation>
 <translation id="8559762987265718583">您设备的日期和时间（<ph name="DATE_AND_TIME" />）不正确，因此无法与 <ph name="BEGIN_BOLD" /><ph name="DOMAIN" /><ph name="END_BOLD" /> 建立私密连接。</translation>
 <translation id="856992080682148">此网站的证书将于 2017 年或之后过期，并且此网站的证书链包含使用 SHA-1 签署的证书。</translation>
@@ -669,7 +669,6 @@
 <translation id="8591846766485502580">您之所以看到这条消息，是因为您的一位家长屏蔽了此网站。</translation>
 <translation id="859285277496340001">证书未指定用于检查是否已吊销证书的机制。</translation>
 <translation id="8647750283161643317">全部重置为默认值</translation>
-<translation id="8680787084697685621">帐户登录详细信息已过期。</translation>
 <translation id="8703575177326907206">您与 <ph name="DOMAIN" /> 的连接未加密。</translation>
 <translation id="8725066075913043281">重试</translation>
 <translation id="8728672262656704056">您已进入隐身模式</translation>
@@ -699,7 +698,6 @@
 <translation id="8987927404178983737">月</translation>
 <translation id="8989148748219918422"><ph name="ORGANIZATION" /> [<ph name="COUNTRY" />]</translation>
 <translation id="9001074447101275817">代理 (<ph name="DOMAIN" />) 要求提供用户名和密码。</translation>
-<translation id="9008201768610948239">忽略</translation>
 <translation id="901974403500617787">应用于整个系统的设置只能由以下所有者设定：<ph name="OWNER_EMAIL" />。</translation>
 <translation id="9020542370529661692">已将此网页内容翻译成<ph name="TARGET_LANGUAGE" /></translation>
 <translation id="9038649477754266430">使用联想查询服务更快速地加载网页</translation>

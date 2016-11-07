@@ -89,6 +89,7 @@ Trykk på Søk eller Shift for å avbryte.</translation>
 <translation id="3294437725009624529">Gjest</translation>
 <translation id="3335772982573114336">Nytt notat</translation>
 <translation id="3364721542077212959">Pekepennverktøy</translation>
+<translation id="3368922792935385530">Tilkoblet</translation>
 <translation id="3371140690572404006">USB-C-enhet (porten foran på høyre side)</translation>
 <translation id="3445925074670675829">USB-C-enhet</translation>
 <translation id="3473479545200714844">Skjermforstørrer</translation>
@@ -126,6 +127,7 @@ Trykk på Søk eller Shift for å avbryte.</translation>
 <translation id="4250680216510889253">Nei</translation>
 <translation id="4279490309300973883">Speiling</translation>
 <translation id="4321179778687042513">ctrl</translation>
+<translation id="4378551569595875038">Kobler til …</translation>
 <translation id="4421231901400348175">Deler kontroll av skjermen med <ph name="HELPER_NAME" /> via fjernhjelp.</translation>
 <translation id="4430019312045809116">Volum</translation>
 <translation id="4448844063988177157">Søker etter Wi-Fi-nettverk ...</translation>
@@ -280,4 +282,5 @@ Trykk på Alt + Søk eller Shift for å avbryte.</translation>
 <translation id="923686485342484400">Trykk på Control+Shift+Q to ganger for å logge av.</translation>
 <translation id="938582441709398163">Tastaturbelegg</translation>
 <translation id="939252827960237676">Lagringen av skjermdumpen mislyktes</translation>
+<translation id="952992212772159698">Ikke aktivert</translation>
 </translationbundle>

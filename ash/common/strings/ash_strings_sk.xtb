@@ -89,6 +89,7 @@ Ak ho chcete zrušiť, stlačte klávesy Hľadať alebo Shift.</translation>
 <translation id="3294437725009624529">Hosť</translation>
 <translation id="3335772982573114336">Nová poznámka</translation>
 <translation id="3364721542077212959">Nástroje pre dotykové pero</translation>
+<translation id="3368922792935385530">Pripojené</translation>
 <translation id="3371140690572404006">zariadenia USB-C (port vpravo vpredu)</translation>
 <translation id="3445925074670675829">Zariadenie USB-C</translation>
 <translation id="3473479545200714844">Lupa</translation>
@@ -125,6 +126,7 @@ Ak ho chcete zrušiť, stlačte klávesy Hľadať alebo Shift.</translation>
 <translation id="4250680216510889253">Nie</translation>
 <translation id="4279490309300973883">Zrkadlenie</translation>
 <translation id="4321179778687042513">ctrl</translation>
+<translation id="4378551569595875038">Pripája sa...</translation>
 <translation id="4421231901400348175">Ovládanie obrazovky sa prostredníctvom Vzdialenej pomoci zdieľa s používateľom <ph name="HELPER_NAME" />.</translation>
 <translation id="4430019312045809116">Hlasitosť</translation>
 <translation id="4448844063988177157">Prebieha vyhľadávanie sietí Wi-Fi...</translation>
@@ -280,4 +282,5 @@ Ak ho chcete zrušiť, stlačte klávesy Alt + Hľadať alebo Shift.</translatio
 <translation id="923686485342484400">Ak sa chcete odhlásiť, stlačte dvakrát kombináciu klávesov Ctrl, Shift a Q.</translation>
 <translation id="938582441709398163">Prekryvná vrstva klávesnice</translation>
 <translation id="939252827960237676">Uloženie snímky obrazovky zlyhalo.</translation>
+<translation id="952992212772159698">Neaktivované</translation>
 </translationbundle>
