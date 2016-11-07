@@ -54,6 +54,7 @@ const base::Feature* kFeaturesExposedToJava[] = {
     &kWebApks,
     &ntp_snippets::kContentSuggestionsFeature,
     &ntp_snippets::kIncreasedVisibility,
+    &ntp_snippets::kForeignSessionsSuggestionsFeature,
     &ntp_snippets::kOfflineBadgeFeature,
     &ntp_snippets::kSaveToOfflineFeature,
     &ntp_snippets::kSectionDismissalFeature,
