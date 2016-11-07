@@ -30,6 +30,9 @@ HardwareRenderer::HardwareRenderer(RenderThreadManager* state)
       surfaces_(SurfacesInstance::GetOrCreateInstance()),
       frame_sink_id_(surfaces_->AllocateFrameSinkId()),
       surface_id_allocator_(base::MakeUnique<cc::SurfaceIdAllocator>()),
+      surface_factory_(new cc::SurfaceFactory(frame_sink_id_,
+                                              surfaces_->GetSurfaceManager(),
+                                              this)),
       last_committed_compositor_frame_sink_id_(0u),
       last_submitted_compositor_frame_sink_id_(0u) {
   DCHECK(last_egl_context_);
@@ -95,12 +98,10 @@ void HardwareRenderer::DrawGL(AwDrawGLInfo* draw_info) {
         DestroySurface();
 
       // This will return all the resources to the previous compositor.
-      surface_factory_.reset();
+      surface_factory_->Reset();
       compositor_id_ = child_frame_->compositor_id;
       last_submitted_compositor_frame_sink_id_ =
           child_frame_->compositor_frame_sink_id;
-      surface_factory_.reset(new cc::SurfaceFactory(
-          frame_sink_id_, surfaces_->GetSurfaceManager(), this));
     }
 
     std::unique_ptr<cc::CompositorFrame> child_compositor_frame =
@@ -148,7 +149,6 @@ void HardwareRenderer::DrawGL(AwDrawGLInfo* draw_info) {
 
 void HardwareRenderer::AllocateSurface() {
   DCHECK(child_id_.is_null());
-  DCHECK(surface_factory_);
   child_id_ = surface_id_allocator_->GenerateId();
   surface_factory_->Create(child_id_);
   surfaces_->AddChildId(cc::SurfaceId(frame_sink_id_, child_id_));
@@ -156,7 +156,6 @@ void HardwareRenderer::AllocateSurface() {
 
 void HardwareRenderer::DestroySurface() {
   DCHECK(!child_id_.is_null());
-  DCHECK(surface_factory_);
 
   // Submit an empty frame to force any existing resources to be returned.
   surface_factory_->SubmitCompositorFrame(child_id_, cc::CompositorFrame(),

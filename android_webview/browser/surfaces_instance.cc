@@ -52,6 +52,8 @@ SurfacesInstance::SurfacesInstance()
   surface_manager_.reset(new cc::SurfaceManager);
   surface_id_allocator_.reset(new cc::SurfaceIdAllocator());
   surface_manager_->RegisterFrameSinkId(frame_sink_id_);
+  surface_factory_.reset(
+      new cc::SurfaceFactory(frame_sink_id_, surface_manager_.get(), this));
 
   std::unique_ptr<cc::BeginFrameSource> begin_frame_source(
       new cc::StubBeginFrameSource);
@@ -72,9 +74,6 @@ SurfacesInstance::SurfacesInstance()
       std::move(scheduler), std::move(texture_mailbox_deleter)));
   display_->Initialize(this, surface_manager_.get(), frame_sink_id_);
   display_->SetVisible(true);
-
-  surface_factory_.reset(
-      new cc::SurfaceFactory(frame_sink_id_, surface_manager_.get(), this));
 
   DCHECK(!g_surfaces_instance);
   g_surfaces_instance = this;
