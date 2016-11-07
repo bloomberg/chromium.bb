@@ -9440,27 +9440,6 @@
             "url": "/html/obsolete/requirements-for-implementations/the-marquee-element-0/marquee-scrolldelay.html"
           }
         ],
-        "html/rendering/replaced-elements/svg-embedded-sizing/svg-in-iframe-auto.html": [
-          {
-            "path": "html/rendering/replaced-elements/svg-embedded-sizing/svg-in-iframe-auto.html",
-            "timeout": "long",
-            "url": "/html/rendering/replaced-elements/svg-embedded-sizing/svg-in-iframe-auto.html"
-          }
-        ],
-        "html/rendering/replaced-elements/svg-embedded-sizing/svg-in-iframe-fixed.html": [
-          {
-            "path": "html/rendering/replaced-elements/svg-embedded-sizing/svg-in-iframe-fixed.html",
-            "timeout": "long",
-            "url": "/html/rendering/replaced-elements/svg-embedded-sizing/svg-in-iframe-fixed.html"
-          }
-        ],
-        "html/rendering/replaced-elements/svg-embedded-sizing/svg-in-iframe-percentage.html": [
-          {
-            "path": "html/rendering/replaced-elements/svg-embedded-sizing/svg-in-iframe-percentage.html",
-            "timeout": "long",
-            "url": "/html/rendering/replaced-elements/svg-embedded-sizing/svg-in-iframe-percentage.html"
-          }
-        ],
         "html/rendering/replaced-elements/svg-embedded-sizing/svg-in-img-auto.html": [
           {
             "path": "html/rendering/replaced-elements/svg-embedded-sizing/svg-in-img-auto.html",
@@ -9480,27 +9459,6 @@
             "path": "html/rendering/replaced-elements/svg-embedded-sizing/svg-in-img-percentage.html",
             "timeout": "long",
             "url": "/html/rendering/replaced-elements/svg-embedded-sizing/svg-in-img-percentage.html"
-          }
-        ],
-        "html/rendering/replaced-elements/svg-embedded-sizing/svg-in-object-auto.html": [
-          {
-            "path": "html/rendering/replaced-elements/svg-embedded-sizing/svg-in-object-auto.html",
-            "timeout": "long",
-            "url": "/html/rendering/replaced-elements/svg-embedded-sizing/svg-in-object-auto.html"
-          }
-        ],
-        "html/rendering/replaced-elements/svg-embedded-sizing/svg-in-object-fixed.html": [
-          {
-            "path": "html/rendering/replaced-elements/svg-embedded-sizing/svg-in-object-fixed.html",
-            "timeout": "long",
-            "url": "/html/rendering/replaced-elements/svg-embedded-sizing/svg-in-object-fixed.html"
-          }
-        ],
-        "html/rendering/replaced-elements/svg-embedded-sizing/svg-in-object-percentage.html": [
-          {
-            "path": "html/rendering/replaced-elements/svg-embedded-sizing/svg-in-object-percentage.html",
-            "timeout": "long",
-            "url": "/html/rendering/replaced-elements/svg-embedded-sizing/svg-in-object-percentage.html"
           }
         ],
         "html/rendering/replaced-elements/svg-inline-sizing/svg-inline.html": [
