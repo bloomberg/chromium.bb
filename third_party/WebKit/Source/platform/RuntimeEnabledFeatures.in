@@ -168,6 +168,7 @@ PaintUnderInvalidationChecking settable_from_internals=True
 PassiveDocumentEventListeners status=experimental
 PassiveEventListenersDueToFling status=experimental
 PassPaintVisualRectToCompositor
+PaymentApp status=experimental
 PaymentRequest status=experimental
 PaymentRequestPayerName status=stable
 PerformanceObserver status=stable

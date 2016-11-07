@@ -4450,6 +4450,11 @@ interface PaymentAddress
     getter sortingCode
     method constructor
     method toJSON
+interface PaymentAppManager
+    attribute @@toStringTag
+    method constructor
+    method getManifest
+    method setManifest
 interface PaymentRequest : EventTarget
     attribute @@toStringTag
     getter onshippingaddresschange
@@ -6170,6 +6175,7 @@ interface ServiceWorkerRegistration : EventTarget
     getter active
     getter installing
     getter onupdatefound
+    getter paymentAppManager
     getter pushManager
     getter scope
     getter sync

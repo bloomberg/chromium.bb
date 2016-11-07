@@ -649,6 +649,7 @@ interface ServiceWorkerRegistration : EventTarget
     getter active
     getter installing
     getter onupdatefound
+    getter paymentAppManager
     getter pushManager
     getter scope
     getter sync

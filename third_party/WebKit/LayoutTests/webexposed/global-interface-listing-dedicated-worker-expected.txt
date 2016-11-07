@@ -661,6 +661,7 @@ Starting worker: resources/global-interface-listing.js
 [Worker]     getter active
 [Worker]     getter installing
 [Worker]     getter onupdatefound
+[Worker]     getter paymentAppManager
 [Worker]     getter pushManager
 [Worker]     getter scope
 [Worker]     getter sync
