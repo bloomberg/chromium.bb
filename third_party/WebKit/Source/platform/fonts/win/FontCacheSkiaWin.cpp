@@ -45,14 +45,14 @@
 
 namespace blink {
 
-HashMap<String, sk_sp<SkTypeface>>* FontCache::s_sideloadedFonts = 0;
+HashMap<String, sk_sp<SkTypeface>>* FontCache::s_sideloadedFonts = nullptr;
 
 // Cached system font metrics.
-AtomicString* FontCache::s_menuFontFamilyName = 0;
+AtomicString* FontCache::s_menuFontFamilyName = nullptr;
 int32_t FontCache::s_menuFontHeight = 0;
-AtomicString* FontCache::s_smallCaptionFontFamilyName = 0;
+AtomicString* FontCache::s_smallCaptionFontFamilyName = nullptr;
 int32_t FontCache::s_smallCaptionFontHeight = 0;
-AtomicString* FontCache::s_statusFontFamilyName = 0;
+AtomicString* FontCache::s_statusFontFamilyName = nullptr;
 int32_t FontCache::s_statusFontHeight = 0;
 
 namespace {
@@ -129,7 +129,7 @@ PassRefPtr<SimpleFontData> FontCache::fallbackFontForCharacter(
   const wchar_t* family = getFallbackFamily(
       character, fontDescription.genericFamily(), fontDescription.locale(),
       &script, fallbackPriority, m_fontManager.get());
-  FontPlatformData* data = 0;
+  FontPlatformData* data = nullptr;
   if (family) {
     FontFaceCreationParams createByFamily(AtomicString(family, wcslen(family)));
     data = getFontPlatformData(fontDescription, createByFamily);
@@ -186,7 +186,7 @@ PassRefPtr<SimpleFontData> FontCache::fallbackFontForCharacter(
       L"gentiumalt", L"ms pgothic", L"simsun", L"gulim", L"pmingliu",
       L"code2000"};
 
-  const wchar_t* const* panUniFonts = 0;
+  const wchar_t* const* panUniFonts = nullptr;
   int numFonts = 0;
   if (script == USCRIPT_HAN) {
     panUniFonts = cjkFonts;
