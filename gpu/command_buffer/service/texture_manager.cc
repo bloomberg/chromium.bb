@@ -137,33 +137,6 @@ class FormatTypeValidator {
         {GL_LUMINANCE_ALPHA, GL_LUMINANCE_ALPHA, GL_UNSIGNED_BYTE},
         {GL_LUMINANCE, GL_LUMINANCE, GL_UNSIGNED_BYTE},
         {GL_ALPHA, GL_ALPHA, GL_UNSIGNED_BYTE},
-        // Exposed by GL_OES_texture_float and GL_OES_texture_half_float
-        {GL_RGB, GL_RGB, GL_FLOAT},
-        {GL_RGBA, GL_RGBA, GL_FLOAT},
-        {GL_LUMINANCE_ALPHA, GL_LUMINANCE_ALPHA, GL_FLOAT},
-        {GL_LUMINANCE, GL_LUMINANCE, GL_FLOAT},
-        {GL_ALPHA, GL_ALPHA, GL_FLOAT},
-        {GL_RGB, GL_RGB, GL_HALF_FLOAT_OES},
-        {GL_RGBA, GL_RGBA, GL_HALF_FLOAT_OES},
-        {GL_LUMINANCE_ALPHA, GL_LUMINANCE_ALPHA, GL_HALF_FLOAT_OES},
-        {GL_LUMINANCE, GL_LUMINANCE, GL_HALF_FLOAT_OES},
-        {GL_ALPHA, GL_ALPHA, GL_HALF_FLOAT_OES},
-        // Exposed by GL_ANGLE_depth_texture
-        {GL_DEPTH_COMPONENT, GL_DEPTH_COMPONENT, GL_UNSIGNED_SHORT},
-        {GL_DEPTH_COMPONENT, GL_DEPTH_COMPONENT, GL_UNSIGNED_INT},
-        {GL_DEPTH_STENCIL, GL_DEPTH_STENCIL, GL_UNSIGNED_INT_24_8},
-        // Exposed by GL_EXT_sRGB
-        {GL_SRGB, GL_SRGB, GL_UNSIGNED_BYTE},
-        {GL_SRGB_ALPHA, GL_SRGB_ALPHA, GL_UNSIGNED_BYTE},
-        // Exposed by GL_EXT_texture_format_BGRA8888
-        {GL_BGRA_EXT, GL_BGRA_EXT, GL_UNSIGNED_BYTE},
-        // Exposed by GL_EXT_texture_rg
-        {GL_RED, GL_RED, GL_UNSIGNED_BYTE},
-        {GL_RG, GL_RG, GL_UNSIGNED_BYTE},
-        {GL_RED, GL_RED, GL_FLOAT},
-        {GL_RG, GL_RG, GL_FLOAT},
-        {GL_RED, GL_RED, GL_HALF_FLOAT_OES},
-        {GL_RG, GL_RG, GL_HALF_FLOAT_OES},
 
         // ES3.
         {GL_R8, GL_RED, GL_UNSIGNED_BYTE},
@@ -234,19 +207,72 @@ class FormatTypeValidator {
         {GL_DEPTH24_STENCIL8, GL_DEPTH_STENCIL, GL_UNSIGNED_INT_24_8},
         {GL_DEPTH32F_STENCIL8, GL_DEPTH_STENCIL,
          GL_FLOAT_32_UNSIGNED_INT_24_8_REV},
-        // Exposed by GL_APPLE_texture_format_BGRA8888
+
+        // Exposed by GL_APPLE_texture_format_BGRA8888 for TexStorage*
+        // TODO(kainino): this actually exposes it for (Copy)TexImage* as well,
+        // which is incorrect. crbug.com/663086
         {GL_BGRA8_EXT, GL_BGRA_EXT, GL_UNSIGNED_BYTE},
+
+        // Exposed by GL_APPLE_texture_format_BGRA8888 and
+        // GL_EXT_texture_format_BGRA8888
+        {GL_BGRA_EXT, GL_BGRA_EXT, GL_UNSIGNED_BYTE},
+    };
+
+    static const FormatType kSupportedFormatTypesES2Only[] = {
+        // Exposed by GL_OES_texture_float and GL_OES_texture_half_float
+        {GL_RGB, GL_RGB, GL_FLOAT},
+        {GL_RGBA, GL_RGBA, GL_FLOAT},
+        {GL_LUMINANCE_ALPHA, GL_LUMINANCE_ALPHA, GL_FLOAT},
+        {GL_LUMINANCE, GL_LUMINANCE, GL_FLOAT},
+        {GL_ALPHA, GL_ALPHA, GL_FLOAT},
+        {GL_RGB, GL_RGB, GL_HALF_FLOAT_OES},
+        {GL_RGBA, GL_RGBA, GL_HALF_FLOAT_OES},
+        {GL_LUMINANCE_ALPHA, GL_LUMINANCE_ALPHA, GL_HALF_FLOAT_OES},
+        {GL_LUMINANCE, GL_LUMINANCE, GL_HALF_FLOAT_OES},
+        {GL_ALPHA, GL_ALPHA, GL_HALF_FLOAT_OES},
+
+        // Exposed by GL_ANGLE_depth_texture
+        {GL_DEPTH_COMPONENT, GL_DEPTH_COMPONENT, GL_UNSIGNED_SHORT},
+        {GL_DEPTH_COMPONENT, GL_DEPTH_COMPONENT, GL_UNSIGNED_INT},
+        {GL_DEPTH_STENCIL, GL_DEPTH_STENCIL, GL_UNSIGNED_INT_24_8},
+
+        // Exposed by GL_EXT_sRGB
+        {GL_SRGB, GL_SRGB, GL_UNSIGNED_BYTE},
+        {GL_SRGB_ALPHA, GL_SRGB_ALPHA, GL_UNSIGNED_BYTE},
+
+        // Exposed by GL_EXT_texture_rg
+        {GL_RED, GL_RED, GL_UNSIGNED_BYTE},
+        {GL_RG, GL_RG, GL_UNSIGNED_BYTE},
+        {GL_RED, GL_RED, GL_FLOAT},
+        {GL_RG, GL_RG, GL_FLOAT},
+        {GL_RED, GL_RED, GL_HALF_FLOAT_OES},
+        {GL_RG, GL_RG, GL_HALF_FLOAT_OES},
     };
 
     for (size_t ii = 0; ii < arraysize(kSupportedFormatTypes); ++ii) {
       supported_combinations_.insert(kSupportedFormatTypes[ii]);
     }
+
+    for (size_t ii = 0; ii < arraysize(kSupportedFormatTypesES2Only); ++ii) {
+      supported_combinations_es2_only_.insert(kSupportedFormatTypesES2Only[ii]);
+    }
   }
 
   // This may be accessed from multiple threads.
-  bool IsValid(GLenum internal_format, GLenum format, GLenum type) const {
+  bool IsValid(ContextType context_type, GLenum internal_format, GLenum format,
+               GLenum type) const {
     FormatType query = { internal_format, format, type };
-    return supported_combinations_.find(query) != supported_combinations_.end();
+    if (supported_combinations_.find(query) != supported_combinations_.end()) {
+      return true;
+    }
+    if (context_type == CONTEXT_TYPE_OPENGLES2 ||
+        context_type == CONTEXT_TYPE_WEBGL1) {
+      if (supported_combinations_es2_only_.find(query) !=
+          supported_combinations_es2_only_.end()) {
+        return true;
+      }
+    }
+    return false;
   }
 
  private:
@@ -271,6 +297,7 @@ class FormatTypeValidator {
   // This class needs to be thread safe, so once supported_combinations_
   // are initialized in the constructor, it should never be modified later.
   std::set<FormatType, FormatTypeCompare> supported_combinations_;
+  std::set<FormatType, FormatTypeCompare> supported_combinations_es2_only_;
 };
 
 static const Texture::CompatibilitySwizzle kSwizzledFormats[] = {
@@ -2304,7 +2331,8 @@ bool TextureManager::ValidateTextureParameters(
                              msg.c_str());
     return false;
   }
-  if (!g_format_type_validator.Get().IsValid(internal_format, format, type)) {
+  if (!g_format_type_validator.Get().IsValid(feature_info_->context_type(),
+                                             internal_format, format, type)) {
     std::string msg = std::string(
         "invalid internalformat/format/type combination ") +
         GLES2Util::GetStringEnum(internal_format) + std::string("/") +

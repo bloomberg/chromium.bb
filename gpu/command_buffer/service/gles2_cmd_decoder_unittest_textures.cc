@@ -844,8 +844,7 @@ TEST_P(GLES2DecoderManualInitTest, CopyTexImage2DUnsizedInternalFormatES3) {
     GLenum sized;
   };
   UnsizedSizedInternalFormat kUnsizedInternalFormats[] = {
-    {GL_RED, GL_R8},
-    {GL_RG, GL_RG8},
+    // GL_RED and GL_RG should not work.
     {GL_RGB, GL_RGB8},
     {GL_RGBA, GL_RGBA8},
     {GL_BGRA_EXT, GL_RGBA8},
