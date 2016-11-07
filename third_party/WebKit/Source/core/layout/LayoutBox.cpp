@@ -404,6 +404,11 @@ void LayoutBox::updateGridPositionAfterStyleChange(
       oldStyle->hasOutOfFlowPosition() == style()->hasOutOfFlowPosition())
     return;
 
+  // Positioned items don't participate on the layout of the grid,
+  // so we don't need to mark the grid as dirty if they change positions.
+  if (oldStyle->hasOutOfFlowPosition() && style()->hasOutOfFlowPosition())
+    return;
+
   // It should be possible to not dirty the grid in some cases (like moving an
   // explicitly placed grid item).
   // For now, it's more simple to just always recompute the grid.

@@ -176,8 +176,9 @@ class LayoutGrid final : public LayoutBlock {
 
   void layoutGridItems(GridSizingData&);
   void prepareChildForPositionedLayout(LayoutBox&);
-  void layoutPositionedObjects(bool relayoutChildren,
-                               PositionedLayoutBehavior = DefaultLayout);
+  void layoutPositionedObjects(
+      bool relayoutChildren,
+      PositionedLayoutBehavior = DefaultLayout) override;
   void offsetAndBreadthForPositionedChild(const LayoutBox&,
                                           GridTrackSizingDirection,
                                           LayoutUnit& offset,

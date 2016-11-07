@@ -475,7 +475,10 @@ void LayoutGrid::repeatTracksSizingIfNeeded(GridSizingData& sizingData,
 void LayoutGrid::layoutBlock(bool relayoutChildren) {
   ASSERT(needsLayout());
 
-  if (!relayoutChildren && simplifiedLayout())
+  // We cannot perform a simplifiedLayout() on a dirty grid that
+  // has positioned items to be laid out.
+  if (!relayoutChildren && (!m_gridIsDirty || !posChildNeedsLayout()) &&
+      simplifiedLayout())
     return;
 
   SubtreeLayoutScope layoutScope(*this);

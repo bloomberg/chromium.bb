@@ -358,8 +358,9 @@ class CORE_EXPORT LayoutBlock : public LayoutBox {
     ForcedLayoutAfterContainingBlockMoved
   };
 
-  void layoutPositionedObjects(bool relayoutChildren,
-                               PositionedLayoutBehavior = DefaultLayout);
+  virtual void layoutPositionedObjects(
+      bool relayoutChildren,
+      PositionedLayoutBehavior = DefaultLayout);
   void markFixedPositionObjectForLayoutIfNeeded(LayoutObject* child,
                                                 SubtreeLayoutScope&);
 
