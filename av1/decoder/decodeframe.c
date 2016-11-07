@@ -2676,11 +2676,13 @@ static void read_tile_info(AV1Decoder *const pbi,
   cm->tile_width = ALIGN_POWER_OF_TWO(cm->tile_width, MAX_MIB_SIZE_LOG2);
   cm->tile_height = ALIGN_POWER_OF_TWO(cm->tile_height, MAX_MIB_SIZE_LOG2);
 
-  // tile size magnitude
-  if (cm->tile_rows > 1 || cm->tile_cols > 1) {
+// tile size magnitude
+#if !CONFIG_TILE_GROUPS
+  if (cm->tile_rows > 1 || cm->tile_cols > 1)
+#endif
     pbi->tile_size_bytes = aom_rb_read_literal(rb, 2) + 1;
-  }
 #endif  // CONFIG_EXT_TILE
+
 #if CONFIG_TILE_GROUPS
   // Store an index to the location of the tile group information
   pbi->tg_size_bit_offset = rb->bit_offset;
