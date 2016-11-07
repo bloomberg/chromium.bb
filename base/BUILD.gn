@@ -652,6 +652,7 @@ component("base") {
     #"process/process_iterator_openbsd.cc",  # Unused in Chromium build.
     "process/process_iterator_win.cc",
     "process/process_linux.cc",
+    "process/process_mac.cc",
     "process/process_metrics.cc",
     "process/process_metrics.h",
 

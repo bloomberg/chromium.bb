@@ -181,8 +181,12 @@ int TaskGroupSampler::RefreshOpenFdCount() {
 
 bool TaskGroupSampler::RefreshProcessPriority() {
   DCHECK(worker_pool_sequenced_checker_.CalledOnValidSequence());
-
+#if defined(OS_MACOSX)
+  return process_.IsProcessBackgrounded(
+      content::BrowserChildProcessHost::GetPortProvider());
+#else
   return process_.IsProcessBackgrounded();
+#endif  // defined(OS_MACOSX)
 }
 
 }  // namespace task_manager

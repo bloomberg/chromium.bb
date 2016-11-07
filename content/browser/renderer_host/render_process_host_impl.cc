@@ -2804,8 +2804,14 @@ void RenderProcessHostImpl::OnProcessLaunched() {
     // Not all platforms launch processes in the same backgrounded state. Make
     // sure |is_process_backgrounded_| reflects this platform's initial process
     // state.
+#if defined(OS_MACOSX)
+    is_process_backgrounded_ =
+        child_process_launcher_->GetProcess().IsProcessBackgrounded(
+            MachBroker::GetInstance());
+#else
     is_process_backgrounded_ =
         child_process_launcher_->GetProcess().IsProcessBackgrounded();
+#endif  // defined(OS_MACOSX)
 
     // Disable updating process priority on startup for now as it incorrectly
     // results in backgrounding foreground navigations until their first commit

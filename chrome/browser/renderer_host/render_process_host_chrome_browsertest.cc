@@ -32,6 +32,10 @@
 #include "net/base/filename_util.h"
 #include "net/test/embedded_test_server/embedded_test_server.h"
 
+#if defined(OS_MACOSX)
+#include "content/public/browser/browser_child_process_host.h"
+#endif  // defined(OS_MACOSX)
+
 using content::RenderViewHost;
 using content::RenderWidgetHost;
 using content::WebContents;
@@ -296,14 +300,19 @@ IN_PROC_BROWSER_TEST_F(ChromeRenderProcessHostTest, MAYBE_ProcessPerTab) {
   EXPECT_EQ(host_count, RenderProcessHostCount());
 }
 
-// We don't change process priorities on Mac or Posix because the user lacks the
+// We don't change process priorities on Posix because the user lacks the
 // permission to raise a process' priority even after lowering it.
-#if defined(OS_WIN) || defined(OS_LINUX)
+#if defined(OS_WIN) || defined(OS_LINUX) || defined(OS_MACOSX)
 IN_PROC_BROWSER_TEST_F(ChromeRenderProcessHostTest, Backgrounding) {
   if (!base::Process::CanBackgroundProcesses()) {
     LOG(ERROR) << "Can't background processes";
     return;
   }
+#if defined(OS_MACOSX)
+  base::PortProvider* port_provider =
+      content::BrowserChildProcessHost::GetPortProvider();
+#endif  //  defined(OS_MACOSX)
+
   base::CommandLine& parsed_command_line =
       *base::CommandLine::ForCurrentProcess();
   parsed_command_line.AppendSwitch(switches::kProcessPerTab);
@@ -316,7 +325,11 @@ IN_PROC_BROWSER_TEST_F(ChromeRenderProcessHostTest, Backgrounding) {
   GURL page1("data:text/html,hello world1");
   base::Process process1 = ShowSingletonTab(page1);
   ASSERT_TRUE(process1.IsValid());
+#if defined(OS_MACOSX)
+  EXPECT_FALSE(process1.IsProcessBackgrounded(port_provider));
+#else
   EXPECT_FALSE(process1.IsProcessBackgrounded());
+#endif
 
   // Create another tab. It should be foreground, and the first tab should
   // now be background.
@@ -324,8 +337,13 @@ IN_PROC_BROWSER_TEST_F(ChromeRenderProcessHostTest, Backgrounding) {
   base::Process process2 = ShowSingletonTab(page2);
   ASSERT_TRUE(process2.IsValid());
   EXPECT_NE(process1.Pid(), process2.Pid());
+#if defined(OS_MACOSX)
+  EXPECT_TRUE(process1.IsProcessBackgrounded(port_provider));
+  EXPECT_FALSE(process2.IsProcessBackgrounded(port_provider));
+#else
   EXPECT_TRUE(process1.IsProcessBackgrounded());
   EXPECT_FALSE(process2.IsProcessBackgrounded());
+#endif  // defined(OS_MACOSX)
 
   // Load another tab in background. The renderer of the new tab should be
   // backgrounded, while visibility of the other renderers should not change.
@@ -334,6 +352,32 @@ IN_PROC_BROWSER_TEST_F(ChromeRenderProcessHostTest, Backgrounding) {
   ASSERT_TRUE(process3.IsValid());
   EXPECT_NE(process3.Pid(), process1.Pid());
   EXPECT_NE(process3.Pid(), process2.Pid());
+#if defined(OS_MACOSX)
+  EXPECT_TRUE(process1.IsProcessBackgrounded(port_provider));
+  EXPECT_FALSE(process2.IsProcessBackgrounded(port_provider));
+  // TODO(gab): The new background tab should be backgrounded but it currently
+  // intentionally isn't per a workaround to https://crbug.com/560446 in
+  // RenderProcessHostImpl::OnProcessLaunched().
+  EXPECT_FALSE(process3.IsProcessBackgrounded(port_provider));
+
+  // Navigate back to the first page. Its renderer should be in foreground
+  // again while the other renderers should be backgrounded.
+
+  EXPECT_EQ(process1.Pid(), ShowSingletonTab(page1).Pid());
+  EXPECT_FALSE(process1.IsProcessBackgrounded(port_provider));
+  EXPECT_TRUE(process2.IsProcessBackgrounded(port_provider));
+  // TODO(gab): Same as above.
+  EXPECT_FALSE(process3.IsProcessBackgrounded(port_provider));
+
+  // TODO(gab): Remove this when https://crbug.com/560446 is fixed, but for now
+  // confirm that the correct state is at least achieved when tab #3 is
+  // explicitly foregrounded and re-backgrounded.
+  EXPECT_EQ(process3.Pid(), ShowSingletonTab(page3).Pid());
+  EXPECT_EQ(process1.Pid(), ShowSingletonTab(page1).Pid());
+  EXPECT_FALSE(process1.IsProcessBackgrounded(port_provider));
+  EXPECT_TRUE(process2.IsProcessBackgrounded(port_provider));
+  EXPECT_TRUE(process3.IsProcessBackgrounded(port_provider));
+#else
   EXPECT_TRUE(process1.IsProcessBackgrounded());
   EXPECT_FALSE(process2.IsProcessBackgrounded());
   // TODO(gab): The new background tab should be backgrounded but it currently
@@ -343,6 +387,7 @@ IN_PROC_BROWSER_TEST_F(ChromeRenderProcessHostTest, Backgrounding) {
 
   // Navigate back to the first page. Its renderer should be in foreground
   // again while the other renderers should be backgrounded.
+
   EXPECT_EQ(process1.Pid(), ShowSingletonTab(page1).Pid());
   EXPECT_FALSE(process1.IsProcessBackgrounded());
   EXPECT_TRUE(process2.IsProcessBackgrounded());
@@ -357,6 +402,7 @@ IN_PROC_BROWSER_TEST_F(ChromeRenderProcessHostTest, Backgrounding) {
   EXPECT_FALSE(process1.IsProcessBackgrounded());
   EXPECT_TRUE(process2.IsProcessBackgrounded());
   EXPECT_TRUE(process3.IsProcessBackgrounded());
+#endif
 }
 #endif
 
@@ -576,9 +622,23 @@ class ChromeRenderProcessHostBackgroundingTest
     ASSERT_NE(audio_process_.Pid(), no_audio_process_.Pid());
     ASSERT_TRUE(no_audio_process_.IsValid());
     ASSERT_TRUE(audio_process_.IsValid());
+#if defined(OS_MACOSX)
+    port_provider_ = content::BrowserChildProcessHost::GetPortProvider();
+#endif //  defined(OS_MACOSX)
   }
 
  protected:
+  void WaitUntilBackgrounded(const base::Process& lhs,
+                             bool lhs_backgrounded,
+                             const base::Process& rhs,
+                             bool rhs_backgrounded) {
+    while (IsProcessBackgrounded(lhs) != lhs_backgrounded ||
+           IsProcessBackgrounded(rhs) != rhs_backgrounded) {
+      base::RunLoop().RunUntilIdle();
+      base::PlatformThread::Sleep(TestTimeouts::tiny_timeout());
+    }
+  }
+
   GURL audio_url_;
   GURL no_audio_url_;
 
@@ -588,6 +648,18 @@ class ChromeRenderProcessHostBackgroundingTest
   content::WebContents* audio_tab_web_contents_;
 
  private:
+  bool IsProcessBackgrounded(const base::Process& process) {
+#if defined(OS_MACOSX)
+    return process.IsProcessBackgrounded(port_provider_);
+#else
+    return process.IsProcessBackgrounded();
+#endif
+  }
+
+#if defined(OS_MACOSX)
+  base::PortProvider* port_provider_;
+#endif
+
   DISALLOW_COPY_AND_ASSIGN(ChromeRenderProcessHostBackgroundingTest);
 };
 
@@ -603,12 +675,7 @@ IN_PROC_BROWSER_TEST_F(ChromeRenderProcessHostBackgroundingTest,
 
   // Wait until the no audio page is backgrounded and the audio page is not
   // backgrounded.
-  while (!no_audio_process_.IsProcessBackgrounded() ||
-         audio_process_.IsProcessBackgrounded()) {
-    base::RunLoop().RunUntilIdle();
-    base::PlatformThread::Sleep(TestTimeouts::tiny_timeout());
-  }
-
+  WaitUntilBackgrounded(no_audio_process_, true, audio_process_, false);
   // Pause the audio and immediately switch to the no audio tab.
   ASSERT_TRUE(content::ExecuteScript(
       audio_tab_web_contents_,
@@ -617,11 +684,7 @@ IN_PROC_BROWSER_TEST_F(ChromeRenderProcessHostBackgroundingTest,
 
   // Wait until the no audio page is not backgrounded and the audio page is
   // backgrounded.
-  while (no_audio_process_.IsProcessBackgrounded() ||
-         !audio_process_.IsProcessBackgrounded()) {
-    base::RunLoop().RunUntilIdle();
-    base::PlatformThread::Sleep(TestTimeouts::tiny_timeout());
-  }
+  WaitUntilBackgrounded(no_audio_process_, false, audio_process_, true);
 }
 
 // Test to make sure that a process is backgrounded automatically when audio
@@ -633,12 +696,7 @@ IN_PROC_BROWSER_TEST_F(ChromeRenderProcessHostBackgroundingTest,
     return;
 
   // Wait until the two pages are not backgrounded.
-  while (no_audio_process_.IsProcessBackgrounded() ||
-         audio_process_.IsProcessBackgrounded()) {
-    base::RunLoop().RunUntilIdle();
-    base::PlatformThread::Sleep(TestTimeouts::tiny_timeout());
-  }
-
+  WaitUntilBackgrounded(audio_process_, false, no_audio_process_, false);
   // Stop the audio.
   ASSERT_TRUE(content::ExecuteScript(
       audio_tab_web_contents_,
@@ -646,14 +704,11 @@ IN_PROC_BROWSER_TEST_F(ChromeRenderProcessHostBackgroundingTest,
 
   // Wait until the no audio page is not backgrounded and the audio page is
   // backgrounded.
-  while (no_audio_process_.IsProcessBackgrounded() ||
-         !audio_process_.IsProcessBackgrounded()) {
-    base::RunLoop().RunUntilIdle();
-    base::PlatformThread::Sleep(TestTimeouts::tiny_timeout());
-  }
+  WaitUntilBackgrounded(no_audio_process_, false, audio_process_, true);
 }
 
-// Test to make sure that a process is un-backgrounded automatically when audio
+// Test to make sure that a process is un-backgrounded automatically when
+// audio
 // starts playing from a backgrounded tab.
 IN_PROC_BROWSER_TEST_F(ChromeRenderProcessHostBackgroundingTest,
                        ProcessPriorityAfterAudioStartsFromBackgroundTab) {
@@ -666,13 +721,7 @@ IN_PROC_BROWSER_TEST_F(ChromeRenderProcessHostBackgroundingTest,
       audio_tab_web_contents_,
       "document.getElementById('audioPlayer').pause();"));
 
-  // Wait until the no audio page is not backgrounded and the audio page is
-  // backgrounded.
-  while (no_audio_process_.IsProcessBackgrounded() ||
-         !audio_process_.IsProcessBackgrounded()) {
-    base::RunLoop().RunUntilIdle();
-    base::PlatformThread::Sleep(TestTimeouts::tiny_timeout());
-  }
+  WaitUntilBackgrounded(no_audio_process_, false, audio_process_, true);
 
   // Start the audio from the backgrounded tab.
   ASSERT_TRUE(
@@ -680,9 +729,5 @@ IN_PROC_BROWSER_TEST_F(ChromeRenderProcessHostBackgroundingTest,
                              "document.getElementById('audioPlayer').play();"));
 
   // Wait until the two pages are not backgrounded.
-  while (no_audio_process_.IsProcessBackgrounded() ||
-         audio_process_.IsProcessBackgrounded()) {
-    base::RunLoop().RunUntilIdle();
-    base::PlatformThread::Sleep(TestTimeouts::tiny_timeout());
-  }
+  WaitUntilBackgrounded(no_audio_process_, false, audio_process_, false);
 }

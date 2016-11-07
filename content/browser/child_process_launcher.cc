@@ -385,7 +385,11 @@ void SetProcessBackgroundedOnLauncherThread(base::Process process,
                                             bool background) {
   DCHECK_CURRENTLY_ON(BrowserThread::PROCESS_LAUNCHER);
   if (process.CanBackgroundProcesses()) {
+#if defined(OS_MACOSX)
+    process.SetProcessBackgrounded(MachBroker::GetInstance(), background);
+#else
     process.SetProcessBackgrounded(background);
+#endif  // defined(OS_MACOSX)
   }
 #if defined(OS_ANDROID)
   SetChildProcessInForeground(process.Handle(), !background);
