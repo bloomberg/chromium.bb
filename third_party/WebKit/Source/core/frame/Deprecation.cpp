@@ -417,24 +417,6 @@ String Deprecation::deprecationMessage(UseCounter::Feature feature) {
           "Please specify the desired codec(s) as part of the contentType.",
           milestoneString(M56));
 
-    case UseCounter::TouchStartUserGestureUtilized:
-      return willBeRemoved(
-          "Performing operations that require explicit user interaction on "
-          "touchstart events",
-          M56, "5649871251963904");
-
-    case UseCounter::TouchMoveUserGestureUtilized:
-      return willBeRemoved(
-          "Performing operations that require explicit user interaction on "
-          "touchmove events",
-          M56, "5649871251963904");
-
-    case UseCounter::TouchEndDuringScrollUserGestureUtilized:
-      return willBeRemoved(
-          "Performing operations that require explicit user interaction on "
-          "touchend events that occur as part of a scroll",
-          M56, "5649871251963904");
-
     case UseCounter::MIDIMessageEventReceivedTime:
       return willBeRemoved("MIDIMessageEvent.receivedTime", M56,
                            "5665772797952000");

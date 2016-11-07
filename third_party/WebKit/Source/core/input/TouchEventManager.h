@@ -7,7 +7,6 @@
 
 #include "core/CoreExport.h"
 #include "core/events/PointerEventFactory.h"
-#include "platform/UserGestureIndicator.h"
 #include "public/platform/WebInputEventResult.h"
 #include "wtf/Allocator.h"
 #include "wtf/HashMap.h"
@@ -21,8 +20,7 @@ class PlatformTouchEvent;
 // This class takes care of dispatching all touch events and
 // maintaining related states.
 class CORE_EXPORT TouchEventManager
-    : public GarbageCollectedFinalized<TouchEventManager>,
-      public UserGestureUtilizedCallback {
+    : public GarbageCollectedFinalized<TouchEventManager> {
   WTF_MAKE_NONCOPYABLE(TouchEventManager);
 
  public:
@@ -65,13 +63,6 @@ class CORE_EXPORT TouchEventManager
   // Returns whether there is any touch on the screen.
   bool isAnyTouchActive() const;
 
-  // Indicate that a touch scroll has started.
-  void setTouchScrollStarted() { m_touchScrollStarted = true; }
-
-  // Invoked when a UserGestureIndicator corresponding to a touch event is
-  // utilized.
-  void userGestureUtilized() override;
-
  private:
   void updateTargetAndRegionMapsForTouchStarts(HeapVector<TouchInfo>&);
   void setAllPropertiesOfTouchInfos(HeapVector<TouchInfo>&);
@@ -102,10 +93,7 @@ class CORE_EXPORT TouchEventManager
   // sequence active.
   Member<Document> m_touchSequenceDocument;
 
-  RefPtr<UserGestureToken> m_touchSequenceUserGestureToken;
   bool m_touchPressed;
-  // True if a touch is active but scrolling/zooming has started.
-  bool m_touchScrollStarted;
   // The touch event currently being handled or NoType if none.
   PlatformEvent::EventType m_currentEvent;
 };

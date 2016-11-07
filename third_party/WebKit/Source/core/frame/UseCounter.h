@@ -1100,9 +1100,6 @@ class CORE_EXPORT UseCounter {
     CSSSelectorPseudoReadWrite = 1378,
     // The above items are available in M52 branch
 
-    TouchStartUserGestureUtilized = 1380,
-    TouchMoveUserGestureUtilized = 1381,
-    TouchEndDuringScrollUserGestureUtilized = 1382,
     CSSSelectorPseudoDefined = 1383,
     RTCPeerConnectionAddIceCandidatePromise = 1384,
     RTCPeerConnectionAddIceCandidateLegacy = 1385,

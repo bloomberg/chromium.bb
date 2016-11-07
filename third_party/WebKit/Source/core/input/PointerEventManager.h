@@ -136,6 +136,10 @@ class CORE_EXPORT PointerEventManager
   // blockTouchPointers().
   void unblockTouchPointers();
 
+  // Generate the TouchInfos for a PlatformTouchEvent, hit-testing as necessary.
+  void computeTouchTargets(const PlatformTouchEvent&,
+                           HeapVector<TouchEventManager::TouchInfo>&);
+
   // Sends touch pointer events and sets consumed bits in TouchInfo array
   // based on the return value of pointer event handlers.
   void dispatchTouchPointerEvents(const PlatformTouchEvent&,
@@ -192,8 +196,8 @@ class CORE_EXPORT PointerEventManager
   bool m_preventMouseEventForPointerType
       [static_cast<size_t>(WebPointerProperties::PointerType::LastEntry) + 1];
 
-  // Set upon sending a pointercancel for touch, prevents PE dispatches for
-  // touches until all touch-points become inactive.
+  // Set upon TouchScrollStarted when sending a pointercancel, prevents PE
+  // dispatches for touches until all touch-points become inactive.
   bool m_inCanceledStateForPointerTypeTouch;
 
   Deque<uint32_t> m_touchIdsForCanceledPointerdowns;
