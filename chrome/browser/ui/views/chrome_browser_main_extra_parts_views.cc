@@ -53,7 +53,7 @@ void ChromeBrowserMainExtraPartsViews::ToolkitInitialized() {
 }
 
 void ChromeBrowserMainExtraPartsViews::PreCreateThreads() {
-#if defined(USE_AURA) && !defined(OS_CHROMEOS)
+#if defined(USE_AURA) && !defined(OS_CHROMEOS) && !defined(USE_OZONE)
   // The screen may have already been set in test initialization.
   if (!display::Screen::GetScreen())
     display::Screen::SetScreenInstance(views::CreateDesktopScreen());

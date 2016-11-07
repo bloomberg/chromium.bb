@@ -3554,6 +3554,13 @@ split_static_library("browser") {
       defines += [ "USE_LIBSECRET" ]
       deps += [ "//third_party/libsecret" ]
     }
+
+    if (use_ozone) {
+      sources += [
+        "fullscreen_ozone.cc",
+        "media/webrtc/window_icon_util_ozone.cc",
+      ]
+    }
   }
 
   if (android_java_ui) {

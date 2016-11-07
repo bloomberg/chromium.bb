@@ -3034,7 +3034,6 @@ split_static_library("ui") {
       "views/frame/browser_desktop_window_tree_host.h",
       "views/frame/desktop_browser_frame_auralinux.cc",
       "views/frame/desktop_browser_frame_auralinux.h",
-      "views/frame/native_browser_frame_factory_auralinux.cc",
       "views/status_icons/status_icon_linux_wrapper.cc",
       "views/status_icons/status_icon_linux_wrapper.h",
       "webui/help/version_updater_basic.cc",
@@ -3053,9 +3052,13 @@ split_static_library("ui") {
         "views/frame/global_menu_bar_registrar_x11.h",
         "views/frame/global_menu_bar_x11.cc",
         "views/frame/global_menu_bar_x11.h",
+        "views/frame/native_browser_frame_factory_auralinux.cc",
         "views/javascript_app_modal_dialog_views_x11.cc",
         "views/javascript_app_modal_dialog_views_x11.h",
       ]
+    }
+    if (use_ozone) {
+      sources += [ "views/frame/native_browser_frame_factory_ozone.cc" ]
     }
   }
   if (is_linux) {  # Both desktop Linux and ChromeOS.
@@ -3077,16 +3080,18 @@ split_static_library("ui") {
       sources += [
         "views/javascript_app_modal_event_blocker_x11.cc",
         "views/javascript_app_modal_event_blocker_x11.h",
-        "views/tabs/window_finder_x11.cc",
       ]
       configs += [ "//build/config/linux:x11" ]
       deps += [
         "//ui/events/devices",
         "//ui/events/devices/x11",
       ]
-      if (is_chromeos) {
-        sources -= [ "views/tabs/window_finder_x11.cc" ]
+      if (is_desktop_linux) {
+        sources += [ "views/tabs/window_finder_x11.cc" ]
       }
+    }
+    if (use_ozone) {
+      sources += [ "views/tabs/window_finder_ozone.cc" ]
     }
   }
 
