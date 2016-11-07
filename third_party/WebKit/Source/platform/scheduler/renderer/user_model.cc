@@ -196,6 +196,7 @@ void UserModel::Reset(base::TimeTicks now) {
   last_reset_time_ = now;
   is_gesture_active_ = false;
   is_gesture_expected_ = false;
+  pending_input_event_count_ = 0;
 }
 
 void UserModel::AsValueInto(base::trace_event::TracedValue* state) const {

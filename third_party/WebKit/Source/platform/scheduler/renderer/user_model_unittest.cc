@@ -252,5 +252,15 @@ TEST_F(UserModelTest, IsGestureExpectedToContinue_LongAfterGestureStarted) {
   EXPECT_EQ(base::TimeDelta(), prediction_valid_duration);
 }
 
+TEST_F(UserModelTest, ResetPendingInputCount) {
+  user_model_->DidStartProcessingInputEvent(
+      blink::WebInputEvent::Type::GestureScrollBegin, clock_->NowTicks());
+  EXPECT_EQ(priority_escalation_after_input_duration(),
+            user_model_->TimeLeftInUserGesture(clock_->NowTicks()));
+  user_model_->Reset(clock_->NowTicks());
+  EXPECT_EQ(base::TimeDelta(),
+            user_model_->TimeLeftInUserGesture(clock_->NowTicks()));
+}
+
 }  // namespace scheduler
 }  // namespace blink
