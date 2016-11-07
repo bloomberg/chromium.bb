@@ -2233,27 +2233,6 @@ void HWNDMessageHandler::OnWindowPosChanging(WINDOWPOS* window_pos) {
         GetMonitorAndRects(window_rect, &monitor, &monitor_rect, &work_area)) {
       bool work_area_changed = (monitor_rect == last_monitor_rect_) &&
                                (work_area != last_work_area_);
-      const bool same_monitor = monitor && (monitor == last_monitor_);
-
-      gfx::Rect expected_maximized_bounds = work_area;
-      if (IsMaximized()) {
-        // Windows automatically adds a standard width border to all sides when
-        // window is maximized. We should take this into account.
-        gfx::Insets client_area_insets;
-        if (GetClientAreaInsets(&client_area_insets))
-          expected_maximized_bounds.Inset(client_area_insets.Scale(-1));
-      }
-      // Sometimes Windows incorrectly changes bounds of maximized windows after
-      // attaching or detaching additional displays. In this case user can see
-      // non-client area of the window (that should be hidden in normal case).
-      // We should restore window position if problem occurs.
-      const bool incorrect_maximized_bounds =
-          IsMaximized() &&
-          (expected_maximized_bounds.x() != window_pos->x ||
-           expected_maximized_bounds.y() != window_pos->y ||
-           expected_maximized_bounds.width() != window_pos->cx ||
-           expected_maximized_bounds.height() != window_pos->cy);
-
       // If the size of a background fullscreen window changes again, then we
       // should reset the |background_fullscreen_hack_| flag.
       if (background_fullscreen_hack_ &&
@@ -2261,11 +2240,9 @@ void HWNDMessageHandler::OnWindowPosChanging(WINDOWPOS* window_pos) {
             (monitor_rect.height() - window_pos->cy != 1))) {
           background_fullscreen_hack_ = false;
       }
-      const bool fullscreen_without_hack =
-          IsFullscreen() && !background_fullscreen_hack_;
-
-      if (incorrect_maximized_bounds ||
-          (same_monitor && (fullscreen_without_hack || work_area_changed))) {
+      if (monitor && (monitor == last_monitor_) &&
+          ((IsFullscreen() && !background_fullscreen_hack_) ||
+           work_area_changed)) {
         // A rect for the monitor we're on changed.  Normally Windows notifies
         // us about this (and thus we're reaching here due to the SetWindowPos()
         // call in OnSettingChange() above), but with some software (e.g.
@@ -2278,7 +2255,9 @@ void HWNDMessageHandler::OnWindowPosChanging(WINDOWPOS* window_pos) {
         if (IsFullscreen()) {
           new_window_rect = monitor_rect;
         } else if (IsMaximized()) {
-          new_window_rect = expected_maximized_bounds;
+          new_window_rect = work_area;
+          int border_thickness = GetSystemMetrics(SM_CXSIZEFRAME);
+          new_window_rect.Inset(-border_thickness, -border_thickness);
         } else {
           new_window_rect = gfx::Rect(window_rect);
           new_window_rect.AdjustToFit(work_area);
