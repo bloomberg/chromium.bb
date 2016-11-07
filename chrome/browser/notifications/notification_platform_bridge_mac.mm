@@ -283,7 +283,7 @@ bool NotificationPlatformBridgeMac::GetDisplayed(
        [notification_center_ deliveredNotifications]) {
     NSString* toast_profile_id = [toast.userInfo
         objectForKey:notification_constants::kNotificationProfileId];
-    if (toast_profile_id == current_profile_id) {
+    if ([toast_profile_id isEqualToString:current_profile_id]) {
       notifications->insert(base::SysNSStringToUTF8([toast.userInfo
           objectForKey:notification_constants::kNotificationId]));
     }
