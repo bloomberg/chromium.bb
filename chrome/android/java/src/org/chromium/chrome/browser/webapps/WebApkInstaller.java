@@ -5,17 +5,14 @@
 package org.chromium.chrome.browser.webapps;
 
 import android.content.ActivityNotFoundException;
-import android.content.Context;
 import android.content.Intent;
 import android.content.pm.PackageManager;
 import android.net.Uri;
 import android.os.Looper;
-import android.provider.Settings;
 
 import org.chromium.base.ApplicationState;
 import org.chromium.base.ApplicationStatus;
 import org.chromium.base.ContextUtils;
-import org.chromium.base.Log;
 import org.chromium.base.annotations.CalledByNative;
 import org.chromium.chrome.browser.ShortcutHelper;
 import org.chromium.chrome.browser.banners.InstallerDelegate;
@@ -70,11 +67,6 @@ public class WebApkInstaller {
     @CalledByNative
     private boolean installAsyncAndMonitorInstallationFromNative(
             String filePath, String packageName) {
-        if (!installingFromUnknownSourcesAllowed()) {
-            Log.e(TAG,
-                    "WebAPK install failed because installation from unknown sources is disabled.");
-            return false;
-        }
         mIsInstall = true;
         mWebApkPackageName = packageName;
 
@@ -137,28 +129,8 @@ public class WebApkInstaller {
      */
     @CalledByNative
     private boolean updateAsyncFromNative(String filePath) {
-        if (!installingFromUnknownSourcesAllowed()) {
-            Log.e(TAG,
-                    "WebAPK update failed because installation from unknown sources is disabled.");
-            return false;
-        }
         mIsInstall = false;
         return installDownloadedWebApk(filePath);
-    }
-
-    /**
-     * Returns whether the user has enabled installing apps from sources other than the Google Play
-     * Store.
-     */
-    private static boolean installingFromUnknownSourcesAllowed() {
-        Context context = ContextUtils.getApplicationContext();
-        try {
-            return Settings.Secure.getInt(
-                           context.getContentResolver(), Settings.Secure.INSTALL_NON_MARKET_APPS)
-                    == 1;
-        } catch (Settings.SettingNotFoundException e) {
-            return false;
-        }
     }
 
     private ApplicationStatus.ApplicationStateListener createApplicationStateListener() {
