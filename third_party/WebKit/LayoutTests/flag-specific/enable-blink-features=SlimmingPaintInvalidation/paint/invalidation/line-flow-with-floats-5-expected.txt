@@ -59,7 +59,7 @@
         {
           "object": "LayoutBlockFlow (floating) SPAN id='blueFloat'",
           "rect": [14, 363, 48, 65],
-          "reason": "bounds change"
+          "reason": "border box change"
         }
       ]
     }
@@ -119,7 +119,7 @@
     },
     {
       "object": "LayoutBlockFlow (floating) SPAN id='blueFloat'",
-      "reason": "bounds change"
+      "reason": "border box change"
     },
     {
       "object": "LayoutText #text",

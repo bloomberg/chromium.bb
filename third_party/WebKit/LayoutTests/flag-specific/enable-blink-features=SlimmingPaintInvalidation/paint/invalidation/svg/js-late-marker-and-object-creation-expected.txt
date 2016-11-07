@@ -22,11 +22,6 @@
           "reason": "became visible"
         },
         {
-          "object": "LayoutSVGRoot svg id='svg-root'",
-          "rect": [203, 211, 111, 111],
-          "reason": "became visible"
-        },
-        {
           "object": "LayoutSVGEllipse circle",
           "rect": [0, 0, 4, 4],
           "reason": "layoutObject insertion"
@@ -35,10 +30,6 @@
     }
   ],
   "objectPaintInvalidations": [
-    {
-      "object": "LayoutSVGRoot svg id='svg-root'",
-      "reason": "became visible"
-    },
     {
       "object": "LayoutSVGContainer g id='content'",
       "reason": "became visible"
