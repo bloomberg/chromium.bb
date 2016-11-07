@@ -104,6 +104,8 @@ class CORE_EXPORT InProcessWorkerMessagingProxy
   unsigned m_unconfirmedMessageCount;
 
   bool m_workerGlobalScopeMayHavePendingActivity;
+
+  WeakPtrFactory<InProcessWorkerMessagingProxy> m_weakPtrFactory;
 };
 
 }  // namespace blink

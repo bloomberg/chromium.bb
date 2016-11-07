@@ -87,11 +87,14 @@ InProcessWorkerMessagingProxy::InProcessWorkerMessagingProxy(
     InProcessWorkerBase* workerObject,
     WorkerClients* workerClients)
     : ThreadedMessagingProxyBase(executionContext),
-      m_workerObjectProxy(InProcessWorkerObjectProxy::create(this)),
       m_workerObject(workerObject),
       m_workerClients(workerClients),
       m_unconfirmedMessageCount(0),
-      m_workerGlobalScopeMayHavePendingActivity(false) {}
+      m_workerGlobalScopeMayHavePendingActivity(false),
+      m_weakPtrFactory(this) {
+  m_workerObjectProxy =
+      InProcessWorkerObjectProxy::create(m_weakPtrFactory.createWeakPtr());
+}
 
 InProcessWorkerMessagingProxy::~InProcessWorkerMessagingProxy() {
   DCHECK(!m_workerObject);

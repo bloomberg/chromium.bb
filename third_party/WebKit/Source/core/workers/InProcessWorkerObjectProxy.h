@@ -64,7 +64,7 @@ class CORE_EXPORT InProcessWorkerObjectProxy : public WorkerReportingProxy {
 
  public:
   static std::unique_ptr<InProcessWorkerObjectProxy> create(
-      InProcessWorkerMessagingProxy*);
+      const WeakPtr<InProcessWorkerMessagingProxy>&);
   ~InProcessWorkerObjectProxy() override;
 
   void postMessageToWorkerObject(PassRefPtr<SerializedScriptValue>,
@@ -89,7 +89,7 @@ class CORE_EXPORT InProcessWorkerObjectProxy : public WorkerReportingProxy {
   void didTerminateWorkerThread() override;
 
  protected:
-  InProcessWorkerObjectProxy(InProcessWorkerMessagingProxy*);
+  InProcessWorkerObjectProxy(const WeakPtr<InProcessWorkerMessagingProxy>&);
   virtual ExecutionContext* getExecutionContext();
 
  private:
@@ -102,6 +102,11 @@ class CORE_EXPORT InProcessWorkerObjectProxy : public WorkerReportingProxy {
 
   // This object always outlives this proxy.
   InProcessWorkerMessagingProxy* m_messagingProxy;
+
+  // No guarantees about the lifetimes of tasks posted by this proxy wrt the
+  // InProcessWorkerMessagingProxy so a weak pointer must be used when posting
+  // the tasks.
+  WeakPtr<InProcessWorkerMessagingProxy> m_messagingProxyWeakPtr;
 
   // Used for checking pending activities on the worker global scope. This is
   // cancelled when the worker global scope is destroyed.
