@@ -172,9 +172,6 @@ class CONTENT_EXPORT BrowserAccessibilityManager : public ui::AXTreeDelegate {
   void NavigationSucceeded();
   void NavigationFailed();
 
-  // Send a message to the renderer to set focus to this node.
-  void SetFocus(const BrowserAccessibility& node);
-
   // Pretend that the given node has focus, for testing only. Doesn't
   // communicate with the renderer and doesn't fire any events.
   void SetFocusLocallyForTesting(BrowserAccessibility* node);
@@ -183,42 +180,26 @@ class CONTENT_EXPORT BrowserAccessibilityManager : public ui::AXTreeDelegate {
   // in any BrowserAccessibilityManager.
   static void SetFocusChangeCallbackForTesting(const base::Closure& callback);
 
-  // Tell the renderer to do the default action for this node.
+  // Accessibility actions. All of these are implemented asynchronously
+  // by sending a message to the renderer to perform the respective action
+  // on the given node.  See the definition of |ui::AXActionData| for more
+  // information about each of these actions.
+  void Decrement(const BrowserAccessibility& node);
   void DoDefaultAction(const BrowserAccessibility& node);
-
-  // Tell the renderer to show the context menu for a given node.
-  void ShowContextMenu(const BrowserAccessibility& node);
-
-  // Tell the renderer to scroll to make |node| visible.
-  // In addition, if it's not possible to make the entire object visible,
-  // scroll so that the |subfocus| rect is visible at least. The subfocus
-  // rect is in local coordinates of the object itself.
+  void HitTest(const gfx::Point& point);
+  void Increment(const BrowserAccessibility& node);
   void ScrollToMakeVisible(
       const BrowserAccessibility& node, gfx::Rect subfocus);
-
-  // Tell the renderer to scroll such that |node| is at |point|,
-  // where |point| is in global coordinates of the WebContents.
   void ScrollToPoint(
       const BrowserAccessibility& node, gfx::Point point);
-
-  // If |node| is itself a scrollable container, set its scroll
-  // offset to |offset|.
+  void SetFocus(const BrowserAccessibility& node);
   void SetScrollOffset(const BrowserAccessibility& node, gfx::Point offset);
-
-  // Tell the renderer to set the value of an editable text node.
   void SetValue(
       const BrowserAccessibility& node, const base::string16& value);
-
-  // Tell the renderer to set the text selection on a node.
   void SetTextSelection(
       const BrowserAccessibility& node, int start_offset, int end_offset);
-
-  // Tell the renderer to set accessibility focus to this node.
   void SetAccessibilityFocus(const BrowserAccessibility& node);
-
-  // Tell the renderer to do a hit test on a point in global screen coordinates
-  // and fire a HOVER event on the node that's hit.
-  void HitTest(const gfx::Point& point);
+  void ShowContextMenu(const BrowserAccessibility& node);
 
   // Retrieve the bounds of the parent View in screen coordinates.
   gfx::Rect GetViewBounds();

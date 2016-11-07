@@ -2795,6 +2795,10 @@ NSString* const NSAccessibilityRequiredAttribute = @"AXRequired";
   } else if ([action isEqualToString:NSAccessibilityScrollToVisibleAction]) {
     manager->ScrollToMakeVisible(
         *browserAccessibility_, gfx::Rect());
+  } else if ([action isEqualToString:NSAccessibilityIncrementAction]) {
+    manager->Increment(*browserAccessibility_);
+  } else if ([action isEqualToString:NSAccessibilityDecrementAction]) {
+    manager->Decrement(*browserAccessibility_);
   }
 }
 

@@ -519,6 +519,7 @@ test("content_browsertests") {
 
   sources = [
     "../app/mojo/mojo_browsertest.cc",
+    "../browser/accessibility/accessibility_action_browsertest.cc",
     "../browser/accessibility/accessibility_event_recorder.cc",
     "../browser/accessibility/accessibility_event_recorder.h",
     "../browser/accessibility/accessibility_event_recorder_mac.mm",

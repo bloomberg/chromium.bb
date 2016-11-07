@@ -232,12 +232,18 @@
 
   // An action to be taken on an accessibility node.
   enum AXAction {
+    // Decrement a slider or range control by one step value.
+    decrement,
+
     // Do the default action for an object, typically this means "click".
     do_default,
 
     // Given a point, find the object it corresponds to and fire a
     // HOVER event on it in response.
     hit_test,
+
+    // Increment a slider or range control by one step value.
+    increment,
 
     // Delete any selected text in the control's text value and
     // insert |AXActionData::value| in its place, like when typing or pasting.
@@ -460,7 +466,7 @@
     // within the object's bounds, the second offset is the right coordinate
     // of the second character, and so on.
     character_offsets,
-    
+
     // Used for caching. Do not read directly. Use
     // |AXNode::GetOrComputeLineStartOffsets|
     // For all text fields and content editable roots: A list of the start
