@@ -46,6 +46,11 @@ ScriptValue PaymentResponse::toJSONForBinding(ScriptState* scriptState) const {
   else
     result.addString("shippingOption", shippingOption());
 
+  if (payerName().isNull())
+    result.addNull("payerName");
+  else
+    result.addString("payerName", payerName());
+
   if (payerEmail().isNull())
     result.addNull("payerEmail");
   else

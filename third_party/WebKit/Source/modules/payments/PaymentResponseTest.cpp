@@ -125,6 +125,7 @@ TEST(PaymentResponseTest, JSONSerializerTest) {
   input->shipping_option = "standardShippingOption";
   input->payer_email = "abc@gmail.com";
   input->payer_phone = "0123";
+  input->payer_name = "Jon Doe";
   input->shipping_address = mojom::blink::PaymentAddress::New();
   input->shipping_address->country = "US";
   input->shipping_address->language_code = "en";
@@ -152,8 +153,8 @@ TEST(PaymentResponseTest, JSONSerializerTest) {
       "Latn\","
       "\"organization\":\"\",\"recipient\":\"\",\"phone\":\"\"},"
       "\"shippingOption\":"
-      "\"standardShippingOption\",\"payerEmail\":\"abc@gmail.com\","
-      "\"payerPhone\":\"0123\"}";
+      "\"standardShippingOption\",\"payerName\":\"Jon Doe\","
+      "\"payerEmail\":\"abc@gmail.com\",\"payerPhone\":\"0123\"}";
   EXPECT_EQ(expected, jsonString);
 }
 
