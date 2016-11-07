@@ -1600,7 +1600,8 @@ bool RenderViewContextMenu::IsCommandIdEnabled(int id) const {
       return IsSavePageEnabled();
 
     case IDC_CONTENT_CONTEXT_RELOADFRAME:
-      return params_.frame_url.is_valid();
+      return params_.frame_url.is_valid() &&
+             params_.frame_url.GetOrigin() != chrome::kChromeUIPrintURL;
 
     case IDC_CONTENT_CONTEXT_UNDO:
       return !!(params_.edit_flags & WebContextMenuData::CanUndo);
