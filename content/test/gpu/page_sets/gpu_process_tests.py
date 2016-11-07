@@ -556,7 +556,7 @@ class ReadbackWebGLGpuProcessPage(gpu_test_base.PageBase):
         elif name == 'webgl':
           result = result and status == 'enabled_readback'
         elif name == 'webgl2':
-          result = result and status == 'disabled_off'
+          result = result and status == 'unavailable_off'
         else:
           result = result and status == 'unavailable_software'
       if not result:
