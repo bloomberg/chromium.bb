@@ -485,6 +485,7 @@ crbug.com/662722 [ Win ] css1/box_properties/height.html [ NeedsManualRebaseline
 crbug.com/662722 [ Win ] css1/box_properties/padding_top_inline.html [ NeedsManualRebaseline ]
 crbug.com/662722 [ Win ] css1/box_properties/margin_top_inline.html [ NeedsManualRebaseline ]
 crbug.com/662722 [ Win ] css1/box_properties/border_color.html [ NeedsManualRebaseline ]
+crbug.com/662722 [ Win ] css1/box_properties/margin_left.html [ NeedsManualRebaseline ]
 crbug.com/662722 [ Mac ] css1/formatting_model/height_of_lines.html [ NeedsManualRebaseline ]
 crbug.com/662722 [ Mac ] css1/classification/list_style_type.html [ NeedsManualRebaseline ]
 crbug.com/662722 [ Mac ] fast/forms/datalist/input-appearance-range-with-datalist-zoomed.html [ NeedsManualRebaseline ]
@@ -504,6 +505,8 @@ crbug.com/662722 [ Win ] virtual/threaded/printing/fixed-positioned-headers-and-
 crbug.com/662722 [ Win ] virtual/threaded/printing/iframe-print.html [ NeedsManualRebaseline ]
 crbug.com/662722 [ Win ] virtual/threaded/printing/list-item-with-empty-first-line.html [ NeedsManualRebaseline ]
 crbug.com/662722 [ Win ] virtual/threaded/printing/subframes-percentage-height.html [ NeedsManualRebaseline ]
+# Flaky on Win.
+crbug.com/662722 [ Win ] css3/filters/effect-reference-tile.html [ Pass Failure ]
 # Flaky on Linux (hover effect?).
 crbug.com/662722 [ Linux ] fast/forms/suggestion-picker/datetimelocal-suggestion-picker-appearance-locale-hebrew.html [ Pass Failure ]
 crbug.com/662722 [ Linux ] fast/forms/suggestion-picker/datetimelocal-suggestion-picker-appearance.html [ Pass Failure ]
