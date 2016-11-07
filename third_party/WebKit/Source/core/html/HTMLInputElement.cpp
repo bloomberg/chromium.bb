@@ -1100,13 +1100,8 @@ void HTMLInputElement::setValue(const String& value,
   m_inputType->setValue(sanitizedValue, valueChanged, eventBehavior);
   m_inputTypeView->didSetValue(sanitizedValue, valueChanged);
 
-  if (valueChanged && eventBehavior == DispatchNoEvent)
-    setTextAsOfLastFormControlChangeEvent(this->value());
-
-  if (!valueChanged)
-    return;
-
-  notifyFormStateChanged();
+  if (valueChanged)
+    notifyFormStateChanged();
 }
 
 void HTMLInputElement::setNonAttributeValue(const String& sanitizedValue) {

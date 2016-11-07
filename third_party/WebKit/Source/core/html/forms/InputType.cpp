@@ -526,6 +526,7 @@ void InputType::setValue(const String& sanitizedValue,
       element().dispatchFormControlChangeEvent();
       break;
     case DispatchNoEvent:
+      element().setTextAsOfLastFormControlChangeEvent(element().value());
       break;
   }
 }

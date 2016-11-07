@@ -182,7 +182,11 @@ void TextFieldInputType::setValue(const String& sanitizedValue,
       break;
   }
 
+  // TODO(tkent): Calling setTextAsOfLastFormControlChangeEvent() twice is very
+  // suspicious.
   if (!element().isFocused())
+    element().setTextAsOfLastFormControlChangeEvent(element().value());
+  if (eventBehavior == DispatchNoEvent)
     element().setTextAsOfLastFormControlChangeEvent(element().value());
 }
 
