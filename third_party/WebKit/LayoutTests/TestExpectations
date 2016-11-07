@@ -25,6 +25,7 @@ crbug.com/569901 crbug.com/24182 [ Debug ] jquery/manipulation.html [ Timeout Pa
 #  paint
 #  svg
 #  canvas, fast/canvas
+#  transforms
 # Some additional bugs that are caused by painting problems are also within this section.
 
 # Failures due to SPV2, that don't also fail without SPV2. DO NOT REBASELINE.
@@ -63,6 +64,9 @@ crbug.com/549742 [ Linux Mac Win ] virtual/gpu/fast/canvas/canvas-drawImage-vide
 crbug.com/591500 [ Win10 ] compositing/squashing/squashing-print.html [ Failure ]
 
 crbug.com/602110 hittesting/border-hittest-with-image-fallback.html [ Failure ]
+
+crbug.com/606302 [ Linux Mac Win7 ] transforms/3d/point-mapping/3d-point-mapping-preserve-3d.html [ Pass Failure ]
+crbug.com/606302 [ Win7 Debug ] transforms/3d/point-mapping/3d-point-mapping-deep.html [ Failure ]
 
 # Fails consistently on WebKit Mac10.10, WebKit Mac10.11 (retina) and mac10.10_blink_rel tryserver, but not on other Mac bots.
 crbug.com/614910 [ Mac ] virtual/gpu-rasterization/fast/images/pixel-crack-image-background-webkit-transform-scale.html [ Pass Failure ]
@@ -106,6 +110,8 @@ crbug.com/645389 [ Win ] virtual/display_list_2d_canvas/fast/canvas/canvas-hit-r
 crbug.com/646010 paint/selection/text-selection-newline-rtl-double-linebreak.html [ Failure ]
 crbug.com/646015 paint/invalidation/hover-invalidation-table.html [ Failure ]
 crbug.com/646016 paint/invalidation/selected-replaced.html [ Failure ]
+
+crbug.com/655955 [ Win Linux ] fast/transforms/transform-update-frame-overflow.html [ Pass Failure ]
 
 # ====== Paint team owned tests to here ======
 
@@ -1358,9 +1364,6 @@ crbug.com/646644 [ Mac10.9 ] http/tests/media/video-buffered-range-contains-curr
 
 crbug.com/637930 http/tests/media/video-buffered.html [ Pass Failure ]
 
-crbug.com/606302 [ Linux Mac Win7 ] transforms/3d/point-mapping/3d-point-mapping-preserve-3d.html [ Pass Failure ]
-crbug.com/606302 [ Win7 Debug ] transforms/3d/point-mapping/3d-point-mapping-deep.html [ Failure ]
-
 crbug.com/613659 imported/wpt/quirks-mode/percentage-height-calculation.html [ Failure ]
 crbug.com/613661 imported/wpt/quirks-mode/table-cell-nowrap-minimum-width-calculation.html [ Failure ]
 crbug.com/613663 imported/wpt/quirks-mode/table-cell-width-calculation.html [ Failure ]
@@ -1370,8 +1373,6 @@ crbug.com/646133 [ Win7 Debug ] imported/wpt/quirks-mode/unitless-length.html [ 
 crbug.com/619978 fast/css/giant-stylesheet-crash.html [ Skip ]
 
 crbug.com/624430 [ Win10 ] fast/text/font-features/caps-casemapping.html [ Failure ]
-
-crbug.com/655955 [ Win Linux ] fast/transforms/transform-update-frame-overflow.html [ Pass Failure ]
 
 crbug.com/620432 accessibility/aria-activedescendant.html [ Failure ]
 
