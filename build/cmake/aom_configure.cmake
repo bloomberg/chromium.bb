@@ -21,6 +21,35 @@ include("${AOM_ROOT}/build/cmake/targets/${AOM_TARGET}.cmake")
 include(FindGit)
 include(FindPerl)
 
+# Test compiler flags.
+if (MSVC)
+  add_compiler_flag_if_supported("/W3")
+  # Disable MSVC warnings that suggest making code non-portable.
+  add_compiler_flag_if_supported("/wd4996")
+  if (ENABLE_WERROR)
+    add_compiler_flag_if_supported("/WX")
+  endif ()
+else ()
+  add_compiler_flag_if_supported("-Wall")
+  add_compiler_flag_if_supported("-Wdeclaration-after-statement")
+  add_compiler_flag_if_supported("-Wdisabled-optimization")
+  add_compiler_flag_if_supported("-Wextra")
+  add_compiler_flag_if_supported("-Wfloat-conversion")
+  add_compiler_flag_if_supported("-Wimplicit-function-declaration")
+  add_compiler_flag_if_supported("-Wpointer-arith")
+  add_compiler_flag_if_supported("-Wshadow")
+  add_compiler_flag_if_supported("-Wsign-compare")
+  add_compiler_flag_if_supported("-Wtype-limits")
+  add_compiler_flag_if_supported("-Wuninitialized")
+  add_compiler_flag_if_supported("-Wunused")
+  add_compiler_flag_if_supported("-Wvla")
+  if (ENABLE_WERROR)
+    add_compiler_flag_if_supported("-Werror")
+  endif ()
+  # Flag(s) added here negate CMake defaults and produce build output similar
+  # to the existing configure/make build system.
+  add_compiler_flag_if_supported("-Wno-unused-function")
+endif ()
 
 # TODO(tomfinegan): consume trailing whitespace after configure_file() when
 # target platform check produces empty INLINE and RESTRICT values (aka empty
