@@ -1728,6 +1728,7 @@
     'cc': ['cc-bugs@chromium.org'],
     'certificate_transparency': ['certificate-transparency-chrome@googlegroups.com',
                                  'eranm@chromium.org',
+                                 'martijn+crwatch@martijnc.be',
                                  'rsleevi+watch@chromium.org'],
     'chrome_elf': ['caitkp+watch@chromium.org',
                    'pennymac+watch@chromium.org'],
