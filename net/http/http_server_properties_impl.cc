@@ -23,7 +23,11 @@ namespace net {
 
 namespace {
 
+// Initial delay for broken alternative services.
 const uint64_t kBrokenAlternativeProtocolDelaySecs = 300;
+// Subsequent failures result in exponential (base 2) backoff.
+// Limit binary shift to limit delay to approximately 2 days.
+const int kBrokenDelayMaxShift = 9;
 
 }  // namespace
 
@@ -472,10 +476,13 @@ void HttpServerPropertiesImpl::MarkAlternativeServiceBroken(
     LOG(DFATAL) << "Trying to mark unknown alternate protocol broken.";
     return;
   }
-  int count = ++recently_broken_alternative_services_[alternative_service];
+  ++recently_broken_alternative_services_[alternative_service];
+  int shift = recently_broken_alternative_services_[alternative_service] - 1;
+  if (shift > kBrokenDelayMaxShift)
+    shift = kBrokenDelayMaxShift;
   base::TimeDelta delay =
       base::TimeDelta::FromSeconds(kBrokenAlternativeProtocolDelaySecs);
-  base::TimeTicks when = base::TimeTicks::Now() + delay * (1 << (count - 1));
+  base::TimeTicks when = base::TimeTicks::Now() + delay * (1 << shift);
   auto result = broken_alternative_services_.insert(
       std::make_pair(alternative_service, when));
   // Return if alternative service is already in expiration queue.
