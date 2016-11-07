@@ -645,7 +645,6 @@ class DeviceTestRunner(TestRunner):
         'xcodebuild',
         'test-without-building',
         'BUILT_PRODUCTS_DIR=%s' % os.path.dirname(self.app_path),
-        'NSUnbufferedIO=YES',
         '-destination', 'id=%s' % self.udid,
         '-project', XCTEST_PROJECT,
         '-scheme', XCTEST_SCHEME,
@@ -682,6 +681,7 @@ class DeviceTestRunner(TestRunner):
     """
     env = super(DeviceTestRunner, self).get_launch_env()
     if self.xctest_path:
+      env['NSUnbufferedIO'] = 'YES'
       # e.g. ios_web_shell_test_host
       env['APP_TARGET_NAME'] = (
         os.path.splitext(os.path.basename(self.app_path))[0])
