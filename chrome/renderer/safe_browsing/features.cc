@@ -5,7 +5,7 @@
 #include "chrome/renderer/safe_browsing/features.h"
 
 #include "base/logging.h"
-#include "base/metrics/histogram.h"
+#include "base/metrics/histogram_macros.h"
 
 namespace safe_browsing {
 

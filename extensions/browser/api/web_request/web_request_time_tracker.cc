@@ -6,7 +6,7 @@
 
 #include "base/bind.h"
 #include "base/compiler_specific.h"
-#include "base/metrics/histogram.h"
+#include "base/metrics/histogram_macros.h"
 #include "extensions/browser/warning_set.h"
 
 

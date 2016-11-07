@@ -5,7 +5,7 @@
 #include "components/sync/model/data_type_error_handler_impl.h"
 
 #include "base/bind.h"
-#include "base/metrics/histogram.h"
+#include "base/metrics/histogram_macros.h"
 
 namespace syncer {
 

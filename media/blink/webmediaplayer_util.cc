@@ -9,7 +9,7 @@
 #include <string>
 #include <utility>
 
-#include "base/metrics/histogram.h"
+#include "base/metrics/histogram_macros.h"
 #include "media/base/bind_to_current_loop.h"
 #include "media/base/media_client.h"
 #include "third_party/WebKit/public/platform/URLConversion.h"

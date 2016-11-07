@@ -5,7 +5,7 @@
 #include "components/navigation_metrics/navigation_metrics.h"
 
 #include "base/macros.h"
-#include "base/metrics/histogram.h"
+#include "base/metrics/histogram_macros.h"
 #include "url/gurl.h"
 
 namespace {

@@ -4,7 +4,7 @@
 
 #include "components/profile_metrics/counts.h"
 
-#include "base/metrics/histogram.h"
+#include "base/metrics/histogram_macros.h"
 
 namespace profile_metrics {
 

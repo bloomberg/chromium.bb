@@ -14,7 +14,7 @@
 #include "base/base64.h"
 #include "base/build_time.h"
 #include "base/cpu.h"
-#include "base/metrics/histogram.h"
+#include "base/metrics/histogram_macros.h"
 #include "base/metrics/histogram_samples.h"
 #include "base/metrics/metrics_hashes.h"
 #include "base/sha1.h"

@@ -9,7 +9,7 @@
 #include <algorithm>
 
 #include "base/bind.h"
-#include "base/metrics/histogram.h"
+#include "base/metrics/histogram_macros.h"
 #include "storage/browser/quota/quota_manager.h"
 #include "url/gurl.h"
 

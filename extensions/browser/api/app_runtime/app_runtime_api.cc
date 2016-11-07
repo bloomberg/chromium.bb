@@ -9,7 +9,7 @@
 #include <utility>
 
 #include "base/memory/ptr_util.h"
-#include "base/metrics/histogram.h"
+#include "base/metrics/histogram_macros.h"
 #include "base/time/time.h"
 #include "base/values.h"
 #include "extensions/browser/entry_info.h"

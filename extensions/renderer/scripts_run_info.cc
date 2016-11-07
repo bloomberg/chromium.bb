@@ -4,7 +4,7 @@
 
 #include "extensions/renderer/scripts_run_info.h"
 
-#include "base/metrics/histogram.h"
+#include "base/metrics/histogram_macros.h"
 #include "content/public/renderer/render_frame.h"
 #include "content/public/renderer/render_thread.h"
 #include "extensions/common/extension_messages.h"

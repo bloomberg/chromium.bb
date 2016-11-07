@@ -7,7 +7,7 @@
 #include "base/base64.h"
 #include "base/files/file_util.h"
 #include "base/json/json_reader.h"
-#include "base/metrics/histogram.h"
+#include "base/metrics/histogram_macros.h"
 #include "base/strings/string_util.h"
 #include "base/timer/elapsed_timer.h"
 #include "base/values.h"

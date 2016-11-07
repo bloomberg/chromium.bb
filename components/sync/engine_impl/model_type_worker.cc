@@ -14,7 +14,7 @@
 #include "base/guid.h"
 #include "base/logging.h"
 #include "base/memory/ptr_util.h"
-#include "base/metrics/histogram.h"
+#include "base/metrics/histogram_macros.h"
 #include "base/strings/stringprintf.h"
 #include "components/sync/base/time.h"
 #include "components/sync/engine/model_type_processor.h"

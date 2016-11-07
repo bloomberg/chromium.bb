@@ -4,7 +4,7 @@
 
 #include "components/data_use_measurement/content/data_use_measurement.h"
 
-#include "base/metrics/histogram.h"
+#include "base/metrics/histogram_macros.h"
 #include "base/metrics/sparse_histogram.h"
 #include "base/strings/stringprintf.h"
 #include "build/build_config.h"

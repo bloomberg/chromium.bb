@@ -2,11 +2,11 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "base/metrics/histogram.h"
-#include "base/strings/string_util.h"
-
-#include "components/dom_distiller/content/common/distillability_service.mojom.h"
 #include "components/dom_distiller/content/renderer/distillability_agent.h"
+
+#include "base/metrics/histogram_macros.h"
+#include "base/strings/string_util.h"
+#include "components/dom_distiller/content/common/distillability_service.mojom.h"
 #include "components/dom_distiller/core/distillable_page_detector.h"
 #include "components/dom_distiller/core/experiments.h"
 #include "components/dom_distiller/core/page_features.h"

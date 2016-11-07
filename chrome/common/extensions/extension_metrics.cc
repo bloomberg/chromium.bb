@@ -4,7 +4,7 @@
 
 #include "chrome/common/extensions/extension_metrics.h"
 
-#include "base/metrics/histogram.h"
+#include "base/metrics/histogram_macros.h"
 #include "extensions/common/constants.h"
 #include "extensions/common/extension.h"
 

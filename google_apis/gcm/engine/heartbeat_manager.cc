@@ -8,7 +8,7 @@
 
 #include "base/callback.h"
 #include "base/location.h"
-#include "base/metrics/histogram.h"
+#include "base/metrics/histogram_macros.h"
 #include "base/power_monitor/power_monitor.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "base/time/time.h"

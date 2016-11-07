@@ -9,7 +9,7 @@
 
 #include "base/lazy_instance.h"
 #include "base/macros.h"
-#include "base/metrics/histogram.h"
+#include "base/metrics/histogram_macros.h"
 #include "base/timer/elapsed_timer.h"
 #include "base/values.h"
 #include "content/public/child/v8_value_converter.h"

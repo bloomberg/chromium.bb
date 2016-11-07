@@ -16,7 +16,7 @@
 #include "base/json/json_reader.h"
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
-#include "base/metrics/histogram.h"
+#include "base/metrics/histogram_macros.h"
 #include "base/synchronization/lock.h"
 #include "base/task_runner_util.h"
 #include "base/timer/elapsed_timer.h"

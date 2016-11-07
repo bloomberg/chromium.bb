@@ -13,6 +13,7 @@
 #include "base/location.h"
 #include "base/metrics/histogram_base.h"
 #include "base/metrics/histogram_delta_serialization.h"
+#include "base/metrics/histogram_macros.h"
 #include "base/process/kill.h"
 #include "base/process/launch.h"
 #include "base/single_thread_task_runner.h"

@@ -4,7 +4,7 @@
 
 #include "components/drive/drive_notification_manager.h"
 
-#include "base/metrics/histogram.h"
+#include "base/metrics/histogram_macros.h"
 #include "components/drive/drive_notification_observer.h"
 #include "components/invalidation/public/invalidation_service.h"
 #include "components/invalidation/public/object_id_invalidation_map.h"
