@@ -1346,3 +1346,16 @@ fuzzer_test("html_preload_scanner_fuzzer") {
     "../platform:blink_fuzzer_test_support",
   ]
 }
+
+# Fuzzer for blink::ContentSecurityPolicy.
+fuzzer_test("content_security_policy_fuzzer") {
+  sources = [
+    "frame/csp/ContentSecurityPolicyFuzzer.cpp",
+  ]
+  deps = [
+    ":core",
+    "//third_party/WebKit/Source/platform:blink_fuzzer_test_support",
+  ]
+  dict = "//testing/libfuzzer/fuzzers/dicts/content_security_policy.dict"
+  seed_corpus = "//testing/libfuzzer/fuzzers/content_security_policy_corpus"
+}
