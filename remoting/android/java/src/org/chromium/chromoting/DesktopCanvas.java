@@ -122,14 +122,19 @@ public class DesktopCanvas {
             startOffsetReductionAnimation();
         }
 
-        repositionImage();
+        if (mRenderData.initialized()) {
+            // The viewport center may have changed so update the position to reflect the new value.
+            repositionImage();
+        }
     }
 
     public void adjustViewportForSystemUi(boolean adjustViewportForSystemUi) {
         mAdjustViewportSizeForSystemUi = adjustViewportForSystemUi;
 
-        // The viewport center may have changed so reposition the image to reflect the new value.
-        repositionImage();
+        if (mRenderData.initialized()) {
+            // The viewport center may have changed so update the position to reflect the new value.
+            repositionImage();
+        }
     }
 
     /** Resizes the image by zooming it such that the image is displayed without borders. */

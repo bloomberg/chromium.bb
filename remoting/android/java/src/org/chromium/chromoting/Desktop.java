@@ -6,6 +6,8 @@ package org.chromium.chromoting;
 
 import android.annotation.SuppressLint;
 import android.content.res.Configuration;
+import android.graphics.Color;
+import android.graphics.drawable.ColorDrawable;
 import android.os.Build;
 import android.os.Bundle;
 import android.os.Handler;
@@ -127,6 +129,12 @@ public class Desktop
 
         View decorView = getWindow().getDecorView();
         decorView.setOnSystemUiVisibilityChangeListener(this);
+
+        // The background color is displayed when the user resizes the window in split-screen past
+        // the boundaries of the image we render.  The default background is white and we use black
+        // for our canvas, thus there is a visual artifact when we draw the canvas over the
+        // background.  Setting the background color to match our canvas will prevent the flash.
+        getWindow().setBackgroundDrawable(new ColorDrawable(Color.BLACK));
 
         mActivityLifecycleListener = mClient.getCapabilityManager().onActivityAcceptingListener(
                 this, Capabilities.CAST_CAPABILITY);
