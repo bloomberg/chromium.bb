@@ -4,14 +4,18 @@
 
 #include "components/previews/core/previews_opt_out_store_sql.h"
 
+#include <string>
+
 #include "base/bind.h"
 #include "base/bind_helpers.h"
+#include "base/command_line.h"
 #include "base/files/file_util.h"
 #include "base/location.h"
 #include "base/logging.h"
 #include "base/memory/ptr_util.h"
 #include "base/metrics/histogram_macros.h"
 #include "base/sequenced_task_runner.h"
+#include "base/strings/string_number_conversions.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "components/previews/core/previews_black_list.h"
 #include "components/previews/core/previews_black_list_item.h"
@@ -25,17 +29,35 @@ namespace previews {
 
 namespace {
 
+// Command line switch to change the previews per row DB size.
+const char kMaxRowsPerHost[] = "previews-max-opt-out-rows-per-host";
+
+// Command line switch to change the previews DB size.
+const char kMaxRows[] = "previews-max-opt-out-rows";
+
+// Returns the maximum number of table rows allowed per host for the previews
+// opt out store. This is enforced during insertion of new navigation entries.
+int MaxRowsPerHostInOptOutDB() {
+  std::string max_rows =
+      base::CommandLine::ForCurrentProcess()->GetSwitchValueASCII(
+          kMaxRowsPerHost);
+  int value;
+  return base::StringToInt(max_rows, &value) ? value : 32;
+}
+
+// Returns the maximum number of table rows allowed for the previews opt out
+// store. This is enforced during load time; thus the database can grow
+// larger than this temporarily.
+int MaxRowsInOptOutDB() {
+  std::string max_rows =
+      base::CommandLine::ForCurrentProcess()->GetSwitchValueASCII(kMaxRows);
+  int value;
+  return base::StringToInt(max_rows, &value) ? value : 3200;
+}
+
 // This is a macro instead of a const, so it can be used inline in other SQL
 // statements below.
 #define PREVIEWS_TABLE_NAME "previews_v1"
-
-// The maximum number of entries allowed per host. Entries are evicted based on
-// entry time.
-const int kMaxRowsPerHost = 32;
-
-// The maximum number of entries allowed in the data base. Entries are evicted
-// based on entry time.
-const int kMaxRowsInDB = 3200;
 
 void CreateSchema(sql::Connection* db) {
   const char kSql[] = "CREATE TABLE IF NOT EXISTS " PREVIEWS_TABLE_NAME
@@ -129,8 +151,8 @@ void AddPreviewNavigationToDataBase(sql::Connection* db,
 // Removes entries if per data base row limit is exceeded.
 void MaybeEvictHostEntryFromDataBase(sql::Connection* db,
                                      const std::string& host_name) {
-  // Delete the oldest entries if there are more than |kMaxRowsPerHost| for
-  // |host_name|.
+  // Delete the oldest entries if there are more than |MaxRowsPerHostInOptOutDB|
+  // for |host_name|.
   // DELETE ... LIMIT -1 OFFSET x means delete all but the first x entries.
   const char kSqlDeleteByHost[] = "DELETE FROM " PREVIEWS_TABLE_NAME
                                   " WHERE ROWID IN"
@@ -142,7 +164,7 @@ void MaybeEvictHostEntryFromDataBase(sql::Connection* db,
   sql::Statement statement_delete_by_host(
       db->GetCachedStatement(SQL_FROM_HERE, kSqlDeleteByHost));
   statement_delete_by_host.BindString(0, host_name);
-  statement_delete_by_host.BindInt(1, kMaxRowsPerHost);
+  statement_delete_by_host.BindInt(1, MaxRowsPerHostInOptOutDB());
   statement_delete_by_host.Run();
 }
 
@@ -180,7 +202,7 @@ void LoadBlackListFromDataBase(
 
   UMA_HISTOGRAM_COUNTS_10000("Previews.OptOut.DBRowCount", count);
 
-  if (count > kMaxRowsInDB) {
+  if (count > MaxRowsInOptOutDB()) {
     // Delete the oldest entries if there are more than |kMaxEntriesInDB|.
     // DELETE ... LIMIT -1 OFFSET x means delete all but the first x entries.
     const char kSqlDeleteByDBSize[] = "DELETE FROM " PREVIEWS_TABLE_NAME
@@ -191,7 +213,7 @@ void LoadBlackListFromDataBase(
 
     sql::Statement statement_delete(
         db->GetCachedStatement(SQL_FROM_HERE, kSqlDeleteByDBSize));
-    statement_delete.BindInt(0, kMaxRowsInDB);
+    statement_delete.BindInt(0, MaxRowsInOptOutDB());
     statement_delete.Run();
   }
 

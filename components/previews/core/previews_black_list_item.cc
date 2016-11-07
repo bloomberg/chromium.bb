@@ -57,4 +57,8 @@ bool PreviewsBlackListItem::IsBlackListed(base::Time now) const {
          total_opt_out_ >= opt_out_black_list_threshold_;
 }
 
+size_t PreviewsBlackListItem::OptOutRecordsSizeForTesting() const {
+  return opt_out_records_.size();
+}
+
 }  // namespace previews

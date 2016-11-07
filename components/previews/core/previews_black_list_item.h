@@ -44,6 +44,8 @@ class PreviewsBlackListItem {
     return most_recent_opt_out_time_;
   }
 
+  size_t OptOutRecordsSizeForTesting() const;
+
  private:
   // A previews navigation to this host is represented by time and whether the
   // navigation was an opt out.
