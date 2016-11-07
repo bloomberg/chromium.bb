@@ -431,7 +431,7 @@ class NetErrorHelperCoreTest : public testing::Test,
     diagnose_error_url_ = page_url;
   }
 
-  void DownloadPageLater(const GURL& page_url) override {
+  void DownloadPageLater() override {
     download_count_++;
   }
 

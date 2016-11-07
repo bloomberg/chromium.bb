@@ -21,7 +21,6 @@
 #include "content/public/browser/navigation_entry.h"
 #include "content/public/browser/navigation_handle.h"
 #include "content/public/browser/render_frame_host.h"
-#include "content/public/browser/render_process_host.h"
 #include "content/public/common/associated_interface_provider.h"
 #include "ipc/ipc_message_macros.h"
 #include "net/base/net_errors.h"
@@ -210,27 +209,19 @@ void NetErrorTabHelper::OnDnsProbeFinished(DnsProbeStatus result) {
 }
 
 #if BUILDFLAG(ANDROID_JAVA_UI)
-void NetErrorTabHelper::DownloadPageLater(const GURL& page_url) {
+void NetErrorTabHelper::DownloadPageLater() {
   // Makes sure that this is coming from an error page.
   content::NavigationEntry* entry =
       web_contents()->GetController().GetLastCommittedEntry();
   if (!entry || entry->GetPageType() != content::PAGE_TYPE_ERROR)
     return;
 
-  GURL validated_page_url(page_url);
-  web_contents()->GetRenderProcessHost()->FilterURL(false, &validated_page_url);
-
   // Only download the page for HTTP/HTTPS URLs.
-  if (!validated_page_url.is_valid() ||
-      !validated_page_url.SchemeIsHTTPOrHTTPS()) {
-    return;
-  }
-
-  // Makes sure that the passed URL matches with current URL.
-  if (validated_page_url != web_contents()->GetLastCommittedURL())
+  GURL url(entry->GetVirtualURL());
+  if (!url.SchemeIsHTTPOrHTTPS())
     return;
 
-  DownloadPageLaterHelper(validated_page_url);
+  DownloadPageLaterHelper(url);
 }
 #endif  // BUILDFLAG(ANDROID_JAVA_UI)
 

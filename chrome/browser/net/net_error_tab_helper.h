@@ -79,7 +79,7 @@ class NetErrorTabHelper
   }
 
 #if BUILDFLAG(ANDROID_JAVA_UI)
-  void DownloadPageLater(const GURL& page_url);
+  void DownloadPageLater();
 #endif  // BUILDFLAG(ANDROID_JAVA_UI)
 
  private:

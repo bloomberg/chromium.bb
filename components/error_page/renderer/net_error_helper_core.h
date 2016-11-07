@@ -112,7 +112,7 @@ class NetErrorHelperCore {
     virtual void DiagnoseError(const GURL& page_url) = 0;
 
     // Schedule to download the page at a later time.
-    virtual void DownloadPageLater(const GURL& page_url) = 0;
+    virtual void DownloadPageLater() = 0;
 
    protected:
     virtual ~Delegate() {}

@@ -1004,8 +1004,7 @@ void NetErrorHelperCore::ExecuteButtonPress(Button button) {
       return;
     case DOWNLOAD_BUTTON:
       RecordEvent(NETWORK_ERROR_PAGE_DOWNLOAD_BUTTON_CLICKED);
-      delegate_->DownloadPageLater(
-          committed_error_page_info_->error.unreachableURL);
+      delegate_->DownloadPageLater();
       return;
     case NO_BUTTON:
       NOTREACHED();

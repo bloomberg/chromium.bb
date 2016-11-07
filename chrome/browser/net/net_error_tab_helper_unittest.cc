@@ -365,7 +365,7 @@ TEST_F(NetErrorTabHelperTest, NoDiagnosticsForNonHttpSchemes) {
 TEST_F(NetErrorTabHelperTest, DownloadPageLater) {
   GURL url("http://somewhere:123/");
   LoadURL(url, false /*succeeded*/);
-  tab_helper()->DownloadPageLater(url);
+  tab_helper()->DownloadPageLater();
   EXPECT_EQ(url, tab_helper()->download_page_later_url());
   EXPECT_EQ(1, tab_helper()->times_download_page_later_invoked());
 }
@@ -373,23 +373,14 @@ TEST_F(NetErrorTabHelperTest, DownloadPageLater) {
 TEST_F(NetErrorTabHelperTest, NoDownloadPageLaterOnNonErrorPage) {
   GURL url("http://somewhere:123/");
   LoadURL(url, true /*succeeded*/);
-  tab_helper()->DownloadPageLater(url);
+  tab_helper()->DownloadPageLater();
   EXPECT_EQ(0, tab_helper()->times_download_page_later_invoked());
 }
 
-TEST_F(NetErrorTabHelperTest, NoDownloadPageLaterOnUrlMismatch) {
-  GURL url("http://somewhere:123/");
-  LoadURL(url, false /*succeeded*/);
-  tab_helper()->DownloadPageLater(GURL("http://other/"));
-  EXPECT_EQ(0, tab_helper()->times_download_page_later_invoked());
-}
-
-// Makes sure that "Download page later" isn't run on invalid URLs or URLs
-// with non-HTTP/HTTPS schemes.
+// Makes sure that "Download page later" isn't run on URLs with non-HTTP/HTTPS
+// schemes.
 TEST_F(NetErrorTabHelperTest, NoDownloadPageLaterForNonHttpSchemes) {
   const char* kUrls[] = {
-    "",
-    "http",
     "file:///blah/blah",
     "chrome://blah/",
     "about:blank",
@@ -398,7 +389,7 @@ TEST_F(NetErrorTabHelperTest, NoDownloadPageLaterForNonHttpSchemes) {
   for (const char* url_string : kUrls) {
     GURL url(url_string);
     LoadURL(url, false /*succeeded*/);
-    tab_helper()->DownloadPageLater(url);
+    tab_helper()->DownloadPageLater();
     EXPECT_EQ(0, tab_helper()->times_download_page_later_invoked());
   }
 }

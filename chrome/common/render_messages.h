@@ -339,7 +339,7 @@ IPC_MESSAGE_ROUTED5(ChromeViewMsg_SetNavigationCorrectionInfo,
 #if defined(OS_ANDROID)
 // Message sent from the renderer to the browser to schedule to download the
 // page at a later time.
-IPC_MESSAGE_ROUTED1(ChromeViewHostMsg_DownloadPageLater, GURL /* url */)
+IPC_MESSAGE_ROUTED0(ChromeViewHostMsg_DownloadPageLater)
 #endif  // defined(OS_ANDROID)
 
 //-----------------------------------------------------------------------------

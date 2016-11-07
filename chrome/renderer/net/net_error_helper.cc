@@ -331,10 +331,10 @@ void NetErrorHelper::DiagnoseError(const GURL& page_url) {
   GetRemoteNetworkDiagnostics()->RunNetworkDiagnostics(page_url);
 }
 
-void NetErrorHelper::DownloadPageLater(const GURL& page_url) {
+void NetErrorHelper::DownloadPageLater() {
 #if defined(OS_ANDROID)
   render_frame()->Send(new ChromeViewHostMsg_DownloadPageLater(
-      render_frame()->GetRoutingID(), page_url));
+      render_frame()->GetRoutingID()));
 #endif  // defined(OS_ANDROID)
 }
 
