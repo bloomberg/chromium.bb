@@ -20,12 +20,27 @@ class SourceListDirectiveTest : public ::testing::Test {
   SourceListDirectiveTest() : csp(ContentSecurityPolicy::create()) {}
 
  protected:
+  struct Source {
+    String scheme;
+    String host;
+    const int port;
+    String path;
+    CSPSource::WildcardDisposition hostWildcard;
+    CSPSource::WildcardDisposition portWildcard;
+  };
+
   virtual void SetUp() {
     KURL secureURL(ParsedURLString, "https://example.test/image.png");
     RefPtr<SecurityOrigin> secureOrigin(SecurityOrigin::create(secureURL));
     document = Document::create();
     document->setSecurityOrigin(secureOrigin);
     csp->bindToExecutionContext(document.get());
+  }
+
+  bool equalSources(const Source& a, const Source& b) {
+    return a.scheme == b.scheme && a.host == b.host && a.port == b.port &&
+           a.path == b.path && a.hostWildcard == b.hostWildcard &&
+           a.portWildcard == b.portWildcard;
   }
 
   Persistent<ContentSecurityPolicy> csp;
@@ -211,6 +226,71 @@ TEST_F(SourceListDirectiveTest, RedirectMatching) {
   EXPECT_FALSE(
       sourceList.allows(KURL(base, "http://example3.com/foo/"),
                         ResourceRequest::RedirectStatus::FollowedRedirect));
+}
+
+TEST_F(SourceListDirectiveTest, GetIntersectCSPSources) {
+  KURL base;
+  String sources =
+      "http://example1.com/foo/ http://*.example2.com/bar/ "
+      "http://*.example3.com:*/bar/";
+  SourceListDirective sourceList("script-src", sources, csp.get());
+  struct TestCase {
+    String sources;
+    String expected;
+  } cases[] = {
+      {"http://example1.com/foo/ http://example2.com/bar/",
+       "http://example1.com/foo/ http://example2.com/bar/"},
+      // Normalizing schemes.
+      {"https://example1.com/foo/ http://example2.com/bar/",
+       "https://example1.com/foo/ http://example2.com/bar/"},
+      {"https://example1.com/foo/ https://example2.com/bar/",
+       "https://example1.com/foo/ https://example2.com/bar/"},
+      {"https://example1.com/foo/ wss://example2.com/bar/",
+       "https://example1.com/foo/"},
+      // Normalizing hosts.
+      {"http://*.example1.com/foo/ http://*.example2.com/bar/",
+       "http://example1.com/foo/ http://*.example2.com/bar/"},
+      {"http://*.example1.com/foo/ http://foo.example2.com/bar/",
+       "http://example1.com/foo/ http://foo.example2.com/bar/"},
+      // Normalizing ports.
+      {"http://example1.com:80/foo/ http://example2.com/bar/",
+       "http://example1.com:80/foo/ http://example2.com/bar/"},
+      {"http://example1.com/foo/ http://example2.com:90/bar/",
+       "http://example1.com/foo/"},
+      {"http://example1.com:*/foo/ http://example2.com/bar/",
+       "http://example1.com/foo/ http://example2.com/bar/"},
+      {"http://*.example3.com:100/bar/ http://example1.com/foo/",
+       "http://example1.com/foo/ http://*.example3.com:100/bar/"},
+      // Normalizing paths.
+      {"http://example1.com/ http://example2.com/",
+       "http://example1.com/foo/ http://example2.com/bar/"},
+      {"http://example1.com/foo/index.html http://example2.com/bar/",
+       "http://example1.com/foo/index.html http://example2.com/bar/"},
+      {"http://example1.com/bar http://example2.com/bar/",
+       "http://example2.com/bar/"},
+      // Not similar to be normalized
+      {"http://non-example1.com/foo/ http://non-example2.com/bar/", ""},
+      {"https://non-example1.com/foo/ wss://non-example2.com/bar/", ""},
+  };
+
+  for (const auto& test : cases) {
+    SourceListDirective secondList("script-src", test.sources, csp.get());
+    HeapVector<Member<CSPSource>> normalized =
+        sourceList.getIntersectCSPSources(secondList.m_list);
+    SourceListDirective helperSourceList("script-src", test.expected,
+                                         csp.get());
+    HeapVector<Member<CSPSource>> expected = helperSourceList.m_list;
+    EXPECT_EQ(normalized.size(), expected.size());
+    for (size_t i = 0; i < normalized.size(); i++) {
+      Source a = {normalized[i]->m_scheme,       normalized[i]->m_host,
+                  normalized[i]->m_port,         normalized[i]->m_path,
+                  normalized[i]->m_hostWildcard, normalized[i]->m_portWildcard};
+      Source b = {expected[i]->m_scheme,       expected[i]->m_host,
+                  expected[i]->m_port,         expected[i]->m_path,
+                  expected[i]->m_hostWildcard, expected[i]->m_portWildcard};
+      EXPECT_TRUE(equalSources(a, b));
+    }
+  }
 }
 
 }  // namespace blink

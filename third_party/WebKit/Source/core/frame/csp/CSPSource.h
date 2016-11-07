@@ -35,16 +35,23 @@ class CORE_EXPORT CSPSource : public GarbageCollectedFinalized<CSPSource> {
   // Returns true if this CSPSource subsumes the other, as defined by the
   // algorithm at https://w3c.github.io/webappsec-csp/embedded/#subsume-policy
   bool subsumes(CSPSource*);
+  // Retrieve the most restrictive information from the two CSPSources if
+  // isSimilar is true for the two. Otherwise, return nullptr.
+  CSPSource* intersect(CSPSource*);
 
   DECLARE_TRACE();
 
  private:
+  FRIEND_TEST_ALL_PREFIXES(CSPSourceTest, IsSimilar);
+  FRIEND_TEST_ALL_PREFIXES(SourceListDirectiveTest, GetIntersectCSPSources);
+
   bool schemeMatches(const String&) const;
   bool hostMatches(const String&) const;
   bool pathMatches(const String&) const;
   // Protocol is necessary to determine default port if it is zero.
   bool portMatches(int port, const String& protocol) const;
   bool isSchemeOnly() const;
+  bool isSimilar(CSPSource* other);
 
   Member<ContentSecurityPolicy> m_policy;
   String m_scheme;

@@ -569,6 +569,21 @@ bool SourceListDirective::hasSourceMatchInList(
   return false;
 }
 
+HeapVector<Member<CSPSource>> SourceListDirective::getIntersectCSPSources(
+    HeapVector<Member<CSPSource>> otherVector) {
+  HeapVector<Member<CSPSource>> normalized;
+  for (const auto& aCspSource : m_list) {
+    Member<CSPSource> matchedCspSource(nullptr);
+    for (const auto& bCspSource : otherVector) {
+      if ((matchedCspSource = bCspSource->intersect(aCspSource)))
+        break;
+    }
+    if (matchedCspSource)
+      normalized.append(matchedCspSource);
+  }
+  return normalized;
+}
+
 DEFINE_TRACE(SourceListDirective) {
   visitor->trace(m_policy);
   visitor->trace(m_list);

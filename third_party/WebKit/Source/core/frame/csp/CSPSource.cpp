@@ -124,6 +124,40 @@ bool CSPSource::subsumes(CSPSource* other) {
   return hostSubsumes && portSubsumes && pathSubsumes;
 }
 
+bool CSPSource::isSimilar(CSPSource* other) {
+  bool schemesMatch =
+      schemeMatches(other->m_scheme) || other->schemeMatches(m_scheme);
+  if (!schemesMatch || isSchemeOnly() || other->isSchemeOnly())
+    return schemesMatch;
+  bool hostsMatch = (m_host == other->m_host) || hostMatches(other->m_host) ||
+                    other->hostMatches(m_host);
+  bool portsMatch = (other->m_portWildcard == HasWildcard) ||
+                    portMatches(other->m_port, other->m_scheme);
+  bool pathsMatch = pathMatches(other->m_path) || other->pathMatches(m_path);
+  if (hostsMatch && portsMatch && pathsMatch)
+    return true;
+
+  return false;
+}
+
+CSPSource* CSPSource::intersect(CSPSource* other) {
+  if (!isSimilar(other))
+    return nullptr;
+
+  String scheme = other->schemeMatches(m_scheme) ? m_scheme : other->m_scheme;
+  String host = m_hostWildcard == NoWildcard ? m_host : other->m_host;
+  String path = other->pathMatches(m_path) ? m_path : other->m_path;
+  int port = (other->m_portWildcard == HasWildcard || !other->m_port)
+                 ? m_port
+                 : other->m_port;
+  WildcardDisposition hostWildcard =
+      (m_hostWildcard == HasWildcard) ? other->m_hostWildcard : m_hostWildcard;
+  WildcardDisposition portWildcard =
+      (m_portWildcard == HasWildcard) ? other->m_portWildcard : m_portWildcard;
+  return new CSPSource(m_policy, scheme, host, port, path, hostWildcard,
+                       portWildcard);
+}
+
 bool CSPSource::isSchemeOnly() const {
   return m_host.isEmpty();
 }

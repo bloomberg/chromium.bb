@@ -344,4 +344,105 @@ TEST_F(CSPSourceTest, SchemesOnlySubsumes) {
   }
 }
 
+TEST_F(CSPSourceTest, IsSimilar) {
+  struct Source {
+    const char* scheme;
+    const char* host;
+    const char* path;
+    const int port;
+  };
+  struct TestCase {
+    const Source a;
+    const Source b;
+    bool isSimilar;
+  } cases[] = {
+      // Similar
+      {{"http", "example.com", "/", 0}, {"http", "example.com", "/", 0}, true},
+      // Schemes
+      {{"https", "example.com", "/", 0},
+       {"https", "example.com", "/", 0},
+       true},
+      {{"https", "example.com", "/", 0}, {"http", "example.com", "/", 0}, true},
+      {{"ws", "example.com", "/", 0}, {"wss", "example.com", "/", 0}, true},
+      // Ports
+      {{"http", "example.com", "/", 90},
+       {"http", "example.com", "/", 90},
+       true},
+      {{"wss", "example.com", "/", 0},
+       {"wss", "example.com", "/", 0},
+       true},  // use default port
+      {{"http", "example.com", "/", 80}, {"http", "example.com", "/", 0}, true},
+      // Paths
+      {{"http", "example.com", "/", 0},
+       {"http", "example.com", "/1.html", 0},
+       true},
+      {{"http", "example.com", "/", 0}, {"http", "example.com", "", 0}, true},
+      {{"http", "example.com", "/", 0},
+       {"http", "example.com", "/a/b/", 0},
+       true},
+      {{"http", "example.com", "/a/", 0},
+       {"http", "example.com", "/a/", 0},
+       true},
+      {{"http", "example.com", "/a/", 0},
+       {"http", "example.com", "/a/b/", 0},
+       true},
+      {{"http", "example.com", "/a/", 0},
+       {"http", "example.com", "/a/b/1.html", 0},
+       true},
+      {{"http", "example.com", "/1.html", 0},
+       {"http", "example.com", "/1.html", 0},
+       true},
+      // Mixed
+      {{"http", "example.com", "/1.html", 90},
+       {"http", "example.com", "/", 90},
+       true},
+      {{"https", "example.com", "/", 0}, {"http", "example.com", "/", 0}, true},
+      {{"http", "example.com", "/a/", 90},
+       {"https", "example.com", "", 90},
+       true},
+      {{"wss", "example.com", "/a/", 90},
+       {"ws", "example.com", "/a/b/", 90},
+       true},
+      {{"https", "example.com", "/a/", 90},
+       {"https", "example.com", "/a/b/", 90},
+       true},
+      // Not Similar
+      {{"http", "example.com", "/a/", 0},
+       {"https", "example.com", "", 90},
+       false},
+      {{"https", "example.com", "/", 0},
+       {"https", "example.com", "/", 90},
+       false},
+      {{"http", "example.com", "/", 0}, {"http", "another.com", "/", 0}, false},
+      {{"wss", "example.com", "/", 0}, {"http", "example.com", "/", 0}, false},
+      {{"wss", "example.com", "/", 0}, {"about", "example.com", "/", 0}, false},
+      {{"http", "example.com", "/", 0},
+       {"about", "example.com", "/", 0},
+       false},
+      {{"http", "example.com", "/1.html", 0},
+       {"http", "example.com", "/2.html", 0},
+       false},
+      {{"http", "example.com", "/a/1.html", 0},
+       {"http", "example.com", "/a/b/", 0},
+       false},
+      {{"http", "example.com", "/", 443},
+       {"about", "example.com", "/", 800},
+       false},
+  };
+
+  for (const auto& test : cases) {
+    CSPSource* returned = new CSPSource(
+        csp.get(), test.a.scheme, test.a.host, test.a.port, test.a.path,
+        CSPSource::NoWildcard, CSPSource::NoWildcard);
+
+    CSPSource* required = new CSPSource(
+        csp.get(), test.b.scheme, test.b.host, test.b.port, test.b.path,
+        CSPSource::NoWildcard, CSPSource::NoWildcard);
+
+    EXPECT_EQ(returned->isSimilar(required), test.isSimilar);
+    // Verify the same test with a and b swapped.
+    EXPECT_EQ(required->isSimilar(returned), test.isSimilar);
+  }
+}
+
 }  // namespace blink
