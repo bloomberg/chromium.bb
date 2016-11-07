@@ -6,8 +6,10 @@
 #define SERVICES_UI_PUBLIC_CPP_MOJO_GPU_MEMORY_BUFFER_MANAGER_H_
 
 #include <memory>
+#include <vector>
 
 #include "base/macros.h"
+#include "base/memory/weak_ptr.h"
 #include "gpu/command_buffer/client/gpu_memory_buffer_manager.h"
 
 namespace ui {
@@ -16,6 +18,10 @@ class MojoGpuMemoryBufferManager : public gpu::GpuMemoryBufferManager {
  public:
   MojoGpuMemoryBufferManager();
   ~MojoGpuMemoryBufferManager() override;
+
+ private:
+  void DeletedGpuMemoryBuffer(gfx::GpuMemoryBufferId id,
+                              const gpu::SyncToken& sync_token);
 
   // Overridden from gpu::GpuMemoryBufferManager:
   std::unique_ptr<gfx::GpuMemoryBuffer> AllocateGpuMemoryBuffer(
@@ -32,7 +38,9 @@ class MojoGpuMemoryBufferManager : public gpu::GpuMemoryBufferManager {
   void SetDestructionSyncToken(gfx::GpuMemoryBuffer* buffer,
                                const gpu::SyncToken& sync_token) override;
 
- private:
+  int counter_ = 0;
+  base::WeakPtrFactory<MojoGpuMemoryBufferManager> weak_ptr_factory_;
+
   DISALLOW_COPY_AND_ASSIGN(MojoGpuMemoryBufferManager);
 };
 
