@@ -484,8 +484,11 @@ V4ProtocolConfig
 SafeBrowsingService::GetV4ProtocolConfig() const {
   V4ProtocolConfig config;
   config.client_name = GetProtocolConfigClientName();
-  config.version = SafeBrowsingProtocolManagerHelper::Version();
+  base::CommandLine* cmdline = base::CommandLine::ForCurrentProcess();
+  config.disable_auto_update =
+      cmdline->HasSwitch(switches::kDisableBackgroundNetworking);
   config.key_param = google_apis::GetAPIKey();;
+  config.version = SafeBrowsingProtocolManagerHelper::Version();
 
   return config;
 }

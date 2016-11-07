@@ -175,7 +175,7 @@ ListIdentifier::ListIdentifier(const ListUpdateResponse& response)
                      response.threat_entry_type(),
                      response.threat_type()) {}
 
-V4ProtocolConfig::V4ProtocolConfig() : disable_auto_update(false) {}
+V4ProtocolConfig::V4ProtocolConfig() {}
 
 V4ProtocolConfig::V4ProtocolConfig(const V4ProtocolConfig& other) = default;
 

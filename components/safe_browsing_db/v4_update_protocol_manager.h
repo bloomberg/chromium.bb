@@ -87,6 +87,7 @@ class V4UpdateProtocolManager : public net::URLFetcherDelegate,
                            TestGetUpdatesWithOneBackoff);
   FRIEND_TEST_ALL_PREFIXES(V4UpdateProtocolManagerTest,
                            TestBase64EncodingUsesUrlEncoding);
+  FRIEND_TEST_ALL_PREFIXES(V4UpdateProtocolManagerTest, TestDisableAutoUpdates);
   friend class V4UpdateProtocolManagerFactoryImpl;
 
   // Fills a FetchThreatListUpdatesRequest protocol buffer for a request.
