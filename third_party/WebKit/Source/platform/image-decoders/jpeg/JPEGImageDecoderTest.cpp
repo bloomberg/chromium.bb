@@ -299,4 +299,18 @@ TEST(JPEGImageDecoderTest, mergeBuffer) {
   testMergeBuffer(&createDecoder, jpegFile);
 }
 
+// This tests decoding a JPEG with many progressive scans.  Decoding should
+// fail, but not hang (crbug.com/642462).
+TEST(JPEGImageDecoderTest, manyProgressiveScans) {
+  RefPtr<SharedBuffer> testData =
+      readFile(decodersTestingDir, "many-progressive-scans.jpg");
+  ASSERT_TRUE(testData.get());
+
+  std::unique_ptr<ImageDecoder> testDecoder = createDecoder();
+  testDecoder->setData(testData.get(), true);
+  EXPECT_EQ(1u, testDecoder->frameCount());
+  ASSERT_TRUE(testDecoder->frameBufferAtIndex(0));
+  EXPECT_TRUE(testDecoder->failed());
+}
+
 }  // namespace blink

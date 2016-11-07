@@ -43,7 +43,6 @@ namespace blink {
 
 namespace {
 
-const char decodersTestingDir[] = "Source/platform/image-decoders/testing";
 const char layoutTestResourcesDir[] = "LayoutTests/fast/images/resources";
 
 std::unique_ptr<ImageDecoder> createDecoder() {

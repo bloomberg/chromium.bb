@@ -11,6 +11,8 @@ namespace blink {
 class ImageDecoder;
 class SharedBuffer;
 
+const char decodersTestingDir[] = "Source/platform/image-decoders/testing";
+
 using DecoderCreator = std::unique_ptr<ImageDecoder> (*)();
 PassRefPtr<SharedBuffer> readFile(const char* fileName);
 PassRefPtr<SharedBuffer> readFile(const char* dir, const char* fileName);

@@ -266,6 +266,17 @@ static yuv_subsampling yuvSubsampling(const jpeg_decompress_struct& info) {
   return YUV_UNKNOWN;
 }
 
+static void progressMonitor(j_common_ptr info) {
+  int scan = ((j_decompress_ptr)info)->input_scan_number;
+  // Progressive images with a very large number of scans can cause the
+  // decoder to hang.  Here we use the progress monitor to abort on
+  // a very large number of scans.  100 is arbitrary, but much larger
+  // than the number of scans we might expect in a normal image.
+  if (scan >= 100) {
+    error_exit(info);
+  }
+}
+
 class JPEGImageReader final {
   USING_FAST_MALLOC(JPEGImageReader);
   WTF_MAKE_NONCOPYABLE(JPEGImageReader);
@@ -299,6 +310,10 @@ class JPEGImageReader final {
     m_src.pub.resync_to_restart = jpeg_resync_to_restart;
     m_src.pub.term_source = term_source;
     m_src.reader = this;
+
+    // Set up a progress monitor.
+    m_info.progress = &m_progressMgr;
+    m_progressMgr.progress_monitor = progressMonitor;
 
     // Retain ICC color profile markers for color management.
     setup_read_icc_profile(&m_info);
@@ -657,6 +672,7 @@ class JPEGImageReader final {
   jpeg_decompress_struct m_info;
   decoder_error_mgr m_err;
   decoder_source_mgr m_src;
+  jpeg_progress_mgr m_progressMgr;
   jstate m_state;
 
   JSAMPARRAY m_samples;
