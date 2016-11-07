@@ -40,7 +40,6 @@ const gfx::Font::Weight kHoverWeight = gfx::Font::Weight::NORMAL;
 const gfx::Font::Weight kActiveWeight = gfx::Font::Weight::BOLD;
 const gfx::Font::Weight kInactiveWeight = gfx::Font::Weight::NORMAL;
 
-const int kHarmonyTabStripVerticalPad = 16;
 const int kHarmonyTabStripTabHeight = 40;
 
 }  // namespace
@@ -387,8 +386,7 @@ Tab* TabStrip::GetTabAtDeltaFromSelected(int delta) const {
 }
 
 MdTabStrip::MdTabStrip() {
-  BoxLayout* layout =
-      new BoxLayout(BoxLayout::kHorizontal, 0, kHarmonyTabStripVerticalPad, 0);
+  BoxLayout* layout = new BoxLayout(BoxLayout::kHorizontal, 0, 0, 0);
   layout->set_main_axis_alignment(BoxLayout::MAIN_AXIS_ALIGNMENT_CENTER);
   layout->set_cross_axis_alignment(BoxLayout::CROSS_AXIS_ALIGNMENT_STRETCH);
   layout->SetDefaultFlex(1);
