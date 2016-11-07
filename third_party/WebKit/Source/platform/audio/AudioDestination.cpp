@@ -31,6 +31,7 @@
 #include "platform/Histogram.h"
 #include "platform/audio/AudioFIFO.h"
 #include "platform/audio/AudioPullFIFO.h"
+#include "platform/audio/AudioUtilities.h"
 #include "platform/weborigin/SecurityOrigin.h"
 #include "public/platform/Platform.h"
 #include "public/platform/WebSecurityOrigin.h"
@@ -38,9 +39,6 @@
 #include <memory>
 
 namespace blink {
-
-// Buffer size at which the web audio engine will render.
-const unsigned renderBufferSize = 128;
 
 // Size of the FIFO
 const size_t fifoSize = 8192;
@@ -66,9 +64,11 @@ AudioDestination::AudioDestination(AudioIOCallback& callback,
                                    PassRefPtr<SecurityOrigin> securityOrigin)
     : m_callback(callback),
       m_numberOfOutputChannels(numberOfOutputChannels),
-      m_inputBus(AudioBus::create(numberOfInputChannels, renderBufferSize)),
-      m_renderBus(
-          AudioBus::create(numberOfOutputChannels, renderBufferSize, false)),
+      m_inputBus(AudioBus::create(numberOfInputChannels,
+                                  AudioUtilities::kRenderQuantumFrames)),
+      m_renderBus(AudioBus::create(numberOfOutputChannels,
+                                   AudioUtilities::kRenderQuantumFrames,
+                                   false)),
       m_sampleRate(sampleRate),
       m_isPlaying(false) {
   // Histogram for audioHardwareBufferSize
@@ -103,8 +103,9 @@ AudioDestination::AudioDestination(AudioIOCallback& callback,
 #endif
 
   // Quick exit if the requested size is too large.
-  ASSERT(m_callbackBufferSize + renderBufferSize <= fifoSize);
-  if (m_callbackBufferSize + renderBufferSize > fifoSize)
+  DCHECK_LE(m_callbackBufferSize + AudioUtilities::kRenderQuantumFrames,
+            fifoSize);
+  if (m_callbackBufferSize + AudioUtilities::kRenderQuantumFrames > fifoSize)
     return;
 
   m_audioDevice = wrapUnique(Platform::current()->createAudioDevice(
@@ -122,7 +123,7 @@ AudioDestination::AudioDestination(AudioIOCallback& callback,
   // Otherwise, the FIFO will call the provider enough times to
   // satisfy the request for data.
   m_fifo = wrapUnique(new AudioPullFIFO(*this, numberOfOutputChannels, fifoSize,
-                                        renderBufferSize));
+                                        AudioUtilities::kRenderQuantumFrames));
 
   // Input buffering.
   m_inputFifo = wrapUnique(new AudioFIFO(numberOfInputChannels, fifoSize));
@@ -130,9 +131,10 @@ AudioDestination::AudioDestination(AudioIOCallback& callback,
   // If the callback size does not match the render size, then we need to
   // buffer some extra silence for the input. Otherwise, we can over-consume
   // the input FIFO.
-  if (m_callbackBufferSize != renderBufferSize) {
+  if (m_callbackBufferSize != AudioUtilities::kRenderQuantumFrames) {
     // FIXME: handle multi-channel input and don't hard-code to stereo.
-    RefPtr<AudioBus> silence = AudioBus::create(2, renderBufferSize);
+    RefPtr<AudioBus> silence =
+        AudioBus::create(2, AudioUtilities::kRenderQuantumFrames);
     m_inputFifo->push(silence.get());
   }
 }

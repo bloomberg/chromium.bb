@@ -61,14 +61,14 @@ class OfflineAudioDestinationHandler final : public AudioDestinationHandler {
 
   float sampleRate() const override { return m_renderTarget->sampleRate(); }
 
-  size_t renderQuantumFrames() const { return renderQuantumSize; }
+  size_t renderQuantumFrames() const {
+    return AudioUtilities::kRenderQuantumFrames;
+  }
 
   WebThread* offlineRenderThread();
 
  private:
   OfflineAudioDestinationHandler(AudioNode&, AudioBuffer* renderTarget);
-
-  static const size_t renderQuantumSize;
 
   // Set up the rendering and start. After setting the context up, it will
   // eventually call |doOfflineRendering|.

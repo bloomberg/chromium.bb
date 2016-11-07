@@ -38,7 +38,6 @@ namespace blink {
 const double MaxDelayTimeSeconds = 0.002;
 
 const int UninitializedAzimuth = -1;
-const unsigned RenderingQuantum = 128;
 
 HRTFPanner::HRTFPanner(float sampleRate, HRTFDatabaseLoader* databaseLoader)
     : Panner(PanningModelHRTF),
@@ -57,10 +56,10 @@ HRTFPanner::HRTFPanner(float sampleRate, HRTFDatabaseLoader* databaseLoader)
       m_convolverR2(fftSizeForSampleRate(sampleRate)),
       m_delayLineL(MaxDelayTimeSeconds, sampleRate),
       m_delayLineR(MaxDelayTimeSeconds, sampleRate),
-      m_tempL1(RenderingQuantum),
-      m_tempR1(RenderingQuantum),
-      m_tempL2(RenderingQuantum),
-      m_tempR2(RenderingQuantum) {
+      m_tempL1(AudioUtilities::kRenderQuantumFrames),
+      m_tempR1(AudioUtilities::kRenderQuantumFrames),
+      m_tempL2(AudioUtilities::kRenderQuantumFrames),
+      m_tempR2(AudioUtilities::kRenderQuantumFrames) {
   ASSERT(databaseLoader);
 }
 
@@ -210,11 +209,11 @@ void HRTFPanner::pan(double desiredAzimuth,
   }
 
   // This algorithm currently requires that we process in power-of-two size
-  // chunks at least RenderingQuantum.
+  // chunks at least AudioUtilities::kRenderQuantumFrames.
   ASSERT(1UL << static_cast<int>(log2(framesToProcess)) == framesToProcess);
-  ASSERT(framesToProcess >= RenderingQuantum);
+  DCHECK_GE(framesToProcess, AudioUtilities::kRenderQuantumFrames);
 
-  const unsigned framesPerSegment = RenderingQuantum;
+  const unsigned framesPerSegment = AudioUtilities::kRenderQuantumFrames;
   const unsigned numberOfSegments = framesToProcess / framesPerSegment;
 
   for (unsigned segment = 0; segment < numberOfSegments; ++segment) {

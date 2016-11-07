@@ -31,6 +31,7 @@
 #include "modules/webaudio/BaseAudioContext.h"
 #include "modules/webaudio/OfflineAudioContext.h"
 #include "platform/audio/AudioBus.h"
+#include "platform/audio/AudioUtilities.h"
 #include "platform/audio/DenormalDisabler.h"
 #include "platform/audio/HRTFDatabaseLoader.h"
 #include "public/platform/Platform.h"
@@ -38,8 +39,6 @@
 #include <algorithm>
 
 namespace blink {
-
-const size_t OfflineAudioDestinationHandler::renderQuantumSize = 128;
 
 OfflineAudioDestinationHandler::OfflineAudioDestinationHandler(
     AudioNode& node,
@@ -52,8 +51,8 @@ OfflineAudioDestinationHandler::OfflineAudioDestinationHandler(
       m_framesToProcess(0),
       m_isRenderingStarted(false),
       m_shouldSuspend(false) {
-  m_renderBus =
-      AudioBus::create(renderTarget->numberOfChannels(), renderQuantumSize);
+  m_renderBus = AudioBus::create(renderTarget->numberOfChannels(),
+                                 AudioUtilities::kRenderQuantumFrames);
   m_framesToProcess = m_renderTarget->length();
 
   // Node-specific defaults.
@@ -157,7 +156,8 @@ void OfflineAudioDestinationHandler::startOfflineRendering() {
   if (!channelsMatch)
     return;
 
-  bool isRenderBusAllocated = m_renderBus->length() >= renderQuantumSize;
+  bool isRenderBusAllocated =
+      m_renderBus->length() >= AudioUtilities::kRenderQuantumFrames;
   DCHECK(isRenderBusAllocated);
   if (!isRenderBusAllocated)
     return;
@@ -181,14 +181,15 @@ void OfflineAudioDestinationHandler::doOfflineRendering() {
     // Suspend the rendering and update m_shouldSuspend if a scheduled
     // suspend found at the current sample frame. Otherwise render one
     // quantum and return false.
-    m_shouldSuspend =
-        renderIfNotSuspended(0, m_renderBus.get(), renderQuantumSize);
+    m_shouldSuspend = renderIfNotSuspended(
+        0, m_renderBus.get(), AudioUtilities::kRenderQuantumFrames);
 
     if (m_shouldSuspend)
       return;
 
     size_t framesAvailableToCopy =
-        std::min(m_framesToProcess, renderQuantumSize);
+        std::min(m_framesToProcess,
+                 static_cast<size_t>(AudioUtilities::kRenderQuantumFrames));
 
     for (unsigned channelIndex = 0; channelIndex < numberOfChannels;
          ++channelIndex) {

@@ -24,11 +24,11 @@
  */
 
 #include "modules/webaudio/WaveShaperDSPKernel.h"
+
+#include "platform/audio/AudioUtilities.h"
 #include "wtf/PtrUtil.h"
 #include "wtf/Threading.h"
 #include <algorithm>
-
-const unsigned RenderingQuantum = 128;
 
 namespace blink {
 
@@ -40,12 +40,18 @@ WaveShaperDSPKernel::WaveShaperDSPKernel(WaveShaperProcessor* processor)
 
 void WaveShaperDSPKernel::lazyInitializeOversampling() {
   if (!m_tempBuffer) {
-    m_tempBuffer = wrapUnique(new AudioFloatArray(RenderingQuantum * 2));
-    m_tempBuffer2 = wrapUnique(new AudioFloatArray(RenderingQuantum * 4));
-    m_upSampler = wrapUnique(new UpSampler(RenderingQuantum));
-    m_downSampler = wrapUnique(new DownSampler(RenderingQuantum * 2));
-    m_upSampler2 = wrapUnique(new UpSampler(RenderingQuantum * 2));
-    m_downSampler2 = wrapUnique(new DownSampler(RenderingQuantum * 4));
+    m_tempBuffer = wrapUnique(
+        new AudioFloatArray(AudioUtilities::kRenderQuantumFrames * 2));
+    m_tempBuffer2 = wrapUnique(
+        new AudioFloatArray(AudioUtilities::kRenderQuantumFrames * 4));
+    m_upSampler =
+        wrapUnique(new UpSampler(AudioUtilities::kRenderQuantumFrames));
+    m_downSampler =
+        wrapUnique(new DownSampler(AudioUtilities::kRenderQuantumFrames * 2));
+    m_upSampler2 =
+        wrapUnique(new UpSampler(AudioUtilities::kRenderQuantumFrames * 2));
+    m_downSampler2 =
+        wrapUnique(new DownSampler(AudioUtilities::kRenderQuantumFrames * 4));
   }
 }
 
@@ -129,7 +135,7 @@ void WaveShaperDSPKernel::processCurve(const float* source,
 void WaveShaperDSPKernel::processCurve2x(const float* source,
                                          float* destination,
                                          size_t framesToProcess) {
-  bool isSafe = framesToProcess == RenderingQuantum;
+  bool isSafe = framesToProcess == AudioUtilities::kRenderQuantumFrames;
   DCHECK(isSafe);
   if (!isSafe)
     return;
@@ -147,7 +153,7 @@ void WaveShaperDSPKernel::processCurve2x(const float* source,
 void WaveShaperDSPKernel::processCurve4x(const float* source,
                                          float* destination,
                                          size_t framesToProcess) {
-  bool isSafe = framesToProcess == RenderingQuantum;
+  bool isSafe = framesToProcess == AudioUtilities::kRenderQuantumFrames;
   DCHECK(isSafe);
   if (!isSafe)
     return;
