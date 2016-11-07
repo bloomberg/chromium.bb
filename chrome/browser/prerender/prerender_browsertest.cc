@@ -3250,9 +3250,9 @@ IN_PROC_BROWSER_TEST_F(PrerenderBrowserTest, AutosigninInPrerenderer) {
       base::Bind(&CreateCountingInterceptorOnIO,
                  done_url, empty_file, done_counter.AsWeakPtr()));
   // Loading may finish or be interrupted. The final result is important only.
-  // TODO(http://crbug.com/660278): TestPrrenderContents can be created after
-  // the JS code runs. The result would be a test timeout.
   DisableLoadEventCheck();
+  // TestPrenderContents is always created before the Autosignin JS can run, so
+  // waiting for PrerenderContents to stop should be reliable.
   PrerenderTestURL("/password/autosignin.html",
                    FINAL_STATUS_CREDENTIAL_MANAGER_API, 0);
   EXPECT_EQ(0, done_counter.count());
