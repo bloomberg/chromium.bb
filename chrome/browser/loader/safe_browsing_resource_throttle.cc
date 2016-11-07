@@ -233,6 +233,8 @@ void SafeBrowsingResourceThrottle::OnCheckBrowseUrlResult(
     safe_browsing::SBThreatType threat_type,
     const safe_browsing::ThreatMetadata& metadata) {
   CHECK_EQ(state_, STATE_CHECKING_URL);
+  CHECK(url.is_valid());
+  CHECK(url_being_checked_.is_valid());
   CHECK_EQ(url, url_being_checked_);
 
   timer_.Stop();  // Cancel the timeout timer.

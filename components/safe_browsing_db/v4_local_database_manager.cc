@@ -524,6 +524,11 @@ void V4LocalDatabaseManager::RespondToClient(
 
   if (check->client_callback_type == ClientCallbackType::CHECK_BROWSE_URL) {
     DCHECK_EQ(1u, check->urls.size());
+    // TODO(vakh): Remove these CHECKs after fixing bugs 660293, 660359.
+    CHECK(check.get());
+    CHECK(check->client);
+    CHECK_LE(1u, check->urls.size());
+    CHECK(check->urls[0].is_valid());
     check->client->OnCheckBrowseUrlResult(
         check->urls[0], check->result_threat_type, check->url_metadata);
   } else if (check->client_callback_type ==
