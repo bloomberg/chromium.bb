@@ -10,6 +10,7 @@
 #include "WebFrameLoadType.h"
 #include "WebHistoryItem.h"
 #include "public/platform/WebCachePolicy.h"
+#include "public/platform/WebURLError.h"
 
 namespace blink {
 
@@ -121,6 +122,10 @@ class WebLocalFrame : public WebFrame {
                         const WebHistoryItem& = WebHistoryItem(),
                         WebHistoryLoadType = WebHistoryDifferentDocumentLoad,
                         bool isClientRedirect = false) = 0;
+
+  // On load failure, attempts to make frame's parent rendering fallback content
+  // and stop this frame loading.
+  virtual bool maybeRenderFallbackContent(const WebURLError&) const = 0;
 
   // Navigation State -------------------------------------------------------
 

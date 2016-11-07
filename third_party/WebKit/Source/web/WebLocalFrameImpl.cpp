@@ -2066,6 +2066,18 @@ void WebLocalFrameImpl::loadData(const WebData& data,
       static_cast<HistoryLoadType>(webHistoryLoadType));
 }
 
+bool WebLocalFrameImpl::maybeRenderFallbackContent(
+    const WebURLError& error) const {
+  DCHECK(frame());
+
+  if (!frame()->owner() || !frame()->owner()->canRenderFallbackContent())
+    return false;
+
+  FrameLoader& frameloader = frame()->loader();
+  frameloader.loadFailed(frameloader.documentLoader(), error);
+  return true;
+}
+
 bool WebLocalFrameImpl::isLoading() const {
   if (!frame() || !frame()->document())
     return false;

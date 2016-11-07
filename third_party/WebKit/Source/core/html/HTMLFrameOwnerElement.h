@@ -80,6 +80,7 @@ class CORE_EXPORT HTMLFrameOwnerElement : public HTMLElement,
   void clearContentFrame() override;
   void dispatchLoad() override;
   SandboxFlags getSandboxFlags() const override { return m_sandboxFlags; }
+  bool canRenderFallbackContent() const override { return false; }
   void renderFallbackContent() override {}
   ScrollbarMode scrollingMode() const override { return ScrollbarAuto; }
   int marginWidth() const override { return -1; }

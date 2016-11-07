@@ -35,6 +35,7 @@ class RemoteFrameOwner final
   void setSandboxFlags(SandboxFlags flags) { m_sandboxFlags = flags; }
   void dispatchLoad() override;
   // TODO(dcheng): Implement.
+  bool canRenderFallbackContent() const override { return false; }
   void renderFallbackContent() override {}
   ScrollbarMode scrollingMode() const override { return m_scrolling; }
   int marginWidth() const override { return m_marginWidth; }

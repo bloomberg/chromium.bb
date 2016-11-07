@@ -5049,6 +5049,13 @@ void RenderFrameImpl::OnFailedNavigation(
     return;
   }
 
+  // On load failure, a frame can ask its owner to render fallback content.
+  // When that happens, don't load an error page.
+  if (frame_->maybeRenderFallbackContent(error)) {
+    browser_side_navigation_pending_ = false;
+    return;
+  }
+
   // Make sure errors are not shown in view source mode.
   frame_->enableViewSourceMode(false);
 

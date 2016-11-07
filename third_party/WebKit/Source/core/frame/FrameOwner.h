@@ -35,6 +35,7 @@ class CORE_EXPORT FrameOwner : public GarbageCollectedMixin {
 
   // On load failure, a frame can ask its owner to render fallback content
   // which replaces the frame contents.
+  virtual bool canRenderFallbackContent() const = 0;
   virtual void renderFallbackContent() = 0;
 
   virtual ScrollbarMode scrollingMode() const = 0;
@@ -60,6 +61,7 @@ class CORE_EXPORT DummyFrameOwner
   void clearContentFrame() override {}
   SandboxFlags getSandboxFlags() const override { return SandboxNone; }
   void dispatchLoad() override {}
+  bool canRenderFallbackContent() const override { return false; }
   void renderFallbackContent() override {}
   ScrollbarMode scrollingMode() const override { return ScrollbarAuto; }
   int marginWidth() const override { return -1; }

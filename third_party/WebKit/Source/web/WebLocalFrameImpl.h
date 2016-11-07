@@ -263,6 +263,7 @@ class WEB_EXPORT WebLocalFrameImpl final
                 const WebHistoryItem&,
                 WebHistoryLoadType,
                 bool isClientRedirect) override;
+  bool maybeRenderFallbackContent(const WebURLError&) const override;
   bool isLoading() const override;
   bool isFrameDetachedForSpecialOneOffStopTheCrashingHackBug561873()
       const override;

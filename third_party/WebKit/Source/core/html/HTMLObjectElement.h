@@ -55,6 +55,7 @@ class CORE_EXPORT HTMLObjectElement final : public HTMLPlugInElement,
 
   bool hasFallbackContent() const override;
   bool useFallbackContent() const override;
+  bool canRenderFallbackContent() const override { return true; }
   void renderFallbackContent() override;
 
   bool isFormControlElement() const override { return false; }
