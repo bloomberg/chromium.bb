@@ -12,12 +12,6 @@ source_set("app") {
     "safe_mode_util.h",
   ]
 
-  # TODO(crbug.com/658242): Remove this dependency once all of downstream code
-  # dependencies have been fixed to not require it.
-  public_deps = [
-    "//ios/chrome/app/application_delegate",
-  ]
-
   deps = [
     "//base",
   ]

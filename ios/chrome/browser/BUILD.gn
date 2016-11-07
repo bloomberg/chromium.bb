@@ -112,14 +112,6 @@ source_set("browser") {
   libs = [ "UIKit.framework" ]
 }
 
-# TODO(crbug.com/658242): this target is there to avoid breaking downstream
-# when this CL rolls. It should be removed in favor of browser.
-group("browser_no_public_deps") {
-  public_deps = [
-    ":browser",
-  ]
-}
-
 source_set("browser_impl") {
   sources = [
     "application_context_impl.cc",
