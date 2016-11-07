@@ -72,31 +72,31 @@ class WebStateImpl;
 // Defaults to NO; this should be enabled before attempting to access the view.
 @property(nonatomic, assign) BOOL webUsageEnabled;
 
-@property(nonatomic, assign) id<CRWWebDelegate> delegate;
+@property(nonatomic, weak) id<CRWWebDelegate> delegate;
 @property(nonatomic, weak) id<CRWWebUserInterfaceDelegate> UIDelegate;
-@property(nonatomic, assign) id<CRWNativeContentProvider> nativeProvider;
-@property(nonatomic, assign)
-    id<CRWSwipeRecognizerProvider> swipeRecognizerProvider;
+@property(nonatomic, weak) id<CRWNativeContentProvider> nativeProvider;
+@property(nonatomic, weak) id<CRWSwipeRecognizerProvider>
+    swipeRecognizerProvider;
 @property(nonatomic, readonly) web::WebState* webState;
 @property(nonatomic, readonly) web::WebStateImpl* webStateImpl;
 
 // The container view used to display content.  If the view has been purged due
 // to low memory, this will recreate it.
-@property(nonatomic, readonly) UIView* view;
+@property(nonatomic, strong, readonly) UIView* view;
 
 // The web view proxy associated with this controller.
-@property(nonatomic, readonly) id<CRWWebViewProxy> webViewProxy;
+@property(nonatomic, strong, readonly) id<CRWWebViewProxy> webViewProxy;
 
 // The view that generates print data when printing. It is nil if printing
 // is not supported.
-@property(nonatomic, readonly) UIView* viewForPrinting;
+@property(nonatomic, strong, readonly) UIView* viewForPrinting;
 
 // Content view was reset due to low memory.  Use placeholder overlay view on
 // next creation.
-@property(nonatomic, readwrite, assign) BOOL usePlaceholderOverlay;
+@property(nonatomic, assign) BOOL usePlaceholderOverlay;
 
 // Returns the current page loading phase.
-@property(nonatomic, readonly) web::LoadPhase loadPhase;
+@property(nonatomic, readonly, assign) web::LoadPhase loadPhase;
 
 // The fraction of the page load that has completed as a number between 0.0
 // (nothing loaded) and 1.0 (fully loaded).
