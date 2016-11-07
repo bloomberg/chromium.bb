@@ -25,13 +25,13 @@ class Toolchain;
 // build itself.
 class NinjaBuildWriter {
  public:
-  NinjaBuildWriter(
-      const BuildSettings* settings,
-      const std::map<const Settings*, const Toolchain*>& used_toolchains,
-      const Toolchain* default_toolchain,
-      const std::vector<const Target*>& default_toolchain_targets,
-      std::ostream& out,
-      std::ostream& dep_out);
+  NinjaBuildWriter(const BuildSettings* settings,
+                   const std::unordered_map<const Settings*, const Toolchain*>&
+                       used_toolchains,
+                   const Toolchain* default_toolchain,
+                   const std::vector<const Target*>& default_toolchain_targets,
+                   std::ostream& out,
+                   std::ostream& dep_out);
   ~NinjaBuildWriter();
 
   // The design of this class is that this static factory function takes the
@@ -57,7 +57,7 @@ class NinjaBuildWriter {
 
   const BuildSettings* build_settings_;
 
-  const std::map<const Settings*, const Toolchain*>& used_toolchains_;
+  const std::unordered_map<const Settings*, const Toolchain*>& used_toolchains_;
   const Toolchain* default_toolchain_;
   const std::vector<const Target*>& default_toolchain_targets_;
 

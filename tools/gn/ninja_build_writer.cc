@@ -134,7 +134,8 @@ Err GetDuplicateOutputError(const std::vector<const Target*>& all_targets,
 
 NinjaBuildWriter::NinjaBuildWriter(
     const BuildSettings* build_settings,
-    const std::map<const Settings*, const Toolchain*>& used_toolchains,
+    const std::unordered_map<const Settings*, const Toolchain*>&
+        used_toolchains,
     const Toolchain* default_toolchain,
     const std::vector<const Target*>& default_toolchain_targets,
     std::ostream& out,
@@ -167,7 +168,7 @@ bool NinjaBuildWriter::RunAndWriteFile(
   ScopedTrace trace(TraceItem::TRACE_FILE_WRITE, "build.ninja");
 
   std::vector<const Target*> all_targets = builder.GetAllResolvedTargets();
-  std::map<const Settings*, const Toolchain*> used_toolchains;
+  std::unordered_map<const Settings*, const Toolchain*> used_toolchains;
 
   // Find the default toolchain info.
   Label default_toolchain_label = builder.loader()->GetDefaultToolchain();
@@ -260,7 +261,7 @@ void NinjaBuildWriter::WriteNinjaRules() {
 
 void NinjaBuildWriter::WriteAllPools() {
   // Compute the pools referenced by all tools of all used toolchains.
-  std::set<const Pool*> used_pools;
+  std::unordered_set<const Pool*> used_pools;
   for (const auto& pair : used_toolchains_) {
     for (int j = Toolchain::TYPE_NONE + 1; j < Toolchain::TYPE_NUMTYPES; j++) {
       Toolchain::ToolType tool_type = static_cast<Toolchain::ToolType>(j);
@@ -270,16 +271,38 @@ void NinjaBuildWriter::WriteAllPools() {
     }
   }
 
-  for (const Pool* pool : used_pools) {
-    std::string pool_name = pool->GetNinjaName(default_toolchain_->label());
-    out_ << "pool " << pool_name << std::endl
+  // Write pools sorted by their name, to make output deterministic.
+  std::vector<const Pool*> sorted_pools(used_pools.begin(), used_pools.end());
+  auto pool_name = [this](const Pool* pool) {
+    return pool->GetNinjaName(default_toolchain_->label());
+  };
+  std::sort(sorted_pools.begin(), sorted_pools.end(),
+            [&pool_name](const Pool* a, const Pool* b) {
+              return pool_name(a) < pool_name(b);
+            });
+  for (const Pool* pool : sorted_pools) {
+    out_ << "pool " << pool_name(pool) << std::endl
          << "  depth = " << pool->depth() << std::endl
          << std::endl;
   }
 }
 
 void NinjaBuildWriter::WriteSubninjas() {
-  for (const auto& pair : used_toolchains_) {
+  // Write toolchains sorted by their name, to make output deterministic.
+  std::vector<std::pair<const Settings*, const Toolchain*>> sorted_settings(
+      used_toolchains_.begin(), used_toolchains_.end());
+  std::sort(sorted_settings.begin(), sorted_settings.end(),
+            [this](const std::pair<const Settings*, const Toolchain*>& a,
+                   const std::pair<const Settings*, const Toolchain*>& b) {
+              // Always put the default toolchain first.
+              if (b.second == default_toolchain_)
+                return false;
+              if (a.second == default_toolchain_)
+                return true;
+              return GetNinjaFileForToolchain(a.first) <
+                     GetNinjaFileForToolchain(b.first);
+            });
+  for (const auto& pair : sorted_settings) {
     out_ << "subninja ";
     path_output_.WriteFile(out_, GetNinjaFileForToolchain(pair.first));
     out_ << std::endl;
