@@ -156,6 +156,9 @@ ResultExpr SandboxBPFBasePolicyAndroid::EvaluateSyscall(int sysno) const {
   }
 #endif
 
+  // Restrict socket-related operations. On non-i386 platforms, these are
+  // individual syscalls. On i386, the socketcall syscall demultiplexes many
+  // socket operations.
 #if defined(__x86_64__) || defined(__arm__) || defined(__aarch64__) || \
       defined(__mips__)
   if (sysno == __NR_socket) {
@@ -165,6 +168,13 @@ ResultExpr SandboxBPFBasePolicyAndroid::EvaluateSyscall(int sysno) const {
     return If(RestrictSocketArguments(domain, type, protocol), Allow())
            .Else(Error(EPERM));
   }
+
+  // https://crbug.com/655300
+  if (sysno == __NR_getsockname) {
+    // Rather than blocking with SIGSYS, just return an error. This is not
+    // documented to be a valid errno, but we will use it anyways.
+    return Error(EPERM);
+  }
 #elif defined(__i386__)
   if (sysno == __NR_socketcall) {
     const Arg<int> socketcall(0);
@@ -172,9 +182,7 @@ ResultExpr SandboxBPFBasePolicyAndroid::EvaluateSyscall(int sysno) const {
     const Arg<int> type(2);
     const Arg<int> protocol(3);
     return If(socketcall == SYS_CONNECT, Allow())
-           .ElseIf(AllOf(socketcall == SYS_SOCKET,
-                         RestrictSocketArguments(domain, type, protocol)),
-                   Allow())
+           .ElseIf(socketcall == SYS_SOCKET, Allow())
            .ElseIf(socketcall == SYS_GETSOCKOPT, Allow())
            .Else(Error(EPERM));
   }
