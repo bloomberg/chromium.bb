@@ -122,10 +122,14 @@ void ChangePictureHandler::OnJavascriptAllowed() {
                  content::NotificationService::AllSources());
   registrar_.Add(this, chrome::NOTIFICATION_LOGIN_USER_IMAGE_CHANGED,
                  content::NotificationService::AllSources());
+
+  camera_observer_.Add(CameraPresenceNotifier::GetInstance());
 }
 
 void ChangePictureHandler::OnJavascriptDisallowed() {
   registrar_.RemoveAll();
+
+  camera_observer_.Remove(CameraPresenceNotifier::GetInstance());
 }
 
 void ChangePictureHandler::SendDefaultImages() {
@@ -203,10 +207,6 @@ void ChangePictureHandler::HandlePageInitialized(const base::ListValue* args) {
   DCHECK(args && args->empty());
 
   AllowJavascript();
-
-  CameraPresenceNotifier* camera = CameraPresenceNotifier::GetInstance();
-  if (!camera_observer_.IsObserving(camera))
-    camera_observer_.Add(camera);
 
   SendDefaultImages();
   SendSelectedImage();
