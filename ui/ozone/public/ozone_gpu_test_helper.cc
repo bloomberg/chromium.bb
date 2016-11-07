@@ -139,7 +139,9 @@ bool OzoneGpuTestHelper::Initialize(
 
   fake_gpu_process_host_.reset(new FakeGpuProcessHost(
       gpu_task_runner, io_helper_thread_->task_runner()));
-  fake_gpu_process_host_->Init();
+  io_helper_thread_->task_runner()->PostTask(
+      FROM_HERE, base::Bind(&FakeGpuProcessHost::Init,
+                            base::Unretained(fake_gpu_process_host_.get())));
 
   return true;
 }
