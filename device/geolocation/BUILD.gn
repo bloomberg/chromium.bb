@@ -50,11 +50,10 @@ component("geolocation") {
     "wifi_data_provider_common.h",
     "wifi_data_provider_common_win.cc",
     "wifi_data_provider_common_win.h",
-    "wifi_data_provider_corewlan_mac.mm",
     "wifi_data_provider_linux.cc",
     "wifi_data_provider_linux.h",
-    "wifi_data_provider_mac.cc",
     "wifi_data_provider_mac.h",
+    "wifi_data_provider_mac.mm",
     "wifi_data_provider_manager.cc",
     "wifi_data_provider_manager.h",
     "wifi_data_provider_win.cc",
@@ -108,7 +107,10 @@ component("geolocation") {
   }
 
   if (is_mac) {
-    libs = [ "Foundation.framework" ]
+    libs = [
+      "CoreWLAN.framework",
+      "Foundation.framework",
+    ]
   }
 }
 

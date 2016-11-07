@@ -27,10 +27,6 @@ class WifiDataProviderMac : public WifiDataProviderCommon {
   DISALLOW_COPY_AND_ASSIGN(WifiDataProviderMac);
 };
 
-// Creates and returns a new API binding for the CoreWLAN API, or NULL if the
-// API can not be initialized.
-WifiDataProviderCommon::WlanApiInterface* NewCoreWlanApi();
-
 }  // namespace device
 
 #endif  // DEVICE_GEOLOCATION_WIFI_DATA_PROVIDER_MAC_H_
