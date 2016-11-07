@@ -341,6 +341,7 @@ test("wtf_unittests") {
     "text/TextCodecTest.cpp",
     "text/TextCodecUTF8Test.cpp",
     "text/TextCodecUserDefinedTest.cpp",
+    "text/TextEncodingTest.cpp",
     "text/WTFStringTest.cpp",
     "typed_arrays/ArrayBufferBuilderTest.cpp",
   ]

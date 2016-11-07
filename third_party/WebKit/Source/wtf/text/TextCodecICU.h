@@ -87,6 +87,8 @@ class TextCodecICU final : public TextCodec {
 #endif
 
   FRIEND_TEST_ALL_PREFIXES(TextCodecICUTest, IgnorableCodePoint);
+  FRIEND_TEST_ALL_PREFIXES(TextCodecICUTest, UTF32AndQuestionMarks);
+  FRIEND_TEST_ALL_PREFIXES(TextCodecICUTest, UTF32Aliases);
 };
 
 struct ICUConverterWrapper {

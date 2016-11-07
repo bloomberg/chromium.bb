@@ -101,7 +101,7 @@ bool TextEncoding::isNonByteBasedEncoding() const {
   }
 
   return *this == UTF16LittleEndianEncoding() ||
-         *this == UTF16BigEndianEncoding() ||
+         *this == UTF16BigEndianEncoding() || *this == UTF32Encoding() ||
          *this == UTF32BigEndianEncoding() ||
          *this == UTF32LittleEndianEncoding();
 }
@@ -154,6 +154,13 @@ const TextEncoding& UTF16LittleEndianEncoding() {
                                   globalUTF16LittleEndianEncoding,
                                   new TextEncoding("UTF-16LE"));
   return globalUTF16LittleEndianEncoding;
+}
+
+// UTF-32 is UTF-32LE with an implicit BOM.
+const TextEncoding& UTF32Encoding() {
+  DEFINE_THREAD_SAFE_STATIC_LOCAL(const TextEncoding, globalUTF32Encoding,
+                                  new TextEncoding("UTF-32"));
+  return globalUTF32Encoding;
 }
 
 const TextEncoding& UTF32BigEndianEncoding() {

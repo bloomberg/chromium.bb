@@ -608,7 +608,11 @@ CString TextCodecICU::encodeInternal(const TextCodecInput& input,
 
   switch (handling) {
     case QuestionMarksForUnencodables:
-      ucnv_setSubstChars(m_converterICU, "?", 1, &err);
+      // Non-byte-based encodings (i.e. UTF-16/32) don't need substitutions
+      // since they can encode any code point, and ucnv_setSubstChars would
+      // require a multi-byte substitution anyway.
+      if (!m_encoding.isNonByteBasedEncoding())
+        ucnv_setSubstChars(m_converterICU, "?", 1, &err);
 #if !defined(USING_SYSTEM_ICU)
       ucnv_setFromUCallBack(m_converterICU, UCNV_FROM_U_CALLBACK_SUBSTITUTE, 0,
                             0, 0, &err);
