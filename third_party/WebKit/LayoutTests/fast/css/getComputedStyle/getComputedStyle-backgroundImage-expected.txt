@@ -1,0 +1,6 @@
+Blocked access to external URL http://dummy/bg.svg#frag1
+Blocked access to external URL http://dummy/bg.svg#frag2
+This is a testharness.js-based test.
+PASS Computed background-image of generated content contains correct fragment identifier. 
+Harness: the test ran to completion.
+

@@ -56,8 +56,7 @@ ImageResource* StyleFetchedImage::cachedImage() const {
 }
 
 CSSValue* StyleFetchedImage::cssValue() const {
-  return CSSImageValue::create(m_image->url(),
-                               const_cast<StyleFetchedImage*>(this));
+  return CSSImageValue::create(m_url, const_cast<StyleFetchedImage*>(this));
 }
 
 CSSValue* StyleFetchedImage::computedCSSValue() const {
