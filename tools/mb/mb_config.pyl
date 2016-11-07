@@ -533,6 +533,7 @@
 
       'linux_chromium_rel_ng': 'gpu_tests_release_trybot',
       'linux_chromium_tsan_rel_ng': 'tsan_disable_nacl_release_trybot',
+      'linux_chromium_ubsan_rel_ng': 'ubsan_vptr_release_trybot',
 
       # This is 'release_bot' rather than 'release_trybot' because
       # 'release_trybot' includes 'dcheck_always_on', which might cause
@@ -1409,6 +1410,10 @@
 
     'ubsan_vptr_release_bot': [
       'ubsan_vptr', 'ubsan_no_recover_hack', 'release_bot',
+    ],
+
+    'ubsan_vptr_release_trybot': [
+      'ubsan_vptr', 'ubsan_no_recover_hack', 'release_trybot',
     ],
 
     'win_clang_debug_bot': [
