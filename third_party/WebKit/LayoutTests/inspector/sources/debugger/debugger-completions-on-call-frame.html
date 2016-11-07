@@ -45,12 +45,12 @@ function test()
 
         function step6(next)
         {
-            WebInspector.JavaScriptAutocomplete.completionsForExpression("var1", "toExp").then(checkAgainstGolden.bind(this, ["toExponential"], [], next));
+            WebInspector.JavaScriptAutocomplete.completionsForExpression("var1.", "toExp").then(checkAgainstGolden.bind(this, ["toExponential"], [], next));
         },
 
         function step7(next)
         {
-            WebInspector.JavaScriptAutocomplete.completionsForExpression("123", "toExp").then(checkAgainstGolden.bind(this, [], ["toExponential"], next));
+            WebInspector.JavaScriptAutocomplete.completionsForExpression("123.", "toExp").then(checkAgainstGolden.bind(this, [], ["toExponential"], next));
         },
 
         function step8(next)
@@ -65,7 +65,7 @@ function test()
 
         function step10(next)
         {
-            WebInspector.JavaScriptAutocomplete.completionsForExpression("console", "log('bar');").then(checkAgainstGolden.bind(this, [], ["$"], next));
+            WebInspector.JavaScriptAutocomplete.completionsForExpression("console.", "log('bar');").then(checkAgainstGolden.bind(this, [], ["$"], next));
         },
 
         function step11(next)
@@ -82,6 +82,11 @@ function test()
         {
             WebInspector.JavaScriptAutocomplete.completionsForExpression("arr2.",  "").then(checkAgainstGolden.bind(this, ["length"], ["1", "2", "3"], next));
         },
+
+        function step14(next)
+        {
+            WebInspector.JavaScriptAutocomplete.completionsForExpression("document\n","E").then(checkAgainstGolden.bind(this, ["Element"], ["ELEMENT_NODE"], next));
+        }
     ]);
 
     function checkAgainstGolden(golden, antiGolden, continuation, completions)
