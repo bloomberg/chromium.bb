@@ -277,6 +277,8 @@ void MessageView::CreateOrUpdateCloseButtonView(
     close->set_animate_on_state_change(false);
     close->SetAccessibleName(l10n_util::GetStringUTF16(
         IDS_MESSAGE_CENTER_CLOSE_NOTIFICATION_BUTTON_ACCESSIBLE_NAME));
+    close->SetTooltipText(l10n_util::GetStringUTF16(
+        IDS_MESSAGE_CENTER_CLOSE_NOTIFICATION_BUTTON_TOOLTIP));
     close->set_owned_by_client();
     AddChildView(close);
     close_button_.reset(close);
