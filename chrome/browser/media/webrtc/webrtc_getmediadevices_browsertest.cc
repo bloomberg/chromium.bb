@@ -15,6 +15,7 @@
 #include "chrome/test/base/ui_test_utils.h"
 #include "content/public/common/content_switches.h"
 #include "content/public/test/browser_test_utils.h"
+#include "media/audio/audio_device_description.h"
 #include "media/audio/audio_manager.h"
 #include "media/base/media_switches.h"
 #include "net/test/embedded_test_server/embedded_test_server.h"
@@ -27,12 +28,9 @@ const char kDeviceKindAudioInput[] = "audioinput";
 const char kDeviceKindVideoInput[] = "videoinput";
 const char kDeviceKindAudioOutput[] = "audiooutput";
 
-const char kSourceKindAudioInput[] = "audio";
-const char kSourceKindVideoInput[] = "video";
-
 }  // namespace
 
-// Integration test for WebRTC getMediaDevices. It always uses fake devices.
+// Integration test for WebRTC enumerateDevices. It always uses fake devices.
 // It needs to be a browser test (and not content browser test) to be able to
 // test that labels are cleared or not depending on if access to devices has
 // been granted.
@@ -65,27 +63,9 @@ class WebRtcGetMediaDevicesBrowserTest
     std::string group_id;
   };
 
-  bool HasOutputDevices() {
-    // There's no fake audio output devices supported yet. We can't test audio
-    // output devices on bots with no output devices, so skip testing for that
-    // on such bots. We cache the result since querying for devices can take
-    // considerable time.
-    if (!has_audio_output_devices_initialized_) {
-      has_audio_output_devices_ =
-          media::AudioManager::Get()->HasAudioOutputDevices();
-      has_audio_output_devices_initialized_ = true;
-    }
-    return has_audio_output_devices_;
-  }
-
-  // If |get_sources| is true, use getSources API and leave groupId empty,
-  // otherwise use getMediaDevices API.
-  void GetMediaDevicesOrSources(content::WebContents* tab,
-                                std::vector<MediaDeviceInfo>* devices,
-                                bool get_sources) {
-    std::string devices_as_json =
-        ExecuteJavascript(get_sources ? "getSources()" : "getMediaDevices()",
-                          tab);
+  void EnumerateDevices(content::WebContents* tab,
+                        std::vector<MediaDeviceInfo>* devices) {
+    std::string devices_as_json = ExecuteJavascript("enumerateDevices()", tab);
     EXPECT_FALSE(devices_as_json.empty());
 
     int error_code;
@@ -109,41 +89,34 @@ class WebRtcGetMediaDevicesBrowserTest
       const base::DictionaryValue* dict;
       MediaDeviceInfo device;
       ASSERT_TRUE((*it)->GetAsDictionary(&dict));
-      ASSERT_TRUE(dict->GetString(get_sources ? "id" : "deviceId",
-                                  &device.device_id));
+      ASSERT_TRUE(dict->GetString("deviceId", &device.device_id));
       ASSERT_TRUE(dict->GetString("kind", &device.kind));
       ASSERT_TRUE(dict->GetString("label", &device.label));
-      if (!get_sources)
-        ASSERT_TRUE(dict->GetString("groupId", &device.group_id));
+      ASSERT_TRUE(dict->GetString("groupId", &device.group_id));
 
       // Should be HMAC SHA256.
-      EXPECT_EQ(64ul, device.device_id.length());
-      EXPECT_TRUE(base::ContainsOnlyChars(device.device_id,
-                                          "0123456789abcdef"));
-
-      const char* kAudioInputKind =
-          get_sources ? kSourceKindAudioInput : kDeviceKindAudioInput;
-      const char* kVideoInputKind =
-          get_sources ? kSourceKindVideoInput : kDeviceKindVideoInput;
-      if (get_sources) {
-        EXPECT_TRUE(device.kind == kAudioInputKind ||
-                    device.kind == kVideoInputKind);
-      } else {
-        EXPECT_TRUE(device.kind == kAudioInputKind ||
-                    device.kind == kVideoInputKind ||
-                    device.kind == kDeviceKindAudioOutput);
+      if (!media::AudioDeviceDescription::IsDefaultDevice(device.device_id) &&
+          !(device.device_id ==
+            media::AudioDeviceDescription::kCommunicationsDeviceId)) {
+        EXPECT_EQ(64ul, device.device_id.length());
+        EXPECT_TRUE(
+            base::ContainsOnlyChars(device.device_id, "0123456789abcdef"));
       }
-      if (device.kind == kAudioInputKind) {
+
+      EXPECT_TRUE(device.kind == kDeviceKindAudioInput ||
+                  device.kind == kDeviceKindVideoInput ||
+                  device.kind == kDeviceKindAudioOutput);
+      if (device.kind == kDeviceKindAudioInput) {
         found_audio_input = true;
-      } else if (device.kind == kVideoInputKind) {
+      } else if (device.kind == kDeviceKindVideoInput) {
         found_video_input = true;
       } else {
         found_audio_output = true;
       }
 
-      // getSources doesn't have group ID support. getMediaDevices doesn't have
-      // group ID support for video input devices.
-      if (get_sources || device.kind == kDeviceKindVideoInput) {
+      // enumerateDevices doesn't have group ID support for video input devices.
+      // TODO(guidou): remove this once http://crbug.com/627793 is fixed.
+      if (device.kind == kDeviceKindVideoInput) {
         EXPECT_TRUE(device.group_id.empty());
       } else {
         EXPECT_FALSE(device.group_id.empty());
@@ -154,21 +127,6 @@ class WebRtcGetMediaDevicesBrowserTest
 
     EXPECT_TRUE(found_audio_input);
     EXPECT_TRUE(found_video_input);
-    if (get_sources) {
-      EXPECT_FALSE(found_audio_output);
-    } else {
-      EXPECT_EQ(HasOutputDevices(), found_audio_output);
-    }
-  }
-
-  void GetMediaDevices(content::WebContents* tab,
-                     std::vector<MediaDeviceInfo>* devices) {
-    GetMediaDevicesOrSources(tab, devices, false);
-  }
-
-  void GetSources(content::WebContents* tab,
-                  std::vector<MediaDeviceInfo>* sources) {
-    GetMediaDevicesOrSources(tab, sources, true);
   }
 
   bool has_audio_output_devices_initialized_;
@@ -180,10 +138,8 @@ INSTANTIATE_TEST_CASE_P(WebRtcGetMediaDevicesBrowserTests,
                         WebRtcGetMediaDevicesBrowserTest,
                         testing::ValuesIn(kParamsToRunTestsWith));
 
-// getMediaDevices has been removed and will be replaced
-// MediaDevices.enumerateDevices. http://crbug.com/388648.
 IN_PROC_BROWSER_TEST_P(WebRtcGetMediaDevicesBrowserTest,
-                       DISABLED_GetMediaDevicesWithoutAccess) {
+                       EnumerateDevicesWithoutAccess) {
   ASSERT_TRUE(embedded_test_server()->Start());
   GURL url(embedded_test_server()->GetURL(kMainWebrtcTestHtmlPage));
   ui_test_utils::NavigateToURL(browser(), url);
@@ -191,7 +147,7 @@ IN_PROC_BROWSER_TEST_P(WebRtcGetMediaDevicesBrowserTest,
       browser()->tab_strip_model()->GetActiveWebContents();
 
   std::vector<MediaDeviceInfo> devices;
-  GetMediaDevices(tab, &devices);
+  EnumerateDevices(tab, &devices);
 
   // Labels should be empty if access has not been allowed.
   for (std::vector<MediaDeviceInfo>::iterator it = devices.begin();
@@ -200,11 +156,8 @@ IN_PROC_BROWSER_TEST_P(WebRtcGetMediaDevicesBrowserTest,
   }
 }
 
-// getMediaDevices has been removed and will be replaced
-// MediaDevices.enumerateDevices. http://crbug.com/388648.
-// Disabled, fails due to http://crbug.com/382391.
 IN_PROC_BROWSER_TEST_P(WebRtcGetMediaDevicesBrowserTest,
-                       DISABLED_GetMediaDevicesWithAccess) {
+                       EnumerateDevicesWithAccess) {
   ASSERT_TRUE(embedded_test_server()->Start());
   GURL url(embedded_test_server()->GetURL(kMainWebrtcTestHtmlPage));
   ui_test_utils::NavigateToURL(browser(), url);
@@ -214,82 +167,11 @@ IN_PROC_BROWSER_TEST_P(WebRtcGetMediaDevicesBrowserTest,
   EXPECT_TRUE(GetUserMediaAndAccept(tab));
 
   std::vector<MediaDeviceInfo> devices;
-  GetMediaDevices(tab, &devices);
+  EnumerateDevices(tab, &devices);
 
   // Labels should be non-empty if access has been allowed.
   for (std::vector<MediaDeviceInfo>::iterator it = devices.begin();
        it != devices.end(); ++it) {
     EXPECT_TRUE(!it->label.empty());
   }
-}
-
-// getMediaDevices has been removed and will be replaced
-// MediaDevices.enumerateDevices. http://crbug.com/388648.
-IN_PROC_BROWSER_TEST_P(WebRtcGetMediaDevicesBrowserTest,
-                       DISABLED_GetMediaDevicesEqualsGetSourcesWithoutAccess) {
-  ASSERT_TRUE(embedded_test_server()->Start());
-  GURL url(embedded_test_server()->GetURL(kMainWebrtcTestHtmlPage));
-  ui_test_utils::NavigateToURL(browser(), url);
-  content::WebContents* tab =
-      browser()->tab_strip_model()->GetActiveWebContents();
-
-  std::vector<MediaDeviceInfo> devices;
-  GetMediaDevices(tab, &devices);
-
-  std::vector<MediaDeviceInfo> sources;
-  GetSources(tab, &sources);
-
-  std::vector<MediaDeviceInfo>::iterator sources_it = sources.begin();
-  for (std::vector<MediaDeviceInfo>::iterator devices_it = devices.begin();
-       devices_it != devices.end(); ++devices_it) {
-    if (devices_it->kind == kDeviceKindAudioOutput)
-      continue;
-    EXPECT_STREQ(devices_it->device_id.c_str(), sources_it->device_id.c_str());
-    if (devices_it->kind == kDeviceKindAudioInput) {
-      EXPECT_STREQ(kSourceKindAudioInput, sources_it->kind.c_str());
-    } else {
-      EXPECT_STREQ(kSourceKindVideoInput, sources_it->kind.c_str());
-    }
-    EXPECT_TRUE(devices_it->label.empty());
-    EXPECT_TRUE(sources_it->label.empty());
-    ++sources_it;
-  }
-  EXPECT_EQ(sources.end(), sources_it);
-}
-
-// getMediaDevices has been removed and will be replaced
-// MediaDevices.enumerateDevices. http://crbug.com/388648.
-// Disabled, fails due to http://crbug.com/382391.
-IN_PROC_BROWSER_TEST_P(WebRtcGetMediaDevicesBrowserTest,
-                       DISABLED_GetMediaDevicesEqualsGetSourcesWithAccess) {
-  ASSERT_TRUE(embedded_test_server()->Start());
-  GURL url(embedded_test_server()->GetURL(kMainWebrtcTestHtmlPage));
-  ui_test_utils::NavigateToURL(browser(), url);
-  content::WebContents* tab =
-      browser()->tab_strip_model()->GetActiveWebContents();
-
-  EXPECT_TRUE(GetUserMediaAndAccept(tab));
-
-  std::vector<MediaDeviceInfo> devices;
-  GetMediaDevices(tab, &devices);
-
-  std::vector<MediaDeviceInfo> sources;
-  GetSources(tab, &sources);
-
-  std::vector<MediaDeviceInfo>::iterator sources_it = sources.begin();
-  for (std::vector<MediaDeviceInfo>::iterator devices_it = devices.begin();
-       devices_it != devices.end(); ++devices_it) {
-    if (devices_it->kind == kDeviceKindAudioOutput)
-      continue;
-    EXPECT_STREQ(devices_it->device_id.c_str(), sources_it->device_id.c_str());
-    if (devices_it->kind == kDeviceKindAudioInput) {
-      EXPECT_STREQ(kSourceKindAudioInput, sources_it->kind.c_str());
-    } else {
-      EXPECT_STREQ(kSourceKindVideoInput, sources_it->kind.c_str());
-    }
-    EXPECT_TRUE(!devices_it->label.empty());
-    EXPECT_STREQ(devices_it->label.c_str(), sources_it->label.c_str());
-    ++sources_it;
-  }
-  EXPECT_EQ(sources.end(), sources_it);
 }
