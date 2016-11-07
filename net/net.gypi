@@ -2148,7 +2148,6 @@
       "websockets/websocket_handshake_stream_create_helper.h",
       "websockets/websocket_inflater.cc",
       "websockets/websocket_inflater.h",
-      "websockets/websocket_mux.h",
       "websockets/websocket_stream.cc",
       "websockets/websocket_stream.h",
     ],
