@@ -209,6 +209,27 @@ void MediaDevicesManager::EnumerateDevices(
     ProcessRequests();
 }
 
+void MediaDevicesManager::SubscribeDeviceChangeNotifications(
+    MediaDeviceType type,
+    MediaDeviceChangeSubscriber* subscriber) {
+  DCHECK_CURRENTLY_ON(BrowserThread::IO);
+
+  auto it = std::find(device_change_subscribers_[type].begin(),
+                      device_change_subscribers_[type].end(), subscriber);
+  if (it == device_change_subscribers_[type].end())
+    device_change_subscribers_[type].push_back(subscriber);
+}
+
+void MediaDevicesManager::UnsubscribeDeviceChangeNotifications(
+    MediaDeviceType type,
+    MediaDeviceChangeSubscriber* subscriber) {
+  DCHECK_CURRENTLY_ON(BrowserThread::IO);
+  auto it = std::find(device_change_subscribers_[type].begin(),
+                      device_change_subscribers_[type].end(), subscriber);
+  if (it != device_change_subscribers_[type].end())
+    device_change_subscribers_[type].erase(it);
+}
+
 void MediaDevicesManager::SetCachePolicy(MediaDeviceType type,
                                          CachePolicy policy) {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
@@ -516,6 +537,10 @@ void MediaDevicesManager::NotifyDeviceChangeSubscribers(
                                         : MEDIA_DEVICE_AUDIO_CAPTURE;
   if (media_stream_manager_)
     media_stream_manager_->NotifyDeviceChangeSubscribers(permission_type);
+
+  for (const auto& subscriber : device_change_subscribers_[type]) {
+    subscriber->OnDevicesChanged(type, snapshot);
+  }
 }
 
 }  // namespace content

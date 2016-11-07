@@ -26,9 +26,13 @@
 #include "media/audio/mock_audio_manager.h"
 #include "media/base/media_switches.h"
 #include "media/capture/video/fake_video_capture_device_factory.h"
+#include "mojo/public/cpp/bindings/binding.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "url/origin.h"
+
+using testing::_;
+using testing::SaveArg;
 
 namespace content {
 
@@ -43,6 +47,21 @@ void PhysicalDevicesEnumerated(base::Closure quit_closure,
   *out = enumeration;
   quit_closure.Run();
 }
+
+class MockMediaDevicesListener : public ::mojom::MediaDevicesListener {
+ public:
+  MockMediaDevicesListener() : binding_(this) {}
+
+  MOCK_METHOD3(OnDevicesChanged,
+               void(MediaDeviceType, uint32_t, const MediaDeviceInfoArray&));
+
+  ::mojom::MediaDevicesListenerPtr CreateInterfacePtrAndBind() {
+    return binding_.CreateInterfacePtrAndBind();
+  }
+
+ private:
+  mojo::Binding<::mojom::MediaDevicesListener> binding_;
+};
 
 }  // namespace
 
@@ -161,13 +180,28 @@ class MediaDevicesDispatcherHostTest : public testing::Test {
   }
 
   // Returns true if all devices have labels, false otherwise.
-  bool DoesContainLabels(
-      const std::vector<std::vector<MediaDeviceInfo>>& enumeration) {
-    for (const auto& device_info_array : enumeration) {
-      for (const auto& device_info : device_info_array) {
-        if (device_info.label.empty())
-          return false;
-      }
+  bool DoesContainLabels(const MediaDeviceInfoArray& device_infos) {
+    for (const auto& device_info : device_infos) {
+      if (device_info.label.empty())
+        return false;
+    }
+    return true;
+  }
+
+  // Returns true if all devices have labels, false otherwise.
+  bool DoesContainLabels(const std::vector<MediaDeviceInfoArray>& enumeration) {
+    for (const auto& device_infos : enumeration) {
+      if (!DoesContainLabels(device_infos))
+        return false;
+    }
+    return true;
+  }
+
+  // Returns true if no devices have labels, false otherwise.
+  bool DoesNotContainLabels(const MediaDeviceInfoArray& device_infos) {
+    for (const auto& device_info : device_infos) {
+      if (!device_info.label.empty())
+        return false;
     }
     return true;
   }
@@ -175,13 +209,42 @@ class MediaDevicesDispatcherHostTest : public testing::Test {
   // Returns true if no devices have labels, false otherwise.
   bool DoesNotContainLabels(
       const std::vector<std::vector<MediaDeviceInfo>>& enumeration) {
-    for (const auto& device_info_array : enumeration) {
-      for (const auto& device_info : device_info_array) {
-        if (!device_info.label.empty())
-          return false;
-      }
+    for (const auto& device_infos : enumeration) {
+      if (!DoesNotContainLabels(device_infos))
+        return false;
     }
     return true;
+  }
+
+  void SubscribeAndWaitForResult(bool has_permission) {
+    MediaDevicesPermissionChecker permission_checker;
+    permission_checker.OverridePermissionsForTesting(has_permission);
+    host_->SetPermissionChecker(permission_checker);
+    uint32_t subscription_id = 0u;
+    url::Origin origin(GURL("http://localhost"));
+    for (size_t i = 0; i < NUM_MEDIA_DEVICE_TYPES; ++i) {
+      MediaDeviceType type = static_cast<MediaDeviceType>(i);
+      host_->SubscribeDeviceChangeNotifications(type, subscription_id, origin);
+      MockMediaDevicesListener device_change_listener;
+      host_->SetDeviceChangeListenerForTesting(
+          device_change_listener.CreateInterfacePtrAndBind());
+      MediaDeviceInfoArray changed_devices;
+      EXPECT_CALL(device_change_listener,
+                  OnDevicesChanged(type, subscription_id, testing::_))
+          .WillRepeatedly(SaveArg<2>(&changed_devices));
+
+      // Simulate device-change notification
+      MediaDeviceInfoArray updated_devices = {
+          {"fake_device_id", "fake_label", "fake_group"}};
+      host_->OnDevicesChanged(type, updated_devices);
+      base::RunLoop().RunUntilIdle();
+      host_->UnsubscribeDeviceChangeNotifications(type, subscription_id);
+
+      if (has_permission)
+        EXPECT_TRUE(DoesContainLabels(changed_devices));
+      else
+        EXPECT_TRUE(DoesNotContainLabels(changed_devices));
+    }
   }
 
   std::unique_ptr<MediaDevicesDispatcherHost> host_;
@@ -193,7 +256,7 @@ class MediaDevicesDispatcherHostTest : public testing::Test {
   MediaDeviceEnumeration physical_devices_;
   url::Origin origin_;
 
-  std::vector<std::vector<MediaDeviceInfo>> enumerated_devices_;
+  std::vector<MediaDeviceInfoArray> enumerated_devices_;
 };
 
 TEST_F(MediaDevicesDispatcherHostTest, EnumerateAudioInputDevices) {
@@ -234,6 +297,14 @@ TEST_F(MediaDevicesDispatcherHostTest, EnumerateAudioOutputDevicesNoAccess) {
 TEST_F(MediaDevicesDispatcherHostTest, EnumerateAllDevicesNoAccess) {
   EnumerateDevicesAndWaitForResult(true, true, true, false);
   EXPECT_TRUE(DoesNotContainLabels(enumerated_devices_));
+}
+
+TEST_F(MediaDevicesDispatcherHostTest, SubscribeDeviceChange) {
+  SubscribeAndWaitForResult(true);
+}
+
+TEST_F(MediaDevicesDispatcherHostTest, SubscribeDeviceChangeNoAccess) {
+  SubscribeAndWaitForResult(false);
 }
 
 };  // namespace content

@@ -75,6 +75,13 @@ class MockMediaDevicesDispatcherHost
     callback.Run(result);
   }
 
+  MOCK_METHOD3(SubscribeDeviceChangeNotifications,
+               void(MediaDeviceType type,
+                    uint32_t subscription_id,
+                    const url::Origin& security_origin));
+  MOCK_METHOD2(UnsubscribeDeviceChangeNotifications,
+               void(MediaDeviceType type, uint32_t subscription_id));
+
   ::mojom::MediaDevicesDispatcherHostPtr CreateInterfacePtrAndBind() {
     return binding_.CreateInterfacePtrAndBind();
   }

@@ -114,6 +114,12 @@ class MockVideoCaptureDeviceFactory
   }
 };
 
+class MockMediaDeviceChangeSubscriber : public MediaDeviceChangeSubscriber {
+ public:
+  MOCK_METHOD2(OnDevicesChanged,
+               void(MediaDeviceType, const MediaDeviceInfoArray&));
+};
+
 }  // namespace
 
 class MediaDevicesManagerTest : public ::testing::Test {
@@ -436,6 +442,125 @@ TEST_F(MediaDevicesManagerTest, EnumerateCacheAllWithDeviceChanges) {
     EXPECT_EQ(num_audio_output_devices,
               enumeration[MEDIA_DEVICE_TYPE_AUDIO_OUTPUT].size());
   }
+}
+
+TEST_F(MediaDevicesManagerTest, SubscribeDeviceChanges) {
+  EXPECT_CALL(*audio_manager_, MockGetAudioOutputDeviceNames(_)).Times(3);
+  EXPECT_CALL(*video_capture_device_factory_, MockGetDeviceDescriptors())
+      .Times(3);
+  EXPECT_CALL(*audio_manager_, MockGetAudioInputDeviceNames(_)).Times(3);
+
+  size_t num_audio_input_devices = 5;
+  size_t num_video_input_devices = 4;
+  size_t num_audio_output_devices = 3;
+  audio_manager_->SetNumAudioInputDevices(num_audio_input_devices);
+  video_capture_device_factory_->set_number_of_devices(num_video_input_devices);
+  audio_manager_->SetNumAudioOutputDevices(num_audio_output_devices);
+
+  // Run an enumeration to make sure |media_devices_manager_| has the new
+  // configuration.
+  EXPECT_CALL(*this, MockCallback(_));
+  MediaDevicesManager::BoolDeviceTypes devices_to_enumerate;
+  devices_to_enumerate[MEDIA_DEVICE_TYPE_AUDIO_INPUT] = true;
+  devices_to_enumerate[MEDIA_DEVICE_TYPE_VIDEO_INPUT] = true;
+  devices_to_enumerate[MEDIA_DEVICE_TYPE_AUDIO_OUTPUT] = true;
+  base::RunLoop run_loop;
+  media_devices_manager_->EnumerateDevices(
+      devices_to_enumerate,
+      base::Bind(&MediaDevicesManagerTest::EnumerateCallback,
+                 base::Unretained(this), &run_loop));
+  run_loop.Run();
+
+  // Add device-change event subscribers.
+  MockMediaDeviceChangeSubscriber subscriber_audio_input;
+  MockMediaDeviceChangeSubscriber subscriber_video_input;
+  MockMediaDeviceChangeSubscriber subscriber_audio_output;
+  MockMediaDeviceChangeSubscriber subscriber_all;
+
+  media_devices_manager_->SubscribeDeviceChangeNotifications(
+      MEDIA_DEVICE_TYPE_AUDIO_INPUT, &subscriber_audio_input);
+  media_devices_manager_->SubscribeDeviceChangeNotifications(
+      MEDIA_DEVICE_TYPE_VIDEO_INPUT, &subscriber_video_input);
+  media_devices_manager_->SubscribeDeviceChangeNotifications(
+      MEDIA_DEVICE_TYPE_AUDIO_OUTPUT, &subscriber_audio_output);
+  media_devices_manager_->SubscribeDeviceChangeNotifications(
+      MEDIA_DEVICE_TYPE_AUDIO_INPUT, &subscriber_all);
+  media_devices_manager_->SubscribeDeviceChangeNotifications(
+      MEDIA_DEVICE_TYPE_VIDEO_INPUT, &subscriber_all);
+  media_devices_manager_->SubscribeDeviceChangeNotifications(
+      MEDIA_DEVICE_TYPE_AUDIO_OUTPUT, &subscriber_all);
+
+  MediaDeviceInfoArray notification_audio_input;
+  MediaDeviceInfoArray notification_video_input;
+  MediaDeviceInfoArray notification_audio_output;
+  MediaDeviceInfoArray notification_all_audio_input;
+  MediaDeviceInfoArray notification_all_video_input;
+  MediaDeviceInfoArray notification_all_audio_output;
+  EXPECT_CALL(subscriber_audio_input,
+              OnDevicesChanged(MEDIA_DEVICE_TYPE_AUDIO_INPUT, _))
+      .Times(1)
+      .WillOnce(SaveArg<1>(&notification_audio_input));
+  EXPECT_CALL(subscriber_video_input,
+              OnDevicesChanged(MEDIA_DEVICE_TYPE_VIDEO_INPUT, _))
+      .Times(1)
+      .WillOnce(SaveArg<1>(&notification_video_input));
+  EXPECT_CALL(subscriber_audio_output,
+              OnDevicesChanged(MEDIA_DEVICE_TYPE_AUDIO_OUTPUT, _))
+      .Times(1)
+      .WillOnce(SaveArg<1>(&notification_audio_output));
+  EXPECT_CALL(subscriber_all,
+              OnDevicesChanged(MEDIA_DEVICE_TYPE_AUDIO_INPUT, _))
+      .Times(2)
+      .WillRepeatedly(SaveArg<1>(&notification_all_audio_input));
+  EXPECT_CALL(subscriber_all,
+              OnDevicesChanged(MEDIA_DEVICE_TYPE_VIDEO_INPUT, _))
+      .Times(2)
+      .WillRepeatedly(SaveArg<1>(&notification_all_video_input));
+  EXPECT_CALL(subscriber_all,
+              OnDevicesChanged(MEDIA_DEVICE_TYPE_AUDIO_OUTPUT, _))
+      .Times(2)
+      .WillRepeatedly(SaveArg<1>(&notification_all_audio_output));
+
+  // Simulate device changes.
+  num_audio_input_devices = 3;
+  num_video_input_devices = 2;
+  num_audio_output_devices = 4;
+  audio_manager_->SetNumAudioInputDevices(num_audio_input_devices);
+  video_capture_device_factory_->set_number_of_devices(num_video_input_devices);
+  audio_manager_->SetNumAudioOutputDevices(num_audio_output_devices);
+  media_devices_manager_->OnDevicesChanged(base::SystemMonitor::DEVTYPE_AUDIO);
+  media_devices_manager_->OnDevicesChanged(
+      base::SystemMonitor::DEVTYPE_VIDEO_CAPTURE);
+  base::RunLoop().RunUntilIdle();
+  EXPECT_EQ(num_audio_input_devices, notification_audio_input.size());
+  EXPECT_EQ(num_video_input_devices, notification_video_input.size());
+  EXPECT_EQ(num_audio_output_devices, notification_audio_output.size());
+  EXPECT_EQ(num_audio_input_devices, notification_all_audio_input.size());
+  EXPECT_EQ(num_video_input_devices, notification_all_video_input.size());
+  EXPECT_EQ(num_audio_output_devices, notification_all_audio_output.size());
+
+  media_devices_manager_->UnsubscribeDeviceChangeNotifications(
+      MEDIA_DEVICE_TYPE_AUDIO_INPUT, &subscriber_audio_input);
+  media_devices_manager_->UnsubscribeDeviceChangeNotifications(
+      MEDIA_DEVICE_TYPE_VIDEO_INPUT, &subscriber_video_input);
+  media_devices_manager_->UnsubscribeDeviceChangeNotifications(
+      MEDIA_DEVICE_TYPE_AUDIO_OUTPUT, &subscriber_audio_output);
+
+  // Simulate further device changes. Only the objects still subscribed to the
+  // device-change events will receive notifications.
+  num_audio_input_devices = 2;
+  num_video_input_devices = 1;
+  num_audio_output_devices = 3;
+  audio_manager_->SetNumAudioInputDevices(num_audio_input_devices);
+  video_capture_device_factory_->set_number_of_devices(num_video_input_devices);
+  audio_manager_->SetNumAudioOutputDevices(num_audio_output_devices);
+  media_devices_manager_->OnDevicesChanged(base::SystemMonitor::DEVTYPE_AUDIO);
+  media_devices_manager_->OnDevicesChanged(
+      base::SystemMonitor::DEVTYPE_VIDEO_CAPTURE);
+  base::RunLoop().RunUntilIdle();
+  EXPECT_EQ(num_audio_input_devices, notification_all_audio_input.size());
+  EXPECT_EQ(num_video_input_devices, notification_all_video_input.size());
+  EXPECT_EQ(num_audio_output_devices, notification_all_audio_output.size());
 }
 
 }  // namespace content

@@ -4,6 +4,8 @@
 
 #include "content/browser/renderer_host/media/media_devices_dispatcher_host.h"
 
+#include <stddef.h>
+
 #include <utility>
 #include <vector>
 
@@ -40,29 +42,49 @@ MediaDeviceInfo TranslateDeviceInfo(bool has_permission,
                                     device_info.group_id));
 }
 
+MediaDeviceInfoArray TranslateMediaDeviceInfoArray(
+    bool has_permission,
+    const std::string& device_id_salt,
+    const std::string& group_id_salt,
+    const url::Origin& security_origin,
+    const MediaDeviceInfoArray& input) {
+  MediaDeviceInfoArray result;
+  for (const auto& device_info : input) {
+    result.push_back(TranslateDeviceInfo(has_permission, device_id_salt,
+                                         group_id_salt, security_origin,
+                                         device_info));
+  }
+  return result;
+}
+
 }  // namespace
+
+struct MediaDevicesDispatcherHost::SubscriptionInfo {
+  uint32_t subscription_id;
+  url::Origin security_origin;
+};
 
 // static
 void MediaDevicesDispatcherHost::Create(
     int render_process_id,
-    int routing_id,
+    int render_frame_id,
     const std::string& device_id_salt,
     MediaStreamManager* media_stream_manager,
     ::mojom::MediaDevicesDispatcherHostRequest request) {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
-  mojo::MakeStrongBinding(
-      base::MakeUnique<MediaDevicesDispatcherHost>(
-          render_process_id, routing_id, device_id_salt, media_stream_manager),
-      std::move(request));
+  mojo::MakeStrongBinding(base::MakeUnique<MediaDevicesDispatcherHost>(
+                              render_process_id, render_frame_id,
+                              device_id_salt, media_stream_manager),
+                          std::move(request));
 }
 
 MediaDevicesDispatcherHost::MediaDevicesDispatcherHost(
     int render_process_id,
-    int routing_id,
+    int render_frame_id,
     const std::string& device_id_salt,
     MediaStreamManager* media_stream_manager)
     : render_process_id_(render_process_id),
-      routing_id_(routing_id),
+      render_frame_id_(render_frame_id),
       device_id_salt_(device_id_salt),
       group_id_salt_(ResourceContext::CreateRandomMediaDeviceIDSalt()),
       media_stream_manager_(media_stream_manager),
@@ -72,6 +94,13 @@ MediaDevicesDispatcherHost::MediaDevicesDispatcherHost(
 
 MediaDevicesDispatcherHost::~MediaDevicesDispatcherHost() {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
+  for (size_t i = 0; i < NUM_MEDIA_DEVICE_TYPES; ++i) {
+    if (!device_change_subscriptions_[i].empty()) {
+      media_stream_manager_->media_devices_manager()
+          ->UnsubscribeDeviceChangeNotifications(
+              static_cast<MediaDeviceType>(i), this);
+    }
+  }
 }
 
 void MediaDevicesDispatcherHost::EnumerateDevices(
@@ -101,16 +130,127 @@ void MediaDevicesDispatcherHost::EnumerateDevices(
   devices_to_enumerate[MEDIA_DEVICE_TYPE_AUDIO_OUTPUT] = request_audio_output;
 
   permission_checker_.CheckPermissions(
-      devices_to_enumerate, render_process_id_, routing_id_, security_origin,
+      devices_to_enumerate, render_process_id_, render_frame_id_,
+      security_origin,
       base::Bind(&MediaDevicesDispatcherHost::DoEnumerateDevices,
                  weak_factory_.GetWeakPtr(), devices_to_enumerate,
                  security_origin, client_callback));
+}
+
+void MediaDevicesDispatcherHost::SubscribeDeviceChangeNotifications(
+    MediaDeviceType type,
+    uint32_t subscription_id,
+    const url::Origin& security_origin) {
+  DCHECK_CURRENTLY_ON(BrowserThread::IO);
+  DCHECK(IsValidMediaDeviceType(type));
+  if (!MediaStreamManager::IsOriginAllowed(render_process_id_,
+                                           security_origin)) {
+    bad_message::ReceivedBadMessage(render_process_id_,
+                                    bad_message::MDDH_UNAUTHORIZED_ORIGIN);
+    return;
+  }
+
+  auto it = std::find_if(device_change_subscriptions_[type].begin(),
+                         device_change_subscriptions_[type].end(),
+                         [subscription_id](const SubscriptionInfo& info) {
+                           return info.subscription_id == subscription_id;
+                         });
+
+  if (it != device_change_subscriptions_[type].end()) {
+    bad_message::ReceivedBadMessage(
+        render_process_id_, bad_message::MDDH_INVALID_SUBSCRIPTION_REQUEST);
+    return;
+  }
+
+  if (device_change_subscriptions_[type].empty()) {
+    media_stream_manager_->media_devices_manager()
+        ->SubscribeDeviceChangeNotifications(type, this);
+  }
+
+  device_change_subscriptions_[type].push_back(
+      SubscriptionInfo{subscription_id, security_origin});
+}
+
+void MediaDevicesDispatcherHost::UnsubscribeDeviceChangeNotifications(
+    MediaDeviceType type,
+    uint32_t subscription_id) {
+  DCHECK_CURRENTLY_ON(BrowserThread::IO);
+  DCHECK(IsValidMediaDeviceType(type));
+  auto it = std::find_if(device_change_subscriptions_[type].begin(),
+                         device_change_subscriptions_[type].end(),
+                         [subscription_id](const SubscriptionInfo& info) {
+                           return info.subscription_id == subscription_id;
+                         });
+
+  if (it == device_change_subscriptions_[type].end()) {
+    bad_message::ReceivedBadMessage(
+        render_process_id_, bad_message::MDDH_INVALID_UNSUBSCRIPTION_REQUEST);
+    return;
+  }
+
+  device_change_subscriptions_[type].erase(it);
+  if (device_change_subscriptions_[type].empty()) {
+    media_stream_manager_->media_devices_manager()
+        ->UnsubscribeDeviceChangeNotifications(type, this);
+  }
+}
+
+void MediaDevicesDispatcherHost::OnDevicesChanged(
+    MediaDeviceType type,
+    const MediaDeviceInfoArray& device_infos) {
+  DCHECK_CURRENTLY_ON(BrowserThread::IO);
+  DCHECK(IsValidMediaDeviceType(type));
+  BrowserThread::PostTask(
+      BrowserThread::UI, FROM_HERE,
+      base::Bind(&MediaDevicesDispatcherHost::NotifyDeviceChangeOnUIThread,
+                 weak_factory_.GetWeakPtr(), device_change_subscriptions_[type],
+                 type, device_infos));
+}
+
+void MediaDevicesDispatcherHost::NotifyDeviceChangeOnUIThread(
+    const std::vector<SubscriptionInfo>& subscriptions,
+    MediaDeviceType type,
+    const MediaDeviceInfoArray& device_infos) {
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
+  DCHECK(IsValidMediaDeviceType(type));
+
+  ::mojom::MediaDevicesListenerPtr media_devices_listener;
+  if (device_change_listener_) {
+    media_devices_listener = std::move(device_change_listener_);
+  } else {
+    RenderFrameHost* render_frame_host =
+        RenderFrameHost::FromID(render_process_id_, render_frame_id_);
+    if (!render_frame_host)
+      return;
+
+    render_frame_host->GetRemoteInterfaces()->GetInterface(
+        mojo::GetProxy(&media_devices_listener));
+    if (!media_devices_listener)
+      return;
+  }
+
+  for (const auto& subscription : subscriptions) {
+    bool has_permission = permission_checker_.CheckPermissionOnUIThread(
+        type, render_process_id_, render_frame_id_,
+        subscription.security_origin);
+    media_devices_listener->OnDevicesChanged(
+        type, subscription.subscription_id,
+        TranslateMediaDeviceInfoArray(
+            has_permission, device_id_salt_, group_id_salt_,
+            subscription.security_origin, device_infos));
+  }
 }
 
 void MediaDevicesDispatcherHost::SetPermissionChecker(
     const MediaDevicesPermissionChecker& permission_checker) {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
   permission_checker_ = permission_checker;
+}
+
+void MediaDevicesDispatcherHost::SetDeviceChangeListenerForTesting(
+    ::mojom::MediaDevicesListenerPtr listener) {
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
+  device_change_listener_ = std::move(listener);
 }
 
 void MediaDevicesDispatcherHost::DoEnumerateDevices(
