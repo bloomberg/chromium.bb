@@ -1460,12 +1460,12 @@ crbug.com/660580 [ Precise ] virtual/scalefactor200withzoom/fast/hidpi/static/dr
 # crbug.com/660580 [ Precise ] virtual/threaded/printing/fixed-positioned-headers-and-footers.html [ Skip ]
 
 # Tests added from W3C auto import bot
-crbug.com/626703 imported/wpt/html/webappapis/idle-callbacks/callback-timeout.html [ Timeout Pass ]
-crbug.com/626703 imported/wpt/html/webappapis/idle-callbacks/callback-multiple-calls.html [ Timeout Pass ]
-crbug.com/626703 imported/wpt/html/webappapis/idle-callbacks/callback-exception.html [ Timeout Pass ]
-crbug.com/626703 imported/wpt/html/webappapis/idle-callbacks/callback-invoked.html [ Timeout Pass ]
-crbug.com/626703 imported/wpt/html/webappapis/idle-callbacks/callback-iframe.html [ Timeout Pass ]
-crbug.com/626703 imported/wpt/html/browsers/the-window-object/window-open-noopener.html [ Timeout Pass ]
+crbug.com/626703 imported/wpt/html/webappapis/idle-callbacks/callback-timeout.html [ Timeout Pass Failure ]
+crbug.com/626703 imported/wpt/html/webappapis/idle-callbacks/callback-multiple-calls.html [ Timeout Pass Failure ]
+crbug.com/626703 imported/wpt/html/webappapis/idle-callbacks/callback-exception.html [ Timeout Pass Failure ]
+crbug.com/626703 imported/wpt/html/webappapis/idle-callbacks/callback-invoked.html [ Timeout Pass Failure ]
+crbug.com/626703 imported/wpt/html/webappapis/idle-callbacks/callback-iframe.html [ Timeout Pass Failure ]
+crbug.com/626703 imported/wpt/html/browsers/the-window-object/window-open-noopener.html [ Timeout Pass Failure ]
 crbug.com/626703 imported/csswg-test/css-display-3/display-contents-before-after-001.html [ Failure ]
 crbug.com/626703 imported/csswg-test/css-display-3/display-contents-before-after-002.html [ Failure ]
 crbug.com/626703 imported/csswg-test/css-display-3/display-contents-block-001.html [ Failure ]
