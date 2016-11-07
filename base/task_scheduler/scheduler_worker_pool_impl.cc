@@ -41,10 +41,6 @@ constexpr char kNumTasksBetweenWaitsHistogramPrefix[] =
     "TaskScheduler.NumTasksBetweenWaits.";
 constexpr char kTaskLatencyHistogramPrefix[] = "TaskScheduler.TaskLatency.";
 
-// SchedulerWorker that owns the current thread, if any.
-LazyInstance<ThreadLocalPointer<const SchedulerWorker>>::Leaky
-    tls_current_worker = LAZY_INSTANCE_INITIALIZER;
-
 // SchedulerWorkerPool that owns the current thread, if any.
 LazyInstance<ThreadLocalPointer<const SchedulerWorkerPool>>::Leaky
     tls_current_worker_pool = LAZY_INSTANCE_INITIALIZER;
@@ -201,7 +197,10 @@ class SchedulerWorkerPoolImpl::SchedulerSingleThreadTaskRunner :
   }
 
   bool RunsTasksOnCurrentThread() const override {
-    return tls_current_worker.Get().Get() == worker_;
+    // Even though this is a SingleThreadTaskRunner, test the actual sequence
+    // instead of the assigned worker so that another task randomly assigned
+    // to the same worker doesn't return true by happenstance.
+    return sequence_->token() == SequenceToken::GetForCurrentThread();
   }
 
  private:
@@ -505,9 +504,7 @@ void SchedulerWorkerPoolImpl::SchedulerWorkerDelegateImpl::OnMainEntry(
   PlatformThread::SetName(
       StringPrintf("TaskScheduler%sWorker%d", outer_->name_.c_str(), index_));
 
-  DCHECK(!tls_current_worker.Get().Get());
   DCHECK(!tls_current_worker_pool.Get().Get());
-  tls_current_worker.Get().Set(worker);
   tls_current_worker_pool.Get().Set(outer_);
 
   // New threads haven't run GetWork() yet, so reset the |idle_start_time_|.

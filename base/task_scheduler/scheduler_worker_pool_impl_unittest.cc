@@ -341,7 +341,10 @@ TEST_P(TaskSchedulerWorkerPoolImplTest, PostDelayedTask) {
 }
 
 // Verify that the RunsTasksOnCurrentThread() method of a SEQUENCED TaskRunner
-// returns false when called from a task that isn't part of the sequence.
+// returns false when called from a task that isn't part of the sequence. Note:
+// Tests that use TestTaskFactory already verify that RunsTasksOnCurrentThread()
+// returns true when appropriate so this method complements it to get full
+// coverage of that method.
 TEST_P(TaskSchedulerWorkerPoolImplTest, SequencedRunsTasksOnCurrentThread) {
   scoped_refptr<TaskRunner> task_runner(
       CreateTaskRunnerWithExecutionMode(worker_pool_.get(), GetParam()));
@@ -356,8 +359,6 @@ TEST_P(TaskSchedulerWorkerPoolImplTest, SequencedRunsTasksOnCurrentThread) {
           [](scoped_refptr<TaskRunner> sequenced_task_runner,
              WaitableEvent* task_ran) {
             EXPECT_FALSE(sequenced_task_runner->RunsTasksOnCurrentThread());
-            // Tests that use TestTaskFactory already verify that
-            // RunsTasksOnCurrentThread() returns true when appropriate.
             task_ran->Signal();
           },
           sequenced_task_runner, Unretained(&task_ran)));
@@ -373,6 +374,65 @@ INSTANTIATE_TEST_CASE_P(Sequenced,
 INSTANTIATE_TEST_CASE_P(
     SingleThreaded,
     TaskSchedulerWorkerPoolImplTest,
+    ::testing::Values(test::ExecutionMode::SINGLE_THREADED));
+
+namespace {
+
+// Same as TaskSchedulerWorkerPoolImplTest but its SchedulerWorkerPoolImpl
+// instance uses |max_threads == 1|.
+class TaskSchedulerWorkerPoolImplSingleWorkerTest
+    : public TaskSchedulerWorkerPoolImplTest {
+ public:
+  TaskSchedulerWorkerPoolImplSingleWorkerTest() = default;
+
+ protected:
+  void SetUp() override {
+    InitializeWorkerPool(TimeDelta::Max(), 1);
+  }
+
+ private:
+  DISALLOW_COPY_AND_ASSIGN(TaskSchedulerWorkerPoolImplSingleWorkerTest);
+};
+
+}  // namespace
+
+// Verify that the RunsTasksOnCurrentThread() method of a
+// SchedulerSingleThreadTaskRunner returns false when called from a task that
+// isn't part of its sequence even though it's running on that
+// SchedulerSingleThreadTaskRunner's assigned worker. Note: Tests that use
+// TestTaskFactory already verify that RunsTasksOnCurrentThread() returns true
+// when appropriate so this method complements it to get full coverage of that
+// method.
+TEST_P(TaskSchedulerWorkerPoolImplSingleWorkerTest,
+       SingleThreadRunsTasksOnCurrentThread) {
+  scoped_refptr<TaskRunner> task_runner(
+      CreateTaskRunnerWithExecutionMode(worker_pool_.get(), GetParam()));
+  scoped_refptr<SingleThreadTaskRunner> single_thread_task_runner(
+      worker_pool_->CreateSingleThreadTaskRunnerWithTraits(TaskTraits()));
+
+  WaitableEvent task_ran(WaitableEvent::ResetPolicy::MANUAL,
+                         WaitableEvent::InitialState::NOT_SIGNALED);
+  task_runner->PostTask(
+      FROM_HERE,
+      Bind(
+          [](scoped_refptr<TaskRunner> single_thread_task_runner,
+             WaitableEvent* task_ran) {
+            EXPECT_FALSE(single_thread_task_runner->RunsTasksOnCurrentThread());
+            task_ran->Signal();
+          },
+          single_thread_task_runner, Unretained(&task_ran)));
+  task_ran.Wait();
+}
+
+INSTANTIATE_TEST_CASE_P(Parallel,
+                        TaskSchedulerWorkerPoolImplSingleWorkerTest,
+                        ::testing::Values(test::ExecutionMode::PARALLEL));
+INSTANTIATE_TEST_CASE_P(Sequenced,
+                        TaskSchedulerWorkerPoolImplSingleWorkerTest,
+                        ::testing::Values(test::ExecutionMode::SEQUENCED));
+INSTANTIATE_TEST_CASE_P(
+    SingleThreaded,
+    TaskSchedulerWorkerPoolImplSingleWorkerTest,
     ::testing::Values(test::ExecutionMode::SINGLE_THREADED));
 
 namespace {
