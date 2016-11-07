@@ -5,6 +5,7 @@
 #ifndef BluetoothAttributeInstanceMap_h
 #define BluetoothAttributeInstanceMap_h
 
+#include "modules/bluetooth/BluetoothRemoteGATTCharacteristic.h"
 #include "modules/bluetooth/BluetoothRemoteGATTService.h"
 #include "platform/heap/Handle.h"
 #include "platform/heap/Heap.h"
@@ -13,7 +14,10 @@
 namespace blink {
 
 class BluetoothDevice;
+class ExecutionContext;
 class ScriptPromiseResolver;
+
+struct WebBluetoothRemoteGATTCharacteristicInit;
 struct WebBluetoothRemoteGATTService;
 
 // Map that holds all GATT attributes, i.e. BluetoothRemoteGATTService,
@@ -36,6 +40,16 @@ class BluetoothAttributeInstanceMap final
   // is in the map.
   bool containsService(const String& serviceInstanceId);
 
+  // Constructs a new BluetoothRemoteGATTCharacteristic object if there was no
+  // characteristic with the same instance id and adds it to the map.
+  // Otherwise returns the BluetoothRemoteGATTCharacteristic object already in
+  // the map.
+  BluetoothRemoteGATTCharacteristic*
+  getOrCreateBluetoothRemoteGATTCharacteristic(
+      ExecutionContext*,
+      std::unique_ptr<WebBluetoothRemoteGATTCharacteristicInit>,
+      BluetoothRemoteGATTService*);
+
   // Removes all Attributes from the map.
   // TODO(crbug.com/654950): Remove characteristics and descriptors when
   // implemented.
@@ -48,6 +62,9 @@ class BluetoothAttributeInstanceMap final
   Member<BluetoothDevice> m_device;
   // Map of service instance ids to objects.
   HeapHashMap<String, Member<BluetoothRemoteGATTService>> m_serviceIdToObject;
+  // Map of characteristic instance ids to objects.
+  HeapHashMap<String, Member<BluetoothRemoteGATTCharacteristic>>
+      m_characteristicIdToObject;
 };
 
 }  // namespace blink

@@ -6,6 +6,7 @@
 
 #include "modules/bluetooth/BluetoothDevice.h"
 #include "modules/bluetooth/BluetoothRemoteGATTService.h"
+#include "public/platform/modules/bluetooth/WebBluetoothRemoteGATTCharacteristicInit.h"
 #include "public/platform/modules/bluetooth/WebBluetoothRemoteGATTService.h"
 #include <memory>
 #include <utility>
@@ -38,6 +39,25 @@ bool BluetoothAttributeInstanceMap::containsService(
   return m_serviceIdToObject.contains(serviceInstanceId);
 }
 
+BluetoothRemoteGATTCharacteristic*
+BluetoothAttributeInstanceMap::getOrCreateBluetoothRemoteGATTCharacteristic(
+    ExecutionContext* context,
+    std::unique_ptr<WebBluetoothRemoteGATTCharacteristicInit> webCharacteristic,
+    BluetoothRemoteGATTService* service) {
+  String characteristicInstanceId = webCharacteristic->characteristicInstanceID;
+
+  BluetoothRemoteGATTCharacteristic* characteristic =
+      m_characteristicIdToObject.get(characteristicInstanceId);
+
+  if (!characteristic) {
+    characteristic = BluetoothRemoteGATTCharacteristic::create(
+        context, std::move(webCharacteristic), service);
+    m_characteristicIdToObject.add(characteristicInstanceId, characteristic);
+  }
+
+  return characteristic;
+}
+
 void BluetoothAttributeInstanceMap::Clear() {
   m_serviceIdToObject.clear();
 }
@@ -45,6 +65,7 @@ void BluetoothAttributeInstanceMap::Clear() {
 DEFINE_TRACE(BluetoothAttributeInstanceMap) {
   visitor->trace(m_device);
   visitor->trace(m_serviceIdToObject);
+  visitor->trace(m_characteristicIdToObject);
 }
 
 }  // namespace blink

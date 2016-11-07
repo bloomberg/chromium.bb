@@ -76,8 +76,10 @@ class GetCharacteristicsCallback
 
     if (m_quantity == mojom::blink::WebBluetoothGATTQueryQuantity::SINGLE) {
       DCHECK_EQ(1u, webCharacteristics.size());
-      m_resolver->resolve(BluetoothRemoteGATTCharacteristic::take(
-          m_resolver, wrapUnique(webCharacteristics[0]), m_service));
+      m_resolver->resolve(
+          m_service->device()->getOrCreateBluetoothRemoteGATTCharacteristic(
+              m_resolver->getExecutionContext(),
+              wrapUnique(webCharacteristics[0]), m_service));
       return;
     }
 
@@ -85,8 +87,10 @@ class GetCharacteristicsCallback
     characteristics.reserveInitialCapacity(webCharacteristics.size());
     for (WebBluetoothRemoteGATTCharacteristicInit* webCharacteristic :
          webCharacteristics) {
-      characteristics.append(BluetoothRemoteGATTCharacteristic::take(
-          m_resolver, wrapUnique(webCharacteristic), m_service));
+      characteristics.append(
+          m_service->device()->getOrCreateBluetoothRemoteGATTCharacteristic(
+              m_resolver->getExecutionContext(), wrapUnique(webCharacteristic),
+              m_service));
     }
     m_resolver->resolve(characteristics);
   }

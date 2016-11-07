@@ -18,11 +18,13 @@
 namespace blink {
 
 class BluetoothAttributeInstanceMap;
+class BluetoothRemoteGATTCharacteristic;
 class BluetoothRemoteGATTServer;
 class BluetoothRemoteGATTService;
 class ScriptPromise;
 class ScriptPromiseResolver;
 
+struct WebBluetoothRemoteGATTCharacteristicInit;
 struct WebBluetoothRemoteGATTService;
 
 // BluetoothDevice represents a physical bluetooth device in the DOM. See IDL.
@@ -49,6 +51,12 @@ class BluetoothDevice final : public EventTargetWithInlineData,
   BluetoothRemoteGATTService* getOrCreateBluetoothRemoteGATTService(
       std::unique_ptr<WebBluetoothRemoteGATTService>);
   bool isValidService(const String& serviceInstanceId);
+
+  BluetoothRemoteGATTCharacteristic*
+  getOrCreateBluetoothRemoteGATTCharacteristic(
+      ExecutionContext*,
+      std::unique_ptr<WebBluetoothRemoteGATTCharacteristicInit>,
+      BluetoothRemoteGATTService*);
 
   // We should disconnect from the device in all of the following cases:
   // 1. When the object gets GarbageCollected e.g. it went out of scope.

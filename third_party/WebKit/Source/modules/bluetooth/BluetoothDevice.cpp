@@ -14,6 +14,7 @@
 #include "modules/bluetooth/BluetoothRemoteGATTServer.h"
 #include "modules/bluetooth/BluetoothSupplement.h"
 #include "public/platform/modules/bluetooth/WebBluetooth.h"
+#include "public/platform/modules/bluetooth/WebBluetoothRemoteGATTCharacteristicInit.h"
 #include <memory>
 #include <utility>
 
@@ -47,6 +48,15 @@ BluetoothDevice::getOrCreateBluetoothRemoteGATTService(
 
 bool BluetoothDevice::isValidService(const String& serviceInstanceId) {
   return m_attributeInstanceMap->containsService(serviceInstanceId);
+}
+
+BluetoothRemoteGATTCharacteristic*
+BluetoothDevice::getOrCreateBluetoothRemoteGATTCharacteristic(
+    ExecutionContext* context,
+    std::unique_ptr<WebBluetoothRemoteGATTCharacteristicInit> webCharacteristic,
+    BluetoothRemoteGATTService* service) {
+  return m_attributeInstanceMap->getOrCreateBluetoothRemoteGATTCharacteristic(
+      context, std::move(webCharacteristic), service);
 }
 
 void BluetoothDevice::dispose() {

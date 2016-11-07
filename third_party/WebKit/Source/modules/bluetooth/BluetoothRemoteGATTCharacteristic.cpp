@@ -4,7 +4,6 @@
 
 #include "modules/bluetooth/BluetoothRemoteGATTCharacteristic.h"
 
-#include "bindings/core/v8/CallbackPromiseAdapter.h"
 #include "bindings/core/v8/ScriptPromise.h"
 #include "bindings/core/v8/ScriptPromiseResolver.h"
 #include "core/dom/DOMDataView.h"
@@ -52,17 +51,15 @@ BluetoothRemoteGATTCharacteristic::BluetoothRemoteGATTCharacteristic(
   ThreadState::current()->registerPreFinalizer(this);
 }
 
-BluetoothRemoteGATTCharacteristic* BluetoothRemoteGATTCharacteristic::take(
-    ScriptPromiseResolver* resolver,
+BluetoothRemoteGATTCharacteristic* BluetoothRemoteGATTCharacteristic::create(
+    ExecutionContext* context,
     std::unique_ptr<WebBluetoothRemoteGATTCharacteristicInit> webCharacteristic,
     BluetoothRemoteGATTService* service) {
-  if (!webCharacteristic) {
-    return nullptr;
-  }
+  DCHECK(webCharacteristic);
+
   BluetoothRemoteGATTCharacteristic* characteristic =
-      new BluetoothRemoteGATTCharacteristic(resolver->getExecutionContext(),
-                                            std::move(webCharacteristic),
-                                            service);
+      new BluetoothRemoteGATTCharacteristic(
+          context, std::move(webCharacteristic), service);
   // See note in ActiveDOMObject about suspendIfNeeded.
   characteristic->suspendIfNeeded();
   return characteristic;
