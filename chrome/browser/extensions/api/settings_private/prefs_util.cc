@@ -180,44 +180,6 @@ const PrefsUtil::TypedPrefMap& PrefsUtil::GetWhitelistedKeys() {
   (*s_whitelist)[browsing_data::prefs::kDeleteTimePeriod] =
       settings_private::PrefType::PREF_TYPE_NUMBER;
 
-  // Content settings. TODO(finnur/dschuyler): Deprecate?
-  (*s_whitelist)["profile.default_content_setting_values.cookies"] =
-      settings_private::PrefType::PREF_TYPE_NUMBER;
-  (*s_whitelist)["profile.default_content_setting_values.fullscreen"] =
-      settings_private::PrefType::PREF_TYPE_NUMBER;
-  (*s_whitelist)["profile.default_content_setting_values.geolocation"] =
-      settings_private::PrefType::PREF_TYPE_NUMBER;
-  (*s_whitelist)["profile.default_content_setting_values.images"] =
-      settings_private::PrefType::PREF_TYPE_NUMBER;
-  (*s_whitelist)["profile.default_content_setting_values.javascript"] =
-      settings_private::PrefType::PREF_TYPE_NUMBER;
-  (*s_whitelist)["profile.default_content_setting_values.media_stream_camera"] =
-      settings_private::PrefType::PREF_TYPE_NUMBER;
-  (*s_whitelist)["profile.default_content_setting_values.media_stream_mic"] =
-      settings_private::PrefType::PREF_TYPE_NUMBER;
-  (*s_whitelist)["profile.default_content_setting_values.notifications"] =
-      settings_private::PrefType::PREF_TYPE_NUMBER;
-  (*s_whitelist)["profile.default_content_setting_values.popups"] =
-      settings_private::PrefType::PREF_TYPE_NUMBER;
-  (*s_whitelist)["profile.content_settings.exceptions.cookies"] =
-      settings_private::PrefType::PREF_TYPE_DICTIONARY;
-  (*s_whitelist)["profile.content_settings.exceptions.fullscreen"] =
-      settings_private::PrefType::PREF_TYPE_DICTIONARY;
-  (*s_whitelist)["profile.content_settings.exceptions.geolocation"] =
-      settings_private::PrefType::PREF_TYPE_DICTIONARY;
-  (*s_whitelist)["profile.content_settings.exceptions.images"] =
-      settings_private::PrefType::PREF_TYPE_DICTIONARY;
-  (*s_whitelist)["profile.content_settings.exceptions.javascript"] =
-      settings_private::PrefType::PREF_TYPE_DICTIONARY;
-  (*s_whitelist)["profile.content_settings.exceptions.media_stream_camera"] =
-      settings_private::PrefType::PREF_TYPE_DICTIONARY;
-  (*s_whitelist)["profile.content_settings.exceptions.media_stream_mic"] =
-      settings_private::PrefType::PREF_TYPE_DICTIONARY;
-  (*s_whitelist)["profile.content_settings.exceptions.notifications"] =
-      settings_private::PrefType::PREF_TYPE_DICTIONARY;
-  (*s_whitelist)["profile.content_settings.exceptions.popups"] =
-      settings_private::PrefType::PREF_TYPE_DICTIONARY;
-
 #if defined(OS_CHROMEOS)
   (*s_whitelist)[chromeos::kAccountsPrefAllowGuest] =
       settings_private::PrefType::PREF_TYPE_BOOLEAN;
