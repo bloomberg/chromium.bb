@@ -300,9 +300,9 @@
     "args": ["--enable-features=WebAssembly"]
   },
   {
-    "prefix": "mojo-service-worker",
+    "prefix": "disable-mojo-service-worker",
     "base": "http/tests/serviceworker",
-    "args": ["--mojo-service-worker"]
+    "args": ["--disable-mojo-service-worker"]
   },
   {
     "prefix": "service-worker-navigation-preload",

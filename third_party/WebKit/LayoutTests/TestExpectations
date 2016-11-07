@@ -361,7 +361,7 @@ crbug.com/635619 virtual/layout_ng/fast/block/float/width-update-after-clear.htm
 # Requires ServiceWorkerNavigationPreload feature enabled. Run under
 # virtual/service-worker-navigation-preload only.
 crbug.com/649558 http/tests/serviceworker/navigation-preload/ [ Skip ]
-crbug.com/649558 virtual/mojo-service-worker/http/tests/serviceworker/navigation-preload/ [ Skip ]
+crbug.com/649558 virtual/disable-mojo-service-worker/http/tests/serviceworker/navigation-preload/ [ Skip ]
 
 # Run these tests with under virtual/scalefactor... only.
 crbug.com/567837 fast/hidpi/static [ Skip ]
@@ -956,7 +956,7 @@ crbug.com/480769 http/tests/inspector/service-workers/service-workers-redundant.
 crbug.com/569901 [ Debug ] http/tests/serviceworker/navigation-redirect.html [ Pass Failure ]
 
 crbug.com/640947 [ Win ] http/tests/serviceworker/foreign-fetch-cors.html [ Pass Failure ]
-crbug.com/640947 [ Win ] virtual/mojo-service-worker/http/tests/serviceworker/foreign-fetch-cors.html [ Pass Failure ]
+crbug.com/640947 [ Win ] virtual/disable-mojo-service-worker/http/tests/serviceworker/foreign-fetch-cors.html [ Pass Failure ]
 
 crbug.com/599670 [ Win Linux ] http/tests/inspector/resource-parameters-ipv6.html [ Failure Pass ]
 
