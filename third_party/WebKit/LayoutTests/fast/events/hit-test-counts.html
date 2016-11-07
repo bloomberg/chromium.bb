@@ -22,7 +22,7 @@ html {
 </style>
 <div id=testArea>
   <div id=target></div>
-  <iframe id=frame srcdoc='<iframe width=75 height=75></iframe>'></iframe>
+  <iframe id=frame srcdoc='<body style="margin: 5px"><iframe width=75 height=75></iframe></body>'></iframe>
 </div>
 <script src="../../resources/js-test.js"></script>
 <script>
@@ -118,6 +118,7 @@ function sendEvents(targetX, targetY, documents, multiTapNotification)
         eventSender.releaseTouchPoint(0);
         eventSender.touchEnd();
     });
+
     logCounts('GestureTapDown', documents, multiTapNotification, function() {
         eventSender.gestureTapDown(targetX, targetY, 30, 30);
     });
@@ -146,6 +147,16 @@ function sendEvents(targetX, targetY, documents, multiTapNotification)
 
     logCounts('GestureScrollEnd', documents, multiTapNotification, function() {
         eventSender.gestureScrollEnd(0, 5);
+    });
+
+    logCounts('DoubleFingerTouch', documents, multiTapNotification, function() {
+        eventSender.addTouchPoint(targetX+1, targetY+1);
+        eventSender.touchStart();
+        eventSender.addTouchPoint(targetX+4, targetY+4);
+        eventSender.touchStart();
+        eventSender.releaseTouchPoint(0);
+        eventSender.releaseTouchPoint(1);
+        eventSender.touchEnd();
     });
 }
 
