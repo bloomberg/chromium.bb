@@ -11,9 +11,8 @@
 #include "testing/gtest/include/gtest/gtest.h"
 #include "ui/views/border.h"
 #include "ui/views/controls/scrollbar/base_scroll_bar_thumb.h"
-#include "ui/views/controls/scrollbar/native_scroll_bar.h"
-#include "ui/views/controls/scrollbar/native_scroll_bar_views.h"
 #include "ui/views/controls/scrollbar/overlay_scroll_bar.h"
+#include "ui/views/controls/scrollbar/scroll_bar_views.h"
 #include "ui/views/test/test_views.h"
 #include "ui/views/test/widget_test.h"
 
@@ -34,10 +33,6 @@ class ScrollViewTestApi {
   BaseScrollBar* GetBaseScrollBar(ScrollBarOrientation orientation) {
     ScrollBar* scroll_bar = orientation == VERTICAL ? scroll_view_->vert_sb_
                                                     : scroll_view_->horiz_sb_;
-    if (scroll_bar->GetClassName() == NativeScrollBar::kViewClassName) {
-      return static_cast<NativeScrollBarViews*>(
-          static_cast<NativeScrollBar*>(scroll_bar)->native_wrapper_);
-    }
     return static_cast<BaseScrollBar*>(scroll_bar);
   }
 

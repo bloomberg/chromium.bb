@@ -3,9 +3,8 @@
 // found in the LICENSE file.
 
 #include "build/build_config.h"
-#include "ui/views/controls/scrollbar/native_scroll_bar.h"
-#include "ui/views/controls/scrollbar/native_scroll_bar_views.h"
 #include "ui/views/controls/scrollbar/scroll_bar.h"
+#include "ui/views/controls/scrollbar/scroll_bar_views.h"
 #include "ui/views/test/views_test_base.h"
 #include "ui/views/widget/widget.h"
 
@@ -46,18 +45,13 @@ class TestScrollBarController : public views::ScrollBarController {
 
 namespace views {
 
-class NativeScrollBarTest : public ViewsTestBase {
+class ScrollBarViewsTest : public ViewsTestBase {
  public:
-  NativeScrollBarTest() : widget_(NULL), scrollbar_(NULL) {}
+  ScrollBarViewsTest() : widget_(nullptr), scrollbar_(nullptr) {}
 
   void SetUp() override {
     ViewsTestBase::SetUp();
     controller_.reset(new TestScrollBarController());
-
-    ASSERT_FALSE(scrollbar_);
-    native_scrollbar_ = new NativeScrollBar(true);
-    native_scrollbar_->SetBounds(0, 0, 100, 100);
-    native_scrollbar_->set_controller(controller_.get());
 
     widget_ = new Widget;
     Widget::InitParams params = CreateParams(Widget::InitParams::TYPE_POPUP);
@@ -65,12 +59,12 @@ class NativeScrollBarTest : public ViewsTestBase {
     widget_->Init(params);
     View* container = new View();
     widget_->SetContentsView(container);
-    container->AddChildView(native_scrollbar_);
 
-    scrollbar_ =
-        static_cast<NativeScrollBarViews*>(native_scrollbar_->native_wrapper_);
+    scrollbar_ = new ScrollBarViews(true);
     scrollbar_->SetBounds(0, 0, 100, 100);
     scrollbar_->Update(100, 1000, 0);
+    scrollbar_->set_controller(controller_.get());
+    container->AddChildView(scrollbar_);
 
     track_size_ = scrollbar_->GetTrackBounds().width();
   }
@@ -82,9 +76,6 @@ class NativeScrollBarTest : public ViewsTestBase {
 
  protected:
   Widget* widget_;
-
-  // This is the native scrollbar the Views one wraps around.
-  NativeScrollBar* native_scrollbar_;
 
   // This is the Views scrollbar.
   BaseScrollBar* scrollbar_;
@@ -106,7 +97,7 @@ class NativeScrollBarTest : public ViewsTestBase {
 #define MAYBE_ScrollBarFitsToBottom ScrollBarFitsToBottom
 #endif
 
-TEST_F(NativeScrollBarTest, MAYBE_Scrolling) {
+TEST_F(ScrollBarViewsTest, MAYBE_Scrolling) {
   EXPECT_EQ(0, scrollbar_->GetPosition());
   EXPECT_EQ(900, scrollbar_->GetMaxPosition());
   EXPECT_EQ(0, scrollbar_->GetMinPosition());
@@ -114,7 +105,7 @@ TEST_F(NativeScrollBarTest, MAYBE_Scrolling) {
   // Scroll to middle.
   scrollbar_->ScrollToThumbPosition(track_size_ / 2, true);
   EXPECT_EQ(450, controller_->last_position);
-  EXPECT_EQ(native_scrollbar_, controller_->last_source);
+  EXPECT_EQ(scrollbar_, controller_->last_source);
 
   // Scroll to the end.
   scrollbar_->ScrollToThumbPosition(track_size_, true);
@@ -144,7 +135,7 @@ TEST_F(NativeScrollBarTest, MAYBE_Scrolling) {
   EXPECT_EQ(0, controller_->last_position);
 }
 
-TEST_F(NativeScrollBarTest, MAYBE_ScrollBarFitsToBottom) {
+TEST_F(ScrollBarViewsTest, MAYBE_ScrollBarFitsToBottom) {
   scrollbar_->Update(100, 1999, 0);
   EXPECT_EQ(0, scrollbar_->GetPosition());
   EXPECT_EQ(1899, scrollbar_->GetMaxPosition());
@@ -164,7 +155,7 @@ TEST_F(NativeScrollBarTest, MAYBE_ScrollBarFitsToBottom) {
       scrollbar_->GetPosition());
 }
 
-TEST_F(NativeScrollBarTest, ScrollToEndAfterShrinkAndExpand) {
+TEST_F(ScrollBarViewsTest, ScrollToEndAfterShrinkAndExpand) {
   // Scroll to the end of the content.
   scrollbar_->Update(100, 1001, 0);
   EXPECT_TRUE(scrollbar_->ScrollByContentsOffset(-1));
@@ -175,7 +166,7 @@ TEST_F(NativeScrollBarTest, ScrollToEndAfterShrinkAndExpand) {
   EXPECT_TRUE(scrollbar_->ScrollByContentsOffset(-1));
 }
 
-TEST_F(NativeScrollBarTest, ThumbFullLengthOfTrack) {
+TEST_F(ScrollBarViewsTest, ThumbFullLengthOfTrack) {
   // Shrink content so that it fits within the viewport.
   scrollbar_->Update(100, 10, 0);
   EXPECT_EQ(scrollbar_->GetTrackBounds().width(),

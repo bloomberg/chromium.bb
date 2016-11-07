@@ -119,8 +119,8 @@ class VIEWS_EXPORT BaseScrollBar : public ScrollBar,
  private:
   friend class test::ScrollViewTestApi;
 
-  FRIEND_TEST_ALL_PREFIXES(NativeScrollBarTest, ScrollBarFitsToBottom);
-  FRIEND_TEST_ALL_PREFIXES(NativeScrollBarTest, ThumbFullLengthOfTrack);
+  FRIEND_TEST_ALL_PREFIXES(ScrollBarViewsTest, ScrollBarFitsToBottom);
+  FRIEND_TEST_ALL_PREFIXES(ScrollBarViewsTest, ThumbFullLengthOfTrack);
   int GetThumbSizeForTest();
 
   // Changes to 'pushed' state and starts a timer to scroll repeatedly.

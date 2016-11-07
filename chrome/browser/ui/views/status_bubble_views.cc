@@ -34,7 +34,7 @@
 #include "ui/gfx/text_elider.h"
 #include "ui/gfx/text_utils.h"
 #include "ui/native_theme/native_theme.h"
-#include "ui/views/controls/scrollbar/native_scroll_bar.h"
+#include "ui/views/controls/scrollbar/scroll_bar_views.h"
 #include "ui/views/widget/root_view.h"
 #include "ui/views/widget/widget.h"
 #include "url/gurl.h"
@@ -936,9 +936,10 @@ int StatusBubbleViews::GetStandardStatusBubbleWidth() {
 
 int StatusBubbleViews::GetMaxStatusBubbleWidth() {
   const ui::NativeTheme* theme = base_view_->GetNativeTheme();
-  return static_cast<int>(std::max(0, base_view_->bounds().width() -
-      (kShadowThickness * 2) - kTextPositionX - kTextHorizPadding - 1 -
-      views::NativeScrollBar::GetVerticalScrollBarWidth(theme)));
+  return static_cast<int>(
+      std::max(0, base_view_->bounds().width() - (kShadowThickness * 2) -
+                      kTextPositionX - kTextHorizPadding - 1 -
+                      views::ScrollBarViews::GetVerticalScrollBarWidth(theme)));
 }
 
 void StatusBubbleViews::SetBubbleWidth(int width) {

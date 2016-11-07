@@ -15,7 +15,7 @@
 #include "ui/views/controls/button/label_button.h"
 #include "ui/views/controls/button/label_button_border.h"
 #include "ui/views/controls/focusable_border.h"
-#include "ui/views/controls/scrollbar/native_scroll_bar.h"
+#include "ui/views/controls/scrollbar/scroll_bar_views.h"
 
 #if defined(OS_LINUX) && !defined(OS_CHROMEOS)
 #define DESKTOP_LINUX
@@ -55,7 +55,7 @@ gfx::ImageSkia PlatformStyle::CreateComboboxArrow(bool is_enabled,
 
 // static
 std::unique_ptr<ScrollBar> PlatformStyle::CreateScrollBar(bool is_horizontal) {
-  return base::MakeUnique<NativeScrollBar>(is_horizontal);
+  return base::MakeUnique<ScrollBarViews>(is_horizontal);
 }
 
 // static
