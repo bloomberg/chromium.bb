@@ -1107,7 +1107,6 @@ std::unique_ptr<SourceStream> URLRequestHttpJob::SetUpSourceStream() {
   std::string mime_type;
   bool success = GetMimeType(&mime_type);
   DCHECK(success || mime_type.empty());
-  DCHECK(request());
   SdchPolicyDelegate::FixUpSdchContentEncodings(
       request()->net_log(), mime_type, dictionaries_advertised_.get(), &types);
 
@@ -1539,17 +1538,15 @@ void URLRequestHttpJob::DoneWithRequest(CompletionCause reason) {
   done_ = true;
 
   // Notify NetworkQualityEstimator.
-  if (request()) {
-    NetworkQualityEstimator* network_quality_estimator =
-        request()->context()->network_quality_estimator();
-    if (network_quality_estimator)
-      network_quality_estimator->NotifyRequestCompleted(
-          *request(), request_->status().error());
+  NetworkQualityEstimator* network_quality_estimator =
+      request()->context()->network_quality_estimator();
+  if (network_quality_estimator) {
+    network_quality_estimator->NotifyRequestCompleted(
+        *request(), request_->status().error());
   }
 
   RecordPerfHistograms(reason);
-  if (request_)
-    request_->set_received_response_content_length(prefilter_bytes_read());
+  request()->set_received_response_content_length(prefilter_bytes_read());
 }
 
 HttpResponseHeaders* URLRequestHttpJob::GetResponseHeaders() const {
@@ -1564,12 +1561,10 @@ void URLRequestHttpJob::NotifyURLRequestDestroyed() {
   awaiting_callback_ = false;
 
   // Notify NetworkQualityEstimator.
-  if (request()) {
-    NetworkQualityEstimator* network_quality_estimator =
-        request()->context()->network_quality_estimator();
-    if (network_quality_estimator)
-      network_quality_estimator->NotifyURLRequestDestroyed(*request());
-  }
+  NetworkQualityEstimator* network_quality_estimator =
+      request()->context()->network_quality_estimator();
+  if (network_quality_estimator)
+    network_quality_estimator->NotifyURLRequestDestroyed(*request());
 }
 
 }  // namespace net

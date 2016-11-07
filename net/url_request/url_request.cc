@@ -182,11 +182,12 @@ URLRequest::~URLRequest() {
       job_->NotifyURLRequestDestroyed();
   }
 
-  if (job_.get())
-    OrphanJob();
+  // Delete job before |this|, since subclasses may do weird things, like depend
+  // on UserData associated with |this| and poke at it during teardown.
+  job_.reset();
 
-  int deleted = context_->url_requests()->erase(this);
-  CHECK_EQ(1, deleted);
+  DCHECK_EQ(1u, context_->url_requests()->count(this));
+  context_->url_requests()->erase(this);
 
   int net_error = OK;
   // Log error only on failure, not cancellation, as even successful requests
@@ -897,7 +898,7 @@ void URLRequest::PrepareToRestart() {
   // one.
   net_log_.EndEvent(NetLogEventType::URL_REQUEST_START_JOB);
 
-  OrphanJob();
+  job_.reset();
 
   response_info_ = HttpResponseInfo();
   response_info_.request_time = base::Time::Now();
@@ -909,19 +910,6 @@ void URLRequest::PrepareToRestart() {
   status_ = URLRequestStatus();
   is_pending_ = false;
   proxy_server_ = ProxyServer();
-}
-
-void URLRequest::OrphanJob() {
-  // When calling this function, please check that URLRequestHttpJob is
-  // not in between calling NetworkDelegate::NotifyHeadersReceived receiving
-  // the call back. This is currently guaranteed by the following strategies:
-  // - OrphanJob is called on JobRestart, in this case the URLRequestJob cannot
-  //   be receiving any headers at that time.
-  // - OrphanJob is called in ~URLRequest, in this case
-  //   NetworkDelegate::NotifyURLRequestDestroyed notifies the NetworkDelegate
-  //   that the callback becomes invalid.
-  job_->Kill();
-  job_ = NULL;
 }
 
 int URLRequest::Redirect(const RedirectInfo& redirect_info) {

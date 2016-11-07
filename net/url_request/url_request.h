@@ -707,11 +707,6 @@ class NET_EXPORT URLRequest : NON_EXPORTED_BASE(public base::NonThreadSafe),
   void RestartWithJob(URLRequestJob* job);
   void PrepareToRestart();
 
-  // Detaches the job from this request in preparation for this object going
-  // away or the job being replaced. The job will not call us back when it has
-  // been orphaned.
-  void OrphanJob();
-
   // Cancels the request and set the error and ssl info for this request to the
   // passed values. Returns the error that was set.
   int DoCancel(int error, const SSLInfo& ssl_info);

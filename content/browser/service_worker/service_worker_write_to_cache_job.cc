@@ -71,6 +71,7 @@ ServiceWorkerWriteToCacheJob::ServiceWorkerWriteToCacheJob(
 }
 
 ServiceWorkerWriteToCacheJob::~ServiceWorkerWriteToCacheJob() {
+  Kill();
   DCHECK_EQ(did_notify_started_, did_notify_finished_);
 }
 

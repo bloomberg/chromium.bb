@@ -366,9 +366,7 @@ void ServiceWorkerURLRequestJob::RecordResult(
   }
   did_record_result_ = true;
   ServiceWorkerMetrics::RecordURLRequestJobResult(IsMainResourceLoad(), result);
-  if (request()) {
-    request()->net_log().AddEvent(RequestJobResultToNetEventType(result));
-  }
+  request()->net_log().AddEvent(RequestJobResultToNetEventType(result));
 }
 
 base::WeakPtr<ServiceWorkerURLRequestJob>
@@ -583,12 +581,6 @@ void ServiceWorkerURLRequestJob::DidDispatchFetchEvent(
     const scoped_refptr<ServiceWorkerVersion>& version) {
   fetch_dispatcher_.reset();
   ServiceWorkerMetrics::RecordFetchEventStatus(IsMainResourceLoad(), status);
-
-  // Check if we're not orphaned.
-  if (!request()) {
-    RecordResult(ServiceWorkerMetrics::REQUEST_JOB_ERROR_NO_REQUEST);
-    return;
-  }
 
   ServiceWorkerMetrics::URLRequestJobResult result =
       ServiceWorkerMetrics::REQUEST_JOB_ERROR_BAD_DELEGATE;
