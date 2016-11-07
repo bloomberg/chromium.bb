@@ -191,14 +191,14 @@ scoped_refptr<MockWebRtcVideoTrack> MockWebRtcVideoTrack::Create(
 }
 
 void MockWebRtcVideoTrack::AddOrUpdateSink(
-    rtc::VideoSinkInterface<cricket::VideoFrame>* sink,
+    rtc::VideoSinkInterface<webrtc::VideoFrame>* sink,
     const rtc::VideoSinkWants& wants) {
   DCHECK(!sink_);
   sink_ = sink;
 }
 
 void MockWebRtcVideoTrack::RemoveSink(
-    rtc::VideoSinkInterface<cricket::VideoFrame>* sink) {
+    rtc::VideoSinkInterface<webrtc::VideoFrame>* sink) {
   DCHECK(sink_ == sink);
   sink_ = NULL;
 }

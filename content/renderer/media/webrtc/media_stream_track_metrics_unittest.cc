@@ -64,9 +64,9 @@ class MockVideoTrackInterface : public VideoTrackInterface {
   MOCK_METHOD1(set_enabled, bool(bool));
   MOCK_METHOD1(set_state, bool(TrackState));
   MOCK_METHOD2(AddOrUpdateSink,
-               void(rtc::VideoSinkInterface<cricket::VideoFrame>*,
+               void(rtc::VideoSinkInterface<webrtc::VideoFrame>*,
                     const rtc::VideoSinkWants&));
-  MOCK_METHOD1(RemoveSink, void(rtc::VideoSinkInterface<cricket::VideoFrame>*));
+  MOCK_METHOD1(RemoveSink, void(rtc::VideoSinkInterface<webrtc::VideoFrame>*));
   MOCK_CONST_METHOD0(GetSource, VideoTrackSourceInterface*());
 
  private:

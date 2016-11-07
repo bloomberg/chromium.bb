@@ -55,9 +55,9 @@ class MockWebRtcVideoTrack : public webrtc::VideoTrackInterface {
   static scoped_refptr<MockWebRtcVideoTrack> Create(const std::string& id);
   MockWebRtcVideoTrack(const std::string& id,
                        webrtc::VideoTrackSourceInterface* source);
-  void AddOrUpdateSink(rtc::VideoSinkInterface<cricket::VideoFrame>* sink,
+  void AddOrUpdateSink(rtc::VideoSinkInterface<webrtc::VideoFrame>* sink,
                        const rtc::VideoSinkWants& wants) override;
-  void RemoveSink(rtc::VideoSinkInterface<cricket::VideoFrame>* sink) override;
+  void RemoveSink(rtc::VideoSinkInterface<webrtc::VideoFrame>* sink) override;
   webrtc::VideoTrackSourceInterface* GetSource() const override;
 
   std::string kind() const override;
@@ -80,7 +80,7 @@ class MockWebRtcVideoTrack : public webrtc::VideoTrackInterface {
   bool enabled_;
   TrackState state_;
   ObserverSet observers_;
-  rtc::VideoSinkInterface<cricket::VideoFrame>* sink_;
+  rtc::VideoSinkInterface<webrtc::VideoFrame>* sink_;
 };
 
 class MockMediaStream : public webrtc::MediaStreamInterface {

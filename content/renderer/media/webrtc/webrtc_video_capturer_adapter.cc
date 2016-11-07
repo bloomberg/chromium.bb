@@ -20,9 +20,7 @@
 #include "third_party/libyuv/include/libyuv/convert_from.h"
 #include "third_party/libyuv/include/libyuv/scale.h"
 #include "third_party/skia/include/core/SkSurface.h"
-#include "third_party/webrtc/common_video/include/video_frame_buffer.h"
 #include "third_party/webrtc/common_video/rotation.h"
-#include "third_party/webrtc/media/engine/webrtcvideoframe.h"
 
 namespace content {
 
@@ -201,7 +199,7 @@ void WebRtcVideoCapturerAdapter::OnFrameCaptured(
   // Return |frame| directly if it is texture backed, because there is no
   // cropping support for texture yet. See http://crbug/503653.
   if (frame->HasTextures()) {
-    OnFrame(cricket::WebRtcVideoFrame(
+    OnFrame(webrtc::VideoFrame(
                 new rtc::RefCountedObject<WebRtcVideoFrameAdapter>(
                     frame, base::Bind(&TextureFrameCopier::CopyTextureFrame,
                                       texture_copier_)),
@@ -230,7 +228,7 @@ void WebRtcVideoCapturerAdapter::OnFrameCaptured(
 
   // If no scaling is needed, return a wrapped version of |frame| directly.
   if (video_frame->natural_size() == video_frame->visible_rect().size()) {
-    OnFrame(cricket::WebRtcVideoFrame(
+    OnFrame(webrtc::VideoFrame(
                 new rtc::RefCountedObject<WebRtcVideoFrameAdapter>(
                     video_frame,
                     WebRtcVideoFrameAdapter::CopyTextureFrameCallback()),
@@ -260,7 +258,7 @@ void WebRtcVideoCapturerAdapter::OnFrameCaptured(
                     scaled_frame->stride(media::VideoFrame::kVPlane),
                     adapted_width, adapted_height, libyuv::kFilterBilinear);
 
-  OnFrame(cricket::WebRtcVideoFrame(
+  OnFrame(webrtc::VideoFrame(
               new rtc::RefCountedObject<WebRtcVideoFrameAdapter>(
                   scaled_frame,
                   WebRtcVideoFrameAdapter::CopyTextureFrameCallback()),

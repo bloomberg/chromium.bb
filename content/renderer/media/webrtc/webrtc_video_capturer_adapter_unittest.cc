@@ -19,7 +19,7 @@ static void ReleaseMailboxCB(const gpu::SyncToken& sync_token) {}
 namespace content {
 
 class WebRtcVideoCapturerAdapterTest
-    : public rtc::VideoSinkInterface<cricket::VideoFrame>,
+    : public rtc::VideoSinkInterface<webrtc::VideoFrame>,
       public ::testing::Test {
  public:
   WebRtcVideoCapturerAdapterTest()
@@ -77,7 +77,7 @@ class WebRtcVideoCapturerAdapterTest
   }
 
   // rtc::VideoSinkInterface
-  void OnFrame(const cricket::VideoFrame& frame) override {
+  void OnFrame(const webrtc::VideoFrame& frame) override {
     output_frame_ = frame;
     output_frame_width_ = frame.width();
     output_frame_height_ = frame.height();
@@ -88,7 +88,8 @@ class WebRtcVideoCapturerAdapterTest
   const ChildProcess child_process_;
 
   WebRtcVideoCapturerAdapter adapter_;
-  cricket::VideoFrame output_frame_;
+  // TODO(nisse): Default constructor is deprecated. Use std::optional?
+  webrtc::VideoFrame output_frame_;
   int output_frame_width_;
   int output_frame_height_;
 };

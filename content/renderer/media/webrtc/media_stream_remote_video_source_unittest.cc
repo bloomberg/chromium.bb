@@ -18,7 +18,6 @@
 #include "media/base/video_frame.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/WebKit/public/web/WebHeap.h"
-#include "third_party/webrtc/media/engine/webrtcvideoframe.h"
 
 namespace content {
 
@@ -132,7 +131,7 @@ TEST_F(MediaStreamRemoteVideoSourceTest, StartTrack) {
   buffer->SetToBlack();
 
   source()->SinkInterfaceForTest()->OnFrame(
-      cricket::WebRtcVideoFrame(buffer, webrtc::kVideoRotation_0, 1000));
+      webrtc::VideoFrame(buffer, webrtc::kVideoRotation_0, 1000));
   run_loop.Run();
 
   EXPECT_EQ(1, sink.number_of_frames());
