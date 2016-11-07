@@ -65,9 +65,6 @@ class SuspendableScriptExecutor final
   void executeAndDestroySelf();
   void dispose();
 
-  // TODO(devlin): m_frame is likely redundant with context accessor on
-  // SuspendableTimer.
-  Member<LocalFrame> m_frame;
   RefPtr<ScriptState> m_scriptState;
   WebScriptExecutionCallback* m_callback;
 

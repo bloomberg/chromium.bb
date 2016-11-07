@@ -184,7 +184,6 @@ SuspendableScriptExecutor::SuspendableScriptExecutor(
     WebScriptExecutionCallback* callback,
     Executor* executor)
     : SuspendableTimer(frame->document()),
-      m_frame(frame),
       m_scriptState(scriptState),
       m_callback(callback),
       m_keepAlive(this),
@@ -212,7 +211,8 @@ void SuspendableScriptExecutor::executeAndDestroySelf() {
   CHECK(m_scriptState->contextIsValid());
 
   ScriptState::Scope scriptScope(m_scriptState.get());
-  Vector<v8::Local<v8::Value>> results = m_executor->execute(m_frame);
+  Vector<v8::Local<v8::Value>> results =
+      m_executor->execute(toDocument(getExecutionContext())->frame());
 
   // The script may have removed the frame, in which case contextDestroyed()
   // will have handled the disposal/callback.
@@ -233,7 +233,6 @@ void SuspendableScriptExecutor::dispose() {
 }
 
 DEFINE_TRACE(SuspendableScriptExecutor) {
-  visitor->trace(m_frame);
   visitor->trace(m_executor);
   SuspendableTimer::trace(visitor);
 }
