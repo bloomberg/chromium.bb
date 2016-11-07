@@ -38,14 +38,19 @@ void SigninErrorHandler::HandleSwitchToExistingProfile(
     const base::ListValue* args) {
   if (duplicate_profile_path_.empty())
     return;
+
+  // CloseDialog will eventually destroy this object, so nothing should access
+  // its members after this call. However, closing the dialog may steal focus
+  // back to the original window, so make a copy of the path to switch to and
+  // perform the switch after the dialog is closed.
+  base::FilePath path_switching_to = duplicate_profile_path_;
+  CloseDialog();
+
   // Switch to the existing duplicate profile. Do not create a new window when
   // any existing ones can be reused.
-  profiles::SwitchToProfile(duplicate_profile_path_, false,
+  profiles::SwitchToProfile(path_switching_to, false,
                             ProfileManager::CreateCallback(),
                             ProfileMetrics::SWITCH_PROFILE_DUPLICATE);
-  // CloseDialog will eventually destroy this object, so nothing should access
-  // its members after this call.
-  CloseDialog();
 }
 
 void SigninErrorHandler::HandleConfirm(const base::ListValue* args) {
