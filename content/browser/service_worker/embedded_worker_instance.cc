@@ -121,6 +121,17 @@ void SetupMojoOnUIThread(
       mojo::MakeProxy(std::move(exposed_interfaces)));
 }
 
+void CallDetach(EmbeddedWorkerInstance* instance) {
+  // This could be called on the UI thread if |client_| still be valid when the
+  // message loop on the UI thread gets destructed.
+  // TODO(shimazu): Remove this after https://crbug.com/604762 is fixed
+  if (!BrowserThread::CurrentlyOn(BrowserThread::IO)) {
+    DCHECK(ServiceWorkerUtils::IsMojoForServiceWorkerEnabled());
+    return;
+  }
+  instance->Detach();
+}
+
 }  // namespace
 
 // Lives on IO thread, proxies notifications to DevToolsManager that lives on
@@ -477,7 +488,7 @@ void EmbeddedWorkerInstance::Start(
   if (ServiceWorkerUtils::IsMojoForServiceWorkerEnabled()) {
     request = mojo::GetProxy(&client_);
     client_.set_connection_error_handler(
-        base::Bind(&EmbeddedWorkerInstance::Detach, base::Unretained(this)));
+        base::Bind(&CallDetach, base::Unretained(this)));
   }
 
   inflight_start_task_.reset(
