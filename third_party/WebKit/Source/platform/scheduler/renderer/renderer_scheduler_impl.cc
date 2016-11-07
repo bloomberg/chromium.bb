@@ -1034,9 +1034,9 @@ void RendererSchedulerImpl::UpdatePolicyLocked(UpdateType update_type) {
     new_policy.timer_queue_policy.time_domain_type = TimeDomainType::VIRTUAL;
   }
 
-  new_policy.should_disable_throttling =
-      ShouldDisableThrottlingBecauseOfAudio(now) ||
-      MainThreadOnly().use_virtual_time;
+  // TODO(altimin): Taking audio state into account here is temporarily
+  // disabled because of failing webrtc bots. Investigate and fix ASAP.
+  new_policy.should_disable_throttling = MainThreadOnly().use_virtual_time;
 
   // Tracing is done before the early out check, because it's quite possible we
   // will otherwise miss this information in traces.
