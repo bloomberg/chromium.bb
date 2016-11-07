@@ -15279,10 +15279,11 @@ Please check your email at <ph name="ACCOUNT_EMAIL">$2<ex>jane.doe@gmail.com</ex
 
       <!-- WebApks -->
       <message name="IDS_FLAGS_ENABLE_WEBAPK" desc="Name for the flag to enable WebAPK feature.">
-        Enable WebAPKs
+        Enable improved add to Home screen
       </message>
       <message name="IDS_FLAGS_ENABLE_WEBAPK_DESCRIPTION" desc="Description for the flag to enable WebAPK feature.">
-        Enables packaging PWAs into an Android WebAPK. Requires sending data to a chrome server to generate the application.
+        Packages "Progressive Web Apps" so that they can integrate more deeply with Android. A Chrome server is used to package sites.
+        In Chrome Canary and Chrome Dev, this requires “Untrusted sources” to be enabled in Android security settings.
       </message>
     </if>
 
