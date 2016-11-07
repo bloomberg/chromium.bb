@@ -1,42 +1,26 @@
 <!DOCTYPE html>
-<html>
-<head>
-<script src="../../resources/js-test.js"></script>
-<script src="resources/util.js"></script>
-</head>
-<body>
-<div id="container">
-  <div id="destination" contentEditable></div>
-</div>
+<script src="../../resources/testharness.js"></script>
+<script src="../../resources/testharnessreport.js"></script>
+<script src="../assert_selection.js"></script>
+<script src="spellcheck_test.js"></script>
 
 <script>
+test(() => assert_false(navigator.platform.includes('Mac')),
+    'This test requires context menu key.');
+test(() => assert_not_equals(window.eventSender, undefined),
+    'This test requires event sender.');
 
-description("Spell check selects the misspelled word on context menu key. " +
-            "To test manually, type 'wellcome home.' place the cursor on 'wellcome', and press the context menu key. " +
-            "The test succeeds when 'wellcome' is selected after the context menu key.");
-
-initSpellTest("destination", "wellcome home.", function(textNode) {
-    var behaviors = ["win", "mac"];
-    for (var i = 0; i < behaviors.length; i++) {
-        internals.settings.setEditingBehavior(behaviors[i]);
-
-        // Place cursor on "wellcome".
-        window.getSelection().removeAllRanges();
-        var range = document.createRange();
-        range.setStart(textNode, 2);
-        range.setEnd(textNode, 2);
-        window.getSelection().addRange(range);
-
-        // Context menu key to show the context menu.
-        eventSender.keyDown("ContextMenu");
-
-        // Esc to close the context menu.
-        eventSender.keyDown("Escape");
-
-        shouldBeEqualToString("window.getSelection().toString()", "wellcome");
-    }
-});
-
+spellcheck_test(
+    '<div contenteditable>well|come home.</div>',
+    '',
+    '<div contenteditable>#wellcome# home.</div>',
+    {
+      title: 'Mark initial misspelling.',
+      callback: sample => test(() => {
+        eventSender.keyDown('ContextMenu');
+        eventSender.keyDown('Escape');
+        assert_equals(sample.selection.toString(), 'wellcome');
+      }, 'When caret is on a misspelled word, pressing context menu key ' +
+      'selects the word.')
+    });
 </script>
-</body>
-</html>
