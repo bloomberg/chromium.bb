@@ -34,7 +34,14 @@ interface VideoCaptureDeviceFactory {
   // Provides exclusive access to the device identified by |device_descriptor|.
   // The access is valid until either the message pipe associated with
   // |proxy_request| is closed by the client, or a subsequent call to
-  // CreateDeviceProxy() is made.
+  // CreateDeviceProxy() is made. When a subsequent call is made while the
+  // |proxy_request| from a previous call has not yet been closed, the service
+  // "revokes" that previous |proxy_request| (by closing the connection) and the
+  // exclusive access goes to the new |proxy_request|.
+  // Note: This design avoids the issue of it not being clear how soon after a
+  // |proxy_request| has been (asynchronously) discarded a subsequent call to
+  // CreateDeviceProxy() would succeed if it were to deny access while still
+  // in use.
   CreateDeviceProxy(VideoCaptureDeviceDescriptor device_descriptor,
                     VideoCaptureDeviceProxy& proxy_request)
       => (DeviceAccessResultCode result_code);

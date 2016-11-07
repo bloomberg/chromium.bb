@@ -16,7 +16,7 @@ namespace video_capture {
 // media::VideoCaptureDevice interface.
 class DeviceMockToMediaAdapter : public media::VideoCaptureDevice {
  public:
-  DeviceMockToMediaAdapter(mojom::MockVideoCaptureDevicePtr device);
+  DeviceMockToMediaAdapter(mojom::MockVideoCaptureDevicePtr* device);
   ~DeviceMockToMediaAdapter() override;
 
   // media::VideoCaptureDevice:
@@ -30,7 +30,7 @@ class DeviceMockToMediaAdapter : public media::VideoCaptureDevice {
   void TakePhoto(TakePhotoCallback callback) override;
 
  private:
-  mojom::MockVideoCaptureDevicePtr device_;
+  mojom::MockVideoCaptureDevicePtr* const device_;
 };
 
 }  // namespace video_capture

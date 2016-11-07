@@ -45,7 +45,6 @@ class CAPTURE_EXPORT VideoCaptureDeviceFactory {
       const VideoCaptureDeviceDescriptor& device_descriptor,
       VideoCaptureFormats* supported_formats) = 0;
 
- protected:
   // Gets descriptors of all video capture devices connected.
   // Used by the default implementation of EnumerateDevices().
   // Note: The same physical device may appear more than once if it is
@@ -53,6 +52,7 @@ class CAPTURE_EXPORT VideoCaptureDeviceFactory {
   virtual void GetDeviceDescriptors(
       VideoCaptureDeviceDescriptors* device_descriptors) = 0;
 
+ protected:
   base::ThreadChecker thread_checker_;
 
  private:

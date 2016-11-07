@@ -4,17 +4,16 @@
 
 #include "services/video_capture/video_capture_service.h"
 
-#include "media/capture/video/fake_video_capture_device.h"
+#include "base/message_loop/message_loop.h"
+#include "media/capture/video/fake_video_capture_device_factory.h"
+#include "media/capture/video/video_capture_buffer_pool.h"
+#include "media/capture/video/video_capture_buffer_tracker.h"
 #include "media/capture/video/video_capture_jpeg_decoder.h"
 #include "services/service_manager/public/cpp/interface_registry.h"
-#include "services/video_capture/video_capture_device_factory_impl.h"
+#include "services/video_capture/device_factory_media_to_mojo_adapter.h"
+#include "services/video_capture/mock_device_factory.h"
 
 namespace {
-static const char kFakeDeviceDisplayName[] = "Fake Video Capture Device";
-static const char kFakeDeviceId[] = "FakeDeviceId";
-static const char kFakeModelId[] = "FakeModelId";
-static const float kFakeCaptureDefaultFrameRate = 20.0f;
-
 // TODO(chfremer): Replace with an actual decoder factory.
 // https://crbug.com/584797
 std::unique_ptr<media::VideoCaptureJpegDecoder> CreateJpegDecoder() {
@@ -25,7 +24,7 @@ std::unique_ptr<media::VideoCaptureJpegDecoder> CreateJpegDecoder() {
 
 namespace video_capture {
 
-VideoCaptureService::VideoCaptureService() = default;
+VideoCaptureService::VideoCaptureService() : mock_device_factory_(nullptr) {}
 
 VideoCaptureService::~VideoCaptureService() = default;
 
@@ -58,7 +57,7 @@ void VideoCaptureService::ConnectToFakeDeviceFactory(
 void VideoCaptureService::ConnectToMockDeviceFactory(
     mojom::VideoCaptureDeviceFactoryRequest request) {
   LazyInitializeMockDeviceFactory();
-  mock_factory_bindings_.AddBinding(mock_device_factory_.get(),
+  mock_factory_bindings_.AddBinding(mock_device_factory_adapter_.get(),
                                     std::move(request));
 }
 
@@ -74,34 +73,38 @@ void VideoCaptureService::AddDeviceToMockFactory(
 void VideoCaptureService::LazyInitializeDeviceFactory() {
   if (device_factory_)
     return;
-  device_factory_ = base::MakeUnique<VideoCaptureDeviceFactoryImpl>(
-      base::Bind(CreateJpegDecoder));
+
+  // Create the platform-specific device factory.
+  // Task runner does not seem to actually be used.
+  std::unique_ptr<media::VideoCaptureDeviceFactory> media_device_factory =
+      media::VideoCaptureDeviceFactory::CreateFactory(
+          base::MessageLoop::current()->task_runner());
+
+  device_factory_ = base::MakeUnique<DeviceFactoryMediaToMojoAdapter>(
+      std::move(media_device_factory), base::Bind(CreateJpegDecoder));
 }
 
 void VideoCaptureService::LazyInitializeFakeDeviceFactory() {
   if (fake_device_factory_)
     return;
-  fake_device_factory_ = base::MakeUnique<VideoCaptureDeviceFactoryImpl>(
-      base::Bind(CreateJpegDecoder));
-  media::VideoCaptureDeviceDescriptor fake_device_descriptor;
-  fake_device_descriptor.display_name = kFakeDeviceDisplayName;
-  fake_device_descriptor.device_id = kFakeDeviceId;
-  fake_device_descriptor.model_id = kFakeModelId;
-  fake_device_descriptor.capture_api = media::VideoCaptureApi::UNKNOWN;
-  fake_device_descriptor.transport_type =
-      media::VideoCaptureTransportType::OTHER_TRANSPORT;
-  fake_device_factory_->AddMediaDevice(
-      base::MakeUnique<media::FakeVideoCaptureDevice>(
-          media::FakeVideoCaptureDevice::BufferOwnership::OWN_BUFFERS,
-          kFakeCaptureDefaultFrameRate),
-      std::move(fake_device_descriptor));
+
+  fake_device_factory_ = base::MakeUnique<DeviceFactoryMediaToMojoAdapter>(
+      base::MakeUnique<media::FakeVideoCaptureDeviceFactory>(),
+      base::Bind(&CreateJpegDecoder));
 }
 
 void VideoCaptureService::LazyInitializeMockDeviceFactory() {
   if (mock_device_factory_)
     return;
-  mock_device_factory_ = base::MakeUnique<VideoCaptureDeviceFactoryImpl>(
-      base::Bind(CreateJpegDecoder));
+
+  auto mock_device_factory = base::MakeUnique<MockDeviceFactory>();
+  // We keep a pointer to the MockDeviceFactory as a member so that we can
+  // invoke its AddMockDevice(). Ownership of the MockDeviceFactory is moved
+  // to the DeviceFactoryMediaToMojoAdapter.
+  mock_device_factory_ = mock_device_factory.get();
+  mock_device_factory_adapter_ =
+      base::MakeUnique<DeviceFactoryMediaToMojoAdapter>(
+          std::move(mock_device_factory), base::Bind(&CreateJpegDecoder));
 }
 
 }  // namespace video_capture

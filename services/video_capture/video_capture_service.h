@@ -14,7 +14,8 @@
 
 namespace video_capture {
 
-class VideoCaptureDeviceFactoryImpl;
+class DeviceFactoryMediaToMojoAdapter;
+class MockDeviceFactory;
 
 // Implementation of mojom::VideoCaptureService as a Service Manager service.
 class VideoCaptureService
@@ -54,9 +55,10 @@ class VideoCaptureService
   mojo::BindingSet<mojom::VideoCaptureDeviceFactory> factory_bindings_;
   mojo::BindingSet<mojom::VideoCaptureDeviceFactory> fake_factory_bindings_;
   mojo::BindingSet<mojom::VideoCaptureDeviceFactory> mock_factory_bindings_;
-  std::unique_ptr<VideoCaptureDeviceFactoryImpl> device_factory_;
-  std::unique_ptr<VideoCaptureDeviceFactoryImpl> fake_device_factory_;
-  std::unique_ptr<VideoCaptureDeviceFactoryImpl> mock_device_factory_;
+  std::unique_ptr<DeviceFactoryMediaToMojoAdapter> device_factory_;
+  std::unique_ptr<DeviceFactoryMediaToMojoAdapter> fake_device_factory_;
+  std::unique_ptr<DeviceFactoryMediaToMojoAdapter> mock_device_factory_adapter_;
+  MockDeviceFactory* mock_device_factory_;
 };
 
 }  // namespace video_capture

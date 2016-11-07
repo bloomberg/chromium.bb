@@ -5,8 +5,8 @@
 #ifndef MEDIA_CAPTURE_VIDEO_VIDEO_CAPTURE_DEVICE_DESCRIPTOR_H_
 #define MEDIA_CAPTURE_VIDEO_VIDEO_CAPTURE_DEVICE_DESCRIPTOR_H_
 
-#include <list>
 #include <string>
+#include <vector>
 
 #include "media/capture/capture_export.h"
 
@@ -84,7 +84,7 @@ struct CAPTURE_EXPORT VideoCaptureDeviceDescriptor {
   VideoCaptureTransportType transport_type;
 };
 
-using VideoCaptureDeviceDescriptors = std::list<VideoCaptureDeviceDescriptor>;
+using VideoCaptureDeviceDescriptors = std::vector<VideoCaptureDeviceDescriptor>;
 
 }  // namespace media
 

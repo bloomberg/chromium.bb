@@ -9,8 +9,8 @@
 namespace video_capture {
 
 DeviceMockToMediaAdapter::DeviceMockToMediaAdapter(
-    mojom::MockVideoCaptureDevicePtr device)
-    : device_(std::move(device)) {}
+    mojom::MockVideoCaptureDevicePtr* device)
+    : device_(device) {}
 
 DeviceMockToMediaAdapter::~DeviceMockToMediaAdapter() = default;
 
@@ -24,13 +24,13 @@ void DeviceMockToMediaAdapter::AllocateAndStart(
       base::MakeUnique<DeviceClientMediaToMojoAdapter>(std::move(client)),
       std::move(client_request));
 
-  device_->AllocateAndStart(std::move(client_proxy));
+  (*device_)->AllocateAndStart(std::move(client_proxy));
 }
 
 void DeviceMockToMediaAdapter::RequestRefreshFrame() {}
 
 void DeviceMockToMediaAdapter::StopAndDeAllocate() {
-  device_->StopAndDeAllocate();
+  (*device_)->StopAndDeAllocate();
 }
 
 void DeviceMockToMediaAdapter::GetPhotoCapabilities(
