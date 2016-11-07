@@ -698,14 +698,18 @@ void ProfileChooserView::ShowBubble(
     signin_metrics::AccessPoint access_point,
     views::View* anchor_view,
     Browser* browser) {
+  if (switches::IsMaterialDesignUserMenu()) {
+    // The Material Design User Menu doesn't have a fast user switcher on
+    // right-click. To ease up the transition for users, show the regular user
+    // menu when right-clicking instead of doing nothing.
+    view_mode = profiles::BUBBLE_VIEW_MODE_PROFILE_CHOOSER;
+  }
+
   // Don't start creating the view if it would be an empty fast user switcher.
   // It has to happen here to prevent the view system from creating an empty
   // container.
-  // Same for material design user menu since fast profile switcher will be
-  // migrated to the left-click menu.
   if (view_mode == profiles::BUBBLE_VIEW_MODE_FAST_PROFILE_CHOOSER &&
-      (!profiles::HasProfileSwitchTargets(browser->profile()) ||
-       switches::IsMaterialDesignUserMenu())) {
+      !profiles::HasProfileSwitchTargets(browser->profile())) {
     return;
   }
 
