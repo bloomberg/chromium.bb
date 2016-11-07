@@ -8,6 +8,7 @@
 
 #include "base/mac/foundation_util.h"
 #include "base/strings/string_number_conversions.h"
+#include "base/strings/sys_string_conversions.h"
 #include "build/build_config.h"
 #include "device/bluetooth/bluetooth_adapter_mac.h"
 #include "device/bluetooth/bluetooth_device_mac.h"
@@ -247,6 +248,38 @@ void BluetoothTestMac::SimulateGattConnection(BluetoothDevice* device) {
                      didConnectPeripheral:peripheral];
 }
 
+void BluetoothTestMac::SimulateConnectedLowEnergyDevice(
+    ConnectedDeviceType device_ordinal) {
+  const char* identifier = nullptr;
+  NSString* name = nil;
+  scoped_nsobject<NSMutableSet> cbUUIDs([[NSMutableSet alloc] init]);
+  switch (device_ordinal) {
+    case ConnectedDeviceType::GENERIC_DEVICE:
+      name = @(kTestDeviceName.c_str());
+      identifier = kTestPeripheralUUID1.c_str();
+      [cbUUIDs
+          addObject:[CBUUID UUIDWithString:@(kTestUUIDGenericAccess.c_str())]];
+      break;
+    case ConnectedDeviceType::HEART_RATE_DEVICE:
+      name = @(kTestDeviceName.c_str());
+      identifier = kTestPeripheralUUID2.c_str();
+      [cbUUIDs
+          addObject:[CBUUID UUIDWithString:@(kTestUUIDGenericAccess.c_str())]];
+      [cbUUIDs addObject:[CBUUID UUIDWithString:@(kTestUUIDHeartRate.c_str())]];
+      break;
+  }
+  DCHECK(name);
+  DCHECK(identifier);
+  DCHECK([cbUUIDs.get() count] > 0);
+  scoped_nsobject<MockCBPeripheral> mock_peripheral([[MockCBPeripheral alloc]
+      initWithUTF8StringIdentifier:identifier
+                              name:name]);
+  mock_peripheral.get().bluetoothTestMac = this;
+  [mock_central_manager_->get()
+      setConnectedMockPeripheral:mock_peripheral.get().peripheral
+                withServiceUUIDs:cbUUIDs.get()];
+}
+
 void BluetoothTestMac::SimulateGattConnectionError(
     BluetoothDevice* device,
     BluetoothDevice::ConnectErrorCode errorCode) {
@@ -438,6 +471,20 @@ void BluetoothTest::OnFakeBluetoothCharacteristicWriteValue(
 
 void BluetoothTest::OnFakeBluetoothGattSetCharacteristicNotification() {
   gatt_notify_characteristic_attempts_++;
+}
+
+BluetoothDevice::UUIDSet
+BluetoothTestMac::RetrieveConnectedPeripheralServiceUUIDs() {
+  BluetoothDevice::UUIDSet service_uuids;
+  for (CBUUID* uuid in
+       [mock_central_manager_->get() retrieveConnectedPeripheralServiceUUIDs]) {
+    service_uuids.insert(BluetoothAdapterMac::BluetoothUUIDWithCBUUID(uuid));
+  }
+  return service_uuids;
+}
+
+void BluetoothTestMac::ResetRetrieveConnectedPeripheralServiceUUIDs() {
+  [mock_central_manager_->get() resetRetrieveConnectedPeripheralServiceUUIDs];
 }
 
 MockCBPeripheral* BluetoothTestMac::GetMockCBPeripheral(

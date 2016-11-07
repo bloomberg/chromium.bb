@@ -33,6 +33,7 @@ BluetoothLowEnergyDeviceMac::BluetoothLowEnergyDeviceMac(
   [peripheral_ setDelegate:peripheral_delegate_];
   identifier_ = GetPeripheralIdentifier(peripheral);
   hash_address_ = GetPeripheralHashAddress(peripheral);
+  UpdateTimestamp();
 }
 
 BluetoothLowEnergyDeviceMac::~BluetoothLowEnergyDeviceMac() {

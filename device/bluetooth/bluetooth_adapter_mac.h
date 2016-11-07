@@ -70,6 +70,9 @@ class DEVICE_BLUETOOTH_EXPORT BluetoothAdapterMac
                        const base::Closure& callback,
                        const ErrorCallback& error_callback) override;
   bool IsDiscovering() const override;
+  std::unordered_map<BluetoothDevice*, BluetoothDevice::UUIDSet>
+  RetrieveGattConnectedDevicesWithDiscoveryFilter(
+      const BluetoothDiscoveryFilter& discovery_filter) override;
   UUIDList GetUUIDs() const override;
   void CreateRfcommService(
       const BluetoothUUID& uuid,
@@ -176,9 +179,19 @@ class DEVICE_BLUETOOTH_EXPORT BluetoothAdapterMac
   // observers.
   void AddPairedDevices();
 
+  // Returns the list of devices that are connected by other applications than
+  // Chromium, based on a service UUID. If no uuid is given, generic access
+  // service (1800) is used (since CoreBluetooth requires to use a service).
+  std::vector<BluetoothDevice*> RetrieveGattConnectedDevicesWithService(
+      const BluetoothUUID* uuid);
+
   // Returns the BLE device associated with the CoreBluetooth peripheral.
   BluetoothLowEnergyDeviceMac* GetBluetoothLowEnergyDeviceMac(
       CBPeripheral* peripheral);
+
+  // Returns true if a new device collides with an existing device.
+  bool DoesCollideWithKnownDevice(CBPeripheral* peripheral,
+                                  BluetoothLowEnergyDeviceMac* device_mac);
 
   std::string address_;
   bool classic_powered_;

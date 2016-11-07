@@ -60,6 +60,12 @@ bool BluetoothAdapter::HasObserver(BluetoothAdapter::Observer* observer) {
   return observers_.HasObserver(observer);
 }
 
+std::unordered_map<BluetoothDevice*, BluetoothDevice::UUIDSet>
+BluetoothAdapter::RetrieveGattConnectedDevicesWithDiscoveryFilter(
+    const BluetoothDiscoveryFilter& discovery_filter) {
+  return std::unordered_map<BluetoothDevice*, BluetoothDevice::UUIDSet>();
+}
+
 void BluetoothAdapter::StartDiscoverySession(
     const DiscoverySessionCallback& callback,
     const ErrorCallback& error_callback) {

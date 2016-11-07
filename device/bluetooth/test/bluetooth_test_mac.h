@@ -40,6 +40,8 @@ class BluetoothTestMac : public BluetoothTestBase {
   void InitWithoutDefaultAdapter() override;
   void InitWithFakeAdapter() override;
   BluetoothDevice* SimulateLowEnergyDevice(int device_ordinal) override;
+  void SimulateConnectedLowEnergyDevice(
+      ConnectedDeviceType device_ordinal) override;
   void SimulateGattConnection(BluetoothDevice* device) override;
   void SimulateGattConnectionError(
       BluetoothDevice* device,
@@ -85,6 +87,11 @@ class BluetoothTestMac : public BluetoothTestBase {
   void OnFakeBluetoothCharacteristicReadValue();
   void OnFakeBluetoothCharacteristicWriteValue(std::vector<uint8_t> value);
   void OnFakeBluetoothGattSetCharacteristicNotification();
+
+  // Returns the service UUIDs used to retrieve connected peripherals.
+  BluetoothDevice::UUIDSet RetrieveConnectedPeripheralServiceUUIDs();
+  // Reset RetrieveConnectedPeripheralServiceUUIDs set.
+  void ResetRetrieveConnectedPeripheralServiceUUIDs();
 
  protected:
   class ScopedMockCentralManager;

@@ -11,6 +11,7 @@
 #include <memory>
 #include <set>
 #include <string>
+#include <unordered_map>
 #include <utility>
 #include <vector>
 
@@ -324,6 +325,16 @@ class DEVICE_BLUETOOTH_EXPORT BluetoothAdapter
   // Indicates whether the adapter is currently discovering new devices.
   virtual bool IsDiscovering() const = 0;
 
+  // Inserts all the devices that are connected by the operating system, and not
+  // being connected by Chromium, into |devices_|. This method is useful since
+  // a discovery session cannot find devices that are already connected to the
+  // computer.
+  // TODO(crbug.com/653032): Needs to be implemented for Android, ChromeOS and
+  // Windows.
+  virtual std::unordered_map<BluetoothDevice*, BluetoothDevice::UUIDSet>
+  RetrieveGattConnectedDevicesWithDiscoveryFilter(
+      const BluetoothDiscoveryFilter& discovery_filter);
+
   // Requests the adapter to start a new discovery session. On success, a new
   // instance of BluetoothDiscoverySession will be returned to the caller via
   // |callback| and the adapter will be discovering nearby Bluetooth devices.
@@ -358,8 +369,9 @@ class DEVICE_BLUETOOTH_EXPORT BluetoothAdapter
       BluetoothDiscoveryFilter* masked_filter) const;
 
   // Requests the list of devices from the adapter. All devices are returned,
-  // including those currently connected and those paired. Use the returned
-  // device pointers to determine which they are.
+  // including those currently connected, those paired and all devices returned
+  // by RetrieveGattConnectedDevicesWithDiscoveryFilter() (from the previous
+  // call). Use the returned device pointers to determine which they are.
   virtual DeviceList GetDevices();
   virtual ConstDeviceList GetDevices() const;
 

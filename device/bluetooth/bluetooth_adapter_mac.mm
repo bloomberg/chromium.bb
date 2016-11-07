@@ -186,6 +186,29 @@ bool BluetoothAdapterMac::IsDiscovering() const {
   return is_discovering;
 }
 
+std::unordered_map<BluetoothDevice*, BluetoothDevice::UUIDSet>
+BluetoothAdapterMac::RetrieveGattConnectedDevicesWithDiscoveryFilter(
+    const BluetoothDiscoveryFilter& discovery_filter) {
+  std::unordered_map<BluetoothDevice*, BluetoothDevice::UUIDSet>
+      connected_devices;
+  std::set<device::BluetoothUUID> uuids;
+  discovery_filter.GetUUIDs(uuids);
+  if (uuids.empty()) {
+    for (BluetoothDevice* device :
+         RetrieveGattConnectedDevicesWithService(nullptr)) {
+      connected_devices[device] = BluetoothDevice::UUIDSet();
+    }
+    return connected_devices;
+  }
+  for (const BluetoothUUID& uuid : uuids) {
+    for (BluetoothDevice* device :
+         RetrieveGattConnectedDevicesWithService(&uuid)) {
+      connected_devices[device].insert(uuid);
+    }
+  }
+  return connected_devices;
+}
+
 BluetoothAdapter::UUIDList BluetoothAdapterMac::GetUUIDs() const {
   NOTIMPLEMENTED();
   return UUIDList();
@@ -499,24 +522,8 @@ void BluetoothAdapterMac::LowEnergyDeviceUpdated(
     VLOG(1) << "LowEnergyDeviceUpdated new device";
     // A new device has been found.
     device_mac = new BluetoothLowEnergyDeviceMac(this, peripheral);
-  } else {
-    // Check that there are no collisions.
-    std::string stored_device_id = device_mac->GetIdentifier();
-    std::string updated_device_id =
-        BluetoothLowEnergyDeviceMac::GetPeripheralIdentifier(peripheral);
-    if (stored_device_id != updated_device_id) {
-      VLOG(1)
-          << "LowEnergyDeviceUpdated stored_device_id != updated_device_id: "
-          << std::endl
-          << "  " << stored_device_id << std::endl
-          << "  " << updated_device_id;
-      // Collision, two identifiers map to the same hash address.  With a 48 bit
-      // hash the probability of this occuring with 10,000 devices
-      // simultaneously present is 1e-6 (see
-      // https://en.wikipedia.org/wiki/Birthday_problem#Probability_table).  We
-      // ignore the second device by returning.
-      return;
-    }
+  } else if (DoesCollideWithKnownDevice(peripheral, device_mac)) {
+    return;
   }
 
   DCHECK(device_mac);
@@ -580,6 +587,48 @@ void BluetoothAdapterMac::AddPairedDevices() {
       ClassicDeviceAdded(device);
     }
   }
+}
+
+std::vector<BluetoothDevice*>
+BluetoothAdapterMac::RetrieveGattConnectedDevicesWithService(
+    const BluetoothUUID* uuid) {
+  NSArray* cbUUIDs = nil;
+  if (!uuid) {
+    // It is not possible to ask for all connected peripherals with
+    // -[CBCentralManager retrieveConnectedPeripheralsWithServices:] by passing
+    // nil. To try to get most of the peripherals, the search is done with
+    // Generic Access service.
+    CBUUID* genericAccessServiceUUID = [CBUUID UUIDWithString:@"1800"];
+    cbUUIDs = @[ genericAccessServiceUUID ];
+  } else {
+    NSString* uuidString =
+        base::SysUTF8ToNSString(uuid->canonical_value().c_str());
+    cbUUIDs = @[ [CBUUID UUIDWithString:uuidString] ];
+  }
+  NSArray* peripherals = [low_energy_central_manager_
+      retrieveConnectedPeripheralsWithServices:cbUUIDs];
+  std::vector<BluetoothDevice*> connected_devices;
+  for (CBPeripheral* peripheral in peripherals) {
+    BluetoothLowEnergyDeviceMac* device_mac =
+        GetBluetoothLowEnergyDeviceMac(peripheral);
+    const bool is_new_device = device_mac == nullptr;
+
+    if (!is_new_device && DoesCollideWithKnownDevice(peripheral, device_mac)) {
+      continue;
+    }
+    if (is_new_device) {
+      device_mac = new BluetoothLowEnergyDeviceMac(this, peripheral);
+      std::string device_address =
+          BluetoothLowEnergyDeviceMac::GetPeripheralHashAddress(peripheral);
+      devices_.add(device_address,
+                   std::unique_ptr<BluetoothDevice>(device_mac));
+      for (auto& observer : observers_) {
+        observer.DeviceAdded(this, device_mac);
+      }
+    }
+    connected_devices.push_back(device_mac);
+  }
+  return connected_devices;
 }
 
 void BluetoothAdapterMac::CreateGattConnection(
@@ -650,6 +699,28 @@ BluetoothAdapterMac::GetBluetoothLowEnergyDeviceMac(CBPeripheral* peripheral) {
     return nil;
   }
   return static_cast<BluetoothLowEnergyDeviceMac*>(iter->second);
+}
+
+bool BluetoothAdapterMac::DoesCollideWithKnownDevice(
+    CBPeripheral* peripheral,
+    BluetoothLowEnergyDeviceMac* device_mac) {
+  // Check that there are no collisions.
+  std::string stored_device_id = device_mac->GetIdentifier();
+  std::string updated_device_id =
+      BluetoothLowEnergyDeviceMac::GetPeripheralIdentifier(peripheral);
+  if (stored_device_id != updated_device_id) {
+    VLOG(1) << "LowEnergyDeviceUpdated stored_device_id != updated_device_id: "
+            << std::endl
+            << "  " << stored_device_id << std::endl
+            << "  " << updated_device_id;
+    // Collision, two identifiers map to the same hash address.  With a 48 bit
+    // hash the probability of this occuring with 10,000 devices
+    // simultaneously present is 1e-6 (see
+    // https://en.wikipedia.org/wiki/Birthday_problem#Probability_table).  We
+    // ignore the second device by returning.
+    return true;
+  }
+  return false;
 }
 
 }  // namespace device

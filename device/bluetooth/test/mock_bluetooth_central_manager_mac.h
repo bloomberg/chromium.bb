@@ -23,6 +23,7 @@
 @property(nonatomic, assign) id<CBCentralManagerDelegate> delegate;
 @property(nonatomic, assign) CBCentralManagerState state;
 @property(nonatomic, assign) device::BluetoothTestMac* bluetoothTestMac;
+@property(nonatomic, readonly) NSArray* retrieveConnectedPeripheralServiceUUIDs;
 
 - (void)scanForPeripheralsWithServices:(NSArray*)serviceUUIDs
                                options:(NSDictionary*)options;
@@ -31,6 +32,15 @@
 
 - (void)connectPeripheral:(CBPeripheral*)peripheral
                   options:(NSDictionary*)options;
+
+// Simulates a peripheral being used by another application. This peripheral
+// will be returned by -[MockCentralManager
+// retrieveConnectedPeripheralsWithServices:].
+- (void)setConnectedMockPeripheral:(CBPeripheral*)peripheral
+                  withServiceUUIDs:(NSSet*)serviceUUIDs;
+
+// Reset -[MockCentralManager retrieveConnectedPeripheralServiceUUIDs].
+- (void)resetRetrieveConnectedPeripheralServiceUUIDs;
 
 @end
 
