@@ -100,13 +100,10 @@ ScriptPromise BluetoothRemoteGATTServer::connect(ScriptState* scriptState) {
 void BluetoothRemoteGATTServer::disconnect(ScriptState* scriptState) {
   if (!m_connected)
     return;
-  m_connected = false;
-  ClearActiveAlgorithms();
+  device()->cleanupDisconnectedDeviceAndFireEvent();
   WebBluetooth* webbluetooth =
       BluetoothSupplement::fromScriptState(scriptState);
   webbluetooth->disconnect(device()->id());
-  device()->dispatchEvent(
-      Event::createBubble(EventTypeNames::gattserverdisconnected));
 }
 
 // Class that allows us to resolve the promise with a single service or

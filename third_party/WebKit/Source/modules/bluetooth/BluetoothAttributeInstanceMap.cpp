@@ -33,6 +33,15 @@ BluetoothAttributeInstanceMap::getOrCreateBluetoothRemoteGATTService(
   return service;
 }
 
+bool BluetoothAttributeInstanceMap::containsService(
+    const String& serviceInstanceId) {
+  return m_serviceIdToObject.contains(serviceInstanceId);
+}
+
+void BluetoothAttributeInstanceMap::Clear() {
+  m_serviceIdToObject.clear();
+}
+
 DEFINE_TRACE(BluetoothAttributeInstanceMap) {
   visitor->trace(m_device);
   visitor->trace(m_serviceIdToObject);

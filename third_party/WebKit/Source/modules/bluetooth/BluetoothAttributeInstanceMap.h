@@ -25,11 +25,21 @@ class BluetoothAttributeInstanceMap final
  public:
   BluetoothAttributeInstanceMap(BluetoothDevice*);
 
+  // Constructs a new BluetoothRemoteGATTService object if there was
+  // no service with the same instance id and adds it to the map.
+  // Otherwise returns the BluetoothRemoteGATTService object already
+  // in the map.
   BluetoothRemoteGATTService* getOrCreateBluetoothRemoteGATTService(
       std::unique_ptr<WebBluetoothRemoteGATTService>);
 
-  // TODO(crbug.com/654950): Implement methods to retrieve all attributes
-  // associated with the device.
+  // Returns true if a BluetoothRemoteGATTService with |serviceInstanceId|
+  // is in the map.
+  bool containsService(const String& serviceInstanceId);
+
+  // Removes all Attributes from the map.
+  // TODO(crbug.com/654950): Remove characteristics and descriptors when
+  // implemented.
+  void Clear();
 
   DECLARE_VIRTUAL_TRACE();
 

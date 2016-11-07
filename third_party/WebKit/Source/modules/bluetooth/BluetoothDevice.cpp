@@ -45,6 +45,10 @@ BluetoothDevice::getOrCreateBluetoothRemoteGATTService(
       std::move(webService));
 }
 
+bool BluetoothDevice::isValidService(const String& serviceInstanceId) {
+  return m_attributeInstanceMap->containsService(serviceInstanceId);
+}
+
 void BluetoothDevice::dispose() {
   disconnectGATTIfConnected();
 }
@@ -53,15 +57,21 @@ void BluetoothDevice::contextDestroyed() {
   disconnectGATTIfConnected();
 }
 
-bool BluetoothDevice::disconnectGATTIfConnected() {
+void BluetoothDevice::disconnectGATTIfConnected() {
   if (m_gatt->connected()) {
     m_gatt->setConnected(false);
     m_gatt->ClearActiveAlgorithms();
     BluetoothSupplement::fromExecutionContext(getExecutionContext())
         ->disconnect(id());
-    return true;
   }
-  return false;
+}
+
+void BluetoothDevice::cleanupDisconnectedDeviceAndFireEvent() {
+  DCHECK(m_gatt->connected());
+  m_gatt->setConnected(false);
+  m_gatt->ClearActiveAlgorithms();
+  m_attributeInstanceMap->Clear();
+  dispatchEvent(Event::createBubble(EventTypeNames::gattserverdisconnected));
 }
 
 const WTF::AtomicString& BluetoothDevice::interfaceName() const {
@@ -73,11 +83,10 @@ ExecutionContext* BluetoothDevice::getExecutionContext() const {
 }
 
 void BluetoothDevice::dispatchGattServerDisconnected() {
-  if (m_gatt->connected()) {
-    m_gatt->setConnected(false);
-    m_gatt->ClearActiveAlgorithms();
-    dispatchEvent(Event::createBubble(EventTypeNames::gattserverdisconnected));
+  if (!m_gatt->connected()) {
+    return;
   }
+  cleanupDisconnectedDeviceAndFireEvent();
 }
 
 DEFINE_TRACE(BluetoothDevice) {

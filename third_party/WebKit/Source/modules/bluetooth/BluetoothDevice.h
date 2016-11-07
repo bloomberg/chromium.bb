@@ -48,6 +48,7 @@ class BluetoothDevice final : public EventTargetWithInlineData,
 
   BluetoothRemoteGATTService* getOrCreateBluetoothRemoteGATTService(
       std::unique_ptr<WebBluetoothRemoteGATTService>);
+  bool isValidService(const String& serviceInstanceId);
 
   // We should disconnect from the device in all of the following cases:
   // 1. When the object gets GarbageCollected e.g. it went out of scope.
@@ -65,9 +66,15 @@ class BluetoothDevice final : public EventTargetWithInlineData,
   // ContextLifecycleObserver interface.
   void contextDestroyed() override;
 
-  // If gatt is connected then disconnects and sets gatt.connected to false.
-  // Returns true if gatt was disconnected.
-  bool disconnectGATTIfConnected();
+  // If gatt is connected then sets gatt.connected to false and disconnects.
+  // This function only performs the necessary steps to ensure a device
+  // disconnects therefore it should only be used when the object is being
+  // garbage collected or the context is being destroyed.
+  void disconnectGATTIfConnected();
+
+  // Performs necessary cleanup when a device disconnects and fires
+  // gattserverdisconnected event.
+  void cleanupDisconnectedDeviceAndFireEvent();
 
   // EventTarget methods:
   const AtomicString& interfaceName() const override;

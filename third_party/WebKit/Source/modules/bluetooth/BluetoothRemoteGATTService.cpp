@@ -26,6 +26,9 @@ const char kGATTServerDisconnected[] =
     "GATT Server disconnected while retrieving characteristics.";
 const char kGATTServerNotConnected[] =
     "GATT Server is disconnected. Cannot retrieve characteristics.";
+const char kInvalidService[] =
+    "Service is no longer valid. Remember to retrieve the service again after "
+    "reconnecting.";
 
 }  // namespace
 
@@ -157,6 +160,11 @@ ScriptPromise BluetoothRemoteGATTService::getCharacteristicsImpl(
     return ScriptPromise::rejectWithDOMException(
         scriptState,
         DOMException::create(NetworkError, kGATTServerNotConnected));
+  }
+
+  if (!device()->isValidService(m_webService->serviceInstanceID)) {
+    return ScriptPromise::rejectWithDOMException(
+        scriptState, DOMException::create(InvalidStateError, kInvalidService));
   }
 
   ScriptPromiseResolver* resolver = ScriptPromiseResolver::create(scriptState);
