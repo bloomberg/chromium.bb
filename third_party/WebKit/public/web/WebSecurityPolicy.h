@@ -58,18 +58,10 @@ class WebSecurityPolicy {
   // hyperlinks to URLs with the scheme.
   BLINK_EXPORT static void registerURLSchemeAsDisplayIsolated(const WebString&);
 
-  // Registers a URL scheme to generate mixed content warnings when resources
-  // whose schemes are not registered as "secure" are embedded.
-  BLINK_EXPORT static void registerURLSchemeAsRestrictingMixedContent(
-      const WebString&);
-
   // Subresources transported by secure schemes do not trigger mixed content
   // warnings. For example, https and data are secure schemes because they
   // cannot be corrupted by active network attackers.
   BLINK_EXPORT static void registerURLSchemeAsSecure(const WebString&);
-
-  // Returns true if the scheme has been registered as a secure scheme.
-  BLINK_EXPORT static bool shouldTreatURLSchemeAsSecure(const WebString&);
 
   // Registers a non-HTTP URL scheme which can be sent CORS requests.
   BLINK_EXPORT static void registerURLSchemeAsCORSEnabled(const WebString&);

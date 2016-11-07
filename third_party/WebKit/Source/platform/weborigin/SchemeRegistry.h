@@ -50,7 +50,6 @@ class PLATFORM_EXPORT SchemeRegistry {
   static void registerURLSchemeAsLocal(const String&);
   static bool shouldTreatURLSchemeAsLocal(const String&);
 
-  static void registerURLSchemeAsRestrictingMixedContent(const String&);
   static bool shouldTreatURLSchemeAsRestrictingMixedContent(const String&);
 
   // Subresources transported by secure schemes do not trigger mixed content

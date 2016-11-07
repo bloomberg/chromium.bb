@@ -60,14 +60,6 @@ static URLSchemesSet& displayIsolatedURLSchemes() {
   return displayIsolatedSchemes;
 }
 
-static URLSchemesSet& mixedContentRestrictingSchemes() {
-  DEFINE_STATIC_LOCAL_WITH_LOCK(URLSchemesSet, mixedContentRestrictingSchemes,
-                                ({
-                                    "https",
-                                }));
-  return mixedContentRestrictingSchemes;
-}
-
 static URLSchemesSet& secureSchemes() {
   DEFINE_STATIC_LOCAL_WITH_LOCK(URLSchemesSet, secureSchemes,
                                 ({
@@ -223,20 +215,10 @@ bool SchemeRegistry::shouldTreatURLSchemeAsDisplayIsolated(
   return displayIsolatedURLSchemes().contains(scheme);
 }
 
-void SchemeRegistry::registerURLSchemeAsRestrictingMixedContent(
-    const String& scheme) {
-  DCHECK_EQ(scheme, scheme.lower());
-  MutexLocker locker(mutex());
-  mixedContentRestrictingSchemes().add(scheme);
-}
-
 bool SchemeRegistry::shouldTreatURLSchemeAsRestrictingMixedContent(
     const String& scheme) {
   DCHECK_EQ(scheme, scheme.lower());
-  if (scheme.isEmpty())
-    return false;
-  MutexLocker locker(mutex());
-  return mixedContentRestrictingSchemes().contains(scheme);
+  return scheme == "https";
 }
 
 void SchemeRegistry::registerURLSchemeAsSecure(const String& scheme) {
