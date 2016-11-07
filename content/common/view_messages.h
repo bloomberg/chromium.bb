@@ -597,10 +597,6 @@ IPC_MESSAGE_ROUTED3(ViewMsg_ReclaimCompositorResources,
                     bool /* is_swap_ack */,
                     cc::ReturnedResourceArray /* resources */)
 
-// Sent by browser to give renderer compositor a new namespace ID for any
-// SurfaceSequences it has to create.
-IPC_MESSAGE_ROUTED1(ViewMsg_SetFrameSinkId, cc::FrameSinkId /* frame_sink_id */)
-
 IPC_MESSAGE_ROUTED0(ViewMsg_SelectWordAroundCaret)
 
 // Sent by the browser to ask the renderer to redraw. Robust to events that can

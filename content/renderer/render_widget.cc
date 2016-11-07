@@ -509,7 +509,6 @@ bool RenderWidget::OnMessageReceived(const IPC::Message& message) {
     IPC_MESSAGE_HANDLER(ViewMsg_SetTextDirection, OnSetTextDirection)
     IPC_MESSAGE_HANDLER(ViewMsg_Move_ACK, OnRequestMoveAck)
     IPC_MESSAGE_HANDLER(ViewMsg_UpdateScreenRects, OnUpdateScreenRects)
-    IPC_MESSAGE_HANDLER(ViewMsg_SetFrameSinkId, OnSetFrameSinkId)
     IPC_MESSAGE_HANDLER(ViewMsg_WaitForNextFrameForTests,
                         OnWaitNextFrameForTests)
     IPC_MESSAGE_HANDLER(InputMsg_RequestCompositionUpdate,
@@ -1115,6 +1114,9 @@ void RenderWidget::initializeLayerTreeView() {
     compositor_->SetNeverVisible();
 
   StartCompositor();
+  DCHECK_NE(MSG_ROUTING_NONE, routing_id_);
+  compositor_->SetFrameSinkId(
+      cc::FrameSinkId(RenderThread::Get()->GetClientId(), routing_id_));
 }
 
 void RenderWidget::WillCloseLayerTreeView() {
@@ -1507,11 +1509,6 @@ void RenderWidget::OnUpdateWindowScreenRect(
     screen_metrics_emulator_->OnUpdateWindowScreenRect(window_screen_rect);
   else
     window_screen_rect_ = window_screen_rect;
-}
-
-void RenderWidget::OnSetFrameSinkId(const cc::FrameSinkId& frame_sink_id) {
-  if (compositor_)
-    compositor_->SetFrameSinkId(frame_sink_id);
 }
 
 void RenderWidget::OnHandleCompositorProto(const std::vector<uint8_t>& proto) {

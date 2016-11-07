@@ -375,13 +375,6 @@ bool RenderViewHostImpl::CreateRenderView(
 
   GetProcess()->GetRendererInterface()->CreateView(std::move(params));
 
-  // If the RWHV has not yet been set, the surface ID namespace will get
-  // passed down by the call to SetView().
-  if (GetWidget()->GetView()) {
-    Send(new ViewMsg_SetFrameSinkId(GetRoutingID(),
-                                    GetWidget()->GetView()->GetFrameSinkId()));
-  }
-
   // If it's enabled, tell the renderer to set up the Javascript bindings for
   // sending messages back to the browser.
   if (GetProcess()->IsForGuestsOnly())

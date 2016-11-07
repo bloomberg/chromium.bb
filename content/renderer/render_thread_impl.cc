@@ -600,6 +600,9 @@ void RenderThreadImpl::SetRenderMessageFilterForTesting(
   g_render_message_filter_for_testing = render_message_filter;
 }
 
+// In single-process mode used for debugging, we don't pass a renderer client
+// ID via command line because RenderThreadImpl lives in the same process as
+// the browser
 RenderThreadImpl::RenderThreadImpl(
     const InProcessChildThreadParams& params,
     std::unique_ptr<blink::scheduler::RendererScheduler> scheduler,
@@ -612,7 +615,8 @@ RenderThreadImpl::RenderThreadImpl(
       renderer_scheduler_(std::move(scheduler)),
       time_zone_monitor_binding_(this),
       categorized_worker_pool_(new CategorizedWorkerPool()),
-      renderer_binding_(this) {
+      renderer_binding_(this),
+      client_id_(1) {
   Init(resource_task_queue);
 }
 
@@ -631,6 +635,11 @@ RenderThreadImpl::RenderThreadImpl(
       categorized_worker_pool_(new CategorizedWorkerPool()),
       renderer_binding_(this) {
   scoped_refptr<base::SingleThreadTaskRunner> test_task_counter;
+  DCHECK(base::CommandLine::ForCurrentProcess()->HasSwitch(
+      switches::kRendererClientId));
+  base::StringToInt(base::CommandLine::ForCurrentProcess()->GetSwitchValueASCII(
+                        switches::kRendererClientId),
+                    &client_id_);
   Init(test_task_counter);
 }
 
@@ -1582,6 +1591,10 @@ AudioRendererMixerManager* RenderThreadImpl::GetAudioRendererMixerManager() {
 
 base::WaitableEvent* RenderThreadImpl::GetShutdownEvent() {
   return ChildProcess::current()->GetShutDownEvent();
+}
+
+int32_t RenderThreadImpl::GetClientId() {
+  return client_id_;
 }
 
 void RenderThreadImpl::OnAssociatedInterfaceRequest(

@@ -4134,24 +4134,6 @@ TEST_F(RenderWidgetHostViewAuraTest, ForwardMouseEvent) {
   view_ = nullptr;
 }
 
-// Tests the RenderWidgetHostImpl sends the correct surface ID namespace to
-// the renderer process.
-TEST_F(RenderWidgetHostViewAuraTest, FrameSinkIdInitialized) {
-  gfx::Size size(5, 5);
-
-  const IPC::Message* msg =
-      sink_->GetUniqueMessageMatching(ViewMsg_SetFrameSinkId::ID);
-  EXPECT_TRUE(msg);
-  ViewMsg_SetFrameSinkId::Param params;
-  ViewMsg_SetFrameSinkId::Read(msg, &params);
-  view_->InitAsChild(nullptr);
-  view_->Show();
-  view_->SetSize(size);
-  view_->OnSwapCompositorFrame(0,
-                               MakeDelegatedFrame(1.f, size, gfx::Rect(size)));
-  EXPECT_EQ(view_->GetFrameSinkId(), std::get<0>(params));
-}
-
 // This class provides functionality to test a RenderWidgetHostViewAura
 // instance which has been hooked up to a test RenderViewHost instance and
 // a WebContents instance.

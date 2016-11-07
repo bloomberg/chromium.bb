@@ -235,6 +235,10 @@ base::WaitableEvent* MockRenderThread::GetShutdownEvent() {
   return NULL;
 }
 
+int32_t MockRenderThread::GetClientId() {
+  return 1;
+}
+
 #if defined(OS_WIN)
 void MockRenderThread::PreCacheFont(const LOGFONT& log_font) {
 }

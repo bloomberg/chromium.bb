@@ -208,6 +208,7 @@ class CONTENT_EXPORT RenderThreadImpl
   int PostTaskToAllWebWorkers(const base::Closure& closure) override;
   bool ResolveProxy(const GURL& url, std::string* proxy_list) override;
   base::WaitableEvent* GetShutdownEvent() override;
+  int32_t GetClientId() override;
 
   // IPC::Listener implementation via ChildThreadImpl:
   void OnAssociatedInterfaceRequest(
@@ -741,6 +742,8 @@ class CONTENT_EXPORT RenderThreadImpl
 
   base::CancelableClosure record_purge_suspend_metric_closure_;
   bool is_renderer_suspended_;
+
+  int32_t client_id_;
 
   DISALLOW_COPY_AND_ASSIGN(RenderThreadImpl);
 };
