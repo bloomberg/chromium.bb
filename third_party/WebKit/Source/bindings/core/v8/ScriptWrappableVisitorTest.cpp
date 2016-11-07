@@ -5,6 +5,7 @@
 #include "bindings/core/v8/ScriptWrappableVisitor.h"
 
 #include "bindings/core/v8/ToV8.h"
+#include "bindings/core/v8/TraceWrapperV8Reference.h"
 #include "bindings/core/v8/V8BindingForTesting.h"
 #include "bindings/core/v8/V8GCController.h"
 #include "bindings/core/v8/V8PerIsolateData.h"
@@ -299,7 +300,6 @@ class HandleContainer
 
   void setValue(v8::Isolate* isolate, v8::Local<v8::String> string) {
     m_handle.set(isolate, string);
-    m_handle.setPhantom();
   }
 
  private:

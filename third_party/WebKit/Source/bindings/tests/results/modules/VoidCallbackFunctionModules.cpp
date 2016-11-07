@@ -22,7 +22,6 @@ VoidCallbackFunctionModules::VoidCallbackFunctionModules(ScriptState* scriptStat
     : m_scriptState(scriptState),
     m_callback(scriptState->isolate(), this, callback) {
   DCHECK(!m_callback.isEmpty());
-  m_callback.setPhantom();
 }
 
 DEFINE_TRACE(VoidCallbackFunctionModules) {}

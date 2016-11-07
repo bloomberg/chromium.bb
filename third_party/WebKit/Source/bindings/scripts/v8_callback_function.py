@@ -11,8 +11,8 @@ from v8_globals import includes  # pylint: disable=W0403
 import v8_utilities  # pylint: disable=W0403
 
 CALLBACK_FUNCTION_H_INCLUDES = frozenset([
-    'bindings/core/v8/ScopedPersistent.h',
     'bindings/core/v8/ScriptWrappable.h',
+    'bindings/core/v8/TraceWrapperV8Reference.h',
     'platform/heap/Handle.h',
     'wtf/text/WTFString.h',
 ])

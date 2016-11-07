@@ -103,50 +103,8 @@ class ScopedPersistent {
 
   ALWAYS_INLINE v8::Persistent<T>& get() { return m_handle; }
 
-  template <typename S>
-  const ScopedPersistent<S>& cast() const {
-    return reinterpret_cast<const ScopedPersistent<v8::Object>&>(
-        const_cast<const ScopedPersistent<T>&>(*this));
-  }
-
  private:
   v8::Persistent<T> m_handle;
-};
-
-/**
- * TraceWrapperV8Reference is used to trace from Blink to V8.
- *
- * TODO(mlippautz): Once shipped, create a separate type with a more
- * appropriate handle type than v8::Persistent. The handle should have regular
- * tracing semantics, i.e., only hold strongly on to an object if reached
- * through tracing.
- */
-template <typename T>
-class TraceWrapperV8Reference : public ScopedPersistent<T> {
- public:
-  explicit TraceWrapperV8Reference(void* parent)
-      : ScopedPersistent<T>(), m_parent(parent) {}
-
-  TraceWrapperV8Reference(v8::Isolate* isolate,
-                          void* parent,
-                          v8::Local<T> handle)
-      : ScopedPersistent<T>(isolate, handle), m_parent(parent) {
-    ScriptWrappableVisitor::writeBarrier(m_parent, &cast<v8::Value>());
-  }
-
-  void set(v8::Isolate* isolate, v8::Local<T> handle) override {
-    ScopedPersistent<T>::set(isolate, handle);
-    ScriptWrappableVisitor::writeBarrier(m_parent, &cast<v8::Value>());
-  }
-
-  template <typename S>
-  const TraceWrapperV8Reference<S>& cast() const {
-    return reinterpret_cast<const TraceWrapperV8Reference<S>&>(
-        const_cast<const TraceWrapperV8Reference<T>&>(*this));
-  }
-
- private:
-  void* m_parent;
 };
 
 }  // namespace blink

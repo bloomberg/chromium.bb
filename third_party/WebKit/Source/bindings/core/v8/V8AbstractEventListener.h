@@ -32,8 +32,8 @@
 #define V8AbstractEventListener_h
 
 #include "bindings/core/v8/DOMWrapperWorld.h"
-#include "bindings/core/v8/ScopedPersistent.h"
 #include "bindings/core/v8/ScriptWrappable.h"
+#include "bindings/core/v8/TraceWrapperV8Reference.h"
 #include "core/CoreExport.h"
 #include "core/events/EventListener.h"
 #include "platform/heap/SelfKeepAlive.h"

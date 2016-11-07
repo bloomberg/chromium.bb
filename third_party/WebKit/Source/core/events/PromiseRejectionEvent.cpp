@@ -20,11 +20,9 @@ PromiseRejectionEvent::PromiseRejectionEvent(
   DCHECK(initializer.hasPromise());
   m_promise.set(initializer.promise().isolate(),
                 initializer.promise().v8Value());
-  m_promise.setPhantom();
   if (initializer.hasReason()) {
     m_reason.set(initializer.reason().isolate(),
                  initializer.reason().v8Value());
-    m_reason.setPhantom();
   }
 }
 

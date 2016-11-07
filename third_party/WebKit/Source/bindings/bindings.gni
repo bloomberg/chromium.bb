@@ -131,6 +131,7 @@ bindings_core_v8_files =
                     "core/v8/SourceLocation.cpp",
                     "core/v8/SourceLocation.h",
                     "core/v8/TraceWrapperMember.h",
+                    "core/v8/TraceWrapperV8Reference.h",
                     "core/v8/Transferables.h",
                     "core/v8/ToV8.cpp",
                     "core/v8/ToV8.h",

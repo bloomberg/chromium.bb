@@ -109,8 +109,7 @@ void V8AbstractEventListener::setListenerObject(
   } else {
     m_keepAlive = this;
   }
-  m_listener.set(isolate(), listener);
-  m_listener.setWeak(this, &wrapperCleared);
+  m_listener.set(isolate(), listener, this, &wrapperCleared);
 }
 
 void V8AbstractEventListener::invokeEventHandler(ScriptState* scriptState,
