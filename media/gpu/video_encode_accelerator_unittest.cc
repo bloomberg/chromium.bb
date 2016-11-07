@@ -438,6 +438,51 @@ static void ParseAndReadTestStreamData(const base::FilePath::StringType& data,
   }
 }
 
+static std::unique_ptr<VideoEncodeAccelerator> CreateFakeVEA() {
+  std::unique_ptr<VideoEncodeAccelerator> encoder;
+  if (g_fake_encoder) {
+    encoder.reset(new FakeVideoEncodeAccelerator(
+        scoped_refptr<base::SingleThreadTaskRunner>(
+            base::ThreadTaskRunnerHandle::Get())));
+  }
+  return encoder;
+}
+
+static std::unique_ptr<VideoEncodeAccelerator> CreateV4L2VEA() {
+  std::unique_ptr<VideoEncodeAccelerator> encoder;
+#if defined(OS_CHROMEOS) && defined(USE_V4L2_CODEC)
+  scoped_refptr<V4L2Device> device = V4L2Device::Create();
+  if (device)
+    encoder.reset(new V4L2VideoEncodeAccelerator(device));
+#endif
+  return encoder;
+}
+
+static std::unique_ptr<VideoEncodeAccelerator> CreateVaapiVEA() {
+  std::unique_ptr<VideoEncodeAccelerator> encoder;
+#if defined(OS_CHROMEOS) && defined(ARCH_CPU_X86_FAMILY)
+  encoder.reset(new VaapiVideoEncodeAccelerator());
+#endif
+  return encoder;
+}
+
+static std::unique_ptr<VideoEncodeAccelerator> CreateVTVEA() {
+  std::unique_ptr<VideoEncodeAccelerator> encoder;
+#if defined(OS_MACOSX)
+  encoder.reset(new VTVideoEncodeAccelerator());
+#endif
+  return encoder;
+}
+
+static std::unique_ptr<VideoEncodeAccelerator> CreateMFVEA() {
+  std::unique_ptr<VideoEncodeAccelerator> encoder;
+#if defined(OS_WIN)
+  MediaFoundationVideoEncodeAccelerator::PreSandboxInitialization();
+  encoder.reset(new MediaFoundationVideoEncodeAccelerator());
+#endif
+  return encoder;
+}
+
 // Basic test environment shared across multiple test cases. We only need to
 // setup it once for all test cases.
 // It helps
@@ -861,12 +906,6 @@ class VEAClient : public VideoEncodeAccelerator::Client {
   // Return the number of encoded frames per second.
   double frames_per_second();
 
-  std::unique_ptr<VideoEncodeAccelerator> CreateFakeVEA();
-  std::unique_ptr<VideoEncodeAccelerator> CreateV4L2VEA();
-  std::unique_ptr<VideoEncodeAccelerator> CreateVaapiVEA();
-  std::unique_ptr<VideoEncodeAccelerator> CreateVTVEA();
-  std::unique_ptr<VideoEncodeAccelerator> CreateMFVEA();
-
   void SetState(ClientState new_state);
 
   // Set current stream parameters to given |bitrate| at |framerate|.
@@ -1116,51 +1155,6 @@ VEAClient::VEAClient(TestStream* test_stream,
 
 VEAClient::~VEAClient() {
   LOG_ASSERT(!has_encoder());
-}
-
-std::unique_ptr<VideoEncodeAccelerator> VEAClient::CreateFakeVEA() {
-  std::unique_ptr<VideoEncodeAccelerator> encoder;
-  if (g_fake_encoder) {
-    encoder.reset(new FakeVideoEncodeAccelerator(
-        scoped_refptr<base::SingleThreadTaskRunner>(
-            base::ThreadTaskRunnerHandle::Get())));
-  }
-  return encoder;
-}
-
-std::unique_ptr<VideoEncodeAccelerator> VEAClient::CreateV4L2VEA() {
-  std::unique_ptr<VideoEncodeAccelerator> encoder;
-#if defined(OS_CHROMEOS) && defined(USE_V4L2_CODEC)
-  scoped_refptr<V4L2Device> device = V4L2Device::Create();
-  if (device)
-    encoder.reset(new V4L2VideoEncodeAccelerator(device));
-#endif
-  return encoder;
-}
-
-std::unique_ptr<VideoEncodeAccelerator> VEAClient::CreateVaapiVEA() {
-  std::unique_ptr<VideoEncodeAccelerator> encoder;
-#if defined(OS_CHROMEOS) && defined(ARCH_CPU_X86_FAMILY)
-  encoder.reset(new VaapiVideoEncodeAccelerator());
-#endif
-  return encoder;
-}
-
-std::unique_ptr<VideoEncodeAccelerator> VEAClient::CreateVTVEA() {
-  std::unique_ptr<VideoEncodeAccelerator> encoder;
-#if defined(OS_MACOSX)
-  encoder.reset(new VTVideoEncodeAccelerator());
-#endif
-  return encoder;
-}
-
-std::unique_ptr<VideoEncodeAccelerator> VEAClient::CreateMFVEA() {
-  std::unique_ptr<VideoEncodeAccelerator> encoder;
-#if defined(OS_WIN)
-  MediaFoundationVideoEncodeAccelerator::PreSandboxInitialization();
-  encoder.reset(new MediaFoundationVideoEncodeAccelerator());
-#endif
-  return encoder;
 }
 
 void VEAClient::CreateEncoder() {
@@ -1676,6 +1670,151 @@ void VEAClient::WriteIvfFrameHeader(int frame_index, size_t frame_size) {
       reinterpret_cast<char*>(&header), sizeof(header)));
 }
 
+// This client is only used to make sure the encoder does not return an encoded
+// frame before getting any input.
+class VEANoInputClient : public VideoEncodeAccelerator::Client {
+ public:
+  explicit VEANoInputClient(ClientStateNotification<ClientState>* note);
+  ~VEANoInputClient() override;
+  void CreateEncoder();
+  void DestroyEncoder();
+
+  // VideoDecodeAccelerator::Client implementation.
+  void RequireBitstreamBuffers(unsigned int input_count,
+                               const gfx::Size& input_coded_size,
+                               size_t output_buffer_size) override;
+  void BitstreamBufferReady(int32_t bitstream_buffer_id,
+                            size_t payload_size,
+                            bool key_frame,
+                            base::TimeDelta timestamp) override;
+  void NotifyError(VideoEncodeAccelerator::Error error) override;
+
+ private:
+  bool has_encoder() { return encoder_.get(); }
+
+  void SetState(ClientState new_state);
+
+  // Provide the encoder with a new output buffer.
+  void FeedEncoderWithOutput(base::SharedMemory* shm, size_t output_size);
+
+  std::unique_ptr<VideoEncodeAccelerator> encoder_;
+
+  // Used to notify another thread about the state. VEAClient does not own this.
+  ClientStateNotification<ClientState>* note_;
+
+  // All methods of this class should be run on the same thread.
+  base::ThreadChecker thread_checker_;
+
+  // Ids for output BitstreamBuffers.
+  ScopedVector<base::SharedMemory> output_shms_;
+  int32_t next_output_buffer_id_;
+
+  // The timer used to monitor the encoder doesn't return an output buffer in
+  // a period of time.
+  std::unique_ptr<base::Timer> timer_;
+};
+
+VEANoInputClient::VEANoInputClient(ClientStateNotification<ClientState>* note)
+    : note_(note), next_output_buffer_id_(0) {}
+
+VEANoInputClient::~VEANoInputClient() {
+  LOG_ASSERT(!has_encoder());
+}
+
+void VEANoInputClient::CreateEncoder() {
+  DCHECK(thread_checker_.CalledOnValidThread());
+  LOG_ASSERT(!has_encoder());
+
+  const int kDefaultWidth = 320;
+  const int kDefaultHeight = 240;
+  const int kDefaultBitrate = 200000;
+  const int kDefaultFps = 30;
+
+  std::unique_ptr<VideoEncodeAccelerator> encoders[] = {
+      CreateFakeVEA(), CreateV4L2VEA(), CreateVaapiVEA(), CreateVTVEA(),
+      CreateMFVEA()};
+
+  // The test case is no input. Use default visible size, bitrate, and fps.
+  gfx::Size visible_size(kDefaultWidth, kDefaultHeight);
+  for (auto& encoder : encoders) {
+    if (!encoder)
+      continue;
+    encoder_ = std::move(encoder);
+    if (encoder_->Initialize(kInputFormat, visible_size, VP8PROFILE_ANY,
+                             kDefaultBitrate, this)) {
+      encoder_->RequestEncodingParametersChange(kDefaultBitrate, kDefaultFps);
+      SetState(CS_INITIALIZED);
+      return;
+    }
+  }
+  encoder_.reset();
+  LOG(ERROR) << "VideoEncodeAccelerator::Initialize() failed";
+  SetState(CS_ERROR);
+}
+
+void VEANoInputClient::DestroyEncoder() {
+  DCHECK(thread_checker_.CalledOnValidThread());
+  if (!has_encoder())
+    return;
+  // Clear the objects that should be destroyed on the same thread as creation.
+  encoder_.reset();
+  timer_.reset();
+}
+
+void VEANoInputClient::RequireBitstreamBuffers(
+    unsigned int input_count,
+    const gfx::Size& input_coded_size,
+    size_t output_size) {
+  DCHECK(thread_checker_.CalledOnValidThread());
+  SetState(CS_ENCODING);
+  ASSERT_GT(output_size, 0UL);
+
+  for (unsigned int i = 0; i < kNumOutputBuffers; ++i) {
+    base::SharedMemory* shm = new base::SharedMemory();
+    LOG_ASSERT(shm->CreateAndMapAnonymous(output_size));
+    output_shms_.push_back(shm);
+    FeedEncoderWithOutput(shm, output_size);
+  }
+  // Timer is used to make sure there is no output frame in 100ms.
+  timer_.reset(new base::Timer(FROM_HERE,
+                               base::TimeDelta::FromMilliseconds(100),
+                               base::Bind(&VEANoInputClient::SetState,
+                                          base::Unretained(this), CS_FINISHED),
+                               false));
+  timer_->Reset();
+}
+
+void VEANoInputClient::BitstreamBufferReady(int32_t bitstream_buffer_id,
+                                            size_t payload_size,
+                                            bool key_frame,
+                                            base::TimeDelta timestamp) {
+  DCHECK(thread_checker_.CalledOnValidThread());
+  SetState(CS_ERROR);
+}
+
+void VEANoInputClient::NotifyError(VideoEncodeAccelerator::Error error) {
+  DCHECK(thread_checker_.CalledOnValidThread());
+  SetState(CS_ERROR);
+}
+
+void VEANoInputClient::SetState(ClientState new_state) {
+  DVLOG(4) << "Changing state to " << new_state;
+  note_->Notify(new_state);
+}
+
+void VEANoInputClient::FeedEncoderWithOutput(base::SharedMemory* shm,
+                                             size_t output_size) {
+  if (!has_encoder())
+    return;
+
+  base::SharedMemoryHandle dup_handle;
+  LOG_ASSERT(shm->ShareToProcess(base::GetCurrentProcessHandle(), &dup_handle));
+
+  BitstreamBuffer bitstream_buffer(next_output_buffer_id_++, dup_handle,
+                                   output_size);
+  encoder_->UseOutputBitstreamBuffer(bitstream_buffer);
+}
+
 // Test parameters:
 // - Number of concurrent encoders. The value takes effect when there is only
 //   one input stream; otherwise, one encoder per input stream will be
@@ -1744,10 +1883,9 @@ TEST_P(VideoEncodeAcceleratorTest, TestSimpleEncode) {
   // encoders are created/destroyed, is a single GPU Process ChildThread.
   // Moreover, we can't have proper multithreading on X11, so this could cause
   // hard to debug issues there, if there were multiple "ChildThreads".
-  for (size_t state_no = 0; state_no < arraysize(state_transitions);
-       ++state_no) {
+  for (const auto& state : state_transitions) {
     for (size_t i = 0; i < num_concurrent_encoders; i++)
-      ASSERT_EQ(notes[i]->Wait(), state_transitions[state_no]);
+      ASSERT_EQ(notes[i]->Wait(), state);
   }
 
   for (size_t i = 0; i < num_concurrent_encoders; ++i) {
@@ -1817,6 +1955,33 @@ INSTANTIATE_TEST_CASE_P(
     VideoEncodeAcceleratorTest,
     ::testing::Values(
         std::make_tuple(1, false, 0, false, false, false, false, false, true)));
+
+TEST(VEANoInputTest, CheckOutput) {
+  std::unique_ptr<ClientStateNotification<ClientState>> note(
+      new ClientStateNotification<ClientState>());
+  std::unique_ptr<VEANoInputClient> client(new VEANoInputClient(note.get()));
+  base::Thread encoder_thread("EncoderThread");
+  ASSERT_TRUE(encoder_thread.Start());
+
+  encoder_thread.task_runner()->PostTask(
+      FROM_HERE, base::Bind(&VEANoInputClient::CreateEncoder,
+                            base::Unretained(client.get())));
+
+  // Encoder must pass through states in this order.
+  enum ClientState state_transitions[] = {CS_INITIALIZED, CS_ENCODING,
+                                          CS_FINISHED};
+
+  for (const auto& state : state_transitions) {
+    ASSERT_EQ(note->Wait(), state);
+  }
+
+  encoder_thread.task_runner()->PostTask(
+      FROM_HERE, base::Bind(&VEANoInputClient::DestroyEncoder,
+                            base::Unretained(client.get())));
+
+  // This ensures all tasks have finished.
+  encoder_thread.Stop();
+}
 
 #elif defined(OS_MACOSX) || defined(OS_WIN)
 INSTANTIATE_TEST_CASE_P(
