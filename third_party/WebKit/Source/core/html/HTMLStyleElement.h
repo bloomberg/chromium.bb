@@ -23,12 +23,16 @@
 #ifndef HTMLStyleElement_h
 #define HTMLStyleElement_h
 
-#include "core/dom/IncrementLoadEventDelayCount.h"
 #include "core/dom/StyleElement.h"
 #include "core/html/HTMLElement.h"
-#include <memory>
 
 namespace blink {
+
+class HTMLStyleElement;
+
+template <typename T>
+class EventSender;
+using StyleEventSender = EventSender<HTMLStyleElement>;
 
 class CORE_EXPORT HTMLStyleElement final : public HTMLElement,
                                            private StyleElement {
@@ -44,7 +48,8 @@ class CORE_EXPORT HTMLStyleElement final : public HTMLElement,
   bool disabled() const;
   void setDisabled(bool);
 
-  void dispatchPendingEvent(std::unique_ptr<IncrementLoadEventDelayCount>);
+  void dispatchPendingEvent(StyleEventSender*);
+  static void dispatchPendingLoadEvents();
 
   DECLARE_VIRTUAL_TRACE();
 

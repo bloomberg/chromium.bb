@@ -27,13 +27,19 @@
 #include "core/css/MediaList.h"
 #include "core/dom/Document.h"
 #include "core/dom/StyleEngine.h"
-#include "core/dom/TaskRunnerHelper.h"
 #include "core/dom/shadow/ShadowRoot.h"
 #include "core/events/Event.h"
+#include "core/events/EventSender.h"
 
 namespace blink {
 
 using namespace HTMLNames;
+
+static StyleEventSender& styleLoadEventSender() {
+  DEFINE_STATIC_LOCAL(StyleEventSender, sharedLoadEventSender,
+                      (StyleEventSender::create(EventTypeNames::load)));
+  return sharedLoadEventSender;
+}
 
 inline HTMLStyleElement::HTMLStyleElement(Document& document,
                                           bool createdByParser)
@@ -107,8 +113,12 @@ const AtomicString& HTMLStyleElement::type() const {
   return getAttribute(typeAttr);
 }
 
-void HTMLStyleElement::dispatchPendingEvent(
-    std::unique_ptr<IncrementLoadEventDelayCount>) {
+void HTMLStyleElement::dispatchPendingLoadEvents() {
+  styleLoadEventSender().dispatchPendingEvents();
+}
+
+void HTMLStyleElement::dispatchPendingEvent(StyleEventSender* eventSender) {
+  DCHECK_EQ(eventSender, &styleLoadEventSender());
   dispatchEvent(Event::create(m_loadedSheet ? EventTypeNames::load
                                             : EventTypeNames::error));
 }
@@ -119,12 +129,7 @@ void HTMLStyleElement::notifyLoadedSheetAndAllCriticalSubresources(
   if (m_firedLoad && isLoadEvent)
     return;
   m_loadedSheet = isLoadEvent;
-  TaskRunnerHelper::get(TaskType::DOMManipulation, &document())
-      ->postTask(
-          BLINK_FROM_HERE,
-          WTF::bind(&HTMLStyleElement::dispatchPendingEvent,
-                    wrapPersistent(this),
-                    passed(IncrementLoadEventDelayCount::create(document()))));
+  styleLoadEventSender().dispatchEventSoon(this);
   m_firedLoad = true;
 }
 
