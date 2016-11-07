@@ -327,7 +327,7 @@ void NetworkQualityEstimator::AddDefaultEstimates() {
     RttObservation rtt_observation(
         default_observations_[current_network_id_.type].http_rtt(),
         tick_clock_->NowTicks(),
-        NETWORK_QUALITY_OBSERVATION_SOURCE_DEFAULT_FROM_PLATFORM);
+        NETWORK_QUALITY_OBSERVATION_SOURCE_DEFAULT_HTTP_FROM_PLATFORM);
     rtt_observations_.AddObservation(rtt_observation);
     NotifyObserversOfRTT(rtt_observation);
   }
@@ -338,7 +338,7 @@ void NetworkQualityEstimator::AddDefaultEstimates() {
         default_observations_[current_network_id_.type]
             .downstream_throughput_kbps(),
         tick_clock_->NowTicks(),
-        NETWORK_QUALITY_OBSERVATION_SOURCE_DEFAULT_FROM_PLATFORM);
+        NETWORK_QUALITY_OBSERVATION_SOURCE_DEFAULT_HTTP_FROM_PLATFORM);
     downstream_throughput_kbps_observations_.AddObservation(
         throughput_observation);
     NotifyObserversOfThroughput(throughput_observation);
@@ -444,8 +444,8 @@ void NetworkQualityEstimator::NotifyHeadersReceived(const URLRequest& request) {
         peak_network_quality_.downstream_throughput_kbps());
   }
 
-  RttObservation http_rtt_observation(
-      observed_http_rtt, now, NETWORK_QUALITY_OBSERVATION_SOURCE_URL_REQUEST);
+  RttObservation http_rtt_observation(observed_http_rtt, now,
+                                      NETWORK_QUALITY_OBSERVATION_SOURCE_HTTP);
   rtt_observations_.AddObservation(http_rtt_observation);
   NotifyObserversOfRTT(http_rtt_observation);
 }
@@ -867,14 +867,14 @@ void NetworkQualityEstimator::RecordMetricsOnConnectionTypeChanged() const {
     static const int kPercentiles[] = {0, 10, 90, 100};
     std::vector<NetworkQualityObservationSource> disallowed_observation_sources;
     disallowed_observation_sources.push_back(
-        NETWORK_QUALITY_OBSERVATION_SOURCE_URL_REQUEST);
+        NETWORK_QUALITY_OBSERVATION_SOURCE_HTTP);
     // Disallow external estimate provider since it provides RTT at HTTP layer.
     disallowed_observation_sources.push_back(
-        NETWORK_QUALITY_OBSERVATION_SOURCE_EXTERNAL_ESTIMATE);
+        NETWORK_QUALITY_OBSERVATION_SOURCE_HTTP_EXTERNAL_ESTIMATE);
     disallowed_observation_sources.push_back(
-        NETWORK_QUALITY_OBSERVATION_SOURCE_CACHED_ESTIMATE);
+        NETWORK_QUALITY_OBSERVATION_SOURCE_HTTP_CACHED_ESTIMATE);
     disallowed_observation_sources.push_back(
-        NETWORK_QUALITY_OBSERVATION_SOURCE_DEFAULT_FROM_PLATFORM);
+        NETWORK_QUALITY_OBSERVATION_SOURCE_DEFAULT_HTTP_FROM_PLATFORM);
     for (size_t i = 0; i < arraysize(kPercentiles); ++i) {
       rtt = GetRTTEstimateInternal(disallowed_observation_sources,
                                    base::TimeTicks(), kPercentiles[i]);
@@ -1195,14 +1195,14 @@ bool NetworkQualityEstimator::GetRecentTransportRTT(
   DCHECK(thread_checker_.CalledOnValidThread());
   std::vector<NetworkQualityObservationSource> disallowed_observation_sources;
   disallowed_observation_sources.push_back(
-      NETWORK_QUALITY_OBSERVATION_SOURCE_URL_REQUEST);
+      NETWORK_QUALITY_OBSERVATION_SOURCE_HTTP);
   // Disallow external estimate provider since it provides RTT at HTTP layer.
   disallowed_observation_sources.push_back(
-      NETWORK_QUALITY_OBSERVATION_SOURCE_EXTERNAL_ESTIMATE);
+      NETWORK_QUALITY_OBSERVATION_SOURCE_HTTP_EXTERNAL_ESTIMATE);
   disallowed_observation_sources.push_back(
-      NETWORK_QUALITY_OBSERVATION_SOURCE_CACHED_ESTIMATE);
+      NETWORK_QUALITY_OBSERVATION_SOURCE_HTTP_CACHED_ESTIMATE);
   disallowed_observation_sources.push_back(
-      NETWORK_QUALITY_OBSERVATION_SOURCE_DEFAULT_FROM_PLATFORM);
+      NETWORK_QUALITY_OBSERVATION_SOURCE_DEFAULT_HTTP_FROM_PLATFORM);
 
   *rtt = GetRTTEstimateInternal(disallowed_observation_sources, start_time, 50);
   return (*rtt != nqe::internal::InvalidRTT());
@@ -1328,7 +1328,7 @@ bool NetworkQualityEstimator::ReadCachedNetworkQualityEstimate() {
       nqe::internal::kInvalidThroughput) {
     ThroughputObservation througphput_observation(
         cached_network_quality.network_quality().downstream_throughput_kbps(),
-        now, NETWORK_QUALITY_OBSERVATION_SOURCE_CACHED_ESTIMATE);
+        now, NETWORK_QUALITY_OBSERVATION_SOURCE_HTTP_CACHED_ESTIMATE);
     downstream_throughput_kbps_observations_.AddObservation(
         througphput_observation);
     NotifyObserversOfThroughput(througphput_observation);
@@ -1338,7 +1338,7 @@ bool NetworkQualityEstimator::ReadCachedNetworkQualityEstimate() {
       nqe::internal::InvalidRTT()) {
     RttObservation rtt_observation(
         cached_network_quality.network_quality().http_rtt(), now,
-        NETWORK_QUALITY_OBSERVATION_SOURCE_CACHED_ESTIMATE);
+        NETWORK_QUALITY_OBSERVATION_SOURCE_HTTP_CACHED_ESTIMATE);
     rtt_observations_.AddObservation(rtt_observation);
     NotifyObserversOfRTT(rtt_observation);
   }
@@ -1361,9 +1361,9 @@ void NetworkQualityEstimator::OnUpdatedEstimateAvailable(
     RecordExternalEstimateProviderMetrics(
         EXTERNAL_ESTIMATE_PROVIDER_STATUS_RTT_AVAILABLE);
     UMA_HISTOGRAM_TIMES("NQE.ExternalEstimateProvider.RTT", rtt);
-    rtt_observations_.AddObservation(
-        RttObservation(rtt, tick_clock_->NowTicks(),
-                       NETWORK_QUALITY_OBSERVATION_SOURCE_EXTERNAL_ESTIMATE));
+    rtt_observations_.AddObservation(RttObservation(
+        rtt, tick_clock_->NowTicks(),
+        NETWORK_QUALITY_OBSERVATION_SOURCE_HTTP_EXTERNAL_ESTIMATE));
     external_estimate_provider_quality_.set_http_rtt(rtt);
   }
 
@@ -1375,7 +1375,7 @@ void NetworkQualityEstimator::OnUpdatedEstimateAvailable(
     downstream_throughput_kbps_observations_.AddObservation(
         ThroughputObservation(
             downstream_throughput_kbps, tick_clock_->NowTicks(),
-            NETWORK_QUALITY_OBSERVATION_SOURCE_EXTERNAL_ESTIMATE));
+            NETWORK_QUALITY_OBSERVATION_SOURCE_HTTP_EXTERNAL_ESTIMATE));
     external_estimate_provider_quality_.set_downstream_throughput_kbps(
         downstream_throughput_kbps);
   }
@@ -1449,7 +1449,7 @@ void NetworkQualityEstimator::OnNewThroughputObservationAvailable(
   }
   ThroughputObservation throughput_observation(
       downstream_kbps, tick_clock_->NowTicks(),
-      NETWORK_QUALITY_OBSERVATION_SOURCE_URL_REQUEST);
+      NETWORK_QUALITY_OBSERVATION_SOURCE_HTTP);
   downstream_throughput_kbps_observations_.AddObservation(
       throughput_observation);
   NotifyObserversOfThroughput(throughput_observation);
