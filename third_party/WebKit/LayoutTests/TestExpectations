@@ -504,6 +504,12 @@ crbug.com/662722 [ Win ] virtual/threaded/printing/fixed-positioned-headers-and-
 crbug.com/662722 [ Win ] virtual/threaded/printing/iframe-print.html [ NeedsManualRebaseline ]
 crbug.com/662722 [ Win ] virtual/threaded/printing/list-item-with-empty-first-line.html [ NeedsManualRebaseline ]
 crbug.com/662722 [ Win ] virtual/threaded/printing/subframes-percentage-height.html [ NeedsManualRebaseline ]
+# Flaky on Linux (hover effect?).
+crbug.com/662722 [ Linux ] fast/forms/suggestion-picker/datetimelocal-suggestion-picker-appearance-locale-hebrew.html [ Pass Failure ]
+crbug.com/662722 [ Linux ] fast/forms/suggestion-picker/datetimelocal-suggestion-picker-appearance.html [ Pass Failure ]
+crbug.com/662722 [ Linux ] fast/forms/suggestion-picker/date-suggestion-picker-appearance-zoom125.html [ Pass Failure ]
+crbug.com/662722 [ Linux ] fast/forms/suggestion-picker/datetimelocal-suggestion-picker-appearance-with-scroll-bar.html [ Pass Failure ]
+crbug.com/662722 [ Linux ] fast/forms/suggestion-picker/date-suggestion-picker-appearance-zoom200.html [ Pass Failure ]
 
 # TODO(oshima): Mac Android are currently not supported.
 crbug.com/567837 [ Mac Android ] virtual/scalefactor200withzoom/fast/hidpi/static [ Skip ]
