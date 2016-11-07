@@ -805,16 +805,17 @@ void SoftwareImageDecodeController::DumpImageMemoryForCache(
   lock_.AssertAcquired();
 
   for (const auto& image_pair : cache) {
+    std::string dump_name = base::StringPrintf(
+        "cc/image_memory/controller_0x%" PRIXPTR "/%s/image_%" PRIu64 "_id_%d",
+        reinterpret_cast<uintptr_t>(this), cache_name,
+        image_pair.second->tracing_id(), image_pair.first.image_id());
+    // CreateMemoryAllocatorDump will automatically add tracking values for the
+    // total size. If locked, we also add a "locked_size" below.
+    MemoryAllocatorDump* dump =
+        image_pair.second->memory()->CreateMemoryAllocatorDump(
+            dump_name.c_str(), pmd);
+    DCHECK(dump);
     if (image_pair.second->is_locked()) {
-      std::string dump_name = base::StringPrintf(
-          "cc/image_memory/controller_0x%" PRIXPTR "/%s/image_%" PRIu64
-          "_id_%d",
-          reinterpret_cast<uintptr_t>(this), cache_name,
-          image_pair.second->tracing_id(), image_pair.first.image_id());
-      MemoryAllocatorDump* dump =
-          image_pair.second->memory()->CreateMemoryAllocatorDump(
-              dump_name.c_str(), pmd);
-      DCHECK(dump);
       dump->AddScalar("locked_size", MemoryAllocatorDump::kUnitsBytes,
                       image_pair.first.locked_bytes());
     }
