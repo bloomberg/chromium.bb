@@ -9,6 +9,7 @@
 #include "ash/common/system/tray/system_tray.h"
 #include "ash/common/system/tray/system_tray_item.h"
 #include "ash/common/system/tray/tray_constants.h"
+#include "base/containers/adapters.h"
 #include "ui/gfx/canvas.h"
 #include "ui/views/background.h"
 #include "ui/views/border.h"
@@ -16,9 +17,158 @@
 #include "ui/views/controls/scroll_view.h"
 #include "ui/views/controls/separator.h"
 #include "ui/views/layout/box_layout.h"
+#include "ui/views/view_targeter.h"
+#include "ui/views/view_targeter_delegate.h"
 
 namespace ash {
 namespace {
+
+const int kHeaderRowSeparatorThickness = 1;
+const SkColor kHeaderRowSeparatorColor = SkColorSetA(SK_ColorBLACK, 0x1F);
+
+// A view that is used as ScrollView contents. It supports designating some of
+// the children as sticky header rows. The sticky header rows are not scrolled
+// above the top of the visible viewport until the next one "pushes" it up and
+// are painted above other children. To indicate that a child is a sticky header
+// row use set_id(kHeaderRowId).
+class ScrollContentsView : public views::View,
+                           public views::ViewTargeterDelegate {
+ public:
+  ScrollContentsView() {
+    SetEventTargeter(base::MakeUnique<views::ViewTargeter>(this));
+    SetLayoutManager(
+        new views::BoxLayout(views::BoxLayout::kVertical, 0, 0, 1));
+  }
+  ~ScrollContentsView() override {}
+
+ protected:
+  // views::View:
+  void OnBoundsChanged(const gfx::Rect& previous_bounds) override {
+    PositionHeaderRows();
+  }
+
+  void PaintChildren(const ui::PaintContext& context) override {
+    for (int i = 0; i < child_count(); ++i) {
+      if (child_at(i)->id() != kHeaderRowId && !child_at(i)->layer())
+        child_at(i)->Paint(context);
+    }
+    // Paint header rows above other children in Z-order.
+    for (auto& header : headers_) {
+      if (!header.view()->layer())
+        header.view()->Paint(context);
+    }
+  }
+
+  void Layout() override {
+    views::View::Layout();
+    headers_.clear();
+    for (int i = 0; i < child_count(); ++i) {
+      views::View* view = child_at(i);
+      if (view->id() == kHeaderRowId)
+        headers_.emplace_back(view);
+    }
+    PositionHeaderRows();
+  }
+
+  void ViewHierarchyChanged(
+      const ViewHierarchyChangedDetails& details) override {
+    if (!details.is_add && details.parent == this) {
+      headers_.erase(std::remove_if(headers_.begin(), headers_.end(),
+                                    [details](const Header& header) {
+                                      return header.view() == details.child;
+                                    }),
+                     headers_.end());
+    }
+  }
+
+  // views::ViewTargeterDelegate:
+  View* TargetForRect(View* root, const gfx::Rect& rect) override {
+    // Give header rows first dibs on events.
+    for (auto& header : headers_) {
+      views::View* view = header.view();
+      gfx::Rect local_to_header = rect;
+      local_to_header.Offset(-view->x(), -view->y());
+      if (ViewTargeterDelegate::DoesIntersectRect(view, local_to_header))
+        return ViewTargeterDelegate::TargetForRect(view, local_to_header);
+    }
+    return ViewTargeterDelegate::TargetForRect(root, rect);
+  }
+
+ private:
+  // A structure that keeps the original offset of each header between the
+  // calls to Layout() to allow keeping track of which view should be sticky.
+  class Header {
+   public:
+    explicit Header(views::View* header)
+        : view_(header), offset_(header->y()), sticky_(true) {
+      DecorateAsSticky(false);
+    }
+
+    // Sets decorations on a header row to indicate whether it is |sticky|.
+    void DecorateAsSticky(bool sticky) {
+      if (sticky_ == sticky)
+        return;
+      sticky_ = sticky;
+      if (sticky) {
+        view_->SetBorder(views::Border::CreateSolidSidedBorder(
+            0, 0, kHeaderRowSeparatorThickness, 0, kHeaderRowSeparatorColor));
+      } else {
+        view_->SetBorder(views::Border::CreateSolidSidedBorder(
+            kHeaderRowSeparatorThickness, 0, 0, 0, kHeaderRowSeparatorColor));
+      }
+    }
+
+    const views::View* view() const { return view_; }
+    views::View* view() { return view_; }
+    int offset() const { return offset_; }
+
+   private:
+    // A header View that can be decorated as sticky.
+    views::View* view_;
+
+    // Offset from the top of ScrollContentsView to |view|'s original vertical
+    // position.
+    int offset_;
+
+    // True if the header is decorated as sticky with a shadow below.
+    bool sticky_;
+  };
+
+  // Adjusts y-position of header rows allowing one or two rows to stick to the
+  // top of the visible viewport.
+  void PositionHeaderRows() {
+    const int scroll_offset = -y();
+    Header* previous_header = nullptr;
+    for (auto& header : base::Reversed(headers_)) {
+      if (header.offset() >= scroll_offset) {
+        header.DecorateAsSticky(false);
+        previous_header = &header;
+        continue;
+      }
+      views::View* header_view = header.view();
+      if (previous_header &&
+          previous_header->view()->y() <
+              scroll_offset + header_view->height()) {
+        // Lower header displacing the header above.
+        header_view->SetY(previous_header->view()->y() - header_view->height());
+        header.DecorateAsSticky(false);
+        previous_header->DecorateAsSticky(false);
+      } else {
+        // A header becomes sticky.
+        header_view->SetY(scroll_offset);
+        header.DecorateAsSticky(true);
+        header_view->Layout();
+        header_view->SchedulePaint();
+      }
+      break;
+    }
+  }
+
+  // Header child views that stick to the top of visible viewport when scrolled.
+  std::vector<Header> headers_;
+
+  DISALLOW_COPY_AND_ASSIGN(ScrollContentsView);
+};
 
 // Constants for the title row in material design.
 const int kTitleRowVerticalPadding = 4;
@@ -65,8 +215,6 @@ class TitleRowSeparatorLayout : public views::LayoutManager {
   }
 };
 
-}  // namespace
-
 class ScrollSeparator : public views::View {
  public:
   ScrollSeparator() {}
@@ -74,7 +222,7 @@ class ScrollSeparator : public views::View {
   ~ScrollSeparator() override {}
 
  private:
-  // Overriden from views::View.
+  // views::View:
   void OnPaint(gfx::Canvas* canvas) override {
     canvas->FillRect(gfx::Rect(0, height() / 2, width(), 1), kBorderLightColor);
   }
@@ -85,6 +233,8 @@ class ScrollSeparator : public views::View {
   DISALLOW_COPY_AND_ASSIGN(ScrollSeparator);
 };
 
+}  // namespace
+
 class ScrollBorder : public views::Border {
  public:
   ScrollBorder() {}
@@ -93,7 +243,7 @@ class ScrollBorder : public views::Border {
   void set_visible(bool visible) { visible_ = visible; }
 
  private:
-  // Overridden from views::Border.
+  // views::Border:
   void Paint(const views::View& view, gfx::Canvas* canvas) override {
     if (!visible_)
       return;
@@ -105,7 +255,7 @@ class ScrollBorder : public views::Border {
 
   gfx::Size GetMinimumSize() const override { return gfx::Size(0, 1); }
 
-  bool visible_;
+  bool visible_ = false;
 
   DISALLOW_COPY_AND_ASSIGN(ScrollBorder);
 };
@@ -161,7 +311,7 @@ void TrayDetailsView::CreateTitleRow(int string_id) {
     title_row_separator_->SetLayoutManager(new TitleRowSeparatorLayout);
     views::Separator* separator =
         new views::Separator(views::Separator::HORIZONTAL);
-    separator->SetColor(ash::kTitleRowSeparatorBorderColor);
+    separator->SetColor(kTitleRowSeparatorBorderColor);
     separator->SetPreferredSize(kTitleRowSeparatorBorderHeight);
     separator->SetBorder(views::Border::CreateEmptyBorder(
         kTitleRowSeparatorHeight - kTitleRowSeparatorBorderHeight, 0, 0, 0));
@@ -181,9 +331,7 @@ void TrayDetailsView::CreateTitleRow(int string_id) {
 
 void TrayDetailsView::CreateScrollableList() {
   DCHECK(!scroller_);
-  scroll_content_ = new views::View;
-  scroll_content_->SetLayoutManager(
-      new views::BoxLayout(views::BoxLayout::kVertical, 0, 0, 1));
+  scroll_content_ = new ScrollContentsView();
   scroller_ = new FixedSizedScrollView;
   scroller_->SetContentsView(scroll_content_);
 

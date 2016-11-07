@@ -10,6 +10,7 @@
 #include "ash/common/system/chromeos/network/network_icon_animation.h"
 #include "ash/common/system/chromeos/network/network_info.h"
 #include "ash/common/system/chromeos/network/network_list_delegate.h"
+#include "ash/common/system/tray/tray_constants.h"
 #include "base/memory/ptr_util.h"
 #include "chromeos/dbus/dbus_thread_manager.h"
 #include "chromeos/dbus/power_manager/power_supply_properties.pb.h"
@@ -27,6 +28,7 @@
 #include "ui/gfx/font.h"
 #include "ui/gfx/paint_vector_icon.h"
 #include "ui/gfx/vector_icons_public.h"
+#include "ui/views/background.h"
 #include "ui/views/border.h"
 #include "ui/views/controls/button/image_button.h"
 #include "ui/views/controls/button/toggle_button.h"
@@ -46,15 +48,13 @@ namespace ash {
 
 namespace {
 
+// TODO(varkha): Merge some of those those constants in tray_constants.h
 const int kWiFiButtonSize = 48;
 const int kWifiRowVerticalInset = 4;
 const int kWifiRowLeftInset = 18;
 const int kWifiRowRightInset = 14;
-const int kWifiRowSeparatorThickness = 1;
 const int kWifiRowChildSpacing = 14;
 const int kFocusBorderInset = 1;
-
-const SkColor kWifiRowSeparatorColor = SkColorSetA(SK_ColorBLACK, 0x1F);
 
 bool IsProhibitedByPolicy(const chromeos::NetworkState* network) {
   if (!NetworkTypePattern::WiFi().MatchesType(network->type()))
@@ -116,11 +116,13 @@ class NetworkListViewMd::WifiHeaderRowView : public views::View {
     return GetPreferredSize().height();
   }
 
+  const char* GetClassName() const override { return "WifiHeaderRowView"; }
+
  private:
   void Init() {
+    set_id(kHeaderRowId);
+    set_background(views::Background::CreateSolidBackground(kBackgroundColor));
     // TODO(tdanderson): Need to unify this with the generic menu row class.
-    SetBorder(views::Border::CreateSolidSidedBorder(
-        kWifiRowSeparatorThickness, 0, 0, 0, kWifiRowSeparatorColor));
     views::View* container = new views::View;
     container->SetBorder(views::Border::CreateEmptyBorder(
         0, kWifiRowLeftInset, 0, kWifiRowRightInset));

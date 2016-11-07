@@ -91,6 +91,9 @@ extern const int kSeparatorWidth;
 extern const SkColor kHorizontalSeparatorColor;
 extern const int kHorizontalSeparatorHeight;
 
+// View ID that is used to mark sticky header rows in a scroll view.
+extern const int kHeaderRowId;
+
 // The size and foreground color of the icons appearing in the material design
 // system tray.
 extern const int kTrayIconSize;
