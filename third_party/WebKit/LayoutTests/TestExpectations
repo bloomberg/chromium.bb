@@ -488,7 +488,6 @@ crbug.com/662722 [ Win ] css1/box_properties/border_color.html [ NeedsManualReba
 crbug.com/662722 [ Win ] css1/box_properties/margin_left.html [ NeedsManualRebaseline ]
 crbug.com/662722 [ Mac ] css1/formatting_model/height_of_lines.html [ NeedsManualRebaseline ]
 crbug.com/662722 [ Mac ] css1/classification/list_style_type.html [ NeedsManualRebaseline ]
-crbug.com/662722 [ Mac ] fast/forms/datalist/input-appearance-range-with-datalist-zoomed.html [ NeedsManualRebaseline ]
 crbug.com/662722 virtual/scalefactor200withzoom/fast/hidpi/static/calendar-picker-appearance.html [ NeedsManualRebaseline ]
 crbug.com/662722 virtual/scalefactor200withzoom/fast/hidpi/static/data-suggestion-picker-appearance.html [ NeedsManualRebaseline ]
 # Win10 Specific. Failed from r430189.
