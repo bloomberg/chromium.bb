@@ -657,6 +657,24 @@ browser_commands_list = [
     "Network.setCookie",
     "Network.canEmulateNetworkConditions",
     "Network.emulateNetworkConditions"]
+async_commands_list = [
+    "Page.getResourceContent",
+    "Page.searchInResource",
+    "Page.captureScreenshot",
+    "Network.getCookies",
+    "Network.deleteCookie",
+    "Network.setCookie",
+    "IO.read",
+    "Input.synthesizePinchGesture",
+    "Input.synthesizeScrollGesture",
+    "Input.synthesizeTapGesture",
+    "Tracing.start",
+    "Tracing.end",
+    "Tracing.getCategories",
+    "Tracing.requestMemoryDump",
+    "SystemInfo.getInfo",
+    "Tethering.bind",
+    "Tethering.unbind"]
 
 for json_domain in all_domains:
   domain_map = {}
@@ -719,7 +737,7 @@ for json_domain in all_domains:
             args.append(
                 tmpl_arg_req.substitute(param_map, param_pass=param_pass))
 
-      if json_command.get("async"):
+      if full_command_name in async_commands_list:
         domain_needs_client = True
         json_returns = []
         if "returns" in json_command:

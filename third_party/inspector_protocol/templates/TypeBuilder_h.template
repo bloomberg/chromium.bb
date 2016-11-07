@@ -189,8 +189,8 @@ public:
 
   {% for command in domain.commands %}
     {% if "redirect" in command %}{% continue %}{% endif %}
-    {% if ("handlers" in command) and not ("renderer" in command["handlers"]) %}{% continue %}{% endif %}
-    {% if "async" in command %}
+    {% if not generate_command(domain.domain, command.name) %}{% continue %}{% endif %}
+    {% if is_async_command(domain.domain, command.name) %}
     class {{config.protocol.export_macro}} {{command.name | to_title_case}}Callback {
     public:
         virtual void sendSuccess(
@@ -204,9 +204,10 @@ public:
       {%- endfor -%}
         ) = 0;
         virtual void sendFailure(const DispatchResponse&) = 0;
+        virtual ~{{command.name | to_title_case}}Callback() { }
     };
     {% endif %}
-    {%- if not("async" in command) %}
+    {%- if not is_async_command(domain.domain, command.name) %}
     virtual DispatchResponse {{command.name}}(
     {%- else %}
     virtual void {{command.name}}(
@@ -219,7 +220,7 @@ public:
         {{resolve_type(parameter).pass_type}} in_{{parameter.name}}
       {%- endif -%}
     {%- endfor -%}
-    {%- if "async" in command -%}
+    {%- if is_async_command(domain.domain, command.name) -%}
       {%- if command.parameters -%}, {% endif -%}
         std::unique_ptr<{{command.name | to_title_case}}Callback> callback
     {%- else -%}
@@ -235,7 +236,7 @@ public:
     ) = 0;
   {% endfor %}
 
-  {% if not has_disable(domain.commands) %}
+  {% if generate_disable(domain) %}
     virtual DispatchResponse disable()
     {
         return DispatchResponse::OK();
@@ -249,7 +250,7 @@ class {{config.protocol.export_macro}} Frontend {
 public:
     Frontend(FrontendChannel* frontendChannel) : m_frontendChannel(frontendChannel) { }
   {% for event in domain.events %}
-    {% if "handlers" in event and not ("renderer" in event["handlers"]) %}{% continue %}{% endif %}
+    {% if not generate_event(domain.domain, event.name) %}{% continue %}{% endif %}
     void {{event.name}}(
     {%- for parameter in event.parameters -%}
       {%- if "optional" in parameter -%}

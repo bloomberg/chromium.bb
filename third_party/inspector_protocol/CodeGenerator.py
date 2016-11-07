@@ -82,6 +82,7 @@ def read_config():
             ".imported.package": False,
             ".protocol.export_macro": "",
             ".protocol.export_header": False,
+            ".protocol.options": False,
             ".exported": False,
             ".exported.export_macro": "",
             ".exported.export_header": False,
@@ -337,11 +338,53 @@ def join_arrays(dict, keys):
     return result
 
 
-def has_disable(commands):
-    for command in commands:
-        if command["name"] == "disable" and (not ("handlers" in command) or "renderer" in command["handlers"]):
-            return True
+def generate_command(protocol, config, domain, command):
+    if not config.protocol.options:
+        return domain in protocol.generate_domains
+    for rule in config.protocol.options:
+        if rule.domain != domain:
+            continue
+        if hasattr(rule, "include"):
+            return command in rule.include
+        if hasattr(rule, "exclude"):
+            return command not in rule.exclude
+        return True
     return False
+
+
+def generate_event(protocol, config, domain, event):
+    if not config.protocol.options:
+        return domain in protocol.generate_domains
+    for rule in config.protocol.options:
+        if rule.domain != domain:
+            continue
+        if hasattr(rule, "include_events"):
+            return event in rule.include_events
+        if hasattr(rule, "exclude_events"):
+            return event not in rule.exclude_events
+        return True
+    return False
+
+
+def is_async_command(protocol, config, domain, command):
+    if not config.protocol.options:
+        return False
+    for rule in config.protocol.options:
+        if rule.domain != domain:
+            continue
+        if hasattr(rule, "async"):
+            return command in rule.async
+        return False
+    return False
+
+
+def generate_disable(protocol, config, domain):
+    if "commands" not in domain:
+        return True
+    for command in domain["commands"]:
+        if command["name"] == "disable" and generate_command(protocol, config, domain["domain"], "disable"):
+            return False
+    return True
 
 
 def format_include(header):
@@ -419,7 +462,10 @@ def main():
             "join_arrays": join_arrays,
             "resolve_type": functools.partial(resolve_type, protocol),
             "type_definition": functools.partial(type_definition, protocol),
-            "has_disable": has_disable,
+            "generate_command": functools.partial(generate_command, protocol, config),
+            "generate_event": functools.partial(generate_event, protocol, config),
+            "is_async_command": functools.partial(is_async_command, protocol, config),
+            "generate_disable": functools.partial(generate_disable, protocol, config),
             "format_include": format_include
         }
 

@@ -5,7 +5,91 @@
         "output": "inspector/protocol",
         "namespace": ["blink", "protocol"],
         "export_macro": "CORE_EXPORT",
-        "export_header": "core/CoreExport.h"
+        "export_header": "core/CoreExport.h",
+        "options": [
+            {
+                "domain": "Accessibility"
+            },
+            {
+                "domain": "Animation"
+            },
+            {
+                "domain": "ApplicationCache"
+            },
+            {
+                "domain": "CacheStorage",
+                "async": ["requestCacheNames", "requestEntries", "deleteCache", "deleteEntry"]
+            },
+            {
+                "domain": "CSS",
+                "async": ["enable"]
+            },
+            {
+                "domain": "Database",
+                "async": ["executeSQL"]
+            },
+            {
+                "domain": "DeviceOrientation"
+            },
+            {
+                "domain": "DOM"
+            },
+            {
+                "domain": "DOMDebugger"
+            },
+            {
+                "domain": "DOMStorage"
+            },
+            {
+                "domain": "IndexedDB",
+                "async": ["requestDatabaseNames", "requestDatabase", "requestData", "clearObjectStore"]
+            },
+            {
+                "domain": "LayerTree"
+            },
+            {
+                "domain": "Log"
+            },
+            {
+                "domain": "Rendering"
+            },
+            {
+                "domain": "Input",
+                "include": ["dispatchTouchEvent"]
+            },
+            {
+                "domain": "Memory",
+                "include": "getDOMCounters"
+            },
+            {
+                "domain": "Tracing",
+                "include": ["start", "end"],
+                "async": ["start", "end"]
+            },
+            {
+                "domain": "Page",
+                "exclude": ["getNavigationHistory", "navigateToHistoryEntry", "captureScreenshot", "screencastFrameAck", "handleJavaScriptDialog", "setColorPickerEnabled",
+                            "getAppManifest", "requestAppBanner", "setControlNavigations", "processNavigation"],
+                "async": ["getResourceContent", "searchInResource"],
+                "exclude_events": ["screencastFrame", "screencastVisibilityChanged", "colorPicked", "interstitialShown", "interstitialHidden", "navigationRequested"]
+            },
+            {
+                "domain": "Emulation",
+                "include": ["forceViewport", "resetViewport", "resetPageScaleFactor", "setPageScaleFactor", "setScriptExecutionDisabled", "setTouchEmulationEnabled",
+                            "setEmulatedMedia", "setCPUThrottlingRate", "setVirtualTimePolicy"],
+                "include_events": ["virtualTimeBudgetExpired"]
+            },
+            {
+                "domain": "Network",
+                "exclude": ["clearBrowserCache", "clearBrowserCookies", "getCookies", "deleteCookie", "setCookie", "canEmulateNetworkConditions"],
+                "async": ["getResponseBody"]
+            },
+            {
+                "domain": "Target",
+                "include": ["setAutoAttach", "sendMessageToTarget"],
+                "include_events": ["attachedToTarget", "detachedFromTarget", "receivedMessageFromTarget"]
+            }
+        ]
     },
 
     "imported": {

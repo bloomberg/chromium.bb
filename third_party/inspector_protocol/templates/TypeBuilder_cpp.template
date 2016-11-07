@@ -145,7 +145,7 @@ const char* {{ literal | to_title_case}} = "{{literal}}";
 
 // ------------- Frontend notifications.
   {% for event in domain.events %}
-    {% if "handlers" in event and not ("renderer" in event["handlers"]) %}{% continue %}{% endif %}
+    {% if not generate_event(domain.domain, event.name) %}{% continue %}{% endif %}
 
 void Frontend::{{event.name}}(
     {%- for parameter in event.parameters %}
@@ -187,7 +187,7 @@ public:
         , m_backend(backend) {
   {% for command in domain.commands %}
     {% if "redirect" in command %}{% continue %}{% endif %}
-    {% if "handlers" in command and not ("renderer" in command["handlers"]) %}{% continue %}{% endif %}
+    {% if not generate_command(domain.domain, command.name) %}{% continue %}{% endif %}
         m_dispatchMap["{{domain.domain}}.{{command.name}}"] = &DispatcherImpl::{{command.name}};
   {% endfor %}
     }
@@ -201,7 +201,7 @@ protected:
 
   {% for command in domain.commands %}
     {% if "redirect" in command %}{% continue %}{% endif %}
-    {% if "handlers" in command and not ("renderer" in command["handlers"]) %}{% continue %}{% endif %}
+    {% if not generate_command(domain.domain, command.name) %}{% continue %}{% endif %}
     DispatchResponse::Status {{command.name}}(int callId, std::unique_ptr<DictionaryValue> requestMessageObject, ErrorSupport*);
   {% endfor %}
 
@@ -222,8 +222,8 @@ DispatchResponse::Status DispatcherImpl::dispatch(int callId, const String& meth
 
   {% for command in domain.commands %}
     {% if "redirect" in command %}{% continue %}{% endif %}
-    {% if "handlers" in command and not ("renderer" in command["handlers"]) %}{% continue %}{% endif %}
-    {% if "async" in command %}
+    {% if not generate_command(domain.domain, command.name) %}{% continue %}{% endif %}
+    {% if is_async_command(domain.domain, command.name) %}
 
 class {{command.name | to_title_case}}CallbackImpl : public Backend::{{command.name | to_title_case}}Callback, public DispatcherBase::Callback {
 public:
@@ -285,7 +285,7 @@ DispatchResponse::Status DispatcherImpl::{{command.name}}(int callId, std::uniqu
         return DispatchResponse::kError;
     }
     {% endif %}
-    {% if "returns" in command and not ("async" in command) %}
+    {% if "returns" in command and not is_async_command(domain.domain, command.name) %}
     // Declare output parameters.
       {% for property in command.returns %}
         {% if "optional" in property %}
@@ -296,7 +296,7 @@ DispatchResponse::Status DispatcherImpl::{{command.name}}(int callId, std::uniqu
       {% endfor %}
     {% endif %}
 
-    {% if not("async" in command) %}
+    {% if not is_async_command(domain.domain, command.name) %}
     std::unique_ptr<DispatcherBase::WeakPtr> weak = weakPtr();
     DispatchResponse response = m_backend->{{command.name}}(
       {%- for property in command.parameters -%}
