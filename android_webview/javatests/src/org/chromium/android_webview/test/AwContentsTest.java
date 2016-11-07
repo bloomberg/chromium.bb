@@ -31,6 +31,7 @@ import org.chromium.android_webview.test.util.JSUtils;
 import org.chromium.base.annotations.SuppressFBWarnings;
 import org.chromium.base.test.util.CallbackHelper;
 import org.chromium.base.test.util.CommandLineFlags;
+import org.chromium.base.test.util.DisabledTest;
 import org.chromium.base.test.util.Feature;
 import org.chromium.base.test.util.parameter.ParameterizedTest;
 import org.chromium.content.browser.BindingManager;
@@ -79,6 +80,7 @@ public class AwContentsTest extends AwTestBase {
 
     @LargeTest
     @Feature({"AndroidWebView"})
+    @DisabledTest(message = "crbug.com/662688")  // Crashes flakily.
     public void testCreateLoadDestroyManyTimes() throws Throwable {
         for (int i = 0; i < 10; ++i) {
             AwTestContainerView testView = createAwTestContainerViewOnMainSync(mContentsClient);
