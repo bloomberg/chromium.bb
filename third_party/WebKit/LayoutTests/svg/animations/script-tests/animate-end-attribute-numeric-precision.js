@@ -40,5 +40,5 @@ function executeTest() {
     runAnimationTest(expectedValues);
 }
 
+var animationStartsImmediately = true;
 var successfullyParsed = true;
-executeTest();
