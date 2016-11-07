@@ -117,26 +117,28 @@ set(CONFIG_BITSTREAM_DEBUG 0)
 set(CONFIG_TILE_GROUPS 0)
 set(CONFIG_EC_ADAPT 0)
 
-# TODO(tomfinegan): consume trailing whitespace after configure_file().
+# TODO(tomfinegan): consume trailing whitespace after configure_file() when
+# target platform check produces empty INLINE and RESTRICT values (aka empty
+# values require special casing).
 configure_file("${AOM_ROOT}/build/cmake/aom_config.h.cmake"
                "${CMAKE_CURRENT_BINARY_DIR}/aom_config.h")
 
 # Read the current git hash.
 find_package(Git)
+set(AOM_GIT_DESCRIPTION)
+set(AOM_GIT_HASH)
 if (GIT_FOUND)
-  # TODO(tomfinegan): Make this smart enough to write a proper version string
-  # when in a repo that is on a label and clean.
-  # TODO(tomfinegan): In addition to the one above, also make this a custom
-  # build rule so users don't have to re-run cmake to create accurately
-  # versioned cmake builds.
+  # TODO(tomfinegan): Add build rule so users don't have to re-run cmake to
+  # create accurately versioned cmake builds.
   execute_process(COMMAND ${GIT_EXECUTABLE}
                   --git-dir=${AOM_ROOT}/.git rev-parse HEAD
                   OUTPUT_VARIABLE AOM_GIT_HASH)
+  execute_process(COMMAND ${GIT_EXECUTABLE} --git-dir=${AOM_ROOT}/.git describe
+                  OUTPUT_VARIABLE AOM_GIT_DESCRIPTION ERROR_QUIET)
   # Consume the newline at the end of the git output.
-  string(STRIP ${AOM_GIT_HASH} AOM_GIT_HASH)
-else ()
-  set(AOM_GIT_HASH)
-endIf ()
+  string(STRIP "${AOM_GIT_HASH}" AOM_GIT_HASH)
+  string(STRIP "${AOM_GIT_DESCRIPTION}" AOM_GIT_DESCRIPTION)
+endif ()
 
 # TODO(tomfinegan): An alternative to dumping the configure command line to
 # aom_config.c is needed in cmake. Normal cmake generation runs do not make the
@@ -149,4 +151,19 @@ endIf ()
 # information available.
 set(AOM_CMAKE_CONFIG "cmake")
 configure_file("${AOM_ROOT}/build/cmake/aom_config.c.cmake"
-               "${CMAKE_CURRENT_BINARY_DIR}/aom_config.c")
+               "${AOM_CONFIG_DIR}/aom_config.c")
+
+# Find Perl.
+find_package(Perl)
+if (NOT PERL_FOUND)
+  message(FATAL_ERROR "Perl is required to build libaom.")
+endif ()
+
+# Generate aom_version.h.
+if ("${AOM_GIT_DESCRIPTION}" STREQUAL "")
+  set(AOM_GIT_DESCRIPTION "${AOM_ROOT}/CHANGELOG")
+endif ()
+execute_process(
+  COMMAND ${PERL_EXECUTABLE} "${AOM_ROOT}/build/cmake/aom_version.pl"
+  --version_data=${AOM_GIT_DESCRIPTION}
+  --version_filename=${AOM_CONFIG_DIR}/aom_version.h)
