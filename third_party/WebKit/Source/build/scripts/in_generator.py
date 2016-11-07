@@ -35,20 +35,8 @@ import optparse
 from in_file import InFile
 
 
-class Writer(object):
-    # Subclasses should override.
-    class_name = None
-    defaults = None
-    valid_values = None
-    default_parameters = None
-
+class GenericWriter(object):
     def __init__(self, in_files):
-        if isinstance(in_files, basestring):
-            in_files = [in_files]
-        if in_files:
-            self.in_file = InFile.load_from_files(in_files, self.defaults, self.valid_values, self.default_parameters)
-        else:
-            self.in_file = None
         self._outputs = {}  # file_name -> generator
 
     def _write_file_if_changed(self, output_dir, contents, file_name):
@@ -73,6 +61,24 @@ class Writer(object):
 
     def set_gperf_path(self, gperf_path):
         self.gperf_path = gperf_path
+
+
+class Writer(GenericWriter):
+    # Subclasses should override.
+    class_name = None
+    defaults = None
+    valid_values = None
+    default_parameters = None
+
+    def __init__(self, in_files):
+        super(Writer, self).__init__(in_files)
+
+        if isinstance(in_files, basestring):
+            in_files = [in_files]
+        if in_files:
+            self.in_file = InFile.load_from_files(in_files, self.defaults, self.valid_values, self.default_parameters)
+        else:
+            self.in_file = None
 
 
 class Maker(object):

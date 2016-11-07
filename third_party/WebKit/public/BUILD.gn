@@ -6,6 +6,7 @@ import("//build/buildflag_header.gni")
 import("//mojo/public/tools/bindings/mojom.gni")
 import("//third_party/WebKit/public/public_features.gni")
 import("//third_party/WebKit/Source/config.gni")
+import("//third_party/WebKit/Source/core/core.gni")
 import("//tools/grit/grit_rule.gni")
 
 if (is_android) {
@@ -615,6 +616,14 @@ grit("resources") {
       "use_concatenated_impulse_responses",
     ]
   }
+  html_min_css = "$blink_core_output_dir/html.css"
+  grit_flags += [
+    "-E",
+    "html_min_css=" + rebase_path(html_min_css),
+  ]
+  deps = [
+    "//third_party/WebKit/Source/core:make_minimized_css",
+  ]
 }
 
 grit("image_resources") {

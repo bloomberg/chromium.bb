@@ -16,7 +16,10 @@ import("//third_party/WebKit/Source/build/scripts/scripts.gni")
 import("//third_party/WebKit/Source/modules/modules_idl_files.gni")
 import("//third_party/WebKit/Source/platform/platform_generated.gni")
 
-visibility = [ "//third_party/WebKit/Source/*" ]
+visibility = [
+  "//third_party/WebKit/Source/*",
+  "//third_party/WebKit/public/*",
+]
 
 rel_blink_core_gen_dir = rebase_path(blink_core_output_dir, root_build_dir)
 
@@ -697,6 +700,26 @@ action("make_core_generated_private_script_for_testing") {
   deps = make_core_generated_deps
 }
 
+action("make_minimized_css") {
+  script = "../build/scripts/minimize_css.py"
+
+  inputs = [
+    "css/html.css",
+  ]
+  outputs = [
+    "$blink_core_output_dir/html.css",
+  ]
+
+  args = [
+    "--output_dir",
+    rel_blink_core_gen_dir,
+  ]
+  args += rebase_path(inputs, root_build_dir)
+
+  deps = make_core_generated_deps
+}
+
+# "HTMLEntityTable" in make_core_generated from GYP.
 action("make_core_generated_html_entity_table") {
   visibility = []  # Allow re-assignment of list.
   visibility = [ ":*" ]
