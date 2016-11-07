@@ -45,7 +45,19 @@
 
 namespace blink {
 
+namespace {
+
 using midi::mojom::PortState;
+
+// Since "open" status is separately managed per MIDIAccess instance, we do not
+// expose service level PortState directly.
+PortState ToDeviceState(PortState state) {
+  if (state == PortState::OPENED)
+    return PortState::CONNECTED;
+  return state;
+}
+
+}  // namespace
 
 MIDIAccess::MIDIAccess(
     std::unique_ptr<MIDIAccessor> accessor,
@@ -132,8 +144,8 @@ void MIDIAccess::didAddInputPort(const String& id,
                                  const String& version,
                                  PortState state) {
   DCHECK(isMainThread());
-  MIDIInput* port =
-      MIDIInput::create(this, id, manufacturer, name, version, state);
+  MIDIInput* port = MIDIInput::create(this, id, manufacturer, name, version,
+                                      ToDeviceState(state));
   m_inputs.append(port);
   dispatchEvent(MIDIConnectionEvent::create(port));
 }
@@ -146,7 +158,7 @@ void MIDIAccess::didAddOutputPort(const String& id,
   DCHECK(isMainThread());
   unsigned portIndex = m_outputs.size();
   MIDIOutput* port = MIDIOutput::create(this, portIndex, id, manufacturer, name,
-                                        version, state);
+                                        version, ToDeviceState(state));
   m_outputs.append(port);
   dispatchEvent(MIDIConnectionEvent::create(port));
 }
@@ -156,7 +168,9 @@ void MIDIAccess::didSetInputPortState(unsigned portIndex, PortState state) {
   if (portIndex >= m_inputs.size())
     return;
 
-  m_inputs[portIndex]->setState(state);
+  PortState deviceState = ToDeviceState(state);
+  if (m_inputs[portIndex]->getState() != deviceState)
+    m_inputs[portIndex]->setState(deviceState);
 }
 
 void MIDIAccess::didSetOutputPortState(unsigned portIndex, PortState state) {
@@ -164,7 +178,9 @@ void MIDIAccess::didSetOutputPortState(unsigned portIndex, PortState state) {
   if (portIndex >= m_outputs.size())
     return;
 
-  m_outputs[portIndex]->setState(state);
+  PortState deviceState = ToDeviceState(state);
+  if (m_outputs[portIndex]->getState() != deviceState)
+    m_outputs[portIndex]->setState(deviceState);
 }
 
 void MIDIAccess::didReceiveMIDIData(unsigned portIndex,

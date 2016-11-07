@@ -54,15 +54,6 @@ class CONTENT_EXPORT MidiMessageFilter : public IPC::MessageFilter {
     return io_task_runner_.get();
   }
 
-  static midi::mojom::PortState ToBlinkState(midi::mojom::PortState state) {
-    // "open" status is separately managed by blink per MIDIAccess instance.
-    // TODO(toyoshim): Pass through the state as is, and have a logic to convert
-    // this state to JavaScript exposing state in Blink side.
-    if (state == midi::mojom::PortState::OPENED)
-      return midi::mojom::PortState::CONNECTED;
-    return state;
-  }
-
  protected:
   ~MidiMessageFilter() override;
 

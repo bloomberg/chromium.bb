@@ -214,16 +214,14 @@ void MidiMessageFilter::HandleClientAdded(Result result) {
         client->didAddInputPort(base::UTF8ToUTF16(info.id),
                                 base::UTF8ToUTF16(info.manufacturer),
                                 base::UTF8ToUTF16(info.name),
-                                base::UTF8ToUTF16(info.version),
-                                ToBlinkState(info.state));
+                                base::UTF8ToUTF16(info.version), info.state);
       }
 
       for (const auto& info : outputs_) {
         client->didAddOutputPort(base::UTF8ToUTF16(info.id),
                                  base::UTF8ToUTF16(info.manufacturer),
                                  base::UTF8ToUTF16(info.name),
-                                 base::UTF8ToUTF16(info.version),
-                                 ToBlinkState(info.state));
+                                 base::UTF8ToUTF16(info.version), info.state);
       }
     }
     client->didStartSession(result);
@@ -238,9 +236,8 @@ void MidiMessageFilter::HandleAddInputPort(midi::MidiPortInfo info) {
   const base::string16 manufacturer = base::UTF8ToUTF16(info.manufacturer);
   const base::string16 name = base::UTF8ToUTF16(info.name);
   const base::string16 version = base::UTF8ToUTF16(info.version);
-  const PortState state = ToBlinkState(info.state);
   for (auto* client : clients_)
-    client->didAddInputPort(id, manufacturer, name, version, state);
+    client->didAddInputPort(id, manufacturer, name, version, info.state);
 }
 
 void MidiMessageFilter::HandleAddOutputPort(midi::MidiPortInfo info) {
@@ -250,9 +247,8 @@ void MidiMessageFilter::HandleAddOutputPort(midi::MidiPortInfo info) {
   const base::string16 manufacturer = base::UTF8ToUTF16(info.manufacturer);
   const base::string16 name = base::UTF8ToUTF16(info.name);
   const base::string16 version = base::UTF8ToUTF16(info.version);
-  const PortState state = ToBlinkState(info.state);
   for (auto* client : clients_)
-    client->didAddOutputPort(id, manufacturer, name, version, state);
+    client->didAddOutputPort(id, manufacturer, name, version, info.state);
 }
 
 void MidiMessageFilter::HandleDataReceived(uint32_t port,
@@ -276,17 +272,21 @@ void MidiMessageFilter::HandleAckknowledgeSentData(size_t bytes_sent) {
 void MidiMessageFilter::HandleSetInputPortState(uint32_t port,
                                                 PortState state) {
   DCHECK(main_task_runner_->BelongsToCurrentThread());
+  if (inputs_[port].state == state)
+    return;
   inputs_[port].state = state;
   for (auto* client : clients_)
-    client->didSetInputPortState(port, ToBlinkState(state));
+    client->didSetInputPortState(port, state);
 }
 
 void MidiMessageFilter::HandleSetOutputPortState(uint32_t port,
                                                  PortState state) {
   DCHECK(main_task_runner_->BelongsToCurrentThread());
+  if (outputs_[port].state == state)
+    return;
   outputs_[port].state = state;
   for (auto* client : clients_)
-    client->didSetOutputPortState(port, ToBlinkState(state));
+    client->didSetOutputPortState(port, state);
 }
 
 }  // namespace content
