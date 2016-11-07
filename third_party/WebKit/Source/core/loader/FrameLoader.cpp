@@ -1512,13 +1512,16 @@ void FrameLoader::processFragment(const KURL& url,
         ->setSafeToPropagateScrollToParent(false);
   }
 
-  // If scroll position is restored from history fragment then we should not
-  // override it unless this is a same document reload.
+  // If scroll position is restored from history fragment or scroll
+  // restoration type is manual, then we should not override it unless this
+  // is a same document reload.
   bool shouldScrollToFragment =
       (loadStartType == NavigationWithinSameDocument &&
        !isBackForwardLoadType(m_loadType)) ||
       (documentLoader() &&
-       !documentLoader()->initialScrollState().didRestoreFromHistory);
+       !documentLoader()->initialScrollState().didRestoreFromHistory &&
+       !(m_currentItem &&
+         m_currentItem->scrollRestorationType() == ScrollRestorationManual));
 
   view->processUrlFragment(url, shouldScrollToFragment
                                     ? FrameView::UrlFragmentScroll
