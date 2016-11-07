@@ -30,7 +30,7 @@ bool IsDeviceConnectedViaUsb(const base::FilePath& path) {
   std::vector<base::FilePath::StringType> components;
   path.GetComponents(&components);
 
-  for (base::FilePath::StringType component : components) {
+  for (const auto& component : components) {
     if (base::StartsWith(component, "usb",
                          base::CompareCase::INSENSITIVE_ASCII))
       return true;
@@ -41,7 +41,7 @@ bool IsDeviceConnectedViaUsb(const base::FilePath& path) {
 
 // Returns the UDL association score between |display| and |device|. A score <=
 // 0 means that there is no association.
-int GetUdlAssociationScore(display::ManagedDisplayInfo* display,
+int GetUdlAssociationScore(const display::ManagedDisplayInfo* display,
                            const ui::TouchscreenDevice* device) {
   // If the devices are not both connected via USB, then there cannot be a UDL
   // association score.
@@ -68,7 +68,7 @@ int GetUdlAssociationScore(display::ManagedDisplayInfo* display,
 // Tries to find a UDL device that best matches |display|. Returns nullptr
 // if one is not found.
 const ui::TouchscreenDevice* GuessBestUdlDevice(
-    display::ManagedDisplayInfo* display,
+    const display::ManagedDisplayInfo* display,
     const DeviceList& devices) {
   int best_score = 0;
   const ui::TouchscreenDevice* best_device = nullptr;
@@ -110,7 +110,7 @@ void AssociateUdlDevices(DisplayInfoList* displays, DeviceList* devices) {
 }
 
 // Returns true if |display| is internal.
-bool IsInternalDisplay(display::ManagedDisplayInfo* display) {
+bool IsInternalDisplay(const display::ManagedDisplayInfo* display) {
   return display::Display::IsInternalDisplayId(display->id());
 }
 
@@ -218,7 +218,7 @@ void AssociateToSingleDisplay(DisplayInfoList* displays, DeviceList* devices) {
           << " displays and " << devices->size() << " devices to match)";
 
   // We only associate to one display.
-  if (displays->size() != 1 || devices->size() == 0)
+  if (displays->size() != 1 || devices->empty())
     return;
 
   display::ManagedDisplayInfo* display = *displays->begin();
