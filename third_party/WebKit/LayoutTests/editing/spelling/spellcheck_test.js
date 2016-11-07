@@ -113,20 +113,21 @@ class MarkerSerializer {
 
   /**
    * @private
-   * @param {!Node} node
+   * @param {!CharacterData} node
    * @param {number} offset
+   * @return {number} The next offset at which a current active marker ends or
+   *                  a new marker starts. Returns node.data.length if there is
+   *                  no more markers.
    */
   advancedTo(node, offset) {
+    var nextCheckPoint = node.data.length;
     for (let type in this.markerTypes_) {
       // Handle the ending of the current active marker.
-      if (isAtRangeEnd(this.activeMarkerRanges_[type], node, offset)) {
-        this.activeMarkerRanges_[type] = null;
+      if (isAtRangeEnd(this.activeMarkerRanges_[type], node, offset))
         this.emit(this.markerTypes_[type]);
-      }
 
-      // Handle the starting of the next active marker.
-      if (this.activeMarkerRanges_[type])
-        return;
+      // Recompute the current active marker and the next check point
+      this.activeMarkerRanges_[type] = null;
       /** @type {number} */
       const markerCount = window.internals.markerCountForNode(node, type);
       for (let i = 0; i < markerCount; ++i) {
@@ -137,15 +138,20 @@ class MarkerSerializer {
         assert_equals(
             marker.endContainer, node,
             'Internal error: marker range not ending in the annotated node.');
-        if (marker.startOffset === offset) {
-          assert_greater_than(marker.endOffset, offset,
-                              'Internal error: marker range is collapsed.');
+        assert_greater_than(marker.endOffset, marker.startOffset,
+                            'Internal error: marker range is collapsed.');
+        if (marker.startOffset <= offset && offset < marker.endOffset) {
           this.activeMarkerRanges_[type] = marker;
-          this.emit(this.markerTypes_[type]);
-          break;
+          nextCheckPoint = Math.min(nextCheckPoint, marker.endOffset);
+          // Handle the starting of the current active marker.
+          if (offset === marker.startOffset)
+            this.emit(this.markerTypes_[type]);
+        } else if (marker.startOffset > offset) {
+          nextCheckPoint = Math.min(nextCheckPoint, marker.startOffset);
         }
       }
     }
+    return nextCheckPoint;
   }
 
   /**
@@ -157,9 +163,10 @@ class MarkerSerializer {
     const text = node.nodeValue;
     /** @type {number} */
     const length = text.length;
-    for (let offset = 0; offset < length; ++offset) {
-      this.advancedTo(node, offset);
-      this.emit(text[offset]);
+    for (let offset = 0; offset < length;) {
+      const nextCheckPoint = this.advancedTo(node, offset);
+      this.emit(text.substring(offset, nextCheckPoint));
+      offset = nextCheckPoint;
     }
     this.advancedTo(node, length);
   }
