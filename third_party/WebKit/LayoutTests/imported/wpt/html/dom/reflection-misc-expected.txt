@@ -1,343 +1,237 @@
 This is a testharness.js-based test.
-PASS html.title: 77 tests
-PASS html.lang: 77 tests
-PASS html.dir: 151 tests
-PASS html.className (<html class>): 77 tests
-PASS html.hidden: 79 tests
-PASS html.accessKey: 77 tests
-PASS html.tabIndex: 53 tests
-PASS html.version: 77 tests
-PASS script.title: 77 tests
-PASS script.lang: 77 tests
-PASS script.dir: 151 tests
-PASS script.className (<script class>): 77 tests
-PASS script.hidden: 79 tests
-PASS script.accessKey: 77 tests
-PASS script.tabIndex: 53 tests
-PASS script.src: 92 tests
-PASS script.type: 77 tests
-PASS script.charset: 77 tests
-PASS script.defer: 79 tests
-PASS script.crossOrigin: 127 tests
-PASS noscript.title: 77 tests
-PASS noscript.lang: 77 tests
-PASS noscript.dir: 151 tests
-PASS noscript.className (<noscript class>): 77 tests
-PASS noscript.hidden: 79 tests
-PASS noscript.accessKey: 77 tests
-PASS noscript.tabIndex: 53 tests
-PASS ins.title: 77 tests
-PASS ins.lang: 77 tests
-PASS ins.dir: 151 tests
-PASS ins.className (<ins class>): 77 tests
-PASS ins.hidden: 79 tests
-PASS ins.accessKey: 77 tests
-PASS ins.tabIndex: 53 tests
-PASS ins.cite: 92 tests
-PASS ins.dateTime: 77 tests
-PASS del.title: 77 tests
-PASS del.lang: 77 tests
-PASS del.dir: 151 tests
-PASS del.className (<del class>): 77 tests
-PASS del.hidden: 79 tests
-PASS del.accessKey: 77 tests
-PASS del.tabIndex: 53 tests
-PASS del.cite: 92 tests
-PASS del.dateTime: 77 tests
-PASS details.title: 77 tests
-PASS details.lang: 77 tests
-PASS details.dir: 151 tests
-PASS details.className (<details class>): 77 tests
-PASS details.hidden: 79 tests
-PASS details.accessKey: 77 tests
-PASS details.tabIndex: 53 tests
-PASS details.open: 79 tests
-PASS summary.title: 77 tests
-PASS summary.lang: 77 tests
-PASS summary.dir: 151 tests
-PASS summary.className (<summary class>): 77 tests
-PASS summary.hidden: 79 tests
-PASS summary.accessKey: 77 tests
-PASS summary.tabIndex: 2 tests
-FAIL summary.tabIndex: setAttribute() to -36 followed by IDL get assert_equals: expected -36 but got -1
-PASS summary.tabIndex: 3 tests
-FAIL summary.tabIndex: setAttribute() to 0 followed by IDL get assert_equals: expected 0 but got -1
-PASS summary.tabIndex: setAttribute() to 1 followed by getAttribute() 
-FAIL summary.tabIndex: setAttribute() to 1 followed by IDL get assert_equals: expected 1 but got -1
-PASS summary.tabIndex: setAttribute() to 2147483647 followed by getAttribute() 
-FAIL summary.tabIndex: setAttribute() to 2147483647 followed by IDL get assert_equals: expected 2147483647 but got -1
-PASS summary.tabIndex: setAttribute() to -2147483648 followed by getAttribute() 
-FAIL summary.tabIndex: setAttribute() to -2147483648 followed by IDL get assert_equals: expected -2147483648 but got -1
-PASS summary.tabIndex: 3 tests
-FAIL summary.tabIndex: setAttribute() to "-0" followed by IDL get assert_equals: expected 0 but got -1
-PASS summary.tabIndex: setAttribute() to "0" followed by getAttribute() 
-FAIL summary.tabIndex: setAttribute() to "0" followed by IDL get assert_equals: expected 0 but got -1
-PASS summary.tabIndex: setAttribute() to "1" followed by getAttribute() 
-FAIL summary.tabIndex: setAttribute() to "1" followed by IDL get assert_equals: expected 1 but got -1
-PASS summary.tabIndex: setAttribute() to "\t7" followed by getAttribute() 
-FAIL summary.tabIndex: setAttribute() to "\t7" followed by IDL get assert_equals: expected 7 but got -1
-PASS summary.tabIndex: setAttribute() to "\f7" followed by getAttribute() 
-FAIL summary.tabIndex: setAttribute() to "\f7" followed by IDL get assert_equals: expected 7 but got -1
-PASS summary.tabIndex: setAttribute() to " 7" followed by getAttribute() 
-FAIL summary.tabIndex: setAttribute() to " 7" followed by IDL get assert_equals: expected 7 but got -1
-PASS summary.tabIndex: setAttribute() to "\n7" followed by getAttribute() 
-FAIL summary.tabIndex: setAttribute() to "\n7" followed by IDL get assert_equals: expected 7 but got -1
-PASS summary.tabIndex: setAttribute() to "\r7" followed by getAttribute() 
-FAIL summary.tabIndex: setAttribute() to "\r7" followed by IDL get assert_equals: expected 7 but got -1
-PASS summary.tabIndex: setAttribute() to 1.5 followed by getAttribute() 
-FAIL summary.tabIndex: setAttribute() to 1.5 followed by IDL get assert_equals: expected 1 but got -1
-PASS summary.tabIndex: setAttribute() to object "2" followed by getAttribute() 
-FAIL summary.tabIndex: setAttribute() to object "2" followed by IDL get assert_equals: expected 2 but got -1
-PASS summary.tabIndex: 2 tests
-FAIL summary.tabIndex: IDL set to -36 followed by IDL get assert_equals: expected -36 but got -1
-PASS summary.tabIndex: 5 tests
-FAIL summary.tabIndex: IDL set to 0 followed by IDL get assert_equals: expected 0 but got -1
-PASS summary.tabIndex: 2 tests
-FAIL summary.tabIndex: IDL set to 1 followed by IDL get assert_equals: expected 1 but got -1
-PASS summary.tabIndex: 2 tests
-FAIL summary.tabIndex: IDL set to 2147483647 followed by IDL get assert_equals: expected 2147483647 but got -1
-PASS summary.tabIndex: 2 tests
-FAIL summary.tabIndex: IDL set to -2147483648 followed by IDL get assert_equals: expected -2147483648 but got -1
-PASS menu.title: 77 tests
-PASS menu.lang: 77 tests
-PASS menu.dir: 151 tests
-PASS menu.className (<menu class>): 77 tests
-PASS menu.hidden: 79 tests
-PASS menu.accessKey: 77 tests
-PASS menu.tabIndex: 53 tests
+PASS html.title: 32 tests
+PASS html.lang: 32 tests
+PASS html.dir: 62 tests
+PASS html.className (<html class>): 32 tests
+PASS html.hidden: 33 tests
+PASS html.accessKey: 32 tests
+PASS html.tabIndex: 24 tests
+PASS html.version: 32 tests
+PASS script.title: 32 tests
+PASS script.lang: 32 tests
+PASS script.dir: 62 tests
+PASS script.className (<script class>): 32 tests
+PASS script.hidden: 33 tests
+PASS script.accessKey: 32 tests
+PASS script.tabIndex: 24 tests
+PASS script.src: 38 tests
+PASS script.type: 32 tests
+PASS script.charset: 32 tests
+PASS script.defer: 33 tests
+PASS script.crossOrigin: 52 tests
+PASS noscript.title: 32 tests
+PASS noscript.lang: 32 tests
+PASS noscript.dir: 62 tests
+PASS noscript.className (<noscript class>): 32 tests
+PASS noscript.hidden: 33 tests
+PASS noscript.accessKey: 32 tests
+PASS noscript.tabIndex: 24 tests
+PASS ins.title: 32 tests
+PASS ins.lang: 32 tests
+PASS ins.dir: 62 tests
+PASS ins.className (<ins class>): 32 tests
+PASS ins.hidden: 33 tests
+PASS ins.accessKey: 32 tests
+PASS ins.tabIndex: 24 tests
+PASS ins.cite: 38 tests
+PASS ins.dateTime: 32 tests
+PASS del.title: 32 tests
+PASS del.lang: 32 tests
+PASS del.dir: 62 tests
+PASS del.className (<del class>): 32 tests
+PASS del.hidden: 33 tests
+PASS del.accessKey: 32 tests
+PASS del.tabIndex: 24 tests
+PASS del.cite: 38 tests
+PASS del.dateTime: 32 tests
+PASS details.title: 32 tests
+PASS details.lang: 32 tests
+PASS details.dir: 62 tests
+PASS details.className (<details class>): 32 tests
+PASS details.hidden: 33 tests
+PASS details.accessKey: 32 tests
+PASS details.tabIndex: 24 tests
+PASS details.open: 33 tests
+PASS summary.title: 32 tests
+PASS summary.lang: 32 tests
+PASS summary.dir: 62 tests
+PASS summary.className (<summary class>): 32 tests
+PASS summary.hidden: 33 tests
+PASS summary.accessKey: 32 tests
+PASS summary.tabIndex: typeof IDL attribute 
+FAIL summary.tabIndex: setAttribute() to -36 assert_equals: IDL get expected -36 but got -1
+PASS summary.tabIndex: setAttribute() to -1 
+FAIL summary.tabIndex: setAttribute() to 0 assert_equals: IDL get expected 0 but got -1
+FAIL summary.tabIndex: setAttribute() to 1 assert_equals: IDL get expected 1 but got -1
+FAIL summary.tabIndex: setAttribute() to 2147483647 assert_equals: IDL get expected 2147483647 but got -1
+FAIL summary.tabIndex: setAttribute() to -2147483648 assert_equals: IDL get expected -2147483648 but got -1
+PASS summary.tabIndex: setAttribute() to "-1" 
+FAIL summary.tabIndex: setAttribute() to "-0" assert_equals: IDL get expected 0 but got -1
+FAIL summary.tabIndex: setAttribute() to "0" assert_equals: IDL get expected 0 but got -1
+FAIL summary.tabIndex: setAttribute() to "1" assert_equals: IDL get expected 1 but got -1
+FAIL summary.tabIndex: setAttribute() to "\t7" assert_equals: IDL get expected 7 but got -1
+FAIL summary.tabIndex: setAttribute() to "\f7" assert_equals: IDL get expected 7 but got -1
+FAIL summary.tabIndex: setAttribute() to " 7" assert_equals: IDL get expected 7 but got -1
+FAIL summary.tabIndex: setAttribute() to "\n7" assert_equals: IDL get expected 7 but got -1
+FAIL summary.tabIndex: setAttribute() to "\r7" assert_equals: IDL get expected 7 but got -1
+FAIL summary.tabIndex: setAttribute() to 1.5 assert_equals: IDL get expected 1 but got -1
+FAIL summary.tabIndex: setAttribute() to object "2" assert_equals: IDL get expected 2 but got -1
+FAIL summary.tabIndex: IDL set to -36 assert_equals: IDL get expected -36 but got -1
+PASS summary.tabIndex: IDL set to -1 
+FAIL summary.tabIndex: IDL set to 0 assert_equals: IDL get expected 0 but got -1
+FAIL summary.tabIndex: IDL set to 1 assert_equals: IDL get expected 1 but got -1
+FAIL summary.tabIndex: IDL set to 2147483647 assert_equals: IDL get expected 2147483647 but got -1
+FAIL summary.tabIndex: IDL set to -2147483648 assert_equals: IDL get expected -2147483648 but got -1
+PASS menu.title: 32 tests
+PASS menu.lang: 32 tests
+PASS menu.dir: 62 tests
+PASS menu.className (<menu class>): 32 tests
+PASS menu.hidden: 33 tests
+PASS menu.accessKey: 32 tests
+PASS menu.tabIndex: 24 tests
 PASS menu.type: typeof IDL attribute 
 FAIL menu.type: IDL get with DOM attribute unset assert_equals: expected "toolbar" but got ""
-PASS menu.type: setAttribute() to "" followed by getAttribute() 
-FAIL menu.type: setAttribute() to "" followed by IDL get assert_equals: expected "toolbar" but got ""
-PASS menu.type: setAttribute() to " \0\x01\x02\x03\x04\x05\x06\x07 \b\t\n\v\f\r\x0e\x0f \x10\x11\x12\x13\x14\x15\x16\x17 \x18\x19\x1a\x1b\x1c\x1d\x1e\x1f  foo " followed by getAttribute() 
-FAIL menu.type: setAttribute() to " \0\x01\x02\x03\x04\x05\x06\x07 \b\t\n\v\f\r\x0e\x0f \x10\x11\x12\x13\x14\x15\x16\x17 \x18\x19\x1a\x1b\x1c\x1d\x1e\x1f  foo " followed by IDL get assert_equals: expected "toolbar" but got " \0\x01\x02\x03\x04\x05\x06\x07 \b\t\n\v\f\r\x0e\x0f \x10\x11\x12\x13\x14\x15\x16\x17 \x18\x19\x1a\x1b\x1c\x1d\x1e\x1f  foo "
-PASS menu.type: setAttribute() to undefined followed by getAttribute() 
-FAIL menu.type: setAttribute() to undefined followed by IDL get assert_equals: expected "toolbar" but got "undefined"
-PASS menu.type: setAttribute() to 7 followed by getAttribute() 
-FAIL menu.type: setAttribute() to 7 followed by IDL get assert_equals: expected "toolbar" but got "7"
-PASS menu.type: setAttribute() to 1.5 followed by getAttribute() 
-FAIL menu.type: setAttribute() to 1.5 followed by IDL get assert_equals: expected "toolbar" but got "1.5"
-PASS menu.type: setAttribute() to true followed by getAttribute() 
-FAIL menu.type: setAttribute() to true followed by IDL get assert_equals: expected "toolbar" but got "true"
-PASS menu.type: setAttribute() to false followed by getAttribute() 
-FAIL menu.type: setAttribute() to false followed by IDL get assert_equals: expected "toolbar" but got "false"
-PASS menu.type: setAttribute() to object "[object Object]" followed by getAttribute() 
-FAIL menu.type: setAttribute() to object "[object Object]" followed by IDL get assert_equals: expected "toolbar" but got "[object Object]"
-PASS menu.type: setAttribute() to NaN followed by getAttribute() 
-FAIL menu.type: setAttribute() to NaN followed by IDL get assert_equals: expected "toolbar" but got "NaN"
-PASS menu.type: setAttribute() to Infinity followed by getAttribute() 
-FAIL menu.type: setAttribute() to Infinity followed by IDL get assert_equals: expected "toolbar" but got "Infinity"
-PASS menu.type: setAttribute() to -Infinity followed by getAttribute() 
-FAIL menu.type: setAttribute() to -Infinity followed by IDL get assert_equals: expected "toolbar" but got "-Infinity"
-PASS menu.type: setAttribute() to "\0" followed by getAttribute() 
-FAIL menu.type: setAttribute() to "\0" followed by IDL get assert_equals: expected "toolbar" but got "\0"
-PASS menu.type: setAttribute() to null followed by getAttribute() 
-FAIL menu.type: setAttribute() to null followed by IDL get assert_equals: expected "toolbar" but got "null"
-PASS menu.type: setAttribute() to object "test-toString" followed by getAttribute() 
-FAIL menu.type: setAttribute() to object "test-toString" followed by IDL get assert_equals: expected "toolbar" but got "test-toString"
-PASS menu.type: setAttribute() to object "test-valueOf" followed by getAttribute() 
-FAIL menu.type: setAttribute() to object "test-valueOf" followed by IDL get assert_equals: expected "toolbar" but got "test-valueOf"
-PASS menu.type: 3 tests
-FAIL menu.type: setAttribute() to "xpopup" followed by IDL get assert_equals: expected "toolbar" but got "xpopup"
-PASS menu.type: setAttribute() to "popup\0" followed by getAttribute() 
-FAIL menu.type: setAttribute() to "popup\0" followed by IDL get assert_equals: expected "toolbar" but got "popup\0"
-PASS menu.type: setAttribute() to "opup" followed by getAttribute() 
-FAIL menu.type: setAttribute() to "opup" followed by IDL get assert_equals: expected "toolbar" but got "opup"
-PASS menu.type: setAttribute() to "POPUP" followed by getAttribute() 
-FAIL menu.type: setAttribute() to "POPUP" followed by IDL get assert_equals: expected "popup" but got "POPUP"
-PASS menu.type: 3 tests
-FAIL menu.type: setAttribute() to "xtoolbar" followed by IDL get assert_equals: expected "toolbar" but got "xtoolbar"
-PASS menu.type: setAttribute() to "toolbar\0" followed by getAttribute() 
-FAIL menu.type: setAttribute() to "toolbar\0" followed by IDL get assert_equals: expected "toolbar" but got "toolbar\0"
-PASS menu.type: setAttribute() to "oolbar" followed by getAttribute() 
-FAIL menu.type: setAttribute() to "oolbar" followed by IDL get assert_equals: expected "toolbar" but got "oolbar"
-PASS menu.type: setAttribute() to "TOOLBAR" followed by getAttribute() 
-FAIL menu.type: setAttribute() to "TOOLBAR" followed by IDL get assert_equals: expected "toolbar" but got "TOOLBAR"
-PASS menu.type: 2 tests
-FAIL menu.type: IDL set to "" followed by IDL get assert_equals: expected "toolbar" but got ""
-PASS menu.type: 2 tests
-FAIL menu.type: IDL set to " \0\x01\x02\x03\x04\x05\x06\x07 \b\t\n\v\f\r\x0e\x0f \x10\x11\x12\x13\x14\x15\x16\x17 \x18\x19\x1a\x1b\x1c\x1d\x1e\x1f  foo " followed by IDL get assert_equals: expected "toolbar" but got " \0\x01\x02\x03\x04\x05\x06\x07 \b\t\n\v\f\r\x0e\x0f \x10\x11\x12\x13\x14\x15\x16\x17 \x18\x19\x1a\x1b\x1c\x1d\x1e\x1f  foo "
-PASS menu.type: 2 tests
-FAIL menu.type: IDL set to undefined followed by IDL get assert_equals: expected "toolbar" but got "undefined"
-PASS menu.type: 2 tests
-FAIL menu.type: IDL set to 7 followed by IDL get assert_equals: expected "toolbar" but got "7"
-PASS menu.type: 2 tests
-FAIL menu.type: IDL set to 1.5 followed by IDL get assert_equals: expected "toolbar" but got "1.5"
-PASS menu.type: 2 tests
-FAIL menu.type: IDL set to true followed by IDL get assert_equals: expected "toolbar" but got "true"
-PASS menu.type: 2 tests
-FAIL menu.type: IDL set to false followed by IDL get assert_equals: expected "toolbar" but got "false"
-PASS menu.type: 2 tests
-FAIL menu.type: IDL set to object "[object Object]" followed by IDL get assert_equals: expected "toolbar" but got "[object Object]"
-PASS menu.type: 2 tests
-FAIL menu.type: IDL set to NaN followed by IDL get assert_equals: expected "toolbar" but got "NaN"
-PASS menu.type: 2 tests
-FAIL menu.type: IDL set to Infinity followed by IDL get assert_equals: expected "toolbar" but got "Infinity"
-PASS menu.type: 2 tests
-FAIL menu.type: IDL set to -Infinity followed by IDL get assert_equals: expected "toolbar" but got "-Infinity"
-PASS menu.type: 2 tests
-FAIL menu.type: IDL set to "\0" followed by IDL get assert_equals: expected "toolbar" but got "\0"
-PASS menu.type: IDL set to null should not throw 
-FAIL menu.type: IDL set to null followed by IDL get assert_equals: expected "toolbar" but got "null"
-PASS menu.type: 2 tests
-FAIL menu.type: IDL set to object "test-toString" followed by IDL get assert_equals: expected "toolbar" but got "test-toString"
-PASS menu.type: 2 tests
-FAIL menu.type: IDL set to object "test-valueOf" followed by IDL get assert_equals: expected "toolbar" but got "test-valueOf"
-PASS menu.type: 5 tests
-FAIL menu.type: IDL set to "xpopup" followed by IDL get assert_equals: expected "toolbar" but got "xpopup"
-PASS menu.type: 2 tests
-FAIL menu.type: IDL set to "popup\0" followed by IDL get assert_equals: expected "toolbar" but got "popup\0"
-PASS menu.type: 2 tests
-FAIL menu.type: IDL set to "opup" followed by IDL get assert_equals: expected "toolbar" but got "opup"
-PASS menu.type: 2 tests
-FAIL menu.type: IDL set to "POPUP" followed by IDL get assert_equals: expected "popup" but got "POPUP"
-PASS menu.type: 5 tests
-FAIL menu.type: IDL set to "xtoolbar" followed by IDL get assert_equals: expected "toolbar" but got "xtoolbar"
-PASS menu.type: 2 tests
-FAIL menu.type: IDL set to "toolbar\0" followed by IDL get assert_equals: expected "toolbar" but got "toolbar\0"
-PASS menu.type: 2 tests
-FAIL menu.type: IDL set to "oolbar" followed by IDL get assert_equals: expected "toolbar" but got "oolbar"
-PASS menu.type: 2 tests
-FAIL menu.type: IDL set to "TOOLBAR" followed by IDL get assert_equals: expected "toolbar" but got "TOOLBAR"
-PASS menu.label: 77 tests
-PASS menu.compact: 79 tests
-PASS menuitem.title: 77 tests
-PASS menuitem.lang: 77 tests
-PASS menuitem.dir: 151 tests
-PASS menuitem.className (<menuitem class>): 77 tests
-PASS menuitem.hidden: 79 tests
-PASS menuitem.accessKey: 77 tests
-PASS menuitem.tabIndex: 53 tests
+FAIL menu.type: setAttribute() to "" assert_equals: IDL get expected "toolbar" but got ""
+FAIL menu.type: setAttribute() to " \0\x01\x02\x03\x04\x05\x06\x07 \b\t\n\v\f\r\x0e\x0f \x10\x11\x12\x13\x14\x15\x16\x17 \x18\x19\x1a\x1b\x1c\x1d\x1e\x1f  foo " assert_equals: IDL get expected "toolbar" but got " \0\x01\x02\x03\x04\x05\x06\x07 \b\t\n\v\f\r\x0e\x0f \x10\x11\x12\x13\x14\x15\x16\x17 \x18\x19\x1a\x1b\x1c\x1d\x1e\x1f  foo "
+FAIL menu.type: setAttribute() to undefined assert_equals: IDL get expected "toolbar" but got "undefined"
+FAIL menu.type: setAttribute() to 7 assert_equals: IDL get expected "toolbar" but got "7"
+FAIL menu.type: setAttribute() to 1.5 assert_equals: IDL get expected "toolbar" but got "1.5"
+FAIL menu.type: setAttribute() to true assert_equals: IDL get expected "toolbar" but got "true"
+FAIL menu.type: setAttribute() to false assert_equals: IDL get expected "toolbar" but got "false"
+FAIL menu.type: setAttribute() to object "[object Object]" assert_equals: IDL get expected "toolbar" but got "[object Object]"
+FAIL menu.type: setAttribute() to NaN assert_equals: IDL get expected "toolbar" but got "NaN"
+FAIL menu.type: setAttribute() to Infinity assert_equals: IDL get expected "toolbar" but got "Infinity"
+FAIL menu.type: setAttribute() to -Infinity assert_equals: IDL get expected "toolbar" but got "-Infinity"
+FAIL menu.type: setAttribute() to "\0" assert_equals: IDL get expected "toolbar" but got "\0"
+FAIL menu.type: setAttribute() to null assert_equals: IDL get expected "toolbar" but got "null"
+FAIL menu.type: setAttribute() to object "test-toString" assert_equals: IDL get expected "toolbar" but got "test-toString"
+FAIL menu.type: setAttribute() to object "test-valueOf" assert_equals: IDL get expected "toolbar" but got "test-valueOf"
+PASS menu.type: setAttribute() to "popup" 
+FAIL menu.type: setAttribute() to "xpopup" assert_equals: IDL get expected "toolbar" but got "xpopup"
+FAIL menu.type: setAttribute() to "popup\0" assert_equals: IDL get expected "toolbar" but got "popup\0"
+FAIL menu.type: setAttribute() to "opup" assert_equals: IDL get expected "toolbar" but got "opup"
+FAIL menu.type: setAttribute() to "POPUP" assert_equals: IDL get expected "popup" but got "POPUP"
+PASS menu.type: setAttribute() to "toolbar" 
+FAIL menu.type: setAttribute() to "xtoolbar" assert_equals: IDL get expected "toolbar" but got "xtoolbar"
+FAIL menu.type: setAttribute() to "toolbar\0" assert_equals: IDL get expected "toolbar" but got "toolbar\0"
+FAIL menu.type: setAttribute() to "oolbar" assert_equals: IDL get expected "toolbar" but got "oolbar"
+FAIL menu.type: setAttribute() to "TOOLBAR" assert_equals: IDL get expected "toolbar" but got "TOOLBAR"
+FAIL menu.type: IDL set to "" assert_equals: IDL get expected "toolbar" but got ""
+FAIL menu.type: IDL set to " \0\x01\x02\x03\x04\x05\x06\x07 \b\t\n\v\f\r\x0e\x0f \x10\x11\x12\x13\x14\x15\x16\x17 \x18\x19\x1a\x1b\x1c\x1d\x1e\x1f  foo " assert_equals: IDL get expected "toolbar" but got " \0\x01\x02\x03\x04\x05\x06\x07 \b\t\n\v\f\r\x0e\x0f \x10\x11\x12\x13\x14\x15\x16\x17 \x18\x19\x1a\x1b\x1c\x1d\x1e\x1f  foo "
+FAIL menu.type: IDL set to undefined assert_equals: IDL get expected "toolbar" but got "undefined"
+FAIL menu.type: IDL set to 7 assert_equals: IDL get expected "toolbar" but got "7"
+FAIL menu.type: IDL set to 1.5 assert_equals: IDL get expected "toolbar" but got "1.5"
+FAIL menu.type: IDL set to true assert_equals: IDL get expected "toolbar" but got "true"
+FAIL menu.type: IDL set to false assert_equals: IDL get expected "toolbar" but got "false"
+FAIL menu.type: IDL set to object "[object Object]" assert_equals: IDL get expected "toolbar" but got "[object Object]"
+FAIL menu.type: IDL set to NaN assert_equals: IDL get expected "toolbar" but got "NaN"
+FAIL menu.type: IDL set to Infinity assert_equals: IDL get expected "toolbar" but got "Infinity"
+FAIL menu.type: IDL set to -Infinity assert_equals: IDL get expected "toolbar" but got "-Infinity"
+FAIL menu.type: IDL set to "\0" assert_equals: IDL get expected "toolbar" but got "\0"
+FAIL menu.type: IDL set to null assert_equals: IDL get expected "toolbar" but got "null"
+FAIL menu.type: IDL set to object "test-toString" assert_equals: IDL get expected "toolbar" but got "test-toString"
+FAIL menu.type: IDL set to object "test-valueOf" assert_equals: IDL get expected "toolbar" but got "test-valueOf"
+PASS menu.type: IDL set to "popup" 
+FAIL menu.type: IDL set to "xpopup" assert_equals: IDL get expected "toolbar" but got "xpopup"
+FAIL menu.type: IDL set to "popup\0" assert_equals: IDL get expected "toolbar" but got "popup\0"
+FAIL menu.type: IDL set to "opup" assert_equals: IDL get expected "toolbar" but got "opup"
+FAIL menu.type: IDL set to "POPUP" assert_equals: IDL get expected "popup" but got "POPUP"
+PASS menu.type: IDL set to "toolbar" 
+FAIL menu.type: IDL set to "xtoolbar" assert_equals: IDL get expected "toolbar" but got "xtoolbar"
+FAIL menu.type: IDL set to "toolbar\0" assert_equals: IDL get expected "toolbar" but got "toolbar\0"
+FAIL menu.type: IDL set to "oolbar" assert_equals: IDL get expected "toolbar" but got "oolbar"
+FAIL menu.type: IDL set to "TOOLBAR" assert_equals: IDL get expected "toolbar" but got "TOOLBAR"
+PASS menu.label: 32 tests
+PASS menu.compact: 33 tests
+PASS menuitem.title: 32 tests
+PASS menuitem.lang: 32 tests
+PASS menuitem.dir: 62 tests
+PASS menuitem.className (<menuitem class>): 32 tests
+PASS menuitem.hidden: 33 tests
+PASS menuitem.accessKey: 32 tests
+PASS menuitem.tabIndex: 24 tests
 PASS menuitem.type: typeof IDL attribute 
 FAIL menuitem.type: IDL get with DOM attribute unset assert_equals: expected "command" but got ""
-PASS menuitem.type: setAttribute() to "" followed by getAttribute() 
-FAIL menuitem.type: setAttribute() to "" followed by IDL get assert_equals: expected "command" but got ""
-PASS menuitem.type: setAttribute() to " \0\x01\x02\x03\x04\x05\x06\x07 \b\t\n\v\f\r\x0e\x0f \x10\x11\x12\x13\x14\x15\x16\x17 \x18\x19\x1a\x1b\x1c\x1d\x1e\x1f  foo " followed by getAttribute() 
-FAIL menuitem.type: setAttribute() to " \0\x01\x02\x03\x04\x05\x06\x07 \b\t\n\v\f\r\x0e\x0f \x10\x11\x12\x13\x14\x15\x16\x17 \x18\x19\x1a\x1b\x1c\x1d\x1e\x1f  foo " followed by IDL get assert_equals: expected "command" but got " \0\x01\x02\x03\x04\x05\x06\x07 \b\t\n\v\f\r\x0e\x0f \x10\x11\x12\x13\x14\x15\x16\x17 \x18\x19\x1a\x1b\x1c\x1d\x1e\x1f  foo "
-PASS menuitem.type: setAttribute() to undefined followed by getAttribute() 
-FAIL menuitem.type: setAttribute() to undefined followed by IDL get assert_equals: expected "command" but got "undefined"
-PASS menuitem.type: setAttribute() to 7 followed by getAttribute() 
-FAIL menuitem.type: setAttribute() to 7 followed by IDL get assert_equals: expected "command" but got "7"
-PASS menuitem.type: setAttribute() to 1.5 followed by getAttribute() 
-FAIL menuitem.type: setAttribute() to 1.5 followed by IDL get assert_equals: expected "command" but got "1.5"
-PASS menuitem.type: setAttribute() to true followed by getAttribute() 
-FAIL menuitem.type: setAttribute() to true followed by IDL get assert_equals: expected "command" but got "true"
-PASS menuitem.type: setAttribute() to false followed by getAttribute() 
-FAIL menuitem.type: setAttribute() to false followed by IDL get assert_equals: expected "command" but got "false"
-PASS menuitem.type: setAttribute() to object "[object Object]" followed by getAttribute() 
-FAIL menuitem.type: setAttribute() to object "[object Object]" followed by IDL get assert_equals: expected "command" but got "[object Object]"
-PASS menuitem.type: setAttribute() to NaN followed by getAttribute() 
-FAIL menuitem.type: setAttribute() to NaN followed by IDL get assert_equals: expected "command" but got "NaN"
-PASS menuitem.type: setAttribute() to Infinity followed by getAttribute() 
-FAIL menuitem.type: setAttribute() to Infinity followed by IDL get assert_equals: expected "command" but got "Infinity"
-PASS menuitem.type: setAttribute() to -Infinity followed by getAttribute() 
-FAIL menuitem.type: setAttribute() to -Infinity followed by IDL get assert_equals: expected "command" but got "-Infinity"
-PASS menuitem.type: setAttribute() to "\0" followed by getAttribute() 
-FAIL menuitem.type: setAttribute() to "\0" followed by IDL get assert_equals: expected "command" but got "\0"
-PASS menuitem.type: setAttribute() to null followed by getAttribute() 
-FAIL menuitem.type: setAttribute() to null followed by IDL get assert_equals: expected "command" but got "null"
-PASS menuitem.type: setAttribute() to object "test-toString" followed by getAttribute() 
-FAIL menuitem.type: setAttribute() to object "test-toString" followed by IDL get assert_equals: expected "command" but got "test-toString"
-PASS menuitem.type: setAttribute() to object "test-valueOf" followed by getAttribute() 
-FAIL menuitem.type: setAttribute() to object "test-valueOf" followed by IDL get assert_equals: expected "command" but got "test-valueOf"
-PASS menuitem.type: 3 tests
-FAIL menuitem.type: setAttribute() to "xcommand" followed by IDL get assert_equals: expected "command" but got "xcommand"
-PASS menuitem.type: setAttribute() to "command\0" followed by getAttribute() 
-FAIL menuitem.type: setAttribute() to "command\0" followed by IDL get assert_equals: expected "command" but got "command\0"
-PASS menuitem.type: setAttribute() to "ommand" followed by getAttribute() 
-FAIL menuitem.type: setAttribute() to "ommand" followed by IDL get assert_equals: expected "command" but got "ommand"
-PASS menuitem.type: setAttribute() to "COMMAND" followed by getAttribute() 
-FAIL menuitem.type: setAttribute() to "COMMAND" followed by IDL get assert_equals: expected "command" but got "COMMAND"
-PASS menuitem.type: 3 tests
-FAIL menuitem.type: setAttribute() to "xcheckbox" followed by IDL get assert_equals: expected "command" but got "xcheckbox"
-PASS menuitem.type: setAttribute() to "checkbox\0" followed by getAttribute() 
-FAIL menuitem.type: setAttribute() to "checkbox\0" followed by IDL get assert_equals: expected "command" but got "checkbox\0"
-PASS menuitem.type: setAttribute() to "heckbox" followed by getAttribute() 
-FAIL menuitem.type: setAttribute() to "heckbox" followed by IDL get assert_equals: expected "command" but got "heckbox"
-PASS menuitem.type: setAttribute() to "CHECKBOX" followed by getAttribute() 
-FAIL menuitem.type: setAttribute() to "CHECKBOX" followed by IDL get assert_equals: expected "checkbox" but got "CHECKBOX"
-PASS menuitem.type: 3 tests
-FAIL menuitem.type: setAttribute() to "xradio" followed by IDL get assert_equals: expected "command" but got "xradio"
-PASS menuitem.type: setAttribute() to "radio\0" followed by getAttribute() 
-FAIL menuitem.type: setAttribute() to "radio\0" followed by IDL get assert_equals: expected "command" but got "radio\0"
-PASS menuitem.type: setAttribute() to "adio" followed by getAttribute() 
-FAIL menuitem.type: setAttribute() to "adio" followed by IDL get assert_equals: expected "command" but got "adio"
-PASS menuitem.type: setAttribute() to "RADIO" followed by getAttribute() 
-FAIL menuitem.type: setAttribute() to "RADIO" followed by IDL get assert_equals: expected "radio" but got "RADIO"
-PASS menuitem.type: 2 tests
-FAIL menuitem.type: IDL set to "" followed by IDL get assert_equals: expected "command" but got ""
-PASS menuitem.type: 2 tests
-FAIL menuitem.type: IDL set to " \0\x01\x02\x03\x04\x05\x06\x07 \b\t\n\v\f\r\x0e\x0f \x10\x11\x12\x13\x14\x15\x16\x17 \x18\x19\x1a\x1b\x1c\x1d\x1e\x1f  foo " followed by IDL get assert_equals: expected "command" but got " \0\x01\x02\x03\x04\x05\x06\x07 \b\t\n\v\f\r\x0e\x0f \x10\x11\x12\x13\x14\x15\x16\x17 \x18\x19\x1a\x1b\x1c\x1d\x1e\x1f  foo "
-PASS menuitem.type: 2 tests
-FAIL menuitem.type: IDL set to undefined followed by IDL get assert_equals: expected "command" but got "undefined"
-PASS menuitem.type: 2 tests
-FAIL menuitem.type: IDL set to 7 followed by IDL get assert_equals: expected "command" but got "7"
-PASS menuitem.type: 2 tests
-FAIL menuitem.type: IDL set to 1.5 followed by IDL get assert_equals: expected "command" but got "1.5"
-PASS menuitem.type: 2 tests
-FAIL menuitem.type: IDL set to true followed by IDL get assert_equals: expected "command" but got "true"
-PASS menuitem.type: 2 tests
-FAIL menuitem.type: IDL set to false followed by IDL get assert_equals: expected "command" but got "false"
-PASS menuitem.type: 2 tests
-FAIL menuitem.type: IDL set to object "[object Object]" followed by IDL get assert_equals: expected "command" but got "[object Object]"
-PASS menuitem.type: 2 tests
-FAIL menuitem.type: IDL set to NaN followed by IDL get assert_equals: expected "command" but got "NaN"
-PASS menuitem.type: 2 tests
-FAIL menuitem.type: IDL set to Infinity followed by IDL get assert_equals: expected "command" but got "Infinity"
-PASS menuitem.type: 2 tests
-FAIL menuitem.type: IDL set to -Infinity followed by IDL get assert_equals: expected "command" but got "-Infinity"
-PASS menuitem.type: 2 tests
-FAIL menuitem.type: IDL set to "\0" followed by IDL get assert_equals: expected "command" but got "\0"
-PASS menuitem.type: IDL set to null should not throw 
-FAIL menuitem.type: IDL set to null followed by IDL get assert_equals: expected "command" but got "null"
-PASS menuitem.type: 2 tests
-FAIL menuitem.type: IDL set to object "test-toString" followed by IDL get assert_equals: expected "command" but got "test-toString"
-PASS menuitem.type: 2 tests
-FAIL menuitem.type: IDL set to object "test-valueOf" followed by IDL get assert_equals: expected "command" but got "test-valueOf"
-PASS menuitem.type: 5 tests
-FAIL menuitem.type: IDL set to "xcommand" followed by IDL get assert_equals: expected "command" but got "xcommand"
-PASS menuitem.type: 2 tests
-FAIL menuitem.type: IDL set to "command\0" followed by IDL get assert_equals: expected "command" but got "command\0"
-PASS menuitem.type: 2 tests
-FAIL menuitem.type: IDL set to "ommand" followed by IDL get assert_equals: expected "command" but got "ommand"
-PASS menuitem.type: 2 tests
-FAIL menuitem.type: IDL set to "COMMAND" followed by IDL get assert_equals: expected "command" but got "COMMAND"
-PASS menuitem.type: 5 tests
-FAIL menuitem.type: IDL set to "xcheckbox" followed by IDL get assert_equals: expected "command" but got "xcheckbox"
-PASS menuitem.type: 2 tests
-FAIL menuitem.type: IDL set to "checkbox\0" followed by IDL get assert_equals: expected "command" but got "checkbox\0"
-PASS menuitem.type: 2 tests
-FAIL menuitem.type: IDL set to "heckbox" followed by IDL get assert_equals: expected "command" but got "heckbox"
-PASS menuitem.type: 2 tests
-FAIL menuitem.type: IDL set to "CHECKBOX" followed by IDL get assert_equals: expected "checkbox" but got "CHECKBOX"
-PASS menuitem.type: 5 tests
-FAIL menuitem.type: IDL set to "xradio" followed by IDL get assert_equals: expected "command" but got "xradio"
-PASS menuitem.type: 2 tests
-FAIL menuitem.type: IDL set to "radio\0" followed by IDL get assert_equals: expected "command" but got "radio\0"
-PASS menuitem.type: 2 tests
-FAIL menuitem.type: IDL set to "adio" followed by IDL get assert_equals: expected "command" but got "adio"
-PASS menuitem.type: 2 tests
-FAIL menuitem.type: IDL set to "RADIO" followed by IDL get assert_equals: expected "radio" but got "RADIO"
-PASS menuitem.label: 77 tests
-PASS menuitem.icon: 92 tests
-PASS menuitem.disabled: 79 tests
-PASS menuitem.checked: 79 tests
-PASS menuitem.radiogroup: 77 tests
-PASS menuitem.default: 79 tests
-PASS dialog.title: 77 tests
-PASS dialog.lang: 77 tests
-PASS dialog.dir: 151 tests
-PASS dialog.className (<dialog class>): 77 tests
-PASS dialog.hidden: 79 tests
-PASS dialog.accessKey: 77 tests
-PASS dialog.tabIndex: 53 tests
-PASS dialog.open: 79 tests
-PASS undefinedelement.title: 77 tests
-PASS undefinedelement.lang: 77 tests
-PASS undefinedelement.dir: 151 tests
-PASS undefinedelement.className (<undefinedelement class>): 77 tests
-PASS undefinedelement.hidden: 79 tests
-PASS undefinedelement.accessKey: 77 tests
-PASS undefinedelement.tabIndex: 53 tests
+FAIL menuitem.type: setAttribute() to "" assert_equals: IDL get expected "command" but got ""
+FAIL menuitem.type: setAttribute() to " \0\x01\x02\x03\x04\x05\x06\x07 \b\t\n\v\f\r\x0e\x0f \x10\x11\x12\x13\x14\x15\x16\x17 \x18\x19\x1a\x1b\x1c\x1d\x1e\x1f  foo " assert_equals: IDL get expected "command" but got " \0\x01\x02\x03\x04\x05\x06\x07 \b\t\n\v\f\r\x0e\x0f \x10\x11\x12\x13\x14\x15\x16\x17 \x18\x19\x1a\x1b\x1c\x1d\x1e\x1f  foo "
+FAIL menuitem.type: setAttribute() to undefined assert_equals: IDL get expected "command" but got "undefined"
+FAIL menuitem.type: setAttribute() to 7 assert_equals: IDL get expected "command" but got "7"
+FAIL menuitem.type: setAttribute() to 1.5 assert_equals: IDL get expected "command" but got "1.5"
+FAIL menuitem.type: setAttribute() to true assert_equals: IDL get expected "command" but got "true"
+FAIL menuitem.type: setAttribute() to false assert_equals: IDL get expected "command" but got "false"
+FAIL menuitem.type: setAttribute() to object "[object Object]" assert_equals: IDL get expected "command" but got "[object Object]"
+FAIL menuitem.type: setAttribute() to NaN assert_equals: IDL get expected "command" but got "NaN"
+FAIL menuitem.type: setAttribute() to Infinity assert_equals: IDL get expected "command" but got "Infinity"
+FAIL menuitem.type: setAttribute() to -Infinity assert_equals: IDL get expected "command" but got "-Infinity"
+FAIL menuitem.type: setAttribute() to "\0" assert_equals: IDL get expected "command" but got "\0"
+FAIL menuitem.type: setAttribute() to null assert_equals: IDL get expected "command" but got "null"
+FAIL menuitem.type: setAttribute() to object "test-toString" assert_equals: IDL get expected "command" but got "test-toString"
+FAIL menuitem.type: setAttribute() to object "test-valueOf" assert_equals: IDL get expected "command" but got "test-valueOf"
+PASS menuitem.type: setAttribute() to "command" 
+FAIL menuitem.type: setAttribute() to "xcommand" assert_equals: IDL get expected "command" but got "xcommand"
+FAIL menuitem.type: setAttribute() to "command\0" assert_equals: IDL get expected "command" but got "command\0"
+FAIL menuitem.type: setAttribute() to "ommand" assert_equals: IDL get expected "command" but got "ommand"
+FAIL menuitem.type: setAttribute() to "COMMAND" assert_equals: IDL get expected "command" but got "COMMAND"
+PASS menuitem.type: setAttribute() to "checkbox" 
+FAIL menuitem.type: setAttribute() to "xcheckbox" assert_equals: IDL get expected "command" but got "xcheckbox"
+FAIL menuitem.type: setAttribute() to "checkbox\0" assert_equals: IDL get expected "command" but got "checkbox\0"
+FAIL menuitem.type: setAttribute() to "heckbox" assert_equals: IDL get expected "command" but got "heckbox"
+FAIL menuitem.type: setAttribute() to "CHECKBOX" assert_equals: IDL get expected "checkbox" but got "CHECKBOX"
+PASS menuitem.type: setAttribute() to "radio" 
+FAIL menuitem.type: setAttribute() to "xradio" assert_equals: IDL get expected "command" but got "xradio"
+FAIL menuitem.type: setAttribute() to "radio\0" assert_equals: IDL get expected "command" but got "radio\0"
+FAIL menuitem.type: setAttribute() to "adio" assert_equals: IDL get expected "command" but got "adio"
+FAIL menuitem.type: setAttribute() to "RADIO" assert_equals: IDL get expected "radio" but got "RADIO"
+FAIL menuitem.type: IDL set to "" assert_equals: IDL get expected "command" but got ""
+FAIL menuitem.type: IDL set to " \0\x01\x02\x03\x04\x05\x06\x07 \b\t\n\v\f\r\x0e\x0f \x10\x11\x12\x13\x14\x15\x16\x17 \x18\x19\x1a\x1b\x1c\x1d\x1e\x1f  foo " assert_equals: IDL get expected "command" but got " \0\x01\x02\x03\x04\x05\x06\x07 \b\t\n\v\f\r\x0e\x0f \x10\x11\x12\x13\x14\x15\x16\x17 \x18\x19\x1a\x1b\x1c\x1d\x1e\x1f  foo "
+FAIL menuitem.type: IDL set to undefined assert_equals: IDL get expected "command" but got "undefined"
+FAIL menuitem.type: IDL set to 7 assert_equals: IDL get expected "command" but got "7"
+FAIL menuitem.type: IDL set to 1.5 assert_equals: IDL get expected "command" but got "1.5"
+FAIL menuitem.type: IDL set to true assert_equals: IDL get expected "command" but got "true"
+FAIL menuitem.type: IDL set to false assert_equals: IDL get expected "command" but got "false"
+FAIL menuitem.type: IDL set to object "[object Object]" assert_equals: IDL get expected "command" but got "[object Object]"
+FAIL menuitem.type: IDL set to NaN assert_equals: IDL get expected "command" but got "NaN"
+FAIL menuitem.type: IDL set to Infinity assert_equals: IDL get expected "command" but got "Infinity"
+FAIL menuitem.type: IDL set to -Infinity assert_equals: IDL get expected "command" but got "-Infinity"
+FAIL menuitem.type: IDL set to "\0" assert_equals: IDL get expected "command" but got "\0"
+FAIL menuitem.type: IDL set to null assert_equals: IDL get expected "command" but got "null"
+FAIL menuitem.type: IDL set to object "test-toString" assert_equals: IDL get expected "command" but got "test-toString"
+FAIL menuitem.type: IDL set to object "test-valueOf" assert_equals: IDL get expected "command" but got "test-valueOf"
+PASS menuitem.type: IDL set to "command" 
+FAIL menuitem.type: IDL set to "xcommand" assert_equals: IDL get expected "command" but got "xcommand"
+FAIL menuitem.type: IDL set to "command\0" assert_equals: IDL get expected "command" but got "command\0"
+FAIL menuitem.type: IDL set to "ommand" assert_equals: IDL get expected "command" but got "ommand"
+FAIL menuitem.type: IDL set to "COMMAND" assert_equals: IDL get expected "command" but got "COMMAND"
+PASS menuitem.type: IDL set to "checkbox" 
+FAIL menuitem.type: IDL set to "xcheckbox" assert_equals: IDL get expected "command" but got "xcheckbox"
+FAIL menuitem.type: IDL set to "checkbox\0" assert_equals: IDL get expected "command" but got "checkbox\0"
+FAIL menuitem.type: IDL set to "heckbox" assert_equals: IDL get expected "command" but got "heckbox"
+FAIL menuitem.type: IDL set to "CHECKBOX" assert_equals: IDL get expected "checkbox" but got "CHECKBOX"
+PASS menuitem.type: IDL set to "radio" 
+FAIL menuitem.type: IDL set to "xradio" assert_equals: IDL get expected "command" but got "xradio"
+FAIL menuitem.type: IDL set to "radio\0" assert_equals: IDL get expected "command" but got "radio\0"
+FAIL menuitem.type: IDL set to "adio" assert_equals: IDL get expected "command" but got "adio"
+FAIL menuitem.type: IDL set to "RADIO" assert_equals: IDL get expected "radio" but got "RADIO"
+PASS menuitem.label: 32 tests
+PASS menuitem.icon: 38 tests
+PASS menuitem.disabled: 33 tests
+PASS menuitem.checked: 33 tests
+PASS menuitem.radiogroup: 32 tests
+PASS menuitem.default: 33 tests
+PASS dialog.title: 32 tests
+PASS dialog.lang: 32 tests
+PASS dialog.dir: 62 tests
+PASS dialog.className (<dialog class>): 32 tests
+PASS dialog.hidden: 33 tests
+PASS dialog.accessKey: 32 tests
+PASS dialog.tabIndex: 24 tests
+PASS dialog.open: 33 tests
+PASS undefinedelement.title: 32 tests
+PASS undefinedelement.lang: 32 tests
+PASS undefinedelement.dir: 62 tests
+PASS undefinedelement.className (<undefinedelement class>): 32 tests
+PASS undefinedelement.hidden: 33 tests
+PASS undefinedelement.accessKey: 32 tests
+PASS undefinedelement.tabIndex: 24 tests
 Harness: the test ran to completion.
 

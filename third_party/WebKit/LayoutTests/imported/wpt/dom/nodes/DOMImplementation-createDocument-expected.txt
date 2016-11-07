@@ -1,5 +1,8 @@
 This is a testharness.js-based test.
 PASS DOMImplementation.createDocument(namespace, qualifiedName, doctype) 
+PASS createDocument test: null,null,null,null 
+FAIL createDocument test: metadata for null,null,null assert_equals: expected "about:blank" but got ""
+PASS createDocument test: characterSet aliases for null,null,null 
 PASS createDocument test: null,undefined,null,null 
 FAIL createDocument test: metadata for null,undefined,null assert_equals: expected "about:blank" but got ""
 PASS createDocument test: characterSet aliases for null,undefined,null 
@@ -13,7 +16,7 @@ PASS createDocument test: characterSet aliases for null,"f1oo",null
 PASS createDocument test: null,"foo1",null,null 
 FAIL createDocument test: metadata for null,"foo1",null assert_equals: expected "about:blank" but got ""
 PASS createDocument test: characterSet aliases for null,"foo1",null 
-PASS createDocument test: null,"̀foo",null,"INVALID_CHARACTER_ERR" 
+PASS createDocument test: null,"ெfoo",null,"INVALID_CHARACTER_ERR" 
 PASS createDocument test: null,"}foo",null,"INVALID_CHARACTER_ERR" 
 PASS createDocument test: null,"f}oo",null,"INVALID_CHARACTER_ERR" 
 PASS createDocument test: null,"foo}",null,"INVALID_CHARACTER_ERR" 
@@ -25,9 +28,13 @@ PASS createDocument test: null,"foo>",null,"INVALID_CHARACTER_ERR"
 PASS createDocument test: null,"<foo>",null,"INVALID_CHARACTER_ERR" 
 PASS createDocument test: null,"f<oo",null,"INVALID_CHARACTER_ERR" 
 PASS createDocument test: null,"^^",null,"INVALID_CHARACTER_ERR" 
+PASS createDocument test: null,"fo o",null,"INVALID_CHARACTER_ERR" 
+PASS createDocument test: null,"-foo",null,"INVALID_CHARACTER_ERR" 
+PASS createDocument test: null,".foo",null,"INVALID_CHARACTER_ERR" 
 PASS createDocument test: null,":foo",null,"NAMESPACE_ERR" 
 PASS createDocument test: null,"f:oo",null,"NAMESPACE_ERR" 
 PASS createDocument test: null,"foo:",null,"NAMESPACE_ERR" 
+PASS createDocument test: null,"f:o:o",null,"NAMESPACE_ERR" 
 PASS createDocument test: null,":",null,"NAMESPACE_ERR" 
 PASS createDocument test: null,"xml",null,null 
 FAIL createDocument test: metadata for null,"xml",null assert_equals: expected "about:blank" but got ""
@@ -40,9 +47,15 @@ PASS createDocument test: null,"xml:foo",null,"NAMESPACE_ERR"
 PASS createDocument test: null,"xmlns:foo",null,"NAMESPACE_ERR" 
 PASS createDocument test: null,"xmlfoo:bar",null,"NAMESPACE_ERR" 
 PASS createDocument test: null,"null:xml",null,"NAMESPACE_ERR" 
+PASS createDocument test: "",null,null,null 
+FAIL createDocument test: metadata for "",null,null assert_equals: expected "about:blank" but got ""
+PASS createDocument test: characterSet aliases for "",null,null 
 PASS createDocument test: "",":foo",null,"NAMESPACE_ERR" 
 PASS createDocument test: "","f:oo",null,"NAMESPACE_ERR" 
 PASS createDocument test: "","foo:",null,"NAMESPACE_ERR" 
+PASS createDocument test: undefined,null,null,null 
+FAIL createDocument test: metadata for undefined,null,null assert_equals: expected "about:blank" but got ""
+PASS createDocument test: characterSet aliases for undefined,null,null 
 PASS createDocument test: undefined,undefined,null,null 
 FAIL createDocument test: metadata for undefined,undefined,null assert_equals: expected "about:blank" but got ""
 PASS createDocument test: characterSet aliases for undefined,undefined,null 
@@ -59,6 +72,7 @@ PASS createDocument test: characterSet aliases for undefined,"foo1",null
 PASS createDocument test: undefined,":foo",null,"NAMESPACE_ERR" 
 PASS createDocument test: undefined,"f:oo",null,"NAMESPACE_ERR" 
 PASS createDocument test: undefined,"foo:",null,"NAMESPACE_ERR" 
+PASS createDocument test: undefined,"f::oo",null,"NAMESPACE_ERR" 
 PASS createDocument test: undefined,"xml",null,null 
 FAIL createDocument test: metadata for undefined,"xml",null assert_equals: expected "about:blank" but got ""
 PASS createDocument test: characterSet aliases for undefined,"xml",null 
@@ -73,6 +87,10 @@ PASS createDocument test: "http://example.com/","foo",null,null
 FAIL createDocument test: metadata for "http://example.com/","foo",null assert_equals: expected "about:blank" but got ""
 PASS createDocument test: characterSet aliases for "http://example.com/","foo",null 
 PASS createDocument test: "http://example.com/","1foo",null,"INVALID_CHARACTER_ERR" 
+PASS createDocument test: "http://example.com/","<foo>",null,"INVALID_CHARACTER_ERR" 
+PASS createDocument test: "http://example.com/","fo<o",null,"INVALID_CHARACTER_ERR" 
+PASS createDocument test: "http://example.com/","-foo",null,"INVALID_CHARACTER_ERR" 
+PASS createDocument test: "http://example.com/",".foo",null,"INVALID_CHARACTER_ERR" 
 PASS createDocument test: "http://example.com/","f1oo",null,null 
 FAIL createDocument test: metadata for "http://example.com/","f1oo",null assert_equals: expected "about:blank" but got ""
 PASS createDocument test: characterSet aliases for "http://example.com/","f1oo",null 
@@ -83,7 +101,28 @@ PASS createDocument test: "http://example.com/",":foo",null,"NAMESPACE_ERR"
 PASS createDocument test: "http://example.com/","f:oo",null,null 
 FAIL createDocument test: metadata for "http://example.com/","f:oo",null assert_equals: expected "about:blank" but got ""
 PASS createDocument test: characterSet aliases for "http://example.com/","f:oo",null 
+PASS createDocument test: "http://example.com/","f:o:o",null,"NAMESPACE_ERR" 
 PASS createDocument test: "http://example.com/","foo:",null,"NAMESPACE_ERR" 
+PASS createDocument test: "http://example.com/","f::oo",null,"NAMESPACE_ERR" 
+FAIL createDocument test: "http://example.com/","a:0",null,"NAMESPACE_ERR" assert_throws: function "function () { document.implementation.createDocument(namespace, qualifiedName, doctype) }" threw object "InvalidCharacterError: Failed to execute 'createDocument' on 'DOMImplementation': The qualified name provided ('a:0') contains the invalid name-start character '0'." that is not a DOMException NAMESPACE_ERR: property "code" is equal to 5, expected 14
+PASS createDocument test: "http://example.com/","0:a",null,"INVALID_CHARACTER_ERR" 
+PASS createDocument test: "http://example.com/","a:_",null,null 
+FAIL createDocument test: metadata for "http://example.com/","a:_",null assert_equals: expected "about:blank" but got ""
+PASS createDocument test: characterSet aliases for "http://example.com/","a:_",null 
+FAIL createDocument test: "http://example.com/","a:ெ",null,"NAMESPACE_ERR" assert_throws: function "function () { document.implementation.createDocument(namespace, qualifiedName, doctype) }" threw object "InvalidCharacterError: Failed to execute 'createDocument' on 'DOMImplementation': The qualified name provided ('a:ெ') contains the invalid name-start character 'ெ'." that is not a DOMException NAMESPACE_ERR: property "code" is equal to 5, expected 14
+PASS createDocument test: "http://example.com/","ெ:a",null,"INVALID_CHARACTER_ERR" 
+PASS createDocument test: "http://example.com/","a:aெ",null,null 
+FAIL createDocument test: metadata for "http://example.com/","a:aெ",null assert_equals: expected "about:blank" but got ""
+PASS createDocument test: characterSet aliases for "http://example.com/","a:aெ",null 
+PASS createDocument test: "http://example.com/","aெ:a",null,null 
+FAIL createDocument test: metadata for "http://example.com/","aெ:a",null assert_equals: expected "about:blank" but got ""
+PASS createDocument test: characterSet aliases for "http://example.com/","aெ:a",null 
+PASS createDocument test: "http://example.com/","xml:test",null,"NAMESPACE_ERR" 
+PASS createDocument test: "http://example.com/","xmlns:test",null,"NAMESPACE_ERR" 
+PASS createDocument test: "http://example.com/","test:xmlns",null,null 
+FAIL createDocument test: metadata for "http://example.com/","test:xmlns",null assert_equals: expected "about:blank" but got ""
+PASS createDocument test: characterSet aliases for "http://example.com/","test:xmlns",null 
+PASS createDocument test: "http://example.com/","xmlns",null,"NAMESPACE_ERR" 
 PASS createDocument test: "http://example.com/","_:_",null,null 
 FAIL createDocument test: metadata for "http://example.com/","_:_",null assert_equals: expected "about:blank" but got ""
 PASS createDocument test: characterSet aliases for "http://example.com/","_:_",null 

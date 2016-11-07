@@ -1460,11 +1460,6 @@ crbug.com/660580 [ Precise ] virtual/scalefactor200withzoom/fast/hidpi/static/dr
 # crbug.com/660580 [ Precise ] virtual/threaded/printing/fixed-positioned-headers-and-footers.html [ Skip ]
 
 # Tests added from W3C auto import bot
-crbug.com/626703 [ Precise Trusty Mac10.11 Mac10.10 Retina Win7 Win10 Mac10.9 ] imported/wpt/html/dom/reflection-tabular.html [ Failure ]
-crbug.com/626703 [ Precise Trusty Mac10.11 Mac10.10 Retina Win7 Win10 Mac10.9 ] imported/wpt/html/dom/reflection-grouping.html [ Failure ]
-crbug.com/626703 [ Precise Trusty Mac10.11 Mac10.10 Retina Win7 Win10 Mac10.9 ] imported/wpt/html/dom/reflection-misc.html [ Failure ]
-crbug.com/626703 [ Precise Trusty Mac10.11 Mac10.10 Retina Win7 Win10 Mac10.9 ] imported/wpt/html/dom/reflection-obsolete.html [ Failure ]
-crbug.com/626703 [ Precise Trusty Mac10.11 Mac10.10 Retina Win7 Win10 Mac10.9 ] imported/wpt/dom/nodes/DOMImplementation-createDocument.html [ Failure ]
 crbug.com/626703 imported/wpt/html/webappapis/idle-callbacks/callback-timeout.html [ Timeout Pass ]
 crbug.com/626703 imported/wpt/html/webappapis/idle-callbacks/callback-multiple-calls.html [ Timeout Pass ]
 crbug.com/626703 imported/wpt/html/webappapis/idle-callbacks/callback-exception.html [ Timeout Pass ]
