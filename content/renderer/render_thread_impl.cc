@@ -847,6 +847,10 @@ void RenderThreadImpl::Init(
                  base::Unretained(this))));
 
   if (base::FeatureList::IsEnabled(features::kMemoryCoordinator)) {
+    // Currently it is not possible to enable both PurgeAndSuspend and
+    // MemoryCoordinator at the same time.
+    DCHECK(!base::FeatureList::IsEnabled(features::kPurgeAndSuspend));
+
     // Disable MemoryPressureListener when memory coordinator is enabled.
     base::MemoryPressureListener::SetNotificationsSuppressed(true);
 
@@ -1752,6 +1756,12 @@ void RenderThreadImpl::OnProcessBackgrounded(bool backgrounded) {
     renderer_scheduler_->OnRendererBackgrounded();
   } else {
     renderer_scheduler_->OnRendererForegrounded();
+    // TODO(tasak): after enabling MemoryCoordinator, remove this Notify
+    // and follow MemoryCoordinator's request.
+    if (base::FeatureList::IsEnabled(features::kPurgeAndSuspend))
+      base::MemoryCoordinatorClientRegistry::GetInstance()->Notify(
+          base::MemoryState::NORMAL);
+
     record_purge_suspend_metric_closure_.Cancel();
     record_purge_suspend_metric_closure_.Reset(
         base::Bind(&RenderThreadImpl::RecordPurgeAndSuspendMetrics,
@@ -1762,11 +1772,17 @@ void RenderThreadImpl::OnProcessBackgrounded(bool backgrounded) {
 
 void RenderThreadImpl::OnProcessPurgeAndSuspend() {
   ChildThreadImpl::OnProcessPurgeAndSuspend();
-  if (is_renderer_suspended_ || !RendererIsHidden())
+  DCHECK(!is_renderer_suspended_);
+  if (!RendererIsHidden())
     return;
-  // TODO(hajimehoshi): Implement purging e.g. cache (crbug/607077)
   is_renderer_suspended_ = true;
-  renderer_scheduler_->SuspendRenderer();
+  if (base::FeatureList::IsEnabled(features::kPurgeAndSuspend)) {
+    // TODO(tasak): After enabling MemoryCoordinator, remove this Notify
+    // and follow MemoryCoordinator's request.
+    base::MemoryCoordinatorClientRegistry::GetInstance()->Notify(
+        base::MemoryState::SUSPENDED);
+    renderer_scheduler_->SuspendRenderer();
+  }
 
   // Since purging is not a synchronous task (e.g. v8 GC, oilpan GC, ...),
   // we need to wait until the task is finished. So wait 15 seconds and
@@ -1879,7 +1895,13 @@ void RenderThreadImpl::OnProcessResume() {
 
   DCHECK(is_renderer_suspended_);
   is_renderer_suspended_ = false;
-  renderer_scheduler_->ResumeRenderer();
+  if (base::FeatureList::IsEnabled(features::kPurgeAndSuspend)) {
+    // TODO(tasak): after enabling MemoryCoordinator, remove this Notify
+    // and follow MemoryCoordinator's request.
+    base::MemoryCoordinatorClientRegistry::GetInstance()->Notify(
+        base::MemoryState::NORMAL);
+    renderer_scheduler_->ResumeRenderer();
+  }
 }
 
 scoped_refptr<gpu::GpuChannelHost> RenderThreadImpl::EstablishGpuChannelSync() {

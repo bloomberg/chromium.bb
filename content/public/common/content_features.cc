@@ -143,6 +143,10 @@ const base::Feature kPointerEvents{"PointerEvent",
 const base::Feature kPointerEventV1SpecCapturing{
     "PointerEventV1SpecCapturing", base::FEATURE_DISABLED_BY_DEFAULT};
 
+// Enables purge and suspend.
+const base::Feature kPurgeAndSuspend{"PurgeAndSuspend",
+                                     base::FEATURE_DISABLED_BY_DEFAULT};
+
 // RAF aligned mouse input events support.
 const base::Feature kRafAlignedMouseInputEvents{
     "RafAlignedMouseInput", base::FEATURE_DISABLED_BY_DEFAULT};
