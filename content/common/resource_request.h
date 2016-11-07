@@ -9,6 +9,7 @@
 #include <string>
 
 #include "base/memory/ref_counted.h"
+#include "base/optional.h"
 #include "content/common/content_export.h"
 #include "content/common/navigation_params.h"
 #include "content/common/resource_request_body_impl.h"
@@ -47,7 +48,7 @@ struct CONTENT_EXPORT ResourceRequest {
 
   // The origin of the context which initiated the request, which will be used
   // for cookie checks like 'First-Party-Only'.
-  url::Origin request_initiator;
+  base::Optional<url::Origin> request_initiator;
 
   // The referrer to use (may be empty).
   GURL referrer;

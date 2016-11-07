@@ -382,6 +382,7 @@ void ServiceWorkerFetchDispatcher::MaybeStartNavigationPreload(
   ResourceRequest request;
   request.method = original_request->method();
   request.url = original_request->url();
+  request.request_initiator = original_request->initiator();
   request.referrer = GURL(original_request->referrer());
   request.referrer_policy = original_info->GetReferrerPolicy();
   request.visibility_state = original_info->GetVisibilityState();

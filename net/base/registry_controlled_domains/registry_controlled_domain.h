@@ -117,6 +117,7 @@
 
 #include <string>
 
+#include "base/optional.h"
 #include "base/strings/string_piece.h"
 #include "net/base/net_export.h"
 
@@ -198,6 +199,10 @@ NET_EXPORT bool SameDomainOrHost(const GURL& gurl1, const GURL& gurl2,
                                  PrivateRegistryFilter filter);
 NET_EXPORT bool SameDomainOrHost(const url::Origin& origin1,
                                  const url::Origin& origin2,
+                                 PrivateRegistryFilter filter);
+// Note: this returns false if |origin2| is not set.
+NET_EXPORT bool SameDomainOrHost(const url::Origin& origin1,
+                                 const base::Optional<url::Origin>& origin2,
                                  PrivateRegistryFilter filter);
 
 // Finds the length in bytes of the registrar portion of the host in the

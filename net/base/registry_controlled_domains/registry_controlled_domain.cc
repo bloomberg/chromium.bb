@@ -354,6 +354,14 @@ bool SameDomainOrHost(const url::Origin& origin1,
   return SameDomainOrHost(origin1.GetURL(), origin2.GetURL(), filter);
 }
 
+bool SameDomainOrHost(const url::Origin& origin1,
+                      const base::Optional<url::Origin>& origin2,
+                      PrivateRegistryFilter filter) {
+  if (!origin2.has_value())
+    return false;
+  return SameDomainOrHost(origin1, origin2.value(), filter);
+}
+
 size_t GetRegistryLength(
     const GURL& gurl,
     UnknownRegistryFilter unknown_filter,

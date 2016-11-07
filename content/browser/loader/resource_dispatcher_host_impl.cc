@@ -1407,6 +1407,12 @@ void ResourceDispatcherHostImpl::ContinuePendingBeginRequest(
 
   new_request->set_first_party_for_cookies(
       request_data.first_party_for_cookies);
+
+  // The initiator should normally be present, unless this is a navigation in a
+  // top-level frame. It may be null for some top-level navigations (eg:
+  // browser-initiated ones).
+  DCHECK(request_data.request_initiator.has_value() ||
+         request_data.resource_type == RESOURCE_TYPE_MAIN_FRAME);
   new_request->set_initiator(request_data.request_initiator);
 
   if (request_data.originated_from_service_worker) {

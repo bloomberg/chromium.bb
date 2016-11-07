@@ -468,8 +468,10 @@ void URLRequest::set_first_party_url_policy(
   first_party_url_policy_ = first_party_url_policy;
 }
 
-void URLRequest::set_initiator(const url::Origin& initiator) {
+void URLRequest::set_initiator(const base::Optional<url::Origin>& initiator) {
   DCHECK(!is_pending_);
+  DCHECK(!initiator.has_value() || initiator.value().unique() ||
+         initiator.value().GetURL().is_valid());
   initiator_ = initiator;
 }
 

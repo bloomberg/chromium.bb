@@ -5,12 +5,15 @@
 #ifndef CONTENT_PUBLIC_COMMON_URL_FETCHER_H_
 #define CONTENT_PUBLIC_COMMON_URL_FETCHER_H_
 
+#include "base/optional.h"
 #include "content/common/content_export.h"
-
-class GURL;
 
 namespace net {
 class URLFetcher;
+}  // namespace
+
+namespace url {
+class Origin;
 }  // namespace
 
 namespace content {
@@ -19,7 +22,7 @@ namespace content {
 // frame.
 CONTENT_EXPORT void AssociateURLFetcherWithRenderFrame(
     net::URLFetcher* url_fetcher,
-    const GURL& first_party_for_cookies,
+    const base::Optional<url::Origin>& initiator,
     int render_process_id,
     int render_frame_id);
 

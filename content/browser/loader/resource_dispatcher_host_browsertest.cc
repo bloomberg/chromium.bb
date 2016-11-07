@@ -755,11 +755,11 @@ namespace {
 struct RequestDataForDelegate {
   const GURL url;
   const GURL first_party;
-  const url::Origin initiator;
+  const base::Optional<url::Origin> initiator;
 
   RequestDataForDelegate(const GURL& url,
                          const GURL& first_party,
-                         const url::Origin initiator)
+                         const base::Optional<url::Origin>& initiator)
       : url(url), first_party(first_party), initiator(initiator) {}
 };
 

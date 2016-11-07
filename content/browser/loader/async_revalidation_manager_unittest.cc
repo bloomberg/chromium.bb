@@ -247,6 +247,7 @@ ResourceRequest CreateResourceRequest(const char* method,
   request.method = std::string(method);
   request.url = url;
   request.first_party_for_cookies = url;  // Bypass third-party cookie blocking.
+  request.request_initiator = url::Origin(url);  // Ensure initiator is set.
   request.referrer_policy = blink::WebReferrerPolicyDefault;
   request.load_flags = 0;
   request.origin_pid = 0;

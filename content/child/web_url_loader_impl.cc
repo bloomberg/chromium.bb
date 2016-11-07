@@ -16,6 +16,7 @@
 #include "base/files/file_path.h"
 #include "base/logging.h"
 #include "base/memory/ptr_util.h"
+#include "base/optional.h"
 #include "base/single_thread_task_runner.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/string_util.h"
@@ -554,7 +555,10 @@ void WebURLLoaderImpl::Context::Start(const WebURLRequest& request,
   resource_request->method = method;
   resource_request->url = url;
   resource_request->first_party_for_cookies = request.firstPartyForCookies();
-  resource_request->request_initiator = request.requestorOrigin();
+  resource_request->request_initiator =
+      request.requestorOrigin().isNull()
+          ? base::Optional<url::Origin>()
+          : base::Optional<url::Origin>(request.requestorOrigin());
   resource_request->referrer = referrer_url;
 
   resource_request->referrer_policy = request.referrerPolicy();

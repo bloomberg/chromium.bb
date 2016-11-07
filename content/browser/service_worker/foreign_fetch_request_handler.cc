@@ -93,8 +93,10 @@ void ForeignFetchRequestHandler::InitializeHandler(
   if (ServiceWorkerUtils::IsMainResourceType(resource_type))
     return;
 
-  if (request->initiator().IsSameOriginWith(url::Origin(request->url())))
+  if (request->initiator().has_value() &&
+      request->initiator()->IsSameOriginWith(url::Origin(request->url()))) {
     return;
+  }
 
   if (!context_wrapper->OriginHasForeignFetchRegistrations(
           request->url().GetOrigin())) {
@@ -219,7 +221,7 @@ void ForeignFetchRequestHandler::DidFindRegistration(
     }
   }
 
-  const url::Origin& request_origin = job->request()->initiator();
+  const url::Origin& request_origin = job->request()->initiator().value();
   bool origin_matches = active_version->foreign_fetch_origins().empty();
   for (const url::Origin& origin : active_version->foreign_fetch_origins()) {
     if (request_origin.IsSameOriginWith(origin))
