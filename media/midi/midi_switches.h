@@ -11,16 +11,12 @@
 #include "build/build_config.h"
 #include "media/midi/midi_export.h"
 
-namespace switches {
-
-#if defined(OS_ANDROID)
-MIDI_EXPORT extern const char kUseAndroidMidiApi[];
-#endif
-
-}  // namespace switches
-
 namespace midi {
 namespace features {
+
+#if defined(OS_ANDROID)
+MIDI_EXPORT extern const base::Feature kMidiManagerAndroid;
+#endif
 
 #if defined(OS_WIN)
 MIDI_EXPORT extern const base::Feature kMidiManagerWinrt;

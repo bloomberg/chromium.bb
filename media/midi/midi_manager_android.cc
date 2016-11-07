@@ -6,7 +6,7 @@
 
 #include "base/android/build_info.h"
 #include "base/android/context_utils.h"
-#include "base/command_line.h"
+#include "base/feature_list.h"
 #include "base/memory/ptr_util.h"
 #include "base/strings/stringprintf.h"
 #include "jni/MidiManagerAndroid_jni.h"
@@ -25,8 +25,7 @@ namespace midi {
 MidiManager* MidiManager::Create() {
   auto sdk_version = base::android::BuildInfo::GetInstance()->sdk_int();
   if (sdk_version <= base::android::SDK_VERSION_LOLLIPOP_MR1 ||
-      !base::CommandLine::ForCurrentProcess()->HasSwitch(
-          switches::kUseAndroidMidiApi)) {
+      !base::FeatureList::IsEnabled(features::kMidiManagerAndroid)) {
     return new MidiManagerUsb(std::unique_ptr<UsbMidiDevice::Factory>(
         new UsbMidiDeviceFactoryAndroid));
   }
