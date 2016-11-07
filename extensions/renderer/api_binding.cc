@@ -10,6 +10,7 @@
 #include "base/strings/stringprintf.h"
 #include "base/values.h"
 #include "extensions/common/extension_api.h"
+#include "extensions/renderer/api_event_handler.h"
 #include "extensions/renderer/v8_helpers.h"
 #include "gin/arguments.h"
 #include "gin/per_context_data.h"
@@ -163,6 +164,7 @@ APIBinding::APIPerContextData::~APIPerContextData() {}
 APIBinding::APIBinding(const std::string& api_name,
                        const base::ListValue& function_definitions,
                        const base::ListValue* type_definitions,
+                       const base::ListValue* event_definitions,
                        const APIMethodCallback& callback,
                        ArgumentSpec::RefMap* type_refs)
     : api_name_(api_name),
@@ -190,6 +192,16 @@ APIBinding::APIBinding(const std::string& api_name,
       (*type_refs)[id] = base::MakeUnique<ArgumentSpec>(*type_dict);
     }
   }
+  if (event_definitions) {
+    event_names_.reserve(event_definitions->GetSize());
+    for (const auto& event : *event_definitions) {
+      const base::DictionaryValue* event_dict = nullptr;
+      CHECK(event->GetAsDictionary(&event_dict));
+      std::string name;
+      CHECK(event_dict->GetString("name", &name));
+      event_names_.push_back(std::move(name));
+    }
+  }
 }
 
 APIBinding::~APIBinding() {}
@@ -197,6 +209,7 @@ APIBinding::~APIBinding() {}
 v8::Local<v8::Object> APIBinding::CreateInstance(
     v8::Local<v8::Context> context,
     v8::Isolate* isolate,
+    APIEventHandler* event_handler,
     const AvailabilityCallback& is_available) {
   // TODO(devlin): APIs may change depending on which features are available,
   // but we should be able to cache the unconditional methods on an object
@@ -232,6 +245,18 @@ v8::Local<v8::Object> APIBinding::CreateInstance(
     v8::Maybe<bool> success = object->CreateDataProperty(
         context, gin::StringToSymbol(isolate, sig.first),
         maybe_function.ToLocalChecked());
+    DCHECK(success.IsJust());
+    DCHECK(success.FromJust());
+  }
+
+  for (const std::string& event_name : event_names_) {
+    std::string full_event_name =
+        base::StringPrintf("%s.%s", api_name_.c_str(), event_name.c_str());
+    v8::Local<v8::Object> event =
+        event_handler->CreateEventInstance(full_event_name, context);
+    DCHECK(!event.IsEmpty());
+    v8::Maybe<bool> success = object->CreateDataProperty(
+        context, gin::StringToSymbol(isolate, event_name), event);
     DCHECK(success.IsJust());
     DCHECK(success.FromJust());
   }

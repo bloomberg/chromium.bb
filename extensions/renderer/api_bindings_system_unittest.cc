@@ -53,6 +53,9 @@ const char kAlphaAPISpec[] =
     "      'name': 'callback',"
     "      'type': 'function'"
     "    }]"
+    "  }],"
+    "  'events': [{"
+    "    'name': 'alphaEvent'"
     "  }]"
     "}";
 
@@ -93,8 +96,36 @@ class APIBindingsSystemTestBase : public gin::V8Test {
 
   void TearDown() override {
     bindings_system_.reset();
+
+    v8::Global<v8::Context> weak_context(instance_->isolate(), context_);
+    weak_context.SetWeak();
+
     holder_.reset();
-    gin::V8Test::TearDown();
+
+    // NOTE: We explicitly do NOT call gin::V8Test::TearDown() here because we
+    // do intermittent validation by doing a garbage collection after context
+    // destruction and ensuring the context is fully released (which wouldn't
+    // happen in cycles).
+    // TODO(devlin): It might be time to move off V8Test if we're doing this.
+    {
+      v8::HandleScope handle_scope(instance_->isolate());
+      v8::Local<v8::Context>::New(instance_->isolate(), context_)->Exit();
+      context_.Reset();
+    }
+
+    // Garbage collect everything so that we find any issues where we might be
+    // double-freeing.
+    // '5' is a magic number stolen from Blink; arbitrarily large enough to
+    // hopefully clean up all the various paths.
+    for (int i = 0; i < 5; i++) {
+      instance_->isolate()->RequestGarbageCollectionForTesting(
+          v8::Isolate::kFullGarbageCollection);
+    }
+
+    ASSERT_TRUE(weak_context.IsEmpty());
+
+    instance_->isolate()->Exit();
+    instance_.reset();
   }
 
   // Checks that |last_request_| exists and was provided with the
@@ -270,6 +301,26 @@ TEST_F(APIBindingsSystemTest, TestInitializationAndCallbacks) {
   }
 
   {
+    // Test an event registration -> event occurrence.
+    const char kTestCall[] =
+        "obj.alphaEvent.addListener(function() {\n"
+        "  this.eventArguments = Array.from(arguments);\n"
+        "});\n";
+    CallFunctionOnObject(context, alpha_api, kTestCall);
+
+    const char kResponseArgsJson[] = "['response',1,{'key':42}]";
+    std::unique_ptr<base::ListValue> expected_args =
+        ListValueFromString(kResponseArgsJson);
+    bindings_system()->FireEventInContext("alpha.alphaEvent", context,
+                                          *expected_args);
+
+    std::unique_ptr<base::Value> result = GetBaseValuePropertyFromObject(
+        context->Global(), context, "eventArguments");
+    ASSERT_TRUE(result);
+    EXPECT_EQ(ReplaceSingleQuotes(kResponseArgsJson), ValueToString(*result));
+  }
+
+  {
     // Test a call -> response on the second API.
     const char kTestCall[] = "obj.simpleFunc(2)";
     CallFunctionOnObject(context, beta_api, kTestCall);
@@ -415,6 +466,24 @@ TEST_F(APIBindingsSystemTestWithRealAPI, RealAPIs) {
     ExecuteScriptAndExpectError(context, kTestCall, kError);
     EXPECT_FALSE(last_request());
     reset_last_request();  // Just to not pollute future results.
+  }
+
+  {
+    const char kTestCall[] =
+        "chrome.idle.onStateChanged.addListener(state => {\n"
+        "  this.idleState = state;\n"
+        "});\n";
+    ExecuteScript(context, kTestCall);
+    v8::Local<v8::Value> v8_result =
+        GetPropertyFromObject(context->Global(), context, "idleState");
+    EXPECT_TRUE(v8_result->IsUndefined());
+    bindings_system()->FireEventInContext("idle.onStateChanged", context,
+                                          *ListValueFromString("['active']"));
+
+    std::unique_ptr<base::Value> result =
+        GetBaseValuePropertyFromObject(context->Global(), context, "idleState");
+    ASSERT_TRUE(result);
+    EXPECT_EQ("\"active\"", ValueToString(*result));
   }
 }
 

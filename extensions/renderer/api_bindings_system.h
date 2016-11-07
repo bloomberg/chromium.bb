@@ -12,6 +12,8 @@
 #include "base/callback.h"
 #include "base/macros.h"
 #include "extensions/renderer/api_binding.h"
+#include "extensions/renderer/api_binding_types.h"
+#include "extensions/renderer/api_event_handler.h"
 #include "extensions/renderer/api_request_handler.h"
 #include "extensions/renderer/argument_spec.h"
 
@@ -43,7 +45,7 @@ class APIBindingsSystem {
       base::Callback<const base::DictionaryValue&(const std::string&)>;
   using SendRequestMethod = base::Callback<void(std::unique_ptr<Request>)>;
 
-  APIBindingsSystem(const APIRequestHandler::CallJSFunction& call_js,
+  APIBindingsSystem(const binding::RunJSFunction& call_js,
                     const GetAPISchemaMethod& get_api_schema,
                     const SendRequestMethod& send_request);
   ~APIBindingsSystem();
@@ -59,6 +61,12 @@ class APIBindingsSystem {
   // with |response|.
   void CompleteRequest(const std::string& request_id,
                        const base::ListValue& response);
+
+  // Notifies the APIEventHandler to fire the corresponding event, notifying
+  // listeners.
+  void FireEventInContext(const std::string& event_name,
+                          v8::Local<v8::Context> context,
+                          const base::ListValue& response);
 
  private:
   // Creates a new APIBinding for the given |api_name|.
@@ -77,6 +85,9 @@ class APIBindingsSystem {
 
   // The request handler associated with the system.
   APIRequestHandler request_handler_;
+
+  // The event handler associated with the system.
+  APIEventHandler event_handler_;
 
   // A map from api_name -> APIBinding for constructed APIs. APIBindings are
   // created lazily.
