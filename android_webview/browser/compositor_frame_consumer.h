@@ -40,10 +40,7 @@ class CompositorFrameConsumer {
   virtual void SetCompositorFrameProducer(
       CompositorFrameProducer* compositor_frame_producer) = 0;
   virtual void SetScrollOffsetOnUI(gfx::Vector2d scroll_offset) = 0;
-  virtual void SetFrameOnUI(
-      std::unique_ptr<ChildFrame> frame,
-      const scoped_refptr<content::SynchronousCompositor::FrameFuture>&
-          frame_future) = 0;
+  virtual void SetFrameOnUI(std::unique_ptr<ChildFrame> frame);
   virtual void InitializeHardwareDrawIfNeededOnUI() = 0;
   virtual ParentCompositorDrawConstraints GetParentDrawConstraintsOnUI()
       const = 0;

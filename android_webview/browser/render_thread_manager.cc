@@ -180,32 +180,10 @@ gfx::Vector2d RenderThreadManager::GetScrollOffsetOnRT() {
   return scroll_offset_;
 }
 
-void RenderThreadManager::SetFrameOnUI(
-    std::unique_ptr<ChildFrame> frame,
-    const scoped_refptr<content::SynchronousCompositor::FrameFuture>&
-        frame_future) {
+void RenderThreadManager::SetFrameOnUI(std::unique_ptr<ChildFrame> frame) {
   base::AutoLock lock(lock_);
   DCHECK(!child_frame_.get());
   child_frame_ = std::move(frame);
-  frame_future_ = std::move(frame_future);
-}
-
-std::unique_ptr<ChildFrame> RenderThreadManager::GetSynchronousCompositorFrame(
-    scoped_refptr<content::SynchronousCompositor::FrameFuture> frame_future,
-    std::unique_ptr<ChildFrame> child_frame) {
-  if (!frame_future)
-    return nullptr;
-  DCHECK(!child_frame->frame.get());
-  std::unique_ptr<content::SynchronousCompositor::Frame> frame =
-      frame_future->GetFrame();
-  std::unique_ptr<cc::CompositorFrame> compositor_frame =
-      std::move(frame->frame);
-  return base::MakeUnique<ChildFrame>(
-      frame->compositor_frame_sink_id, std::move(compositor_frame),
-      child_frame->compositor_id,
-      child_frame->viewport_rect_for_tile_priority_empty,
-      child_frame->transform_for_tile_priority,
-      child_frame->offscreen_pre_raster, child_frame->is_layer);
 }
 
 std::unique_ptr<ChildFrame> RenderThreadManager::PassFrameOnRT() {
@@ -215,18 +193,10 @@ std::unique_ptr<ChildFrame> RenderThreadManager::PassFrameOnRT() {
   return std::move(child_frame_);
 }
 
-scoped_refptr<content::SynchronousCompositor::FrameFuture>
-RenderThreadManager::PassFrameFutureOnRT() {
-  base::AutoLock lock(lock_);
-  return std::move(frame_future_);
-}
-
 std::unique_ptr<ChildFrame> RenderThreadManager::PassUncommittedFrameOnUI() {
   base::AutoLock lock(lock_);
-  if (async_on_draw_hardware_ && child_frame_.get()) {
-    return GetSynchronousCompositorFrame(std::move(frame_future_),
-                                         std::move(child_frame_));
-  }
+  if (child_frame_)
+    child_frame_->WaitOnFutureIfNeeded();
   return std::move(child_frame_);
 }
 

@@ -62,30 +62,14 @@ void HardwareRenderer::CommitFrame() {
   if (!child_frame.get())
     return;
   ReturnResourcesInChildFrame();
-  frame_future_ = render_thread_manager_->PassFrameFutureOnRT();
   child_frame_ = std::move(child_frame);
 }
 
 void HardwareRenderer::DrawGL(AwDrawGLInfo* draw_info) {
   TRACE_EVENT0("android_webview", "HardwareRenderer::DrawGL");
 
-  if (frame_future_) {
-    TRACE_EVENT0("android_webview", "GetFrame");
-    DCHECK(child_frame_);
-    DCHECK(!child_frame_->frame);
-
-    std::unique_ptr<content::SynchronousCompositor::Frame> frame =
-        frame_future_->GetFrame();
-    if (frame) {
-      child_frame_->compositor_frame_sink_id = frame->compositor_frame_sink_id;
-      child_frame_->frame = std::move(frame->frame);
-    } else {
-      child_frame_.reset();
-    }
-    frame_future_ = nullptr;
-  }
-
   if (child_frame_) {
+    child_frame_->WaitOnFutureIfNeeded();
     last_committed_compositor_frame_sink_id_ =
         child_frame_->compositor_frame_sink_id;
   }

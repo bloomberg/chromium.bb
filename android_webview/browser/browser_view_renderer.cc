@@ -252,14 +252,14 @@ bool BrowserViewRenderer::OnDrawHardware() {
 
   allow_async_draw_ = true;
   std::unique_ptr<ChildFrame> child_frame = base::MakeUnique<ChildFrame>(
-      frame.compositor_frame_sink_id, std::move(frame.frame), compositor_id_,
-      viewport_rect_for_tile_priority.IsEmpty(), transform_for_tile_priority,
-      offscreen_pre_raster_, external_draw_constraints_.is_layer);
+      std::move(future), frame.compositor_frame_sink_id, std::move(frame.frame),
+      compositor_id_, viewport_rect_for_tile_priority.IsEmpty(),
+      transform_for_tile_priority, offscreen_pre_raster_,
+      external_draw_constraints_.is_layer);
 
   ReturnUnusedResource(
       current_compositor_frame_consumer_->PassUncommittedFrameOnUI());
-  current_compositor_frame_consumer_->SetFrameOnUI(std::move(child_frame),
-                                                   std::move(future));
+  current_compositor_frame_consumer_->SetFrameOnUI(std::move(child_frame));
   return true;
 }
 
