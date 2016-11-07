@@ -453,7 +453,7 @@ void GpuProcessTransportFactory::EstablishedGpuChannel(
   if (vulkan_context_provider) {
     vulkan_surface.reset(new VulkanBrowserCompositorOutputSurface(
         vulkan_context_provider, compositor->vsync_manager(),
-        compositor->task_runner().get()));
+        begin_frame_source.get()));
     if (!vulkan_surface->Initialize(compositor.get()->widget())) {
       vulkan_surface->Destroy();
       vulkan_surface.reset();

@@ -8,6 +8,8 @@
 #include <memory>
 
 #include "base/macros.h"
+#include "base/memory/weak_ptr.h"
+#include "cc/output/output_surface_frame.h"
 #include "content/browser/compositor/browser_compositor_output_surface.h"
 #include "ui/gfx/native_widget_types.h"
 
@@ -30,18 +32,27 @@ class VulkanBrowserCompositorOutputSurface
   bool Initialize(gfx::AcceleratedWidget widget);
   void Destroy();
 
-  // BrowserCompositorOutputSurface implementation.
-  void OnGpuSwapBuffersCompleted(
-      const std::vector<ui::LatencyInfo>& latency_info,
-      gfx::SwapResult result,
-      const gpu::GpuProcessHostedCALayerTreeParamsMac* params_mac) override;
-
- protected:
   // cc::OutputSurface implementation.
-  void SwapBuffers(cc::CompositorFrame* frame) override;
+  void BindToClient(cc::OutputSurfaceClient* client) override;
+  void EnsureBackbuffer() override;
+  void DiscardBackbuffer() override;
+  void BindFramebuffer() override;
+  bool IsDisplayedAsOverlayPlane() const override;
+  unsigned GetOverlayTextureId() const override;
+  bool SurfaceIsSuspendForRecycle() const override;
+  void Reshape(const gfx::Size& size,
+               float device_scale_factor,
+               const gfx::ColorSpace& color_space,
+               bool has_alpha) override;
+  uint32_t GetFramebufferCopyTextureFormat() override;
+  void SwapBuffers(cc::OutputSurfaceFrame frame) override;
 
  private:
+  void SwapBuffersAck();
+
   std::unique_ptr<gpu::VulkanSurface> surface_;
+  cc::OutputSurfaceClient* client_ = nullptr;
+  base::WeakPtrFactory<VulkanBrowserCompositorOutputSurface> weak_ptr_factory_;
 
   DISALLOW_COPY_AND_ASSIGN(VulkanBrowserCompositorOutputSurface);
 };

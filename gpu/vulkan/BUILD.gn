@@ -10,6 +10,7 @@ config("vulkan_config") {
 }
 
 if (enable_vulkan) {
+  vulkan_lib_dir = getenv("VULKAN_SDK") + "/lib"
   component("vulkan") {
     output_name = "vulkan_wrapper"
 
@@ -56,7 +57,10 @@ if (enable_vulkan) {
       libs = [ "vulkan" ]
 
       if (current_cpu == "x64") {
-        lib_dirs = [ "/usr/lib/x86_64-linux-gnu" ]
+        lib_dirs = [
+          "/usr/lib/x86_64-linux-gnu",
+          vulkan_lib_dir,
+        ]
       } else {
         assert(false, "Unsupported vulkan target: " + current_cpu)
       }
@@ -87,7 +91,10 @@ if (enable_vulkan) {
 
     include_dirs = [ "/usr/include" ]
     if (current_cpu == "x64") {
-      lib_dirs = [ "/usr/lib/x86_64-linux-gnu" ]
+      lib_dirs = [
+        "/usr/lib/x86_64-linux-gnu",
+        vulkan_lib_dir,
+      ]
     } else {
       assert(false, "Unsupported vulkan target: " + current_cpu)
     }
