@@ -57,13 +57,17 @@ source_set("unit_tests") {
   sources = [
     "icon_cacher_unittest.cc",
     "most_visited_sites_unittest.cc",
+    "popular_sites_unittest.cc",
   ]
 
   deps = [
     ":ntp_tiles",
+    "//base/test:test_support",
     "//components/favicon/core",
     "//components/favicon_base",
     "//components/image_fetcher",
+    "//components/pref_registry:test_support",
+    "//net:test_support",
     "//testing/gmock",
     "//testing/gtest",
     "//ui/gfx:test_support",
