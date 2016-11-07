@@ -354,6 +354,13 @@ imported/wpt/html/syntax/parsing-html-fragments/the-input-byte-stream-038.html [
 # crbug.com/490939: The following tests are too large.  They cause time out frequently.
 # Also, html/dom/interfaces.html is flaky.
 imported/wpt/html/dom/interfaces.html [ Skip ]
+# [ Slow ] didn't help the following svg-in-*.html tests.
+imported/wpt/html/rendering/replaced-elements/svg-embedded-sizing/svg-in-iframe-auto.html [ Skip ]
+imported/wpt/html/rendering/replaced-elements/svg-embedded-sizing/svg-in-iframe-fixed.html [ Skip ]
+imported/wpt/html/rendering/replaced-elements/svg-embedded-sizing/svg-in-iframe-percentage.html [ Skip ]
+imported/wpt/html/rendering/replaced-elements/svg-embedded-sizing/svg-in-object-auto.html [ Skip ]
+imported/wpt/html/rendering/replaced-elements/svg-embedded-sizing/svg-in-object-fixed.html [ Skip ]
+imported/wpt/html/rendering/replaced-elements/svg-embedded-sizing/svg-in-object-percentage.html [ Skip ]
 
 # Depends on unimported directories of web-platform-tests/.
 imported/wpt/html/browsers/browsing-the-web/read-text/load-text-plain.html [ Skip ]
