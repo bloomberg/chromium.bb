@@ -150,6 +150,11 @@ class SQL_EXPORT Connection {
   // other platforms.
   void set_restrict_to_user() { restrict_to_user_ = true; }
 
+  // Call to use alternative status-tracking for mmap.  Usually this is tracked
+  // in the meta table, but some databases have no meta table.
+  // TODO(shess): Maybe just have all databases use the alt option?
+  void set_mmap_alt_status() { mmap_alt_status_ = true; }
+
   // Call to opt out of memory-mapped file I/O.
   void set_mmap_disabled() { mmap_disabled_ = true; }
 
@@ -218,6 +223,9 @@ class SQL_EXPORT Connection {
     EVENT_MMAP_SUCCESS_NEW,          // Read to EOF in this run.
     EVENT_MMAP_SUCCESS_PARTIAL,      // Read but did not reach EOF.
     EVENT_MMAP_SUCCESS_NO_PROGRESS,  // Read quota exhausted.
+
+    EVENT_MMAP_STATUS_FAILURE_READ,  // Failure reading MmapStatus view.
+    EVENT_MMAP_STATUS_FAILURE_UPDATE,// Failure updating MmapStatus view.
 
     // Leave this at the end.
     // TODO(shess): |EVENT_MAX| causes compile fail on Windows.
@@ -443,11 +451,12 @@ class SQL_EXPORT Connection {
 
   // Info querying -------------------------------------------------------------
 
-  // Returns true if the given table (or index) exists.  Instead of
-  // test-then-create, callers should almost always prefer "CREATE TABLE IF NOT
-  // EXISTS" or "CREATE INDEX IF NOT EXISTS".
-  bool DoesTableExist(const char* table_name) const;
+  // Returns true if the given structure exists.  Instead of test-then-create,
+  // callers should almost always prefer the "IF NOT EXISTS" version of the
+  // CREATE statement.
   bool DoesIndexExist(const char* index_name) const;
+  bool DoesTableExist(const char* table_name) const;
+  bool DoesViewExist(const char* table_name) const;
 
   // Returns true if a column with the given name exists in the given table.
   bool DoesColumnExist(const char* table_name, const char* column_name) const;
@@ -508,6 +517,7 @@ class SQL_EXPORT Connection {
 
   FRIEND_TEST_ALL_PREFIXES(SQLConnectionTest, CollectDiagnosticInfo);
   FRIEND_TEST_ALL_PREFIXES(SQLConnectionTest, GetAppropriateMmapSize);
+  FRIEND_TEST_ALL_PREFIXES(SQLConnectionTest, GetAppropriateMmapSizeAltStatus);
   FRIEND_TEST_ALL_PREFIXES(SQLConnectionTest, OnMemoryDump);
   FRIEND_TEST_ALL_PREFIXES(SQLConnectionTest, RegisterIntentToUpload);
 
@@ -535,8 +545,8 @@ class SQL_EXPORT Connection {
       base::ThreadRestrictions::AssertIOAllowed();
   }
 
-  // Internal helper for DoesTableExist and DoesIndexExist.
-  bool DoesTableOrIndexExist(const char* name, const char* type) const;
+  // Internal helper for Does*Exist() functions.
+  bool DoesSchemaItemExist(const char* name, const char* type) const;
 
   // Accessors for global error-expecter, for injecting behavior during tests.
   // See test/scoped_error_expecter.h.
@@ -722,6 +732,10 @@ class SQL_EXPORT Connection {
   // the file should only be read through once.
   size_t GetAppropriateMmapSize();
 
+  // Helpers for GetAppropriateMmapSize().
+  bool GetMmapAltStatus(int64_t* status);
+  bool SetMmapAltStatus(int64_t status);
+
   // The actual sqlite database. Will be NULL before Init has been called or if
   // Init resulted in an error.
   sqlite3* db_;
@@ -762,6 +776,9 @@ class SQL_EXPORT Connection {
   // databases (incorrect use of the API) from calls to once-valid
   // databases.
   bool poisoned_;
+
+  // |true| to use alternate storage for tracking mmap status.
+  bool mmap_alt_status_;
 
   // |true| if SQLite memory-mapped I/O is not desired for this connection.
   bool mmap_disabled_;

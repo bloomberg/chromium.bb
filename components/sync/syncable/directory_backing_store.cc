@@ -1749,9 +1749,8 @@ void DirectoryBackingStore::ResetAndCreateConnection() {
   db_->set_cache_size(32);
   db_->set_page_size(database_page_size_);
 
-  // TODO(shess): The current mitigation for http://crbug.com/537742 stores
-  // state in the meta table, which this database does not use.
-  db_->set_mmap_disabled();
+  // This db does not use [meta] table, store mmap status data elsewhere.
+  db_->set_mmap_alt_status();
 
   if (!catastrophic_error_handler_.is_null())
     SetCatastrophicErrorHandler(catastrophic_error_handler_);

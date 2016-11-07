@@ -315,12 +315,23 @@ TEST_F(SQLConnectionTest, IsSQLValidTest) {
 }
 
 TEST_F(SQLConnectionTest, DoesStuffExist) {
-  // Test DoesTableExist.
+  // Test DoesTableExist and DoesIndexExist.
   EXPECT_FALSE(db().DoesTableExist("foo"));
   ASSERT_TRUE(db().Execute("CREATE TABLE foo (a, b)"));
   ASSERT_TRUE(db().Execute("CREATE INDEX foo_a ON foo (a)"));
+  EXPECT_FALSE(db().DoesIndexExist("foo"));
   EXPECT_TRUE(db().DoesTableExist("foo"));
   EXPECT_TRUE(db().DoesIndexExist("foo_a"));
+  EXPECT_FALSE(db().DoesTableExist("foo_a"));
+
+  // Test DoesViewExist.  The CREATE VIEW is an older form because some iOS
+  // versions use an earlier version of SQLite, and the difference isn't
+  // relevant for this test.
+  EXPECT_FALSE(db().DoesViewExist("voo"));
+  ASSERT_TRUE(db().Execute("CREATE VIEW voo AS SELECT 1"));
+  EXPECT_FALSE(db().DoesIndexExist("voo"));
+  EXPECT_FALSE(db().DoesTableExist("voo"));
+  EXPECT_TRUE(db().DoesViewExist("voo"));
 
   // Test DoesColumnExist.
   EXPECT_FALSE(db().DoesColumnExist("foo", "bar"));
@@ -1471,11 +1482,43 @@ TEST_F(SQLConnectionTest, MmapInitiallyEnabled) {
   sql::Connection::Delete(db_path());
   db().set_mmap_disabled();
   ASSERT_TRUE(db().Open(db_path()));
+  EXPECT_EQ("0", ExecuteWithResult(&db(), "PRAGMA mmap_size"));
+}
+
+// Test whether a fresh database gets mmap enabled when using alternate status
+// storage.
+TEST_F(SQLConnectionTest, MmapInitiallyEnabledAltStatus) {
+  // Re-open fresh database with alt-status flag set.
+  db().Close();
+  sql::Connection::Delete(db_path());
+  db().set_mmap_alt_status();
+  ASSERT_TRUE(db().Open(db_path()));
+
   {
     sql::Statement s(db().GetUniqueStatement("PRAGMA mmap_size"));
-    ASSERT_TRUE(s.Step());
-    EXPECT_LE(s.ColumnInt(0), 0);
+
+    // SQLite doesn't have mmap support (perhaps an early iOS release).
+    if (!s.Step())
+      return;
+
+    // If mmap I/O is not on, attempt to turn it on.  If that succeeds, then
+    // Open() should have turned it on.  If mmap support is disabled, 0 is
+    // returned.  If the VFS does not understand SQLITE_FCNTL_MMAP_SIZE (for
+    // instance MojoVFS), -1 is returned.
+    if (s.ColumnInt(0) <= 0) {
+      ASSERT_TRUE(db().Execute("PRAGMA mmap_size = 1048576"));
+      s.Reset(true);
+      ASSERT_TRUE(s.Step());
+      EXPECT_LE(s.ColumnInt(0), 0);
+    }
   }
+
+  // Test that explicit disable overrides set_mmap_alt_status().
+  db().Close();
+  sql::Connection::Delete(db_path());
+  db().set_mmap_disabled();
+  ASSERT_TRUE(db().Open(db_path()));
+  EXPECT_EQ("0", ExecuteWithResult(&db(), "PRAGMA mmap_size"));
 }
 
 TEST_F(SQLConnectionTest, GetAppropriateMmapSize) {
@@ -1521,6 +1564,44 @@ TEST_F(SQLConnectionTest, GetAppropriateMmapSize) {
   ASSERT_GT(db().GetAppropriateMmapSize(), kMmapAlot);
   ASSERT_TRUE(MetaTable::GetMmapStatus(&db(), &mmap_status));
   ASSERT_EQ(MetaTable::kMmapSuccess, mmap_status);
+}
+
+TEST_F(SQLConnectionTest, GetAppropriateMmapSizeAltStatus) {
+#if defined(OS_IOS) && defined(USE_SYSTEM_SQLITE)
+  // Mmap is not supported on iOS9.  Make sure that test takes precedence.
+  if (!base::ios::IsRunningOnIOS10OrLater()) {
+    db().set_mmap_alt_status();
+    ASSERT_EQ(0UL, db().GetAppropriateMmapSize());
+    return;
+  }
+#endif
+
+  const size_t kMmapAlot = 25 * 1024 * 1024;
+
+  // At this point, Connection still expects a future [meta] table.
+  ASSERT_FALSE(db().DoesTableExist("meta"));
+  ASSERT_FALSE(db().DoesViewExist("MmapStatus"));
+  ASSERT_GT(db().GetAppropriateMmapSize(), kMmapAlot);
+  ASSERT_FALSE(db().DoesTableExist("meta"));
+  ASSERT_FALSE(db().DoesViewExist("MmapStatus"));
+
+  // Using alt status, everything should be mapped, with state in the view.
+  db().set_mmap_alt_status();
+  ASSERT_GT(db().GetAppropriateMmapSize(), kMmapAlot);
+  ASSERT_FALSE(db().DoesTableExist("meta"));
+  ASSERT_TRUE(db().DoesViewExist("MmapStatus"));
+  EXPECT_EQ(base::IntToString(MetaTable::kMmapSuccess),
+            ExecuteWithResult(&db(), "SELECT * FROM MmapStatus"));
+
+  // Also maps everything when kMmapSuccess is in the view.
+  ASSERT_GT(db().GetAppropriateMmapSize(), kMmapAlot);
+
+  // Failure status leads to nothing being mapped.
+  ASSERT_TRUE(db().Execute("DROP VIEW MmapStatus"));
+  ASSERT_TRUE(db().Execute("CREATE VIEW MmapStatus AS SELECT -2"));
+  ASSERT_EQ(0UL, db().GetAppropriateMmapSize());
+  EXPECT_EQ(base::IntToString(MetaTable::kMmapFailure),
+            ExecuteWithResult(&db(), "SELECT * FROM MmapStatus"));
 }
 
 // To prevent invalid SQL from accidentally shipping to production, prepared

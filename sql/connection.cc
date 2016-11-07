@@ -318,6 +318,7 @@ Connection::Connection()
       needs_rollback_(false),
       in_memory_(false),
       poisoned_(false),
+      mmap_alt_status_(false),
       mmap_disabled_(false),
       mmap_enabled_(false),
       total_changes_at_last_release_(0),
@@ -840,6 +841,49 @@ std::string Connection::CollectCorruptionInfo() {
   return debug_info;
 }
 
+bool Connection::GetMmapAltStatus(int64_t* status) {
+  // The [meta] version uses a missing table as a signal for a fresh database.
+  // That will not work for the view, which would not exist in either a new or
+  // an existing database.  A new database _should_ be only one page long, so
+  // just don't bother optimizing this case (start at offset 0).
+  // TODO(shess): Could the [meta] case also get simpler, then?
+  if (!DoesViewExist("MmapStatus")) {
+    *status = 0;
+    return true;
+  }
+
+  const char* kMmapStatusSql = "SELECT * FROM MmapStatus";
+  Statement s(GetUniqueStatement(kMmapStatusSql));
+  if (s.Step())
+    *status = s.ColumnInt64(0);
+  return s.Succeeded();
+}
+
+bool Connection::SetMmapAltStatus(int64_t status) {
+  if (!BeginTransaction())
+    return false;
+
+  // View may not exist on first run.
+  if (!Execute("DROP VIEW IF EXISTS MmapStatus")) {
+    RollbackTransaction();
+    return false;
+  }
+
+  // Views live in the schema, so they cannot be parameterized.  For an integer
+  // value, this construct should be safe from SQL injection, if the value
+  // becomes more complicated use "SELECT quote(?)" to generate a safe quoted
+  // value.
+  const std::string createViewSql =
+      base::StringPrintf("CREATE VIEW MmapStatus (value) AS SELECT %" PRId64,
+                         status);
+  if (!Execute(createViewSql.c_str())) {
+    RollbackTransaction();
+    return false;
+  }
+
+  return CommitTransaction();
+}
+
 size_t Connection::GetAppropriateMmapSize() {
   AssertIOAllowed();
 
@@ -854,27 +898,27 @@ size_t Connection::GetAppropriateMmapSize() {
   // percentile of Chrome databases in the wild, so this should be good.
   const size_t kMmapEverything = 256 * 1024 * 1024;
 
-  // If the database doesn't have a place to track progress, assume the best.
-  // This will happen when new databases are created, or if a database doesn't
-  // use a meta table.  sql::MetaTable::Init() will preload kMmapSuccess.
-  // TODO(shess): Databases not using meta include:
-  //   DOMStorageDatabase (localstorage)
-  //   ActivityDatabase (extensions activity log)
-  //   PredictorDatabase (prefetch and autocomplete predictor data)
-  //   SyncDirectory (sync metadata storage)
-  // For now, these all have mmap disabled to allow other databases to get the
-  // default-enable path.  sqlite-diag could be an alternative for all but
-  // DOMStorageDatabase, which creates many small databases.
-  // http://crbug.com/537742
-  if (!MetaTable::DoesTableExist(this)) {
-    RecordOneEvent(EVENT_MMAP_META_MISSING);
-    return kMmapEverything;
-  }
-
+  // Progress information is tracked in the [meta] table for databases which use
+  // sql::MetaTable, otherwise it is tracked in a special view.
+  // TODO(shess): Move all cases to the view implementation.
   int64_t mmap_ofs = 0;
-  if (!MetaTable::GetMmapStatus(this, &mmap_ofs)) {
-    RecordOneEvent(EVENT_MMAP_META_FAILURE_READ);
-    return 0;
+  if (mmap_alt_status_) {
+    if (!GetMmapAltStatus(&mmap_ofs)) {
+      RecordOneEvent(EVENT_MMAP_STATUS_FAILURE_READ);
+      return 0;
+    }
+  } else {
+    // If [meta] doesn't exist, yet, it's a new database, assume the best.
+    // sql::MetaTable::Init() will preload kMmapSuccess.
+    if (!MetaTable::DoesTableExist(this)) {
+      RecordOneEvent(EVENT_MMAP_META_MISSING);
+      return kMmapEverything;
+    }
+
+    if (!MetaTable::GetMmapStatus(this, &mmap_ofs)) {
+      RecordOneEvent(EVENT_MMAP_META_FAILURE_READ);
+      return 0;
+    }
   }
 
   // Database read failed in the past, don't memory map.
@@ -949,9 +993,16 @@ size_t Connection::GetAppropriateMmapSize() {
         event = EVENT_MMAP_FAILED_NEW;
       }
 
-      if (!MetaTable::SetMmapStatus(this, mmap_ofs)) {
-        RecordOneEvent(EVENT_MMAP_META_FAILURE_UPDATE);
-        return 0;
+      if (mmap_alt_status_) {
+        if (!SetMmapAltStatus(mmap_ofs)) {
+          RecordOneEvent(EVENT_MMAP_STATUS_FAILURE_UPDATE);
+          return 0;
+        }
+      } else {
+        if (!MetaTable::SetMmapStatus(this, mmap_ofs)) {
+          RecordOneEvent(EVENT_MMAP_META_FAILURE_UPDATE);
+          return 0;
+        }
       }
 
       RecordOneEvent(event);
@@ -1503,15 +1554,19 @@ bool Connection::IsSQLValid(const char* sql) {
   return true;
 }
 
-bool Connection::DoesTableExist(const char* table_name) const {
-  return DoesTableOrIndexExist(table_name, "table");
-}
-
 bool Connection::DoesIndexExist(const char* index_name) const {
-  return DoesTableOrIndexExist(index_name, "index");
+  return DoesSchemaItemExist(index_name, "index");
 }
 
-bool Connection::DoesTableOrIndexExist(
+bool Connection::DoesTableExist(const char* table_name) const {
+  return DoesSchemaItemExist(table_name, "table");
+}
+
+bool Connection::DoesViewExist(const char* view_name) const {
+  return DoesSchemaItemExist(view_name, "view");
+}
+
+bool Connection::DoesSchemaItemExist(
     const char* name, const char* type) const {
   const char* kSql =
       "SELECT name FROM sqlite_master WHERE type=? AND name=? COLLATE NOCASE";
