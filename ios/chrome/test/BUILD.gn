@@ -19,7 +19,7 @@ source_set("test_support") {
 
   deps = [
     "//base",
-    "//base/test:test_support",
+    "//components/content_settings/core/common",
     "//components/network_time",
     "//components/prefs",
     "//components/prefs:test_support",
@@ -29,6 +29,7 @@ source_set("test_support") {
     "//ios/public/provider/chrome/browser",
     "//ios/public/provider/chrome/browser:test_support",
     "//ios/web",
+    "//ios/web:test_support",
     "//net",
     "//testing/gmock",
     "//testing/gtest",

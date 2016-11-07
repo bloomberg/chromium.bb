@@ -6,6 +6,7 @@
 
 #include "base/macros.h"
 #include "base/path_service.h"
+#include "components/content_settings/core/common/content_settings_pattern.h"
 #include "ios/chrome/browser/browser_state/browser_state_keyed_service_factories.h"
 #include "ios/chrome/browser/chrome_paths.h"
 #include "ios/chrome/browser/chrome_url_constants.h"
@@ -27,10 +28,6 @@ class IOSChromeUnitTestSuiteInitializer
   ~IOSChromeUnitTestSuiteInitializer() override {}
 
   void OnTestStart(const testing::TestInfo& test_info) override {
-    DCHECK(!web_client_);
-    web_client_.reset(new web::WebClient);
-    web::SetWebClient(web_client_.get());
-
     DCHECK(!ios::GetChromeBrowserProvider());
     test_ios_chrome_provider_initializer_.reset(
         new ios::TestChromeProviderInitializer());
@@ -45,24 +42,20 @@ class IOSChromeUnitTestSuiteInitializer
 
     test_ios_chrome_provider_initializer_.reset();
     DCHECK(!ios::GetChromeBrowserProvider());
-
-    DCHECK_EQ(web::GetWebClient(), web_client_.get());
-    web::SetWebClient(nullptr);
-    web_client_.reset();
   }
 
  private:
-  std::unique_ptr<web::WebClient> web_client_;
   std::unique_ptr<ios::TestChromeProviderInitializer>
       test_ios_chrome_provider_initializer_;
   std::unique_ptr<ApplicationContext> application_context_;
+
   DISALLOW_COPY_AND_ASSIGN(IOSChromeUnitTestSuiteInitializer);
 };
 
 }  // namespace
 
 IOSChromeUnitTestSuite::IOSChromeUnitTestSuite(int argc, char** argv)
-    : base::TestSuite(argc, argv) {}
+    : web::WebTestSuite(argc, argv) {}
 
 IOSChromeUnitTestSuite::~IOSChromeUnitTestSuite() {}
 
@@ -74,21 +67,16 @@ void IOSChromeUnitTestSuite::Initialize() {
       testing::UnitTest::GetInstance()->listeners();
   listeners.Append(new IOSChromeUnitTestSuiteInitializer);
 
+  // Call the superclass Initialize() method after adding the listener.
+  web::WebTestSuite::Initialize();
+
   // Ensure that all BrowserStateKeyedServiceFactories are built before any
   // test is run so that the dependencies are correctly resolved.
   EnsureBrowserStateKeyedServiceFactoriesBuilt();
 
   ios::RegisterPathProvider();
   ui::RegisterPathProvider();
-
-  ui::ResourceBundle::InitSharedInstanceWithLocale(
-      "en-US", nullptr, ui::ResourceBundle::LOAD_COMMON_RESOURCES);
-  base::FilePath resources_pack_path;
-  PathService::Get(ios::FILE_RESOURCES_PACK, &resources_pack_path);
-  ResourceBundle::GetSharedInstance().AddDataPackFromPath(
-      resources_pack_path, ui::SCALE_FACTOR_100P);
-
   url::AddStandardScheme(kChromeUIScheme, url::SCHEME_WITHOUT_PORT);
-
-  base::TestSuite::Initialize();
+  ContentSettingsPattern::SetNonWildcardDomainNonPortScheme(
+      kDummyExtensionScheme);
 }
