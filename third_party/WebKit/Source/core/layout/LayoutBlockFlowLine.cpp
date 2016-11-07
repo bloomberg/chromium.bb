@@ -39,13 +39,9 @@
 #include "core/layout/svg/line/SVGRootInlineBox.h"
 #include "platform/text/BidiResolver.h"
 #include "platform/text/Character.h"
-#include "wtf/StdLibExtras.h"
 #include "wtf/Vector.h"
-#include "wtf/text/CharacterNames.h"
 
 namespace blink {
-
-using namespace WTF::Unicode;
 
 class ExpansionOpportunities {
  public:
