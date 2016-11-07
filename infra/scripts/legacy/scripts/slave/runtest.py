@@ -481,10 +481,6 @@ def main():
                            help='Source paths in stack traces will be stripped '
                            'of prefixes ending with this substring. This '
                            'option is used by sanitizer tools.')
-  option_parser.add_option('--no-spawn-dbus', action='store_true',
-                           default=False,
-                           help='Disable GLib DBus bug workaround: '
-                                'manually spawning dbus-launch')
   option_parser.add_option('--test-launcher-summary-output',
                            help='Path to test results file with all the info '
                                 'from the test launcher')
@@ -518,9 +514,7 @@ def main():
 
   print '[Running on builder: "%s"]' % options.builder_name
 
-  did_launch_dbus = False
-  if not options.no_spawn_dbus:
-    did_launch_dbus = _LaunchDBus()
+  did_launch_dbus = _LaunchDBus()
 
   try:
     options.build_dir = build_directory.GetBuildOutputDirectory()
