@@ -204,7 +204,8 @@ bool HandleUrl(int render_process_host_id,
   return false;
 }
 
-// Called when the dialog is closed.
+// Called when the dialog is closed. Note that once we show the UI, we should
+// never show the Chrome OS' fallback dialog.
 void OnIntentPickerClosed(int render_process_host_id,
                           int routing_id,
                           const GURL& url,
@@ -258,9 +259,8 @@ void OnIntentPickerClosed(int render_process_host_id,
       // fall through.
     }
     case ArcNavigationThrottle::CloseReason::DIALOG_DEACTIVATED: {
-      // The user didn't select any ARC activity. Show the Chrome OS dialog.
-      ShowFallbackExternalProtocolDialog(render_process_host_id, routing_id,
-                                         url);
+      // The user didn't select any ARC activity.
+      CloseTabIfNeeded(render_process_host_id, routing_id);
       break;
     }
   }
