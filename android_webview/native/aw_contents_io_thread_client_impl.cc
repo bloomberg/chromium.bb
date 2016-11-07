@@ -273,13 +273,12 @@ void AwContentsIoThreadClientImpl::SetServiceWorkerIoThreadClient(
 // static
 std::unique_ptr<AwContentsIoThreadClient>
 AwContentsIoThreadClient::GetServiceWorkerIoThreadClient() {
-  if (g_sw_instance_.Get().is_empty())
-    return std::unique_ptr<AwContentsIoThreadClient>();
-
   JNIEnv* env = AttachCurrentThread();
   ScopedJavaLocalRef<jobject> java_delegate = g_sw_instance_.Get().get(env);
 
-  DCHECK(!java_delegate.is_null());
+  if (java_delegate.is_null())
+    return std::unique_ptr<AwContentsIoThreadClient>();
+
   return std::unique_ptr<AwContentsIoThreadClient>(
       new AwContentsIoThreadClientImpl(false, java_delegate));
 }

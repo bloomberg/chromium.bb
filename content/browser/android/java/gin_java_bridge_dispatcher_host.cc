@@ -374,7 +374,7 @@ void GinJavaBridgeDispatcherHost::OnObjectWrapperDeleted(
     return;
   JavaObjectWeakGlobalRef ref =
       RemoveHolderAndAdvanceLocked(routing_id, &iter);
-  if (!ref.is_empty()) {
+  if (!ref.is_uninitialized()) {
     RemoveFromRetainedObjectSetLocked(ref);
   }
 }

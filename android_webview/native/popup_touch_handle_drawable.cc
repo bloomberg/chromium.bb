@@ -17,7 +17,7 @@ PopupTouchHandleDrawable::PopupTouchHandleDrawable(
     float horizontal_padding_ratio)
     : java_ref_(env, obj)
     , drawable_horizontal_padding_ratio_(horizontal_padding_ratio) {
-  DCHECK(!java_ref_.is_empty());
+  DCHECK(obj);
 }
 
 PopupTouchHandleDrawable::~PopupTouchHandleDrawable() {

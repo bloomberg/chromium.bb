@@ -26,7 +26,7 @@ PlatformImeControllerAndroid::~PlatformImeControllerAndroid() {
 
 void PlatformImeControllerAndroid::Init(JNIEnv* env,
                                         const JavaParamRef<jobject>& jobj) {
-  DCHECK(java_platform_ime_controller_android_.is_empty());
+  DCHECK(java_platform_ime_controller_android_.is_uninitialized());
   java_platform_ime_controller_android_ = JavaObjectWeakGlobalRef(env, jobj);
 }
 

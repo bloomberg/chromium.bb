@@ -160,7 +160,7 @@ void PlatformWindowAndroid::ReleaseWindow() {
 // PlatformWindowAndroid, PlatformWindow implementation:
 
 void PlatformWindowAndroid::Show() {
-  if (!java_platform_window_android_.is_empty())
+  if (!java_platform_window_android_.is_uninitialized())
     return;
   JNIEnv* env = base::android::AttachCurrentThread();
   java_platform_window_android_ = JavaObjectWeakGlobalRef(

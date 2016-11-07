@@ -100,7 +100,7 @@ bool GinJavaMethodInvocationHelper::AppendObjectRef(
     if (iter == object_refs_.end()) {
       JavaObjectWeakGlobalRef object_ref(
           dispatcher->GetObjectWeakRef(object_id));
-      if (!object_ref.is_empty()) {
+      if (!object_ref.is_uninitialized()) {
         object_refs_.insert(std::make_pair(object_id, object_ref));
       }
     }
