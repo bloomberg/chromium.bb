@@ -419,6 +419,8 @@ class WebGLConformanceExpectations(GpuTestExpectations):
     # This test is skipped because it is crashing the GPU process.
     self.Skip('conformance/glsl/misc/shader-with-non-reserved-words.html',
               ['android', ('qualcomm', 'Adreno (TM) 418')], bug=609883)
+    self.Flaky('conformance/misc/bad-arguments-test.html',
+              ['android', ('qualcomm', 'Adreno (TM) 418')], bug=663066)
     self.Fail('conformance/textures/misc/' +
               'tex-image-and-sub-image-2d-with-array-buffer-view.html',
               ['android', ('qualcomm', 'Adreno (TM) 418')], bug=610951)
@@ -579,6 +581,8 @@ class WebGLConformanceExpectations(GpuTestExpectations):
               ['android', ('qualcomm', 'Adreno (TM) 420')], bug=499555)
     self.Fail('conformance/textures/webgl_canvas/*',
               ['android', ('qualcomm', 'Adreno (TM) 430')], bug=611945)
+    self.Flaky('conformance/uniforms/uniform-samplers-test.html',
+              ['android', ('qualcomm', 'Adreno (TM) 430')], bug=663071)
 
     # Nexus 9
     self.Fail('deqp/data/gles2/shaders/functions.html',
