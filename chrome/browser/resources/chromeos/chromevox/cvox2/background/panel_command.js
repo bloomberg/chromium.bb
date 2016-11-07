@@ -48,4 +48,5 @@ PanelCommandType = {
   DISABLE_MENUS: 'disable_menus',
   SEARCH: 'search',
   TUTORIAL: 'tutorial',
+  UPDATE_NOTES: 'update_notes',
 };

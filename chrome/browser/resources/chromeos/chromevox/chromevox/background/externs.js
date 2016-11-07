@@ -5,6 +5,7 @@
 // Common external variables when compiling ChromeVox background code
 
 var localStorage = {};
+var sessionStorage = {};
 
 /**
  * @type {Object}

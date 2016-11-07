@@ -130,6 +130,12 @@ Panel.init = function() {
 
   document.addEventListener('keydown', Panel.onKeyDown, false);
   document.addEventListener('mouseup', Panel.onMouseUp, false);
+  window.addEventListener('blur', function(evt) {
+    if (evt.target != window || document.activeElement == document.body)
+      return;
+
+    Panel.closeMenusAndRestoreFocus();
+  }, false);
 
   Panel.searchInput_.addEventListener('blur', Panel.onSearchInputBlur, false);
 };
@@ -215,6 +221,9 @@ Panel.exec = function(command) {
     case PanelCommandType.TUTORIAL:
       Panel.onTutorial();
       break;
+    case PanelCommandType.UPDATE_NOTES:
+      Panel.onTutorial('updateNotes');
+      break;
   }
 };
 
@@ -253,7 +262,7 @@ Panel.setMode = function(mode) {
     // host code to make the window fullscreen and give it focus.
     window.location = '#fullscreen';
   } else if (this.mode_ == Panel.Mode.FOCUSED) {
-    // // Change the url fragment to 'focus', which signals the native
+    // Change the url fragment to 'focus', which signals the native
     // host code to give the window focus.
     window.location = '#focus';
   } else {
@@ -784,13 +793,20 @@ Panel.closeMenusAndRestoreFocus = function() {
 
 /**
  * Open the tutorial.
+ * @param {string=} opt_page Show a specific page.
  */
-Panel.onTutorial = function() {
+Panel.onTutorial = function(opt_page) {
   // Change the url fragment to 'fullscreen', which signals the native
   // host code to make the window fullscreen, revealing the menus.
   Panel.setMode(Panel.Mode.FULLSCREEN_TUTORIAL);
 
-  Panel.tutorial_.firstPage();
+  switch (opt_page) {
+    case 'updateNotes':
+      Panel.tutorial_.updateNotes();
+      break;
+    default:
+      Panel.tutorial_.lastViewedPage();
+  }
 };
 
 /**

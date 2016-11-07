@@ -180,8 +180,11 @@ CommandHandler.onCommand = function(command) {
             ChromeVoxState.instance.currentRange);
       }
       break;
-    case 'showNextUpdatePage':
+    case 'help':
       (new PanelCommand(PanelCommandType.TUTORIAL)).send();
+      return false;
+    case 'showNextUpdatePage':
+      (new PanelCommand(PanelCommandType.UPDATE_NOTES)).send();
       return false;
     default:
       break;

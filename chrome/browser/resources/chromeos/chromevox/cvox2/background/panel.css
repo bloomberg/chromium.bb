@@ -291,6 +291,10 @@ button {
   font-weight: bold;
 }
 
+#tutorial_main h2:focus {
+  outline: none
+}
+
 #tutorial_main p,
 #tutorial_main a {
   display: block;
