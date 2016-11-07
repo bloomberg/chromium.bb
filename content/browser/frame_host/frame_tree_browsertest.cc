@@ -323,6 +323,7 @@ IN_PROC_BROWSER_TEST_F(FrameTreeBrowserTest, NavigateGrandchildToBlob) {
   FrameTreeNode* target = root->child_at(0)->child_at(0);
 
   std::string blob_url_string;
+  RenderFrameDeletedObserver deleted_observer(target->current_frame_host());
   EXPECT_TRUE(ExecuteScriptAndExtractString(
       root,
       "function receiveMessage(event) {"
@@ -337,6 +338,9 @@ IN_PROC_BROWSER_TEST_F(FrameTreeBrowserTest, NavigateGrandchildToBlob) {
       "var blob_url = URL.createObjectURL(blob);"
       "frames[0][0].location.href = blob_url;",
       &blob_url_string));
+  // Wait for the RenderFrame to go away, if this will be cross-process.
+  if (AreAllSitesIsolatedForTesting())
+    deleted_observer.WaitUntilDeleted();
   EXPECT_EQ(GURL(blob_url_string), target->current_url());
   EXPECT_EQ(url::kBlobScheme, target->current_url().scheme());
   EXPECT_FALSE(target->current_origin().unique());

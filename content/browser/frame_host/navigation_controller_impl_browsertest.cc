@@ -2239,14 +2239,8 @@ IN_PROC_BROWSER_TEST_F(NavigationControllerBrowserTest,
 // Verify the tree of FrameNavigationEntries after NAVIGATION_TYPE_NEW_SUBFRAME
 // commits.
 // Disabled due to flakes; see https://crbug.com/646836.
-#if defined(OS_ANDROID) || defined(OS_LINUX)
-#define MAYBE_FrameNavigationEntry_NewSubframe \
-    DISABLED_FrameNavigationEntry_NewSubframe
-#else
-#define MAYBE_FrameNavigationEntry_NewSubframe FrameNavigationEntry_NewSubframe
-#endif
 IN_PROC_BROWSER_TEST_F(NavigationControllerBrowserTest,
-                       MAYBE_FrameNavigationEntry_NewSubframe) {
+                       FrameNavigationEntry_NewSubframe) {
   GURL main_url(embedded_test_server()->GetURL(
       "/navigation_controller/simple_page_1.html"));
   EXPECT_TRUE(NavigateToURL(shell(), main_url));
@@ -2314,7 +2308,7 @@ IN_PROC_BROWSER_TEST_F(NavigationControllerBrowserTest,
   }
 
   // 4. Create a nested same-site iframe in the second subframe, wait for it to
-  // commit, then navigate it again.
+  // commit, then navigate it again cross-site.
   {
     LoadCommittedCapturer capturer(shell()->web_contents());
     std::string script = "var iframe = document.createElement('iframe');"
@@ -2327,7 +2321,12 @@ IN_PROC_BROWSER_TEST_F(NavigationControllerBrowserTest,
       "bar.com", "/navigation_controller/simple_page_1.html"));
   {
     FrameNavigateParamsCapturer capturer(root->child_at(1)->child_at(0));
+    RenderFrameDeletedObserver deleted_observer(
+        root->child_at(1)->child_at(0)->current_frame_host());
     NavigateFrameToURL(root->child_at(1)->child_at(0), bar_url);
+    // Wait for the RenderFrame to go away, if this will be cross-process.
+    if (AreAllSitesIsolatedForTesting())
+      deleted_observer.WaitUntilDeleted();
     capturer.Wait();
     EXPECT_TRUE(ui::PageTransitionTypeIncludingQualifiersIs(
         capturer.params().transition, ui::PAGE_TRANSITION_MANUAL_SUBFRAME));
@@ -2363,9 +2362,14 @@ IN_PROC_BROWSER_TEST_F(NavigationControllerBrowserTest,
       "baz.com", "/navigation_controller/simple_page_1.html"));
   {
     FrameNavigateParamsCapturer capturer(root->child_at(1));
+    RenderFrameDeletedObserver deleted_observer(
+        root->child_at(1)->current_frame_host());
     std::string script = "var frames = document.getElementsByTagName('iframe');"
                          "frames[1].src = '" + baz_url.spec() + "';";
     EXPECT_TRUE(ExecuteScript(root, script));
+    // Wait for the RenderFrame to go away, if this will be cross-process.
+    if (AreAllSitesIsolatedForTesting())
+      deleted_observer.WaitUntilDeleted();
     capturer.Wait();
     EXPECT_TRUE(ui::PageTransitionTypeIncludingQualifiersIs(
         capturer.params().transition, ui::PAGE_TRANSITION_MANUAL_SUBFRAME));
