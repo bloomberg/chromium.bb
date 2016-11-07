@@ -84,8 +84,8 @@ crbug.com/506754 http/tests/inspector/service-workers/service-worker-agents.html
 crbug.com/506754 http/tests/security/cross-origin-indexeddb-allowed.html [ Leak ]
 crbug.com/506754 http/tests/serviceworker/chromium/resolve-after-window-close.html [ Leak ]
 crbug.com/506754 http/tests/serviceworker/chromium/window-close-during-registration.html [ Leak ]
-crbug.com/506754 virtual/mojo-service-worker/http/tests/serviceworker/chromium/resolve-after-window-close.html [ Leak ]
-crbug.com/506754 virtual/mojo-service-worker/http/tests/serviceworker/chromium/window-close-during-registration.html [ Leak ]
+crbug.com/506754 virtual/disable-mojo-service-worker/http/tests/serviceworker/chromium/resolve-after-window-close.html [ Leak ]
+crbug.com/506754 virtual/disable-mojo-service-worker/http/tests/serviceworker/chromium/window-close-during-registration.html [ Leak ]
 crbug.com/506754 virtual/service-worker-navigation-preload/http/tests/serviceworker/chromium/resolve-after-window-close.html [ Leak ]
 crbug.com/506754 virtual/service-worker-navigation-preload/http/tests/serviceworker/chromium/window-close-during-registration.html [ Leak ]
 
