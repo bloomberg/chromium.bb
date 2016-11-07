@@ -653,6 +653,8 @@ TEST_F(ResourcePrefetchPredictorTablesTest, DatabaseIsResetWhenIncompatible) {
                       &host_redirect_data);
   EXPECT_TRUE(url_data.empty());
   EXPECT_TRUE(host_data.empty());
+  EXPECT_TRUE(url_redirect_data.empty());
+  EXPECT_TRUE(host_redirect_data.empty());
 }
 
 TEST_F(ResourcePrefetchPredictorTablesReopenTest, GetAllData) {

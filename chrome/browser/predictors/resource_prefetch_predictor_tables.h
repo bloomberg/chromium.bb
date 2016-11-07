@@ -5,8 +5,7 @@
 #ifndef CHROME_BROWSER_PREDICTORS_RESOURCE_PREFETCH_PREDICTOR_TABLES_H_
 #define CHROME_BROWSER_PREDICTORS_RESOURCE_PREFETCH_PREDICTOR_TABLES_H_
 
-#include <stddef.h>
-
+#include <cstddef>
 #include <map>
 #include <memory>
 #include <string>
@@ -14,13 +13,9 @@
 
 #include "base/gtest_prod_util.h"
 #include "base/macros.h"
-#include "base/memory/ptr_util.h"
 #include "chrome/browser/predictors/predictor_table_base.h"
 #include "chrome/browser/predictors/resource_prefetch_common.h"
 #include "chrome/browser/predictors/resource_prefetch_predictor.pb.h"
-#include "content/public/common/resource_type.h"
-#include "net/base/request_priority.h"
-#include "url/gurl.h"
 
 namespace sql {
 class Statement;
@@ -91,12 +86,21 @@ class ResourcePrefetchPredictorTables : public PredictorTableBase {
   // Sorts the resources by score, decreasing.
   static void SortResources(PrefetchData* data);
 
+  // Computes score of |data|.
+  static float ComputeResourceScore(const ResourceData& data);
+
   // Removes the redirects with more than |max_consecutive_misses| consecutive
   // misses from |data|.
   static void TrimRedirects(RedirectData* data, size_t max_consecutive_misses);
 
   // The maximum length of the string that can be stored in the DB.
   static constexpr size_t kMaxStringLength = 1024;
+
+ protected:
+  // Protected for testing. Use PredictorDatabase::resource_prefetch_tables()
+  // instead of this constructor.
+  ResourcePrefetchPredictorTables();
+  ~ResourcePrefetchPredictorTables() override;
 
  private:
   // Represents the type of information that is stored in prefetch database.
@@ -105,16 +109,14 @@ class ResourcePrefetchPredictorTables : public PredictorTableBase {
   enum class TableOperationType { INSERT, REMOVE };
 
   friend class PredictorDatabaseInternal;
-  friend class MockResourcePrefetchPredictorTables;
   FRIEND_TEST_ALL_PREFIXES(ResourcePrefetchPredictorTablesTest,
                            DatabaseVersionIsSet);
   FRIEND_TEST_ALL_PREFIXES(ResourcePrefetchPredictorTablesTest,
                            DatabaseIsResetWhenIncompatible);
-  FRIEND_TEST_ALL_PREFIXES(ResourcePrefetchPredictorTablesTest,
-                           ComputeResourceScore);
 
-  ResourcePrefetchPredictorTables();
-  ~ResourcePrefetchPredictorTables() override;
+  // Database version. Always increment it when any change is made to the data
+  // schema (including the .proto).
+  static constexpr int kDatabaseVersion = 5;
 
   // Helper functions below help perform functions on the Url and host table
   // using the same code.
@@ -130,22 +132,15 @@ class ResourcePrefetchPredictorTables : public PredictorTableBase {
                         PrefetchDataType data_type,
                         const std::vector<std::string>& keys);
 
-  // Computes score of |data|.
-  static float ComputeResourceScore(const ResourceData& data);
-
-  // PredictorTableBase methods.
+  // PredictorTableBase:
   void CreateTableIfNonExistent() override;
   void LogDatabaseStats() override;
-
-  // Database version. Always increment it when any change is made to the data
-  // schema (including the .proto).
-  static constexpr int kDatabaseVersion = 5;
 
   static bool DropTablesIfOutdated(sql::Connection* db);
   static int GetDatabaseVersion(sql::Connection* db);
   static bool SetDatabaseVersion(sql::Connection* db, int version);
 
-  // Helper to return Statements for cached Statements.
+  // Helper to return cached Statements.
   std::unique_ptr<sql::Statement> GetTableUpdateStatement(
       PrefetchKeyType key_type,
       PrefetchDataType data_type,

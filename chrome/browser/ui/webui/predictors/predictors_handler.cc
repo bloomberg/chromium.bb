@@ -5,6 +5,7 @@
 #include "chrome/browser/ui/webui/predictors/predictors_handler.h"
 
 #include <memory>
+#include <string>
 #include <utility>
 
 #include "base/bind.h"
@@ -128,6 +129,8 @@ void PredictorsHandler::AddPrefetchDataMapToListValue(
       resource->SetInteger("number_of_misses", r.number_of_misses());
       resource->SetInteger("consecutive_misses", r.consecutive_misses());
       resource->SetDouble("position", r.average_position());
+      resource->SetDouble(
+          "score", ResourcePrefetchPredictorTables::ComputeResourceScore(r));
       resources->Append(std::move(resource));
     }
     main->Set("resources", resources);
