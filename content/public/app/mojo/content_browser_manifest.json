@@ -84,6 +84,7 @@
           "device::usb::DeviceManager",
           "media::mojom::InterfaceFactory",
           "media::mojom::RemoterFactory",
+          "media::mojom::Renderer",
           "mojom::MediaDevicesDispatcherHost"
         ]
       },
