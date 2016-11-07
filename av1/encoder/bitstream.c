@@ -3952,28 +3952,29 @@ static void write_uncompressed_header(AV1_COMP *cpi,
 #if CONFIG_GLOBAL_MOTION
 static void write_global_motion_params(Global_Motion_Params *params,
                                        aom_prob *probs, aom_writer *w) {
-  GLOBAL_MOTION_TYPE gmtype = get_gmtype(params);
+  GLOBAL_MOTION_TYPE gmtype = params->gmtype;
   av1_write_token(w, av1_global_motion_types_tree, probs,
                   &global_motion_types_encodings[gmtype]);
   switch (gmtype) {
     case GLOBAL_ZERO: break;
     case GLOBAL_AFFINE:
-      aom_write_primitive_symmetric(
-          w, (params->motion_params.wmmat[4] >> GM_ALPHA_PREC_DIFF),
-          GM_ABS_ALPHA_BITS);
-      aom_write_primitive_symmetric(
-          w, (params->motion_params.wmmat[5] >> GM_ALPHA_PREC_DIFF) -
-                 (1 << GM_ALPHA_PREC_BITS),
-          GM_ABS_ALPHA_BITS);
-    // fallthrough intended
     case GLOBAL_ROTZOOM:
       aom_write_primitive_symmetric(
-          w, (params->motion_params.wmmat[2] >> GM_ALPHA_PREC_DIFF),
-          GM_ABS_ALPHA_BITS);
-      aom_write_primitive_symmetric(
-          w, (params->motion_params.wmmat[3] >> GM_ALPHA_PREC_DIFF) -
+          w, (params->motion_params.wmmat[2] >> GM_ALPHA_PREC_DIFF) -
                  (1 << GM_ALPHA_PREC_BITS),
           GM_ABS_ALPHA_BITS);
+      aom_write_primitive_symmetric(
+          w, (params->motion_params.wmmat[3] >> GM_ALPHA_PREC_DIFF),
+          GM_ABS_ALPHA_BITS);
+      if (gmtype == GLOBAL_AFFINE) {
+        aom_write_primitive_symmetric(
+            w, (params->motion_params.wmmat[4] >> GM_ALPHA_PREC_DIFF),
+            GM_ABS_ALPHA_BITS);
+        aom_write_primitive_symmetric(
+            w, (params->motion_params.wmmat[5] >> GM_ALPHA_PREC_DIFF) -
+                   (1 << GM_ALPHA_PREC_BITS),
+            GM_ABS_ALPHA_BITS);
+      }
     // fallthrough intended
     case GLOBAL_TRANSLATION:
       aom_write_primitive_symmetric(
@@ -3992,18 +3993,19 @@ static void write_global_motion(AV1_COMP *cpi, aom_writer *w) {
   int frame;
   for (frame = LAST_FRAME; frame <= ALTREF_FRAME; ++frame) {
     if (!cpi->global_motion_used[frame]) {
-      memset(&cm->global_motion[frame], 0, sizeof(*cm->global_motion));
+      set_default_gmparams(&cm->global_motion[frame]);
     }
     write_global_motion_params(&cm->global_motion[frame],
                                cm->fc->global_motion_types_prob, w);
     /*
-          printf("Enc Ref %d [%d] (used %d): %d %d %d %d\n",
-                 frame, cm->current_video_frame, cpi->global_motion_used[frame],
-                 cm->global_motion[frame].motion_params.wmmat[0].as_mv.row,
-                 cm->global_motion[frame].motion_params.wmmat[0].as_mv.col,
-                 cm->global_motion[frame].motion_params.wmmat[1].as_mv.row,
-                 cm->global_motion[frame].motion_params.wmmat[1].as_mv.col);
-    */
+    printf("Enc Ref %d [%d/%d] (used %d): %d %d %d %d\n",
+           frame, cm->current_video_frame, cm->show_frame,
+           cpi->global_motion_used[frame],
+           cm->global_motion[frame].motion_params.wmmat[0],
+           cm->global_motion[frame].motion_params.wmmat[1],
+           cm->global_motion[frame].motion_params.wmmat[2],
+           cm->global_motion[frame].motion_params.wmmat[3]);
+           */
   }
 }
 #endif

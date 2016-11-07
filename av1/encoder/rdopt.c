@@ -4317,14 +4317,16 @@ static int get_gmbitcost(const Global_Motion_Params *gm,
   int gmtype_cost[GLOBAL_MOTION_TYPES];
   int bits;
   av1_cost_tokens(gmtype_cost, probs, av1_global_motion_types_tree);
-  if (gm->motion_params.wmmat[5] || gm->motion_params.wmmat[4]) {
-    bits = (GM_ABS_TRANS_BITS + 1) * 2 + 4 * GM_ABS_ALPHA_BITS + 4;
-  } else if (gm->motion_params.wmmat[3] || gm->motion_params.wmmat[2]) {
-    bits = (GM_ABS_TRANS_BITS + 1) * 2 + 2 * GM_ABS_ALPHA_BITS + 2;
-  } else {
-    bits = ((gm->motion_params.wmmat[1] || gm->motion_params.wmmat[0])
-                ? ((GM_ABS_TRANS_BITS + 1) * 2)
-                : 0);
+  switch (gm->gmtype) {
+    case GLOBAL_AFFINE:
+      bits = (GM_ABS_TRANS_BITS + 1) * 2 + 4 * GM_ABS_ALPHA_BITS + 4;
+      break;
+    case GLOBAL_ROTZOOM:
+      bits = (GM_ABS_TRANS_BITS + 1) * 2 + 2 * GM_ABS_ALPHA_BITS + 2;
+      break;
+    case GLOBAL_TRANSLATION: bits = (GM_ABS_TRANS_BITS + 1) * 2; break;
+    case GLOBAL_ZERO: bits = 0; break;
+    default: assert(0); return 0;
   }
   return bits ? (bits << AV1_PROB_COST_SHIFT) + gmtype_cost[gm->gmtype] : 0;
 }
@@ -5335,9 +5337,9 @@ static int64_t rd_pick_best_sub8x8_mode(
 #endif  // CONFIG_REF_MV
 
 #if CONFIG_GLOBAL_MOTION
-        if (get_gmtype(&cm->global_motion[mbmi->ref_frame[0]]) == GLOBAL_ZERO &&
+        if (cm->global_motion[mbmi->ref_frame[0]].gmtype == GLOBAL_ZERO &&
             (!has_second_rf ||
-             get_gmtype(&cm->global_motion[mbmi->ref_frame[1]]) == GLOBAL_ZERO))
+             cm->global_motion[mbmi->ref_frame[1]].gmtype == GLOBAL_ZERO))
 #endif  // CONFIG_GLOBAL_MOTION
 
           if (!check_best_zero_mv(cpi, mbmi_ext->mode_context,
@@ -8855,10 +8857,9 @@ void av1_rd_pick_inter_mode_sb(const AV1_COMP *cpi, TileDataEnc *tile_data,
         }
       }
 #if CONFIG_GLOBAL_MOTION
-    } else if (get_gmtype(&cm->global_motion[ref_frame]) == GLOBAL_ZERO &&
+    } else if (cm->global_motion[ref_frame].gmtype == GLOBAL_ZERO &&
                (!comp_pred ||
-                get_gmtype(&cm->global_motion[second_ref_frame]) ==
-                    GLOBAL_ZERO)) {
+                cm->global_motion[second_ref_frame].gmtype == GLOBAL_ZERO)) {
 #else   // CONFIG_GLOBAL_MOTION
     } else {
 #endif  // CONFIG_GLOBAL_MOTION

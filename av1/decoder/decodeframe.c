@@ -4010,27 +4010,32 @@ static void read_global_motion_params(Global_Motion_Params *params,
                                       aom_prob *probs, aom_reader *r) {
   GLOBAL_MOTION_TYPE gmtype =
       aom_read_tree(r, av1_global_motion_types_tree, probs, ACCT_STR);
+  set_default_gmparams(params);
   params->gmtype = gmtype;
   params->motion_params.wmtype = gm_to_trans_type(gmtype);
   switch (gmtype) {
     case GLOBAL_ZERO: break;
     case GLOBAL_AFFINE:
-      params->motion_params.wmmat[4] =
-          (aom_read_primitive_symmetric(r, GM_ABS_ALPHA_BITS) *
-           GM_ALPHA_DECODE_FACTOR);
-      params->motion_params.wmmat[5] =
-          aom_read_primitive_symmetric(r, GM_ABS_ALPHA_BITS) *
-              GM_ALPHA_DECODE_FACTOR +
-          (1 << WARPEDMODEL_PREC_BITS);
-    // fallthrough intended
     case GLOBAL_ROTZOOM:
       params->motion_params.wmmat[2] =
-          aom_read_primitive_symmetric(r, GM_ABS_ALPHA_BITS) *
-          GM_ALPHA_DECODE_FACTOR;
-      params->motion_params.wmmat[3] =
           (aom_read_primitive_symmetric(r, GM_ABS_ALPHA_BITS) *
            GM_ALPHA_DECODE_FACTOR) +
           (1 << WARPEDMODEL_PREC_BITS);
+      params->motion_params.wmmat[3] =
+          aom_read_primitive_symmetric(r, GM_ABS_ALPHA_BITS) *
+          GM_ALPHA_DECODE_FACTOR;
+      if (gmtype == GLOBAL_AFFINE) {
+        params->motion_params.wmmat[4] =
+            (aom_read_primitive_symmetric(r, GM_ABS_ALPHA_BITS) *
+             GM_ALPHA_DECODE_FACTOR);
+        params->motion_params.wmmat[5] =
+            aom_read_primitive_symmetric(r, GM_ABS_ALPHA_BITS) *
+                GM_ALPHA_DECODE_FACTOR +
+            (1 << WARPEDMODEL_PREC_BITS);
+      } else {
+        params->motion_params.wmmat[4] = -params->motion_params.wmmat[3];
+        params->motion_params.wmmat[5] = params->motion_params.wmmat[2];
+      }
     // fallthrough intended
     case GLOBAL_TRANSLATION:
       params->motion_params.wmmat[0] =
@@ -4046,18 +4051,17 @@ static void read_global_motion_params(Global_Motion_Params *params,
 
 static void read_global_motion(AV1_COMMON *cm, aom_reader *r) {
   int frame;
-  memset(cm->global_motion, 0, sizeof(cm->global_motion));
   for (frame = LAST_FRAME; frame <= ALTREF_FRAME; ++frame) {
     read_global_motion_params(&cm->global_motion[frame],
                               cm->fc->global_motion_types_prob, r);
     /*
-          printf("Dec Ref %d [%d]: %d %d %d %d\n",
-                 frame, cm->current_video_frame,
-                 cm->global_motion[frame].motion_params.wmmat[0].as_mv.row,
-                 cm->global_motion[frame].motion_params.wmmat[0].as_mv.col,
-                 cm->global_motion[frame].motion_params.wmmat[1].as_mv.row,
-                 cm->global_motion[frame].motion_params.wmmat[1].as_mv.col);
-    */
+    printf("Dec Ref %d [%d/%d]: %d %d %d %d\n",
+           frame, cm->current_video_frame, cm->show_frame,
+           cm->global_motion[frame].motion_params.wmmat[0],
+           cm->global_motion[frame].motion_params.wmmat[1],
+           cm->global_motion[frame].motion_params.wmmat[2],
+           cm->global_motion[frame].motion_params.wmmat[3]);
+           */
   }
 }
 #endif  // CONFIG_GLOBAL_MOTION

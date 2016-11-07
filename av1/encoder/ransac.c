@@ -41,8 +41,8 @@ static void project_points_double_translation(double *mat, double *points,
   int i;
   for (i = 0; i < n; ++i) {
     const double x = *(points++), y = *(points++);
-    *(proj++) = x + mat[1];
-    *(proj++) = y + mat[0];
+    *(proj++) = x + mat[0];
+    *(proj++) = y + mat[1];
     points += stride_points - 2;
     proj += stride_proj - 2;
   }
@@ -55,8 +55,8 @@ static void project_points_double_rotzoom(double *mat, double *points,
   int i;
   for (i = 0; i < n; ++i) {
     const double x = *(points++), y = *(points++);
-    *(proj++) = mat[3] * x + mat[2] * y + mat[1];
-    *(proj++) = -mat[2] * x + mat[3] * y + mat[0];
+    *(proj++) = mat[2] * x + mat[3] * y + mat[0];
+    *(proj++) = -mat[3] * x + mat[2] * y + mat[1];
     points += stride_points - 2;
     proj += stride_proj - 2;
   }
@@ -69,8 +69,8 @@ static void project_points_double_affine(double *mat, double *points,
   int i;
   for (i = 0; i < n; ++i) {
     const double x = *(points++), y = *(points++);
-    *(proj++) = mat[3] * x + mat[2] * y + mat[1];
-    *(proj++) = mat[4] * x + mat[5] * y + mat[0];
+    *(proj++) = mat[2] * x + mat[3] * y + mat[0];
+    *(proj++) = mat[4] * x + mat[5] * y + mat[1];
     points += stride_points - 2;
     proj += stride_proj - 2;
   }
@@ -84,11 +84,11 @@ static void project_points_double_homography(double *mat, double *points,
   double x, y, Z, Z_inv;
   for (i = 0; i < n; ++i) {
     x = *(points++), y = *(points++);
-    Z_inv = mat[7] * x + mat[6] * y + 1;
-    assert(fabs(Z_inv) > 0.00001);
+    Z_inv = mat[6] * x + mat[7] * y + 1;
+    assert(fabs(Z_inv) > 0.000001);
     Z = 1. / Z_inv;
-    *(proj++) = (mat[1] * x + mat[0] * y + mat[3]) * Z;
-    *(proj++) = (mat[2] * x + mat[4] * y + mat[4]) * Z;
+    *(proj++) = (mat[0] * x + mat[1] * y + mat[2]) * Z;
+    *(proj++) = (mat[3] * x + mat[4] * y + mat[5]) * Z;
     points += stride_points - 2;
     proj += stride_proj - 2;
   }
@@ -273,7 +273,7 @@ static int ransac(double *matched_points, int npoints, int *number_of_inliers,
         pNoOutliers = 1 - pow(fracinliers, minpts);
         pNoOutliers = fmax(EPS, pNoOutliers);
         pNoOutliers = fmin(1 - EPS, pNoOutliers);
-        assert(fabs(1.0 - pNoOutliers) > 0.00001);
+        // assert(fabs(1.0 - pNoOutliers) > 0.00001);
         temp = (int)(log(1.0 - PROBABILITY_REQUIRED) / log(pNoOutliers));
         if (temp > 0 && temp < N) {
           N = AOMMAX(temp, MIN_TRIALS);
@@ -360,10 +360,18 @@ int ransac_homography(double *matched_points, int npoints,
   if (!result) {
     // normalize so that H33 = 1
     int i;
+    double params[8];
     const double m = 1.0 / best_params[8];
     assert(fabs(best_params[8]) > 0.00001);
-    for (i = 0; i < 8; ++i) best_params[i] *= m;
-    best_params[8] = 1.0;
+    for (i = 0; i < 8; ++i) params[i] = best_params[i] * m;
+    best_params[0] = params[2];
+    best_params[1] = params[5];
+    best_params[2] = params[0];
+    best_params[3] = params[1];
+    best_params[4] = params[3];
+    best_params[5] = params[4];
+    best_params[6] = params[6];
+    best_params[7] = params[7];
   }
   return result;
 }
