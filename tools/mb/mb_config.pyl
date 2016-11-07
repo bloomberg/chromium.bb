@@ -195,8 +195,6 @@
       'Win 10 Fast Ring': 'release_trybot',
       'Windows deterministic': 'release_bot_x86',
       'Windows Clang deterministic': 'clang_release_bot_minimal_symbols_x86',
-      'Win LKGR (DrM 64)': 'release_drmemory_drfuzz',
-      'Win LKGR (DrM)': 'release_drmemory_drfuzz_x86',
     },
 
     'chromium.goma': {
@@ -298,16 +296,12 @@
       'Chromium Linux ChromeOS MSan Builder': 'chromeos_msan_release_bot',
       'Chromium Linux MSan Builder': 'msan_release_bot',
       'Chromium Linux TSan Builder': 'tsan_disable_nacl_release_bot',
-      'Chromium Windows Builder (DrMemory x64)': 'drmemory_shared_release',
-      'Chromium Windows Builder (DrMemory)': 'drmemory_shared_release_x86',
     },
 
     'chromium.memory.full': {
       'Chromium Linux ChromeOS MSan Builder': 'chromeos_msan_release_bot',
       'Chromium Linux MSan Builder': 'msan_release_bot',
       'Chromium Linux TSan Builder': 'tsan_disable_nacl_release_bot',
-      'Chromium Windows Builder (DrMemory x64)': 'drmemory_shared_release',
-      'Chromium Windows Builder (DrMemory)': 'drmemory_shared_release_x86',
     },
 
     'chromium.perf': {
@@ -1130,14 +1124,6 @@
       'debug', 'libfuzzer', 'asan', 'chromeos_codecs', 'pdf_xfa', 'disable_nacl',
     ],
 
-    'drmemory_shared_release': [
-      'drmemory', 'shared', 'release',
-    ],
-
-    'drmemory_shared_release_x86': [
-      'drmemory', 'shared', 'release', 'x86',
-    ],
-
     'debug_trybot': [
       'debug_trybot',
     ],
@@ -1356,14 +1342,6 @@
     'release_bot_x86': [
       'release_bot', 'x86',
     ],
-
-    'release_drmemory_drfuzz': [
-      'release', 'drmemory', 'drfuzz', 'chrome_with_codecs',
-    ],
-
-    'release_drmemory_drfuzz_x86': [
-      'release', 'drmemory', 'drfuzz', 'x86', 'chrome_with_codecs',
-     ],
 
     'release_libfuzzer_asan': [
       'release', 'libfuzzer', 'asan', 'chromeos_codecs', 'pdf_xfa', 'disable_nacl', 'optimize_for_fuzzing',
@@ -1823,12 +1801,6 @@
 
     'x86': {
       'gn_args': 'target_cpu="x86"',
-    },
-
-    'drfuzz': { 'gn_args': 'use_drfuzz=true' },
-
-    'drmemory': {
-      'gn_args': 'is_component_build=true enable_iterator_debugging=false',
     },
   },
 }

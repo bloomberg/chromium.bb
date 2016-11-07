@@ -792,7 +792,6 @@ class TryServerMasterTest(unittest.TestCase):
             'win_chromium_rel',
             'win_chromium_x64_dbg',
             'win_chromium_x64_rel',
-            'win_drmemory',
             'win_nacl_sdk',
             'win_nacl_sdk_build',
             'win_rel_naclmore',

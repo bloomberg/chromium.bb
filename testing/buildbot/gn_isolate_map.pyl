@@ -292,14 +292,6 @@
     "label": "//:chromium_builder_asan",
     "type": "additional_compile_target",
   },
-  "chromium_builder_dbg_drmemory_win": {
-    "label": "//:chromium_builder_dbg_drmemory_win",
-    "type": "additional_compile_target",
-  },
-  "chromium_builder_lkgr_drmemory_win": {
-    "label": "//:chromium_builder_lkgr_drmemory_win",
-    "type": "additional_compile_target",
-  },
   "chromium_builder_perf": {
     "label": "//:chromium_builder_perf",
     "type": "additional_compile_target",

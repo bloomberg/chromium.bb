@@ -60,10 +60,4 @@ static_library("re2") {
   configs -= [ "//build/config/compiler:chromium_code" ]
   configs += [ "//build/config/compiler:no_chromium_code" ]
   public_configs = [ ":re2_config" ]
-
-  # TODO(battre) If Dr. Memory is ever migrated to GN, a flag needs to be
-  # added for this that adds a MEMORY_SANITIZER define. See re2.gyp.
-  # if (is_drmemory) {
-  #   defines += [ "MEMORY_SANITIZER" ]
-  # }
 }
