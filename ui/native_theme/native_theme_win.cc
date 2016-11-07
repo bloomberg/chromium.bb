@@ -150,6 +150,10 @@ class ScopedCreateDCWithBitmap {
 
 namespace ui {
 
+NativeTheme* NativeTheme::GetInstanceForNativeUi() {
+  return NativeThemeWin::instance();
+}
+
 bool NativeThemeWin::IsThemingActive() const {
   return is_theme_active_ && is_theme_active_();
 }
