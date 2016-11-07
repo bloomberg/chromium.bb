@@ -2194,8 +2194,8 @@ passed in using the ``flow style'' notation.
 A list of translation modes that should be used for this test. If not
 defined defaults to 0. Valid mode values are @samp{noContractions},
 @samp{compbrlAtCursor}, @samp{dotsIO}, @samp{comp8Dots},
-@samp{pass1Only}, @samp{compbrlLeftCursor}, @samp{otherTrans}or
-@samp{ucBrl}.
+@samp{pass1Only}, @samp{compbrlLeftCursor}, @samp{otherTrans},
+@samp{ucBrl}, @samp{noUndefinedDots} or @samp{partialTrans}.
 @end table
 
 @end table
@@ -2601,6 +2601,17 @@ spacing between the input and output strings. The @code{typeform} and
 @code{spacing} parameters may be @code{NULL} if this information is
 not needed. @code{mode} again specifies how the back-translation
 should be done.
+
+There are two additional modes that only apply to back-translation. By
+default, if a dot pattern in the input is undefined, the dot numbers
+will be included in the output. If the @code{noUndefinedDots} mode is
+set, this does not occur; an undefined dot pattern simply produces no
+output. The @code{partialTrans} mode specifies that the input should be
+treated as an incomplete word. That is, rules that apply only for
+complete words or at the end of a word will not take effect. This is
+intended to be used when translating input typed on a braille keyboard
+to provide a rough idea to the user of the characters they are typing
+before the word is complete.
 
 @node lou_backTranslate
 @section lou_backTranslate
@@ -3056,6 +3067,6 @@ directory. Usage information is included in the Python module itself.
 @c  LocalWords:  abrege decrement pre cornf comf scano cornm cornp po
 @c  LocalWords:  h's brl testtrans UCS asis libyaml doctests url yaml
 @c  LocalWords:  testmode iftex unicode ueb xfail eo noContractions
-@c  LocalWords:  dotsIO otherTrans ucBrl abc doctest inString enum cp
-@c  LocalWords:  outbufbuf logcallback fprint lbu EOF checkTable fn
-@c  LocalWords:  ispell
+@c  LocalWords:  dotsIO otherTrans ucBrl noUndefinedDots partialTrans
+@c  LocalWords:  abc doctest inString enum cp outbufbuf logcallback fprint
+@c  LocalWords:  lbu EOF heckTable fn ispell

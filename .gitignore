@@ -161,6 +161,8 @@ TAGS
 /tests/Makefile
 /tests/Makefile.in
 /tests/backtranslate
+/tests/backtranslate_noUndefinedDots
+/tests/backtranslate_partialTrans
 /tests/backtranslate_with_letsign
 /tests/capitalization
 /tests/capitalized_with_sentance
