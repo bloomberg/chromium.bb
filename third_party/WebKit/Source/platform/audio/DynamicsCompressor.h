@@ -31,7 +31,6 @@
 
 #include "platform/audio/AudioArray.h"
 #include "platform/audio/DynamicsCompressorKernel.h"
-#include "platform/audio/ZeroPole.h"
 #include "wtf/Allocator.h"
 #include "wtf/Noncopyable.h"
 #include <memory>

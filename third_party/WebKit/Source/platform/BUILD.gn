@@ -456,8 +456,6 @@ component("platform") {
     "audio/UpSampler.h",
     "audio/VectorMath.cpp",
     "audio/VectorMath.h",
-    "audio/ZeroPole.cpp",
-    "audio/ZeroPole.h",
     "audio/android/FFTFrameOpenMAXDLAndroid.cpp",
     "audio/ffmpeg/FFTFrameFFMPEG.cpp",
     "audio/ipp/FFTFrameIPP.cpp",
