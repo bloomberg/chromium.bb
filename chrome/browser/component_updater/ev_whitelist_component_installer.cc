@@ -81,12 +81,13 @@ bool EVWhitelistComponentInstallerTraits::RequiresNetworkEncryption() const {
   return false;
 }
 
-bool EVWhitelistComponentInstallerTraits::OnCustomInstall(
+update_client::CrxInstaller::Result
+EVWhitelistComponentInstallerTraits::OnCustomInstall(
     const base::DictionaryValue& manifest,
     const base::FilePath& install_dir) {
   VLOG(1) << "Entering EVWhitelistComponentInstallerTraits::OnCustomInstall.";
 
-  return true;  // Nothing custom here.
+  return update_client::CrxInstaller::Result(0);  // Nothing custom here.
 }
 
 base::FilePath EVWhitelistComponentInstallerTraits::GetInstalledPath(

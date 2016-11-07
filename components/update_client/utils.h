@@ -10,10 +10,13 @@
 #include <utility>
 #include <vector>
 
+#include "base/callback_forward.h"
+#include "components/update_client/update_client.h"
 
 class GURL;
 
 namespace base {
+class DictionaryValue;
 class FilePath;
 }
 
@@ -113,6 +116,10 @@ bool IsValidInstallerAttribute(const InstallerAttribute& attr);
 
 // Removes the unsecure urls in the |urls| parameter.
 void RemoveUnsecureUrls(std::vector<GURL>* urls);
+
+// Adapter function for the old definitions of CrxInstaller::Install until the
+// component installer code is migrated to use a REsult instead of bool.
+CrxInstaller::Result InstallFunctionWrapper(base::Callback<bool()> callback);
 
 }  // namespace update_client
 

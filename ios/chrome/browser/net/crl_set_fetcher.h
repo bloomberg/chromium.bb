@@ -40,8 +40,8 @@ class CRLSetFetcher : public update_client::CrxInstaller {
 
   // ComponentInstaller interface
   void OnUpdateError(int error) override;
-  bool Install(const base::DictionaryValue& manifest,
-               const base::FilePath& unpack_path) override;
+  Result Install(const base::DictionaryValue& manifest,
+                 const base::FilePath& unpack_path) override;
   bool GetInstalledFile(const std::string& file,
                         base::FilePath* installed_file) override;
   bool Uninstall() override;
@@ -78,6 +78,9 @@ class CRLSetFetcher : public update_client::CrxInstaller {
   // DoDeleteFromDisk runs on the FILE thread and removes the CRLSet file from
   // the disk.
   void DoDeleteFromDisk();
+
+  bool DoInstall(const base::DictionaryValue& manifest,
+                 const base::FilePath& unpack_path);
 
   component_updater::ComponentUpdateService* cus_;
 

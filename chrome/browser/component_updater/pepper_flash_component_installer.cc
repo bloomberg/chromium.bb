@@ -36,6 +36,7 @@
 #include "components/component_updater/component_updater_service.h"
 #include "components/component_updater/default_component_installer.h"
 #include "components/update_client/update_client.h"
+#include "components/update_client/update_client_errors.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/plugin_service.h"
 #include "content/public/common/content_constants.h"
@@ -159,8 +160,9 @@ class FlashComponentInstallerTraits : public ComponentInstallerTraits {
   // The following methods override ComponentInstallerTraits.
   bool SupportsGroupPolicyEnabledComponentUpdates() const override;
   bool RequiresNetworkEncryption() const override;
-  bool OnCustomInstall(const base::DictionaryValue& manifest,
-                       const base::FilePath& install_dir) override;
+  update_client::CrxInstaller::Result OnCustomInstall(
+      const base::DictionaryValue& manifest,
+      const base::FilePath& install_dir) override;
   bool VerifyInstallation(const base::DictionaryValue& manifest,
                           const base::FilePath& install_dir) const override;
   void ComponentReady(const base::Version& version,
@@ -186,7 +188,8 @@ bool FlashComponentInstallerTraits::RequiresNetworkEncryption() const {
   return false;
 }
 
-bool FlashComponentInstallerTraits::OnCustomInstall(
+update_client::CrxInstaller::Result
+FlashComponentInstallerTraits::OnCustomInstall(
     const base::DictionaryValue& manifest,
     const base::FilePath& install_dir) {
 #if defined(OS_LINUX)
@@ -195,14 +198,17 @@ bool FlashComponentInstallerTraits::OnCustomInstall(
   // Populate the component updated flash hint file so that the zygote can
   // locate and preload the latest version of flash.
   std::string version;
-  if (!manifest.GetString("version", &version))
-    return false;
+  if (!manifest.GetString("version", &version)) {
+    return update_client::CrxInstaller::Result(
+        update_client::InstallError::GENERIC_ERROR);
+  }
   if (!component_flash_hint_file::RecordFlashUpdate(flash_path, flash_path,
                                                     version)) {
-    return false;
+    return update_client::CrxInstaller::Result(
+        update_client::InstallError::GENERIC_ERROR);
   }
 #endif  // defined(OS_LINUX)
-  return true;
+  return update_client::CrxInstaller::Result(update_client::InstallError::NONE);
 }
 
 void FlashComponentInstallerTraits::ComponentReady(

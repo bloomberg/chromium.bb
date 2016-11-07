@@ -82,9 +82,10 @@ class FakeInstallerTraits : public ComponentInstallerTraits {
 
   bool RequiresNetworkEncryption() const override { return true; }
 
-  bool OnCustomInstall(const base::DictionaryValue& manifest,
-                       const base::FilePath& install_dir) override {
-    return true;
+  update_client::CrxInstaller::Result OnCustomInstall(
+      const base::DictionaryValue& manifest,
+      const base::FilePath& install_dir) override {
+    return update_client::CrxInstaller::Result(0);
   }
 
   void ComponentReady(
