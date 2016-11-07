@@ -10,7 +10,6 @@
 
 #include "base/logging.h"
 #include "base/memory/ptr_util.h"
-#include "base/message_loop/message_loop.h"
 #include "components/sync/driver/change_processor.h"
 #include "components/sync/driver/sync_client.h"
 #include "components/sync/syncable/user_share.h"
@@ -312,63 +311,21 @@ bool SyncBackendRegistrar::IsOnThreadForGroup(ModelType type,
 }
 
 SyncBackendRegistrar::~SyncBackendRegistrar() {
-  DCHECK(workers_.empty());
-}
-
-void SyncBackendRegistrar::OnWorkerLoopDestroyed(ModelSafeGroup group) {
-  RemoveWorker(group);
+  // All data types should have been deactivated by now.
+  DCHECK(processors_.empty());
 }
 
 void SyncBackendRegistrar::MaybeAddWorker(ModelSafeGroup group) {
   const scoped_refptr<ModelSafeWorker> worker =
-      sync_client_->CreateModelWorkerForGroup(group, this);
+      sync_client_->CreateModelWorkerForGroup(group);
   if (worker) {
     DCHECK(workers_.find(group) == workers_.end());
     workers_[group] = worker;
-    workers_[group]->RegisterForLoopDestruction();
-  }
-}
-
-void SyncBackendRegistrar::OnWorkerUnregistrationDone(ModelSafeGroup group) {
-  RemoveWorker(group);
-}
-
-void SyncBackendRegistrar::RemoveWorker(ModelSafeGroup group) {
-  DVLOG(1) << "Remove " << ModelSafeGroupToString(group) << " worker.";
-
-  bool last_worker = false;
-  {
-    base::AutoLock al(lock_);
-    WorkerMap::iterator it = workers_.find(group);
-    CHECK(it != workers_.end());
-    stopped_workers_.push_back(it->second);
-    workers_.erase(it);
-    last_worker = workers_.empty();
-  }
-
-  if (last_worker) {
-    // Self-destruction after last worker.
-    DVLOG(1) << "Destroy registrar on loop of "
-             << ModelSafeGroupToString(group);
-    delete this;
   }
 }
 
 std::unique_ptr<base::Thread> SyncBackendRegistrar::ReleaseSyncThread() {
   return std::move(sync_thread_);
-}
-
-void SyncBackendRegistrar::Shutdown() {
-  // All data types should have been deactivated by now.
-  DCHECK(processors_.empty());
-
-  // Unregister worker from observing loop destruction.
-  base::AutoLock al(lock_);
-  for (WorkerMap::iterator it = workers_.begin(); it != workers_.end(); ++it) {
-    it->second->UnregisterForLoopDestruction(
-        base::Bind(&SyncBackendRegistrar::OnWorkerUnregistrationDone,
-                   base::Unretained(this)));
-  }
 }
 
 base::Thread* SyncBackendRegistrar::sync_thread() {

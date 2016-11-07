@@ -4,9 +4,7 @@
 
 #include "components/sync/engine/model_safe_worker.h"
 
-#include "base/bind.h"
 #include "base/json/json_writer.h"
-#include "base/threading/thread_task_runner_handle.h"
 #include "base/values.h"
 
 namespace syncer {
@@ -71,116 +69,24 @@ std::string ModelSafeGroupToString(ModelSafeGroup group) {
   }
 }
 
-ModelSafeWorker::ModelSafeWorker(WorkerLoopDestructionObserver* observer)
-    : stopped_(false),
-      observer_(observer) {}
-
+ModelSafeWorker::ModelSafeWorker() {}
 ModelSafeWorker::~ModelSafeWorker() {}
 
 void ModelSafeWorker::RequestStop() {
-  base::AutoLock al(stopped_lock_);
-
   // Set stop flag. This prevents any *further* tasks from being posted to
   // worker threads (see DoWorkAndWaitUntilDone below), but note that one may
   // already be posted.
-  stopped_ = true;
+  stopped_.Set();
 }
 
 SyncerError ModelSafeWorker::DoWorkAndWaitUntilDone(const WorkCallback& work) {
-  {
-    base::AutoLock al(stopped_lock_);
-    if (stopped_)
-      return CANNOT_DO_WORK;
-  }
-
+  if (stopped_.IsSet())
+    return CANNOT_DO_WORK;
   return DoWorkAndWaitUntilDoneImpl(work);
 }
 
 bool ModelSafeWorker::IsStopped() {
-  base::AutoLock al(stopped_lock_);
-  return stopped_;
-}
-
-void ModelSafeWorker::WillDestroyCurrentMessageLoop() {
-  {
-    base::AutoLock al(stopped_lock_);
-    stopped_ = true;
-
-    DVLOG(1) << ModelSafeGroupToString(GetModelSafeGroup())
-             << " worker stops on destruction of its working thread.";
-  }
-
-  {
-    base::AutoLock l(working_task_runner_lock_);
-    working_task_runner_ = nullptr;
-  }
-
-  if (observer_)
-    observer_->OnWorkerLoopDestroyed(GetModelSafeGroup());
-}
-
-void ModelSafeWorker::SetWorkingLoopToCurrent() {
-  base::Callback<void(ModelSafeGroup)> unregister_done_callback;
-
-  {
-    base::AutoLock l(working_task_runner_lock_);
-    DCHECK(!working_task_runner_);
-
-    if (unregister_done_callback_.is_null()) {
-      // Expected case - UnregisterForLoopDestruction hasn't been called yet.
-      base::MessageLoop::current()->AddDestructionObserver(this);
-      working_task_runner_ = base::ThreadTaskRunnerHandle::Get();
-    } else {
-      // Rare case which is possible when the model type thread remains
-      // blocked for the entire session and UnregisterForLoopDestruction ends
-      // up being called before this method. This method is posted unlike
-      // UnregisterForLoopDestruction - that's why they can end up being called
-      // out of order.
-      // In this case we skip the destruction observer registration
-      // and just invoke the callback stored at UnregisterForLoopDestruction.
-      DCHECK(stopped_);
-      unregister_done_callback = unregister_done_callback_;
-      unregister_done_callback_.Reset();
-    }
-  }
-
-  if (!unregister_done_callback.is_null()) {
-    unregister_done_callback.Run(GetModelSafeGroup());
-  }
-}
-
-void ModelSafeWorker::UnregisterForLoopDestruction(
-    base::Callback<void(ModelSafeGroup)> unregister_done_callback) {
-  base::AutoLock l(working_task_runner_lock_);
-  if (working_task_runner_) {
-    // Normal case - observer registration has been already done.
-    // Delegate to the sync thread to do the actual unregistration in
-    // UnregisterForLoopDestructionAsync.
-    DCHECK(!working_task_runner_->BelongsToCurrentThread());
-    working_task_runner_->PostTask(
-        FROM_HERE,
-        base::Bind(&ModelSafeWorker::UnregisterForLoopDestructionAsync, this,
-                   unregister_done_callback));
-  } else {
-    // The working loop is still unknown, probably because the model type
-    // thread is blocked. Store the callback to be called from
-    // SetWorkingLoopToCurrent.
-    unregister_done_callback_ = unregister_done_callback;
-  }
-}
-
-void ModelSafeWorker::UnregisterForLoopDestructionAsync(
-    base::Callback<void(ModelSafeGroup)> unregister_done_callback) {
-  {
-    base::AutoLock l(working_task_runner_lock_);
-    if (!working_task_runner_)
-      return;
-    DCHECK(working_task_runner_->BelongsToCurrentThread());
-  }
-
-  DCHECK(stopped_);
-  base::MessageLoop::current()->RemoveDestructionObserver(this);
-  unregister_done_callback.Run(GetModelSafeGroup());
+  return stopped_.IsSet();
 }
 
 }  // namespace syncer

@@ -100,8 +100,7 @@ base::WeakPtr<ModelTypeSyncBridge> FakeSyncClient::GetSyncBridgeForModelType(
 }
 
 scoped_refptr<ModelSafeWorker> FakeSyncClient::CreateModelWorkerForGroup(
-    ModelSafeGroup group,
-    WorkerLoopDestructionObserver* observer) {
+    ModelSafeGroup group) {
   return scoped_refptr<ModelSafeWorker>();
 }
 

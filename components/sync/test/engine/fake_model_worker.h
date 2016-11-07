@@ -5,9 +5,6 @@
 #ifndef COMPONENTS_SYNC_TEST_ENGINE_FAKE_MODEL_WORKER_H_
 #define COMPONENTS_SYNC_TEST_ENGINE_FAKE_MODEL_WORKER_H_
 
-#include <vector>
-
-#include "base/compiler_specific.h"
 #include "base/macros.h"
 #include "base/threading/non_thread_safe.h"
 #include "components/sync/base/syncer_error.h"
@@ -22,7 +19,6 @@ class FakeModelWorker : public ModelSafeWorker, public base::NonThreadSafe {
   explicit FakeModelWorker(ModelSafeGroup group);
 
   // ModelSafeWorker implementation.
-  void RegisterForLoopDestruction() override;
   ModelSafeGroup GetModelSafeGroup() override;
 
  protected:

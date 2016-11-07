@@ -142,11 +142,10 @@ class FakeSyncManagerFactory : public SyncManagerFactory {
 class BackendSyncClient : public FakeSyncClient {
  public:
   scoped_refptr<ModelSafeWorker> CreateModelWorkerForGroup(
-      ModelSafeGroup group,
-      WorkerLoopDestructionObserver* observer) override {
+      ModelSafeGroup group) override {
     switch (group) {
       case GROUP_PASSIVE:
-        return new PassiveModelWorker(observer);
+        return new PassiveModelWorker();
       default:
         return nullptr;
     }

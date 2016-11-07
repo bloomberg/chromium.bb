@@ -119,14 +119,8 @@ class SyncBackendHost : public BackendDataTypeConfigurer {
   // Called on |frontend_loop_| to kick off shutdown.
   // See the implementation and Core::DoShutdown for details.
   // Must be called *after* StopSyncingForShutdown.
-  // For any reason other than BROWSER_SHUTDOWN, caller should claim sync
-  // thread because:
-  // * during browser shutdown sync thread is not claimed to avoid blocking
-  //   browser shutdown on sync shutdown.
-  // * otherwise sync thread is claimed so that if sync backend is recreated
-  //   later, initialization of new backend is serialized on previous sync
-  //   thread after cleanup of previous backend to avoid old/new backends
-  //   interfere with each other.
+  // Transfers ownership of the sync thread to the caller which may reuse it
+  // with a different SyncBackendHost or join it immediately.
   virtual std::unique_ptr<base::Thread> Shutdown(ShutdownReason reason) = 0;
 
   // Removes all current registrations from the backend on the

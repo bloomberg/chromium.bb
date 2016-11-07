@@ -9,6 +9,7 @@
 #include "base/memory/ptr_util.h"
 #include "components/bookmarks/browser/bookmark_model.h"
 #include "components/history/core/browser/history_model_worker.h"
+#include "components/history/core/browser/history_service.h"
 #include "components/pref_registry/pref_registry_syncable.h"
 #include "components/signin/core/browser/signin_manager_base.h"
 #include "components/sync/base/sync_prefs.h"
@@ -47,8 +48,7 @@ class BundleSyncClient : public syncer::FakeSyncClient {
       syncer::ModelType type) override;
   syncer::SyncService* GetSyncService() override;
   scoped_refptr<syncer::ModelSafeWorker> CreateModelWorkerForGroup(
-      syncer::ModelSafeGroup group,
-      syncer::WorkerLoopDestructionObserver* observer) override;
+      syncer::ModelSafeGroup group) override;
   history::HistoryService* GetHistoryService() override;
   bookmarks::BookmarkModel* GetBookmarkModel() override;
 
@@ -122,31 +122,26 @@ syncer::SyncService* BundleSyncClient::GetSyncService() {
 }
 
 scoped_refptr<syncer::ModelSafeWorker>
-BundleSyncClient::CreateModelWorkerForGroup(
-    syncer::ModelSafeGroup group,
-    syncer::WorkerLoopDestructionObserver* observer) {
+BundleSyncClient::CreateModelWorkerForGroup(syncer::ModelSafeGroup group) {
   if (!db_thread_)
-    return FakeSyncClient::CreateModelWorkerForGroup(group, observer);
+    return FakeSyncClient::CreateModelWorkerForGroup(group);
   DCHECK(file_thread_) << "DB thread was specified but FILE thread was not.";
   switch (group) {
     case syncer::GROUP_DB:
-      return new syncer::BrowserThreadModelWorker(db_thread_, syncer::GROUP_DB,
-                                                  observer);
+      return new syncer::BrowserThreadModelWorker(db_thread_, syncer::GROUP_DB);
     case syncer::GROUP_FILE:
       return new syncer::BrowserThreadModelWorker(file_thread_,
-                                                  syncer::GROUP_FILE, observer);
+                                                  syncer::GROUP_FILE);
     case syncer::GROUP_UI:
-      return new syncer::UIModelWorker(base::ThreadTaskRunnerHandle::Get(),
-                                       observer);
+      return new syncer::UIModelWorker(base::ThreadTaskRunnerHandle::Get());
     case syncer::GROUP_PASSIVE:
-      return new syncer::PassiveModelWorker(observer);
+      return new syncer::PassiveModelWorker();
     case syncer::GROUP_HISTORY: {
       history::HistoryService* history_service = GetHistoryService();
       if (!history_service)
         return nullptr;
       return new HistoryModelWorker(history_service->AsWeakPtr(),
-                                    base::ThreadTaskRunnerHandle::Get(),
-                                    observer);
+                                    base::ThreadTaskRunnerHandle::Get());
     }
     default:
       return nullptr;

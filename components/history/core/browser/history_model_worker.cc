@@ -6,9 +6,9 @@
 
 #include <utility>
 
-#include "base/memory/ref_counted.h"
-#include "base/message_loop/message_loop.h"
 #include "base/synchronization/waitable_event.h"
+#include "components/history/core/browser/history_db_task.h"
+#include "components/history/core/browser/history_service.h"
 #include "components/sync/base/scoped_event_signal.h"
 
 namespace browser_sync {
@@ -92,26 +92,11 @@ void PostWorkerTask(
 
 HistoryModelWorker::HistoryModelWorker(
     const base::WeakPtr<history::HistoryService>& history_service,
-    const scoped_refptr<base::SingleThreadTaskRunner>& ui_thread,
-    syncer::WorkerLoopDestructionObserver* observer)
-    : syncer::ModelSafeWorker(observer),
-      history_service_(history_service),
-      ui_thread_(ui_thread) {
+    const scoped_refptr<base::SingleThreadTaskRunner>& ui_thread)
+    : history_service_(history_service), ui_thread_(ui_thread) {
   CHECK(history_service.get());
   DCHECK(ui_thread_->BelongsToCurrentThread());
   cancelable_tracker_.reset(new base::CancelableTaskTracker);
-}
-
-void HistoryModelWorker::RegisterForLoopDestruction() {
-  CHECK(history_service_.get());
-  history_service_->ScheduleDBTask(
-      std::unique_ptr<history::HistoryDBTask>(new AddDBThreadObserverTask(
-          base::Bind(&HistoryModelWorker::RegisterOnDBThread, this))),
-      cancelable_tracker_.get());
-}
-
-void HistoryModelWorker::RegisterOnDBThread() {
-  SetWorkingLoopToCurrent();
 }
 
 syncer::SyncerError HistoryModelWorker::DoWorkAndWaitUntilDoneImpl(

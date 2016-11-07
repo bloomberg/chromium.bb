@@ -68,8 +68,7 @@ class SyncBrowserThreadModelWorkerTest : public testing::Test {
  protected:
   void SetUp() override {
     db_thread_.Start();
-    worker_ = new BrowserThreadModelWorker(db_thread_.task_runner(), GROUP_DB,
-                                           nullptr);
+    worker_ = new BrowserThreadModelWorker(db_thread_.task_runner(), GROUP_DB);
   }
 
   virtual void Teardown() {

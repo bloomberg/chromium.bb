@@ -5,7 +5,6 @@
 #ifndef COMPONENTS_SYNC_ENGINE_PASSIVE_MODEL_WORKER_H_
 #define COMPONENTS_SYNC_ENGINE_PASSIVE_MODEL_WORKER_H_
 
-#include "base/compiler_specific.h"
 #include "base/macros.h"
 #include "components/sync/base/syncer_error.h"
 #include "components/sync/engine/model_safe_worker.h"
@@ -17,10 +16,9 @@ namespace syncer {
 // thread).
 class PassiveModelWorker : public ModelSafeWorker {
  public:
-  explicit PassiveModelWorker(WorkerLoopDestructionObserver* observer);
+  PassiveModelWorker();
 
   // ModelSafeWorker implementation. Called on the sync thread.
-  void RegisterForLoopDestruction() override;
   ModelSafeGroup GetModelSafeGroup() override;
 
  protected:

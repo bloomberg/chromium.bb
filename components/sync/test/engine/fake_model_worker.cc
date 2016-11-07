@@ -4,10 +4,11 @@
 
 #include "components/sync/test/engine/fake_model_worker.h"
 
+#include "base/callback.h"
+
 namespace syncer {
 
-FakeModelWorker::FakeModelWorker(ModelSafeGroup group)
-    : ModelSafeWorker(nullptr), group_(group) {}
+FakeModelWorker::FakeModelWorker(ModelSafeGroup group) : group_(group) {}
 
 FakeModelWorker::~FakeModelWorker() {
   // We may need to relax this is FakeModelWorker is used in a
@@ -15,10 +16,6 @@ FakeModelWorker::~FakeModelWorker() {
   // RefCountedThreadSafe, they could theoretically be destroyed from
   // a different thread.
   DCHECK(CalledOnValidThread());
-}
-
-void FakeModelWorker::RegisterForLoopDestruction() {
-  NOTREACHED();
 }
 
 SyncerError FakeModelWorker::DoWorkAndWaitUntilDoneImpl(

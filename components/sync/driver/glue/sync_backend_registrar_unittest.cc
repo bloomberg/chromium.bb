@@ -4,6 +4,8 @@
 
 #include "components/sync/driver/glue/sync_backend_registrar.h"
 
+#include <memory>
+
 #include "base/location.h"
 #include "base/memory/ptr_util.h"
 #include "base/run_loop.h"
@@ -42,17 +44,16 @@ class RegistrarSyncClient : public FakeSyncClient {
         file_task_runner_(file_task_runner) {}
 
   scoped_refptr<ModelSafeWorker> CreateModelWorkerForGroup(
-      ModelSafeGroup group,
-      WorkerLoopDestructionObserver* observer) override {
+      ModelSafeGroup group) override {
     switch (group) {
       case GROUP_UI:
-        return new BrowserThreadModelWorker(ui_task_runner_, group, observer);
+        return new BrowserThreadModelWorker(ui_task_runner_, group);
       case GROUP_DB:
-        return new BrowserThreadModelWorker(db_task_runner_, group, observer);
+        return new BrowserThreadModelWorker(db_task_runner_, group);
       case GROUP_FILE:
-        return new BrowserThreadModelWorker(file_task_runner_, group, observer);
+        return new BrowserThreadModelWorker(file_task_runner_, group);
       case GROUP_PASSIVE:
-        return new PassiveModelWorker(observer);
+        return new PassiveModelWorker();
       default:
         return nullptr;
     }
@@ -79,9 +80,7 @@ class SyncBackendRegistrarTest : public testing::Test {
 
  protected:
   SyncBackendRegistrarTest()
-      : db_thread_("DBThreadForTest"),
-        file_thread_("FileThreadForTest"),
-        sync_thread_(nullptr) {}
+      : db_thread_("DBThreadForTest"), file_thread_("FileThreadForTest") {}
 
   ~SyncBackendRegistrarTest() override {}
 
@@ -94,16 +93,18 @@ class SyncBackendRegistrarTest : public testing::Test {
     registrar_ = base::MakeUnique<SyncBackendRegistrar>(
         "test", sync_client_.get(), std::unique_ptr<base::Thread>(),
         ui_task_runner(), db_task_runner(), file_task_runner());
-    sync_thread_ = registrar_->sync_thread();
   }
 
   void TearDown() override {
     registrar_->RequestWorkerStopOnUIThread();
     test_user_share_.TearDown();
-    sync_thread_->task_runner()->PostTask(
-        FROM_HERE, base::Bind(&SyncBackendRegistrar::Shutdown,
-                              base::Unretained(registrar_.release())));
-    sync_thread_->WaitUntilThreadStarted();
+    {
+      std::unique_ptr<base::Thread> released_sync_thread =
+          registrar_->ReleaseSyncThread();
+      released_sync_thread->task_runner()->DeleteSoon(FROM_HERE,
+                                                      registrar_.release());
+      // |released_sync_thread| is joined at the end of this scope.
+    }
     base::RunLoop().RunUntilIdle();
   }
 
@@ -148,8 +149,6 @@ class SyncBackendRegistrarTest : public testing::Test {
   TestUserShare test_user_share_;
   std::unique_ptr<RegistrarSyncClient> sync_client_;
   std::unique_ptr<SyncBackendRegistrar> registrar_;
-
-  base::Thread* sync_thread_;
 };
 
 TEST_F(SyncBackendRegistrarTest, ConstructorEmpty) {
@@ -302,130 +301,6 @@ TEST_F(SyncBackendRegistrarTest, ConfigureNonBlockingDataType) {
   EXPECT_EQ(types_to_add, registrar_->GetLastConfiguredTypes());
   ExpectRoutingInfo(registrar_.get(), {{AUTOFILL, GROUP_NON_BLOCKING},
                                        {BOOKMARKS, GROUP_NON_BLOCKING}});
-}
-
-class SyncBackendRegistrarShutdownTest : public testing::Test {
- public:
-  void BlockDBThread() {
-    EXPECT_FALSE(db_thread_lock_.Try());
-
-    db_thread_blocked_.Signal();
-    base::AutoLock l(db_thread_lock_);
-  }
-
- protected:
-  friend class TestRegistrar;
-
-  SyncBackendRegistrarShutdownTest()
-      : db_thread_("DBThreadForTest"),
-        file_thread_("FileThreadForTest"),
-        db_thread_blocked_(base::WaitableEvent::ResetPolicy::AUTOMATIC,
-                           base::WaitableEvent::InitialState::NOT_SIGNALED) {
-    quit_closure_ = run_loop_.QuitClosure();
-  }
-
-  ~SyncBackendRegistrarShutdownTest() override {}
-
-  void SetUp() override {
-    db_thread_.StartAndWaitForTesting();
-    file_thread_.StartAndWaitForTesting();
-    sync_client_ = base::MakeUnique<RegistrarSyncClient>(
-        ui_task_runner(), db_task_runner(), file_task_runner());
-  }
-
-  void PostQuitOnUIMessageLoop() {
-    ui_task_runner()->PostTask(FROM_HERE, quit_closure_);
-  }
-
-  const scoped_refptr<base::SingleThreadTaskRunner> ui_task_runner() {
-    return message_loop_.task_runner();
-  }
-
-  const scoped_refptr<base::SingleThreadTaskRunner> db_task_runner() {
-    return db_thread_.task_runner();
-  }
-
-  const scoped_refptr<base::SingleThreadTaskRunner> file_task_runner() {
-    return file_thread_.task_runner();
-  }
-
-  base::MessageLoop message_loop_;
-  base::Thread db_thread_;
-  base::Thread file_thread_;
-
-  std::unique_ptr<RegistrarSyncClient> sync_client_;
-  base::WaitableEvent db_thread_blocked_;
-
-  base::Lock db_thread_lock_;
-  base::RunLoop run_loop_;
-  base::Closure quit_closure_;
-};
-
-// Wrap SyncBackendRegistrar so that we can monitor its lifetime.
-class TestRegistrar : public SyncBackendRegistrar {
- public:
-  explicit TestRegistrar(
-      SyncClient* sync_client,
-      const scoped_refptr<base::SingleThreadTaskRunner>& ui_thread,
-      const scoped_refptr<base::SingleThreadTaskRunner>& db_thread,
-      const scoped_refptr<base::SingleThreadTaskRunner>& file_thread,
-      SyncBackendRegistrarShutdownTest* test)
-      : SyncBackendRegistrar("test",
-                             sync_client,
-                             std::unique_ptr<base::Thread>(),
-                             ui_thread,
-                             db_thread,
-                             file_thread),
-        test_(test) {}
-
-  ~TestRegistrar() override { test_->PostQuitOnUIMessageLoop(); }
-
- private:
-  SyncBackendRegistrarShutdownTest* test_;
-};
-
-TEST_F(SyncBackendRegistrarShutdownTest, BlockingShutdown) {
-  // Take ownership of |db_thread_lock_| so that the DB thread can't acquire it.
-  db_thread_lock_.Acquire();
-
-  // This will block the DB thread by waiting on |db_thread_lock_|.
-  db_task_runner()->PostTask(
-      FROM_HERE, base::Bind(&SyncBackendRegistrarShutdownTest::BlockDBThread,
-                            base::Unretained(this)));
-
-  std::unique_ptr<TestRegistrar> registrar(
-      new TestRegistrar(sync_client_.get(), ui_task_runner(), db_task_runner(),
-                        file_task_runner(), this));
-  base::Thread* sync_thread = registrar->sync_thread();
-
-  // Stop here until the DB thread gets a chance to run and block on the lock.
-  // Please note that since the task above didn't finish, the task to
-  // initialize the worker on the DB thread hasn't had a chance to run yet too.
-  // Which means ModelSafeWorker::SetWorkingLoopToCurrent hasn't been called
-  // for the DB worker.
-  db_thread_blocked_.Wait();
-
-  registrar->SetInitialTypes(ModelTypeSet());
-
-  // Start the shutdown.
-  registrar->RequestWorkerStopOnUIThread();
-
-  sync_thread->task_runner()->PostTask(
-      FROM_HERE, base::Bind(&SyncBackendRegistrar::Shutdown,
-                            base::Unretained(registrar.release())));
-
-  // Make sure the thread starts running.
-  sync_thread->WaitUntilThreadStarted();
-
-  // The test verifies that the sync thread doesn't block because
-  // of the blocked DB thread and can finish the shutdown.
-  base::RunLoop().RunUntilIdle();
-
-  db_thread_lock_.Release();
-
-  // Run the main thread loop until all workers have been removed and the
-  // registrar destroyed.
-  run_loop_.Run();
 }
 
 }  // namespace

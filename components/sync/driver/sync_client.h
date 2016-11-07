@@ -104,8 +104,7 @@ class SyncClient {
   // cannot be created.
   // TODO(maxbogue): Move this inside SyncApiComponentFactory.
   virtual scoped_refptr<ModelSafeWorker> CreateModelWorkerForGroup(
-      ModelSafeGroup group,
-      WorkerLoopDestructionObserver* observer) = 0;
+      ModelSafeGroup group) = 0;
 
   // Returns the current SyncApiComponentFactory instance.
   virtual SyncApiComponentFactory* GetSyncApiComponentFactory() = 0;

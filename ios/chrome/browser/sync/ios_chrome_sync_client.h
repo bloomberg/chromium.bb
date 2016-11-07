@@ -55,8 +55,7 @@ class IOSChromeSyncClient : public syncer::SyncClient {
   base::WeakPtr<syncer::ModelTypeSyncBridge> GetSyncBridgeForModelType(
       syncer::ModelType type) override;
   scoped_refptr<syncer::ModelSafeWorker> CreateModelWorkerForGroup(
-      syncer::ModelSafeGroup group,
-      syncer::WorkerLoopDestructionObserver* observer) override;
+      syncer::ModelSafeGroup group) override;
   syncer::SyncApiComponentFactory* GetSyncApiComponentFactory() override;
 
   void SetSyncApiComponentFactoryForTesting(

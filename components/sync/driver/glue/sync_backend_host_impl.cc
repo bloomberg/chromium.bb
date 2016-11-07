@@ -6,6 +6,7 @@
 
 #include <utility>
 
+#include "base/bind.h"
 #include "base/command_line.h"
 #include "base/feature_list.h"
 #include "base/location.h"
@@ -244,8 +245,6 @@ std::unique_ptr<base::Thread> SyncBackendHostImpl::Shutdown(
   DCHECK(!frontend_);
   DCHECK(registrar_->sync_thread()->IsRunning());
 
-  bool sync_thread_claimed = (reason != BROWSER_SHUTDOWN);
-
   if (invalidation_handler_registered_) {
     if (reason == DISABLE_SYNC) {
       UnregisterInvalidationIds();
@@ -257,22 +256,21 @@ std::unique_ptr<base::Thread> SyncBackendHostImpl::Shutdown(
 
   model_type_connector_.reset();
 
-  // Shut down and destroy sync manager.
+  // Shut down and destroy SyncManager. SyncManager holds a pointer to
+  // |registrar_| so its destruction must be sequenced before the destruction of
+  // |registrar_|.
   registrar_->sync_thread()->task_runner()->PostTask(
       FROM_HERE,
       base::Bind(&SyncBackendHostCore::DoShutdown, core_, reason));
   core_ = nullptr;
 
-  // Worker cleanup.
-  SyncBackendRegistrar* detached_registrar = registrar_.release();
-  detached_registrar->sync_thread()->task_runner()->PostTask(
-      FROM_HERE, base::Bind(&SyncBackendRegistrar::Shutdown,
-                            base::Unretained(detached_registrar)));
+  // Destroy |registrar_|.
+  std::unique_ptr<base::Thread> released_sync_thread =
+      registrar_->ReleaseSyncThread();
+  released_sync_thread->task_runner()->DeleteSoon(FROM_HERE,
+                                                  registrar_.release());
 
-  if (sync_thread_claimed)
-    return detached_registrar->ReleaseSyncThread();
-  else
-    return std::unique_ptr<base::Thread>();
+  return released_sync_thread;
 }
 
 void SyncBackendHostImpl::UnregisterInvalidationIds() {

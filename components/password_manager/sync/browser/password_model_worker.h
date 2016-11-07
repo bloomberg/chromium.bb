@@ -5,8 +5,6 @@
 #ifndef COMPONENTS_PASSWORD_MANAGER_SYNC_BROWSER_PASSWORD_MODEL_WORKER_H_
 #define COMPONENTS_PASSWORD_MANAGER_SYNC_BROWSER_PASSWORD_MODEL_WORKER_H_
 
-#include "base/callback_forward.h"
-#include "base/compiler_specific.h"
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
 #include "components/sync/engine/model_safe_worker.h"
@@ -23,11 +21,9 @@ namespace browser_sync {
 class PasswordModelWorker : public syncer::ModelSafeWorker {
  public:
   PasswordModelWorker(
-      const scoped_refptr<password_manager::PasswordStore>& password_store,
-      syncer::WorkerLoopDestructionObserver* observer);
+      const scoped_refptr<password_manager::PasswordStore>& password_store);
 
   // syncer::ModelSafeWorker implementation. Called on syncapi SyncerThread.
-  void RegisterForLoopDestruction() override;
   syncer::ModelSafeGroup GetModelSafeGroup() override;
   void RequestStop() override;
 
@@ -37,10 +33,6 @@ class PasswordModelWorker : public syncer::ModelSafeWorker {
 
  private:
   ~PasswordModelWorker() override;
-
-  // Called on password thread to add PasswordModelWorker as destruction
-  // observer.
-  void RegisterForPasswordLoopDestruction();
 
   // |password_store_| is used on password thread but released on UI thread.
   // Protected by |password_store_lock_|.

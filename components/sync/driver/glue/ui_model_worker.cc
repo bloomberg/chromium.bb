@@ -4,12 +4,12 @@
 
 #include "components/sync/driver/glue/ui_model_worker.h"
 
+#include <utility>
+
 #include "base/bind.h"
 #include "base/bind_helpers.h"
-#include "base/message_loop/message_loop.h"
+#include "base/callback.h"
 #include "base/synchronization/waitable_event.h"
-#include "base/third_party/dynamic_annotations/dynamic_annotations.h"
-#include "base/threading/thread_restrictions.h"
 #include "components/sync/base/scoped_event_signal.h"
 
 namespace syncer {
@@ -26,14 +26,8 @@ void CallDoWorkAndSignalEvent(const WorkCallback& work,
 }  // namespace
 
 UIModelWorker::UIModelWorker(
-    const scoped_refptr<base::SingleThreadTaskRunner>& ui_thread,
-    WorkerLoopDestructionObserver* observer)
-    : ModelSafeWorker(observer), ui_thread_(ui_thread) {}
-
-void UIModelWorker::RegisterForLoopDestruction() {
-  CHECK(ui_thread_->BelongsToCurrentThread());
-  SetWorkingLoopToCurrent();
-}
+    scoped_refptr<base::SingleThreadTaskRunner> ui_thread)
+    : ui_thread_(std::move(ui_thread)) {}
 
 SyncerError UIModelWorker::DoWorkAndWaitUntilDoneImpl(
     const WorkCallback& work) {

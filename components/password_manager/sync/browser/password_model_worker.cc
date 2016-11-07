@@ -5,7 +5,7 @@
 #include "components/password_manager/sync/browser/password_model_worker.h"
 
 #include "base/bind.h"
-#include "base/memory/ref_counted.h"
+#include "base/callback.h"
 #include "base/synchronization/waitable_event.h"
 #include "components/password_manager/core/browser/password_store.h"
 #include "components/sync/base/scoped_event_signal.h"
@@ -24,16 +24,9 @@ void CallDoWorkAndSignalEvent(const syncer::WorkCallback& work,
 }  // namespace
 
 PasswordModelWorker::PasswordModelWorker(
-    const scoped_refptr<password_manager::PasswordStore>& password_store,
-    syncer::WorkerLoopDestructionObserver* observer)
-    : syncer::ModelSafeWorker(observer), password_store_(password_store) {
+    const scoped_refptr<password_manager::PasswordStore>& password_store)
+    : password_store_(password_store) {
   DCHECK(password_store.get());
-}
-
-void PasswordModelWorker::RegisterForLoopDestruction() {
-  base::AutoLock lock(password_store_lock_);
-  password_store_->ScheduleTask(base::Bind(
-      &PasswordModelWorker::RegisterForPasswordLoopDestruction, this));
 }
 
 syncer::SyncerError PasswordModelWorker::DoWorkAndWaitUntilDoneImpl(
@@ -70,10 +63,6 @@ syncer::ModelSafeGroup PasswordModelWorker::GetModelSafeGroup() {
 }
 
 PasswordModelWorker::~PasswordModelWorker() {}
-
-void PasswordModelWorker::RegisterForPasswordLoopDestruction() {
-  SetWorkingLoopToCurrent();
-}
 
 void PasswordModelWorker::RequestStop() {
   ModelSafeWorker::RequestStop();

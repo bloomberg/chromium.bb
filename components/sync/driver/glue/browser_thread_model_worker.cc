@@ -5,6 +5,7 @@
 #include "components/sync/driver/glue/browser_thread_model_worker.h"
 
 #include "base/bind.h"
+#include "base/callback.h"
 #include "base/single_thread_task_runner.h"
 #include "base/synchronization/waitable_event.h"
 
@@ -14,9 +15,8 @@ namespace syncer {
 
 BrowserThreadModelWorker::BrowserThreadModelWorker(
     const scoped_refptr<SingleThreadTaskRunner>& runner,
-    ModelSafeGroup group,
-    WorkerLoopDestructionObserver* observer)
-    : ModelSafeWorker(observer), runner_(runner), group_(group) {}
+    ModelSafeGroup group)
+    : runner_(runner), group_(group) {}
 
 SyncerError BrowserThreadModelWorker::DoWorkAndWaitUntilDoneImpl(
     const WorkCallback& work) {
@@ -51,16 +51,6 @@ ModelSafeGroup BrowserThreadModelWorker::GetModelSafeGroup() {
 }
 
 BrowserThreadModelWorker::~BrowserThreadModelWorker() {}
-
-void BrowserThreadModelWorker::RegisterForLoopDestruction() {
-  if (runner_->BelongsToCurrentThread()) {
-    SetWorkingLoopToCurrent();
-  } else {
-    runner_->PostTask(
-        FROM_HERE,
-        Bind(&BrowserThreadModelWorker::RegisterForLoopDestruction, this));
-  }
-}
 
 void BrowserThreadModelWorker::CallDoWorkAndSignalTask(
     const WorkCallback& work,

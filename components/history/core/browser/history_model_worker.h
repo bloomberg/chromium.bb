@@ -5,14 +5,13 @@
 #ifndef COMPONENTS_HISTORY_CORE_BROWSER_HISTORY_MODEL_WORKER_H_
 #define COMPONENTS_HISTORY_CORE_BROWSER_HISTORY_MODEL_WORKER_H_
 
-#include "base/callback_forward.h"
-#include "base/compiler_specific.h"
+#include <memory>
+
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
 #include "base/memory/weak_ptr.h"
+#include "base/single_thread_task_runner.h"
 #include "base/task/cancelable_task_tracker.h"
-#include "components/history/core/browser/history_db_task.h"
-#include "components/history/core/browser/history_service.h"
 #include "components/sync/engine/model_safe_worker.h"
 
 namespace history {
@@ -27,16 +26,10 @@ class HistoryModelWorker : public syncer::ModelSafeWorker {
  public:
   explicit HistoryModelWorker(
       const base::WeakPtr<history::HistoryService>& history_service,
-      const scoped_refptr<base::SingleThreadTaskRunner>& ui_thread,
-      syncer::WorkerLoopDestructionObserver* observer);
+      const scoped_refptr<base::SingleThreadTaskRunner>& ui_thread);
 
   // syncer::ModelSafeWorker implementation. Called on syncapi SyncerThread.
-  void RegisterForLoopDestruction() override;
   syncer::ModelSafeGroup GetModelSafeGroup() override;
-
-  // Called on history DB thread to register HistoryModelWorker to observe
-  // destruction of history backend loop.
-  void RegisterOnDBThread();
 
  protected:
   syncer::SyncerError DoWorkAndWaitUntilDoneImpl(

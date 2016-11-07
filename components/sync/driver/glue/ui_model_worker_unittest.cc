@@ -36,7 +36,7 @@ class SyncUIModelWorkerTest : public testing::Test {
  public:
   SyncUIModelWorkerTest() : sync_thread_("SyncThreadForTest") {
     sync_thread_.Start();
-    worker_ = new UIModelWorker(base::ThreadTaskRunnerHandle::Get(), nullptr);
+    worker_ = new UIModelWorker(base::ThreadTaskRunnerHandle::Get());
   }
 
   void PostWorkToSyncThread(WorkCallback work) {

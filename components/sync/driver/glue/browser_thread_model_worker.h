@@ -5,17 +5,12 @@
 #ifndef COMPONENTS_SYNC_DRIVER_GLUE_BROWSER_THREAD_MODEL_WORKER_H_
 #define COMPONENTS_SYNC_DRIVER_GLUE_BROWSER_THREAD_MODEL_WORKER_H_
 
-#include "base/callback_forward.h"
-#include "base/compiler_specific.h"
 #include "base/macros.h"
+#include "base/memory/ref_counted.h"
+#include "base/single_thread_task_runner.h"
 #include "components/sync/base/scoped_event_signal.h"
 #include "components/sync/base/syncer_error.h"
 #include "components/sync/engine/model_safe_worker.h"
-
-namespace base {
-class SingleThreadTaskRunner;
-class WaitableEvent;
-}  // namespace base
 
 namespace syncer {
 
@@ -27,11 +22,9 @@ class BrowserThreadModelWorker : public ModelSafeWorker {
  public:
   BrowserThreadModelWorker(
       const scoped_refptr<base::SingleThreadTaskRunner>& runner,
-      ModelSafeGroup group,
-      WorkerLoopDestructionObserver* observer);
+      ModelSafeGroup group);
 
   // ModelSafeWorker implementation. Called on the sync thread.
-  void RegisterForLoopDestruction() override;
   ModelSafeGroup GetModelSafeGroup() override;
 
  protected:

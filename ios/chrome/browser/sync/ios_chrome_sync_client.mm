@@ -342,36 +342,34 @@ IOSChromeSyncClient::GetSyncBridgeForModelType(syncer::ModelType type) {
 }
 
 scoped_refptr<syncer::ModelSafeWorker>
-IOSChromeSyncClient::CreateModelWorkerForGroup(
-    syncer::ModelSafeGroup group,
-    syncer::WorkerLoopDestructionObserver* observer) {
+IOSChromeSyncClient::CreateModelWorkerForGroup(syncer::ModelSafeGroup group) {
   DCHECK_CURRENTLY_ON(web::WebThread::UI);
   switch (group) {
     case syncer::GROUP_DB:
       return new syncer::BrowserThreadModelWorker(
           web::WebThread::GetTaskRunnerForThread(web::WebThread::DB),
-          syncer::GROUP_DB, observer);
+          syncer::GROUP_DB);
     case syncer::GROUP_FILE:
       return new syncer::BrowserThreadModelWorker(
           web::WebThread::GetTaskRunnerForThread(web::WebThread::FILE),
-          syncer::GROUP_FILE, observer);
+          syncer::GROUP_FILE);
     case syncer::GROUP_UI:
       return new syncer::UIModelWorker(
-          web::WebThread::GetTaskRunnerForThread(web::WebThread::UI), observer);
+          web::WebThread::GetTaskRunnerForThread(web::WebThread::UI));
     case syncer::GROUP_PASSIVE:
-      return new syncer::PassiveModelWorker(observer);
+      return new syncer::PassiveModelWorker();
     case syncer::GROUP_HISTORY: {
       history::HistoryService* history_service = GetHistoryService();
       if (!history_service)
         return nullptr;
       return new browser_sync::HistoryModelWorker(
           history_service->AsWeakPtr(),
-          web::WebThread::GetTaskRunnerForThread(web::WebThread::UI), observer);
+          web::WebThread::GetTaskRunnerForThread(web::WebThread::UI));
     }
     case syncer::GROUP_PASSWORD: {
       if (!password_store_)
         return nullptr;
-      return new browser_sync::PasswordModelWorker(password_store_, observer);
+      return new browser_sync::PasswordModelWorker(password_store_);
     }
     default:
       return nullptr;

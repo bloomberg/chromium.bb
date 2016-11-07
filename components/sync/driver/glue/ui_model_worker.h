@@ -5,13 +5,9 @@
 #ifndef COMPONENTS_SYNC_DRIVER_GLUE_UI_MODEL_WORKER_H_
 #define COMPONENTS_SYNC_DRIVER_GLUE_UI_MODEL_WORKER_H_
 
-#include "base/callback.h"
-#include "base/compiler_specific.h"
 #include "base/macros.h"
+#include "base/memory/ref_counted.h"
 #include "base/single_thread_task_runner.h"
-#include "base/synchronization/condition_variable.h"
-#include "base/synchronization/lock.h"
-#include "components/sync/base/unrecoverable_error_info.h"
 #include "components/sync/engine/model_safe_worker.h"
 
 namespace syncer {
@@ -21,11 +17,9 @@ namespace syncer {
 // from the MessageLoop home to the native model.
 class UIModelWorker : public ModelSafeWorker {
  public:
-  UIModelWorker(const scoped_refptr<base::SingleThreadTaskRunner>& ui_thread,
-                WorkerLoopDestructionObserver* observer);
+  explicit UIModelWorker(scoped_refptr<base::SingleThreadTaskRunner> ui_thread);
 
   // ModelSafeWorker implementation. Called on syncapi SyncerThread.
-  void RegisterForLoopDestruction() override;
   ModelSafeGroup GetModelSafeGroup() override;
 
  protected:

@@ -42,8 +42,7 @@ class FakeSyncClient : public SyncClient {
   base::WeakPtr<ModelTypeSyncBridge> GetSyncBridgeForModelType(
       ModelType type) override;
   scoped_refptr<ModelSafeWorker> CreateModelWorkerForGroup(
-      ModelSafeGroup group,
-      WorkerLoopDestructionObserver* observer) override;
+      ModelSafeGroup group) override;
   SyncApiComponentFactory* GetSyncApiComponentFactory() override;
 
   void SetModelTypeSyncBridge(ModelTypeSyncBridge* bridge);
