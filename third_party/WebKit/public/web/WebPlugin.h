@@ -41,9 +41,6 @@
 #include "WebWidget.h"
 #include <v8.h>
 
-struct NPObject;
-struct _NPP;
-
 namespace blink {
 
 class WebDragData;
