@@ -16,10 +16,22 @@ class GURL;
 
 namespace arc {
 
+// An enum returned from GetAction function. This is visible for testing.
 enum class GetActionResult {
+  // ARC cannot handle the |original_url|, and the URL does not have a fallback
+  // http(s) URL. Chrome should show the "Google Chrome OS can't open the page"
+  // dialog now.
   SHOW_CHROME_OS_DIALOG,
+  // ARC cannot handle the |original_url|, but the URL did have a fallback URL
+  // which Chrome can handle. Chrome should show the fallback URL now.
   OPEN_URL_IN_CHROME,
+  // ARC can handle the |original_url|, and one of the ARC activities is a
+  // preferred one. ARC should handle the URL now.
   HANDLE_URL_IN_ARC,
+  // Chrome should show the disambig UI because 1) ARC can handle the
+  // |original_url| but none of the ARC activities is a preferred one, or
+  // 2) there are two or more browsers (e.g. Chrome and a browser app in ARC)
+  // that can handle a fallback URL.
   ASK_USER,
 };
 
