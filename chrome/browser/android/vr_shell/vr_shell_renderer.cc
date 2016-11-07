@@ -151,7 +151,7 @@ const char* GetShaderSource(vr_shell::ShaderID shader) {
                 mid_ring_opacity * (1.0 - (r - black_radius) * black_feather);
             mediump float alpha = clamp(
                 min(hole_alpha, max(color1, black_alpha_factor)), 0.0, 1.0);
-            vec3 color_rgb = color1 * color.xyz;
+            lowp vec3 color_rgb = color1 * color.xyz;
             gl_FragColor = vec4(color_rgb, color.w * alpha);
           });
     case vr_shell::ShaderID::LASER_FRAGMENT_SHADER:
