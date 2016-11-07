@@ -14,12 +14,6 @@
 
 namespace web {
 
-namespace {
-// The number of ActiveStateManagers that are currently in active state.
-// At most one ActiveStateManager can be active at any given time.
-int g_active_state_manager_active_count = 0;
-}  // namespace
-
 ActiveStateManagerImpl::ActiveStateManagerImpl(BrowserState* browser_state)
     : browser_state_(browser_state), active_(false) {
   DCHECK_CURRENTLY_ON(WebThread::UI);
@@ -38,12 +32,6 @@ void ActiveStateManagerImpl::SetActive(bool active) {
   if (active == active_) {
     return;
   }
-  if (active) {
-    ++g_active_state_manager_active_count;
-  } else {
-    --g_active_state_manager_active_count;
-  }
-  DCHECK_GE(1, g_active_state_manager_active_count);
   active_ = active;
 
   if (active) {
