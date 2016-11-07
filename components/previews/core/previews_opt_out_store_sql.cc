@@ -173,14 +173,17 @@ void LoadBlackListFromDataBase(
     scoped_refptr<base::SingleThreadTaskRunner> runner,
     LoadBlackListCallback callback) {
   // Gets the table sorted by host and time. Limits the number of hosts using
-  // most recent opt_out time as the limiting function.
+  // most recent opt_out time as the limiting function. Sorting is free due to
+  // the table structure, and it improves performance in the loop below.
   const char kSql[] =
       "SELECT host_name, time, opt_out"
-      " FROM " PREVIEWS_TABLE_NAME;
+      " FROM " PREVIEWS_TABLE_NAME " ORDER BY host_name, time DESC";
 
   sql::Statement statement(db->GetUniqueStatement(kSql));
 
   std::unique_ptr<BlackListItemMap> black_list_item_map(new BlackListItemMap());
+  std::unique_ptr<PreviewsBlackListItem> host_indifferent_black_list_item =
+      PreviewsBlackList::CreateHostIndifferentBlackListItem();
   int count = 0;
   // Add the host name, the visit time, and opt out history to
   // |black_list_item_map|.
@@ -188,14 +191,19 @@ void LoadBlackListFromDataBase(
     ++count;
     std::string host_name = statement.ColumnString(0);
     PreviewsBlackListItem* black_list_item =
-        PreviewsBlackList::GetOrCreateBlackListItem(black_list_item_map.get(),
-                                                    host_name);
+        PreviewsBlackList::GetOrCreateBlackListItemForMap(
+            black_list_item_map.get(), host_name);
     DCHECK_LE(black_list_item_map->size(),
               params::MaxInMemoryHostsInBlackList());
     // Allows the internal logic of PreviewsBlackListItem to determine how to
     // evict entries when there are more than
     // |StoredHistoryLengthForBlackList()| for the host.
     black_list_item->AddPreviewNavigation(
+        statement.ColumnBool(2),
+        base::Time::FromInternalValue(statement.ColumnInt64(1)));
+    // Allows the internal logic of PreviewsBlackListItem to determine what
+    // items to evict.
+    host_indifferent_black_list_item->AddPreviewNavigation(
         statement.ColumnBool(2),
         base::Time::FromInternalValue(statement.ColumnInt64(1)));
   }
@@ -218,7 +226,8 @@ void LoadBlackListFromDataBase(
   }
 
   runner->PostTask(FROM_HERE,
-                   base::Bind(callback, base::Passed(&black_list_item_map)));
+                   base::Bind(callback, base::Passed(&black_list_item_map),
+                              base::Passed(&host_indifferent_black_list_item)));
 }
 
 // Synchronous implementations, these are run on the background thread

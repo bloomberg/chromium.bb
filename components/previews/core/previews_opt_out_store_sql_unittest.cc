@@ -40,8 +40,10 @@ class PreviewsOptOutStoreSQLTest : public testing::Test {
   ~PreviewsOptOutStoreSQLTest() override {}
 
   // Called when |store_| is done loading.
-  void OnLoaded(std::unique_ptr<BlackListItemMap> black_list_map) {
+  void OnLoaded(std::unique_ptr<BlackListItemMap> black_list_map,
+                std::unique_ptr<PreviewsBlackListItem> host_indifferent_item) {
     black_list_map_ = std::move(black_list_map);
+    host_indifferent_item_ = std::move(host_indifferent_item);
   }
 
   // Initializes the store and get the data from it.
@@ -87,6 +89,9 @@ class PreviewsOptOutStoreSQLTest : public testing::Test {
 
   // The map returned from |store_|.
   std::unique_ptr<BlackListItemMap> black_list_map_;
+
+  // The host indifferent item from |store_|
+  std::unique_ptr<PreviewsBlackListItem> host_indifferent_item_;
 
   // The directory for the database.
   base::ScopedTempDir temp_dir_;
@@ -136,6 +141,8 @@ TEST_F(PreviewsOptOutStoreSQLTest, TestPersistance) {
   EXPECT_NE(black_list_map_->end(), iter);
   EXPECT_EQ(1U, iter->second->OptOutRecordsSizeForTesting());
   EXPECT_EQ(now, iter->second->most_recent_opt_out_time().value());
+  EXPECT_EQ(1U, host_indifferent_item_->OptOutRecordsSizeForTesting());
+  EXPECT_EQ(now, host_indifferent_item_->most_recent_opt_out_time().value());
   histogram_tester_.ExpectBucketCount("Previews.OptOut.DBRowCount", 1, 1);
   histogram_tester_.ExpectTotalCount("Previews.OptOut.DBRowCount", 2);
 }
@@ -179,6 +186,8 @@ TEST_F(PreviewsOptOutStoreSQLTest, TestMaxRows) {
   // The delete happens after the load, so it is possible to load more than
   // |row_limit| into the in memory map.
   EXPECT_EQ(row_limit + 1, black_list_map_->size());
+  EXPECT_EQ(row_limit + 1,
+            host_indifferent_item_->OptOutRecordsSizeForTesting());
 
   DestroyStore();
   CreateAndLoad();
@@ -195,6 +204,9 @@ TEST_F(PreviewsOptOutStoreSQLTest, TestMaxRows) {
   EXPECT_EQ(host_b_time,
             iter_host_b->second->most_recent_opt_out_time().value());
   EXPECT_EQ(1U, iter_host_b->second->OptOutRecordsSizeForTesting());
+  EXPECT_EQ(host_b_time,
+            host_indifferent_item_->most_recent_opt_out_time().value());
+  EXPECT_EQ(row_limit, host_indifferent_item_->OptOutRecordsSizeForTesting());
   histogram_tester_.ExpectTotalCount("Previews.OptOut.DBRowCount", 3);
 }
 
@@ -239,6 +251,7 @@ TEST_F(PreviewsOptOutStoreSQLTest, TestMaxRowsPerHost) {
   EXPECT_EQ(last_opt_out_time,
             iter->second->most_recent_opt_out_time().value());
   EXPECT_EQ(row_limit, iter->second->OptOutRecordsSizeForTesting());
+  EXPECT_EQ(row_limit, host_indifferent_item_->OptOutRecordsSizeForTesting());
   clock.Advance(base::TimeDelta::FromSeconds(1));
   // If both entries' opt out states are stored correctly, then this should not
   // be black listed.

@@ -27,17 +27,33 @@ const char kOfflinePagesSlowNetwork[] = "show_offline_pages";
 
 // The maximum number of recent previews navigations the black list looks at to
 // determine if a host is blacklisted.
-const char kMaxStoredHistoryLength[] = "stored_history_length";
+const char kMaxStoredHistoryLengthPerHost[] =
+    "per_host_max_stored_history_length";
+
+// The maximum number of recent previews navigations the black list looks at to
+// determine if all previews navigations should be disallowed.
+const char kMaxStoredHistoryLengthHostIndifferent[] =
+    "host_indifferent_max_stored_history_length";
 
 // The maximum number of hosts allowed in the in memory black list.
 const char kMaxHostsInBlackList[] = "max_hosts_in_blacklist";
 
 // The number of recent navigations that were opted out of that would trigger
 // the host to be blacklisted.
-const char kOptOutThreshold[] = "opt_out_threshold";
+const char kPerHostOptOutThreshold[] = "per_host_opt_out_threshold";
+
+// The number of recent navigations that were opted out of that would trigger
+// all previews navigations to be disallowed.
+const char kHostIndifferentOptOutThreshold[] =
+    "host_indifferent_opt_out_threshold";
 
 // The amount of time a host remains blacklisted due to opt outs.
-const char kBlackListDurationInDays[] = "black_list_duration_in_days";
+const char kPerHostBlackListDurationInDays[] =
+    "per_host_black_list_duration_in_days";
+
+// The amount of time a host remains blacklisted due to opt outs.
+const char kHostIndifferentBlackListDurationInDays[] =
+    "host_indifferent_black_list_duration_in_days";
 
 // The amount of time after any opt out that no previews should be shown.
 const char kSingleOptOutDurationInSeconds[] =
@@ -45,12 +61,6 @@ const char kSingleOptOutDurationInSeconds[] =
 
 // The string that corresponds to enabled for the variation param experiments.
 const char kExperimentEnabled[] = "true";
-
-// In seconds. Hosts are blacklisted for 30 days.
-const int kDefaultBlackListDurationInDays = 30;
-
-// In seconds. Previews are not shown for 5 minutes after an opt out.
-constexpr int kDefaultSingleOptOutDurationInSeconds = 60 * 5;
 
 // Returns the parameter value of |param| as a string. If there is no value for
 // |param|, returns an empty string.
@@ -71,11 +81,20 @@ std::string ParamValue(const std::string& param) {
 
 namespace params {
 
-size_t MaxStoredHistoryLengthForBlackList() {
-  std::string param_value = ParamValue(kMaxStoredHistoryLength);
+size_t MaxStoredHistoryLengthForPerHostBlackList() {
+  std::string param_value = ParamValue(kMaxStoredHistoryLengthPerHost);
   size_t history_length;
   if (!base::StringToSizeT(param_value, &history_length)) {
     return 4;
+  }
+  return history_length;
+}
+
+size_t MaxStoredHistoryLengthForHostIndifferentBlackList() {
+  std::string param_value = ParamValue(kMaxStoredHistoryLengthHostIndifferent);
+  size_t history_length;
+  if (!base::StringToSizeT(param_value, &history_length)) {
+    return 10;
   }
   return history_length;
 }
@@ -89,8 +108,8 @@ size_t MaxInMemoryHostsInBlackList() {
   return max_hosts;
 }
 
-int BlackListOptOutThreshold() {
-  std::string param_value = ParamValue(kOptOutThreshold);
+int PerHostBlackListOptOutThreshold() {
+  std::string param_value = ParamValue(kPerHostOptOutThreshold);
   int opt_out_threshold;
   if (!base::StringToInt(param_value, &opt_out_threshold)) {
     return 2;
@@ -98,11 +117,29 @@ int BlackListOptOutThreshold() {
   return opt_out_threshold;
 }
 
-base::TimeDelta BlackListDuration() {
-  std::string param_value = ParamValue(kBlackListDurationInDays);
+int HostIndifferentBlackListOptOutThreshold() {
+  std::string param_value = ParamValue(kHostIndifferentOptOutThreshold);
+  int opt_out_threshold;
+  if (!base::StringToInt(param_value, &opt_out_threshold)) {
+    return 4;
+  }
+  return opt_out_threshold;
+}
+
+base::TimeDelta PerHostBlackListDuration() {
+  std::string param_value = ParamValue(kPerHostBlackListDurationInDays);
   int duration;
   if (!base::StringToInt(param_value, &duration)) {
-    return base::TimeDelta::FromDays(kDefaultBlackListDurationInDays);
+    return base::TimeDelta::FromDays(30);
+  }
+  return base::TimeDelta::FromDays(duration);
+}
+
+base::TimeDelta HostIndifferentBlackListPerHostDuration() {
+  std::string param_value = ParamValue(kHostIndifferentBlackListDurationInDays);
+  int duration;
+  if (!base::StringToInt(param_value, &duration)) {
+    return base::TimeDelta::FromDays(365 * 100);
   }
   return base::TimeDelta::FromDays(duration);
 }
@@ -111,7 +148,7 @@ base::TimeDelta SingleOptOutDuration() {
   std::string param_value = ParamValue(kSingleOptOutDurationInSeconds);
   int duration;
   if (!base::StringToInt(param_value, &duration)) {
-    return base::TimeDelta::FromSeconds(kDefaultSingleOptOutDurationInSeconds);
+    return base::TimeDelta::FromSeconds(60 * 5);
   }
   return base::TimeDelta::FromSeconds(duration);
 }

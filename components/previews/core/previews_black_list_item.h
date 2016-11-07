@@ -7,9 +7,9 @@
 
 #include <stdint.h>
 
-#include <list>
 #include <map>
 #include <memory>
+#include <queue>
 #include <string>
 
 #include "base/callback.h"
@@ -49,12 +49,29 @@ class PreviewsBlackListItem {
  private:
   // A previews navigation to this host is represented by time and whether the
   // navigation was an opt out.
-  struct OptOutRecord {
+  class OptOutRecord {
+   public:
     OptOutRecord(base::Time entry_time, bool opt_out);
-    ~OptOutRecord() {}
-    const base::Time
-        entry_time;      // The time that the opt out state was determined.
-    const bool opt_out;  // Whether the user opt out of the preview.
+    ~OptOutRecord();
+    OptOutRecord(OptOutRecord&&);
+    OptOutRecord& operator=(OptOutRecord&&);
+
+    // Used to determine eviction priority.
+    bool operator<(const OptOutRecord& other) const;
+
+    // The time that the opt out state was determined.
+    base::Time entry_time() const { return entry_time_; }
+
+    // Whether the user opted out of the preview.
+    bool opt_out() const { return opt_out_; }
+
+   private:
+    // The time that the opt out state was determined.
+    base::Time entry_time_;
+    // Whether the user opted out of the preview.
+    bool opt_out_;
+
+    DISALLOW_COPY_AND_ASSIGN(OptOutRecord);
   };
 
   // The number of entries to store to determine preview eligibility.
@@ -65,8 +82,9 @@ class PreviewsBlackListItem {
   const base::TimeDelta max_black_list_duration_;
 
   // The |max_stored_history_length_| most recent previews navigation. Is
-  // maintained as a list sorted by entry_time (earliest to latest).
-  std::list<OptOutRecord> opt_out_records_;
+  // maintained as a priority queue that has high priority for items that should
+  // be evicted (i.e., they are old).
+  std::priority_queue<OptOutRecord> opt_out_records_;
 
   // Time of the most recent opt out.
   base::Optional<base::Time> most_recent_opt_out_time_;

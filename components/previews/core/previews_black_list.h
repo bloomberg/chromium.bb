@@ -70,15 +70,14 @@ class PreviewsBlackList {
 
   // Returns a new PreviewsBlackListItem representing |host_name|. Adds the new
   // item to |black_list_item_map|.
-  static PreviewsBlackListItem* GetOrCreateBlackListItem(
+  static PreviewsBlackListItem* GetOrCreateBlackListItemForMap(
       BlackListItemMap* black_list_item_map,
       const std::string& host_name);
 
-  // Returns the PreviewsBlackListItem representing |host_name| in
-  // |black_list_item_map|. If there is no item for |host_name|, returns null.
-  static PreviewsBlackListItem* GetBlackListItem(
-      const BlackListItemMap& black_list_item_map,
-      const std::string& host_name);
+  // Returns a new PreviewsBlackListItem for the host indifferent black list
+  // that does not consider host name when determining eligibility.
+  static std::unique_ptr<PreviewsBlackListItem>
+  CreateHostIndifferentBlackListItem();
 
  private:
   // Synchronous version of AddPreviewNavigation method.
@@ -90,9 +89,11 @@ class PreviewsBlackList {
   void ClearBlackListSync(base::Time begin_time, base::Time end_time);
 
   // Callback passed to the backing store when loading black list information.
-  // Moves the returned map into the in-memory black list and runs any
-  // outstanding tasks.
-  void LoadBlackListDone(std::unique_ptr<BlackListItemMap> black_list_item_map);
+  // Moves the |black_list_item_map| and |host_indifferent_black_list_item| into
+  // the in-memory black list and runs any outstanding tasks.
+  void LoadBlackListDone(
+      std::unique_ptr<BlackListItemMap> black_list_item_map,
+      std::unique_ptr<PreviewsBlackListItem> host_indifferent_black_list_item);
 
   // Called while waiting for the black list to be loaded from the backing
   // store.
@@ -102,6 +103,9 @@ class PreviewsBlackList {
 
   // Map maintaining the in-memory black list.
   std::unique_ptr<BlackListItemMap> black_list_item_map_;
+
+  // Host indifferent opt out history.
+  std::unique_ptr<PreviewsBlackListItem> host_indifferent_black_list_item_;
 
   // Whether the black list is done being loaded from the backing store.
   bool loaded_;

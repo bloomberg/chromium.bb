@@ -5,6 +5,7 @@
 #include "components/previews/core/previews_black_list_item.h"
 
 #include <algorithm>
+#include <tuple>
 
 #include "components/previews/core/previews_opt_out_store.h"
 
@@ -12,7 +13,21 @@ namespace previews {
 
 PreviewsBlackListItem::OptOutRecord::OptOutRecord(base::Time entry_time,
                                                   bool opt_out)
-    : entry_time(entry_time), opt_out(opt_out) {}
+    : entry_time_(entry_time), opt_out_(opt_out) {}
+
+PreviewsBlackListItem::OptOutRecord::~OptOutRecord() {}
+
+PreviewsBlackListItem::OptOutRecord::OptOutRecord(OptOutRecord&&) = default;
+
+PreviewsBlackListItem::OptOutRecord& PreviewsBlackListItem::OptOutRecord::
+operator=(OptOutRecord&&) = default;
+
+bool PreviewsBlackListItem::OptOutRecord::operator<(
+    const OptOutRecord& other) const {
+  // Fresher entries are lower priority to evict, as are non-opt-outs.
+  return std::tie(entry_time_, opt_out_) >
+         std::tie(other.entry_time_, other.opt_out_);
+}
 
 PreviewsBlackListItem::PreviewsBlackListItem(
     size_t stored_history_length,
@@ -28,24 +43,21 @@ PreviewsBlackListItem::~PreviewsBlackListItem() {}
 void PreviewsBlackListItem::AddPreviewNavigation(bool opt_out,
                                                  base::Time entry_time) {
   DCHECK_LE(opt_out_records_.size(), max_stored_history_length_);
+
+  opt_out_records_.emplace(entry_time, opt_out);
+
   if (opt_out && (!most_recent_opt_out_time_ ||
                   entry_time > most_recent_opt_out_time_.value())) {
     most_recent_opt_out_time_ = entry_time;
   }
   total_opt_out_ += opt_out ? 1 : 0;
 
-  // Find insert postion to keep the list sorted. Typically, this will be at the
-  // end of the list, but for systems with clocks that are not non-decreasing
-  // with time, this may not be the end. Linearly search from end to begin.
-  auto iter = opt_out_records_.rbegin();
-  while (iter != opt_out_records_.rend() && iter->entry_time > entry_time)
-    iter++;
-  opt_out_records_.emplace(iter.base(), entry_time, opt_out);
-
-  // Remove the oldest entry if the size exceeds the history size.
+  // Remove the oldest entry if the size exceeds the max history size.
   if (opt_out_records_.size() > max_stored_history_length_) {
-    total_opt_out_ -= opt_out_records_.front().opt_out ? 1 : 0;
-    opt_out_records_.pop_front();
+    DCHECK_EQ(opt_out_records_.size(), max_stored_history_length_ + 1);
+    DCHECK_LE(opt_out_records_.top().entry_time(), entry_time);
+    total_opt_out_ -= opt_out_records_.top().opt_out() ? 1 : 0;
+    opt_out_records_.pop();
   }
   DCHECK_LE(opt_out_records_.size(), max_stored_history_length_);
 }
