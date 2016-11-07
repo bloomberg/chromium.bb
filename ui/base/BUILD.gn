@@ -130,6 +130,7 @@ component("base") {
     "cocoa/three_part_image.mm",
     "cocoa/tool_tip_base_view.h",
     "cocoa/tool_tip_base_view.mm",
+    "cocoa/touch_bar_forward_declarations.h",
     "cocoa/tracking_area.h",
     "cocoa/tracking_area.mm",
     "cocoa/underlay_opengl_hosting_window.h",

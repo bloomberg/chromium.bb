@@ -62,6 +62,7 @@ component("views") {
     "button_drag_utils.h",
     "cocoa/bridged_content_view.h",
     "cocoa/bridged_content_view.mm",
+    "cocoa/bridged_content_view_touch_bar.mm",
     "cocoa/bridged_native_widget.h",
     "cocoa/bridged_native_widget.mm",
     "cocoa/bridged_native_widget_owner.h",
