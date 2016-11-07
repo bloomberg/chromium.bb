@@ -141,16 +141,9 @@ using base::scoped_nsobject;
 }
 
 - (void)didModifyServices:(NSArray*)invalidatedServices {
-  // -[CBPeripheralDelegate peripheral:didModifyServices:] is only available
-  // with 10.9. It is safe to call this method (even if chrome is running on
-  // 10.8) since WebBluetooth is enabled only with 10.10.
-  // TODO(crbug.com/653056)
   DCHECK(
       [_delegate respondsToSelector:@selector(peripheral:didModifyServices:)]);
-#pragma clang diagnostic push
-#pragma clang diagnostic ignored "-Wpartial-availability"
   [_delegate peripheral:self.peripheral didModifyServices:invalidatedServices];
-#pragma clang diagnostic pop
 }
 
 - (NSUUID*)identifier {
