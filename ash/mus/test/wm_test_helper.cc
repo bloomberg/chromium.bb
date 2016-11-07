@@ -181,10 +181,10 @@ void WmTestHelper::UpdateDisplay(RootWindowController* root_window_controller,
   root_window_controller->root()->SetBounds(gfx::Rect(bounds.size()));
   display::ScreenBase* screen =
       window_manager_app_->window_manager()->screen_.get();
-  const bool is_primary = screen->display_list()->FindDisplayById(
+  const bool is_primary = screen->display_list().FindDisplayById(
                               root_window_controller->display().id()) ==
-                          screen->display_list()->GetPrimaryDisplayIterator();
-  screen->display_list()->UpdateDisplay(
+                          screen->display_list().GetPrimaryDisplayIterator();
+  screen->display_list().UpdateDisplay(
       root_window_controller->display(),
       is_primary ? display::DisplayList::Type::PRIMARY
                  : display::DisplayList::Type::NOT_PRIMARY);

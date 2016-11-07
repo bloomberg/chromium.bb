@@ -132,7 +132,7 @@ void RootWindowController::SetWorkAreaInests(const gfx::Insets& insets) {
   if (old_work_area == display_.work_area())
     return;
 
-  window_manager_->screen()->display_list()->UpdateDisplay(display_);
+  window_manager_->screen()->display_list().UpdateDisplay(display_);
 
   // Push new display insets to service:ui if we have a connection.
   auto* display_controller = window_manager_->GetDisplayController();
@@ -144,7 +144,7 @@ void RootWindowController::SetWorkAreaInests(const gfx::Insets& insets) {
 void RootWindowController::SetDisplay(const display::Display& display) {
   DCHECK_EQ(display.id(), display_.id());
   display_ = display;
-  window_manager_->screen()->display_list()->UpdateDisplay(display_);
+  window_manager_->screen()->display_list().UpdateDisplay(display_);
 }
 
 gfx::Rect RootWindowController::CalculateDefaultBounds(

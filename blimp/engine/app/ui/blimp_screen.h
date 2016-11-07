@@ -10,7 +10,7 @@
 #include "base/macros.h"
 #include "base/observer_list.h"
 #include "ui/display/display.h"
-#include "ui/display/screen.h"
+#include "ui/display/screen_base.h"
 
 namespace aura {
 class WindowTreeHost;
@@ -20,7 +20,7 @@ namespace blimp {
 namespace engine {
 
 // Presents the client's single screen.
-class BlimpScreen : public display::Screen {
+class BlimpScreen : public display::ScreenBase {
  public:
   BlimpScreen();
   ~BlimpScreen() override;
@@ -36,21 +36,10 @@ class BlimpScreen : public display::Screen {
   gfx::Point GetCursorScreenPoint() override;
   bool IsWindowUnderCursor(gfx::NativeWindow window) override;
   gfx::NativeWindow GetWindowAtScreenPoint(const gfx::Point& point) override;
-  int GetNumDisplays() const override;
-  std::vector<display::Display> GetAllDisplays() const override;
   display::Display GetDisplayNearestWindow(gfx::NativeView view) const override;
-  display::Display GetDisplayNearestPoint(
-      const gfx::Point& point) const override;
-  display::Display GetDisplayMatching(
-      const gfx::Rect& match_rect) const override;
-  display::Display GetPrimaryDisplay() const override;
-  void AddObserver(display::DisplayObserver* observer) override;
-  void RemoveObserver(display::DisplayObserver* observer) override;
 
  private:
   aura::WindowTreeHost* window_tree_host_;
-  display::Display display_;
-  base::ObserverList<display::DisplayObserver> observers_;
   DISALLOW_COPY_AND_ASSIGN(BlimpScreen);
 };
 

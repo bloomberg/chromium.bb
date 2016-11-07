@@ -15,32 +15,26 @@ namespace engine {
 namespace {
 
 const int64_t kDisplayId = 1;
-const int kNumDisplays = 1;
 
 }  // namespace
 
-BlimpScreen::BlimpScreen() : display_(kDisplayId) {}
+BlimpScreen::BlimpScreen() {
+  display::Display display(kDisplayId);
+  ProcessDisplayChanged(display, true /* is_primary */);
+}
 
 BlimpScreen::~BlimpScreen() {}
 
 void BlimpScreen::UpdateDisplayScaleAndSize(float scale,
                                             const gfx::Size& size) {
-  if (scale == display_.device_scale_factor() &&
-      size == display_.GetSizeInPixel()) {
+  display::Display display(GetPrimaryDisplay());
+  if (scale == display.device_scale_factor() &&
+      size == display.GetSizeInPixel()) {
     return;
   }
 
-  uint32_t metrics = display::DisplayObserver::DISPLAY_METRIC_NONE;
-  if (scale != display_.device_scale_factor())
-    metrics |= display::DisplayObserver::DISPLAY_METRIC_DEVICE_SCALE_FACTOR;
-
-  if (size != display_.GetSizeInPixel())
-    metrics |= display::DisplayObserver::DISPLAY_METRIC_BOUNDS;
-
-  display_.SetScaleAndBounds(scale, gfx::Rect(size));
-
-  for (auto& observer : observers_)
-    observer.OnDisplayMetricsChanged(display_, metrics);
+  display.SetScaleAndBounds(scale, gfx::Rect(size));
+  display_list().UpdateDisplay(display);
 }
 
 gfx::Point BlimpScreen::GetCursorScreenPoint() {
@@ -58,39 +52,9 @@ gfx::NativeWindow BlimpScreen::GetWindowAtScreenPoint(const gfx::Point& point) {
              : gfx::NativeWindow(nullptr);
 }
 
-int BlimpScreen::GetNumDisplays() const {
-  return kNumDisplays;
-}
-
-std::vector<display::Display> BlimpScreen::GetAllDisplays() const {
-  return std::vector<display::Display>(1, display_);
-}
-
 display::Display BlimpScreen::GetDisplayNearestWindow(
     gfx::NativeWindow window) const {
-  return display_;
-}
-
-display::Display BlimpScreen::GetDisplayNearestPoint(
-    const gfx::Point& point) const {
-  return display_;
-}
-
-display::Display BlimpScreen::GetDisplayMatching(
-    const gfx::Rect& match_rect) const {
-  return display_;
-}
-
-display::Display BlimpScreen::GetPrimaryDisplay() const {
-  return display_;
-}
-
-void BlimpScreen::AddObserver(display::DisplayObserver* observer) {
-  observers_.AddObserver(observer);
-}
-
-void BlimpScreen::RemoveObserver(display::DisplayObserver* observer) {
-  observers_.RemoveObserver(observer);
+  return GetPrimaryDisplay();
 }
 
 }  // namespace engine

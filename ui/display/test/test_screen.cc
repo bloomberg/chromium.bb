@@ -10,10 +10,11 @@ namespace display {
 namespace test {
 
 TestScreen::TestScreen() {
+  display::Display display;
+  ProcessDisplayChanged(display, true /* is_primary */);
 }
 
-TestScreen::~TestScreen() {
-}
+TestScreen::~TestScreen() {}
 
 gfx::Point TestScreen::GetCursorScreenPoint() {
   return gfx::Point();
@@ -27,34 +28,8 @@ gfx::NativeWindow TestScreen::GetWindowAtScreenPoint(const gfx::Point& point) {
   return nullptr;
 }
 
-int TestScreen::GetNumDisplays() const {
-  return 1;
-}
-
-std::vector<Display> TestScreen::GetAllDisplays() const {
-  return std::vector<Display>(1, display_);
-}
-
 Display TestScreen::GetDisplayNearestWindow(gfx::NativeView view) const {
-  return display_;
-}
-
-Display TestScreen::GetDisplayNearestPoint(const gfx::Point& point) const {
-  return display_;
-}
-
-Display TestScreen::GetDisplayMatching(const gfx::Rect& match_rect) const {
-  return display_;
-}
-
-Display TestScreen::GetPrimaryDisplay() const {
-  return display_;
-}
-
-void TestScreen::AddObserver(DisplayObserver* observer) {
-}
-
-void TestScreen::RemoveObserver(DisplayObserver* observer) {
+  return GetPrimaryDisplay();
 }
 
 }  // namespace test

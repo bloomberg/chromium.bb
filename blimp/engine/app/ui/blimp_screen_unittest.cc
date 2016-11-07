@@ -58,7 +58,8 @@ TEST_F(BlimpScreenTest, ObserversAreInfomed) {
   auto display = screen_->GetPrimaryDisplay();
   uint32_t changed_metrics =
       display::DisplayObserver::DISPLAY_METRIC_DEVICE_SCALE_FACTOR |
-      display::DisplayObserver::DISPLAY_METRIC_BOUNDS;
+      display::DisplayObserver::DISPLAY_METRIC_BOUNDS |
+      display::DisplayObserver::DISPLAY_METRIC_WORK_AREA;
 
   InSequence s;
   EXPECT_CALL(observer1_,
@@ -66,14 +67,17 @@ TEST_F(BlimpScreenTest, ObserversAreInfomed) {
   EXPECT_CALL(observer2_,
               OnDisplayMetricsChanged(EqualsDisplay(display), changed_metrics));
 
-  changed_metrics = display::DisplayObserver::DISPLAY_METRIC_BOUNDS;
+  changed_metrics = display::DisplayObserver::DISPLAY_METRIC_BOUNDS |
+                    display::DisplayObserver::DISPLAY_METRIC_WORK_AREA;
   EXPECT_CALL(observer1_,
               OnDisplayMetricsChanged(EqualsDisplay(display), changed_metrics));
   EXPECT_CALL(observer2_,
               OnDisplayMetricsChanged(EqualsDisplay(display), changed_metrics));
 
   changed_metrics =
-      display::DisplayObserver::DISPLAY_METRIC_DEVICE_SCALE_FACTOR;
+      display::DisplayObserver::DISPLAY_METRIC_DEVICE_SCALE_FACTOR |
+      display::DisplayObserver::DISPLAY_METRIC_BOUNDS |
+      display::DisplayObserver::DISPLAY_METRIC_WORK_AREA;
   EXPECT_CALL(observer1_,
               OnDisplayMetricsChanged(EqualsDisplay(display), changed_metrics));
   EXPECT_CALL(observer2_,
@@ -100,7 +104,8 @@ TEST_F(BlimpScreenTest, RemoveObserver) {
   auto display = screen_->GetPrimaryDisplay();
   uint32_t changed_metrics =
       display::DisplayObserver::DISPLAY_METRIC_DEVICE_SCALE_FACTOR |
-      display::DisplayObserver::DISPLAY_METRIC_BOUNDS;
+      display::DisplayObserver::DISPLAY_METRIC_BOUNDS |
+      display::DisplayObserver::DISPLAY_METRIC_WORK_AREA;
   EXPECT_CALL(observer1_,
               OnDisplayMetricsChanged(EqualsDisplay(display), changed_metrics));
 

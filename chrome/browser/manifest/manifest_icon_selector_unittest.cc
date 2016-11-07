@@ -20,8 +20,13 @@ const int DEFAULT_PREFERRED_ICON_SIZE = 48;
 class ManifestIconSelectorTest : public testing::Test  {
  protected:
   ManifestIconSelectorTest() {
-    test_screen_.display()->set_id(0x1337);
-    test_screen_.display()->set_bounds(gfx::Rect(0, 0, 2560, 1440));
+    const display::Display test_display = test_screen_.GetPrimaryDisplay();
+    display::Display display(test_display);
+    display.set_id(0x1337);
+    display.set_bounds(gfx::Rect(0, 0, 2560, 1440));
+    test_screen_.display_list().RemoveDisplay(test_display.id());
+    test_screen_.display_list().AddDisplay(display,
+                                           display::DisplayList::Type::PRIMARY);
     display::Screen::SetScreenInstance(&test_screen_);
   }
 
@@ -45,7 +50,9 @@ class ManifestIconSelectorTest : public testing::Test  {
   }
 
   void SetDisplayDeviceScaleFactor(float device_scale_factor) {
-    test_screen_.display()->set_device_scale_factor(device_scale_factor);
+    display::Display display(test_screen_.GetPrimaryDisplay());
+    display.set_device_scale_factor(device_scale_factor);
+    test_screen_.display_list().UpdateDisplay(display);
   }
 
   int GetPreferredIconSizeInDp() {

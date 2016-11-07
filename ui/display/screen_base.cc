@@ -12,28 +12,9 @@
 
 namespace display {
 
-ScreenBase::ScreenBase() {
-  Screen::SetScreenInstance(this);
-}
+ScreenBase::ScreenBase() {}
 
-ScreenBase::~ScreenBase() {
-  DCHECK_EQ(this, Screen::GetScreen());
-  Screen::SetScreenInstance(nullptr);
-}
-
-void ScreenBase::ProcessDisplayChanged(const Display& changed_display,
-                                       bool is_primary) {
-  if (display_list_.FindDisplayById(changed_display.id()) ==
-      display_list_.displays().end()) {
-    display_list_.AddDisplay(changed_display,
-                             is_primary ? DisplayList::Type::PRIMARY
-                                        : DisplayList::Type::NOT_PRIMARY);
-    return;
-  }
-  display_list_.UpdateDisplay(
-      changed_display,
-      is_primary ? DisplayList::Type::PRIMARY : DisplayList::Type::NOT_PRIMARY);
-}
+ScreenBase::~ScreenBase() {}
 
 gfx::Point ScreenBase::GetCursorScreenPoint() {
   NOTIMPLEMENTED();
@@ -86,6 +67,20 @@ void ScreenBase::AddObserver(DisplayObserver* observer) {
 
 void ScreenBase::RemoveObserver(DisplayObserver* observer) {
   display_list_.RemoveObserver(observer);
+}
+
+void ScreenBase::ProcessDisplayChanged(const Display& changed_display,
+                                       bool is_primary) {
+  if (display_list_.FindDisplayById(changed_display.id()) ==
+      display_list_.displays().end()) {
+    display_list_.AddDisplay(changed_display,
+                             is_primary ? DisplayList::Type::PRIMARY
+                                        : DisplayList::Type::NOT_PRIMARY);
+    return;
+  }
+  display_list_.UpdateDisplay(
+      changed_display,
+      is_primary ? DisplayList::Type::PRIMARY : DisplayList::Type::NOT_PRIMARY);
 }
 
 }  // namespace display

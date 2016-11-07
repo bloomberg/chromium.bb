@@ -56,7 +56,6 @@ class DISPLAY_EXPORT DisplayList {
   const Displays& displays() const { return displays_; }
 
   Displays::const_iterator FindDisplayById(int64_t id) const;
-  Displays::iterator FindDisplayById(int64_t id);
 
   Displays::const_iterator GetPrimaryDisplayIterator() const;
 
@@ -92,6 +91,8 @@ class DISPLAY_EXPORT DisplayList {
   void DecrementObserverSuspendLockCount();
 
   Type GetTypeByDisplayId(int64_t display_id) const;
+
+  Displays::iterator FindDisplayByIdInternal(int64_t id);
 
   std::vector<display::Display> displays_;
   int primary_display_index_ = -1;

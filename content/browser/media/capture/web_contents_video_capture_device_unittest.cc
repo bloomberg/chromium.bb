@@ -603,10 +603,14 @@ class MAYBE_WebContentsVideoCaptureDeviceTest : public testing::Test {
 
  protected:
   void SetUp() override {
-    test_screen_.display()->set_id(0x1337);
-    test_screen_.display()->set_bounds(gfx::Rect(0, 0, 2560, 1440));
-    test_screen_.display()->set_device_scale_factor(kTestDeviceScaleFactor);
-
+    const display::Display test_display = test_screen_.GetPrimaryDisplay();
+    display::Display display(test_display);
+    display.set_id(0x1337);
+    display.set_bounds(gfx::Rect(0, 0, 2560, 1440));
+    display.set_device_scale_factor(kTestDeviceScaleFactor);
+    test_screen_.display_list().RemoveDisplay(test_display.id());
+    test_screen_.display_list().AddDisplay(display,
+                                           display::DisplayList::Type::PRIMARY);
     display::Screen::SetScreenInstance(&test_screen_);
     ASSERT_EQ(&test_screen_, display::Screen::GetScreen());
 

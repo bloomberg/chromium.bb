@@ -9,7 +9,7 @@
 #include "base/macros.h"
 #include "ui/aura/window_observer.h"
 #include "ui/display/display.h"
-#include "ui/display/screen.h"
+#include "ui/display/screen_base.h"
 
 namespace gfx {
 class Insets;
@@ -25,7 +25,7 @@ class WindowTreeHost;
 
 namespace headless {
 
-class HeadlessScreen : public display::Screen, public aura::WindowObserver {
+class HeadlessScreen : public display::ScreenBase, public aura::WindowObserver {
  public:
   // Creates a display::Screen of the specified size (physical pixels).
   static HeadlessScreen* Create(const gfx::Size& size);
@@ -52,22 +52,12 @@ class HeadlessScreen : public display::Screen, public aura::WindowObserver {
   gfx::Point GetCursorScreenPoint() override;
   bool IsWindowUnderCursor(gfx::NativeWindow window) override;
   gfx::NativeWindow GetWindowAtScreenPoint(const gfx::Point& point) override;
-  int GetNumDisplays() const override;
-  std::vector<display::Display> GetAllDisplays() const override;
   display::Display GetDisplayNearestWindow(gfx::NativeView view) const override;
-  display::Display GetDisplayNearestPoint(
-      const gfx::Point& point) const override;
-  display::Display GetDisplayMatching(
-      const gfx::Rect& match_rect) const override;
-  display::Display GetPrimaryDisplay() const override;
-  void AddObserver(display::DisplayObserver* observer) override;
-  void RemoveObserver(display::DisplayObserver* observer) override;
 
  private:
   explicit HeadlessScreen(const gfx::Rect& screen_bounds);
 
   aura::WindowTreeHost* host_;
-  display::Display display_;
   float ui_scale_;
 
   DISALLOW_COPY_AND_ASSIGN(HeadlessScreen);

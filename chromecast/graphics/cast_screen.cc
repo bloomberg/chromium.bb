@@ -9,7 +9,6 @@
 #include "base/command_line.h"
 #include "chromecast/public/graphics_properties_shlib.h"
 #include "ui/aura/env.h"
-#include "ui/display/screen.h"
 #include "ui/gfx/geometry/rect_conversions.h"
 #include "ui/gfx/geometry/size.h"
 #include "ui/gfx/geometry/size_conversions.h"
@@ -51,42 +50,18 @@ gfx::NativeWindow CastScreen::GetWindowAtScreenPoint(const gfx::Point& point) {
   return gfx::NativeWindow(nullptr);
 }
 
-int CastScreen::GetNumDisplays() const {
-  return 1;
-}
-
-std::vector<display::Display> CastScreen::GetAllDisplays() const {
-  return std::vector<display::Display>(1, display_);
-}
-
 display::Display CastScreen::GetDisplayNearestWindow(
     gfx::NativeWindow window) const {
-  return display_;
+  return GetPrimaryDisplay();
 }
 
-display::Display CastScreen::GetDisplayNearestPoint(
-    const gfx::Point& point) const {
-  return display_;
-}
-
-display::Display CastScreen::GetDisplayMatching(
-    const gfx::Rect& match_rect) const {
-  return display_;
-}
-
-display::Display CastScreen::GetPrimaryDisplay() const {
-  return display_;
-}
-
-void CastScreen::AddObserver(display::DisplayObserver* observer) {}
-
-void CastScreen::RemoveObserver(display::DisplayObserver* observer) {}
-
-CastScreen::CastScreen() : display_(kDisplayId) {
+CastScreen::CastScreen() {
   // Device scale factor computed relative to 720p display
+  display::Display display(kDisplayId);
   const gfx::Size size = GetScreenResolution();
   const float device_scale_factor = size.height() / 720.0f;
-  display_.SetScaleAndBounds(device_scale_factor, gfx::Rect(size));
+  display.SetScaleAndBounds(device_scale_factor, gfx::Rect(size));
+  ProcessDisplayChanged(display, true /* is_primary */);
 }
 
 }  // namespace chromecast

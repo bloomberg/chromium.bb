@@ -20,14 +20,9 @@ class DISPLAY_EXPORT ScreenBase : public Screen {
   ScreenBase();
   ~ScreenBase() override;
 
-  DisplayList* display_list() { return &display_list_; }
+  DisplayList& display_list() { return display_list_; };
+  const DisplayList& display_list() const { return display_list_; };
 
- protected:
-  // Invoked when a display changed in some way, including being added.
-  // If |is_primary| is true, |changed_display| is the primary display.
-  void ProcessDisplayChanged(const Display& changed_display, bool is_primary);
-
- private:
   // Screen:
   gfx::Point GetCursorScreenPoint() override;
   bool IsWindowUnderCursor(gfx::NativeWindow window) override;
@@ -41,6 +36,12 @@ class DISPLAY_EXPORT ScreenBase : public Screen {
   void AddObserver(DisplayObserver* observer) override;
   void RemoveObserver(DisplayObserver* observer) override;
 
+ protected:
+  // Invoked when a display changed in some way, including being added.
+  // If |is_primary| is true, |changed_display| is the primary display.
+  void ProcessDisplayChanged(const Display& changed_display, bool is_primary);
+
+ private:
   DisplayList display_list_;
 
   DISALLOW_COPY_AND_ASSIGN(ScreenBase);

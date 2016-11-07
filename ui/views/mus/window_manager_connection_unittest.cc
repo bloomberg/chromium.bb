@@ -90,8 +90,10 @@ TEST_F(WindowManagerConnectionTest, GetWindowAtScreenPointDisplayOffset) {
 
   // Make the first display offset by 50.
   test::WindowManagerConnectionTestApi api(connection());
-  api.screen()->display_list()->FindDisplayById(displays[0].id())->
-      set_bounds(gfx::Rect(44, 44, 50, 50));
+  display::Display display(
+      *api.screen()->display_list().FindDisplayById(displays[0].id()));
+  display.set_bounds(gfx::Rect(44, 44, 50, 50));
+  api.screen()->display_list().UpdateDisplay(display);
 
   EXPECT_EQ(one, GetWindowAtScreenPoint(gfx::Point(50, 50)));
 }

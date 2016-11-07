@@ -1514,7 +1514,11 @@ TEST_F(RenderWidgetHostViewAuraTest, PhysicalBackingSizeWithScale) {
   aura_test_helper_->test_screen()->SetDeviceScaleFactor(2.0f);
   EXPECT_EQ("200x200", view_->GetPhysicalBackingSize().ToString());
   // Extra ScreenInfoChanged message for |parent_view_|.
-  EXPECT_EQ(0u, sink_->message_count());
+  // Changing the device scale factor triggers the
+  // RenderWidgetHostViewAura::OnDisplayMetricsChanged() observer callback,
+  // which sends a ViewMsg_Resize::ID message to the renderer.
+  EXPECT_EQ(1u, sink_->message_count());
+  EXPECT_EQ(ViewMsg_Resize::ID, sink_->GetMessageAt(0)->type());
   auto view_delegate = static_cast<MockRenderWidgetHostDelegate*>(
       static_cast<RenderWidgetHostImpl*>(view_->GetRenderWidgetHost())
           ->delegate());
@@ -1525,7 +1529,8 @@ TEST_F(RenderWidgetHostViewAuraTest, PhysicalBackingSizeWithScale) {
 
   aura_test_helper_->test_screen()->SetDeviceScaleFactor(1.0f);
   // Extra ScreenInfoChanged message for |parent_view_|.
-  EXPECT_EQ(0u, sink_->message_count());
+  EXPECT_EQ(1u, sink_->message_count());
+  EXPECT_EQ(ViewMsg_Resize::ID, sink_->GetMessageAt(0)->type());
   EXPECT_EQ(1.0f, view_delegate->get_last_device_scale_factor());
   EXPECT_EQ("100x100", view_->GetPhysicalBackingSize().ToString());
 }

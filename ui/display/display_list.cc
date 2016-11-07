@@ -41,14 +41,6 @@ DisplayList::Displays::const_iterator DisplayList::FindDisplayById(
   return displays_.end();
 }
 
-DisplayList::Displays::iterator DisplayList::FindDisplayById(int64_t id) {
-  for (auto iter = displays_.begin(); iter != displays_.end(); ++iter) {
-    if (iter->id() == id)
-      return iter;
-  }
-  return displays_.end();
-}
-
 DisplayList::Displays::const_iterator DisplayList::GetPrimaryDisplayIterator()
     const {
   return primary_display_index_ == -1
@@ -65,7 +57,7 @@ void DisplayList::UpdateDisplay(const display::Display& display) {
 }
 
 void DisplayList::UpdateDisplay(const display::Display& display, Type type) {
-  auto iter = FindDisplayById(display.id());
+  auto iter = FindDisplayByIdInternal(display.id());
   DCHECK(iter != displays_.end());
 
   display::Display* local_display = &(*iter);
@@ -102,7 +94,7 @@ void DisplayList::UpdateDisplay(const display::Display& display, Type type) {
 }
 
 void DisplayList::AddDisplay(const display::Display& display, Type type) {
-  DCHECK(displays_.end() == FindDisplayById(display.id()));
+  DCHECK(displays_.end() == FindDisplayByIdInternal(display.id()));
   displays_.push_back(display);
   if (type == Type::PRIMARY)
     primary_display_index_ = static_cast<int>(displays_.size()) - 1;
@@ -113,7 +105,7 @@ void DisplayList::AddDisplay(const display::Display& display, Type type) {
 }
 
 void DisplayList::RemoveDisplay(int64_t id) {
-  auto iter = FindDisplayById(id);
+  auto iter = FindDisplayByIdInternal(id);
   DCHECK(displays_.end() != iter);
   if (primary_display_index_ == static_cast<int>(iter - displays_.begin())) {
     // The primary display can only be removed if it is the last display.
@@ -147,6 +139,15 @@ DisplayList::Type DisplayList::GetTypeByDisplayId(int64_t display_id) const {
   return (displays_[primary_display_index_].id() == display_id
               ? Type::PRIMARY
               : Type::NOT_PRIMARY);
+}
+
+DisplayList::Displays::iterator DisplayList::FindDisplayByIdInternal(
+    int64_t id) {
+  for (auto iter = displays_.begin(); iter != displays_.end(); ++iter) {
+    if (iter->id() == id)
+      return iter;
+  }
+  return displays_.end();
 }
 
 }  // namespace display
