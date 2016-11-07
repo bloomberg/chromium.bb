@@ -1119,4 +1119,41 @@ TEST_F(WindowTreeClientClientTest, ModalSuccess) {
       window_tree()->AckSingleChangeOfType(WindowTreeChangeType::MODAL, false));
 }
 
+// Verifies OnWindowHierarchyChanged() deals correctly with identifying existing
+// windows.
+TEST_F(WindowTreeClientWmTest, OnWindowHierarchyChangedWithExistingWindow) {
+  Window* window1 = new Window(nullptr);
+  window1->Init(ui::LAYER_NOT_DRAWN);
+  Window* window2 = new Window(nullptr);
+  window2->Init(ui::LAYER_NOT_DRAWN);
+  window_tree()->AckAllChanges();
+  const Id server_window_id = server_id(root_window()) + 11;
+  ui::mojom::WindowDataPtr data1 = ui::mojom::WindowData::New();
+  ui::mojom::WindowDataPtr data2 = ui::mojom::WindowData::New();
+  ui::mojom::WindowDataPtr data3 = ui::mojom::WindowData::New();
+  data1->parent_id = server_id(root_window());
+  data1->window_id = server_window_id;
+  data1->bounds = gfx::Rect(1, 2, 3, 4);
+  data2->parent_id = server_window_id;
+  data2->window_id = WindowMus::Get(window1)->server_id();
+  data2->bounds = gfx::Rect(1, 2, 3, 4);
+  data3->parent_id = server_window_id;
+  data3->window_id = WindowMus::Get(window2)->server_id();
+  data3->bounds = gfx::Rect(1, 2, 3, 4);
+  mojo::Array<ui::mojom::WindowDataPtr> data_array(3);
+  data_array[0] = std::move(data1);
+  data_array[1] = std::move(data2);
+  data_array[2] = std::move(data3);
+  window_tree_client()->OnWindowHierarchyChanged(
+      server_window_id, 0, server_id(root_window()), std::move(data_array));
+  ASSERT_FALSE(window_tree()->has_change());
+  ASSERT_EQ(1u, root_window()->children().size());
+  Window* server_window = root_window()->children()[0];
+  EXPECT_EQ(window1->parent(), server_window);
+  EXPECT_EQ(window2->parent(), server_window);
+  ASSERT_EQ(2u, server_window->children().size());
+  EXPECT_EQ(window1, server_window->children()[0]);
+  EXPECT_EQ(window2, server_window->children()[1]);
+}
+
 }  // namespace aura

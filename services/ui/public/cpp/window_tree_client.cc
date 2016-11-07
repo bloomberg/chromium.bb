@@ -473,28 +473,19 @@ bool WindowTreeClient::ApplyServerChangeToExistingInFlightChange(
   return true;
 }
 
-Window* WindowTreeClient::BuildWindowTree(
+void WindowTreeClient::BuildWindowTree(
     const mojo::Array<mojom::WindowDataPtr>& windows,
     Window* initial_parent) {
-  std::vector<Window*> parents;
-  Window* root = nullptr;
-  Window* last_window = nullptr;
-  if (initial_parent)
-    parents.push_back(initial_parent);
-  for (size_t i = 0; i < windows.size(); ++i) {
-    if (last_window && windows[i]->parent_id == server_id(last_window)) {
-      parents.push_back(last_window);
-    } else if (!parents.empty()) {
-      while (server_id(parents.back()) != windows[i]->parent_id)
-        parents.pop_back();
-    }
-    Window* window = AddWindowToClient(
-        this, !parents.empty() ? parents.back() : nullptr, windows[i]);
-    if (!last_window)
-      root = window;
-    last_window = window;
+  for (const auto& window_data : windows) {
+    Window* parent = window_data->parent_id == 0
+                         ? nullptr
+                         : GetWindowByServerId(window_data->parent_id);
+    Window* existing_window = GetWindowByServerId(window_data->window_id);
+    if (!existing_window)
+      AddWindowToClient(this, parent, window_data);
+    else if (parent)
+      WindowPrivate(parent).LocalAddChild(existing_window);
   }
-  return root;
 }
 
 Window* WindowTreeClient::NewWindowImpl(

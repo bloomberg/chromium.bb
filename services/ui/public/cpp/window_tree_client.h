@@ -250,8 +250,8 @@ class WindowTreeClient : public mojom::WindowTreeClient,
 
   static Id server_id(const Window* window) { return window->server_id(); }
 
-  Window* BuildWindowTree(const mojo::Array<mojom::WindowDataPtr>& windows,
-                          Window* initial_parent);
+  void BuildWindowTree(const mojo::Array<mojom::WindowDataPtr>& windows,
+                       Window* initial_parent);
 
   Window* NewWindowImpl(NewWindowType type,
                         const Window::SharedProperties* properties);

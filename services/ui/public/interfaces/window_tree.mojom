@@ -357,7 +357,11 @@ interface WindowTreeClient {
   // Invoked when a change is done to the hierarchy. A value of 0 is used to
   // identify a null window. For example, if the old_parent is NULL, 0 is
   // supplied.
-  // |windows| contains any windows that the client has not been told about.
+  // If |window| was not visible to this client, but is visible now because
+  // |new_parent| is visible to this client, then |windows| contains details
+  // about |window|, and all its descendants. |windows| includes any windows
+  // that client may already know about, but did not know the parent because
+  // the parent was previously not visible to this client.
   // This is not sent for hierarchy changes of windows not known to this client
   // or not attached to the tree.
   OnWindowHierarchyChanged(uint32 window,

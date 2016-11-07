@@ -355,23 +355,16 @@ bool WindowTreeClient::ApplyServerChangeToExistingInFlightChange(
 }
 
 void WindowTreeClient::BuildWindowTree(
-    const mojo::Array<ui::mojom::WindowDataPtr>& windows,
-    WindowMus* initial_parent) {
-  std::vector<WindowMus*> parents;
-  WindowMus* last_window = nullptr;
-  if (initial_parent)
-    parents.push_back(initial_parent);
+    const mojo::Array<ui::mojom::WindowDataPtr>& windows) {
   for (const auto& window_data : windows) {
-    if (last_window && window_data->parent_id == last_window->server_id()) {
-      parents.push_back(last_window);
-    } else if (!parents.empty()) {
-      while (parents.back()->server_id() != window_data->parent_id)
-        parents.pop_back();
-    }
-    // This code is only called in a context where there is a parent.
-    DCHECK(!parents.empty());
-    last_window = NewWindowFromWindowData(
-        !parents.empty() ? parents.back() : nullptr, window_data);
+    WindowMus* parent = window_data->parent_id == kInvalidServerId
+                            ? nullptr
+                            : GetWindowByServerId(window_data->parent_id);
+    WindowMus* existing_window = GetWindowByServerId(window_data->window_id);
+    if (!existing_window)
+      NewWindowFromWindowData(parent, window_data);
+    else if (parent)
+      parent->AddChildFromServer(existing_window);
   }
 }
 
@@ -1024,12 +1017,9 @@ void WindowTreeClient::OnWindowHierarchyChanged(
     Id old_parent_id,
     Id new_parent_id,
     mojo::Array<ui::mojom::WindowDataPtr> windows) {
-  WindowMus* initial_parent =
-      windows.size() ? GetWindowByServerId(windows[0]->parent_id) : nullptr;
-
   const bool was_window_known = GetWindowByServerId(window_id) != nullptr;
 
-  BuildWindowTree(windows, initial_parent);
+  BuildWindowTree(windows);
 
   // If the window was not known, then BuildWindowTree() will have created it
   // and parented the window.

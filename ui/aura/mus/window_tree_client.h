@@ -200,8 +200,7 @@ class AURA_EXPORT WindowTreeClient
   // See InFlightChange for details on how InFlightChanges are used.
   bool ApplyServerChangeToExistingInFlightChange(const InFlightChange& change);
 
-  void BuildWindowTree(const mojo::Array<ui::mojom::WindowDataPtr>& windows,
-                       WindowMus* initial_parent);
+  void BuildWindowTree(const mojo::Array<ui::mojom::WindowDataPtr>& windows);
 
   // Creates a WindowPortMus from the server side data.
   std::unique_ptr<WindowPortMus> CreateWindowPortMus(

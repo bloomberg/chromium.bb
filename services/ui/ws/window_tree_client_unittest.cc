@@ -2173,6 +2173,39 @@ TEST_F(WindowTreeClientTest, SurfaceIdPropagation) {
             changes1()->back().surface_id.frame_sink_id().client_id());
 }
 
+// Verifies when an unknown window with a known child is added to a hierarchy
+// the known child is identified in the WindowData.
+TEST_F(WindowTreeClientTest, AddUnknownWindowKnownParent) {
+  const Id window_1_100 = wt_client1()->NewWindow(100);
+  ASSERT_TRUE(window_1_100);
+  ASSERT_TRUE(wt_client1()->AddWindow(root_window_id(), window_1_100));
+
+  // Establish the second client at 1,100.
+  ASSERT_NO_FATAL_FAILURE(EstablishSecondClientWithRoot(window_1_100));
+  const Id window_2_1 = wt_client2()->NewWindow(1000);
+  const Id window_2_2 = wt_client2()->NewWindow(2000);
+  // Add 2_1 to the root, remove 2_1, add 2_1 to 2_2 and then 2_2 to the parent.
+  ASSERT_TRUE(
+      wt_client2()->AddWindow(wt_client2()->root_window_id(), window_2_1));
+  ASSERT_TRUE(wt_client2()->RemoveWindowFromParent(window_2_1));
+  ASSERT_TRUE(wt_client2()->AddWindow(window_2_2, window_2_1));
+  wt_client1()->WaitForChangeCount(2);
+  changes1()->clear();
+  ASSERT_TRUE(
+      wt_client2()->AddWindow(wt_client2()->root_window_id(), window_2_2));
+  wt_client1()->WaitForChangeCount(1);
+  const Id window_2_1_in_wm = BuildWindowId(client_id_2(), 1);
+  const Id window_2_2_in_wm = BuildWindowId(client_id_2(), 2);
+  EXPECT_EQ("HierarchyChanged window=" + IdToString(window_2_2_in_wm) +
+                " old_parent=null new_parent=" + IdToString(window_1_100),
+            SingleChangeToDescription(*changes1()));
+  EXPECT_EQ("[window=" + IdToString(window_2_2_in_wm) + " parent=" +
+                IdToString(window_1_100) + "],[window=" +
+                IdToString(window_2_1_in_wm) + " parent=" +
+                IdToString(window_2_2_in_wm) + "]",
+            ChangeWindowDescription(*changes1()));
+}
+
 // TODO(sky): need to better track changes to initial client. For example,
 // that SetBounsdWindows/AddWindow and the like don't result in messages to the
 // originating client.
