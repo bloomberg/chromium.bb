@@ -39,6 +39,8 @@
 @property(nonatomic, retain, readonly) id<CRWNativeContent> nativeController;
 // The currently displayed transient content view.
 @property(nonatomic, retain, readonly) CRWContentView* transientContentView;
+@property(nonatomic, assign) id<CRWWebControllerContainerViewDelegate>
+    delegate;  // weak
 
 // Designated initializer.  |proxy|'s content view will be updated as different
 // content is added to the container.

@@ -1135,6 +1135,8 @@ const NSTimeInterval kSnapshotOverlayTransition = 0.5;
   DCHECK([NSThread isMainThread]);
   DCHECK(_isBeingDestroyed);  // 'close' must have been called already.
   DCHECK(!_webView);
+  // TODO(crbug.com/662860): Don't set the delegate to nil.
+  [_containerView setDelegate:nil];
   _touchTrackingRecognizer.get().touchTrackingDelegate = nil;
   [[_webViewProxy scrollViewProxy] removeObserver:self];
   [[NSNotificationCenter defaultCenter] removeObserver:self];

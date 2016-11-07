@@ -212,6 +212,14 @@
                                UIEdgeInsetsMake(headerHeight, 0, 0, 0));
 }
 
+- (id<CRWWebControllerContainerViewDelegate>)delegate {
+  return _delegate.get();
+}
+
+- (void)setDelegate:(id<CRWWebControllerContainerViewDelegate>)delegate {
+  _delegate.reset(delegate);
+}
+
 #pragma mark Layout
 
 - (void)layoutSubviews {
