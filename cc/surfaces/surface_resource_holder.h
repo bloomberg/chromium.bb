@@ -25,6 +25,7 @@ class CC_SURFACES_EXPORT SurfaceResourceHolder {
   explicit SurfaceResourceHolder(SurfaceFactoryClient* client);
   ~SurfaceResourceHolder();
 
+  void Reset();
   void ReceiveFromChild(const TransferableResourceArray& resources);
   void RefResources(const TransferableResourceArray& resources);
   void UnrefResources(const ReturnedResourceArray& resources);

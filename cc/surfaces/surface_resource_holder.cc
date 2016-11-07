@@ -19,6 +19,10 @@ SurfaceResourceHolder::ResourceRefs::ResourceRefs()
     : refs_received_from_child(0), refs_holding_resource_alive(0) {
 }
 
+void SurfaceResourceHolder::Reset() {
+  resource_id_info_map_.clear();
+}
+
 void SurfaceResourceHolder::ReceiveFromChild(
     const TransferableResourceArray& resources) {
   for (TransferableResourceArray::const_iterator it = resources.begin();

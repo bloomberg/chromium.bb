@@ -22,7 +22,8 @@ SurfaceFactory::SurfaceFactory(const FrameSinkId& frame_sink_id,
       manager_(manager),
       client_(client),
       holder_(client),
-      needs_sync_points_(true) {}
+      needs_sync_points_(true),
+      weak_factory_(this) {}
 
 SurfaceFactory::~SurfaceFactory() {
   if (!surface_map_.empty()) {
@@ -40,9 +41,17 @@ void SurfaceFactory::DestroyAll() {
   surface_map_.clear();
 }
 
+void SurfaceFactory::Reset() {
+  DestroyAll();
+  // Disown Surfaces that are still alive so that they don't try to unref
+  // resources that we're not tracking any more.
+  weak_factory_.InvalidateWeakPtrs();
+  holder_.Reset();
+}
+
 void SurfaceFactory::Create(const LocalFrameId& local_frame_id) {
-  std::unique_ptr<Surface> surface(base::MakeUnique<Surface>(
-      SurfaceId(frame_sink_id_, local_frame_id), this));
+  auto surface(base::MakeUnique<Surface>(
+      SurfaceId(frame_sink_id_, local_frame_id), weak_factory_.GetWeakPtr()));
   manager_->RegisterSurface(surface.get());
   DCHECK(!surface_map_.count(local_frame_id));
   surface_map_[local_frame_id] = std::move(surface);

@@ -491,6 +491,30 @@ TEST_F(SurfaceFactoryTest, DestroyAll) {
   EXPECT_EQ(1u, execute_count);
 }
 
+// Tests that SurfaceFactory doesn't return resources after Reset().
+TEST_F(SurfaceFactoryTest, Reset) {
+  LocalFrameId id(7, 0);
+  factory_->Create(id);
+
+  TransferableResource resource;
+  resource.id = 1;
+  resource.mailbox_holder.texture_target = GL_TEXTURE_2D;
+  CompositorFrame frame;
+  frame.resource_list.push_back(resource);
+  uint32_t execute_count = 0;
+  factory_->SubmitCompositorFrame(id, std::move(frame),
+                                  base::Bind(&DrawCallback, &execute_count));
+  EXPECT_EQ(last_created_surface_id().local_frame_id(), id);
+
+  SurfaceId surface_id(kArbitraryFrameSinkId, id);
+  manager_.AddSurfaceReference(SurfaceManager::kRootSurfaceId, surface_id);
+  factory_->Reset();
+  EXPECT_TRUE(client_.returned_resources().empty());
+  manager_.RemoveSurfaceReference(SurfaceManager::kRootSurfaceId, surface_id);
+  EXPECT_TRUE(client_.returned_resources().empty());
+  local_frame_id_ = LocalFrameId();
+}
+
 TEST_F(SurfaceFactoryTest, DestroySequence) {
   LocalFrameId local_frame_id2(5, 0);
   SurfaceId id2(kArbitraryFrameSinkId, local_frame_id2);

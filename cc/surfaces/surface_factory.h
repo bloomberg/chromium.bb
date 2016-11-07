@@ -35,8 +35,7 @@ class SurfaceManager;
 // submitted to frames created by a particular factory will be returned to that
 // factory's client when they are no longer being used. This is the only class
 // most users of surfaces will need to directly interact with.
-class CC_SURFACES_EXPORT SurfaceFactory
-    : public base::SupportsWeakPtr<SurfaceFactory> {
+class CC_SURFACES_EXPORT SurfaceFactory {
  public:
   using DrawCallback = base::Callback<void()>;
 
@@ -49,7 +48,13 @@ class CC_SURFACES_EXPORT SurfaceFactory
 
   void Create(const LocalFrameId& local_frame_id);
   void Destroy(const LocalFrameId& local_frame_id);
+
+  // Destroys all surfaces.
   void DestroyAll();
+
+  // Destroys and disown all surfaces, and reset all resource references. This
+  // is useful when resources are invalid (e.g. lost context).
+  void Reset();
 
   // Set that the current frame on new_id is to be treated as the successor to
   // the current frame on old_id for the purposes of calculating damage.
@@ -97,6 +102,8 @@ class CC_SURFACES_EXPORT SurfaceFactory
   using OwningSurfaceMap = std::
       unordered_map<LocalFrameId, std::unique_ptr<Surface>, LocalFrameIdHash>;
   OwningSurfaceMap surface_map_;
+
+  base::WeakPtrFactory<SurfaceFactory> weak_factory_;
 
   DISALLOW_COPY_AND_ASSIGN(SurfaceFactory);
 };
