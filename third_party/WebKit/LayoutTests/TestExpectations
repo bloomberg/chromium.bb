@@ -445,9 +445,6 @@ crbug.com/518993 imported/wpt/user-timing/test_user_timing_measure_navigation_ti
 crbug.com/636053 [ Mac Win ] printing/thead-repeats-at-top-of-each-page-multiple-tables.html [ NeedsManualRebaseline ]
 crbug.com/636053 [ Mac Win ] virtual/threaded/printing/thead-repeats-at-top-of-each-page-multiple-tables.html [ NeedsManualRebaseline ]
 
-crbug.com/519001 storage/indexeddb/pending-version-change-stuck-works-with-terminate.html [ Pass Timeout ]
-crbug.com/519002 storage/indexeddb/pending-version-change-stuck.html [ Pass Timeout ]
-
 crbug.com/636239 [ Win7 ] media/video-zoom-controls.html [ Failure ]
 crbug.com/520189 [ Mac ] http/tests/misc/submit-post-keygen.html [ Pass Timeout ]
 
