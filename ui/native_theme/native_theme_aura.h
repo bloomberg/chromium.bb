@@ -14,10 +14,9 @@ namespace ui {
 class NATIVE_THEME_EXPORT NativeThemeAura : public NativeThemeBase {
  public:
   static NativeThemeAura* instance();
-  static NativeThemeAura* web_instance();
 
  protected:
-  explicit NativeThemeAura(bool use_overlay_scrollbars);
+  NativeThemeAura();
   ~NativeThemeAura() override;
 
   // Overridden from NativeThemeBase:
@@ -53,8 +52,6 @@ class NATIVE_THEME_EXPORT NativeThemeAura : public NativeThemeBase {
                         const ExtraParams& extra) const override;
 
  private:
-  bool use_overlay_scrollbars_;
-
   DISALLOW_COPY_AND_ASSIGN(NativeThemeAura);
 };
 

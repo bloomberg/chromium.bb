@@ -20,11 +20,6 @@ const int kCheckboxAndRadioHeight = 16;
 NativeTheme* NativeTheme::GetInstanceForWeb() {
   return NativeThemeAndroid::instance();
 }
-
-NativeTheme* NativeTheme::GetInstanceForNativeUi() {
-  NOTREACHED();
-  return nullptr;
-}
 #endif
 
 // static
