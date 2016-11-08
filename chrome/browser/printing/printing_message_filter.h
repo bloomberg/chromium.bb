@@ -10,33 +10,21 @@
 #include <memory>
 #include <string>
 
-#include "base/compiler_specific.h"
 #include "base/macros.h"
 #include "build/build_config.h"
 #include "components/prefs/pref_member.h"
 #include "content/public/browser/browser_message_filter.h"
 #include "printing/features/features.h"
 
-#if defined(OS_WIN)
-#include "base/memory/shared_memory.h"
-#endif
-
 struct PrintHostMsg_ScriptedPrint_Params;
 class Profile;
-class ProfileIOData;
 
 namespace base {
 class DictionaryValue;
-class FilePath;
-}
-
-namespace content {
-class WebContents;
 }
 
 namespace printing {
 
-class PrintJobManager;
 class PrintQueriesQueue;
 class PrinterQuery;
 
@@ -54,26 +42,18 @@ class PrintingMessageFilter : public content::BrowserMessageFilter {
  private:
   ~PrintingMessageFilter() override;
 
-#if defined(OS_CHROMEOS) || defined(OS_ANDROID)
+#if defined(OS_ANDROID)
   // Used to ask the browser allocate a temporary file for the renderer
   // to fill in resulting PDF in renderer.
   void OnAllocateTempFileForPrinting(int render_view_id,
                                      base::FileDescriptor* temp_file_fd,
                                      int* sequence_number);
   void OnTempFileForPrintingWritten(int render_view_id, int sequence_number);
-#endif
 
-#if defined(OS_ANDROID)
   // Updates the file descriptor for the PrintViewManagerBasic of a given
   // render_view_id.
   void UpdateFileDescriptor(int render_view_id, int fd);
 #endif
-
-  // GetPrintSettingsForRenderView must be called via PostTask and
-  // base::Bind.  Collapse the settings-specific params into a
-  // struct to avoid running into issues with too many params
-  // to base::Bind.
-  struct GetPrintSettingsForRenderViewParams;
 
   // Checks if printing is enabled.
   void OnIsPrintingEnabled(bool* is_enabled);

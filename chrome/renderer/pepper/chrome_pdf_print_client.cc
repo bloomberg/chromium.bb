@@ -25,7 +25,7 @@ blink::WebElement GetWebElement(PP_Instance instance_id) {
 printing::PrintWebViewHelper* GetPrintWebViewHelper(
     const blink::WebElement& element) {
   if (element.isNull())
-    return NULL;
+    return nullptr;
   blink::WebView* view = element.document().frame()->view();
   content::RenderView* render_view = content::RenderView::FromWebView(view);
   return printing::PrintWebViewHelper::Get(render_view);
@@ -33,10 +33,8 @@ printing::PrintWebViewHelper* GetPrintWebViewHelper(
 
 }  // namespace
 
-ChromePDFPrintClient::ChromePDFPrintClient() {
-}
-ChromePDFPrintClient::~ChromePDFPrintClient() {
-}
+ChromePDFPrintClient::ChromePDFPrintClient() {}
+ChromePDFPrintClient::~ChromePDFPrintClient() {}
 
 bool ChromePDFPrintClient::IsPrintingEnabled(PP_Instance instance_id) {
   blink::WebElement element = GetWebElement(instance_id);
@@ -47,9 +45,8 @@ bool ChromePDFPrintClient::IsPrintingEnabled(PP_Instance instance_id) {
 bool ChromePDFPrintClient::Print(PP_Instance instance_id) {
   blink::WebElement element = GetWebElement(instance_id);
   printing::PrintWebViewHelper* helper = GetPrintWebViewHelper(element);
-  if (helper) {
-    helper->PrintNode(element);
-    return true;
-  }
-  return false;
+  if (!helper)
+    return false;
+  helper->PrintNode(element);
+  return true;
 }

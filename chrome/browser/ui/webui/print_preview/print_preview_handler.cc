@@ -103,6 +103,7 @@
 using content::BrowserThread;
 using content::RenderViewHost;
 using content::WebContents;
+using printing::PrintViewManager;
 
 namespace {
 
@@ -376,8 +377,7 @@ std::unique_ptr<base::DictionaryValue> GetPdfCapabilities(
 void PrintersToValues(const printing::PrinterList& printer_list,
                       base::ListValue* printers) {
   for (const printing::PrinterBasicInfo& printer : printer_list) {
-    std::unique_ptr<base::DictionaryValue> printer_info =
-        base::MakeUnique<base::DictionaryValue>();
+    auto printer_info = base::MakeUnique<base::DictionaryValue>();
     printer_info->SetString(printing::kSettingDeviceName, printer.printer_name);
 
     const auto printer_name_description =
@@ -935,8 +935,7 @@ void PrintPreviewHandler::HandlePrint(const base::ListValue* args) {
     // called. In the case below, since the preview dialog will be hidden and
     // not closed, we need to make this call.
     if (initiator) {
-      printing::PrintViewManager* print_view_manager =
-          printing::PrintViewManager::FromWebContents(initiator);
+      auto* print_view_manager = PrintViewManager::FromWebContents(initiator);
       print_view_manager->PrintPreviewDone();
     }
 #else
@@ -1003,8 +1002,7 @@ void PrintPreviewHandler::HandleGetPrinterCapabilities(
     return;
 
   if (printer_name == kLocalPdfPrinterId) {
-    std::unique_ptr<base::DictionaryValue> printer_info(
-        new base::DictionaryValue);
+    auto printer_info = base::MakeUnique<base::DictionaryValue>();
     printer_info->SetString(printing::kPrinterId, printer_name);
     printer_info->Set(
         printing::kPrinterCapabilities,
@@ -1046,7 +1044,7 @@ void PrintPreviewHandler::HandleGetAccessToken(const base::ListValue* args) {
   if (!args->GetString(0, &type))
     return;
   if (!token_service_)
-    token_service_.reset(new AccessTokenService(this));
+    token_service_ = base::MakeUnique<AccessTokenService>(this);
   token_service_->RequestToken(type);
 }
 
@@ -1075,8 +1073,7 @@ void PrintPreviewHandler::HandleShowSystemDialog(
   if (!initiator)
     return;
 
-  printing::PrintViewManager* print_view_manager =
-      printing::PrintViewManager::FromWebContents(initiator);
+  auto* print_view_manager = PrintViewManager::FromWebContents(initiator);
   print_view_manager->PrintForSystemDialogNow(
       base::Bind(&PrintPreviewHandler::ClosePreviewDialog,
                  weak_factory_.GetWeakPtr()));
@@ -1421,8 +1418,8 @@ void PrintPreviewHandler::StartPrivetLister(const scoped_refptr<
   DCHECK(!service_discovery_client_.get() ||
          service_discovery_client_.get() == client.get());
   service_discovery_client_ = client;
-  printer_lister_.reset(new cloud_print::PrivetLocalPrinterLister(
-      service_discovery_client_.get(), profile->GetRequestContext(), this));
+  printer_lister_ = base::MakeUnique<cloud_print::PrivetLocalPrinterLister>(
+      service_discovery_client_.get(), profile->GetRequestContext(), this);
   printer_lister_->Start();
 }
 
