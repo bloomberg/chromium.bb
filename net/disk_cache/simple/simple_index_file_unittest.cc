@@ -328,7 +328,8 @@ TEST_F(SimpleIndexFileTest, SimpleCacheUpgrade) {
                             index_file_contents.size()));
 
   // Upgrade the cache.
-  ASSERT_TRUE(disk_cache::UpgradeSimpleCacheOnDisk(cache_path));
+  ASSERT_TRUE(
+      disk_cache::UpgradeSimpleCacheOnDisk(cache_path, SimpleExperiment()));
 
   // Create the backend and initiate index flush by destroying the backend.
   base::Thread cache_thread("CacheThread");
