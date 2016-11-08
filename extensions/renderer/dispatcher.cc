@@ -14,6 +14,7 @@
 #include "base/callback.h"
 #include "base/command_line.h"
 #include "base/debug/alias.h"
+#include "base/feature_list.h"
 #include "base/lazy_instance.h"
 #include "base/macros.h"
 #include "base/memory/ptr_util.h"
@@ -28,9 +29,9 @@
 #include "build/build_config.h"
 #include "content/grit/content_resources.h"
 #include "content/public/child/v8_value_converter.h"
+#include "content/public/common/content_features.h"
 #include "content/public/common/content_switches.h"
 #include "content/public/common/url_constants.h"
-#include "content/public/renderer/guest_mode.h"
 #include "content/public/renderer/render_frame.h"
 #include "content/public/renderer/render_thread.h"
 #include "extensions/common/api/messaging/message.h"
@@ -713,7 +714,7 @@ std::vector<std::pair<std::string, int> > Dispatcher::GetJsResources() {
   resources.push_back(std::make_pair("guestViewEvents",
                                      IDR_GUEST_VIEW_EVENTS_JS));
 
-  if (content::GuestMode::UseCrossProcessFramesForGuests()) {
+  if (base::FeatureList::IsEnabled(::features::kGuestViewCrossProcessFrames)) {
     resources.push_back(std::make_pair("guestViewIframe",
                                        IDR_GUEST_VIEW_IFRAME_JS));
     resources.push_back(std::make_pair("guestViewIframeContainer",
@@ -1641,7 +1642,7 @@ void Dispatcher::RequireGuestViewModules(ScriptContext* context) {
   }
 
   if (requires_guest_view_module &&
-      content::GuestMode::UseCrossProcessFramesForGuests()) {
+      base::FeatureList::IsEnabled(::features::kGuestViewCrossProcessFrames)) {
     module_system->Require("guestViewIframe");
     module_system->Require("guestViewIframeContainer");
   }

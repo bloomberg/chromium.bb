@@ -7,6 +7,7 @@
 #include "build/build_config.h"
 #include "chrome/browser/extensions/extension_apitest.h"
 #include "chrome/test/base/ui_test_utils.h"
+#include "content/public/common/content_features.h"
 #include "content/public/common/content_switches.h"
 #include "extensions/common/feature_switch.h"
 #include "extensions/common/switches.h"
@@ -22,8 +23,15 @@ class ExtensionOptionsApiTest : public ExtensionApiTest,
     ExtensionApiTest::SetUpCommandLine(command_line);
 
     bool use_cross_process_frames_for_guests = GetParam();
-    if (use_cross_process_frames_for_guests)
-      command_line->AppendSwitch(switches::kUseCrossProcessFramesForGuests);
+    if (use_cross_process_frames_for_guests) {
+      command_line->AppendSwitchASCII(
+          switches::kEnableFeatures,
+          ::features::kGuestViewCrossProcessFrames.name);
+    } else {
+      command_line->AppendSwitchASCII(
+          switches::kDisableFeatures,
+          ::features::kGuestViewCrossProcessFrames.name);
+    }
   }
 };
 

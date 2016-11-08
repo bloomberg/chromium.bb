@@ -87,6 +87,11 @@ const base::Feature kGamepadExtensions{"GamepadExtensions",
 const base::Feature kGenericSensor{"GenericSensor",
                                    base::FEATURE_DISABLED_BY_DEFAULT};
 
+// Causes the implementations of guests (inner WebContents) to use
+// out-of-process iframes.
+const base::Feature kGuestViewCrossProcessFrames{
+    "GuestViewCrossProcessFrames", base::FEATURE_DISABLED_BY_DEFAULT};
+
 // Enables lazily parsing css properties for performance.
 const base::Feature kLazyParseCSS{"LazyParseCSS",
                                   base::FEATURE_DISABLED_BY_DEFAULT};

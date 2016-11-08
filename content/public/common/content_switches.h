@@ -25,7 +25,6 @@ CONTENT_EXPORT extern const char kAndroidFontsPath[];
 CONTENT_EXPORT extern const char kBlinkSettings[];
 CONTENT_EXPORT extern const char kBrowserCrashTest[];
 CONTENT_EXPORT extern const char kBrowserSubprocessPath[];
-CONTENT_EXPORT extern const char kUseCrossProcessFramesForGuests[];
 CONTENT_EXPORT extern const char kDefaultTileWidth[];
 CONTENT_EXPORT extern const char kDefaultTileHeight[];
 CONTENT_EXPORT extern const char kDisable2dCanvasAntialiasing[];

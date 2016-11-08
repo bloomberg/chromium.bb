@@ -1734,7 +1734,6 @@ void RenderProcessHostImpl::PropagateBrowserCommandLineToRenderer(
     switches::kTouchTextSelectionStrategy,
     switches::kTraceConfigFile,
     switches::kTraceToConsole,
-    switches::kUseCrossProcessFramesForGuests,
     switches::kUseFakeUIForMediaStream,
     // This flag needs to be propagated to the renderer process for
     // --in-process-webgl.

@@ -8,6 +8,7 @@
 #include "components/guest_view/browser/guest_view_manager.h"
 #include "components/guest_view/browser/guest_view_manager_factory.h"
 #include "components/guest_view/browser/test_guest_view_manager.h"
+#include "content/public/common/content_features.h"
 #include "content/public/common/content_switches.h"
 #include "content/public/test/browser_test.h"
 #include "content/public/test/browser_test_utils.h"
@@ -147,8 +148,15 @@ class AppViewTest : public AppShellTest,
     AppShellTest::SetUpCommandLine(command_line);
 
     bool use_cross_process_frames_for_guests = GetParam();
-    if (use_cross_process_frames_for_guests)
-      command_line->AppendSwitch(switches::kUseCrossProcessFramesForGuests);
+    if (use_cross_process_frames_for_guests) {
+      command_line->AppendSwitchASCII(
+          switches::kEnableFeatures,
+          ::features::kGuestViewCrossProcessFrames.name);
+    } else {
+      command_line->AppendSwitchASCII(
+          switches::kDisableFeatures,
+          ::features::kGuestViewCrossProcessFrames.name);
+    }
   }
 
   content::WebContents* embedder_web_contents_;

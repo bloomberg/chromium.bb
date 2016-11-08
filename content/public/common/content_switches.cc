@@ -62,11 +62,6 @@ const char kBrowserCrashTest[]              = "crash-test";
 // Path to the exe to run for the renderer and plugin subprocesses.
 const char kBrowserSubprocessPath[]         = "browser-subprocess-path";
 
-// Causes the implementations of guests (inner WebContents) to use
-// out-of-process iframes.
-const char kUseCrossProcessFramesForGuests[]   =
-    "use-cross-process-frames-for-guests";
-
 // Sets the tile size used by composited layers.
 const char kDefaultTileWidth[]              = "default-tile-width";
 const char kDefaultTileHeight[]             = "default-tile-height";

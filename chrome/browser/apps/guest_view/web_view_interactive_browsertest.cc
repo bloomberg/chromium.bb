@@ -33,6 +33,7 @@
 #include "content/public/browser/render_widget_host_iterator.h"
 #include "content/public/browser/render_widget_host_view.h"
 #include "content/public/browser/web_contents.h"
+#include "content/public/common/content_features.h"
 #include "content/public/common/content_switches.h"
 #include "content/public/test/browser_test_utils.h"
 #include "extensions/browser/api/extensions_api_client.h"
@@ -500,8 +501,15 @@ class WebViewInteractiveTest : public WebViewInteractiveTestBase,
     WebViewInteractiveTestBase::SetUpCommandLine(command_line);
 
     bool use_cross_process_frames_for_guests = GetParam();
-    if (use_cross_process_frames_for_guests)
-      command_line->AppendSwitch(switches::kUseCrossProcessFramesForGuests);
+    if (use_cross_process_frames_for_guests) {
+      command_line->AppendSwitchASCII(
+          switches::kEnableFeatures,
+          ::features::kGuestViewCrossProcessFrames.name);
+    } else {
+      command_line->AppendSwitchASCII(
+          switches::kDisableFeatures,
+          ::features::kGuestViewCrossProcessFrames.name);
+    }
   }
 };
 
