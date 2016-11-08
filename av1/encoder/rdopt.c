@@ -3018,16 +3018,15 @@ static int64_t rd_pick_intra_sby_mode(const AV1_COMP *const cpi, MACROBLOCK *x,
 
 // Return value 0: early termination triggered, no valid rd cost available;
 //              1: rd cost values are valid.
-static int super_block_uvrd(const AV1_COMP *const cpi, MACROBLOCK *x, int *rate,
-                            int64_t *distortion, int *skippable, int64_t *sse,
-                            BLOCK_SIZE bsize, int64_t ref_best_rd) {
+static int super_block_uvrd(const AV1_COMP *const cpi, MACROBLOCK *x,
+                            RD_STATS *rd_stats, BLOCK_SIZE bsize,
+                            int64_t ref_best_rd) {
   MACROBLOCKD *const xd = &x->e_mbd;
   MB_MODE_INFO *const mbmi = &xd->mi[0]->mbmi;
   const TX_SIZE uv_tx_size = get_uv_tx_size(mbmi, &xd->plane[1]);
   int plane;
   int is_cost_valid = 1;
-  RD_STATS rd_stats;
-  av1_init_rd_stats(&rd_stats);
+  av1_init_rd_stats(rd_stats);
 
   if (ref_best_rd < 0) is_cost_valid = 0;
 #if !CONFIG_PVQ
@@ -3046,10 +3045,10 @@ static int super_block_uvrd(const AV1_COMP *const cpi, MACROBLOCK *x, int *rate,
         is_cost_valid = 0;
         break;
       }
-      av1_merge_rd_stats(&rd_stats, &pn_rd_stats);
-      if (RDCOST(x->rdmult, x->rddiv, rd_stats.rate, rd_stats.dist) >
+      av1_merge_rd_stats(rd_stats, &pn_rd_stats);
+      if (RDCOST(x->rdmult, x->rddiv, rd_stats->rate, rd_stats->dist) >
               ref_best_rd &&
-          RDCOST(x->rdmult, x->rddiv, 0, rd_stats.sse) > ref_best_rd) {
+          RDCOST(x->rdmult, x->rddiv, 0, rd_stats->sse) > ref_best_rd) {
         is_cost_valid = 0;
         break;
       }
@@ -3058,13 +3057,8 @@ static int super_block_uvrd(const AV1_COMP *const cpi, MACROBLOCK *x, int *rate,
 
   if (!is_cost_valid) {
     // reset cost value
-    av1_invalid_rd_stats(&rd_stats);
+    av1_invalid_rd_stats(rd_stats);
   }
-
-  *rate = rd_stats.rate;
-  *distortion = rd_stats.dist;
-  *sse = rd_stats.sse;
-  *skippable = rd_stats.skip;
 
   return is_cost_valid;
 }
@@ -3686,9 +3680,7 @@ static int inter_block_uvrd(const AV1_COMP *cpi, MACROBLOCK *x,
 
 #if CONFIG_EXT_TX && CONFIG_RECT_TX
   if (is_rect_tx(mbmi->tx_size)) {
-    return super_block_uvrd(cpi, x, &rd_stats->rate, &rd_stats->dist,
-                            &rd_stats->skip, &rd_stats->sse, bsize,
-                            ref_best_rd);
+    return super_block_uvrd(cpi, x, rd_stats, bsize, ref_best_rd);
   }
 #endif  // CONFIG_EXT_TX && CONFIG_RECT_TX
 
@@ -3762,12 +3754,13 @@ static void rd_pick_palette_intra_sbuv(
       (4 * num_4x4_blocks_high_lookup[bsize]) >> (xd->plane[1].subsampling_y);
   const int cols =
       (4 * num_4x4_blocks_wide_lookup[bsize]) >> (xd->plane[1].subsampling_x);
-  int this_rate, this_rate_tokenonly, s;
-  int64_t this_distortion, this_rd;
+  int this_rate;
+  int64_t this_rd;
   int colors_u, colors_v, colors;
   const int src_stride = x->plane[1].src.stride;
   const uint8_t *const src_u = x->plane[1].src.buf;
   const uint8_t *const src_v = x->plane[2].src.buf;
+  RD_STATS tokenonly_rd_stats;
 
   if (rows * cols > PALETTE_MAX_BLOCK_SIZE) return;
 
@@ -3794,7 +3787,6 @@ static void rd_pick_palette_intra_sbuv(
     int r, c, n, i, j;
     const int max_itr = 50;
     uint8_t color_order[PALETTE_MAX_SIZE];
-    int64_t this_sse;
     float lb_u, ub_u, val_u;
     float lb_v, ub_v, val_v;
     float *const data = x->palette_buffer->kmeans_data_buf;
@@ -3873,11 +3865,10 @@ static void rd_pick_palette_intra_sbuv(
         }
       }
 
-      super_block_uvrd(cpi, x, &this_rate_tokenonly, &this_distortion, &s,
-                       &this_sse, bsize, *best_rd);
-      if (this_rate_tokenonly == INT_MAX) continue;
+      super_block_uvrd(cpi, x, &tokenonly_rd_stats, bsize, *best_rd);
+      if (tokenonly_rd_stats.rate == INT_MAX) continue;
       this_rate =
-          this_rate_tokenonly + dc_mode_cost +
+          tokenonly_rd_stats.rate + dc_mode_cost +
           2 * cpi->common.bit_depth * n * av1_cost_bit(128, 0) +
           cpi->palette_uv_size_cost[bsize - BLOCK_8X8][n - 2] +
           write_uniform_cost(n, color_map[0]) +
@@ -3894,7 +3885,7 @@ static void rd_pick_palette_intra_sbuv(
         }
       }
 
-      this_rd = RDCOST(x->rdmult, x->rddiv, this_rate, this_distortion);
+      this_rd = RDCOST(x->rdmult, x->rddiv, this_rate, tokenonly_rd_stats.dist);
       if (this_rd < *best_rd) {
         *best_rd = this_rd;
         *palette_mode_info = *pmi;
@@ -3902,9 +3893,9 @@ static void rd_pick_palette_intra_sbuv(
                rows * cols * sizeof(best_palette_color_map[0]));
         *mode_selected = DC_PRED;
         *rate = this_rate;
-        *distortion = this_distortion;
-        *rate_tokenonly = this_rate_tokenonly;
-        *skippable = s;
+        *distortion = tokenonly_rd_stats.dist;
+        *rate_tokenonly = tokenonly_rd_stats.rate;
+        *skippable = tokenonly_rd_stats.skip;
       }
     }
   }
@@ -3920,10 +3911,11 @@ static int rd_pick_filter_intra_sbuv(const AV1_COMP *const cpi, MACROBLOCK *x,
   MACROBLOCKD *const xd = &x->e_mbd;
   MB_MODE_INFO *mbmi = &xd->mi[0]->mbmi;
   int filter_intra_selected_flag = 0;
-  int this_rate_tokenonly, this_rate, s;
-  int64_t this_distortion, this_sse, this_rd;
+  int this_rate;
+  int64_t this_rd;
   FILTER_INTRA_MODE mode;
   FILTER_INTRA_MODE_INFO filter_intra_mode_info;
+  RD_STATS tokenonly_rd_stats;
 
   av1_zero(filter_intra_mode_info);
   mbmi->filter_intra_mode_info.use_filter_intra_mode[1] = 1;
@@ -3934,21 +3926,20 @@ static int rd_pick_filter_intra_sbuv(const AV1_COMP *const cpi, MACROBLOCK *x,
 
   for (mode = 0; mode < FILTER_INTRA_MODES; ++mode) {
     mbmi->filter_intra_mode_info.filter_intra_mode[1] = mode;
-    if (!super_block_uvrd(cpi, x, &this_rate_tokenonly, &this_distortion, &s,
-                          &this_sse, bsize, *best_rd))
+    if (!super_block_uvrd(cpi, x, &tokenonly_rd_stats, bsize, *best_rd))
       continue;
 
-    this_rate = this_rate_tokenonly +
+    this_rate = tokenonly_rd_stats.rate +
                 av1_cost_bit(cpi->common.fc->filter_intra_probs[1], 1) +
                 cpi->intra_uv_mode_cost[mbmi->mode][mbmi->uv_mode] +
                 write_uniform_cost(FILTER_INTRA_MODES, mode);
-    this_rd = RDCOST(x->rdmult, x->rddiv, this_rate, this_distortion);
+    this_rd = RDCOST(x->rdmult, x->rddiv, this_rate, tokenonly_rd_stats.dist);
     if (this_rd < *best_rd) {
       *best_rd = this_rd;
       *rate = this_rate;
-      *rate_tokenonly = this_rate_tokenonly;
-      *distortion = this_distortion;
-      *skippable = s;
+      *rate_tokenonly = tokenonly_rd_stats.rate;
+      *distortion = tokenonly_rd_stats.dist;
+      *skippable = tokenonly_rd_stats.skip;
       filter_intra_mode_info = mbmi->filter_intra_mode_info;
       filter_intra_selected_flag = 1;
     }
@@ -3973,22 +3964,21 @@ static void pick_intra_angle_routine_sbuv(
     int64_t *distortion, int *skippable, int *best_angle_delta,
     BLOCK_SIZE bsize, int rate_overhead, int64_t *best_rd) {
   MB_MODE_INFO *mbmi = &x->e_mbd.mi[0]->mbmi;
-  int this_rate_tokenonly, this_rate, s;
-  int64_t this_distortion, this_sse, this_rd;
+  int this_rate;
+  int64_t this_rd;
+  RD_STATS tokenonly_rd_stats;
 
-  if (!super_block_uvrd(cpi, x, &this_rate_tokenonly, &this_distortion, &s,
-                        &this_sse, bsize, *best_rd))
-    return;
+  if (!super_block_uvrd(cpi, x, &tokenonly_rd_stats, bsize, *best_rd)) return;
 
-  this_rate = this_rate_tokenonly + rate_overhead;
-  this_rd = RDCOST(x->rdmult, x->rddiv, this_rate, this_distortion);
+  this_rate = tokenonly_rd_stats.rate + rate_overhead;
+  this_rd = RDCOST(x->rdmult, x->rddiv, this_rate, tokenonly_rd_stats.dist);
   if (this_rd < *best_rd) {
     *best_rd = this_rd;
     *best_angle_delta = mbmi->angle_delta[1];
     *rate = this_rate;
-    *rate_tokenonly = this_rate_tokenonly;
-    *distortion = this_distortion;
-    *skippable = s;
+    *rate_tokenonly = tokenonly_rd_stats.rate;
+    *distortion = tokenonly_rd_stats.dist;
+    *skippable = tokenonly_rd_stats.skip;
   }
 }
 
@@ -3999,10 +3989,11 @@ static int rd_pick_intra_angle_sbuv(const AV1_COMP *const cpi, MACROBLOCK *x,
                                     int64_t best_rd) {
   MACROBLOCKD *const xd = &x->e_mbd;
   MB_MODE_INFO *mbmi = &xd->mi[0]->mbmi;
-  int this_rate_tokenonly, this_rate, s;
-  int64_t this_distortion, this_sse, this_rd;
+  int this_rate;
+  int64_t this_rd;
   int angle_delta, best_angle_delta = 0;
   const double rd_adjust = 1.2;
+  RD_STATS tokenonly_rd_stats;
 
   *rate_tokenonly = INT_MAX;
   if (ANGLE_FAST_SEARCH) {
@@ -4019,24 +4010,23 @@ static int rd_pick_intra_angle_sbuv(const AV1_COMP *const cpi, MACROBLOCK *x,
       tmp_best_rd = (i == 0 && best_rd < INT64_MAX)
                         ? (int64_t)(best_rd * rd_adjust)
                         : best_rd;
-      if (!super_block_uvrd(cpi, x, &this_rate_tokenonly, &this_distortion, &s,
-                            &this_sse, bsize, tmp_best_rd)) {
+      if (!super_block_uvrd(cpi, x, &tokenonly_rd_stats, bsize, tmp_best_rd)) {
         if (i == 0)
           break;
         else
           continue;
       }
-      this_rate = this_rate_tokenonly + rate_overhead;
-      this_rd = RDCOST(x->rdmult, x->rddiv, this_rate, this_distortion);
+      this_rate = tokenonly_rd_stats.rate + rate_overhead;
+      this_rd = RDCOST(x->rdmult, x->rddiv, this_rate, tokenonly_rd_stats.dist);
       if (i == 0 && best_rd < INT64_MAX && this_rd > best_rd * rd_adjust) break;
       if (this_rd < best_rd) {
         best_i = i;
         best_rd = this_rd;
         best_angle_delta = mbmi->angle_delta[1];
         *rate = this_rate;
-        *rate_tokenonly = this_rate_tokenonly;
-        *distortion = this_distortion;
-        *skippable = s;
+        *rate_tokenonly = tokenonly_rd_stats.rate;
+        *distortion = tokenonly_rd_stats.dist;
+        *skippable = tokenonly_rd_stats.skip;
       }
     }
 
@@ -4072,8 +4062,8 @@ static int64_t rd_pick_intra_sbuv_mode(const AV1_COMP *const cpi, MACROBLOCK *x,
   PREDICTION_MODE mode;
   PREDICTION_MODE mode_selected = DC_PRED;
   int64_t best_rd = INT64_MAX, this_rd;
-  int this_rate_tokenonly, this_rate, s;
-  int64_t this_distortion, this_sse;
+  int this_rate;
+  RD_STATS tokenonly_rd_stats;
 #if CONFIG_PVQ
   od_rollback_buffer buf;
 
@@ -4111,32 +4101,33 @@ static int64_t rd_pick_intra_sbuv_mode(const AV1_COMP *const cpi, MACROBLOCK *x,
                     write_uniform_cost(2 * MAX_ANGLE_DELTAS + 1, 0);
     mbmi->angle_delta[1] = 0;
     if (mbmi->sb_type >= BLOCK_8X8 && is_directional_mode) {
-      if (!rd_pick_intra_angle_sbuv(cpi, x, &this_rate, &this_rate_tokenonly,
-                                    &this_distortion, &s, bsize, rate_overhead,
-                                    best_rd))
+      if (!rd_pick_intra_angle_sbuv(
+              cpi, x, &this_rate, &tokenonly_rd_stats.rate,
+              &tokenonly_rd_stats.dist, &tokenonly_rd_stats.skip, bsize,
+              rate_overhead, best_rd))
         continue;
     } else {
-      if (!super_block_uvrd(cpi, x, &this_rate_tokenonly, &this_distortion, &s,
-                            &this_sse, bsize, best_rd)) {
+      if (!super_block_uvrd(cpi, x, &tokenonly_rd_stats, bsize, best_rd)) {
 #if CONFIG_PVQ
         od_encode_rollback(&x->daala_enc, &buf);
 #endif
         continue;
       }
     }
-    this_rate = this_rate_tokenonly + cpi->intra_uv_mode_cost[mbmi->mode][mode];
+    this_rate =
+        tokenonly_rd_stats.rate + cpi->intra_uv_mode_cost[mbmi->mode][mode];
     if (mbmi->sb_type >= BLOCK_8X8 && is_directional_mode)
       this_rate += write_uniform_cost(2 * MAX_ANGLE_DELTAS + 1,
                                       MAX_ANGLE_DELTAS + mbmi->angle_delta[1]);
 #else
-    if (!super_block_uvrd(cpi, x, &this_rate_tokenonly, &this_distortion, &s,
-                          &this_sse, bsize, best_rd)) {
+    if (!super_block_uvrd(cpi, x, &tokenonly_rd_stats, bsize, best_rd)) {
 #if CONFIG_PVQ
       od_encode_rollback(&x->daala_enc, &buf);
 #endif
       continue;
     }
-    this_rate = this_rate_tokenonly + cpi->intra_uv_mode_cost[mbmi->mode][mode];
+    this_rate =
+        tokenonly_rd_stats.rate + cpi->intra_uv_mode_cost[mbmi->mode][mode];
 #endif  // CONFIG_EXT_INTRA
 #if CONFIG_FILTER_INTRA
     if (mbmi->sb_type >= BLOCK_8X8 && mode == DC_PRED)
@@ -4159,10 +4150,10 @@ static int64_t rd_pick_intra_sbuv_mode(const AV1_COMP *const cpi, MACROBLOCK *x,
     // chroma's own mode decision based on separate RDO.
     // TODO(yushin) : Seek for more reasonable solution than this.
     this_rd = RDCOST(x->rdmult >> (1 * PVQ_CHROMA_RD), x->rddiv, this_rate,
-                     this_distortion);
+                     tokenonly_rd_stats.dist);
     od_encode_rollback(&x->daala_enc, &buf);
 #else
-    this_rd = RDCOST(x->rdmult, x->rddiv, this_rate, this_distortion);
+    this_rd = RDCOST(x->rdmult, x->rddiv, this_rate, tokenonly_rd_stats.dist);
 #endif
 
     if (this_rd < best_rd) {
@@ -4172,9 +4163,9 @@ static int64_t rd_pick_intra_sbuv_mode(const AV1_COMP *const cpi, MACROBLOCK *x,
 #endif  // CONFIG_EXT_INTRA
       best_rd = this_rd;
       *rate = this_rate;
-      *rate_tokenonly = this_rate_tokenonly;
-      *distortion = this_distortion;
-      *skippable = s;
+      *rate_tokenonly = tokenonly_rd_stats.rate;
+      *distortion = tokenonly_rd_stats.dist;
+      *skippable = tokenonly_rd_stats.skip;
     }
   }
 
@@ -7783,9 +7774,7 @@ static int64_t handle_inter_mode(
       int64_t sseuv = INT64_MAX;
       int64_t rdcosty = INT64_MAX;
       int is_cost_valid_uv = 0;
-#if CONFIG_VAR_TX
       RD_STATS rd_stats_uv;
-#endif
 
       {
         // Y cost and distortion
@@ -7851,15 +7840,14 @@ static int64_t handle_inter_mode(
       // record uv planes' transform block coefficient cost
       if (is_cost_valid_uv) av1_merge_rd_stats(&mbmi->rd_stats, &rd_stats_uv);
 #endif
+#else
+      is_cost_valid_uv =
+          super_block_uvrd(cpi, x, &rd_stats_uv, bsize, ref_best_rd - rdcosty);
+#endif  // CONFIG_VAR_TX
       *rate_uv = rd_stats_uv.rate;
       distortion_uv = rd_stats_uv.dist;
       skippable_uv = rd_stats_uv.skip;
       sseuv = rd_stats_uv.sse;
-#else
-      is_cost_valid_uv =
-          super_block_uvrd(cpi, x, rate_uv, &distortion_uv, &skippable_uv,
-                           &sseuv, bsize, ref_best_rd - rdcosty);
-#endif  // CONFIG_VAR_TX
       if (!is_cost_valid_uv) {
         *rate2 = INT_MAX;
         *distortion = INT64_MAX;
@@ -9553,13 +9541,11 @@ void av1_rd_pick_inter_mode_sb(const AV1_COMP *cpi, TileDataEnc *tile_data,
       inter_block_uvrd(cpi, x, &rd_stats_uv, bsize, INT64_MAX);
 #else
       super_block_yrd(cpi, x, &rd_stats_y, bsize, INT64_MAX);
-      super_block_uvrd(cpi, x, &rd_stats_uv.rate, &rd_stats_uv.dist,
-                       &rd_stats_uv.skip, &rd_stats_uv.sse, bsize, INT64_MAX);
+      super_block_uvrd(cpi, x, &rd_stats_uv, bsize, INT64_MAX);
 #endif  // CONFIG_VAR_TX
     } else {
       super_block_yrd(cpi, x, &rd_stats_y, bsize, INT64_MAX);
-      super_block_uvrd(cpi, x, &rd_stats_uv.rate, &rd_stats_uv.dist,
-                       &rd_stats_uv.skip, &rd_stats_uv.sse, bsize, INT64_MAX);
+      super_block_uvrd(cpi, x, &rd_stats_uv, bsize, INT64_MAX);
     }
 
     if (RDCOST(x->rdmult, x->rddiv, rd_stats_y.rate + rd_stats_uv.rate,
@@ -10697,22 +10683,20 @@ void av1_rd_pick_inter_mode_sub8x8(const struct AV1_COMP *cpi,
         // If even the 'Y' rd value of split is higher than best so far
         // then dont bother looking at UV
         int is_cost_valid_uv;
-#if CONFIG_VAR_TX
         RD_STATS rd_stats_uv;
-#endif
         av1_build_inter_predictors_sbuv(&x->e_mbd, mi_row, mi_col, BLOCK_8X8);
 #if CONFIG_VAR_TX
         is_cost_valid_uv =
             inter_block_uvrd(cpi, x, &rd_stats_uv, BLOCK_8X8, tmp_best_rdu);
+#else
+        is_cost_valid_uv =
+            super_block_uvrd(cpi, x, &rd_stats_uv, BLOCK_8X8, tmp_best_rdu);
+#endif
         rate_uv = rd_stats_uv.rate;
         distortion_uv = rd_stats_uv.dist;
         uv_skippable = rd_stats_uv.skip;
         uv_sse = rd_stats_uv.sse;
-#else
-        is_cost_valid_uv =
-            super_block_uvrd(cpi, x, &rate_uv, &distortion_uv, &uv_skippable,
-                             &uv_sse, BLOCK_8X8, tmp_best_rdu);
-#endif
+
         if (!is_cost_valid_uv) continue;
         rate2 += rate_uv;
         distortion2 += distortion_uv;
