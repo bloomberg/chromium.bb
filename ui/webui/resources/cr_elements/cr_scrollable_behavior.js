@@ -36,6 +36,11 @@
 
 /** @polymerBehavior */
 var CrScrollableBehavior = {
+  properties: {
+    /** @private */
+    intervalId_: Number,
+  },
+
   ready: function() {
     var scrollableElements = this.root.querySelectorAll('[scrollable]');
 
@@ -50,6 +55,11 @@ var CrScrollableBehavior = {
       scrollable.addEventListener('scroll', this.updateScrollEvent_.bind(this));
   },
 
+  detached: function() {
+    if (this.intervalId_)
+      clearInterval(this.intervalId_);
+  },
+
   /**
    * Called any time the contents of a scrollable container may have changed.
    * This ensures that the <iron-list> contents of dynamically sized
@@ -58,7 +68,7 @@ var CrScrollableBehavior = {
   updateScrollableContents() {
     let nodeList = this.root.querySelectorAll('[scrollable] iron-list');
     // Use setTimeout to avoid initial render / sizing issues.
-    let intervalId = setInterval(function() {
+    this.intervalId_ = setInterval(function() {
       let unreadyNodes = [];
       for (let node of nodeList) {
         if (node.parentNode.scrollHeight == 0) {
@@ -69,10 +79,10 @@ var CrScrollableBehavior = {
         ironList.notifyResize();
       }
       if (unreadyNodes.length == 0)
-        clearInterval(intervalId);
+        clearInterval(this.intervalId_);
       else
         nodeList = unreadyNodes;
-    }, 10);
+    }.bind(this), 10);
   },
 
   /**

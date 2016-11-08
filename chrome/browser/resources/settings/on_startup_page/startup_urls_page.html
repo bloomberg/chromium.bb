@@ -1,5 +1,6 @@
 <link rel="import" href="chrome://resources/html/polymer.html">
 <link rel="import" href="chrome://resources/polymer/v1_0/iron-flex-layout/classes/iron-flex-layout.html">
+<link rel="import" href="chrome://resources/polymer/v1_0/iron-list/iron-list.html">
 <link rel="import" href="chrome://resources/html/web_ui_listener_behavior.html">
 <link rel="import" href="chrome://resources/cr_elements/cr_scrollable_behavior.html">
 <link rel="import" href="/settings_shared_css.html">
@@ -35,7 +36,8 @@
           on-tap="onUseCurrentPagesTap_">$i18n{onStartupUseCurrent}</div>
     </div>
     <template is="dom-if" if="[[showStartupUrlDialog_]]" restamp>
-      <settings-startup-url-dialog model="[[startupUrlDialogModel_]]">
+      <settings-startup-url-dialog model="[[startupUrlDialogModel_]]"
+          on-close="destroyUrlDialog_">
       </settings-startup-url-dialog>
     </template>
   </template>
