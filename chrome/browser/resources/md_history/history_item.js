@@ -271,7 +271,8 @@ cr.define('md_history', function() {
         return;
 
       browserService.recordHistogram(
-          'HistoryPage.ClickPosition', this.index, UMA_MAX_BUCKET_VALUE);
+          'HistoryPage.ClickPosition',
+          Math.min(this.index, UMA_MAX_BUCKET_VALUE), UMA_MAX_BUCKET_VALUE);
 
       if (this.index <= UMA_MAX_SUBSET_BUCKET_VALUE) {
         browserService.recordHistogram(
