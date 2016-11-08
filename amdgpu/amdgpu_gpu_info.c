@@ -182,40 +182,44 @@ drm_private int amdgpu_query_gpu_info_init(amdgpu_device_handle dev)
 		dev->info.backend_disable[i] =
 			(dev->info.backend_disable[i] >> 16) & 0xff;
 
-		r = amdgpu_read_mm_registers(dev, 0xa0d4, 1, instance, 0,
-					     &dev->info.pa_sc_raster_cfg[i]);
+		if (dev->info.family_id < AMDGPU_FAMILY_AI) {
+			r = amdgpu_read_mm_registers(dev, 0xa0d4, 1, instance, 0,
+						     &dev->info.pa_sc_raster_cfg[i]);
+			if (r)
+				return r;
+
+			if (dev->info.family_id >= AMDGPU_FAMILY_CI) {
+				r = amdgpu_read_mm_registers(dev, 0xa0d5, 1, instance, 0,
+						     &dev->info.pa_sc_raster_cfg1[i]);
+				if (r)
+					return r;
+			}
+		}
+	}
+
+	r = amdgpu_read_mm_registers(dev, 0x263e, 1, 0xffffffff, 0,
+					     &dev->info.gb_addr_cfg);
+	if (r)
+		return r;
+
+	if (dev->info.family_id < AMDGPU_FAMILY_AI) {
+		r = amdgpu_read_mm_registers(dev, 0x2644, 32, 0xffffffff, 0,
+					     dev->info.gb_tile_mode);
 		if (r)
 			return r;
 
 		if (dev->info.family_id >= AMDGPU_FAMILY_CI) {
-			r = amdgpu_read_mm_registers(dev, 0xa0d5, 1, instance, 0,
-					     &dev->info.pa_sc_raster_cfg1[i]);
+			r = amdgpu_read_mm_registers(dev, 0x2664, 16, 0xffffffff, 0,
+						     dev->info.gb_macro_tile_mode);
 			if (r)
 				return r;
 		}
-	}
 
-	r = amdgpu_read_mm_registers(dev, 0x2644, 32, 0xffffffff, 0,
-				     dev->info.gb_tile_mode);
-	if (r)
-		return r;
-
-	if (dev->info.family_id >= AMDGPU_FAMILY_CI) {
-		r = amdgpu_read_mm_registers(dev, 0x2664, 16, 0xffffffff, 0,
-					     dev->info.gb_macro_tile_mode);
+		r = amdgpu_read_mm_registers(dev, 0x9d8, 1, 0xffffffff, 0,
+					     &dev->info.mc_arb_ramcfg);
 		if (r)
 			return r;
 	}
-
-	r = amdgpu_read_mm_registers(dev, 0x263e, 1, 0xffffffff, 0,
-				     &dev->info.gb_addr_cfg);
-	if (r)
-		return r;
-
-	r = amdgpu_read_mm_registers(dev, 0x9d8, 1, 0xffffffff, 0,
-				     &dev->info.mc_arb_ramcfg);
-	if (r)
-		return r;
 
 	dev->info.cu_active_number = dev->dev_info.cu_active_number;
 	dev->info.cu_ao_mask = dev->dev_info.cu_ao_mask;
