@@ -125,13 +125,16 @@ DeviceLocalAccountPolicyBroker::DeviceLocalAccountPolicyBroker(
       user_id_(account.user_id),
       component_policy_cache_path_(component_policy_cache_path),
       store_(std::move(store)),
-      extension_tracker_(account, store_.get(), &schema_registry_),
       external_data_manager_(external_data_manager),
       core_(dm_protocol::kChromePublicAccountPolicyType,
             store_->account_id(),
             store_.get(),
             task_runner),
       policy_update_callback_(policy_update_callback) {
+  if (account.type != DeviceLocalAccount::TYPE_ARC_KIOSK_APP) {
+    extension_tracker_.reset(new DeviceLocalAccountExtensionTracker(
+        account, store_.get(), &schema_registry_));
+  }
   base::FilePath cache_root_dir;
   CHECK(PathService::Get(chromeos::DIR_DEVICE_LOCAL_ACCOUNT_EXTENSIONS,
                          &cache_root_dir));

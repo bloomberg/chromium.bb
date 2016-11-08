@@ -127,7 +127,7 @@ class DeviceLocalAccountPolicyBroker
   const base::FilePath component_policy_cache_path_;
   SchemaRegistry schema_registry_;
   const std::unique_ptr<DeviceLocalAccountPolicyStore> store_;
-  DeviceLocalAccountExtensionTracker extension_tracker_;
+  std::unique_ptr<DeviceLocalAccountExtensionTracker> extension_tracker_;
   scoped_refptr<DeviceLocalAccountExternalDataManager> external_data_manager_;
   scoped_refptr<chromeos::DeviceLocalAccountExternalPolicyLoader>
       extension_loader_;

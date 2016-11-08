@@ -15,6 +15,26 @@ class OwnerSettingsServiceChromeOS;
 
 namespace policy {
 
+struct ArcKioskAppBasicInfo {
+  ArcKioskAppBasicInfo(const std::string& package_name,
+                       const std::string& class_name,
+                       const std::string& action);
+  ArcKioskAppBasicInfo(const ArcKioskAppBasicInfo& other);
+  ArcKioskAppBasicInfo();
+  ~ArcKioskAppBasicInfo();
+
+  bool operator==(const ArcKioskAppBasicInfo& other) const;
+
+  const std::string& package_name() const { return package_name_; }
+  const std::string& class_name() const { return class_name_; }
+  const std::string& action() const { return action_; }
+
+ private:
+  std::string package_name_;
+  std::string class_name_;
+  std::string action_;
+};
+
 // This must match DeviceLocalAccountInfoProto.AccountType in
 // chrome_device_policy.proto.
 struct DeviceLocalAccount {
@@ -34,6 +54,8 @@ struct DeviceLocalAccount {
                      const std::string& account_id,
                      const std::string& kiosk_app_id,
                      const std::string& kiosk_app_update_url);
+  DeviceLocalAccount(const ArcKioskAppBasicInfo& arc_kiosk_app_info,
+                     const std::string& account_id);
   DeviceLocalAccount(const DeviceLocalAccount& other);
   ~DeviceLocalAccount();
 
@@ -59,6 +81,8 @@ struct DeviceLocalAccount {
   std::string user_id;
   std::string kiosk_app_id;
   std::string kiosk_app_update_url;
+
+  ArcKioskAppBasicInfo arc_kiosk_app_info;
 };
 
 std::string GenerateDeviceLocalAccountUserId(const std::string& account_id,

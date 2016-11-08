@@ -30,6 +30,7 @@
 #include "chrome/browser/chromeos/accessibility/accessibility_manager.h"
 #include "chrome/browser/chromeos/accessibility/magnification_manager.h"
 #include "chrome/browser/chromeos/accessibility/spoken_feedback_event_rewriter.h"
+#include "chrome/browser/chromeos/app_mode/arc/arc_kiosk_app_manager.h"
 #include "chrome/browser/chromeos/app_mode/kiosk_app_launch_error.h"
 #include "chrome/browser/chromeos/app_mode/kiosk_app_manager.h"
 #include "chrome/browser/chromeos/app_mode/kiosk_mode_idle_app_name_notification.h"
@@ -523,6 +524,8 @@ void ChromeBrowserMainPartsChromeos::PreProfileInit() {
 
   power_prefs_.reset(new PowerPrefs(PowerPolicyController::Get()));
 
+  arc_kiosk_app_manager_.reset(new ArcKioskAppManager());
+
   // In Aura builds this will initialize ash::Shell.
   ChromeBrowserMainPartsLinux::PreProfileInit();
 
@@ -777,6 +780,7 @@ void ChromeBrowserMainPartsChromeos::PostMainMessageLoopRun() {
   BootTimesRecorder::Get()->AddLogoutTimeMarker("UIMessageLoopEnded", true);
 
   arc_service_launcher_->Shutdown();
+  arc_kiosk_app_manager_.reset();
 
   // Destroy the application name notifier for Kiosk mode.
   KioskModeIdleAppNameNotification::Shutdown();

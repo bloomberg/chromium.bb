@@ -33,6 +33,24 @@ const char kDeviceLocalAccountDomainSuffix[] = ".device-local.localhost";
 
 }  // namespace
 
+ArcKioskAppBasicInfo::ArcKioskAppBasicInfo(const std::string& package_name,
+                                           const std::string& class_name,
+                                           const std::string& action)
+    : package_name_(package_name), class_name_(class_name), action_(action) {}
+
+ArcKioskAppBasicInfo::ArcKioskAppBasicInfo(const ArcKioskAppBasicInfo& other) =
+    default;
+
+ArcKioskAppBasicInfo::ArcKioskAppBasicInfo() {}
+
+ArcKioskAppBasicInfo::~ArcKioskAppBasicInfo() {}
+
+bool ArcKioskAppBasicInfo::operator==(const ArcKioskAppBasicInfo& other) const {
+  return this->package_name_ == other.package_name_ &&
+         this->action_ == other.action_ &&
+         this->class_name_ == other.class_name_;
+}
+
 DeviceLocalAccount::DeviceLocalAccount(Type type,
                                        const std::string& account_id,
                                        const std::string& kiosk_app_id,
@@ -43,6 +61,14 @@ DeviceLocalAccount::DeviceLocalAccount(Type type,
       kiosk_app_id(kiosk_app_id),
       kiosk_app_update_url(kiosk_app_update_url) {
 }
+
+DeviceLocalAccount::DeviceLocalAccount(
+    const ArcKioskAppBasicInfo& arc_kiosk_app_info,
+    const std::string& account_id)
+    : type(DeviceLocalAccount::TYPE_ARC_KIOSK_APP),
+      account_id(account_id),
+      user_id(GenerateDeviceLocalAccountUserId(account_id, type)),
+      arc_kiosk_app_info(arc_kiosk_app_info) {}
 
 DeviceLocalAccount::DeviceLocalAccount(const DeviceLocalAccount& other) =
     default;
@@ -130,6 +156,20 @@ void SetDeviceLocalAccounts(chromeos::OwnerSettingsServiceChromeOS* service,
             chromeos::kAccountsPrefDeviceLocalAccountsKeyKioskAppUpdateURL,
             it->kiosk_app_update_url);
       }
+    } else if (it->type == DeviceLocalAccount::TYPE_ARC_KIOSK_APP) {
+      entry->SetStringWithoutPathExpansion(
+          chromeos::kAccountsPrefDeviceLocalAccountsKeyArcKioskPackage,
+          it->arc_kiosk_app_info.package_name());
+      if (!it->arc_kiosk_app_info.class_name().empty()) {
+        entry->SetStringWithoutPathExpansion(
+            chromeos::kAccountsPrefDeviceLocalAccountsKeyArcKioskClass,
+            it->arc_kiosk_app_info.class_name());
+      }
+      if (!it->arc_kiosk_app_info.action().empty()) {
+        entry->SetStringWithoutPathExpansion(
+            chromeos::kAccountsPrefDeviceLocalAccountsKeyArcKioskAction,
+            it->arc_kiosk_app_info.action());
+      }
     }
     list.Append(std::move(entry));
   }
@@ -173,32 +213,66 @@ std::vector<DeviceLocalAccount> GetDeviceLocalAccounts(
       continue;
     }
 
-    std::string kiosk_app_id;
-    std::string kiosk_app_update_url;
-    if (type == DeviceLocalAccount::TYPE_KIOSK_APP) {
-      if (!entry->GetStringWithoutPathExpansion(
-              chromeos::kAccountsPrefDeviceLocalAccountsKeyKioskAppId,
-              &kiosk_app_id)) {
-        LOG(ERROR) << "Missing app ID in device-local account entry at index "
-                   << i << ".";
-        continue;
-      }
-      entry->GetStringWithoutPathExpansion(
-          chromeos::kAccountsPrefDeviceLocalAccountsKeyKioskAppUpdateURL,
-          &kiosk_app_update_url);
-    }
-
     if (!account_ids.insert(account_id).second) {
       LOG(ERROR) << "Duplicate entry in device-local account list at index "
                  << i << ": " << account_id << ".";
       continue;
     }
 
-    accounts.push_back(
-        DeviceLocalAccount(static_cast<DeviceLocalAccount::Type>(type),
-                           account_id,
-                           kiosk_app_id,
-                           kiosk_app_update_url));
+    switch (type) {
+      case DeviceLocalAccount::TYPE_PUBLIC_SESSION:
+        accounts.push_back(DeviceLocalAccount(
+            DeviceLocalAccount::TYPE_PUBLIC_SESSION, account_id, "", ""));
+        break;
+      case DeviceLocalAccount::TYPE_KIOSK_APP: {
+        std::string kiosk_app_id;
+        std::string kiosk_app_update_url;
+        if (type == DeviceLocalAccount::TYPE_KIOSK_APP) {
+          if (!entry->GetStringWithoutPathExpansion(
+                  chromeos::kAccountsPrefDeviceLocalAccountsKeyKioskAppId,
+                  &kiosk_app_id)) {
+            LOG(ERROR)
+                << "Missing app ID in device-local account entry at index " << i
+                << ".";
+            continue;
+          }
+          entry->GetStringWithoutPathExpansion(
+              chromeos::kAccountsPrefDeviceLocalAccountsKeyKioskAppUpdateURL,
+              &kiosk_app_update_url);
+        }
+
+        accounts.push_back(
+            DeviceLocalAccount(DeviceLocalAccount::TYPE_KIOSK_APP, account_id,
+                               kiosk_app_id, kiosk_app_update_url));
+        break;
+      }
+      case DeviceLocalAccount::TYPE_ARC_KIOSK_APP: {
+        std::string package_name;
+        std::string class_name;
+        std::string action;
+        if (!entry->GetStringWithoutPathExpansion(
+                chromeos::kAccountsPrefDeviceLocalAccountsKeyArcKioskPackage,
+                &package_name)) {
+          LOG(ERROR) << "Missing package name in ARC kiosk type device-local "
+                        "account at index "
+                     << i << ".";
+          continue;
+        }
+        entry->GetStringWithoutPathExpansion(
+            chromeos::kAccountsPrefDeviceLocalAccountsKeyArcKioskClass,
+            &class_name);
+        entry->GetStringWithoutPathExpansion(
+            chromeos::kAccountsPrefDeviceLocalAccountsKeyArcKioskAction,
+            &action);
+        const ArcKioskAppBasicInfo arc_kiosk_app(package_name, class_name,
+                                                 action);
+
+        accounts.push_back(DeviceLocalAccount(arc_kiosk_app, account_id));
+        break;
+      }
+      case DeviceLocalAccount::TYPE_COUNT:
+        NOTREACHED();
+    }
   }
   return accounts;
 }

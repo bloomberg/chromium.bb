@@ -23,6 +23,7 @@ class ArcServiceLauncher;
 
 namespace chromeos {
 
+class ArcKioskAppManager;
 class DataPromoNotification;
 class EventRewriter;
 class EventRewriterController;
@@ -93,6 +94,7 @@ class ChromeBrowserMainPartsChromeos : public ChromeBrowserMainPartsLinux {
   std::unique_ptr<arc::ArcServiceLauncher> arc_service_launcher_;
 
   std::unique_ptr<LowDiskNotification> low_disk_notification_;
+  std::unique_ptr<ArcKioskAppManager> arc_kiosk_app_manager_;
 
   DISALLOW_COPY_AND_ASSIGN(ChromeBrowserMainPartsChromeos);
 };

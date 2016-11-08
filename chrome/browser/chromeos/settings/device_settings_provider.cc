@@ -201,6 +201,21 @@ void DecodeLoginPolicies(
             kAccountsPrefDeviceLocalAccountsKeyKioskAppUpdateURL,
             entry->kiosk_app().update_url());
       }
+      if (entry->android_kiosk_app().has_package_name()) {
+        entry_dict->SetStringWithoutPathExpansion(
+            chromeos::kAccountsPrefDeviceLocalAccountsKeyArcKioskPackage,
+            entry->android_kiosk_app().package_name());
+      }
+      if (entry->android_kiosk_app().has_class_name()) {
+        entry_dict->SetStringWithoutPathExpansion(
+            chromeos::kAccountsPrefDeviceLocalAccountsKeyArcKioskClass,
+            entry->android_kiosk_app().class_name());
+      }
+      if (entry->android_kiosk_app().has_action()) {
+        entry_dict->SetStringWithoutPathExpansion(
+            chromeos::kAccountsPrefDeviceLocalAccountsKeyArcKioskAction,
+            entry->android_kiosk_app().action());
+      }
     } else if (entry->has_deprecated_public_session_id()) {
       // Deprecated public session specification.
       entry_dict->SetStringWithoutPathExpansion(
