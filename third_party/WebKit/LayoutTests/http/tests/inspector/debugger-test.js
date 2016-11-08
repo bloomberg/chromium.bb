@@ -422,7 +422,7 @@ InspectorTest.setBreakpoint = function(sourceFrame, lineNumber, condition, enabl
 
 InspectorTest.removeBreakpoint = function(sourceFrame, lineNumber)
 {
-    sourceFrame._breakpointManager.findBreakpointOnLine(sourceFrame._uiSourceCode, lineNumber).remove();
+    sourceFrame._breakpointManager.findBreakpoints(sourceFrame._uiSourceCode, lineNumber)[0].remove();
 };
 
 InspectorTest.dumpBreakpointSidebarPane = function(title)

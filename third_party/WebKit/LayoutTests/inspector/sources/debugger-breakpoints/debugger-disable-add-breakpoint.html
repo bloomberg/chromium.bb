@@ -60,7 +60,7 @@ var test = function()
     function step7()
     {
         InspectorTest.addResult("Debugger disabled");
-        var breakpoint = WebInspector.breakpointManager.findBreakpointOnLine(testSourceFrame.uiSourceCode(), 8);
+        var breakpoint = WebInspector.breakpointManager.findBreakpoints(testSourceFrame.uiSourceCode(), 8)[0];
         breakpoint.remove();
         InspectorTest.addResult("Breakpoint removed");
         InspectorTest.debuggerModel.addEventListener(WebInspector.DebuggerModel.Events.DebuggerWasEnabled, step8, this);
