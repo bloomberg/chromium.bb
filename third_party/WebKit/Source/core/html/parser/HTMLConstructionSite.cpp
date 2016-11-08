@@ -676,7 +676,7 @@ void HTMLConstructionSite::insertHTMLFormElement(AtomicHTMLToken* token,
   HTMLElement* element = createHTMLElement(token);
   ASSERT(isHTMLFormElement(element));
   HTMLFormElement* formElement = toHTMLFormElement(element);
-  if (!ownerDocumentForCurrentNode().isTemplateDocument())
+  if (!openElements()->hasTemplateInHTMLScope())
     m_form = formElement;
   formElement->setDemoted(isDemoted);
   attachLater(currentNode(), formElement);
