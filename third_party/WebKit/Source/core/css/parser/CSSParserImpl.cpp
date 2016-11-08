@@ -885,24 +885,20 @@ void CSSParserImpl::consumeDeclaration(CSSParserTokenRange range,
     }
   }
 
-  size_t propertiesCount = m_parsedProperties.size();
-  // TODO(timloh): This should only be for StyleRule::Style/Keyframe,
-  // crbug.com/641873.
-  if (unresolvedProperty == CSSPropertyVariable) {
-    AtomicString variableName = token.value().toAtomicString();
-    bool isAnimationTainted = ruleType == StyleRule::Keyframe;
-    consumeVariableValue(range.makeSubRange(&range.peek(), declarationValueEnd),
-                         variableName, important, isAnimationTainted);
-  }
-
-  // TODO(timloh): Should this check occur before the call to
-  // consumeVariableValue()?
   if (important &&
       (ruleType == StyleRule::FontFace || ruleType == StyleRule::Keyframe))
     return;
 
-  if (unresolvedProperty != CSSPropertyInvalid &&
-      unresolvedProperty != CSSPropertyVariable) {
+  size_t propertiesCount = m_parsedProperties.size();
+
+  if (unresolvedProperty == CSSPropertyVariable) {
+    if (ruleType != StyleRule::Style && ruleType != StyleRule::Keyframe)
+      return;
+    AtomicString variableName = token.value().toAtomicString();
+    bool isAnimationTainted = ruleType == StyleRule::Keyframe;
+    consumeVariableValue(range.makeSubRange(&range.peek(), declarationValueEnd),
+                         variableName, important, isAnimationTainted);
+  } else if (unresolvedProperty != CSSPropertyInvalid) {
     if (m_styleSheet && m_styleSheet->singleOwnerDocument())
       Deprecation::warnOnDeprecatedProperties(
           m_styleSheet->singleOwnerDocument()->frame(), unresolvedProperty);
