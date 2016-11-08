@@ -101,14 +101,10 @@ static CompositingQueryMode gCompositingQueryMode =
 
 struct SameSizeAsPaintLayer : DisplayItemClient {
   int bitFields;
-  void* pointers[10];
+  void* pointers[11];
   LayoutUnit layoutUnits[4];
   IntSize size;
   Persistent<PaintLayerScrollableArea> scrollableArea;
-  struct {
-    IntRect rect, rect2;
-    void* pointers[2];
-  } ancestorCompositingInputs;
   struct {
     IntSize size;
     void* pointer;
@@ -1031,14 +1027,9 @@ void PaintLayer::setNeedsCompositingInputsUpdate() {
 
 void PaintLayer::updateAncestorDependentCompositingInputs(
     const AncestorDependentCompositingInputs& compositingInputs,
-    const RareAncestorDependentCompositingInputs& rareCompositingInputs,
     bool hasAncestorWithClipPath) {
-  m_ancestorDependentCompositingInputs = compositingInputs;
-  if (rareCompositingInputs.isDefault())
-    m_rareAncestorDependentCompositingInputs.reset();
-  else
-    m_rareAncestorDependentCompositingInputs = wrapUnique(
-        new RareAncestorDependentCompositingInputs(rareCompositingInputs));
+  m_ancestorDependentCompositingInputs =
+      wrapUnique(new AncestorDependentCompositingInputs(compositingInputs));
   m_hasAncestorWithClipPath = hasAncestorWithClipPath;
   m_needsAncestorDependentCompositingInputsUpdate = false;
 }
