@@ -331,7 +331,7 @@ void NTPSnippetsService::FetchSnippetsFromHosts(
 void NTPSnippetsService::Fetch(
     const Category& category,
     const std::set<std::string>& known_suggestion_ids,
-    FetchingCallback callback) {
+    const FetchingCallback& callback) {
   if (!ready()) {
     CallWithEmptyResults(callback);
     return;

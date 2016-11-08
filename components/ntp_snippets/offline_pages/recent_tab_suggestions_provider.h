@@ -49,7 +49,7 @@ class RecentTabSuggestionsProvider : public ContentSuggestionsProvider,
                             const ImageFetchedCallback& callback) override;
   void Fetch(const Category& category,
              const std::set<std::string>& known_suggestion_ids,
-             FetchingCallback callback) override;
+             const FetchingCallback& callback) override;
   void ClearHistory(
       base::Time begin,
       base::Time end,

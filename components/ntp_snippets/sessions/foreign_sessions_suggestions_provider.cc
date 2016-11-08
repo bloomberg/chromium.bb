@@ -154,7 +154,7 @@ void ForeignSessionsSuggestionsProvider::FetchSuggestionImage(
 void ForeignSessionsSuggestionsProvider::Fetch(
     const Category& category,
     const std::set<std::string>& known_suggestion_ids,
-    FetchingCallback callback) {
+    const FetchingCallback& callback) {
   NOTREACHED();
 }
 

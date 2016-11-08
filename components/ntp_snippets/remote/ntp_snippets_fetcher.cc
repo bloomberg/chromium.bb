@@ -774,8 +774,9 @@ void NTPSnippetsFetcher::FilterCategories(FetchedCategoriesVector* categories) {
     categories->clear();
     return;
   }
-  categories->erase(categories->begin(), category_it);
-  categories->erase(category_it + 1, categories->end());
+  FetchedCategory category = std::move(*category_it);
+  categories->clear();
+  categories->emplace_back(std::move(category));
 }
 
 void NTPSnippetsFetcher::FetchFinished(
@@ -785,9 +786,9 @@ void NTPSnippetsFetcher::FetchFinished(
   DCHECK(result == FetchResult::SUCCESS || !fetched_categories);
   last_status_ = FetchResultToString(result) + extra_message;
 
-  // TODO(fhorschig): Filter (un)wanted categories by modifying fetch request.
-  // As soon as backends support the parameter, there is no reason to overfetch
-  // and filter here.
+  // Filter out unwanted categories if necessary.
+  // TODO(fhorschig): As soon as the server supports filtering by
+  // that instead of over-fetching and filtering here.
   if (fetched_categories.has_value())
     FilterCategories(&fetched_categories.value());
 

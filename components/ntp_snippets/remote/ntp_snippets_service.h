@@ -119,7 +119,7 @@ class NTPSnippetsService final : public ContentSuggestionsProvider,
                             const ImageFetchedCallback& callback) override;
   void Fetch(const Category& category,
              const std::set<std::string>& known_suggestion_ids,
-             FetchingCallback callback) override;
+             const FetchingCallback& callback) override;
   void ClearHistory(
       base::Time begin,
       base::Time end,
@@ -350,9 +350,8 @@ class NTPSnippetsService final : public ContentSuggestionsProvider,
     ~CategoryContent();
     CategoryContent& operator=(CategoryContent&&);
   };
-  using CategoryContentMap =
-      std::map<Category, CategoryContent, Category::CompareByID>;
-  CategoryContentMap categories_;
+
+  std::map<Category, CategoryContent, Category::CompareByID> categories_;
 
   // The ISO 639-1 code of the language used by the application.
   const std::string application_language_code_;

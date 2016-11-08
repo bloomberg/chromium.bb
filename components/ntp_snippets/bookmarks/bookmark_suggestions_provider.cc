@@ -158,7 +158,7 @@ void BookmarkSuggestionsProvider::FetchSuggestionImage(
 void BookmarkSuggestionsProvider::Fetch(
     const Category& category,
     const std::set<std::string>& known_suggestion_ids,
-    FetchingCallback callback) {
+    const FetchingCallback& callback) {
   NOTREACHED();
   base::ThreadTaskRunnerHandle::Get()->PostTask(
       FROM_HERE,

@@ -109,7 +109,7 @@ class ContentSuggestionsProvider {
   // existing suggestions.
   virtual void Fetch(const Category& category,
                      const std::set<std::string>& known_suggestion_ids,
-                     FetchingCallback callback) = 0;
+                     const FetchingCallback& callback) = 0;
 
   // Removes history from the specified time range where the URL matches the
   // |filter|. The data removed depends on the provider. Note that the

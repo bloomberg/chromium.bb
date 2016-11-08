@@ -684,6 +684,21 @@ TEST_F(NTPSnippetsContentSuggestionsFetcherTest, ExclusiveCategoryOnly) {
       "    \"ampUrl\" : \"http://localhost/amp\","
       "    \"faviconUrl\" : \"http://localhost/favicon.ico\" "
       "  }]"
+      "}, {"
+      "  \"id\": 3,"
+      "  \"localizedTitle\": \"Articles for Anybody\","
+      "  \"suggestions\" : [{"
+      "    \"ids\" : [\"http://localhost/foo3\"],"
+      "    \"title\" : \"Foo Barred from Baz\","
+      "    \"snippet\" : \"...\","
+      "    \"fullPageUrl\" : \"http://localhost/foo3\","
+      "    \"creationTime\" : \"2016-06-30T11:01:37.000Z\","
+      "    \"expirationTime\" : \"2016-07-01T11:01:37.000Z\","
+      "    \"attribution\" : \"Foo News\","
+      "    \"imageUrl\" : \"http://localhost/foo3.jpg\","
+      "    \"ampUrl\" : \"http://localhost/amp\","
+      "    \"faviconUrl\" : \"http://localhost/favicon.ico\" "
+      "  }]"
       "}]}";
   SetFakeResponse(/*response_data=*/kJsonStr, net::HTTP_OK,
                   net::URLRequestStatus::SUCCESS);
@@ -693,7 +708,7 @@ TEST_F(NTPSnippetsContentSuggestionsFetcherTest, ExclusiveCategoryOnly) {
 
   NTPSnippetsFetcher::Params params = test_params();
   params.exclusive_category = base::Optional<Category>(
-      CategoryFactory().FromKnownCategory(KnownCategories::ARTICLES));
+      CategoryFactory().FromRemoteCategory(2));
   snippets_fetcher().FetchSnippets(
       params, ToSnippetsAvailableCallback(&mock_callback()));
   FastForwardUntilNoTasksRemain();
@@ -702,10 +717,10 @@ TEST_F(NTPSnippetsContentSuggestionsFetcherTest, ExclusiveCategoryOnly) {
   ASSERT_THAT(fetched_categories->size(), Eq(1u));
   const auto& category = (*fetched_categories)[0];
   EXPECT_THAT(category.category.id(),
-              Eq(static_cast<int>(KnownCategories::ARTICLES)));
+              Eq(CategoryFactory().FromRemoteCategory(2).id()));
   ASSERT_THAT(category.snippets.size(), Eq(1u));
   EXPECT_THAT(category.snippets[0]->best_source().url.spec(),
-              Eq("http://localhost/foobar"));
+              Eq("http://localhost/foo2"));
 }
 
 TEST_F(NTPSnippetsFetcherTest, ShouldFetchSuccessfullyEmptyList) {

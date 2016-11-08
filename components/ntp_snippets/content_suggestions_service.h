@@ -34,7 +34,6 @@ class Image;
 namespace ntp_snippets {
 
 class NTPSnippetsService;
-class NTPSnippetsFetcher;
 
 // Retrieves suggestions from a number of ContentSuggestionsProviders and serves
 // them grouped into categories. There can be at most one provider per category.

@@ -167,7 +167,7 @@ void DownloadSuggestionsProvider::FetchSuggestionImage(
 void DownloadSuggestionsProvider::Fetch(
     const ntp_snippets::Category& category,
     const std::set<std::string>& known_suggestion_ids,
-    FetchingCallback callback) {
+    const FetchingCallback& callback) {
   NOTREACHED();
   base::ThreadTaskRunnerHandle::Get()->PostTask(
       FROM_HERE,
