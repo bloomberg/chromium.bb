@@ -429,6 +429,62 @@ TEST(VideoFrame, CreateFrame_OddWidth) {
   EXPECT_EQ(677, frame->coded_size().width());
 }
 
+TEST(VideoFrame, AllocationSize_OddSize) {
+  const gfx::Size size(3, 5);
+  for (unsigned int i = 1u; i <= PIXEL_FORMAT_MAX; ++i) {
+    const VideoPixelFormat format = static_cast<VideoPixelFormat>(i);
+    const size_t allocation_size = VideoFrame::AllocationSize(format, size);
+    switch (format) {
+      case PIXEL_FORMAT_YUV444P9:
+      case PIXEL_FORMAT_YUV444P10:
+      case PIXEL_FORMAT_YUV444P12:
+        EXPECT_EQ(144u, allocation_size) << VideoPixelFormatToString(format);
+        break;
+      case PIXEL_FORMAT_YUV422P9:
+      case PIXEL_FORMAT_YUV422P10:
+      case PIXEL_FORMAT_YUV422P12:
+        EXPECT_EQ(96u, allocation_size) << VideoPixelFormatToString(format);
+        break;
+      case PIXEL_FORMAT_YV24:
+      case PIXEL_FORMAT_YUV420P9:
+      case PIXEL_FORMAT_YUV420P10:
+      case PIXEL_FORMAT_YUV420P12:
+        EXPECT_EQ(72u, allocation_size) << VideoPixelFormatToString(format);
+        break;
+      case PIXEL_FORMAT_UYVY:
+      case PIXEL_FORMAT_YUY2:
+      case PIXEL_FORMAT_YV16:
+        EXPECT_EQ(48u, allocation_size) << VideoPixelFormatToString(format);
+        break;
+      case PIXEL_FORMAT_YV12:
+      case PIXEL_FORMAT_I420:
+      case PIXEL_FORMAT_NV12:
+      case PIXEL_FORMAT_NV21:
+      case PIXEL_FORMAT_MT21:
+        EXPECT_EQ(36u, allocation_size) << VideoPixelFormatToString(format);
+        break;
+      case PIXEL_FORMAT_ARGB:
+      case PIXEL_FORMAT_XRGB:
+      case PIXEL_FORMAT_YV12A:
+      case PIXEL_FORMAT_RGB32:
+        EXPECT_EQ(60u, allocation_size) << VideoPixelFormatToString(format);
+        break;
+      case PIXEL_FORMAT_RGB24:
+        EXPECT_EQ(45u, allocation_size) << VideoPixelFormatToString(format);
+        break;
+      case PIXEL_FORMAT_Y16:
+        EXPECT_EQ(30u, allocation_size) << VideoPixelFormatToString(format);
+        break;
+      case PIXEL_FORMAT_Y8:
+        EXPECT_EQ(15u, allocation_size) << VideoPixelFormatToString(format);
+        break;
+      case PIXEL_FORMAT_MJPEG:
+      case PIXEL_FORMAT_UNKNOWN:
+        break;
+    }
+  }
+}
+
 TEST(VideoFrameMetadata, SetAndThenGetAllKeysForAllTypes) {
   VideoFrameMetadata metadata;
 

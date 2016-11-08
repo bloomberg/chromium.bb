@@ -92,6 +92,45 @@ static bool AreValidPixelFormatsForWrap(VideoPixelFormat source_format,
          target_format == PIXEL_FORMAT_I420;
 }
 
+// If it is required to allocate aligned to multiple-of-two size overall for the
+// frame of pixel |format|.
+bool RequiresEvenSizeAllocation(VideoPixelFormat format) {
+  switch (format) {
+    case PIXEL_FORMAT_ARGB:
+    case PIXEL_FORMAT_XRGB:
+    case PIXEL_FORMAT_RGB24:
+    case PIXEL_FORMAT_RGB32:
+    case PIXEL_FORMAT_Y8:
+    case PIXEL_FORMAT_Y16:
+      return false;
+    case PIXEL_FORMAT_NV12:
+    case PIXEL_FORMAT_NV21:
+    case PIXEL_FORMAT_MT21:
+    case PIXEL_FORMAT_I420:
+    case PIXEL_FORMAT_MJPEG:
+    case PIXEL_FORMAT_YUY2:
+    case PIXEL_FORMAT_YV12:
+    case PIXEL_FORMAT_YV16:
+    case PIXEL_FORMAT_YV24:
+    case PIXEL_FORMAT_YUV420P9:
+    case PIXEL_FORMAT_YUV422P9:
+    case PIXEL_FORMAT_YUV444P9:
+    case PIXEL_FORMAT_YUV420P10:
+    case PIXEL_FORMAT_YUV422P10:
+    case PIXEL_FORMAT_YUV444P10:
+    case PIXEL_FORMAT_YUV420P12:
+    case PIXEL_FORMAT_YUV422P12:
+    case PIXEL_FORMAT_YUV444P12:
+    case PIXEL_FORMAT_YV12A:
+    case PIXEL_FORMAT_UYVY:
+      return true;
+    case PIXEL_FORMAT_UNKNOWN:
+      break;
+  }
+  NOTREACHED() << "Unsupported video frame format: " << format;
+  return false;
+}
+
 // static
 bool VideoFrame::IsValidConfig(VideoPixelFormat format,
                                StorageType storage_type,
@@ -515,7 +554,7 @@ gfx::Size VideoFrame::PlaneSize(VideoPixelFormat format,
 
   int width = coded_size.width();
   int height = coded_size.height();
-  if (format != PIXEL_FORMAT_ARGB) {
+  if (RequiresEvenSizeAllocation(format)) {
     // Align to multiple-of-two size overall. This ensures that non-subsampled
     // planes can be addressed by pixel with the same scaling as the subsampled
     // planes.
