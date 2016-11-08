@@ -128,6 +128,10 @@ public class ContextualSearchSceneLayer extends SceneOverlayLayer {
         int dividerLineColor = searchBarControl.getDividerLineColor();
         float dividerLineXOffset = searchBarControl.getDividerLineXOffset();
 
+        boolean touchHighlightVisible = searchBarControl.getTouchHighlightVisible();
+        float touchHighlightXOffset = searchBarControl.getTouchHighlightXOffsetPx();
+        float touchHighlightWidth = searchBarControl.getTouchHighlightWidthPx();
+
         WebContents panelWebContents = panel.getContentViewCore() != null
                 ? panel.getContentViewCore().getWebContents() : null;
 
@@ -195,6 +199,9 @@ public class ContextualSearchSceneLayer extends SceneOverlayLayer {
                 dividerLineHeight,
                 dividerLineColor,
                 dividerLineXOffset,
+                touchHighlightVisible,
+                touchHighlightXOffset,
+                touchHighlightWidth,
                 Profile.getLastUsedProfile());
     }
 
@@ -308,5 +315,8 @@ public class ContextualSearchSceneLayer extends SceneOverlayLayer {
             float dividerLineHeight,
             int dividerLineColor,
             float dividerLineXOffset,
+            boolean touchHighlightVisible,
+            float touchHighlightXOffset,
+            float toucHighlightWidth,
             Profile profile);
 }

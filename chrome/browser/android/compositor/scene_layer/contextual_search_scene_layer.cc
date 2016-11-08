@@ -121,6 +121,9 @@ void ContextualSearchSceneLayer::UpdateContextualSearchLayer(
     jfloat divider_line_height,
     jint divider_line_color,
     jfloat divider_line_x_offset,
+    jboolean touch_highlight_visible,
+    jfloat touch_highlight_x_offset,
+    jfloat touch_highlight_width,
     jobject j_profile) {
 
   // Load the thumbnail if necessary.
@@ -214,7 +217,10 @@ void ContextualSearchSceneLayer::UpdateContextualSearchLayer(
       divider_line_width,
       divider_line_height,
       divider_line_color,
-      divider_line_x_offset);
+      divider_line_x_offset,
+      touch_highlight_visible,
+      touch_highlight_x_offset,
+      touch_highlight_width);
 
   // Make the layer visible if it is not already.
   contextual_search_layer_->layer()->SetHideLayerAndSubtree(false);

@@ -731,6 +731,8 @@ public class OverlayPanel extends OverlayPanelAnimation implements ActivityState
 
     @Override
     public void swipeStarted(ScrollDirection direction, float x, float y) {
+        if (direction == ScrollDirection.UNKNOWN) return;
+
         if (onInterceptBarSwipe()) {
             mIgnoreSwipeEvents = true;
             return;
@@ -763,6 +765,18 @@ public class OverlayPanel extends OverlayPanelAnimation implements ActivityState
     public boolean isSwipeEnabled(ScrollDirection direction) {
         return direction == ScrollDirection.UP && isShowing();
     }
+
+    // Other event handlers.
+
+    /**
+     * The user has performed a down event and has not performed a move or up yet. This event is
+     * commonly used to provide visual feedback to the user to let them know that their action has
+     * been recognized.
+     * See {@link GestureDetector.SimpleOnGestureListener#onShowPress()}.
+     * @param x The x coordinate in dp.
+     * @param y The y coordinate in dp.
+     */
+    public void onShowPress(float x, float y) {}
 
     // ============================================================================================
     // SceneOverlay implementation.

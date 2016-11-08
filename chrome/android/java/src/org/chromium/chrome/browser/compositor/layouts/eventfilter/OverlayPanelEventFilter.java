@@ -191,6 +191,7 @@ public class OverlayPanelEventFilter extends GestureEventFilter {
                 mPanel.notifyBarTouched(e.getX() * mPxToDp);
             }
             mSwipeRecognizer.onTouchEvent(e);
+            mGestureDetector.onTouchEvent(e);
             return true;
         }
 
@@ -548,6 +549,16 @@ public class OverlayPanelEventFilter extends GestureEventFilter {
      * Internal GestureDetector class that is responsible for determining the event target.
      */
     private class InternalGestureDetector extends GestureDetector.SimpleOnGestureListener {
+        @Override
+        public void onLongPress(MotionEvent e) {
+            mPanel.onLongPress(e.getX() * mPxToDp, e.getY() * mPxToDp);
+        }
+
+        @Override
+        public void onShowPress(MotionEvent e) {
+            mPanel.onShowPress(e.getX() * mPxToDp, e.getY() * mPxToDp);
+        }
+
         @Override
         public boolean onSingleTapUp(MotionEvent e) {
             // TODO(mdjones): Investigate how this is ever the case. The API docs do not say this

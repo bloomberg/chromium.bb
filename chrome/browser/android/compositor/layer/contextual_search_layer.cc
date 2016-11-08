@@ -22,6 +22,7 @@ namespace {
 const SkColor kSearchBackgroundColor = SkColorSetRGB(0xee, 0xee, 0xee);
 const SkColor kSearchBarBackgroundColor = SkColorSetRGB(0xff, 0xff, 0xff);
 const SkColor kPeekPromoRippleBackgroundColor = SkColorSetRGB(0x42, 0x85, 0xF4);
+const SkColor kTouchHighlightColor = SkColorSetARGB(0x33, 0x99, 0x99, 0x99);
 
 // The alpha blend used in the Peek Promo Background in order to achieve
 // a lighter shade of the color of the Peek Promo Ripple.
@@ -97,7 +98,10 @@ void ContextualSearchLayer::SetProperties(
     float divider_line_width,
     float divider_line_height,
     int divider_line_color,
-    float divider_line_x_offset) {
+    float divider_line_x_offset,
+    bool touch_highlight_visible,
+    float touch_highlight_x_offset,
+    float touch_highlight_width) {
 
   // Round values to avoid pixel gap between layers.
   search_bar_height = floor(search_bar_height);
@@ -404,6 +408,20 @@ void ContextualSearchLayer::SetProperties(
     divider_line_->SetBackgroundColor(divider_line_color);
   } else if (divider_line_->parent()) {
     divider_line_->RemoveFromParent();
+  }
+
+  // ---------------------------------------------------------------------------
+  // Touch Highlight Layer
+  // ---------------------------------------------------------------------------
+  if (touch_highlight_visible) {
+    if (touch_highlight_layer_->parent() != layer_)
+      layer_->AddChild(touch_highlight_layer_);
+    gfx::Size background_size(touch_highlight_width, search_bar_height);
+    touch_highlight_layer_->SetBounds(background_size);
+    touch_highlight_layer_->SetPosition(gfx::PointF(
+        touch_highlight_x_offset, search_bar_top));
+  } else {
+    touch_highlight_layer_->RemoveFromParent();
   }
 
   // ---------------------------------------------------------------------------
@@ -738,7 +756,8 @@ ContextualSearchLayer::ContextualSearchLayer(
       progress_bar_background_(cc::NinePatchLayer::Create()),
       search_caption_(cc::UIResourceLayer::Create()),
       text_layer_(cc::UIResourceLayer::Create()),
-      divider_line_(cc::SolidColorLayer::Create()) {
+      divider_line_(cc::SolidColorLayer::Create()),
+      touch_highlight_layer_(cc::SolidColorLayer::Create()) {
   // Search Peek Promo
   peek_promo_container_->SetIsDrawable(true);
   peek_promo_container_->SetBackgroundColor(kSearchBarBackgroundColor);
@@ -783,13 +802,16 @@ ContextualSearchLayer::ContextualSearchLayer(
 
   // Divider line
   divider_line_->SetIsDrawable(true);
-  layer_->AddChild(divider_line_);
 
   // Content layer
   text_layer_->SetIsDrawable(true);
   // NOTE(mdjones): This can be called multiple times to add other text layers.
   AddBarTextLayer(text_layer_);
   text_layer_->AddChild(search_context_);
+
+  // Touch Highlight Layer
+  touch_highlight_layer_->SetIsDrawable(true);
+  touch_highlight_layer_->SetBackgroundColor(kTouchHighlightColor);
 }
 
 ContextualSearchLayer::~ContextualSearchLayer() {

@@ -27,7 +27,8 @@ public class ContextualSearchBarControl
      */
     protected enum AnimationType {
         TEXT_OPACITY,
-        DIVIDER_LINE_VISIBILITY
+        DIVIDER_LINE_VISIBILITY,
+        TOUCH_HIGHLIGHT_VISIBILITY
     }
 
     /**
@@ -105,6 +106,11 @@ public class ContextualSearchBarControl
     private float mExpandedPercent;
 
     /**
+     * Converts dp dimensions to pixels.
+     */
+    private final float mDpToPx;
+
+    /**
      * Constructs a new bottom bar control container by inflating views from XML.
      *
      * @param panel     The panel.
@@ -137,6 +143,7 @@ public class ContextualSearchBarControl
                 R.color.google_grey_500);
         mEndButtonWidth = context.getResources().getDimension(
                 R.dimen.contextual_search_end_button_width);
+        mDpToPx = context.getResources().getDisplayMetrics().density;
     }
 
     /**
@@ -404,6 +411,163 @@ public class ContextualSearchBarControl
     }
 
     // ============================================================================================
+    // Touch Highlight
+    // ============================================================================================
+
+    /**
+     * Whether the touch highlight is visible.
+     */
+    private boolean mTouchHighlightVisible;
+
+    /**
+     * Whether the touch highlight visibility is currently being animated.
+     */
+    private boolean mAnimatingTouchHighlightVisibility;
+
+    /**
+     * Whether the touch highlight should be hidden when its animation finishes.
+     */
+    private boolean mHideTouchHighlightOnAnimationFinish;
+
+    /**
+     * Whether the touch that triggered showing the touch highlight was on the end Bar button.
+     */
+    private boolean mWasTouchOnEndButton;
+
+    /**
+     * Whether the divider line was visible when the touch highlight started showing.
+     */
+    private boolean mWasDividerVisibleOnTouch;
+
+    /**
+     * @return Whether the touch highlight is visible.
+     */
+    public boolean getTouchHighlightVisible() {
+        return mTouchHighlightVisible;
+    }
+
+    /**
+     * @return The x-offset of the touch highlight in pixels.
+     */
+    public float getTouchHighlightXOffsetPx() {
+        if (mWasDividerVisibleOnTouch
+                && ((mWasTouchOnEndButton && !LocalizationUtils.isLayoutRtl())
+                || (!mWasTouchOnEndButton && LocalizationUtils.isLayoutRtl()))) {
+            // If the touch was on the end button in LTR, offset the touch highlight so that it
+            // starts at the beginning of the end button.
+            // If the touch was not on the end button in RTL, offset the touch highlight so that it
+            // starts after the end button.
+            return getDividerLineXOffset() + getDividerLineWidth();
+        }
+
+        return 0;
+    }
+
+    /**
+     * @return The width of the touch highlight in pixels.
+     */
+    public float getTouchHighlightWidthPx() {
+        if (mWasDividerVisibleOnTouch) {
+            // The touch was on the end button so the touch highlight should cover the end button.
+            if (mWasTouchOnEndButton) return mEndButtonWidth;
+
+            // The touch was not on the end button so the touch highlight should cover everything
+            // except the end button.
+            return mOverlayPanel.getContentViewWidthPx() - mEndButtonWidth - getDividerLineWidth();
+        }
+
+        // If the divider line wasn't visible when the Bar was touched, the touch highlight covers
+        // the entire Bar.
+        return mOverlayPanel.getContentViewWidthPx();
+    }
+
+    /**
+     * Should be called when the Bar is clicked.
+     * @param x The x-position of the click in px.
+     */
+    public void onSearchBarClick(float x) {
+        if (mTouchHighlightVisible) {
+            hideTouchHighlight();
+        } else {
+            // #onSearchBarClick() may be called without a call to #onShowPress(). If this happens,
+            // show the touch highlight for the animation duration.
+            mHideTouchHighlightOnAnimationFinish = true;
+            showTouchHighlight(x);
+        }
+    }
+
+    /**
+     * Should be called when an onShowPress() event occurs on the Bar.
+     * See {@link GestureDetector.SimpleOnGestureListener#onShowPress()}.
+     * @param x The x-position of the touch in px.
+     */
+    public void onShowPress(float x) {
+        mHideTouchHighlightOnAnimationFinish = false;
+        showTouchHighlight(x);
+    }
+
+    /**
+     * Should be called when the Bar is long-pressed.
+     */
+    public void onLongPress() {
+        hideTouchHighlight();
+    }
+
+    /**
+     * Should be called when a scroll event on the Bar or Panel occurs.
+     */
+    public void onScroll() {
+        hideTouchHighlight();
+    }
+
+    /**
+     * Shows the touch highlight if it is not already visible.
+     * @param x The x-position of the touch in px.
+     */
+    private void showTouchHighlight(float x) {
+        if (mTouchHighlightVisible) return;
+
+        mWasTouchOnEndButton = isTouchOnEndButton(x);
+        mWasDividerVisibleOnTouch = getDividerLineVisibilityPercentage() > 0.f;
+        mTouchHighlightVisible = true;
+        mAnimatingTouchHighlightVisibility = true;
+
+        // The touch highlight animation is used to ensure the touch highlight is visible for at
+        // least OverlayPanelAnimation.BASE_ANIMATION_DURATION_MS.
+        // TODO(twellington): Add a material ripple to this animation.
+        mOverlayPanel.addToAnimation(this, AnimationType.TOUCH_HIGHLIGHT_VISIBILITY, 0.f, 1.f,
+                OverlayPanelAnimation.BASE_ANIMATION_DURATION_MS, 0);
+    }
+
+    /**
+     * Hides the touch highlight.
+     */
+    private void hideTouchHighlight() {
+        if (!mTouchHighlightVisible) return;
+
+        // If the touch highlight animation is currently running, wait for the animation to finish
+        // before hiding the touch highlight.
+        if (mAnimatingTouchHighlightVisibility) {
+            mHideTouchHighlightOnAnimationFinish = true;
+            return;
+        }
+        mTouchHighlightVisible = false;
+        mOverlayPanel.requestUpdate();
+    }
+
+    /**
+     * @param x The x-position of the touch in px.
+     * @return Whether the touch occurred on the search Bar's end button.
+     */
+    private boolean isTouchOnEndButton(float x) {
+        if (getDividerLineVisibilityPercentage() == 0.f) return false;
+
+        float xPx = x * mDpToPx;
+        if (LocalizationUtils.isLayoutRtl()) return xPx <= getDividerLineXOffset();
+        return xPx > getDividerLineXOffset();
+    }
+
+    // ============================================================================================
     // Search Bar Animation
     // ============================================================================================
 
@@ -456,5 +620,11 @@ public class ContextualSearchBarControl
     }
 
     @Override
-    public void onPropertyAnimationFinished(AnimationType prop) {}
+    public void onPropertyAnimationFinished(AnimationType prop) {
+        if (prop == AnimationType.TOUCH_HIGHLIGHT_VISIBILITY) {
+            mAnimatingTouchHighlightVisibility = false;
+            if (mHideTouchHighlightOnAnimationFinish) mTouchHighlightVisible = false;
+            mHideTouchHighlightOnAnimationFinish = false;
+        }
+    }
 }

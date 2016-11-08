@@ -92,7 +92,10 @@ class ContextualSearchLayer : public OverlayPanelLayer {
                      float divider_line_width,
                      float divider_line_height,
                      int divider_line_color,
-                     float divider_line_x_offset);
+                     float divider_line_x_offset,
+                     bool touch_highlight_visible,
+                     float touch_highlight_x_offset,
+                     float touch_highlight_width);
 
   void SetThumbnail(const SkBitmap* thumbnail);
 
@@ -151,6 +154,7 @@ class ContextualSearchLayer : public OverlayPanelLayer {
   scoped_refptr<cc::UIResourceLayer> search_caption_;
   scoped_refptr<cc::UIResourceLayer> text_layer_;
   scoped_refptr<cc::SolidColorLayer> divider_line_;
+  scoped_refptr<cc::SolidColorLayer> touch_highlight_layer_;
 };
 
 }  //  namespace android
