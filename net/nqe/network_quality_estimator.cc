@@ -890,6 +890,9 @@ void NetworkQualityEstimator::RecordMetricsOnMainFrameRequest() const {
     rtt_percentile->Add(
         estimated_quality_at_last_main_frame_.http_rtt().InMilliseconds());
   }
+  UMA_HISTOGRAM_BOOLEAN("NQE.EstimateAvailable.MainFrame.RTT",
+                        estimated_quality_at_last_main_frame_.http_rtt() !=
+                            nqe::internal::InvalidRTT());
 
   if (estimated_quality_at_last_main_frame_.transport_rtt() !=
       nqe::internal::InvalidRTT()) {
@@ -902,6 +905,9 @@ void NetworkQualityEstimator::RecordMetricsOnMainFrameRequest() const {
     transport_rtt_percentile->Add(
         estimated_quality_at_last_main_frame_.transport_rtt().InMilliseconds());
   }
+  UMA_HISTOGRAM_BOOLEAN("NQE.EstimateAvailable.MainFrame.TransportRTT",
+                        estimated_quality_at_last_main_frame_.transport_rtt() !=
+                            nqe::internal::InvalidRTT());
 
   if (estimated_quality_at_last_main_frame_.downstream_throughput_kbps() !=
       nqe::internal::kInvalidThroughput) {
@@ -914,6 +920,10 @@ void NetworkQualityEstimator::RecordMetricsOnMainFrameRequest() const {
     throughput_percentile->Add(
         estimated_quality_at_last_main_frame_.downstream_throughput_kbps());
   }
+  UMA_HISTOGRAM_BOOLEAN(
+      "NQE.EstimateAvailable.MainFrame.Kbps",
+      estimated_quality_at_last_main_frame_.downstream_throughput_kbps() !=
+          nqe::internal::kInvalidThroughput);
 
   UMA_HISTOGRAM_ENUMERATION("NQE.MainFrame.EffectiveConnectionType",
                             effective_connection_type_at_last_main_frame_,
