@@ -674,9 +674,9 @@ group.add_option("--git_similarity", action="store", dest="git_similarity",
                  metavar="SIM", type="int", default=50,
                  help=("Set the minimum similarity percentage for detecting "
                        "renames and copies. See `git diff -C`. (default 50)."))
-group.add_option("--git_only_search_patch", action="store_false", default=True,
+group.add_option("--git_find_copies_harder", action="store_true", default=False,
                  dest='git_find_copies_harder',
-                 help="Removes --find-copies-harder when seaching for copies")
+                 help="Adds --find-copies-harder when seaching for copies")
 group.add_option("--git_no_find_copies", action="store_false", default=True,
                  dest="git_find_copies",
                  help=("Prevents git from looking for copies (default off)."))
