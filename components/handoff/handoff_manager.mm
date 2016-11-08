@@ -6,11 +6,12 @@
 
 #include "base/logging.h"
 #include "base/mac/scoped_nsobject.h"
-#include "build/build_config.h"
 #include "net/base/mac/url_conversions.h"
 
 #if defined(OS_IOS)
 #include "base/ios/ios_util.h"
+#include "components/handoff/pref_names_ios.h"
+#include "components/pref_registry/pref_registry_syncable.h"  // nogncheck
 #endif
 
 #if defined(OS_MACOSX) && !defined(OS_IOS)
@@ -34,6 +35,14 @@
 @implementation HandoffManager
 
 @synthesize userActivity = _userActivity;
+
+#if defined(OS_IOS)
++ (void)registerBrowserStatePrefs:(user_prefs::PrefRegistrySyncable*)registry {
+  registry->RegisterBooleanPref(
+      prefs::kIosHandoffToOtherDevices, true,
+      user_prefs::PrefRegistrySyncable::SYNCABLE_PREF);
+}
+#endif
 
 - (instancetype)init {
   self = [super init];
@@ -95,6 +104,14 @@
   DCHECK(origin);
   self.userActivity.userInfo = @{ handoff::kOriginKey : origin };
   [self.userActivity becomeCurrent];
+}
+
+@end
+
+@implementation HandoffManager (TestingOnly)
+
+- (NSURL*)userActivityWebpageURL {
+  return self.userActivity.webpageURL;
 }
 
 @end

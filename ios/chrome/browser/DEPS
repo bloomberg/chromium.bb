@@ -20,6 +20,7 @@ include_rules = [
   "+components/flags_ui",
   "+components/gcm_driver",
   "+components/google/core/browser",
+  "+components/handoff",
   "+components/history/core/browser",
   "+components/history/ios/browser",
   "+components/image_fetcher",

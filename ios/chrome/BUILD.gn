@@ -22,6 +22,7 @@ test("ios_chrome_unittests") {
     "//ios/chrome/app/application_delegate:unit_tests",
     "//ios/chrome/browser:unit_tests",
     "//ios/chrome/browser/browsing_data:unit_tests",
+    "//ios/chrome/browser/device_sharing:unit_tests",
     "//ios/chrome/browser/favicon:unit_tests",
     "//ios/chrome/browser/geolocation:unit_tests",
     "//ios/chrome/browser/itunes_links:unit_tests",
