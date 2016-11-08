@@ -25,6 +25,21 @@ CGPoint ScreenPointFromWindow(NSPoint window_point, NSWindow* window) {
 }
 
 NSEvent* AttachWindowToCGEvent(CGEventRef event, NSWindow* window) {
+  // -[NSEvent locationInWindow] changes from screen coordinates to window
+  // coordinates when a window is attached to the mouse event. -[NSEvent
+  // eventWithCGEvent:] handles the Quartz -> AppKit coordinate flipping, but
+  // not the offset. Unfortunately -eventWithCGEvent: uses the *screen* height
+  // to flip, not the window height (it doesn't know about the window yet). So
+  // to get the correct -[NSEvent locationInWindow], anticipate the bogus screen
+  // flip that eventWithCGEvent: will do. This is yuck, but NSEvent does not
+  // provide a way to generate test scrolling events any other way. Fortunately,
+  // once you do all the algebra, all we need to do here is offset by the window
+  // origin, but in different directions for x/y.
+  CGPoint location = CGEventGetLocation(event);
+  location.y += NSMinY([window frame]);
+  location.x -= NSMinX([window frame]);
+  CGEventSetLocation(event, location);
+
   // These CGEventFields were made public in the 10.7 SDK, but don't help to
   // populate the -[NSEvent window] pointer when creating an event with
   // +[NSEvent eventWithCGEvent:]. Set that separately, using reflection.
@@ -207,6 +222,8 @@ NSEvent* TestScrollEvent(NSPoint window_point,
   DCHECK_EQ(has_precise_deltas, [event hasPreciseScrollingDeltas]);
   DCHECK_EQ(event_phase, [event phase]);
   DCHECK_EQ(momentum_phase, [event momentumPhase]);
+  DCHECK_EQ(window_point.x, [event locationInWindow].x);
+  DCHECK_EQ(window_point.y, [event locationInWindow].y);
   return event;
 }
 
