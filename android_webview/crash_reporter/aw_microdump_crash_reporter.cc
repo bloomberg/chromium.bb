@@ -5,6 +5,7 @@
 #include "android_webview/crash_reporter/aw_microdump_crash_reporter.h"
 
 #include "android_webview/common/aw_version_info_values.h"
+#include "base/android/build_info.h"
 #include "base/debug/dump_without_crashing.h"
 #include "base/files/file_path.h"
 #include "base/lazy_instance.h"
@@ -67,6 +68,14 @@ bool g_enabled = false;
 
 #if defined(ARCH_CPU_X86_FAMILY)
 bool SafeToUseSignalHandler() {
+  // N+ shared library namespacing means that we are unable to dlopen
+  // libnativebridge (because it isn't in the NDK). However we know
+  // that, were we able to, the tests below would pass, so just return
+  // true here.
+  if (base::android::BuildInfo::GetInstance()->sdk_int() >=
+      base::android::SDK_VERSION_NOUGAT) {
+    return true;
+  }
   // On X86/64 there are binary translators that handle SIGSEGV in userspace and
   // may get chained after our handler - see http://crbug.com/477444
   // We attempt to detect this to work out when it's safe to install breakpad.
