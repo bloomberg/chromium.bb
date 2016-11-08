@@ -17,6 +17,7 @@
 #include "chrome/browser/chromeos/arc/arc_auth_context.h"
 #include "chrome/browser/chromeos/arc/arc_optin_uma.h"
 #include "chrome/browser/chromeos/arc/arc_support_host.h"
+#include "chrome/browser/chromeos/arc/optin/arc_optin_preference_handler.h"
 #include "chrome/browser/chromeos/arc/policy/arc_android_management_checker.h"
 #include "chrome/browser/chromeos/arc/policy/arc_policy_util.h"
 #include "chrome/browser/chromeos/profiles/profile_helper.h"
@@ -28,6 +29,7 @@
 #include "chrome/browser/ui/app_list/arc/arc_app_launcher.h"
 #include "chrome/browser/ui/app_list/arc/arc_app_utils.h"
 #include "chrome/browser/ui/ash/multi_user/multi_user_util.h"
+#include "chrome/browser/ui/browser_commands.h"
 #include "chrome/browser/ui/extensions/app_launch_params.h"
 #include "chrome/browser/ui/extensions/application_launch.h"
 #include "chrome/common/pref_names.h"
@@ -482,7 +484,7 @@ void ArcAuthService::OnSignInFailedInternal(ProvisioningResult result) {
   if (result == ProvisioningResult::ARC_STOPPED) {
     if (profile_->GetPrefs()->HasPrefPath(prefs::kArcSignedIn))
       profile_->GetPrefs()->SetBoolean(prefs::kArcSignedIn, false);
-    ShutdownBridgeAndShowUI(UIPage::ERROR,
+    ShutdownBridgeAndShowUI(ArcSupportHost::UIPage::ERROR,
                             l10n_util::GetStringUTF16(error_message_id));
     return;
   }
@@ -500,7 +502,7 @@ void ArcAuthService::OnSignInFailedInternal(ProvisioningResult result) {
 
   // We'll delay shutting down the bridge in this case to allow people to send
   // feedback.
-  ShowUI(UIPage::ERROR_WITH_FEEDBACK,
+  ShowUI(ArcSupportHost::UIPage::ERROR_WITH_FEEDBACK,
          l10n_util::GetStringUTF16(error_message_id));
 }
 
@@ -542,6 +544,14 @@ void ArcAuthService::OnPrimaryUserProfilePrepared(Profile* profile) {
   // So, it may be better to initialize it lazily.
   // TODO(hidehiko): Revisit to think about lazy initialization.
   support_host_.reset(new ArcSupportHost());
+  support_host_->AddObserver(this);
+  if (!g_disable_ui_for_testing && !IsOptInVerificationDisabled()) {
+    preference_handler_ = base::MakeUnique<arc::ArcOptInPreferenceHandler>(
+        this, profile_->GetPrefs());
+    // This automatically updates all preferences.
+    preference_handler_->Start();
+  }
+
   SetState(State::STOPPED);
 
   PrefServiceSyncableFromProfile(profile_)->AddSyncedPrefObserver(
@@ -599,7 +609,8 @@ void ArcAuthService::Shutdown() {
   SetState(State::NOT_INITIALIZED);
 }
 
-void ArcAuthService::ShowUI(UIPage page, const base::string16& status) {
+void ArcAuthService::ShowUI(ArcSupportHost::UIPage page,
+                            const base::string16& status) {
   if (g_disable_ui_for_testing || IsOptInVerificationDisabled())
     return;
 
@@ -731,7 +742,7 @@ void ArcAuthService::ShutdownBridgeAndCloseUI() {
   CloseUI();
 }
 
-void ArcAuthService::ShutdownBridgeAndShowUI(UIPage page,
+void ArcAuthService::ShutdownBridgeAndShowUI(ArcSupportHost::UIPage page,
                                              const base::string16& status) {
   ShutdownBridge();
   ShowUI(page, status);
@@ -748,14 +759,15 @@ void ArcAuthService::RemoveObserver(Observer* observer) {
 }
 
 void ArcAuthService::CloseUI() {
-  ui_page_ = UIPage::NO_PAGE;
+  ui_page_ = ArcSupportHost::UIPage::NO_PAGE;
   ui_page_status_.clear();
 
   if (support_host_)
     support_host_->Close();
 }
 
-void ArcAuthService::SetUIPage(UIPage page, const base::string16& status) {
+void ArcAuthService::SetUIPage(ArcSupportHost::UIPage page,
+                               const base::string16& status) {
   ui_page_ = page;
   ui_page_status_ = status;
   if (support_host_)
@@ -799,7 +811,7 @@ void ArcAuthService::SetAuthCodeAndStartArc(const std::string& auth_code) {
   sign_in_time_ = base::Time::Now();
   VLOG(1) << "Starting ARC for first sign in.";
 
-  SetUIPage(UIPage::START_PROGRESS, base::string16());
+  SetUIPage(ArcSupportHost::UIPage::START_PROGRESS, base::string16());
   ShutdownBridge();
   auth_code_ = auth_code;
   arc_sign_in_timer_.Start(FROM_HERE, kArcSignInTimeout,
@@ -820,9 +832,9 @@ void ArcAuthService::StartLso() {
   profile_->GetPrefs()->SetBoolean(prefs::kArcTermsAccepted, true);
 
   // Update UMA only if error (with or without feedback) is currently shown.
-  if (ui_page_ == UIPage::ERROR) {
+  if (ui_page_ == ArcSupportHost::UIPage::ERROR) {
     UpdateOptInActionUMA(OptInActionType::RETRY);
-  } else if (ui_page_ == UIPage::ERROR_WITH_FEEDBACK) {
+  } else if (ui_page_ == ArcSupportHost::UIPage::ERROR_WITH_FEEDBACK) {
     UpdateOptInActionUMA(OptInActionType::RETRY);
     ShutdownBridge();
   }
@@ -843,16 +855,15 @@ void ArcAuthService::CancelAuthCode() {
   // In case |state_| is ACTIVE, |ui_page_| can be START_PROGRESS (which means
   // normal Arc booting) or  ERROR or ERROR_WITH_FEEDBACK (in case Arc can not
   // be started). If Arc is booting normally dont't stop it on progress close.
-  if (state_ != State::FETCHING_CODE && ui_page_ != UIPage::ERROR &&
-      ui_page_ != UIPage::ERROR_WITH_FEEDBACK) {
+  if (state_ != State::FETCHING_CODE &&
+      ui_page_ != ArcSupportHost::UIPage::ERROR &&
+      ui_page_ != ArcSupportHost::UIPage::ERROR_WITH_FEEDBACK) {
     return;
   }
 
   // Update UMA with user cancel only if error is not currently shown.
-  if (ui_page_ != UIPage::ERROR && ui_page_ == UIPage::ERROR_WITH_FEEDBACK &&
-      ui_page_ != UIPage::NO_PAGE) {
+  if (ui_page_ == ArcSupportHost::UIPage::ERROR_WITH_FEEDBACK)
     UpdateOptInCancelUMA(OptInCancelReason::USER_CANCEL);
-  }
 
   StopArc();
 
@@ -909,20 +920,21 @@ void ArcAuthService::StartUI() {
   if (!arc_bridge_service()->stopped()) {
     // If the user attempts to re-enable ARC while the bridge is still running
     // the user should not be able to continue until the bridge has stopped.
-    ShowUI(UIPage::ERROR, l10n_util::GetStringUTF16(
-                              IDS_ARC_SIGN_IN_SERVICE_UNAVAILABLE_ERROR));
+    ShowUI(
+        ArcSupportHost::UIPage::ERROR,
+        l10n_util::GetStringUTF16(IDS_ARC_SIGN_IN_SERVICE_UNAVAILABLE_ERROR));
     return;
   }
 
   SetState(State::FETCHING_CODE);
-  ShowUI(UIPage::TERMS, base::string16());
+  ShowUI(ArcSupportHost::UIPage::TERMS, base::string16());
 }
 
 void ArcAuthService::OnPrepareContextFailed() {
   DCHECK_EQ(state_, State::FETCHING_CODE);
 
   ShutdownBridgeAndShowUI(
-      UIPage::ERROR,
+      ArcSupportHost::UIPage::ERROR,
       l10n_util::GetStringUTF16(IDS_ARC_SERVER_COMMUNICATION_ERROR));
   UpdateOptInCancelUMA(OptInCancelReason::NETWORK_ERROR);
 }
@@ -935,7 +947,7 @@ void ArcAuthService::OnAuthCodeFailed() {
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
   DCHECK_EQ(state_, State::FETCHING_CODE);
   ShutdownBridgeAndShowUI(
-      UIPage::ERROR,
+      ArcSupportHost::UIPage::ERROR,
       l10n_util::GetStringUTF16(IDS_ARC_SERVER_COMMUNICATION_ERROR));
   UpdateOptInCancelUMA(OptInCancelReason::NETWORK_ERROR);
 }
@@ -949,13 +961,13 @@ void ArcAuthService::OnAndroidManagementChecked(
       break;
     case policy::AndroidManagementClient::Result::MANAGED:
       ShutdownBridgeAndShowUI(
-          UIPage::ERROR,
+          ArcSupportHost::UIPage::ERROR,
           l10n_util::GetStringUTF16(IDS_ARC_ANDROID_MANAGEMENT_REQUIRED_ERROR));
       UpdateOptInCancelUMA(OptInCancelReason::ANDROID_MANAGEMENT_REQUIRED);
       break;
     case policy::AndroidManagementClient::Result::ERROR:
       ShutdownBridgeAndShowUI(
-          UIPage::ERROR,
+          ArcSupportHost::UIPage::ERROR,
           l10n_util::GetStringUTF16(IDS_ARC_SERVER_COMMUNICATION_ERROR));
       UpdateOptInCancelUMA(OptInCancelReason::NETWORK_ERROR);
       break;
@@ -994,7 +1006,7 @@ void ArcAuthService::FetchAuthCode() {
     auth_code_fetcher_.reset(new ArcAuthCodeFetcher(
         this, context_->GetURLRequestContext(), profile_, auth_endpoint));
   } else {
-    ShowUI(UIPage::LSO_PROGRESS, base::string16());
+    ShowUI(ArcSupportHost::UIPage::LSO_PROGRESS, base::string16());
   }
 }
 
@@ -1013,6 +1025,52 @@ void ArcAuthService::OnAndroidManagementPassed() {
   } else {
     FetchAuthCode();
   }
+}
+
+void ArcAuthService::OnWindowClosed() {
+  CancelAuthCode();
+}
+
+void ArcAuthService::OnTermsAgreed(bool is_metrics_enabled,
+                                   bool is_backup_and_restore_enabled,
+                                   bool is_location_service_enabled) {
+  // This is ARC support's UI event callback, so this is called only when
+  // the UI is visible. The condition to open the UI is
+  // !g_disable_ui_for_testing && !IsOptInVerificationDisabled() (see ShowUI())
+  // and in the case, preference_handler_ should be always created (see
+  // OnPrimaryUserProfilePrepared()),
+  // TODO(hidehiko): Simplify the logic with the code restructuring.
+  DCHECK(preference_handler_);
+  preference_handler_->EnableMetrics(is_metrics_enabled);
+  preference_handler_->EnableBackupRestore(is_backup_and_restore_enabled);
+  preference_handler_->EnableLocationService(is_location_service_enabled);
+  StartLso();
+}
+
+void ArcAuthService::OnAuthSucceeded(const std::string& auth_code) {
+  SetAuthCodeAndStartArc(auth_code);
+}
+
+void ArcAuthService::OnSendFeedbackClicked() {
+  chrome::OpenFeedbackDialog(nullptr);
+}
+
+void ArcAuthService::OnMetricsModeChanged(bool enabled, bool managed) {
+  if (!support_host_)
+    return;
+  support_host_->SetMetricsPreferenceCheckbox(enabled, managed);
+}
+
+void ArcAuthService::OnBackupAndRestoreModeChanged(bool enabled, bool managed) {
+  if (!support_host_)
+    return;
+  support_host_->SetBackupAndRestorePreferenceCheckbox(enabled, managed);
+}
+
+void ArcAuthService::OnLocationServicesModeChanged(bool enabled, bool managed) {
+  if (!support_host_)
+    return;
+  support_host_->SetLocationServicesPreferenceCheckbox(enabled, managed);
 }
 
 std::ostream& operator<<(std::ostream& os, const ArcAuthService::State& state) {
