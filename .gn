@@ -235,7 +235,6 @@ exec_script_whitelist = [
   "//build/toolchain/concurrent_links.gni",
   "//build/toolchain/mac/BUILD.gn",
   "//build/toolchain/nacl/BUILD.gn",
-  "//build/toolchain/toolchain.gni",
   "//build/toolchain/win/BUILD.gn",
   "//build/util/branding.gni",
   "//build/util/version.gni",
