@@ -45,7 +45,6 @@
 #include "core/inspector/WorkerThreadDebugger.h"
 #include "core/workers/WorkerGlobalScope.h"
 #include "core/workers/WorkerOrWorkletGlobalScope.h"
-#include "core/workers/WorkerThread.h"
 #include "platform/heap/ThreadState.h"
 #include "public/platform/Platform.h"
 #include <memory>
@@ -127,12 +126,12 @@ void WorkerOrWorkletScriptController::disposeContextIfNeeded() {
   if (!isContextInitialized())
     return;
 
-  if (m_globalScope->isWorkerGlobalScope() ||
-      m_globalScope->isThreadedWorkletGlobalScope()) {
-    ScriptState::Scope scope(m_scriptState.get());
+  if (m_globalScope->isWorkerGlobalScope()) {
     WorkerThreadDebugger* debugger = WorkerThreadDebugger::from(m_isolate);
-    debugger->contextWillBeDestroyed(m_globalScope->thread(),
-                                     m_scriptState->context());
+    if (debugger) {
+      ScriptState::Scope scope(m_scriptState.get());
+      debugger->contextWillBeDestroyed(m_scriptState->context());
+    }
   }
   m_scriptState->disposePerContextData();
 }
@@ -185,7 +184,8 @@ bool WorkerOrWorkletScriptController::initializeContextIfNeeded() {
   if (m_globalScope->isWorkerGlobalScope() ||
       m_globalScope->isThreadedWorkletGlobalScope()) {
     WorkerThreadDebugger* debugger = WorkerThreadDebugger::from(m_isolate);
-    debugger->contextCreated(m_globalScope->thread(), context);
+    if (debugger)
+      debugger->contextCreated(context);
   }
 
   // The global proxy object.  Note this is not the global object.

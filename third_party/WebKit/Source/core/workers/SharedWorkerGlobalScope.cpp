@@ -97,7 +97,7 @@ void SharedWorkerGlobalScope::exceptionThrown(ErrorEvent* event) {
   WorkerGlobalScope::exceptionThrown(event);
   if (WorkerThreadDebugger* debugger =
           WorkerThreadDebugger::from(thread()->isolate()))
-    debugger->exceptionThrown(thread(), event);
+    debugger->exceptionThrown(event);
 }
 
 DEFINE_TRACE(SharedWorkerGlobalScope) {
