@@ -7,7 +7,7 @@
 #include <vector>
 
 #include "content/public/test/browser_test.h"
-#include "headless/public/domains/page.h"
+#include "headless/public/devtools/domains/page.h"
 #include "headless/public/headless_browser.h"
 #include "headless/public/headless_devtools_client.h"
 #include "headless/public/headless_web_contents.h"

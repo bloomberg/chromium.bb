@@ -9,8 +9,8 @@
 #include <vector>
 
 #include "base/macros.h"
-#include "headless/public/domains/css.h"
-#include "headless/public/domains/dom.h"
+#include "headless/public/devtools/domains/css.h"
+#include "headless/public/devtools/domains/dom.h"
 
 namespace headless {
 class HeadlessDevToolsClient;

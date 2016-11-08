@@ -15,7 +15,7 @@
 #include "headless/lib/browser/headless_browser_context_impl.h"
 #include "headless/lib/browser/headless_browser_impl.h"
 #include "headless/lib/browser/headless_web_contents_impl.h"
-#include "headless/public/domains/target.h"
+#include "headless/public/devtools/domains/target.h"
 #include "ui/base/resource/resource_bundle.h"
 
 namespace headless {

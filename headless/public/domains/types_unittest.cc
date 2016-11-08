@@ -3,7 +3,9 @@
 // found in the LICENSE file.
 
 #include "base/json/json_reader.h"
-#include "headless/public/domains/types.h"
+#include "headless/public/devtools/domains/accessibility.h"
+#include "headless/public/devtools/domains/memory.h"
+#include "headless/public/devtools/domains/page.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace headless {

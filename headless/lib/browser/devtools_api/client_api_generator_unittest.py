@@ -352,6 +352,65 @@ class ClientApiGeneratorTest(unittest.TestCase):
     types = json_api['domains'][0]['types']
     self.assertListEqual(types, expected_types)
 
+  def test_InitializeDomainDependencies(self):
+    json_api = {
+      'domains': [
+        {
+          'domain': 'Domain1',
+          'types': [
+            {
+              'id': 'TestType',
+              'type': 'object',
+              'properties': [
+                  {'name': 'p1', 'type': 'object', '$ref': 'Domain2.TestType'},
+              ],
+            },
+          ],
+        },
+        {
+          'domain': 'Domain2',
+          'dependencies': ['Domain3'],
+          'types': [
+            {
+              'id': 'TestType',
+              'type': 'object',
+              'properties': [
+                  {'name': 'p1', 'type': 'object', '$ref': 'Domain1.TestType'},
+              ],
+            },
+          ],
+        },
+        {
+          'domain': 'Domain3',
+        },
+        {
+          'domain': 'Domain4',
+          'dependencies': ['Domain1'],
+        },
+      ]
+    }
+    client_api_generator.InitializeDomainDependencies(json_api)
+
+    dependencies = [ {
+      'domain': domain['domain'],
+      'dependencies': domain['dependencies']
+    } for domain in json_api['domains'] ]
+
+    self.assertListEqual(dependencies, [ {
+        "domain": "Domain1",
+        "dependencies": ["Domain1", "Domain2", "Domain3"],
+      }, {
+        "domain": "Domain2",
+        "dependencies": ["Domain1", "Domain2", "Domain3"],
+      }, {
+        "domain": "Domain3",
+        "dependencies": ["Domain3"],
+      }, {
+        "domain": "Domain4",
+        "dependencies": ["Domain1", "Domain2", "Domain3", "Domain4"],
+      }
+    ])
+
   def test_PatchExperimentalDomains(self):
     json_api = {
       'domains': [
@@ -455,10 +514,8 @@ class ClientApiGeneratorTest(unittest.TestCase):
       dirname = tempfile.mkdtemp()
       jinja_env = client_api_generator.InitializeJinjaEnv(dirname)
       client_api_generator.CreateTypeDefinitions(json_api)
-      client_api_generator.Generate(jinja_env, dirname, json_api, 'types',
-                                    ['cc'])
-      client_api_generator.Generate(jinja_env, dirname, json_api, 'types',
-                                    ['h'])
+      client_api_generator.Generate(jinja_env, dirname, json_api,
+                                    'deprecated_types', ['h'])
       # This is just a smoke test; we don't actually verify the generated output
       # here.
     finally:
@@ -490,8 +547,9 @@ class ClientApiGeneratorTest(unittest.TestCase):
     try:
       dirname = tempfile.mkdtemp()
       jinja_env = client_api_generator.InitializeJinjaEnv(dirname)
-      client_api_generator.GenerateDomains(jinja_env, dirname, json_api,
-                                          'domain', ['cc', 'h'])
+      client_api_generator.GeneratePerDomain(
+          jinja_env, dirname, json_api,
+          'domain', ['cc', 'h'], lambda domain_name: domain_name)
       # This is just a smoke test; we don't actually verify the generated output
       # here.
     finally:

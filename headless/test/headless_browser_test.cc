@@ -13,7 +13,7 @@
 #include "content/public/common/url_constants.h"
 #include "headless/lib/browser/headless_browser_impl.h"
 #include "headless/lib/headless_content_main_delegate.h"
-#include "headless/public/domains/runtime.h"
+#include "headless/public/devtools/domains/runtime.h"
 #include "headless/public/headless_devtools_client.h"
 #include "headless/public/headless_devtools_target.h"
 #include "headless/public/headless_web_contents.h"

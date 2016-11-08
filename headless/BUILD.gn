@@ -59,74 +59,59 @@ grit("headless_lib_resources_grit") {
   ]
 }
 
-generated_devtools_api = [
-  "$target_gen_dir/public/domains/accessibility.cc",
-  "$target_gen_dir/public/domains/accessibility.h",
-  "$target_gen_dir/public/domains/animation.cc",
-  "$target_gen_dir/public/domains/animation.h",
-  "$target_gen_dir/public/domains/application_cache.cc",
-  "$target_gen_dir/public/domains/application_cache.h",
-  "$target_gen_dir/public/domains/cache_storage.cc",
-  "$target_gen_dir/public/domains/cache_storage.h",
-  "$target_gen_dir/public/domains/console.cc",
-  "$target_gen_dir/public/domains/console.h",
-  "$target_gen_dir/public/domains/css.cc",
-  "$target_gen_dir/public/domains/css.h",
-  "$target_gen_dir/public/domains/database.cc",
-  "$target_gen_dir/public/domains/database.h",
-  "$target_gen_dir/public/domains/debugger.cc",
-  "$target_gen_dir/public/domains/debugger.h",
-  "$target_gen_dir/public/domains/device_orientation.cc",
-  "$target_gen_dir/public/domains/device_orientation.h",
-  "$target_gen_dir/public/domains/dom.cc",
-  "$target_gen_dir/public/domains/dom.h",
-  "$target_gen_dir/public/domains/dom_debugger.cc",
-  "$target_gen_dir/public/domains/dom_debugger.h",
-  "$target_gen_dir/public/domains/dom_storage.cc",
-  "$target_gen_dir/public/domains/dom_storage.h",
-  "$target_gen_dir/public/domains/emulation.cc",
-  "$target_gen_dir/public/domains/emulation.h",
-  "$target_gen_dir/public/domains/heap_profiler.cc",
-  "$target_gen_dir/public/domains/heap_profiler.h",
-  "$target_gen_dir/public/domains/indexeddb.cc",
-  "$target_gen_dir/public/domains/indexeddb.h",
-  "$target_gen_dir/public/domains/input.cc",
-  "$target_gen_dir/public/domains/input.h",
-  "$target_gen_dir/public/domains/inspector.cc",
-  "$target_gen_dir/public/domains/inspector.h",
-  "$target_gen_dir/public/domains/io.cc",
-  "$target_gen_dir/public/domains/io.h",
-  "$target_gen_dir/public/domains/layer_tree.cc",
-  "$target_gen_dir/public/domains/layer_tree.h",
-  "$target_gen_dir/public/domains/log.cc",
-  "$target_gen_dir/public/domains/log.h",
-  "$target_gen_dir/public/domains/memory.cc",
-  "$target_gen_dir/public/domains/memory.h",
-  "$target_gen_dir/public/domains/network.cc",
-  "$target_gen_dir/public/domains/network.h",
-  "$target_gen_dir/public/domains/page.cc",
-  "$target_gen_dir/public/domains/page.h",
-  "$target_gen_dir/public/domains/profiler.cc",
-  "$target_gen_dir/public/domains/profiler.h",
-  "$target_gen_dir/public/domains/rendering.cc",
-  "$target_gen_dir/public/domains/rendering.h",
-  "$target_gen_dir/public/domains/runtime.cc",
-  "$target_gen_dir/public/domains/runtime.h",
-  "$target_gen_dir/public/domains/security.cc",
-  "$target_gen_dir/public/domains/security.h",
-  "$target_gen_dir/public/domains/service_worker.cc",
-  "$target_gen_dir/public/domains/service_worker.h",
-  "$target_gen_dir/public/domains/target.cc",
-  "$target_gen_dir/public/domains/target.h",
-  "$target_gen_dir/public/domains/tracing.cc",
-  "$target_gen_dir/public/domains/tracing.h",
-  "$target_gen_dir/public/domains/type_conversions.h",
-  "$target_gen_dir/public/domains/types.cc",
-  "$target_gen_dir/public/domains/types.h",
+devtools_domains = [
+  "accessibility",
+  "animation",
+  "application_cache",
+  "cache_storage",
+  "console",
+  "css",
+  "database",
+  "debugger",
+  "device_orientation",
+  "dom",
+  "dom_debugger",
+  "dom_storage",
+  "emulation",
+  "heap_profiler",
+  "indexeddb",
+  "input",
+  "inspector",
+  "io",
+  "layer_tree",
+  "log",
+  "memory",
+  "network",
+  "page",
+  "profiler",
+  "rendering",
+  "runtime",
+  "security",
+  "service_worker",
+  "target",
+  "tracing",
 ]
 
+generated_devtools_api = [
+  "$target_gen_dir/public/domains/types.h",
+  "$target_gen_dir/public/domains/type_conversions.h",
+]
+foreach(domain, devtools_domains) {
+  generated_devtools_api += [
+    "$target_gen_dir/public/domains/" + domain + ".h",
+    "$target_gen_dir/public/devtools/domains/" + domain + ".cc",
+    "$target_gen_dir/public/devtools/domains/" + domain + ".h",
+    "$target_gen_dir/public/devtools/domains/types_" + domain + ".h",
+    "$target_gen_dir/public/devtools/domains/types_" + domain + ".cc",
+    "$target_gen_dir/public/devtools/internal/type_conversions_" + domain +
+        ".h",
+    "$target_gen_dir/public/devtools/internal/" +
+        "types_forward_declarations_" + domain + ".h",
+  ]
+}
+
 action("gen_devtools_client_api") {
-  script = "//headless/lib/browser/client_api_generator.py"
+  script = "//headless/lib/browser/devtools_api/client_api_generator.py"
   deps = [
     "//third_party/WebKit/Source/core/inspector:protocol_version",
   ]
@@ -137,18 +122,21 @@ action("gen_devtools_client_api") {
   outputs = generated_devtools_api
 
   sources = [
-    "lib/browser/domain_cc.template",
-    "lib/browser/domain_h.template",
-    "lib/browser/type_conversions_h.template",
-    "lib/browser/types_cc.template",
-    "lib/browser/types_h.template",
+    "lib/browser/devtools_api/deprecated_type_conversions_h.template",
+    "lib/browser/devtools_api/deprecated_types_h.template",
+    "lib/browser/devtools_api/domain_cc.template",
+    "lib/browser/devtools_api/domain_h.template",
+    "lib/browser/devtools_api/domain_type_conversions_h.template",
+    "lib/browser/devtools_api/domain_types_cc.template",
+    "lib/browser/devtools_api/domain_types_forward_declaration_h.template",
+    "lib/browser/devtools_api/domain_types_h.template",
   ]
 
   args = [
     "--protocol",
     rebase_path(inputs[0], root_build_dir),
     "--output_dir",
-    rebase_path(target_gen_dir) + "/public/domains",
+    rebase_path(target_gen_dir) + "/public",
   ]
 }
 

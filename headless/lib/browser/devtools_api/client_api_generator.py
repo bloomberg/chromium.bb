@@ -3,9 +3,10 @@
 # found in the LICENSE file.
 
 import argparse
+import collections
 import os.path
-import sys
 import re
+import sys
 try:
   import json
 except ImportError:
@@ -61,14 +62,14 @@ def CamelCaseToHackerStyle(name):
 
 def SanitizeLiteral(literal):
   return {
-    # Rename null enumeration values to avoid a clash with the NULL macro.
-    'null': 'none',
-    # Rename mathematical constants to avoid colliding with C macros.
-    'Infinity': 'InfinityValue',
-    '-Infinity': 'NegativeInfinityValue',
-    'NaN': 'NaNValue',
-    # Turn negative zero into a safe identifier.
-    '-0': 'NegativeZeroValue',
+      # Rename null enumeration values to avoid a clash with the NULL macro.
+      'null': 'none',
+      # Rename mathematical constants to avoid colliding with C macros.
+      'Infinity': 'InfinityValue',
+      '-Infinity': 'NegativeInfinityValue',
+      'NaN': 'NaNValue',
+      # Turn negative zero into a safe identifier.
+      '-0': 'NegativeZeroValue',
   }.get(literal, literal)
 
 
@@ -82,10 +83,10 @@ def InitializeJinjaEnv(cache_dir):
       lstrip_blocks=True,  # So we can indent control flow tags.
       trim_blocks=True)
   jinja_env.filters.update({
-    'to_title_case': ToTitleCase,
-    'dash_to_camelcase': DashToCamelCase,
-    'camelcase_to_hacker_style': CamelCaseToHackerStyle,
-    'sanitize_literal': SanitizeLiteral,
+      'to_title_case': ToTitleCase,
+      'dash_to_camelcase': DashToCamelCase,
+      'camelcase_to_hacker_style': CamelCaseToHackerStyle,
+      'sanitize_literal': SanitizeLiteral,
   })
   jinja_env.add_extension('jinja2.ext.loopcontrols')
   return jinja_env
@@ -113,108 +114,109 @@ def PatchFullQualifiedRefs(json_api):
 def CreateUserTypeDefinition(domain, type):
   namespace = CamelCaseToHackerStyle(domain['domain'])
   return {
-    'return_type': 'std::unique_ptr<headless::%s::%s>' % (
-        namespace, type['id']),
-    'pass_type': 'std::unique_ptr<headless::%s::%s>' % (namespace, type['id']),
-    'to_raw_type': '*%s',
-    'to_raw_return_type': '%s.get()',
-    'to_pass_type': 'std::move(%s)',
-    'type': 'std::unique_ptr<headless::%s::%s>' % (namespace, type['id']),
-    'raw_type': 'headless::%s::%s' % (namespace, type['id']),
-    'raw_pass_type': 'headless::%s::%s*' % (namespace, type['id']),
-    'raw_return_type': 'const headless::%s::%s*' % (namespace, type['id']),
+      'return_type': 'std::unique_ptr<headless::%s::%s>' % (
+          namespace, type['id']),
+      'pass_type': 'std::unique_ptr<headless::%s::%s>' % (
+          namespace, type['id']),
+      'to_raw_type': '*%s',
+      'to_raw_return_type': '%s.get()',
+      'to_pass_type': 'std::move(%s)',
+      'type': 'std::unique_ptr<headless::%s::%s>' % (namespace, type['id']),
+      'raw_type': 'headless::%s::%s' % (namespace, type['id']),
+      'raw_pass_type': 'headless::%s::%s*' % (namespace, type['id']),
+      'raw_return_type': 'const headless::%s::%s*' % (namespace, type['id']),
   }
 
 
 def CreateEnumTypeDefinition(domain_name, type):
   namespace = CamelCaseToHackerStyle(domain_name)
   return {
-    'return_type': 'headless::%s::%s' % (namespace, type['id']),
-    'pass_type': 'headless::%s::%s' % (namespace, type['id']),
-    'to_raw_type': '%s',
-    'to_raw_return_type': '%s',
-    'to_pass_type': '%s',
-    'type': 'headless::%s::%s' % (namespace, type['id']),
-    'raw_type': 'headless::%s::%s' % (namespace, type['id']),
-    'raw_pass_type': 'headless::%s::%s' % (namespace, type['id']),
-    'raw_return_type': 'headless::%s::%s' % (namespace, type['id']),
+      'return_type': 'headless::%s::%s' % (namespace, type['id']),
+      'pass_type': 'headless::%s::%s' % (namespace, type['id']),
+      'to_raw_type': '%s',
+      'to_raw_return_type': '%s',
+      'to_pass_type': '%s',
+      'type': 'headless::%s::%s' % (namespace, type['id']),
+      'raw_type': 'headless::%s::%s' % (namespace, type['id']),
+      'raw_pass_type': 'headless::%s::%s' % (namespace, type['id']),
+      'raw_return_type': 'headless::%s::%s' % (namespace, type['id']),
   }
 
 
 def CreateObjectTypeDefinition():
   return {
-    'return_type': 'std::unique_ptr<base::DictionaryValue>',
-    'pass_type': 'std::unique_ptr<base::DictionaryValue>',
-    'to_raw_type': '*%s',
-    'to_raw_return_type': '%s.get()',
-    'to_pass_type': 'std::move(%s)',
-    'type': 'std::unique_ptr<base::DictionaryValue>',
-    'raw_type': 'base::DictionaryValue',
-    'raw_pass_type': 'base::DictionaryValue*',
-    'raw_return_type': 'const base::DictionaryValue*',
+      'return_type': 'std::unique_ptr<base::DictionaryValue>',
+      'pass_type': 'std::unique_ptr<base::DictionaryValue>',
+      'to_raw_type': '*%s',
+      'to_raw_return_type': '%s.get()',
+      'to_pass_type': 'std::move(%s)',
+      'type': 'std::unique_ptr<base::DictionaryValue>',
+      'raw_type': 'base::DictionaryValue',
+      'raw_pass_type': 'base::DictionaryValue*',
+      'raw_return_type': 'const base::DictionaryValue*',
   }
 
 
 def WrapObjectTypeDefinition(type):
   id = type.get('id', 'base::Value')
   return {
-    'return_type': 'std::unique_ptr<%s>' % id,
-    'pass_type': 'std::unique_ptr<%s>' % id,
-    'to_raw_type': '*%s',
-    'to_raw_return_type': '%s.get()',
-    'to_pass_type': 'std::move(%s)',
-    'type': 'std::unique_ptr<%s>' % id,
-    'raw_type': id,
-    'raw_pass_type': '%s*' % id,
-    'raw_return_type': 'const %s*' % id,
+      'return_type': 'std::unique_ptr<%s>' % id,
+      'pass_type': 'std::unique_ptr<%s>' % id,
+      'to_raw_type': '*%s',
+      'to_raw_return_type': '%s.get()',
+      'to_pass_type': 'std::move(%s)',
+      'type': 'std::unique_ptr<%s>' % id,
+      'raw_type': id,
+      'raw_pass_type': '%s*' % id,
+      'raw_return_type': 'const %s*' % id,
   }
 
 
 def CreateAnyTypeDefinition():
   return {
-    'return_type': 'std::unique_ptr<base::Value>',
-    'pass_type': 'std::unique_ptr<base::Value>',
-    'to_raw_type': '*%s',
-    'to_raw_return_type': '%s.get()',
-    'to_pass_type': 'std::move(%s)',
-    'type': 'std::unique_ptr<base::Value>',
-    'raw_type': 'base::Value',
-    'raw_pass_type': 'base::Value*',
-    'raw_return_type': 'const base::Value*',
+      'return_type': 'std::unique_ptr<base::Value>',
+      'pass_type': 'std::unique_ptr<base::Value>',
+      'to_raw_type': '*%s',
+      'to_raw_return_type': '%s.get()',
+      'to_pass_type': 'std::move(%s)',
+      'type': 'std::unique_ptr<base::Value>',
+      'raw_type': 'base::Value',
+      'raw_pass_type': 'base::Value*',
+      'raw_return_type': 'const base::Value*',
   }
 
 
 def CreateStringTypeDefinition(domain):
   return {
-    'return_type': 'std::string',
-    'pass_type': 'const std::string&',
-    'to_pass_type': '%s',
-    'to_raw_type': '%s',
-    'to_raw_return_type': '%s',
-    'type': 'std::string',
-    'raw_type': 'std::string',
-    'raw_pass_type': 'const std::string&',
-    'raw_return_type': 'std::string',
+      'return_type': 'std::string',
+      'pass_type': 'const std::string&',
+      'to_pass_type': '%s',
+      'to_raw_type': '%s',
+      'to_raw_return_type': '%s',
+      'type': 'std::string',
+      'raw_type': 'std::string',
+      'raw_pass_type': 'const std::string&',
+      'raw_return_type': 'std::string',
   }
 
 
 def CreatePrimitiveTypeDefinition(type):
   typedefs = {
-    'number': 'double',
-    'integer': 'int',
-    'boolean': 'bool',
-    'string': 'std::string',
+      'number': 'double',
+      'integer': 'int',
+      'boolean': 'bool',
+      'string': 'std::string',
   }
   return {
-    'return_type': typedefs[type],
-    'pass_type': typedefs[type],
-    'to_pass_type': '%s',
-    'to_raw_type': '%s',
-    'to_raw_return_type': '%s',
-    'type': typedefs[type],
-    'raw_type': typedefs[type],
-    'raw_pass_type': typedefs[type],
-    'raw_return_type': typedefs[type],
+      'return_type': typedefs[type],
+      'pass_type': typedefs[type],
+      'to_pass_type': '%s',
+      'to_raw_type': '%s',
+      'to_raw_return_type': '%s',
+      'type': typedefs[type],
+      'raw_type': typedefs[type],
+      'raw_pass_type': typedefs[type],
+      'raw_return_type': typedefs[type],
   }
 
 
@@ -229,15 +231,15 @@ type_definitions['any'] = CreateAnyTypeDefinition()
 
 def WrapArrayDefinition(type):
   return {
-    'return_type': 'std::vector<%s>' % type['type'],
-    'pass_type': 'std::vector<%s>' % type['type'],
-    'to_raw_type': '%s',
-    'to_raw_return_type': '&%s',
-    'to_pass_type': 'std::move(%s)',
-    'type': 'std::vector<%s>' % type['type'],
-    'raw_type': 'std::vector<%s>' % type['type'],
-    'raw_pass_type': 'std::vector<%s>*' % type['type'],
-    'raw_return_type': 'const std::vector<%s>*' % type['type'],
+      'return_type': 'std::vector<%s>' % type['type'],
+      'pass_type': 'std::vector<%s>' % type['type'],
+      'to_raw_type': '%s',
+      'to_raw_return_type': '&%s',
+      'to_pass_type': 'std::move(%s)',
+      'type': 'std::vector<%s>' % type['type'],
+      'raw_type': 'std::vector<%s>' % type['type'],
+      'raw_pass_type': 'std::vector<%s>*' % type['type'],
+      'raw_return_type': 'const std::vector<%s>*' % type['type'],
   }
 
 
@@ -301,7 +303,8 @@ def SynthesizeEnumType(domain, owner, type):
 
 def SynthesizeCommandTypes(json_api):
   """Generate types for command parameters, return values and enum
-     properties."""
+     properties.
+  """
   for domain in json_api['domains']:
     if not 'types' in domain:
       domain['types'] = []
@@ -317,11 +320,11 @@ def SynthesizeCommandTypes(json_api):
           if 'enum' in parameter and not '$ref' in parameter:
             SynthesizeEnumType(domain, command['name'], parameter)
         parameters_type = {
-          'id': ToTitleCase(command['name']) + 'Params',
-          'type': 'object',
-          'description': 'Parameters for the %s command.' % ToTitleCase(
-              command['name']),
-          'properties': command['parameters']
+            'id': ToTitleCase(command['name']) + 'Params',
+            'type': 'object',
+            'description': 'Parameters for the %s command.' % ToTitleCase(
+                command['name']),
+            'properties': command['parameters']
         }
         domain['types'].append(parameters_type)
       if 'returns' in command:
@@ -329,11 +332,11 @@ def SynthesizeCommandTypes(json_api):
           if 'enum' in parameter and not '$ref' in parameter:
             SynthesizeEnumType(domain, command['name'], parameter)
         result_type = {
-          'id': ToTitleCase(command['name']) + 'Result',
-          'type': 'object',
-          'description': 'Result for the %s command.' % ToTitleCase(
-              command['name']),
-          'properties': command['returns']
+            'id': ToTitleCase(command['name']) + 'Result',
+            'type': 'object',
+            'description': 'Result for the %s command.' % ToTitleCase(
+                command['name']),
+            'properties': command['returns']
         }
         domain['types'].append(result_type)
 
@@ -352,18 +355,57 @@ def SynthesizeEventTypes(json_api):
         if 'enum' in parameter and not '$ref' in parameter:
           SynthesizeEnumType(domain, event['name'], parameter)
       event_type = {
-        'id': ToTitleCase(event['name']) + 'Params',
-        'type': 'object',
-        'description': 'Parameters for the %s event.' % ToTitleCase(
-            event['name']),
-        'properties': event.get('parameters', [])
+          'id': ToTitleCase(event['name']) + 'Params',
+          'type': 'object',
+          'description': 'Parameters for the %s event.' % ToTitleCase(
+              event['name']),
+          'properties': event.get('parameters', [])
       }
       domain['types'].append(event_type)
 
 
+def InitializeDomainDependencies(json_api):
+  """For each domain create list of domains given domain depends on,
+  including itself."""
+
+  direct_deps = collections.defaultdict(set)
+
+  def GetDomainDepsFromRefs(domain_name, json):
+    if isinstance(json, list):
+      for value in json:
+        GetDomainDepsFromRefs(domain_name, value)
+      return
+
+    if not isinstance(json, dict):
+      return
+    for value in json.itervalues():
+      GetDomainDepsFromRefs(domain_name, value)
+
+    if '$ref' in json:
+      if '.' in json['$ref']:
+        dep = json['$ref'].split('.')[0]
+        direct_deps[domain_name].add(dep)
+
+  for domain in json_api['domains']:
+    direct_deps[domain['domain']] = set(domain.get('dependencies', []))
+    GetDomainDepsFromRefs(domain['domain'], domain)
+
+  def TraverseDependencies(domain, deps):
+    if domain in deps:
+      return
+    deps.add(domain)
+
+    for dep in direct_deps[domain]:
+      TraverseDependencies(dep, deps)
+
+  for domain in json_api['domains']:
+    domain_deps = set()
+    TraverseDependencies(domain['domain'], domain_deps)
+    domain['dependencies'] = sorted(domain_deps)
+
+
 def PatchExperimentalCommandsAndEvents(json_api):
-  """
-  Mark all commands and events in experimental domains as experimental
+  """Mark all commands and events in experimental domains as experimental
   and make sure experimental commands have at least empty parameters
   and return values.
   """
@@ -375,10 +417,14 @@ def PatchExperimentalCommandsAndEvents(json_api):
         event['experimental'] = True
 
 
+def EnsureDirectoryExists(path):
+  if not os.path.exists(path):
+    os.makedirs(path)
+
+
 def EnsureCommandsHaveParametersAndReturnTypes(json_api):
-  """
-  Make sure all commands have at least empty parameters and return values. This
-  guarantees API compatibility if a previously experimental command is made
+  """Make sure all commands have at least empty parameters and return values.
+  This guarantees API compatibility if a previously experimental command is made
   stable.
   """
   for domain in json_api['domains']:
@@ -392,46 +438,98 @@ def EnsureCommandsHaveParametersAndReturnTypes(json_api):
         event['parameters'] = []
 
 
-def Generate(jinja_env, output_dirname, json_api, class_name, file_types):
+def Generate(jinja_env, output_dirname, json_api,
+             class_name, file_types, file_name=None):
+  if file_name is None:
+    file_name = class_name
+  EnsureDirectoryExists(output_dirname)
   template_context = {
-    'api': json_api,
-    'join_arrays': JoinArrays,
-    'resolve_type': ResolveType,
-    'type_definition': TypeDefinition,
+      'api': json_api,
+      'join_arrays': JoinArrays,
+      'resolve_type': ResolveType,
+      'type_definition': TypeDefinition,
   }
   for file_type in file_types:
     template = jinja_env.get_template('/%s_%s.template' % (
         class_name, file_type))
-    output_file = '%s/%s.%s' % (output_dirname, class_name, file_type)
+    output_file = '%s/%s.%s' % (output_dirname, file_name, file_type)
     with open(output_file, 'w') as f:
       f.write(template.render(template_context))
 
 
-def GenerateDomains(jinja_env, output_dirname, json_api, class_name,
-                    file_types):
+def GeneratePerDomain(jinja_env, output_dirname, json_api, class_name,
+                    file_types, domain_name_to_file_name_func):
+  EnsureDirectoryExists(output_dirname)
   for file_type in file_types:
     template = jinja_env.get_template('/%s_%s.template' % (
         class_name, file_type))
     for domain in json_api['domains']:
       template_context = {
-        'domain': domain,
-        'resolve_type': ResolveType,
+          'domain': domain,
+          'resolve_type': ResolveType,
       }
       domain_name = CamelCaseToHackerStyle(domain['domain'])
-      output_file = '%s/%s.%s' % (output_dirname, domain_name, file_type)
+      output_file = '%s/%s.%s' % (output_dirname,
+                                  domain_name_to_file_name_func(domain_name),
+                                  file_type)
       with open(output_file, 'w') as f:
         f.write(template.render(template_context))
+
+
+def GenerateDomains(jinja_env, output_dirname, json_api):
+  GeneratePerDomain(
+      jinja_env, os.path.join(output_dirname, 'devtools', 'domains'), json_api,
+      'domain', ['cc', 'h'],
+      lambda domain_name: domain_name)
+
+  # TODO(altimin): Remove this in 2017.
+  # Generate DOMAIN.h in the old directory for backwards compatibility.
+  GeneratePerDomain(
+      jinja_env, os.path.join(output_dirname, 'domains'), json_api,
+      'deprecated_domain', ['h'], lambda domain_name: domain_name)
+
+
+def GenerateTypes(jinja_env, output_dirname, json_api):
+  # Generate forward declarations for types.
+  GeneratePerDomain(
+      jinja_env, os.path.join(output_dirname, 'devtools', 'internal'),
+      json_api, 'domain_types_forward_declaration', ['h'],
+      lambda domain_name: 'types_forward_declaration_%s' % (domain_name, ))
+  # Generate types on per-domain basis.
+  GeneratePerDomain(
+      jinja_env, os.path.join(output_dirname, 'devtools', 'domains'),
+      json_api, 'domain_types', ['h', 'cc'],
+      lambda domain_name: 'types_%s' % (domain_name, ))
+
+  # TODO(altimin): Remove this in 2017.
+  # Generate types.h for backwards compatibility.
+  Generate(jinja_env, os.path.join(output_dirname, 'domains'), json_api,
+           'deprecated_types', ['h'], 'types')
+
+
+def GenerateTypeConversions(jinja_env, output_dirname, json_api):
+  # Generate type conversions on per-domain basis.
+  GeneratePerDomain(
+      jinja_env, os.path.join(output_dirname, 'devtools', 'internal'),
+      json_api, 'domain_type_conversions', ['h'],
+      lambda domain_name: 'type_conversions_%s' % (domain_name, ))
+
+  # TODO(altimin): Remove this in 2017.
+  # Generate type_conversions.h for backwards compatibility.
+  Generate(jinja_env, os.path.join(output_dirname, 'domains'), json_api,
+           'deprecated_type_conversions', ['h'], 'type_conversions')
 
 
 if __name__ == '__main__':
   json_api, output_dirname = ParseArguments(sys.argv[1:])
   jinja_env = InitializeJinjaEnv(output_dirname)
+  InitializeDomainDependencies(json_api)
   PatchExperimentalCommandsAndEvents(json_api)
   EnsureCommandsHaveParametersAndReturnTypes(json_api)
   SynthesizeCommandTypes(json_api)
   SynthesizeEventTypes(json_api)
   PatchFullQualifiedRefs(json_api)
   CreateTypeDefinitions(json_api)
-  Generate(jinja_env, output_dirname, json_api, 'types', ['cc', 'h'])
-  Generate(jinja_env, output_dirname, json_api, 'type_conversions', ['h'])
-  GenerateDomains(jinja_env, output_dirname, json_api, 'domain', ['cc', 'h'])
+  GenerateDomains(jinja_env, output_dirname, json_api)
+  GenerateTypes(jinja_env, output_dirname, json_api)
+  GenerateTypeConversions(jinja_env, output_dirname, json_api)

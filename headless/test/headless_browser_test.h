@@ -9,8 +9,8 @@
 #include <string>
 
 #include "content/public/test/browser_test_base.h"
-#include "headless/public/domains/network.h"
-#include "headless/public/domains/page.h"
+#include "headless/public/devtools/domains/network.h"
+#include "headless/public/devtools/domains/page.h"
 #include "headless/public/headless_browser.h"
 #include "headless/public/headless_web_contents.h"
 
