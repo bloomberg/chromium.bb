@@ -122,6 +122,8 @@ class DepsUpdater(object):
         If this method is changed, the lists of files expected to be identical
         in LayoutTests/PRESUBMIT.py should also be changed.
         """
+        # TODO(tkent): resources_to_copy_to_wpt is unnecessary after enabling
+        # WPTServe.
         resources_to_copy_to_wpt = [
             ('testharnessreport.js', 'resources'),
             ('WebIDLParser.js', 'resources'),

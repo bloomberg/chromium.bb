@@ -22,6 +22,14 @@
     {
       "url-path": "/wpt_automation/",
       "local-dir": "../../../../../../LayoutTests/imported/wpt_automation"
+    },
+    {
+      "url-path": "/resources/testharnessreport.js",
+      "local-dir": "../../../../../../LayoutTests/resources"
+    },
+    {
+      "url-path": "/common/vendor-prefix.js",
+      "local-dir": "../../../../../../LayoutTests/resources"
     }
   ]
 }
