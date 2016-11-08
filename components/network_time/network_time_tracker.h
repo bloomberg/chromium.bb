@@ -130,9 +130,13 @@ class NetworkTimeTracker : public net::URLFetcherDelegate {
 
   void SetTimeServerURLForTesting(const GURL& url);
 
+  GURL GetTimeServerURLForTesting() const;
+
   bool QueryTimeServiceForTesting();
 
   void WaitForFetchForTesting(uint32_t nonce);
+
+  void OverrideNonceForTesting(uint32_t nonce);
 
   base::TimeDelta GetTimerDelayForTesting() const;
 

@@ -9,6 +9,7 @@
 
 #include "base/callback_forward.h"
 #include "base/macros.h"
+#include "base/memory/weak_ptr.h"
 #include "base/timer/timer.h"
 #include "chrome/browser/chrome_notification_types.h"
 #include "chrome/browser/profiles/profile.h"
@@ -32,6 +33,10 @@ class Clock;
 
 namespace content {
 class WebContents;
+}
+
+namespace network_time {
+class NetworkTimeTracker;
 }
 
 // This class is responsible for deciding what type of interstitial to show for
@@ -72,6 +77,8 @@ class SSLErrorHandler : public content::WebContentsUserData<SSLErrorHandler>,
   static void SetInterstitialTimerStartedCallbackForTest(
       TimerStartedCallback* callback);
   static void SetClockForTest(base::Clock* testing_clock);
+  static void SetNetworkTimeTrackerForTest(
+      network_time::NetworkTimeTracker* tracker);
 
  protected:
   // The parameters are the same as SSLBlockingPage's constructor.
@@ -101,9 +108,8 @@ class SSLErrorHandler : public content::WebContentsUserData<SSLErrorHandler>,
   virtual bool IsErrorOverridable() const;
   virtual void ShowCaptivePortalInterstitial(const GURL& landing_url);
   virtual void ShowSSLInterstitial();
-
-  void ShowBadClockInterstitial(const base::Time& now,
-                                ssl_errors::ClockState clock_state);
+  virtual void ShowBadClockInterstitial(const base::Time& now,
+                                        ssl_errors::ClockState clock_state);
 
   // Gets the result of whether the suggested URL is valid. Displays
   // common name mismatch interstitial or ssl interstitial accordingly.
@@ -130,6 +136,9 @@ class SSLErrorHandler : public content::WebContentsUserData<SSLErrorHandler>,
   // load stops or when there is a new navigation.
   void DeleteSSLErrorHandler();
 
+  void HandleCertDateInvalidError();
+  void HandleCertDateInvalidErrorImpl();
+
   content::WebContents* web_contents_;
   const int cert_error_;
   const net::SSLInfo ssl_info_;
@@ -144,6 +153,8 @@ class SSLErrorHandler : public content::WebContentsUserData<SSLErrorHandler>,
   std::unique_ptr<CommonNameMismatchHandler> common_name_mismatch_handler_;
 
   std::unique_ptr<SSLCertReporter> ssl_cert_reporter_;
+
+  base::WeakPtrFactory<SSLErrorHandler> weak_ptr_factory_;
 
   DISALLOW_COPY_AND_ASSIGN(SSLErrorHandler);
 };

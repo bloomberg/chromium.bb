@@ -20,6 +20,8 @@
 #include "base/test/histogram_tester.h"
 #include "base/test/simple_test_clock.h"
 #include "base/threading/thread_task_runner_handle.h"
+#include "base/time/default_clock.h"
+#include "base/time/default_tick_clock.h"
 #include "base/time/time.h"
 #include "build/build_config.h"
 #include "chrome/app/chrome_command_ids.h"
@@ -50,8 +52,9 @@
 #include "chrome/test/base/in_process_browser_test.h"
 #include "chrome/test/base/ui_test_utils.h"
 #include "components/content_settings/core/browser/host_content_settings_map.h"
+#include "components/network_time/network_time_test_utils.h"
 #include "components/network_time/network_time_tracker.h"
-#include "components/prefs/pref_service.h"
+#include "components/prefs/testing_pref_service.h"
 #include "components/security_interstitials/core/controller_client.h"
 #include "components/security_interstitials/core/metrics_helper.h"
 #include "components/security_state/security_state_model.h"
@@ -81,11 +84,13 @@
 #include "content/public/test/test_renderer_host.h"
 #include "content/public/test/test_utils.h"
 #include "net/base/host_port_pair.h"
+#include "net/base/io_buffer.h"
 #include "net/base/net_errors.h"
 #include "net/cert/cert_status_flags.h"
 #include "net/cert/mock_cert_verifier.h"
 #include "net/cert/x509_certificate.h"
 #include "net/dns/mock_host_resolver.h"
+#include "net/http/http_response_headers.h"
 #include "net/ssl/ssl_info.h"
 #include "net/test/cert_test_util.h"
 #include "net/test/embedded_test_server/embedded_test_server.h"
@@ -2851,6 +2856,491 @@ IN_PROC_BROWSER_TEST_F(SSLUITest,
   content::SSLStatus after_interstitial_ssl_status = entry->GetSSL();
   ASSERT_NO_FATAL_FAILURE(
       after_interstitial_ssl_status.Equals(clock_interstitial_ssl_status));
+}
+
+// A URLRequestJob that serves valid time server responses, but delays
+// them until Resume() is called. If Resume() is called before a request
+// is made, then the request will not be delayed.
+class DelayableNetworkTimeURLRequestJob : public net::URLRequestJob {
+ public:
+  DelayableNetworkTimeURLRequestJob(net::URLRequest* request,
+                                    net::NetworkDelegate* network_delegate,
+                                    bool delayed)
+      : net::URLRequestJob(request, network_delegate),
+        delayed_(delayed),
+        weak_factory_(this) {}
+
+  ~DelayableNetworkTimeURLRequestJob() override {}
+
+  base::WeakPtr<DelayableNetworkTimeURLRequestJob> GetWeakPtr() {
+    return weak_factory_.GetWeakPtr();
+  }
+
+  // URLRequestJob:
+  void Start() override {
+    started_ = true;
+    if (delayed_) {
+      // Do nothing until Resume() is called.
+      return;
+    }
+    Resume();
+  }
+
+  int ReadRawData(net::IOBuffer* buf, int buf_size) override {
+    int bytes_read =
+        std::min(static_cast<size_t>(buf_size),
+                 strlen(network_time::kGoodTimeResponseBody) - data_offset_);
+    memcpy(buf->data(), network_time::kGoodTimeResponseBody + data_offset_,
+           bytes_read);
+    data_offset_ += bytes_read;
+    return bytes_read;
+  }
+
+  int GetResponseCode() const override { return 200; }
+
+  void GetResponseInfo(net::HttpResponseInfo* info) override {
+    std::string headers;
+    headers.append(
+        "HTTP/1.1 200 OK\n"
+        "Content-type: text/plain\n");
+    headers.append(base::StringPrintf(
+        "Content-Length: %1d\n",
+        static_cast<int>(strlen(network_time::kGoodTimeResponseBody))));
+    info->headers =
+        new net::HttpResponseHeaders(net::HttpUtil::AssembleRawHeaders(
+            headers.c_str(), static_cast<int>(headers.length())));
+    info->headers->AddHeader(
+        "x-cup-server-proof: " +
+        std::string(network_time::kGoodTimeResponseServerProofHeader));
+  }
+
+  // Resumes a previously started request that was delayed. If no
+  // request has been started yet, then when Start() is called it will
+  // not delay.
+  void Resume() {
+    DCHECK_CURRENTLY_ON(content::BrowserThread::IO);
+    DCHECK(delayed_);
+    if (!started_) {
+      // If Start() hasn't been called yet, then unset |delayed_| so
+      // that when Start() is called, the request will begin
+      // immediately.
+      delayed_ = false;
+      return;
+    }
+
+    // Start reading asynchronously as would a normal network request.
+    base::ThreadTaskRunnerHandle::Get()->PostTask(
+        FROM_HERE,
+        base::Bind(&DelayableNetworkTimeURLRequestJob::NotifyHeadersComplete,
+                   weak_factory_.GetWeakPtr()));
+  }
+
+ private:
+  bool delayed_;
+  bool started_ = false;
+  int data_offset_ = 0;
+  base::WeakPtrFactory<DelayableNetworkTimeURLRequestJob> weak_factory_;
+
+  DISALLOW_COPY_AND_ASSIGN(DelayableNetworkTimeURLRequestJob);
+};
+
+// A URLRequestInterceptor that intercepts requests to use
+// DelayableNetworkTimeURLRequestJobs. Expects to intercept only a
+// single request in its lifetime.
+class DelayedNetworkTimeInterceptor : public net::URLRequestInterceptor {
+ public:
+  DelayedNetworkTimeInterceptor() {}
+  ~DelayedNetworkTimeInterceptor() override {}
+
+  // Intercepts |request| to use a DelayableNetworkTimeURLRequestJob. If
+  // Resume() has been called before MaybeInterceptRequest(), then the
+  // request will not be delayed.
+  net::URLRequestJob* MaybeInterceptRequest(
+      net::URLRequest* request,
+      net::NetworkDelegate* network_delegate) const override {
+    // Only support one intercepted request.
+    EXPECT_FALSE(intercepted_request_);
+    intercepted_request_ = true;
+    // If the request has been resumed before this request is created,
+    // then |should_delay_requests_| will be false and the request will
+    // not delay.
+    DelayableNetworkTimeURLRequestJob* job =
+        new DelayableNetworkTimeURLRequestJob(request, network_delegate,
+                                              should_delay_requests_);
+    if (should_delay_requests_)
+      delayed_request_ = job->GetWeakPtr();
+    return job;
+  }
+
+  void Resume() {
+    DCHECK_CURRENTLY_ON(content::BrowserThread::IO);
+    if (!should_delay_requests_)
+      return;
+    should_delay_requests_ = false;
+    if (delayed_request_)
+      delayed_request_->Resume();
+  }
+
+ private:
+  // True if a request has been intercepted. Used to enforce that only
+  // one request is intercepted in this object's lifetime.
+  mutable bool intercepted_request_ = false;
+  // True until Resume() is called. If Resume() is called before a
+  // request is intercepted, then a request that is intercepted later
+  // will continue without a delay.
+  bool should_delay_requests_ = true;
+  // Use a WeakPtr in case the request is cancelled before Resume() is called.
+  mutable base::WeakPtr<DelayableNetworkTimeURLRequestJob> delayed_request_ =
+      nullptr;
+
+  DISALLOW_COPY_AND_ASSIGN(DelayedNetworkTimeInterceptor);
+};
+
+// IO-thread helper methods for SSLNetworkTimeBrowserTest.
+
+void ResumeDelayedNetworkTimeRequest(
+    DelayedNetworkTimeInterceptor* interceptor) {
+  DCHECK_CURRENTLY_ON(content::BrowserThread::IO);
+  interceptor->Resume();
+}
+
+void SetUpNetworkTimeInterceptorOnIOThread(
+    DelayedNetworkTimeInterceptor* interceptor,
+    const GURL& time_server_url) {
+  DCHECK_CURRENTLY_ON(content::BrowserThread::IO);
+  net::URLRequestFilter::GetInstance()->AddHostnameInterceptor(
+      time_server_url.scheme(), time_server_url.host(),
+      std::unique_ptr<DelayedNetworkTimeInterceptor>(interceptor));
+}
+
+void CleanUpOnIOThread() {
+  DCHECK_CURRENTLY_ON(content::BrowserThread::IO);
+  net::URLRequestFilter::GetInstance()->ClearHandlers();
+}
+
+// A fixture for testing on-demand network time queries on SSL
+// certificate date errors. It can simulate a delayed network time
+// request, and it allows the user to configure the experimental
+// parameters of the NetworkTimeTracker. Expects only one network time
+// request to be issued during the test.
+class SSLNetworkTimeBrowserTest : public SSLUITest {
+ public:
+  SSLNetworkTimeBrowserTest()
+      : SSLUITest(),
+        field_trial_test_(network_time::FieldTrialTest::CreateForBrowserTest()),
+        interceptor_(nullptr) {}
+  ~SSLNetworkTimeBrowserTest() override {}
+
+  void SetUpOnMainThread() override { SetUpNetworkTimeServer(); }
+
+  void TearDownOnMainThread() override {
+    content::BrowserThread::PostTask(content::BrowserThread::IO, FROM_HERE,
+                                     base::Bind(&CleanUpOnIOThread));
+  }
+
+ protected:
+  network_time::FieldTrialTest* field_trial_test() const {
+    return field_trial_test_.get();
+  }
+
+  void SetUpNetworkTimeServer() {
+    field_trial_test()->SetNetworkQueriesWithVariationsService(
+        true, 0.0, network_time::FieldTrialTest::FETCHES_ON_DEMAND_ONLY);
+
+    // Install the URL interceptor that serves delayed network time
+    // responses.
+    interceptor_ = new DelayedNetworkTimeInterceptor();
+    content::BrowserThread::PostTask(
+        content::BrowserThread::IO, FROM_HERE,
+        base::Bind(&SetUpNetworkTimeInterceptorOnIOThread,
+                   base::Unretained(interceptor_),
+                   g_browser_process->network_time_tracker()
+                       ->GetTimeServerURLForTesting()));
+  }
+
+  void TriggerTimeResponse() {
+    content::BrowserThread::PostTask(
+        content::BrowserThread::IO, FROM_HERE,
+        base::Bind(&ResumeDelayedNetworkTimeRequest,
+                   base::Unretained(interceptor_)));
+  }
+
+  // Asserts that the first time request to the server is currently pending.
+  void CheckTimeQueryPending() {
+    base::Time unused_time;
+    base::TimeDelta unused_uncertainty;
+    ASSERT_EQ(network_time::NetworkTimeTracker::NETWORK_TIME_FIRST_SYNC_PENDING,
+              g_browser_process->network_time_tracker()->GetNetworkTime(
+                  &unused_time, &unused_uncertainty));
+  }
+
+ private:
+  std::unique_ptr<network_time::FieldTrialTest> field_trial_test_;
+  DelayedNetworkTimeInterceptor* interceptor_;
+
+  DISALLOW_COPY_AND_ASSIGN(SSLNetworkTimeBrowserTest);
+};
+
+// Tests that if an on-demand network time fetch returns that the clock
+// is okay, a normal SSL interstitial is shown.
+IN_PROC_BROWSER_TEST_F(SSLNetworkTimeBrowserTest, OnDemandFetchClockOk) {
+  ASSERT_TRUE(https_server_expired_.Start());
+  // Use a testing clock set to the time that GoodTimeResponseHandler
+  // returns, to simulate the system clock matching the network time.
+  base::SimpleTestClock testing_clock;
+  SSLErrorHandler::SetClockForTest(&testing_clock);
+  testing_clock.SetNow(
+      base::Time::FromJsTime(network_time::kGoodTimeResponseHandlerJsTime));
+  // Set the build time to match the testing clock, to ensure that the
+  // build time heuristic doesn't fire.
+  ssl_errors::SetBuildTimeForTesting(testing_clock.Now());
+
+  // Set a long timeout to ensure that the on-demand time fetch completes.
+  SSLErrorHandler::SetInterstitialDelayForTest(base::TimeDelta::FromHours(1));
+
+  WebContents* contents = browser()->tab_strip_model()->GetActiveWebContents();
+  ASSERT_TRUE(contents);
+  SSLInterstitialTimerObserver interstitial_timer_observer(contents);
+
+  content::WindowedNotificationObserver observer(
+      content::NOTIFICATION_LOAD_STOP,
+      content::NotificationService::AllSources());
+  ui_test_utils::NavigateToURLWithDisposition(
+      browser(), https_server_expired_.GetURL("/"),
+      WindowOpenDisposition::CURRENT_TAB, ui_test_utils::BROWSER_TEST_NONE);
+
+  // Once |interstitial_timer_observer| has fired, the request has been
+  // sent. Override the nonce that NetworkTimeTracker expects so that
+  // when the response comes back, it will validate. The nonce can only
+  // be overriden for the current in-flight request, so the test must
+  // call OverrideNonceForTesting() after the request has been sent and
+  // before the response has been received.
+  interstitial_timer_observer.WaitForTimerStarted();
+  g_browser_process->network_time_tracker()->OverrideNonceForTesting(123123123);
+  TriggerTimeResponse();
+
+  EXPECT_TRUE(contents->IsLoading());
+  observer.Wait();
+  content::WaitForInterstitialAttach(contents);
+
+  EXPECT_TRUE(contents->ShowingInterstitialPage());
+  InterstitialPage* interstitial_page = contents->GetInterstitialPage();
+  ASSERT_TRUE(interstitial_page);
+  ASSERT_EQ(SSLBlockingPage::kTypeForTesting,
+            interstitial_page->GetDelegateForTesting()->GetTypeForTesting());
+}
+
+// Tests that if an on-demand network time fetch returns that the clock
+// is wrong, a bad clock interstitial is shown.
+IN_PROC_BROWSER_TEST_F(SSLNetworkTimeBrowserTest, OnDemandFetchClockWrong) {
+  ASSERT_TRUE(https_server_expired_.Start());
+  // Use a testing clock set to a time that is different from what
+  // GoodTimeResponseHandler returns, simulating a system clock that is
+  // 30 days ahead of the network time.
+  base::SimpleTestClock testing_clock;
+  SSLErrorHandler::SetClockForTest(&testing_clock);
+  testing_clock.SetNow(
+      base::Time::FromJsTime(network_time::kGoodTimeResponseHandlerJsTime));
+  testing_clock.Advance(base::TimeDelta::FromDays(30));
+  // Set the build time to match the testing clock, to ensure that the
+  // build time heuristic doesn't fire.
+  ssl_errors::SetBuildTimeForTesting(testing_clock.Now());
+
+  // Set a long timeout to ensure that the on-demand time fetch completes.
+  SSLErrorHandler::SetInterstitialDelayForTest(base::TimeDelta::FromHours(1));
+
+  WebContents* contents = browser()->tab_strip_model()->GetActiveWebContents();
+  ASSERT_TRUE(contents);
+  SSLInterstitialTimerObserver interstitial_timer_observer(contents);
+
+  content::WindowedNotificationObserver observer(
+      content::NOTIFICATION_LOAD_STOP,
+      content::NotificationService::AllSources());
+
+  ui_test_utils::NavigateToURLWithDisposition(
+      browser(), https_server_expired_.GetURL("/"),
+      WindowOpenDisposition::CURRENT_TAB, ui_test_utils::BROWSER_TEST_NONE);
+
+  // Once |interstitial_timer_observer| has fired, the request has been
+  // sent. Override the nonce that NetworkTimeTracker expects so that
+  // when the response comes back, it will validate. The nonce can only
+  // be overriden for the current in-flight request, so the test must
+  // call OverrideNonceForTesting() after the request has been sent and
+  // before the response has been received.
+  interstitial_timer_observer.WaitForTimerStarted();
+  g_browser_process->network_time_tracker()->OverrideNonceForTesting(123123123);
+  TriggerTimeResponse();
+
+  EXPECT_TRUE(contents->IsLoading());
+  observer.Wait();
+  content::WaitForInterstitialAttach(contents);
+
+  EXPECT_TRUE(contents->ShowingInterstitialPage());
+  InterstitialPage* interstitial_page = contents->GetInterstitialPage();
+  ASSERT_TRUE(interstitial_page);
+  ASSERT_EQ(BadClockBlockingPage::kTypeForTesting,
+            interstitial_page->GetDelegateForTesting()->GetTypeForTesting());
+}
+
+// Tests that if the timeout expires before the network time fetch
+// returns, then a normal SSL intersitial is shown.
+IN_PROC_BROWSER_TEST_F(SSLNetworkTimeBrowserTest,
+                       TimeoutExpiresBeforeFetchCompletes) {
+  ASSERT_TRUE(https_server_expired_.Start());
+  // Set the timer to fire immediately.
+  SSLErrorHandler::SetInterstitialDelayForTest(base::TimeDelta());
+
+  ui_test_utils::NavigateToURL(browser(), https_server_expired_.GetURL("/"));
+  WebContents* contents = browser()->tab_strip_model()->GetActiveWebContents();
+  ASSERT_TRUE(contents);
+  content::WaitForInterstitialAttach(contents);
+
+  EXPECT_TRUE(contents->ShowingInterstitialPage());
+  InterstitialPage* interstitial_page = contents->GetInterstitialPage();
+  ASSERT_TRUE(interstitial_page);
+  ASSERT_EQ(SSLBlockingPage::kTypeForTesting,
+            interstitial_page->GetDelegateForTesting()->GetTypeForTesting());
+
+  // Navigate away, and then trigger the network time response; no crash should
+  // occur.
+  ASSERT_TRUE(https_server_.Start());
+  ui_test_utils::NavigateToURL(browser(), https_server_.GetURL("/"));
+  ASSERT_NO_FATAL_FAILURE(CheckTimeQueryPending());
+  TriggerTimeResponse();
+}
+
+// Tests that if the user stops the page load before either the network
+// time fetch completes or the timeout expires, then there is no interstitial.
+IN_PROC_BROWSER_TEST_F(SSLNetworkTimeBrowserTest, StopBeforeTimeoutExpires) {
+  ASSERT_TRUE(https_server_expired_.Start());
+  // Set the timer to a long delay.
+  SSLErrorHandler::SetInterstitialDelayForTest(base::TimeDelta::FromHours(1));
+
+  WebContents* contents = browser()->tab_strip_model()->GetActiveWebContents();
+  ASSERT_TRUE(contents);
+  SSLInterstitialTimerObserver interstitial_timer_observer(contents);
+
+  ui_test_utils::NavigateToURLWithDisposition(
+      browser(), https_server_expired_.GetURL("/"),
+      WindowOpenDisposition::CURRENT_TAB, ui_test_utils::BROWSER_TEST_NONE);
+  interstitial_timer_observer.WaitForTimerStarted();
+
+  EXPECT_TRUE(contents->IsLoading());
+  content::WindowedNotificationObserver observer(
+      content::NOTIFICATION_LOAD_STOP,
+      content::NotificationService::AllSources());
+  contents->Stop();
+  observer.Wait();
+
+  // Make sure that the |SSLErrorHandler| is deleted.
+  EXPECT_FALSE(SSLErrorHandler::FromWebContents(contents));
+  EXPECT_FALSE(contents->ShowingInterstitialPage());
+  EXPECT_FALSE(contents->IsLoading());
+
+  // Navigate away, and then trigger the network time response; no crash should
+  // occur.
+  ASSERT_TRUE(https_server_.Start());
+  ui_test_utils::NavigateToURL(browser(), https_server_.GetURL("/title1.html"));
+  ASSERT_NO_FATAL_FAILURE(CheckTimeQueryPending());
+  TriggerTimeResponse();
+}
+
+// Tests that if the user reloads the page before either the network
+// time fetch completes or the timeout expires, then there is no interstitial.
+IN_PROC_BROWSER_TEST_F(SSLNetworkTimeBrowserTest, ReloadBeforeTimeoutExpires) {
+  ASSERT_TRUE(https_server_expired_.Start());
+  // Set the timer to a long delay.
+  SSLErrorHandler::SetInterstitialDelayForTest(base::TimeDelta::FromHours(1));
+
+  WebContents* contents = browser()->tab_strip_model()->GetActiveWebContents();
+  SSLInterstitialTimerObserver interstitial_timer_observer(contents);
+
+  ui_test_utils::NavigateToURLWithDisposition(
+      browser(), https_server_expired_.GetURL("/"),
+      WindowOpenDisposition::CURRENT_TAB, ui_test_utils::BROWSER_TEST_NONE);
+  interstitial_timer_observer.WaitForTimerStarted();
+
+  EXPECT_TRUE(contents->IsLoading());
+  content::TestNavigationObserver observer(contents, 1);
+  chrome::Reload(browser(), WindowOpenDisposition::CURRENT_TAB);
+  observer.Wait();
+
+  // Make sure that the |SSLErrorHandler| is deleted.
+  EXPECT_FALSE(SSLErrorHandler::FromWebContents(contents));
+  EXPECT_FALSE(contents->ShowingInterstitialPage());
+  EXPECT_FALSE(contents->IsLoading());
+
+  // Navigate away, and then trigger the network time response and wait
+  // for the response; no crash should occur.
+  ASSERT_TRUE(https_server_.Start());
+  ui_test_utils::NavigateToURL(browser(), https_server_.GetURL("/"));
+  ASSERT_NO_FATAL_FAILURE(CheckTimeQueryPending());
+  TriggerTimeResponse();
+}
+
+// Tests that if the user navigates away before either the network time
+// fetch completes or the timeout expires, then there is no
+// interstitial.
+IN_PROC_BROWSER_TEST_F(SSLNetworkTimeBrowserTest,
+                       NavigateAwayBeforeTimeoutExpires) {
+  ASSERT_TRUE(https_server_expired_.Start());
+  ASSERT_TRUE(https_server_.Start());
+  // Set the timer to a long delay.
+  SSLErrorHandler::SetInterstitialDelayForTest(base::TimeDelta::FromHours(1));
+
+  WebContents* contents = browser()->tab_strip_model()->GetActiveWebContents();
+  SSLInterstitialTimerObserver interstitial_timer_observer(contents);
+
+  ui_test_utils::NavigateToURLWithDisposition(
+      browser(), https_server_expired_.GetURL("/"),
+      WindowOpenDisposition::CURRENT_TAB, ui_test_utils::BROWSER_TEST_NONE);
+  interstitial_timer_observer.WaitForTimerStarted();
+
+  EXPECT_TRUE(contents->IsLoading());
+  content::TestNavigationObserver observer(contents, 1);
+  browser()->OpenURL(content::OpenURLParams(
+      https_server_.GetURL("/"), content::Referrer(),
+      WindowOpenDisposition::CURRENT_TAB, ui::PAGE_TRANSITION_TYPED, false));
+  observer.Wait();
+
+  // Make sure that the |SSLErrorHandler| is deleted.
+  EXPECT_FALSE(SSLErrorHandler::FromWebContents(contents));
+  EXPECT_FALSE(contents->ShowingInterstitialPage());
+  EXPECT_FALSE(contents->IsLoading());
+
+  // Navigate away, and then trigger the network time response and wait
+  // for the response; no crash should occur.
+  ui_test_utils::NavigateToURL(browser(), https_server_.GetURL("/"));
+  ASSERT_NO_FATAL_FAILURE(CheckTimeQueryPending());
+  TriggerTimeResponse();
+}
+
+// Tests that if the user closes the tab before the network time fetch
+// completes, it doesn't cause a crash.
+IN_PROC_BROWSER_TEST_F(SSLNetworkTimeBrowserTest,
+                       CloseTabBeforeNetworkFetchCompletes) {
+  ASSERT_TRUE(https_server_expired_.Start());
+  // Set the timer to fire immediately.
+  SSLErrorHandler::SetInterstitialDelayForTest(base::TimeDelta());
+
+  ui_test_utils::NavigateToURL(browser(), https_server_expired_.GetURL("/"));
+  WebContents* contents = browser()->tab_strip_model()->GetActiveWebContents();
+  ASSERT_TRUE(contents);
+  content::WaitForInterstitialAttach(contents);
+
+  EXPECT_TRUE(contents->ShowingInterstitialPage());
+  InterstitialPage* interstitial_page = contents->GetInterstitialPage();
+  ASSERT_TRUE(interstitial_page);
+  ASSERT_EQ(SSLBlockingPage::kTypeForTesting,
+            interstitial_page->GetDelegateForTesting()->GetTypeForTesting());
+
+  // Open a second tab, close the first, and then trigger the network time
+  // response and wait for the response; no crash should occur.
+  ASSERT_TRUE(https_server_.Start());
+  AddTabAtIndex(1, https_server_.GetURL("/"), ui::PAGE_TRANSITION_TYPED);
+  chrome::CloseWebContents(browser(), contents, false);
+  ASSERT_NO_FATAL_FAILURE(CheckTimeQueryPending());
+  TriggerTimeResponse();
 }
 
 class CommonNameMismatchBrowserTest : public CertVerifierBrowserTest {

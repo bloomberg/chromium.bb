@@ -42,7 +42,7 @@ NetworkErrorResponseHandler(const net::test_server::HttpRequest& request) {
 class SSLErrorClassificationTest : public ::testing::Test {
  public:
   SSLErrorClassificationTest()
-      : field_trial_test_(new network_time::FieldTrialTest()) {}
+      : field_trial_test_(network_time::FieldTrialTest::CreateForUnitTest()) {}
   network_time::FieldTrialTest* field_trial_test() {
     return field_trial_test_.get();
   }
@@ -357,7 +357,8 @@ TEST_F(SSLErrorClassificationTest, NetworkClockStateHistogram) {
       new net::TestURLRequestContextGetter(io_thread.task_runner()));
   network_time_tracker.SetTimeServerURLForTesting(test_server.GetURL("/"));
   field_trial_test()->SetNetworkQueriesWithVariationsService(
-      true, 0.0, network_time::FieldTrialTest::ENABLE_FETCHES_ON_DEMAND);
+      true, 0.0,
+      network_time::FieldTrialTest::FETCHES_IN_BACKGROUND_AND_ON_DEMAND);
 
   // No sync attempt.
   EXPECT_EQ(
