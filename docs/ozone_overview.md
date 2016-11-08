@@ -285,7 +285,7 @@ ninja -C out/OzoneCaca content_shell
 ```
 
   Note: traditional TTYs are not the ideal browsing experience.<br/>
-  [![Picture of a workstation using Ozone/caca to display the Google home page in a text terminal](https://www.chromium.org/_/rsrc/1396307876689/developers/design-documents/ozone/IMG_20140331_151619.jpg?height=240&amp;width=320)](https://www.chromium.org/developers/design-documents/ozone/IMG_20140331_151619.jpg?attredirects=0)
+  ![Picture of a workstation using Ozone/caca to display the Google home page in a text terminal](./images/ozone_caca.jpg)
 
 ## Communication
 
