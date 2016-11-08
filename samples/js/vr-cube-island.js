@@ -17,9 +17,17 @@ window.VRCubeIsland = (function () {
     "uniform mat4 modelViewMat;",
     "attribute vec3 position;",
     "attribute vec2 texCoord;",
+    "attribute vec3 normal;",
     "varying vec2 vTexCoord;",
+    "varying vec3 vLight;",
+
+    "const vec3 lightDir = vec3(0.75, 0.5, 1.0);",
+    "const vec3 ambientColor = vec3(0.5, 0.5, 0.5);",
+    "const vec3 lightColor = vec3(0.75, 0.75, 0.75);",
 
     "void main() {",
+    "  float lightFactor = max(dot(normalize(lightDir), normal), 0.0);",
+    "  vLight = ambientColor + (lightColor * lightFactor);",
     "  vTexCoord = texCoord;",
     "  gl_Position = projectionMat * modelViewMat * vec4( position, 1.0 );",
     "}",
@@ -29,9 +37,10 @@ window.VRCubeIsland = (function () {
     "precision mediump float;",
     "uniform sampler2D diffuse;",
     "varying vec2 vTexCoord;",
+    "varying vec3 vLight;",
 
     "void main() {",
-    "  gl_FragColor = texture2D(diffuse, vTexCoord);",
+    "  gl_FragColor = vec4(vLight, 1.0) * texture2D(diffuse, vTexCoord);",
     "}",
   ].join("\n");
 
@@ -47,7 +56,8 @@ window.VRCubeIsland = (function () {
     this.program.attachShaderSource(cubeIslandFS, gl.FRAGMENT_SHADER);
     this.program.bindAttribLocation({
       position: 0,
-      texCoord: 1
+      texCoord: 1,
+      normal: 2
     });
     this.program.link();
 
@@ -69,64 +79,64 @@ window.VRCubeIsland = (function () {
     // Build a single box.
     function appendBox (left, bottom, back, right, top, front) {
       // Bottom
-      var idx = cubeVerts.length / 5.0;
+      var idx = cubeVerts.length / 8.0;
       cubeIndices.push(idx, idx + 1, idx + 2);
       cubeIndices.push(idx, idx + 2, idx + 3);
 
-      cubeVerts.push(left, bottom, back, 0.0, 1.0);
-      cubeVerts.push(right, bottom, back, 1.0, 1.0);
-      cubeVerts.push(right, bottom, front, 1.0, 0.0);
-      cubeVerts.push(left, bottom, front, 0.0, 0.0);
+      cubeVerts.push(left, bottom, back, 0.0, 1.0, 0.0, -1.0, 0.0);
+      cubeVerts.push(right, bottom, back, 1.0, 1.0, 0.0, -1.0, 0.0);
+      cubeVerts.push(right, bottom, front, 1.0, 0.0, 0.0, -1.0, 0.0);
+      cubeVerts.push(left, bottom, front, 0.0, 0.0, 0.0, -1.0, 0.0);
 
       // Top
-      idx = cubeVerts.length / 5.0;
+      idx = cubeVerts.length / 8.0;
       cubeIndices.push(idx, idx + 2, idx + 1);
       cubeIndices.push(idx, idx + 3, idx + 2);
 
-      cubeVerts.push(left, top, back, 0.0, 0.0);
-      cubeVerts.push(right, top, back, 1.0, 0.0);
-      cubeVerts.push(right, top, front, 1.0, 1.0);
-      cubeVerts.push(left, top, front, 0.0, 1.0);
+      cubeVerts.push(left, top, back, 0.0, 0.0, 0.0, 1.0, 0.0);
+      cubeVerts.push(right, top, back, 1.0, 0.0, 0.0, 1.0, 0.0);
+      cubeVerts.push(right, top, front, 1.0, 1.0, 0.0, 1.0, 0.0);
+      cubeVerts.push(left, top, front, 0.0, 1.0, 0.0, 1.0, 0.0);
 
       // Left
-      idx = cubeVerts.length / 5.0;
+      idx = cubeVerts.length / 8.0;
       cubeIndices.push(idx, idx + 2, idx + 1);
       cubeIndices.push(idx, idx + 3, idx + 2);
 
-      cubeVerts.push(left, bottom, back, 0.0, 1.0);
-      cubeVerts.push(left, top, back, 0.0, 0.0);
-      cubeVerts.push(left, top, front, 1.0, 0.0);
-      cubeVerts.push(left, bottom, front, 1.0, 1.0);
+      cubeVerts.push(left, bottom, back, 0.0, 1.0, -1.0, 0.0, 0.0);
+      cubeVerts.push(left, top, back, 0.0, 0.0, -1.0, 0.0, 0.0);
+      cubeVerts.push(left, top, front, 1.0, 0.0, -1.0, 0.0, 0.0);
+      cubeVerts.push(left, bottom, front, 1.0, 1.0, -1.0, 0.0, 0.0);
 
       // Right
-      idx = cubeVerts.length / 5.0;
+      idx = cubeVerts.length / 8.0;
       cubeIndices.push(idx, idx + 1, idx + 2);
       cubeIndices.push(idx, idx + 2, idx + 3);
 
-      cubeVerts.push(right, bottom, back, 1.0, 1.0);
-      cubeVerts.push(right, top, back, 1.0, 0.0);
-      cubeVerts.push(right, top, front, 0.0, 0.0);
-      cubeVerts.push(right, bottom, front, 0.0, 1.0);
+      cubeVerts.push(right, bottom, back, 1.0, 1.0, 1.0, 0.0, 0.0);
+      cubeVerts.push(right, top, back, 1.0, 0.0, 1.0, 0.0, 0.0);
+      cubeVerts.push(right, top, front, 0.0, 0.0, 1.0, 0.0, 0.0);
+      cubeVerts.push(right, bottom, front, 0.0, 1.0, 1.0, 0.0, 0.0);
 
       // Back
-      idx = cubeVerts.length / 5.0;
+      idx = cubeVerts.length / 8.0;
       cubeIndices.push(idx, idx + 2, idx + 1);
       cubeIndices.push(idx, idx + 3, idx + 2);
 
-      cubeVerts.push(left, bottom, back, 1.0, 1.0);
-      cubeVerts.push(right, bottom, back, 0.0, 1.0);
-      cubeVerts.push(right, top, back, 0.0, 0.0);
-      cubeVerts.push(left, top, back, 1.0, 0.0);
+      cubeVerts.push(left, bottom, back, 1.0, 1.0, 0.0, 0.0, -1.0);
+      cubeVerts.push(right, bottom, back, 0.0, 1.0, 0.0, 0.0, -1.0);
+      cubeVerts.push(right, top, back, 0.0, 0.0, 0.0, 0.0, -1.0);
+      cubeVerts.push(left, top, back, 1.0, 0.0, 0.0, 0.0, -1.0);
 
       // Front
-      idx = cubeVerts.length / 5.0;
+      idx = cubeVerts.length / 8.0;
       cubeIndices.push(idx, idx + 1, idx + 2);
       cubeIndices.push(idx, idx + 2, idx + 3);
 
-      cubeVerts.push(left, bottom, front, 0.0, 1.0);
-      cubeVerts.push(right, bottom, front, 1.0, 1.0);
-      cubeVerts.push(right, top, front, 1.0, 0.0);
-      cubeVerts.push(left, top, front, 0.0, 0.0);
+      cubeVerts.push(left, bottom, front, 0.0, 1.0, 0.0, 0.0, 1.0);
+      cubeVerts.push(right, bottom, front, 1.0, 1.0, 0.0, 0.0, 1.0);
+      cubeVerts.push(right, top, front, 1.0, 0.0, 0.0, 0.0, 1.0);
+      cubeVerts.push(left, top, front, 0.0, 0.0, 0.0, 0.0, 1.0);
     }
 
     // Appends a cube with the given centerpoint and size.
@@ -185,9 +195,12 @@ window.VRCubeIsland = (function () {
 
     gl.enableVertexAttribArray(program.attrib.position);
     gl.enableVertexAttribArray(program.attrib.texCoord);
+    gl.enableVertexAttribArray(program.attrib.normal);
 
-    gl.vertexAttribPointer(program.attrib.position, 3, gl.FLOAT, false, 20, 0);
-    gl.vertexAttribPointer(program.attrib.texCoord, 2, gl.FLOAT, false, 20, 12);
+    gl.vertexAttribPointer(program.attrib.position, 3, gl.FLOAT, false, 32, 0);
+    gl.vertexAttribPointer(program.attrib.texCoord, 2, gl.FLOAT, false, 32, 12);
+    gl.vertexAttribPointer(program.attrib.normal, 3, gl.FLOAT, false, 32, 20);
+
 
     gl.activeTexture(gl.TEXTURE0);
     gl.uniform1i(this.program.uniform.diffuse, 0);

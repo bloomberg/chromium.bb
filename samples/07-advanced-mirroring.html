@@ -98,7 +98,6 @@ found in the LICENSE file.
       function initWebGL () {
         var glAttribs = {
           alpha: false,
-          antialias: !VRSamplesUtil.isMobile()
           // When doing mirroring like this, do NOT turn on PreserveDrawingBuffer!
         };
         gl = webglCanvas.getContext("webgl", glAttribs);

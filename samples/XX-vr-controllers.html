@@ -104,7 +104,6 @@ found in the LICENSE file.
       function initWebGL (preserveDrawingBuffer) {
         var glAttribs = {
           alpha: false,
-          antialias: !VRSamplesUtil.isMobile(),
           preserveDrawingBuffer: preserveDrawingBuffer
         };
         gl = webglCanvas.getContext("webgl", glAttribs);
@@ -307,7 +306,7 @@ found in the LICENSE file.
           mat4.translate(gamepadMat2, gamepadMat2, [0, -0.5, -0.3]);
           mat4.rotateX(gamepadMat2, gamepadMat2, -Math.PI * 0.2);
           mat4.scale(gamepadMat2, gamepadMat2, [0.25, 0.25, 0.5]);
-          
+
           mat4.multiply(gamepadMat, gamepadMat, gamepadMat2);
 
           debugGeom.drawBoxWithMatrix(gamepadMat, gamepadColor);

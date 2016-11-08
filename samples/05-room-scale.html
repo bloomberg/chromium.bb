@@ -95,7 +95,6 @@ found in the LICENSE file.
       function initWebGL (preserveDrawingBuffer) {
         var glAttribs = {
           alpha: false,
-          antialias: !VRSamplesUtil.isMobile(),
           preserveDrawingBuffer: preserveDrawingBuffer
         };
         gl = webglCanvas.getContext("webgl", glAttribs);

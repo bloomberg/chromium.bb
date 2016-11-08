@@ -34,7 +34,8 @@
 
       ul.sample-list {
         list-style: none;
-        padding-left: 1em;
+        padding-left: 0.0em;
+        margin-left: 0.0em;
         display: table;
       }
 
@@ -118,7 +119,7 @@
 
             var polyfillLink = document.createElement("a");
             polyfillLink.href = page.path + "?polyfill=1";
-            polyfillLink.innerHTML = "(Use Polyfill)";
+            polyfillLink.innerHTML = "(Polyfill)";
             li.appendChild(polyfillLink);
 
             var sourceLink = document.createElement("a");
