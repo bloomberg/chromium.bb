@@ -298,7 +298,7 @@ public class ContextualSearchPanel extends OverlayPanel {
         } else if (isExpanded() || isMaximized()) {
             if (isCoordinateInsideCloseButton(x)) {
                 closePanel(StateChangeReason.CLOSE_BUTTON, true);
-            } else if (!mActivity.isCustomTab() && canDisplayContentInPanel()) {
+            } else if (canPromoteToNewTab()) {
                 mManagementDelegate.promoteToTab();
             }
         }
@@ -832,6 +832,13 @@ public class ContextualSearchPanel extends OverlayPanel {
      */
     public void destroyContent() {
         super.destroyOverlayPanelContent();
+    }
+
+    /**
+     * @return Whether the panel content can be displayed in a new tab.
+     */
+    boolean canPromoteToNewTab() {
+        return !mActivity.isCustomTab() && canDisplayContentInPanel();
     }
 
     // ============================================================================================

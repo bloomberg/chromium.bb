@@ -111,6 +111,11 @@ public class ContextualSearchBarControl
     private final float mDpToPx;
 
     /**
+     * Whether the panel contents can be promoted to a new tab.
+     */
+    private final boolean mCanPromoteToNewTab;
+
+    /**
      * Constructs a new bottom bar control container by inflating views from XML.
      *
      * @param panel     The panel.
@@ -118,15 +123,17 @@ public class ContextualSearchBarControl
      * @param container The parent view for the bottom bar views.
      * @param loader    The resource loader that will handle the snapshot capturing.
      */
-    public ContextualSearchBarControl(OverlayPanel panel,
+    public ContextualSearchBarControl(ContextualSearchPanel panel,
                                       Context context,
                                       ViewGroup container,
                                       DynamicResourceLoader loader) {
         mOverlayPanel = panel;
+        mCanPromoteToNewTab = panel.canPromoteToNewTab();
         mImageControl = new ContextualSearchImageControl(panel, context);
         mContextControl = new ContextualSearchContextControl(panel, context, container, loader);
         mSearchTermControl = new ContextualSearchTermControl(panel, context, container, loader);
-        mCaptionControl = new ContextualSearchCaptionControl(panel, context, container, loader);
+        mCaptionControl = new ContextualSearchCaptionControl(panel, context, container, loader,
+                mCanPromoteToNewTab);
         mQuickActionControl = new ContextualSearchQuickActionControl(context, loader);
 
         mTextLayerMinHeight = context.getResources().getDimension(
@@ -496,6 +503,12 @@ public class ContextualSearchBarControl
         if (mTouchHighlightVisible) return;
 
         mWasTouchOnEndButton = isTouchOnEndButton(x);
+
+        // If the panel is expanded or maximized and the panel content cannot be promoted to a new
+        // tab, then tapping anywhere besides the end button does nothing. In this case, the touch
+        // highlight should not be shown.
+        if (!mWasTouchOnEndButton && !mOverlayPanel.isPeeking() && !mCanPromoteToNewTab) return;
+
         mWasDividerVisibleOnTouch = getDividerLineVisibilityPercentage() > 0.f;
         mTouchHighlightVisible = true;
 

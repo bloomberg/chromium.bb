@@ -65,6 +65,11 @@ public class ContextualSearchCaptionControl extends OverlayPanelTextViewInflater
     private boolean mShowingExpandedCaption;
 
     /**
+     * Whether the expanded caption should be shown.
+     */
+    private final boolean mShouldShowExpandedCaption;
+
+    /**
      * The caption visibility.
      */
     private boolean mIsVisible;
@@ -83,15 +88,18 @@ public class ContextualSearchCaptionControl extends OverlayPanelTextViewInflater
     private boolean mDidCapture;
 
     /**
-     * @param panel             The panel.
-     * @param context           The Android Context used to inflate the View.
-     * @param container         The container View used to inflate the View.
-     * @param resourceLoader    The resource loader that will handle the snapshot capturing.
+     * @param panel                     The panel.
+     * @param context                   The Android Context used to inflate the View.
+     * @param container                 The container View used to inflate the View.
+     * @param resourceLoader            The resource loader that will handle the snapshot capturing.
+     * @param shouldShowExpandedCaption Whether the "Open in new tab" caption should be shown
+     *                                  when the panel is expanded.
      */
     public ContextualSearchCaptionControl(OverlayPanel panel, Context context, ViewGroup container,
-            DynamicResourceLoader resourceLoader) {
+            DynamicResourceLoader resourceLoader, boolean shouldShowExpandedCaption) {
         super(panel, R.layout.contextual_search_caption_view, R.id.contextual_search_caption_view,
                 context, container, resourceLoader);
+        mShouldShowExpandedCaption = shouldShowExpandedCaption;
     }
 
     /**
@@ -123,6 +131,14 @@ public class ContextualSearchCaptionControl extends OverlayPanelTextViewInflater
      * @param percentage The percentage to the more opened state.
      */
     public void onUpdateFromPeekToExpand(float percentage) {
+        if (!mShouldShowExpandedCaption) {
+            if (mHasPeekingCaption) {
+                mOverlayPanel.cancelAnimation(this, AnimationType.APPEARANCE);
+                mAnimationPercentage = 1.f - percentage;
+            }
+            return;
+        }
+
         if (mHasPeekingCaption) {
             if (percentage < EXPANDED_CAPTION_THRESHOLD && mShowingExpandedCaption) {
                 // Start showing the peeking caption again.
