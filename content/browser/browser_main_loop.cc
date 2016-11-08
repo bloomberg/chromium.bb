@@ -350,12 +350,12 @@ MSVC_ENABLE_OPTIMIZE();
 #if defined(OS_WIN)
 // Creates a memory pressure monitor using automatic thresholds, or those
 // specified on the command-line. Ownership is passed to the caller.
-base::win::MemoryPressureMonitor* CreateWinMemoryPressureMonitor(
-    const base::CommandLine& parsed_command_line) {
-  std::vector<std::string> thresholds = base::SplitString(
-      parsed_command_line.GetSwitchValueASCII(
-          switches::kMemoryPressureThresholdsMb),
-      ",", base::TRIM_WHITESPACE, base::SPLIT_WANT_ALL);
+std::unique_ptr<base::win::MemoryPressureMonitor>
+CreateWinMemoryPressureMonitor(const base::CommandLine& parsed_command_line) {
+  std::vector<std::string> thresholds =
+      base::SplitString(parsed_command_line.GetSwitchValueASCII(
+                            switches::kMemoryPressureThresholdsMb),
+                        ",", base::TRIM_WHITESPACE, base::SPLIT_WANT_ALL);
 
   int moderate_threshold_mb = 0;
   int critical_threshold_mb = 0;
@@ -364,12 +364,12 @@ base::win::MemoryPressureMonitor* CreateWinMemoryPressureMonitor(
       base::StringToInt(thresholds[1], &critical_threshold_mb) &&
       moderate_threshold_mb >= critical_threshold_mb &&
       critical_threshold_mb >= 0) {
-    return new base::win::MemoryPressureMonitor(moderate_threshold_mb,
-                                                critical_threshold_mb);
+    return base::MakeUnique<base::win::MemoryPressureMonitor>(
+        moderate_threshold_mb, critical_threshold_mb);
   }
 
   // In absence of valid switches use the automatic defaults.
-  return new base::win::MemoryPressureMonitor();
+  return base::MakeUnique<base::win::MemoryPressureMonitor>();
 }
 #endif  // defined(OS_WIN)
 
@@ -1399,6 +1399,22 @@ bool BrowserMainLoop::UsingInProcessGpu() const {
 }
 
 void BrowserMainLoop::InitializeMemoryManagementComponent() {
+  // TODO(chrisha): Abstract away this construction mess to a helper function,
+  // once MemoryPressureMonitor is made a concrete class.
+#if defined(OS_CHROMEOS)
+  if (chromeos::switches::MemoryPressureHandlingEnabled()) {
+    memory_pressure_monitor_ =
+        base::MakeUnique<base::chromeos::MemoryPressureMonitor>(
+            chromeos::switches::GetMemoryPressureThresholds());
+  }
+#elif defined(OS_MACOSX)
+  memory_pressure_monitor_ =
+    base::MakeUnique<base::mac::MemoryPressureMonitor>();
+#elif defined(OS_WIN)
+  memory_pressure_monitor_ =
+      CreateWinMemoryPressureMonitor(parsed_command_line_);
+#endif
+
   if (base::FeatureList::IsEnabled(features::kMemoryCoordinator)) {
     // Disable MemoryPressureListener when memory coordinator is enabled.
     base::MemoryPressureListener::SetNotificationsSuppressed(true);
@@ -1412,22 +1428,13 @@ void BrowserMainLoop::InitializeMemoryManagementComponent() {
         SetSetCurrentMemoryStateForTestingCallback(base::Bind(
             &MemoryCoordinator::SetCurrentMemoryStateForTesting,
             base::Unretained(MemoryCoordinator::GetInstance())));
-    return;
-  }
 
-  // TODO(chrisha): Abstract away this construction mess to a helper function,
-  // once MemoryPressureMonitor is made a concrete class.
-#if defined(OS_CHROMEOS)
-  if (chromeos::switches::MemoryPressureHandlingEnabled()) {
-    memory_pressure_monitor_.reset(new base::chromeos::MemoryPressureMonitor(
-        chromeos::switches::GetMemoryPressureThresholds()));
+    if (memory_pressure_monitor_) {
+      memory_pressure_monitor_->SetDispatchCallback(
+          base::Bind(&MemoryCoordinator::RecordMemoryPressure,
+                     base::Unretained(MemoryCoordinator::GetInstance())));
+    }
   }
-#elif defined(OS_MACOSX)
-  memory_pressure_monitor_.reset(new base::mac::MemoryPressureMonitor());
-#elif defined(OS_WIN)
-  memory_pressure_monitor_.reset(CreateWinMemoryPressureMonitor(
-      parsed_command_line_));
-#endif
 }
 
 bool BrowserMainLoop::InitializeToolkit() {

@@ -6,6 +6,7 @@
 #define CONTENT_BROWSER_MEMORY_MEMORY_COORDINATOR_H_
 
 #include "base/memory/memory_coordinator_client_registry.h"
+#include "base/memory/memory_pressure_monitor.h"
 #include "base/process/process_handle.h"
 #include "content/common/content_export.h"
 #include "content/common/memory_coordinator.mojom.h"
@@ -51,6 +52,11 @@ class CONTENT_EXPORT MemoryCoordinator {
   // Returns the memory state of the specified render process. Returns UNKNOWN
   // if the process is not tracked by this coordinator.
   mojom::MemoryState GetChildMemoryState(int render_process_id) const;
+
+  // Records memory pressure notifications. Called by MemoryPressureMonitor.
+  // TODO(bashi): Remove this when MemoryPressureMonitor is retired.
+  void RecordMemoryPressure(
+      base::MemoryPressureMonitor::MemoryPressureLevel level);
 
   // Called when ChildMemoryCoordinator calls AddChild().
   virtual void OnChildAdded(int render_process_id) {}

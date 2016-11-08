@@ -5,6 +5,7 @@
 #include "content/browser/memory/memory_coordinator.h"
 
 #include "base/memory/memory_coordinator_client_registry.h"
+#include "base/metrics/histogram_macros.h"
 #include "content/public/browser/content_browser_client.h"
 #include "content/public/browser/render_process_host.h"
 #include "content/public/common/content_client.h"
@@ -118,6 +119,25 @@ mojom::MemoryState MemoryCoordinator::GetChildMemoryState(
   if (iter == children_.end())
     return mojom::MemoryState::UNKNOWN;
   return iter->second.memory_state;
+}
+
+void MemoryCoordinator::RecordMemoryPressure(
+    base::MemoryPressureMonitor::MemoryPressureLevel level) {
+  int state = static_cast<int>(GetCurrentMemoryState());
+  switch (level) {
+    case base::MemoryPressureListener::MEMORY_PRESSURE_LEVEL_MODERATE:
+      UMA_HISTOGRAM_ENUMERATION(
+          "Memory.Coordinator.StateOnModerateNotificationReceived",
+          state, base::kMemoryStateMax);
+      break;
+    case base::MemoryPressureListener::MEMORY_PRESSURE_LEVEL_CRITICAL:
+      UMA_HISTOGRAM_ENUMERATION(
+          "Memory.Coordinator.StateOnCriticalNotificationReceived",
+          state, base::kMemoryStateMax);
+      break;
+    case base::MemoryPressureListener::MEMORY_PRESSURE_LEVEL_NONE:
+      NOTREACHED();
+  }
 }
 
 void MemoryCoordinator::EnableFeaturesForTesting() {
