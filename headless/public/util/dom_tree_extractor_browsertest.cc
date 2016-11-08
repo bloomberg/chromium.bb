@@ -5,6 +5,7 @@
 #include "headless/public/util/dom_tree_extractor.h"
 
 #include <memory>
+#include "base/json/json_reader.h"
 #include "base/json/json_writer.h"
 #include "base/strings/string_util.h"
 #include "content/public/browser/render_widget_host_view.h"
@@ -22,6 +23,19 @@
 #include "url/gurl.h"
 
 namespace headless {
+
+namespace {
+
+std::string NormaliseJSON(const std::string& json) {
+  std::unique_ptr<base::Value> parsed_json = base::JSONReader::Read(json);
+  DCHECK(parsed_json);
+  std::string normalized_json;
+  base::JSONWriter::WriteWithOptions(
+      *parsed_json, base::JSONWriter::OPTIONS_PRETTY_PRINT, &normalized_json);
+  return normalized_json;
+}
+
+}  // namespace
 
 class DomTreeExtractorBrowserTest : public HeadlessAsyncDevTooledBrowserTest,
                                     public page::Observer {
@@ -139,543 +153,572 @@ class DomTreeExtractorBrowserTest : public HeadlessAsyncDevTooledBrowserTest,
     }
 
     const std::vector<std::string> expected_dom_nodes = {
-        "{\n"
-        "   'baseURL': 'http://127.0.0.1/dom_tree_test.html',\n"
-        "   'boundingBox': {\n"
-        "      'height': 600.0,\n"
-        "      'width': 800.0,\n"
-        "      'x': 0.0,\n"
-        "      'y': 0.0\n"
-        "   },\n"
-        "   'childIndices': [ 1 ],\n"
-        "   'documentURL': 'http://127.0.0.1/dom_tree_test.html',\n"
-        "   'localName': '',\n"
-        "   'nodeId': 1,\n"
-        "   'nodeName': '#document',\n"
-        "   'nodeType': 9,\n"
-        "   'nodeValue': '',\n"
-        "   'xmlVersion': ''\n"
-        "}\n",
+        R"raw_string({
+           "backendNodeId": 3,
+           "baseURL": "http://127.0.0.1/dom_tree_test.html",
+           "boundingBox": {
+              "height": 600.0,
+              "width": 800.0,
+              "x": 0.0,
+              "y": 0.0
+           },
+           "childIndices": [ 1 ],
+           "documentURL": "http://127.0.0.1/dom_tree_test.html",
+           "localName": "",
+           "nodeId": 1,
+           "nodeName": "#document",
+           "nodeType": 9,
+           "nodeValue": "",
+           "xmlVersion": ""
+        })raw_string",
 
-        "{\n"
-        "   'attributes': [  ],\n"
-        "   'boundingBox': {\n"
-        "      'height': 600.0,\n"
-        "      'width': 800.0,\n"
-        "      'x': 0.0,\n"
-        "      'y': 0.0\n"
-        "   },\n"
-        "   'childIndices': [ 2, 5 ],\n"
-        "   'frameId': '?',\n"
-        "   'localName': 'html',\n"
-        "   'nodeId': 2,\n"
-        "   'nodeName': 'HTML',\n"
-        "   'nodeType': 1,\n"
-        "   'nodeValue': '',\n"
-        "   'styleIndex': 0\n"
-        "}\n",
+        R"raw_string({
+           "attributes": [  ],
+           "backendNodeId": 4,
+           "boundingBox": {
+              "height": 600.0,
+              "width": 800.0,
+              "x": 0.0,
+              "y": 0.0
+           },
+           "childIndices": [ 2, 5 ],
+           "frameId": "?",
+           "localName": "html",
+           "nodeId": 2,
+           "nodeName": "HTML",
+           "nodeType": 1,
+           "nodeValue": "",
+           "styleIndex": 0
+        })raw_string",
 
-        "{\n"
-        "   'attributes': [  ],\n"
-        "   'childIndices': [ 3 ],\n"
-        "   'localName': 'head',\n"
-        "   'nodeId': 3,\n"
-        "   'nodeName': 'HEAD',\n"
-        "   'nodeType': 1,\n"
-        "   'nodeValue': ''\n"
-        "}\n",
+        R"raw_string({
+           "attributes": [  ],
+           "backendNodeId": 5,
+           "childIndices": [ 3 ],
+           "localName": "head",
+           "nodeId": 3,
+           "nodeName": "HEAD",
+           "nodeType": 1,
+           "nodeValue": ""
+        })raw_string",
 
-        "{\n"
-        "   'attributes': [  ],\n"
-        "   'childIndices': [ 4 ],\n"
-        "   'localName': 'title',\n"
-        "   'nodeId': 4,\n"
-        "   'nodeName': 'TITLE',\n"
-        "   'nodeType': 1,\n"
-        "   'nodeValue': ''\n"
-        "}\n",
+        R"raw_string({
+           "attributes": [  ],
+           "backendNodeId": 6,
+           "childIndices": [ 4 ],
+           "localName": "title",
+           "nodeId": 4,
+           "nodeName": "TITLE",
+           "nodeType": 1,
+           "nodeValue": ""
+        })raw_string",
 
-        "{\n"
-        "   'localName': '',\n"
-        "   'nodeId': 5,\n"
-        "   'nodeName': '#text',\n"
-        "   'nodeType': 3,\n"
-        "   'nodeValue': 'Hello world!'\n"
-        "}\n",
+        R"raw_string({
+           "backendNodeId": 7,
+           "localName": "",
+           "nodeId": 5,
+           "nodeName": "#text",
+           "nodeType": 3,
+           "nodeValue": "Hello world!"
+        })raw_string",
 
-        "{\n"
-        "   'attributes': [  ],\n"
-        "   'boundingBox': {\n"
-        "      'height': 584.0,\n"
-        "      'width': 784.0,\n"
-        "      'x': 8.0,\n"
-        "      'y': 8.0\n"
-        "   },\n"
-        "   'childIndices': [ 6 ],\n"
-        "   'localName': 'body',\n"
-        "   'nodeId': 6,\n"
-        "   'nodeName': 'BODY',\n"
-        "   'nodeType': 1,\n"
-        "   'nodeValue': '',\n"
-        "   'styleIndex': 1\n"
-        "}\n",
+        R"raw_string({
+           "attributes": [  ],
+           "backendNodeId": 8,
+           "boundingBox": {
+              "height": 584.0,
+              "width": 784.0,
+              "x": 8.0,
+              "y": 8.0
+           },
+           "childIndices": [ 6 ],
+           "localName": "body",
+           "nodeId": 6,
+           "nodeName": "BODY",
+           "nodeType": 1,
+           "nodeValue": "",
+           "styleIndex": 1
+        })raw_string",
 
-        "{\n"
-        "   'attributes': [ 'id', 'id1' ],\n"
-        "   'boundingBox': {\n"
-        "      'height': 367.0,\n"
-        "      'width': 784.0,\n"
-        "      'x': 8.0,\n"
-        "      'y': 8.0\n"
-        "   },\n"
-        "   'childIndices': [ 7, 9, 16 ],\n"
-        "   'localName': 'div',\n"
-        "   'nodeId': 7,\n"
-        "   'nodeName': 'DIV',\n"
-        "   'nodeType': 1,\n"
-        "   'nodeValue': '',\n"
-        "   'styleIndex': 0\n"
-        "}\n",
+        R"raw_string({
+           "attributes": [ "id", "id1" ],
+           "backendNodeId": 9,
+           "boundingBox": {
+              "height": 367.0,
+              "width": 784.0,
+              "x": 8.0,
+              "y": 8.0
+           },
+           "childIndices": [ 7, 9, 16 ],
+           "localName": "div",
+           "nodeId": 7,
+           "nodeName": "DIV",
+           "nodeType": 1,
+           "nodeValue": "",
+           "styleIndex": 0
+        })raw_string",
 
-        "{\n"
-        "   'attributes': [ 'style', 'color: red' ],\n"
-        "   'boundingBox': {\n"
-        "      'height': 37.0,\n"
-        "      'width': 784.0,\n"
-        "      'x': 8.0,\n"
-        "      'y': 8.0\n"
-        "   },\n"
-        "   'childIndices': [ 8 ],\n"
-        "   'localName': 'h1',\n"
-        "   'nodeId': 8,\n"
-        "   'nodeName': 'H1',\n"
-        "   'nodeType': 1,\n"
-        "   'nodeValue': '',\n"
-        "   'styleIndex': 2\n"
-        "}\n",
+        R"raw_string({
+           "attributes": [ "style", "color: red" ],
+           "backendNodeId": 10,
+           "boundingBox": {
+              "height": 37.0,
+              "width": 784.0,
+              "x": 8.0,
+              "y": 8.0
+           },
+           "childIndices": [ 8 ],
+           "localName": "h1",
+           "nodeId": 8,
+           "nodeName": "H1",
+           "nodeType": 1,
+           "nodeValue": "",
+           "styleIndex": 2
+        })raw_string",
 
-        "{\n"
-        "   'boundingBox': {\n"
-        "      'height': 36.0,\n"
-        "      'width': 143.0,\n"
-        "      'x': 8.0,\n"
-        "      'y': 8.0\n"
-        "   },\n"
-        "   'inlineTextNodes': [ {\n"
-        "      'boundingBox': {\n"
-        "         'height': 36.0,\n"
-        "         'width': 142.171875,\n"
-        "         'x': 8.0,\n"
-        "         'y': 8.0\n"
-        "      },\n"
-        "      'numCharacters': 10,\n"
-        "      'startCharacterIndex': 0\n"
-        "   } ],\n"
-        "   'layoutText': 'Some text.',\n"
-        "   'localName': '',\n"
-        "   'nodeId': 9,\n"
-        "   'nodeName': '#text',\n"
-        "   'nodeType': 3,\n"
-        "   'nodeValue': 'Some text.',\n"
-        "   'styleIndex': 2\n"
-        "}\n",
+        R"raw_string({
+           "backendNodeId": 11,
+           "boundingBox": {
+              "height": 36.0,
+              "width": 143.0,
+              "x": 8.0,
+              "y": 8.0
+           },
+           "inlineTextNodes": [ {
+              "boundingBox": {
+                 "height": 36.0,
+                 "width": 142.171875,
+                 "x": 8.0,
+                 "y": 8.0
+              },
+              "numCharacters": 10,
+              "startCharacterIndex": 0
+           } ],
+           "layoutText": "Some text.",
+           "localName": "",
+           "nodeId": 9,
+           "nodeName": "#text",
+           "nodeType": 3,
+           "nodeValue": "Some text.",
+           "styleIndex": 2
+        })raw_string",
 
-        "{\n"
-        "   'attributes': [ 'src', '/iframe.html', 'width', '400', 'height', "
-        "'200' ],\n"
-        "   'boundingBox': {\n"
-        "      'height': 205.0,\n"
-        "      'width': 404.0,\n"
-        "      'x': 8.0,\n"
-        "      'y': 66.0\n"
-        "   },\n"
-        "   'childIndices': [  ],\n"
-        "   'contentDocumentIndex': 10,\n"
-        "   'frameId': '?',\n"
-        "   'localName': 'iframe',\n"
-        "   'nodeId': 10,\n"
-        "   'nodeName': 'IFRAME',\n"
-        "   'nodeType': 1,\n"
-        "   'nodeValue': '',\n"
-        "   'styleIndex': 4\n"
-        "}\n",
+        R"raw_string({
+           "attributes": [
+             "src", "/iframe.html", "width", "400", "height", "200" ],
+           "backendNodeId": 12,
+           "boundingBox": {
+              "height": 205.0,
+              "width": 404.0,
+              "x": 8.0,
+              "y": 66.0
+           },
+           "childIndices": [  ],
+           "contentDocumentIndex": 10,
+           "frameId": "?",
+           "localName": "iframe",
+           "nodeId": 10,
+           "nodeName": "IFRAME",
+           "nodeType": 1,
+           "nodeValue": "",
+           "styleIndex": 4
+        })raw_string",
 
-        "{\n"
-        "   'baseURL': 'http://127.0.0.1/iframe.html',\n"
-        "   'childIndices': [ 11 ],\n"
-        "   'documentURL': 'http://127.0.0.1/iframe.html',\n"
-        "   'localName': '',\n"
-        "   'nodeId': 11,\n"
-        "   'nodeName': '#document',\n"
-        "   'nodeType': 9,\n"
-        "   'nodeValue': '',\n"
-        "   'xmlVersion': ''\n"
-        "}\n",
+        R"raw_string({
+           "backendNodeId": 13,
+           "baseURL": "http://127.0.0.1/iframe.html",
+           "childIndices": [ 11 ],
+           "documentURL": "http://127.0.0.1/iframe.html",
+           "localName": "",
+           "nodeId": 11,
+           "nodeName": "#document",
+           "nodeType": 9,
+           "nodeValue": "",
+           "xmlVersion": ""
+        })raw_string",
 
-        "{\n"
-        "   'attributes': [  ],\n"
-        "   'boundingBox': {\n"
-        "      'height': 200.0,\n"
-        "      'width': 400.0,\n"
-        "      'x': 10.0,\n"
-        "      'y': 68.0\n"
-        "   },\n"
-        "   'childIndices': [ 12, 13 ],\n"
-        "   'frameId': '?',\n"
-        "   'localName': 'html',\n"
-        "   'nodeId': 12,\n"
-        "   'nodeName': 'HTML',\n"
-        "   'nodeType': 1,\n"
-        "   'nodeValue': '',\n"
-        "   'styleIndex': 0\n"
-        "}\n",
+        R"raw_string({
+           "attributes": [  ],
+           "backendNodeId": 14,
+           "boundingBox": {
+              "height": 200.0,
+              "width": 400.0,
+              "x": 10.0,
+              "y": 68.0
+           },
+           "childIndices": [ 12, 13 ],
+           "frameId": "?",
+           "localName": "html",
+           "nodeId": 12,
+           "nodeName": "HTML",
+           "nodeType": 1,
+           "nodeValue": "",
+           "styleIndex": 0
+        })raw_string",
 
-        "{\n"
-        "   'attributes': [  ],\n"
-        "   'childIndices': [  ],\n"
-        "   'localName': 'head',\n"
-        "   'nodeId': 13,\n"
-        "   'nodeName': 'HEAD',\n"
-        "   'nodeType': 1,\n"
-        "   'nodeValue': ''\n"
-        "}\n",
+        R"raw_string({
+           "attributes": [  ],
+           "backendNodeId": 15,
+           "childIndices": [  ],
+           "localName": "head",
+           "nodeId": 13,
+           "nodeName": "HEAD",
+           "nodeType": 1,
+           "nodeValue": ""
+        })raw_string",
 
-        "{\n"
-        "   'attributes': [  ],\n"
-        "   'boundingBox': {\n"
-        "      'height': 171.0,\n"
-        "      'width': 384.0,\n"
-        "      'x': 18.0,\n"
-        "      'y': 76.0\n"
-        "   },\n"
-        "   'childIndices': [ 14 ],\n"
-        "   'localName': 'body',\n"
-        "   'nodeId': 14,\n"
-        "   'nodeName': 'BODY',\n"
-        "   'nodeType': 1,\n"
-        "   'nodeValue': '',\n"
-        "   'styleIndex': 1\n"
-        "}\n",
+        R"raw_string({
+           "attributes": [  ],
+           "backendNodeId": 16,
+           "boundingBox": {
+              "height": 171.0,
+              "width": 384.0,
+              "x": 18.0,
+              "y": 76.0
+           },
+           "childIndices": [ 14 ],
+           "localName": "body",
+           "nodeId": 14,
+           "nodeName": "BODY",
+           "nodeType": 1,
+           "nodeValue": "",
+           "styleIndex": 1
+        })raw_string",
 
-        "{\n"
-        "   'attributes': [  ],\n"
-        "   'boundingBox': {\n"
-        "      'height': 37.0,\n"
-        "      'width': 384.0,\n"
-        "      'x': 18.0,\n"
-        "      'y': 76.0\n"
-        "   },\n"
-        "   'childIndices': [ 15 ],\n"
-        "   'localName': 'h1',\n"
-        "   'nodeId': 15,\n"
-        "   'nodeName': 'H1',\n"
-        "   'nodeType': 1,\n"
-        "   'nodeValue': '',\n"
-        "   'styleIndex': 3\n"
-        "}\n",
+        R"raw_string({
+           "attributes": [  ],
+           "backendNodeId": 17,
+           "boundingBox": {
+              "height": 37.0,
+              "width": 384.0,
+              "x": 18.0,
+              "y": 76.0
+           },
+           "childIndices": [ 15 ],
+           "localName": "h1",
+           "nodeId": 15,
+           "nodeName": "H1",
+           "nodeType": 1,
+           "nodeValue": "",
+           "styleIndex": 3
+        })raw_string",
 
-        "{\n"
-        "   'boundingBox': {\n"
-        "      'height': 36.0,\n"
-        "      'width': 308.0,\n"
-        "      'x': 8.0,\n"
-        "      'y': 8.0\n"
-        "   },\n"
-        "   'inlineTextNodes': [ {\n"
-        "      'boundingBox': {\n"
-        "         'height': 36.0,\n"
-        "         'width': 307.734375,\n"
-        "         'x': 8.0,\n"
-        "         'y': 8.0\n"
-        "      },\n"
-        "      'numCharacters': 22,\n"
-        "      'startCharacterIndex': 0\n"
-        "   } ],\n"
-        "   'layoutText': 'Hello from the iframe!',\n"
-        "   'localName': '',\n"
-        "   'nodeId': 16,\n"
-        "   'nodeName': '#text',\n"
-        "   'nodeType': 3,\n"
-        "   'nodeValue': 'Hello from the iframe!',\n"
-        "   'styleIndex': 3\n"
-        "}\n",
+        R"raw_string({
+           "backendNodeId": 18,
+           "boundingBox": {
+              "height": 36.0,
+              "width": 308.0,
+              "x": 8.0,
+              "y": 8.0
+           },
+           "inlineTextNodes": [ {
+              "boundingBox": {
+                 "height": 36.0,
+                 "width": 307.734375,
+                 "x": 8.0,
+                 "y": 8.0
+              },
+              "numCharacters": 22,
+              "startCharacterIndex": 0
+           } ],
+           "layoutText": "Hello from the iframe!",
+           "localName": "",
+           "nodeId": 16,
+           "nodeName": "#text",
+           "nodeType": 3,
+           "nodeValue": "Hello from the iframe!",
+           "styleIndex": 3
+        })raw_string",
 
-        "{\n"
-        "   'attributes': [ 'id', 'id2' ],\n"
-        "   'boundingBox': {\n"
-        "      'height': 105.0,\n"
-        "      'width': 784.0,\n"
-        "      'x': 8.0,\n"
-        "      'y': 270.0\n"
-        "   },\n"
-        "   'childIndices': [ 17 ],\n"
-        "   'localName': 'div',\n"
-        "   'nodeId': 17,\n"
-        "   'nodeName': 'DIV',\n"
-        "   'nodeType': 1,\n"
-        "   'nodeValue': '',\n"
-        "   'styleIndex': 0\n"
-        "}\n",
+        R"raw_string({
+           "attributes": [ "id", "id2" ],
+           "backendNodeId": 19,
+           "boundingBox": {
+              "height": 105.0,
+              "width": 784.0,
+              "x": 8.0,
+              "y": 270.0
+           },
+           "childIndices": [ 17 ],
+           "localName": "div",
+           "nodeId": 17,
+           "nodeName": "DIV",
+           "nodeType": 1,
+           "nodeValue": "",
+           "styleIndex": 0
+        })raw_string",
 
-        "{\n"
-        "   'attributes': [ 'id', 'id3' ],\n"
-        "   'boundingBox': {\n"
-        "      'height': 105.0,\n"
-        "      'width': 784.0,\n"
-        "      'x': 8.0,\n"
-        "      'y': 270.0\n"
-        "   },\n"
-        "   'childIndices': [ 18 ],\n"
-        "   'localName': 'div',\n"
-        "   'nodeId': 18,\n"
-        "   'nodeName': 'DIV',\n"
-        "   'nodeType': 1,\n"
-        "   'nodeValue': '',\n"
-        "   'styleIndex': 0\n"
-        "}\n",
+        R"raw_string({
+           "attributes": [ "id", "id3" ],
+           "backendNodeId": 20,
+           "boundingBox": {
+              "height": 105.0,
+              "width": 784.0,
+              "x": 8.0,
+              "y": 270.0
+           },
+           "childIndices": [ 18 ],
+           "localName": "div",
+           "nodeId": 18,
+           "nodeName": "DIV",
+           "nodeType": 1,
+           "nodeValue": "",
+           "styleIndex": 0
+        })raw_string",
 
-        "{\n"
-        "   'attributes': [ 'id', 'id4' ],\n"
-        "   'boundingBox': {\n"
-        "      'height': 105.0,\n"
-        "      'width': 784.0,\n"
-        "      'x': 8.0,\n"
-        "      'y': 270.0\n"
-        "   },\n"
-        "   'childIndices': [ 19, 21, 23, 24 ],\n"
-        "   'localName': 'div',\n"
-        "   'nodeId': 19,\n"
-        "   'nodeName': 'DIV',\n"
-        "   'nodeType': 1,\n"
-        "   'nodeValue': '',\n"
-        "   'styleIndex': 0\n"
-        "}\n",
+        R"raw_string({
+           "attributes": [ "id", "id4" ],
+           "backendNodeId": 21,
+           "boundingBox": {
+              "height": 105.0,
+              "width": 784.0,
+              "x": 8.0,
+              "y": 270.0
+           },
+           "childIndices": [ 19, 21, 23, 24 ],
+           "localName": "div",
+           "nodeId": 19,
+           "nodeName": "DIV",
+           "nodeType": 1,
+           "nodeValue": "",
+           "styleIndex": 0
+        })raw_string",
 
-        "{\n"
-        "   'attributes': [ 'href', 'https://www.google.com' ],\n"
-        "   'boundingBox': {\n"
-        "      'height': 18.0,\n"
-        "      'width': 53.0,\n"
-        "      'x': 8.0,\n"
-        "      'y': 270.0\n"
-        "   },\n"
-        "   'childIndices': [ 20 ],\n"
-        "   'localName': 'a',\n"
-        "   'nodeId': 20,\n"
-        "   'nodeName': 'A',\n"
-        "   'nodeType': 1,\n"
-        "   'nodeValue': '',\n"
-        "   'styleIndex': 5\n"
-        "}\n",
+        R"raw_string({
+           "attributes": [ "href", "https://www.google.com" ],
+           "backendNodeId": 22,
+           "boundingBox": {
+              "height": 18.0,
+              "width": 53.0,
+              "x": 8.0,
+              "y": 270.0
+           },
+           "childIndices": [ 20 ],
+           "localName": "a",
+           "nodeId": 20,
+           "nodeName": "A",
+           "nodeType": 1,
+           "nodeValue": "",
+           "styleIndex": 5
+        })raw_string",
 
-        "{\n"
-        "   'boundingBox': {\n"
-        "      'height': 18.0,\n"
-        "      'width': 53.0,\n"
-        "      'x': 8.0,\n"
-        "      'y': 270.0\n"
-        "   },\n"
-        "   'inlineTextNodes': [ {\n"
-        "      'boundingBox': {\n"
-        "         'height': 17.0,\n"
-        "         'width': 52.421875,\n"
-        "         'x': 8.0,\n"
-        "         'y': 270.4375\n"
-        "      },\n"
-        "      'numCharacters': 7,\n"
-        "      'startCharacterIndex': 0\n"
-        "   } ],\n"
-        "   'layoutText': 'Google!',\n"
-        "   'localName': '',\n"
-        "   'nodeId': 21,\n"
-        "   'nodeName': '#text',\n"
-        "   'nodeType': 3,\n"
-        "   'nodeValue': 'Google!',\n"
-        "   'styleIndex': 5\n"
-        "}\n",
+        R"raw_string({
+           "backendNodeId": 23,
+           "boundingBox": {
+              "height": 18.0,
+              "width": 53.0,
+              "x": 8.0,
+              "y": 270.0
+           },
+           "inlineTextNodes": [ {
+              "boundingBox": {
+                 "height": 17.0,
+                 "width": 52.421875,
+                 "x": 8.0,
+                 "y": 270.4375
+              },
+              "numCharacters": 7,
+              "startCharacterIndex": 0
+           } ],
+           "layoutText": "Google!",
+           "localName": "",
+           "nodeId": 21,
+           "nodeName": "#text",
+           "nodeType": 3,
+           "nodeValue": "Google!",
+           "styleIndex": 5
+        })raw_string",
 
-        "{\n"
-        "   'attributes': [  ],\n"
-        "   'boundingBox': {\n"
-        "      'height': 19.0,\n"
-        "      'width': 784.0,\n"
-        "      'x': 8.0,\n"
-        "      'y': 304.0\n"
-        "   },\n"
-        "   'childIndices': [ 22 ],\n"
-        "   'localName': 'p',\n"
-        "   'nodeId': 22,\n"
-        "   'nodeName': 'P',\n"
-        "   'nodeType': 1,\n"
-        "   'nodeValue': '',\n"
-        "   'styleIndex': 6\n"
-        "}\n",
+        R"raw_string({
+           "attributes": [  ],
+           "backendNodeId": 24,
+           "boundingBox": {
+              "height": 19.0,
+              "width": 784.0,
+              "x": 8.0,
+              "y": 304.0
+           },
+           "childIndices": [ 22 ],
+           "localName": "p",
+           "nodeId": 22,
+           "nodeName": "P",
+           "nodeType": 1,
+           "nodeValue": "",
+           "styleIndex": 6
+        })raw_string",
 
-        "{\n"
-        "   'boundingBox': {\n"
-        "      'height': 18.0,\n"
-        "      'width': 85.0,\n"
-        "      'x': 8.0,\n"
-        "      'y': 304.0\n"
-        "   },\n"
-        "   'inlineTextNodes': [ {\n"
-        "      'boundingBox': {\n"
-        "         'height': 17.0,\n"
-        "         'width': 84.84375,\n"
-        "         'x': 8.0,\n"
-        "         'y': 304.4375\n"
-        "      },\n"
-        "      'numCharacters': 12,\n"
-        "      'startCharacterIndex': 0\n"
-        "   } ],\n"
-        "   'layoutText': 'A paragraph!',\n"
-        "   'localName': '',\n"
-        "   'nodeId': 23,\n"
-        "   'nodeName': '#text',\n"
-        "   'nodeType': 3,\n"
-        "   'nodeValue': 'A paragraph!',\n"
-        "   'styleIndex': 6\n"
-        "}\n",
+        R"raw_string({
+           "backendNodeId": 25,
+           "boundingBox": {
+              "height": 18.0,
+              "width": 85.0,
+              "x": 8.0,
+              "y": 304.0
+           },
+           "inlineTextNodes": [ {
+              "boundingBox": {
+                 "height": 17.0,
+                 "width": 84.84375,
+                 "x": 8.0,
+                 "y": 304.4375
+              },
+              "numCharacters": 12,
+              "startCharacterIndex": 0
+           } ],
+           "layoutText": "A paragraph!",
+           "localName": "",
+           "nodeId": 23,
+           "nodeName": "#text",
+           "nodeType": 3,
+           "nodeValue": "A paragraph!",
+           "styleIndex": 6
+        })raw_string",
 
-        "{\n"
-        "   'attributes': [  ],\n"
-        "   'boundingBox': {\n"
-        "      'height': 0.0,\n"
-        "      'width': 0.0,\n"
-        "      'x': 0.0,\n"
-        "      'y': 0.0\n"
-        "   },\n"
-        "   'childIndices': [  ],\n"
-        "   'inlineTextNodes': [ {\n"
-        "      'boundingBox': {\n"
-        "         'height': 17.0,\n"
-        "         'width': 0.0,\n"
-        "         'x': 8.0,\n"
-        "         'y': 338.4375\n"
-        "      },\n"
-        "      'numCharacters': 1,\n"
-        "      'startCharacterIndex': 0\n"
-        "   } ],\n"
-        "   'layoutText': '\\n',\n"
-        "   'localName': 'br',\n"
-        "   'nodeId': 24,\n"
-        "   'nodeName': 'BR',\n"
-        "   'nodeType': 1,\n"
-        "   'nodeValue': '',\n"
-        "   'styleIndex': 4\n"
-        "}\n",
+        R"raw_string({
+           "attributes": [  ],
+           "backendNodeId": 26,
+           "boundingBox": {
+              "height": 0.0,
+              "width": 0.0,
+              "x": 0.0,
+              "y": 0.0
+           },
+           "childIndices": [  ],
+           "inlineTextNodes": [ {
+              "boundingBox": {
+                 "height": 17.0,
+                 "width": 0.0,
+                 "x": 8.0,
+                 "y": 338.4375
+              },
+              "numCharacters": 1,
+              "startCharacterIndex": 0
+           } ],
+           "layoutText": "\n",
+           "localName": "br",
+           "nodeId": 24,
+           "nodeName": "BR",
+           "nodeType": 1,
+           "nodeValue": "",
+           "styleIndex": 4
+        })raw_string",
 
-        "{\n"
-        "   'attributes': [ 'style', 'color: green' ],\n"
-        "   'boundingBox': {\n"
-        "      'height': 19.0,\n"
-        "      'width': 784.0,\n"
-        "      'x': 8.0,\n"
-        "      'y': 356.0\n"
-        "   },\n"
-        "   'childIndices': [ 25, 26, 28 ],\n"
-        "   'localName': 'div',\n"
-        "   'nodeId': 25,\n"
-        "   'nodeName': 'DIV',\n"
-        "   'nodeType': 1,\n"
-        "   'nodeValue': '',\n"
-        "   'styleIndex': 7\n"
-        "}\n",
+        R"raw_string({
+           "attributes": [ "style", "color: green" ],
+           "backendNodeId": 27,
+           "boundingBox": {
+              "height": 19.0,
+              "width": 784.0,
+              "x": 8.0,
+              "y": 356.0
+           },
+           "childIndices": [ 25, 26, 28 ],
+           "localName": "div",
+           "nodeId": 25,
+           "nodeName": "DIV",
+           "nodeType": 1,
+           "nodeValue": "",
+           "styleIndex": 7
+        })raw_string",
 
-        "{\n"
-        "   'boundingBox': {\n"
-        "      'height': 18.0,\n"
-        "      'width': 41.0,\n"
-        "      'x': 8.0,\n"
-        "      'y': 356.0\n"
-        "   },\n"
-        "   'inlineTextNodes': [ {\n"
-        "      'boundingBox': {\n"
-        "         'height': 17.0,\n"
-        "         'width': 40.4375,\n"
-        "         'x': 8.0,\n"
-        "         'y': 356.4375\n"
-        "      },\n"
-        "      'numCharacters': 5,\n"
-        "      'startCharacterIndex': 0\n"
-        "   } ],\n"
-        "   'layoutText': 'Some ',\n"
-        "   'localName': '',\n"
-        "   'nodeId': 26,\n"
-        "   'nodeName': '#text',\n"
-        "   'nodeType': 3,\n"
-        "   'nodeValue': 'Some ',\n"
-        "   'styleIndex': 7\n"
-        "}\n",
+        R"raw_string({
+           "backendNodeId": 28,
+           "boundingBox": {
+              "height": 18.0,
+              "width": 41.0,
+              "x": 8.0,
+              "y": 356.0
+           },
+           "inlineTextNodes": [ {
+              "boundingBox": {
+                 "height": 17.0,
+                 "width": 40.4375,
+                 "x": 8.0,
+                 "y": 356.4375
+              },
+              "numCharacters": 5,
+              "startCharacterIndex": 0
+           } ],
+           "layoutText": "Some ",
+           "localName": "",
+           "nodeId": 26,
+           "nodeName": "#text",
+           "nodeType": 3,
+           "nodeValue": "Some ",
+           "styleIndex": 7
+        })raw_string",
 
-        "{\n"
-        "   'attributes': [  ],\n"
-        "   'boundingBox': {\n"
-        "      'height': 18.0,\n"
-        "      'width': 37.0,\n"
-        "      'x': 48.0,\n"
-        "      'y': 356.0\n"
-        "   },\n"
-        "   'childIndices': [ 27 ],\n"
-        "   'localName': 'em',\n"
-        "   'nodeId': 27,\n"
-        "   'nodeName': 'EM',\n"
-        "   'nodeType': 1,\n"
-        "   'nodeValue': '',\n"
-        "   'styleIndex': 8\n"
-        "}\n",
+        R"raw_string({
+           "attributes": [  ],
+           "backendNodeId": 29,
+           "boundingBox": {
+              "height": 18.0,
+              "width": 37.0,
+              "x": 48.0,
+              "y": 356.0
+           },
+           "childIndices": [ 27 ],
+           "localName": "em",
+           "nodeId": 27,
+           "nodeName": "EM",
+           "nodeType": 1,
+           "nodeValue": "",
+           "styleIndex": 8
+        })raw_string",
 
-        "{\n"
-        "   'boundingBox': {\n"
-        "      'height': 18.0,\n"
-        "      'width': 37.0,\n"
-        "      'x': 48.0,\n"
-        "      'y': 356.0\n"
-        "   },\n"
-        "   'inlineTextNodes': [ {\n"
-        "      'boundingBox': {\n"
-        "         'height': 17.0,\n"
-        "         'width': 35.828125,\n"
-        "         'x': 48.4375,\n"
-        "         'y': 356.4375\n"
-        "      },\n"
-        "      'numCharacters': 5,\n"
-        "      'startCharacterIndex': 0\n"
-        "   } ],\n"
-        "   'layoutText': 'green',\n"
-        "   'localName': '',\n"
-        "   'nodeId': 28,\n"
-        "   'nodeName': '#text',\n"
-        "   'nodeType': 3,\n"
-        "   'nodeValue': 'green',\n"
-        "   'styleIndex': 8\n"
-        "}\n",
+        R"raw_string({
+           "backendNodeId": 30,
+           "boundingBox": {
+              "height": 18.0,
+              "width": 37.0,
+              "x": 48.0,
+              "y": 356.0
+           },
+           "inlineTextNodes": [ {
+              "boundingBox": {
+                 "height": 17.0,
+                 "width": 35.828125,
+                 "x": 48.4375,
+                 "y": 356.4375
+              },
+              "numCharacters": 5,
+              "startCharacterIndex": 0
+           } ],
+           "layoutText": "green",
+           "localName": "",
+           "nodeId": 28,
+           "nodeName": "#text",
+           "nodeType": 3,
+           "nodeValue": "green",
+           "styleIndex": 8
+        })raw_string",
 
-        "{\n"
-        "   'boundingBox': {\n"
-        "      'height': 18.0,\n"
-        "      'width': 41.0,\n"
-        "      'x': 84.0,\n"
-        "      'y': 356.0\n"
-        "   },\n"
-        "   'inlineTextNodes': [ {\n"
-        "      'boundingBox': {\n"
-        "         'height': 17.0,\n"
-        "         'width': 39.984375,\n"
-        "         'x': 84.265625,\n"
-        "         'y': 356.4375\n"
-        "      },\n"
-        "      'numCharacters': 8,\n"
-        "      'startCharacterIndex': 0\n"
-        "   } ],\n"
-        "   'layoutText': ' text...',\n"
-        "   'localName': '',\n"
-        "   'nodeId': 29,\n"
-        "   'nodeName': '#text',\n"
-        "   'nodeType': 3,\n"
-        "   'nodeValue': ' text...',\n"
-        "   'styleIndex': 7\n"
-        "}\n"};
+        R"raw_string({
+           "backendNodeId": 31,
+           "boundingBox": {
+              "height": 18.0,
+              "width": 41.0,
+              "x": 84.0,
+              "y": 356.0
+           },
+           "inlineTextNodes": [ {
+              "boundingBox": {
+                 "height": 17.0,
+                 "width": 39.984375,
+                 "x": 84.265625,
+                 "y": 356.4375
+              },
+              "numCharacters": 8,
+              "startCharacterIndex": 0
+           } ],
+           "layoutText": " text...",
+           "localName": "",
+           "nodeId": 29,
+           "nodeName": "#text",
+           "nodeType": 3,
+           "nodeValue": " text...",
+           "styleIndex": 7
+        })raw_string"};
 
     EXPECT_EQ(expected_dom_nodes.size(), dom_nodes.size());
 
@@ -684,102 +727,101 @@ class DomTreeExtractorBrowserTest : public HeadlessAsyncDevTooledBrowserTest,
       base::JSONWriter::WriteWithOptions(
           *dom_nodes[i], base::JSONWriter::OPTIONS_PRETTY_PRINT, &result_json);
 
-      base::ReplaceChars(result_json, "\"", "'", &result_json);
-
       ASSERT_LT(i, expected_dom_nodes.size());
-      EXPECT_EQ(expected_dom_nodes[i], result_json) << " Node # " << i;
+      EXPECT_EQ(NormaliseJSON(expected_dom_nodes[i]), result_json) << " Node # "
+                                                                   << i;
     }
 
     const std::vector<std::string> expected_styles = {
-        "{\n"
-        "   'color': 'rgb(0, 0, 0)',\n"
-        "   'display': 'block',\n"
-        "   'font-style': 'normal',\n"
-        "   'margin-bottom': '0px',\n"
-        "   'margin-left': '0px',\n"
-        "   'margin-right': '0px',\n"
-        "   'margin-top': '0px'\n"
-        "}\n",
+        R"raw_string({
+           "color": "rgb(0, 0, 0)",
+           "display": "block",
+           "font-style": "normal",
+           "margin-bottom": "0px",
+           "margin-left": "0px",
+           "margin-right": "0px",
+           "margin-top": "0px"
+        })raw_string",
 
-        "{\n"
-        "   'color': 'rgb(0, 0, 0)',\n"
-        "   'display': 'block',\n"
-        "   'font-style': 'normal',\n"
-        "   'margin-bottom': '8px',\n"
-        "   'margin-left': '8px',\n"
-        "   'margin-right': '8px',\n"
-        "   'margin-top': '8px'\n"
-        "}\n",
+        R"raw_string({
+           "color": "rgb(0, 0, 0)",
+           "display": "block",
+           "font-style": "normal",
+           "margin-bottom": "8px",
+           "margin-left": "8px",
+           "margin-right": "8px",
+           "margin-top": "8px"
+        })raw_string",
 
-        "{\n"
-        "   'color': 'rgb(255, 0, 0)',\n"
-        "   'display': 'block',\n"
-        "   'font-style': 'normal',\n"
-        "   'margin-bottom': '21.44px',\n"
-        "   'margin-left': '0px',\n"
-        "   'margin-right': '0px',\n"
-        "   'margin-top': '21.44px'\n"
-        "}\n",
+        R"raw_string({
+           "color": "rgb(255, 0, 0)",
+           "display": "block",
+           "font-style": "normal",
+           "margin-bottom": "21.44px",
+           "margin-left": "0px",
+           "margin-right": "0px",
+           "margin-top": "21.44px"
+        })raw_string",
 
-        "{\n"
-        "   'color': 'rgb(0, 0, 0)',\n"
-        "   'display': 'block',\n"
-        "   'font-style': 'normal',\n"
-        "   'margin-bottom': '21.44px',\n"
-        "   'margin-left': '0px',\n"
-        "   'margin-right': '0px',\n"
-        "   'margin-top': '21.44px'\n"
-        "}\n",
+        R"raw_string({
+           "color": "rgb(0, 0, 0)",
+           "display": "block",
+           "font-style": "normal",
+           "margin-bottom": "21.44px",
+           "margin-left": "0px",
+           "margin-right": "0px",
+           "margin-top": "21.44px"
+        })raw_string",
 
-        "{\n"
-        "   'color': 'rgb(0, 0, 0)',\n"
-        "   'display': 'inline',\n"
-        "   'font-style': 'normal',\n"
-        "   'margin-bottom': '0px',\n"
-        "   'margin-left': '0px',\n"
-        "   'margin-right': '0px',\n"
-        "   'margin-top': '0px'\n"
-        "}\n",
+        R"raw_string({
+           "color": "rgb(0, 0, 0)",
+           "display": "inline",
+           "font-style": "normal",
+           "margin-bottom": "0px",
+           "margin-left": "0px",
+           "margin-right": "0px",
+           "margin-top": "0px"
+        })raw_string",
 
-        "{\n"
-        "   'color': 'rgb(0, 0, 238)',\n"
-        "   'display': 'inline',\n"
-        "   'font-style': 'normal',\n"
-        "   'margin-bottom': '0px',\n"
-        "   'margin-left': '0px',\n"
-        "   'margin-right': '0px',\n"
-        "   'margin-top': '0px'\n"
-        "}\n",
+        R"raw_string({
+           "color": "rgb(0, 0, 238)",
+           "display": "inline",
+           "font-style": "normal",
+           "margin-bottom": "0px",
+           "margin-left": "0px",
+           "margin-right": "0px",
+           "margin-top": "0px"
+        })raw_string",
 
-        "{\n"
-        "   'color': 'rgb(0, 0, 0)',\n"
-        "   'display': 'block',\n"
-        "   'font-style': 'normal',\n"
-        "   'margin-bottom': '16px',\n"
-        "   'margin-left': '0px',\n"
-        "   'margin-right': '0px',\n"
-        "   'margin-top': '16px'\n"
-        "}\n",
+        R"raw_string({
+           "color": "rgb(0, 0, 0)",
+           "display": "block",
+           "font-style": "normal",
+           "margin-bottom": "16px",
+           "margin-left": "0px",
+           "margin-right": "0px",
+           "margin-top": "16px"
+        })raw_string",
 
-        "{\n"
-        "   'color': 'rgb(0, 128, 0)',\n"
-        "   'display': 'block',\n"
-        "   'font-style': 'normal',\n"
-        "   'margin-bottom': '0px',\n"
-        "   'margin-left': '0px',\n"
-        "   'margin-right': '0px',\n"
-        "   'margin-top': '0px'\n"
-        "}\n",
+        R"raw_string({
+           "color": "rgb(0, 128, 0)",
+           "display": "block",
+           "font-style": "normal",
+           "margin-bottom": "0px",
+           "margin-left": "0px",
+           "margin-right": "0px",
+           "margin-top": "0px"
+        })raw_string",
 
-        "{\n"
-        "   'color': 'rgb(0, 128, 0)',\n"
-        "   'display': 'inline',\n"
-        "   'font-style': 'italic',\n"
-        "   'margin-bottom': '0px',\n"
-        "   'margin-left': '0px',\n"
-        "   'margin-right': '0px',\n"
-        "   'margin-top': '0px'\n"
-        "}\n"};
+        R"raw_string({
+           "color": "rgb(0, 128, 0)",
+           "display": "inline",
+           "font-style": "italic",
+           "margin-bottom": "0px",
+           "margin-left": "0px",
+           "margin-right": "0px",
+           "margin-top": "0px"
+        })raw_string"};
 
     for (size_t i = 0; i < computed_styles.size(); i++) {
       std::string result_json;
@@ -787,10 +829,9 @@ class DomTreeExtractorBrowserTest : public HeadlessAsyncDevTooledBrowserTest,
                                          base::JSONWriter::OPTIONS_PRETTY_PRINT,
                                          &result_json);
 
-      base::ReplaceChars(result_json, "\"", "'", &result_json);
-
       ASSERT_LT(i, expected_styles.size());
-      EXPECT_EQ(expected_styles[i], result_json) << " Style # " << i;
+      EXPECT_EQ(NormaliseJSON(expected_styles[i]), result_json) << " Style # "
+                                                                << i;
     }
 
     FinishAsynchronousTest();
