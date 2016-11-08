@@ -2586,13 +2586,13 @@ If you're done with the tutorial, use ChromeVox to navigate to the Close button 
         We've been hard at work on a new and improved ChromeVox experience; here's what's new
       </message>
       <message desc="Part of the ChromeVox update notes for m56, new items 1." name="IDS_CHROMEVOX_UPDATE_56_ITEM_1">
-        new key bindings. We've made Search the ChromeVox modifier and dramatically simplified the key combinations.
+        New key bindings. We've made Search the ChromeVox modifier and dramatically simplified the key combinations.
       </message>
       <message desc="Part of the ChromeVox update notes for m56, new items 2." name="IDS_CHROMEVOX_UPDATE_56_ITEM_2">
-        new earcons. We've refreshed the set of audio icons you hear to make browsing more responsive.
+        New earcons. We've refreshed the set of audio icons you hear to make browsing more responsive.
       </message>
       <message desc="Part of the ChromeVox update notes for m56, new items 3." name="IDS_CHROMEVOX_UPDATE_56_ITEM_3">
-        under the hood upgrades. We've revamped how ChromeVox works from the bottom up. Expect better performance, stability, and web support/compliance.
+        Under the hood upgrades. We've revamped how ChromeVox works from the bottom up. Expect better performance, stability, and web support/compliance.
       </message>
       <message desc="Part of the ChromeVox update notes for m56, closing paragraph." name="IDS_CHROMEVOX_UPDATE_56_OUTTRO">
         We're excited to hear from you on this new experience. Send us feedback directly by pressing Search+a, then i. Press the next button to continue onto the tutorial to learn everything you need to get started.

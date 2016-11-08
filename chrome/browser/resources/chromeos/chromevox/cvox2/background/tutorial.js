@@ -179,7 +179,12 @@ Tutorial.prototype = {
       } else if (pageElement.link) {
         element = document.createElement('a');
         element.href = pageElement.link;
-        element.target = '_blank';
+        element.setAttribute('tabindex', 0);
+        element.addEventListener('click', function(evt) {
+          Panel.closeMenusAndRestoreFocus();
+          chrome.windows.create({url: evt.target.href});
+          return false;
+        }, false);
       } else {
         element = document.createElement('p');
       }

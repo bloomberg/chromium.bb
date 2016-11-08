@@ -301,6 +301,7 @@ AutomationPredicate.container = function(node) {
  */
 AutomationPredicate.structuralContainer = AutomationPredicate.roles([
     Role.rootWebArea,
+    Role.webView,
     Role.embeddedObject,
     Role.iframe,
     Role.iframePresentational]);
@@ -345,8 +346,8 @@ AutomationPredicate.shouldIgnoreNode = function(node) {
   if (node.role == Role.listMarker)
     return true;
 
-  // Don't ignore nodes with names.
-  if (node.name || node.value || node.description)
+  // Don't ignore nodes with names or name-like attribute.
+  if (node.name || node.value || node.description || node.url)
     return false;
 
   // Ignore some roles.
