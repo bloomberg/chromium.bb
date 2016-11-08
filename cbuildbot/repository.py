@@ -512,7 +512,7 @@ class RepoRepository(object):
       self._DoCleanup()
 
     except cros_build_lib.RunCommandError as e:
-      err_msg = e.Stringify(error=False, output=False)
+      err_msg = e.Stringify()
       logging.error(err_msg)
       raise SrcCheckOutException(err_msg)
 
