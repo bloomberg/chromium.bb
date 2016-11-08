@@ -201,8 +201,6 @@ source_set("web_arc") {
     "web_state/ui/crw_swipe_recognizer_provider.h",
     "web_state/ui/crw_touch_tracking_recognizer.h",
     "web_state/ui/crw_touch_tracking_recognizer.mm",
-    "web_state/ui/crw_web_controller.h",
-    "web_state/ui/crw_web_controller.mm",
     "web_thread_impl.cc",
     "web_thread_impl.h",
     "web_view_creation_util.mm",
@@ -264,6 +262,8 @@ source_set("web") {
   ]
 
   sources = [
+    "web_state/ui/crw_web_controller.h",
+    "web_state/ui/crw_web_controller.mm",
     "web_state/ui/crw_web_controller_container_view.h",
     "web_state/ui/crw_web_controller_container_view.mm",
     "web_state/ui/crw_web_view_content_view.mm",
