@@ -35,11 +35,13 @@ namespace {
 
 // The timeout used to disconnect a client from the IPC Server channel if it
 // forgets to do so.  This ensures the server channel is not blocked forever.
-const int kInitialRequestTimeoutSeconds = 5;
+constexpr base::TimeDelta kInitialRequestTimeout =
+    base::TimeDelta::FromSeconds(5);
 
 // This value represents the amount of time to wait for a security key request
 // from the client before terminating the connection.
-const int kSecurityKeyRequestTimeoutSeconds = 60;
+constexpr base::TimeDelta kSecurityKeyRequestTimeout =
+    base::TimeDelta::FromSeconds(60);
 
 }  // namespace
 
@@ -58,8 +60,7 @@ namespace remoting {
 // key forwarding sessions to occur concurrently.
 // TODO(joedow): Update SecurityKeyAuthHandler impls to run on a separate IO
 // thread instead of the thread it was created on: crbug.com/591739
-class SecurityKeyAuthHandlerWin : public SecurityKeyAuthHandler,
-                                  public IPC::Listener {
+class SecurityKeyAuthHandlerWin : public SecurityKeyAuthHandler {
  public:
   explicit SecurityKeyAuthHandlerWin(
       ClientSessionDetails* client_session_details);
@@ -78,17 +79,9 @@ class SecurityKeyAuthHandlerWin : public SecurityKeyAuthHandler,
   size_t GetActiveConnectionCountForTest() const override;
   void SetRequestTimeoutForTest(base::TimeDelta timeout) override;
 
-  // IPC::Listener implementation.
-  bool OnMessageReceived(const IPC::Message& message) override;
-  void OnChannelConnected(int32_t peer_pid) override;
-  void OnChannelError() override;
-
   // Creates the IPC server channel and waits for a connection using
   // |ipc_server_channel_name_|.
   void StartIpcServerChannel();
-
-  // Restarts the IPC server channel to prepare for another connection.
-  void RecreateIpcServerChannel();
 
   // Closes the IPC channel created for a security key forwarding session.
   void CloseSecurityKeyRequestIpcChannel(int connection_id);
@@ -97,8 +90,7 @@ class SecurityKeyAuthHandlerWin : public SecurityKeyAuthHandler,
   ActiveChannels::const_iterator GetChannelForConnectionId(
       int connection_id) const;
 
-  // Creates a unique name based on the well-known IPC channel name.
-  std::string GenerateUniqueChannelName();
+  void OnChannelConnected();
 
   // Represents the last id assigned to a new security key request IPC channel.
   int last_connection_id_ = 0;
@@ -115,13 +107,6 @@ class SecurityKeyAuthHandlerWin : public SecurityKeyAuthHandler,
   // The amount of time to wait for a client to process the connection details
   // message and disconnect from the IPC server channel before disconnecting it.
   base::TimeDelta disconnect_timeout_;
-
-  // Used to recreate the IPC server channel if a client forgets to disconnect.
-  base::OneShotTimer timer_;
-
-  // IPC Clients connect to this channel first to receive their own IPC
-  // channel to start a security key forwarding session on.
-  std::unique_ptr<IPC::Channel> ipc_server_channel_;
 
   // Ensures SecurityKeyAuthHandlerWin methods are called on the same thread.
   base::ThreadChecker thread_checker_;
@@ -144,8 +129,7 @@ std::unique_ptr<SecurityKeyAuthHandler> SecurityKeyAuthHandler::Create(
 SecurityKeyAuthHandlerWin::SecurityKeyAuthHandlerWin(
     ClientSessionDetails* client_session_details)
     : client_session_details_(client_session_details),
-      disconnect_timeout_(
-          base::TimeDelta::FromSeconds(kInitialRequestTimeoutSeconds)),
+      disconnect_timeout_(kInitialRequestTimeout),
       weak_factory_(this) {
   DCHECK(client_session_details_);
 }
@@ -159,7 +143,8 @@ void SecurityKeyAuthHandlerWin::CreateSecurityKeyConnection() {
 
 bool SecurityKeyAuthHandlerWin::IsValidConnectionId(int connection_id) const {
   DCHECK(thread_checker_.CalledOnValidThread());
-  return (GetChannelForConnectionId(connection_id) != active_channels_.end());
+  return connection_id != last_connection_id_ &&
+         (GetChannelForConnectionId(connection_id) != active_channels_.end());
 }
 
 void SecurityKeyAuthHandlerWin::SendClientResponse(
@@ -194,7 +179,11 @@ void SecurityKeyAuthHandlerWin::SetSendMessageCallback(
 }
 
 size_t SecurityKeyAuthHandlerWin::GetActiveConnectionCountForTest() const {
-  return active_channels_.size();
+  if (active_channels_.empty()) {
+    return 0u;
+  }
+  // One channel is waiting for a connection.
+  return active_channels_.size() - 1;
 }
 
 void SecurityKeyAuthHandlerWin::SetRequestTimeoutForTest(
@@ -205,31 +194,17 @@ void SecurityKeyAuthHandlerWin::SetRequestTimeoutForTest(
 void SecurityKeyAuthHandlerWin::StartIpcServerChannel() {
   DCHECK(thread_checker_.CalledOnValidThread());
 
-  // Create a named pipe owned by the current user (the LocalService account
-  // (SID: S-1-5-19) when running in the network process) which is available to
-  // all authenticated users.
-  // presubmit: allow wstring
-  std::wstring user_sid;
-  CHECK(base::win::GetUserSidString(&user_sid));
-  std::string user_sid_utf8 = base::WideToUTF8(user_sid);
-  std::string security_descriptor = base::StringPrintf(
-      "O:%sG:%sD:(A;;GA;;;AU)", user_sid_utf8.c_str(), user_sid_utf8.c_str());
-
-  base::win::ScopedHandle pipe;
-  CHECK(CreateIpcChannel(remoting::GetSecurityKeyIpcChannelName(),
-                         security_descriptor, &pipe));
-  ipc_server_channel_ =
-      IPC::Channel::CreateNamedServer(IPC::ChannelHandle(pipe.Get()), this);
-  CHECK(ipc_server_channel_->Connect());
-}
-
-void SecurityKeyAuthHandlerWin::RecreateIpcServerChannel() {
-  DCHECK(thread_checker_.CalledOnValidThread());
-
-  timer_.Stop();
-  ipc_server_channel_.reset();
-
-  StartIpcServerChannel();
+  int new_connection_id = ++last_connection_id_;
+  std::unique_ptr<SecurityKeyIpcServer> ipc_server(SecurityKeyIpcServer::Create(
+      new_connection_id, client_session_details_, disconnect_timeout_,
+      send_message_callback_,
+      base::Bind(&SecurityKeyAuthHandlerWin::OnChannelConnected,
+                 base::Unretained(this)),
+      base::Bind(&SecurityKeyAuthHandlerWin::CloseSecurityKeyRequestIpcChannel,
+                 base::Unretained(this), new_connection_id)));
+  ipc_server->CreateChannel(remoting::GetSecurityKeyIpcChannel(),
+                            kSecurityKeyRequestTimeout);
+  active_channels_[new_connection_id] = std::move(ipc_server);
 }
 
 void SecurityKeyAuthHandlerWin::CloseSecurityKeyRequestIpcChannel(
@@ -242,67 +217,9 @@ SecurityKeyAuthHandlerWin::GetChannelForConnectionId(int connection_id) const {
   return active_channels_.find(connection_id);
 }
 
-std::string SecurityKeyAuthHandlerWin::GenerateUniqueChannelName() {
-  return GetSecurityKeyIpcChannelName() + "." +
-         IPC::Channel::GenerateUniqueRandomChannelID();
-}
-
-bool SecurityKeyAuthHandlerWin::OnMessageReceived(const IPC::Message& message) {
-  DCHECK(thread_checker_.CalledOnValidThread());
-  // This class does handle any IPC messages sent by the client.
-  return false;
-}
-
-void SecurityKeyAuthHandlerWin::OnChannelConnected(int32_t peer_pid) {
-  DCHECK(thread_checker_.CalledOnValidThread());
-
-  timer_.Start(FROM_HERE, disconnect_timeout_,
-               base::Bind(&SecurityKeyAuthHandlerWin::OnChannelError,
-                          base::Unretained(this)));
-
-  // Verify the IPC connection attempt originated from the session we are
-  // currently remoting.  We don't want to service requests from arbitrary
-  // Windows sessions.
-  bool close_connection = false;
-  DWORD peer_session_id;
-  if (!ProcessIdToSessionId(peer_pid, &peer_session_id)) {
-    PLOG(ERROR) << "ProcessIdToSessionId() failed";
-    close_connection = true;
-  } else if (peer_session_id != client_session_details_->desktop_session_id()) {
-    LOG(INFO) << "Ignoring connection attempt from outside remoted session.";
-    close_connection = true;
-  }
-  if (close_connection) {
-    base::ThreadTaskRunnerHandle::Get()->PostTask(
-        FROM_HERE, base::Bind(&SecurityKeyAuthHandlerWin::OnChannelError,
-                              weak_factory_.GetWeakPtr()));
-    return;
-  }
-
-  int new_connection_id = ++last_connection_id_;
-  std::unique_ptr<SecurityKeyIpcServer> ipc_server(SecurityKeyIpcServer::Create(
-      new_connection_id, client_session_details_, disconnect_timeout_,
-      send_message_callback_,
-      base::Bind(&SecurityKeyAuthHandlerWin::CloseSecurityKeyRequestIpcChannel,
-                 base::Unretained(this), new_connection_id)));
-
-  std::string unique_channel_name = GenerateUniqueChannelName();
-  if (ipc_server->CreateChannel(
-          unique_channel_name,
-          base::TimeDelta::FromSeconds(kSecurityKeyRequestTimeoutSeconds))) {
-    active_channels_[new_connection_id] = std::move(ipc_server);
-    ipc_server_channel_->Send(
-        new ChromotingNetworkToRemoteSecurityKeyMsg_ConnectionDetails(
-            unique_channel_name));
-  }
-}
-
-void SecurityKeyAuthHandlerWin::OnChannelError() {
-  DCHECK(thread_checker_.CalledOnValidThread());
-
-  // Could be an error, most likely the client disconnected though.  Either way
-  // we should restart the server to prepare for the next connection.
-  RecreateIpcServerChannel();
+void SecurityKeyAuthHandlerWin::OnChannelConnected() {
+  // Create another server to accept the next connection.
+  StartIpcServerChannel();
 }
 
 }  // namespace remoting

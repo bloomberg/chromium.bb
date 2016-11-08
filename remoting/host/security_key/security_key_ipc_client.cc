@@ -14,6 +14,8 @@
 #include "ipc/ipc_listener.h"
 #include "ipc/ipc_message.h"
 #include "ipc/ipc_message_macros.h"
+#include "mojo/edk/embedder/embedder.h"
+#include "mojo/edk/embedder/named_platform_handle_utils.h"
 #include "remoting/host/chromoting_messages.h"
 #include "remoting/host/ipc_constants.h"
 #include "remoting/host/security_key/security_key_ipc_constants.h"
@@ -21,34 +23,18 @@
 namespace remoting {
 
 SecurityKeyIpcClient::SecurityKeyIpcClient()
-    : initial_ipc_channel_name_(remoting::GetSecurityKeyIpcChannelName()),
+    : named_channel_handle_(remoting::GetSecurityKeyIpcChannel()),
       weak_factory_(this) {}
 
 SecurityKeyIpcClient::~SecurityKeyIpcClient() {}
 
-bool SecurityKeyIpcClient::WaitForSecurityKeyIpcServerChannel() {
+bool SecurityKeyIpcClient::CheckForSecurityKeyIpcServerChannel() {
   DCHECK(thread_checker_.CalledOnValidThread());
 
-  // The retry loop is needed as the IPC Servers we connect to are reset (torn
-  // down and recreated) and we should be resilient in that case.  We need to
-  // strike a balance between resilience and speed as we do not want to add
-  // un-necessary delay to the local scenario when no session is active.
-  // 500ms was chosen as a reasonable balance between reliability of remote
-  // session detection and overhead added to the local security key operation
-  // when no remote session is present.
-  const base::TimeDelta kTotalWaitTime = base::TimeDelta::FromMilliseconds(500);
-  const base::TimeDelta kPerIterationWaitTime =
-      base::TimeDelta::FromMilliseconds(10);
-  const int kLoopIterations = kTotalWaitTime / kPerIterationWaitTime;
-  for (int i = 0; i < kLoopIterations; i++) {
-    if (IPC::Channel::IsNamedServerInitialized(initial_ipc_channel_name_)) {
-      return true;
-    }
-
-    base::PlatformThread::Sleep(kPerIterationWaitTime);
+  if (!channel_handle_.is_valid()) {
+    channel_handle_ = mojo::edk::CreateClientHandle(named_channel_handle_);
   }
-
-  return false;
+  return channel_handle_.is_valid();
 }
 
 void SecurityKeyIpcClient::EstablishIpcConnection(
@@ -62,7 +48,7 @@ void SecurityKeyIpcClient::EstablishIpcConnection(
   connection_ready_callback_ = connection_ready_callback;
   connection_error_callback_ = connection_error_callback;
 
-  ConnectToIpcChannel(initial_ipc_channel_name_);
+  ConnectToIpcChannel();
 }
 
 bool SecurityKeyIpcClient::SendSecurityKeyRequest(
@@ -93,9 +79,9 @@ void SecurityKeyIpcClient::CloseIpcConnection() {
   ipc_channel_.reset();
 }
 
-void SecurityKeyIpcClient::SetInitialIpcChannelNameForTest(
-    const std::string& initial_ipc_channel_name) {
-  initial_ipc_channel_name_ = initial_ipc_channel_name;
+void SecurityKeyIpcClient::SetIpcChannelHandleForTest(
+    const mojo::edk::NamedPlatformHandle& channel_handle) {
+  named_channel_handle_ = channel_handle;
 }
 
 void SecurityKeyIpcClient::SetExpectedIpcServerSessionIdForTest(
@@ -108,9 +94,6 @@ bool SecurityKeyIpcClient::OnMessageReceived(const IPC::Message& message) {
 
   bool handled = true;
   IPC_BEGIN_MESSAGE_MAP(SecurityKeyIpcClient, message)
-    IPC_MESSAGE_HANDLER(
-        ChromotingNetworkToRemoteSecurityKeyMsg_ConnectionDetails,
-        OnConnectionDetails)
     IPC_MESSAGE_HANDLER(ChromotingNetworkToRemoteSecurityKeyMsg_Response,
                         OnSecurityKeyResponse)
     IPC_MESSAGE_UNHANDLED(handled = false)
@@ -126,8 +109,7 @@ void SecurityKeyIpcClient::OnChannelConnected(int32_t peer_pid) {
 #if defined(OS_WIN)
   DWORD peer_session_id;
   if (!ProcessIdToSessionId(peer_pid, &peer_session_id)) {
-    uint32_t last_error = GetLastError();
-    LOG(ERROR) << "ProcessIdToSessionId failed with error code: " << last_error;
+    PLOG(ERROR) << "ProcessIdToSessionId failed";
     base::ResetAndReturn(&connection_error_callback_).Run();
     return;
   }
@@ -141,13 +123,7 @@ void SecurityKeyIpcClient::OnChannelConnected(int32_t peer_pid) {
   }
 #endif  // defined(OS_WIN)
 
-  // If we have received the connection details already (i.e.
-  // |ipc_channel_name_| is populated) then we signal that the connection is
-  // ready for use.  Otherwise this is the initial connection and we will wait
-  // to receive the ConnectionDetails message before proceeding.
-  if (!ipc_channel_name_.empty()) {
-    base::ResetAndReturn(&connection_ready_callback_).Run();
-  }
+  base::ResetAndReturn(&connection_ready_callback_).Run();
 }
 
 void SecurityKeyIpcClient::OnChannelError() {
@@ -156,23 +132,6 @@ void SecurityKeyIpcClient::OnChannelError() {
   if (!connection_error_callback_.is_null()) {
     base::ResetAndReturn(&connection_error_callback_).Run();
   }
-}
-
-void SecurityKeyIpcClient::OnConnectionDetails(
-    const std::string& channel_name) {
-  DCHECK(thread_checker_.CalledOnValidThread());
-  ipc_channel_name_ = channel_name;
-
-  // Now that we have received the name for the IPC channel we will use for our
-  // security key request, we want to disconnect from the intial IPC channel
-  // and then connect to the new one.
-  // NOTE: We do not want to perform these tasks now as we are in the middle of
-  // existing IPC message handler, thus we post the tasks so they will be
-  // handled after this method completes.
-  base::ThreadTaskRunnerHandle::Get()->PostTask(
-      FROM_HERE, base::Bind(&SecurityKeyIpcClient::ConnectToIpcChannel,
-                            weak_factory_.GetWeakPtr(),
-                            base::ConstRef(ipc_channel_name_)));
 }
 
 void SecurityKeyIpcClient::OnSecurityKeyResponse(
@@ -188,30 +147,26 @@ void SecurityKeyIpcClient::OnSecurityKeyResponse(
   }
 }
 
-void SecurityKeyIpcClient::ConnectToIpcChannel(
-    const std::string& channel_name) {
+void SecurityKeyIpcClient::ConnectToIpcChannel() {
   DCHECK(thread_checker_.CalledOnValidThread());
 
   // Verify that any existing IPC connection has been closed.
   CloseIpcConnection();
 
-  // The retry loop is needed as the IPC Servers we connect to are reset (torn
-  // down and recreated) and we should be resilient in that case.
-  const base::TimeDelta kTotalWaitTime =
-      base::TimeDelta::FromMilliseconds(1000);
-  const base::TimeDelta kPerIterationWaitTime =
-      base::TimeDelta::FromMilliseconds(25);
-  const int kLoopIterations = kTotalWaitTime / kPerIterationWaitTime;
-  IPC::ChannelHandle channel_handle(channel_name);
-  for (int i = 0; i < kLoopIterations; i++) {
-    ipc_channel_ = IPC::Channel::CreateNamedClient(channel_handle, this);
-    if (ipc_channel_->Connect()) {
-      return;
+  if (!channel_handle_.is_valid() && !CheckForSecurityKeyIpcServerChannel()) {
+    if (!connection_error_callback_.is_null()) {
+      base::ResetAndReturn(&connection_error_callback_).Run();
     }
-
-    ipc_channel_.reset();
-    base::PlatformThread::Sleep(kPerIterationWaitTime);
+    return;
   }
+
+  ipc_channel_ = IPC::Channel::CreateClient(
+      mojo::edk::ConnectToPeerProcess(std::move(channel_handle_)).release(),
+      this);
+  if (ipc_channel_->Connect()) {
+    return;
+  }
+  ipc_channel_.reset();
 
   if (!connection_error_callback_.is_null()) {
     base::ResetAndReturn(&connection_error_callback_).Run();

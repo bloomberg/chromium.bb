@@ -35,11 +35,12 @@ class FakeSecurityKeyIpcServer : public SecurityKeyIpcServer,
       ClientSessionDetails* client_session_details,
       base::TimeDelta initial_connect_timeout,
       const SecurityKeyAuthHandler::SendMessageCallback& send_message_callback,
+      const base::Closure& connect_callback,
       const base::Closure& channel_closed_callback);
   ~FakeSecurityKeyIpcServer() override;
 
   // SecurityKeyIpcServer interface.
-  bool CreateChannel(const std::string& channel_name,
+  bool CreateChannel(const mojo::edk::NamedPlatformHandle& channel_handle,
                      base::TimeDelta request_timeout) override;
   bool SendResponse(const std::string& message_data) override;
 
@@ -57,9 +58,6 @@ class FakeSecurityKeyIpcServer : public SecurityKeyIpcServer,
     return last_message_received_;
   }
 
-  // The name of the IPC channel created by this instance.
-  const std::string& channel_name() const { return channel_name_; }
-
   // Signaled when a security key response message is received.
   // NOTE: Ths callback will be used instead of the IPC channel for response
   // notifications if it is set.
@@ -71,19 +69,18 @@ class FakeSecurityKeyIpcServer : public SecurityKeyIpcServer,
   // IPC::Listener interface.
   bool OnMessageReceived(const IPC::Message& message) override;
   void OnChannelConnected(int32_t peer_pid) override;
-  void OnChannelError() override;
 
   // The id assigned to this IPC connection.
   int connection_id_;
-
-  // Name of the IPC channel this instance was told to connect to.
-  std::string channel_name_;
 
   // The payload for the last message received.
   std::string last_message_received_;
 
   // Used to forward security key requests to the remote client.
   SecurityKeyAuthHandler::SendMessageCallback send_message_callback_;
+
+  // Signaled when the IPC channel is connected.
+  base::Closure connect_callback_;
 
   // Signaled when the IPC channel is closed.
   base::Closure channel_closed_callback_;
@@ -115,6 +112,7 @@ class FakeSecurityKeyIpcServerFactory : public SecurityKeyIpcServerFactory {
       ClientSessionDetails* client_session_details,
       base::TimeDelta initial_connect_timeout,
       const SecurityKeyAuthHandler::SendMessageCallback& message_callback,
+      const base::Closure& connect_callback,
       const base::Closure& done_callback) override;
 
   // Provide a WeakPtr reference to the FakeSecurityKeyIpcServer object

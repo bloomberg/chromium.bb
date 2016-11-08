@@ -116,7 +116,7 @@ void SecurityKeyMessageHandlerTest::OnSecurityKeyMessage(
 
 TEST_F(SecurityKeyMessageHandlerTest,
        ProcessConnectMessage_SessionExists_ConnectionAttemptSuccess) {
-  ipc_client_weak_ptr_->set_wait_for_ipc_channel_return_value(true);
+  ipc_client_weak_ptr_->set_check_for_ipc_channel_return_value(true);
   ipc_client_weak_ptr_->set_establish_ipc_connection_should_succeed(true);
 
   reader_weak_ptr_->message_callback().Run(
@@ -132,7 +132,7 @@ TEST_F(SecurityKeyMessageHandlerTest,
 
 TEST_F(SecurityKeyMessageHandlerTest,
        ProcessConnectMessage_SessionExists_WriteFails) {
-  ipc_client_weak_ptr_->set_wait_for_ipc_channel_return_value(true);
+  ipc_client_weak_ptr_->set_check_for_ipc_channel_return_value(true);
   ipc_client_weak_ptr_->set_establish_ipc_connection_should_succeed(true);
   writer_weak_ptr_->set_write_request_succeeded(/*should_succeed=*/false);
 
@@ -148,7 +148,7 @@ TEST_F(SecurityKeyMessageHandlerTest,
 
 TEST_F(SecurityKeyMessageHandlerTest,
        ProcessConnectMessage_SessionExists_ConnectionAttemptFailure) {
-  ipc_client_weak_ptr_->set_wait_for_ipc_channel_return_value(true);
+  ipc_client_weak_ptr_->set_check_for_ipc_channel_return_value(true);
   ipc_client_weak_ptr_->set_establish_ipc_connection_should_succeed(false);
 
   reader_weak_ptr_->message_callback().Run(
@@ -162,7 +162,7 @@ TEST_F(SecurityKeyMessageHandlerTest,
 }
 
 TEST_F(SecurityKeyMessageHandlerTest, ProcessConnectMessage_NoSessionExists) {
-  ipc_client_weak_ptr_->set_wait_for_ipc_channel_return_value(false);
+  ipc_client_weak_ptr_->set_check_for_ipc_channel_return_value(false);
   ipc_client_weak_ptr_->set_establish_ipc_connection_should_succeed(false);
 
   reader_weak_ptr_->message_callback().Run(
@@ -177,7 +177,7 @@ TEST_F(SecurityKeyMessageHandlerTest, ProcessConnectMessage_NoSessionExists) {
 }
 
 TEST_F(SecurityKeyMessageHandlerTest, ProcessConnectMessage_IncorrectPayload) {
-  ipc_client_weak_ptr_->set_wait_for_ipc_channel_return_value(true);
+  ipc_client_weak_ptr_->set_check_for_ipc_channel_return_value(true);
   ipc_client_weak_ptr_->set_establish_ipc_connection_should_succeed(false);
 
   reader_weak_ptr_->message_callback().Run(

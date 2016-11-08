@@ -121,7 +121,7 @@ void SecurityKeyMessageHandler::HandleConnectRequest(
     return;
   }
 
-  if (ipc_client_->WaitForSecurityKeyIpcServerChannel()) {
+  if (ipc_client_->CheckForSecurityKeyIpcServerChannel()) {
     // If we find an IPC server, then attempt to establish a connection.
     ipc_client_->EstablishIpcConnection(
         base::Bind(&SecurityKeyMessageHandler::HandleIpcConnectionChange,

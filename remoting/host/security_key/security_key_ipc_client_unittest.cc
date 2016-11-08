@@ -12,7 +12,8 @@
 #include "base/message_loop/message_loop.h"
 #include "base/run_loop.h"
 #include "ipc/ipc_channel.h"
-#include "remoting/host/security_key/fake_ipc_security_key_auth_handler.h"
+#include "mojo/edk/embedder/named_platform_handle_utils.h"
+#include "mojo/edk/test/scoped_ipc_support.h"
 #include "remoting/host/security_key/fake_security_key_ipc_server.h"
 #include "remoting/host/security_key/security_key_ipc_constants.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -66,16 +67,14 @@ class SecurityKeyIpcClientTest : public testing::Test {
   // IPC tests require a valid MessageLoop to run.
   base::MessageLoopForIO message_loop_;
 
+  mojo::edk::test::ScopedIPCSupport ipc_support_;
+
   // Used to allow |message_loop_| to run during tests.  The instance is reset
   // after each stage of the tests has been completed.
   std::unique_ptr<base::RunLoop> run_loop_;
 
   // The object under test.
   SecurityKeyIpcClient security_key_ipc_client_;
-
-  // Provides a connection details message to |security_key_ipc_client_|
-  // for testing.
-  FakeIpcSecurityKeyAuthHandler fake_security_key_auth_handler_;
 
   // Used to send/receive security key IPC messages for testing.
   FakeSecurityKeyIpcServer fake_ipc_server_;
@@ -98,13 +97,15 @@ class SecurityKeyIpcClientTest : public testing::Test {
 };
 
 SecurityKeyIpcClientTest::SecurityKeyIpcClientTest()
-    : run_loop_(new base::RunLoop()),
+    : ipc_support_(message_loop_.task_runner()),
+      run_loop_(new base::RunLoop()),
       fake_ipc_server_(
           kTestConnectionId,
           /*client_session_details=*/nullptr,
           /*initial_connect_timeout=*/base::TimeDelta::FromMilliseconds(500),
           base::Bind(&SecurityKeyIpcClientTest::SendMessageToClient,
                      base::Unretained(this)),
+          base::Bind(&base::DoNothing),
           base::Bind(&SecurityKeyIpcClientTest::OperationComplete,
                      base::Unretained(this),
                      /*failed=*/false)) {}
@@ -153,26 +154,14 @@ std::string SecurityKeyIpcClientTest::GenerateUniqueTestChannelName() {
 void SecurityKeyIpcClientTest::EstablishConnection(bool expect_success) {
   // Start up the security key forwarding session IPC channel first, that way
   // we can provide the channel using the fake SecurityKeyAuthHandler later on.
-  std::string ipc_session_channel_name = GenerateUniqueTestChannelName();
+  mojo::edk::NamedPlatformHandle channel_handle(
+      GenerateUniqueTestChannelName());
+  security_key_ipc_client_.SetIpcChannelHandleForTest(channel_handle);
   ASSERT_TRUE(fake_ipc_server_.CreateChannel(
-      ipc_session_channel_name,
+      channel_handle,
       /*request_timeout=*/base::TimeDelta::FromMilliseconds(500)));
-  ASSERT_TRUE(IPC::Channel::IsNamedServerInitialized(ipc_session_channel_name));
-  fake_security_key_auth_handler_.set_ipc_security_key_channel_name(
-      ipc_session_channel_name);
 
-  // Set up the channel name for the initial IPC channel.
-  std::string ipc_server_channel_name = GenerateUniqueTestChannelName();
-  fake_security_key_auth_handler_.set_ipc_server_channel_name(
-      ipc_server_channel_name);
-  security_key_ipc_client_.SetInitialIpcChannelNameForTest(
-      ipc_server_channel_name);
-
-  // Create the initial IPC channel and verify it was set up correctly.
-  ASSERT_FALSE(security_key_ipc_client_.WaitForSecurityKeyIpcServerChannel());
-  fake_security_key_auth_handler_.CreateSecurityKeyConnection();
-  ASSERT_TRUE(IPC::Channel::IsNamedServerInitialized(ipc_server_channel_name));
-  ASSERT_TRUE(security_key_ipc_client_.WaitForSecurityKeyIpcServerChannel());
+  ASSERT_TRUE(security_key_ipc_client_.CheckForSecurityKeyIpcServerChannel());
 
   // Establish the IPC channel so we can begin sending and receiving security
   // key messages.
@@ -285,38 +274,9 @@ TEST_F(SecurityKeyIpcClientTest, SendRequestBeforeEstablishingConnection) {
                                base::Unretained(this))));
 }
 
-TEST_F(SecurityKeyIpcClientTest, NonExistentMainIpcServerChannel) {
-  std::string ipc_server_channel_name(kNonexistentIpcChannelName);
-  security_key_ipc_client_.SetInitialIpcChannelNameForTest(
-      ipc_server_channel_name);
-
-  // Attempt to establish the conection (should fail since the IPC channel does
-  // not exist).
-  security_key_ipc_client_.EstablishIpcConnection(
-      base::Bind(&SecurityKeyIpcClientTest::OperationComplete,
-                 base::Unretained(this), /*failed=*/false),
-      base::Bind(&SecurityKeyIpcClientTest::OperationComplete,
-                 base::Unretained(this), /*failed=*/true));
-  WaitForOperationComplete();
-  ASSERT_TRUE(operation_failed_);
-}
-
-TEST_F(SecurityKeyIpcClientTest, NonExistentIpcSessionChannel) {
-  fake_security_key_auth_handler_.set_ipc_security_key_channel_name(
-      kNonexistentIpcChannelName);
-
-  // Set up the channel name for the initial IPC channel.
-  std::string ipc_server_channel_name = GenerateUniqueTestChannelName();
-  fake_security_key_auth_handler_.set_ipc_server_channel_name(
-      ipc_server_channel_name);
-  security_key_ipc_client_.SetInitialIpcChannelNameForTest(
-      ipc_server_channel_name);
-
-  // Create the initial IPC channel and verify it was set up correctly.
-  ASSERT_FALSE(security_key_ipc_client_.WaitForSecurityKeyIpcServerChannel());
-  fake_security_key_auth_handler_.CreateSecurityKeyConnection();
-  ASSERT_TRUE(IPC::Channel::IsNamedServerInitialized(ipc_server_channel_name));
-  ASSERT_TRUE(security_key_ipc_client_.WaitForSecurityKeyIpcServerChannel());
+TEST_F(SecurityKeyIpcClientTest, NonExistentIpcServerChannel) {
+  security_key_ipc_client_.SetIpcChannelHandleForTest(
+      mojo::edk::NamedPlatformHandle(kNonexistentIpcChannelName));
 
   // Attempt to establish the conection (should fail since the IPC channel does
   // not exist).

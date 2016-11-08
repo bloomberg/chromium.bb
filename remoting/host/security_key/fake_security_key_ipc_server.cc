@@ -14,6 +14,9 @@
 #include "ipc/ipc_channel.h"
 #include "ipc/ipc_message.h"
 #include "ipc/ipc_message_macros.h"
+#include "mojo/edk/embedder/embedder.h"
+#include "mojo/edk/embedder/named_platform_handle.h"
+#include "mojo/edk/embedder/named_platform_handle_utils.h"
 #include "remoting/host/chromoting_messages.h"
 #include "remoting/host/security_key/security_key_auth_handler.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -25,9 +28,11 @@ FakeSecurityKeyIpcServer::FakeSecurityKeyIpcServer(
     ClientSessionDetails* client_session_details,
     base::TimeDelta initial_connect_timeout,
     const SecurityKeyAuthHandler::SendMessageCallback& send_message_callback,
+    const base::Closure& connect_callback,
     const base::Closure& channel_closed_callback)
     : connection_id_(connection_id),
       send_message_callback_(send_message_callback),
+      connect_callback_(connect_callback),
       channel_closed_callback_(channel_closed_callback),
       weak_factory_(this) {}
 
@@ -58,16 +63,22 @@ bool FakeSecurityKeyIpcServer::OnMessageReceived(const IPC::Message& message) {
   return handled;
 }
 
-void FakeSecurityKeyIpcServer::OnChannelConnected(int32_t peer_pid) {}
+void FakeSecurityKeyIpcServer::OnChannelConnected(int32_t peer_pid) {
+  connect_callback_.Run();
+}
 
-void FakeSecurityKeyIpcServer::OnChannelError() {}
-
-bool FakeSecurityKeyIpcServer::CreateChannel(const std::string& channel_name,
-                                             base::TimeDelta request_timeout) {
-  channel_name_ = channel_name;
-
-  ipc_channel_ =
-      IPC::Channel::CreateNamedServer(IPC::ChannelHandle(channel_name_), this);
+bool FakeSecurityKeyIpcServer::CreateChannel(
+    const mojo::edk::NamedPlatformHandle& channel_handle,
+    base::TimeDelta request_timeout) {
+  mojo::edk::CreateServerHandleOptions options;
+#if defined(OS_WIN)
+  options.enforce_uniqueness = false;
+#endif
+  ipc_channel_ = IPC::Channel::CreateServer(
+      mojo::edk::ConnectToPeerProcess(
+          mojo::edk::CreateServerHandle(channel_handle, options))
+          .release(),
+      this);
   EXPECT_NE(nullptr, ipc_channel_);
   return ipc_channel_->Connect();
 }
@@ -101,15 +112,15 @@ std::unique_ptr<SecurityKeyIpcServer> FakeSecurityKeyIpcServerFactory::Create(
     ClientSessionDetails* client_session_details,
     base::TimeDelta initial_connect_timeout,
     const SecurityKeyAuthHandler::SendMessageCallback& send_message_callback,
+    const base::Closure& connect_callback,
     const base::Closure& done_callback) {
-  std::unique_ptr<FakeSecurityKeyIpcServer> fake_ipc_server(
-      new FakeSecurityKeyIpcServer(connection_id, client_session_details,
-                                   initial_connect_timeout,
-                                   send_message_callback, done_callback));
+  auto fake_ipc_server = base::MakeUnique<FakeSecurityKeyIpcServer>(
+      connection_id, client_session_details, initial_connect_timeout,
+      send_message_callback, connect_callback, done_callback);
 
   ipc_server_map_[connection_id] = fake_ipc_server->AsWeakPtr();
 
-  return base::WrapUnique(fake_ipc_server.release());
+  return fake_ipc_server;
 }
 
 base::WeakPtr<FakeSecurityKeyIpcServer>

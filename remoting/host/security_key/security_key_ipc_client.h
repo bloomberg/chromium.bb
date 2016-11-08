@@ -12,6 +12,8 @@
 #include "base/memory/weak_ptr.h"
 #include "base/threading/thread_checker.h"
 #include "ipc/ipc_listener.h"
+#include "mojo/edk/embedder/named_platform_handle.h"
+#include "mojo/edk/embedder/scoped_platform_handle.h"
 
 namespace IPC {
 class Channel;
@@ -34,7 +36,7 @@ class SecurityKeyIpcClient : public IPC::Listener {
 
   // Returns true if there is an active remoting session which supports
   // security key request forwarding.
-  virtual bool WaitForSecurityKeyIpcServerChannel();
+  virtual bool CheckForSecurityKeyIpcServerChannel();
 
   // Begins the process of connecting to the IPC channel which will be used for
   // exchanging security key messages.
@@ -55,10 +57,9 @@ class SecurityKeyIpcClient : public IPC::Listener {
   // Closes the IPC channel if connected.
   virtual void CloseIpcConnection();
 
-  // Allows tests to override the initial IPC channel used to retrieve IPC
-  // connection details.
-  void SetInitialIpcChannelNameForTest(
-      const std::string& initial_ipc_channel_name);
+  // Allows tests to override the IPC channel.
+  void SetIpcChannelHandleForTest(
+      const mojo::edk::NamedPlatformHandle& channel_handle);
 
   // Allows tests to override the expected session ID.
   void SetExpectedIpcServerSessionIdForTest(uint32_t expected_session_id);
@@ -76,17 +77,18 @@ class SecurityKeyIpcClient : public IPC::Listener {
   void OnSecurityKeyResponse(const std::string& request_data);
 
   // Establishes a connection to the specified IPC Server channel.
-  void ConnectToIpcChannel(const std::string& channel_name);
+  void ConnectToIpcChannel();
 
   // Used to validate the IPC Server process is running in the correct session.
   // '0' (default) corresponds to the session the network process runs in.
   uint32_t expected_ipc_server_session_id_ = 0;
 
-  // Name for the IPC channel used for exchanging security key messages.
-  std::string ipc_channel_name_;
 
   // Name of the initial IPC channel used to retrieve connection info.
-  std::string initial_ipc_channel_name_;
+  mojo::edk::NamedPlatformHandle named_channel_handle_;
+
+  // A handle for the IPC channel used for exchanging security key messages.
+  mojo::edk::ScopedPlatformHandle channel_handle_;
 
   // Signaled when the IPC connection is ready for security key requests.
   base::Closure connection_ready_callback_;

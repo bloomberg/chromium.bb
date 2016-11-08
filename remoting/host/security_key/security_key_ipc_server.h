@@ -11,6 +11,7 @@
 
 #include "base/callback_forward.h"
 #include "base/time/time.h"
+#include "mojo/edk/embedder/named_platform_handle.h"
 #include "remoting/host/security_key/security_key_auth_handler.h"
 
 namespace remoting {
@@ -30,6 +31,7 @@ class SecurityKeyIpcServer {
       ClientSessionDetails* client_session_details,
       base::TimeDelta initial_connect_timeout,
       const SecurityKeyAuthHandler::SendMessageCallback& message_callback,
+      const base::Closure& connect_callback,
       const base::Closure& done_callback);
 
   // Used to set a Factory to generate fake/mock SecurityKeyIpcServer
@@ -37,8 +39,9 @@ class SecurityKeyIpcServer {
   static void SetFactoryForTest(SecurityKeyIpcServerFactory* factory);
 
   // Creates and starts listening on an IPC channel with the given name.
-  virtual bool CreateChannel(const std::string& channel_name,
-                             base::TimeDelta request_timeout) = 0;
+  virtual bool CreateChannel(
+      const mojo::edk::NamedPlatformHandle& channel_handle,
+      base::TimeDelta request_timeout) = 0;
 
   // Sends a security key response IPC message via the IPC channel.
   virtual bool SendResponse(const std::string& message_data) = 0;
@@ -54,6 +57,7 @@ class SecurityKeyIpcServerFactory {
       ClientSessionDetails* client_session_details,
       base::TimeDelta connect_timeout,
       const SecurityKeyAuthHandler::SendMessageCallback& message_callback,
+      const base::Closure& connect_callback,
       const base::Closure& done_callback) = 0;
 };
 

@@ -14,6 +14,8 @@
 #include "ipc/ipc_channel.h"
 #include "ipc/ipc_message.h"
 #include "ipc/ipc_message_macros.h"
+#include "mojo/edk/embedder/embedder.h"
+#include "mojo/edk/embedder/named_platform_handle_utils.h"
 #include "remoting/host/chromoting_messages.h"
 
 namespace remoting {
@@ -30,8 +32,8 @@ base::WeakPtr<FakeSecurityKeyIpcClient> FakeSecurityKeyIpcClient::AsWeakPtr() {
   return weak_factory_.GetWeakPtr();
 }
 
-bool FakeSecurityKeyIpcClient::WaitForSecurityKeyIpcServerChannel() {
-  return wait_for_ipc_channel_return_value_;
+bool FakeSecurityKeyIpcClient::CheckForSecurityKeyIpcServerChannel() {
+  return check_for_ipc_channel_return_value_;
 }
 
 void FakeSecurityKeyIpcClient::EstablishIpcConnection(
@@ -61,24 +63,16 @@ void FakeSecurityKeyIpcClient::CloseIpcConnection() {
   channel_event_callback_.Run();
 }
 
-bool FakeSecurityKeyIpcClient::ConnectViaIpc(const std::string& channel_name) {
-  // The retry loop is needed as the IPC Servers we connect to are reset (torn
-  // down and recreated) in some tests and we should be resilient in that case.
-  IPC::ChannelHandle channel_handle(channel_name);
-  for (int i = 0; i < 5; i++) {
-    client_channel_ = IPC::Channel::CreateNamedClient(channel_handle, this);
-    if (client_channel_->Connect()) {
-      return true;
-    }
-
-    base::RunLoop run_loop;
-    base::ThreadTaskRunnerHandle::Get()->PostDelayedTask(
-        FROM_HERE, run_loop.QuitClosure(),
-        base::TimeDelta::FromMilliseconds(100));
-    run_loop.Run();
+bool FakeSecurityKeyIpcClient::ConnectViaIpc(
+    const mojo::edk::NamedPlatformHandle& channel_handle) {
+  mojo::edk::ScopedPlatformHandle handle =
+      mojo::edk::CreateClientHandle(channel_handle);
+  if (!handle.is_valid()) {
+    return false;
   }
-
-  return false;
+  client_channel_ = IPC::Channel::CreateClient(
+      mojo::edk::ConnectToPeerProcess(std::move(handle)).release(), this);
+  return client_channel_->Connect();
 }
 
 void FakeSecurityKeyIpcClient::SendSecurityKeyRequestViaIpc(
@@ -90,9 +84,6 @@ void FakeSecurityKeyIpcClient::SendSecurityKeyRequestViaIpc(
 bool FakeSecurityKeyIpcClient::OnMessageReceived(const IPC::Message& message) {
   bool handled = true;
   IPC_BEGIN_MESSAGE_MAP(FakeSecurityKeyIpcClient, message)
-    IPC_MESSAGE_HANDLER(
-        ChromotingNetworkToRemoteSecurityKeyMsg_ConnectionDetails,
-        OnConnectionDetails)
     IPC_MESSAGE_HANDLER(ChromotingNetworkToRemoteSecurityKeyMsg_Response,
                         OnSecurityKeyResponse)
     IPC_MESSAGE_UNHANDLED(handled = false)
@@ -109,12 +100,6 @@ void FakeSecurityKeyIpcClient::OnChannelConnected(int32_t peer_pid) {
 
 void FakeSecurityKeyIpcClient::OnChannelError() {
   ipc_channel_connected_ = false;
-  channel_event_callback_.Run();
-}
-
-void FakeSecurityKeyIpcClient::OnConnectionDetails(
-    const std::string& channel_name) {
-  last_message_received_ = channel_name;
   channel_event_callback_.Run();
 }
 

@@ -36,6 +36,7 @@ source_set("security_key") {
   ]
 
   deps = [
+    "//mojo/edk/system",
     "//remoting/proto",
     "//third_party/webrtc/modules/desktop_capture",
   ]
@@ -90,14 +91,15 @@ source_set("unit_tests") {
   public_deps = [
     ":test_support",
   ]
+  deps = [
+    "//mojo/edk/test:test_support",
+  ]
 }
 
 static_library("test_support") {
   testonly = true
 
   sources = [
-    "fake_ipc_security_key_auth_handler.cc",
-    "fake_ipc_security_key_auth_handler.h",
     "fake_security_key_ipc_client.cc",
     "fake_security_key_ipc_client.h",
     "fake_security_key_ipc_server.cc",

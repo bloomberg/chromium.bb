@@ -18,3 +18,9 @@ include_rules = [
   "+third_party/webrtc",
   "+ui",
 ]
+
+specific_include_rules = {
+  ".*unittest\.cc": [
+    "+mojo/edk/test",
+  ],
+}

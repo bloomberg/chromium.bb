@@ -14,10 +14,10 @@
 #endif  // defined(OS_POSIX)
 
 namespace {
-base::LazyInstance<std::string> g_security_key_ipc_channel_name =
-    LAZY_INSTANCE_INITIALIZER;
+base::LazyInstance<mojo::edk::NamedPlatformHandle>
+    g_security_key_ipc_channel_name = LAZY_INSTANCE_INITIALIZER;
 
-const char kSecurityKeyIpcChannelName[] = "security_key_ipc_channel";
+constexpr char kSecurityKeyIpcChannelName[] = "security_key_ipc_channel";
 
 }  // namespace
 
@@ -25,16 +25,18 @@ namespace remoting {
 
 const char kSecurityKeyConnectionError[] = "ssh_connection_error";
 
-const std::string& GetSecurityKeyIpcChannelName() {
-  if (g_security_key_ipc_channel_name.Get().empty()) {
-    g_security_key_ipc_channel_name.Get() = kSecurityKeyIpcChannelName;
+const mojo::edk::NamedPlatformHandle& GetSecurityKeyIpcChannel() {
+  if (!g_security_key_ipc_channel_name.Get().is_valid()) {
+    g_security_key_ipc_channel_name.Get() =
+        mojo::edk::NamedPlatformHandle(kSecurityKeyIpcChannelName);
   }
 
   return g_security_key_ipc_channel_name.Get();
 }
 
-void SetSecurityKeyIpcChannelNameForTest(const std::string& channel_name) {
-  g_security_key_ipc_channel_name.Get() = channel_name;
+void SetSecurityKeyIpcChannelForTest(
+    const mojo::edk::NamedPlatformHandle& channel_handle) {
+  g_security_key_ipc_channel_name.Get() = channel_handle;
 }
 
 std::string GetChannelNamePathPrefixForTest() {

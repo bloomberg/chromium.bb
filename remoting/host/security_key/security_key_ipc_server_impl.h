@@ -39,11 +39,12 @@ class SecurityKeyIpcServerImpl : public SecurityKeyIpcServer,
       ClientSessionDetails* client_session_details,
       base::TimeDelta initial_connect_timeout,
       const SecurityKeyAuthHandler::SendMessageCallback& message_callback,
+      const base::Closure& connect_callback,
       const base::Closure& done_callback);
   ~SecurityKeyIpcServerImpl() override;
 
   // SecurityKeyIpcServer implementation.
-  bool CreateChannel(const std::string& channel_name,
+  bool CreateChannel(const mojo::edk::NamedPlatformHandle& channel_handle,
                      base::TimeDelta request_timeout) override;
   bool SendResponse(const std::string& message_data) override;
 
@@ -55,6 +56,8 @@ class SecurityKeyIpcServerImpl : public SecurityKeyIpcServer,
 
   // Handles security key resquest IPC messages.
   void OnSecurityKeyRequest(const std::string& request);
+
+  void CloseChannel();
 
   // The value assigned to identify the current IPC channel.
   int connection_id_;
@@ -75,6 +78,9 @@ class SecurityKeyIpcServerImpl : public SecurityKeyIpcServer,
   // Used to detect timeouts and disconnect the IPC channel.
   base::OneShotTimer timer_;
 
+  // Used to signal that the IPC channel has been connected.
+  base::Closure connect_callback_;
+
   // Used to signal that the IPC channel should be disconnected.
   base::Closure done_callback_;
 
@@ -83,6 +89,10 @@ class SecurityKeyIpcServerImpl : public SecurityKeyIpcServer,
 
   // Used for sending/receiving security key messages between processes.
   std::unique_ptr<IPC::Channel> ipc_channel_;
+
+  // A token that can be used to close the underlying mojo connection. If no
+  // connection exists, this is empty.
+  std::string mojo_peer_token_;
 
   // Ensures SecurityKeyIpcServerImpl methods are called on the same thread.
   base::ThreadChecker thread_checker_;
