@@ -514,7 +514,7 @@ wl_array_copy(struct wl_array *array, struct wl_array *source);
 typedef int32_t wl_fixed_t;
 
 static inline double
-wl_fixed_to_double (wl_fixed_t f)
+wl_fixed_to_double(wl_fixed_t f)
 {
 	union {
 		double d;
