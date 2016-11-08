@@ -13,6 +13,8 @@ source_set("browser") {
     "distribution/app_distribution_provider.mm",
     "geolocation_updater_provider.h",
     "geolocation_updater_provider.mm",
+    "omaha/omaha_service_provider.h",
+    "omaha/omaha_service_provider.mm",
     "signin/chrome_identity.h",
     "signin/chrome_identity.mm",
     "signin/chrome_identity_browser_opener.h",
@@ -61,6 +63,7 @@ source_set("browser") {
     "//components/sync_sessions",
     "//ios/public/provider/web",
     "//ios/web",
+    "//url",
   ]
 
   libs = [
@@ -80,6 +83,8 @@ source_set("test_support") {
   sources = [
     "distribution/test_app_distribution_provider.h",
     "distribution/test_app_distribution_provider.mm",
+    "omaha/test_omaha_service_provider.h",
+    "omaha/test_omaha_service_provider.mm",
     "signin/fake_chrome_identity.h",
     "signin/fake_chrome_identity.mm",
     "signin/fake_chrome_identity_interaction_manager.h",

@@ -145,6 +145,10 @@ id<LogoVendor> ChromeBrowserProvider::CreateLogoVendor(
   return nil;
 }
 
+OmahaServiceProvider* ChromeBrowserProvider::GetOmahaServiceProvider() const {
+  return nil;
+}
+
 bool ChromeBrowserProvider::ShouldEmbedderRegisterVoiceSearchPrefs() const {
   return false;
 }

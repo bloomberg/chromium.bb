@@ -31,10 +31,12 @@ class TestChromeBrowserProvider : public ChromeBrowserProvider {
   NSArray* GetAvailableVoiceSearchLanguages() const override;
   VoiceSearchProvider* GetVoiceSearchProvider() const override;
   AppDistributionProvider* GetAppDistributionProvider() const override;
+  OmahaServiceProvider* GetOmahaServiceProvider() const override;
 
  private:
   std::unique_ptr<AppDistributionProvider> app_distribution_provider_;
   std::unique_ptr<ChromeIdentityService> chrome_identity_service_;
+  std::unique_ptr<OmahaServiceProvider> omaha_service_provider_;
   std::unique_ptr<UpdatableResourceProvider> updatable_resource_provider_;
   std::unique_ptr<VoiceSearchProvider> voice_search_provider_;
 

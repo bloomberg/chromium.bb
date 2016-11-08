@@ -21,6 +21,7 @@ class AppDistributionProvider;
 class AutocompleteProvider;
 class GURL;
 class InfoBarViewDelegate;
+class OmahaServiceProvider;
 class PrefRegistrySimple;
 class PrefService;
 class VoiceSearchProvider;
@@ -162,6 +163,9 @@ class ChromeBrowserProvider {
   virtual id<LogoVendor> CreateLogoVendor(
       ios::ChromeBrowserState* browser_state,
       id<UrlLoader> loader) const NS_RETURNS_RETAINED;
+
+  // Returns an instance of the omaha service provider.
+  virtual OmahaServiceProvider* GetOmahaServiceProvider() const;
 
   // Returns the SyncedWindowDelegatesGetter implementation.
   virtual std::unique_ptr<sync_sessions::SyncedWindowDelegatesGetter>
