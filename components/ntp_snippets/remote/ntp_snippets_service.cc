@@ -671,14 +671,7 @@ void NTPSnippetsService::OnFetchMoreFinished(
   // entry and always keep archived copy of the results.
   if (base::ContainsKey(categories_, fetched_category.category)) {
     // Add the snippets to the archive so that we keep track of the image urls.
-    CategoryContent* content = &categories_[fetched_category.category];
-    // TODO(tschumann): We always insert at the beginning of |archived| for FIFO
-    // GC semantics. This is inefficient. Consider using a deque, or appending
-    // to the end and having a slightly more expensive garbage collection.
-    content->archived.insert(
-        content->archived.begin(),
-        std::make_move_iterator(fetched_category.snippets.begin()),
-        std::make_move_iterator(fetched_category.snippets.end()));
+    ArchiveSnippets(fetched_category.category, &fetched_category.snippets);
   }
   fetching_callback.Run(std::move(result));
 }
@@ -771,14 +764,12 @@ void NTPSnippetsService::OnFetchFinished(
 void NTPSnippetsService::ArchiveSnippets(Category category,
                                          NTPSnippet::PtrVector* to_archive) {
   CategoryContent* content = &categories_[category];
-  database_->DeleteSnippets(GetSnippetIDVector(*to_archive));
-  // Do not delete the thumbnail images as they are still handy on open NTPs.
 
   // Archive previous snippets - move them at the beginning of the list.
   content->archived.insert(content->archived.begin(),
                            std::make_move_iterator(to_archive->begin()),
                            std::make_move_iterator(to_archive->end()));
-  RemoveNullPointers(to_archive);
+  to_archive->clear();
 
   // If there are more archived snippets than we want to keep, delete the
   // oldest ones by their fetch time (which are always in the back).
@@ -821,15 +812,16 @@ void NTPSnippetsService::IntegrateSnippets(const Category& category,
 
   // It's entirely possible that the newly fetched snippets contain articles
   // that have been present before.
-  // Since archival removes snippets from the database (indexed by
-  // snippet->id()), we need to make sure to only archive snippets that don't
+  // We need to make sure to only delete and archive snippets that don't
   // appear with the same ID in the new suggestions (it's fine for additional
   // IDs though).
   EraseByPrimaryID(&content->snippets, *GetSnippetIDVector(new_snippets));
+  // Do not delete the thumbnail images as they are still handy on open NTPs.
+  database_->DeleteSnippets(GetSnippetIDVector(content->snippets));
+  ArchiveSnippets(category, &content->snippets);
 
   database_->SaveSnippets(new_snippets);
 
-  ArchiveSnippets(category, &content->snippets);
   content->snippets = std::move(new_snippets);
 }
 
@@ -1176,13 +1168,13 @@ const NTPSnippet* NTPSnippetsService::CategoryContent::FindSnippet(
   if (it != snippets.end())
     return it->get();
 
-  it = std::find_if(
+  auto archived_it = std::find_if(
       archived.begin(), archived.end(),
       [&id_within_category](const std::unique_ptr<NTPSnippet>& snippet) {
         return snippet->id() == id_within_category;
       });
-  if (it != archived.end())
-    return it->get();
+  if (archived_it != archived.end())
+    return archived_it->get();
 
   return nullptr;
 }

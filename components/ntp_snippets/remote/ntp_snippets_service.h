@@ -6,6 +6,7 @@
 #define COMPONENTS_NTP_SNIPPETS_REMOTE_NTP_SNIPPETS_SERVICE_H_
 
 #include <cstddef>
+#include <deque>
 #include <map>
 #include <memory>
 #include <set>
@@ -139,12 +140,6 @@ class NTPSnippetsService final : public ContentSuggestionsProvider,
     return categories_.find(category)->second.snippets;
   }
 
-  // Available snippets, only for unit tests.
-  const NTPSnippet::PtrVector& GetArchivedSnippetsForTesting(
-      Category category) const {
-    return categories_.find(category)->second.archived;
-  }
-
   // Dismissed snippets, only for unit tests.
   const NTPSnippet::PtrVector& GetDismissedSnippetsForTesting(
       Category category) const {
@@ -221,8 +216,9 @@ class NTPSnippetsService final : public ContentSuggestionsProvider,
       NTPSnippetsFetcher::OptionalFetchedCategories fetched_categories);
 
   // Moves all snippets from |to_archive| into the archive of the |category|.
-  // It also deletes the snippets from the DB and keeps the archive reasonably
-  // short.
+  // Clears |to_archive|. As the archive is a FIFO buffer of limited size, this
+  // function will also delete images from the database in case the associated
+  // snippet gets evicted from the archive.
   void ArchiveSnippets(Category category, NTPSnippet::PtrVector* to_archive);
 
   // Sanitizes new fetched snippets -- e.g. adding missing dates and filtering
@@ -335,7 +331,8 @@ class NTPSnippetsService final : public ContentSuggestionsProvider,
     // All previous suggestions that we keep around in memory because they can
     // be on some open NTP. We do not persist this list so that on a new start
     // of Chrome, this is empty.
-    NTPSnippet::PtrVector archived;
+    // |archived| is a FIFO buffer with a maximum length.
+    std::deque<std::unique_ptr<NTPSnippet>> archived;
 
     // Suggestions that the user dismissed. We keep these around until they
     // expire so we won't re-add them to |snippets| on the next fetch.
