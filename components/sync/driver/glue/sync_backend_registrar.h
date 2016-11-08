@@ -15,7 +15,7 @@
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
 #include "base/synchronization/lock.h"
-#include "base/threading/thread.h"
+#include "base/threading/thread_checker.h"
 #include "components/sync/base/model_type.h"
 #include "components/sync/engine/model_safe_worker.h"
 #include "components/sync/engine/sync_manager.h"
@@ -32,12 +32,7 @@ struct UserShare;
 class SyncBackendRegistrar : public SyncManager::ChangeDelegate {
  public:
   // |name| is used for debugging. Must be created on the UI thread.
-  SyncBackendRegistrar(
-      const std::string& name,
-      SyncClient* sync_client,
-      const scoped_refptr<base::SingleThreadTaskRunner>& ui_thread,
-      const scoped_refptr<base::SingleThreadTaskRunner>& db_thread,
-      const scoped_refptr<base::SingleThreadTaskRunner>& file_thread);
+  SyncBackendRegistrar(const std::string& name, SyncClient* sync_client);
 
   // A SyncBackendRegistrar is owned by a SyncBackendHostImpl. It is destroyed
   // by SyncBackendHostImpl::Shutdown() which performs the following operations
@@ -136,10 +131,6 @@ class SyncBackendRegistrar : public SyncManager::ChangeDelegate {
   // called with |lock_| held.  May be called on any thread.
   bool IsCurrentThreadSafeForModel(ModelType model_type) const;
 
-  // Returns true if the current thread is the native thread for the
-  // given group (or if it is undeterminable).
-  bool IsOnThreadForGroup(ModelType type, ModelSafeGroup group) const;
-
   // Returns model safe group that should be assigned to type when it is first
   // configured (before activation). Returns GROUP_PASSIVE for directory types
   // and GROUP_NON_BLOCKING for non-blocking types.
@@ -150,6 +141,9 @@ class SyncBackendRegistrar : public SyncManager::ChangeDelegate {
 
   // A pointer to the sync client.
   SyncClient* const sync_client_;
+
+  // Checker for the UI thread (where this object is constructed).
+  base::ThreadChecker ui_thread_checker_;
 
   // Protects all variables below.
   mutable base::Lock lock_;
@@ -165,11 +159,6 @@ class SyncBackendRegistrar : public SyncManager::ChangeDelegate {
   // The types that were enabled as of the last configuration. Updated on each
   // call to ConfigureDataTypes as well as SetInitialTypes.
   ModelTypeSet last_configured_types_;
-
-  // References to the thread task runners that sync depends on.
-  const scoped_refptr<base::SingleThreadTaskRunner> ui_thread_;
-  const scoped_refptr<base::SingleThreadTaskRunner> db_thread_;
-  const scoped_refptr<base::SingleThreadTaskRunner> file_thread_;
 
   // Set of types with non-blocking implementation (as opposed to directory
   // based).

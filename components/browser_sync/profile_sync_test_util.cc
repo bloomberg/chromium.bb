@@ -260,8 +260,6 @@ ProfileSyncService::InitParams ProfileSyncServiceBundle::CreateBasicInitParams(
   init_params.url_request_context = url_request_context();
   init_params.debug_identifier = "dummyDebugName";
   init_params.channel = version_info::Channel::UNKNOWN;
-  init_params.db_thread = db_thread_;
-  init_params.file_thread = base::ThreadTaskRunnerHandle::Get();
   init_params.blocking_pool = worker_pool_owner_.pool().get();
 
   return init_params;

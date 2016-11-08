@@ -124,6 +124,13 @@ syncer::ModelSafeGroup HistoryModelWorker::GetModelSafeGroup() {
   return syncer::GROUP_HISTORY;
 }
 
+bool HistoryModelWorker::IsOnModelThread() {
+  // Ideally HistoryService would expose a way to check whether this is the
+  // history DB thread. Since it doesn't, just return true to bypass a CHECK in
+  // the sync code.
+  return true;
+}
+
 HistoryModelWorker::~HistoryModelWorker() {
   // The base::CancelableTaskTracker class is not thread-safe and must only be
   // used from a single thread but the current object may not be destroyed from

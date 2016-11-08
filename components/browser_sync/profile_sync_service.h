@@ -245,8 +245,6 @@ class ProfileSyncService : public syncer::SyncService,
     scoped_refptr<net::URLRequestContextGetter> url_request_context;
     std::string debug_identifier;
     version_info::Channel channel = version_info::Channel::UNKNOWN;
-    scoped_refptr<base::SingleThreadTaskRunner> db_thread;
-    scoped_refptr<base::SingleThreadTaskRunner> file_thread;
     base::SequencedWorkerPool* blocking_pool = nullptr;
 
    private:
@@ -826,8 +824,6 @@ class ProfileSyncService : public syncer::SyncService,
   version_info::Channel channel_;
 
   // Threading context.
-  scoped_refptr<base::SingleThreadTaskRunner> db_thread_;
-  scoped_refptr<base::SingleThreadTaskRunner> file_thread_;
   base::SequencedWorkerPool* blocking_pool_;
 
   // Indicates if this is the first time sync is being configured.  This value

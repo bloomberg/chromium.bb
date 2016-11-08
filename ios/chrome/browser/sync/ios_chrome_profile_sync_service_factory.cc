@@ -141,10 +141,6 @@ IOSChromeProfileSyncServiceFactory::BuildServiceInstanceFor(
   init_params.url_request_context = browser_state->GetRequestContext();
   init_params.debug_identifier = browser_state->GetDebugName();
   init_params.channel = ::GetChannel();
-  init_params.db_thread =
-      web::WebThread::GetTaskRunnerForThread(web::WebThread::DB);
-  init_params.file_thread =
-      web::WebThread::GetTaskRunnerForThread(web::WebThread::FILE);
   init_params.blocking_pool = web::WebThread::GetBlockingPool();
 
   auto pss = base::MakeUnique<ProfileSyncService>(std::move(init_params));

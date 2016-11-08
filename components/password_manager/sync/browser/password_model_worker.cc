@@ -62,6 +62,13 @@ syncer::ModelSafeGroup PasswordModelWorker::GetModelSafeGroup() {
   return syncer::GROUP_PASSWORD;
 }
 
+bool PasswordModelWorker::IsOnModelThread() {
+  // Ideally PasswordStore would expose a way to check whether this is the
+  // thread it does work on. Since it doesn't, just return true to bypass a
+  // CHECK in the sync code.
+  return true;
+}
+
 PasswordModelWorker::~PasswordModelWorker() {}
 
 void PasswordModelWorker::RequestStop() {

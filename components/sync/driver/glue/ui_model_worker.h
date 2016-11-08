@@ -21,6 +21,7 @@ class UIModelWorker : public ModelSafeWorker {
 
   // ModelSafeWorker implementation. Called on syncapi SyncerThread.
   ModelSafeGroup GetModelSafeGroup() override;
+  bool IsOnModelThread() override;
 
  protected:
   SyncerError DoWorkAndWaitUntilDoneImpl(const WorkCallback& work) override;

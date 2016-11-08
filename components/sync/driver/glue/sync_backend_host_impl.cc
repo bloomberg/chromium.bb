@@ -73,8 +73,6 @@ SyncBackendHostImpl::~SyncBackendHostImpl() {
 void SyncBackendHostImpl::Initialize(
     SyncFrontend* frontend,
     base::Thread* sync_thread,
-    const scoped_refptr<base::SingleThreadTaskRunner>& db_thread,
-    const scoped_refptr<base::SingleThreadTaskRunner>& file_thread,
     const WeakHandle<JsEventHandler>& event_handler,
     const GURL& sync_service_url,
     const std::string& sync_user_agent,
@@ -90,8 +88,7 @@ void SyncBackendHostImpl::Initialize(
   CHECK(sync_thread);
   sync_thread_ = sync_thread;
 
-  registrar_ = base::MakeUnique<SyncBackendRegistrar>(
-      name_, sync_client_, ui_thread_, db_thread, file_thread);
+  registrar_ = base::MakeUnique<SyncBackendRegistrar>(name_, sync_client_);
 
   DCHECK(frontend);
   frontend_ = frontend;

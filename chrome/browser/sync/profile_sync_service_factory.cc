@@ -183,11 +183,6 @@ KeyedService* ProfileSyncServiceFactory::BuildServiceInstanceFor(
   init_params.url_request_context = profile->GetRequestContext();
   init_params.debug_identifier = profile->GetDebugName();
   init_params.channel = chrome::GetChannel();
-
-  init_params.db_thread = content::BrowserThread::GetTaskRunnerForThread(
-      content::BrowserThread::DB);
-  init_params.file_thread = content::BrowserThread::GetTaskRunnerForThread(
-      content::BrowserThread::FILE);
   init_params.blocking_pool = content::BrowserThread::GetBlockingPool();
 
   auto pss = base::MakeUnique<ProfileSyncService>(std::move(init_params));

@@ -16,18 +16,9 @@
 
 namespace syncer {
 
-SyncBackendRegistrar::SyncBackendRegistrar(
-    const std::string& name,
-    SyncClient* sync_client,
-    const scoped_refptr<base::SingleThreadTaskRunner>& ui_thread,
-    const scoped_refptr<base::SingleThreadTaskRunner>& db_thread,
-    const scoped_refptr<base::SingleThreadTaskRunner>& file_thread)
-    : name_(name),
-      sync_client_(sync_client),
-      ui_thread_(ui_thread),
-      db_thread_(db_thread),
-      file_thread_(file_thread) {
-  DCHECK(ui_thread_->BelongsToCurrentThread());
+SyncBackendRegistrar::SyncBackendRegistrar(const std::string& name,
+                                           SyncClient* sync_client)
+    : name_(name), sync_client_(sync_client) {
   DCHECK(sync_client_);
 
   MaybeAddWorker(GROUP_DB);
@@ -36,14 +27,10 @@ SyncBackendRegistrar::SyncBackendRegistrar(
   MaybeAddWorker(GROUP_PASSIVE);
   MaybeAddWorker(GROUP_HISTORY);
   MaybeAddWorker(GROUP_PASSWORD);
-
-  // Must have at least one worker for SyncBackendRegistrar to be destroyed
-  // correctly, as it is destroyed after the last worker dies.
-  DCHECK_GT(workers_.size(), 0u);
 }
 
 void SyncBackendRegistrar::RegisterNonBlockingType(ModelType type) {
-  DCHECK(ui_thread_->BelongsToCurrentThread());
+  DCHECK(ui_thread_checker_.CalledOnValidThread());
   base::AutoLock lock(lock_);
   // There may have been a previously successful sync of a type when passive,
   // which is now NonBlocking. We're not sure what order these two sets of types
@@ -93,7 +80,7 @@ void SyncBackendRegistrar::SetInitialTypes(ModelTypeSet initial_types) {
 }
 
 void SyncBackendRegistrar::AddRestoredNonBlockingType(ModelType type) {
-  DCHECK(ui_thread_->BelongsToCurrentThread());
+  DCHECK(ui_thread_checker_.CalledOnValidThread());
   base::AutoLock lock(lock_);
   DCHECK(non_blocking_types_.Has(type));
   DCHECK(routing_info_.find(type) == routing_info_.end());
@@ -102,7 +89,7 @@ void SyncBackendRegistrar::AddRestoredNonBlockingType(ModelType type) {
 }
 
 bool SyncBackendRegistrar::IsNigoriEnabled() const {
-  DCHECK(ui_thread_->BelongsToCurrentThread());
+  DCHECK(ui_thread_checker_.CalledOnValidThread());
   base::AutoLock lock(lock_);
   return routing_info_.find(NIGORI) != routing_info_.end();
 }
@@ -154,7 +141,7 @@ ModelTypeSet SyncBackendRegistrar::GetLastConfiguredTypes() const {
 }
 
 void SyncBackendRegistrar::RequestWorkerStopOnUIThread() {
-  DCHECK(ui_thread_->BelongsToCurrentThread());
+  DCHECK(ui_thread_checker_.CalledOnValidThread());
   base::AutoLock lock(lock_);
   for (WorkerMap::const_iterator it = workers_.begin(); it != workers_.end();
        ++it) {
@@ -188,7 +175,7 @@ void SyncBackendRegistrar::ActivateDataType(ModelType type,
 void SyncBackendRegistrar::DeactivateDataType(ModelType type) {
   DVLOG(1) << "Deactivate: " << ModelTypeToString(type);
 
-  DCHECK(ui_thread_->BelongsToCurrentThread() || IsControlType(type));
+  DCHECK(ui_thread_checker_.CalledOnValidThread() || IsControlType(type));
   base::AutoLock lock(lock_);
 
   routing_info_.erase(type);
@@ -272,33 +259,16 @@ ChangeProcessor* SyncBackendRegistrar::GetProcessorUnsafe(
 bool SyncBackendRegistrar::IsCurrentThreadSafeForModel(
     ModelType model_type) const {
   lock_.AssertAcquired();
-  return IsOnThreadForGroup(model_type,
-                            GetGroupForModelType(model_type, routing_info_));
-}
+  ModelSafeGroup group = GetGroupForModelType(model_type, routing_info_);
+  DCHECK_NE(GROUP_NON_BLOCKING, group);
 
-bool SyncBackendRegistrar::IsOnThreadForGroup(ModelType type,
-                                              ModelSafeGroup group) const {
-  switch (group) {
-    case GROUP_PASSIVE:
-      return IsControlType(type);
-    case GROUP_UI:
-      return ui_thread_->BelongsToCurrentThread();
-    case GROUP_DB:
-      return db_thread_->BelongsToCurrentThread();
-    case GROUP_FILE:
-      return file_thread_->BelongsToCurrentThread();
-    case GROUP_HISTORY:
-      // TODO(sync): How to check we're on the right thread?
-      return type == TYPED_URLS;
-    case GROUP_PASSWORD:
-      // TODO(sync): How to check we're on the right thread?
-      return type == PASSWORDS;
-    case GROUP_NON_BLOCKING:
-      // IsOnThreadForGroup shouldn't be called for non-blocking types.
-      return false;
+  if (group == GROUP_PASSIVE) {
+    return IsControlType(model_type);
   }
-  NOTREACHED();
-  return false;
+
+  auto it = workers_.find(group);
+  DCHECK(it != workers_.end());
+  return it->second->IsOnModelThread();
 }
 
 SyncBackendRegistrar::~SyncBackendRegistrar() {

@@ -213,8 +213,7 @@ class SyncBackendHostTest : public testing::Test {
                        base::Unretained(network_resources_.get()), nullptr,
                        base::Bind(&EmptyNetworkTimeUpdate));
     backend_->Initialize(
-        &mock_frontend_, &sync_thread_, base::ThreadTaskRunnerHandle::Get(),
-        base::ThreadTaskRunnerHandle::Get(), WeakHandle<JsEventHandler>(),
+        &mock_frontend_, &sync_thread_, WeakHandle<JsEventHandler>(),
         GURL(std::string()), std::string(), credentials_, true, false,
         base::FilePath(), std::move(fake_manager_factory_),
         MakeWeakHandle(test_unrecoverable_error_handler_.GetWeakPtr()),

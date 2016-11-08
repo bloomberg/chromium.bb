@@ -23,8 +23,9 @@ class PasswordModelWorker : public syncer::ModelSafeWorker {
   PasswordModelWorker(
       const scoped_refptr<password_manager::PasswordStore>& password_store);
 
-  // syncer::ModelSafeWorker implementation. Called on syncapi SyncerThread.
+  // syncer::ModelSafeWorker implementation.
   syncer::ModelSafeGroup GetModelSafeGroup() override;
+  bool IsOnModelThread() override;
   void RequestStop() override;
 
  protected:

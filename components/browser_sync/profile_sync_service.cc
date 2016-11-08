@@ -184,8 +184,6 @@ ProfileSyncService::InitParams::InitParams(InitParams&& other)  // NOLINT
       url_request_context(std::move(other.url_request_context)),
       debug_identifier(std::move(other.debug_identifier)),
       channel(other.channel),
-      db_thread(std::move(other.db_thread)),
-      file_thread(std::move(other.file_thread)),
       blocking_pool(other.blocking_pool) {}
 
 ProfileSyncService::ProfileSyncService(InitParams init_params)
@@ -203,8 +201,6 @@ ProfileSyncService::ProfileSyncService(InitParams init_params)
       url_request_context_(init_params.url_request_context),
       debug_identifier_(std::move(init_params.debug_identifier)),
       channel_(init_params.channel),
-      db_thread_(init_params.db_thread),
-      file_thread_(init_params.file_thread),
       blocking_pool_(init_params.blocking_pool),
       is_first_time_sync_configure_(false),
       backend_initialized_(false),
@@ -545,9 +541,9 @@ void ProfileSyncService::InitializeBackend(bool delete_stale_data) {
                      url_request_context_, network_time_update_callback_);
 
   backend_->Initialize(
-      this, sync_thread_.get(), db_thread_, file_thread_, GetJsEventHandler(),
-      sync_service_url_, local_device_->GetSyncUserAgent(), credentials,
-      delete_stale_data, enable_local_sync_backend, local_sync_backend_folder,
+      this, sync_thread_.get(), GetJsEventHandler(), sync_service_url_,
+      local_device_->GetSyncUserAgent(), credentials, delete_stale_data,
+      enable_local_sync_backend, local_sync_backend_folder,
       base::MakeUnique<syncer::SyncManagerFactory>(),
       MakeWeakHandle(sync_enabled_weak_factory_.GetWeakPtr()),
       base::Bind(syncer::ReportUnrecoverableError, channel_),

@@ -10,6 +10,7 @@
 #include "base/memory/ptr_util.h"
 #include "base/run_loop.h"
 #include "base/single_thread_task_runner.h"
+#include "base/threading/thread.h"
 #include "components/sync/driver/change_processor_mock.h"
 #include "components/sync/driver/fake_sync_client.h"
 #include "components/sync/driver/glue/browser_thread_model_worker.h"
@@ -93,9 +94,8 @@ class SyncBackendRegistrarTest : public testing::Test {
     test_user_share_.SetUp();
     sync_client_ = base::MakeUnique<RegistrarSyncClient>(
         ui_task_runner(), db_task_runner(), file_task_runner());
-    registrar_ = base::MakeUnique<SyncBackendRegistrar>(
-        "test", sync_client_.get(), ui_task_runner(), db_task_runner(),
-        file_task_runner());
+    registrar_ =
+        base::MakeUnique<SyncBackendRegistrar>("test", sync_client_.get());
   }
 
   void TearDown() override {

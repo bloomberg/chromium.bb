@@ -64,6 +64,9 @@ class ModelSafeWorker : public base::RefCountedThreadSafe<ModelSafeWorker> {
 
   virtual ModelSafeGroup GetModelSafeGroup() = 0;
 
+  // Returns true if called on the thread this worker works on.
+  virtual bool IsOnModelThread() = 0;
+
  protected:
   ModelSafeWorker();
   virtual ~ModelSafeWorker();

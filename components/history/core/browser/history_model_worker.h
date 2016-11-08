@@ -28,8 +28,9 @@ class HistoryModelWorker : public syncer::ModelSafeWorker {
       const base::WeakPtr<history::HistoryService>& history_service,
       const scoped_refptr<base::SingleThreadTaskRunner>& ui_thread);
 
-  // syncer::ModelSafeWorker implementation. Called on syncapi SyncerThread.
+  // syncer::ModelSafeWorker implementation.
   syncer::ModelSafeGroup GetModelSafeGroup() override;
+  bool IsOnModelThread() override;
 
  protected:
   syncer::SyncerError DoWorkAndWaitUntilDoneImpl(

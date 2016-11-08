@@ -15,19 +15,23 @@ FakeModelWorker::~FakeModelWorker() {
   // multi-threaded test; since ModelSafeWorkers are
   // RefCountedThreadSafe, they could theoretically be destroyed from
   // a different thread.
-  DCHECK(CalledOnValidThread());
+  DCHECK(thread_checker_.CalledOnValidThread());
 }
 
 SyncerError FakeModelWorker::DoWorkAndWaitUntilDoneImpl(
     const WorkCallback& work) {
-  DCHECK(CalledOnValidThread());
+  DCHECK(thread_checker_.CalledOnValidThread());
   // Simply do the work on the current thread.
   return work.Run();
 }
 
 ModelSafeGroup FakeModelWorker::GetModelSafeGroup() {
-  DCHECK(CalledOnValidThread());
+  DCHECK(thread_checker_.CalledOnValidThread());
   return group_;
+}
+
+bool FakeModelWorker::IsOnModelThread() {
+  return thread_checker_.CalledOnValidThread();
 }
 
 }  // namespace syncer

@@ -50,6 +50,10 @@ ModelSafeGroup BrowserThreadModelWorker::GetModelSafeGroup() {
   return group_;
 }
 
+bool BrowserThreadModelWorker::IsOnModelThread() {
+  return runner_->BelongsToCurrentThread();
+}
+
 BrowserThreadModelWorker::~BrowserThreadModelWorker() {}
 
 void BrowserThreadModelWorker::CallDoWorkAndSignalTask(

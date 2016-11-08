@@ -62,6 +62,10 @@ ModelSafeGroup UIModelWorker::GetModelSafeGroup() {
   return GROUP_UI;
 }
 
+bool UIModelWorker::IsOnModelThread() {
+  return ui_thread_->BelongsToCurrentThread();
+}
+
 UIModelWorker::~UIModelWorker() {}
 
 }  // namespace syncer

@@ -18,8 +18,9 @@ class PassiveModelWorker : public ModelSafeWorker {
  public:
   PassiveModelWorker();
 
-  // ModelSafeWorker implementation. Called on the sync thread.
+  // ModelSafeWorker implementation.
   ModelSafeGroup GetModelSafeGroup() override;
+  bool IsOnModelThread() override;
 
  protected:
   SyncerError DoWorkAndWaitUntilDoneImpl(const WorkCallback& work) override;

@@ -24,8 +24,9 @@ class BrowserThreadModelWorker : public ModelSafeWorker {
       const scoped_refptr<base::SingleThreadTaskRunner>& runner,
       ModelSafeGroup group);
 
-  // ModelSafeWorker implementation. Called on the sync thread.
+  // ModelSafeWorker implementation.
   ModelSafeGroup GetModelSafeGroup() override;
+  bool IsOnModelThread() override;
 
  protected:
   ~BrowserThreadModelWorker() override;
