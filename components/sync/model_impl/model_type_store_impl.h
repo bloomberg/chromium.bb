@@ -103,6 +103,17 @@ class ModelTypeStoreImpl : public ModelTypeStore, public base::NonThreadSafe {
   void WriteModificationsDone(const CallbackWithResult& callback,
                               Result result);
 
+  // Parse the serialized metadata into protos and pass them to |callback|.
+  void DeserializeMetadata(const ReadMetadataCallback& callback,
+                           const std::string& global_metadata,
+                           std::unique_ptr<RecordList> metadata_records);
+
+  // Helper function to create a SyncError with message |msg|.
+  SyncError MakeSyncError(const std::string& msg);
+
+  // The model type using this store.
+  const ModelType type_;
+
   // Backend should be deleted on backend thread.
   // To accomplish this store's dtor posts task to backend thread passing
   // backend ownership to task parameter.

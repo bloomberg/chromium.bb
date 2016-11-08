@@ -92,10 +92,8 @@ class DeviceInfoSyncBridge : public ModelTypeSyncBridge,
                       std::unique_ptr<ModelTypeStore> store);
   void OnReadAllData(ModelTypeStore::Result result,
                      std::unique_ptr<ModelTypeStore::RecordList> record_list);
-  void OnReadAllMetadata(
-      ModelTypeStore::Result result,
-      std::unique_ptr<ModelTypeStore::RecordList> metadata_records,
-      const std::string& global_metadata);
+  void OnReadAllMetadata(SyncError error,
+                         std::unique_ptr<MetadataBatch> metadata_batch);
   void OnCommit(ModelTypeStore::Result result);
 
   // Load metadata if the data is loaded and the provider is initialized.

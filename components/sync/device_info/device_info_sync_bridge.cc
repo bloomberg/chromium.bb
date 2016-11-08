@@ -368,33 +368,9 @@ void DeviceInfoSyncBridge::LoadMetadataIfReady() {
 }
 
 void DeviceInfoSyncBridge::OnReadAllMetadata(
-    Result result,
-    std::unique_ptr<RecordList> metadata_records,
-    const std::string& global_metadata) {
-  if (result != Result::SUCCESS) {
-    ReportStartupErrorToSync("Load of metadata completely failed.");
-    return;
-  }
-
-  auto batch = base::MakeUnique<MetadataBatch>();
-  ModelTypeState state;
-  if (state.ParseFromString(global_metadata)) {
-    batch->SetModelTypeState(state);
-  } else {
-    ReportStartupErrorToSync("Failed to deserialize global metadata.");
-    return;
-  }
-
-  for (const Record& r : *metadata_records.get()) {
-    sync_pb::EntityMetadata entity_metadata;
-    if (entity_metadata.ParseFromString(r.value)) {
-      batch->AddMetadata(r.id, entity_metadata);
-    } else {
-      ReportStartupErrorToSync("Failed to deserialize entity metadata.");
-    }
-  }
-
-  change_processor()->OnMetadataLoaded(SyncError(), std::move(batch));
+    SyncError error,
+    std::unique_ptr<MetadataBatch> metadata_batch) {
+  change_processor()->OnMetadataLoaded(error, std::move(metadata_batch));
   ReconcileLocalAndStored();
 }
 
