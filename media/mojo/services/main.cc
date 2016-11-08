@@ -10,17 +10,6 @@
 #include "services/service_manager/public/c/main.h"
 #include "services/service_manager/public/cpp/service_runner.h"
 
-namespace {
-
-service_manager::ServiceRunner* g_runner = nullptr;
-
-void QuitApplication() {
-  DCHECK(g_runner);
-  g_runner->Quit();
-}
-
-}  // namespace
-
 MojoResult ServiceMain(MojoHandle mojo_handle) {
   // Enable logging.
   base::AtExitManager at_exit;
@@ -31,8 +20,7 @@ MojoResult ServiceMain(MojoHandle mojo_handle) {
   logging::InitLogging(settings);
 
   std::unique_ptr<service_manager::Service> service =
-      media::CreateMediaServiceForTesting(base::Bind(&QuitApplication));
+      media::CreateMediaServiceForTesting();
   service_manager::ServiceRunner runner(service.release());
-  g_runner = &runner;
   return runner.Run(mojo_handle, false /* init_base */);
 }

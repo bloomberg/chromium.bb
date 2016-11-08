@@ -14,8 +14,7 @@
 namespace device {
 
 std::unique_ptr<service_manager::Service> CreateDeviceService(
-    scoped_refptr<base::SingleThreadTaskRunner> file_task_runner,
-    const base::Closure& quit_closure);
+    scoped_refptr<base::SingleThreadTaskRunner> file_task_runner);
 
 class DeviceService : public service_manager::Service {
  public:

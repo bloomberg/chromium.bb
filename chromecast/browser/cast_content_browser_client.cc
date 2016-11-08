@@ -78,8 +78,7 @@ namespace shell {
 namespace {
 #if defined(ENABLE_MOJO_MEDIA_IN_BROWSER_PROCESS)
 static std::unique_ptr<service_manager::Service> CreateMediaService(
-    CastContentBrowserClient* browser_client,
-    const base::Closure& quit_closure) {
+    CastContentBrowserClient* browser_client) {
   std::unique_ptr<media::CastMojoMediaClient> mojo_media_client(
       new media::CastMojoMediaClient(
           base::Bind(&CastContentBrowserClient::CreateMediaPipelineBackend,
@@ -89,7 +88,7 @@ static std::unique_ptr<service_manager::Service> CreateMediaService(
           browser_client->GetVideoResolutionPolicy(),
           browser_client->media_resource_tracker()));
   return std::unique_ptr<service_manager::Service>(
-      new ::media::MediaService(std::move(mojo_media_client), quit_closure));
+      new ::media::MediaService(std::move(mojo_media_client)));
 }
 #endif  // defined(ENABLE_MOJO_MEDIA_IN_BROWSER_PROCESS)
 

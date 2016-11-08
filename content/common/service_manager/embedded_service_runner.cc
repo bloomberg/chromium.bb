@@ -81,18 +81,14 @@ class EmbeddedServiceRunner::InstanceManager
     DCHECK(service_task_runner_->BelongsToCurrentThread());
 
     int instance_id = next_instance_id_++;
-    base::Closure quit_closure =
-        base::Bind(&InstanceManager::OnInstanceLost, this, instance_id);
 
-    // TODO(rockot): Get rid of the quit closure argument to the factory
-    // function. Services should request termination via their ServiceContext
-    // once we have that working.
     std::unique_ptr<service_manager::ServiceContext> context =
         base::MakeUnique<service_manager::ServiceContext>(
-            factory_callback_.Run(quit_closure), std::move(request));
+            factory_callback_.Run(), std::move(request));
 
     service_manager::ServiceContext* raw_context = context.get();
-    context->SetConnectionLostClosure(quit_closure);
+    context->SetConnectionLostClosure(
+        base::Bind(&InstanceManager::OnInstanceLost, this, instance_id));
     contexts_.insert(std::make_pair(raw_context, std::move(context)));
     id_to_context_map_.insert(std::make_pair(instance_id, raw_context));
   }

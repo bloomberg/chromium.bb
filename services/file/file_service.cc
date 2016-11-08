@@ -73,8 +73,7 @@ class FileService::LevelDBServiceObjects
 
 std::unique_ptr<service_manager::Service> CreateFileService(
     scoped_refptr<base::SingleThreadTaskRunner> file_service_runner,
-    scoped_refptr<base::SingleThreadTaskRunner> leveldb_service_runner,
-    const base::Closure& quit_closure) {
+    scoped_refptr<base::SingleThreadTaskRunner> leveldb_service_runner) {
   return base::MakeUnique<FileService>(std::move(file_service_runner),
                                        std::move(leveldb_service_runner));
 }

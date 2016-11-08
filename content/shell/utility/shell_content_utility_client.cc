@@ -66,8 +66,7 @@ class TestServiceImpl : public mojom::TestService {
   DISALLOW_COPY_AND_ASSIGN(TestServiceImpl);
 };
 
-std::unique_ptr<service_manager::Service> CreateTestService(
-    const base::Closure& quit_closure) {
+std::unique_ptr<service_manager::Service> CreateTestService() {
   return std::unique_ptr<service_manager::Service>(new TestService);
 }
 

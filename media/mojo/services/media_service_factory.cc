@@ -15,23 +15,21 @@
 
 namespace media {
 
-std::unique_ptr<service_manager::Service> CreateMediaService(
-    const base::Closure& quit_closure) {
+std::unique_ptr<service_manager::Service> CreateMediaService() {
 #if defined(ENABLE_TEST_MOJO_MEDIA_CLIENT)
-  return CreateMediaServiceForTesting(quit_closure);
+  return CreateMediaServiceForTesting();
 #elif defined(OS_ANDROID)
-  return std::unique_ptr<service_manager::Service>(new MediaService(
-      base::MakeUnique<AndroidMojoMediaClient>(), quit_closure));
+  return std::unique_ptr<service_manager::Service>(
+      new MediaService(base::MakeUnique<AndroidMojoMediaClient>()));
 #else
   NOTREACHED() << "No MediaService implementation available.";
   return nullptr;
 #endif
 }
 
-std::unique_ptr<service_manager::Service> CreateMediaServiceForTesting(
-    const base::Closure& quit_closure) {
+std::unique_ptr<service_manager::Service> CreateMediaServiceForTesting() {
   return std::unique_ptr<service_manager::Service>(
-      new MediaService(base::MakeUnique<TestMojoMediaClient>(), quit_closure));
+      new MediaService(base::MakeUnique<TestMojoMediaClient>()));
 }
 
 }  // namespace media

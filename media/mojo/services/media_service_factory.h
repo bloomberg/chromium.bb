@@ -17,11 +17,11 @@ namespace media {
 // platform. Uses the TestMojoMediaClient if |enable_test_mojo_media_client| is
 // true.
 std::unique_ptr<service_manager::Service> MEDIA_MOJO_EXPORT
-CreateMediaService(const base::Closure& quit_closure);
+CreateMediaService();
 
 // Creates a MediaService instance using the TestMojoMediaClient.
 std::unique_ptr<service_manager::Service> MEDIA_MOJO_EXPORT
-CreateMediaServiceForTesting(const base::Closure& quit_closure);
+CreateMediaServiceForTesting();
 
 }  // namespace media
 

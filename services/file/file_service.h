@@ -18,8 +18,7 @@ namespace file {
 
 std::unique_ptr<service_manager::Service> CreateFileService(
     scoped_refptr<base::SingleThreadTaskRunner> file_service_runner,
-    scoped_refptr<base::SingleThreadTaskRunner> leveldb_service_runner,
-    const base::Closure& quit_closure);
+    scoped_refptr<base::SingleThreadTaskRunner> leveldb_service_runner);
 
 class FileService
     : public service_manager::Service,
