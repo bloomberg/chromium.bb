@@ -1482,8 +1482,9 @@ void RenderFrameImpl::OnImeFinishComposingText(bool keep_selection) {
 MediaStreamDispatcher* RenderFrameImpl::GetMediaStreamDispatcher() {
   if (!web_user_media_client_)
     InitializeUserMediaClient();
-  return web_user_media_client_ ?
-      web_user_media_client_->media_stream_dispatcher() : NULL;
+  return web_user_media_client_
+             ? web_user_media_client_->media_stream_dispatcher()
+             : nullptr;
 }
 
 bool RenderFrameImpl::Send(IPC::Message* message) {
@@ -1537,7 +1538,7 @@ bool RenderFrameImpl::OnMessageReceived(const IPC::Message& msg) {
                         OnCustomContextMenuAction)
 #if defined(ENABLE_PLUGINS)
     IPC_MESSAGE_HANDLER(FrameMsg_SetPepperVolume, OnSetPepperVolume)
-#endif  // defined(ENABLE_PLUGINS)
+#endif
     IPC_MESSAGE_HANDLER(InputMsg_Undo, OnUndo)
     IPC_MESSAGE_HANDLER(InputMsg_Redo, OnRedo)
     IPC_MESSAGE_HANDLER(InputMsg_Cut, OnCut)

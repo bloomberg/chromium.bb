@@ -109,7 +109,7 @@ FrameTree::FrameTree(Navigator* navigator,
                               std::string(),
                               std::string(),
                               FrameOwnerProperties())),
-      focused_frame_tree_node_id_(-1),
+      focused_frame_tree_node_id_(FrameTreeNode::kFrameTreeNodeInvalidId),
       load_progress_(0.0) {}
 
 FrameTree::~FrameTree() {
@@ -381,7 +381,7 @@ void FrameTree::ReleaseRenderViewHostRef(RenderViewHostImpl* render_view_host) {
 
 void FrameTree::FrameRemoved(FrameTreeNode* frame) {
   if (frame->frame_tree_node_id() == focused_frame_tree_node_id_)
-    focused_frame_tree_node_id_ = -1;
+    focused_frame_tree_node_id_ = FrameTreeNode::kFrameTreeNodeInvalidId;
 
   // No notification for the root frame.
   if (!frame->parent()) {

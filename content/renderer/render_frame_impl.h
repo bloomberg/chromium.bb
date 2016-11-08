@@ -8,8 +8,10 @@
 #include <stddef.h>
 #include <stdint.h>
 
+#include <deque>
 #include <map>
 #include <memory>
+#include <set>
 #include <string>
 #include <vector>
 
@@ -102,7 +104,7 @@ class RendererWebMediaPlayerDelegate;
 class SurfaceManager;
 class UrlIndex;
 class WebEncryptedMediaClientImpl;
-}
+}  // namespace media
 
 namespace service_manager {
 class InterfaceRegistry;
