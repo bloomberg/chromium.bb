@@ -90,6 +90,24 @@ bool IsApplicationServerKey(const std::string& sender_info) {
   return sender_info.size() == 65 && sender_info[0] == 0x04;
 }
 
+// Returns sender_info if non-empty, otherwise checks if stored_sender_id
+// may be used as a fallback and if so, returns stored_sender_id instead.
+//
+// This is in order to support the legacy way of subscribing from a service
+// worker (first subscribe from the document using a gcm_sender_id set in the
+// manifest, and then subscribe from the service worker with no key).
+//
+// An empty string will be returned if sender_info is empty and the fallback
+// is not a numeric gcm sender id.
+std::string FixSenderInfo(const std::string& sender_info,
+                          const std::string& stored_sender_id) {
+  if (!sender_info.empty())
+    return sender_info;
+  if (base::ContainsOnlyChars(stored_sender_id, "0123456789"))
+    return stored_sender_id;
+  return std::string();
+}
+
 }  // namespace
 
 struct PushMessagingMessageFilter::RegisterData {
@@ -282,32 +300,41 @@ void PushMessagingMessageFilter::OnSubscribe(
   }
   data.requesting_origin = service_worker_registration->pattern().GetOrigin();
 
+  DCHECK(!(data.options.sender_info.empty() && data.FromDocument()));
+
   service_worker_context_->GetRegistrationUserData(
       data.service_worker_registration_id,
-      {kPushRegistrationIdServiceWorkerKey},
+      {kPushRegistrationIdServiceWorkerKey, kPushSenderIdServiceWorkerKey},
       base::Bind(&PushMessagingMessageFilter::DidCheckForExistingRegistration,
                  weak_factory_io_to_io_.GetWeakPtr(), data));
 }
 
 void PushMessagingMessageFilter::DidCheckForExistingRegistration(
     const RegisterData& data,
-    const std::vector<std::string>& push_registration_id,
+    const std::vector<std::string>& push_registration_id_and_sender_id,
     ServiceWorkerStatusCode service_worker_status) {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
   if (service_worker_status == SERVICE_WORKER_OK) {
-    // TODO(johnme): Check that stored sender ID equals data.options.sender_info
-    // and throw an exception if they don't match.
-    DCHECK_EQ(1u, push_registration_id.size());
+    DCHECK_EQ(2u, push_registration_id_and_sender_id.size());
+    const auto& push_registration_id = push_registration_id_and_sender_id[0];
+    const auto& stored_sender_id = push_registration_id_and_sender_id[1];
+    std::string fixed_sender_id =
+        FixSenderInfo(data.options.sender_info, stored_sender_id);
+    if (fixed_sender_id.empty()) {
+      SendSubscriptionError(data, PUSH_REGISTRATION_STATUS_NO_SENDER_ID);
+      return;
+    }
+    // TODO(crbug.com/638924): Check that stored sender ID equals
+    // data.options.sender_info and throw an exception if they don't match.
     auto callback = base::Bind(
         &PushMessagingMessageFilter::DidGetEncryptionKeys,
-        weak_factory_io_to_io_.GetWeakPtr(), data, push_registration_id[0]);
-
+        weak_factory_io_to_io_.GetWeakPtr(), data, push_registration_id);
     BrowserThread::PostTask(
         BrowserThread::UI, FROM_HERE,
         base::Bind(&Core::GetEncryptionInfoOnUI,
                    base::Unretained(ui_core_.get()), data.requesting_origin,
-                   data.service_worker_registration_id,
-                   data.options.sender_info, callback));
+                   data.service_worker_registration_id, fixed_sender_id,
+                   callback));
     return;
   }
   // TODO(johnme): The spec allows the register algorithm to reject with an
@@ -320,6 +347,8 @@ void PushMessagingMessageFilter::DidCheckForExistingRegistration(
                             base::Bind(&Core::RegisterOnUI,
                                        base::Unretained(ui_core_.get()), data));
   } else {
+    // There is no existing registration and the sender_info passed in was
+    // empty, but perhaps there is a stored sender id we can use.
     service_worker_context_->GetRegistrationUserData(
         data.service_worker_registration_id, {kPushSenderIdServiceWorkerKey},
         base::Bind(&PushMessagingMessageFilter::DidGetSenderIdFromStorage,
@@ -346,16 +375,24 @@ void PushMessagingMessageFilter::DidGetEncryptionKeys(
 
 void PushMessagingMessageFilter::DidGetSenderIdFromStorage(
     const RegisterData& data,
-    const std::vector<std::string>& sender_id,
+    const std::vector<std::string>& stored_sender_id,
     ServiceWorkerStatusCode service_worker_status) {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
   if (service_worker_status != SERVICE_WORKER_OK) {
     SendSubscriptionError(data, PUSH_REGISTRATION_STATUS_NO_SENDER_ID);
     return;
   }
-  DCHECK_EQ(1u, sender_id.size());
+  DCHECK_EQ(1u, stored_sender_id.size());
+  // We should only be here because no sender info was supplied to subscribe().
+  DCHECK(data.options.sender_info.empty());
+  std::string fixed_sender_id =
+      FixSenderInfo(data.options.sender_info, stored_sender_id[0]);
+  if (fixed_sender_id.empty()) {
+    SendSubscriptionError(data, PUSH_REGISTRATION_STATUS_NO_SENDER_ID);
+    return;
+  }
   RegisterData mutated_data = data;
-  mutated_data.options.sender_info = sender_id[0];
+  mutated_data.options.sender_info = fixed_sender_id;
   BrowserThread::PostTask(
       BrowserThread::UI, FROM_HERE,
       base::Bind(&Core::RegisterOnUI, base::Unretained(ui_core_.get()),

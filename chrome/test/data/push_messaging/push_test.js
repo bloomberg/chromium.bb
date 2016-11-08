@@ -119,6 +119,18 @@ function documentSubscribePush() {
   }).catch(sendErrorToTest);
 }
 
+function documentSubscribePushWithNumericKey() {
+  navigator.serviceWorker.ready.then(function(swRegistration) {
+    return swRegistration.pushManager.subscribe({
+          userVisibleOnly: true,
+          applicationServerKey: new TextEncoder().encode('1234567890')
+        })
+        .then(function(subscription) {
+          sendResultToTest(subscription.endpoint);
+        });
+  }).catch(sendErrorToTest);
+}
+
 function workerSubscribePush() {
   // Send the message to the worker for it to subscribe
   navigator.serviceWorker.controller.postMessage({command: 'workerSubscribe'});
@@ -126,9 +138,16 @@ function workerSubscribePush() {
 
 function workerSubscribePushNoKey() {
   // The worker will try to subscribe without providing a key. This should
-  // succeed if the worker was previously subscribed and fail otherwise.
+  // succeed if the worker was previously subscribed with a numeric key
+  // and fail otherwise.
   navigator.serviceWorker.controller.postMessage(
       {command: 'workerSubscribeNoKey'});
+}
+
+function workerSubscribePushWithNumericKey() {
+  // Send the message to the worker for it to subscribe
+  navigator.serviceWorker.controller.postMessage(
+      {command: 'workerSubscribeWithNumericKey'});
 }
 
 function GetP256dh() {
