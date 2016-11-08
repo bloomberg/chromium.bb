@@ -90,12 +90,11 @@ import org.chromium.chrome.browser.tab.BrowserControlsVisibilityDelegate;
 import org.chromium.chrome.browser.tab.Tab;
 import org.chromium.chrome.browser.tab.TabDelegateFactory;
 import org.chromium.chrome.browser.tabmodel.ChromeTabCreator;
-import org.chromium.chrome.browser.tabmodel.EmptyTabModelObserver;
 import org.chromium.chrome.browser.tabmodel.TabModel;
 import org.chromium.chrome.browser.tabmodel.TabModel.TabLaunchType;
-import org.chromium.chrome.browser.tabmodel.TabModelObserver;
 import org.chromium.chrome.browser.tabmodel.TabModelSelector;
 import org.chromium.chrome.browser.tabmodel.TabModelSelectorImpl;
+import org.chromium.chrome.browser.tabmodel.TabModelSelectorTabModelObserver;
 import org.chromium.chrome.browser.tabmodel.TabModelSelectorTabObserver;
 import org.chromium.chrome.browser.tabmodel.TabModelUtils;
 import org.chromium.chrome.browser.tabmodel.TabWindowManager;
@@ -202,7 +201,7 @@ public class ChromeTabbedActivity extends ChromeActivity implements OverviewMode
 
     private TabModelSelectorImpl mTabModelSelectorImpl;
     private TabModelSelectorTabObserver mTabModelSelectorTabObserver;
-    private TabModelObserver mTabModelObserver;
+    private TabModelSelectorTabModelObserver mTabModelObserver;
 
     private boolean mUIInitialized = false;
 
@@ -289,7 +288,7 @@ public class ChromeTabbedActivity extends ChromeActivity implements OverviewMode
             mTabModelSelectorImpl.onNativeLibraryReady(getTabContentManager());
             mVrShellDelegate.onNativeLibraryReady();
 
-            mTabModelObserver = new EmptyTabModelObserver() {
+            mTabModelObserver = new TabModelSelectorTabModelObserver(mTabModelSelectorImpl) {
                 @Override
                 public void didCloseTab(int tabId, boolean incognito) {
                     closeIfNoTabsAndHomepageEnabled(false);
@@ -333,9 +332,6 @@ public class ChromeTabbedActivity extends ChromeActivity implements OverviewMode
                             NewTabPageUma.NTP_IMPESSION_POTENTIAL_NOTAB);
                 }
             };
-            for (TabModel model : mTabModelSelectorImpl.getModels()) {
-                model.addObserver(mTabModelObserver);
-            }
 
             Bundle state = getSavedInstanceState();
             if (state != null && state.containsKey(FRE_RUNNING)) {
@@ -1438,11 +1434,7 @@ public class ChromeTabbedActivity extends ChromeActivity implements OverviewMode
             mTabModelSelectorTabObserver = null;
         }
 
-        if (mTabModelObserver != null) {
-            for (TabModel model : mTabModelSelectorImpl.getModels()) {
-                model.removeObserver(mTabModelObserver);
-            }
-        }
+        if (mTabModelObserver != null) mTabModelObserver.destroy();
 
         if (mUndoBarPopupController != null) {
             mUndoBarPopupController.destroy();
