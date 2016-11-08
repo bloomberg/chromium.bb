@@ -139,7 +139,7 @@ TEST_F(SchemaRegistryTrackingPolicyProviderTest, SchemaReadyWithComponents) {
   Mock::VerifyAndClearExpectations(&mock_provider_);
 
   EXPECT_CALL(mock_provider_, RefreshPolicies());
-  schema_registry_.SetReady(POLICY_DOMAIN_CHROME);
+  schema_registry_.SetDomainReady(POLICY_DOMAIN_CHROME);
   Mock::VerifyAndClearExpectations(&mock_provider_);
 
   EXPECT_FALSE(schema_registry_tracking_provider_.IsInitializationComplete(

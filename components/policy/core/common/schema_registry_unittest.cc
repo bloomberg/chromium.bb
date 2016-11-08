@@ -121,11 +121,11 @@ TEST(SchemaRegistryTest, IsReady) {
   EXPECT_FALSE(registry.IsReady());
 #endif
   EXPECT_CALL(observer, OnSchemaRegistryReady());
-  registry.SetReady(POLICY_DOMAIN_CHROME);
+  registry.SetDomainReady(POLICY_DOMAIN_CHROME);
   Mock::VerifyAndClearExpectations(&observer);
   EXPECT_TRUE(registry.IsReady());
   EXPECT_CALL(observer, OnSchemaRegistryReady()).Times(0);
-  registry.SetReady(POLICY_DOMAIN_CHROME);
+  registry.SetDomainReady(POLICY_DOMAIN_CHROME);
   Mock::VerifyAndClearExpectations(&observer);
   EXPECT_TRUE(registry.IsReady());
 
@@ -277,7 +277,7 @@ TEST(SchemaRegistryTest, ForwardingSchemaRegistry) {
   EXPECT_FALSE(registry->IsReady());
   EXPECT_FALSE(forwarding.IsReady());
 
-  registry->SetReady(POLICY_DOMAIN_CHROME);
+  registry->SetDomainReady(POLICY_DOMAIN_CHROME);
   EXPECT_TRUE(registry->IsReady());
   // The ForwardingSchemaRegistry becomes ready independently of the wrapped
   // registry.
@@ -291,7 +291,7 @@ TEST(SchemaRegistryTest, ForwardingSchemaRegistry) {
   Mock::VerifyAndClearExpectations(&observer);
 
   EXPECT_CALL(observer, OnSchemaRegistryReady());
-  forwarding.SetReady(POLICY_DOMAIN_CHROME);
+  forwarding.SetDomainReady(POLICY_DOMAIN_CHROME);
   EXPECT_TRUE(forwarding.IsReady());
   Mock::VerifyAndClearExpectations(&observer);
 

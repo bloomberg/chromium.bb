@@ -66,7 +66,7 @@ bool SchemaRegistry::IsReady() const {
   return true;
 }
 
-void SchemaRegistry::SetReady(PolicyDomain domain) {
+void SchemaRegistry::SetDomainReady(PolicyDomain domain) {
   if (domains_ready_[domain])
     return;
   domains_ready_[domain] = true;
@@ -78,12 +78,12 @@ void SchemaRegistry::SetReady(PolicyDomain domain) {
 
 void SchemaRegistry::SetAllDomainsReady() {
   for (int i = 0; i < POLICY_DOMAIN_SIZE; ++i)
-    SetReady(static_cast<PolicyDomain>(i));
+    SetDomainReady(static_cast<PolicyDomain>(i));
 }
 
 void SchemaRegistry::SetExtensionsDomainsReady() {
-  SetReady(POLICY_DOMAIN_EXTENSIONS);
-  SetReady(POLICY_DOMAIN_SIGNIN_EXTENSIONS);
+  SetDomainReady(POLICY_DOMAIN_EXTENSIONS);
+  SetDomainReady(POLICY_DOMAIN_SIGNIN_EXTENSIONS);
 }
 
 void SchemaRegistry::AddObserver(Observer* observer) {
