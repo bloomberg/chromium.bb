@@ -80,8 +80,9 @@ public class OfflinePageSavePageLaterEvaluationTest
     private static final String INPUT_FILE_PATH = "paquete/offline_eval_urls.txt";
     private static final String LOG_OUTPUT_FILE_PATH = "paquete/offline_eval_logs.txt";
     private static final String RESULT_OUTPUT_FILE_PATH = "paquete/offline_eval_results.txt";
-    private static final int GET_PAGES_TIMEOUT_MS = 5000;
-    private static final int PAGE_MODEL_LOAD_TIMEOUT_MS = 5000;
+    private static final int GET_PAGES_TIMEOUT_MS = 30000;
+    private static final int PAGE_MODEL_LOAD_TIMEOUT_MS = 30000;
+    private static final int REMOVE_REQUESTS_TIMEOUT_MS = 30000;
 
     private OfflinePageEvaluationBridge mBridge;
     private OfflinePageEvaluationObserver mObserver;
@@ -110,11 +111,34 @@ public class OfflinePageSavePageLaterEvaluationTest
 
     @Override
     protected void tearDown() throws Exception {
-        super.tearDown();
         NotificationManager notificationManager =
                 (NotificationManager) ContextUtils.getApplicationContext().getSystemService(
                         Context.NOTIFICATION_SERVICE);
         notificationManager.cancelAll();
+        final Semaphore mClearingSemaphore = new Semaphore(0);
+        ThreadUtils.runOnUiThread(new Runnable() {
+            @Override
+            public void run() {
+                mBridge.getRequestsInQueue(new Callback<SavePageRequest[]>() {
+                    @Override
+                    public void onResult(SavePageRequest[] results) {
+                        ArrayList<Long> ids = new ArrayList<Long>(results.length);
+                        for (int i = 0; i < results.length; i++) {
+                            ids.add(results[i].getRequestId());
+                        }
+                        mBridge.removeRequestsFromQueue(ids, new Callback<Integer>() {
+                            @Override
+                            public void onResult(Integer removedCount) {
+                                mClearingSemaphore.release();
+                            }
+                        });
+                    }
+                });
+            }
+        });
+        checkTrue(mClearingSemaphore.tryAcquire(REMOVE_REQUESTS_TIMEOUT_MS, TimeUnit.MILLISECONDS),
+                "Timed out when clearing remaining requests!");
+        super.tearDown();
     }
 
     @Override

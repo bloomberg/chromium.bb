@@ -6,6 +6,7 @@
 
 #include "base/android/callback_android.h"
 #include "base/android/jni_android.h"
+#include "base/android/jni_array.h"
 #include "base/android/jni_string.h"
 #include "base/memory/ptr_util.h"
 #include "base/sequenced_task_runner.h"
@@ -79,6 +80,25 @@ ScopedJavaLocalRef<jobject> ToJavaSavePageRequest(
       ConvertUTF8ToJavaString(env, request.client_id().id));
 }
 
+ScopedJavaLocalRef<jobjectArray> CreateJavaSavePageRequests(
+    JNIEnv* env,
+    std::vector<std::unique_ptr<SavePageRequest>> requests) {
+  ScopedJavaLocalRef<jclass> save_page_request_clazz = base::android::GetClass(
+      env, "org/chromium/chrome/browser/offlinepages/SavePageRequest");
+  jobjectArray joa = env->NewObjectArray(
+      requests.size(), save_page_request_clazz.obj(), nullptr);
+  base::android::CheckException(env);
+
+  for (size_t i = 0; i < requests.size(); i++) {
+    SavePageRequest request = *(requests[i]);
+    ScopedJavaLocalRef<jobject> j_save_page_request =
+        ToJavaSavePageRequest(env, request);
+    env->SetObjectArrayElement(joa, i, j_save_page_request.obj());
+  }
+
+  return ScopedJavaLocalRef<jobjectArray>(env, joa);
+}
+
 void GetAllPagesCallback(
     const ScopedJavaGlobalRef<jobject>& j_result_obj,
     const ScopedJavaGlobalRef<jobject>& j_callback_obj,
@@ -93,6 +113,21 @@ void OnPushRequestsDone(const ScopedJavaGlobalRef<jobject>& j_callback_obj,
   base::android::RunCallbackAndroid(j_callback_obj, result);
 }
 
+void OnGetAllRequestsDone(
+    const ScopedJavaGlobalRef<jobject>& j_callback_obj,
+    std::vector<std::unique_ptr<SavePageRequest>> all_requests) {
+  JNIEnv* env = base::android::AttachCurrentThread();
+
+  ScopedJavaLocalRef<jobjectArray> j_result_obj =
+      CreateJavaSavePageRequests(env, std::move(all_requests));
+  base::android::RunCallbackAndroid(j_callback_obj, j_result_obj);
+}
+
+void OnRemoveRequestsDone(const ScopedJavaGlobalRef<jobject>& j_callback_obj,
+                          const MultipleItemStatuses& removed_request_results) {
+  base::android::RunCallbackAndroid(j_callback_obj,
+                                    int(removed_request_results.size()));
+}
 }  // namespace
 
 static ScopedJavaLocalRef<jobject> GetBridgeForProfile(
@@ -279,6 +314,27 @@ void OfflinePageEvaluationBridge::SavePageLater(
       GURL(ConvertJavaStringToUTF8(env, j_url)), client_id,
       static_cast<bool>(user_requested),
       RequestCoordinator::RequestAvailability::ENABLED_FOR_OFFLINER);
+}
+
+void OfflinePageEvaluationBridge::GetRequestsInQueue(
+    JNIEnv* env,
+    const JavaParamRef<jobject>& obj,
+    const JavaParamRef<jobject>& j_callback_obj) {
+  ScopedJavaGlobalRef<jobject> j_callback_ref(j_callback_obj);
+  request_coordinator_->GetAllRequests(
+      base::Bind(&OnGetAllRequestsDone, j_callback_ref));
+}
+
+void OfflinePageEvaluationBridge::RemoveRequestsFromQueue(
+    JNIEnv* env,
+    const JavaParamRef<jobject>& obj,
+    const JavaParamRef<jlongArray>& j_request_ids,
+    const JavaParamRef<jobject>& j_callback_obj) {
+  std::vector<int64_t> request_ids;
+  base::android::JavaLongArrayToInt64Vector(env, j_request_ids, &request_ids);
+  ScopedJavaGlobalRef<jobject> j_callback_ref(j_callback_obj);
+  request_coordinator_->RemoveRequests(
+      request_ids, base::Bind(&OnRemoveRequestsDone, j_callback_ref));
 }
 
 void OfflinePageEvaluationBridge::NotifyIfDoneLoading() const {
