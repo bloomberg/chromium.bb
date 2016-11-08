@@ -75,9 +75,6 @@ class Display : public PlatformDisplayDelegate,
   // Returns a display::Display corresponding to this ws::Display.
   display::Display ToDisplay() const;
 
-  // Schedules a paint for the specified region in the coordinates of |window|.
-  void SchedulePaint(const ServerWindow* window, const gfx::Rect& bounds);
-
   gfx::Size GetSize() const;
 
   WindowServer* window_server() { return window_server_; }

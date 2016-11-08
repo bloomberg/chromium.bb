@@ -51,7 +51,7 @@ class DisplayManager : public UserIdTrackerObserver,
 
   // Returns the Display that contains |window|, or null if |window| is not
   // attached to a display.
-  Display* GetDisplayContaining(ServerWindow* window);
+  Display* GetDisplayContaining(const ServerWindow* window);
   const Display* GetDisplayContaining(const ServerWindow* window) const;
 
   // Returns the display with the specified display id, or null if there is no

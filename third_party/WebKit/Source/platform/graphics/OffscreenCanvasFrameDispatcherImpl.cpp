@@ -318,6 +318,9 @@ void OffscreenCanvasFrameDispatcherImpl::DidReceiveCompositorFrameAck() {
   // TODO(fsamuel): Implement this.
 }
 
+void OffscreenCanvasFrameDispatcherImpl::OnBeginFrame(
+    const cc::BeginFrameArgs& beginFrameArgs) {}
+
 void OffscreenCanvasFrameDispatcherImpl::ReclaimResources(
     const cc::ReturnedResourceArray& resources) {
   for (const auto& resource : resources) {

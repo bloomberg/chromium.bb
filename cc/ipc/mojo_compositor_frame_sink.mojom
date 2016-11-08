@@ -4,7 +4,9 @@
 
 module cc.mojom;
 
+import "cc/ipc/begin_frame_args.mojom";
 import "cc/ipc/compositor_frame.mojom";
+import "cc/ipc/frame_sink_id.mojom";
 import "cc/ipc/returned_resource.mojom";
 
 // A MojoCompositorFrameSink is an interface for receiving CompositorFrame
@@ -38,6 +40,18 @@ interface MojoCompositorFrameSinkClient {
   // rid of it.
   DidReceiveCompositorFrameAck();
 
+  // Notification for the client to generate a CompositorFrame.
+  OnBeginFrame(BeginFrameArgs args);
+
   // Returns resources sent to SubmitCompositorFrame to be reused or freed.
   ReclaimResources(ReturnedResourceArray resources);
+};
+
+// MojoCompositorFrameSinkPrivate is used by the display compositor host to set
+// up BeginFrameSource hierarchies.  This API lives in SurfaceManager but is
+// called from here in order to ensure that hierarchy registration does not race
+// CompositorFrameSink creation.
+interface MojoCompositorFrameSinkPrivate {
+  AddChildFrameSink(FrameSinkId child_frame_sink_id);
+  RemoveChildFrameSink(FrameSinkId child_frame_sink_id);
 };

@@ -6,6 +6,7 @@
 #define OffscreenCanvasFrameDispatcherImpl_h
 
 #include "cc/ipc/mojo_compositor_frame_sink.mojom-blink.h"
+#include "cc/output/begin_frame_args.h"
 #include "cc/resources/shared_bitmap.h"
 #include "cc/surfaces/surface_id.h"
 #include "mojo/public/cpp/bindings/binding.h"
@@ -35,6 +36,7 @@ class PLATFORM_EXPORT OffscreenCanvasFrameDispatcherImpl final
 
   // cc::mojom::blink::MojoCompositorFrameSinkClient implementation.
   void DidReceiveCompositorFrameAck() override;
+  void OnBeginFrame(const cc::BeginFrameArgs&) override;
   void ReclaimResources(const cc::ReturnedResourceArray& resources) override;
 
   // This enum is used in histogram, so it should be append-only.

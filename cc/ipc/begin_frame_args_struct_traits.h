@@ -5,7 +5,7 @@
 #ifndef CC_IPC_BEGIN_FRAME_ARGS_STRUCT_TRAITS_H_
 #define CC_IPC_BEGIN_FRAME_ARGS_STRUCT_TRAITS_H_
 
-#include "cc/ipc/begin_frame_args.mojom.h"
+#include "cc/ipc/begin_frame_args.mojom-shared.h"
 #include "cc/output/begin_frame_args.h"
 
 namespace mojo {

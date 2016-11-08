@@ -47,10 +47,7 @@ bool WindowCompositorFrameSink::BindToClient(
       new mojo::Binding<cc::mojom::MojoCompositorFrameSinkClient>(
           this, std::move(client_request_)));
 
-  // TODO(enne): Get this from the WindowSurface via ServerWindowSurface.
-  begin_frame_source_.reset(new cc::DelayBasedBeginFrameSource(
-      base::MakeUnique<cc::DelayBasedTimeSource>(
-          base::ThreadTaskRunnerHandle::Get().get())));
+  begin_frame_source_ = base::MakeUnique<cc::ExternalBeginFrameSource>(this);
 
   client->SetBeginFrameSource(begin_frame_source_.get());
   return true;
@@ -93,6 +90,11 @@ void WindowCompositorFrameSink::DidReceiveCompositorFrameAck() {
   client_->DidReceiveCompositorFrameAck();
 }
 
+void WindowCompositorFrameSink::OnBeginFrame(
+    const cc::BeginFrameArgs& begin_frame_args) {
+  begin_frame_source_->OnBeginFrame(begin_frame_args);
+}
+
 void WindowCompositorFrameSink::ReclaimResources(
     const cc::ReturnedResourceArray& resources) {
   DCHECK(thread_checker_);
@@ -100,6 +102,10 @@ void WindowCompositorFrameSink::ReclaimResources(
   if (!client_)
     return;
   client_->ReclaimResources(resources);
+}
+
+void WindowCompositorFrameSink::OnNeedsBeginFrames(bool needs_begin_frames) {
+  compositor_frame_sink_->SetNeedsBeginFrame(needs_begin_frames);
 }
 
 WindowCompositorFrameSinkBinding::~WindowCompositorFrameSinkBinding() {}

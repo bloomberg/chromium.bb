@@ -91,7 +91,7 @@ void DisplayManager::OnDisplayUpdate(Display* display) {
     pair.second->OnDisplayUpdate(display);
 }
 
-Display* DisplayManager::GetDisplayContaining(ServerWindow* window) {
+Display* DisplayManager::GetDisplayContaining(const ServerWindow* window) {
   return const_cast<Display*>(
       static_cast<const DisplayManager*>(this)->GetDisplayContaining(window));
 }

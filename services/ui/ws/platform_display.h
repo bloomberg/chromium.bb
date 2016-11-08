@@ -66,10 +66,6 @@ class PlatformDisplay {
 
   virtual void Init(PlatformDisplayDelegate* delegate) = 0;
 
-  // Schedules a paint for the specified region in the coordinates of |window|.
-  virtual void SchedulePaint(const ServerWindow* window,
-                             const gfx::Rect& bounds) = 0;
-
   virtual void SetViewportSize(const gfx::Size& size) = 0;
 
   virtual void SetTitle(const base::string16& title) = 0;
@@ -82,9 +78,6 @@ class PlatformDisplay {
 
   virtual void UpdateTextInputState(const ui::TextInputState& state) = 0;
   virtual void SetImeVisibility(bool visible) = 0;
-
-  // Returns true if a compositor frame has been submitted but not drawn yet.
-  virtual bool IsFramePending() const = 0;
 
   virtual gfx::Rect GetBounds() const = 0;
 
@@ -125,8 +118,6 @@ class DefaultPlatformDisplay : public PlatformDisplay,
   // PlatformDisplay:
   void Init(PlatformDisplayDelegate* delegate) override;
   int64_t GetId() const override;
-  void SchedulePaint(const ServerWindow* window,
-                     const gfx::Rect& bounds) override;
   void SetViewportSize(const gfx::Size& size) override;
   void SetTitle(const base::string16& title) override;
   void SetCapture() override;
@@ -134,7 +125,6 @@ class DefaultPlatformDisplay : public PlatformDisplay,
   void SetCursorById(mojom::Cursor cursor) override;
   void UpdateTextInputState(const ui::TextInputState& state) override;
   void SetImeVisibility(bool visible) override;
-  bool IsFramePending() const override;
   gfx::Rect GetBounds() const override;
   bool UpdateViewportMetrics(const display::ViewportMetrics& metrics) override;
   const display::ViewportMetrics& GetViewportMetrics() const override;

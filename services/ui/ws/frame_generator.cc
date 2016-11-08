@@ -30,7 +30,6 @@ FrameGenerator::FrameGenerator(FrameGeneratorDelegate* delegate,
           WindowIdToTransportId(root_window->id()),
           static_cast<uint32_t>(mojom::CompositorFrameSinkType::DEFAULT)),
       root_window_(root_window),
-      draw_timer_(false, false),
       binding_(this),
       weak_factory_(this) {
   DCHECK(delegate_);
@@ -58,14 +57,14 @@ void FrameGenerator::OnGpuChannelEstablished(
         channel->gpu_memory_buffer_manager(),
         new SurfacesContextProvider(widget_, channel), std::move(request),
         binding_.CreateInterfacePtrAndBind());
+    // TODO(fsamuel): This means we're always requesting a new BeginFrame signal
+    // even when we don't need it. Once surface ID propagation work is done,
+    // this will not be necessary because FrameGenerator will only need a
+    // BeginFrame if the window manager changes.
+    compositor_frame_sink_->SetNeedsBeginFrame(true);
   } else {
     gpu_channel_ = std::move(channel);
   }
-}
-
-void FrameGenerator::RequestRedraw(const gfx::Rect& redraw_region) {
-  dirty_rect_.Union(redraw_region);
-  WantToDraw();
 }
 
 void FrameGenerator::OnAcceleratedWidgetAvailable(
@@ -79,13 +78,24 @@ void FrameGenerator::OnAcceleratedWidgetAvailable(
         gpu_channel_->gpu_memory_buffer_manager(),
         new SurfacesContextProvider(widget_, std::move(gpu_channel_)),
         std::move(request), binding_.CreateInterfacePtrAndBind());
+    // TODO(fsamuel): This means we're always requesting a new BeginFrame signal
+    // even when we don't need it. Once surface ID propagation work is done,
+    // this will not be necessary because FrameGenerator will only need a
+    // BeginFrame if the window manager changes.
+    compositor_frame_sink_->SetNeedsBeginFrame(true);
   }
 }
 
-void FrameGenerator::DidReceiveCompositorFrameAck() {
-  frame_pending_ = false;
-  if (!dirty_rect_.IsEmpty())
-    WantToDraw();
+void FrameGenerator::DidReceiveCompositorFrameAck() {}
+
+void FrameGenerator::OnBeginFrame(const cc::BeginFrameArgs& begin_frame_arags) {
+  if (!root_window_->visible())
+    return;
+
+  // TODO(fsamuel): We should add a trace for generating a top level frame.
+  cc::CompositorFrame frame(GenerateCompositorFrame(root_window_->bounds()));
+  if (compositor_frame_sink_)
+    compositor_frame_sink_->SubmitCompositorFrame(std::move(frame));
 }
 
 void FrameGenerator::ReclaimResources(
@@ -94,35 +104,11 @@ void FrameGenerator::ReclaimResources(
   // any resources.
 }
 
-void FrameGenerator::WantToDraw() {
-  if (draw_timer_.IsRunning() || frame_pending_)
-    return;
-
-  // TODO(rjkroege): Use vblank to kick off Draw.
-  draw_timer_.Start(
-      FROM_HERE, base::TimeDelta(),
-      base::Bind(&FrameGenerator::Draw, weak_factory_.GetWeakPtr()));
-}
-
-void FrameGenerator::Draw() {
-  if (!root_window_->visible())
-    return;
-
-  dirty_rect_.Intersect(root_window_->bounds());
-  // TODO(fsamuel): We should add a trace for generating a top level frame.
-  cc::CompositorFrame frame(GenerateCompositorFrame(root_window_->bounds()));
-  if (compositor_frame_sink_) {
-    frame_pending_ = true;
-    compositor_frame_sink_->SubmitCompositorFrame(std::move(frame));
-  }
-  dirty_rect_ = gfx::Rect();
-}
-
 cc::CompositorFrame FrameGenerator::GenerateCompositorFrame(
     const gfx::Rect& output_rect) {
   const cc::RenderPassId render_pass_id(1, 1);
   std::unique_ptr<cc::RenderPass> render_pass = cc::RenderPass::Create();
-  render_pass->SetNew(render_pass_id, output_rect, dirty_rect_,
+  render_pass->SetNew(render_pass_id, output_rect, output_rect,
                       gfx::Transform());
 
   DrawWindowTree(render_pass.get(), root_window_, gfx::Vector2d(), 1.0f);
@@ -131,7 +117,7 @@ cc::CompositorFrame FrameGenerator::GenerateCompositorFrame(
   frame.render_pass_list.push_back(std::move(render_pass));
   if (delegate_->IsInHighContrastMode()) {
     std::unique_ptr<cc::RenderPass> invert_pass = cc::RenderPass::Create();
-    invert_pass->SetNew(cc::RenderPassId(2, 0), output_rect, dirty_rect_,
+    invert_pass->SetNew(cc::RenderPassId(2, 0), output_rect, output_rect,
                         gfx::Transform());
     cc::SharedQuadState* shared_state =
         invert_pass->CreateAndAppendSharedQuadState();

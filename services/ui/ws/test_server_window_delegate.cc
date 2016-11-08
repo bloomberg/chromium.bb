@@ -20,10 +20,8 @@ ui::DisplayCompositor* TestServerWindowDelegate::GetDisplayCompositor() {
   return display_compositor_.get();
 }
 
-void TestServerWindowDelegate::OnScheduleWindowPaint(ServerWindow* window) {}
-
-const ServerWindow* TestServerWindowDelegate::GetRootWindow(
-    const ServerWindow* window) const {
+ServerWindow* TestServerWindowDelegate::GetRootWindow(
+    const ServerWindow* window) {
   return root_window_;
 }
 

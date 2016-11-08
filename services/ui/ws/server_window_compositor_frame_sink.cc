@@ -17,9 +17,6 @@
 #include "cc/surfaces/display_scheduler.h"
 #include "services/ui/surfaces/direct_output_surface.h"
 #include "services/ui/surfaces/display_compositor.h"
-#include "services/ui/ws/server_window.h"
-#include "services/ui/ws/server_window_compositor_frame_sink_manager.h"
-#include "services/ui/ws/server_window_delegate.h"
 
 #if defined(USE_OZONE)
 #include "gpu/command_buffer/client/gles2_interface.h"
@@ -30,7 +27,7 @@ namespace ui {
 namespace ws {
 
 ServerWindowCompositorFrameSink::ServerWindowCompositorFrameSink(
-    ServerWindowCompositorFrameSinkManager* manager,
+    scoped_refptr<DisplayCompositor> display_compositor,
     const cc::FrameSinkId& frame_sink_id,
     gfx::AcceleratedWidget widget,
     gpu::GpuMemoryBufferManager* gpu_memory_buffer_manager,
@@ -39,16 +36,13 @@ ServerWindowCompositorFrameSink::ServerWindowCompositorFrameSink(
     cc::mojom::MojoCompositorFrameSinkClientPtr client)
     : frame_sink_id_(frame_sink_id),
       task_runner_(base::ThreadTaskRunnerHandle::Get()),
-      manager_(manager),
-      surface_factory_(frame_sink_id_,
-                       manager_->GetCompositorFrameSinkManager(),
-                       this),
+      display_compositor_(display_compositor),
+      surface_factory_(frame_sink_id_, display_compositor_->manager(), this),
       client_(std::move(client)),
       binding_(this, std::move(request)) {
-  cc::SurfaceManager* surface_manager =
-      manager_->GetCompositorFrameSinkManager();
-  surface_manager->RegisterFrameSinkId(frame_sink_id_);
-  surface_manager->RegisterSurfaceFactoryClient(frame_sink_id_, this);
+  display_compositor_->manager()->RegisterFrameSinkId(frame_sink_id_);
+  display_compositor_->manager()->RegisterSurfaceFactoryClient(frame_sink_id_,
+                                                               this);
 
   if (widget != gfx::kNullAcceleratedWidget)
     InitDisplay(widget, gpu_memory_buffer_manager, std::move(context_provider));
@@ -59,15 +53,15 @@ ServerWindowCompositorFrameSink::~ServerWindowCompositorFrameSink() {
   // call back into here and access |client_| so we should destroy
   // |surface_factory_|'s resources early on.
   surface_factory_.DestroyAll();
-  cc::SurfaceManager* surface_manager =
-      manager_->GetCompositorFrameSinkManager();
-  surface_manager->UnregisterSurfaceFactoryClient(frame_sink_id_);
-  surface_manager->InvalidateFrameSinkId(frame_sink_id_);
+  display_compositor_->manager()->UnregisterSurfaceFactoryClient(
+      frame_sink_id_);
+  display_compositor_->manager()->InvalidateFrameSinkId(frame_sink_id_);
 }
 
 void ServerWindowCompositorFrameSink::SetNeedsBeginFrame(
     bool needs_begin_frame) {
-  // TODO(fsamuel): Implement this.
+  needs_begin_frame_ = needs_begin_frame;
+  UpdateNeedsBeginFramesInternal();
 }
 
 void ServerWindowCompositorFrameSink::SubmitCompositorFrame(
@@ -93,8 +87,6 @@ void ServerWindowCompositorFrameSink::SubmitCompositorFrame(
                            frame.metadata.device_scale_factor);
   }
   last_submitted_frame_size_ = frame_size;
-  ServerWindow* window = manager_->window_;
-  window->delegate()->OnScheduleWindowPaint(window);
 }
 
 void ServerWindowCompositorFrameSink::DidReceiveCompositorFrameAck() {
@@ -107,6 +99,20 @@ void ServerWindowCompositorFrameSink::DidReceiveCompositorFrameAck() {
     surface_returned_resources_.clear();
   }
   ack_pending_count_--;
+}
+
+void ServerWindowCompositorFrameSink::AddChildFrameSink(
+    const cc::FrameSinkId& child_frame_sink_id) {
+  cc::SurfaceManager* surface_manager = display_compositor_->manager();
+  surface_manager->RegisterFrameSinkHierarchy(frame_sink_id_,
+                                              child_frame_sink_id);
+}
+
+void ServerWindowCompositorFrameSink::RemoveChildFrameSink(
+    const cc::FrameSinkId& child_frame_sink_id) {
+  cc::SurfaceManager* surface_manager = display_compositor_->manager();
+  surface_manager->UnregisterFrameSinkHierarchy(frame_sink_id_,
+                                                child_frame_sink_id);
 }
 
 void ServerWindowCompositorFrameSink::InitDisplay(
@@ -147,8 +153,7 @@ void ServerWindowCompositorFrameSink::InitDisplay(
       cc::RendererSettings(), std::move(synthetic_begin_frame_source),
       std::move(display_output_surface), std::move(scheduler),
       base::MakeUnique<cc::TextureMailboxDeleter>(task_runner_.get())));
-  display_->Initialize(this, manager_->GetCompositorFrameSinkManager(),
-                       frame_sink_id_);
+  display_->Initialize(this, display_compositor_->manager(), frame_sink_id_);
   display_->SetVisible(true);
 }
 
@@ -177,6 +182,42 @@ void ServerWindowCompositorFrameSink::ReturnResources(
 void ServerWindowCompositorFrameSink::SetBeginFrameSource(
     cc::BeginFrameSource* begin_frame_source) {
   // TODO(tansell): Implement this.
+  if (begin_frame_source_ && added_frame_observer_) {
+    begin_frame_source_->RemoveObserver(this);
+    added_frame_observer_ = false;
+  }
+  begin_frame_source_ = begin_frame_source;
+  UpdateNeedsBeginFramesInternal();
+}
+
+void ServerWindowCompositorFrameSink::OnBeginFrame(
+    const cc::BeginFrameArgs& args) {
+  UpdateNeedsBeginFramesInternal();
+  last_begin_frame_args_ = args;
+  if (client_)
+    client_->OnBeginFrame(args);
+}
+
+const cc::BeginFrameArgs&
+ServerWindowCompositorFrameSink::LastUsedBeginFrameArgs() const {
+  return last_begin_frame_args_;
+}
+
+void ServerWindowCompositorFrameSink::OnBeginFrameSourcePausedChanged(
+    bool paused) {}
+
+void ServerWindowCompositorFrameSink::UpdateNeedsBeginFramesInternal() {
+  if (!begin_frame_source_)
+    return;
+
+  if (needs_begin_frame_ == added_frame_observer_)
+    return;
+
+  added_frame_observer_ = needs_begin_frame_;
+  if (needs_begin_frame_)
+    begin_frame_source_->AddObserver(this);
+  else
+    begin_frame_source_->RemoveObserver(this);
 }
 
 }  // namespace ws

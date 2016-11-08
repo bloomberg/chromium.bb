@@ -101,18 +101,6 @@ DefaultPlatformDisplay::~DefaultPlatformDisplay() {
   platform_window_.reset();
 }
 
-void DefaultPlatformDisplay::SchedulePaint(const ServerWindow* window,
-                                           const gfx::Rect& bounds) {
-  DCHECK(window);
-  if (!window->IsDrawn())
-    return;
-  const gfx::Rect root_relative_rect =
-      ConvertRectBetweenWindows(window, delegate_->GetRootWindow(), bounds);
-  if (root_relative_rect.IsEmpty())
-    return;
-  frame_generator_->RequestRedraw(root_relative_rect);
-}
-
 void DefaultPlatformDisplay::SetViewportSize(const gfx::Size& size) {
   platform_window_->SetBounds(gfx::Rect(size));
 }
@@ -153,10 +141,6 @@ void DefaultPlatformDisplay::SetImeVisibility(bool visible) {
   ui::PlatformImeController* ime = platform_window_->GetPlatformImeController();
   if (ime)
     ime->SetImeVisibility(visible);
-}
-
-bool DefaultPlatformDisplay::IsFramePending() const {
-  return frame_generator_->is_frame_pending();
 }
 
 gfx::Rect DefaultPlatformDisplay::GetBounds() const {
@@ -209,7 +193,6 @@ void DefaultPlatformDisplay::OnBoundsChanged(const gfx::Rect& new_bounds) {
 }
 
 void DefaultPlatformDisplay::OnDamageRect(const gfx::Rect& damaged_region) {
-  frame_generator_->RequestRedraw(damaged_region);
 }
 
 void DefaultPlatformDisplay::DispatchEvent(ui::Event* event) {

@@ -42,8 +42,6 @@ class TestPlatformDisplay : public PlatformDisplay {
   // PlatformDisplay:
   void Init(PlatformDisplayDelegate* delegate) override {}
   int64_t GetId() const override { return id_; }
-  void SchedulePaint(const ServerWindow* window,
-                     const gfx::Rect& bounds) override {}
   void SetViewportSize(const gfx::Size& size) override {}
   void SetTitle(const base::string16& title) override {}
   void SetCapture() override {}
@@ -53,7 +51,6 @@ class TestPlatformDisplay : public PlatformDisplay {
   }
   void UpdateTextInputState(const ui::TextInputState& state) override {}
   void SetImeVisibility(bool visible) override {}
-  bool IsFramePending() const override { return false; }
   gfx::Rect GetBounds() const override { return display_metrics_.bounds; }
   bool UpdateViewportMetrics(const display::ViewportMetrics& metrics) override {
     if (display_metrics_ == metrics)

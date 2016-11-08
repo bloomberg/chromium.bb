@@ -288,7 +288,6 @@ void ServerWindow::SetOpacity(float value) {
     return;
   float old_opacity = opacity_;
   opacity_ = value;
-  delegate_->OnScheduleWindowPaint(this);
   for (auto& observer : observers_)
     observer.OnWindowOpacityChanged(this, old_opacity, opacity_);
 }
@@ -314,7 +313,6 @@ void ServerWindow::SetTransform(const gfx::Transform& transform) {
     return;
 
   transform_ = transform;
-  delegate_->OnScheduleWindowPaint(this);
 }
 
 void ServerWindow::SetProperty(const std::string& name,
@@ -381,7 +379,6 @@ void ServerWindow::SetUnderlayOffset(const gfx::Vector2d& offset) {
     return;
 
   underlay_offset_ = offset;
-  delegate_->OnScheduleWindowPaint(this);
 }
 
 void ServerWindow::OnEmbeddedAppDisconnected() {

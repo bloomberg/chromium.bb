@@ -38,29 +38,46 @@ struct CompositorFrameSinkData {
   cc::SurfaceId latest_submitted_surface_id;
   gfx::Size latest_submitted_frame_size;
   cc::SurfaceSequenceGenerator surface_sequence_generator;
-  // TODO(fsamuel): This should be a mojo interface.
-  std::unique_ptr<ServerWindowCompositorFrameSink> compositor_frame_sink;
+  cc::mojom::MojoCompositorFrameSinkPrivatePtr compositor_frame_sink;
+  cc::mojom::MojoCompositorFrameSinkPrivateRequest
+      pending_compositor_frame_sink_request;
 };
 
 // ServerWindowCompositorFrameSinkManager tracks the surfaces associated with a
 // ServerWindow.
+// TODO(fsamuel): Delete this once window decorations are managed in the window
+// manager.
 class ServerWindowCompositorFrameSinkManager {
  public:
   explicit ServerWindowCompositorFrameSinkManager(ServerWindow* window);
   ~ServerWindowCompositorFrameSinkManager();
 
-  // Returns true if the surfaces from this manager should be drawn.
+  // Returns true if the CompositorFrameSinks from this manager should be drawn.
   bool ShouldDraw();
 
-  // Creates a new surface of the specified type, replacing the existing one of
-  // the specified type.
+  // Creates a new CompositorFrameSink of the specified type, replacing the
+  // existing one of the specified type.
   void CreateCompositorFrameSink(
-      mojom::CompositorFrameSinkType surface_type,
+      mojom::CompositorFrameSinkType compositor_frame_sink_type,
       gfx::AcceleratedWidget widget,
       gpu::GpuMemoryBufferManager* gpu_memory_buffer_manager,
       scoped_refptr<SurfacesContextProvider> context_provider,
       cc::mojom::MojoCompositorFrameSinkRequest request,
       cc::mojom::MojoCompositorFrameSinkClientPtr client);
+
+  // Adds the provided |frame_sink_id| to this ServerWindow's associated
+  // CompositorFrameSink if possible. If this ServerWindow does not have
+  // an associated CompositorFrameSink then this method will recursively
+  // walk up the window hierarchy and register itself with the first ancestor
+  // that has a CompositorFrameSink of the same type. This method returns
+  // the FrameSinkId that is the first composited ancestor of the ServerWindow
+  // assocaited with the provided |frame_sink_id|.
+  void AddChildFrameSinkId(
+      mojom::CompositorFrameSinkType compositor_frame_sink_type,
+      const cc::FrameSinkId& frame_sink_id);
+  void RemoveChildFrameSinkId(
+      mojom::CompositorFrameSinkType compositor_frame_sink_type,
+      const cc::FrameSinkId& frame_sink_id);
 
   ServerWindow* window() { return window_; }
 

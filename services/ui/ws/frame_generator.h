@@ -60,23 +60,15 @@ class FrameGenerator : public ServerWindowTracker,
   void RequestRedraw(const gfx::Rect& redraw_region);
   void OnAcceleratedWidgetAvailable(gfx::AcceleratedWidget widget);
 
-  bool is_frame_pending() { return frame_pending_; }
-
  private:
   friend class ui::ws::test::FrameGeneratorTest;
 
   // cc::mojom::MojoCompositorFrameSinkClient implementation:
   void DidReceiveCompositorFrameAck() override;
+  void OnBeginFrame(const cc::BeginFrameArgs& begin_frame_arags) override;
   void ReclaimResources(const cc::ReturnedResourceArray& resources) override;
 
-  void WantToDraw();
-
-  // This method initiates a top level redraw of the display.
-  // TODO(fsamuel): In polliwog, this only gets called when the window manager
-  // changes.
-  void Draw();
-
-  // Generates the CompositorFrame for the current |dirty_rect_|.
+  // Generates the CompositorFrame.
   cc::CompositorFrame GenerateCompositorFrame(const gfx::Rect& output_rect);
 
   // DrawWindowTree recursively visits ServerWindows, creating a SurfaceDrawQuad
@@ -122,11 +114,6 @@ class FrameGenerator : public ServerWindowTracker,
   cc::mojom::MojoCompositorFrameSinkPtr compositor_frame_sink_;
   gfx::AcceleratedWidget widget_ = gfx::kNullAcceleratedWidget;
 
-  // The region that needs to be redrawn next time the compositor frame is
-  // generated.
-  gfx::Rect dirty_rect_;
-  base::Timer draw_timer_;
-  bool frame_pending_ = false;
   struct SurfaceDependency {
     cc::LocalFrameId local_frame_id;
     cc::SurfaceSequence sequence;

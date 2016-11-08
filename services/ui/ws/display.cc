@@ -105,12 +105,6 @@ display::Display Display::ToDisplay() const {
   return display;
 }
 
-void Display::SchedulePaint(const ServerWindow* window,
-                            const gfx::Rect& bounds) {
-  DCHECK(root_->Contains(window));
-  platform_display_->SchedulePaint(window, bounds);
-}
-
 gfx::Size Display::GetSize() const {
   return platform_display_->GetBounds().size();
 }

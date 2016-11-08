@@ -107,9 +107,6 @@ class WindowServer : public ServerWindowDelegate,
   // Returns the Window identified by |id|.
   ServerWindow* GetWindow(const WindowId& id);
 
-  // Schedules a paint for the specified region in the coordinates of |window|.
-  void SchedulePaint(ServerWindow* window, const gfx::Rect& bounds);
-
   OperationType current_operation_type() const {
     return current_operation_ ? current_operation_->type()
                               : OperationType::NONE;
@@ -195,11 +192,12 @@ class WindowServer : public ServerWindowDelegate,
   void ProcessWindowDeleted(ServerWindow* window);
   void ProcessWillChangeWindowPredefinedCursor(ServerWindow* window,
                                                mojom::Cursor cursor_id);
-  void ProcessWindowSurfaceCreated(ServerWindow* window,
-                                   mojom::CompositorFrameSinkType surface_type,
-                                   const cc::SurfaceId& surface_id,
-                                   const gfx::Size& frame_size,
-                                   float device_scale_factor);
+  void ProcessWindowSurfaceCreated(
+      ServerWindow* window,
+      mojom::CompositorFrameSinkType compositor_frame_sink_type,
+      const cc::SurfaceId& surface_id,
+      const gfx::Size& frame_size,
+      float device_scale_factor);
 
   // Sends an |event| to all WindowTrees belonging to |user_id| that might be
   // observing events. Skips |ignore_tree| if it is non-null. |target_window| is
@@ -294,8 +292,7 @@ class WindowServer : public ServerWindowDelegate,
   bool IsUserInHighContrastMode(const UserId& user) const;
 
   // Overridden from ServerWindowDelegate:
-  void OnScheduleWindowPaint(ServerWindow* window) override;
-  const ServerWindow* GetRootWindow(const ServerWindow* window) const override;
+  ServerWindow* GetRootWindow(const ServerWindow* window) override;
 
   // Overridden from ServerWindowObserver:
   void OnWindowDestroyed(ServerWindow* window) override;
@@ -380,6 +377,7 @@ class WindowServer : public ServerWindowDelegate,
   uint32_t next_wm_change_id_;
 
   std::unique_ptr<GpuServiceProxy> gpu_proxy_;
+  // TODO(fsamuel): The window server should not have a GPU channel.
   scoped_refptr<gpu::GpuChannelHost> gpu_channel_;
   base::Callback<void(ServerWindow*)> window_paint_callback_;
 
