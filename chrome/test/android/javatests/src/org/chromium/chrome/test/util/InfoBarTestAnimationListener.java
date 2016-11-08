@@ -1,81 +1,43 @@
 // Copyright 2013 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
+
 package org.chromium.chrome.test.util;
 
-import android.os.SystemClock;
-
+import org.chromium.base.test.util.CallbackHelper;
 import org.chromium.chrome.browser.infobar.InfoBarContainer.InfoBarAnimationListener;
 
-import java.util.concurrent.TimeUnit;
+import java.util.concurrent.TimeoutException;
 
 /**
  * Allow tests to register for animation finished notifications.
  */
 public class InfoBarTestAnimationListener implements InfoBarAnimationListener {
+    private final CallbackHelper mAddAnimationFinished;
+    private final CallbackHelper mSwapAnimationFinished;
+    private final CallbackHelper mRemoveAnimationFinished;
 
-    private static final long WAIT_MILLIS = TimeUnit.SECONDS.toMillis(5);
-
-    private static class ConditionalWait {
-        private volatile Boolean mCondition;
-        private final Object mLock;
-
-        ConditionalWait() {
-            mCondition = false;
-            mLock = new Object();
-        }
-
-        /**
-         * Waits for {@code millis} or until the value of the condition becomes true
-         * if it does it resets it to false before returning so it can be reused.
-         *
-         * @return true if the condition becomes true before the specified {@code millis}.
-         */
-        public boolean waitAndExpire(long millis) throws InterruptedException {
-            synchronized (mLock) {
-                while (!mCondition && millis > 0) {
-                    long start = SystemClock.elapsedRealtime();
-                    mLock.wait(millis);
-                    millis -= (SystemClock.elapsedRealtime() - start);
-                }
-                boolean result = mCondition;
-                mCondition = false;
-                return result;
-            }
-        }
-
-        public void set(boolean value) {
-            synchronized (mLock) {
-                mCondition = value;
-                if (value) {
-                    mLock.notify();
-                }
-            }
-        }
-    }
-
-    private ConditionalWait mAddAnimationFinished;
-    private ConditionalWait mSwapAnimationFinished;
-    private ConditionalWait mRemoveAnimationFinished;
-
+    private int mAddCallCount;
+    private int mSwapCallCount;
+    private int mRemoveCallCount;
 
     public InfoBarTestAnimationListener() {
-        mAddAnimationFinished = new ConditionalWait();
-        mSwapAnimationFinished = new ConditionalWait();
-        mRemoveAnimationFinished = new ConditionalWait();
+        mAddAnimationFinished = new CallbackHelper();
+        mSwapAnimationFinished = new CallbackHelper();
+        mRemoveAnimationFinished = new CallbackHelper();
     }
 
     @Override
     public void notifyAnimationFinished(int animationType) {
         switch(animationType) {
             case InfoBarAnimationListener.ANIMATION_TYPE_SHOW:
-                mAddAnimationFinished.set(true);
+                mAddAnimationFinished.notifyCalled();
                 break;
             case InfoBarAnimationListener.ANIMATION_TYPE_SWAP:
-                mSwapAnimationFinished.set(true);
+                mSwapAnimationFinished.notifyCalled();
                 break;
             case InfoBarAnimationListener.ANIMATION_TYPE_HIDE:
-                mRemoveAnimationFinished.set(true);
+                mRemoveAnimationFinished.notifyCalled();
                 break;
             default:
                 throw new UnsupportedOperationException(
@@ -83,15 +45,21 @@ public class InfoBarTestAnimationListener implements InfoBarAnimationListener {
         }
     }
 
-    public boolean addInfoBarAnimationFinished() throws InterruptedException {
-        return mAddAnimationFinished.waitAndExpire(WAIT_MILLIS);
+    public void addInfoBarAnimationFinished(String msg)
+            throws InterruptedException, TimeoutException {
+        mAddAnimationFinished.waitForCallback(msg, mAddCallCount);
+        mAddCallCount++;
     }
 
-    public boolean swapInfoBarAnimationFinished() throws InterruptedException {
-        return mSwapAnimationFinished.waitAndExpire(WAIT_MILLIS);
+    public void swapInfoBarAnimationFinished(String msg)
+            throws InterruptedException, TimeoutException {
+        mSwapAnimationFinished.waitForCallback(msg, mSwapCallCount);
+        mSwapCallCount++;
     }
 
-    public boolean removeInfoBarAnimationFinished() throws InterruptedException {
-        return mRemoveAnimationFinished.waitAndExpire(WAIT_MILLIS);
+    public void removeInfoBarAnimationFinished(String msg)
+            throws InterruptedException, TimeoutException {
+        mRemoveAnimationFinished.waitForCallback(msg, mRemoveCallCount);
+        mRemoveCallCount++;
     }
 }

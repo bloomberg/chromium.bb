@@ -191,7 +191,7 @@ public class PermissionTestCaseBase extends ChromeActivityTestCaseBase<ChromeAct
      */
     private void replyToInfoBarAndWaitForUpdates(PermissionUpdateWaiter updateWaiter, int nUpdates,
             boolean allow, boolean hasSwitch, boolean toggleSwitch) throws Exception {
-        assertTrue("InfoBar not added.", mListener.addInfoBarAnimationFinished());
+        mListener.addInfoBarAnimationFinished("InfoBar not added.");
         InfoBar infobar = getInfoBars().get(0);
         assertNotNull(infobar);
 

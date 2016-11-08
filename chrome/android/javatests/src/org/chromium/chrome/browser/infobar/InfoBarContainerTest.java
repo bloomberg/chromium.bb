@@ -27,6 +27,7 @@ import org.chromium.net.test.EmbeddedTestServer;
 
 import java.util.List;
 import java.util.concurrent.Callable;
+import java.util.concurrent.TimeoutException;
 import java.util.concurrent.atomic.AtomicInteger;
 
 /**
@@ -84,7 +85,8 @@ public class InfoBarContainerTest extends ChromeActivityTestCaseBase<ChromeActiv
     }
 
     // Adds an infobar to the currrent tab. Blocks until the infobar has been added.
-    private TestListener addInfoBarToCurrentTab(final boolean expires) throws InterruptedException {
+    private TestListener addInfoBarToCurrentTab(final boolean expires)
+            throws InterruptedException, TimeoutException {
         List<InfoBar> infoBars = getInfoBars();
         int previousCount = infoBars.size();
 
@@ -97,7 +99,7 @@ public class InfoBarContainerTest extends ChromeActivityTestCaseBase<ChromeActiv
                         MESSAGE_TEXT, null, null, expires);
             }
         });
-        assertTrue("InfoBar not added.", mListener.addInfoBarAnimationFinished());
+        mListener.addInfoBarAnimationFinished("InfoBar not added.");
 
         // Verify it's really there.
         assertEquals(previousCount + 1, infoBars.size());
@@ -121,7 +123,7 @@ public class InfoBarContainerTest extends ChromeActivityTestCaseBase<ChromeActiv
                 infoBar.onCloseButtonClicked();
             }
         });
-        assertTrue("InfoBar not removed.", mListener.removeInfoBarAnimationFinished());
+        mListener.removeInfoBarAnimationFinished("InfoBar not removed.");
         listener.dismissedCallback.waitForCallback(0, 1);
         assertEquals(0, listener.primaryButtonCallback.getCallCount());
         assertEquals(0, listener.secondaryButtonCallback.getCallCount());
@@ -139,7 +141,7 @@ public class InfoBarContainerTest extends ChromeActivityTestCaseBase<ChromeActiv
 
         // Now navigate, it should expire.
         loadUrl(mTestServer.getURL("/chrome/test/data/android/google.html"));
-        assertTrue("InfoBar not removed.", mListener.removeInfoBarAnimationFinished());
+        mListener.removeInfoBarAnimationFinished("InfoBar not removed.");
         assertTrue(getInfoBars().isEmpty());
         assertEquals(0, infobarListener.dismissedCallback.getCallCount());
         assertEquals(0, infobarListener.primaryButtonCallback.getCallCount());
@@ -251,7 +253,7 @@ public class InfoBarContainerTest extends ChromeActivityTestCaseBase<ChromeActiv
         // Now press the close button.
         assertEquals(0, infobarListener.dismissedCallback.getCallCount());
         assertTrue("Close button wasn't found", InfoBarUtil.clickCloseButton(getInfoBars().get(0)));
-        assertTrue("Infobar not removed.", mListener.removeInfoBarAnimationFinished());
+        mListener.removeInfoBarAnimationFinished("Infobar not removed.");
         infobarListener.dismissedCallback.waitForCallback(0, 1);
         assertEquals(0, infobarListener.primaryButtonCallback.getCallCount());
         assertEquals(0, infobarListener.secondaryButtonCallback.getCallCount());
