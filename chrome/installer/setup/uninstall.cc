@@ -757,7 +757,7 @@ void UninstallActiveSetupEntries(const InstallerState& installer_state,
   //
   // It is however very hard to delete those values as the registry hives for
   // other users are not loaded by default under HKEY_USERS (unless a user is
-  // logged on or has a process impersonating him).
+  // logged on or has a process impersonating them).
   //
   // Following our best effort uninstall practices, try to delete the value in
   // all users hives. If a given user's hive is not loaded, try to load it to
