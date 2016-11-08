@@ -111,8 +111,6 @@ crbug.com/646010 paint/selection/text-selection-newline-rtl-double-linebreak.htm
 crbug.com/646015 paint/invalidation/hover-invalidation-table.html [ Failure ]
 crbug.com/646016 paint/invalidation/selected-replaced.html [ Failure ]
 
-crbug.com/657839 [ Android ] fast/images/paletted-png-with-color-profile.html [ NeedsRebaseline ]
-
 crbug.com/655955 [ Win Linux ] fast/transforms/transform-update-frame-overflow.html [ Pass Failure ]
 
 
