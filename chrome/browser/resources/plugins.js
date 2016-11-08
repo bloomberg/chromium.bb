@@ -77,7 +77,7 @@ function loadShowDetailsFromPrefs(showDetails) {
  *             type: 'BROWSER PLUGIN',
  *             mime_types: [
  *               {
- *                 description: 'New Guy Media',
+ *                 description: 'New Media Type',
  *                 file_extensions: ['mfp'],
  *                 mime_type: 'application/x-my-first'
  *               },

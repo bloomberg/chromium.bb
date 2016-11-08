@@ -5,7 +5,7 @@
 (function() {
 
 /**
- * Names of the radio buttons which allow the user to choose his encryption
+ * Names of the radio buttons which allow the user to choose their encryption
  * mechanism.
  * @enum {string}
  */
@@ -91,7 +91,7 @@ Polymer({
     /**
      * Whether the "create passphrase" inputs should be shown. These inputs
      * give the user the opportunity to use a custom passphrase instead of
-     * authenticating with his Google credentials.
+     * authenticating with their Google credentials.
      * @private
      */
     creatingNewPassphrase_: {

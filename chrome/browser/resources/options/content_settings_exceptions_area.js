@@ -177,7 +177,7 @@ cr.define('options.contentSettings', function() {
       // already-existing exceptions (which we assume are valid).
       this.inputValidityKnown = this.pattern;
       // This one tracks the actual validity of the pattern in the input. This
-      // starts off as true so as not to annoy the user when he adds a new and
+      // starts off as true so as not to annoy the user when they add a new and
       // empty input.
       this.inputIsValid = true;
 

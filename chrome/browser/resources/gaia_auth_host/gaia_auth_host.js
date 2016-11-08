@@ -8,7 +8,7 @@
  * authentication flow. There are two events would be raised after this point:
  * a 'ready' event when the authentication UI is ready to use and a 'completed'
  * event when the authentication is completed successfully. If caller is
- * interested in the user credentials, he may supply a success callback with
+ * interested in the user credentials, they may supply a success callback with
  * {@code load} call. The callback will be invoked when the authentication is
  * completed successfully and with the available credential data.
  */
@@ -143,9 +143,9 @@ cr.define('cr.login', function() {
     successCallback_: null,
 
     /**
-     * Invoked when the auth flow needs a user to confirm his/her passwords.
-     * This could happen when there are more than one passwords scraped during
-     * SAML flow. The embedder of GaiaAuthHost should show an UI to collect a
+     * Invoked when the auth flow needs a user to confirm their passwords. This
+     * could happen when there are more than one passwords scraped during SAML
+     * flow. The embedder of GaiaAuthHost should show an UI to collect a
      * password from user then call GaiaAuthHost.verifyConfirmedPassword to
      * verify. If the password is good, the auth flow continues with success
      * path. Otherwise, confirmPasswordCallback_ is invoked again.
