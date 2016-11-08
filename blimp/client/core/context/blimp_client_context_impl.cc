@@ -199,7 +199,10 @@ void BlimpClientContextImpl::ConnectWithAssignment(
 
 std::unordered_map<std::string, std::string>
 BlimpClientContextImpl::CreateFeedbackData() {
-  return CreateBlimpFeedbackData(blimp_contents_manager_.get());
+  IdentitySource* identity_source = GetIdentitySource();
+  DCHECK(identity_source);
+  return CreateBlimpFeedbackData(blimp_contents_manager_.get(),
+                                 identity_source->GetActiveUsername());
 }
 
 IdentitySource* BlimpClientContextImpl::GetIdentitySource() {

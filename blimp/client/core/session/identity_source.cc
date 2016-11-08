@@ -66,6 +66,10 @@ void IdentitySource::Connect() {
   FetchAuthToken();
 }
 
+std::string IdentitySource::GetActiveUsername() {
+  return identity_provider_->GetActiveUsername();
+}
+
 // Add sign in state observer.
 void IdentitySource::AddObserver(IdentityProvider::Observer* observer) {
   DCHECK(identity_provider_);

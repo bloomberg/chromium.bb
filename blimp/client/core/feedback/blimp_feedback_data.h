@@ -16,10 +16,13 @@ class BlimpContentsManager;
 extern const char kFeedbackSupportedKey[];
 // Denotes whether there exists any visible BlimpContents.
 extern const char kFeedbackHasVisibleBlimpContents[];
+// Denotes the user name for the current logged in user.
+extern const char kFeedbackUserNameKey[];
 
 // Creates a data object containing data about Blimp to be used for feedback.
 std::unordered_map<std::string, std::string> CreateBlimpFeedbackData(
-    BlimpContentsManager* blimp_contents_manager);
+    BlimpContentsManager* blimp_contents_manager,
+    const std::string& username);
 
 }  // namespace client
 }  // namespace blimp

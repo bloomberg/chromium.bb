@@ -10,6 +10,7 @@ namespace blimp {
 namespace client {
 const char kFeedbackSupportedKey[] = "Blimp Supported";
 const char kFeedbackHasVisibleBlimpContents[] = "Blimp Visible";
+const char kFeedbackUserNameKey[] = "Blimp Account";
 
 namespace {
 std::string HasVisibleBlimpContents(
@@ -26,11 +27,13 @@ std::string HasVisibleBlimpContents(
 }  // namespace
 
 std::unordered_map<std::string, std::string> CreateBlimpFeedbackData(
-    BlimpContentsManager* blimp_contents_manager) {
+    BlimpContentsManager* blimp_contents_manager,
+    const std::string& username) {
   std::unordered_map<std::string, std::string> data;
   data.insert(std::make_pair(kFeedbackSupportedKey, "true"));
   data.insert(std::make_pair(kFeedbackHasVisibleBlimpContents,
                              HasVisibleBlimpContents(blimp_contents_manager)));
+  data.insert(std::make_pair(kFeedbackUserNameKey, username));
   return data;
 }
 

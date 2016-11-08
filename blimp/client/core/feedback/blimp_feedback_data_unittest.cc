@@ -22,6 +22,8 @@
 #include "ui/android/window_android.h"
 #endif  // defined(OS_ANDROID)
 
+const char kDefaultUserName[] = "mock_user";
+
 namespace blimp {
 namespace client {
 namespace {
@@ -70,7 +72,7 @@ class BlimpFeedbackDataTest : public testing::Test {
 
 TEST_F(BlimpFeedbackDataTest, IncludesBlimpIsSupported) {
   std::unordered_map<std::string, std::string> data =
-      CreateBlimpFeedbackData(&blimp_contents_manager_);
+      CreateBlimpFeedbackData(&blimp_contents_manager_, kDefaultUserName);
   auto search = data.find(kFeedbackSupportedKey);
   ASSERT_TRUE(search != data.end());
   EXPECT_EQ("true", search->second);
@@ -84,17 +86,35 @@ TEST_F(BlimpFeedbackDataTest, CheckVisibilityCalculation) {
   // Verify that visibility is false when there are no visible BlimpContents.
   blimp_contents->Hide();
   std::unordered_map<std::string, std::string> data =
-      CreateBlimpFeedbackData(&blimp_contents_manager_);
+      CreateBlimpFeedbackData(&blimp_contents_manager_, kDefaultUserName);
   auto search = data.find(kFeedbackHasVisibleBlimpContents);
   ASSERT_TRUE(search != data.end());
   EXPECT_EQ("false", search->second);
 
   // Verify that visibility is true when there are visible BlimpContents.
   blimp_contents->Show();
-  data = CreateBlimpFeedbackData(&blimp_contents_manager_);
+  data = CreateBlimpFeedbackData(&blimp_contents_manager_, kDefaultUserName);
   search = data.find(kFeedbackHasVisibleBlimpContents);
   ASSERT_TRUE(search != data.end());
   EXPECT_EQ("true", search->second);
+}
+
+TEST_F(BlimpFeedbackDataTest, CheckUserName) {
+  // Verify non-empty user name in the feedback data.
+  std::unordered_map<std::string, std::string> data =
+      CreateBlimpFeedbackData(&blimp_contents_manager_, kDefaultUserName);
+  auto search = data.find(kFeedbackUserNameKey);
+  ASSERT_TRUE(search != data.end());
+  EXPECT_EQ(kDefaultUserName, search->second);
+}
+
+TEST_F(BlimpFeedbackDataTest, CheckEmptyUserName) {
+  // Verify empty user name in the feedback data.
+  std::unordered_map<std::string, std::string> data =
+      CreateBlimpFeedbackData(&blimp_contents_manager_, "");
+  auto search = data.find(kFeedbackUserNameKey);
+  ASSERT_TRUE(search != data.end());
+  EXPECT_EQ("", search->second);
 }
 
 }  // namespace

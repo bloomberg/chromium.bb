@@ -36,6 +36,9 @@ class IdentitySource : public OAuth2TokenService::Consumer,
   // Duplicate connect calls during token fetching will be ignored.
   void Connect();
 
+  // Returns the account name for the current user.
+  std::string GetActiveUsername();
+
   // Add sign in state observer.
   void AddObserver(IdentityProvider::Observer* observer);
 

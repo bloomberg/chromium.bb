@@ -263,6 +263,32 @@ TEST_F(IdentitySourceTest, TestConnectFailDelegateCallback) {
   DCHECK_EQ(auth.Failed(), 1);
 }
 
+TEST_F(IdentitySourceTest, CheckUserName) {
+  TestBlimpClientContextDelegate mock_blimp_delegate;
+  MockIdentitySource auth(
+      mock_blimp_delegate.CreateIdentityProvider(),
+      base::Bind(&TestBlimpClientContextDelegate::OnAuthenticationError,
+                 base::Unretained(&mock_blimp_delegate)),
+      base::Bind(&MockIdentitySource::MockTokenCall, base::Unretained(&auth)));
+
+  FakeIdentityProvider* id_provider =
+      static_cast<FakeIdentityProvider*>(auth.GetIdentityProvider());
+  std::string account = "mock_account";
+
+  // Verify the user name before the login.
+  EXPECT_EQ("", auth.GetActiveUsername());
+
+  // Log in the mock user.
+  id_provider->LogIn(account);
+
+  // Verify that the identity source can return the correct user name.
+  EXPECT_EQ(account, auth.GetActiveUsername());
+
+  // Verify the user name after the logout.
+  id_provider->LogOut();
+  EXPECT_EQ("", auth.GetActiveUsername());
+}
+
 }  // namespace
 }  // namespace client
 }  // namespace blimp
