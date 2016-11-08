@@ -40,8 +40,22 @@ function assertContextMenuSuggestion(sample, expected) {
   }, title);
   sample.remove();
 
-  if (++testHolder.finishedCount == 7)
+  if (++testHolder.finishedCount == 9)
     testHolder.done();
+}
+
+function doubleClickAt(node, offset) {
+  const document = node.ownerDocument;
+  const range = document.createRange();
+  range.setStart(node, offset);
+  const rect = range.getClientRects()[0];
+  const x = document.offsetLeft + rect.left;
+  const y = document.offsetTop + rect.top + rect.height / 2;
+  eventSender.mouseMoveTo(x, y);
+  eventSender.mouseDown();
+  eventSender.mouseUp();
+  eventSender.mouseDown();
+  eventSender.mouseUp();
 }
 
 spellcheck_test(
@@ -105,5 +119,33 @@ spellcheck_test(
     {
       title: 'Has marker on initial misspelling in "wellcome home." with "wellcome home" selected.',
       callback: sample => assertContextMenuSuggestion(sample)
+    });
+
+// Note: for the following test cases related to double clicking, the selection
+// dependends on platform (Win selects a trailing space while other platforms do
+// not), which, however, do not affect the context menu spelling suggestions.
+
+spellcheck_test(
+    '<div contenteditable>wellcome home.</div>',
+    document => {
+      var div = document.querySelector('div');
+      doubleClickAt(div.firstChild, 4);
+    },
+    '<div contenteditable>#wellcome# home.</div>',
+    {
+      title: 'Has marker on misspelled word "wellcome" after selecting it with double-clicking',
+      callback: sample => assertContextMenuSuggestion(sample, 'welcome')
+    });
+
+spellcheck_test(
+    '<div contenteditable>wellcome_ home.</div>',
+    document => {
+      var div = document.querySelector('div');
+      doubleClickAt(div.firstChild, 4);
+    },
+    '<div contenteditable>#wellcome#_ home.</div>',
+    {
+      title: 'Has marker on misspelled word "wellcome" after selecting it and its trailing underscore with double-clicking',
+      callback: sample => assertContextMenuSuggestion(sample, 'welcome')
     });
 </script>
