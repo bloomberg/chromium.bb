@@ -77,8 +77,8 @@ size_t MemoryCoordinator::NumChildrenForTesting() {
   return children_.size();
 }
 
-bool MemoryCoordinator::SetMemoryState(int render_process_id,
-                                       mojom::MemoryState memory_state) {
+bool MemoryCoordinator::SetChildMemoryState(int render_process_id,
+                                            mojom::MemoryState memory_state) {
   // Can't set an invalid memory state.
   if (memory_state == mojom::MemoryState::UNKNOWN)
     return false;
@@ -112,7 +112,7 @@ bool MemoryCoordinator::SetMemoryState(int render_process_id,
   return true;
 }
 
-mojom::MemoryState MemoryCoordinator::GetMemoryState(
+mojom::MemoryState MemoryCoordinator::GetChildMemoryState(
     int render_process_id) const {
   auto iter = children_.find(render_process_id);
   if (iter == children_.end())

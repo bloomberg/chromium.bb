@@ -72,9 +72,9 @@ class TestMemoryCoordinator : public MemoryCoordinator {
   }
 
   // Wrapper of MemoryCoordinator::SetMemoryState that also calls RunUntilIdle.
-  bool SetMemoryState(
+  bool SetChildMemoryState(
       int render_process_id, mojom::MemoryState memory_state) {
-    bool result = MemoryCoordinator::SetMemoryState(
+    bool result = MemoryCoordinator::SetChildMemoryState(
         render_process_id, memory_state);
     RunUntilIdle();
     return result;
@@ -102,7 +102,7 @@ TEST_F(MemoryCoordinatorTest, SetMemoryStateFailsInvalidState) {
   TestMemoryCoordinator mc;
   auto cmc1 = mc.CreateChildMemoryCoordinator(1);
 
-  EXPECT_FALSE(mc.SetMemoryState(1, mojom::MemoryState::UNKNOWN));
+  EXPECT_FALSE(mc.SetChildMemoryState(1, mojom::MemoryState::UNKNOWN));
   EXPECT_EQ(0, cmc1->on_state_change_calls());
 }
 
@@ -110,7 +110,7 @@ TEST_F(MemoryCoordinatorTest, SetMemoryStateFailsInvalidRenderer) {
   TestMemoryCoordinator mc;
   auto cmc1 = mc.CreateChildMemoryCoordinator(1);
 
-  EXPECT_FALSE(mc.SetMemoryState(2, mojom::MemoryState::THROTTLED));
+  EXPECT_FALSE(mc.SetChildMemoryState(2, mojom::MemoryState::THROTTLED));
   EXPECT_EQ(0, cmc1->on_state_change_calls());
 }
 
@@ -118,7 +118,7 @@ TEST_F(MemoryCoordinatorTest, SetMemoryStateNotDeliveredNop) {
   TestMemoryCoordinator mc;
   auto cmc1 = mc.CreateChildMemoryCoordinator(1);
 
-  EXPECT_FALSE(mc.SetMemoryState(2, mojom::MemoryState::NORMAL));
+  EXPECT_FALSE(mc.SetChildMemoryState(2, mojom::MemoryState::NORMAL));
   EXPECT_EQ(0, cmc1->on_state_change_calls());
 }
 
@@ -127,11 +127,11 @@ TEST_F(MemoryCoordinatorTest, SetMemoryStateDelivered) {
   auto cmc1 = mc.CreateChildMemoryCoordinator(1);
   auto cmc2 = mc.CreateChildMemoryCoordinator(2);
 
-  EXPECT_TRUE(mc.SetMemoryState(1, mojom::MemoryState::THROTTLED));
+  EXPECT_TRUE(mc.SetChildMemoryState(1, mojom::MemoryState::THROTTLED));
   EXPECT_EQ(1, cmc1->on_state_change_calls());
   EXPECT_EQ(mojom::MemoryState::THROTTLED, cmc1->state());
 
-  EXPECT_TRUE(mc.SetMemoryState(2, mojom::MemoryState::SUSPENDED));
+  EXPECT_TRUE(mc.SetChildMemoryState(2, mojom::MemoryState::SUSPENDED));
   EXPECT_EQ(1, cmc2->on_state_change_calls());
   EXPECT_EQ(mojom::MemoryState::SUSPENDED, cmc2->state());
 }

@@ -108,7 +108,7 @@ void MemoryCoordinatorImpl::Start() {
 
 void MemoryCoordinatorImpl::OnChildAdded(int render_process_id) {
   // Populate the global state as an initial state of a newly created process.
-  SetMemoryState(render_process_id, ToMojomMemoryState(current_state_));
+  SetChildMemoryState(render_process_id, ToMojomMemoryState(current_state_));
 }
 
 base::MemoryState MemoryCoordinatorImpl::GetCurrentMemoryState() const {
@@ -147,7 +147,7 @@ void MemoryCoordinatorImpl::Observe(int type,
   // We don't throttle/suspend a visible renderer for now.
   auto new_state = is_visible ? mojom::MemoryState::NORMAL
                               : ToMojomMemoryState(current_state_);
-  SetMemoryState(iter->first, new_state);
+  SetChildMemoryState(iter->first, new_state);
 }
 
 base::MemoryState MemoryCoordinatorImpl::CalculateNextState() {
@@ -216,10 +216,10 @@ void MemoryCoordinatorImpl::NotifyStateToClients() {
 
 void MemoryCoordinatorImpl::NotifyStateToChildren() {
   auto mojo_state = ToMojomMemoryState(current_state_);
-  // It's OK to call SetMemoryState() unconditionally because it checks whether
-  // this state transition is valid.
+  // It's OK to call SetChildMemoryState() unconditionally because it checks
+  // whether this state transition is valid.
   for (auto& iter : children())
-    SetMemoryState(iter.first, mojo_state);
+    SetChildMemoryState(iter.first, mojo_state);
 }
 
 void MemoryCoordinatorImpl::ScheduleUpdateState(base::TimeDelta delta) {

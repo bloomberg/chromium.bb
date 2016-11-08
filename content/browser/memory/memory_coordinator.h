@@ -45,12 +45,12 @@ class CONTENT_EXPORT MemoryCoordinator {
   // Dispatches a memory state change to the provided process. Returns true if
   // the process is tracked by this coordinator and successfully dispatches,
   // returns false otherwise.
-  bool SetMemoryState(
+  bool SetChildMemoryState(
       int render_process_id, mojom::MemoryState memory_state);
 
   // Returns the memory state of the specified render process. Returns UNKNOWN
   // if the process is not tracked by this coordinator.
-  mojom::MemoryState GetMemoryState(int render_process_id) const;
+  mojom::MemoryState GetChildMemoryState(int render_process_id) const;
 
   // Called when ChildMemoryCoordinator calls AddChild().
   virtual void OnChildAdded(int render_process_id) {}
