@@ -13,7 +13,6 @@
 #include "modules/sensor/SensorPollingStrategy.h"
 #include "modules/sensor/SensorProviderProxy.h"
 #include "modules/sensor/SensorReading.h"
-#include "modules/sensor/SensorReadingEvent.h"
 
 using namespace device::mojom::blink;
 
@@ -29,8 +28,7 @@ Sensor::Sensor(ScriptState* scriptState,
           toDocument(scriptState->getExecutionContext())->page()),
       m_sensorOptions(sensorOptions),
       m_type(type),
-      m_state(Sensor::SensorState::IDLE),
-      m_storedData() {
+      m_state(Sensor::SensorState::IDLE) {
   // Check secure context.
   String errorMessage;
   if (!scriptState->getExecutionContext()->isSecureContext(errorMessage)) {
@@ -119,12 +117,14 @@ String Sensor::state() const {
 }
 
 SensorReading* Sensor::reading() const {
-  return m_sensorReading.get();
+  if (m_state != Sensor::SensorState::ACTIVE)
+    return nullptr;
+  DCHECK(m_sensorProxy);
+  return m_sensorProxy->sensorReading();
 }
 
 DEFINE_TRACE(Sensor) {
   visitor->trace(m_sensorProxy);
-  visitor->trace(m_sensorReading);
   ActiveScriptWrappable::trace(visitor);
   ContextLifecycleObserver::trace(visitor);
   PageVisibilityObserver::trace(visitor);
@@ -146,8 +146,13 @@ void Sensor::initSensorProxyIfNeeded() {
   if (!document || !document->frame())
     return;
 
-  m_sensorProxy =
-      SensorProviderProxy::from(document->frame())->getOrCreateSensor(m_type);
+  auto provider = SensorProviderProxy::from(document->frame());
+  m_sensorProxy = provider->getSensor(m_type);
+
+  if (!m_sensorProxy) {
+    m_sensorProxy =
+        provider->createSensor(m_type, createSensorReadingFactory());
+  }
 }
 
 void Sensor::contextDestroyed() {
@@ -222,10 +227,6 @@ void Sensor::pageVisibilityChanged() {
 void Sensor::startListening() {
   DCHECK(m_sensorProxy);
   updateState(Sensor::SensorState::ACTIVATING);
-  if (!m_sensorReading) {
-    m_sensorReading = createSensorReading(m_sensorProxy);
-    DCHECK(m_sensorReading);
-  }
 
   m_sensorProxy->addObserver(this);
   if (!m_sensorProxy->isInitialized()) {
@@ -247,7 +248,6 @@ void Sensor::startListening() {
 
 void Sensor::stopListening() {
   DCHECK(m_sensorProxy);
-  m_sensorReading = nullptr;
   updateState(Sensor::SensorState::IDLE);
 
   if (m_sensorProxy->isInitialized()) {
@@ -270,18 +270,18 @@ void Sensor::pollForData() {
 
   DCHECK(m_sensorProxy);
   DCHECK(m_sensorProxy->isInitialized());
-  m_sensorProxy->updateInternalReading();
+  m_sensorProxy->updateSensorReading();
 
-  DCHECK(m_sensorReading);
+  DCHECK(m_sensorProxy->sensorReading());
   if (getExecutionContext() &&
-      m_sensorReading->isReadingUpdated(m_storedData)) {
+      m_sensorProxy->sensorReading()->isReadingUpdated(m_storedData)) {
     getExecutionContext()->postTask(
         BLINK_FROM_HERE,
         createSameThreadTask(&Sensor::notifySensorReadingChanged,
                              wrapWeakPersistent(this)));
   }
 
-  m_storedData = m_sensorProxy->reading();
+  m_storedData = m_sensorProxy->sensorReading()->data();
 }
 
 void Sensor::updateState(Sensor::SensorState newState) {
@@ -324,8 +324,7 @@ void Sensor::updatePollingStatus() {
 }
 
 void Sensor::notifySensorReadingChanged() {
-  dispatchEvent(
-      SensorReadingEvent::create(EventTypeNames::change, m_sensorReading));
+  dispatchEvent(Event::create(EventTypeNames::change));
 }
 
 void Sensor::notifyStateChanged() {

@@ -19,24 +19,21 @@ class AmbientLightSensorReading final : public SensorReading {
     return new AmbientLightSensorReading(init);
   }
 
-  static AmbientLightSensorReading* create(SensorProxy* proxy) {
-    return new AmbientLightSensorReading(proxy);
+  static AmbientLightSensorReading* create(const device::SensorReading& data) {
+    return new AmbientLightSensorReading(data);
   }
 
   ~AmbientLightSensorReading() override;
 
   double illuminance() const;
 
-  bool isReadingUpdated(const SensorProxy::Reading&) const override;
+  bool isReadingUpdated(const device::SensorReading&) const override;
 
   DECLARE_VIRTUAL_TRACE();
 
  private:
   explicit AmbientLightSensorReading(const AmbientLightSensorReadingInit&);
-  explicit AmbientLightSensorReading(SensorProxy*);
-
- private:
-  AmbientLightSensorReadingInit mAmbientLightSensorReadingInit;
+  explicit AmbientLightSensorReading(const device::SensorReading&);
 };
 
 }  // namepsace blink

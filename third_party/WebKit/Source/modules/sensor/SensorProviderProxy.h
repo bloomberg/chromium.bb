@@ -14,6 +14,7 @@
 namespace blink {
 
 class SensorProxy;
+class SensorReadingFactory;
 
 // This class wraps 'SensorProvider' mojo interface and it manages
 // 'SensorProxy' instances.
@@ -28,7 +29,10 @@ class SensorProviderProxy final
 
   ~SensorProviderProxy();
 
-  SensorProxy* getOrCreateSensor(device::mojom::blink::SensorType);
+  SensorProxy* createSensor(device::mojom::blink::SensorType,
+                            std::unique_ptr<SensorReadingFactory>);
+
+  SensorProxy* getSensor(device::mojom::blink::SensorType);
 
   DECLARE_VIRTUAL_TRACE();
 

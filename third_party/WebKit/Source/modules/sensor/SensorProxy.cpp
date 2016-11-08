@@ -6,6 +6,7 @@
 
 #include "core/frame/LocalFrame.h"
 #include "modules/sensor/SensorProviderProxy.h"
+#include "modules/sensor/SensorReading.h"
 #include "platform/mojo/MojoHelper.h"
 #include "public/platform/Platform.h"
 
@@ -13,14 +14,16 @@ using namespace device::mojom::blink;
 
 namespace blink {
 
-SensorProxy::SensorProxy(SensorType sensorType, SensorProviderProxy* provider)
+SensorProxy::SensorProxy(SensorType sensorType,
+                         SensorProviderProxy* provider,
+                         std::unique_ptr<SensorReadingFactory> readingFactory)
     : m_type(sensorType),
       m_mode(ReportingMode::CONTINUOUS),
       m_provider(provider),
       m_clientBinding(this),
       m_state(SensorProxy::Uninitialized),
-      m_reading(),
-      m_suspended(false) {}
+      m_suspended(false),
+      m_readingFactory(std::move(readingFactory)) {}
 
 SensorProxy::~SensorProxy() {}
 
@@ -29,6 +32,7 @@ void SensorProxy::dispose() {
 }
 
 DEFINE_TRACE(SensorProxy) {
+  visitor->trace(m_reading);
   visitor->trace(m_observers);
   visitor->trace(m_provider);
 }
@@ -98,16 +102,20 @@ const device::mojom::blink::SensorConfiguration* SensorProxy::defaultConfig()
   return m_defaultConfig.get();
 }
 
-void SensorProxy::updateInternalReading() {
+void SensorProxy::updateSensorReading() {
   DCHECK(isInitialized());
+  DCHECK(m_readingFactory);
   int readAttempts = 0;
   const int kMaxReadAttemptsCount = 10;
-  while (!tryReadFromBuffer()) {
+  device::SensorReading readingData;
+  while (!tryReadFromBuffer(readingData)) {
     if (++readAttempts == kMaxReadAttemptsCount) {
       handleSensorError();
       return;
     }
   }
+
+  m_reading = m_readingFactory->createSensorReading(readingData);
 }
 
 void SensorProxy::RaiseError() {
@@ -135,6 +143,7 @@ void SensorProxy::handleSensorError(ExceptionCode code,
   m_sharedBufferHandle.reset();
   m_defaultConfig.reset();
   m_clientBinding.Close();
+  m_reading = nullptr;
 
   for (Observer* observer : m_observers)
     observer->onSensorError(code, sanitizedMessage, unsanitizedMessage);
@@ -182,16 +191,16 @@ void SensorProxy::onSensorCreated(SensorInitParamsPtr params,
     observer->onSensorInitialized();
 }
 
-bool SensorProxy::tryReadFromBuffer() {
+bool SensorProxy::tryReadFromBuffer(device::SensorReading& result) {
   DCHECK(isInitialized());
   const ReadingBuffer* buffer =
       static_cast<const ReadingBuffer*>(m_sharedBuffer.get());
   const device::OneWriterSeqLock& seqlock = buffer->seqlock.value();
   auto version = seqlock.ReadBegin();
-  auto reading = buffer->reading;
+  auto readingData = buffer->reading;
   if (seqlock.ReadRetry(version))
     return false;
-  m_reading = reading;
+  result = readingData;
   return true;
 }
 

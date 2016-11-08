@@ -19,21 +19,41 @@ class SensorReading : public GarbageCollectedFinalized<SensorReading>,
   DEFINE_WRAPPERTYPEINFO();
 
  public:
-  DECLARE_VIRTUAL_TRACE();
+  DEFINE_INLINE_VIRTUAL_TRACE() {}
 
   DOMHighResTimeStamp timeStamp(ScriptState*) const;
 
   // Returns 'true' if the current reading value is different than the given
   // previous one; otherwise returns 'false'.
-  virtual bool isReadingUpdated(const SensorProxy::Reading& previous) const = 0;
+  virtual bool isReadingUpdated(
+      const device::SensorReading& previous) const = 0;
+
+  const device::SensorReading& data() const { return m_data; }
 
   virtual ~SensorReading();
 
  protected:
-  explicit SensorReading(SensorProxy*);
+  explicit SensorReading(const device::SensorReading&);
+
+ private:
+  device::SensorReading m_data;
+};
+
+class SensorReadingFactory {
+ public:
+  virtual SensorReading* createSensorReading(const device::SensorReading&) = 0;
 
  protected:
-  Member<SensorProxy> m_sensorProxy;
+  SensorReadingFactory() = default;
+};
+
+template <typename SensorReadingType>
+class SensorReadingFactoryImpl : public SensorReadingFactory {
+ public:
+  SensorReading* createSensorReading(
+      const device::SensorReading& reading) override {
+    return SensorReadingType::create(reading);
+  }
 };
 
 }  // namepsace blink

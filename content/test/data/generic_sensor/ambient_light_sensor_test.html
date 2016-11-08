@@ -3,10 +3,11 @@
     <title>AmbientLight Generic Sensor test</title>
     <script type="text/javascript">
       var timeOrigin;
-      function onAmbientLightReadingChange(event) {
-        if (event.reading.illuminance == 50 &&
-            event.reading.timeStamp > timeOrigin &&
-            event.reading.timeStamp < window.performance.now()) {
+      var sensor;
+      function onAmbientLightReadingChange() {
+        if (sensor.reading.illuminance == 50 &&
+            sensor.reading.timeStamp > timeOrigin &&
+            sensor.reading.timeStamp < window.performance.now()) {
           pass();
         } else {
           fail();
@@ -14,11 +15,10 @@
       }
 
       function start() {
-        var sensor = new AmbientLightSensor();
+        sensor = new AmbientLightSensor();
         timeOrigin = window.performance.now();
-        sensor.onchange = function(e) {
-            onAmbientLightReadingChange(e);
-          };
+        sensor.onchange =
+            onAmbientLightReadingChange;
         sensor.start();
       }
 

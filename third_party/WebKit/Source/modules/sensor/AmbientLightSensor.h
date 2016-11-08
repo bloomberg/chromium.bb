@@ -27,7 +27,7 @@ class AmbientLightSensor final : public Sensor {
  private:
   AmbientLightSensor(ScriptState*, const SensorOptions&, ExceptionState&);
   // Sensor overrides.
-  SensorReading* createSensorReading(SensorProxy*) override;
+  std::unique_ptr<SensorReadingFactory> createSensorReadingFactory() override;
   SensorConfigurationPtr createSensorConfig(
       const SensorOptions&,
       const SensorConfiguration& defaultConfig) override;

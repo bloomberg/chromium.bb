@@ -5,32 +5,39 @@
 #include "modules/sensor/AmbientLightSensorReading.h"
 
 #include "modules/sensor/SensorProxy.h"
+#include "wtf/CurrentTime.h"
 
 namespace blink {
 
+namespace {
+
+device::SensorReading ToReadingData(const AmbientLightSensorReadingInit& init) {
+  device::SensorReading result;
+  result.timestamp = WTF::monotonicallyIncreasingTime();
+  if (init.hasIlluminance())
+    result.values[0] = init.illuminance();
+
+  return result;
+}
+
+}  // namespace
+
 AmbientLightSensorReading::AmbientLightSensorReading(
     const AmbientLightSensorReadingInit& init)
-    : SensorReading(nullptr), mAmbientLightSensorReadingInit(init) {}
+    : SensorReading(ToReadingData(init)) {}
 
-AmbientLightSensorReading::AmbientLightSensorReading(SensorProxy* proxy)
-    : SensorReading(proxy),
-      mAmbientLightSensorReadingInit(AmbientLightSensorReadingInit()) {}
+AmbientLightSensorReading::AmbientLightSensorReading(
+    const device::SensorReading& data)
+    : SensorReading(data) {}
 
 AmbientLightSensorReading::~AmbientLightSensorReading() = default;
 
 double AmbientLightSensorReading::illuminance() const {
-  if (mAmbientLightSensorReadingInit.hasIlluminance())
-    return mAmbientLightSensorReadingInit.illuminance();
-
-  if (!m_sensorProxy)
-    return 0.0;
-  return m_sensorProxy->reading().values[0];
+  return data().values[0];
 }
 
 bool AmbientLightSensorReading::isReadingUpdated(
-    const SensorProxy::Reading& previous) const {
-  if (!m_sensorProxy)
-    return false;
+    const device::SensorReading& previous) const {
   return previous.values[0] != illuminance();
 }
 

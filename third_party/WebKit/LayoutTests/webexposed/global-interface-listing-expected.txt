@@ -6137,10 +6137,6 @@ interface SensorReading
     attribute @@toStringTag
     getter timeStamp
     method constructor
-interface SensorReadingEvent : Event
-    attribute @@toStringTag
-    getter reading
-    method constructor
 interface ServiceWorker : EventTarget
     attribute @@toStringTag
     getter onerror

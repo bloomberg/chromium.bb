@@ -185,8 +185,8 @@ sensor_test(sensor => {
             }
           };
 
-          ambientLightSensor.onchange = e => {
-            assert_equals(e.reading.illuminance, kDefaultReadingValue);
+          ambientLightSensor.onchange = () => {
+            assert_equals(ambientLightSensor.reading.illuminance, kDefaultReadingValue);
             ambientLightSensor.stop();
           };
 
@@ -214,8 +214,8 @@ sensor_test(sensor => {
             }
           }
 
-          ambientLightSensor.onchange = e => {
-            assert_equals(e.reading.illuminance, kDefaultReadingValue);
+          ambientLightSensor.onchange = () => {
+            assert_equals(ambientLightSensor.reading.illuminance, kDefaultReadingValue);
             ambientLightSensor.stop();
           }
           ambientLightSensor.onerror = reject;
@@ -235,8 +235,8 @@ sensor_test(sensor => {
       })
       .then((mockSensor) => {
         return new Promise((resolve, reject) => {
-          ambientLightSensor.onchange = e => {
-            if (e.reading.illuminance == kDefaultReadingValue) {
+          ambientLightSensor.onchange = () => {
+            if (ambientLightSensor.reading.illuminance == kDefaultReadingValue) {
               resolve(mockSensor);
             }
           }
@@ -267,5 +267,54 @@ sensor_test(sensor => {
   return testPromise;
 }, 'Test that sensor receives suspend / resume notifications when page'
     +' visibility changes.');
+
+
+sensor_test(sensor => {
+  let sensor1 = new AmbientLightSensor({frequency: 60});
+  sensor1.start();
+
+  let sensor2 = new AmbientLightSensor({frequency: 20});
+  sensor2.start();
+  let testPromise = sensor.mockSensorProvider.getCreatedSensor()
+      .then(mockSensor => {
+        return mockSensor.setUpdateSensorReadingFunction(update_sensor_reading);
+      })
+      .then((mockSensor) => {
+        return new Promise((resolve, reject) => {
+          sensor1.onstatechange = event => {
+            if (sensor1.state === 'idle') {
+              resolve(mockSensor);
+            }
+          };
+
+          sensor1.onchange = () => {
+            // Reading value is correct.
+            assert_equals(sensor1.reading.illuminance, kDefaultReadingValue);
+
+            // Both sensors share the same reading instance.
+            let reading = sensor1.reading;
+            assert_equals(reading, sensor2.reading);
+
+            // After first sensor stops its reading is null, reading for second
+            // sensor sensor remains.
+            sensor1.stop();
+            assert_equals(sensor1.reading, null);
+            assert_equals(sensor2.reading.illuminance, kDefaultReadingValue);
+
+            sensor2.stop();
+            assert_equals(sensor2.reading, null);
+
+            // Cached reading remains.
+            assert_equals(reading.illuminance, kDefaultReadingValue);
+          };
+
+          sensor1.onerror = reject;
+          sensor2.onerror = reject;
+        });
+      })
+      .then(mockSensor => { return mockSensor.removeConfigurationCalled(); });
+
+  return testPromise;
+}, 'Test that sensor reading is correct.');
 
 </script>

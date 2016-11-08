@@ -34,8 +34,10 @@ AmbientLightSensorReading* AmbientLightSensor::reading() const {
   return static_cast<AmbientLightSensorReading*>(Sensor::reading());
 }
 
-SensorReading* AmbientLightSensor::createSensorReading(SensorProxy* proxy) {
-  return AmbientLightSensorReading::create(proxy);
+std::unique_ptr<SensorReadingFactory>
+AmbientLightSensor::createSensorReadingFactory() {
+  return std::unique_ptr<SensorReadingFactory>(
+      new SensorReadingFactoryImpl<AmbientLightSensorReading>());
 }
 
 auto AmbientLightSensor::createSensorConfig(

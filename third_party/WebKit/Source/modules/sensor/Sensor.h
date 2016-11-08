@@ -66,7 +66,8 @@ class Sensor : public EventTargetWithInlineData,
          const SensorOptions&,
          ExceptionState&,
          device::mojom::blink::SensorType);
-  virtual SensorReading* createSensorReading(SensorProxy*) = 0;
+  virtual std::unique_ptr<SensorReadingFactory>
+  createSensorReadingFactory() = 0;
 
   using SensorConfigurationPtr = device::mojom::blink::SensorConfigurationPtr;
   using SensorConfiguration = device::mojom::blink::SensorConfiguration;
@@ -111,13 +112,12 @@ class Sensor : public EventTargetWithInlineData,
   void notifyError(DOMException* error);
 
  private:
-  Member<SensorReading> m_sensorReading;
   SensorOptions m_sensorOptions;
   device::mojom::blink::SensorType m_type;
   SensorState m_state;
   Member<SensorProxy> m_sensorProxy;
   std::unique_ptr<SensorPollingStrategy> m_polling;
-  SensorProxy::Reading m_storedData;
+  device::SensorReading m_storedData;
   SensorConfigurationPtr m_configuration;
 };
 

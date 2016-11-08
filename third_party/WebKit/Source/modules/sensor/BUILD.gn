@@ -22,8 +22,6 @@ blink_modules_sources("sensor") {
     "SensorProxy.h",
     "SensorReading.cpp",
     "SensorReading.h",
-    "SensorReadingEvent.cpp",
-    "SensorReadingEvent.h",
   ]
 
   deps = [
