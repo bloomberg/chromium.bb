@@ -98,7 +98,7 @@ class WebURLLoaderMockFactoryImpl : public WebURLLoaderMockFactory {
 
   // Table of the registered URLs and the responses that they should receive.
   using URLToResponseMap = HashMap<KURL, ResponseInfo>;
-  URLToResponseMap url_to_reponse_info_;
+  URLToResponseMap url_to_response_info_;
 
   DISALLOW_COPY_AND_ASSIGN(WebURLLoaderMockFactoryImpl);
 };

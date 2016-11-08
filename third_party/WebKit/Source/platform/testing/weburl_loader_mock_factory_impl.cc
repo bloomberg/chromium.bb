@@ -45,8 +45,8 @@ void WebURLLoaderMockFactoryImpl::registerURL(const WebURL& url,
         << response_info.file_path.MaybeAsASCII() << " does not exist.";
   }
 
-  DCHECK(url_to_reponse_info_.find(url) == url_to_reponse_info_.end());
-  url_to_reponse_info_.set(url, response_info);
+  DCHECK(url_to_response_info_.find(url) == url_to_response_info_.end());
+  url_to_response_info_.set(url, response_info);
 }
 
 
@@ -54,15 +54,15 @@ void WebURLLoaderMockFactoryImpl::registerErrorURL(
     const WebURL& url,
     const WebURLResponse& response,
     const WebURLError& error) {
-  DCHECK(url_to_reponse_info_.find(url) == url_to_reponse_info_.end());
+  DCHECK(url_to_response_info_.find(url) == url_to_response_info_.end());
   registerURL(url, response, WebString());
   url_to_error_info_.set(url, error);
 }
 
 void WebURLLoaderMockFactoryImpl::unregisterURL(const blink::WebURL& url) {
-  URLToResponseMap::iterator iter = url_to_reponse_info_.find(url);
-  DCHECK(iter != url_to_reponse_info_.end());
-  url_to_reponse_info_.remove(iter);
+  URLToResponseMap::iterator iter = url_to_response_info_.find(url);
+  DCHECK(iter != url_to_response_info_.end());
+  url_to_response_info_.remove(iter);
 
   URLToErrorMap::iterator error_iter = url_to_error_info_.find(url);
   if (error_iter != url_to_error_info_.end())
@@ -70,7 +70,7 @@ void WebURLLoaderMockFactoryImpl::unregisterURL(const blink::WebURL& url) {
 }
 
 void WebURLLoaderMockFactoryImpl::unregisterAllURLs() {
-  url_to_reponse_info_.clear();
+  url_to_response_info_.clear();
   url_to_error_info_.clear();
 }
 
@@ -106,7 +106,7 @@ void WebURLLoaderMockFactoryImpl::serveAsynchronousRequests() {
 }
 
 bool WebURLLoaderMockFactoryImpl::IsMockedURL(const blink::WebURL& url) {
-  return url_to_reponse_info_.find(url) != url_to_reponse_info_.end();
+  return url_to_response_info_.find(url) != url_to_response_info_.end();
 }
 
 void WebURLLoaderMockFactoryImpl::CancelLoad(WebURLLoaderMock* loader) {
@@ -140,8 +140,8 @@ void WebURLLoaderMockFactoryImpl::LoadRequest(const WebURLRequest& request,
     *error = error_iter->value;
 
   URLToResponseMap::const_iterator iter =
-      url_to_reponse_info_.find(request.url());
-  if (iter == url_to_reponse_info_.end()) {
+      url_to_response_info_.find(request.url());
+  if (iter == url_to_response_info_.end()) {
     // Non mocked URLs should not have been passed to the default URLLoader.
     NOTREACHED();
     return;
