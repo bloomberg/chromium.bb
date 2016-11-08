@@ -29,9 +29,7 @@ class VIEWS_EXPORT OverlayScrollBar : public BaseScrollBar {
   void OnMouseExitedScrollView(const ui::MouseEvent& event) override;
 
   // View overrides:
-  gfx::Size GetPreferredSize() const override;
   void Layout() override;
-  void OnPaint(gfx::Canvas* canvas) override;
 
  private:
   gfx::SlideAnimation animation_;

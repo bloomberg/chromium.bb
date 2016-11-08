@@ -139,10 +139,6 @@ void OverlayScrollBar::OnGestureEvent(ui::GestureEvent* event) {
   BaseScrollBar::OnGestureEvent(event);
 }
 
-gfx::Size OverlayScrollBar::GetPreferredSize() const {
-  return gfx::Size();
-}
-
 void OverlayScrollBar::Layout() {
   gfx::Rect thumb_bounds = GetTrackBounds();
   BaseScrollBarThumb* thumb = GetThumb();
@@ -154,9 +150,6 @@ void OverlayScrollBar::Layout() {
     thumb_bounds.set_height(thumb->height());
   }
   thumb->SetBoundsRect(thumb_bounds);
-}
-
-void OverlayScrollBar::OnPaint(gfx::Canvas* canvas) {
 }
 
 }  // namespace views

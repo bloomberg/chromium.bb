@@ -364,11 +364,14 @@ void ImeMenuTray::ShowImeMenuBubble() {
 
   uint32_t current_height = ime_list_view_->scroll_content()->height();
   const gfx::Range height_range = GetImeListViewRange();
-  if (current_height > height_range.end()) {
+
+  if (MaterialDesignController::IsSystemTrayMenuMaterial()) {
+    ime_list_view_->scroller()->ClipHeightTo(height_range.start(),
+                                             height_range.end());
+  } else if (current_height > height_range.end()) {
     ime_list_view_->scroller()->SetFixedSize(
         gfx::Size(kTrayPopupMaxWidth, height_range.end()));
-  } else if (MaterialDesignController::IsSystemTrayMenuMaterial() &&
-             current_height < height_range.start()) {
+  } else if (current_height < height_range.start()) {
     ime_list_view_->scroller()->SetFixedSize(
         gfx::Size(kTrayPopupMaxWidth, height_range.start()));
   }

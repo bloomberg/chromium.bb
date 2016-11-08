@@ -28,6 +28,10 @@
 namespace ash {
 namespace {
 
+bool UseMd() {
+  return MaterialDesignController::IsSystemTrayMenuMaterial();
+}
+
 // A view that is used as ScrollView contents. It supports designating some of
 // the children as sticky header rows. The sticky header rows are not scrolled
 // above the top of the visible viewport until the next one "pushes" it up and
@@ -296,8 +300,7 @@ TrayDetailsView::TrayDetailsView(SystemTrayItem* owner)
 TrayDetailsView::~TrayDetailsView() {}
 
 void TrayDetailsView::OnViewClicked(views::View* sender) {
-  if (!MaterialDesignController::IsSystemTrayMenuMaterial() && title_row_ &&
-      sender == title_row_->content()) {
+  if (!UseMd() && title_row_ && sender == title_row_->content()) {
     TransitionToDefaultView();
     return;
   }
@@ -307,8 +310,7 @@ void TrayDetailsView::OnViewClicked(views::View* sender) {
 
 void TrayDetailsView::ButtonPressed(views::Button* sender,
                                     const ui::Event& event) {
-  if (MaterialDesignController::IsSystemTrayMenuMaterial() &&
-      sender == back_button_) {
+  if (UseMd() && sender == back_button_) {
     TransitionToDefaultView();
     return;
   }
@@ -320,7 +322,7 @@ void TrayDetailsView::CreateTitleRow(int string_id) {
   DCHECK(!title_row_);
   title_row_ = new SpecialPopupRow();
   title_row_->SetTextLabel(string_id, this);
-  if (MaterialDesignController::IsSystemTrayMenuMaterial()) {
+  if (UseMd()) {
     title_row_->SetBorder(views::CreateEmptyBorder(kTitleRowPaddingTop, 0,
                                                    kTitleRowPaddingBottom, 0));
     AddChildViewAt(title_row_, 0);
@@ -343,7 +345,7 @@ void TrayDetailsView::CreateTitleRow(int string_id) {
 
   CreateExtraTitleRowButtons();
 
-  if (MaterialDesignController::IsSystemTrayMenuMaterial())
+  if (UseMd())
     back_button_ = title_row_->AddBackButton(this);
 
   Layout();
@@ -399,7 +401,7 @@ void TrayDetailsView::TransitionToDefaultView() {
   // Cache pointer to owner in this function scope. TrayDetailsView will be
   // deleted after called ShowDefaultView.
   SystemTrayItem* owner = owner_;
-  if (MaterialDesignController::IsSystemTrayMenuMaterial()) {
+  if (UseMd()) {
     if (back_button_ && back_button_->HasFocus())
       owner->set_restore_focus(true);
   } else {
@@ -419,21 +421,28 @@ void TrayDetailsView::Layout() {
   }
 
   if (scroller_) {
-    scroller_->set_fixed_size(gfx::Size());
-    gfx::Size size = GetPreferredSize();
+    if (UseMd()) {
+      gfx::Size scroller_size = scroll_content_->GetPreferredSize();
+      gfx::Size pref_size = GetPreferredSize();
+      scroller()->ClipHeightTo(
+          0, scroller_size.height() - (pref_size.height() - height()));
+    } else {
+      scroller_->set_fixed_size(gfx::Size());
+      gfx::Size size = GetPreferredSize();
 
-    // Set the scroller to fill the space above the bottom row, so that the
-    // bottom row of the detailed view will always stay just above the title
-    // row.
-    gfx::Size scroller_size = scroll_content_->GetPreferredSize();
-    scroller_->set_fixed_size(
-        gfx::Size(width() + scroller_->GetScrollBarWidth(),
-                  scroller_size.height() - (size.height() - height())));
+      // Set the scroller to fill the space above the bottom row, so that the
+      // bottom row of the detailed view will always stay just above the title
+      // row.
+      gfx::Size scroller_size = scroll_content_->GetPreferredSize();
+      scroller_->set_fixed_size(
+          gfx::Size(width() + scroller_->GetScrollBarWidth(),
+                    scroller_size.height() - (size.height() - height())));
+    }
   }
 
   views::View::Layout();
 
-  if (title_row_ && !MaterialDesignController::IsSystemTrayMenuMaterial()) {
+  if (title_row_ && !UseMd()) {
     // Always make sure the title row is bottom-aligned in non-MD.
     gfx::Rect fbounds = title_row_->bounds();
     fbounds.set_y(height() - title_row_->height());

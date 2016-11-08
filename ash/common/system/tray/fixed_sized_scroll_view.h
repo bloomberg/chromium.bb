@@ -11,6 +11,8 @@
 namespace ash {
 
 // A custom scroll-view that has a specified dimension.
+// TODO(estade): can we get rid of this class? In MD, it hardly differs in
+// behavior from ScrollView.
 class FixedSizedScrollView : public views::ScrollView {
  public:
   FixedSizedScrollView();
@@ -22,7 +24,7 @@ class FixedSizedScrollView : public views::ScrollView {
   // PreferredSizeChanged()).
   void SetFixedSize(const gfx::Size& size);
 
-  void set_fixed_size(const gfx::Size& size) { fixed_size_ = size; }
+  void set_fixed_size(const gfx::Size& size);
 
   // Overridden from views::View:
   gfx::Size GetPreferredSize() const override;
