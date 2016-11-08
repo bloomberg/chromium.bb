@@ -261,6 +261,22 @@ void ServeOneByOneImage(
   notify->OnImageDataFetched(id, "1-by-1-image-data");
 }
 
+gfx::Image FetchImage(NTPSnippetsService* service,
+                      const ContentSuggestion::ID& suggestion_id) {
+  gfx::Image result;
+  base::RunLoop run_loop;
+  service->FetchSuggestionImage(suggestion_id,
+                                base::Bind(
+                                    [](base::Closure signal, gfx::Image* output,
+                                       const gfx::Image& loaded) {
+                                      *output = loaded;
+                                      signal.Run();
+                                    },
+                                    run_loop.QuitClosure(), &result));
+  run_loop.Run();
+  return result;
+}
+
 void ParseJson(
     const std::string& json,
     const ntp_snippets::NTPSnippetsFetcher::SuccessCallback& success_callback,
@@ -893,6 +909,19 @@ TEST_F(NTPSnippetsServiceTest, LoadsAdditionalSnippets) {
                          /*known_ids=*/std::set<std::string>(),
                          expect_only_second_suggestion_received);
 
+  ServeImageCallback cb = base::Bind(&ServeOneByOneImage, service.get());
+  EXPECT_CALL(*image_fetcher(), StartOrQueueNetworkRequest(_, _, _))
+      .Times(2)
+      .WillRepeatedly(WithArgs<0, 2>(Invoke(&cb, &ServeImageCallback::Run)));
+  image_decoder()->SetDecodedImage(gfx::test::CreateImage(1, 1));
+  gfx::Image image = FetchImage(service.get(), MakeArticleID("http://first"));
+  EXPECT_FALSE(image.IsEmpty());
+  EXPECT_EQ(1, image.Width());
+
+  image = FetchImage(service.get(), MakeArticleID("http://second"));
+  EXPECT_FALSE(image.IsEmpty());
+  EXPECT_EQ(1, image.Width());
+
   // Verify that the observer did not get updated about the additional snippets.
   // Rationale: It's not clear that snippets fetched in one context (i.e. one
   // potentially old NTP) should be shown in other NTPs as well.
@@ -1352,26 +1381,6 @@ TEST_F(NTPSnippetsServiceTest, SuggestionsFetchedOnSignInAndSignOut) {
   base::RunLoop().RunUntilIdle();
   EXPECT_THAT(service->GetSnippetsForTesting(articles_category()), SizeIs(2));
 }
-
-namespace {
-
-gfx::Image FetchImage(NTPSnippetsService* service,
-                      const ContentSuggestion::ID& suggestion_id) {
-  gfx::Image result;
-  base::RunLoop run_loop;
-  service->FetchSuggestionImage(suggestion_id,
-                                base::Bind(
-                                    [](base::Closure signal, gfx::Image* output,
-                                       const gfx::Image& loaded) {
-                                      *output = loaded;
-                                      signal.Run();
-                                    },
-                                    run_loop.QuitClosure(), &result));
-  run_loop.Run();
-  return result;
-}
-
-}  // namespace
 
 TEST_F(NTPSnippetsServiceTest, ShouldClearOrphanedImagesOnRestart) {
   auto service = MakeSnippetsService();

@@ -660,9 +660,27 @@ void NTPSnippetsService::OnFetchMoreFinished(
     return;
   }
   auto& fetched_category = (*fetched_categories)[0];
+
   SanitizeFetchedCategory(&fetched_category);
-  fetching_callback.Run(ConvertToContentSuggestions(
-      fetched_category.category, fetched_category.snippets));
+
+  std::vector<ContentSuggestion> result = ConvertToContentSuggestions(
+      fetched_category.category, fetched_category.snippets);
+
+  // TODO(tschumann): Once we get the CategoryInfo from FetchedCategories and
+  // store them inside CategoryContent, we can simply create a new category_
+  // entry and always keep archived copy of the results.
+  if (base::ContainsKey(categories_, fetched_category.category)) {
+    // Add the snippets to the archive so that we keep track of the image urls.
+    CategoryContent* content = &categories_[fetched_category.category];
+    // TODO(tschumann): We always insert at the beginning of |archived| for FIFO
+    // GC semantics. This is inefficient. Consider using a deque, or appending
+    // to the end and having a slightly more expensive garbage collection.
+    content->archived.insert(
+        content->archived.begin(),
+        std::make_move_iterator(fetched_category.snippets.begin()),
+        std::make_move_iterator(fetched_category.snippets.end()));
+  }
+  fetching_callback.Run(std::move(result));
 }
 
 void NTPSnippetsService::OnFetchFinished(
