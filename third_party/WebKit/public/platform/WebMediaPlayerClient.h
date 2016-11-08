@@ -90,6 +90,7 @@ class BLINK_PLATFORM_EXPORT WebMediaPlayerClient {
   virtual void connectedToRemoteDevice() = 0;
   virtual void disconnectedFromRemoteDevice() = 0;
   virtual void cancelledRemotePlaybackRequest() = 0;
+  virtual void remotePlaybackStarted() = 0;
 
   // Returns whether the media element is in an autoplay muted state.
   virtual bool isAutoplayingMuted() = 0;

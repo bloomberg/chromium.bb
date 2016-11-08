@@ -34,6 +34,9 @@ class RemoteMediaPlayerManager : public content::BrowserMediaPlayerManager {
   // Callback to trigger when a remote device has been unselected.
   void OnRemoteDeviceUnselected(int player_id);
 
+  // Callback to trigger when the video on a remote device starts playing.
+  void OnRemotePlaybackStarted(int player_id);
+
   // Callback to trigger when the video on a remote device finishes playing.
   void OnRemotePlaybackFinished(int player_id);
 

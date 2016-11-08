@@ -120,6 +120,10 @@ IPC_MESSAGE_ROUTED2(MediaPlayerMsg_ConnectedToRemoteDevice,
 IPC_MESSAGE_ROUTED1(MediaPlayerMsg_DisconnectedFromRemoteDevice,
                     int /* player_id */)
 
+// The remote playback has started.
+IPC_MESSAGE_ROUTED1(MediaPlayerMsg_RemotePlaybackStarted,
+                    int /* player_id */)
+
 // The remote playback device selection has been cancelled.
 IPC_MESSAGE_ROUTED1(MediaPlayerMsg_CancelledRemotePlaybackRequest,
                     int /* player_id */)

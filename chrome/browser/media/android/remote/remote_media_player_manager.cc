@@ -208,6 +208,10 @@ void RemoteMediaPlayerManager::OnRemoteDeviceUnselected(int player_id) {
   ReplaceRemotePlayerWithLocal(player_id);
 }
 
+void RemoteMediaPlayerManager::OnRemotePlaybackStarted(int player_id) {
+  Send(new MediaPlayerMsg_RemotePlaybackStarted(RoutingID(), player_id));
+}
+
 void RemoteMediaPlayerManager::OnRemotePlaybackFinished(int player_id) {
   ReplaceRemotePlayerWithLocal(player_id);
 }

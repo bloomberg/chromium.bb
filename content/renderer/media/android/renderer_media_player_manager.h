@@ -109,6 +109,7 @@ class RendererMediaPlayerManager :
       const std::string& remote_playback_message);
   void OnDisconnectedFromRemoteDevice(int player_id);
   void OnCancelledRemotePlaybackRequest(int player_id);
+  void OnRemotePlaybackStarted(int player_id);
   void OnDidExitFullscreen(int player_id);
   void OnDidEnterFullscreen(int player_id);
   void OnPlayerPlay(int player_id);

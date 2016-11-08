@@ -76,6 +76,7 @@ class WebMediaPlayerCast : public RendererMediaPlayerInterface {
       const std::string& remote_playback_message) override;
   void OnDisconnectedFromRemoteDevice() override;
   void OnCancelledRemotePlaybackRequest() override;
+  void OnRemotePlaybackStarted() override;
   void OnDidExitFullscreen() override;
   void OnMediaPlayerPlay() override;
   void OnMediaPlayerPause() override;

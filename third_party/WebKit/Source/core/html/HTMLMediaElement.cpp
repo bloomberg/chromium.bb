@@ -3168,7 +3168,7 @@ void HTMLMediaElement::connectedToRemoteDevice() {
   if (mediaControls())
     mediaControls()->startedCasting();
   if (remotePlaybackClient())
-    remotePlaybackClient()->stateChanged(WebRemotePlaybackState::Connected);
+    remotePlaybackClient()->stateChanged(WebRemotePlaybackState::Connecting);
 }
 
 void HTMLMediaElement::disconnectedFromRemoteDevice() {
@@ -3182,6 +3182,11 @@ void HTMLMediaElement::disconnectedFromRemoteDevice() {
 void HTMLMediaElement::cancelledRemotePlaybackRequest() {
   if (remotePlaybackClient())
     remotePlaybackClient()->promptCancelled();
+}
+
+void HTMLMediaElement::remotePlaybackStarted() {
+  if (remotePlaybackClient())
+    remotePlaybackClient()->stateChanged(WebRemotePlaybackState::Connected);
 }
 
 bool HTMLMediaElement::isAutoplayingMuted() {

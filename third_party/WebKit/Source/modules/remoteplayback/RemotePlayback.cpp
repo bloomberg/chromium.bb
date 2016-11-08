@@ -205,11 +205,9 @@ void RemotePlayback::notifyInitialAvailability(int callbackId) {
 }
 
 void RemotePlayback::stateChanged(WebRemotePlaybackState state) {
-  // We may get a "disconnected" state change while in the "disconnected"
-  // state if initiated connection fails. So cleanup the promise resolvers
-  // before checking if anything changed.
-  // TODO(avayvod): cleanup this logic when implementing the "connecting"
-  // state.
+  if (m_state == state)
+    return;
+
   if (m_promptPromiseResolver) {
     // Changing state to Disconnected from "disconnected" or "connecting" means
     // that establishing connection with remote playback device failed.
@@ -220,13 +218,14 @@ void RemotePlayback::stateChanged(WebRemotePlaybackState state) {
       m_promptPromiseResolver->reject(DOMException::create(
           AbortError, "Failed to connect to the remote device."));
     } else {
+      DCHECK((m_state == WebRemotePlaybackState::Disconnected &&
+              state == WebRemotePlaybackState::Connecting) ||
+             (m_state == WebRemotePlaybackState::Connected &&
+              state == WebRemotePlaybackState::Disconnected));
       m_promptPromiseResolver->resolve();
     }
     m_promptPromiseResolver = nullptr;
   }
-
-  if (m_state == state)
-    return;
 
   m_state = state;
   switch (m_state) {

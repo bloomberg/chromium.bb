@@ -49,6 +49,7 @@ class RendererMediaPlayerInterface {
   virtual void OnConnectedToRemoteDevice(
       const std::string& remote_playback_message) = 0;
   virtual void OnDisconnectedFromRemoteDevice() = 0;
+  virtual void OnRemotePlaybackStarted() = 0;
   virtual void OnCancelledRemotePlaybackRequest() = 0;
   virtual void OnDidExitFullscreen() = 0;
   virtual void OnMediaPlayerPlay() = 0;

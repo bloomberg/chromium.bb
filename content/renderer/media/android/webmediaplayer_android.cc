@@ -880,6 +880,11 @@ void WebMediaPlayerAndroid::OnCancelledRemotePlaybackRequest() {
   client_->cancelledRemotePlaybackRequest();
 }
 
+void WebMediaPlayerAndroid::OnRemotePlaybackStarted() {
+  DCHECK(main_thread_checker_.CalledOnValidThread());
+  client_->remotePlaybackStarted();
+}
+
 void WebMediaPlayerAndroid::OnDidExitFullscreen() {
   SetNeedsEstablishPeer(true);
   // We had the fullscreen surface connected to Android MediaPlayer,

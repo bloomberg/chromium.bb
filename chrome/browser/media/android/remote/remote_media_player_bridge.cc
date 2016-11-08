@@ -180,6 +180,14 @@ void RemoteMediaPlayerBridge::OnCastStarting(
   }
 }
 
+void RemoteMediaPlayerBridge::OnCastStarted(
+    JNIEnv* env,
+    const JavaParamRef<jobject>& obj) {
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
+  static_cast<RemoteMediaPlayerManager*>(manager())->OnRemotePlaybackStarted(
+      player_id());
+}
+
 void RemoteMediaPlayerBridge::OnCastStopping(JNIEnv* env,
                                              const JavaParamRef<jobject>& obj) {
   static_cast<RemoteMediaPlayerManager*>(manager())
