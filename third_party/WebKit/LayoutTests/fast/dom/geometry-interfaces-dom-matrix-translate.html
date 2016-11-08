@@ -3,6 +3,23 @@
 <script src="../../resources/testharnessreport.js"></script>
 <script src="./resources/geometry-interfaces-test-helpers.js"></script>
 <script>
+
+test(function() {
+  var matrix = new DOMMatrix();
+  assert_identity_2d_matrix(matrix);
+  var result = matrix.translate();
+  assert_identity_2d_matrix(result);
+  assert_identity_2d_matrix(matrix);
+}, "DOMMatrix.translate()");
+
+test(function() {
+  var matrix = new DOMMatrix();
+  assert_identity_2d_matrix(matrix);
+  var result = matrix.translate(6);
+  assert_2d_matrix_equals(result, [1, 0, 0, 1, 6, 0]);
+  assert_identity_2d_matrix(matrix);
+}, "DOMMatrix.translate(tx)");
+
 test(function() {
   var matrix = new DOMMatrix();
   assert_identity_2d_matrix(matrix);
@@ -19,6 +36,22 @@ test(function() {
   assert_2d_matrix_equals(result, [1, 0, 0, 1, 6, 5]);
   assert_2d_matrix_equals(matrix, [1, 0, 0, 1, 2, 3]);
 }, "DOMMatrix.translate(tx, ty) with non-identity");
+
+test(function() {
+  var matrix = new DOMMatrix();
+  assert_identity_2d_matrix(matrix);
+  var result = matrix.translateSelf();
+  assert_identity_2d_matrix(result);
+  assert_identity_2d_matrix(matrix);
+}, "DOMMatrix.translateSelf()");
+
+test(function() {
+  var matrix = new DOMMatrix();
+  assert_identity_2d_matrix(matrix);
+  var result = matrix.translateSelf(5);
+  assert_2d_matrix_equals(result, [1, 0, 0, 1, 5, 0]);
+  assert_2d_matrix_equals(matrix, [1, 0, 0, 1, 5, 0]);
+}, "DOMMatrix.translateSelf(tx)");
 
 test(function() {
   var matrix = new DOMMatrix();

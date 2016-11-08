@@ -50,8 +50,8 @@
     // Mutable transform methods
     [RaisesException] DOMMatrix multiplySelf(optional DOMMatrixInit other);
     [RaisesException] DOMMatrix preMultiplySelf(optional DOMMatrixInit other);
-    DOMMatrix translateSelf(unrestricted double tx,
-                            unrestricted double ty,
+    DOMMatrix translateSelf(optional unrestricted double tx = 0,
+                            optional unrestricted double ty = 0,
                             optional unrestricted double tz = 0);
     DOMMatrix scaleSelf(optional unrestricted double scaleX = 1,
                         optional unrestricted double scaleY,

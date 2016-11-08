@@ -48,8 +48,8 @@
     // TODO(zino): Should implement transformPoint() method (See: crbug.com/645885)
     // TODO(zino): Should remove scaleNonUniform() method (See: crbug.com/645887)
     // Immutable transform methods
-    DOMMatrix translate(unrestricted double tx,
-                        unrestricted double ty,
+    DOMMatrix translate(optional unrestricted double tx = 0,
+                        optional unrestricted double ty = 0,
                         optional unrestricted double tz = 0);
     DOMMatrix scale(optional unrestricted double scaleX = 1,
                     optional unrestricted double scaleY,
