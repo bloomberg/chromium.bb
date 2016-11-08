@@ -1,0 +1,274 @@
+<!doctype html>
+<!--
+Copyright 2016 The Chromium Authors. All rights reserved.
+Use of this source code is governed by a BSD-style license that can be
+found in the LICENSE file.
+-->
+<html>
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1, user-scalable=no">
+    <meta name="mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+
+    <title>04b - Simple Mirroring pt. 2</title>
+
+    <!--
+      This sample demonstrates how to restrict a simple mirror of VR content
+      (using PreserveDrawingBuffer) to only show the contents of a single eye.
+    -->
+
+    <style>
+      body {
+        background-color: black;
+      }
+
+      #canvas-clip, #webgl-canvas {
+        box-sizing: border-box;
+        height: 100%;
+        left: 0;
+        margin: 0;
+        position: absolute;
+        top: 0;
+        width: 100%;
+      }
+
+      #canvas-clip.presenting {
+        /* This property allows the canvas-clip div to hide the parts of the
+        WebVR canvas that extend past it's bounds without adding scrollbars*/
+        overflow: hidden;
+
+        /* These center the div on the screen */
+        bottom: 0;
+        right: 0;
+        margin: auto;
+      }
+
+      .presenting #webgl-canvas {
+        /* By making the canvas 200% as wide as it's parent we'll only see the
+        left eye's content. The rest will be cropped by the parent div */
+        width: 200%;
+      }
+    </style>
+
+    <!-- This entire block in only to facilitate dynamically enabling and
+    disabling the WebVR polyfill, and is not necessary for most WebVR apps.
+    If you want to use the polyfill in your app, just include the js file and
+    everything will work the way you want it to by default. -->
+    <script>
+      var WebVRConfig = {
+        // Prevents the polyfill from initializing automatically.
+        DEFER_INITIALIZATION: true,
+        // Polyfill optimizations
+        DIRTY_SUBMIT_FRAME_BINDINGS: true,
+        BUFFER_SCALE: 0.75,
+      };
+    </script>
+    <script src="js/third-party/webvr-polyfill.js"></script>
+    <script src="js/third-party/wglu/wglu-url.js"></script>
+    <script>
+      // Dynamically turn the polyfill on if requested by the query args.
+      if (WGLUUrl.getBool('polyfill', false)) {
+        InitializeWebVRPolyfill();
+      } else {
+        // Shim for migration from older version of WebVR. Shouldn't be necessary for very long.
+        InitializeSpecShim();
+      }
+    </script>
+    <!-- End sample polyfill enabling logic -->
+
+    <script src="js/third-party/gl-matrix-min.js"></script>
+
+    <script src="js/third-party/wglu/wglu-program.js"></script>
+    <script src="js/third-party/wglu/wglu-stats.js"></script>
+    <script src="js/third-party/wglu/wglu-texture.js"></script>
+
+    <script src="js/vr-cube-sea.js"></script>
+    <script src="js/vr-samples-util.js"></script>
+  </head>
+  <body>
+    <div id="canvas-clip">
+      <canvas id="webgl-canvas"></canvas>
+    </div>
+    <script>
+      /* global mat4, VRCubeSea, WGLUStats, WGLUTextureLoader, VRSamplesUtil */
+      (function () {
+      "use strict";
+
+      var vrDisplay = null;
+      var frameData = null;
+      var projectionMat = mat4.create();
+      var viewMat = mat4.create();
+      var vrPresentButton = null;
+
+      // ================================
+      // WebVR-specific code begins here.
+      // ================================
+
+      // WebGL setup.
+      var webglCanvas = document.getElementById("webgl-canvas");
+      var canvasClip = document.getElementById("canvas-clip");
+      var gl = null;
+      var cubeSea = null;
+      var stats = null;
+
+      function initWebGL (preserveDrawingBuffer) {
+        var glAttribs = {
+          alpha: false,
+          antialias: true,
+          preserveDrawingBuffer: preserveDrawingBuffer
+        };
+        gl = webglCanvas.getContext("webgl", glAttribs);
+        if (!gl) {
+          gl = webglCanvas.getContext("experimental-webgl", glAttribs);
+          if (!gl) {
+            VRSamplesUtil.addError("Your browser does not support WebGL.");
+            return;
+          }
+        }
+        gl.clearColor(0.1, 0.2, 0.3, 1.0);
+        gl.enable(gl.DEPTH_TEST);
+        gl.enable(gl.CULL_FACE);
+
+        var textureLoader = new WGLUTextureLoader(gl);
+        var texture = textureLoader.loadTexture("media/textures/cube-sea.png");
+        cubeSea = new VRCubeSea(gl, texture);
+        stats = new WGLUStats(gl);
+
+        window.addEventListener("resize", onResize, false);
+        onResize();
+        window.requestAnimationFrame(onAnimationFrame);
+      }
+
+      function onVRRequestPresent () {
+        vrDisplay.requestPresent([{ source: webglCanvas }]).then(function () {
+        }, function () {
+          VRSamplesUtil.addError("requestPresent failed.", 2000);
+        });
+      }
+
+      function onVRExitPresent () {
+        if (!vrDisplay.isPresenting)
+          return;
+
+        vrDisplay.exitPresent().then(function () {
+        }, function () {
+          VRSamplesUtil.addError("exitPresent failed.", 2000);
+        });
+      }
+
+      function onVRPresentChange () {
+        if (vrDisplay.isPresenting) {
+          if (vrDisplay.capabilities.hasExternalDisplay) {
+            VRSamplesUtil.removeButton(vrPresentButton);
+            vrPresentButton = VRSamplesUtil.addButton("Exit VR", "E", "media/icons/cardboard64.png", onVRExitPresent);
+            canvasClip.classList.add("presenting");
+
+            // Set the size to half the width and height of the eye's render
+            // target. This makes the image proportional while also reducing the
+            // draw costs of mirroring it to the screen.
+            var leftEye = vrDisplay.getEyeParameters("left");
+            canvasClip.style.width = (leftEye.renderWidth/2) + "px";
+            canvasClip.style.height = (leftEye.renderHeight/2) + "px";
+          }
+        } else {
+          if (vrDisplay.capabilities.hasExternalDisplay) {
+            VRSamplesUtil.removeButton(vrPresentButton);
+            vrPresentButton = VRSamplesUtil.addButton("Enter VR", "E", "media/icons/cardboard64.png", onVRRequestPresent);
+
+            // Reset the div to it's default size when we're done presenting.
+            canvasClip.classList.remove("presenting");
+            canvasClip.style.width = "";
+            canvasClip.style.height = "";
+          }
+        }
+
+        // Make sure the canvas is resized AFTER we've updated the container div.
+        onResize();
+      }
+
+      if (navigator.getVRDisplays) {
+        frameData = new VRFrameData();
+
+        navigator.getVRDisplays().then(function (displays) {
+          if (displays.length > 0) {
+            vrDisplay = displays[0];
+            VRSamplesUtil.addButton("Reset Pose", "R", null, function () { vrDisplay.resetPose(); });
+
+            if (vrDisplay.capabilities.canPresent)
+              vrPresentButton = VRSamplesUtil.addButton("Enter VR", "E", "media/icons/cardboard64.png", onVRRequestPresent);
+
+            window.addEventListener('vrdisplaypresentchange', onVRPresentChange, false);
+            window.addEventListener('vrdisplayactivate', onVRRequestPresent, false);
+            window.addEventListener('vrdisplaydeactivate', onVRExitPresent, false);
+
+            initWebGL(vrDisplay.capabilities.hasExternalDisplay);
+          } else {
+            initWebGL(false);
+            VRSamplesUtil.addInfo("WebVR supported, but no VRDisplays found.", 3000);
+          }
+        });
+      } else if (navigator.getVRDevices) {
+        initWebGL(false);
+        VRSamplesUtil.addError("Your browser supports WebVR but not the latest version. See <a href='http://webvr.info'>webvr.info</a> for more info.");
+      } else {
+        initWebGL(false);
+        VRSamplesUtil.addError("Your browser does not support WebVR. See <a href='http://webvr.info'>webvr.info</a> for assistance.");
+      }
+
+      function onResize () {
+        if (vrDisplay && vrDisplay.isPresenting) {
+          var leftEye = vrDisplay.getEyeParameters("left");
+          var rightEye = vrDisplay.getEyeParameters("right");
+
+          webglCanvas.width = Math.max(leftEye.renderWidth, rightEye.renderWidth) * 2;
+          webglCanvas.height = Math.max(leftEye.renderHeight, rightEye.renderHeight);
+        } else {
+          webglCanvas.width = webglCanvas.offsetWidth * window.devicePixelRatio;
+          webglCanvas.height = webglCanvas.offsetHeight * window.devicePixelRatio;
+        }
+      }
+
+
+      function onAnimationFrame (t) {
+        stats.begin();
+
+        gl.clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT);
+
+        if (vrDisplay) {
+          vrDisplay.requestAnimationFrame(onAnimationFrame);
+
+          vrDisplay.getFrameData(frameData);
+
+          if (vrDisplay.isPresenting) {
+            gl.viewport(0, 0, webglCanvas.width * 0.5, webglCanvas.height);
+            cubeSea.render(frameData.leftProjectionMatrix, frameData.leftViewMatrix, stats);
+
+            gl.viewport(webglCanvas.width * 0.5, 0, webglCanvas.width * 0.5, webglCanvas.height);
+            cubeSea.render(frameData.rightProjectionMatrix, frameData.rightViewMatrix, stats);
+
+            vrDisplay.submitFrame();
+          } else {
+            gl.viewport(0, 0, webglCanvas.width, webglCanvas.height);
+            mat4.perspective(projectionMat, Math.PI*0.4, webglCanvas.width / webglCanvas.height, 0.1, 1024.0);
+            cubeSea.render(projectionMat, frameData.leftViewMatrix, stats);
+            stats.renderOrtho();
+          }
+        } else {
+          window.requestAnimationFrame(onAnimationFrame);
+
+          // No VRDisplay found.
+          gl.viewport(0, 0, webglCanvas.width, webglCanvas.height);
+          mat4.perspective(projectionMat, Math.PI*0.4, webglCanvas.width / webglCanvas.height, 0.1, 1024.0);
+          mat4.identity(viewMat);
+          cubeSea.render(projectionMat, viewMat, stats);
+
+          stats.renderOrtho();
+        }
+
+        stats.end();
+      }
+      })();
+    </script>
+  </body>
+</html>
