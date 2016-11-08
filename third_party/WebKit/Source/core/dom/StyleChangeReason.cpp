@@ -35,7 +35,6 @@ const char PropertyUnregistration[] = "PropertyUnregistration";
 const char PseudoClass[] = "PseudoClass";
 const char SVGContainerSizeChange[] = "SVGContainerSizeChange";
 const char SVGCursor[] = "SVGCursor";
-const char SVGFilterLayerUpdate[] = "SVGFilterLayerUpdate";
 const char Settings[] = "Settings";
 const char Shadow[] = "Shadow";
 const char StyleInvalidator[] = "StyleInvalidator";

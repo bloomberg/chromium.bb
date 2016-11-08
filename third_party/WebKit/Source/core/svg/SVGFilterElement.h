@@ -34,7 +34,7 @@
 
 namespace blink {
 
-class SVGResourceClient;
+class SVGElementProxySet;
 
 class CORE_EXPORT SVGFilterElement final : public SVGElement,
                                            public SVGURIReference {
@@ -47,8 +47,7 @@ class CORE_EXPORT SVGFilterElement final : public SVGElement,
 
   ~SVGFilterElement() override;
 
-  void addClient(SVGResourceClient*);
-  void removeClient(SVGResourceClient*);
+  SVGElementProxySet& elementProxySet();
 
   SVGAnimatedLength* x() const { return m_x.get(); }
   SVGAnimatedLength* y() const { return m_y.get(); }
@@ -80,7 +79,7 @@ class CORE_EXPORT SVGFilterElement final : public SVGElement,
   Member<SVGAnimatedEnumeration<SVGUnitTypes::SVGUnitType>> m_filterUnits;
   Member<SVGAnimatedEnumeration<SVGUnitTypes::SVGUnitType>> m_primitiveUnits;
 
-  HeapHashSet<WeakMember<SVGResourceClient>> m_clientsToAdd;
+  Member<SVGElementProxySet> m_elementProxySet;
 };
 
 }  // namespace blink

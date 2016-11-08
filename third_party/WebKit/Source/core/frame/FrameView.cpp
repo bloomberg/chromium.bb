@@ -3037,22 +3037,9 @@ void FrameView::updateStyleAndLayoutIfNeededRecursiveInternal() {
   for (const auto& frameView : frameViews)
     frameView->updateStyleAndLayoutIfNeededRecursiveInternal();
 
-  checkDoesNotNeedLayout();
-
-  // When SVG filters are invalidated using
-  // Document::scheduleSVGFilterLayerUpdateHack() they may trigger an extra
-  // style recalc. See PaintLayer::filterNeedsPaintInvalidation().
-  if (m_frame->document()->hasSVGFilterElementsRequiringLayerUpdate()) {
-    m_frame->document()->updateStyleAndLayoutTree();
-
-    if (needsLayout())
-      layout();
-  }
-
   // These asserts ensure that parent frames are clean, when child frames
   // finished updating layout and style.
   checkDoesNotNeedLayout();
-  ASSERT(!m_frame->document()->hasSVGFilterElementsRequiringLayerUpdate());
 #if ENABLE(ASSERT)
   m_frame->document()->layoutView()->assertLaidOut();
 #endif

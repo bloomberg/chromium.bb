@@ -1571,8 +1571,6 @@ bool Document::needsFullLayoutTreeUpdate() const {
     return false;
   if (!m_useElementsNeedingUpdate.isEmpty())
     return true;
-  if (!m_layerUpdateSVGFilterElements.isEmpty())
-    return true;
   if (needsStyleRecalc())
     return true;
   if (needsStyleInvalidation())
@@ -1965,11 +1963,8 @@ void Document::updateStyle() {
 
   if (Element* documentElement = this->documentElement()) {
     inheritHtmlAndBodyElementStyles(change);
-    dirtyElementsForLayerUpdate();
     if (documentElement->shouldCallRecalcStyle(change))
       documentElement->recalcStyle(change);
-    while (dirtyElementsForLayerUpdate())
-      documentElement->recalcStyle(NoChange);
   }
 
   view()->recalcOverflowAfterStyleChange();
@@ -2245,31 +2240,6 @@ void Document::setIsViewSource(bool isViewSource) {
 
   setSecurityOrigin(SecurityOrigin::createUnique());
   didUpdateSecurityOrigin();
-}
-
-bool Document::dirtyElementsForLayerUpdate() {
-  if (m_layerUpdateSVGFilterElements.isEmpty())
-    return false;
-
-  for (Element* element : m_layerUpdateSVGFilterElements)
-    element->setNeedsStyleRecalc(LocalStyleChange,
-                                 StyleChangeReasonForTracing::create(
-                                     StyleChangeReason::SVGFilterLayerUpdate));
-  m_layerUpdateSVGFilterElements.clear();
-  return true;
-}
-
-void Document::scheduleSVGFilterLayerUpdateHack(Element& element) {
-  if (element.getStyleChangeType() == NeedsReattachStyleChange)
-    return;
-  element.setSVGFilterNeedsLayerUpdate();
-  m_layerUpdateSVGFilterElements.add(&element);
-  scheduleLayoutTreeUpdateIfNeeded();
-}
-
-void Document::unscheduleSVGFilterLayerUpdateHack(Element& element) {
-  element.clearSVGFilterNeedsLayerUpdate();
-  m_layerUpdateSVGFilterElements.remove(&element);
 }
 
 void Document::scheduleUseShadowTreeUpdate(SVGUseElement& element) {
@@ -6421,7 +6391,6 @@ DEFINE_TRACE(Document) {
   visitor->trace(m_customElementMicrotaskRunQueue);
   visitor->trace(m_elementDataCache);
   visitor->trace(m_useElementsNeedingUpdate);
-  visitor->trace(m_layerUpdateSVGFilterElements);
   visitor->trace(m_timers);
   visitor->trace(m_templateDocument);
   visitor->trace(m_templateDocumentHost);

@@ -18,7 +18,6 @@ blink_core_sources("fetch") {
     "CrossOriginAccessControl.h",
     "DocumentResource.cpp",
     "DocumentResource.h",
-    "DocumentResourceReference.h",
     "FetchContext.cpp",
     "FetchContext.h",
     "FetchInitiatorInfo.h",

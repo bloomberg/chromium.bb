@@ -104,6 +104,8 @@ class LayoutSVGResourceFilter final : public LayoutSVGResourceContainer {
   void willBeDestroyed() override;
 
  private:
+  SVGElementProxySet* elementProxySet() override;
+
   void disposeFilterMap();
 
   using FilterMap = PersistentHeapHashMap<LayoutObject*, Member<FilterData>>;

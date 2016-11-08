@@ -67,6 +67,7 @@ namespace blink {
 class CompositedLayerMapping;
 class CompositorFilterOperations;
 class ComputedStyle;
+class FilterEffect;
 class FilterOperations;
 class HitTestResult;
 class HitTestingTransformState;
@@ -481,8 +482,6 @@ class CORE_EXPORT PaintLayer : public DisplayItemClient {
            layoutObject()->style()->preserves3D();
   }
 
-  void filterNeedsPaintInvalidation();
-
   // Returns |true| if any property that renders using filter operations is
   // used (including, but not limited to, 'filter' and 'box-reflect').
   bool hasFilterInducingProperty() const {
@@ -599,6 +598,7 @@ class CORE_EXPORT PaintLayer : public DisplayItemClient {
     return m_rareData ? m_rareData->filterInfo.get() : nullptr;
   }
   PaintLayerFilterInfo& ensureFilterInfo();
+  void removeFilterInfo();
 
   void updateFilters(const ComputedStyle* oldStyle,
                      const ComputedStyle& newStyle);
@@ -815,8 +815,6 @@ class CORE_EXPORT PaintLayer : public DisplayItemClient {
   void setShouldIsolateCompositedDescendants(bool);
 
   void updateDescendantDependentFlags();
-
-  void updateOrRemoveFilterEffect();
 
   void updateSelfPaintingLayer();
   // This is O(depth) so avoid calling this in loops. Instead use optimizations
@@ -1070,7 +1068,6 @@ class CORE_EXPORT PaintLayer : public DisplayItemClient {
   void updateStackingNode();
 
   FilterOperations addReflectionToFilterOperations(const ComputedStyle&) const;
-  FilterEffect* updateFilterEffect() const;
 
   // FIXME: We could lazily allocate our ScrollableArea based on style
   // properties ('overflow', ...) but for now, we are always allocating it for
@@ -1086,8 +1083,6 @@ class CORE_EXPORT PaintLayer : public DisplayItemClient {
                        const ComputedStyle& newStyle);
 
   void removeAncestorOverflowLayer(const PaintLayer* removedLayer);
-
-  void updateOrRemoveFilterClients();
 
   void updatePaginationRecursive(bool needsPaginationUpdate = false);
   void clearPaginationRecursive();
