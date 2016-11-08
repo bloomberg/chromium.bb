@@ -137,10 +137,7 @@ class BorderView : public NativeViewHost {
     SetFocusBehavior(FocusBehavior::NEVER);
   }
 
-  ~BorderView() override {
-    if (widget_)
-      widget_->CloseNow();
-  }
+  ~BorderView() override {}
 
   virtual internal::RootView* GetContentsRootView() {
     return static_cast<internal::RootView*>(widget_->GetRootView());
