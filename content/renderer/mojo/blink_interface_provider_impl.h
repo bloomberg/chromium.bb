@@ -38,6 +38,9 @@ class BlinkInterfaceProviderImpl : public blink::InterfaceProvider {
 
   scoped_refptr<base::SingleThreadTaskRunner> main_thread_task_runner_;
 
+  // Should only be accessed by Web Worker threads that are using the
+  // blink::Platform-level interface provider.
+  base::WeakPtr<BlinkInterfaceProviderImpl> weak_ptr_;
   base::WeakPtrFactory<BlinkInterfaceProviderImpl> weak_ptr_factory_;
 
   DISALLOW_COPY_AND_ASSIGN(BlinkInterfaceProviderImpl);
