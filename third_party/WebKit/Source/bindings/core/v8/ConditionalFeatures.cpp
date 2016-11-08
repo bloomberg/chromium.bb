@@ -99,7 +99,7 @@ bool isFeatureEnabledInFrame(const FeaturePolicy::Feature& feature,
       (feature.defaultPolicy != FeaturePolicy::FeatureDefault::DisableForAll);
   if (!RuntimeEnabledFeatures::featurePolicyEnabled() || !frame)
     return enabledByDefault;
-  FeaturePolicy* featurePolicy = frame->getFeaturePolicy();
+  FeaturePolicy* featurePolicy = frame->securityContext()->getFeaturePolicy();
   if (!featurePolicy)
     return enabledByDefault;
 

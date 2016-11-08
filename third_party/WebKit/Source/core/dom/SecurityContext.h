@@ -29,6 +29,7 @@
 
 #include "core/CoreExport.h"
 #include "core/dom/SandboxFlags.h"
+#include "platform/feature_policy/FeaturePolicy.h"
 #include "platform/heap/Handle.h"
 #include "platform/weborigin/Suborigin.h"
 #include "public/platform/WebAddressSpace.h"
@@ -40,6 +41,8 @@
 #include "wtf/RefPtr.h"
 #include "wtf/text/StringHash.h"
 #include "wtf/text/WTFString.h"
+
+#include <memory>
 
 namespace blink {
 
@@ -89,6 +92,11 @@ class CORE_EXPORT SecurityContext : public GarbageCollectedMixin {
 
   void enforceSuborigin(const Suborigin&);
 
+  FeaturePolicy* getFeaturePolicy() const { return m_featurePolicy.get(); }
+  void setFeaturePolicy(std::unique_ptr<FeaturePolicy> newPolicy) {
+    m_featurePolicy = std::move(newPolicy);
+  }
+
  protected:
   SecurityContext();
   virtual ~SecurityContext();
@@ -100,6 +108,7 @@ class CORE_EXPORT SecurityContext : public GarbageCollectedMixin {
  private:
   RefPtr<SecurityOrigin> m_securityOrigin;
   Member<ContentSecurityPolicy> m_contentSecurityPolicy;
+  std::unique_ptr<FeaturePolicy> m_featurePolicy;
 
   SandboxFlags m_sandboxFlags;
 

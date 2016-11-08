@@ -579,9 +579,11 @@ void FrameLoader::didBeginDocument() {
     if (RuntimeEnabledFeatures::featurePolicyEnabled()) {
       std::unique_ptr<FeaturePolicy> featurePolicy(
           FeaturePolicy::createFromParentPolicy(
-              (isLoadingMainFrame()
-                   ? nullptr
-                   : m_frame->client()->parent()->getFeaturePolicy()),
+              (isLoadingMainFrame() ? nullptr
+                                    : m_frame->client()
+                                          ->parent()
+                                          ->securityContext()
+                                          ->getFeaturePolicy()),
               m_frame->securityContext()->getSecurityOrigin()));
       Vector<String> messages;
       featurePolicy->setHeaderPolicy(
@@ -593,7 +595,7 @@ void FrameLoader::didBeginDocument() {
             OtherMessageSource, ErrorMessageLevel,
             "Error with Feature-Policy header: " + message));
       }
-      m_frame->setFeaturePolicy(std::move(featurePolicy));
+      m_frame->document()->setFeaturePolicy(std::move(featurePolicy));
     }
   }
 
