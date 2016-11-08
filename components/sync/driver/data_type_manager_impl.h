@@ -113,10 +113,6 @@ class DataTypeManagerImpl : public DataTypeManager,
   void NotifyStart();
   void NotifyDone(const ConfigureResult& result);
 
-  // Add to |configure_time_delta_| the time since we last called
-  // Restart().
-  void AddToConfigureTime();
-
   void ConfigureImpl(ModelTypeSet desired_types, ConfigureReason reason);
 
   // Calls data type controllers of requested types to register with backend.
@@ -162,10 +158,6 @@ class DataTypeManagerImpl : public DataTypeManager,
 
   // The last time Restart() was called.
   base::Time last_restart_time_;
-
-  // The accumulated time spent between calls to Restart() and going
-  // to the DONE state.
-  base::TimeDelta configure_time_delta_;
 
   // Sync's datatype debug info listener, which we pass model association
   // statistics to.

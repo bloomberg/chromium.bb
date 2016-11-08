@@ -638,18 +638,18 @@ void DataTypeManagerImpl::NotifyStart() {
 void DataTypeManagerImpl::NotifyDone(const ConfigureResult& raw_result) {
   catch_up_in_progress_ = false;
 
-  AddToConfigureTime();
+  DCHECK(!last_restart_time_.is_null());
+  base::TimeDelta configure_time = base::Time::Now() - last_restart_time_;
 
   ConfigureResult result = raw_result;
   result.data_type_status_table = data_type_status_table_;
 
-  DVLOG(1) << "Total time spent configuring: "
-           << configure_time_delta_.InSecondsF() << "s";
+  DVLOG(1) << "Total time spent configuring: " << configure_time.InSecondsF()
+           << "s";
   switch (result.status) {
     case DataTypeManager::OK:
       DVLOG(1) << "NotifyDone called with result: OK";
-      UMA_HISTOGRAM_LONG_TIMES("Sync.ConfigureTime_Long.OK",
-                               configure_time_delta_);
+      UMA_HISTOGRAM_LONG_TIMES("Sync.ConfigureTime_Long.OK", configure_time);
       if (debug_info_listener_.IsInitialized() &&
           !configuration_stats_.empty()) {
         debug_info_listener_.Call(
@@ -661,12 +661,12 @@ void DataTypeManagerImpl::NotifyDone(const ConfigureResult& raw_result) {
     case DataTypeManager::ABORTED:
       DVLOG(1) << "NotifyDone called with result: ABORTED";
       UMA_HISTOGRAM_LONG_TIMES("Sync.ConfigureTime_Long.ABORTED",
-                               configure_time_delta_);
+                               configure_time);
       break;
     case DataTypeManager::UNRECOVERABLE_ERROR:
       DVLOG(1) << "NotifyDone called with result: UNRECOVERABLE_ERROR";
       UMA_HISTOGRAM_LONG_TIMES("Sync.ConfigureTime_Long.UNRECOVERABLE_ERROR",
-                               configure_time_delta_);
+                               configure_time);
       break;
     case DataTypeManager::UNKNOWN:
       NOTREACHED();
@@ -677,11 +677,6 @@ void DataTypeManagerImpl::NotifyDone(const ConfigureResult& raw_result) {
 
 DataTypeManager::State DataTypeManagerImpl::state() const {
   return state_;
-}
-
-void DataTypeManagerImpl::AddToConfigureTime() {
-  DCHECK(!last_restart_time_.is_null());
-  configure_time_delta_ += (base::Time::Now() - last_restart_time_);
 }
 
 ModelTypeSet DataTypeManagerImpl::GetEnabledTypes() const {
