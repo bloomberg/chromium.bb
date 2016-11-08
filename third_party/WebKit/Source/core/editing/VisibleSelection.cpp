@@ -55,6 +55,7 @@ VisibleSelectionTemplate<Strategy>::VisibleSelectionTemplate(
     : m_base(selection.base()),
       m_extent(selection.extent()),
       m_affinity(selection.affinity()),
+      m_selectionType(NoSelection),
       m_isDirectional(selection.isDirectional()),
       m_granularity(selection.granularity()),
       m_hasTrailingWhitespace(selection.hasTrailingWhitespace()) {

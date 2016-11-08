@@ -214,6 +214,10 @@ TEST_F(VisibleSelectionTest, Initialisation) {
   EXPECT_EQ("", range->text());
   testFlatTreePositionsToEqualToDOMTreePositions(selection,
                                                  selectionInFlatTree);
+
+  const VisibleSelection noSelection =
+      createVisibleSelection(SelectionInDOMTree::Builder().build());
+  EXPECT_EQ(NoSelection, noSelection.getSelectionType());
 }
 
 TEST_F(VisibleSelectionTest, ShadowCrossing) {
