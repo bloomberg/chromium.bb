@@ -16,7 +16,7 @@ SyncBackendHostMock::~SyncBackendHostMock() {}
 
 void SyncBackendHostMock::Initialize(
     SyncFrontend* frontend,
-    std::unique_ptr<base::Thread> sync_thread,
+    base::Thread* sync_thread,
     const scoped_refptr<base::SingleThreadTaskRunner>& db_thread,
     const scoped_refptr<base::SingleThreadTaskRunner>& file_thread,
     const WeakHandle<JsEventHandler>& event_handler,
@@ -53,10 +53,7 @@ bool SyncBackendHostMock::SetDecryptionPassphrase(
 
 void SyncBackendHostMock::StopSyncingForShutdown() {}
 
-std::unique_ptr<base::Thread> SyncBackendHostMock::Shutdown(
-    ShutdownReason reason) {
-  return std::unique_ptr<base::Thread>();
-}
+void SyncBackendHostMock::Shutdown(ShutdownReason reason) {}
 
 void SyncBackendHostMock::UnregisterInvalidationIds() {}
 
@@ -119,10 +116,6 @@ void SyncBackendHostMock::GetModelSafeRoutingInfo(
     ModelSafeRoutingInfo* out) const {}
 
 void SyncBackendHostMock::FlushDirectory() const {}
-
-base::MessageLoop* SyncBackendHostMock::GetSyncLoopForTesting() {
-  return nullptr;
-}
 
 void SyncBackendHostMock::RefreshTypesForTest(ModelTypeSet types) {}
 

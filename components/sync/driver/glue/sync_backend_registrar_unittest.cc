@@ -80,32 +80,29 @@ class SyncBackendRegistrarTest : public testing::Test {
 
  protected:
   SyncBackendRegistrarTest()
-      : db_thread_("DBThreadForTest"), file_thread_("FileThreadForTest") {}
+      : db_thread_("DBThreadForTest"),
+        file_thread_("FileThreadForTest"),
+        sync_thread_("SyncThreadForTest") {}
 
   ~SyncBackendRegistrarTest() override {}
 
   void SetUp() override {
     db_thread_.StartAndWaitForTesting();
     file_thread_.StartAndWaitForTesting();
+    sync_thread_.StartAndWaitForTesting();
     test_user_share_.SetUp();
     sync_client_ = base::MakeUnique<RegistrarSyncClient>(
         ui_task_runner(), db_task_runner(), file_task_runner());
     registrar_ = base::MakeUnique<SyncBackendRegistrar>(
-        "test", sync_client_.get(), std::unique_ptr<base::Thread>(),
-        ui_task_runner(), db_task_runner(), file_task_runner());
+        "test", sync_client_.get(), ui_task_runner(), db_task_runner(),
+        file_task_runner());
   }
 
   void TearDown() override {
     registrar_->RequestWorkerStopOnUIThread();
     test_user_share_.TearDown();
-    {
-      std::unique_ptr<base::Thread> released_sync_thread =
-          registrar_->ReleaseSyncThread();
-      released_sync_thread->task_runner()->DeleteSoon(FROM_HERE,
-                                                      registrar_.release());
-      // |released_sync_thread| is joined at the end of this scope.
-    }
-    base::RunLoop().RunUntilIdle();
+    sync_thread_.task_runner()->DeleteSoon(FROM_HERE, registrar_.release());
+    sync_thread_.FlushForTesting();
   }
 
   void ExpectRoutingInfo(SyncBackendRegistrar* registrar,
@@ -145,6 +142,7 @@ class SyncBackendRegistrarTest : public testing::Test {
   base::MessageLoop message_loop_;
   base::Thread db_thread_;
   base::Thread file_thread_;
+  base::Thread sync_thread_;
 
   TestUserShare test_user_share_;
   std::unique_ptr<RegistrarSyncClient> sync_client_;

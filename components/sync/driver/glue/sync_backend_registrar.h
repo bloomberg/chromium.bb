@@ -35,7 +35,6 @@ class SyncBackendRegistrar : public SyncManager::ChangeDelegate {
   SyncBackendRegistrar(
       const std::string& name,
       SyncClient* sync_client,
-      std::unique_ptr<base::Thread> sync_thread,
       const scoped_refptr<base::SingleThreadTaskRunner>& ui_thread,
       const scoped_refptr<base::SingleThreadTaskRunner>& db_thread,
       const scoped_refptr<base::SingleThreadTaskRunner>& file_thread);
@@ -117,11 +116,6 @@ class SyncBackendRegistrar : public SyncManager::ChangeDelegate {
   void GetWorkers(std::vector<scoped_refptr<ModelSafeWorker>>* out);
   void GetModelSafeRoutingInfo(ModelSafeRoutingInfo* out);
 
-  // Release ownership of |sync_thread_|. Called when sync is disabled.
-  std::unique_ptr<base::Thread> ReleaseSyncThread();
-
-  base::Thread* sync_thread();
-
  private:
   typedef std::map<ModelSafeGroup, scoped_refptr<ModelSafeWorker>> WorkerMap;
   typedef std::map<ModelType, ChangeProcessor*> ProcessorMap;
@@ -176,8 +170,6 @@ class SyncBackendRegistrar : public SyncManager::ChangeDelegate {
   const scoped_refptr<base::SingleThreadTaskRunner> ui_thread_;
   const scoped_refptr<base::SingleThreadTaskRunner> db_thread_;
   const scoped_refptr<base::SingleThreadTaskRunner> file_thread_;
-
-  std::unique_ptr<base::Thread> sync_thread_;
 
   // Set of types with non-blocking implementation (as opposed to directory
   // based).

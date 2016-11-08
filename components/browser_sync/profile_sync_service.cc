@@ -496,6 +496,13 @@ void ProfileSyncService::InitializeBackend(bool delete_stale_data) {
     return;
   }
 
+  if (!sync_thread_) {
+    sync_thread_ = base::MakeUnique<base::Thread>("Chrome_SyncThread");
+    base::Thread::Options options;
+    options.timer_slack = base::TIMER_SLACK_MAXIMUM;
+    CHECK(sync_thread_->StartWithOptions(options));
+  }
+
   SyncCredentials credentials = GetCredentials();
 
   if (delete_stale_data)
@@ -538,11 +545,10 @@ void ProfileSyncService::InitializeBackend(bool delete_stale_data) {
                      url_request_context_, network_time_update_callback_);
 
   backend_->Initialize(
-      this, std::move(sync_thread_), db_thread_, file_thread_,
-      GetJsEventHandler(), sync_service_url_, local_device_->GetSyncUserAgent(),
-      credentials, delete_stale_data, enable_local_sync_backend,
-      local_sync_backend_folder, std::unique_ptr<syncer::SyncManagerFactory>(
-                                     new syncer::SyncManagerFactory()),
+      this, sync_thread_.get(), db_thread_, file_thread_, GetJsEventHandler(),
+      sync_service_url_, local_device_->GetSyncUserAgent(), credentials,
+      delete_stale_data, enable_local_sync_backend, local_sync_backend_folder,
+      base::MakeUnique<syncer::SyncManagerFactory>(),
       MakeWeakHandle(sync_enabled_weak_factory_.GetWeakPtr()),
       base::Bind(syncer::ReportUnrecoverableError, channel_),
       http_post_provider_factory_getter, std::move(saved_nigori_state_));
@@ -786,7 +792,7 @@ void ProfileSyncService::ShutdownImpl(syncer::ShutdownReason reason) {
   // shutting it down.
   std::unique_ptr<SyncBackendHost> doomed_backend(backend_.release());
   if (doomed_backend) {
-    sync_thread_ = doomed_backend->Shutdown(reason);
+    doomed_backend->Shutdown(reason);
     doomed_backend.reset();
   }
   base::TimeDelta shutdown_time = base::Time::Now() - shutdown_start_time;
@@ -2448,8 +2454,6 @@ base::FilePath ProfileSyncService::GetDirectoryPathForTest() const {
 base::MessageLoop* ProfileSyncService::GetSyncLoopForTest() const {
   if (sync_thread_) {
     return sync_thread_->message_loop();
-  } else if (backend_) {
-    return backend_->GetSyncLoopForTesting();
   } else {
     return nullptr;
   }

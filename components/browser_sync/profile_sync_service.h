@@ -921,11 +921,10 @@ class ProfileSyncService : public syncer::SyncService,
   // and association information.
   syncer::WeakHandle<syncer::DataTypeDebugInfoListener> debug_info_listener_;
 
-  // A thread where all the sync operations happen.
-  // OWNERSHIP Notes:
-  //     * Created when backend starts for the first time.
-  //     * If sync is disabled, PSS claims ownership from backend.
-  //     * If sync is reenabled, PSS passes ownership to new backend.
+  // The thread where all the sync operations happen. This thread is kept alive
+  // until browser shutdown and reused if sync is turned off and on again. It is
+  // joined during the shutdown process, but there is an abort mechanism in
+  // place to prevent slow HTTP requests from blocking browser shutdown.
   std::unique_ptr<base::Thread> sync_thread_;
 
   // ProfileSyncService uses this service to get access tokens.

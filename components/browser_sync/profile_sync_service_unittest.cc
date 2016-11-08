@@ -103,7 +103,7 @@ class TestSyncServiceObserver : public syncer::SyncServiceObserver {
 class SyncBackendHostNoReturn : public SyncBackendHostMock {
   void Initialize(
       syncer::SyncFrontend* frontend,
-      std::unique_ptr<base::Thread> sync_thread,
+      base::Thread* sync_thread,
       const scoped_refptr<base::SingleThreadTaskRunner>& db_thread,
       const scoped_refptr<base::SingleThreadTaskRunner>& file_thread,
       const syncer::WeakHandle<syncer::JsEventHandler>& event_handler,
@@ -130,7 +130,7 @@ class SyncBackendHostMockCollectDeleteDirParam : public SyncBackendHostMock {
 
   void Initialize(
       syncer::SyncFrontend* frontend,
-      std::unique_ptr<base::Thread> sync_thread,
+      base::Thread* sync_thread,
       const scoped_refptr<base::SingleThreadTaskRunner>& db_thread,
       const scoped_refptr<base::SingleThreadTaskRunner>& file_thread,
       const syncer::WeakHandle<syncer::JsEventHandler>& event_handler,
@@ -149,7 +149,7 @@ class SyncBackendHostMockCollectDeleteDirParam : public SyncBackendHostMock {
           saved_nigori_state) override {
     delete_dir_param_->push_back(delete_sync_data_folder);
     SyncBackendHostMock::Initialize(
-        frontend, std::move(sync_thread), db_thread, file_thread, event_handler,
+        frontend, sync_thread, db_thread, file_thread, event_handler,
         service_url, sync_user_agent, credentials, delete_sync_data_folder,
         enable_local_sync_backend, local_sync_backend_folder,
         std::move(sync_manager_factory), unrecoverable_error_handler,

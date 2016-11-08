@@ -19,7 +19,6 @@ namespace syncer {
 SyncBackendRegistrar::SyncBackendRegistrar(
     const std::string& name,
     SyncClient* sync_client,
-    std::unique_ptr<base::Thread> sync_thread,
     const scoped_refptr<base::SingleThreadTaskRunner>& ui_thread,
     const scoped_refptr<base::SingleThreadTaskRunner>& db_thread,
     const scoped_refptr<base::SingleThreadTaskRunner>& file_thread)
@@ -30,14 +29,6 @@ SyncBackendRegistrar::SyncBackendRegistrar(
       file_thread_(file_thread) {
   DCHECK(ui_thread_->BelongsToCurrentThread());
   DCHECK(sync_client_);
-
-  sync_thread_ = std::move(sync_thread);
-  if (!sync_thread_) {
-    sync_thread_ = base::MakeUnique<base::Thread>("Chrome_SyncThread");
-    base::Thread::Options options;
-    options.timer_slack = base::TIMER_SLACK_MAXIMUM;
-    CHECK(sync_thread_->StartWithOptions(options));
-  }
 
   MaybeAddWorker(GROUP_DB);
   MaybeAddWorker(GROUP_FILE);
@@ -322,14 +313,6 @@ void SyncBackendRegistrar::MaybeAddWorker(ModelSafeGroup group) {
     DCHECK(workers_.find(group) == workers_.end());
     workers_[group] = worker;
   }
-}
-
-std::unique_ptr<base::Thread> SyncBackendRegistrar::ReleaseSyncThread() {
-  return std::move(sync_thread_);
-}
-
-base::Thread* SyncBackendRegistrar::sync_thread() {
-  return sync_thread_.get();
 }
 
 ModelSafeGroup SyncBackendRegistrar::GetInitialGroupForType(

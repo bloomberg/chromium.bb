@@ -28,7 +28,7 @@ class SyncBackendHostMock : public SyncBackendHost {
 
   void Initialize(
       SyncFrontend* frontend,
-      std::unique_ptr<base::Thread> sync_thread,
+      base::Thread* sync_thread,
       const scoped_refptr<base::SingleThreadTaskRunner>& db_thread,
       const scoped_refptr<base::SingleThreadTaskRunner>& file_thread,
       const WeakHandle<JsEventHandler>& event_handler,
@@ -58,7 +58,7 @@ class SyncBackendHostMock : public SyncBackendHost {
 
   void StopSyncingForShutdown() override;
 
-  std::unique_ptr<base::Thread> Shutdown(ShutdownReason reason) override;
+  void Shutdown(ShutdownReason reason) override;
 
   void UnregisterInvalidationIds() override;
 
@@ -104,8 +104,6 @@ class SyncBackendHostMock : public SyncBackendHost {
 
   void EnableDirectoryTypeDebugInfoForwarding() override;
   void DisableDirectoryTypeDebugInfoForwarding() override;
-
-  base::MessageLoop* GetSyncLoopForTesting() override;
 
   void RefreshTypesForTest(ModelTypeSet types) override;
 

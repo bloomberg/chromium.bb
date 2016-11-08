@@ -59,7 +59,7 @@ class SyncBackendHost : public BackendDataTypeConfigurer {
   // backend instance. May be null.
   virtual void Initialize(
       SyncFrontend* frontend,
-      std::unique_ptr<base::Thread> sync_thread,
+      base::Thread* sync_thread,
       const scoped_refptr<base::SingleThreadTaskRunner>& db_thread,
       const scoped_refptr<base::SingleThreadTaskRunner>& file_thread,
       const WeakHandle<JsEventHandler>& event_handler,
@@ -119,9 +119,7 @@ class SyncBackendHost : public BackendDataTypeConfigurer {
   // Called on |frontend_loop_| to kick off shutdown.
   // See the implementation and Core::DoShutdown for details.
   // Must be called *after* StopSyncingForShutdown.
-  // Transfers ownership of the sync thread to the caller which may reuse it
-  // with a different SyncBackendHost or join it immediately.
-  virtual std::unique_ptr<base::Thread> Shutdown(ShutdownReason reason) = 0;
+  virtual void Shutdown(ShutdownReason reason) = 0;
 
   // Removes all current registrations from the backend on the
   // InvalidationService.
@@ -195,8 +193,6 @@ class SyncBackendHost : public BackendDataTypeConfigurer {
 
   // Disables the sending of directory type debug counters.
   virtual void DisableDirectoryTypeDebugInfoForwarding() = 0;
-
-  virtual base::MessageLoop* GetSyncLoopForTesting() = 0;
 
   // Triggers sync cycle to update |types|.
   virtual void RefreshTypesForTest(ModelTypeSet types) = 0;

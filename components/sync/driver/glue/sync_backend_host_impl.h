@@ -75,7 +75,7 @@ class SyncBackendHostImpl : public SyncBackendHost, public InvalidationHandler {
   // SyncBackendHost implementation.
   void Initialize(
       SyncFrontend* frontend,
-      std::unique_ptr<base::Thread> sync_thread,
+      base::Thread* sync_thread,
       const scoped_refptr<base::SingleThreadTaskRunner>& db_thread,
       const scoped_refptr<base::SingleThreadTaskRunner>& file_thread,
       const WeakHandle<JsEventHandler>& event_handler,
@@ -99,7 +99,7 @@ class SyncBackendHostImpl : public SyncBackendHost, public InvalidationHandler {
   bool SetDecryptionPassphrase(const std::string& passphrase) override
       WARN_UNUSED_RESULT;
   void StopSyncingForShutdown() override;
-  std::unique_ptr<base::Thread> Shutdown(ShutdownReason reason) override;
+  void Shutdown(ShutdownReason reason) override;
   void UnregisterInvalidationIds() override;
   ModelTypeSet ConfigureDataTypes(
       ConfigureReason reason,
@@ -128,7 +128,6 @@ class SyncBackendHostImpl : public SyncBackendHost, public InvalidationHandler {
   void DisableProtocolEventForwarding() override;
   void EnableDirectoryTypeDebugInfoForwarding() override;
   void DisableDirectoryTypeDebugInfoForwarding() override;
-  base::MessageLoop* GetSyncLoopForTesting() override;
   void RefreshTypesForTest(ModelTypeSet types) override;
   void ClearServerData(
       const SyncManager::ClearServerDataCallback& callback) override;
@@ -300,6 +299,9 @@ class SyncBackendHostImpl : public SyncBackendHost, public InvalidationHandler {
   scoped_refptr<base::SingleThreadTaskRunner> const frontend_task_runner_;
 
   SyncClient* const sync_client_;
+
+  // A pointer to the sync thread.
+  base::Thread* sync_thread_;
 
   // The UI thread's task runner.
   const scoped_refptr<base::SingleThreadTaskRunner> ui_thread_;
