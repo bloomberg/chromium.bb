@@ -21,7 +21,7 @@ SkColor NativeThemeDarkAura::GetSystemColor(ColorId color_id) const {
   static const SkColor kTextfieldDefaultColor = SK_ColorWHITE;
   static const SkColor kTextfieldDefaultBackground =
       SkColorSetRGB(0x62, 0x62, 0x62);
-  static const SkColor kTextfieldSelectionBackgroundFocused =
+  static const SkColor kTextSelectionBackgroundFocused =
       SkColorSetA(gfx::kGoogleBlue700, 0xCC);
 
   static const SkColor kResultsTableNormalBackground =
@@ -45,7 +45,10 @@ SkColor NativeThemeDarkAura::GetSystemColor(ColorId color_id) const {
 
     // Label
     case kColorId_LabelEnabledColor:
+    case kColorId_LabelTextSelectionColor:
       return kPrimaryTextColor;
+    case kColorId_LabelTextSelectionBackgroundFocused:
+      return kTextSelectionBackgroundFocused;
 
     // Link
     case kColorId_LinkEnabled:
@@ -59,7 +62,7 @@ SkColor NativeThemeDarkAura::GetSystemColor(ColorId color_id) const {
     case kColorId_TextfieldDefaultBackground:
       return kTextfieldDefaultBackground;
     case kColorId_TextfieldSelectionBackgroundFocused:
-      return kTextfieldSelectionBackgroundFocused;
+      return kTextSelectionBackgroundFocused;
 
     // Results Tables
     case kColorId_ResultsTableNormalBackground:

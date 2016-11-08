@@ -353,6 +353,7 @@ class VIEWS_EXPORT Textfield : public View,
   // SelectionControllerDelegate overrides:
   gfx::RenderText* GetRenderTextForSelectionController() override;
   bool IsReadOnly() const override;
+  bool SupportsDrag() const override;
   void SetTextBeingDragged(bool value) override;
   int GetViewHeight() const override;
   int GetViewWidth() const override;

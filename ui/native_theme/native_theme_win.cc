@@ -521,6 +521,8 @@ SkColor NativeThemeWin::GetSystemColor(ColorId color_id) const {
   const SkColor kResultsTableUrlColor =
       md ? gfx::kGoogleBlue700 : SkColorSetRGB(0x0b, 0x80, 0x43);
   const SkColor kResultsTableSelectedUrlColor = SK_ColorWHITE;
+  // Label:
+  const SkColor kLabelTextSelectionBackgroundFocusedColor = gfx::kGoogleBlue700;
 
   switch (color_id) {
     // Windows
@@ -553,6 +555,10 @@ SkColor NativeThemeWin::GetSystemColor(ColorId color_id) const {
       return system_colors_[COLOR_BTNTEXT];
     case kColorId_LabelDisabledColor:
       return system_colors_[COLOR_GRAYTEXT];
+    case kColorId_LabelTextSelectionColor:
+      return system_colors_[COLOR_HIGHLIGHTTEXT];
+    case kColorId_LabelTextSelectionBackgroundFocused:
+      return kLabelTextSelectionBackgroundFocusedColor;
 
     // Textfield
     case kColorId_TextfieldDefaultColor:

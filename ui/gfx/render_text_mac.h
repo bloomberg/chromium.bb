@@ -36,6 +36,7 @@ class GFX_EXPORT RenderTextMac : public RenderText {
   Size GetStringSize() override;
   SizeF GetStringSizeF() override;
   SelectionModel FindCursorPosition(const Point& point) override;
+  bool IsSelectionSupported() const override;
   std::vector<FontSpan> GetFontSpansForTesting() override;
 
  protected:

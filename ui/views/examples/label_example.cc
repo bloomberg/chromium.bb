@@ -115,6 +115,10 @@ void LabelExample::CreateExampleView(View* container) {
   label->SetBorder(CreateSolidBorder(20, SK_ColorRED));
   container->AddChildView(label);
 
+  label = new Label(ASCIIToUTF16("A label supporting text selection."));
+  label->SetSelectable(true);
+  container->AddChildView(label);
+
   AddCustomLabel(container);
 }
 

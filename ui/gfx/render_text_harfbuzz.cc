@@ -845,6 +845,11 @@ SelectionModel RenderTextHarfBuzz::FindCursorPosition(const Point& point) {
   return EdgeSelectionModel(CURSOR_RIGHT);
 }
 
+bool RenderTextHarfBuzz::IsSelectionSupported() const {
+  // TODO(karandeepb): Support multi-line text selection.
+  return !multiline();
+}
+
 std::vector<RenderText::FontSpan> RenderTextHarfBuzz::GetFontSpansForTesting() {
   EnsureLayout();
 

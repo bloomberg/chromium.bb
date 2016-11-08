@@ -51,6 +51,7 @@ class VIEWS_EXPORT Link : public Label {
   void SetText(const base::string16& text) override;
   void OnNativeThemeChanged(const ui::NativeTheme* theme) override;
   void SetEnabledColor(SkColor color) override;
+  bool IsSelectionSupported() const override;
 
   // TODO(estade): almost all the places that call this pass false. With
   // Harmony, false is already the default so those callsites can be removed.

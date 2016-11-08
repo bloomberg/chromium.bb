@@ -174,6 +174,10 @@ void Link::SetEnabledColor(SkColor color) {
   Label::SetEnabledColor(GetEnabledColor());
 }
 
+bool Link::IsSelectionSupported() const {
+  return false;
+}
+
 void Link::SetUnderline(bool underline) {
   if (underline_ == underline)
     return;

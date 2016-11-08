@@ -19,6 +19,11 @@ SelectionController::SelectionController(SelectionControllerDelegate* delegate)
     : aggregated_clicks_(0),
       delegate_(delegate),
       handles_selection_clipboard_(false) {
+// On Linux, update the selection clipboard on a text selection.
+#if defined(OS_LINUX) && !defined(OS_CHROMEOS)
+  set_handles_selection_clipboard(true);
+#endif
+
   DCHECK(delegate);
 }
 
@@ -32,12 +37,15 @@ bool SelectionController::OnMousePressed(const ui::MouseEvent& event,
     return true;
 
   if (event.IsOnlyLeftMouseButton()) {
-    delegate_->SetTextBeingDragged(false);
+    if (delegate_->SupportsDrag())
+      delegate_->SetTextBeingDragged(false);
+
     switch (aggregated_clicks_) {
       case 0:
         // If the click location is within an existing selection, it may be a
         // potential drag and drop.
-        if (render_text->IsPointInSelection(event.location())) {
+        if (delegate_->SupportsDrag() &&
+            render_text->IsPointInSelection(event.location())) {
           delegate_->SetTextBeingDragged(true);
         } else {
           delegate_->OnBeforePointerAction();
@@ -127,7 +135,9 @@ void SelectionController::OnMouseReleased(const ui::MouseEvent& event) {
         render_text->MoveCursorTo(event.location(), false);
     delegate_->OnAfterPointerAction(false, selection_changed);
   }
-  delegate_->SetTextBeingDragged(false);
+
+  if (delegate_->SupportsDrag())
+    delegate_->SetTextBeingDragged(false);
 
   if (handles_selection_clipboard_ && !render_text->selection().is_empty())
     delegate_->UpdateSelectionClipboard();
@@ -172,7 +182,7 @@ void SelectionController::SelectThroughLastDragLocation() {
   delegate_->OnBeforePointerAction();
 
   // TODO(karandeepb): See if this can be handled at the RenderText level.
-  const bool drags_to_end = PlatformStyle::kTextfieldDragVerticallyDragsToEnd;
+  const bool drags_to_end = PlatformStyle::kTextDragVerticallyDragsToEnd;
   if (drags_to_end && last_drag_location_.y() < 0) {
     render_text->MoveCursor(gfx::LINE_BREAK, gfx::CURSOR_LEFT,
                             gfx::SELECTION_RETAIN);

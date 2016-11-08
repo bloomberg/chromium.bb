@@ -9,12 +9,15 @@
 #include "base/gtest_prod_util.h"
 #include "base/macros.h"
 #include "ui/gfx/render_text.h"
+#include "ui/views/selection_controller_delegate.h"
 #include "ui/views/view.h"
 
 namespace views {
+class LabelTest;
+class SelectionController;
 
 // A view subclass that can display a string.
-class VIEWS_EXPORT Label : public View {
+class VIEWS_EXPORT Label : public View, public SelectionControllerDelegate {
  public:
   // Internal class name.
   static const char kViewClassName[];
@@ -51,10 +54,22 @@ class VIEWS_EXPORT Label : public View {
 
   SkColor enabled_color() const { return actual_enabled_color_; }
 
-  // Sets the background color.  This won't be explicitly drawn, but the label
+  // Sets the background color. This won't be explicitly drawn, but the label
   // will force the text color to be readable over it.
   void SetBackgroundColor(SkColor color);
   SkColor background_color() const { return background_color_; }
+
+  // Sets the selection text color. This will automatically force the color to
+  // be readable over the selection background color, if auto color readability
+  // is enabled. Initialized with system default.
+  void SetSelectionTextColor(SkColor color);
+  SkColor selection_text_color() const { return actual_selection_text_color_; }
+
+  // Sets the selection background color. Initialized with system default.
+  void SetSelectionBackgroundColor(SkColor color);
+  SkColor selection_background_color() const {
+    return selection_background_color_;
+  }
 
   // Set drop shadows underneath the text.
   void SetShadows(const gfx::ShadowValues& shadows);
@@ -126,6 +141,26 @@ class VIEWS_EXPORT Label : public View {
   // Get the text as displayed to the user, respecting the obscured flag.
   base::string16 GetDisplayTextForTesting();
 
+  // Returns true if the label is selectable. Default is false.
+  bool selectable() const { return !!selection_controller_; }
+
+  // Sets whether the label is selectable. False is returned if the call fails,
+  // i.e. when selection is not supported but |selectable| is true.
+  bool SetSelectable(bool selectable);
+
+  // Returns true if the label has a selection.
+  bool HasSelection() const;
+
+  // Selects the entire text. NO-OP if the label is not selectable.
+  void SelectAll();
+
+  // Clears any active selection.
+  void ClearSelection();
+
+  // Selects the given text range. NO-OP if the label is not selectable or the
+  // |range| endpoints don't lie on grapheme boundaries.
+  void SelectRange(const gfx::Range& range);
+
   // View:
   gfx::Insets GetInsets() const override;
   int GetBaseline() const override;
@@ -147,11 +182,18 @@ class VIEWS_EXPORT Label : public View {
       const base::string16& text,
       gfx::HorizontalAlignment alignment,
       gfx::DirectionalityMode directionality,
-      gfx::ElideBehavior elide_behavior);
+      gfx::ElideBehavior elide_behavior) const;
 
   void PaintText(gfx::Canvas* canvas);
 
   SkColor disabled_color() const { return actual_disabled_color_; }
+
+  // Returns true if the label can be made selectable. For example, links do not
+  // support text selection.
+  // Subclasses should override this function in case they want to selectively
+  // support text selection. If a subclass stops supporting text selection, it
+  // should call SetSelectable(false).
+  virtual bool IsSelectionSupported() const;
 
   // View:
   void OnBoundsChanged(const gfx::Rect& previous_bounds) override;
@@ -159,22 +201,47 @@ class VIEWS_EXPORT Label : public View {
   void OnPaint(gfx::Canvas* canvas) override;
   void OnDeviceScaleFactorChanged(float device_scale_factor) override;
   void OnNativeThemeChanged(const ui::NativeTheme* theme) override;
+  gfx::NativeCursor GetCursor(const ui::MouseEvent& event) override;
+  void OnFocus() override;
+  void OnBlur() override;
+  bool OnMousePressed(const ui::MouseEvent& event) override;
+  bool OnMouseDragged(const ui::MouseEvent& event) override;
+  void OnMouseReleased(const ui::MouseEvent& event) override;
+  void OnMouseCaptureLost() override;
 
  private:
   FRIEND_TEST_ALL_PREFIXES(LabelTest, ResetRenderTextData);
   FRIEND_TEST_ALL_PREFIXES(LabelTest, MultilineSupportedRenderText);
   FRIEND_TEST_ALL_PREFIXES(LabelTest, TextChangeWithoutLayout);
-  FRIEND_TEST_ALL_PREFIXES(LabelFocusTest, FocusBounds);
-  FRIEND_TEST_ALL_PREFIXES(LabelFocusTest, EmptyLabel);
+  FRIEND_TEST_ALL_PREFIXES(LabelTest, EmptyLabel);
+  FRIEND_TEST_ALL_PREFIXES(LabelTest, FocusBounds);
+  FRIEND_TEST_ALL_PREFIXES(LabelTest, MultiLineSizingWithElide);
+  friend class LabelTest;
+
+  // SelectionControllerDelegate overrides:
+  gfx::RenderText* GetRenderTextForSelectionController() override;
+  bool IsReadOnly() const override;
+  bool SupportsDrag() const override;
+  bool HasTextBeingDragged() const override;
+  void SetTextBeingDragged(bool value) override;
+  int GetViewHeight() const override;
+  int GetViewWidth() const override;
+  int GetDragSelectionDelay() const override;
+  void OnBeforePointerAction() override;
+  void OnAfterPointerAction(bool text_changed, bool selection_changed) override;
+  bool PasteSelectionClipboard() override;
+  void UpdateSelectionClipboard() override;
+
+  const gfx::RenderText* GetRenderTextForSelectionController() const;
 
   void Init(const base::string16& text, const gfx::FontList& font_list);
 
   void ResetLayout();
 
   // Set up |lines_| to actually be painted.
-  void MaybeBuildRenderTextLines();
+  void MaybeBuildRenderTextLines() const;
 
-  gfx::Rect GetFocusBounds();
+  gfx::Rect GetFocusBounds() const;
 
   // Get the text broken into lines as needed to fit the given |width|.
   std::vector<base::string16> GetLinesForWidth(int width) const;
@@ -186,29 +253,42 @@ class VIEWS_EXPORT Label : public View {
   void RecalculateColors();
 
   // Applies |actual_{enabled,disabled}_color_| to |lines_|.
-  void ApplyTextColors();
+  void ApplyTextColors() const;
 
   // Updates any colors that have not been explicitly set from the theme.
   void UpdateColorsFromTheme(const ui::NativeTheme* theme);
 
   bool ShouldShowDefaultTooltip() const;
 
+  // Empties |lines_| and updates |stored_selection_range_|.
+  void ClearRenderTextLines() const;
+
   // An un-elided and single-line RenderText object used for preferred sizing.
   std::unique_ptr<gfx::RenderText> render_text_;
 
   // The RenderText instances used to display elided and multi-line text.
-  std::vector<std::unique_ptr<gfx::RenderText>> lines_;
+  mutable std::vector<std::unique_ptr<gfx::RenderText>> lines_;
+
+  // Persists the current selection range between the calls to
+  // ClearRenderTextLines() and MaybeBuildRenderTextLines(). Holds an
+  // InvalidRange when not in use.
+  mutable gfx::Range stored_selection_range_;
 
   SkColor requested_enabled_color_ = SK_ColorRED;
   SkColor actual_enabled_color_ = SK_ColorRED;
   SkColor requested_disabled_color_ = SK_ColorRED;
   SkColor actual_disabled_color_ = SK_ColorRED;
   SkColor background_color_ = SK_ColorRED;
+  SkColor requested_selection_text_color_ = SK_ColorRED;
+  SkColor actual_selection_text_color_ = SK_ColorRED;
+  SkColor selection_background_color_ = SK_ColorRED;
 
   // Set to true once the corresponding setter is invoked.
   bool enabled_color_set_;
   bool disabled_color_set_;
   bool background_color_set_;
+  bool selection_text_color_set_;
+  bool selection_background_color_set_;
 
   gfx::ElideBehavior elide_behavior_;
 
@@ -226,6 +306,8 @@ class VIEWS_EXPORT Label : public View {
   // TODO(ckocagil): Remove is_first_paint_text_ before crbug.com/441028 is
   // closed.
   bool is_first_paint_text_;
+
+  std::unique_ptr<SelectionController> selection_controller_;
 
   DISALLOW_COPY_AND_ASSIGN(Label);
 };

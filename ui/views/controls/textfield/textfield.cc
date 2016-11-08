@@ -259,11 +259,6 @@ Textfield::Textfield()
   View::SetBorder(std::unique_ptr<Border>(new FocusableBorder()));
   SetFocusBehavior(FocusBehavior::ALWAYS);
 
-// On Linux, middle click should update or paste the selection clipboard.
-#if defined(OS_LINUX) && !defined(OS_CHROMEOS)
-  selection_controller_.set_handles_selection_clipboard(true);
-#endif
-
   // These allow BrowserView to pass edit commands from the Chrome menu to us
   // when we're focused by simply asking the FocusManager to
   // ProcessAccelerator() with the relevant accelerators.
@@ -1774,6 +1769,10 @@ gfx::RenderText* Textfield::GetRenderTextForSelectionController() {
 
 bool Textfield::IsReadOnly() const {
   return read_only();
+}
+
+bool Textfield::SupportsDrag() const {
+  return true;
 }
 
 void Textfield::SetTextBeingDragged(bool value) {

@@ -113,6 +113,10 @@ SelectionModel RenderTextMac::FindCursorPosition(const Point& point) {
   return SelectionModel();
 }
 
+bool RenderTextMac::IsSelectionSupported() const {
+  return false;
+}
+
 std::vector<RenderText::FontSpan> RenderTextMac::GetFontSpansForTesting() {
   EnsureLayout();
   if (!runs_valid_)

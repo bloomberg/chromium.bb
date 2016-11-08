@@ -14,10 +14,13 @@
 
 #include "base/i18n/rtl.h"
 #include "base/logging.h"
+#include "base/memory/ptr_util.h"
 #include "base/profiler/scoped_tracker.h"
 #include "base/strings/string_split.h"
 #include "base/strings/utf_string_conversions.h"
 #include "ui/accessibility/ax_node_data.h"
+#include "ui/base/clipboard/scoped_clipboard_writer.h"
+#include "ui/base/cursor/cursor.h"
 #include "ui/base/default_style.h"
 #include "ui/base/material_design/material_design_controller.h"
 #include "ui/base/resource/resource_bundle.h"
@@ -26,6 +29,9 @@
 #include "ui/gfx/geometry/insets.h"
 #include "ui/gfx/text_elider.h"
 #include "ui/native_theme/native_theme.h"
+#include "ui/views/focus/focus_manager.h"
+#include "ui/views/native_cursor.h"
+#include "ui/views/selection_controller.h"
 
 namespace views {
 // static
@@ -100,6 +106,24 @@ void Label::SetBackgroundColor(SkColor color) {
   RecalculateColors();
 }
 
+void Label::SetSelectionTextColor(SkColor color) {
+  if (selection_text_color_set_ && requested_selection_text_color_ == color)
+    return;
+  is_first_paint_text_ = true;
+  requested_selection_text_color_ = color;
+  selection_text_color_set_ = true;
+  RecalculateColors();
+}
+
+void Label::SetSelectionBackgroundColor(SkColor color) {
+  if (selection_background_color_set_ && selection_background_color_ == color)
+    return;
+  is_first_paint_text_ = true;
+  selection_background_color_ = color;
+  selection_background_color_set_ = true;
+  RecalculateColors();
+}
+
 void Label::SetShadows(const gfx::ShadowValues& shadows) {
   // TODO(mukai): early exit if the specified shadows are same.
   is_first_paint_text_ = true;
@@ -147,6 +171,8 @@ void Label::SetMultiLine(bool multi_line) {
   if (render_text_->MultilineSupported())
     render_text_->SetMultiline(multi_line);
   render_text_->SetReplaceNewlineCharsWithSymbols(!multi_line);
+  if (multi_line)
+    SetSelectable(false);
   ResetLayout();
 }
 
@@ -204,7 +230,7 @@ void Label::SetMaximumWidth(int max_width) {
 }
 
 base::string16 Label::GetDisplayTextForTesting() {
-  lines_.clear();
+  ClearRenderTextLines();
   MaybeBuildRenderTextLines();
   base::string16 result;
   if (lines_.empty())
@@ -215,6 +241,54 @@ base::string16 Label::GetDisplayTextForTesting() {
     result.append(lines_[i]->GetDisplayText());
   }
   return result;
+}
+
+bool Label::IsSelectionSupported() const {
+  return !multi_line() && render_text_->IsSelectionSupported();
+}
+
+bool Label::SetSelectable(bool value) {
+  if (value == selectable())
+    return true;
+
+  if (!value) {
+    ClearSelection();
+    selection_controller_.reset();
+    return true;
+  }
+
+  if (!IsSelectionSupported())
+    return false;
+
+  selection_controller_ = base::MakeUnique<SelectionController>(this);
+  return true;
+}
+
+bool Label::HasSelection() const {
+  const gfx::RenderText* render_text = GetRenderTextForSelectionController();
+  return render_text ? !render_text->selection().is_empty() : false;
+}
+
+void Label::SelectAll() {
+  gfx::RenderText* render_text = GetRenderTextForSelectionController();
+  if (!render_text)
+    return;
+  render_text->SelectAll(false);
+  SchedulePaint();
+}
+
+void Label::ClearSelection() {
+  gfx::RenderText* render_text = GetRenderTextForSelectionController();
+  if (!render_text)
+    return;
+  render_text->ClearSelection();
+  SchedulePaint();
+}
+
+void Label::SelectRange(const gfx::Range& range) {
+  gfx::RenderText* render_text = GetRenderTextForSelectionController();
+  if (render_text && render_text->SelectRange(range))
+    SchedulePaint();
 }
 
 gfx::Insets Label::GetInsets() const {
@@ -296,7 +370,7 @@ int Label::GetHeightForWidth(int w) const {
 }
 
 void Label::Layout() {
-  lines_.clear();
+  ClearRenderTextLines();
 }
 
 const char* Label::GetClassName() const {
@@ -312,8 +386,7 @@ View* Label::GetTooltipHandlerForPoint(const gfx::Point& point) {
 }
 
 bool Label::CanProcessEventsWithinSubtree() const {
-  // Send events to the parent view for handling.
-  return false;
+  return !!GetRenderTextForSelectionController();
 }
 
 void Label::GetAccessibleNodeData(ui::AXNodeData* node_data) {
@@ -350,7 +423,7 @@ std::unique_ptr<gfx::RenderText> Label::CreateRenderText(
     const base::string16& text,
     gfx::HorizontalAlignment alignment,
     gfx::DirectionalityMode directionality,
-    gfx::ElideBehavior elide_behavior) {
+    gfx::ElideBehavior elide_behavior) const {
   std::unique_ptr<gfx::RenderText> render_text(
       render_text_->CreateInstanceOfSameType());
   render_text->SetHorizontalAlignment(alignment);
@@ -389,12 +462,86 @@ void Label::OnPaint(gfx::Canvas* canvas) {
   } else {
     PaintText(canvas);
   }
-  if (HasFocus() && !ui::MaterialDesignController::IsSecondaryUiMaterial())
+
+  // Check for IsAccessibilityFocusable() to prevent drawing a focus rect for
+  // non-focusable labels with selection, which are given focus explicitly in
+  // OnMousePressed.
+  if (HasFocus() && !ui::MaterialDesignController::IsSecondaryUiMaterial() &&
+      IsAccessibilityFocusable()) {
     canvas->DrawFocusRect(GetFocusBounds());
+  }
 }
 
 void Label::OnNativeThemeChanged(const ui::NativeTheme* theme) {
   UpdateColorsFromTheme(theme);
+}
+
+gfx::NativeCursor Label::GetCursor(const ui::MouseEvent& event) {
+  return GetRenderTextForSelectionController() ? GetNativeIBeamCursor()
+                                               : gfx::kNullCursor;
+}
+
+void Label::OnFocus() {
+  gfx::RenderText* render_text = GetRenderTextForSelectionController();
+  if (render_text) {
+    render_text->set_focused(true);
+    SchedulePaint();
+  }
+  View::OnFocus();
+}
+
+void Label::OnBlur() {
+  gfx::RenderText* render_text = GetRenderTextForSelectionController();
+  if (render_text) {
+    render_text->set_focused(false);
+    SchedulePaint();
+  }
+  View::OnBlur();
+}
+
+bool Label::OnMousePressed(const ui::MouseEvent& event) {
+  if (!GetRenderTextForSelectionController())
+    return false;
+
+  // RequestFocus() won't work when the label has FocusBehavior::NEVER. Hence
+  // explicitly set the focused view.
+  // TODO(karandeepb): If a widget with a label having FocusBehavior::NEVER as
+  // the currently focused view (due to selection) was to lose focus, focus
+  // won't be restored to the label (and hence a text selection won't be drawn)
+  // when the widget gets focus again. Fix this.
+  // Tracked in https://crbug.com/630365.
+  if ((event.IsOnlyLeftMouseButton() || event.IsOnlyRightMouseButton()) &&
+      GetFocusManager()) {
+    GetFocusManager()->SetFocusedView(this);
+  }
+
+#if defined(OS_LINUX) && !defined(OS_CHROMEOS)
+  if (event.IsOnlyMiddleMouseButton() && GetFocusManager())
+    GetFocusManager()->SetFocusedView(this);
+#endif
+
+  return selection_controller_->OnMousePressed(event, false);
+}
+
+bool Label::OnMouseDragged(const ui::MouseEvent& event) {
+  if (!GetRenderTextForSelectionController())
+    return false;
+
+  return selection_controller_->OnMouseDragged(event);
+}
+
+void Label::OnMouseReleased(const ui::MouseEvent& event) {
+  if (!GetRenderTextForSelectionController())
+    return;
+
+  selection_controller_->OnMouseReleased(event);
+}
+
+void Label::OnMouseCaptureLost() {
+  if (!GetRenderTextForSelectionController())
+    return;
+
+  selection_controller_->OnMouseCaptureLost();
 }
 
 void Label::OnDeviceScaleFactorChanged(float device_scale_factor) {
@@ -407,7 +554,84 @@ void Label::OnDeviceScaleFactorChanged(float device_scale_factor) {
 
 void Label::VisibilityChanged(View* starting_from, bool is_visible) {
   if (!is_visible)
-    lines_.clear();
+    ClearRenderTextLines();
+}
+
+gfx::RenderText* Label::GetRenderTextForSelectionController() {
+  return const_cast<gfx::RenderText*>(
+      static_cast<const Label*>(this)->GetRenderTextForSelectionController());
+}
+
+bool Label::IsReadOnly() const {
+  return true;
+}
+
+bool Label::SupportsDrag() const {
+  // TODO(crbug.com/661379): Labels should support dragging selected text.
+  return false;
+}
+
+bool Label::HasTextBeingDragged() const {
+  return false;
+}
+
+void Label::SetTextBeingDragged(bool value) {
+  NOTREACHED();
+}
+
+int Label::GetViewHeight() const {
+  return height();
+}
+
+int Label::GetViewWidth() const {
+  return width();
+}
+
+int Label::GetDragSelectionDelay() const {
+  // Labels don't need to use a repeating timer to update the drag selection.
+  // Since the cursor is disabled for labels, a selection outside the display
+  // area won't change the text in the display area. It is expected that all the
+  // text will fit in the display area for labels anyway.
+  return 0;
+}
+
+void Label::OnBeforePointerAction() {}
+
+void Label::OnAfterPointerAction(bool text_changed, bool selection_changed) {
+  DCHECK(!text_changed);
+  if (selection_changed)
+    SchedulePaint();
+}
+
+bool Label::PasteSelectionClipboard() {
+  NOTREACHED();
+  return false;
+}
+
+void Label::UpdateSelectionClipboard() {
+#if defined(OS_LINUX) && !defined(OS_CHROMEOS)
+  if (!obscured()) {
+    const gfx::RenderText* render_text = GetRenderTextForSelectionController();
+    DCHECK(render_text);
+    const base::string16 selected_text =
+        render_text->GetTextFromRange(render_text->selection());
+    ui::ScopedClipboardWriter(ui::CLIPBOARD_TYPE_SELECTION)
+        .WriteText(selected_text);
+  }
+#endif
+}
+
+const gfx::RenderText* Label::GetRenderTextForSelectionController() const {
+  if (!selectable())
+    return nullptr;
+  MaybeBuildRenderTextLines();
+
+  // This may happen when the content bounds of the view are empty.
+  if (lines_.empty())
+    return nullptr;
+
+  DCHECK_EQ(1u, lines_.size());
+  return lines_[0].get();
 }
 
 void Label::Init(const base::string16& text, const gfx::FontList& font_list) {
@@ -422,7 +646,9 @@ void Label::Init(const base::string16& text, const gfx::FontList& font_list) {
   render_text_->SetWordWrapBehavior(gfx::TRUNCATE_LONG_WORDS);
 
   elide_behavior_ = gfx::ELIDE_TAIL;
+  stored_selection_range_ = gfx::Range::InvalidRange();
   enabled_color_set_ = disabled_color_set_ = background_color_set_ = false;
+  selection_text_color_set_ = selection_background_color_set_ = false;
   subpixel_rendering_enabled_ = true;
   auto_color_readability_ = true;
   multi_line_ = false;
@@ -439,10 +665,10 @@ void Label::ResetLayout() {
   InvalidateLayout();
   PreferredSizeChanged();
   SchedulePaint();
-  lines_.clear();
+  ClearRenderTextLines();
 }
 
-void Label::MaybeBuildRenderTextLines() {
+void Label::MaybeBuildRenderTextLines() const {
   if (!lines_.empty())
     return;
 
@@ -475,6 +701,14 @@ void Label::MaybeBuildRenderTextLines() {
     render_text->SetDisplayRect(rect);
     render_text->SetMultiline(multi_line());
     render_text->SetWordWrapBehavior(render_text_->word_wrap_behavior());
+
+    // Setup render text for selection controller.
+    if (selectable()) {
+      render_text->set_focused(HasFocus());
+      if (stored_selection_range_.IsValid())
+        render_text->SelectRange(stored_selection_range_);
+    }
+
     lines_.push_back(std::move(render_text));
   } else {
     std::vector<base::string16> lines = GetLinesForWidth(rect.width());
@@ -493,10 +727,12 @@ void Label::MaybeBuildRenderTextLines() {
     for (size_t i = lines_.size(); i < lines.size(); ++i)
       lines_.back()->SetText(lines_.back()->text() + lines[i]);
   }
+
+  stored_selection_range_ = gfx::Range::InvalidRange();
   ApplyTextColors();
 }
 
-gfx::Rect Label::GetFocusBounds() {
+gfx::Rect Label::GetFocusBounds() const {
   MaybeBuildRenderTextLines();
 
   gfx::Rect focus_bounds;
@@ -571,17 +807,25 @@ void Label::RecalculateColors() {
       color_utils::GetReadableColor(requested_disabled_color_,
                                     background_color_) :
       requested_disabled_color_;
+  actual_selection_text_color_ =
+      auto_color_readability_
+          ? color_utils::GetReadableColor(requested_selection_text_color_,
+                                          selection_background_color_)
+          : requested_selection_text_color_;
 
   ApplyTextColors();
   SchedulePaint();
 }
 
-void Label::ApplyTextColors() {
+void Label::ApplyTextColors() const {
   SkColor color = enabled() ? actual_enabled_color_ : actual_disabled_color_;
   bool subpixel_rendering_suppressed =
       SkColorGetA(background_color_) != 0xFF || !subpixel_rendering_enabled_;
   for (size_t i = 0; i < lines_.size(); ++i) {
     lines_[i]->SetColor(color);
+    lines_[i]->set_selection_color(actual_selection_text_color_);
+    lines_[i]->set_selection_background_focused_color(
+        selection_background_color_);
     lines_[i]->set_subpixel_rendering_suppressed(subpixel_rendering_suppressed);
   }
 }
@@ -599,6 +843,14 @@ void Label::UpdateColorsFromTheme(const ui::NativeTheme* theme) {
     background_color_ =
         theme->GetSystemColor(ui::NativeTheme::kColorId_DialogBackground);
   }
+  if (!selection_text_color_set_) {
+    requested_selection_text_color_ = theme->GetSystemColor(
+        ui::NativeTheme::kColorId_LabelTextSelectionColor);
+  }
+  if (!selection_background_color_set_) {
+    selection_background_color_ = theme->GetSystemColor(
+        ui::NativeTheme::kColorId_LabelTextSelectionBackgroundFocused);
+  }
   RecalculateColors();
 }
 
@@ -607,6 +859,15 @@ bool Label::ShouldShowDefaultTooltip() const {
   const gfx::Size size = GetContentsBounds().size();
   return !obscured() && (text_size.width() > size.width() ||
                          (multi_line() && text_size.height() > size.height()));
+}
+
+void Label::ClearRenderTextLines() const {
+  // Persist the selection range if there is an active selection.
+  if (HasSelection()) {
+    stored_selection_range_ =
+        GetRenderTextForSelectionController()->selection();
+  }
+  lines_.clear();
 }
 
 }  // namespace views

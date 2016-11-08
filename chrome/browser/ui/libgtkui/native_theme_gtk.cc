@@ -272,6 +272,10 @@ SkColor NativeThemeGtk2::GetSystemColor(ColorId color_id) const {
       return GetTextColor(GetEntry(), NORMAL);
     case kColorId_LabelDisabledColor:
       return GetTextColor(GetLabel(), INSENSITIVE);
+    case kColorId_LabelTextSelectionColor:
+      return GetTextColor(GetLabel(), SELECTED);
+    case kColorId_LabelTextSelectionBackgroundFocused:
+      return GetBaseColor(GetLabel(), SELECTED);
 
     // Link
     case kColorId_LinkDisabled:

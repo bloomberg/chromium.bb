@@ -24,10 +24,13 @@ class VIEWS_EXPORT SelectionControllerDelegate {
 
   // Returns true if the associated text view is read only.
   virtual bool IsReadOnly() const = 0;
+  // Returns whether the associated view supports drag-and-drop.
+  virtual bool SupportsDrag() const = 0;
   // Returns whether there is a drag operation originating from the associated
   // view.
   virtual bool HasTextBeingDragged() const = 0;
-  // Sets whether text is being dragged from the associated view.
+  // Sets whether text is being dragged from the associated view. Called only if
+  // the delegate supports drag.
   virtual void SetTextBeingDragged(bool value) = 0;
   // Returns the height of the associated view.
   virtual int GetViewHeight() const = 0;

@@ -1499,9 +1499,9 @@ TEST_F(TextfieldTest, DragUpOrDownSelectsToEnd) {
   InitTextfield();
   textfield_->SetText(ASCIIToUTF16("hello world"));
   const base::string16 expected_up = base::ASCIIToUTF16(
-      PlatformStyle::kTextfieldDragVerticallyDragsToEnd ? "hello" : "lo");
+      PlatformStyle::kTextDragVerticallyDragsToEnd ? "hello" : "lo");
   const base::string16 expected_down = base::ASCIIToUTF16(
-      PlatformStyle::kTextfieldDragVerticallyDragsToEnd ? " world" : " w");
+      PlatformStyle::kTextDragVerticallyDragsToEnd ? " world" : " w");
   const int kStartX = GetCursorPositionX(5);
   const int kDownX = GetCursorPositionX(7);
   const int kUpX = GetCursorPositionX(3);

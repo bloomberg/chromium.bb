@@ -159,6 +159,7 @@ SkColor NativeThemeMac::GetSystemColor(ColorId color_id) const {
     // background color for text selections. We honor that setting.
     // TODO(ellyjones): Listen for NSSystemColorsDidChangeNotification somewhere
     // and propagate it to the View hierarchy.
+    case kColorId_LabelTextSelectionBackgroundFocused:
     case kColorId_TextfieldSelectionBackgroundFocused:
       return NSSystemColorToSkColor([NSColor selectedTextBackgroundColor]);
     default:
@@ -198,6 +199,8 @@ SkColor NativeThemeMac::GetSystemColor(ColorId color_id) const {
       return NSSystemColorToSkColor([NSColor disabledControlTextColor]);
     case kColorId_ButtonHoverColor:
       return NSSystemColorToSkColor([NSColor selectedControlTextColor]);
+    case kColorId_LabelTextSelectionColor:
+      return NSSystemColorToSkColor([NSColor selectedTextColor]);
 
     // Link.
     case kColorId_LinkDisabled:
