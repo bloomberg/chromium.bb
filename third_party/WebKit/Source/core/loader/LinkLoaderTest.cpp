@@ -252,6 +252,57 @@ TEST(LinkLoaderTest, Preload) {
   }
 }
 
+TEST(LinkLoaderTest, Prefetch) {
+  struct TestCase {
+    const char* href;
+    // TODO(yoav): Add support for type and media crbug.com/662687
+    const char* type;
+    const char* media;
+    const ReferrerPolicy referrerPolicy;
+    const bool linkLoaderShouldLoadValue;
+    const bool expectingLoad;
+    const ReferrerPolicy expectedReferrerPolicy;
+  } cases[] = {
+      // Referrer Policy
+      {"http://example.test/cat.jpg", "image/jpg", "", ReferrerPolicyOrigin,
+       true, true, ReferrerPolicyOrigin},
+      {"http://example.test/cat.jpg", "image/jpg", "",
+       ReferrerPolicyOriginWhenCrossOrigin, true, true,
+       ReferrerPolicyOriginWhenCrossOrigin},
+      {"http://example.test/cat.jpg", "image/jpg", "", ReferrerPolicyNever,
+       true, true, ReferrerPolicyNever},
+  };
+
+  // Test the cases with a single header
+  for (const auto& testCase : cases) {
+    std::unique_ptr<DummyPageHolder> dummyPageHolder =
+        DummyPageHolder::create(IntSize(500, 500));
+    dummyPageHolder->frame().settings()->setScriptEnabled(true);
+    Persistent<MockLinkLoaderClient> loaderClient =
+        MockLinkLoaderClient::create(testCase.linkLoaderShouldLoadValue);
+    LinkLoader* loader = LinkLoader::create(loaderClient.get());
+    KURL hrefURL = KURL(KURL(), testCase.href);
+    URLTestHelpers::registerMockedErrorURLLoad(hrefURL);
+    loader->loadLink(LinkRelAttribute("prefetch"), CrossOriginAttributeNotSet,
+                     testCase.type, "", testCase.media, testCase.referrerPolicy,
+                     hrefURL, dummyPageHolder->document(), NetworkHintsMock());
+    ASSERT_TRUE(dummyPageHolder->document().fetcher());
+    Resource* resource = loader->resource();
+    if (testCase.expectingLoad) {
+      EXPECT_TRUE(resource);
+    } else {
+      EXPECT_FALSE(resource);
+    }
+    if (resource) {
+      if (testCase.expectedReferrerPolicy != ReferrerPolicyDefault) {
+        EXPECT_EQ(testCase.expectedReferrerPolicy,
+                  resource->resourceRequest().getReferrerPolicy());
+      }
+    }
+    Platform::current()->getURLLoaderMockFactory()->unregisterAllURLs();
+  }
+}
+
 TEST(LinkLoaderTest, DNSPrefetch) {
   struct {
     const char* href;
@@ -260,9 +311,8 @@ TEST(LinkLoaderTest, DNSPrefetch) {
       {"http://example.com/", true},
       {"https://example.com/", true},
       {"//example.com/", true},
+      {"//example.com/", false},
   };
-
-  // TODO(yoav): Test (and fix) shouldLoad = false
 
   // Test the cases with a single header
   for (const auto& testCase : cases) {
@@ -297,6 +347,7 @@ TEST(LinkLoaderTest, Preconnect) {
       {"https://example.com/", CrossOriginAttributeNotSet, true, true, false},
       {"http://example.com/", CrossOriginAttributeAnonymous, true, false, true},
       {"//example.com/", CrossOriginAttributeNotSet, true, false, false},
+      {"http://example.com/", CrossOriginAttributeNotSet, false, false, false},
   };
 
   // Test the cases with a single header
