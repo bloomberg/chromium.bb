@@ -1062,6 +1062,7 @@ interface DOMMatrixReadOnly
     method skewY
     method toFloat32Array
     method toFloat64Array
+    method toJSON
     method toString
     method translate
 interface DOMParser

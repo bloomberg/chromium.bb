@@ -2,6 +2,9 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include "core/dom/DOMMatrixReadOnly.h"
+
+#include "bindings/core/v8/V8ObjectBuilder.h"
 #include "core/dom/DOMMatrix.h"
 #include "core/dom/DOMMatrixInit.h"
 
@@ -265,6 +268,36 @@ const String DOMMatrixReadOnly::toString() const {
   stream << ")";
 
   return String(stream.str().c_str());
+}
+
+ScriptValue DOMMatrixReadOnly::toJSONForBinding(
+    ScriptState* scriptState) const {
+  V8ObjectBuilder result(scriptState);
+  result.addNumber("a", a());
+  result.addNumber("b", b());
+  result.addNumber("c", c());
+  result.addNumber("d", d());
+  result.addNumber("e", e());
+  result.addNumber("f", f());
+  result.addNumber("m11", m11());
+  result.addNumber("m12", m12());
+  result.addNumber("m13", m13());
+  result.addNumber("m14", m14());
+  result.addNumber("m21", m21());
+  result.addNumber("m22", m22());
+  result.addNumber("m23", m23());
+  result.addNumber("m24", m24());
+  result.addNumber("m31", m31());
+  result.addNumber("m32", m32());
+  result.addNumber("m33", m33());
+  result.addNumber("m34", m34());
+  result.addNumber("m41", m41());
+  result.addNumber("m42", m42());
+  result.addNumber("m43", m43());
+  result.addNumber("m44", m44());
+  result.addBoolean("is2D", is2D());
+  result.addBoolean("isIdentity", isIdentity());
+  return result.scriptValue();
 }
 
 }  // namespace blink

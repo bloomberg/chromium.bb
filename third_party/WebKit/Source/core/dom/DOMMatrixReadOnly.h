@@ -85,6 +85,8 @@ class CORE_EXPORT DOMMatrixReadOnly
 
   const String toString() const;
 
+  ScriptValue toJSONForBinding(ScriptState*) const;
+
   const TransformationMatrix& matrix() const { return *m_matrix; }
 
   DEFINE_INLINE_TRACE() {}

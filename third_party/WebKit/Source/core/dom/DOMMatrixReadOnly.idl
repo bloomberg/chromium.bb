@@ -80,4 +80,5 @@
     Float32Array toFloat32Array();
     Float64Array toFloat64Array();
     stringifier;
+    serializer = {attribute};
 };
