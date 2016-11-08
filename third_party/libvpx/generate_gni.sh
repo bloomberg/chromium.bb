@@ -179,9 +179,9 @@ function make_clean {
 # Lint a pair of vpx_config.h and vpx_config.asm to make sure they match.
 # $1 - Header file directory.
 function lint_config {
-  # mips does not contain any assembly so the header does not need to be
-  # compared to the asm.
-  if [[ "$1" != *mipsel && "$1" != *mips64el ]]; then
+  # mips and native client do not contain any assembly so the headers do not
+  # need to be compared to the asm.
+  if [[ "$1" != *mipsel && "$1" != *mips64el && "$1" != nacl ]]; then
     $BASE_DIR/lint_config.sh \
       -h $BASE_DIR/$LIBVPX_CONFIG_DIR/$1/vpx_config.h \
       -a $BASE_DIR/$LIBVPX_CONFIG_DIR/$1/vpx_config.asm
@@ -219,7 +219,7 @@ function gen_rtcd_header {
   echo "Generate $LIBVPX_CONFIG_DIR/$1/*_rtcd.h files."
 
   rm -rf $BASE_DIR/$TEMP_DIR/libvpx.config
-  if [[ "$2" == "mipsel" || "$2" == "mips64el" ]]; then
+  if [[ "$2" == "mipsel" || "$2" == "mips64el" || "$2" == nacl ]]; then
     print_config_basic $1 > $BASE_DIR/$TEMP_DIR/libvpx.config
   else
     $BASE_DIR/lint_config.sh -p \
@@ -270,12 +270,19 @@ function gen_config_files {
   # available, which doesn't work from inside a sandbox on linux.
   ( echo '/HAVE_UNISTD_H/s/[01]/0/' ; echo 'w' ; echo 'q' ) | ed -s vpx_config.h
 
-  # Generate vpx_config.asm. Do not create one for mips.
-  if [[ "$1" != *mipsel && "$1" != *mips64el ]]; then
+  # Use the correct ads2gas script.
+  if [[ "$1" == linux* ]]; then
+    local ASM_CONV=ads2gas.pl
+  else
+    local ASM_CONV=ads2gas_apple.pl
+  fi
+
+  # Generate vpx_config.asm. Do not create one for mips or native client.
+  if [[ "$1" != *mipsel && "$1" != *mips64el && "$1" != nacl ]]; then
     if [[ "$1" == *x64* ]] || [[ "$1" == *ia32* ]]; then
       egrep "#define [A-Z0-9_]+ [01]" vpx_config.h | awk '{print "%define " $2 " " $3}' > vpx_config.asm
     else
-      egrep "#define [A-Z0-9_]+ [01]" vpx_config.h | awk '{print $2 " EQU " $3}' | perl $BASE_DIR/$LIBVPX_SRC_DIR/build/make/ads2gas.pl > vpx_config.asm
+      egrep "#define [A-Z0-9_]+ [01]" vpx_config.h | awk '{print $2 " EQU " $3}' | perl $BASE_DIR/$LIBVPX_SRC_DIR/build/make/$ASM_CONV > vpx_config.asm
     fi
   fi
 
@@ -329,6 +336,8 @@ gen_config_files win/ia32 "--target=x86-win32-vs12 ${all_platforms} ${x86_platfo
 gen_config_files win/x64 "--target=x86_64-win64-vs12 ${all_platforms} ${x86_platforms}"
 gen_config_files mac/ia32 "--target=x86-darwin9-gcc ${all_platforms} ${x86_platforms}"
 gen_config_files mac/x64 "--target=x86_64-darwin9-gcc ${all_platforms} ${x86_platforms}"
+gen_config_files ios/arm-neon "--target=armv7-linux-gcc ${all_platforms}"
+gen_config_files ios/arm64 "--target=armv8-linux-gcc ${all_platforms}"
 gen_config_files nacl "--target=generic-gnu $HIGHBD ${all_platforms}"
 
 echo "Remove temporary directory."
@@ -349,6 +358,8 @@ lint_config win/ia32
 lint_config win/x64
 lint_config mac/ia32
 lint_config mac/x64
+lint_config ios/arm-neon
+lint_config ios/arm64
 lint_config nacl
 
 echo "Create temporary directory."
@@ -370,6 +381,8 @@ gen_rtcd_header win/ia32 x86
 gen_rtcd_header win/x64 x86_64
 gen_rtcd_header mac/ia32 x86
 gen_rtcd_header mac/x64 x86_64
+gen_rtcd_header ios/arm-neon armv7
+gen_rtcd_header ios/arm64 armv8
 gen_rtcd_header nacl nacl
 
 echo "Prepare Makefile."
