@@ -636,39 +636,36 @@ NSString* const kXCallbackParametersKey = @"xCallbackParameters";
 }
 
 - (void)goDelta:(int)delta {
-  if (delta == 0 || ![self canGoDelta:delta])
-    return;
-
-  NSInteger oldNavigationIndex = self.currentNavigationIndex;
-  NSInteger newNavigationIndex = [self indexOfEntryForDelta:delta];
-
-  if (delta < 0) {
-    [self discardNonCommittedEntries];
-    for (int i = delta; i < 0; i++) {
-      base::RecordAction(UserMetricsAction("Back"));
-    }
-  } else if (delta > 0) {
-    [self discardTransientEntry];
-    for (int i = 0; i < delta; i++) {
-      base::RecordAction(UserMetricsAction("Forward"));
-    }
+  if (delta != 0 && [self canGoDelta:delta]) {
+    NSInteger newNavigationIndex = [self indexOfEntryForDelta:delta];
+    [self goToEntry:_entries[newNavigationIndex]];
   }
-
-  _currentNavigationIndex = newNavigationIndex;
-  _previousNavigationIndex = oldNavigationIndex;
 }
 
 - (void)goToEntry:(CRWSessionEntry*)entry {
   DCHECK(entry);
+  if (![_entries containsObject:entry])
+    return;
 
-  [self discardTransientEntry];
-
-  // Check that |entries_| still contains |entry|. |entry| could have been
-  // removed by -clearForwardEntries.
-  if ([_entries containsObject:entry]) {
-    _previousNavigationIndex = self.currentNavigationIndex;
-    self.currentNavigationIndex = [_entries indexOfObject:entry];
+  NSInteger newNavigationIndex = [_entries indexOfObject:entry];
+  NSInteger delta = newNavigationIndex - _currentNavigationIndex;
+  if (delta < 0) {
+    for (int i = delta; i < 0; i++) {
+      base::RecordAction(UserMetricsAction("Back"));
+    }
+    [self discardNonCommittedEntries];
+  } else if (0 < delta) {
+    for (int i = 0; i < delta; i++) {
+      base::RecordAction(UserMetricsAction("Forward"));
+    }
+    [self discardTransientEntry];
+  } else {
+    // delta is 0, no need to change current navigation index.
+    return;
   }
+
+  _previousNavigationIndex = _currentNavigationIndex;
+  _currentNavigationIndex = newNavigationIndex;
 }
 
 - (void)removeEntryAtIndex:(NSInteger)index {
