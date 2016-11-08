@@ -47,8 +47,7 @@ NSString* const kOpenerNavigationIndexKey = @"openerNavigationIndex";
 NSString* const kPreviousNavigationIndexKey = @"previousNavigationIndex";
 NSString* const kTabIdKey = @"tabId";
 NSString* const kWindowNameKey = @"windowName";
-NSString* const kXCallbackParametersKey = @"xCallbackParameters";
-}  // anonymous namespace
+}  // namespace
 
 @interface CRWSessionController () {
   // Weak pointer back to the owning NavigationManager. This is to facilitate
@@ -103,9 +102,6 @@ NSString* const kXCallbackParametersKey = @"xCallbackParameters";
   // Time smoother for navigation entry timestamps; see comment in
   // navigation_controller_impl.h
   web::TimeSmoother _timeSmoother;
-
-  // XCallback parameters used to create (or clobber) the tab. Can be nil.
-  XCallbackParameters* _xCallbackParameters;
 }
 
 // Redefine as readwrite.
@@ -149,7 +145,6 @@ NSString* const kXCallbackParametersKey = @"xCallbackParameters";
 @synthesize openedByDOM = _openedByDOM;
 @synthesize openerNavigationIndex = _openerNavigationIndex;
 @synthesize sessionCertificatePolicyManager = _sessionCertificatePolicyManager;
-@synthesize xCallbackParameters = _xCallbackParameters;
 
 - (id)initWithWindowName:(NSString*)windowName
                 openerId:(NSString*)openerId
@@ -241,9 +236,6 @@ NSString* const kXCallbackParametersKey = @"xCallbackParameters";
       _sessionCertificatePolicyManager =
           [[CRWSessionCertificatePolicyManager alloc] init];
     }
-
-    _xCallbackParameters =
-        [aDecoder decodeObjectForKey:kXCallbackParametersKey];
   }
   return self;
 }
@@ -261,7 +253,6 @@ NSString* const kXCallbackParametersKey = @"xCallbackParameters";
   [aCoder encodeObject:_entries forKey:kEntriesKey];
   [aCoder encodeObject:_sessionCertificatePolicyManager
                 forKey:kCertificatePolicyManagerKey];
-  [aCoder encodeObject:_xCallbackParameters forKey:kXCallbackParametersKey];
   // rendererInitiated is deliberately not preserved, as upstream.
 }
 
@@ -279,8 +270,6 @@ NSString* const kXCallbackParametersKey = @"xCallbackParameters";
       [[NSMutableArray alloc] initWithArray:_entries copyItems:YES];
   copy->_sessionCertificatePolicyManager =
       [_sessionCertificatePolicyManager copy];
-  copy->_xCallbackParameters = [base::mac::ObjCCastStrict<NSObject<NSCopying>>(
-      _xCallbackParameters) copy];
   return copy;
 }
 
@@ -309,11 +298,10 @@ NSString* const kXCallbackParametersKey = @"xCallbackParameters";
   return [NSString
       stringWithFormat:
           @"id: %@\nname: %@\nlast visit: %f\ncurrent index: %" PRIdNS
-          @"\nprevious index: %" PRIdNS "\n%@\npending: %@\ntransient: %@\n"
-          @"xCallback:\n%@\n",
+          @"\nprevious index: %" PRIdNS "\n%@\npending: %@\ntransient: %@\n",
           _tabId, self.windowName, _lastVisitedTimestamp,
           _currentNavigationIndex, _previousNavigationIndex, _entries,
-          _pendingEntry.get(), _transientEntry.get(), _xCallbackParameters];
+          _pendingEntry.get(), _transientEntry.get()];
 }
 
 // Returns the current entry in the session list, or the pending entry if there
@@ -570,8 +558,6 @@ NSString* const kXCallbackParametersKey = @"xCallbackParameters";
     self.currentNavigationIndex = -1;
     _previousNavigationIndex = -1;
   }
-  self.xCallbackParameters = [base::mac::ObjCCastStrict<NSObject<NSCopying>>(
-      otherSession.xCallbackParameters) copy];
   self.windowName = otherSession.windowName;
   NSInteger numInitialEntries = [_entries count];
 

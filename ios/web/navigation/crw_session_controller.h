@@ -13,7 +13,6 @@
 
 @class CRWSessionEntry;
 @class CRWSessionCertificatePolicyManager;
-@class XCallbackParameters;
 
 namespace web {
 class NavigationManagerImpl;
@@ -54,7 +53,6 @@ struct SSLStatus;
 @property(nonatomic, assign) NSTimeInterval lastVisitedTimestamp;
 @property(nonatomic, readonly, copy) NSString* openerId;
 @property(nonatomic, readonly, assign) NSInteger openerNavigationIndex;
-@property(nonatomic, strong) XCallbackParameters* xCallbackParameters;
 
 // CRWSessionController doesn't have public constructors. New
 // CRWSessionControllers are created by deserialization, or via a
