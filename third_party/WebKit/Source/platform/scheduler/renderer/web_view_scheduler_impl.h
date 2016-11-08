@@ -57,6 +57,7 @@ class BLINK_PLATFORM_EXPORT WebViewSchedulerImpl : public WebViewScheduler {
   void IncrementBackgroundParserCount();
   void DecrementBackgroundParserCount();
   void Unregister(WebFrameSchedulerImpl* frame_scheduler);
+  void OnNavigation();
 
   bool IsAudioPlaying() const;
 
@@ -71,6 +72,8 @@ class BLINK_PLATFORM_EXPORT WebViewSchedulerImpl : public WebViewScheduler {
   void setAllowVirtualTimeToAdvance(bool allow_virtual_time_to_advance);
   void ApplyVirtualTimePolicy();
 
+  void OnThrottlingReported(base::TimeDelta throttling_duration);
+
   std::set<WebFrameSchedulerImpl*> frame_schedulers_;
   std::set<unsigned long> pending_loads_;
   WebScheduler::InterventionReporter* intervention_reporter_;  // Not owned.
@@ -83,6 +86,7 @@ class BLINK_PLATFORM_EXPORT WebViewSchedulerImpl : public WebViewScheduler {
   bool have_seen_loading_task_;
   bool virtual_time_;
   bool is_audio_playing_;
+  bool reported_background_throttling_since_navigation_;
   TaskQueueThrottler::TimeBudgetPool*
       background_time_budget_pool_;  // Not owned.
 

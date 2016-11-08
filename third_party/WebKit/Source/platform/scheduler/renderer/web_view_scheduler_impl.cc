@@ -5,6 +5,7 @@
 #include "platform/scheduler/renderer/web_view_scheduler_impl.h"
 
 #include "base/logging.h"
+#include "base/strings/stringprintf.h"
 #include "platform/RuntimeEnabledFeatures.h"
 #include "platform/scheduler/base/virtual_time_domain.h"
 #include "platform/scheduler/child/scheduler_tqm_delegate.h"
@@ -19,6 +20,10 @@ namespace scheduler {
 namespace {
 
 const double kBackgroundBudgetAsCPUFraction = .01;
+// Given that we already align timers to 1Hz, do not report throttling if
+// it is under 3s.
+constexpr base::TimeDelta kMinimalBackgroundThrottlingDurationToReport =
+    base::TimeDelta::FromSeconds(3);
 
 }  // namespace
 
@@ -36,6 +41,7 @@ WebViewSchedulerImpl::WebViewSchedulerImpl(
       have_seen_loading_task_(false),
       virtual_time_(false),
       is_audio_playing_(false),
+      reported_background_throttling_since_navigation_(false),
       background_time_budget_pool_(nullptr) {
   renderer_scheduler->AddWebViewScheduler(this);
 
@@ -104,6 +110,10 @@ WebViewSchedulerImpl::createFrameScheduler(blink::BlameContext* blame_context) {
 void WebViewSchedulerImpl::Unregister(WebFrameSchedulerImpl* frame_scheduler) {
   DCHECK(frame_schedulers_.find(frame_scheduler) != frame_schedulers_.end());
   frame_schedulers_.erase(frame_scheduler);
+}
+
+void WebViewSchedulerImpl::OnNavigation() {
+  reported_background_throttling_since_navigation_ = false;
 }
 
 void WebViewSchedulerImpl::ReportIntervention(const std::string& message) {
@@ -196,6 +206,26 @@ void WebViewSchedulerImpl::ApplyVirtualTimePolicy() {
 
 bool WebViewSchedulerImpl::IsAudioPlaying() const {
   return is_audio_playing_;
+}
+
+void WebViewSchedulerImpl::OnThrottlingReported(
+    base::TimeDelta throttling_duration) {
+  if (throttling_duration < kMinimalBackgroundThrottlingDurationToReport)
+    return;
+
+  if (reported_background_throttling_since_navigation_)
+    return;
+  reported_background_throttling_since_navigation_ = true;
+
+  std::string message = base::StringPrintf(
+      "Timer tasks have taken too much time while the page was in the "
+      "background. "
+      "As a result, they have been deferred for %.3f seconds. "
+      "See https://www.chromestatus.com/feature/6172836527865856 "
+      "for more details",
+      throttling_duration.InSecondsF());
+
+  intervention_reporter_->ReportIntervention(WebString::fromUTF8(message));
 }
 
 }  // namespace scheduler

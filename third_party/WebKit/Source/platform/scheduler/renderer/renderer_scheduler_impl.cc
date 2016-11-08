@@ -1473,6 +1473,10 @@ void RendererSchedulerImpl::ResetForNavigationLocked() {
   MainThreadOnly().idle_time_estimator.Clear();
   MainThreadOnly().have_seen_a_begin_main_frame = false;
   MainThreadOnly().have_reported_blocking_intervention_since_navigation = false;
+  for (WebViewSchedulerImpl* web_view_scheduler :
+       MainThreadOnly().web_view_schedulers) {
+    web_view_scheduler->OnNavigation();
+  }
   UpdatePolicyLocked(UpdateType::MAY_EARLY_OUT_IF_POLICY_UNCHANGED);
 }
 

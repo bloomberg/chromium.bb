@@ -85,6 +85,12 @@ class BLINK_PLATFORM_EXPORT TaskQueueThrottler : public TimeDomain::Observer {
 
     const char* Name() const;
 
+    // Set callback which will be called every time when this budget pool
+    // is throttled. Throttling duration (time until the queue is allowed
+    // to run again) is passed as a parameter to callback.
+    void SetReportingCallback(
+        base::Callback<void(base::TimeDelta)> reporting_callback);
+
     // All queues should be removed before calling Close().
     void Close();
 
@@ -140,6 +146,8 @@ class BLINK_PLATFORM_EXPORT TaskQueueThrottler : public TimeDomain::Observer {
     bool is_enabled_;
 
     std::unordered_set<TaskQueue*> associated_task_queues_;
+
+    base::Callback<void(base::TimeDelta)> reporting_callback_;
 
     DISALLOW_COPY_AND_ASSIGN(TimeBudgetPool);
   };

@@ -895,5 +895,55 @@ TEST_F(TaskQueueThrottlerTest, EnableAndDisableThrottling) {
                                      base::TimeDelta::FromMilliseconds(2000)));
 }
 
+namespace {
+
+void RecordThrottling(std::vector<base::TimeDelta>* reported_throttling_times,
+                      base::TimeDelta throttling_duration) {
+  reported_throttling_times->push_back(throttling_duration);
+}
+
+}  // namespace
+
+TEST_F(TaskQueueThrottlerTest, ReportThrottling) {
+  std::vector<base::TimeTicks> run_times;
+  std::vector<base::TimeDelta> reported_throttling_times;
+
+  TaskQueueThrottler::TimeBudgetPool* pool =
+      task_queue_throttler_->CreateTimeBudgetPool("test");
+
+  pool->SetTimeBudget(base::TimeTicks(), 0.1);
+  pool->AddQueue(base::TimeTicks(), timer_queue_.get());
+
+  pool->SetReportingCallback(
+      base::Bind(&RecordThrottling, &reported_throttling_times));
+
+  task_queue_throttler_->IncreaseThrottleRefCount(timer_queue_.get());
+
+  timer_queue_->PostDelayedTask(FROM_HERE,
+                                base::Bind(&TestTask, &run_times, clock_.get()),
+                                base::TimeDelta::FromMilliseconds(200));
+  timer_queue_->PostDelayedTask(
+      FROM_HERE, base::Bind(&ExpensiveTestTask, &run_times, clock_.get()),
+      base::TimeDelta::FromMilliseconds(200));
+  timer_queue_->PostDelayedTask(
+      FROM_HERE, base::Bind(&ExpensiveTestTask, &run_times, clock_.get()),
+      base::TimeDelta::FromMilliseconds(200));
+
+  mock_task_runner_->RunUntilIdle();
+
+  EXPECT_THAT(run_times,
+              ElementsAre(base::TimeTicks() + base::TimeDelta::FromSeconds(1),
+                          base::TimeTicks() + base::TimeDelta::FromSeconds(1),
+                          base::TimeTicks() + base::TimeDelta::FromSeconds(3)));
+
+  EXPECT_THAT(reported_throttling_times,
+              ElementsAre(base::TimeDelta::FromMilliseconds(1255),
+                          base::TimeDelta::FromMilliseconds(1755)));
+
+  pool->RemoveQueue(clock_->NowTicks(), timer_queue_.get());
+  task_queue_throttler_->DecreaseThrottleRefCount(timer_queue_.get());
+  pool->Close();
+}
+
 }  // namespace scheduler
 }  // namespace blink

@@ -158,6 +158,11 @@ bool TaskQueueThrottler::TimeBudgetPool::IsThrottlingEnabled() const {
   return is_enabled_;
 }
 
+void TaskQueueThrottler::TimeBudgetPool::SetReportingCallback(
+    base::Callback<void(base::TimeDelta)> reporting_callback) {
+  reporting_callback_ = reporting_callback;
+}
+
 void TaskQueueThrottler::TimeBudgetPool::Close() {
   DCHECK_EQ(0u, associated_task_queues_.size());
 
@@ -185,8 +190,14 @@ void TaskQueueThrottler::TimeBudgetPool::RecordTaskRunTime(
   DCHECK_LE(start_time, end_time);
   Advance(end_time);
   if (is_enabled_) {
+    base::TimeDelta old_budget_level = current_budget_level_;
     current_budget_level_ -= (end_time - start_time);
     EnforceBudgetLevelRestrictions();
+
+    if (!reporting_callback_.is_null() && old_budget_level.InSecondsF() > 0 &&
+        current_budget_level_.InSecondsF() < 0) {
+      reporting_callback_.Run(-current_budget_level_ / cpu_percentage_);
+    }
   }
 }
 
