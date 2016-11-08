@@ -136,7 +136,7 @@ interface IntentHelperInstance {
 
   // Asks the ContentResolver to get an FD to read the file specified by the
   // URL.
-  [MinVersion=15] OpenFileToRead@12(string url) => (handle fd);
+  [MinVersion=15] OpenFileToRead@12(string url) => (handle? fd);
 
   // Requests 48dp * 48dp icons of the |activities| suitable for the
   // |scale_factor|. An array of icon data will be returned.
