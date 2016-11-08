@@ -857,13 +857,13 @@ To obtain new licenses, connect to the internet and play your downloaded content
         Spend less on data by using Google to optimize the pages you visit. Pages accessed using private connections (HTTPS) or in Incognito tabs will not be optimized or seen by Google.
       </message>
       <message name="IDS_DATA_REDUCTION_ENABLE_BUTTON" desc="Button the user presses if they want to enable Data Saver" >
-        Enable Data Saver
+        Turn on Data Saver
       </message>
       <message name="IDS_DATA_REDUCTION_ENABLED_SWITCH" desc="Message to show when the Data Saver feature is enabled via the switch on the First Run Experience card" >
-        Data Saver enabled
+        Data Saver is on
       </message>
       <message name="IDS_DATA_REDUCTION_DISABLED_SWITCH" desc="Message to show when the Data Saver feature is disabled via the switch on the First Run Experience card" >
-        Data Saver disabled
+        Data Saver is off
       </message>
       <message name="IDS_DATA_REDUCTION_ENABLED_TOAST" desc="Toast message displayed after the user enables Data Saver from the promo" >
         Data Saver is on. Manage it in Settings.
