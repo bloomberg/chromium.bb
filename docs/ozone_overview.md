@@ -160,10 +160,29 @@ Then to run for example the headless platform:
                                   --ozone-dump-file=/tmp/
 ```
 
-### Linux Desktop - ([bug](http://crbug.com/295089))
+### Linux Desktop - ([waterfall](https://build.chromium.org/p/chromium.fyi/builders/Ozone%20Linux/))
+Support for Linux Desktop is currently [in-progress](http://crbug.com/295089).
 
-This is not supported by any of the in-tree platforms. Please see above and try
-a ChromeOS or embedded build for now.
+The following targets are currently working:
+
+* various unit tests
+* `chrome`
+
+To build `chrome`, do this from the `src` directory:
+
+``` shell
+gn args out/OzoneLinuxDesktop --args="use_ozone=true enable_package_mash_services=true"
+ninja -C out/OzoneLinuxDesktop chrome
+```
+Then to run for example the X11 platform:
+
+``` shell
+./out/OzoneLinuxDesktop/chrome --ozone-platform=x11 \
+                               --disable-setuid-sandbox \
+                               --mash
+```
+
+Note: You may need to apply [this patch](https://codereview.chromium.org/2485673002/) to avoid missing ash resources during chrome execution.
 
 ### GN Configuration notes
 
@@ -242,18 +261,16 @@ and then partially upstreamed.
 It is still actively being developed in the chromium tree, feel free to discuss
 with us on freenode.net, `#ozone-wayland` channel or on `ozone-dev`.
 
-In order to run an Ozone build of `chrome`, you currently (2016/10/28)
-need to compile it for ChromeOS, where software rendering is not allowed.
-Also, accelerated rendering only works in Ozone/Wayland when the UI and GPU
-components are running in the same process. Below are some quick build & run
-instructions. It is assumed that you are launching `chrome` from a Wayland
-environment such as `weston`.
+Below are some quick build & run instructions. It is assumed that you are
+launching `chrome` from a Wayland environment such as `weston`. Apply
+[this patch](https://codereview.chromium.org/2485673002/) and execute the
+following commands:
 
 ``` shell
-gn args out/OzoneWayland --args="use_ozone=true ozone_platform_wayland=true target_os=\"chromeos\""
+gn args out/OzoneWayland --args="use_ozone=true enable_package_mash_services=true"
 ninja -C out/OzoneWayland chrome
 ./out/OzoneWayland/chrome --ozone-platform=wayland \
-                          --in-process-gpu \
+                          --mash \
                           --disable-setuid-sandbox
 ```
 
