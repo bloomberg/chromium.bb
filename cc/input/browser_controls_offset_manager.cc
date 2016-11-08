@@ -43,7 +43,8 @@ BrowserControlsOffsetManager::BrowserControlsOffsetManager(
       animation_direction_(NO_ANIMATION),
       permitted_state_(BOTH),
       accumulated_scroll_delta_(0.f),
-      baseline_content_offset_(0.f),
+      baseline_top_content_offset_(0.f),
+      baseline_bottom_content_offset_(0.f),
       controls_show_threshold_(controls_hide_threshold),
       controls_hide_threshold_(controls_show_threshold),
       pinch_gesture_active_(false) {
@@ -57,7 +58,8 @@ float BrowserControlsOffsetManager::ControlsTopOffset() const {
 }
 
 float BrowserControlsOffsetManager::ContentTopOffset() const {
-  return TopControlsShownRatio() * TopControlsHeight();
+  return TopControlsHeight() > 0
+      ? TopControlsShownRatio() * TopControlsHeight() : 0.0f;
 }
 
 float BrowserControlsOffsetManager::TopControlsShownRatio() const {
@@ -73,7 +75,8 @@ float BrowserControlsOffsetManager::BottomControlsHeight() const {
 }
 
 float BrowserControlsOffsetManager::ContentBottomOffset() const {
-  return BottomControlsShownRatio() * BottomControlsHeight();
+  return BottomControlsHeight() > 0
+      ? BottomControlsShownRatio() * BottomControlsHeight() : 0.0f;
 }
 
 float BrowserControlsOffsetManager::BottomControlsShownRatio() const {
@@ -120,7 +123,12 @@ void BrowserControlsOffsetManager::ScrollBegin() {
 
 gfx::Vector2dF BrowserControlsOffsetManager::ScrollBy(
     const gfx::Vector2dF& pending_delta) {
-  if (!TopControlsHeight())
+  // If one or both of the top/bottom controls are showing, the shown ratio
+  // needs to be computed.
+  float controls_height =
+      TopControlsHeight() ? TopControlsHeight() : BottomControlsHeight();
+
+  if (!controls_height)
     return pending_delta;
 
   if (pinch_gesture_active_)
@@ -133,10 +141,11 @@ gfx::Vector2dF BrowserControlsOffsetManager::ScrollBy(
 
   accumulated_scroll_delta_ += pending_delta.y();
 
-  float old_offset = ContentTopOffset();
+  float old_top_offset = ContentTopOffset();
+  float baseline_content_offset = TopControlsHeight()
+      ? baseline_top_content_offset_ : baseline_bottom_content_offset_;
   client_->SetCurrentBrowserControlsShownRatio(
-      (baseline_content_offset_ - accumulated_scroll_delta_) /
-      TopControlsHeight());
+      (baseline_content_offset - accumulated_scroll_delta_) / controls_height);
 
   // If the controls are fully visible, treat the current position as the
   // new baseline even if the gesture didn't end.
@@ -145,7 +154,11 @@ gfx::Vector2dF BrowserControlsOffsetManager::ScrollBy(
 
   ResetAnimations();
 
-  gfx::Vector2dF applied_delta(0.f, old_offset - ContentTopOffset());
+  // applied_delta will negate any scroll on the content if the top browser
+  // controls are showing in favor of hiding the controls and resizing the
+  // content. If the top controls have no height, the content should scroll
+  // immediately.
+  gfx::Vector2dF applied_delta(0.f, old_top_offset - ContentTopOffset());
   return pending_delta - applied_delta;
 }
 
@@ -255,7 +268,8 @@ bool BrowserControlsOffsetManager::IsAnimationComplete(float new_ratio) {
 
 void BrowserControlsOffsetManager::ResetBaseline() {
   accumulated_scroll_delta_ = 0.f;
-  baseline_content_offset_ = ContentTopOffset();
+  baseline_top_content_offset_ = ContentTopOffset();
+  baseline_bottom_content_offset_ = ContentBottomOffset();
 }
 
 }  // namespace cc
