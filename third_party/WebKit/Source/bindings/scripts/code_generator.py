@@ -170,7 +170,7 @@ def main(argv):
     jinja_env = initialize_jinja_env(cache_dir)
     template_filenames = [filename for filename in os.listdir(TEMPLATES_DIR)
                           # Skip .svn, directories, etc.
-                          if filename.endswith(('.cpp', '.h'))]
+                          if filename.endswith(('.tmpl', '.txt'))]
     for template_filename in template_filenames:
         jinja_env.get_template(template_filename)
 
