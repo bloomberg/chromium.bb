@@ -118,12 +118,13 @@ static void RecordUserGestureMerge(const UserGestureToken& oldToken,
 
 UserGestureToken* UserGestureIndicator::s_rootToken = nullptr;
 
-UserGestureIndicator::UserGestureIndicator(PassRefPtr<UserGestureToken> token)
-    : m_token(token == s_rootToken ? nullptr : token.get()) {
-  // Silently ignore UserGestureIndicators on non-main threads.
-  if (!isMainThread() || !m_token)
+UserGestureIndicator::UserGestureIndicator(PassRefPtr<UserGestureToken> token) {
+  // Silently ignore UserGestureIndicators on non-main threads and tokens that
+  // are already active.
+  if (!isMainThread() || !token || token == s_rootToken)
     return;
 
+  m_token = token;
   if (!s_rootToken) {
     s_rootToken = m_token.get();
   } else {
