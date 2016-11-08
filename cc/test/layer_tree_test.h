@@ -18,6 +18,8 @@
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace cc {
+
+class AnimationHost;
 class AnimationPlayer;
 class FakeLayerTreeHostClient;
 class LayerImpl;
@@ -93,6 +95,8 @@ class LayerTreeTest : public testing::Test, public TestHooks {
 
   void DoBeginTest();
   void Timeout();
+
+  AnimationHost* animation_host() const { return animation_host_.get(); }
 
  protected:
   LayerTreeTest();
@@ -179,6 +183,7 @@ class LayerTreeTest : public testing::Test, public TestHooks {
 
   std::unique_ptr<LayerTreeHostClientForTesting> client_;
   std::unique_ptr<LayerTreeHost> layer_tree_host_;
+  std::unique_ptr<AnimationHost> animation_host_;
   LayerTreeHostInProcess* layer_tree_host_in_process_;
 
   bool beginning_ = false;

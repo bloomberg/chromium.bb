@@ -4,6 +4,7 @@
 
 #include "cc/layers/layer_proto_converter.h"
 
+#include "cc/animation/animation_host.h"
 #include "cc/layers/empty_content_layer_client.h"
 #include "cc/layers/heads_up_display_layer.h"
 #include "cc/layers/layer.h"
@@ -20,8 +21,9 @@ namespace {
 class LayerProtoConverterTest : public testing::Test {
  protected:
   void SetUp() override {
-    layer_tree_host_ =
-        FakeLayerTreeHost::Create(&fake_client_, &task_graph_runner_);
+    animation_host_ = AnimationHost::CreateForTesting(ThreadInstance::MAIN);
+    layer_tree_host_ = FakeLayerTreeHost::Create(
+        &fake_client_, &task_graph_runner_, animation_host_.get());
   }
 
   void TearDown() override {
@@ -31,6 +33,7 @@ class LayerProtoConverterTest : public testing::Test {
 
   TestTaskGraphRunner task_graph_runner_;
   FakeLayerTreeHostClient fake_client_;
+  std::unique_ptr<AnimationHost> animation_host_;
   std::unique_ptr<FakeLayerTreeHost> layer_tree_host_;
 };
 

@@ -29,6 +29,8 @@ class CommandLine;
 }
 
 namespace cc {
+
+class AnimationHost;
 class InputHandler;
 class Layer;
 class LayerTreeHost;
@@ -223,6 +225,7 @@ class CONTENT_EXPORT RenderWidgetCompositor
   RenderWidgetCompositorDelegate* const delegate_;
   CompositorDependencies* const compositor_deps_;
   const bool threaded_;
+  std::unique_ptr<cc::AnimationHost> animation_host_;
   std::unique_ptr<cc::LayerTreeHost> layer_tree_host_;
   bool never_visible_;
 

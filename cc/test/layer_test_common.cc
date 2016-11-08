@@ -120,7 +120,11 @@ LayerTestCommon::LayerImplTest::LayerImplTest()
 
 LayerTestCommon::LayerImplTest::LayerImplTest(const LayerTreeSettings& settings)
     : compositor_frame_sink_(FakeCompositorFrameSink::Create3d()),
-      host_(FakeLayerTreeHost::Create(&client_, &task_graph_runner_, settings)),
+      animation_host_(AnimationHost::CreateForTesting(ThreadInstance::MAIN)),
+      host_(FakeLayerTreeHost::Create(&client_,
+                                      &task_graph_runner_,
+                                      animation_host_.get(),
+                                      settings)),
       render_pass_(RenderPass::Create()),
       layer_impl_id_(2) {
   std::unique_ptr<LayerImpl> root =
@@ -133,16 +137,15 @@ LayerTestCommon::LayerImplTest::LayerImplTest(const LayerTreeSettings& settings)
 
   const int timeline_id = AnimationIdProvider::NextTimelineId();
   timeline_ = AnimationTimeline::Create(timeline_id);
-  host_->GetLayerTree()->animation_host()->AddAnimationTimeline(timeline_);
+  animation_host_->AddAnimationTimeline(timeline_);
   // Create impl-side instance.
-  host_->GetLayerTree()->animation_host()->PushPropertiesTo(
-      host_->host_impl()->animation_host());
+  animation_host_->PushPropertiesTo(host_->host_impl()->animation_host());
   timeline_impl_ =
       host_->host_impl()->animation_host()->GetTimelineById(timeline_id);
 }
 
 LayerTestCommon::LayerImplTest::~LayerImplTest() {
-  host_->GetLayerTree()->animation_host()->RemoveAnimationTimeline(timeline_);
+  animation_host_->RemoveAnimationTimeline(timeline_);
   timeline_ = nullptr;
   host_->host_impl()->ReleaseCompositorFrameSink();
 }

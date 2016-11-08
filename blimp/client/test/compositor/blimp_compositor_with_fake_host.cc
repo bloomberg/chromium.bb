@@ -4,6 +4,7 @@
 
 #include "blimp/client/test/compositor/blimp_compositor_with_fake_host.h"
 
+#include "cc/animation/animation_host.h"
 #include "cc/proto/compositor_message.pb.h"
 #include "cc/test/fake_proxy.h"
 
@@ -44,10 +45,12 @@ BlimpCompositorWithFakeHost::CreateFakeUpdate(
 
 std::unique_ptr<cc::LayerTreeHostInProcess>
 BlimpCompositorWithFakeHost::CreateLayerTreeHost() {
+  DCHECK(animation_host());
+
   cc::LayerTreeSettings settings;
-  std::unique_ptr<cc::FakeLayerTreeHost> host =
-      cc::FakeLayerTreeHost::Create(&fake_client_, &task_graph_runner_,
-                                    settings, cc::CompositorMode::THREADED);
+  std::unique_ptr<cc::FakeLayerTreeHost> host = cc::FakeLayerTreeHost::Create(
+      &fake_client_, &task_graph_runner_, animation_host(), settings,
+      cc::CompositorMode::THREADED);
   host->InitializeForTesting(
       cc::TaskRunnerProvider::Create(base::ThreadTaskRunnerHandle::Get(),
                                      base::ThreadTaskRunnerHandle::Get()),

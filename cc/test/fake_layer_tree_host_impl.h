@@ -16,6 +16,8 @@ class GpuMemoryBufferManager;
 
 namespace cc {
 
+class AnimationHost;
+
 class FakeLayerTreeHostImpl : public LayerTreeHostImpl {
  public:
   FakeLayerTreeHostImpl(TaskRunnerProvider* task_runner_provider,

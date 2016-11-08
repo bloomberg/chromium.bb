@@ -15,6 +15,7 @@
 #include "cc/test/remote_client_layer_factory.h"
 #include "cc/trees/layer_tree_host_client.h"
 #include "cc/trees/layer_tree_host_in_process.h"
+#include "cc/trees/mutator_host.h"
 
 namespace cc {
 
@@ -109,7 +110,7 @@ LayerTreeHostRemoteForTesting::CreateRemoteCompositorBridge(
 std::unique_ptr<LayerTreeHostRemoteForTesting>
 LayerTreeHostRemoteForTesting::Create(
     LayerTreeHostClient* client,
-    std::unique_ptr<AnimationHost> animation_host,
+    MutatorHost* mutator_host,
     LayerTreeSettings const* settings,
     TaskGraphRunner* task_graph_runner,
     scoped_refptr<base::SingleThreadTaskRunner> main_task_runner,
@@ -121,7 +122,7 @@ LayerTreeHostRemoteForTesting::Create(
   LayerTreeHostRemote::InitParams params;
   params.client = client;
   params.main_task_runner = main_task_runner;
-  params.animation_host = std::move(animation_host);
+  params.mutator_host = mutator_host;
   params.remote_compositor_bridge =
       CreateRemoteCompositorBridge(main_task_runner);
   params.engine_picture_cache =
@@ -142,6 +143,7 @@ LayerTreeHostRemoteForTesting::LayerTreeHostRemoteForTesting(InitParams* params)
           base::MakeUnique<LayerTreeHostInProcessClient>(this)) {}
 
 LayerTreeHostRemoteForTesting::~LayerTreeHostRemoteForTesting() {
+  animation_host_->SetMutatorHostClient(nullptr);
   compositor_state_deserializer_ = nullptr;
   layer_tree_host_in_process_ = nullptr;
 }
@@ -199,9 +201,10 @@ void LayerTreeHostRemoteForTesting::Initialize(
       static_cast<RemoteCompositorBridgeImpl*>(remote_compositor_bridge());
   remote_compositor_bridge_impl->SetRemoteHost(this);
 
+  animation_host_ = AnimationHost::CreateForTesting(ThreadInstance::MAIN);
   layer_tree_host_in_process_ = CreateLayerTreeHostInProcess(
       layer_tree_host_in_process_client_.get(), task_graph_runner,
-      GetSettings(), main_task_runner, impl_task_runner);
+      GetSettings(), main_task_runner, impl_task_runner, animation_host_.get());
 
   compositor_state_deserializer_ =
       base::MakeUnique<CompositorStateDeserializer>(
@@ -225,14 +228,15 @@ LayerTreeHostRemoteForTesting::CreateLayerTreeHostInProcess(
     TaskGraphRunner* task_graph_runner,
     const LayerTreeSettings& settings,
     scoped_refptr<base::SingleThreadTaskRunner> main_task_runner,
-    scoped_refptr<base::SingleThreadTaskRunner> impl_task_runner) {
+    scoped_refptr<base::SingleThreadTaskRunner> impl_task_runner,
+    MutatorHost* mutator_host) {
   LayerTreeHostInProcess::InitParams params;
 
   params.client = client;
   params.task_graph_runner = task_graph_runner;
   params.settings = &settings;
   params.main_task_runner = main_task_runner;
-  params.animation_host = AnimationHost::CreateMainInstance();
+  params.mutator_host = mutator_host;
 
   return LayerTreeHostInProcess::CreateThreaded(impl_task_runner, &params);
 }

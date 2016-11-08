@@ -6,7 +6,6 @@
 
 #include "base/auto_reset.h"
 #include "base/time/time.h"
-#include "cc/animation/animation_host.h"
 #include "cc/input/page_scale_animation.h"
 #include "cc/layers/heads_up_display_layer.h"
 #include "cc/layers/heads_up_display_layer_impl.h"
@@ -17,6 +16,7 @@
 #include "cc/trees/layer_tree_host.h"
 #include "cc/trees/layer_tree_host_common.h"
 #include "cc/trees/layer_tree_impl.h"
+#include "cc/trees/mutator_host.h"
 #include "cc/trees/property_tree_builder.h"
 
 namespace cc {
@@ -59,20 +59,19 @@ LayerTree::Inputs::Inputs()
 
 LayerTree::Inputs::~Inputs() = default;
 
-LayerTree::LayerTree(std::unique_ptr<AnimationHost> animation_host,
-                     LayerTreeHost* layer_tree_host)
+LayerTree::LayerTree(MutatorHost* mutator_host, LayerTreeHost* layer_tree_host)
     : needs_full_tree_sync_(true),
       needs_meta_info_recomputation_(true),
       in_paint_layer_contents_(false),
-      animation_host_(std::move(animation_host)),
+      mutator_host_(mutator_host),
       layer_tree_host_(layer_tree_host) {
-  DCHECK(animation_host_);
+  DCHECK(mutator_host_);
   DCHECK(layer_tree_host_);
-  animation_host_->SetMutatorHostClient(this);
+  mutator_host_->SetMutatorHostClient(this);
 }
 
 LayerTree::~LayerTree() {
-  animation_host_->SetMutatorHostClient(nullptr);
+  mutator_host_->SetMutatorHostClient(nullptr);
 
   // We must clear any pointers into the layer tree prior to destroying it.
   RegisterViewportLayers(nullptr, nullptr, nullptr, nullptr);
@@ -243,8 +242,8 @@ void LayerTree::RegisterLayer(Layer* layer) {
   DCHECK(!in_paint_layer_contents_);
   layer_id_map_[layer->id()] = layer;
   if (layer->element_id()) {
-    animation_host_->RegisterElement(layer->element_id(),
-                                     ElementListType::ACTIVE);
+    mutator_host_->RegisterElement(layer->element_id(),
+                                   ElementListType::ACTIVE);
   }
 }
 
@@ -252,8 +251,8 @@ void LayerTree::UnregisterLayer(Layer* layer) {
   DCHECK(LayerById(layer->id()));
   DCHECK(!in_paint_layer_contents_);
   if (layer->element_id()) {
-    animation_host_->UnregisterElement(layer->element_id(),
-                                       ElementListType::ACTIVE);
+    mutator_host_->UnregisterElement(layer->element_id(),
+                                     ElementListType::ACTIVE);
   }
   RemoveLayerShouldPushProperties(layer);
   layer_id_map_.erase(layer->id());
@@ -585,13 +584,13 @@ void LayerTree::RegisterElement(ElementId element_id,
     element_layers_map_[layer->element_id()] = layer;
   }
 
-  animation_host_->RegisterElement(element_id, list_type);
+  mutator_host_->RegisterElement(element_id, list_type);
 }
 
 void LayerTree::UnregisterElement(ElementId element_id,
                                   ElementListType list_type,
                                   Layer* layer) {
-  animation_host_->UnregisterElement(element_id, list_type);
+  mutator_host_->UnregisterElement(element_id, list_type);
 
   if (layer->element_id()) {
     element_layers_map_.erase(layer->element_id());

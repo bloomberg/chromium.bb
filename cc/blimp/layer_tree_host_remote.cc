@@ -7,7 +7,6 @@
 #include "base/atomic_sequence_num.h"
 #include "base/auto_reset.h"
 #include "base/memory/ptr_util.h"
-#include "cc/animation/animation_host.h"
 #include "cc/blimp/compositor_proto_state.h"
 #include "cc/blimp/engine_picture_cache.h"
 #include "cc/blimp/picture_data_conversions.h"
@@ -20,6 +19,7 @@
 #include "cc/trees/layer_tree.h"
 #include "cc/trees/layer_tree_host_client.h"
 #include "cc/trees/layer_tree_host_common.h"
+#include "cc/trees/mutator_host.h"
 #include "cc/trees/task_runner_provider.h"
 #include "ui/gfx/geometry/scroll_offset.h"
 
@@ -64,8 +64,7 @@ LayerTreeHostRemote::InitParams::~InitParams() = default;
 LayerTreeHostRemote::LayerTreeHostRemote(InitParams* params)
     : LayerTreeHostRemote(
           params,
-          base::MakeUnique<LayerTree>(std::move(params->animation_host),
-                                      this)) {}
+          base::MakeUnique<LayerTree>(params->mutator_host, this)) {}
 
 LayerTreeHostRemote::LayerTreeHostRemote(InitParams* params,
                                          std::unique_ptr<LayerTree> layer_tree)
@@ -377,7 +376,6 @@ void LayerTreeHostRemote::BeginMainFrame() {
   // We don't run any animations on the layer because threaded animations are
   // disabled.
   // TODO(khushalsagar): Revisit this when adding support for animations.
-  DCHECK(!layer_tree_->animation_host()->needs_push_properties());
   client_->UpdateLayerTreeHost();
 
   current_pipeline_stage_ = FramePipelineStage::UPDATE_LAYERS;

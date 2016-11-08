@@ -239,6 +239,8 @@ void RenderWidgetCompositor::Initialize(float device_scale_factor) {
   cc::LayerTreeSettings settings =
       GenerateLayerTreeSettings(*cmd, compositor_deps_, device_scale_factor);
 
+  animation_host_ = cc::AnimationHost::CreateMainInstance();
+
   if (cmd->HasSwitch(switches::kUseRemoteCompositing) &&
       cmd->HasSwitch(switches::kUseLayerTreeHostRemote)) {
     DCHECK(!threaded_);
@@ -247,7 +249,7 @@ void RenderWidgetCompositor::Initialize(float device_scale_factor) {
     params.client = this;
     params.main_task_runner =
         compositor_deps_->GetCompositorMainThreadTaskRunner();
-    params.animation_host = cc::AnimationHost::CreateMainInstance();
+    params.mutator_host = animation_host_.get();
     params.remote_compositor_bridge =
         GetContentClient()->renderer()->CreateRemoteCompositorBridge(
             this, params.main_task_runner);
@@ -265,7 +267,7 @@ void RenderWidgetCompositor::Initialize(float device_scale_factor) {
   params.task_graph_runner = compositor_deps_->GetTaskGraphRunner();
   params.main_task_runner =
       compositor_deps_->GetCompositorMainThreadTaskRunner();
-  params.animation_host = cc::AnimationHost::CreateMainInstance();
+  params.mutator_host = animation_host_.get();
 
   if (cmd->HasSwitch(switches::kUseRemoteCompositing)) {
     DCHECK(!threaded_);
@@ -680,18 +682,16 @@ void RenderWidgetCompositor::clearRootLayer() {
 
 void RenderWidgetCompositor::attachCompositorAnimationTimeline(
     cc::AnimationTimeline* compositor_timeline) {
-  cc::AnimationHost* animation_host =
-      layer_tree_host_->GetLayerTree()->animation_host();
-  DCHECK(animation_host);
-  animation_host->AddAnimationTimeline(compositor_timeline);
+  DCHECK(animation_host_);
+  DCHECK(compositor_deps_->IsThreadedAnimationEnabled());
+  animation_host_->AddAnimationTimeline(compositor_timeline);
 }
 
 void RenderWidgetCompositor::detachCompositorAnimationTimeline(
     cc::AnimationTimeline* compositor_timeline) {
-  cc::AnimationHost* animation_host =
-      layer_tree_host_->GetLayerTree()->animation_host();
-  DCHECK(animation_host);
-  animation_host->RemoveAnimationTimeline(compositor_timeline);
+  DCHECK(animation_host_);
+  DCHECK(compositor_deps_->IsThreadedAnimationEnabled());
+  animation_host_->RemoveAnimationTimeline(compositor_timeline);
 }
 
 void RenderWidgetCompositor::setViewportSize(

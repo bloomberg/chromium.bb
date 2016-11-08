@@ -185,20 +185,21 @@ Compositor::Compositor(ui::ContextFactory* context_factory,
 
   base::TimeTicks before_create = base::TimeTicks::Now();
 
+  animation_host_ = cc::AnimationHost::CreateMainInstance();
+
   cc::LayerTreeHostInProcess::InitParams params;
   params.client = this;
   params.task_graph_runner = context_factory_->GetTaskGraphRunner();
   params.settings = &settings;
   params.main_task_runner = task_runner_;
-  params.animation_host = cc::AnimationHost::CreateMainInstance();
+  params.mutator_host = animation_host_.get();
   host_ = cc::LayerTreeHostInProcess::CreateSingleThreaded(this, &params);
   UMA_HISTOGRAM_TIMES("GPU.CreateBrowserCompositor",
                       base::TimeTicks::Now() - before_create);
 
   animation_timeline_ =
       cc::AnimationTimeline::Create(cc::AnimationIdProvider::NextTimelineId());
-  host_->GetLayerTree()->animation_host()->AddAnimationTimeline(
-      animation_timeline_.get());
+  animation_host_->AddAnimationTimeline(animation_timeline_.get());
 
   host_->GetLayerTree()->SetRootLayer(root_web_layer_);
   host_->SetFrameSinkId(frame_sink_id_);
@@ -221,8 +222,7 @@ Compositor::~Compositor() {
     root_layer_->ResetCompositor();
 
   if (animation_timeline_)
-    host_->GetLayerTree()->animation_host()->RemoveAnimationTimeline(
-        animation_timeline_.get());
+    animation_host_->RemoveAnimationTimeline(animation_timeline_.get());
 
   // Stop all outstanding draws before telling the ContextFactory to tear
   // down any contexts that the |host_| may rely upon.

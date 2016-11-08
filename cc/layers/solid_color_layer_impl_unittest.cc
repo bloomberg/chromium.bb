@@ -8,6 +8,7 @@
 
 #include <vector>
 
+#include "cc/animation/animation_host.h"
 #include "cc/layers/append_quads_data.h"
 #include "cc/layers/solid_color_layer.h"
 #include "cc/quads/solid_color_draw_quad.h"
@@ -135,8 +136,9 @@ TEST(SolidColorLayerImplTest, VerifyOpaqueRect) {
 
   FakeLayerTreeHostClient client;
   TestTaskGraphRunner task_graph_runner;
-  std::unique_ptr<FakeLayerTreeHost> host =
-      FakeLayerTreeHost::Create(&client, &task_graph_runner);
+  auto animation_host = AnimationHost::CreateForTesting(ThreadInstance::MAIN);
+  std::unique_ptr<FakeLayerTreeHost> host = FakeLayerTreeHost::Create(
+      &client, &task_graph_runner, animation_host.get());
   host->SetRootLayer(root);
 
   LayerTreeHostCommon::CalcDrawPropsMainInputsForTesting inputs(

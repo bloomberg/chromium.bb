@@ -4,6 +4,7 @@
 
 #include "cc/layers/painted_scrollbar_layer.h"
 
+#include "cc/animation/animation_host.h"
 #include "cc/test/fake_layer_tree_host.h"
 #include "cc/test/fake_layer_tree_host_client.h"
 #include "cc/test/fake_scrollbar.h"
@@ -29,10 +30,10 @@ class MockScrollbar : public FakeScrollbar {
 TEST(PaintedScrollbarLayerTest, NeedsPaint) {
   FakeLayerTreeHostClient fake_client_;
   TestTaskGraphRunner task_graph_runner_;
-  std::unique_ptr<FakeLayerTreeHost> layer_tree_host_;
 
-  layer_tree_host_ =
-      FakeLayerTreeHost::Create(&fake_client_, &task_graph_runner_);
+  auto animation_host = AnimationHost::CreateForTesting(ThreadInstance::MAIN);
+  auto layer_tree_host = FakeLayerTreeHost::Create(
+      &fake_client_, &task_graph_runner_, animation_host.get());
 
   MockScrollbar* scrollbar = new MockScrollbar();
   scoped_refptr<PaintedScrollbarLayer> scrollbar_layer =
@@ -41,9 +42,9 @@ TEST(PaintedScrollbarLayerTest, NeedsPaint) {
   scrollbar_layer->SetIsDrawable(true);
   scrollbar_layer->SetBounds(gfx::Size(100, 100));
 
-  layer_tree_host_->SetRootLayer(scrollbar_layer);
+  layer_tree_host->SetRootLayer(scrollbar_layer);
   EXPECT_EQ(scrollbar_layer->GetLayerTreeHostForTesting(),
-            layer_tree_host_.get());
+            layer_tree_host.get());
   scrollbar_layer->SavePaintProperties();
 
   // Request no paint, but expect them to be painted because they have not

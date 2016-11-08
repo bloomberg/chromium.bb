@@ -13,6 +13,7 @@
 #include "base/format_macros.h"
 #include "base/memory/ptr_util.h"
 #include "base/strings/stringprintf.h"
+#include "cc/animation/animation_host.h"
 #include "cc/layers/layer.h"
 #include "cc/layers/layer_impl.h"
 #include "cc/test/animation_test_common.h"
@@ -127,7 +128,10 @@ void ExpectTreesAreIdentical(Layer* root_layer,
 class TreeSynchronizerTest : public testing::Test {
  protected:
   TreeSynchronizerTest()
-      : host_(FakeLayerTreeHost::Create(&client_, &task_graph_runner_)) {}
+      : animation_host_(AnimationHost::CreateForTesting(ThreadInstance::MAIN)),
+        host_(FakeLayerTreeHost::Create(&client_,
+                                        &task_graph_runner_,
+                                        animation_host_.get())) {}
 
   bool is_equal(ScrollTree::ScrollOffsetMap map,
                 ScrollTree::ScrollOffsetMap other) {
@@ -150,6 +154,7 @@ class TreeSynchronizerTest : public testing::Test {
   FakeLayerTreeHostClient client_;
   StubLayerTreeHostSingleThreadClient single_thread_client_;
   TestTaskGraphRunner task_graph_runner_;
+  std::unique_ptr<AnimationHost> animation_host_;
   std::unique_ptr<FakeLayerTreeHost> host_;
 };
 

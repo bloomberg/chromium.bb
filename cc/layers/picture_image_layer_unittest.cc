@@ -4,6 +4,7 @@
 
 #include "cc/layers/picture_image_layer.h"
 
+#include "cc/animation/animation_host.h"
 #include "cc/playback/display_item.h"
 #include "cc/test/fake_layer_tree_host.h"
 #include "cc/test/skia_common.h"
@@ -21,8 +22,9 @@ TEST(PictureImageLayerTest, PaintContentsToDisplayList) {
   scoped_refptr<PictureImageLayer> layer = PictureImageLayer::Create();
   FakeLayerTreeHostClient client;
   TestTaskGraphRunner task_graph_runner;
-  std::unique_ptr<FakeLayerTreeHost> host =
-      FakeLayerTreeHost::Create(&client, &task_graph_runner);
+  auto animation_host = AnimationHost::CreateForTesting(ThreadInstance::MAIN);
+  std::unique_ptr<FakeLayerTreeHost> host = FakeLayerTreeHost::Create(
+      &client, &task_graph_runner, animation_host.get());
   layer->SetLayerTreeHost(host.get());
   gfx::Rect layer_rect(200, 200);
 

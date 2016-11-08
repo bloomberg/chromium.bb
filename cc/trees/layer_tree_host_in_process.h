@@ -46,7 +46,6 @@
 #include "ui/gfx/geometry/rect.h"
 
 namespace cc {
-class AnimationHost;
 class AnimationEvents;
 class BeginFrameSource;
 class ClientPictureCache;
@@ -59,6 +58,7 @@ class LayerTreeHostImpl;
 class LayerTreeHostImplClient;
 class LayerTreeHostSingleThreadClient;
 class LayerTreeMutator;
+class MutatorHost;
 class PropertyTrees;
 class Region;
 class RemoteProtoChannel;
@@ -85,7 +85,7 @@ class CC_EXPORT LayerTreeHostInProcess : public LayerTreeHost {
     LayerTreeSettings const* settings = nullptr;
     scoped_refptr<base::SingleThreadTaskRunner> main_task_runner;
     ImageSerializationProcessor* image_serialization_processor = nullptr;
-    std::unique_ptr<AnimationHost> animation_host;
+    MutatorHost* mutator_host;
 
     InitParams();
     ~InitParams();

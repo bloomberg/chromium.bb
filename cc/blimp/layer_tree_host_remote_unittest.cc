@@ -144,9 +144,8 @@ class MockLayer : public Layer {
 
 class MockLayerTree : public LayerTree {
  public:
-  MockLayerTree(std::unique_ptr<AnimationHost> animation_host,
-                LayerTreeHost* layer_tree_host)
-      : LayerTree(std::move(animation_host), layer_tree_host) {}
+  MockLayerTree(MutatorHost* mutator_host, LayerTreeHost* layer_tree_host)
+      : LayerTree(mutator_host, layer_tree_host) {}
   ~MockLayerTree() override {}
 
   // We don't want tree sync requests to trigger commits.
@@ -158,8 +157,7 @@ class LayerTreeHostRemoteForTesting : public LayerTreeHostRemote {
   explicit LayerTreeHostRemoteForTesting(InitParams* params)
       : LayerTreeHostRemote(
             params,
-            base::MakeUnique<MockLayerTree>(AnimationHost::CreateMainInstance(),
-                                            this)) {}
+            base::MakeUnique<MockLayerTree>(params->mutator_host, this)) {}
   ~LayerTreeHostRemoteForTesting() override {}
 };
 
@@ -172,6 +170,8 @@ class LayerTreeHostRemoteTest : public testing::Test {
   ~LayerTreeHostRemoteTest() override {}
 
   void SetUp() override {
+    animation_host_ = AnimationHost::CreateForTesting(ThreadInstance::MAIN);
+
     LayerTreeHostRemote::InitParams params;
     params.client = &mock_layer_tree_host_client_;
     scoped_refptr<base::SingleThreadTaskRunner> main_task_runner =
@@ -187,7 +187,7 @@ class LayerTreeHostRemoteTest : public testing::Test {
         image_serialization_processor_.CreateEnginePictureCache();
     LayerTreeSettings settings;
     params.settings = &settings;
-
+    params.mutator_host = animation_host_.get();
     layer_tree_host_ = base::MakeUnique<LayerTreeHostRemoteForTesting>(&params);
 
     // Make sure the root layer always updates.
@@ -225,6 +225,7 @@ class LayerTreeHostRemoteTest : public testing::Test {
   }
 
  protected:
+  std::unique_ptr<AnimationHost> animation_host_;
   std::unique_ptr<LayerTreeHostRemote> layer_tree_host_;
   StrictMock<MockLayerTreeHostClient> mock_layer_tree_host_client_;
   UpdateTrackingRemoteCompositorBridge* remote_compositor_bridge_ = nullptr;

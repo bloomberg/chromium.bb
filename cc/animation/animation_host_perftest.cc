@@ -32,8 +32,9 @@ class AnimationHostPerfTest : public testing::Test {
 
   void SetUp() override {
     LayerTreeSettings settings;
-    layer_tree_host_ =
-        FakeLayerTreeHost::Create(&fake_client_, &task_graph_runner_, settings);
+    animation_host_ = AnimationHost::CreateForTesting(ThreadInstance::MAIN);
+    layer_tree_host_ = FakeLayerTreeHost::Create(
+        &fake_client_, &task_graph_runner_, animation_host_.get(), settings);
     layer_tree_host_->InitializeSingleThreaded(
         &single_thread_client_, base::ThreadTaskRunnerHandle::Get());
 
@@ -51,9 +52,7 @@ class AnimationHostPerfTest : public testing::Test {
     layer_tree_host_ = nullptr;
   }
 
-  AnimationHost* host() const {
-    return layer_tree_host_->GetLayerTree()->animation_host();
-  }
+  AnimationHost* host() const { return animation_host_.get(); }
   AnimationHost* host_impl() const {
     return layer_tree_host_->host_impl()->animation_host();
   }
@@ -137,6 +136,7 @@ class AnimationHostPerfTest : public testing::Test {
  private:
   StubLayerTreeHostSingleThreadClient single_thread_client_;
   FakeLayerTreeHostClient fake_client_;
+  std::unique_ptr<AnimationHost> animation_host_;
   std::unique_ptr<FakeLayerTreeHost> layer_tree_host_;
   scoped_refptr<Layer> root_layer_;
   LayerImpl* root_layer_impl_;

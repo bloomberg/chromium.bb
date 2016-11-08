@@ -91,8 +91,9 @@ namespace cc {
 class LayerSerializationTest : public testing::Test {
  protected:
   void SetUp() override {
-    layer_tree_host_ =
-        FakeLayerTreeHost::Create(&fake_client_, &task_graph_runner_);
+    animation_host_ = AnimationHost::CreateForTesting(ThreadInstance::MAIN);
+    layer_tree_host_ = FakeLayerTreeHost::Create(
+        &fake_client_, &task_graph_runner_, animation_host_.get());
   }
 
   void TearDown() override {
@@ -864,6 +865,7 @@ class LayerSerializationTest : public testing::Test {
 
   TestTaskGraphRunner task_graph_runner_;
   FakeLayerTreeHostClient fake_client_;
+  std::unique_ptr<AnimationHost> animation_host_;
   std::unique_ptr<FakeLayerTreeHost> layer_tree_host_;
 };
 
@@ -873,7 +875,7 @@ class MockLayerTree : public LayerTree {
  public:
   MockLayerTree(LayerTreeHostInProcess::InitParams* params,
                 LayerTreeHost* layer_tree_host)
-      : LayerTree(std::move(params->animation_host), layer_tree_host) {}
+      : LayerTree(params->mutator_host, layer_tree_host) {}
   ~MockLayerTree() override {}
 
   MOCK_METHOD0(SetNeedsFullTreeSync, void());
@@ -912,12 +914,13 @@ class LayerTest : public testing::Test {
 
  protected:
   void SetUp() override {
+    animation_host_ = AnimationHost::CreateForTesting(ThreadInstance::MAIN);
+
     LayerTreeHostInProcess::InitParams params;
     params.client = &fake_client_;
     params.settings = &settings_;
     params.task_graph_runner = &task_graph_runner_;
-    params.animation_host =
-        AnimationHost::CreateForTesting(ThreadInstance::MAIN);
+    params.mutator_host = animation_host_.get();
 
     layer_tree_host_.reset(
         new StrictMock<MockLayerTreeHost>(&single_thread_client_, &params));
@@ -938,7 +941,9 @@ class LayerTest : public testing::Test {
     grand_child3_ = nullptr;
 
     layer_tree_->SetRootLayer(nullptr);
+    animation_host_->SetMutatorHostClient(nullptr);
     layer_tree_host_ = nullptr;
+    animation_host_ = nullptr;
     layer_tree_ = nullptr;
   }
 
@@ -995,6 +1000,7 @@ class LayerTest : public testing::Test {
   StubLayerTreeHostSingleThreadClient single_thread_client_;
   FakeLayerTreeHostClient fake_client_;
   std::unique_ptr<StrictMock<MockLayerTreeHost>> layer_tree_host_;
+  std::unique_ptr<AnimationHost> animation_host_;
   StrictMock<MockLayerTree>* layer_tree_;
   scoped_refptr<Layer> parent_;
   scoped_refptr<Layer> child1_;
@@ -1814,18 +1820,19 @@ TEST_F(LayerTest, MaskHasParent) {
 
 class LayerTreeHostFactory {
  public:
-  std::unique_ptr<LayerTreeHost> Create() {
-    return Create(LayerTreeSettings());
+  std::unique_ptr<LayerTreeHost> Create(MutatorHost* mutator_host) {
+    return Create(LayerTreeSettings(), mutator_host);
   }
 
-  std::unique_ptr<LayerTreeHost> Create(LayerTreeSettings settings) {
+  std::unique_ptr<LayerTreeHost> Create(LayerTreeSettings settings,
+                                        MutatorHost* mutator_host) {
     LayerTreeHostInProcess::InitParams params;
     params.client = &client_;
     params.task_graph_runner = &task_graph_runner_;
     params.settings = &settings;
     params.main_task_runner = base::ThreadTaskRunnerHandle::Get();
-    params.animation_host =
-        AnimationHost::CreateForTesting(ThreadInstance::MAIN);
+    params.mutator_host = mutator_host;
+
     return LayerTreeHostInProcess::CreateSingleThreaded(&single_thread_client_,
                                                         &params);
   }
@@ -1861,7 +1868,10 @@ TEST_F(LayerLayerTreeHostTest, EnteringTree) {
   AssertLayerTreeHostMatchesForSubtree(parent.get(), nullptr);
 
   LayerTreeHostFactory factory;
-  std::unique_ptr<LayerTreeHost> layer_tree_host = factory.Create();
+
+  auto animation_host = AnimationHost::CreateForTesting(ThreadInstance::MAIN);
+  std::unique_ptr<LayerTreeHost> layer_tree_host =
+      factory.Create(animation_host.get());
   LayerTree* layer_tree = layer_tree_host->GetLayerTree();
   // Setting the root layer should set the host pointer for all layers in the
   // tree.
@@ -1879,7 +1889,10 @@ TEST_F(LayerLayerTreeHostTest, EnteringTree) {
 TEST_F(LayerLayerTreeHostTest, AddingLayerSubtree) {
   scoped_refptr<Layer> parent = Layer::Create();
   LayerTreeHostFactory factory;
-  std::unique_ptr<LayerTreeHost> layer_tree_host = factory.Create();
+
+  auto animation_host = AnimationHost::CreateForTesting(ThreadInstance::MAIN);
+  std::unique_ptr<LayerTreeHost> layer_tree_host =
+      factory.Create(animation_host.get());
   LayerTree* layer_tree = layer_tree_host->GetLayerTree();
 
   layer_tree->SetRootLayer(parent.get());
@@ -1912,7 +1925,9 @@ TEST_F(LayerLayerTreeHostTest, ChangeHost) {
   child->SetMaskLayer(mask.get());
 
   LayerTreeHostFactory factory;
-  std::unique_ptr<LayerTreeHost> first_layer_tree_host = factory.Create();
+  auto animation_host1 = AnimationHost::CreateForTesting(ThreadInstance::MAIN);
+  std::unique_ptr<LayerTreeHost> first_layer_tree_host =
+      factory.Create(animation_host1.get());
   first_layer_tree_host->GetLayerTree()->SetRootLayer(parent.get());
 
   AssertLayerTreeHostMatchesForSubtree(parent.get(),
@@ -1920,7 +1935,9 @@ TEST_F(LayerLayerTreeHostTest, ChangeHost) {
 
   // Now re-root the tree to a new host (simulating what we do on a context lost
   // event). This should update the host pointers for all layers in the tree.
-  std::unique_ptr<LayerTreeHost> second_layer_tree_host = factory.Create();
+  auto animation_host2 = AnimationHost::CreateForTesting(ThreadInstance::MAIN);
+  std::unique_ptr<LayerTreeHost> second_layer_tree_host =
+      factory.Create(animation_host2.get());
   second_layer_tree_host->GetLayerTree()->SetRootLayer(parent.get());
 
   AssertLayerTreeHostMatchesForSubtree(parent.get(),
@@ -1942,7 +1959,9 @@ TEST_F(LayerLayerTreeHostTest, ChangeHostInSubtree) {
   first_parent->AddChild(second_child);
 
   LayerTreeHostFactory factory;
-  std::unique_ptr<LayerTreeHost> first_layer_tree_host = factory.Create();
+  auto animation_host1 = AnimationHost::CreateForTesting(ThreadInstance::MAIN);
+  std::unique_ptr<LayerTreeHost> first_layer_tree_host =
+      factory.Create(animation_host1.get());
   first_layer_tree_host->GetLayerTree()->SetRootLayer(first_parent.get());
 
   AssertLayerTreeHostMatchesForSubtree(first_parent.get(),
@@ -1950,7 +1969,9 @@ TEST_F(LayerLayerTreeHostTest, ChangeHostInSubtree) {
 
   // Now reparent the subtree starting at second_child to a layer in a different
   // tree.
-  std::unique_ptr<LayerTreeHost> second_layer_tree_host = factory.Create();
+  auto animation_host2 = AnimationHost::CreateForTesting(ThreadInstance::MAIN);
+  std::unique_ptr<LayerTreeHost> second_layer_tree_host =
+      factory.Create(animation_host2.get());
   second_layer_tree_host->GetLayerTree()->SetRootLayer(second_parent.get());
 
   second_parent->AddChild(second_child);
@@ -1976,7 +1997,9 @@ TEST_F(LayerLayerTreeHostTest, ReplaceMaskLayer) {
   mask->AddChild(mask_child);
 
   LayerTreeHostFactory factory;
-  std::unique_ptr<LayerTreeHost> layer_tree_host = factory.Create();
+  auto animation_host = AnimationHost::CreateForTesting(ThreadInstance::MAIN);
+  std::unique_ptr<LayerTreeHost> layer_tree_host =
+      factory.Create(animation_host.get());
   layer_tree_host->GetLayerTree()->SetRootLayer(parent.get());
 
   AssertLayerTreeHostMatchesForSubtree(parent.get(), layer_tree_host.get());
@@ -1995,13 +2018,17 @@ TEST_F(LayerLayerTreeHostTest, DestroyHostWithNonNullRootLayer) {
   scoped_refptr<Layer> child = Layer::Create();
   root->AddChild(child);
   LayerTreeHostFactory factory;
-  std::unique_ptr<LayerTreeHost> layer_tree_host = factory.Create();
+  auto animation_host = AnimationHost::CreateForTesting(ThreadInstance::MAIN);
+  std::unique_ptr<LayerTreeHost> layer_tree_host =
+      factory.Create(animation_host.get());
   layer_tree_host->GetLayerTree()->SetRootLayer(root);
 }
 
 TEST_F(LayerTest, SafeOpaqueBackgroundColor) {
   LayerTreeHostFactory factory;
-  std::unique_ptr<LayerTreeHost> layer_tree_host = factory.Create();
+  auto animation_host = AnimationHost::CreateForTesting(ThreadInstance::MAIN);
+  std::unique_ptr<LayerTreeHost> layer_tree_host =
+      factory.Create(animation_host.get());
   LayerTree* layer_tree = layer_tree_host->GetLayerTree();
 
   scoped_refptr<Layer> layer = Layer::Create();

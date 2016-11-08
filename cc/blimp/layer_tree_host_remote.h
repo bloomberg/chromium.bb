@@ -24,7 +24,7 @@ namespace proto {
 class LayerTreeHost;
 }  // namespace proto
 
-class AnimationHost;
+class MutatorHost;
 class EnginePictureCache;
 class ImageSerializationProcessor;
 class RemoteCompositorBridge;
@@ -36,7 +36,7 @@ class CC_EXPORT LayerTreeHostRemote : public LayerTreeHost,
   struct CC_EXPORT InitParams {
     LayerTreeHostClient* client = nullptr;
     scoped_refptr<base::SingleThreadTaskRunner> main_task_runner;
-    std::unique_ptr<AnimationHost> animation_host;
+    MutatorHost* mutator_host;
     std::unique_ptr<RemoteCompositorBridge> remote_compositor_bridge;
     std::unique_ptr<EnginePictureCache> engine_picture_cache;
     LayerTreeSettings const* settings = nullptr;

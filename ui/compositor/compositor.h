@@ -38,6 +38,7 @@ class SingleThreadTaskRunner;
 }
 
 namespace cc {
+class AnimationHost;
 class AnimationTimeline;
 class ContextProvider;
 class Layer;
@@ -411,6 +412,7 @@ class COMPOSITOR_EXPORT Compositor
   bool compositor_frame_sink_requested_;
   const cc::FrameSinkId frame_sink_id_;
   scoped_refptr<cc::Layer> root_web_layer_;
+  std::unique_ptr<cc::AnimationHost> animation_host_;
   std::unique_ptr<cc::LayerTreeHost> host_;
   scoped_refptr<base::SingleThreadTaskRunner> task_runner_;
 

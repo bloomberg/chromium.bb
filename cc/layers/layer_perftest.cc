@@ -5,6 +5,7 @@
 #include "cc/layers/layer.h"
 
 #include "base/threading/thread_task_runner_handle.h"
+#include "cc/animation/animation_host.h"
 #include "cc/debug/lap_timer.h"
 #include "cc/test/fake_impl_task_runner_provider.h"
 #include "cc/test/fake_layer_tree_host.h"
@@ -32,8 +33,9 @@ class LayerPerfTest : public testing::Test {
 
  protected:
   void SetUp() override {
-    layer_tree_host_ =
-        FakeLayerTreeHost::Create(&fake_client_, &task_graph_runner_);
+    animation_host_ = AnimationHost::CreateForTesting(ThreadInstance::MAIN);
+    layer_tree_host_ = FakeLayerTreeHost::Create(
+        &fake_client_, &task_graph_runner_, animation_host_.get());
     layer_tree_host_->InitializeSingleThreaded(
         &single_thread_client_, base::ThreadTaskRunnerHandle::Get());
   }
@@ -49,6 +51,7 @@ class LayerPerfTest : public testing::Test {
 
   StubLayerTreeHostSingleThreadClient single_thread_client_;
   FakeLayerTreeHostClient fake_client_;
+  std::unique_ptr<AnimationHost> animation_host_;
   std::unique_ptr<FakeLayerTreeHost> layer_tree_host_;
   LapTimer timer_;
 };

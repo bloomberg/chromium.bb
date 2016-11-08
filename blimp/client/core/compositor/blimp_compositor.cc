@@ -152,6 +152,7 @@ void BlimpCompositor::Initialize() {
   GetEmbedderDeps()->GetSurfaceManager()->RegisterFrameSinkId(frame_sink_id_);
   surface_factory_ = base::MakeUnique<cc::SurfaceFactory>(
       frame_sink_id_, GetEmbedderDeps()->GetSurfaceManager(), this);
+  animation_host_ = cc::AnimationHost::CreateMainInstance();
   host_ = CreateLayerTreeHost();
 
   if (use_threaded_layer_tree_host_) {
@@ -526,6 +527,7 @@ void BlimpCompositor::DestroyDelegatedContent() {
 
 std::unique_ptr<cc::LayerTreeHostInProcess>
 BlimpCompositor::CreateLayerTreeHost() {
+  DCHECK(animation_host_);
   std::unique_ptr<cc::LayerTreeHostInProcess> host;
 
   cc::LayerTreeHostInProcess::InitParams params;
@@ -540,8 +542,7 @@ BlimpCompositor::CreateLayerTreeHost() {
   cc::LayerTreeSettings* settings =
       compositor_dependencies_->GetLayerTreeSettings();
   params.settings = settings;
-
-  params.animation_host = cc::AnimationHost::CreateMainInstance();
+  params.mutator_host = animation_host_.get();
 
   scoped_refptr<base::SingleThreadTaskRunner> compositor_task_runner =
       compositor_dependencies_->GetCompositorTaskRunner();

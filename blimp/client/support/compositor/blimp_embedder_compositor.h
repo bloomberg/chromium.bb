@@ -15,6 +15,7 @@
 #include "ui/gfx/geometry/size.h"
 
 namespace cc {
+class AnimationHost;
 class Display;
 class LayerTreeHost;
 class SurfaceManager;
@@ -85,6 +86,7 @@ class BlimpEmbedderCompositor : public cc::LayerTreeHostClient,
 
   gfx::Size viewport_size_in_px_;
 
+  std::unique_ptr<cc::AnimationHost> animation_host_;
   std::unique_ptr<cc::LayerTreeHost> host_;
   scoped_refptr<cc::Layer> root_layer_;
 

@@ -94,11 +94,13 @@ class CompositorStateDeserializerTest
     scoped_refptr<base::SingleThreadTaskRunner> main_task_runner =
         base::ThreadTaskRunnerHandle::Get();
 
+    animation_host_ = AnimationHost::CreateForTesting(ThreadInstance::MAIN);
+
     // Engine side setup.
     LayerTreeHostRemote::InitParams params;
     params.client = &layer_tree_host_client_remote_;
     params.main_task_runner = main_task_runner;
-    params.animation_host = AnimationHost::CreateMainInstance();
+    params.mutator_host = animation_host_.get();
     params.remote_compositor_bridge =
         base::MakeUnique<RemoteCompositorBridgeForTest>(
             main_task_runner,
@@ -114,7 +116,8 @@ class CompositorStateDeserializerTest
 
     // Client side setup.
     layer_tree_host_in_process_ = FakeLayerTreeHost::Create(
-        this, &task_graph_runner_, settings, CompositorMode::THREADED);
+        this, &task_graph_runner_, animation_host_.get(), settings,
+        CompositorMode::THREADED);
     layer_tree_host_in_process_->InitializeForTesting(
         TaskRunnerProvider::Create(base::ThreadTaskRunnerHandle::Get(),
                                    base::ThreadTaskRunnerHandle::Get()),
@@ -131,6 +134,7 @@ class CompositorStateDeserializerTest
     layer_tree_host_remote_ = nullptr;
     compositor_state_deserializer_ = nullptr;
     layer_tree_host_in_process_ = nullptr;
+    animation_host_ = nullptr;
   }
 
   void ProcessCompositorStateUpdate(
@@ -274,6 +278,7 @@ class CompositorStateDeserializerTest
   StubLayerTreeHostClient layer_tree_host_client_remote_;
 
   // Client setup.
+  std::unique_ptr<AnimationHost> animation_host_;
   std::unique_ptr<FakeLayerTreeHost> layer_tree_host_in_process_;
   std::unique_ptr<CompositorStateDeserializer> compositor_state_deserializer_;
   TestTaskGraphRunner task_graph_runner_;

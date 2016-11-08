@@ -23,13 +23,13 @@ WebLayerTreeViewImplForTesting::WebLayerTreeViewImplForTesting()
 
 WebLayerTreeViewImplForTesting::WebLayerTreeViewImplForTesting(
     const cc::LayerTreeSettings& settings) {
+  m_animationHost = cc::AnimationHost::CreateMainInstance();
   cc::LayerTreeHostInProcess::InitParams params;
   params.client = this;
   params.settings = &settings;
   params.main_task_runner = base::ThreadTaskRunnerHandle::Get();
   params.task_graph_runner = &m_taskGraphRunner;
-  params.animation_host =
-      cc::AnimationHost::CreateForTesting(cc::ThreadInstance::MAIN);
+  params.mutator_host = m_animationHost.get();
   m_layerTreeHost =
       cc::LayerTreeHostInProcess::CreateSingleThreaded(this, &params);
   ASSERT(m_layerTreeHost);
@@ -64,16 +64,14 @@ void WebLayerTreeViewImplForTesting::clearRootLayer() {
 
 void WebLayerTreeViewImplForTesting::attachCompositorAnimationTimeline(
     cc::AnimationTimeline* compositorTimeline) {
-  DCHECK(m_layerTreeHost->GetLayerTree()->animation_host());
-  m_layerTreeHost->GetLayerTree()->animation_host()->AddAnimationTimeline(
-      compositorTimeline);
+  DCHECK(m_animationHost);
+  m_animationHost->AddAnimationTimeline(compositorTimeline);
 }
 
 void WebLayerTreeViewImplForTesting::detachCompositorAnimationTimeline(
     cc::AnimationTimeline* compositorTimeline) {
-  DCHECK(m_layerTreeHost->GetLayerTree()->animation_host());
-  m_layerTreeHost->GetLayerTree()->animation_host()->RemoveAnimationTimeline(
-      compositorTimeline);
+  DCHECK(m_animationHost);
+  m_animationHost->RemoveAnimationTimeline(compositorTimeline);
 }
 
 void WebLayerTreeViewImplForTesting::setViewportSize(

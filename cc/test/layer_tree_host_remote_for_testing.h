@@ -14,8 +14,11 @@ class GpuMemoryBufferManager;
 }  // namespace gpu
 
 namespace cc {
+
+class AnimationHost;
 class FakeImageSerializationProcessor;
 class LayerTreeHostInProcess;
+class MutatorHost;
 class SharedBitmapManager;
 class TaskGraphRunner;
 
@@ -27,7 +30,7 @@ class LayerTreeHostRemoteForTesting : public LayerTreeHostRemote,
  public:
   static std::unique_ptr<LayerTreeHostRemoteForTesting> Create(
       LayerTreeHostClient* client,
-      std::unique_ptr<AnimationHost> animation_host,
+      MutatorHost* mutator_host,
       LayerTreeSettings const* settings,
       TaskGraphRunner* task_graph_runner,
       scoped_refptr<base::SingleThreadTaskRunner> main_task_runner,
@@ -66,7 +69,8 @@ class LayerTreeHostRemoteForTesting : public LayerTreeHostRemote,
       TaskGraphRunner* task_graph_runner,
       const LayerTreeSettings& settings,
       scoped_refptr<base::SingleThreadTaskRunner> main_task_runner,
-      scoped_refptr<base::SingleThreadTaskRunner> impl_task_runner);
+      scoped_refptr<base::SingleThreadTaskRunner> impl_task_runner,
+      MutatorHost* mutator_host);
 
  private:
   class LayerTreeHostInProcessClient;
@@ -85,6 +89,7 @@ class LayerTreeHostRemoteForTesting : public LayerTreeHostRemote,
       std::unique_ptr<CompositorProtoState> compositor_proto_state);
 
   std::unique_ptr<LayerTreeHostInProcess> layer_tree_host_in_process_;
+  std::unique_ptr<AnimationHost> animation_host_;
   std::unique_ptr<CompositorStateDeserializer> compositor_state_deserializer_;
 
   bool client_state_dirty_ = false;

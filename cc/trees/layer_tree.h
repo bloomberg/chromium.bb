@@ -33,7 +33,6 @@ class LayerTree;
 class LayerUpdate;
 }  // namespace proto
 
-class AnimationHost;
 class ClientPictureCache;
 class EnginePictureCache;
 class HeadsUpDisplayLayer;
@@ -41,6 +40,7 @@ class Layer;
 class LayerTreeHost;
 class LayerTreeImpl;
 class LayerTreeSettings;
+class MutatorHost;
 struct PendingPageScaleAnimation;
 class UIResourceManager;
 class SwapPromiseManager;
@@ -51,8 +51,7 @@ class CC_EXPORT LayerTree : public MutatorHostClient {
   using LayerSet = std::unordered_set<Layer*>;
   using LayerIdMap = std::unordered_map<int, Layer*>;
 
-  LayerTree(std::unique_ptr<AnimationHost> animation_host,
-            LayerTreeHost* layer_tree_host);
+  LayerTree(MutatorHost* mutator_host, LayerTreeHost* layer_tree_host);
   virtual ~LayerTree();
 
   void SetRootLayer(scoped_refptr<Layer> root_layer);
@@ -189,7 +188,7 @@ class CC_EXPORT LayerTree : public MutatorHostClient {
   void ToProtobuf(proto::LayerTree* proto, bool inputs_only);
   void FromProtobuf(const proto::LayerTree& proto);
 
-  AnimationHost* animation_host() const { return animation_host_.get(); }
+  MutatorHost* mutator_host() const { return mutator_host_; }
 
   Layer* LayerByElementId(ElementId element_id) const;
   void RegisterElement(ElementId element_id,
@@ -301,7 +300,7 @@ class CC_EXPORT LayerTree : public MutatorHostClient {
 
   bool in_paint_layer_contents_;
 
-  std::unique_ptr<AnimationHost> animation_host_;
+  MutatorHost* mutator_host_;
   LayerTreeHost* layer_tree_host_;
 
   // TODO(khushalsagar): Make these go away once we transition blimp to an

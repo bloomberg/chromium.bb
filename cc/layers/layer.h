@@ -51,7 +51,6 @@ class ConvertableToTraceFormat;
 
 namespace cc {
 
-class AnimationHost;
 class CopyOutputRequest;
 class LayerAnimationEventObserver;
 class LayerClient;
@@ -60,6 +59,7 @@ class LayerTreeHost;
 class LayerTreeHostCommon;
 class LayerTreeImpl;
 class LayerTreeSettings;
+class MutatorHost;
 class RenderingStatsInstrumentation;
 class ResourceUpdateQueue;
 class ScrollbarLayerInterface;
@@ -494,7 +494,7 @@ class CC_EXPORT Layer : public base::RefCounted<Layer> {
   }
   void ClearPreferredRasterBounds();
 
-  AnimationHost* GetMutatorHost() const;
+  MutatorHost* GetMutatorHost() const;
 
   ElementListType GetElementTypeForAnimation() const;
 

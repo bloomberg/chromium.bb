@@ -28,6 +28,7 @@ class Thread;
 }  // namespace base
 
 namespace cc {
+class AnimationHost;
 class InputHandler;
 
 namespace proto {
@@ -149,6 +150,8 @@ class BlimpCompositor : public cc::LayerTreeHostClient,
   void Initialize();
   virtual std::unique_ptr<cc::LayerTreeHostInProcess> CreateLayerTreeHost();
 
+  cc::AnimationHost* animation_host() { return animation_host_.get(); }
+
  private:
   class FrameTrackingSwapPromise;
 
@@ -212,6 +215,7 @@ class BlimpCompositor : public cc::LayerTreeHostClient,
 
   cc::FrameSinkId frame_sink_id_;
 
+  std::unique_ptr<cc::AnimationHost> animation_host_;
   std::unique_ptr<cc::LayerTreeHostInProcess> host_;
 
   std::unique_ptr<cc::SurfaceFactory> surface_factory_;

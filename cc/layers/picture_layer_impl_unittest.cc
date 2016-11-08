@@ -14,6 +14,7 @@
 #include "base/location.h"
 #include "base/macros.h"
 #include "base/threading/thread_task_runner_handle.h"
+#include "cc/animation/animation_host.h"
 #include "cc/base/math_util.h"
 #include "cc/layers/append_quads_data.h"
 #include "cc/layers/picture_layer.h"
@@ -4318,8 +4319,9 @@ void PictureLayerImplTest::TestQuadsForSolidColor(bool test_for_solid) {
   scoped_refptr<PictureLayer> layer = PictureLayer::Create(&client);
   FakeLayerTreeHostClient host_client;
   TestTaskGraphRunner task_graph_runner;
-  std::unique_ptr<FakeLayerTreeHost> host =
-      FakeLayerTreeHost::Create(&host_client, &task_graph_runner);
+  auto animation_host = AnimationHost::CreateForTesting(ThreadInstance::MAIN);
+  std::unique_ptr<FakeLayerTreeHost> host = FakeLayerTreeHost::Create(
+      &host_client, &task_graph_runner, animation_host.get());
   host->SetRootLayer(layer);
   RecordingSource* recording_source = layer->GetRecordingSourceForTesting();
 
@@ -4379,8 +4381,9 @@ TEST_F(PictureLayerImplTest, NonSolidToSolidNoTilings) {
   scoped_refptr<PictureLayer> layer = PictureLayer::Create(&client);
   FakeLayerTreeHostClient host_client;
   TestTaskGraphRunner task_graph_runner;
-  std::unique_ptr<FakeLayerTreeHost> host =
-      FakeLayerTreeHost::Create(&host_client, &task_graph_runner);
+  auto animation_host = AnimationHost::CreateForTesting(ThreadInstance::MAIN);
+  std::unique_ptr<FakeLayerTreeHost> host = FakeLayerTreeHost::Create(
+      &host_client, &task_graph_runner, animation_host.get());
   host->SetRootLayer(layer);
   RecordingSource* recording_source = layer->GetRecordingSourceForTesting();
 

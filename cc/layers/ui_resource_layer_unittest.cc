@@ -5,6 +5,7 @@
 #include "cc/layers/ui_resource_layer.h"
 
 #include "base/threading/thread_task_runner_handle.h"
+#include "cc/animation/animation_host.h"
 #include "cc/resources/resource_provider.h"
 #include "cc/resources/scoped_ui_resource.h"
 #include "cc/test/fake_layer_tree_host.h"
@@ -48,8 +49,9 @@ class TestUIResourceLayer : public UIResourceLayer {
 class UIResourceLayerTest : public testing::Test {
  protected:
   void SetUp() override {
-    layer_tree_host_ =
-        FakeLayerTreeHost::Create(&fake_client_, &task_graph_runner_);
+    animation_host_ = AnimationHost::CreateForTesting(ThreadInstance::MAIN);
+    layer_tree_host_ = FakeLayerTreeHost::Create(
+        &fake_client_, &task_graph_runner_, animation_host_.get());
     layer_tree_host_->InitializeSingleThreaded(
         &single_thread_client_, base::ThreadTaskRunnerHandle::Get());
   }
@@ -61,6 +63,7 @@ class UIResourceLayerTest : public testing::Test {
   FakeLayerTreeHostClient fake_client_;
   StubLayerTreeHostSingleThreadClient single_thread_client_;
   TestTaskGraphRunner task_graph_runner_;
+  std::unique_ptr<AnimationHost> animation_host_;
   std::unique_ptr<FakeLayerTreeHost> layer_tree_host_;
 };
 

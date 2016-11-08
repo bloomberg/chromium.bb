@@ -2,6 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include "cc/animation/animation_host.h"
 #include "cc/test/fake_layer_tree_host.h"
 #include "cc/test/fake_layer_tree_host_client.h"
 #include "cc/test/test_task_graph_runner.h"
@@ -15,9 +16,10 @@ TEST(LayerTreeHostRecordGpuHistogramTest, SingleThreaded) {
   FakeLayerTreeHostClient host_client;
   TestTaskGraphRunner task_graph_runner;
   LayerTreeSettings settings;
-  std::unique_ptr<FakeLayerTreeHost> host =
-      FakeLayerTreeHost::Create(&host_client, &task_graph_runner, settings,
-                                CompositorMode::SINGLE_THREADED);
+  auto animation_host = AnimationHost::CreateForTesting(ThreadInstance::MAIN);
+  std::unique_ptr<FakeLayerTreeHost> host = FakeLayerTreeHost::Create(
+      &host_client, &task_graph_runner, animation_host.get(), settings,
+      CompositorMode::SINGLE_THREADED);
   host->RecordGpuRasterizationHistogram();
   EXPECT_FALSE(host->gpu_rasterization_histogram_recorded());
 }
@@ -26,8 +28,10 @@ TEST(LayerTreeHostRecordGpuHistogramTest, Threaded) {
   FakeLayerTreeHostClient host_client;
   TestTaskGraphRunner task_graph_runner;
   LayerTreeSettings settings;
+  auto animation_host = AnimationHost::CreateForTesting(ThreadInstance::MAIN);
   std::unique_ptr<FakeLayerTreeHost> host = FakeLayerTreeHost::Create(
-      &host_client, &task_graph_runner, settings, CompositorMode::THREADED);
+      &host_client, &task_graph_runner, animation_host.get(), settings,
+      CompositorMode::THREADED);
   host->RecordGpuRasterizationHistogram();
   EXPECT_TRUE(host->gpu_rasterization_histogram_recorded());
 }

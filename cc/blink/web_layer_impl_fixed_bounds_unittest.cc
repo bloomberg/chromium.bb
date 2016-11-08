@@ -3,6 +3,7 @@
 // found in the LICENSE file.
 
 #include <vector>
+#include "cc/animation/animation_host.h"
 #include "cc/blink/web_layer_impl_fixed_bounds.h"
 #include "cc/layers/picture_image_layer.h"
 #include "cc/test/fake_layer_tree_host.h"
@@ -103,10 +104,13 @@ void CompareFixedBoundsLayerAndNormalLayer(const WebFloatPoint& anchor_point,
   normal_layer.setPosition(position);
   root_layer.addChild(&normal_layer);
 
+  auto animation_host =
+      cc::AnimationHost::CreateForTesting(cc::ThreadInstance::MAIN);
+
   cc::FakeLayerTreeHostClient client;
   cc::TestTaskGraphRunner task_graph_runner;
-  std::unique_ptr<cc::FakeLayerTreeHost> host =
-      cc::FakeLayerTreeHost::Create(&client, &task_graph_runner);
+  std::unique_ptr<cc::FakeLayerTreeHost> host = cc::FakeLayerTreeHost::Create(
+      &client, &task_graph_runner, animation_host.get());
   host->SetRootLayer(root_layer.layer());
 
   {

@@ -111,12 +111,13 @@ class ScrollbarLayerTest : public testing::Test {
 
     scrollbar_layer_id_ = -1;
 
+    animation_host_ = AnimationHost::CreateForTesting(ThreadInstance::MAIN);
+
     LayerTreeHostInProcess::InitParams params;
     params.client = &fake_client_;
     params.settings = &layer_tree_settings_;
     params.task_graph_runner = &task_graph_runner_;
-    params.animation_host =
-        AnimationHost::CreateForTesting(ThreadInstance::MAIN);
+    params.mutator_host = animation_host_.get();
 
     std::unique_ptr<FakeResourceTrackingUIResourceManager>
         fake_ui_resource_manager =
@@ -167,6 +168,7 @@ class ScrollbarLayerTest : public testing::Test {
   StubLayerTreeHostSingleThreadClient single_thread_client_;
   TestTaskGraphRunner task_graph_runner_;
   LayerTreeSettings layer_tree_settings_;
+  std::unique_ptr<AnimationHost> animation_host_;
   std::unique_ptr<FakeLayerTreeHost> layer_tree_host_;
   LayerTree* layer_tree_;
   int scrollbar_layer_id_;

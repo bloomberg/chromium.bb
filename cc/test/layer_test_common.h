@@ -175,6 +175,7 @@ class LayerTestCommon {
     FakeLayerTreeHostClient client_;
     TestTaskGraphRunner task_graph_runner_;
     std::unique_ptr<CompositorFrameSink> compositor_frame_sink_;
+    std::unique_ptr<AnimationHost> animation_host_;
     std::unique_ptr<FakeLayerTreeHost> host_;
     std::unique_ptr<RenderPass> render_pass_;
     scoped_refptr<AnimationTimeline> timeline_;

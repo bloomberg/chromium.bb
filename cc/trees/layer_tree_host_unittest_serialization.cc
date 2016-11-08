@@ -7,6 +7,7 @@
 #include <memory>
 
 #include "base/memory/ptr_util.h"
+#include "cc/animation/animation_host.h"
 #include "cc/layers/empty_content_layer_client.h"
 #include "cc/layers/heads_up_display_layer.h"
 #include "cc/layers/layer.h"
@@ -69,12 +70,16 @@ class LayerTreeHostSerializationTest : public testing::Test {
  protected:
   void SetUp() override {
     LayerTreeSettings settings;
+    animation_host_src_ = AnimationHost::CreateForTesting(ThreadInstance::MAIN);
     layer_tree_host_src_ = FakeLayerTreeHost::Create(
-        &client_src_, &task_graph_runner_src_, settings,
-        CompositorMode::SINGLE_THREADED, image_serialization_processor_.get());
+        &client_src_, &task_graph_runner_src_, animation_host_src_.get(),
+        settings, CompositorMode::SINGLE_THREADED,
+        image_serialization_processor_.get());
+    animation_host_dst_ = AnimationHost::CreateForTesting(ThreadInstance::MAIN);
     layer_tree_host_dst_ = FakeLayerTreeHost::Create(
-        &client_dst_, &task_graph_runner_dst_, settings,
-        CompositorMode::SINGLE_THREADED, image_serialization_processor_.get());
+        &client_dst_, &task_graph_runner_dst_, animation_host_dst_.get(),
+        settings, CompositorMode::SINGLE_THREADED,
+        image_serialization_processor_.get());
     layer_tree_host_src_->InitializePictureCacheForTesting();
     layer_tree_host_dst_->InitializePictureCacheForTesting();
   }
@@ -416,10 +421,12 @@ class LayerTreeHostSerializationTest : public testing::Test {
 
   TestTaskGraphRunner task_graph_runner_src_;
   FakeLayerTreeHostClient client_src_;
+  std::unique_ptr<AnimationHost> animation_host_src_;
   std::unique_ptr<FakeLayerTreeHost> layer_tree_host_src_;
 
   TestTaskGraphRunner task_graph_runner_dst_;
   FakeLayerTreeHostClient client_dst_;
+  std::unique_ptr<AnimationHost> animation_host_dst_;
   std::unique_ptr<FakeLayerTreeHost> layer_tree_host_dst_;
 };
 

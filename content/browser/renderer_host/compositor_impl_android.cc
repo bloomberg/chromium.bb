@@ -506,12 +506,14 @@ void CompositorImpl::CreateLayerTreeHost() {
       command_line->HasSwitch(cc::switches::kUIShowFPSCounter);
   settings.single_thread_proxy_scheduler = true;
 
+  animation_host_ = cc::AnimationHost::CreateMainInstance();
+
   cc::LayerTreeHostInProcess::InitParams params;
   params.client = this;
   params.task_graph_runner = g_task_graph_runner.Pointer();
   params.main_task_runner = base::ThreadTaskRunnerHandle::Get();
   params.settings = &settings;
-  params.animation_host = cc::AnimationHost::CreateMainInstance();
+  params.mutator_host = animation_host_.get();
   host_ = cc::LayerTreeHostInProcess::CreateSingleThreaded(this, &params);
   DCHECK(!host_->IsVisible());
   host_->GetLayerTree()->SetRootLayer(root_window_->GetLayer());

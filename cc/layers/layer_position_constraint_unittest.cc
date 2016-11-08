@@ -6,6 +6,7 @@
 
 #include <vector>
 
+#include "cc/animation/animation_host.h"
 #include "cc/layers/layer.h"
 #include "cc/layers/layer_impl.h"
 #include "cc/proto/layer_position_constraint.pb.h"
@@ -61,8 +62,10 @@ void ExecuteCalculateDrawProperties(LayerImpl* root_layer) {
 class LayerPositionConstraintTest : public testing::Test {
  public:
   LayerPositionConstraintTest()
-      : layer_tree_host_(
-            FakeLayerTreeHost::Create(&fake_client_, &task_graph_runner_)),
+      : animation_host_(AnimationHost::CreateForTesting(ThreadInstance::MAIN)),
+        layer_tree_host_(FakeLayerTreeHost::Create(&fake_client_,
+                                                   &task_graph_runner_,
+                                                   animation_host_.get())),
         root_impl_(nullptr),
         inner_viewport_container_layer_impl_(nullptr),
         scroll_layer_impl_(nullptr),
@@ -170,6 +173,7 @@ class LayerPositionConstraintTest : public testing::Test {
  protected:
   FakeLayerTreeHostClient fake_client_;
   TestTaskGraphRunner task_graph_runner_;
+  std::unique_ptr<AnimationHost> animation_host_;
   std::unique_ptr<FakeLayerTreeHost> layer_tree_host_;
   scoped_refptr<Layer> root_;
   scoped_refptr<Layer> inner_viewport_container_layer_;

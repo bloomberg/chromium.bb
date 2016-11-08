@@ -69,12 +69,12 @@ class MockLayerTreeHost : public LayerTreeHostInProcess {
  public:
   static std::unique_ptr<MockLayerTreeHost> Create(
       FakeLayerTreeHostClient* client,
-      TaskGraphRunner* task_graph_runner) {
+      TaskGraphRunner* task_graph_runner,
+      MutatorHost* mutator_host) {
     LayerTreeHostInProcess::InitParams params;
     params.client = client;
     params.task_graph_runner = task_graph_runner;
-    params.animation_host =
-        AnimationHost::CreateForTesting(ThreadInstance::MAIN);
+    params.mutator_host = mutator_host;
     LayerTreeSettings settings;
     settings.verify_clip_tree_calculations = true;
     params.settings = &settings;
@@ -215,8 +215,9 @@ class TextureLayerTest : public testing::Test {
 
  protected:
   void SetUp() override {
-    layer_tree_host_ =
-        MockLayerTreeHost::Create(&fake_client_, &task_graph_runner_);
+    animation_host_ = AnimationHost::CreateForTesting(ThreadInstance::MAIN);
+    layer_tree_host_ = MockLayerTreeHost::Create(
+        &fake_client_, &task_graph_runner_, animation_host_.get());
     layer_tree_ = layer_tree_host_->GetLayerTree();
     EXPECT_CALL(*layer_tree_host_, SetNeedsCommit()).Times(AnyNumber());
     layer_tree_->SetViewportSize(gfx::Size(10, 10));
@@ -227,11 +228,14 @@ class TextureLayerTest : public testing::Test {
     Mock::VerifyAndClearExpectations(layer_tree_host_.get());
     EXPECT_CALL(*layer_tree_host_, SetNeedsCommit()).Times(AnyNumber());
 
+    animation_host_->SetMutatorHostClient(nullptr);
     layer_tree_->SetRootLayer(nullptr);
     layer_tree_host_ = nullptr;
+    animation_host_ = nullptr;
   }
 
   std::unique_ptr<MockLayerTreeHost> layer_tree_host_;
+  std::unique_ptr<AnimationHost> animation_host_;
   LayerTree* layer_tree_;
   FakeImplTaskRunnerProvider task_runner_provider_;
   FakeLayerTreeHostClient fake_client_;
@@ -850,8 +854,8 @@ class TextureLayerImplWithMailboxTest : public TextureLayerTest {
  protected:
   void SetUp() override {
     TextureLayerTest::SetUp();
-    layer_tree_host_ =
-        MockLayerTreeHost::Create(&fake_client_, &task_graph_runner_);
+    layer_tree_host_ = MockLayerTreeHost::Create(
+        &fake_client_, &task_graph_runner_, animation_host_.get());
     layer_tree_ = layer_tree_host_->GetLayerTree();
     host_impl_.SetVisible(true);
     EXPECT_TRUE(host_impl_.InitializeRenderer(compositor_frame_sink_.get()));

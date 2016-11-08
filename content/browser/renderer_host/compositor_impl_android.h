@@ -32,6 +32,7 @@
 struct ANativeWindow;
 
 namespace cc {
+class AnimationHost;
 class Display;
 class Layer;
 class LayerTreeHost;
@@ -145,6 +146,7 @@ class CONTENT_EXPORT CompositorImpl
 
   // Destruction order matters here:
   base::ObserverList<VSyncObserver, true> observer_list_;
+  std::unique_ptr<cc::AnimationHost> animation_host_;
   std::unique_ptr<cc::LayerTreeHost> host_;
   ui::ResourceManagerImpl resource_manager_;
 

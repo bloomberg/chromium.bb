@@ -192,8 +192,7 @@ LayerTreeHostInProcess::LayerTreeHostInProcess(InitParams* params,
     : LayerTreeHostInProcess(
           params,
           mode,
-          base::MakeUnique<LayerTree>(std::move(params->animation_host),
-                                      this)) {}
+          base::MakeUnique<LayerTree>(params->mutator_host, this)) {}
 
 LayerTreeHostInProcess::LayerTreeHostInProcess(
     InitParams* params,
@@ -320,7 +319,7 @@ void LayerTreeHostInProcess::InitializeProxy(std::unique_ptr<Proxy> proxy) {
   proxy_ = std::move(proxy);
   proxy_->Start();
 
-  layer_tree_->animation_host()->SetSupportsScrollAnimations(
+  layer_tree_->mutator_host()->SetSupportsScrollAnimations(
       proxy_->SupportsImplScrolling());
 }
 
@@ -500,7 +499,7 @@ void LayerTreeHostInProcess::FinishCommitOnImplThread(
 
     TRACE_EVENT0("cc", "LayerTreeHostInProcess::AnimationHost::PushProperties");
     DCHECK(host_impl->mutator_host());
-    layer_tree_->animation_host()->PushPropertiesTo(host_impl->mutator_host());
+    layer_tree_->mutator_host()->PushPropertiesTo(host_impl->mutator_host());
   }
 
   micro_benchmark_controller_.ScheduleImplBenchmarks(host_impl);
@@ -571,8 +570,7 @@ LayerTreeHostInProcess::CreateLayerTreeHostImpl(
 
   const bool supports_impl_scrolling = task_runner_provider_->HasImplThread();
   std::unique_ptr<MutatorHost> mutator_host_impl =
-      layer_tree_->animation_host()->CreateImplInstance(
-          supports_impl_scrolling);
+      layer_tree_->mutator_host()->CreateImplInstance(supports_impl_scrolling);
 
   std::unique_ptr<LayerTreeHostImpl> host_impl = LayerTreeHostImpl::Create(
       settings_, client, task_runner_provider_.get(),
@@ -642,7 +640,7 @@ void LayerTreeHostInProcess::SetNextCommitForcesRedraw() {
 void LayerTreeHostInProcess::SetAnimationEvents(
     std::unique_ptr<AnimationEvents> events) {
   DCHECK(task_runner_provider_->IsMainThread());
-  layer_tree_->animation_host()->SetAnimationEvents(std::move(events));
+  layer_tree_->mutator_host()->SetAnimationEvents(std::move(events));
 }
 
 void LayerTreeHostInProcess::SetDebugState(
@@ -921,11 +919,11 @@ void LayerTreeHostInProcess::UpdateBrowserControlsState(
 }
 
 void LayerTreeHostInProcess::AnimateLayers(base::TimeTicks monotonic_time) {
-  AnimationHost* animation_host = layer_tree_->animation_host();
-  std::unique_ptr<AnimationEvents> events = animation_host->CreateEvents();
+  MutatorHost* mutator_host = layer_tree_->mutator_host();
+  std::unique_ptr<AnimationEvents> events = mutator_host->CreateEvents();
 
-  if (animation_host->AnimateLayers(monotonic_time))
-    animation_host->UpdateAnimationState(true, events.get());
+  if (mutator_host->AnimateLayers(monotonic_time))
+    mutator_host->UpdateAnimationState(true, events.get());
 
   if (!events->events_.empty())
     layer_tree_->property_trees()->needs_rebuild = true;

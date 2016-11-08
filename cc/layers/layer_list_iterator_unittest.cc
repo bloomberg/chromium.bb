@@ -7,6 +7,7 @@
 #include <memory>
 
 #include "base/containers/adapters.h"
+#include "cc/animation/animation_host.h"
 #include "cc/test/fake_compositor_frame_sink.h"
 #include "cc/test/fake_impl_task_runner_provider.h"
 #include "cc/test/fake_layer_tree_host.h"
@@ -24,8 +25,9 @@ TEST(LayerListIteratorTest, VerifyTraversalOrder) {
   // Unfortunate preamble.
   FakeLayerTreeHostClient client;
   TestTaskGraphRunner task_graph_runner;
-  std::unique_ptr<FakeLayerTreeHost> host_ptr =
-      FakeLayerTreeHost::Create(&client, &task_graph_runner);
+  auto animation_host = AnimationHost::CreateForTesting(ThreadInstance::MAIN);
+  std::unique_ptr<FakeLayerTreeHost> host_ptr = FakeLayerTreeHost::Create(
+      &client, &task_graph_runner, animation_host.get());
   FakeLayerTreeHost* host = host_ptr.get();
 
   // This test constructs the following tree.
@@ -76,8 +78,9 @@ TEST(LayerListIteratorTest, VerifySingleLayer) {
   // Unfortunate preamble.
   FakeLayerTreeHostClient client;
   TestTaskGraphRunner task_graph_runner;
-  std::unique_ptr<FakeLayerTreeHost> host_ptr =
-      FakeLayerTreeHost::Create(&client, &task_graph_runner);
+  auto animation_host = AnimationHost::CreateForTesting(ThreadInstance::MAIN);
+  std::unique_ptr<FakeLayerTreeHost> host_ptr = FakeLayerTreeHost::Create(
+      &client, &task_graph_runner, animation_host.get());
   FakeLayerTreeHost* host = host_ptr.get();
 
   // This test constructs a tree consisting of a single layer.
@@ -109,8 +112,9 @@ TEST(LayerListReverseIteratorTest, VerifyTraversalOrder) {
   // Unfortunate preamble.
   FakeLayerTreeHostClient client;
   TestTaskGraphRunner task_graph_runner;
-  std::unique_ptr<FakeLayerTreeHost> host_ptr =
-      FakeLayerTreeHost::Create(&client, &task_graph_runner);
+  auto animation_host = AnimationHost::CreateForTesting(ThreadInstance::MAIN);
+  std::unique_ptr<FakeLayerTreeHost> host_ptr = FakeLayerTreeHost::Create(
+      &client, &task_graph_runner, animation_host.get());
   FakeLayerTreeHost* host = host_ptr.get();
 
   // This test constructs the following tree.
@@ -163,8 +167,9 @@ TEST(LayerListReverseIteratorTest, VerifySingleLayer) {
   // Unfortunate preamble.
   FakeLayerTreeHostClient client;
   TestTaskGraphRunner task_graph_runner;
-  std::unique_ptr<FakeLayerTreeHost> host_ptr =
-      FakeLayerTreeHost::Create(&client, &task_graph_runner);
+  auto animation_host = AnimationHost::CreateForTesting(ThreadInstance::MAIN);
+  std::unique_ptr<FakeLayerTreeHost> host_ptr = FakeLayerTreeHost::Create(
+      &client, &task_graph_runner, animation_host.get());
   FakeLayerTreeHost* host = host_ptr.get();
 
   // This test constructs a tree consisting of a single layer.

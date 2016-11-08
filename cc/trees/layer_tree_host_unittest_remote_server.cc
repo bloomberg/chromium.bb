@@ -27,19 +27,22 @@ class LayerTreeHostTestRemoteServer : public testing::Test,
       : calls_received_(0),
         image_serialization_processor_(
             base::WrapUnique(new FakeImageSerializationProcessor)) {
+    animation_host_ = AnimationHost::CreateForTesting(ThreadInstance::MAIN);
+
     LayerTreeHostInProcess::InitParams params;
     params.client = this;
     params.task_graph_runner = &task_graph_runner_;
     params.settings = &settings_;
     params.main_task_runner = base::ThreadTaskRunnerHandle::Get();
     params.image_serialization_processor = image_serialization_processor_.get();
-    params.animation_host =
-        AnimationHost::CreateForTesting(ThreadInstance::MAIN);
+    params.mutator_host = animation_host_.get();
     layer_tree_host_ =
         LayerTreeHostInProcess::CreateRemoteServer(this, &params);
   }
 
-  ~LayerTreeHostTestRemoteServer() override {}
+  ~LayerTreeHostTestRemoteServer() override {
+    animation_host_->SetMutatorHostClient(nullptr);
+  }
 
   // LayerTreeHostClient implementation
   void WillBeginMainFrame() override {}
@@ -70,6 +73,7 @@ class LayerTreeHostTestRemoteServer : public testing::Test,
   int calls_received_;
   TestTaskGraphRunner task_graph_runner_;
   LayerTreeSettings settings_;
+  std::unique_ptr<AnimationHost> animation_host_;
   std::unique_ptr<LayerTreeHostInProcess> layer_tree_host_;
   RemoteProtoChannel::ProtoReceiver* receiver_;
   std::unique_ptr<FakeImageSerializationProcessor>

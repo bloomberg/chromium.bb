@@ -15,7 +15,6 @@
 #include "base/single_thread_task_runner.h"
 #include "base/time/time.h"
 #include "base/trace_event/trace_event.h"
-#include "cc/animation/animation_host.h"
 #include "cc/animation/mutable_properties.h"
 #include "cc/base/simple_enclosed_region.h"
 #include "cc/debug/frame_viewer_instrumentation.h"
@@ -34,6 +33,7 @@
 #include "cc/trees/effect_node.h"
 #include "cc/trees/layer_tree_host.h"
 #include "cc/trees/layer_tree_impl.h"
+#include "cc/trees/mutator_host.h"
 #include "cc/trees/transform_node.h"
 #include "third_party/skia/include/core/SkImageFilter.h"
 #include "ui/gfx/geometry/rect_conversions.h"
@@ -1795,8 +1795,8 @@ void Layer::ClearPreferredRasterBounds() {
   SetNeedsCommit();
 }
 
-AnimationHost* Layer::GetMutatorHost() const {
-  return layer_tree_ ? layer_tree_->animation_host() : nullptr;
+MutatorHost* Layer::GetMutatorHost() const {
+  return layer_tree_ ? layer_tree_->mutator_host() : nullptr;
 }
 
 ElementListType Layer::GetElementTypeForAnimation() const {

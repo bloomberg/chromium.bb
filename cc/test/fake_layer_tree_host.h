@@ -14,32 +14,39 @@
 #include "cc/trees/tree_synchronizer.h"
 
 namespace cc {
+
 class ImageSerializationProcessor;
+class MutatorHost;
 class TestTaskGraphRunner;
 
 class FakeLayerTreeHost : public LayerTreeHostInProcess {
  public:
   static std::unique_ptr<FakeLayerTreeHost> Create(
       FakeLayerTreeHostClient* client,
-      TestTaskGraphRunner* task_graph_runner);
+      TestTaskGraphRunner* task_graph_runner,
+      MutatorHost* mutator_host);
   static std::unique_ptr<FakeLayerTreeHost> Create(
       FakeLayerTreeHostClient* client,
       TestTaskGraphRunner* task_graph_runner,
+      MutatorHost* mutator_host,
       const LayerTreeSettings& settings);
   static std::unique_ptr<FakeLayerTreeHost> Create(
       FakeLayerTreeHostClient* client,
       TestTaskGraphRunner* task_graph_runner,
+      MutatorHost* mutator_host,
       const LayerTreeSettings& settings,
       CompositorMode mode);
   static std::unique_ptr<FakeLayerTreeHost> Create(
       FakeLayerTreeHostClient* client,
       TestTaskGraphRunner* task_graph_runner,
+      MutatorHost* mutator_host,
       const LayerTreeSettings& settings,
       CompositorMode mode,
       InitParams params);
   static std::unique_ptr<FakeLayerTreeHost> Create(
       FakeLayerTreeHostClient* client,
       TestTaskGraphRunner* task_graph_runner,
+      MutatorHost* mutator_host,
       const LayerTreeSettings& settings,
       CompositorMode mode,
       ImageSerializationProcessor* image_serialization_processor);
