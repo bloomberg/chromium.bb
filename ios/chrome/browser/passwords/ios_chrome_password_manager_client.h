@@ -69,7 +69,6 @@ class IOSChromePasswordManagerClient
   void NotifyStorePasswordCalled() override;
   void ForceSavePassword() override;
   bool IsSavingAndFillingEnabledForCurrentPage() const override;
-  bool IsUpdatePasswordUIEnabled() const override;
   const GURL& GetLastCommittedEntryURL() const override;
   const password_manager::CredentialsFilter* GetStoreResultFilter()
       const override;

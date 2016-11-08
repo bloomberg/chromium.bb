@@ -185,9 +185,6 @@ class PasswordManagerClient {
   // Returns the main frame URL.
   virtual const GURL& GetMainFrameURL() const;
 
-  // Returns true if the UI for confirmation of update password is enabled.
-  virtual bool IsUpdatePasswordUIEnabled() const;
-
   virtual const GURL& GetLastCommittedEntryURL() const = 0;
 
   // Use this to filter credentials before handling them in password manager.

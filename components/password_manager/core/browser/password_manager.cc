@@ -285,12 +285,6 @@ void PasswordManager::ProvisionallySavePassword(const PasswordForm& form) {
 
     (*iter)->SetSubmittedForm(form);
 
-    if ((*iter)->is_ignorable_change_password_form()) {
-      if (logger)
-        logger->LogMessage(Logger::STRING_CHANGE_PASSWORD_FORM);
-      continue;
-    }
-
     if (result == PasswordFormManager::RESULT_COMPLETE_MATCH) {
       // If we find a manager that exactly matches the submitted form including
       // the action URL, exit the loop.
@@ -570,11 +564,9 @@ bool PasswordManager::ShouldPromptUserToSavePassword() const {
           provisional_save_manager_
               ->is_possible_change_password_form_without_username() ||
           provisional_save_manager_->retry_password_form_password_update() ||
-          (provisional_save_manager_->password_overridden() &&
-           client_->IsUpdatePasswordUIEnabled())) &&
+          provisional_save_manager_->password_overridden()) &&
          !(provisional_save_manager_->has_generated_password() &&
-           (provisional_save_manager_->IsNewLogin() ||
-            !client_->IsUpdatePasswordUIEnabled())) &&
+           provisional_save_manager_->IsNewLogin()) &&
          !provisional_save_manager_->IsPendingCredentialsPublicSuffixMatch();
 }
 

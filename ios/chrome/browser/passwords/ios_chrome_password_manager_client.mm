@@ -75,7 +75,7 @@ bool IOSChromePasswordManagerClient::PromptUserToSaveOrUpdatePassword(
   if (form_to_save->IsBlacklisted())
     return false;
 
-  if (update_password && IsUpdatePasswordUIEnabled()) {
+  if (update_password) {
     [delegate_ showUpdatePasswordInfoBar:std::move(form_to_save)];
   } else {
     [delegate_ showSavePasswordInfoBar:std::move(form_to_save)];
@@ -124,10 +124,6 @@ bool IOSChromePasswordManagerClient::IsSavingAndFillingEnabledForCurrentPage()
   return *saving_passwords_enabled_ && !IsOffTheRecord() &&
          !DidLastPageLoadEncounterSSLErrors() &&
          IsFillingEnabledForCurrentPage();
-}
-
-bool IOSChromePasswordManagerClient::IsUpdatePasswordUIEnabled() const {
-  return experimental_flags::IsUpdatePasswordUIEnabled();
 }
 
 const GURL& IOSChromePasswordManagerClient::GetLastCommittedEntryURL() const {

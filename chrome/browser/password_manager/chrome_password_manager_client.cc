@@ -246,7 +246,7 @@ bool ChromePasswordManagerClient::PromptUserToSaveOrUpdatePassword(
   if (form_to_save->IsBlacklisted())
     return false;
 
-  if (update_password && IsUpdatePasswordUIEnabled()) {
+  if (update_password) {
     UpdatePasswordInfoBarDelegate::Create(web_contents(),
                                           std::move(form_to_save));
     return true;
@@ -535,10 +535,6 @@ void ChromePasswordManagerClient::PromptUserToEnableAutosigninIfNecessary() {
 void ChromePasswordManagerClient::GenerationAvailableForForm(
     const autofill::PasswordForm& form) {
   password_manager_.GenerationAvailableForForm(form);
-}
-
-bool ChromePasswordManagerClient::IsUpdatePasswordUIEnabled() const {
-  return true;
 }
 
 const GURL& ChromePasswordManagerClient::GetMainFrameURL() const {

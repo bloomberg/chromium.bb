@@ -27,7 +27,6 @@ NSString* const kEnableViewCopyPasswords = @"EnableViewCopyPasswords";
 NSString* const kHeuristicsForPasswordGeneration =
     @"HeuristicsForPasswordGeneration";
 NSString* const kEnableReadingList = @"EnableReadingList";
-NSString* const kUpdatePasswordUIDisabled = @"UpdatePasswordUIDisabled";
 NSString* const kEnableNewClearBrowsingDataUI = @"EnableNewClearBrowsingDataUI";
 NSString* const kMDMIntegrationDisabled = @"MDMIntegrationDisabled";
 }  // namespace
@@ -137,11 +136,6 @@ bool IsPhysicalWebEnabled() {
       base::FieldTrialList::FindFullName("PhysicalWebEnabled");
   return base::StartsWith(group_name, "Enabled",
                           base::CompareCase::INSENSITIVE_ASCII);
-}
-
-bool IsUpdatePasswordUIEnabled() {
-  return ![[NSUserDefaults standardUserDefaults]
-      boolForKey:kUpdatePasswordUIDisabled];
 }
 
 bool IsQRCodeReaderEnabled() {

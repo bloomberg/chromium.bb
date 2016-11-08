@@ -40,9 +40,6 @@ bool IsAllBookmarksEnabled();
 // Whether the Physical Web feature is enabled.
 bool IsPhysicalWebEnabled();
 
-// Whether the update password UI is enabled.
-bool IsUpdatePasswordUIEnabled();
-
 // Whether the QR Code Reader is enabled.
 bool IsQRCodeReaderEnabled();
 

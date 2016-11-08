@@ -68,10 +68,6 @@ const GURL& PasswordManagerClient::GetMainFrameURL() const {
   return GURL::EmptyGURL();
 }
 
-bool PasswordManagerClient::IsUpdatePasswordUIEnabled() const {
-  return false;
-}
-
 const LogManager* PasswordManagerClient::GetLogManager() const {
   return nullptr;
 }

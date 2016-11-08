@@ -315,7 +315,6 @@ class TestPasswordManagerClient : public StubPasswordManagerClient {
   explicit TestPasswordManagerClient(PasswordStore* password_store)
       : password_store_(password_store),
         driver_(new NiceMock<MockPasswordManagerDriver>),
-        is_update_password_ui_enabled_(false),
         filter_all_results_(false) {
     prefs_.registry()->RegisterBooleanPref(prefs::kPasswordManagerSavingEnabled,
                                            true);
@@ -350,18 +349,10 @@ class TestPasswordManagerClient : public StubPasswordManagerClient {
 
   void KillDriver() { driver_.reset(); }
 
-  bool IsUpdatePasswordUIEnabled() const override {
-    return is_update_password_ui_enabled_;
-  }
-  void set_is_update_password_ui_enabled(bool value) {
-    is_update_password_ui_enabled_ = value;
-  }
-
  private:
   TestingPrefServiceSimple prefs_;
   PasswordStore* password_store_;
   std::unique_ptr<MockPasswordManagerDriver> driver_;
-  bool is_update_password_ui_enabled_;
 
   // Filters to remove all and no results, respectively, in FilterResults.
   NiceMock<MockStoreResultFilter> all_filter_;
@@ -550,7 +541,6 @@ class PasswordFormManagerTest : public testing::Test {
     field.form_control_type = "password";
     observed_form()->form_data.fields.push_back(field);
 
-    client()->set_is_update_password_ui_enabled(true);
     PasswordFormManager form_manager(
         password_manager(), client(), client()->driver(), *observed_form(),
         base::MakeUnique<NiceMock<MockFormSaver>>());
@@ -1970,63 +1960,6 @@ TEST_F(PasswordFormManagerTest, PreferredMatchIsUpToDate) {
   PasswordForm dummy(*form_manager()->preferred_match());
 }
 
-TEST_F(PasswordFormManagerTest,
-       IsIngnorableChangePasswordForm_MatchingUsernameAndPassword) {
-  observed_form()->new_password_element =
-      base::ASCIIToUTF16("new_password_field");
-
-  PasswordFormManager form_manager(password_manager(), client(),
-                                   client()->driver(), *observed_form(),
-                                   base::MakeUnique<MockFormSaver>());
-  SimulateMatchingPhase(&form_manager, RESULT_SAVED_MATCH);
-
-  // The user submits a password on a change-password form, which does not use
-  // the "autocomplete=username" mark-up (therefore Chrome had to guess what is
-  // the username), but the user-typed credentials match something already
-  // stored (which confirms that the guess was right).
-  PasswordForm credentials(*observed_form());
-  credentials.username_value = saved_match()->username_value;
-  credentials.password_value = saved_match()->password_value;
-  credentials.new_password_value = ASCIIToUTF16("NewPassword");
-
-  form_manager.SetSubmittedForm(credentials);
-  EXPECT_FALSE(form_manager.is_ignorable_change_password_form());
-}
-
-TEST_F(PasswordFormManagerTest,
-       IsIngnorableChangePasswordForm_NotMatchingPassword) {
-  SimulateMatchingPhase(form_manager(), RESULT_SAVED_MATCH);
-
-  // The user submits a password on a change-password form, which does not use
-  // the "autocomplete=username" mark-up (therefore Chrome had to guess what is
-  // the username), and the user-typed password do not match anything already
-  // stored. There is not much confidence in the guess being right, so the
-  // password should not be stored.
-  saved_match()->password_value = ASCIIToUTF16("DifferentPassword");
-  saved_match()->new_password_element =
-      base::ASCIIToUTF16("new_password_field");
-  saved_match()->new_password_value = base::ASCIIToUTF16("new_pwd");
-  form_manager()->SetSubmittedForm(*saved_match());
-  EXPECT_TRUE(form_manager()->is_ignorable_change_password_form());
-}
-
-TEST_F(PasswordFormManagerTest,
-       IsIngnorableChangePasswordForm_NotMatchingUsername) {
-  SimulateMatchingPhase(form_manager(), RESULT_SAVED_MATCH);
-
-  // The user submits a password on a change-password form, which does not use
-  // the "autocomplete=username" mark-up (therefore Chrome had to guess what is
-  // the username), and the user-typed username does not match anything already
-  // stored. There is not much confidence in the guess being right, so the
-  // password should not be stored.
-  saved_match()->username_value = ASCIIToUTF16("DifferentUsername");
-  saved_match()->new_password_element =
-      base::ASCIIToUTF16("new_password_field");
-  saved_match()->new_password_value = base::ASCIIToUTF16("new_pwd");
-  form_manager()->SetSubmittedForm(*saved_match());
-  EXPECT_TRUE(form_manager()->is_ignorable_change_password_form());
-}
-
 TEST_F(PasswordFormManagerTest, PasswordToSave_NoElements) {
   PasswordForm form;
   EXPECT_TRUE(PasswordFormManager::PasswordToSave(form).empty());
@@ -2108,7 +2041,6 @@ TEST_F(PasswordFormManagerTest, TestUpdateMethod) {
   // verify in the end that this did not happen.
   saved_match()->submit_element.clear();
 
-  client()->set_is_update_password_ui_enabled(true);
   PasswordFormManager form_manager(password_manager(), client(),
                                    client()->driver(), *observed_form(),
                                    base::MakeUnique<MockFormSaver>());
@@ -2171,7 +2103,6 @@ TEST_F(PasswordFormManagerTest, TestUpdateNoUsernameTextfieldPresent) {
   // will verify in the end that this did not happen.
   saved_match()->submit_element.clear();
 
-  client()->set_is_update_password_ui_enabled(true);
   PasswordFormManager form_manager(password_manager(), client(),
                                    client()->driver(), *observed_form(),
                                    base::MakeUnique<MockFormSaver>());
@@ -2605,7 +2536,6 @@ TEST_F(PasswordFormManagerTest, DontFetchStatistics) {
 
 TEST_F(PasswordFormManagerTest,
        TestSavingOnChangePasswordFormGenerationNoStoredForms) {
-  client()->set_is_update_password_ui_enabled(true);
   SimulateMatchingPhase(form_manager(), RESULT_NO_MATCH);
   form_manager()->set_has_generated_password(true);
 
@@ -2641,7 +2571,6 @@ TEST_F(PasswordFormManagerTest,
 }
 
 TEST_F(PasswordFormManagerTest, TestUpdatingOnChangePasswordFormGeneration) {
-  client()->set_is_update_password_ui_enabled(true);
   SimulateMatchingPhase(form_manager(), RESULT_SAVED_MATCH);
   form_manager()->set_has_generated_password(true);
 
@@ -2678,7 +2607,6 @@ TEST_F(PasswordFormManagerTest, TestUpdatingOnChangePasswordFormGeneration) {
 
 TEST_F(PasswordFormManagerTest,
        TestSavingOnChangePasswordFormGenerationNoMatchedForms) {
-  client()->set_is_update_password_ui_enabled(true);
   SimulateMatchingPhase(form_manager(), RESULT_SAVED_MATCH);
   form_manager()->set_has_generated_password(true);
 
@@ -2730,7 +2658,6 @@ TEST_F(PasswordFormManagerTest,
   field.name = ASCIIToUTF16("NewPasswd");
   observed_form()->form_data.fields.push_back(field);
 
-  client()->set_is_update_password_ui_enabled(true);
   PasswordFormManager form_manager(password_manager(), client(),
                                    client()->driver(), *observed_form(),
                                    base::MakeUnique<MockFormSaver>());

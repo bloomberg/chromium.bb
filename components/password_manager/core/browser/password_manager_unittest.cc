@@ -53,9 +53,6 @@ class MockPasswordManagerClient : public StubPasswordManagerClient {
     EXPECT_CALL(*this, GetStoreResultFilter())
         .Times(AnyNumber())
         .WillRepeatedly(Return(&filter_));
-    EXPECT_CALL(*this, IsUpdatePasswordUIEnabled())
-        .Times(AnyNumber())
-        .WillRepeatedly(Return(true));
     ON_CALL(filter_, ShouldSave(_)).WillByDefault(Return(true));
   }
 
@@ -71,7 +68,6 @@ class MockPasswordManagerClient : public StubPasswordManagerClient {
   MOCK_METHOD0(AutomaticPasswordSaveIndicator, void());
   MOCK_METHOD0(GetPrefs, PrefService*());
   MOCK_METHOD0(GetDriver, PasswordManagerDriver*());
-  MOCK_CONST_METHOD0(IsUpdatePasswordUIEnabled, bool());
   MOCK_CONST_METHOD0(GetStoreResultFilter, const MockStoreResultFilter*());
 
   // Workaround for std::unique_ptr<> lacking a copy constructor.

@@ -47,6 +47,7 @@ class ManagePasswordsStateTest : public testing::Test {
   void SetUp() override {
     test_local_form_.origin = GURL("http://example.com");
     test_local_form_.username_value = base::ASCIIToUTF16("username");
+    test_local_form_.username_element = base::ASCIIToUTF16("username_element");
     test_local_form_.password_value = base::ASCIIToUTF16("12345");
 
     test_submitted_form_ = test_local_form_;
