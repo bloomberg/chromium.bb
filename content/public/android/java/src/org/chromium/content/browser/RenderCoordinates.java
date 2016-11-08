@@ -8,7 +8,8 @@ import android.content.Context;
 import android.util.TypedValue;
 
 import org.chromium.base.VisibleForTesting;
-import org.chromium.ui.base.WindowAndroid;
+
+import java.lang.ref.WeakReference;
 
 /**
  * Cached copy of all positions and scales (CSS-to-DIP-to-physical pixels)
@@ -38,7 +39,7 @@ public class RenderCoordinates {
     private float mMaxPageScaleFactor = 1.0f;
 
     // Cached device density.
-    private float mDeviceScaleFactor;
+    private float mDeviceScaleFactor = 1.0f;
 
     // Multiplier that determines how many (device) pixels to scroll per mouse
     // wheel tick. Defaults to the preferred list item height.
@@ -61,14 +62,14 @@ public class RenderCoordinates {
         mContentHeightCss = contentHeightCss;
     }
 
-    void updateDeviceScaleFactorFromWindow(WindowAndroid windowAndroid) {
-        mDeviceScaleFactor = windowAndroid.getDisplay().getDIPScale();
+    void setDeviceScaleFactor(float dipScale, WeakReference<Context> displayContext) {
+        mDeviceScaleFactor = dipScale;
 
         // The wheel scroll factor depends on the theme in the context.
         // This code assumes that the theme won't change between this call and
         // getWheelScrollFactor().
 
-        Context context = windowAndroid.getContext().get();
+        Context context = displayContext.get();
         TypedValue outValue = new TypedValue();
         // This is the same attribute used by Android Views to scale wheel
         // event motion into scroll deltas.

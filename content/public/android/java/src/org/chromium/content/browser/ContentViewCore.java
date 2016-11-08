@@ -86,6 +86,7 @@ import org.chromium.ui.base.DeviceFormFactor;
 import org.chromium.ui.base.ViewAndroidDelegate;
 import org.chromium.ui.base.WindowAndroid;
 import org.chromium.ui.base.ime.TextInputType;
+import org.chromium.ui.display.DisplayAndroid;
 import org.chromium.ui.display.DisplayAndroid.DisplayAndroidObserver;
 import org.chromium.ui.touch_selection.SelectionEventType;
 
@@ -652,14 +653,17 @@ public class ContentViewCore implements AccessibilityStateChangeListener, Displa
         assert windowNativePointer != 0;
 
         mZoomControlsDelegate = NO_OP_ZOOM_CONTROLS_DELEGATE;
+
+        final float dipScale = windowAndroid.getDisplay().getDIPScale();
+
+        mRenderCoordinates.reset();
+        mRenderCoordinates.setDeviceScaleFactor(dipScale, windowAndroid.getContext());
+
         mNativeContentViewCore = nativeInit(webContents, mViewAndroidDelegate, windowNativePointer,
-                mRetainedJavaScriptObjects);
+                dipScale, mRetainedJavaScriptObjects);
         mWebContents = nativeGetWebContentsAndroid(mNativeContentViewCore);
 
         setContainerViewInternals(internalDispatcher);
-
-        mRenderCoordinates.reset();
-        mRenderCoordinates.updateDeviceScaleFactorFromWindow(windowAndroid);
 
         initPopupZoomer(mContext);
         mImeAdapter = createImeAdapter();
@@ -694,9 +698,10 @@ public class ContentViewCore implements AccessibilityStateChangeListener, Displa
         if (!mAttachedToWindow) return;
         WindowAndroid windowAndroid = getWindowAndroid();
         if (windowAndroid != null) {
-            mRenderCoordinates.updateDeviceScaleFactorFromWindow(windowAndroid);
-            windowAndroid.getDisplay().addObserver(this);
-            onRotationChanged(windowAndroid.getDisplay().getRotation());
+            DisplayAndroid display = windowAndroid.getDisplay();
+            display.addObserver(this);
+            onRotationChanged(display.getRotation());
+            onDIPScaleChanged(display.getDIPScale());
         }
     }
 
@@ -3235,6 +3240,7 @@ public class ContentViewCore implements AccessibilityStateChangeListener, Displa
         updateGestureStateListener(GestureEventType.FLING_END);
     }
 
+    // DisplayAndroidObserver method.
     @Override
     public void onRotationChanged(int rotation) {
         // ActionMode#invalidate() won't be able to re-layout the floating
@@ -3265,6 +3271,16 @@ public class ContentViewCore implements AccessibilityStateChangeListener, Displa
         }
 
         sendOrientationChangeEvent(rotationDegrees);
+    }
+
+    // DisplayAndroidObserver method.
+    @Override
+    public void onDIPScaleChanged(float dipScale) {
+        WindowAndroid windowAndroid = getWindowAndroid();
+        if (windowAndroid == null || mNativeContentViewCore == 0) return;
+
+        mRenderCoordinates.setDeviceScaleFactor(dipScale, getWindowAndroid().getContext());
+        nativeSetDIPScale(mNativeContentViewCore, dipScale);
     }
 
     /**
@@ -3319,7 +3335,7 @@ public class ContentViewCore implements AccessibilityStateChangeListener, Displa
     }
 
     private native long nativeInit(WebContents webContents, ViewAndroidDelegate viewAndroidDelegate,
-            long windowAndroidPtr, HashSet<Object> retainedObjectSet);
+            long windowAndroidPtr, float dipScale, HashSet<Object> retainedObjectSet);
     private static native ContentViewCore nativeFromWebContentsAndroid(WebContents webContents);
 
     private native void nativeUpdateWindowAndroid(
@@ -3330,6 +3346,8 @@ public class ContentViewCore implements AccessibilityStateChangeListener, Displa
     private native void nativeOnJavaContentViewCoreDestroyed(long nativeContentViewCoreImpl);
 
     private native void nativeSetFocus(long nativeContentViewCoreImpl, boolean focused);
+
+    private native void nativeSetDIPScale(long nativeContentViewCoreImpl, float dipScale);
 
     private native void nativeSendOrientationChangeEvent(
             long nativeContentViewCoreImpl, int orientation);

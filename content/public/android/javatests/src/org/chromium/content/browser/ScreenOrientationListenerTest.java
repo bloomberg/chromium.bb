@@ -37,6 +37,9 @@ public class ScreenOrientationListenerTest extends ContentShellTestBase {
             notifyCalled();
         }
 
+        @Override
+        public void onDIPScaleChanged(float dipScale) {}
+
         public int getLastRotation() {
             return mLastOrientation;
         }

@@ -34,6 +34,13 @@ public class DisplayAndroid {
          * @param orientation One of Surface.ROTATION_* values.
          */
         void onRotationChanged(int rotation);
+
+        /**
+         * Called whenever the screen density changes.
+         *
+         * @param screen density, aka Density Independent Pixel scale.
+         */
+        void onDIPScaleChanged(float dipScale);
     }
 
     private static final String TAG = "DisplayAndroid";
@@ -190,6 +197,8 @@ public class DisplayAndroid {
 
     @TargetApi(Build.VERSION_CODES.JELLY_BEAN_MR1)
     /* package */ void updateFromDisplay(Display display) {
+        float oldDensity = mDisplayMetrics.density;
+
         display.getSize(mSize);
         display.getMetrics(mDisplayMetrics);
 
@@ -207,6 +216,16 @@ public class DisplayAndroid {
             DisplayAndroidObserver[] observers = getObservers();
             for (DisplayAndroidObserver o : observers) {
                 o.onRotationChanged(mRotation);
+            }
+        }
+
+        // Intentional comparison of floats: we assume that if scales differ,
+        // they differ significantly.
+        boolean dipScaleChanged = oldDensity != mDisplayMetrics.density;
+        if (dipScaleChanged) {
+            DisplayAndroidObserver[] observers = getObservers();
+            for (DisplayAndroidObserver o : observers) {
+                o.onDIPScaleChanged(mDisplayMetrics.density);
             }
         }
     }

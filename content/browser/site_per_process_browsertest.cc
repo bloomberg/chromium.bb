@@ -626,13 +626,23 @@ IN_PROC_BROWSER_TEST_F(SitePerProcessHighDPIBrowserTest,
       "a.com", "/cross_site_iframe_factory.html?a(b)"));
   NavigateToURL(shell(), main_url);
 
-  EXPECT_EQ(SitePerProcessHighDPIBrowserTest::kDeviceScaleFactor,
-            GetFrameDeviceScaleFactor(web_contents()));
+  // On Android forcing device scale factor does not work for tests, therefore
+  // we ensure that make frame and iframe have the same DIP scale there, but
+  // not necessarily kDeviceScaleFactor.
+  const double expected_dip_scale =
+#if defined(OS_ANDROID)
+      GetFrameDeviceScaleFactor(web_contents());
+#else
+      SitePerProcessHighDPIBrowserTest::kDeviceScaleFactor;
+#endif
+
+  EXPECT_EQ(expected_dip_scale, GetFrameDeviceScaleFactor(web_contents()));
 
   FrameTreeNode* root = web_contents()->GetFrameTree()->root();
+  ASSERT_EQ(1U, root->child_count());
+
   FrameTreeNode* child = root->child_at(0);
-  EXPECT_EQ(SitePerProcessHighDPIBrowserTest::kDeviceScaleFactor,
-            GetFrameDeviceScaleFactor(child));
+  EXPECT_EQ(expected_dip_scale, GetFrameDeviceScaleFactor(child));
 }
 
 // Ensure that navigating subframes in --site-per-process mode works and the
