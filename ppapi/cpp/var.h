@@ -315,7 +315,7 @@ class Var {
 
  private:
   // Prevent an arbitrary pointer argument from being implicitly converted to
-  // a bool at Var construction. If somebody makes such a mistake, (s)he will
+  // a bool at Var construction. If somebody makes such a mistake, they will
   // get a compilation error.
   Var(void* non_scriptable_object_pointer);
 };
