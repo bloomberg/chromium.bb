@@ -239,7 +239,7 @@ static CSSValue* valueForPositionOffset(const ComputedStyle& style,
         return CSSPrimitiveValue::create(0,
                                          CSSPrimitiveValue::UnitType::Pixels);
 
-      if (opposite.isPercentOrCalc() || opposite.isCalculated()) {
+      if (opposite.isPercentOrCalc()) {
         if (layoutObject->isBox()) {
           LayoutUnit containingBlockSize =
               (propertyID == CSSPropertyLeft || propertyID == CSSPropertyRight)
