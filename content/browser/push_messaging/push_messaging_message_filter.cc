@@ -324,8 +324,10 @@ void PushMessagingMessageFilter::DidCheckForExistingRegistration(
       SendSubscriptionError(data, PUSH_REGISTRATION_STATUS_NO_SENDER_ID);
       return;
     }
-    // TODO(crbug.com/638924): Check that stored sender ID equals
-    // data.options.sender_info and throw an exception if they don't match.
+    if (fixed_sender_id != stored_sender_id) {
+      SendSubscriptionError(data, PUSH_REGISTRATION_STATUS_SENDER_ID_MISMATCH);
+      return;
+    }
     auto callback = base::Bind(
         &PushMessagingMessageFilter::DidGetEncryptionKeys,
         weak_factory_io_to_io_.GetWeakPtr(), data, push_registration_id);

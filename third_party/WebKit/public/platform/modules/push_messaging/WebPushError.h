@@ -17,7 +17,8 @@ struct WebPushError {
     ErrorTypeNotFound,
     ErrorTypeNotSupported,
     ErrorTypeUnknown,
-    ErrorTypeLast = ErrorTypeUnknown
+    ErrorTypeInvalidState,
+    ErrorTypeLast = ErrorTypeInvalidState
   };
 
   WebPushError(ErrorType errorType, const WebString& message)

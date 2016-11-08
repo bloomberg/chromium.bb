@@ -53,7 +53,7 @@ self.addEventListener('message', function handler (event) {
     pushSubscriptionOptions.applicationServerKey = kApplicationServerKey.buffer;
   } else if (event.data.command == 'workerSubscribeWithNumericKey') {
     pushSubscriptionOptions.applicationServerKey =
-        new TextEncoder().encode('1234567890');
+        new TextEncoder().encode(event.data.key);
   } else if (event.data.command == 'workerSubscribeNoKey') {
     // Nothing to set up
   } else {

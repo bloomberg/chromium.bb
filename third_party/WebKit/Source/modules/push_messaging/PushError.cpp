@@ -15,6 +15,8 @@ DOMException* PushError::take(ScriptPromiseResolver*,
   switch (webError.errorType) {
     case WebPushError::ErrorTypeAbort:
       return DOMException::create(AbortError, webError.message);
+    case WebPushError::ErrorTypeInvalidState:
+      return DOMException::create(InvalidStateError, webError.message);
     case WebPushError::ErrorTypeNetwork:
       return DOMException::create(NetworkError, webError.message);
     case WebPushError::ErrorTypeNotAllowed:

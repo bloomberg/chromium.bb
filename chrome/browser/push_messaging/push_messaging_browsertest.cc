@@ -814,6 +814,62 @@ IN_PROC_BROWSER_TEST_F(
   EXPECT_NE(push_service(), GetAppHandler());
 }
 
+IN_PROC_BROWSER_TEST_F(PushMessagingBrowserTest, ResubscribeWithMismatchedKey) {
+  std::string script_result;
+
+  ASSERT_TRUE(RunScript("registerServiceWorker()", &script_result));
+  ASSERT_EQ("ok - service worker registered", script_result);
+
+  ASSERT_NO_FATAL_FAILURE(RequestAndAcceptPermission());
+
+  LoadTestPage();  // Reload to become controlled.
+
+  ASSERT_TRUE(RunScript("isControlled()", &script_result));
+  ASSERT_EQ("true - is controlled", script_result);
+
+  // Run the subscribe from the service worker with a key.
+  // This should succeed.
+  ASSERT_TRUE(
+      RunScript("workerSubscribePushWithNumericKey('11111')", &script_result));
+  std::string token1;
+  ASSERT_NO_FATAL_FAILURE(
+      EndpointToToken(script_result, false /* standard_protocol */, &token1));
+
+  // Try to resubscribe with a different key - should fail.
+  ASSERT_TRUE(
+      RunScript("workerSubscribePushWithNumericKey('22222')", &script_result));
+  EXPECT_EQ(
+      "InvalidStateError - Registration failed - A subscription with a "
+      "different applicationServerKey (or gcm_sender_id) already exists; to "
+      "change the applicationServerKey, unsubscribe then resubscribe.",
+      script_result);
+
+  // Try to resubscribe with the original key - should succeed.
+  ASSERT_TRUE(
+      RunScript("workerSubscribePushWithNumericKey('11111')", &script_result));
+  std::string token2;
+  ASSERT_NO_FATAL_FAILURE(
+      EndpointToToken(script_result, false /* standard_protocol */, &token2));
+  EXPECT_EQ(token1, token2);
+
+  ASSERT_TRUE(RunScript("unsubscribePush()", &script_result));
+  EXPECT_EQ("unsubscribe result: true", script_result);
+  EXPECT_NE(push_service(), GetAppHandler());
+
+  // Resubscribe with a different key after unsubscribing.
+  // Should succeed, and we should get a new subscription token.
+  ASSERT_TRUE(
+      RunScript("workerSubscribePushWithNumericKey('22222')", &script_result));
+  std::string token3;
+  ASSERT_NO_FATAL_FAILURE(
+      EndpointToToken(script_result, false /* standard_protocol */, &token3));
+  EXPECT_NE(token1, token3);
+
+  ASSERT_TRUE(RunScript("unsubscribePush()", &script_result));
+  EXPECT_EQ("unsubscribe result: true", script_result);
+  EXPECT_NE(push_service(), GetAppHandler());
+}
+
 IN_PROC_BROWSER_TEST_F(PushMessagingBrowserTest, SubscribePersisted) {
   std::string script_result;
 

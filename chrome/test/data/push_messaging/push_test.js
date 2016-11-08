@@ -144,10 +144,10 @@ function workerSubscribePushNoKey() {
       {command: 'workerSubscribeNoKey'});
 }
 
-function workerSubscribePushWithNumericKey() {
-  // Send the message to the worker for it to subscribe
+function workerSubscribePushWithNumericKey(numericKey = '1234567890') {
+  // Send the message to the worker for it to subscribe with the given key
   navigator.serviceWorker.controller.postMessage(
-      {command: 'workerSubscribeWithNumericKey'});
+      {command: 'workerSubscribeWithNumericKey', key: numericKey});
 }
 
 function GetP256dh() {

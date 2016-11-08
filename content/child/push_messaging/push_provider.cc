@@ -46,6 +46,9 @@ blink::WebPushError PushRegistrationStatusToWebPushError(
     case PUSH_REGISTRATION_STATUS_PERMISSION_DENIED:
       error_type = blink::WebPushError::ErrorTypeNotAllowed;
       break;
+    case PUSH_REGISTRATION_STATUS_SENDER_ID_MISMATCH:
+      error_type = blink::WebPushError::ErrorTypeInvalidState;
+      break;
     case PUSH_REGISTRATION_STATUS_SUCCESS_FROM_PUSH_SERVICE:
     case PUSH_REGISTRATION_STATUS_NO_SERVICE_WORKER:
     case PUSH_REGISTRATION_STATUS_SERVICE_NOT_AVAILABLE:

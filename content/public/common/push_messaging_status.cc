@@ -52,6 +52,11 @@ const char* PushRegistrationStatusToString(PushRegistrationStatus status) {
     case PUSH_REGISTRATION_STATUS_MANIFEST_EMPTY_OR_MISSING:
       return "Registration failed - missing applicationServerKey, and manifest "
              "empty or missing";
+
+    case PUSH_REGISTRATION_STATUS_SENDER_ID_MISMATCH:
+      return "Registration failed - A subscription with a different "
+             "applicationServerKey (or gcm_sender_id) already exists; to "
+             "change the applicationServerKey, unsubscribe then resubscribe.";
   }
   NOTREACHED();
   return "";
