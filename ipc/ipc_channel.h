@@ -39,17 +39,8 @@ class Listener;
 // http://www.chromium.org/developers/design-documents/inter-process-communication
 // for overview of IPC in Chromium.
 
-// Channels are implemented using named pipes on Windows, and
-// socket pairs (or in some special cases unix domain sockets) on POSIX.
-// On Windows we access pipes in various processes by name.
-// On POSIX we pass file descriptors to child processes and assign names to them
-// in a lookup table.
-// In general on POSIX we do not use unix domain sockets due to security
-// concerns and the fact that they can leave garbage around the file system
-// (MacOS does not support abstract named unix domain sockets).
-// You can use unix domain sockets if you like on POSIX by constructing the
-// the channel with the mode set to one of the NAMED modes. NAMED modes are
-// currently used by automation and service processes.
+// Channels are implemented using mojo message pipes on all platforms other
+// than NaCl.
 
 class IPC_EXPORT Channel : public Endpoint {
   // Security tests need access to the pipe handle.
@@ -61,7 +52,6 @@ class IPC_EXPORT Channel : public Endpoint {
     MODE_NO_FLAG = 0x0,
     MODE_SERVER_FLAG = 0x1,
     MODE_CLIENT_FLAG = 0x2,
-    MODE_NAMED_FLAG = 0x4,
   };
 
   // Some Standard Modes
@@ -71,8 +61,6 @@ class IPC_EXPORT Channel : public Endpoint {
     MODE_NONE = MODE_NO_FLAG,
     MODE_SERVER = MODE_SERVER_FLAG,
     MODE_CLIENT = MODE_CLIENT_FLAG,
-    MODE_NAMED_SERVER = MODE_SERVER_FLAG | MODE_NAMED_FLAG,
-    MODE_NAMED_CLIENT = MODE_CLIENT_FLAG | MODE_NAMED_FLAG,
   };
 
   // Messages internal to the IPC implementation are defined here.
@@ -193,17 +181,6 @@ class IPC_EXPORT Channel : public Endpoint {
       const scoped_refptr<base::SingleThreadTaskRunner>& ipc_task_runner =
           base::ThreadTaskRunnerHandle::Get());
 
-  // Channels on Windows are named by default and accessible from other
-  // processes. On POSIX channels are anonymous by default and not accessible
-  // from other processes. Named channels work via named unix domain sockets.
-  // On Windows MODE_NAMED_SERVER is equivalent to MODE_SERVER and
-  // MODE_NAMED_CLIENT is equivalent to MODE_CLIENT.
-  static std::unique_ptr<Channel> CreateNamedServer(
-      const IPC::ChannelHandle& channel_handle,
-      Listener* listener);
-  static std::unique_ptr<Channel> CreateNamedClient(
-      const IPC::ChannelHandle& channel_handle,
-      Listener* listener);
   static std::unique_ptr<Channel> CreateServer(
       const IPC::ChannelHandle& channel_handle,
       Listener* listener,
@@ -282,10 +259,6 @@ class IPC_EXPORT Channel : public Endpoint {
   virtual base::ScopedFD TakeClientFileDescriptor() = 0;
 #endif
 
-  // Returns true if a named server channel is initialized on the given channel
-  // ID. Even if true, the server may have already accepted a connection.
-  static bool IsNamedServerInitialized(const std::string& channel_id);
-
 #if !defined(OS_NACL_SFI)
   // Generates a channel ID that's non-predictable and unique.
   static std::string GenerateUniqueRandomChannelID();
@@ -313,14 +286,6 @@ class IPC_EXPORT Channel : public Endpoint {
   // PID namespace.
   static void SetGlobalPid(int pid);
   static int GetGlobalPid();
-#endif
-
-#if defined(OS_ANDROID)
-  // Most tests are single process and work the same on all platforms. However
-  // in some cases we want to test multi-process, and Android differs in that it
-  // can't 'exec' after forking. This callback resets any data in the forked
-  // process such that it acts similar to if it was exec'd, for tests.
-  static void NotifyProcessForkedForTesting();
 #endif
 
  protected:
@@ -354,12 +319,6 @@ class IPC_EXPORT Channel : public Endpoint {
  private:
   bool did_start_connect_ = false;
 };
-
-#if defined(OS_POSIX)
-// SocketPair() creates a pair of socket FDs suitable for using with
-// IPC::Channel.
-IPC_EXPORT bool SocketPair(int* fd1, int* fd2);
-#endif
 
 }  // namespace IPC
 

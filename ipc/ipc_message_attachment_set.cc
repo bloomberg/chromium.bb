@@ -184,23 +184,6 @@ MessageAttachmentSet::GetBrokerableAttachments() const {
   return brokerable_attachments_;
 }
 
-void MessageAttachmentSet::ReplacePlaceholderWithAttachment(
-    const scoped_refptr<BrokerableAttachment>& attachment) {
-  DCHECK_NE(BrokerableAttachment::PLACEHOLDER, attachment->GetBrokerableType());
-  for (auto it = brokerable_attachments_.begin();
-       it != brokerable_attachments_.end(); ++it) {
-    if ((*it)->GetBrokerableType() == BrokerableAttachment::PLACEHOLDER &&
-        (*it)->GetIdentifier() == attachment->GetIdentifier()) {
-      *it = attachment;
-      return;
-    }
-  }
-
-  // This function should only be called if there is a placeholder ready to be
-  // replaced.
-  NOTREACHED();
-}
-
 #if defined(OS_POSIX)
 
 void MessageAttachmentSet::PeekDescriptors(base::PlatformFile* buffer) const {

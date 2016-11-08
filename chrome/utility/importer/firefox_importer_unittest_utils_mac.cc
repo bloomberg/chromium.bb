@@ -17,15 +17,16 @@
 #include "base/process/launch.h"
 #include "base/run_loop.h"
 #include "base/single_thread_task_runner.h"
+#include "base/test/multiprocess_test.h"
 #include "base/test/test_timeouts.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "chrome/common/importer/firefox_importer_utils.h"
+#include "content/public/common/content_descriptors.h"
 #include "content/public/common/mojo_channel_switches.h"
 #include "ipc/ipc_channel.h"
 #include "ipc/ipc_descriptors.h"
 #include "ipc/ipc_listener.h"
 #include "ipc/ipc_message.h"
-#include "ipc/ipc_multiprocess_test.h"
 #include "mojo/edk/embedder/embedder.h"
 #include "mojo/edk/embedder/platform_channel_pair.h"
 #include "mojo/edk/embedder/scoped_platform_handle.h"
@@ -55,8 +56,9 @@ base::Process LaunchNSSDecrypterChildProcess(
   options.environ["DYLD_FALLBACK_LIBRARY_PATH"] = nss_path.value();
 
   base::FileHandleMappingVector fds_to_map;
-  fds_to_map.push_back(std::pair<int,int>(mojo_handle.get().handle,
-      kPrimaryIPCChannel + base::GlobalDescriptors::kBaseDescriptor));
+  fds_to_map.push_back(std::pair<int, int>(
+      mojo_handle.get().handle,
+      kMojoIPCChannel + base::GlobalDescriptors::kBaseDescriptor));
 
   options.fds_to_remap = &fds_to_map;
   return base::LaunchProcess(cl.argv(), options);
@@ -278,13 +280,13 @@ class FFDecryptorClientChannelListener : public IPC::Listener {
 };
 
 // Entry function in child process.
-MULTIPROCESS_IPC_TEST_MAIN(NSSDecrypterChildProcess) {
+MULTIPROCESS_TEST_MAIN(NSSDecrypterChildProcess) {
   base::MessageLoopForIO main_message_loop;
   FFDecryptorClientChannelListener listener;
 
   mojo::edk::SetParentPipeHandle(
       mojo::edk::ScopedPlatformHandle(mojo::edk::PlatformHandle(
-          base::GlobalDescriptors::GetInstance()->Get(kPrimaryIPCChannel))));
+          kMojoIPCChannel + base::GlobalDescriptors::kBaseDescriptor)));
   mojo::ScopedMessagePipeHandle mojo_handle =
       mojo::edk::CreateChildMessagePipe(
           base::CommandLine::ForCurrentProcess()->GetSwitchValueASCII(

@@ -51,7 +51,6 @@ ChannelReader::ChannelReader(Listener* listener)
 }
 
 ChannelReader::~ChannelReader() {
-  DCHECK(blocked_ids_.empty());
 }
 
 ChannelReader::DispatchState ChannelReader::ProcessIncomingMessages() {
@@ -67,10 +66,6 @@ ChannelReader::DispatchState ChannelReader::ProcessIncomingMessages() {
     DCHECK(bytes_read > 0);
     if (!TranslateInputData(input_buf_, bytes_read))
       return DISPATCH_ERROR;
-
-    DispatchState state = DispatchMessages();
-    if (state != DISPATCH_FINISHED)
-      return state;
   }
 }
 
@@ -78,7 +73,7 @@ ChannelReader::DispatchState ChannelReader::AsyncReadComplete(int bytes_read) {
   if (!TranslateInputData(input_buf_, bytes_read))
     return DISPATCH_ERROR;
 
-  return DispatchMessages();
+  return DISPATCH_FINISHED;
 }
 
 bool ChannelReader::IsInternalMessage(const Message& m) {
@@ -93,10 +88,6 @@ bool ChannelReader::IsHelloMessage(const Message& m) {
 }
 
 void ChannelReader::CleanUp() {
-  if (!blocked_ids_.empty()) {
-    StopObservingAttachmentBroker();
-    blocked_ids_.clear();
-  }
 }
 
 void ChannelReader::DispatchMessage(Message* m) {
@@ -132,7 +123,7 @@ bool ChannelReader::TranslateInputData(const char* input_data,
       int pickle_len = static_cast<int>(info.pickle_end - p);
       Message translated_message(p, pickle_len);
 
-      if (!HandleTranslatedMessage(&translated_message, info.attachment_ids))
+      if (!HandleTranslatedMessage(&translated_message))
         return false;
 
       p = info.message_end;
@@ -188,9 +179,7 @@ bool ChannelReader::TranslateInputData(const char* input_data,
   return true;
 }
 
-bool ChannelReader::HandleTranslatedMessage(
-    Message* translated_message,
-    const AttachmentIdVector& attachment_ids) {
+bool ChannelReader::HandleTranslatedMessage(Message* translated_message) {
   // Immediately handle internal messages.
   if (IsInternalMessage(*translated_message)) {
     EMIT_TRACE_EVENT(*translated_message);
@@ -201,138 +190,20 @@ bool ChannelReader::HandleTranslatedMessage(
 
   translated_message->set_sender_pid(GetSenderPID());
 
-  // Immediately handle attachment broker messages.
-  if (DispatchAttachmentBrokerMessage(*translated_message)) {
-    // Ideally, the log would have been emitted prior to dispatching the
-    // message, but that would require this class to know more about the
-    // internals of attachment brokering, which should be avoided.
-    EMIT_TRACE_EVENT(*translated_message);
-    HandleDispatchError(*translated_message);
-    return true;
-  }
-
-  return HandleExternalMessage(translated_message, attachment_ids);
+  return HandleExternalMessage(translated_message);
 }
 
-bool ChannelReader::HandleExternalMessage(
-    Message* external_message,
-    const AttachmentIdVector& attachment_ids) {
-  for (const auto& id : attachment_ids)
-    external_message->AddPlaceholderBrokerableAttachmentWithId(id);
-
+bool ChannelReader::HandleExternalMessage(Message* external_message) {
   if (!GetNonBrokeredAttachments(external_message))
     return false;
 
-  // If there are no queued messages, attempt to immediately dispatch the
-  // newly translated message.
-  if (queued_messages_.empty()) {
-    DCHECK(blocked_ids_.empty());
-    AttachmentIdSet blocked_ids = GetBrokeredAttachments(external_message);
-
-    if (blocked_ids.empty()) {
-      DispatchMessage(external_message);
-      return true;
-    }
-
-    blocked_ids_.swap(blocked_ids);
-    StartObservingAttachmentBroker();
-  }
-
-  // Make a deep copy of |external_message| to add to the queue.
-  std::unique_ptr<Message> m(new Message(*external_message));
-  queued_messages_.push_back(m.release());
+  DispatchMessage(external_message);
   return true;
 }
 
 void ChannelReader::HandleDispatchError(const Message& message) {
   if (message.dispatch_error())
     listener_->OnBadMessageReceived(message);
-}
-
-bool ChannelReader::DispatchAttachmentBrokerMessage(const Message& message) {
-#if USE_ATTACHMENT_BROKER
-  if (IsAttachmentBrokerEndpoint() && GetAttachmentBroker()) {
-    return GetAttachmentBroker()->OnMessageReceived(message);
-  }
-#endif  // USE_ATTACHMENT_BROKER
-
-  return false;
-}
-
-ChannelReader::DispatchState ChannelReader::DispatchMessages() {
-  while (!queued_messages_.empty()) {
-    if (!blocked_ids_.empty())
-      return DISPATCH_WAITING_ON_BROKER;
-
-    Message* m = queued_messages_.front();
-
-    AttachmentIdSet blocked_ids = GetBrokeredAttachments(m);
-    if (!blocked_ids.empty()) {
-      blocked_ids_.swap(blocked_ids);
-      StartObservingAttachmentBroker();
-      return DISPATCH_WAITING_ON_BROKER;
-    }
-
-    DispatchMessage(m);
-    queued_messages_.erase(queued_messages_.begin());
-  }
-  return DISPATCH_FINISHED;
-}
-
-ChannelReader::AttachmentIdSet ChannelReader::GetBrokeredAttachments(
-    Message* msg) {
-  std::set<BrokerableAttachment::AttachmentId> blocked_ids;
-
-#if USE_ATTACHMENT_BROKER
-  MessageAttachmentSet* set = msg->attachment_set();
-  std::vector<scoped_refptr<IPC::BrokerableAttachment>>
-      brokerable_attachments_copy(set->GetBrokerableAttachments());
-  for (const auto& attachment : brokerable_attachments_copy) {
-    if (attachment->NeedsBrokering()) {
-      AttachmentBroker* broker = GetAttachmentBroker();
-      DCHECK(broker);
-      scoped_refptr<BrokerableAttachment> brokered_attachment;
-      bool result = broker->GetAttachmentWithId(attachment->GetIdentifier(),
-                                                &brokered_attachment);
-      if (!result) {
-        blocked_ids.insert(attachment->GetIdentifier());
-        continue;
-      }
-
-      set->ReplacePlaceholderWithAttachment(brokered_attachment);
-    }
-  }
-#endif  // USE_ATTACHMENT_BROKER
-
-  return blocked_ids;
-}
-
-void ChannelReader::ReceivedBrokerableAttachmentWithId(
-    const BrokerableAttachment::AttachmentId& id) {
-  if (blocked_ids_.empty())
-    return;
-
-  auto it = find(blocked_ids_.begin(), blocked_ids_.end(), id);
-  if (it != blocked_ids_.end())
-    blocked_ids_.erase(it);
-
-  if (blocked_ids_.empty()) {
-    StopObservingAttachmentBroker();
-    DispatchMessages();
-  }
-}
-
-void ChannelReader::StartObservingAttachmentBroker() {
-#if USE_ATTACHMENT_BROKER
-  DCHECK(base::MessageLoopForIO::IsCurrent());
-  GetAttachmentBroker()->AddObserver(this, base::ThreadTaskRunnerHandle::Get());
-#endif  // USE_ATTACHMENT_BROKER
-}
-
-void ChannelReader::StopObservingAttachmentBroker() {
-#if USE_ATTACHMENT_BROKER
-  GetAttachmentBroker()->RemoveObserver(this);
-#endif  // USE_ATTACHMENT_BROKER
 }
 
 bool ChannelReader::CheckMessageSize(size_t size) {

@@ -225,10 +225,6 @@ bool ChannelNacl::Send(Message* message) {
   return true;
 }
 
-AttachmentBroker* ChannelNacl::GetAttachmentBroker() {
-  return nullptr;
-}
-
 void ChannelNacl::DidRecvMsg(std::unique_ptr<MessageContents> contents) {
   // Close sets the pipe to -1. It's possible we'll get a buffer sent to us from
   // the reader thread after Close is called. If so, we ignore it.
@@ -390,10 +386,6 @@ base::ProcessId ChannelNacl::GetSenderPID() {
   // The untrusted side of the IPC::Channel should never have to worry about
   // sender's process id.
   return base::kNullProcessId;
-}
-
-bool ChannelNacl::IsAttachmentBrokerEndpoint() {
-  return is_attachment_broker_endpoint();
 }
 
 // Channel's methods

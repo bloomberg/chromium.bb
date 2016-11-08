@@ -29,8 +29,7 @@ HandleAttachmentWin::HandleAttachmentWin(const HANDLE& handle,
     : handle_(handle), permissions_(HandleWin::INVALID), owns_handle_(true) {}
 
 HandleAttachmentWin::HandleAttachmentWin(const WireFormat& wire_format)
-    : BrokerableAttachment(wire_format.attachment_id),
-      handle_(LongToHandle(wire_format.handle)),
+    : handle_(LongToHandle(wire_format.handle)),
       permissions_(wire_format.permissions),
       owns_handle_(true) {}
 
@@ -46,8 +45,7 @@ HandleAttachmentWin::BrokerableType HandleAttachmentWin::GetBrokerableType()
 
 HandleAttachmentWin::WireFormat HandleAttachmentWin::GetWireFormat(
     const base::ProcessId& destination) const {
-  return WireFormat(HandleToLong(handle_), destination, permissions_,
-                    GetIdentifier());
+  return WireFormat(HandleToLong(handle_), destination, permissions_);
 }
 
 }  // namespace internal

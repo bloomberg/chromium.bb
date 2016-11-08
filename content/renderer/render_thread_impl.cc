@@ -180,10 +180,6 @@
 #include "content/renderer/webscrollbarbehavior_impl_mac.h"
 #endif
 
-#if defined(OS_POSIX)
-#include "ipc/ipc_channel_posix.h"
-#endif
-
 #if defined(OS_WIN)
 #include <windows.h>
 #include <objbase.h>

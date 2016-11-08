@@ -90,7 +90,6 @@
 #endif
 
 #if defined(OS_POSIX)
-#include "ipc/ipc_channel_posix.h"
 #include "third_party/skia/include/core/SkMallocPixelRef.h"
 #include "third_party/skia/include/core/SkPixelRef.h"
 #endif  // defined(OS_POSIX)

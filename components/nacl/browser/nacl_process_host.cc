@@ -70,7 +70,6 @@
 #include <sys/socket.h>
 
 #include "content/public/browser/zygote_handle_linux.h"
-#include "ipc/ipc_channel_posix.h"
 #elif defined(OS_WIN)
 #include <windows.h>
 #include <winsock2.h>

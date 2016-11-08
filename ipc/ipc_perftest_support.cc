@@ -28,6 +28,7 @@
 #include "ipc/ipc_descriptors.h"
 #include "ipc/ipc_message_utils.h"
 #include "ipc/ipc_sender.h"
+#include "mojo/edk/test/scoped_ipc_support.h"
 
 namespace IPC {
 namespace test {
@@ -248,14 +249,15 @@ IPCChannelPerfTestBase::GetDefaultTestParams() {
 
 void IPCChannelPerfTestBase::RunTestChannelPingPong(
     const std::vector<PingPongTestParams>& params) {
-  Init("PerformanceClient");
+  auto message_loop = base::MakeUnique<base::MessageLoopForIO>();
+  mojo::edk::test::ScopedIPCSupport ipc_support(message_loop->task_runner());
+  InitWithCustomMessageLoop("MojoPerfTestClient", std::move(message_loop));
 
   // Set up IPC channel and start client.
   PerformanceChannelListener listener("Channel");
   CreateChannel(&listener);
   listener.Init(channel());
   ASSERT_TRUE(ConnectChannel());
-  ASSERT_TRUE(StartClient());
 
   LockThreadAffinity thread_locker(kSharedCore);
   for (size_t i = 0; i < params.size(); i++) {
@@ -288,41 +290,44 @@ void IPCChannelPerfTestBase::RunTestChannelPingPong(
 void IPCChannelPerfTestBase::RunTestChannelProxyPingPong(
     const std::vector<PingPongTestParams>& params) {
   io_thread_.reset(new base::TestIOThread(base::TestIOThread::kAutoStart));
-  InitWithCustomMessageLoop("PerformanceClient",
-                            base::MakeUnique<base::MessageLoop>());
+  {
+    auto message_loop = base::MakeUnique<base::MessageLoopForIO>();
+    mojo::edk::test::ScopedIPCSupport ipc_support(io_thread_->task_runner());
+    InitWithCustomMessageLoop("MojoPerfTestClient", std::move(message_loop));
 
-  // Set up IPC channel and start client.
-  PerformanceChannelListener listener("ChannelProxy");
-  CreateChannelProxy(&listener, io_thread_->task_runner());
-  listener.Init(channel_proxy());
-  ASSERT_TRUE(StartClient());
+    // Set up IPC channel and start client.
+    PerformanceChannelListener listener("ChannelProxy");
+    auto channel_proxy = IPC::ChannelProxy::Create(
+        TakeHandle().release(), IPC::Channel::MODE_SERVER, &listener,
+        io_thread_->task_runner());
+    listener.Init(channel_proxy.get());
 
-  LockThreadAffinity thread_locker(kSharedCore);
-  for (size_t i = 0; i < params.size(); i++) {
-    listener.SetTestParams(params[i].message_count(),
-                           params[i].message_size());
+    LockThreadAffinity thread_locker(kSharedCore);
+    for (size_t i = 0; i < params.size(); i++) {
+      listener.SetTestParams(params[i].message_count(),
+                             params[i].message_size());
 
-    // This initial message will kick-start the ping-pong of messages.
-    Message* message =
-        new Message(0, 2, Message::PRIORITY_NORMAL);
+      // This initial message will kick-start the ping-pong of messages.
+      Message* message = new Message(0, 2, Message::PRIORITY_NORMAL);
+      message->WriteInt64(base::TimeTicks::Now().ToInternalValue());
+      message->WriteInt(-1);
+      message->WriteString("hello");
+      channel_proxy->Send(message);
+
+      // Run message loop.
+      base::RunLoop().Run();
+    }
+
+    // Send quit message.
+    Message* message = new Message(0, 2, Message::PRIORITY_NORMAL);
     message->WriteInt64(base::TimeTicks::Now().ToInternalValue());
     message->WriteInt(-1);
-    message->WriteString("hello");
-    sender()->Send(message);
+    message->WriteString("quit");
+    channel_proxy->Send(message);
 
-    // Run message loop.
-    base::RunLoop().Run();
+    EXPECT_TRUE(WaitForClientShutdown());
+    channel_proxy.reset();
   }
-
-  // Send quit message.
-  Message* message = new Message(0, 2, Message::PRIORITY_NORMAL);
-  message->WriteInt64(base::TimeTicks::Now().ToInternalValue());
-  message->WriteInt(-1);
-  message->WriteString("quit");
-  sender()->Send(message);
-
-  EXPECT_TRUE(WaitForClientShutdown());
-  DestroyChannelProxy();
 
   io_thread_.reset();
 }
@@ -333,12 +338,6 @@ PingPongTestClient::PingPongTestClient()
 }
 
 PingPongTestClient::~PingPongTestClient() {
-}
-
-std::unique_ptr<Channel> PingPongTestClient::CreateChannel(Listener* listener) {
-  return Channel::CreateClient(
-      IPCTestBase::GetChannelName("PerformanceClient"), listener,
-      base::ThreadTaskRunnerHandle::Get());
 }
 
 int PingPongTestClient::RunMain() {

@@ -25,12 +25,8 @@ class IPC_EXPORT MachPortAttachmentMac : public BrokerableAttachment {
     // constructor.
     WireFormat() : mach_port(0), destination_process(0) {}
 
-    WireFormat(uint32_t mach_port,
-               const base::ProcessId& destination_process,
-               const AttachmentId& attachment_id)
-        : mach_port(mach_port),
-          destination_process(destination_process),
-          attachment_id(attachment_id) {}
+    WireFormat(uint32_t mach_port, const base::ProcessId& destination_process)
+        : mach_port(mach_port), destination_process(destination_process) {}
 
     // The mach port that is intended for duplication, or the mach port that has
     // been duplicated, depending on context.
@@ -42,8 +38,6 @@ class IPC_EXPORT MachPortAttachmentMac : public BrokerableAttachment {
 
     // The id of the destination process that the handle is duplicated into.
     base::ProcessId destination_process;
-
-    AttachmentId attachment_id;
   };
 
   // This constructor increments the ref count of |mach_port_| and takes

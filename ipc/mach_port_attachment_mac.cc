@@ -25,8 +25,7 @@ MachPortAttachmentMac::MachPortAttachmentMac(mach_port_t mach_port,
     : mach_port_(mach_port), owns_mach_port_(true) {}
 
 MachPortAttachmentMac::MachPortAttachmentMac(const WireFormat& wire_format)
-    : BrokerableAttachment(wire_format.attachment_id),
-      mach_port_(static_cast<mach_port_t>(wire_format.mach_port)),
+    : mach_port_(static_cast<mach_port_t>(wire_format.mach_port)),
       owns_mach_port_(true) {}
 
 MachPortAttachmentMac::~MachPortAttachmentMac() {
@@ -45,8 +44,7 @@ MachPortAttachmentMac::BrokerableType MachPortAttachmentMac::GetBrokerableType()
 
 MachPortAttachmentMac::WireFormat MachPortAttachmentMac::GetWireFormat(
     const base::ProcessId& destination) const {
-  return WireFormat(static_cast<uint32_t>(mach_port_), destination,
-                    GetIdentifier());
+  return WireFormat(static_cast<uint32_t>(mach_port_), destination);
 }
 
 }  // namespace internal

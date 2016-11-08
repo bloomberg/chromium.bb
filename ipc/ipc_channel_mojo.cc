@@ -399,10 +399,6 @@ void ChannelMojo::OnMessageReceived(const Message& message) {
   TRACE_EVENT2("ipc,toplevel", "ChannelMojo::OnMessageReceived",
                "class", IPC_MESSAGE_ID_CLASS(message.type()),
                "line", IPC_MESSAGE_ID_LINE(message.type()));
-  if (AttachmentBroker* broker = AttachmentBroker::GetGlobal()) {
-    if (broker->OnMessageReceived(message))
-      return;
-  }
   listener_->OnMessageReceived(message);
   if (message.dispatch_error())
     listener_->OnBadMessageReceived(message);

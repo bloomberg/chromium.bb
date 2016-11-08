@@ -93,11 +93,6 @@ class IPC_EXPORT MessageAttachmentSet
   std::vector<scoped_refptr<IPC::BrokerableAttachment>>
   GetBrokerableAttachments() const;
 
-  // Replaces a placeholder brokerable attachment with |attachment|, matching
-  // them by their id.
-  void ReplacePlaceholderWithAttachment(
-      const scoped_refptr<BrokerableAttachment>& attachment);
-
 #if defined(OS_POSIX)
   // This is the maximum number of descriptors per message. We need to know this
   // because the control message kernel interface has to be given a buffer which

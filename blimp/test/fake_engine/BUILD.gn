@@ -45,7 +45,6 @@ test("fake_engine_app_tests") {
     "//base",
     "//base/test:test_support",
     "//blimp/test/fake_engine/proto:proto",
-    "//ipc",
     "//testing/gmock",
     "//testing/gtest",
     "//third_party/grpc:grpc++_unsecure",

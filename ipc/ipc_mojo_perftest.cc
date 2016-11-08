@@ -23,28 +23,10 @@ namespace {
 class MojoChannelPerfTest : public test::IPCChannelPerfTestBase {
  public:
   void TearDown() override {
-    ipc_support_.reset();
     test::IPCChannelPerfTestBase::TearDown();
   }
 
-  std::unique_ptr<ChannelFactory> CreateChannelFactory(
-      const ChannelHandle& handle,
-      base::SingleThreadTaskRunner* runner) override {
-    ipc_support_.reset(new mojo::edk::test::ScopedIPCSupport(io_task_runner()));
-    return ChannelMojo::CreateServerFactory(
-        helper_.StartChild("MojoPerfTestClient"), runner);
-  }
-
-  bool StartClient() override {
-    return true;
-  }
-
-  bool WaitForClientShutdown() override {
-    return helper_.WaitForChildTestShutdown();
-  }
-
   mojo::edk::test::MultiprocessTestHelper helper_;
-  std::unique_ptr<mojo::edk::test::ScopedIPCSupport> ipc_support_;
 };
 
 TEST_F(MojoChannelPerfTest, ChannelPingPong) {

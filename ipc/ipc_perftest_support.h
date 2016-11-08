@@ -35,7 +35,7 @@ class PingPongTestParams {
   int message_count_;
 };
 
-class IPCChannelPerfTestBase : public IPCTestBase {
+class IPCChannelPerfTestBase : public IPCChannelMojoTestBase {
  public:
   IPCChannelPerfTestBase();
   ~IPCChannelPerfTestBase() override;
@@ -62,7 +62,7 @@ class PingPongTestClient {
   PingPongTestClient();
   virtual ~PingPongTestClient();
 
-  virtual std::unique_ptr<Channel> CreateChannel(Listener* listener);
+  virtual std::unique_ptr<Channel> CreateChannel(Listener* listener) = 0;
   int RunMain();
   scoped_refptr<base::TaskRunner> task_runner();
 

@@ -47,7 +47,6 @@ class ChannelNacl : public Channel,
   bool Connect() override;
   void Close() override;
   bool Send(Message* message) override;
-  AttachmentBroker* GetAttachmentBroker() override;
 
   // Posted to the main thread by ReaderThreadRunner.
   void DidRecvMsg(std::unique_ptr<MessageContents> contents);
@@ -69,7 +68,6 @@ class ChannelNacl : public Channel,
   bool DidEmptyInputBuffers() override;
   void HandleInternalMessage(const Message& msg) override;
   base::ProcessId GetSenderPID() override;
-  bool IsAttachmentBrokerEndpoint() override;
 
   Mode mode_;
   bool waiting_connect_;

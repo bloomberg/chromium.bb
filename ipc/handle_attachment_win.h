@@ -29,12 +29,10 @@ class IPC_EXPORT HandleAttachmentWin : public BrokerableAttachment {
 
     WireFormat(int32_t handle,
                const base::ProcessId& destination_process,
-               HandleWin::Permissions permissions,
-               const AttachmentId& attachment_id)
+               HandleWin::Permissions permissions)
         : handle(handle),
           destination_process(destination_process),
-          permissions(permissions),
-          attachment_id(attachment_id) {}
+          permissions(permissions) {}
 
     // The HANDLE that is intended for duplication, or the HANDLE that has been
     // duplicated, depending on context.
@@ -50,8 +48,6 @@ class IPC_EXPORT HandleAttachmentWin : public BrokerableAttachment {
 
     // The permissions to use when duplicating the handle.
     HandleWin::Permissions permissions;
-
-    AttachmentId attachment_id;
   };
 
   // This constructor makes a copy of |handle| and takes ownership of the

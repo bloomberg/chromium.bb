@@ -19,17 +19,17 @@ class PlatformChannelFactory : public ChannelFactory {
       const scoped_refptr<base::SingleThreadTaskRunner>& ipc_task_runner)
       : handle_(handle), mode_(mode), ipc_task_runner_(ipc_task_runner) {}
 
-  std::string GetName() const override {
-    return handle_.name;
-  }
+  std::string GetName() const override { return ""; }
 
   std::unique_ptr<Channel> BuildChannel(Listener* listener) override {
-    if (handle_.mojo_handle.is_valid()) {
-      return ChannelMojo::Create(
-          mojo::ScopedMessagePipeHandle(handle_.mojo_handle), mode_, listener,
-          ipc_task_runner_);
-    }
+#if defined(OS_NACL_SFI)
     return Channel::Create(handle_, mode_, listener);
+#else
+    DCHECK(handle_.is_mojo_channel_handle());
+    return ChannelMojo::Create(
+        mojo::ScopedMessagePipeHandle(handle_.mojo_handle), mode_, listener,
+        ipc_task_runner_);
+#endif
   }
 
   scoped_refptr<base::SingleThreadTaskRunner> GetIPCTaskRunner() override {

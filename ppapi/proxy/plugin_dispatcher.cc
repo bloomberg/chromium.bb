@@ -36,10 +36,6 @@
 #include "ppapi/shared_impl/proxy_lock.h"
 #include "ppapi/shared_impl/resource.h"
 
-#if defined(OS_POSIX) && !defined(OS_NACL)
-#include "ipc/ipc_channel_posix.h"
-#endif
-
 namespace ppapi {
 namespace proxy {
 

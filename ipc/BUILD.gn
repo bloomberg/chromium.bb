@@ -9,25 +9,8 @@ import("//tools/ipc_fuzzer/ipc_fuzzer.gni")
 
 component("ipc") {
   sources = [
-    "attachment_broker.cc",
-    "attachment_broker.h",
-    "attachment_broker_messages.h",
-    "attachment_broker_privileged.cc",
-    "attachment_broker_privileged.h",
-    "attachment_broker_privileged_mac.cc",
-    "attachment_broker_privileged_mac.h",
-    "attachment_broker_privileged_win.cc",
-    "attachment_broker_privileged_win.h",
-    "attachment_broker_unprivileged.cc",
-    "attachment_broker_unprivileged.h",
-    "attachment_broker_unprivileged_mac.cc",
-    "attachment_broker_unprivileged_mac.h",
-    "attachment_broker_unprivileged_win.cc",
-    "attachment_broker_unprivileged_win.h",
     "brokerable_attachment.cc",
     "brokerable_attachment.h",
-    "brokerable_attachment_mac.cc",
-    "brokerable_attachment_win.cc",
     "export_template.h",
     "handle_attachment_win.cc",
     "handle_attachment_win.h",
@@ -43,14 +26,10 @@ component("ipc") {
     "ipc_channel_mojo.h",
     "ipc_channel_nacl.cc",
     "ipc_channel_nacl.h",
-    "ipc_channel_posix.cc",
-    "ipc_channel_posix.h",
     "ipc_channel_proxy.cc",
     "ipc_channel_proxy.h",
     "ipc_channel_reader.cc",
     "ipc_channel_reader.h",
-    "ipc_channel_win.cc",
-    "ipc_channel_win.h",
     "ipc_descriptors.h",
     "ipc_endpoint.cc",
     "ipc_endpoint.h",
@@ -64,8 +43,6 @@ component("ipc") {
     "ipc_message_attachment.h",
     "ipc_message_attachment_set.cc",
     "ipc_message_attachment_set.h",
-    "ipc_message_generator.cc",
-    "ipc_message_generator.h",
     "ipc_message_macros.h",
     "ipc_message_pipe_reader.cc",
     "ipc_message_pipe_reader.h",
@@ -109,8 +86,6 @@ component("ipc") {
     "param_traits_macros.h",
     "param_traits_read_macros.h",
     "param_traits_write_macros.h",
-    "placeholder_brokerable_attachment.cc",
-    "placeholder_brokerable_attachment.h",
     "struct_constructor_macros.h",
     "struct_destructor_macros.h",
     "unix_domain_socket_util.cc",
@@ -120,7 +95,6 @@ component("ipc") {
   if (is_nacl && !is_nacl_nonsfi) {
     sources -= [
       "ipc_channel.cc",
-      "ipc_channel_posix.cc",
       "unix_domain_socket_util.cc",
     ]
   } else {
@@ -196,11 +170,7 @@ if (!is_ios) {
 
   test("ipc_tests") {
     sources = [
-      "attachment_broker_mac_unittest.cc",
-      "attachment_broker_privileged_mac_unittest.cc",
-      "attachment_broker_privileged_win_unittest.cc",
       "ipc_channel_mojo_unittest.cc",
-      "ipc_channel_posix_unittest.cc",
       "ipc_channel_proxy_unittest.cc",
       "ipc_channel_reader_unittest.cc",
       "ipc_fuzzing_tests.cc",
@@ -219,10 +189,6 @@ if (!is_ios) {
 
     if (!is_win && !is_ios) {
       sources += [ "unix_domain_socket_util_unittest.cc" ]
-    }
-
-    if (!is_android) {
-      sources += [ "ipc_channel_unittest.cc" ]
     }
 
     if (!is_ios) {
@@ -252,7 +218,6 @@ if (!is_ios) {
   test("ipc_perftests") {
     sources = [
       "ipc_mojo_perftest.cc",
-      "ipc_perftests.cc",
       "run_all_perftests.cc",
     ]
 
@@ -271,8 +236,6 @@ if (!is_ios) {
   static_library("test_support") {
     testonly = true
     sources = [
-      "ipc_multiprocess_test.cc",
-      "ipc_multiprocess_test.h",
       "ipc_perftest_support.cc",
       "ipc_perftest_support.h",
       "ipc_security_test_util.cc",

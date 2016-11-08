@@ -5,6 +5,8 @@
 #include "blimp/test/fake_engine/fake_engine.h"
 
 #include <fcntl.h>
+#include <sys/socket.h>
+#include <sys/un.h>
 
 #include "base/command_line.h"
 #include "base/files/file_path.h"
@@ -15,7 +17,6 @@
 #include "blimp/test/fake_engine/proto/engine.grpc.pb.h"
 #include "blimp/test/fake_engine/proto/lifetime.grpc.pb.h"
 #include "blimp/test/fake_engine/proto/logging.grpc.pb.h"
-#include "ipc/ipc_channel.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/grpc/include/grpc++/create_channel_posix.h"
@@ -27,6 +28,30 @@ using ::testing::_;
 namespace blimp {
 
 namespace {
+
+bool SocketPair(int* fd1, int* fd2) {
+  int pipe_fds[2];
+  if (socketpair(AF_UNIX, SOCK_STREAM, 0, pipe_fds) != 0) {
+    PLOG(ERROR) << "socketpair()";
+    return false;
+  }
+
+  // Set both ends to be non-blocking.
+  if (fcntl(pipe_fds[0], F_SETFL, O_NONBLOCK) == -1 ||
+      fcntl(pipe_fds[1], F_SETFL, O_NONBLOCK) == -1) {
+    PLOG(ERROR) << "fcntl(O_NONBLOCK)";
+    if (IGNORE_EINTR(close(pipe_fds[0])) < 0)
+      PLOG(ERROR) << "close";
+    if (IGNORE_EINTR(close(pipe_fds[1])) < 0)
+      PLOG(ERROR) << "close";
+    return false;
+  }
+
+  *fd1 = pipe_fds[0];
+  *fd2 = pipe_fds[1];
+
+  return true;
+}
 
 class MockLifetimeService : public Lifetime::Service {
  public:
@@ -52,8 +77,8 @@ class FakeEngineAppTest : public testing::Test {
 
  protected:
   void SetUp() override {
-    CHECK(IPC::SocketPair(&rendering_server_connect_fd_, &engine_listen_fd_));
-    CHECK(IPC::SocketPair(&rendering_server_listen_fd_, &engine_connect_fd_));
+    CHECK(SocketPair(&rendering_server_connect_fd_, &engine_listen_fd_));
+    CHECK(SocketPair(&rendering_server_listen_fd_, &engine_connect_fd_));
 
     grpc::ServerBuilder builder;
     builder.RegisterService(&mock_lifetime_service_);

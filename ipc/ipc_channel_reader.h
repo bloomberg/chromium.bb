@@ -12,7 +12,6 @@
 #include "base/gtest_prod_util.h"
 #include "base/macros.h"
 #include "base/memory/scoped_vector.h"
-#include "ipc/attachment_broker.h"
 #include "ipc/brokerable_attachment.h"
 #include "ipc/ipc_channel.h"
 #include "ipc/ipc_export.h"
@@ -32,8 +31,7 @@ namespace internal {
 // functionality that would benefit from being factored out. If we add
 // something like that in the future, it would be more appropriate to add it
 // here (and rename appropriately) rather than writing a different class.
-class IPC_EXPORT ChannelReader : public SupportsAttachmentBrokering,
-                                 public AttachmentBroker::Observer {
+class IPC_EXPORT ChannelReader {
  public:
   explicit ChannelReader(Listener* listener);
   virtual ~ChannelReader();
@@ -115,16 +113,10 @@ class IPC_EXPORT ChannelReader : public SupportsAttachmentBrokering,
   virtual void HandleInternalMessage(const Message& msg) = 0;
 
   // Exposed for testing purposes only.
-  ScopedVector<Message>* get_queued_messages() { return &queued_messages_; }
-
-  // Exposed for testing purposes only.
   virtual void DispatchMessage(Message* m);
 
   // Get the process ID for the sender of the message.
   virtual base::ProcessId GetSenderPID() = 0;
-
-  // Whether the channel is an endpoint of attachment brokering.
-  virtual bool IsAttachmentBrokerEndpoint() = 0;
 
  private:
   FRIEND_TEST_ALL_PREFIXES(ChannelReaderTest, AttachmentAlreadyBrokered);
@@ -132,9 +124,6 @@ class IPC_EXPORT ChannelReader : public SupportsAttachmentBrokering,
   FRIEND_TEST_ALL_PREFIXES(ChannelReaderTest, ResizeOverflowBuffer);
   FRIEND_TEST_ALL_PREFIXES(ChannelReaderTest, InvalidMessageSize);
   FRIEND_TEST_ALL_PREFIXES(ChannelReaderTest, TrimBuffer);
-
-  using AttachmentIdSet = std::set<BrokerableAttachment::AttachmentId>;
-  using AttachmentIdVector = std::vector<BrokerableAttachment::AttachmentId>;
 
   // Takes the data received from the IPC channel and translates it into
   // Messages. Complete messages are passed to HandleTranslatedMessage().
@@ -145,42 +134,16 @@ class IPC_EXPORT ChannelReader : public SupportsAttachmentBrokering,
   // immediately dispatched. Other messages are passed to
   // HandleExternalMessage().
   // Returns |false| on unrecoverable error.
-  bool HandleTranslatedMessage(Message* translated_message,
-                               const AttachmentIdVector& attachment_ids);
+  bool HandleTranslatedMessage(Message* translated_message);
 
   // Populates the message with brokered and non-brokered attachments. If
   // possible, the message is immediately dispatched. Otherwise, a deep copy of
   // the message is added to |queued_messages_|. |blocked_ids_| are updated if
   // necessary.
-  bool HandleExternalMessage(Message* external_message,
-                             const AttachmentIdVector& attachment_ids);
+  bool HandleExternalMessage(Message* external_message);
 
   // If there was a dispatch error, informs |listener_|.
   void HandleDispatchError(const Message& message);
-
-  // Attachment broker messages should be dispatched out of band, since there
-  // are no ordering restrictions on them, and they may be required to dispatch
-  // the messages waiting in |queued_messages_|.
-  // Returns true if the attachment broker handled |message|.
-  bool DispatchAttachmentBrokerMessage(const Message& message);
-
-  // Dispatches messages from queued_messages_ to listeners. Successfully
-  // dispatched messages are removed from queued_messages_.
-  DispatchState DispatchMessages();
-
-  // Attempts to fill in the brokerable attachments of |msg| with information
-  // from the Attachment Broker.
-  // Returns the set of ids that are still waiting to be brokered.
-  AttachmentIdSet GetBrokeredAttachments(Message* msg);
-
-  // AttachmentBroker::Observer overrides.
-  void ReceivedBrokerableAttachmentWithId(
-      const BrokerableAttachment::AttachmentId& id) override;
-
-  // This class should observe the attachment broker if and only if blocked_ids_
-  // is not empty.
-  void StartObservingAttachmentBroker();
-  void StopObservingAttachmentBroker();
 
   // Checks that |size| is a valid message size. Has side effects if it's not.
   bool CheckMessageSize(size_t size);
@@ -199,15 +162,6 @@ class IPC_EXPORT ChannelReader : public SupportsAttachmentBrokering,
   // This is not a constant because we update it to reflect the reality
   // of std::string::reserve() implementation.
   size_t max_input_buffer_size_;
-
-  // These messages are waiting to be dispatched. If this vector is non-empty,
-  // then the front Message must be blocked on receiving an attachment from the
-  // AttachmentBroker.
-  ScopedVector<Message> queued_messages_;
-
-  // If the next message to be processed is blocked by the broker, then this
-  // set contains the AttachmentIds that are needed to unblock the message.
-  AttachmentIdSet blocked_ids_;
 
   DISALLOW_COPY_AND_ASSIGN(ChannelReader);
 };
