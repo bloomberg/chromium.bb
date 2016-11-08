@@ -118,6 +118,11 @@ NativeTheme* NativeTheme::GetInstanceForNativeUi() {
 }
 
 // static
+NativeTheme* NativeTheme::GetInstanceForNativeUi() {
+  return NativeThemeMac::instance();
+}
+
+// static
 NativeThemeMac* NativeThemeMac::instance() {
   CR_DEFINE_STATIC_LOCAL(NativeThemeMac, s_native_theme, ());
   return &s_native_theme;
