@@ -171,7 +171,7 @@ class UnpackedDesktopFrame : public webrtc::DesktopFrame {
 };
 
 // TODO(sergeyu): Move this to a separate file where it can be reused.
-class FakeScreenCapturer : public webrtc::ScreenCapturer {
+class FakeScreenCapturer : public webrtc::DesktopCapturer {
  public:
   FakeScreenCapturer()
       : callback_(NULL),
@@ -212,9 +212,9 @@ class FakeScreenCapturer : public webrtc::ScreenCapturer {
                                std::move(frame));
   }
 
-  bool GetScreenList(ScreenList* screens) override { return false; }
+  bool GetSourceList(SourceList* screens) override { return false; }
 
-  bool SelectScreen(webrtc::ScreenId id) override { return false; }
+  bool SelectSource(SourceId id) override { return false; }
 
  private:
   Callback* callback_;
@@ -285,7 +285,7 @@ class DesktopCaptureDeviceTest : public testing::Test {
 #endif
 TEST_F(DesktopCaptureDeviceTest, MAYBE_Capture) {
   std::unique_ptr<webrtc::DesktopCapturer> capturer(
-      webrtc::ScreenCapturer::Create(
+      webrtc::DesktopCapturer::CreateScreenCapturer(
           webrtc::DesktopCaptureOptions::CreateDefault()));
   CreateScreenCaptureDevice(std::move(capturer));
 

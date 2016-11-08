@@ -7,6 +7,7 @@
 #include <stddef.h>
 #include <stdint.h>
 #include <string.h>
+#include <utility>
 #include <vector>
 
 #include "base/location.h"
@@ -58,7 +59,7 @@ class MockObserver : public DesktopMediaListObserver {
                void(DesktopMediaList* list, int index));
 };
 
-class FakeScreenCapturer : public webrtc::ScreenCapturer {
+class FakeScreenCapturer : public webrtc::DesktopCapturer {
  public:
   FakeScreenCapturer() {}
   ~FakeScreenCapturer() override {}
@@ -75,14 +76,12 @@ class FakeScreenCapturer : public webrtc::ScreenCapturer {
                                std::move(frame));
   }
 
-  bool GetScreenList(ScreenList* screens) override {
-    webrtc::ScreenCapturer::Screen screen;
-    screen.id = 0;
-    screens->push_back(screen);
+  bool GetSourceList(SourceList* screens) override {
+    screens->push_back({0});
     return true;
   }
 
-  bool SelectScreen(webrtc::ScreenId id) override {
+  bool SelectSource(SourceId id) override {
     EXPECT_EQ(0, id);
     return true;
   }
@@ -93,21 +92,21 @@ class FakeScreenCapturer : public webrtc::ScreenCapturer {
   DISALLOW_COPY_AND_ASSIGN(FakeScreenCapturer);
 };
 
-class FakeWindowCapturer : public webrtc::WindowCapturer {
+class FakeWindowCapturer : public webrtc::DesktopCapturer {
  public:
   FakeWindowCapturer()
       : callback_(NULL) {
   }
   ~FakeWindowCapturer() override {}
 
-  void SetWindowList(const WindowList& list) {
+  void SetWindowList(const SourceList& list) {
     base::AutoLock lock(window_list_lock_);
     window_list_ = list;
   }
 
   // Sets |value| thats going to be used to memset() content of the frames
   // generated for |window_id|. By default generated frames are set to zeros.
-  void SetNextFrameValue(WindowId window_id, int8_t value) {
+  void SetNextFrameValue(SourceId window_id, int8_t value) {
     base::AutoLock lock(frame_values_lock_);
     frame_values_[window_id] = value;
   }
@@ -120,7 +119,7 @@ class FakeWindowCapturer : public webrtc::WindowCapturer {
 
     base::AutoLock lock(frame_values_lock_);
 
-    std::map<WindowId, int8_t>::iterator it =
+    std::map<SourceId, int8_t>::iterator it =
         frame_values_.find(selected_window_id_);
     int8_t value = (it != frame_values_.end()) ? it->second : 0;
     std::unique_ptr<webrtc::DesktopFrame> frame(
@@ -130,28 +129,28 @@ class FakeWindowCapturer : public webrtc::WindowCapturer {
                                std::move(frame));
   }
 
-  bool GetWindowList(WindowList* windows) override {
+  bool GetSourceList(SourceList* windows) override {
     base::AutoLock lock(window_list_lock_);
     *windows = window_list_;
     return true;
   }
 
-  bool SelectWindow(WindowId id) override {
+  bool SelectSource(SourceId id) override {
     selected_window_id_ = id;
     return true;
   }
 
-  bool BringSelectedWindowToFront() override { return true; }
+  bool FocusOnSelectedSource() override { return true; }
 
  private:
   Callback* callback_;
-  WindowList window_list_;
+  SourceList window_list_;
   base::Lock window_list_lock_;
 
-  WindowId selected_window_id_;
+  SourceId selected_window_id_;
 
   // Frames to be captured per window.
-  std::map<WindowId, int8_t> frame_values_;
+  std::map<SourceId, int8_t> frame_values_;
   base::Lock frame_values_lock_;
 
   DISALLOW_COPY_AND_ASSIGN(FakeWindowCapturer);
@@ -181,7 +180,7 @@ class NativeDesktopMediaListTest : public views::ViewsTestBase {
   }
 
   void CreateWithCapturers(bool screen, bool window) {
-    webrtc::ScreenCapturer* screen_capturer = nullptr;
+    webrtc::DesktopCapturer* screen_capturer = nullptr;
     if (screen)
       screen_capturer = new FakeScreenCapturer();
 
@@ -191,15 +190,15 @@ class NativeDesktopMediaListTest : public views::ViewsTestBase {
       window_capturer_ = nullptr;
 
     model_.reset(new NativeDesktopMediaList(
-        std::unique_ptr<webrtc::ScreenCapturer>(screen_capturer),
-        std::unique_ptr<webrtc::WindowCapturer>(window_capturer_)));
+        std::unique_ptr<webrtc::DesktopCapturer>(screen_capturer),
+        std::unique_ptr<webrtc::DesktopCapturer>(window_capturer_)));
 
     // Set update period to reduce the time it takes to run tests.
     model_->SetUpdatePeriod(base::TimeDelta::FromMilliseconds(20));
   }
 
   void AddNativeWindow(int id) {
-    webrtc::WindowCapturer::Window window;
+    webrtc::DesktopCapturer::Source window;
     window.id = id;
     window.title = "Test window";
     window_list_.push_back(window);
@@ -220,7 +219,7 @@ class NativeDesktopMediaListTest : public views::ViewsTestBase {
   }
 
   void AddAuraWindow() {
-    webrtc::WindowCapturer::Window window;
+    webrtc::DesktopCapturer::Source window;
     window.title = "Test window";
     // Create a aura native widow through a widget.
     desktop_widgets_.push_back(CreateDesktopWidget());
@@ -355,7 +354,7 @@ class NativeDesktopMediaListTest : public views::ViewsTestBase {
   // Owned by |model_|;
   FakeWindowCapturer* window_capturer_;
 
-  webrtc::WindowCapturer::WindowList window_list_;
+  webrtc::DesktopCapturer::SourceList window_list_;
   std::vector<std::unique_ptr<views::Widget>> desktop_widgets_;
   std::map<DesktopMediaID::Id, DesktopMediaID::Id> native_aura_id_map_;
   std::unique_ptr<NativeDesktopMediaList> model_;
@@ -387,7 +386,6 @@ TEST_F(NativeDesktopMediaListTest, AddNativeWindow) {
       .WillOnce(DoAll(CheckListSize(model_.get(), index + 1),
                       QuitMessageLoop(message_loop())));
 
-  webrtc::WindowCapturer::Window window;
   AddNativeWindow(index);
   window_capturer_->SetWindowList(window_list_);
 
@@ -507,10 +505,7 @@ TEST_F(NativeDesktopMediaListTest, MoveWindow) {
       .WillOnce(DoAll(CheckListSize(model_.get(), kDefaultWindowCount + 1),
                       QuitMessageLoop(message_loop())));
 
-  // Swap the two windows.
-  webrtc::WindowCapturer::Window temp = window_list_[0];
-  window_list_[0] = window_list_[1];
-  window_list_[1] = temp;
+  std::swap(window_list_[0], window_list_[1]);
   window_capturer_->SetWindowList(window_list_);
 
   base::RunLoop().Run();

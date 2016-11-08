@@ -74,7 +74,7 @@ void DesktopCapturerProxy::Core::CreateCapturer(
 #if defined(OS_CHROMEOS)
   capturer_.reset(new AuraDesktopCapturer());
 #else  // !defined(OS_CHROMEOS)
-  capturer_.reset(webrtc::ScreenCapturer::Create(options));
+  capturer_ = webrtc::DesktopCapturer::CreateScreenCapturer(options);
 #endif  // !defined(OS_CHROMEOS)
   if (!capturer_)
     LOG(ERROR) << "Failed to initialize screen capturer.";

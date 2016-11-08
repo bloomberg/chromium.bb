@@ -14,8 +14,7 @@
 #include "ui/gfx/image/image.h"
 
 namespace webrtc {
-class ScreenCapturer;
-class WindowCapturer;
+class DesktopCapturer;
 }
 
 // Implementation of DesktopMediaList that shows native screens and
@@ -26,8 +25,8 @@ class NativeDesktopMediaList : public DesktopMediaListBase {
   // types of sources the model should be populated with (e.g. it will only
   // contain windows, if |screen_capturer| is NULL).
   NativeDesktopMediaList(
-      std::unique_ptr<webrtc::ScreenCapturer> screen_capturer,
-      std::unique_ptr<webrtc::WindowCapturer> window_capturer);
+      std::unique_ptr<webrtc::DesktopCapturer> screen_capturer,
+      std::unique_ptr<webrtc::DesktopCapturer> window_capturer);
   ~NativeDesktopMediaList() override;
 
  private:

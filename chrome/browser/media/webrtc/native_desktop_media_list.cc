@@ -83,8 +83,8 @@ class NativeDesktopMediaList::Worker
     : public webrtc::DesktopCapturer::Callback {
  public:
   Worker(base::WeakPtr<NativeDesktopMediaList> media_list,
-         std::unique_ptr<webrtc::ScreenCapturer> screen_capturer,
-         std::unique_ptr<webrtc::WindowCapturer> window_capturer);
+         std::unique_ptr<webrtc::DesktopCapturer> screen_capturer,
+         std::unique_ptr<webrtc::DesktopCapturer> window_capturer);
   ~Worker() override;
 
   void Refresh(const DesktopMediaID::Id& view_dialog_id);
@@ -101,8 +101,8 @@ class NativeDesktopMediaList::Worker
 
   base::WeakPtr<NativeDesktopMediaList> media_list_;
 
-  std::unique_ptr<webrtc::ScreenCapturer> screen_capturer_;
-  std::unique_ptr<webrtc::WindowCapturer> window_capturer_;
+  std::unique_ptr<webrtc::DesktopCapturer> screen_capturer_;
+  std::unique_ptr<webrtc::DesktopCapturer> window_capturer_;
 
   std::unique_ptr<webrtc::DesktopFrame> current_frame_;
 
@@ -113,8 +113,8 @@ class NativeDesktopMediaList::Worker
 
 NativeDesktopMediaList::Worker::Worker(
     base::WeakPtr<NativeDesktopMediaList> media_list,
-    std::unique_ptr<webrtc::ScreenCapturer> screen_capturer,
-    std::unique_ptr<webrtc::WindowCapturer> window_capturer)
+    std::unique_ptr<webrtc::DesktopCapturer> screen_capturer,
+    std::unique_ptr<webrtc::DesktopCapturer> window_capturer)
     : media_list_(media_list),
       screen_capturer_(std::move(screen_capturer)),
       window_capturer_(std::move(window_capturer)) {
@@ -131,8 +131,8 @@ void NativeDesktopMediaList::Worker::Refresh(
   std::vector<SourceDescription> sources;
 
   if (screen_capturer_) {
-    webrtc::ScreenCapturer::ScreenList screens;
-    if (screen_capturer_->GetScreenList(&screens)) {
+    webrtc::DesktopCapturer::SourceList screens;
+    if (screen_capturer_->GetSourceList(&screens)) {
       bool mutiple_screens = screens.size() > 1;
       base::string16 title;
       for (size_t i = 0; i < screens.size(); ++i) {
@@ -153,10 +153,9 @@ void NativeDesktopMediaList::Worker::Refresh(
   }
 
   if (window_capturer_) {
-    webrtc::WindowCapturer::WindowList windows;
-    if (window_capturer_->GetWindowList(&windows)) {
-      for (webrtc::WindowCapturer::WindowList::iterator it = windows.begin();
-           it != windows.end(); ++it) {
+    webrtc::DesktopCapturer::SourceList windows;
+    if (window_capturer_->GetSourceList(&windows)) {
+      for (auto it = windows.begin(); it != windows.end(); ++it) {
         // Skip the picker dialog window.
         if (it->id == view_dialog_id)
           continue;
@@ -183,13 +182,13 @@ void NativeDesktopMediaList::Worker::RefreshThumbnails(
   for (const auto& id : native_ids) {
     switch (id.type) {
       case DesktopMediaID::TYPE_SCREEN:
-        if (!screen_capturer_->SelectScreen(id.id))
+        if (!screen_capturer_->SelectSource(id.id))
           continue;
         screen_capturer_->CaptureFrame();
         break;
 
       case DesktopMediaID::TYPE_WINDOW:
-        if (!window_capturer_->SelectWindow(id.id))
+        if (!window_capturer_->SelectSource(id.id))
           continue;
         window_capturer_->CaptureFrame();
         break;
@@ -233,8 +232,8 @@ void NativeDesktopMediaList::Worker::OnCaptureResult(
 }
 
 NativeDesktopMediaList::NativeDesktopMediaList(
-    std::unique_ptr<webrtc::ScreenCapturer> screen_capturer,
-    std::unique_ptr<webrtc::WindowCapturer> window_capturer)
+    std::unique_ptr<webrtc::DesktopCapturer> screen_capturer,
+    std::unique_ptr<webrtc::DesktopCapturer> window_capturer)
     : DesktopMediaListBase(
           base::TimeDelta::FromMilliseconds(kDefaultUpdatePeriod)),
       weak_factory_(this) {
