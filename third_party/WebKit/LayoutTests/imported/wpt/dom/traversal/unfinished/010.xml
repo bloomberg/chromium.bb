@@ -60,5 +60,5 @@
  </body>
  <!-- some more nodes to test this: -->
  <?body test?>
- 
+ <![CDATA[]]>
 </html>

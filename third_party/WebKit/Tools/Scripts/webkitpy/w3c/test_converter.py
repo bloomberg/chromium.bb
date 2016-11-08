@@ -39,9 +39,19 @@ _log = logging.getLogger(__name__)
 def convert_for_webkit(new_path, filename, reference_support_info, host=Host()):
     """Converts a file's contents so the Blink layout test runner can run it.
 
+    Args:
+        new_path: Absolute path where file will be copied to in the Chromium repo.
+        filename: Absolute path to where the file is.
+        reference_support_info: Dict of information about a related reference HTML, if any.
+
     Returns:
-      A pair: the list of modified properties, and the modified text if the file was modified, None otherwise.
+        A pair of (list of modified CSS properties, modified text) if the file
+        should be modified; None, if the file is not modified.
     """
+    # Conversion is not necessary for any tests in wpt now; see http://crbug.com/654081.
+    if re.search(r'[/\\]imported[/\\]wpt[/\\]', new_path):
+        return None
+
     contents = host.filesystem.read_binary_file(filename)
     converter = _W3CTestConverter(new_path, filename, reference_support_info, host)
     if filename.endswith('.css'):
