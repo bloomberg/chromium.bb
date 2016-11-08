@@ -57,7 +57,7 @@ TEST_F(AvatarIconControllerTest, ShowingAvatarIconInIncognito) {
   AvatarBaseController* icon_controller =
       [window->cocoa_controller() avatarButtonController];
   // In incognito, we should be using the AvatarIconController to show the
-  // incognito guy.
+  // incognito icon.
   EXPECT_TRUE([icon_controller isKindOfClass:[AvatarIconController class]]);
 
   browser->window()->Close();

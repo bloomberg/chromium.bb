@@ -287,7 +287,7 @@ class Command;
 // coordinates (origin in bottom-left).
 - (NSRect)regularWindowFrame;
 
-// Whether or not to show the avatar, which is either the incognito guy or the
+// Whether or not to show the avatar, which is either the incognito icon or the
 // user's profile avatar.
 - (BOOL)shouldShowAvatar;
 

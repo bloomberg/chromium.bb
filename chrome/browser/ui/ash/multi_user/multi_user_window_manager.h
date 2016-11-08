@@ -63,7 +63,7 @@ class MultiUserWindowManager {
   enum MultiProfileMode {
     MULTI_PROFILE_MODE_UNINITIALIZED,  // Not initialized yet.
     MULTI_PROFILE_MODE_OFF,            // Single user mode.
-    MULTI_PROFILE_MODE_SEPARATED,      // Each user has his own desktop.
+    MULTI_PROFILE_MODE_SEPARATED,      // Each user has their own desktop.
     MULTI_PROFILE_MODE_MIXED           // All users mix windows freely.
   };
 

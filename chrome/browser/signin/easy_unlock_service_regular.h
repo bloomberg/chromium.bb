@@ -168,7 +168,7 @@ class EasyUnlockServiceRegular
   bool will_unlock_using_easy_unlock_;
 
   // The timestamp for the most recent time when the lock screen was shown. The
-  // lock screen is typically shown when the user awakens her computer from
+  // lock screen is typically shown when the user awakens their computer from
   // sleep -- e.g. by opening the lid -- but can also be shown if the screen is
   // locked but the computer does not go to sleep.
   base::TimeTicks lock_screen_last_shown_timestamp_;

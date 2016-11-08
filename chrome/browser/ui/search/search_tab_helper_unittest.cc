@@ -213,7 +213,7 @@ TEST_F(SearchTabHelperTest, OnChromeIdentityCheckMatchSlightlyDifferentGmail) {
 TEST_F(SearchTabHelperTest, OnChromeIdentityCheckMatchSlightlyDifferentGmail2) {
   NavigateAndCommit(GURL(chrome::kChromeSearchLocalNtpUrl));
   //
-  CreateSigninManager(std::string("chrome.guy.7FOREVER"));
+  CreateSigninManager(std::string("chrome.user.7FOREVER"));
   SearchTabHelper* search_tab_helper =
       SearchTabHelper::FromWebContents(web_contents());
   ASSERT_NE(static_cast<SearchTabHelper*>(NULL), search_tab_helper);
@@ -221,7 +221,7 @@ TEST_F(SearchTabHelperTest, OnChromeIdentityCheckMatchSlightlyDifferentGmail2) {
   // For gmail/googlemail, canonicalization is done so that email addresses have
   // a standard form.
   const base::string16 test_identity =
-      base::ASCIIToUTF16("chromeguy7forever@googlemail.com");
+      base::ASCIIToUTF16("chromeuser7forever@googlemail.com");
   search_tab_helper->OnChromeIdentityCheck(test_identity);
 
   const IPC::Message* message = process()->sink().GetUniqueMessageMatching(

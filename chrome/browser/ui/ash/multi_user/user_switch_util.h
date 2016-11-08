@@ -8,7 +8,7 @@
 #include "base/callback.h"
 
 // Tries to switch to a new user by first checking if desktop casting / sharing
-// is going on, and let the user decide if he wants to terminate it or not.
+// is going on, and letting the user decide if they want to terminate it or not.
 // After terminating any desktop sharing operations, the |switch_user| function
 // will be called.
 void TrySwitchingActiveUser(const base::Callback<void()> switch_user);

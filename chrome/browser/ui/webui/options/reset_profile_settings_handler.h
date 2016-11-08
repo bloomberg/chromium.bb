@@ -65,7 +65,7 @@ class ResetProfileSettingsHandler
   void OnSettingsFetched();
 
   // Resets profile settings to default values. |send_settings| is true if user
-  // gave his consent to upload broken settings to Google for analysis.
+  // gave their consent to upload broken settings to Google for analysis.
   void ResetProfile(
       bool send_settings,
       reset_report::ChromeResetReport::ResetRequestOrigin request_origin);

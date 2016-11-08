@@ -226,7 +226,7 @@ void ChangePictureHandler::SendSelectedImage() {
       break;
     }
     case user_manager::User::USER_IMAGE_PROFILE: {
-      // User has his/her Profile image as the current image.
+      // User has their Profile image as the current image.
       SendProfileImage(user->GetImage(), true);
       break;
     }

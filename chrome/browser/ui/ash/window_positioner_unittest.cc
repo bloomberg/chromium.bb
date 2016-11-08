@@ -76,7 +76,7 @@ void WindowPositionerTest::SetUp() {
       std::move(dummy_popup), &popup_params);
 
   // We hide all windows upon start - each user is required to set it up
-  // as he needs it.
+  // as they need it.
   window()->Hide();
   popup()->Hide();
   window_positioner_.reset(new WindowPositioner(WmShell::Get()));

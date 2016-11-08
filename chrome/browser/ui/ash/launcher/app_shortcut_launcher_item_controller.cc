@@ -47,8 +47,8 @@ const int kClickSuppressionInMS = 1000;
 
 // Check if a browser can be used for activation. This addresses a special use
 // case in the M31 multi profile mode where a user activates a V1 app which only
-// exists yet on another users desktop, but he expects to get only his own app
-// items and not the ones from other users through activation.
+// exists yet on another users desktop, but they expect to get only their own
+// app items and not the ones from other users through activation.
 // TODO(skuhne): Remove this function and replace the call with
 // launcher_controller()->IsBrowserFromActiveUser(browser) once this experiment
 // goes away.

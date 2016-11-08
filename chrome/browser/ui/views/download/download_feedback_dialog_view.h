@@ -20,7 +20,7 @@ class PageNavigator;
 
 class Profile;
 
-// Asks the user whether s/he wants to participate in the Safe Browsing
+// Asks the user whether they want to participate in the Safe Browsing
 // download feedback program. Shown only for downloads marked DANGEROUS_HOST
 // or UNCOMMON_DOWNLOAD. The user should only see this dialog once.
 class DownloadFeedbackDialogView : public views::DialogDelegate,

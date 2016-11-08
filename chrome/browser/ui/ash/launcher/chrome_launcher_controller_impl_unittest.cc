@@ -3093,8 +3093,8 @@ TEST_F(MultiProfileMultiBrowserShelfLayoutChromeLauncherControllerImplTest,
   EXPECT_FALSE(v2_app_3.window()->GetNativeWindow()->IsVisible());
   EXPECT_TRUE(v2_app_4.window()->GetNativeWindow()->IsVisible());
 
-  // Switching to desktop #3 and create an app for user #1 there should land on
-  // his own desktop (#1).
+  // Switching to desktop #3 and creating an app for user #1 should place it on
+  // that user's desktop (#1).
   SwitchActiveUser(account_id3);
   V2App v2_app_5(profile1, extension1_.get());
   EXPECT_FALSE(v2_app_5.window()->GetNativeWindow()->IsVisible());
