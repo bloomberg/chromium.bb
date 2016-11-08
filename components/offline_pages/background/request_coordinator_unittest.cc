@@ -1257,7 +1257,13 @@ TEST_F(RequestCoordinatorTest, GetAllRequests) {
   EXPECT_EQ(kRequestId2, last_requests().at(1)->request_id());
 }
 
-TEST_F(RequestCoordinatorTest, PauseAndResumeObserver) {
+#if defined(OS_IOS)
+// Flaky on IOS. http://crbug/663311
+#define MAYBE_PauseAndResumeObserver DISABLED_PauseAndResumeObserver
+#else
+#define MAYBE_PauseAndResumeObserver PauseAndResumeObserver
+#endif
+TEST_F(RequestCoordinatorTest, MAYBE_PauseAndResumeObserver) {
   // Add a request to the queue.
   offline_pages::SavePageRequest request1(kRequestId1, kUrl1, kClientId1,
                                           base::Time::Now(), kUserRequested);
