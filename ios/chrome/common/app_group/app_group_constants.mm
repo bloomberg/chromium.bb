@@ -9,7 +9,8 @@
 #include "components/version_info/version_info.h"
 
 namespace {
-NSString* const kChromeAppGroupIdentifier = @"group.com.google.chrome";
+NSString* const kChromeAppGroupIdentifier =
+    @"group." IOS_BUNDLE_ID_PREFIX ".chrome";
 }
 
 namespace app_group {
