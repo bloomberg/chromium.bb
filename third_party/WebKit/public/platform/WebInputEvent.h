@@ -341,13 +341,13 @@ class WebKeyboardEvent : public WebInputEvent {
   // keyboard event handling changes. It also mentions the list of keys
   // which don't have associated character events.
   bool isCharacterKey() const {
-#if 0
+    // TODO(dtapuska): Determine if we can remove this method and just
+    // not actually generate events for these instead of filtering them out.
     switch (windowsKeyCode) {
-    case VKEY_BACK:
-    case VKEY_ESCAPE:
+      case 0x08:  // VK_BACK
+      case 0x1b:  // VK_ESCAPE
         return false;
     }
-#endif
     return true;
   }
 };
