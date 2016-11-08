@@ -4,9 +4,12 @@
 
 package org.chromium.chrome.browser;
 
+import android.annotation.SuppressLint;
 import android.annotation.TargetApi;
 import android.app.Activity;
 import android.app.ActivityManager;
+import android.app.ActivityManager.AppTask;
+import android.app.ActivityManager.RecentTaskInfo;
 import android.content.Context;
 import android.content.Intent;
 import android.graphics.Color;
@@ -57,6 +60,7 @@ import org.chromium.chrome.browser.compositor.layouts.phone.StackLayout;
 import org.chromium.chrome.browser.cookies.CookiesFetcher;
 import org.chromium.chrome.browser.device.DeviceClassManager;
 import org.chromium.chrome.browser.document.ChromeLauncherActivity;
+import org.chromium.chrome.browser.document.DocumentUtils;
 import org.chromium.chrome.browser.download.DownloadUtils;
 import org.chromium.chrome.browser.firstrun.FirstRunActivity;
 import org.chromium.chrome.browser.firstrun.FirstRunFlowSequencer;
@@ -1094,17 +1098,25 @@ public class ChromeTabbedActivity extends ChromeActivity implements OverviewMode
     @Override
     protected boolean isStartedUpCorrectly(Intent intent) {
         // If tabs from this instance were merged into a different ChromeTabbedActivity instance
-        // then this instance should not be created. This may happen if the process is restarted
-        // e.g. on upgrade or from about://flags. See crbug.com/657418
+        // and the other instance is still running, then this instance should not be created. This
+        // may happen if the process is restarted e.g. on upgrade or from about://flags.
+        // See crbug.com/657418
         boolean tabsMergedIntoAnotherInstance =
                 sMergedInstanceTaskId != 0 && sMergedInstanceTaskId != getTaskId();
-        if (tabsMergedIntoAnotherInstance) {
+
+        // Since a static is used to track the merged instance task id, it is possible that
+        // sMergedInstanceTaskId is still set even though the associated task is not running.
+        boolean mergedInstanceTaskStillRunning = isMergedInstanceTaskRunning();
+
+        if (tabsMergedIntoAnotherInstance && mergedInstanceTaskStillRunning) {
             // Currently only two instances of ChromeTabbedActivity may be running at any given
             // time. If tabs were merged into another instance and this instance is being killed due
             // to incorrect startup, then no other instances should exist. Reset the merged instance
             // task id.
             setMergedInstanceTaskId(0);
             return false;
+        } else if (!mergedInstanceTaskStillRunning) {
+            setMergedInstanceTaskId(0);
         }
 
         return super.isStartedUpCorrectly(intent);
@@ -1694,5 +1706,20 @@ public class ChromeTabbedActivity extends ChromeActivity implements OverviewMode
 
     private static void setMergedInstanceTaskId(int mergedInstanceTaskId) {
         sMergedInstanceTaskId = mergedInstanceTaskId;
+    }
+
+    @SuppressLint("NewApi")
+    private boolean isMergedInstanceTaskRunning() {
+        if (!FeatureUtilities.isTabModelMergingEnabled() || sMergedInstanceTaskId == 0) {
+            return false;
+        }
+
+        ActivityManager manager = (ActivityManager) getSystemService(Context.ACTIVITY_SERVICE);
+        for (AppTask task : manager.getAppTasks()) {
+            RecentTaskInfo info = DocumentUtils.getTaskInfoFromTask(task);
+            if (info == null) continue;
+            if (info.id == sMergedInstanceTaskId) return true;
+        }
+        return false;
     }
 }
