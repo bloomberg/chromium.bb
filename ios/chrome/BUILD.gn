@@ -33,6 +33,7 @@ test("ios_chrome_unittests") {
     "//ios/chrome/browser/ssl:unit_tests",
     "//ios/chrome/browser/suggestions:unit_tests",
     "//ios/chrome/browser/translate:unit_tests",
+    "//ios/chrome/browser/u2f:unit_tests",
     "//ios/chrome/browser/ui:unit_tests",
     "//ios/chrome/browser/ui/alert_coordinator:unit_tests",
     "//ios/chrome/browser/ui/commands:unit_tests",
