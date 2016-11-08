@@ -71,7 +71,7 @@ void SearchGeolocationDisclosureTabHelper::
     return;
 
   // All good, let's show the disclosure.
-  SearchGeolocationDisclosureInfoBarDelegate::Create(web_contents());
+  SearchGeolocationDisclosureInfoBarDelegate::Create(web_contents(), gurl);
 }
 
 Profile* SearchGeolocationDisclosureTabHelper::GetProfile() {

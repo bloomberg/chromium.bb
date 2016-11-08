@@ -18,6 +18,8 @@
 #include "base/strings/string16.h"
 #include "build/build_config.h"
 #include "components/infobars/core/infobar_delegate.h"
+#include "ui/gfx/range/range.h"
+#include "url/gurl.h"
 
 namespace content {
 class WebContents;
@@ -29,18 +31,34 @@ class SearchGeolocationDisclosureInfoBarDelegate
   ~SearchGeolocationDisclosureInfoBarDelegate() override;
 
   // Create and show the infobar.
-  static void Create(content::WebContents* web_contents);
+  static void Create(content::WebContents* web_contents,
+                     const GURL& search_url);
 
-  // Gets the message to display in the infobar.
-  base::string16 GetMessageText() const;
+  // The translated text of the message to display.
+  const base::string16& message_text() const { return message_text_; }
+
+  // The range of the message that should be a link.
+  const gfx::Range& inline_link_range() const { return inline_link_range_; }
+
+  // The search URL that caused this infobar to be displayed.
+  const GURL& search_url() const { return search_url_; }
 
  private:
-  SearchGeolocationDisclosureInfoBarDelegate();
+  explicit SearchGeolocationDisclosureInfoBarDelegate(const GURL& search_url);
 
   // InfoBarDelegate:
   Type GetInfoBarType() const override;
   infobars::InfoBarDelegate::InfoBarIdentifier GetIdentifier() const override;
   int GetIconId() const override;
+
+  // The translated text of the message to display.
+  base::string16 message_text_;
+
+  // The range of the message that should be a link.
+  gfx::Range inline_link_range_;
+
+  // The search URL that caused this infobar to be displayed.
+  GURL search_url_;
 
   DISALLOW_COPY_AND_ASSIGN(SearchGeolocationDisclosureInfoBarDelegate);
 };

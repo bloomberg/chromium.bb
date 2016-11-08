@@ -21,6 +21,8 @@ class SearchGeolocationDisclosureInfoBar : public InfoBarAndroid {
   // InfoBarAndroid:
   base::android::ScopedJavaLocalRef<jobject> CreateRenderInfoBar(
       JNIEnv* env) override;
+  void OnLinkClicked(JNIEnv* env,
+                     const base::android::JavaParamRef<jobject>& obj) override;
   void ProcessButton(int action) override;
 
   SearchGeolocationDisclosureInfoBarDelegate* GetDelegate();

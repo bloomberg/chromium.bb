@@ -17,24 +17,26 @@ SearchGeolocationDisclosureInfoBarDelegate::
 
 // static
 void SearchGeolocationDisclosureInfoBarDelegate::Create(
-    content::WebContents* web_contents) {
+    content::WebContents* web_contents, const GURL& search_url) {
   InfoBarService* infobar_service =
       InfoBarService::FromWebContents(web_contents);
   // Add the new delegate.
   infobar_service->AddInfoBar(
-      base::MakeUnique<SearchGeolocationDisclosureInfoBar>(
-          base::WrapUnique(new SearchGeolocationDisclosureInfoBarDelegate())));
+      base::MakeUnique<SearchGeolocationDisclosureInfoBar>(base::WrapUnique(
+          new SearchGeolocationDisclosureInfoBarDelegate(search_url))));
 }
 
-base::string16 SearchGeolocationDisclosureInfoBarDelegate::GetMessageText()
-    const {
-  return l10n_util::GetStringUTF16(
-      IDS_SEARCH_GEOLOCATION_DISCLOSURE_INFOBAR_TEXT);
-};
-
 SearchGeolocationDisclosureInfoBarDelegate::
-    SearchGeolocationDisclosureInfoBarDelegate()
-    : infobars::InfoBarDelegate() {}
+    SearchGeolocationDisclosureInfoBarDelegate(const GURL& search_url)
+    : infobars::InfoBarDelegate(),
+      search_url_(search_url) {
+  base::string16 link = l10n_util::GetStringUTF16(
+      IDS_SEARCH_GEOLOCATION_DISCLOSURE_INFOBAR_SETTINGS_LINK_TEXT);
+  size_t offset;
+  message_text_ = l10n_util::GetStringFUTF16(
+      IDS_SEARCH_GEOLOCATION_DISCLOSURE_INFOBAR_TEXT, link, &offset);
+  inline_link_range_ = gfx::Range(offset, offset + link.length());
+}
 
 infobars::InfoBarDelegate::Type
 SearchGeolocationDisclosureInfoBarDelegate::GetInfoBarType() const {

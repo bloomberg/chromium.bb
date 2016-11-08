@@ -22,9 +22,24 @@ ScopedJavaLocalRef<jobject>
 SearchGeolocationDisclosureInfoBar::CreateRenderInfoBar(JNIEnv* env) {
   ScopedJavaLocalRef<jstring> message_text =
       base::android::ConvertUTF16ToJavaString(
-          env, GetDelegate()->GetMessageText());
+          env, GetDelegate()->message_text());
   return Java_SearchGeolocationDisclosureInfoBar_show(
-      env, GetEnumeratedIconId(), message_text);
+      env, GetEnumeratedIconId(), message_text,
+      GetDelegate()->inline_link_range().start(),
+      GetDelegate()->inline_link_range().end());
+}
+
+void SearchGeolocationDisclosureInfoBar::OnLinkClicked(
+    JNIEnv* env,
+    const base::android::JavaParamRef<jobject>& obj) {
+  if (!owner())
+    return;  // We're closing; don't call anything, it might access the owner.
+
+  ScopedJavaLocalRef<jstring> search_url =
+      base::android::ConvertUTF8ToJavaString(
+          env, GetDelegate()->search_url().spec());
+  Java_SearchGeolocationDisclosureInfoBar_showSettingsPage(env, search_url);
+  RemoveSelf();
 }
 
 void SearchGeolocationDisclosureInfoBar::ProcessButton(int action) {
