@@ -194,10 +194,9 @@ int GpuMain(const MainFunctionParams& parameters) {
   logging::SetLogMessageHandler(GpuProcessLogMessageHandler);
 
 #if defined(OS_WIN)
-  // Use a UI message loop because ANGLE and the desktop GL platform can
-  // create child windows to render to.
-  base::MessagePumpForGpu::InitFactory();
-  base::MessageLoop main_message_loop(base::MessageLoop::TYPE_UI);
+  // OK to use default non-UI message loop because all GPU windows run on
+  // dedicated thread.
+  base::MessageLoop main_message_loop(base::MessageLoop::TYPE_DEFAULT);
 #elif defined(USE_X11)
   // We need a UI loop so that we can grab the Expose events. See GLSurfaceGLX
   // and https://crbug.com/326995.
