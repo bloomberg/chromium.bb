@@ -104,17 +104,22 @@ void InitDaysAgoToRecencyScoreArray() {
 }  // namespace
 
 // static
-const size_t ScoredHistoryMatch::kMaxVisitsToScore = 10;
-bool ScoredHistoryMatch::also_do_hup_like_scoring_ = false;
-int ScoredHistoryMatch::bookmark_value_ = 1;
-bool ScoredHistoryMatch::fix_few_visits_bug_ = false;
-bool ScoredHistoryMatch::allow_tld_matches_ = false;
-bool ScoredHistoryMatch::allow_scheme_matches_ = false;
-size_t ScoredHistoryMatch::num_title_words_to_allow_ = 10u;
-bool ScoredHistoryMatch::hqp_experimental_scoring_enabled_ = false;
+bool ScoredHistoryMatch::also_do_hup_like_scoring_;
+float ScoredHistoryMatch::bookmark_value_;
+float ScoredHistoryMatch::typed_value_;
+bool ScoredHistoryMatch::fix_few_visits_bug_;
+bool ScoredHistoryMatch::frequency_uses_sum_;
+size_t ScoredHistoryMatch::max_visits_to_score_;
+bool ScoredHistoryMatch::allow_tld_matches_;
+bool ScoredHistoryMatch::allow_scheme_matches_;
+size_t ScoredHistoryMatch::num_title_words_to_allow_;
+bool ScoredHistoryMatch::hqp_experimental_scoring_enabled_;
+
+// Default topicality threshold.  See GetTopicalityScore() for details.
 float ScoredHistoryMatch::topicality_threshold_ = 0.8f;
-// Default HQP relevance buckets. See GetFinalRelevancyScore()
-// for more details on these numbers.
+
+// Default HQP relevance buckets. See GetFinalRelevancyScore() for more details
+// on these numbers.
 char ScoredHistoryMatch::hqp_relevance_buckets_str_[] =
     "0.0:400,1.5:600,5.0:900,10.5:1203,15.0:1300,20.0:1399";
 std::vector<ScoredHistoryMatch::ScoreMaxRelevance>*
@@ -403,6 +408,9 @@ void ScoredHistoryMatch::Init() {
   initialized = true;
   also_do_hup_like_scoring_ = OmniboxFieldTrial::HQPAlsoDoHUPLikeScoring();
   bookmark_value_ = OmniboxFieldTrial::HQPBookmarkValue();
+  typed_value_ = OmniboxFieldTrial::HQPTypedValue();
+  max_visits_to_score_ = OmniboxFieldTrial::HQPMaxVisitsToScore();
+  frequency_uses_sum_ = OmniboxFieldTrial::HQPFreqencyUsesSum();
   fix_few_visits_bug_ = OmniboxFieldTrial::HQPFixFewVisitsBug();
   allow_tld_matches_ = OmniboxFieldTrial::HQPAllowMatchInTLDValue();
   allow_scheme_matches_ = OmniboxFieldTrial::HQPAllowMatchInSchemeValue();
@@ -574,29 +582,38 @@ float ScoredHistoryMatch::GetRecencyScore(int last_visit_days_ago) const {
 float ScoredHistoryMatch::GetFrequency(const base::Time& now,
                                        const bool bookmarked,
                                        const VisitInfoVector& visits) const {
-  // Compute the weighted average |value_of_transition| over the last at
-  // most kMaxVisitsToScore visits, where each visit is weighted using
-  // GetRecencyScore() based on how many days ago it happened.  Use
-  // kMaxVisitsToScore as the denominator for the average regardless of
-  // how many visits there were in order to penalize a match that has
-  // fewer visits than kMaxVisitsToScore.
+  // Compute the weighted sum of |value_of_transition| over the last at most
+  // |max_visits_to_score_| visits, where each visit is weighted using
+  // GetRecencyScore() based on how many days ago it happened.
   float summed_visit_points = 0;
-  const size_t max_visit_to_score =
-      std::min(visits.size(), ScoredHistoryMatch::kMaxVisitsToScore);
-  for (size_t i = 0; i < max_visit_to_score; ++i) {
-    const bool is_page_transition_typed = ui::PageTransitionCoreTypeIs(
-        visits[i].second, ui::PAGE_TRANSITION_TYPED);
-    int value_of_transition = is_page_transition_typed ? 20 : 1;
+  auto visits_end =
+      visits.begin() + std::min(visits.size(), max_visits_to_score_);
+  // Visits should be in newest to oldest order.
+  DCHECK(std::adjacent_find(
+             visits.begin(), visits_end,
+             [](const history::VisitInfo& a, const history::VisitInfo& b) {
+               return a.first < b.first;
+             }) == visits_end);
+  for (auto i = visits.begin(); i != visits_end; ++i) {
+    const bool is_page_transition_typed =
+        ui::PageTransitionCoreTypeIs(i->second, ui::PAGE_TRANSITION_TYPED);
+    float value_of_transition = is_page_transition_typed ? typed_value_ : 1;
     if (bookmarked)
       value_of_transition = std::max(value_of_transition, bookmark_value_);
-    const float bucket_weight =
-        GetRecencyScore((now - visits[i].first).InDays());
+    const float bucket_weight = GetRecencyScore((now - i->first).InDays());
     summed_visit_points += (value_of_transition * bucket_weight);
   }
+  if (frequency_uses_sum_)
+    return summed_visit_points;
+
+  // Compute the average weighted value_of_transition and return it.
+  // Use |max_visits_to_score_| as the denominator for the average regardless of
+  // how many visits there were in order to penalize a match that has
+  // fewer visits than kMaxVisitsToScore.
   if (fix_few_visits_bug_)
-    return summed_visit_points / ScoredHistoryMatch::kMaxVisitsToScore;
+    return summed_visit_points / ScoredHistoryMatch::max_visits_to_score_;
   return visits.size() * summed_visit_points /
-      ScoredHistoryMatch::kMaxVisitsToScore;
+         ScoredHistoryMatch::max_visits_to_score_;
 }
 
 // static

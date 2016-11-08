@@ -48,6 +48,11 @@ static const int kCurrentCacheFileVersion = 5;
 class URLIndexPrivateData
     : public base::RefCountedThreadSafe<URLIndexPrivateData> {
  public:
+  // The maximum number of recent visits stored.  Public so that
+  // ScoredHistoryMatch can enuse that this number is greater than the number
+  // of visits it wants to use for scoring.
+  static constexpr size_t kMaxVisitsToStoreInCache = 10;
+
   URLIndexPrivateData();
 
   // Given a base::string16 in |term_string|, scans the history index and

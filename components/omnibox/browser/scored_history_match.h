@@ -75,11 +75,6 @@ struct ScoredHistoryMatch : public history::HistoryMatch {
       size_t start_pos,
       size_t end_pos);
 
-  // The maximum number of recent visits to examine in GetFrequency().
-  // Public so url_index_private_data.cc knows how many visits it is
-  // expected to deliver (at minimum) to this class.
-  static const size_t kMaxVisitsToScore;
-
   // An interim score taking into consideration location and completeness
   // of the match.
   int raw_score;
@@ -99,6 +94,7 @@ struct ScoredHistoryMatch : public history::HistoryMatch {
  private:
   friend class ScoredHistoryMatchTest;
   FRIEND_TEST_ALL_PREFIXES(ScoredHistoryMatchTest, GetFinalRelevancyScore);
+  FRIEND_TEST_ALL_PREFIXES(ScoredHistoryMatchTest, GetFrequency);
   FRIEND_TEST_ALL_PREFIXES(ScoredHistoryMatchTest, GetHQPBucketsFromString);
   FRIEND_TEST_ALL_PREFIXES(ScoredHistoryMatchTest, ScoringBookmarks);
   FRIEND_TEST_ALL_PREFIXES(ScoredHistoryMatchTest, ScoringScheme);
@@ -123,7 +119,7 @@ struct ScoredHistoryMatch : public history::HistoryMatch {
   // how many days ago the page was last visited.
   float GetRecencyScore(int last_visit_days_ago) const;
 
-  // Examines the first kMaxVisitsToScore and return a score (higher is
+  // Examines the first |max_visits_to_score_| and returns a score (higher is
   // better) based the rate of visits, whether the page is bookmarked, and
   // how often those visits are typed navigations (i.e., explicitly
   // invoked by the user).  |now| is passed in to avoid unnecessarily
@@ -161,12 +157,22 @@ struct ScoredHistoryMatch : public history::HistoryMatch {
   static bool also_do_hup_like_scoring_;
 
   // Untyped visits to bookmarked pages score this, compared to 1 for
-  // untyped visits to non-bookmarked pages and 20 for typed visits.
-  static int bookmark_value_;
+  // untyped visits to non-bookmarked pages and |typed_value_| for typed visits.
+  static float bookmark_value_;
+
+  // Typed visits to page score this, compared to 1 for untyped visits.
+  static float typed_value_;
 
   // True if we should fix a bug in frequency scoring relating to how we
   // extrapolate frecency when the URL has been visited few times.
   static bool fix_few_visits_bug_;
+
+  // Determines whether GetFrequency() returns a score based on on the weighted
+  // sum of visit scores instead of the weighted average.
+  static bool frequency_uses_sum_;
+
+  // The maximum number of recent visits to examine in GetFrequency().
+  static size_t max_visits_to_score_;
 
   // If true, we allow input terms to match in the TLD (e.g., ".com").
   static bool allow_tld_matches_;

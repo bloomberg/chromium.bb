@@ -227,6 +227,7 @@ class OmniboxFieldTrial {
   static void GetDefaultHUPScoringParams(HUPScoringParams* scoring_params);
   static void GetExperimentalHUPScoringParams(HUPScoringParams* scoring_params);
 
+  // ---------------------------------------------------------
   // For the HQPBookmarkValue experiment that's part of the
   // bundled omnibox field trial.
 
@@ -234,7 +235,7 @@ class OmniboxFieldTrial {
   // Compare this value with the default of 1 for non-bookmarked untyped
   // visits to pages and the default of 20 for typed visits.  Returns
   // 10 if the bookmark value experiment isn't active.
-  static int HQPBookmarkValue();
+  static float HQPBookmarkValue();
 
   // ---------------------------------------------------------
   // For the HQPAllowMatchInTLD experiment that's part of the
@@ -294,6 +295,19 @@ class OmniboxFieldTrial {
   // Returns true if HQP should apply the bug fix to discount the visits to
   // pages visited less than ten times.
   static bool HQPFixFewVisitsBug();
+
+  // Returns true if HQP should use the weighted sum when computing frequency
+  // scores.  False means to use the weighted average.  Returns false if the
+  // experiment isn't active.
+  static bool HQPFreqencyUsesSum();
+
+  // Returns the number of visits HQP should use when computing frequency
+  // scores.  Returns 10 if the epxeriment isn't active.
+  static size_t HQPMaxVisitsToScore();
+
+  // Returns the score that should be given to typed transitions.  (The score
+  // of non-typed transitions is 1.)  Returns 20 if the experiment isn't active.
+  static float HQPTypedValue();
 
   // ---------------------------------------------------------
   // For the HQPNumTitleWords experiment that's part of the
@@ -362,6 +376,7 @@ class OmniboxFieldTrial {
   static const char kSearchHistoryRule[];
   static const char kDemoteByTypeRule[];
   static const char kHQPBookmarkValueRule[];
+  static const char kHQPTypedValueRule[];
   static const char kHQPDiscountFrecencyWhenFewVisitsRule[];
   static const char kHQPAllowMatchInTLDRule[];
   static const char kHQPAllowMatchInSchemeRule[];
@@ -372,6 +387,8 @@ class OmniboxFieldTrial {
   static const char kMeasureSuggestPollingDelayFromLastKeystrokeRule[];
   static const char kSuggestPollingDelayMsRule[];
   static const char kHQPFixFewVisitsBugRule[];
+  static const char kHQPFreqencyUsesSumRule[];
+  static const char kHQPMaxVisitsToScoreRule[];
   static const char kHQPNumTitleWordsRule[];
   static const char kHQPAlsoDoHUPLikeScoringRule[];
   static const char kHUPSearchDatabaseRule[];

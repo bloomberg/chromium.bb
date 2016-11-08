@@ -41,10 +41,6 @@ using google::protobuf::RepeatedField;
 using google::protobuf::RepeatedPtrField;
 using in_memory_url_index::InMemoryURLIndexCacheItem;
 
-namespace {
-static const size_t kMaxVisitsToStoreInCache = 10u;
-}
-
 typedef in_memory_url_index::InMemoryURLIndexCacheItem_WordListItem
     WordListItem;
 typedef in_memory_url_index::InMemoryURLIndexCacheItem_WordMapItem_WordMapEntry
@@ -122,12 +118,8 @@ UpdateRecentVisitsFromHistoryDBTask::UpdateRecentVisitsFromHistoryDBTask(
 bool UpdateRecentVisitsFromHistoryDBTask::RunOnDBThread(
     history::HistoryBackend* backend,
     history::HistoryDatabase* db) {
-  // Make sure the private data is going to get as many recent visits as
-  // ScoredHistoryMatch::GetFrequency() hopes to use.
-  DCHECK_GE(kMaxVisitsToStoreInCache, ScoredHistoryMatch::kMaxVisitsToScore);
-  succeeded_ = db->GetMostRecentVisitsForURL(url_id_,
-                                             kMaxVisitsToStoreInCache,
-                                             &recent_visits_);
+  succeeded_ = db->GetMostRecentVisitsForURL(
+      url_id_, URLIndexPrivateData::kMaxVisitsToStoreInCache, &recent_visits_);
   if (!succeeded_)
     recent_visits_.clear();
   return true;  // Always claim to be done; do not retry failures.
@@ -143,6 +135,9 @@ UpdateRecentVisitsFromHistoryDBTask::~UpdateRecentVisitsFromHistoryDBTask() {
 
 
 // URLIndexPrivateData ---------------------------------------------------------
+
+// static
+constexpr size_t URLIndexPrivateData::kMaxVisitsToStoreInCache;
 
 URLIndexPrivateData::URLIndexPrivateData()
     : restored_cache_version_(0),
@@ -740,9 +735,6 @@ bool URLIndexPrivateData::IndexRow(
     // However, unittest code actually calls this on the UI thread.
     // So we don't do any thread checks.
     history::VisitVector recent_visits;
-    // Make sure the private data is going to get as many recent visits as
-    // ScoredHistoryMatch::GetFrequency() hopes to use.
-    DCHECK_GE(kMaxVisitsToStoreInCache, ScoredHistoryMatch::kMaxVisitsToScore);
     if (history_db->GetMostRecentVisitsForURL(row_id,
                                               kMaxVisitsToStoreInCache,
                                               &recent_visits))

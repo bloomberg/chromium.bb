@@ -16,6 +16,7 @@
 #include "build/build_config.h"
 #include "components/metrics/proto/omnibox_event.pb.h"
 #include "components/omnibox/browser/omnibox_switches.h"
+#include "components/omnibox/browser/url_index_private_data.h"
 #include "components/search/search.h"
 #include "components/variations/active_field_trials.h"
 #include "components/variations/metrics_util.h"
@@ -322,7 +323,7 @@ void OmniboxFieldTrial::GetExperimentalHUPScoringParams(
       &scoring_params->visited_count_buckets);
 }
 
-int OmniboxFieldTrial::HQPBookmarkValue() {
+float OmniboxFieldTrial::HQPBookmarkValue() {
   std::string bookmark_value_str =
       variations::GetVariationParamValue(kBundledExperimentFieldTrialName,
                                          kHQPBookmarkValueRule);
@@ -331,8 +332,8 @@ int OmniboxFieldTrial::HQPBookmarkValue() {
   // This is a best-effort conversion; we trust the hand-crafted parameters
   // downloaded from the server to be perfect.  There's no need for handle
   // errors smartly.
-  int bookmark_value;
-  base::StringToInt(bookmark_value_str, &bookmark_value);
+  double bookmark_value;
+  base::StringToDouble(bookmark_value_str, &bookmark_value);
   return bookmark_value;
 }
 
@@ -405,6 +406,41 @@ bool OmniboxFieldTrial::HQPFixFewVisitsBug() {
   return variations::GetVariationParamValue(
       kBundledExperimentFieldTrialName,
       kHQPFixFewVisitsBugRule) == "true";
+}
+
+bool OmniboxFieldTrial::HQPFreqencyUsesSum() {
+  return variations::GetVariationParamValue(kBundledExperimentFieldTrialName,
+                                            kHQPFreqencyUsesSumRule) == "true";
+}
+
+size_t OmniboxFieldTrial::HQPMaxVisitsToScore() {
+  std::string max_visits_str = variations::GetVariationParamValue(
+      kBundledExperimentFieldTrialName, kHQPMaxVisitsToScoreRule);
+  constexpr size_t kDefaultMaxVisitsToScore = 10;
+  static_assert(
+      URLIndexPrivateData::kMaxVisitsToStoreInCache >= kDefaultMaxVisitsToScore,
+      "HQP should store at least as many visits as it expects to score");
+  if (max_visits_str.empty())
+    return kDefaultMaxVisitsToScore;
+  // This is a best-effort conversion; we trust the hand-crafted parameters
+  // downloaded from the server to be perfect.  There's no need for handle
+  // errors smartly.
+  size_t max_visits_value;
+  base::StringToSizeT(max_visits_str, &max_visits_value);
+  return max_visits_value;
+}
+
+float OmniboxFieldTrial::HQPTypedValue() {
+  std::string typed_value_str = variations::GetVariationParamValue(
+      kBundledExperimentFieldTrialName, kHQPTypedValueRule);
+  if (typed_value_str.empty())
+    return 20;
+  // This is a best-effort conversion; we trust the hand-crafted parameters
+  // downloaded from the server to be perfect.  There's no need for handle
+  // errors smartly.
+  double typed_value;
+  base::StringToDouble(typed_value_str, &typed_value);
+  return typed_value;
 }
 
 size_t OmniboxFieldTrial::HQPNumTitleWordsToAllow() {
@@ -494,6 +530,7 @@ const char OmniboxFieldTrial::kSearchHistoryRule[] = "SearchHistory";
 const char OmniboxFieldTrial::kDemoteByTypeRule[] = "DemoteByType";
 const char OmniboxFieldTrial::kHQPBookmarkValueRule[] =
     "HQPBookmarkValue";
+const char OmniboxFieldTrial::kHQPTypedValueRule[] = "HQPTypedValue";
 const char OmniboxFieldTrial::kHQPAllowMatchInTLDRule[] = "HQPAllowMatchInTLD";
 const char OmniboxFieldTrial::kHQPAllowMatchInSchemeRule[] =
     "HQPAllowMatchInScheme";
@@ -508,6 +545,9 @@ OmniboxFieldTrial::kMeasureSuggestPollingDelayFromLastKeystrokeRule[] =
 const char OmniboxFieldTrial::kSuggestPollingDelayMsRule[] =
     "SuggestPollingDelayMs";
 const char OmniboxFieldTrial::kHQPFixFewVisitsBugRule[] = "HQPFixFewVisitsBug";
+const char OmniboxFieldTrial::kHQPFreqencyUsesSumRule[] = "HQPFreqencyUsesSum";
+const char OmniboxFieldTrial::kHQPMaxVisitsToScoreRule[] =
+    "HQPMaxVisitsToScoreRule";
 const char OmniboxFieldTrial::kHQPNumTitleWordsRule[] = "HQPNumTitleWords";
 const char OmniboxFieldTrial::kHQPAlsoDoHUPLikeScoringRule[] =
     "HQPAlsoDoHUPLikeScoring";
