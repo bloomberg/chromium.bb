@@ -546,19 +546,18 @@ bool QuicChromiumClientSession::GetSSLInfo(SSLInfo* ssl_info) const {
   ssl_info->cert_status = cert_verify_result_->cert_status;
   ssl_info->cert = cert_verify_result_->verified_cert;
 
-  // TODO(davidben): Switch these to the TLS 1.3 AEAD-only ciphers. That will
-  // place them in the cache in the default configuration, so do this when we
-  // are comfortable supporting those values long-term.
+  // Map QUIC AEADs to the corresponding TLS 1.3 cipher. OpenSSL's cipher suite
+  // numbers begin with a stray 0x03, so mask them off.
   QuicTag aead = crypto_stream_->crypto_negotiated_params().aead;
   uint16_t cipher_suite;
   int security_bits;
   switch (aead) {
     case kAESG:
-      cipher_suite = 0xc02f;  // TLS_ECDHE_RSA_WITH_AES_128_GCM_SHA256
+      cipher_suite = TLS1_CK_AES_128_GCM_SHA256 & 0xffff;
       security_bits = 128;
       break;
     case kCC20:
-      cipher_suite = 0xcc13;  // TLS_ECDHE_RSA_WITH_CHACHA20_POLY1305_SHA256
+      cipher_suite = TLS1_CK_CHACHA20_POLY1305_SHA256 & 0xffff;
       security_bits = 256;
       break;
     default:
