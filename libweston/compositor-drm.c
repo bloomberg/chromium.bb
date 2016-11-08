@@ -3062,7 +3062,7 @@ drm_assign_planes(struct weston_output *output_base, void *repaint_data)
 	struct drm_output_state *state;
 	struct drm_plane_state *plane_state;
 	struct weston_view *ev;
-	pixman_region32_t overlap, surface_overlap;
+	pixman_region32_t surface_overlap, renderer_region;
 	struct weston_plane *primary, *next_plane;
 	bool picked_scanout = false;
 
@@ -3084,7 +3084,7 @@ drm_assign_planes(struct weston_output *output_base, void *repaint_data)
 	 * the client buffer can be used directly for the sprite surface
 	 * as we do for flipping full screen surfaces.
 	 */
-	pixman_region32_init(&overlap);
+	pixman_region32_init(&renderer_region);
 	primary = &output_base->compositor->primary_plane;
 
 	wl_list_for_each(ev, &output_base->compositor->view_list, link) {
@@ -3108,7 +3108,7 @@ drm_assign_planes(struct weston_output *output_base, void *repaint_data)
 			es->keep_buffer = false;
 
 		pixman_region32_init(&surface_overlap);
-		pixman_region32_intersect(&surface_overlap, &overlap,
+		pixman_region32_intersect(&surface_overlap, &renderer_region,
 					  &ev->transform.boundingbox);
 
 		next_plane = NULL;
@@ -3135,7 +3135,8 @@ drm_assign_planes(struct weston_output *output_base, void *repaint_data)
 		weston_view_move_to_plane(ev, next_plane);
 
 		if (next_plane == primary)
-			pixman_region32_union(&overlap, &overlap,
+			pixman_region32_union(&renderer_region,
+					      &renderer_region,
 					      &ev->transform.boundingbox);
 
 		if (next_plane == primary ||
@@ -3152,7 +3153,7 @@ drm_assign_planes(struct weston_output *output_base, void *repaint_data)
 
 		pixman_region32_fini(&surface_overlap);
 	}
-	pixman_region32_fini(&overlap);
+	pixman_region32_fini(&renderer_region);
 
 	/* We rely on output->cursor_view being both an accurate reflection of
 	 * the cursor plane's state, but also being maintained across repaints
