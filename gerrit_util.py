@@ -621,19 +621,28 @@ def GetReview(host, change, revision):
 
 def AddReviewers(host, change, add=None, is_reviewer=True):
   """Add reviewers to a change."""
+  errors = None
   if not add:
-    return
+    return None
   if isinstance(add, basestring):
     add = (add,)
   path = 'changes/%s/reviewers' % change
   for r in add:
+    state = 'REVIEWER' if is_reviewer else 'CC'
     body = {
       'reviewer': r,
-      'state': 'REVIEWER' if is_reviewer else 'CC',
+      'state': state,
     }
-    conn = CreateHttpConn(host, path, reqtype='POST', body=body)
-    jmsg = ReadHttpJsonResponse(conn, ignore_404=False)
-  return jmsg
+    try:
+      conn = CreateHttpConn(host, path, reqtype='POST', body=body)
+      _ = ReadHttpJsonResponse(conn, ignore_404=False)
+    except GerritError as e:
+      if e.http_status == 422:  # "Unprocessable Entity"
+        LOGGER.warn('Failed to add "%s" as a %s' % (r, state.lower()))
+        errors = True
+      else:
+        raise
+  return errors
 
 
 def RemoveReviewers(host, change, remove=None):

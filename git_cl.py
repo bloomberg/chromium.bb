@@ -2842,8 +2842,10 @@ class _GerritChangelistImpl(_ChangelistCodereviewBase):
     if change_desc.get_cced():
       cc.extend(change_desc.get_cced())
     if cc:
-      gerrit_util.AddReviewers(
+      errors = gerrit_util.AddReviewers(
           self._GetGerritHost(), self.GetIssue(), cc, is_reviewer=False)
+      if errors:
+        return 1
 
     return 0
 
