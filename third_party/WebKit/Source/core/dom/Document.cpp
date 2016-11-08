@@ -254,6 +254,7 @@
 #include "wtf/HashFunctions.h"
 #include "wtf/PtrUtil.h"
 #include "wtf/StdLibExtras.h"
+#include "wtf/text/CharacterNames.h"
 #include "wtf/text/StringBuffer.h"
 #include "wtf/text/TextEncodingRegistry.h"
 #include <memory>
@@ -1313,9 +1314,6 @@ static inline String canonicalizedTitle(Document* document,
 
   // Replace control characters with spaces and collapse whitespace.
   bool pendingWhitespace = false;
-  const UChar lineTabulationCharacter = 0x0b;
-  const UChar spaceCharacter = 0x20;
-  const UChar deleteCharacter = 0x7f;
   for (unsigned i = 0; i < length; ++i) {
     UChar32 c = characters[i];
     if ((c <= spaceCharacter && c != lineTabulationCharacter) ||
