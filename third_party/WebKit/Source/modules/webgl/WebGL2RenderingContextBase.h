@@ -493,15 +493,6 @@ class WebGL2RenderingContextBase : public WebGLRenderingContextBase {
                      GLint,
                      GLenum,
                      GLenum,
-                     HTMLImageElement*,
-                     ExceptionState&);
-  void texSubImage3D(GLenum,
-                     GLint,
-                     GLint,
-                     GLint,
-                     GLint,
-                     GLenum,
-                     GLenum,
                      HTMLCanvasElement*,
                      ExceptionState&);
   void texSubImage3D(GLenum,
