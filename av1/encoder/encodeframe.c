@@ -5487,8 +5487,7 @@ static void encode_superblock(const AV1_COMP *const cpi, ThreadData *td,
       if (xd->lossless[mbmi->segment_id]) tx_size = TX_4X4;
     }
 #else
-      tx_size = AOMMIN(tx_mode_to_biggest_tx_size[cm->tx_mode],
-                       max_txsize_lookup[bsize]);
+      tx_size = tx_size_from_tx_mode(bsize, cm->tx_mode, is_inter);
 #endif
     else
       tx_size = (bsize >= BLOCK_8X8) ? tx_size : TX_4X4;
