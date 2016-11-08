@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef VIRTUAL_METHODS_H_
-#define VIRTUAL_METHODS_H_
+#ifndef VIRTUAL_BODIES_H_
+#define VIRTUAL_BODIES_H_
 
 // Note: This is not actual windows.h but the stub file in system/windows.h
 #include <windows.h>
@@ -47,4 +47,4 @@ class VirtualMethodsInHeadersTesting : public VirtualMethodsInHeaders {
   testing::TestStruct tester_;
 };
 
-#endif  // VIRTUAL_METHODS_H_
+#endif  // VIRTUAL_BODIES_H_

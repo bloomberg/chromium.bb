@@ -653,10 +653,14 @@ void FindBadConstructsConsumer::CountType(const Type* type,
 
       // HACK: I'm at a loss about how to get the syntax checker to get
       // whether a template is externed or not. For the first pass here,
-      // just do retarded string comparisons.
+      // just do simple string comparisons.
+      //
+      // The check for "atomic_int" is a quick hack; The real fix will be to
+      // check the class after template instantiation. TODO(dcheng): Do the real
+      // fix. https://bugs.chromium.org/p/chromium/issues/detail?id=663463
       if (TemplateDecl* decl = name.getAsTemplateDecl()) {
         std::string base_name = decl->getNameAsString();
-        if (base_name == "basic_string")
+        if (base_name == "basic_string" || base_name == "atomic_int")
           whitelisted_template = true;
       }
 
