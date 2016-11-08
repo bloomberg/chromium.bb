@@ -124,10 +124,11 @@ class ShellSurface : public SurfaceDelegate,
 
   // Sets the application ID for the window. The application ID identifies the
   // general class of applications to which the window belongs.
-  static void SetApplicationId(aura::Window* window, const std::string& id);
+  static void SetApplicationId(aura::Window* window,
+                               std::string* application_id);
   static const std::string GetApplicationId(aura::Window* window);
 
-  // Set the application ID for the surface.
+  // Set application id for surface.
   void SetApplicationId(const std::string& application_id);
 
   // Start an interactive move of surface.
@@ -274,6 +275,7 @@ class ShellSurface : public SurfaceDelegate,
   const int container_;
   bool pending_show_widget_ = false;
   base::string16 title_;
+  std::string application_id_;
   gfx::Rect geometry_;
   gfx::Rect pending_geometry_;
   double scale_ = 1.0;
