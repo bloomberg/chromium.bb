@@ -20,7 +20,7 @@ enum FillLightMode {
 };
 
 [
-    RuntimeEnabled=ImageCapture,
+    OriginTrialEnabled=ImageCapture,
 ] interface PhotoCapabilities {
     readonly attribute MeteringMode whiteBalanceMode;
     readonly attribute MediaSettingsRange colorTemperature;

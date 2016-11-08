@@ -61,6 +61,10 @@ void installConditionalFeaturesForModules(
                                        interfaceObject);
     }
   } else if (wrapperTypeInfo == &V8Window::wrapperTypeInfo) {
+    if (OriginTrials::imageCaptureEnabled(executionContext)) {
+      V8WindowPartial::installImageCapture(isolate, world, global,
+                                           prototypeObject, interfaceObject);
+    }
     if (OriginTrials::webUSBEnabled(executionContext)) {
       V8WindowPartial::installWebUSB(isolate, world, global, prototypeObject,
                                      interfaceObject);
