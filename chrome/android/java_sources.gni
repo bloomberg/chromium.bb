@@ -1097,6 +1097,7 @@ chrome_java_sources = [
   "java/src/org/chromium/chrome/browser/widget/selection/SelectableItemHighlightView.java",
   "java/src/org/chromium/chrome/browser/widget/selection/SelectableItemView.java",
   "java/src/org/chromium/chrome/browser/widget/selection/SelectionDelegate.java",
+  "java/src/org/chromium/chrome/browser/widget/selection/SelectableListLayout.java",
   "java/src/org/chromium/chrome/browser/widget/selection/SelectionToolbar.java",
   "java/src/org/chromium/chrome/browser/widget/newtab/NewTabButton.java",
 ]

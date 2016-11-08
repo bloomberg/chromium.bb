@@ -2299,6 +2299,9 @@ To obtain new licenses, connect to the internet and play your downloaded content
           =1 {Remove 1 selected item}
           other {Remove # selected items}}
       </message>
+      <message name="IDS_SELECTED" desc="A label for the number of items selected.">
+        selected
+      </message>
 
       <message name="IDS_VIDEO_CALL_NOTIFICATION_TEXT_2" desc="Text to be shown as a notification when a WebRTC video call is in progress.">
         Accessing video input

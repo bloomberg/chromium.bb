@@ -384,4 +384,7 @@
 
     <!-- Downloads dimensions. -->
     <dimen name="downloads_item_icon_size">48dp</dimen>
+
+    <!--  Miscellaneous dimensions -->
+    <dimen name="action_bar_shadow_height">10dp</dimen>
 </resources>
