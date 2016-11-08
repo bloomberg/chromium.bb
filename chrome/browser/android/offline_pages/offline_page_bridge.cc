@@ -213,11 +213,6 @@ static jboolean IsOfflineBookmarksEnabled(JNIEnv* env,
   return offline_pages::IsOfflineBookmarksEnabled();
 }
 
-static jboolean IsBackgroundLoadingEnabled(JNIEnv* env,
-                                           const JavaParamRef<jclass>& clazz) {
-  return offline_pages::IsOfflinePagesBackgroundLoadingEnabled();
-}
-
 static jboolean IsPageSharingEnabled(JNIEnv* env,
                                      const JavaParamRef<jclass>& clazz) {
   return offline_pages::IsOfflinePagesSharingEnabled();

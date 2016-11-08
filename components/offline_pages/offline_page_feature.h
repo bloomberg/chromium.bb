@@ -12,7 +12,6 @@ namespace offline_pages {
 
 extern const base::Feature kOfflineBookmarksFeature;
 extern const base::Feature kOffliningRecentPagesFeature;
-extern const base::Feature kOfflinePagesBackgroundLoadingFeature;
 extern const base::Feature kOfflinePagesCTFeature;
 extern const base::Feature kOfflinePagesSharingFeature;
 extern const base::Feature kBackgroundLoaderForDownloadsFeature;
@@ -24,15 +23,14 @@ bool IsOfflineBookmarksEnabled();
 // Returns true if offlining of recent pages (aka 'Last N pages') is enabled.
 bool IsOffliningRecentPagesEnabled();
 
-// Returns true if saving offline pages in the background is enabled.
-bool IsOfflinePagesBackgroundLoadingEnabled();
-
 // Returns true if offline CT features are enabled.  See crbug.com/620421.
 bool IsOfflinePagesCTEnabled();
 
 // Returns true if offline page sharing is enabled.
 bool IsOfflinePagesSharingEnabled();
 
+// Returns true if saving a foreground tab that is taking too long using the
+// background scheduler is enabled.
 bool IsBackgroundLoaderForDownloadsEnabled();
 
 // Returns true if downloading a page asynchonously is enabled.

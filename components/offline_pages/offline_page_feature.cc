@@ -18,10 +18,6 @@ const base::Feature kOffliningRecentPagesFeature {
    "OfflineRecentPages", base::FEATURE_DISABLED_BY_DEFAULT
 };
 
-const base::Feature kOfflinePagesBackgroundLoadingFeature {
-   "OfflinePagesBackgroundLoading", base::FEATURE_DISABLED_BY_DEFAULT
-};
-
 const base::Feature kOfflinePagesCTFeature {
    "OfflinePagesCT", base::FEATURE_ENABLED_BY_DEFAULT
 };
@@ -42,10 +38,6 @@ bool IsOfflineBookmarksEnabled() {
 
 bool IsOffliningRecentPagesEnabled() {
   return  base::FeatureList::IsEnabled(kOffliningRecentPagesFeature);
-}
-
-bool IsOfflinePagesBackgroundLoadingEnabled() {
-  return base::FeatureList::IsEnabled(kOfflinePagesBackgroundLoadingFeature);
 }
 
 bool IsOfflinePagesCTEnabled() {

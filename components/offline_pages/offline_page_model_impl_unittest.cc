@@ -1213,25 +1213,6 @@ TEST(CommandLineFlagsTest, OffliningRecentPages) {
   EXPECT_TRUE(offline_pages::IsOffliningRecentPagesEnabled());
 }
 
-TEST(CommandLineFlagsTest, OfflinePagesBackgroundLoading) {
-  // Enable offline bookmarks feature first.
-  // TODO(dimich): once offline pages are enabled by default, remove this.
-  std::unique_ptr<base::test::ScopedFeatureList> scoped_feature_list(
-      new base::test::ScopedFeatureList);
-  scoped_feature_list->InitAndEnableFeature(kOfflineBookmarksFeature);
-
-  // This feature is still disabled by default.
-  EXPECT_FALSE(offline_pages::IsOfflinePagesBackgroundLoadingEnabled());
-
-  // Check if feature is correctly enabled by command-line flag.
-  scoped_feature_list.reset(new base::test::ScopedFeatureList);
-  scoped_feature_list->InitFromCommandLine(
-      std::string(kOfflineBookmarksFeature.name) + "," +
-          kOfflinePagesBackgroundLoadingFeature.name,
-      "");
-  EXPECT_TRUE(offline_pages::IsOfflinePagesBackgroundLoadingEnabled());
-}
-
 TEST(CommandLineFlagsTest, OfflinePagesSharing) {
   // Enable offline bookmarks feature first.
   // TODO(dimich): once offline pages are enabled by default, remove this.

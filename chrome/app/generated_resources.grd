@@ -15020,12 +15020,6 @@ Please check your email at <ph name="ACCOUNT_EMAIL">$2<ex>jane.doe@gmail.com</ex
       <message name="IDS_FLAGS_OFFLINE_PAGES_ASYNC_DOWNLOAD_DESCRIPTION" desc="Description for the flag to enable offline pages.">
         Enables showing "DOWNLOAD PAGE LATER" button in error pages such that the user can click on it to download the page later.
       </message>
-      <message name="IDS_FLAGS_OFFLINE_PAGES_BACKGROUND_LOADING_NAME" desc="Name for the flag to enable offline pages to load in the background.">
-        Enables offline pages to load in the background
-      </message>
-      <message name="IDS_FLAGS_OFFLINE_PAGES_BACKGROUND_LOADING_DESCRIPTION" desc="Description for the flag to enable offline pages.">
-        Enables the browser to wake up and load offline pages automatically in the background.
-      </message>
       <message name="IDS_FLAGS_OFFLINE_PAGES_SHARING_NAME" desc="Name for the flag to enable offline pages to be shared.">
         Enables offline pages to be shared.
       </message>

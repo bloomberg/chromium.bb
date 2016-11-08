@@ -118,18 +118,6 @@ public class OfflinePageBridge {
     }
 
     /**
-     * @return True if saving offline pages in the background is enabled.
-     */
-    @VisibleForTesting
-    public static boolean isBackgroundLoadingEnabled() {
-        ThreadUtils.assertOnUiThread();
-        if (sBackgroundLoadingEnabled == null) {
-            sBackgroundLoadingEnabled = nativeIsBackgroundLoadingEnabled();
-        }
-        return sBackgroundLoadingEnabled;
-    }
-
-    /**
      * @return True if offline pages sharing is enabled.
      */
     @VisibleForTesting
@@ -503,7 +491,6 @@ public class OfflinePageBridge {
     }
 
     private static native boolean nativeIsOfflineBookmarksEnabled();
-    private static native boolean nativeIsBackgroundLoadingEnabled();
     private static native boolean nativeIsPageSharingEnabled();
     private static native boolean nativeCanSavePage(String url);
     private static native OfflinePageBridge nativeGetOfflinePageBridgeForProfile(Profile profile);

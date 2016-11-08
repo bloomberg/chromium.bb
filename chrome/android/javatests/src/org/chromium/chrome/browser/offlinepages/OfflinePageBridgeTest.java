@@ -162,18 +162,6 @@ public class OfflinePageBridgeTest extends ChromeActivityTestCaseBase<ChromeActi
                 getPageByClientId(BOOKMARK_ID));
     }
 
-    @CommandLineFlags.Add("disable-features=OfflinePagesBackgroundLoading")
-    @SmallTest
-    public void testBackgroundLoadSwitch() throws Exception {
-        ThreadUtils.runOnUiThreadBlocking(new Runnable() {
-            @Override
-            public void run() {
-                assertFalse("If background loading is off, we should see the feature disabled",
-                        OfflinePageBridge.isBackgroundLoadingEnabled());
-            }
-        });
-    }
-
     @CommandLineFlags.Add("disable-features=OfflinePagesSharing")
     @SmallTest
     @RetryOnFailure
