@@ -198,6 +198,36 @@ def ParseGTestXML(xml_content):
   return results
 
 
+def ConvertTestFilterFileIntoGTestFilterArgument(input_lines):
+  """Converts test filter file contents into --gtest_filter argument.
+
+  See //testing/buildbot/filters/README.md for description of the
+  syntax that |input_lines| are expected to follow.
+
+  See
+  https://github.com/google/googletest/blob/master/googletest/docs/AdvancedGuide.md#running-a-subset-of-the-tests
+  for description of the syntax that --gtest_filter argument should follow.
+
+  Args:
+    input_lines: An iterable (e.g. a list or a file) containing input lines.
+  Returns:
+    a string suitable for feeding as an argument of --gtest_filter parameter.
+  """
+  # Strip whitespace + skip empty lines and lines beginning with '#'.
+  stripped_lines = (l.strip() for l in input_lines)
+  filter_lines = list(l for l in stripped_lines if l and l[0] != '#')
+
+  # Split the tests into positive and negative patterns (gtest treats
+  # every pattern after the first '-' sign as an exclusion).
+  positive_patterns = ':'.join(l for l in filter_lines if l[0] != '-')
+  negative_patterns = ':'.join(l[1:] for l in filter_lines if l[0] == '-')
+  if negative_patterns:
+    negative_patterns = '-' + negative_patterns
+
+  # Join the filter lines into one, big --gtest_filter argument.
+  return positive_patterns + negative_patterns
+
+
 class GtestTestInstance(test_instance.TestInstance):
 
   def __init__(self, args, isolate_delegate, error_func):
@@ -252,13 +282,7 @@ class GtestTestInstance(test_instance.TestInstance):
       self._gtest_filter = args.test_filter
     elif args.test_filter_file:
       with open(args.test_filter_file, 'r') as f:
-        # Strip whitespace + skip empty lines and lines beginning with '#'.
-        # This should be consistent with processing of
-        # --test-launcher-filter-file in base/test/launcher/test_launcher.cc.
-        stripped_lines = (l.strip() for l in f)
-        filter_lines = (l for l in stripped_lines if l and l[0] != '#')
-        # Join the filter lines into one, big --gtest_filter argument.
-        self._gtest_filter = ':'.join(filter_lines)
+        self._gtest_filter = ConvertTestFilterFileIntoGTestFilterArgument(f)
     else:
       self._gtest_filter = None
 
