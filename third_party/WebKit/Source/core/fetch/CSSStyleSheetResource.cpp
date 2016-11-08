@@ -77,6 +77,9 @@ void CSSStyleSheetResource::setParsedStyleSheetCache(
   m_parsedStyleSheetCache = newSheet;
   if (m_parsedStyleSheetCache)
     m_parsedStyleSheetCache->setReferencedFromResource(this);
+
+  // Updates the decoded size to take parsed stylesheet cache into account.
+  updateDecodedSize();
 }
 
 DEFINE_TRACE(CSSStyleSheetResource) {
@@ -134,9 +137,8 @@ void CSSStyleSheetResource::appendData(const char* data, size_t length) {
 
 void CSSStyleSheetResource::checkNotify() {
   // Decode the data to find out the encoding and cache the decoded sheet text.
-  if (data()) {
-    m_decodedSheetText = decodedText();
-  }
+  if (data())
+    setDecodedSheetText(decodedText());
 
   ResourceClientWalker<StyleSheetResourceClient> w(clients());
   while (StyleSheetResourceClient* c = w.next()) {
@@ -151,6 +153,7 @@ void CSSStyleSheetResource::checkNotify() {
   // Note that LinkStyle::setCSSStyleSheet can be called from didAddClient too,
   // but is safe as we should have a cached ResourceIntegrityDisposition.
   clearData();
+  setEncodedSizeMemoryUsage(0);
 }
 
 void CSSStyleSheetResource::destroyDecodedDataIfPossible() {
@@ -158,11 +161,10 @@ void CSSStyleSheetResource::destroyDecodedDataIfPossible() {
     return;
 
   setParsedStyleSheetCache(nullptr);
-  setDecodedSize(0);
 }
 
 void CSSStyleSheetResource::destroyDecodedDataForFailedRevalidation() {
-  m_decodedSheetText = String();
+  setDecodedSheetText(String());
   destroyDecodedDataIfPossible();
 }
 
@@ -217,7 +219,19 @@ void CSSStyleSheetResource::saveParsedStyleSheet(StyleSheetContents* sheet) {
     return;
   }
   setParsedStyleSheetCache(sheet);
-  setDecodedSize(m_parsedStyleSheetCache->estimatedSizeInBytes());
+}
+
+void CSSStyleSheetResource::setDecodedSheetText(
+    const String& decodedSheetText) {
+  m_decodedSheetText = decodedSheetText;
+  updateDecodedSize();
+}
+
+void CSSStyleSheetResource::updateDecodedSize() {
+  size_t decodedSize = m_decodedSheetText.charactersSizeInBytes();
+  if (m_parsedStyleSheetCache)
+    decodedSize += m_parsedStyleSheetCache->estimatedSizeInBytes();
+  setDecodedSize(decodedSize);
 }
 
 }  // namespace blink
