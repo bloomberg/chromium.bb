@@ -1609,6 +1609,9 @@ InspectorStyleSheet::buildObjectForRuleUsage(CSSRule* rule, bool wasUsed) {
 
   CSSRuleSourceData* sourceData = sourceDataForRule(rule);
 
+  if (!sourceData)
+    return nullptr;
+
   std::unique_ptr<protocol::CSS::RuleUsage> result =
       protocol::CSS::RuleUsage::create()
           .setStyleSheetId(id())

@@ -2527,8 +2527,12 @@ Response InspectorCSSAgent::stopRuleUsageTracking(
 
         StyleRule* styleRule = cssRule->styleRule();
 
-        result->get()->addItem(
-            buildObjectForRuleUsage(cssRule, m_tracker->contains(styleRule)));
+        std::unique_ptr<protocol::CSS::RuleUsage> protocolRule =
+            buildObjectForRuleUsage(cssRule, m_tracker->contains(styleRule));
+        if (!protocolRule)
+          continue;
+
+        result->get()->addItem(std::move(protocolRule));
       }
     }
   }

@@ -1,0 +1,76 @@
+<html>
+<head>
+
+<style>
+#modifyRule {
+    box-sizing: border-box;
+}
+
+#modifyRule {
+    height: 100%;
+}
+
+#modifyRule {
+    width: 100%;
+}
+</style>
+
+<script type="text/javascript" src="../../http/tests/inspector-protocol/inspector-protocol-test.js"></script>
+<script type="text/javascript" src="../../http/tests/inspector-protocol/css-protocol-test.js"></script>
+<script type="text/javascript" src="../../http/tests/inspector-protocol/dom-protocol-test.js"></script>
+<script type="text/javascript">
+
+function test()
+{
+    var documentNodeId;
+
+    InspectorTest.requestDocumentNodeId(onDocumentNodeId);
+
+    function onDocumentNodeId(nodeId)
+    {
+        documentNodeId = nodeId;
+        InspectorTest.sendCommandOrDie("DOM.enable", {});
+        InspectorTest.sendCommandOrDie("CSS.enable", {}, function() {
+            InspectorTest.sendCommandOrDie("CSS.startRuleUsageTracking", {},  () =>
+                                           { testModifyRule(); })
+        });
+    }
+
+    function testModifyRule()
+    {
+        InspectorTest.evaluateInPage("document.styleSheets[0].rules[0].style.setProperty('color', 'red')");
+        InspectorTest.evaluateInPage("document.styleSheets[0].rules[2].style.setProperty('color', 'blue')");
+        InspectorTest.evaluateInPage("document.styleSheets[0].rules[1].style.setProperty('color', 'green')");
+
+        InspectorTest.sendCommandOrDie("CSS.stopRuleUsageTracking", {}, ruleListLoaded);
+        function ruleListLoaded(result) {
+            if(!result) {
+                return;
+            }
+            var rules = result.ruleUsage;
+            var usedLines = rules.filter(rule => rule.used);
+            var unusedLines = rules.filter(rule => !rule.used);
+
+            usedLines.sort();
+            unusedLines.sort();
+            InspectorTest.log("=== Size of array: " + rules.length);
+            InspectorTest.log("   Number of used Rules: " + usedLines.length);
+            for(var line of usedLines)
+                InspectorTest.log(line.range.startLine);
+
+            InspectorTest.log("   Number of unused Rules: " + unusedLines.length);
+            for(var line of unusedLines)
+                InspectorTest.log(line.range.startLine);
+
+            InspectorTest.completeTest();
+        }
+    }
+}
+
+</script>
+</head>
+<body onload="runTest();">
+<p>The test verifies that CSS.stopRuleUsageTracking doesn't crash when used concurrently with the CSSOM modifications.</p>
+<article id="modifyRule"></article>
+</body>
+</html>
