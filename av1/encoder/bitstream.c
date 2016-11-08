@@ -1789,11 +1789,9 @@ static void write_modes_b(AV1_COMP *cpi, const TileInfo *const tile,
   MODE_INFO *m;
   int plane;
   int bh, bw;
-#if CONFIG_RANS
-  (void)tok;
-  (void)tok_end;
-  (void)plane;
-#endif  // !CONFIG_RANS
+#if CONFIG_RD_DEBUG
+  int64_t txb_coeff_cost[MAX_MB_PLANE] = { 0 };
+#endif
 #if CONFIG_PVQ
   MB_MODE_INFO *mbmi;
   BLOCK_SIZE bsize;
@@ -2738,9 +2736,9 @@ static void update_coef_probs(AV1_COMP *cpi, aom_writer *w) {
   const TX_MODE tx_mode = cpi->common.tx_mode;
   const TX_SIZE max_tx_size = tx_mode_to_biggest_tx_size[tx_mode];
   TX_SIZE tx_size;
-#if CONFIG_RANS
+#if CONFIG_EC_MULTISYMBOL
   int update = 0;
-#endif  // CONFIG_RANS
+#endif  // CONFIG_EC_MULTISYMBOL
 #if CONFIG_ENTROPY
   AV1_COMMON *cm = &cpi->common;
   SUBFRAME_STATS *subframe_stats = &cpi->subframe_stats;
@@ -2788,18 +2786,18 @@ static void update_coef_probs(AV1_COMP *cpi, aom_writer *w) {
 
         update_coef_probs_subframe(w, cpi, tx_size, cpi->branch_ct_buf,
                                    frame_coef_probs);
-#if CONFIG_RANS
+#if CONFIG_EC_MULTISYMBOL
         update = 1;
-#endif  // CONFIG_RANS
+#endif  // CONFIG_EC_MULTISYMBOL
       } else {
 #endif  // CONFIG_ENTROPY
         build_tree_distribution(cpi, tx_size, frame_branch_ct,
                                 frame_coef_probs);
         update_coef_probs_common(w, cpi, tx_size, frame_branch_ct,
                                  frame_coef_probs);
-#if CONFIG_RANS
+#if CONFIG_EC_MULTISYMBOL
         update = 1;
-#endif  // CONFIG_RANS
+#endif  // CONFIG_EC_MULTISYMBOL
 #if CONFIG_ENTROPY
       }
 #endif  // CONFIG_ENTROPY
@@ -2826,9 +2824,9 @@ static void update_coef_probs(AV1_COMP *cpi, aom_writer *w) {
     av1_copy(cm->counts.eob_branch, eob_counts_copy);
   }
 #endif  // CONFIG_ENTROPY
-#if CONFIG_RANS
+#if CONFIG_EC_MULTISYMBOL
   if (update) av1_coef_pareto_cdfs(cpi->common.fc);
-#endif  // CONFIG_RANS
+#endif  // CONFIG_EC_MULTISYMBOL
 }
 #endif
 

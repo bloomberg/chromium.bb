@@ -263,11 +263,6 @@ static INLINE int get_entropy_context(TX_SIZE tx_size, const ENTROPY_CONTEXT *a,
   return combine_entropy_contexts(above_ec, left_ec);
 }
 
-#if CONFIG_RANS
-struct frame_contexts;
-void av1_coef_pareto_cdfs(struct frame_contexts *fc);
-#endif  // CONFIG_RANS
-
 #if CONFIG_ENTROPY
 #define COEF_COUNT_SAT_BITS 5
 #define COEF_MAX_UPDATE_FACTOR_BITS 7

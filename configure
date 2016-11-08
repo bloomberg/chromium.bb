@@ -271,7 +271,6 @@ EXPERIMENT_LIST="
     new_quant
     supertx
     ans
-    rans
     ec_multisymbol
     loop_restoration
     ext_partition

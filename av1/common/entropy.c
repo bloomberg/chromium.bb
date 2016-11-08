@@ -2807,7 +2807,7 @@ void av1_model_to_full_probs(const aom_prob *model, aom_prob *full) {
   extend_to_full_distribution(&full[UNCONSTRAINED_NODES], model[PIVOT_NODE]);
 }
 
-#if CONFIG_RANS || CONFIG_DAALA_EC
+#if CONFIG_EC_MULTISYMBOL
 static void build_token_cdfs(const aom_prob *pdf_model,
                              aom_cdf_prob cdf[ENTROPY_TOKENS]) {
   int i, sum = 0;
@@ -2828,7 +2828,7 @@ void av1_coef_pareto_cdfs(FRAME_CONTEXT *fc) {
             build_token_cdfs(fc->coef_probs[t][i][j][k][l],
                              fc->coef_cdfs[t][i][j][k][l]);
 }
-#endif  // CONFIG_RANS
+#endif  // CONFIG_EC_MULTISYMBOL
 
 void av1_default_coef_probs(AV1_COMMON *cm) {
 #if CONFIG_ENTROPY
@@ -2844,9 +2844,9 @@ void av1_default_coef_probs(AV1_COMMON *cm) {
   av1_copy(cm->fc->coef_probs[TX_16X16], default_coef_probs_16x16);
   av1_copy(cm->fc->coef_probs[TX_32X32], default_coef_probs_32x32);
 #endif  // CONFIG_ENTROPY
-#if CONFIG_RANS || CONFIG_DAALA_EC
+#if CONFIG_EC_MULTISYMBOL
   av1_coef_pareto_cdfs(cm->fc);
-#endif  // CONFIG_RANS
+#endif  // CONFIG_EC_MULTISYMBOL
 }
 
 #if CONFIG_ADAPT_SCAN

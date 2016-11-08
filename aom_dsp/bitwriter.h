@@ -173,7 +173,7 @@ static INLINE void aom_write_tree_record(aom_writer *w,
 #if CONFIG_EC_MULTISYMBOL
 static INLINE void aom_write_symbol(aom_writer *w, int symb, aom_cdf_prob *cdf,
                                     int nsymbs) {
-#if CONFIG_RANS
+#if CONFIG_ANS
   struct rans_sym s;
   (void)nsymbs;
   assert(cdf);

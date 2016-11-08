@@ -306,12 +306,12 @@ const av1_extra_bit av1_extra_bits_high12[ENTROPY_TOKENS] = {
 };
 #endif
 
-#if !CONFIG_RANS
+#if !CONFIG_EC_MULTISYMBOL
 const struct av1_token av1_coef_encodings[ENTROPY_TOKENS] = {
   { 2, 2 },  { 6, 3 },   { 28, 5 },  { 58, 6 },  { 59, 6 },  { 60, 6 },
   { 61, 6 }, { 124, 7 }, { 125, 7 }, { 126, 7 }, { 127, 7 }, { 0, 1 }
 };
-#endif  // !CONFIG_RANS
+#endif  // !CONFIG_EC_MULTISYMBOL
 
 struct tokenize_b_args {
   const AV1_COMP *cpi;
