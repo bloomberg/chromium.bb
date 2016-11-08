@@ -131,7 +131,10 @@ void NetworkListView::UpdateNetworkIcons() {
     info->disable =
         (network->activation_state() == shill::kActivationStateActivating) ||
         prohibited_by_policy;
-    info->is_wifi = network->Matches(NetworkTypePattern::WiFi());
+    if (network->Matches(NetworkTypePattern::WiFi()))
+      info->type = NetworkInfo::Type::WIFI;
+    else if (network->Matches(NetworkTypePattern::Cellular()))
+      info->type = NetworkInfo::Type::CELLULAR;
     if (prohibited_by_policy) {
       info->tooltip =
           l10n_util::GetStringUTF16(IDS_ASH_STATUS_TRAY_NETWORK_PROHIBITED);

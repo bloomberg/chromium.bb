@@ -12,11 +12,12 @@
 #include <vector>
 
 #include "ash/common/system/chromeos/network/network_icon_animation_observer.h"
+#include "ash/common/system/chromeos/network/network_info.h"
 #include "ash/common/system/chromeos/network/network_list_view_base.h"
 #include "base/macros.h"
 #include "chromeos/network/network_state_handler.h"
+#include "chromeos/network/network_type_pattern.h"
 #include "ui/gfx/image/image_skia.h"
-#include "ui/views/controls/button/button.h"
 
 namespace views {
 class Label;
@@ -31,9 +32,10 @@ class NetworkListDelegate;
 // A list of available networks of a given type. This class is used for all
 // network types except VPNs. For VPNs, see the |VPNList| class.
 class NetworkListViewMd : public NetworkListViewBase,
-                          public network_icon::AnimationObserver,
-                          public views::ButtonListener {
+                          public network_icon::AnimationObserver {
  public:
+  class SectionHeaderRowView;
+
   explicit NetworkListViewMd(NetworkListDelegate* delegate);
   ~NetworkListViewMd() override;
 
@@ -43,8 +45,6 @@ class NetworkListViewMd : public NetworkListViewBase,
                       std::string* service_path) const override;
 
  private:
-  class WifiHeaderRowView;
-
   // Clears |network_list_| and adds to it |networks| that match |delegate_|'s
   // network type pattern.
   void UpdateNetworks(
@@ -71,8 +71,9 @@ class NetworkListViewMd : public NetworkListViewBase,
   // |is_wifi| is matching the attribute of a network connection starting at
   // |child_index|. Returns a set of service paths for the added network
   // connections.
-  std::unique_ptr<std::set<std::string>> UpdateNetworkChildren(bool is_wifi,
-                                                               int child_index);
+  std::unique_ptr<std::set<std::string>> UpdateNetworkChildren(
+      NetworkInfo::Type type,
+      int child_index);
   void UpdateNetworkChild(int index, const NetworkInfo* info);
 
   // Reorders children of |container()| as necessary placing |view| at |index|.
@@ -88,24 +89,24 @@ class NetworkListViewMd : public NetworkListViewBase,
                        int insertion_index,
                        views::Label** label_ptr);
 
-  // Creates a Wi-Fi header row |view| and adds it to |container()| if necessary
-  // and reorders the |container()| placing the |view| at |child_index|.
-  void UpdateWifiHeaderRow(bool enabled,
-                           int child_index,
-                           WifiHeaderRowView** view);
+  // Creates a cellular/Wi-Fi header row |view| and adds it to |container()| if
+  // necessary and reorders the |container()| placing the |view| at
+  // |child_index|.
+  void UpdateSectionHeaderRow(chromeos::NetworkTypePattern pattern,
+                              bool enabled,
+                              int child_index,
+                              SectionHeaderRowView** view);
 
   // network_icon::AnimationObserver:
   void NetworkIconChanged() override;
-
-  // views::ButtonListener:
-  void ButtonPressed(views::Button* sender, const ui::Event& event) override;
 
   bool needs_relayout_;
   NetworkListDelegate* delegate_;
 
   views::Label* no_wifi_networks_view_;
   views::Label* no_cellular_networks_view_;
-  WifiHeaderRowView* wifi_header_view_;
+  SectionHeaderRowView* cellular_header_view_;
+  SectionHeaderRowView* wifi_header_view_;
 
   // An owned list of network info.
   std::vector<std::unique_ptr<NetworkInfo>> network_list_;

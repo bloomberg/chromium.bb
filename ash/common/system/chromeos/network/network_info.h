@@ -19,6 +19,8 @@ namespace ash {
 // Includes information necessary about a network for displaying the appropriate
 // UI to the user.
 struct NetworkInfo {
+  enum class Type { UNKNOWN, WIFI, CELLULAR };
+
   NetworkInfo();
   NetworkInfo(const std::string& path);
   ~NetworkInfo();
@@ -29,7 +31,7 @@ struct NetworkInfo {
   gfx::ImageSkia image;
   bool disable;
   bool highlight;
-  bool is_wifi;
+  Type type;
 };
 
 }  // namespace ash
