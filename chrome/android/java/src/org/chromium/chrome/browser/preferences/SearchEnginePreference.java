@@ -78,7 +78,7 @@ public class SearchEnginePreference extends PreferenceFragment
         } else if (v == mSaveButton) {
             TemplateUrlService.getInstance().setSearchEngine(mSelectedIndex);
             // If the user has manually set the default search engine, disable auto switching.
-            boolean manualSwitch = mSelectedIndex == mSearchEngineAdapter
+            boolean manualSwitch = mSelectedIndex != mSearchEngineAdapter
                     .getInitialSearchEnginePosition();
             if (manualSwitch) {
                 RecordUserAction.record("SearchEngine_ManualChange");
