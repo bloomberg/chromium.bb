@@ -11,6 +11,7 @@
 #include "services/ui/public/interfaces/event_matcher.mojom.h"
 #include "ui/aura/env.h"
 #include "ui/aura/mus/gpu_service.h"
+#include "ui/aura/mus/mus_context_factory.h"
 #include "ui/aura/mus/os_exchange_data_provider_mus.h"
 #include "ui/aura/mus/property_converter.h"
 #include "ui/aura/mus/window_tree_client.h"
@@ -21,7 +22,6 @@
 #include "ui/views/mus/clipboard_mus.h"
 #include "ui/views/mus/desktop_window_tree_host_mus.h"
 #include "ui/views/mus/screen_mus.h"
-#include "ui/views/mus/surface_context_factory.h"
 #include "ui/views/views_delegate.h"
 #include "ui/views/widget/desktop_aura/desktop_native_widget_aura.h"
 #include "ui/wm/core/capture_controller.h"
@@ -110,7 +110,7 @@ MusClient::MusClient(service_manager::Connector* connector,
 
   gpu_service_ = aura::GpuService::Create(connector, std::move(io_task_runner));
   compositor_context_factory_ =
-      base::MakeUnique<views::SurfaceContextFactory>(gpu_service_.get());
+      base::MakeUnique<aura::MusContextFactory>(gpu_service_.get());
   aura::Env::GetInstance()->set_context_factory(
       compositor_context_factory_.get());
   window_tree_client_ =

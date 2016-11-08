@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef UI_VIEWS_MUS_SURFACE_CONTEXT_FACTORY_H_
-#define UI_VIEWS_MUS_SURFACE_CONTEXT_FACTORY_H_
+#ifndef UI_AURA_MUS_MUS_CONTEXT_FACTORY_H_
+#define UI_AURA_MUS_MUS_CONTEXT_FACTORY_H_
 
 #include <stdint.h>
 
@@ -11,19 +11,17 @@
 #include "cc/surfaces/surface_manager.h"
 #include "services/ui/public/cpp/raster_thread_helper.h"
 #include "services/ui/public/interfaces/window_tree.mojom.h"
+#include "ui/aura/aura_export.h"
 #include "ui/compositor/compositor.h"
-#include "ui/views/mus/mus_export.h"
 
-namespace ui {
+namespace aura {
 class GpuService;
-}
 
-namespace views {
-
-class VIEWS_MUS_EXPORT SurfaceContextFactory : public ui::ContextFactory {
+// ContextFactory implementation that can be used with Mus.
+class AURA_EXPORT MusContextFactory : public ui::ContextFactory {
  public:
-  explicit SurfaceContextFactory(ui::GpuService* gpu_service);
-  ~SurfaceContextFactory() override;
+  explicit MusContextFactory(GpuService* gpu_service);
+  ~MusContextFactory() override;
 
  private:
   // ContextFactory:
@@ -59,11 +57,11 @@ class VIEWS_MUS_EXPORT SurfaceContextFactory : public ui::ContextFactory {
   cc::SurfaceManager surface_manager_;
   uint32_t next_sink_id_;
   ui::RasterThreadHelper raster_thread_helper_;
-  ui::GpuService* gpu_service_;
+  GpuService* gpu_service_;
 
-  DISALLOW_COPY_AND_ASSIGN(SurfaceContextFactory);
+  DISALLOW_COPY_AND_ASSIGN(MusContextFactory);
 };
 
-}  // namespace views
+}  // namespace aura
 
-#endif  // UI_VIEWS_MUS_SURFACE_CONTEXT_FACTORY_H_
+#endif  // UI_AURA_MUS_MUS_CONTEXT_FACTORY_H_

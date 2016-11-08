@@ -18,6 +18,7 @@ namespace aura {
 class Env;
 class GpuService;
 class PropertyConverter;
+class MusContextFactory;
 class Window;
 class WindowTreeClient;
 }
@@ -38,7 +39,6 @@ class WMState;
 namespace views {
 
 class ScreenMus;
-class SurfaceContextFactory;
 
 namespace internal {
 class NativeWidgetDelegate;
@@ -116,7 +116,7 @@ class VIEWS_MUS_EXPORT MusClient
 
   std::unique_ptr<aura::GpuService> gpu_service_;
 
-  std::unique_ptr<SurfaceContextFactory> compositor_context_factory_;
+  std::unique_ptr<aura::MusContextFactory> compositor_context_factory_;
 
   DISALLOW_COPY_AND_ASSIGN(MusClient);
 };
