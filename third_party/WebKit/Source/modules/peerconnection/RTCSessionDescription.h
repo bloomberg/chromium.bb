@@ -37,6 +37,7 @@
 
 namespace blink {
 
+class ExecutionContext;
 class RTCSessionDescriptionInit;
 class ScriptState;
 class ScriptValue;
@@ -47,7 +48,8 @@ class RTCSessionDescription final
   DEFINE_WRAPPERTYPEINFO();
 
  public:
-  static RTCSessionDescription* create(const RTCSessionDescriptionInit&);
+  static RTCSessionDescription* create(ExecutionContext*,
+                                       const RTCSessionDescriptionInit&);
   static RTCSessionDescription* create(WebRTCSessionDescription);
 
   String type();

@@ -32,19 +32,26 @@
 
 #include "bindings/core/v8/ScriptValue.h"
 #include "bindings/core/v8/V8ObjectBuilder.h"
+#include "core/dom/ExecutionContext.h"
+#include "core/frame/UseCounter.h"
 #include "modules/peerconnection/RTCSessionDescriptionInit.h"
 
 namespace blink {
 
 RTCSessionDescription* RTCSessionDescription::create(
+    ExecutionContext* context,
     const RTCSessionDescriptionInit& descriptionInitDict) {
   String type;
   if (descriptionInitDict.hasType())
     type = descriptionInitDict.type();
+  else
+    UseCounter::count(context, UseCounter::RTCSessionDescriptionInitNoType);
 
   String sdp;
   if (descriptionInitDict.hasSdp())
     sdp = descriptionInitDict.sdp();
+  else
+    UseCounter::count(context, UseCounter::RTCSessionDescriptionInitNoSdp);
 
   return new RTCSessionDescription(WebRTCSessionDescription(type, sdp));
 }

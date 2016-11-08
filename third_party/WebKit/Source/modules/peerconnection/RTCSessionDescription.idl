@@ -28,18 +28,22 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-// http://www.w3.org/TR/webrtc/#idl-def-RTCSessionDescription
+// https://w3c.github.io/webrtc-pc/#rtcsessiondescription-class
 
 enum RTCSdpType {
     "offer",
     "pranswer",
     "answer"
+    // TODO(foolip): "rollback" is in the spec and Gecko's IDL.
 };
 
 [
-    Constructor(optional RTCSessionDescriptionInit descriptionInitDict)
+    Constructor(optional RTCSessionDescriptionInit descriptionInitDict),
+    ConstructorCallWith=ExecutionContext,
 ] interface RTCSessionDescription {
-    attribute RTCSdpType? type;
-    attribute DOMString? sdp;
+    // TODO(foolip): |type| and |sdp| should be readonly and not nullable.
+    // https://crbug.com/662898
+    [Measure] attribute RTCSdpType? type;
+    [Measure] attribute DOMString? sdp;
     serializer = {attribute};
 };

@@ -1387,6 +1387,12 @@ class CORE_EXPORT UseCounter {
     WebBluetoothRequestDevice = 1670,
     UnitlessPerspectiveInPerspectiveProperty = 1671,
     UnitlessPerspectiveInTransformProperty = 1672,
+    V8RTCSessionDescription_Type_AttributeGetter = 1673,
+    V8RTCSessionDescription_Type_AttributeSetter = 1674,
+    V8RTCSessionDescription_Sdp_AttributeGetter = 1675,
+    V8RTCSessionDescription_Sdp_AttributeSetter = 1676,
+    RTCSessionDescriptionInitNoType = 1677,
+    RTCSessionDescriptionInitNoSdp = 1678,
 
     // Add new features immediately above this line. Don't change assigned
     // numbers of any item, and don't reuse removed slots.
