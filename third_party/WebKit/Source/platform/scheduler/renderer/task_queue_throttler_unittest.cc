@@ -855,13 +855,36 @@ TEST_F(TaskQueueThrottlerTest, EnableAndDisableThrottling) {
                                      base::TimeDelta::FromMilliseconds(300)));
   run_times.clear();
 
-  // Schedule a task at 900ms.
+  // Schedule a task at 900ms. It should proceed as normal.
   timer_queue_->PostDelayedTask(FROM_HERE,
                                 base::Bind(&TestTask, &run_times, clock_.get()),
                                 base::TimeDelta::FromMilliseconds(400));
 
+  // Schedule a task at 1200ms. It should proceed as normal.
+  // PumpThrottledTasks was scheduled at 1000ms, so it needs to be checked
+  // that it was cancelled and it does not interfere with tasks posted before
+  // 1s mark and scheduled to run after 1s mark.
+  timer_queue_->PostDelayedTask(FROM_HERE,
+                                base::Bind(&TestTask, &run_times, clock_.get()),
+                                base::TimeDelta::FromMilliseconds(700));
+
   mock_task_runner_->RunUntilTime(base::TimeTicks() +
-                                  base::TimeDelta::FromMilliseconds(700));
+                                  base::TimeDelta::FromMilliseconds(1300));
+
+  EXPECT_THAT(
+      run_times,
+      ElementsAre(base::TimeTicks() + base::TimeDelta::FromMilliseconds(900),
+                  base::TimeTicks() + base::TimeDelta::FromMilliseconds(1200)));
+  run_times.clear();
+
+  // Schedule a task at 1500ms. It should be throttled because of enabled
+  // throttling.
+  timer_queue_->PostDelayedTask(FROM_HERE,
+                                base::Bind(&TestTask, &run_times, clock_.get()),
+                                base::TimeDelta::FromMilliseconds(200));
+
+  mock_task_runner_->RunUntilTime(base::TimeTicks() +
+                                  base::TimeDelta::FromMilliseconds(1400));
 
   // Throttling is enabled and new task should be aligned.
   task_queue_throttler_->EnableThrottling();
@@ -869,7 +892,7 @@ TEST_F(TaskQueueThrottlerTest, EnableAndDisableThrottling) {
   mock_task_runner_->RunUntilIdle();
 
   EXPECT_THAT(run_times, ElementsAre(base::TimeTicks() +
-                                     base::TimeDelta::FromMilliseconds(1000)));
+                                     base::TimeDelta::FromMilliseconds(2000)));
 }
 
 }  // namespace scheduler

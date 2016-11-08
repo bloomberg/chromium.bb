@@ -597,6 +597,9 @@ void TaskQueueThrottler::DisableThrottling() {
     queue->RemoveFence();
     queue->SetQueueEnabled(map_entry.second.enabled);
   }
+
+  pump_throttled_tasks_closure_.Cancel();
+  pending_pump_throttled_tasks_runtime_ = base::nullopt;
 }
 
 void TaskQueueThrottler::EnableThrottling() {
