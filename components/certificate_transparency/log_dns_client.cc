@@ -107,18 +107,18 @@ class LogDnsClient::AuditProofQuery {
   // to leave ownership of |dns_client| with LogDnsClient.
   AuditProofQuery(net::DnsClient* dns_client,
                   const std::string& domain_for_log,
-                  uint64_t tree_size,
                   const net::NetLogWithSource& net_log);
 
-  // Begins the process of getting an audit |proof| for the CT log entry with a
-  // leaf hash of |leaf_hash|. If it cannot be obtained synchronously,
-  // net::ERR_IO_PENDING will be returned and |callback| will be invoked when
-  // the operation has completed asynchronously.
-  // Ownership of |proof| remains with the caller, and it must not be deleted
-  // until the operation is complete.
+  // Begins the process of getting an audit proof for the CT log entry with a
+  // leaf hash of |leaf_hash|. The proof will be for a tree of size |tree_size|.
+  // If it cannot be obtained synchronously, net::ERR_IO_PENDING will be
+  // returned and |callback| will be invoked when the operation has completed
+  // asynchronously. Ownership of |proof| remains with the caller, and it must
+  // not be deleted until the operation is complete.
   net::Error Start(std::string leaf_hash,
+                   uint64_t tree_size,
                    const net::CompletionCallback& callback,
-                   net::ct::MerkleAuditProof* proof);
+                   net::ct::MerkleAuditProof* out_proof);
 
  private:
   enum class State {
@@ -178,9 +178,6 @@ class LogDnsClient::AuditProofQuery {
   std::string domain_for_log_;
   // The Merkle leaf hash of the CT log entry an audit proof is required for.
   std::string leaf_hash_;
-  // The size of the CT log's tree, from which the proof is requested.
-  // TODO(robpercival): Remove |tree_size| once |proof_| has a tree_size member.
-  uint64_t tree_size_;
   // The audit proof to populate.
   net::ct::MerkleAuditProof* proof_;
   // The callback to invoke when the query is complete.
@@ -201,11 +198,9 @@ class LogDnsClient::AuditProofQuery {
 LogDnsClient::AuditProofQuery::AuditProofQuery(
     net::DnsClient* dns_client,
     const std::string& domain_for_log,
-    uint64_t tree_size,
     const net::NetLogWithSource& net_log)
     : next_state_(State::NONE),
       domain_for_log_(domain_for_log),
-      tree_size_(tree_size),
       dns_client_(dns_client),
       net_log_(net_log),
       weak_ptr_factory_(this) {
@@ -217,11 +212,13 @@ LogDnsClient::AuditProofQuery::AuditProofQuery(
 // the method, avoiding the need to make a copy.
 net::Error LogDnsClient::AuditProofQuery::Start(
     std::string leaf_hash,
+    uint64_t tree_size,
     const net::CompletionCallback& callback,
     net::ct::MerkleAuditProof* proof) {
   // It should not already be in progress.
   DCHECK_EQ(State::NONE, next_state_);
   proof_ = proof;
+  proof_->tree_size = tree_size;
   leaf_hash_ = std::move(leaf_hash);
   callback_ = callback;
   // The first step in the query is to request the leaf index corresponding to
@@ -312,7 +309,7 @@ net::Error LogDnsClient::AuditProofQuery::RequestLeafIndexComplete(
   // b) the wrong leaf hash was provided.
   // c) there is a bug server-side.
   // The first two are more likely, so return ERR_INVALID_ARGUMENT.
-  if (proof_->leaf_index >= tree_size_) {
+  if (proof_->leaf_index >= proof_->tree_size) {
     return net::ERR_INVALID_ARGUMENT;
   }
 
@@ -322,15 +319,15 @@ net::Error LogDnsClient::AuditProofQuery::RequestLeafIndexComplete(
 
 net::Error LogDnsClient::AuditProofQuery::RequestAuditProofNodes() {
   // Test pre-conditions (should be guaranteed by DNS response validation).
-  if (proof_->leaf_index >= tree_size_ ||
-      proof_->nodes.size() >=
-          net::ct::CalculateAuditPathLength(proof_->leaf_index, tree_size_)) {
+  if (proof_->leaf_index >= proof_->tree_size ||
+      proof_->nodes.size() >= net::ct::CalculateAuditPathLength(
+                                  proof_->leaf_index, proof_->tree_size)) {
     return net::ERR_UNEXPECTED;
   }
 
   std::string qname = base::StringPrintf(
       "%zu.%" PRIu64 ".%" PRIu64 ".tree.%s.", proof_->nodes.size(),
-      proof_->leaf_index, tree_size_, domain_for_log_.c_str());
+      proof_->leaf_index, proof_->tree_size, domain_for_log_.c_str());
 
   if (!StartDnsTransaction(qname)) {
     return net::ERR_NAME_RESOLUTION_FAILED;
@@ -347,7 +344,7 @@ net::Error LogDnsClient::AuditProofQuery::RequestAuditProofNodesComplete(
   }
 
   const uint64_t audit_path_length =
-      net::ct::CalculateAuditPathLength(proof_->leaf_index, tree_size_);
+      net::ct::CalculateAuditPathLength(proof_->leaf_index, proof_->tree_size);
 
   // The calculated |audit_path_length| can't ever be greater than 64, so
   // deriving the amount of memory to reserve from the untrusted |leaf_index|
@@ -432,11 +429,11 @@ net::Error LogDnsClient::QueryAuditProof(
   }
 
   AuditProofQuery* query = new AuditProofQuery(
-      dns_client_.get(), domain_for_log.as_string(), tree_size, net_log_);
+      dns_client_.get(), domain_for_log.as_string(), net_log_);
   // Transfers ownership of |query| to |audit_proof_queries_|.
   audit_proof_queries_.emplace_back(query);
 
-  return query->Start(std::move(leaf_hash),
+  return query->Start(std::move(leaf_hash), tree_size,
                       base::Bind(&LogDnsClient::QueryAuditProofComplete,
                                  weak_ptr_factory_.GetWeakPtr(),
                                  base::Unretained(query), callback),

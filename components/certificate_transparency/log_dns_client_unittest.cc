@@ -289,8 +289,7 @@ TEST_P(LogDnsClientTest, QueryAuditProof) {
   ASSERT_THAT(QueryAuditProof("ct.test", kLeafHashes[0], 999999, &proof),
               IsOk());
   EXPECT_THAT(proof.leaf_index, Eq(123456u));
-  // TODO(robpercival): Enable this once MerkleAuditProof has tree_size.
-  // EXPECT_THAT(proof.tree_size, Eq(999999));
+  EXPECT_THAT(proof.tree_size, Eq(999999u));
   EXPECT_THAT(proof.nodes, Eq(audit_proof));
 }
 
@@ -325,8 +324,7 @@ TEST_P(LogDnsClientTest, QueryAuditProofHandlesResponsesWithShortAuditPaths) {
   ASSERT_THAT(QueryAuditProof("ct.test", kLeafHashes[0], 999999, &proof),
               IsOk());
   EXPECT_THAT(proof.leaf_index, Eq(123456u));
-  // TODO(robpercival): Enable this once MerkleAuditProof has tree_size.
-  // EXPECT_THAT(proof.tree_size, Eq(999999));
+  EXPECT_THAT(proof.tree_size, Eq(999999u));
   EXPECT_THAT(proof.nodes, Eq(audit_proof));
 }
 
@@ -570,8 +568,7 @@ TEST_P(LogDnsClientTest, AdoptsLatestDnsConfigMidQuery) {
   // The DNS config should be updated during this time.
   ASSERT_THAT(callback.WaitForResult(), IsOk());
   EXPECT_THAT(proof.leaf_index, Eq(123456u));
-  // TODO(robpercival): Enable this once MerkleAuditProof has tree_size.
-  // EXPECT_THAT(proof.tree_size, Eq(999999));
+  EXPECT_THAT(proof.tree_size, Eq(999999u));
   EXPECT_THAT(proof.nodes, Eq(audit_proof));
 
   // Check that the DNS config change was adopted.
@@ -654,8 +651,7 @@ TEST_P(LogDnsClientTest, CanPerformQueriesInParallel) {
     SCOPED_TRACE(testing::Message() << "callbacks[" << i << "]");
     EXPECT_THAT(callback.WaitForResult(), IsOk());
     EXPECT_THAT(proofs[i].leaf_index, Eq(kLeafIndices[i]));
-    // TODO(robpercival): Enable this once MerkleAuditProof has tree_size.
-    // EXPECT_THAT(proofs[i].tree_size, kTreeSizes[i]);
+    EXPECT_THAT(proofs[i].tree_size, Eq(kTreeSizes[i]));
     EXPECT_THAT(proofs[i].nodes, Eq(audit_proofs[i]));
   }
 }
@@ -704,8 +700,7 @@ TEST_P(LogDnsClientTest, CanBeThrottledToOneQueryAtATime) {
   // Check that the first query succeeded.
   EXPECT_THAT(callback1.WaitForResult(), IsOk());
   EXPECT_THAT(proof1.leaf_index, Eq(123456u));
-  // TODO(robpercival): Enable this once MerkleAuditProof has tree_size.
-  // EXPECT_THAT(proof1.tree_size, Eq(999999));
+  EXPECT_THAT(proof1.tree_size, Eq(999999u));
   EXPECT_THAT(proof1.nodes, Eq(audit_proof));
 
   // Try a third query, which should succeed now that the first is finished.
@@ -730,8 +725,7 @@ TEST_P(LogDnsClientTest, CanBeThrottledToOneQueryAtATime) {
   // Check that the third query succeeded.
   EXPECT_THAT(callback3.WaitForResult(), IsOk());
   EXPECT_THAT(proof3.leaf_index, Eq(666u));
-  // TODO(robpercival): Enable this once MerkleAuditProof has tree_size.
-  // EXPECT_THAT(proof3.tree_size, Eq(999999));
+  EXPECT_THAT(proof3.tree_size, Eq(999999u));
   EXPECT_THAT(proof3.nodes, Eq(audit_proof));
 }
 

@@ -69,7 +69,7 @@ class LogDnsClient : public net::NetworkChangeNotifier::DNSObserver {
   // The size of the CT log tree, for which the proof is requested, must be
   // provided in |tree_size|.
   // The leaf index and audit proof obtained from the CT log will be placed in
-  // |proof|.
+  // |out_proof|.
   // If the proof cannot be obtained synchronously, this method will return
   // net::ERR_IO_PENDING and invoke |callback| once the query is complete.
   // Returns:
@@ -78,8 +78,6 @@ class LogDnsClient : public net::NetworkChangeNotifier::DNSObserver {
   //   continuing asynchronously.
   // - net::ERR_TEMPORARILY_THROTTLED if the maximum number of concurrent
   //   queries are already in progress. Try again later.
-  //   TODO(robpercival): Provide a mechanism to notify the caller when no
-  //   longer throttled.
   // - net::ERR_NAME_RESOLUTION_FAILED if DNS queries are not possible.
   //   Check that the DnsConfig returned by NetworkChangeNotifier is valid.
   // - net::ERR_INVALID_ARGUMENT if an argument is invalid, e.g. |leaf_hash| is
@@ -87,7 +85,7 @@ class LogDnsClient : public net::NetworkChangeNotifier::DNSObserver {
   net::Error QueryAuditProof(base::StringPiece domain_for_log,
                              std::string leaf_hash,
                              uint64_t tree_size,
-                             net::ct::MerkleAuditProof* proof,
+                             net::ct::MerkleAuditProof* out_proof,
                              const net::CompletionCallback& callback);
 
  private:
