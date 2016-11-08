@@ -5,6 +5,7 @@
 #include "ui/ozone/platform/drm/common/client_native_pixmap_dmabuf.h"
 
 #include <fcntl.h>
+#include <linux/version.h>
 #include <stddef.h>
 #include <sys/mman.h>
 #include <xf86drm.h>
@@ -13,9 +14,7 @@
 #include "base/process/memory.h"
 #include "base/trace_event/trace_event.h"
 
-#if defined(USE_OZONE)
-// TODO(vignatti): replace the local definitions below with #include
-// <linux/dma-buf.h> once kernel version 4.6 becomes widely used.
+#if LINUX_VERSION_CODE < KERNEL_VERSION(4, 6, 0)
 #include <linux/types.h>
 
 struct local_dma_buf_sync {
@@ -32,6 +31,9 @@ struct local_dma_buf_sync {
 #define LOCAL_DMA_BUF_BASE 'b'
 #define LOCAL_DMA_BUF_IOCTL_SYNC \
   _IOW(LOCAL_DMA_BUF_BASE, 0, struct local_dma_buf_sync)
+
+#else
+#include <linux/dma-buf.h>
 #endif
 
 namespace ui {
