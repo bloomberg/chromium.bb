@@ -154,7 +154,7 @@ SkColor NativeThemeDarkAura::GetSystemColor(ColorId color_id) const {
   return gfx::kPlaceholderColor;
 }
 
-NativeThemeDarkAura::NativeThemeDarkAura() : NativeThemeAura(false) {}
+NativeThemeDarkAura::NativeThemeDarkAura() {}
 
 NativeThemeDarkAura::~NativeThemeDarkAura() {}
 
