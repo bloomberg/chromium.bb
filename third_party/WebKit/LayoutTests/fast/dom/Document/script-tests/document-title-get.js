@@ -17,7 +17,7 @@ shouldBeEqualToString("document.title","nowhitespacetitle");
 
 debug('Test with whitespace');
 document.title = "\u0009\u000aone\u000b\u000cspace\u000d\u0020";
-shouldBeEqualToString("document.title","one space");
+shouldBeEqualToString("document.title","one\u000b space");
 
 debug('Test with various whitespace lengths and fields');
 document.title = "   lots of \r whitespace and \n\n\n    \t    newlines \t";

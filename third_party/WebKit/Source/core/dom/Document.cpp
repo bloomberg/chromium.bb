@@ -1314,11 +1314,13 @@ static inline String canonicalizedTitle(Document* document,
 
   // Replace control characters with spaces and collapse whitespace.
   bool pendingWhitespace = false;
+  const UChar lineTabulationCharacter = 0x0b;
+  const UChar spaceCharacter = 0x20;
+  const UChar deleteCharacter = 0x7f;
   for (unsigned i = 0; i < length; ++i) {
     UChar32 c = characters[i];
-    if (c <= 0x20 || c == 0x7F ||
-        (WTF::Unicode::category(c) &
-         (WTF::Unicode::Separator_Line | WTF::Unicode::Separator_Paragraph))) {
+    if ((c <= spaceCharacter && c != lineTabulationCharacter) ||
+        c == deleteCharacter) {
       if (builderIndex != 0)
         pendingWhitespace = true;
     } else {

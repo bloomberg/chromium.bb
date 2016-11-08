@@ -12,7 +12,7 @@ PASS document.title is ""
 Test with no whitespace
 PASS document.title is "nowhitespacetitle"
 Test with whitespace
-PASS document.title is "one space"
+PASS document.title is "one\u000b space"
 Test with various whitespace lengths and fields
 PASS document.title is "lots of whitespace and newlines"
 Test with various length strings
