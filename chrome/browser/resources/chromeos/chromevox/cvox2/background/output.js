@@ -540,7 +540,8 @@ Output.RULES = {
           '@describe_switch_off($name)) $description $state'
     },
     tab: {
-      speak: '@describe_tab($name) $state $description'
+      speak: '@describe_tab($name) $state $description ' +
+          '$if($setSize, @describe_index($posInSet, $setSize))',
     },
     table: {
       enter: '@table_summary($name, $tableRowCount, $tableColumnCount) ' +

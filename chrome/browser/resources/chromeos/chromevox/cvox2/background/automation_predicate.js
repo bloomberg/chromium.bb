@@ -104,6 +104,7 @@ AutomationPredicate.formField = AutomationPredicate.match({
     Role.listBox,
     Role.slider,
     Role.switch,
+    Role.tab,
     Role.tree
   ]
 });
@@ -119,8 +120,7 @@ AutomationPredicate.control = AutomationPredicate.match({
     Role.menuItemCheckBox,
     Role.menuItemRadio,
     Role.menuListOption,
-    Role.scrollBar,
-    Role.tab
+    Role.scrollBar
   ]
 });
 
