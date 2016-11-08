@@ -95,10 +95,14 @@ static void (*{{method.name}}MethodForPartialInterface)(const v8::FunctionCallba
 {% from 'attributes.cpp.tmpl' import constructor_getter_callback,
        attribute_getter, attribute_getter_callback,
        attribute_setter, attribute_setter_callback,
+       attribute_cache_property_callback,
        attribute_getter_implemented_in_private_script,
        attribute_setter_implemented_in_private_script
        with context %}
 {% for attribute in attributes if attribute.should_be_exposed_to_script %}
+{% if attribute.is_cached_accessor %}
+{{attribute_cache_property_callback(attribute)}}
+{% endif %}
 {% for world_suffix in attribute.world_suffixes %}
 {% if not attribute.has_custom_getter and not attribute.constructor_type %}
 {{attribute_getter(attribute, world_suffix)}}

@@ -1521,6 +1521,37 @@ These extended attributes are _temporary_ and are only in use while some change 
 
 Summary: `[LegacyTreatAsPartialInterface]` on an interface that is the target of an `implements` statement means that the interface is treated as a partial interface, meaning members are accessed via static member functions in a separate class, rather than as instance methods on the instance object `*impl` or class methods on the C++ class implementing the (main) interface. This is legacy from original implementation of `implements`, and is being removed ([Bug 360435](https://crbug.com/360435), nbarth@).
 
+
+### [CachedAccessor] _(a)_
+
+Summary: Caches the accessor result in a private property (not directly accesible from JS). Improves accessor reads (getter) at the expense of extra memory and manual invalidation which should be trivial in most cases.
+
+
+*** note
+* The getter cannot have any side effects since calls to the getter will be replaced by a cheap property load.
+* It uses a **push approach**, so updates must be _pushed_ every single time, it **DOES NOT** invalidate/update the cache automatically.
+* Despite being cached, the getter can still be called on certain circumstances, consistency is a must.
+* The cache **MUST** be initialized before using it. There's no default value like _undefined_ or a _hole_.
+***
+
+
+Usage: `[CachedAccessor]` takes no arguments, can be specified on attributes.
+
+```webidl
+interface HTMLFoo {
+    [CachedAccessor] readonly attribute Bar bar;
+};
+```
+
+
+Register the required property in V8PrivateProperty.h.
+To update the cached value (e.g. for HTMLFoo.bar) proceed as follows:
+
+```c++
+V8PrivateProperty::getHTMLFooBarCachedAccessor().set(context, object, newValue);
+```
+
+
 ## Discouraged Blink-specific IDL Extended Attributes
 
 These extended attributes are _discouraged_ - they are not deprecated, but they should be avoided and removed if possible.

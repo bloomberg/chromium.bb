@@ -160,6 +160,7 @@ template <class FunctionOrTemplate>
 v8::Local<FunctionOrTemplate> createAccessorFunctionOrTemplate(
     v8::Isolate*,
     v8::FunctionCallback,
+    V8DOMConfiguration::CachedAccessorCallback,
     v8::Local<v8::Value> data,
     v8::Local<v8::Signature>,
     int length);
@@ -169,13 +170,21 @@ v8::Local<v8::FunctionTemplate>
 createAccessorFunctionOrTemplate<v8::FunctionTemplate>(
     v8::Isolate* isolate,
     v8::FunctionCallback callback,
+    V8DOMConfiguration::CachedAccessorCallback cachedAccessorCallback,
     v8::Local<v8::Value> data,
     v8::Local<v8::Signature> signature,
     int length) {
   v8::Local<v8::FunctionTemplate> functionTemplate;
   if (callback) {
-    functionTemplate =
-        v8::FunctionTemplate::New(isolate, callback, data, signature, length);
+    if (cachedAccessorCallback) {
+      functionTemplate = v8::FunctionTemplate::NewWithCache(
+          isolate, callback, cachedAccessorCallback(isolate), data, signature,
+          length);
+    } else {
+      functionTemplate =
+          v8::FunctionTemplate::New(isolate, callback, data, signature, length);
+    }
+
     if (!functionTemplate.IsEmpty()) {
       functionTemplate->RemovePrototype();
       functionTemplate->SetAcceptAnyReceiver(false);
@@ -188,6 +197,7 @@ template <>
 v8::Local<v8::Function> createAccessorFunctionOrTemplate<v8::Function>(
     v8::Isolate* isolate,
     v8::FunctionCallback callback,
+    V8DOMConfiguration::CachedAccessorCallback,
     v8::Local<v8::Value> data,
     v8::Local<v8::Signature> signature,
     int length) {
@@ -196,7 +206,7 @@ v8::Local<v8::Function> createAccessorFunctionOrTemplate<v8::Function>(
 
   v8::Local<v8::FunctionTemplate> functionTemplate =
       createAccessorFunctionOrTemplate<v8::FunctionTemplate>(
-          isolate, callback, data, signature, length);
+          isolate, callback, nullptr, data, signature, length);
   if (functionTemplate.IsEmpty())
     return v8::Local<v8::Function>();
 
@@ -224,12 +234,15 @@ void installAccessorInternal(
   v8::Local<v8::Name> name = v8AtomicString(isolate, accessor.name);
   v8::FunctionCallback getterCallback = accessor.getter;
   v8::FunctionCallback setterCallback = accessor.setter;
+  V8DOMConfiguration::CachedAccessorCallback cachedAccessorCallback = nullptr;
   if (world.isMainWorld()) {
     if (accessor.getterForMainWorld)
       getterCallback = accessor.getterForMainWorld;
     if (accessor.setterForMainWorld)
       setterCallback = accessor.setterForMainWorld;
+    cachedAccessorCallback = accessor.cachedAccessorCallback;
   }
+
   // Support [LenientThis] by not specifying the signature.  V8 does not do
   // the type checking against holder if no signature is specified.  Note that
   // info.Holder() passed to callbacks will be *unsafe*.
@@ -243,10 +256,11 @@ void installAccessorInternal(
       (V8DOMConfiguration::OnInstance | V8DOMConfiguration::OnPrototype)) {
     v8::Local<FunctionOrTemplate> getter =
         createAccessorFunctionOrTemplate<FunctionOrTemplate>(
-            isolate, getterCallback, data, signature, 0);
+            isolate, getterCallback, cachedAccessorCallback, data, signature,
+            0);
     v8::Local<FunctionOrTemplate> setter =
         createAccessorFunctionOrTemplate<FunctionOrTemplate>(
-            isolate, setterCallback, data, signature, 1);
+            isolate, setterCallback, nullptr, data, signature, 1);
     if (accessor.propertyLocationConfiguration & V8DOMConfiguration::OnInstance)
       instanceOrTemplate->SetAccessorProperty(
           name, getter, setter,
@@ -266,10 +280,12 @@ void installAccessorInternal(
     // type check against a holder.
     v8::Local<FunctionOrTemplate> getter =
         createAccessorFunctionOrTemplate<FunctionOrTemplate>(
-            isolate, getterCallback, data, v8::Local<v8::Signature>(), 0);
+            isolate, getterCallback, nullptr, data, v8::Local<v8::Signature>(),
+            0);
     v8::Local<FunctionOrTemplate> setter =
         createAccessorFunctionOrTemplate<FunctionOrTemplate>(
-            isolate, setterCallback, data, v8::Local<v8::Signature>(), 1);
+            isolate, setterCallback, nullptr, data, v8::Local<v8::Signature>(),
+            1);
     interfaceOrTemplate->SetAccessorProperty(
         name, getter, setter,
         static_cast<v8::PropertyAttribute>(accessor.attribute),

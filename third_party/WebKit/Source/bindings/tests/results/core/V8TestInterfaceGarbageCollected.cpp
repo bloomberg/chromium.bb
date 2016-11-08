@@ -339,7 +339,7 @@ static void constructor(const v8::FunctionCallbackInfo<v8::Value>& info) {
 } // namespace TestInterfaceGarbageCollectedV8Internal
 
 const V8DOMConfiguration::AccessorConfiguration V8TestInterfaceGarbageCollectedAccessors[] = {
-    {"attr1", TestInterfaceGarbageCollectedV8Internal::attr1AttributeGetterCallback, TestInterfaceGarbageCollectedV8Internal::attr1AttributeSetterCallback, 0, 0, 0, v8::DEFAULT, static_cast<v8::PropertyAttribute>(v8::None), V8DOMConfiguration::ExposedToAllScripts, V8DOMConfiguration::OnPrototype, V8DOMConfiguration::CheckHolder},
+    {"attr1", TestInterfaceGarbageCollectedV8Internal::attr1AttributeGetterCallback, TestInterfaceGarbageCollectedV8Internal::attr1AttributeSetterCallback, 0, 0, nullptr, 0, v8::DEFAULT, static_cast<v8::PropertyAttribute>(v8::None), V8DOMConfiguration::ExposedToAllScripts, V8DOMConfiguration::OnPrototype, V8DOMConfiguration::CheckHolder},
 };
 
 const V8DOMConfiguration::MethodConfiguration V8TestInterfaceGarbageCollectedMethods[] = {

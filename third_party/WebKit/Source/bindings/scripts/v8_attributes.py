@@ -118,6 +118,11 @@ def attribute_context(interface, attribute, interfaces):
     if cached_attribute_validation_method or keep_alive_for_gc:
         includes.add('bindings/core/v8/V8HiddenValue.h')
 
+    # [CachedAccessor]
+    is_cached_accessor = 'CachedAccessor' in extended_attributes
+    if is_cached_accessor:
+        includes.add('bindings/core/v8/V8PrivateProperty.h')
+
     context = {
         'access_control_list': access_control_list(interface, attribute),
         'activity_logging_world_list_for_getter': v8_utilities.activity_logging_world_list(attribute, 'Getter'),  # [ActivityLogging]
@@ -137,6 +142,7 @@ def attribute_context(interface, attribute, interfaces):
         'has_custom_setter': has_custom_setter(attribute),
         'has_setter': has_setter(interface, attribute),
         'idl_type': str(idl_type),  # need trailing [] on array for Dictionary::ConversionContext::setConversionType
+        'is_cached_accessor': is_cached_accessor,
         'is_call_with_execution_context': has_extended_attribute_value(attribute, 'CallWith', 'ExecutionContext'),
         'is_call_with_script_state': has_extended_attribute_value(attribute, 'CallWith', 'ScriptState'),
         'is_ce_reactions': is_ce_reactions,
@@ -144,7 +150,7 @@ def attribute_context(interface, attribute, interfaces):
         'is_check_security_for_return_value': is_check_security_for_return_value,
         'is_custom_element_callbacks': is_custom_element_callbacks,
         # TODO(yukishiino): Make all DOM attributes accessor-type properties.
-        'is_data_type_property': is_data_type_property(interface, attribute),
+        'is_data_type_property': not ('CachedAccessor' in extended_attributes) and is_data_type_property(interface, attribute),
         'is_getter_raises_exception':  # [RaisesException]
             'RaisesException' in extended_attributes and
             extended_attributes['RaisesException'] in (None, 'Getter'),
@@ -184,6 +190,7 @@ def attribute_context(interface, attribute, interfaces):
         'runtime_feature_name': v8_utilities.runtime_feature_name(attribute),  # [RuntimeEnabled]
         'secure_context_test': v8_utilities.secure_context(attribute, interface),  # [SecureContext]
         'should_be_exposed_to_script': not (is_implemented_in_private_script and is_only_exposed_to_private_script),
+        'cached_accessor_name': '%s%sCachedAccessor' % (interface.name, attribute.name.capitalize()),
         'world_suffixes': (
             ['', 'ForMainWorld']
             if 'PerWorldBindings' in extended_attributes

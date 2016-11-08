@@ -43,6 +43,7 @@
 #include "bindings/core/v8/V8Initializer.h"
 #include "bindings/core/v8/V8ObjectConstructor.h"
 #include "bindings/core/v8/V8PagePopupControllerBinding.h"
+#include "bindings/core/v8/V8PrivateProperty.h"
 #include "bindings/core/v8/V8Window.h"
 #include "core/frame/LocalFrame.h"
 #include "core/frame/csp/ContentSecurityPolicy.h"
@@ -423,12 +424,10 @@ void WindowProxy::updateDocumentProperty() {
   checkDocumentWrapper(m_document.newLocal(m_isolate), frame->document());
 
   ASSERT(documentWrapper->IsObject());
-  // TODO(jochen): Don't replace the accessor with a data value. We need a way
-  // to tell v8 that the accessor's return value won't change after this point.
-  if (!v8CallBoolean(context->Global()->ForceSet(
-          context, v8AtomicString(m_isolate, "document"), documentWrapper,
-          static_cast<v8::PropertyAttribute>(v8::ReadOnly | v8::DontDelete))))
-    return;
+
+  // Update cached accessor.
+  CHECK(V8PrivateProperty::getWindowDocumentCachedAccessor(m_isolate).set(
+      context, context->Global(), documentWrapper));
 }
 
 void WindowProxy::updateActivityLogger() {

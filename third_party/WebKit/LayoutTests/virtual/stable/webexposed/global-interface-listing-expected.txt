@@ -7531,7 +7531,6 @@ interface webkitURL
     attribute defaultStatus
     attribute defaultstatus
     attribute devicePixelRatio
-    attribute document
     attribute event
     attribute eventSender
     attribute external
@@ -7681,6 +7680,7 @@ interface webkitURL
     attribute webkitIndexedDB
     attribute webkitStorageInfo
     attribute window
+    getter document
     method alert
     method atob
     method blur

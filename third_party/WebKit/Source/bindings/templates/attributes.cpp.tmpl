@@ -232,6 +232,15 @@ const v8::FunctionCallbackInfo<v8::Value>& info
 
 
 {##############################################################################}
+{% macro attribute_cache_property_callback(attribute) %}
+static v8::Local<v8::Private> {{attribute.name}}CachedAccessorCallback(v8::Isolate* isolate)
+{
+    return V8PrivateProperty::get{{attribute.cached_accessor_name}}(isolate).getPrivate();
+}
+{% endmacro %}
+
+
+{##############################################################################}
 {% macro constructor_getter_callback(attribute, world_suffix) %}
 void {{attribute.name}}ConstructorGetterCallback{{world_suffix}}(v8::Local<v8::Name> property, const v8::PropertyCallbackInfo<v8::Value>& info) {
   {% if attribute.deprecate_as %}
@@ -497,6 +506,10 @@ bool {{v8_class}}::PrivateScript::{{attribute.name}}AttributeSetter(LocalFrame* 
        'V8DOMConfiguration::OnlyExposedToPrivateScript'
        if attribute.only_exposed_to_private_script else
        'V8DOMConfiguration::ExposedToAllScripts' %}
+{% set cached_accessor_callback =
+       '%sV8Internal::%sCachedAccessorCallback' % (cpp_class_or_partial, attribute.name)
+       if attribute.is_cached_accessor else
+       'nullptr' %}
 {% set holder_check = 'V8DOMConfiguration::DoNotCheckHolder'
        if attribute.is_lenient_this else 'V8DOMConfiguration::CheckHolder' %}
 {% set attribute_configuration_list = [
@@ -505,6 +518,7 @@ bool {{v8_class}}::PrivateScript::{{attribute.name}}AttributeSetter(LocalFrame* 
        setter_callback,
        getter_callback_for_main_world,
        setter_callback_for_main_world,
+       cached_accessor_callback,
        wrapper_type_info,
        access_control,
        property_attribute,

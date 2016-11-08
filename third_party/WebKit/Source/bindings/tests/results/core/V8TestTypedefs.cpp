@@ -316,15 +316,15 @@ static void constructor(const v8::FunctionCallbackInfo<v8::Value>& info) {
 #pragma clang diagnostic ignored "-Wglobal-constructors"
 #endif
 const V8DOMConfiguration::AttributeConfiguration V8TestTypedefsLazyDataAttributes[] = {
-    {"tAttribute", v8ConstructorAttributeGetter, 0, 0, 0, const_cast<WrapperTypeInfo*>(&V8TestInterface::wrapperTypeInfo), static_cast<v8::AccessControl>(v8::DEFAULT), static_cast<v8::PropertyAttribute>(v8::DontEnum), V8DOMConfiguration::ExposedToAllScripts, V8DOMConfiguration::OnInstance, V8DOMConfiguration::CheckHolder},
+    {"tAttribute", v8ConstructorAttributeGetter, 0, 0, 0, nullptr, const_cast<WrapperTypeInfo*>(&V8TestInterface::wrapperTypeInfo), static_cast<v8::AccessControl>(v8::DEFAULT), static_cast<v8::PropertyAttribute>(v8::DontEnum), V8DOMConfiguration::ExposedToAllScripts, V8DOMConfiguration::OnInstance, V8DOMConfiguration::CheckHolder},
 };
 #if defined(COMPONENT_BUILD) && defined(WIN32) && COMPILER(CLANG)
 #pragma clang diagnostic pop
 #endif
 
 const V8DOMConfiguration::AccessorConfiguration V8TestTypedefsAccessors[] = {
-    {"uLongLongAttribute", TestTypedefsV8Internal::uLongLongAttributeAttributeGetterCallback, TestTypedefsV8Internal::uLongLongAttributeAttributeSetterCallback, 0, 0, 0, v8::DEFAULT, static_cast<v8::PropertyAttribute>(v8::None), V8DOMConfiguration::ExposedToAllScripts, V8DOMConfiguration::OnPrototype, V8DOMConfiguration::CheckHolder},
-    {"domStringOrDoubleOrNullAttribute", TestTypedefsV8Internal::domStringOrDoubleOrNullAttributeAttributeGetterCallback, TestTypedefsV8Internal::domStringOrDoubleOrNullAttributeAttributeSetterCallback, 0, 0, 0, v8::DEFAULT, static_cast<v8::PropertyAttribute>(v8::None), V8DOMConfiguration::ExposedToAllScripts, V8DOMConfiguration::OnPrototype, V8DOMConfiguration::CheckHolder},
+    {"uLongLongAttribute", TestTypedefsV8Internal::uLongLongAttributeAttributeGetterCallback, TestTypedefsV8Internal::uLongLongAttributeAttributeSetterCallback, 0, 0, nullptr, 0, v8::DEFAULT, static_cast<v8::PropertyAttribute>(v8::None), V8DOMConfiguration::ExposedToAllScripts, V8DOMConfiguration::OnPrototype, V8DOMConfiguration::CheckHolder},
+    {"domStringOrDoubleOrNullAttribute", TestTypedefsV8Internal::domStringOrDoubleOrNullAttributeAttributeGetterCallback, TestTypedefsV8Internal::domStringOrDoubleOrNullAttributeAttributeSetterCallback, 0, 0, nullptr, 0, v8::DEFAULT, static_cast<v8::PropertyAttribute>(v8::None), V8DOMConfiguration::ExposedToAllScripts, V8DOMConfiguration::OnPrototype, V8DOMConfiguration::CheckHolder},
 };
 
 const V8DOMConfiguration::MethodConfiguration V8TestTypedefsMethods[] = {

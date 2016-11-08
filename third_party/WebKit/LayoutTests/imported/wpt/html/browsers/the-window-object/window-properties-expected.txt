@@ -138,7 +138,7 @@ FAIL Window attribute: onunload assert_equals: expected "function" but got "unde
 FAIL Window attribute: onvolumechange assert_equals: expected "function" but got "undefined"
 FAIL Window attribute: onwaiting assert_equals: expected "function" but got "undefined"
 FAIL Window unforgeable attribute: window assert_equals: expected "function" but got "undefined"
-FAIL Window unforgeable attribute: document assert_equals: expected "function" but got "undefined"
+PASS Window unforgeable attribute: document 
 FAIL Window unforgeable attribute: location assert_equals: expected "function" but got "undefined"
 FAIL Window unforgeable attribute: top assert_equals: expected "function" but got "undefined"
 FAIL Window replaceable attribute: self assert_equals: expected "function" but got "undefined"

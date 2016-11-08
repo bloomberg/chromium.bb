@@ -59,7 +59,7 @@ namespace TestInterfaceNamedConstructorV8Internal {
 #pragma clang diagnostic ignored "-Wglobal-constructors"
 #endif
 const V8DOMConfiguration::AttributeConfiguration V8TestInterfaceNamedConstructorLazyDataAttributes[] = {
-    {"testNamedConstructorConstructorAttribute", v8ConstructorAttributeGetter, 0, 0, 0, const_cast<WrapperTypeInfo*>(&V8TestNamedConstructor::wrapperTypeInfo), static_cast<v8::AccessControl>(v8::DEFAULT), static_cast<v8::PropertyAttribute>(v8::DontEnum), V8DOMConfiguration::ExposedToAllScripts, V8DOMConfiguration::OnInstance, V8DOMConfiguration::CheckHolder},
+    {"testNamedConstructorConstructorAttribute", v8ConstructorAttributeGetter, 0, 0, 0, nullptr, const_cast<WrapperTypeInfo*>(&V8TestNamedConstructor::wrapperTypeInfo), static_cast<v8::AccessControl>(v8::DEFAULT), static_cast<v8::PropertyAttribute>(v8::DontEnum), V8DOMConfiguration::ExposedToAllScripts, V8DOMConfiguration::OnInstance, V8DOMConfiguration::CheckHolder},
 };
 #if defined(COMPONENT_BUILD) && defined(WIN32) && COMPILER(CLANG)
 #pragma clang diagnostic pop

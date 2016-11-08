@@ -28,7 +28,7 @@ v8::Local<v8::Private> V8PrivateProperty::createV8Private(v8::Isolate* isolate,
           isolate, reinterpret_cast<const uint8_t*>(symbol),
           v8::NewStringType::kNormal, static_cast<int>(length))
           .ToLocalChecked();
-  return v8::Private::ForApi(isolate, str);
+  return v8::Private::New(isolate, str);
 }
 
 }  // namespace blink

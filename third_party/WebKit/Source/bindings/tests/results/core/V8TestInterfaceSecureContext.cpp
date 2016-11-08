@@ -361,31 +361,31 @@ void V8TestInterfaceSecureContext::preparePrototypeAndInterfaceObject(v8::Local<
   ExecutionContext* executionContext = toExecutionContext(context);
   v8::Local<v8::Signature> signature = v8::Signature::New(isolate, interfaceTemplate);
   if (executionContext && (executionContext->isSecureContext())) {
-      const V8DOMConfiguration::AccessorConfiguration accessorConfiguration = {"secureContextAttribute", TestInterfaceSecureContextV8Internal::secureContextAttributeAttributeGetterCallback, TestInterfaceSecureContextV8Internal::secureContextAttributeAttributeSetterCallback, 0, 0, 0, v8::DEFAULT, static_cast<v8::PropertyAttribute>(v8::None), V8DOMConfiguration::ExposedToAllScripts, V8DOMConfiguration::OnPrototype, V8DOMConfiguration::CheckHolder};
+      const V8DOMConfiguration::AccessorConfiguration accessorConfiguration = {"secureContextAttribute", TestInterfaceSecureContextV8Internal::secureContextAttributeAttributeGetterCallback, TestInterfaceSecureContextV8Internal::secureContextAttributeAttributeSetterCallback, 0, 0, nullptr, 0, v8::DEFAULT, static_cast<v8::PropertyAttribute>(v8::None), V8DOMConfiguration::ExposedToAllScripts, V8DOMConfiguration::OnPrototype, V8DOMConfiguration::CheckHolder};
       V8DOMConfiguration::installAccessor(isolate, world, v8::Local<v8::Object>(), prototypeObject, interfaceObject, signature, accessorConfiguration);
   }
   if (executionContext && (executionContext->isSecureContext())) {
       if (RuntimeEnabledFeatures::secureFeatureEnabled()) {
-          const V8DOMConfiguration::AccessorConfiguration accessorConfiguration = {"secureContextRuntimeEnabledAttribute", TestInterfaceSecureContextV8Internal::secureContextRuntimeEnabledAttributeAttributeGetterCallback, TestInterfaceSecureContextV8Internal::secureContextRuntimeEnabledAttributeAttributeSetterCallback, 0, 0, 0, v8::DEFAULT, static_cast<v8::PropertyAttribute>(v8::None), V8DOMConfiguration::ExposedToAllScripts, V8DOMConfiguration::OnPrototype, V8DOMConfiguration::CheckHolder};
+          const V8DOMConfiguration::AccessorConfiguration accessorConfiguration = {"secureContextRuntimeEnabledAttribute", TestInterfaceSecureContextV8Internal::secureContextRuntimeEnabledAttributeAttributeGetterCallback, TestInterfaceSecureContextV8Internal::secureContextRuntimeEnabledAttributeAttributeSetterCallback, 0, 0, nullptr, 0, v8::DEFAULT, static_cast<v8::PropertyAttribute>(v8::None), V8DOMConfiguration::ExposedToAllScripts, V8DOMConfiguration::OnPrototype, V8DOMConfiguration::CheckHolder};
           V8DOMConfiguration::installAccessor(isolate, world, v8::Local<v8::Object>(), prototypeObject, interfaceObject, signature, accessorConfiguration);
       }
   }
   if (executionContext && (executionContext->isDocument())) {
       if (executionContext && (executionContext->isSecureContext())) {
-          const V8DOMConfiguration::AccessorConfiguration accessorConfiguration = {"secureContextWindowExposedAttribute", TestInterfaceSecureContextV8Internal::secureContextWindowExposedAttributeAttributeGetterCallback, TestInterfaceSecureContextV8Internal::secureContextWindowExposedAttributeAttributeSetterCallback, 0, 0, 0, v8::DEFAULT, static_cast<v8::PropertyAttribute>(v8::None), V8DOMConfiguration::ExposedToAllScripts, V8DOMConfiguration::OnPrototype, V8DOMConfiguration::CheckHolder};
+          const V8DOMConfiguration::AccessorConfiguration accessorConfiguration = {"secureContextWindowExposedAttribute", TestInterfaceSecureContextV8Internal::secureContextWindowExposedAttributeAttributeGetterCallback, TestInterfaceSecureContextV8Internal::secureContextWindowExposedAttributeAttributeSetterCallback, 0, 0, nullptr, 0, v8::DEFAULT, static_cast<v8::PropertyAttribute>(v8::None), V8DOMConfiguration::ExposedToAllScripts, V8DOMConfiguration::OnPrototype, V8DOMConfiguration::CheckHolder};
           V8DOMConfiguration::installAccessor(isolate, world, v8::Local<v8::Object>(), prototypeObject, interfaceObject, signature, accessorConfiguration);
       }
   }
   if (executionContext && (executionContext->isWorkerGlobalScope())) {
       if (executionContext && (executionContext->isSecureContext())) {
-          const V8DOMConfiguration::AccessorConfiguration accessorConfiguration = {"secureContextWorkerExposedAttribute", TestInterfaceSecureContextV8Internal::secureContextWorkerExposedAttributeAttributeGetterCallback, TestInterfaceSecureContextV8Internal::secureContextWorkerExposedAttributeAttributeSetterCallback, 0, 0, 0, v8::DEFAULT, static_cast<v8::PropertyAttribute>(v8::None), V8DOMConfiguration::ExposedToAllScripts, V8DOMConfiguration::OnPrototype, V8DOMConfiguration::CheckHolder};
+          const V8DOMConfiguration::AccessorConfiguration accessorConfiguration = {"secureContextWorkerExposedAttribute", TestInterfaceSecureContextV8Internal::secureContextWorkerExposedAttributeAttributeGetterCallback, TestInterfaceSecureContextV8Internal::secureContextWorkerExposedAttributeAttributeSetterCallback, 0, 0, nullptr, 0, v8::DEFAULT, static_cast<v8::PropertyAttribute>(v8::None), V8DOMConfiguration::ExposedToAllScripts, V8DOMConfiguration::OnPrototype, V8DOMConfiguration::CheckHolder};
           V8DOMConfiguration::installAccessor(isolate, world, v8::Local<v8::Object>(), prototypeObject, interfaceObject, signature, accessorConfiguration);
       }
   }
   if (executionContext && (executionContext->isDocument())) {
       if (executionContext && (executionContext->isSecureContext())) {
           if (RuntimeEnabledFeatures::secureFeatureEnabled()) {
-              const V8DOMConfiguration::AccessorConfiguration accessorConfiguration = {"secureContextWindowExposedRuntimeEnabledAttribute", TestInterfaceSecureContextV8Internal::secureContextWindowExposedRuntimeEnabledAttributeAttributeGetterCallback, TestInterfaceSecureContextV8Internal::secureContextWindowExposedRuntimeEnabledAttributeAttributeSetterCallback, 0, 0, 0, v8::DEFAULT, static_cast<v8::PropertyAttribute>(v8::None), V8DOMConfiguration::ExposedToAllScripts, V8DOMConfiguration::OnPrototype, V8DOMConfiguration::CheckHolder};
+              const V8DOMConfiguration::AccessorConfiguration accessorConfiguration = {"secureContextWindowExposedRuntimeEnabledAttribute", TestInterfaceSecureContextV8Internal::secureContextWindowExposedRuntimeEnabledAttributeAttributeGetterCallback, TestInterfaceSecureContextV8Internal::secureContextWindowExposedRuntimeEnabledAttributeAttributeSetterCallback, 0, 0, nullptr, 0, v8::DEFAULT, static_cast<v8::PropertyAttribute>(v8::None), V8DOMConfiguration::ExposedToAllScripts, V8DOMConfiguration::OnPrototype, V8DOMConfiguration::CheckHolder};
               V8DOMConfiguration::installAccessor(isolate, world, v8::Local<v8::Object>(), prototypeObject, interfaceObject, signature, accessorConfiguration);
           }
       }
@@ -393,7 +393,7 @@ void V8TestInterfaceSecureContext::preparePrototypeAndInterfaceObject(v8::Local<
   if (executionContext && (executionContext->isWorkerGlobalScope())) {
       if (executionContext && (executionContext->isSecureContext())) {
           if (RuntimeEnabledFeatures::secureFeatureEnabled()) {
-              const V8DOMConfiguration::AccessorConfiguration accessorConfiguration = {"secureContextWorkerExposedRuntimeEnabledAttribute", TestInterfaceSecureContextV8Internal::secureContextWorkerExposedRuntimeEnabledAttributeAttributeGetterCallback, TestInterfaceSecureContextV8Internal::secureContextWorkerExposedRuntimeEnabledAttributeAttributeSetterCallback, 0, 0, 0, v8::DEFAULT, static_cast<v8::PropertyAttribute>(v8::None), V8DOMConfiguration::ExposedToAllScripts, V8DOMConfiguration::OnPrototype, V8DOMConfiguration::CheckHolder};
+              const V8DOMConfiguration::AccessorConfiguration accessorConfiguration = {"secureContextWorkerExposedRuntimeEnabledAttribute", TestInterfaceSecureContextV8Internal::secureContextWorkerExposedRuntimeEnabledAttributeAttributeGetterCallback, TestInterfaceSecureContextV8Internal::secureContextWorkerExposedRuntimeEnabledAttributeAttributeSetterCallback, 0, 0, nullptr, 0, v8::DEFAULT, static_cast<v8::PropertyAttribute>(v8::None), V8DOMConfiguration::ExposedToAllScripts, V8DOMConfiguration::OnPrototype, V8DOMConfiguration::CheckHolder};
               V8DOMConfiguration::installAccessor(isolate, world, v8::Local<v8::Object>(), prototypeObject, interfaceObject, signature, accessorConfiguration);
           }
       }

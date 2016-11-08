@@ -34,7 +34,8 @@ class ScriptWrappable;
   X(SameObject, NotificationActions)    \
   X(SameObject, NotificationData)       \
   X(SameObject, NotificationVibrate)    \
-  X(V8NodeFilterCondition, Filter)
+  X(V8NodeFilterCondition, Filter)      \
+  X(Window, DocumentCachedAccessor)
 
 // The getter's name for a private property.
 #define V8_PRIVATE_PROPERTY_GETTER_NAME(InterfaceName, PrivateKeyName) \
@@ -104,6 +105,8 @@ class CORE_EXPORT V8PrivateProperty {
              v8::Local<v8::Value> value) const {
       return v8CallBoolean(object->SetPrivate(context, m_privateSymbol, value));
     }
+
+    v8::Local<v8::Private> getPrivate() { return m_privateSymbol; }
 
    private:
     friend class V8PrivateProperty;

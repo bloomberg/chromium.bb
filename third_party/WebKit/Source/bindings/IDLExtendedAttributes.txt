@@ -33,6 +33,7 @@
 
 ActiveScriptWrappable
 CEReactions
+CachedAccessor
 CachedAttribute=*
 CallWith=ExecutionContext|ScriptState|ScriptArguments|CurrentWindow|EnteredWindow|ThisValue
 CheckSecurity=Receiver|ReturnValue

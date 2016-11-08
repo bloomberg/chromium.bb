@@ -36,7 +36,7 @@
     // FIXME: The spec uses the WindowProxy type for this and many other attributes.
     [Unforgeable, DoNotCheckSecurity] readonly attribute Window window;
     [Replaceable, DoNotCheckSecurity] readonly attribute Window self;
-    [Unforgeable] readonly attribute Document document;
+    [Unforgeable, CachedAccessor] readonly attribute Document document;
     attribute DOMString name;
     [PutForwards=href, Unforgeable, DoNotCheckSecurity] readonly attribute Location location;
     readonly attribute History history;
