@@ -7,8 +7,10 @@
 
 #include <list>
 #include <map>
+#include <memory>
 #include <set>
 #include <utility>
+
 #include "base/compiler_specific.h"
 #include "base/macros.h"
 #include "base/win/scoped_handle.h"
@@ -61,8 +63,6 @@ class BrokerServicesBase final : public BrokerServices,
   bool IsActiveTarget(DWORD process_id);
 
  private:
-  typedef std::list<JobTracker*> JobTrackerList;
-
   // The routine that the worker thread executes. It is in charge of
   // notifications and cleanup-related tasks.
   static DWORD WINAPI TargetEventsThread(PVOID param);
@@ -82,14 +82,15 @@ class BrokerServicesBase final : public BrokerServices,
   // threads at the same time.
   CRITICAL_SECTION lock_;
 
-  // provides a pool of threads that are used to wait on the IPC calls.
-  ThreadProvider* thread_pool_;
+  // Provides a pool of threads that are used to wait on the IPC calls.
+  std::unique_ptr<ThreadProvider> thread_pool_;
 
   // List of the trackers for closing and cleanup purposes.
-  JobTrackerList tracker_list_;
+  std::list<std::unique_ptr<JobTracker>> tracker_list_;
 
   // Provides a fast lookup to identify sandboxed processes that belong to a
-  // job. Consult |jobless_process_handles_| for handles of pocess without job.
+  // job. Consult |jobless_process_handles_| for handles of processes without
+  // jobs.
   std::set<DWORD> child_process_ids_;
 
   DISALLOW_COPY_AND_ASSIGN(BrokerServicesBase);
