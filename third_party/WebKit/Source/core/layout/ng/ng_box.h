@@ -63,6 +63,7 @@ class CORE_EXPORT NGBox final : public GarbageCollectedFinalized<NGBox> {
   void PositionUpdated();
 
   bool CanUseNewLayout();
+  bool HasInlineChildren();
 
   // After we run the layout algorithm, this function copies back the geometry
   // data to the layout box.

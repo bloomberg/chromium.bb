@@ -10,6 +10,7 @@
 #include "core/layout/ng/ng_constraint_space_builder.h"
 #include "core/layout/ng/ng_constraint_space.h"
 #include "core/layout/ng/ng_direction.h"
+#include "core/layout/ng/ng_inline_layout_algorithm.h"
 #include "core/layout/ng/ng_fragment.h"
 #include "core/layout/ng/ng_fragment_builder.h"
 #include "core/layout/ng/ng_length_utils.h"
@@ -36,15 +37,22 @@ bool NGBox::Layout(const NGConstraintSpace* constraint_space,
   // resulting size to the LayoutObject, or use the old layout code and
   // synthesize a fragment.
   if (CanUseNewLayout()) {
-    // Change the coordinate system of the constraint space.
-    NGConstraintSpace* child_constraint_space = new NGConstraintSpace(
-        FromPlatformWritingMode(Style()->getWritingMode()),
-        FromPlatformDirection(Style()->direction()),
-        constraint_space->MutablePhysicalSpace());
+    if (!layout_algorithm_) {
+      // Change the coordinate system of the constraint space.
+      NGConstraintSpace* child_constraint_space = new NGConstraintSpace(
+          FromPlatformWritingMode(Style()->getWritingMode()),
+          FromPlatformDirection(Style()->direction()),
+          constraint_space->MutablePhysicalSpace());
 
-    if (!layout_algorithm_)
-      layout_algorithm_ = new NGBlockLayoutAlgorithm(Style(), FirstChild(),
-                                                     child_constraint_space);
+      if (HasInlineChildren()) {
+        layout_algorithm_ = new NGInlineLayoutAlgorithm(
+            Style(), new NGInlineBox(layout_box_->slowFirstChild()),
+            child_constraint_space);
+      } else {
+        layout_algorithm_ = new NGBlockLayoutAlgorithm(Style(), FirstChild(),
+                                                       child_constraint_space);
+      }
+    }
 
     NGPhysicalFragment* fragment = nullptr;
     if (!layout_algorithm_->Layout(&fragment))
@@ -212,14 +220,24 @@ bool NGBox::CanUseNewLayout() {
     return true;
   if (!layout_box_->isLayoutBlockFlow())
     return false;
+  if (HasInlineChildren())
+    return false;
+  return true;
+}
+
+bool NGBox::HasInlineChildren() {
+  if (!layout_box_)
+    return false;
+
   const LayoutBlockFlow* block_flow = toLayoutBlockFlow(layout_box_);
   LayoutObject* child = block_flow->firstChild();
   while (child) {
     if (child->isInline())
-      return false;
+      return true;
     child = child->nextSibling();
   }
-  return true;
+
+  return false;
 }
 
 void NGBox::CopyFragmentDataToLayoutBox(
