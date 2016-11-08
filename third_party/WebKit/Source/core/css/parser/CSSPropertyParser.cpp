@@ -1770,15 +1770,19 @@ static bool consumeNumbers(CSSParserTokenRange& args,
 }
 
 static bool consumePerspective(CSSParserTokenRange& args,
-                               CSSParserMode cssParserMode,
+                               const CSSParserContext& context,
                                CSSFunctionValue*& transformValue,
                                bool useLegacyParsing) {
   CSSPrimitiveValue* parsedValue =
-      consumeLength(args, cssParserMode, ValueRangeNonNegative);
+      consumeLength(args, context.mode(), ValueRangeNonNegative);
   if (!parsedValue && useLegacyParsing) {
     double perspective;
     if (!consumeNumberRaw(args, perspective) || perspective < 0)
       return false;
+    if (context.useCounter()) {
+      context.useCounter()->count(
+          UseCounter::UnitlessPerspectiveInTransformProperty);
+    }
     parsedValue = CSSPrimitiveValue::create(
         perspective, CSSPrimitiveValue::UnitType::Pixels);
   }
@@ -1789,7 +1793,7 @@ static bool consumePerspective(CSSParserTokenRange& args,
 }
 
 static CSSValue* consumeTransformValue(CSSParserTokenRange& range,
-                                       CSSParserMode cssParserMode,
+                                       const CSSParserContext& context,
                                        bool useLegacyParsing) {
   CSSValueID functionId = range.peek().functionId();
   if (functionId == CSSValueInvalid)
@@ -1833,27 +1837,26 @@ static CSSValue* consumeTransformValue(CSSParserTokenRange& range,
       }
       break;
     case CSSValuePerspective:
-      if (!consumePerspective(args, cssParserMode, transformValue,
-                              useLegacyParsing))
+      if (!consumePerspective(args, context, transformValue, useLegacyParsing))
         return nullptr;
       break;
     case CSSValueTranslateX:
     case CSSValueTranslateY:
     case CSSValueTranslate:
-      parsedValue = consumeLengthOrPercent(args, cssParserMode, ValueRangeAll);
+      parsedValue = consumeLengthOrPercent(args, context.mode(), ValueRangeAll);
       if (!parsedValue)
         return nullptr;
       if (functionId == CSSValueTranslate &&
           consumeCommaIncludingWhitespace(args)) {
         transformValue->append(*parsedValue);
         parsedValue =
-            consumeLengthOrPercent(args, cssParserMode, ValueRangeAll);
+            consumeLengthOrPercent(args, context.mode(), ValueRangeAll);
         if (!parsedValue)
           return nullptr;
       }
       break;
     case CSSValueTranslateZ:
-      parsedValue = consumeLength(args, cssParserMode, ValueRangeAll);
+      parsedValue = consumeLength(args, context.mode(), ValueRangeAll);
       break;
     case CSSValueMatrix:
     case CSSValueMatrix3d:
@@ -1874,7 +1877,7 @@ static CSSValue* consumeTransformValue(CSSParserTokenRange& range,
         return nullptr;
       break;
     case CSSValueTranslate3d:
-      if (!consumeTranslate3d(args, cssParserMode, transformValue))
+      if (!consumeTranslate3d(args, context.mode(), transformValue))
         return nullptr;
       break;
     default:
@@ -1888,7 +1891,7 @@ static CSSValue* consumeTransformValue(CSSParserTokenRange& range,
 }
 
 static CSSValue* consumeTransform(CSSParserTokenRange& range,
-                                  CSSParserMode cssParserMode,
+                                  const CSSParserContext& context,
                                   bool useLegacyParsing) {
   if (range.peek().id() == CSSValueNone)
     return consumeIdent(range);
@@ -1896,7 +1899,7 @@ static CSSValue* consumeTransform(CSSParserTokenRange& range,
   CSSValueList* list = CSSValueList::createSpaceSeparated();
   do {
     CSSValue* parsedTransformValue =
-        consumeTransformValue(range, cssParserMode, useLegacyParsing);
+        consumeTransformValue(range, context, useLegacyParsing);
     if (!parsedTransformValue)
       return nullptr;
     list->append(*parsedTransformValue);
@@ -2190,17 +2193,21 @@ static CSSValue* consumeContent(CSSParserTokenRange& range,
 }
 
 static CSSValue* consumePerspective(CSSParserTokenRange& range,
-                                    CSSParserMode cssParserMode,
+                                    const CSSParserContext& context,
                                     CSSPropertyID unresolvedProperty) {
   if (range.peek().id() == CSSValueNone)
     return consumeIdent(range);
   CSSPrimitiveValue* parsedValue =
-      consumeLength(range, cssParserMode, ValueRangeAll);
+      consumeLength(range, context.mode(), ValueRangeAll);
   if (!parsedValue &&
       (unresolvedProperty == CSSPropertyAliasWebkitPerspective)) {
     double perspective;
     if (!consumeNumberRaw(range, perspective))
       return nullptr;
+    if (context.useCounter()) {
+      context.useCounter()->count(
+          UseCounter::UnitlessPerspectiveInPerspectiveProperty);
+    }
     parsedValue = CSSPrimitiveValue::create(
         perspective, CSSPrimitiveValue::UnitType::Pixels);
   }
@@ -3660,7 +3667,7 @@ const CSSValue* CSSPropertyParser::parseSingleValue(
       return consumeLineWidth(m_range, m_context.mode(), UnitlessQuirk::Forbid);
     case CSSPropertyTransform:
       return consumeTransform(
-          m_range, m_context.mode(),
+          m_range, m_context,
           unresolvedProperty == CSSPropertyAliasWebkitTransform);
     case CSSPropertyWebkitTransformOriginX:
     case CSSPropertyWebkitPerspectiveOriginX:
@@ -3726,7 +3733,7 @@ const CSSValue* CSSPropertyParser::parseSingleValue(
     case CSSPropertyWebkitMaskBoxImageSource:
       return consumeImageOrNone(m_range, m_context);
     case CSSPropertyPerspective:
-      return consumePerspective(m_range, m_context.mode(), unresolvedProperty);
+      return consumePerspective(m_range, m_context, unresolvedProperty);
     case CSSPropertyScrollSnapCoordinate:
       return consumeScrollSnapCoordinate(m_range, m_context.mode());
     case CSSPropertyScrollSnapPointsX:

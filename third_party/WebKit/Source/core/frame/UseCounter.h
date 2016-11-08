@@ -1385,6 +1385,8 @@ class CORE_EXPORT UseCounter {
     DocumentCreateElement2ndArgStringHandling = 1668,
     V8MediaRecorder_Start_Method = 1669,
     WebBluetoothRequestDevice = 1670,
+    UnitlessPerspectiveInPerspectiveProperty = 1671,
+    UnitlessPerspectiveInTransformProperty = 1672,
 
     // Add new features immediately above this line. Don't change assigned
     // numbers of any item, and don't reuse removed slots.
