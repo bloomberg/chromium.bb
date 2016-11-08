@@ -3632,10 +3632,8 @@ bool LayoutBlockFlow::positionNewFloats(LineWidth* width) {
   for (; it != end; ++it) {
     FloatingObject& floatingObject = *it->get();
     // The containing block is responsible for positioning floats, so if we have
-    // floats in our list that come from somewhere else, do not attempt to
-    // position them.
-    if (floatingObject.layoutObject()->containingBlock() != this)
-      continue;
+    // unplaced floats in our list that come from somewhere else, we have a bug.
+    DCHECK_EQ(floatingObject.layoutObject()->containingBlock(), this);
 
     LayoutBox* childBox = floatingObject.layoutObject();
 
