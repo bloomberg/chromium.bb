@@ -823,15 +823,17 @@ size_t FieldTrialList::GetFieldTrialCount() {
 // static
 void FieldTrialList::CreateTrialsFromSharedMemory(
     std::unique_ptr<SharedMemory> shm) {
-  const SharedPersistentMemoryAllocator shalloc(std::move(shm), 0,
-                                                kAllocatorName, true);
-  PersistentMemoryAllocator::Iterator mem_iter(&shalloc);
+  global_->field_trial_allocator_.reset(new SharedPersistentMemoryAllocator(
+      std::move(shm), 0, kAllocatorName, true));
+  SharedPersistentMemoryAllocator* shalloc =
+      global_->field_trial_allocator_.get();
+  PersistentMemoryAllocator::Iterator mem_iter(shalloc);
 
   SharedPersistentMemoryAllocator::Reference ref;
   while ((ref = mem_iter.GetNextOfType(kFieldTrialType)) !=
          SharedPersistentMemoryAllocator::kReferenceNull) {
     const FieldTrialEntry* entry =
-        shalloc.GetAsObject<const FieldTrialEntry>(ref, kFieldTrialType);
+        shalloc->GetAsObject<const FieldTrialEntry>(ref, kFieldTrialType);
 
     StringPiece trial_name;
     StringPiece group_name;
@@ -845,6 +847,7 @@ void FieldTrialList::CreateTrialsFromSharedMemory(
     FieldTrial* trial =
         CreateFieldTrial(trial_name.as_string(), group_name.as_string());
 
+    trial->ref_ = ref;
     if (entry->activated) {
       // Call |group()| to mark the trial as "used" and notify observers, if
       // any. This is useful to ensure that field trials created in child
@@ -895,6 +898,11 @@ void FieldTrialList::AddToAllocatorWhileLocked(FieldTrial* field_trial) {
   if (allocator == nullptr)
     return;
 
+  // Or if the allocator is read only, which means we are in a child process and
+  // shouldn't be writing to it.
+  if (allocator->IsReadonly())
+    return;
+
   // Or if we've already added it.
   if (field_trial->ref_ != SharedPersistentMemoryAllocator::kReferenceNull)
     return;
@@ -932,6 +940,11 @@ void FieldTrialList::ActivateFieldTrialEntryWhileLocked(
     FieldTrial* field_trial) {
   SharedPersistentMemoryAllocator* allocator =
       global_->field_trial_allocator_.get();
+
+  // Check if we're in the child process and return early if so.
+  if (allocator && allocator->IsReadonly())
+    return;
+
   SharedPersistentMemoryAllocator::Reference ref = field_trial->ref_;
   if (ref == SharedPersistentMemoryAllocator::kReferenceNull) {
     // It's fine to do this even if the allocator hasn't been instantiated
