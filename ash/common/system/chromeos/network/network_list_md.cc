@@ -6,6 +6,7 @@
 
 #include <stddef.h>
 
+#include "ash/common/ash_view_ids.h"
 #include "ash/common/system/chromeos/network/network_icon.h"
 #include "ash/common/system/chromeos/network/network_icon_animation.h"
 #include "ash/common/system/chromeos/network/network_info.h"
@@ -120,7 +121,7 @@ class NetworkListViewMd::WifiHeaderRowView : public views::View {
 
  private:
   void Init() {
-    set_id(kHeaderRowId);
+    set_id(VIEW_ID_STICKY_HEADER);
     set_background(views::Background::CreateSolidBackground(kBackgroundColor));
     // TODO(tdanderson): Need to unify this with the generic menu row class.
     views::View* container = new views::View;

@@ -77,8 +77,6 @@ const int kTrayNotificationContentsWidth =
     kTrayPopupMinWidth - (kNotificationIconWidth + kNotificationButtonWidth +
                           (kTrayPopupPaddingHorizontal / 2) * 3);
 
-const int kHeaderRowId = -1;
-
 const int kTrayIconSize = 16;
 const SkColor kTrayIconColor = SK_ColorWHITE;
 const int kMenuIconSize = 20;

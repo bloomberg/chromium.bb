@@ -8,9 +8,14 @@
 namespace ash {
 
 enum ViewID {
-  VIEW_ID_NONE = 10000,
-  VIEW_ID_MEDIA_TRAY_VIEW,
+  VIEW_ID_NONE = 0,
+
+  // Ash IDs start above the range used in Chrome (c/b/ui/view_ids.h).
+  VIEW_ID_MEDIA_TRAY_VIEW = 10000,
   VIEW_ID_USER_VIEW_MEDIA_INDICATOR,
+
+  // View ID that is used to mark sticky header rows in a scroll view.
+  VIEW_ID_STICKY_HEADER,
 };
 
 }  // namespace ash

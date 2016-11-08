@@ -4,6 +4,7 @@
 
 #include "ash/common/system/tray/tray_details_view.h"
 
+#include "ash/common/ash_view_ids.h"
 #include "ash/common/material_design/material_design_controller.h"
 #include "ash/common/system/tray/fixed_sized_scroll_view.h"
 #include "ash/common/system/tray/system_tray.h"
@@ -31,7 +32,7 @@ namespace {
 // the children as sticky header rows. The sticky header rows are not scrolled
 // above the top of the visible viewport until the next one "pushes" it up and
 // are painted above other children. To indicate that a child is a sticky header
-// row use set_id(kHeaderRowId).
+// row use set_id(VIEW_ID_STICKY_HEADER).
 class ScrollContentsView : public views::View,
                            public views::ViewTargeterDelegate {
  public:
@@ -50,7 +51,7 @@ class ScrollContentsView : public views::View,
 
   void PaintChildren(const ui::PaintContext& context) override {
     for (int i = 0; i < child_count(); ++i) {
-      if (child_at(i)->id() != kHeaderRowId && !child_at(i)->layer())
+      if (child_at(i)->id() != VIEW_ID_STICKY_HEADER && !child_at(i)->layer())
         child_at(i)->Paint(context);
     }
     // Paint header rows above other children in Z-order.
@@ -66,7 +67,7 @@ class ScrollContentsView : public views::View,
     headers_.clear();
     for (int i = 0; i < child_count(); ++i) {
       views::View* view = child_at(i);
-      if (view->id() == kHeaderRowId)
+      if (view->id() == VIEW_ID_STICKY_HEADER)
         headers_.emplace_back(view);
     }
     PositionHeaderRows();
