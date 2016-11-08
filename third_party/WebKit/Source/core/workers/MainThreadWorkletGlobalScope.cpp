@@ -23,6 +23,11 @@ MainThreadWorkletGlobalScope::MainThreadWorkletGlobalScope(
 
 MainThreadWorkletGlobalScope::~MainThreadWorkletGlobalScope() {}
 
+WorkerThread* MainThreadWorkletGlobalScope::thread() const {
+  NOTREACHED();
+  return nullptr;
+}
+
 void MainThreadWorkletGlobalScope::evaluateScript(
     const ScriptSourceCode& scriptSourceCode) {
   scriptController()->evaluate(scriptSourceCode);

@@ -96,12 +96,8 @@ void DedicatedWorkerGlobalScope::postMessage(
       MessagePort::disentanglePorts(context, ports, exceptionState);
   if (exceptionState.hadException())
     return;
-  thread()->workerObjectProxy().postMessageToWorkerObject(std::move(message),
-                                                          std::move(channels));
-}
-
-DedicatedWorkerThread* DedicatedWorkerGlobalScope::thread() const {
-  return static_cast<DedicatedWorkerThread*>(WorkerGlobalScope::thread());
+  workerObjectProxy().postMessageToWorkerObject(std::move(message),
+                                                std::move(channels));
 }
 
 static void countOnDocument(UseCounter::Feature feature,
@@ -118,14 +114,19 @@ static void countDeprecationOnDocument(UseCounter::Feature feature,
 
 void DedicatedWorkerGlobalScope::countFeature(
     UseCounter::Feature feature) const {
-  thread()->workerObjectProxy().postTaskToMainExecutionContext(
+  workerObjectProxy().postTaskToMainExecutionContext(
       createCrossThreadTask(&countOnDocument, feature));
 }
 
 void DedicatedWorkerGlobalScope::countDeprecation(
     UseCounter::Feature feature) const {
-  thread()->workerObjectProxy().postTaskToMainExecutionContext(
+  workerObjectProxy().postTaskToMainExecutionContext(
       createCrossThreadTask(&countDeprecationOnDocument, feature));
+}
+
+InProcessWorkerObjectProxy& DedicatedWorkerGlobalScope::workerObjectProxy()
+    const {
+  return static_cast<DedicatedWorkerThread*>(thread())->workerObjectProxy();
 }
 
 DEFINE_TRACE(DedicatedWorkerGlobalScope) {

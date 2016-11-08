@@ -24,6 +24,9 @@ class CORE_EXPORT MainThreadWorkletGlobalScope : public WorkletGlobalScope,
   ~MainThreadWorkletGlobalScope() override;
   bool isMainThreadWorkletGlobalScope() const final { return true; }
 
+  // WorkerOrWorkletGlobalScope
+  WorkerThread* thread() const final;
+
   // WorkletGlobalScopeProxy
   void evaluateScript(const ScriptSourceCode&) final;
   void terminateWorkletGlobalScope() final;

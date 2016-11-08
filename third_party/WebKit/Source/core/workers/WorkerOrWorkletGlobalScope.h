@@ -11,6 +11,7 @@ namespace blink {
 
 class ScriptWrappable;
 class WorkerOrWorkletScriptController;
+class WorkerThread;
 
 class CORE_EXPORT WorkerOrWorkletGlobalScope : public ExecutionContext {
  public:
@@ -26,6 +27,10 @@ class CORE_EXPORT WorkerOrWorkletGlobalScope : public ExecutionContext {
   // Should be called before destroying the global scope object. Allows
   // sub-classes to perform any cleanup needed.
   virtual void dispose() = 0;
+
+  // May return nullptr if this global scope is not threaded (i.e.,
+  // MainThreadWorkletGlobalScope) or after dispose() is called.
+  virtual WorkerThread* thread() const = 0;
 };
 
 DEFINE_TYPE_CASTS(

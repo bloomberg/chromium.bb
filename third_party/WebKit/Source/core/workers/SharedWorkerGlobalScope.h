@@ -47,7 +47,6 @@ class SharedWorkerGlobalScope final : public WorkerGlobalScope {
   DEFINE_WRAPPERTYPEINFO();
 
  public:
-  typedef WorkerGlobalScope Base;
   static SharedWorkerGlobalScope* create(
       const String& name,
       SharedWorkerThread*,
@@ -62,8 +61,6 @@ class SharedWorkerGlobalScope final : public WorkerGlobalScope {
   // Setters/Getters for attributes in SharedWorkerGlobalScope.idl
   DEFINE_ATTRIBUTE_EVENT_LISTENER(connect);
   String name() const { return m_name; }
-
-  SharedWorkerThread* thread();
 
   DECLARE_VIRTUAL_TRACE();
 

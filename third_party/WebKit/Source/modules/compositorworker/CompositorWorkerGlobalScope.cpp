@@ -76,8 +76,8 @@ void CompositorWorkerGlobalScope::postMessage(
       MessagePort::disentanglePorts(executionContext, ports, exceptionState);
   if (exceptionState.hadException())
     return;
-  thread()->workerObjectProxy().postMessageToWorkerObject(std::move(message),
-                                                          std::move(channels));
+  workerObjectProxy().postMessageToWorkerObject(std::move(message),
+                                                std::move(channels));
 }
 
 int CompositorWorkerGlobalScope::requestAnimationFrame(
@@ -100,8 +100,9 @@ bool CompositorWorkerGlobalScope::executeAnimationFrameCallbacks(
   return !m_callbackCollection.isEmpty();
 }
 
-CompositorWorkerThread* CompositorWorkerGlobalScope::thread() const {
-  return static_cast<CompositorWorkerThread*>(WorkerGlobalScope::thread());
+InProcessWorkerObjectProxy& CompositorWorkerGlobalScope::workerObjectProxy()
+    const {
+  return static_cast<CompositorWorkerThread*>(thread())->workerObjectProxy();
 }
 
 }  // namespace blink
