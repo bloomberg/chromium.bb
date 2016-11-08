@@ -365,6 +365,9 @@ class NATIVE_THEME_EXPORT NativeTheme {
   // returning the port's subclass.
   static NativeTheme* GetInstanceForWeb();
 
+  // Returns a shared instance of the default native theme for native UI.
+  static NativeTheme* GetInstanceForNativeUi();
+
   // Add or remove observers to be notified when the native theme changes.
   void AddObserver(NativeThemeObserver* observer);
   void RemoveObserver(NativeThemeObserver* observer);
