@@ -50,12 +50,12 @@ struct NGLogicalOffset {
 
   // Converts a logical offset to a physical offset. See:
   // https://drafts.csswg.org/css-writing-modes-3/#logical-to-physical
-  // @param container_size the size of the rect (typically a fragment).
+  // @param outer_size the size of the rect (typically a fragment).
   // @param inner_size the size of the inner rect (typically a child fragment).
   CORE_EXPORT NGPhysicalOffset
   ConvertToPhysical(NGWritingMode mode,
                     NGDirection direction,
-                    NGPhysicalSize container_size,
+                    NGPhysicalSize outer_size,
                     NGPhysicalSize inner_size) const;
   bool operator==(const NGLogicalOffset& other) const;
 

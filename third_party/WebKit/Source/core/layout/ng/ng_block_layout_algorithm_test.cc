@@ -20,9 +20,10 @@ NGConstraintSpace* ConstructConstraintSpace(NGWritingMode writing_mode,
                                             NGDirection direction,
                                             NGLogicalSize size) {
   NGConstraintSpaceBuilder builder(writing_mode);
-  return new NGConstraintSpace(
-      writing_mode, direction,
-      builder.SetContainerSize(size).ToConstraintSpace());
+  builder.SetAvailableSize(size).SetPercentageResolutionSize(size);
+
+  return new NGConstraintSpace(writing_mode, direction,
+                               builder.ToConstraintSpace());
 }
 
 class NGBlockLayoutAlgorithmTest : public ::testing::Test {
@@ -539,7 +540,7 @@ TEST_F(NGBlockLayoutAlgorithmTest, BorderAndPadding) {
   EXPECT_EQ(kBorderLeft + kPaddingLeft, child->LeftOffset());
 }
 
-TEST_F(NGBlockLayoutAlgorithmTest, PercentageSize) {
+TEST_F(NGBlockLayoutAlgorithmTest, PercentageResolutionSize) {
   const int kPaddingLeft = 10;
   const int kWidth = 30;
   style_->setWidth(Length(kWidth, Fixed));

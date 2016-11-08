@@ -34,7 +34,8 @@ class CORE_EXPORT NGPhysicalConstraintSpace final
     : public GarbageCollectedFinalized<NGPhysicalConstraintSpace> {
  public:
   NGPhysicalConstraintSpace(
-      NGPhysicalSize container_size,
+      NGPhysicalSize available_size,
+      NGPhysicalSize percentage_resolution_size,
       bool fixed_width,
       bool fixed_height,
       bool width_direction_triggers_scrollbar,
@@ -42,8 +43,6 @@ class CORE_EXPORT NGPhysicalConstraintSpace final
       NGFragmentationType width_direction_fragmentation_type,
       NGFragmentationType height_direction_fragmentation_type,
       bool is_new_fc);
-
-  NGPhysicalSize ContainerSize() const { return container_size_; }
 
   void AddExclusion(const NGLogicalRect&, unsigned options = 0);
   const Vector<std::unique_ptr<const NGLogicalRect>>& Exclusions(
@@ -54,7 +53,8 @@ class CORE_EXPORT NGPhysicalConstraintSpace final
  private:
   friend class NGConstraintSpace;
 
-  NGPhysicalSize container_size_;
+  NGPhysicalSize available_size_;
+  NGPhysicalSize percentage_resolution_size_;
 
   unsigned fixed_width_ : 1;
   unsigned fixed_height_ : 1;

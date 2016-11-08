@@ -17,7 +17,7 @@ NGConstraintSpace::NGConstraintSpace(NGWritingMode writing_mode,
                                      NGDirection direction,
                                      NGPhysicalConstraintSpace* physical_space)
     : physical_space_(physical_space),
-      size_(physical_space->ContainerSize().ConvertToLogical(writing_mode)),
+      size_(physical_space->available_size_.ConvertToLogical(writing_mode)),
       writing_mode_(writing_mode),
       direction_(direction) {}
 
@@ -25,25 +25,25 @@ NGConstraintSpace* NGConstraintSpace::CreateFromLayoutObject(
     const LayoutBox& box) {
   bool fixed_inline = false, fixed_block = false, is_new_fc = false;
   // XXX for orthogonal writing mode this is not right
-  LayoutUnit container_logical_width =
+  LayoutUnit available_logical_width =
       std::max(LayoutUnit(), box.containingBlockLogicalWidthForContent());
-  LayoutUnit container_logical_height;
+  LayoutUnit available_logical_height;
   if (!box.parent()) {
-    container_logical_height = box.view()->viewLogicalHeightForPercentages();
+    available_logical_height = box.view()->viewLogicalHeightForPercentages();
   } else if (box.containingBlock()) {
-    container_logical_height =
+    available_logical_height =
         box.containingBlock()->availableLogicalHeightForPercentageComputation();
   }
-  // When we have an override size, the container_logical_{width,height} will be
+  // When we have an override size, the available_logical_{width,height} will be
   // used as the final size of the box, so it has to include border and
   // padding.
   if (box.hasOverrideLogicalContentWidth()) {
-    container_logical_width =
+    available_logical_width =
         box.borderAndPaddingLogicalWidth() + box.overrideLogicalContentWidth();
     fixed_inline = true;
   }
   if (box.hasOverrideLogicalContentHeight()) {
-    container_logical_height = box.borderAndPaddingLogicalHeight() +
+    available_logical_height = box.borderAndPaddingLogicalHeight() +
                                box.overrideLogicalContentHeight();
     fixed_block = true;
   }
@@ -54,8 +54,10 @@ NGConstraintSpace* NGConstraintSpace::CreateFromLayoutObject(
   NGConstraintSpaceBuilder builder(
       FromPlatformWritingMode(box.styleRef().getWritingMode()));
   builder
-      .SetContainerSize(
-          NGLogicalSize(container_logical_width, container_logical_height))
+      .SetAvailableSize(
+          NGLogicalSize(available_logical_width, available_logical_height))
+      .SetPercentageResolutionSize(
+          NGLogicalSize(available_logical_width, available_logical_height))
       .SetIsInlineDirectionTriggersScrollbar(
           box.styleRef().overflowInlineDirection() == OverflowAuto)
       .SetIsBlockDirectionTriggersScrollbar(
@@ -76,8 +78,13 @@ void NGConstraintSpace::AddExclusion(const NGLogicalRect& exclusion) const {
   MutablePhysicalSpace()->AddExclusion(exclusion);
 }
 
-NGLogicalSize NGConstraintSpace::ContainerSize() const {
-  return physical_space_->container_size_.ConvertToLogical(
+NGLogicalSize NGConstraintSpace::PercentageResolutionSize() const {
+  return physical_space_->percentage_resolution_size_.ConvertToLogical(
+      static_cast<NGWritingMode>(writing_mode_));
+}
+
+NGLogicalSize NGConstraintSpace::AvailableSize() const {
+  return physical_space_->available_size_.ConvertToLogical(
       static_cast<NGWritingMode>(writing_mode_));
 }
 

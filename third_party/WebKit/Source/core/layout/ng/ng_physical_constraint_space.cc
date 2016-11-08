@@ -7,7 +7,8 @@
 namespace blink {
 
 NGPhysicalConstraintSpace::NGPhysicalConstraintSpace(
-    NGPhysicalSize container_size,
+    NGPhysicalSize available_size,
+    NGPhysicalSize percentage_resolution_size,
     bool fixed_width,
     bool fixed_height,
     bool width_direction_triggers_scrollbar,
@@ -15,7 +16,8 @@ NGPhysicalConstraintSpace::NGPhysicalConstraintSpace(
     NGFragmentationType width_direction_fragmentation_type,
     NGFragmentationType height_direction_fragmentation_type,
     bool is_new_fc)
-    : container_size_(container_size),
+    : available_size_(available_size),
+      percentage_resolution_size_(percentage_resolution_size),
       fixed_width_(fixed_width),
       fixed_height_(fixed_height),
       width_direction_triggers_scrollbar_(width_direction_triggers_scrollbar),

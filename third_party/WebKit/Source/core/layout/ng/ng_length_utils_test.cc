@@ -5,6 +5,7 @@
 #include "core/layout/ng/ng_length_utils.h"
 
 #include "core/layout/ng/ng_constraint_space.h"
+#include "core/layout/ng/ng_constraint_space_builder.h"
 #include "core/layout/ng/ng_fragment.h"
 #include "core/layout/ng/ng_fragment_builder.h"
 #include "core/layout/ng/ng_physical_fragment.h"
@@ -27,12 +28,17 @@ class NGLengthUtilsTest : public ::testing::Test {
                                                      int block_size,
                                                      bool fixed_inline = false,
                                                      bool fixed_block = false) {
-    return new NGConstraintSpace(
-        HorizontalTopBottom, LeftToRight,
-        new NGPhysicalConstraintSpace(
-            NGPhysicalSize(LayoutUnit(inline_size), LayoutUnit(block_size)),
-            fixed_inline, fixed_block, false, false, FragmentNone, FragmentNone,
-            false));
+    NGConstraintSpaceBuilder builder(HorizontalTopBottom);
+    builder
+        .SetAvailableSize(
+            NGLogicalSize(LayoutUnit(inline_size), LayoutUnit(block_size)))
+        .SetPercentageResolutionSize(
+            NGLogicalSize(LayoutUnit(inline_size), LayoutUnit(block_size)))
+        .SetIsFixedSizeInline(fixed_inline)
+        .SetIsFixedSizeBlock(fixed_block);
+
+    return new NGConstraintSpace(HorizontalTopBottom, LeftToRight,
+                                 builder.ToConstraintSpace());
   }
 
   LayoutUnit ResolveInlineLength(

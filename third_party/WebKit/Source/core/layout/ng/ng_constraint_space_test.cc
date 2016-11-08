@@ -19,7 +19,7 @@ NGConstraintSpace* ConstructConstraintSpace(NGWritingMode writing_mode,
   return new NGConstraintSpace(
       writing_mode, direction,
       new NGPhysicalConstraintSpace(
-          size, /* fixed_width */ true, /* fixed_height */ false,
+          size, size, /* fixed_width */ true, /* fixed_height */ false,
           /* width_direction_triggers_scrollbar */ true,
           /* height_direction_triggers_scrollbar */ false, FragmentNone,
           FragmentColumn, /* is_new_fc */ false));
@@ -27,6 +27,7 @@ NGConstraintSpace* ConstructConstraintSpace(NGWritingMode writing_mode,
 
 TEST(NGConstraintSpaceTest, WritingMode) {
   NGPhysicalConstraintSpace* phy_space = new NGPhysicalConstraintSpace(
+      NGPhysicalSize(LayoutUnit(200), LayoutUnit(100)),
       NGPhysicalSize(LayoutUnit(200), LayoutUnit(100)), /* fixed_width */ true,
       /* fixed_height */ false, /* width_direction_triggers_scrollbar */ true,
       /* height_direction_triggers_scrollbar */ false, FragmentNone,
@@ -38,11 +39,11 @@ TEST(NGConstraintSpaceTest, WritingMode) {
   NGConstraintSpace* vert_space =
       new NGConstraintSpace(VerticalRightLeft, LeftToRight, phy_space);
 
-  EXPECT_EQ(LayoutUnit(200), horz_space->ContainerSize().inline_size);
-  EXPECT_EQ(LayoutUnit(200), vert_space->ContainerSize().block_size);
+  EXPECT_EQ(LayoutUnit(200), horz_space->AvailableSize().inline_size);
+  EXPECT_EQ(LayoutUnit(200), vert_space->AvailableSize().block_size);
 
-  EXPECT_EQ(LayoutUnit(100), horz_space->ContainerSize().block_size);
-  EXPECT_EQ(LayoutUnit(100), vert_space->ContainerSize().inline_size);
+  EXPECT_EQ(LayoutUnit(100), horz_space->AvailableSize().block_size);
+  EXPECT_EQ(LayoutUnit(100), vert_space->AvailableSize().inline_size);
 
   EXPECT_TRUE(horz_space->InlineTriggersScrollbar());
   EXPECT_TRUE(vert_space->BlockTriggersScrollbar());

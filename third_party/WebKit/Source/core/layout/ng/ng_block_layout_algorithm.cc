@@ -168,7 +168,9 @@ bool NGBlockLayoutAlgorithm::Layout(NGPhysicalFragment** out) {
 
       space_builder_ =
           new NGConstraintSpaceBuilder(constraint_space_->WritingMode());
-      space_builder_->SetContainerSize(
+      space_builder_->SetAvailableSize(
+          NGLogicalSize(adjusted_inline_size, adjusted_block_size));
+      space_builder_->SetPercentageResolutionSize(
           NGLogicalSize(adjusted_inline_size, adjusted_block_size));
 
       constraint_space_->SetSize(

@@ -65,7 +65,7 @@ CORE_EXPORT NGBoxStrut ComputePadding(const NGConstraintSpace&,
                                       const ComputedStyle&);
 
 // Resolves margin: auto in the inline direction after a box has been laid out.
-// This uses the container size from the constraint space and the box size from
+// This uses the available size from the constraint space and the box size from
 // the fragment to compute the margins that are auto, if any, and adjusts
 // the given NGBoxStrut accordingly.
 CORE_EXPORT void ApplyAutoMargins(const NGConstraintSpace&,

@@ -62,7 +62,7 @@ LayoutUnit ResolveInlineLength(const NGConstraintSpace& constraintSpace,
                                LengthResolveType type) {
   // TODO(layout-ng): Handle min/max/fit-content
   DCHECK(!length.isMaxSizeNone());
-  DCHECK_GE(constraintSpace.ContainerSize().inline_size, LayoutUnit());
+  DCHECK_GE(constraintSpace.AvailableSize().inline_size, LayoutUnit());
 
   if (type == LengthResolveType::MinSize && length.isAuto())
     return LayoutUnit();
@@ -77,21 +77,23 @@ LayoutUnit ResolveInlineLength(const NGConstraintSpace& constraintSpace,
     border_and_padding =
         ComputeBorders(style) + ComputePadding(constraintSpace, style);
   }
-  LayoutUnit container_size = constraintSpace.ContainerSize().inline_size;
   switch (length.type()) {
     case Auto:
     case FillAvailable: {
+      LayoutUnit content_size = constraintSpace.AvailableSize().inline_size;
       NGBoxStrut margins =
           ComputeMargins(constraintSpace, style,
                          FromPlatformWritingMode(style.getWritingMode()),
                          FromPlatformDirection(style.direction()));
       return std::max(border_and_padding.InlineSum(),
-                      container_size - margins.InlineSum());
+                      content_size - margins.InlineSum());
     }
     case Percent:
     case Fixed:
     case Calculated: {
-      LayoutUnit value = valueForLength(length, container_size);
+      LayoutUnit percentage_resolution_size =
+          constraintSpace.PercentageResolutionSize().inline_size;
+      LayoutUnit value = valueForLength(length, percentage_resolution_size);
       if (style.boxSizing() == BoxSizingContentBox) {
         value += border_and_padding.InlineSum();
       } else {
@@ -129,7 +131,7 @@ LayoutUnit ResolveBlockLength(const NGConstraintSpace& constraintSpace,
   // Make sure that indefinite percentages resolve to NGSizeIndefinite, not to
   // a random negative number.
   if (length.isPercentOrCalc() &&
-      constraintSpace.ContainerSize().block_size == NGSizeIndefinite)
+      constraintSpace.PercentageResolutionSize().block_size == NGSizeIndefinite)
     return contentSize;
 
   // We don't need this when we're resolving margin/border/padding; skip
@@ -139,20 +141,22 @@ LayoutUnit ResolveBlockLength(const NGConstraintSpace& constraintSpace,
     border_and_padding =
         ComputeBorders(style) + ComputePadding(constraintSpace, style);
   }
-  LayoutUnit container_size = constraintSpace.ContainerSize().block_size;
   switch (length.type()) {
     case FillAvailable: {
+      LayoutUnit content_size = constraintSpace.AvailableSize().block_size;
       NGBoxStrut margins =
           ComputeMargins(constraintSpace, style,
                          FromPlatformWritingMode(style.getWritingMode()),
                          FromPlatformDirection(style.direction()));
       return std::max(border_and_padding.BlockSum(),
-                      container_size - margins.BlockSum());
+                      content_size - margins.BlockSum());
     }
     case Percent:
     case Fixed:
     case Calculated: {
-      LayoutUnit value = valueForLength(length, container_size);
+      LayoutUnit percentage_resolution_size =
+          constraintSpace.PercentageResolutionSize().block_size;
+      LayoutUnit value = valueForLength(length, percentage_resolution_size);
       if (style.boxSizing() == BoxSizingContentBox) {
         value += border_and_padding.BlockSum();
       } else {
@@ -184,7 +188,7 @@ LayoutUnit ComputeInlineSizeForFragment(
     const NGConstraintSpace& constraintSpace,
     const ComputedStyle& style) {
   if (constraintSpace.FixedInlineSize())
-    return constraintSpace.ContainerSize().inline_size;
+    return constraintSpace.AvailableSize().inline_size;
 
   LayoutUnit extent =
       ResolveInlineLength(constraintSpace, style, style.logicalWidth(),
@@ -208,7 +212,7 @@ LayoutUnit ComputeBlockSizeForFragment(const NGConstraintSpace& constraintSpace,
                                        const ComputedStyle& style,
                                        LayoutUnit contentSize) {
   if (constraintSpace.FixedBlockSize())
-    return constraintSpace.ContainerSize().block_size;
+    return constraintSpace.AvailableSize().block_size;
 
   LayoutUnit extent =
       ResolveBlockLength(constraintSpace, style, style.logicalHeight(),
@@ -291,7 +295,7 @@ void ApplyAutoMargins(const NGConstraintSpace& constraint_space,
   DCHECK(margins) << "Margins cannot be NULL here";
   const LayoutUnit used_space = fragment.InlineSize() + margins->InlineSum();
   const LayoutUnit available_space =
-      constraint_space.ContainerSize().inline_size - used_space;
+      constraint_space.AvailableSize().inline_size - used_space;
   if (available_space < LayoutUnit())
     return;
   if (style.marginStart().isAuto() && style.marginEnd().isAuto()) {

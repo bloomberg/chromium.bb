@@ -15,7 +15,10 @@ class CORE_EXPORT NGConstraintSpaceBuilder final
  public:
   NGConstraintSpaceBuilder(NGWritingMode writing_mode);
 
-  NGConstraintSpaceBuilder& SetContainerSize(NGLogicalSize container_size);
+  NGConstraintSpaceBuilder& SetAvailableSize(NGLogicalSize available_size);
+
+  NGConstraintSpaceBuilder& SetPercentageResolutionSize(
+      NGLogicalSize percentage_resolution_size);
 
   NGConstraintSpaceBuilder& SetIsFixedSizeInline(bool is_fixed_size_inline);
   NGConstraintSpaceBuilder& SetIsFixedSizeBlock(bool is_fixed_size_block);
@@ -39,7 +42,8 @@ class CORE_EXPORT NGConstraintSpaceBuilder final
   DEFINE_INLINE_TRACE() {}
 
  private:
-  NGLogicalSize container_size_;
+  NGLogicalSize available_size_;
+  NGLogicalSize percentage_resolution_size_;
 
   // const bit fields.
   const unsigned writing_mode_ : 2;

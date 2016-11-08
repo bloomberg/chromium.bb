@@ -28,7 +28,7 @@ class CORE_EXPORT NGConstraintSpace final
  public:
   // Constructs a constraint space based on an existing backing
   // NGPhysicalConstraintSpace. Sets this constraint space's size to the
-  // physical constraint space's container size, converted to logical
+  // physical constraint space's available size, converted to logical
   // coordinates.
   NGConstraintSpace(NGWritingMode, NGDirection, NGPhysicalConstraintSpace*);
 
@@ -64,20 +64,20 @@ class CORE_EXPORT NGConstraintSpace final
   // exclusion is set in physical coordinates.
   void AddExclusion(const NGLogicalRect& exclusion) const;
 
-  // Size of the container. Used for the following three cases:
-  // 1) Percentage resolution.
-  // 2) Resolving absolute positions of children.
-  // 3) Defining the threshold that triggers the presence of a scrollbar. Only
-  //    applies if the corresponding scrollbarTrigger flag has been set for the
-  //    direction.
-  NGLogicalSize ContainerSize() const;
+  // The size to use for percentage resolution.
+  // See: https://drafts.csswg.org/css-sizing/#percentage-sizing
+  NGLogicalSize PercentageResolutionSize() const;
+
+  // The available space size.
+  // See: https://drafts.csswg.org/css-sizing/#available
+  NGLogicalSize AvailableSize() const;
 
   // Offset relative to the root constraint space.
   NGLogicalOffset Offset() const { return offset_; }
   void SetOffset(const NGLogicalOffset& offset) { offset_ = offset; }
 
   // Returns the effective size of the constraint space. Equal to the
-  // ContainerSize() for the root constraint space but derived constraint spaces
+  // AvailableSize() for the root constraint space but derived constraint spaces
   // return the size of the layout opportunity.
   virtual NGLogicalSize Size() const { return size_; }
   void SetSize(const NGLogicalSize& size) { size_ = size; }
@@ -86,7 +86,7 @@ class CORE_EXPORT NGConstraintSpace final
   // Formatting Context.
   bool IsNewFormattingContext() const;
 
-  // Whether exceeding the containerSize triggers the presence of a scrollbar
+  // Whether exceeding the AvailableSize() triggers the presence of a scrollbar
   // for the indicated direction.
   // If exceeded the current layout should be aborted and invoked again with a
   // constraint space modified to reserve space for a scrollbar.

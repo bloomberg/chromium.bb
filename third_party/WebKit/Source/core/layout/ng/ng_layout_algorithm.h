@@ -39,7 +39,7 @@ class CORE_EXPORT NGLayoutAlgorithm
   // The result will not take any min-width. max-width or width properties into
   // account. Implementations can return NotImpplemented in which case the
   // caller is expected ot synthesize this value from the overflow rect returned
-  // from Layout called with a container width of 0 and LayoutUnit::max(),
+  // from Layout called with a available width of 0 and LayoutUnit::max(),
   // respectively.
   // A Pending return value has the same meaning as a false return from layout,
   // i.e. it is a request to call this function again.

@@ -89,7 +89,9 @@ bool NGBox::ComputeMinAndMaxContentSizes(MinAndMaxContentSizes* sizes) {
     NGConstraintSpaceBuilder builder(
         FromPlatformWritingMode(Style()->getWritingMode()));
 
-    builder.SetContainerSize(NGLogicalSize(LayoutUnit(), LayoutUnit()));
+    builder.SetAvailableSize(NGLogicalSize(LayoutUnit(), LayoutUnit()));
+    builder.SetPercentageResolutionSize(
+        NGLogicalSize(LayoutUnit(), LayoutUnit()));
     // TODO(layoutng): Use builder.ToConstraintSpace.ToLogicalConstraintSpace
     // once
     // that's available.
@@ -126,7 +128,9 @@ bool NGBox::ComputeMinAndMaxContentSizes(MinAndMaxContentSizes* sizes) {
   // Now, redo with infinite space for max_content
   NGConstraintSpaceBuilder builder(
       FromPlatformWritingMode(Style()->getWritingMode()));
-  builder.SetContainerSize(NGLogicalSize(LayoutUnit::max(), LayoutUnit()));
+  builder.SetAvailableSize(NGLogicalSize(LayoutUnit::max(), LayoutUnit()));
+  builder.SetPercentageResolutionSize(
+      NGLogicalSize(LayoutUnit(), LayoutUnit()));
   NGConstraintSpace* constraint_space = new NGConstraintSpace(
       FromPlatformWritingMode(Style()->getWritingMode()),
       FromPlatformDirection(Style()->direction()), builder.ToConstraintSpace());
@@ -250,11 +254,11 @@ void NGBox::CopyFragmentDataToLayoutBox(
 NGPhysicalFragment* NGBox::RunOldLayout(
     const NGConstraintSpace& constraint_space) {
   // TODO(layout-ng): If fixedSize is true, set the override width/height too
-  NGLogicalSize container_size = constraint_space.ContainerSize();
+  NGLogicalSize available_size = constraint_space.AvailableSize();
   layout_box_->setOverrideContainingBlockContentLogicalWidth(
-      container_size.inline_size);
+      available_size.inline_size);
   layout_box_->setOverrideContainingBlockContentLogicalHeight(
-      container_size.block_size);
+      available_size.block_size);
   if (layout_box_->isLayoutNGBlockFlow() && layout_box_->needsLayout()) {
     toLayoutNGBlockFlow(layout_box_)->LayoutBlockFlow::layoutBlock(true);
   } else {
