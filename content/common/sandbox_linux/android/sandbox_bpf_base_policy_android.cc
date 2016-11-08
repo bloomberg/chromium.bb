@@ -40,6 +40,7 @@ namespace content {
 
 namespace {
 
+#if !defined(__i386__)
 // Restricts the arguments to sys_socket() to AF_UNIX. Returns a BoolExpr that
 // evaluates to true if the syscall should be allowed.
 BoolExpr RestrictSocketArguments(const Arg<int>& domain,
@@ -51,6 +52,7 @@ BoolExpr RestrictSocketArguments(const Arg<int>& domain,
                      (type & ~kSockFlags) == SOCK_STREAM),
                protocol == 0);
 }
+#endif  // !defined(__i386__)
 
 }  // namespace
 
