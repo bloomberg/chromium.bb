@@ -58,6 +58,8 @@ const gpu::GpuPreferences GetGpuPreferencesFromCommandLine() {
         static_cast<gpu::GpuPreferences::VpxDecodeVendors>(
             enable_accelerated_vpx_decode_val);
   }
+  gpu_preferences.enable_low_latency_dxva =
+      !command_line->HasSwitch(switches::kDisableLowLatencyDxva);
   gpu_preferences.enable_zero_copy_dxgi_video =
       !command_line->HasSwitch(switches::kDisableZeroCopyDxgiVideo);
   gpu_preferences.enable_nv12_dxgi_video =

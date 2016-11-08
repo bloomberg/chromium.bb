@@ -63,6 +63,7 @@ CONTENT_EXPORT extern const char kDisableGpuRasterization[];
 CONTENT_EXPORT extern const char kDisableGpuSandbox[];
 CONTENT_EXPORT extern const char kDisableInProcessStackTraces[];
 CONTENT_EXPORT extern const char kDisableJavaScriptHarmonyShipping[];
+CONTENT_EXPORT extern const char kDisableLowLatencyDxva[];
 CONTENT_EXPORT extern const char kDisableLowResTiling[];
 CONTENT_EXPORT extern const char kDisableHangMonitor[];
 CONTENT_EXPORT extern const char kDisableHideInactiveStackedTabCloseButtons[];

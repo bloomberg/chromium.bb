@@ -480,6 +480,9 @@ class MEDIA_GPU_EXPORT DXVAVideoDecodeAccelerator
   // multiple flush done notifications being sent out.
   bool pending_flush_;
 
+  // Use CODECAPI_AVLowLatencyMode.
+  bool enable_low_latency_;
+
   bool share_nv12_textures_;
 
   // Copy NV12 texture to another NV12 texture.

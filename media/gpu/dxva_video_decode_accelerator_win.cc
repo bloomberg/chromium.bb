@@ -501,6 +501,7 @@ DXVAVideoDecodeAccelerator::DXVAVideoDecodeAccelerator(
       codec_(kUnknownVideoCodec),
       decoder_thread_("DXVAVideoDecoderThread"),
       pending_flush_(false),
+      enable_low_latency_(gpu_preferences.enable_low_latency_dxva),
       share_nv12_textures_(gpu_preferences.enable_zero_copy_dxgi_video &&
                            !workarounds.disable_dxgi_zero_copy_video),
       copy_nv12_textures_(gpu_preferences.enable_nv12_dxgi_video &&
@@ -1453,11 +1454,13 @@ bool DXVAVideoDecodeAccelerator::CheckDecoderDxvaSupport() {
     RETURN_ON_HR_FAILURE(hr, "Failed to enable DXVA H/W decoding", false);
   }
 
-  hr = attributes->SetUINT32(CODECAPI_AVLowLatencyMode, TRUE);
-  if (SUCCEEDED(hr)) {
-    DVLOG(1) << "Successfully set Low latency mode on decoder.";
-  } else {
-    DVLOG(1) << "Failed to set Low latency mode on decoder. Error: " << hr;
+  if (enable_low_latency_) {
+    hr = attributes->SetUINT32(CODECAPI_AVLowLatencyMode, TRUE);
+    if (SUCCEEDED(hr)) {
+      DVLOG(1) << "Successfully set Low latency mode on decoder.";
+    } else {
+      DVLOG(1) << "Failed to set Low latency mode on decoder. Error: " << hr;
+    }
   }
 
   auto* gl_context = get_gl_context_cb_.Run();

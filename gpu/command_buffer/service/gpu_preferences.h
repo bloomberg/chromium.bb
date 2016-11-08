@@ -61,6 +61,9 @@ struct GPU_EXPORT GpuPreferences {
   // Bitmask - 0x1=Microsoft, 0x2=AMD, 0x03=Try all.
   VpxDecodeVendors enable_accelerated_vpx_decode = VPX_VENDOR_MICROSOFT;
 
+  // Enables using CODECAPI_AVLowLatencyMode.
+  bool enable_low_latency_dxva = true;
+
   // Enables support for avoiding copying DXGI NV12 textures.
   bool enable_zero_copy_dxgi_video = false;
 
