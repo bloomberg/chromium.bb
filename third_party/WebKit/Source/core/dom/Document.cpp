@@ -167,7 +167,6 @@
 #include "core/html/HTMLLinkElement.h"
 #include "core/html/HTMLMetaElement.h"
 #include "core/html/HTMLScriptElement.h"
-#include "core/html/HTMLStyleElement.h"
 #include "core/html/HTMLTemplateElement.h"
 #include "core/html/HTMLTitleElement.h"
 #include "core/html/PluginDocument.h"
@@ -2795,8 +2794,6 @@ void Document::implicitClose() {
   if (frame() && frame()->script().canExecuteScripts(NotAboutToExecuteScript)) {
     ImageLoader::dispatchPendingLoadEvents();
     ImageLoader::dispatchPendingErrorEvents();
-
-    HTMLStyleElement::dispatchPendingLoadEvents();
   }
 
   // JS running below could remove the frame or destroy the LayoutView so we

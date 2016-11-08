@@ -16,5 +16,5 @@ function buggyAsyncCode()
 
 window.jsTestIsAsync = true;
 debug("Will throw an error soon");
-setTimeout(buggyAsyncCode, 0);
 </script>
+<body onload="setTimeout(buggyAsyncCode, 0)"></body>

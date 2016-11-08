@@ -1,5 +1,4 @@
 <!DOCTYPE html>
-<div id='target'></div>
 <style type="text/css">
   #target {
     background-color: black;
@@ -8,8 +7,13 @@
   }
 </style>
 <script>
+function onLoad() {
     var element = document.getElementById('target');
     var animation = element.animate(
         {opacity: ['0', '1']},
         {duration: Infinity, iterationStart: 4.75});
+}
 </script>
+<body onload="onLoad()">
+<div id="target"></div>
+</body>

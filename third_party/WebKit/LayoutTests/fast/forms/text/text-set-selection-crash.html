@@ -1,13 +1,13 @@
 <body>
-<script src="../../../resources/js-test.js"></script>
+<script src="../../../resources/testharness.js"></script>
+<script src="../../../resources/testharnessreport.js"></script>
 <applet code=""><input><embed type="application/x-blink-test-plugin" width="200"></embed></applet>
 <script>
-description('There was a bug that HTMLTextFormControlElement::setSelectionRange crashed. This test requires ASAN or something.');
-jsTestIsAsync = true;
+var t = async_test('There was a bug that HTMLTextFormControlElement::setSelectionRange crashed. This test requires ASAN or something.');
 document.body.onload = function() {
     document.getElementsByTagName('input')[0].focus();
-    testPassed('if not crash.');
-    finishJSTest();
+    // passed if not crash.
+    t.done();
 };
 </script>
 </body>
