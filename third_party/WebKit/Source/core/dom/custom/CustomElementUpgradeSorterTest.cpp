@@ -43,6 +43,7 @@ class CustomElementUpgradeSorterTest : public ::testing::Test {
   ShadowRoot* attachShadowTo(Element* element) {
     NonThrowableExceptionState noExceptions;
     ShadowRootInit shadowRootInit;
+    shadowRootInit.setMode("open");
     return element->attachShadow(scriptState(), shadowRootInit, noExceptions);
   }
 
