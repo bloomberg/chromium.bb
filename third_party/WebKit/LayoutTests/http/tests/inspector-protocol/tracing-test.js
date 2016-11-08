@@ -110,13 +110,16 @@ InspectorTest.retrieveStream = function(streamHandle, offset, chunkSize, callbac
     }
 }
 
+InspectorTest.findEvents = function(name, ph, condition)
+{
+    return InspectorTest.devtoolsEvents.filter(e => e.name === name && e.ph === ph && (!condition || condition(e)));
+}
+
 InspectorTest.findEvent = function(name, ph, condition)
 {
-    for (var i = 0; i < InspectorTest.devtoolsEvents.length; i++) {
-        var e = InspectorTest.devtoolsEvents[i];
-        if (e.name === name && e.ph === ph && (!condition || condition(e)))
-            return e;
-    }
+    var events = InspectorTest.findEvents(name, ph, condition);
+    if (events.length)
+        return events[0];
     throw new Error("Couldn't find event " + name + " / " + ph + "\n\n in " + JSON.stringify(InspectorTest.devtoolsEvents, null, 2));
 }
 

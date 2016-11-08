@@ -32,7 +32,15 @@ function test()
     },
     {
         "args": {
-            "sessionId": sessionId
+            "data": {
+                "page": "0x2f7b63884000",
+                "sessionId": sessionId,
+                "frames": [
+                    {"frame": "0x2f7b63884000", "url": "top-page-url", "name": "top-page-name"},
+                    {"frame": "0x2f7b63884100", "url": "subframe-url1", "name": "subframe-name1"},
+                    {"frame": "0x2f7b63884200", "url": "about:blank", "name": "subframe-name2"}
+                ]
+            }
         },
         "cat": "disabled-by-default-devtools.timeline",
         "name": "TracingStartedInPage",
@@ -41,6 +49,22 @@ function test()
         "tid": 23,
         "ts": 100000,
         "tts": 606543
+    },
+    {
+        "args": {
+            "data": {
+                "frame": "0x2f7b63884300",
+                "url": "subframe-url3",
+                "name": "subframe-name3"
+            }
+        },
+        "cat": "disabled-by-default-devtools.timeline",
+        "name": "CommitLoad",
+        "ph": "I",
+        "pid": 17851,
+        "tid": 23,
+        "ts": 100010,
+        "tts": 606544
     },
     {
         "args": {},
@@ -71,7 +95,7 @@ function test()
         "tts": 1758056
     },
     {
-        "args": {},
+        "args": { "data": { "frame": "0x2f7b63884100" } },
         "cat": "disabled-by-default-devtools.timeline",
         "name": "FunctionCall",
         "ph": "X",
@@ -133,8 +157,8 @@ function test()
     },
     {
         "args": {
-            "frame": "0x2f7b63884000",
             "data": {
+                "frame": "0x2f7b63884000",
                 "stackTrace": [
                     { "functionName": "b", "callUID": "b", "scriptId": 1 },
                     { "functionName": "a", "callUID": "a", "scriptId": 1 }
@@ -170,8 +194,8 @@ function test()
     },
     {
         "args": {
-            "frame": "0x2f7b63884000",
             "data": {
+                "frame": "0x2f7b63884000",
                 "stackTrace": [
                     { "functionName": "b", "callUID": "b", "scriptId": 1 },
                     { "functionName": "a", "callUID": "a", "scriptId": 1 }
@@ -265,6 +289,7 @@ function test()
     {
         "args": {
             "beginData": {
+                "frame": "0x2f7b63884200",
                 "stackTrace": [
                     { "functionName": "a", "callUID": "a", "scriptId": 1 },
                     { "functionName": "l", "callUID": "l", "scriptId": 1 },
@@ -319,7 +344,7 @@ function test()
         "ts": 230125
     },
     {
-        "args": {},
+        "args": { "data": {"frame": "0x2f7b63884300" } },
         "cat": "disabled-by-default-devtools.timeline",
         "name": "FunctionCall",
         "ph": "X",
@@ -572,8 +597,9 @@ function test()
     InspectorTest.setTraceEvents(InspectorTest.timelineModel(), InspectorTest.tracingModel(), rawTraceEvents);
 
     timeline.requestWindowTimes(0, Infinity);
-    for (var grouping in WebInspector.TimelineAggregator.GroupBy) {
-        var groupingValue = WebInspector.TimelineAggregator.GroupBy[grouping];
+    var groupByEnum = WebInspector.AggregatedTimelineTreeView.GroupBy;
+    for (var grouping in groupByEnum) {
+        var groupingValue = groupByEnum[grouping];
         testEventTree(WebInspector.TimelinePanel.DetailsTab.CallTree, groupingValue);
         testEventTree(WebInspector.TimelinePanel.DetailsTab.BottomUp, groupingValue);
     }

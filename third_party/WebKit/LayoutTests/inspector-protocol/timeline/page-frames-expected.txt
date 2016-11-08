@@ -1,0 +1,8 @@
+Recording started
+Tracing complete
+Frames in TracingStartedInPage
+url: inspector-protocol/timeline/page-frames.html name: 
+Frames in CommitLoad events
+url: about:blank name: Frame No. 1
+url: inspector-protocol/resources/blank.html name: 
+

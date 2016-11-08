@@ -168,6 +168,12 @@ const char* pseudoTypeToString(CSSSelector::PseudoType pseudoType) {
   return "";
 }
 
+String urlForFrame(LocalFrame* frame) {
+  KURL url = frame->document()->url();
+  url.removeFragmentIdentifier();
+  return url.getString();
+}
+
 }  // namespace
 
 namespace InspectorScheduleStyleInvalidationTrackingEvent {
@@ -744,12 +750,15 @@ std::unique_ptr<TracedValue> frameEventData(LocalFrame* frame) {
   value->setString("frame", toHexString(frame));
   bool isMainFrame = frame && frame->isMainFrame();
   value->setBoolean("isMainFrame", isMainFrame);
-  value->setString("page", toHexString(frame));
+  value->setString("page", toHexString(frame->localFrameRoot()));
   return value;
 }
 
 std::unique_ptr<TracedValue> InspectorCommitLoadEvent::data(LocalFrame* frame) {
-  return frameEventData(frame);
+  std::unique_ptr<TracedValue> frameData = frameEventData(frame);
+  frameData->setString("url", urlForFrame(frame));
+  frameData->setString("name", frame->tree().name());
+  return frameData;
 }
 
 std::unique_ptr<TracedValue> InspectorMarkLoadEvent::data(LocalFrame* frame) {
@@ -930,7 +939,18 @@ std::unique_ptr<TracedValue> InspectorTracingStartedInFrame::data(
     LocalFrame* frame) {
   std::unique_ptr<TracedValue> value = TracedValue::create();
   value->setString("sessionId", sessionId);
-  value->setString("page", toHexString(frame));
+  value->setString("page", toHexString(frame->localFrameRoot()));
+  value->beginArray("frames");
+  for (Frame* f = frame; f; f = f->tree().traverseNext(frame)) {
+    if (!f->isLocalFrame())
+      continue;
+    value->beginDictionary();
+    value->setString("frame", toHexString(f));
+    value->setString("url", urlForFrame(toLocalFrame(f)));
+    value->setString("name", f->tree().name());
+    value->endDictionary();
+  }
+  value->endArray();
   return value;
 }
 
