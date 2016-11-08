@@ -106,6 +106,11 @@ class _ApkDelegate(object):
     self._component = '%s/%s' % (self._package, self._runner)
     self._extras = test_instance.extras
 
+  def GetTestDataRoot(self, device):
+    # pylint: disable=no-self-use
+    return posixpath.join(device.GetExternalStoragePath(),
+                          'chromium_tests_root')
+
   def Install(self, device):
     if self._test_apk_incremental_install_script:
       local_device_test_run.IncrementalInstall(device, self._apk_helper,
@@ -169,6 +174,11 @@ class _ExeDelegate(object):
     self._device_dist_dir = posixpath.join(
         constants.TEST_EXECUTABLE_DIR, os.path.basename(dist_dir))
     self._test_run = tr
+
+  def GetTestDataRoot(self, device):
+    # pylint: disable=no-self-use
+    # pylint: disable=unused-argument
+    return posixpath.join(constants.TEST_EXECUTABLE_DIR, 'chromium_tests_root')
 
   def Install(self, device):
     # TODO(jbudorick): Look into merging this with normal data deps pushing if
@@ -247,8 +257,7 @@ class LocalDeviceGtestRun(local_device_test_run.LocalDeviceTestRun):
 
       def push_test_data():
         # Push data dependencies.
-        device_root = posixpath.join(dev.GetExternalStoragePath(),
-                                     'chromium_tests_root')
+        device_root = self._delegate.GetTestDataRoot(dev)
         data_deps = self._test_instance.GetDataDependencies()
         host_device_tuples = [
             (h, d if d is not None else device_root)
