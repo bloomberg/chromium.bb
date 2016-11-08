@@ -1121,7 +1121,6 @@ static uint64_t sum_squares_2d(const int16_t *diff, int diff_stride,
                                TX_SIZE tx_size) {
   uint64_t sse;
   switch (tx_size) {
-#if CONFIG_EXT_TX
     case TX_4X8:
       sse = aom_sum_squares_2d_i16(diff, diff_stride, 4) +
             aom_sum_squares_2d_i16(diff + 4 * diff_stride, diff_stride, 4);
@@ -1146,7 +1145,6 @@ static uint64_t sum_squares_2d(const int16_t *diff, int diff_stride,
       sse = aom_sum_squares_2d_i16(diff, diff_stride, 16) +
             aom_sum_squares_2d_i16(diff + 16, diff_stride, 16);
       break;
-#endif  // CONFIG_EXT_TX
     default:
       assert(tx_size < TX_SIZES);
       sse = aom_sum_squares_2d_i16(diff, diff_stride, tx_size_wide[tx_size]);
