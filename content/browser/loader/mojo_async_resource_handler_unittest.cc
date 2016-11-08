@@ -184,6 +184,10 @@ class TestResourceController : public ResourceController {
   }
 
   void CancelWithError(int error_code) override {
+    // While cancelling more than once is legal, none of these tests should do
+    // it.
+    EXPECT_FALSE(is_cancel_with_error_called_);
+
     is_cancel_with_error_called_ = true;
     error_ = error_code;
     if (quit_closure_)

@@ -353,28 +353,28 @@ bool MojoAsyncResourceHandler::AllocateWriterIOBuffer(
 void MojoAsyncResourceHandler::Resume() {
   if (!did_defer_)
     return;
-  bool defer = false;
+  did_defer_ = false;
+
   if (is_using_io_buffer_not_from_writer_) {
     // |buffer_| is set to a net::IOBufferWithSize. Write the buffer contents
     // to the data pipe.
     DCHECK_GT(buffer_bytes_read_, 0u);
-    if (!CopyReadDataToDataPipe(&defer)) {
+    if (!CopyReadDataToDataPipe(&did_defer_)) {
       controller()->CancelWithError(net::ERR_FAILED);
       return;
     }
   } else {
     // Allocate a buffer for the next OnWillRead call here.
-    if (!AllocateWriterIOBuffer(&buffer_, &defer)) {
+    if (!AllocateWriterIOBuffer(&buffer_, &did_defer_)) {
       controller()->CancelWithError(net::ERR_FAILED);
       return;
     }
   }
 
-  if (defer) {
+  if (did_defer_) {
     // Continue waiting.
     return;
   }
-  did_defer_ = false;
   request()->LogUnblocked();
   controller()->Resume();
 }
