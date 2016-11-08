@@ -2,19 +2,20 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-package org.chromium.ui.picker;
+package org.chromium.content.browser.picker;
 
 import static org.junit.Assert.assertEquals;
 
 import android.app.Activity;
 import android.widget.DatePicker;
 
-import org.chromium.testing.local.LocalRobolectricTestRunner;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.robolectric.Robolectric;
 import org.robolectric.annotation.Config;
+
+import org.chromium.testing.local.LocalRobolectricTestRunner;
 
 import java.util.TimeZone;
 

@@ -27,8 +27,8 @@ import org.chromium.base.annotations.JNINamespace;
 import org.chromium.blink_public.web.WebInputEventModifier;
 import org.chromium.blink_public.web.WebInputEventType;
 import org.chromium.content.browser.RenderCoordinates;
+import org.chromium.content.browser.picker.InputDialogContainer;
 import org.chromium.ui.base.ime.TextInputType;
-import org.chromium.ui.picker.InputDialogContainer;
 
 /**
  * Adapts and plumbs android IME service onto the chrome text input API.

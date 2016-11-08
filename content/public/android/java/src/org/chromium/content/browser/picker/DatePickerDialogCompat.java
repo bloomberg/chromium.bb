@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-package org.chromium.ui.picker;
+package org.chromium.content.browser.picker;
 
 import android.app.DatePickerDialog;
 import android.content.Context;
@@ -16,10 +16,10 @@ import android.widget.DatePicker;
  * outside). This class will call the listener instead of the DatePickerDialog only when the
  * BUTTON_POSITIVE has been clicked.
  */
-class ChromeDatePickerDialog extends DatePickerDialog {
+class DatePickerDialogCompat extends DatePickerDialog {
     private final OnDateSetListener mCallBack;
 
-    public ChromeDatePickerDialog(Context context,
+    public DatePickerDialogCompat(Context context,
             OnDateSetListener callBack,
             int year,
             int monthOfYear,

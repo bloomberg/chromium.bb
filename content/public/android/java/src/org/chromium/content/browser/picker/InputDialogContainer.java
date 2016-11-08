@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-package org.chromium.ui.picker;
+package org.chromium.content.browser.picker;
 
 import android.app.AlertDialog;
 import android.app.DatePickerDialog.OnDateSetListener;
@@ -16,10 +16,10 @@ import android.widget.DatePicker;
 import android.widget.ListView;
 import android.widget.TimePicker;
 
-import org.chromium.ui.R;
+import org.chromium.content.R;
+import org.chromium.content.browser.picker.DateTimePickerDialog.OnDateTimeSetListener;
+import org.chromium.content.browser.picker.MultiFieldTimePickerDialog.OnMultiFieldTimeSetListener;
 import org.chromium.ui.base.ime.TextInputType;
-import org.chromium.ui.picker.DateTimePickerDialog.OnDateTimeSetListener;
-import org.chromium.ui.picker.MultiFieldTimePickerDialog.OnMultiFieldTimeSetListener;
 
 import java.util.Arrays;
 import java.util.Calendar;
@@ -60,7 +60,7 @@ public class InputDialogContainer {
         mInputActionDelegate = inputActionDelegate;
     }
 
-    public void showPickerDialog(final int dialogType, double dialogValue,
+    protected void showPickerDialog(final int dialogType, double dialogValue,
             double min, double max, double step) {
         Calendar cal;
         // |dialogValue|, |min|, |max| mean different things depending on the |dialogType|.
@@ -118,7 +118,7 @@ public class InputDialogContainer {
         }
     }
 
-    void showSuggestionDialog(final int dialogType,
+    private void showSuggestionDialog(final int dialogType,
             final double dialogValue,
             final double min, final double max, final double step,
             DateTimeSuggestion[] suggestions) {
@@ -200,7 +200,7 @@ public class InputDialogContainer {
         int stepTime = (int) step;
 
         if (dialogType == TextInputType.DATE) {
-            ChromeDatePickerDialog dialog = new ChromeDatePickerDialog(mContext,
+            DatePickerDialogCompat dialog = new DatePickerDialogCompat(mContext,
                     new DateListener(dialogType),
                     year, month, monthDay);
             DateDialogNormalizer.normalize(dialog.getDatePicker(), dialog,
@@ -264,11 +264,11 @@ public class InputDialogContainer {
         mDialog.show();
     }
 
-    boolean isDialogShowing() {
+    private boolean isDialogShowing() {
         return mDialog != null && mDialog.isShowing();
     }
 
-    void dismissDialog() {
+    private void dismissDialog() {
         if (isDialogShowing()) mDialog.dismiss();
     }
 

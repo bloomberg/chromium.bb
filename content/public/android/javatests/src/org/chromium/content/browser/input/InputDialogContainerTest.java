@@ -9,11 +9,11 @@ import android.test.AndroidTestCase;
 import android.test.suitebuilder.annotation.SmallTest;
 
 import org.chromium.base.test.util.Feature;
+import org.chromium.content.browser.picker.InputDialogContainer;
 import org.chromium.ui.base.ime.TextInputType;
-import org.chromium.ui.picker.InputDialogContainer;
 
 /**
- * Unittests for the {@link org.chromium.ui.picker.InputDialogContainer} class.
+ * Unittests for the {@link org.chromium.content.browser.picker.InputDialogContainer} class.
  */
 public class InputDialogContainerTest extends AndroidTestCase {
     // Defined in third_party/WebKit/Source/platform/DateComponents.h
@@ -362,6 +362,12 @@ public class InputDialogContainerTest extends AndroidTestCase {
             mExpectedMin = min;
             mExpectedMax = max;
             mExpectedStep = step;
+        }
+
+        @Override
+        public void showPickerDialog(
+                final int dialogType, double dialogValue, double min, double max, double step) {
+            super.showPickerDialog(dialogType, dialogValue, min, max, step);
         }
 
         @Override

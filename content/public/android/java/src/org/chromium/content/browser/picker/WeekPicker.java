@@ -2,16 +2,18 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-package org.chromium.ui.picker;
+package org.chromium.content.browser.picker;
 
 import android.content.Context;
 
-import org.chromium.ui.R;
+import org.chromium.content.R;
 
 import java.util.Calendar;
 import java.util.TimeZone;
 
-// This class is heavily based on android.widget.DatePicker.
+/**
+ * This class is heavily based on android.widget.DatePicker.
+ */
 public class WeekPicker extends TwoFieldDatePicker {
 
     public WeekPicker(Context context, double minValue, double maxValue) {
