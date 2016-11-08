@@ -25,6 +25,7 @@ class WindowTreeHostMus;
 
 namespace client {
 class CaptureClient;
+class FocusClient;
 }
 
 // Interface implemented by an application using mus.
@@ -58,6 +59,10 @@ class AURA_EXPORT WindowTreeClientDelegate {
   // windows owned by other processes.
   virtual void OnPointerEventObserved(const ui::PointerEvent& event,
                                       Window* target) = 0;
+
+  // Mus expects a single FocusClient is used for all WindowTreeHosts. This
+  // returns it. GetFocusClient() is called from the constructor.
+  virtual client::FocusClient* GetFocusClient() = 0;
 
   // Mus expects a single CaptureClient is used for all WindowTreeHosts. This
   // returns it. GetCaptureClient() is called from the constructor.

@@ -28,7 +28,6 @@ enum class Cursor : int32_t;
 namespace aura {
 
 class CaptureSynchronizer;
-class FocusSynchronizer;
 class WindowMus;
 class WindowTreeClient;
 
@@ -232,17 +231,13 @@ class InFlightCaptureChange : public InFlightWindowTreeClientChange {
 
 class InFlightFocusChange : public InFlightWindowTreeClientChange {
  public:
-  InFlightFocusChange(WindowTreeClient* client,
-                      FocusSynchronizer* focus_synchronizer,
-                      WindowMus* revert_value);
+  InFlightFocusChange(WindowTreeClient* client, WindowMus* revert_value);
   ~InFlightFocusChange() override;
 
   // InFlightChange:
   void Revert() override;
 
  private:
-  FocusSynchronizer* focus_synchronizer_;
-
   DISALLOW_COPY_AND_ASSIGN(InFlightFocusChange);
 };
 

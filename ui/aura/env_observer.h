@@ -12,10 +12,6 @@ namespace aura {
 class Window;
 class WindowTreeHost;
 
-namespace client {
-class FocusClient;
-}
-
 class AURA_EXPORT EnvObserver {
  public:
   // Called when |window| has been initialized.
@@ -29,10 +25,6 @@ class AURA_EXPORT EnvObserver {
 
   // Called right before Env is destroyed.
   virtual void OnWillDestroyEnv() {}
-
-  // Called from Env::SetActiveFocusClient(), see it for details.
-  virtual void OnActiveFocusClientChanged(client::FocusClient* focus_client,
-                                          Window* window) {}
 
  protected:
   virtual ~EnvObserver() {}

@@ -232,6 +232,10 @@ void AuraTestBase::OnWmPerformMoveLoop(
 
 void AuraTestBase::OnWmCancelMoveLoop(Window* window) {}
 
+client::FocusClient* AuraTestBase::GetFocusClient() {
+  return helper_->focus_client();
+}
+
 client::CaptureClient* AuraTestBase::GetCaptureClient() {
   return helper_->capture_client();
 }

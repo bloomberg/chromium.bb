@@ -32,6 +32,7 @@ class Identity;
 }
 
 namespace wm {
+class FocusController;
 class WMState;
 }
 
@@ -90,6 +91,7 @@ class VIEWS_MUS_EXPORT MusClient
   void OnEmbedRootDestroyed(aura::Window* root) override;
   void OnPointerEventObserved(const ui::PointerEvent& event,
                               aura::Window* target) override;
+  aura::client::FocusClient* GetFocusClient() override;
   aura::client::CaptureClient* GetCaptureClient() override;
   aura::PropertyConverter* GetPropertyConverter() override;
 
@@ -109,6 +111,8 @@ class VIEWS_MUS_EXPORT MusClient
   std::unique_ptr<wm::WMState> wm_state_;
 
   std::unique_ptr<ScreenMus> screen_;
+
+  std::unique_ptr<wm::FocusController> focus_controller_;
 
   std::unique_ptr<aura::PropertyConverter> property_converter_;
 

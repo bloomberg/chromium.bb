@@ -24,11 +24,29 @@
 #include "ui/views/mus/surface_context_factory.h"
 #include "ui/views/views_delegate.h"
 #include "ui/views/widget/desktop_aura/desktop_native_widget_aura.h"
+#include "ui/wm/core/base_focus_rules.h"
 #include "ui/wm/core/capture_controller.h"
+#include "ui/wm/core/focus_controller.h"
 #include "ui/wm/core/wm_state.h"
 
 namespace views {
 namespace {
+
+// TODO: this is temporary, figure out what the real one should be like.
+class FocusRulesMus : public wm::BaseFocusRules {
+ public:
+  FocusRulesMus() {}
+  ~FocusRulesMus() override {}
+
+  // wm::BaseFocusRules::
+  bool SupportsChildActivation(aura::Window* window) const override {
+    NOTIMPLEMENTED();
+    return true;
+  }
+
+ private:
+  DISALLOW_COPY_AND_ASSIGN(FocusRulesMus);
+};
 
 class PropertyConverterImpl : public aura::PropertyConverter {
  public:
@@ -113,6 +131,8 @@ MusClient::MusClient(service_manager::Connector* connector,
       base::MakeUnique<views::SurfaceContextFactory>(gpu_service_.get());
   aura::Env::GetInstance()->set_context_factory(
       compositor_context_factory_.get());
+  // TODO(sky): need a class similar to DesktopFocusRules.
+  focus_controller_ = base::MakeUnique<wm::FocusController>(new FocusRulesMus);
   window_tree_client_ =
       base::MakeUnique<aura::WindowTreeClient>(this, nullptr, nullptr);
   window_tree_client_->ConnectViaWindowTreeFactory(connector_);
@@ -154,6 +174,10 @@ void MusClient::OnPointerEventObserved(const ui::PointerEvent& event,
 void MusClient::OnWindowManagerFrameValuesChanged() {
   // TODO(sky): wire up to DesktopNativeWidgetAura.
   NOTIMPLEMENTED();
+}
+
+aura::client::FocusClient* MusClient::GetFocusClient() {
+  return focus_controller_.get();
 }
 
 aura::client::CaptureClient* MusClient::GetCaptureClient() {
