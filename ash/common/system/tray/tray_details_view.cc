@@ -10,7 +10,11 @@
 #include "ash/common/system/tray/system_tray_item.h"
 #include "ash/common/system/tray/tray_constants.h"
 #include "base/containers/adapters.h"
+#include "third_party/skia/include/core/SkDrawLooper.h"
+#include "ui/compositor/paint_context.h"
+#include "ui/compositor/paint_recorder.h"
 #include "ui/gfx/canvas.h"
+#include "ui/gfx/skia_util.h"
 #include "ui/views/background.h"
 #include "ui/views/border.h"
 #include "ui/views/controls/progress_bar.h"
@@ -22,9 +26,6 @@
 
 namespace ash {
 namespace {
-
-const int kHeaderRowSeparatorThickness = 1;
-const SkColor kHeaderRowSeparatorColor = SkColorSetA(SK_ColorBLACK, 0x1F);
 
 // A view that is used as ScrollView contents. It supports designating some of
 // the children as sticky header rows. The sticky header rows are not scrolled
@@ -54,8 +55,9 @@ class ScrollContentsView : public views::View,
     }
     // Paint header rows above other children in Z-order.
     for (auto& header : headers_) {
-      if (!header.view()->layer())
-        header.view()->Paint(context);
+      if (!header.view->layer())
+        header.view->Paint(context);
+      PaintDelineation(header, context);
     }
   }
 
@@ -75,7 +77,7 @@ class ScrollContentsView : public views::View,
     if (!details.is_add && details.parent == this) {
       headers_.erase(std::remove_if(headers_.begin(), headers_.end(),
                                     [details](const Header& header) {
-                                      return header.view() == details.child;
+                                      return header.view == details.child;
                                     }),
                      headers_.end());
     }
@@ -85,7 +87,7 @@ class ScrollContentsView : public views::View,
   View* TargetForRect(View* root, const gfx::Rect& rect) override {
     // Give header rows first dibs on events.
     for (auto& header : headers_) {
-      views::View* view = header.view();
+      views::View* view = header.view;
       gfx::Rect local_to_header = rect;
       local_to_header.Offset(-view->x(), -view->y());
       if (ViewTargeterDelegate::DoesIntersectRect(view, local_to_header))
@@ -95,43 +97,23 @@ class ScrollContentsView : public views::View,
   }
 
  private:
+  const int kSeparatorThickness = 1;
+  const SkColor kSeparatorColor = SkColorSetA(SK_ColorBLACK, 0x1F);
+  const int kShadowOffsetY = 2;
+  const int kShadowBlur = 2;
+
   // A structure that keeps the original offset of each header between the
   // calls to Layout() to allow keeping track of which view should be sticky.
-  class Header {
-   public:
-    explicit Header(views::View* header)
-        : view_(header), offset_(header->y()), sticky_(true) {
-      DecorateAsSticky(false);
-    }
+  struct Header {
+    explicit Header(views::View* view)
+        : view(view), natural_offset(view->y()) {}
 
-    // Sets decorations on a header row to indicate whether it is |sticky|.
-    void DecorateAsSticky(bool sticky) {
-      if (sticky_ == sticky)
-        return;
-      sticky_ = sticky;
-      if (sticky) {
-        view_->SetBorder(views::CreateSolidSidedBorder(
-            0, 0, kHeaderRowSeparatorThickness, 0, kHeaderRowSeparatorColor));
-      } else {
-        view_->SetBorder(views::CreateSolidSidedBorder(
-            kHeaderRowSeparatorThickness, 0, 0, 0, kHeaderRowSeparatorColor));
-      }
-    }
-
-    const views::View* view() const { return view_; }
-    views::View* view() { return view_; }
-    int offset() const { return offset_; }
-
-   private:
     // A header View that can be decorated as sticky.
-    views::View* view_;
+    views::View* view;
 
     // Offset from the top of ScrollContentsView to |view|'s original vertical
     // position.
-    int offset_;
-
-    // True if the header is decorated as sticky with a shadow below.
-    bool sticky_;
+    int natural_offset;
   };
 
   // Adjusts y-position of header rows allowing one or two rows to stick to the
@@ -140,28 +122,65 @@ class ScrollContentsView : public views::View,
     const int scroll_offset = -y();
     Header* previous_header = nullptr;
     for (auto& header : base::Reversed(headers_)) {
-      if (header.offset() >= scroll_offset) {
-        header.DecorateAsSticky(false);
+      views::View* header_view = header.view;
+      if (header.natural_offset >= scroll_offset) {
         previous_header = &header;
+        header_view->SetY(header.natural_offset);
         continue;
       }
-      views::View* header_view = header.view();
       if (previous_header &&
-          previous_header->view()->y() <
-              scroll_offset + header_view->height()) {
+          previous_header->view->y() < scroll_offset + header_view->height()) {
         // Lower header displacing the header above.
-        header_view->SetY(previous_header->view()->y() - header_view->height());
-        header.DecorateAsSticky(false);
-        previous_header->DecorateAsSticky(false);
+        header_view->SetY(previous_header->view->y() - header_view->height());
       } else {
         // A header becomes sticky.
         header_view->SetY(scroll_offset);
-        header.DecorateAsSticky(true);
         header_view->Layout();
         header_view->SchedulePaint();
       }
       break;
     }
+  }
+
+  // Paints a separator for a header view. The separator can be a horizontal
+  // rule or a horizontal shadow, depending on whether the header is sticking to
+  // the top of the scroll viewport.
+  void PaintDelineation(const Header& header, const ui::PaintContext& context) {
+    const View* view = header.view;
+    const bool at_top = view->y() == -y();
+
+    // If the header is where it normally belongs, draw a separator above.
+    if (view->y() == header.natural_offset) {
+      // But if the header is at the very top of the viewport, draw nothing.
+      if (at_top)
+        return;
+
+      // TODO(estade): look better at 1.5x scale.
+      ui::PaintRecorder recorder(context, size());
+      gfx::Canvas* canvas = recorder.canvas();
+      gfx::Rect separator = view->bounds();
+      separator.set_height(kSeparatorThickness);
+      canvas->FillRect(separator, kSeparatorColor);
+      return;
+    }
+
+    // If the header is displaced but is not at the top of the viewport, it's
+    // being pushed out by another header. Draw nothing.
+    if (!at_top)
+      return;
+
+    // Otherwise, draw a shadow below.
+    ui::PaintRecorder recorder(context, size());
+    gfx::Canvas* canvas = recorder.canvas();
+    SkPaint paint;
+    gfx::ShadowValues shadow;
+    shadow.emplace_back(gfx::Vector2d(0, kShadowOffsetY), kShadowBlur,
+                        kSeparatorColor);
+    paint.setLooper(gfx::CreateShadowDrawLooperCorrectBlur(shadow));
+    paint.setAntiAlias(true);
+    gfx::Rect rect(0, 0, view->width(), view->bounds().bottom());
+    canvas->ClipRect(rect, SkRegion::kDifference_Op);
+    canvas->DrawRect(rect, paint);
   }
 
   // Header child views that stick to the top of visible viewport when scrolled.
