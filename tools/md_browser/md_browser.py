@@ -19,7 +19,7 @@ import time
 import webbrowser
 
 
-THIS_DIR = os.path.abspath(os.path.dirname(__file__))
+THIS_DIR = os.path.realpath(os.path.dirname(__file__))
 SRC_DIR = os.path.dirname(os.path.dirname(THIS_DIR))
 sys.path.append(os.path.join(SRC_DIR, 'third_party', 'Python-Markdown'))
 import markdown
@@ -34,14 +34,14 @@ def main(argv):
                       help='open file in browser')
   args = parser.parse_args(argv)
 
-  top_level = os.path.abspath(args.directory)
+  top_level = os.path.realpath(args.directory)
 
   s = Server(args.port, top_level)
 
   print('Listening on http://localhost:%s/' % args.port)
   thread = None
   if args.file:
-    path = os.path.abspath(args.file)
+    path = os.path.realpath(args.file)
     if not path.startswith(top_level):
       print('%s is not under %s' % (args.file, args.directory))
       return 1
@@ -108,7 +108,7 @@ class Server(SocketServer.TCPServer):
   def __init__(self, port, top_level):
     SocketServer.TCPServer.__init__(self, ('0.0.0.0', port), Handler)
     self.port = port
-    self.top_level = os.path.abspath(top_level)
+    self.top_level = top_level
     self.retcode = None
 
   def server_bind(self):
@@ -125,7 +125,7 @@ class Handler(SimpleHTTPServer.SimpleHTTPRequestHandler):
     if path.startswith('/chromium/src/+/master'):
       path = path[len('/chromium/src/+/master'):]
 
-    full_path = os.path.abspath(os.path.join(self.server.top_level, path[1:]))
+    full_path = os.path.realpath(os.path.join(self.server.top_level, path[1:]))
 
     if not full_path.startswith(self.server.top_level):
       self._DoUnknown()
