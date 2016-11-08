@@ -17,6 +17,7 @@
 #include "base/debug/leak_annotations.h"
 #include "base/format_macros.h"
 #include "chrome/common/chrome_result_codes.h"
+#include "chrome/install_static/install_details.h"
 #include "chrome/install_static/install_util.h"
 #include "components/crash/content/app/crashpad.h"
 #include "components/crash/core/common/crash_keys.h"
@@ -327,23 +328,20 @@ bool ChromeCrashReporterClient::GetDeferredUploadsSupported(
   return false;
 }
 
+// TODO(grt): Remove |exe_path| from crash_reporter::CrashReporterClient.
 bool ChromeCrashReporterClient::GetIsPerUserInstall(
     const base::string16& exe_path) {
-  return !install_static::IsSystemInstall(exe_path.c_str());
+  return !install_static::InstallDetails::Get().system_level();
 }
 
+// TODO(grt): Remove |is_per_user_install| from
+// crash_reporter::CrashReporterClient.
 bool ChromeCrashReporterClient::GetShouldDumpLargerDumps(
     bool is_per_user_install) {
-  base::string16 channel_name;
-  install_static::GetChromeChannelName(is_per_user_install,
-                                       false, // !add_modifier
-                                       &channel_name);
-  // Capture more detail in crash dumps for Beta, Dev, Canary channels and
-  // if channel is unknown (e.g. Chromium or developer builds).
-  return (channel_name == install_static::kChromeChannelBeta ||
-          channel_name == install_static::kChromeChannelDev ||
-          channel_name == install_static::kChromeChannelCanary ||
-          channel_name == install_static::kChromeChannelUnknown);
+  // Capture larger dumps for Google Chrome "beta", "dev", and "canary"
+  // channels. Stable channel and Chromium builds are on channel "", and use
+  // smaller dumps.
+  return !install_static::InstallDetails::Get().channel().empty();
 }
 
 int ChromeCrashReporterClient::GetResultCodeRespawnFailed() {
