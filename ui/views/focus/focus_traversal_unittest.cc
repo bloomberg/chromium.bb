@@ -137,7 +137,14 @@ class BorderView : public NativeViewHost {
     SetFocusBehavior(FocusBehavior::NEVER);
   }
 
-  ~BorderView() override {}
+  ~BorderView() override {
+    // TODO: ifdef should not be necessary. NativeWidgetMac has different
+    // ownership semantics: http://crbug.com/663418.
+#if !defined(OS_MACOSX)
+    if (widget_)
+      widget_->CloseNow();
+#endif
+  }
 
   virtual internal::RootView* GetContentsRootView() {
     return static_cast<internal::RootView*>(widget_->GetRootView());
