@@ -315,8 +315,13 @@ void InkDropImpl::HideHighlightOnRippleHiddenState::OnFocusChanged() {
 void InkDropImpl::HideHighlightOnRippleHiddenState::AnimationStarted(
     InkDropState ink_drop_state) {
   if (ink_drop_state == views::InkDropState::DEACTIVATED &&
-      GetInkDrop()->is_focused_) {
-    GetInkDrop()->ink_drop_ripple_->HideImmediately();
+      GetInkDrop()->ShouldHighlightBasedOnFocus()) {
+    // It's possible to get animation started events when destroying the
+    // |ink_drop_ripple_|.
+    // TODO(bruthig): Investigate if the animation framework can address this
+    // issue instead. See https://crbug.com/663335.
+    if (GetInkDrop()->ink_drop_ripple_)
+      GetInkDrop()->ink_drop_ripple_->HideImmediately();
     GetInkDrop()->SetHighlightState(
         state_factory()->CreateVisibleState(base::TimeDelta(), false));
   }

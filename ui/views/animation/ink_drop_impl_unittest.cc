@@ -478,6 +478,17 @@ TEST_P(InkDropImplHideAutoHighlightTest,
   EXPECT_TRUE(test_api()->ShouldHighlight());
 }
 
+// Verifies there is no crash when animations are started during the destruction
+// of the InkDropRipple. See https://crbug.com/663335.
+TEST_P(InkDropImplHideAutoHighlightTest, NoCrashDuringRippleTearDown) {
+  ink_drop()->SetShowHighlightOnFocus(true);
+  ink_drop()->SetFocused(true);
+  ink_drop()->AnimateToState(InkDropState::ACTIVATED);
+  ink_drop()->AnimateToState(InkDropState::DEACTIVATED);
+  ink_drop()->AnimateToState(InkDropState::DEACTIVATED);
+  DestroyInkDrop();
+}
+
 ////////////////////////////////////////////////////////////////////////////////
 //
 // InkDropImpl::AutoHighlightMode::SHOW_ON_RIPPLE specific tests
