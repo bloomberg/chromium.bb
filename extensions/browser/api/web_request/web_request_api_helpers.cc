@@ -343,7 +343,7 @@ EventResponseDelta* CalculateOnBeforeSendHeadersDelta(
       new EventResponseDelta(extension_id, extension_install_time);
   result->cancel = cancel;
 
-  // The event listener might not have passed any new headers if he
+  // The event listener might not have passed any new headers if it
   // just wanted to cancel the request.
   if (new_headers) {
     // Find deleted headers.

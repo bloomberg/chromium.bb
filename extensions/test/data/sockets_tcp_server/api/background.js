@@ -14,7 +14,7 @@ var port = -1;
 var socketId = 0;
 var succeeded = false;
 
-// Many thanks to Dennis for his StackOverflow answer: http://goo.gl/UDanx
+// Many thanks to Dennis for the StackOverflow answer: http://goo.gl/UDanx
 // Since amended to handle BlobBuilder deprecation.
 function string2ArrayBuffer(string, callback) {
   var blob = new Blob([string]);

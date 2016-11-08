@@ -60,8 +60,8 @@ class ExtensionThrottleEntryInterface
   // indicated is already one of those that will be counted as an error.
   virtual void ReceivedContentWasMalformed(int response_code) = 0;
 
-  // Get the URL ID associated with his entry. Should only be used for debugging
-  // purpose.
+  // Get the URL ID associated with this entry. Should only be used for
+  // debugging purpose.
   virtual const std::string& GetURLIdForDebugging() const = 0;
 
  protected:
