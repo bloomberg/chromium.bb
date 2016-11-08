@@ -7,16 +7,12 @@
 #include "base/stl_util.h"
 #include "base/strings/stringprintf.h"
 #include "base/values.h"
-#include "content/public/child/v8_value_converter.h"
 #include "extensions/renderer/api_binding.h"
+#include "extensions/renderer/api_binding_test.h"
 #include "extensions/renderer/api_binding_test_util.h"
 #include "extensions/renderer/api_event_handler.h"
 #include "extensions/renderer/api_request_handler.h"
 #include "gin/converter.h"
-#include "gin/public/context_holder.h"
-#include "gin/public/isolate_holder.h"
-#include "gin/test/v8_test.h"
-#include "gin/try_catch.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "v8/include/v8.h"
 
@@ -103,7 +99,7 @@ bool AllowAllAPIs(const std::string& name) {
 
 }  // namespace
 
-class APIBindingTest : public gin::V8Test {
+class APIBindingUnittest : public APIBindingTest {
  public:
   void OnFunctionCall(const std::string& name,
                       std::unique_ptr<base::ListValue> arguments,
@@ -119,49 +115,16 @@ class APIBindingTest : public gin::V8Test {
   }
 
  protected:
-  APIBindingTest() {}
+  APIBindingUnittest() {}
   void SetUp() override {
-    gin::V8Test::SetUp();
-    v8::HandleScope handle_scope(instance_->isolate());
-    holder_ = base::MakeUnique<gin::ContextHolder>(instance_->isolate());
-    holder_->SetContext(
-        v8::Local<v8::Context>::New(instance_->isolate(), context_));
+    APIBindingTest::SetUp();
     request_handler_ = base::MakeUnique<APIRequestHandler>(
         base::Bind(&RunFunctionOnGlobalAndIgnoreResult));
   }
 
   void TearDown() override {
     request_handler_.reset();
-
-    v8::Global<v8::Context> weak_context(instance_->isolate(), context_);
-    weak_context.SetWeak();
-
-    holder_.reset();
-
-    // NOTE: We explicitly do NOT call gin::V8Test::TearDown() here because we
-    // do intermittent validation by doing a garbage collection after context
-    // destruction and ensuring the context is fully released (which wouldn't
-    // happen in cycles).
-    // TODO(devlin): It might be time to move off V8Test if we're doing this.
-    {
-      v8::HandleScope handle_scope(instance_->isolate());
-      v8::Local<v8::Context>::New(instance_->isolate(), context_)->Exit();
-      context_.Reset();
-    }
-
-    // Garbage collect everything so that we find any issues where we might be
-    // double-freeing.
-    // '5' is a magic number stolen from Blink; arbitrarily large enough to
-    // hopefully clean up all the various paths.
-    for (int i = 0; i < 5; i++) {
-      instance_->isolate()->RequestGarbageCollectionForTesting(
-          v8::Isolate::kFullGarbageCollection);
-    }
-
-    ASSERT_TRUE(weak_context.IsEmpty());
-
-    instance_->isolate()->Exit();
-    instance_.reset();
+    APIBindingTest::TearDown();
   }
 
   void ExpectPass(v8::Local<v8::Object> object,
@@ -189,25 +152,22 @@ class APIBindingTest : public gin::V8Test {
                const std::string& expected_error);
 
   std::unique_ptr<base::ListValue> arguments_;
-  std::unique_ptr<gin::ContextHolder> holder_;
   std::unique_ptr<APIRequestHandler> request_handler_;
   std::string last_request_id_;
 
-  DISALLOW_COPY_AND_ASSIGN(APIBindingTest);
+  DISALLOW_COPY_AND_ASSIGN(APIBindingUnittest);
 };
 
-void APIBindingTest::RunTest(v8::Local<v8::Object> object,
-                             const std::string& script_source,
-                             bool should_pass,
-                             const std::string& expected_json_arguments,
-                             const std::string& expected_error) {
+void APIBindingUnittest::RunTest(v8::Local<v8::Object> object,
+                                 const std::string& script_source,
+                                 bool should_pass,
+                                 const std::string& expected_json_arguments,
+                                 const std::string& expected_error) {
   EXPECT_FALSE(arguments_);
   std::string wrapped_script_source =
       base::StringPrintf("(function(obj) { %s })", script_source.c_str());
-  v8::Isolate* isolate = instance_->isolate();
 
-  v8::Local<v8::Context> context =
-      v8::Local<v8::Context>::New(isolate, context_);
+  v8::Local<v8::Context> context = ContextLocal();
   v8::Local<v8::Function> func =
       FunctionFromString(context, wrapped_script_source);
   ASSERT_FALSE(func.IsEmpty());
@@ -226,27 +186,23 @@ void APIBindingTest::RunTest(v8::Local<v8::Object> object,
   arguments_.reset();
 }
 
-TEST_F(APIBindingTest, Test) {
+TEST_F(APIBindingUnittest, Test) {
   std::unique_ptr<base::ListValue> functions = ListValueFromString(kFunctions);
   ASSERT_TRUE(functions);
   ArgumentSpec::RefMap refs;
   APIBinding binding(
       "test", *functions, nullptr, nullptr,
-      base::Bind(&APIBindingTest::OnFunctionCall, base::Unretained(this)),
+      base::Bind(&APIBindingUnittest::OnFunctionCall, base::Unretained(this)),
       &refs);
   EXPECT_TRUE(refs.empty());
 
-  v8::Isolate* isolate = instance_->isolate();
-
-  v8::HandleScope handle_scope(isolate);
-  v8::Local<v8::Context> context =
-      v8::Local<v8::Context>::New(isolate, context_);
+  v8::HandleScope handle_scope(isolate());
+  v8::Local<v8::Context> context = ContextLocal();
 
   APIEventHandler event_handler(
       base::Bind(&RunFunctionOnGlobalAndIgnoreResult));
-  v8::Local<v8::Object> binding_object =
-      binding.CreateInstance(context, isolate, &event_handler,
-                             base::Bind(&AllowAllAPIs));
+  v8::Local<v8::Object> binding_object = binding.CreateInstance(
+      context, isolate(), &event_handler, base::Bind(&AllowAllAPIs));
 
   ExpectPass(binding_object, "obj.oneString('foo');", "['foo']");
   ExpectPass(binding_object, "obj.oneString('');", "['']");
@@ -300,7 +256,7 @@ TEST_F(APIBindingTest, Test) {
   ExpectFailure(binding_object, "obj.optionalCallback(0)", kError);
 }
 
-TEST_F(APIBindingTest, TypeRefsTest) {
+TEST_F(APIBindingUnittest, TypeRefsTest) {
   const char kTypes[] =
       "[{"
       "  'id': 'refObj',"
@@ -337,23 +293,19 @@ TEST_F(APIBindingTest, TypeRefsTest) {
   ArgumentSpec::RefMap refs;
   APIBinding binding(
       "test", *functions, types.get(), nullptr,
-      base::Bind(&APIBindingTest::OnFunctionCall, base::Unretained(this)),
+      base::Bind(&APIBindingUnittest::OnFunctionCall, base::Unretained(this)),
       &refs);
   EXPECT_EQ(2u, refs.size());
   EXPECT_TRUE(base::ContainsKey(refs, "refObj"));
   EXPECT_TRUE(base::ContainsKey(refs, "refEnum"));
 
-  v8::Isolate* isolate = instance_->isolate();
-
-  v8::HandleScope handle_scope(isolate);
-  v8::Local<v8::Context> context =
-      v8::Local<v8::Context>::New(isolate, context_);
+  v8::HandleScope handle_scope(isolate());
+  v8::Local<v8::Context> context = ContextLocal();
 
   APIEventHandler event_handler(
       base::Bind(&RunFunctionOnGlobalAndIgnoreResult));
-  v8::Local<v8::Object> binding_object =
-      binding.CreateInstance(context, isolate, &event_handler,
-                             base::Bind(&AllowAllAPIs));
+  v8::Local<v8::Object> binding_object = binding.CreateInstance(
+      context, isolate(), &event_handler, base::Bind(&AllowAllAPIs));
 
   ExpectPass(binding_object, "obj.takesRefObj({prop1: 'foo'})",
              "[{'prop1':'foo'}]");
@@ -366,7 +318,7 @@ TEST_F(APIBindingTest, TypeRefsTest) {
   ExpectFailure(binding_object, "obj.takesRefEnum('gamma')", kError);
 }
 
-TEST_F(APIBindingTest, RestrictedAPIs) {
+TEST_F(APIBindingUnittest, RestrictedAPIs) {
   const char kRestrictedFunctions[] =
       "[{"
       "  'name': 'allowedOne',"
@@ -387,13 +339,11 @@ TEST_F(APIBindingTest, RestrictedAPIs) {
   ArgumentSpec::RefMap refs;
   APIBinding binding(
       "test", *functions, nullptr, nullptr,
-      base::Bind(&APIBindingTest::OnFunctionCall, base::Unretained(this)),
+      base::Bind(&APIBindingUnittest::OnFunctionCall, base::Unretained(this)),
       &refs);
 
-  v8::Isolate* isolate = instance_->isolate();
-  v8::HandleScope handle_scope(isolate);
-  v8::Local<v8::Context> context =
-      v8::Local<v8::Context>::New(isolate, context_);
+  v8::HandleScope handle_scope(isolate());
+  v8::Local<v8::Context> context = ContextLocal();
 
   auto is_available = [](const std::string& name) {
     std::set<std::string> functions = {"test.allowedOne", "test.allowedTwo",
@@ -405,9 +355,8 @@ TEST_F(APIBindingTest, RestrictedAPIs) {
 
   APIEventHandler event_handler(
       base::Bind(&RunFunctionOnGlobalAndIgnoreResult));
-  v8::Local<v8::Object> binding_object =
-      binding.CreateInstance(context, isolate, &event_handler,
-                             base::Bind(is_available));
+  v8::Local<v8::Object> binding_object = binding.CreateInstance(
+      context, isolate(), &event_handler, base::Bind(is_available));
 
   auto is_defined = [&binding_object, context](const std::string& name) {
     v8::Local<v8::Value> val =
@@ -424,7 +373,7 @@ TEST_F(APIBindingTest, RestrictedAPIs) {
 
 // Tests that events specified in the API are created as properties of the API
 // object.
-TEST_F(APIBindingTest, TestEventCreation) {
+TEST_F(APIBindingUnittest, TestEventCreation) {
   const char kEvents[] = "[{'name': 'onFoo'}, {'name': 'onBar'}]";
   std::unique_ptr<base::ListValue> events = ListValueFromString(kEvents);
   ASSERT_TRUE(events);
@@ -433,35 +382,32 @@ TEST_F(APIBindingTest, TestEventCreation) {
   ArgumentSpec::RefMap refs;
   APIBinding binding(
       "test", *functions, nullptr, events.get(),
-      base::Bind(&APIBindingTest::OnFunctionCall, base::Unretained(this)),
+      base::Bind(&APIBindingUnittest::OnFunctionCall, base::Unretained(this)),
       &refs);
 
-  v8::Isolate* isolate = instance_->isolate();
-  v8::HandleScope handle_scope(isolate);
-  v8::Local<v8::Context> context =
-      v8::Local<v8::Context>::New(isolate, context_);
+  v8::HandleScope handle_scope(isolate());
+  v8::Local<v8::Context> context = ContextLocal();
 
   APIEventHandler event_handler(
       base::Bind(&RunFunctionOnGlobalAndIgnoreResult));
-  v8::Local<v8::Object> binding_object =
-      binding.CreateInstance(context, isolate, &event_handler,
-                             base::Bind(&AllowAllAPIs));
+  v8::Local<v8::Object> binding_object = binding.CreateInstance(
+      context, isolate(), &event_handler, base::Bind(&AllowAllAPIs));
 
   // Event behavior is tested in the APIEventHandler unittests as well as the
   // APIBindingsSystem tests, so we really only need to check that the events
   // are being initialized on the object.
   v8::Maybe<bool> has_on_foo =
-      binding_object->Has(context, gin::StringToV8(isolate, "onFoo"));
+      binding_object->Has(context, gin::StringToV8(isolate(), "onFoo"));
   EXPECT_TRUE(has_on_foo.IsJust());
   EXPECT_TRUE(has_on_foo.FromJust());
 
   v8::Maybe<bool> has_on_bar =
-      binding_object->Has(context, gin::StringToV8(isolate, "onBar"));
+      binding_object->Has(context, gin::StringToV8(isolate(), "onBar"));
   EXPECT_TRUE(has_on_bar.IsJust());
   EXPECT_TRUE(has_on_bar.FromJust());
 
   v8::Maybe<bool> has_on_baz =
-      binding_object->Has(context, gin::StringToV8(isolate, "onBaz"));
+      binding_object->Has(context, gin::StringToV8(isolate(), "onBaz"));
   EXPECT_TRUE(has_on_baz.IsJust());
   EXPECT_FALSE(has_on_baz.FromJust());
 }

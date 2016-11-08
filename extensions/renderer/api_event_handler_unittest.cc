@@ -8,59 +8,17 @@
 #include "base/memory/ptr_util.h"
 #include "base/strings/stringprintf.h"
 #include "base/values.h"
+#include "extensions/renderer/api_binding_test.h"
 #include "extensions/renderer/api_binding_test_util.h"
 #include "gin/converter.h"
 #include "gin/public/context_holder.h"
-#include "gin/public/isolate_holder.h"
-#include "gin/test/v8_test.h"
-#include "gin/try_catch.h"
 
 namespace extensions {
 
-class APIEventHandlerTest : public gin::V8Test {
+class APIEventHandlerTest : public APIBindingTest {
  protected:
   APIEventHandlerTest() {}
   ~APIEventHandlerTest() override {}
-
-  void SetUp() override {
-    gin::V8Test::SetUp();
-    v8::HandleScope handle_scope(instance_->isolate());
-    holder_ = base::MakeUnique<gin::ContextHolder>(instance_->isolate());
-    holder_->SetContext(
-        v8::Local<v8::Context>::New(instance_->isolate(), context_));
-  }
-
-  void TearDown() override {
-    // Garbage collect everything so that we find any issues where we might be
-    // double-freeing.
-    // '5' is a magic number stolen from Blink; arbitrarily large enough to
-    // hopefully clean up all the various paths.
-    v8::Global<v8::Context> weak_context(instance_->isolate(), context_);
-    weak_context.SetWeak();
-
-    holder_.reset();
-
-    // NOTE: We explicitly do NOT call gin::V8Test::TearDown() here because we
-    // do intermittent validation by doing a garbage collection after context
-    // destruction and ensuring the context is fully released (which wouldn't
-    // happen in cycles).
-    // TODO(devlin): It might be time to move off V8Test if we're doing this.
-    {
-      v8::HandleScope handle_scope(instance_->isolate());
-      v8::Local<v8::Context>::New(instance_->isolate(), context_)->Exit();
-      context_.Reset();
-    }
-
-    for (int i = 0; i < 5; i++) {
-      instance_->isolate()->RequestGarbageCollectionForTesting(
-          v8::Isolate::kFullGarbageCollection);
-    }
-
-    ASSERT_TRUE(weak_context.IsEmpty());
-
-    instance_->isolate()->Exit();
-    instance_.reset();
-  }
 
   void CallFunctionOnObject(v8::Local<v8::Context> context,
                             v8::Local<v8::Object> object,
@@ -76,8 +34,6 @@ class APIEventHandlerTest : public gin::V8Test {
   }
 
  private:
-  std::unique_ptr<gin::ContextHolder> holder_;
-
   DISALLOW_COPY_AND_ASSIGN(APIEventHandlerTest);
 };
 
@@ -85,10 +41,8 @@ class APIEventHandlerTest : public gin::V8Test {
 // associated methods on the JS object.
 TEST_F(APIEventHandlerTest, AddingRemovingAndQueryingEventListeners) {
   const char kEventName[] = "alpha";
-  v8::Isolate* isolate = instance_->isolate();
-  v8::HandleScope handle_scope(instance_->isolate());
-  v8::Local<v8::Context> context =
-      v8::Local<v8::Context>::New(instance_->isolate(), context_);
+  v8::HandleScope handle_scope(isolate());
+  v8::Local<v8::Context> context = ContextLocal();
 
   APIEventHandler handler(base::Bind(&RunFunctionOnGlobalAndIgnoreResult));
   v8::Local<v8::Object> event =
@@ -131,7 +85,7 @@ TEST_F(APIEventHandlerTest, AddingRemovingAndQueryingEventListeners) {
     v8::Local<v8::Value> result =
         RunFunction(has_listener_function, context, arraysize(argv), argv);
     bool has_listener = false;
-    EXPECT_TRUE(gin::Converter<bool>::FromV8(isolate, result, &has_listener));
+    EXPECT_TRUE(gin::Converter<bool>::FromV8(isolate(), result, &has_listener));
     EXPECT_TRUE(has_listener);
   }
 
@@ -143,7 +97,7 @@ TEST_F(APIEventHandlerTest, AddingRemovingAndQueryingEventListeners) {
     v8::Local<v8::Value> result =
         RunFunction(has_listener_function, context, arraysize(argv), argv);
     bool has_listener = false;
-    EXPECT_TRUE(gin::Converter<bool>::FromV8(isolate, result, &has_listener));
+    EXPECT_TRUE(gin::Converter<bool>::FromV8(isolate(), result, &has_listener));
     EXPECT_FALSE(has_listener);
   }
 
@@ -157,7 +111,8 @@ TEST_F(APIEventHandlerTest, AddingRemovingAndQueryingEventListeners) {
     v8::Local<v8::Value> result =
         RunFunction(has_listeners_function, context, arraysize(argv), argv);
     bool has_listeners = false;
-    EXPECT_TRUE(gin::Converter<bool>::FromV8(isolate, result, &has_listeners));
+    EXPECT_TRUE(
+        gin::Converter<bool>::FromV8(isolate(), result, &has_listeners));
     EXPECT_TRUE(has_listeners);
   }
 
@@ -176,7 +131,8 @@ TEST_F(APIEventHandlerTest, AddingRemovingAndQueryingEventListeners) {
     v8::Local<v8::Value> result =
         RunFunction(has_listeners_function, context, arraysize(argv), argv);
     bool has_listeners = false;
-    EXPECT_TRUE(gin::Converter<bool>::FromV8(isolate, result, &has_listeners));
+    EXPECT_TRUE(
+        gin::Converter<bool>::FromV8(isolate(), result, &has_listeners));
     EXPECT_FALSE(has_listeners);
   }
 }
@@ -185,9 +141,8 @@ TEST_F(APIEventHandlerTest, AddingRemovingAndQueryingEventListeners) {
 TEST_F(APIEventHandlerTest, FiringEvents) {
   const char kAlphaName[] = "alpha";
   const char kBetaName[] = "beta";
-  v8::HandleScope handle_scope(instance_->isolate());
-  v8::Local<v8::Context> context =
-      v8::Local<v8::Context>::New(instance_->isolate(), context_);
+  v8::HandleScope handle_scope(isolate());
+  v8::Local<v8::Context> context = ContextLocal();
 
   APIEventHandler handler(base::Bind(&RunFunctionOnGlobalAndIgnoreResult));
   v8::Local<v8::Object> alpha_event =
@@ -281,10 +236,8 @@ TEST_F(APIEventHandlerTest, FiringEvents) {
 
 // Tests firing events with arguments.
 TEST_F(APIEventHandlerTest, EventArguments) {
-  v8::Isolate* isolate = instance_->isolate();
-  v8::HandleScope handle_scope(isolate);
-  v8::Local<v8::Context> context =
-      v8::Local<v8::Context>::New(isolate, context_);
+  v8::HandleScope handle_scope(isolate());
+  v8::Local<v8::Context> context = ContextLocal();
 
   const char kEventName[] = "alpha";
   APIEventHandler handler(base::Bind(&RunFunctionOnGlobalAndIgnoreResult));
@@ -320,13 +273,11 @@ TEST_F(APIEventHandlerTest, EventArguments) {
 
 // Test dispatching events to multiple contexts.
 TEST_F(APIEventHandlerTest, MultipleContexts) {
-  v8::Isolate* isolate = instance_->isolate();
-  v8::HandleScope handle_scope(instance_->isolate());
+  v8::HandleScope handle_scope(isolate());
 
-  v8::Local<v8::Context> context_a =
-      v8::Local<v8::Context>::New(isolate, context_);
-  v8::Local<v8::Context> context_b = v8::Context::New(isolate);
-  gin::ContextHolder holder_b(isolate);
+  v8::Local<v8::Context> context_a = ContextLocal();
+  v8::Local<v8::Context> context_b = v8::Context::New(isolate());
+  gin::ContextHolder holder_b(isolate());
   holder_b.SetContext(context_b);
 
   const char kEventName[] = "onFoo";
@@ -410,10 +361,8 @@ TEST_F(APIEventHandlerTest, MultipleContexts) {
 }
 
 TEST_F(APIEventHandlerTest, DifferentCallingMethods) {
-  v8::Isolate* isolate = instance_->isolate();
-  v8::HandleScope handle_scope(isolate);
-  v8::Local<v8::Context> context =
-      v8::Local<v8::Context>::New(isolate, context_);
+  v8::HandleScope handle_scope(isolate());
+  v8::Local<v8::Context> context = ContextLocal();
 
   const char kEventName[] = "alpha";
   APIEventHandler handler(base::Bind(&RunFunctionOnGlobalAndIgnoreResult));

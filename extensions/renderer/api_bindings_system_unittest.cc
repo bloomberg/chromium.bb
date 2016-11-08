@@ -12,11 +12,9 @@
 #include "base/values.h"
 #include "extensions/common/extension_api.h"
 #include "extensions/renderer/api_binding.h"
+#include "extensions/renderer/api_binding_test.h"
 #include "extensions/renderer/api_binding_test_util.h"
 #include "gin/converter.h"
-#include "gin/public/context_holder.h"
-#include "gin/public/isolate_holder.h"
-#include "gin/test/v8_test.h"
 #include "gin/try_catch.h"
 
 namespace extensions {
@@ -77,7 +75,7 @@ bool AllowAllAPIs(const std::string& name) {
 
 // The base class to test the APIBindingsSystem. This allows subclasses to
 // retrieve API schemas differently.
-class APIBindingsSystemTestBase : public gin::V8Test {
+class APIBindingsSystemTestBase : public APIBindingTest {
  public:
   // Returns the DictionaryValue representing the schema with the given API
   // name.
@@ -92,40 +90,19 @@ class APIBindingsSystemTestBase : public gin::V8Test {
 
  protected:
   APIBindingsSystemTestBase() {}
-  void SetUp() override;
+  void SetUp() override {
+    APIBindingTest::SetUp();
+    bindings_system_ = base::MakeUnique<APIBindingsSystem>(
+        base::Bind(&RunFunctionOnGlobalAndIgnoreResult),
+        base::Bind(&APIBindingsSystemTestBase::GetAPISchema,
+                   base::Unretained(this)),
+        base::Bind(&APIBindingsSystemTestBase::OnAPIRequest,
+                   base::Unretained(this)));
+  }
 
   void TearDown() override {
     bindings_system_.reset();
-
-    v8::Global<v8::Context> weak_context(instance_->isolate(), context_);
-    weak_context.SetWeak();
-
-    holder_.reset();
-
-    // NOTE: We explicitly do NOT call gin::V8Test::TearDown() here because we
-    // do intermittent validation by doing a garbage collection after context
-    // destruction and ensuring the context is fully released (which wouldn't
-    // happen in cycles).
-    // TODO(devlin): It might be time to move off V8Test if we're doing this.
-    {
-      v8::HandleScope handle_scope(instance_->isolate());
-      v8::Local<v8::Context>::New(instance_->isolate(), context_)->Exit();
-      context_.Reset();
-    }
-
-    // Garbage collect everything so that we find any issues where we might be
-    // double-freeing.
-    // '5' is a magic number stolen from Blink; arbitrarily large enough to
-    // hopefully clean up all the various paths.
-    for (int i = 0; i < 5; i++) {
-      instance_->isolate()->RequestGarbageCollectionForTesting(
-          v8::Isolate::kFullGarbageCollection);
-    }
-
-    ASSERT_TRUE(weak_context.IsEmpty());
-
-    instance_->isolate()->Exit();
-    instance_.reset();
+    APIBindingTest::TearDown();
   }
 
   // Checks that |last_request_| exists and was provided with the
@@ -140,8 +117,6 @@ class APIBindingsSystemTestBase : public gin::V8Test {
   APIBindingsSystem* bindings_system() { return bindings_system_.get(); }
 
  private:
-  std::unique_ptr<gin::ContextHolder> holder_;
-
   // The APIBindingsSystem associated with the test. Safe to use across multiple
   // contexts.
   std::unique_ptr<APIBindingsSystem> bindings_system_;
@@ -152,21 +127,6 @@ class APIBindingsSystemTestBase : public gin::V8Test {
 
   DISALLOW_COPY_AND_ASSIGN(APIBindingsSystemTestBase);
 };
-
-void APIBindingsSystemTestBase::SetUp() {
-  gin::V8Test::SetUp();
-  v8::HandleScope handle_scope(instance_->isolate());
-  holder_ = base::MakeUnique<gin::ContextHolder>(instance_->isolate());
-  holder_->SetContext(
-      v8::Local<v8::Context>::New(instance_->isolate(), context_));
-
-  bindings_system_ = base::MakeUnique<APIBindingsSystem>(
-      base::Bind(&RunFunctionOnGlobalAndIgnoreResult),
-      base::Bind(&APIBindingsSystemTestBase::GetAPISchema,
-                 base::Unretained(this)),
-      base::Bind(&APIBindingsSystemTestBase::OnAPIRequest,
-                 base::Unretained(this)));
-}
 
 void APIBindingsSystemTestBase::ValidateLastRequest(
     const std::string& expected_name,
@@ -242,16 +202,14 @@ void APIBindingsSystemTest::SetUp() {
 // Tests API object initialization, calling a method on the supplied APIs, and
 // triggering the callback for the request.
 TEST_F(APIBindingsSystemTest, TestInitializationAndCallbacks) {
-  v8::Isolate* isolate = instance_->isolate();
-  v8::HandleScope handle_scope(isolate);
-  v8::Local<v8::Context> context =
-      v8::Local<v8::Context>::New(isolate, context_);
+  v8::HandleScope handle_scope(isolate());
+  v8::Local<v8::Context> context = ContextLocal();
 
   v8::Local<v8::Object> alpha_api = bindings_system()->CreateAPIInstance(
-      kAlphaAPIName, context, isolate, base::Bind(&AllowAllAPIs));
+      kAlphaAPIName, context, isolate(), base::Bind(&AllowAllAPIs));
   ASSERT_FALSE(alpha_api.IsEmpty());
   v8::Local<v8::Object> beta_api = bindings_system()->CreateAPIInstance(
-      kBetaAPIName, context, isolate, base::Bind(&AllowAllAPIs));
+      kBetaAPIName, context, isolate(), base::Bind(&AllowAllAPIs));
   ASSERT_FALSE(beta_api.IsEmpty());
 
   {
@@ -360,9 +318,7 @@ class APIBindingsSystemTestWithRealAPI : public APIBindingsSystemTestBase {
 void APIBindingsSystemTestWithRealAPI::ExecuteScript(
     v8::Local<v8::Context> context,
     const std::string& script_source) {
-  v8::Isolate* isolate = instance_->isolate();
-
-  v8::TryCatch try_catch(isolate);
+  v8::TryCatch try_catch(isolate());
   // V8ValueFromScriptSource runs the source and returns the result; here, we
   // only care about running the source.
   V8ValueFromScriptSource(context, script_source);
@@ -374,9 +330,7 @@ void APIBindingsSystemTestWithRealAPI::ExecuteScriptAndExpectError(
     v8::Local<v8::Context> context,
     const std::string& script_source,
     const std::string& expected_error) {
-  v8::Isolate* isolate = instance_->isolate();
-
-  v8::TryCatch try_catch(isolate);
+  v8::TryCatch try_catch(isolate());
   V8ValueFromScriptSource(context, script_source);
   ASSERT_TRUE(try_catch.HasCaught()) << script_source;
   EXPECT_EQ(expected_error, gin::V8ToString(try_catch.Message()->Get()));
@@ -388,15 +342,13 @@ void APIBindingsSystemTestWithRealAPI::ExecuteScriptAndExpectError(
 // intended to be used in the future as well as to make sure that it works with
 // actual APIs.
 TEST_F(APIBindingsSystemTestWithRealAPI, RealAPIs) {
-  v8::Isolate* isolate = instance_->isolate();
-  v8::HandleScope handle_scope(isolate);
-  v8::Local<v8::Context> context =
-      v8::Local<v8::Context>::New(isolate, context_);
+  v8::HandleScope handle_scope(isolate());
+  v8::Local<v8::Context> context = ContextLocal();
 
-  v8::Local<v8::Object> chrome = v8::Object::New(isolate);
+  v8::Local<v8::Object> chrome = v8::Object::New(isolate());
   {
     v8::Maybe<bool> res = context->Global()->Set(
-        context, gin::StringToV8(isolate, "chrome"), chrome);
+        context, gin::StringToV8(isolate(), "chrome"), chrome);
     ASSERT_TRUE(res.IsJust());
     ASSERT_TRUE(res.FromJust());
   }
