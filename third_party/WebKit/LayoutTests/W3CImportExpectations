@@ -338,6 +338,9 @@ imported/wpt/webvtt [ Skip ]
 # (if it's a blink/test tooling issue) or an upstream bug reference
 # (if the test itself is buggy).
 
+# TODO(tkent): This triggers a run-webkit-tests bug.
+imported/wpt/testharness_runner.html [ Skip ]
+
 # crbug.com/490694: Needs to support *.headers.
 imported/wpt/html/dom/documents/resource-metadata-management/document-lastModified.html [ Skip ]
 imported/wpt/html/syntax/parsing-html-fragments/the-input-byte-stream-001.html [ Skip ]
@@ -598,6 +601,10 @@ imported/wpt/html/editing/dnd/svg [ Skip ]
 
 # crbug.com/496467: "hxml" files have CR (not CR+LF) and any patches fail.
 imported/wpt/html/editing/dnd/platform/plugin/swfsources [ Skip ]
+
+# crbug.com/662667: CRLF line endings
+imported/wpt/html/syntax/parsing-html-fragments/the-input-byte-stream-003.html [ Skip ]
+imported/wpt/html/syntax/parsing-html-fragments/the-input-byte-stream-004.html [ Skip ]
 
 # https://github.com/w3c/web-platform-tests/issues/1881: Tests refer
 # non-existing .js file.
