@@ -5,7 +5,6 @@
 from pylib.gtest import gtest_test_instance
 from pylib.instrumentation import instrumentation_test_instance
 from pylib.perf import perf_test_instance
-from pylib.uirobot import uirobot_test_instance
 from pylib.utils import isolator
 
 
@@ -19,7 +18,5 @@ def CreateTestInstance(args, error_func):
         args, isolator.Isolator(), error_func)
   elif args.command == 'perf':
     return perf_test_instance.PerfTestInstance(args, error_func)
-  elif args.command == 'uirobot':
-    return uirobot_test_instance.UirobotTestInstance(args, error_func)
 
   error_func('Unable to create %s test instance.' % args.command)

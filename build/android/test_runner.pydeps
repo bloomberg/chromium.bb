@@ -113,16 +113,12 @@ pylib/monkey/test_options.py
 pylib/monkey/test_runner.py
 pylib/perf/__init__.py
 pylib/perf/perf_test_instance.py
-pylib/remote/__init__.py
-pylib/remote/device/__init__.py
 pylib/results/__init__.py
 pylib/results/flakiness_dashboard/__init__.py
 pylib/results/flakiness_dashboard/json_results_generator.py
 pylib/results/flakiness_dashboard/results_uploader.py
 pylib/results/json_results.py
 pylib/results/report_results.py
-pylib/uirobot/__init__.py
-pylib/uirobot/uirobot_test_instance.py
 pylib/utils/__init__.py
 pylib/utils/isolator.py
 pylib/utils/proguard.py

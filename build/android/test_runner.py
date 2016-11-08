@@ -147,64 +147,6 @@ def ProcessCommonOptions(args):
     os.environ['PATH'] = adb_dir + os.pathsep + os.environ['PATH']
 
 
-def AddRemoteDeviceOptions(parser):
-  group = parser.add_argument_group('Remote Device Options')
-
-  group.add_argument('--trigger',
-                     help=('Only triggers the test if set. Stores test_run_id '
-                           'in given file path. '))
-  group.add_argument('--collect',
-                     help=('Only collects the test results if set. '
-                           'Gets test_run_id from given file path.'))
-  group.add_argument('--remote-device', action='append',
-                     help='Device type to run test on.')
-  group.add_argument('--results-path',
-                     help='File path to download results to.')
-  group.add_argument('--api-protocol',
-                     help='HTTP protocol to use. (http or https)')
-  group.add_argument('--api-address',
-                     help='Address to send HTTP requests.')
-  group.add_argument('--api-port',
-                     help='Port to send HTTP requests to.')
-  group.add_argument('--runner-type',
-                     help='Type of test to run as.')
-  group.add_argument('--runner-package',
-                     help='Package name of test.')
-  group.add_argument('--device-type',
-                     choices=constants.VALID_DEVICE_TYPES,
-                     help=('Type of device to run on. iOS or android'))
-  group.add_argument('--device-oem', action='append',
-                     help='Device OEM to run on.')
-  group.add_argument('--remote-device-file',
-                     help=('File with JSON to select remote device. '
-                           'Overrides all other flags.'))
-  group.add_argument('--remote-device-timeout', type=int,
-                     help='Times to retry finding remote device')
-  group.add_argument('--network-config', type=int,
-                     help='Integer that specifies the network environment '
-                          'that the tests will be run in.')
-  group.add_argument('--test-timeout', type=int,
-                     help='Test run timeout in seconds.')
-
-  device_os_group = group.add_mutually_exclusive_group()
-  device_os_group.add_argument('--remote-device-minimum-os',
-                               help='Minimum OS on device.')
-  device_os_group.add_argument('--remote-device-os', action='append',
-                               help='OS to have on the device.')
-
-  api_secret_group = group.add_mutually_exclusive_group()
-  api_secret_group.add_argument('--api-secret', default='',
-                                help='API secret for remote devices.')
-  api_secret_group.add_argument('--api-secret-file', default='',
-                                help='Path to file that contains API secret.')
-
-  api_key_group = group.add_mutually_exclusive_group()
-  api_key_group.add_argument('--api-key', default='',
-                             help='API key for remote devices.')
-  api_key_group.add_argument('--api-key-file', default='',
-                             help='Path to file that contains API key.')
-
-
 def AddDeviceOptions(parser):
   """Adds device options to |parser|."""
   group = parser.add_argument_group(title='Device Options')
@@ -301,7 +243,6 @@ def AddGTestOptions(parser):
 
   AddDeviceOptions(parser)
   AddCommonOptions(parser)
-  AddRemoteDeviceOptions(parser)
 
 
 def AddLinkerTestOptions(parser):
@@ -444,7 +385,6 @@ def AddInstrumentationTestOptions(parser):
 
   AddCommonOptions(parser)
   AddDeviceOptions(parser)
-  AddRemoteDeviceOptions(parser)
 
 
 def AddJUnitTestOptions(parser):
@@ -524,22 +464,6 @@ def ProcessMonkeyTestOptions(args):
       args.seed,
       args.extra_args)
 
-def AddUirobotTestOptions(parser):
-  """Adds uirobot test options to |option_parser|."""
-  group = parser.add_argument_group('Uirobot Test Options')
-
-  group.add_argument('--app-under-test', required=True,
-                     help='APK to run tests on.')
-  group.add_argument(
-      '--repeat', dest='repeat', type=int, default=0,
-      help='Number of times to repeat the uirobot test.')
-  group.add_argument(
-      '--minutes', default=5, type=int,
-      help='Number of minutes to run uirobot test [default: %(default)s].')
-
-  AddCommonOptions(parser)
-  AddDeviceOptions(parser)
-  AddRemoteDeviceOptions(parser)
 
 def AddPerfTestOptions(parser):
   """Adds perf test options to |parser|."""
@@ -798,7 +722,6 @@ _SUPPORTED_IN_PLATFORM_MODE = [
   'gtest',
   'instrumentation',
   'perf',
-  'uirobot',
 ]
 
 
@@ -919,9 +842,6 @@ VALID_COMMANDS = {
     'linker': CommandConfigTuple(
         AddLinkerTestOptions,
         'Linker tests'),
-    'uirobot': CommandConfigTuple(
-        AddUirobotTestOptions,
-        'Uirobot test'),
 }
 
 
