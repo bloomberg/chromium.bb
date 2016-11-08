@@ -60,8 +60,9 @@
 #include "content/test/accessibility_browser_test_utils.h"
 #include "net/base/filename_util.h"
 #include "net/cookies/cookie_store.h"
-#include "net/filter/filter.h"
 #include "net/filter/gzip_header.h"
+#include "net/filter/gzip_source_stream.h"
+#include "net/filter/mock_source_stream.h"
 #include "net/test/embedded_test_server/embedded_test_server.h"
 #include "net/test/embedded_test_server/http_request.h"
 #include "net/test/embedded_test_server/http_response.h"
@@ -365,21 +366,25 @@ bool HasGzipHeader(const base::RefCountedMemory& maybe_gzipped) {
 
 void AppendGzippedResource(const base::RefCountedMemory& encoded,
                            std::string* to_append) {
-  std::unique_ptr<net::Filter> filter = net::Filter::GZipFactory();
-  memcpy(filter->stream_buffer()->data(), encoded.front_as<char>(),
-         encoded.size());
-  filter->FlushStreamBuffer(encoded.size());
-
-  const int kBufferSize = 4096;
-  char dest_buffer[kBufferSize];
-
-  net::Filter::FilterStatus status;
-  do {
-    int read_size = kBufferSize;
-    status = filter->ReadData(dest_buffer, &read_size);
-    ASSERT_NE(status, net::Filter::FILTER_ERROR);
-    to_append->append(dest_buffer, read_size);
-  } while (status != net::Filter::FILTER_DONE);
+  std::unique_ptr<net::MockSourceStream> source_stream(
+      new net::MockSourceStream());
+  source_stream->AddReadResult(encoded.front_as<char>(), encoded.size(),
+                               net::OK, net::MockSourceStream::SYNC);
+  // Add an EOF.
+  source_stream->AddReadResult(encoded.front_as<char>() + encoded.size(), 0,
+                               net::OK, net::MockSourceStream::SYNC);
+  std::unique_ptr<net::GzipSourceStream> filter = net::GzipSourceStream::Create(
+      std::move(source_stream), net::SourceStream::TYPE_GZIP);
+  scoped_refptr<net::IOBufferWithSize> dest_buffer =
+      new net::IOBufferWithSize(4096);
+  net::CompletionCallback callback;
+  while (true) {
+    int rv = filter->Read(dest_buffer.get(), dest_buffer->size(), callback);
+    ASSERT_LE(0, rv);
+    if (rv <= 0)
+      break;
+    to_append->append(dest_buffer->data(), rv);
+  }
 }
 
 // Queries for video input devices on the current system using the getSources

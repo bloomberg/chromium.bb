@@ -1553,8 +1553,6 @@
       'filter/gzip_source_stream_unittest.cc',
       'filter/mock_filter_context.cc',
       'filter/mock_filter_context.h',
-      'filter/mock_source_stream.cc',
-      'filter/mock_source_stream.h',
       'filter/sdch_filter_unittest.cc',
       'filter/sdch_policy_delegate_unittest.cc',
       'filter/sdch_source_stream_unittest.cc',

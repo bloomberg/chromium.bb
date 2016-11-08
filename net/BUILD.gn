@@ -518,6 +518,8 @@ static_library("test_support") {
     "dns/mock_host_resolver.h",
     "dns/mock_mdns_socket_factory.cc",
     "dns/mock_mdns_socket_factory.h",
+    "filter/mock_source_stream.cc",
+    "filter/mock_source_stream.h",
     "http/http_stream_factory_test_util.cc",
     "http/http_stream_factory_test_util.h",
     "http/http_transaction_test_util.cc",
