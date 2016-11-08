@@ -855,7 +855,8 @@ static void pack_txb_tokens(aom_writer *w, const TOKENEXTRA **tp,
     token_stats->cost += tmp_token_stats.cost;
 #endif
   } else {
-    const int bsl = block_size_wide[bsize] >> (tx_size_wide_log2[0] + 1);
+    const TX_SIZE sub_txs = sub_tx_size_map[tx_size];
+    const int bsl = tx_size_wide_unit[sub_txs];
     int i;
 
     assert(bsl > 0);
@@ -863,7 +864,6 @@ static void pack_txb_tokens(aom_writer *w, const TOKENEXTRA **tp,
     for (i = 0; i < 4; ++i) {
       const int offsetr = blk_row + (i >> 1) * bsl;
       const int offsetc = blk_col + (i & 0x01) * bsl;
-      const TX_SIZE sub_txs = tx_size - 1;
       const int step = tx_size_wide_unit[sub_txs] * tx_size_high_unit[sub_txs];
 
       if (offsetr >= max_blocks_high || offsetc >= max_blocks_wide) continue;
