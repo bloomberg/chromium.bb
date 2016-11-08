@@ -11,9 +11,9 @@ namespace media {
 
 RemotingRendererFactory::RemotingRendererFactory(
     std::unique_ptr<RendererFactory> default_renderer_factory,
-    std::unique_ptr<RemotingController> remoting_controller)
+    std::unique_ptr<RemotingRendererController> remoting_renderer_controller)
     : default_renderer_factory_(std::move(default_renderer_factory)),
-      remoting_controller_(std::move(remoting_controller)) {}
+      remoting_renderer_controller_(std::move(remoting_renderer_controller)) {}
 
 RemotingRendererFactory::~RemotingRendererFactory() {}
 
@@ -23,10 +23,11 @@ std::unique_ptr<Renderer> RemotingRendererFactory::CreateRenderer(
     AudioRendererSink* audio_renderer_sink,
     VideoRendererSink* video_renderer_sink,
     const RequestSurfaceCB& request_surface_cb) {
-  if (remoting_controller_ && remoting_controller_->is_remoting()) {
+  if (remoting_renderer_controller_ &&
+      remoting_renderer_controller_->remote_rendering_started()) {
     VLOG(1) << "Create Remoting renderer.";
     return base::WrapUnique(new RemoteRendererImpl(
-        media_task_runner, remoting_controller_->GetWeakPtr()));
+        media_task_runner, remoting_renderer_controller_->GetWeakPtr()));
   } else {
     VLOG(1) << "Create Local playback renderer.";
     return default_renderer_factory_->CreateRenderer(

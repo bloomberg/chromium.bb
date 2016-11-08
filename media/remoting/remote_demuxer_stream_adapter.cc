@@ -233,7 +233,7 @@ void RemoteDemuxerStreamAdapter::OnNewBuffer(
       return;
     case ::media::DemuxerStream::kConfigChanged:
       // TODO(erickung): consider sending updated Audio/Video decoder config to
-      // RemotingController.
+      // RemotingRendererController.
       // Stores available audio/video decoder config and issues
       // RPC_DS_READUNTIL_CALLBACK RPC to notify receiver.
       DCHECK(!input);

@@ -16,7 +16,7 @@
 #include "media/base/demuxer_stream_provider.h"
 #include "media/base/media_keys.h"
 #include "media/remoting/remote_demuxer_stream_adapter.h"
-#include "media/remoting/remoting_controller.h"
+#include "media/remoting/remoting_renderer_controller.h"
 #include "media/remoting/rpc/proto_enum_utils.h"
 #include "media/remoting/rpc/proto_utils.h"
 
@@ -24,20 +24,21 @@ namespace media {
 
 RemoteRendererImpl::RemoteRendererImpl(
     scoped_refptr<base::SingleThreadTaskRunner> media_task_runner,
-    const base::WeakPtr<RemotingController>& remoting_controller)
+    const base::WeakPtr<RemotingRendererController>&
+        remoting_renderer_controller)
     : state_(STATE_UNINITIALIZED),
       main_task_runner_(base::ThreadTaskRunnerHandle::Get()),
       media_task_runner_(std::move(media_task_runner)),
       demuxer_stream_provider_(nullptr),
       client_(nullptr),
-      remoting_controller_(remoting_controller),
-      rpc_broker_(remoting_controller_->GetRpcBroker()),
+      remoting_renderer_controller_(remoting_renderer_controller),
+      rpc_broker_(remoting_renderer_controller_->GetRpcBroker()),
       rpc_handle_(remoting::RpcBroker::GetUniqueHandle()),
       remote_renderer_handle_(remoting::kInvalidHandle),
       weak_factory_(this) {
   VLOG(2) << __FUNCTION__;
   // The constructor is running on the main thread.
-  DCHECK(remoting_controller);
+  DCHECK(remoting_renderer_controller);
   const remoting::RpcBroker::ReceiveMessageCallback receive_callback =
       base::Bind(&RemoteRendererImpl::OnMessageReceivedOnMainThread,
                  media_task_runner_, weak_factory_.GetWeakPtr());
@@ -86,14 +87,14 @@ void RemoteRendererImpl::Initialize(
   }
 
   // Establish remoting data pipe connection using main thread.
-  const RemotingController::DataPipeStartCallback data_pipe_callback =
+  const RemotingSourceImpl::DataPipeStartCallback data_pipe_callback =
       base::Bind(&RemoteRendererImpl::OnDataPipeCreatedOnMainThread,
                  media_task_runner_, weak_factory_.GetWeakPtr());
   main_task_runner_->PostTask(
       FROM_HERE,
-      base::Bind(&RemotingController::StartDataPipe, remoting_controller_,
-                 base::Passed(&audio_data_pipe), base::Passed(&video_data_pipe),
-                 data_pipe_callback));
+      base::Bind(&RemotingRendererController::StartDataPipe,
+                 remoting_renderer_controller_, base::Passed(&audio_data_pipe),
+                 base::Passed(&video_data_pipe), data_pipe_callback));
 }
 
 void RemoteRendererImpl::SetCdm(CdmContext* cdm_context,

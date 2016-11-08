@@ -8,7 +8,7 @@
 #include "base/bind_helpers.h"
 #include "base/callback.h"
 #include "base/threading/thread_task_runner_handle.h"
-#include "media/remoting/remoting_controller.h"
+#include "media/remoting/remoting_source_impl.h"
 #include "media/remoting/rpc/proto_utils.h"
 #include "mojo/public/cpp/bindings/strong_binding.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -106,7 +106,9 @@ void FakeRemotingDataStreamSender::CancelInFlightData() {
 }
 
 FakeRemoter::FakeRemoter(mojom::RemotingSourcePtr source, bool start_will_fail)
-    : source_(std::move(source)), start_will_fail_(start_will_fail) {}
+    : source_(std::move(source)),
+      start_will_fail_(start_will_fail),
+      weak_factory_(this) {}
 
 FakeRemoter::~FakeRemoter() {}
 
@@ -114,10 +116,11 @@ void FakeRemoter::Start() {
   if (start_will_fail_) {
     base::ThreadTaskRunnerHandle::Get()->PostTask(
         FROM_HERE,
-        base::Bind(&FakeRemoter::StartFailed, base::Unretained(this)));
+        base::Bind(&FakeRemoter::StartFailed, weak_factory_.GetWeakPtr()));
   } else {
     base::ThreadTaskRunnerHandle::Get()->PostTask(
-        FROM_HERE, base::Bind(&FakeRemoter::Started, base::Unretained(this)));
+        FROM_HERE,
+        base::Bind(&FakeRemoter::Started, weak_factory_.GetWeakPtr()));
   }
 }
 
@@ -142,7 +145,7 @@ void FakeRemoter::StartDataStreams(
 void FakeRemoter::Stop(mojom::RemotingStopReason reason) {
   base::ThreadTaskRunnerHandle::Get()->PostTask(
       FROM_HERE,
-      base::Bind(&FakeRemoter::Stopped, base::Unretained(this), reason));
+      base::Bind(&FakeRemoter::Stopped, weak_factory_.GetWeakPtr(), reason));
 }
 
 void FakeRemoter::SendMessageToSink(const std::vector<uint8_t>& message) {}
@@ -171,7 +174,7 @@ void FakeRemoterFactory::Create(mojom::RemotingSourcePtr source,
       std::move(request));
 }
 
-std::unique_ptr<RemotingController> CreateRemotingController(
+scoped_refptr<RemotingSourceImpl> CreateRemotingSourceImpl(
     bool start_will_fail) {
   mojom::RemotingSourcePtr remoting_source;
   mojom::RemotingSourceRequest remoting_source_request =
@@ -180,10 +183,8 @@ std::unique_ptr<RemotingController> CreateRemotingController(
   std::unique_ptr<mojom::RemoterFactory> remoter_factory =
       base::MakeUnique<FakeRemoterFactory>(start_will_fail);
   remoter_factory->Create(std::move(remoting_source), mojo::GetProxy(&remoter));
-  std::unique_ptr<RemotingController> remoting_controller =
-      base::MakeUnique<RemotingController>(std::move(remoting_source_request),
-                                           std::move(remoter));
-  return remoting_controller;
+  return new RemotingSourceImpl(std::move(remoting_source_request),
+                                std::move(remoter));
 }
 
 }  // namespace media

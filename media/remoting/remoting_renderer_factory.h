@@ -6,18 +6,17 @@
 #define MEDIA_REMOTING_REMOTING_RENDERER_FACTORY_H_
 
 #include "media/base/renderer_factory.h"
-#include "media/remoting/remoting_controller.h"
+#include "media/remoting/remoting_renderer_controller.h"
 
 namespace media {
 
 // Create renderer for local playback or remoting according to info from
-// |remoting_controller|.
-// TODO(xjz): Merge this with Eric's implementation.
+// |remoting_renderer_controller|.
 class RemotingRendererFactory : public RendererFactory {
  public:
   RemotingRendererFactory(
       std::unique_ptr<RendererFactory> default_renderer_factory,
-      std::unique_ptr<RemotingController> remoting_controller);
+      std::unique_ptr<RemotingRendererController> remoting_renderer_controller);
   ~RemotingRendererFactory() override;
 
   std::unique_ptr<Renderer> CreateRenderer(
@@ -29,7 +28,8 @@ class RemotingRendererFactory : public RendererFactory {
 
  private:
   const std::unique_ptr<RendererFactory> default_renderer_factory_;
-  const std::unique_ptr<RemotingController> remoting_controller_;
+  const std::unique_ptr<RemotingRendererController>
+      remoting_renderer_controller_;
 
   DISALLOW_COPY_AND_ASSIGN(RemotingRendererFactory);
 };

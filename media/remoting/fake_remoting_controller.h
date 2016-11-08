@@ -11,7 +11,7 @@
 
 namespace media {
 
-class RemotingController;
+class RemotingSourceImpl;
 
 class FakeRemotingDataStreamSender : public mojom::RemotingDataStreamSender {
  public:
@@ -77,6 +77,9 @@ class FakeRemoter final : public mojom::Remoter {
 
   std::unique_ptr<FakeRemotingDataStreamSender> audio_stream_sender_;
   std::unique_ptr<FakeRemotingDataStreamSender> video_stream_sender_;
+
+  base::WeakPtrFactory<FakeRemoter> weak_factory_;
+
   DISALLOW_COPY_AND_ASSIGN(FakeRemoter);
 };
 
@@ -96,7 +99,7 @@ class FakeRemoterFactory final : public mojom::RemoterFactory {
   DISALLOW_COPY_AND_ASSIGN(FakeRemoterFactory);
 };
 
-std::unique_ptr<RemotingController> CreateRemotingController(
+scoped_refptr<RemotingSourceImpl> CreateRemotingSourceImpl(
     bool start_will_fail);
 
 }  // namespace media

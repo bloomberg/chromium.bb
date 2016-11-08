@@ -14,4 +14,8 @@ CdmContext::~CdmContext() {}
 
 void IgnoreCdmAttached(bool /* success */) {}
 
+void* CdmContext::GetClassIdentifier() const {
+  return nullptr;
+}
+
 }  // namespace media

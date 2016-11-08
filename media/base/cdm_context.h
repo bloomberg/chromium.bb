@@ -34,6 +34,10 @@ class MEDIA_EXPORT CdmContext {
   // is not supported (e.g. this CDM is a local CDM).
   virtual int GetCdmId() const = 0;
 
+  // Returns a unique class identifier. Some subclasses override and use this
+  // method to provide safe down-casting to their type.
+  virtual void* GetClassIdentifier() const;
+
  protected:
   CdmContext();
 

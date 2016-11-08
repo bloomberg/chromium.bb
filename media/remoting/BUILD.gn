@@ -37,10 +37,22 @@ source_set("remoting") {
     "remote_demuxer_stream_adapter.h",
     "remote_renderer_impl.cc",
     "remote_renderer_impl.h",
-    "remoting_controller.cc",
-    "remoting_controller.h",
+    "remoting_cdm.cc",
+    "remoting_cdm.h",
+    "remoting_cdm_context.cc",
+    "remoting_cdm_context.h",
+    "remoting_cdm_controller.cc",
+    "remoting_cdm_controller.h",
+    "remoting_cdm_factory.cc",
+    "remoting_cdm_factory.h",
+    "remoting_renderer_controller.cc",
+    "remoting_renderer_controller.h",
     "remoting_renderer_factory.cc",
     "remoting_renderer_factory.h",
+    "remoting_sink_observer.cc",
+    "remoting_sink_observer.h",
+    "remoting_source_impl.cc",
+    "remoting_source_impl.h",
   ]
   deps = [
     ":rpc",
@@ -60,7 +72,7 @@ source_set("media_remoting_tests") {
     "fake_remoting_demuxer_stream_provider.h",
     "remote_demuxer_stream_adapter_unittest.cc",
     "remote_renderer_impl_unittest.cc",
-    "remoting_controller_unittest.cc",
+    "remoting_renderer_controller_unittest.cc",
     "rpc/proto_utils_unittest.cc",
     "rpc/rpc_broker_unittest.cc",
   ]
@@ -76,6 +88,7 @@ source_set("media_remoting_tests") {
     "//testing/gtest",
     "//ui/gfx:test_support",
     "//ui/gfx/geometry",
+    "//url",
   ]
 }
 

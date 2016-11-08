@@ -25,7 +25,7 @@
 namespace media {
 
 class BalancedMediaTaskRunnerFactory;
-class RemotingController;
+class RemotingRendererController;
 class Renderer;
 class VideoRendererSink;
 
@@ -42,7 +42,8 @@ class RemoteRendererImpl : public Renderer {
   // thread.
   RemoteRendererImpl(
       const scoped_refptr<base::SingleThreadTaskRunner> media_task_runner,
-      const base::WeakPtr<RemotingController>& remoting_controller);
+      const base::WeakPtr<RemotingRendererController>&
+          remoting_renderer_controller);
   ~RemoteRendererImpl() final;
 
  private:
@@ -141,7 +142,7 @@ class RemoteRendererImpl : public Renderer {
       video_demuxer_stream_adapter_;
 
   // Component to establish mojo remoting service on browser process.
-  const base::WeakPtr<RemotingController> remoting_controller_;
+  const base::WeakPtr<RemotingRendererController> remoting_renderer_controller_;
   // Broker class to process incoming and outgoing RPC message.
   const base::WeakPtr<remoting::RpcBroker> rpc_broker_;
   // RPC handle value for RemoteRendererImpl component.
