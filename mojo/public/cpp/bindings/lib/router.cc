@@ -323,9 +323,11 @@ void Router::OnConnectionError() {
 
   encountered_error_ = true;
 
-  // The callbacks may hold on to resources. There is no need to keep them any
-  // longer.
-  async_responders_.clear();
+  // Response callbacks may hold on to resource, and there's no need to keep
+  // them alive any longer. Note that it's allowed that a pending response
+  // callback may own this endpoint, so we simply move the responders onto the
+  // stack here and let them be destroyed when the stack unwinds.
+  AsyncResponderMap responders = std::move(async_responders_);
 
   if (!error_handler_.is_null()) {
     error_handler_.Run();

@@ -790,6 +790,25 @@ TEST_F(InterfacePtrTest, InterfaceRequestResetWithReason) {
   run_loop.Run();
 }
 
+TEST_F(InterfacePtrTest, CallbackOwnsInterfacePtr) {
+  sample::PingTestPtr ptr;
+  sample::PingTestRequest request = GetProxy(&ptr);
+
+  base::RunLoop run_loop;
+
+  // Make a call with the proxy's lifetime bound to the response callback.
+  sample::PingTest* raw_proxy = ptr.get();
+  ptr.set_connection_error_handler(run_loop.QuitClosure());
+  raw_proxy->Ping(
+      base::Bind([](sample::PingTestPtr ptr) {}, base::Passed(&ptr)));
+
+  // Trigger an error on |ptr|. This will ultimately lead to the proxy's
+  // response callbacks being destroyed, which will in turn lead to the proxy
+  // being destroyed. This should not crash.
+  request.PassMessagePipe();
+  run_loop.Run();
+}
+
 }  // namespace
 }  // namespace test
 }  // namespace mojo
