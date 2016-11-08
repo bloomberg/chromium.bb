@@ -34,7 +34,8 @@
           "device::mojom::PowerMonitor",
           "device::mojom::TimeZoneMonitor",
           "media::mojom::ImageCapture",
-          "memory_coordinator::mojom::MemoryCoordinatorHandle"
+          "memory_coordinator::mojom::MemoryCoordinatorHandle",
+          "payments::mojom::PaymentAppManager"
         ],
         "service_manager:service_factory": [
           "service_manager::mojom::ServiceFactory"

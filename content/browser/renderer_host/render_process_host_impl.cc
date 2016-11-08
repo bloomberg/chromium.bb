@@ -88,6 +88,7 @@
 #include "content/browser/mime_registry_impl.h"
 #include "content/browser/notifications/notification_message_filter.h"
 #include "content/browser/notifications/platform_notification_context_impl.h"
+#include "content/browser/payments/payment_app_manager.h"
 #include "content/browser/permissions/permission_service_context.h"
 #include "content/browser/permissions/permission_service_impl.h"
 #include "content/browser/power_monitor_message_broadcaster.h"
@@ -1211,6 +1212,13 @@ void RenderProcessHostImpl::RegisterMojoInterfaces() {
                  base::Unretained(permission_service_context_.get())));
   // TODO(mcasas): finalize arguments.
   AddUIThreadInterface(registry.get(), base::Bind(&ImageCaptureImpl::Create));
+
+  AddUIThreadInterface(
+      registry.get(),
+      base::Bind(&PaymentAppContext::CreateService,
+                 base::Unretained(
+                     storage_partition_impl_->GetPaymentAppContext())));
+
   AddUIThreadInterface(
       registry.get(),
       base::Bind(&OffscreenCanvasCompositorFrameSinkProviderImpl::Create));

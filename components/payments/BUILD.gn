@@ -14,6 +14,16 @@ mojom("payment_request") {
   ]
 }
 
+mojom("payment_app") {
+  sources = [
+    "payment_app.mojom",
+  ]
+
+  public_deps = [
+    "//mojo/common:common_custom_types",
+  ]
+}
+
 static_library("payment_validation") {
   sources = [
     "payment_details_validation.cc",

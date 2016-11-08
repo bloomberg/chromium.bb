@@ -374,6 +374,7 @@ StoragePartitionImpl::StoragePartitionImpl(
     HostZoomLevelContext* host_zoom_level_context,
     PlatformNotificationContextImpl* platform_notification_context,
     BackgroundSyncContext* background_sync_context,
+    PaymentAppContext* payment_app_context,
     scoped_refptr<BroadcastChannelProvider> broadcast_channel_provider)
     : partition_path_(partition_path),
       quota_manager_(quota_manager),
@@ -388,6 +389,7 @@ StoragePartitionImpl::StoragePartitionImpl(
       host_zoom_level_context_(host_zoom_level_context),
       platform_notification_context_(platform_notification_context),
       background_sync_context_(background_sync_context),
+      payment_app_context_(payment_app_context),
       broadcast_channel_provider_(std::move(broadcast_channel_provider)),
       browser_context_(browser_context) {}
 
@@ -420,6 +422,9 @@ StoragePartitionImpl::~StoragePartitionImpl() {
 
   if (GetBackgroundSyncContext())
     GetBackgroundSyncContext()->Shutdown();
+
+  if (GetPaymentAppContext())
+    GetPaymentAppContext()->Shutdown();
 }
 
 std::unique_ptr<StoragePartitionImpl> StoragePartitionImpl::Create(
@@ -509,6 +514,10 @@ std::unique_ptr<StoragePartitionImpl> StoragePartitionImpl::Create(
       new BackgroundSyncContext();
   background_sync_context->Init(service_worker_context);
 
+  scoped_refptr<PaymentAppContext> payment_app_context =
+      new PaymentAppContext();
+  payment_app_context->Init(service_worker_context);
+
   scoped_refptr<BroadcastChannelProvider>
       broadcast_channel_provider = new BroadcastChannelProvider();
 
@@ -520,6 +529,7 @@ std::unique_ptr<StoragePartitionImpl> StoragePartitionImpl::Create(
           cache_storage_context.get(), service_worker_context.get(),
           special_storage_policy.get(), host_zoom_level_context.get(),
           platform_notification_context.get(), background_sync_context.get(),
+          payment_app_context.get(),
           std::move(broadcast_channel_provider)));
 
   service_worker_context->set_storage_partition(storage_partition.get());
@@ -593,6 +603,10 @@ StoragePartitionImpl::GetPlatformNotificationContext() {
 
 BackgroundSyncContext* StoragePartitionImpl::GetBackgroundSyncContext() {
   return background_sync_context_.get();
+}
+
+PaymentAppContext* StoragePartitionImpl::GetPaymentAppContext() {
+  return payment_app_context_.get();
 }
 
 BroadcastChannelProvider* StoragePartitionImpl::GetBroadcastChannelProvider() {

@@ -4,6 +4,7 @@
 
 #include "modules/payments/PaymentAppServiceWorkerRegistration.h"
 
+#include "bindings/core/v8/ScriptState.h"
 #include "modules/payments/PaymentAppManager.h"
 #include "modules/serviceworkers/ServiceWorkerRegistration.h"
 
@@ -29,14 +30,18 @@ PaymentAppServiceWorkerRegistration& PaymentAppServiceWorkerRegistration::from(
 
 // static
 PaymentAppManager* PaymentAppServiceWorkerRegistration::paymentAppManager(
+    ScriptState* scriptState,
     ServiceWorkerRegistration& registration) {
   return PaymentAppServiceWorkerRegistration::from(registration)
-      .paymentAppManager();
+      .paymentAppManager(scriptState);
 }
 
-PaymentAppManager* PaymentAppServiceWorkerRegistration::paymentAppManager() {
-  if (!m_paymentAppManager)
-    m_paymentAppManager = PaymentAppManager::create(m_registration);
+PaymentAppManager* PaymentAppServiceWorkerRegistration::paymentAppManager(
+    ScriptState* scriptState) {
+  if (!m_paymentAppManager) {
+    m_paymentAppManager =
+        PaymentAppManager::create(scriptState, m_registration);
+  }
   return m_paymentAppManager.get();
 }
 
