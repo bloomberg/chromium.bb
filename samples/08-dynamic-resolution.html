@@ -203,9 +203,6 @@ found in the LICENSE file.
         VRSamplesUtil.addError("Your browser does not support WebVR. See <a href='http://webvr.info'>webvr.info</a> for assistance.");
       }
 
-      // How
-
-
       function onResize () {
         if (vrDisplay && vrDisplay.isPresenting) {
           var leftEye = vrDisplay.getEyeParameters("left");
@@ -218,6 +215,15 @@ found in the LICENSE file.
           webglCanvas.height = webglCanvas.offsetHeight * window.devicePixelRatio;
         }
       }
+
+      function onClick () {
+        // Reset the background color to a random value
+        gl.clearColor(
+            Math.random() * 0.5,
+            Math.random() * 0.5,
+            Math.random() * 0.5, 1.0);
+      }
+      webglCanvas.addEventListener("click", onClick, false);
 
       // How large our frame should be in relation to the recommended render
       // target size.

@@ -229,6 +229,14 @@ found in the LICENSE file.
         }
       }
 
+      function onClick () {
+        // Reset the background color to a random value
+        gl.clearColor(
+            Math.random() * 0.5,
+            Math.random() * 0.5,
+            Math.random() * 0.5, 1.0);
+      }
+      webglCanvas.addEventListener("click", onClick, false);
 
       function onAnimationFrame (t) {
         stats.begin();

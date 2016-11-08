@@ -245,6 +245,20 @@ found in the LICENSE file.
       window.addEventListener("resize", onResize, false);
       onResize();
 
+      // Listen for click events on the canvas, which may come from something
+      // like a Cardboard viewer or other VR controller, and make a small change
+      // to the scene in response (so that we know it's working.) This basic
+      // interaction mode is the baseline for all WebVR compatible devices, and
+      // should ideally always be minimally supported.
+      function onClick () {
+        // Reset the background color to a random value
+        gl.clearColor(
+            Math.random() * 0.5,
+            Math.random() * 0.5,
+            Math.random() * 0.5, 1.0);
+      }
+      webglCanvas.addEventListener("click", onClick, false);
+
       function onAnimationFrame (t) {
         stats.begin();
 
